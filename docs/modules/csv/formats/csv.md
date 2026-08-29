@@ -1,8 +1,40 @@
-import {CsvDocsTabs} from '@site/src/components/docs/csv-docs-tabs';
+---
+title: CSV, TSV, and DSV formats
+description: Simple text encodings for tabular data that are easy to inspect, stream, and exchange.
+hide_title: true
+page_style: designed
+---
 
-# CSV, TSV, DSV
+import {CsvDocsTabs} from '@site/src/components/docs/csv-docs-tabs';
+import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
+import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
+
+<DocPageHeader
+  eyebrow="Delimited text formats"
+  title="Start with a table anyone can inspect."
+  description="CSV, TSV, and DSV use plain text to represent rows and fields. Their simplicity makes them useful for exchange, command-line tools, spreadsheets, and streaming pipelines."
+  tone="cyan"
+  meta={['Plain text', 'Streaming-friendly', 'Tabular data']}
+  links={[
+    {label: 'CSV module', to: '/docs/modules/csv'},
+    {label: 'Streaming loaders', to: '/docs/developer-guide/using-streaming-loaders'}
+  ]}
+/>
 
 <CsvDocsTabs active="overview" />
+
+<DocOrientation
+  eyebrow="The delimiter is the detail"
+  title="Keep the rows readable. Configure the variations."
+  description="The same loader handles commas, tabs, semicolons, quotes, headers, and other dialect choices while exposing the result through ordinary table and scan APIs."
+  tone="cyan"
+  items={[
+    {label: 'Layout', value: 'One record per line, fields by delimiter'},
+    {label: 'Variants', value: 'CSV, TSV, and other DSV dialects'},
+    {label: 'Input', value: 'Files, responses, and streams'},
+    {label: 'Output', value: 'Objects, tables, or Arrow batches'}
+  ]}
+/>
 
 <p class="badges">
   <a href="/docs/developer-guide/common-scan-architecture">
@@ -15,6 +47,12 @@ Comma-separated values, and more generally delimiter-separated values, is a comm
 - _[`@loaders.gl/csv`](/docs/modules/csv)_
 - _[RFC4180](https://tools.ietf.org/html/rfc4180)_
 - _[Wikipedia article](https://en.wikipedia.org/wiki/Delimiter-separated_values)_
+
+<ReferenceBoundary
+  title="Syntax and scan behavior"
+  description="The sections below cover delimiters, quoting, variants, and the sequential scan behavior of CSVSource."
+  tone="cyan"
+/>
 
 ## About CSV, TSV, DSV
 
