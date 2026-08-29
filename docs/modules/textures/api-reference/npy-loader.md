@@ -1,3 +1,45 @@
+---
+title: NPYLoader
+description: Read NumPy NPY arrays into typed JavaScript data while preserving dtype, order, and shape metadata.
+hide_title: true
+page_style: designed
+---
+
+import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
+import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
+
+<DocPageHeader
+  eyebrow="Textures module · API reference"
+  title="Bring a NumPy array into a typed JavaScript pipeline."
+  description="NPYLoader handles the compact NumPy array format and returns the typed data together with the header metadata needed to interpret its dimensions and storage order."
+  tone="blue"
+  meta={['.npy', 'Typed arrays', 'Synchronous decoder']}
+  links={[
+    {label: 'Textures module', to: '/docs/modules/textures'},
+    {label: 'Texture data', to: '/docs/specifications/category-texture'},
+    {label: 'Image loaders', to: '/docs/modules/images'}
+  ]}
+/>
+
+<DocOrientation
+  eyebrow="What comes back"
+  title="Values plus the metadata that makes them useful."
+  description="The loader returns a typed array for the values and a small header describing dtype, Fortran order, and dimensions. The array is ready for application or texture conversion code."
+  tone="blue"
+  items={[
+    {label: 'Data', value: 'TypedArray selected from the NPY descriptor'},
+    {label: 'Dtype', value: 'Element kind, width, and byte order'},
+    {label: 'Shape', value: 'Dimensions of the multidimensional array'},
+    {label: 'Order', value: 'C-order or Fortran-order storage metadata'}
+  ]}
+/>
+
+<ReferenceBoundary
+  title="NPYLoader details"
+  description="The reference below covers the supported file shape, usage, returned header fields, and current option boundaries."
+  tone="blue"
+/>
+
 # NPYLoader
 
 <p class="badges">
