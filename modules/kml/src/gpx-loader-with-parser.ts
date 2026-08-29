@@ -11,13 +11,12 @@ import type {
   BinaryFeatureCollection,
   ArrowTable
 } from '@loaders.gl/schema';
-import {gpx} from '@tmcw/togeojson';
-import {DOMParser} from '@xmldom/xmldom';
 import {
   buildFeatureTableSchema,
   convertFeatureCollectionToArrowTable
 } from './lib/feature-collection-to-arrow';
 import {GPXLoader as GPXLoaderMetadata} from './gpx-loader';
+import {parseGPXTextToFeatureCollection as parseGPXDocumentText} from './sports-track-parser';
 
 const {preload: _GPXLoaderPreload, ...GPXLoaderMetadataWithoutPreload} = GPXLoaderMetadata;
 
@@ -48,8 +47,7 @@ export const GPXLoaderWithParser = {
  * @returns Parsed GeoJSON feature collection.
  */
 export function parseGPXTextToFeatureCollection(text: string): FeatureCollection {
-  const doc = new DOMParser().parseFromString(text, 'text/xml');
-  return gpx(doc);
+  return parseGPXDocumentText(text);
 }
 
 /**

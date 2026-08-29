@@ -5,11 +5,14 @@
 import {expect, test} from 'vitest';
 import {encode, parse} from '@loaders.gl/core';
 import {
+  GPXLoader,
+  KMLLoader,
   KMZLoader,
   KMZSourceLoader,
   KMZVectorSource,
   KMZWriter,
   KMLWriter,
+  TCXLoader,
   openKMZArchive,
   parseKMLDocument,
   resolveKMZResourcePath
@@ -49,6 +52,14 @@ test('KMZ loader and writer conformance', () => {
   validateLoader(KMZLoader, 'KMZLoader');
   validateWriter(KMLWriter, 'KMLWriter');
   validateWriter(KMZWriter, 'KMZWriter');
+});
+
+test('KML-family table loaders default to Arrow tables', () => {
+  expect(KMLLoader.options.kml.shape).toBe('arrow-table');
+  expect(KMZLoader.options.kmz.shape).toBe('arrow-table');
+  expect(GPXLoader.options.gpx.shape).toBe('arrow-table');
+  expect(TCXLoader.options.tcx.shape).toBe('arrow-table');
+  expect(KMZSourceLoader.defaultOptions.kmz.format).toBe('arrow');
 });
 
 test('KMZ archive reads the primary KML and relative resources', async () => {
@@ -109,8 +120,8 @@ test('KMZ vector source exposes metadata, resources, and spatial filtering', asy
       [2, 3]
     ]
   });
-  expect(features.shape).toBe('geojson-table');
-  if (features.shape === 'geojson-table') expect(features.features).toHaveLength(1);
+  expect(features.shape).toBe('arrow-table');
+  if (features.shape === 'arrow-table') expect(features.data.numRows).toBe(1);
   expect(new TextDecoder().decode(await source.getResource('images/map.png'))).toBe('image');
   await source.close();
 });

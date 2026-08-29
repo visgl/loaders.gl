@@ -35,7 +35,7 @@ export const GPXLoader = {
   ...GPXFormat,
   version: VERSION,
   options: {
-    gpx: {shape: 'geojson-table'},
+    gpx: {shape: 'arrow-table'},
     gis: {}
   },
   preload

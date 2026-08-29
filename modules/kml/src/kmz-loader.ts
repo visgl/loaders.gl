@@ -31,7 +31,7 @@ export const KMZLoader = {
   ...KMZFormat,
   version: VERSION,
   options: {
-    kmz: {shape: 'geojson-table', includeKMLMetadata: false},
+    kmz: {shape: 'arrow-table', includeKMLMetadata: false},
     gis: {}
   },
   preload

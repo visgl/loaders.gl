@@ -41,8 +41,8 @@ export const KMZSourceLoader = {
   type: 'kmz',
   fromUrl: true,
   fromBlob: true,
-  options: {kmz: {format: 'geojson'}},
-  defaultOptions: {kmz: {format: 'geojson'}},
+  options: {kmz: {format: 'arrow'}},
+  defaultOptions: {kmz: {format: 'arrow'}},
   testURL: (url: string): boolean => /\.kmz($|[?#])/i.test(url),
   testData: (data: Blob): boolean =>
     ['application/vnd.google-earth.kmz', 'application/vnd.google-earth.kmz+zip'].includes(
@@ -122,7 +122,7 @@ export class KMZVectorSource
           featureIntersectsBounds(feature, parameters.boundingBox)
         )
       : archive.document.features;
-    const format = parameters.format || this.options.kmz?.format || 'geojson';
+    const format = parameters.format || this.options.kmz?.format || 'arrow';
     if (format === 'arrow') return convertFeatureCollectionToArrowTable(features);
     if (format === 'binary') {
       throw new Error('KMZVectorSource does not yet support binary geometry output');
