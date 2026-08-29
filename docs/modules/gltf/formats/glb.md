@@ -7,6 +7,7 @@ page_style: designed
 
 import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
 import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
+import {ThreeDDataFormatsGraphic} from '@site/src/components/docs/three-d-data-formats-graphic';
 
 <DocPageHeader
   eyebrow="Binary scene container"
@@ -19,6 +20,8 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
     {label: '3D data formats', to: '/docs/developer-guide/3d-data-formats'}
   ]}
 />
+
+<ThreeDDataFormatsGraphic />
 
 <DocOrientation
   eyebrow="The GLB boundary"
