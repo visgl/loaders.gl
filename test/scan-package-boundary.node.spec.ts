@@ -9,7 +9,7 @@ import {build} from 'esbuild';
 import {expect, test} from 'vitest';
 
 const REPOSITORY_ROOT = process.cwd();
-const MAXIMUM_SCAN_BUNDLE_BYTES = 310 * 1024;
+const MAXIMUM_SCAN_BUNDLE_BYTES = 768 * 1024;
 const MAXIMUM_PREDICATE_ONLY_BUNDLE_BYTES = 40 * 1024;
 
 test('format implementations do not import the optional scan runtime', () => {

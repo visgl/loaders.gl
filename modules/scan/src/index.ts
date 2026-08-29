@@ -70,6 +70,25 @@ export type {
   TableScanSource
 } from '@loaders.gl/loader-utils';
 export type {ScanQuery} from './scan-query';
+export {
+  executeSpatialJoin,
+  executeSpatialQuery,
+  explainSpatialQuery,
+  prepareSpatialArrowTable
+} from './spatial-query';
+export type {
+  SpatialAggregate,
+  SpatialExecutionPlan,
+  SpatialExpression,
+  SpatialJoin,
+  SpatialJoinOptions,
+  SpatialJoinResult,
+  SpatialPlanExplanation,
+  SpatialPlanStage,
+  SpatialPredicate,
+  SpatialQueryOptions,
+  SpatialQueryResult
+} from './spatial-query';
 
 export {
   FEDERATED_TABLE_QUERY_CAPABILITIES,

@@ -12,6 +12,7 @@ import {DataSourceManager, type ScanExecutionTelemetry} from '@loaders.gl/loader
 import {ParquetJSWriter} from '@loaders.gl/parquet';
 import {DeltaTableSource} from '../src/delta';
 import {IcebergTableSource} from '../src/iceberg';
+import {HudiTableSource} from '../src/hudi';
 import {ParquetSource} from '@loaders.gl/parquet/parquet-source-loader';
 import type {Schema} from '@loaders.gl/schema';
 import {parseSQLPredicate} from '@loaders.gl/sql';
@@ -30,6 +31,32 @@ const OUTPUT_SCHEMA: Schema = {
 test('exposes incubating table-format entry points without extending the scan root', () => {
   expect(IcebergTableSource).toBeDefined();
   expect(DeltaTableSource).toBeDefined();
+  expect(HudiTableSource).toBeDefined();
+});
+
+test('validates the minimal Hudi Copy-on-Write descriptor boundary', async () => {
+  const source = new HudiTableSource(
+    new Blob([
+      JSON.stringify({
+        tableType: 'COPY_ON_WRITE',
+        completedInstant: '20260829010101',
+        basePath: 'https://example.com/table/',
+        files: [{path: 'part-000.parquet', size: 12, numRecords: 3}]
+      })
+    ])
+  );
+  const fragments = await source.getScanFragments();
+  expect(fragments[0]).toMatchObject({
+    id: 'part-000.parquet',
+    uri: 'https://example.com/table/part-000.parquet',
+    byteLength: 12,
+    rowCount: 3
+  });
+
+  const mergeOnReadSource = new HudiTableSource(
+    new Blob([JSON.stringify({tableType: 'MERGE_ON_READ', files: []})])
+  );
+  await expect(mergeOnReadSource.getScanFragments()).rejects.toThrow('Merge-on-Read');
 });
 
 test('federates actual CSV, NDJSON, Arrow IPC, and Parquet sources', async () => {

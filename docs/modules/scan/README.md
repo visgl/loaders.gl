@@ -35,6 +35,16 @@ module. They are not imported by `@loaders.gl/scan` itself, so applications usin
 query engine do not pay for table-format code. The subpaths are experimental and may become
 dedicated packages after their APIs stabilize.
 
+Hudi is available as a minimal proof of concept:
+
+```ts
+import {HudiTableSource} from '@loaders.gl/scan/hudi';
+```
+
+The POC accepts a JSON snapshot descriptor listing Copy-on-Write Parquet base files. Merge-on-Read
+logs, incremental timeline queries, deletes/updates, compaction, and the Hudi metadata table are
+explicitly not supported yet.
+
 ## Query an Arrow table
 
 Arrow is the built-in reference backend. `createScanEngine()` is asynchronous so an application can
@@ -53,6 +63,31 @@ const result = engine.query(table, {
 
 The query is immutable and follows `filter -> project -> limit` semantics. Predicate columns do not
 need to appear in the result projection, and a limit counts only rows that survive filtering.
+
+Spatial plans are available when `@loaders.gl/geoarrow` is installed. `executeSpatialQuery()` converts
+only coordinate-requiring geometry columns to adaptive native GeoArrow once, uses direct GeoArrow
+bounds for conservative pruning, and evaluates supported exact residual predicates and aggregates
+from cached native coordinates. Bbox-only predicates and geometry counts stay in their compact
+source encoding. Unsupported residual operators fall back to the format-neutral geometry kernel
+only for candidate rows. `executeSpatialJoin()` uses the same native residual path for both tables
+and reports candidate and matched pair counts. `explainSpatialQuery()` returns these logical
+stages without reading geometry values.
+
+```ts
+import {executeSpatialQuery, explainSpatialQuery} from '@loaders.gl/scan';
+
+const options = {
+  spatial: {
+    geometryColumn: 'geometry',
+    predicate: 'dwithin',
+    geometry: {type: 'Point', coordinates: [-122.4, 37.8]},
+    distance: 0.01
+  },
+  columns: ['id', 'geometry']
+};
+const plan = explainSpatialQuery(table, options);
+const result = executeSpatialQuery(table, options);
+```
 
 ## Discover source controls
 
@@ -76,6 +111,9 @@ from physical pushdown.
 | API | Use it for | Result |
 | --- | --- | --- |
 | `createScanEngine()` | Query one in-memory Arrow table | Materialized Arrow table |
+| `executeSpatialQuery()` | Filter an Arrow table by spatial predicates | Native-pruned Arrow table |
+| `executeSpatialJoin()` | Join two Arrow tables by spatial relationship | Prefixed Arrow table and pair counts |
+| `explainSpatialQuery()` | Inspect spatial planning decisions | Serializable plan stages |
 | `registerScanBackend()` | Register an application-owned lazy backend | No eager backend import |
 | `FederatedTableScanSource` | Append managed table sources in stable order | Arrow batches with provenance |
 | `VectorTileTableScanSource` | Query one already-addressed MVT or vector PMTiles tile | One Arrow feature batch |
