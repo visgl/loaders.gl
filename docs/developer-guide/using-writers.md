@@ -33,7 +33,7 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
   ]}
 />
 
-Writers allow applications to encoded data for a number of the formats supported by loaders.gl.
+Writers allow applications to encode data into many of the formats supported by loaders.gl.
 
 For a detailed specification of the writer object format see the [API reference](/docs/specifications/writer-object-format).
 

@@ -33,7 +33,9 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
   ]}
 />
 
-loaders.gl has parser functions that use so called "loaders" to convert the raw data loaded from files into parsed objects. Each loader encapsulates a parsing function for one file format (or a group of related file formats) together with some metadata (like the loader name, common file extensions for the format etc).
+loaders.gl has parser functions that use so-called **loaders** to convert raw file data into parsed
+objects. Each loader combines a parser for one format (or related group of formats) with metadata
+such as its name, supported extensions, and input type.
 
 <ReferenceBoundary
   title="Selection, options, and runtime behavior"
@@ -53,14 +55,14 @@ Loaders are passed into utility functions in the loaders.gl core API to enable p
 import {load} from '@loaders.gl/core';
 import {CSVLoader} from '@loaders.gl/csv';
 
-data = await load(url, CSVLoader);
+const data = await load(url, CSVLoader);
 // Application code here
 ...
 ```
 
 ## Specifying Loaders
 
-As seen above can be specified directly in a call to `load` or any of the `parse` functions:
+As shown above, loaders can be specified directly in a call to `load` or any of the `parse` functions:
 
 ```typescript
 import {load} from '@loaders.gl/core';
@@ -75,7 +77,7 @@ const pointCloud = await load(url, [PCDLoader, LASLoader]);
 
 ### Loaders and TypeScript
 
-Since v4.0, all loaders are typed, meaning that loaders.gl can infer types for returned data and loader options from the supplied loader
+Since v4.0, all loaders are typed, meaning that loaders.gl can infer types for returned data and loader options from the supplied loader.
 
 Note that type inference only works when single loader is provided:
 
@@ -91,21 +93,23 @@ const lasPointCloud = await load(url, LASLoader); // => type LASMesh
 const pointCloud = await load(url, [PCDLoader, LASLoader]); // => type unknown
 ```
 
-Note that you can use selectLoader and a switch statement to remain typed
+You can use `selectLoader` and a `switch` statement when the input format is unknown but the result should remain typed:
 
 ```typescript
-import {load} from '@loaders.gl/core';
+import {load, selectLoader} from '@loaders.gl/core';
 import {PCDLoader} from '@loaders.gl/pcd';
 import {LASLoader} from '@loaders.gl/las';
 
 const loader = await selectLoader(url, [PCDLoader, LASLoader]);
 switch (loader.id) {
-  case: 'pcd':
+  case 'pcd': {
     const pcdPointCloud = await load(url, PCDLoader); // => type PCDMesh
     break;
-  case 'las':
+  }
+  case 'las': {
     const lasPointCloud = await load(url, LASLoader); // => type LASMesh
     break;
+  }
 }
 ```
 
@@ -142,7 +146,7 @@ import {selectLoader} from '@loaders.gl/core';
 import {ArrowLoader} from '@loaders.gl/arrow';
 import {CSVLoader} from '@loaders.gl/csv';
 
-selectLoader([ArrowLoader, CSVLoader], 'filename.csv'); // => CSVLoader
+selectLoader('filename.csv', [ArrowLoader, CSVLoader]); // => CSVLoader
 ```
 
 Note: Selection works on urls and/or data

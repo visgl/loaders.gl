@@ -34,10 +34,10 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
   ]}
 />
 
-loaders.gl provides a number of `SourceLoader` exports that support multi-step data loading. **SourceLoaders** are different from parser **loaders**:
+loaders.gl provides `SourceLoader` exports for multi-step data loading. **SourceLoaders** are different from parser **loaders**:
 
-- loaders are designed for "one-shot" atomic or streaming loads of data
-- while a `SourceLoader` can be thought of as a multi-step or multi-resource loader, which is required for a number of data formats and access patterns.
+- loaders are designed for one complete result or a stream of parsed batches;
+- a `SourceLoader` owns the metadata, resource discovery, and repeated requests required by a dataset or service.
 
 <SourceLoaderGraphic standalone />
 
