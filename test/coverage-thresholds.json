@@ -77,6 +77,21 @@
         "branches": 56
       }
     },
+    "@loaders.gl/config": {
+      "path": "modules/config",
+      "browser": {
+        "statements": 76,
+        "lines": 76,
+        "functions": 95,
+        "branches": 70
+      },
+      "merged": {
+        "statements": 76,
+        "lines": 76,
+        "functions": 95,
+        "branches": 70
+      }
+    },
     "@loaders.gl/core": {
       "path": "modules/core",
       "browser": {
