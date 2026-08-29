@@ -16,11 +16,6 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
   description="Resolve tileset structure, linked content, and level-of-detail decisions without making the application understand every 3D Tiles detail."
   tone="violet"
   meta={['3D Tiles', 'Tileset traversal', 'glTF and point clouds']}
-  links={[
-    {label: '3D Tiles format', to: '/docs/modules/3d-tiles/formats/3d-tiles'},
-    {label: 'Tiles3DLoader', to: '/docs/modules/3d-tiles/api-reference/tiles-3d-loader'},
-    {label: 'Using sources', to: '/docs/developer-guide/using-sources'}
-  ]}
 />
 
 <Tiles3DDocsTabs active="module" />

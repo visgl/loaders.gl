@@ -17,14 +17,10 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
   tone="violet"
   hideTitle={true}
   logos={[
-    {alt: 'OGC logo', src: '/images/format-logos/ogc-logo.png', href: 'https://www.ogc.org/standard/3dtiles/'},
-    {alt: '3D Tiles logo', src: '/images/format-logos/3d-tiles-logo.png', href: 'https://github.com/CesiumGS/3d-tiles'}
+    {alt: 'OGC logo', src: '/images/format-logos/ogc-logo-transparent.png', href: 'https://www.ogc.org/standard/3dtiles/'},
+    {alt: '3D Tiles logo', src: '/images/format-logos/3d-tiles-logo-transparent.png', href: 'https://github.com/CesiumGS/3d-tiles'}
   ]}
   meta={['Hierarchical', 'Streamable', 'Level-of-detail aware']}
-  links={[
-    {label: '3D Tiles module', to: '/docs/modules/3d-tiles'},
-    {label: 'Tiles3DLoader', to: '/docs/modules/3d-tiles/api-reference/tiles-3d-loader'}
-  ]}
 />
 
 <Tiles3DDocsTabs active="format" />
@@ -63,7 +59,7 @@ provides a visual implementation for that feature.
 
 ### Tileset and traversal
 
-| Capability | Status | Notes |
+| Capability | <span data-docs-table-status>Status</span> | Notes |
 | --- | :---: | --- |
 | 3D Tiles 1.0 tileset JSON | ✅ | Parsed and normalized by [`Tiles3DLoader`](../api-reference/tiles-3d-loader). |
 | 3D Tiles 1.1 tileset JSON | ✅ | Includes implicit-tiling and metadata declarations. |
@@ -79,7 +75,7 @@ provides a visual implementation for that feature.
 
 ### Tile payloads
 
-| Payload | Status | Notes |
+| Payload | <span data-docs-table-status>Status</span> | Notes |
 | --- | :---: | --- |
 | `b3dm` batched 3D model | ✅ | Batch tables and glTF payloads are exposed. |
 | `i3dm` instanced 3D model | ✅ | Instancing metadata is parsed. |
@@ -93,7 +89,7 @@ provides a visual implementation for that feature.
 
 ### Extensions and metadata
 
-| Capability | Status | Notes |
+| Capability | <span data-docs-table-status>Status</span> | Notes |
 | --- | :---: | --- |
 | Required-extension validation | ✅ v5.0 | Unsupported required names fail before normalization or network requests. |
 | `3DTILES_implicit_tiling` | ✅ | QUADTREE and OCTREE availability are supported. |
@@ -113,7 +109,7 @@ See [Coordinate reference systems in 3D Tiles](../concepts/coordinate-reference-
 semantic discovery, regions, affine versus nonlinear transforms, nested tilesets, epochs, local
 frames, and precision rules.
 
-| Capability | Status | Notes |
+| Capability | <span data-docs-table-status>Status</span> | Notes |
 | --- | :---: | --- |
 | `TILESET_CRS_GEOCENTRIC` | ✅ v5.0 | Resolved from inline schema and tileset metadata; explicit `UNKNOWN` remains unknown. |
 | `TILESET_CRS_COORDINATE_EPOCH` | ✅ v5.0 | Finite epoch values are preserved in normalized metadata. |

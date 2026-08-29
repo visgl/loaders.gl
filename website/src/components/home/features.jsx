@@ -170,8 +170,19 @@ export const FEATURE_CARDS = [
   }
 ];
 
-/** The small set of capability entry points that belongs on the homepage. */
-export const HOME_FEATURE_IDS = ['scan', 'loaders', '3d', 'streaming'];
+/** The compact capability index shown on the homepage; full graphics live on the linked pages. */
+export const HOME_FEATURE_IDS = [
+  'scan',
+  'loaders',
+  '3d',
+  'streaming',
+  'datasets',
+  'workers',
+  'arrow',
+  'writers',
+  'performance',
+  'standards'
+];
 
 const FeatureSection = styled.section`
   background: #0d1521;

@@ -350,6 +350,15 @@ main .container {
   width: 18% !important;
 }
 
+.markdown .docs-markdown-table__table:has(thead th [data-docs-table-status]) thead th:nth-child(2),
+.markdown .docs-markdown-table__table:has(thead th [data-docs-table-status]) tbody td:nth-child(2) {
+  min-width: 7.5rem;
+  text-align: center;
+  vertical-align: middle;
+  white-space: nowrap !important;
+  width: 7.5rem !important;
+}
+
 .markdown .docs-markdown-table__table:not(:has(tbody td:nth-child(3))) tbody td:nth-child(2) {
   width: 73% !important;
 }

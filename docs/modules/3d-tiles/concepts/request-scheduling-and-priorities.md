@@ -17,7 +17,7 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
   meta={['Progressive coverage', 'Foveated priority', 'RequestScheduler']}
 />
 
-<Tiles3DDocsTabs active="requests" />
+<Tiles3DDocsTabs active="runtime" />
 
 <DocOrientation
   eyebrow="Request order"

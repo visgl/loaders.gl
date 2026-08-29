@@ -15,11 +15,6 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
   description="3D Tiles can describe a local or geocentric world frame, geographic regions, and affine placement transforms. loaders.gl preserves authoritative metadata and does not infer ECEF merely from large coordinate values."
   tone="orange"
   meta={['World-frame discovery', 'Regions and transforms', 'Explicit CRS metadata']}
-  links={[
-    {label: 'CRS guide', to: '/docs/developer-guide/coordinate-reference-systems'},
-    {label: '3D Tiles runtime', to: '/docs/modules/3d-tiles/concepts'},
-    {label: 'Tiles3DSource', to: '/docs/modules/tiles/api-reference/tiles-3d-source'}
-  ]}
 />
 
 <Tiles3DDocsTabs active="runtime" />

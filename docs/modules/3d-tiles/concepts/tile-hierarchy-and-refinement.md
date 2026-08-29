@@ -17,7 +17,7 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
   meta={['Explicit and implicit trees', 'ADD / REPLACE refinement', 'Ancestor coverage']}
 />
 
-<Tiles3DDocsTabs active="hierarchy" />
+<Tiles3DDocsTabs active="runtime" />
 
 <DocOrientation
   eyebrow="Hierarchy traversal"

@@ -17,7 +17,7 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
   meta={['Relative and signed URLs', 'Magic-byte detection', 'Nested tilesets']}
 />
 
-<Tiles3DDocsTabs active="resources" />
+<Tiles3DDocsTabs active="runtime" />
 
 <DocOrientation
   eyebrow="Resource boundary"

@@ -9,6 +9,7 @@ import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
 import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
 import {LoaderLiveExample} from '@site/src/components/docs/loader-live-example';
 import {TiledSceneGraphic} from '@site/src/components/docs/tiled-scene-graphic';
+import {Tiles3DDocsTabs} from '@site/src/components/docs/tiles-3d-docs-tabs';
 
 <DocPageHeader
   eyebrow="3D Tiles"
@@ -17,12 +18,9 @@ import {TiledSceneGraphic} from '@site/src/components/docs/tiled-scene-graphic';
   hideTitle
   tone="blue"
   meta={['3D Tiles', 'Linked asset loading', 'Tileset and tile content']}
-  links={[
-    {label: '3D Tiles module', to: '/docs/modules/3d-tiles'},
-    {label: '3D Tiles format', to: '/docs/modules/3d-tiles/formats/3d-tiles'},
-    {label: 'Tiles source', to: '/docs/modules/tiles/api-reference/tiles-3d-source'}
-  ]}
 />
+
+<Tiles3DDocsTabs active="loader" />
 
 <LoaderLiveExample />
 

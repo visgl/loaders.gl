@@ -17,7 +17,7 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
   meta={['Perspective and orthographic views', 'Logical pixels', 'Transform-aware error']}
 />
 
-<Tiles3DDocsTabs active="sse-lod" />
+<Tiles3DDocsTabs active="runtime" />
 
 <DocOrientation
   eyebrow="Level of detail"

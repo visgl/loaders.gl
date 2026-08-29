@@ -17,7 +17,7 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
   meta={['Invariants and fixtures', 'Runtime measurements', 'Renderer boundary']}
 />
 
-<Tiles3DDocsTabs active="diagnostics" />
+<Tiles3DDocsTabs active="runtime" />
 
 <DocOrientation
   eyebrow="Conformance contract"

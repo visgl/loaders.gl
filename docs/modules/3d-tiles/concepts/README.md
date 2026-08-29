@@ -15,11 +15,6 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
   description="These guides explain the decisions made between a tileset response and the content an application can render: resource detection, hierarchy traversal, level of detail, request priority, and memory."
   tone="violet"
   meta={['Traversal and LOD', 'Request scheduling', 'Cache diagnostics']}
-  links={[
-    {label: '3D Tiles module', to: '/docs/modules/3d-tiles'},
-    {label: 'Tiles3DSource', to: '/docs/modules/tiles/api-reference/tiles-3d-source'},
-    {label: '3D formats', to: '/docs/developer-guide/3d-data-formats'}
-  ]}
 />
 
 <Tiles3DDocsTabs active="runtime" />

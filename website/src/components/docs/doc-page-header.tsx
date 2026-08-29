@@ -102,6 +102,8 @@ export function DocPageHeader({
     }
   }, []);
 
+  const renderIdentity = !hideTitle && metadata.title !== title;
+
   return (
     <section
       className={styles.header}
@@ -135,7 +137,7 @@ export function DocPageHeader({
             </div>
           </div>
         </div>
-        {hideTitle ? (
+        {!renderIdentity ? (
           <h1 className={styles.title} id="doc-page-header-title">
             {title}
           </h1>

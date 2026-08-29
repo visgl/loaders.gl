@@ -14,57 +14,23 @@ type Tiles3DDocsTab = {
 export type Tiles3DDocsTabId =
   | 'module'
   | 'format'
+  | 'loader'
   | 'runtime'
-  | 'resources'
-  | 'hierarchy'
-  | 'implicit'
-  | 'sse-lod'
-  | 'requests'
-  | 'cache'
-  | 'diagnostics';
+  | 'source';
 
 const TILES_3D_DOCS_TABS: Tiles3DDocsTab[] = [
   {id: 'module', label: 'Module', href: '/docs/modules/3d-tiles'},
-  {id: 'format', label: '3D Tiles format', href: '/docs/modules/3d-tiles/formats/3d-tiles'},
-  {id: 'runtime', label: 'Runtime', href: '/docs/modules/3d-tiles/concepts'},
+  {id: 'format', label: 'Format', href: '/docs/modules/3d-tiles/formats/3d-tiles'},
+  {id: 'loader', label: 'Loader API', href: '/docs/modules/3d-tiles/api-reference/tiles-3d-loader'},
+  {id: 'runtime', label: 'Runtime guides', href: '/docs/modules/3d-tiles/concepts'},
   {
-    id: 'resources',
-    label: 'Resources',
-    href: '/docs/modules/3d-tiles/concepts/resource-resolution-and-content-detection'
-  },
-  {
-    id: 'hierarchy',
-    label: 'Hierarchy',
-    href: '/docs/modules/3d-tiles/concepts/tile-hierarchy-and-refinement'
-  },
-  {
-    id: 'implicit',
-    label: 'Implicit',
-    href: '/docs/modules/3d-tiles/concepts/implicit-tiling-and-subtrees'
-  },
-  {
-    id: 'sse-lod',
-    label: 'SSE / LOD',
-    href: '/docs/modules/3d-tiles/concepts/screen-space-error-and-lod'
-  },
-  {
-    id: 'requests',
-    label: 'Requests',
-    href: '/docs/modules/3d-tiles/concepts/request-scheduling-and-priorities'
-  },
-  {
-    id: 'cache',
-    label: 'Cache',
-    href: '/docs/modules/3d-tiles/concepts/caching-and-memory'
-  },
-  {
-    id: 'diagnostics',
-    label: 'Diagnostics',
-    href: '/docs/modules/3d-tiles/concepts/runtime-tuning-and-diagnostics'
+    id: 'source',
+    label: 'Source API',
+    href: '/docs/modules/tiles/api-reference/tiles-3d-source'
   }
 ];
 
-/** Renders links between the 3D Tiles module and runtime-concepts documentation pages. */
+/** Renders the primary navigation for the 3D Tiles documentation. */
 export function Tiles3DDocsTabs({
   active
 }: {

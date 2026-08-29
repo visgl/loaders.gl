@@ -17,7 +17,7 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
   meta={['Byte-native budgets', 'Current-frame protection', 'LRU reuse']}
 />
 
-<Tiles3DDocsTabs active="cache" />
+<Tiles3DDocsTabs active="runtime" />
 
 <DocOrientation
   eyebrow="Working-set policy"

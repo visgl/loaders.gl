@@ -17,7 +17,7 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
   meta={['Quality first', 'Requests second', 'Memory last']}
 />
 
-<Tiles3DDocsTabs active="diagnostics" />
+<Tiles3DDocsTabs active="runtime" />
 
 <DocOrientation
   eyebrow="A practical tuning loop"

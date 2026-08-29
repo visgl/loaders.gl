@@ -17,7 +17,7 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
   meta={['QUADTREE and OCTREE', 'Availability bitstreams', 'Lazy materialization']}
 />
 
-<Tiles3DDocsTabs active="implicit" />
+<Tiles3DDocsTabs active="runtime" />
 
 <DocOrientation
   eyebrow="Availability-driven hierarchy"
