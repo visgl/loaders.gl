@@ -1,4 +1,47 @@
-# Coordinate reference systems in 3D Tiles
+---
+title: Coordinate reference systems in 3D Tiles
+description: Keep the world frame, geographic regions, transforms, and coordinate metadata distinct while traversing a 3D Tiles dataset.
+hide_title: true
+page_style: designed
+---
+
+import {Tiles3DDocsTabs} from '@site/src/components/docs/tiles-3d-docs-tabs';
+import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
+import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
+
+<DocPageHeader
+  eyebrow="3D Tiles runtime / coordinates"
+  title="Know which frame the tiles actually use."
+  description="3D Tiles can describe a local or geocentric world frame, geographic regions, and affine placement transforms. loaders.gl preserves authoritative metadata and does not infer ECEF merely from large coordinate values."
+  tone="orange"
+  meta={['World-frame discovery', 'Regions and transforms', 'Explicit CRS metadata']}
+  links={[
+    {label: 'CRS guide', to: '/docs/developer-guide/coordinate-reference-systems'},
+    {label: '3D Tiles runtime', to: '/docs/modules/3d-tiles/concepts'},
+    {label: 'Tiles3DSource', to: '/docs/modules/tiles/api-reference/tiles-3d-source'}
+  ]}
+/>
+
+<Tiles3DDocsTabs active="runtime" />
+
+<DocOrientation
+  eyebrow="Coordinate meaning and placement"
+  title="Metadata says what the numbers mean; transforms say where the tile sits."
+  description="A region carries geographic semantics, while boxes, spheres, and content transforms participate in runtime culling. Keeping those roles separate avoids silently changing a dataset’s world frame."
+  tone="orange"
+  items={[
+    {label: 'Discover', value: 'Use explicit metadata and schema before fallback evidence.'},
+    {label: 'Preserve', value: 'Retain CRS identifiers, epochs, entities, and original values.'},
+    {label: 'Transform', value: 'Apply affine placement to Cartesian volumes, not geographic regions.'},
+    {label: 'Report', value: 'Expose normalized spatial metadata on the initialized tileset.'}
+  ]}
+/>
+
+<ReferenceBoundary
+  title="3D Tiles coordinate reference"
+  description="The detailed reference covers discovery precedence, regions, Cartesian bounds, transforms, schema metadata, and the relationship to shared CRS types."
+  tone="orange"
+/>
 
 3D Tiles separates its affine tile hierarchy from the CRS of the world frame containing that
 hierarchy. Many global tilesets use ECEF coordinates, but local tilesets are valid. loaders.gl uses
