@@ -1,4 +1,44 @@
-# Tile3D
+---
+title: Tile3D
+description: Inspect the runtime state of one tile during 3D Tiles traversal, loading, selection, and cache management.
+hide_title: true
+page_style: designed
+---
+
+import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
+import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
+
+<DocPageHeader
+  eyebrow="Tiles API / runtime tile"
+  title="One tile, all the state traversal needs."
+  description="Tile3D is the runtime record used by Tileset3D. It connects source headers to transformed volumes, content state, level-of-detail measurements, selection, and lazy-child lifecycle."
+  tone="violet"
+  meta={['Internal runtime record', 'Volumes and LOD', 'Content lifecycle']}
+  links={[
+    {label: 'Tiles runtime', to: '/docs/modules/tiles'},
+    {label: 'Tileset3D', to: '/docs/modules/tiles/api-reference/tileset-3d'},
+    {label: '3D Tiles runtime', to: '/docs/modules/3d-tiles/concepts'}
+  ]}
+/>
+
+<DocOrientation
+  eyebrow="Per-tile state"
+  title="Separate hierarchy, content, and visibility."
+  description="A tile's source header describes the hierarchy, while the runtime tracks transformed bounds, render content, request eligibility, and whether lazy children are known. Keeping those states distinct prevents traversal and rendering decisions from leaking into one another."
+  tone="violet"
+  items={[
+    {label: 'Geometry', value: 'Bounding volumes and geometric error after transforms.'},
+    {label: 'Traversal', value: 'Children, refinement mode, visibility, and request eligibility.'},
+    {label: 'Content', value: 'Payload state, content bounds, selection, and load lifecycle.'},
+    {label: 'Diagnostics', value: 'LOD metrics, priorities, cache state, and lazy-subtree status.'}
+  ]}
+/>
+
+<ReferenceBoundary
+  title="Tile3D reference"
+  description="The detailed reference lists construction, properties, visibility helpers, content state, priorities, and lifecycle behavior used by the tiles runtime."
+  tone="violet"
+/>
 
 > The `Tile3D` class is used internally by `loaders.gl/tiles` `Tileset3D` class to manage loading/unloading tiles.
 
