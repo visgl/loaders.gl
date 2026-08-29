@@ -1,8 +1,47 @@
-import {TracesDocsTabs} from '@site/src/components/docs/traces-docs-tabs';
+---
+title: ChromeTraceLoader
+description: Read Chrome Trace Event JSON as a validated document or Arrow event table.
+hide_title: true
+page_style: designed
+---
 
-# ChromeTraceLoader
+import {TracesDocsTabs} from '@site/src/components/docs/traces-docs-tabs';
+import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
+import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
+
+<DocPageHeader
+  eyebrow="Traces module · loader API"
+  title="ChromeTraceLoader"
+  description="Read Chrome Trace Event JSON as a validated file container or as a typed Arrow event table for analysis and transformation."
+  tone="violet"
+  meta={['Chrome Trace Event', 'JSON or Arrow', 'Batch validation']}
+  links={[
+    {label: 'Chrome trace format', to: '/docs/modules/traces/formats/chrome-trace'},
+    {label: 'ChromeTraceWriter', to: '/docs/modules/traces/api-reference/chrome-trace-writer'},
+    {label: 'Traces module', to: '/docs/modules/traces'}
+  ]}
+/>
 
 <TracesDocsTabs active="chrometraceloader" />
+
+<DocOrientation
+  eyebrow="What it returns"
+  title="Keep the trace document—or work with typed events."
+  description="ChromeTraceLoader preserves the top-level JSON container by default and can project events into Arrow columns when the next step is filtering, joining, or batch processing."
+  tone="violet"
+  items={[
+    {label: 'JSON', value: 'Validated container with passthrough fields'},
+    {label: 'Arrow', value: 'Typed event table with metadata'},
+    {label: 'Batches', value: 'Bounded events for streaming reads'},
+    {label: 'Compatibility', value: 'Package-root preload and parser subpath'}
+  ]}
+/>
+
+<ReferenceBoundary
+  title="ChromeTraceLoader reference"
+  description="The sections below document usage, return types, options, validation, and parser boundaries."
+  tone="violet"
+/>
 
 `ChromeTraceLoader` loads Chrome Trace Event JSON. It returns a validated JSON container by default
 or an Apache Arrow event table when `chromeTrace.shape` is `arrow-table`.
