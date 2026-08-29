@@ -1,4 +1,44 @@
-# CesiumIonLoader
+---
+title: CesiumIonLoader
+description: Bootstrap Cesium ion assets and load their authenticated 3D Tiles content.
+hide_title: true
+page_style: designed
+---
+
+import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
+import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
+
+<DocPageHeader
+  eyebrow="Cesium ion loader"
+  title="Resolve an ion asset without leaking its credentials."
+  description="`CesiumIonLoader` extends `Tiles3DLoader` with Cesium ion asset discovery and origin-scoped endpoint credentials. It bootstraps an asset, then keeps the returned token attached only to the resolved tileset origin."
+  tone="blue"
+  meta={['Cesium ion', 'Authenticated bootstrap', '3D Tiles']}
+  links={[
+    {label: '3D Tiles loader', to: '/docs/modules/3d-tiles/api-reference/tiles-3d-loader'},
+    {label: 'Authentication guide', to: '/docs/developer-guide/authentication'},
+    {label: 'Tiles source', to: '/docs/modules/tiles/api-reference/tiles-3d-source'}
+  ]}
+/>
+
+<DocOrientation
+  eyebrow="The ion bootstrap path"
+  title="Authenticate the API. Resolve the endpoint. Continue as 3D Tiles."
+  description="The application token is used for ion discovery; the endpoint token is scoped to the resolved asset origin before nested tiles and linked resources are requested."
+  tone="blue"
+  items={[
+    {label: 'Input', value: 'Ion asset URL or asset ID'},
+    {label: 'Bootstrap', value: 'Ion API and endpoint documents'},
+    {label: 'Credentials', value: 'Application token and origin-scoped endpoint token'},
+    {label: 'Output', value: 'The same parsed data as Tiles3DLoader'}
+  ]}
+/>
+
+<ReferenceBoundary
+  title="Credential and loader details"
+  description="The reference below covers usage, token lifecycle, options, nested resources, and the inherited Tiles3DLoader behavior."
+  tone="blue"
+/>
 
 `CesiumIonLoader` extends `Tiles3DLoader` with Cesium ion asset discovery and authentication. It
 uses an application access token to resolve an asset endpoint, then scopes the endpoint token

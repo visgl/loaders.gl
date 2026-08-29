@@ -1,4 +1,38 @@
-# Tiles3DLoader
+---
+title: Tiles3DLoader
+description: Parse 3D Tiles tilesets and tile payloads with linked assets.
+hide_title: true
+page_style: designed
+---
+
+import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
+import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
+
+<DocPageHeader
+  eyebrow="3D Tiles loader"
+  title="Read tiled 3D worlds one payload at a time."
+  description="`Tiles3DLoader` parses 3D Tiles tilesets and their renderable content, then delegates linked glTF, Draco, image, and texture payloads to the appropriate loaders. Use it directly for parsing or with `Tiles3DSource` for view-driven traversal."
+  tone="blue"
+  meta={['3D Tiles', 'Linked asset loading', 'Tileset and tile content']}
+  links={[
+    {label: '3D Tiles module', to: '/docs/modules/3d-tiles'},
+    {label: '3D Tiles format', to: '/docs/modules/3d-tiles/formats/3d-tiles'},
+    {label: 'Tiles source', to: '/docs/modules/tiles/api-reference/tiles-3d-source'}
+  ]}
+/>
+
+<DocOrientation
+  eyebrow="The 3D Tiles path"
+  title="Read the tileset. Resolve content. Decode the renderable payload."
+  description="A 3D Tiles dataset is a hierarchy plus content resources. The loader handles the format boundary; the tiles runtime decides which content should be requested for a view."
+  tone="blue"
+  items={[
+    {label: 'Input', value: 'Tileset JSON or binary tile content'},
+    {label: 'Hierarchy', value: 'Tiles, bounding volumes, and refinement'},
+    {label: 'Subloaders', value: 'glTF, Draco, images, and textures'},
+    {label: 'Output', value: 'Tileset metadata or decoded tile content'}
+  ]}
+/>
 
 <p class="badges">
   <img src="https://img.shields.io/badge/From-v2.1-blue.svg?style=flat-square" alt="From-v2.1" />
@@ -20,6 +54,12 @@ Parses a [3D tiles](https://github.com/AnalyticalGraphicsInc/3d-tiles) tileset.
 \* Streaming is not supported for individual tiles, however tilesets are streamed by loading only the tiles needed for the specified viewports.
 
 ## Usage
+
+<ReferenceBoundary
+  title="Loader and payload details"
+  description="The reference below covers direct parsing, tileset traversal, validation, options, linked assets, and supported content types."
+  tone="blue"
+/>
 
 As a tileset contains multiple file formats, `Tiles3DLoader` is needed to be explicitly specified when using [`load`](https://loaders.gl/modules/core/docs/api-reference/load) function.
 

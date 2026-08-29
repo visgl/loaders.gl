@@ -1,4 +1,38 @@
-# GLBLoader
+---
+title: GLBLoader
+description: Split a GLB binary envelope into JSON and binary chunks.
+hide_title: true
+page_style: designed
+---
+
+import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
+import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
+
+<DocPageHeader
+  eyebrow="GLB loader"
+  title="Open the binary envelope around a glTF asset."
+  description="`GLBLoader` parses the GLB container and returns its JSON and binary chunks. Use `GLTFLoader` when the goal is a complete glTF scenegraph; use this lower-level loader when the envelope itself is the data you need."
+  tone="blue"
+  meta={['GLB v1 and v2', 'JSON and BIN chunks', 'Binary envelope']}
+  links={[
+    {label: 'glTF module', to: '/docs/modules/gltf'},
+    {label: 'GLB format', to: '/docs/modules/gltf/formats/glb'},
+    {label: 'GLTFLoader', to: '/docs/modules/gltf/api-reference/gltf-loader'}
+  ]}
+/>
+
+<DocOrientation
+  eyebrow="The GLB boundary"
+  title="Read one binary file. Expose its JSON and byte ranges."
+  description="GLB packages a JSON chunk and one or more binary chunks into a single file. The loader preserves chunk offsets and lengths so higher-level code can decide how to interpret them."
+  tone="blue"
+  items={[
+    {label: 'Input', value: '`.glb` binary data'},
+    {label: 'Envelope', value: 'Header, version, and chunk lengths'},
+    {label: 'JSON', value: 'Parsed glTF or application JSON'},
+    {label: 'Binary', value: 'One or more ArrayBuffer chunks'}
+  ]}
+/>
 
 <p class="badges">
   <img src="https://img.shields.io/badge/From-v1.0-blue.svg?style=flat-square" alt="From-v1.0" />
@@ -20,6 +54,12 @@ Note: applications that want to parse GLB-formatted glTF files would normally us
 \* From [![Website shields.io](https://img.shields.io/badge/v2.3-blue.svg?style=flat-square)](http://shields.io), the `GLBLoader` can also load GLB v1 formatted files, returning a normalized GLB v2 compatible data structure, but with the `version` field set to `1`.
 
 ## Usage
+
+<ReferenceBoundary
+  title="Container and data-shape details"
+  description="The reference below covers supported GLB versions, options, parsed output fields, chunk offsets, and the distinction from GLTFLoader."
+  tone="blue"
+/>
 
 ```typescript
 import {load} from '@loaders.gl/core';
