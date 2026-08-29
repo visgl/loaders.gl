@@ -1,6 +1,6 @@
 import React, {useCallback, useState} from 'react';
 
-import {AvroLoaderWithParser} from '@loaders.gl/parquet/avro-loader';
+import {AvroLoaderWithParser} from '@loaders.gl/avro/avro-loader';
 
 const AVRO_FILES = [
   {

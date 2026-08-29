@@ -10,7 +10,16 @@ import {
   xzCompression,
   zstdCompression
 } from '@loaders.gl/compression';
-import {toArrayBuffer, toUint8Array} from './parquetjs/utils/binary-utils';
+function toUint8Array(binary: ArrayBuffer | ArrayBufferView): Uint8Array {
+  if (binary instanceof Uint8Array) return binary;
+  if (ArrayBuffer.isView(binary))
+    return new Uint8Array(binary.buffer, binary.byteOffset, binary.byteLength);
+  return new Uint8Array(binary);
+}
+
+function toArrayBuffer(binary: ArrayBuffer | ArrayBufferView): ArrayBuffer {
+  return toUint8Array(binary).slice().buffer;
+}
 
 type AvroCodec = 'null' | 'deflate' | 'snappy' | 'zstandard' | 'bzip2' | 'xz';
 

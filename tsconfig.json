@@ -247,6 +247,15 @@
       "@loaders.gl/parquet/test": [
         "modules/parquet/test"
       ],
+      "@loaders.gl/avro": [
+        "modules/avro/src"
+      ],
+      "@loaders.gl/avro/*": [
+        "modules/avro/src/*"
+      ],
+      "@loaders.gl/avro/test": [
+        "modules/avro/test"
+      ],
       "@loaders.gl/lance": [
         "modules/lance/src"
       ],

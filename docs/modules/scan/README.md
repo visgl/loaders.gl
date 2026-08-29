@@ -38,6 +38,20 @@ support matrix and execution semantics.
 npm install @loaders.gl/scan apache-arrow
 ```
 
+## Incubating table formats
+
+Iceberg and Delta Lake adapters are currently incubating behind explicit subpaths:
+
+```ts
+import {IcebergTableSource} from '@loaders.gl/scan/iceberg';
+import {DeltaTableSource} from '@loaders.gl/scan/delta';
+```
+
+These adapters discover snapshots and files, then delegate physical Parquet reads to the Parquet
+module. They are not imported by `@loaders.gl/scan` itself, so applications using only the core
+query engine do not pay for table-format code. The subpaths are experimental and may become
+dedicated packages after their APIs stabilize.
+
 ## Query an Arrow table
 
 Arrow is the built-in reference backend. `createScanEngine()` is asynchronous so an application can

@@ -42,7 +42,9 @@ test('Avro file parsing reads multiple ranged blocks and applies block selection
     batches.push(batch);
   }
 
-  const selectedIds = batches.flatMap(batch => Array.from(batch.data.getChild('id')?.toArray() || []));
+  const selectedIds = batches.flatMap(batch =>
+    Array.from(batch.data.getChild('id')?.toArray() || [])
+  );
   expect(selectedIds.length).toBeGreaterThan(20);
   expect(selectedIds.every(id => Number(id) >= 0 && Number(id) < 160)).toBe(true);
   expect(selectedIds.includes(0)).toBe(false);
