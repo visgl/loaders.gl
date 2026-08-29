@@ -6,6 +6,7 @@ page_style: designed
 ---
 
 import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
+import {CrossFormatScanEngineGraphic} from '@site/src/components/docs/cross-format-scan-engine-graphic';
 import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
 
 <DocPageHeader
@@ -20,6 +21,8 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
     {label: 'Lance example', to: 'https://github.com/visgl/loaders.gl/tree/master/examples/lance/browser'}
   ]}
 />
+
+<CrossFormatScanEngineGraphic />
 
 <DocOrientation
   eyebrow="The Lance read path"
