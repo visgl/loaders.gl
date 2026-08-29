@@ -1,8 +1,44 @@
-# selectLoader
+---
+title: selectLoader
+description: Choose a compatible loader from extensions, MIME types, and content signatures.
+hide_title: true
+page_style: designed
+---
 
-<p class="badges">
-  <img src="https://img.shields.io/badge/From-v2.2-blue.svg?style=flat-square" alt="From-v2.2" /> 
-</p>
+import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
+import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
+
+<DocPageHeader
+  eyebrow="Core module · loader selection"
+  title="selectLoader"
+  description="Select a loader for a resource using its URL, MIME type, or initial bytes, with support for explicit candidates and the registered loader list."
+  tone="blue"
+  meta={['Extension matching', 'MIME types', 'Content sniffing']}
+  links={[
+    {label: 'Core module', to: '/docs/modules/core'},
+    {label: 'Register loaders', to: '/docs/modules/core/api-reference/register-loaders'},
+    {label: 'LoaderOptions', to: '/docs/modules/core/api-reference/loader-options'}
+  ]}
+/>
+
+<DocOrientation
+  eyebrow="How selection works"
+  title="Give applications a loader without hard-coding every format."
+  description="Selection uses the signals available for the input: filename, MIME type, and—when safe—initial content bytes. Applications can still provide an explicit loader list or a single known loader."
+  tone="blue"
+  items={[
+    {label: 'URL', value: 'File extension and resource name'},
+    {label: 'MIME', value: 'Response or Blob content type'},
+    {label: 'Bytes', value: 'Magic-byte and signature detection'},
+    {label: 'Registry', value: 'Pre-registered loaders when requested'}
+  ]}
+/>
+
+<ReferenceBoundary
+  title="selectLoader reference"
+  description="The sections below document selection functions, supported input forms, candidate lists, registry behavior, and error handling."
+  tone="blue"
+/>
 
 The `selectLoader()` and `selectLoaderSync()` functions will automatically select
 an appropriate loader for a specific resource. `selectLoader()` is called by the
