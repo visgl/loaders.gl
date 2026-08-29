@@ -1,4 +1,47 @@
-# Introduction
+---
+title: Apache Arrow JavaScript
+description: Work with typed, binary columnar data in JavaScript and loaders.gl.
+hide_title: true
+page_style: designed
+---
+
+import {CategoryDataConcept} from '@site/src/components/home/concepts';
+import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
+import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
+
+<DocPageHeader
+  eyebrow="Arrow JavaScript guide"
+  title="A typed table shape for JavaScript."
+  description="Apache Arrow JS gives applications a binary columnar representation for tables, vectors, record batches, schemas, and zero-copy-friendly data movement. loaders.gl uses it as a common boundary across formats and runtimes."
+  tone="cyan"
+  meta={['Apache Arrow JS v21+', 'Typed columns', 'Tables and record batches']}
+  links={[
+    {label: 'Arrow in loaders.gl', to: '/docs/developer-guide/apache-arrow'},
+    {label: 'Working with tables', to: '/docs/arrowjs/developer-guide/tables'},
+    {label: 'API reference', to: '/docs/arrowjs/api-reference'}
+  ]}
+/>
+
+<CategoryDataConcept initialCategoryId="table" initialRepresentationId="arrow" />
+
+<DocOrientation
+  eyebrow="Start with the data shape"
+  title="Use columns when the next operation is column-shaped."
+  description="Arrow keeps values typed and grouped by column while still supporting row access, batches, schemas, and nested data. It is a useful interchange boundary, not a requirement for every application."
+  tone="cyan"
+  items={[
+    {label: 'Table', value: 'A chunked collection of named, typed columns'},
+    {label: 'Vector', value: 'A logical column view over one or more data chunks'},
+    {label: 'RecordBatch', value: 'A row-aligned group of columns for streaming'},
+    {label: 'Schema', value: 'Field names, types, nullability, and metadata'}
+  ]}
+  />
+
+<ReferenceBoundary
+  title="Arrow JS concepts and APIs"
+  description="The sections and linked guides below cover installation, table access, builders, data types, streaming readers and writers, and the loaders.gl Mesh Arrow convention."
+  tone="cyan"
+/>
 
 The Apache Arrow Arrow JS library provides a JavaScript API is designed to help applications work with binary columnar data in the Apache Arrow format. Arrow JS offers a core set of classes that supports use cases such as batched loading and writing, column and row access, schemas etc.
 

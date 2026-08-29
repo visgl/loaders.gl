@@ -1,4 +1,44 @@
-# Mesh Arrow Tables
+---
+title: Mesh Arrow tables
+description: Represent renderable mesh and point-cloud primitives as typed Apache Arrow tables.
+hide_title: true
+page_style: designed
+---
+
+import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
+import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
+
+<DocPageHeader
+  eyebrow="Arrow JS guide · loaders.gl convention"
+  title="Keep mesh attributes columnar all the way to the GPU boundary."
+  description="Mesh Arrow is the loaders.gl convention for representing one renderable mesh or point-cloud primitive as an Apache Arrow table. It gives format loaders and renderers a shared geometry contract without pretending to replace scene graphs or materials."
+  tone="blue"
+  meta={['Mesh and point clouds', 'Apache Arrow table', 'luma.gl interop']}
+  links={[
+    {label: 'Mesh category', to: '/docs/specifications/category-mesh'},
+    {label: 'Apache Arrow guide', to: '/docs/developer-guide/apache-arrow'},
+    {label: 'Mesh Arrow package', to: '/docs/modules/schema/table-guide'}
+  ]}
+/>
+
+<DocOrientation
+  eyebrow="The Mesh Arrow contract"
+  title="One vertex per row. Typed attributes by semantic name."
+  description="The table stores vertex attributes in Arrow columns, with topology and optional index metadata kept alongside the data. That makes it possible to move geometry between loaders, transforms, workers, and GPU adapters."
+  tone="blue"
+  items={[
+    {label: 'Required column', value: 'POSITION as an XYZ fixed-size list'},
+    {label: 'Optional columns', value: 'NORMAL, COLOR_0, TEXCOORD_n, and custom attributes'},
+    {label: 'Topology', value: 'Point list, triangle list, or triangle strip'},
+    {label: 'Scene boundary', value: 'Materials, textures, placements, and draw scheduling stay separate'}
+  ]}
+/>
+
+<ReferenceBoundary
+  title="Mesh Arrow storage and interop"
+  description="The reference below defines columns, metadata, record batches, table construction, glTF projection, zero-copy limits, and luma.gl upload behavior."
+  tone="blue"
+/>
 
 Mesh Arrow is the loaders.gl convention for representing one renderable mesh or point-cloud primitive as an Apache Arrow table. It is a vis.gl interoperability contract, not an Apache Arrow, GeoArrow, or glTF standard.
 
