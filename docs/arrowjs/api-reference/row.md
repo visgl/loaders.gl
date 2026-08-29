@@ -1,4 +1,44 @@
-# Row
+---
+title: Row
+description: Access one record from a table, record batch, or structured Arrow vector.
+hide_title: true
+page_style: designed
+---
+
+import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
+import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
+
+<DocPageHeader
+  eyebrow="Arrow JS API · row access"
+  title="Inspect one row without rebuilding the table."
+  description="Row values are the row-level view returned by Table, RecordBatch, and Struct vectors. Use names or indexes for inspection, then convert explicitly when a plain object or array is needed."
+  tone="blue"
+  meta={['Named and indexed access', 'Struct rows', 'JSON and array conversion']}
+  links={[
+    {label: 'Table', to: '/docs/arrowjs/api-reference/table'},
+    {label: 'RecordBatch', to: '/docs/arrowjs/api-reference/record-batch'},
+    {label: 'Vector', to: '/docs/arrowjs/api-reference/vector'}
+  ]}
+/>
+
+<DocOrientation
+  eyebrow="The Row model"
+  title="Use a row for inspection, not as the storage model."
+  description="Arrow stores columns and batches, then provides a row proxy when application code needs record-shaped access. Keep column operations columnar and materialize rows only at a boundary that needs them."
+  tone="blue"
+  items={[
+    {label: 'Access', value: 'Index or field name'},
+    {label: 'Iteration', value: 'Entries through the row iterator'},
+    {label: 'Conversion', value: 'toArray, toJSON, and toString'},
+    {label: 'Source', value: 'Table rows, RecordBatch rows, or Struct vectors'}
+  ]}
+/>
+
+<ReferenceBoundary
+  title="Row and StructRow reference"
+  description="The sections below document row methods, iteration, field access, and the relationship between row proxies and columnar storage."
+  tone="blue"
+/>
 
 :::info
 This page is aligned to Apache Arrow JS v21.x (`apache-arrow`).

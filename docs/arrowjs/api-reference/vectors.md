@@ -1,4 +1,44 @@
-# Vectors and Vector Types
+---
+title: Vectors and vector helpers
+description: Construct Apache Arrow vectors from typed arrays, JavaScript values, and explicit nested types.
+hide_title: true
+page_style: designed
+---
+
+import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
+import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
+
+<DocPageHeader
+  eyebrow="Arrow JS API · vector construction"
+  title="Create a typed column from the data you already have."
+  description="Use makeVector for typed-array or Data-backed input, and vectorFromArray when values begin as ordinary JavaScript data. Both produce the modern Vector abstraction used by tables and record batches."
+  tone="blue"
+  meta={['makeVector', 'vectorFromArray', 'Typed and nested values']}
+  links={[
+    {label: 'Vector', to: '/docs/arrowjs/api-reference/vector'},
+    {label: 'Builder', to: '/docs/arrowjs/api-reference/builder'},
+    {label: 'Data types', to: '/docs/arrowjs/api-reference/types'}
+  ]}
+/>
+
+<DocOrientation
+  eyebrow="The vector factory path"
+  title="Choose inference or control."
+  description="Use typed arrays when the storage and type are already known. Use vectorFromArray when readability and type inference matter, or pass an explicit DataType for nested and precise schemas."
+  tone="blue"
+  items={[
+    {label: 'makeVector', value: 'Typed arrays, Data chunks, or existing vectors'},
+    {label: 'vectorFromArray', value: 'Plain values with optional type inference'},
+    {label: 'Zero-copy', value: 'Typed-array input can retain its backing storage'},
+    {label: 'Nested data', value: 'Struct and other child types through explicit schemas'}
+  ]}
+/>
+
+<ReferenceBoundary
+  title="Vector factories and type support"
+  description="The sections below document factory signatures, inference behavior, supported type families, and examples for scalar and structured vectors."
+  tone="blue"
+/>
 
 :::info
 This page is aligned to Apache Arrow JS v21.x (`apache-arrow`).
