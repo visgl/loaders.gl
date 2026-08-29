@@ -6,7 +6,7 @@ import {expect, test, vi} from 'vitest';
 
 vi.mock('@loaders.gl/parquet/parquet-dataset-source', () => ({
   ParquetDatasetSource: class MockParquetDatasetSource {
-    constructor(public readonly fragments: unknown[]) {}
+    constructor(public readonly fragments: unknown[] | (() => Promise<unknown[]>)) {}
     async getSchema() {
       return {fields: []};
     }
@@ -15,7 +15,7 @@ vi.mock('@loaders.gl/parquet/parquet-dataset-source', () => ({
     }
     async *read() {
       const fragments =
-        typeof this.fragments[0] === 'function' ? await this.fragments[0]() : this.fragments;
+        typeof this.fragments === 'function' ? await this.fragments() : this.fragments;
       yield {data: 'batch', fragments};
     }
   }
@@ -79,6 +79,7 @@ test('validates descriptors and supports metadata, explain, read, and scan', asy
   const scanBatches = [];
   for await (const batch of source.scan()) scanBatches.push(batch);
   expect(scanBatches).toHaveLength(1);
+  expect(readBatches[0]).toMatchObject({fragments: [{id: 'part.parquet'}]});
 });
 
 test('rejects empty, malformed, and unsupported Hudi descriptors', async () => {
@@ -87,6 +88,9 @@ test('rejects empty, malformed, and unsupported Hudi descriptors', async () => {
   );
   await expect(
     new HudiTableSource(new Blob([JSON.stringify({})])).getScanFragments()
+  ).rejects.toThrow('files array');
+  await expect(
+    new HudiTableSource(new Blob([JSON.stringify(null)])).getScanFragments()
   ).rejects.toThrow('files array');
   await expect(
     new HudiTableSource(
@@ -111,4 +115,26 @@ test('resolves relative files with the configured Hudi base URL', async () => {
 test('preserves absolute and path-only file references', async () => {
   const source = new HudiTableSource(new Blob([JSON.stringify({files: [{path: 'part.parquet'}]})]));
   await expect(source.getScanFragments()).resolves.toMatchObject([{uri: 'part.parquet'}]);
+});
+
+test('loads URL descriptors and reports missing file statistics as zero', async () => {
+  const descriptorUrl = 'https://example.com/table/snapshot.json';
+  const signal = new AbortController().signal;
+  const source = new HudiTableSource(descriptorUrl, {
+    hudi: {headers: {'x-test': 'hudi'}}
+  });
+  const fetch = vi.fn(
+    async () =>
+      new Response(JSON.stringify({files: [{path: 'https://cdn.example.com/part.parquet'}]}))
+  );
+  source.fetch = fetch;
+
+  await expect(source.getQueryMetadata({signal})).resolves.toMatchObject({
+    name: descriptorUrl,
+    statistics: {rowCount: 0, byteLength: 0}
+  });
+  expect(fetch).toHaveBeenCalledWith(descriptorUrl, {
+    headers: {'x-test': 'hudi'},
+    signal
+  });
 });

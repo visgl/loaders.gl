@@ -13,26 +13,35 @@ import {createWorker} from '@loaders.gl/worker-utils';
  * @param loader
  */
 export async function createLoaderWorker(loader: LoaderWithParser) {
-  await createWorker(
-    async (input: any, options: {[key: string]: any} = {}, workerContext, loaderContext = {}) => {
-      // validateLoaderVersion(loader, data.source.split('@')[1]);
-
-      const result = await parseData({
-        loader,
-        arrayBuffer: input,
-        options,
-        context: {
-          ...loaderContext,
-          coreApi: createWorkerCoreApi(),
-          _parse: createParseOnMainThread(workerContext?.process)
-        } as LoaderContext
-      });
-
-      return loader.serializeWorkerResult
-        ? loader.serializeWorkerResult(result, options, loaderContext as LoaderContext)
-        : result;
-    }
+  await createWorker((input, options, workerContext, loaderContext) =>
+    processLoaderWorkerData(loader, input, options, workerContext, loaderContext)
   );
+}
+
+/** Processes one loader request using the same context installed inside a worker. */
+export async function processLoaderWorkerData(
+  loader: LoaderWithParser,
+  input: ArrayBuffer,
+  options: {[key: string]: any} = {},
+  workerContext?: {
+    process?: (data: any, options?: LoaderOptions, context?: Record<string, any>) => any;
+  },
+  loaderContext: Record<string, any> = {}
+) {
+  const result = await parseData({
+    loader,
+    arrayBuffer: input,
+    options,
+    context: {
+      ...loaderContext,
+      coreApi: createWorkerCoreApi(),
+      _parse: createParseOnMainThread(workerContext?.process)
+    } as LoaderContext
+  });
+
+  return loader.serializeWorkerResult
+    ? loader.serializeWorkerResult(result, options, loaderContext as LoaderContext)
+    : result;
 }
 
 /**
