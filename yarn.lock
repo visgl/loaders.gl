@@ -5202,6 +5202,16 @@ __metadata:
   languageName: unknown
   linkType: soft
 
+"@loaders.gl/config@workspace:modules/config":
+  version: 0.0.0-use.local
+  resolution: "@loaders.gl/config@workspace:modules/config"
+  dependencies:
+    "@loaders.gl/loader-utils": "npm:5.0.0-alpha.2"
+  peerDependencies:
+    "@loaders.gl/core": ~5.0.0-alpha.0
+  languageName: unknown
+  linkType: soft
+
 "@loaders.gl/copc@workspace:*, @loaders.gl/copc@workspace:modules/copc":
   version: 0.0.0-use.local
   resolution: "@loaders.gl/copc@workspace:modules/copc"

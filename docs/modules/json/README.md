@@ -10,6 +10,10 @@ The `@loaders.gl/json` module parses JSON, tabular JSON, and geospatial formats 
 The JSON loaders also support batched parsing which can be useful when loading very large tabular JSON files
 to avoid blocking for tens of seconds.
 
+For configuration formats with the same general object/array data model, see the dependency-free
+[`YAMLLoader`](/docs/modules/config/api-reference/yaml-loader) and
+[`TOMLLoader`](/docs/modules/config/api-reference/toml-loader) in `@loaders.gl/config`.
+
 `JSONLoader` exposes `json.backend: 'fast'` as an experimental opt-in backend for streaming extraction. This keeps atomic JSON parsing on the standard `JSON.parse` path while using the faster streaming parser for `loadInBatches`.
 
 ## Installation

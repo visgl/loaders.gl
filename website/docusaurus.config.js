@@ -156,6 +156,7 @@ const config = {
             '@loaders.gl/arrow': resolve('../modules/arrow/src'),
             '@loaders.gl/bson': resolve('../modules/bson/src'),
             '@loaders.gl/compression': resolve('../modules/compression/src'),
+            '@loaders.gl/config': resolve('../modules/config/src'),
             '@loaders.gl/copc': resolve('../modules/copc/src'),
             '@loaders.gl/core': resolve('../modules/core/src'),
             '@loaders.gl/crypto': resolve('../modules/crypto/src'),

@@ -29,6 +29,8 @@
       "modules/flatgeobuf/formats/flatgeobuf",
       "modules/arrow/formats/geoarrow",
       "modules/json/formats/geojson",
+      "modules/config/formats/toml",
+      "modules/config/formats/yaml",
       "modules/geopackage/formats/geopackage",
       "modules/parquet/formats/geoparquet",
       "modules/geotiff/formats/geotiff",
@@ -138,6 +140,8 @@
           "modules/images/api-reference/image-loader",
           "modules/json/api-reference/json-loader",
           "modules/json/api-reference/json-table-loader",
+          "modules/config/api-reference/toml-loader",
+          "modules/config/api-reference/yaml-loader",
           "modules/kml/api-reference/kml-loader",
           "modules/mvt/api-reference/map-style-loader",
           "modules/las/api-reference/las-loader",
@@ -361,6 +365,15 @@
           "modules/compression/api-reference/bzip2",
           "modules/compression/api-reference/xz",
           "modules/compression/api-reference/no-compressor-decompressor"
+        ]
+      },
+      {
+        "type": "category",
+        "label": "@loaders.gl/config",
+        "items": [
+          "modules/config/README",
+          "modules/config/api-reference/toml-loader",
+          "modules/config/api-reference/yaml-loader"
         ]
       },
       {
