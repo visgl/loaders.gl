@@ -1,7 +1,40 @@
+---
+title: Binary Columnar Data Formats
+description: Understand how Arrow, Parquet, ORC, Avro, and table layers fit together for analytical data.
+hide_title: true
+page_style: designed
+---
+
 import {CrossFormatScanEngineGraphic} from '@site/src/components/docs/cross-format-scan-engine-graphic';
+import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
+import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
 import {IcebergScanLiveExample} from '@site/src/components/docs/iceberg-scan-live-example';
 
-# Binary Columnar Data Formats
+<DocPageHeader
+  eyebrow="Binary columnar data"
+  title="Separate the table, the file, and the scan."
+  description="Arrow, Parquet, ORC, Avro, Iceberg, and related systems solve different parts of the data path. This guide gives each layer a clear place, then shows how loaders.gl connects them in the browser."
+  tone="cyan"
+  meta={['Arrow and IPC', 'Parquet and ORC', 'Cloud-native scans']}
+  links={[
+    {label: 'Arrow tentpole', to: '/docs/developer-guide/apache-arrow'},
+    {label: 'Parquet format', to: '/docs/modules/parquet/formats/parquet'},
+    {label: 'Scan architecture', to: '/docs/developer-guide/common-scan-architecture'}
+  ]}
+/>
+
+<DocOrientation
+  eyebrow="How the pieces fit"
+  title="Plan the dataset. Read the file. Return a common table."
+  description="The most useful distinction is between table-management metadata, physical file layout, scan execution, and the in-memory representation handed to an application."
+  tone="cyan"
+  items={[
+    {label: 'Table layer', value: 'Snapshots, manifests, partitions, and transactions'},
+    {label: 'File layer', value: 'Parquet, ORC, Avro, and Arrow IPC bytes'},
+    {label: 'Scan layer', value: 'Projection, predicates, ranges, batches, and workers'},
+    {label: 'Result layer', value: 'Typed Arrow arrays, record batches, and tables'}
+  ]}
+/>
 
 Binary columnar formats are designed to store tabular data compactly and make analytical reads
 efficient. They are especially useful when a query needs a subset of columns, a subset of rows, or
@@ -11,6 +44,12 @@ The formats in this space are related, but they are not interchangeable. **Arrow
 in-memory and interchange representation, **Parquet** and **ORC** are analytical file formats,
 **Avro** is primarily a row-oriented serialization format, and **Iceberg** and **Delta Lake** are
 table-management layers that usually organize files in one of these formats.
+
+<ReferenceBoundary
+  title="Format comparison and architecture details"
+  description="The reference below compares the physical formats, table layers, scan responsibilities, tradeoffs, and loaders.gl integration points."
+  tone="cyan"
+/>
 
 <CrossFormatScanEngineGraphic />
 
