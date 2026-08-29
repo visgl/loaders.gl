@@ -155,5 +155,6 @@ const tileSource = createDataSource(url, [TableTileSourceLoader], {
 });
 
 // request a particular tile
-const features = tileSource.getTile(z, x, y).features;
+const tile = await tileSource.getTile({z: 5, x: 10, y: 12});
+const features = tile?.features || [];
 ```
