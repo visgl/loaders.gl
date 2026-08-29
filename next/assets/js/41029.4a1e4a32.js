@@ -1,0 +1,1 @@
+"use strict";(self.webpackChunkproject_website=self.webpackChunkproject_website||[]).push([["41029"],{47652(e,t,s){s.r(t),s.d(t,{default:()=>a});var c=s(62540),l=s(63696);function a(){let e=(0,l.useCallback)(e=>{console.log(e)},[]);return(0,c.jsx)("canvas",{style:{width:"80vh",height:"80vh"},ref:e})}}}]);
