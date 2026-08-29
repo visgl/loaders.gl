@@ -12,7 +12,7 @@ export default function IndexPage() {
   return (
     <Layout title="Home" description="deck.gl">
       <Home HeroExample={HeroExample}>
-        <Features />
+        <Features showVisuals={false} />
       </Home>
     </Layout>
   );

@@ -253,6 +253,14 @@ const FeatureCard = styled(Link)`
   }
 `;
 
+const CompactFeatureCard = styled(FeatureCard)`
+  min-height: 270px;
+
+  @media screen and (max-width: 760px) {
+    min-height: 250px;
+  }
+`;
+
 const CardBody = styled.div`
   max-width: ${(props) => (props.$wide ? '470px' : '420px')};
   position: relative;
@@ -320,6 +328,10 @@ const CardFooter = styled.div`
     gap: 12px;
     max-width: 100%;
   }
+`;
+
+const CompactCardFooter = styled(CardFooter)`
+  max-width: 100%;
 `;
 
 const TagList = styled.div`
@@ -802,7 +814,10 @@ export function RenderFeatureVisual({type, wide}) {
 }
 
 /** Renders the homepage's large feature cards for the loaders.gl tentpole capabilities. */
-export default function Features() {
+export default function Features({showVisuals = true}) {
+  const CardComponent = showVisuals ? FeatureCard : CompactFeatureCard;
+  const FooterComponent = showVisuals ? CardFooter : CompactCardFooter;
+
   return (
     <FeatureSection>
       <FeatureContent>
@@ -819,7 +834,7 @@ export default function Features() {
 
         <FeatureGrid>
           {FEATURE_CARDS.map((feature) => (
-            <FeatureCard
+            <CardComponent
               key={feature.id}
               to={feature.href}
               aria-label={`${feature.title} — ${feature.linkLabel}`}
@@ -834,16 +849,16 @@ export default function Features() {
                 <CardTitle>{feature.title}</CardTitle>
                 <CardDescription>{feature.description}</CardDescription>
               </CardBody>
-              <RenderFeatureVisual type={feature.visual} wide={feature.wide} />
-              <CardFooter $wide={feature.wide}>
+              {showVisuals && <RenderFeatureVisual type={feature.visual} wide={feature.wide} />}
+              <FooterComponent $wide={feature.wide}>
                 <TagList>
                   {feature.tags.map((tag) => (
                     <Tag key={tag}>{tag}</Tag>
                   ))}
                 </TagList>
                 <CardLink>{feature.linkLabel}</CardLink>
-              </CardFooter>
-            </FeatureCard>
+              </FooterComponent>
+            </CardComponent>
           ))}
         </FeatureGrid>
       </FeatureContent>
