@@ -1,9 +1,9 @@
 import React, {useState} from 'react';
 import Link from '@docusaurus/Link';
 import useBaseUrl from '@docusaurus/useBaseUrl';
-import styled from 'styled-components';
 
 import copcLogo from '../../../../docs/images/logos/copc-logo-80.png';
+import styles from './format-logo-gallery.module.css';
 
 type FormatTag = 'tables' | 'geospatial' | 'services' | 'textures' | 'pointclouds' | 'meshes';
 type FormatFilter = 'all' | FormatTag;
@@ -103,68 +103,6 @@ const FORMAT_METADATA: ReadonlyArray<FormatMetadata> = [
   {slug: 'arcgis', label: 'ArcGIS API Reference', logo: 'arcgis-logo.svg', tags: ['geospatial', 'services']}
 ];
 
-const Gallery = styled.section`
-  margin: 2rem 0 2.5rem;
-`;
-
-const TabList = styled.div`
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.6rem;
-  margin: 0 0 1rem;
-`;
-
-const Tab = styled.button<{$selected: boolean}>`
-  background: ${props => (props.$selected ? 'var(--ifm-color-primary)' : 'var(--ifm-background-surface-color)')};
-  border: 1px solid ${props => (props.$selected ? 'var(--ifm-color-primary)' : 'var(--ifm-color-emphasis-300)')};
-  border-radius: 999px;
-  color: ${props => (props.$selected ? 'var(--ifm-color-white)' : 'var(--ifm-font-color-base)')};
-  cursor: pointer;
-  font-size: 0.84rem;
-  font-weight: 700;
-  padding: 0.7rem 0.95rem;
-`;
-
-const Grid = styled.div`
-  display: grid;
-  gap: 0.9rem;
-  grid-template-columns: repeat(auto-fit, minmax(132px, 1fr));
-`;
-
-const Card = styled(Link)`
-  align-items: center;
-  background: var(--ifm-background-surface-color);
-  border: 1px solid var(--ifm-color-emphasis-200);
-  border-radius: 14px;
-  color: inherit;
-  display: grid;
-  gap: 0.65rem;
-  grid-template-rows: 88px auto;
-  min-height: 144px;
-  padding: 0.85rem;
-  text-decoration: none;
-
-  &:hover {
-    border-color: var(--ifm-color-primary);
-    text-decoration: none;
-    transform: translateY(-2px);
-  }
-`;
-
-const Logo = styled.img`
-  height: 56px;
-  justify-self: center;
-  max-width: 100%;
-  object-fit: contain;
-`;
-
-const Label = styled.span`
-  font-size: 0.82rem;
-  font-weight: 700;
-  line-height: 1.25;
-  text-align: center;
-`;
-
 /** Resolves a gallery logo from either the static gallery directory or a bundled asset import. */
 function getLogoUrl(logo: string, logoBaseUrl: string): string {
   return logo.startsWith('/') || logo.startsWith('data:') || logo.includes('://')
@@ -210,38 +148,39 @@ export function FormatLogoGallery() {
   );
 
   return (
-    <Gallery>
+    <section className={styles.gallery}>
       <p>
         loaders.gl supports tabular, geospatial, 3D, texture, archive, and interchange formats.
         Dedicated format or ecosystem marks are used where available; the neutral badge identifies
         formats without a maintained logo.
       </p>
-      <TabList aria-label="Format filters" role="tablist">
+      <div className={styles.tabList} aria-label="Format filters" role="tablist">
         {FILTERS.map(filter => (
-          <Tab
+          <button
+            className={`${styles.tab} ${selectedFilter === filter.value ? styles.tabSelected : ''}`}
             key={filter.value}
             type="button"
             role="tab"
             aria-selected={selectedFilter === filter.value}
-            $selected={selectedFilter === filter.value}
             onClick={() => setSelectedFilter(filter.value)}
           >
             {filter.label}
-          </Tab>
+          </button>
         ))}
-      </TabList>
-      <Grid>
+      </div>
+      <div className={styles.grid}>
         {visibleFormats.map(format => (
-          <Card key={format.slug} to={`/docs/${format.path}`} title={format.label}>
-            <Logo
+          <Link className={styles.card} key={format.slug} to={`/docs/${format.path}`} title={format.label}>
+            <img
+              className={styles.logo}
               alt={`${format.label} logo`}
               loading="lazy"
               src={getLogoUrl(format.logo, logoBaseUrl)}
             />
-            <Label>{format.label}</Label>
-          </Card>
+            <span className={styles.label}>{format.label}</span>
+          </Link>
         ))}
-      </Grid>
-    </Gallery>
+      </div>
+    </section>
   );
 }

@@ -1,0 +1,81 @@
+.gallery {
+  margin: 2rem 0 2.5rem;
+}
+
+.tabList {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+  margin: 0 0 1rem;
+}
+
+.tab {
+  background: var(--ifm-background-surface-color);
+  border: 1px solid var(--ifm-color-emphasis-300);
+  border-radius: 999px;
+  color: var(--ifm-font-color-base);
+  cursor: pointer;
+  font-size: 0.84rem;
+  font-weight: 700;
+  padding: 0.7rem 0.95rem;
+}
+
+.tab:hover,
+.tab:focus-visible {
+  border-color: var(--ifm-color-primary);
+}
+
+.tab:focus-visible,
+.card:focus-visible {
+  outline: 3px solid color-mix(in srgb, var(--ifm-color-primary) 35%, transparent);
+  outline-offset: 2px;
+}
+
+.tabSelected {
+  background: var(--ifm-color-primary);
+  border-color: var(--ifm-color-primary);
+  color: var(--ifm-color-white);
+}
+
+.grid {
+  display: grid;
+  gap: 0.9rem;
+  grid-template-columns: repeat(auto-fit, minmax(132px, 1fr));
+}
+
+.card {
+  align-items: center;
+  background: var(--ifm-background-surface-color);
+  border: 1px solid var(--ifm-color-emphasis-200);
+  border-radius: 14px;
+  color: inherit;
+  display: grid;
+  gap: 0.65rem;
+  grid-template-rows: 88px auto;
+  min-height: 144px;
+  padding: 0.85rem;
+  text-decoration: none;
+  transition:
+    border-color 160ms ease,
+    transform 160ms ease;
+}
+
+.card:hover {
+  border-color: var(--ifm-color-primary);
+  text-decoration: none;
+  transform: translateY(-2px);
+}
+
+.logo {
+  height: 56px;
+  justify-self: center;
+  max-width: 100%;
+  object-fit: contain;
+}
+
+.label {
+  font-size: 0.82rem;
+  font-weight: 700;
+  line-height: 1.25;
+  text-align: center;
+}
