@@ -5,6 +5,7 @@ hide_title: true
 page_style: designed
 ---
 
+import {RangeRequestGraphic} from '@site/src/components/docs/range-request-graphic';
 import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
 import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
 
@@ -19,6 +20,8 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
     {label: 'Range requests', to: '/docs/developer-guide/using-range-requests'}
   ]}
 />
+
+<RangeRequestGraphic />
 
 <DocOrientation
   eyebrow="The cloud-native pattern"

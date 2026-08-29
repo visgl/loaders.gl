@@ -21,6 +21,8 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
   ]}
 />
 
+<WriterPipelineGraphic />
+
 <DocOrientation
   eyebrow="The writer path"
   title="Encode the application shape you already have."
@@ -33,8 +35,6 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
     {label: 'Save', value: 'Write a buffer, stream, file, or application response'}
   ]}
 />
-
-<WriterPipelineGraphic />
 
 Writers allow applications to encode data into many of the formats supported by loaders.gl.
 
