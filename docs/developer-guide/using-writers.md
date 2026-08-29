@@ -6,6 +6,7 @@ page_style: designed
 ---
 
 import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
+import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
 
 <DocPageHeader
   eyebrow="Core API"
@@ -19,9 +20,28 @@ import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
   ]}
 />
 
+<DocOrientation
+  eyebrow="The writer path"
+  title="Encode the application shape you already have."
+  description="Writers sit at the far edge of a pipeline. Convert into the format’s documented input shape, choose the output container, and keep format-specific encoding behind one explicit module."
+  tone="yellow"
+  items={[
+    {label: 'Prepare', value: 'Use a category shape or format-specific writer input'},
+    {label: 'Encode', value: 'Call encode() or encodeSync() with one writer'},
+    {label: 'Compress', value: 'Pass codec and container options where supported'},
+    {label: 'Save', value: 'Write a buffer, stream, file, or application response'}
+  ]}
+/>
+
 Writers allow applications to encoded data for a number of the formats supported by loaders.gl.
 
 For a detailed specification of the writer object format see the [API reference](/docs/specifications/writer-object-format).
+
+<ReferenceBoundary
+  title="Writer inputs and output behavior"
+  description="The guide below covers writer selection, category-compatible input data, asynchronous encoding, options, and format-specific boundaries."
+  tone="yellow"
+/>
 
 ## Usage
 

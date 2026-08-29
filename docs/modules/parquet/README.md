@@ -6,6 +6,7 @@ page_style: designed
 ---
 
 import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
+import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
 
 <DocPageHeader
   eyebrow="Module overview"
@@ -29,6 +30,19 @@ import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
   </a>
 </p>
 
+<DocOrientation
+  eyebrow="The Parquet module"
+  title="Read the columns that matter."
+  description="The module spans the simple loader path and the selective cloud path: use rows for convenience, Arrow for typed transport, and sources when metadata can eliminate work before decoding."
+  tone="mint"
+  items={[
+    {label: 'Load', value: 'Decode Parquet into rows or Arrow-compatible tables'},
+    {label: 'Select', value: 'Prune files, row groups, columns, pages, and predicates'},
+    {label: 'Stream', value: 'Process batches without materializing the complete dataset'},
+    {label: 'Compose', value: 'Use GeoParquet, Iceberg, Delta, and scan-aware sources'}
+  ]}
+/>
+
 Experimental loader and writer for the Apache Parquet format.
 
 - `ParquetLoader` and `ParquetWriter` are the default wasm-backed plain-row APIs.
@@ -43,6 +57,12 @@ Experimental loader and writer for the Apache Parquet format.
   Import `DeltaTableSource` from the explicit `@loaders.gl/parquet/delta-source` subpath to replay
   newline-delimited transaction logs and dispatch active Parquet files through the same dataset
   reader.
+
+<ReferenceBoundary
+  title="Parquet APIs and dataset integrations"
+  description="The reference below covers loaders, writers, Arrow output, geospatial metadata, selective sources, Iceberg, Delta, and implementation boundaries."
+  tone="mint"
+/>
 
 ## Geospatial Metadata
 

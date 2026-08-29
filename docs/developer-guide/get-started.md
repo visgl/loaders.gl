@@ -6,6 +6,7 @@ page_style: designed
 ---
 
 import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
+import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
 
 <DocPageHeader
   eyebrow="First steps"
@@ -17,6 +18,25 @@ import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
     {label: 'Using loaders', to: '/docs/developer-guide/using-loaders'},
     {label: 'Browse modules', to: '/docs'}
   ]}
+/>
+
+<DocOrientation
+  eyebrow="A minimal first path"
+  title="Install one core. Add formats as you need them."
+  description="The first application path is deliberately small: install core, choose a format module, load a file, and expand into workers, streams, or sources only when the data requires it."
+  tone="blue"
+  items={[
+    {label: 'Install', value: 'Add @loaders.gl/core and the format modules you use'},
+    {label: 'Load', value: 'Call load() or parse() with an explicit loader'},
+    {label: 'Scale', value: 'Register loaders, stream batches, or move work to workers'},
+    {label: 'Adapt', value: 'Use sources, converters, and writers for larger workflows'}
+  ]}
+/>
+
+<ReferenceBoundary
+  title="Setup and first application paths"
+  description="The guide below covers installation, loading, registration, building, browser support, and Node.js setup."
+  tone="blue"
 />
 
 ## Installing

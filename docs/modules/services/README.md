@@ -6,6 +6,7 @@ page_style: designed
 ---
 
 import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
+import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
 
 <DocPageHeader
   eyebrow="Service sources"
@@ -26,6 +27,25 @@ created with `createDataSource`, and rendered through deck.gl's generic `SourceL
 OGC protocols such as WMS, WMTS, WFS, WCS, CSW, GML, and OGC API remain in
 [`@loaders.gl/wms`](/docs/modules/wms). Keeping the protocol implementations in their owning
 modules lets applications install only the service families they use.
+
+<DocOrientation
+  eyebrow="The service path"
+  title="Treat remote services like data sources."
+  description="Discover the endpoint, request the useful subset, and hand the result to application code or a renderer without coupling that code to one service vendor."
+  tone="orange"
+  items={[
+    {label: 'Discover', value: 'Identify service capabilities and available layers'},
+    {label: 'Request', value: 'Ask for features, images, tiles, or scene content'},
+    {label: 'Normalize', value: 'Use vector, raster, tile, or tileset source contracts'},
+    {label: 'Render', value: 'Connect visual results to deck.gl SourceLayer when useful'}
+  ]}
+/>
+
+<ReferenceBoundary
+  title="Service sources and integration details"
+  description="The reference below covers supported ArcGIS services, installation, source construction, authentication, capability discovery, and deck.gl integration."
+  tone="orange"
+/>
 
 ## Service support
 

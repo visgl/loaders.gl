@@ -7,6 +7,7 @@ page_style: designed
 
 import {ArrowDocsTabs} from '@site/src/components/docs/arrow-docs-tabs';
 import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
+import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
 
 <DocPageHeader
   eyebrow="Arrow module / loader"
@@ -22,11 +23,30 @@ import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
 
 <ArrowDocsTabs active="arrowloader" />
 
+<DocOrientation
+  eyebrow="What ArrowLoader preserves"
+  title="Bring the columns in without turning them into rows."
+  description="ArrowLoader keeps IPC data in its typed table form by default, while allowing applications to choose a different loaders.gl table shape when an integration needs it."
+  tone="cyan"
+  items={[
+    {label: 'Input', value: 'Arrow IPC files, streams, and compatible responses'},
+    {label: 'Default', value: "ArrowTable output with shape: 'arrow-table'"},
+    {label: 'Alternatives', value: 'Columnar, array-row, or object-row table wrappers'},
+    {label: 'Streaming', value: 'Incremental Arrow batches with optional debounce'}
+  ]}
+/>
+
 <p class="badges">
   <img src="https://img.shields.io/badge/From-v1.0-blue.svg?style=flat-square" alt="From-v1.0" />
 </p>
 
 The `ArrowLoader` parses the Apache Arrow columnar table format.
+
+<ReferenceBoundary
+  title="ArrowLoader usage and options"
+  description="The reference below covers loading, returned shapes, batch behavior, and the options that control table conversion."
+  tone="cyan"
+/>
 
 ## Usage
 
