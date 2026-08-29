@@ -40,19 +40,17 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
   tone="violet"
 />
 
-> The `Tile3D` class is used internally by `loaders.gl/tiles` `Tileset3D` class to manage loading/unloading tiles.
-
 ## Constructor
 
 ```typescript
 new Tile3D(tileset, header, parentHeader);
 ```
 
-Paremeters:
+Parameters:
 
 - `tileset` (Tileset3D) - `Tileset3D` instance which contains this tile
-- `header` (Tile3D) - `Tile3D` instance
-- `parentHeader` (Tile3D) - `Tile3D` instance of parent tile
+- `header` (Object) - Source metadata for this tile
+- `parentHeader` (Object) - Source metadata for the parent tile
 
 #### Properties
 
@@ -108,7 +106,7 @@ The depth of the tile in the traversal tree.
 
 ###### `content` (Object)
 
-The tile's content.This represents the actual tile's payload.
+The tile's content. This represents the actual tile's payload.
 
 ###### `type` (String)
 
@@ -127,7 +125,8 @@ Specifies the type of refine that is used when traversing this tile for renderin
 
 ###### `selected` (Boolean)
 
-Whether this tile is selected for rendering in current update frame and viewport. A selected tile should has its content loaded and satifies current viewport.
+Whether this tile is selected for rendering in the current update frame and viewport. A selected
+tile has its content loaded and satisfies the current viewport requirements.
 
 ###### `distanceToCamera` (Number)
 
@@ -149,12 +148,12 @@ The unprocessed tile header object passed in.
 
 ##### `destroy()`
 
-Destroy the tile node, including destroy all the metadata and unload content.
+Destroys the tile node, including its metadata, and unloads its content.
 
 ##### `loadContent()`
 
-Load a content of the tile.
+Loads the tile content.
 
 ##### `unloadContent()`
 
-Unload a content of the tile.
+Unloads the tile content.

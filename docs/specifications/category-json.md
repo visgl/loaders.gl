@@ -32,11 +32,12 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
   ]}
 />
 
-The _json_ category loaders supports loading loosely structured data including:
+The JSON-style category is for loosely structured values that do not need a geometry- or
+table-specific result shape. Its loaders can return:
 
-- associative arrays (also known as name-value pairs),
-- integer indexed arrays
-- and a suite of fundamental scalar types.
+- objects with name/value pairs,
+- arrays with integer indexes, and
+- fundamental scalar values such as strings, numbers, booleans, and `null`.
 
 <ReferenceBoundary
   title="The structured-data details"
@@ -46,13 +47,13 @@ The _json_ category loaders supports loading loosely structured data including:
 
 ## JSON Category Loaders
 
-| Loader                                                       | Notes |
-| ------------------------------------------------------------ | ----- |
-| [`JSONLoader`](/docs/modules/json/api-reference/json-loader) |       |
-| [`BSONLoader`](/docs/modules/bson/api-reference/bson-loader) |       |
-| [`XMLLoader`](/docs/modules/xml/api-reference/xml-loader)    |       |
-| [`HTMLLoader`](/docs/modules/xml/api-reference/html-loader)  |       |
+| Loader                                                       | Notes                                      |
+| ------------------------------------------------------------ | ------------------------------------------ |
+| [`JSONLoader`](/docs/modules/json/api-reference/json-loader) | JSON documents and nested values           |
+| [`BSONLoader`](/docs/modules/bson/api-reference/bson-loader) | Binary JSON documents                       |
+| [`XMLLoader`](/docs/modules/xml/api-reference/xml-loader)    | XML documents represented as JavaScript data |
+| [`HTMLLoader`](/docs/modules/xml/api-reference/html-loader)  | HTML documents and fragments               |
 
 ## Data Structure
 
-Objects and arrays containing other object and arrays or primitive values.
+Objects and arrays can contain other objects, arrays, or primitive values.

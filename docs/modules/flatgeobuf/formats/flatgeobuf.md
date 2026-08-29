@@ -67,10 +67,14 @@ Goals are to be suitable for large volumes of static data, significantly faster 
 
 ## Geometries
 
-FlatGeobuf supports any vector geometry type defined in the OGC Simple Features specification (the same feature types supported by the WKB 2D geometry type enumeration).
+FlatGeobuf supports vector geometry types defined in the OGC Simple Features specification (the
+same feature types supported by the WKB 2D geometry type enumeration).
 
 :::caution
-GeoBuf geometries include the standard building blocks of `Point`, `LineString`, `Polygon`,`MultiPoint`, `MultiLineString`, `MultiPolygon`, and `GeometryCollection`, but also includes more infrequently types such as `CircularString`, `Surface`, and `TIN`` (Triangulated irregular network). These additional types are not supported by loaders.gl.
+FlatGeobuf geometries include the standard building blocks of `Point`, `LineString`, `Polygon`,
+`MultiPoint`, `MultiLineString`, `MultiPolygon`, and `GeometryCollection`, but also include less
+frequently used types such as `CircularString`, `Surface`, and `TIN` (triangulated irregular
+network). These additional types are not supported by loaders.gl.
 :::
 
 | Type               | Value | loaders.gl | Comment |
@@ -121,7 +125,7 @@ Apart from geometry, FlatGeobuf supports columns with a range of types:
 ## Metadata
 
 :::caution
-loaders.gl currently does not currently expose all metadata.
+loaders.gl does not expose all metadata fields yet.
 :::
 
 ```typescript

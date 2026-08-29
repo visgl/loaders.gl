@@ -40,13 +40,11 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
   tone="cyan"
 />
 
-> The `Tileset3D` class is being generalized to handle more use cases. Since this may require modifying some APIs, this class should be considered experiemental.
-
 The `Tileset3D` class is the shared runtime for traversal, culling, selection, cache management, and request scheduling across source-backed 3D tilesets.
 
 It is constructed with a [`Tileset3DSource`](/docs/modules/tiles/api-reference/tileset-3d-source), such as [`Tiles3DSource`](/docs/modules/tiles/api-reference/tiles-3d-source) or [`I3SSource`](/docs/modules/tiles/api-reference/i3s-source).
 
-References
+## Standards
 
 - [3D Tiles](https://github.com/AnalyticalGraphicsInc/3d-tiles/tree/master/specification).
 - [I3S Tiles](https://github.com/Esri/i3s-spec).
@@ -73,7 +71,7 @@ import {I3SLoader} from '@loaders.gl/i3s';
 import {I3SSource, Tileset3D} from '@loaders.gl/tiles';
 import {WebMercatorViewport} from '@deck.gl/web-mercator';
 
-const tileseturl =
+const tilesetUrl =
   'https://tiles.arcgis.com/tiles/z2tnIkrLQ2BRzr6P/arcgis/rest/services/SanFrancisco_Bldgs/SceneServer/layers/0';
 const source = new I3SSource({url: tilesetUrl, loader: I3SLoader});
 const tileset3d = new Tileset3D(source, {
@@ -84,7 +82,7 @@ const viewport = new WebMercatorViewport({latitude, longitude, zoom});
 tileset3d.update(viewport);
 ```
 
-Since `Tileset3D's update` is a synchronized call, which selects the tiles qualified for rendering based on current viewport and available tiles, user can trigger another `update` when new tiles are loaded.
+`Tileset3D.update` is synchronous: it selects the tiles qualified for rendering based on the current viewport and the tiles currently available. Trigger another `update` when newly requested tiles finish loading.
 
 ```typescript
 import {Tileset3D} from '@loaders.gl/tiles';
@@ -127,13 +125,13 @@ Parameters:
   - `options.updateTransforms`=`true` (`Boolean`) - Always check if the tileset `modelMatrix` was updated. Set to `false` to improve performance when the tileset remains stationary in the scene.
   - `options.loadOptions` - _loaders.gl_ options used when loading tiles from the tiling server. Includes `fetch` options such as authentication `headers`, worker options such as `maxConcurrency`, and options to other loaders such as `3d-tiles`, `gltf`, and `draco`.
   - `options.contentLoader` = `null` (`Promise`) - An optional external async content loader for the tile. Once the promise resolves, a tile is regarded as _READY_ to be displayed on the viewport.
-  - `options.loadTiles`=`true` (`Boolean`) - Whether the tileset traverse and update tiles. Set this options to `false` during the run time to freeze the scene.
+  - `options.loadTiles`=`true` (`Boolean`) - Whether the tileset traverses and updates tiles. Set this option to `false` at runtime to freeze the scene.
 
 Callbacks:
 
 - `onTileLoad` (`(tileHeader : Tile3D) : void`) - callback when a tile node is fully loaded during the tileset traversal.
 - `onTileUnload` (`(tileHeader : Tile3D) : void`) - callback when a tile node is unloaded during the tileset traversal.
-- `onTileError` (`(tileHeader : Tile3D, message : String) : void`) - callback when a tile faile to load during the tileset traversal.
+- `onTileError` (`(tileHeader : Tile3D, message : String) : void`) - callback when a tile fails to load during traversal.
 - `onTraversalComplete` (`(selectedTiles : Tile3D[]) : Tile3D[]`) - callback post-process selectedTiles right after traversal.
 
 The `Tileset3D` allows callbacks (`onTileLoad`, `onTileUnload`) to be registered that notify the app when the set of tiles available for rendering has changed. This is important because tile loads complete asynchronously, after the `tileset3D.update(...)` call has returned.
@@ -162,7 +160,8 @@ for the formulas, worked example, projection boundaries, and tuning guidance.
 
 ###### `boundingVolume` (BoundingVolume)
 
-The root tile's bounding volume, which is also the bouding volume of the entire tileset. Check `Tile3D#boundingVolume`
+The root tile's bounding volume, which is also the bounding volume of the entire tileset. See
+`Tile3D#boundingVolume`.
 
 ###### `cartesianCenter` (Number[3])
 
@@ -170,7 +169,7 @@ Center of tileset in fixed frame coordinates.
 
 ###### `cartographicCenter` (Number[3])
 
-Center of tileset in cartographic coordinates `[long, lat, elevation]`
+Center of the tileset in cartographic coordinates `[long, lat, elevation]`.
 
 ###### `ellipsoid` ([`Ellipsoid`](https://math.gl/modules/geospatial/docs/api-reference/ellipsoid))
 
