@@ -7,8 +7,11 @@ page_style: designed
 
 import {ArrowDocsTabs} from '@site/src/components/docs/arrow-docs-tabs';
 import {ArrowJsStructureGraphic} from '@site/src/components/docs/arrow-js-structure-graphic';
+import {CapabilityHero} from '@site/src/components/docs/capability-hero';
 import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
 import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
+
+<CapabilityHero capability="arrow" />
 
 <DocPageHeader
   eyebrow="Arrow module / loader"

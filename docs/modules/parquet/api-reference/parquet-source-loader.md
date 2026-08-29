@@ -5,9 +5,12 @@ hide_title: true
 page_style: designed
 ---
 
+import {CapabilityHero} from '@site/src/components/docs/capability-hero';
 import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
 import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
 import {ParquetLayoutGraphic} from '@site/src/components/docs/parquet-layout-graphic';
+
+<CapabilityHero capability="datasets" />
 
 <DocPageHeader
   eyebrow="Parquet source"

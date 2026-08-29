@@ -7,9 +7,12 @@ page_style: designed
 
 import {CrossFormatScanEngineGraphic} from '@site/src/components/docs/cross-format-scan-engine-graphic';
 import {ArrowDataPlaneGraphic} from '@site/src/components/docs/arrow-data-plane-graphic';
+import {CapabilityHero} from '@site/src/components/docs/capability-hero';
 import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
 import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
 import {IcebergScanLiveExample} from '@site/src/components/docs/iceberg-scan-live-example';
+
+<CapabilityHero capability="columnar" />
 
 <DocPageHeader
   eyebrow="Binary columnar data"

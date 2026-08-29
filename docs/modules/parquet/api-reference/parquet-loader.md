@@ -8,8 +8,11 @@ page_style: designed
 import {ParquetDocsTabs} from '@site/src/components/docs/parquet-docs-tabs';
 import {ParquetLayoutGraphic} from '@site/src/components/docs/parquet-layout-graphic';
 import BrowserOnly from '@docusaurus/BrowserOnly';
+import {CapabilityHero} from '@site/src/components/docs/capability-hero';
 import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
 import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
+
+<CapabilityHero capability="columnar" />
 
 <DocPageHeader
   eyebrow="Parquet module / loader"

@@ -6,8 +6,11 @@ page_style: designed
 ---
 
 import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
+import {CapabilityHero} from '@site/src/components/docs/capability-hero';
 import {ArrowDataPlaneGraphic} from '@site/src/components/docs/arrow-data-plane-graphic';
 import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
+
+<CapabilityHero capability="arrow" />
 
 <DocPageHeader
   eyebrow="Module overview"

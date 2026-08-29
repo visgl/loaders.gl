@@ -94,6 +94,19 @@ export const FEATURE_CARDS = [
     tone: 'cyan'
   },
   {
+    id: 'columnar',
+    eyebrow: 'Binary columnar data',
+    title: 'Keep wide tables compact.',
+    description:
+      'Use typed columns, selective reads, and Arrow-compatible batches to move large analytical datasets through the browser without turning every value into a JavaScript object.',
+    href: '/docs/formats/binary-columnar',
+    linkLabel: 'Explore columnar data',
+    tags: ['Arrow', 'Parquet', 'selective reads'],
+    visual: 'columnar',
+    wide: true,
+    tone: 'cyan'
+  },
+  {
     id: 'writers',
     eyebrow: 'Portable output',
     title: 'Encode the data you already have.',
@@ -641,6 +654,40 @@ const ArrowCell = styled.span`
   height: ${(props) => (props.$header ? '10px' : '18px')};
 `;
 
+const ColumnarVisual = styled(CardVisual)`
+  align-items: end;
+  display: flex;
+  gap: 9px;
+  height: 150px;
+  justify-content: end;
+  padding: 18px;
+  width: 48%;
+`;
+
+const ColumnarColumn = styled.div`
+  display: grid;
+  gap: 4px;
+  width: ${(props) => props.$width || '31px'};
+`;
+
+const ColumnarCell = styled.span`
+  background: ${(props) =>
+    props.$selected ? 'var(--card-accent)' : props.$header ? 'rgba(81, 226, 244, 0.68)' : 'rgba(81, 226, 244, 0.18)'};
+  border-radius: 3px;
+  display: block;
+  height: ${(props) => (props.$header ? '9px' : '16px')};
+`;
+
+const ColumnarRange = styled.span`
+  border: 1px solid rgba(117, 224, 186, 0.7);
+  border-radius: 5px;
+  bottom: 13px;
+  height: 42px;
+  position: absolute;
+  right: 14px;
+  width: 35px;
+`;
+
 const WriterVisual = styled(CardVisual)`
   align-items: center;
   display: flex;
@@ -948,6 +995,22 @@ export function RenderFeatureVisual({type, wide}) {
           </ArrowColumn>
         ))}
       </ArrowVisual>
+    );
+  }
+
+  if (type === 'columnar') {
+    return (
+      <ColumnarVisual $wide={wide} aria-hidden="true">
+        {[['25px', false], ['34px', true], ['25px', false], ['34px', true]].map(([width, selected], index) => (
+          <ColumnarColumn key={index} $width={width}>
+            <ColumnarCell $header />
+            {Array.from({length: 5}, (_, rowIndex) => (
+              <ColumnarCell key={rowIndex} $selected={selected && rowIndex > 1} />
+            ))}
+          </ColumnarColumn>
+        ))}
+        <ColumnarRange />
+      </ColumnarVisual>
     );
   }
 

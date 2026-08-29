@@ -9,8 +9,11 @@ import {ArrowDocsTabs} from '@site/src/components/docs/arrow-docs-tabs';
 import {ArrowDataPlaneGraphic} from '@site/src/components/docs/arrow-data-plane-graphic';
 import {ArrowJsStructureGraphic} from '@site/src/components/docs/arrow-js-structure-graphic';
 import {ArrowScanLiveExample} from '@site/src/components/docs/arrow-scan-live-example';
+import {CapabilityHero} from '@site/src/components/docs/capability-hero';
 import {DocOrientation} from '@site/src/components/docs/designed-doc';
 import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
+
+<CapabilityHero capability="arrow" />
 
 <DocPageHeader
   eyebrow="Binary columnar format"
