@@ -1,8 +1,47 @@
-import {ObjDocsTabs} from '@site/src/components/docs/obj-docs-tabs';
+---
+title: OBJ format
+description: Exchange readable Wavefront mesh geometry through common mesh and Mesh Arrow data shapes.
+hide_title: true
+page_style: designed
+---
 
-# OBJ Format
+import {ObjDocsTabs} from '@site/src/components/docs/obj-docs-tabs';
+import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
+import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
+
+<DocPageHeader
+  eyebrow="Mesh interchange format"
+  title="Readable mesh geometry with a long tail of tooling."
+  description="Wavefront OBJ is a simple text format for vertices, normals, texture coordinates, and faces. loaders.gl maps it into the shared mesh pipeline and can write compatible OBJ text back out."
+  tone="violet"
+  meta={['Wavefront OBJ', 'Readable text', 'Mesh and Arrow output']}
+  links={[
+    {label: 'OBJ module', to: '/docs/modules/obj'},
+    {label: 'OBJLoader', to: '/docs/modules/obj/api-reference/obj-loader'},
+    {label: 'Mesh category', to: '/docs/specifications/category-mesh'}
+  ]}
+/>
 
 <ObjDocsTabs active="format" />
+
+<DocOrientation
+  eyebrow="The OBJ data path"
+  title="Parse familiar text into a portable mesh shape."
+  description="OBJ keeps the source easy to inspect and edit, while the loader resolves its separate attribute streams and face references into data that renderers and Arrow-based tools can consume."
+  tone="violet"
+  items={[
+    {label: 'Geometry', value: 'Vertices, normals, UVs, colors, and faces'},
+    {label: 'Materials', value: 'Optional MTL references are recognized at the loader boundary'},
+    {label: 'Output', value: 'Mesh objects or Mesh Arrow tables'},
+    {label: 'Write', value: 'Encode compatible mesh data as OBJ text'}
+  ]}
+/>
+
+<ReferenceBoundary
+  title="OBJ structure and APIs"
+  description="The reference below covers the file layout, loaders, writers, mesh output, materials, and implementation limits."
+  tone="violet"
+/>
 
 ## Loaders and Writers
 

@@ -1,4 +1,44 @@
-# TWKBWriter 🚧
+---
+title: TWKBWriter
+description: Encode loaders.gl geometry as compact Tiny Well-Known Binary.
+hide_title: true
+page_style: designed
+---
+
+import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
+import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
+
+<DocPageHeader
+  eyebrow="WKT module · geometry writer"
+  title="TWKBWriter"
+  description="Encode structured geometry as Tiny Well-Known Binary when a compact binary representation is more useful than readable WKT or general-purpose WKB."
+  tone="orange"
+  meta={['From v4.0', 'Compact binary', 'Synchronous writer']}
+  links={[
+    {label: 'TWKB format', to: '/docs/modules/wkt/formats/twkb'},
+    {label: 'TWKBLoader', to: '/docs/modules/wkt/api-reference/twkb-loader'},
+    {label: 'WKT module', to: '/docs/modules/wkt'}
+  ]}
+/>
+
+<DocOrientation
+  eyebrow="What it writes"
+  title="Turn structured geometry into transport-sized bytes."
+  description="The writer accepts GeoJSON-style geometry, applies the selected dimensional flags, and emits TWKB bytes that can be stored or sent to a service implementing the TWKB specification."
+  tone="orange"
+  items={[
+    {label: 'Input', value: 'GeoJSON-style point, line, polygon, or collection'},
+    {label: 'Dimensions', value: 'XY, XYZ, XYM, or XYZM through writer options'},
+    {label: 'Output', value: 'ArrayBuffer containing TWKB'},
+    {label: 'APIs', value: 'encode and encodeSync'}
+  ]}
+/>
+
+<ReferenceBoundary
+  title="TWKBWriter reference"
+  description="The sections below document installation, usage, dimensional options, and the compact format summary."
+  tone="orange"
+/>
 
 <p class="badges">
   <img src="https://img.shields.io/badge/From-v4.0-blue.svg?style=flat-square" alt="From-v4.0" />

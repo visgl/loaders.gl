@@ -1,4 +1,44 @@
-# TWKBLoader 🚧
+---
+title: TWKBLoader
+description: Parse compact Tiny Well-Known Binary geometry into loaders.gl data.
+hide_title: true
+page_style: designed
+---
+
+import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
+import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
+
+<DocPageHeader
+  eyebrow="WKT module · geometry loader"
+  title="TWKBLoader"
+  description="Parse Tiny Well-Known Binary geometry and expose it through the same application-facing geometry shape used by the WKT module."
+  tone="orange"
+  meta={['From v4.0', 'Compact binary', 'Synchronous parser']}
+  links={[
+    {label: 'TWKB format', to: '/docs/modules/wkt/formats/twkb'},
+    {label: 'TWKBWriter', to: '/docs/modules/wkt/api-reference/twkb-writer'},
+    {label: 'WKT module', to: '/docs/modules/wkt'}
+  ]}
+/>
+
+<DocOrientation
+  eyebrow="What it reads"
+  title="Reconstruct geometry from compact integer records."
+  description="TWKB reduces transport size by quantizing coordinates and storing neighboring positions as deltas. The loader handles that binary representation before returning structured geometry data."
+  tone="orange"
+  items={[
+    {label: 'Input', value: 'Tiny Well-Known Binary bytes'},
+    {label: 'Encoding', value: 'Quantized coordinates, deltas, and varints'},
+    {label: 'Output', value: 'Structured geometry positions'},
+    {label: 'APIs', value: 'load, parse, and parseSync'}
+  ]}
+/>
+
+<ReferenceBoundary
+  title="TWKBLoader reference"
+  description="The sections below document installation, usage, the compact geometry encoding, and the current loader behavior."
+  tone="orange"
+/>
 
 <p class="badges">
   <img src="https://img.shields.io/badge/From-v4.0-blue.svg?style=flat-square" alt="From-v4.0" />
