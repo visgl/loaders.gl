@@ -1,4 +1,38 @@
-# RADLoader and RADSourceLoader
+---
+title: RADLoader and RADSourceLoader
+description: Read Spark RAD metadata and range-fetch Gaussian splat chunks as typed tables.
+hide_title: true
+page_style: designed
+---
+
+import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
+import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
+
+<DocPageHeader
+  eyebrow="RAD source"
+  title="Page large splat datasets instead of loading them all."
+  description="`RADLoader` reads local RAD metadata while `RADSourceLoader` discovers and range-fetches Spark RAD chunks. The source exposes decoded chunk tables so a renderer can own level-of-detail selection and GPU residency."
+  tone="violet"
+  meta={['Spark RAD', 'Range requests', 'Level of detail']}
+  links={[
+    {label: 'Splats module', to: '/docs/modules/splats'},
+    {label: 'Splat formats', to: '/docs/modules/splats/formats/splats'},
+    {label: 'Source architecture', to: '/docs/developer-guide/using-sources'}
+  ]}
+/>
+
+<DocOrientation
+  eyebrow="The RAD source path"
+  title="Read metadata first. Fetch only the chunks a view needs."
+  description="RAD separates dataset metadata from chunk payloads. The source keeps that boundary explicit while returning each decoded page in the standard table shape."
+  tone="violet"
+  items={[
+    {label: 'Discover', value: 'RAD metadata, hierarchy, and chunk locations'},
+    {label: 'Fetch', value: 'Range requests for RAD and RADC payloads'},
+    {label: 'Decode', value: 'Chunk attributes into Mesh Arrow tables'},
+    {label: 'Control', value: 'Renderer-owned LoD traversal and cache policy'}
+  ]}
+/>
 
 <p class="badges">
   <img src="https://img.shields.io/badge/From-v5.0-blue.svg?style=flat-square" alt="From-v5.0" />
@@ -8,6 +42,12 @@
 `RADLoader` parses Spark `.rad` metadata. `RADSourceLoader` creates a runtime
 source for range-fetching Spark `.rad` headers, RADC chunks, and decoded chunk
 tables.
+
+<ReferenceBoundary
+  title="RAD source and chunk details"
+  description="The reference below covers local parsing, remote range fetching, chunk iteration, decoded attributes, options, and the renderer boundary."
+  tone="violet"
+/>
 
 | Property   | Value                                      |
 | ---------- | ------------------------------------------ |
