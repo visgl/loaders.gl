@@ -1,6 +1,45 @@
-# Binary Data
+---
+title: Binary data
+description: Move typed bytes efficiently between files, workers, loaders, and renderers.
+hide_title: true
+page_style: designed
+---
+
+import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
+import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
+
+<DocPageHeader
+  eyebrow="The transport layer"
+  title="Make the bytes do the work."
+  description="loaders.gl uses ArrayBuffers and typed views as a shared boundary for file access, parsing, worker transfer, Arrow tables, and GPU upload."
+  tone="cyan"
+  meta={['ArrayBuffer-first', 'Typed arrays', 'Transferable data']}
+  links={[
+    {label: 'Apache Arrow', to: '/docs/developer-guide/apache-arrow'},
+    {label: 'Worker loaders', to: '/docs/developer-guide/using-worker-loaders'}
+  ]}
+/>
+
+<DocOrientation
+  eyebrow="Why binary is the common shape"
+  title="Read once. Transfer cheaply. Interpret at the edge."
+  description="A binary result can cross a worker boundary or move toward a renderer without first becoming a large graph of JavaScript objects. Typed views add meaning without copying the underlying bytes."
+  tone="cyan"
+  items={[
+    {label: 'Input', value: 'Files, responses, blobs, and byte streams'},
+    {label: 'Views', value: 'Uint8Array, DataView, and numeric typed arrays'},
+    {label: 'Workers', value: 'Transfer ownership instead of serializing objects'},
+    {label: 'Next step', value: 'Arrow columns, compressed data, or GPU buffers'}
+  ]}
+/>
 
 The loaders.gl API consistently uses `ArrayBuffer`s to represent and transport binary data.
+
+<ReferenceBoundary
+  title="Binary representations and conversions"
+  description="The sections below explain ArrayBuffers, typed-array views, text encoding, JavaScript binary types, and the conversion utilities provided by loaders.gl."
+  tone="cyan"
+/>
 
 ## Why ArrayBuffers?
 

@@ -1,6 +1,45 @@
-# Worker Threads
+---
+title: Worker threads
+description: Move expensive parsing off the browser main thread while keeping data transfer explicit.
+hide_title: true
+page_style: designed
+---
+
+import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
+import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
+
+<DocPageHeader
+  eyebrow="Parallel parsing"
+  title="Keep the interface responsive while data is decoded."
+  description="Worker-enabled loaders run parsing away from the browser main thread. The useful boundary is transferable binary data: less serialization means more of the worker’s time goes to parsing."
+  tone="violet"
+  meta={['Browser workers', 'Transferable buffers', 'Zero-config bundles']}
+  links={[
+    {label: 'Worker loaders', to: '/docs/developer-guide/using-worker-loaders'},
+    {label: 'Binary data', to: '/docs/developer-guide/concepts/binary-data'}
+  ]}
+/>
+
+<DocOrientation
+  eyebrow="The performance boundary"
+  title="Move computation, not a second copy of the dataset."
+  description="Workers help when parsing is expensive and results can remain in transferable buffers. The same API can fall back to the main thread when debugging, startup cost, or object-heavy output matters more."
+  tone="violet"
+  items={[
+    {label: 'Good fit', value: 'Large files and compute-heavy decoders'},
+    {label: 'Data shape', value: 'ArrayBuffers, typed arrays, and Arrow'},
+    {label: 'Trade-off', value: 'Startup, messaging, and serialization cost'},
+    {label: 'Debugging', value: 'Switch to main-thread parsing when needed'}
+  ]}
+/>
 
 On modern browsers, many loaders.gl loaders are set up to run on JavaScript worker threads. (Refer the documentation of each loader to see if it supports worker thread loading).
+
+<ReferenceBoundary
+  title="Worker data flow and trade-offs"
+  description="The sections below cover transfer, data types, message passing, build configuration, bundle size, debugging, and benchmarking."
+  tone="violet"
+/>
 
 Loading and parsing of data on worker threads can bring significant advantages
 
