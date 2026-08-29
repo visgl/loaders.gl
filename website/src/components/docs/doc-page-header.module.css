@@ -88,6 +88,32 @@
   max-width: 48rem;
 }
 
+.badges {
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  margin-top: 1.1rem;
+}
+
+.badges:empty {
+  display: none;
+}
+
+.badges :global(img) {
+  border: 1px solid color-mix(in srgb, var(--header-accent) 42%, transparent);
+  border-radius: 0.28rem;
+  display: block;
+  filter: saturate(0.72) brightness(1.08);
+  height: 1.25rem;
+  margin: 0;
+  opacity: 0.92;
+}
+
+.badges :global(a) {
+  display: inline-flex;
+}
+
 .footer {
   align-items: end;
   display: flex;

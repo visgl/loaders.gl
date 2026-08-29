@@ -1,4 +1,4 @@
-import React, {type ReactNode} from 'react';
+import React, {useEffect, useRef, type ReactNode} from 'react';
 import Link from '@docusaurus/Link';
 
 import styles from './doc-page-header.module.css';
@@ -35,6 +35,8 @@ export type DocPageHeaderProps = {
   meta?: readonly string[];
   /** Optional related destinations. */
   links?: readonly DocPageHeaderLink[];
+  /** Optional status and version badges moved out of the long-form reference content. */
+  badges?: readonly ReactNode[];
 };
 
 /**
@@ -46,16 +48,47 @@ export function DocPageHeader({
   description,
   tone = 'cyan',
   meta = [],
-  links = []
+  links = [],
+  badges = []
 }: DocPageHeaderProps): ReactNode {
+  const headerReference = useRef<HTMLElement>(null);
+
+  useEffect(() => {
+    const headerElement = headerReference.current;
+    const markdownElement = headerElement?.closest('.theme-doc-markdown');
+    const badgeTarget = headerElement?.querySelector('[data-doc-page-header-badges]');
+
+    if (!markdownElement || !badgeTarget) {
+      return;
+    }
+
+    const badgeParagraphs = Array.from(markdownElement.children).filter(
+      element => element instanceof HTMLElement && element.classList.contains('badges')
+    );
+
+    for (const badgeParagraph of badgeParagraphs) {
+      badgeTarget.append(...Array.from(badgeParagraph.childNodes));
+      badgeParagraph.remove();
+    }
+  }, []);
+
   return (
-    <section className={styles.header} data-tone={tone} aria-labelledby="doc-page-header-title">
+    <section
+      className={styles.header}
+      data-doc-page-header
+      data-tone={tone}
+      ref={headerReference}
+      aria-labelledby="doc-page-header-title"
+    >
       <div className={styles.copy}>
         <p className={styles.eyebrow}>{eyebrow}</p>
         <h1 className={styles.title} id="doc-page-header-title">
           {title}
         </h1>
         <p className={styles.description}>{description}</p>
+        <div className={styles.badges} data-doc-page-header-badges aria-label="Page status">
+          {badges}
+        </div>
       </div>
       {(meta.length > 0 || links.length > 0) && (
         <div className={styles.footer}>

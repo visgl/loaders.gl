@@ -10,7 +10,10 @@ function HeroExample() {
 
 export default function IndexPage() {
   return (
-    <Layout title="Home" description="deck.gl">
+    <Layout
+      title="Home"
+      description="A standards-obsessed toolkit for loading, scanning, transforming, and visualizing the data formats that power modern cloud compute and web visualization."
+    >
       <Home HeroExample={HeroExample}>
         <Features showVisuals={false} featureIds={HOME_FEATURE_IDS} />
       </Home>

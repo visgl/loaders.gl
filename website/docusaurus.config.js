@@ -74,7 +74,7 @@ function createBundlerPlugin() {
 
 const config = {
   title: 'loaders.gl',
-  tagline: 'A collection of loaders modules for Geospatial and 3D visualization use cases',
+  tagline: 'Big data loading for the web',
   url: siteUrl,
   baseUrl,
   onBrokenLinks: 'warn',

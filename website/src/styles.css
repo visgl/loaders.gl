@@ -146,6 +146,10 @@ html.docs-designed-page main {
   font-size: 1.08em;
 }
 
+.docs-designed-page .theme-doc-markdown:has(> [data-doc-page-header]) > .badges {
+  display: none;
+}
+
 .docs-designed-page .theme-doc-markdown strong {
   color: var(--ifm-heading-color);
 }
@@ -195,33 +199,48 @@ main .container {
   position: relative;
 }
 .markdown .docs-markdown-table {
-  margin: 1.75rem 0;
-  width: fit-content;
-  max-width: 100%;
-  overflow-x: auto;
+  background:
+    linear-gradient(135deg, color-mix(in srgb, var(--ifm-color-primary) 8%, transparent), transparent 42%),
+    var(--docs-table-shell-background);
   border: 1px solid var(--docs-table-border);
-  border-radius: 12px;
-  padding: 0.75rem;
-  background: var(--docs-table-shell-background);
+  border-radius: 18px;
   box-shadow: var(--docs-table-shadow);
-  margin-left: auto;
-  margin-right: auto;
+  margin: 2rem auto;
+  max-width: min(100%, 82rem);
+  overflow-x: auto;
+  padding: 0.45rem;
+  position: relative;
+  scrollbar-color: var(--ifm-color-primary) transparent;
+}
+
+.markdown .docs-markdown-table::before {
+  background: linear-gradient(90deg, var(--ifm-color-primary), color-mix(in srgb, var(--ifm-color-primary) 10%, transparent));
+  border-radius: 1rem 1rem 0 0;
+  content: '';
+  height: 2px;
+  left: 0.45rem;
+  position: absolute;
+  right: 0.45rem;
+  top: 0.45rem;
 }
 
 .markdown .docs-markdown-table__table {
-  width: max-content;
-  min-width: min(100%, 40rem);
-  margin: 0;
+  border: 1px solid var(--docs-table-border);
   border-collapse: separate;
   border-spacing: 0;
-  color: var(--docs-table-text);
-  border-radius: 8px;
   background: var(--docs-table-background);
+  border-radius: 14px;
+  color: var(--docs-table-text);
+  margin: 0;
+  min-width: 100%;
   overflow: hidden;
+  width: max-content;
 }
 
 .markdown .docs-markdown-table__table thead {
-  background: var(--docs-table-header-background);
+  background:
+    linear-gradient(90deg, color-mix(in srgb, var(--ifm-color-primary) 15%, transparent), transparent 70%),
+    var(--docs-table-header-background);
 }
 
 .markdown .docs-markdown-table__table thead tr {
@@ -232,13 +251,22 @@ main .container {
 .markdown .docs-markdown-table__table tbody tr:nth-child(2n),
 .markdown .docs-markdown-table__table tbody tr:nth-child(2n + 1) {
   background: transparent;
+  transition: background-color 160ms ease;
+}
+
+.markdown .docs-markdown-table__table tbody tr:nth-child(even) {
+  background: color-mix(in srgb, var(--ifm-color-primary) 4%, transparent);
+}
+
+.markdown .docs-markdown-table__table tbody tr:hover {
+  background: color-mix(in srgb, var(--ifm-color-primary) 10%, transparent);
 }
 
 .markdown .docs-markdown-table__table th,
 .markdown .docs-markdown-table__table td {
-  padding: 0.8rem 0.95rem;
   border: 0;
   border-bottom: 1px solid var(--docs-table-divider);
+  padding: 0.62rem 0.9rem;
   vertical-align: top;
 }
 
@@ -249,17 +277,20 @@ main .container {
 }
 
 .markdown .docs-markdown-table__table th {
-  font-size: 0.83rem;
-  font-weight: 700;
-  letter-spacing: 0.01em;
+  color: var(--docs-accent-text);
+  font-size: 0.76rem;
+  font-weight: 780;
+  letter-spacing: 0.075em;
   text-transform: none;
 }
 
 .markdown .docs-markdown-table__table thead th[colspan] {
-  font-size: 1.66rem;
+  color: var(--ifm-heading-color);
+  font-size: 1.35rem;
   font-weight: 800;
   line-height: 1.2;
-  text-align: center;
+  letter-spacing: -0.02em;
+  text-align: left;
 }
 
 .markdown .docs-markdown-table__table tbody tr:last-child td {
@@ -268,24 +299,25 @@ main .container {
 
 .markdown .docs-markdown-table__table th + th,
 .markdown .docs-markdown-table__table td + td {
-  border-left: 1px solid var(--docs-table-divider);
+  border-left: 1px solid color-mix(in srgb, var(--docs-table-divider) 60%, transparent);
 }
 
 .markdown .docs-markdown-table__table td code,
 .markdown .docs-markdown-table__table th code {
-  white-space: nowrap;
-  padding: 0;
-  border: 0;
-  background: transparent;
+  background: color-mix(in srgb, var(--ifm-color-primary) 11%, transparent);
+  border: 1px solid color-mix(in srgb, var(--ifm-color-primary) 20%, transparent);
+  border-radius: 0.4rem;
   box-shadow: none;
-  color: var(--ifm-color-gray-800);
+  color: var(--docs-table-link);
   font-size: 1.02em;
   font-weight: 700;
+  padding: 0.12rem 0.32rem;
+  white-space: nowrap;
 }
 
 html[data-theme='dark'] .markdown .docs-markdown-table__table td code,
 html[data-theme='dark'] .markdown .docs-markdown-table__table th code {
-  color: rgba(226, 232, 240, 0.92);
+  color: var(--docs-table-link);
 }
 
 .markdown .docs-markdown-table__table a {
@@ -383,8 +415,8 @@ html[data-theme='dark'] .markdown .docs-api-card__meta {
 
 @media (max-width: 996px) {
   .markdown .docs-markdown-table {
-    margin-left: 0;
-    margin-right: 0;
+    margin-left: auto;
+    margin-right: auto;
   }
 
   .markdown .docs-markdown-table__table {
