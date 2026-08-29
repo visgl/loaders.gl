@@ -5176,6 +5176,17 @@ __metadata:
   languageName: unknown
   linkType: soft
 
+"@loaders.gl/avro@npm:5.0.0-alpha.2, @loaders.gl/avro@workspace:modules/avro":
+  version: 0.0.0-use.local
+  resolution: "@loaders.gl/avro@workspace:modules/avro"
+  dependencies:
+    "@loaders.gl/compression": "npm:5.0.0-alpha.2"
+    "@loaders.gl/loader-utils": "npm:5.0.0-alpha.2"
+    "@loaders.gl/schema": "npm:5.0.0-alpha.2"
+    apache-arrow: "npm:>= 17.0.0"
+  languageName: unknown
+  linkType: soft
+
 "@loaders.gl/bson@npm:5.0.0-alpha.2, @loaders.gl/bson@workspace:*, @loaders.gl/bson@workspace:modules/bson":
   version: 0.0.0-use.local
   resolution: "@loaders.gl/bson@workspace:modules/bson"
@@ -5629,11 +5640,12 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@loaders.gl/parquet@workspace:*, @loaders.gl/parquet@workspace:modules/parquet":
+"@loaders.gl/parquet@npm:5.0.0-alpha.2, @loaders.gl/parquet@workspace:*, @loaders.gl/parquet@workspace:modules/parquet":
   version: 0.0.0-use.local
   resolution: "@loaders.gl/parquet@workspace:modules/parquet"
   dependencies:
     "@loaders.gl/arrow": "npm:5.0.0-alpha.2"
+    "@loaders.gl/avro": "npm:5.0.0-alpha.2"
     "@loaders.gl/bson": "npm:5.0.0-alpha.2"
     "@loaders.gl/compression": "npm:5.0.0-alpha.2"
     "@loaders.gl/geoarrow": "npm:5.0.0-alpha.2"
@@ -5738,6 +5750,7 @@ __metadata:
   resolution: "@loaders.gl/scan@workspace:modules/scan"
   dependencies:
     "@loaders.gl/loader-utils": "npm:5.0.0-alpha.2"
+    "@loaders.gl/parquet": "npm:5.0.0-alpha.2"
     "@loaders.gl/schema": "npm:5.0.0-alpha.2"
     "@loaders.gl/schema-utils": "npm:5.0.0-alpha.2"
     "@loaders.gl/sql": "npm:5.0.0-alpha.2"

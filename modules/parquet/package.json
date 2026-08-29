@@ -43,29 +43,13 @@
       "types": "./dist/parquet-loader.d.ts",
       "import": "./dist/parquet-loader.js"
     },
-    "./avro-loader": {
-      "types": "./dist/avro-loader.d.ts",
-      "import": "./dist/avro-loader.js"
-    },
-    "./avro-schema-loader": {
-      "types": "./dist/avro-schema-loader.d.ts",
-      "import": "./dist/avro-schema-loader.js"
-    },
-    "./avro-writer": {
-      "types": "./dist/avro-writer.d.ts",
-      "import": "./dist/avro-writer.js"
-    },
-    "./avro-stream": {
-      "types": "./dist/avro-stream.d.ts",
-      "import": "./dist/avro-stream.js"
-    },
-    "./avro-ocf": {
-      "types": "./dist/avro-ocf.d.ts",
-      "import": "./dist/avro-ocf.js"
-    },
     "./iceberg-table-source": {
       "types": "./dist/iceberg-table-source.d.ts",
       "import": "./dist/iceberg-table-source.js"
+    },
+    "./iceberg-types": {
+      "types": "./dist/iceberg-types.d.ts",
+      "import": "./dist/iceberg-types.js"
     },
     "./iceberg-rest-catalog": {
       "types": "./dist/iceberg-rest-catalog.d.ts",
@@ -74,6 +58,14 @@
     "./delta-source": {
       "types": "./dist/delta-source.d.ts",
       "import": "./dist/delta-source.js"
+    },
+    "./delta-source-loader-types": {
+      "types": "./dist/delta-source-loader-types.d.ts",
+      "import": "./dist/delta-source-loader-types.js"
+    },
+    "./delta-types": {
+      "types": "./dist/delta-types.d.ts",
+      "import": "./dist/delta-types.js"
     },
     "./parquet-js-loader": {
       "types": "./dist/parquet-js-loader.d.ts",
@@ -131,6 +123,7 @@
   },
   "dependencies": {
     "@loaders.gl/arrow": "5.0.0-alpha.2",
+    "@loaders.gl/avro": "5.0.0-alpha.2",
     "@loaders.gl/bson": "5.0.0-alpha.2",
     "@loaders.gl/compression": "5.0.0-alpha.2",
     "@loaders.gl/geoarrow": "5.0.0-alpha.2",

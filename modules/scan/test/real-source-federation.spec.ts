@@ -10,7 +10,8 @@ import {CSVTableSource} from '@loaders.gl/csv';
 import {NDJSONTableSource} from '@loaders.gl/json';
 import {DataSourceManager, type ScanExecutionTelemetry} from '@loaders.gl/loader-utils';
 import {ParquetJSWriter} from '@loaders.gl/parquet';
-import {DeltaTableSource} from '../../parquet/src/delta-source';
+import {DeltaTableSource} from '../src/delta';
+import {IcebergTableSource} from '../src/iceberg';
 import {ParquetSource} from '@loaders.gl/parquet/parquet-source-loader';
 import type {Schema} from '@loaders.gl/schema';
 import {parseSQLPredicate} from '@loaders.gl/sql';
@@ -25,6 +26,11 @@ const OUTPUT_SCHEMA: Schema = {
   ],
   metadata: {}
 };
+
+test('exposes incubating table-format entry points without extending the scan root', () => {
+  expect(IcebergTableSource).toBeDefined();
+  expect(DeltaTableSource).toBeDefined();
+});
 
 test('federates actual CSV, NDJSON, Arrow IPC, and Parquet sources', async () => {
   const parquetBytes = await ParquetJSWriter.encode({
