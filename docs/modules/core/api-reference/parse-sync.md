@@ -1,4 +1,38 @@
-# parseSync
+---
+title: parseSync
+description: Parse already-loaded data synchronously with a parser-capable loader.
+hide_title: true
+page_style: designed
+---
+
+import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
+import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
+
+<DocPageHeader
+  eyebrow="Core parsing API"
+  title="Use a synchronous parser when the loader supports it."
+  description="`parseSync` turns already-loaded text or binary data into a decoded result without returning a promise. It is useful for small, local inputs, but most loaders and browser pipelines should use the asynchronous APIs."
+  tone="blue"
+  meta={['Synchronous parsing', 'Already-loaded data', 'Parser-capable loaders only']}
+  links={[
+    {label: 'Core module', to: '/docs/modules/core'},
+    {label: 'Async parse', to: '/docs/modules/core/api-reference/parse'},
+    {label: 'Loader options', to: '/docs/modules/core/api-reference/loader-options'}
+  ]}
+/>
+
+<DocOrientation
+  eyebrow="The sync boundary"
+  title="Load first. Parse immediately. Keep the call site explicit."
+  description="Synchronous parsing does not fetch data and cannot suspend for worker setup or asynchronous codecs. The loader must provide a synchronous parser for the chosen input."
+  tone="blue"
+  items={[
+    {label: 'Input', value: 'Text or binary data already in memory'},
+    {label: 'Loader', value: 'A parser-capable loader or loader list'},
+    {label: 'Context', value: 'Options and optional source URL'},
+    {label: 'Output', value: 'Decoded value, or an error when sync parsing is unavailable'}
+  ]}
+/>
 
 :::caution
 Synchronous parsing is not supported by all loaders. Refer to the documentation for each loader.
@@ -28,6 +62,12 @@ parseSync(data: ArrayBuffer | string, loaders: Loader[], options?: LoaderOptions
 Returns:
 
 - Return value depends on the _loader object_ category, or `null`, in which case asynchronous parsing is required.
+
+<ReferenceBoundary
+  title="Synchronous parsing details"
+  description="The reference below covers supported inputs, loader selection, options, return values, limitations, and error handling."
+  tone="blue"
+/>
 
 ## Usage
 

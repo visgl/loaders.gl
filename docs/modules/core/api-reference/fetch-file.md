@@ -1,4 +1,38 @@
-# fetchFile
+---
+title: fetchFile
+description: Fetch remote resources or local Node.js files through a loaders.gl Response-compatible wrapper.
+hide_title: true
+page_style: designed
+---
+
+import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
+import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
+
+<DocPageHeader
+  eyebrow="Core fetch API"
+  title="Give the same parsing pipeline a URL or a local file."
+  description="`fetchFile` wraps the platform fetch API and adds loaders.gl path-prefix, alias, and Node.js local-file support. It returns a standard `Response`, so the result can flow directly into `parse`."
+  tone="blue"
+  meta={['Fetch-compatible Response', 'Node.js local files', 'Path and alias resolution']}
+  links={[
+    {label: 'Core module', to: '/docs/modules/core'},
+    {label: 'Parse API', to: '/docs/modules/core/api-reference/parse'},
+    {label: 'Path prefix', to: '/docs/modules/core/api-reference/set-path-prefix'}
+  ]}
+/>
+
+<DocOrientation
+  eyebrow="The fetch boundary"
+  title="Resolve the input. Return a familiar response."
+  description="Remote URLs use the platform fetch path; Node.js paths can resolve through the local filesystem. Downstream code still consumes standard response methods such as `arrayBuffer`, `text`, and `json`."
+  tone="blue"
+  items={[
+    {label: 'Input', value: 'Remote URL, data URL, Blob, or Node.js path'},
+    {label: 'Resolve', value: 'Platform fetch, path prefix, and test aliases'},
+    {label: 'Return', value: 'A Response-compatible object'},
+    {label: 'Next step', value: 'Pass the response to `parse` or read it directly'}
+  ]}
+/>
 
 The `fetchFile()` function is an alternative to the built-in
 [`fetch`](https://developer.mozilla.org/en-US/docs/Web/API/fetch) function.
@@ -7,6 +41,12 @@ The `fetchFile()` function is an alternative to the built-in
 - load from local file system under Node.js
 - path prefix resolution
 - alias resolution
+
+<ReferenceBoundary
+  title="Fetch and response details"
+  description="The reference below covers remote and local inputs, response methods, Node.js behavior, path prefixes, aliases, and request options."
+  tone="blue"
+/>
 
 ```typescript
 fetchFile(url: string | Blob, options?: RequestInit) : Promise<Response>
