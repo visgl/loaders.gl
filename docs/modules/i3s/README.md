@@ -22,8 +22,10 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
 />
 
 ![ogc-logo](../../images/logos/ogc-logo-60.png)
+&nbsp;
+![arcgis-logo](../../images/logos/arcgis-logo.svg)
 
-The `@loaders.gl/i3s` module supports loading and traversing Indexed 3d Scene Layer (I3S).
+The `@loaders.gl/i3s` module supports loading and traversing Indexed 3D Scene Layer (I3S).
 
 See the [I3S format support matrix](/docs/modules/i3s/formats/i3s) for detailed coverage of scene layer profiles,
 specification generations, geometry, textures, attributes, delivery options, and known gaps.

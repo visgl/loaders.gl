@@ -37,8 +37,6 @@ import {TexturesDocsTabs} from '@site/src/components/docs/textures-docs-tabs';
   ]}
 />
 
-<TexturesDocsTabs active="compressedtexturewriter" />
-
 <p class="badges">
   <img src="https://img.shields.io/badge/From-v3.0-blue.svg?style=flat-square" alt="From-v3.0" />
   <img src="https://img.shields.io/badge/Node.js-only-red.svg?style=flat-square" alt="Node.js-only" />
@@ -66,10 +64,10 @@ The package is resolved as an optional peer dependency and called directly. The 
 | -------------- | ------------------------------------------------------ |
 | File Extension |                                                        |
 | File Type      | Binary                                                 |
-| Data Format    |                                                        |
-| File Format    |                                                        |
+| Data Format    | Encoded image URL                                      |
+| File Format    | S3TC / DXT1 in a KTX container                        |
 | Encoder Type   | Asynchronous                                           |
-| Worker Thread  | No (but may run on separate native thread in browsers) |
+| Worker Thread  | No; Node.js-only native tool invocation               |
 | Streaming      | No                                                     |
 
 ## Usage
@@ -88,12 +86,25 @@ const outputFilename = await encodeURLtoURL(IMAGE_URL, '/tmp/test.ktx', Compress
 
 ## Data Format
 
-TBA
+The experimental encoder accepts an input image URL and invokes the optional
+`texture-compressor` package to produce an S3TC/DXT1 texture. The current command-line
+tool writes a KTX container even though the public writer metadata uses the `dds` identifier.
+The output URL must therefore end in `.ktx`.
+
+This path is intentionally URL-based and does not expose a browser-side `encode()` method.
+For a portable browser workflow, use [`KTX2BasisWriter`](/docs/modules/textures/api-reference/ktx2-basis-texture-writer)
+or prepare compressed textures during an asset build.
 
 ## Options
 
 | Option | Type | Default | Description |
 | ------ | ---- | ------- | ----------- |
+| `texture.format` | `string` | `'auto'` | Format hint retained for the writer options contract; the current encoder emits S3TC/DXT1. |
+| `texture.compression` | `string` | `'auto'` | Compression hint retained for compatibility; the current encoder uses DXT1. |
+| `texture.quality` | `string` | `'auto'` | Quality hint retained for compatibility; the current encoder uses normal quality. |
+| `texture.mipmap` | `boolean` | `false` | Mipmap preference retained for compatibility with the external toolchain. |
+| `texture.flipY` | `boolean` | `false` | Vertical orientation preference retained for compatibility with the external toolchain. |
+| `texture.toolFlags` | `string` | `''` | Additional tool flags reserved for the external compressor. |
 
 ## Remarks
 

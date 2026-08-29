@@ -67,24 +67,32 @@ The 3D Tiles category can represent the major tiled 3D formats:
 
 The `@loaders.gl/tiles` module provides classes that facilitate working with `3D Tiles` loader category data.
 
-Tileset Traversal Support
+### Tileset traversal
 
-To start loading tiles once a top-level tileset file is loaded, the application can instantiate the `Tileset3D` class and start calling `tileset3D.update(viewport)`.
+Once a top-level tileset file is loaded, an application can instantiate `Tileset3D` and call
+`tileset3D.update(viewport)` as the camera changes.
 
-Since 3D tiled data sets tend to be very big, the key idea is to only load the tiles actually needed to show a view from the current camera position.
+3D tiled datasets tend to be large, so traversal loads only the tiles needed for the current view.
 
-The `Tileset3D` allows callbacks (`onTileLoad`, `onTileUnload`) to be registered that notify the app when the set of tiles available for rendering has changed. This is important because tile loads complete asynchronously, after the `tileset3D.update(...)` call has returned.
+`Tileset3D` accepts `onTileLoad` and `onTileUnload` callbacks that notify the application when
+the set of renderable tiles changes. Tile loads complete asynchronously, after
+`tileset3D.update(...)` returns.
 
-### Coordinate Systems
+### Coordinate systems
 
-To help applications process the `position` data in the tiles, 3D Tiles category loaders are expected to provide matrices are provided to enable tiles to be used in both fixed frame or cartographic (long/lat-relative, east-north-up / ENU) coordinate systems:
+To help applications process tile positions, 3D Tiles category loaders provide matrices that
+support both fixed-frame and cartographic (longitude/latitude-relative, east-north-up / ENU)
+coordinate systems:
 
 - _cartesian_ WGS84 fixed frame coordinates
 - _cartographic_ tile geometry positions to ENU meter offsets from `cartographicOrigin`.
 
 Position units in both cases are in meters.
 
-For cartographic coordinates, tiles come with a pre chosen cartographic origin and precalculated model matrix. This cartographic origin is "arbitrary" (chosen based on the tiles bounding volume center). A different origin can be chosen and a transform can be calculated, e.g. using the math.gl `Ellipsoid` class.
+For cartographic coordinates, tiles include a pre-chosen cartographic origin and a precalculated
+model matrix. The origin is selected from the tile's bounding-volume center; applications can
+choose a different origin and calculate a transform, for example with math.gl's `Ellipsoid`
+class.
 
 ## Data Format
 
@@ -114,7 +122,7 @@ A single metadata object that needs to be loaded for each tileset. It contains "
 
 The following fields are guaranteed. Additionally, the loaded tile object will contain all the data fetched from the provided url.
 
-Tiles are often loaded in bulk, however they may be loaded in pages or
+Tiles may be loaded in bulk, by pages, or one tile at a time, depending on the source format.
 
 | Field            | Type     | Contents                                                                                                                                                                                                                                                                  |
 | ---------------- | -------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -128,8 +136,8 @@ Tiles are often loaded in bulk, however they may be loaded in pages or
 | `boundingVolume` | `Object` | A bounding volume in Cartesian coordinates converted from i3s node's [`mbs`](https://github.com/Esri/i3s-spec/blob/master/docs/1.6/mbs.cmn.) that encloses a tile or its content. Exactly one box, region, or sphere property is required.                                |
 | `lodMetricType`  | `string` | Level of Detail (LoD) metric type, which is used to decide if a tile is sufficient for current viewport. Only support `maxScreenThreshold` for now. Check I3S [lodSelection](https://github.com/Esri/i3s-spec/blob/master/docs/1.7/lodSelection.cmn.md) for more details. |
 | `lodMetricValue` | `string` | Level of Detail (LoD) metric value.                                                                                                                                                                                                                                       |
-| `children`       | `Array`  | An array of objects that define child tiles. Each child tile content is fully enclosed by its parent tile's bounding volume and, generally, has more details than parent. for leaf tiles, the length of this array is zero, and children may not be defined.              |
-| `content`        | `string` | The actual payload of the tile or the url point to the actual payload. If `option.loadContent` is enabled, content will be populated with the loaded value following the Tile Content section                                                                             |
+| `children`       | `Array`  | An array of child tile objects. Child content is enclosed by the parent bounding volume and generally has more detail. Leaf tiles have no children. |
+| `content`        | `string` | The tile payload or a URL pointing to it. If `options.loadContent` is enabled, this field contains the loaded value described in the Tile Content section. |
 
 ### Tile Content
 
@@ -140,10 +148,10 @@ After content is loaded, the following fields are guaranteed. But different tile
 | `cartesianOrigin`    | `Number[3]`  | "Center" of tile geometry in WGS84 fixed frame coordinates                                                |
 | `cartographicOrigin` | `Number[3]`  | "Origin" in lng/lat (center of tile's bounding volume)                                                    |
 | `modelMatrix`        | `Number[16]` | Transforms tile geometry positions to fixed frame coordinates                                             |
-| `vertexCount`        | `Number`     | Transforms tile geometry positions to fixed frame coordinates                                             |
+| `vertexCount`        | `Number`     | Number of vertices in the tile geometry                                                                     |
 | `attributes`         | `Object`     | Binary typed arrays containing the geometry of the tile.                                                  |
 | `texture`            | `Object`     | Loaded texture by [`loaders.gl/image`](https://loaders.gl/docs/modules/images/api-reference/image-loader) |
-| `featureData`        | `Object`     | Loaded feature data for parsing the geometies (Will be deprecated in 2.x)                                 |
+| `featureData`        | `Object`     | Loaded feature data used when parsing tile geometry (legacy field)                                         |
 
 `attributes` contains following fields
 

@@ -37,6 +37,8 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
 - _[I3S community specification](https://github.com/Esri/i3s-spec)_
 - _[OGC I3S Community Standard](https://www.ogc.org/standard/i3s/)_
 
+![arcgis-logo](../../../images/logos/arcgis-logo.svg)
+
 Indexed 3D Scene Layer (I3S) is a hierarchical, streamable format for large geospatial 3D
 datasets. A scene layer organizes geometry, textures, attributes, and level-of-detail information
 into a node tree. It can be delivered through REST resources or packaged as a Scene Layer Package
