@@ -180,6 +180,21 @@ describe('resolveVisualSource', () => {
   });
 });
 
+test('SourceLayer passes parser loaders through to the 3D source child', () => {
+  const layer = createTestLayer({data: 'https://example.com/layers/0'});
+  layer.state.resolvedSource = {
+    source: 'https://example.com/layers/0',
+    sourceType: 'tile-3d',
+    parserLoaders: [TEST_PARSER_LOADER],
+    owned: false
+  };
+
+  const childLayer = (layer.renderLayers() as any[])[0];
+
+  expect(childLayer.props.loader).toEqual([TEST_PARSER_LOADER]);
+  expect(childLayer.props.loaders).toEqual([TEST_PARSER_LOADER]);
+});
+
 describe('source classification and metadata defaults', () => {
   test('classifies overlapping runtimes in safe order', () => {
     expect(
