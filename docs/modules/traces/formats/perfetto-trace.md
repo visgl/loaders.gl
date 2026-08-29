@@ -1,11 +1,49 @@
-import {TracesDocsTabs} from '@site/src/components/docs/traces-docs-tabs';
+---
+title: Perfetto Trace format
+description: A protobuf trace envelope projected into typed Arrow tables for browser analysis.
+hide_title: true
+page_style: designed
+---
 
-# Perfetto Trace
+import {TracesDocsTabs} from '@site/src/components/docs/traces-docs-tabs';
+import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
+import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
+
+<DocPageHeader
+  eyebrow="Performance trace format"
+  title="Turn a trace stream into tables you can inspect."
+  description="The Perfetto loader reads protobuf Trace packets, tracks sequence state and descriptors, and projects supported TrackEvent data into typed Apache Arrow tables for browser-side analysis."
+  tone="violet"
+  meta={['Perfetto protobuf', 'TrackEvent', 'Arrow tables']}
+  links={[
+    {label: 'Traces module', to: '/docs/modules/traces'},
+    {label: 'Perfetto loader', to: '/docs/modules/traces/api-reference/perfetto-trace-loader'}
+  ]}
+/>
 
 <TracesDocsTabs active="perfetto-trace" />
 
+<DocOrientation
+  eyebrow="The trace projection"
+  title="Preserve the event relationships that matter."
+  description="Perfetto traces contain more than isolated events. The projection keeps tracks, processes, threads, timestamps, and open slices connected while exposing a compact table-oriented result."
+  tone="violet"
+  items={[
+    {label: 'Input', value: 'TracePacket messages in a protobuf envelope'},
+    {label: 'State', value: 'Descriptors, interned names, and sequence resets'},
+    {label: 'Output', value: 'Tracks, slices, processes, and threads tables'},
+    {label: 'Stream', value: 'Incremental packet parsing with bounded state'}
+  ]}
+/>
+
 Perfetto's native format is a protobuf `Trace` envelope containing repeated `TracePacket` messages.
 The traces module projects Perfetto's stable TrackEvent model into typed Apache Arrow tables.
+
+<ReferenceBoundary
+  title="Perfetto projection and boundaries"
+  description="The sections below document supported TrackEvent fields, Arrow table schemas, timestamp semantics, streaming behavior, and unsupported packet families."
+  tone="violet"
+/>
 
 ## Supported TrackEvent Data
 
