@@ -40,18 +40,21 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
 
 The `GLBLoader` parses a GLB binary "envelope" extracting the embedded JSON and binary chunks.
 
-Note: applications that want to parse GLB-formatted glTF files would normally use the `GLTFLoader` instead. The `GLBLoader` can be used to load custom data that combines JSON and binary resources.
+:::info[Choose the layer]
 
-| Loader          | Characteristic                                                                                                                                                                                                   |
-| --------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| File Extensions | `.glb`                                                                                                                                                                                                           |
-| File Type       | Binary                                                                                                                                                                                                           |
-| File Format     | [GLB v2](https://github.com/KhronosGroup/glTF/tree/master/specification/2.0#glb-file-format-specification), [GLB v1](https://github.com/KhronosGroup/glTF/tree/master/extensions/1.0/Khronos/KHR_binary_glTF) \* |
-| Data Format     | See below                                                                                                                                                                                                        |
-| Supported APIs  | `load`, `parse`, `parseSync`                                                                                                                                                                                     |
-|                 |
+- Use `GLTFLoader` when the binary envelope contains a glTF scene and linked resources should be
+  resolved for you.
+- Use `GLBLoader` when an application needs to inspect, preserve, or reinterpret the JSON and
+  binary chunks directly.
 
-\* From [![Website shields.io](https://img.shields.io/badge/v2.3-blue.svg?style=flat-square)](http://shields.io), the `GLBLoader` can also load GLB v1 formatted files, returning a normalized GLB v2 compatible data structure, but with the `version` field set to `1`.
+:::
+
+| Input | Output | APIs |
+| --- | --- | --- |
+| `.glb` binary data | Header metadata, parsed JSON, and one or more binary chunks | `load`, `parse`, `parseSync` |
+
+The loader reads GLB v1 and v2 files, plus the draft GLB v3 chunk layout. GLB v1 is returned in
+the standard `GLB` shape with `version: 1`; it is not silently presented as a v2 file.
 
 ## Usage
 
@@ -71,14 +74,14 @@ const gltf = await load(url, GLBLoader);
 
 | Option                    | Type    | Default | Description                                                  |
 | ------------------------- | ------- | ------- | ------------------------------------------------------------ |
-| `glb.strict` (DEPRECATED) | Boolean | `false` | Whether to support non-standard JSON/BIN chunk type numbers. |
+| `glb.strict` (DEPRECATED) | Boolean | `false` | Whether to reject deprecated XVIZ chunk type numbers; `false` keeps compatibility. |
 
 Remarks:
 
 - Parses GLB v2 encoded data.
 - Parses draft GLB v3 encoded data, including 64-bit file/chunk lengths and multiple binary chunks.
-- Parses GLB v1 encoded data (enabling support for the glTF v1 `KHR_binary_gltf` extension). Parsed GLB v1 data is returned in the standard `GLB` format.
-- Extracts multiple binary chunks if present (this is supported by the GLB specification but is not used in the glTF specification).
+- Parses GLB v1 encoded data (enabling support for the glTF v1 `KHR_binary_gltf` extension).
+- Extracts multiple binary chunks if present, even though the glTF specification normally uses one.
 
 ## Data Format
 
@@ -112,7 +115,7 @@ Returns
 | Field                       | Type          | Default | Description                                          |
 | --------------------------- | ------------- | ------- | ---------------------------------------------------- |
 | `type`                      | `String`      | `glTF`  | String containing the first four bytes of the file   |
-| `version`                   | `Number`      | `2`     | The version number, only version 2 is supported      |
+| `version`                   | `Number`      | `2`     | The GLB version number                               |
 | `json`                      | `Object`      | `{}`    | Parsed JSON from the JSON chunk                      |
 | `binChunks`                 | `ArrayBuffer` | `null`  | The binary chunk                                     |
 | `binChunks[\*].arrayBuffer` | `ArrayBuffer` | `null`  | The binary chunk                                     |
