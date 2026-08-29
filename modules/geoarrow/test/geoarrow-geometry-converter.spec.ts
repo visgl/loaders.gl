@@ -45,14 +45,6 @@ const GEOARROW_WKB_CONFORMANCE_CASES = [
   ...['', '-z', '-m', '-zm'].map(dimensionSuffix => [
     `example_geometrycollection${dimensionSuffix}_wkb.arrows`,
     'geoarrow.geometrycollection'
-  ]),
-  ...['', '-z', '-m', '-zm'].map(dimensionSuffix => [
-    `example_geometrycollection-nested${dimensionSuffix}_wkb.arrows`,
-    'geoarrow.geometrycollection'
-  ]),
-  ...['', '-z', '-m', '-zm'].map(dimensionSuffix => [
-    `example_geometrycollection-nested${dimensionSuffix}_wkb.arrows`,
-    'geoarrow.geometry'
   ])
 ] as const satisfies readonly (readonly [string, GeoArrowGeometryTarget])[];
 
@@ -677,6 +669,51 @@ test('GeoArrow polygon rewinding traverses mixed dense unions and collections', 
   expect((result[0]?.geometry as any).coordinates[0][1]).toEqual([1, 0]);
   expect((result[1]?.geometry as any).geometries[0].coordinates[0][0][1]).toEqual([3, 2]);
 });
+test('GeoArrow polygon rewinding leaves unreferenced sliced union children unchanged', () => {
+  const source = convertFeaturesToGeoArrowTable([
+    {
+      type: 'Feature',
+      properties: {id: 1},
+      geometry: {
+        type: 'Polygon',
+        coordinates: [
+          [
+            [0, 0],
+            [0, 1],
+            [1, 1],
+            [1, 0],
+            [0, 0]
+          ]
+        ]
+      }
+    },
+    {
+      type: 'Feature',
+      properties: {id: 2},
+      geometry: {
+        type: 'Polygon',
+        coordinates: [
+          [
+            [2, 2],
+            [2, 3],
+            [3, 3],
+            [3, 2],
+            [2, 2]
+          ]
+        ]
+      }
+    }
+  ]).data;
+  const union = convertGeoArrowGeometry(source, 'geoarrow.geometry').getChild('geometry')!;
+  const firstBefore = convertGeoArrowVectorCellToGeoJSON(union, 0, 'geoarrow.geometry');
+
+  rewindGeoArrow(union.slice(1, 2), 'geoarrow.geometry');
+
+  expect(convertGeoArrowVectorCellToGeoJSON(union, 0, 'geoarrow.geometry')).toEqual(firstBefore);
+  expect(
+    (convertGeoArrowVectorCellToGeoJSON(union, 1, 'geoarrow.geometry') as any).coordinates[0][1]
+  ).toEqual([3, 2]);
+});
 test('GeoArrow LineString conversion writes direct coordinates and offsets from WKB', () => {
   const bytes = new Uint8Array(
     convertGeometryToWKB({
@@ -693,6 +730,26 @@ test('GeoArrow LineString conversion writes direct coordinates and offsets from 
   });
   expect(convertedVector.type.toString()).toContain('LargeList');
   expect(Array.from(convertedVector.get(0).get(1).toArray())).toEqual([3, 4]);
+});
+
+test('direct WKB conversion rejects trailing bytes', () => {
+  const bytes = new Uint8Array(convertGeometryToWKB({type: 'Point', coordinates: [1, 2]}));
+  const malformedBytes = new Uint8Array(bytes.byteLength + 1);
+  malformedBytes.set(bytes);
+  const vector = arrow.vectorFromArray([malformedBytes], new arrow.Binary());
+
+  expect(() => convertGeoArrowVector(vector, 'geoarrow.wkb', 'geoarrow.point')).toThrow(
+    /Invalid WKB geometry at row 0/
+  );
+});
+
+test('GeoArrow conversion can reject the compatibility object fallback', () => {
+  const bytes = new Uint8Array(convertGeometryToWKB({type: 'Point', coordinates: [1, 2]}));
+  const vector = arrow.vectorFromArray([bytes], new arrow.Binary());
+
+  expect(() =>
+    convertGeoArrowVector(vector, 'geoarrow.wkb', 'geoarrow.wkt', {fallback: 'error'})
+  ).toThrow(/No direct GeoArrow conversion kernel/);
 });
 
 const directWKBGeometryCases: readonly [GeoArrowGeometryTarget, Geometry][] = [
@@ -1211,7 +1268,7 @@ test('GeoArrowGeometryConverter decodes WKB GeometryCollections without a GeoJSO
   ).toContain('LargeList<Union<');
 });
 
-test('GeoArrowGeometryConverter decodes nested WKB GeometryCollections directly', () => {
+test('GeoArrowGeometryConverter rejects recursive native GeometryCollections', () => {
   const geometry: Geometry = {
     type: 'GeometryCollection',
     geometries: [
@@ -1235,53 +1292,15 @@ test('GeoArrowGeometryConverter decodes nested WKB GeometryCollections directly'
     geoarrow: {encoding: 'wkb'}
   }).data;
 
-  const collection = convertGeoArrowGeometry(source, 'geoarrow.geometrycollection', {
-    coordinates: 'separated',
-    offsetType: 'int64'
-  });
-  const collectionVector = collection.getChild('geometry')!;
-  expect(collectionVector.type.toString()).toContain('LargeList<Union<');
-  const collectionUnionType = (collectionVector.type as arrow.LargeList)
-    .valueType as arrow.DenseUnion;
-  expect(collectionUnionType.children.map(field => field.name)).toEqual([
-    'Point',
-    'GeometryCollection'
-  ]);
-  const nestedCollectionField = collectionUnionType.children.find(
-    field => field.name === 'GeometryCollection'
-  )!;
-  expect(nestedCollectionField.type.toString()).toContain('LargeList<Union<');
-  expect(convertGeoArrowToTable(collection, 'geojson-table').features[0].geometry).toEqual(
-    geometry
+  expect(() => convertGeoArrowGeometry(source, 'geoarrow.geometrycollection')).toThrow(
+    /do not support recursive GeometryCollections/
+  );
+  expect(() => convertGeoArrowGeometry(source, 'geoarrow.geometry')).toThrow(
+    /do not support recursive GeometryCollections/
   );
 
-  const collectionWKB = convertGeoArrowGeometry(collection, 'geoarrow.wkb');
-  const collectionRoundTrip = convertGeoArrowGeometry(
-    collectionWKB,
-    'geoarrow.geometrycollection',
-    {coordinates: 'separated', offsetType: 'int64'}
-  );
-  expect(convertGeoArrowToTable(collectionRoundTrip, 'geojson-table').features[0].geometry).toEqual(
-    geometry
-  );
-
-  const union = convertGeoArrowGeometry(source, 'geoarrow.geometry', {
-    coordinates: 'separated',
-    offsetType: 'int64'
-  });
-  const unionType = union.getChild('geometry')?.type as arrow.DenseUnion;
-  const collectionField = unionType.children.find(field => field.name === 'GeometryCollection');
-  expect(collectionField?.type.toString()).toContain('LargeList<Union<');
-  const unionCollectionType = (collectionField?.type as arrow.LargeList)
-    .valueType as arrow.DenseUnion;
-  expect(unionCollectionType.children.map(field => field.name)).toContain('GeometryCollection');
-  expect(convertGeoArrowToTable(union, 'geojson-table').features[0].geometry).toEqual(geometry);
-
-  const unionWKB = convertGeoArrowGeometry(union, 'geoarrow.wkb');
-  const unionRoundTrip = convertGeoArrowGeometry(unionWKB, 'geoarrow.geometry');
-  expect(convertGeoArrowToTable(unionRoundTrip, 'geojson-table').features[0].geometry).toEqual(
-    geometry
-  );
+  const wkb = source.getChild('geometry');
+  expect(wkb?.length).toBe(1);
 });
 
 test('GeoArrowGeometryConverter bounds GeometryCollection recursion', () => {

@@ -26,6 +26,18 @@ test('getGeoArrowRowBounds reads sliced separated native points', () => {
   expect(getGeoArrowRowBounds(geometry!, 'geoarrow.point')).toEqual([[3, 4, 3, 4]]);
 });
 
+test('getGeoArrowRowBounds reads sliced interleaved native points', () => {
+  const source = convertFeaturesToGeoArrowTable([
+    {type: 'Feature', properties: {id: 1}, geometry: {type: 'Point', coordinates: [1, 2]}},
+    {type: 'Feature', properties: {id: 2}, geometry: {type: 'Point', coordinates: [3, 4]}}
+  ]);
+  const native = convertGeoArrowGeometry(source.data, 'geoarrow.point');
+  const geometry = native.getChild('geometry')?.slice(1, 2);
+
+  expect(geometry).toBeTruthy();
+  expect(getGeoArrowRowBounds(geometry!, 'geoarrow.point')).toEqual([[3, 4, 3, 4]]);
+});
+
 test('getGeoArrowRowBounds reads nested native lines with large offsets', () => {
   const source = convertFeaturesToGeoArrowTable([
     {
@@ -81,7 +93,7 @@ test('getGeoArrowRowBounds reads a sliced nested native line', () => {
   expect(getGeoArrowRowBounds(geometry!, 'geoarrow.linestring')).toEqual([[7, 8, 9, 10]]);
 });
 
-test('getGeoArrowRowBounds walks mixed unions and nested collections in buffers', () => {
+test('getGeoArrowRowBounds walks mixed unions and collections in buffers', () => {
   const source = convertFeaturesToGeoArrowTable([
     {
       type: 'Feature',
@@ -95,15 +107,10 @@ test('getGeoArrowRowBounds walks mixed unions and nested collections in buffers'
         type: 'GeometryCollection',
         geometries: [
           {
-            type: 'GeometryCollection',
-            geometries: [
-              {
-                type: 'LineString',
-                coordinates: [
-                  [-4, 3],
-                  [8, 9]
-                ]
-              }
+            type: 'LineString',
+            coordinates: [
+              [-4, 3],
+              [8, 9]
             ]
           }
         ]
@@ -124,15 +131,10 @@ test('getGeoArrowRowBounds walks mixed unions and nested collections in buffers'
         type: 'GeometryCollection',
         geometries: [
           {
-            type: 'GeometryCollection',
-            geometries: [
-              {
-                type: 'LineString',
-                coordinates: [
-                  [-4, 3],
-                  [8, 9]
-                ]
-              }
+            type: 'LineString',
+            coordinates: [
+              [-4, 3],
+              [8, 9]
             ]
           }
         ]

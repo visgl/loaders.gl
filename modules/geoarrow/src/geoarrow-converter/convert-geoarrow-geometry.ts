@@ -23,6 +23,7 @@ import {
   decodeWKTUnionVector
 } from '../lib/kernels/decode-wkt-native';
 import {
+  assertValidWKBVector,
   decodeWKBNativeVector,
   decodeWKBGeometryCollectionVector,
   decodeWKBUnionVector
@@ -86,6 +87,8 @@ export type GeoArrowGeometryConvertOptions = {
   maxGeometryBytes?: number;
   /** Maximum coordinate vertices across one input vector. */
   maxGeometryVertices?: number;
+  /** Behavior when no direct Arrow-buffer kernel exists. Defaults to the compatibility bridge. */
+  fallback?: 'geojson' | 'error';
 };
 
 const DEFAULT_MAX_GEOMETRY_COLLECTION_DEPTH = 64;
@@ -120,6 +123,10 @@ export function convertGeoArrowVector(
     canReuseGeoArrowVector(column, resolvedTargetEncoding, options)
   ) {
     return column;
+  }
+
+  if (sourceEncoding === 'geoarrow.wkb') {
+    assertValidWKBVector(column);
   }
 
   return convertGeometryColumn(column, sourceEncoding, resolvedTargetEncoding, 'geometry', {
@@ -465,8 +472,21 @@ function convertGeometryColumn(
     );
     if (directWKTCollectionVector) return directWKTCollectionVector;
   }
+  if (options?.fallback === 'error') {
+    throw new Error(
+      `No direct GeoArrow conversion kernel is available for ${sourceEncoding} to ${targetEncoding}.`
+    );
+  }
   const geometries = extractGeometries(column, sourceEncoding);
   assertGeometryCollectionDepth(geometries, options?.maxGeometryCollectionDepth);
+  if (
+    (targetEncoding === 'geoarrow.geometry' || targetEncoding === 'geoarrow.geometrycollection') &&
+    getGeometryCollectionDepth(geometries) > 1
+  ) {
+    throw new Error(
+      'Native GeoArrow layouts do not support recursive GeometryCollections; keep the column as WKB or WKT.'
+    );
+  }
 
   const targetDimension = usesNativeGeoArrowCoordinates(targetEncoding)
     ? getTargetDimension(geometries, options?.dimension)
@@ -870,10 +890,10 @@ function createGeometryCollectionVector(
   const memberUnionVector = createGeometryUnionVector(
     flattenedGeometries,
     targetDimension,
-    geometryCollectionDepth > 0,
+    false,
     geometryColumn,
     options,
-    geometryCollectionDepth,
+    0,
     targetDimensionName
   );
   const listType = createListType(

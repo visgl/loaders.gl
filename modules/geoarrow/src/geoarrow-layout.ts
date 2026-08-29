@@ -12,6 +12,7 @@ import type {
 import {getGeometryMetadataForField} from './metadata/geoarrow-metadata';
 import {
   getGeoArrowUnionDimension,
+  getGeoArrowUnionCoordinateLayout,
   getGeoArrowUnionGeometryKind,
   type GeoArrowUnionGeometryKind
 } from './lib/kernels/geoarrow-union';
@@ -95,6 +96,8 @@ export type GeoArrowUnionChildLayout = Readonly<{
   geometryType: GeoArrowUnionGeometryKind | null;
   /** Coordinate dimension inferred from the child type, name, or type ID. */
   dimension: GeoArrowDimension | null;
+  /** Coordinate memory layout inferred from the child physical type. */
+  coordinates: GeoArrowCoordinateLayout | null;
 }>;
 
 /** Value-independent physical and semantic facts about a GeoArrow field. */
@@ -227,8 +230,20 @@ export function inspectGeoArrowLayout(field: arrow.Field): GeoArrowLayoutInspect
     arrowType: field.type.toString(),
     storage: state.storageKinds[0] || 'unknown',
     storageKinds: state.storageKinds,
-    dimension: getCommonValue(state.dimensions),
-    coordinates: getCommonValue(state.coordinates),
+    dimension: getCommonValue(
+      state.dimensions.length > 0
+        ? state.dimensions
+        : state.unionChildren
+            .map(child => child.dimension)
+            .filter((dimension): dimension is GeoArrowDimension => dimension !== null)
+    ),
+    coordinates: getCommonValue(
+      state.coordinates.length > 0
+        ? state.coordinates
+        : state.unionChildren
+            .map(child => child.coordinates)
+            .filter((coordinates): coordinates is GeoArrowCoordinateLayout => coordinates !== null)
+    ),
     coordinatePrecision: getCommonValue(state.precisions),
     offsetTypes: state.offsetTypes,
     childNullability: state.childNullability,
@@ -262,7 +277,8 @@ function visitType(type: arrow.DataType, path: string, state: LayoutState): void
         name: child.name,
         typeId,
         geometryType: getGeoArrowUnionGeometryKind(child.name, typeId),
-        dimension: getGeoArrowUnionDimension(child.name, child.type, typeId)
+        dimension: getGeoArrowUnionDimension(child.name, child.type, typeId),
+        coordinates: getGeoArrowUnionCoordinateLayout(child.type)
       });
       visitType(child.type, `${path}.child[${childIndex}]`, state);
     }
@@ -318,7 +334,7 @@ function classifyField(
         message: 'geoarrow.geometrycollection requires a list containing a dense union.'
       });
     }
-    validateUnionChildren(type, path, issues);
+    validateUnionChildren(type, path, issues, true);
     return 'geometry-union';
   }
   if (
@@ -326,7 +342,7 @@ function classifyField(
     type.children[0]?.type instanceof arrow.DenseUnion
   ) {
     validateUnionType(type.children[0].type, `${path}.child[0]`, state, issues);
-    validateUnionChildren(type.children[0].type, `${path}.child[0]`, issues);
+    validateUnionChildren(type.children[0].type, `${path}.child[0]`, issues, false);
     return 'geometrycollection';
   }
 
@@ -583,7 +599,8 @@ function validateUnionType(
 function validateUnionChildren(
   type: arrow.DenseUnion,
   path: string,
-  issues: GeoArrowLayoutIssue[]
+  issues: GeoArrowLayoutIssue[],
+  allowGeometryCollection: boolean
 ): void {
   for (let childIndex = 0; childIndex < type.children.length; childIndex++) {
     const child = type.children[childIndex];
@@ -599,6 +616,15 @@ function validateUnionChildren(
     }
     const childPath = `${path}.child[${childIndex}]`;
     if (geometryType === 'GeometryCollection') {
+      if (!allowGeometryCollection) {
+        issues.push({
+          code: 'invalid-union',
+          path: childPath,
+          message:
+            'GeoArrow GeometryCollection members cannot recursively contain GeometryCollection.'
+        });
+        continue;
+      }
       if (
         !(child.type instanceof arrow.List || child.type instanceof arrow.LargeList) ||
         !(child.type.children[0]?.type instanceof arrow.DenseUnion)
@@ -608,6 +634,8 @@ function validateUnionChildren(
           path: childPath,
           message: 'GeometryCollection union children require a list of dense union children.'
         });
+      } else {
+        validateUnionChildren(child.type.children[0].type, childPath, issues, false);
       }
       continue;
     }

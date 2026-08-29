@@ -147,7 +147,7 @@ export function decodeWKTUnionVector(
     if (!parsed) return null;
     parsedRows.push(parsed);
   }
-  return makeWKTUnionVector(parsedRows, dimension, coordinates, offsetType, geometryTypes);
+  return makeWKTUnionVector(parsedRows, dimension, coordinates, offsetType, geometryTypes, true);
 }
 
 /**
@@ -196,7 +196,8 @@ function makeWKTUnionVector(
   dimension: GeoArrowDimension | undefined,
   coordinates: GeoArrowCoordinateLayout,
   offsetType: GeoArrowOffsetType,
-  geometryTypes?: readonly GeoParquetGeometryType[]
+  geometryTypes?: readonly GeoParquetGeometryType[],
+  allowGeometryCollection = true
 ): arrow.Vector | null {
   const children = new Map<string, WKTUnionChild>();
   for (const geometryType of geometryTypes || []) {
@@ -205,6 +206,7 @@ function makeWKTUnionVector(
   }
   for (const parsed of parsedRows) {
     if (!parsed) continue;
+    if (!allowGeometryCollection && parsed.kind === 'GeometryCollection') return null;
     const child = {
       kind: parsed.kind as WKTUnionChild['kind'],
       dimension: dimension || parsed.dimension
@@ -311,7 +313,10 @@ function makeWKTCollectionVector(
     dimension,
     coordinates,
     offsetType,
-    geometryTypes?.filter(geometryType => !geometryType.startsWith('GeometryCollection'))
+    geometryTypes?.filter(
+      geometryType => !geometryType.toLowerCase().startsWith('geometrycollection')
+    ),
+    false
   );
   if (!unionVector) return null;
   const listField = new arrow.Field('geometries', unionVector.type, true);

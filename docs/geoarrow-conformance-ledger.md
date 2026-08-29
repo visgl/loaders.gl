@@ -1,8 +1,9 @@
 # GeoArrow Conformance Ledger
 
-The loaders.gl GeoArrow contract is tracked by a deterministic matrix exported from
-`@loaders.gl/geoarrow/geoarrow-conformance`. The matrix is intentionally data-driven so the
-same case identifiers can be used by fast tests, slow interoperability tests, and benchmarks.
+The loaders.gl GeoArrow contract has a lazily generated case ledger exported from
+`@loaders.gl/geoarrow/geoarrow-conformance`. Its identifiers coordinate focused fast tests, slow
+interoperability tests, and benchmarks. Generating the ledger does not itself certify a case;
+executable tests and benchmark results provide that evidence.
 
 ## Matrix Axes
 
@@ -47,5 +48,5 @@ silently reducing coverage.
   validity bits without calling `Vector.get()`; this applies to concrete points and nested
   list geometries.
 
-The fast matrix is kept hermetic. Large payloads, fuzzing, and external implementation
+Required conformance tests are kept hermetic. Large payloads, fuzzing, and external implementation
 round-trips belong in slow or external test projects.

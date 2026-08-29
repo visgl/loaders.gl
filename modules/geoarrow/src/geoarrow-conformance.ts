@@ -88,10 +88,7 @@ export type GeoArrowConformanceCase = Readonly<{
   childNameVariant: GeoArrowConformanceChildNameVariant;
 }>;
 
-/** Frozen deterministic matrix used by tests, benchmarks, and documentation. */
-export const GEOARROW_CONFORMANCE_MATRIX: readonly GeoArrowConformanceCase[] = Object.freeze(
-  createGeoArrowConformanceMatrix().map(testCase => Object.freeze(testCase))
-);
+let geoArrowConformanceMatrix: readonly GeoArrowConformanceCase[] | undefined;
 
 /**
  * Returns the deterministic conformance matrix used by tests, benchmarks, and documentation.
@@ -103,10 +100,13 @@ export const GEOARROW_CONFORMANCE_MATRIX: readonly GeoArrowConformanceCase[] = O
  * @returns Immutable conformance cases in stable order.
  */
 export function getGeoArrowConformanceMatrix(): readonly GeoArrowConformanceCase[] {
-  return GEOARROW_CONFORMANCE_MATRIX;
+  geoArrowConformanceMatrix ||= Object.freeze(
+    createGeoArrowConformanceMatrix().map(testCase => Object.freeze(testCase))
+  );
+  return geoArrowConformanceMatrix;
 }
 
-/** Builds the deterministic matrix once at module initialization. */
+/** Builds the deterministic matrix on first use. */
 function createGeoArrowConformanceMatrix(): GeoArrowConformanceCase[] {
   const cases: GeoArrowConformanceCase[] = [];
   for (const encoding of GEOARROW_ENCODINGS) {

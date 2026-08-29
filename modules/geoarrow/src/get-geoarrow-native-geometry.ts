@@ -32,9 +32,9 @@ type NativeCoordinates = number[] | NativeCoordinates[];
 /**
  * Reads one native GeoArrow row into a geometry-family tagged coordinate value.
  *
- * The result omits GeoJSON properties and preserves native coordinate nesting, allowing Scan to
- * execute common residual predicates without creating GeoJSON geometry objects. Dense unions and
- * nested GeometryCollections are decoded recursively.
+ * The result omits GeoJSON properties and preserves native coordinate nesting so callers can
+ * process geometry without creating GeoJSON feature objects. Dense unions and spec-conforming
+ * GeometryCollections are decoded recursively.
  *
  * @param column Native GeoArrow vector.
  * @param rowIndex Logical row index.

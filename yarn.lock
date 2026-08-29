@@ -5608,7 +5608,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@loaders.gl/parquet@npm:5.0.0-alpha.2, @loaders.gl/parquet@workspace:*, @loaders.gl/parquet@workspace:modules/parquet":
+"@loaders.gl/parquet@workspace:*, @loaders.gl/parquet@workspace:modules/parquet":
   version: 0.0.0-use.local
   resolution: "@loaders.gl/parquet@workspace:modules/parquet"
   dependencies:

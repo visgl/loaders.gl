@@ -78,21 +78,26 @@ CRS and unknown metadata, and reports scalar conflicts. Use `strict` to reject u
 
 ## Conversion Paths
 
-Use `convertGeoArrowGeometry(table, 'native')` when a table will be scanned or rendered from
+Use `convertGeoArrowGeometry(table, 'native')` when a table will be processed or rendered from
 coordinates. The adaptive target selects concrete point, line, polygon, or multi-geometries for
 homogeneous columns and uses `geoarrow.geometry` for genuinely mixed columns. Set
 `coordinates: 'separated'` for one typed buffer per ordinate or `offsetType: 'int64'` for large
 arrays.
 
+Direct Arrow-buffer kernels cover the primary native, WKB, WKT, union, and box paths. Conversions
+without a direct kernel retain the compatibility GeoJSON bridge by default. Set `fallback: 'error'`
+to require a direct kernel in performance-sensitive code and fail instead of materializing objects.
+
 WKB/WKT scalar columns may use standard, large, or Arrow view storage (`Binary`, `LargeBinary`,
-`BinaryView`, `Utf8`, `LargeUtf8`, or `Utf8View`). View columns retain their variadic value buffers
-through worker transfer-list collection.
+`BinaryView`, `Utf8`, `LargeUtf8`, or `Utf8View`). Use `@loaders.gl/arrow/transport` to isolate
+sliced Arrow buffers and prepare tables for worker transfer.
 
 WKB remains the compact interchange and persistence representation. WKT columns use direct
 state-machine and native-buffer paths in both directions: parsing numeric tokens into the
 GeoArrow builder and writing native coordinates without creating one GeoJSON object per feature.
-Mixed WKT columns and GeometryCollections use typed union kernels as well, including recursively
-nested collections, without a GeoJSON materialization bridge.
+Mixed WKT columns and GeometryCollections use typed union kernels as well, without a GeoJSON
+materialization bridge. Recursive GeometryCollections remain valid in serialized WKB/WKT, but the
+GeoArrow native schema forbids them and native conversion rejects them.
 
 Recursive collection decoding is bounded by `maxGeometryCollectionDepth` (64 by default) on
 `GeoArrowGeometryConvertOptions`. Set a smaller limit for untrusted inputs; exceeding the limit

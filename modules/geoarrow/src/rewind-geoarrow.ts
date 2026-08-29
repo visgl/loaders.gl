@@ -4,6 +4,7 @@
 
 import * as arrow from 'apache-arrow';
 import type {GeoArrowEncoding} from '@loaders.gl/schema';
+import {getGeoArrowUnionGeometryKind} from './lib/kernels/geoarrow-union';
 
 /** Ring orientation requested by {@link rewindGeoArrow}. */
 export type GeoArrowRingOrientation = 'counterclockwise' | 'clockwise';
@@ -61,18 +62,22 @@ export function rewindGeoArrow(
   return column;
 }
 
-/** Recursively rewinds area children in a dense union or GeometryCollection list. */
+/** Rewinds only area child rows referenced by the visible union or collection rows. */
 function rewindUnionData(data: arrow.Data, exteriorSign: number): void {
   if (data.type instanceof arrow.DenseUnion) {
-    for (let childIndex = 0; childIndex < data.children.length; childIndex++) {
+    const referencedRows = getReferencedUnionRows(data);
+    for (const [childIndex, rowIndices] of referencedRows) {
       const childData = data.children[childIndex];
-      const childName = data.type.children[childIndex]?.name || '';
-      if (childName.startsWith('Polygon')) {
-        rewindPolygonVector(new arrow.Vector([childData]), exteriorSign);
-      } else if (childName.startsWith('MultiPolygon')) {
-        rewindMultiPolygonVector(new arrow.Vector([childData]), exteriorSign);
-      } else if (childName.startsWith('GeometryCollection')) {
-        rewindUnionData(childData, exteriorSign);
+      const childField = data.type.children[childIndex];
+      const typeId = data.type.typeIds[childIndex];
+      const geometryKind = getGeoArrowUnionGeometryKind(childField?.name, typeId);
+      const childVector = new arrow.Vector([childData]);
+      if (geometryKind === 'Polygon') {
+        rewindPolygonRows(childVector, rowIndices, exteriorSign);
+      } else if (geometryKind === 'MultiPolygon') {
+        rewindMultiPolygonRows(childVector, rowIndices, exteriorSign);
+      } else if (geometryKind === 'GeometryCollection') {
+        rewindCollectionRows(childVector, rowIndices, exteriorSign);
       }
     }
     return;
@@ -81,27 +86,96 @@ function rewindUnionData(data: arrow.Data, exteriorSign: number): void {
     (data.type instanceof arrow.List || data.type instanceof arrow.LargeList) &&
     data.children[0]
   ) {
-    rewindUnionData(data.children[0], exteriorSign);
+    rewindCollectionRows(
+      new arrow.Vector([data]),
+      Array.from({length: data.length}, (_, rowIndex) => rowIndex),
+      exteriorSign
+    );
   }
 }
 
-/** Rewinds every Polygon row in a union child vector. */
-function rewindPolygonVector(vector: arrow.Vector, exteriorSign: number): void {
-  for (let rowIndex = 0; rowIndex < vector.length; rowIndex++) {
+/** Collects unique child rows referenced by the visible portion of a dense union. */
+function getReferencedUnionRows(data: arrow.Data): Map<number, Set<number>> {
+  const referencedRows = new Map<number, Set<number>>();
+  if (!(data.type instanceof arrow.DenseUnion) || !data.typeIds || !data.valueOffsets) {
+    return referencedRows;
+  }
+  const useLogicalIndex = data.typeIds.length <= data.length;
+  for (let rowIndex = 0; rowIndex < data.length; rowIndex++) {
+    const typeIdIndex = getUnionBufferIndex(
+      data.typeIds.length,
+      data.offset,
+      rowIndex,
+      useLogicalIndex
+    );
+    const valueOffsetIndex = getUnionBufferIndex(
+      data.valueOffsets.length,
+      data.offset,
+      rowIndex,
+      useLogicalIndex
+    );
+    const childIndex = data.type.typeIds.indexOf(data.typeIds[typeIdIndex]);
+    const valueOffset = data.valueOffsets[valueOffsetIndex];
+    if (childIndex < 0 || valueOffset < 0 || valueOffset >= data.children[childIndex].length) {
+      continue;
+    }
+    const childRows = referencedRows.get(childIndex) || new Set<number>();
+    childRows.add(valueOffset);
+    referencedRows.set(childIndex, childRows);
+  }
+  return referencedRows;
+}
+
+/** Resolves a dense-union buffer index for full and shortened sliced data. */
+function getUnionBufferIndex(
+  bufferLength: number,
+  offset: number,
+  rowIndex: number,
+  useLogicalIndex: boolean
+): number {
+  if (useLogicalIndex) return rowIndex;
+  const physicalIndex = offset + rowIndex;
+  return physicalIndex < bufferLength ? physicalIndex : rowIndex;
+}
+
+/** Rewinds selected Polygon rows in a union child vector. */
+function rewindPolygonRows(
+  vector: arrow.Vector,
+  rowIndices: Iterable<number>,
+  exteriorSign: number
+): void {
+  for (const rowIndex of rowIndices) {
     const polygon = vector.get(rowIndex);
     if (polygon) rewindPolygon(polygon as arrow.Vector, exteriorSign);
   }
 }
 
-/** Rewinds every MultiPolygon row in a union child vector. */
-function rewindMultiPolygonVector(vector: arrow.Vector, exteriorSign: number): void {
-  for (let rowIndex = 0; rowIndex < vector.length; rowIndex++) {
+/** Rewinds selected MultiPolygon rows in a union child vector. */
+function rewindMultiPolygonRows(
+  vector: arrow.Vector,
+  rowIndices: Iterable<number>,
+  exteriorSign: number
+): void {
+  for (const rowIndex of rowIndices) {
     const multiPolygon = vector.get(rowIndex) as arrow.Vector | null;
     if (!multiPolygon) continue;
     for (let polygonIndex = 0; polygonIndex < multiPolygon.length; polygonIndex++) {
       const polygon = multiPolygon.get(polygonIndex);
       if (polygon) rewindPolygon(polygon as arrow.Vector, exteriorSign);
     }
+  }
+}
+
+/** Rewinds union members of selected GeometryCollection rows. */
+function rewindCollectionRows(
+  vector: arrow.Vector,
+  rowIndices: Iterable<number>,
+  exteriorSign: number
+): void {
+  for (const rowIndex of rowIndices) {
+    const collection = vector.get(rowIndex) as arrow.Vector | null;
+    if (!collection) continue;
+    for (const childData of collection.data) rewindUnionData(childData, exteriorSign);
   }
 }
 

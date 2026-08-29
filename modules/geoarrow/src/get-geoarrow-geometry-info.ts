@@ -4,343 +4,144 @@
 
 import * as arrow from 'apache-arrow';
 import type {GeoArrowEncoding} from './metadata/geoarrow-metadata';
+import {
+  inspectGeoArrowLayout,
+  type GeoArrowLayoutInspection,
+  type GeoArrowLayoutKind
+} from './geoarrow-layout';
 
 /**
  * @see https://geoarrow.org/format.html#memory-layouts
  */
 export type GeoArrowGeometryInfo = {
-  /** Geometry encodings that are compatible with this column (Field) */
+  /** Geometry encodings that are compatible with this column (Field). */
   compatibleEncodings: GeoArrowEncoding[];
-  /** How many levels of List<> nesting  */
+  /** Number of variable-length list levels before coordinates. */
   nesting: 0 | 1 | 2 | 3 | null;
-  /** How many values per coordinate */
+  /** Number of values per coordinate. */
   dimension: number | null;
-  /**
-   * - 0: A point is just a Coordinate
-   * - 1: A line string or a multipoint is a List<Coordinate>
-   * - 2: A polygon or a multilinestring are List<List<Coordinate>>
-   * - 3: multipolygons are List<List<List<Coordinate>>>
-   */
-  /** Coordinate memory layout {x,y,...} vs [x,y,...] */
+  /** Coordinate memory layout. */
   coordinates: 'separated' | 'interleaved' | null;
-  /** Coordinate  */
-  valueType: 'double'; // 'float'
-};
-
-/** Helper type used to test coordinates */
-type CoordinateFieldInfo = {
-  coordinates: 'interleaved' | 'separated';
-  dimension: 2 | 3 | 4;
+  /** Coordinate scalar type retained for compatibility with the legacy inspector. */
   valueType: 'double';
 };
 
 /**
- * Examines a column containing GeoArrow formatted data and returns information about the geometry type
- * that can be useful during traversal
- * @see https://geoarrow.org/format.html#memory-layouts
+ * Examines a GeoArrow field without reading array values.
+ *
+ * This compatibility projection delegates physical classification to
+ * {@link inspectGeoArrowLayout}, the canonical layout oracle.
+ *
+ * @param field Arrow field to inspect.
+ * @returns Legacy geometry information or null for an unrecognized layout.
  */
-// eslint-disable-next-line max-statements
-export function getGeoArrowGeometryInfo(arrowField: arrow.Field): GeoArrowGeometryInfo | null {
-  if (
-    arrowField.type instanceof arrow.Utf8 ||
-    arrowField.type instanceof arrow.LargeUtf8 ||
-    arrowField.type instanceof arrow.Utf8View
-  ) {
-    return {
-      compatibleEncodings: ['geoarrow.wkt'],
-      nesting: 0,
-      /** @note: Dimension encoded in WKT */
-      dimension: 2,
-      coordinates: 'interleaved',
-      valueType: 'double'
-    };
-  }
-
-  if (
-    arrowField.type instanceof arrow.Binary ||
-    arrowField.type instanceof arrow.LargeBinary ||
-    arrowField.type instanceof arrow.BinaryView
-  ) {
-    return {
-      compatibleEncodings: ['geoarrow.wkb'],
-      nesting: 0,
-      /** @note: Dimension encoded in WKB */
-      dimension: 2,
-      coordinates: 'interleaved',
-      valueType: 'double'
-    };
-  }
-
-  if (isBoxField(arrowField)) {
-    const dimension = (arrowField.type as arrow.Struct).children.length / 2;
-    return {
-      compatibleEncodings: ['geoarrow.box'],
-      nesting: 0,
-      dimension,
-      coordinates: 'separated',
-      valueType: 'double'
-    };
-  }
-
-  const unionInfo = getUnionGeometryInfo(arrowField.type);
-  if (unionInfo) {
-    return unionInfo;
-  }
-
-  let coordinateInfo = getCoordinateFieldInfo(arrowField);
-  // A point is just a Coordinate
-  if (coordinateInfo) {
-    return {
-      compatibleEncodings: ['geoarrow.point'],
-      nesting: 0,
-      ...coordinateInfo
-    };
-  }
-
-  // A line string or a multipoint is a List<Coordinate>
-  if (!isListType(arrowField.type)) {
-    return null;
-  }
-  arrowField = arrowField.type.children[0];
-
-  coordinateInfo = getCoordinateFieldInfo(arrowField);
-  if (coordinateInfo) {
-    return {
-      compatibleEncodings: ['geoarrow.linestring', 'geoarrow.multipoint'],
-      nesting: 1,
-      ...coordinateInfo
-    };
-  }
-
-  // A polygon or a multiline string are List<List<Coordinate>>
-  if (!isListType(arrowField.type)) {
-    return null;
-  }
-  arrowField = arrowField.type.children[0];
-
-  coordinateInfo = getCoordinateFieldInfo(arrowField);
-  if (coordinateInfo) {
-    return {
-      compatibleEncodings: ['geoarrow.polygon', 'geoarrow.multilinestring'],
-      nesting: 2,
-      ...coordinateInfo
-    };
-  }
-
-  // A multipolygons are List<List<List<Coordinate>>>
-  if (!isListType(arrowField.type)) {
-    return null;
-  }
-  arrowField = arrowField.type.children[0];
-
-  coordinateInfo = getCoordinateFieldInfo(arrowField);
-  if (coordinateInfo) {
-    return {
-      compatibleEncodings: ['geoarrow.multipolygon'],
-      nesting: 3,
-      ...coordinateInfo
-    };
-  }
-
-  return null;
-}
-
-/** Summarizes dense-union geometry layouts without inspecting any array values. */
-function getUnionGeometryInfo(type: arrow.DataType): GeoArrowGeometryInfo | null {
-  if (type instanceof arrow.DenseUnion) {
-    const childInfos = type.children
-      .map(child => getGeometryInfoForType(child.type))
-      .filter((info): info is GeoArrowGeometryInfo => Boolean(info));
-    if (childInfos.length !== type.children.length || childInfos.length === 0) {
-      return null;
-    }
-    return {
-      compatibleEncodings: ['geoarrow.geometry'],
-      nesting: getCommonValue(childInfos.map(info => info.nesting)),
-      dimension: getCommonValue(childInfos.map(info => info.dimension)),
-      coordinates: getCommonValue(childInfos.map(info => info.coordinates)),
-      valueType: 'double'
-    };
-  }
-
-  if (
-    (type instanceof arrow.List || type instanceof arrow.LargeList) &&
-    type.children[0]?.type instanceof arrow.DenseUnion
-  ) {
-    const unionInfo = getUnionGeometryInfo(type.children[0].type);
-    if (!unionInfo) {
-      return null;
-    }
-    return {
-      compatibleEncodings: ['geoarrow.geometrycollection'],
-      nesting: 1,
-      dimension: unionInfo.dimension,
-      coordinates: unionInfo.coordinates,
-      valueType: unionInfo.valueType
-    };
-  }
-
-  return null;
-}
-
-/** Gets geometry information for a union child, including nested collections. */
-function getGeometryInfoForType(type: arrow.DataType): GeoArrowGeometryInfo | null {
-  if (type instanceof arrow.DenseUnion) {
-    return getUnionGeometryInfo(type);
-  }
-  if (
-    (type instanceof arrow.List || type instanceof arrow.LargeList) &&
-    type.children[0]?.type instanceof arrow.DenseUnion
-  ) {
-    return getUnionGeometryInfo(type);
-  }
-
-  const field = new arrow.Field('geometry', type, true);
-  if (isBoxField(field)) {
-    return null;
-  }
-  const coordinateInfo = getCoordinateFieldInfo(field);
-  if (coordinateInfo) {
-    return {
-      compatibleEncodings: ['geoarrow.point'],
-      nesting: 0,
-      ...coordinateInfo
-    };
-  }
-  if (!(type instanceof arrow.List || type instanceof arrow.LargeList)) {
-    return null;
-  }
-
-  const childInfo = getCoordinateFieldInfo(type.children[0]);
-  if (childInfo) {
-    return {
-      compatibleEncodings: ['geoarrow.linestring', 'geoarrow.multipoint'],
-      nesting: 1,
-      ...childInfo
-    };
-  }
-  const nestedType = type.children[0]?.type;
-  if (!(nestedType instanceof arrow.List || nestedType instanceof arrow.LargeList)) {
-    return null;
-  }
-  const nestedChildInfo = getCoordinateFieldInfo(nestedType.children[0]);
-  if (nestedChildInfo) {
-    return {
-      compatibleEncodings: ['geoarrow.polygon', 'geoarrow.multilinestring'],
-      nesting: 2,
-      ...nestedChildInfo
-    };
-  }
-  const deeplyNestedType = nestedType.children[0]?.type;
-  if (!(deeplyNestedType instanceof arrow.List || deeplyNestedType instanceof arrow.LargeList)) {
-    return null;
-  }
-  const deeplyNestedChildInfo = getCoordinateFieldInfo(deeplyNestedType.children[0]);
-  if (!deeplyNestedChildInfo) {
-    return null;
-  }
-  return {
-    compatibleEncodings: ['geoarrow.multipolygon'],
-    nesting: 3,
-    ...deeplyNestedChildInfo
-  };
-}
-
-/** Returns a value when all union children agree, or null for mixed children. */
-function getCommonValue<T>(values: readonly T[]): T | null {
-  const firstValue = values[0];
-  return values.every(value => value === firstValue) ? firstValue : null;
-}
-
-/** Returns whether an Arrow type is a 32-bit or 64-bit offset list. */
-function isListType(type: arrow.DataType): type is arrow.List | arrow.LargeList {
-  return type instanceof arrow.List || type instanceof arrow.LargeList;
+export function getGeoArrowGeometryInfo(field: arrow.Field): GeoArrowGeometryInfo | null {
+  return getGeoArrowGeometryInfoFromLayout(field, inspectGeoArrowLayout(field));
 }
 
 /**
- * @see https://geoarrow.org/format.html#memory-layouts
+ * Projects a canonical layout inspection into the legacy geometry-info shape.
+ *
+ * @param field Arrow field represented by the inspection.
+ * @param inspection Canonical GeoArrow layout inspection.
+ * @returns Legacy geometry information or null for an unrecognized layout.
  */
-function getCoordinateFieldInfo(arrowField: arrow.Field): CoordinateFieldInfo | null {
-  if (isBoxField(arrowField)) {
-    return null;
-  }
-  // interleaved case
-  if (arrowField.type instanceof arrow.FixedSizeList) {
-    const dimension = arrowField.type.listSize;
-    if (dimension < 2 || dimension > 4) {
-      return null;
-    }
+export function getGeoArrowGeometryInfoFromLayout(
+  field: arrow.Field,
+  inspection: GeoArrowLayoutInspection
+): GeoArrowGeometryInfo | null {
+  const {layout} = inspection;
+  if (inspection.issues.some(issue => issue.code !== 'missing-extension')) return null;
+  const compatibleEncodings = getCompatibleEncodings(layout.kind, layout.encoding, field.type);
+  if (compatibleEncodings.length === 0) return null;
 
-    const child = arrowField.type.children[0];
-    // Spec currently only supports 64 bit coordinates
-    if (!child || !(child.type instanceof arrow.Float)) {
-      return null;
-    }
-
-    return {
-      coordinates: 'interleaved',
-      dimension: dimension as 2 | 3 | 4,
-      valueType: 'double'
-    };
-  }
-
-  // separated case
-  if (arrowField.type instanceof arrow.Struct) {
-    const children = arrowField.type.children;
-
-    const dimension = children.length;
-    if (dimension < 2 || dimension > 4) {
-      return null;
-    }
-
-    const coordinateNames = children.map(child => child.name);
-    const validCoordinateNames = [
-      ['x', 'y'],
-      ['x', 'y', 'z'],
-      ['x', 'y', 'm'],
-      ['x', 'y', 'z', 'm']
-    ];
-    if (
-      !validCoordinateNames.some(
-        names =>
-          names.length === coordinateNames.length &&
-          names.every((name, index) => coordinateNames[index] === name)
-      )
-    ) {
-      return null;
-    }
-
-    // Spec currently only supports 64 bit coordinates
-    for (const child of children) {
-      if (!(child.type instanceof arrow.Float)) {
-        return null;
-      }
-    }
-
-    return {
-      coordinates: 'separated',
-      dimension: dimension as 2 | 3 | 4,
-      valueType: 'double'
-    };
-  }
-
-  // No other types are valid coordinates
-  return null;
+  return {
+    compatibleEncodings,
+    nesting: getNesting(layout.kind, field.type),
+    dimension: layout.dimension
+      ? layout.dimension === 'xy'
+        ? 2
+        : layout.dimension === 'xyzm'
+          ? 4
+          : 3
+      : layout.kind === 'wkb' || layout.kind === 'wkt'
+        ? 2
+        : null,
+    coordinates:
+      layout.coordinates || (layout.kind === 'wkb' || layout.kind === 'wkt' ? 'interleaved' : null),
+    valueType: 'double'
+  };
 }
 
-function isBoxField(arrowField: arrow.Field): boolean {
-  if (!(arrowField.type instanceof arrow.Struct)) return false;
-  const names = arrowField.type.children.map(child => child.name);
-  const expectedNames = [
-    ['xmin', 'ymin', 'xmax', 'ymax'],
-    ['xmin', 'ymin', 'zmin', 'xmax', 'ymax', 'zmax'],
-    ['xmin', 'ymin', 'mmin', 'xmax', 'ymax', 'mmax'],
-    ['xmin', 'ymin', 'zmin', 'mmin', 'xmax', 'ymax', 'zmax', 'mmax']
-  ];
-  return expectedNames.some(
-    expected =>
-      names.length === expected.length &&
-      expected.every((name, index) => names[index] === name) &&
-      arrowField.type.children.every(child => child.type instanceof arrow.Float)
-  );
+/** Resolves compatible legacy encodings from one canonical layout classification. */
+function getCompatibleEncodings(
+  kind: GeoArrowLayoutKind,
+  encoding: GeoArrowEncoding | null,
+  type: arrow.DataType
+): GeoArrowEncoding[] {
+  switch (kind) {
+    case 'point':
+      return ['geoarrow.point'];
+    case 'linestring':
+      return ['geoarrow.linestring'];
+    case 'multipoint':
+      return ['geoarrow.multipoint'];
+    case 'polygon':
+      return ['geoarrow.polygon'];
+    case 'multilinestring':
+      return ['geoarrow.multilinestring'];
+    case 'multipolygon':
+      return ['geoarrow.multipolygon'];
+    case 'geometry-union':
+      return ['geoarrow.geometry'];
+    case 'geometrycollection':
+      return ['geoarrow.geometrycollection'];
+    case 'box':
+      return ['geoarrow.box'];
+    case 'wkb':
+      return ['geoarrow.wkb'];
+    case 'wkt':
+      return ['geoarrow.wkt'];
+    case 'list-geometry': {
+      const depth = getListDepth(type);
+      if (
+        encoding &&
+        ((depth === 1 &&
+          (encoding === 'geoarrow.linestring' || encoding === 'geoarrow.multipoint')) ||
+          (depth === 2 &&
+            (encoding === 'geoarrow.polygon' || encoding === 'geoarrow.multilinestring')) ||
+          (depth === 3 && encoding === 'geoarrow.multipolygon'))
+      ) {
+        return [encoding];
+      }
+      return depth === 1
+        ? ['geoarrow.linestring', 'geoarrow.multipoint']
+        : depth === 2
+          ? ['geoarrow.polygon', 'geoarrow.multilinestring']
+          : depth === 3
+            ? ['geoarrow.multipolygon']
+            : [];
+    }
+    default:
+      return [];
+  }
+}
+
+/** Returns the legacy nesting value for a canonical layout. */
+function getNesting(kind: GeoArrowLayoutKind, type: arrow.DataType): 0 | 1 | 2 | 3 | null {
+  if (kind === 'geometry-union') return null;
+  if (kind === 'geometrycollection') return 1;
+  const depth = getListDepth(type);
+  return depth >= 0 && depth <= 3 ? (depth as 0 | 1 | 2 | 3) : null;
+}
+
+/** Counts list levels before a coordinate, struct, union, or scalar leaf. */
+function getListDepth(type: arrow.DataType): number {
+  let depth = 0;
+  let currentType = type;
+  while (currentType instanceof arrow.List || currentType instanceof arrow.LargeList) {
+    depth++;
+    currentType = currentType.children[0].type;
+  }
+  return depth;
 }

@@ -6,7 +6,7 @@ import * as arrow from 'apache-arrow';
 import {expect, test} from 'vitest';
 import {GeoArrowBuilder} from '@loaders.gl/geoarrow';
 
-test('GeoArrowBuilder measures and writes point buffers without GIS dependencies', () => {
+test('GeoArrowBuilder measures and writes point buffers through the shared implementation', () => {
   const geometryArray = GeoArrowBuilder.buildGeometryArray(
     [
       builder => {

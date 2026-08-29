@@ -11,7 +11,7 @@ import type {
   GeoParquetGeometryType
 } from '@loaders.gl/schema';
 import {getGeometryMetadataForField} from './metadata/geoarrow-metadata';
-import {getGeoArrowGeometryInfo} from './get-geoarrow-geometry-info';
+import {getGeoArrowGeometryInfoFromLayout} from './get-geoarrow-geometry-info';
 import {getWKBGeometryStatistics, convertWKTToGeometry} from '@loaders.gl/gis';
 import {inspectGeoArrowLayout} from './geoarrow-layout';
 
@@ -73,8 +73,16 @@ export type GeoArrowEncodingRequirements = Readonly<{
 
 /** Returns physical and metadata-derived capabilities for a GeoArrow field. */
 export function getGeoArrowFieldInfo(field: arrow.Field): GeoArrowFieldInfo | null {
+  return getGeoArrowFieldInfoFromLayout(field, inspectGeoArrowLayout(field));
+}
+
+/** Builds field capabilities from one canonical layout inspection. */
+function getGeoArrowFieldInfoFromLayout(
+  field: arrow.Field,
+  layoutInspection: ReturnType<typeof inspectGeoArrowLayout>
+): GeoArrowFieldInfo | null {
   const metadata = getGeometryMetadataForField(field.metadata || new Map());
-  const geometryInfo = getGeoArrowGeometryInfo(field);
+  const geometryInfo = getGeoArrowGeometryInfoFromLayout(field, layoutInspection);
   const encoding = metadata?.encoding || null;
   if (!metadata && !geometryInfo) {
     return null;
@@ -94,8 +102,8 @@ export function getGeoArrowFieldInfo(field: arrow.Field): GeoArrowFieldInfo | nu
 
 /** Validates the physical Arrow type and extension metadata of one field. */
 export function validateGeoArrowField(field: arrow.Field): GeoArrowValidationResult {
-  const info = getGeoArrowFieldInfo(field);
   const layoutInspection = inspectGeoArrowLayout(field);
+  const info = getGeoArrowFieldInfoFromLayout(field, layoutInspection);
   const issues: GeoArrowValidationIssue[] = layoutInspection.issues.map(issue => ({
     path: issue.path,
     message: issue.message
@@ -109,7 +117,7 @@ export function validateGeoArrowField(field: arrow.Field): GeoArrowValidationRes
   }
   if (
     metadata?.encoding &&
-    !getGeoArrowGeometryInfo(field) &&
+    !getGeoArrowGeometryInfoFromLayout(field, layoutInspection) &&
     !issues.some(issue => issue.message.includes('physical Arrow layout'))
   ) {
     issues.push({

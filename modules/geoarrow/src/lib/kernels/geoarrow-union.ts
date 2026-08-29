@@ -71,6 +71,25 @@ export function getGeoArrowUnionDimension(
           : null;
 }
 
+/** Infers the coordinate memory layout used below a union child type. */
+export function getGeoArrowUnionCoordinateLayout(
+  type: arrow.DataType | undefined
+): 'interleaved' | 'separated' | null {
+  if (!type) return null;
+  if (type instanceof arrow.FixedSizeList) return 'interleaved';
+  if (type instanceof arrow.Struct) return 'separated';
+  if (type instanceof arrow.List || type instanceof arrow.LargeList) {
+    return getGeoArrowUnionCoordinateLayout(type.children[0]?.type);
+  }
+  if (type instanceof arrow.DenseUnion) {
+    const layouts = type.children
+      .map(child => getGeoArrowUnionCoordinateLayout(child.type))
+      .filter((layout): layout is 'interleaved' | 'separated' => layout !== null);
+    return layouts.length > 0 && layouts.every(layout => layout === layouts[0]) ? layouts[0] : null;
+  }
+  return null;
+}
+
 /** Infers the coordinate dimension from a concrete native Arrow type. */
 function getPhysicalCoordinateDimension(
   type: arrow.DataType | undefined

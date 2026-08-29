@@ -53,10 +53,6 @@
       "types": "./dist/map-geoarrow-coordinates.d.ts",
       "import": "./dist/map-geoarrow-coordinates.js"
     },
-    "./geoarrow-transfer": {
-      "types": "./dist/geoarrow-transfer.d.ts",
-      "import": "./dist/geoarrow-transfer.js"
-    },
     "./geoarrow-stream": {
       "types": "./dist/geoarrow-stream.d.ts",
       "import": "./dist/geoarrow-stream.js"

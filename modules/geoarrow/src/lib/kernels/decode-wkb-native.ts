@@ -44,6 +44,43 @@ type WKBHeader = {
   byteOffset: number;
 };
 
+/**
+ * Validates that every non-null WKB row contains exactly one complete geometry.
+ *
+ * @param column WKB Arrow vector.
+ * @param maxGeometryCollectionDepth Maximum accepted collection nesting depth.
+ */
+export function assertValidWKBVector(
+  column: arrow.Vector,
+  maxGeometryCollectionDepth = Number.POSITIVE_INFINITY
+): void {
+  for (let rowIndex = 0; rowIndex < column.length; rowIndex++) {
+    const value = column.get(rowIndex);
+    if (value == null) continue;
+    const bytes = getWKBBytes(value);
+    if (!bytes) throw new Error(`Invalid WKB value at row ${rowIndex}.`);
+    try {
+      const dataView = getDataView(bytes);
+      const header = readHeader(dataView, 0);
+      if (skipGeometry(dataView, header, maxGeometryCollectionDepth) !== dataView.byteLength) {
+        throw new Error('Trailing or truncated bytes');
+      }
+    } catch {
+      throw new Error(`Invalid WKB geometry at row ${rowIndex}.`);
+    }
+  }
+}
+
+/** Normalizes Arrow binary cells to byte views without copying. */
+function getWKBBytes(value: unknown): Uint8Array | null {
+  if (value instanceof Uint8Array) return value;
+  if (value instanceof ArrayBuffer) return new Uint8Array(value);
+  if (ArrayBuffer.isView(value)) {
+    return new Uint8Array(value.buffer, value.byteOffset, value.byteLength);
+  }
+  return null;
+}
+
 type OffsetArray = Int32Array | BigInt64Array;
 
 type NativeBuffers = {
@@ -246,7 +283,9 @@ function makeWKBUnionVector(
     }
     try {
       const header = readHeader(getDataView(bytes), 0);
-      rowKinds.push(getUnionGeometryKind(header.geometryType));
+      const geometryKind = getUnionGeometryKind(header.geometryType);
+      if (collectionDepth > 0 && geometryKind === 'GeometryCollection') return null;
+      rowKinds.push(geometryKind);
       rowDimensions.push(dimensionName || header.dimension);
     } catch {
       return null;
@@ -308,7 +347,9 @@ function makeWKBUnionVector(
             undefined,
             offsetType,
             coordinates,
-            geometryTypes?.filter(geometryType => !geometryType.startsWith('GeometryCollection')),
+            geometryTypes?.filter(
+              geometryType => !geometryType.toLowerCase().startsWith('geometrycollection')
+            ),
             maxGeometryCollectionDepth,
             collectionDepth
           )
@@ -379,12 +420,14 @@ export function decodeWKBGeometryCollectionVector(
     dimensionName,
     offsetType,
     coordinates,
-    geometryTypes,
+    geometryTypes?.filter(
+      geometryType => !geometryType.toLowerCase().startsWith('geometrycollection')
+    ),
     maxGeometryCollectionDepth
   );
 }
 
-/** Builds a recursive GeometryCollection list from WKB rows without creating geometry objects. */
+/** Builds a spec-conforming GeometryCollection list from WKB rows without geometry objects. */
 function makeWKBCollectionVector(
   rows: readonly (Uint8Array | null)[],
   dimensionName: GeoArrowDimension | undefined,
@@ -470,7 +513,13 @@ function writeWKBRow(
   coordinateSize: 2 | 3 | 4,
   writer: NativeBufferWriter
 ): boolean {
-  const header = readHeader(dataView, 0);
+  let header: WKBHeader;
+  try {
+    header = readHeader(dataView, 0);
+    if (skipGeometry(dataView, header) !== dataView.byteLength) return false;
+  } catch {
+    return false;
+  }
   switch (targetEncoding) {
     case 'geoarrow.point':
       if (header.geometryType !== 1) return false;

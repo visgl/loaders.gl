@@ -9,22 +9,6 @@ export {getDeckBinaryDataFromArrowMesh} from './mesharrow/get-deck-binary-data';
 
 // GIS CATEGORY - GEOARROW
 export type {GeoArrowMetadata, GeoArrowEncoding, GeoArrowBox} from '@loaders.gl/schema';
-export {
-  GEOARROW_ENCODINGS,
-  GEOARROW_DIMENSIONS,
-  GEOARROW_COORDINATE_LAYOUTS,
-  GEOARROW_OFFSET_TYPES,
-  GEOARROW_ROW_STATES,
-  GEOARROW_CHILD_NAME_VARIANTS,
-  GEOARROW_GEOMETRY_TYPES,
-  GEOARROW_CONFORMANCE_MATRIX,
-  getGeoArrowConformanceMatrix
-} from './geoarrow-conformance';
-export type {
-  GeoArrowConformanceCase,
-  GeoArrowConformanceRowState,
-  GeoArrowConformanceChildNameVariant
-} from './geoarrow-conformance';
 export type {
   GeoArrowConvertToOptions,
   GeoArrowConvertFromOptions
@@ -115,12 +99,11 @@ export {getGeoArrowBounds, getGeoArrowRowBounds} from './geoarrow-bounds';
 export type {GeoArrowBounds} from './geoarrow-bounds';
 export {mapGeoArrowCoordinates} from './map-geoarrow-coordinates';
 export type {GeoArrowCoordinateMapper} from './map-geoarrow-coordinates';
-export {getGeoArrowTransferList} from './geoarrow-transfer';
 export {rewindGeoArrow} from './rewind-geoarrow';
 export type {GeoArrowRingOrientation, RewindGeoArrowOptions} from './rewind-geoarrow';
 export type {GeoArrowResourceLimitOptions} from './geoarrow-resource-limits';
 
-// The builder is owned by GeoArrow; GIS retains its legacy loader-facing compatibility export.
+// GeoArrow exposes the shared builder used by loader-facing GIS integrations.
 export {GeoArrowBuilder} from './geoarrow-builder';
 export type {
   GeoArrowBuilderEncoding,

@@ -130,11 +130,12 @@ function collectNativeBounds(
     const values = child?.values;
     if (!child || !values || coordinateSize < 2 || coordinateSize > 4) return false;
     for (let coordinateIndex = startIndex; coordinateIndex < endIndex; coordinateIndex++) {
-      const valueIndex = coordinateIndex * coordinateSize;
+      const logicalValueIndex = coordinateIndex * coordinateSize;
+      const physicalOffset = child.offset + data.offset * coordinateSize;
       updateNativeBounds(
         bounds,
-        readDataValue(values, child, valueIndex),
-        readDataValue(values, child, valueIndex + 1)
+        readSlicedDataValue(values, physicalOffset, logicalValueIndex),
+        readSlicedDataValue(values, physicalOffset, logicalValueIndex + 1)
       );
     }
     return true;
@@ -190,6 +191,16 @@ function readNativeChildValue(child: arrow.Data | undefined, rowIndex: number): 
 function readDataValue(values: ArrayLike<number>, data: arrow.Data, index: number): number {
   const offsetIndex = data.offset + index;
   return Number(values[offsetIndex < values.length ? offsetIndex : index]);
+}
+
+/** Reads from a full backing buffer or a shortened sliced view. */
+function readSlicedDataValue(
+  values: ArrayLike<number>,
+  physicalOffset: number,
+  logicalIndex: number
+): number {
+  const physicalIndex = physicalOffset + logicalIndex;
+  return Number(values[physicalIndex < values.length ? physicalIndex : logicalIndex]);
 }
 
 /** Resolves a dense-union buffer index for full and sliced Arrow union data. */
@@ -255,7 +266,7 @@ function toGeoArrowBounds(bounds: MutableBounds): GeoArrowBounds | null {
 /**
  * Computes exact XY bounds for one GeoArrow geometry cell.
  *
- * WKB uses the existing binary scanner; native encodings walk Arrow vectors and coordinate
+ * WKB uses the existing binary parser; native encodings walk Arrow vectors and coordinate
  * buffers directly. The function is deliberately tolerant of null and empty geometries.
  *
  * @param value GeoArrow cell value.

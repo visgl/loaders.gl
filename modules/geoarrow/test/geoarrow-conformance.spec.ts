@@ -5,20 +5,22 @@
 import * as arrow from 'apache-arrow';
 import {expect, test} from 'vitest';
 import {
-  GEOARROW_ENCODINGS,
-  GEOARROW_CHILD_NAME_VARIANTS,
-  GEOARROW_GEOMETRY_TYPES,
-  GEOARROW_ROW_STATES,
   convertFeaturesToGeoArrowTable,
   convertGeoArrowGeometry,
-  getGeoArrowConformanceMatrix,
   inspectGeoArrowVector,
   isGeoArrowLineString,
   validateGeoArrowField,
   validateGeoArrowVector
 } from '@loaders.gl/geoarrow';
+import {
+  GEOARROW_ENCODINGS,
+  GEOARROW_CHILD_NAME_VARIANTS,
+  GEOARROW_GEOMETRY_TYPES,
+  GEOARROW_ROW_STATES,
+  getGeoArrowConformanceMatrix
+} from '@loaders.gl/geoarrow/geoarrow-conformance';
 
-test('GeoArrow conformance matrix is deterministic and complete', () => {
+test('GeoArrow conformance ledger identifiers are deterministic', () => {
   const matrix = getGeoArrowConformanceMatrix();
   const ids = matrix.map(testCase => testCase.id);
 
@@ -99,39 +101,27 @@ test('GeoArrow vector validation checks native list offsets', () => {
   expect(result.issues.some(issue => issue.message.includes('exceeds child length'))).toBe(true);
 });
 
-test('GeoArrow vector validation checks nested collection unions', () => {
-  const source = convertFeaturesToGeoArrowTable([
-    {
-      type: 'Feature',
-      properties: {},
-      geometry: {
-        type: 'GeometryCollection',
-        geometries: [
-          {
-            type: 'GeometryCollection',
-            geometries: [{type: 'Point', coordinates: [1, 2]}]
-          }
-        ]
-      }
-    }
-  ]).data;
-  const collection = convertGeoArrowGeometry(source, 'geoarrow.geometrycollection');
-  const outerListData = collection.getChild('geometry')!.data[0];
-  const outerUnionData = outerListData.children[0];
-  const outerUnionType = outerListData.children[0].type as arrow.DenseUnion;
-  const nestedCollectionIndex = outerUnionType.children.findIndex(
-    field => field.name === 'GeometryCollection'
+test('GeoArrow field validation rejects recursive collection union children', () => {
+  const coordinateType = new arrow.FixedSizeList(
+    2,
+    new arrow.Field('item', new arrow.Float64(), true)
   );
-  const nestedListData = outerUnionData.children[nestedCollectionIndex];
-  const nestedUnionData = nestedListData.children[0];
-  nestedUnionData.typeIds[nestedUnionData.offset] = 99;
+  const pointUnion = new arrow.DenseUnion([1], [new arrow.Field('Point', coordinateType, true)]);
+  const nestedCollection = new arrow.List(new arrow.Field('geometries', pointUnion, true));
+  const collectionUnion = new arrow.DenseUnion(
+    [7],
+    [new arrow.Field('GeometryCollection', nestedCollection, true)]
+  );
+  const field = new arrow.Field(
+    'geometry',
+    new arrow.List(new arrow.Field('geometries', collectionUnion, true)),
+    true,
+    new Map([['ARROW:extension:name', 'geoarrow.geometrycollection']])
+  );
 
-  const result = validateGeoArrowVector(
-    collection.getChild('geometry')!,
-    'geoarrow.geometrycollection'
-  );
+  const result = validateGeoArrowField(field);
   expect(result.valid).toBe(false);
-  expect(result.issues.some(issue => issue.message.includes('Unknown dense union type id'))).toBe(
+  expect(result.issues.some(issue => issue.message.includes('cannot recursively contain'))).toBe(
     true
   );
 });
