@@ -8,7 +8,23 @@ export {getBoundingBoxFromArrowPositions} from './mesharrow/get-bounding-box';
 export {getDeckBinaryDataFromArrowMesh} from './mesharrow/get-deck-binary-data';
 
 // GIS CATEGORY - GEOARROW
-export type {GeoArrowMetadata, GeoArrowEncoding} from './metadata/geoarrow-metadata';
+export type {GeoArrowMetadata, GeoArrowEncoding, GeoArrowBox} from '@loaders.gl/schema';
+export {
+  GEOARROW_ENCODINGS,
+  GEOARROW_DIMENSIONS,
+  GEOARROW_COORDINATE_LAYOUTS,
+  GEOARROW_OFFSET_TYPES,
+  GEOARROW_ROW_STATES,
+  GEOARROW_CHILD_NAME_VARIANTS,
+  GEOARROW_GEOMETRY_TYPES,
+  GEOARROW_CONFORMANCE_MATRIX,
+  getGeoArrowConformanceMatrix
+} from './geoarrow-conformance';
+export type {
+  GeoArrowConformanceCase,
+  GeoArrowConformanceRowState,
+  GeoArrowConformanceChildNameVariant
+} from './geoarrow-conformance';
 export type {
   GeoArrowConvertToOptions,
   GeoArrowConvertFromOptions
@@ -22,9 +38,17 @@ export type {GeoArrowGeometryShape} from './geoarrow-converter/geoarrow-geometry
 export {
   GEOARROW_GEOMETRY_CONVERTERS,
   GeoArrowGeometryConverter,
-  convertGeoArrowGeometry
+  convertGeoArrowGeometry,
+  convertGeoArrowVector,
+  convertGeoArrowVectorCellToGeoJSON
 } from './geoarrow-converter/geoarrow-geometry-converter';
-export type {GeoArrowGeometryConvertOptions} from './geoarrow-converter/convert-geoarrow-geometry';
+export type {
+  GeoArrowGeometryConvertOptions,
+  GeoArrowGeometryTarget,
+  GeoArrowCoordinateLayout,
+  GeoArrowDimension,
+  GeoArrowOffsetType
+} from './geoarrow-converter/convert-geoarrow-geometry';
 
 export type {
   GeoArrowWKB,
@@ -32,6 +56,7 @@ export type {
   GeoArrowCoordInterleaved,
   GeoArrowCoordSeparated,
   GeoArrowCoord,
+  GeoArrowList,
   GeoArrowPoint,
   GeoArrowLineString,
   GeoArrowPolygon,
@@ -45,11 +70,13 @@ export type {
   GeoArrowMultiPointSeparated,
   GeoArrowMultiLineStringSeparated,
   GeoArrowMultiPolygonSeparated,
-  GeoArrowGeometrySeparated
+  GeoArrowGeometrySeparated,
+  GeoArrowBoxType
 } from './geoarrow-types';
 
 export {
   isGeoArrowPoint,
+  isGeoArrowBox,
   isGeoArrowLineString,
   isGeoArrowPolygon,
   isGeoArrowMultiPoint,
@@ -60,6 +87,14 @@ export {
 
 // GEOARROW / GEOPARQUET METADATA
 export {getGeometryColumnsFromSchema} from './metadata/geoarrow-metadata';
+export {mergeGeoArrowMetadata, mergeGeoArrowSchemas} from './metadata/merge-geoarrow-metadata';
+export type {
+  GeoArrowMetadataConflict,
+  GeoArrowMetadataMergeMode,
+  GeoArrowMetadataMergeOptions,
+  GeoArrowMetadataMergeResult,
+  GeoArrowSchemaMergeResult
+} from './metadata/merge-geoarrow-metadata';
 
 export type {GeoColumnMetadata} from './metadata/geoparquet-metadata';
 export {
@@ -70,6 +105,52 @@ export {
 
 export {getGeoArrowGeometryInfo} from './get-geoarrow-geometry-info';
 export {getGeoarrowVertexCount} from './get-geoarrow-vertex-count';
+export {getGeoArrowNativeGeometry} from './get-geoarrow-native-geometry';
+export type {GeoArrowNativeGeometry} from './get-geoarrow-native-geometry';
+export {convertGeoArrowBatches} from './geoarrow-stream';
+export type {GeoArrowStreamConvertOptions} from './geoarrow-stream';
+export {inspectGeoArrowVector} from './geoarrow-inspection';
+export type {GeoArrowVectorInspection} from './geoarrow-inspection';
+export {getGeoArrowBounds, getGeoArrowRowBounds} from './geoarrow-bounds';
+export type {GeoArrowBounds} from './geoarrow-bounds';
+export {mapGeoArrowCoordinates} from './map-geoarrow-coordinates';
+export type {GeoArrowCoordinateMapper} from './map-geoarrow-coordinates';
+export {getGeoArrowTransferList} from './geoarrow-transfer';
+export {rewindGeoArrow} from './rewind-geoarrow';
+export type {GeoArrowRingOrientation, RewindGeoArrowOptions} from './rewind-geoarrow';
+export type {GeoArrowResourceLimitOptions} from './geoarrow-resource-limits';
+
+// The builder is owned by GeoArrow; GIS retains its legacy loader-facing compatibility export.
+export {GeoArrowBuilder} from './geoarrow-builder';
+export type {
+  GeoArrowBuilderEncoding,
+  GeoArrowCoordinateTransform,
+  GeoArrowBuilderDimension,
+  GeoArrowBuilderTarget,
+  GeoArrowSeparatedBoxBuffers,
+  GeoArrowSeparatedCoordinateBuffers,
+  GeoArrowBuilderCoordinates,
+  GeoArrowBuilderOffsets,
+  GeoArrowGeometryArray,
+  GeoArrowBuilderBaseOptions,
+  GeoArrowBuilderMeasureOptions,
+  GeoArrowBuilderWriteOptions,
+  GeoArrowBuilderOptions,
+  GeoArrowGeometryWriter
+} from './geoarrow-builder';
+export {
+  getGeoArrowFieldInfo,
+  validateGeoArrowField,
+  validateGeoArrowVector,
+  negotiateGeoArrowEncoding
+} from './geoarrow-capabilities';
+export type {
+  GeoArrowFieldInfo,
+  GeoArrowValidationIssue,
+  GeoArrowValidationResult,
+  GeoArrowVectorValidationResult,
+  GeoArrowEncodingRequirements
+} from './geoarrow-capabilities';
 
 export {updateBoundsFromGeoArrowSamples} from './get-arrow-bounds';
 

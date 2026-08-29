@@ -154,8 +154,9 @@ function parsePointGeometry(
   littleEndian: boolean
 ): {geometry: Point; byteOffset: number} {
   const parsedPosition = parsePosition(dataView, byteOffset, dimensions, littleEndian);
+  const coordinates = parsedPosition.position.every(Number.isNaN) ? [] : parsedPosition.position;
   return {
-    geometry: {type: 'Point', coordinates: parsedPosition.position},
+    geometry: {type: 'Point', coordinates},
     byteOffset: parsedPosition.byteOffset
   };
 }

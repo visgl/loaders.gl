@@ -1,6 +1,10 @@
 import {expect, test} from 'vitest';
 import * as arrow from 'apache-arrow';
-import {getGeoarrowVertexCount} from '@loaders.gl/geoarrow';
+import {
+  convertFeaturesToGeoArrowTable,
+  convertGeoArrowGeometry,
+  getGeoarrowVertexCount
+} from '@loaders.gl/geoarrow';
 import {
   convertGeometryToWKB,
   makeWKBGeometryArrowTable,
@@ -82,4 +86,85 @@ test('geoarrow#getGeoarrowVertexCount skips extra WKB ordinates', () => {
   expect(getGeoarrowVertexCount(geometryData), 'counts XYZM WKB vertices using source points').toBe(
     4
   );
+});
+
+test('geoarrow#getGeoarrowVertexCount traverses dense unions and collections', () => {
+  const source = convertFeaturesToGeoArrowTable([
+    {
+      type: 'Feature',
+      properties: {},
+      geometry: {type: 'Point', coordinates: [1, 2]}
+    },
+    {
+      type: 'Feature',
+      properties: {},
+      geometry: {
+        type: 'LineString',
+        coordinates: [
+          [0, 0],
+          [3, 4]
+        ]
+      }
+    }
+  ]).data;
+  const union = convertGeoArrowGeometry(source, 'geoarrow.geometry');
+
+  expect(getGeoarrowVertexCount(union)).toBe(3);
+
+  const collectionSource = convertFeaturesToGeoArrowTable([
+    {
+      type: 'Feature',
+      properties: {},
+      geometry: {
+        type: 'GeometryCollection',
+        geometries: [
+          {type: 'Point', coordinates: [1, 2]},
+          {
+            type: 'LineString',
+            coordinates: [
+              [0, 0],
+              [3, 4]
+            ]
+          }
+        ]
+      }
+    }
+  ]).data;
+  const collection = convertGeoArrowGeometry(collectionSource, 'geoarrow.geometrycollection');
+
+  expect(getGeoarrowVertexCount(collection)).toBe(3);
+});
+
+test('geoarrow#getGeoarrowVertexCount counts WKT rows and empty geometries', () => {
+  const data = arrow.vectorFromArray(
+    ['POINT (1 2)', 'LINESTRING (0 0, 1 1)', 'GEOMETRYCOLLECTION (POINT EMPTY, POINT (3 4))', null],
+    new arrow.Utf8()
+  );
+
+  expect(getGeoarrowVertexCount(data.data[0])).toBe(4);
+});
+
+test('geoarrow#getGeoarrowVertexCount accepts Arrow view storage', () => {
+  const wkt = arrow.vectorFromArray(['POINT (1 2)'], new arrow.Utf8View());
+  const wkb = arrow.vectorFromArray(
+    [new Uint8Array([1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0])],
+    new arrow.BinaryView()
+  );
+
+  expect(getGeoarrowVertexCount(wkt.data[0])).toBe(1);
+  expect(getGeoarrowVertexCount(wkb.data[0])).toBe(1);
+});
+
+test('geoarrow#getGeoarrowVertexCount treats Box extents as zero vertices', () => {
+  const table = convertFeaturesToGeoArrowTable(
+    [
+      {type: 'Feature', properties: {}, geometry: {type: 'Point', coordinates: [1, 2]}},
+      {type: 'Feature', properties: {}, geometry: {type: 'Point', coordinates: [3, 4]}}
+    ],
+    {geoarrow: {encoding: 'geoarrow.box'}}
+  ).data;
+  const geometry = table.getChild('geometry')!;
+
+  expect(getGeoarrowVertexCount(geometry.data[0])).toBe(0);
+  expect(getGeoarrowVertexCount(table)).toBe(0);
 });

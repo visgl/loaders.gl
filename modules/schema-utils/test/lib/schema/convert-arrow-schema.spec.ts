@@ -268,20 +268,12 @@ test('Arrow schema conversion preserves field and schema metadata', () => {
   expect(convertSchemaToArrow({fields: [], metadata: undefined as never}).metadata.size).toBe(0);
 });
 
-test('unsupported Arrow and serialized types report useful errors', () => {
+test('unsupported Arrow types report useful errors', () => {
   expect(() => serializeArrowType(new arrow.DurationSecond())).toThrow('arrow type not supported');
   expect(() =>
     serializeArrowType(new arrow.Dictionary(new arrow.Utf8(), new arrow.Int64()))
   ).toThrow('arrow dictionary index type not supported');
   expect(() => deserializeArrowType('int')).toThrow('array type not supported');
-  expect(() =>
-    deserializeArrowType({
-      type: 'sparse-union',
-      typeIds: new Int32Array(),
-      children: [],
-      typeIdToChildIndex: {}
-    })
-  ).toThrow('array type not supported');
   expect(() =>
     deserializeArrowType({
       type: 'dictionary',
@@ -291,4 +283,17 @@ test('unsupported Arrow and serialized types report useful errors', () => {
       isOrdered: false
     })
   ).toThrow('schema dictionary index type not supported');
+});
+
+test.each(['sparse-union', 'dense-union'] as const)('%s schema types round-trip', type => {
+  const dataType: DataType = {
+    type,
+    typeIds: new Int32Array([3, 9]),
+    children: [
+      {name: 'point', type: 'int32', nullable: true, metadata: {}},
+      {name: 'text', type: 'utf8', nullable: true, metadata: {}}
+    ],
+    typeIdToChildIndex: {3: 0, 9: 1}
+  };
+  expect(serializeArrowType(deserializeArrowType(dataType))).toEqual(dataType);
 });

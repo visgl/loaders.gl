@@ -6,11 +6,11 @@ export type {
   GeoMetadata,
   GeoColumnMetadata,
   GeoParquetGeometryType
-} from '@loaders.gl/gis';
+} from '@loaders.gl/schema';
 export {
   getGeoMetadata,
   setGeoMetadata,
   unpackGeoMetadata,
   unpackJSONStringMetadata,
   parseJSONStringMetadata
-} from '@loaders.gl/gis';
+} from '@loaders.gl/schema';

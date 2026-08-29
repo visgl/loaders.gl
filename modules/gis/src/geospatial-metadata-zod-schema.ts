@@ -56,6 +56,10 @@ export const GeoParquetColumnMetadataSchema = z
     encoding: z.enum([
       'WKB',
       'wkb',
+      'GEOMETRY',
+      'geometry',
+      'GEOGRAPHY',
+      'geography',
       'point',
       'linestring',
       'polygon',
@@ -102,10 +106,11 @@ export const GeoParquetMetadataSchema = z
   .superRefine((metadata, context) => {
     if (!metadata.version.startsWith('2.')) return;
     for (const [columnName, column] of Object.entries(metadata.columns)) {
-      if (column.encoding.toUpperCase() !== 'WKB') {
+      const encoding = column.encoding.toUpperCase();
+      if (encoding !== 'WKB' && encoding !== 'GEOMETRY' && encoding !== 'GEOGRAPHY') {
         context.addIssue({
           code: 'custom',
-          message: 'GeoParquet 2.x geometry columns must use WKB encoding',
+          message: 'GeoParquet 2.x geometry columns must use WKB, GEOMETRY, or GEOGRAPHY encoding',
           path: ['columns', columnName, 'encoding']
         });
       }

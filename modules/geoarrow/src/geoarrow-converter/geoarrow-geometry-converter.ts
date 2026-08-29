@@ -6,14 +6,17 @@ import type {Converter} from '@loaders.gl/schema-utils';
 import type {GeoArrowEncoding} from '../metadata/geoarrow-metadata';
 import {
   convertGeoArrowGeometry,
-  type GeoArrowGeometryConvertOptions
+  convertGeoArrowVector,
+  convertGeoArrowVectorCellToGeoJSON,
+  type GeoArrowGeometryConvertOptions,
+  type GeoArrowGeometryTarget
 } from './convert-geoarrow-geometry';
 import {isGeoArrowApacheTable} from './convert-geoarrow';
 
 /**
  * Shapes supported by the GeoArrow geometry converter.
  */
-export type GeoArrowGeometryShape = 'geoarrow' | GeoArrowEncoding;
+export type GeoArrowGeometryShape = 'geoarrow' | GeoArrowEncoding | 'native';
 
 /**
  * Leaf converter that rewrites geometry columns in a GeoArrow Arrow table to a target GeoArrow encoding.
@@ -34,7 +37,9 @@ export const GeoArrowGeometryConverter: Converter<
     'geoarrow.polygon',
     'geoarrow.multipoint',
     'geoarrow.multilinestring',
-    'geoarrow.multipolygon'
+    'geoarrow.multipolygon',
+    'geoarrow.box',
+    'native'
   ],
   canConvert(sourceShape, targetShape) {
     return sourceShape === 'geoarrow' && targetShape !== 'geoarrow';
@@ -46,7 +51,7 @@ export const GeoArrowGeometryConverter: Converter<
     if (targetShape === 'geoarrow') {
       throw new Error('GeoArrowGeometryConverter requires a concrete GeoArrow target encoding.');
     }
-    return convertGeoArrowGeometry(input as any, targetShape, options);
+    return convertGeoArrowGeometry(input as any, targetShape as GeoArrowGeometryTarget, options);
   }
 } as const;
 
@@ -58,4 +63,4 @@ export const GEOARROW_GEOMETRY_CONVERTERS = [GeoArrowGeometryConverter] as const
 /**
  * Converts one or more geometry columns in a GeoArrow table to a concrete GeoArrow encoding.
  */
-export {convertGeoArrowGeometry};
+export {convertGeoArrowGeometry, convertGeoArrowVector, convertGeoArrowVectorCellToGeoJSON};

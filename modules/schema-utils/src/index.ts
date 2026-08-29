@@ -54,6 +54,7 @@ export {
   makeArrowRecordBatchIterator
 } from './lib/table/batches/make-arrow-batch-iterator';
 export {
+  selectArrowTableRows,
   queryArrowTable,
   type ArrowTableQueryOptions,
   type ArrowTableRowFilter

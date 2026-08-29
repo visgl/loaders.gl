@@ -12,9 +12,9 @@ export type GeoArrowGeometryInfo = {
   /** Geometry encodings that are compatible with this column (Field) */
   compatibleEncodings: GeoArrowEncoding[];
   /** How many levels of List<> nesting  */
-  nesting: 0 | 1 | 2 | 3;
+  nesting: 0 | 1 | 2 | 3 | null;
   /** How many values per coordinate */
-  dimension: number;
+  dimension: number | null;
   /**
    * - 0: A point is just a Coordinate
    * - 1: A line string or a multipoint is a List<Coordinate>
@@ -22,7 +22,7 @@ export type GeoArrowGeometryInfo = {
    * - 3: multipolygons are List<List<List<Coordinate>>>
    */
   /** Coordinate memory layout {x,y,...} vs [x,y,...] */
-  coordinates: 'separated' | 'interleaved';
+  coordinates: 'separated' | 'interleaved' | null;
   /** Coordinate  */
   valueType: 'double'; // 'float'
 };
@@ -41,7 +41,11 @@ type CoordinateFieldInfo = {
  */
 // eslint-disable-next-line max-statements
 export function getGeoArrowGeometryInfo(arrowField: arrow.Field): GeoArrowGeometryInfo | null {
-  if (arrowField.type instanceof arrow.Utf8) {
+  if (
+    arrowField.type instanceof arrow.Utf8 ||
+    arrowField.type instanceof arrow.LargeUtf8 ||
+    arrowField.type instanceof arrow.Utf8View
+  ) {
     return {
       compatibleEncodings: ['geoarrow.wkt'],
       nesting: 0,
@@ -52,7 +56,11 @@ export function getGeoArrowGeometryInfo(arrowField: arrow.Field): GeoArrowGeomet
     };
   }
 
-  if (arrowField.type instanceof arrow.Binary || arrowField.type instanceof arrow.LargeBinary) {
+  if (
+    arrowField.type instanceof arrow.Binary ||
+    arrowField.type instanceof arrow.LargeBinary ||
+    arrowField.type instanceof arrow.BinaryView
+  ) {
     return {
       compatibleEncodings: ['geoarrow.wkb'],
       nesting: 0,
@@ -62,6 +70,23 @@ export function getGeoArrowGeometryInfo(arrowField: arrow.Field): GeoArrowGeomet
       valueType: 'double'
     };
   }
+
+  if (isBoxField(arrowField)) {
+    const dimension = (arrowField.type as arrow.Struct).children.length / 2;
+    return {
+      compatibleEncodings: ['geoarrow.box'],
+      nesting: 0,
+      dimension,
+      coordinates: 'separated',
+      valueType: 'double'
+    };
+  }
+
+  const unionInfo = getUnionGeometryInfo(arrowField.type);
+  if (unionInfo) {
+    return unionInfo;
+  }
+
   let coordinateInfo = getCoordinateFieldInfo(arrowField);
   // A point is just a Coordinate
   if (coordinateInfo) {
@@ -73,7 +98,7 @@ export function getGeoArrowGeometryInfo(arrowField: arrow.Field): GeoArrowGeomet
   }
 
   // A line string or a multipoint is a List<Coordinate>
-  if (!(arrowField.type instanceof arrow.List)) {
+  if (!isListType(arrowField.type)) {
     return null;
   }
   arrowField = arrowField.type.children[0];
@@ -88,7 +113,7 @@ export function getGeoArrowGeometryInfo(arrowField: arrow.Field): GeoArrowGeomet
   }
 
   // A polygon or a multiline string are List<List<Coordinate>>
-  if (!(arrowField.type instanceof arrow.List)) {
+  if (!isListType(arrowField.type)) {
     return null;
   }
   arrowField = arrowField.type.children[0];
@@ -103,7 +128,7 @@ export function getGeoArrowGeometryInfo(arrowField: arrow.Field): GeoArrowGeomet
   }
 
   // A multipolygons are List<List<List<Coordinate>>>
-  if (!(arrowField.type instanceof arrow.List)) {
+  if (!isListType(arrowField.type)) {
     return null;
   }
   arrowField = arrowField.type.children[0];
@@ -120,10 +145,125 @@ export function getGeoArrowGeometryInfo(arrowField: arrow.Field): GeoArrowGeomet
   return null;
 }
 
+/** Summarizes dense-union geometry layouts without inspecting any array values. */
+function getUnionGeometryInfo(type: arrow.DataType): GeoArrowGeometryInfo | null {
+  if (type instanceof arrow.DenseUnion) {
+    const childInfos = type.children
+      .map(child => getGeometryInfoForType(child.type))
+      .filter((info): info is GeoArrowGeometryInfo => Boolean(info));
+    if (childInfos.length !== type.children.length || childInfos.length === 0) {
+      return null;
+    }
+    return {
+      compatibleEncodings: ['geoarrow.geometry'],
+      nesting: getCommonValue(childInfos.map(info => info.nesting)),
+      dimension: getCommonValue(childInfos.map(info => info.dimension)),
+      coordinates: getCommonValue(childInfos.map(info => info.coordinates)),
+      valueType: 'double'
+    };
+  }
+
+  if (
+    (type instanceof arrow.List || type instanceof arrow.LargeList) &&
+    type.children[0]?.type instanceof arrow.DenseUnion
+  ) {
+    const unionInfo = getUnionGeometryInfo(type.children[0].type);
+    if (!unionInfo) {
+      return null;
+    }
+    return {
+      compatibleEncodings: ['geoarrow.geometrycollection'],
+      nesting: 1,
+      dimension: unionInfo.dimension,
+      coordinates: unionInfo.coordinates,
+      valueType: unionInfo.valueType
+    };
+  }
+
+  return null;
+}
+
+/** Gets geometry information for a union child, including nested collections. */
+function getGeometryInfoForType(type: arrow.DataType): GeoArrowGeometryInfo | null {
+  if (type instanceof arrow.DenseUnion) {
+    return getUnionGeometryInfo(type);
+  }
+  if (
+    (type instanceof arrow.List || type instanceof arrow.LargeList) &&
+    type.children[0]?.type instanceof arrow.DenseUnion
+  ) {
+    return getUnionGeometryInfo(type);
+  }
+
+  const field = new arrow.Field('geometry', type, true);
+  if (isBoxField(field)) {
+    return null;
+  }
+  const coordinateInfo = getCoordinateFieldInfo(field);
+  if (coordinateInfo) {
+    return {
+      compatibleEncodings: ['geoarrow.point'],
+      nesting: 0,
+      ...coordinateInfo
+    };
+  }
+  if (!(type instanceof arrow.List || type instanceof arrow.LargeList)) {
+    return null;
+  }
+
+  const childInfo = getCoordinateFieldInfo(type.children[0]);
+  if (childInfo) {
+    return {
+      compatibleEncodings: ['geoarrow.linestring', 'geoarrow.multipoint'],
+      nesting: 1,
+      ...childInfo
+    };
+  }
+  const nestedType = type.children[0]?.type;
+  if (!(nestedType instanceof arrow.List || nestedType instanceof arrow.LargeList)) {
+    return null;
+  }
+  const nestedChildInfo = getCoordinateFieldInfo(nestedType.children[0]);
+  if (nestedChildInfo) {
+    return {
+      compatibleEncodings: ['geoarrow.polygon', 'geoarrow.multilinestring'],
+      nesting: 2,
+      ...nestedChildInfo
+    };
+  }
+  const deeplyNestedType = nestedType.children[0]?.type;
+  if (!(deeplyNestedType instanceof arrow.List || deeplyNestedType instanceof arrow.LargeList)) {
+    return null;
+  }
+  const deeplyNestedChildInfo = getCoordinateFieldInfo(deeplyNestedType.children[0]);
+  if (!deeplyNestedChildInfo) {
+    return null;
+  }
+  return {
+    compatibleEncodings: ['geoarrow.multipolygon'],
+    nesting: 3,
+    ...deeplyNestedChildInfo
+  };
+}
+
+/** Returns a value when all union children agree, or null for mixed children. */
+function getCommonValue<T>(values: readonly T[]): T | null {
+  const firstValue = values[0];
+  return values.every(value => value === firstValue) ? firstValue : null;
+}
+
+/** Returns whether an Arrow type is a 32-bit or 64-bit offset list. */
+function isListType(type: arrow.DataType): type is arrow.List | arrow.LargeList {
+  return type instanceof arrow.List || type instanceof arrow.LargeList;
+}
+
 /**
  * @see https://geoarrow.org/format.html#memory-layouts
  */
 function getCoordinateFieldInfo(arrowField: arrow.Field): CoordinateFieldInfo | null {
+  if (isBoxField(arrowField)) {
+    return null;
+  }
   // interleaved case
   if (arrowField.type instanceof arrow.FixedSizeList) {
     const dimension = arrowField.type.listSize;
@@ -133,7 +273,7 @@ function getCoordinateFieldInfo(arrowField: arrow.Field): CoordinateFieldInfo | 
 
     const child = arrowField.type.children[0];
     // Spec currently only supports 64 bit coordinates
-    if (!(child.type instanceof arrow.Float)) {
+    if (!child || !(child.type instanceof arrow.Float)) {
       return null;
     }
 
@@ -153,6 +293,23 @@ function getCoordinateFieldInfo(arrowField: arrow.Field): CoordinateFieldInfo | 
       return null;
     }
 
+    const coordinateNames = children.map(child => child.name);
+    const validCoordinateNames = [
+      ['x', 'y'],
+      ['x', 'y', 'z'],
+      ['x', 'y', 'm'],
+      ['x', 'y', 'z', 'm']
+    ];
+    if (
+      !validCoordinateNames.some(
+        names =>
+          names.length === coordinateNames.length &&
+          names.every((name, index) => coordinateNames[index] === name)
+      )
+    ) {
+      return null;
+    }
+
     // Spec currently only supports 64 bit coordinates
     for (const child of children) {
       if (!(child.type instanceof arrow.Float)) {
@@ -169,4 +326,21 @@ function getCoordinateFieldInfo(arrowField: arrow.Field): CoordinateFieldInfo | 
 
   // No other types are valid coordinates
   return null;
+}
+
+function isBoxField(arrowField: arrow.Field): boolean {
+  if (!(arrowField.type instanceof arrow.Struct)) return false;
+  const names = arrowField.type.children.map(child => child.name);
+  const expectedNames = [
+    ['xmin', 'ymin', 'xmax', 'ymax'],
+    ['xmin', 'ymin', 'zmin', 'xmax', 'ymax', 'zmax'],
+    ['xmin', 'ymin', 'mmin', 'xmax', 'ymax', 'mmax'],
+    ['xmin', 'ymin', 'zmin', 'mmin', 'xmax', 'ymax', 'zmax', 'mmax']
+  ];
+  return expectedNames.some(
+    expected =>
+      names.length === expected.length &&
+      expected.every((name, index) => names[index] === name) &&
+      arrowField.type.children.every(child => child.type instanceof arrow.Float)
+  );
 }

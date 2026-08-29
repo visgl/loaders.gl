@@ -6,9 +6,39 @@ import * as arrow from 'apache-arrow';
 import {convertGeometryToWKB, convertGeometryToWKT} from '@loaders.gl/gis';
 import type {Geometry, Position} from '@loaders.gl/schema';
 import {convertGeoArrowGeometryToGeoJSON} from '../lib/geometry-converters/convert-geoarrow-to-geojson';
-import type {GeoArrowEncoding} from '../metadata/geoarrow-metadata';
+import type {GeoArrowEncoding, GeoArrowMetadata} from '../metadata/geoarrow-metadata';
 import {getGeometryMetadataForField} from '../metadata/geoarrow-metadata';
-import {getGeoMetadata, type GeoMetadata} from '../metadata/geoparquet-metadata';
+import {
+  getGeoMetadata,
+  type GeoMetadata,
+  type GeoColumnMetadata,
+  type GeoParquetGeometryType
+} from '../metadata/geoparquet-metadata';
+import {inspectGeoArrowVector} from '../geoarrow-inspection';
+import {decodeWKBPointVector} from '../lib/kernels/decode-wkb-point';
+import {decodeWKBLineStringVector} from '../lib/kernels/decode-wkb-linestring';
+import {
+  decodeWKTGeometryCollectionVector,
+  decodeWKTNativeVector,
+  decodeWKTUnionVector
+} from '../lib/kernels/decode-wkt-native';
+import {
+  decodeWKBNativeVector,
+  decodeWKBGeometryCollectionVector,
+  decodeWKBUnionVector
+} from '../lib/kernels/decode-wkb-native';
+import {encodeGeoArrowBoxVector} from '../lib/kernels/encode-geoarrow-box';
+import {
+  encodeGeoArrowGeometryCollectionWKBVector,
+  encodeGeoArrowUnionWKBVector,
+  encodeGeoArrowWKBVector
+} from '../lib/kernels/encode-geoarrow-wkb';
+import {
+  convertNativeGeoArrowUnionVector,
+  convertNativeGeoArrowVector
+} from '../lib/kernels/convert-native-geoarrow';
+import {encodeGeoArrowWKTVector} from '../lib/kernels/encode-geoarrow-wkt';
+import {assertGeoArrowResourceLimits} from '../geoarrow-resource-limits';
 
 type GeoArrowGeometryKind =
   | 'Point'
@@ -23,7 +53,7 @@ type GeometryUnionChildValue =
   | Geometry
   | string
   | Uint8Array
-  | number[]
+  | (number | null)[]
   | number[][]
   | number[][][]
   | number[][][][]
@@ -32,12 +62,109 @@ type GeometryUnionChildValue =
 /**
  * Options for converting geometry columns in a GeoArrow table.
  */
+export type GeoArrowGeometryTarget = GeoArrowEncoding | 'native';
+export type GeoArrowCoordinateLayout = 'interleaved' | 'separated';
+export type GeoArrowDimension = 'xy' | 'xyz' | 'xym' | 'xyzm';
+export type GeoArrowOffsetType = 'int32' | 'int64';
+
 export type GeoArrowGeometryConvertOptions = {
   /** Optional single geometry column to convert. Defaults to all geometry columns. */
   geometryColumn?: string;
   /** Optional list of geometry columns to convert. Defaults to all geometry columns. */
   geometryColumns?: string[];
+  /** Known geometry types used to select an adaptive native target for vector conversion. */
+  geometryTypes?: readonly GeoParquetGeometryType[];
+  /** Coordinate storage layout for native output. Defaults to interleaved. */
+  coordinates?: GeoArrowCoordinateLayout;
+  /** Exact coordinate dimensions for native output. */
+  dimension?: GeoArrowDimension;
+  /** Offset storage width for variable-length native output. Defaults to int32. */
+  offsetType?: GeoArrowOffsetType;
+  /** Maximum nested GeometryCollection depth. Defaults to 64. */
+  maxGeometryCollectionDepth?: number;
+  /** Maximum serialized bytes across one WKB or WKT input vector. */
+  maxGeometryBytes?: number;
+  /** Maximum coordinate vertices across one input vector. */
+  maxGeometryVertices?: number;
 };
+
+const DEFAULT_MAX_GEOMETRY_COLLECTION_DEPTH = 64;
+
+/**
+ * Converts one GeoArrow vector to a concrete or adaptive native encoding.
+ *
+ * Same-encoding conversions return the original vector so all Arrow buffers remain shared.
+ *
+ * @param column GeoArrow geometry vector.
+ * @param sourceEncoding Source GeoArrow encoding.
+ * @param targetEncoding Concrete target encoding or the adaptive `native` target.
+ * @param options Conversion options and optional geometry type metadata.
+ * @returns Converted GeoArrow vector.
+ */
+export function convertGeoArrowVector(
+  column: arrow.Vector,
+  sourceEncoding: GeoArrowEncoding,
+  targetEncoding: GeoArrowGeometryTarget,
+  options?: GeoArrowGeometryConvertOptions
+): arrow.Vector {
+  const maxGeometryCollectionDepth = getMaxGeometryCollectionDepth(options);
+  assertGeoArrowResourceLimits(column, sourceEncoding, options);
+  const resolvedTargetEncoding = resolveTargetEncoding(
+    targetEncoding,
+    sourceEncoding,
+    options?.geometryTypes
+  );
+
+  if (
+    sourceEncoding === resolvedTargetEncoding &&
+    canReuseGeoArrowVector(column, resolvedTargetEncoding, options)
+  ) {
+    return column;
+  }
+
+  return convertGeometryColumn(column, sourceEncoding, resolvedTargetEncoding, 'geometry', {
+    ...options,
+    maxGeometryCollectionDepth
+  });
+}
+
+/**
+ * Converts one vector cell to GeoJSON, including dense-union and geometry-collection columns.
+ *
+ * Dense union cells need the parent vector's type-id buffer to recover the geometry kind; the
+ * ordinary cell converter intentionally has no vector context and therefore cannot decode them.
+ *
+ * @param column GeoArrow geometry vector.
+ * @param rowIndex Row index within the vector.
+ * @param encoding Declared GeoArrow encoding.
+ * @returns GeoJSON geometry or `null`.
+ */
+export function convertGeoArrowVectorCellToGeoJSON(
+  column: arrow.Vector,
+  rowIndex: number,
+  encoding: GeoArrowEncoding
+): Geometry | null {
+  if (encoding === 'geoarrow.geometry') {
+    const {typeId} = getDenseUnionCellInfo(column, rowIndex);
+    return convertUnionValueToGeometry(column.get(rowIndex), getGeometryKindFromTypeId(typeId));
+  }
+  if (encoding === 'geoarrow.geometrycollection') {
+    const collectionValue = column.get(rowIndex);
+    if (!collectionValue) return null;
+    const childGeometries: Geometry[] = [];
+    const unionVector = collectionValue as arrow.Vector;
+    for (let memberIndex = 0; memberIndex < unionVector.length; memberIndex++) {
+      const {typeId} = getDenseUnionCellInfo(unionVector, memberIndex);
+      const geometry = convertUnionValueToGeometry(
+        unionVector.get(memberIndex),
+        getGeometryKindFromTypeId(typeId)
+      );
+      if (geometry) childGeometries.push(geometry);
+    }
+    return {type: 'GeometryCollection', geometries: childGeometries};
+  }
+  return convertGeoArrowGeometryToGeoJSON(column.get(rowIndex), encoding);
+}
 
 /**
  * Converts one or more geometry columns in a GeoArrow Arrow table to a target GeoArrow encoding.
@@ -48,63 +175,133 @@ export type GeoArrowGeometryConvertOptions = {
  */
 export function convertGeoArrowGeometry(
   table: arrow.Table,
-  targetEncoding: GeoArrowEncoding,
+  targetEncoding: GeoArrowGeometryTarget,
   options?: GeoArrowGeometryConvertOptions
 ): arrow.Table {
+  const maxGeometryCollectionDepth = getMaxGeometryCollectionDepth(options);
   const geometryColumns = getGeometryColumnsFromArrowSchema(table.schema);
   const selectedGeometryColumns = resolveGeometryColumns(geometryColumns, options);
+  const geoMetadata = getGeoMetadata(table.schema.metadata || new Map());
 
   if (selectedGeometryColumns.length === 0) {
     throw new Error('GeoArrowGeometryConverter requires at least one geometry column to convert.');
   }
 
-  const convertedVectors = new Map<string, arrow.Vector>();
+  const convertedEncodings = new Map<string, GeoArrowEncoding>();
+  const conversionOptions = new Map<string, GeoArrowGeometryConvertOptions | undefined>();
   for (const geometryColumn of selectedGeometryColumns) {
-    const sourceEncoding = geometryColumns[geometryColumn]?.encoding;
-    const column = table.getChild(geometryColumn);
-
-    if (!sourceEncoding || !column) {
+    const sourceMetadata = geometryColumns[geometryColumn];
+    const sourceEncoding = sourceMetadata?.encoding;
+    if (!sourceEncoding) {
       throw new Error(`GeoArrowGeometryConverter could not resolve column "${geometryColumn}".`);
     }
 
-    convertedVectors.set(
-      geometryColumn,
-      convertGeometryColumn(column, sourceEncoding, targetEncoding, geometryColumn)
+    const geometryTypes =
+      options?.geometryTypes ||
+      geoMetadata?.columns?.[geometryColumn]?.geometry_types ||
+      sourceMetadata?.geometry_types ||
+      inferGeometryTypes(table, geometryColumn, sourceEncoding);
+    const resolvedTargetEncoding = resolveTargetEncoding(
+      targetEncoding,
+      sourceEncoding,
+      geometryTypes
     );
+    conversionOptions.set(
+      geometryColumn,
+      geometryTypes && geometryTypes.length > 0
+        ? {...options, geometryTypes, maxGeometryCollectionDepth}
+        : {...options, maxGeometryCollectionDepth}
+    );
+    const sourceVector = table.getChild(geometryColumn);
+    if (
+      sourceEncoding !== resolvedTargetEncoding ||
+      (sourceVector &&
+        !canReuseGeoArrowVector(
+          sourceVector,
+          resolvedTargetEncoding,
+          conversionOptions.get(geometryColumn)
+        ))
+    ) {
+      convertedEncodings.set(geometryColumn, resolvedTargetEncoding);
+    }
   }
 
-  const nextFields = table.schema.fields.map(field => {
-    const convertedVector = convertedVectors.get(field.name);
-    return convertedVector
-      ? createConvertedField(field, convertedVector.type, targetEncoding)
-      : field;
-  });
+  if (convertedEncodings.size === 0) {
+    for (const geometryColumn of selectedGeometryColumns) {
+      const sourceMetadata = geometryColumns[geometryColumn];
+      const sourceVector = table.getChild(geometryColumn);
+      if (sourceMetadata?.encoding && sourceVector) {
+        assertGeoArrowResourceLimits(sourceVector, sourceMetadata.encoding, options);
+      }
+    }
+    return table;
+  }
 
   const nextSchemaMetadata = cloneMetadataMap(table.schema.metadata);
-  updateGeoMetadata(
-    nextSchemaMetadata,
-    getGeoMetadata(table.schema.metadata || new Map()),
-    selectedGeometryColumns,
-    targetEncoding
-  );
-  const nextSchema = new arrow.Schema(nextFields, nextSchemaMetadata);
-  const nextRecordBatch = new arrow.RecordBatch(
-    nextSchema,
-    arrow.makeData({
-      type: new arrow.Struct(nextFields),
-      length: table.numRows,
-      nullCount: 0,
-      children: nextFields.map(field => {
-        const convertedVector = convertedVectors.get(field.name);
-        if (convertedVector) {
-          return convertedVector.data[0];
-        }
-        return table.getChild(field.name)!.data[0];
-      })
+  updateGeoMetadata(nextSchemaMetadata, geoMetadata, convertedEncodings, conversionOptions);
+  const sourceGeometryColumns = getGeometryColumnsFromArrowSchema(table.schema);
+  const convertedBatchVectors = table.batches.map(batch =>
+    table.schema.fields.map(field => {
+      const sourceVector = batch.getChild(field.name);
+      if (!sourceVector) {
+        throw new Error(`GeoArrowGeometryConverter could not resolve column "${field.name}".`);
+      }
+      const convertedEncoding = convertedEncodings.get(field.name);
+      if (!convertedEncoding) {
+        return sourceVector;
+      }
+      return convertGeoArrowVector(
+        sourceVector,
+        sourceGeometryColumns[field.name].encoding!,
+        convertedEncoding,
+        conversionOptions.get(field.name)
+      );
     })
   );
+  const nextFields = table.schema.fields.map((field, fieldIndex) => {
+    const convertedEncoding = convertedEncodings.get(field.name);
+    const convertedVector = convertedBatchVectors[0]?.[fieldIndex];
+    return convertedEncoding && convertedVector
+      ? createConvertedField(
+          field,
+          convertedVector.type,
+          convertedEncoding,
+          conversionOptions.get(field.name)?.geometryTypes,
+          conversionOptions.get(field.name),
+          geoMetadata?.columns?.[field.name]
+        )
+      : field;
+  });
+  const nextSchema = new arrow.Schema(nextFields, nextSchemaMetadata);
+  const nextBatches = convertedBatchVectors.map((batchVectors, batchIndex) => {
+    const children = batchVectors.map(vector => vector.data[0]);
+    return new arrow.RecordBatch(
+      nextSchema,
+      arrow.makeData({
+        type: new arrow.Struct(nextFields),
+        length: table.batches[batchIndex].numRows,
+        nullCount: 0,
+        children
+      })
+    );
+  });
 
-  return new arrow.Table(nextRecordBatch);
+  return new arrow.Table(nextSchema, nextBatches);
+}
+
+/** Inspects all record batches when WKB geometry metadata does not declare geometry types. */
+function inferGeometryTypes(
+  table: arrow.Table,
+  geometryColumn: string,
+  sourceEncoding: GeoArrowEncoding
+): readonly GeoParquetGeometryType[] | undefined {
+  if (sourceEncoding !== 'geoarrow.wkb' && sourceEncoding !== 'geoarrow.wkt') {
+    return undefined;
+  }
+  const vector = table.getChild(geometryColumn);
+  if (!vector) return undefined;
+  const inspection = inspectGeoArrowVector(vector, sourceEncoding);
+  return inspection.geometryTypes.length > 0 ? inspection.geometryTypes : undefined;
 }
 
 /**
@@ -112,10 +309,8 @@ export function convertGeoArrowGeometry(
  * @param schema Apache Arrow schema.
  * @returns GeoArrow geometry columns keyed by field name.
  */
-function getGeometryColumnsFromArrowSchema(
-  schema: arrow.Schema
-): Record<string, {encoding?: GeoArrowEncoding}> {
-  const geometryColumns: Record<string, {encoding?: GeoArrowEncoding}> = {};
+function getGeometryColumnsFromArrowSchema(schema: arrow.Schema): Record<string, GeoArrowMetadata> {
+  const geometryColumns: Record<string, GeoArrowMetadata> = {};
 
   for (const field of schema.fields) {
     const geometryMetadata = getGeometryMetadataForField(field.metadata || new Map());
@@ -139,23 +334,281 @@ function convertGeometryColumn(
   column: arrow.Vector,
   sourceEncoding: GeoArrowEncoding,
   targetEncoding: GeoArrowEncoding,
-  geometryColumn: string
+  geometryColumn: string,
+  options?: GeoArrowGeometryConvertOptions
 ): arrow.Vector {
+  if (targetEncoding === 'geoarrow.box') {
+    return encodeGeoArrowBoxVector(column, sourceEncoding, options?.dimension);
+  }
+  const directNativeUnionVector = convertNativeGeoArrowUnionVector(
+    column,
+    targetEncoding,
+    options?.dimension,
+    options?.coordinates,
+    options?.offsetType
+  );
+  if (directNativeUnionVector) return directNativeUnionVector;
+  const directNativeVector = convertNativeGeoArrowVector(
+    column,
+    sourceEncoding,
+    targetEncoding,
+    options?.dimension || getDimensionFromGeometryTypes(options?.geometryTypes),
+    options?.coordinates,
+    options?.offsetType
+  );
+  if (directNativeVector) return directNativeVector;
+  if (targetEncoding === 'geoarrow.wkt') {
+    const directWKTVector = encodeGeoArrowWKTVector(column, sourceEncoding, options?.dimension);
+    if (directWKTVector) return directWKTVector;
+  }
+  if (targetEncoding === 'geoarrow.wkb') {
+    if (sourceEncoding === 'geoarrow.geometry') {
+      const directUnionWKBVector = encodeGeoArrowUnionWKBVector(column);
+      if (directUnionWKBVector) return directUnionWKBVector;
+    }
+    if (sourceEncoding === 'geoarrow.geometrycollection') {
+      const directCollectionWKBVector = encodeGeoArrowGeometryCollectionWKBVector(column);
+      if (directCollectionWKBVector) return directCollectionWKBVector;
+    }
+    const directWKBVector = encodeGeoArrowWKBVector(
+      column,
+      sourceEncoding,
+      options?.dimension,
+      options?.geometryTypes
+    );
+    if (directWKBVector) return directWKBVector;
+  }
+  if (sourceEncoding === 'geoarrow.wkb' && targetEncoding === 'geoarrow.geometry') {
+    const directUnionVector = decodeWKBUnionVector(
+      column,
+      options?.dimension,
+      options?.offsetType,
+      options?.coordinates,
+      options?.geometryTypes,
+      options?.maxGeometryCollectionDepth
+    );
+    if (directUnionVector) return directUnionVector;
+  }
+  if (sourceEncoding === 'geoarrow.wkb' && targetEncoding === 'geoarrow.geometrycollection') {
+    const directCollectionVector = decodeWKBGeometryCollectionVector(
+      column,
+      options?.dimension,
+      options?.offsetType,
+      options?.coordinates,
+      options?.geometryTypes,
+      options?.maxGeometryCollectionDepth
+    );
+    if (directCollectionVector) return directCollectionVector;
+  }
+  if (
+    sourceEncoding === 'geoarrow.wkb' &&
+    targetEncoding !== 'geoarrow.geometry' &&
+    targetEncoding !== 'geoarrow.geometrycollection' &&
+    targetEncoding !== 'geoarrow.wkb' &&
+    targetEncoding !== 'geoarrow.wkt'
+  ) {
+    const directNativeVector = decodeWKBNativeVector(
+      column,
+      targetEncoding,
+      options?.dimension,
+      options?.offsetType,
+      options?.coordinates
+    );
+    if (directNativeVector) return directNativeVector;
+  }
+  if (
+    sourceEncoding === 'geoarrow.wkb' &&
+    targetEncoding === 'geoarrow.point' &&
+    options?.coordinates !== 'separated'
+  ) {
+    const directPointVector = tryDecodeWKBPointVector(column, options?.dimension);
+    if (directPointVector) return directPointVector;
+  }
+  if (
+    sourceEncoding === 'geoarrow.wkb' &&
+    targetEncoding === 'geoarrow.linestring' &&
+    options?.coordinates !== 'separated'
+  ) {
+    const directLineStringVector = tryDecodeWKBLineStringVector(column, options);
+    if (directLineStringVector) return directLineStringVector;
+  }
+  if (sourceEncoding === 'geoarrow.wkt' && isConcreteNativeEncoding(targetEncoding)) {
+    const directWKTVector = decodeWKTNativeVector(
+      column,
+      targetEncoding,
+      options?.dimension,
+      options?.coordinates,
+      options?.offsetType,
+      options?.maxGeometryCollectionDepth
+    );
+    if (directWKTVector) return directWKTVector;
+  }
+  if (sourceEncoding === 'geoarrow.wkt' && targetEncoding === 'geoarrow.geometry') {
+    const directWKTUnionVector = decodeWKTUnionVector(
+      column,
+      options?.dimension,
+      options?.coordinates,
+      options?.offsetType,
+      options?.geometryTypes,
+      options?.maxGeometryCollectionDepth
+    );
+    if (directWKTUnionVector) return directWKTUnionVector;
+  }
+  if (sourceEncoding === 'geoarrow.wkt' && targetEncoding === 'geoarrow.geometrycollection') {
+    const directWKTCollectionVector = decodeWKTGeometryCollectionVector(
+      column,
+      options?.dimension,
+      options?.coordinates,
+      options?.offsetType,
+      options?.geometryTypes,
+      options?.maxGeometryCollectionDepth
+    );
+    if (directWKTCollectionVector) return directWKTCollectionVector;
+  }
   const geometries = extractGeometries(column, sourceEncoding);
+  assertGeometryCollectionDepth(geometries, options?.maxGeometryCollectionDepth);
 
   const targetDimension = usesNativeGeoArrowCoordinates(targetEncoding)
-    ? getTargetDimension(geometries)
+    ? getTargetDimension(geometries, options?.dimension)
     : 2;
+  const targetDimensionName = usesNativeGeoArrowCoordinates(targetEncoding)
+    ? getTargetDimensionName(geometries, options)
+    : 'xy';
   if (targetEncoding === 'geoarrow.geometry') {
-    return createGeometryUnionVector(geometries, targetDimension, true, geometryColumn);
+    return createGeometryUnionVector(
+      geometries,
+      targetDimension,
+      true,
+      geometryColumn,
+      options,
+      getGeometryCollectionDepth(geometries),
+      targetDimensionName
+    );
   }
   if (targetEncoding === 'geoarrow.geometrycollection') {
-    return createGeometryCollectionVector(geometries, targetDimension, geometryColumn);
+    return createGeometryCollectionVector(
+      geometries,
+      targetDimension,
+      geometryColumn,
+      options,
+      getGeometryCollectionDepth(geometries),
+      targetDimensionName
+    );
   }
   const targetValues = geometries.map(geometry =>
-    convertGeometryValue(geometry, targetEncoding, targetDimension, geometryColumn)
+    convertGeometryValue(geometry, targetEncoding, targetDimension, geometryColumn, options)
   );
-  return arrow.vectorFromArray(targetValues, getTargetArrowType(targetEncoding, targetDimension));
+  const nativeValues =
+    options?.coordinates === 'separated'
+      ? targetValues.map(value => separateCoordinateValues(value, targetDimension))
+      : targetValues;
+  return arrow.vectorFromArray(
+    nativeValues,
+    getTargetArrowType(
+      targetEncoding,
+      targetDimension,
+      options,
+      options?.dimension || getDimensionFromGeometryTypes(options?.geometryTypes)
+    )
+  );
+}
+
+/** Returns a validated collection-depth limit for all conversion paths. */
+function getMaxGeometryCollectionDepth(options?: GeoArrowGeometryConvertOptions): number {
+  const maximumDepth = options?.maxGeometryCollectionDepth ?? DEFAULT_MAX_GEOMETRY_COLLECTION_DEPTH;
+  if (!Number.isSafeInteger(maximumDepth) || maximumDepth < 0) {
+    throw new Error('maxGeometryCollectionDepth must be a non-negative safe integer.');
+  }
+  return maximumDepth;
+}
+
+/** Rejects hostile or accidentally unbounded nested GeometryCollections without recursion. */
+function assertGeometryCollectionDepth(
+  geometries: readonly (Geometry | null)[],
+  maximumDepth = DEFAULT_MAX_GEOMETRY_COLLECTION_DEPTH
+): void {
+  const pending: {geometry: Geometry; depth: number}[] = [];
+  for (const geometry of geometries) {
+    if (geometry) pending.push({geometry, depth: 0});
+  }
+  while (pending.length > 0) {
+    const current = pending.pop()!;
+    if (current.geometry.type !== 'GeometryCollection') continue;
+    const depth = current.depth + 1;
+    if (depth > maximumDepth) {
+      throw new Error(
+        `GeometryCollection nesting exceeds maxGeometryCollectionDepth (${maximumDepth}).`
+      );
+    }
+    for (const child of current.geometry.geometries) {
+      pending.push({geometry: child, depth});
+    }
+  }
+}
+
+function isConcreteNativeEncoding(
+  encoding: GeoArrowEncoding
+): encoding is
+  | 'geoarrow.point'
+  | 'geoarrow.linestring'
+  | 'geoarrow.polygon'
+  | 'geoarrow.multipoint'
+  | 'geoarrow.multilinestring'
+  | 'geoarrow.multipolygon' {
+  return (
+    encoding === 'geoarrow.point' ||
+    encoding === 'geoarrow.linestring' ||
+    encoding === 'geoarrow.polygon' ||
+    encoding === 'geoarrow.multipoint' ||
+    encoding === 'geoarrow.multilinestring' ||
+    encoding === 'geoarrow.multipolygon'
+  );
+}
+
+/** Uses the direct point kernel when WKB headers prove the whole vector is point geometry. */
+function tryDecodeWKBPointVector(
+  column: arrow.Vector,
+  dimensionName?: GeoArrowDimension
+): arrow.Vector | null {
+  const inspection = inspectGeoArrowVector(column, 'geoarrow.wkb');
+  if (
+    inspection.malformedRowCount > 0 ||
+    inspection.geometryTypes.some(geometryType => !geometryType.startsWith('Point'))
+  ) {
+    return null;
+  }
+  const coordinateSize = dimensionName
+    ? getTargetDimension([], dimensionName)
+    : Math.max(...inspection.dimensions.map(getDimensionSize), 2);
+  if (inspection.dimensions.some(dimension => getDimensionSize(dimension) !== coordinateSize)) {
+    return null;
+  }
+  return decodeWKBPointVector(column, coordinateSize as 2 | 3 | 4);
+}
+
+function getDimensionSize(dimension: GeoArrowDimension): number {
+  return dimension === 'xy' ? 2 : dimension === 'xyz' || dimension === 'xym' ? 3 : 4;
+}
+
+/** Uses the direct LineString kernel when WKB headers prove a uniform vector. */
+function tryDecodeWKBLineStringVector(
+  column: arrow.Vector,
+  options?: GeoArrowGeometryConvertOptions
+): arrow.Vector | null {
+  const inspection = inspectGeoArrowVector(column, 'geoarrow.wkb');
+  if (
+    inspection.malformedRowCount > 0 ||
+    inspection.geometryTypes.some(geometryType => !geometryType.startsWith('LineString'))
+  ) {
+    return null;
+  }
+  const coordinateSize = options?.dimension
+    ? getTargetDimension([], options.dimension)
+    : Math.max(...inspection.dimensions.map(getDimensionSize), 2);
+  if (inspection.dimensions.some(dimension => getDimensionSize(dimension) !== coordinateSize)) {
+    return null;
+  }
+  return decodeWKBLineStringVector(column, coordinateSize as 2 | 3 | 4, options?.offsetType);
 }
 
 /**
@@ -170,17 +623,20 @@ function convertGeometryValue(
   geometry: Geometry | null,
   targetEncoding: GeoArrowEncoding,
   targetDimension: 2 | 3 | 4,
-  geometryColumn: string
-): string | Uint8Array | number[] | number[][] | number[][][] | number[][][][] | null {
+  geometryColumn: string,
+  options?: GeoArrowGeometryConvertOptions
+): string | Uint8Array | (number | null)[] | number[][] | number[][][] | number[][][][] | null {
   if (!geometry) {
     return null;
   }
 
   switch (targetEncoding) {
     case 'geoarrow.wkb':
-      return new Uint8Array(convertGeometryToWKB(geometry, getGeometryWKBOptions(geometry)));
+      return new Uint8Array(
+        convertGeometryToWKB(geometry, getGeometryWKBOptions(geometry, options))
+      );
     case 'geoarrow.wkt':
-      return convertGeometryToWKT(geometry);
+      return convertGeometryToWKT(geometry, {dimension: getGeometryDimension(geometry, options)});
     case 'geoarrow.point':
       return normalizePointCoordinates(geometry, targetDimension, geometryColumn);
     case 'geoarrow.linestring':
@@ -287,7 +743,10 @@ function createGeometryUnionVector(
   geometries: (Geometry | null)[],
   targetDimension: 2 | 3 | 4,
   allowGeometryCollections: boolean,
-  geometryColumn: string
+  geometryColumn: string,
+  options?: GeoArrowGeometryConvertOptions,
+  geometryCollectionDepth = allowGeometryCollections ? getGeometryCollectionDepth(geometries) : 0,
+  targetDimensionName: GeoArrowDimension = getDimensionName(targetDimension)
 ): arrow.Vector {
   const usedKinds = new Set<GeoArrowGeometryKind>();
   const typeIds: number[] = [];
@@ -297,10 +756,17 @@ function createGeometryUnionVector(
   const nullCarrierKind = getNullCarrierKind(geometries, allowGeometryCollections);
   usedKinds.add(nullCarrierKind);
   childValues[nullCarrierKind] = [];
+  for (const geometryType of options?.geometryTypes || []) {
+    const geometryKind = getBaseGeometryKind(geometryType);
+    if (geometryKind && (allowGeometryCollections || geometryKind !== 'GeometryCollection')) {
+      usedKinds.add(geometryKind);
+      childValues[geometryKind] ||= [];
+    }
+  }
 
   for (const geometry of geometries) {
     const geometryKind = geometry?.type || nullCarrierKind;
-    if (geometryKind === 'GeometryCollection' && !allowGeometryCollections) {
+    if (geometryKind === 'GeometryCollection' && geometryCollectionDepth === 0) {
       throw new Error(
         `GeoArrowGeometryConverter cannot encode GeometryCollection in "${geometryColumn}" without a geometrycollection child.`
       );
@@ -310,7 +776,7 @@ function createGeometryUnionVector(
     usedKinds.add(childKind);
     childValues[childKind] ||= [];
     valueOffsets.push(childValues[childKind]!.length);
-    typeIds.push(getUnionTypeId(childKind, targetDimension));
+    typeIds.push(getUnionTypeId(childKind, targetDimension, targetDimensionName));
 
     childValues[childKind]!.push(
       geometry ? convertGeometryToUnionChildValue(geometry, targetDimension, geometryColumn) : null
@@ -319,22 +785,37 @@ function createGeometryUnionVector(
 
   const orderedKinds = [...usedKinds].sort(
     (leftKind, rightKind) =>
-      getUnionTypeId(leftKind, targetDimension) - getUnionTypeId(rightKind, targetDimension)
+      getUnionTypeId(leftKind, targetDimension, targetDimensionName) -
+      getUnionTypeId(rightKind, targetDimension, targetDimensionName)
   );
   const fields = orderedKinds.map(
     kind =>
       new arrow.Field(
-        getUnionFieldName(kind, targetDimension),
-        getUnionChildType(kind, targetDimension),
+        getUnionFieldName(kind, targetDimension, targetDimensionName),
+        getUnionChildType(
+          kind,
+          targetDimension,
+          options,
+          geometryCollectionDepth,
+          targetDimensionName
+        ),
         true
       )
   );
   const children = orderedKinds.map(kind => {
     const values = childValues[kind] || [];
-    return createUnionChildVector(kind, values, targetDimension, geometryColumn).data[0];
+    return createUnionChildVector(
+      kind,
+      values,
+      targetDimension,
+      geometryColumn,
+      options,
+      geometryCollectionDepth,
+      targetDimensionName
+    ).data[0];
   });
   const unionType = new arrow.DenseUnion(
-    orderedKinds.map(kind => getUnionTypeId(kind, targetDimension)),
+    orderedKinds.map(kind => getUnionTypeId(kind, targetDimension, targetDimensionName)),
     fields
   );
 
@@ -360,7 +841,10 @@ function createGeometryUnionVector(
 function createGeometryCollectionVector(
   geometries: (Geometry | null)[],
   targetDimension: 2 | 3 | 4,
-  geometryColumn: string
+  geometryColumn: string,
+  options?: GeoArrowGeometryConvertOptions,
+  geometryCollectionDepth = getGeometryCollectionDepth(geometries),
+  targetDimensionName: GeoArrowDimension = getDimensionName(targetDimension)
 ): arrow.Vector {
   const flattenedGeometries: (Geometry | null)[] = [];
   const valueOffsets = [0];
@@ -386,21 +870,37 @@ function createGeometryCollectionVector(
   const memberUnionVector = createGeometryUnionVector(
     flattenedGeometries,
     targetDimension,
-    false,
-    geometryColumn
+    geometryCollectionDepth > 0,
+    geometryColumn,
+    options,
+    geometryCollectionDepth,
+    targetDimensionName
   );
-  const listType = new arrow.List(new arrow.Field('geometries', memberUnionVector.type, true));
+  const listType = createListType(
+    new arrow.Field('geometries', memberUnionVector.type, true),
+    options?.offsetType
+  );
 
-  return arrow.makeVector(
-    arrow.makeData({
-      type: listType,
-      length: geometries.length,
-      nullCount: validity.filter(isValid => !isValid).length,
-      nullBitmap: createNullBitmap(validity),
-      valueOffsets: Int32Array.from(valueOffsets),
-      child: memberUnionVector.data[0]
-    })
-  );
+  const listData = {
+    length: geometries.length,
+    nullCount: validity.filter(isValid => !isValid).length,
+    nullBitmap: createNullBitmap(validity),
+    valueOffsets: createOffsetArray(valueOffsets, options?.offsetType),
+    child: memberUnionVector.data[0]
+  };
+  const listDataValue =
+    listType instanceof arrow.LargeList
+      ? arrow.makeData({
+          type: listType,
+          ...listData,
+          valueOffsets: BigInt64Array.from(valueOffsets, BigInt)
+        })
+      : arrow.makeData({
+          type: listType as arrow.List,
+          ...listData,
+          valueOffsets: Int32Array.from(valueOffsets)
+        });
+  return arrow.makeVector(listDataValue as any);
 }
 
 /**
@@ -414,7 +914,7 @@ function convertGeometryToUnionChildValue(
   geometry: Geometry,
   targetDimension: 2 | 3 | 4,
   geometryColumn: string
-): Geometry | number[] | number[][] | number[][][] | number[][][][] | null {
+): Geometry | (number | null)[] | number[][] | number[][][] | number[][][][] | null {
   switch (geometry.type) {
     case 'Point':
       return normalizePointCoordinates(geometry, targetDimension, geometryColumn);
@@ -445,17 +945,36 @@ function createUnionChildVector(
   geometryKind: GeoArrowGeometryKind,
   values: unknown[],
   targetDimension: 2 | 3 | 4,
-  geometryColumn: string
+  geometryColumn: string,
+  options?: GeoArrowGeometryConvertOptions,
+  geometryCollectionDepth = 0,
+  dimensionName: GeoArrowDimension = getDimensionName(targetDimension)
 ): arrow.Vector {
   if (geometryKind === 'GeometryCollection') {
     return createGeometryCollectionVector(
       values as (Geometry | null)[],
       targetDimension,
-      geometryColumn
+      geometryColumn,
+      options,
+      Math.max(geometryCollectionDepth - 1, 0),
+      dimensionName
     );
   }
 
-  return arrow.vectorFromArray(values, getUnionChildType(geometryKind, targetDimension));
+  const nativeValues =
+    options?.coordinates === 'separated'
+      ? values.map(value => separateCoordinateValues(value, targetDimension))
+      : values;
+  return arrow.vectorFromArray(
+    nativeValues,
+    getUnionChildType(
+      geometryKind,
+      targetDimension,
+      options,
+      geometryCollectionDepth,
+      dimensionName
+    )
+  );
 }
 
 /**
@@ -468,6 +987,7 @@ function convertUnionValueToGeometry(
   value: unknown,
   geometryKind: GeoArrowGeometryKind
 ): Geometry | null {
+  if (value == null) return null;
   switch (geometryKind) {
     case 'Point':
       return convertGeoArrowGeometryToGeoJSON(value, 'geoarrow.point');
@@ -516,15 +1036,39 @@ function getDenseUnionCellInfo(
 
   for (const chunk of vector.data) {
     if (remainingRowIndex < chunk.length) {
+      const typeIdIndex = getUnionBufferIndex(
+        chunk.typeIds.length,
+        chunk.offset,
+        remainingRowIndex,
+        chunk.typeIds.length <= chunk.length
+      );
+      const valueOffsetIndex = getUnionBufferIndex(
+        chunk.valueOffsets.length,
+        chunk.offset,
+        remainingRowIndex,
+        chunk.typeIds.length <= chunk.length
+      );
       return {
-        typeId: chunk.typeIds[chunk.offset + remainingRowIndex],
-        valueOffset: chunk.valueOffsets[chunk.offset + remainingRowIndex]
+        typeId: chunk.typeIds[typeIdIndex],
+        valueOffset: chunk.valueOffsets[valueOffsetIndex]
       };
     }
     remainingRowIndex -= chunk.length;
   }
 
   throw new Error(`DenseUnion row ${rowIndex} is out of bounds.`);
+}
+
+/** Resolves union buffer indexes for both full and already-sliced Arrow buffers. */
+function getUnionBufferIndex(
+  bufferLength: number,
+  offset: number,
+  rowIndex: number,
+  useLogicalIndex: boolean
+): number {
+  if (useLogicalIndex) return rowIndex;
+  const physicalIndex = offset + rowIndex;
+  return physicalIndex < bufferLength ? physicalIndex : rowIndex;
 }
 
 /**
@@ -576,24 +1120,58 @@ function getNullCarrierKind(
   return 'Point';
 }
 
+/** Removes a GeoParquet dimension suffix and validates a geometry union child kind. */
+function getBaseGeometryKind(geometryType: GeoParquetGeometryType): GeoArrowGeometryKind | null {
+  const geometryKind = geometryType.replace(/ (?:ZM|Z|M)$/, '');
+  switch (geometryKind) {
+    case 'Point':
+    case 'LineString':
+    case 'Polygon':
+    case 'MultiPoint':
+    case 'MultiLineString':
+    case 'MultiPolygon':
+    case 'GeometryCollection':
+      return geometryKind;
+    default:
+      return null;
+  }
+}
+
+/** Returns the maximum nested GeometryCollection depth in a geometry sequence. */
+function getGeometryCollectionDepth(geometries: (Geometry | null)[]): number {
+  let maximumDepth = 0;
+  for (const geometry of geometries) {
+    if (geometry?.type === 'GeometryCollection') {
+      maximumDepth = Math.max(maximumDepth, 1 + getGeometryCollectionDepth(geometry.geometries));
+    }
+  }
+  return maximumDepth;
+}
+
 /**
  * Returns the GeoArrow union type id for a geometry kind and coordinate dimension.
  * @param geometryKind Geometry kind.
  * @param targetDimension Coordinate dimension.
  * @returns GeoArrow union type id.
  */
-function getUnionTypeId(geometryKind: GeoArrowGeometryKind, targetDimension: 2 | 3 | 4): number {
+function getUnionTypeId(
+  geometryKind: GeoArrowGeometryKind,
+  targetDimension: 2 | 3 | 4,
+  dimensionName = getDimensionName(targetDimension)
+): number {
   const baseTypeId = getUnionBaseTypeId(geometryKind);
 
-  switch (targetDimension) {
-    case 2:
+  switch (dimensionName) {
+    case 'xy':
       return baseTypeId;
-    case 3:
+    case 'xyz':
       return 10 + baseTypeId;
-    case 4:
+    case 'xym':
+      return 20 + baseTypeId;
+    case 'xyzm':
       return 30 + baseTypeId;
     default:
-      throw new Error(`Unsupported GeoArrow coordinate dimension "${targetDimension}".`);
+      return baseTypeId;
   }
 }
 
@@ -603,16 +1181,22 @@ function getUnionTypeId(geometryKind: GeoArrowGeometryKind, targetDimension: 2 |
  * @param targetDimension Coordinate dimension.
  * @returns Arrow field name.
  */
-function getUnionFieldName(geometryKind: GeoArrowGeometryKind, targetDimension: 2 | 3 | 4): string {
-  switch (targetDimension) {
-    case 2:
+function getUnionFieldName(
+  geometryKind: GeoArrowGeometryKind,
+  targetDimension: 2 | 3 | 4,
+  dimensionName = getDimensionName(targetDimension)
+): string {
+  switch (dimensionName) {
+    case 'xy':
       return geometryKind;
-    case 3:
+    case 'xyz':
       return `${geometryKind} Z`;
-    case 4:
+    case 'xym':
+      return `${geometryKind} M`;
+    case 'xyzm':
       return `${geometryKind} ZM`;
     default:
-      throw new Error(`Unsupported GeoArrow coordinate dimension "${targetDimension}".`);
+      return geometryKind;
   }
 }
 
@@ -624,13 +1208,26 @@ function getUnionFieldName(geometryKind: GeoArrowGeometryKind, targetDimension: 
  */
 function getUnionChildType(
   geometryKind: GeoArrowGeometryKind,
-  targetDimension: 2 | 3 | 4
+  targetDimension: 2 | 3 | 4,
+  options?: GeoArrowGeometryConvertOptions,
+  geometryCollectionDepth = 0,
+  dimensionName: GeoArrowDimension = getDimensionName(targetDimension)
 ): arrow.DataType {
   if (geometryKind === 'GeometryCollection') {
-    return buildGeometryCollectionType(targetDimension);
+    return buildGeometryCollectionType(
+      targetDimension,
+      options,
+      Math.max(geometryCollectionDepth - 1, 0),
+      dimensionName
+    );
   }
 
-  return getTargetArrowType(getGeometryKindEncoding(geometryKind), targetDimension);
+  return getTargetArrowType(
+    getGeometryKindEncoding(geometryKind),
+    targetDimension,
+    options,
+    dimensionName
+  );
 }
 
 /**
@@ -699,11 +1296,69 @@ function resolveGeometryColumns(
 function createConvertedField(
   field: arrow.Field,
   type: arrow.DataType,
-  targetEncoding: GeoArrowEncoding
+  targetEncoding: GeoArrowEncoding,
+  geometryTypes?: readonly GeoParquetGeometryType[],
+  options?: GeoArrowGeometryConvertOptions,
+  sourceGeoColumnMetadata?: GeoColumnMetadata
 ): arrow.Field {
   const metadata = cloneMetadataMap(field.metadata);
   metadata.set('ARROW:extension:name', targetEncoding);
+  const effectiveGeometryTypes = options?.dimension
+    ? getGeometryTypesForEncoding(targetEncoding, options.dimension)
+    : geometryTypes && geometryTypes.length > 0
+      ? geometryTypes
+      : getGeometryTypesForEncoding(targetEncoding, options?.dimension);
+  if (effectiveGeometryTypes.length > 0) {
+    const extensionMetadata = {
+      ...(getGeometryMetadataForField(metadata) || {}),
+      ...getPreservedFieldMetadata(sourceGeoColumnMetadata)
+    };
+    extensionMetadata.encoding = targetEncoding;
+    extensionMetadata.geometry_types = [...effectiveGeometryTypes];
+    metadata.set('ARROW:extension:metadata', JSON.stringify(extensionMetadata));
+  }
   return new arrow.Field(field.name, type, field.nullable, metadata);
+}
+
+/** Carries GeoParquet semantics into the GeoArrow field without copying its file-level encoding. */
+function getPreservedFieldMetadata(
+  sourceGeoColumnMetadata?: GeoColumnMetadata
+): Record<string, unknown> {
+  if (!sourceGeoColumnMetadata) return {};
+  const preservedMetadata: Record<string, unknown> = {};
+  for (const key of ['crs', 'orientation', 'bbox', 'epoch', 'edges']) {
+    const value = sourceGeoColumnMetadata[key];
+    if (value !== undefined && value !== null && !(key === 'edges' && value === 'planar')) {
+      preservedMetadata[key] = value;
+    }
+  }
+  for (const [key, value] of Object.entries(sourceGeoColumnMetadata)) {
+    if (!(key in preservedMetadata) && !['encoding', 'geometry_types', 'crs'].includes(key)) {
+      preservedMetadata[key] = value;
+    }
+  }
+  return preservedMetadata;
+}
+
+/** Derives one concrete geometry type for explicit native dimension metadata. */
+function getGeometryTypesForEncoding(
+  encoding: GeoArrowEncoding,
+  dimension?: GeoArrowDimension
+): GeoParquetGeometryType[] {
+  if (!dimension) return [];
+  const geometryTypeByEncoding: Partial<Record<GeoArrowEncoding, string>> = {
+    'geoarrow.point': 'Point',
+    'geoarrow.linestring': 'LineString',
+    'geoarrow.polygon': 'Polygon',
+    'geoarrow.multipoint': 'MultiPoint',
+    'geoarrow.multilinestring': 'MultiLineString',
+    'geoarrow.multipolygon': 'MultiPolygon'
+  };
+  const geometryType = geometryTypeByEncoding[encoding];
+  if (!geometryType) return [];
+  const suffix =
+    dimension === 'xy' ? '' : dimension === 'xyz' ? ' Z' : dimension === 'xym' ? ' M' : ' ZM';
+  return [`${geometryType}${suffix}` as GeoParquetGeometryType];
 }
 
 /**
@@ -716,8 +1371,8 @@ function createConvertedField(
 function updateGeoMetadata(
   metadata: Map<string, string>,
   geoMetadata: GeoMetadata | null,
-  selectedGeometryColumns: string[],
-  targetEncoding: GeoArrowEncoding
+  convertedEncodings: Map<string, GeoArrowEncoding>,
+  conversionOptions: Map<string, GeoArrowGeometryConvertOptions | undefined>
 ): void {
   if (!geoMetadata) {
     return;
@@ -725,19 +1380,20 @@ function updateGeoMetadata(
 
   const nextGeoMetadata = JSON.parse(JSON.stringify(geoMetadata)) as GeoMetadata;
 
-  if (targetEncoding === 'geoarrow.wkb' || targetEncoding === 'geoarrow.wkt') {
-    const targetGeoParquetEncoding = targetEncoding === 'geoarrow.wkb' ? 'wkb' : 'wkt';
-    for (const geometryColumn of selectedGeometryColumns) {
-      if (nextGeoMetadata.columns?.[geometryColumn]) {
-        nextGeoMetadata.columns[geometryColumn].encoding = targetGeoParquetEncoding;
+  for (const [geometryColumn, targetEncoding] of convertedEncodings) {
+    const geometryColumnMetadata = nextGeoMetadata.columns?.[geometryColumn];
+    if (!geometryColumnMetadata) continue;
+    const targetGeoParquetEncoding = getGeoParquetEncoding(targetEncoding);
+    if (targetGeoParquetEncoding) {
+      geometryColumnMetadata.encoding = targetGeoParquetEncoding;
+    }
+    const requestedDimension = conversionOptions.get(geometryColumn)?.dimension;
+    if (requestedDimension) {
+      const geometryTypes = getGeometryTypesForEncoding(targetEncoding, requestedDimension);
+      if (geometryTypes.length > 0) {
+        geometryColumnMetadata.geometry_types = geometryTypes;
       }
     }
-    metadata.set('geo', JSON.stringify(nextGeoMetadata));
-    return;
-  }
-
-  for (const geometryColumn of selectedGeometryColumns) {
-    delete nextGeoMetadata.columns?.[geometryColumn];
   }
 
   const remainingGeometryColumns = Object.keys(nextGeoMetadata.columns || {});
@@ -760,6 +1416,32 @@ function updateGeoMetadata(
   metadata.set('geo', JSON.stringify(nextGeoMetadata));
 }
 
+/** Maps a GeoArrow target to a representable GeoParquet encoding when one exists. */
+function getGeoParquetEncoding(targetEncoding: GeoArrowEncoding): string | null {
+  switch (targetEncoding) {
+    case 'geoarrow.wkb':
+      return 'wkb';
+    case 'geoarrow.wkt':
+      return 'wkt';
+    case 'geoarrow.geometry':
+      return 'geometry';
+    case 'geoarrow.point':
+      return 'point';
+    case 'geoarrow.linestring':
+      return 'linestring';
+    case 'geoarrow.polygon':
+      return 'polygon';
+    case 'geoarrow.multipoint':
+      return 'multipoint';
+    case 'geoarrow.multilinestring':
+      return 'multilinestring';
+    case 'geoarrow.multipolygon':
+      return 'multipolygon';
+    default:
+      return null;
+  }
+}
+
 /**
  * Returns the Arrow data type for a target GeoArrow encoding.
  * @param targetEncoding Target GeoArrow encoding.
@@ -768,44 +1450,47 @@ function updateGeoMetadata(
  */
 function getTargetArrowType(
   targetEncoding: GeoArrowEncoding,
-  targetDimension: 2 | 3 | 4
+  targetDimension: 2 | 3 | 4,
+  options?: GeoArrowGeometryConvertOptions,
+  dimensionName: GeoArrowDimension = getDimensionName(targetDimension)
 ): arrow.DataType {
-  const coordinateType = new arrow.FixedSizeList(
-    targetDimension,
-    new arrow.Field('value', new arrow.Float64(), false)
-  );
+  const coordinateType = getCoordinateType(targetDimension, options?.coordinates, dimensionName);
+  const createList = (field: arrow.Field): arrow.DataType =>
+    createListType(field, options?.offsetType);
 
   switch (targetEncoding) {
     case 'geoarrow.geometry':
-      return buildGeometryUnionType(targetDimension, true);
+      return buildGeometryUnionType(targetDimension, true, options, 1, dimensionName);
     case 'geoarrow.geometrycollection':
-      return buildGeometryCollectionType(targetDimension);
+      return buildGeometryCollectionType(targetDimension, options, 0, dimensionName);
     case 'geoarrow.point':
       return coordinateType;
     case 'geoarrow.linestring':
     case 'geoarrow.multipoint':
-      return new arrow.List(new arrow.Field('value', coordinateType, true));
+      return createList(new arrow.Field('value', coordinateType, true));
     case 'geoarrow.polygon':
     case 'geoarrow.multilinestring':
-      return new arrow.List(
-        new arrow.Field(
-          'value',
-          new arrow.List(new arrow.Field('value', coordinateType, true)),
-          true
-        )
+      return createList(
+        new arrow.Field('value', createList(new arrow.Field('value', coordinateType, true)), true)
       );
     case 'geoarrow.multipolygon':
-      return new arrow.List(
+      return createList(
         new arrow.Field(
           'value',
-          new arrow.List(
+          createList(
             new arrow.Field(
               'value',
-              new arrow.List(new arrow.Field('value', coordinateType, true)),
+              createList(new arrow.Field('value', coordinateType, true)),
               true
             )
           ),
           true
+        )
+      );
+    case 'geoarrow.box':
+      return new arrow.Struct(
+        getBoxFieldNames(options?.dimension || getDimensionName(targetDimension)).map(
+          name => new arrow.Field(name, new arrow.Float64(), true)
         )
       );
     case 'geoarrow.wkb':
@@ -827,6 +1512,182 @@ function usesNativeGeoArrowCoordinates(targetEncoding: GeoArrowEncoding): boolea
 }
 
 /**
+ * Returns whether an explicitly requested native physical layout already matches a vector.
+ *
+ * Encoding names alone do not describe coordinate layout, dimensions, or offset width. Keeping
+ * this check next to the identity fast path prevents an adaptive `native` request from silently
+ * ignoring an explicit physical representation requirement.
+ *
+ * @param column GeoArrow vector to inspect.
+ * @param encoding Resolved target encoding.
+ * @param options Conversion options.
+ * @returns Whether the vector can be reused without conversion.
+ */
+function canReuseGeoArrowVector(
+  column: arrow.Vector,
+  encoding: GeoArrowEncoding,
+  options?: GeoArrowGeometryConvertOptions
+): boolean {
+  if (!usesNativeGeoArrowCoordinates(encoding)) {
+    return true;
+  }
+
+  if (options?.dimension) {
+    // A three-coordinate vector cannot distinguish XYZ from XYM from its physical type alone.
+    return false;
+  }
+  if (options?.coordinates && getCoordinateLayout(column.type) !== options.coordinates) {
+    return false;
+  }
+  if (options?.offsetType && getVectorOffsetType(column.type) !== options.offsetType) {
+    return false;
+  }
+  return true;
+}
+
+/** Returns the coordinate layout found in a nested native GeoArrow type. */
+function getCoordinateLayout(type: arrow.DataType): GeoArrowCoordinateLayout | null {
+  if (type instanceof arrow.FixedSizeList) return 'interleaved';
+  if (type instanceof arrow.Struct) {
+    const names = type.children.map(child => child.name);
+    if (names[0] === 'x' && names[1] === 'y') return 'separated';
+    for (const child of type.children) {
+      const layout = getCoordinateLayout(child.type);
+      if (layout) return layout;
+    }
+    return null;
+  }
+  if (type instanceof arrow.List || type instanceof arrow.LargeList) {
+    return getCoordinateLayout(type.children[0].type);
+  }
+  if (type instanceof arrow.DenseUnion) {
+    for (const child of type.children) {
+      const layout = getCoordinateLayout(child.type);
+      if (layout) return layout;
+    }
+  }
+  return null;
+}
+
+/** Returns the first variable-length offset width found in a nested native GeoArrow type. */
+function getVectorOffsetType(type: arrow.DataType): GeoArrowOffsetType | null {
+  if (type instanceof arrow.List) return 'int32';
+  if (type instanceof arrow.LargeList) return 'int64';
+  if (type instanceof arrow.Struct) {
+    for (const child of type.children) {
+      const offsetType = getVectorOffsetType(child.type);
+      if (offsetType) return offsetType;
+    }
+  }
+  if (type instanceof arrow.DenseUnion) {
+    for (const child of type.children) {
+      const offsetType = getVectorOffsetType(child.type);
+      if (offsetType) return offsetType;
+    }
+  }
+  return null;
+}
+
+/**
+ * Resolves the adaptive native target for one geometry column.
+ * @param targetEncoding Requested target encoding.
+ * @param sourceEncoding Source encoding.
+ * @param geometryTypes Trusted geometry type metadata, when available.
+ * @returns Concrete GeoArrow target encoding.
+ */
+function resolveTargetEncoding(
+  targetEncoding: GeoArrowGeometryTarget,
+  sourceEncoding: GeoArrowEncoding,
+  geometryTypes?: readonly GeoParquetGeometryType[]
+): GeoArrowEncoding {
+  if (targetEncoding !== 'native') {
+    return targetEncoding;
+  }
+
+  if (
+    sourceEncoding === 'geoarrow.geometry' ||
+    sourceEncoding === 'geoarrow.geometrycollection' ||
+    sourceEncoding === 'geoarrow.box'
+  ) {
+    return sourceEncoding;
+  }
+
+  if (
+    sourceEncoding !== 'geoarrow.wkb' &&
+    sourceEncoding !== 'geoarrow.wkt' &&
+    sourceEncoding.startsWith('geoarrow.')
+  ) {
+    return sourceEncoding;
+  }
+
+  return selectNativeEncoding(geometryTypes);
+}
+
+/**
+ * Selects a concrete native encoding from GeoParquet geometry type metadata.
+ * @param geometryTypes Geometry type metadata.
+ * @returns Concrete native encoding or dense union when metadata is incomplete.
+ */
+function selectNativeEncoding(geometryTypes?: readonly GeoParquetGeometryType[]): GeoArrowEncoding {
+  if (!geometryTypes || geometryTypes.length === 0) {
+    return 'geoarrow.geometry';
+  }
+
+  const geometryKinds = new Set(
+    geometryTypes.map(geometryType => geometryType.replace(/ (Z|M|ZM)$/, ''))
+  );
+  const dimensions = new Set(
+    geometryTypes.map(geometryType => {
+      if (geometryType.endsWith(' ZM')) return 'xyzm';
+      if (geometryType.endsWith(' Z')) return 'xyz';
+      if (geometryType.endsWith(' M')) return 'xym';
+      return 'xy';
+    })
+  );
+
+  if (dimensions.size > 1) {
+    return 'geoarrow.geometry';
+  }
+
+  if (geometryKinds.has('GeometryCollection')) {
+    return 'geoarrow.geometry';
+  }
+
+  if (geometryKinds.size === 1) {
+    switch ([...geometryKinds][0]) {
+      case 'Point':
+        return 'geoarrow.point';
+      case 'MultiPoint':
+        return 'geoarrow.multipoint';
+      case 'LineString':
+        return 'geoarrow.linestring';
+      case 'MultiLineString':
+        return 'geoarrow.multilinestring';
+      case 'Polygon':
+        return 'geoarrow.polygon';
+      case 'MultiPolygon':
+        return 'geoarrow.multipolygon';
+      default:
+        return 'geoarrow.geometry';
+    }
+  }
+
+  if (geometryKinds.size === 2) {
+    if (geometryKinds.has('Point') && geometryKinds.has('MultiPoint')) {
+      return 'geoarrow.multipoint';
+    }
+    if (geometryKinds.has('LineString') && geometryKinds.has('MultiLineString')) {
+      return 'geoarrow.multilinestring';
+    }
+    if (geometryKinds.has('Polygon') && geometryKinds.has('MultiPolygon')) {
+      return 'geoarrow.multipolygon';
+    }
+  }
+
+  return 'geoarrow.geometry';
+}
+
+/**
  * Builds the Arrow type for a GeoArrow dense union geometry column.
  * @param targetDimension Coordinate dimension.
  * @param allowGeometryCollections Whether to include geometrycollection children.
@@ -834,7 +1695,10 @@ function usesNativeGeoArrowCoordinates(targetEncoding: GeoArrowEncoding): boolea
  */
 function buildGeometryUnionType(
   targetDimension: 2 | 3 | 4,
-  allowGeometryCollections: boolean
+  allowGeometryCollections: boolean,
+  options?: GeoArrowGeometryConvertOptions,
+  geometryCollectionDepth = allowGeometryCollections ? 1 : 0,
+  dimensionName: GeoArrowDimension = getDimensionName(targetDimension)
 ): arrow.DenseUnion {
   const geometryKinds: GeoArrowGeometryKind[] = [
     'Point',
@@ -845,17 +1709,23 @@ function buildGeometryUnionType(
     'MultiPolygon'
   ];
 
-  if (allowGeometryCollections) {
+  if (allowGeometryCollections && geometryCollectionDepth > 0) {
     geometryKinds.push('GeometryCollection');
   }
 
   return new arrow.DenseUnion(
-    geometryKinds.map(geometryKind => getUnionTypeId(geometryKind, targetDimension)),
+    geometryKinds.map(geometryKind => getUnionTypeId(geometryKind, targetDimension, dimensionName)),
     geometryKinds.map(
       geometryKind =>
         new arrow.Field(
-          getUnionFieldName(geometryKind, targetDimension),
-          getUnionChildType(geometryKind, targetDimension),
+          getUnionFieldName(geometryKind, targetDimension, dimensionName),
+          getUnionChildType(
+            geometryKind,
+            targetDimension,
+            options,
+            geometryCollectionDepth,
+            dimensionName
+          ),
           true
         )
     )
@@ -867,9 +1737,25 @@ function buildGeometryUnionType(
  * @param targetDimension Coordinate dimension.
  * @returns List<DenseUnion> Arrow type.
  */
-function buildGeometryCollectionType(targetDimension: 2 | 3 | 4): arrow.List {
-  return new arrow.List(
-    new arrow.Field('geometries', buildGeometryUnionType(targetDimension, false), true)
+function buildGeometryCollectionType(
+  targetDimension: 2 | 3 | 4,
+  options?: GeoArrowGeometryConvertOptions,
+  geometryCollectionDepth = 0,
+  dimensionName: GeoArrowDimension = getDimensionName(targetDimension)
+): arrow.DataType {
+  return createListType(
+    new arrow.Field(
+      'geometries',
+      buildGeometryUnionType(
+        targetDimension,
+        geometryCollectionDepth > 0,
+        options,
+        geometryCollectionDepth,
+        dimensionName
+      ),
+      true
+    ),
+    options?.offsetType
   );
 }
 
@@ -928,9 +1814,16 @@ function getGeometryKindEncoding(
 /**
  * Determines the target coordinate dimension for a set of geometries.
  * @param geometries Source geometries.
+ * @param dimensionName Optional exact dimension name.
  * @returns Coordinate dimension for the converted column.
  */
-function getTargetDimension(geometries: (Geometry | null)[]): 2 | 3 | 4 {
+function getTargetDimension(
+  geometries: (Geometry | null)[],
+  dimensionName?: GeoArrowDimension
+): 2 | 3 | 4 {
+  if (dimensionName) {
+    return dimensionName.length === 2 ? 2 : dimensionName.length === 3 ? 3 : 4;
+  }
   let dimension = 2;
 
   for (const geometry of geometries) {
@@ -981,6 +1874,118 @@ function getCoordinateDimension(coordinates: unknown): number {
   return getCoordinateDimension(coordinates[0]);
 }
 
+function getDimensionName(coordinateSize: 2 | 3 | 4): GeoArrowDimension {
+  return coordinateSize === 2 ? 'xy' : coordinateSize === 4 ? 'xyzm' : 'xyz';
+}
+
+/** Resolves physical coordinate width and semantic Z/M meaning for a conversion. */
+function getTargetDimensionName(
+  geometries: (Geometry | null)[],
+  options?: GeoArrowGeometryConvertOptions
+): GeoArrowDimension {
+  return (
+    options?.dimension ||
+    getDimensionFromGeometryTypes(options?.geometryTypes) ||
+    getDimensionName(getTargetDimension(geometries))
+  );
+}
+
+/** Returns one semantic dimension when all declared geometry types agree. */
+function getDimensionFromGeometryTypes(
+  geometryTypes?: readonly GeoParquetGeometryType[]
+): GeoArrowDimension | undefined {
+  if (!geometryTypes || geometryTypes.length === 0) return undefined;
+  const dimensions = new Set(
+    geometryTypes.map(geometryType =>
+      geometryType.endsWith(' ZM')
+        ? 'xyzm'
+        : geometryType.endsWith(' Z')
+          ? 'xyz'
+          : geometryType.endsWith(' M')
+            ? 'xym'
+            : 'xy'
+    )
+  );
+  return dimensions.size === 1 ? ([...dimensions][0] as GeoArrowDimension) : undefined;
+}
+
+function getBoxFieldNames(dimension: GeoArrowDimension): string[] {
+  const minimumNames =
+    dimension === 'xy'
+      ? ['xmin', 'ymin']
+      : dimension === 'xyz'
+        ? ['xmin', 'ymin', 'zmin']
+        : dimension === 'xym'
+          ? ['xmin', 'ymin', 'mmin']
+          : ['xmin', 'ymin', 'zmin', 'mmin'];
+  const maximumNames =
+    dimension === 'xy'
+      ? ['xmax', 'ymax']
+      : dimension === 'xyz'
+        ? ['xmax', 'ymax', 'zmax']
+        : dimension === 'xym'
+          ? ['xmax', 'ymax', 'mmax']
+          : ['xmax', 'ymax', 'zmax', 'mmax'];
+  return [...minimumNames, ...maximumNames];
+}
+
+/** Creates the Arrow coordinate type for the requested layout and dimension. */
+function getCoordinateType(
+  targetDimension: 2 | 3 | 4,
+  coordinates: GeoArrowCoordinateLayout = 'interleaved',
+  dimensionName: GeoArrowDimension = getDimensionName(targetDimension)
+): arrow.DataType {
+  if (coordinates === 'interleaved') {
+    return new arrow.FixedSizeList(
+      targetDimension,
+      new arrow.Field('value', new arrow.Float64(), true)
+    );
+  }
+
+  const coordinateNames =
+    dimensionName === 'xy'
+      ? ['x', 'y']
+      : dimensionName === 'xyz'
+        ? ['x', 'y', 'z']
+        : dimensionName === 'xym'
+          ? ['x', 'y', 'm']
+          : ['x', 'y', 'z', 'm'];
+  return new arrow.Struct(
+    coordinateNames.map(name => new arrow.Field(name, new arrow.Float64(), true))
+  );
+}
+
+/** Creates a variable-length list type with the requested offset width. */
+function createListType(
+  field: arrow.Field,
+  offsetType: GeoArrowOffsetType = 'int32'
+): arrow.DataType {
+  return offsetType === 'int64' ? new arrow.LargeList(field) : new arrow.List(field);
+}
+
+/** Creates offsets compatible with the selected Arrow list type. */
+function createOffsetArray(
+  offsets: number[],
+  offsetType: GeoArrowOffsetType = 'int32'
+): Int32Array | BigInt64Array {
+  return offsetType === 'int64' ? BigInt64Array.from(offsets, BigInt) : Int32Array.from(offsets);
+}
+
+/** Recursively converts interleaved coordinate tuples to separated struct values. */
+function separateCoordinateValues(value: unknown, targetDimension: 2 | 3 | 4): unknown {
+  if (!Array.isArray(value)) {
+    return value;
+  }
+  if (value.length === 0 || (typeof value[0] !== 'number' && !value.every(item => item === null))) {
+    return value.map(item => separateCoordinateValues(item, targetDimension));
+  }
+
+  const names = ['x', 'y', 'z', 'm'];
+  return Object.fromEntries(
+    names.slice(0, targetDimension).map((name, index) => [name, value[index]])
+  );
+}
+
 /**
  * Clones Arrow metadata into a mutable map.
  * @param metadata Metadata to clone.
@@ -995,12 +2000,41 @@ function cloneMetadataMap(metadata?: Map<string, string>): Map<string, string> {
  * @param geometry Geometry being encoded.
  * @returns WKB options.
  */
-function getGeometryWKBOptions(geometry: Geometry): {hasZ?: boolean; hasM?: boolean} {
-  const dimensions = getGeometryCoordinateDimension(geometry);
+function getGeometryWKBOptions(
+  geometry: Geometry,
+  options?: GeoArrowGeometryConvertOptions
+): {hasZ?: boolean; hasM?: boolean} {
+  const dimension = getGeometryDimension(geometry, options);
   return {
-    hasZ: dimensions > 2,
-    hasM: dimensions > 3
+    hasZ: dimension === 'xyz' || dimension === 'xyzm',
+    hasM: dimension === 'xym' || dimension === 'xyzm'
   };
+}
+
+/** Resolves the semantic dimension of one geometry, honoring WKT annotations and metadata. */
+function getGeometryDimension(
+  geometry: Geometry,
+  options?: GeoArrowGeometryConvertOptions
+): GeoArrowDimension {
+  if (options?.dimension) return options.dimension;
+  const declaredDimension = (geometry as Geometry & {__geoarrowDimension?: GeoArrowDimension})
+    .__geoarrowDimension;
+  if (declaredDimension) return declaredDimension;
+  const geometryTypes = options?.geometryTypes || [];
+  const dimensions = new Set(
+    geometryTypes.map(geometryType =>
+      geometryType.endsWith(' ZM')
+        ? 'xyzm'
+        : geometryType.endsWith(' Z')
+          ? 'xyz'
+          : geometryType.endsWith(' M')
+            ? 'xym'
+            : 'xy'
+    )
+  );
+  if (dimensions.size === 1) return [...dimensions][0] as GeoArrowDimension;
+  const coordinateDimension = getGeometryCoordinateDimension(geometry);
+  return coordinateDimension === 4 ? 'xyzm' : coordinateDimension === 3 ? 'xyz' : 'xy';
 }
 
 /**
@@ -1014,11 +2048,14 @@ function normalizePointCoordinates(
   geometry: Geometry,
   targetDimension: 2 | 3 | 4,
   geometryColumn: string
-): number[] {
+): (number | null)[] {
   if (geometry.type !== 'Point') {
     throw new Error(
       `GeoArrowGeometryConverter cannot encode ${geometry.type} as geoarrow.point in column "${geometryColumn}".`
     );
+  }
+  if (geometry.coordinates.length === 0) {
+    return Array.from({length: targetDimension}, () => null);
   }
   return padPosition(geometry.coordinates, targetDimension);
 }
@@ -1077,6 +2114,9 @@ function normalizeMultiPointCoordinates(
   targetDimension: 2 | 3 | 4,
   geometryColumn: string
 ): number[][] {
+  if (geometry.type === 'Point') {
+    return [padPosition(geometry.coordinates, targetDimension)];
+  }
   if (geometry.type !== 'MultiPoint') {
     throw new Error(
       `GeoArrowGeometryConverter cannot encode ${geometry.type} as geoarrow.multipoint in column "${geometryColumn}".`
@@ -1097,6 +2137,9 @@ function normalizeMultiLineStringCoordinates(
   targetDimension: 2 | 3 | 4,
   geometryColumn: string
 ): number[][][] {
+  if (geometry.type === 'LineString') {
+    return [geometry.coordinates.map(position => padPosition(position, targetDimension))];
+  }
   if (geometry.type !== 'MultiLineString') {
     throw new Error(
       `GeoArrowGeometryConverter cannot encode ${geometry.type} as geoarrow.multilinestring in column "${geometryColumn}".`
@@ -1119,6 +2162,11 @@ function normalizeMultiPolygonCoordinates(
   targetDimension: 2 | 3 | 4,
   geometryColumn: string
 ): number[][][][] {
+  if (geometry.type === 'Polygon') {
+    return [
+      geometry.coordinates.map(ring => ring.map(position => padPosition(position, targetDimension)))
+    ];
+  }
   if (geometry.type !== 'MultiPolygon') {
     throw new Error(
       `GeoArrowGeometryConverter cannot encode ${geometry.type} as geoarrow.multipolygon in column "${geometryColumn}".`

@@ -263,6 +263,12 @@ export function serializeArrowType(arrowType: arrow.DataType): DataType {
         type: 'list',
         children: [serializeArrowField(listField)]
       };
+    case arrow.LargeList:
+      const largeListType = arrowType as arrow.LargeList;
+      return {
+        type: 'large-list',
+        children: [serializeArrowField(largeListType.valueField)]
+      };
     case arrow.FixedSizeList:
       const fixedSizeList = arrowType as arrow.FixedSizeList;
       return {
@@ -275,6 +281,15 @@ export function serializeArrowType(arrowType: arrow.DataType): DataType {
       return {
         type: 'struct',
         children: structType.children.map(arrowField => serializeArrowField(arrowField))
+      };
+    case arrow.SparseUnion:
+    case arrow.DenseUnion:
+      const unionType = arrowType as arrow.SparseUnion | arrow.DenseUnion;
+      return {
+        type: unionType instanceof arrow.DenseUnion ? 'dense-union' : 'sparse-union',
+        typeIds: unionType.typeIds,
+        children: unionType.children.map(arrowField => serializeArrowField(arrowField)),
+        typeIdToChildIndex: {...unionType.typeIdToChildIndex}
       };
     case arrow.Dictionary:
       const dictionaryType = arrowType as arrow.Dictionary;
@@ -313,6 +328,10 @@ export function deserializeArrowType(
         const field = deserializeArrowField(dataType.children[0], options);
         return new arrow.List(field);
       }
+      case 'large-list': {
+        const field = deserializeArrowField(dataType.children[0], options);
+        return new arrow.LargeList(field);
+      }
       case 'fixed-size-list': {
         const child = deserializeArrowField(dataType.children[0], options);
         return new arrow.FixedSizeList(dataType.listSize, child);
@@ -324,6 +343,15 @@ export function deserializeArrowType(
           deserializeArrowField(arrowField, options)
         );
         return new arrow.Struct(children);
+      }
+      case 'sparse-union':
+      case 'dense-union': {
+        const children = dataType.children.map(arrowField =>
+          deserializeArrowField(arrowField, options)
+        );
+        return dataType.type === 'dense-union'
+          ? new arrow.DenseUnion(dataType.typeIds, children)
+          : new arrow.SparseUnion(dataType.typeIds, children);
       }
       case 'dictionary': {
         return new arrow.Dictionary(

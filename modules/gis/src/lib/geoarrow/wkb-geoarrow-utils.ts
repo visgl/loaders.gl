@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import type {Field, Geometry, Schema} from '@loaders.gl/schema';
+import type {Field, Geometry, GeoArrowDimension, Schema} from '@loaders.gl/schema';
 import type {GeoArrowBuilderEncoding} from './geoarrow-builder';
 import {convertGeometryToWKB} from '../geometry-converters/wkb/convert-geometry-to-wkb';
 import {
@@ -210,11 +210,31 @@ export function encodeWKBGeometryValue(
  * @returns WKB dimensional flags.
  */
 export function getGeometryWKBOptions(geometry: Geometry): {hasZ?: boolean; hasM?: boolean} {
-  const dimensions = getCoordinateDimensions(getGeometrySampleCoordinates(geometry));
+  const dimension = getGeometryDimension(geometry);
   return {
-    hasZ: dimensions > 2,
-    hasM: dimensions > 3
+    hasZ: dimension === 'xyz' || dimension === 'xyzm',
+    hasM: dimension === 'xym' || dimension === 'xyzm'
   };
+}
+
+function getGeometryDimension(geometry: Geometry): GeoArrowDimension {
+  const declaredDimension = (geometry as Geometry & {__geoarrowDimension?: GeoArrowDimension})
+    .__geoarrowDimension;
+  if (declaredDimension) return declaredDimension;
+
+  if ('geometries' in geometry) {
+    let hasZ = false;
+    let hasM = false;
+    for (const child of geometry.geometries) {
+      const childDimension = getGeometryDimension(child);
+      hasZ ||= childDimension === 'xyz' || childDimension === 'xyzm';
+      hasM ||= childDimension === 'xym' || childDimension === 'xyzm';
+    }
+    return hasZ && hasM ? 'xyzm' : hasZ ? 'xyz' : hasM ? 'xym' : 'xy';
+  }
+
+  const dimensions = getCoordinateDimensions(getGeometrySampleCoordinates(geometry));
+  return dimensions > 3 ? 'xyzm' : dimensions > 2 ? 'xyz' : 'xy';
 }
 
 /**
@@ -233,13 +253,17 @@ export function inferGeoParquetGeometryTypes(
       continue;
     }
 
-    const dimensions = getCoordinateDimensions(getGeometrySampleCoordinates(geometry));
-    geometryTypes.add(
-      (dimensions > 2 ? `${geometry.type} Z` : geometry.type) as GeoParquetGeometryType
-    );
+    const dimension = getGeometryDimension(geometry);
+    geometryTypes.add(`${geometry.type}${getDimensionSuffix(dimension)}` as GeoParquetGeometryType);
   }
 
   return [...geometryTypes];
+}
+
+function getDimensionSuffix(dimension: GeoArrowDimension): string {
+  return dimension === 'xy'
+    ? ''
+    : ` ${dimension === 'xyzm' ? 'ZM' : dimension.slice(2).toUpperCase()}`;
 }
 
 /**
