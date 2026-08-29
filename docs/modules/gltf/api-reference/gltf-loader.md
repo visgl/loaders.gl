@@ -14,6 +14,7 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
   eyebrow="glTF module / loader"
   title="GLTFLoader"
   description="Load a standards-shaped scene while the loader resolves buffers, images, compressed meshes, and other linked resources around it."
+  hideTitle
   tone="pink"
   meta={['.gltf and .glb', 'Linked assets', 'Draco and meshopt']}
   links={[

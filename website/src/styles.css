@@ -45,8 +45,8 @@
   --docs-table-background: rgba(255, 255, 255, 0.92);
   --docs-table-shell-background: rgba(247, 250, 252, 0.92);
   --docs-table-header-background: var(--ifm-color-gray-200);
-  --docs-table-border: var(--ifm-color-gray-400);
-  --docs-table-divider: rgba(43, 56, 72, 0.1);
+  --docs-table-border: rgba(118, 131, 150, 0.32);
+  --docs-table-divider: rgba(92, 101, 122, 0.14);
   --docs-table-shadow:
     0 20px 44px rgba(43, 56, 72, 0.12),
     0 6px 18px rgba(43, 56, 72, 0.08);
@@ -78,17 +78,32 @@ html[data-theme='dark'] {
   --docs-accent-text: #62D5FF;
   --docs-text-strong: #F5F8FC;
   --docs-text-muted: #9FB0C4;
-  --docs-table-background: rgba(36, 46, 58, 0.92);
-  --docs-table-shell-background: rgba(29, 38, 49, 0.94);
-  --docs-table-header-background: rgba(72, 86, 104, 0.72);
-  --docs-table-border: rgba(158, 174, 192, 0.26);
-  --docs-table-divider: rgba(225, 232, 240, 0.12);
+  --docs-table-background: rgba(11, 24, 43, 0.72);
+  --docs-table-shell-background: rgba(13, 21, 33, 0.96);
+  --docs-table-header-background: rgba(19, 39, 65, 0.94);
+  --docs-table-border: rgba(111, 120, 145, 0.34);
+  --docs-table-divider: rgba(165, 151, 184, 0.12);
   --docs-table-shadow:
     0 18px 42px rgba(0, 0, 0, 0.3),
     0 4px 12px rgba(0, 0, 0, 0.24);
-  --docs-table-text: rgba(255, 255, 255, 0.92);
-  --docs-table-link: #66d6ff;
-  --docs-table-link-hover: #8ae0ff;
+  --docs-table-text: rgba(244, 248, 251, 0.9);
+  --docs-table-link: #70c7ff;
+  --docs-table-link-hover: #9bdcff;
+}
+
+/* Designed documentation keeps reference tables on the same dark surface as its cards in either theme. */
+html.docs-designed-page {
+  --docs-table-background: rgba(17, 31, 51, 0.96);
+  --docs-table-shell-background: rgba(13, 21, 33, 0.96);
+  --docs-table-header-background: rgba(26, 45, 70, 0.94);
+  --docs-table-border: rgba(111, 120, 145, 0.34);
+  --docs-table-divider: rgba(165, 151, 184, 0.12);
+  --docs-table-shadow:
+    0 20px 44px rgba(13, 21, 33, 0.22),
+    0 6px 18px rgba(13, 21, 33, 0.14);
+  --docs-table-text: rgba(244, 248, 251, 0.9);
+  --docs-table-link: #70c7ff;
+  --docs-table-link-hover: #9bdcff;
 }
 
 html[data-theme='dark'] .navbar {
@@ -200,15 +215,15 @@ main .container {
 }
 .markdown .docs-markdown-table {
   background:
-    linear-gradient(135deg, color-mix(in srgb, var(--ifm-color-primary) 8%, transparent), transparent 42%),
-    var(--docs-table-shell-background);
+    radial-gradient(circle at 92% 0%, color-mix(in srgb, var(--ifm-color-primary) 10%, transparent), transparent 34%),
+    linear-gradient(145deg, color-mix(in srgb, var(--ifm-color-primary) 7%, var(--docs-table-shell-background)), var(--docs-table-shell-background));
   border: 1px solid var(--docs-table-border);
-  border-radius: 18px;
+  border-radius: 22px;
   box-shadow: var(--docs-table-shadow);
   margin: 2rem auto;
   max-width: min(100%, 82rem);
-  overflow-x: auto;
-  padding: 0.45rem;
+  overflow: auto;
+  padding: 0;
   position: relative;
   scrollbar-color: var(--ifm-color-primary) transparent;
 }
@@ -218,18 +233,18 @@ main .container {
   border-radius: 1rem 1rem 0 0;
   content: '';
   height: 2px;
-  left: 0.45rem;
+  left: 0;
   position: absolute;
-  right: 0.45rem;
-  top: 0.45rem;
+  right: 0;
+  top: 0;
 }
 
 .markdown .docs-markdown-table__table {
-  border: 1px solid var(--docs-table-border);
+  border: 0 !important;
   border-collapse: separate;
   border-spacing: 0;
-  background: var(--docs-table-background);
-  border-radius: 14px;
+  background: transparent;
+  border-radius: 0;
   color: var(--docs-table-text);
   margin: 0;
   min-width: 100%;
@@ -237,9 +252,14 @@ main .container {
   width: max-content;
 }
 
+.docs-designed-page .markdown .docs-markdown-table__table {
+  font-size: 0.92rem;
+  line-height: 1.42;
+}
+
 .markdown .docs-markdown-table__table thead {
   background:
-    linear-gradient(90deg, color-mix(in srgb, var(--ifm-color-primary) 15%, transparent), transparent 70%),
+    linear-gradient(105deg, color-mix(in srgb, var(--ifm-color-primary) 16%, transparent), transparent 68%),
     var(--docs-table-header-background);
 }
 
@@ -264,10 +284,16 @@ main .container {
 
 .markdown .docs-markdown-table__table th,
 .markdown .docs-markdown-table__table td {
-  border: 0;
-  border-bottom: 1px solid var(--docs-table-divider);
-  padding: 0.62rem 0.9rem;
+  border-color: transparent !important;
+  border-style: none !important;
+  border-width: 0 !important;
+  padding: 0.34rem 0.78rem !important;
   vertical-align: top;
+}
+
+.markdown .docs-markdown-table__table tbody tr + tr td {
+  border-top: 1px solid var(--docs-table-divider) !important;
+  border-bottom: 0 !important;
 }
 
 .markdown .docs-markdown-table__table tbody td,
@@ -285,34 +311,54 @@ main .container {
 }
 
 .markdown .docs-markdown-table__table thead th[colspan] {
-  color: var(--ifm-heading-color);
-  font-size: 1.35rem;
-  font-weight: 800;
-  line-height: 1.2;
-  letter-spacing: -0.02em;
+  border-bottom: 1px solid var(--docs-table-divider) !important;
+  color: var(--ifm-color-primary-light) !important;
+  font-size: 0.76rem !important;
+  font-weight: 800 !important;
+  letter-spacing: 0.14em !important;
+  line-height: 1.2 !important;
+  padding: 0.78rem 0.9rem !important;
   text-align: left;
+  text-transform: uppercase !important;
 }
 
 .markdown .docs-markdown-table__table tbody tr:last-child td {
-  border-bottom: 0;
+  border-bottom: 0 !important;
 }
 
-.markdown .docs-markdown-table__table th + th,
-.markdown .docs-markdown-table__table td + td {
-  border-left: 1px solid color-mix(in srgb, var(--docs-table-divider) 60%, transparent);
+.markdown .docs-markdown-table__table tbody td:first-child {
+  background: color-mix(in srgb, var(--ifm-color-primary) 4.5%, transparent) !important;
+  border-right: 0 !important;
+  color: color-mix(in srgb, var(--docs-table-text) 90%, var(--ifm-color-primary-light)) !important;
+  font-weight: 700 !important;
+  white-space: nowrap !important;
+  width: 27% !important;
+}
+
+.markdown .docs-markdown-table__table tbody td + td {
+  border-left: 0 !important;
 }
 
 .markdown .docs-markdown-table__table td code,
 .markdown .docs-markdown-table__table th code {
-  background: color-mix(in srgb, var(--ifm-color-primary) 11%, transparent);
-  border: 1px solid color-mix(in srgb, var(--ifm-color-primary) 20%, transparent);
+  background: color-mix(in srgb, var(--ifm-color-primary) 11%, transparent) !important;
+  background-color: color-mix(in srgb, var(--ifm-color-primary) 11%, transparent) !important;
+  border: 1px solid color-mix(in srgb, var(--ifm-color-primary) 20%, transparent) !important;
   border-radius: 0.4rem;
-  box-shadow: none;
-  color: var(--docs-table-link);
-  font-size: 1.02em;
+  box-shadow: none !important;
+  color: var(--docs-table-link) !important;
+  font-family: var(--ifm-font-family-monospace);
+  font-size: 0.9em !important;
   font-weight: 700;
-  padding: 0.12rem 0.32rem;
+  padding: 0.06em 0.25em !important;
   white-space: nowrap;
+}
+
+.docs-designed-page .markdown .docs-markdown-table__table td code,
+.docs-designed-page .markdown .docs-markdown-table__table th code {
+  background: rgba(112, 199, 255, 0.1);
+  border-color: rgba(112, 199, 255, 0.24);
+  color: #9bdcff;
 }
 
 html[data-theme='dark'] .markdown .docs-markdown-table__table td code,

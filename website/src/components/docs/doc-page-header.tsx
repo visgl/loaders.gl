@@ -40,7 +40,19 @@ export type DocPageHeaderProps = {
   notice?: ReactNode;
   /** Optional status and version badges moved out of the long-form reference content. */
   badges?: readonly ReactNode[];
+  /** Render the document identifier as the sole title, omitting the prose title line. */
+  hideTitle?: boolean;
 };
+
+/** Renders the small amount of inline code commonly used in page descriptions. */
+function renderDescription(description: string): ReactNode {
+  return description.split(/(`[^`]+`)/g).map((part, index) => {
+    if (part.startsWith('`') && part.endsWith('`')) {
+      return <code key={index}>{part.slice(1, -1)}</code>;
+    }
+    return part;
+  });
+}
 
 /**
  * Renders a concise orientation panel before detailed module, format, category, or API content.
@@ -53,7 +65,8 @@ export function DocPageHeader({
   meta = [],
   links = [],
   notice,
-  badges = []
+  badges = [],
+  hideTitle = false
 }: DocPageHeaderProps): ReactNode {
   const {metadata} = useDoc();
   const headerReference = useRef<HTMLElement>(null);
@@ -92,11 +105,19 @@ export function DocPageHeader({
             {badges}
           </div>
         </div>
-        <p className={styles.identity}>{metadata.title}</p>
-        <h1 className={styles.title} id="doc-page-header-title">
-          {title}
-        </h1>
-        <p className={styles.description}>{description}</p>
+        {hideTitle ? (
+          <h1 className={styles.identity} id="doc-page-header-title">
+            {metadata.title}
+          </h1>
+        ) : (
+          <>
+            <p className={styles.identity}>{metadata.title}</p>
+            <h1 className={styles.title} id="doc-page-header-title">
+              {title}
+            </h1>
+          </>
+        )}
+        <p className={styles.description}>{renderDescription(description)}</p>
         {notice ? <div className={styles.notice}>{notice}</div> : null}
       </div>
       {(meta.length > 0 || links.length > 0) && (

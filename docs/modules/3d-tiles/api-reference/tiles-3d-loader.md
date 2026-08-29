@@ -10,9 +10,10 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
 import {TiledSceneGraphic} from '@site/src/components/docs/tiled-scene-graphic';
 
 <DocPageHeader
-  eyebrow="3D Tiles loader"
+  eyebrow="3D Tiles"
   title="Read tiled 3D worlds one payload at a time."
-  description="`Tiles3DLoader` parses 3D Tiles tilesets and their renderable content, then delegates linked glTF, Draco, image, and texture payloads to the appropriate loaders. Use it directly for parsing or with `Tiles3DSource` for view-driven traversal."
+  description="Read tiled 3D worlds one payload at a time. `Tiles3DLoader` parses 3D Tiles tilesets and their renderable content, then delegates linked glTF, Draco, image, and texture payloads to the appropriate loaders. Use it directly for parsing or with `Tiles3DSource` for view-driven traversal."
+  hideTitle
   tone="blue"
   meta={['3D Tiles', 'Linked asset loading', 'Tileset and tile content']}
   links={[
@@ -54,7 +55,7 @@ Parses a [3D Tiles](https://github.com/CesiumGS/3d-tiles) tileset.
 | Streaming Support     | No \*                                                                                                                    |
 | Subloaders            | `DracoLoader` (`.pnts`), `GLTFLoader` (`.b3dm`, `.i3dm`), `ImageBitmapLoader` (`.jpg`, `.png`), `TextureLoader` (`.ktx`) |
 
-\* Streaming is not supported for individual tiles, however tilesets are streamed by loading only the tiles needed for the specified viewports.
+\* Streaming individual tile contents is not supported; however, tilesets are streamed so that only the tiles needed for the specified viewports are loaded.
 
 ## Usage
 

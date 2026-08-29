@@ -18,6 +18,7 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
   eyebrow="Parquet module / loader"
   title="ParquetLoader"
   description="Start with a familiar load call, then opt into Arrow output, batches, or the selective source API as the dataset grows."
+  hideTitle
   tone="mint"
   meta={['WASM-backed default', 'Arrow table option', 'Streaming batches']}
   links={[

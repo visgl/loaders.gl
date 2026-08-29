@@ -12,7 +12,8 @@ import {TiledSceneGraphic} from '@site/src/components/docs/tiled-scene-graphic';
 <DocPageHeader
   eyebrow="I3S loader"
   title="Load ArcGIS scene layers as traversable data."
-  description="`I3SLoader` reads Indexed 3D Scene layers, their geometry and texture resources, and the metadata needed by the shared tiles runtime. Use it for mesh, point, and scene-layer content delivered as JSON, binary nodes, or an SLPK archive."
+  description="Load ArcGIS scene layers as traversable data. `I3SLoader` reads Indexed 3D Scene layers, their geometry and texture resources, and the metadata needed by the shared tiles runtime. Use it for mesh, point, and scene-layer content delivered as JSON, binary nodes, or an SLPK archive."
+  hideTitle
   tone="orange"
   meta={['I3S 1.x and 2.x', 'Scene and point layers', 'JSON and binary resources']}
   links={[

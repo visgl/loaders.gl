@@ -17,6 +17,7 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
   eyebrow="Arrow module / loader"
   title="ArrowLoader"
   description="Read Arrow IPC data and keep its typed, columnar structure as it enters your application."
+  hideTitle
   tone="cyan"
   meta={['Input: .arrow / .feather', 'Output: ArrowTable', 'Supports batches']}
   links={[
