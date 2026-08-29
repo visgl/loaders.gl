@@ -1,4 +1,38 @@
-# RangeRequestScheduler
+---
+title: RangeRequestScheduler
+description: Coalesce nearby byte-range requests while preserving exact slices for callers.
+hide_title: true
+page_style: designed
+---
+
+import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
+import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
+
+<DocPageHeader
+  eyebrow="Range-read scheduler"
+  title="Turn many tiny reads into a bounded cloud request plan."
+  description="`RangeRequestScheduler` batches nearby byte ranges, coalesces compatible requests, and returns each caller its exact requested slice. It is the transport layer beneath readers for formats such as PMTiles and other random-access objects."
+  tone="blue"
+  meta={['HTTP Range', 'Request coalescing', 'Transport diagnostics']}
+  links={[
+    {label: 'Loader utilities', to: '/docs/modules/loader-utils'},
+    {label: 'Range cache', to: '/docs/modules/loader-utils/api-reference/range-request-cache'},
+    {label: 'Scan architecture', to: '/docs/developer-guide/common-scan-architecture'}
+  ]}
+/>
+
+<DocOrientation
+  eyebrow="The scheduling path"
+  title="Queue the logical reads. Merge compatible transport work."
+  description="A format reader can ask for headers, indexes, or pages independently. The scheduler decides when to flush and how to over-fetch nearby bytes without changing the exact result each caller receives."
+  tone="blue"
+  items={[
+    {label: 'Queue', value: 'Logical offset and length requests'},
+    {label: 'Merge', value: 'Nearby compatible ranges within configured limits'},
+    {label: 'Slice', value: 'Return each caller’s exact requested bytes'},
+    {label: 'Observe', value: 'Track logical, merged, fetched, and failed ranges'}
+  ]}
+/>
 
 <p class="badges">
   <img src="https://img.shields.io/badge/From-v5.0-blue.svg?style=flat-square" alt="From-v5.0" />
@@ -9,6 +43,12 @@
 It can be composed with [`RangeRequestCache`](./range-request-cache) when completed ranges should
 also be retained for reuse.
 It is used by `PMTilesSourceLoader` and can be reused by other byte-range-addressable Sources.
+
+<ReferenceBoundary
+  title="Scheduling and transport details"
+  description="The reference below covers batching, expansion, coalescing identity, custom transports, exact slicing, cancellation, and range statistics."
+  tone="blue"
+/>
 
 ```typescript
 import {RangeRequestScheduler, createRangeStats, getRangeStats} from '@loaders.gl/loader-utils';

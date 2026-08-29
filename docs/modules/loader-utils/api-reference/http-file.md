@@ -1,4 +1,38 @@
-# HttpFile
+---
+title: HttpFile
+description: Read remote objects through validated random-access HTTP range requests.
+hide_title: true
+page_style: designed
+---
+
+import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
+import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
+
+<DocPageHeader
+  eyebrow="Remote random access"
+  title="Read a cloud object like a local binary file."
+  description="`HttpFile` pins the remote object’s length and validators, then exposes exact reads through the `ReadableFile` interface. It makes range-addressable formats usable without downloading the whole object first."
+  tone="blue"
+  meta={['HTTP Range', 'ETag consistency', 'Browser and Node.js']}
+  links={[
+    {label: 'Loader utilities', to: '/docs/modules/loader-utils'},
+    {label: 'Range scheduler', to: '/docs/modules/loader-utils/api-reference/range-request-scheduler'},
+    {label: 'Readable files', to: '/docs/modules/loader-utils/api-reference/readable-file'}
+  ]}
+/>
+
+<DocOrientation
+  eyebrow="The remote-file path"
+  title="Pin the object. Request a range. Validate the response."
+  description="Cloud-native readers depend on exact byte ranges, but remote objects can change or servers can return unexpected responses. `HttpFile` keeps identity and transport validation together."
+  tone="blue"
+  items={[
+    {label: 'Open', value: 'Discover length and available validators'},
+    {label: 'Read', value: 'Issue exact `Range` requests for byte intervals'},
+    {label: 'Validate', value: 'Check status, Content-Range, length, and identity'},
+    {label: 'Return', value: 'ArrayBuffer through the common ReadableFile contract'}
+  ]}
+/>
 
 <p class="badges">
   <img src="https://img.shields.io/badge/From-v5.0-blue.svg?style=flat-square" alt="From-v5.0" />
@@ -8,6 +42,12 @@
 `HttpFile` provides validated random access to a remote object in browsers and Node.js. It sends
 exact HTTP range requests, pins the object's length and available validators, and rejects responses
 that no longer describe the same object.
+
+<ReferenceBoundary
+  title="Remote file and consistency details"
+  description="The reference below covers opening, range reads, headers, validators, consistency modes, scheduling, telemetry, and failure behavior."
+  tone="blue"
+/>
 
 ```typescript
 import {HttpFile} from '@loaders.gl/loader-utils';
