@@ -6,6 +6,7 @@ page_style: designed
 ---
 
 import {ArrowDocsTabs} from '@site/src/components/docs/arrow-docs-tabs';
+import {ArrowDataPlaneGraphic} from '@site/src/components/docs/arrow-data-plane-graphic';
 import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
 import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
 
@@ -23,6 +24,8 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
 />
 
 <ArrowDocsTabs active="format" />
+
+<ArrowDataPlaneGraphic />
 
 <DocOrientation
   eyebrow="Why Arrow is the common shape"
