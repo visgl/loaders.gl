@@ -6,6 +6,7 @@ page_style: designed
 ---
 
 import {GeoPackageDocsTabs} from '@site/src/components/docs/geopackage-docs-tabs';
+import {DatasetDiscoveryGraphic} from '@site/src/components/docs/dataset-discovery-graphic';
 import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
 import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
 
@@ -22,6 +23,8 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
 />
 
 <GeoPackageDocsTabs active="overview" />
+
+<DatasetDiscoveryGraphic kind="geopackage" />
 
 <DocOrientation
   eyebrow="The package boundary"

@@ -6,6 +6,7 @@ page_style: designed
 ---
 
 import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
+import {DatasetDiscoveryGraphic} from '@site/src/components/docs/dataset-discovery-graphic';
 import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
 
 <DocPageHeader
@@ -19,6 +20,8 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
     {label: 'CRS guide', to: '/docs/developer-guide/coordinate-reference-systems'}
   ]}
 />
+
+<DatasetDiscoveryGraphic kind="geopackage" />
 
 <DocOrientation
   eyebrow="The GeoPackage path"
