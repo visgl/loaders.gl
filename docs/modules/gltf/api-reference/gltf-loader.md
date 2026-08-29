@@ -41,20 +41,28 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
   <img src="https://img.shields.io/badge/From-v1.0-blue.svg?style=flat-square" alt="From-v1.0" />
 </p>
 
-Parses a glTF file. Can load both the `.glb` (binary) and `.gltf` (application/json) file format variants.
+Parses a glTF file. It loads both the `.glb` (binary) and `.gltf` (application/json) variants,
+then keeps the standards-shaped JSON available alongside any resolved buffers, images, and
+decoded extension data.
 
-A glTF file contains a hierarchical scenegraph description that can be used to instantiate corresponding hierarcy of actual `Scenegraph` related classes in most WebGL libraries.
+:::info[Start with the output you need]
 
-| Loader          | Characteristic                                                                                                                                                  |
-| --------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------- | --- |
-| File Extensions | `.glb`, `.gltf`                                                                                                                                                 |
-| File Type       | Binary, JSON, Linked Assets                                                                                                                                     |
-| File Format     | [glTF v2.1 (draft)](/docs/modules/gltf/formats/gltf#gltf-21-draft), [glTF v2](https://github.com/KhronosGroup/glTF/tree/master/specification/2.0), [GLTF v1](https://github.com/KhronosGroup/glTF/tree/master/specification/1.0) \* |
-| Data Format     | [Scenegraph](/docs/specifications/category-scenegraph)                                                                                                          |
-| Supported APIs  | `load`, `parse`                                                                                                                                                 |
-| Subloaders      | `DracoLoader`, `ImageBitmapLoader`                                                                                                                              |     |
+- Use `GLTFLoader` when you need the glTF document, linked resources, or extension processing.
+- Use [`postProcessGLTF`](post-process-gltf) or [`GLTFScenegraph`](gltf-scenegraph) when traversal
+  should be more convenient than following indices in the source JSON.
+- Use [`convertGLTFToMeshArrow()`](/docs/specifications/category-mesh#mesh-arrow-tables) when
+  static primitive attributes should enter a shared Mesh Arrow table without baking scene
+  transforms into the geometry.
 
-\* From [![Website shields.io](https://img.shields.io/badge/v2.3-blue.svg?style=flat-square)](http://shields.io), the `GLTFLoader` offers optional, best-effort support for converting older glTF v1 files to glTF v2 format (`options.gltf.normalize: true`). This conversion has a number of limitations and the parsed data structure may be only partially converted to glTF v2, causing issues to show up later e.g. when attempting to render the scenegraphs.
+:::
+
+| Input | Output | APIs |
+| --- | --- | --- |
+| `.gltf` JSON, `.glb` binary, and draft glTF 2.1 assets | [Scenegraph category data](/docs/specifications/category-scenegraph): source `json` plus optional `buffers`, `images`, `files`, and `externalAssets` | `load`, `parse` |
+
+The loader also supports optional best-effort conversion of older glTF v1 files to glTF v2 with
+`options.gltf.normalize: true`. This conversion has limitations; use the normalization helpers
+below when an application needs diagnostics or strict rejection of unsupported legacy features.
 
 For applications that need explicit conversion diagnostics, `normalizeGLTFV1()` returns a report
 listing unsupported legacy features. Use `normalize: 'strict'` to reject those features instead of
@@ -64,7 +72,7 @@ shaders are preserved under `json.extras.gltf1Resources`; they are not guessed i
 
 ## Usage
 
-```
+```ts
 import {load} from '@loaders.gl/core';
 import {GLTFLoader} from '@loaders.gl/gltf';
 const gltf = await load(url, GLTFLoader);
@@ -72,12 +80,16 @@ const gltf = await load(url, GLTFLoader);
 
 To decompress Draco-compressed meshes:
 
-```
+```ts
 import {load} from '@loaders.gl/core';
 import {GLTFLoader} from '@loaders.gl/gltf';
-import {DracoLoader} from '@loaders.gl/draco';
-const gltf = load(url, GLTFLoader, {DracoLoader, decompress: true});
+const gltf = await load(url, GLTFLoader, {
+  gltf: {decompressMeshes: true}
+});
 ```
+
+Draco and meshopt decoders are maintained by the glTF module. For linked buffers, images, or
+draft glTF 2.1 files, enable the matching `gltf.load*` options described below.
 
 <ReferenceBoundary
   title="Loader behavior and options"
@@ -129,12 +141,12 @@ Note: while supported, synchronous parsing of glTF (e.g. using `parseSync()`) ha
 
 | Option                    | Type    | Default | Description                                                                  |
 | ------------------------- | ------- | ------- | ---------------------------------------------------------------------------- |
-| `gltf.loadBuffers`        | Boolean | `false` | Fetch any referenced binary buffer files (and decode base64 encoded URIS).   |
+| `gltf.loadBuffers`        | Boolean | `true`  | Fetch any referenced binary buffer files (and decode base64 encoded URIs).   |
 | `gltf.loadFiles`          | Boolean | `false` | Resolve draft glTF 2.1 `files` entries from URIs or buffer views.             |
 | `gltf.loadExternalAssets` | Boolean | `false` | Recursively parse draft glTF 2.1 external assets instantiated by scene nodes. |
-| `gltf.loadImages`         | Boolean | `false` | Load images referenced by textures or the draft glTF 2.1 thumbnail.          |
+| `gltf.loadImages`         | Boolean | `true`  | Load images referenced by textures or the draft glTF 2.1 thumbnail.          |
 | `gltf.decompressMeshes`   | Boolean | `true`  | Decompress Draco and [KHR/EXT meshopt](/docs/modules/gltf/formats/gltf#meshopt-compression) data. |
-| `gltf.normalize`          | Boolean | `false` | Optional, best-effort attempt at converting glTF v1 files to glTF2 format.   |
+| `gltf.normalize`          | Boolean | `true`  | Best-effort conversion of glTF v1 files to glTF v2 format.                   |
 
 ### Meshopt decompression
 
