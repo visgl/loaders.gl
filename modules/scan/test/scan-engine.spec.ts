@@ -24,6 +24,9 @@ test('creates the Arrow reference engine by default', async () => {
   expect(engine.name).toBe('arrow');
   expect(result.data.schema.fields.map(field => field.name)).toEqual(['name']);
   expect(result.data.toArray().map(row => row?.toJSON())).toEqual([{name: 'b'}]);
+
+  const asyncResult = await engine.queryAsync(makeArrowTable({value: [1, 2]}), {limit: 1});
+  expect(asyncResult.data.numRows).toBe(1);
 });
 
 test('exposes the shared metadata vocabulary from the optional scan package', () => {
@@ -60,6 +63,7 @@ test('loads a registered backend through the same root API', async () => {
 
   expect(engine.name).toBe('test');
   expect(engine.query(table)).toBe(table);
+  await expect(engine.queryAsync(table)).resolves.toBe(table);
 });
 
 test('validates backend registrations and loader names', async () => {
