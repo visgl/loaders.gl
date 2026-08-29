@@ -93,17 +93,8 @@ npm install @loaders.gl/core
 
 ## Usage
 
-> Intended usage only, not yet working!
-
-```
-import {load} from `@loaders.gl/core`;
-import {PotreeLoader} from `@loaders.gl/potree`;
-import {Tileset3D} from `@loaders.gl/category-3d-tiles`;
-
-const potree = await load(POTREE_URL);
-const tileset = new Tileset3D(potree);
-const tilesToRender = tileset.traverse(frameData);
-```
+For a complete point-cloud source, create a `DataSource` and pass it to the point-cloud tileset
+runtime. The source resolves the Potree hierarchy and node payloads as the viewport requests them:
 
 Potree can also be used through the `DataSource` path with the lightweight point-cloud manager:
 

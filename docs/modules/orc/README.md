@@ -16,7 +16,7 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
   meta={['Apache ORC', 'Read and write', 'Arrow tables']}
   links={[
     {label: 'ORC format', to: '/docs/modules/orc/formats/orc'},
-    {label: 'ORC format', to: '/docs/modules/orc/formats/orc'},
+    {label: 'ORC scan', to: '/docs/modules/orc#scan-support'},
     {label: 'Scan architecture', to: '/docs/developer-guide/common-scan-architecture'}
   ]}
 />

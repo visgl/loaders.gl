@@ -40,24 +40,30 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
   tone="orange"
 />
 
-This section collects articles that provide additional information about a number of the file formats supported by loaders.gl.
+Format pages answer a different question from API pages: what does the file or protocol represent,
+and what should a reader know before choosing an implementation?
 
-Note that these file format articles are essentially a cleaned up collection of research notes for some of the formats supported by loaders.gl. They are not intended to be comprehensive or exhaustive. The hope is that by sharing these notes we may help some readers quickly build deeper understanding of a particular format, by providing a high level, easily digestible summary of the key points of that format.
+| You want to… | Use… |
+| --- | --- |
+| Understand a file's purpose and layout | A format article in this section |
+| Load or write that format in JavaScript | The linked loaders.gl module page |
+| Check a function, option, or return type | The module's API reference |
+| Compare related formats | The relevant category or data-plane guide |
 
-## Documentation Structure
+## What a format article covers
 
-The file format articles in this section aim to follow the following structure:
+Articles usually begin with links to the relevant specification and loaders.gl module, then move
+through the format's purpose, physical or logical layout, important features, versions, and a small
+example when one makes the structure easier to see. The goal is a useful orientation, not a complete
+replacement for the normative specification.
 
-- **Links** -Articles should start off with links to the loaders.gl module that implements this format, as well as specifications and if available, the corresponding wikipedia article.
-- **Overview** of formats - what is the purpose of the format?
-- **Features** details about what is stored in the format (columns, metadata, data types, encodings, compressions, ...).
-- **Versions** - if the format has undergone notable revisions, it is desirable to have a section about what these are and what changed between releases. It is good to be able to show when the versions were standardized to place them in context of the evolution of file formats.
-- **Example** - Especially for textual formats it is often illustrative to show a short example file.
+Loaders.gl support notes may appear in a clearly labeled column or section. They describe the
+implementation boundary and should not be read as part of the format specification. For API
+behavior, follow the module and loader links instead.
 
-The preference is that file format articles should focus on the format itself and avoid describing the loaders.gl API. The articles can then be relevant for a bigger audience, and loaders.gl API information can be concentrated into the reference docs.
+## Scope and contributions
 
-However for practical reasons some information showing loaders.gl support for various file format features may be included. For example, an extra loaders.gl specific column can occasionally found in tables listing out format features, indicating if those features are supported in loaders.gl. The information should so that it is clearly marked and can easily be ignored.
-
-## Caveats
-
-The documentation in this "Formats" section are provided on an as-is basis, there is no currently no stated goal of provide similar documentation for all covered formats. Requesting maintainers to write new articles or update existing articles will likely not be successful. That said, egregious errors will be fixed if reported. GitHub Pull Requests with corrections or additional contributions are welcome, as long the proposed changes are reasonably consistent with the general style and level detail of the existing documentation.
+This collection is selective. Some articles are concise research notes, while others document a
+format in more depth; there is no promise that every supported format has a matching article.
+Corrections and focused additions are welcome, especially when they improve accuracy, clarify a
+version distinction, or connect a format to the right loaders.gl entry point.
