@@ -48,9 +48,9 @@ export class ArrowTableBatchAggregator extends ColumnarTableBatchAggregator {
 // Convert from a simple loaders.gl schema to an Arrow schema
 function getArrowSchema(schema): arrow.Schema {
   const arrowFields: arrow.Field[] = [];
-  for (const key in schema) {
-    const field = schema[key];
-    if (field.type === Float32Array) {
+  const fields = Array.isArray(schema.fields) ? schema.fields : Object.values(schema);
+  for (const field of fields as any[]) {
+    if (field.type === 'float32' || field.type === Float32Array) {
       // TODO - just store the original field as metadata?
       const metadata = new Map(); // field;
       // arrow: new arrow.Field(name, nullable, metadata)
@@ -60,6 +60,9 @@ function getArrowSchema(schema): arrow.Schema {
   }
   if (arrowFields.length === 0) {
     throw new Error('No arrow convertible fields');
+  }
+  if (arrowFields.length !== fields.length) {
+    throw new Error('Some schema fields are not arrow convertible');
   }
 
   return new arrow.Schema(arrowFields);

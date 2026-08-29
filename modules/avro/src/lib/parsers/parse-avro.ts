@@ -617,15 +617,27 @@ function resolveReaderValue(
     return value;
   }
   if (readerSchema.type === 'array' && Array.isArray(value)) {
+    const writerItems =
+      !Array.isArray(writerSchema) &&
+      typeof writerSchema !== 'string' &&
+      writerSchema.type === 'array'
+        ? writerSchema.items
+        : writerSchema;
     return value.map(item =>
-      resolveReaderValue(item, writerSchema, readerSchema.items as AvroSchema)
+      resolveReaderValue(item, writerItems as AvroSchema, readerSchema.items as AvroSchema)
     );
   }
   if (readerSchema.type === 'map' && value instanceof Map) {
+    const writerValues =
+      !Array.isArray(writerSchema) &&
+      typeof writerSchema !== 'string' &&
+      writerSchema.type === 'map'
+        ? writerSchema.values
+        : writerSchema;
     return new Map(
       [...value.entries()].map(([key, item]) => [
         key,
-        resolveReaderValue(item, writerSchema, readerSchema.values as AvroSchema)
+        resolveReaderValue(item, writerValues as AvroSchema, readerSchema.values as AvroSchema)
       ])
     );
   }
