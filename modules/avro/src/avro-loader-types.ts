@@ -38,7 +38,7 @@ export type AvroLoaderOptions = {
 
 /** Preloads the parser-bearing Avro loader implementation. */
 async function preloadAvroLoader() {
-  const {AvroLoaderWithParser} = await import('@loaders.gl/parquet/avro-loader');
+  const {AvroLoaderWithParser} = await import('@loaders.gl/avro/avro-loader');
   return AvroLoaderWithParser;
 }
 
