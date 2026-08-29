@@ -1,4 +1,44 @@
-# Tileset3D
+---
+title: Tileset3D
+description: Traverse, cull, request, and cache source-backed 3D tilesets.
+hide_title: true
+page_style: designed
+---
+
+import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
+import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
+
+<DocPageHeader
+  eyebrow="Tiles module · 3D runtime"
+  title="Tileset3D"
+  description="The shared runtime for hierarchical 3D data: traverse visible tiles, cull by volume, schedule requests, manage cache state, and coordinate selected content."
+  tone="cyan"
+  meta={['3D traversal', 'Culling and requests', 'Source-backed runtime']}
+  links={[
+    {label: 'Tileset3DSource', to: '/docs/modules/tiles/api-reference/tileset-3d-source'},
+    {label: 'Tiles3DSource', to: '/docs/modules/tiles/api-reference/tiles-3d-source'},
+    {label: 'Tiles module', to: '/docs/modules/tiles'}
+  ]}
+/>
+
+<DocOrientation
+  eyebrow="The 3D runtime"
+  title="Select the data the view needs, when it needs it."
+  description="Tileset3D keeps hierarchical data responsive by combining view-dependent traversal with source-provided metadata and content loading."
+  tone="cyan"
+  items={[
+    {label: 'Traversal', value: 'Choose tiles by screen-space and hierarchy'},
+    {label: 'Culling', value: 'Test volumes against the current view'},
+    {label: 'Requests', value: 'Schedule and prioritize tile content'},
+    {label: 'Cache', value: 'Retain, unload, and refresh tile state'}
+  ]}
+/>
+
+<ReferenceBoundary
+  title="Tileset3D reference"
+  description="The sections below document construction, viewport updates, callbacks, traversal, cache behavior, and source integration."
+  tone="cyan"
+/>
 
 > The `Tileset3D` class is being generalized to handle more use cases. Since this may require modifying some APIs, this class should be considered experiemental.
 
