@@ -1,4 +1,44 @@
-# Lance
+---
+title: Lance
+description: Read selected Lance dataset columns into Arrow tables.
+hide_title: true
+page_style: designed
+---
+
+import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
+import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
+
+<DocPageHeader
+  eyebrow="Lance module"
+  title="Read columnar dataset fragments without loading everything."
+  description="`@loaders.gl/lance` provides a focused, read-only path through Lance manifests, fragments, and selected primitive columns. It uses Arrow tables as the result and HTTP ranges for remote column reads."
+  tone="cyan"
+  meta={['Lance datasets', 'Selected columns', 'Arrow output']}
+  links={[
+    {label: 'Lance APIs', to: '/docs/modules/lance/api-reference/lance-source-loader'},
+    {label: 'Arrow data plane', to: '/docs/developer-guide/apache-arrow'},
+    {label: 'Lance example', to: 'https://github.com/visgl/loaders.gl/tree/master/examples/lance/browser'}
+  ]}
+/>
+
+<DocOrientation
+  eyebrow="The Lance read path"
+  title="Read metadata. Select columns. Decode Arrow data."
+  description="The current module keeps its supported surface explicit: remote range reads and primitive columns are implemented, while unsupported encodings and writes remain outside the advertised contract."
+  tone="cyan"
+  items={[
+    {label: 'Discover', value: 'Versioned manifests, fragments, and data files'},
+    {label: 'Select', value: 'Primitive scalar or 2D coordinate columns'},
+    {label: 'Transport', value: 'Local reads or HTTP byte ranges'},
+    {label: 'Output', value: 'Decoded Apache Arrow tables'}
+  ]}
+/>
+
+<ReferenceBoundary
+  title="Current scope and APIs"
+  description="The reference below documents supported column types, source and parser entry points, known limitations, and the browser example."
+  tone="cyan"
+/>
 
 <p class="badges">
   <img src="https://img.shields.io/badge/Status-Work--In--Progress-orange.svg?style=flat-square" alt="Status: Work-In-Progress" />
