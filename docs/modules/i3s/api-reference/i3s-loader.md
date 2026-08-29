@@ -7,6 +7,7 @@ page_style: designed
 
 import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
 import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
+import {TiledSceneGraphic} from '@site/src/components/docs/tiled-scene-graphic';
 
 <DocPageHeader
   eyebrow="I3S loader"
@@ -20,6 +21,8 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
     {label: 'I3S source', to: '/docs/modules/tiles/api-reference/i3s-source'}
   ]}
 />
+
+<TiledSceneGraphic />
 
 <DocOrientation
   eyebrow="The I3S loading path"

@@ -6,6 +6,7 @@ page_style: designed
 ---
 
 import {JsonDocsTabs} from '@site/src/components/docs/json-docs-tabs';
+import {GeoArrowFlowGraphic} from '@site/src/components/docs/geoarrow-flow-graphic';
 import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
 import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
 
@@ -22,6 +23,8 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
 />
 
 <JsonDocsTabs active="geojsonloader" tryItHref="/examples/geospatial/geojson" />
+
+<GeoArrowFlowGraphic />
 
 <DocOrientation
   eyebrow="One loader, several useful shapes"

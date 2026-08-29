@@ -7,6 +7,7 @@ page_style: designed
 
 import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
 import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
+import {DatasetDiscoveryGraphic} from '@site/src/components/docs/dataset-discovery-graphic';
 
 <DocPageHeader
   eyebrow="STAC source"
@@ -19,6 +20,8 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
     {label: 'Cloud-native formats', to: '/docs/specifications/cloud-native-geospatial'}
   ]}
 />
+
+<DatasetDiscoveryGraphic kind="stac" />
 
 <DocOrientation
   eyebrow="Discovery before decoding"

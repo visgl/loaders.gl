@@ -8,6 +8,7 @@ page_style: designed
 import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
 import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
 import {FlatGeobufDocsTabs} from '@site/src/components/docs/flatgeobuf-docs-tabs';
+import {RangeRequestGraphic} from '@site/src/components/docs/range-request-graphic';
 
 <DocPageHeader
   eyebrow="FlatGeobuf source loader"
@@ -41,6 +42,8 @@ import {FlatGeobufDocsTabs} from '@site/src/components/docs/flatgeobuf-docs-tabs
 </p>
 
 <FlatGeobufDocsTabs active="source" />
+
+<RangeRequestGraphic />
 
 <ReferenceBoundary
   title="Source behavior and output contracts"

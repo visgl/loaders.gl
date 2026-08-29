@@ -8,6 +8,7 @@ page_style: designed
 import {TexturesDocsTabs} from '@site/src/components/docs/textures-docs-tabs';
 import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
 import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
+import {TextureTranscodeGraphic} from '@site/src/components/docs/texture-transcode-graphic';
 
 <DocPageHeader
   eyebrow="Texture loader"
@@ -22,6 +23,8 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
 />
 
 <TexturesDocsTabs active="basisloader" />
+
+<TextureTranscodeGraphic />
 
 <DocOrientation
   eyebrow="The runtime decision"
