@@ -23,6 +23,8 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
 
 <LasDocsTabs active="overview" />
 
+![las-logo](../../images/logos/las-logo.svg)
+
 <DocOrientation
   eyebrow="The LAS path"
   title="Decode the fields your workflow actually uses."
@@ -39,7 +41,7 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
 See [Coordinate Reference Systems](/docs/developer-guide/coordinate-reference-systems) for the
 current LAS/LAZ projection-record support and vertical/compound CRS roadmap.
 
-The `@loaders.gl/las` module supports the [LASER file format](/docs/modules/las/formats/las) (LAS) and its compressed version (LAZ).
+The `@loaders.gl/las` module supports the [LAS file format](/docs/modules/las/formats/las) and its compressed version (LAZ).
 
 <ReferenceBoundary
   title="LAS implementation details"
