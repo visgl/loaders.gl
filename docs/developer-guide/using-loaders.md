@@ -6,6 +6,7 @@ page_style: designed
 ---
 
 import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
+import {LoaderSelectionGraphic} from '@site/src/components/docs/loader-selection-graphic';
 import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
 
 <DocPageHeader
@@ -19,6 +20,8 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
     {label: 'Loader object format', to: '/docs/specifications/loader-object-format'}
   ]}
 />
+
+<LoaderSelectionGraphic />
 
 <DocOrientation
   eyebrow="The loader path"

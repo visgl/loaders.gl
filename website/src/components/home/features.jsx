@@ -24,8 +24,8 @@ export const FEATURE_CARDS = [
     title: 'Optimized, feature-rich parsers',
     description:
       'TypeScript-native, feature-complete, and optimized loaders for complex formats like LAZ and Parquet, with broad support across GIS, meshes, imagery, scenes, tiles, point clouds, and beyond.',
-    href: '/docs',
-    linkLabel: 'Browse loader docs',
+    href: '/docs/developer-guide/using-loaders',
+    linkLabel: 'Choose a loader',
     tags: ['tables', 'GIS', '3D', 'point clouds'],
     visual: 'loaders',
     wide: true,
