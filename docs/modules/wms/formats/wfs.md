@@ -1,7 +1,40 @@
-import {WmsDocsTabs} from '@site/src/components/docs/wms-docs-tabs';
-import {ClientExample} from '@site/src/components';
+---
+title: WFS - Web Feature Service
+description: Query vector features and stream them into geospatial or Arrow pipelines.
+hide_title: true
+page_style: designed
+---
 
-# WFS - Web Feature Service
+import {ClientExample} from '@site/src/components';
+import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
+import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
+import {WmsDocsTabs} from '@site/src/components/docs/wms-docs-tabs';
+
+<DocPageHeader
+  eyebrow="OGC vector service"
+  title="Query features without taking ownership of the whole service response."
+  description="WFS exposes vector features over HTTP. The loaders.gl source handles capabilities, bounds, CRS, paging, GeoJSON, and streaming GML while keeping the result usable as features, binary data, or Arrow tables."
+  tone="mint"
+  meta={['WFS 2.0 and 1.1', 'GeoJSON and GML', 'Vector and Arrow output']}
+  links={[
+    {label: 'WMS module', to: '/docs/modules/wms'},
+    {label: 'WFS source', to: '/docs/modules/wms/formats/wfs'},
+    {label: 'Scan architecture', to: '/docs/developer-guide/common-scan-architecture'}
+  ]}
+/>
+
+<DocOrientation
+  eyebrow="The WFS request path"
+  title="Discover the layer. Bound the request. Stream the features."
+  description="A WFS response can be large and service-specific. Keep the request explicit, then normalize the response at the source boundary for map layers and table processing."
+  tone="mint"
+  items={[
+    {label: 'Discover', value: 'Feature types, CRS, formats, and service limits'},
+    {label: 'Bound', value: 'Layer, extent, properties, paging, and filters'},
+    {label: 'Stream', value: 'GeoJSON or GML features in bounded batches'},
+    {label: 'Return', value: 'Vector features, binary data, or Arrow tables'}
+  ]}
+/>
 
 <WmsDocsTabs active="wfs" />
 
@@ -15,6 +48,12 @@ import {ClientExample} from '@site/src/components';
 
 WFS serves vector features and properties over HTTP. `WFSSourceLoader` provides a read-only
 `VectorSource` with GeoJSON and streaming GML ingestion.
+
+<ReferenceBoundary
+  title="WFS protocol and source details"
+  description="The reference below covers version differences, feature requests, output formats, paging, CRS handling, filters, and the optional scan table view."
+  tone="mint"
+/>
 
 ## Feature support
 
