@@ -1,4 +1,44 @@
-# ImageLoader
+---
+title: ImageLoader
+description: Load legacy browser and raw image representations for compatibility with older applications.
+hide_title: true
+page_style: designed
+---
+
+import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
+import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
+
+<DocPageHeader
+  eyebrow="Images API · compatibility loader"
+  title="Keep older image pipelines working while you migrate."
+  description="ImageLoader preserves the older environment-dependent return modes used by existing applications. New code should prefer ImageBitmapLoader, but this page explains the compatibility contract when a migration must be gradual."
+  tone="pink"
+  meta={['From v1.0', 'Deprecated in v4.4', 'Image / ImageBitmap / raw data']}
+  links={[
+    {label: 'Images module', to: '/docs/modules/images'},
+    {label: 'ImageBitmapLoader', to: '/docs/modules/images/api-reference/image-bitmap-loader'},
+    {label: 'Image category', to: '/docs/specifications/category-image'}
+  ]}
+/>
+
+<DocOrientation
+  eyebrow="Migration at a glance"
+  title="Know which representation your old code expects."
+  description="ImageLoader can return an ImageBitmap, an HTMLImageElement, or raw pixel data depending on options and runtime. Make that choice explicit while moving new paths to the stable bitmap-first loader."
+  tone="pink"
+  items={[
+    {label: 'Legacy modes', value: 'auto, data, imagebitmap, and image'},
+    {label: 'Preferred path', value: 'ImageBitmapLoader plus getImageData when needed'},
+    {label: 'Runtime', value: 'Browser-first, with Node.js polyfill support'},
+    {label: 'Status', value: 'Compatibility API; not recommended for new code'}
+  ]}
+/>
+
+<ReferenceBoundary
+  title="ImageLoader compatibility reference"
+  description="The sections below document supported formats, return modes, imagebitmap options, portability notes, and migration guidance."
+  tone="pink"
+/>
 
 <p class="badges">
   <img src="https://img.shields.io/badge/From-v1.0-blue.svg?style=flat-square" alt="From-v1.0" />
