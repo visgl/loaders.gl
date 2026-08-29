@@ -1,4 +1,44 @@
-# Overview
+---
+title: Cryptographic hashes
+description: Hash data incrementally as loaders and streams process it.
+hide_title: true
+page_style: designed
+---
+
+import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
+import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
+
+<DocPageHeader
+  eyebrow="Crypto module"
+  title="Hash data while it is moving through the pipeline."
+  description="`@loaders.gl/crypto` provides optional CRC32, CRC32C, MD5, and SHA-256 transforms. Attach one to a batch-loading path when integrity, checksums, or content identity matter without first buffering the complete source."
+  tone="violet"
+  meta={['CRC32 and CRC32C', 'MD5 and SHA-256', 'Incremental transforms']}
+  links={[
+    {label: 'Hash API', to: '/docs/modules/crypto/api-reference/hash'},
+    {label: 'Using streaming loaders', to: '/docs/developer-guide/using-streaming-loaders'},
+    {label: 'Worker loaders', to: '/docs/developer-guide/using-worker-loaders'}
+  ]}
+/>
+
+<DocOrientation
+  eyebrow="The hashing path"
+  title="Receive batches. Update the digest. Read the result."
+  description="Hash transforms consume the same incremental batches as the rest of the loaders.gl pipeline. Choose the encoding required by the service or file format that will receive the digest."
+  tone="violet"
+  items={[
+    {label: 'Input', value: 'Binary or text batches from a loader'},
+    {label: 'Algorithms', value: 'CRC32, CRC32C, MD5, and SHA-256'},
+    {label: 'Encoding', value: 'Hex or base64 digest output'},
+    {label: 'Result', value: 'Final digest from the transform lifecycle'}
+  ]}
+/>
+
+<ReferenceBoundary
+  title="Hash algorithms and transform details"
+  description="The reference below covers supported algorithms, digest encodings, transform usage, synchronous methods, and performance considerations."
+  tone="violet"
+/>
 
 <p class="badges">
   <img src="https://img.shields.io/badge/From-v2.3-blue.svg?style=flat-square" alt="From-v3.0" />
@@ -10,7 +50,7 @@ Terminology:
 
 - A **hash** is an
 
-## Cryptographic Algorithmgs
+## Cryptographic algorithms
 
 MD5, SHA256 and many more, see [crypto-js](https://github.com/brix/crypto-js)
 
@@ -37,13 +77,14 @@ The API offers "transforms" that can calculate a cryptographic hash incrementall
 | [`MD5Hash`](/docs/modules/crypto/api-reference/md5-hash)       | Y    | Base64-encoded Cryptographic Hash |
 | [`SHA256Hash`](/docs/modules/crypto/api-reference/sha256-hash) | Y    | Base64-encoded Cryptographic Hash |
 
-## Using Transforms
+## Using transforms
 
 The `@loaders.gl/crypto` libraries exports transform that can be used to incrementally calculate a cryptographic hash as data is being loaded and parsed:
 
 ```typescript
 import {loadInBatches} from '@loaders.gl/core';
 import {CRC32Hash} from '@loaders.gl/crypto';
+import {CSVLoader} from '@loaders.gl/csv';
 
 let hash;
 
@@ -56,7 +97,6 @@ const csvIterator = await loadInBatches(CSV_URL, CSVLoader, {
   }
 });
 
-let csv;
 for await (const batch of csvIterator) {
 }
 
