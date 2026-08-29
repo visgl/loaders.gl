@@ -6,6 +6,7 @@ page_style: designed
 ---
 
 import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
+import {ConversionPipelineGraphic} from '@site/src/components/docs/conversion-pipeline-graphic';
 import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
 
 <DocPageHeader
@@ -19,6 +20,8 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
     {label: 'Using writers', to: '/docs/developer-guide/using-writers'}
   ]}
 />
+
+<ConversionPipelineGraphic />
 
 <DocOrientation
   eyebrow="The conversion path"
