@@ -6,6 +6,7 @@ page_style: designed
 ---
 
 import {LasDocsTabs} from '@site/src/components/docs/las-docs-tabs';
+import {PointCloudFormatGraphic} from '@site/src/components/docs/point-cloud-format-graphic';
 import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
 import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
 
@@ -24,6 +25,8 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
 <LasDocsTabs active="overview" />
 
 ![las-logo](../../images/logos/las-logo.svg)
+
+<PointCloudFormatGraphic />
 
 <DocOrientation
   eyebrow="The LAS path"

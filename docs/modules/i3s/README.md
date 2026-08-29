@@ -6,6 +6,7 @@ page_style: designed
 ---
 
 import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
+import {TiledSceneGraphic} from '@site/src/components/docs/tiled-scene-graphic';
 import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
 
 <DocPageHeader
@@ -24,6 +25,8 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
 ![ogc-logo](../../images/logos/ogc-logo-60.png)
 &nbsp;
 ![arcgis-logo](../../images/logos/arcgis-logo.svg)
+
+<TiledSceneGraphic />
 
 The `@loaders.gl/i3s` module supports loading and traversing Indexed 3D Scene Layer (I3S).
 

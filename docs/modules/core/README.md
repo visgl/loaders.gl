@@ -6,6 +6,7 @@ page_style: designed
 ---
 
 import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
+import {LoaderSelectionGraphic} from '@site/src/components/docs/loader-selection-graphic';
 import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
 
 <DocPageHeader
@@ -20,6 +21,8 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
     {label: 'Core API reference', to: '/docs/modules/core/api-reference/load'}
   ]}
 />
+
+<LoaderSelectionGraphic />
 
 <DocOrientation
   eyebrow="The core module"

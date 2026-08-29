@@ -6,6 +6,7 @@ page_style: designed
 ---
 
 import {Tiles3DDocsTabs} from '@site/src/components/docs/tiles-3d-docs-tabs';
+import {TiledSceneGraphic} from '@site/src/components/docs/tiled-scene-graphic';
 import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
 import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
 
@@ -27,6 +28,8 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
 ![ogc-logo](../../images/logos/ogc-logo-60.png)
 &nbsp;
 ![3dtiles-logo](./images/3d-tiles-logo-60.png)
+
+<TiledSceneGraphic />
 
 The `@loaders.gl/3d-tiles` module supports loading and traversing 3D Tiles.
 
