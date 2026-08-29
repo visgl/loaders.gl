@@ -1,4 +1,44 @@
-# GMLLoader
+---
+title: GMLLoader
+description: Parse the common geospatial feature subset of Geography Markup Language.
+hide_title: true
+page_style: designed
+---
+
+import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
+import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
+
+<DocPageHeader
+  eyebrow="WMS module · geospatial loader"
+  title="GMLLoader"
+  description="Parse the practical feature and geometry subset of OGC Geography Markup Language into GeoJSON-style feature tables, including incremental feature batches for large responses."
+  tone="cyan"
+  meta={['From v3.3', 'GML', 'Streaming features']}
+  links={[
+    {label: 'WMS module', to: '/docs/modules/wms'},
+    {label: 'XMLLoader', to: '/docs/modules/xml/api-reference/xml-loader'},
+    {label: 'GIS category', to: '/docs/specifications/category-gis'}
+  ]}
+/>
+
+<DocOrientation
+  eyebrow="What it reads"
+  title="Extract useful features from an ambitious XML standard."
+  description="GML covers a very broad space. GMLLoader focuses on the common feature-collection and geometry path, with a streaming mode that emits complete features as the response arrives."
+  tone="cyan"
+  items={[
+    {label: 'Input', value: 'GML feature collections and responses'},
+    {label: 'Geometry', value: 'Points, lines, polygons, and multiparts'},
+    {label: 'Output', value: 'GeoJSON-style features and properties'},
+    {label: 'Streaming', value: 'Feature batches for large WFS responses'}
+  ]}
+/>
+
+<ReferenceBoundary
+  title="GMLLoader reference"
+  description="The sections below document usage, parsed data, streaming behavior, options, and the supported subset."
+  tone="cyan"
+/>
 
 ![ogc-logo](../../../images/logos/ogc-logo-60.png)
 

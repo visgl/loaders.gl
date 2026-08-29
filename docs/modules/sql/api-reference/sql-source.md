@@ -1,4 +1,44 @@
-# SQLDataSource
+---
+title: SQLDataSource
+description: A shared source contract for metadata, portable table queries, and Arrow results.
+hide_title: true
+page_style: designed
+---
+
+import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
+import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
+
+<DocPageHeader
+  eyebrow="SQL module · source API"
+  title="SQLDataSource"
+  description="A shared base class for SQL-backed sources that exposes catalog metadata, table schemas, portable queries, and Arrow results through one application-facing contract."
+  tone="mint"
+  meta={['Metadata discovery', 'Portable predicates', 'Arrow queries']}
+  links={[
+    {label: 'SQL module', to: '/docs/modules/sql'},
+    {label: 'Scan architecture', to: '/docs/developer-guide/common-scan-architecture'},
+    {label: 'Arrow guide', to: '/docs/developer-guide/apache-arrow'}
+  ]}
+/>
+
+<DocOrientation
+  eyebrow="The SQL source boundary"
+  title="Discover once. Query through a common shape."
+  description="SQLDataSource keeps provider-specific adapters behind a small set of metadata and query methods. Applications can work with tables and Arrow results without knowing which backend is connected."
+  tone="mint"
+  items={[
+    {label: 'Metadata', value: 'Catalogs, schemas, tables, and capabilities'},
+    {label: 'Schema', value: 'A loaders.gl schema for each table'},
+    {label: 'Rows', value: 'Object rows for straightforward application use'},
+    {label: 'Arrow', value: 'Columnar results for analytical pipelines'}
+  ]}
+/>
+
+<ReferenceBoundary
+  title="SQLDataSource reference"
+  description="The sections below document metadata methods, portable queries, raw SQL, Arrow results, and connection cleanup."
+  tone="mint"
+/>
 
 `SQLDataSource` is a shared base class for SQL-backed data sources such as `DuckDBSQLSource` and `SnowflakeSQLSource`.
 

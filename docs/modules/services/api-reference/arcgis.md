@@ -1,4 +1,44 @@
-# ArcGIS service API reference
+---
+title: ArcGIS service API reference
+description: The loaders.gl source contracts for ArcGIS feature, image, vector-tile, and scene services.
+hide_title: true
+page_style: designed
+---
+
+import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
+import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
+
+<DocPageHeader
+  eyebrow="Services module · ArcGIS"
+  title="ArcGIS service sources"
+  description="ArcGIS publishes several service families. loaders.gl maps the useful endpoint contracts onto sources for vectors, images, tiles, and scenes, with deterministic discovery and shared authentication."
+  tone="violet"
+  meta={['FeatureServer', 'ImageServer', 'MapServer and SceneServer']}
+  links={[
+    {label: 'Services module', to: '/docs/modules/services'},
+    {label: 'Service sources', to: '/docs/developer-guide/using-sources'},
+    {label: 'ArcGIS sources', to: '/docs/modules/services/arcgis-feature-server'}
+  ]}
+/>
+
+<DocOrientation
+  eyebrow="The ArcGIS boundary"
+  title="One service family, several data contracts."
+  description="Select the source contract that matches the endpoint: vector features, imagery, cached tiles, vector tiles, or 3D scene content."
+  tone="violet"
+  items={[
+    {label: 'Features', value: 'FeatureServer to vector and table data'},
+    {label: 'Imagery', value: 'ImageServer to images or raster data'},
+    {label: 'Tiles', value: 'MapServer and VectorTileServer sources'},
+    {label: 'Scenes', value: 'SceneServer to I3S and point-cloud sources'}
+  ]}
+/>
+
+<ReferenceBoundary
+  title="ArcGIS service reference"
+  description="The tables below map endpoint families to source contracts, discovery helpers, and provider-specific references."
+  tone="violet"
+/>
 
 ArcGIS Server directories can publish several endpoint families. loaders.gl v5 keeps one small
 source loader per visual data contract and a shared registry for automatic selection.
