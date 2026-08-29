@@ -1,8 +1,50 @@
-# Upgrade Guide
+---
+title: Arrow JS upgrade guide
+description: Track the JavaScript-facing changes that matter when upgrading Apache Arrow JS in loaders.gl applications.
+hide_title: true
+page_style: designed
+---
 
-Unfortunately for JavaScript users, Apache Arrow JS does not publish detailed upgrade notes beyond the common [Apache Arrow release notes](https://arrow.apache.org/release/).
+import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
+import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
 
-Also Apache Arrow JS follows a cross-language versioning scheme. Major version bumps can be frequent and may not always correspond to user-facing JavaScript changes.
+<DocPageHeader
+  eyebrow="Arrow JS · migration"
+  title="Upgrade the table library without losing the data path."
+  description="Arrow JS uses a cross-language versioning scheme, so releases do not always map neatly to user-facing JavaScript changes. This guide highlights the migration points most relevant to loaders.gl and browser applications."
+  tone="cyan"
+  meta={['Apache Arrow JS', 'Migration notes', 'Loaders.gl compatibility']}
+  links={[
+    {label: 'Arrow JavaScript', to: '/docs/arrowjs'},
+    {label: 'Arrow JS introduction', to: '/docs/arrowjs/developer-guide/introduction'},
+    {label: 'Contributing notes', to: '/docs/arrowjs/contributing'}
+  ]}
+/>
+
+<DocOrientation
+  eyebrow="How to use this guide"
+  title="Check the version, then check the boundaries."
+  description="Start with the Arrow major line used by your application, verify the factory and table APIs it relies on, and make sure browser, worker, and Node.js bundles resolve one compatible Arrow installation."
+  tone="cyan"
+  items={[
+    {label: 'Current', value: 'Start with the v21 notes and your resolved package version'},
+    {label: 'Factories', value: 'Prefer current table, vector, reader, and writer constructors'},
+    {label: 'Removed APIs', value: 'Replace legacy DataFrame and class-specific factories'},
+    {label: 'Runtime', value: 'Check streams, polyfills, and duplicate package installations'}
+  ]}
+/>
+
+<ReferenceBoundary
+  title="Version-by-version migration notes"
+  description="The sections below summarize the documented JavaScript-facing changes and the practical checks that loaders.gl applications should make during an upgrade."
+  tone="cyan"
+/>
+
+Apache Arrow JS does not publish detailed JavaScript-only upgrade notes beyond the common [Apache
+Arrow release notes](https://arrow.apache.org/release/).
+
+It follows a cross-language versioning scheme, so major version bumps can be frequent and may not
+correspond to user-facing JavaScript changes.
 
 The biggest Arrow JS changes affecting APIs were introduced in v9.0 (based on feedback from loaders.gl users).
 
