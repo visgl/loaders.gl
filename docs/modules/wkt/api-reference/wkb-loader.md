@@ -1,8 +1,44 @@
-# WKBLoader
+---
+title: WKBLoader
+description: Parse compact OGC Well-Known Binary geometry into loaders.gl data.
+hide_title: true
+page_style: designed
+---
 
-<p class="badges">
-  <img src="https://img.shields.io/badge/From-v2.2-blue.svg?style=flat-square" alt="From-v2.2" />
-</p>
+import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
+import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
+
+<DocPageHeader
+  eyebrow="WKT module · geometry loader"
+  title="WKBLoader"
+  description="Parse compact Well-Known Binary geometry into loaders.gl data for database, GIS, Shapefile, and GeoArrow-oriented pipelines."
+  tone="orange"
+  meta={['From v2.2', 'OGC WKB', 'Binary parser']}
+  links={[
+    {label: 'WKB format', to: '/docs/modules/wkt/formats/wkb'},
+    {label: 'WKBWriter', to: '/docs/modules/wkt/api-reference/wkb-writer'},
+    {label: 'WKT module', to: '/docs/modules/wkt'}
+  ]}
+/>
+
+<DocOrientation
+  eyebrow="What it reads"
+  title="Keep geometry compact without losing its structure."
+  description="WKB stores geometry as binary coordinates and topology without feature attributes. It is a useful boundary format for databases, shapefiles, and columnar geometry pipelines."
+  tone="orange"
+  items={[
+    {label: 'Input', value: 'Binary WKB geometry bytes'},
+    {label: 'Output', value: 'Structured positions and geometry'},
+    {label: 'Dimensions', value: 'Two to four coordinate dimensions'},
+    {label: 'APIs', value: 'load, parse, and parseSync'}
+  ]}
+/>
+
+<ReferenceBoundary
+  title="WKBLoader reference"
+  description="The sections below document format metadata, installation, usage, geometry details, and attribution."
+  tone="orange"
+/>
 
 ![ogc-logo](../../../images/logos/ogc-logo-60.png)
 
