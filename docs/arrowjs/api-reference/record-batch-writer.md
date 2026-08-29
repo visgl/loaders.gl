@@ -1,4 +1,44 @@
-# RecordBatchWriter
+---
+title: RecordBatchWriter
+description: Write Arrow tables and record batches to IPC streams, files, or JSON output.
+hide_title: true
+page_style: designed
+---
+
+import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
+import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
+
+<DocPageHeader
+  eyebrow="Arrow JS API · streaming output"
+  title="Write typed batches without collecting everything first."
+  description="RecordBatchWriter serializes Tables or RecordBatch iterables as Arrow IPC streams, files, or JSON. It is the output counterpart to RecordBatchReader and fits incremental loaders, scans, and writers."
+  tone="mint"
+  meta={['IPC stream and file', 'Sync and async inputs', 'JSON output']}
+  links={[
+    {label: 'RecordBatchReader', to: '/docs/arrowjs/api-reference/record-batch-reader'},
+    {label: 'RecordBatch', to: '/docs/arrowjs/api-reference/record-batch'},
+    {label: 'Using writers', to: '/docs/developer-guide/using-writers'}
+  ]}
+/>
+
+<DocOrientation
+  eyebrow="The writer path"
+  title="Keep batches incremental all the way to the wire."
+  description="Choose a stream, file, or JSON writer based on the receiving system. Each writer can consume a complete Table or an iterable of batches, including asynchronous producers."
+  tone="mint"
+  items={[
+    {label: 'Input', value: 'Table, RecordBatch iterable, or async iterable'},
+    {label: 'Output', value: 'Arrow IPC stream, file bytes, or JSON chunks'},
+    {label: 'Adapters', value: 'Node and WHATWG transform helpers'},
+    {label: 'Use it when', value: 'The consumer can receive batches or serialized bytes'}
+  ]}
+/>
+
+<ReferenceBoundary
+  title="RecordBatchWriter reference"
+  description="The sections below document static writeAll helpers, stream transforms, output methods, and the differences between stream, file, and JSON writers."
+  tone="mint"
+/>
 
 :::info
 This page is aligned to Apache Arrow JS v21.x (`apache-arrow`).
