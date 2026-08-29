@@ -1,4 +1,47 @@
-# Streaming
+---
+title: Streaming concepts
+description: Understand incremental loading, batched updates, and async data flows in loaders.gl.
+hide_title: true
+page_style: designed
+---
+
+import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
+import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
+import {StreamingConcept} from '@site/src/components/home/concepts';
+
+<DocPageHeader
+  eyebrow="Developer guide · streaming"
+  title="Start processing before the file is complete."
+  description="Streaming loaders turn large inputs into useful batches without requiring the complete file in memory. The API is still evolving, but the core direction is a portable async-iterator contract across browser and Node.js sources."
+  tone="mint"
+  meta={['Incremental parsing', 'Batched updates', 'Browser and Node.js']}
+  links={[
+    {label: 'Streaming loaders', to: '/docs/developer-guide/using-streaming-loaders'},
+    {label: 'Async iterators', to: '/docs/developer-guide/concepts/async-iterators'},
+    {label: 'Using workers', to: '/docs/developer-guide/using-worker-loaders'}
+  ]}
+/>
+
+<DocOrientation
+  eyebrow="Three ways to stream"
+  title="Reduce memory, reduce latency, or keep a pipeline moving."
+  description="Incremental parsing, incremental loading, and batched updates solve different parts of the problem. The most useful pipelines combine them while keeping batch semantics explicit."
+  tone="mint"
+  items={[
+    {label: 'Incremental parsing', value: 'Parse partial input and emit updates'},
+    {label: 'Incremental loading', value: 'Fetch or read only the input needed so far'},
+    {label: 'Batched updates', value: 'Handle useful partial results as they arrive'},
+    {label: 'Streaming writes', value: 'Emit output progressively when the writer supports it'}
+  ]}
+/>
+
+<StreamingConcept />
+
+<ReferenceBoundary
+  title="Streaming model and limitations"
+  description="The sections below cover streamed loads, batch conventions, Node versus DOM streams, polyfills, and the current utility surface."
+  tone="mint"
+/>
 
 > Streaming support in loaders.gl is a work-in-progress. The ambition is that many loaders would support streaming from both Node and DOM streams, through a consistent API and set of conventions (for both applications and loader/writer objects).
 
