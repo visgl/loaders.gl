@@ -6,6 +6,7 @@ page_style: designed
 ---
 
 import {GltfDocsTabs} from '@site/src/components/docs/gltf-docs-tabs';
+import {ThreeDDataFormatsGraphic} from '@site/src/components/docs/three-d-data-formats-graphic';
 import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
 import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
 
@@ -23,6 +24,8 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
 />
 
 <GltfDocsTabs active="gltf-loader" />
+
+<ThreeDDataFormatsGraphic />
 
 <DocOrientation
   eyebrow="What GLTFLoader handles"

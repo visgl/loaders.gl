@@ -6,6 +6,7 @@ page_style: designed
 ---
 
 import {ArrowDocsTabs} from '@site/src/components/docs/arrow-docs-tabs';
+import {ArrowJsStructureGraphic} from '@site/src/components/docs/arrow-js-structure-graphic';
 import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
 import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
 
@@ -22,6 +23,8 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
 />
 
 <ArrowDocsTabs active="arrowloader" />
+
+<ArrowJsStructureGraphic />
 
 <DocOrientation
   eyebrow="What ArrowLoader preserves"

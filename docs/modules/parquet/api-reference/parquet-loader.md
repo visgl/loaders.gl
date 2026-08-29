@@ -6,6 +6,7 @@ page_style: designed
 ---
 
 import {ParquetDocsTabs} from '@site/src/components/docs/parquet-docs-tabs';
+import {ParquetLayoutGraphic} from '@site/src/components/docs/parquet-layout-graphic';
 import BrowserOnly from '@docusaurus/BrowserOnly';
 import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
 import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
@@ -23,6 +24,8 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
 />
 
 <ParquetDocsTabs active="parquetloader" />
+
+<ParquetLayoutGraphic />
 
 <DocOrientation
   eyebrow="What ParquetLoader returns"

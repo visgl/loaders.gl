@@ -6,6 +6,7 @@ page_style: designed
 ---
 
 import {CopcDocsTabs} from '@site/src/components/docs/copc-docs-tabs';
+import {CopcRangeGraphic} from '@site/src/components/docs/copc-range-graphic';
 import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
 import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
 
@@ -26,6 +27,8 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
 </p>
 
 <CopcDocsTabs active="source" />
+
+<CopcRangeGraphic />
 
 <DocOrientation
   eyebrow="What this loader does"
