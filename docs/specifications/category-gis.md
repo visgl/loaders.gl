@@ -6,7 +6,7 @@ page_style: designed
 ---
 
 import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
-import {ReferenceBoundary} from '@site/src/components/docs/designed-doc';
+import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
 import {CategoryDataConcept} from '@site/src/components/home/concepts';
 
 <DocPageHeader
@@ -23,9 +23,23 @@ import {CategoryDataConcept} from '@site/src/components/home/concepts';
 
 <CategoryDataConcept initialCategoryId="gis" initialRepresentationId="plain" />
 
-> The Geospatial category is experimental
+<DocOrientation
+  eyebrow="The geospatial path"
+  title="Keep coordinates, geometry, and attributes together."
+  description="Geospatial loaders differ in how they store geometry and how much metadata they carry. The shared category gives applications familiar feature, geometry, and table shapes while each format keeps its own strengths."
+  tone="orange"
+  items={[
+    {label: 'Features', value: 'Geometry and properties in a feature-oriented shape'},
+    {label: 'Geometry', value: 'Single WKT, WKB, or GeoJSON geometry values'},
+    {label: 'Tables', value: 'Typed columns with GeoArrow metadata where supported'},
+    {label: 'Services', value: 'Remote features, tiles, rasters, and scene data'}
+  ]}
+/>
 
-Several geospatial formats return data in the form of lists of lng/lat encoded geometric objects.
+The category includes local files, cloud-native vector formats, and remote services. Some loaders
+return one geometry, some return layers of features, and others expose a table that can move into
+scans or render-oriented converters. Check the format page when CRS, indexing, or layer behavior is
+important.
 
 <ReferenceBoundary
   title="Geospatial shapes and contracts"
@@ -39,13 +53,13 @@ Several geospatial formats return data in the form of lists of lng/lat encoded g
 | --------------------------------------------------------- | ------ | --------------------------------------- | ----------------- | ---------- | --------------- | -------- |
 | [`GPXLoader`](/docs/modules/kml/api-reference/gpx-loader) | Layers | `FeatureCollection`                     | attributes object | parsed XML |
 | [`KMLLoader`](/docs/modules/kml/api-reference/kml-loader) | Layers | `FeatureCollection`                     | attributes object | parsed XML |
-| [`TCXLoader`](/docs/modules/kml/api-reference/tcx-loader) |        | `FeatureCollection`                     | attributes object | parsed XML |
-| `GeoJSONLoader`                                           |        | `FeatureCollection`                     |
-| `ShapefileLoader`                                         |        | `FeatureCollection`                     | attributes object | -          |                 |
+| [`TCXLoader`](/docs/modules/kml/api-reference/tcx-loader) | Layers | `FeatureCollection`                     | attributes object | parsed XML |
+| [`GeoJSONLoader`](/docs/modules/json/api-reference/geojson-loader) |        | `FeatureCollection`                     |
+| [`ShapefileLoader`](/docs/modules/shapefile/api-reference/shapefile-loader) |        | `FeatureCollection`                     | attributes object | -          |
 | `SHPLoader`                                               |        | `FeatureCollection`                     | attributes object | -          | only geometries |
-| `FlatGeobufLoader`                                        |        | `FeatureCollection`                     | -                 | -          |
+| [`FlatGeobufLoader`](/docs/modules/flatgeobuf/api-reference/flatgeobuf-loader) |        | `FeatureCollection`                     | -                 | -          |
 | [`MVTLoader`](/docs/modules/mvt/api-reference/mvt-loader) | Layers | `FeatureCollections`                    |
-| `GeoPackageLoader`                                        | Layers | `FeatureCollections`                    | -                 | -          |
+| [`GeoPackageLoader`](/docs/modules/geopackage/api-reference/geopackage-loader) | Layers | `FeatureCollections`                    | -                 | -          |
 | [`WKBLoader`](/docs/modules/wkt/api-reference/wkb-loader) | Single | a single geojson geometry (not feature) | -                 | -          | only geometry   |
 | [`WKTLoader`](/docs/modules/wkt/api-reference/wkt-loader) | Single | a single geojson geometry (not feature) | -                 | -          | only geometry   |
 

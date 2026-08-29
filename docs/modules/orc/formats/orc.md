@@ -7,6 +7,7 @@ page_style: designed
 
 import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
 import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
+import {OrcCloudLiveExample} from '@site/src/components/docs/orc-cloud-live-example';
 
 <DocPageHeader
   eyebrow="Columnar file format"
@@ -32,6 +33,8 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
     {label: 'Output', value: 'Arrow tables with portable scan semantics'}
   ]}
 />
+
+<OrcCloudLiveExample />
 
 <p class="badges">
   <a href="/docs/developer-guide/common-scan-architecture">
