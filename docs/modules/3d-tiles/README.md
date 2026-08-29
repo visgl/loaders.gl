@@ -63,7 +63,7 @@ npm install @loaders.gl/core
 The module provides loaders for the individual 3D Tiles payload forms:
 
 - [`Tiles3DLoader`](/docs/modules/3d-tiles/api-reference/tiles-3d-loader), a loader for loading a top-down or nested tileset and its tiles.
-- [`CesiumIonLoader`](/docs/modules/3d-tiles/api-reference/cesium-ion-loader), a loader extends from `Tiles3DLoader` with resolving credentials from Cesium ion.
+- [`CesiumIonLoader`](/docs/modules/3d-tiles/api-reference/cesium-ion-loader), a `Tiles3DLoader` variant that resolves credentials and tileset URLs from Cesium ion.
 
 For dynamic selection and loading of tilesets larger than browser memory, use the helper classes in
 the `@loaders.gl/tiles` module:
@@ -89,7 +89,7 @@ The [3D Tiles runtime concepts suite](/docs/modules/3d-tiles/concepts) explains 
 
 ## Usage
 
-Basic API usage is illustrated in the following snippet. Create a `Tileset3D` instance, point it a valid tileset URL, set up callbacks, and keep feeding in new camera positions:
+Basic API usage is illustrated in the following snippet. Load the tileset header, create a `Tileset3D` instance, and keep selecting tiles as the camera moves:
 
 ```typescript
 import {load} from '@loaders.gl/core';
@@ -98,23 +98,21 @@ import {Tileset3D} from '@loaders.gl/tiles';
 
 const tilesetUrl = ''; // add the url to your tileset.json file here
 
-const tilesetJson = await load(tilesetUrl, Tiles3DLoader);
+const tilesetHeader = await load(tilesetUrl, Tiles3DLoader);
 
-const tileset3d = new Tileset3D(tilesetJson, {
+const tileset = new Tileset3D(tilesetHeader, {
   onTileLoad: (tile) => console.log(tile)
 });
 
-// initial viewport
-tileset3d.update(viewport);
+await tileset.selectTiles(viewport);
 
-// Viewport changes (pan zoom etc)
-tileset3d.selectTiles(viewport);
+// Call again whenever the viewport changes.
+await tileset.selectTiles(viewport);
 
 // Visible tiles
-const visibleTiles = tileset3d.tiles.filter((tile) => tile.selected);
+const visibleTiles = tileset.tiles.filter((tile) => tile.selected);
 
-// Note that visibleTiles will likely not immediately include all tiles
-// tiles will keep loading and file `onTileLoad` callbacks
+// Visible tiles may change while content continues loading.
 ```
 
 ## Remarks
