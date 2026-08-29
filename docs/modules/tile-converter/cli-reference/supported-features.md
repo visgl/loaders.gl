@@ -1,4 +1,44 @@
-# Supported features
+---
+title: Tile Converter supported features
+description: Check which I3S and 3D Tiles layer types, versions, sources, extensions, and output options the converter supports.
+hide_title: true
+page_style: designed
+---
+
+import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
+import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
+
+<DocPageHeader
+  eyebrow="Tile converter / compatibility"
+  title="Check the conversion boundary before starting a large job."
+  description="I3S and 3D Tiles are broad standards with several layer types, payloads, versions, and extensions. This matrix records the subset the tile-converter can currently translate and the cases that remain outside its contract."
+  tone="violet"
+  meta={['Layer types', 'Input sources', 'Version and extension matrix']}
+  links={[
+    {label: 'Tile Converter CLI', to: '/docs/modules/tile-converter/cli-reference/tile-converter'},
+    {label: 'I3S converter API', to: '/docs/modules/tile-converter/api-reference/i3s-converter'},
+    {label: '3D Tiles converter API', to: '/docs/modules/tile-converter/api-reference/3d-tiles-converter'}
+  ]}
+/>
+
+<DocOrientation
+  eyebrow="Compatibility at a glance"
+  title="Know what will translate before bytes start moving."
+  description="Use the tables below to distinguish supported inputs from partial or unsupported features. A standard version being recognized does not imply every embedded layer or extension is convertible."
+  tone="violet"
+  items={[
+    {label: 'Layers', value: 'Compare I3S and 3D Tiles scene, mesh, point, and composite types.'},
+    {label: 'Sources', value: 'Check local folders, services, SLPK containers, and hosted URLs.'},
+    {label: 'Versions', value: 'Review supported standard generations and in-progress coverage.'},
+    {label: 'Extensions', value: 'Inspect input preservation and output limitations explicitly.'}
+  ]}
+/>
+
+<ReferenceBoundary
+  title="Supported-feature matrix"
+  description="The detailed tables below define layer, source, version, extension, and option support for the current converter line."
+  tone="violet"
+/>
 
 The tile-converter is capable to convert 3D tiles data of formats [3DTiles](https://github.com/CesiumGS/3d-tiles/tree/main/specification) and [I3S](https://github.com/Esri/i3s-spec). Both `3DTiles` and `I3S` are wide specifications which include many internal formats and data types. The tile-converter doesn't cover all features described in those specifications. This sheet summarises the compatibility of the tile-converter with different parts and features of `3DTiles` and `I3S`.
 

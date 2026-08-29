@@ -1,4 +1,44 @@
-# Tile Converter
+---
+title: Tile Converter CLI
+description: Convert I3S and 3D Tiles datasets from URLs or local sources with a repeatable command-line workflow.
+hide_title: true
+page_style: designed
+---
+
+import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
+import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
+
+<DocPageHeader
+  eyebrow="Tile converter / CLI"
+  title="Put tiled-data conversion in the build pipeline."
+  description="The tile-converter CLI converts supported I3S and 3D Tiles datasets from URLs or local files. Use it for data preparation, format migration, and repeatable output generation outside the browser."
+  tone="orange"
+  meta={['I3S ↔ 3D Tiles', 'Node.js and Docker', 'Batch conversion']}
+  links={[
+    {label: 'Tile converter module', to: '/docs/modules/tile-converter'},
+    {label: 'Supported features', to: '/docs/modules/tile-converter/cli-reference/supported-features'},
+    {label: 'JavaScript APIs', to: '/docs/modules/tile-converter/api-reference/3d-tiles-converter'}
+  ]}
+/>
+
+<DocOrientation
+  eyebrow="A repeatable conversion path"
+  title="Choose the input, set the output policy, run the conversion."
+  description="The CLI exposes the same conversion boundary as the JavaScript APIs, with options for depth, compression, textures, bounding volumes, height references, and SLPK packaging."
+  tone="orange"
+  items={[
+    {label: 'Input', value: 'An I3S or 3D Tiles URL, service, or local dataset.'},
+    {label: 'Policy', value: 'Set depth, Draco, textures, materials, bounds, and elevation options.'},
+    {label: 'Run', value: 'Execute with npx, an installed package, Docker, or the bundle script.'},
+    {label: 'Output', value: 'Write the target tiled standard and its associated resources.'}
+  ]}
+/>
+
+<ReferenceBoundary
+  title="Tile Converter CLI reference"
+  description="The detailed guide covers installation, command-line options, dependencies, output modes, and links to the supported-feature matrix."
+  tone="orange"
+/>
 
 <p class="badges">
   <img src="https://img.shields.io/badge/From-v3.0-blue.svg?style=flat-square" alt="From-v3.0" />

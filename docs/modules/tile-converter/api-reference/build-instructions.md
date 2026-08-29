@@ -1,4 +1,44 @@
-# Build Instructions
+---
+title: Tile converter build instructions
+description: Build and run the tile converter directly from a repository branch when a published package is not sufficient.
+hide_title: true
+page_style: designed
+---
+
+import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
+import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
+
+<DocPageHeader
+  eyebrow="Tile converter / development"
+  title="Run the converter from the source tree."
+  description="Use these instructions when a repository branch contains a fix or capability that is not in the published package yet. The workflow builds the dependencies, installs the elevation model, and runs the converter against a chosen tileset."
+  tone="blue"
+  meta={['Repository build', 'Latest branch changes', 'Development workflow']}
+  links={[
+    {label: 'Tile converter module', to: '/docs/modules/tile-converter'},
+    {label: 'CLI reference', to: '/docs/modules/tile-converter/cli-reference/tile-converter'},
+    {label: 'Bundle script', to: '/docs/modules/tile-converter/api-reference/tile-converter-bundle'}
+  ]}
+/>
+
+<DocOrientation
+  eyebrow="Source-tree workflow"
+  title="Build the exact converter version you need."
+  description="A source build is useful for testing current branch changes or a local patch. Keep the conversion depth bounded when working with a large remote dataset, then validate the generated output with the I3S server or a viewer."
+  tone="blue"
+  items={[
+    {label: 'Checkout', value: 'Clone the repository and select the branch to test.'},
+    {label: 'Build', value: 'Install dependencies and build the required modules.'},
+    {label: 'Prepare', value: 'Install or disable the Earth Gravity Model dependency.'},
+    {label: 'Convert', value: 'Run a bounded conversion and inspect the generated dataset.'}
+  ]}
+/>
+
+<ReferenceBoundary
+  title="Build and run details"
+  description="The detailed guide lists repository setup, build commands, elevation-model options, conversion examples, and local I3S serving steps."
+  tone="blue"
+/>
 
 <p class="badges">
   <img src="https://img.shields.io/badge/From-v3.0-blue.svg?style=flat-square" alt="From-v3.0" />
