@@ -6,7 +6,7 @@ import {expect, test, vi} from 'vitest';
 
 vi.mock('@loaders.gl/parquet/parquet-dataset-source', () => ({
   ParquetDatasetSource: class MockParquetDatasetSource {
-    constructor(public readonly fragments: unknown[]) {}
+    constructor(public readonly fragments: unknown[] | (() => Promise<unknown[]>)) {}
     async getSchema() {
       return {fields: []};
     }
@@ -15,7 +15,7 @@ vi.mock('@loaders.gl/parquet/parquet-dataset-source', () => ({
     }
     async *read() {
       const fragments =
-        typeof this.fragments[0] === 'function' ? await this.fragments[0]() : this.fragments;
+        typeof this.fragments === 'function' ? await this.fragments() : this.fragments;
       yield {data: 'batch', fragments};
     }
   }
@@ -111,4 +111,27 @@ test('resolves relative files with the configured Hudi base URL', async () => {
 test('preserves absolute and path-only file references', async () => {
   const source = new HudiTableSource(new Blob([JSON.stringify({files: [{path: 'part.parquet'}]})]));
   await expect(source.getScanFragments()).resolves.toMatchObject([{uri: 'part.parquet'}]);
+});
+
+test('loads URL descriptors with headers and defaults missing statistics to zero', async () => {
+  const fetchFunction = vi.fn(async (_url: string, options?: RequestInit) => {
+    expect(new Headers(options?.headers).get('Authorization')).toBe('Bearer test');
+    return new Response(JSON.stringify({files: [{path: 'part.parquet'}]}));
+  });
+  const source = new HudiTableSource('https://example.com/snapshot.json', {
+    hudi: {headers: {Authorization: 'Bearer test'}},
+    core: {loadOptions: {fetch: fetchFunction}}
+  });
+
+  await expect(source.getQueryMetadata()).resolves.toMatchObject({
+    name: 'https://example.com/snapshot.json',
+    statistics: {rowCount: 0, byteLength: 0}
+  });
+  expect(fetchFunction).toHaveBeenCalledOnce();
+});
+
+test('rejects primitive JSON descriptors', async () => {
+  await expect(new HudiTableSource(new Blob(['null'])).getScanFragments()).rejects.toThrow(
+    'files array'
+  );
 });
