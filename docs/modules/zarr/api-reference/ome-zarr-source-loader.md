@@ -1,4 +1,44 @@
-# OMEZarrSourceLoader
+---
+title: OMEZarrSourceLoader
+description: Open OME-Zarr v2 and v3 image pyramids and read selected multiscale raster regions.
+hide_title: true
+page_style: designed
+---
+
+import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
+import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
+
+<DocPageHeader
+  eyebrow="Zarr API / bioimaging"
+  title="Read an image pyramid at the level and channels you need."
+  description="OMEZarrSourceLoader discovers OME image metadata, resolves multiscale arrays, and reads selected raster windows from local or remote stores without flattening the entire pyramid first."
+  tone="orange"
+  meta={['OME-Zarr v2 / v3', 'Multiscale images', 'Chunked raster reads']}
+  links={[
+    {label: 'Zarr module', to: '/docs/modules/zarr'},
+    {label: 'OME-Zarr example', to: '/examples/bioimaging/ome-zarr'},
+    {label: 'GeoZarr source', to: '/docs/modules/zarr/api-reference/geo-zarr-source-loader'}
+  ]}
+/>
+
+<DocOrientation
+  eyebrow="Image-pyramid source"
+  title="Discover dimensions, then request a view."
+  description="OME-Zarr describes channels, dimensions, scales, and image groups separately from the chunks that store pixels. The source keeps those choices explicit in the metadata and raster request."
+  tone="orange"
+  items={[
+    {label: 'Discover', value: 'Read OME metadata, dimensions, channels, and pyramid levels.'},
+    {label: 'Select', value: 'Choose level, time, depth, channels, and output size.'},
+    {label: 'Read', value: 'Fetch only the chunks covering the requested raster.'},
+    {label: 'Render', value: 'Return typed raster data for the application or visualization layer.'}
+  ]}
+/>
+
+<ReferenceBoundary
+  title="OME-Zarr source reference"
+  description="The detailed reference covers store discovery, metadata options, dimension selection, channel handling, and raster output."
+  tone="orange"
+/>
 
 <p class="badges">
   <img src="https://img.shields.io/badge/From-v5.0-blue.svg?style=flat-square" alt="From-v5.0" />

@@ -1,4 +1,44 @@
-# LERCLoader
+---
+title: LERCLoader
+description: Decode Limited Error Raster Compression payloads into typed raster data for imagery and analytical coverage workflows.
+hide_title: true
+page_style: designed
+---
+
+import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
+import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
+
+<DocPageHeader
+  eyebrow="Raster compression API"
+  title="Decode compact raster blocks without guessing the pixels."
+  description="LERCLoader reads LERC byte streams used on their own or inside formats such as MRF and GeoTIFF. The decoded result preserves raster dimensions, bands, masks, and error metadata for the next application step."
+  tone="blue"
+  meta={['LERC 1 and 2', 'Typed raster output', 'GeoTIFF and service use']}
+  links={[
+    {label: 'WMS module', to: '/docs/modules/wms'},
+    {label: 'GeoTIFF module', to: '/docs/modules/geotiff'},
+    {label: 'Image category', to: '/docs/specifications/category-image'}
+  ]}
+/>
+
+<DocOrientation
+  eyebrow="Compressed raster path"
+  title="Keep the compression boundary separate from raster use."
+  description="LERC is a byte-stream encoding, not a display policy. The loader decodes the samples and validity information; the application decides how to colorize, resample, analyze, or render them."
+  tone="blue"
+  items={[
+    {label: 'Input', value: 'LERC1 or LERC2 binary byte streams.'},
+    {label: 'Decode', value: 'Recover dimensions, bands, samples, and no-data masks.'},
+    {label: 'Metadata', value: 'Expose compression and error information with the raster.'},
+    {label: 'Next step', value: 'Pass typed pixels to analysis, imagery, or visualization code.'}
+  ]}
+/>
+
+<ReferenceBoundary
+  title="LERCLoader reference"
+  description="The detailed reference documents accepted byte streams, decoded data fields, options, and the environments where the decoder runs."
+  tone="blue"
+/>
 
 <p class="badges">
   <img src="https://img.shields.io/badge/From-v3.3-blue.svg?style=flat-square" alt="From-3.3" />
