@@ -114,7 +114,7 @@ const FeatureSection = styled.section`
   background: #0d1521;
   color: #f4f8fb;
   overflow: hidden;
-  padding: 112px 64px 120px;
+  padding: ${(props) => (props.$compact ? '72px 64px 80px' : '112px 64px 120px')};
   position: relative;
 
   &::before {
@@ -128,11 +128,11 @@ const FeatureSection = styled.section`
   }
 
   @media screen and (max-width: 996px) {
-    padding: 88px 32px 96px;
+    padding: ${(props) => (props.$compact ? '60px 32px 68px' : '88px 32px 96px')};
   }
 
   @media screen and (max-width: 640px) {
-    padding: 68px 20px 76px;
+    padding: ${(props) => (props.$compact ? '48px 20px 56px' : '68px 20px 76px')};
   }
 `;
 
@@ -258,10 +258,12 @@ const FeatureCard = styled(Link)`
 
 const CompactFeatureCard = styled(FeatureCard)`
   grid-column: span 1;
-  min-height: 270px;
+  min-height: 218px;
+  padding: 24px;
 
   @media screen and (max-width: 760px) {
-    min-height: 250px;
+    min-height: 204px;
+    padding: 22px;
   }
 `;
 
@@ -336,6 +338,7 @@ const CardFooter = styled.div`
 
 const CompactCardFooter = styled(CardFooter)`
   max-width: 100%;
+  padding-top: 22px;
 `;
 
 const TagList = styled.div`
@@ -831,7 +834,7 @@ export default function Features({showVisuals = true, featureIds}) {
     : FEATURE_CARDS;
 
   return (
-    <FeatureSection>
+    <FeatureSection $compact={!showVisuals}>
       <FeatureContent>
         <FeatureIntro>
           <div>
