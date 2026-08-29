@@ -1,4 +1,38 @@
-# I3SLoader
+---
+title: I3SLoader
+description: Load Indexed 3D Scene layers and their node resources.
+hide_title: true
+page_style: designed
+---
+
+import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
+import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
+
+<DocPageHeader
+  eyebrow="I3S loader"
+  title="Load ArcGIS scene layers as traversable data."
+  description="`I3SLoader` reads Indexed 3D Scene layers, their geometry and texture resources, and the metadata needed by the shared tiles runtime. Use it for mesh, point, and scene-layer content delivered as JSON, binary nodes, or an SLPK archive."
+  tone="orange"
+  meta={['I3S 1.x and 2.x', 'Scene and point layers', 'JSON and binary resources']}
+  links={[
+    {label: 'I3S module', to: '/docs/modules/i3s'},
+    {label: 'I3S format', to: '/docs/modules/i3s/formats/i3s'},
+    {label: 'I3S source', to: '/docs/modules/tiles/api-reference/i3s-source'}
+  ]}
+/>
+
+<DocOrientation
+  eyebrow="The I3S loading path"
+  title="Read layer metadata, traverse nodes, decode payloads."
+  description="I3S is a layered delivery format rather than one self-contained file. The loader keeps the format-specific details behind the normal loaders.gl and tiles APIs."
+  tone="orange"
+  items={[
+    {label: 'Input', value: 'Layer JSON, node resources, or an SLPK archive'},
+    {label: 'Hierarchy', value: 'Scene layer nodes with level-of-detail metadata'},
+    {label: 'Payloads', value: 'Mesh, point, texture, material, and attribute resources'},
+    {label: 'Output', value: 'I3S data for loaders, sources, and tiles traversal'}
+  ]}
+/>
 
 <p class="badges">
   <img src="https://img.shields.io/badge/From-v2.1-blue.svg?style=flat-square" alt="From-v2.1" />
@@ -16,6 +50,12 @@ A loader for loading an [Indexed 3d Scene (I3S) layer](https://github.com/Esri/i
 | Supported APIs | `load`, `parse`                                     |
 
 ## Format support
+
+<ReferenceBoundary
+  title="Format and runtime details"
+  description="The detailed sections cover supported I3S profiles, terminology, loading, rendering integration, and the full loader object."
+  tone="orange"
+/>
 
 See the [I3S format support matrix](../formats/i3s) for detailed coverage of scene layer profiles,
 specification generations, delivery modes, hierarchy and LOD, mesh geometry, textures, materials,

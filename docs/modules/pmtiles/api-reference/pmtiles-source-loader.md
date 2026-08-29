@@ -1,4 +1,38 @@
-# PMTilesSourceLoader
+---
+title: PMTilesSourceLoader
+description: Read tiles from a PMTiles archive with batched range requests.
+hide_title: true
+page_style: designed
+---
+
+import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
+import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
+
+<DocPageHeader
+  eyebrow="PMTiles source loader"
+  title="Read archive tiles without downloading the archive."
+  description="`PMTilesSourceLoader` turns a PMTiles archive into a tile source. For remote archives it reads the header and directory with byte ranges, queues nearby tile requests, and coalesces compatible ranges before fetching."
+  tone="violet"
+  meta={['PMTiles v2 and v3', 'HTTP range requests', 'Tile source']}
+  links={[
+    {label: 'PMTiles module', to: '/docs/modules/pmtiles'},
+    {label: 'PMTiles format', to: '/docs/modules/pmtiles/formats/pmtiles'},
+    {label: 'Range request guide', to: '/docs/developer-guide/using-range-requests'}
+  ]}
+/>
+
+<DocOrientation
+  eyebrow="The archive path"
+  title="Inspect the archive. Find a tile. Fetch only its bytes."
+  description="PMTiles keeps a tile pyramid in one archive. The source adds loaders.gl source lifecycle and range scheduling around the format’s header, directory, and tile-content lookups."
+  tone="violet"
+  items={[
+    {label: 'Open', value: 'Remote URL or in-memory PMTiles data'},
+    {label: 'Discover', value: 'Header, metadata, and directory entries'},
+    {label: 'Request', value: 'One tile or a coordinated batch of tiles'},
+    {label: 'Transport', value: 'Merged HTTP ranges with bounded over-fetch'}
+  ]}
+/>
 
 <p class="badges">
   <img src="https://img.shields.io/badge/From-v4.0-blue.svg?style=flat-square" alt="From-v4.0" />
@@ -18,6 +52,12 @@ coalesced before the archive bytes are fetched.
 | Data Format    | Metadata                                         |
 
 ## Usage
+
+<ReferenceBoundary
+  title="Source and range details"
+  description="The reference below covers construction, explicit tile batches, range scheduling options, diagnostics, and server response requirements."
+  tone="violet"
+/>
 
 ```typescript
 import {createDataSource} from '@loaders.gl/core';

@@ -1,4 +1,38 @@
-# parse
+---
+title: parse
+description: Decode already-available data with a loader.
+hide_title: true
+page_style: designed
+---
+
+import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
+import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
+
+<DocPageHeader
+  eyebrow="Core parsing API"
+  title="Decode data you already have."
+  description="Use `parse()` when the bytes, text, response, or stream are already in hand. It selects a loader, runs the parser, and returns the loader’s category data without treating a string as a URL."
+  tone="cyan"
+  meta={['Async API', 'Loaded data', 'Explicit or registered loaders']}
+  links={[
+    {label: 'Core module', to: '/docs/modules/core'},
+    {label: 'Load a URL', to: '/docs/modules/core/api-reference/load'},
+    {label: 'Parse in batches', to: '/docs/modules/core/api-reference/parse-in-batches'}
+  ]}
+/>
+
+<DocOrientation
+  eyebrow="The parse boundary"
+  title="Receive data. Select a loader. Return category data."
+  description="Parsing is the lower-level companion to `load()`: fetching is your responsibility, while loaders.gl handles selection, parser setup, worker execution, and the returned data shape."
+  tone="cyan"
+  items={[
+    {label: 'Input', value: 'Response, bytes, text, File, Blob, or an iterator'},
+    {label: 'Selection', value: 'Explicit loader or registered autodetection'},
+    {label: 'Execution', value: 'Parser, worker, and loader-specific options'},
+    {label: 'Output', value: 'The selected loader’s category data'}
+  ]}
+/>
 
 This function "atomically" parses data (i.e. parses the entire data set in one operation). It can be called on "already loaded" data such as `ArrayBuffer` and `string` objects.
 
@@ -21,11 +55,17 @@ data = await parse(fetchFile(url), OBJLoader);
 ...
 ```
 
+<ReferenceBoundary
+  title="Parsing details"
+  description="The reference below covers async parsing, batch parsing, errors, supported input types, and loader selection."
+  tone="cyan"
+/>
+
 Batched (streaming) parsing is supported by some loaders
 
 ```typescript
 import {fetchFile, parseInBatches} from '@loaders.gl/core';
-import {CSVLoader} from '@loaders.gl/obj';
+import {CSVLoader} from '@loaders.gl/csv';
 
 const batchIterator = await parseInBatches(fetchFile(url), CSVLoader);
 for await (const batch of batchIterator) {

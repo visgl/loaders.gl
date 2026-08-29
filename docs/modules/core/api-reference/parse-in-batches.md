@@ -1,4 +1,38 @@
-# parseInBatches
+---
+title: parseInBatches
+description: Decode a stream incrementally into loader-defined batches.
+hide_title: true
+page_style: designed
+---
+
+import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
+import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
+
+<DocPageHeader
+  eyebrow="Core streaming API"
+  title="Decode a stream one batch at a time."
+  description="Use `parseInBatches()` when the input can arrive incrementally and the application can start work before the complete resource is available. The async iterator yields metadata and data in the shape defined by the loader."
+  tone="violet"
+  meta={['Async iterator', 'Incremental parsing', 'Metadata and data batches']}
+  links={[
+    {label: 'Core module', to: '/docs/modules/core'},
+    {label: 'Load in batches', to: '/docs/modules/core/api-reference/load-in-batches'},
+    {label: 'Streaming guide', to: '/docs/developer-guide/using-streaming-loaders'}
+  ]}
+/>
+
+<DocOrientation
+  eyebrow="The batch boundary"
+  title="Read, yield, process, continue."
+  description="A batch is not always a row array. Depending on the loader it may contain metadata, a schema, table rows, geometry, or another category-specific result."
+  tone="violet"
+  items={[
+    {label: 'Input', value: 'Response, stream, iterator, or supported loaded data'},
+    {label: 'Selection', value: 'Explicit loader or registered autodetection'},
+    {label: 'Yield', value: 'Metadata and data through an async iterator'},
+    {label: 'Control', value: 'Loader options, backpressure, and cancellation'}
+  ]}
+/>
 
 The `parseInBatches` function can parse incrementally from a stream of data as it arrives and emit "batches" of parsed data.
 
@@ -12,11 +46,17 @@ When calling parse from a loader to invoke a sub-loader, do not use this functio
 
 ## Usage
 
+<ReferenceBoundary
+  title="Batch parsing details"
+  description="The reference below covers batch-compatible loaders, metadata batches, input types, loader selection, and options."
+  tone="violet"
+/>
+
 Parse CSV in batches (emitting a batch of rows every time data arrives from the network):
 
 ```typescript
 import {fetchFile, parseInBatches} from '@loaders.gl/core';
-import {CSVLoader} from '@loaders.gl/obj';
+import {CSVLoader} from '@loaders.gl/csv';
 
 const batchIterator = await parseInBatches(fetchFile(url), CSVLoader);
 for await (const batch of batchIterator) {
@@ -28,7 +68,7 @@ Parse CSV in batches, requesting an initial metadata batch:
 
 ```typescript
 import {fetchFile, parseInBatches} from '@loaders.gl/core';
-import {CSVLoader} from '@loaders.gl/obj';
+import {CSVLoader} from '@loaders.gl/csv';
 
 const batchIterator = await parseInBatches(fetchFile(url), CSVLoader, {metadata: true});
 for await (const batch of batchIterator) {
