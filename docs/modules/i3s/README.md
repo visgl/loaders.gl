@@ -41,7 +41,7 @@ specification generations, geometry, textures, attributes, delivery options, and
   ]}
 />
 
-References
+## Standards
 
 - [I3S Tiles Specification](https://github.com/Esri/i3s-spec) - The living specification.
 - [I3S Tiles Standard](http://www.ogc.org/standards/i3s) - The official standard from [OGC](http://www.ogc.org/standards/i3s), the Open Geospatial Consortium.
@@ -61,12 +61,13 @@ npm install @loaders.gl/core
 
 ## API
 
-A standard complement of loader is provided to load the individual 3d Tile file formats:
+The module provides loaders and sources for I3S scene-layer profiles:
 
 - [`I3SLoader`](/docs/modules/i3s/api-reference/i3s-loader), a loader for loading a top-down or nested tileset and its tiles.
 - [`I3SPointCloudSource`](/docs/modules/i3s/api-reference/i3s-point-cloud-source), a source for I3S 2.x Point Cloud layers that can be used with [`PointCloudTileset`](/docs/modules/tiles/api-reference/point-cloud-tileset).
 
-To handle the complex dynamic tile selection and loading required to performantly render larger-than-browser-memory tilesets, additional helper classes are provided in `@loaders.gl/tiles` module:
+For dynamic selection and loading of scene layers larger than browser memory, use the helper classes
+in the `@loaders.gl/tiles` module:
 
 - [`Tileset3D`](/docs/modules/tiles/api-reference/tileset-3d) to work with the loaded tileset.
 - [`Tile3D`](/docs/modules/tiles/api-reference/tile-3d) to access data for a specific tile.

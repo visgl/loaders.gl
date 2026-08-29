@@ -46,7 +46,7 @@ summary of parser, traversal, extension, and renderer-facing support.
   ]}
 />
 
-References
+## Standards
 
 - [3D Tiles Specification](https://github.com/AnalyticalGraphicsInc/3d-tiles) - The living specification.
 - [3D Tiles Standard](https://www.opengeospatial.org/standards/3DTiles) - The official standard from [OGC](https://www.opengeospatial.org/), the Open Geospatial Consortium.
@@ -60,12 +60,13 @@ npm install @loaders.gl/core
 
 ## API
 
-A standard complement of loaders and writers are provided to load the individual 3d Tile file formats:
+The module provides loaders for the individual 3D Tiles payload forms:
 
 - [`Tiles3DLoader`](/docs/modules/3d-tiles/api-reference/tiles-3d-loader), a loader for loading a top-down or nested tileset and its tiles.
 - [`CesiumIonLoader`](/docs/modules/3d-tiles/api-reference/cesium-ion-loader), a loader extends from `Tiles3DLoader` with resolving credentials from Cesium ion.
 
-To handle the complex dynamic tile selection and loading required to performantly render larger-than-browser-memory tilesets, additional helper classes are provided in `@loaders.gl/tiles` module:
+For dynamic selection and loading of tilesets larger than browser memory, use the helper classes in
+the `@loaders.gl/tiles` module:
 
 - [`Tileset3D`](/docs/modules/tiles/api-reference/tileset-3d) to work with the loaded tileset.
 - [`Tile3D`](/docs/modules/tiles/api-reference/tile-3d) to access data for a specific tile.
@@ -126,4 +127,5 @@ const visibleTiles = tileset3d.tiles.filter((tile) => tile.selected);
 
 ## Attribution
 
-`@loaders.gl/3d-tiles` is a fork of 3D tile related code in the [Cesium github repository](https://github.com/AnalyticalGraphicsInc/cesium) under Apache 2 License, and is developed in collabration with the Cesium engineering team.
+`@loaders.gl/3d-tiles` includes code derived from the [Cesium repository](https://github.com/AnalyticalGraphicsInc/cesium)
+under the Apache 2.0 license and is maintained in collaboration with the Cesium engineering team.

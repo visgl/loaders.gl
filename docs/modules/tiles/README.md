@@ -39,47 +39,27 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
   tone="violet"
 />
 
-<p align="right">
-  <a href="https://www.npmjs.com/package/@loaders.gl/tiles">
-    <img src="https://img.shields.io/npm/v/@loaders.gl/tiles.svg?style=flat-square&label=npm%20package" alt="npm package version" />
-  </a>
-  <a href="https://github.com/visgl/loaders.gl/blob/master/LICENSE">
-    <img src="https://img.shields.io/badge/license-MIT-brightgreen.svg?style=flat-square" alt="MIT license" />
-  </a>
-  <a href="https://www.npmjs.com/package/@loaders.gl/tiles">
-    <img src="https://img.shields.io/npm/dm/@loaders.gl/tiles.svg?style=flat-square&label=downloads" alt="npm downloads" />
-  </a>
-  <a href="https://www.typescriptlang.org">
-    <img src="https://img.shields.io/badge/TypeScript-6.0-3178C6.svg?style=flat-square" alt="TypeScript 6.0" />
-  </a>
-</p>
-
-<h1 align="center">Tiles | <a href="https://loaders.gl/docs/modules/tiles">Docs</a></h1>
-
-<h5 align="center">Source-backed 2D and 3D tileset loading for loaders.gl</h5>
-
 ## Overview
 
-`@loaders/tiles` exposes handy classes such as `Tileset3D`, `Tile3D`, and `RasterSet` for
-source-backed 2D and 3D loading workflows. These classes understand the loaded data from tile and
-raster sources and provide useful functions for dynamically selecting or refreshing data under a
-viewport.
+`@loaders.gl/tiles` exposes `Tileset3D`, `Tile3D`, `PointCloudTileset`, and `RasterSet` for
+source-backed 2D and 3D loading workflows. These classes select, request, refresh, and release
+content under a viewport while the source keeps ownership of format-specific loading.
 
 ## Concepts
 
 - [OGC 3D Tiles](https://www.opengeospatial.org/standards/3DTiles) standard
 - [OGC i3s](https://www.opengeospatial.org/standards/i3s) standard
-- **Tile Header Hierarchy** - An initial, "minimal" set of data listing the _hierarchy of available tiles_, with minimal information to allow an application to determine which tiles need to be loaded based on a certain viewing position in 3d space.
-- **Tile Header** - A minimal header describing a tiles bounding volume and a screen space error tolerance (allowing the tile to be culled if it is distant), as well as the URL to load the tile's actual content from.
+- **Tile header hierarchy** - A compact description of available tiles, bounds, and relationships used to decide which content may be relevant to a view.
+- **Tile header** - A tile's bounding volume, screen-space error target, and content reference.
 - **Tile Content** - The actual payload of the tile.
-- **Tile Cache** - Since the number of tiles in big tilesets often exceed what can be loaded into available memory, it is important to have a system that releases no-longer visible tiles from memory.
-- **Tileset Traversal** - Dynamically loading and rendering 3D tiles based on current viewing position, possibly triggering loads of new tiles and unloading of older, no-longer visible tiles.
+- **Tile cache** - A bounded store that releases content no longer needed by the current view.
+- **Tileset traversal** - View-dependent selection that loads new content and unloads older content as the camera moves.
 
 ### Tileset3D Class
 
 #### Properties
 
-- `boundingVolume` (`BoundingVolume`): The root tile's bounding volume, which is also the bouding volume of the entire tileset. Check `Tile3DHeader#boundingVolume`
+- `boundingVolume` (`BoundingVolume`): The root tile's bounding volume, which encloses the entire tileset. See `Tile3DHeader#boundingVolume`.
 - `cartesianCenter` (`Number[3]`): Center of tileset in fixed frame coordinates.
 - `cartographicCenter` (`Number[3]`): Center of tileset in cartographic coordinates `[long, lat, elevation]`
 - `ellipsoid` ([`Ellipsoid`](https://math.gl/modules/geospatial/docs/api-reference/ellipsoid)): Gets an ellipsoid describing the shape of the globe.
@@ -89,7 +69,7 @@ viewport.
 - `modelMatrix` (`Matrix4: A [Matrix4](https://math.gl/modules/core/docs/api-reference/matrix4) instance (4x4 transformation matrix) that transforms the entire tileset.
 - `root` (`Tile3DHeader`): The root tile header.
 - `tiles`: (`Array<Tile3DHeader>`): All the tiles that have been traversed.
-- `stats` ([`Stats`](https://uber-web.github.io/probe.gl/docs/api-reference/log/stats))): An instance of a probe.gl `Stats` object that contains information on how many tiles have been loaded etc. Easy to display using a probe.gl `StatsWidget`.
+- `stats` ([`Stats`](https://uber-web.github.io/probe.gl/docs/api-reference/log/stats)): A probe.gl `Stats` object containing tile-loading counters.
 - `tileset` (`Object`): The original tileset data this object instanced from.
 - `tilesLoaded` (`Boolean`): When `true`, all tiles that meet the screen space error this frame are loaded. The tileset is completely loaded for this view.
 - `gpuMemoryUsageInBytes` (`Number`): The total amount of GPU memory in bytes used by the tileset. This value is estimated from geometry, texture, and batch table textures of loaded tiles. For point clouds, this value also includes per-point metadata.
@@ -109,7 +89,7 @@ viewport.
       Callbacks:
     - `onTileLoad` (`(tileHeader : Tile3DHeader) : void`) - callback when a tile node is fully loaded during the tileset traversal.
     - `onTileUnload` (`(tileHeader : Tile3DHeader) : void`) - callback when a tile node is unloaded during the tileset traversal.
-    - `onTileError` (`(tileHeader : Tile3DHeader, message : String) : void`) - callback when a tile faile to load during the tileset traversal.
+- `onTileError` (`(tileHeader : Tile3DHeader, message : String) : void`) - callback when a tile fails to load during traversal.
 - `update(viewport: WebMercatorViewport) : Number`: Execute traversal under current viewport and fetch tiles needed for current viewport and update `selectedTiles`. Return `frameNumber` of this update frame.
 - `destroy() : void`: Destroys the WebGL resources held by this object, and destroy all the tiles' resources by recursively traversing the tileset tree.
 
@@ -130,13 +110,13 @@ viewport.
   - `render`: has content to render
   - `tileset`: tileset tile
 - `depth` (`Number`): The depth of the tile in the tileset tree.
-- `content` (`Object`): The tile's content.This represents the actual tile's payload.
+- `content` (`Object`): The tile's content. This represents the actual tile payload.
 - `type` (`String`): One of `scenegraph`, `pointcloud`, `mesh`
 - `parent` (`Tile3DHeader`): Parent of this tile.
 - `refine` (`String`): Specifies the type of refine that is used when traversing this tile for rendering. [`Reference`](https://github.com/AnalyticalGraphicsInc/3d-tiles/blob/master/specification/README.md#refinement)
   - `ADD`: high-resolution children tiles should be rendered in addition to lower-resolution parent tiles when level of details of parent tiles are not sufficient for current view.
   - `REPLACEMENT`: high-resolution children tiles should replace parent tiles when lower-resolution parent tiles are not sufficient for current view.
-- `selected` (`Boolean`): Whether this tile is selected for rendering in current update frame and viewport. A selected tile should has its content loaded and satifies current viewport.
+- `selected` (`Boolean`): Whether this tile is selected for rendering in the current frame and viewport. A selected tile should have content that satisfies the current viewport.
 - `tileset` (`Tileset3D`): The `Tileset3D` instance containing this tile.
 - `header` (`Object`): The unprocessed tile header object passed in.
 
