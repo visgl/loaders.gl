@@ -10,6 +10,25 @@ import {AvroWriter} from '../src/avro-writer';
 import {encodeAvroInChunks} from '../src/avro-stream';
 import {getAvroSchemaFingerprint} from '../src/lib/parsers/parse-avro';
 import {parseAvroOCF} from '../src/avro-ocf';
+import {compressAvro, decompressAvro} from '../src/avro-compression';
+
+test('Avro compression handles null and deflate blocks', async () => {
+  const value = new TextEncoder().encode('compression coverage');
+  await expect(compressAvro('null', value)).resolves.toBe(value);
+  await expect(decompressAvro('null', value)).resolves.toBe(value);
+
+  const compressed = await compressAvro('deflate', value);
+  expect(compressed).not.toEqual(value);
+  await expect(decompressAvro('deflate', compressed)).resolves.toEqual(value);
+});
+
+test('Avro compression rejects unsupported codecs', async () => {
+  const value = new Uint8Array([1, 2, 3]);
+  await expect(compressAvro('unsupported', value)).rejects.toThrow(/unsupported compression codec/);
+  await expect(decompressAvro('unsupported', value)).rejects.toThrow(
+    /unsupported compression codec/
+  );
+});
 test('AvroWriter#encode round-trips an Arrow table', async () => {
   const input = {
     shape: 'arrow-table' as const,
