@@ -1,4 +1,37 @@
-# GeoZarrSourceLoader
+---
+title: GeoZarrSourceLoader
+description: Query GeoZarr arrays as geospatial rasters while preserving dimensions, chunks, and CRS metadata.
+hide_title: true
+page_style: designed
+---
+
+import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
+import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
+
+<DocPageHeader
+  eyebrow="GeoZarr source"
+  title="Ask a multidimensional array for a spatial slice."
+  description="GeoZarrSourceLoader maps GeoZarr and CF/xarray metadata to raster requests, selecting variables, dimensions, levels, and chunks without discarding the array’s native meaning."
+  tone="pink"
+  meta={['Zarr v2 and v3', 'GeoZarr and CF', 'Chunk-selected raster']}
+  links={[
+    {label: 'Zarr format', to: '/docs/modules/zarr/formats/zarr'},
+    {label: 'Zarr module', to: '/docs/modules/zarr'}
+  ]}
+/>
+
+<DocOrientation
+  eyebrow="The multidimensional request"
+  title="Select the variable, dimensions, and window."
+  description="The source discovers array and coordinate metadata, derives a spatial transform when possible, and reads the chunks that cover the requested view and named slices."
+  tone="pink"
+  items={[
+    {label: 'Discover', value: 'Variables, dimensions, CRS, and transforms'},
+    {label: 'Select', value: 'Array path, time, level, channel, or slice'},
+    {label: 'Read', value: 'Only chunks intersecting the request'},
+    {label: 'Return', value: 'Typed raster data with dimension metadata'}
+  ]}
+/>
 
 <p class="badges">
   <img src="https://img.shields.io/badge/From-v5.0-blue.svg?style=flat-square" alt="From-v5.0" />
@@ -16,6 +49,12 @@ The source recognizes two interoperable metadata patterns:
 - Regular one-dimensional CF/xarray longitude/latitude or x/y coordinate variables. The source
   derives an affine transform when those coordinates are evenly spaced and reads CRS WKT from a CF
   `grid_mapping` variable when present.
+
+<ReferenceBoundary
+  title="GeoZarr source usage"
+  description="The sections below cover metadata conventions, source construction, viewport requests, selections, and chunk access."
+  tone="pink"
+/>
 
 ## Usage
 
