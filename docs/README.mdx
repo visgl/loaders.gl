@@ -6,10 +6,21 @@ page_style: designed
 ---
 
 import {FormatLogoGallery} from '@site/src/components/docs/format-logo-gallery';
-import {CapabilityHero} from '@site/src/components/docs/capability-hero';
+import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
 import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
 
-<CapabilityHero capability="loaders" />
+<DocPageHeader
+  eyebrow="Library overview"
+  title="Load data. Keep the application path."
+  description="A focused map of loaders.gl: choose a format, find its common data shape, and go deeper only when you need the implementation details."
+  tone="cyan"
+  meta={['Loaders and writers', 'Files, streams, and services', 'TypeScript']}
+  links={[
+    {label: 'Get started', to: '/docs/developer-guide/get-started'},
+    {label: 'Loader categories', to: '/docs/developer-guide/loader-categories'},
+    {label: 'Common scan architecture', to: '/docs/developer-guide/common-scan-architecture'}
+  ]}
+/>
 
 ## Explore formats
 
