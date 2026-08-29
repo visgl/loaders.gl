@@ -6,6 +6,7 @@ page_style: designed
 ---
 
 import {CsvDocsTabs} from '@site/src/components/docs/csv-docs-tabs';
+import {StructuredDataPathGraphic} from '@site/src/components/docs/structured-data-path-graphic';
 import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
 import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
 
@@ -23,6 +24,8 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
 />
 
 <CsvDocsTabs active="format" />
+
+<StructuredDataPathGraphic />
 
 <DocOrientation
   eyebrow="Delimited data path"

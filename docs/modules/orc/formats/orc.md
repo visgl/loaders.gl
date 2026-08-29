@@ -6,6 +6,7 @@ page_style: designed
 ---
 
 import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
+import {CrossFormatScanEngineGraphic} from '@site/src/components/docs/cross-format-scan-engine-graphic';
 import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
 import {OrcCloudLiveExample} from '@site/src/components/docs/orc-cloud-live-example';
 
@@ -20,6 +21,8 @@ import {OrcCloudLiveExample} from '@site/src/components/docs/orc-cloud-live-exam
     {label: 'Scan architecture', to: '/docs/developer-guide/common-scan-architecture'}
   ]}
 />
+
+<CrossFormatScanEngineGraphic />
 
 <DocOrientation
   eyebrow="The ORC layout"

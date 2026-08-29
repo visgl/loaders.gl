@@ -6,6 +6,7 @@ page_style: designed
 ---
 
 import {WmsDocsTabs} from '@site/src/components/docs/wms-docs-tabs';
+import {ServiceSourceGraphic} from '@site/src/components/docs/service-source-graphic';
 import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
 import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
 
@@ -22,6 +23,8 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
 />
 
 <WmsDocsTabs active="wms" />
+
+<ServiceSourceGraphic kind="ogc" />
 
 <DocOrientation
   eyebrow="The service sequence"
