@@ -272,6 +272,7 @@ export class SourceLayer<DataT = any> extends CompositeLayer<SourceLayerProps<Da
           new Tile3DSourceLayer({
             ...childProps,
             data: resolvedSource.source as string | Blob | Tileset3DSource,
+            loader: resolvedSource.parserLoaders,
             loaders: resolvedSource.parserLoaders,
             onTilesetLoad: tileset => {
               this.props.onTilesetLoad?.(tileset);
