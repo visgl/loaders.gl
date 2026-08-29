@@ -1,8 +1,47 @@
-import {TexturesDocsTabs} from '@site/src/components/docs/textures-docs-tabs';
+---
+title: Radiance HDR format
+description: Decode RGBE high-dynamic-range images for environment lighting, skyboxes, reflections, and tone mapping.
+hide_title: true
+page_style: designed
+---
 
-# Radiance HDR
+import {TexturesDocsTabs} from '@site/src/components/docs/textures-docs-tabs';
+import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
+import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
+
+<DocPageHeader
+  eyebrow="High-dynamic-range image"
+  title="Keep lighting values above display range."
+  description="Radiance HDR stores RGBE pixels with a shared exponent, making it useful for environment maps and lighting workflows. loaders.gl decodes the image into texture data while leaving tone mapping and display policy to the renderer."
+  tone="orange"
+  meta={['RGBE pixels', 'Environment lighting', 'Texture output']}
+  links={[
+    {label: 'Textures module', to: '/docs/modules/textures'},
+    {label: 'RadianceHDRLoader', to: '/docs/modules/textures/api-reference/radiance-hdr-loader'},
+    {label: 'Image category', to: '/docs/specifications/category-image'}
+  ]}
+/>
 
 <TexturesDocsTabs active="hdr" />
+
+<DocOrientation
+  eyebrow="HDR data path"
+  title="Decode scene-referred values before display."
+  description="HDR images carry a wider range of values than ordinary display images. The loader preserves that range in a texture representation so an application can choose filtering, lighting, and tone mapping explicitly."
+  tone="orange"
+  items={[
+    {label: 'Input', value: 'Radiance RGBE `.hdr` or compatible picture data.'},
+    {label: 'Decode', value: 'Expand RGBE pixels into floating-point texture samples.'},
+    {label: 'Use', value: 'Feed environment lighting, reflections, or tone-mapping tests.'},
+    {label: 'Display', value: 'Apply the renderer’s own exposure and color policy.'}
+  ]}
+/>
+
+<ReferenceBoundary
+  title="Radiance HDR format details"
+  description="The reference below covers RGBE storage, format revisions, scanline encoding, loader behavior, and rendering considerations."
+  tone="orange"
+/>
 
 <p class="badges">
   <img src="https://img.shields.io/badge/From-v4.4-blue.svg?style=flat-square" alt="From-v4.4" />
