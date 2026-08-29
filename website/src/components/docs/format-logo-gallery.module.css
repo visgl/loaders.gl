@@ -73,6 +73,55 @@
   object-fit: contain;
 }
 
+.neutralLogo {
+  align-items: center;
+  background:
+    linear-gradient(135deg, color-mix(in srgb, var(--ifm-color-primary) 13%, transparent), transparent),
+    var(--ifm-background-surface-color);
+  border: 1px solid color-mix(in srgb, var(--ifm-color-primary) 42%, var(--ifm-color-emphasis-300));
+  border-radius: 12px;
+  color: var(--ifm-color-primary-dark);
+  display: flex;
+  height: 56px;
+  justify-self: center;
+  justify-content: center;
+  overflow: hidden;
+  position: relative;
+  width: 86px;
+}
+
+.neutralLogo::before,
+.neutralLogo::after {
+  background: var(--ifm-color-primary);
+  content: '';
+  opacity: 0.2;
+  position: absolute;
+  transform: rotate(-28deg);
+}
+
+.neutralLogo::before {
+  height: 90px;
+  left: 12px;
+  top: -18px;
+  width: 7px;
+}
+
+.neutralLogo::after {
+  bottom: -18px;
+  height: 90px;
+  right: 13px;
+  width: 7px;
+}
+
+.neutralLogoMark {
+  font-family: var(--ifm-font-family-monospace);
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  position: relative;
+  z-index: 1;
+}
+
 .label {
   font-size: 0.82rem;
   font-weight: 700;
