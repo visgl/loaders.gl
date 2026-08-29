@@ -34,14 +34,20 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
 />
 
 ```typescript
-load(url: string | File, loaders: Loader, options?: LoaderOptions]): Promise<unknown>
-load(url: string | File, loaders: Loader[], options?: LoaderOptions]): Promise<unknown>
-load(url: string | File, options?: LoaderOptions): Promise<unknown>
+load(
+  url: string | File | Blob,
+  loaders?: Loader | Loader[],
+  options?: LoaderOptions
+): Promise<unknown>
 ```
 
-The `load()` function is used to load and parse data with a specific _loader object_. An array of loader objects can be provided, in which case `load` will attempt to autodetect which loader is appropriate for the file.
+The `load()` function fetches and parses data with a specific loader object. An array of loader
+objects can be provided, in which case `load()` attempts to select the appropriate loader from the
+URL, extension, content type, and file signature.
 
-The `load()` function can also be used with multiple _loaders_. `load()` takes a `url` and one or more _loader objects_, checks what type of data that loader prefers to work on (e.g. text, JSON, binary, stream, ...), loads the data in the appropriate way, and passes it to the loader.
+The `loaders` parameter can be omitted when loaders have been registered with
+[`registerLoaders`](/docs/modules/core/api-reference/register-loaders). The selected loader tells
+core whether it needs text, JSON, binary data, or a stream.
 
 <ReferenceBoundary
   title="load inputs and options"
@@ -49,23 +55,29 @@ The `load()` function can also be used with multiple _loaders_. `load()` takes a
   tone="cyan"
 />
 
-The `loaders` parameter can also be omitted, in which case any _loader objects_ previously registered with [`registerLoaders`](/docs/modules/core/api-reference/register-loaders) will be used.
+:::info[Use `load()` for resources]
 
-- `url` - Urls can be data urls (`data://`) or a request (`http://` or `https://`) urls, or a file name (Node.js only). Also accepts `File` or `Blob` object (Browser only). Can also accept any format that is accepted by [`parse`](https://github.com/visgl/loaders.gl/blob/master/docs/api-reference/core/parse), with the exception of strings that are interpreted as urls.
-- `loaders` - can be a single loader or an array of loaders. If a single loader is provided, it is used directly. If omitted, the list of pre-registered loaders is used (see [`registerLoaders`](/docs/modules/core/api-reference/register-loaders)).
-- `options` - see [`LoaderOptions`](./loader-options).
+- Pass a URL, data URL, browser `File`, or `Blob` when core should fetch the resource.
+- Pass an explicit loader when the format is known; pass an array when detection should choose.
+- Use [`parse()`](/docs/modules/core/api-reference/parse) when the bytes, text, response, or
+  stream are already available.
 
-Returns:
+:::
 
-- If `options.fetch` is not overridden with a new function.
-- Return value depends on the _loader category_.
+The return value depends on the selected loader's category data. For example, a CSV loader may
+return batches or a table, while a glTF loader returns a scenegraph-shaped object.
 
-Notes:
+## Parameters
 
-- If `url` is not a `string`, `load` will call `parse` directly.
-- Any path prefix set by `setPathPrefix` will be appended to relative urls.
-- `load` takes a `url` and a loader object, checks what type of data that loader prefers to work on (e.g. text, binary, stream, ...), loads the data in the appropriate way, and passes it to the loader.
-- If `@loaders.gl/polyfills` is installed, `load` will work under Node.js as well.
+- `url` accepts HTTP(S) and data URLs, Node.js file names, browser `File` objects, and `Blob`
+  objects. Non-string inputs are passed directly to the parsing path.
+- `loaders` can be one loader, an array of candidate loaders, or omitted in favor of registered
+  loaders.
+- `options` combines core fetch/parse options with loader-specific sub-objects. See
+  [`LoaderOptions`](./loader-options).
+
+Any path prefix set by [`setPathPrefix`](./set-path-prefix) is applied to relative URLs. If
+`@loaders.gl/polyfills` is installed, the same API can be used under Node.js.
 
 ## Options
 
