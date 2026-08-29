@@ -1,8 +1,47 @@
-import {BsonDocsTabs} from '@site/src/components/docs/bson-docs-tabs';
+---
+title: BSON - Binary JSON
+description: Store JSON-like documents with explicit binary scalar types and compact traversal-friendly records.
+hide_title: true
+page_style: designed
+---
 
-# BSON - Binary JSON
+import {BsonDocsTabs} from '@site/src/components/docs/bson-docs-tabs';
+import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
+import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
+
+<DocPageHeader
+  eyebrow="Document binary format"
+  title="Keep JSON-like documents typed on the wire."
+  description="BSON is a binary document format with explicit scalar types such as dates, 64-bit integers, decimals, byte arrays, and regular expressions. loaders.gl exposes it through the same loader and writer boundaries used by other formats."
+  tone="yellow"
+  meta={['Binary JSON', 'Typed scalar values', 'MongoDB js-bson']}
+  links={[
+    {label: 'BSON module', to: '/docs/modules/bson'},
+    {label: 'BSONLoader', to: '/docs/modules/bson/api-reference/bson-loader'},
+    {label: 'BSONWriter', to: '/docs/modules/bson/api-reference/bson-writer'}
+  ]}
+/>
 
 <BsonDocsTabs active="overview" />
+
+<DocOrientation
+  eyebrow="The BSON document path"
+  title="Use JSON structure without giving up typed values."
+  description="BSON keeps the familiar object-and-array model while adding explicit binary representations for values that JSON cannot describe precisely. Its length prefixes also make document traversal straightforward."
+  tone="yellow"
+  items={[
+    {label: 'Structure', value: 'Objects, arrays, field names, types, and values'},
+    {label: 'Extra scalars', value: 'Dates, int64, decimal128, bytes, regex, and code'},
+    {label: 'Read', value: 'Decode binary documents into JavaScript objects'},
+    {label: 'Write', value: 'Serialize JSON-like data as BSON bytes'}
+  ]}
+/>
+
+<ReferenceBoundary
+  title="BSON structure and compatibility"
+  description="The reference below covers BSON data types, Extended JSON, binary layout, efficiency trade-offs, and the loaders.gl entry points."
+  tone="yellow"
+/>
 
 The BSON ("Binary JSON") specification defines a binary format for storing JSON-like data with additional scalar types and explicit type information.
 
