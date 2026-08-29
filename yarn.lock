@@ -5661,10 +5661,8 @@ __metadata:
     hyparquet: "npm:1.29.0"
     hyparquet-compressors: "npm:1.1.1"
     isomorphic-ws: "npm:^5.0.0"
-    lz4js: "npm:^0.2.0"
     object-stream: "npm:0.0.1"
     parquet-wasm: "npm:0.7.2"
-    snappyjs: "npm:^0.6.0"
     varint: "npm:^6.0.0"
     zstd-codec: "npm:^0.1"
   peerDependencies:
@@ -30547,7 +30545,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"snappyjs@npm:^0.6.0, snappyjs@npm:^0.6.1":
+"snappyjs@npm:^0.6.1":
   version: 0.6.1
   resolution: "snappyjs@npm:0.6.1"
   checksum: 10c0/6fa62bb62adfc2bad577db78c58b1c52aba5482f749018ff3000f13bf660f13ec5f16ab80673ce4e8792902a16c30e5fb40a3b67dbca9af525658c9d343c5b1c
