@@ -6,6 +6,7 @@ page_style: designed
 ---
 
 import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
+import {TextureTranscodeGraphic} from '@site/src/components/docs/texture-transcode-graphic';
 import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
 
 <DocPageHeader
@@ -18,6 +19,8 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
     {label: '3D data formats', to: '/docs/developer-guide/3d-data-formats'}
   ]}
 />
+
+<TextureTranscodeGraphic />
 
 <DocOrientation
   eyebrow="Container, payload, runtime"
