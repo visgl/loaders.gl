@@ -1,4 +1,37 @@
-# Using Unbundled Loaders
+---
+title: Using unbundled loaders
+description: Keep broad format support available without putting every parser in the initial application bundle.
+hide_title: true
+page_style: designed
+---
+
+import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
+import {DocOrientation} from '@site/src/components/docs/designed-doc';
+
+<DocPageHeader
+  eyebrow="Bundle boundaries"
+  title="Recognize many formats. Download fewer parsers up front."
+  description="Unbundled loaders keep metadata in the main application bundle and dynamically load parser implementations when an input actually needs them."
+  tone="mint"
+  meta={['Metadata-first imports', 'Dynamic parser chunks', 'Tree-shakeable']}
+  links={[
+    {label: 'Loader categories', to: '/docs/developer-guide/loader-categories'},
+    {label: 'Managing dependencies', to: '/docs/developer-guide/dependencies'}
+  ]}
+/>
+
+<DocOrientation
+  eyebrow="When to split a parser"
+  title="Keep the application broad without making startup broad."
+  description="Use an unbundled import when a format is supported occasionally. Keep the bundled path for formats central to the application or required by synchronous APIs."
+  tone="mint"
+  items={[
+    {label: 'Main bundle', value: 'Loader metadata and format recognition'},
+    {label: 'On demand', value: 'Parser implementation loaded at first use'},
+    {label: 'Async APIs', value: 'Core preloads the parser automatically'},
+    {label: 'Sync APIs', value: 'Use a parser-bearing bundled loader'}
+  ]}
+/>
 
 One of the strengths of loaders.gl is the ability for an application to support a wide range of similar input formats by using a list of loaders. However, bundling many rarely used loaders into the main application bundle has a real cost. In this case, unbundled loaders can be a good option.
 

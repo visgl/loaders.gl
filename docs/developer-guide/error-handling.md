@@ -1,4 +1,37 @@
-# Handling Errors
+---
+title: Handling errors
+description: Distinguish request failures, service responses, and parser failures with one async error model.
+hide_title: true
+page_style: designed
+---
+
+import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
+import {DocOrientation} from '@site/src/components/docs/designed-doc';
+
+<DocPageHeader
+  eyebrow="Failure is part of the data path"
+  title="Tell the user what failed, not just that it failed."
+  description="A load can fail while fetching bytes, while a service rejects a request, or while a parser rejects the returned data. loaders.gl keeps those failures observable through promises and exceptions."
+  tone="orange"
+  meta={['Network errors', 'Service responses', 'Parser errors']}
+  links={[
+    {label: 'Authentication', to: '/docs/developer-guide/authentication'},
+    {label: 'Core load API', to: '/docs/modules/core/api-reference/load'}
+  ]}
+/>
+
+<DocOrientation
+  eyebrow="Three failure boundaries"
+  title="Access, response, or content."
+  description="Handle the failure at the boundary that owns it. Preserve the original error and add request or format context when presenting a useful message to an application user."
+  tone="orange"
+  items={[
+    {label: 'Access', value: 'DNS, network, timeout, or missing resource'},
+    {label: 'Response', value: 'HTTP status, auth, or service parameters'},
+    {label: 'Content', value: 'Malformed or unsupported format data'},
+    {label: 'Async API', value: 'Catch exceptions or rejected promises'}
+  ]}
+/>
 
 Applications that implement loading and saving of data typically wish to provide solid error handling. A number of error conditions can occur that are outside the applications control (missing files, unreadable files, incorrectly formatted files etc).Being able to catch these errors and surface meaningful error messages to the end user is important.
 
