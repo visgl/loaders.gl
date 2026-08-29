@@ -1,12 +1,46 @@
-import {CsvDocsTabs} from '@site/src/components/docs/csv-docs-tabs';
+---
+title: CSVLoader
+description: Load CSV and TSV data into row, columnar, or Arrow table shapes.
+hide_title: true
+page_style: designed
+---
 
-# CSVLoader
+import {CsvDocsTabs} from '@site/src/components/docs/csv-docs-tabs';
+import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
+import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
+
+<DocPageHeader
+  eyebrow="CSV module · loader API"
+  title="CSVLoader"
+  description="Load CSV and TSV text into a table shape that suits the next stage of your application, from familiar JavaScript rows to typed Apache Arrow columns."
+  tone="blue"
+  meta={['From v1.0', 'CSV / TSV', 'Arrow output']}
+  links={[
+    {label: 'CSV format', to: '/docs/modules/csv/formats/csv'},
+    {label: 'CSV module', to: '/docs/modules/csv'}
+  ]}
+/>
 
 <CsvDocsTabs active="csvloader" />
 
-<p className="badges">
-  <img src="https://img.shields.io/badge/From-v1.0-blue.svg?style=flat-square" alt="From-v1.0" />
-</p>
+<DocOrientation
+  eyebrow="What it returns"
+  title="Start with rows. Move to columns when the pipeline grows."
+  description="CSVLoader keeps the simple path simple, then offers columnar and Arrow representations for typed data, geometry columns, and more efficient handoffs."
+  tone="blue"
+  items={[
+    {label: 'Object rows', value: 'Readable records for application code'},
+    {label: 'Columnar', value: 'Columns without row-object overhead'},
+    {label: 'Arrow', value: 'Typed, binary-compatible table data'},
+    {label: 'Geometry', value: 'Optional WKT and WKB detection'}
+  ]}
+/>
+
+<ReferenceBoundary
+  title="CSVLoader reference"
+  description="The sections below cover usage, bundle boundaries, headers, typing, geometry columns, and all loader options."
+  tone="blue"
+/>
 
 `CSVLoader` loads CSV and TSV data as loaders.gl row tables by default. Set `csv.shape: 'array-row-table'`, `csv.shape: 'columnar-table'`, or `csv.shape: 'arrow-table'` to request a different table shape.
 
