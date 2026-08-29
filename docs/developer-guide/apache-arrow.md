@@ -6,11 +6,14 @@ page_style: designed
 ---
 
 import {CapabilityHero} from '@site/src/components/docs/capability-hero';
+import {ArrowDataPlaneGraphic} from '@site/src/components/docs/arrow-data-plane-graphic';
 import {ArrowJsStructureGraphic} from '@site/src/components/docs/arrow-js-structure-graphic';
 import {CategoryDataConcept} from '@site/src/components/home/concepts';
 import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
 
 <CapabilityHero capability="arrow" />
+
+<ArrowDataPlaneGraphic />
 
 <CategoryDataConcept initialCategoryId="table" initialRepresentationId="arrow" />
 
