@@ -30,6 +30,10 @@
   z-index: 1;
 }
 
+.visual {
+  display: contents;
+}
+
 .eyebrow {
   align-items: center;
   color: var(--card-accent);
@@ -92,7 +96,7 @@
 
 @media (max-width: 760px) {
   .hero {
-    min-height: 430px;
+    min-height: 0;
     padding: 26px;
   }
 
@@ -103,12 +107,23 @@
   .description {
     max-width: 100%;
   }
+
+  .visual {
+    display: block;
+    height: 180px;
+    margin-top: 1.25rem;
+    position: relative;
+  }
+
+  .visual > div {
+    bottom: 0;
+    right: 0;
+  }
 }
 
 @media (max-width: 480px) {
   .hero {
     border-radius: 18px;
-    min-height: 440px;
     padding: 22px;
   }
 }
