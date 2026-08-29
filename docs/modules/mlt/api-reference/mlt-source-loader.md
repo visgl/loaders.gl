@@ -1,6 +1,40 @@
-# MLTSourceLoader
+---
+title: MLTSourceLoader
+description: Read MapLibre Tile data from URL-addressed tile services.
+hide_title: true
+page_style: designed
+---
 
-<p class="badges">
+import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
+import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
+
+<DocPageHeader
+  eyebrow="MLT source loader"
+  title="Fetch compact vector tiles through a source."
+  description="`MLTSourceLoader` connects URL-addressed MapLibre Tile services to the loaders.gl source API. It resolves tile URLs, decodes MLT payloads, and can return GeoJSON-style tables or binary geometry."
+  tone="blue"
+  meta={['MapLibre Tile', 'URL tile services', 'GeoJSON or binary output']}
+  links={[
+    {label: 'MLT module', to: '/docs/modules/mlt'},
+    {label: 'MLT format', to: '/docs/modules/mlt/formats/mlt'},
+    {label: 'Using sources', to: '/docs/developer-guide/using-sources'}
+  ]}
+/>
+
+<DocOrientation
+  eyebrow="The MLT source boundary"
+  title="Keep tile addressing separate from tile decoding."
+  description="The source owns service URLs and metadata, while `MLTLoader` owns the compact binary payload. Applications can request tiles through the common source lifecycle."
+  tone="blue"
+  items={[
+    {label: 'Input', value: 'Tile service URL and optional metadata URL'},
+    {label: 'Addressing', value: 'z/x/y tile coordinates with configurable extension'},
+    {label: 'Decode', value: 'MLT layers, attributes, and geometry'},
+    {label: 'Output', value: 'GeoJSON table or binary geometry'}
+  ]}
+/>
+
+<p className="badges">
   <img src="https://img.shields.io/badge/From-v4.4-blue.svg?style=flat-square" alt="From-v4.4" />
 </p>
 
@@ -14,6 +48,12 @@ The `MLTSourceLoader` dynamically loads MapLibre Tile (`.mlt`) data from URL bas
 | Data Format    | GeoJSON                                        |
 
 ## Usage
+
+<ReferenceBoundary
+  title="Source options and output details"
+  description="The reference below documents construction, URL and metadata options, coordinate output, layer filtering, and related loader APIs."
+  tone="blue"
+/>
 
 ```typescript
 import {createDataSource} from '@loaders.gl/core';

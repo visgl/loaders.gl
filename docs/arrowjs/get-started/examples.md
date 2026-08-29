@@ -1,3 +1,45 @@
+---
+title: Arrow JavaScript examples
+description: Start with small Arrow table examples for files, buffers, arrays, and browser requests.
+hide_title: true
+page_style: designed
+---
+
+import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
+import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
+
+<DocPageHeader
+  eyebrow="Arrow JavaScript · examples"
+  title="Try the smallest useful Arrow programs."
+  description="These examples show the common entry points without hiding the data shape: read IPC, combine buffers, create a table from arrays, and fetch a remote stream."
+  tone="cyan"
+  meta={['Copyable examples', 'IPC files', 'Browser and Node.js']}
+  links={[
+    {label: 'Getting started', to: '/docs/arrowjs/get-started'},
+    {label: 'Reading and writing', to: '/docs/arrowjs/developer-guide/reading-and-writing'},
+    {label: 'Arrow in loaders.gl', to: '/docs/developer-guide/apache-arrow'}
+  ]}
+/>
+
+<DocOrientation
+  eyebrow="Four starting points"
+  title="Use the example that matches your input."
+  description="Arrow JS can consume IPC bytes, build tables from typed arrays, or iterate through a response. The resulting table and record-batch APIs are the same."
+  tone="cyan"
+  items={[
+    {label: 'On disk', value: 'Read a complete IPC file'},
+    {label: 'Split buffers', value: 'Combine schema and record buffers'},
+    {label: 'In memory', value: 'Create columns from JavaScript arrays'},
+    {label: 'Over HTTP', value: 'Fetch and iterate through record batches'}
+  ]}
+/>
+
+<ReferenceBoundary
+  title="Example details"
+  description="The snippets below are intentionally small. Follow the linked guides when you need schemas, writers, builders, workers, or loaders.gl integration."
+  tone="cyan"
+/>
+
 # Examples
 
 Some short examples

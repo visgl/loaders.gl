@@ -1,12 +1,47 @@
-import {JsonDocsTabs} from '@site/src/components/docs/json-docs-tabs';
+---
+title: NDGeoJSONLoader
+description: Stream newline-delimited GeoJSON features into application or table data.
+hide_title: true
+page_style: designed
+---
 
-# NDGeoJSONLoader
+import {JsonDocsTabs} from '@site/src/components/docs/json-docs-tabs';
+import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
+import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
+
+<DocPageHeader
+  eyebrow="JSON module · geospatial streaming"
+  title="NDGeoJSONLoader"
+  description="Stream GeoJSON features as newline-delimited records, keeping a large feature collection usable in incremental rendering and analysis workflows."
+  tone="mint"
+  meta={['From v1.0', 'GeoJSONL', 'Streaming features']}
+  links={[
+    {label: 'GeoJSON format', to: '/docs/modules/json/formats/geojson'},
+    {label: 'GeoJSONLoader', to: '/docs/modules/json/api-reference/geojson-loader'},
+    {label: 'JSON module', to: '/docs/modules/json'}
+  ]}
+/>
 
 <JsonDocsTabs active="ndgeojsonloader" tryItHref="/examples/geospatial/geojson" />
 
-<p class="badges">
-  <img src="https://img.shields.io/badge/From-v1.0-blue.svg?style=flat-square" alt="From-v1.0" />
-</p>
+<DocOrientation
+  eyebrow="What it reads"
+  title="Process features one line at a time."
+  description="NDGeoJSONLoader is the line-oriented GeoJSON path for files and streams that should not be held as one large FeatureCollection before processing begins."
+  tone="mint"
+  items={[
+    {label: 'Input', value: 'One GeoJSON feature per line'},
+    {label: 'Output', value: 'Incremental feature batches'},
+    {label: 'Geometry', value: 'GeoJSON geometry and properties'},
+    {label: 'Use cases', value: 'Large exports, maps, and stream processing'}
+  ]}
+/>
+
+<ReferenceBoundary
+  title="NDGeoJSONLoader reference"
+  description="The sections below document the line-oriented formats, usage, output, and streaming behavior."
+  tone="mint"
+/>
 
 For GeoJSON, the root level FeatureCollection object is removed with a simple array of features, one per line
 

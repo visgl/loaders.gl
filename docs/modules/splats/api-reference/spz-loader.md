@@ -1,11 +1,51 @@
-# SPZLoader
+---
+title: SPZLoader
+description: Parse compressed Niantic Spatial SPZ Gaussian splat files into Mesh Arrow tables.
+hide_title: true
+page_style: designed
+---
 
-<p class="badges">
+import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
+import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
+
+<DocPageHeader
+  eyebrow="SPZ loader"
+  title="Decode compressed splats without changing the application shape."
+  description="`SPZLoader` reads Niantic Spatial SPZ files, handles their compressed attribute streams, and returns the same Mesh Arrow table shape as the other loaders.gl Gaussian splat formats."
+  tone="violet"
+  meta={['SPZ v4', 'ZSTD streams', 'Mesh Arrow table']}
+  links={[
+    {label: 'Splats module', to: '/docs/modules/splats'},
+    {label: 'Splat formats', to: '/docs/modules/splats/formats/splats'},
+    {label: 'Mesh category', to: '/docs/specifications/category-mesh'}
+  ]}
+/>
+
+<DocOrientation
+  eyebrow="The SPZ path"
+  title="Probe the file. Decompress its streams. Return typed splat columns."
+  description="SPZ keeps the file small by compressing independent attribute streams. The loader hides that storage detail while preserving the decoded fields and format metadata needed by applications."
+  tone="violet"
+  items={[
+    {label: 'Input', value: 'SPZ v4 binary data with `NGSP` magic'},
+    {label: 'Codec', value: 'Native probe or injected ZSTD implementation'},
+    {label: 'Decode', value: 'Positions, color, opacity, scale, rotation, and SH'},
+    {label: 'Output', value: 'Mesh Arrow table plus SPZ loader metadata'}
+  ]}
+/>
+
+<p className="badges">
   <img src="https://img.shields.io/badge/From-v5.0-blue.svg?style=flat-square" alt="From-v5.0" />
   <img src="https://img.shields.io/badge/Status-Experimental-orange.svg?style=flat-square" alt="Status: Experimental" />
 </p>
 
 `SPZLoader` parses Niantic Spatial `.spz` Gaussian splat files and returns a [Mesh Arrow table](/docs/specifications/category-mesh#mesh-arrow-tables).
+
+<ReferenceBoundary
+  title="Compression and output details"
+  description="The reference below covers runtime codec selection, supported SPZ versions, decoded fields, metadata, and loader options."
+  tone="violet"
+/>
 
 | Property     | Value                                      |
 | ------------ | ------------------------------------------ |

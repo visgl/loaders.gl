@@ -1,6 +1,46 @@
-# TextureArrayLoader
+---
+title: TextureArrayLoader
+description: Load a JSON texture-array manifest and assemble its member images into a shared array texture representation.
+hide_title: true
+page_style: designed
+---
 
-<p class="badges">
+import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
+import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
+
+<DocPageHeader
+  eyebrow="Texture API / manifest loader"
+  title="Describe an array of images, then load it as one texture."
+  description="TextureArrayLoader reads a JSON manifest that names the member images and their layout. It delegates image decoding to ImageBitmapLoader and returns a texture-array shape with the array structure still visible."
+  tone="mint"
+  meta={['JSON manifest', 'Image arrays', 'Delegated image loading']}
+  links={[
+    {label: 'Textures module', to: '/docs/modules/textures'},
+    {label: 'Texture category', to: '/docs/specifications/category-texture'},
+    {label: 'ImageBitmapLoader', to: '/docs/modules/images/api-reference/image-bitmap-loader'}
+  ]}
+/>
+
+<DocOrientation
+  eyebrow="Manifest-driven texture data"
+  title="Keep layout metadata beside the image references."
+  description="An array texture is more than a list of URLs: the manifest describes its shape and member ordering. The loader keeps those details explicit while reusing the standard image decoding path."
+  tone="mint"
+  items={[
+    {label: 'Manifest', value: 'Declare an image-texture-array shape and member resources.'},
+    {label: 'Resolve', value: 'Load member images through the configured image loader.'},
+    {label: 'Assemble', value: 'Preserve ordering, dimensions, and array metadata.'},
+    {label: 'Upload', value: 'Hand the normalized texture array to the graphics runtime.'}
+  ]}
+/>
+
+<ReferenceBoundary
+  title="TextureArrayLoader reference"
+  description="The detailed reference covers manifest structure, member-image loading, options, dimensions, and output texture-array fields."
+  tone="mint"
+/>
+
+<p className="badges">
   <img src="https://img.shields.io/badge/From-v5.0-blue.svg?style=flat-square" alt="From-v5.0" />
 </p>
 

@@ -1,4 +1,44 @@
-# LoaderOptions
+---
+title: LoaderOptions
+description: Configure shared loading, parsing, workers, batches, and format-specific behavior.
+hide_title: true
+page_style: designed
+---
+
+import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
+import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
+
+<DocPageHeader
+  eyebrow="Core module · options API"
+  title="LoaderOptions"
+  description="Configure the shared runtime behavior of loaders.gl APIs, then add format-specific options under the loader namespace that owns them."
+  tone="blue"
+  meta={['Core options', 'Worker controls', 'Format namespaces']}
+  links={[
+    {label: 'Core module', to: '/docs/modules/core'},
+    {label: 'Using loaders', to: '/docs/developer-guide/using-loaders'},
+    {label: 'Worker processing', to: '/docs/modules/worker-utils/api-reference/worker-processing'}
+  ]}
+/>
+
+<DocOrientation
+  eyebrow="The options boundary"
+  title="Keep runtime policy separate from format policy."
+  description="Shared options control fetching, workers, concurrency, logging, shapes, and transforms. Loader-specific namespaces describe how an individual format should be decoded or encoded."
+  tone="blue"
+  items={[
+    {label: 'Runtime', value: 'Fetch, logging, errors, and worker execution'},
+    {label: 'Concurrency', value: 'Pool size, reuse, and mobile limits'},
+    {label: 'Shape', value: 'Shared default output representation'},
+    {label: 'Format', value: 'Options nested under each loader ID'}
+  ]}
+/>
+
+<ReferenceBoundary
+  title="LoaderOptions reference"
+  description="The sections below document core options, loader-specific namespaces, batched parsing, and compatibility aliases."
+  tone="blue"
+/>
 
 APIs in `@loaders.gl/core` takes an `options?: LoaderOptions` parameter. The options are documented on this page.
 

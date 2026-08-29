@@ -1,10 +1,49 @@
-# WMSCapabilitiesLoader
+---
+title: WMSCapabilitiesLoader
+description: Parse OGC WMS GetCapabilities responses into typed service metadata.
+hide_title: true
+page_style: designed
+---
+
+import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
+import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
+
+<DocPageHeader
+  eyebrow="WMS module · capabilities loader"
+  title="WMSCapabilitiesLoader"
+  description="Read an OGC Web Map Service capabilities response into typed metadata describing layers, requests, limits, exceptions, and supported service behavior."
+  tone="cyan"
+  meta={['From v3.3', 'OGC WMS', 'Typed metadata']}
+  links={[
+    {label: 'WMS format', to: '/docs/modules/wms/formats/wms'},
+    {label: 'WMS module', to: '/docs/modules/wms'},
+    {label: 'CRS and tile grids', to: '/docs/modules/wms/api-reference/crs-and-tile-grids'}
+  ]}
+/>
+
+<DocOrientation
+  eyebrow="What it reads"
+  title="Inspect a map service before making map requests."
+  description="GetCapabilities is the service’s catalog. The loader turns its XML response into metadata applications can use to select layers, formats, coordinate systems, and request methods."
+  tone="cyan"
+  items={[
+    {label: 'Layers', value: 'Names, titles, bounds, and nested groups'},
+    {label: 'Requests', value: 'Supported WMS operations and formats'},
+    {label: 'Service', value: 'Limits, fees, access, and keywords'},
+    {label: 'Exceptions', value: 'Declared error formats and behavior'}
+  ]}
+/>
+
+<ReferenceBoundary
+  title="WMSCapabilitiesLoader reference"
+  description="The sections below document the request, parsed capability types, options, and XML limitations."
+  tone="cyan"
+/>
 
 ![ogc-logo](../../../images/logos/ogc-logo-60.png)
 
-<p class="badges">
+<p className="badges">
   <img src="https://img.shields.io/badge/From-v3.3-blue.svg?style=flat-square" alt="From-3.3" />
-  &nbsp;
   <img src="https://img.shields.io/badge/Status-Experimental-orange.svg?style=flat-square" alt="Status: Experimental" />
 </p>
 

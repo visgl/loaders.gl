@@ -1,8 +1,42 @@
+---
+title: 3D Tiles screen-space error and level of detail
+description: See how geometric error becomes a view-dependent pixel threshold that drives 3D Tiles refinement.
+hide_title: true
+page_style: designed
+---
+
 import {Tiles3DDocsTabs} from '@site/src/components/docs/tiles-3d-docs-tabs';
+import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
+import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
 
-# Screen-Space Error and Level of Detail
+<DocPageHeader
+  eyebrow="3D Tiles runtime / LOD"
+  title="Turn world-space error into view-space detail."
+  description="Screen-space error gives traversal a consistent question: is this tile detailed enough for the current camera, projection, transform, and viewport?"
+  tone="orange"
+  meta={['Perspective and orthographic views', 'Logical pixels', 'Transform-aware error']}
+/>
 
-<Tiles3DDocsTabs active="sse-lod" />
+<Tiles3DDocsTabs active="runtime" />
+
+<DocOrientation
+  eyebrow="Level of detail"
+  title="One threshold controls the visible tradeoff."
+  description="The runtime projects a tile's geometric error into logical viewport pixels and refines when that error exceeds the configured maximum. Lower thresholds ask for more detail and more work."
+  tone="orange"
+  items={[
+    {label: 'Start with', value: 'The source geometricError and the complete tile transform.'},
+    {label: 'Project', value: 'Convert world-space error into perspective or orthographic pixels.'},
+    {label: 'Compare', value: 'Use maximumScreenSpaceError as the final refinement target.'},
+    {label: 'Tune', value: 'Balance visible detail against requests, memory, and decode work.'}
+  ]}
+/>
+
+<ReferenceBoundary
+  title="The SSE calculation"
+  description="The technical sections define the projection formulas, transform scaling, dynamic reductions, and the conditions that lead to refinement."
+  tone="orange"
+/>
 
 3D Tiles organizes content in a spatial hierarchy. A parent tile provides a coarser representation of an area, while its descendants provide progressively more detail. `Tileset3D` traverses this hierarchy for every viewport and uses **screen-space error (SSE)** to decide whether a tile is detailed enough to render or should refine to its children.
 

@@ -1,8 +1,44 @@
-# @loaders.gl/scan
+---
+title: '@loaders.gl/scan'
+description: A portable query runtime for bounded, selective reads across local and cloud data.
+hide_title: true
+page_style: designed
+---
 
-<p class="badges">
+import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
+import {CrossFormatScanEngineGraphic} from '@site/src/components/docs/cross-format-scan-engine-graphic';
+import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
+
+<DocPageHeader
+  eyebrow="Module overview"
+  title="@loaders.gl/scan"
+  description="Describe the rows, columns, bounds, and limits you need once, then let each source plan the most useful reads it can perform."
+  tone="violet"
+  meta={['Arrow results', 'Range-aware sources', 'Portable query contract']}
+  links={[
+    {label: 'Scan architecture', to: '/docs/developer-guide/common-scan-architecture'},
+    {label: 'Get started', to: '/docs/developer-guide/get-started'}
+  ]}
+/>
+
+<p className="badges">
   <img src="https://img.shields.io/badge/From-v5.0-blue.svg?style=flat-square" alt="From v5.0" />
 </p>
+
+<CrossFormatScanEngineGraphic />
+
+<DocOrientation
+  eyebrow="The scan module"
+  title="Describe the work. Let the source plan the reads."
+  description="The scan runtime keeps query intent separate from the storage format, so an application can ask for columns, predicates, bounds, and limits while each source reports what it can execute."
+  tone="violet"
+  items={[
+    {label: 'Intent', value: 'Columns, predicates, bounds, limits, and ordering'},
+    {label: 'Planning', value: 'Source metadata distinguishes pushdown from residual work'},
+    {label: 'Execution', value: 'Arrow tables, addressed tiles, or bounded feature requests'},
+    {label: 'Federation', value: 'Ordered append with schema reconciliation and provenance'}
+  ]}
+/>
 
 `@loaders.gl/scan` is the optional application-facing runtime for portable queries. It collects the
 reference Arrow executor, query parsing, source-neutral query metadata, ordered append federation,
@@ -14,6 +50,12 @@ runtime bundle cost.
 
 See the [common scan architecture](/docs/developer-guide/common-scan-architecture) for the complete
 support matrix and execution semantics.
+
+<ReferenceBoundary
+  title="Scan APIs and execution semantics"
+  description="The reference below covers installation, table execution, source metadata, federation, vector views, cancellation, and backend registration."
+  tone="violet"
+/>
 
 ## Installation
 

@@ -1,8 +1,44 @@
-# Tileset3DSource
+---
+title: Tileset3DSource
+description: The source contract between a 3D format and the shared tileset runtime.
+hide_title: true
+page_style: designed
+---
 
-<p class="badges">
-  <img src="https://img.shields.io/badge/From-v5.0-blue.svg?style=flat-square" alt="From-v5.0" />
-</p>
+import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
+import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
+
+<DocPageHeader
+  eyebrow="Tiles module · source contract"
+  title="Tileset3DSource"
+  description="A format-neutral contract for connecting 3D Tiles, I3S, and other hierarchical datasets to Tileset3D traversal, culling, request scheduling, and cache management."
+  tone="cyan"
+  meta={['Format-neutral', '3D hierarchy', 'Source lifecycle']}
+  links={[
+    {label: 'Tileset3D', to: '/docs/modules/tiles/api-reference/tileset-3d'},
+    {label: '3D Tiles source', to: '/docs/modules/tiles/api-reference/tiles-3d-source'},
+    {label: 'I3S source', to: '/docs/modules/tiles/api-reference/i3s-source'}
+  ]}
+/>
+
+<DocOrientation
+  eyebrow="The contract boundary"
+  title="Let each format own its rules. Share the runtime."
+  description="A source normalizes metadata, creates runtime tile headers, resolves content, and supplies traversal hooks. Tileset3D can then manage the common lifecycle without knowing the source format."
+  tone="cyan"
+  items={[
+    {label: 'Initialize', value: 'Load and normalize root metadata'},
+    {label: 'Headers', value: 'Create runtime tile tree nodes'},
+    {label: 'Content', value: 'Fetch and process selected payloads'},
+    {label: 'Runtime', value: 'Traversal, culling, cache, and scheduling'}
+  ]}
+/>
+
+<ReferenceBoundary
+  title="Tileset3DSource reference"
+  description="The sections below document responsibilities, lifecycle order, core shape, and concrete source implementations."
+  tone="cyan"
+/>
 
 The `Tileset3DSource` interface defines the format-specific contract consumed by [`Tileset3D`](/docs/modules/tiles/api-reference/tileset-3d).
 

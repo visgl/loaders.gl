@@ -1,10 +1,45 @@
-import {FlatGeobufDocsTabs} from '@site/src/components/docs/flatgeobuf-docs-tabs';
+---
+title: FlatGeobuf format
+description: A binary, spatially indexed feature format designed for streaming and selective reads.
+hide_title: true
+page_style: designed
+---
 
-# FlatGeobuf
+import {FlatGeobufDocsTabs} from '@site/src/components/docs/flatgeobuf-docs-tabs';
+import {RangeRequestGraphic} from '@site/src/components/docs/range-request-graphic';
+import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
+import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
+
+<DocPageHeader
+  eyebrow="Indexed feature format"
+  title="Find the features before decoding the file."
+  description="FlatGeobuf stores OGC geometries in a compact FlatBuffers layout and can include a spatial index. That makes it useful for streaming and bounded reads without the weight of a database."
+  tone="cyan"
+  meta={['FlatBuffers', 'Row-oriented', 'Optional spatial index']}
+  links={[
+    {label: 'FlatGeobuf module', to: '/docs/modules/flatgeobuf'},
+    {label: 'FlatGeobuf source', to: '/docs/modules/flatgeobuf/api-reference/flatgeobuf-source-loader'}
+  ]}
+/>
 
 <FlatGeobufDocsTabs active="overview" />
 
-<p class="badges">
+<RangeRequestGraphic />
+
+<DocOrientation
+  eyebrow="The useful trade-off"
+  title="A row format with a spatial shortcut."
+  description="FlatGeobuf keeps complete features together while its index lets a reader skip records outside a requested bounding box. It complements columnar formats rather than replacing them."
+  tone="cyan"
+  items={[
+    {label: 'Layout', value: 'FlatBuffers-encoded feature records'},
+    {label: 'Selection', value: 'R-tree bounding-box pruning when present'},
+    {label: 'Geometry', value: 'OGC Simple Features geometry types'},
+    {label: 'Output', value: 'GeoJSON-like features or Arrow batches'}
+  ]}
+/>
+
+<p className="badges">
   <a href="/docs/developer-guide/common-scan-architecture">
     <img src="https://img.shields.io/badge/Scan-Supported-2f855a.svg?style=flat-square" alt="Scan supported" />
   </a>
@@ -18,6 +53,12 @@ import {FlatGeobufDocsTabs} from '@site/src/components/docs/flatgeobuf-docs-tabs
 FlatGeobuf is a binary (FlatBuffers-encoded) format that defines geospatial geometries. It is row-oriented rather than columnar like GeoParquet and GeoArrow and offers a different set of trade-offs.
 FlatGeobuf was inspired by [geobuf](https://github.com/mapbox/geobuf) and [flatbush](https://github.com/mourner/flatbush).
 
+<ReferenceBoundary
+  title="FlatGeobuf structure and support"
+  description="The sections below describe layout, geometry types, indexing, scan behavior, and the format features supported by loaders.gl."
+  tone="cyan"
+/>
+
 ## Characteristics
 
 - Binary
@@ -29,10 +70,14 @@ Goals are to be suitable for large volumes of static data, significantly faster 
 
 ## Geometries
 
-FlatGeobuf supports any vector geometry type defined in the OGC Simple Features specification (the same feature types supported by the WKB 2D geometry type enumeration).
+FlatGeobuf supports vector geometry types defined in the OGC Simple Features specification (the
+same feature types supported by the WKB 2D geometry type enumeration).
 
 :::caution
-GeoBuf geometries include the standard building blocks of `Point`, `LineString`, `Polygon`,`MultiPoint`, `MultiLineString`, `MultiPolygon`, and `GeometryCollection`, but also includes more infrequently types such as `CircularString`, `Surface`, and `TIN`` (Triangulated irregular network). These additional types are not supported by loaders.gl.
+FlatGeobuf geometries include the standard building blocks of `Point`, `LineString`, `Polygon`,
+`MultiPoint`, `MultiLineString`, `MultiPolygon`, and `GeometryCollection`, but also include less
+frequently used types such as `CircularString`, `Surface`, and `TIN` (triangulated irregular
+network). These additional types are not supported by loaders.gl.
 :::
 
 | Type               | Value | loaders.gl | Comment |
@@ -83,7 +128,7 @@ Apart from geometry, FlatGeobuf supports columns with a range of types:
 ## Metadata
 
 :::caution
-loaders.gl currently does not currently expose all metadata.
+loaders.gl does not expose all metadata fields yet.
 :::
 
 ```typescript

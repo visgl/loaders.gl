@@ -1,4 +1,44 @@
-# Working with Tables
+---
+title: Working with Arrow tables
+description: Load, inspect, slice, iterate, and filter Apache Arrow tables in JavaScript.
+hide_title: true
+page_style: designed
+---
+
+import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
+import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
+
+<DocPageHeader
+  eyebrow="Arrow JS guide · tables"
+  title="Read the columns you need, when you need them."
+  description="Arrow tables support both row-oriented inspection and column-oriented access. This guide starts with a small IPC load, then shows the operations most applications use to explore and filter the result."
+  tone="cyan"
+  meta={['IPC loading', 'Rows and columns', 'Schemas and timestamps']}
+  links={[
+    {label: 'Arrow JavaScript', to: '/docs/arrowjs'},
+    {label: 'Arrow API reference', to: '/docs/arrowjs/api-reference'},
+    {label: 'Apache Arrow guide', to: '/docs/developer-guide/apache-arrow'}
+  ]}
+/>
+
+<DocOrientation
+  eyebrow="A table in four moves"
+  title="Load, inspect, select, and process."
+  description="The same Arrow table can be explored as rows or columns. Keep the column view for typed processing, and convert to row objects only at an application boundary that needs them."
+  tone="cyan"
+  items={[
+    {label: 'Load', value: 'Read Arrow IPC into a Table'},
+    {label: 'Inspect', value: 'Use numRows, schema fields, and field types'},
+    {label: 'Select', value: 'Read rows or child vectors by name'},
+    {label: 'Process', value: 'Filter, slice, and pass batches downstream'}
+  ]}
+/>
+
+<ReferenceBoundary
+  title="Table access patterns"
+  description="The examples below cover IPC loading, schema inspection, row access, column vectors, timestamp conversion, and filtering."
+  tone="cyan"
+/>
 
 References:
 

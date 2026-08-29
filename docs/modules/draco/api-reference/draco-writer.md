@@ -1,6 +1,47 @@
-import {DracoDocsTabs} from '@site/src/components/docs/draco-docs-tabs';
+---
+title: DracoWriter
+description: Encode meshes and point clouds with Draco compression.
+hide_title: true
+page_style: designed
+---
 
-# DracoWriter
+import {DracoDocsTabs} from '@site/src/components/docs/draco-docs-tabs';
+import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
+import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
+
+<DocPageHeader
+  eyebrow="Draco module · writer API"
+  title="DracoWriter"
+  description="Encode meshes and point clouds with Draco compression, retaining application attribute names, metadata, and configurable quantization at the compression boundary."
+  tone="blue"
+  meta={['From v1.0', 'Mesh and point cloud', 'Configurable quantization']}
+  links={[
+    {label: 'Draco format', to: '/docs/modules/draco/formats/draco'},
+    {label: 'DracoLoader', to: '/docs/modules/draco/api-reference/draco-loader'},
+    {label: 'Draco module', to: '/docs/modules/draco'}
+  ]}
+/>
+
+<DracoDocsTabs active="dracowriter" />
+
+<DocOrientation
+  eyebrow="What it writes"
+  title="Compress geometry without throwing away its contract."
+  description="DracoWriter accepts mesh-oriented data, validates its attributes and indices, and encodes the result with controls for point clouds, speed, quantization, and metadata."
+  tone="blue"
+  items={[
+    {label: 'Input', value: 'Mesh, Mesh Arrow table, or flat attributes'},
+    {label: 'Output', value: 'Draco-compressed geometry'},
+    {label: 'Control', value: 'Speed, method, and quantization'},
+    {label: 'Metadata', value: 'Geometry and per-attribute metadata'}
+  ]}
+/>
+
+<ReferenceBoundary
+  title="DracoWriter reference"
+  description="The sections below document batch encoding, usage, input normalization, validation, options, and metadata."
+  tone="blue"
+/>
 
 For applications encoding many independent geometries, `encodeDracoBatch` initializes the
 Draco runtime once and processes inputs sequentially, keeping peak native memory bounded while
@@ -8,12 +49,6 @@ avoiding per-geometry module startup overhead. It returns one `DracoEncodingResu
 An optional `AbortSignal` cancels between geometries, and `onProgress` receives a completion
 count after each successful encode. Worker pooling is intentionally tracked separately for the
 shared loaders.gl worker framework.
-
-<DracoDocsTabs active="dracowriter" />
-
-<p class="badges">
-  <img src="https://img.shields.io/badge/From-v1.0-blue.svg?style=flat-square" alt="From-v1.0" />
-</p>
 
 ![logo](../images/draco-small.png)
 

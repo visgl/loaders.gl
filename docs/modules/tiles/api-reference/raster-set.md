@@ -1,8 +1,44 @@
-# RasterSet
+---
+title: RasterSet
+description: Manage viewport-driven raster requests through a raster source.
+hide_title: true
+page_style: designed
+---
 
-<p class="badges">
-  <img src="https://img.shields.io/badge/Status-Experimental-orange.svg?style=flat-square" alt="Status: Experimental" />
-</p>
+import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
+import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
+
+<DocPageHeader
+  eyebrow="Tiles module · raster runtime"
+  title="RasterSet"
+  description="A small loading manager for viewport-driven raster sources, with metadata loading, debounced requests, lifecycle callbacks, and CRS-aware view state."
+  tone="cyan"
+  meta={['Experimental', 'Raster sources', 'Viewport-driven']}
+  links={[
+    {label: 'Tiles module', to: '/docs/modules/tiles'},
+    {label: 'Using sources', to: '/docs/developer-guide/using-sources'},
+    {label: 'CRS guide', to: '/docs/developer-guide/coordinate-reference-systems'}
+  ]}
+/>
+
+<DocOrientation
+  eyebrow="The raster boundary"
+  title="Load only the raster view the application asks for."
+  description="RasterSet keeps source metadata and viewport-driven raster requests in one small lifecycle, so layers and examples can subscribe to progress without owning request coordination."
+  tone="cyan"
+  items={[
+    {label: 'Metadata', value: 'Load source information once'},
+    {label: 'Viewport', value: 'Request raster data for a view'},
+    {label: 'Scheduling', value: 'Debounce and optionally refetch'},
+    {label: 'Events', value: 'Subscribe to metadata and raster loads'}
+  ]}
+/>
+
+<ReferenceBoundary
+  title="RasterSet reference"
+  description="The sections below document construction, source integration, request options, callbacks, and CRS considerations."
+  tone="cyan"
+/>
 
 `RasterSet` is a lightweight loading manager for viewport-driven [`RasterSource`](/docs/developer-guide/using-sources) implementations.
 

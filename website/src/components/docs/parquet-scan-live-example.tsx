@@ -13,6 +13,7 @@ type ParquetDemoState = Readonly<{
 
 const DEFAULT_PARQUET_URL =
   'https://raw.githubusercontent.com/visgl/loaders.gl/master/modules/parquet/test/data/geoparquet/airports.parquet';
+const objectSizeCache = new Map<string, number>();
 
 /** Demonstrates the shared scan panel on a standalone range-readable Parquet file. */
 export function ParquetScanLiveExample(): JSX.Element {
@@ -25,8 +26,10 @@ export function ParquetScanLiveExample(): JSX.Element {
     let mounted = true;
     void (async () => {
       try {
-        const {ParquetSource} = await import('@loaders.gl/parquet');
-        const source = new ParquetSource(url, {parquet: {worker: false}}) as ParquetSource;
+        const {ParquetSource} = await import('@loaders.gl/parquet/parquet-source-loader');
+        const source = new ParquetSource(url, {
+          core: {loadOptions: {core: {fetch: fetchWithExposedContentRange}}, worker: false}
+        }) as ParquetSource;
         const metadata = await source.getQueryMetadata();
         let table: ArrowTable | undefined;
         for await (const batch of source.read({
@@ -76,4 +79,28 @@ export function ParquetScanLiveExample(): JSX.Element {
 function ParquetPreview({table}: {table: ArrowTable}): JSX.Element {
   const columns = table.schema.fields.map(field => field.name);
   return <p><strong>Arrow result:</strong> {table.data.numRows} rows · {columns.length} columns ({columns.join(', ')})</p>;
+}
+
+/** Adds the range metadata hidden by the public GitHub CORS policy. */
+async function fetchWithExposedContentRange(url: string, options?: RequestInit): Promise<Response> {
+  const response = await fetch(url, options);
+  const range = options?.headers && new Headers(options.headers).get('Range');
+  if (response.status !== 206 || response.headers.get('Content-Range') || !range) return response;
+  const match = range.match(/^bytes=(\d+)-(\d+)$/);
+  if (!match) return response;
+  let objectSize = objectSizeCache.get(url);
+  if (objectSize === undefined) {
+    const headResponse = await fetch(url, {method: 'HEAD'});
+    const contentLength = headResponse.headers.get('Content-Length');
+    if (!headResponse.ok || !contentLength) return response;
+    objectSize = Number(contentLength);
+    objectSizeCache.set(url, objectSize);
+  }
+  const headers = new Headers(response.headers);
+  headers.set('Content-Range', `bytes ${match[1]}-${match[2]}/${objectSize}`);
+  return new Response(await response.arrayBuffer(), {
+    status: response.status,
+    statusText: response.statusText,
+    headers
+  });
 }

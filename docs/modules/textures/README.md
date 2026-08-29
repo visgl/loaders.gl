@@ -1,16 +1,57 @@
-import {TexturesDocsTabs} from '@site/src/components/docs/textures-docs-tabs';
+---
+title: '@loaders.gl/textures'
+description: Load compressed texture containers and transcode portable payloads into GPU-oriented formats.
+hide_title: true
+page_style: designed
+---
 
-# Overview
+import {TexturesDocsTabs} from '@site/src/components/docs/textures-docs-tabs';
+import {TextureTranscodeGraphic} from '@site/src/components/docs/texture-transcode-graphic';
+import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
+import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
+
+<DocPageHeader
+  eyebrow="Texture module"
+  title="Ship one texture asset. Choose the GPU format at runtime."
+  description="The textures module handles containers, mip chains, arrays, cube maps, and compressed payloads. Basis Universal can be transcoded on the client to a format supported by the current device."
+  tone="cyan"
+  meta={['KTX / KTX2', 'Basis Universal', 'GPU-oriented payloads']}
+  links={[
+    {label: 'Texture category', to: '/docs/specifications/category-texture'},
+    {label: 'Basis format', to: '/docs/modules/textures/formats/basis'}
+  ]}
+/>
 
 <TexturesDocsTabs active="overview" />
 
-<p class="badges">
+<TextureTranscodeGraphic />
+
+<DocOrientation
+  eyebrow="Container, payload, device"
+  title="Keep texture delivery separate from texture use."
+  description="A source file can carry mip levels and a portable compressed payload. The application can inspect that metadata, select a target, and hand the resulting levels to its rendering layer."
+  tone="cyan"
+  items={[
+    {label: 'Containers', value: 'KTX, KTX2, DDS, PVR, Basis, and Crunch'},
+    {label: 'Layouts', value: 'Mips, arrays, cube maps, and 3D texture images'},
+    {label: 'Transcode', value: 'Basis payloads to device-compatible compressed formats'},
+    {label: 'Return', value: 'TextureLevel data or normalized texture objects'}
+  ]}
+/>
+
+<p className="badges">
   <img src="https://img.shields.io/badge/From-v3.0-blue.svg?style=flat-square" alt="From-v3.0" />
 </p>
 
 The `@loaders.gl/textures` module contains loaders for compressed textures. More specifically it contains loaders and writers for compressed texture **container** formats, including KTX, DDS and PVR. It also supports supercompressed Basis textures and decoded Radiance HDR images.
 
 See [Texture Loaders](/docs/specifications/category-texture) for the shared category conventions.
+
+<ReferenceBoundary
+  title="Texture module details"
+  description="The sections below cover formats, loaders, writers, normalized return shapes, and runtime selection."
+  tone="cyan"
+/>
 
 Note that a texture is more complex than an image. A texture typically has many subimages. A texture can represent a single logical image but can also be a texture cube, a texture array etc representing many logical images. In addition, each "image" typically has many mipmap levels.
 
@@ -21,8 +62,7 @@ Basis encoded textures are super compressed. A more recent addition, they can be
 ## Installation
 
 ```bash
-npm install @loaders.gl/textures
-npm install @loaders.gl/core
+npm install @loaders.gl/core @loaders.gl/textures
 ```
 
 ## Formats
@@ -37,7 +77,7 @@ The `@loaders.gl/textures` module handles the following formats:
 | [`PVR`](/docs/modules/textures/formats/pvr)                                 | PowerVR texture container format                                                                                                                        |
 | [`Basis Universal`](/docs/modules/textures/formats/basis)                   | Supercompressed texture format for runtime transcoding                                                                                                  |
 | [`Crunch`](/docs/modules/textures/formats/crunch)                           | Lossy compressed texture distribution format for GPU textures                                                                                           |
-| [`Radiance HDR`](/docs/modules/textures/formats/hdr)                        | High-dynamic-range RGBE textures stored in `.hdr` files <img src="https://img.shields.io/badge/From-v4.4-blue.svg?style=flat-square" alt="From-v4.4" /> |
+| [`Radiance HDR`](/docs/modules/textures/formats/hdr)                        | High-dynamic-range RGBE textures stored in `.hdr` files                                                                                              |
 
 ## API
 
@@ -45,12 +85,12 @@ The `@loaders.gl/textures` module handles the following formats:
 | ------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------- |
 | [`BasisLoader`](/docs/modules/textures/api-reference/basis-loader)                          | Basis Universal textures as `TextureLevel[][]`                                                                                            |
 | [`CompressedTextureLoader`](/docs/modules/textures/api-reference/compressed-texture-loader) | KTX, DDS and PVR mip chains as `TextureLevel[]`                                                                                           |
-| [`RadianceHDRLoader`](/docs/modules/textures/api-reference/radiance-hdr-loader)             | Radiance `.hdr` textures as `Texture` <img src="https://img.shields.io/badge/From-v4.4-blue.svg?style=flat-square" alt="From-v4.4" />     |
-| [`CrunchWorkerLoader`](/docs/modules/textures/api-reference/crunch-loader)                  | Crunch mip chains as `TextureLevel[]`                                                                                                     |
-| [`TextureLoader`](/docs/modules/textures/api-reference/texture-loader)                      | Manifest-driven single image or mip chain <img src="https://img.shields.io/badge/From-v5.0-blue.svg?style=flat-square" alt="From-v5.0" /> |
-| [`TextureArrayLoader`](/docs/modules/textures/api-reference/texture-array-loader)           | Manifest-driven texture arrays <img src="https://img.shields.io/badge/From-v5.0-blue.svg?style=flat-square" alt="From-v5.0" />            |
-| [`TextureCubeLoader`](/docs/modules/textures/api-reference/texture-cube-loader)             | Manifest-driven cubemaps <img src="https://img.shields.io/badge/From-v5.0-blue.svg?style=flat-square" alt="From-v5.0" />                  |
-| [`TextureCubeArrayLoader`](/docs/modules/textures/api-reference/texture-cube-array-loader)  | Manifest-driven cube arrays <img src="https://img.shields.io/badge/From-v5.0-blue.svg?style=flat-square" alt="From-v5.0" />               |
+| [`RadianceHDRLoader`](/docs/modules/textures/api-reference/radiance-hdr-loader)             | Radiance `.hdr` textures as `Texture`                                                                                                        |
+| [`CrunchWorkerLoader`](/docs/modules/textures/api-reference/crunch-loader)                  | Crunch mip chains as `TextureLevel[]`                                                                                                        |
+| [`TextureLoader`](/docs/modules/textures/api-reference/texture-loader)                      | Manifest-driven single image or mip chain                                                                                                   |
+| [`TextureArrayLoader`](/docs/modules/textures/api-reference/texture-array-loader)           | Manifest-driven texture arrays                                                                                                              |
+| [`TextureCubeLoader`](/docs/modules/textures/api-reference/texture-cube-loader)             | Manifest-driven cubemaps                                                                                                                    |
+| [`TextureCubeArrayLoader`](/docs/modules/textures/api-reference/texture-cube-array-loader)  | Manifest-driven cube arrays                                                                                                                 |
 
 ## Return Types
 
@@ -63,9 +103,9 @@ A `TextureLevel` describes one mip level of one texture image.
 | Field           | Type              | Description                                                                                                                                        |
 | --------------- | ----------------- | -------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `compressed`    | `boolean`         | Whether the mip level data is GPU-compressed.                                                                                                      |
-| `shape`         | `'texture-level'` | Shape tag for normalized texture-level payloads. <img src="https://img.shields.io/badge/From-v4.4-blue.svg?style=flat-square" alt="From-v4.4" />   |
-| `format`        | `number`          | WebGL internal format enum for the decoded level. <img src="https://img.shields.io/badge/From-v4.4-blue.svg?style=flat-square" alt="From-v4.4" />  |
-| `textureFormat` | `TextureFormat`   | WebGPU / luma.gl style format string for the data. <img src="https://img.shields.io/badge/From-v4.4-blue.svg?style=flat-square" alt="From-v4.4" /> |
+| `shape`         | `'texture-level'` | Shape tag for normalized texture-level payloads.                                                                                              |
+| `format`        | `number`          | WebGL internal format enum for the decoded level.                                                                                              |
+| `textureFormat` | `TextureFormat`   | WebGPU / luma.gl style format string for the data.                                                                                            |
 | `data`          | `TypedArray`      | The payload for this mip level. Compressed texture loaders return `Uint8Array`; `RadianceHDRLoader` returns `Float32Array`.                        |
 | `width`         | `number`          | Width of this mip level.                                                                                                                           |
 | `height`        | `number`          | Height of this mip level.                                                                                                                          |
@@ -86,10 +126,10 @@ See [`BasisLoader`](/docs/modules/textures/api-reference/basis-loader) and [`Com
 
 The textures module also includes manifest-driven loaders for composite image textures:
 
-- [`TextureLoader`](/docs/modules/textures/api-reference/texture-loader) for a single image or mip chain <img src="https://img.shields.io/badge/From-v5.0-blue.svg?style=flat-square" alt="From-v5.0" />
-- [`TextureArrayLoader`](/docs/modules/textures/api-reference/texture-array-loader) for texture arrays, including mipmapped layers <img src="https://img.shields.io/badge/From-v5.0-blue.svg?style=flat-square" alt="From-v5.0" />
-- [`TextureCubeLoader`](/docs/modules/textures/api-reference/texture-cube-loader) for cubemaps, including mipmapped faces <img src="https://img.shields.io/badge/From-v5.0-blue.svg?style=flat-square" alt="From-v5.0" />
-- [`TextureCubeArrayLoader`](/docs/modules/textures/api-reference/texture-cube-array-loader) for cube arrays <img src="https://img.shields.io/badge/From-v5.0-blue.svg?style=flat-square" alt="From-v5.0" />
+- [`TextureLoader`](/docs/modules/textures/api-reference/texture-loader) for a single image or mip chain
+- [`TextureArrayLoader`](/docs/modules/textures/api-reference/texture-array-loader) for texture arrays, including mipmapped layers
+- [`TextureCubeLoader`](/docs/modules/textures/api-reference/texture-cube-loader) for cubemaps, including mipmapped faces
+- [`TextureCubeArrayLoader`](/docs/modules/textures/api-reference/texture-cube-array-loader) for cube arrays
 
 These loaders resolve relative member URLs against the manifest URL, or against `options.core.baseUrl` when parsing an in-memory manifest.
 Member assets are parsed with `ImageBitmapLoader` by default.

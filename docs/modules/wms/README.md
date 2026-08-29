@@ -1,8 +1,50 @@
-# OGC geospatial services
+---
+title: '@loaders.gl/wms'
+description: Read OGC maps, tiles, features, coverages, observations, and catalog services through source APIs.
+hide_title: true
+page_style: designed
+---
+
+import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
+import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
+import {ServiceSourceGraphic} from '@site/src/components/docs/service-source-graphic';
+
+<DocPageHeader
+  eyebrow="OGC service module"
+  title="Treat geospatial services as data sources."
+  description="The WMS module covers classic OGC Web Services, modern OGC APIs, and GML response parsing. It keeps capability discovery, request construction, and decoded results in explicit source contracts."
+  tone="orange"
+  meta={['WMS / WMTS', 'WFS / WCS', 'OGC APIs and GML']}
+  links={[
+    {label: 'Services module', to: '/docs/modules/services'},
+    {label: 'Using sources', to: '/docs/developer-guide/using-sources'}
+  ]}
+/>
+
+<ServiceSourceGraphic kind="ogc" />
+
+<DocOrientation
+  eyebrow="The service path"
+  title="Discover capabilities before requesting data."
+  description="Service endpoints vary in operations and response formats. The module exposes that variability explicitly so an application can choose the right source, request, and output path."
+  tone="orange"
+  items={[
+    {label: 'Maps and tiles', value: 'WMS, WMTS, and OGC API Tiles'},
+    {label: 'Features', value: 'WFS, OGC API Features, and GML'},
+    {label: 'Coverages', value: 'WCS, OGC API Coverages, and EDR'},
+    {label: 'Catalogs', value: 'CSW and OWS Context discovery paths'}
+  ]}
+/>
 
 The `@loaders.gl/wms` module provides read-only clients and response parsers for classic OGC Web
 Services, modern OGC APIs, and GML. Despite the historical package name, it covers maps, tiles,
 features, coverages, environmental observations, and catalogs.
+
+<ReferenceBoundary
+  title="Service support details"
+  description="The sections below provide the service matrix, installation instructions, source APIs, and protocol-specific boundaries."
+  tone="orange"
+/>
 
 ## Service matrix
 

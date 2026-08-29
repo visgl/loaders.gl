@@ -1,4 +1,40 @@
-# Converting Data
+---
+title: Converting data
+description: Move between loaders.gl data shapes with explicit, composable converters.
+hide_title: true
+page_style: designed
+---
+
+import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
+import {ConversionPipelineGraphic} from '@site/src/components/docs/conversion-pipeline-graphic';
+import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
+
+<DocPageHeader
+  eyebrow="Data conversion"
+  title="Move between data shapes"
+  description="Compose small, explicit converters when the next stage needs a different table, geometry, or rendering representation."
+  tone="yellow"
+  meta={['Explicit paths', 'Table and geometry shapes', 'Render-ready output']}
+  links={[
+    {label: 'Loader categories', to: '/docs/developer-guide/loader-categories'},
+    {label: 'Using writers', to: '/docs/developer-guide/using-writers'}
+  ]}
+/>
+
+<ConversionPipelineGraphic />
+
+<DocOrientation
+  eyebrow="The conversion path"
+  title="Make the next shape an explicit decision."
+  description="Converters connect related data representations without making every loader understand every other format. Applications choose the edges they need and keep the rest out of the bundle."
+  tone="yellow"
+  items={[
+    {label: 'Detect', value: 'Identify the source and target data shapes'},
+    {label: 'Compose', value: 'Pass the leaf converters that define an allowed path'},
+    {label: 'Preserve', value: 'Keep metadata and binary columns where the target supports them'},
+    {label: 'Render', value: 'Use dedicated geometry converters when GeoJSON is not required'}
+  ]}
+/>
 
 The loaders.gl converter system is a graph of small, explicit converter objects. You pass the converters you want, `convert()` finds a path, and each leaf module handles one direct step.
 
@@ -16,6 +52,12 @@ const binary = convert(features, 'binary-feature-collection', [FeatureCollection
 ```
 
 ![Converter flow](/img/developer-guide/conversion-flow.svg)
+
+<ReferenceBoundary
+  title="Converter families and shape paths"
+  description="The sections below document the dispatcher, table and Arrow conversions, GeoArrow and feature collections, render-focused utilities, and format categories."
+  tone="yellow"
+/>
 
 ## In This Section
 

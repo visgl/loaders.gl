@@ -1,4 +1,46 @@
-# What's New
+---
+title: What's new in Arrow JavaScript
+description: Track Apache Arrow JavaScript releases and the compatibility details relevant to loaders.gl.
+hide_title: true
+page_style: designed
+---
+
+import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
+import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
+
+<DocPageHeader
+  eyebrow="Arrow JavaScript · release notes"
+  title="Track the table library behind the data plane."
+  description="Use these notes to follow Apache Arrow JS releases, understand dependency alignment, and identify the changes most likely to affect loaders.gl applications."
+  tone="cyan"
+  meta={['Arrow JS v21+', 'Dependency alignment', 'API notes']}
+  links={[
+    {label: 'Arrow JS guide', to: '/docs/arrowjs'},
+    {label: 'Arrow in loaders.gl', to: '/docs/developer-guide/apache-arrow'},
+    {label: 'Upgrade guide', to: '/docs/upgrade-guide'}
+  ]}
+/>
+
+<DocOrientation
+  eyebrow="Reading Arrow release notes"
+  title="Align dependencies before chasing API details."
+  description="Arrow JS follows the Apache Arrow release stream. First check the resolved package family, then use the version notes and loaders.gl guidance to decide whether application code needs to change."
+  tone="cyan"
+  items={[
+    {label: 'First check', value: 'Which apache-arrow version the application resolves'},
+    {label: 'Then check', value: 'Table, vector, reader, and writer API changes'},
+    {label: 'For loaders.gl', value: 'Arrow table and batch interoperability guidance'},
+    {label: 'For history', value: 'Older release sections and upstream notes'}
+  ]}
+/>
+
+<ReferenceBoundary
+  title="Arrow JavaScript release history"
+  description="The release notes below preserve upstream links and JavaScript-specific compatibility details."
+  tone="cyan"
+/>
+
+## What's New
 
 This page collects relevant information about Apache Arrow JS releases.
 

@@ -1,4 +1,45 @@
+---
+title: Arrow JavaScript introduction
+description: Understand the tables, vectors, buffers, schemas, and builders that make up Arrow JS.
+hide_title: true
+page_style: designed
+---
+
 import {ArrowJsStructureGraphic} from '@site/src/components/docs/arrow-js-structure-graphic';
+import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
+import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
+
+<DocPageHeader
+  eyebrow="Arrow JavaScript · foundations"
+  title="A binary columnar model you can inspect from JavaScript."
+  description="Arrow JS represents typed columns and tables as logical objects over contiguous buffers. Once the shape is clear, the rest of the library is a set of focused tools for reading, writing, building, and transforming those buffers."
+  tone="cyan"
+  meta={['Tables and vectors', 'Typed buffers', 'Schemas and batches']}
+  links={[
+    {label: 'Getting started', to: '/docs/arrowjs/get-started'},
+    {label: 'Data types', to: '/docs/arrowjs/developer-guide/data-types'},
+    {label: 'Arrow in loaders.gl', to: '/docs/developer-guide/apache-arrow'}
+  ]}
+/>
+
+<DocOrientation
+  eyebrow="The object model"
+  title="Read the logical shape, then the buffers beneath it."
+  description="Tables group vectors by name, vectors group record batches, and each batch references typed buffers plus validity state. Schemas describe this structure without requiring the consumer to guess."
+  tone="cyan"
+  items={[
+    {label: 'Table', value: 'Named columns with a shared schema'},
+    {label: 'Vector', value: 'A logical column over one or more chunks'},
+    {label: 'RecordBatch', value: 'Aligned columns for incremental I/O'},
+    {label: 'Data', value: 'Typed values over contiguous buffers'}
+  ]}
+/>
+
+<ReferenceBoundary
+  title="Arrow JS foundations"
+  description="The graphic and sections below introduce the core components, terminology, data types, and links into the detailed guides."
+  tone="cyan"
+/>
 
 # Introduction
 

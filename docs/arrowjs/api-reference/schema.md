@@ -1,4 +1,44 @@
-# Schema
+---
+title: Schema
+description: Describe the fields, types, nullability, and metadata shared by Arrow columns.
+hide_title: true
+page_style: designed
+---
+
+import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
+import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
+
+<DocPageHeader
+  eyebrow="Arrow JS API · schema"
+  title="Make the table’s contract explicit."
+  description="Schema is the ordered description of an Arrow table, record batch, or record. It names each field, declares its DataType and nullability, and carries metadata that should survive serialization."
+  tone="cyan"
+  meta={['Ordered fields', 'Types and nullability', 'Schema metadata']}
+  links={[
+    {label: 'Field', to: '/docs/arrowjs/api-reference/field'},
+    {label: 'Data types', to: '/docs/arrowjs/api-reference/types'},
+    {label: 'Table', to: '/docs/arrowjs/api-reference/table'}
+  ]}
+/>
+
+<DocOrientation
+  eyebrow="The Schema model"
+  title="Describe columns before moving their values."
+  description="A schema lets readers, writers, builders, and applications agree on names and types independently of the physical batches that carry the values."
+  tone="cyan"
+  items={[
+    {label: 'Fields', value: 'Ordered Field descriptors for each column'},
+    {label: 'Types', value: 'Primitive, nested, temporal, and dictionary types'},
+    {label: 'Nullability', value: 'Whether a field may contain null values'},
+    {label: 'Metadata', value: 'String key/value annotations and dictionaries'}
+  ]}
+/>
+
+<ReferenceBoundary
+  title="Schema reference"
+  description="The sections below document construction, fields, metadata, dictionaries, selection, assignment, and schema compatibility."
+  tone="cyan"
+/>
 
 :::info
 This page is aligned to Apache Arrow JS v21.x (`apache-arrow`).

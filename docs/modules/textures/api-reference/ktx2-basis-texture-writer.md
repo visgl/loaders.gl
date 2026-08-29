@@ -1,10 +1,49 @@
-import {TexturesDocsTabs} from '@site/src/components/docs/textures-docs-tabs';
+---
+title: KTX2BasisWriter
+description: Encode RGBA pixel data as Basis Universal compressed KTX2 textures for portable GPU delivery.
+hide_title: true
+page_style: designed
+---
 
-# KTX2BasisWriter
+import {TexturesDocsTabs} from '@site/src/components/docs/textures-docs-tabs';
+import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
+import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
+
+<DocPageHeader
+  eyebrow="Texture API / writer"
+  title="Write one compressed texture for many GPU families."
+  description="KTX2BasisWriter encodes supported RGBA pixel data with Basis Universal and packages the result as KTX2. The output can be transcoded by a consuming runtime to a device-compatible compressed format."
+  tone="cyan"
+  meta={['KTX2 output', 'Basis Universal', 'Node.js writer']}
+  links={[
+    {label: 'Textures module', to: '/docs/modules/textures'},
+    {label: 'Basis format', to: '/docs/modules/textures/formats/basis'},
+    {label: 'Texture category', to: '/docs/specifications/category-texture'}
+  ]}
+/>
 
 <TexturesDocsTabs active="ktx2basiswriter" />
 
-<p class="badges">
+<DocOrientation
+  eyebrow="Portable texture output"
+  title="Compress once, transcode near the device."
+  description="Basis Universal separates distribution compression from the final GPU block format. Write a KTX2 asset once, then let the runtime choose the supported target where it is loaded."
+  tone="cyan"
+  items={[
+    {label: 'Input', value: 'RGBA8, RGBA16F, or RGBA32F pixel data.'},
+    {label: 'Encode', value: 'Compress pixels with Basis Universal.'},
+    {label: 'Package', value: 'Store the result in a KTX2 container.'},
+    {label: 'Transcode', value: 'Choose a device-compatible GPU format at load time.'}
+  ]}
+/>
+
+<ReferenceBoundary
+  title="KTX2BasisWriter reference"
+  description="The detailed reference covers accepted pixel data, encoding options, output structure, Node.js requirements, and runtime transcoding."
+  tone="cyan"
+/>
+
+<p className="badges">
   <img src="https://img.shields.io/badge/From-v3.1-blue.svg?style=flat-square" alt="From-v3.1" />
   <img src="https://img.shields.io/badge/Node.js-only-red.svg?style=flat-square" alt="Node.js-only" />
 </p>

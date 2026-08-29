@@ -1,4 +1,44 @@
-# Apache Arrow JavaScript API Reference
+---
+title: Apache Arrow JavaScript API reference
+description: Find the modern Apache Arrow JS classes and functions used by loaders.gl data pipelines.
+hide_title: true
+page_style: designed
+---
+
+import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
+import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
+
+<DocPageHeader
+  eyebrow="Arrow JS reference"
+  title="The classes behind the columnar data path."
+  description="This reference is organized around the modern Apache Arrow JS v21+ surface: data, vectors, tables, schemas, builders, and IPC readers and writers. Use it after the conceptual Arrow guide when you need an exact API name."
+  tone="cyan"
+  meta={['Apache Arrow JS v21+', 'Core exports', 'IPC and builders']}
+  links={[
+    {label: 'Arrow JavaScript guide', to: '/docs/arrowjs'},
+    {label: 'Working with tables', to: '/docs/arrowjs/developer-guide/tables'},
+    {label: 'Arrow in loaders.gl', to: '/docs/developer-guide/apache-arrow'}
+  ]}
+/>
+
+<DocOrientation
+  eyebrow="How to use this reference"
+  title="Start with the container, then follow the value."
+  description="Most applications begin with makeTable or tableFromIPC, inspect a schema, and then work through vectors or record batches. The API pages below describe the pieces without requiring a legacy Arrow JS mental model."
+  tone="cyan"
+  items={[
+    {label: 'Create', value: 'makeTable, makeData, makeVector, or makeBuilder'},
+    {label: 'Inspect', value: 'Table, RecordBatch, Schema, Field, and Vector'},
+    {label: 'Serialize', value: 'tableFromIPC, tableToIPC, and batch readers/writers'},
+    {label: 'Migrate', value: 'Prefer modern v21+ exports over legacy vector constructors'}
+  ]}
+/>
+
+<ReferenceBoundary
+  title="Core Arrow JS API"
+  description="The reference below summarizes the supported public surface and links to the individual data-model, type, builder, vector, and IO pages."
+  tone="cyan"
+/>
 
 :::info
 This page is aligned to Apache Arrow JS v21.x (`apache-arrow`).

@@ -1,0 +1,425 @@
+.globalTableStyle {
+  width: 100%;
+}
+
+.previewLayout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.2fr);
+  align-items: stretch;
+  gap: 1rem;
+}
+
+.previewPane {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+}
+
+.paneCard {
+  display: flex;
+  flex: 1;
+  min-height: 0;
+  flex-direction: column;
+  padding: 0.9rem;
+  border: 1px solid var(--ifm-color-gray-400);
+  border-radius: 12px;
+  background: rgba(247, 250, 252, 0.92);
+  box-shadow:
+    0 20px 44px rgba(43, 56, 72, 0.12),
+    0 6px 18px rgba(43, 56, 72, 0.08);
+}
+
+.sourceSummaryCard {
+  display: grid;
+  grid-column: 1 / -1;
+  grid-template-columns: max-content minmax(0, 1fr) max-content;
+  align-items: baseline;
+  gap: 0.75rem;
+  padding: 0.7rem 0.9rem;
+  border: 1px dashed var(--ifm-color-gray-300);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.96);
+  color: var(--ifm-color-gray-900);
+  box-shadow: 0 8px 20px rgba(43, 56, 72, 0.08);
+}
+
+.hasSamples {
+  grid-template-columns: max-content minmax(10rem, max-content) minmax(0, 1fr) max-content;
+}
+
+.dragActive {
+  border-color: var(--ifm-color-primary);
+  background: rgba(225, 245, 255, 0.96);
+}
+
+.sourceSummaryLabel,
+.sourceErrorLabel,
+.paneLabel {
+  color: var(--ifm-color-gray-700);
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.sourceInput {
+  min-width: 0;
+  width: 100%;
+  border: 0;
+  outline: none;
+  background: transparent;
+  color: var(--ifm-color-gray-900);
+  font-family: var(--ifm-font-family-monospace);
+  font-size: 0.78rem;
+  white-space: nowrap;
+}
+
+.sourceInput::placeholder {
+  color: var(--ifm-color-gray-600);
+}
+
+.sourceSampleSelect,
+.sourceAction,
+.toggleButton {
+  padding: 0.38rem 0.5rem;
+  border: 1px solid rgba(43, 56, 72, 0.18);
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.92);
+  color: var(--ifm-color-gray-800);
+  font-size: 0.74rem;
+  font-weight: 700;
+}
+
+.sourceSampleSelect {
+  min-width: 0;
+  max-width: 16rem;
+}
+
+.sourceAction,
+.toggleButton {
+  line-height: 1;
+  cursor: pointer;
+}
+
+.sourceAction:hover,
+.toggleButton:hover {
+  background: var(--ifm-color-gray-100);
+}
+
+.sourceErrorMessage {
+  display: block;
+  grid-column: 1 / -1;
+  min-width: 0;
+  padding: 0.7rem 0.8rem;
+  border: 1px solid rgba(185, 28, 28, 0.24);
+  border-radius: 8px;
+  background: rgba(254, 242, 242, 0.96);
+  color: rgb(127, 29, 29);
+}
+
+.sourceErrorLabel {
+  margin-bottom: 0.35rem;
+}
+
+.sourceErrorText {
+  margin: 0;
+  overflow-wrap: anywhere;
+  white-space: pre-wrap;
+  font-family: var(--ifm-font-family-monospace);
+  font-size: 0.78rem;
+  line-height: 1.45;
+}
+
+.paneHeader {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 1rem;
+  margin: 0 0 0.75rem;
+}
+
+.paneLabel,
+.paneMeta {
+  margin: 0;
+}
+
+.paneLabel {
+  font-size: 0.76rem;
+  font-weight: 700;
+}
+
+.paneMeta {
+  color: var(--ifm-color-gray-700);
+  font-size: 0.8rem;
+  font-weight: 600;
+  text-align: right;
+}
+
+.headerActions {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+}
+
+.tableShell,
+.sourceShell {
+  position: relative;
+  width: 100%;
+  height: 32rem;
+  overflow: auto;
+  padding: 0;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+}
+
+.sourceViewport {
+  min-height: 100%;
+  margin: 0;
+  padding: 1rem 1.05rem;
+  overflow: visible;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.96);
+  color: var(--ifm-color-gray-900);
+  font-family: var(--ifm-font-family-monospace);
+  font-size: 0.8rem;
+  line-height: 1.6;
+  overflow-wrap: normal;
+  white-space: pre;
+}
+
+.wrapText {
+  overflow-wrap: anywhere;
+  white-space: pre-wrap;
+}
+
+.binaryViewport {
+  min-height: 100%;
+  padding: 1rem 1.05rem;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.96);
+  color: var(--ifm-color-gray-900);
+  font-family: var(--ifm-font-family-monospace);
+  font-size: 0.8rem;
+  line-height: 1.5;
+}
+
+.binaryHeader,
+.binaryRow {
+  display: grid;
+  grid-template-columns: 4.5rem 1fr;
+  gap: 0.85rem;
+}
+
+.binaryHeader {
+  margin-bottom: 0.6rem;
+  color: var(--ifm-color-gray-700);
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.binaryRow {
+  align-items: start;
+  margin-bottom: 0.35rem;
+}
+
+.binaryOffset {
+  color: var(--ifm-color-gray-700);
+  font-weight: 700;
+}
+
+.binaryBytes {
+  display: grid;
+  gap: 0.45rem 0.6rem;
+}
+
+.binaryByte {
+  width: 2.25rem;
+  text-align: center;
+}
+
+.binaryAscii {
+  min-height: 0.95rem;
+  margin-top: 0.16rem;
+  color: var(--ifm-color-gray-700);
+  font-size: 0.7rem;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.binaryHex {
+  color: var(--ifm-color-gray-800);
+}
+
+.binaryOverflow {
+  margin-top: 0.9rem;
+  color: var(--ifm-color-gray-700);
+  font-weight: 600;
+}
+
+.statusContainer {
+  display: flex;
+  min-width: 100%;
+  min-height: 6rem;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+  color: var(--ifm-color-emphasis-700);
+}
+
+.previewTable {
+  width: 100%;
+  min-width: 100%;
+  margin: 0;
+  border-collapse: separate;
+  border-spacing: 0;
+  table-layout: auto;
+  overflow: hidden;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.96);
+  color: var(--ifm-color-gray-900);
+  font-size: 0.85rem;
+}
+
+.previewTableHead {
+  position: sticky;
+  top: 0;
+  z-index: 4;
+}
+
+.headerCell {
+  position: sticky;
+  top: 0;
+  z-index: 4;
+  min-width: 12rem;
+  padding: 0.7rem 0.95rem;
+  border-bottom: 1px solid rgba(43, 56, 72, 0.12);
+  background: var(--ifm-color-gray-200);
+  color: var(--ifm-color-gray-900);
+  font-size: 0.83rem;
+  font-weight: 700;
+  text-align: left;
+}
+
+.bodyCell {
+  min-width: 12rem;
+  padding: 0.68rem 0.95rem;
+  border-bottom: 1px solid rgba(43, 56, 72, 0.08);
+  color: var(--ifm-color-gray-800);
+  overflow-wrap: anywhere;
+  vertical-align: top;
+  white-space: pre-wrap;
+}
+
+.previewRow:last-child .bodyCell {
+  border-bottom: 0;
+}
+
+.sourceSampleSelect:focus-visible,
+.sourceInput:focus-visible,
+.sourceAction:focus-visible,
+.toggleButton:focus-visible {
+  outline: 3px solid rgba(50, 120, 216, 0.25);
+  outline-offset: 2px;
+}
+
+:global(html[data-theme='dark']) .paneCard {
+  border-color: rgba(158, 174, 192, 0.26);
+  background: rgba(29, 38, 49, 0.94);
+  box-shadow:
+    0 18px 42px rgba(0, 0, 0, 0.3),
+    0 4px 12px rgba(0, 0, 0, 0.24);
+}
+
+:global(html[data-theme='dark']) .sourceSummaryCard {
+  border-color: rgba(158, 174, 192, 0.22);
+  background: rgba(30, 41, 59, 0.96);
+  color: rgba(241, 245, 249, 0.92);
+}
+
+:global(html[data-theme='dark']) .sourceSummaryLabel,
+:global(html[data-theme='dark']) .paneLabel {
+  color: rgba(203, 213, 225, 0.9);
+}
+
+:global(html[data-theme='dark']) .sourceInput {
+  color: rgba(241, 245, 249, 0.92);
+}
+
+:global(html[data-theme='dark']) .sourceSampleSelect,
+:global(html[data-theme='dark']) .sourceAction,
+:global(html[data-theme='dark']) .toggleButton {
+  border-color: rgba(158, 174, 192, 0.28);
+  background: rgba(51, 65, 85, 0.92);
+  color: rgba(241, 245, 249, 0.92);
+}
+
+:global(html[data-theme='dark']) .sourceErrorMessage {
+  border-color: rgba(248, 113, 113, 0.32);
+  background: rgba(69, 10, 10, 0.56);
+  color: rgba(254, 226, 226, 0.96);
+}
+
+:global(html[data-theme='dark']) .previewTable,
+:global(html[data-theme='dark']) .sourceViewport,
+:global(html[data-theme='dark']) .binaryViewport {
+  background: rgba(36, 46, 58, 0.92);
+  color: rgba(241, 245, 249, 0.92);
+}
+
+:global(html[data-theme='dark']) .binaryHeader,
+:global(html[data-theme='dark']) .binaryOffset,
+:global(html[data-theme='dark']) .binaryAscii,
+:global(html[data-theme='dark']) .binaryOverflow,
+:global(html[data-theme='dark']) .paneMeta {
+  color: rgba(203, 213, 225, 0.9);
+}
+
+:global(html[data-theme='dark']) .binaryHex {
+  color: rgba(241, 245, 249, 0.92);
+}
+
+:global(html[data-theme='dark']) .headerCell {
+  border-bottom-color: rgba(225, 232, 240, 0.14);
+  background: rgba(72, 86, 104, 0.72);
+  color: rgba(255, 255, 255, 0.92);
+}
+
+:global(html[data-theme='dark']) .bodyCell {
+  border-bottom-color: rgba(225, 232, 240, 0.12);
+  color: rgba(241, 245, 249, 0.9);
+}
+
+@media (max-width: 960px) {
+  .previewLayout {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 640px) {
+  .sourceSummaryCard,
+  .hasSamples {
+    grid-template-columns: 1fr;
+    gap: 0.35rem;
+  }
+
+  .sourceSampleSelect,
+  .sourceInput,
+  .sourceAction {
+    width: 100%;
+    max-width: none;
+  }
+
+  .paneHeader {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 0.4rem;
+  }
+
+  .headerActions {
+    width: 100%;
+    justify-content: space-between;
+  }
+}

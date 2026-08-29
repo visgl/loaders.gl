@@ -74,7 +74,7 @@ function createBundlerPlugin() {
 
 const config = {
   title: 'loaders.gl',
-  tagline: 'A collection of loaders modules for Geospatial and 3D visualization use cases',
+  tagline: 'Big data loading for the web',
   url: siteUrl,
   baseUrl,
   onBrokenLinks: 'warn',
@@ -115,6 +115,7 @@ const config = {
         },
         theme: {
           customCss: [
+            resolve('../node_modules/@deck.gl/widgets/dist/stylesheet.css'),
             resolve('./src/styles.css')
             // resolve('./node_modules/maplibre-gl/dist/maplibre-gl.css')
           ]
@@ -337,7 +338,8 @@ const config = {
         title: 'loaders.gl',
         logo: {
           alt: 'vis.gl Logo',
-          src: 'images/visgl-logo-dark.png'
+          src: 'images/visgl-logo-dark.png',
+          srcDark: 'images/visgl-logo-light.png'
         },
         items: [
           {

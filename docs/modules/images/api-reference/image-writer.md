@@ -1,6 +1,46 @@
-# ImageWriter
+---
+title: ImageWriter
+description: Encode image values as browser- and Node.js-compatible image bytes.
+hide_title: true
+page_style: designed
+---
+
+import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
+import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
+
+<DocPageHeader
+  eyebrow="Image writer"
+  title="Take decoded pixels back to a file or upload body."
+  description="`ImageWriter` encodes `ImageBitmap`, `Image`, and image-data values into formats such as PNG and JPEG. The writer owns encoding while the application decides where the resulting bytes go."
+  tone="mint"
+  meta={['PNG and JPEG', 'ImageBitmap and ImageData', 'Async encoding']}
+  links={[
+    {label: 'Images module', to: '/docs/modules/images'},
+    {label: 'Image category', to: '/docs/specifications/category-image'},
+    {label: 'Using writers', to: '/docs/developer-guide/using-writers'}
+  ]}
+/>
+
+<DocOrientation
+  eyebrow="The image writing path"
+  title="Start with pixels. Choose the encoded representation."
+  description="The writer accepts the common image values produced by loaders.gl and uses the runtime’s available canvas or image encoder to produce uploadable bytes."
+  tone="mint"
+  items={[
+    {label: 'Input', value: 'ImageBitmap, Image, or image-data object'},
+    {label: 'Format', value: 'PNG, JPEG, and environment-supported types'},
+    {label: 'Quality', value: 'Optional JPEG or WebP quality control'},
+    {label: 'Output', value: 'Encoded ArrayBuffer for saving or upload'}
+  ]}
+/>
 
 The `ImageWriter` class can encode an image into `ArrayBuffer` both under browser and Node.js
+
+<ReferenceBoundary
+  title="Encoding and runtime details"
+  description="The reference below covers accepted image values, output MIME types, quality options, browser support, and Node.js behavior."
+  tone="mint"
+/>
 
 | Loader         | Characteristic                                         |
 | -------------- | ------------------------------------------------------ |

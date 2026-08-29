@@ -1,8 +1,41 @@
+---
+title: OpenTelemetry OTLP Trace
+description: Normalize OpenTelemetry distributed traces from protobuf, JSON, or JSON Lines into Arrow tables.
+hide_title: true
+page_style: designed
+---
+
 {/* SPDX-License-Identifier: MIT */}
 
+import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
+import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
 import {TracesDocsTabs} from '@site/src/components/docs/traces-docs-tabs';
 
-# OpenTelemetry OTLP Trace
+<DocPageHeader
+  eyebrow="Distributed trace format"
+  title="Keep OpenTelemetry’s hierarchy when traces enter the browser."
+  description="OTLP carries resources, instrumentation scopes, spans, events, links, status, and typed attributes. loaders.gl preserves that hierarchy through related Arrow tables and supports binary and JSON-oriented encodings."
+  tone="violet"
+  meta={['OTLP v1.11 projection', 'Protobuf and JSON', 'Five Arrow tables']}
+  links={[
+    {label: 'Traces module', to: '/docs/modules/traces'},
+    {label: 'Arrow format', to: '/docs/modules/arrow/formats/arrow'},
+    {label: 'OTLP loader', to: '/docs/modules/traces/api-reference/otlp-trace-loader'}
+  ]}
+/>
+
+<DocOrientation
+  eyebrow="The OTLP path"
+  title="Decode the envelope. Preserve resources. Analyze spans as tables."
+  description="The projection keeps resource and scope identity separate from repeated span rows, while retaining typed attributes and nanosecond timestamps for downstream analysis."
+  tone="violet"
+  items={[
+    {label: 'Input', value: 'OTLP protobuf, protobuf-JSON, or JSON Lines'},
+    {label: 'Hierarchy', value: 'Resources → scopes → spans → events and links'},
+    {label: 'Output', value: 'Five related Arrow tables'},
+    {label: 'Stream', value: 'Repeated protobuf messages or complete JSON Lines'}
+  ]}
+/>
 
 <TracesDocsTabs active="otlp-trace" />
 
@@ -10,6 +43,12 @@ The OpenTelemetry Protocol (OTLP) represents distributed traces as resources con
 instrumentation scopes, which contain spans. Spans can contain attributes, timestamped events,
 links to other spans, and status information. The traces module accepts the standard OTLP
 `TracesData` wire shape used by trace export requests.
+
+<ReferenceBoundary
+  title="OTLP projection and fidelity details"
+  description="The reference below covers encodings, related Arrow tables, typed attributes, streaming, timestamps, and the supported scope."
+  tone="violet"
+/>
 
 ## Supported Encodings
 

@@ -1,14 +1,52 @@
+---
+title: WMTS format
+description: Request map imagery through advertised tile matrix sets and resource templates.
+hide_title: true
+page_style: designed
+---
+
 import {WmsDocsTabs} from '@site/src/components/docs/wms-docs-tabs';
 import {ClientExample} from '@site/src/components';
+import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
+import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
 
-# WMTS - Web Map Tile Service
+<DocPageHeader
+  eyebrow="OGC tiled image service"
+  title="Use the tile matrix the service already advertises."
+  description="WMTS describes discrete tile matrix sets, layers, styles, image formats, and resource templates. The source negotiates those capabilities before requesting visible imagery."
+  tone="mint"
+  meta={['WMTS 1.0.0', 'Tile matrix sets', 'KVP and REST templates']}
+  links={[
+    {label: 'WMS module', to: '/docs/modules/wms'},
+    {label: 'WMS format', to: '/docs/modules/wms/formats/wms'}
+  ]}
+/>
 
 <WmsDocsTabs active="wmts" />
+
+<DocOrientation
+  eyebrow="The tile-service sequence"
+  title="Read the capabilities. Choose the matrix. Fetch the tile."
+  description="WMTS differs from WMS by making tiling explicit. The client selects an advertised layer, style, format, and matrix set, then requests tiles using the service’s identifiers."
+  tone="mint"
+  items={[
+    {label: 'Discover', value: 'Layers, styles, formats, and matrix sets'},
+    {label: 'Select', value: 'A compatible CRS and tile matrix'},
+    {label: 'Request', value: 'KVP parameters or REST resource URL'},
+    {label: 'Render', value: 'Visible image tiles through TileSource'}
+  ]}
+/>
 
 ![ogc-logo](../../../images/logos/ogc-logo-60.png)
 
 WMTS serves map imagery on discrete, advertised tile matrix sets. `WMTSSourceLoader` implements a
 loaders.gl `TileSource` and negotiates the layer, style, format, and grid from capabilities.
+
+<ReferenceBoundary
+  title="WMTS capabilities and tile requests"
+  description="The sections below cover capabilities parsing, matrix selection, request encodings, image formats, CRS metadata, and rendering integration."
+  tone="mint"
+/>
 
 ## Feature support
 

@@ -1,6 +1,40 @@
-# Compression
+---
+title: Compression
+description: Compress and decompress common payloads with runtime-aware codecs.
+hide_title: true
+page_style: designed
+---
 
-<p class="badges">
+import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
+import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
+
+<DocPageHeader
+  eyebrow="Compression module"
+  title="Choose the smallest codec that fits the runtime."
+  description="`@loaders.gl/compression` gives loaders, writers, and applications one API for lossless codecs in browsers and Node.js. Built-in streams are preferred when available; optional fallbacks stay out of the common bundle."
+  tone="violet"
+  meta={['Browser and Node.js', 'Built-in codecs first', 'Optional fallbacks']}
+  links={[
+    {label: 'Compression APIs', to: '/docs/modules/compression/api-reference/compressor-decompressor'},
+    {label: 'Using workers', to: '/docs/developer-guide/using-worker-loaders'},
+    {label: 'Codec support', to: '/docs/modules/compression/api-reference/built-in-codecs'}
+  ]}
+/>
+
+<DocOrientation
+  eyebrow="The codec path"
+  title="Detect the runtime. Select the implementation. Move bytes."
+  description="The module keeps codec selection separate from the loader or writer that needs it. Applications can use stable root exports or choose an implementation explicitly for bundle and benchmark control."
+  tone="violet"
+  items={[
+    {label: 'Input', value: 'ArrayBuffer, typed bytes, or a stream-compatible payload'},
+    {label: 'Selection', value: 'Native stream, compact fallback, or explicit backend'},
+    {label: 'Execution', value: 'Main thread, worker, browser, or Node.js'},
+    {label: 'Output', value: 'Compressed or decompressed binary data'}
+  ]}
+/>
+
+<p className="badges">
   <img src="https://img.shields.io/badge/From-v2.3-blue.svg?style=flat-square" alt="From v2.3" />
 </p>
 
@@ -9,11 +43,17 @@ and Node.js. It is designed to keep the common path small: use a built-in codec 
 has one, choose a compact JavaScript implementation when it does not, and load a larger or
 specialized implementation only when an application asks for it.
 
-<p class="badges">
+<p className="badges">
   <img src="https://img.shields.io/badge/From-v5.0-blue.svg?style=flat-square" alt="From v5.0" />
 </p>
 
 ## Start here
+
+<ReferenceBoundary
+  title="Codec selection and implementation details"
+  description="The reference below covers installation, built-in paths, optional codecs, workers, implementation-specific imports, and compatibility guidance."
+  tone="violet"
+/>
 
 Choose an implementation based on what your application values most:
 

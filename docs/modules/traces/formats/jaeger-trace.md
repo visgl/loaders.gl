@@ -1,8 +1,28 @@
+---
+title: Jaeger JSON Trace
+description: Normalize Jaeger spans, processes, logs, and references into interoperable Arrow tables.
+hide_title: true
+page_style: designed
+---
+
 {/* SPDX-License-Identifier: MIT */}
 
+import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
+import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
 import {TracesDocsTabs} from '@site/src/components/docs/traces-docs-tabs';
 
-# Jaeger JSON Trace
+<DocPageHeader
+  eyebrow="Distributed trace format"
+  title="Bring Jaeger traces into a typed table path."
+  description="Jaeger JSON is a practical interchange format for spans, process descriptors, logs, tags, and references. loaders.gl normalizes it into the shared trace tables used by OTLP and Zipkin adapters."
+  tone="violet"
+  meta={['Jaeger JSON', 'Microsecond timestamps', 'Arrow projection']}
+  links={[
+    {label: 'Traces module', to: '/docs/modules/traces'},
+    {label: 'OTLP format', to: '/docs/modules/traces/formats/otlp-trace'},
+    {label: 'Jaeger loader', to: '/docs/modules/traces/api-reference/jaeger-trace-loader'}
+  ]}
+/>
 
 <TracesDocsTabs active="jaeger-trace" />
 
@@ -10,6 +30,12 @@ Jaeger JSON represents distributed spans with microsecond timestamps, typed tags
 descriptors, logs, and `CHILD_OF` or `FOLLOWS_FROM` references. Jaeger Query API responses wrap
 traces in a `data` array, while archive and interchange tools commonly use individual trace
 objects or arrays of spans with embedded process descriptors.
+
+<ReferenceBoundary
+  title="Jaeger shape and fidelity details"
+  description="The reference below covers accepted JSON shapes, Arrow projection, timestamp conversion, tags, references, and round-trip limitations."
+  tone="violet"
+/>
 
 ## Supported Shapes
 

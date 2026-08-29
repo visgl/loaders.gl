@@ -37,7 +37,7 @@ const INITIAL_VIEW_STATE: MapViewState = {
   longitude: -71.064,
   latitude: 42.357,
   zoom: 12.2,
-  minZoom: 3,
+  minZoom: 9,
   maxZoom: 18,
   pitch: 25,
   bearing: 0

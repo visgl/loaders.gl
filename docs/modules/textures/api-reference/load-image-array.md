@@ -1,4 +1,44 @@
-# loadImages
+---
+title: loadImageArray
+description: Load a counted image array or mip-level image set through one URL callback.
+hide_title: true
+page_style: designed
+---
+
+import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
+import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
+
+<DocPageHeader
+  eyebrow="Images API · array helper"
+  title="Load an image array without repeating the request loop."
+  description="loadImageArray generates and decodes a predictable sequence of images for texture arrays, volume slices, or mip-level sets. The callback receives the image index and level of detail."
+  tone="blue"
+  meta={['Texture arrays', 'Volume slices', 'Optional mip levels']}
+  links={[
+    {label: 'Images module', to: '/docs/modules/images'},
+    {label: 'loadImage', to: '/docs/modules/textures/api-reference/load-image'},
+    {label: 'Texture category', to: '/docs/specifications/category-texture'}
+  ]}
+/>
+
+<DocOrientation
+  eyebrow="The array helper path"
+  title="Make index and level-of-detail part of the URL contract."
+  description="The helper keeps the two dimensions of an image resource explicit: which array member is being loaded and which mip level belongs to it."
+  tone="blue"
+  items={[
+    {label: 'Input', value: 'Count plus a URL callback'},
+    {label: 'Callback', value: 'Receives index and optional mip level'},
+    {label: 'Output', value: 'An image array or an array of mip arrays'},
+    {label: 'Use it for', value: 'Texture arrays, 3D slices, or repeated face resources'}
+  ]}
+/>
+
+<ReferenceBoundary
+  title="loadImageArray reference"
+  description="The reference below documents callback parameters, mip-level behavior, return values, and image decoding options."
+  tone="blue"
+/>
 
 A function that loads an array of images. Primarily intended for loading:
 

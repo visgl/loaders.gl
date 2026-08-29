@@ -1,6 +1,48 @@
+---
+title: Hash API
+description: Hash complete buffers or async binary batches with the crypto module’s portable interface.
+hide_title: true
+page_style: designed
+---
+
+import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
+import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
+
+<DocPageHeader
+  eyebrow="Crypto module · API reference"
+  title="Hash data without coupling the pipeline to one runtime."
+  description="The Hash base class gives synchronous, asynchronous, and batched hashing implementations one shape. Choose the algorithm separately from the code that feeds it bytes."
+  tone="violet"
+  meta={['Async and sync', 'Batch hashing', 'Browser and Node.js']}
+  links={[
+    {label: 'Crypto module', to: '/docs/modules/crypto'},
+    {label: 'CRC32Hash', to: '/docs/modules/crypto/api-reference/crc32-hash'},
+    {label: 'SHA256Hash', to: '/docs/modules/crypto/api-reference/sha256-hash'}
+  ]}
+/>
+
+<DocOrientation
+  eyebrow="Choose the operation"
+  title="Keep hashing at the same boundary as the bytes."
+  description="Use hash() for a complete buffer, hashSync() when the implementation is already loaded, and hashBatches() when data arrives through a streaming pipeline."
+  tone="violet"
+  items={[
+    {label: 'Algorithm', value: 'Select a concrete Hash implementation'},
+    {label: 'Async', value: 'Hash one ArrayBuffer without blocking the caller'},
+    {label: 'Sync', value: 'Use a preloaded implementation for local work'},
+    {label: 'Batches', value: 'Hash an AsyncIterable of binary chunks'}
+  ]}
+/>
+
+<ReferenceBoundary
+  title="Hash API details"
+  description="The reference below documents support detection, preload requirements, output encodings, and the fallback behavior for non-streaming algorithms."
+  tone="violet"
+/>
+
 # Hash
 
-<p class="badges">
+<p className="badges">
   <img src="https://img.shields.io/badge/From-v2.3-blue.svg?style=flat-square" alt="From-v3.0" />
 </p>
 

@@ -1,4 +1,44 @@
-# OGC API services
+---
+title: OGC API services
+description: Use focused HTTP source adapters for OGC API Features, Tiles, Coverages, and EDR resources.
+hide_title: true
+page_style: designed
+---
+
+import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
+import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
+
+<DocPageHeader
+  eyebrow="OGC API services"
+  title="Use the service path that matches the data."
+  description="The OGC API family exposes linked JSON resources and focused HTTP operations. loaders.gl provides small source adapters for the common read paths, with the protocol boundaries kept visible."
+  tone="cyan"
+  meta={['Features', 'Tiles and coverages', 'EDR observations']}
+  links={[
+    {label: 'WMS module', to: '/docs/modules/wms'},
+    {label: 'Using sources', to: '/docs/developer-guide/using-sources'},
+    {label: 'Service discovery', to: '/docs/modules/wms/services/capability-discovery'}
+  ]}
+/>
+
+<DocOrientation
+  eyebrow="A focused service client"
+  title="Discover, request, and keep the response shape explicit."
+  description="Each OGC API source follows the links and operations it understands, then returns a documented result. Applications can add service-specific parameters without adopting a universal abstraction."
+  tone="cyan"
+  items={[
+    {label: 'Features', value: 'Collections and items with bounding boxes, CRS, and paging links.'},
+    {label: 'Tiles', value: 'Known tile links and templates returned as raw tile bytes.'},
+    {label: 'Coverages', value: 'Collection subsets returned as JSON or binary coverage data.'},
+    {label: 'EDR', value: 'Position, area, trajectory, corridor, cube, and radius queries.'}
+  ]}
+/>
+
+<ReferenceBoundary
+  title="OGC API service details"
+  description="The reference below compares the supported APIs, source loaders, response paths, and intentional conformance boundaries."
+  tone="cyan"
+/>
 
 The OGC API family replaces monolithic XML web-service protocols with linked JSON resources and
 focused HTTP APIs. `@loaders.gl/wms` provides deliberately small, interoperable adapters for the

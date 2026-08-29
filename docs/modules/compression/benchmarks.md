@@ -1,6 +1,45 @@
-import BrowserOnly from '@docusaurus/BrowserOnly';
+---
+title: Compression benchmarks
+description: Compare browser decompression paths across native and loaders.gl codec implementations.
+hide_title: true
+page_style: designed
+---
 
-# Compression Benchmarks
+import BrowserOnly from '@docusaurus/BrowserOnly';
+import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
+import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
+
+<DocPageHeader
+  eyebrow="Compression module · live benchmark"
+  title="Compare codec paths on the machine that will run them."
+  description="These browser benchmarks put native decompression, compact JavaScript codecs, and injected backends against the same bytes. Results are useful for choosing a path, not for claiming a universal ranking."
+  tone="violet"
+  meta={['Browser runtime', 'Warm-up aware', 'Bytes per second']}
+  links={[
+    {label: 'Compression module', to: '/docs/modules/compression'},
+    {label: 'Codec API', to: '/docs/modules/compression/api-reference/compressor-decompressor'},
+    {label: 'Using workers', to: '/docs/developer-guide/using-worker-loaders'}
+  ]}
+/>
+
+<DocOrientation
+  eyebrow="Read the result carefully"
+  title="Benchmark the boundary you actually care about."
+  description="Warm-up, browser support, bundle size, and output verification all matter alongside throughput. Run the same format and payload when comparing implementations."
+  tone="violet"
+  items={[
+    {label: 'Throughput', value: 'Measured on the uncompressed fixture bytes'},
+    {label: 'Correctness', value: 'Every row is checked against expected output'},
+    {label: 'Native', value: 'Shown as N/A when the browser lacks support'},
+    {label: 'Bundle', value: 'Approximate browser payload indicator'}
+  ]}
+/>
+
+<ReferenceBoundary
+  title="Run the benchmark"
+  description="The interactive app below runs the comparison in this browser. Notes underneath define fixtures, warm-up, backend coverage, and known platform variation."
+  tone="violet"
+/>
 
 These live browser benchmarks compare built-in decompression with the
 compact or injected codec paths used by `@loaders.gl/compression`.

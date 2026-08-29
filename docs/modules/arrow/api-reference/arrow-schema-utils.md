@@ -1,10 +1,50 @@
-# Arrow Schema Utilities
+---
+title: Arrow Schema Utilities
+description: Validate Arrow schemas and rename columns without leaving the vector representation.
+hide_title: true
+page_style: designed
+---
+
+import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
+import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
+
+<DocPageHeader
+  eyebrow="Arrow schema utilities"
+  title="Make table contracts explicit at the boundary."
+  description="These helpers validate Apache Arrow JS table schemas and rename selected fields while preserving vectors and untouched columns. They are useful when a loader or source needs a clear contract before handing data to the next stage."
+  tone="cyan"
+  meta={['Apache Arrow', 'Schema validation', 'Vector-preserving rename']}
+  links={[
+    {label: 'Arrow module', to: '/docs/modules/arrow'},
+    {label: 'Arrow data model', to: '/docs/modules/arrow/formats/arrow'},
+    {label: 'Table category', to: '/docs/specifications/category-table'}
+  ]}
+/>
+
+<DocOrientation
+  eyebrow="The schema boundary"
+  title="Check the shape. Adapt names. Keep the data buffers."
+  description="Schema utilities sit between format-specific input and application code: they make mismatches visible and avoid unnecessary conversion when only field names need to change."
+  tone="cyan"
+  items={[
+    {label: 'Validate', value: 'Field order, names, and Arrow type IDs'},
+    {label: 'Adapt', value: 'Rename selected fields against a target schema'},
+    {label: 'Preserve', value: 'Vectors, buffers, and unmapped columns'},
+    {label: 'Result', value: 'A typed Arrow table for downstream code'}
+  ]}
+/>
 
 The Arrow schema utilities help validate Apache Arrow JS tables at runtime and rename columns while
 preserving Arrow vectors.
 
 Use these helpers when integrating Arrow-backed APIs or data sources where the incoming table
 schema should be checked before downstream code relies on typed field names.
+
+<ReferenceBoundary
+  title="Validation and rename details"
+  description="The reference below covers expected schemas, extra-field policy, field mappings, type checks, and error behavior."
+  tone="cyan"
+/>
 
 ## `validateArrowTableSchema`
 

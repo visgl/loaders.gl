@@ -1,0 +1,292 @@
+.frame {
+  --arrow-accent: #77e2ef;
+  --arrow-muted: rgba(223, 240, 245, 0.68);
+  background:
+    radial-gradient(circle at 88% 4%, rgba(95, 204, 222, 0.17), transparent 22rem),
+    linear-gradient(145deg, #142938, #0d1722 72%);
+  border: 1px solid rgba(145, 222, 235, 0.28);
+  border-radius: 24px;
+  box-shadow: 0 24px 70px rgba(12, 21, 29, 0.22);
+  color: #f3f8fa;
+  margin: 30px 0 36px;
+  overflow: hidden;
+  padding: clamp(22px, 4vw, 42px);
+}
+
+.header {
+  max-width: 760px;
+}
+
+.eyebrow {
+  color: var(--arrow-accent);
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.14em;
+  line-height: 1.3;
+  margin: 0;
+  text-transform: uppercase;
+}
+
+.title {
+  color: #f3f8fa;
+  font-size: clamp(1.7rem, 4vw, 2.75rem);
+  letter-spacing: -0.05em;
+  line-height: 1;
+  margin: 12px 0 14px;
+}
+
+.lead,
+.caption {
+  color: var(--arrow-muted);
+  font-size: 15px;
+  line-height: 1.65;
+  margin: 0;
+}
+
+.diagramList {
+  display: grid;
+  gap: 28px;
+  margin-top: 30px;
+}
+
+.diagramSection {
+  background: rgba(5, 13, 23, 0.48);
+  border: 1px solid rgba(198, 226, 234, 0.18);
+  border-radius: 14px;
+  min-width: 0;
+  overflow-x: auto;
+  padding: 16px;
+}
+
+.diagramTitle {
+  color: #ffffff;
+  font-size: 16px;
+  line-height: 1.25;
+  margin: 0 0 16px;
+}
+
+.schemaDiagram {
+  align-items: start;
+  display: grid;
+  gap: 22px;
+  grid-template-columns: minmax(128px, 0.7fr) minmax(330px, 1.8fr);
+  min-width: 560px;
+}
+
+.schemaColumn,
+.fieldDetails,
+.dataGroup {
+  display: grid;
+  gap: 8px;
+}
+
+.fieldsGrid {
+  display: grid;
+  gap: 14px;
+  grid-template-columns: repeat(3, minmax(96px, 1fr));
+}
+
+.fieldCard,
+.dataBufferList {
+  border: 1px solid rgba(198, 226, 234, 0.22);
+  border-radius: 9px;
+  display: grid;
+  gap: 8px;
+  padding: 10px;
+}
+
+.tableDiagram {
+  display: grid;
+  gap: 12px 18px;
+  grid-template-columns: minmax(128px, 0.8fr) repeat(3, minmax(96px, 1fr));
+  min-width: 560px;
+}
+
+.gridSpacer {
+  min-height: 44px;
+}
+
+.vectorCell {
+  align-items: center;
+  display: grid;
+  gap: 6px;
+  justify-items: center;
+}
+
+.verticalConnector {
+  background: rgba(193, 229, 235, 0.45);
+  height: 20px;
+  width: 2px;
+}
+
+.connectedDataCell,
+.connectedFieldsLabel {
+  position: relative;
+}
+
+.connectedDataCell::before {
+  background: rgba(193, 229, 235, 0.45);
+  content: '';
+  height: 2px;
+  left: -18px;
+  position: absolute;
+  top: 50%;
+  width: 18px;
+}
+
+.connectedFieldsLabel::after {
+  background: rgba(193, 229, 235, 0.45);
+  content: '';
+  height: 2px;
+  left: 100%;
+  position: absolute;
+  top: 50%;
+  width: 22px;
+}
+
+.dataDiagram {
+  align-items: start;
+  display: grid;
+  gap: 18px;
+  grid-template-columns: minmax(128px, 0.45fr) minmax(410px, 1.8fr);
+  min-width: 560px;
+}
+
+.dataGroups {
+  display: grid;
+  gap: 14px;
+  grid-template-columns: repeat(3, minmax(120px, 1fr));
+  position: relative;
+}
+
+.vectorGroups {
+  display: grid;
+  gap: 14px;
+  grid-template-columns: minmax(120px, 0.8fr) minmax(260px, 1.4fr);
+  position: relative;
+}
+
+.dataGroups::before,
+.vectorGroups::before {
+  background: rgba(193, 229, 235, 0.45);
+  content: '';
+  height: 2px;
+  left: -18px;
+  position: absolute;
+  top: 22px;
+  width: 18px;
+}
+
+.nestedBlock,
+.fieldDetail,
+.dataGroupTitle {
+  border: 1px solid rgba(198, 226, 234, 0.22);
+  border-radius: 8px;
+  color: #dcecf0;
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1.3;
+  padding: 9px 10px;
+}
+
+.fieldDetail {
+  background: rgba(219, 240, 245, 0.06);
+  border-color: rgba(198, 226, 234, 0.14);
+  font-size: 11px;
+  text-align: center;
+}
+
+.block,
+.dataGroupTitle {
+  align-items: center;
+  background: rgba(255, 255, 255, 0.07);
+  border: 1px solid rgba(198, 226, 234, 0.22);
+  border-radius: 8px;
+  color: #f7fcfd;
+  display: flex;
+  font-size: 13px;
+  font-weight: 800;
+  justify-content: center;
+  line-height: 1.25;
+  min-height: 44px;
+  padding: 10px 12px;
+  text-align: center;
+}
+
+.block[data-variant='recordBatch'] {
+  background: rgba(115, 227, 242, 0.14);
+  border-color: rgba(115, 227, 242, 0.64);
+  color: #b9f2f6;
+}
+
+.block[data-variant='vector'] {
+  background: rgba(111, 218, 160, 0.12);
+  border-color: rgba(134, 226, 172, 0.52);
+  color: #c7f4d5;
+}
+
+.block[data-variant='data'] {
+  background: rgba(244, 190, 80, 0.13);
+  border-color: rgba(244, 202, 112, 0.56);
+  color: #ffe4a6;
+}
+
+.block[data-variant='dataType'] {
+  background: rgba(139, 157, 235, 0.14);
+  border-color: rgba(160, 176, 242, 0.58);
+  color: #d8ddff;
+}
+
+.block[data-variant='field'],
+.dataGroupTitle[data-variant='field'] {
+  background: rgba(210, 148, 231, 0.12);
+  border-color: rgba(210, 148, 231, 0.5);
+  color: #f0d5f7;
+}
+
+.dataGroupTitle[data-variant='buffer'] {
+  background: rgba(244, 190, 80, 0.15);
+  border-color: rgba(244, 202, 112, 0.58);
+  color: #ffe4a6;
+}
+
+.dataGroupTitle[data-variant='childData'] {
+  background: rgba(183, 143, 126, 0.13);
+  border-color: rgba(210, 174, 156, 0.5);
+  color: #f1d9ca;
+}
+
+.dataGroupTitle[data-variant='data'] {
+  background: rgba(115, 227, 242, 0.12);
+  border-color: rgba(115, 227, 242, 0.5);
+  color: #b9f2f6;
+}
+
+.dataGroupTitle[data-variant='parameter'] {
+  background: rgba(133, 157, 178, 0.13);
+  border-color: rgba(169, 193, 210, 0.42);
+  color: #d4e7f0;
+}
+
+.caption {
+  border-top: 1px solid rgba(198, 226, 234, 0.18);
+  font-size: 12px;
+  margin-top: 22px;
+  padding-top: 16px;
+}
+
+@media screen and (max-width: 640px) {
+  .frame {
+    border-radius: 16px;
+  }
+
+  .diagramSection {
+    padding: 12px;
+  }
+
+  .dataDiagram,
+  .schemaDiagram,
+  .tableDiagram {
+    min-width: 520px;
+  }
+}

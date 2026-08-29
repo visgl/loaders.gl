@@ -1,4 +1,44 @@
-# AsyncIterators
+---
+title: Async iterators
+description: Use JavaScript async iterators as the portable interface for streaming loaders and writers.
+hide_title: true
+page_style: designed
+---
+
+import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
+import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
+
+<DocPageHeader
+  eyebrow="Developer guide · iteration"
+  title="Process batches with ordinary JavaScript."
+  description="loaders.gl uses ES2018 async iterators as the common shape for streamed input, parsed batches, transforms, and output. If you can use for await...of, you already know the central control flow."
+  tone="mint"
+  meta={['ES2018', 'for await...of', 'Streaming loaders and writers']}
+  links={[
+    {label: 'Streaming loaders', to: '/docs/developer-guide/using-streaming-loaders'},
+    {label: 'Streaming concepts', to: '/docs/developer-guide/concepts/streaming'},
+    {label: 'Using writers', to: '/docs/developer-guide/using-writers'}
+  ]}
+/>
+
+<DocOrientation
+  eyebrow="The iterator model"
+  title="One pull-based loop for files, streams, and batches."
+  description="An iterable describes how values are obtained; an async iterable allows each next value to wait for I/O. loaders.gl uses that distinction to keep streaming behavior portable across browsers and Node.js."
+  tone="mint"
+  items={[
+    {label: 'Iterator', value: 'next() returns one IteratorResult'},
+    {label: 'Iterable', value: 'Provides a Symbol.iterator or async counterpart'},
+    {label: 'Generator', value: 'Produces values through function syntax'},
+    {label: 'Pipeline', value: 'Consume or produce batches with for await...of'}
+  ]}
+/>
+
+<ReferenceBoundary
+  title="Async iterator details"
+  description="The sections below explain TypeScript iterator types, batched parsing and encoding, stream interoperability, and custom async generators."
+  tone="mint"
+/>
 
 Streaming functionality in loaders.gl is built on the ES2018 `AsyncIterator` concept.
 This page gives some background on `AsyncIterator`.

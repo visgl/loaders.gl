@@ -1,10 +1,56 @@
-# Overview
+---
+title: '@loaders.gl/arrow'
+description: Arrow and GeoArrow loaders, writers, and utilities for typed columnar data.
+hide_title: true
+page_style: designed
+---
+
+import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
+import {CapabilityHero} from '@site/src/components/docs/capability-hero';
+import {ArrowDataPlaneGraphic} from '@site/src/components/docs/arrow-data-plane-graphic';
+import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
+
+<CapabilityHero capability="arrow" />
+
+<DocPageHeader
+  eyebrow="Module overview"
+  title="@loaders.gl/arrow"
+  description="Use Apache Arrow as the common table shape between format loaders, workers, transforms, and writers."
+  tone="cyan"
+  meta={['Apache Arrow', 'GeoArrow', 'Tables and transport']}
+  links={[
+    {label: 'Arrow format', to: '/docs/modules/arrow/formats/arrow'},
+    {label: 'ArrowLoader', to: '/docs/modules/arrow/api-reference/arrow-loader'},
+    {label: 'ArrowWriter', to: '/docs/modules/arrow/api-reference/arrow-writer'}
+  ]}
+/>
 
 ![arrow-logo](./images/apache-arrow-small.png)
 &emsp;
 ![apache-logo](../../images/logos/apache-logo.png)
 
+<ArrowDataPlaneGraphic />
+
+<DocOrientation
+  eyebrow="The Arrow module"
+  title="One binary table shape between every stage."
+  description="Use Arrow when a loader, worker, transform, scanner, or writer needs to exchange typed columns without falling back to format-specific row objects."
+  tone="cyan"
+  items={[
+    {label: 'Ingest', value: 'Load Arrow IPC and convert compatible formats into tables'},
+    {label: 'Compute', value: 'Keep typed columns, schemas, and batches explicit'},
+    {label: 'Transport', value: 'Move buffers across workers with focused helpers'},
+    {label: 'Geospatial', value: 'Carry GeoArrow geometry columns and metadata'}
+  ]}
+/>
+
 The `@loaders.gl/arrow` module provides support for the [Apache Arrow](/docs/modules/arrow/formats/arrow) and [GeoArrow](/docs/modules/arrow/formats/geoarrow) formats.
+
+<ReferenceBoundary
+  title="Loaders, writers, and table utilities"
+  description="The reference below covers installation, Arrow and GeoArrow entry points, transport helpers, indexed views, schema utilities, and the underlying Arrow JS API."
+  tone="cyan"
+/>
 
 ## Installation
 

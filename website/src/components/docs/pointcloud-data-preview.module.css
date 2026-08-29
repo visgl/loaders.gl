@@ -1,0 +1,284 @@
+.globalPreviewStyle {
+  width: 100%;
+}
+
+.previewLayout {
+  display: grid;
+  grid-template-columns: minmax(0, 0.95fr) minmax(0, 1.15fr) minmax(0, 1fr);
+  gap: 1rem;
+  align-items: stretch;
+  margin-top: 1rem;
+}
+
+.previewPane {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.paneCard {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-height: 0;
+  padding: 0.9rem;
+  border: 1px solid var(--ifm-color-gray-400);
+  border-radius: 8px;
+  background: rgba(247, 250, 252, 0.92);
+}
+
+.paneHeader {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 1rem;
+  margin: 0 0 0.75rem;
+}
+
+.paneLabel,
+.paneMeta {
+  margin: 0;
+}
+
+.paneLabel {
+  color: var(--ifm-color-gray-700);
+  font-size: 0.76rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.paneMeta {
+  color: var(--ifm-color-gray-700);
+  font-size: 0.8rem;
+  font-weight: 600;
+  text-align: right;
+}
+
+.sourceShell,
+.tableShell {
+  width: 100%;
+  height: 24rem;
+  overflow: auto;
+  padding: 0;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+}
+
+.tableShell {
+  position: relative;
+}
+
+.canvasShell {
+  width: 100%;
+  height: 24rem;
+  overflow: hidden;
+  border-radius: 8px;
+  background: #eef2f7;
+}
+
+.binaryViewport,
+.textViewport {
+  min-height: 100%;
+  padding: 1rem 1.05rem;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.96);
+  color: var(--ifm-color-gray-900);
+  font-family: var(--ifm-font-family-monospace);
+  font-size: 0.8rem;
+  line-height: 1.5;
+}
+
+.textViewport {
+  margin: 0;
+  white-space: pre-wrap;
+}
+
+.binaryHeader,
+.binaryRow {
+  display: grid;
+  grid-template-columns: 4.5rem max-content max-content;
+  gap: 1.1rem;
+}
+
+.binaryHeader {
+  margin-bottom: 0.6rem;
+  color: var(--ifm-color-gray-700);
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.binaryRow {
+  align-items: start;
+  margin-bottom: 0.35rem;
+}
+
+.binaryOffset {
+  color: var(--ifm-color-gray-700);
+  font-weight: 700;
+}
+
+.binaryBytes {
+  display: grid;
+  gap: 0.45rem;
+}
+
+.binaryByte {
+  width: 1.85rem;
+  text-align: center;
+}
+
+.binaryAscii {
+  white-space: pre;
+}
+
+.binaryOverflow {
+  margin-top: 0.9rem;
+  color: var(--ifm-color-gray-700);
+  font-weight: 600;
+}
+
+.previewTable {
+  width: max-content;
+  min-width: 100%;
+  margin: 0;
+  border-collapse: separate;
+  border-spacing: 0;
+  color: var(--ifm-color-gray-900);
+  background: rgba(255, 255, 255, 0.96);
+  font-size: 0.85rem;
+}
+
+.previewTableHead {
+  position: sticky;
+  top: 0;
+  z-index: 6;
+}
+
+.headerCell,
+.rowIndexHeaderCell {
+  position: sticky;
+  top: 0;
+  z-index: 3;
+  width: 1%;
+  min-width: 7rem;
+  max-width: 28rem;
+  padding: 0.7rem 0.95rem;
+  text-align: left;
+  white-space: nowrap;
+  background: var(--ifm-color-gray-200);
+  background-clip: padding-box;
+  border-bottom: 1px solid rgba(43, 56, 72, 0.12);
+  box-shadow: 0 1px 0 rgba(43, 56, 72, 0.12);
+  color: var(--ifm-color-gray-900);
+  font-size: 0.83rem;
+  font-weight: 700;
+}
+
+.rowIndexHeaderCell {
+  left: 0;
+  z-index: 5;
+  width: 3.25rem;
+  min-width: 3.25rem;
+  max-width: 3.25rem;
+  text-align: right;
+  box-shadow:
+    1px 0 0 rgba(43, 56, 72, 0.12),
+    0 1px 0 rgba(43, 56, 72, 0.12);
+}
+
+.bodyCell,
+.rowIndexCell {
+  width: 1%;
+  min-width: 7rem;
+  max-width: 28rem;
+  padding: 0.68rem 0.95rem;
+  white-space: nowrap;
+  border-bottom: 1px solid rgba(43, 56, 72, 0.08);
+  color: var(--ifm-color-gray-800);
+}
+
+.rowIndexCell {
+  position: sticky;
+  left: 0;
+  z-index: 2;
+  width: 3.25rem;
+  min-width: 3.25rem;
+  max-width: 3.25rem;
+  background: rgba(255, 255, 255, 0.96);
+  background-clip: padding-box;
+  box-shadow: 1px 0 0 rgba(43, 56, 72, 0.08);
+  color: var(--ifm-color-gray-700);
+  font-weight: 700;
+  text-align: right;
+}
+
+.statusContainer {
+  display: flex;
+  min-height: 6rem;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+  color: var(--ifm-color-emphasis-700);
+}
+
+:global(html[data-theme='dark']) .paneCard {
+  border-color: rgba(158, 174, 192, 0.26);
+  background: rgba(29, 38, 49, 0.94);
+}
+
+:global(html[data-theme='dark']) .binaryViewport,
+:global(html[data-theme='dark']) .textViewport,
+:global(html[data-theme='dark']) .previewTable {
+  background: rgba(36, 46, 58, 0.92);
+  color: rgba(241, 245, 249, 0.92);
+}
+
+:global(html[data-theme='dark']) .binaryHeader,
+:global(html[data-theme='dark']) .binaryOffset,
+:global(html[data-theme='dark']) .binaryOverflow,
+:global(html[data-theme='dark']) .paneMeta {
+  color: rgba(203, 213, 225, 0.9);
+}
+
+:global(html[data-theme='dark']) .headerCell,
+:global(html[data-theme='dark']) .rowIndexHeaderCell {
+  background: rgba(72, 86, 104, 0.72);
+  border-bottom-color: rgba(225, 232, 240, 0.14);
+  color: rgba(255, 255, 255, 0.92);
+}
+
+:global(html[data-theme='dark']) .bodyCell,
+:global(html[data-theme='dark']) .rowIndexCell {
+  border-bottom-color: rgba(225, 232, 240, 0.12);
+  color: rgba(241, 245, 249, 0.9);
+}
+
+:global(html[data-theme='dark']) .rowIndexCell {
+  background: rgba(36, 46, 58, 0.92);
+}
+
+@media (max-width: 1200px) {
+  .previewLayout {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  }
+}
+
+@media (max-width: 760px) {
+  .previewLayout {
+    grid-template-columns: 1fr;
+  }
+
+  .paneHeader {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 0.4rem;
+  }
+
+  .paneMeta {
+    text-align: left;
+  }
+}

@@ -1,6 +1,46 @@
-# ReadableFile implementations
+---
+title: ReadableFile implementations
+description: Use one random-access file interface across URLs, buffers, blobs, and Node.js files.
+hide_title: true
+page_style: designed
+---
+
+import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
+import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
+
+<DocPageHeader
+  eyebrow="Random-access file interface"
+  title="Give every binary loader the same file-shaped input."
+  description="`ReadableFile` implementations hide whether bytes live in a cloud object, an in-memory buffer, a browser Blob, or a Node.js file. Format loaders can request exact ranges without importing platform-specific APIs."
+  tone="blue"
+  meta={['HttpFile', 'ArrayBufferFile', 'BlobFile and NodeFile']}
+  links={[
+    {label: 'Loader utilities', to: '/docs/modules/loader-utils'},
+    {label: 'HTTP file', to: '/docs/modules/loader-utils/api-reference/http-file'},
+    {label: 'Range scheduler', to: '/docs/modules/loader-utils/api-reference/range-request-scheduler'}
+  ]}
+/>
+
+<DocOrientation
+  eyebrow="The file boundary"
+  title="Open the source. Read exact bytes. Keep the parser portable."
+  description="The same `read` operation can target remote HTTP ranges, browser-owned bytes, or a local file. That lets archives, tiles, point clouds, and analytical formats share access code."
+  tone="blue"
+  items={[
+    {label: 'Remote', value: 'HttpFile with validators and HTTP Range'},
+    {label: 'Memory', value: 'ArrayBufferFile or DataViewReadableFile'},
+    {label: 'Browser', value: 'BlobFile and File-backed reads'},
+    {label: 'Node.js', value: 'NodeFile backed by the local filesystem'}
+  ]}
+/>
 
 `ReadableFile` objects provide random access to binary content without exposing any platform-specific APIs. loaders.gl ships ready-made implementations for both browser and Node.js environments so that loaders can work with the same API regardless of where the data lives.
+
+<ReferenceBoundary
+  title="Readable-file implementations"
+  description="The reference below compares remote, memory, browser, and Node.js implementations and shows how each one supports exact reads."
+  tone="blue"
+/>
 
 ## Available classes
 

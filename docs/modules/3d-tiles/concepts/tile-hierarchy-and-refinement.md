@@ -1,8 +1,42 @@
+---
+title: 3D Tiles tile hierarchy and refinement
+description: Follow visible branches through explicit and implicit hierarchies while preserving safe coverage during loading.
+hide_title: true
+page_style: designed
+---
+
 import {Tiles3DDocsTabs} from '@site/src/components/docs/tiles-3d-docs-tabs';
+import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
+import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
 
-# Tile Hierarchy and Refinement
+<DocPageHeader
+  eyebrow="3D Tiles runtime / hierarchy"
+  title="Traverse the tree without losing coverage."
+  description="A tileset is a view-dependent hierarchy. This guide explains how visibility, geometric error, refinement mode, and loading state work together as the camera moves."
+  tone="cyan"
+  meta={['Explicit and implicit trees', 'ADD / REPLACE refinement', 'Ancestor coverage']}
+/>
 
-<Tiles3DDocsTabs active="hierarchy" />
+<Tiles3DDocsTabs active="runtime" />
+
+<DocOrientation
+  eyebrow="Hierarchy traversal"
+  title="Choose what is needed, then fill it in."
+  description="Traversal can request more detail without making the frame depend on content that has not arrived. Ancestors remain useful coverage while descendants load."
+  tone="cyan"
+  items={[
+    {label: 'Cull', value: 'Discard branches outside the frustum or request volume.'},
+    {label: 'Measure', value: 'Compare transformed geometric error with the view.'},
+    {label: 'Refine', value: 'Apply ADD or REPLACE semantics to visible descendants.'},
+    {label: 'Recover', value: 'Keep renderable ancestors until replacements are ready.'}
+  ]}
+/>
+
+<ReferenceBoundary
+  title="Traversal behavior"
+  description="The detailed sections cover hierarchy states, implicit boundaries, refinement modes, and the per-frame selection lifecycle."
+  tone="cyan"
+/>
 
 3D Tiles divides a dataset into a tree. A tile describes a bounding volume, a geometric error, an optional content resource, and zero or more children. Traversal visits visible branches and decides whether each tile can provide current coverage or needs descendants.
 

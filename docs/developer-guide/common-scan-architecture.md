@@ -7,9 +7,12 @@ page_style: designed
 
 import {FederatedScanLiveExample} from '@site/src/components/docs/federated-scan-live-example';
 import {CapabilityHero} from '@site/src/components/docs/capability-hero';
+import {CrossFormatScanEngineGraphic} from '@site/src/components/docs/cross-format-scan-engine-graphic';
 import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
 
 <CapabilityHero capability="scan" />
+
+<CrossFormatScanEngineGraphic />
 
 ## Try a scan
 

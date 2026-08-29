@@ -9,7 +9,8 @@ import React, {
 import {load, type LoaderOptions} from '@loaders.gl/core';
 import {BSONLoader} from '@loaders.gl/bson';
 import {HTMLLoader, XMLLoader} from '@loaders.gl/xml';
-import styled from 'styled-components';
+
+import styles from './structured-data-live-example.module.css';
 
 type StructuredDataLoaderName = 'XMLLoader' | 'HTMLLoader' | 'BSONLoader';
 
@@ -50,232 +51,6 @@ type StructuredDataLiveExampleSource = {
 };
 
 const SOURCE_BYTE_LIMIT = 1024;
-
-const PreviewLayout = styled.div`
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-  gap: 1rem;
-
-  @media (max-width: 960px) {
-    grid-template-columns: 1fr;
-  }
-`;
-
-const SourceSummaryCard = styled.form<{$hasSamples?: boolean; $isDragActive?: boolean}>`
-  grid-column: 1 / -1;
-  display: grid;
-  grid-template-columns: ${(props) =>
-    props.$hasSamples
-      ? 'max-content minmax(10rem, max-content) minmax(0, 1fr) max-content'
-      : 'max-content minmax(0, 1fr) max-content'};
-  gap: 0.75rem;
-  align-items: baseline;
-  padding: 0.7rem 0.9rem;
-  border: 1px dashed
-    ${(props) => (props.$isDragActive ? 'var(--ifm-color-primary)' : 'var(--ifm-color-gray-300)')};
-  border-radius: 8px;
-  background: ${(props) =>
-    props.$isDragActive ? 'rgba(225, 245, 255, 0.96)' : 'rgba(255, 255, 255, 0.96)'};
-  color: var(--ifm-color-gray-900);
-
-  @media (max-width: 640px) {
-    grid-template-columns: 1fr;
-    gap: 0.35rem;
-  }
-`;
-
-const SourceSummaryLabel = styled.div`
-  color: var(--ifm-color-gray-700);
-  font-size: 0.72rem;
-  font-weight: 800;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
-`;
-
-const SourceSampleSelect = styled.select`
-  min-width: 0;
-  max-width: 16rem;
-  border: 1px solid rgba(43, 56, 72, 0.18);
-  border-radius: 6px;
-  background: rgba(255, 255, 255, 0.92);
-  color: var(--ifm-color-gray-800);
-  font-size: 0.74rem;
-  font-weight: 700;
-  padding: 0.38rem 0.5rem;
-`;
-
-const SourceInput = styled.input`
-  min-width: 0;
-  width: 100%;
-  border: 0;
-  background: transparent;
-  color: var(--ifm-color-gray-900);
-  font-family: var(--ifm-font-family-monospace);
-  font-size: 0.78rem;
-  outline: none;
-  white-space: nowrap;
-`;
-
-const SourceAction = styled.button`
-  border: 1px solid rgba(43, 56, 72, 0.2);
-  border-radius: 6px;
-  background: rgba(255, 255, 255, 0.92);
-  color: var(--ifm-color-gray-800);
-  cursor: pointer;
-  font-size: 0.74rem;
-  font-weight: 700;
-  line-height: 1;
-  padding: 0.42rem 0.58rem;
-
-  &:hover {
-    background: var(--ifm-color-gray-100);
-  }
-`;
-
-const SourceErrorMessage = styled.div`
-  grid-column: 1 / -1;
-  min-width: 0;
-  padding: 0.7rem 0.8rem;
-  border: 1px solid rgba(185, 28, 28, 0.24);
-  border-radius: 8px;
-  background: rgba(254, 242, 242, 0.96);
-  color: rgb(127, 29, 29);
-`;
-
-const SourceErrorLabel = styled.div`
-  margin-bottom: 0.35rem;
-  font-size: 0.72rem;
-  font-weight: 800;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
-`;
-
-const SourceErrorText = styled.pre`
-  margin: 0;
-  overflow-wrap: anywhere;
-  white-space: pre-wrap;
-  font-family: var(--ifm-font-family-monospace);
-  font-size: 0.78rem;
-  line-height: 1.45;
-`;
-
-const PreviewPane = styled.section`
-  min-width: 0;
-`;
-
-const PaneCard = styled.div`
-  min-height: 24rem;
-  padding: 0.9rem;
-  border: 1px solid var(--ifm-color-gray-400);
-  border-radius: 8px;
-  background: rgba(247, 250, 252, 0.92);
-`;
-
-const PaneLabel = styled.div`
-  margin: 0 0 0.75rem;
-  color: var(--ifm-color-gray-700);
-  font-size: 0.76rem;
-  font-weight: 700;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
-`;
-
-const PaneHeader = styled.div`
-  display: flex;
-  align-items: baseline;
-  justify-content: space-between;
-  gap: 1rem;
-  margin: 0 0 0.75rem;
-`;
-
-const HeaderLabel = styled(PaneLabel)`
-  margin: 0;
-`;
-
-const ToggleButton = styled.button`
-  border: 1px solid rgba(43, 56, 72, 0.2);
-  border-radius: 6px;
-  background: rgba(255, 255, 255, 0.92);
-  color: var(--ifm-color-gray-800);
-  cursor: pointer;
-  font-size: 0.74rem;
-  font-weight: 700;
-  line-height: 1;
-  padding: 0.42rem 0.58rem;
-
-  &:hover {
-    background: var(--ifm-color-gray-100);
-  }
-`;
-
-const PreviewText = styled.pre<{$wrap?: boolean}>`
-  height: 22rem;
-  margin: 0;
-  padding: 1rem;
-  overflow: auto;
-  border-radius: 8px;
-  background: rgba(255, 255, 255, 0.96);
-  color: var(--ifm-color-gray-900);
-  font-family: var(--ifm-font-family-monospace);
-  font-size: 0.8rem;
-  line-height: 1.5;
-  overflow-wrap: ${(props) => (props.$wrap ? 'anywhere' : 'normal')};
-  white-space: ${(props) => (props.$wrap ? 'pre-wrap' : 'pre')};
-`;
-
-const StatusContainer = styled.div`
-  display: flex;
-  min-height: 6rem;
-  align-items: center;
-  justify-content: center;
-  padding: 1rem;
-  color: var(--ifm-color-emphasis-700);
-`;
-
-const GlobalPreviewStyle = styled.div`
-  html[data-theme='dark'] & ${SourceSummaryCard} {
-    border-color: rgba(158, 174, 192, 0.22);
-    background: rgba(30, 41, 59, 0.96);
-    color: rgba(241, 245, 249, 0.92);
-  }
-
-  html[data-theme='dark'] & ${SourceSummaryLabel} {
-    color: rgba(203, 213, 225, 0.9);
-  }
-
-  html[data-theme='dark'] & ${SourceInput} {
-    color: rgba(241, 245, 249, 0.92);
-  }
-
-  html[data-theme='dark'] & ${SourceSampleSelect},
-  html[data-theme='dark'] & ${SourceAction} {
-    border-color: rgba(158, 174, 192, 0.28);
-    background: rgba(51, 65, 85, 0.92);
-    color: rgba(241, 245, 249, 0.92);
-  }
-
-  html[data-theme='dark'] & ${SourceErrorMessage} {
-    border-color: rgba(248, 113, 113, 0.32);
-    background: rgba(69, 10, 10, 0.56);
-    color: rgba(254, 226, 226, 0.96);
-  }
-
-  html[data-theme='dark'] & ${PaneCard} {
-    border-color: rgba(158, 174, 192, 0.26);
-    background: rgba(29, 38, 49, 0.94);
-  }
-
-  html[data-theme='dark'] & ${PreviewText} {
-    background: rgba(36, 46, 58, 0.92);
-    color: rgba(241, 245, 249, 0.92);
-  }
-
-  html[data-theme='dark'] & ${ToggleButton} {
-    border-color: rgba(158, 174, 192, 0.28);
-    background: rgba(51, 65, 85, 0.92);
-    color: rgba(241, 245, 249, 0.92);
-  }
-`;
 
 /**
  * Loads a configured XML or HTML file and renders source text beside parsed JSON output.
@@ -386,11 +161,10 @@ export default function StructuredDataLiveExample({
   }
 
   return (
-    <GlobalPreviewStyle>
-      <PreviewLayout>
-        <SourceSummaryCard
-          $hasSamples={Boolean(config.sampleFiles?.length)}
-          $isDragActive={isDragActive}
+    <div className={styles.globalPreview}>
+      <div className={styles.previewLayout}>
+        <form
+          className={`${styles.sourceSummaryCard} ${config.sampleFiles?.length ? styles.hasSamples : ''} ${isDragActive ? styles.dragActive : ''}`}
           onSubmit={(event) => {
             event.preventDefault();
             updateSourceUrl();
@@ -399,9 +173,10 @@ export default function StructuredDataLiveExample({
           onDragLeave={handleDragLeave}
           onDrop={handleDrop}
         >
-          <SourceSummaryLabel>{source.label}</SourceSummaryLabel>
+          <div className={styles.sourceSummaryLabel}>{source.label}</div>
           {config.sampleFiles?.length ? (
-            <SourceSampleSelect
+            <select
+              className={styles.sourceSampleSelect}
               aria-label="Sample file"
               value={getSelectedSampleUrl(config.sampleFiles, source)}
               onChange={handleSampleFileChange}
@@ -412,9 +187,10 @@ export default function StructuredDataLiveExample({
                   {sampleFile.label}
                 </option>
               ))}
-            </SourceSampleSelect>
+            </select>
           ) : null}
-          <SourceInput
+          <input
+            className={styles.sourceInput}
             aria-label="Source URL or dropped file"
             value={sourceInputValue}
             placeholder="Enter a source URL or drop a file"
@@ -424,16 +200,16 @@ export default function StructuredDataLiveExample({
             readOnly={source.type === 'file'}
             title={source.value}
           />
-          <SourceAction type="submit">Load</SourceAction>
+          <button className={styles.sourceAction} type="submit">Load</button>
           {state.status === 'error' && (
-            <SourceErrorMessage role="alert">
-              <SourceErrorLabel>Loader error</SourceErrorLabel>
-              <SourceErrorText>{state.errorMessage}</SourceErrorText>
-            </SourceErrorMessage>
+            <div className={styles.sourceErrorMessage} role="alert">
+              <div className={styles.sourceErrorLabel}>Loader error</div>
+              <pre className={styles.sourceErrorText}>{state.errorMessage}</pre>
+            </div>
           )}
-        </SourceSummaryCard>
+        </form>
         {state.status === 'loading' && (
-          <StatusContainer>Loading structured data...</StatusContainer>
+          <div className={styles.statusContainer}>Loading structured data...</div>
         )}
         {state.status === 'error' && state.sourceText && state.sourceLabel && (
           <>
@@ -443,12 +219,12 @@ export default function StructuredDataLiveExample({
               wrapSourceText={wrapSourceText}
               onToggleWrapSourceText={() => setWrapSourceText(value => !value)}
             />
-            <PreviewPane>
-              <PaneCard>
-                <PaneLabel>{config.loaderName}</PaneLabel>
-                <StatusContainer>No parsed output</StatusContainer>
-              </PaneCard>
-            </PreviewPane>
+            <section className={styles.previewPane}>
+              <div className={styles.paneCard}>
+                <div className={styles.paneLabel}>{config.loaderName}</div>
+                <div className={styles.statusContainer}>No parsed output</div>
+              </div>
+            </section>
           </>
         )}
         {state.status === 'loaded' && (
@@ -459,16 +235,16 @@ export default function StructuredDataLiveExample({
               wrapSourceText={wrapSourceText}
               onToggleWrapSourceText={() => setWrapSourceText(value => !value)}
             />
-            <PreviewPane>
-              <PaneCard>
-                <PaneLabel>{config.loaderName}</PaneLabel>
-                <PreviewText>{JSON.stringify(state.parsedData, null, 2)}</PreviewText>
-              </PaneCard>
-            </PreviewPane>
+            <section className={styles.previewPane}>
+              <div className={styles.paneCard}>
+                <div className={styles.paneLabel}>{config.loaderName}</div>
+                <pre className={styles.previewText}>{JSON.stringify(state.parsedData, null, 2)}</pre>
+              </div>
+            </section>
           </>
         )}
-      </PreviewLayout>
-    </GlobalPreviewStyle>
+      </div>
+    </div>
   );
 }
 
@@ -491,17 +267,17 @@ function StructuredSourcePane({
   onToggleWrapSourceText: () => void;
 }) {
   return (
-    <PreviewPane>
-      <PaneCard>
-        <PaneHeader>
-          <HeaderLabel>{sourceLabel}</HeaderLabel>
-          <ToggleButton type="button" onClick={onToggleWrapSourceText}>
+    <section className={styles.previewPane}>
+      <div className={styles.paneCard}>
+        <div className={styles.paneHeader}>
+          <div className={`${styles.paneLabel} ${styles.headerLabel}`}>{sourceLabel}</div>
+          <button className={styles.toggleButton} type="button" onClick={onToggleWrapSourceText}>
             {wrapSourceText ? 'No Wrap' : 'Wrap'}
-          </ToggleButton>
-        </PaneHeader>
-        <PreviewText $wrap={wrapSourceText}>{sourceText}</PreviewText>
-      </PaneCard>
-    </PreviewPane>
+          </button>
+        </div>
+        <pre className={`${styles.previewText} ${wrapSourceText ? styles.wrapText : ''}`}>{sourceText}</pre>
+      </div>
+    </section>
   );
 }
 

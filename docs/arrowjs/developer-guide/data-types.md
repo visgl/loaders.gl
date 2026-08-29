@@ -1,3 +1,45 @@
+---
+title: Arrow data types
+description: Choose the Arrow logical types and physical layouts that keep JavaScript tables precise and compact.
+hide_title: true
+page_style: designed
+---
+
+import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
+import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
+
+<DocPageHeader
+  eyebrow="Arrow JavaScript · types"
+  title="Make the column type part of the contract."
+  description="Arrow separates logical meaning from physical storage: numbers, timestamps, strings, lists, structs, dictionaries, and unions each carry a precise schema that readers can inspect before consuming values."
+  tone="violet"
+  meta={['Primitive types', 'Nested data', 'Validity bitmaps']}
+  links={[
+    {label: 'Arrow JS guide', to: '/docs/arrowjs'},
+    {label: 'Schema API', to: '/docs/arrowjs/api-reference/schema'},
+    {label: 'Field API', to: '/docs/arrowjs/api-reference/field'}
+  ]}
+/>
+
+<DocOrientation
+  eyebrow="The type families"
+  title="Pick the narrowest type that preserves the meaning."
+  description="Fixed-width values are easy to index and transfer. Variable-width and nested values preserve richer structures, while dictionaries keep repeated categorical values compact."
+  tone="violet"
+  items={[
+    {label: 'Fixed width', value: 'Integers, floats, dates, times, decimals, and fixed binary'},
+    {label: 'Variable width', value: 'UTF-8 strings, binary values, lists, and maps'},
+    {label: 'Nested', value: 'Structs, unions, and child vectors with their own types'},
+    {label: 'Dictionary', value: 'Encoded repeated values with a separate key vector'}
+  ]}
+/>
+
+<ReferenceBoundary
+  title="Data type details"
+  description="The reference below explains descriptors, buffers, validity, logical types, nested layouts, and the JavaScript precision boundary."
+  tone="violet"
+/>
+
 # Data Types
 
 Arrow supports a rich set of data types:

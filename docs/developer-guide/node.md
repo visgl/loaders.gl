@@ -1,4 +1,37 @@
-# Node.js support
+---
+title: Node.js support
+description: Use loaders.gl from Node.js while keeping the shared browser-compatible API available.
+hide_title: true
+page_style: designed
+---
+
+import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
+import {DocOrientation} from '@site/src/components/docs/designed-doc';
+
+<DocPageHeader
+  eyebrow="Server-side JavaScript"
+  title="Use the same loaders in Node.js and the browser."
+  description="loaders.gl favors portable Web APIs, with an explicit polyfill package for Node.js environments that do not provide fetch, Response, or related globals."
+  tone="blue"
+  meta={['Node.js', 'Portable APIs', 'Optional polyfills']}
+  links={[
+    {label: 'Polyfills module', to: '/docs/modules/polyfills/api-reference'},
+    {label: 'Preferred JavaScript APIs', to: '/docs/developer-guide/concepts/javascript-apis'}
+  ]}
+/>
+
+<DocOrientation
+  eyebrow="The Node.js boundary"
+  title="Install the platform pieces, keep the data path portable."
+  description="Import polyfills when the runtime needs them. The core loaders continue to use browser-compatible abstractions for fetching, files, streams, and binary data."
+  tone="blue"
+  items={[
+    {label: 'Setup', value: 'Import @loaders.gl/polyfills when required'},
+    {label: 'Core', value: 'Use fetch, Response, and ArrayBuffer APIs'},
+    {label: 'Files', value: 'Adapt local data through readable-file APIs'},
+    {label: 'Compatibility', value: 'Keep application code portable where useful'}
+  ]}
+/>
 
 Firstly, to run loaders.gl on Node.js you want to import the `@loaders.gl/polyfills` module.
 

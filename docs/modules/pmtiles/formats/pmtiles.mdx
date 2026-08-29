@@ -1,10 +1,42 @@
-import {TileDocsTabs} from '@site/src/components/docs/tile-docs-tabs';
+---
+title: PMTiles format
+description: A single HTTP range-readable archive for tiled vector, raster, and terrain data.
+hide_title: true
+page_style: designed
+---
 
-# PMTiles 
+import {TileDocsTabs} from '@site/src/components/docs/tile-docs-tabs';
+import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
+import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
+
+<DocPageHeader
+  eyebrow="Cloud tile archive"
+  title="Keep a tileset in one range-readable file."
+  description="PMTiles replaces a directory of tile objects with one archive whose header and directories locate the tile ranges needed for a view. The payload can remain vector, raster, or terrain data."
+  tone="violet"
+  meta={['PMTiles v3', 'HTTP ranges', 'Vector and raster tiles']}
+  links={[
+    {label: 'PMTiles module', to: '/docs/modules/pmtiles'},
+    {label: 'PMTiles source', to: '/docs/modules/pmtiles/api-reference/pmtiles-source-loader'}
+  ]}
+/>
 
 <TileDocsTabs active="pmtiles" />
 
-<p class="badges">
+<DocOrientation
+  eyebrow="The archive workflow"
+  title="Read the index, resolve the tile, fetch the payload."
+  description="PMTiles owns archive addressing and range reads. Once the tile bytes arrive, the application can pass them to the loader for the payload’s actual format."
+  tone="violet"
+  items={[
+    {label: 'Header', value: 'Archive bounds, zooms, tile type, and metadata'},
+    {label: 'Directory', value: 'Compact tile identifiers and byte ranges'},
+    {label: 'Request', value: 'Z/X/Y lookup over HTTP range requests'},
+    {label: 'Decode', value: 'MVT, image, terrain, or another tile payload'}
+  ]}
+/>
+
+<p className="badges">
   <a href="/docs/modules/scan#vector-table-views">
     <img src="https://img.shields.io/badge/Scan-Table_view-3178C6.svg?style=flat-square" alt="Optional scan table view" />
   </a>
@@ -19,6 +51,12 @@ PMTiles is a general format for storing tiled data addressed by Z/X/Y coordinate
 PMTiles is commonly used for visualization (e.g. for cartographic basemap vector tiles), and then often contains vector data, where each tile data contained within the archive is encoded as a Mapbox Vector Tile (MVT), however it can also be used to store image tiles (in PNG and JPEG format) containing e.g. raster data or terrain mesh data.
 
 A PMTiles archive replaces a big directory tree of thousands of individual tile files, allowing an entire tileset to be manipulated (uploaded, downloaded, served, analyzed) as a single file.
+
+<ReferenceBoundary
+  title="PMTiles layout and tile types"
+  description="The sections below describe the optional table view, supported payload types, metadata, and archive refresh behavior."
+  tone="violet"
+/>
 
 In addition, there is a range of utilities and libraries for working with PMTiles, such Python packages for reading and writing, and support for various programming languages and tools as well as a number of viewers. And tiling tools such as [tippecanoe](https://github.com/felt/tippecanoe) can now output directly to PMTiles.
 

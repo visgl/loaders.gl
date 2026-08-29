@@ -1,6 +1,46 @@
-# Zip Archive
+---
+title: Zip Archive
+description: Read ZIP containers and their random-access entries as a virtual file system.
+hide_title: true
+page_style: designed
+---
+
+import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
+import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
+
+<DocPageHeader
+  eyebrow="Archive format"
+  title="Open a bundle without unpacking the whole bundle first."
+  description="ZIP packages related files behind one container. loaders.gl’s random-access support validates local headers and central-directory metadata so applications can fetch or read individual entries when appropriate."
+  tone="blue"
+  meta={['ZIP archives', 'ZIP64', 'Random-access entries']}
+  links={[
+    {label: 'ZIP module', to: '/docs/modules/zip'},
+    {label: 'ZipLoader', to: '/docs/modules/zip/api-reference/zip-loader'},
+    {label: 'Using loaders', to: '/docs/developer-guide/using-loaders'}
+  ]}
+/>
+
+<DocOrientation
+  eyebrow="The archive path"
+  title="Inspect the directory. Select an entry. Read only what the pipeline needs."
+  description="The archive boundary separates container validation and entry lookup from the format-specific loader that decodes each selected member."
+  tone="blue"
+  items={[
+    {label: 'Container', value: 'Local headers, central directory, and ZIP64 metadata'},
+    {label: 'Lookup', value: 'Entry names, offsets, compressed and uncompressed sizes'},
+    {label: 'Read', value: 'Individual members through a virtual file system'},
+    {label: 'Decode', value: 'Pass selected entries to their format loaders'}
+  ]}
+/>
 
 > The [`loaders.gl/zip`](/docs/modules/zip) module provides support for working with Zip Archives.
+
+<ReferenceBoundary
+  title="ZIP container and validation details"
+  description="The reference below covers local header layouts, data descriptors, ZIP64 validation, random access, and member loading."
+  tone="blue"
+/>
 
 [ZIP Archive](<https://en.wikipedia.org/wiki/Zip_(file_format)>)
 

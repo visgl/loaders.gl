@@ -1,6 +1,39 @@
-# Iceberg table source
+---
+title: Iceberg table source
+description: Plan reads over Iceberg metadata and manifests, then stream selected Parquet data as Arrow.
+hide_title: true
+page_style: designed
+---
 
-<p class="badges">
+import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
+import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
+
+<DocPageHeader
+  eyebrow="Versioned table source"
+  title="Turn manifests into a bounded table read."
+  description="IcebergTableSource reads table metadata and manifests, selects the relevant Parquet data files, and delegates physical decoding to the shared Parquet source path."
+  tone="violet"
+  meta={['Apache Iceberg', 'Manifest planning', 'Arrow batches']}
+  links={[
+    {label: 'Scan architecture', to: '/docs/developer-guide/common-scan-architecture'},
+    {label: 'Parquet source', to: '/docs/modules/parquet/api-reference/parquet-source-loader'}
+  ]}
+/>
+
+<DocOrientation
+  eyebrow="The manifest path"
+  title="Use table metadata before opening data files."
+  description="Iceberg metadata provides the snapshot and manifest structure. The source uses it to choose active files before Parquet handles row groups, pages, columns, and byte ranges."
+  tone="violet"
+  items={[
+    {label: 'Discover', value: 'Table metadata, schemas, snapshots, and manifests'},
+    {label: 'Select', value: 'Active data files for the requested snapshot'},
+    {label: 'Delegate', value: 'Parquet row-group, page, and range planning'},
+    {label: 'Return', value: 'Streaming Arrow batches with query semantics'}
+  ]}
+/>
+
+<p className="badges">
   <a href="/docs/developer-guide/common-scan-architecture">
     <img src="https://img.shields.io/badge/Scan-Supported-2f855a.svg?style=flat-square" alt="Scan supported" />
   </a>
@@ -8,6 +41,12 @@
 
 `IcebergTableSource` reads an Apache Iceberg table's metadata and manifest files, selects Parquet
 data files, and delegates the actual file reads to `ParquetDatasetSource`.
+
+<ReferenceBoundary
+  title="Iceberg source details"
+  description="The sections below cover construction, metadata and manifest planning, query options, and Arrow results."
+  tone="violet"
+/>
 
 ```ts
 import {IcebergTableSource} from '@loaders.gl/scan/iceberg';

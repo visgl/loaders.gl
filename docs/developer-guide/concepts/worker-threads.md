@@ -1,20 +1,64 @@
-# Worker Threads
+---
+title: Worker threads
+description: Move expensive parsing off the browser main thread while keeping data transfer explicit.
+hide_title: true
+page_style: designed
+---
 
-On modern browsers, many loaders.gl loaders are set up to run on JavaScript worker threads. (Refer the documentation of each loader to see if it supports worker thread loading).
+import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
+import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
+
+<DocPageHeader
+  eyebrow="Parallel parsing"
+  title="Keep the interface responsive while data is decoded."
+  description="Worker-enabled loaders run parsing away from the browser main thread. The useful boundary is transferable binary data: less serialization means more of the worker’s time goes to parsing."
+  tone="violet"
+  meta={['Browser workers', 'Transferable buffers', 'Zero-config bundles']}
+  links={[
+    {label: 'Worker loaders', to: '/docs/developer-guide/using-worker-loaders'},
+    {label: 'Binary data', to: '/docs/developer-guide/concepts/binary-data'}
+  ]}
+/>
+
+<DocOrientation
+  eyebrow="The performance boundary"
+  title="Move computation, not a second copy of the dataset."
+  description="Workers help when parsing is expensive and results can remain in transferable buffers. The same API can fall back to the main thread when debugging, startup cost, or object-heavy output matters more."
+  tone="violet"
+  items={[
+    {label: 'Good fit', value: 'Large files and compute-heavy decoders'},
+    {label: 'Data shape', value: 'ArrayBuffers, typed arrays, and Arrow'},
+    {label: 'Trade-off', value: 'Startup, messaging, and serialization cost'},
+    {label: 'Debugging', value: 'Switch to main-thread parsing when needed'}
+  ]}
+/>
+
+On modern browsers, many loaders.gl loaders can run on JavaScript worker threads. See each loader's
+documentation for its worker support and any required codec or asset configuration.
+
+<ReferenceBoundary
+  title="Worker data flow and trade-offs"
+  description="The sections below cover transfer, data types, message passing, build configuration, bundle size, debugging, and benchmarking."
+  tone="violet"
+/>
 
 Loading and parsing of data on worker threads can bring significant advantages
 
 - **Avoid blocking the browser main thread** - when parsing longer files, the main thread can become blocked, effectively "freezing" the application's user interface until parsing completes.
-- **Parallel parsing on multi-core CPUs** - when parsing multiple files on machines that have multiple cores (essentially all machines, even modern mobile phones tend to have at least two cores), worker threads enables multiple files to be parsed in parallel which can dramatically reduce the total load times.
+- **Parallel parsing on multi-core CPUs** - when parsing multiple files on machines with multiple
+  cores, worker threads enable files to be parsed in parallel and can reduce total load time.
 
-Hoever, there are a number of considerations when loading and parsing data on JavaScript worker threads:
+However, there are a number of considerations when loading and parsing data on JavaScript worker threads:
 
-- **Serialization/deserializion overhead** when transferring resuls back to main thread can more than defeat gains from loading on a separate thread.
-- **Choice of Data Types** - Due to data transfer issues there are constraints on what data types are appropriate
+- **Serialization/deserialization overhead** when transferring results back to the main thread can
+  more than defeat the gains from loading on a separate thread.
+- **Choice of data types** - Data transfer is cheapest for binary and transferable types.
 - **Build configuration** - Workers can require complex build system setup/configuration.
-- **Message Passing** - Parsing on workers requires message passing between threads. While simple it can add clutter to application code.
-- **Debugging** - Worker based code tends to be harder to debug. Being able to easily switch back to main thread parsing (or an alternate worker build) can be very helpful.
-- **Startup Times** - Worker startup times can defeat speed gains from parsing on workers.
+- **Message passing** - Parsing on workers requires communication between threads. While loaders.gl
+  handles it, messaging still has a cost.
+- **Debugging** - Worker-based code can be harder to debug. Switching back to main-thread parsing is
+  useful during development.
+- **Startup times** - Worker startup time can outweigh the parsing savings for small inputs.
 
 ## Data Transfer
 

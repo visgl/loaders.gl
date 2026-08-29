@@ -1,13 +1,55 @@
+---
+title: FlatGeobufSourceLoader
+description: Query indexed FlatGeobuf datasets with HTTP ranges.
+hide_title: true
+page_style: designed
+---
+
+import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
+import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
 import {FlatGeobufDocsTabs} from '@site/src/components/docs/flatgeobuf-docs-tabs';
+import {RangeRequestGraphic} from '@site/src/components/docs/range-request-graphic';
 
-# FlatGeobufSourceLoader
+<DocPageHeader
+  eyebrow="FlatGeobuf source loader"
+  title="Query an indexed vector file from the browser."
+  description="`FlatGeobufSourceLoader` uses the FlatGeobuf spatial index and HTTP range requests to return only the features needed for a query. It can expose GeoJSON-style, binary, or Arrow table results."
+  tone="cyan"
+  meta={['FlatGeobuf', 'Spatial index', 'HTTP range requests']}
+  links={[
+    {label: 'FlatGeobuf module', to: '/docs/modules/flatgeobuf'},
+    {label: 'FlatGeobuf format', to: '/docs/modules/flatgeobuf/formats/flatgeobuf'},
+    {label: 'Scan architecture', to: '/docs/developer-guide/common-scan-architecture'}
+  ]}
+/>
 
-<p class="badges">
+<DocOrientation
+  eyebrow="The indexed query path"
+  title="Read the header. Select the index ranges. Return matching features."
+  description="A FlatGeobuf source keeps the file remote and lets the spatial index narrow the bytes before geometry decoding."
+  tone="cyan"
+  items={[
+    {label: 'Open', value: 'Remote `.fgb` URL or supported loaded data'},
+    {label: 'Filter', value: 'Bounding box, layers, and output format'},
+    {label: 'Transport', value: 'Coalesced byte ranges for selected index nodes'},
+    {label: 'Output', value: 'GeoJSON table, binary features, or Arrow table'}
+  ]}
+/>
+
+<p className="badges">
   <img src="https://img.shields.io/badge/From-v5.0-blue.svg?style=flat-square" alt="From-v5.0" />
   <img src="https://img.shields.io/badge/range_requests-From_v5.0-blue.svg?style=flat-square" alt="range requests from v5.0" />
 </p>
 
 <FlatGeobufDocsTabs active="source" />
+
+<RangeRequestGraphic />
+
+<ReferenceBoundary
+  title="Source behavior and output contracts"
+  description="The reference below covers construction, query results, metadata, CRS handling, range requirements, and empty-result behavior."
+  tone="cyan"
+/>
 
 The `FlatGeobufSourceLoader` creates an indexed vector source for remote `.fgb` datasets and serves viewport-sized feature subsets through HTTP range requests.
 

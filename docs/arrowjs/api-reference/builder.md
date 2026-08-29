@@ -1,4 +1,44 @@
-# Builders
+---
+title: Arrow builders
+description: Construct typed Apache Arrow vectors incrementally from JavaScript values.
+hide_title: true
+page_style: designed
+---
+
+import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
+import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
+
+<DocPageHeader
+  eyebrow="Arrow JS API · construction"
+  title="Build typed vectors as values arrive."
+  description="Builder APIs turn incremental values into typed Arrow vectors. They are useful when a loader, transform, or application receives records over time and wants to finish a column without first assembling an untyped JavaScript array."
+  tone="mint"
+  meta={['Incremental construction', 'Typed vectors', 'Null handling']}
+  links={[
+    {label: 'Vector', to: '/docs/arrowjs/api-reference/vector'},
+    {label: 'Table', to: '/docs/arrowjs/api-reference/table'},
+    {label: 'Arrow JS guide', to: '/docs/arrowjs'}
+  ]}
+/>
+
+<DocOrientation
+  eyebrow="The builder path"
+  title="Choose a type. Append values. Finish a vector."
+  description="makeBuilder selects a concrete builder from a DataType and supports null sentinels and nested children. Keep the builder at the ingestion boundary, then pass the finished vector into a batch or table."
+  tone="mint"
+  items={[
+    {label: 'Declare', value: 'Choose the target DataType'},
+    {label: 'Append', value: 'Add values or configured null sentinels'},
+    {label: 'Finish', value: 'Materialize the Vector when the chunk is complete'},
+    {label: 'Compose', value: 'Use child builders for Struct, List, Map, and Union types'}
+  ]}
+/>
+
+<ReferenceBoundary
+  title="Builder reference"
+  description="The sections below document makeBuilder, options, append and finish behavior, nested builders, and concrete builder classes."
+  tone="mint"
+/>
 
 :::info
 This page is aligned to Apache Arrow JS v21.x (`apache-arrow`).

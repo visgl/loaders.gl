@@ -1,10 +1,45 @@
+---
+title: '@loaders.gl/traces'
+description: Load, normalize, and write performance traces as structured Arrow tables.
+hide_title: true
+page_style: designed
+---
+
 {/* SPDX-License-Identifier: MIT */}
 
 import {TracesDocsTabs} from '@site/src/components/docs/traces-docs-tabs';
+import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
+import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
+import {TraceTableGraphic} from '@site/src/components/docs/trace-table-graphic';
 
-# Traces
+<DocPageHeader
+  eyebrow="Performance data module"
+  title="Put trace formats on a common table path."
+  description="The traces module reads browser, system, and distributed-tracing formats and projects them into typed Arrow tables. That makes trace data available to the same filtering, analysis, and writer workflows as other columnar data."
+  tone="cyan"
+  meta={['Chrome Trace', 'Perfetto', 'OTLP / Jaeger / Zipkin']}
+  links={[
+    {label: 'Arrow format', to: '/docs/modules/arrow/formats/arrow'},
+    {label: 'Perfetto format', to: '/docs/modules/traces/formats/perfetto-trace'}
+  ]}
+/>
 
 <TracesDocsTabs active="overview" />
+
+<TraceTableGraphic />
+
+<DocOrientation
+  eyebrow="The trace path"
+  title="Different trace dialects, predictable tables."
+  description="Each source format has its own event model. The module preserves its important entities while normalizing them into named Arrow tables that analysis code can consume consistently."
+  tone="cyan"
+  items={[
+    {label: 'Browser traces', value: 'Chrome Trace Event JSON and Arrow'},
+    {label: 'System traces', value: 'Perfetto TrackEvent protobuf tables'},
+    {label: 'Distributed traces', value: 'OTLP, Jaeger, and Zipkin projections'},
+    {label: 'Write', value: 'Re-encode compatible Arrow tables for supported formats'}
+  ]}
+/>
 
 The `@loaders.gl/traces` module reads and writes performance trace formats without requiring a
 specific visualization framework. Chrome Trace Event JSON can be loaded as validated JSON or
@@ -12,6 +47,12 @@ Apache Arrow. Stable Perfetto TrackEvent protobuf data is projected into four ty
 OpenTelemetry OTLP traces in protobuf, protobuf-JSON, or JSON Lines are normalized into five
 relational Arrow tables. Jaeger and Zipkin JSON use the same five-table projection for direct
 interoperability.
+
+<ReferenceBoundary
+  title="Trace format and table details"
+  description="The sections below compare formats, loaders, writers, streaming results, and the normalized Arrow table contracts."
+  tone="cyan"
+/>
 
 ## Installation
 

@@ -1,4 +1,46 @@
-# Upgrade Guide
+---
+title: Upgrade guide
+description: Plan loaders.gl upgrades with focused notes on removals, deprecations, and behavior changes.
+hide_title: true
+page_style: designed
+---
+
+import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
+import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
+
+<DocPageHeader
+  eyebrow="Migration guide"
+  title="Upgrade with the data path in view."
+  description="Use this guide to identify breaking changes, deprecated APIs, dependency alignment, and new defaults before moving an application to a newer loaders.gl release."
+  tone="orange"
+  meta={['v4.5 and v5.0', 'Breaking changes', 'Migration examples']}
+  links={[
+    {label: 'What’s new', to: '/docs/whats-new'},
+    {label: 'Get started', to: '/docs/developer-guide/get-started'},
+    {label: 'Apache Arrow', to: '/docs/developer-guide/apache-arrow'}
+  ]}
+/>
+
+<DocOrientation
+  eyebrow="Before you upgrade"
+  title="Check the boundary that changed."
+  description="Most migrations are local to a package or return shape. Read the relevant section, update imports and options, then verify the resulting table, source, worker, or writer contract with the linked documentation."
+  tone="orange"
+  items={[
+    {label: 'Imports', value: 'Packages, subpaths, and renamed APIs'},
+    {label: 'Data shapes', value: 'Arrow tables, batches, and discriminated results'},
+    {label: 'Runtime behavior', value: 'Caching, traversal, workers, and source lifecycles'},
+    {label: 'Dependencies', value: 'Optional codecs, Arrow versions, and peer packages'}
+  ]}
+/>
+
+<ReferenceBoundary
+  title="Version-by-version migration details"
+  description="The sections below record v4.5 additions and v5 deprecations, removals, defaults, and compatibility notes."
+  tone="orange"
+/>
+
+## Upgrade Guide
 
 ## Upgrading to v4.5
 

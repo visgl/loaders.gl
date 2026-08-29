@@ -1,4 +1,44 @@
-# Table
+---
+title: Table
+description: Work with chunked, typed columns as one logical Apache Arrow table.
+hide_title: true
+page_style: designed
+---
+
+import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
+import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
+
+<DocPageHeader
+  eyebrow="Arrow JS API · container"
+  title="The table is the application-facing container."
+  description="Table combines one or more record-batch chunks into a logical set of named, typed columns. Use it for ordinary multi-column Arrow data, then choose rows, vectors, or batches for the next operation."
+  tone="cyan"
+  meta={['Chunked columns', 'Rows and vectors', 'Apache Arrow JS v21+']}
+  links={[
+    {label: 'Arrow JS guide', to: '/docs/arrowjs'},
+    {label: 'RecordBatch', to: '/docs/arrowjs/api-reference/record-batch'},
+    {label: 'Vector', to: '/docs/arrowjs/api-reference/vector'}
+  ]}
+/>
+
+<DocOrientation
+  eyebrow="The Table model"
+  title="One logical table, many physical batches."
+  description="A Table keeps the schema and row count stable while allowing data to arrive or remain stored in record-batch chunks. This is the useful boundary between IPC, loaders, scans, and application code."
+  tone="cyan"
+  items={[
+    {label: 'Schema', value: 'Names and types shared by the table columns'},
+    {label: 'Batches', value: 'Row-aligned RecordBatch chunks'},
+    {label: 'Access', value: 'Rows, child vectors, slices, and iteration'},
+    {label: 'Scale', value: 'Chunking without changing the logical table shape'}
+  ]}
+/>
+
+<ReferenceBoundary
+  title="Table reference"
+  description="The sections below document construction, members, row and column access, slicing, iteration, and serialization-related behavior."
+  tone="cyan"
+/>
 
 :::info
 This page is aligned to Apache Arrow JS v21.x (`apache-arrow`).

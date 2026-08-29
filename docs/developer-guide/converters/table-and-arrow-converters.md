@@ -1,6 +1,45 @@
-# Table And Arrow Converters
+---
+title: Table and Arrow converters
+description: Move between loaders.gl table wrappers, raw Arrow tables, and GeoArrow-compatible data.
+hide_title: true
+page_style: designed
+---
+
+import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
+import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
+
+<DocPageHeader
+  eyebrow="Data conversion"
+  title="Keep the table shape explicit as data moves."
+  description="The table and Arrow converters bridge loaders.gl wrappers and raw Apache Arrow tables. They let an application choose a convenient shape at each boundary without confusing a wrapper with the underlying table data."
+  tone="cyan"
+  meta={['TableConverter', 'ArrowConverter', 'GeoArrow']}
+  links={[
+    {label: 'Arrow format', to: '/docs/modules/arrow/formats/arrow'},
+    {label: 'Loader categories', to: '/docs/developer-guide/loader-categories'}
+  ]}
+/>
+
+<DocOrientation
+  eyebrow="Shape is part of the contract"
+  title="Convert at the boundary, not by accident."
+  description="A raw Arrow table, a loaders.gl Arrow wrapper, a columnar table, and an array of row objects can all describe the same records. The converters make the transition deliberate."
+  tone="cyan"
+  items={[
+    {label: 'Raw Arrow', value: "shape: 'arrow' for Apache Arrow JS tables"},
+    {label: 'Arrow wrapper', value: "shape: 'arrow-table' for loaders.gl APIs"},
+    {label: 'Other shapes', value: 'Rows, columnar tables, and GeoJSON-like tables'},
+    {label: 'Use it for', value: 'Normalization before rendering, scanning, or writing'}
+  ]}
+/>
 
 These converters move between loaders.gl table wrappers and Apache Arrow tables.
+
+<ReferenceBoundary
+  title="Converter details"
+  description="The sections below document the two converter families and their supported shape mappings."
+  tone="cyan"
+/>
 
 ## TableConverter
 

@@ -1,6 +1,39 @@
-# WMSSourceLoader
+---
+title: WMSSourceLoader
+description: Discover WMS capabilities and request georeferenced map images through a typed source.
+hide_title: true
+page_style: designed
+---
 
-<p class="badges">
+import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
+import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
+
+<DocPageHeader
+  eyebrow="WMS source"
+  title="Treat a map service as a queryable image source."
+  description="WMSSourceLoader discovers service capabilities, validates request parameters, and returns typed map images or feature information through the common source interface."
+  tone="mint"
+  meta={['Capabilities', 'GetMap', 'ImageService']}
+  links={[
+    {label: 'WMS format', to: '/docs/modules/wms/formats/wms'},
+    {label: 'WMS module', to: '/docs/modules/wms'}
+  ]}
+/>
+
+<DocOrientation
+  eyebrow="The source workflow"
+  title="Discover once. Request images with explicit bounds."
+  description="The source keeps service metadata and request construction together, while exposing the result in a form a map layer or application can consume."
+  tone="mint"
+  items={[
+    {label: 'Discover', value: 'Capabilities, layers, styles, CRS, and dimensions'},
+    {label: 'Configure', value: 'Version and default WMS parameters'},
+    {label: 'Request', value: 'Map images, feature info, or legends'},
+    {label: 'Return', value: 'Typed image-service results and errors'}
+  ]}
+/>
+
+<p className="badges">
   <img src="https://img.shields.io/badge/From-v3.3-blue.svg?style=flat-square" alt="From-3.3" />
 </p>
 
@@ -11,6 +44,12 @@ The `WMSSourceLoader` class helps applications interact with a WMS service (disc
 The `WMSSourceLoader` provides a type safe API that forms valid WMS URLs and issues requests, handles WMS version differences and edge cases under the hood and parses results and errors into strongly typed JavaScript objects.
 
 The `WMSSourceLoader` implements the `ImageService` interface, allowing WMS services to be used as one interchangeable source of asynchronously generated map image data.
+
+<ReferenceBoundary
+  title="WMS source methods"
+  description="The sections below cover source construction, capabilities, map requests, feature information, version handling, and authentication."
+  tone="mint"
+/>
 
 ## Usage
 

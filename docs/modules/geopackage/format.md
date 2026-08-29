@@ -1,8 +1,47 @@
-import {GeoPackageDocsTabs} from '@site/src/components/docs/geopackage-docs-tabs';
+---
+title: GeoPackage format
+description: Read OGC GeoPackage vector tables from a portable SQLite container and expose them as geometry or Arrow data.
+hide_title: true
+page_style: designed
+---
 
-# GeoPackage Format
+import {GeoPackageDocsTabs} from '@site/src/components/docs/geopackage-docs-tabs';
+import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
+import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
+
+<DocPageHeader
+  eyebrow="Geospatial container"
+  title="A portable SQLite file for geospatial tables."
+  description="GeoPackage combines OGC-defined metadata tables with SQLite storage for vector features, tiles, and related geospatial content. loaders.gl exposes the tables through common geometry and Arrow paths."
+  tone="mint"
+  meta={['OGC GeoPackage', 'SQLite container', 'Geometry and Arrow tables']}
+  links={[
+    {label: 'GeoPackage module', to: '/docs/modules/geopackage'},
+    {label: 'GeoPackageLoader', to: '/docs/modules/geopackage/api-reference/geopackage-loader'},
+    {label: 'Source API', to: '/docs/modules/geopackage/api-reference/geopackage-source'}
+  ]}
+/>
 
 <GeoPackageDocsTabs active="format" />
+
+<DocOrientation
+  eyebrow="Portable geospatial data"
+  title="Open the table you need, keep its metadata."
+  description="A GeoPackage can contain several feature tables and the metadata that describes their geometry columns and coordinate systems. The loader turns a selected table into a shared application shape."
+  tone="mint"
+  items={[
+    {label: 'Container', value: 'A single SQLite file with OGC metadata tables.'},
+    {label: 'Discovery', value: 'Inspect tables, geometry columns, bounds, and CRS metadata.'},
+    {label: 'Output', value: 'GeoJSON tables, WKB-backed geometry, or Arrow tables.'},
+    {label: 'Source path', value: 'Read selected table data without treating the whole file as one row set.'}
+  ]}
+/>
+
+<ReferenceBoundary
+  title="GeoPackage format and API details"
+  description="The reference below describes the SQLite container, OGC metadata, supported geometry encodings, and the loader/source boundaries."
+  tone="mint"
+/>
 
 | Characteristic       | Value                                                                                      |
 | -------------------- | ------------------------------------------------------------------------------------------ |

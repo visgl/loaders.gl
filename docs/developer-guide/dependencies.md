@@ -1,4 +1,37 @@
-# Managing Dependencies
+---
+title: Managing dependencies
+description: Supply optional JavaScript and WebAssembly runtimes without coupling every loader to one bundle.
+hide_title: true
+page_style: designed
+---
+
+import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
+import {DocOrientation} from '@site/src/components/docs/designed-doc';
+
+<DocPageHeader
+  eyebrow="Runtime dependencies"
+  title="Load the heavy part only when the format needs it."
+  description="Some decoders and writers depend on JavaScript or WebAssembly modules. loaders.gl keeps those runtimes injectable so applications can choose bundle size, startup time, and implementation explicitly."
+  tone="violet"
+  meta={['JavaScript modules', 'WebAssembly', 'Application-controlled']}
+  links={[
+    {label: 'Unbundled loaders', to: '/docs/developer-guide/using-unbundled-loaders'},
+    {label: 'Worker loaders', to: '/docs/developer-guide/using-worker-loaders'}
+  ]}
+/>
+
+<DocOrientation
+  eyebrow="The dependency decision"
+  title="Bundle a runtime, point to an asset, or let the loader choose."
+  description="The same loader contract can work with an injected module object, an explicit URL, or a built-in fallback. Keep provider and bundler decisions at the application boundary."
+  tone="violet"
+  items={[
+    {label: 'Inject', value: 'Pass a preloaded module object'},
+    {label: 'Override', value: 'Provide a URL or asset path'},
+    {label: 'Fallback', value: 'Use the loader’s supported default'},
+    {label: 'Scope', value: 'Configure one load or shared options'}
+  ]}
+/>
 
 Some loaders and writers need external JavaScript or WebAssembly runtimes at execution time. Examples include Draco decoders and Basis encoder/transcoder modules.
 

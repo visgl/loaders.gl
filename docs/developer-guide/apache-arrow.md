@@ -6,12 +6,18 @@ page_style: designed
 ---
 
 import {CapabilityHero} from '@site/src/components/docs/capability-hero';
+import {ArrowDataPlaneGraphic} from '@site/src/components/docs/arrow-data-plane-graphic';
+import {ArrowJsStructureGraphic} from '@site/src/components/docs/arrow-js-structure-graphic';
 import {CategoryDataConcept} from '@site/src/components/home/concepts';
 import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
 
 <CapabilityHero capability="arrow" />
 
+<ArrowDataPlaneGraphic />
+
 <CategoryDataConcept initialCategoryId="table" initialRepresentationId="arrow" />
+
+<ArrowJsStructureGraphic />
 
 <DocOrientation
   eyebrow="A common data plane"
@@ -32,7 +38,7 @@ Apache Arrow gives different tabular formats a shared, typed columnar shape. Use
 efficient transfer or the same processing code across formats; loaders that return other shapes do
 not require it.
 
-loaders.gl is adding support for Apache Arrow as its standard in-memory representation of tables.
+loaders.gl uses Apache Arrow as a standard in-memory representation of tables.
 
 loaders.gl provides an `ArrowLoader` and an `ArrowWriter` that load and write Arrow files.
 

@@ -1,6 +1,46 @@
-# HexWKBLoader 🚧
+---
+title: HexWKBLoader
+description: Parse hexadecimal WKB strings into structured geometry data.
+hide_title: true
+page_style: designed
+---
 
-<p class="badges">
+import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
+import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
+
+<DocPageHeader
+  eyebrow="WKT module · geometry loader"
+  title="HexWKBLoader"
+  description="Decode WKB represented as hexadecimal text when a database, API, or JSON envelope cannot carry raw binary bytes directly."
+  tone="violet"
+  meta={['From v2.2', 'Hexadecimal WKB', 'Synchronous parser']}
+  links={[
+    {label: 'WKB format', to: '/docs/modules/wkt/formats/wkb'},
+    {label: 'WKBLoader', to: '/docs/modules/wkt/api-reference/wkb-loader'},
+    {label: 'WKT module', to: '/docs/modules/wkt'}
+  ]}
+/>
+
+<DocOrientation
+  eyebrow="What it reads"
+  title="Cross the text-to-binary boundary once."
+  description="HexWKBLoader accepts hexadecimal WKB and returns the same structured geometry shape as the binary WKB loader, so downstream GIS code does not need to care how the bytes arrived."
+  tone="violet"
+  items={[
+    {label: 'Input', value: 'Hexadecimal text containing WKB bytes'},
+    {label: 'Output', value: 'Structured geometry positions'},
+    {label: 'Dimensions', value: 'Two to four coordinate dimensions'},
+    {label: 'APIs', value: 'load, parse, and parseSync'}
+  ]}
+/>
+
+<ReferenceBoundary
+  title="HexWKBLoader reference"
+  description="The sections below document installation, usage, WKB geometry details, and the relationship between hexadecimal and binary inputs."
+  tone="violet"
+/>
+
+<p className="badges">
   <img src="https://img.shields.io/badge/From-v2.2-blue.svg?style=flat-square" alt="From-v2.2" />
 </p>
 

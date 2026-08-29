@@ -1,8 +1,44 @@
-# Terrain Loaders
+---
+title: TerrainLoader
+description: Reconstruct mesh surfaces from encoded height-map images.
+hide_title: true
+page_style: designed
+---
 
-<p class="badges">
-  <img src="https://img.shields.io/badge/From-v1.0-blue.svg?style=flat-square" alt="From-v1.0" />
-</p>
+import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
+import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
+
+<DocPageHeader
+  eyebrow="Terrain module · loader API"
+  title="TerrainLoader"
+  description="Decode RGB or grayscale elevation images into a renderable mesh or Mesh Arrow table, with control over bounds, error, skirts, and elevation decoding."
+  tone="orange"
+  meta={['From v1.0', 'Height-map images', 'Mesh / Arrow output']}
+  links={[
+    {label: 'Terrain module', to: '/docs/modules/terrain'},
+    {label: 'Mesh category', to: '/docs/specifications/category-mesh'},
+    {label: 'QuantizedMeshLoader', to: '/docs/modules/terrain/api-reference/quantized-mesh-loader'}
+  ]}
+/>
+
+<DocOrientation
+  eyebrow="What it reconstructs"
+  title="Turn pixels that encode elevation into a surface."
+  description="TerrainLoader interprets image channels as elevation samples, places them within optional geographic bounds, and produces mesh data that can be rendered or passed through a columnar pipeline."
+  tone="orange"
+  items={[
+    {label: 'Input', value: 'RGB, grayscale, or raw terrain images'},
+    {label: 'Decode', value: 'Channel scales and elevation offset'},
+    {label: 'Output', value: 'Mesh or Mesh Arrow table'},
+    {label: 'Detail', value: 'Error tolerance, bounds, and skirts'}
+  ]}
+/>
+
+<ReferenceBoundary
+  title="TerrainLoader reference"
+  description="The sections below document supported inputs, output shapes, usage, elevation decoding, and loader options."
+  tone="orange"
+/>
 
 `TerrainLoader` reconstructs mesh surfaces from height map images, e.g. [Mapzen Terrain Tiles](https://github.com/tilezen/joerd/blob/master/docs/formats.md), which encodes elevation into R,G,B values. It returns the legacy [Mesh](/docs/specifications/category-mesh) object by default and can return a [Mesh Arrow table](/docs/specifications/category-mesh#mesh-arrow-tables) with `terrain.shape: 'arrow-table'`.
 

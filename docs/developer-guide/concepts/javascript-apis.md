@@ -1,4 +1,44 @@
-# Preferred JavaScript APIs
+---
+title: Preferred JavaScript APIs
+description: Use portable browser and Node.js APIs for loading, writing, binary data, and images.
+hide_title: true
+page_style: designed
+---
+
+import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
+import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
+
+<DocPageHeader
+  eyebrow="Developer guide · platform APIs"
+  title="Use the platform boundary loaders.gl already understands."
+  description="loaders.gl builds on a small set of browser-compatible APIs—fetch, ArrayBuffer, streams, Blob, and ImageBitmap—so the same loader code can run across modern browsers and Node.js."
+  tone="blue"
+  meta={['Browser and Node.js', 'fetch and ranges', 'ArrayBuffer and streams']}
+  links={[
+    {label: 'Get started', to: '/docs/developer-guide/get-started'},
+    {label: 'Using sources', to: '/docs/developer-guide/using-sources'},
+    {label: 'Polyfills', to: '/docs/modules/polyfills/api-reference'}
+  ]}
+/>
+
+<DocOrientation
+  eyebrow="The platform choices"
+  title="Keep the boundary portable, then specialize inside it."
+  description="Applications can still control requests and local files directly. loaders.gl provides adapters where browser and Node.js APIs differ, while keeping the loader-facing contracts stable."
+  tone="blue"
+  items={[
+    {label: 'Network', value: 'fetch, Response, and HTTP range requests'},
+    {label: 'Files', value: 'ReadableFile and WritableFile implementations'},
+    {label: 'Binary', value: 'ArrayBuffer, typed arrays, Blob, and DataView'},
+    {label: 'Images', value: 'ImageBitmap-first decoding with Node.js support'}
+  ]}
+/>
+
+<ReferenceBoundary
+  title="Platform API details"
+  description="The sections below cover fetch, local files, validated ranges, saving data, binary memory, image APIs, and runtime-specific polyfills."
+  tone="blue"
+/>
 
 loaders.gl supports input and output of data from JavaScript/TypeScript programs. To do this it is necessary to use platform APIs for
 

@@ -1,5 +1,4 @@
 import React, {useEffect, useState} from 'react';
-import styled from 'styled-components';
 
 import type {ScanExecutionTelemetry, ScanQueryMetadata} from '@loaders.gl/scan';
 
@@ -8,6 +7,7 @@ import {
   type FederatedScanPanelSource,
   type FederatedScanPanelState
 } from './federated-scan-panel';
+import styles from './federated-scan-live-example.module.css';
 
 const DEFAULT_STATE: FederatedScanPanelState = {
   sourceIds: ['recent', 'archive', 'snapshot'],
@@ -159,16 +159,16 @@ export function FederatedScanLiveExample(): JSX.Element {
   }, [submittedValue]);
 
   return (
-    <ExampleFrame>
-      <ExampleHeader>
+    <section className={styles.exampleFrame}>
+      <div className={styles.exampleHeader}>
         <div>
           <strong>Heterogeneous weather history</strong>
           <div>CSV + NDJSON + Arrow IPC → ordered Arrow batches</div>
         </div>
-        <Status $failed={Boolean(results.error)}>
+        <span className={`${styles.status} ${results.error ? styles.failed : styles.success}`}>
           {results.error ? 'Failed' : loading ? 'Planning…' : `${results.rows?.length || 0} rows`}
-        </Status>
-      </ExampleHeader>
+        </span>
+      </div>
       <FederatedScanPanel
         sources={sources}
         metadata={metadata}
@@ -184,9 +184,9 @@ export function FederatedScanLiveExample(): JSX.Element {
           setSubmittedValue(nextValue);
         }}
       />
-      {results.error ? <ErrorMessage>{results.error}</ErrorMessage> : null}
+      {results.error ? <div className={styles.errorMessage}>{results.error}</div> : null}
       {results.rows?.length ? <RowsPreview rows={results.rows} /> : null}
-    </ExampleFrame>
+    </section>
   );
 }
 
@@ -194,7 +194,7 @@ export function FederatedScanLiveExample(): JSX.Element {
 function RowsPreview({rows}: {rows: readonly Record<string, unknown>[]}): JSX.Element {
   const columns = Object.keys(rows[0] || {});
   return (
-    <Preview>
+    <div className={styles.preview}>
       <strong>Bounded Arrow result</strong>
       <table>
         <thead>
@@ -208,7 +208,7 @@ function RowsPreview({rows}: {rows: readonly Record<string, unknown>[]}): JSX.El
           ))}
         </tbody>
       </table>
-    </Preview>
+    </div>
   );
 }
 
@@ -236,52 +236,3 @@ function getSourceTitle(sourceId: string): string {
     }[sourceId] || sourceId
   );
 }
-
-const ExampleFrame = styled.section`
-  margin: 18px 0;
-`;
-const ExampleHeader = styled.div`
-  display: flex;
-  justify-content: space-between;
-  gap: 12px;
-  color: #475467;
-
-  strong {
-    color: #101828;
-  }
-`;
-const Status = styled.span<{$failed: boolean}>`
-  align-self: flex-start;
-  border-radius: 999px;
-  padding: 3px 9px;
-  color: ${({$failed}) => ($failed ? '#b42318' : '#067647')};
-  background: ${({$failed}) => ($failed ? '#fef3f2' : '#ecfdf3')};
-  font-size: 0.76rem;
-  font-weight: 600;
-`;
-const ErrorMessage = styled.div`
-  border-radius: 6px;
-  padding: 10px;
-  color: #b42318;
-  background: #fef3f2;
-`;
-const Preview = styled.div`
-  overflow-x: auto;
-  border: 1px solid #d0d5dd;
-  border-radius: 8px;
-  padding: 12px;
-
-  table {
-    width: 100%;
-    margin-top: 8px;
-    border-collapse: collapse;
-  }
-
-  th,
-  td {
-    border-bottom: 1px solid #eaecf0;
-    padding: 6px 8px;
-    text-align: left;
-    font-size: 0.78rem;
-  }
-`;

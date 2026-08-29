@@ -1,4 +1,44 @@
-# I3SPointCloudSource
+---
+title: I3SPointCloudSource
+description: Traverse I3S point-cloud layers through the shared tiles runtime.
+hide_title: true
+page_style: designed
+---
+
+import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
+import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
+
+<DocPageHeader
+  eyebrow="I3S point-cloud source"
+  title="Use I3S point clouds with one traversal API."
+  description="`I3SPointCloudSource` adapts I3S 2.x point-cloud layers to `PointCloudTileset`. It handles layer metadata, node resources, precision, elevation placement, and optional CRS conversion while the tiles runtime manages visibility and budgets."
+  tone="orange"
+  meta={['I3S 2.x', 'PointCloudTileset', 'CRS and elevation aware']}
+  links={[
+    {label: 'I3S module', to: '/docs/modules/i3s'},
+    {label: 'Point-cloud tiles', to: '/docs/modules/tiles/api-reference/point-cloud-tileset'},
+    {label: 'CRS in I3S', to: '/docs/modules/i3s/concepts/coordinate-reference-systems'}
+  ]}
+/>
+
+<DocOrientation
+  eyebrow="The point-cloud source boundary"
+  title="Discover once. Request visible nodes. Render stable points."
+  description="The source translates producer-specific I3S resources into the common point-cloud tiles contract without making the application understand LEPCC pages, offsets, or elevation metadata."
+  tone="orange"
+  items={[
+    {label: 'Input', value: 'SceneServer layer, SLPK URL, or SLPK Blob'},
+    {label: 'Decode', value: 'LEPCC XYZ with RGB, intensity, flags, and attributes'},
+    {label: 'Spatial', value: 'Target CRS, origin-relative positions, and bounds'},
+    {label: 'Runtime', value: 'PointCloudTileset traversal, budgets, and visibility'}
+  ]}
+/>
+
+<ReferenceBoundary
+  title="Source behavior and spatial details"
+  description="The sections below document construction, attributes, precision, CRS conversion, elevation placement, and source-specific limits."
+  tone="orange"
+/>
 
 `I3SPointCloudSource` adapts an I3S 2.x Point Cloud layer to the shared
 [`PointCloudTileset`](/docs/modules/tiles/api-reference/point-cloud-tileset) traversal API.

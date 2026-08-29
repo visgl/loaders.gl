@@ -1,12 +1,47 @@
-import {DracoDocsTabs} from '@site/src/components/docs/draco-docs-tabs';
+---
+title: DracoLoader
+description: Decode compressed meshes and point clouds into mesh or Arrow data.
+hide_title: true
+page_style: designed
+---
 
-# Draco Loaders
+import {DracoDocsTabs} from '@site/src/components/docs/draco-docs-tabs';
+import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
+import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
+
+<DocPageHeader
+  eyebrow="Draco module · loader API"
+  title="DracoLoader"
+  description="Decode compressed meshes and point clouds into a render-ready Mesh object or a Mesh Arrow table, with worker and backend controls for browser applications."
+  tone="blue"
+  meta={['From v1.0', 'Mesh and point cloud', 'WASM / worker capable']}
+  links={[
+    {label: 'Draco format', to: '/docs/modules/draco/formats/draco'},
+    {label: 'DracoWriter', to: '/docs/modules/draco/api-reference/draco-writer'},
+    {label: 'Draco module', to: '/docs/modules/draco'}
+  ]}
+/>
 
 <DracoDocsTabs active="dracoloader" />
 
-<p class="badges">
-  <img src="https://img.shields.io/badge/From-v1.0-blue.svg?style=flat-square" alt="From-v1.0" />
-</p>
+<DocOrientation
+  eyebrow="What it returns"
+  title="Decode once. Keep the geometry useful downstream."
+  description="DracoLoader expands compressed attribute maps into the mesh family used by rendering and processing code, while preserving metadata and optional typed columnar output."
+  tone="blue"
+  items={[
+    {label: 'Input', value: 'Draco-compressed mesh or point cloud'},
+    {label: 'Default', value: 'Legacy Mesh object'},
+    {label: 'Arrow', value: 'Mesh Arrow table with attribute columns'},
+    {label: 'Execution', value: 'WASM, JavaScript, or injected Draco backend'}
+  ]}
+/>
+
+<ReferenceBoundary
+  title="DracoLoader reference"
+  description="The sections below document usage, output shapes, supported attributes, metadata, backends, and module overrides."
+  tone="blue"
+/>
 
 ![logo](../images/draco-small.png)
 

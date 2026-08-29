@@ -1,4 +1,44 @@
-# Format Categories
+---
+title: Format categories
+description: Understand the table, geometry, and feature shapes that connect loaders, converters, and renderers.
+hide_title: true
+page_style: designed
+---
+
+import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
+import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
+
+<DocPageHeader
+  eyebrow="Converter guide · data shapes"
+  title="Name the shape before you choose the converter."
+  description="loaders.gl uses explicit shape names to make data boundaries visible. This guide maps table, geometry, and feature-collection representations so an application can choose an output based on the next operation."
+  tone="yellow"
+  meta={['Table shapes', 'Geometry encodings', 'Render families']}
+  links={[
+    {label: 'Loader categories', to: '/docs/developer-guide/loader-categories'},
+    {label: 'Feature collection converters', to: '/docs/developer-guide/converters/feature-collection-converters'},
+    {label: 'Table category', to: '/docs/specifications/category-table'}
+  ]}
+/>
+
+<DocOrientation
+  eyebrow="A practical map"
+  title="Same data, different working shapes."
+  description="Arrow and GeoArrow keep data columnar, GeoJSON keeps feature relationships explicit, and binary feature collections keep geometry ready for rendering. Converters connect those shapes without hiding the trade-off."
+  tone="yellow"
+  items={[
+    {label: 'Tables', value: 'Typed columns, row objects, or column-oriented wrappers'},
+    {label: 'Geometry', value: 'GeoJSON objects, WKB, WKT, TWKB, or GeoArrow encodings'},
+    {label: 'Render output', value: 'Points, lines, and polygons with typed offsets and positions'},
+    {label: 'Selection rule', value: 'Choose the shape that matches the next consumer'}
+  ]}
+/>
+
+<ReferenceBoundary
+  title="Shape names and mappings"
+  description="The tables below define the public shape names and explain how multi-geometries and GeometryCollections map into render families."
+  tone="yellow"
+ />
 
 The converters connect a few distinct format families. Keeping those families straight makes the API much easier to reason about.
 

@@ -1,8 +1,47 @@
-import {KmlDocsTabs} from '@site/src/components/docs/kml-docs-tabs';
+---
+title: KML, GPX, and TCX formats
+description: Load geographic annotations, GPS tracks, and training activities into shared geometry data shapes.
+hide_title: true
+page_style: designed
+---
 
-# KML, GPX, TCX Format
+import {KmlDocsTabs} from '@site/src/components/docs/kml-docs-tabs';
+import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
+import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
+
+<DocPageHeader
+  eyebrow="XML geospatial formats"
+  title="Bring annotated tracks into one geometry path."
+  description="KML, GPX, and TCX use related XML foundations but describe different kinds of geographic data. loaders.gl preserves their useful metadata while returning common geometry and table shapes for applications."
+  tone="orange"
+  meta={['KML annotations', 'GPX tracks and routes', 'TCX activities']}
+  links={[
+    {label: 'KML module', to: '/docs/modules/kml'},
+    {label: 'KMLLoader', to: '/docs/modules/kml/api-reference/kml-loader'},
+    {label: 'GIS category', to: '/docs/specifications/category-gis'}
+  ]}
+/>
 
 <KmlDocsTabs active="format" />
+
+<DocOrientation
+  eyebrow="Geographic document path"
+  title="Keep the track data useful after XML."
+  description="Each format has its own document vocabulary, but the application usually needs coordinates, features, properties, and timing. The loaders normalize those common pieces without discarding source metadata."
+  tone="orange"
+  items={[
+    {label: 'KML', value: 'Placemarks, paths, regions, styles, and Earth-browser metadata.'},
+    {label: 'GPX', value: 'Tracks, routes, waypoints, and elevation/time fields.'},
+    {label: 'TCX', value: 'Training activity laps, tracks, and workout metadata.'},
+    {label: 'Output', value: 'GeoJSON, geometry tables, object rows, or Arrow tables.'}
+  ]}
+/>
+
+<ReferenceBoundary
+  title="KML, GPX, and TCX details"
+  description="The reference below compares the three XML formats, loader output shapes, metadata behavior, and supported entry points."
+  tone="orange"
+/>
 
 | Characteristic       | Value                                                                                      |
 | -------------------- | ------------------------------------------------------------------------------------------ |
