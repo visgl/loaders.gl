@@ -1,8 +1,47 @@
-# Arrow Table Transport
+---
+title: Arrow table transport
+description: Move Arrow tables across worker boundaries with explicit buffer and schema handling.
+hide_title: true
+page_style: designed
+---
+
+import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
+import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
+
+<DocPageHeader
+  eyebrow="Arrow worker transport"
+  title="Move the table without moving unrelated memory."
+  description="The transport helpers prepare Arrow tables for structured clone or IPC transfer. They make sliced buffers safe to transfer and keep the schema explicit when data crosses a worker boundary."
+  tone="blue"
+  meta={['Worker transport', 'Transfer-safe buffers', 'Schema preservation']}
+  links={[
+    {label: 'Worker loaders', to: '/docs/developer-guide/using-worker-loaders'},
+    {label: 'Arrow format', to: '/docs/modules/arrow/formats/arrow'}
+  ]}
+/>
+
+<DocOrientation
+  eyebrow="The transport choice"
+  title="Use the smallest boundary that stays correct."
+  description="Dehydrate and hydrate when both sides share compatible Arrow JS layouts. Use IPC serialization when the receiver may use a different package version or runtime."
+  tone="blue"
+  items={[
+    {label: 'Dehydrate', value: 'Prepare a table and isolate sliced typed-array buffers'},
+    {label: 'Hydrate', value: 'Rebuild a real Arrow JS table on the receiving side'},
+    {label: 'IPC', value: 'Use serialized Arrow bytes across compatibility boundaries'},
+    {label: 'Preserves', value: 'Schema, types, columns, and table-level structure'}
+  ]}
+/>
 
 `@loaders.gl/arrow/transport` provides focused Arrow table transport helpers for worker
 boundaries. The same helpers are also available from the `@loaders.gl/arrow` root export for
 compatibility, but worker-aware modules should prefer the transport subpath.
+
+<ReferenceBoundary
+  title="Transport and buffer details"
+  description="The sections below compare separated Arrow payloads with IPC, and document schema, buffer, and compatibility behavior."
+  tone="blue"
+/>
 
 Use `dehydrateArrowTable` / `hydrateArrowTable` when both sides are known to use compatible Apache
 Arrow JS object layouts and the receiver should continue working with a separated Arrow table. Use

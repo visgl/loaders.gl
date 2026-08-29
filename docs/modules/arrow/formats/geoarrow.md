@@ -1,11 +1,43 @@
-import {ArrowDocsTabs} from '@site/src/components/docs/arrow-docs-tabs';
+---
+title: GeoArrow format
+description: Store geospatial columns in Apache Arrow while preserving geometry layout and CRS metadata.
+hide_title: true
+page_style: designed
+---
 
-# GeoArrow
+import {ArrowDocsTabs} from '@site/src/components/docs/arrow-docs-tabs';
+import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
+import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
+
+<DocPageHeader
+  eyebrow="Geospatial columnar format"
+  title="Put geometry columns on the Arrow path."
+  description="GeoArrow defines the Arrow extension metadata and layouts that let geospatial features travel with typed attribute columns. It is a convention on top of Arrow, so a valid GeoArrow table remains an Arrow table."
+  tone="cyan"
+  meta={['Apache Arrow extensions', 'Geometry columns', 'CRS metadata']}
+  links={[
+    {label: 'Arrow format', to: '/docs/modules/arrow/formats/arrow'},
+    {label: 'CRS guide', to: '/docs/developer-guide/coordinate-reference-systems'}
+  ]}
+/>
 
 See [Coordinate Reference Systems](/docs/developer-guide/coordinate-reference-systems) for
 GeoArrow CRS representations, column-specific metadata, and current preservation gaps.
 
 <ArrowDocsTabs active="geoarrow" />
+
+<DocOrientation
+  eyebrow="The GeoArrow path"
+  title="Keep features and attributes in one typed table."
+  description="Geometry columns carry their encoding and extension metadata alongside ordinary Arrow fields. That lets table readers, scans, workers, and renderers share a columnar contract without inventing a second file format."
+  tone="cyan"
+  items={[
+    {label: 'Geometry', value: 'Point, line, polygon, and collection layouts'},
+    {label: 'Attributes', value: 'Typed Arrow columns for non-spatial feature data'},
+    {label: 'Metadata', value: 'Extension type information and CRS definitions'},
+    {label: 'Interop', value: 'Arrow IPC and the wider Arrow ecosystem'}
+  ]}
+/>
 
 <p class="badges">
   <a href="/docs/developer-guide/common-scan-architecture">
@@ -21,6 +53,12 @@ GeoArrow CRS representations, column-specific metadata, and current preservation
 ## Overview
 
 GeoArrow is a specification for storing geospatial data in Apache Arrow memory layout. It ensures geospatial tools can interoperate and leverage the growing Apache Arrow ecosystem.
+
+<ReferenceBoundary
+  title="GeoArrow layout and metadata"
+  description="The sections below describe geometry encodings, extension metadata, scan behavior, and loaders.gl support."
+  tone="cyan"
+/>
 
 GeoArrow enables each row in an Arrow table to represent a feature as defined by the OGC Simple Feature Access standard (i.e. Point, LineString, Polygon, MultiPoint, MultiLineString, MultiPolygon, and GeometryCollection).
 
