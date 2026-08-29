@@ -13,10 +13,10 @@ vi.mock('@loaders.gl/parquet/parquet-dataset-source', () => ({
     async getScanPlan() {
       return {fragments: this.fragments};
     }
-    read() {
-      return (async function* () {
-        yield {data: 'batch'};
-      })();
+    async *read() {
+      const fragments =
+        typeof this.fragments[0] === 'function' ? await this.fragments[0]() : this.fragments;
+      yield {data: 'batch', fragments};
     }
   }
 }));
@@ -106,4 +106,9 @@ test('resolves relative files with the configured Hudi base URL', async () => {
   await expect(source.getScanFragments()).resolves.toMatchObject([
     {uri: 'https://example.com/data/part.parquet'}
   ]);
+});
+
+test('preserves absolute and path-only file references', async () => {
+  const source = new HudiTableSource(new Blob([JSON.stringify({files: [{path: 'part.parquet'}]})]));
+  await expect(source.getScanFragments()).resolves.toMatchObject([{uri: 'part.parquet'}]);
 });
