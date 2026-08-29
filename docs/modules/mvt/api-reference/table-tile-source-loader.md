@@ -1,12 +1,47 @@
-import {TileDocsTabs} from '@site/src/components/docs/tile-docs-tabs';
+---
+title: TableTileSourceLoader
+description: Build vector tiles on demand from a large in-browser table.
+hide_title: true
+page_style: designed
+---
 
-# TableTileSourceLoader
+import {TileDocsTabs} from '@site/src/components/docs/tile-docs-tabs';
+import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
+import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
+
+<DocPageHeader
+  eyebrow="MVT module · source API"
+  title="TableTileSourceLoader"
+  description="Create simplified vector tiles from a table with geometry, so a browser can render a larger in-memory dataset without drawing every feature on every frame."
+  tone="blue"
+  meta={['From v5.0', 'Table to tiles', 'On-demand simplification']}
+  links={[
+    {label: 'MVT format', to: '/docs/modules/mvt/formats/mvt'},
+    {label: 'MVTLoader', to: '/docs/modules/mvt/api-reference/mvt-loader'},
+    {label: 'Tile sources', to: '/docs/modules/mvt'}
+  ]}
+/>
 
 <TileDocsTabs active="table-tile-source-loader" />
 
-<p class="badges">
-  <img src="https://img.shields.io/badge/From-v5.0-blue.svg?style=flat-square" alt="From-v5.0" />
-</p>
+<DocOrientation
+  eyebrow="What it does"
+  title="Use tiles as a rendering boundary, even without a tile server."
+  description="The source indexes an in-memory table, simplifies geometry for each zoom level, and serves tile-shaped results compatible with MVT workflows."
+  tone="blue"
+  items={[
+    {label: 'Input', value: 'A table containing geometry columns'},
+    {label: 'Index', value: 'An in-browser zoom and tile index'},
+    {label: 'Geometry', value: 'Clipped and simplified per zoom'},
+    {label: 'Output', value: 'GeoJSON-compatible vector tile data'}
+  ]}
+/>
+
+<ReferenceBoundary
+  title="TableTileSourceLoader reference"
+  description="The sections below cover use cases, installation, source creation, and output format."
+  tone="blue"
+/>
 
 The `TableTileSourceLoader` slices large GeoJSON datasets into small vector tiles on the fly.
 Can enable rendering and interacting with large geospatial datasets
