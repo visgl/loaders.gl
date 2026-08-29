@@ -118,7 +118,7 @@ describe('FlatGeobuf reader metadata branches', () => {
       featureCount: '12',
       bounds: '1,2,3,4'
     });
-    expect(schema.fields[1].metadata?.['ARROW:extension:name']).toBe('geoarrow.linestring');
+    expect(schema.fields[1].metadata?.['ARROW:extension:name']).toBe('geoarrow.wkb');
   });
 
   test('creates projections only from declared source CRS definitions', () => {

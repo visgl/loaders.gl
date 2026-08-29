@@ -40,6 +40,50 @@ describe('geospatial metadata', () => {
     });
   });
 
+  it('preserves unknown column metadata while synthesizing GeoParquet metadata', () => {
+    const schema: Schema = {
+      fields: [
+        {
+          name: 'geometry',
+          type: 'binary',
+          metadata: {
+            'ARROW:extension:name': 'geoarrow.wkb',
+            'ARROW:extension:metadata': JSON.stringify({
+              crs: 'OGC:CRS84',
+              source: {driver: 'custom'},
+              future_flag: true
+            })
+          }
+        }
+      ],
+      metadata: {}
+    };
+
+    ensureGeoParquetMetadata(schema);
+
+    expect(JSON.parse(schema.metadata.geo).columns.geometry).toMatchObject({
+      source: {driver: 'custom'},
+      future_flag: true
+    });
+  });
+
+  it('accepts binary view GeoParquet fields when applying metadata', () => {
+    const schema: Schema = {
+      fields: [{name: 'geometry', type: 'binary-view'}],
+      metadata: {
+        geo: JSON.stringify({
+          version: '1.1.0',
+          primary_column: 'geometry',
+          columns: {geometry: {encoding: 'WKB', geometry_types: ['Point']}}
+        })
+      }
+    };
+
+    applyGeoParquetToFieldMetadata(schema);
+
+    expect(schema.fields[0].metadata?.['ARROW:extension:name']).toBe('geoarrow.wkb');
+  });
+
   it('maps GeoParquet CRS defaults and all non-planar edge algorithms to GeoArrow', () => {
     const schema: Schema = {
       fields: [{name: 'geometry', type: 'binary'}],
@@ -62,6 +106,38 @@ describe('geospatial metadata', () => {
         crs: 'OGC:CRS84',
         crs_type: 'authority_code',
         edges: 'karney'
+      })
+    });
+  });
+
+  it('maps GeoParquet 2.0 GEOGRAPHY logical types to WKB with explicit edge semantics', () => {
+    const schema: Schema = {
+      fields: [{name: 'geometry', type: 'binary'}],
+      metadata: {
+        geo: JSON.stringify({
+          version: '2.0.0',
+          primary_column: 'geometry',
+          columns: {
+            geometry: {
+              encoding: 'GEOGRAPHY',
+              geometry_types: ['Point'],
+              crs: null,
+              epoch: 2024.25,
+              vendor_metadata: {source: 'sensor'}
+            }
+          }
+        })
+      }
+    };
+
+    applyGeoParquetToFieldMetadata(schema);
+
+    expect(schema.fields[0].metadata).toEqual({
+      'ARROW:extension:name': 'geoarrow.wkb',
+      'ARROW:extension:metadata': JSON.stringify({
+        edges: 'spherical',
+        epoch: 2024.25,
+        vendor_metadata: {source: 'sensor'}
       })
     });
   });
@@ -93,7 +169,13 @@ describe('geospatial metadata', () => {
       epoch: 2022.5,
       vendor: 'preserved'
     });
-    expect(schema.fields[0].metadata).toEqual({'ARROW:extension:name': 'geoarrow.wkb'});
+    expect(schema.fields[0].metadata).toEqual({
+      'ARROW:extension:name': 'geoarrow.wkb',
+      'ARROW:extension:metadata': JSON.stringify({
+        epoch: 2022.5,
+        vendor: 'preserved'
+      })
+    });
   });
 
   it('does not misrepresent an unresolved GeoArrow authority CRS as GeoParquet CRS84', () => {

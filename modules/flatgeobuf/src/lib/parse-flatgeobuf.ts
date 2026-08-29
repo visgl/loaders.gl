@@ -15,22 +15,23 @@ import {
 import {
   convertGeojsonToBinaryFeatureCollection,
   encodeWKBGeometryValue,
-  GeoArrowBuilder,
-  makeGeoArrowGeometryField,
-  setGeoArrowGeometryColumnMetadata,
+  makeWKBGeometryField,
+  makeWKBGeometryDataFromArray,
+  setWKBGeometryColumnMetadata,
   transformGeoJsonCoords,
-  type GeoArrowBuilderEncoding,
   type GeoParquetGeometryType
 } from '@loaders.gl/gis';
+import {WKBBuilder} from '@loaders.gl/gis';
 import {convertSchemaToArrow, queryArrowTable} from '@loaders.gl/schema-utils';
 import {
   decodeFlatGeobufGeometry,
   FlatGeobufColumnType,
   FlatGeobufGeometryType,
+  getFlatGeobufGeometryBounds,
   getFlatGeobufCRSIdentifier,
   readFlatGeobufFeatures,
   readFlatGeobufHeader,
-  writeFlatGeobufGeometry,
+  writeFlatGeobufGeometryToWKB,
   type FlatGeobufHeader
 } from './flatgeobuf-reader';
 
@@ -84,7 +85,7 @@ export function parseFlatGeobuf(
   }
 }
 
-/** Parses FlatGeobuf into typed GeoArrow and Apache Arrow buffers. */
+/** Parses FlatGeobuf into compact GeoArrow WKB and Apache Arrow buffers. */
 export function parseFlatGeobufToArrowTable(
   arrayBuffer: ArrayBuffer,
   options: ParseFlatGeobufOptions = {}
@@ -92,40 +93,37 @@ export function parseFlatGeobufToArrowTable(
   const header = readFlatGeobufHeader(arrayBuffer);
   const schema = makeArrowSchema(header);
   const projection = getProjection(header, options.reproject, options.crs || 'WGS84');
-  const geometryOptions = {encoding: getGeometryEncoding(header.geometryType), hasZ: header.hasZ};
-  const measuredGeometry = new GeoArrowBuilder({mode: 'measure', ...geometryOptions});
-  for (const feature of readFlatGeobufFeatures(arrayBuffer, header)) {
-    if (matchesBoundingBox(arrayBuffer, feature.geometryOffset, header, options.boundingBox))
-      writeGeometry(measuredGeometry, arrayBuffer, feature.geometryOffset, header);
-  }
-  const geometryArray = measuredGeometry.getGeometryArray();
-  const geometryBuilder = new GeoArrowBuilder({
-    mode: 'write',
-    target: geometryArray,
-    transform: projection?.project,
-    ...geometryOptions
+  const features = [...readFlatGeobufFeatures(arrayBuffer, header)].filter(feature =>
+    matchesBoundingBox(arrayBuffer, feature.geometryOffset, header, options.boundingBox)
+  );
+  const geometryWriters = features.map(feature =>
+    feature.geometryOffset === undefined
+      ? null
+      : (builder: WKBBuilder) =>
+          writeFlatGeobufGeometryToWKB(builder, arrayBuffer, feature.geometryOffset, header)
+  );
+  const geometryArray = WKBBuilder.buildGeometryArray(geometryWriters, {
+    hasZ: header.hasZ,
+    transform: projection?.project
   });
   const arrowSchema = convertSchemaToArrow(schema);
   const propertyBuilders = arrowSchema.fields
     .slice(0, -1)
     .map(field => arrow.makeBuilder({type: field.type, nullValues: [null]}));
-  for (const feature of readFlatGeobufFeatures(arrayBuffer, header)) {
-    if (!matchesBoundingBox(arrayBuffer, feature.geometryOffset, header, options.boundingBox))
-      continue;
+  for (const feature of features) {
     for (let index = 0; index < header.columns.length; index++)
       propertyBuilders[index].append(feature.properties[header.columns[index].name] ?? null);
-    writeGeometry(geometryBuilder, arrayBuffer, feature.geometryOffset, header);
   }
   const propertyData = propertyBuilders.map(builder => {
     const data = builder.flush();
     builder.finish();
     return data;
   });
-  const geometryData = GeoArrowBuilder.makeGeometryData(geometryBuilder.getGeometryArray());
+  const geometryData = makeWKBGeometryDataFromArray(geometryArray);
   const structData = new arrow.Data(
     new arrow.Struct(arrowSchema.fields),
     0,
-    geometryArray.length,
+    features.length,
     0,
     undefined,
     [...propertyData, geometryData]
@@ -193,14 +191,7 @@ export function makeArrowSchema(header: FlatGeobufHeader | any): Schema {
       primary_key: String(column.primaryKey)
     }
   }));
-  const encoding = getGeometryEncoding(header.geometryType);
-  fields.push(
-    makeGeoArrowGeometryField({
-      geometryColumnName: GEOMETRY_COLUMN_NAME,
-      encoding,
-      coordinateSize: header.hasZ ? 3 : 2
-    })
-  );
+  fields.push(makeWKBGeometryField(GEOMETRY_COLUMN_NAME));
   const schema: Schema = {
     fields,
     metadata: {
@@ -214,9 +205,8 @@ export function makeArrowSchema(header: FlatGeobufHeader | any): Schema {
       bounds: header.envelope?.join(',') || ''
     }
   };
-  setGeoArrowGeometryColumnMetadata(schema.metadata!, {
+  setWKBGeometryColumnMetadata(schema.metadata!, {
     geometryColumnName: GEOMETRY_COLUMN_NAME,
-    encoding,
     geometryTypes: [getGeometryType(header.geometryType, header.hasZ)]
   });
   return schema;
@@ -233,16 +223,15 @@ export function makeArrowRow(feature: Feature, _header?: unknown): Record<string
 function makeGeoJsonTable(arrayBuffer: ArrayBuffer, options: ParseFlatGeobufOptions) {
   const header = readFlatGeobufHeader(arrayBuffer);
   let features: Feature[] = [];
-  for (const feature of readFlatGeobufFeatures(arrayBuffer, header))
+  for (const feature of readFlatGeobufFeatures(arrayBuffer, header)) {
+    if (!matchesBoundingBox(arrayBuffer, feature.geometryOffset, header, options.boundingBox))
+      continue;
     features.push({
       type: 'Feature',
       properties: feature.properties,
       geometry: decodeFlatGeobufGeometry(arrayBuffer, feature.geometryOffset, header)
     });
-  if (options.boundingBox)
-    features = features.filter(feature =>
-      intersectsBoundingBox(feature.geometry, options.boundingBox!)
-    );
+  }
   const projection = getProjection(header, options.reproject, options.crs || 'WGS84');
   if (projection)
     features = transformGeoJsonCoords(features, coordinates => projection.project(coordinates));
@@ -254,15 +243,6 @@ function makeGeoJsonTable(arrayBuffer: ArrayBuffer, options: ParseFlatGeobufOpti
   };
 }
 
-function writeGeometry(
-  builder: GeoArrowBuilder,
-  arrayBuffer: ArrayBuffer,
-  geometryOffset: number | undefined,
-  header: FlatGeobufHeader
-): void {
-  writeFlatGeobufGeometry(builder, arrayBuffer, geometryOffset, header);
-}
-
 function throwIfAborted(signal?: AbortSignal): void {
   if (signal?.aborted) {
     const error = new Error('Aborted');
@@ -271,24 +251,6 @@ function throwIfAborted(signal?: AbortSignal): void {
   }
 }
 
-function getGeometryEncoding(type: FlatGeobufGeometryType): GeoArrowBuilderEncoding {
-  switch (type) {
-    case FlatGeobufGeometryType.Point:
-      return 'geoarrow.point';
-    case FlatGeobufGeometryType.LineString:
-      return 'geoarrow.linestring';
-    case FlatGeobufGeometryType.Polygon:
-      return 'geoarrow.polygon';
-    case FlatGeobufGeometryType.MultiPoint:
-      return 'geoarrow.multipoint';
-    case FlatGeobufGeometryType.MultiLineString:
-      return 'geoarrow.multilinestring';
-    case FlatGeobufGeometryType.MultiPolygon:
-      return 'geoarrow.multipolygon';
-    default:
-      throw new Error(`Unsupported FlatGeobuf geometry type ${type}`);
-  }
-}
 function getGeometryType(type: FlatGeobufGeometryType, hasZ: boolean): GeoParquetGeometryType {
   const names: Record<FlatGeobufGeometryType, string> = {
     0: 'Geometry',
@@ -354,34 +316,20 @@ export function getProjection(
     throw new Error(`FlatGeobuf reprojection failed: ${message}`);
   }
 }
-function intersectsBoundingBox(
-  geometry: any,
-  boundingBox: [[number, number], [number, number]]
-): boolean {
-  const coordinates: number[][] = [];
-  const collect = (value: any) =>
-    Array.isArray(value?.[0]) ? value.forEach(collect) : coordinates.push(value);
-  collect(geometry?.coordinates);
-  return coordinates.some(
-    ([x, y]) =>
-      x >= boundingBox[0][0] &&
-      x <= boundingBox[1][0] &&
-      y >= boundingBox[0][1] &&
-      y <= boundingBox[1][1]
-  );
-}
 function matchesBoundingBox(
   arrayBuffer: ArrayBuffer,
   geometryOffset: number | undefined,
   header: FlatGeobufHeader,
   boundingBox?: [[number, number], [number, number]]
 ): boolean {
-  return (
-    !boundingBox ||
-    intersectsBoundingBox(
-      decodeFlatGeobufGeometry(arrayBuffer, geometryOffset, header),
-      boundingBox
-    )
+  if (!boundingBox) return true;
+  const bounds = getFlatGeobufGeometryBounds(arrayBuffer, geometryOffset, header);
+  return Boolean(
+    bounds &&
+      bounds[2] >= boundingBox[0][0] &&
+      bounds[0] <= boundingBox[1][0] &&
+      bounds[3] >= boundingBox[0][1] &&
+      bounds[1] <= boundingBox[1][1]
   );
 }
 function makePropertySchema(header: FlatGeobufHeader): Schema {

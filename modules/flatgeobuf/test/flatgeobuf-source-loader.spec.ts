@@ -125,8 +125,8 @@ test('FlatGeobufSourceLoader#getFeatures returns matching feature sets across fo
   expect(geometryField?.name, 'Arrow schema appends geometry').toBe('geometry');
   expect(
     geometryField?.metadata?.['ARROW:extension:name'],
-    'Arrow geometry uses native GeoArrow encoding'
-  ).toBe('geoarrow.multipolygon');
+    'Arrow geometry uses compact GeoArrow WKB encoding'
+  ).toBe('geoarrow.wkb');
   expect(arrow.schema.metadata?.geo, 'Arrow schema includes geo metadata').toBeTruthy();
   const arrowGeojson = convertGeoArrowToTable(arrow.data, 'geojson-table');
   expect(

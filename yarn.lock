@@ -5608,14 +5608,13 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@loaders.gl/parquet@workspace:*, @loaders.gl/parquet@workspace:modules/parquet":
+"@loaders.gl/parquet@npm:5.0.0-alpha.2, @loaders.gl/parquet@workspace:*, @loaders.gl/parquet@workspace:modules/parquet":
   version: 0.0.0-use.local
   resolution: "@loaders.gl/parquet@workspace:modules/parquet"
   dependencies:
     "@loaders.gl/arrow": "npm:5.0.0-alpha.2"
     "@loaders.gl/bson": "npm:5.0.0-alpha.2"
     "@loaders.gl/compression": "npm:5.0.0-alpha.2"
-    "@loaders.gl/geoarrow": "npm:5.0.0-alpha.2"
     "@loaders.gl/gis": "npm:5.0.0-alpha.2"
     "@loaders.gl/loader-utils": "npm:5.0.0-alpha.2"
     "@loaders.gl/schema": "npm:5.0.0-alpha.2"
@@ -5716,6 +5715,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@loaders.gl/scan@workspace:modules/scan"
   dependencies:
+    "@loaders.gl/geoarrow": "npm:5.0.0-alpha.2"
     "@loaders.gl/loader-utils": "npm:5.0.0-alpha.2"
     "@loaders.gl/schema": "npm:5.0.0-alpha.2"
     "@loaders.gl/schema-utils": "npm:5.0.0-alpha.2"

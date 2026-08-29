@@ -4,7 +4,6 @@
 
 import * as arrow from 'apache-arrow';
 
-import type {Field, Schema} from '@loaders.gl/schema';
 import {
   getGeoMetadata,
   getMetadataValue,
@@ -14,8 +13,10 @@ import {
   type GeoArrowMetadata,
   type GeoColumnMetadata,
   type GeoMetadata,
-  type GeoParquetGeometryType
-} from '@loaders.gl/gis';
+  type GeoParquetGeometryType,
+  type Field,
+  type Schema
+} from '@loaders.gl/schema';
 import {
   GeoArrowMetadataSchema,
   GeoParquetMetadataSchema
@@ -42,6 +43,8 @@ const GEOARROW_ENCODINGS = [
 
 const GEOPARQUET_TO_GEOARROW_ENCODINGS = {
   wkb: 'geoarrow.wkb',
+  geometry: 'geoarrow.wkb',
+  geography: 'geoarrow.wkb',
   point: 'geoarrow.point',
   linestring: 'geoarrow.linestring',
   polygon: 'geoarrow.polygon',
@@ -334,11 +337,18 @@ function getGeoArrowMetadataFromGeoParquetField(
     return null;
   }
 
-  if (normalizedEncoding === 'wkb' && field.type !== 'binary') {
+  const isBinaryGeospatialEncoding =
+    normalizedEncoding === 'wkb' ||
+    normalizedEncoding === 'geometry' ||
+    normalizedEncoding === 'geography';
+  if (isBinaryGeospatialEncoding && !isBinaryFieldType(field.type)) {
     return null;
   }
 
-  if (normalizedEncoding !== 'wkb' && (field.type === 'binary' || field.type === 'utf8')) {
+  if (
+    !isBinaryGeospatialEncoding &&
+    (isBinaryFieldType(field.type) || isStringFieldType(field.type))
+  ) {
     return null;
   }
 
@@ -352,6 +362,18 @@ function getGeoArrowMetadataFromGeoParquetField(
   }
   if (columnMetadata.edges && columnMetadata.edges !== 'planar') {
     extensionMetadata.edges = columnMetadata.edges;
+  }
+  if (normalizedEncoding === 'geography' && !extensionMetadata.edges) {
+    extensionMetadata.edges = 'spherical';
+  }
+  for (const [metadataKey, metadataValue] of Object.entries(columnMetadata)) {
+    if (
+      metadataValue !== undefined &&
+      metadataValue !== null &&
+      !['encoding', 'geometry_types', 'crs', 'edges'].includes(metadataKey)
+    ) {
+      extensionMetadata[metadataKey] = metadataValue;
+    }
   }
 
   return Object.keys(extensionMetadata).length > 0
@@ -385,6 +407,8 @@ function synthesizeGeoParquetColumnMetadata(
     geometry_types: geometryTypes
   };
 
+  const preservedMetadata = preserveUnknownGeoParquetColumnMetadata(geometryMetadata);
+
   if (geometryMetadata.crs === undefined) {
     columnMetadata.crs = null;
   } else if (typeof geometryMetadata.crs === 'object') {
@@ -399,7 +423,7 @@ function synthesizeGeoParquetColumnMetadata(
     columnMetadata.edges = geometryMetadata.edges;
   }
 
-  return columnMetadata;
+  return {...preservedMetadata, ...columnMetadata};
 }
 
 /** Returns whether a compact GeoArrow CRS identifier has GeoParquet's default CRS semantics. */
@@ -424,7 +448,7 @@ function pickValidOptionalGeoParquetColumnMetadata(
     return {};
   }
 
-  const nextColumnMetadata: Partial<GeoColumnMetadata> = {};
+  const nextColumnMetadata = preserveUnknownGeoParquetColumnMetadata(columnMetadata);
 
   if (columnMetadata.orientation === 'counterclockwise') {
     nextColumnMetadata.orientation = columnMetadata.orientation;
@@ -443,6 +467,45 @@ function pickValidOptionalGeoParquetColumnMetadata(
   }
 
   return nextColumnMetadata;
+}
+
+/** Preserves vendor and future GeoParquet column keys without trusting core fields. */
+function preserveUnknownGeoParquetColumnMetadata(
+  columnMetadata: Record<string, unknown> | undefined
+): Record<string, unknown> {
+  if (!columnMetadata) {
+    return {};
+  }
+
+  const preservedMetadata: Record<string, unknown> = {};
+  for (const [metadataKey, metadataValue] of Object.entries(columnMetadata)) {
+    if (
+      metadataValue !== undefined &&
+      ![
+        'encoding',
+        'geometry_types',
+        'crs',
+        'edges',
+        'orientation',
+        'bbox',
+        'epoch',
+        'covering'
+      ].includes(metadataKey)
+    ) {
+      preservedMetadata[metadataKey] = metadataValue;
+    }
+  }
+  return preservedMetadata;
+}
+
+/** Returns whether an Arrow field is a binary value capable of carrying WKB bytes. */
+function isBinaryFieldType(fieldType: Field['type']): boolean {
+  return typeof fieldType === 'string' && (fieldType === 'binary' || fieldType === 'binary-view');
+}
+
+/** Returns whether an Arrow field is a UTF-8 value capable of carrying WKT text. */
+function isStringFieldType(fieldType: Field['type']): boolean {
+  return typeof fieldType === 'string' && (fieldType === 'utf8' || fieldType === 'utf8-view');
 }
 
 function isValidBBox(
