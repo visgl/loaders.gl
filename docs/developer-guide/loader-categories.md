@@ -51,26 +51,32 @@ has identical capabilities.
 The fact that loaders belong to categories enables applications to register additional loaders in
 the same category.
 
-For instance, once an application has added support for one loader in a category, other loaders in the same category can be registered during application startup.
+For instance, an application can register several point-cloud loaders during startup and let the
+shared loader selector choose between them:
 
 ```typescript
 import {load, registerLoaders} from '@loaders.gl/core';
+import {LASLoader} from '@loaders.gl/las';
 import {PCDLoader} from '@loaders.gl/pcd';
-async function loadPointCloud(url) {
-  const pointCloud = await load(url, PCDLoader);
+
+registerLoaders([LASLoader, PCDLoader]);
+
+async function loadPointCloud(url: string) {
+  const pointCloud = await load(url);
   // Use some WebGL framework to render the parsed cloud
 }
 ```
 
-## Data Format
+## Data format
 
-Each category documents the returned data format. loaders and writers reference the category documentation.
+Each category documents the returned data format. Loaders and writers reference the category
+documentation.
 
-## Writers and Categories
+## Writers and categories
 
 Writers for a format that belongs to a category accept data objects with fields described by the documentation for that category.
 
-## Accessing Format-Specific Data
+## Accessing format-specific data
 
 Sometimes, not all the properties provided by a certain file format can be mapped to common properties defined by the corresponding loader category.
 
@@ -86,3 +92,5 @@ Categories are described in the specifications section. Some currently defined c
 - [PointCloud/Mesh](/docs/specifications/category-mesh)
 - [Scenegraph](/docs/specifications/category-scenegraph)
 - [GIS](/docs/specifications/category-gis)
+- [JSON](/docs/specifications/category-json)
+- [3D Tiles](/docs/specifications/category-3d-tiles)

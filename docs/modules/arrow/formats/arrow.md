@@ -6,6 +6,7 @@ page_style: designed
 ---
 
 import {ArrowDocsTabs} from '@site/src/components/docs/arrow-docs-tabs';
+import {ArrowDataPlaneGraphic} from '@site/src/components/docs/arrow-data-plane-graphic';
 import {ArrowJsStructureGraphic} from '@site/src/components/docs/arrow-js-structure-graphic';
 import {ArrowScanLiveExample} from '@site/src/components/docs/arrow-scan-live-example';
 import {DocOrientation} from '@site/src/components/docs/designed-doc';
@@ -24,6 +25,8 @@ import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
 />
 
 <ArrowDocsTabs active="overview" />
+
+<ArrowDataPlaneGraphic />
 
 <DocOrientation
   eyebrow="Why Arrow is useful"
