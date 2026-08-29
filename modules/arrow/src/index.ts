@@ -14,7 +14,7 @@ export type {ArrowLoaderOptions} from './exports/arrow-loader';
 export {ArrowLoader} from './arrow-loader';
 export {ArrowSourceLoader, ArrowTableSource} from './arrow-source';
 
-export {ArrowWriter} from './arrow-writer';
+export {ArrowWriter, type ArrowWriterOptions} from './arrow-writer';
 export type {
   ArrowConvertFromOptions,
   ArrowConvertToOptions

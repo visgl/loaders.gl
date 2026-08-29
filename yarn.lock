@@ -5163,6 +5163,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@loaders.gl/arrow@workspace:modules/arrow"
   dependencies:
+    "@loaders.gl/compression": "npm:5.0.0-alpha.2"
     "@loaders.gl/gis": "npm:5.0.0-alpha.2"
     "@loaders.gl/loader-utils": "npm:5.0.0-alpha.2"
     "@loaders.gl/schema": "npm:5.0.0-alpha.2"
@@ -5171,6 +5172,7 @@ __metadata:
     "@loaders.gl/worker-utils": "npm:5.0.0-alpha.2"
     "@math.gl/polygon": "npm:4.2.0-alpha.6"
     apache-arrow: "npm:>= 17.0.0"
+    lz4js: "npm:^0.2.0"
   peerDependencies:
     "@loaders.gl/core": ~5.0.0-alpha.0
   languageName: unknown

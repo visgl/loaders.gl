@@ -43,7 +43,8 @@ import {WriterPipelineGraphic} from '@site/src/components/docs/writer-pipeline-g
   <img src="https://img.shields.io/badge/From-v3.0-blue.svg?style=flat-square" alt="From-v3.0" />
 </p>
 
-The `ArrowWriter` encodes a set of arrays into an ArrayBuffer of Apache Arrow columnar format.
+The `ArrowWriter` encodes a set of arrays into an Apache Arrow IPC stream or file. The file
+container is Feather V2 and can optionally use LZ4-frame or Zstandard embedded buffer compression.
 
 <ReferenceBoundary
   title="ArrowWriter options and shapes"
@@ -76,11 +77,38 @@ const arraysData = [
 const arrayBuffer = encodeSync(arraysData, ArrowWriter);
 ```
 
+To write a compressed Feather V2 file:
+
+```typescript
+import {encode} from '@loaders.gl/core';
+import {ZstdCodec} from 'zstd-codec';
+
+const featherBuffer = await encode(arraysData, ArrowWriter, {
+  modules: {'zstd-codec': ZstdCodec},
+  arrow: {
+    container: 'file',
+    compression: 'zstd'
+  }
+});
+```
+
+LZ4 compression supports `encodeSync` without an injected module. Zstandard compression uses
+asynchronous `encode` and an injected `zstd-codec` module so its codec can be initialized without
+adding the large optional encoder to every Arrow browser bundle.
+
 ## Options
 
-`ArrowWriter` does not currently define format-specific options. The input arrays determine the
-Arrow field names and types; use the exported `VECTOR_TYPES` constants when constructing the input.
+| Option | Type | Default | Description |
+| ------ | ---- | ------- | ----------- |
+| `arrow.container` | `'stream'` \| `'file'` | `'stream'` | Selects the Arrow IPC stream or file container. Feather V2 uses `'file'`. |
+| `arrow.compression` | `null` \| `'lz4'` \| `'zstd'` | `null` | Selects embedded record-batch buffer compression. Compression requires Apache Arrow JS 21.2 or later. |
+
+The input arrays determine the Arrow field names and types; use the exported `VECTOR_TYPES`
+constants when constructing the input.
 
 ## Dependencies
 
 [Apache Arrow JS](https://arrow.apache.org/docs/js/) library is included into the bundle.
+
+Install [`zstd-codec`](https://www.npmjs.com/package/zstd-codec) when writing Zstandard-compressed
+IPC data. Decoding Zstandard data and reading or writing LZ4 data require no additional package.
