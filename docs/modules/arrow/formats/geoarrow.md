@@ -8,6 +8,7 @@ page_style: designed
 import {ArrowDocsTabs} from '@site/src/components/docs/arrow-docs-tabs';
 import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
 import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
+import {GeoArrowFlowGraphic} from '@site/src/components/docs/geoarrow-flow-graphic';
 
 <DocPageHeader
   eyebrow="Geospatial columnar format"
@@ -25,6 +26,8 @@ See [Coordinate Reference Systems](/docs/developer-guide/coordinate-reference-sy
 GeoArrow CRS representations, column-specific metadata, and current preservation gaps.
 
 <ArrowDocsTabs active="geoarrow" />
+
+<GeoArrowFlowGraphic />
 
 <DocOrientation
   eyebrow="The GeoArrow path"
