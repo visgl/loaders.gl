@@ -35,6 +35,10 @@
     "./bundled": {
       "types": "./dist/bundled.d.ts",
       "import": "./dist/bundled.js"
+    },
+    "./kmz-loader": {
+      "types": "./dist/kmz-loader.d.ts",
+      "import": "./dist/kmz-loader.js"
     }
   },
   "sideEffects": false,

@@ -2,37 +2,55 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import type {Loader, LoaderOptions} from '@loaders.gl/loader-utils';
+import type {LoaderWithParser} from '@loaders.gl/loader-utils';
 import type {GeoJSONTable, ObjectRowTable, ArrowTable} from '@loaders.gl/schema';
-import {KMZFormat} from './kml-format';
+import {
+  buildFeatureTableSchema,
+  convertFeatureCollectionToArrowTable
+} from './lib/feature-collection-to-arrow';
+import {convertKMLDocumentToFeatureCollection} from './kml-parser';
+import {KMZLoader as KMZLoaderMetadata, type KMZLoaderOptions} from './kmz-loader-types';
+import {openKMZArchive} from './kmz-archive';
 
-// __VERSION__ is injected by babel-plugin-version-inline
-// @ts-ignore TS2304: Cannot find name '__VERSION__'.
-const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : 'latest';
+const {preload: _KMZLoaderPreload, ...KMZLoaderMetadataWithoutPreload} = KMZLoaderMetadata;
 
-export type KMZLoaderOptions = LoaderOptions & {
-  kmz?: {
-    shape?: 'object-row-table' | 'geojson-table' | 'arrow-table';
-    includeKMLMetadata?: boolean;
-  };
-};
+/** Parser-bearing loader for KMZ archives containing KML documents. */
+export const KMZLoaderWithParser = {
+  ...KMZLoaderMetadataWithoutPreload,
+  parse: async (arrayBuffer, options?: KMZLoaderOptions) =>
+    parseKMZArrayBuffer(arrayBuffer, options)
+} as const satisfies LoaderWithParser<
+  ObjectRowTable | GeoJSONTable | ArrowTable,
+  never,
+  KMZLoaderOptions
+>;
 
-/** Preloads the parser-bearing KMZ loader implementation. */
-async function preload() {
-  const {KMZLoaderWithParser} = await import('./kmz-loader-with-parser');
-  return KMZLoaderWithParser;
+/** Parses a KMZ archive into the requested public table shape. */
+export async function parseKMZArrayBuffer(
+  arrayBuffer: ArrayBuffer,
+  options?: KMZLoaderOptions
+): Promise<ObjectRowTable | GeoJSONTable | ArrowTable> {
+  const archive = await openKMZArchive(arrayBuffer);
+  try {
+    const document = convertKMLDocumentToFeatureCollection(archive.document, {
+      includeKMLMetadata: options?.kmz?.includeKMLMetadata
+    });
+    const shape = options?.kmz?.shape || KMZLoaderWithParser.options.kmz.shape;
+    switch (shape) {
+      case 'object-row-table':
+        return {shape, data: document.features};
+      case 'arrow-table':
+        return convertFeatureCollectionToArrowTable(document.features);
+      case 'geojson-table':
+      default:
+        return {
+          shape: 'geojson-table',
+          schema: buildFeatureTableSchema(document.features),
+          type: 'FeatureCollection',
+          features: document.features
+        };
+    }
+  } finally {
+    await archive.close();
+  }
 }
-
-/** Metadata-only loader for KMZ archives containing KML documents. */
-export const KMZLoader = {
-  dataType: null as unknown as ObjectRowTable | GeoJSONTable | ArrowTable,
-  batchType: null as never,
-
-  ...KMZFormat,
-  version: VERSION,
-  options: {
-    kmz: {shape: 'arrow-table', includeKMLMetadata: false},
-    gis: {}
-  },
-  preload
-} as const satisfies Loader<ObjectRowTable | GeoJSONTable | ArrowTable, never, KMZLoaderOptions>;

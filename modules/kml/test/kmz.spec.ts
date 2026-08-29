@@ -19,6 +19,7 @@ import {
 } from '@loaders.gl/kml';
 import {ZipWriter} from '@loaders.gl/zip';
 import {validateLoader, validateWriter} from 'test/common/conformance';
+import {KMZLoaderWithParser} from '@loaders.gl/kml/kmz-loader';
 
 const SAMPLE_KML = `<?xml version="1.0" encoding="UTF-8"?>
 <kml xmlns="http://www.opengis.net/kml/2.2">
@@ -60,6 +61,10 @@ test('KML-family table loaders default to Arrow tables', () => {
   expect(GPXLoader.options.gpx.shape).toBe('arrow-table');
   expect(TCXLoader.options.tcx.shape).toBe('arrow-table');
   expect(KMZSourceLoader.defaultOptions.kmz.format).toBe('arrow');
+});
+
+test('KMZ parser is available through its package subpath', () => {
+  expect(KMZLoaderWithParser.parse).toBeTypeOf('function');
 });
 
 test('KMZ archive reads the primary KML and relative resources', async () => {
@@ -164,4 +169,41 @@ test('KML parser resolves styles declared after Placemarks and preserves KML met
     'stroke-width': 4,
     kml: {altitudeMode: 'absolute', extrude: true}
   });
+});
+
+test('KML parser collects models from placemarks', () => {
+  const document = parseKMLDocument(`
+    <kml xmlns="http://www.opengis.net/kml/2.2"><Document>
+      <Placemark><name>Building</name><Model>
+        <Location><longitude>1</longitude><latitude>2</latitude><altitude>3</altitude></Location>
+        <Orientation><heading>4</heading><tilt>5</tilt><roll>6</roll></Orientation>
+        <Scale><x>1</x><y>2</y><z>3</z></Scale>
+        <Link><href>models/building.dae</href></Link>
+      </Model></Placemark>
+    </Document></kml>
+  `);
+
+  expect(document.models).toHaveLength(1);
+  expect(document.models[0]).toMatchObject({
+    href: 'models/building.dae',
+    location: [1, 2, 3],
+    orientation: {heading: 4, tilt: 5, roll: 6},
+    scale: {x: 1, y: 2, z: 3}
+  });
+});
+
+test('KML parser uses the normal StyleMap pair', () => {
+  const document = parseKMLDocument(`
+    <kml xmlns="http://www.opengis.net/kml/2.2"><Document>
+      <Style id="normal"><LineStyle><color>ff0000ff</color></LineStyle></Style>
+      <Style id="highlight"><LineStyle><color>ffff0000</color></LineStyle></Style>
+      <StyleMap id="mapped">
+        <Pair><key>normal</key><styleUrl>#normal</styleUrl></Pair>
+        <Pair><key>highlight</key><styleUrl>#highlight</styleUrl></Pair>
+      </StyleMap>
+      <Placemark><styleUrl>#mapped</styleUrl><LineString><coordinates>1,2 3,4</coordinates></LineString></Placemark>
+    </Document></kml>
+  `);
+
+  expect(document.features[0].properties).toMatchObject({stroke: '#ff0000'});
 });

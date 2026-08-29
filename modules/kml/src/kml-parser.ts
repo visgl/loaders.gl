@@ -164,6 +164,7 @@ function parseContainer(
   flattenFolderFeatures: boolean
 ): void {
   for (const placemark of getChildObjects(node, 'Placemark')) {
+    for (const model of findDescendants(placemark, 'Model')) models.push(parseModel(model));
     features.push(parsePlacemark(placemark, parentPath, styles));
   }
   for (const folderNode of getChildObjects(node, 'Folder')) {
@@ -278,7 +279,8 @@ function getGeometryNode(node: XMLObject): XMLObject | undefined {
     'Polygon',
     'MultiGeometry',
     'Track',
-    'MultiTrack'
+    'MultiTrack',
+    'Model'
   ]) {
     const geometry = getFirstObject(node, name);
     if (geometry) return withType(geometry, name);
@@ -308,6 +310,8 @@ function parseGeometry(node: XMLObject): Geometry | null {
     case 'Track':
     case 'MultiTrack':
       return parseTrack(node);
+    case 'Model':
+      return null;
     default:
       return null;
   }
@@ -400,12 +404,18 @@ function parseStyle(node: XMLObject, id: string): KMLStyle {
 function parseStyleMap(node: XMLObject, styles: Record<string, KMLStyle>): void {
   const id = getAttribute(node, 'id');
   if (!id) return;
+  let normalStyle: KMLStyle | undefined;
+  let fallbackStyle: KMLStyle | undefined;
   for (const pair of getChildObjects(node, 'Pair')) {
     const key = getChildText(pair, 'key');
     const styleUrl = getChildText(pair, 'styleUrl');
     const style = styleUrl && styles[styleUrl.replace(/^#/, '')];
-    if (key && style) styles[id] = style;
+    if (!style) continue;
+    fallbackStyle ||= style;
+    if (key === 'normal') normalStyle = style;
   }
+  const style = normalStyle || fallbackStyle;
+  if (style) styles[id] = style;
 }
 
 function parseColorStyle(node: XMLObject): {color?: string; opacity?: number} {
@@ -515,7 +525,8 @@ function getGeometryObjects(node: XMLObject): XMLObject[] {
     'Polygon',
     'MultiGeometry',
     'Track',
-    'MultiTrack'
+    'MultiTrack',
+    'Model'
   ].flatMap(name => getChildObjects(node, name).map(child => withType(child, name)));
 }
 

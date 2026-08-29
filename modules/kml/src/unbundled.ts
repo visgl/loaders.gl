@@ -8,8 +8,8 @@ export {GPXLoader} from './gpx-loader';
 export type {KMLLoaderOptions} from './kml-loader';
 export {KMLLoader} from './kml-loader';
 
-export type {KMZLoaderOptions} from './kmz-loader';
-export {KMZLoader} from './kmz-loader';
+export type {KMZLoaderOptions} from './kmz-loader-types';
+export {KMZLoader} from './kmz-loader-types';
 
 export type {KMZSourceOptions} from './kmz-source';
 export {KMZSourceLoader, KMZVectorSource} from './kmz-source';
