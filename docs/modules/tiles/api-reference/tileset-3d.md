@@ -59,12 +59,12 @@ import {Tiles3DSource, Tileset3D} from '@loaders.gl/tiles';
 
 const tilesetUrl = 'https://assets.ion.cesium.com/43978/tileset.json';
 const source = new Tiles3DSource({url: tilesetUrl, loader: Tiles3DLoader});
-const tileset3d = new Tileset3D(source, {
+const tileset = new Tileset3D(source, {
   onTileLoad: (tile) => console.log(tile)
 });
 ```
 
-Loading a tileset and dynamically load/unload with viewport.
+Loading a tileset from an I3S source and updating it with the viewport:
 
 ```typescript
 import {I3SLoader} from '@loaders.gl/i3s';
@@ -74,25 +74,20 @@ import {WebMercatorViewport} from '@deck.gl/web-mercator';
 const tilesetUrl =
   'https://tiles.arcgis.com/tiles/z2tnIkrLQ2BRzr6P/arcgis/rest/services/SanFrancisco_Bldgs/SceneServer/layers/0';
 const source = new I3SSource({url: tilesetUrl, loader: I3SLoader});
-const tileset3d = new Tileset3D(source, {
+const tileset = new Tileset3D(source, {
   onTileLoad: (tile) => console.log(tile)
 });
 
 const viewport = new WebMercatorViewport({latitude, longitude, zoom});
-tileset3d.update(viewport);
+await tileset.selectTiles(viewport);
+const visibleTiles = tileset.tiles.filter(tile => tile.selected);
 ```
 
-`Tileset3D.update` is synchronous: it selects the tiles qualified for rendering based on the current viewport and the tiles currently available. Trigger another `update` when newly requested tiles finish loading.
+`Tileset3D.selectTiles` waits for initialization and coalesces viewport updates. Call it again when
+the viewport changes; the selected set can continue to change as requested tile content arrives.
 
-```typescript
-import {Tileset3D} from '@loaders.gl/tiles';
-
-const viewport = new WebMercatorViewport({latitude, longitude, zoom});
-
-const tileset3d = new Tileset3D(source, {
-  onTileLoad: (tile) => tileset3d.update(viewport)
-});
-```
+`Tileset3D.update(viewport)` remains available as a fire-and-forget compatibility wrapper when the
+application does not need to await the traversal promise.
 
 ## Constructor
 
@@ -134,7 +129,9 @@ Callbacks:
 - `onTileError` (`(tileHeader : Tile3D, message : String) : void`) - callback when a tile fails to load during traversal.
 - `onTraversalComplete` (`(selectedTiles : Tile3D[]) : Tile3D[]`) - callback post-process selectedTiles right after traversal.
 
-The `Tileset3D` allows callbacks (`onTileLoad`, `onTileUnload`) to be registered that notify the app when the set of tiles available for rendering has changed. This is important because tile loads complete asynchronously, after the `tileset3D.update(...)` call has returned.
+The `Tileset3D` allows callbacks (`onTileLoad`, `onTileUnload`) to be registered that notify the app
+when the set of tiles available for rendering has changed. Tile loads complete asynchronously, so
+the selected set can change after a traversal call returns.
 
 For format-specific source behavior, see:
 
