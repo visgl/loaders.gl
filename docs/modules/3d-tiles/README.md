@@ -7,6 +7,7 @@ page_style: designed
 
 import {Tiles3DDocsTabs} from '@site/src/components/docs/tiles-3d-docs-tabs';
 import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
+import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
 
 <DocPageHeader
   eyebrow="Tiled scene module"
@@ -31,6 +32,19 @@ The `@loaders.gl/3d-tiles` module supports loading and traversing 3D Tiles.
 
 See the [3D Tiles format compatibility matrix](/docs/modules/3d-tiles/formats/3d-tiles) for a capability-by-capability
 summary of parser, traversal, extension, and renderer-facing support.
+
+<DocOrientation
+  eyebrow="The 3D Tiles module"
+  title="Keep the hierarchy. Request the visible pieces."
+  description="The module separates tileset parsing from view-dependent traversal, so applications can work with large worlds while retaining bounds, refinement, content references, and source metadata."
+  tone="violet"
+  items={[
+    {label: 'Parse', value: 'Tileset JSON, archives, payloads, and extensions'},
+    {label: 'Traverse', value: 'Bounds, screen-space error, refinement, and visibility'},
+    {label: 'Resolve', value: 'glTF, points, composites, nested tilesets, and subtrees'},
+    {label: 'Integrate', value: 'Tileset3D and Tile3D for application-owned rendering'}
+  ]}
+/>
 
 References
 
@@ -65,6 +79,12 @@ The [3D Tiles runtime concepts suite](/docs/modules/3d-tiles/concepts) explains 
 - [Request scheduling, progressive loading, and foveated requests](/docs/modules/3d-tiles/concepts/request-scheduling-and-priorities)
 - [Caching and memory](/docs/modules/3d-tiles/concepts/caching-and-memory)
 - [Runtime tuning and diagnostics](/docs/modules/3d-tiles/concepts/runtime-tuning-and-diagnostics)
+
+<ReferenceBoundary
+  title="Module APIs and runtime concepts"
+  description="The reference below covers installation, loaders, traversal helpers, usage, runtime concepts, and the current compatibility boundaries."
+  tone="violet"
+/>
 
 ## Usage
 

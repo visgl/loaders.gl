@@ -6,6 +6,7 @@ page_style: designed
 ---
 
 import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
+import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
 
 <DocPageHeader
   eyebrow="Module overview"
@@ -24,7 +25,26 @@ import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
 &emsp;
 ![apache-logo](../../images/logos/apache-logo.png)
 
+<DocOrientation
+  eyebrow="The Arrow module"
+  title="One binary table shape between every stage."
+  description="Use Arrow when a loader, worker, transform, scanner, or writer needs to exchange typed columns without falling back to format-specific row objects."
+  tone="cyan"
+  items={[
+    {label: 'Ingest', value: 'Load Arrow IPC and convert compatible formats into tables'},
+    {label: 'Compute', value: 'Keep typed columns, schemas, and batches explicit'},
+    {label: 'Transport', value: 'Move buffers across workers with focused helpers'},
+    {label: 'Geospatial', value: 'Carry GeoArrow geometry columns and metadata'}
+  ]}
+/>
+
 The `@loaders.gl/arrow` module provides support for the [Apache Arrow](/docs/modules/arrow/formats/arrow) and [GeoArrow](/docs/modules/arrow/formats/geoarrow) formats.
+
+<ReferenceBoundary
+  title="Loaders, writers, and table utilities"
+  description="The reference below covers installation, Arrow and GeoArrow entry points, transport helpers, indexed views, schema utilities, and the underlying Arrow JS API."
+  tone="cyan"
+/>
 
 ## Installation
 

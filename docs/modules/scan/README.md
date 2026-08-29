@@ -6,6 +6,7 @@ page_style: designed
 ---
 
 import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
+import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
 
 <DocPageHeader
   eyebrow="Module overview"
@@ -23,6 +24,19 @@ import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
   <img src="https://img.shields.io/badge/From-v5.0-blue.svg?style=flat-square" alt="From v5.0" />
 </p>
 
+<DocOrientation
+  eyebrow="The scan module"
+  title="Describe the work. Let the source plan the reads."
+  description="The scan runtime keeps query intent separate from the storage format, so an application can ask for columns, predicates, bounds, and limits while each source reports what it can execute."
+  tone="violet"
+  items={[
+    {label: 'Intent', value: 'Columns, predicates, bounds, limits, and ordering'},
+    {label: 'Planning', value: 'Source metadata distinguishes pushdown from residual work'},
+    {label: 'Execution', value: 'Arrow tables, addressed tiles, or bounded feature requests'},
+    {label: 'Federation', value: 'Ordered append with schema reconciliation and provenance'}
+  ]}
+/>
+
 `@loaders.gl/scan` is the optional application-facing runtime for portable queries. It collects the
 reference Arrow executor, query parsing, source-neutral query metadata, ordered append federation,
 and adapters that expose an already-addressed vector result as a table.
@@ -33,6 +47,12 @@ runtime bundle cost.
 
 See the [common scan architecture](/docs/developer-guide/common-scan-architecture) for the complete
 support matrix and execution semantics.
+
+<ReferenceBoundary
+  title="Scan APIs and execution semantics"
+  description="The reference below covers installation, table execution, source metadata, federation, vector views, cancellation, and backend registration."
+  tone="violet"
+/>
 
 ## Installation
 

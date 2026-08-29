@@ -6,6 +6,7 @@ page_style: designed
 ---
 
 import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
+import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
 
 <DocPageHeader
   eyebrow="Tiled scene module"
@@ -27,10 +28,29 @@ The `@loaders.gl/i3s` module supports loading and traversing Indexed 3d Scene La
 See the [I3S format support matrix](/docs/modules/i3s/formats/i3s) for detailed coverage of scene layer profiles,
 specification generations, geometry, textures, attributes, delivery options, and known gaps.
 
+<DocOrientation
+  eyebrow="The I3S module"
+  title="Traverse scene layers without flattening the service."
+  description="I3S keeps scene, point, and point-cloud content in a spatial hierarchy. loaders.gl exposes the profile metadata and traversal inputs so applications can request and decode the pieces they need."
+  tone="orange"
+  items={[
+    {label: 'Profiles', value: '3D objects, integrated mesh, point, and point cloud'},
+    {label: 'Hierarchy', value: 'Nodes, bounds, levels of detail, and resource links'},
+    {label: 'Payloads', value: 'Geometry, attributes, textures, Draco, and KTX2'},
+    {label: 'Runtime', value: 'I3SSource, point-cloud sources, and Tileset3D traversal'}
+  ]}
+/>
+
 References
 
 - [I3S Tiles Specification](https://github.com/Esri/i3s-spec) - The living specification.
 - [I3S Tiles Standard](http://www.ogc.org/standards/i3s) - The official standard from [OGC](http://www.ogc.org/standards/i3s), the Open Geospatial Consortium.
+
+<ReferenceBoundary
+  title="Profiles, APIs, and source behavior"
+  description="The reference below covers installation, profile-specific loaders, source construction, traversal helpers, and the compatibility matrix."
+  tone="orange"
+/>
 
 ## Installation
 
