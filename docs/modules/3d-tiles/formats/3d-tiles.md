@@ -6,6 +6,7 @@ page_style: designed
 ---
 
 import {Tiles3DDocsTabs} from '@site/src/components/docs/tiles-3d-docs-tabs';
+import {TiledSceneGraphic} from '@site/src/components/docs/tiled-scene-graphic';
 import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
 import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
 
@@ -22,6 +23,8 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
 />
 
 <Tiles3DDocsTabs active="format" />
+
+<TiledSceneGraphic />
 
 <DocOrientation
   eyebrow="The 3D Tiles delivery model"

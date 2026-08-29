@@ -7,6 +7,7 @@ page_style: designed
 
 import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
 import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
+import {TiledSceneGraphic} from '@site/src/components/docs/tiled-scene-graphic';
 
 <DocPageHeader
   eyebrow="Hierarchical scene-layer format"
@@ -19,6 +20,8 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
     {label: '3D data formats', to: '/docs/developer-guide/3d-data-formats'}
   ]}
 />
+
+<TiledSceneGraphic />
 
 <DocOrientation
   eyebrow="The layer contract"

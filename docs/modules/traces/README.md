@@ -10,6 +10,7 @@ page_style: designed
 import {TracesDocsTabs} from '@site/src/components/docs/traces-docs-tabs';
 import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
 import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
+import {TraceTableGraphic} from '@site/src/components/docs/trace-table-graphic';
 
 <DocPageHeader
   eyebrow="Performance data module"
@@ -24,6 +25,8 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
 />
 
 <TracesDocsTabs active="overview" />
+
+<TraceTableGraphic />
 
 <DocOrientation
   eyebrow="The trace path"
