@@ -32,6 +32,16 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
   ]}
 />
 
+:::info[Choose the runtime that matches the job]
+
+- Use a format loader such as `Tiles3DLoader`, `I3SLoader`, or `PotreeLoader` when you need to
+  inspect or load one resource.
+- Use a source such as `Tiles3DSource` or `I3SSource` with `Tileset3D` when visibility, caching,
+  request scheduling, and repeated viewport updates are part of the application.
+- Use `SourceLayer` when a deck.gl application should connect a source directly to a renderer.
+
+:::
+
 The 3D Tiles category defines a generalized representation of hierarchical geospatial data
 structures. Specific loaders for tiled 3D data return a standardized representation.
 
@@ -69,14 +79,15 @@ The `@loaders.gl/tiles` module provides classes that facilitate working with `3D
 
 ### Tileset traversal
 
-Once a top-level tileset file is loaded, an application can instantiate `Tileset3D` and call
-`tileset3D.update(viewport)` as the camera changes.
+Once a source has been created, an application can instantiate `Tileset3D` and call
+`await tileset.selectTiles(viewport)` as the camera changes. The asynchronous method waits for
+initialization and coalesces repeated viewport updates.
 
 3D tiled datasets tend to be large, so traversal loads only the tiles needed for the current view.
 
 `Tileset3D` accepts `onTileLoad` and `onTileUnload` callbacks that notify the application when
-the set of renderable tiles changes. Tile loads complete asynchronously, after
-`tileset3D.update(...)` returns.
+the set of renderable tiles changes. `tileset.update(viewport)` remains available as a fire-and-
+forget compatibility wrapper when the application does not need to await the traversal promise.
 
 ### Coordinate systems
 
