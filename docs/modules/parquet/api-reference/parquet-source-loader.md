@@ -1,4 +1,37 @@
-# ParquetSourceLoader
+---
+title: ParquetSourceLoader
+description: Read remote Parquet selectively through metadata, byte ranges, predicates, and Arrow batches.
+hide_title: true
+page_style: designed
+---
+
+import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
+import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
+
+<DocPageHeader
+  eyebrow="Parquet source"
+  title="Ask a remote table for a bounded result."
+  description="ParquetSourceLoader discovers schema and row-group metadata, then reads only the columns and byte ranges needed for a request. Results arrive as Arrow batches through a reusable source."
+  tone="cyan"
+  meta={['Remote Parquet', 'Row-group selection', 'Arrow batches']}
+  links={[
+    {label: 'Scan architecture', to: '/docs/developer-guide/common-scan-architecture'},
+    {label: 'Parquet format', to: '/docs/modules/parquet/formats/parquet'}
+  ]}
+/>
+
+<DocOrientation
+  eyebrow="The source contract"
+  title="Inspect metadata once, then reuse the plan."
+  description="The source caches the footer and schema, accepts table queries, and delegates physical decoding to the Parquet reader. Applications can keep the high-level request independent of the file layout."
+  tone="cyan"
+  items={[
+    {label: 'Discover', value: 'Schema, row groups, columns, statistics, and size'},
+    {label: 'Plan', value: 'Projection, predicates, row-group pruning, and limits'},
+    {label: 'Read', value: 'Bounded HTTP ranges with cancellation'},
+    {label: 'Return', value: 'Streaming Arrow record batches'}
+  ]}
+/>
 
 <p class="badges">
   <img src="https://img.shields.io/badge/From-v5.0-blue.svg?style=flat-square" alt="From-v5.0" />
@@ -10,6 +43,12 @@
 batch access without downloading an entire remote Parquet object. The source uses bounded HTTP byte
 ranges, decodes the footer once, and shares the resulting metadata and schema cache across calls and
 reads.
+
+<ReferenceBoundary
+  title="Parquet source details"
+  description="The sections below document source construction, query options, metadata caching, range reads, and Arrow batch results."
+  tone="cyan"
+/>
 
 ## Usage
 

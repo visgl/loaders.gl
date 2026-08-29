@@ -1,8 +1,40 @@
-import {ParquetDocsTabs} from '@site/src/components/docs/parquet-docs-tabs';
+---
+title: GeoParquet format
+description: Store geospatial columns in Parquet with explicit geometry metadata, encodings, and CRS information.
+hide_title: true
+page_style: designed
+---
 
-# GeoParquet
+import {ParquetDocsTabs} from '@site/src/components/docs/parquet-docs-tabs';
+import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
+import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
+
+<DocPageHeader
+  eyebrow="Geospatial columnar format"
+  title="Put geometry into the Parquet table contract."
+  description="GeoParquet adds geospatial metadata and encoding conventions to Parquet. The result is still a Parquet table, but readers can discover geometry columns, encodings, bounds, and coordinate meaning without a sidecar format."
+  tone="cyan"
+  meta={['Parquet', 'Geo metadata', 'WKB and GeoArrow encodings']}
+  links={[
+    {label: 'Parquet format', to: '/docs/modules/parquet/formats/parquet'},
+    {label: 'GeoArrow format', to: '/docs/modules/arrow/formats/geoarrow'}
+  ]}
+/>
 
 <ParquetDocsTabs active="geoparquet" />
+
+<DocOrientation
+  eyebrow="The GeoParquet path"
+  title="One table, with spatial meaning attached."
+  description="GeoParquet keeps geometry values in typed Parquet columns and records how to interpret them in schema metadata. That makes storage, scan planning, and application conversion part of one inspectable path."
+  tone="cyan"
+  items={[
+    {label: 'Storage', value: 'Parquet columns with GeoParquet metadata'},
+    {label: 'Geometry', value: 'WKB, native GeoArrow, and newer logical encodings'},
+    {label: 'Meaning', value: 'Primary geometry, bounds, CRS, and epoch metadata'},
+    {label: 'Runtime', value: 'Projection, predicates, and Arrow feature tables'}
+  ]}
+/>
 
 <p class="badges">
   <a href="/docs/developer-guide/common-scan-architecture">
@@ -18,6 +50,12 @@ import {ParquetDocsTabs} from '@site/src/components/docs/parquet-docs-tabs';
 - _[geoparquet.org](https://geoparquet.org)_
 
 GeoParquet is a standard for storing geospatial data in Parquet files.
+
+<ReferenceBoundary
+  title="GeoParquet metadata and encoding details"
+  description="The sections below cover schema metadata, geometry encodings, supported features, CRS behavior, and loaders.gl integration."
+  tone="cyan"
+/>
 
 See [Coordinate Reference Systems](/docs/developer-guide/coordinate-reference-systems) for the
 cross-format CRS model and the distinction between metadata preservation and reprojection.
