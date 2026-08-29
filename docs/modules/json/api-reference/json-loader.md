@@ -1,8 +1,47 @@
-import {JsonDocsTabs} from '@site/src/components/docs/json-docs-tabs';
+---
+title: JSONLoader
+description: Parse JSON documents or stream arrays into loaders.gl data.
+hide_title: true
+page_style: designed
+---
 
-# JSONLoader
+import {JsonDocsTabs} from '@site/src/components/docs/json-docs-tabs';
+import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
+import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
+
+<DocPageHeader
+  eyebrow="JSON module · loader API"
+  title="JSONLoader"
+  description="Parse arbitrary JSON documents, or stream rows from an array inside a larger document when the payload is too large to process as one blocking operation."
+  tone="yellow"
+  meta={['JSON documents', 'Streaming arrays', 'From v1.0']}
+  links={[
+    {label: 'JSON format', to: '/docs/modules/json/formats/json'},
+    {label: 'JSONTableLoader', to: '/docs/modules/json/api-reference/json-table-loader'},
+    {label: 'JSON module', to: '/docs/modules/json'}
+  ]}
+/>
 
 <JsonDocsTabs active="jsonloader" />
+
+<DocOrientation
+  eyebrow="What it returns"
+  title="Preserve the document—or stream the records inside it."
+  description="JSONLoader handles arbitrary JSON values while retaining a compatibility path for arrays and JSONPath-selected row streams. Use JSONTableLoader when table output is the contract."
+  tone="yellow"
+  items={[
+    {label: 'Documents', value: 'Objects, arrays, and scalar JSON values'},
+    {label: 'Rows', value: 'Arrays extracted as loaders.gl batches'},
+    {label: 'GeoJSON', value: 'Feature arrays selected by JSONPath'},
+    {label: 'APIs', value: 'load, parse, sync, and batch parsing'}
+  ]}
+/>
+
+<ReferenceBoundary
+  title="JSONLoader reference"
+  description="The sections below cover format metadata, atomic and streaming usage, JSONPath selection, and loader options."
+  tone="yellow"
+/>
 
 Streaming loader for JSON encoded files.
 

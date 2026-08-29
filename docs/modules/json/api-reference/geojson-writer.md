@@ -1,12 +1,47 @@
-import {JsonDocsTabs} from '@site/src/components/docs/json-docs-tabs';
+---
+title: GeoJSONWriter
+description: Encode loaders.gl geospatial data as GeoJSON or newline-delimited features.
+hide_title: true
+page_style: designed
+---
 
-# GeoJSONWriter
+import {JsonDocsTabs} from '@site/src/components/docs/json-docs-tabs';
+import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
+import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
+
+<DocPageHeader
+  eyebrow="JSON module · geospatial writer"
+  title="GeoJSONWriter"
+  description="Encode loaders.gl geospatial tables as GeoJSON, keeping feature geometry and properties in a format that mapping tools and web APIs understand."
+  tone="mint"
+  meta={['From v4.0', 'GeoJSON', 'Streaming output']}
+  links={[
+    {label: 'GeoJSON format', to: '/docs/modules/json/formats/geojson'},
+    {label: 'GeoJSONLoader', to: '/docs/modules/json/api-reference/geojson-loader'},
+    {label: 'JSON module', to: '/docs/modules/json'}
+  ]}
+/>
 
 <JsonDocsTabs active="geojsonwriter" tryItHref="/examples/geospatial/geojson" />
 
-<p class="badges">
-  <img src="https://img.shields.io/badge/From-v4.0-blue.svg?style=flat-square" alt="From-v4.0" />
-</p>
+<DocOrientation
+  eyebrow="What it writes"
+  title="Send table data back to the map as features."
+  description="GeoJSONWriter converts table-shaped geospatial data into a FeatureCollection or feature stream, with an incremental path for larger outputs."
+  tone="mint"
+  items={[
+    {label: 'Input', value: 'GeoJSON tables and geometry columns'},
+    {label: 'Output', value: 'GeoJSON features and collections'},
+    {label: 'Streaming', value: 'Incremental feature batches'},
+    {label: 'Boundary', value: 'Readable web and GIS interchange'}
+  ]}
+/>
+
+<ReferenceBoundary
+  title="GeoJSONWriter reference"
+  description="The sections below document format metadata, usage, streaming, output shapes, and writer options."
+  tone="mint"
+/>
 
 Streaming writer for GeoJSON encoded files.
 
