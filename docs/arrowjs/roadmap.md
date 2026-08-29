@@ -66,4 +66,7 @@ The Arrow JS type system (schemas etc could be represented in this way, in fact 
 This reduces the need for serialization and deserialization.
 Having a helper class that can be instantiated on top of the pure data structure is of course fine.
 
-TBA...
+The pure-JavaScript representation remains a design direction rather than a proposed change to
+the Arrow JS object model. In loaders.gl, serialized table helpers and focused transport APIs
+provide a practical boundary today; future Arrow JS work should preserve the ability to move
+typed buffers without forcing applications to learn an additional object graph.

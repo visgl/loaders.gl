@@ -124,7 +124,7 @@ Compressed GPU texture containers and texture-level return shapes are documented
 The image category also provides a few utilities:
 
 - Detecting ("sniffing") mime type and size of image files before parsing them
-- Getting image data (arrays of pixels) from an image without knowing which type was loaded (TBA)
+- Getting image data (arrays of pixels) from an image without knowing which type was loaded with [`getImageData`](/docs/modules/images/api-reference/image-loader)
 
 ## Remarks
 

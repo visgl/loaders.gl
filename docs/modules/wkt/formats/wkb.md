@@ -68,9 +68,13 @@ Well-known binary (WKB) representations are typically shown in hexadecimal strin
 
 TWKB uses varints, precision truncation and zigzag point encoding to reduce binary size ~2x (however compressed size reduction is less)
 
-## Version History
+## Version context
 
-TBA.
+The core WKB geometry layout is defined by the OGC Simple Feature Access family of standards
+and is also widely implemented by spatial databases such as PostGIS. Extended type codes add
+Z, M, and CRS dimensions without changing the basic byte-order and geometry-record structure.
+The loaders.gl WKB path focuses on the core point, line, polygon, multipart, and collection
+types listed in the support table below.
 
 ## Ecosystem Support
 

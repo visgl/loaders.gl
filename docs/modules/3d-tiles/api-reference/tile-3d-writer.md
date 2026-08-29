@@ -40,4 +40,9 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
   tone="orange"
 />
 
-TBA
+`Tiles3DWriter` is not currently implemented. There is no public `encode()` or
+`encodeURLtoURL()` path for producing a complete 3D Tiles tileset from loaders.gl data.
+
+For content-writing workflows, write the payload format separately—for example with
+[`GLTFWriter`](/docs/modules/gltf/api-reference/gltf-writer) or [`DracoWriter`](/docs/modules/draco/api-reference/draco-writer)—then assemble and publish the
+tileset with a format-specific toolchain.

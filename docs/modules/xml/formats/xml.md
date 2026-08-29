@@ -71,7 +71,10 @@ A repetition of XML elements with the same tag name is typically converted into 
 
 ### Arrays
 
-TBA
+XML has no standalone array type. A sequence of sibling elements with the same name is commonly
+represented as a JavaScript array, while a single occurrence is represented as one value. This
+means a consumer that needs a stable array shape should normalize both cases at its application
+boundary, and should keep XML schema knowledge outside the generic XML parser.
 
 ## XML schemas
 
