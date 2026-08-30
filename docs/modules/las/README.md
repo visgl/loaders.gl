@@ -12,10 +12,11 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
 
 <DocPageHeader
   eyebrow="Point-cloud module"
-  title="Keep the point record, or keep the columns."
-  description="The LAS module reads and writes the established LAS/LAZ exchange formats, including the modern point-record fields that matter for lidar workflows. Choose raw records, a render-ready point cloud, or a typed Mesh Arrow table."
+  title="@loaders.gl/las"
+  description="Keep the point record, or keep the columns. Read and write LAS/LAZ exchange data as raw records, a render-ready point cloud, or a typed Mesh Arrow table."
   tone="blue"
   meta={['LAS 1.0–1.5', 'LAZ point formats 0–10', 'TypeScript reader']}
+  logos={[{alt: 'LAS', src: '/images/format-logos/las-logo.svg'}]}
   links={[
     {label: 'LAS / LAZ format', to: '/docs/modules/las/formats/las'},
     {label: 'Mesh category', to: '/docs/specifications/category-mesh'}
@@ -23,8 +24,6 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
 />
 
 <LasDocsTabs active="overview" />
-
-![las-logo](../../images/logos/las-logo.svg)
 
 <PointCloudFormatGraphic />
 

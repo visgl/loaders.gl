@@ -41,7 +41,7 @@ export type ScanEngine = ScanBackend & {
   queryAsync: (sourceTable: ArrowTable, options?: ArrowQueryOptions) => Promise<ArrowTable>;
 };
 
-const scanBackendLoaders = new Map<ScanBackendName, ScanBackendLoader>();
+const scanBackends = new Map<ScanBackendName, ScanBackend | ScanBackendLoader>();
 
 const arrowScanBackend: ScanBackend = Object.freeze({
   name: 'arrow',
@@ -51,7 +51,9 @@ const arrowScanBackend: ScanBackend = Object.freeze({
   explain: explainArrowTableQuery
 });
 
-scanBackendLoaders.set('arrow', () => arrowScanBackend);
+// Store the built-in backend directly. Apart from avoiding needless indirection, this keeps
+// coverage stable when browser shards transform this shared module independently.
+scanBackends.set('arrow', arrowScanBackend);
 
 /**
  * Registers a lazy scan backend without adding it to the default bundle.
@@ -64,7 +66,7 @@ export function registerScanBackend(name: ScanBackendName, loader: ScanBackendLo
   if (!name || !loader) {
     throw new Error('A scan backend name and loader are required');
   }
-  scanBackendLoaders.set(name, loader);
+  scanBackends.set(name, loader);
 }
 
 /**
@@ -75,13 +77,14 @@ export function registerScanBackend(name: ScanBackendName, loader: ScanBackendLo
  */
 export async function createScanEngine(options: ScanEngineOptions = {}): Promise<ScanEngine> {
   const backendName = options.backend || 'arrow';
-  const loader = scanBackendLoaders.get(backendName);
-  if (!loader) {
+  const registeredBackend = scanBackends.get(backendName);
+  if (!registeredBackend) {
     throw new Error(
       `Scan backend "${backendName}" is not registered. The built-in backend is "arrow".`
     );
   }
-  const backend = await loader();
+  const backend =
+    typeof registeredBackend === 'function' ? await registeredBackend() : registeredBackend;
   if (backend.name !== backendName) {
     throw new Error(
       `Scan backend loader returned "${backend.name}" while "${backendName}" was requested.`

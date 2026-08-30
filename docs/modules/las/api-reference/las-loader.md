@@ -11,10 +11,11 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
 
 <DocPageHeader
   eyebrow="LAS loader"
-  title="Choose the point shape that fits the next step."
-  description="LASLoader reads LAS and LAZ records with a pure TypeScript implementation. Return a render-ready point cloud for visualization, or select Arrow columns when the data is headed to analysis, workers, scans, or writers."
+  title="LASLoader"
+  description="Choose the point shape that fits the next step. Read LAS and LAZ records into a render-ready point cloud, or select Arrow columns for analysis, workers, scans, and writers."
   tone="blue"
   meta={['LAS / LAZ', 'TypeScript', 'Arrow output']}
+  logos={[{alt: 'LAS', src: '/images/format-logos/las-logo.svg'}]}
   links={[
     {label: 'LAS / LAZ format', to: '/docs/modules/las/formats/las'},
     {label: 'LASWriter', to: '/docs/modules/las/api-reference/las-writer'}

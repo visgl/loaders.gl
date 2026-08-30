@@ -1,4 +1,4 @@
-import test from 'test/utils/vitest-tape';
+import {expect, test} from 'vitest';
 import {
   flattenPropertyTableByFeatureIds,
   checkPropertiesLength,
@@ -7,8 +7,7 @@ import {
   getAttributeType
 } from '../../../src/i3s-converter/helpers/feature-attributes';
 import type {GLTFPostprocessed} from '@loaders.gl/gltf';
-
-test('tile-converter(i3s)#flattenPropertyTableByFeatureIds - Should return flatten property table', async t => {
+test('tile-converter(i3s)#flattenPropertyTableByFeatureIds - Should return flatten property table', async () => {
   const featureIdsMap = {0: 0, 1: 1, 3: 3};
   const propertyTable = {
     component: ['Wall', 'Roof', 'Clock', 'Frames'],
@@ -19,42 +18,37 @@ test('tile-converter(i3s)#flattenPropertyTableByFeatureIds - Should return flatt
     color: ['red', 'green', 'white']
   };
   const result = flattenPropertyTableByFeatureIds(featureIdsMap, propertyTable);
-  t.deepEqual(result, expectedResult);
+  expect(result).toEqual(expectedResult);
 });
-
-test('tile-converter(i3s)#checkPropertiesLength - Should return false if properies count is the same as featureIds count', async t => {
+test('tile-converter(i3s)#checkPropertiesLength - Should return false if properies count is the same as featureIds count', async () => {
   const featureIds = [0, 1, 3];
   const propertyTable = {
     component: ['Wall', 'Roof', 'Clock'],
     color: ['red', 'green', 'blue']
   };
   const result = checkPropertiesLength(featureIds, propertyTable);
-  t.deepEqual(result, false);
+  expect(result).toEqual(false);
 });
-
-test('tile-converter(i3s)#checkPropertiesLength - Should return true if properies count is not the same as featureIds count', async t => {
+test('tile-converter(i3s)#checkPropertiesLength - Should return true if properies count is not the same as featureIds count', async () => {
   const featureIds = [0, 1, 3];
   const propertyTable = {
     component: ['Wall', 'Roof', 'Clock', 'Frames'],
     color: ['red', 'green', 'blue', 'white']
   };
   const result = checkPropertiesLength(featureIds, propertyTable);
-  t.deepEqual(result, true);
+  expect(result).toEqual(true);
 });
-
-test('tile-converter(i3s)#getAttributeType - Should return the type of attribute', async t => {
+test('tile-converter(i3s)#getAttributeType - Should return the type of attribute', async () => {
   const attributes = ['', 'myName', 0, 1, 2n, 3.5];
   const typesExpected = ['string', 'string', 'Int32', 'Int32', 'string', 'double'];
   const types: string[] = [];
   for (const attribute of attributes) {
     types.push(getAttributeType(attribute));
   }
-  t.deepEqual(types, typesExpected, 'popupInfo');
+  expect(types, 'popupInfo').toEqual(typesExpected);
 });
-
-test('tile-converter(i3s)#getAttributeTypesFromSchema - Should return attributes type taken from the extension schema', async t => {
+test('tile-converter(i3s)#getAttributeTypesFromSchema - Should return attributes type taken from the extension schema', async () => {
   /* eslint-disable camelcase */
-
   const gltfJson = {
     extensions: {
       EXT_structural_metadata: {
@@ -97,7 +91,6 @@ test('tile-converter(i3s)#getAttributeTypesFromSchema - Should return attributes
       }
     }
   };
-
   const schema_expected = {
     color: 'string',
     name: 'string',
@@ -106,19 +99,15 @@ test('tile-converter(i3s)#getAttributeTypesFromSchema - Should return attributes
     opt_float32: 'double',
     opt_enum: 'string'
   };
-
   /* eslint-enable camelcase */
-
   const attributePropertySet = getAttributeTypesMapFromSchema(
     gltfJson as unknown as GLTFPostprocessed,
     'owt_lulc'
   );
-  t.deepEqual(attributePropertySet, schema_expected, 'attribute type taken from the schema');
+  expect(attributePropertySet, 'attribute type taken from the schema').toEqual(schema_expected);
 });
-
-test('tile-converter(i3s)#getAttributeTypesFromPropertyTable - Should return attributes type taken from the extension schema', async t => {
+test('tile-converter(i3s)#getAttributeTypesFromPropertyTable - Should return attributes type taken from the extension schema', async () => {
   /* eslint-disable camelcase */
-
   const propertyTable = {
     color: ['red', 'green'],
     name: ['myRed', 'myGreen'],
@@ -126,7 +115,6 @@ test('tile-converter(i3s)#getAttributeTypesFromPropertyTable - Should return att
     opt_uint64: [2n, 3n],
     opt_float32: [3.5, 4.0]
   };
-
   const typesExpected = {
     color: 'string',
     name: 'string',
@@ -134,9 +122,7 @@ test('tile-converter(i3s)#getAttributeTypesFromPropertyTable - Should return att
     opt_uint64: 'string',
     opt_float32: 'double'
   };
-
   /* eslint-enable camelcase */
-
   const attributeTypes = getAttributeTypesMapFromPropertyTable(propertyTable);
-  t.deepEqual(attributeTypes, typesExpected, 'attribute type taken from the property table');
+  expect(attributeTypes, 'attribute type taken from the property table').toEqual(typesExpected);
 });

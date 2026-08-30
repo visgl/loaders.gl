@@ -9,17 +9,16 @@ import {ParquetDocsTabs} from '@site/src/components/docs/parquet-docs-tabs';
 import {ParquetLayoutGraphic} from '@site/src/components/docs/parquet-layout-graphic';
 import {ParquetScanLiveExample} from '@site/src/components/docs/parquet-scan-live-example';
 import {CapabilityHero} from '@site/src/components/docs/capability-hero';
-import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
 import {DocOrientation} from '@site/src/components/docs/designed-doc';
 
-<CapabilityHero capability="columnar" />
-
-<DocPageHeader
+<CapabilityHero
+  capability="columnar"
   eyebrow="Columnar file format"
   title="Apache Parquet"
   description="Organize data into independently useful row groups, column chunks, and pages so readers can fetch less and decode only what they need."
-  tone="mint"
-  meta={['Column-oriented', 'Range-readable', 'Arrow-friendly']}
+  logos={[
+    {alt: 'Apache Parquet', src: '/images/format-logos/parquet-logo.png'}
+  ]}
   links={[
     {label: 'Parquet module', to: '/docs/modules/parquet'},
     {label: 'ParquetLoader', to: '/docs/modules/parquet/api-reference/parquet-loader'}

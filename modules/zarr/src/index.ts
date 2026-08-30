@@ -11,6 +11,7 @@ export {
 } from './ome-zarr-source-loader';
 export {GeoZarrSourceLoader, GeoZarrRasterSource} from './geo-zarr-source-loader';
 export {ZarrArraySourceLoader, ZarrArraySource} from './zarr-array-source';
+export {SpatialDataSourceLoader, SpatialDataSource} from './spatial-data-source';
 export type {
   GetZarrArrayParameters,
   ZarrArrayData,
@@ -19,6 +20,14 @@ export type {
   ZarrArraySourceLoaderOptions,
   ZarrArraySourceMetadata
 } from './zarr-array-source';
+export type {
+  SpatialDataElementFormat,
+  SpatialDataElementKind,
+  SpatialDataElementMetadata,
+  SpatialDataSourceLoaderOptions,
+  SpatialDataSourceMetadata,
+  SpatialDataZarrElementSource
+} from './spatial-data-source';
 export type {
   GetOMEZarrParameters,
   LoadConsolidatedMetadataOptions,

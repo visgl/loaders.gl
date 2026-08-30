@@ -5,27 +5,24 @@ hide_title: true
 page_style: designed
 ---
 
-import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
 import {CapabilityHero} from '@site/src/components/docs/capability-hero';
 import {ParquetLayoutGraphic} from '@site/src/components/docs/parquet-layout-graphic';
 import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
 
-<CapabilityHero capability="columnar" />
-
-<DocPageHeader
+<CapabilityHero
+  capability="columnar"
   eyebrow="Module overview"
   title="@loaders.gl/parquet"
   description="Use Parquet when column selection, metadata pruning, and Arrow-compatible results matter more than reading the whole file."
-  tone="mint"
-  meta={['Parquet and GeoParquet', 'Arrow output', 'Selective reads']}
+  logos={[
+    {alt: 'Apache Parquet', src: '/images/format-logos/parquet-logo.png'}
+  ]}
   links={[
     {label: 'Parquet format', to: '/docs/modules/parquet/formats/parquet'},
     {label: 'ParquetLoader', to: '/docs/modules/parquet/api-reference/parquet-loader'},
     {label: 'Scan architecture', to: '/docs/developer-guide/common-scan-architecture'}
   ]}
 />
-
-![parquet-logo](./images/parquet-logo-small.png)
 
 <p className="badges">
   <img src="https://img.shields.io/badge/From-v3.1-blue.svg?style=flat-square" alt="From-v3.1" />

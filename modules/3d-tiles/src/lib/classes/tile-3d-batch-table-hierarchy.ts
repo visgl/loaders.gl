@@ -8,6 +8,9 @@
 // TODO - Finish hierarchy suypport: this file is only half ported
 /* eslint-disable */
 // @ts-nocheck
+import {GL} from '@math.gl/geometry-utils';
+import {createTypedArrayFromAccessor} from './helpers/tile-3d-accessor-utils';
+
 const defined = x => x !== undefined;
 
 const scratchVisited = [];
@@ -68,8 +71,6 @@ export function initializeHierarchy(batchTable, jsonHeader, binaryBody) {
 function initializeHierarchyValues(hierarchyJson, binaryBody) {
   let i;
   let classId;
-  let binaryAccessor;
-
   const instancesLength = hierarchyJson.instancesLength;
   const classes = hierarchyJson.classes;
   let classIds = hierarchyJson.classIds;
@@ -78,27 +79,27 @@ function initializeHierarchyValues(hierarchyJson, binaryBody) {
   let parentIdsLength = instancesLength;
 
   if (defined(classIds.byteOffset)) {
-    classIds.componentType = defaultValue(classIds.componentType, GL.UNSIGNED_SHORT);
-    classIds.type = AttributeType.SCALAR;
-    binaryAccessor = getBinaryAccessor(classIds);
-    classIds = binaryAccessor.createArrayBufferView(
+    classIds.componentType ??= GL.UNSIGNED_SHORT;
+    classIds.type = 'SCALAR';
+    classIds = createTypedArrayFromAccessor(
+      classIds,
       binaryBody.buffer,
-      binaryBody.byteOffset + classIds.byteOffset,
+      binaryBody.byteOffset,
       instancesLength
-    );
+    ).values;
   }
 
   let parentIndexes;
   if (defined(parentCounts)) {
     if (defined(parentCounts.byteOffset)) {
-      parentCounts.componentType = defaultValue(parentCounts.componentType, GL.UNSIGNED_SHORT);
-      parentCounts.type = AttributeType.SCALAR;
-      binaryAccessor = getBinaryAccessor(parentCounts);
-      parentCounts = binaryAccessor.createArrayBufferView(
+      parentCounts.componentType ??= GL.UNSIGNED_SHORT;
+      parentCounts.type = 'SCALAR';
+      parentCounts = createTypedArrayFromAccessor(
+        parentCounts,
         binaryBody.buffer,
-        binaryBody.byteOffset + parentCounts.byteOffset,
+        binaryBody.byteOffset,
         instancesLength
-      );
+      ).values;
     }
     parentIndexes = new Uint16Array(instancesLength);
     parentIdsLength = 0;
@@ -109,14 +110,14 @@ function initializeHierarchyValues(hierarchyJson, binaryBody) {
   }
 
   if (defined(parentIds) && defined(parentIds.byteOffset)) {
-    parentIds.componentType = defaultValue(parentIds.componentType, GL.UNSIGNED_SHORT);
-    parentIds.type = AttributeType.SCALAR;
-    binaryAccessor = getBinaryAccessor(parentIds);
-    parentIds = binaryAccessor.createArrayBufferView(
+    parentIds.componentType ??= GL.UNSIGNED_SHORT;
+    parentIds.type = 'SCALAR';
+    parentIds = createTypedArrayFromAccessor(
+      parentIds,
       binaryBody.buffer,
-      binaryBody.byteOffset + parentIds.byteOffset,
+      binaryBody.byteOffset,
       parentIdsLength
-    );
+    ).values;
   }
 
   const classesLength = classes.length;

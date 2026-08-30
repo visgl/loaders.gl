@@ -10,6 +10,13 @@ export {ParquetJSLoaderWithParser as ParquetJSLoader} from './parquet-js-loader'
 export {
   ParquetSourceLoader,
   ParquetSource,
+  type ParquetDeferredPageFilter,
+  type ParquetEncodedColumnChunk,
+  type ParquetEncodedPage,
+  type ParquetEncodedPageBatch,
+  type ParquetEncodedPageReadOptions,
+  type ParquetEncodedPageSection,
+  type ParquetPageCompressionState,
   type ParquetSourceLoaderOptions,
   type ParquetSourceReadOptions,
   type ParquetSourceMetadata,

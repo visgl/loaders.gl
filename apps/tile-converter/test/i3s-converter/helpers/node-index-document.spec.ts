@@ -1,10 +1,9 @@
-import test from 'test/utils/vitest-tape';
+import {describe, expect, test} from 'vitest';
 import {isBrowser} from '@loaders.gl/core';
 import {NodeIndexDocument} from '../../../src/i3s-converter/helpers/node-index-document';
 import I3SConverter from '../../../src/i3s-converter/i3s-converter';
 import WriteQueue from '../../../src/lib/utils/write-queue';
 import {ConversionDump} from '../../../src/lib/utils/conversion-dump';
-
 const getConverter = ({slpk, instantNodeWriting} = {slpk: false, instantNodeWriting: false}) => {
   const converter = new I3SConverter();
   converter.options = {
@@ -15,25 +14,14 @@ const getConverter = ({slpk, instantNodeWriting} = {slpk: false, instantNodeWrit
   converter.writeQueue = new WriteQueue(new ConversionDump());
   return converter;
 };
-
-test('tile-converter(i3s)#NodeIndexDocument', async t => {
-  if (isBrowser) {
-    t.end();
-    return;
-  }
-
-  t.test(
-    'tile-converter(i3s)#NodeIndexDocument - Should create an instance of NodeIndexDocument class',
-    async st => {
-      const node = new NodeIndexDocument(0, getConverter());
-      st.ok(node instanceof NodeIndexDocument);
-      st.equal(node.inPageId, 0);
-      st.equal(node.id, 'root');
-      st.end();
-    }
-  );
-
-  t.test('tile-converter(i3s)#NodeIndexDocument - Should create root node', async st => {
+describe.skipIf(isBrowser)('tile-converter(i3s)#NodeIndexDocument', () => {
+  test('tile-converter(i3s)#NodeIndexDocument - Should create an instance of NodeIndexDocument class', async () => {
+    const node = new NodeIndexDocument(0, getConverter());
+    expect(node instanceof NodeIndexDocument).toBeTruthy();
+    expect(node.inPageId).toBe(0);
+    expect(node.id).toBe('root');
+  });
+  test('tile-converter(i3s)#NodeIndexDocument - Should create root node', async () => {
     const node = await NodeIndexDocument.createRootNode(
       {
         obb: {center: [1, 1, 1], halfSize: [2, 3, 4], quaternion: [4, 3, 2, 1]},
@@ -41,13 +29,11 @@ test('tile-converter(i3s)#NodeIndexDocument', async t => {
       },
       getConverter()
     );
-    st.ok(node instanceof NodeIndexDocument);
-    st.equal(node.inPageId, 0);
-    st.equal(node.id, 'root');
-    st.end();
+    expect(node instanceof NodeIndexDocument).toBeTruthy();
+    expect(node.inPageId).toBe(0);
+    expect(node.id).toBe('root');
   });
-
-  t.test('tile-converter(i3s)#NodeIndexDocument - Should create root node', async st => {
+  test('tile-converter(i3s)#NodeIndexDocument - Should create root node', async () => {
     const obb = {center: [1, 1, 1], halfSize: [2, 3, 4], quaternion: [4, 3, 2, 1]};
     const parentNode = await NodeIndexDocument.createRootNode(
       {obb, mbs: [1, 2, 3, 4]},
@@ -74,11 +60,8 @@ test('tile-converter(i3s)#NodeIndexDocument', async t => {
       resources: emptyResources,
       converter: getConverter()
     });
-    st.ok(node instanceof NodeIndexDocument);
-    st.equal(node.inPageId, 5);
-    st.equal(node.id, '5');
-    st.end();
+    expect(node instanceof NodeIndexDocument).toBeTruthy();
+    expect(node.inPageId).toBe(5);
+    expect(node.id).toBe('5');
   });
-
-  t.end();
 });
