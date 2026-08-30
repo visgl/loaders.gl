@@ -46,7 +46,8 @@ const scanBackendLoaders = new Map<ScanBackendName, ScanBackendLoader>();
 const arrowScanBackend: ScanBackend = Object.freeze({
   name: 'arrow',
   query: queryArrowTable,
-  queryAsync: async (sourceTable, options) => queryArrowTable(sourceTable, options),
+  queryAsync: (sourceTable, options) =>
+    Promise.resolve().then(queryArrowTable.bind(null, sourceTable, options)),
   explain: explainArrowTableQuery
 });
 
