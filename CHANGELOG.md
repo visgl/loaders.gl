@@ -2,6 +2,11 @@
 
 ## v5.0
 
+### v5.0.0-alpha.5
+
+- feat(geoarrow): establish the GeoArrow tentpole contract with native columnar conversions, adaptive layouts, validation, resource limits, and format examples
+- chore(math.gl): align all loaders.gl-owned math.gl dependencies with `5.0.0-alpha.4`
+
 ### v5.0.0-alpha.4
 
 - feat(parquet): expose encoded pages for deferred decoding and future query execution
