@@ -158,15 +158,18 @@
 .logoLink {
   align-items: center;
   display: inline-flex;
+  flex: 0 0 auto;
 }
 
 .logos :global(img) {
   display: block;
   filter: brightness(0) invert(1);
+  height: auto;
   max-height: 2.35rem;
   max-width: 9rem;
   object-fit: contain;
   opacity: 0.88;
+  width: auto;
 }
 
 .badges :global(img) {

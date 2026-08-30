@@ -11,7 +11,7 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
 
 <DocPageHeader
   eyebrow="Dataset catalog format"
-  title="Describe the asset before you download it."
+  title="STAC"
   description="STAC connects catalog, collection, and item metadata to the files or services that carry the actual data. It adds spatial and temporal discovery without replacing the native format loader."
   tone="mint"
   meta={['Catalogs and Items', 'Space and time', 'Asset links']}

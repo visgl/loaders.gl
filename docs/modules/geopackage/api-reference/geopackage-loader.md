@@ -7,19 +7,26 @@ page_style: designed
 
 import {GeoPackageDocsTabs} from '@site/src/components/docs/geopackage-docs-tabs';
 import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
+import {DocLiveExample} from '@site/src/components/docs/doc-live-example';
 import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
+import {ClientExample} from '@site/src/components';
 
 <DocPageHeader
   eyebrow="GeoPackage loader"
-  title="Choose a feature table, then read it normally."
+  title="GeoPackageLoader"
   description="GeoPackageLoader opens the SQLite container, discovers its feature tables, and returns the selected table in a loaders.gl geometry shape."
   tone="orange"
+  logos={[{alt: 'Open Geospatial Consortium', src: '/images/format-logos/ogc-logo-transparent.png'}]}
   meta={['SQLite-backed', 'Feature tables', 'Geometry metadata']}
   links={[
     {label: 'GeoPackage format', to: '/docs/modules/geopackage/formats/geopackage'},
     {label: 'GeoPackage module', to: '/docs/modules/geopackage'}
   ]}
 />
+
+<DocLiveExample label="GeoPackage loader example" height="420px">
+  <ClientExample kind="geospatial" format="GeoPackage" />
+</DocLiveExample>
 
 <GeoPackageDocsTabs active="loader" />
 
@@ -35,8 +42,6 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
     {label: 'Return', value: 'GeoJSON, table, or feature data'}
   ]}
 />
-
-![ogc-logo](../../../images/logos/ogc-logo-60.png)
 
 <p className="badges">
   <img src="https://img.shields.io/badge/From-v3.0-blue.svg?style=flat-square" alt="From-v3.0" />

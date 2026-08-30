@@ -11,7 +11,7 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
 
 <DocPageHeader
   eyebrow="Dataset discovery"
-  title="Find the asset before choosing the loader."
+  title="@loaders.gl/stac"
   description="The STAC module discovers datasets, links, time ranges, and spatial extents from static catalogs or API searches, then leaves the selected asset free to use its native loader."
   tone="mint"
   meta={['STAC catalogs', 'API Item Search', 'Asset links']}

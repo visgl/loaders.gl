@@ -6,20 +6,27 @@ page_style: designed
 ---
 
 import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
+import {DocLiveExample} from '@site/src/components/docs/doc-live-example';
 import {DatasetDiscoveryGraphic} from '@site/src/components/docs/dataset-discovery-graphic';
 import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
+import {ClientExample} from '@site/src/components';
 
 <DocPageHeader
   eyebrow="Geospatial database module"
-  title="Open a GeoPackage without hiding its layers."
+  title="@loaders.gl/geopackage"
   description="GeoPackage is a SQLite-based container for vector features, tiles, and metadata. The module exposes its tables and layers directly, with a source path for discovering and reading selected data."
   tone="orange"
+  logos={[{alt: 'Open Geospatial Consortium', src: '/images/format-logos/ogc-logo-transparent.png'}]}
   meta={['OGC GeoPackage', 'SQLite', 'Layer and table access']}
   links={[
     {label: 'GeoPackage format', to: '/docs/modules/geopackage/formats/geopackage'},
     {label: 'CRS guide', to: '/docs/developer-guide/coordinate-reference-systems'}
   ]}
 />
+
+<DocLiveExample label="GeoPackage map example" height="440px">
+  <ClientExample kind="geospatial" format="GeoPackage" />
+</DocLiveExample>
 
 <DatasetDiscoveryGraphic kind="geopackage" />
 
@@ -35,8 +42,6 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
     {label: 'Runtime', value: 'Local parsing with explicit CRS and layer information'}
   ]}
 />
-
-![ogc-logo](../../images/logos/ogc-logo-60.png)
 
 <ReferenceBoundary
   title="GeoPackage module details"

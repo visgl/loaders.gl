@@ -7,19 +7,26 @@ page_style: designed
 
 import {GeoTiffDocsTabs} from '@site/src/components/docs/geotiff-docs-tabs';
 import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
+import {DocLiveExample} from '@site/src/components/docs/doc-live-example';
 import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
+import {ClientExample} from '@site/src/components';
 
 <DocPageHeader
   eyebrow="GeoTIFF loader"
-  title="Read raster values with their spatial context."
+  title="GeoTIFFLoader"
   description="GeoTIFFLoader is the entry point for TIFF imagery whose tags describe scale, bounds, and coordinate reference. Use the source APIs when a cloud query needs selective ranges or windows."
   tone="mint"
+  logos={[{alt: 'Open Geospatial Consortium', src: '/images/format-logos/ogc-logo-transparent.png'}]}
   meta={['TIFF input', 'GeoTIFF metadata', 'Typed raster output']}
   links={[
     {label: 'GeoTIFF format', to: '/docs/modules/geotiff/formats/geotiff'},
     {label: 'GeoTIFF module', to: '/docs/modules/geotiff'}
   ]}
 />
+
+<DocLiveExample label="GeoTIFF raster example" height="420px">
+  <ClientExample kind="geotiff" />
+</DocLiveExample>
 
 <GeoTiffDocsTabs active="geotiffloader" />
 
@@ -40,8 +47,6 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
   <img src="https://img.shields.io/badge/From-v1.0-blue.svg?style=flat-square" alt="From-v1.0" />
   <img src="https://img.shields.io/badge/Status-Work--In--Progress-orange.svg?style=flat-square" alt="Status: Work-In-Progress" />
 </p>
-
-![ogc-logo](../../../images/logos/ogc-logo-60.png)
 
 <ReferenceBoundary
   title="GeoTIFF loader details"

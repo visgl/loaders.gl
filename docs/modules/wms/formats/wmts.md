@@ -8,19 +8,25 @@ page_style: designed
 import {WmsDocsTabs} from '@site/src/components/docs/wms-docs-tabs';
 import {ClientExample} from '@site/src/components';
 import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
+import {DocLiveExample} from '@site/src/components/docs/doc-live-example';
 import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
 
 <DocPageHeader
   eyebrow="OGC tiled image service"
-  title="Use the tile matrix the service already advertises."
+  title="WMTS"
   description="WMTS describes discrete tile matrix sets, layers, styles, image formats, and resource templates. The source negotiates those capabilities before requesting visible imagery."
   tone="mint"
+  logos={[{alt: 'Open Geospatial Consortium', src: '/images/format-logos/ogc-logo-transparent.png'}]}
   meta={['WMTS 1.0.0', 'Tile matrix sets', 'KVP and REST templates']}
   links={[
     {label: 'WMS module', to: '/docs/modules/wms'},
     {label: 'WMS format', to: '/docs/modules/wms/formats/wms'}
   ]}
 />
+
+<DocLiveExample label="WMTS tile service example" height="440px">
+  <ClientExample kind="wms" format="WMTS" />
+</DocLiveExample>
 
 <WmsDocsTabs active="wmts" />
 
@@ -36,8 +42,6 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
     {label: 'Render', value: 'Visible image tiles through TileSource'}
   ]}
 />
-
-![ogc-logo](../../../images/logos/ogc-logo-60.png)
 
 WMTS serves map imagery on discrete, advertised tile matrix sets. `WMTSSourceLoader` implements a
 loaders.gl `TileSource` and negotiates the layer, style, format, and grid from capabilities.
@@ -110,15 +114,6 @@ const layer = new SourceLayer({
   }
 });
 ```
-
-## Live example
-
-This example loads NASA GIBS capabilities, selects a layer and matrix set, and renders the
-advertised image tiles through deck.gl.
-
-<div style={{height: '520px'}}>
-  <ClientExample kind="wms" format="WMTS" />
-</div>
 
 ## References
 

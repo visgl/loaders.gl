@@ -9,6 +9,7 @@ import {ClientExample} from '@site/src/components';
 import {WmsDocsTabs} from '@site/src/components/docs/wms-docs-tabs';
 import {ServiceSourceGraphic} from '@site/src/components/docs/service-source-graphic';
 import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
+import {DocLiveExample} from '@site/src/components/docs/doc-live-example';
 import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
 
 <DocPageHeader
@@ -16,6 +17,7 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
   title="ArcGIS ImageServer"
   description="Access rendered imagery and analytical raster data through ImageSource and TileSource contracts, including viewport exports and LERC responses."
   tone="violet"
+  logos={[{alt: 'ArcGIS', src: '/images/format-logos/arcgis-logo.svg'}]}
   meta={['ImageServer', 'Images and tiles', 'LERC raster output']}
   links={[
     {label: 'Services module', to: '/docs/modules/services'},
@@ -23,6 +25,10 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
     {label: 'CRS guide', to: '/docs/developer-guide/coordinate-reference-systems'}
   ]}
 />
+
+<DocLiveExample label="ArcGIS ImageServer example" height="440px">
+  <ClientExample kind="wms" format="ArcGIS Image Server" />
+</DocLiveExample>
 
 <WmsDocsTabs active="arcgis-image-server" />
 
@@ -173,14 +179,6 @@ const layer = new SourceLayer({
 
 Use `core.type: 'arcgis-image-server-tiles'` in `sourceOptions` when tiled export is preferred over
 one viewport-sized image.
-
-## Live examples
-
-### Viewport image
-
-<div style={{height: '520px'}}>
-  <ClientExample kind="wms" format="ArcGIS Image Server" />
-</div>
 
 - [ImageServer export tiles](/examples/tiles/arcgis-image-server-tiles)
 - [Analytical ImageServer LERC](/examples/tiles/arcgis-image-server-lerc)

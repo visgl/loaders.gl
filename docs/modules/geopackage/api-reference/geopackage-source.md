@@ -6,14 +6,17 @@ page_style: designed
 ---
 
 import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
+import {DocLiveExample} from '@site/src/components/docs/doc-live-example';
 import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
 import {GeoPackageDocsTabs} from '@site/src/components/docs/geopackage-docs-tabs';
+import {ClientExample} from '@site/src/components';
 
 <DocPageHeader
   eyebrow="GeoPackage source"
-  title="Open a database file, then choose the table."
+  title="GeoPackageSource"
   description="`GeoPackageSource` exposes GeoPackage table metadata and reads a selected table into the common Arrow table shape. It keeps database discovery separate from the application’s table-processing path."
   tone="yellow"
+  logos={[{alt: 'Open Geospatial Consortium', src: '/images/format-logos/ogc-logo-transparent.png'}]}
   meta={['GeoPackage', 'Table discovery', 'Arrow output']}
   links={[
     {label: 'GeoPackage module', to: '/docs/modules/geopackage'},
@@ -21,6 +24,10 @@ import {GeoPackageDocsTabs} from '@site/src/components/docs/geopackage-docs-tabs
     {label: 'Arrow data plane', to: '/docs/developer-guide/apache-arrow'}
   ]}
 />
+
+<DocLiveExample label="GeoPackage source example" height="420px">
+  <ClientExample kind="geospatial" format="GeoPackage" />
+</DocLiveExample>
 
 <DocOrientation
   eyebrow="The database-file path"
