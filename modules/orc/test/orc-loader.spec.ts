@@ -546,6 +546,170 @@ test('ORCLoader#parse reconstructs LIST child streams', async () => {
   }
 });
 
+test('ORCLoader#parse reconstructs nested STRUCT and MAP columns', async () => {
+  const nestedStruct = buildORCFixture({
+    rowCount: 1,
+    streams: [{kind: 1, column: 2, bytes: Uint8Array.from([0xff, 84])}],
+    types: [
+      {kind: 12, subtypes: [1], fieldNames: ['nested']},
+      {kind: 12, subtypes: [2], fieldNames: ['value']},
+      {kind: 3}
+    ]
+  });
+  const structResult = await ORCLoaderWithParser.parse(nestedStruct.buffer);
+  expect(structResult.shape).toBe('arrow-table');
+  if (structResult.shape === 'arrow-table') {
+    expect(structResult.data.getChild('nested')?.get(0)?.toJSON()).toEqual({value: 42});
+  }
+
+  const map = buildORCFixture({
+    rowCount: 1,
+    streams: [
+      {kind: 2, column: 1, bytes: Uint8Array.from([0xff, 2])},
+      {kind: 1, column: 2, bytes: new TextEncoder().encode('ab')},
+      {kind: 2, column: 2, bytes: Uint8Array.from([0xfe, 1, 1])},
+      {kind: 1, column: 3, bytes: Uint8Array.from([0xfe, 32, 64])}
+    ],
+    types: [
+      {kind: 12, subtypes: [1], fieldNames: ['mapping']},
+      {kind: 11, subtypes: [2, 3]},
+      {kind: 7},
+      {kind: 3}
+    ]
+  });
+  const mapResult = await ORCLoaderWithParser.parse(map.buffer);
+  expect(mapResult.shape).toBe('arrow-table');
+  if (mapResult.shape === 'arrow-table') {
+    expect(mapResult.data.numRows).toBe(1);
+    expect(mapResult.data.getChild('mapping')?.get(0)).toBeTruthy();
+  }
+});
+
+test('ORCLoader#parse reconstructs boolean lists including empty lists', async () => {
+  const fixture = buildORCFixture({
+    rowCount: 3,
+    streams: [
+      {kind: 2, column: 1, bytes: Uint8Array.from([0xfd, 2, 0, 1])},
+      {kind: 1, column: 2, bytes: Uint8Array.from([0xa0])}
+    ],
+    types: [{kind: 12, subtypes: [1], fieldNames: ['flags']}, {kind: 10, subtypes: [2]}, {kind: 0}]
+  });
+  const result = await ORCLoaderWithParser.parse(fixture.buffer);
+  expect(result.shape).toBe('arrow-table');
+  if (result.shape === 'arrow-table') {
+    const flags = result.data.getChild('flags');
+    expect(flags?.get(0)?.toArray()).toEqual([true, false]);
+    expect(flags?.get(1)?.length).toBe(0);
+    expect(flags?.get(2)?.toArray()).toEqual([true]);
+  }
+
+  const nullableFixture = buildORCFixture({
+    rowCount: 3,
+    streams: [
+      {kind: 0, column: 1, bytes: Uint8Array.from([0xa0])},
+      {kind: 1, column: 1, bytes: Uint8Array.from([0xc0])}
+    ],
+    types: [{kind: 12, subtypes: [1], fieldNames: ['enabled']}, {kind: 0}]
+  });
+  const nullableResult = await ORCLoaderWithParser.parse(nullableFixture.buffer);
+  expect(nullableResult.shape).toBe('arrow-table');
+  if (nullableResult.shape === 'arrow-table') {
+    expect(getColumnValues(nullableResult.data, 'enabled')).toEqual([true, null, true]);
+  }
+});
+
+test('ORCLoader#parse validates root, stream, and container structure', async () => {
+  const emptyNonStruct = buildORCFixture({rowCount: 0, streams: [], types: [{kind: 3}]});
+  const emptyResult = await ORCLoaderWithParser.parse(emptyNonStruct.buffer);
+  expect(emptyResult.shape).toBe('arrow-table');
+  if (emptyResult.shape === 'arrow-table') expect(emptyResult.data.numCols).toBe(0);
+
+  await expect(
+    ORCLoaderWithParser.parse(
+      buildORCFixture({rowCount: 1, streams: [], types: [{kind: 3}]}).buffer
+    )
+  ).rejects.toThrow('root type is not a struct');
+  await expect(
+    ORCLoaderWithParser.parse(
+      buildORCFixture({
+        rowCount: 1,
+        streams: [],
+        types: [{kind: 12, subtypes: [2], fieldNames: ['missing']}, {kind: 3}]
+      }).buffer
+    )
+  ).rejects.toThrow('ORC type 2 is missing');
+  await expect(
+    ORCLoaderWithParser.parse(
+      buildORCFixture({
+        rowCount: 1,
+        streams: [],
+        types: [{kind: 12, subtypes: [1], fieldNames: ['value']}, {kind: 3}]
+      }).buffer
+    )
+  ).rejects.toThrow('data stream is missing');
+  await expect(
+    ORCLoaderWithParser.parse(
+      buildORCFixture({
+        rowCount: 1,
+        streams: [],
+        types: [
+          {kind: 12, subtypes: [1], fieldNames: ['items']},
+          {kind: 10, subtypes: [2]},
+          {kind: 3}
+        ]
+      }).buffer
+    )
+  ).rejects.toThrow('length stream is missing');
+  await expect(
+    ORCLoaderWithParser.parse(
+      buildORCFixture({
+        rowCount: 1,
+        streams: [{kind: 2, column: 1, bytes: Uint8Array.from([0xff, 2])}],
+        types: [
+          {kind: 12, subtypes: [1], fieldNames: ['items']},
+          {kind: 10, subtypes: [9]}
+        ]
+      }).buffer
+    )
+  ).rejects.toThrow('container child type is missing');
+  await expect(
+    ORCLoaderWithParser.parse(
+      buildORCFixture({
+        rowCount: 1,
+        streams: [{kind: 1, column: 1, bytes: Uint8Array.from([0])}],
+        types: [{kind: 12, subtypes: [1], fieldNames: ['timestamp']}, {kind: 9}]
+      }).buffer
+    )
+  ).rejects.toThrow('not supported yet');
+
+  const allNull = await ORCLoaderWithParser.parse(
+    buildORCFixture({
+      rowCount: 3,
+      streams: [{kind: 0, column: 1, bytes: Uint8Array.from([0])}],
+      types: [{kind: 12, subtypes: [1], fieldNames: ['value']}, {kind: 3}]
+    }).buffer
+  );
+  expect(allNull.shape).toBe('arrow-table');
+  if (allNull.shape === 'arrow-table') {
+    expect(getColumnValues(allNull.data, 'value')).toEqual([null, null, null]);
+  }
+
+  const missingNestedChild = await ORCLoaderWithParser.parse(
+    buildORCFixture({
+      rowCount: 1,
+      streams: [],
+      types: [
+        {kind: 12, subtypes: [1], fieldNames: ['nested']},
+        {kind: 12, subtypes: [9], fieldNames: ['missing']}
+      ]
+    }).buffer
+  );
+  expect(missingNestedChild.shape).toBe('arrow-table');
+  if (missingNestedChild.shape === 'arrow-table') {
+    expect(missingNestedChild.data.getChild('nested')?.get(0)?.toJSON()).toEqual({});
+  }
+});
+
 function concatBytes(...arrays: Uint8Array[]): Uint8Array {
   const output = new Uint8Array(arrays.reduce((length, array) => length + array.length, 0));
   let offset = 0;
@@ -554,6 +718,74 @@ function concatBytes(...arrays: Uint8Array[]): Uint8Array {
     offset += array.length;
   }
   return output;
+}
+
+/** Builds a tiny uncompressed ORC file from explicit streams and type metadata. */
+function buildORCFixture(options: {
+  rowCount: number;
+  streams: Array<{kind: number; column: number; bytes: Uint8Array}>;
+  types: Array<{kind: number; subtypes?: number[]; fieldNames?: string[]}>;
+}): Uint8Array {
+  const data = concatBytes(...options.streams.map(stream => stream.bytes));
+  const stripeFooter = encodeMessage([
+    ...options.streams.map(
+      stream =>
+        [
+          1,
+          encodeMessage([
+            [1, stream.kind],
+            [2, stream.column],
+            [3, stream.bytes.length]
+          ])
+        ] as [number, Uint8Array]
+    ),
+    ...options.types.map(
+      (_type, column) =>
+        [
+          2,
+          encodeMessage([
+            [1, 0],
+            [3, column]
+          ])
+        ] as [number, Uint8Array]
+    )
+  ]);
+  const stripeInformation = encodeMessage([
+    [1, 3],
+    [2, 0],
+    [3, data.length],
+    [4, stripeFooter.length],
+    [5, options.rowCount]
+  ]);
+  const typeMessages = options.types.map(type =>
+    encodeMessage([
+      [1, type.kind],
+      ...(type.subtypes || []).map(subtype => [2, subtype] as [number, number]),
+      ...(type.fieldNames || []).map(fieldName => [3, fieldName] as [number, string])
+    ])
+  );
+  const footer = encodeMessage([
+    [3, stripeInformation],
+    ...typeMessages.map(type => [4, type] as [number, Uint8Array]),
+    [6, options.rowCount]
+  ]);
+  const postscript = encodeMessage([
+    [1, footer.length],
+    [2, 0],
+    [3, 262_144],
+    [4, 0],
+    [4, 12]
+  ]);
+  const bytes = new Uint8Array(
+    3 + data.length + stripeFooter.length + footer.length + postscript.length + 1
+  );
+  bytes.set([0x4f, 0x52, 0x43]);
+  bytes.set(data, 3);
+  bytes.set(stripeFooter, 3 + data.length);
+  bytes.set(footer, 3 + data.length + stripeFooter.length);
+  bytes.set(postscript, 3 + data.length + stripeFooter.length + footer.length);
+  bytes[bytes.length - 1] = postscript.length;
+  return bytes;
 }
 
 /** Materializes an Arrow column as row values while preserving null entries. */
