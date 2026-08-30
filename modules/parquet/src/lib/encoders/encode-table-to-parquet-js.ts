@@ -2,13 +2,17 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import type {DataType, Field, ObjectRowTable, Schema, Table} from '@loaders.gl/schema';
 import {
   getGeoMetadata,
+  type DataType,
+  type Field,
   type GeoArrowEdgeType,
   type GeoArrowMetadata,
-  type GeoColumnMetadata
-} from '@loaders.gl/gis';
+  type GeoColumnMetadata,
+  type ObjectRowTable,
+  type Schema,
+  type Table
+} from '@loaders.gl/schema';
 import {concatUint8Arrays} from '../../parquetjs/utils/binary-utils';
 import {ParquetEncoder} from '../../parquetjs/encoder/parquet-encoder';
 import {ParquetSchema} from '../../parquetjs/schema/schema';

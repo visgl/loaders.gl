@@ -15,6 +15,7 @@ import type {
   MultiPolygon,
   GeometryCollection
 } from '@loaders.gl/schema';
+import type {GeoArrowDimension} from '@loaders.gl/schema';
 import {WKBGeometryType, WKBOptions} from './helpers/wkb-types';
 import {BinaryWriter} from '../../utils/binary-writer';
 
@@ -113,7 +114,7 @@ function writeCoordinate(
     writer.writeDoubleLE(coordinate[2]);
   }
   if (options.hasM) {
-    writer.writeDoubleLE(coordinate[3]);
+    writer.writeDoubleLE(coordinate[options.hasZ ? 3 : 2]);
   }
 }
 
@@ -301,8 +302,10 @@ function encodeGeometryCollection(
   writer.writeUInt32LE(collection.geometries.length);
 
   for (const geometry of collection.geometries) {
-    // TODO: handle srid? {srid: collection.srid}
-    const arrayBuffer = convertGeometryToWKB(geometry, options);
+    const arrayBuffer = convertGeometryToWKB(
+      geometry,
+      getGeometryCollectionChildOptions(geometry, options)
+    );
     writer.writeBuffer(arrayBuffer);
   }
 
@@ -313,10 +316,23 @@ function getGeometryCollectionSize(collection: GeometryCollection, options: WKBO
   let size = 1 + 4 + 4;
 
   for (const geometry of collection.geometries) {
-    size += getGeometrySize(geometry, options);
+    size += getGeometrySize(geometry, getGeometryCollectionChildOptions(geometry, options));
   }
 
   return size;
+}
+
+function getGeometryCollectionChildOptions(
+  geometry: Geometry,
+  parentOptions: WKBOptions
+): WKBOptions {
+  const dimension = (geometry as Geometry & {__geoarrowDimension?: GeoArrowDimension})
+    .__geoarrowDimension;
+  if (!dimension) return parentOptions;
+  return {
+    hasZ: dimension === 'xyz' || dimension === 'xyzm',
+    hasM: dimension === 'xym' || dimension === 'xyzm'
+  };
 }
 
 // HELPERS

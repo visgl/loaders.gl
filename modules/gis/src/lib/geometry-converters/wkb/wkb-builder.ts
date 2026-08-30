@@ -2,22 +2,15 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
+import {WKBBuilder as MathWKBBuilder} from '@math.gl/wkb';
+import type {WellKnownDimension, WKBGeometryType as MathWKBGeometryType} from '@math.gl/wkb';
 import {WKBGeometryType} from './helpers/wkb-types';
-
-const LITTLE_ENDIAN = true;
 
 /** Function that writes one WKB geometry into a builder. */
 export type WKBGeometryWriter = (builder: WKBBuilder) => void;
 
 /** Geometry type names accepted by the generic WKB builder. */
-export type WKBGeometryTypeName =
-  | 'Point'
-  | 'LineString'
-  | 'Polygon'
-  | 'MultiPoint'
-  | 'MultiLineString'
-  | 'MultiPolygon'
-  | 'GeometryCollection';
+export type WKBGeometryTypeName = MathWKBGeometryType;
 
 /** Transforms one XY coordinate before it is written. */
 export type WKBCoordinateTransform = (coordinate: number[]) => number[];
@@ -33,18 +26,12 @@ export type WKBBuilderBaseOptions = {
 };
 
 /** Options for a WKB builder that only measures byte length. */
-export type WKBBuilderMeasureOptions = WKBBuilderBaseOptions & {
-  /** Selects byte-counting mode. */
-  mode: 'measure';
-};
+export type WKBBuilderMeasureOptions = WKBBuilderBaseOptions & {mode: 'measure'};
 
 /** Options for a WKB builder that writes into caller-owned storage. */
 export type WKBBuilderWriteOptions = WKBBuilderBaseOptions & {
-  /** Selects direct writing mode. */
   mode: 'write';
-  /** Target storage that receives WKB bytes. */
-  target: ArrayBuffer | ArrayBufferView | DataView;
-  /** Starting byte offset in the target storage. */
+  target: ArrayBufferLike | ArrayBufferView;
   byteOffset?: number;
 };
 
@@ -53,157 +40,134 @@ export type WKBBuilderOptions = WKBBuilderMeasureOptions | WKBBuilderWriteOption
 
 /** Contiguous Arrow-style WKB geometry array buffers. */
 export type WKBGeometryArray = {
-  /** Offsets into `values`, one more than geometry count. */
   valueOffsets: Int32Array;
-  /** Contiguous WKB bytes for all non-null geometries. */
   values: Uint8Array;
-  /** Arrow validity bitmap, omitted when there are no null geometries. */
   nullBitmap?: Uint8Array;
-  /** Number of null geometry entries. */
   nullCount: number;
 };
 
 /**
- * Incremental WKB writer that can run the same geometry calls in measure or write mode.
+ * Compatibility facade over the Arrow-independent `@math.gl/wkb` builder.
+ *
+ * The loaders.gl API retains its legacy `hasZ` and `hasM` options while math.gl owns byte
+ * measurement, bounds checking, endian handling, and WKB emission.
  */
 export class WKBBuilder {
   readonly mode: 'measure' | 'write';
   readonly hasZ: boolean;
   readonly hasM: boolean;
   readonly transform?: WKBCoordinateTransform;
-
-  private dataView: DataView | null;
-  private startByteOffset: number;
-  private endByteOffset: number;
-  private byteOffset: number;
+  private readonly builder: MathWKBBuilder;
 
   constructor(options: WKBBuilderOptions) {
     this.mode = options.mode;
     this.hasZ = Boolean(options.hasZ);
     this.hasM = Boolean(options.hasM);
     this.transform = options.transform;
-    const targetInfo =
+    const dimension = getDimension(this.hasZ, this.hasM);
+    const transform = options.transform
+      ? (coordinate: readonly number[]): readonly number[] => {
+          const transformed = options.transform!([coordinate[0], coordinate[1]]);
+          return [transformed[0], transformed[1], ...coordinate.slice(2)];
+        }
+      : undefined;
+    this.builder =
       options.mode === 'write'
-        ? makeDataView(options.target, options.byteOffset || 0)
-        : {dataView: null, byteOffset: 0, endByteOffset: 0};
-    this.startByteOffset = targetInfo.byteOffset;
-    this.endByteOffset = targetInfo.endByteOffset;
-    this.byteOffset = this.startByteOffset;
-    this.dataView = targetInfo.dataView;
+        ? new MathWKBBuilder({
+            mode: 'write',
+            target: options.target,
+            byteOffset: options.byteOffset,
+            dimension,
+            transform
+          })
+        : new MathWKBBuilder({mode: 'measure', dimension, transform});
   }
 
   /** Begins a geometry by type, optionally writing its count field. */
   beginGeometry(type: WKBGeometryType | WKBGeometryTypeName, count?: number): void {
-    switch (getWKBGeometryType(type)) {
-      case WKBGeometryType.Point:
-        this.beginPoint();
-        break;
-      case WKBGeometryType.LineString:
-        this.beginLineString(count || 0);
-        break;
-      case WKBGeometryType.Polygon:
-        this.beginPolygon(count || 0);
-        break;
-      case WKBGeometryType.MultiPoint:
-        this.beginMultiPoint(count || 0);
-        break;
-      case WKBGeometryType.MultiLineString:
-        this.beginMultiLineString(count || 0);
-        break;
-      case WKBGeometryType.MultiPolygon:
-        this.beginMultiPolygon(count || 0);
-        break;
-      case WKBGeometryType.GeometryCollection:
-        this.writeHeader(WKBGeometryType.GeometryCollection);
-        this.writeUInt32(count || 0);
-        break;
-      default:
-        throw new Error(`Unsupported WKB geometry type: ${type}`);
+    const geometryTypeName = getGeometryTypeName(type);
+    if (!geometryTypeName) {
+      throw new Error('Unsupported WKB geometry type');
     }
+    this.callBuilder(() => this.builder.beginGeometry(geometryTypeName, count));
   }
 
-  /** Begins a point geometry. */
+  /** Begins one point geometry. */
   beginPoint(): void {
-    this.writeHeader(WKBGeometryType.Point);
+    this.callBuilder(() => this.builder.beginPoint());
   }
 
-  /** Begins a linestring geometry. */
+  /** Begins one linestring geometry. */
   beginLineString(pointCount: number): void {
-    this.writeHeader(WKBGeometryType.LineString);
-    this.writeUInt32(pointCount);
+    this.callBuilder(() => this.builder.beginLineString(pointCount));
   }
 
-  /** Begins a polygon geometry. */
+  /** Begins one polygon geometry. */
   beginPolygon(ringCount: number): void {
-    this.writeHeader(WKBGeometryType.Polygon);
-    this.writeUInt32(ringCount);
+    this.callBuilder(() => this.builder.beginPolygon(ringCount));
   }
 
   /** Begins one linear ring inside a polygon. */
   beginLinearRing(pointCount: number): void {
-    this.writeUInt32(pointCount);
+    this.callBuilder(() => this.builder.beginLinearRing(pointCount));
   }
 
-  /** Begins a multipoint geometry. */
+  /** Begins one multipoint geometry. */
   beginMultiPoint(pointCount: number): void {
-    this.writeHeader(WKBGeometryType.MultiPoint);
-    this.writeUInt32(pointCount);
+    this.callBuilder(() => this.builder.beginMultiPoint(pointCount));
   }
 
-  /** Begins a multilinestring geometry. */
+  /** Begins one multilinestring geometry. */
   beginMultiLineString(lineCount: number): void {
-    this.writeHeader(WKBGeometryType.MultiLineString);
-    this.writeUInt32(lineCount);
+    this.callBuilder(() => this.builder.beginMultiLineString(lineCount));
   }
 
-  /** Begins a multipolygon geometry. */
+  /** Begins one multipolygon geometry. */
   beginMultiPolygon(polygonCount: number): void {
-    this.writeHeader(WKBGeometryType.MultiPolygon);
-    this.writeUInt32(polygonCount);
+    this.callBuilder(() => this.builder.beginMultiPolygon(polygonCount));
   }
 
   /** Writes one coordinate using the builder's dimensional options. */
   writeCoordinate(x: number, y: number, z?: number, m?: number): void {
-    if (this.transform) {
-      const transformedCoordinate = this.transform([x, y]);
-      x = transformedCoordinate[0];
-      y = transformedCoordinate[1];
-    }
-
-    this.writeFloat64(x);
-    this.writeFloat64(y);
-    if (this.hasZ) {
-      this.writeFloat64(z ?? NaN);
-    }
-    if (this.hasM) {
-      this.writeFloat64(m ?? NaN);
-    }
+    this.callBuilder(() => this.builder.writeCoordinate(x, y, z, m));
   }
 
   /** Finishes the current geometry and returns its byte length. */
   finishGeometry(): number {
-    return this.getByteLength();
+    return this.callBuilder(() => this.builder.finishGeometry());
   }
 
   /** Returns the number of bytes measured or written by this builder. */
   getByteLength(): number {
-    return this.byteOffset - this.startByteOffset;
+    return this.callBuilder(() => this.builder.finishGeometry());
+  }
+
+  /** Runs a math.gl builder operation while preserving the legacy facade error text. */
+  private callBuilder<T>(callback: () => T): T {
+    try {
+      return callback();
+    } catch (error) {
+      if (error instanceof Error && error.message.includes('target buffer overflow')) {
+        throw new Error('WKBBuilder overflow');
+      }
+      throw error;
+    }
   }
 
   /** Measures geometry writer callbacks and returns Arrow Binary offsets. */
   static measureGeometryArray(
-    geometryWriters: (WKBGeometryWriter | null)[],
+    geometryWriters: readonly (WKBGeometryWriter | null | undefined)[],
     options: WKBBuilderBaseOptions = {}
   ): Int32Array {
     const valueOffsets = new Int32Array(geometryWriters.length + 1);
-    for (let geometryIndex = 0; geometryIndex < geometryWriters.length; geometryIndex++) {
-      const geometryWriter = geometryWriters[geometryIndex];
-      if (geometryWriter) {
+    for (let index = 0; index < geometryWriters.length; index++) {
+      const writer = geometryWriters[index];
+      if (writer) {
         const builder = new WKBBuilder({mode: 'measure', ...options});
-        geometryWriter(builder);
-        valueOffsets[geometryIndex + 1] = valueOffsets[geometryIndex] + builder.finishGeometry();
+        writer(builder);
+        valueOffsets[index + 1] = valueOffsets[index] + builder.finishGeometry();
       } else {
-        valueOffsets[geometryIndex + 1] = valueOffsets[geometryIndex];
+        valueOffsets[index + 1] = valueOffsets[index];
       }
     }
     return valueOffsets;
@@ -211,132 +175,49 @@ export class WKBBuilder {
 
   /** Writes geometry writer callbacks into an existing contiguous values buffer. */
   static writeGeometryArray(
-    geometryWriters: (WKBGeometryWriter | null)[],
+    geometryWriters: readonly (WKBGeometryWriter | null | undefined)[],
     valueOffsets: Int32Array,
     values: Uint8Array,
     options: WKBBuilderBaseOptions = {}
   ): Uint8Array {
-    for (let geometryIndex = 0; geometryIndex < geometryWriters.length; geometryIndex++) {
-      const geometryWriter = geometryWriters[geometryIndex];
-      if (!geometryWriter) {
-        continue;
+    for (let index = 0; index < geometryWriters.length; index++) {
+      const writer = geometryWriters[index];
+      if (writer) {
+        const builder = new WKBBuilder({
+          mode: 'write',
+          target: values,
+          byteOffset: valueOffsets[index],
+          ...options
+        });
+        writer(builder);
+        builder.finishGeometry();
       }
-      const builder = new WKBBuilder({
-        mode: 'write',
-        target: values,
-        byteOffset: valueOffsets[geometryIndex],
-        ...options
-      });
-      geometryWriter(builder);
-      builder.finishGeometry();
     }
     return values;
   }
 
-  /** Builds Arrow-style offsets, values and validity buffers from geometry writer callbacks. */
+  /** Builds Arrow-style offsets, values, and validity buffers in two passes. */
   static buildGeometryArray(
-    geometryWriters: (WKBGeometryWriter | null)[],
+    geometryWriters: readonly (WKBGeometryWriter | null | undefined)[],
     options: WKBBuilderBaseOptions = {}
   ): WKBGeometryArray {
     const valueOffsets = WKBBuilder.measureGeometryArray(geometryWriters, options);
     const values = new Uint8Array(valueOffsets[valueOffsets.length - 1]);
     WKBBuilder.writeGeometryArray(geometryWriters, valueOffsets, values, options);
-
-    const nullBitmap = makeNullBitmap(geometryWriters);
-    return {
-      valueOffsets,
-      values,
-      nullBitmap: nullBitmap.nullCount > 0 ? nullBitmap.nullBitmap : undefined,
-      nullCount: nullBitmap.nullCount
-    };
-  }
-
-  private writeHeader(geometryType: WKBGeometryType): void {
-    this.writeUInt8(1);
-    this.writeUInt32(getWKBTypeCode(geometryType, this.hasZ, this.hasM));
-  }
-
-  private writeUInt8(value: number): void {
-    this.ensureSize(1);
-    this.dataView?.setUint8(this.byteOffset, value);
-    this.byteOffset += 1;
-  }
-
-  private writeUInt32(value: number): void {
-    this.ensureSize(4);
-    this.dataView?.setUint32(this.byteOffset, value, LITTLE_ENDIAN);
-    this.byteOffset += 4;
-  }
-
-  private writeFloat64(value: number): void {
-    this.ensureSize(8);
-    this.dataView?.setFloat64(this.byteOffset, value, LITTLE_ENDIAN);
-    this.byteOffset += 8;
-  }
-
-  private ensureSize(byteLength: number): void {
-    if (this.dataView && this.byteOffset + byteLength > this.endByteOffset) {
-      throw new Error('WKBBuilder overflow');
+    const nullBitmap = new Uint8Array(Math.ceil(geometryWriters.length / 8));
+    let nullCount = 0;
+    for (let index = 0; index < geometryWriters.length; index++) {
+      if (geometryWriters[index]) nullBitmap[index >> 3] |= 1 << (index & 7);
+      else nullCount++;
     }
+    return {valueOffsets, values, nullBitmap: nullCount ? nullBitmap : undefined, nullCount};
   }
 }
 
-function makeDataView(
-  target: ArrayBuffer | ArrayBufferView | DataView,
-  byteOffset: number
-): {
-  dataView: DataView | null;
-  byteOffset: number;
-  endByteOffset: number;
-} {
-  if (target instanceof DataView) {
-    return {
-      dataView: new DataView(target.buffer),
-      byteOffset: target.byteOffset + byteOffset,
-      endByteOffset: target.byteOffset + target.byteLength
-    };
-  }
-  if (ArrayBuffer.isView(target)) {
-    return {
-      dataView: new DataView(target.buffer),
-      byteOffset: target.byteOffset + byteOffset,
-      endByteOffset: target.byteOffset + target.byteLength
-    };
-  }
-  return {dataView: new DataView(target), byteOffset, endByteOffset: target.byteLength};
+function getDimension(hasZ: boolean, hasM: boolean): WellKnownDimension {
+  return hasZ && hasM ? 'xyzm' : hasZ ? 'xyz' : hasM ? 'xym' : 'xy';
 }
 
-function getWKBTypeCode(geometryType: WKBGeometryType, hasZ: boolean, hasM: boolean): number {
-  let dimensionType = 0;
-  if (hasZ && hasM) {
-    dimensionType = 3000;
-  } else if (hasZ) {
-    dimensionType = 1000;
-  } else if (hasM) {
-    dimensionType = 2000;
-  }
-  return dimensionType + geometryType;
-}
-
-function getWKBGeometryType(type: WKBGeometryType | WKBGeometryTypeName): WKBGeometryType {
-  if (typeof type === 'number') {
-    return type;
-  }
-  return WKBGeometryType[type];
-}
-
-function makeNullBitmap(geometryWriters: (WKBGeometryWriter | null)[]): {
-  nullBitmap: Uint8Array;
-  nullCount: number;
-} {
-  const nullBitmap = new Uint8Array(Math.ceil(geometryWriters.length / 8));
-  let nullCount = 0;
-  for (let geometryIndex = 0; geometryIndex < geometryWriters.length; geometryIndex++) {
-    if (geometryWriters[geometryIndex]) {
-      nullBitmap[geometryIndex >> 3] |= 1 << (geometryIndex & 7);
-    } else {
-      nullCount++;
-    }
-  }
-  return {nullBitmap, nullCount};
+function getGeometryTypeName(type: WKBGeometryType | WKBGeometryTypeName): WKBGeometryTypeName {
+  return typeof type === 'number' ? (WKBGeometryType[type] as WKBGeometryTypeName) : type;
 }

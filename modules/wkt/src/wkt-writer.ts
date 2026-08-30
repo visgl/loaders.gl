@@ -26,7 +26,7 @@ export const WKTWriter = {
   text: true,
   encode: async (geometry: Geometry) => convertGeometryToWKTSync(geometry),
   encodeSync: convertGeometryToWKTSync,
-  encodeTextSync: convertGeometryToWKT,
+  encodeTextSync: (geometry: Geometry) => convertGeometryToWKT(geometry),
   options: {
     wkt: {}
   }

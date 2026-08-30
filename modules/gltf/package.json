@@ -73,8 +73,8 @@
     "@loaders.gl/schema": "5.0.0-alpha.4",
     "@loaders.gl/schema-utils": "5.0.0-alpha.4",
     "@loaders.gl/textures": "5.0.0-alpha.4",
-    "@math.gl/core": "4.2.0-alpha.6",
-    "@math.gl/culling": "^4.2.0-alpha.6",
+    "@math.gl/core": "5.0.0-alpha.4",
+    "@math.gl/culling": "5.0.0-alpha.4",
     "meshoptimizer": "^1.2.0",
     "zod": "^4.1.12"
   },

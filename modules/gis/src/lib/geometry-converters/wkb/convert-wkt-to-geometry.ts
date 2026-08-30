@@ -4,6 +4,7 @@
 // Fork of https://github.com/mapbox/wellknown under ISC license (MIT/BSD-2-clause equivalent)
 
 import type {Geometry} from '@loaders.gl/schema';
+import type {GeoArrowDimension} from '@loaders.gl/schema';
 
 /* eslint-disable */
 // @ts-nocheck
@@ -20,6 +21,24 @@ export type ParseWKTOptions = {
     crs?: boolean;
   };
 };
+
+/** Returns the dimensional token declared by a WKT geometry, or `xy` for plain WKT. */
+export function getWKTDimension(input: string): GeoArrowDimension | null {
+  const match = input
+    .trim()
+    .match(
+      /^(?:POINT|LINESTRING|POLYGON|MULTIPOINT|MULTILINESTRING|MULTIPOLYGON|GEOMETRYCOLLECTION)(?:\s+(ZM|Z|M))?(?:\s|\()/i
+    );
+  if (!match) return null;
+  const dimensionToken = match[1]?.toUpperCase();
+  return dimensionToken === 'Z'
+    ? 'xyz'
+    : dimensionToken === 'M'
+      ? 'xym'
+      : dimensionToken === 'ZM'
+        ? 'xyzm'
+        : 'xy';
+}
 
 /** State of parser, passed around between parser functions */
 type ParseWKTState = {
@@ -43,20 +62,83 @@ export function convertWKTToGeometry(input: string, options?: ParseWKTOptions): 
   const state: ParseWKTState = {parts, _, i: 0};
 
   const geometry = parseGeometry(state);
+  white(state);
+  if (!geometry || state.i !== state._?.length) {
+    return null;
+  }
 
   return options?.wkt?.crs ? addCRS(geometry, srid) : geometry;
 }
 
 function parseGeometry(state: ParseWKTState): Geometry | null {
-  return (
+  const startIndex = state.i;
+  const geometry =
     parsePoint(state) ||
     parseLineString(state) ||
     parsePolygon(state) ||
     parseMultiPoint(state) ||
     parseMultiLineString(state) ||
     parseMultiPolygon(state) ||
-    parseGeometryCollection(state)
-  );
+    parseGeometryCollection(state);
+  if (geometry) {
+    const geometryText = state._?.substring(startIndex, state.i) || '';
+    const dimension = getWKTDimension(geometryText);
+    const hasExplicitDimension = /\s+(?:ZM|Z|M)\s*(?:\(|EMPTY\b)/i.test(geometryText);
+    if (!hasValidCoordinateArity(geometry, hasExplicitDimension ? dimension : null)) {
+      return null;
+    }
+    if (hasExplicitDimension && dimension && dimension !== 'xy') {
+      Object.defineProperty(geometry, '__geoarrowDimension', {
+        configurable: true,
+        enumerable: false,
+        value: dimension
+      });
+    }
+  }
+  return geometry;
+}
+
+/** Checks that every coordinate tuple matches the dimensional token on one WKT geometry. */
+function hasValidCoordinateArity(geometry: Geometry, dimension: GeoArrowDimension | null): boolean {
+  const coordinateSize =
+    dimension === null ? null : dimension === 'xy' ? 2 : dimension === 'xyzm' ? 4 : 3;
+  let inferredCoordinateSize: number | null = null;
+  /** Checks one coordinate tuple without assuming that the parser produced an array. */
+  const isValidCoordinate = (coordinate: unknown): boolean => {
+    if (!Array.isArray(coordinate)) return false;
+    if (coordinate.length === 0) return true;
+    if (!coordinate.every(value => typeof value === 'number' && Number.isFinite(value))) {
+      return false;
+    }
+    if (coordinateSize !== null) return coordinate.length === coordinateSize;
+    if (coordinate.length < 2 || coordinate.length > 4) return false;
+    if (inferredCoordinateSize === null) inferredCoordinateSize = coordinate.length;
+    return coordinate.length === inferredCoordinateSize;
+  };
+  /** Checks a list of coordinate tuples. */
+  const isValidCoordinateList = (coordinates: unknown): boolean =>
+    Array.isArray(coordinates) && coordinates.every(isValidCoordinate);
+  /** Checks a list of coordinate rings. */
+  const isValidRingList = (rings: unknown): boolean =>
+    Array.isArray(rings) && rings.every(isValidCoordinateList);
+  switch (geometry.type) {
+    case 'Point':
+      return isValidCoordinate(geometry.coordinates);
+    case 'LineString':
+      return isValidCoordinateList(geometry.coordinates);
+    case 'Polygon':
+      return isValidRingList(geometry.coordinates);
+    case 'MultiPoint':
+      return isValidCoordinateList(geometry.coordinates);
+    case 'MultiLineString':
+      return isValidRingList(geometry.coordinates);
+    case 'MultiPolygon':
+      return Array.isArray(geometry.coordinates) && geometry.coordinates.every(isValidRingList);
+    case 'GeometryCollection':
+      return true;
+    default:
+      return false;
+  }
 }
 
 /** Adds a coordinate reference system as an undocumented  */
@@ -78,10 +160,13 @@ function addCRS(obj: Geometry | null, srid?: string): Geometry | null {
 // GEOMETRIES
 
 function parsePoint(state: ParseWKTState): Geometry | null {
-  if (!$(/^(POINT(\sz)?)/i, state)) {
+  if (!$(/^(POINT(?:\s+(?:ZM|Z|M))?)/i, state)) {
     return null;
   }
   white(state);
+  if ($(/^(EMPTY)\b/i, state)) {
+    return {type: 'Point', coordinates: []};
+  }
   if (!$(/^(\()/, state)) {
     return null;
   }
@@ -100,30 +185,52 @@ function parsePoint(state: ParseWKTState): Geometry | null {
 }
 
 function parseMultiPoint(state: ParseWKTState): Geometry | null {
-  if (!$(/^(MULTIPOINT)/i, state)) {
+  if (!$(/^(MULTIPOINT(?:\s+(?:ZM|Z|M))?)/i, state)) {
     return null;
   }
   white(state);
-  const newCoordsFormat = state._?.substring(state._?.indexOf('(') + 1, state._.length - 1)
-    .replace(/\(/g, '')
-    .replace(/\)/g, '');
-  state._ = 'MULTIPOINT (' + newCoordsFormat + ')';
-  const c = multicoords(state);
-  if (!c) {
+  if ($(/^(EMPTY)\b/i, state)) {
+    return {type: 'MultiPoint', coordinates: []};
+  }
+  if (!$(/^(\()/, state)) {
     return null;
   }
+
+  const coordinates: number[][] = [];
   white(state);
+  const isParenthesized = state._?.substring(state.i).startsWith('(');
+  if (isParenthesized) {
+    while (true) {
+      if (!$(/^(\()/, state)) return null;
+      const coordinate = coords(state);
+      if (!coordinate || coordinate.length !== 1 || !$(/^(\))/, state)) return null;
+      coordinates.push(coordinate[0]);
+      white(state);
+      if (!$(/^(,)/, state)) break;
+      white(state);
+    }
+  } else {
+    const coordinateList = coords(state);
+    if (!coordinateList) return null;
+    coordinates.push(...coordinateList);
+  }
+
+  white(state);
+  if (!$(/^(\))/, state)) return null;
   return {
     type: 'MultiPoint',
-    coordinates: c
+    coordinates
   };
 }
 
 function parseLineString(state: ParseWKTState): Geometry | null {
-  if (!$(/^(LINESTRING(\sz)?)/i, state)) {
+  if (!$(/^(LINESTRING(?:\s+(?:ZM|Z|M))?)/i, state)) {
     return null;
   }
   white(state);
+  if ($(/^(EMPTY)\b/i, state)) {
+    return {type: 'LineString', coordinates: []};
+  }
   if (!$(/^(\()/, state)) {
     return null;
   }
@@ -141,8 +248,11 @@ function parseLineString(state: ParseWKTState): Geometry | null {
 }
 
 function parseMultiLineString(state: ParseWKTState): Geometry | null {
-  if (!$(/^(MULTILINESTRING)/i, state)) return null;
+  if (!$(/^(MULTILINESTRING(?:\s+(?:ZM|Z|M))?)/i, state)) return null;
   white(state);
+  if ($(/^(EMPTY)\b/i, state)) {
+    return {type: 'MultiLineString', coordinates: []};
+  }
   const c = multicoords(state);
   if (!c) {
     return null;
@@ -157,10 +267,13 @@ function parseMultiLineString(state: ParseWKTState): Geometry | null {
 }
 
 function parsePolygon(state: ParseWKTState): Geometry | null {
-  if (!$(/^(POLYGON(\sz)?)/i, state)) {
+  if (!$(/^(POLYGON(?:\s+(?:ZM|Z|M))?)/i, state)) {
     return null;
   }
   white(state);
+  if ($(/^(EMPTY)\b/i, state)) {
+    return {type: 'Polygon', coordinates: []};
+  }
   const c = multicoords(state);
   if (!c) {
     return null;
@@ -174,10 +287,13 @@ function parsePolygon(state: ParseWKTState): Geometry | null {
 }
 
 function parseMultiPolygon(state: ParseWKTState): Geometry | null {
-  if (!$(/^(MULTIPOLYGON)/i, state)) {
+  if (!$(/^(MULTIPOLYGON(?:\s+(?:ZM|Z|M))?)/i, state)) {
     return null;
   }
   white(state);
+  if ($(/^(EMPTY)\b/i, state)) {
+    return {type: 'MultiPolygon', coordinates: []};
+  }
   const c = multicoords(state);
   if (!c) {
     return null;
@@ -193,10 +309,14 @@ function parseGeometryCollection(state: ParseWKTState): Geometry | null {
   const geometries: Geometry[] = [];
   let geometry: Geometry | null;
 
-  if (!$(/^(GEOMETRYCOLLECTION)/i, state)) {
+  if (!$(/^(GEOMETRYCOLLECTION(?:\s+(?:ZM|Z|M))?)/i, state)) {
     return null;
   }
   white(state);
+
+  if ($(/^(EMPTY)\b/i, state)) {
+    return {type: 'GeometryCollection', geometries: []};
+  }
 
   if (!$(/^(\()/, state)) {
     return null;

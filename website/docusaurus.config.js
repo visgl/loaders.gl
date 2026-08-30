@@ -6,6 +6,9 @@ const {version} = require('../package.json');
 const {themes} = require('prism-react-renderer');
 const lightCodeTheme = themes.github;
 const darkCodeTheme = themes.dracula;
+const legacyMathCoreEntry = require.resolve('@math.gl/core', {
+  paths: [resolve('../node_modules/@deck.gl/core')]
+});
 
 /** Creates the existing SWC loader with deterministic styled-components IDs. */
 function createJavaScriptLoader(isServer) {
@@ -58,6 +61,16 @@ function createBundlerPlugin() {
             const normalizedContext = resource.context?.replace(/\\/g, '/');
             if (normalizedContext?.includes('/modules/worker-utils/src')) {
               resource.request = resolve('./src/shims/loadersgl-worker-version.js');
+            }
+          }),
+          new bundler.NormalModuleReplacementPlugin(/^@math\.gl\/core$/, resource => {
+            const normalizedContext = resource.context?.replace(/\\/g, '/');
+            if (
+              normalizedContext?.includes('/node_modules/@deck.gl/') ||
+              normalizedContext?.includes('/node_modules/@luma.gl/')
+            ) {
+              // deck.gl/luma.gl 9.3 publish code compiled against math.gl 4.x.
+              resource.request = legacyMathCoreEntry;
             }
           }),
           new bundler.NormalModuleReplacementPlugin(/^\.\/lerc\.js$/, resource => {

@@ -42,6 +42,7 @@ export type DataType =
   // Composite types
   | {type: 'decimal'; bitWidth: number; precision: number; scale: number}
   | {type: 'list'; children: Field[]} // one child only
+  | {type: 'large-list'; children: Field[]} // one child only, with 64-bit offsets
   | {type: 'struct'; children: Field[]}
   | {
       type: 'sparse-union';

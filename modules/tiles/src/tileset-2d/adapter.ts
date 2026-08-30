@@ -2,7 +2,6 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import type {Matrix4} from '@math.gl/core';
 import type {Bounds, TileBoundingBox, TileIndex, ZRange} from './types';
 
 /** Traversal inputs required by a {@link Tileset2DAdapter}. */
@@ -22,9 +21,9 @@ export type Tileset2DTraversalContext<ViewStateT> = {
   /** Elevation range used during geospatial tile selection. */
   zRange?: ZRange | null;
   /** Optional model matrix applied by the surrounding layer stack. */
-  modelMatrix?: Matrix4 | null;
+  modelMatrix?: readonly number[] | null;
   /** Inverse of the current model matrix. */
-  modelMatrixInverse?: Matrix4 | null;
+  modelMatrixInverse?: readonly number[] | null;
 };
 
 /** Minimal tile metadata inputs required by a {@link Tileset2DAdapter}. */

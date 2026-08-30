@@ -33,6 +33,46 @@
       "import": "./dist/index.js",
       "require": "./dist/index.cjs"
     },
+    "./geoarrow-capabilities": {
+      "types": "./dist/geoarrow-capabilities.d.ts",
+      "import": "./dist/geoarrow-capabilities.js"
+    },
+    "./geoarrow-inspection": {
+      "types": "./dist/geoarrow-inspection.d.ts",
+      "import": "./dist/geoarrow-inspection.js"
+    },
+    "./geoarrow-layout": {
+      "types": "./dist/geoarrow-layout.d.ts",
+      "import": "./dist/geoarrow-layout.js"
+    },
+    "./geoarrow-bounds": {
+      "types": "./dist/geoarrow-bounds.d.ts",
+      "import": "./dist/geoarrow-bounds.js"
+    },
+    "./map-geoarrow-coordinates": {
+      "types": "./dist/map-geoarrow-coordinates.d.ts",
+      "import": "./dist/map-geoarrow-coordinates.js"
+    },
+    "./geoarrow-stream": {
+      "types": "./dist/geoarrow-stream.d.ts",
+      "import": "./dist/geoarrow-stream.js"
+    },
+    "./rewind-geoarrow": {
+      "types": "./dist/rewind-geoarrow.d.ts",
+      "import": "./dist/rewind-geoarrow.js"
+    },
+    "./geoarrow-conformance": {
+      "types": "./dist/geoarrow-conformance.d.ts",
+      "import": "./dist/geoarrow-conformance.js"
+    },
+    "./geoarrow-geometry-converter": {
+      "types": "./dist/geoarrow-converter/geoarrow-geometry-converter.d.ts",
+      "import": "./dist/geoarrow-converter/geoarrow-geometry-converter.js"
+    },
+    "./geoarrow-builder": {
+      "types": "./dist/geoarrow-builder.d.ts",
+      "import": "./dist/geoarrow-builder.js"
+    },
     "./exports/*": {
       "types": "./dist/exports/*.d.ts",
       "import": "./dist/exports/*.js"
@@ -57,7 +97,9 @@
     "@loaders.gl/loader-utils": "5.0.0-alpha.4",
     "@loaders.gl/schema": "5.0.0-alpha.4",
     "@loaders.gl/schema-utils": "5.0.0-alpha.4",
-    "@math.gl/polygon": "4.2.0-alpha.6",
+    "@math.gl/geoarrow": "5.0.0-alpha.4",
+    "@math.gl/polygon": "5.0.0-alpha.4",
+    "@math.gl/wkb": "5.0.0-alpha.4",
     "apache-arrow": ">= 17.0.0"
   },
   "peerDependencies": {

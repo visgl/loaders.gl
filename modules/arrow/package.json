@@ -84,7 +84,7 @@
     "@loaders.gl/schema-utils": "5.0.0-alpha.4",
     "@loaders.gl/wkt": "5.0.0-alpha.4",
     "@loaders.gl/worker-utils": "5.0.0-alpha.4",
-    "@math.gl/polygon": "4.2.0-alpha.6",
+    "@math.gl/polygon": "5.0.0-alpha.4",
     "apache-arrow": ">= 17.0.0",
     "lz4js": "^0.2.0"
   },

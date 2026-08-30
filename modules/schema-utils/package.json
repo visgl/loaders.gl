@@ -42,7 +42,7 @@
   },
   "dependencies": {
     "@loaders.gl/schema": "5.0.0-alpha.4",
-    "@math.gl/types": "4.2.0-alpha.6",
+    "@math.gl/types": "5.0.0-alpha.4",
     "@types/geojson": "^7946.0.7",
     "apache-arrow": ">= 17.0.0"
   },

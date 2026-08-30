@@ -3,25 +3,11 @@
 // Copyright (c) vis.gl contributors
 
 import {Metadata, SchemaWithMetadata, getMetadataValue} from './metadata-utils';
-import type {GeoArrowEncoding, GeoArrowMetadata} from '@loaders.gl/gis';
+import type {GeoArrowEncoding, GeoArrowMetadata} from '@loaders.gl/schema';
 import {GeoArrowMetadataSchema} from '@loaders.gl/gis/geospatial-metadata-zod-schema';
+import {GEOARROW_ENCODINGS} from '../geoarrow-conformance';
 
-export type {GeoArrowEncoding, GeoArrowMetadata} from '@loaders.gl/gis';
-
-/** Array containing all encodings */
-const GEOARROW_ENCODINGS = [
-  'geoarrow.geometry',
-  'geoarrow.geometrycollection',
-  'geoarrow.multipolygon',
-  'geoarrow.polygon',
-  'geoarrow.multilinestring',
-  'geoarrow.linestring',
-  'geoarrow.multipoint',
-  'geoarrow.point',
-  'geoarrow.box',
-  'geoarrow.wkb',
-  'geoarrow.wkt'
-] as const satisfies GeoArrowEncoding[];
+export type {GeoArrowEncoding, GeoArrowMetadata} from '@loaders.gl/schema';
 
 const GEOARROW_ENCODING = 'ARROW:extension:name';
 const GEOARROW_METADATA = 'ARROW:extension:metadata';

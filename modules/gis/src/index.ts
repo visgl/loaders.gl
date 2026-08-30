@@ -77,7 +77,12 @@ export {
 export type {
   GeoArrowBuilderEncoding,
   GeoArrowCoordinateTransform,
+  GeoArrowBuilderDimension,
   GeoArrowBuilderTarget,
+  GeoArrowSeparatedBoxBuffers,
+  GeoArrowSeparatedCoordinateBuffers,
+  GeoArrowBuilderCoordinates,
+  GeoArrowBuilderOffsets,
   GeoArrowGeometryArray,
   GeoArrowBuilderBaseOptions,
   GeoArrowBuilderMeasureOptions,
@@ -147,7 +152,13 @@ export {
 } from './deprecated';
 
 // GEOMETRY ENCODING DETECTION
-export {isWKB, isTWKB, isWKT} from './lib/geometry-converters/wkb/helpers/parse-wkb-header';
+export {
+  isWKB,
+  isTWKB,
+  isWKT,
+  getWKTGeometryType,
+  parseWKBHeader
+} from './lib/geometry-converters/wkb/helpers/parse-wkb-header';
 
 export type {WKBHeader} from './lib/geometry-converters/wkb/helpers/wkb-types';
 export {WKT_MAGIC_STRINGS} from './lib/geometry-converters/wkb/helpers/wkb-types';
@@ -190,6 +201,8 @@ export {
   convertGeometryToWKB,
   convertGeometryToTWKB
 } from './deprecated';
+export type {WKTGeometryOptions} from './lib/geometry-converters/wkb/convert-geometry-to-wkt';
+export {getWKTDimension} from './lib/geometry-converters/wkb/convert-wkt-to-geometry';
 
 // CRS
 export type {PROJ4CRS} from './lib/crs/crs';

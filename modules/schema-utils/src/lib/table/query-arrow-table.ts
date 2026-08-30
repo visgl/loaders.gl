@@ -68,6 +68,33 @@ export function queryArrowTable<PredicateT = unknown>(
   return schema ? {shape: 'arrow-table', schema, data} : {shape: 'arrow-table', data};
 }
 
+/** Selects rows from an Arrow table while preserving the requested column order. */
+export function selectArrowTableRows(
+  table: ArrowTable,
+  rowIndices: readonly number[],
+  columns?: readonly string[],
+  limit?: number
+): ArrowTable {
+  const availableColumns = table.data.schema.fields.map(field => field.name);
+  const selectedColumns = columns ? [...columns] : availableColumns;
+  for (const columnName of selectedColumns) {
+    if (!availableColumns.includes(columnName)) {
+      throw new Error(`Arrow table query could not read column "${columnName}".`);
+    }
+  }
+  const limitedRowIndices = rowIndices.slice(0, limit ?? Number.POSITIVE_INFINITY);
+  const data = createArrowTableFromRowIndices(table.data, selectedColumns, limitedRowIndices);
+  const schema = table.schema
+    ? {
+        ...table.schema,
+        fields: selectedColumns.flatMap(
+          columnName => table.schema?.fields.filter(field => field.name === columnName) || []
+        )
+      }
+    : undefined;
+  return schema ? {shape: 'arrow-table', schema, data} : {shape: 'arrow-table', data};
+}
+
 function createArrowTableFromRowIndices(
   sourceData: arrow.Table,
   selectedColumns: readonly string[],
@@ -90,5 +117,14 @@ function createArrowTableFromRowIndices(
       ];
     })
   );
-  return new arrow.Table(schema, vectors);
+  const children = selectedColumns.map(columnName => vectors[columnName].data[0]);
+  const data = new arrow.Data(
+    new arrow.Struct(schema.fields),
+    0,
+    rowIndices.length,
+    0,
+    undefined,
+    children
+  );
+  return new arrow.Table(schema, new arrow.RecordBatch(schema, data));
 }

@@ -25,6 +25,7 @@ const excludePatterns = [
   'test/init-tests.ts',
   'test/modules.ts',
   'test/node.ts',
+  'test/**/node_modules/**',
   'test/bench/**',
   'test/render/**'
 ];

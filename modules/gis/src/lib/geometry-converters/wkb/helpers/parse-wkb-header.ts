@@ -2,15 +2,10 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
+import {inspectWKBHeader} from '@math.gl/wkb';
+import type {WellKnownDimension, WKBGeometryType as MathWKBGeometryType} from '@math.gl/wkb';
 import type {WKBGeometryType, WKBHeader} from './wkb-types';
-import {
-  EWKB_FLAG_Z,
-  EWKB_FLAG_M,
-  EWKB_FLAG_SRID,
-  MAX_SRID,
-  WKT_MAGIC_STRINGS,
-  WKT_MAGIC_BYTES
-} from './wkb-types';
+import {MAX_SRID, WKT_MAGIC_STRINGS, WKT_MAGIC_BYTES} from './wkb-types';
 
 /** 
  * Check if a string is WKT.
@@ -42,8 +37,14 @@ export function isWKT(input: string | ArrayBufferLike): boolean {
  */
 export function getWKTGeometryType(input: string | ArrayBufferLike): WKBGeometryType | null {
   if (typeof input === 'string') {
-    const index = WKT_MAGIC_STRINGS.findIndex(magicString => input.startsWith(magicString));
-    return index >= 0 ? ((index + 1) as WKBGeometryType) : null;
+    const match = input.match(
+      /^(POINT|LINESTRING|POLYGON|MULTIPOINT|MULTILINESTRING|MULTIPOLYGON|GEOMETRYCOLLECTION)(?:\s+(?:ZM|Z|M))?(?:\s|\()/i
+    );
+    if (!match?.[1]) return null;
+    const geometryType = WKT_MAGIC_STRINGS.findIndex(magicString =>
+      magicString.startsWith(match[1].toUpperCase())
+    );
+    return geometryType >= 0 ? ((geometryType + 1) as WKBGeometryType) : null;
   }
   const inputArray = new Uint8Array(input);
   const index = WKT_MAGIC_BYTES.findIndex(magicBytes =>
@@ -74,55 +75,12 @@ export function isTWKB(arrayBuffer: ArrayBufferLike): boolean {
 
 /** Sanity checks that first to 5-9 bytes could represent a supported WKB dialect header */
 export function isWKB(arrayBuffer: ArrayBufferLike): boolean {
-  const dataView = new DataView(arrayBuffer);
-  let byteOffset = 0;
-
-  const endianness = dataView.getUint8(byteOffset);
-  byteOffset += 1;
-
-  // Check valid endianness (only 0 or 1 are allowed)
-  if (endianness > 1) {
+  try {
+    const header = inspectWKBHeader(arrayBuffer);
+    return header.srid === undefined || header.srid <= MAX_SRID;
+  } catch {
     return false;
   }
-
-  const littleEndian = endianness === 1;
-
-  const geometry = dataView.getUint32(byteOffset, littleEndian);
-  byteOffset += 4;
-
-  // check valid geometry type (we don't support extension geometries)
-  const geometryType = geometry & 0x07;
-  if (geometryType === 0 || geometryType > 7) {
-    return false;
-  }
-
-  const geometryFlags = geometry - geometryType;
-
-  // Accept iso-wkb flags
-  if (
-    geometryFlags === 0 ||
-    geometryFlags === 1000 ||
-    geometryFlags === 2000 ||
-    geometryFlags === 3000
-  ) {
-    return true;
-  }
-
-  // Accept ewkb flags but reject otherwise
-  if ((geometryFlags & ~(EWKB_FLAG_Z | EWKB_FLAG_M | EWKB_FLAG_SRID)) !== 0) {
-    return false;
-  }
-
-  if (geometryFlags & EWKB_FLAG_SRID) {
-    const srid = dataView.getUint32(byteOffset, littleEndian);
-    byteOffset += 4;
-
-    if (srid > MAX_SRID) {
-      return false;
-    }
-  }
-
-  return true;
 }
 
 /**
@@ -131,86 +89,48 @@ export function isWKB(arrayBuffer: ArrayBufferLike): boolean {
  * @param target optionally supply a WKBHeader object to avoid creating a new object for every call
  * @returns a header object describing the WKB data
  */
-// eslint-disable-next-line max-statements, complexity
 export function parseWKBHeader(dataView: DataView, target?: WKBHeader): WKBHeader {
-  const wkbHeader: WKBHeader = Object.assign(target || {}, {
-    type: 'wkb',
-    variant: 'wkb',
-    geometryType: 1,
-    dimensions: 2,
-    coordinates: 'xy',
-    littleEndian: true
-  } as WKBHeader);
-  wkbHeader.byteOffset = target?.byteOffset ?? 0;
-
-  if (isWKT(dataView.buffer)) {
-    // TODO - WKB header could include WKT type
-    throw new Error('WKB: Cannot parse WKT data');
+  const text = new TextDecoder().decode(
+    new Uint8Array(dataView.buffer, dataView.byteOffset, dataView.byteLength)
+  );
+  if (isWKT(text)) {
+    throw new Error('Cannot parse WKT');
   }
-
-  // Check endianness of data
-  wkbHeader.littleEndian = dataView.getUint8(wkbHeader.byteOffset) === 1;
-  wkbHeader.byteOffset++;
-
-  // 4-digit code representing dimension and type of geometry
-  const geometryCode = dataView.getUint32(wkbHeader.byteOffset, wkbHeader.littleEndian);
-  wkbHeader.byteOffset += 4;
-
-  wkbHeader.geometryType = (geometryCode & 0x7) as 1 | 2 | 3 | 4 | 5 | 6 | 7;
-
-  // Check if EWKB variant. Uses bitmasks for Z&M dimensions as well as optional SRID field
-  const ewkbZ = geometryCode & EWKB_FLAG_Z;
-  const ewkbM = geometryCode & EWKB_FLAG_M;
-  const ewkbSRID = geometryCode & EWKB_FLAG_SRID;
-
-  // EWKB flag values are large integers that do not form a valid ISO dimensional offset. Detect
-  // them before interpreting the unflagged representation as ISO WKB.
-  if (!ewkbZ && !ewkbM && !ewkbSRID) {
-    const isoType = (geometryCode - wkbHeader.geometryType) / 1000;
-    switch (isoType) {
-      case 0:
-        break;
-      case 1:
-        wkbHeader.variant = 'iso-wkb';
-        wkbHeader.dimensions = 3;
-        wkbHeader.coordinates = 'xyz';
-        break;
-      case 2:
-        wkbHeader.variant = 'iso-wkb';
-        wkbHeader.dimensions = 3;
-        wkbHeader.coordinates = 'xym';
-        break;
-      case 3:
-        wkbHeader.variant = 'iso-wkb';
-        wkbHeader.dimensions = 4;
-        wkbHeader.coordinates = 'xyzm';
-        break;
-      default:
-        throw new Error(`WKB: Unsupported iso-wkb type: ${isoType}`);
+  let header: ReturnType<typeof inspectWKBHeader>;
+  try {
+    header = inspectWKBHeader(dataView, target?.byteOffset ?? 0);
+  } catch (error) {
+    const littleEndian = dataView.getUint8(0) === 1;
+    const geometryCode = dataView.getUint32(1, littleEndian);
+    if (geometryCode >= 1000) {
+      throw new Error('Unsupported iso-wkb type');
     }
+    throw error;
   }
+  return Object.assign(target || {}, {
+    type: 'wkb',
+    variant: header.dialect,
+    geometryType: getGeometryTypeCode(header.geometryType),
+    dimensions: getDimensionSize(header.dimension),
+    coordinates: header.dimension,
+    littleEndian: header.littleEndian,
+    byteOffset: header.bodyByteOffset,
+    ...(header.srid === undefined ? {} : {srid: header.srid})
+  } satisfies WKBHeader);
+}
 
-  if (ewkbZ && ewkbM) {
-    wkbHeader.variant = 'ewkb';
-    wkbHeader.dimensions = 4;
-    wkbHeader.coordinates = 'xyzm';
-  } else if (ewkbZ) {
-    wkbHeader.variant = 'ewkb';
-    wkbHeader.dimensions = 3;
-    wkbHeader.coordinates = 'xyz';
-  } else if (ewkbM) {
-    wkbHeader.variant = 'ewkb';
-    wkbHeader.dimensions = 3;
-    wkbHeader.coordinates = 'xym';
-  }
+function getGeometryTypeCode(geometryType: MathWKBGeometryType): WKBGeometryType {
+  return ([
+    'Point',
+    'LineString',
+    'Polygon',
+    'MultiPoint',
+    'MultiLineString',
+    'MultiPolygon',
+    'GeometryCollection'
+  ].indexOf(geometryType) + 1) as WKBGeometryType;
+}
 
-  // If SRID present read four more bytes
-  if (ewkbSRID) {
-    wkbHeader.variant = 'ewkb';
-    // 4-digit code representing dimension and type of geometry
-    wkbHeader.srid = dataView.getUint32(wkbHeader.byteOffset, wkbHeader.littleEndian);
-    wkbHeader.byteOffset += 4;
-  }
-
-  return wkbHeader;
+function getDimensionSize(dimension: WellKnownDimension): 2 | 3 | 4 {
+  return dimension === 'xy' ? 2 : dimension === 'xyzm' ? 4 : 3;
 }

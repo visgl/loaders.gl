@@ -3,8 +3,12 @@
 // Copyright (c) vis.gl contributors
 
 import * as arrow from 'apache-arrow';
+import {scanWKB} from '@math.gl/wkb';
+import type {Geometry} from '@loaders.gl/schema';
+import {convertWKTToGeometry} from '@loaders.gl/gis';
 
 import {
+  isGeoArrowBox,
   isGeoArrowLineString,
   isGeoArrowMultiLineString,
   isGeoArrowMultiPoint,
@@ -13,17 +17,6 @@ import {
   isGeoArrowPolygon
 } from './geoarrow-functions';
 import {getGeoArrowGeometryInfo} from './get-geoarrow-geometry-info';
-
-const EWKB_FLAG_Z = 0x80000000;
-const EWKB_FLAG_M = 0x40000000;
-const EWKB_FLAG_SRID = 0x20000000;
-
-type WKBCountHeader = {
-  geometryType: number;
-  dimensions: 2 | 3 | 4;
-  littleEndian: boolean;
-  byteOffset: number;
-};
 
 /**
  * Counts coordinate vertices in GeoArrow data.
@@ -87,11 +80,37 @@ function getGeoarrowVectorVertexCount(vector: arrow.Vector): number {
  * @returns Number of vertices in the data chunk.
  */
 function getGeoarrowDataVertexCount(data: arrow.Data): number {
-  if (data.type instanceof arrow.Binary || data.type instanceof arrow.LargeBinary) {
+  if (
+    data.type instanceof arrow.Binary ||
+    data.type instanceof arrow.LargeBinary ||
+    data.type instanceof arrow.BinaryView
+  ) {
     return getWKBDataVertexCount(data);
   }
-  if (data.type instanceof arrow.Utf8 || data.type instanceof arrow.LargeUtf8) {
-    throw new Error('GeoArrow WKT vertex counting is not supported.');
+  if (
+    data.type instanceof arrow.Utf8 ||
+    data.type instanceof arrow.LargeUtf8 ||
+    data.type instanceof arrow.Utf8View
+  ) {
+    throw new Error('WKT vertex counting is not supported.');
+  }
+  if (data.type instanceof arrow.DenseUnion) {
+    return data.children.reduce(
+      (vertexCount, child) => vertexCount + getGeoarrowDataVertexCount(child),
+      0
+    );
+  }
+  if (
+    (data.type instanceof arrow.List || data.type instanceof arrow.LargeList) &&
+    data.children[0]?.type instanceof arrow.DenseUnion
+  ) {
+    return getGeoarrowDataVertexCount(data.children[0]);
+  }
+
+  // A Box stores extents rather than geometry vertices. It is still a recognized
+  // GeoArrow column, but contributes no coordinate vertices to this measurement.
+  if (isGeoArrowBox(data.type)) {
+    return 0;
   }
 
   if (isGeoArrowPoint(data.type)) {
@@ -108,6 +127,66 @@ function getGeoarrowDataVertexCount(data: arrow.Data): number {
   }
 
   throw new Error(`Unsupported GeoArrow data type: ${data.type}`);
+}
+
+/**
+ * Counts vertices in WKT data for internal conversion resource checks.
+ *
+ * This is intentionally separate from getGeoarrowVertexCount(): the public counter does not
+ * promise WKT support, while conversion limits must still protect WKT-to-native conversions.
+ * @param input Arrow UTF-8 Vector or Data containing WKT values.
+ * @returns Number of coordinate vertices in non-null WKT values.
+ */
+export function getGeoarrowWKTVertexCount(input: arrow.Vector | arrow.Data): number {
+  if (input instanceof arrow.Vector) {
+    return input.data.reduce((vertexCount, data) => vertexCount + getWKTDataVertexCount(data), 0);
+  }
+  if (input instanceof arrow.Data) {
+    return getWKTDataVertexCount(input);
+  }
+  throw new Error('Expected an Apache Arrow Vector or Data instance.');
+}
+
+/** Counts vertices in one Arrow UTF-8 WKT data chunk. */
+function getWKTDataVertexCount(data: arrow.Data): number {
+  const vector = new arrow.Vector([data]);
+  let vertexCount = 0;
+
+  for (let rowIndex = 0; rowIndex < vector.length; rowIndex++) {
+    const value = vector.get(rowIndex);
+    if (value == null) continue;
+    const geometry = convertWKTToGeometry(String(value));
+    if (!geometry) throw new Error(`Invalid WKT geometry at row ${rowIndex}.`);
+    vertexCount += countGeometryVertices(geometry);
+  }
+
+  return vertexCount;
+}
+
+/** Counts coordinate tuples in a parsed geometry, including nested collections. */
+function countGeometryVertices(geometry: Geometry): number {
+  switch (geometry.type) {
+    case 'Point':
+      return geometry.coordinates.length > 0 ? 1 : 0;
+    case 'MultiPoint':
+    case 'LineString':
+      return geometry.coordinates.length;
+    case 'Polygon':
+      return geometry.coordinates.reduce((count, ring) => count + ring.length, 0);
+    case 'MultiLineString':
+      return geometry.coordinates.reduce((count, line) => count + line.length, 0);
+    case 'MultiPolygon':
+      return geometry.coordinates.reduce(
+        (count, polygon) =>
+          count + polygon.reduce((polygonCount, ring) => polygonCount + ring.length, 0),
+        0
+      );
+    case 'GeometryCollection':
+      return geometry.geometries.reduce(
+        (count, childGeometry) => count + countGeometryVertices(childGeometry),
+        0
+      );
+  }
 }
 
 /**
@@ -135,157 +214,12 @@ function getWKBDataVertexCount(data: arrow.Data): number {
  * @returns Number of source vertices encoded by the WKB geometry.
  */
 function getWKBVertexCount(wkb: ArrayBufferLike | ArrayBufferView): number {
-  const dataView = getWKBDataView(wkb);
-  return parseWKBGeometryVertexCount(dataView, 0).vertexCount;
-}
-
-/**
- * Creates a DataView over WKB bytes without copying typed array inputs.
- * @param wkb Binary WKB input.
- * @returns DataView over the WKB bytes.
- */
-function getWKBDataView(wkb: ArrayBufferLike | ArrayBufferView): DataView {
-  if (ArrayBuffer.isView(wkb)) {
-    return new DataView(wkb.buffer, wkb.byteOffset, wkb.byteLength);
-  }
-  return new DataView(wkb);
-}
-
-/**
- * Counts vertices in a WKB geometry starting at a byte offset.
- * @param dataView Binary WKB input view.
- * @param byteOffset Offset to the geometry header.
- * @returns Vertex count and next unread byte offset.
- */
-function parseWKBGeometryVertexCount(
-  dataView: DataView,
-  byteOffset: number
-): {vertexCount: number; byteOffset: number} {
-  const header = parseWKBCountHeader(dataView, byteOffset);
-
-  switch (header.geometryType) {
-    case 1:
-      return {
-        vertexCount: 1,
-        byteOffset: header.byteOffset + header.dimensions * 8
-      };
-    case 2:
-      return parseWKBPointSequenceVertexCount(dataView, header.byteOffset, header);
-    case 3:
-      return parseWKBPolygonVertexCount(dataView, header.byteOffset, header);
-    case 4:
-    case 5:
-    case 6:
-    case 7:
-      return parseWKBGeometryCollectionVertexCount(dataView, header.byteOffset, header);
-    default:
-      throw new Error(`WKB: Unsupported geometry type: ${header.geometryType}`);
-  }
-}
-
-/**
- * Parses a WKB header for vertex counting.
- * @param dataView Binary WKB input view.
- * @param byteOffset Offset to the geometry header.
- * @returns Parsed header.
- */
-function parseWKBCountHeader(dataView: DataView, byteOffset: number): WKBCountHeader {
-  const littleEndian = dataView.getUint8(byteOffset) === 1;
-  byteOffset++;
-
-  const geometryCode = dataView.getUint32(byteOffset, littleEndian);
-  byteOffset += 4;
-
-  const geometryType = geometryCode & 0x7;
-  let dimensions: 2 | 3 | 4 = 2;
-  const isoType = (geometryCode - geometryType) / 1000;
-
-  if (isoType === 1 || isoType === 2) {
-    dimensions = 3;
-  } else if (isoType === 3) {
-    dimensions = 4;
-  } else {
-    const ewkbZ = geometryCode & EWKB_FLAG_Z;
-    const ewkbM = geometryCode & EWKB_FLAG_M;
-    const ewkbSRID = geometryCode & EWKB_FLAG_SRID;
-
-    if (ewkbZ && ewkbM) {
-      dimensions = 4;
-    } else if (ewkbZ || ewkbM) {
-      dimensions = 3;
+  try {
+    return scanWKB(wkb).coordinateCount;
+  } catch (error) {
+    if (error instanceof Error && error.message.startsWith('Unsupported WKB geometry type')) {
+      throw new Error('Unsupported geometry type');
     }
-
-    if (ewkbSRID) {
-      byteOffset += 4;
-    }
+    throw error;
   }
-
-  return {geometryType, dimensions, littleEndian, byteOffset};
-}
-
-/**
- * Counts vertices in a WKB point sequence.
- * @param dataView Binary WKB input view.
- * @param byteOffset Offset to the point count.
- * @param header Parsed WKB header.
- * @returns Vertex count and next unread byte offset.
- */
-function parseWKBPointSequenceVertexCount(
-  dataView: DataView,
-  byteOffset: number,
-  header: WKBCountHeader
-): {vertexCount: number; byteOffset: number} {
-  const vertexCount = dataView.getUint32(byteOffset, header.littleEndian);
-  byteOffset += 4 + vertexCount * header.dimensions * 8;
-  return {vertexCount, byteOffset};
-}
-
-/**
- * Counts vertices in a WKB polygon.
- * @param dataView Binary WKB input view.
- * @param byteOffset Offset to the polygon ring count.
- * @param header Parsed WKB header.
- * @returns Vertex count and next unread byte offset.
- */
-function parseWKBPolygonVertexCount(
-  dataView: DataView,
-  byteOffset: number,
-  header: WKBCountHeader
-): {vertexCount: number; byteOffset: number} {
-  const ringCount = dataView.getUint32(byteOffset, header.littleEndian);
-  byteOffset += 4;
-
-  let vertexCount = 0;
-  for (let ringIndex = 0; ringIndex < ringCount; ringIndex++) {
-    const pointCount = dataView.getUint32(byteOffset, header.littleEndian);
-    vertexCount += pointCount;
-    byteOffset += 4 + pointCount * header.dimensions * 8;
-  }
-
-  return {vertexCount, byteOffset};
-}
-
-/**
- * Counts vertices in a WKB multi-geometry or geometry collection.
- * @param dataView Binary WKB input view.
- * @param byteOffset Offset to the collection count.
- * @param header Parsed WKB header.
- * @returns Vertex count and next unread byte offset.
- */
-function parseWKBGeometryCollectionVertexCount(
-  dataView: DataView,
-  byteOffset: number,
-  header: WKBCountHeader
-): {vertexCount: number; byteOffset: number} {
-  const geometryCount = dataView.getUint32(byteOffset, header.littleEndian);
-  byteOffset += 4;
-
-  let vertexCount = 0;
-  for (let geometryIndex = 0; geometryIndex < geometryCount; geometryIndex++) {
-    const parsedGeometry = parseWKBGeometryVertexCount(dataView, byteOffset);
-    vertexCount += parsedGeometry.vertexCount;
-    byteOffset = parsedGeometry.byteOffset;
-  }
-
-  return {vertexCount, byteOffset};
 }

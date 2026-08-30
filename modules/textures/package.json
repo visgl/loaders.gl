@@ -94,7 +94,7 @@
     "@loaders.gl/loader-utils": "5.0.0-alpha.4",
     "@loaders.gl/schema": "5.0.0-alpha.4",
     "@loaders.gl/worker-utils": "5.0.0-alpha.4",
-    "@math.gl/types": "4.2.0-alpha.6",
+    "@math.gl/types": "5.0.0-alpha.4",
     "zod": "^4.1.12"
   },
   "peerDependencies": {
