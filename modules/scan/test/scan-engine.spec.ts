@@ -26,6 +26,19 @@ test('creates the Arrow reference engine by default', async () => {
   expect(result.data.toArray().map(row => row?.toJSON())).toEqual([{name: 'b'}]);
 });
 
+test('reports synchronous Arrow query failures as rejected promises', async () => {
+  const engine = await createScanEngine();
+  const controller = new AbortController();
+  controller.abort(new Error('query cancelled'));
+
+  const queryPromise = engine.queryAsync(makeArrowTable({value: [1]}), {
+    signal: controller.signal
+  });
+
+  expect(queryPromise).toBeInstanceOf(Promise);
+  await expect(queryPromise).rejects.toThrow('Arrow query was aborted.');
+});
+
 test('exposes the shared metadata vocabulary from the optional scan package', () => {
   const table = makeArrowTable({name: ['a'], value: [1]});
   const metadata = createScanQueryMetadata({
