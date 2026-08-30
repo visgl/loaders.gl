@@ -320,7 +320,7 @@ export async function* parseAvroInBatchesFromFile(
 }
 
 /** Decodes one Avro OCF block and applies the optional reader schema. */
-async function decodeAvroBlockRows(
+export async function decodeAvroBlockRows(
   compressedBytes: Uint8Array,
   rowCount: number,
   header: AvroOCFHeader,

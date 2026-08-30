@@ -6,13 +6,19 @@ test.each([
   ['null', 'expected a string, object, or union'],
   ['[]', 'empty union'],
   ['"missing"', 'unknown type'],
+  ['{}', 'missing type'],
+  ['{"type":"record","name":"1Invalid","fields":[]}', 'invalid or missing name'],
   ['{"type":"record"}', 'invalid or missing name'],
   ['{"type":"record","name":"Root"}', 'expected an array'],
   ['{"type":"record","name":"Root","fields":[null]}', 'invalid field'],
+  ['{"type":"record","name":"Root","fields":[{"name":1,"type":"int"}]}', 'invalid field'],
   ['{"type":"array"}', 'expected a string, object, or union'],
   ['{"type":"map","values":"missing"}', 'unknown type'],
   ['{"type":"unknown"}', 'unknown type'],
   ['{"type":"fixed","name":"Value","size":-1}', 'non-negative integer'],
+  ['{"type":"fixed","name":"Value","size":1.5}', 'non-negative integer'],
+  ['{"type":"fixed","name":"Value","size":"1"}', 'non-negative integer'],
+  ['{"type":"enum","name":"Kind","symbols":null}', 'array of strings'],
   ['{"type":"enum","name":"Kind","symbols":["A",1]}', 'array of strings']
 ])('rejects invalid standalone schema: %s', (schema, message) => {
   expect(() => parseAvroSchema(schema)).toThrow(message);
@@ -47,11 +53,24 @@ test('validates nested named schemas, unions, collections, and defaults', () => 
         },
         default: {id: 7}
       },
+      {name: 'nestedReference', type: {type: 'Nested'}, default: {id: 7}},
+      {name: 'wrapped', type: {type: {type: 'string'}}, default: 'value'},
+      {name: 'primitiveObject', type: {type: 'string'}, default: 'value'},
       {name: 'optional', type: ['null', 'string'], default: null}
     ]
   };
 
   expect(parseAvroSchema(JSON.stringify(schema))).toEqual(schema);
+});
+
+test.each([
+  '"string"',
+  '{"type":"string"}',
+  '{"type":{"type":"string"}}',
+  '["null","string"]',
+  '{"type":"record","name":"Node","fields":[{"name":"next","type":["null","Node"],"default":null}]}'
+])('accepts standalone primitive, wrapped, union, and recursive schemas: %s', schema => {
+  expect(parseAvroSchema(schema)).toBeDefined();
 });
 
 test.each([
@@ -86,6 +105,22 @@ test.each([
   [
     '{"type":"record","name":"Root","fields":[{"name":"value","type":{"type":"fixed","name":"Value","size":2},"default":1}]}',
     'expected string'
+  ],
+  [
+    '{"type":"record","name":"Root","fields":[{"name":"value","type":"double","default":1e400}]}',
+    'expected number'
+  ],
+  [
+    '{"type":"record","name":"Root","fields":[{"name":"value","type":"string","default":1}]}',
+    'expected string'
+  ],
+  [
+    '{"type":"record","name":"Root","fields":[{"name":"value","type":{"type":"record","name":"Nested","fields":[]},"default":[]}]}',
+    'expected record object'
+  ],
+  [
+    '{"type":"record","name":"Root","fields":[{"name":"value","type":{"type":"enum","name":"Kind","symbols":["A"]},"default":1}]}',
+    'unknown enum symbol'
   ]
 ])('rejects incompatible Avro defaults: %s', (schema, message) => {
   expect(() => parseAvroSchema(schema)).toThrow(message);
