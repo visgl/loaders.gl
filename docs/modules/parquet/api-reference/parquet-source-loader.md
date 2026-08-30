@@ -248,6 +248,33 @@ row-group indexes and provenance.
 Rows fall back to caller-thread decoding when workers are disabled or unavailable. Nested columns
 retain their composite values while primitive and logical columns flow through the columnar path.
 
+### `readPages(options?): AsyncIterable<ParquetEncodedPageBatch>`
+
+Returns an experimental, transport-neutral representation of encoded Parquet pages without
+materializing JavaScript values or Arrow arrays. This is intended for deferred CPU decoders and GPU
+pipelines. loaders.gl still owns footer parsing, range I/O, encrypted-page decryption, CRC checks,
+row-group pruning, dictionaries, and V1/V2 page framing.
+
+```ts
+for await (const pageBatch of source.readPages({
+  columns: ['position', 'category'],
+  predicate: {op: '>=', args: [{property: 'timestamp'}, start]},
+  preserveCompression: ['LZ4_RAW']
+})) {
+  gpuDecoder.enqueue(pageBatch);
+}
+```
+
+Each batch contains one row group's projected columns plus any hidden columns needed by its
+`residualFilter`. Metadata and Bloom filters prune candidates, but loaders.gl does not claim to have
+applied the exact predicate or bounding box when it has deliberately deferred value decoding.
+
+Page descriptors identify the physical type, encoding, dictionary scope, compression state, level
+ranges, and value range. Codecs listed in `preserveCompression` remain compressed for a downstream
+decoder; all other codecs are inflated while their Parquet value encoding remains untouched.
+Ordinary `read()` behavior and Arrow results are unchanged, and the Parquet module does not depend
+on a particular GPU framework.
+
 ### `getScanPlan(options?): Promise<ParquetSourceExplain>`
 
 Returns the common logical `scan → filter → project → limit` plan together with the physical

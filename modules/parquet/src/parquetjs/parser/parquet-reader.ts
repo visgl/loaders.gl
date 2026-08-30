@@ -7,6 +7,7 @@
 import type {ReadableFile} from '@loaders.gl/loader-utils';
 
 import {ParquetSchema} from '../schema/schema';
+import type {ParquetEncodedColumnChunk} from '../../parquet-encoded-page-types';
 import {
   decodeSchema,
   decodeDataPages,
@@ -14,6 +15,7 @@ import {
   decodeUncompressedDataPages,
   decodeUncompressedDictionaryBuffer
 } from './decoders';
+import {scanParquetEncodedPages} from './encoded-pages';
 import {materializeRows} from '../schema/shred';
 import {createParquetPageDecompressor, type ParquetPageDecompressor} from '../compression';
 
@@ -759,6 +761,70 @@ export class ParquetReader {
     };
   }
 
+  /**
+   * Reads selected column chunks as encoded page descriptors without materializing values.
+   *
+   * Page headers, encryption, checksums, and optional decompression remain reader concerns. Value,
+   * dictionary, and level decoding is deliberately left to the downstream consumer.
+   */
+  async readRowGroupEncodedPages(
+    schema: ParquetSchema,
+    rowGroup: RowGroup,
+    columnList: string[][],
+    preserveCompression: ReadonlySet<string>,
+    signal?: AbortSignal,
+    rowGroupOrdinal = 0
+  ): Promise<Readonly<Record<string, ParquetEncodedColumnChunk>>> {
+    await this.resolveColumnMetadata(rowGroup, rowGroupOrdinal, columnList);
+    const selectedColumnChunks: Array<{
+      columnChunk: ColumnChunk;
+      metadata: NonNullable<ColumnChunk['meta_data']>;
+      columnOrdinal: number;
+    }> = [];
+    for (let columnOrdinal = 0; columnOrdinal < rowGroup.columns.length; columnOrdinal++) {
+      const columnChunk = rowGroup.columns[columnOrdinal];
+      const path = getColumnChunkPath(columnChunk);
+      if (columnList.length > 0 && (!path || fieldIndexOf(columnList, path) < 0)) continue;
+      const physicalColumnOrdinal = getPhysicalColumnOrdinal(columnChunk, columnOrdinal);
+      const metadata =
+        columnChunk.meta_data ||
+        (await this.getColumnMetadata(columnChunk, rowGroupOrdinal, physicalColumnOrdinal));
+      if (columnList.length === 0 || fieldIndexOf(columnList, metadata.path_in_schema) >= 0) {
+        selectedColumnChunks.push({
+          columnChunk,
+          metadata,
+          columnOrdinal: physicalColumnOrdinal
+        });
+      }
+    }
+    const columnEntries: Array<readonly [string, ParquetEncodedColumnChunk]> = [];
+    for (
+      let batchStart = 0;
+      batchStart < selectedColumnChunks.length;
+      batchStart += MAXIMUM_CONCURRENT_COLUMN_READS
+    ) {
+      columnEntries.push(
+        ...(await Promise.all(
+          selectedColumnChunks
+            .slice(batchStart, batchStart + MAXIMUM_CONCURRENT_COLUMN_READS)
+            .map(async ({columnChunk, metadata, columnOrdinal}) => {
+              const encodedColumn = await this.readColumnChunkEncodedPages(
+                schema,
+                columnChunk,
+                preserveCompression,
+                signal,
+                rowGroupOrdinal,
+                columnOrdinal,
+                metadata
+              );
+              return [metadata.path_in_schema.join(), encodedColumn] as const;
+            })
+        ))
+      );
+    }
+    return Object.freeze(Object.fromEntries(columnEntries));
+  }
+
   /** Reads independently materializable non-repeated columns for one row range using page indexes. */
   async readRowGroupRange(
     schema: ParquetSchema,
@@ -995,6 +1061,117 @@ export class ParquetReader {
         )
       : chunkBuffer.subarray(pagesRelativeOffset, pagesRelativeOffset + pagesSize);
     return await decodeDataPages(pagesBuf, {...context, dictionary});
+  }
+
+  /** Reads one column chunk as encoded dictionaries, levels, and values for deferred decoding. */
+  async readColumnChunkEncodedPages(
+    schema: ParquetSchema,
+    columnChunk: ColumnChunk,
+    preserveCompression: ReadonlySet<string>,
+    signal?: AbortSignal,
+    rowGroupOrdinal = 0,
+    columnOrdinal = 0,
+    resolvedMetadata?: NonNullable<ColumnChunk['meta_data']>
+  ): Promise<ParquetEncodedColumnChunk> {
+    if (columnChunk.file_path !== undefined && columnChunk.file_path !== null) {
+      throw new Error('external references are not supported');
+    }
+    const metadata = resolvedMetadata || columnChunk.meta_data;
+    if (!metadata) throw new Error('Parquet column metadata is missing');
+    const field = schema.findField(metadata.path_in_schema);
+    const physicalType: PrimitiveType = getThriftEnum(Type, metadata.type) as PrimitiveType;
+    if (physicalType !== field.primitiveType) {
+      throw new Error(`chunk type not matching schema: ${physicalType}`);
+    }
+    const compression = getThriftEnum(CompressionCodec, metadata.codec) as ParquetCompression;
+    const dataPageOffset = Number(metadata.data_page_offset);
+    const dictionaryPageOffset = metadata.dictionary_page_offset;
+    const validDictionaryPageOffset =
+      dictionaryPageOffset !== undefined && Number(dictionaryPageOffset) > 0
+        ? Number(dictionaryPageOffset)
+        : undefined;
+    const chunkOffset = Math.min(dataPageOffset, validDictionaryPageOffset ?? dataPageOffset);
+    const chunkEnd = chunkOffset + Number(metadata.total_compressed_size);
+    const chunkByteLength = Math.min(
+      this.file.size - chunkOffset,
+      Math.max(0, chunkEnd - chunkOffset)
+    );
+    const chunkBuffer = await this.readBytes(chunkOffset, chunkByteLength, signal);
+    const dataPageRelativeOffset = dataPageOffset - chunkOffset;
+    const dataPageByteLength = Math.min(
+      chunkBuffer.byteLength - dataPageRelativeOffset,
+      Math.max(0, chunkEnd - dataPageOffset)
+    );
+    const context = {
+      column: field,
+      compression,
+      decompressPage: this.getPageDecompressor(compression),
+      preserveCompression,
+      verifyPageChecksums: this.props.verifyPageChecksums
+    };
+
+    let dictionary;
+    if (validDictionaryPageOffset !== undefined) {
+      const dictionaryRelativeOffset = validDictionaryPageOffset - chunkOffset;
+      const dictionaryByteLength = Math.min(
+        Math.max(0, dataPageOffset - validDictionaryPageOffset),
+        chunkBuffer.byteLength - dictionaryRelativeOffset,
+        this.props.defaultDictionarySize
+      );
+      const dictionaryBuffer = chunkBuffer.subarray(
+        dictionaryRelativeOffset,
+        dictionaryRelativeOffset + dictionaryByteLength
+      );
+      const plaintextDictionaryBuffer = columnChunk.crypto_metadata
+        ? await this.decryptColumnPages(
+            dictionaryBuffer,
+            {
+              type: physicalType,
+              rLevelMax: field.rLevelMax,
+              dLevelMax: field.dLevelMax,
+              compression,
+              column: field
+            },
+            rowGroupOrdinal,
+            columnOrdinal,
+            this.getColumnKeyMetadata(columnChunk),
+            true
+          )
+        : dictionaryBuffer;
+      dictionary = (await scanParquetEncodedPages(plaintextDictionaryBuffer, context))[0];
+    }
+
+    const dataPageBuffer = chunkBuffer.subarray(
+      dataPageRelativeOffset,
+      dataPageRelativeOffset + dataPageByteLength
+    );
+    const plaintextDataPageBuffer = columnChunk.crypto_metadata
+      ? await this.decryptColumnPages(
+          dataPageBuffer,
+          {
+            type: physicalType,
+            rLevelMax: field.rLevelMax,
+            dLevelMax: field.dLevelMax,
+            compression,
+            column: field
+          },
+          rowGroupOrdinal,
+          columnOrdinal,
+          this.getColumnKeyMetadata(columnChunk)
+        )
+      : dataPageBuffer;
+    const pages = await scanParquetEncodedPages(plaintextDataPageBuffer, context);
+    return Object.freeze({
+      path: Object.freeze([...metadata.path_in_schema]),
+      physicalType,
+      typeLength: field.typeLength,
+      maxRepetitionLevel: field.rLevelMax,
+      maxDefinitionLevel: field.dLevelMax,
+      compression,
+      valueCount: Number(metadata.num_values),
+      dictionary,
+      pages: Object.freeze(pages)
+    });
   }
 
   /** Decrypts the length-prefixed page header and data modules in one column chunk. */

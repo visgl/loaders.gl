@@ -13,6 +13,15 @@ export {ParquetJSLoader} from './parquet-js-loader-types';
 
 export {ParquetSourceLoader} from './parquet-source-loader-types';
 export type {
+  ParquetDeferredPageFilter,
+  ParquetEncodedColumnChunk,
+  ParquetEncodedPage,
+  ParquetEncodedPageBatch,
+  ParquetEncodedPageReadOptions,
+  ParquetEncodedPageSection,
+  ParquetPageCompressionState
+} from './parquet-encoded-page-types';
+export type {
   ParquetBatch,
   ParquetBatchMetadata,
   ParquetBatchProvenance,

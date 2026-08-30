@@ -23,6 +23,7 @@ import type {
 } from '@loaders.gl/loader-utils';
 import type {ArrayType, ArrowTable, Schema} from '@loaders.gl/schema';
 import {convertTable} from '@loaders.gl/schema-utils';
+import {getGeoMetadata} from '@loaders.gl/gis';
 
 import {getSchemaFromParquetReader} from './lib/parsers/get-parquet-schema';
 import {
@@ -69,6 +70,11 @@ import {
   type ParquetSourceCapabilities
 } from './parquet-source-capabilities';
 import {ParquetSourceLoader as ParquetSourceLoaderMetadata} from './parquet-source-loader-types';
+import type {
+  ParquetEncodedPageBatch,
+  ParquetEncodedPageReadOptions,
+  ParquetDeferredPageFilter
+} from './parquet-encoded-page-types';
 import type {
   ParquetBatch,
   ParquetColumnChunkMetadata,
@@ -120,6 +126,15 @@ import {
 } from './parquetjs/utils/binary-utils';
 import {fieldIndexOf} from './parquetjs/utils/read-utils';
 
+export type {
+  ParquetEncodedColumnChunk,
+  ParquetEncodedPage,
+  ParquetEncodedPageBatch,
+  ParquetEncodedPageReadOptions,
+  ParquetEncodedPageSection,
+  ParquetDeferredPageFilter,
+  ParquetPageCompressionState
+} from './parquet-encoded-page-types';
 export type {
   ParquetBatch,
   ParquetBatchMetadata,
@@ -376,6 +391,86 @@ export class ParquetSource
   /** Common scan-architecture alias for selective Parquet reads. */
   scan(options: ParquetSourceReadOptions = {}): AsyncIterable<ParquetSourceBatch> {
     return this.read(options);
+  }
+
+  /**
+   * Reads candidate encoded pages without decoding values or constructing Arrow arrays.
+   *
+   * Footer statistics and Bloom filters prune complete row groups. Any exact predicate or spatial
+   * filter is returned as residual work, and its hidden columns are included in the page batch.
+   */
+  async *readPages(
+    options: ParquetEncodedPageReadOptions = {}
+  ): AsyncIterable<ParquetEncodedPageBatch> {
+    const readOptions = this.getReadOptions({
+      rowGroups: options.rowGroups,
+      columns: options.columns,
+      rowGroupFilter: options.rowGroupFilter,
+      predicate: options.predicate,
+      bbox: options.bbox,
+      geometryColumn: options.geometryColumn,
+      signal: options.signal
+    });
+    const readContext = createReadAbortContext(readOptions.signal);
+    this.activeReadControllers.add(readContext.abortController);
+    try {
+      const initialization = await this.getInitialization(readContext.abortController.signal);
+      await this.getCompressionInitialization();
+      throwIfAborted(readContext.abortController.signal);
+      const physicalPlan = await this.planRowGroups(
+        initialization,
+        readOptions,
+        readContext.abortController.signal
+      );
+      const projectedColumns = normalizeColumns(readOptions.columns, initialization.schema);
+      const predicateColumns = physicalPlan.predicate
+        ? getParquetPredicateColumns(physicalPlan.predicate)
+        : [];
+      const geoMetadata = readOptions.bbox
+        ? getGeoMetadata(initialization.schema.metadata)
+        : undefined;
+      const geometryColumn = readOptions.bbox
+        ? readOptions.geometryColumn || geoMetadata?.primary_column
+        : undefined;
+      const filterColumns = [
+        ...new Set([...predicateColumns, ...(geometryColumn ? [geometryColumn] : [])])
+      ];
+      const decodedColumns =
+        projectedColumns.length === 0 ? [] : [...new Set([...projectedColumns, ...filterColumns])];
+      const columnList = decodedColumns.map(column => [column]);
+      const preserveCompression = new Set(options.preserveCompression ?? []);
+      const residualFilter: ParquetDeferredPageFilter | undefined =
+        readOptions.predicate || readOptions.bbox
+          ? Object.freeze({
+              predicate: readOptions.predicate,
+              bbox: readOptions.bbox,
+              geometryColumn
+            })
+          : undefined;
+      for (const rowGroupIndex of physicalPlan.rowGroupIndices) {
+        throwIfAborted(readContext.abortController.signal);
+        const columns = await initialization.reader.readRowGroupEncodedPages(
+          initialization.parquetSchema,
+          initialization.fileMetadata.row_groups[rowGroupIndex],
+          columnList,
+          preserveCompression,
+          readContext.abortController.signal,
+          rowGroupIndex
+        );
+        yield Object.freeze({
+          shape: 'parquet-encoded-pages' as const,
+          rowGroup: initialization.metadata.rowGroups[rowGroupIndex],
+          projectedColumns: Object.freeze([...projectedColumns]),
+          filterColumns: Object.freeze(filterColumns),
+          columns,
+          residualFilter
+        });
+      }
+    } finally {
+      readContext.abortController.abort();
+      readContext.removeSignalListener();
+      this.activeReadControllers.delete(readContext.abortController);
+    }
   }
 
   /** Returns a copy of cumulative transport, decode, conversion, and pruning telemetry. */
