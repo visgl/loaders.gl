@@ -26,7 +26,7 @@ import {ClientExample} from '@site/src/components';
 />
 
 <DocLiveExample label="GeoParquetLoader map example" height="420px">
-  <ClientExample kind="geospatial" format="GeoParquet" />
+  <ClientExample kind="geospatial" format="GeoParquet" parquetLoaderName="geoparquet" />
 </DocLiveExample>
 
 <ParquetDocsTabs active="geoparquetloader" />
