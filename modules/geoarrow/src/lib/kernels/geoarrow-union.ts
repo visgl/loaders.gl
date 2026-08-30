@@ -27,6 +27,7 @@ export function getGeoArrowUnionGeometryKind(
   if (normalizedName.includes('multipoint')) return 'MultiPoint';
   if (normalizedName.includes('polygon')) return 'Polygon';
   if (normalizedName.includes('linestring')) return 'LineString';
+  if (normalizedName.includes('line')) return 'LineString';
   if (normalizedName.includes('point')) return 'Point';
   switch (typeId % 10) {
     case 1:

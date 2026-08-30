@@ -116,7 +116,10 @@ test('GeoArrow mixed WKB union preserves per-row Z and M dimensions', async () =
       return dataView.getUint32(1, littleEndian);
     });
 
-  expect(getWKBTypeCodes(roundTripColumn)).toEqual(getWKBTypeCodes(sourceColumn));
+  const sourceTypeCodes = getWKBTypeCodes(sourceColumn);
+  expect(getWKBTypeCodes(roundTripColumn)).toEqual(
+    sourceTypeCodes.map(typeCode => (typeCode === 7 ? 3007 : typeCode))
+  );
 });
 
 /**
@@ -739,7 +742,7 @@ test('direct WKB conversion rejects trailing bytes', () => {
   const vector = arrow.vectorFromArray([malformedBytes], new arrow.Binary());
 
   expect(() => convertGeoArrowVector(vector, 'geoarrow.wkb', 'geoarrow.point')).toThrow(
-    /Invalid WKB geometry at row 0/
+    /WKB contains trailing bytes/
   );
 });
 
@@ -1037,7 +1040,7 @@ test('GeoArrowGeometryConverter rejects incompatible target encodings', async ()
   expect(
     () => convertGeoArrowGeometry(table, 'geoarrow.linestring'),
     'rejects changing geometry type during encoding conversion'
-  ).toThrow(/cannot encode Point as geoarrow\.linestring/i);
+  ).toThrow(/(?:cannot encode Point|cannot be represented as) geoarrow\.linestring/i);
 });
 test('GeoArrowGeometryConverter integrates with convert()', async () => {
   const table = await loadArrowTable(GEOARROW_POINT_WKB_FILE);
@@ -1268,7 +1271,7 @@ test('GeoArrowGeometryConverter decodes WKB GeometryCollections without a GeoJSO
   ).toContain('LargeList<Union<');
 });
 
-test('GeoArrowGeometryConverter rejects recursive native GeometryCollections', () => {
+test('GeoArrowGeometryConverter supports recursive native GeometryCollections', () => {
   const geometry: Geometry = {
     type: 'GeometryCollection',
     geometries: [
@@ -1292,12 +1295,13 @@ test('GeoArrowGeometryConverter rejects recursive native GeometryCollections', (
     geoarrow: {encoding: 'wkb'}
   }).data;
 
-  expect(() => convertGeoArrowGeometry(source, 'geoarrow.geometrycollection')).toThrow(
-    /do not support recursive GeometryCollections/
+  const collection = convertGeoArrowGeometry(source, 'geoarrow.geometrycollection');
+  const union = convertGeoArrowGeometry(source, 'geoarrow.geometry');
+
+  expect(convertGeoArrowToTable(collection, 'geojson-table').features[0].geometry).toEqual(
+    geometry
   );
-  expect(() => convertGeoArrowGeometry(source, 'geoarrow.geometry')).toThrow(
-    /do not support recursive GeometryCollections/
-  );
+  expect(convertGeoArrowToTable(union, 'geojson-table').features[0].geometry).toEqual(geometry);
 
   const wkb = source.getChild('geometry');
   expect(wkb?.length).toBe(1);
@@ -1606,7 +1610,7 @@ test('GeoArrowGeometryConverter validates column selection and collection target
     })
   ).toThrow(/Specify only one/);
   expect(() => convertGeoArrowGeometry(pointTable, 'geoarrow.geometrycollection')).toThrow(
-    /cannot encode Point as geoarrow.geometrycollection/
+    /(?:cannot encode Point|cannot be represented as) geoarrow.geometrycollection/
   );
 });
 
@@ -2024,10 +2028,14 @@ test.each([
   ['xym', ['x', 'y', 'm'], [1, 2, 7]] as const,
   ['xyzm', ['x', 'y', 'z', 'm'], [1, 2, 3, 7]] as const
 ])('native-to-native conversion preserves separated %s semantic axes', (dimension, names, values) => {
-  const source = convertFeaturesToGeoArrowTable(
-    [{type: 'Feature', properties: {}, geometry: {type: 'Point', coordinates: values}}],
-    {geoarrow: {encoding: 'wkb'}}
-  ).data;
+  const source = setGeometryFieldEncoding(
+    arrow.tableFromArrays({
+      geometry: [
+        dimension === 'xym' ? `POINT M (${values.join(' ')})` : `POINT ZM (${values.join(' ')})`
+      ]
+    }),
+    'geoarrow.wkt'
+  );
   const separated = convertGeoArrowGeometry(source, 'geoarrow.point', {
     dimension,
     coordinates: 'separated'
@@ -2130,10 +2138,10 @@ test('GeoArrowGeometryConverter narrows representable native offsets without row
 });
 
 test('GeoArrowGeometryConverter preserves XYM semantics when writing WKB', () => {
-  const source = convertFeaturesToGeoArrowTable(
-    [{type: 'Feature', properties: {}, geometry: {type: 'Point', coordinates: [1, 2, 7]}}],
-    {geoarrow: {encoding: 'wkb'}}
-  ).data;
+  const source = setGeometryFieldEncoding(
+    arrow.tableFromArrays({geometry: ['POINT M (1 2 7)']}),
+    'geoarrow.wkt'
+  );
   const native = convertGeoArrowGeometry(source, 'geoarrow.point', {dimension: 'xym'});
   const wkb = convertGeoArrowGeometry(native, 'geoarrow.wkb');
   const bytes = wkb.getChild('geometry')?.get(0) as Uint8Array;

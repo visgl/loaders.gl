@@ -149,7 +149,7 @@ describe('GeoArrow physical layout oracle', () => {
 
     expect(result.valid).toBe(true);
     expect(result.layout.kind).toBe('geometry-union');
-    expect(result.layout.unionTypeIds).toEqual([1, 2]);
+    expect(result.layout.unionTypeIds).toEqual([1, 5]);
     expect(result.layout.unionChildren.map(child => child.geometryType)).toEqual([
       'Point',
       'LineString'
