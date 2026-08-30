@@ -718,6 +718,12 @@ function compareValues(left: unknown, right: SQLPredicateValue): number {
   if (left instanceof Date && right instanceof Date) {
     return compareNumbers(left.getTime(), right.getTime());
   }
+  if (typeof left === 'number' && right instanceof Date) {
+    return compareNumbers(left, right.getTime());
+  }
+  if (left instanceof Date && typeof right === 'number') {
+    return compareNumbers(left.getTime(), right);
+  }
   if (left instanceof Uint8Array && right instanceof Uint8Array) {
     return compareBinary(left, right);
   }

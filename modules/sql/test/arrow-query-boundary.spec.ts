@@ -61,11 +61,13 @@ test('queryArrowTable compares Date and binary predicate values', () => {
   const firstDate = new Date('2020-01-01T00:00:00Z');
   const secondDate = new Date('2021-01-01T00:00:00Z');
   const dates = makeArrowTable({value: [firstDate, secondDate]});
-  expect(() =>
-    queryArrowTable(dates, {
-      predicate: {op: '=', args: [{property: 'value'}, secondDate]} as any
-    })
-  ).toThrow(/cannot compare number with Date/);
+  expect(
+    toRows(
+      queryArrowTable(dates, {
+        predicate: {op: '=', args: [{property: 'value'}, secondDate]}
+      })
+    ).map(row => Number(row.value))
+  ).toEqual([secondDate.getTime()]);
 
   const binaryData = new arrow.Table({
     value: arrow.vectorFromArray(
