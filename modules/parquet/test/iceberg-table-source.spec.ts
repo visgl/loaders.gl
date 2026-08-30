@@ -373,3 +373,191 @@ test('IcebergTableSource prunes bounds, spatial envelopes, and partition transfo
   expect(transformed.files[0].partitions).toEqual({region_partition: 'west', region: 'west'});
   await transformed.close();
 });
+
+test('IcebergTableSource decodes every primitive bound and prunes both sides', async () => {
+  const source = new IcebergTableSource('metadata.json') as any;
+  const encoders: Record<string, (value: any) => Uint8Array> = {
+    boolean: value => Uint8Array.of(value ? 1 : 0),
+    int: value => encodeDataView(4, view => view.setInt32(0, value, false)),
+    date: value => encodeDataView(4, view => view.setInt32(0, value, false)),
+    long: value => encodeDataView(8, view => view.setBigInt64(0, BigInt(value), false)),
+    time: value => encodeDataView(8, view => view.setBigInt64(0, BigInt(value), false)),
+    timestamp: value => encodeDataView(8, view => view.setBigInt64(0, BigInt(value), false)),
+    timestz: value => encodeDataView(8, view => view.setBigInt64(0, BigInt(value), false)),
+    float: value => encodeDataView(4, view => view.setFloat32(0, value, false)),
+    double: value => encodeDataView(8, view => view.setFloat64(0, value, false)),
+    string: value => new TextEncoder().encode(value)
+  };
+  const fields = Object.keys(encoders).map((type, index) => ({
+    id: index + 1,
+    name: type,
+    type: index === 1 ? {type} : type
+  }));
+  const metadata = {
+    'format-version': 2,
+    location: 'table',
+    'current-schema-id': 1,
+    schemas: [{'schema-id': 1, fields}]
+  };
+
+  for (const [property, encode] of Object.entries(encoders)) {
+    const fieldId = fields.find(field => field.name === property)!.id;
+    const lowerValue = property === 'string' ? 'b' : property === 'boolean' ? false : 10;
+    const upperValue = property === 'string' ? 'm' : property === 'boolean' ? true : 20;
+    const file = {
+      data: `${property}.parquet`,
+      schemaId: 1,
+      lowerBounds: {[fieldId]: encode(lowerValue)},
+      upperBounds: {[fieldId]: encode(upperValue)}
+    };
+    const inside = property === 'string' ? 'g' : property === 'boolean' ? true : 15;
+    const below = property === 'string' ? 'a' : property === 'boolean' ? false : 5;
+    const above = property === 'string' ? 'z' : property === 'boolean' ? true : 25;
+    const expected =
+      property === 'boolean'
+        ? [
+            [{op: '=', args: [{property}, true]}, 1],
+            [{op: '=', args: [{property}, false]}, 1],
+            [{op: '<', args: [{property}, false]}, 0],
+            [{op: '>', args: [{property}, true]}, 0]
+          ]
+        : [
+            [{op: '=', args: [{property}, inside]}, 1],
+            [{op: '=', args: [{property}, below]}, 0],
+            [{op: '<', args: [{property}, below]}, 0],
+            [{op: '<=', args: [{property}, below]}, 0],
+            [{op: '>', args: [{property}, above]}, 0],
+            [{op: '>=', args: [{property}, above]}, 0],
+            [{op: '<>', args: [{property}, inside]}, 1],
+            [{op: 'in', args: [{property}, [below, inside, above]]}, 1]
+          ];
+    for (const [predicate, fileCount] of expected) {
+      const dataset = source.createParquetDataset(
+        {dataFiles: [file], deleteFiles: []},
+        metadata,
+        {predicate}
+      );
+      expect(dataset.files.length, `${property} ${predicate.op}`).toBe(fileCount);
+      await dataset.close();
+    }
+  }
+});
+
+test('IcebergTableSource conservatively handles malformed bounds and exhaustive spatial boxes', async () => {
+  const source = new IcebergTableSource('metadata.json') as any;
+  const metadata = {
+    'format-version': 2,
+    location: 'table',
+    'current-schema-id': 1,
+    schemas: [{'schema-id': 1, fields: [{id: 1, name: 'geometry'}, {id: 2, name: 'value'}]}]
+  };
+  const spatialCases = [
+    [{geometry: [0, 0, 10, 10]}, {geometry: [0, 0, 10, 10]}, [-2, 2, -1, 3], 0],
+    [{geometry: [0, 0]}, {geometry: [10, 10]}, [11, 2, 12, 3], 0],
+    [{geometry: {xmin: 0, ymin: 0, xmax: 10, ymax: 10}}, {geometry: null}, [2, -2, 3, -1], 0],
+    [{geometry: [0, 0, 10, 10]}, {geometry: [0, 0, 10, 10]}, [2, 11, 3, 12], 0],
+    [{geometry: [0, 0, 10, 10]}, {geometry: [0, 0, 10, 10]}, [10, 10, 12, 12], 1],
+    [{geometry: ['bad', 0, 10, 10]}, {geometry: [0, 0, 10, 10]}, [20, 20, 30, 30], 1],
+    [{geometry: {xmin: 0, ymin: 0, xmax: 10}}, {geometry: null}, [20, 20, 30, 30], 1],
+    [undefined, undefined, [20, 20, 30, 30], 1]
+  ] as const;
+  for (const [lowerBounds, upperBounds, bbox, expectedCount] of spatialCases) {
+    const dataset = source.createParquetDataset(
+      {dataFiles: [{data: 'geometry.parquet', schemaId: 1, lowerBounds, upperBounds}], deleteFiles: []},
+      metadata,
+      {spatialFilter: {column: 'geometry', bbox}}
+    );
+    expect(dataset.files.length).toBe(expectedCount);
+    await dataset.close();
+  }
+
+  const malformedPrimitiveCases = [
+    {lowerBounds: {2: Uint8Array.of(1)}, upperBounds: {2: Uint8Array.of(2)}},
+    {lowerBounds: {2: Uint8Array.of(1, 2, 3, 4)}, upperBounds: undefined},
+    {lowerBounds: {2: new Uint8Array()}, upperBounds: {2: new Uint8Array()}},
+    {lowerBounds: {missing: 1}, upperBounds: {missing: 2}}
+  ];
+  for (const file of malformedPrimitiveCases) {
+    const dataset = source.createParquetDataset(
+      {dataFiles: [{data: 'value.parquet', schemaId: 1, ...file}], deleteFiles: []},
+      metadata,
+      {predicate: {op: '=', args: [{property: 'value'}, 1]}}
+    );
+    expect(dataset.files).toHaveLength(1);
+    await dataset.close();
+  }
+});
+
+test('IcebergTableSource normalizes partition scalar variants and record wrappers', async () => {
+  const source = new IcebergTableSource('metadata.json') as any;
+  source.getMetadata = async () => ({
+    'format-version': 2,
+    location: 'table',
+    'current-snapshot-id': 1,
+    snapshots: [{'snapshot-id': 1, 'manifest-list': 'list.avro'}]
+  });
+  source.readAvroRecords = vi
+    .fn()
+    .mockResolvedValueOnce([{manifest_path: 'manifest.avro'}])
+    .mockResolvedValueOnce([
+      {
+        status: 1,
+        data_file: {
+          file_path: 'data.parquet',
+          file_format: 'parquet',
+          partition: {nil: null, text: 'x', count: 2, enabled: false, ignored: {nested: true}},
+          lower_bounds: new Map([['value', 1]]),
+          upper_bounds: new Map([['value', 2]]),
+          data_sequence_number: 0
+        }
+      }
+    ]);
+  const plan = await source.getScanPlan();
+  expect(plan.dataFiles[0]).toMatchObject({
+    partition: {nil: null, text: 'x', count: 2, enabled: false, ignored: {nested: true}},
+    lowerBounds: {value: 1},
+    upperBounds: {value: 2},
+    dataSequenceNumber: 0
+  });
+  const dataset = source.createParquetDataset(plan, await source.getMetadata(), {});
+  expect(dataset.files[0].partitions).toEqual({nil: null, text: 'x', count: 2, enabled: false});
+  await dataset.close();
+});
+
+test.each([
+  [false, false, 'failed'],
+  [true, false, 'cancelled']
+] as const)(
+  'IcebergTableSource reports delegated scan failures (aborted=%s)',
+  async (aborted, _unused, expectedStatus) => {
+    const source = new IcebergTableSource('metadata.json') as any;
+    source.getMetadata = async () => ({'format-version': 2, location: 'table'});
+    source.getScanPlan = async () => ({dataFiles: [{data: 'data.parquet'}], deleteFiles: []});
+    source.createParquetDataset = () => ({
+      async *read(options: any) {
+        options.onTelemetry({status: 'completed', rowsReturned: 0, sourceType: 'parquet'});
+        throw new Error('delegated failure');
+      },
+      close: vi.fn()
+    });
+    const abortController = new AbortController();
+    if (aborted) abortController.abort();
+    const telemetry = vi.fn();
+    const consume = async () => {
+      for await (const _batch of source.scan({signal: abortController.signal, onTelemetry: telemetry})) {
+        // No batches are expected.
+      }
+    };
+    await expect(consume()).rejects.toThrow('delegated failure');
+    expect(telemetry).toHaveBeenCalledWith(
+      expect.objectContaining({status: expectedStatus, rowsReturned: 0, error: expect.any(Error)})
+    );
+  }
+);
+
+/** Encodes one primitive through a big-endian DataView callback. */
+function encodeDataView(byteLength: number, encode: (view: DataView) => void): Uint8Array {
+  const bytes = new Uint8Array(byteLength);
+  encode(new DataView(bytes.buffer));
+  return bytes;
+}

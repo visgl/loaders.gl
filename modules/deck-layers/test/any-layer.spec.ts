@@ -8,8 +8,11 @@ import type {Loader, SourceLoader} from '@loaders.gl/loader-utils';
 import {
   classifyVisualSource,
   createSourceViewState,
+  finalizeOwnedSource,
   getFirstSourceLayerName,
+  getCoordinateReferenceSystemIdentifier,
   getSourceCoordinateReferenceSystem,
+  loadVisualSourceMetadata,
   resolveVisualSource
 } from '../src/source-layer-utils';
 
@@ -250,6 +253,101 @@ describe('source classification and metadata defaults', () => {
       target: [10, 10, 0],
       crs: 'EPSG:4326'
     });
+  });
+
+  test('normalizes CRS authority objects and fallback metadata shapes', () => {
+    expect(getCoordinateReferenceSystemIdentifier('CRS:84')).toBe('CRS:84');
+    expect(getCoordinateReferenceSystemIdentifier(null)).toBeUndefined();
+    expect(
+      getCoordinateReferenceSystemIdentifier({
+        ids: [{}, {authority: 'EPSG', code: 4326}]
+      })
+    ).toBe('EPSG:4326');
+    expect(getCoordinateReferenceSystemIdentifier({id: {authority: 'EPSG'}})).toBeUndefined();
+    expect(
+      getSourceCoordinateReferenceSystem({layers: [{name: 'roads', srs: ['EPSG:27700']}]})
+    ).toBe('EPSG:27700');
+    expect(getSourceCoordinateReferenceSystem({crs: {id: {authority: 'EPSG', code: 4326}}})).toBe(
+      'EPSG:4326'
+    );
+    expect(getFirstSourceLayerName({layer: {layers: [{layers: []}, {name: 'second'}]}})).toBe(
+      'second'
+    );
+    expect(getFirstSourceLayerName({layers: [{layers: [{}]}]})).toBeNull();
+  });
+
+  test('loads metadata across point-cloud, parser-backed, and absent contracts', async () => {
+    const initialize = vi.fn(async () => {});
+    const getMetadata = vi.fn(async () => ({name: 'cloud'}));
+    await expect(
+      loadVisualSourceMetadata({
+        source: {initialize, getMetadata, isReady: false},
+        sourceType: 'point-cloud',
+        parserLoaders: [],
+        owned: false
+      })
+    ).resolves.toEqual({name: 'cloud'});
+    expect(initialize).toHaveBeenCalledOnce();
+    expect(getMetadata).toHaveBeenCalledWith({formatSpecificMetadata: false});
+
+    await expect(
+      loadVisualSourceMetadata({
+        source: 'tileset.json',
+        sourceType: 'tile-3d',
+        parserLoaders: [],
+        owned: false
+      })
+    ).resolves.toBeNull();
+    await expect(
+      loadVisualSourceMetadata({source: {}, sourceType: 'image', parserLoaders: [], owned: false})
+    ).resolves.toBeNull();
+  });
+
+  test('derives navigation hints from flat, nested, and source view-state bounds', async () => {
+    await expect(createSourceViewState({}, null)).resolves.toBeNull();
+    await expect(
+      createSourceViewState(
+        {getViewState: async () => ({cartographicCenter: [4, 5, 6], zoom: 7})},
+        null
+      )
+    ).resolves.toMatchObject({longitude: 4, latitude: 5, target: [4, 5, 6], zoom: 7});
+    await expect(
+      createSourceViewState({}, {boundingBox: [-180, -90, 180, 90]})
+    ).resolves.toMatchObject({longitude: 0, latitude: 0, zoom: 0});
+    await expect(
+      createSourceViewState(
+        {
+          getViewState: async () => ({
+            boundingVolume: {
+              cartographicBounds: [
+                [1, 2],
+                [1, 2]
+              ]
+            }
+          })
+        },
+        {layers: [{name: 'unbounded'}, {name: 'ignored', boundingBox: [0, 0, 1, 1]}]}
+      )
+    ).resolves.toMatchObject({
+      bounds: [
+        [1, 2],
+        [1, 2]
+      ],
+      zoom: 24
+    });
+  });
+
+  test('finalizes owned sources using the first supported lifecycle method', async () => {
+    const finalize = vi.fn();
+    const destroy = vi.fn();
+    const close = vi.fn();
+    await finalizeOwnedSource({finalize, destroy, close});
+    await finalizeOwnedSource({destroy, close});
+    await finalizeOwnedSource({close});
+    await finalizeOwnedSource(null);
+    expect(finalize).toHaveBeenCalledOnce();
+    expect(destroy).toHaveBeenCalledOnce();
+    expect(close).toHaveBeenCalledOnce();
   });
 });
 

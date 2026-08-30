@@ -528,6 +528,87 @@ describe('Avro boundary coverage', () => {
     ).rejects.toThrow('do not support chunked');
   });
 
+  test('covers empty OCF output, single-record framing, and custom metadata', async () => {
+    const schema = {type: 'record', name: 'Value', fields: [{name: 'id', type: 'int'}]};
+    const emptyOutput = await encodeAvro(createStructuralTable([]), {
+      avro: {
+        schema,
+        metadata: {description: 'empty table', binary: Uint8Array.from([1, 2])}
+      }
+    });
+    expect(parseAvroOCF(emptyOutput).blocks).toEqual([]);
+
+    const table = createStructuralTable([{id: 3}]);
+    const raw = await encodeAvro(table, {avro: {schema, encoding: 'raw'}});
+    const singleObject = await encodeAvro(table, {avro: {schema, encoding: 'single-object'}});
+    expect((await parseAvro(raw, {schema, encoding: 'raw'})).data.numRows).toBe(1);
+    expect((await parseAvro(singleObject, {schema, encoding: 'single-object'})).data.numRows).toBe(
+      1
+    );
+
+    await expect(
+      encodeAvro(createStructuralTable([]), {avro: {schema, encoding: 'raw'}})
+    ).rejects.toThrow('exactly one table row');
+    await expect(
+      encodeAvro(createStructuralTable([]), {avro: {schema, encoding: 'single-object'}})
+    ).rejects.toThrow('exactly one table row');
+    for (const key of ['avro.schema', 'avro.codec']) {
+      await expect(
+        encodeAvro(table, {avro: {schema, metadata: {[key]: 'reserved'}}})
+      ).rejects.toThrow('is reserved');
+    }
+  });
+
+  test('encodes union matching and empty container branches', async () => {
+    const schema = {
+      type: 'record',
+      name: 'UnionMatrix',
+      fields: [
+        {name: 'nullable', type: ['null', 'string']},
+        {name: 'nestedUnion', type: [['null', 'boolean'], 'string']},
+        {name: 'recordUnion', type: ['null', {type: 'record', name: 'Nested', fields: []}]},
+        {name: 'arrayUnion', type: ['null', {type: 'array', items: 'int'}]},
+        {name: 'mapUnion', type: ['null', {type: 'map', values: 'string'}]},
+        {name: 'emptyArray', type: {type: 'array', items: 'int'}},
+        {name: 'emptyMap', type: {type: 'map', values: 'int'}},
+        {name: 'byteArray', type: 'bytes'},
+        {name: 'byteBuffer', type: 'bytes'}
+      ]
+    };
+    const encoded = await encodeRaw(schema, {
+      nullable: null,
+      nestedUnion: true,
+      recordUnion: {},
+      arrayUnion: [],
+      mapUnion: {},
+      emptyArray: null,
+      emptyMap: null,
+      byteArray: Uint8Array.from([1]),
+      byteBuffer: Uint8Array.from([2]).buffer
+    });
+    expect((await parseAvro(encoded, {schema, encoding: 'raw'})).data.numRows).toBe(1);
+  });
+
+  test.each([
+    [{type: 'int', logicalType: 'date'}, new Date('2024-02-03T00:00:00Z')],
+    [{type: 'int', logicalType: 'time-millis'}, new Date('2024-02-03T04:05:06.007Z')],
+    [{type: 'long', logicalType: 'time-micros'}, new Date('2024-02-03T04:05:06.007Z')],
+    [{type: 'long', logicalType: 'timestamp-micros'}, new Date('2024-02-03T04:05:06.007Z')],
+    [{type: 'long', logicalType: 'timestamp-nanos'}, new Date('2024-02-03T04:05:06.007Z')],
+    [{type: 'long', logicalType: 'local-timestamp-nanos'}, new Date('2024-02-03T04:05:06.007Z')],
+    [{type: 'long', logicalType: 'timestamp-millis'}, 0n],
+    [{type: 'fixed', logicalType: 'duration', size: 12}, [1, 2, 3]],
+    [
+      {type: 'fixed', logicalType: 'duration', size: 12},
+      {months: 0, days: 0, milliseconds: 0}
+    ],
+    [{type: 'bytes', logicalType: 'big-decimal'}, ['12.3', 2]],
+    [{type: 'bytes', logicalType: 'decimal', scale: 2}, null]
+  ])('encodes logical writer boundary %#', async (fieldType, value) => {
+    const schema = {type: 'record', fields: [{name: 'value', type: fieldType}]};
+    await expect(encodeRaw(schema, {value})).resolves.toBeInstanceOf(ArrayBuffer);
+  });
+
   test.each([
     [{type: ['null', 'string']}, 1, 'union branch'],
     [{type: 'enum', symbols: ['A']}, 'B', 'Unknown Avro enum'],

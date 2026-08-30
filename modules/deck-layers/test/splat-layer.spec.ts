@@ -166,3 +166,173 @@ test('SplatLayer reports invalid async batch shapes', async () => {
   ).toThrow(/requires ArrowTableBatch values/);
   splatBatches.close();
 });
+
+test('SplatLayer covers static engine lifecycle, prop refreshes, and CPU policy', () => {
+  const table = createGaussianSplatTable();
+  const layer = createLayer({
+    data: table,
+    renderMode: 'cpu',
+    sortMode: 'tile',
+    alphaCutoff: 0,
+    screenSizeCutoffPixels: 0,
+    gaussianSupportRadius: 0,
+    kernel2DSize: 0,
+    maxScreenSpaceSplatSize: 1
+  });
+  layer.state = {} as any;
+  layer.initializeState();
+
+  const calls: string[] = [];
+  let engineProps: any;
+  const engine = {
+    setProps(props: any) {
+      calls.push('setProps');
+      engineProps = props;
+    },
+    setData(data: unknown, color: unknown) {
+      expect(data).toBe(table);
+      expect(color).toEqual([255, 255, 255, 255]);
+      calls.push('setData');
+    },
+    getSplatCount: () => 2,
+    getWebGLAttributes: () => ({length: 2, attributes: {}}),
+    destroy: () => calls.push('destroy')
+  };
+  layer.state.splatEngine = engine as any;
+
+  layer.updateState({
+    props: layer.props,
+    oldProps: {...layer.props, data: null},
+    changeFlags: {dataChanged: true}
+  } as any);
+  expect(calls).toEqual(['setProps', 'setData']);
+  expect(engineProps).toMatchObject({
+    sortMode: 'tile',
+    alphaCutoff: 0,
+    screenSizeCutoffPixels: 0,
+    gaussianSupportRadius: 0,
+    kernel2DSize: 0,
+    maxScreenSpaceSplatSize: 1
+  });
+
+  engineProps.onDataUpdate();
+  expect(layer.state.engineDataVersion).toBe(1);
+  const streamError = new Error('stream failed');
+  engineProps.onDataError(streamError);
+  expect(layer.state.streamError).toBe(streamError);
+
+  layer.updateState({
+    props: layer.props,
+    oldProps: layer.props,
+    changeFlags: {dataChanged: false, propsChanged: true}
+  } as any);
+  expect(calls.filter(call => call === 'setData')).toHaveLength(2);
+  expect((layer as any).shouldUseGpuEngine()).toBe(false);
+
+  const rendered = layer.renderLayers() as any;
+  expect(rendered.props.data).toEqual({length: 2, attributes: {}});
+
+  const noDataLayer = createLayer({data: null});
+  noDataLayer.state = {...layer.state, splatEngine: engine} as any;
+  noDataLayer.updateState({
+    props: noDataLayer.props,
+    oldProps: {...noDataLayer.props, data: table},
+    changeFlags: {dataChanged: true}
+  } as any);
+  expect(calls).toContain('destroy');
+  expect(noDataLayer.renderLayers()).toBeNull();
+});
+
+test('SplatLayer covers GPU policy and streamed engine render branches', () => {
+  const stream = createControlledAsyncIterable<ArrowTableBatch>();
+  const layer = createLayer({data: stream, renderMode: 'gpu'});
+  layer.state = {} as any;
+  layer.initializeState();
+  expect(() => (layer as any).shouldUseGpuEngine()).toThrow(/requires a WebGPU device/);
+
+  const destroyed: number[] = [];
+  const engine = {
+    setProps: () => {},
+    setData: () => {},
+    getSplatCount: () => 3,
+    getWebGLAttributes: () => ({length: 3, attributes: {marker: true}}),
+    destroy: () => destroyed.push(1)
+  };
+  layer.state.splatEngine = engine as any;
+  layer.state.streamEngines = [engine as any, null];
+  layer.context = {device: {type: 'webgpu'}} as any;
+  layer.updateState({
+    props: layer.props,
+    oldProps: {...layer.props, data: null},
+    changeFlags: {dataChanged: true}
+  } as any);
+  expect((layer.renderLayers() as any).props.data.length).toBe(3);
+
+  expect((layer as any).shouldUseGpuEngine()).toBe(true);
+  expect((layer.renderLayers() as any).props.data).toEqual({length: 3, attributes: {}});
+
+  layer.state.streamError = new Error('render stream failed');
+  expect(() => layer.renderLayers()).toThrow('render stream failed');
+  layer.state.streamError = null;
+  (layer as any).destroyStreamEngineResources();
+  expect(destroyed).toEqual([1]);
+});
+
+test('Splat primitive draw covers WebGL, WebGPU, picking, and viewport inputs', () => {
+  const layer = createLayer({data: createGaussianSplatTable()});
+  const primitive = layer.renderLayers() as any;
+  const operations: unknown[] = [];
+  const model = {
+    shaderInputs: {setProps: (props: unknown) => operations.push(props)},
+    setBindings: (bindings: unknown) => operations.push(bindings),
+    setInstanceCount: (count: number) => operations.push(['instances', count]),
+    setVertexCount: (count: number) => operations.push(['vertices', count]),
+    draw: (renderPass: unknown) => operations.push(['draw', renderPass])
+  };
+  const splatEngine = {
+    update: (props: unknown) => operations.push(props),
+    getRenderBindings: () => ({storage: true}),
+    getRenderSplatCount: () => 2
+  };
+  primitive.state = {model};
+  primitive.context = {
+    device: {type: 'webgl'},
+    viewport: null,
+    renderPass: 'webgl-pass'
+  };
+  Object.defineProperty(primitive, 'props', {
+    configurable: true,
+    value: {...primitive.props, splatEngine}
+  });
+  primitive.draw();
+  expect(operations).toContainEqual({radiusScale: 1});
+  expect(operations).toContainEqual(['draw', 'webgl-pass']);
+
+  operations.length = 0;
+  primitive.context = {
+    device: {type: 'webgpu'},
+    viewport: {
+      width: 0,
+      height: 0,
+      viewProjectionMatrix: [1],
+      getFrustumPlanes: () => ({
+        near: {normal: {clone: () => ({negate: () => [0, 0, -1]})}, distance: 1}
+      })
+    },
+    renderPass: 'webgpu-pass'
+  };
+  primitive.draw({shaderModuleProps: {picking: {isActive: true}}});
+  expect(operations).toEqual([]);
+  primitive.draw();
+  expect(operations).toContainEqual({storage: true});
+  expect(operations).toContainEqual(['instances', 2]);
+  expect(operations).toContainEqual(['vertices', 4]);
+
+  Object.defineProperty(primitive, 'props', {
+    configurable: true,
+    value: {...primitive.props, splatEngine: null}
+  });
+  primitive.draw();
+  primitive.state = {};
+  primitive.draw();
+});
