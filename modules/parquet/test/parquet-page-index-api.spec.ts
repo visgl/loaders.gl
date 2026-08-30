@@ -3,10 +3,11 @@ import {describe, expect, test} from 'vitest';
 import {
   canUseParquetPageIndexForColumn,
   decodeOffsetIndex,
-  decodeParquetPageStatisticsValue
+  decodeParquetPageStatisticsValue,
+  getParquetIndexRange
 } from '../src/lib/parquet-page-index';
 import {ParquetSchema} from '../src/parquetjs/schema/schema';
-import {OffsetIndex, PageLocation, SizeStatistics} from '../src/parquetjs/parquet-thrift';
+import {Encoding, OffsetIndex, PageLocation, SizeStatistics} from '../src/parquetjs/parquet-thrift';
 import {serializeThrift} from '../src/parquetjs/utils/read-utils';
 import {Uint8ArrayCompactProtocol} from '../src/parquetjs/utils/uint8-array-compact-protocol';
 import {Uint8ArrayTransport} from '../src/parquetjs/utils/uint8-array-transport';
@@ -31,6 +32,70 @@ describe('Parquet page-index public helpers', () => {
     expect(
       decodeParquetPageStatisticsValue(new Uint8Array([42, 0, 0, 0]), schema.findField(['value']))
     ).toBe(42);
+  });
+
+  test('decodes every physical page-statistics representation', () => {
+    const cases = [
+      [{type: 'BOOLEAN'}, Uint8Array.of(1), true],
+      [{type: 'UINT_32'}, Uint8Array.of(255, 255, 255, 255), 4294967295],
+      [{type: 'INT_64'}, Uint8Array.of(254, 255, 255, 255, 255, 255, 255, 255), -2n],
+      [{type: 'UINT_64'}, Uint8Array.of(2, 0, 0, 0, 0, 0, 0, 0), 2n],
+      [{type: 'FLOAT'}, floatBytes(1.25, 4), 1.25],
+      [{type: 'DOUBLE'}, floatBytes(-2.5, 8), -2.5],
+      [{type: 'UTF8'}, new TextEncoder().encode('text'), 'text']
+    ] as const;
+    for (const [definition, bytes, expected] of cases) {
+      const field = new ParquetSchema({value: definition as any}).findField('value');
+      expect(decodeParquetPageStatisticsValue(bytes, field)).toEqual(expected);
+    }
+
+    const int96 = new Uint8Array(12);
+    const int96View = new DataView(int96.buffer);
+    int96View.setBigUint64(0, 1_000_000n, true);
+    int96View.setInt32(8, 2440588, true);
+    const int96Field = new ParquetSchema({value: {type: 'INT96'}}).findField('value');
+    expect(decodeParquetPageStatisticsValue(int96, int96Field, {int96AsTimestamp: true})).toBe(
+      1_000_000n
+    );
+    int96View.setBigUint64(0, 86_400_000_000_000n, true);
+    expect(decodeParquetPageStatisticsValue(int96, int96Field, {int96AsTimestamp: true})).toEqual(
+      int96
+    );
+    expect(
+      decodeParquetPageStatisticsValue(Uint8Array.of(1), {primitiveType: 'INVALID'} as any)
+    ).toBeUndefined();
+  });
+
+  test('validates page-index ranges and dictionary selection prerequisites', () => {
+    expect(getParquetIndexRange(10 as any, 20, 100)).toEqual({offset: 10, length: 20});
+    for (const [offset, length, fileSize] of [
+      [undefined, 1, 10],
+      [1, undefined, 10],
+      [-1, 1, 10],
+      [1, 0, 10],
+      [1, 1.5, 10],
+      [9, 2, 10],
+      [1, 1, -1]
+    ]) {
+      expect(getParquetIndexRange(offset as any, length, fileSize as number)).toBeUndefined();
+    }
+
+    const schema = new ParquetSchema({value: {type: 'INT32'}});
+    expect(canUseParquetPageIndexForColumn(schema, {} as any)).toBe(false);
+    expect(
+      canUseParquetPageIndexForColumn(schema, {
+        meta_data: {path_in_schema: ['value'], encodings: [], dictionary_page_offset: undefined}
+      } as any)
+    ).toBe(true);
+    expect(
+      canUseParquetPageIndexForColumn(schema, {
+        meta_data: {
+          path_in_schema: ['value'],
+          encodings: [Encoding.PLAIN_DICTIONARY],
+          dictionary_page_offset: undefined
+        }
+      } as any)
+    ).toBe(false);
   });
 
   test('keeps repeated leaves on the complete-column path', () => {
@@ -119,3 +184,11 @@ describe('Parquet page-index public helpers', () => {
     }
   });
 });
+
+function floatBytes(value: number, byteLength: 4 | 8): Uint8Array {
+  const bytes = new Uint8Array(byteLength);
+  const dataView = new DataView(bytes.buffer);
+  if (byteLength === 4) dataView.setFloat32(0, value, true);
+  else dataView.setFloat64(0, value, true);
+  return bytes;
+}

@@ -45,6 +45,94 @@ async function collectBatches(iterator: AsyncIterable<any>): Promise<any[]> {
 }
 
 describe('Avro boundary coverage', () => {
+  test('fingerprints every parsing-canonical schema form', () => {
+    const schemas = [
+      'string',
+      ['null', 'long'],
+      {type: ['null', 'double']},
+      {type: {type: 'int'}},
+      {type: 'enum', name: 'Kind', symbols: ['A', 'B']},
+      {type: 'fixed', name: 'Token', size: 4},
+      {type: 'array', items: {type: 'long'}},
+      {type: 'map', values: ['null', 'string']},
+      {
+        type: 'record',
+        name: 'Canonical',
+        fields: [
+          {name: 'kind', type: {type: 'enum', name: 'NestedKind', symbols: ['A']}},
+          {name: 'values', type: {type: 'array', items: 'int'}}
+        ]
+      }
+    ];
+    const fingerprints = schemas.map(schema => getAvroSchemaFingerprint(schema));
+    expect(new Set(fingerprints).size).toBe(schemas.length);
+  });
+
+  test.each([
+    [
+      'invalid enum index',
+      {
+        type: 'record',
+        name: 'Value',
+        fields: [{name: 'value', type: {type: 'enum', symbols: ['A']}}]
+      },
+      [2],
+      'Invalid Avro enum index'
+    ],
+    [
+      'unsupported primitive',
+      {type: 'record', name: 'Value', fields: [{name: 'value', type: 'potato'}]},
+      [],
+      'Unsupported Avro schema type'
+    ],
+    [
+      'decimal precision',
+      {
+        type: 'record',
+        name: 'Value',
+        fields: [
+          {name: 'value', type: {type: 'bytes', logicalType: 'decimal', precision: 1, scale: 0}}
+        ]
+      },
+      [2, 127],
+      'decimal value exceeds'
+    ],
+    [
+      'invalid UUID',
+      {
+        type: 'record',
+        name: 'Value',
+        fields: [{name: 'value', type: {type: 'string', logicalType: 'uuid'}}]
+      },
+      [2, 120],
+      'Invalid Avro UUID'
+    ],
+    [
+      'invalid duration',
+      {
+        type: 'record',
+        name: 'Value',
+        fields: [{name: 'value', type: {type: 'fixed', size: 1, logicalType: 'duration'}}]
+      },
+      [0],
+      'duration must contain 12 bytes'
+    ],
+    [
+      'truncated big decimal',
+      {
+        type: 'record',
+        name: 'Value',
+        fields: [{name: 'value', type: {type: 'bytes', logicalType: 'big-decimal'}}]
+      },
+      [4, 2, 1],
+      'Truncated Avro big-decimal'
+    ]
+  ] as const)('rejects malformed raw logical data: %s', async (_name, schema, bytes, message) => {
+    await expect(
+      parseAvro(Uint8Array.from(bytes).buffer, {encoding: 'raw', schema: schema as any})
+    ).rejects.toThrow(message);
+  });
+
   test('round-trips primitive, container, enum, fixed, and nested schema forms', async () => {
     const schema = {
       type: 'record',
