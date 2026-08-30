@@ -1,12 +1,10 @@
-import test from 'test/utils/vitest-tape';
+import {expect, test} from 'vitest';
 import {default as I3SConverter} from '../../src/i3s-converter/i3s-converter';
 import {isBrowser, setLoaderOptions} from '@loaders.gl/core';
-
 import {cleanUpPath} from '../utils/file-utils';
 import {BROWSER_ERROR_MESSAGE} from '../../src/constants';
 import {parseSLPKArchive} from '@loaders.gl/i3s';
 import {NodeFile} from '@loaders.gl/loader-utils';
-
 const TILESET_URL = '@loaders.gl/3d-tiles/test/data/CesiumJS/Batched/BatchedColors/tileset.json';
 const TILESET_WITH_TEXTURES =
   '@loaders.gl/3d-tiles/test/data/CesiumJS/Batched/BatchedTextured/tileset.json';
@@ -17,9 +15,7 @@ const TILESET_WITH_FAILING_CONTENT =
 const TILESET_CDB_YEMEN =
   '@loaders.gl/3d-tiles/test/data/CesiumJS/VNext/cdb-yemen-cut/tileset.json';
 const TILESET_3TZ = './modules/3d-tiles/test/data/test.3tz';
-
 const PGM_FILE_PATH = '@loaders.gl/tile-converter/test/data/egm84-30.pgm';
-
 const TEST_TEXTURE_MATERIAL = {
   doubleSided: false,
   emissiveFactor: [0, 0, 0],
@@ -32,7 +28,6 @@ const TEST_TEXTURE_MATERIAL = {
     }
   }
 };
-
 const TEST_FULL_EXTENT = {
   xmin: -75.61412210800641,
   ymin: 40.040956941636935,
@@ -41,12 +36,10 @@ const TEST_FULL_EXTENT = {
   zmin: 0,
   zmax: 20
 };
-
 setLoaderOptions({
   _worker: 'test'
 });
-
-test('tile-converter(i3s)#converts 3d-tiles tileset to i3s tileset', async t => {
+test('tile-converter(i3s)#converts 3d-tiles tileset to i3s tileset', async () => {
   const converter = new I3SConverter();
   const tilesetJson = await converter.convert({
     inputUrl: TILESET_URL,
@@ -55,15 +48,13 @@ test('tile-converter(i3s)#converts 3d-tiles tileset to i3s tileset', async t => 
     egmFilePath: PGM_FILE_PATH
   });
   if (!isBrowser) {
-    t.ok(tilesetJson);
+    expect(tilesetJson).toBeTruthy();
     await cleanUpPath('data/BatchedColors');
   } else {
-    t.equals(tilesetJson, BROWSER_ERROR_MESSAGE);
+    expect(tilesetJson).toBe(BROWSER_ERROR_MESSAGE);
   }
-  t.end();
 });
-
-test('tile-converter(i3s)#should create Draco compressed geometry', async t => {
+test('tile-converter(i3s)#should create Draco compressed geometry', async () => {
   if (!isBrowser) {
     const converter = new I3SConverter();
     const tilesetJson = await converter.convert({
@@ -73,13 +64,11 @@ test('tile-converter(i3s)#should create Draco compressed geometry', async t => {
       draco: true,
       egmFilePath: PGM_FILE_PATH
     });
-    t.ok(tilesetJson);
+    expect(tilesetJson).toBeTruthy();
   }
   await cleanUpPath('data/BatchedColors');
-  t.end();
 });
-
-test('tile-converter(i3s)#converts 3d-tiles tileset to i3s tileset with validation', async t => {
+test('tile-converter(i3s)#converts 3d-tiles tileset to i3s tileset with validation', async () => {
   if (!isBrowser) {
     const converter = new I3SConverter();
     const tilesetJson = await converter.convert({
@@ -89,13 +78,11 @@ test('tile-converter(i3s)#converts 3d-tiles tileset to i3s tileset with validati
       egmFilePath: PGM_FILE_PATH,
       validate: true
     });
-    t.ok(tilesetJson);
+    expect(tilesetJson).toBeTruthy();
   }
   await cleanUpPath('data/BatchedColors');
-  t.end();
 });
-
-test('tile-converter(i3s)#root node should not contain geometry and textures', async t => {
+test('tile-converter(i3s)#root node should not contain geometry and textures', async () => {
   if (!isBrowser) {
     const converter = new I3SConverter();
     await converter.convert({
@@ -104,18 +91,15 @@ test('tile-converter(i3s)#root node should not contain geometry and textures', a
       tilesetName: 'BatchedColors',
       egmFilePath: PGM_FILE_PATH
     });
-
     const archive = await parseSLPKArchive(new NodeFile('data/BatchedColors.slpk'));
     const rootTileJson = new TextDecoder().decode(await archive.getFile('nodes/root', 'http'));
     const rootTile = JSON.parse(rootTileJson);
-    t.notOk(rootTile.geometryData);
-    t.notOk(rootTile.textureData);
+    expect(rootTile.geometryData).toBeFalsy();
+    expect(rootTile.textureData).toBeFalsy();
   }
   await cleanUpPath('data/BatchedColors');
-  t.end();
 });
-
-test('tile-converter(i3s)#should create sharedResources json file', async t => {
+test('tile-converter(i3s)#should create sharedResources json file', async () => {
   if (!isBrowser) {
     const converter = new I3SConverter();
     await converter.convert({
@@ -127,14 +111,12 @@ test('tile-converter(i3s)#should create sharedResources json file', async t => {
     const archive = await parseSLPKArchive(new NodeFile('data/BatchedTextured.slpk'));
     const rootTileJson = new TextDecoder().decode(await archive.getFile('nodes/1/shared', 'http'));
     const sharedResources = JSON.parse(rootTileJson);
-    t.ok(sharedResources.materialDefinitions);
-    t.ok(sharedResources.textureDefinitions);
+    expect(sharedResources.materialDefinitions).toBeTruthy();
+    expect(sharedResources.textureDefinitions).toBeTruthy();
   }
   await cleanUpPath('data/BatchedTextured');
-  t.end();
 });
-
-test('tile-converter(i3s)#should generate KTX2 texture', async t => {
+test('tile-converter(i3s)#should generate KTX2 texture', async () => {
   if (!isBrowser) {
     const EXPECTED_TEXTURE_SET_DEFINITIONS = [
       {
@@ -151,7 +133,6 @@ test('tile-converter(i3s)#should generate KTX2 texture', async t => {
         atlas: true
       }
     ];
-
     const converter = new I3SConverter();
     await converter.convert({
       inputUrl: TILESET_WITH_TEXTURES,
@@ -166,21 +147,18 @@ test('tile-converter(i3s)#should generate KTX2 texture', async t => {
       await archive.getFile('nodes/1/textures/1', 'http')
     );
     const tileset0 = JSON.parse(sharedResourcesJson);
-    t.ok(ktx2Texture, 'ktx2 texture exists!');
-    t.ok(tileset0.textureSetDefinitions);
-    t.deepEqual(tileset0.textureSetDefinitions, EXPECTED_TEXTURE_SET_DEFINITIONS);
+    expect(ktx2Texture, 'ktx2 texture exists!').toBeTruthy();
+    expect(tileset0.textureSetDefinitions).toBeTruthy();
+    expect(tileset0.textureSetDefinitions).toEqual(EXPECTED_TEXTURE_SET_DEFINITIONS);
   }
   await cleanUpPath('data/BatchedTextured');
-  t.end();
 });
-
-test('tile-converter(i3s)#Should not generate JPG texture if only KTX2 is provided and generateTextures = false', async t => {
+test('tile-converter(i3s)#Should not generate JPG texture if only KTX2 is provided and generateTextures = false', async () => {
   if (!isBrowser) {
     const EXPECTED_TEXTURE_SET_DEFINITIONS = [
       {formats: [{name: '1', format: 'ktx2'}]},
       {formats: [{name: '1', format: 'ktx2'}], atlas: true}
     ];
-
     const converter = new I3SConverter();
     await converter.convert({
       inputUrl: TILESET_WITH_KTX_2_TEXTURE,
@@ -195,15 +173,13 @@ test('tile-converter(i3s)#Should not generate JPG texture if only KTX2 is provid
       await archive.getFile('nodes/1/textures/1', 'http')
     );
     const tileset0 = JSON.parse(sharedResourcesJson);
-    t.ok(ktx2Texture, 'ktx2 texture exists!');
-    t.ok(tileset0.textureSetDefinitions);
-    t.deepEqual(tileset0.textureSetDefinitions, EXPECTED_TEXTURE_SET_DEFINITIONS);
+    expect(ktx2Texture, 'ktx2 texture exists!').toBeTruthy();
+    expect(tileset0.textureSetDefinitions).toBeTruthy();
+    expect(tileset0.textureSetDefinitions).toEqual(EXPECTED_TEXTURE_SET_DEFINITIONS);
   }
   await cleanUpPath('data/ktx2_only');
-  t.end();
 });
-
-test('tile-converter(i3s)#Should generate JPG texture if only KTX2 is provided and generateTextures = true', async t => {
+test('tile-converter(i3s)#Should generate JPG texture if only KTX2 is provided and generateTextures = true', async () => {
   if (!isBrowser) {
     const EXPECTED_TEXTURE_SET_DEFINITIONS = [
       {
@@ -220,7 +196,6 @@ test('tile-converter(i3s)#Should generate JPG texture if only KTX2 is provided a
         atlas: true
       }
     ];
-
     const converter = new I3SConverter();
     await converter.convert({
       inputUrl: TILESET_WITH_KTX_2_TEXTURE,
@@ -235,15 +210,13 @@ test('tile-converter(i3s)#Should generate JPG texture if only KTX2 is provided a
       await archive.getFile('nodes/1/textures/1', 'http')
     );
     const tileset0 = JSON.parse(sharedResourcesJson);
-    t.ok(ktx2Texture, 'ktx2 texture exists!');
-    t.ok(tileset0.textureSetDefinitions);
-    t.deepEqual(tileset0.textureSetDefinitions, EXPECTED_TEXTURE_SET_DEFINITIONS);
+    expect(ktx2Texture, 'ktx2 texture exists!').toBeTruthy();
+    expect(tileset0.textureSetDefinitions).toBeTruthy();
+    expect(tileset0.textureSetDefinitions).toEqual(EXPECTED_TEXTURE_SET_DEFINITIONS);
   }
   await cleanUpPath('data/jpg_and_ktx2');
-  t.end();
 });
-
-test('tile-converter(i3s)#should create only unique materials', async t => {
+test('tile-converter(i3s)#should create only unique materials', async () => {
   if (!isBrowser) {
     const converter = new I3SConverter();
     await converter.convert({
@@ -255,15 +228,13 @@ test('tile-converter(i3s)#should create only unique materials', async t => {
     const archive = await parseSLPKArchive(new NodeFile('data/BatchedTextured.slpk'));
     const layerJson = new TextDecoder().decode(await archive.getFile('', 'http'));
     const layer = JSON.parse(layerJson);
-    t.ok(layer.materialDefinitions);
-    t.equal(layer.materialDefinitions.length, 1);
-    t.deepEqual(layer.materialDefinitions[0], TEST_TEXTURE_MATERIAL);
+    expect(layer.materialDefinitions).toBeTruthy();
+    expect(layer.materialDefinitions.length).toBe(1);
+    expect(layer.materialDefinitions[0]).toEqual(TEST_TEXTURE_MATERIAL);
   }
   await cleanUpPath('data/BatchedTextured');
-  t.end();
 });
-
-test('tile-converter(i3s)#converts 3d-tiles tileset to i3s tileset with bounding volume creation from geometry', async t => {
+test('tile-converter(i3s)#converts 3d-tiles tileset to i3s tileset with bounding volume creation from geometry', async () => {
   if (!isBrowser) {
     const converter = new I3SConverter();
     const tilesetJson = await converter.convert({
@@ -273,13 +244,11 @@ test('tile-converter(i3s)#converts 3d-tiles tileset to i3s tileset with bounding
       generateBoundingVolumes: true,
       egmFilePath: PGM_FILE_PATH
     });
-    t.ok(tilesetJson);
+    expect(tilesetJson).toBeTruthy();
   }
   await cleanUpPath('data/BatchedColors');
-  t.end();
 });
-
-test('tile-converter(i3s)#layer json should contain fullExtent field', async t => {
+test('tile-converter(i3s)#layer json should contain fullExtent field', async () => {
   if (!isBrowser) {
     const converter = new I3SConverter();
     await converter.convert({
@@ -290,18 +259,15 @@ test('tile-converter(i3s)#layer json should contain fullExtent field', async t =
     });
     const archive = await parseSLPKArchive(new NodeFile('data/BatchedTextured.slpk'));
     const layerJson = new TextDecoder().decode(await archive.getFile('', 'http'));
-
     const layer = JSON.parse(layerJson);
-    t.ok(layer.fullExtent);
+    expect(layer.fullExtent).toBeTruthy();
     for (const key in layer.fullExtent) {
-      t.equal(layer.fullExtent[key], TEST_FULL_EXTENT[key]);
+      expect(layer.fullExtent[key]).toBe(TEST_FULL_EXTENT[key]);
     }
   }
   await cleanUpPath('data/BatchedTextured');
-  t.end();
 });
-
-test('tile-converter(i3s)#proceed with failing content', async t => {
+test('tile-converter(i3s)#proceed with failing content', async () => {
   if (!isBrowser) {
     const converter = new I3SConverter();
     await converter.convert({
@@ -313,17 +279,15 @@ test('tile-converter(i3s)#proceed with failing content', async t => {
     const archive = await parseSLPKArchive(new NodeFile('data/FailingContent.slpk'));
     const layerJson = new TextDecoder().decode(await archive.getFile('nodepages/0', 'http'));
     const nodePage = JSON.parse(layerJson);
-    t.ok(nodePage.nodes[1].mesh);
-    t.notOk(nodePage.nodes[2].mesh);
-    t.notOk(nodePage.nodes[3].mesh);
-    t.notOk(nodePage.nodes[4].mesh);
-    t.notOk(nodePage.nodes[5].mesh);
+    expect(nodePage.nodes[1].mesh).toBeTruthy();
+    expect(nodePage.nodes[2].mesh).toBeFalsy();
+    expect(nodePage.nodes[3].mesh).toBeFalsy();
+    expect(nodePage.nodes[4].mesh).toBeFalsy();
+    expect(nodePage.nodes[5].mesh).toBeFalsy();
   }
   await cleanUpPath('data/FailingContent');
-  t.end();
 });
-
-test('tile-converter(i3s)#convert with --metadata-class option', async t => {
+test('tile-converter(i3s)#convert with --metadata-class option', async () => {
   if (!isBrowser) {
     const converter = new I3SConverter();
     await converter.convert({
@@ -335,13 +299,11 @@ test('tile-converter(i3s)#convert with --metadata-class option', async t => {
     });
     const archive = await parseSLPKArchive(new NodeFile('data/CDB_Yemen.slpk'));
     const nodePageJson = new TextDecoder().decode(await archive.getFile('nodepages/0', 'http'));
-    t.ok(nodePageJson);
+    expect(nodePageJson).toBeTruthy();
   }
   await cleanUpPath('data/CDB_Yemen');
-  t.end();
 });
-
-test('tile-converter(i3s)#convert 3tz arhive', async t => {
+test('tile-converter(i3s)#convert 3tz arhive', async () => {
   if (!isBrowser) {
     const converter = new I3SConverter();
     await converter.convert({
@@ -352,8 +314,7 @@ test('tile-converter(i3s)#convert 3tz arhive', async t => {
     });
     const archive = await parseSLPKArchive(new NodeFile('data/3tz-test.slpk'));
     const nodePageJson = new TextDecoder().decode(await archive.getFile('nodepages/0', 'http'));
-    t.ok(nodePageJson);
+    expect(nodePageJson).toBeTruthy();
   }
   await cleanUpPath('data/3tz-test');
-  t.end();
 });
