@@ -103,4 +103,47 @@ describe('SpatialDataSource', () => {
       points: [{name: 'cells', format: 'parquet-dataset', axes: ['x', 'y']}]
     });
   });
+
+  test('preserves a nested SpatialData container path', async () => {
+    const source = new SpatialDataSource('https://example.com/store.zarr', {
+      zarr: {metadataPath: 'zmetadata', path: '/experiment/'},
+      core: {
+        loadOptions: {
+          fetch: async () =>
+            new Response(
+              JSON.stringify({
+                metadata: {
+                  '.zgroup': {zarr_format: 2},
+                  'experiment/.zgroup': {zarr_format: 2},
+                  'experiment/.zattrs': {spatialdata_attrs: {version: '0.2'}},
+                  'experiment/images/.zgroup': {zarr_format: 2},
+                  'experiment/images/sample/.zgroup': {zarr_format: 2},
+                  'experiment/images/sample/.zattrs': {axes: ['y', 'x']},
+                  'experiment/tables/.zgroup': {zarr_format: 2},
+                  'experiment/tables/observations/.zgroup': {zarr_format: 2}
+                }
+              })
+            )
+        }
+      }
+    });
+
+    const metadata = await source.getMetadata();
+    const imageSource = await source.createRasterSource('image', 'sample');
+    const tableSource = await source.createTableArraySource('observations', 'X');
+
+    expect(metadata).toMatchObject({
+      version: '0.2',
+      images: [
+        {
+          name: 'sample',
+          path: 'images/sample',
+          url: 'https://example.com/store.zarr/experiment/images/sample'
+        }
+      ],
+      tables: [{name: 'observations', path: 'tables/observations'}]
+    });
+    expect(imageSource.options.zarr?.path).toBe('experiment/images/sample');
+    expect(tableSource.options.zarr?.path).toBe('experiment/tables/observations');
+  });
 });

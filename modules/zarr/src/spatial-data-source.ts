@@ -155,7 +155,7 @@ export class SpatialDataSource extends ZarrSource {
       this.data,
       {
         ...this.options,
-        zarr: {...this.options.zarr, path: element.path}
+        zarr: {...this.options.zarr, path: joinZarrPath(this.path, element.path)}
       },
       this.hasCoreApi ? this.coreApi : undefined
     );
@@ -177,7 +177,7 @@ export class SpatialDataSource extends ZarrSource {
       this.data,
       {
         ...this.options,
-        zarr: {...this.options.zarr, path: element.path},
+        zarr: {...this.options.zarr, path: joinZarrPath(this.path, element.path)},
         zarrArray: {...options, path: normalizedArrayPath}
       },
       this.hasCoreApi ? this.coreApi : undefined
@@ -187,8 +187,14 @@ export class SpatialDataSource extends ZarrSource {
   /** Loads and normalizes the consolidated SpatialData element catalog. */
   private async discoverMetadata(signal?: AbortSignal): Promise<SpatialDataSourceMetadata> {
     const consolidated = await this.getConsolidatedMetadata(signal);
-    const elements = Object.freeze(discoverSpatialDataElements(this.url, consolidated));
-    const rootSpatialDataAttributes = getObject(consolidated.rootAttributes.spatialdata_attrs);
+    const spatialDataPath = normalizeZarrPath(this.path);
+    const attributes = spatialDataPath
+      ? getGroupAttributes(consolidated, spatialDataPath)
+      : consolidated.rootAttributes;
+    const elements = Object.freeze(
+      discoverSpatialDataElements(this.url, consolidated, spatialDataPath)
+    );
+    const rootSpatialDataAttributes = getObject(attributes.spatialdata_attrs);
     const metadata: SpatialDataSourceMetadata = {
       version: getString(rootSpatialDataAttributes?.version),
       elements,
@@ -197,7 +203,7 @@ export class SpatialDataSource extends ZarrSource {
       points: getElementsByKind(elements, 'points'),
       shapes: getElementsByKind(elements, 'shapes'),
       tables: getElementsByKind(elements, 'table'),
-      attributes: Object.freeze({...consolidated.rootAttributes})
+      attributes: Object.freeze({...attributes})
     };
     return Object.freeze(metadata);
   }
@@ -214,21 +220,24 @@ const SPATIAL_DATA_NAMESPACES = Object.freeze([
 /** Discovers direct element groups beneath every SpatialData namespace. */
 function discoverSpatialDataElements(
   rootUrl: string,
-  consolidated: ZarrConsolidatedMetadata
+  consolidated: ZarrConsolidatedMetadata,
+  spatialDataPath: string
 ): SpatialDataElementMetadata[] {
   const elements: SpatialDataElementMetadata[] = [];
   for (const definition of SPATIAL_DATA_NAMESPACES) {
-    const paths = getDirectGroupChildren(consolidated, definition.namespace);
-    for (const path of paths) {
-      const name = path.slice(definition.namespace.length + 1);
-      const attributes = getGroupAttributes(consolidated, path);
+    const namespacePath = joinZarrPath(spatialDataPath, definition.namespace);
+    const paths = getDirectGroupChildren(consolidated, namespacePath);
+    for (const fullPath of paths) {
+      const name = fullPath.slice(namespacePath.length + 1);
+      const path = `${definition.namespace}/${name}`;
+      const attributes = getGroupAttributes(consolidated, fullPath);
       const spatialDataAttributes = getObject(attributes.spatialdata_attrs);
       elements.push(
         Object.freeze({
           kind: definition.kind,
           name,
           path,
-          url: getElementUrl(rootUrl, path, definition.format),
+          url: getElementUrl(rootUrl, fullPath, definition.format),
           format: definition.format,
           version: getString(spatialDataAttributes?.version) || getString(attributes.version),
           axes: getAxes(attributes),
@@ -239,6 +248,16 @@ function discoverSpatialDataElements(
     }
   }
   return elements;
+}
+
+/** Joins normalized Zarr group paths without introducing a leading slash. */
+function joinZarrPath(...paths: Array<string | null>): string {
+  return paths.map(normalizeZarrPath).filter(Boolean).join('/');
+}
+
+/** Normalizes an optional Zarr group path for consolidated metadata lookups. */
+function normalizeZarrPath(path: string | null): string {
+  return path?.replace(/^\/+|\/+$/g, '') || '';
 }
 
 /** Returns group paths that are direct children of a namespace. */
