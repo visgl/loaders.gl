@@ -57,7 +57,7 @@ const data = await load(url, TCXLoader, options);
 
 ## Shapes
 
-`TCXLoader` returns loaders.gl `GeoJSONTable` objects by default. Set `tcx.shape` to select another table representation.
+`TCXLoader` returns loaders.gl `ArrowTable` objects by default. Set `tcx.shape` to select another table representation.
 
 | Shape                | Output                                       |
 | -------------------- | -------------------------------------------- |
@@ -70,8 +70,8 @@ const data = await load(url, TCXLoader, options);
 
 | Option      | Type   | Default           | Description                            |
 | ----------- | ------ | ----------------- | -------------------------------------- |
-| `tcx.shape` | string | `'geojson-table'` | Selects the returned table shape.      |
+| `tcx.shape` | string | `'arrow-table'` | Selects the returned table shape.      |
 
 ## Limitations
 
-- In Node.JS, applications must import `@loaders.gl/polyfills` for the `DOMParser` polyfill.
+- The loader interprets coordinates as WGS84 longitude/latitude (`OGC:CRS84`).

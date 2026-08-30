@@ -5524,8 +5524,8 @@ __metadata:
     "@loaders.gl/loader-utils": "npm:5.0.0-alpha.2"
     "@loaders.gl/schema": "npm:5.0.0-alpha.2"
     "@loaders.gl/schema-utils": "npm:5.0.0-alpha.2"
-    "@tmcw/togeojson": "npm:^4.5.0"
-    "@xmldom/xmldom": "npm:^0.8.12"
+    "@loaders.gl/xml": "npm:5.0.0-alpha.2"
+    "@loaders.gl/zip": "npm:5.0.0-alpha.2"
   peerDependencies:
     "@loaders.gl/core": ~5.0.0-alpha.0
   languageName: unknown
@@ -8884,13 +8884,6 @@ __metadata:
   dependencies:
     defer-to-connect: "npm:^2.0.1"
   checksum: 10c0/4629d2fbb2ea67c2e9dc03af235c0991c79ebdddcbc19aed5d5732fb29ce01c13331e9b1a491584b9069bd6ecde6581dcbf871f11b7eefdebbab34de6cf2197e
-  languageName: node
-  linkType: hard
-
-"@tmcw/togeojson@npm:^4.5.0":
-  version: 4.7.0
-  resolution: "@tmcw/togeojson@npm:4.7.0"
-  checksum: 10c0/6c9585c4a50e28a187602348923500474b599ed459cef44b728f9e3aa6781f0c1bb7f96879c3047fe037f58a97ca13d2d8f4ddebd97e374d40098a9611715447
   languageName: node
   linkType: hard
 
@@ -12412,13 +12405,6 @@ __metadata:
     webpack-dev-server:
       optional: true
   checksum: 10c0/36079d34971ff99a58b66b13f4184dcdd8617853c48cccdbc3f9ab7ea9e5d4fcf504e873c298ea7aa15e0b51ad2c4aee4d7a70bd7d9364e60f57b0eb93ca15fc
-  languageName: node
-  linkType: hard
-
-"@xmldom/xmldom@npm:^0.8.12":
-  version: 0.8.12
-  resolution: "@xmldom/xmldom@npm:0.8.12"
-  checksum: 10c0/b733c84292d1bee32ef21a05aba8f9063456b51a54068d0b4a1abf5545156ee0b9894b7ae23775b5881b11c35a8a03871d1b514fb7e1b11654cdbee57e1c2707
   languageName: node
   linkType: hard
 

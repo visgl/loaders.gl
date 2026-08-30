@@ -26,7 +26,7 @@ import {
 } from '@loaders.gl/i3s';
 import {ImageBitmapFormat, ImageFormat} from '@loaders.gl/images';
 import {GeoJSONFormat, JSONFormat, NDGeoJSONFormat, NDJSONFormat} from '@loaders.gl/json';
-import {GPXFormat, KMLFormat, TCXFormat} from '@loaders.gl/kml';
+import {GPXFormat, KMLFormat, KMZFormat, TCXFormat} from '@loaders.gl/kml';
 import {LASFormat} from '@loaders.gl/las';
 import {LERCFormat} from '@loaders.gl/lerc';
 import {MLTFormat} from '@loaders.gl/mlt';
@@ -101,6 +101,7 @@ const FORMAT_EXPORTS = [
   ['NDJSONFormat', NDJSONFormat, 'json'],
   ['NDGeoJSONFormat', NDGeoJSONFormat, 'json'],
   ['KMLFormat', KMLFormat, 'xml'],
+  ['KMZFormat', KMZFormat, 'zip'],
   ['GPXFormat', GPXFormat, 'xml'],
   ['TCXFormat', TCXFormat, 'xml'],
   ['LASFormat', LASFormat, 'binary'],

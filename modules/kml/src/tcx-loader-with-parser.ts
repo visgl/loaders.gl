@@ -11,13 +11,12 @@ import type {
   BinaryFeatureCollection,
   ArrowTable
 } from '@loaders.gl/schema';
-import {tcx} from '@tmcw/togeojson';
-import {DOMParser} from '@xmldom/xmldom';
 import {
   buildFeatureTableSchema,
   convertFeatureCollectionToArrowTable
 } from './lib/feature-collection-to-arrow';
 import {TCXLoader as TCXLoaderMetadata} from './tcx-loader';
+import {parseTCXTextToFeatureCollection as parseTCXDocumentText} from './sports-track-parser';
 
 const {preload: _TCXLoaderPreload, ...TCXLoaderMetadataWithoutPreload} = TCXLoaderMetadata;
 
@@ -48,8 +47,7 @@ export const TCXLoaderWithParser = {
  * @returns Parsed GeoJSON feature collection.
  */
 export function parseTCXTextToFeatureCollection(text: string): FeatureCollection {
-  const doc = new DOMParser().parseFromString(text, 'text/xml');
-  return tcx(doc);
+  return parseTCXDocumentText(text);
 }
 
 /**

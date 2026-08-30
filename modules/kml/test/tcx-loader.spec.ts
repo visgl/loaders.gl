@@ -24,7 +24,9 @@ test.skip('TCXLoader#parse', async () => {
   expect(table.features.length, 'Data matches GeoJSON').toBe(1);
 });
 test('TCXLoader#parseInBatches', async () => {
-  const iterator = await loadInBatches(`${TCX_URL}.tcx`, TCXLoader, {gis: {format: 'geojson'}});
+  const iterator = await loadInBatches(`${TCX_URL}.tcx`, TCXLoader, {
+    tcx: {shape: 'geojson-table'}
+  });
   let data: any;
   for await (const batch of iterator) {
     data = batch;
@@ -32,5 +34,24 @@ test('TCXLoader#parseInBatches', async () => {
   // const resp = await fetchFile(`${TCX_URL}.geojson`);
   // const geojson = await resp.json();
   // geojson.shape = 'geojson-table';
-  expect(data.features.length).toBe(1);
+  expect(data.shape).toBe('geojson-table');
+  if (data.shape === 'geojson-table') expect(data.features.length).toBe(1);
+});
+
+test('TCXLoader#parse preserves activity and multi-track metadata', async () => {
+  const table = await load(`${TCX_URL}.tcx`, TCXLoader, {tcx: {shape: 'geojson-table'}});
+  expect(table.shape).toBe('geojson-table');
+  if (table.shape === 'geojson-table') {
+    expect(table.features).toHaveLength(1);
+    expect(table.features[0].properties).toMatchObject({
+      totalTimeSeconds: 2325.02,
+      distanceMeters: 8348.5039063,
+      maxSpeed: 18.6828499
+    });
+    expect(table.features[0].geometry).toMatchObject({
+      type: 'MultiLineString',
+      coordinates: expect.arrayContaining([expect.any(Array), expect.any(Array), expect.any(Array)])
+    });
+    expect(table.features[0].properties.coordinateProperties.times).toHaveLength(3);
+  }
 });

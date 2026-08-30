@@ -35,7 +35,7 @@ export const TCXLoader = {
   ...TCXFormat,
   version: VERSION,
   options: {
-    tcx: {shape: 'geojson-table'},
+    tcx: {shape: 'arrow-table'},
     gis: {}
   },
   preload

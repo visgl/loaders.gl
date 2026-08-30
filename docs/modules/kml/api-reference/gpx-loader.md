@@ -57,7 +57,7 @@ const data = await load(url, GPXLoader, options);
 
 ## Shapes
 
-`GPXLoader` returns loaders.gl `GeoJSONTable` objects by default. Set `gpx.shape` to select another table representation.
+`GPXLoader` returns loaders.gl `ArrowTable` objects by default. Set `gpx.shape` to select another table representation.
 
 | Shape                | Output                                       |
 | -------------------- | -------------------------------------------- |
@@ -70,8 +70,8 @@ const data = await load(url, GPXLoader, options);
 
 | Option      | Type   | Default           | Description                            |
 | ----------- | ------ | ----------------- | -------------------------------------- |
-| `gpx.shape` | string | `'geojson-table'` | Selects the returned table shape.      |
+| `gpx.shape` | string | `'arrow-table'` | Selects the returned table shape.      |
 
 ## Limitations
 
-- In Node.JS, applications must import `@loaders.gl/polyfills` for the `DOMParser` polyfill.
+- The loader interprets coordinates as WGS84 longitude/latitude (`OGC:CRS84`).

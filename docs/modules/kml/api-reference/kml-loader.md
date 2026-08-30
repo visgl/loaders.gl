@@ -59,7 +59,7 @@ const data = await load(url, KMLLoader, options);
 
 ## Shapes
 
-`KMLLoader` returns loaders.gl `GeoJSONTable` objects by default. Set `kml.shape` to select another table representation.
+`KMLLoader` returns loaders.gl `ArrowTable` objects by default. Set `kml.shape` to select another table representation.
 
 | Shape                | Output                                       |
 | -------------------- | -------------------------------------------- |
@@ -71,8 +71,8 @@ const data = await load(url, KMLLoader, options);
 
 | Option      | Type   | Default           | Description                            |
 | ----------- | ------ | ----------------- | -------------------------------------- |
-| `kml.shape` | string | `'geojson-table'` | Selects the returned table shape.      |
+| `kml.shape` | string | `'arrow-table'` | Selects the returned table shape.      |
 
 ## Limitations
 
-- In Node.JS, applications must import `@loaders.gl/polyfills` for the `DOMParser` polyfill.
+- The loader interprets KML coordinates as WGS84 longitude/latitude (`OGC:CRS84`).

@@ -50,3 +50,25 @@ exchanges GPS tracks, but treats a track as an Activity rather than simply a
 series of GPS points. TCX provides standards for transferring heart rate,
 running cadence, bicycle cadence, calories in the detailed track. It also
 provides summary data in the form of laps.
+
+## Characteristics
+
+| Characteristic | Value |
+| --- | --- |
+| File extension | `.tcx` |
+| MIME type | `application/vnd.garmin.tcx+xml` |
+| Container | XML document |
+| Coordinate reference system | WGS84 longitude/latitude (`OGC:CRS84`) |
+
+## Feature matrix
+
+| Feature | Support | Output |
+| --- | --- | --- |
+| Activities and laps | Supported | Feature properties and line geometry |
+| Multiple tracks per lap | Supported | MultiLineString geometry |
+| Trackpoint timestamps | Supported | Coordinate properties |
+| Elevation | Supported | Z coordinates |
+| Heart rate, cadence, speed, and power | Supported | Coordinate properties or aligned arrays |
+| Lap summary metrics | Supported | Typed feature properties |
+| Arrow, GeoJSON, and object-row tables | Supported | Arrow is the default |
+| Binary geometry output | Supported | Select `tcx.shape: 'binary-geometry'` |

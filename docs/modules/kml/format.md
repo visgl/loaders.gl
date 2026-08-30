@@ -1,6 +1,6 @@
 ---
-title: KML, GPX, and TCX formats
-description: Load geographic annotations, GPS tracks, and training activities into shared geometry data shapes.
+title: KML, KMZ, GPX, and TCX formats
+description: Load geographic annotations, packaged maps, GPS tracks, and training activities into shared geometry data shapes.
 hide_title: true
 page_style: designed
 ---
@@ -12,9 +12,9 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
 <DocPageHeader
   eyebrow="XML geospatial formats"
   title="Bring annotated tracks into one geometry path."
-  description="KML, GPX, and TCX use related XML foundations but describe different kinds of geographic data. loaders.gl preserves their useful metadata while returning common geometry and table shapes for applications."
+  description="KML, KMZ, GPX, and TCX use related XML foundations but describe different kinds of geographic data. loaders.gl preserves their useful metadata while returning common geometry and table shapes for applications."
   tone="orange"
-  meta={['KML annotations', 'GPX tracks and routes', 'TCX activities']}
+  meta={['KML/KMZ annotations', 'GPX tracks and routes', 'TCX activities']}
   links={[
     {label: 'KML module', to: '/docs/modules/kml'},
     {label: 'KMLLoader', to: '/docs/modules/kml/api-reference/kml-loader'},
@@ -45,10 +45,10 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
 
 | Characteristic       | Value                                                                                      |
 | -------------------- | ------------------------------------------------------------------------------------------ |
-| File Formats         | [KML](/docs/modules/kml/formats/kml), [GPX](/docs/modules/kml/formats/gpx), [TCX](/docs/modules/kml/formats/tcx) |
+| File Formats         | [KML and KMZ](/docs/modules/kml/formats/kml), [GPX](/docs/modules/kml/formats/gpx), [TCX](/docs/modules/kml/formats/tcx) |
 | Data Format          | [Geometry Tables](/docs/specifications/category-gis), GeoJSON                              |
-| File Extensions      | `.kml`, `.gpx`, `.tcx`                                                                     |
-| MIME Types           | `application/vnd.google-earth.kml+xml`, `application/gpx+xml`, `application/vnd.garmin.tcx+xml` |
+| File Extensions      | `.kml`, `.kmz`, `.gpx`, `.tcx`                                                             |
+| MIME Types           | `application/vnd.google-earth.kml+xml`, `application/vnd.google-earth.kmz`, `application/gpx+xml`, `application/vnd.garmin.tcx+xml` |
 | File Type            | Text/XML                                                                                   |
 | Loader APIs          | `load`, `parse`, `parseTextSync`                                                           |
 | Loader Worker Thread | No                                                                                         |
@@ -86,4 +86,4 @@ KML, GPX, and TCX are XML-based geospatial interchange formats. They are text fi
 
 ## Geospatial Output
 
-The KML module converts these XML documents into loaders.gl geometry table shapes for application code. The default output is a `GeoJSONTable`, and `arrow-table` can be selected when columnar Arrow output is needed.
+The KML module converts these documents into loaders.gl geometry table shapes for application code. The default output is an `ArrowTable`; GeoJSON and object-row tables remain available through the format-specific `shape` option.

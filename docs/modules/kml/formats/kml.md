@@ -12,9 +12,9 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
 <DocPageHeader
   eyebrow="Geographic annotation format"
   title="Put places, paths, and views in an Earth-ready document."
-  description="KML uses XML elements to describe geographic annotations and visualization instructions for maps and 3D Earth browsers. loaders.gl keeps the format in the broader GIS and scene-data pipeline."
+  description="KML uses XML elements to describe geographic annotations and visualization instructions for maps and 3D Earth browsers; KMZ packages those documents and their resources. loaders.gl keeps both formats in the broader GIS and scene-data pipeline."
   tone="mint"
-  meta={['KML 2.2', 'XML-based', 'OGC standard']}
+  meta={['KML/KMZ', 'KML 2.2', 'OGC standard']}
   links={[
     {label: 'KML module', to: '/docs/modules/kml'},
     {label: 'KMLLoader', to: '/docs/modules/kml/api-reference/kml-loader'}
@@ -38,13 +38,64 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
 
 ![ogc-logo](../../../images/logos/ogc-logo-60.png)
 
+KML (Keyhole Markup Language) is an XML format for geographic annotation and
+visualization in two-dimensional maps and three-dimensional Earth browsers.
+KMZ is the ZIP-based packaging of a KML document and its related resources,
+such as images, models, and screen overlays.
+
+The `@loaders.gl/kml` module parses both formats with the native
+`@loaders.gl/xml` parser. It does not require a browser DOM or Node DOM
+polyfill.
+
 - [KML Tutorial - Google](https://developers.google.com/kml/documentation/kml_tut)
 
-Keyhole Markup Language (KML) is an XML notation for expressing geographic
-annotation and visualization within two-dimensional maps and three-dimensional
-Earth browsers.
+KML is an [Open Geospatial Consortium standard][kml_ogc_standard].
 
-KML is now an [Open Geospatial Consortium standard][kml_ogc_standard].
+## Characteristics
+
+| Characteristic | KML | KMZ |
+| --- | --- | --- |
+| Container | XML document | ZIP archive containing KML and resources |
+| Typical extension | `.kml` | `.kmz` |
+| MIME type | `application/vnd.google-earth.kml+xml` | `application/vnd.google-earth.kmz` |
+| Coordinate reference system | WGS84 longitude/latitude (`OGC:CRS84`) | WGS84 longitude/latitude (`OGC:CRS84`) |
+| Main use | Geographic features and visualization | Portable geographic package |
+
+## Feature matrix
+
+| Feature | Support | Notes |
+| --- | --- | --- |
+| Point, LineString, LinearRing, Polygon | Supported | Coordinates preserve altitude when present |
+| MultiGeometry | Supported | Converted to GeoJSON geometry collections or normalized table geometry |
+| Folders and nested documents | Supported | Folder hierarchy is retained by the rich parser and source metadata |
+| Styles and StyleMaps | Supported | Common line, polygon, icon, and label properties are normalized |
+| ExtendedData and SchemaData | Supported | Values are exposed as feature properties |
+| TimeStamp and TimeSpan | Supported | Preserved as KML feature metadata when requested |
+| Ground, screen, and photo overlays | Supported | Metadata and relative resource paths are retained |
+| NetworkLink | Supported | Link metadata is retained; remote KML is not followed automatically |
+| Model | Supported | Location, orientation, scale, and resource reference metadata are retained |
+| `gx:Track` and `gx:MultiTrack` | Supported | Converted to line geometry with timestamp metadata |
+| KMZ `doc.kml` selection | Supported | Falls back to a root or first KML entry when needed |
+| KMZ relative resources | Supported | Lazy archive access through `openKMZArchive` and `KMZVectorSource` |
+| KML/KMZ writing | Supported | `KMLWriter` and `KMZWriter` cover common feature geometries and properties |
+| Arbitrary CRS transformation | Not implemented | KML/KMZ coordinates are interpreted as WGS84 longitude/latitude |
+| External NetworkLink fetching | Not implemented | Applications decide whether and how to fetch linked documents |
+
+## Output
+
+`KMLLoader` and `KMZLoader` return an Arrow table by default. Use the `shape`
+option to request `geojson-table` or `object-row-table`. The Arrow geometry
+column uses the loaders.gl GeoArrow/WKB table representation.
+
+```typescript
+import {load} from '@loaders.gl/core';
+import {KMZLoader} from '@loaders.gl/kml';
+
+const table = await load('map.kmz', KMZLoader);
+```
+
+For archive metadata and lazy resources, use `KMZVectorSource`. For XML or
+archive output, use `KMLWriter` or `KMZWriter`.
 
 <ReferenceBoundary
   title="KML document structure"
