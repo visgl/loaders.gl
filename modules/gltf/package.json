@@ -1,6 +1,6 @@
 {
   "name": "@loaders.gl/gltf",
-  "version": "5.0.0-alpha.2",
+  "version": "5.0.0-alpha.3",
   "description": "Framework-independent loader for the glTF format",
   "license": "MIT",
   "type": "module",
@@ -67,12 +67,12 @@
     "build-bundle-dev": "ocular-bundle ./bundle.ts --env=dev --output=dist/dist.dev.js"
   },
   "dependencies": {
-    "@loaders.gl/draco": "5.0.0-alpha.2",
-    "@loaders.gl/images": "5.0.0-alpha.2",
-    "@loaders.gl/loader-utils": "5.0.0-alpha.2",
-    "@loaders.gl/schema": "5.0.0-alpha.2",
-    "@loaders.gl/schema-utils": "5.0.0-alpha.2",
-    "@loaders.gl/textures": "5.0.0-alpha.2",
+    "@loaders.gl/draco": "5.0.0-alpha.3",
+    "@loaders.gl/images": "5.0.0-alpha.3",
+    "@loaders.gl/loader-utils": "5.0.0-alpha.3",
+    "@loaders.gl/schema": "5.0.0-alpha.3",
+    "@loaders.gl/schema-utils": "5.0.0-alpha.3",
+    "@loaders.gl/textures": "5.0.0-alpha.3",
     "@math.gl/core": "4.2.0-alpha.6",
     "@math.gl/culling": "^4.2.0-alpha.6",
     "meshoptimizer": "^1.2.0",
