@@ -1,6 +1,6 @@
 {
   "name": "@loaders.gl/crypto",
-  "version": "5.0.0-alpha.4",
+  "version": "5.0.0-alpha.5",
   "description": "Cryptographic/hashing plugins for loaders.gl",
   "license": "MIT",
   "type": "module",
@@ -52,8 +52,8 @@
     "build-worker-node": "esbuild src/workers/crypto-worker-node.ts --outfile=dist/crypto-worker-node.js --platform=node --target=esnext,node16 --bundle --minify --sourcemap --define:__VERSION__=\\\"$npm_package_version\\\""
   },
   "dependencies": {
-    "@loaders.gl/loader-utils": "5.0.0-alpha.4",
-    "@loaders.gl/worker-utils": "5.0.0-alpha.4"
+    "@loaders.gl/loader-utils": "5.0.0-alpha.5",
+    "@loaders.gl/worker-utils": "5.0.0-alpha.5"
   },
   "devDependencies": {
     "crypto-js": "^3.0.0 || ^4.0.0"

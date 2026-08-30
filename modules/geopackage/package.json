@@ -1,7 +1,7 @@
 {
   "name": "@loaders.gl/geopackage",
   "description": "GeoPackage data loaders",
-  "version": "5.0.0-alpha.4",
+  "version": "5.0.0-alpha.5",
   "license": "MIT",
   "type": "module",
   "publishConfig": {
@@ -51,11 +51,11 @@
     "build-worker": "# esbuild src/workers/geopackage-worker.ts --bundle --outfile=dist/geopackage-worker.js --external:{util,fs,path} --define:__VERSION__=\\\"$npm_package_version\\\""
   },
   "dependencies": {
-    "@loaders.gl/gis": "5.0.0-alpha.4",
-    "@loaders.gl/loader-utils": "5.0.0-alpha.4",
-    "@loaders.gl/schema": "5.0.0-alpha.4",
-    "@loaders.gl/schema-utils": "5.0.0-alpha.4",
-    "@loaders.gl/wkt": "5.0.0-alpha.4",
+    "@loaders.gl/gis": "5.0.0-alpha.5",
+    "@loaders.gl/loader-utils": "5.0.0-alpha.5",
+    "@loaders.gl/schema": "5.0.0-alpha.5",
+    "@loaders.gl/schema-utils": "5.0.0-alpha.5",
+    "@loaders.gl/wkt": "5.0.0-alpha.5",
     "@math.gl/crs": "5.0.0-alpha.4",
     "@math.gl/proj4": "5.0.0-alpha.4",
     "@types/sql.js": "^1.4.5",
