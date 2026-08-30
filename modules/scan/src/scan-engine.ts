@@ -43,10 +43,18 @@ export type ScanEngine = ScanBackend & {
 
 const scanBackendLoaders = new Map<ScanBackendName, ScanBackendLoader>();
 
+/** Executes the built-in Arrow backend through its asynchronous interface. */
+async function queryArrowTableAsync(
+  sourceTable: ArrowTable,
+  options?: ArrowQueryOptions
+): Promise<ArrowTable> {
+  return queryArrowTable(sourceTable, options);
+}
+
 const arrowScanBackend: ScanBackend = Object.freeze({
   name: 'arrow',
   query: queryArrowTable,
-  queryAsync: async (sourceTable, options) => queryArrowTable(sourceTable, options),
+  queryAsync: queryArrowTableAsync,
   explain: explainArrowTableQuery
 });
 

@@ -1,20 +1,14 @@
-import test from 'test/utils/vitest-tape';
+import {expect, test} from 'vitest';
 import {isBrowser} from '@loaders.gl/core';
 import {SceneLayer3D} from '@loaders.gl/i3s';
 import {createSceneServer} from '../../../src/i3s-server/utils/create-scene-server';
-
-test('tile-converter(i3s-server)#createSceneServer', async t => {
+test('tile-converter(i3s-server)#createSceneServer', async () => {
   if (isBrowser) {
-    t.end();
     return;
   }
-
   const result = createSceneServer('Buildings_3D_Multipatch_DA12_Subset', LAYER);
-  t.equals(JSON.stringify(result).length, 4889);
-
-  t.end();
+  expect(JSON.stringify(result).length).toBe(4889);
 });
-
 const LAYER: SceneLayer3D = {
   id: 0,
   version: 'ECB1F245-BAB6-4CF3-86CE-9CF6047E9239',

@@ -1,8 +1,7 @@
-import test from 'test/utils/vitest-tape';
+import {expect, test} from 'vitest';
 import {isBrowser} from '@loaders.gl/core';
 import {path} from '@loaders.gl/loader-utils';
 import {getFileByUrl, loadArchive} from '../../../src/i3s-server/controllers/slpk-controller';
-
 const URL_PREFIX = '';
 const SLPK_URL = './modules/i3s/test/data/DA12_subset.slpk';
 const TEST_CASES = [
@@ -14,31 +13,21 @@ const TEST_CASES = [
   {input: 'nodes/1/geometries/1', output: 1767},
   {input: 'nodes/1/shared', output: 333}
 ];
-
-test('tile-converter(i3s-server)#getFileByUrl return null if file is not loaded', async t => {
+test('tile-converter(i3s-server)#getFileByUrl return null if file is not loaded', async () => {
   if (isBrowser) {
-    t.end();
     return;
   }
-
   const result = await getFileByUrl('layers/0');
-  t.equals(result, null);
-
-  t.end();
+  expect(result).toBe(null);
 });
-
-test('tile-converter(i3s-server)#getFileByUrl return files content', async t => {
+test('tile-converter(i3s-server)#getFileByUrl return files content', async () => {
   if (isBrowser) {
-    t.end();
     return;
   }
   const FULL_LAYER_PATH = path.join(process.cwd(), SLPK_URL); // eslint-disable-line no-undef
   await loadArchive(FULL_LAYER_PATH);
-
   for (const testCase of TEST_CASES) {
     const result = await getFileByUrl(`${URL_PREFIX}${testCase.input}`);
-    t.equals(result?.byteLength, testCase.output);
+    expect(result?.byteLength).toBe(testCase.output);
   }
-
-  t.end();
 });
