@@ -67,7 +67,7 @@ A `SourceLoader` provides general information about the supported resource forma
 
 A `DataSource` instance provides methods to query metadata and to query data for specific geospatial areas or views.
 
-A `DataSource` can (and sometimes must) expose a completely unique API. However a big advantage comes when a `DataSource` conforms to an existing `*Source` interface.
+A `DataSource` can (and sometimes must) expose a completely unique API. However a big advantage comes when a `DataSource` conforms to an existing `*Source` interface. `DataSource` is the implementation base class; the `*Source` interfaces are type-only capability contracts.
 
 This means that applications written against that interface can now support the new source without any changes to existing logic.
 
@@ -83,6 +83,55 @@ This means that applications written against that interface can now support the 
 
 A `DataSource` instance provides methods to query metadata: `await dataSource.getMetadata()`.
 
+## Composing source capabilities
+
+One runtime object can implement several source capabilities while sharing the input, options,
+authentication, caches, and lifecycle supplied by `DataSource`:
+
+```ts
+import {DataSource} from '@loaders.gl/loader-utils';
+import type {
+  DataSourceOptions,
+  ImageSource,
+  ImageSourceMetadata,
+  ImageType,
+  GetImageParameters,
+  RasterData,
+  RasterSource,
+  RasterSourceMetadata,
+  GetRasterParameters
+} from '@loaders.gl/loader-utils';
+
+type CompositeMetadata = ImageSourceMetadata & RasterSourceMetadata;
+
+class CompositeSource
+  extends DataSource<string, DataSourceOptions>
+  implements ImageSource, RasterSource
+{
+  async getMetadata(): Promise<CompositeMetadata> {
+    throw new Error('Return one source-level metadata object rich enough for both capabilities.');
+  }
+
+  async getImage(parameters: GetImageParameters): Promise<ImageType> {
+    throw new Error('Return rendered pixels for the requested extent.');
+  }
+
+  async getRaster(parameters: GetRasterParameters): Promise<RasterData> {
+    throw new Error('Return typed samples for the requested viewport.');
+  }
+}
+```
+
+Existing composite runtimes include MVT and PMTiles sources that implement image- and vector-tile
+capabilities, COPC sources that implement tile and point-cloud scan capabilities, and GeoTIFF
+sources that implement raster and scan-discovery capabilities. Distinct source loaders may still
+be appropriate when endpoints, initialization, or output semantics differ.
+
+Automatic consumers still choose one view at a time. For example, `SourceLayer` classifies a
+multi-capability object into the first matching rendering family: 3D tile, point cloud, raster,
+image, vector, then 2D tile. This classification does not add an implicit capability-selection API;
+callers that need another view should use the corresponding specialized source consumer or adapter.
+
 ## Adapter Sources
 
 While most `SourceLoader` implementations provide an interface for interacting with a specific web service or cloud archive file format (e.g. `PMTilesSourceLoader`), it is also possible to create adapters:
@@ -96,7 +145,7 @@ Just like the appropriate parser loader can be selected automatically from a lis
 
 ## Creating new Sources
 
-Just like applications can create their own loaders, apps can also create (and potentially contribute) their own source loaders and use them with loaders.gl, as long as they follow the required interfaces (e.g, every runtime source instance must inherit from `DataSource`).
+Just like applications can create their own loaders, apps can also create (and potentially contribute) their own source loaders and use them with loaders.gl, as long as they follow the required interfaces (for example, runtime source instances extend `DataSource` and implement one or more source capability interfaces).
 
 ## Raster sources
 

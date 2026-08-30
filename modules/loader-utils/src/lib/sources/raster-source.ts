@@ -160,20 +160,15 @@ export type RasterSourceMetadata = {
  * @typeParam ParametersT Request parameters accepted by the source.
  * @typeParam MetadataT Metadata returned by the source.
  */
-export abstract class RasterSource<
+export interface RasterSource<
   DataT extends RasterData = RasterData,
   ParametersT extends GetRasterParameters = GetRasterParameters,
   MetadataT extends RasterSourceMetadata = RasterSourceMetadata
 > {
-  /** Canonical source type identifier used during source selection. */
-  static type: string = 'template';
-  /** URL matcher used during automatic source selection. */
-  static testURL = (url: string): boolean => false;
-
   /** Returns normalized dataset metadata without loading raster samples. */
-  abstract getMetadata(): Promise<MetadataT>;
+  getMetadata(): Promise<MetadataT>;
   /** Loads raster samples for the supplied viewport request. */
-  abstract getRaster(parameters: ParametersT): Promise<DataT>;
+  getRaster(parameters: ParametersT): Promise<DataT>;
 }
 
 /**

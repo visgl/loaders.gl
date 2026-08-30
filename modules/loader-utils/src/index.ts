@@ -407,7 +407,7 @@ export type {
 export type {CatalogSource, CatalogSourceCapabilities} from './lib/sources/catalog-source';
 export type {GeoServiceType, ServiceCapabilities} from './lib/sources/service-capabilities';
 
-export {ImageSource} from './lib/sources/image-source';
+export type {ImageSource} from './lib/sources/image-source';
 export type {ImageType} from './lib/sources/utils/image-type';
 export type {ImageSourceMetadata} from './lib/sources/image-source';
 export type {GetImageParameters} from './lib/sources/image-source';
@@ -430,8 +430,9 @@ export type {ImageTileSource} from './lib/sources/image-tile-source';
 export type {VectorTileSource} from './lib/sources/vector-tile-source';
 export type {VectorTile} from './lib/sources/vector-tile-source';
 
-export {RasterSource, getRasterViewportBoundingBox} from './lib/sources/raster-source';
+export {getRasterViewportBoundingBox} from './lib/sources/raster-source';
 export type {
+  RasterSource,
   RasterChannelDataType,
   RasterBoundingBox,
   RasterViewport,

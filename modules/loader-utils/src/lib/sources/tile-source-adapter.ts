@@ -1,8 +1,8 @@
 // loaders.gl
 // SPDX-License-Identifier: MIT
 
-import {TileSource, GetTileParameters, GetTileDataParameters} from './tile-source';
-import {ImageSource, ImageSourceMetadata} from './image-source';
+import type {TileSource, GetTileParameters, GetTileDataParameters} from './tile-source';
+import type {ImageSource, ImageSourceMetadata} from './image-source';
 
 /**
  * MapTileSource - data sources that allow data to be queried by (geospatial) extents

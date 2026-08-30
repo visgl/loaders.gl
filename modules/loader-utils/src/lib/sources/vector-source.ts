@@ -15,13 +15,10 @@ export type VectorSourceData = GeoJSONTable | BinaryFeatureCollection | ArrowTab
  * @note
  * - If geospatial, bounding box is expected to be in web mercator coordinates
  */
-export abstract class VectorSource {
-  static type: string = 'template';
-  static testURL = (url: string): boolean => false;
-
-  abstract getSchema(): Promise<Schema>;
-  abstract getMetadata(options: {formatSpecificMetadata?: boolean}): Promise<VectorSourceMetadata>;
-  abstract getFeatures(parameters: GetFeaturesParameters): Promise<VectorSourceData>;
+export interface VectorSource {
+  getSchema(): Promise<Schema>;
+  getMetadata(options: {formatSpecificMetadata?: boolean}): Promise<VectorSourceMetadata>;
+  getFeatures(parameters: GetFeaturesParameters): Promise<VectorSourceData>;
 }
 
 // PARAMETER TYPES

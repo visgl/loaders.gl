@@ -7,10 +7,11 @@ import type {
   CoreAPI,
   SourceLoader,
   DataSourceOptions,
+  ImageSource,
   ImageSourceMetadata,
   GetImageParameters
 } from '@loaders.gl/loader-utils';
-import {DataSource, ImageSource, mergeOptions} from '@loaders.gl/loader-utils';
+import {DataSource, mergeOptions} from '@loaders.gl/loader-utils';
 
 import type {ImageType} from '@loaders.gl/images';
 import {ImageBitmapLoader} from '@loaders.gl/images';
