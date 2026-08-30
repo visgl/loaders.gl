@@ -56,7 +56,8 @@ test('OMEZarrImageSource validates pyramid levels and channels', async () => {
 test('loadZarrConsolidatedMetadata handles .zmetadata and extracts top-level groups', async () => {
     const metadata = await loadZarrConsolidatedMetadata(OME_FIXTURE, { fetch: fetchFile });
     expect(metadata.format).toBe('v2');
-    expect(metadata.metadataPath).toBe('.zmetadata');
+  expect(metadata.metadataPath).toBe('.zmetadata');
+  expect(metadata.rootAttributes).toHaveProperty('multiscales');
     expect(metadata.topLevelGroups).toEqual([]);
     expect(metadata.topLevelArrays).toEqual(['0', '1']);
 });
@@ -79,7 +80,8 @@ test('loadZarrConsolidatedMetadata handles v3 zarr.json fixture metadata', async
         fetch: fetchFile
     });
     expect(metadata.format).toBe('v3');
-    expect(metadata.metadataPath).toBe('zarr.json');
+  expect(metadata.metadataPath).toBe('zarr.json');
+  expect(metadata.rootAttributes).toMatchObject({spatialdata_attrs: {version: '0.1.0'}});
     expect(metadata.topLevelGroups).toEqual(['images', 'labels', 'points', 'shapes', 'tables']);
     expect(metadata.topLevelArrays).toEqual([]);
 });

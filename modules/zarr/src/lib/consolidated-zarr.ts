@@ -16,6 +16,8 @@ export type ZarrConsolidatedMetadata = {
   metadataPath: '.zmetadata' | 'zmetadata' | 'zarr.json';
   /** Format-specific consolidated metadata entries keyed by Zarr path. */
   metadata: Record<string, unknown>;
+  /** Attributes declared on the root group. */
+  rootAttributes: Record<string, unknown>;
   /** Top-level group paths. */
   topLevelGroups: string[];
   /** Top-level array paths. */
@@ -27,6 +29,7 @@ type V2ConsolidatedMetadata = {
 };
 
 type V3ConsolidatedMetadata = {
+  attributes?: Record<string, unknown>;
   consolidated_metadata?: {
     metadata?: Record<string, unknown>;
   };
@@ -109,6 +112,7 @@ function normalizeConsolidatedMetadata(
       format: 'v3',
       metadataPath,
       metadata: normalizedMetadata,
+      rootAttributes: {...((metadata as V3ConsolidatedMetadata).attributes || {})},
       topLevelGroups: extractV3TopLevelNodes(normalizedMetadata, 'group'),
       topLevelArrays: extractV3TopLevelNodes(normalizedMetadata, 'array')
     };
@@ -123,9 +127,18 @@ function normalizeConsolidatedMetadata(
     format: 'v2',
     metadataPath,
     metadata: normalizedMetadata,
+    rootAttributes: getV2RootAttributes(normalizedMetadata),
     topLevelGroups: extractV2TopLevelNodes(Object.keys(normalizedMetadata), 'zgroup'),
     topLevelArrays: extractV2TopLevelNodes(Object.keys(normalizedMetadata), 'zarray')
   };
+}
+
+/** Extracts root attributes from a consolidated Zarr v2 metadata map. */
+function getV2RootAttributes(metadata: Record<string, unknown>): Record<string, unknown> {
+  const attributes = metadata['.zattrs'];
+  return attributes && typeof attributes === 'object'
+    ? {...(attributes as Record<string, unknown>)}
+    : {};
 }
 
 /** Extracts top-level v2 nodes represented by `.zgroup` or `.zarray` keys. */
