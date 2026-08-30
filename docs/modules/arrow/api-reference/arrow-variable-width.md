@@ -10,7 +10,7 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
 
 <DocPageHeader
   eyebrow="Arrow variable-width utilities"
-  title="Choose the string representation your runtime can use."
+  title="Arrow variable-width conversion"
   description="These utilities convert Arrow `Utf8`, `Utf8View`, `Binary`, and `BinaryView` vectors and tables while preserving logical values, nulls, and unrelated columns."
   tone="cyan"
   meta={['Utf8 and Binary', 'View types', 'Compatibility conversion']}

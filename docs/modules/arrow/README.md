@@ -7,6 +7,7 @@ page_style: designed
 
 import {CapabilityHero} from '@site/src/components/docs/capability-hero';
 import {ArrowDataPlaneGraphic} from '@site/src/components/docs/arrow-data-plane-graphic';
+import {ArrowScanLiveExample} from '@site/src/components/docs/arrow-scan-live-example';
 import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
 import apacheLogo from '../../images/logos/apache-logo.png';
 
@@ -22,6 +23,8 @@ import apacheLogo from '../../images/logos/apache-logo.png';
     {label: 'ArrowWriter', to: '/docs/modules/arrow/api-reference/arrow-writer'}
   ]}
 />
+
+<ArrowScanLiveExample />
 
 <ArrowDataPlaneGraphic />
 

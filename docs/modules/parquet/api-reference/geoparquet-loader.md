@@ -7,13 +7,16 @@ page_style: designed
 
 import {ParquetDocsTabs} from '@site/src/components/docs/parquet-docs-tabs';
 import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
+import {DocLiveExample} from '@site/src/components/docs/doc-live-example';
 import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
+import {ClientExample} from '@site/src/components';
 
 <DocPageHeader
   eyebrow="Parquet module · geospatial loader"
   title="GeoParquetLoader"
   description="Read GeoParquet files into loaders.gl geospatial tables while preserving the metadata that describes geometry columns, coordinate systems, and encodings."
   tone="mint"
+  logos={[{alt: 'Apache Parquet', src: '/images/format-logos/parquet-logo.png'}]}
   meta={['From v5.0', 'GeoParquet', 'Arrow output']}
   links={[
     {label: 'GeoParquet format', to: '/docs/modules/parquet/formats/geoparquet'},
@@ -21,6 +24,10 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
     {label: 'Parquet module', to: '/docs/modules/parquet'}
   ]}
 />
+
+<DocLiveExample label="GeoParquetLoader map example" height="420px">
+  <ClientExample kind="geospatial" format="GeoParquet" />
+</DocLiveExample>
 
 <ParquetDocsTabs active="geoparquetloader" />
 

@@ -25,6 +25,8 @@ import {DocOrientation} from '@site/src/components/docs/designed-doc';
   ]}
 />
 
+<ParquetScanLiveExample />
+
 <ParquetDocsTabs active="overview" />
 
 <ParquetLayoutGraphic />
@@ -48,17 +50,11 @@ Use the panel below to inspect Parquet metadata, select columns, and limit the A
 from a remote file. The reader can plan the request from the footer before decoding the selected
 data ranges.
 
-<ParquetScanLiveExample />
-
 <p className="badges">
   <a href="/docs/developer-guide/common-scan-architecture">
     <img src="https://img.shields.io/badge/Scan-Supported-2f855a.svg?style=flat-square" alt="Scan supported" />
   </a>
 </p>
-
-![parquet-logo](../images/parquet-logo-small.png)
-&emsp;
-![apache-logo](../../../images/logos/apache-logo.png)
 
 - _[`@loaders.gl/parquet`](/docs/modules/parquet)_
 - _[Apache Parquet format specification](https://github.com/apache/parquet-format)_

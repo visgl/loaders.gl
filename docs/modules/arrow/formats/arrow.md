@@ -25,6 +25,8 @@ import apacheLogo from '../../../images/logos/apache-logo.png';
   ]}
 />
 
+<ArrowScanLiveExample />
+
 <ArrowDocsTabs active="overview" />
 
 <ArrowDataPlaneGraphic />
@@ -71,8 +73,6 @@ Arrow stores values by column rather than by row. This layout improves cache loc
 
 Use the panel below to inspect Arrow IPC metadata, choose columns, and limit the rows returned from a
 remote table. The same source contract is used by the broader scan architecture.
-
-<ArrowScanLiveExample />
 
 ## Scan support
 

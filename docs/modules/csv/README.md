@@ -6,20 +6,27 @@ page_style: designed
 ---
 
 import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
+import {DocLiveExample} from '@site/src/components/docs/doc-live-example';
 import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
 import {StructuredDataPathGraphic} from '@site/src/components/docs/structured-data-path-graphic';
+import {ClientExample} from '@site/src/components';
 
 <DocPageHeader
   eyebrow="Table module"
-  title="Turn delimited text into a table path."
+  title="@loaders.gl/csv"
   description="The CSV module handles CSV and TSV input through the same loaders.gl APIs used by binary table formats. It can materialize a table, emit batches as records arrive, or write compatible data back to text."
   tone="cyan"
+  logos={[{alt: 'CSV', src: '/images/format-logos/csv-logo.svg'}]}
   meta={['CSV / TSV', 'Streaming', 'Table output']}
   links={[
     {label: 'Table category', to: '/docs/specifications/category-table'},
     {label: 'Streaming loaders', to: '/docs/developer-guide/using-streaming-loaders'}
   ]}
 />
+
+<DocLiveExample label="CSV table map example" height="420px">
+  <ClientExample kind="geospatial" format="CSV" />
+</DocLiveExample>
 
 <StructuredDataPathGraphic />
 

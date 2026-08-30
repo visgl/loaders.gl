@@ -11,7 +11,7 @@ import {StructuredDataPathGraphic} from '@site/src/components/docs/structured-da
 
 <DocPageHeader
   eyebrow="Structured data module"
-  title="Use JSON where it is strongest, then choose a shape."
+  title="@loaders.gl/json"
   description="The JSON module covers arbitrary documents, newline-delimited records, tabular arrays, and GeoJSON. Applications can preserve nested structures or ask for table and feature outputs when that is the better next step."
   tone="yellow"
   meta={['JSON / NDJSON', 'GeoJSON', 'Table and feature output']}

@@ -7,20 +7,27 @@ page_style: designed
 
 import {CsvDocsTabs} from '@site/src/components/docs/csv-docs-tabs';
 import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
+import {DocLiveExample} from '@site/src/components/docs/doc-live-example';
 import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
 import {StructuredDataPathGraphic} from '@site/src/components/docs/structured-data-path-graphic';
+import {ClientExample} from '@site/src/components';
 
 <DocPageHeader
   eyebrow="Delimited text formats"
-  title="Start with a table anyone can inspect."
+  title="CSV, TSV, and DSV"
   description="CSV, TSV, and DSV use plain text to represent rows and fields. Their simplicity makes them useful for exchange, command-line tools, spreadsheets, and streaming pipelines."
   tone="cyan"
+  logos={[{alt: 'CSV', src: '/images/format-logos/csv-logo.svg'}]}
   meta={['Plain text', 'Streaming-friendly', 'Tabular data']}
   links={[
     {label: 'CSV module', to: '/docs/modules/csv'},
     {label: 'Streaming loaders', to: '/docs/developer-guide/using-streaming-loaders'}
   ]}
 />
+
+<DocLiveExample label="CSV format map example" height="420px">
+  <ClientExample kind="geospatial" format="CSV" />
+</DocLiveExample>
 
 <CsvDocsTabs active="overview" />
 

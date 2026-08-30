@@ -10,7 +10,7 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
 
 <DocPageHeader
   eyebrow="Arrow schema utilities"
-  title="Make table contracts explicit at the boundary."
+  title="Arrow schema utilities"
   description="These helpers validate Apache Arrow JS table schemas and rename selected fields while preserving vectors and untouched columns. They are useful when a loader or source needs a clear contract before handing data to the next stage."
   tone="cyan"
   meta={['Apache Arrow', 'Schema validation', 'Vector-preserving rename']}

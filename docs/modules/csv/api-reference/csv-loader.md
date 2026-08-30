@@ -7,19 +7,26 @@ page_style: designed
 
 import {CsvDocsTabs} from '@site/src/components/docs/csv-docs-tabs';
 import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
+import {DocLiveExample} from '@site/src/components/docs/doc-live-example';
 import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
+import {ClientExample} from '@site/src/components';
 
 <DocPageHeader
   eyebrow="CSV module · loader API"
   title="CSVLoader"
   description="Load CSV and TSV text into a table shape that suits the next stage of your application, from familiar JavaScript rows to typed Apache Arrow columns."
   tone="blue"
+  logos={[{alt: 'CSV', src: '/images/format-logos/csv-logo.svg'}]}
   meta={['From v1.0', 'CSV / TSV', 'Arrow output']}
   links={[
     {label: 'CSV format', to: '/docs/modules/csv/formats/csv'},
     {label: 'CSV module', to: '/docs/modules/csv'}
   ]}
 />
+
+<DocLiveExample label="CSVLoader table map example" height="420px">
+  <ClientExample kind="geospatial" format="CSV" />
+</DocLiveExample>
 
 <CsvDocsTabs active="csvloader" />
 
