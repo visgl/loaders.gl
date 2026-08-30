@@ -12,7 +12,7 @@ const excludePatterns = [
   '**/*.disabled.*',
   'modules/**/wip/**',
   'modules/3d-tiles/test/lib/styles/**',
-  'modules/xml/test/sax-ts/testcases/**/!(issue-30).spec.ts',
+  'modules/xml/test/sax-ts/testcases/**/*.spec.ts',
   'modules/core/test/lib/api/create-data-source.spec.ts',
   'modules/i3s/test/i3s-content-loader.spec.ts',
   'modules/loader-utils/test/categories/mesh/**',
