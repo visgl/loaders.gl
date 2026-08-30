@@ -2,6 +2,14 @@
 
 ## v5.0
 
+### v5.0.0-alpha.4
+
+- feat(parquet): expose encoded pages for deferred decoding and future query execution
+- feat(zarr): add SpatialData container source support
+- refactor(loader-utils): compose source capability interfaces for shared scan metadata
+- docs(website): expand format service pages and standards coverage
+- test(scan): improve coverage and stabilize merged scan metrics
+
 ### v5.0.0-alpha.3
 
 - feat(scan): add the experimental shared `_scan` loader option and asynchronous scan execution path
