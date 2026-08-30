@@ -73,6 +73,82 @@ describe('GLTFSchema', () => {
     expect(validProfile.success, validProfile.error?.message).toBe(true);
   });
 
+  it('validates a structurally rich glTF 2.1 document through nested official constraints', () => {
+    const document = {
+      asset: {version: '2.1', generator: 'loaders.gl'},
+      buffers: [{byteLength: 128, uri: 'mesh.bin'}],
+      bufferViews: [
+        {buffer: 0, byteOffset: 0, byteLength: 72, target: 34962},
+        {buffer: 0, byteOffset: 72, byteLength: 12, target: 34963}
+      ],
+      accessors: [
+        {
+          bufferView: 0,
+          componentType: 5126,
+          count: 3,
+          type: 'VEC3',
+          min: [0, 0, 0],
+          max: [1, 1, 0]
+        },
+        {bufferView: 1, componentType: 5123, count: 3, type: 'SCALAR'}
+      ],
+      images: [{uri: 'texture.png'}],
+      samplers: [{magFilter: 9729, minFilter: 9987, wrapS: 10497, wrapT: 33071}],
+      textures: [{sampler: 0, source: 0}],
+      materials: [
+        {
+          pbrMetallicRoughness: {
+            baseColorFactor: [1, 0.5, 0.25, 1],
+            baseColorTexture: {index: 0, texCoord: 0},
+            metallicFactor: 0.2,
+            roughnessFactor: 0.8
+          },
+          alphaMode: 'BLEND',
+          doubleSided: true
+        }
+      ],
+      meshes: [{primitives: [{attributes: {POSITION: 0}, indices: 1, material: 0, mode: 4}]}],
+      cameras: [{type: 'perspective', perspective: {yfov: 1, znear: 0.1, zfar: 100}}],
+      animations: [
+        {
+          channels: [{sampler: 0, target: {node: 0, path: 'translation'}}],
+          samplers: [{input: 1, output: 0, interpolation: 'LINEAR'}]
+        }
+      ],
+      scenes: [{nodes: [0]}],
+      scene: 0,
+      extensionsUsed: ['EXT_mesh_gpu_instancing'],
+      extensionsRequired: ['EXT_mesh_gpu_instancing'],
+      extras: {owner: 'coverage'}
+    };
+
+    const result = GLTF21Schema.safeParse(document);
+    expect(result.success, result.error?.message).toBe(true);
+  });
+
+  it('rejects nested exclusive, dependency, and conditional violations', () => {
+    const asset = {version: '2.1'};
+    const invalidDocuments = [
+      {asset, nodes: [{matrix: new Array(16).fill(0), translation: [0, 0, 0]}]},
+      {asset, nodes: [{skin: 0}], skins: [{joints: [0]}]},
+      {asset, images: [{uri: 'image.png', bufferView: 0, mimeType: 'image/png'}]},
+      {
+        asset,
+        accessors: [
+          {
+            componentType: 5126,
+            count: 1,
+            type: 'SCALAR',
+            sparse: {count: 1, indices: {componentType: 5123}, values: {}}
+          }
+        ]
+      }
+    ];
+    for (const document of invalidDocuments) {
+      expect(GLTF21Schema.safeParse(document).success, JSON.stringify(document)).toBe(false);
+    }
+  });
+
   it('accepts a glTF document and preserves extension properties', () => {
     const document = {
       asset: {version: '2.0'},

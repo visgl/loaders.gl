@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT AND Apache-2.0
 // Copyright vis.gl contributors
 
-import {expect, test} from 'vitest';
+import {expect, test, vi} from 'vitest';
 import {coreApi} from '@loaders.gl/core';
 import {Tiles3DLoader} from '@loaders.gl/3d-tiles';
 import {getI3sTileHeader} from '@loaders.gl/i3s/test/test-utils/load-utils';
@@ -145,4 +145,73 @@ test('TilesetCache#unloadTiles evicts by exact bytes and protects current-frame 
   expect(unloadedTiles, 'evicts eligible tiles in LRU order').toEqual([firstTile, secondTile]);
   expect(tileset.gpuMemoryUsageInBytes, 'stops after reaching the exact byte target').toBe(100);
   expect(protectedTile._cacheNode, 'retains the tile touched in the current frame').toBeTruthy();
+});
+
+test('Tileset3D runtime bookkeeping covers loading, statistics, change detection, and teardown', async () => {
+  const onTileError = vi.fn();
+  const onSourceError = vi.fn();
+  const onTileUnload = vi.fn();
+  const tileset = createTestTileset({onTileError, onSourceError, onTileUnload});
+  await tileset.tilesetInitializationPromise;
+  const root = tileset.root!;
+
+  expect(tileset.tiles).toEqual([]);
+  expect(tileset.frameNumber).toBe(0);
+  expect(tileset.isLoaded()).toBeFalsy();
+  expect(tileset.queryParams).toBe('v=1.2.3');
+  expect(tileset.getTileUrl(TILESET_URL)).toContain('tileset.json');
+  expect(tileset.hasExtension('missing')).toBeFalsy();
+  expect(tileset._needTraverse('main')).toBeTruthy();
+  tileset.options.viewportTraversersMap = {secondary: 'main'};
+  expect(tileset._needTraverse('secondary')).toBeFalsy();
+
+  expect(tileset._tilesChanged([], [root])).toBeTruthy();
+  expect(tileset._tilesChanged([root], [root])).toBeFalsy();
+  expect(tileset._tilesChanged([root], [{id: 'other'} as Tile3D])).toBeTruthy();
+
+  const renderTile = {
+    id: 'render-tile',
+    contentAvailable: true,
+    content: {pointCount: 3},
+    contents: [{vertexCount: 5}, {pointCount: 7}]
+  } as unknown as Tile3D;
+  tileset.selectedTiles = [renderTile];
+  tileset._updateStats();
+  expect(tileset.stats.get('Tiles In View').count).toBe(1);
+  expect(tileset.stats.get('Tiles To Render').count).toBe(1);
+  expect(tileset.stats.get('Points/Vertices').count).toBe(12);
+
+  tileset._onStartTileLoading();
+  expect(tileset.stats.get('Tiles Loading').count).toBe(1);
+  tileset._onEndTileLoading();
+  expect(tileset.stats.get('Tiles Loading').count).toBe(0);
+
+  const consoleError = vi.spyOn(console, 'error').mockImplementation(() => {});
+  tileset._onTileLoadError(root, new Error('broken tile'));
+  expect(onTileError).toHaveBeenCalledWith(root, 'broken tile', root.url);
+  expect(consoleError).toHaveBeenCalledOnce();
+  consoleError.mockRestore();
+
+  tileset._onSourceError(new Error('source failed'), root);
+  expect(onSourceError).toHaveBeenCalledOnce();
+
+  root.gpuMemoryUsageInBytes = 64;
+  tileset._updateCacheStats(root);
+  expect(tileset.gpuMemoryUsageInBytes).toBe(64);
+  tileset._unloadTile(root);
+  expect(tileset.gpuMemoryUsageInBytes).toBe(0);
+  expect(onTileUnload).toHaveBeenCalledWith(root);
+
+  const child = {
+    children: [],
+    destroy: vi.fn(),
+    unloadContent: vi.fn(),
+    gpuMemoryUsageInBytes: 0
+  } as unknown as Tile3D;
+  const subtreeRoot = {children: [child], destroy: vi.fn()} as unknown as Tile3D;
+  vi.spyOn(tileset as any, '_destroyTile');
+  tileset._destroySubtree(subtreeRoot);
+  expect(subtreeRoot.children).toEqual([]);
+  expect((tileset as any)._destroyTile).toHaveBeenCalledWith(child);
+  tileset.destroy();
 });

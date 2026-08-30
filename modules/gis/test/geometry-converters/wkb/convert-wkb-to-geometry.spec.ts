@@ -237,6 +237,37 @@ test('triangulateWKB#handles EWKB SRID metadata without changing indices', () =>
   expect(withSrid).toEqual(plain);
 });
 
+test('triangulateWKB#handles all EWKB dimensional flags with SRID metadata', () => {
+  const polygon = {
+    type: 'Polygon' as const,
+    coordinates: [
+      [
+        [0, 0, 10, 100],
+        [4, 0, 20, 200],
+        [4, 4, 30, 300],
+        [0, 4, 40, 400],
+        [0, 0, 10, 100]
+      ]
+    ]
+  };
+  const expected = triangulateWKB(
+    convertGeometryToWKB({
+      type: 'Polygon',
+      coordinates: [polygon.coordinates[0].map(position => position.slice(0, 2))]
+    })
+  );
+
+  expect(triangulateWKB(convertGeometryToWKB(polygon, {hasZ: true, wkb: {srid: 4326}}))).toEqual(
+    expected
+  );
+  expect(triangulateWKB(convertGeometryToWKB(polygon, {hasM: true, wkb: {srid: 4326}}))).toEqual(
+    expected
+  );
+  expect(
+    triangulateWKB(convertGeometryToWKB(polygon, {hasZ: true, hasM: true, wkb: {srid: 4326}}))
+  ).toEqual(expected);
+});
+
 test('triangulateWKB#rejects invalid multipolygon children', () => {
   const bytes = new Uint8Array(
     convertGeometryToWKB({

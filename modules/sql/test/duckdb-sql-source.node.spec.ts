@@ -39,3 +39,56 @@ test('DuckDBSQLSource executes queries and exposes metadata', async () => {
   expect(schema.fields[0]?.name, 'returns table schema').toBe('value');
   await dataSource.close();
 });
+
+test('DuckDBSQLSource exposes complete filtered metadata and lifecycle behavior', async () => {
+  const dataSource = createDataSource('duckdb:///:memory:', [DuckDBSQLSource], {
+    duckdb: {accessMode: 'read_write'}
+  }) as DuckDBSQLDataSource;
+
+  await dataSource.queryRows(`CREATE SCHEMA analytics`);
+  await dataSource.queryRows(`CREATE TABLE analytics.events (id INTEGER NOT NULL, label VARCHAR)`);
+
+  const catalogs = await dataSource.listCatalogs();
+  expect(catalogs.some(catalog => catalog.catalogName === 'memory')).toBe(true);
+
+  const schemas = await dataSource.listSchemas('memory');
+  expect(schemas).toContainEqual({catalogName: 'memory', schemaName: 'analytics'});
+
+  const tables = await dataSource.listTables({catalogName: 'memory', schemaName: 'analytics'});
+  expect(tables).toContainEqual({
+    catalogName: 'memory',
+    schemaName: 'analytics',
+    tableName: 'events',
+    tableType: 'BASE TABLE'
+  });
+
+  const schema = await dataSource.getTableSchema({
+    catalogName: 'memory',
+    schemaName: 'analytics',
+    tableName: 'events'
+  });
+  expect(schema.fields.map(field => [field.name, field.nullable])).toEqual([
+    ['id', false],
+    ['label', true]
+  ]);
+
+  await dataSource.close();
+  await dataSource.close();
+});
+
+test('DuckDBSQLSource validates unsupported remote adapters and URL forms', async () => {
+  const remoteSource = new DuckDBSQLDataSource('duckdb:///:memory:', {
+    duckdb: {remoteUrl: 'https://example.com/database.duckdb'}
+  });
+  await expect(remoteSource.queryRows('SELECT 1')).rejects.toThrow(
+    'Remote DuckDB adapters are not implemented'
+  );
+
+  const encodedPathSource = new DuckDBSQLDataSource('duckdb:///tmp/encoded%20database.duckdb', {
+    duckdb: {databasePath: ':memory:'}
+  });
+  await expect(
+    encodedPathSource.queryRows('SELECT ?::INTEGER AS value', {parameters: [7]})
+  ).resolves.toEqual([{value: 7}]);
+  await encodedPathSource.close();
+});

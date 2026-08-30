@@ -76,6 +76,9 @@ export default class ZarritaPixelSource<S extends string[]> {
   /** Reads a complete 2D plane from the backing array. */
   async getRaster({selection, signal}: RasterSelection<S> | {selection: number[]; signal?: AbortSignal}) {
     const sel = this.chunkIndex(selection, null, null) as Array<number | null>;
+    if (this.labels[this.labels.length - 1] === '_c') {
+      sel[sel.length - 1] = null;
+    }
     const chunk = await getCachedZarrSelection(
       this.data,
       getZarrSelectionKey(sel),
