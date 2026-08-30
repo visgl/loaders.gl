@@ -156,6 +156,105 @@ describe('CSV optimized parsing paths', () => {
     expect(getArrowColumnValues(table, 'optional')).toEqual([null, '+2']);
   });
 
+  test('covers direct typed column growth, promotion, duplicate headers, and ragged rows', async () => {
+    const rows = [
+      'value|value|raw|boolean|date|missing',
+      '||alpha|TRUE|2018-05-04T21:08:03.269Z|',
+      '1|10||false|2019-06-05T01:02:03Z',
+      '2|20|beta||2020-07-06T01:02:03+01:00|tail|ignored',
+      '|30|gamma|TRUE||tail',
+      'text|40|FALSE|false|not-a-date|tail',
+      '3|50|delta|TRUE|2021-08-07T01:02:03.000Z|tail',
+      '4|60|epsilon|FALSE|2022-09-08T01:02:03.000Z|tail',
+      '5|70|zeta|TRUE|2023-10-09T01:02:03.000Z|tail'
+    ];
+    const csvBytes = new TextEncoder().encode(rows.join('\r\n'));
+    const table = await CSVLoader.parse(csvBytes.buffer, {
+      csv: {
+        delimiter: '|',
+        header: true,
+        shape: 'arrow-table',
+        dynamicTyping: true,
+        skipEmptyLines: false
+      }
+    });
+
+    expect(table.schema?.fields.map(field => field.name)).toEqual([
+      'value',
+      'value.1',
+      'raw',
+      'boolean',
+      'date',
+      'missing'
+    ]);
+    expect(getArrowColumnValues(table, 'value')).toEqual([
+      null,
+      '1',
+      '2',
+      null,
+      'text',
+      '3',
+      '4',
+      '5'
+    ]);
+    expect(getArrowColumnValues(table, 'value.1')).toEqual([null, 10, 20, 30, 40, 50, 60, 70]);
+    expect(getArrowColumnValues(table, 'raw')).toEqual([
+      'alpha',
+      null,
+      'beta',
+      'gamma',
+      'false',
+      'delta',
+      'epsilon',
+      'zeta'
+    ]);
+    expect(getArrowColumnValues(table, 'boolean')).toEqual([
+      true,
+      false,
+      null,
+      true,
+      false,
+      true,
+      false,
+      true
+    ]);
+    expect(getArrowColumnValues(table, 'missing')).toEqual([
+      null,
+      null,
+      'tail',
+      'tail',
+      'tail',
+      'tail',
+      'tail',
+      'tail'
+    ]);
+  });
+
+  test.each([
+    ['empty input', '', {}],
+    ['quoted header', '"a",b\n1,2', {}],
+    ['multi-byte delimiter', 'a::b\n1::2', {delimiter: '::'}],
+    ['non-ASCII delimiter', 'a§b\n1§2', {delimiter: '§'}],
+    ['comments', 'a,b\n# ignored\n1,2', {comments: '#'}],
+    ['greedy empty lines', 'a,b\n\n1,2', {skipEmptyLines: 'greedy' as const}],
+    ['custom escaping', 'a,b\n1,2', {quoteChar: "'", escapeChar: '\\'}],
+    ['too many numeric fields', 'a,b\n1,2,3', {}],
+    ['too few numeric fields', 'a,b,c\n1,2', {}],
+    ['invalid numeric character', 'a,b\n1,x', {}],
+    ['empty numeric field', 'a,b\n1,', {}],
+    ['bare carriage return', 'a,b\r1,2\r3,4', {}]
+  ])('falls back safely for %s', async (_name, csvText, csvOptions) => {
+    const table = await CSVLoader.parseText(csvText as string, {
+      csv: {
+        header: true,
+        shape: 'arrow-table',
+        dynamicTyping: true,
+        ...(csvOptions as object)
+      }
+    });
+    expect(table.shape).toBe('arrow-table');
+  });
+
   test('preserves custom delimiter inference for row output', async () => {
     const table = await CSVLoader.parseText('city^count\nParis^42\n', {
       csv: {
