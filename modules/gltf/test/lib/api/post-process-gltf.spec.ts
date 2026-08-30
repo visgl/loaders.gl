@@ -173,3 +173,126 @@ test('gltf#postProcessGLTF applies sparse-only index accessor substitutions', ()
     'applies sparse substitutions to the implicit-zero base'
   ).toEqual([0, 5, 5, 0, 0, 2, 2, 0]);
 });
+
+test('gltf#postProcessGLTF resolves the complete scene, material, texture, and skin graph', () => {
+  const bytes = new Uint8Array(64);
+  new Float32Array(bytes.buffer, 8, 6).set([1, 2, 3, 4, 5, 6]);
+  const json = postProcessGLTF({
+    baseUri: 'https://example.com/models/',
+    json: {
+      asset: {version: '2.0'},
+      buffers: [{byteLength: bytes.byteLength}],
+      bufferViews: [
+        {buffer: 0, byteOffset: 8, byteLength: 24, byteStride: 12},
+        {buffer: 0, byteOffset: 0, byteLength: 8}
+      ],
+      accessors: [
+        {bufferView: 0, componentType: 5126, count: 2, type: 'VEC3'},
+        {componentType: 5123, count: 2, type: 'SCALAR'}
+      ],
+      images: [{bufferView: 1, mimeType: 'image/png'}, {uri: 'fallback.png'}],
+      samplers: [{magFilter: 9728, minFilter: 9984, wrapS: 33071, wrapT: 33648}],
+      textures: [{sampler: 0, source: 0}, {source: 1}, {}],
+      materials: [
+        {
+          normalTexture: {index: 0},
+          occlusionTexture: {index: 0},
+          emissiveTexture: {index: 1},
+          pbrMetallicRoughness: {
+            baseColorTexture: {index: 0},
+            metallicRoughnessTexture: {index: 1}
+          }
+        },
+        {}
+      ],
+      meshes: [
+        {primitives: [{attributes: {POSITION: 0}, indices: 1, material: 0, mode: 4}]},
+        {id: 'second', primitives: []}
+      ],
+      cameras: [{type: 'perspective', perspective: {yfov: 1, znear: 0.1}}],
+      skins: [{inverseBindMatrices: 1, joints: [0]}],
+      nodes: [{mesh: 0, camera: 0, skin: 0, children: [1]}, {meshes: [0, 1] as any}],
+      scenes: [{nodes: [0]}],
+      scene: 0
+    },
+    buffers: [{arrayBuffer: bytes.buffer, byteOffset: 0, byteLength: bytes.byteLength}],
+    images: [{width: 4, height: 2}]
+  } as unknown as GLTFWithBuffers);
+
+  expect(Array.from(json.accessors[0].value)).toEqual([1, 2, 3, 4, 5, 6]);
+  expect(json.images[0].image).toEqual({width: 4, height: 2});
+  expect(json.images[1].image).toBeNull();
+  expect(json.textures[0].sampler.parameters).toMatchObject({
+    10240: 9728,
+    10241: 9984,
+    10242: 33071,
+    10243: 33648
+  });
+  expect(json.textures[1].sampler.id).toBe('default-sampler');
+  expect(json.textures[2].source).toBeUndefined();
+  expect(json.materials[0].emissiveFactor).toEqual([1, 1, 1]);
+  expect(json.materials[1].emissiveFactor).toEqual([0, 0, 0]);
+  expect(json.materials[0].normalTexture?.texture).toBe(json.textures[0]);
+  expect(json.nodes[0].children?.[0]).toBe(json.nodes[1]);
+  expect(json.nodes[1].mesh?.primitives).toHaveLength(1);
+  expect(json.skins[0].inverseBindMatrices).toBe(json.accessors[1]);
+  expect(json.scene).toBe(json.scenes[0]);
+});
+
+test('gltf#postProcessGLTF covers portable topology size boundaries', () => {
+  const emptyLoop = postProcessGLTF({
+    json: {
+      asset: {version: '2.0'},
+      accessors: [{componentType: 5126, count: 1, type: 'VEC3'}],
+      meshes: [{primitives: [{attributes: {POSITION: 0}, mode: 2}]}]
+    },
+    buffers: []
+  } as GLTFWithBuffers).meshes[0].primitives[0];
+  expect(emptyLoop.indices?.value).toHaveLength(0);
+  expect(emptyLoop.indices?.min).toBeUndefined();
+
+  const largeFan = postProcessGLTF({
+    json: {
+      asset: {version: '2.0'},
+      accessors: [{componentType: 5126, count: 65_537, type: 'VEC3'}],
+      meshes: [{primitives: [{attributes: {POSITION: 0}, mode: 6}]}]
+    },
+    buffers: []
+  } as GLTFWithBuffers).meshes[0].primitives[0];
+  expect(largeFan.indices?.value).toBeInstanceOf(Uint32Array);
+  expect(largeFan.indices?.componentType).toBe(5125);
+  expect(largeFan.indices?.max).toEqual([65_536]);
+});
+
+test('gltf#postProcessGLTF validates sparse index types, ranges, and byte lengths', () => {
+  const makeSparseSource = (componentType: number, index: number, valueByteLength = 4) => {
+    const bytes = new Uint8Array([index, 0, 0, 0, 9, 0, 0, 0]);
+    return {
+      json: {
+        asset: {version: '2.0'},
+        buffers: [{byteLength: bytes.byteLength}],
+        bufferViews: [
+          {buffer: 0, byteLength: 4},
+          {buffer: 0, byteOffset: 4, byteLength: valueByteLength}
+        ],
+        accessors: [
+          {
+            componentType: 5125,
+            count: 2,
+            type: 'SCALAR',
+            sparse: {
+              count: 1,
+              indices: {bufferView: 0, componentType},
+              values: {bufferView: 1}
+            }
+          }
+        ]
+      },
+      buffers: [{arrayBuffer: bytes.buffer, byteOffset: 0, byteLength: bytes.byteLength}]
+    } as unknown as GLTFWithBuffers;
+  };
+
+  expect(() => postProcessGLTF(makeSparseSource(5122, 0))).toThrow(/Invalid glTF sparse index/);
+  expect(() => postProcessGLTF(makeSparseSource(5121, 4))).toThrow(/out of bounds/);
+  expect(() => postProcessGLTF(makeSparseSource(5121, 0, 2))).toThrow(/exceeds its buffer view/);
+});
