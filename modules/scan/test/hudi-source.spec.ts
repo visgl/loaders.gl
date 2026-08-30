@@ -2,7 +2,10 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import {expect, test, vi} from 'vitest';
+import {afterEach, expect, test, vi} from 'vitest';
+import {setPathPrefix} from '@loaders.gl/loader-utils';
+
+afterEach(() => setPathPrefix(''));
 
 vi.mock('@loaders.gl/parquet/parquet-dataset-source', () => ({
   ParquetDatasetSource: class MockParquetDatasetSource {
@@ -102,6 +105,18 @@ test('rejects empty, malformed, and unsupported Hudi descriptors', async () => {
   ).rejects.toThrow('contains no Parquet base files');
 });
 
+test.each([
+  [null, 'must be an object'],
+  [{}, 'non-empty string path'],
+  [{path: 1}, 'non-empty string path'],
+  [{path: 'part.parquet', size: '1'}, 'size must be a finite number'],
+  [{path: 'part.parquet', numRecords: '1'}, 'numRecords must be a finite number'],
+  [{path: 'part.parquet', partitionValues: []}, 'partitionValues must be an object']
+])('rejects an invalid Hudi base-file descriptor: %j', async (file, message) => {
+  const source = new HudiTableSource(new Blob([JSON.stringify({files: [file]})]));
+  await expect(source.getScanFragments()).rejects.toThrow(message);
+});
+
 test('resolves relative files with the configured Hudi base URL', async () => {
   const source = new HudiTableSource(
     new Blob([JSON.stringify({files: [{path: 'part.parquet'}]})]),
@@ -118,7 +133,9 @@ test('preserves absolute and path-only file references', async () => {
 });
 
 test('loads URL descriptors and reports missing file statistics as zero', async () => {
-  const descriptorUrl = 'https://example.com/table/snapshot.json';
+  const descriptorUrl = 'snapshot.json';
+  const resolvedDescriptorUrl = 'https://example.com/table/snapshot.json';
+  setPathPrefix('https://example.com/table/');
   const signal = new AbortController().signal;
   const source = new HudiTableSource(descriptorUrl, {
     hudi: {headers: {'x-test': 'hudi'}}
@@ -133,7 +150,7 @@ test('loads URL descriptors and reports missing file statistics as zero', async 
     name: descriptorUrl,
     statistics: {rowCount: 0, byteLength: 0}
   });
-  expect(fetch).toHaveBeenCalledWith(descriptorUrl, {
+  expect(fetch).toHaveBeenCalledWith(resolvedDescriptorUrl, {
     headers: {'x-test': 'hudi'},
     signal
   });

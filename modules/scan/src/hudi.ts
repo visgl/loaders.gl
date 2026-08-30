@@ -23,9 +23,13 @@ import type {
 
 /** A physical Parquet base file recorded by a Hudi snapshot descriptor. */
 export type HudiBaseFile = Readonly<{
+  /** Path or URL of the Parquet base file. */
   path: string;
+  /** Compressed file size in bytes, when recorded by the descriptor. */
   size?: number;
+  /** Number of records in the base file, when recorded by the descriptor. */
   numRecords?: number;
+  /** Partition column values associated with the base file. */
   partitionValues?: Readonly<Record<string, unknown>>;
 }>;
 
@@ -139,7 +143,7 @@ export class HudiTableSource
   private async loadDescriptor(signal?: AbortSignal): Promise<HudiSnapshotDescriptor> {
     const text =
       typeof this.data === 'string'
-        ? await (await this.fetch(this.data, {headers: this.options.hudi?.headers, signal})).text()
+        ? await (await this.fetch(this.url, {headers: this.options.hudi?.headers, signal})).text()
         : await this.data.text();
     let descriptor: unknown;
     try {
@@ -154,6 +158,7 @@ export class HudiTableSource
     if (!Array.isArray(files)) {
       throw new Error('Hudi snapshot descriptor must contain a files array');
     }
+    files.forEach((file, index) => validateHudiBaseFile(file, index));
     const value = descriptor as HudiSnapshotDescriptor;
     if (
       value.tableType &&
@@ -196,5 +201,36 @@ export class HudiTableSource
     const baseUrl = this.options.hudi?.baseUrl || basePath;
     if (baseUrl) return new URL(path, baseUrl).toString();
     return path;
+  }
+}
+
+/** Validates one externally supplied Hudi base-file descriptor. */
+function validateHudiBaseFile(file: unknown, index: number): asserts file is HudiBaseFile {
+  if (!file || typeof file !== 'object' || Array.isArray(file)) {
+    throw new Error(`Hudi snapshot file at index ${index} must be an object`);
+  }
+  const value = file as Record<string, unknown>;
+  if (typeof value.path !== 'string' || !value.path) {
+    throw new Error(`Hudi snapshot file at index ${index} must contain a non-empty string path`);
+  }
+  if (
+    value.size !== undefined &&
+    (typeof value.size !== 'number' || !Number.isFinite(value.size))
+  ) {
+    throw new Error(`Hudi snapshot file at index ${index} size must be a finite number`);
+  }
+  if (
+    value.numRecords !== undefined &&
+    (typeof value.numRecords !== 'number' || !Number.isFinite(value.numRecords))
+  ) {
+    throw new Error(`Hudi snapshot file at index ${index} numRecords must be a finite number`);
+  }
+  if (
+    value.partitionValues !== undefined &&
+    (!value.partitionValues ||
+      typeof value.partitionValues !== 'object' ||
+      Array.isArray(value.partitionValues))
+  ) {
+    throw new Error(`Hudi snapshot file at index ${index} partitionValues must be an object`);
   }
 }
