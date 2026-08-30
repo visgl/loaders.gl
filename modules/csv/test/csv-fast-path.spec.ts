@@ -252,7 +252,26 @@ describe('CSV optimized parsing paths', () => {
         ...(csvOptions as object)
       }
     });
-    expect(table.shape).toBe('arrow-table');
+    const expectedTable = await CSVLoader.parseText(csvText as string, {
+      csv: {
+        header: true,
+        shape: 'object-row-table',
+        dynamicTyping: true,
+        ...(csvOptions as object)
+      }
+    });
+    expect(table.data.numRows).toBe(expectedTable.data.length);
+    const expectedFields = (expectedTable.schema?.fields || []).filter(
+      field => field.name !== '__parsed_extra'
+    );
+    expect(table.schema?.fields.map(field => field.name)).toEqual(
+      expectedFields.map(field => field.name)
+    );
+    for (const field of expectedFields) {
+      expect(getArrowColumnValues(table, field.name)).toEqual(
+        expectedTable.data.map(row => row[field.name] ?? null)
+      );
+    }
   });
 
   test('preserves custom delimiter inference for row output', async () => {

@@ -99,12 +99,23 @@ describe('Parquet split-block Bloom filters', () => {
   });
 
   test('hashes all XXH64 lane and tail layouts deterministically', () => {
-    for (const byteLength of [4, 7, 8, 12, 15, 31, 32, 33, 40, 63, 64, 65]) {
+    const referenceVectors = new Map<number, bigint>([
+      [4, 0x61a38a60f2bc4a83n],
+      [7, 0x0c3b423a4fa2d22dn],
+      [8, 0xe48b81578fd82dd8n],
+      [12, 0x245eeabd88884a9an],
+      [15, 0x5fdf959cd6df6c84n],
+      [31, 0x6b66696bb5484a2en],
+      [32, 0xb9cd2ff344ba8ac4n],
+      [33, 0xffe4d1e299a054d5n],
+      [40, 0x74ebaf82cdc11c2fn],
+      [63, 0x3c622ccc1cd28d6dn],
+      [64, 0xef37b13a3067228bn],
+      [65, 0x0555a5801e89d394n]
+    ]);
+    for (const [byteLength, expectedHash] of referenceVectors) {
       const bytes = Uint8Array.from({length: byteLength}, (_, index) => index * 17);
-      const first = hashParquetBloomFilterValue(bytes);
-      expect(hashParquetBloomFilterValue(bytes)).toBe(first);
-      expect(first).toBeGreaterThanOrEqual(0n);
-      expect(first).toBeLessThanOrEqual(0xffffffffffffffffn);
+      expect(hashParquetBloomFilterValue(bytes)).toBe(expectedHash);
     }
   });
 
