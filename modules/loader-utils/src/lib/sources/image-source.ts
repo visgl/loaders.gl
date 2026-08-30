@@ -3,19 +3,16 @@
 // Copyright (c) vis.gl contributors
 
 // TODO - can we import from schema?
-import {ImageType} from './utils/image-type';
+import type {ImageType} from './utils/image-type';
 import type {CRSIdentifier} from '@math.gl/crs';
 // TODO - remove (this breaks WMS layer)
 
 /**
  * ImageSource - data sources that allow images to be queried by (geospatial) extents
  */
-export abstract class ImageSource {
-  static type: string = 'template';
-  static testURL = (url: string): boolean => false;
-
-  abstract getMetadata(): Promise<ImageSourceMetadata>;
-  abstract getImage(parameters: GetImageParameters): Promise<ImageType>;
+export interface ImageSource {
+  getMetadata(): Promise<ImageSourceMetadata>;
+  getImage(parameters: GetImageParameters): Promise<ImageType>;
 }
 
 // PARAMETER TYPES

@@ -4,7 +4,7 @@
 
 import {expect, test} from 'vitest';
 import {withFetchMock, mockResults, requestInits} from '../test-utils/fetch-spy';
-import {WMSSourceLoader} from '@loaders.gl/wms';
+import {ImageSource, WMSSourceLoader} from '@loaders.gl/wms';
 const WMS_SERVICE_URL = 'https:/mock-wms-service';
 const WMS_VERSION = '1.3.0';
 test('WMSSourceLoader#constructor', async () => {
@@ -13,6 +13,12 @@ test('WMSSourceLoader#constructor', async () => {
   expect(getCapabilitiesUrl, 'getCapabilitiesURL').toBe(
     `https:/mock-wms-service?SERVICE=WMS&VERSION=${WMS_VERSION}&REQUEST=GetCapabilities`
   );
+});
+test('ImageSource legacy runtime guard recognizes the structural capability', () => {
+  const wmsImageSource = WMSSourceLoader.createDataSource(WMS_SERVICE_URL, {});
+
+  expect(wmsImageSource instanceof ImageSource).toBe(true);
+  expect({} instanceof ImageSource).toBe(false);
 });
 test('WMSSourceLoader#getMapURL', async () => {
   let wmsImageSource = WMSSourceLoader.createDataSource(WMS_SERVICE_URL, {});

@@ -115,6 +115,45 @@ Concrete runtime classes are unchanged. For example:
 
 The old top-level `*Source` aliases have been removed, so imports must be updated explicitly.
 
+### Source capability interfaces
+
+`ImageSource`, `VectorSource`, and `RasterSource` are now type-only capability interfaces, matching
+the existing tile, catalog, and scan source contracts. `DataSource` remains the implementation base
+class. The obsolete `type` and `testURL` statics were removed from the capability contracts;
+runtime source selection continues to use the corresponding fields on `SourceLoader`.
+
+Custom sources that extended one of the old abstract classes should instead extend `DataSource`
+and implement one or more capability interfaces:
+
+```ts
+import {DataSource} from '@loaders.gl/loader-utils';
+import type {
+  DataSourceOptions,
+  GetImageParameters,
+  ImageSource,
+  ImageSourceMetadata,
+  ImageType
+} from '@loaders.gl/loader-utils';
+
+class CustomImageSource
+  extends DataSource<string, DataSourceOptions>
+  implements ImageSource
+{
+  async getMetadata(): Promise<ImageSourceMetadata> {
+    throw new Error('Return normalized image-source metadata.');
+  }
+
+  async getImage(parameters: GetImageParameters): Promise<ImageType> {
+    throw new Error('Load the requested image.');
+  }
+}
+```
+
+Import these contracts with `import type`; they are no longer runtime constructor values. Concrete
+source classes and operational methods such as `getMetadata()`, `getImage()`, `getRaster()`, and
+`getFeatures()` are unchanged. `@loaders.gl/wms` temporarily retains a deprecated structural
+`ImageSource` runtime guard for deck.gl 9.x compatibility; it is not a constructor or base class.
+
 ### Arrow loader and writer variant removal
 
 Redundant Arrow-specific loader and writer variants have been removed where the primary loader or writer already supports Arrow table data.
