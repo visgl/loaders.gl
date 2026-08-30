@@ -7,6 +7,8 @@ import {describe, expect, test} from 'vitest';
 import {
   parseCurve,
   parseCurveSegments,
+  parseCompositeSurface,
+  parseExteriorOrInterior,
   parseGMLFeature,
   parseGMLFeatureCollection,
   parseGML,
@@ -232,5 +234,117 @@ describe('GML geometry helpers', () => {
     expect(() => parseMultiSurface({}, OPTIONS, CONTEXT)).toThrow('must have > 0 polygons');
     expect(() => parsePolygonOrRectangle({}, OPTIONS, CONTEXT)).toThrow('invalid');
     expect(parseGMLFeatureCollection({})).toBeNull();
+  });
+
+  test('dispatches every polygon and surface geometry family', () => {
+    const surface = {'gml:patches': {'gml:Rectangle': POLYGON}};
+    const composite = {'gml:surfaceMember': {'gml:Surface': surface}};
+    expect(parseGMLToGeometry({'gml:Polygon': POLYGON}, OPTIONS, CONTEXT)?.type).toBe('Polygon');
+    expect(parseGMLToGeometry({'gml:Rectangle': POLYGON}, OPTIONS, CONTEXT)?.type).toBe('Polygon');
+    expect(parseGMLToGeometry({'gml:Surface': surface}, OPTIONS, CONTEXT)?.type).toBe(
+      'MultiPolygon'
+    );
+    expect(
+      parseGMLToGeometry(
+        {'gml:MultiSurface': {'gml:surfaceMember': {'gml:Surface': surface}}},
+        OPTIONS,
+        CONTEXT
+      )?.type
+    ).toBe('MultiPolygon');
+    expect(parseCompositeSurface(composite, OPTIONS, CONTEXT)).toHaveLength(1);
+    expect(
+      parseCompositeSurface({'gml:surfaceMembers': {'gml:Polygon': POLYGON}}, OPTIONS, CONTEXT)
+    ).toHaveLength(1);
+  });
+
+  test('joins overlapping curve and ring segments', () => {
+    const segments = {
+      ignored: {},
+      'gml:LineStringSegment': {'gml:posList': '0 0 1 1'},
+      'alternate:LineStringSegment': {'gml:posList': '1 1 2 2'}
+    };
+    expect(parseCurveSegments(segments, OPTIONS, CONTEXT)).toEqual([
+      [0, 0],
+      [1, 1],
+      [2, 2]
+    ]);
+    const ring = {
+      'gml:curveMember': {
+        'gml:Curve': {'gml:segments': {'gml:LineStringSegment': {'gml:posList': '0 0 2 0'}}}
+      },
+      'alternate:curveMember': {
+        'gml:Curve': {
+          'gml:segments': {'gml:LineStringSegment': {'gml:posList': '2 0 2 2 0 0'}}
+        }
+      }
+    };
+    expect(parseRing(ring, OPTIONS, CONTEXT)).toEqual([
+      [0, 0],
+      [2, 0],
+      [2, 2],
+      [0, 0]
+    ]);
+  });
+
+  test('normalizes plural members, nested features, ids, and typed values', () => {
+    const collection = parseGMLFeatureCollection(
+      {
+        wrapper: {
+          'gml:featureMembers': [
+            {
+              attributes: {},
+              'app:item': {
+                fid: 'direct.1',
+                'app:flags': [{value: '1'}, {'#text': 'false'}],
+                'app:when': {'#text': 20260830}
+              }
+            },
+            {'app:item': {attributes: {'app:id': 'attribute.2'}, 'app:value': 3}}
+          ]
+        }
+      },
+      {propertyTypes: {flags: 'boolean', when: 'date-time'}}
+    );
+    expect(collection?.features).toMatchObject([
+      {id: 'direct.1', geometry: null, properties: {flags: [true, false], when: '20260830'}},
+      {id: 'attribute.2', geometry: null, properties: {value: 3}}
+    ]);
+  });
+
+  test('covers alternate coordinate forms and their validation', () => {
+    expect(parsePoint({'gml:coord': {'gml:X': 7, 'gml:Y': 8}}, OPTIONS, CONTEXT)).toEqual([7, 8]);
+    expect(
+      parseLinearRingOrLineString(
+        {'gml:pos': {value: '1 2'}, 'alternate:pos': {value: '3 4'}},
+        OPTIONS,
+        CONTEXT
+      )
+    ).toEqual([
+      [1, 2],
+      [3, 4]
+    ]);
+    expect(
+      parseExteriorOrInterior(
+        {
+          'gml:Ring': {
+            'gml:curveMember': {
+              'gml:LineString': {'gml:coordinates': '0,0 2,0 2,2 0,0'}
+            }
+          }
+        },
+        OPTIONS,
+        CONTEXT
+      )
+    ).toHaveLength(4);
+    expect(() => parsePos('1 2 3 4', OPTIONS, CONTEXT)).toThrow('must have 1 point');
+    expect(() =>
+      parsePosList({attributes: {srsDimension: '0'}, value: '1 2'}, OPTIONS, CONTEXT)
+    ).toThrow('positive integer');
+    expect(() => parsePoint({'gml:coordinates': '1,not-a-number'}, OPTIONS, CONTEXT)).toThrow(
+      'invalid GML 2 coordinates'
+    );
+    expect(() => parseExteriorOrInterior({}, OPTIONS, CONTEXT)).toThrow('invalid');
+    expect(() => parseRing({'gml:curveMember': {}}, OPTIONS, CONTEXT)).toThrow('invalid');
+    expect(() => parseCompositeSurface({}, OPTIONS, CONTEXT)).toThrow('must have > 0 polygons');
   });
 });

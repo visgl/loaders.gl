@@ -3,11 +3,14 @@
 // Copyright (c) vis.gl contributors
 
 import {expect, test} from 'vitest';
-import type {Schema, TableBatch} from '@loaders.gl/schema';
+import * as arrow from 'apache-arrow';
+import type {Feature, Schema, TableBatch} from '@loaders.gl/schema';
 import {
+  convertGeoJSONFeaturesToArrowTable,
   convertRowTableToArrowTable,
   convertTableBatchesToArrow,
   makeNDJSONArrowBatchIterator,
+  normalizeJSONArrowSchema,
   validateRowTableAgainstArrowSchema
 } from '../src/lib/parsers/convert-row-table-to-arrow';
 
@@ -227,4 +230,98 @@ test('JSON Arrow batch adapters freeze schemas and preserve metadata batches', a
     yieldBatches([{batchType: 'data', shape: 'invalid', data: []}])
   );
   await expect(invalidIterator.next()).rejects.toThrow(/requires row-table data batches/);
+});
+
+test('JSON Arrow conversion covers primitive and integer policy matrices', () => {
+  const integerTypes = ['int8', 'int16', 'int32', 'uint8', 'uint16', 'uint32'] as const;
+  for (const integerType of integerTypes) {
+    const schema: Schema = {
+      fields: [{name: 'value', type: integerType, nullable: true}],
+      metadata: {}
+    };
+    const table = convertRowTableToArrowTable(
+      {shape: 'object-row-table', data: [{value: Number.POSITIVE_INFINITY}]} as any,
+      {schema, arrowConversion: {integerConversion: 'clamp-and-round'}}
+    );
+    expect(table.data.numRows).toBe(1);
+    const nullable = convertRowTableToArrowTable(
+      {shape: 'object-row-table', data: [{value: 1.5}]} as any,
+      {schema, arrowConversion: {integerConversion: 'null'}}
+    );
+    expect(nullable.data.getChild('value')?.get(0)).toBeNull();
+  }
+
+  const primitiveFields: Schema['fields'] = [
+    {name: 'boolean', type: 'bool', nullable: false},
+    {name: 'float', type: 'float32', nullable: false},
+    {name: 'date', type: 'date-day', nullable: false},
+    {name: 'time', type: 'time-millisecond', nullable: false},
+    {name: 'timestamp', type: 'timestamp-millisecond', nullable: false},
+    {name: 'binary', type: 'binary-view', nullable: false},
+    {name: 'nothing', type: 'null', nullable: true}
+  ];
+  const primitiveTable = convertRowTableToArrowTable(
+    {
+      shape: 'object-row-table',
+      data: [
+        {
+          boolean: true,
+          float: 1.5,
+          date: new Date(0),
+          time: new Date(1),
+          timestamp: new Date(2),
+          binary: new Uint8Array([1]),
+          nothing: null
+        }
+      ]
+    } as any,
+    {schema: {fields: primitiveFields, metadata: {}}}
+  );
+  expect(primitiveTable.data.numRows).toBe(1);
+});
+
+test('JSON Arrow conversion validates GeoArrow schemas and deduplicates recovery logs', () => {
+  const feature: Feature = {
+    type: 'Feature',
+    geometry: {type: 'Point', coordinates: [1, 2]},
+    properties: {name: 'point'}
+  };
+  expect(() =>
+    convertGeoJSONFeaturesToArrowTable([feature], {
+      schema: {fields: [{name: 'name', type: 'utf8', nullable: true}], metadata: {}}
+    })
+  ).toThrow('must include geometry');
+  expect(() =>
+    convertGeoJSONFeaturesToArrowTable([feature], {
+      schema: {
+        fields: [{name: 'geometry', type: 'utf8', nullable: true}],
+        metadata: {}
+      }
+    })
+  ).toThrow('must have binary type');
+  const geoarrow = convertGeoJSONFeaturesToArrowTable([feature], {
+    schema: {
+      fields: [
+        {name: 'geometry', type: 'binary', nullable: true, metadata: {custom: 'preserved'}},
+        {name: 'name', type: 'utf8', nullable: true}
+      ],
+      metadata: {custom: 'root'}
+    }
+  });
+  expect(geoarrow.schema?.fields[0].metadata).toMatchObject({custom: 'preserved'});
+
+  const messages: string[] = [];
+  const recovered = convertRowTableToArrowTable(
+    {shape: 'object-row-table', data: [{value: 'bad'}, {value: 'bad-again'}]} as any,
+    {
+      schema: {fields: [{name: 'value', type: 'float64', nullable: true}], metadata: {}},
+      arrowConversion: {onTypeMismatch: 'null'},
+      log: {once: (message: string) => () => messages.push(message)}
+    }
+  );
+  expect(recovered.data.numRows).toBe(2);
+  expect(messages).toHaveLength(1);
+
+  const arrowSchema = new arrow.Schema([new arrow.Field('value', new arrow.Utf8(), true)]);
+  expect(normalizeJSONArrowSchema(arrowSchema).fields[0].name).toBe('value');
 });

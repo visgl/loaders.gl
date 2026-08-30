@@ -140,6 +140,37 @@ test('parseRADChunkToGaussianSplats rejects missing quantization ranges', () => 
     )
   ).toThrow(/property rgb is missing min/);
 });
+test('parseRADChunkToGaussianSplats handles an enabled but absent spherical harmonics bank', () => {
+  const splats = parseRADChunkToGaussianSplats(makeRADChunkFixture(), {
+    radChunk: {includeSphericalHarmonics: true}
+  });
+  expect(splats.sphericalHarmonics).toBeUndefined();
+  expect(splats.sphericalHarmonicsComponentCount).toBeUndefined();
+});
+test.each([
+  ['oct88r8', 'invalid', /unsupported orientation encoding invalid/],
+  ['f32_lebytes', 'unsupported', /unsupported center encoding unsupported/],
+  ['"encoding":"u16"', '"encoding":"bad"', /unsupported child_count encoding bad/],
+  ['"encoding":"u32"', '"encoding":"bad"', /unsupported child_start encoding bad/],
+  ['"compression":"gz"', '"compression":"zz"', /unsupported property compression zz/]
+] as const)('parseRADChunkToGaussianSplats rejects invalid metadata replacement %s', (from, to, expectedError) => {
+  const chunk = replaceRADChunkMetadataText(makeRADChunkFixture(), from, to);
+  expect(() => parseRADChunkToGaussianSplats(chunk)).toThrow(expectedError);
+});
+test('parseRADChunkToGaussianSplats reports corrupt compressed property payloads', () => {
+  const chunk = makeRADChunkFixture();
+  const metadata = parseRADChunkHeader(chunk);
+  const center = metadata.properties.find(property => property.property === 'center')!;
+  const bytes = new Uint8Array(chunk);
+  bytes.fill(
+    0,
+    metadata.payloadByteOffset + center.offset,
+    metadata.payloadByteOffset + center.offset + center.bytes
+  );
+  expect(() => parseRADChunkToGaussianSplats(chunk)).toThrow(
+    /failed to decompress RADC property center/
+  );
+});
 test('RADSourceLoader uses source-level splat encoding for chunk decoding', async () => {
   const source = (await load(
     new Blob([
@@ -433,6 +464,20 @@ function makeRADChunkFixture(options: RADChunkFixtureOptions = {}): ArrayBuffer 
     );
   }
   return data;
+}
+
+/** Replaces equal-length text in a chunk metadata header without changing payload offsets. */
+function replaceRADChunkMetadataText(data: ArrayBuffer, from: string, to: string): ArrayBuffer {
+  expect(to.length).toBe(from.length);
+  const output = data.slice(0);
+  const dataView = new DataView(output);
+  const metadataLength = dataView.getUint32(4, true);
+  const metadataBytes = new Uint8Array(output, 8, metadataLength);
+  const metadataText = new TextDecoder().decode(metadataBytes);
+  expect(metadataText).toContain(from);
+  const replacement = new TextEncoder().encode(metadataText.replace(from, to));
+  metadataBytes.set(replacement);
+  return output;
 }
 /** One encoded RADC property fixture payload. */
 type RADChunkPayload = {

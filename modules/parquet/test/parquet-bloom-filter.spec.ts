@@ -7,6 +7,7 @@ import {
   checkParquetSplitBlockBloomFilter,
   decodeParquetSplitBlockBloomFilter,
   encodeParquetBloomFilterValue,
+  encodeParquetSplitBlockBloomFilter,
   hashParquetBloomFilterValue,
   insertParquetSplitBlockBloomFilter
 } from '../src/lib/parquet-bloom-filter';
@@ -70,6 +71,95 @@ describe('Parquet split-block Bloom filters', () => {
     ]);
     expect(Array.from(encodeParquetBloomFilterValue('id', 'BYTE_ARRAY'))).toEqual([105, 100]);
     expect(() => encodeParquetBloomFilterValue(new Uint8Array(2), 'FIXED_LEN_BYTE_ARRAY', 3)).toThrow();
+  });
+
+  test('encodes every physical scalar type into a complete searchable filter', () => {
+    const cases = [
+      ['BOOLEAN', [true, false]],
+      ['INT32', [-1, 42]],
+      ['INT64', [-2n, '9223372036854775807']],
+      ['FLOAT', [1.25, Number.NaN]],
+      ['DOUBLE', [-2.5, Number.POSITIVE_INFINITY]],
+      ['BYTE_ARRAY', ['text', new Uint8Array([1, 2])]],
+      ['FIXED_LEN_BYTE_ARRAY', [new Uint8Array([3, 4]), new Uint8Array([5, 6])], 2]
+    ] as const;
+
+    for (const [physicalType, values, typeLength] of cases) {
+      const encoded = encodeParquetSplitBlockBloomFilter(values as any, physicalType, typeLength);
+      const decoded = decodeParquetSplitBlockBloomFilter(encoded!);
+      expect(decoded.algorithm).toBe('BLOCK');
+      expect(decoded.hash).toBe('XXHASH');
+      expect(decoded.compression).toBe('UNCOMPRESSED');
+      for (const value of values) {
+        const bytes = encodeParquetBloomFilterValue(value as any, physicalType, typeLength);
+        expect(checkParquetSplitBlockBloomFilter(decoded.bitset, hashParquetBloomFilterValue(bytes))).toBe(true);
+      }
+    }
+    expect(encodeParquetSplitBlockBloomFilter([], 'INT32')).toBeUndefined();
+  });
+
+  test('hashes all XXH64 lane and tail layouts deterministically', () => {
+    const referenceVectors = new Map<number, bigint>([
+      [4, 0x61a38a60f2bc4a83n],
+      [7, 0x0c3b423a4fa2d22dn],
+      [8, 0xe48b81578fd82dd8n],
+      [12, 0x245eeabd88884a9an],
+      [15, 0x5fdf959cd6df6c84n],
+      [31, 0x6b66696bb5484a2en],
+      [32, 0xb9cd2ff344ba8ac4n],
+      [33, 0xffe4d1e299a054d5n],
+      [40, 0x74ebaf82cdc11c2fn],
+      [63, 0x3c622ccc1cd28d6dn],
+      [64, 0xef37b13a3067228bn],
+      [65, 0x0555a5801e89d394n]
+    ]);
+    for (const [byteLength, expectedHash] of referenceVectors) {
+      const bytes = Uint8Array.from({length: byteLength}, (_, index) => index * 17);
+      expect(hashParquetBloomFilterValue(bytes)).toBe(expectedHash);
+    }
+  });
+
+  test.each([
+    [1, 'BOOLEAN'],
+    [1.5, 'INT32'],
+    [{}, 'INT64'],
+    ['1', 'FLOAT'],
+    ['1', 'DOUBLE'],
+    [1, 'BYTE_ARRAY'],
+    [new Uint8Array([1]), 'FIXED_LEN_BYTE_ARRAY'],
+    [1, 'UNSUPPORTED']
+  ] as const)('rejects invalid Bloom scalar %#', (value, physicalType) => {
+    expect(() =>
+      encodeParquetBloomFilterValue(value as any, physicalType as any, 2)
+    ).toThrow();
+  });
+
+  test('rejects missing, invalid, and truncated Bloom headers', () => {
+    const missingLength = new Uint8Array([0]);
+    expect(() => decodeParquetSplitBlockBloomFilter(missingLength)).toThrow(/bitset length/);
+
+    for (const bitsetByteLength of [0, 31]) {
+      const writer = new Uint8ArrayCompactProtocolWriter();
+      writer.writeStructBegin('BloomFilterHeader');
+      writer.writeFieldBegin('ignored', Thrift.Type.I32, 9);
+      writer.writeI32(123);
+      writer.writeFieldEnd();
+      writer.writeFieldBegin('numBytes', Thrift.Type.I32, 1);
+      writer.writeI32(bitsetByteLength);
+      writer.writeFieldEnd();
+      writer.writeFieldStop();
+      writer.writeStructEnd();
+      expect(() => decodeParquetSplitBlockBloomFilter(writer.getBytes())).toThrow(/bitset length/);
+    }
+
+    const writer = new Uint8ArrayCompactProtocolWriter();
+    writer.writeStructBegin('BloomFilterHeader');
+    writer.writeFieldBegin('numBytes', Thrift.Type.I32, 1);
+    writer.writeI32(32);
+    writer.writeFieldEnd();
+    writer.writeFieldStop();
+    writer.writeStructEnd();
+    expect(() => decodeParquetSplitBlockBloomFilter(writer.getBytes())).toThrow(/Truncated/);
   });
 
   test('plans only safe equality and IN probes', () => {

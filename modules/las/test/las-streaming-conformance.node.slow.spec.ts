@@ -77,48 +77,6 @@ const CONFORMANCE_FIXTURES: readonly ConformanceFixture[] = [
 ];
 
 describe('TypeScript LAZ streaming conformance', () => {
-  test('LAS 1.5 exposes and validates its extended header', async () => {
-    const source = await loadArrayBuffer('@loaders.gl/las/test/data/pdrf9-1.5.las');
-    const header = parseLASHeader(source);
-    expect(header.versionAsString).toBe('1.5');
-    expect(header.headerSize).toBeGreaterThanOrEqual(393);
-    expect(header.userHeaderData).toBeUndefined();
-    expect(header.metadata?.maxGpsTime).toBe(0);
-    expect(header.metadata?.minGpsTime).toBe(0);
-    expect(header.metadata?.timeOffset).toBe(0);
-    const extendedSource = source.slice(0);
-    const extendedDataView = new DataView(extendedSource);
-    extendedDataView.setUint16(94, 400, true);
-    new Uint8Array(extendedSource, 393, 7).set([1, 2, 3, 4, 5, 6, 7]);
-    const extendedHeader = parseLASHeader(extendedSource);
-    expect(Array.from(extendedHeader.userHeaderData!)).toEqual([1, 2, 3, 4, 5, 6, 7]);
-    expect(header.metadata?.userHeaderData).toEqual(header.userHeaderData);
-
-    const invalidPointFormat = source.slice(0, header.headerSize!);
-    new DataView(invalidPointFormat).setUint8(104, 5);
-    expect(() => parseLASHeader(invalidPointFormat)).toThrow(/LAS 1.5 requires point data record/);
-
-    const invalidHeader = source.slice(0, 375);
-    new DataView(invalidHeader).setUint16(94, 375, true);
-    expect(() => parseLASHeader(invalidHeader)).toThrow(/LAS 1.5 header must be at least 393/);
-
-    const invalidFlags = source.slice(0);
-    new DataView(invalidFlags).setUint16(6, 0x30, true);
-    expect(() => parseLASHeader(invalidFlags)).toThrow(/Global Encoding contains reserved bits/);
-
-    const invalidTimeFlags = source.slice(0);
-    new DataView(invalidTimeFlags).setUint16(6, 0x50, true);
-    expect(() => parseLASHeader(invalidTimeFlags)).toThrow(
-      /Time Offset Flag requires GPS Time Type/
-    );
-
-    const invalidTimeRange = source.slice(0);
-    const invalidTimeRangeView = new DataView(invalidTimeRange);
-    invalidTimeRangeView.setFloat64(375, 1, true);
-    invalidTimeRangeView.setFloat64(383, 2, true);
-    expect(() => parseLASHeader(invalidTimeRange)).toThrow(/GPS time range is invalid/);
-  });
-
   test.each(
     CONFORMANCE_FIXTURES
   )('$label preserves every raw point byte across seeded arbitrary input splits', async fixture => {

@@ -10,7 +10,9 @@ import {
   parseAvro,
   parseAvroFromUrl,
   parseAvroInBatches,
-  parseAvroInBatchesFromUrl
+  parseAvroInBatchesFromUrl,
+  parseAvroOCF,
+  parseAvroOCFHeader
 } from '../src/lib/parsers/parse-avro';
 
 afterEach(() => vi.unstubAllGlobals());
@@ -43,6 +45,94 @@ async function collectBatches(iterator: AsyncIterable<any>): Promise<any[]> {
 }
 
 describe('Avro boundary coverage', () => {
+  test('fingerprints every parsing-canonical schema form', () => {
+    const schemas = [
+      'string',
+      ['null', 'long'],
+      {type: ['null', 'double']},
+      {type: {type: 'int'}},
+      {type: 'enum', name: 'Kind', symbols: ['A', 'B']},
+      {type: 'fixed', name: 'Token', size: 4},
+      {type: 'array', items: {type: 'long'}},
+      {type: 'map', values: ['null', 'string']},
+      {
+        type: 'record',
+        name: 'Canonical',
+        fields: [
+          {name: 'kind', type: {type: 'enum', name: 'NestedKind', symbols: ['A']}},
+          {name: 'values', type: {type: 'array', items: 'int'}}
+        ]
+      }
+    ];
+    const fingerprints = schemas.map(schema => getAvroSchemaFingerprint(schema));
+    expect(new Set(fingerprints).size).toBe(schemas.length);
+  });
+
+  test.each([
+    [
+      'invalid enum index',
+      {
+        type: 'record',
+        name: 'Value',
+        fields: [{name: 'value', type: {type: 'enum', symbols: ['A']}}]
+      },
+      [2],
+      'Invalid Avro enum index'
+    ],
+    [
+      'unsupported primitive',
+      {type: 'record', name: 'Value', fields: [{name: 'value', type: 'potato'}]},
+      [],
+      'Unsupported Avro schema type'
+    ],
+    [
+      'decimal precision',
+      {
+        type: 'record',
+        name: 'Value',
+        fields: [
+          {name: 'value', type: {type: 'bytes', logicalType: 'decimal', precision: 1, scale: 0}}
+        ]
+      },
+      [2, 127],
+      'decimal value exceeds'
+    ],
+    [
+      'invalid UUID',
+      {
+        type: 'record',
+        name: 'Value',
+        fields: [{name: 'value', type: {type: 'string', logicalType: 'uuid'}}]
+      },
+      [2, 120],
+      'Invalid Avro UUID'
+    ],
+    [
+      'invalid duration',
+      {
+        type: 'record',
+        name: 'Value',
+        fields: [{name: 'value', type: {type: 'fixed', size: 1, logicalType: 'duration'}}]
+      },
+      [0],
+      'duration must contain 12 bytes'
+    ],
+    [
+      'truncated big decimal',
+      {
+        type: 'record',
+        name: 'Value',
+        fields: [{name: 'value', type: {type: 'bytes', logicalType: 'big-decimal'}}]
+      },
+      [4, 2, 1],
+      'Truncated Avro big-decimal'
+    ]
+  ] as const)('rejects malformed raw logical data: %s', async (_name, schema, bytes, message) => {
+    await expect(
+      parseAvro(Uint8Array.from(bytes).buffer, {encoding: 'raw', schema: schema as any})
+    ).rejects.toThrow(message);
+  });
+
   test('round-trips primitive, container, enum, fixed, and nested schema forms', async () => {
     const schema = {
       type: 'record',
@@ -145,6 +235,175 @@ describe('Avro boundary coverage', () => {
     expect(result.data.toArray()[0]).toMatchObject({name: 'renamed', count: 4, added: true});
   });
 
+  test('round-trips every supported logical type and signed decimal shape', async () => {
+    const schema = {
+      type: 'record',
+      name: 'LogicalValues',
+      fields: [
+        {
+          name: 'negativeDecimal',
+          type: {type: 'bytes', logicalType: 'decimal', precision: 8, scale: 2}
+        },
+        {
+          name: 'fixedDecimal',
+          type: {
+            type: 'fixed',
+            name: 'FixedDecimal',
+            size: 4,
+            logicalType: 'decimal',
+            precision: 8,
+            scale: 3
+          }
+        },
+        {name: 'bigDecimal', type: {type: 'bytes', logicalType: 'big-decimal'}},
+        {name: 'identifier', type: {type: 'string', logicalType: 'uuid'}},
+        {
+          name: 'duration',
+          type: {type: 'fixed', name: 'Duration', size: 12, logicalType: 'duration'}
+        },
+        {name: 'date', type: {type: 'int', logicalType: 'date'}},
+        {name: 'timeMillis', type: {type: 'int', logicalType: 'time-millis'}},
+        {name: 'timeMicros', type: {type: 'long', logicalType: 'time-micros'}},
+        {name: 'timestampMillis', type: {type: 'long', logicalType: 'timestamp-millis'}},
+        {name: 'timestampMicros', type: {type: 'long', logicalType: 'timestamp-micros'}},
+        {name: 'timestampNanos', type: {type: 'long', logicalType: 'timestamp-nanos'}},
+        {name: 'localMillis', type: {type: 'long', logicalType: 'local-timestamp-millis'}},
+        {name: 'localMicros', type: {type: 'long', logicalType: 'local-timestamp-micros'}},
+        {name: 'localNanos', type: {type: 'long', logicalType: 'local-timestamp-nanos'}}
+      ]
+    };
+    const instant = new Date('2025-02-03T04:05:06.007Z');
+    const encoded = await encodeRaw(schema, {
+      negativeDecimal: -123.45,
+      fixedDecimal: 12.345,
+      bigDecimal: {value: '-987.65', scale: 2},
+      identifier: '123e4567-e89b-12d3-a456-426614174000',
+      duration: {months: 2, days: 3, milliseconds: 4},
+      date: instant,
+      timeMillis: instant,
+      timeMicros: instant,
+      timestampMillis: instant,
+      timestampMicros: instant,
+      timestampNanos: instant,
+      localMillis: instant,
+      localMicros: instant,
+      localNanos: instant
+    });
+    const decoded = (
+      await parseAvro(encoded, {encoding: 'raw', schema, longType: 'bigint'})
+    ).data.toArray()[0] as any;
+
+    expect(decoded.negativeDecimal).toBeCloseTo(-123.45);
+    expect(decoded.fixedDecimal).toBeCloseTo(12.345);
+    expect(decoded.bigDecimal).toMatchObject({value: -987.65, scale: 2});
+    expect(decoded.identifier).toBe('123e4567-e89b-12d3-a456-426614174000');
+    expect(decoded.duration).toMatchObject({months: 2, days: 3, milliseconds: 4});
+    expect(decoded.date).toBe(Date.UTC(2025, 1, 3));
+    expect(decoded.timestampMillis).toBe(instant.getTime());
+    expect(decoded.timestampMicros).toBe(instant.getTime());
+    expect(decoded.timestampNanos).toBeTypeOf('bigint');
+    expect(decoded.localNanos).toBeTypeOf('bigint');
+  });
+
+  test('validates reader records, defaults, unions, enums, fixed values, and promotions', async () => {
+    const writerSchema = {
+      type: 'record',
+      name: 'WriterRecord',
+      fields: [
+        {name: 'integer', type: 'int'},
+        {name: 'enumeration', type: {type: 'enum', name: 'WriterEnum', symbols: ['A', 'B']}},
+        {name: 'fixed', type: {type: 'fixed', name: 'WriterFixed', size: 2}},
+        {name: 'items', type: {type: 'array', items: 'int'}},
+        {name: 'mapping', type: {type: 'map', values: 'int'}},
+        {
+          name: 'nested',
+          type: {type: 'record', name: 'Nested', fields: [{name: 'value', type: 'int'}]}
+        }
+      ]
+    };
+    const encoded = await encodeRaw(writerSchema, {
+      integer: 4,
+      enumeration: 'B',
+      fixed: new Uint8Array([1, 2]),
+      items: [1, 2],
+      mapping: {a: 3},
+      nested: {value: 5}
+    });
+    const readerSchema = {
+      type: 'record',
+      name: 'ReaderRecord',
+      aliases: ['WriterRecord'],
+      fields: [
+        {name: 'integer', type: {type: ['null', 'double']}},
+        {name: 'enumeration', type: {type: 'enum', symbols: ['A', 'B', 'C']}},
+        {name: 'fixed', type: {type: 'fixed', size: 2}},
+        {name: 'items', type: {type: 'array', items: 'long'}},
+        {name: 'mapping', type: {type: 'map', values: 'double'}},
+        {
+          name: 'nested',
+          type: {type: 'record', name: 'Nested', fields: [{name: 'value', type: 'long'}]}
+        },
+        {name: 'nullDefault', type: ['null', 'string'], default: null},
+        {name: 'booleanDefault', type: 'boolean', default: false},
+        {name: 'stringDefault', type: 'string', default: 'default'},
+        {name: 'bytesDefault', type: 'bytes', default: 'bytes'},
+        {name: 'numberDefault', type: 'double', default: 2.5},
+        {name: 'fixedDefault', type: {type: 'fixed', size: 1}, default: 'x'},
+        {name: 'enumDefault', type: {type: 'enum', symbols: ['A']}, default: 'A'},
+        {name: 'arrayDefault', type: {type: 'array', items: 'int'}, default: []},
+        {name: 'mapDefault', type: {type: 'map', values: 'int'}, default: {}},
+        {name: 'recordDefault', type: {type: 'record', fields: []}, default: {}}
+      ]
+    };
+    const decoded = await parseAvro(encoded, {
+      encoding: 'raw',
+      schema: writerSchema,
+      readerSchema
+    });
+    expect(decoded.data.numRows).toBe(1);
+
+    await expect(
+      parseAvro(encoded, {
+        encoding: 'raw',
+        schema: writerSchema,
+        readerSchema: {...readerSchema, name: 'Unrelated', aliases: []}
+      })
+    ).rejects.toThrow('incompatible');
+    await expect(
+      parseAvro(encoded, {
+        encoding: 'raw',
+        schema: writerSchema,
+        readerSchema: {
+          type: 'record',
+          aliases: ['WriterRecord'],
+          fields: [{name: 'missing', type: 'int'}]
+        }
+      })
+    ).rejects.toThrow('no writer value or default');
+    await expect(
+      parseAvro(encoded, {
+        encoding: 'raw',
+        schema: writerSchema,
+        readerSchema: {
+          type: 'record',
+          aliases: ['WriterRecord'],
+          fields: [{name: 'badDefault', type: ['string', 'null'], default: null}]
+        }
+      })
+    ).rejects.toThrow('default');
+    await expect(
+      parseAvro(encoded, {
+        encoding: 'raw',
+        schema: writerSchema,
+        readerSchema: {
+          type: 'record',
+          aliases: ['WriterRecord'],
+          fields: [{name: 'integer', type: ['boolean', 'string']}]
+        }
+      })
+    ).rejects.toThrow('no compatible branch');
+  });
+
   test('supports automatic single-object detection and optional fingerprint validation', async () => {
     const schema = {
       type: 'record',
@@ -184,6 +443,71 @@ describe('Avro boundary coverage', () => {
     await expect(
       parseAvro(new Uint8Array([0]).buffer, {encoding: 'raw', schema: 'int'})
     ).rejects.toThrow('root schema must be a record');
+  });
+
+  test('rejects malformed OCF framing, metadata, codecs, and raw logical payloads', async () => {
+    const schema = {type: 'record', name: 'Empty', fields: []};
+    const encoded = new Uint8Array(await encodeAvro(createStructuralTable([{}]), {avro: {schema}}));
+
+    const invalidMagic = encoded.slice();
+    invalidMagic[0] = 0;
+    expect(() => parseAvroOCF(invalidMagic.buffer)).toThrow('Object Container File header');
+
+    const missingSchema = encoded.slice();
+    const schemaKeyOffset = findBytes(missingSchema, new TextEncoder().encode('avro.schema'));
+    missingSchema[schemaKeyOffset] = 'x'.charCodeAt(0);
+    expect(() => parseAvroOCFHeader(missingSchema.buffer)).toThrow('missing the avro.schema');
+
+    const unsupportedCodec = encoded.slice();
+    const codecValueOffset = findBytes(unsupportedCodec, new TextEncoder().encode('null'));
+    unsupportedCodec.set(new TextEncoder().encode('xxxx'), codecValueOffset);
+    await expect(parseAvro(unsupportedCodec.buffer)).rejects.toThrow('not supported');
+
+    const container = parseAvroOCF(encoded.buffer);
+    const invalidSync = encoded.slice();
+    invalidSync[container.blocks[0].syncOffset] ^= 0xff;
+    expect(() => parseAvroOCF(invalidSync.buffer)).toThrow('block sync marker');
+
+    const negativeSize = encoded.slice();
+    negativeSize[container.blocks[0].offset + 1] = 1;
+    expect(() => parseAvroOCF(negativeSize.buffer)).toThrow('negative Avro block size');
+
+    const zeroCount = encoded.slice();
+    zeroCount[container.blocks[0].offset] = 0;
+    expect(parseAvroOCF(zeroCount.buffer).blocks).toEqual([]);
+
+    await expect(
+      parseAvro(new Uint8Array([4]).buffer, {
+        encoding: 'raw',
+        schema: {type: 'record', fields: [{name: 'value', type: {type: 'enum', symbols: ['A']}}]}
+      })
+    ).rejects.toThrow('Invalid Avro enum index');
+    await expect(
+      parseAvro(new Uint8Array([1]).buffer, {
+        encoding: 'raw',
+        schema: {type: 'record', fields: [{name: 'value', type: 'bytes'}]}
+      })
+    ).rejects.toThrow('negative Avro byte array length');
+    await expect(
+      parseAvro(new Uint8Array([2, 0]).buffer, {
+        encoding: 'raw',
+        schema: {
+          type: 'record',
+          fields: [{name: 'value', type: {type: 'bytes', logicalType: 'big-decimal'}}]
+        }
+      })
+    ).rejects.toThrow('Truncated Avro big-decimal payload');
+    await expect(
+      parseAvro(new Uint8Array([2, 0xff]).buffer, {
+        encoding: 'raw',
+        schema: {
+          type: 'record',
+          fields: [
+            {name: 'value', type: {type: 'bytes', logicalType: 'decimal', precision: 1, scale: 0}}
+          ]
+        }
+      })
+    ).resolves.toMatchObject({shape: 'arrow-table'});
   });
 
   test('validates writer framing and root schema options', async () => {
@@ -325,3 +649,11 @@ describe('Avro boundary coverage', () => {
     await expect(parseAvroFromUrl('https://example.test/error.avro')).rejects.toThrow('HTTP 503');
   });
 });
+
+/** Finds one byte sequence in a test fixture. */
+function findBytes(bytes: Uint8Array, sequence: Uint8Array): number {
+  for (let start = 0; start <= bytes.length - sequence.length; start++) {
+    if (sequence.every((byte, index) => bytes[start + index] === byte)) return start;
+  }
+  throw new Error('Byte sequence not found');
+}
