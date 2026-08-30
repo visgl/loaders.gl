@@ -1,15 +1,63 @@
+---
+title: ArcGIS FeatureServer
+description: Query ArcGIS feature layers through the loaders.gl vector source contract.
+hide_title: true
+page_style: designed
+---
+
 import {ClientExample} from '@site/src/components';
 import {WmsDocsTabs} from '@site/src/components/docs/wms-docs-tabs';
+import {ServiceSourceGraphic} from '@site/src/components/docs/service-source-graphic';
+import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
+import {DocLiveExample} from '@site/src/components/docs/doc-live-example';
+import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
 
-# ArcGIS FeatureServer
+<DocPageHeader
+  eyebrow="Services module · ArcGIS vector source"
+  title="ArcGIS FeatureServer"
+  description="Query ArcGIS feature layers through the loaders.gl VectorSource contract, with normalized metadata, schemas, spatial requests, and GeoJSON, binary, or Arrow output."
+  tone="violet"
+  logos={[{alt: 'ArcGIS', src: '/images/format-logos/arcgis-logo.svg'}]}
+  meta={['FeatureServer', 'VectorSource', 'GeoJSON / binary / Arrow']}
+  links={[
+    {label: 'Services module', to: '/docs/modules/services'},
+    {label: 'ArcGIS service API', to: '/docs/modules/services/api-reference/arcgis'},
+    {label: 'Scan architecture', to: '/docs/developer-guide/common-scan-architecture'}
+  ]}
+/>
+
+<DocLiveExample label="ArcGIS FeatureServer example" height="440px">
+  <ClientExample kind="wms" format="ArcGIS Feature Server" />
+</DocLiveExample>
 
 <WmsDocsTabs active="arcgis-feature-server" />
 
-<p class="badges">
+<ServiceSourceGraphic kind="arcgis" />
+
+<p className="badges">
   <a href="/docs/modules/scan#vector-table-views">
     <img src="https://img.shields.io/badge/Scan-Table_view-3178C6.svg?style=flat-square" alt="Optional scan table view" />
   </a>
 </p>
+
+<DocOrientation
+  eyebrow="What it provides"
+  title="Ask a feature service for the data your view needs."
+  description="The source handles service discovery and query construction while the application chooses the output shape and any residual table operations."
+  tone="violet"
+  items={[
+    {label: 'Metadata', value: 'Layers, bounds, CRS, and capabilities'},
+    {label: 'Schema', value: 'ArcGIS fields mapped to loaders.gl types'},
+    {label: 'Query', value: 'Bounds, predicates, fields, and precision'},
+    {label: 'Output', value: 'GeoJSON, binary, or Arrow feature data'}
+  ]}
+/>
+
+<ReferenceBoundary
+  title="FeatureServer reference"
+  description="The sections below cover support, scan table views, authentication, request options, and source behavior."
+  tone="violet"
+/>
 
 ArcGIS FeatureServer endpoints expose queryable vector feature layers through the ArcGIS REST API.
 `ArcGISFeatureServerSourceLoader` adapts a service or layer endpoint to the loaders.gl
@@ -115,12 +163,6 @@ const layer = new SourceLayer({
 ```
 
 The generic layer chooses a vector renderer and refreshes the query as the viewport changes.
-
-## Live example
-
-<div style={{height: '520px'}}>
-  <ClientExample kind="wms" format="ArcGIS Feature Server" />
-</div>
 
 ## References
 

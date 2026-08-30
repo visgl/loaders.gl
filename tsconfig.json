@@ -190,8 +190,20 @@
       "@loaders.gl/json/test": [
         "modules/json/test"
       ],
+      "@loaders.gl/config": [
+        "modules/config/src"
+      ],
+      "@loaders.gl/config/*": [
+        "modules/config/src/*"
+      ],
+      "@loaders.gl/config/test": [
+        "modules/config/test"
+      ],
       "@loaders.gl/kml": [
         "modules/kml/src"
+      ],
+      "@loaders.gl/kml/*": [
+        "modules/kml/src/*"
       ],
       "@loaders.gl/kml/test": [
         "modules/kml/test"
@@ -246,6 +258,15 @@
       ],
       "@loaders.gl/parquet/test": [
         "modules/parquet/test"
+      ],
+      "@loaders.gl/avro": [
+        "modules/avro/src"
+      ],
+      "@loaders.gl/avro/*": [
+        "modules/avro/src/*"
+      ],
+      "@loaders.gl/avro/test": [
+        "modules/avro/test"
       ],
       "@loaders.gl/lance": [
         "modules/lance/src"

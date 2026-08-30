@@ -10,11 +10,13 @@ import {
 import type {
   CoreAPI,
   DataSourceOptions,
+  SourceLoader,
+  VectorSource,
   VectorSourceMetadata,
   GetFeaturesParameters,
   VectorSourceData
 } from '@loaders.gl/loader-utils';
-import {SourceLoader, DataSource, VectorSource, mergeOptions} from '@loaders.gl/loader-utils';
+import {DataSource, mergeOptions} from '@loaders.gl/loader-utils';
 
 import type {WFSCapabilities} from './wfs-capabilities-loader';
 import {WFSCapabilitiesLoaderWithParser} from './wfs-capabilities-loader-with-parser';

@@ -1,8 +1,47 @@
-# splitArrowBuffers
+---
+title: splitArrowBuffers
+description: Make sliced Arrow buffers safe to transfer across workers without copying unrelated bytes.
+hide_title: true
+page_style: designed
+---
+
+import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
+import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
+
+<DocPageHeader
+  eyebrow="Arrow buffer utility"
+  title="splitArrowBuffers"
+  description="splitArrowBuffers rebuilds Arrow JS objects so typed-array views that point into larger buffers become standalone when necessary. Full-buffer views can still be reused."
+  tone="blue"
+  meta={['Worker-safe transfer', 'Sliced buffers', 'Arrow JS objects']}
+  links={[
+    {label: 'Arrow table transport', to: '/docs/modules/arrow/api-reference/arrow-table-transport'},
+    {label: 'Worker loaders', to: '/docs/developer-guide/using-worker-loaders'}
+  ]}
+/>
+
+<DocOrientation
+  eyebrow="A precise copy policy"
+  title="Copy what needs isolating, and no more."
+  description="Use the default sliced-buffer policy for worker transfer, choose no copying when ownership is already controlled, or copy all buffers when a fully independent object is required."
+  tone="blue"
+  items={[
+    {label: 'Default', value: "Copy only views into larger backing buffers"},
+    {label: "'none'", value: 'Reuse all typed arrays'},
+    {label: "'all'", value: 'Copy every Arrow internal typed array'},
+    {label: 'Input', value: 'Arrow tables, record batches, vectors, or data objects'}
+  ]}
+/>
 
 `splitArrowBuffers` rebuilds Apache Arrow JS objects so sliced internal typed-array buffers are
 copied into standalone `ArrayBuffer`s. Internal typed arrays that already span their full backing
 `ArrayBuffer` are reused by default.
+
+<ReferenceBoundary
+  title="Buffer-splitting details"
+  description="The sections below cover usage, supported Arrow object types, copy policies, and the compatibility alias."
+  tone="blue"
+/>
 
 This is useful before sending Arrow data across a worker boundary. The transferred buffers can be
 detached without detaching unrelated bytes from a larger shared backing buffer.

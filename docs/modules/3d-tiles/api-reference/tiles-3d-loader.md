@@ -1,27 +1,72 @@
-# Tiles3DLoader
+---
+title: Tiles3DLoader
+description: Parse 3D Tiles tilesets and tile payloads with linked assets.
+hide_title: true
+page_style: designed
+---
 
-<p class="badges">
+import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
+import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
+import {LoaderLiveExample} from '@site/src/components/docs/loader-live-example';
+import {TiledSceneGraphic} from '@site/src/components/docs/tiled-scene-graphic';
+import {Tiles3DDocsTabs} from '@site/src/components/docs/tiles-3d-docs-tabs';
+
+<DocPageHeader
+  eyebrow="3D Tiles"
+  title="Read tiled 3D worlds one payload at a time."
+  description="Read tiled 3D worlds one payload at a time. `Tiles3DLoader` parses 3D Tiles tilesets and their renderable content, then delegates linked glTF, Draco, image, and texture payloads to the appropriate loaders. Use it directly for parsing or with `Tiles3DSource` for view-driven traversal."
+  hideTitle
+  tone="blue"
+  meta={['3D Tiles', 'Linked asset loading', 'Tileset and tile content']}
+/>
+
+<Tiles3DDocsTabs active="loader" />
+
+<LoaderLiveExample />
+
+<TiledSceneGraphic />
+
+<DocOrientation
+  eyebrow="The 3D Tiles path"
+  title="Read the tileset. Resolve content. Decode the renderable payload."
+  description="A 3D Tiles dataset is a hierarchy plus content resources. The loader handles the format boundary; the tiles runtime decides which content should be requested for a view."
+  tone="blue"
+  items={[
+    {label: 'Input', value: 'Tileset JSON or binary tile content'},
+    {label: 'Hierarchy', value: 'Tiles, bounding volumes, and refinement'},
+    {label: 'Subloaders', value: 'glTF, Draco, images, and textures'},
+    {label: 'Output', value: 'Tileset metadata or decoded tile content'}
+  ]}
+/>
+
+<p className="badges">
   <img src="https://img.shields.io/badge/From-v2.1-blue.svg?style=flat-square" alt="From-v2.1" />
 </p>
 
-Parses a [3D tiles](https://github.com/AnalyticalGraphicsInc/3d-tiles) tileset.
+Parses a [3D Tiles](https://github.com/CesiumGS/3d-tiles) tileset.
 
 | Loader                | Characteristic                                                                                                           |
 | --------------------- | ------------------------------------------------------------------------------------------------------------------------ |
 | File Extensions       | `.b3dm`,`.i3dm`, `.pnts`, `.cmpt`                                                                                        |
 | File Type             | Binary (with linked assets)                                                                                              |
-| File Format           | [3D Tiles](https://github.com/AnalyticalGraphicsInc/3d-tiles/tree/master/specification#tile-format-specifications)       |
+| File Format           | [3D Tiles](https://github.com/CesiumGS/3d-tiles/tree/main/specification#tile-format-specifications)       |
 | Data Format           | Data Formats (see below)                                                                                                 |
 | Decoder Type          | Asynchronous                                                                                                             |
 | Worker Thread Support | No                                                                                                                       |
 | Streaming Support     | No \*                                                                                                                    |
 | Subloaders            | `DracoLoader` (`.pnts`), `GLTFLoader` (`.b3dm`, `.i3dm`), `ImageBitmapLoader` (`.jpg`, `.png`), `TextureLoader` (`.ktx`) |
 
-\* Streaming is not supported for individual tiles, however tilesets are streamed by loading only the tiles needed for the specified viewports.
+\* Streaming individual tile contents is not supported; however, tilesets are streamed so that only the tiles needed for the specified viewports are loaded.
 
 ## Usage
 
-As a tileset contains multiple file formats, `Tiles3DLoader` is needed to be explicitly specified when using [`load`](https://loaders.gl/modules/core/docs/api-reference/load) function.
+<ReferenceBoundary
+  title="Loader and payload details"
+  description="The reference below covers direct parsing, tileset traversal, validation, options, linked assets, and supported content types."
+  tone="blue"
+/>
+
+As a tileset contains multiple file formats, `Tiles3DLoader` is needed to be explicitly specified when using [`load`](/docs/modules/core/api-reference/load).
 
 Load a tileset file.
 
@@ -32,27 +77,37 @@ const tilesetUrl = 'https://assets.ion.cesium.com/43978/tileset.json';
 const tilesetJson = await load(tilesetUrl, Tiles3DLoader);
 ```
 
-To decompress tiles containing Draco compressed glTF models or Draco compressed point clouds:
+Draco-compressed content is decoded while supported tile content is parsed. For a Draco-compressed
+point-cloud tile, the nested Draco options control the returned representation:
 
 ```typescript
-import {load, registerLoaders} from '@loaders.gl/core';
+import {load} from '@loaders.gl/core';
 import {Tiles3DLoader} from '@loaders.gl/3d-tiles';
 const tileUrl = 'https://assets.ion.cesium.com/43978/1.pnts';
-const tile = await load(tileUrl, Tiles3DLoader, {decompress: true});
+const tile = await load(tileUrl, Tiles3DLoader, {draco: {shape: 'mesh'}});
+```
+
+For a tile containing Draco-compressed glTF geometry, pass the glTF options through the 3D Tiles
+loader:
+
+```typescript
+const tile = await load(tileUrl, Tiles3DLoader, {
+  '3d-tiles': {loadGLTF: true},
+  gltf: {decompressMeshes: true}
+});
 ```
 
 Load a tileset and dynamically load/unload tiles based on viewport with helper class `Tileset3D` (`@loaders.gl/tiles`)
 
 ```typescript
-import {load} from '@loaders.gl/core';
-import {Tileset3D} from '@loaders.gl/tiles';
+import {Tiles3DSource, Tileset3D} from '@loaders.gl/tiles';
 import {Tiles3DLoader} from '@loaders.gl/3d-tiles';
 import {WebMercatorViewport} from '@deck.gl/core';
 
-const tilesetUrl = 'https://assets.cesium.ion.com/43978/tileset.json';
-const tilesetJson = await load(tilesetUrl, Tiles3DLoader);
+const tilesetUrl = 'https://assets.ion.cesium.com/43978/tileset.json';
+const source = new Tiles3DSource({url: tilesetUrl, loader: Tiles3DLoader});
 
-const tileset3d = new Tileset3D(tilesetJson, {
+const tileset = new Tileset3D(source, {
   throttleRequests: false,
   onTileLoad: (tile) => console.log(tile)
 });
@@ -64,17 +119,13 @@ const viewport = new WebMercatorViewport({
   longitude: -74.0115413,
   zoom: 17
 });
-tileset3d.selectTiles(viewport);
+await tileset.selectTiles(viewport);
 
 // visible tiles
-const visibleTiles = tileset3d.tiles.filter((tile) => tile.selected);
-// Note that visibleTiles will likely not immediately include all tiles
-// tiles will keep loading and file `onTileLoad` callbacks
-
-// To fully load all tiles in a given view, repeatedly select tiles until the tileset is loaded
-while (!tileset3d.isLoaded()) {
-  await tileset3d.selectTiles(viewport);
-}
+const visibleTiles = tileset.tiles.filter((tile) => tile.selected);
+// Note that visibleTiles will likely not immediately include all tiles.
+// Content continues loading and onTileLoad fires as resources become ready.
+// Call selectTiles again whenever the viewport changes.
 ```
 
 ## Tileset Metadata Validation
@@ -95,27 +146,19 @@ Both schemas enforce the same structural constraints, including that a tileset c
 
 ## Options
 
-| Option               | Type             | Default | Description                                                                                                                                                           |
-| -------------------- | ---------------- | ------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `3d-tiles.isTileset` | `Boolean` or `auto` | `auto` | Selects tileset-header or render-content parsing. `auto` inspects binary magic and JSON structure, independent of the URL extension or MIME type. Explicit `true` or `false` asserts the expected category and rejects a mismatch. |
-| `3d-tiles.maximumCachedSubtrees` | `Number` | `32` | Maximum settled implicit-subtree availability resources retained by each `Tiles3DSource`. `0` retains only in-flight requests for deduplication. See [Implicit tiling and lazy subtrees](/docs/modules/3d-tiles/concepts/implicit-tiling-and-subtrees). |
-| `3d-tiles.headers`   | `Object`         | `null`  | Used to load data from server                                                                                                                                         |
-| `3d-tiles.tileset`   | `Object`         | `null`  | `Tileset` object loaded by `Tiles3DLoader` or follow the data format specified in [Tileset Object](#tileset-object). It is required when loading i3s geometry content |
-| `3d-tiles.tile`      | `Object`         | `null`  | `Tile` object loaded by `Tiles3DLoader` or follow the data format [Tile Object](#tile-object). It is required when loading i3s geometry content                       |
+| Option | Type | Default | Description |
+| --- | --- | --- | --- |
+| `3d-tiles.isTileset` | `boolean \| 'auto'` | `'auto'` | Select tileset-header or render-content parsing. Auto-detection uses binary magic and JSON structure rather than trusting the URL extension. |
+| `3d-tiles.loadGLTF` | `boolean` | `true` | Parse embedded glTF binaries and linked glTF resources in `b3dm` and `i3dm` content. |
+| `3d-tiles.decodeQuantizedPositions` | `boolean` | `false` | Decode quantized point positions on the CPU when the renderer does not handle them directly. |
+| `3d-tiles.maximumCachedSubtrees` | `number` | `32` | Limit settled implicit-subtree resources retained by each 3D Tiles source. `0` retains only in-flight requests for deduplication. |
+| `3d-tiles.assetGltfUpAxis` | `'x' \| 'y' \| 'z' \| null` | `null` | Override the up axis used when interpreting linked glTF assets. |
 
-Point cloud tie options
+General request options such as headers are supplied through the shared loaders.gl options. When
+`3d-tiles.loadGLTF` is enabled, use [`GLTFLoader` options](/docs/modules/gltf/api-reference/gltf-loader)
+under `options.gltf` to control linked scene resources.
 
-| Option                              | Type      | Default | Description                          |
-| ----------------------------------- | --------- | ------- | ------------------------------------ |
-| `3d-tiles.decodeQuantizedPositions` | `Boolean` | `false` | Pre-decode quantized position on CPU |
-
-For i3dm and b3dm tiles:
-
-| Option              | Type    | Default | Description                           |
-| ------------------- | ------- | ------- | ------------------------------------- |
-| `3d-tiles.loadGLTF` | Boolean | `true`  | Fetch and parse any linked glTF files |
-
-If `options['3d-tiles'].loadGLTF` is `true`, GLTF loading can be controlled by providing [`GLTFLoader` options](/docs/modules/gltf/api-reference/gltf-loader) via the `options.gltf` sub options. Standard linked raster images are decoded through [`ImageBitmapLoader`](/docs/modules/images/api-reference/image-bitmap-loader).
+Standard linked raster images are decoded through [`ImageBitmapLoader`](/docs/modules/images/api-reference/image-bitmap-loader).
 
 See [Resource resolution and content detection](/docs/modules/3d-tiles/concepts/resource-resolution-and-content-detection) for extensionless and signed URLs, nested tilesets, inherited query parameters, archive sources, validation behavior, and troubleshooting.
 
@@ -123,7 +166,9 @@ See [Resource resolution and content detection](/docs/modules/3d-tiles/concepts/
 
 ### b3dm, i3dm
 
-The Batched 3D Model and Instanced 3D model tile types contain an embedded glTF file. This can be parsed into a hierarchical scene graph description that can be used to instantiate an actual sceneg raph in most WebGL libraries.
+The Batched 3D Model and Instanced 3D Model tile types contain an embedded glTF file. This can be
+parsed into a hierarchical scene graph description that can be used to instantiate an actual scene
+graph in most WebGL libraries.
 
 Can load both binary `.glb` files and JSON `.gltf` files.
 
@@ -140,7 +185,7 @@ Loaded data conforms to the 3D Tiles loader category specification with the foll
 | Field            | Type     | Contents                                                                                                                                                                                                                                                                                                                   |
 | ---------------- | -------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `type`           | `String` | Value is `TILES3D`. Indicates the returned object is a Cesium `3D Tiles` tileset.                                                                                                                                                                                                                                          |
-| `lodMetricType`  | `String` | Root's Level of Detail (LoD) metric type, which is used to decide if a tile is sufficient for current viewport. Used for deciding if this tile is sufficient given current viewport. Cesium use [`geometricError`](https://github.com/AnalyticalGraphicsInc/3d-tiles/blob/master/specification/README.md#geometric-error). |
+| `lodMetricType`  | `String` | Root's Level of Detail (LoD) metric type, which is used to decide if a tile is sufficient for the current viewport. 3D Tiles uses [`geometricError`](https://github.com/CesiumGS/3d-tiles/blob/main/specification/README.md#geometric-error). |
 | `lodMetricValue` | `Number` | Root's level of detail (LoD) metric value.                                                                                                                                                                                                                                                                                 |
 
 ### Tile Object
@@ -152,8 +197,8 @@ The following fields are guaranteed. Additionally, the loaded tile object will c
 | `id`              | `String`     | Identifier of the tile, unique in a tileset                                                                                                                                                                                                                                                                         |
 | `refine`          | `String`     | Refinement type of the tile, `ADD` or `REPLACE`                                                                                                                                                                                                                                                                     |
 | `type`            | `String`     | Type of the tile, one of `pointcloud` (`.pnts`), `scenegraph` (`.i3dm`, `.b3dm`, `.glb`, `.gltf`)                                                                                                                                                                                                                   |
-| `boundingVolume`  | `Object`     | A bounding volume in Cartesian coordinates that encloses a tile or its content. Exactly one box, region, or sphere property is required. ([`Reference`](https://github.com/AnalyticalGraphicsInc/3d-tiles/tree/master/specification#bounding-volume))                                                               |
-| `lodMetricType`   | `String`     | Level of Detail (LoD) metric type, which is used to decide if a tile is sufficient for current viewport. Used for deciding if this tile is sufficient given current viewport. Cesium use [`geometricError`](https://github.com/AnalyticalGraphicsInc/3d-tiles/blob/master/specification/README.md#geometric-error). |
+| `boundingVolume`  | `Object`     | A bounding volume in Cartesian coordinates that encloses a tile or its content. Exactly one box, region, or sphere property is required. ([`Reference`](https://github.com/CesiumGS/3d-tiles/tree/main/specification#bounding-volume))                                                               |
+| `lodMetricType`   | `String`     | Level of Detail (LoD) metric type, which is used to decide if a tile is sufficient for the current viewport. 3D Tiles uses [`geometricError`](https://github.com/CesiumGS/3d-tiles/blob/main/specification/README.md#geometric-error). |
 | `lodMetricValue`  | `String`     | Level of Detail (LoD) metric value.                                                                                                                                                                                                                                                                                 |
 | `children`        | `Array`      | An array of objects that define child tiles. Each child tile content is fully enclosed by its parent tile's bounding volume and, generally, has more details than parent. for leaf tiles, the length of this array is zero, and children may not be defined.                                                        |
 | `transformMatrix` | `Number[16]` | A matrix that transforms from the tile's local coordinate system to the parent tile's coordinate system—or the tileset's coordinate system in the case of the root tile                                                                                                                                             |
@@ -189,4 +234,4 @@ Scenegraph Fields
 
 | Field  | Type     | Contents                                                                                             |
 | ------ | -------- | ---------------------------------------------------------------------------------------------------- |
-| `gltf` | `Object` | check [GLTFLoader](https://loaders.gl/modules/gltf/docs/api-reference/gltf-loader) for detailed spec |
+| `gltf` | `Object` | See the [`GLTFLoader`](/docs/modules/gltf/api-reference/gltf-loader) reference for linked scene content. |

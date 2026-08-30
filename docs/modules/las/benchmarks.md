@@ -1,9 +1,48 @@
+---
+title: LAS benchmarks
+description: Compare LAZ decoding and Arrow point-cloud output across browser implementations.
+hide_title: true
+page_style: designed
+---
+
 import BrowserOnly from '@docusaurus/BrowserOnly';
 import {LasDocsTabs} from '@site/src/components/docs/las-docs-tabs';
+import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
+import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
 
-# LAS Benchmarks
+<DocPageHeader
+  eyebrow="LAS module · live benchmark"
+  title="Measure LAZ decoding with the columns your app needs."
+  description="These browser benchmarks compare loaders.gl’s TypeScript decoder with alternate implementations while verifying identical point-cloud columns, Arrow types, and row counts."
+  tone="orange"
+  meta={['LAZ', 'Arrow output', 'Browser runtime']}
+  links={[
+    {label: 'LAS module', to: '/docs/modules/las'},
+    {label: 'LASLoader', to: '/docs/modules/las/api-reference/las-loader'},
+    {label: 'Point-cloud category', to: '/docs/specifications/category-mesh'}
+  ]}
+/>
 
 <LasDocsTabs active="benchmarks" />
+
+<DocOrientation
+  eyebrow="Compare like with like"
+  title="Keep the output schema fixed while the decoder changes."
+  description="Render, common, comprehensive, and streaming groups answer different questions. Compare values within a group and remember that more requested fields means more work."
+  tone="orange"
+  items={[
+    {label: 'Render', value: 'POSITION and COLOR_0 for display'},
+    {label: 'Common', value: 'Adds intensity and classification'},
+    {label: 'Comprehensive', value: 'Materializes every represented LAS field'},
+    {label: 'Streaming', value: 'Feeds pre-split LAZ chunks to parseInBatches'}
+  ]}
+/>
+
+<ReferenceBoundary
+  title="Run the benchmark"
+  description="The interactive app below performs verified comparisons. The notes explain fixture setup, decoder initialization, timing boundaries, and how to interpret the groups."
+  tone="orange"
+/>
 
 These live browser benchmarks use compressed LAZ and Arrow-table output. Each section names a feature workload, and each result row identifies the decoder backend: **loaders.gl (TypeScript)**, **laz-perf (C++ to JS) · 0.0.7**, or **laz-rs (Rust to WASM) · 0.1.0**. The COPC package loader is not listed as a separate backend because it wraps laz-perf. Every competitive comparison parses identical bytes and requests the common point-cloud columns `POSITION`, `COLOR_0`, `intensity`, and `classification`. Benchmark initialization verifies that every implementation returns exactly those four columns with identical Arrow physical types and row counts; the run fails rather than reporting an unfair comparison.
 

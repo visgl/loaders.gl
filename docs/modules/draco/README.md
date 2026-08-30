@@ -1,6 +1,48 @@
-# Overview
+---
+title: '@loaders.gl/draco'
+description: Compress and decompress meshes and point clouds with Draco, including Arrow-compatible geometry paths.
+hide_title: true
+page_style: designed
+---
+
+import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
+import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
+import {ThreeDDataFormatsGraphic} from '@site/src/components/docs/three-d-data-formats-graphic';
+
+<DocPageHeader
+  eyebrow="Geometry compression module"
+  title="Move geometry efficiently without changing its meaning."
+  description="The Draco module decodes and encodes compressed meshes and point clouds. It supports render-ready mesh objects, Mesh Arrow tables, worker execution, and the glTF compression extension path."
+  tone="blue"
+  meta={['Draco', 'Mesh and point cloud', 'Worker and batch APIs']}
+  links={[
+    {label: 'Mesh category', to: '/docs/specifications/category-mesh'},
+    {label: '3D data formats', to: '/docs/developer-guide/3d-data-formats'}
+  ]}
+/>
+
+<ThreeDDataFormatsGraphic />
+
+<DocOrientation
+  eyebrow="Compression as a pipeline stage"
+  title="Decode for rendering, or keep the columns."
+  description="Draco is a payload codec, not the application data model. The loader can return typed geometry for a renderer or Arrow-compatible columns for processing and conversion."
+  tone="blue"
+  items={[
+    {label: 'Inputs', value: 'Compressed meshes and point clouds'},
+    {label: 'Outputs', value: 'Mesh objects or Mesh Arrow tables'},
+    {label: 'Execution', value: 'Main thread, worker, and stateful batch encoding'},
+    {label: 'Composition', value: 'glTF KHR_draco_mesh_compression payloads'}
+  ]}
+/>
 
 ![logo](./images/draco-small.png)
+
+<ReferenceBoundary
+  title="Draco module details"
+  description="The sections below cover installation, loaders, writers, batch encoding, worker behavior, and glTF integration."
+  tone="blue"
+/>
 
 The `@loaders.gl/draco` module handles compressing and decompressing of 3D meshes and point clouds with [DRACO](https://github.com/google/draco).
 

@@ -1,8 +1,45 @@
-import {GltfDocsTabs} from '@site/src/components/docs/gltf-docs-tabs';
+---
+title: glTF format
+description: A compact, interoperable scene format for delivering geometry, materials, and animation.
+hide_title: true
+page_style: designed
+---
 
-# glTF - gl Transfer Format
+import {GltfDocsTabs} from '@site/src/components/docs/gltf-docs-tabs';
+import {ThreeDDataFormatsGraphic} from '@site/src/components/docs/three-d-data-formats-graphic';
+import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
+import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
+
+<DocPageHeader
+  eyebrow="Scenegraph format"
+  title="glTF"
+  description="A delivery-focused scene format for geometry, materials, hierarchy, animation, and the linked binary or image assets that make a model complete."
+  tone="pink"
+  meta={['.gltf and .glb', 'Scenegraph data', 'Khronos standard']}
+  logos={[{alt: 'glTF', src: '/images/format-logos/gltf-logo.png'}]}
+  links={[
+    {label: 'glTF module', to: '/docs/modules/gltf'},
+    {label: 'GLTFLoader', to: '/docs/modules/gltf/api-reference/gltf-loader'},
+    {label: 'Try glTF', to: '/examples/gltf'}
+  ]}
+/>
 
 <GltfDocsTabs active="format" />
+
+<ThreeDDataFormatsGraphic />
+
+<DocOrientation
+  eyebrow="The glTF delivery model"
+  title="A scene graph with its payloads close at hand."
+  description="glTF describes the scene and its relationships, while buffers, images, and extensions carry the data needed to render it. Choose the JSON or binary container without changing the application-facing scene model."
+  tone="pink"
+  items={[
+    {label: 'Scene', value: 'Nodes, meshes, materials, skins, and animation'},
+    {label: 'Containers', value: '.gltf JSON or .glb binary packaging'},
+    {label: 'Payloads', value: 'Buffers and images, embedded or external'},
+    {label: 'Extensions', value: 'Draco, meshopt, KTX2/Basis, and draft 2.1 features'}
+  ]}
+/>
 
 - _[`@loaders.gl/gltf`](/docs/modules/gltf)_
 - _[glTF specification](https://registry.khronos.org/glTF/specs/2.0/glTF-2.0.html)_
@@ -11,6 +48,12 @@ import {GltfDocsTabs} from '@site/src/components/docs/gltf-docs-tabs';
 glTF is a standard file format for three-dimensional scenes and models, intended to be a streamlined, interoperable format for the delivery of 3D assets, while minimizing file size and runtime processing by apps. Sometimes described as the "JPEG of 3D."
 
 An open standard developed and maintained by the Khronos Group, it supports 3D model geometry, appearance, scene graph hierarchy, and animation.
+
+<ReferenceBoundary
+  title="Specification and implementation details"
+  description="The sections below record draft 2.1 behavior, container variants, version history, extensions, and the fields exposed by loaders.gl."
+  tone="pink"
+/>
 
 ## Draft glTF 2.1 Unified File References
 

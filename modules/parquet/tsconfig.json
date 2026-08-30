@@ -8,6 +8,7 @@
     "outDir": "dist"
   },
   "references": [
+    {"path": "../avro"},
     {"path": "../arrow"},
     {"path": "../bson"},
     {"path": "../compression"},

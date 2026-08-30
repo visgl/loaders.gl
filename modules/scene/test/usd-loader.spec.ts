@@ -2,6 +2,7 @@ import {expect, test} from 'vitest';
 import {load, parse} from '@loaders.gl/core';
 import {USDLoader} from '@loaders.gl/scene';
 import {USDLoaderWithParser} from '@loaders.gl/scene/usd-loader';
+import {parseUSDA} from '../src/lib/parse-usda';
 test('USDLoader exposes metadata at the package root', () => {
   expect(USDLoader.id, 'uses the usd identifier').toBe('usd');
   expect(typeof USDLoader.preload, 'exposes preload').toBe('function');
@@ -171,6 +172,75 @@ def Xform "Level1" {
 }`;
   const stage = await parse(source, USDLoader, {usd: {maxReferenceDepth: 0}});
   expect(stage.rootPrims[0].children[0].children[0].name, 'parses nested prims').toBe('Level3');
+});
+
+test('USDA parser covers lexical values, qualifiers, variants, and class prims', () => {
+  const stage = parseUSDA(
+    `#usda 1.0
+    /* block
+       comment */
+    (
+      string documentation = "line\\nvalue",
+      customData = {
+        owner = "loaders.gl"
+        bool enabled = true
+      },
+    )
+    class "Template" {
+      uniform token mode = 'fast'
+      varying double signed = -1.25e+2
+      custom bool disabled = false
+      string empty = None
+      string alsoEmpty = null
+      asset reference = @models/mesh.usda@</Root/Mesh>
+      rel target = </Materials/Default>
+      string[] words = ["one", "two",]
+      double3 tuple = (+.5, 2., 3E-1)
+      dictionary values = {
+        int first = 1
+        second = 2
+      }
+      variantSet "quality" = {
+        "low" { def Scope "Child" { int value = 1 } }
+        "high" { over "Child" { int value = 2 } }
+      }
+    }
+    over "Untyped" {}
+    stray tokens are ignored
+    `,
+    'https://example.com/root.usda'
+  );
+
+  expect(stage.url).toBe('https://example.com/root.usda');
+  expect(stage.layers).toEqual(['https://example.com/root.usda']);
+  expect(stage.metadata).toMatchObject({
+    documentation: 'line\nvalue',
+    customData: {owner: 'loaders.gl', enabled: true}
+  });
+  const template = stage.rootPrims[0];
+  expect(template).toMatchObject({name: 'Template', type: '', specifier: 'class'});
+  expect(template.attributes.mode).toMatchObject({type: 'token', value: 'fast'});
+  expect(template.attributes.signed.value).toBe(-125);
+  expect(template.attributes.disabled.value).toBe(false);
+  expect(template.attributes.empty.value).toBeNull();
+  expect(template.attributes.alsoEmpty.value).toBeNull();
+  expect(template.attributes.reference.value).toEqual({
+    assetPath: 'models/mesh.usda',
+    primPath: '/Root/Mesh'
+  });
+  expect(template.attributes.target.value).toEqual({path: '/Materials/Default'});
+  expect(template.attributes.words.value).toEqual(['one', 'two']);
+  expect(template.attributes.tuple.value).toEqual([0.5, 2, 0.3]);
+  expect(template.attributes.values.value).toEqual({first: 1, second: 2});
+  expect(template.variants.quality.low.children[0].name).toBe('Child');
+  expect(stage.rootPrims[1]).toMatchObject({name: 'Untyped', type: '', specifier: 'over'});
+});
+
+test('USDA parser reports invalid headers and expected punctuation with line numbers', () => {
+  expect(() => parseUSDA('def Xform "World" {}')).toThrow('must begin with the #usda header');
+  expect(() => parseUSDA('#usda 1.0\ndef Xform "World" (metadata = 1)')).toThrow(
+    'Expected "{" at USDA line 2'
+  );
 });
 test('USDLoader rejects unsupported binary USDC layers', async () => {
   await expect(

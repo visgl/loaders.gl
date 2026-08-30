@@ -1,6 +1,42 @@
-# Using Range Requests
+---
+title: Using range requests
+description: Read only the byte ranges needed from large cloud-hosted assets.
+hide_title: true
+page_style: designed
+---
 
-<p class="badges">
+import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
+import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
+import {RangeRequestGraphic} from '@site/src/components/docs/range-request-graphic';
+
+<DocPageHeader
+  eyebrow="Cloud-native I/O"
+  title="Use range requests"
+  description="Let a source map a logical request to a small set of byte ranges, so a browser can work with large remote assets without downloading the whole object."
+  tone="violet"
+  meta={['HTTP Range', 'Request scheduling', 'Cloud object storage']}
+  links={[
+    {label: 'Scan architecture', to: '/docs/developer-guide/common-scan-architecture'},
+    {label: 'Using sources', to: '/docs/developer-guide/using-sources'}
+  ]}
+/>
+
+<RangeRequestGraphic />
+
+<DocOrientation
+  eyebrow="The range-request path"
+  title="Turn a logical read into a few useful bytes."
+  description="Range-aware sources use file metadata and request context to fetch only the intervals needed by the current operation, while a shared scheduler combines nearby work."
+  tone="violet"
+  items={[
+    {label: 'Locate', value: 'Map a tile, column, page, or footer to byte offsets'},
+    {label: 'Combine', value: 'Merge nearby ranges within explicit request limits'},
+    {label: 'Cache', value: 'Reuse completed intervals without sharing mutable storage'},
+    {label: 'Serve', value: 'Work with object stores, CDNs, and compatible HTTP servers'}
+  ]}
+/>
+
+<p className="badges">
   <img src="https://img.shields.io/badge/From-v5.0-blue.svg?style=flat-square" alt="From-v5.0" />
   <img src="https://img.shields.io/badge/experimental-yellow.svg?style=flat-square" alt="experimental" />
 </p>
@@ -11,6 +47,12 @@ loaders.gl Sources can use scheduled byte-range loading to take the middle path.
 
 PMTiles URL sources use this path by default. The lower-level scheduler is available in
 `@loaders.gl/loader-utils` for future byte-range Sources.
+
+<ReferenceBoundary
+  title="Scheduling, caching, and transport details"
+  description="The guide below covers scheduler options, cache behavior, HTTP range semantics, local testing, diagnostics, and failure or abort handling."
+  tone="violet"
+/>
 
 ## How It Works
 

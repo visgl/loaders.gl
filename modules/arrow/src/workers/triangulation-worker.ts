@@ -17,24 +17,27 @@ import type {
 } from '../triangulate-on-worker';
 import {triangulateWKBGeometryColumn} from '../triangulate-wkb-geometry-column';
 
-createWorker(async (data, options = {}) => {
+createWorker(processTriangulationWorkerMessage);
+
+/** Processes one structured-cloned triangulation worker request. */
+export async function processTriangulationWorkerMessage(data: unknown): Promise<unknown> {
   const input = data as TriangulationWorkerInput;
   const operation = input?.operation;
   switch (operation) {
     case 'test':
       return input;
     case 'triangulate':
-      return triangulateBatch(data);
+      return triangulateBatch(input);
     case 'triangulate-wkb-column':
-      return triangulateWKBColumn(data);
+      return triangulateWKBColumn(input);
     case 'parse-geoarrow':
-      return parseGeoArrowBatch(data);
+      return parseGeoArrowBatch(input);
     default:
       throw new Error(
         `TriangulationWorker: Unsupported operation ${operation}. Expected 'triangulate'`
       );
   }
-});
+}
 
 /** Marker export used by the Node worker entrypoint to retain this side-effectful module. */
 export const TRIANGULATION_WORKER_LOADED = true;

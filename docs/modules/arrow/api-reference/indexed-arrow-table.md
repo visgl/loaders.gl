@@ -1,4 +1,37 @@
-# IndexedArrowTable
+---
+title: IndexedArrowTable
+description: Create readonly filtered and reordered Arrow table views without copying columns immediately.
+hide_title: true
+page_style: designed
+---
+
+import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
+import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
+
+<DocPageHeader
+  eyebrow="Arrow table view"
+  title="IndexedArrowTable"
+  description="IndexedArrowTable and IndexedArrowVector add a readonly index over Arrow data. Filtering, sorting, slicing, and repeated row views can stay as indexes until an application explicitly asks for copied values."
+  tone="blue"
+  meta={['Readonly view', 'Lazy materialization', 'Arrow JS']}
+  links={[
+    {label: 'Arrow module', to: '/docs/modules/arrow'},
+    {label: 'Scan architecture', to: '/docs/developer-guide/common-scan-architecture'}
+  ]}
+/>
+
+<DocOrientation
+  eyebrow="Views over columns"
+  title="Change row order without rewriting every column."
+  description="The indexed view stores visible-to-raw row mappings. It is useful for query results, sorting, and UI tables where copying the complete Arrow table would be premature."
+  tone="blue"
+  items={[
+    {label: 'Stores', value: 'Visible row indexes over a backing Arrow table'},
+    {label: 'Supports', value: 'Filtering, sorting, slicing, and duplicate rows'},
+    {label: 'Reads', value: 'Values and child vectors through the indexed view'},
+    {label: 'Materializes', value: 'Only when callers request a new table or row array'}
+  ]}
+/>
 
 `IndexedArrowTable` and `IndexedArrowVector` provide readonly indexed views over Apache Arrow JS
 tables and vectors.
@@ -6,6 +39,12 @@ tables and vectors.
 Use these classes when you want to filter, sort, slice, or reorder an Arrow table without copying
 column data immediately. The view stores row indexes and only copies values when you call
 `materializeArrowTable()`, `toArray()`, or iterate rows.
+
+<ReferenceBoundary
+  title="Indexed view details"
+  description="The sections below document row indexes, filtering, sorting, materialization, and vector access."
+  tone="blue"
+/>
 
 ## Concepts
 

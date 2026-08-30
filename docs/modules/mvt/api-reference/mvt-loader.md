@@ -1,10 +1,52 @@
-# MVTLoader
+---
+title: MVTLoader
+description: Decode a Mapbox Vector Tile into geometry or a table-shaped result.
+hide_title: true
+page_style: designed
+---
 
-<p class="badges">
+import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
+import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
+import {LoaderLiveExample} from '@site/src/components/docs/loader-live-example';
+
+<DocPageHeader
+  eyebrow="MVT loader"
+  title="Turn one vector tile into usable features."
+  description="MVTLoader decodes protobuf tile layers into GeoJSON-style features and supports coordinate and output-shape options for mapping and table workflows."
+  tone="blue"
+  meta={['Binary input', 'GeoJSON output', 'Optional Arrow shape']}
+  links={[
+    {label: 'MVT format', to: '/docs/modules/mvt/formats/mvt'},
+    {label: 'MVT module', to: '/docs/modules/mvt'}
+  ]}
+/>
+
+<LoaderLiveExample />
+
+<DocOrientation
+  eyebrow="What the loader does"
+  title="Decode the payload. Choose the coordinate space."
+  description="The tile address is supplied by the application or source. The loader focuses on decoding layers, geometry commands, properties, and the requested output representation."
+  tone="blue"
+  items={[
+    {label: 'Input', value: 'A protobuf-encoded MVT payload'},
+    {label: 'Geometry', value: 'Tile-local or WGS84 coordinates'},
+    {label: 'Properties', value: 'Feature attributes from each layer'},
+    {label: 'Output', value: 'GeoJSON features or table-shaped data'}
+  ]}
+/>
+
+<p className="badges">
   <img src="https://img.shields.io/badge/From-v1.0-blue.svg?style=flat-square" alt="From-v1.0" />
 </p>
 
 Loader for the [Mapbox Vector Tile](https://docs.mapbox.com/vector-tiles/specification/) format for representation of geometry.
+
+<ReferenceBoundary
+  title="Loader options and output shapes"
+  description="The detailed reference below covers recognition, usage, coordinate conversion, and the output structures returned by MVTLoader."
+  tone="blue"
+/>
 
 | Loader         | Characteristic                                                            |
 | -------------- | ------------------------------------------------------------------------- |

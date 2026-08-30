@@ -1,6 +1,46 @@
-## Tile converter bundle script
+---
+title: Tile converter bundle script
+description: Build a self-contained Node.js converter bundle for environments that do not install the full npm package.
+hide_title: true
+page_style: designed
+---
 
-<p class="badges">
+import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
+import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
+
+<DocPageHeader
+  eyebrow="Tile converter / distribution"
+  title="Ship the converter as one runnable script."
+  description="The bundle script packages the tile converter for users who need a simple Node.js entry point rather than a repository checkout or npm installation. The generated script still uses the same conversion options and output policies."
+  tone="cyan"
+  meta={['Standalone bundle', 'Node.js runtime', 'Optional SLPK archiver']}
+  links={[
+    {label: 'Tile converter module', to: '/docs/modules/tile-converter'},
+    {label: 'CLI reference', to: '/docs/modules/tile-converter/cli-reference/tile-converter'},
+    {label: 'Build instructions', to: '/docs/modules/tile-converter/api-reference/build-instructions'}
+  ]}
+/>
+
+<DocOrientation
+  eyebrow="Portable distribution"
+  title="Build once, run where Node.js is available."
+  description="A bundle is useful for a controlled handoff or an offline conversion environment. Keep the generated script, install the required elevation model, and add an external archiver only when SLPK output is needed."
+  tone="cyan"
+  items={[
+    {label: 'Build', value: 'Generate converter.min.js from the tile-converter module.'},
+    {label: 'Run', value: 'Use the script with Node.js and the normal CLI options.'},
+    {label: 'Prepare', value: 'Install or configure the Earth Gravity Model as needed.'},
+    {label: 'Package', value: 'Provide an external archiver when the output needs SLPK packaging.'}
+  ]}
+/>
+
+<ReferenceBoundary
+  title="Bundle script details"
+  description="The detailed guide covers bundle generation, runtime requirements, elevation-model setup, archiver requirements, and example conversions."
+  tone="cyan"
+/>
+
+<p className="badges">
   <img src="https://img.shields.io/badge/From-v3.0-blue.svg?style=flat-square" alt="From-v3.0" />
 </p>
 

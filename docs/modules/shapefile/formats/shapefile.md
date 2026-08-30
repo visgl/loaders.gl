@@ -1,10 +1,49 @@
+---
+title: Shapefile
+description: Read the multi-file ESRI vector format and its sidecar metadata as one geospatial dataset.
+hide_title: true
+page_style: designed
+---
+
+import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
+import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
 import {ShapefileDocsTabs} from '@site/src/components/docs/shapefile-docs-tabs';
 
-# Shapefile
+<DocPageHeader
+  eyebrow="Legacy geospatial vector format"
+  title="Treat the sidecars as part of the dataset."
+  description="A Shapefile is a coordinated group of files: geometry, attributes, indexes, coordinate reference information, and sometimes text encoding. loaders.gl helps bring that group into a common vector representation."
+  tone="mint"
+  meta={['SHP / SHX / DBF', 'PRJ and CPG sidecars', 'WGS84 normalization']}
+  links={[
+    {label: 'Shapefile module', to: '/docs/modules/shapefile'},
+    {label: 'Shapefile loader', to: '/docs/modules/shapefile/api-reference/shapefile-loader'},
+    {label: 'GIS category', to: '/docs/specifications/category-gis'}
+  ]}
+/>
+
+<DocOrientation
+  eyebrow="The Shapefile path"
+  title="Collect the files. Decode geometry and attributes. Check the CRS."
+  description="The main `.shp` file is only one part of a typical dataset. Correct results depend on resolving the related index, attribute, projection, and encoding files together."
+  tone="mint"
+  items={[
+    {label: 'Geometry', value: '`.shp` records and supported shape types'},
+    {label: 'Attributes', value: '`.dbf` fields and code-page decoding'},
+    {label: 'Metadata', value: '`.shx`, `.prj`, and optional `.cpg` sidecars'},
+    {label: 'Output', value: 'Common vector features with CRS-aware coordinates'}
+  ]}
+/>
 
 <ShapefileDocsTabs active="overview" />
 
 ESRI Shapefiles is a file format for storing geospatial vector data.
+
+<ReferenceBoundary
+  title="Shapefile structure and compatibility details"
+  description="The reference below covers sidecar files, coordinate systems, encodings, supported geometries, version history, and troubleshooting."
+  tone="mint"
+/>
 
 - _[`@loaders.gl/shapefile`](/docs/modules/shapefile)_
 - _[Wikipedia](https://en.wikipedia.org/wiki/Shapefile)_ - _[ESRI Shapefile Whitepaper](https://www.esri.com/content/dam/esrisites/sitecore-archive/Files/Pdfs/library/whitepapers/pdfs/shapefile.pdf)_ - _[Notes on Shapefile usage](http://webhelp.esri.com/arcgisdesktop/9.3/index.cfm?TopicName=Geoprocessing_considerations_for_shapefile_output)_

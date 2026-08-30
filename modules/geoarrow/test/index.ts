@@ -10,3 +10,4 @@ import './get-arrow-bounds.spec';
 import './merge-geoarrow-schemas.spec';
 import './geoarrow-layout.spec';
 import './geoarrow-stream.spec';
+import './geoarrow-format-examples.spec';

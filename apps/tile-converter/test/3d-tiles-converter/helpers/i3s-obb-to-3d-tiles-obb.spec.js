@@ -1,11 +1,9 @@
-import test from 'test/utils/vitest-tape';
+import {expect, test} from 'vitest';
 import {load} from '@loaders.gl/core';
 import {i3sObbTo3dTilesObb} from '../../../src/3d-tiles-converter/helpers/i3s-obb-to-3d-tiles-obb';
 import {PGMLoader} from '../../../src/pgm-loader';
-
 const PGM_FILE_PATH = '@loaders.gl/tile-converter/test/data/egm84-30.pgm';
-
-test('tile-converter(3d-tiles)#i3sObbTo3dTilesObb - converts I3S OBB to 3D-Tiles OBB', async t => {
+test('tile-converter(3d-tiles)#i3sObbTo3dTilesObb - converts I3S OBB to 3D-Tiles OBB', async () => {
   const geoidHeightModel = await load(PGM_FILE_PATH, PGMLoader);
   // Frankfurt coordinates
   const tiles3DObb = i3sObbTo3dTilesObb(
@@ -16,12 +14,9 @@ test('tile-converter(3d-tiles)#i3sObbTo3dTilesObb - converts I3S OBB to 3D-Tiles
     },
     geoidHeightModel
   );
-  t.deepEqual(
-    tiles3DObb,
-    [
-      4051761.1851145783, 618337.9522269954, 4870774.44126969, -336.2714136867215,
-      2143.2431775188084, 6.702657086033947, -1376.7648141647935, -219.86692925233362,
-      1165.2083195250113, 54.63531987122361, 8.337884469955748, 66.07890687770515
-    ]
-  );
+  expect(tiles3DObb).toEqual([
+    4051761.1851145783, 618337.9522269954, 4870774.44126969, -336.2714136867215, 2143.2431775188084,
+    6.702657086033947, -1376.7648141647935, -219.86692925233362, 1165.2083195250113,
+    54.63531987122361, 8.337884469955748, 66.07890687770515
+  ]);
 });

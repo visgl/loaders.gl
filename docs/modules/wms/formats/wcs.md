@@ -1,6 +1,39 @@
+---
+title: WCS - Web Coverage Service
+description: Discover and request analytical raster coverages through a typed geospatial source.
+hide_title: true
+page_style: designed
+---
+
+import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
+import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
 import {WmsDocsTabs} from '@site/src/components/docs/wms-docs-tabs';
 
-# WCS - Web Coverage Service
+<DocPageHeader
+  eyebrow="OGC coverage service"
+  title="Request the coverage data behind the map."
+  description="WCS provides analytical raster coverages rather than server-rendered map images. The source discovers the service, builds version-aware subset requests, and preserves binary responses for the appropriate decoder."
+  tone="mint"
+  meta={['WCS 1.x and 2.x', 'Coverage subsets', 'GeoTIFF and LERC']}
+  links={[
+    {label: 'WMS module', to: '/docs/modules/wms'},
+    {label: 'WCS source', to: '/docs/modules/wms/formats/wcs'},
+    {label: 'GeoTIFF format', to: '/docs/modules/geotiff/formats/geotiff'}
+  ]}
+/>
+
+<DocOrientation
+  eyebrow="The WCS request path"
+  title="Read the coverage metadata. Select a subset. Decode the result."
+  description="WCS keeps coverage values and request dimensions explicit. Use the source to form the service request, then choose whether the returned representation should remain binary or become analysis-ready pixels."
+  tone="mint"
+  items={[
+    {label: 'Discover', value: 'Coverages, bounds, formats, axes, and CRS'},
+    {label: 'Subset', value: 'Bounding boxes, dimensions, and explicit axes'},
+    {label: 'Request', value: 'Version-aware `GetCoverage` parameters'},
+    {label: 'Decode', value: 'GeoTIFF, LERC, or another binary coverage loader'}
+  ]}
+/>
 
 <WmsDocsTabs active="wcs" />
 
@@ -8,6 +41,12 @@ import {WmsDocsTabs} from '@site/src/components/docs/wms-docs-tabs';
 
 WCS provides analytical geospatial coverages rather than server-rendered map images.
 `WCSCoverageSourceLoader` supports focused discovery and read-only coverage retrieval.
+
+<ReferenceBoundary
+  title="Coverage request and decoding details"
+  description="The reference below covers capabilities, subsets, CRS selection, binary responses, LERC decoding, and request customization."
+  tone="mint"
+/>
 
 ## Feature support
 

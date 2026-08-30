@@ -1,12 +1,47 @@
+---
+title: SHPLoader
+description: Decode the geometry component of a Shapefile dataset.
+hide_title: true
+page_style: designed
+---
+
 import {ShapefileDocsTabs} from '@site/src/components/docs/shapefile-docs-tabs';
+import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
+import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
 
-# SHPLoader
-
-<p class="badges">
-  <img src="https://img.shields.io/badge/From-v2.3-blue.svg?style=flat-square" alt="From-v2.3" />
-</p>
+<DocPageHeader
+  eyebrow="Shapefile module · geometry loader"
+  title="SHPLoader"
+  description="Decode the `.shp` geometry component of a Shapefile dataset into WKB or Arrow geometry columns. Use ShapefileLoader when attributes and sidecars are needed too."
+  tone="orange"
+  meta={['From v2.3', 'SHP geometry', 'WKB / GeoArrow']}
+  links={[
+    {label: 'Shapefile format', to: '/docs/modules/shapefile/formats/shapefile'},
+    {label: 'ShapefileLoader', to: '/docs/modules/shapefile/api-reference/shapefile-loader'},
+    {label: 'Shapefile module', to: '/docs/modules/shapefile'}
+  ]}
+/>
 
 <ShapefileDocsTabs active="shp" />
+
+<DocOrientation
+  eyebrow="What it reads"
+  title="Decode geometry when the attributes are handled elsewhere."
+  description="SHPLoader focuses on the binary geometry file and can emit compact WKB or an Arrow geometry column, making it useful as a lower-level building block."
+  tone="orange"
+  items={[
+    {label: 'Input', value: 'A `.shp` geometry file'},
+    {label: 'Default', value: 'An array of WKB geometries'},
+    {label: 'Arrow', value: 'WKB or typed GeoArrow geometry'},
+    {label: 'Dimensions', value: 'X, Y, Z, and M where present'}
+  ]}
+/>
+
+<ReferenceBoundary
+  title="SHPLoader reference"
+  description="The sections below document the lower-level loader, installation, usage, output, and geometry options."
+  tone="orange"
+/>
 
 A "sub loader" for the `.shp` (geometries) file component of a shapefile.
 

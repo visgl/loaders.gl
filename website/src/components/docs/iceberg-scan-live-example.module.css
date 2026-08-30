@@ -1,0 +1,293 @@
+.exampleFrame {
+  margin: 28px 0;
+  padding: 18px;
+  border: 1px solid rgba(112, 199, 255, 0.2);
+  border-radius: 18px;
+  background: linear-gradient(145deg, rgba(16, 30, 49, 0.97), rgba(10, 22, 38, 0.98));
+  box-shadow: 0 20px 54px rgba(0, 0, 0, 0.18);
+  color: #e4edf6;
+}
+
+.exampleHeader,
+.planHeader,
+.previewHeading {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.exampleHeader {
+  align-items: flex-start;
+}
+
+.exampleTitle {
+  margin: 0;
+  font-size: 18px;
+  color: #f6f9fc;
+}
+
+.exampleDescription {
+  max-width: 720px;
+  margin: 6px 0 0;
+  color: rgba(219, 231, 244, 0.72);
+  font-size: 13px;
+}
+
+.stageBadge {
+  padding: 7px 10px;
+  border: 1px solid rgba(76, 175, 80, 0.55);
+  border-radius: 999px;
+  color: #dff7e9;
+  font-size: 12px;
+  font-weight: 800;
+  white-space: nowrap;
+}
+
+.stageReady {
+  background: rgba(76, 175, 80, 0.12);
+}
+
+.stageFailed {
+  border-color: rgba(211, 47, 47, 0.45);
+  background: rgba(211, 47, 47, 0.1);
+}
+
+.stageRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 18px;
+}
+
+.stageBlock {
+  flex: 1 1 0;
+  min-width: 0;
+  padding: 9px 6px;
+  border: 1px solid rgba(173, 200, 219, 0.16);
+  border-radius: 8px;
+  background: rgba(6, 15, 27, 0.5);
+  color: #e4edf6;
+  font-size: 12px;
+  font-weight: 800;
+  text-align: center;
+}
+
+.stageActive {
+  border-color: rgba(0, 173, 230, 0.65);
+  background: rgba(0, 173, 230, 0.12);
+}
+
+.stageArrow {
+  flex: 0 0 24px;
+  color: rgba(219, 231, 244, 0.48);
+  font-weight: 800;
+  text-align: center;
+}
+
+.sourcePicker,
+.queryForm,
+.planPanel,
+.errorMessage,
+.previewFrame {
+  margin-top: 16px;
+}
+
+.sourcePickerLabel,
+.queryInputLabel {
+  color: rgba(219, 231, 244, 0.68);
+  font-size: 11px;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.sourceHint,
+.queryHint,
+.planHeader span,
+.previewHeading span {
+  color: rgba(219, 231, 244, 0.52);
+  font-size: 10px;
+}
+
+.sourceHint,
+.queryHint {
+  margin-top: 5px;
+}
+
+.queryEditors {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.queryEditor {
+  min-width: 0;
+}
+
+.queryInputLabel {
+  display: block;
+  margin-bottom: 5px;
+}
+
+.queryInput {
+  width: 100%;
+  min-width: 0;
+  min-height: 62px;
+  padding: 8px 9px;
+  border: 1px solid rgba(173, 200, 219, 0.2);
+  border-radius: 6px;
+  background: rgba(6, 15, 27, 0.68);
+  color: #e4edf6;
+  font-family: var(--ifm-font-family-monospace);
+  font-size: 12px;
+  resize: vertical;
+}
+
+.queryButton {
+  margin-top: 10px;
+  padding: 7px 14px;
+  border: 0;
+  border-radius: 6px;
+  background: var(--ifm-color-primary);
+  color: #ffffff;
+  font-size: 12px;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.queryButton:hover,
+.queryButton:focus-visible {
+  filter: brightness(0.94);
+}
+
+.queryInput:focus-visible,
+.queryButton:focus-visible {
+  outline: 3px solid rgba(50, 120, 216, 0.25);
+  outline-offset: 2px;
+}
+
+.planPanel {
+  padding: 10px 12px;
+  border: 1px solid rgba(173, 200, 219, 0.15);
+  border-radius: 8px;
+  background: rgba(6, 15, 27, 0.5);
+}
+
+.planHeader {
+  color: #e4edf6;
+  font-size: 12px;
+}
+
+.planStats {
+  display: flex;
+  gap: 18px;
+  margin-top: 8px;
+}
+
+.metric {
+  display: flex;
+  align-items: baseline;
+  gap: 5px;
+}
+
+.metricValue {
+  color: #f6f9fc;
+  font-size: 15px;
+  font-weight: 800;
+}
+
+.metricLabel {
+  color: rgba(219, 231, 244, 0.68);
+  font-size: 11px;
+}
+
+.errorMessage {
+  padding: 10px;
+  border: 1px solid rgba(211, 47, 47, 0.35);
+  border-radius: 8px;
+  background: rgba(211, 47, 47, 0.08);
+  color: #f1d9df;
+  font-size: 13px;
+}
+
+.previewFrame {
+  overflow: hidden;
+  border: 1px solid rgba(173, 200, 219, 0.16);
+  border-radius: 14px;
+  background: rgba(6, 15, 27, 0.48);
+}
+
+.previewHeading {
+  padding: 10px 12px;
+  background: rgba(26, 45, 70, 0.94);
+  color: #e4edf6;
+  font-size: 12px;
+}
+
+.previewScroll {
+  max-width: 100%;
+  overflow-x: auto;
+}
+
+.previewTable {
+  min-width: 100%;
+  margin: 0;
+  border-collapse: collapse;
+  color: #e4edf6;
+  font-size: 11px;
+  white-space: nowrap;
+}
+
+.previewTable th,
+.previewTable td {
+  padding: 7px 9px;
+  border: 0 !important;
+  border-bottom: 1px solid rgba(165, 151, 184, 0.12) !important;
+  background: rgba(13, 27, 46, 0.82) !important;
+  color: #e4edf6 !important;
+  text-align: left;
+}
+
+.previewTable th {
+  background: rgba(19, 39, 65, 0.94) !important;
+  color: #b9ddf7 !important;
+  font-weight: 800;
+}
+
+.previewTable tbody tr:nth-child(even) td {
+  background: rgba(20, 35, 56, 0.86) !important;
+}
+
+.previewTable tr:last-child td {
+  border-bottom: 0;
+}
+
+@media (max-width: 640px) {
+  .exampleHeader,
+  .previewHeading {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .stageRow {
+    gap: 4px;
+  }
+
+  .stageArrow {
+    flex-basis: 16px;
+  }
+
+  .stageBlock {
+    padding-inline: 3px;
+    font-size: 11px;
+  }
+
+  .queryEditors {
+    grid-template-columns: 1fr;
+  }
+
+  .planStats {
+    flex-wrap: wrap;
+  }
+}

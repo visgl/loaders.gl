@@ -1,8 +1,47 @@
-import {TracesDocsTabs} from '@site/src/components/docs/traces-docs-tabs';
+---
+title: PerfettoTraceLoader
+description: Read Perfetto TrackEvent traces into typed Apache Arrow tables.
+hide_title: true
+page_style: designed
+---
 
-# PerfettoTraceLoader
+import {TracesDocsTabs} from '@site/src/components/docs/traces-docs-tabs';
+import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
+import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
+
+<DocPageHeader
+  eyebrow="Traces module · loader API"
+  title="PerfettoTraceLoader"
+  description="Read stable Perfetto TrackEvent protobuf data into four typed Arrow tables for tracks, slices, processes, and threads."
+  tone="violet"
+  meta={['Perfetto protobuf', 'Arrow tables', 'Typed trace projection']}
+  links={[
+    {label: 'Perfetto format', to: '/docs/modules/traces/formats/perfetto-trace'},
+    {label: 'PerfettoTraceWriter', to: '/docs/modules/traces/api-reference/perfetto-trace-writer'},
+    {label: 'Traces module', to: '/docs/modules/traces'}
+  ]}
+/>
 
 <TracesDocsTabs active="perfettotraceloader" />
+
+<DocOrientation
+  eyebrow="What it returns"
+  title="Turn a trace envelope into tables you can query."
+  description="The loader separates the stable TrackEvent projection into related Arrow tables, keeping identifiers and timing values typed for analysis and round-trip writing."
+  tone="violet"
+  items={[
+    {label: 'Tracks', value: 'Track descriptors and associations'},
+    {label: 'Slices', value: 'Timed and instant events'},
+    {label: 'Processes', value: 'Process descriptors'},
+    {label: 'Threads', value: 'Thread descriptors and ownership'}
+  ]}
+/>
+
+<ReferenceBoundary
+  title="PerfettoTraceLoader reference"
+  description="The sections below document usage, the Arrow result, numeric fidelity, and supported trace projection."
+  tone="violet"
+/>
 
 `PerfettoTraceLoader` reads stable Perfetto TrackEvent protobuf data into four typed Apache Arrow
 tables. See the [Perfetto format page](../formats/perfetto-trace) for the supported projection and

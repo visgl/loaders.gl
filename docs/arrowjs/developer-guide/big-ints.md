@@ -1,3 +1,45 @@
+---
+title: Working with Arrow big integers
+description: Preserve 64-bit and 128-bit numeric values across Arrow buffers and JavaScript conversions.
+hide_title: true
+page_style: designed
+---
+
+import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
+import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
+
+<DocPageHeader
+  eyebrow="Arrow JavaScript · numeric precision"
+  title="Keep wide numbers wide until you choose to convert them."
+  description="Arrow’s Int64, Uint64, and Decimal values can exceed JavaScript’s safe integer range. Arrow JS keeps their underlying representation precise and provides explicit conversion paths for numbers, strings, BigInts, and JSON."
+  tone="orange"
+  meta={['Int64 and Uint64', 'Decimal128', 'BigInt-aware']}
+  links={[
+    {label: 'Arrow JS guide', to: '/docs/arrowjs'},
+    {label: 'Data types', to: '/docs/arrowjs/developer-guide/data-types'},
+    {label: 'Vector API', to: '/docs/arrowjs/api-reference/vector'}
+  ]}
+/>
+
+<DocOrientation
+  eyebrow="The precision boundary"
+  title="Choose a representation that matches the consumer."
+  description="Use native BigInt when the runtime supports it, strings when values cross JSON boundaries, or numbers only when the application has established that precision loss is acceptable."
+  tone="orange"
+  items={[
+    {label: 'Storage', value: 'Arrow keeps wide values in paired 32-bit buffers'},
+    {label: 'BigInt', value: 'Native signed or unsigned integer conversion'},
+    {label: 'String', value: 'Stable decimal representation for JSON and logs'},
+    {label: 'Number', value: 'Convenient but limited to safe integer precision'}
+  ]}
+/>
+
+<ReferenceBoundary
+  title="Wide integer details"
+  description="The examples below explain the typed-array representation, conversion helpers, native BigInt support, and precision caveats."
+  tone="orange"
+/>
+
 # Working with BigInts
 
 Arrow supports big integers.

@@ -1,8 +1,30 @@
-import {CapabilityHero} from '@site/src/components/docs/capability-hero';
+---
+title: Coordinate reference systems
+description: Preserve coordinate meaning and make reprojection explicit.
+hide_title: true
+page_style: designed
+---
 
-# Coordinate Reference Systems
+import {CapabilityHero} from '@site/src/components/docs/capability-hero';
+import {CrsFlowGraphic} from '@site/src/components/docs/capability-flow-graphics';
+import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
 
 <CapabilityHero capability="crs" />
+
+<CrsFlowGraphic />
+
+<DocOrientation
+  eyebrow="Coordinate meaning"
+  title="Keep coordinates and their meaning together."
+  description="CRS metadata tells an application what coordinate values mean. loaders.gl preserves that definition during loading, while reprojection remains an explicit operation with a named target."
+  tone="orange"
+  items={[
+    {label: 'First step', value: 'Preserve the source definition and provenance'},
+    {label: 'Second step', value: 'Transform only when the application requests it'},
+    {label: 'Representations', value: 'EPSG identifiers, WKT, PROJ strings, and PROJJSON'},
+    {label: 'Used by', value: 'GeoArrow, GeoParquet, FlatGeobuf, I3S, and 3D Tiles'}
+  ]}
+/>
 
 ## Start here
 
@@ -14,6 +36,12 @@ Coordinate reference system (CRS) metadata tells an application how coordinates 
 earth. Preserving that metadata is different from transforming coordinates. loaders.gl aims to
 make both explicit: loaders should first discover and retain the source CRS; reprojection only
 happens when a loader documents an opt-in transformation path.
+
+<ReferenceBoundary
+  title="The CRS contract"
+  description="The rest of this guide covers representations, shared descriptors, spatial APIs, axis order, heights, epochs, and failure behavior."
+  tone="orange"
+/>
 
 ## CRS representations
 

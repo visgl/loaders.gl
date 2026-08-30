@@ -82,13 +82,18 @@ export class Tile3DSourceLayer<
     const {loadOptions = {}} = this.props;
 
     // TODO: deprecate `loader` in v9.0
+    // Prefer the explicit loader array over Tile3DLayer's default `loader` prop.
     // @ts-ignore
-    const loaders = this.props.loader || this.props.loaders;
+    const loaders = this.props.loaders || this.props.loader;
     const loaderCandidates = (Array.isArray(loaders) ? loaders : [loaders]).filter(Boolean);
     const selectedLoader =
       (await selectLoader(tilesetUrl, loaderCandidates as any, {
         ...loadOptions,
-        core: {...loadOptions.core, nothrow: true}
+        core: {
+          ...loadOptions.core,
+          ignoreRegisteredLoaders: true,
+          nothrow: true
+        }
       })) || loaderCandidates[0];
     if (!selectedLoader) {
       throw new Error('Tile3DSourceLayer requires a loader for URL or Blob inputs.');
@@ -159,6 +164,12 @@ export function createSource(
 ): Tiles3DSource | I3SSource {
   const sourceLoader = getSourceLoader(loader);
   const lowerCaseUrl = typeof url === 'string' ? url.toLowerCase() : '';
+
+  if (url instanceof Blob && sourceLoader.id !== 'slpk' && sourceLoader.id !== '3tz') {
+    throw new Error(
+      'Tile3DSourceLayer Blob inputs require a 3TZ or SLPK archive loader so relative resources can be resolved.'
+    );
+  }
 
   if (sourceLoader.id === 'slpk' || lowerCaseUrl.endsWith('.slpk')) {
     const archiveConfig =

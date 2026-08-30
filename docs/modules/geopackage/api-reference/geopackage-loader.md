@@ -1,16 +1,59 @@
-import {GeoPackageDocsTabs} from '@site/src/components/docs/geopackage-docs-tabs';
+---
+title: GeoPackageLoader
+description: Read GeoPackage feature tables from a portable SQLite-based container.
+hide_title: true
+page_style: designed
+---
 
-# GeoPackageLoader
+import {GeoPackageDocsTabs} from '@site/src/components/docs/geopackage-docs-tabs';
+import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
+import {DocLiveExample} from '@site/src/components/docs/doc-live-example';
+import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
+import {ClientExample} from '@site/src/components';
+
+<DocPageHeader
+  eyebrow="GeoPackage loader"
+  title="GeoPackageLoader"
+  description="GeoPackageLoader opens the SQLite container, discovers its feature tables, and returns the selected table in a loaders.gl geometry shape."
+  tone="orange"
+  logos={[{alt: 'Open Geospatial Consortium', src: '/images/format-logos/ogc-logo-transparent.png'}]}
+  meta={['SQLite-backed', 'Feature tables', 'Geometry metadata']}
+  links={[
+    {label: 'GeoPackage format', to: '/docs/modules/geopackage/formats/geopackage'},
+    {label: 'GeoPackage module', to: '/docs/modules/geopackage'}
+  ]}
+/>
+
+<DocLiveExample label="GeoPackage loader example" height="420px">
+  <ClientExample kind="geospatial" format="GeoPackage" />
+</DocLiveExample>
 
 <GeoPackageDocsTabs active="loader" />
 
-![ogc-logo](../../../images/logos/ogc-logo-60.png)
+<DocOrientation
+  eyebrow="The read sequence"
+  title="Inspect the package before selecting rows."
+  description="A package can hold more than one feature table. Select the table and output shape explicitly; the loader keeps geometry columns and spatial metadata attached to the result."
+  tone="orange"
+  items={[
+    {label: 'Open', value: 'Load the SQLite-backed package'},
+    {label: 'Discover', value: 'List tables and geometry metadata'},
+    {label: 'Select', value: 'Choose one table and output shape'},
+    {label: 'Return', value: 'GeoJSON, table, or feature data'}
+  ]}
+/>
 
-<p class="badges">
+<p className="badges">
   <img src="https://img.shields.io/badge/From-v3.0-blue.svg?style=flat-square" alt="From-v3.0" />
 </p>
 
 The `GeoPackageLoader` parses GeoPackage vector tables into loaders.gl geometry tables.
+
+<ReferenceBoundary
+  title="GeoPackage loader usage"
+  description="The sections below cover package selection, output shapes, SQL.js setup, and the current loader constraints."
+  tone="orange"
+/>
 
 :::caution
 The `GeoPackageLoader` depends on the [`sql.js`](https://github.com/sql-js/sql.js) npm module which has caused issues with certain JavaScript bundlers. It is recommended that you do your own tests before using the `GeoPackageLoader` in your project.

@@ -272,6 +272,43 @@ describe('raw Arrow CSV parser', () => {
     expect(toRows(table)).toEqual([{value: '1'}, {value: 'true'}, {value: 'text'}]);
   });
 
+  test('grows specialized numeric and UTF-8 buffers across null and mixed-type transitions', async () => {
+    const rows = ['number,label'];
+    rows.push(',');
+    for (let rowIndex = 0; rowIndex < 1100; rowIndex++) {
+      rows.push(`${rowIndex},value-${rowIndex}`);
+    }
+    rows.push('mixed,true');
+    const table = await parseCSVTextAsArrow(rows.join('\n'), {
+      csv: {header: true, dynamicTyping: true}
+    });
+
+    expect(table.data.numRows).toBe(1102);
+    expect(table.schema.fields.map(field => field.type)).toEqual(['utf8', 'utf8']);
+    expect(getArrowColumnValues(table, 'number').slice(0, 3)).toEqual([null, '0', '1']);
+    expect(getArrowColumnValues(table, 'number').at(-1)).toBe('mixed');
+    expect(getArrowColumnValues(table, 'label').at(-1)).toBe('true');
+  });
+
+  test('covers dynamic UTF-8 whitespace, capitalization, dates, and escaped builder growth', async () => {
+    const nonBreakingSpace = '\u00a0';
+    const emSpace = '\u2003';
+    const quotedValue = `${'x'.repeat(5000)}"${'y'.repeat(5000)}`;
+    const table = await parseCSVTextAsArrow(
+      `boolean,numeric,date,mixed,quoted\nTRUE,${nonBreakingSpace}12${nonBreakingSpace},2025-01-02T03:04:05Z,True,"${quotedValue.replace('"', '""')}"\nFALSE,${emSpace}13,2026-02-03T04:05:06Z,true,short`,
+      {csv: {header: true, delimiter: ',', dynamicTyping: true}}
+    );
+
+    expect(getArrowColumnValues(table, 'boolean')).toEqual([true, false]);
+    expect(getArrowColumnValues(table, 'numeric')).toEqual([12, 13]);
+    expect(getArrowColumnValues(table, 'date')).toEqual([
+      Date.parse('2025-01-02T03:04:05Z'),
+      Date.parse('2026-02-03T04:05:06Z')
+    ]);
+    expect(getArrowColumnValues(table, 'mixed')).toEqual(['True', 'true']);
+    expect(getArrowColumnValues(table, 'quoted')[0]).toBe(quotedValue);
+  });
+
   test('freezes inferred types across Arrow batches', async () => {
     const chunks = [encode('value,name\n1,first\n'), encode('text,second\n3,third\n')];
     const batches = parseCSVInArrowBatches(chunks, {

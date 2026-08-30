@@ -1,10 +1,55 @@
-import {ArrowDocsTabs} from '@site/src/components/docs/arrow-docs-tabs';
+---
+title: Apache Arrow format
+description: A binary columnar format for moving typed table data between files, workers, and applications.
+hide_title: true
+page_style: designed
+---
 
-# Apache Arrow
+import {ArrowDocsTabs} from '@site/src/components/docs/arrow-docs-tabs';
+import {ArrowDataPlaneGraphic} from '@site/src/components/docs/arrow-data-plane-graphic';
+import {ArrowJsStructureGraphic} from '@site/src/components/docs/arrow-js-structure-graphic';
+import {ArrowScanLiveExample} from '@site/src/components/docs/arrow-scan-live-example';
+import {CapabilityHero} from '@site/src/components/docs/capability-hero';
+import {DocOrientation} from '@site/src/components/docs/designed-doc';
+import apacheLogo from '../../../images/logos/apache-logo.png';
+
+<CapabilityHero
+  capability="arrow"
+  eyebrow="Binary columnar format"
+  title="Apache Arrow"
+  description="A typed table representation that keeps data compact, shareable, and ready for the next step in a JavaScript pipeline."
+  logos={[{alt: 'Apache Software Foundation', src: apacheLogo}]}
+  links={[
+    {label: 'Arrow module', to: '/docs/modules/arrow'},
+    {label: 'Try Arrow', to: '/examples/table/arrow'}
+  ]}
+/>
+
+## Try a selective read
+
+Use the panel below to inspect Arrow IPC metadata, choose columns, and limit the rows returned from a
+remote table. The same source contract is used by the broader scan architecture.
+
+<ArrowScanLiveExample />
 
 <ArrowDocsTabs active="overview" />
 
-<p class="badges">
+<ArrowDataPlaneGraphic />
+
+<DocOrientation
+  eyebrow="Why Arrow is useful"
+  title="Decode once. Reuse the table."
+  description="Arrow gives loaders, transforms, workers, and renderers a common binary shape. The file format is only the first boundary; the in-memory table is the part your application can keep reusing."
+  tone="cyan"
+  items={[
+    {label: 'Storage', value: 'Columns are typed and laid out for efficient access'},
+    {label: 'Transport', value: 'IPC messages can stream or cross worker boundaries'},
+    {label: 'Interop', value: 'The same table model is shared across languages'},
+    {label: 'Loaders.gl', value: 'ArrowLoader, ArrowWriter, and GeoArrow utilities'}
+  ]}
+/>
+
+<p className="badges">
   <a href="/docs/developer-guide/common-scan-architecture">
     <img src="https://img.shields.io/badge/Scan-Supported-2f855a.svg?style=flat-square" alt="Scan supported" />
   </a>
@@ -22,6 +67,8 @@ Apache Arrow is a language-independent binary columnar memory format for table-l
 The Apache Arrow project specifies a binary columnar memory format for flat and nested data. It supports zero-copy shared memory, streaming messages, interprocess communication, and efficient integration with data libraries.
 
 Arrow stores values by column rather than by row. This layout improves cache locality and enables vectorized operations, SIMD processing, and efficient transfer to runtimes that understand Arrow memory.
+
+<ArrowJsStructureGraphic />
 
 ## Arrow JS
 

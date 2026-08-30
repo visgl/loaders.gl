@@ -1,11 +1,6 @@
-// loaders.gl
-// SPDX-License-Identifier: MIT
-// Copyright (c) vis.gl contributors
-
-import test from 'test/utils/vitest-tape';
+import {expect, test} from 'vitest';
 import {resolve as resolveBenchmarkSpecifier} from './utils/bench-loader.mjs';
-
-test('bench-loader resolves workspace benchmark entries from test sources', async t => {
+test('bench-loader resolves workspace benchmark entries from test sources', async () => {
   const resolution = await resolveBenchmarkSpecifier(
     '@loaders.gl/json/test/json-loader.bench',
     {},
@@ -13,39 +8,30 @@ test('bench-loader resolves workspace benchmark entries from test sources', asyn
       throw new Error('nextResolve should not be called for workspace benchmark entries');
     }
   );
-
-  t.ok(
+  expect(
     resolution.url.endsWith('/modules/json/test/json-loader.bench.ts'),
     'benchmark entry resolves to test source'
-  );
-  t.ok(resolution.shortCircuit, 'benchmark entry short-circuits Node resolution');
-  t.end();
+  ).toBeTruthy();
+  expect(resolution.shortCircuit, 'benchmark entry short-circuits Node resolution').toBeTruthy();
 });
-
-test('bench-loader resolves workspace package roots from src', async t => {
+test('bench-loader resolves workspace package roots from src', async () => {
   const resolution = await resolveBenchmarkSpecifier('@loaders.gl/json', {}, () => {
     throw new Error('nextResolve should not be called for workspace package roots');
   });
-
-  t.ok(
+  expect(
     resolution.url.endsWith('/modules/json/src/index.ts'),
     'package root resolves to src/index.ts'
-  );
-  t.ok(resolution.shortCircuit, 'package root short-circuits Node resolution');
-  t.end();
+  ).toBeTruthy();
+  expect(resolution.shortCircuit, 'package root short-circuits Node resolution').toBeTruthy();
 });
-
-test('bench-loader delegates third-party resolution to Node', async t => {
+test('bench-loader delegates third-party resolution to Node', async () => {
   let nextResolveCalled = false;
   const delegatedResolution = {url: 'node:fs', shortCircuit: false};
-
   const resolution = await resolveBenchmarkSpecifier('node:fs', {}, async specifier => {
     nextResolveCalled = true;
-    t.equal(specifier, 'node:fs', 'third-party specifier is delegated unchanged');
+    expect(specifier, 'third-party specifier is delegated unchanged').toBe('node:fs');
     return delegatedResolution;
   });
-
-  t.ok(nextResolveCalled, 'third-party resolution is delegated');
-  t.equal(resolution, delegatedResolution, 'delegate result is returned');
-  t.end();
+  expect(nextResolveCalled, 'third-party resolution is delegated').toBeTruthy();
+  expect(resolution, 'delegate result is returned').toBe(delegatedResolution);
 });

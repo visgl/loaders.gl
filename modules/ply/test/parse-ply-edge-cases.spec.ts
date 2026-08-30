@@ -11,6 +11,17 @@ import {
   parsePLYHeader,
   parsePLYToArrowTable
 } from '../src/lib/parse-ply';
+import {parsePLYInBatches} from '../src/lib/parse-ply-in-batches';
+
+/** Collects every table emitted by the streaming PLY parser. */
+async function collectPLYBatches(bytes: Uint8Array, options: Record<string, unknown>) {
+  const chunks = [bytes.subarray(0, 7), bytes.subarray(7, 31), bytes.subarray(31)];
+  const batches = [];
+  for await (const batch of parsePLYInBatches(chunks, options)) {
+    batches.push(batch);
+  }
+  return batches;
+}
 
 describe('PLY parser edge cases', () => {
   test('parses every scalar type through both endian direct point-cloud paths', () => {
@@ -235,6 +246,57 @@ describe('PLY parser edge cases', () => {
     expect(parsePLYToArrowTable(headerText)).toBeNull();
   });
 
+  test('packs every normalized binary point-cloud attribute on the direct path', () => {
+    const propertyNames = [
+      'x',
+      'y',
+      'z',
+      'nx',
+      'ny',
+      'nz',
+      's',
+      't',
+      'red',
+      'green',
+      'blue',
+      'confidence'
+    ];
+    const headerText = [
+      'ply',
+      'format binary_little_endian 1.0',
+      'element vertex 1',
+      ...propertyNames.map(
+        propertyName =>
+          `property ${['red', 'green', 'blue'].includes(propertyName) ? 'uchar' : 'float'} ${propertyName}`
+      ),
+      'end_header\n'
+    ].join('\n');
+    const header = parsePLYHeader(headerText);
+    const plan = getPLYBinaryPointCloudParsePlan(header)!;
+    const records = new Uint8Array(plan.vertexStride);
+    const dataView = new DataView(records.buffer);
+    let byteOffset = 0;
+    for (let propertyIndex = 0; propertyIndex < propertyNames.length; propertyIndex++) {
+      const propertyName = propertyNames[propertyIndex];
+      if (['red', 'green', 'blue'].includes(propertyName)) {
+        dataView.setUint8(byteOffset, 100 + propertyIndex);
+        byteOffset += 1;
+      } else {
+        dataView.setFloat32(byteOffset, propertyIndex + 0.5, true);
+        byteOffset += 4;
+      }
+    }
+
+    const table = parsePLYBinaryPointCloudRecordsToArrowTable(records, header, {}, plan)!;
+    expect(Array.from(table.data.getChild('POSITION')!.get(0) as number[])).toEqual([
+      0.5, 1.5, 2.5
+    ]);
+    expect(Array.from(table.data.getChild('NORMAL')!.get(0) as number[])).toEqual([3.5, 4.5, 5.5]);
+    expect(Array.from(table.data.getChild('TEXCOORD_0')!.get(0) as number[])).toEqual([6.5, 7.5]);
+    expect(Array.from(table.data.getChild('COLOR_0')!.get(0) as number[])).toEqual([108, 109, 110]);
+    expect(table.data.getChild('confidence')!.get(0)).toBe(11.5);
+  });
+
   test('rejects unsupported point-cloud layouts and malformed headers', () => {
     const headerText = [
       'ply',
@@ -247,5 +309,118 @@ describe('PLY parser edge cases', () => {
     expect(getPLYBinaryPointCloudParsePlan(header)).toBeNull();
     expect(parsePLYBinaryPointCloudRecordsToArrowTable(new Uint8Array(0), header)).toBeNull();
     expect(parsePLY('not a ply').attributes).toEqual({});
+  });
+
+  test('streams fixed-width binary point clouds across arbitrary chunk boundaries', async () => {
+    const headerBytes = new TextEncoder().encode(
+      [
+        'ply',
+        'format binary_little_endian 1.0',
+        'comment streamed',
+        'element vertex 3',
+        'property float x',
+        'property float y',
+        'property float z',
+        'property ushort intensity',
+        'end_header\r\n'
+      ].join('\n')
+    );
+    const body = new Uint8Array(42);
+    const dataView = new DataView(body.buffer);
+    for (let index = 0; index < 3; index++) {
+      const offset = index * 14;
+      dataView.setFloat32(offset, index + 0.25, true);
+      dataView.setFloat32(offset + 4, index + 1.25, true);
+      dataView.setFloat32(offset + 8, index + 2.25, true);
+      dataView.setUint16(offset + 12, 100 + index, true);
+    }
+    const bytes = new Uint8Array(headerBytes.length + body.length);
+    bytes.set(headerBytes);
+    bytes.set(body, headerBytes.length);
+
+    const batches = await collectPLYBatches(bytes, {
+      shape: 'arrow-table',
+      pointCloud: true,
+      batchSize: 2
+    });
+    expect(batches.map((batch: any) => batch.data.numRows)).toEqual([2, 1]);
+    expect((batches[1] as any).data.getChild('intensity').get(0)).toBe(102);
+  });
+
+  test('streams ASCII Arrow batches and legacy meshes with empty lines', async () => {
+    const text = [
+      'ply',
+      'format ascii 1.0',
+      'comment streamed ascii',
+      'element vertex 3',
+      'property float x',
+      'property float y',
+      'property float z',
+      'end_header',
+      '1 2 3',
+      '',
+      '4 5 6',
+      '7 8 9'
+    ].join('\n');
+    const bytes = new TextEncoder().encode(text);
+    const options = {};
+    const arrowBatches = await collectPLYBatches(bytes, {
+      ...options,
+      shape: 'arrow-table',
+      batchSize: 2
+    });
+    expect(arrowBatches.map((batch: any) => batch.data.numRows)).toEqual([2, 1]);
+
+    const meshBatches = await collectPLYBatches(bytes, options);
+    expect(meshBatches).toHaveLength(1);
+    expect(Array.from((meshBatches[0] as any).attributes.POSITION.value)).toEqual([
+      1, 2, 3, 4, 5, 6, 7, 8, 9
+    ]);
+  });
+
+  test('streams variable-width binary vertex rows and validates incomplete layouts', async () => {
+    const headerBytes = new TextEncoder().encode(
+      [
+        'ply',
+        'format binary_big_endian 1.0',
+        'element vertex 2',
+        'property float x',
+        'property float y',
+        'property float z',
+        'property list uchar ushort samples',
+        'end_header\n'
+      ].join('\n')
+    );
+    const body = new Uint8Array(31);
+    const dataView = new DataView(body.buffer);
+    dataView.setFloat32(0, 1, false);
+    dataView.setFloat32(4, 2, false);
+    dataView.setFloat32(8, 3, false);
+    dataView.setUint8(12, 2);
+    dataView.setUint16(13, 10, false);
+    dataView.setUint16(15, 20, false);
+    dataView.setFloat32(17, 4, false);
+    dataView.setFloat32(21, 5, false);
+    dataView.setFloat32(25, 6, false);
+    dataView.setUint8(29, 0);
+    const bytes = new Uint8Array(headerBytes.length + body.length);
+    bytes.set(headerBytes);
+    bytes.set(body, headerBytes.length);
+    const batches = await collectPLYBatches(bytes, {shape: 'arrow-table', batchSize: 1});
+    expect(batches.map((batch: any) => batch.data.numRows)).toEqual([1, 1]);
+
+    await expect(
+      collectPLYBatches(new TextEncoder().encode('ply\nformat ascii 1.0\n'), {
+        shape: 'arrow-table'
+      })
+    ).rejects.toThrow('Incomplete PLY header');
+    await expect(
+      collectPLYBatches(
+        new TextEncoder().encode(
+          'ply\nformat ascii 1.0\nelement face 1\nproperty list uchar int indices\nend_header\n3 0 1 2\n'
+        ),
+        {shape: 'arrow-table'}
+      )
+    ).rejects.toThrow('requires one vertex element');
   });
 });

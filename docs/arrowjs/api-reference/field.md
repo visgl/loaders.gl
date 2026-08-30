@@ -1,4 +1,44 @@
-# Field
+---
+title: Field
+description: Describe one named Arrow column with its type, nullability, and metadata.
+hide_title: true
+page_style: designed
+---
+
+import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
+import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
+
+<DocPageHeader
+  eyebrow="Arrow JS API · schema component"
+  title="A Field gives one column a name and a contract."
+  description="Field pairs a column name with its DataType, nullability, and optional metadata. Schemas use ordered fields to describe the columns in tables, record batches, and nested structures."
+  tone="cyan"
+  meta={['Name and type', 'Nullability', 'Field metadata']}
+  links={[
+    {label: 'Schema', to: '/docs/arrowjs/api-reference/schema'},
+    {label: 'Data types', to: '/docs/arrowjs/api-reference/types'},
+    {label: 'Table', to: '/docs/arrowjs/api-reference/table'}
+  ]}
+/>
+
+<DocOrientation
+  eyebrow="The Field model"
+  title="Give every column a stable meaning."
+  description="Fields are the small schema units that let Arrow readers, builders, and writers agree on how to interpret a column before values are accessed."
+  tone="cyan"
+  items={[
+    {label: 'Name', value: 'The stable column identifier'},
+    {label: 'Type', value: 'The logical Arrow DataType'},
+    {label: 'Nullability', value: 'Whether null values are permitted'},
+    {label: 'Metadata', value: 'Optional string annotations for consumers'}
+  ]}
+/>
+
+<ReferenceBoundary
+  title="Field reference"
+  description="The sections below document members, constructors, Field.new, cloning, metadata, and type relationships."
+  tone="cyan"
+/>
 
 :::info
 This page is aligned to Apache Arrow JS v21.x (`apache-arrow`).

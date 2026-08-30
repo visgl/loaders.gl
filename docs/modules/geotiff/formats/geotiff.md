@@ -1,16 +1,56 @@
-import {GeoTiffDocsTabs} from '@site/src/components/docs/geotiff-docs-tabs';
+---
+title: GeoTIFF format
+description: A TIFF image with metadata that locates raster pixels in a coordinate system.
+hide_title: true
+page_style: designed
+---
 
-# GeoTIFF
+import {GeoTiffDocsTabs} from '@site/src/components/docs/geotiff-docs-tabs';
+import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
+import {DocLiveExample} from '@site/src/components/docs/doc-live-example';
+import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
+import {RasterWindowGraphic} from '@site/src/components/docs/raster-window-graphic';
+import {ClientExample} from '@site/src/components';
+
+<DocPageHeader
+  eyebrow="Georeferenced raster format"
+  title="GeoTIFF"
+  description="GeoTIFF combines TIFF image storage with tags that describe the raster’s coordinate system, bounds, scale, and placement. Cloud Optimized GeoTIFF adds a layout that makes bounded reads practical."
+  tone="mint"
+  logos={[{alt: 'Open Geospatial Consortium', src: '/images/format-logos/ogc-logo-transparent.png'}]}
+  meta={['TIFF 6.0', 'GeoTIFF tags', 'COG range reads']}
+  links={[
+    {label: 'GeoTIFF module', to: '/docs/modules/geotiff'},
+    {label: 'Scan architecture', to: '/docs/developer-guide/common-scan-architecture'}
+  ]}
+/>
+
+<DocLiveExample label="GeoTIFF raster format example" height="420px">
+  <ClientExample kind="geotiff" />
+</DocLiveExample>
 
 <GeoTiffDocsTabs active="format" />
 
-<p class="badges">
+<RasterWindowGraphic kind="geotiff" />
+
+<DocOrientation
+  eyebrow="A raster has more than pixels"
+  title="Read the window, resolution, bands, and reference."
+  description="A raster request is naturally spatial. loaders.gl keeps bounds, overviews, bands, and CRS metadata together so a cloud read can select the relevant image ranges."
+  tone="mint"
+  items={[
+    {label: 'Image', value: 'Typed pixel values and dimensions'},
+    {label: 'Location', value: 'Bounds, transform, and coordinate reference'},
+    {label: 'Selection', value: 'Window, overview, and band choices'},
+    {label: 'Delivery', value: 'Local files or HTTP range-readable COGs'}
+  ]}
+/>
+
+<p className="badges">
   <a href="/docs/developer-guide/common-scan-architecture">
     <img src="https://img.shields.io/badge/Scan-Supported-2f855a.svg?style=flat-square" alt="Scan supported" />
   </a>
 </p>
-
-![ogc-logo](../../../images/logos/ogc-logo-60.png)
 
 - _[`@loaders.gl/geotiff`](/docs/modules/geotiff)_
 - _[OGC Standard](https://www.ogc.org/standard/geotiff/)_
@@ -52,3 +92,9 @@ window, resolution, and band vocabulary rather than pretending pixels are table 
 COG range access is preserved: a bounded request can select the relevant image and byte ranges
 without first downloading the entire file. When a viewport CRS differs from the source CRS, the
 source rejects the request rather than silently returning misregistered pixels.
+
+<ReferenceBoundary
+  title="TIFF metadata and raster access"
+  description="The sections below describe GeoTIFF metadata, TIFF structure, scan behavior, and the boundaries of the current source implementations."
+  tone="mint"
+/>

@@ -1,4 +1,44 @@
-# TWKB
+---
+title: TWKB - Tiny Well-Known Binary
+description: Encode vector geometry compactly with delta coordinates and variable-length integers.
+hide_title: true
+page_style: designed
+---
+
+import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
+import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
+
+<DocPageHeader
+  eyebrow="Geometry binary format"
+  title="Smaller geometry records for constrained links."
+  description="Tiny Well-Known Binary (TWKB) is a compact WKB variant that uses quantized coordinates, deltas, and variable-length integers to reduce the bytes needed for neighboring geometry points."
+  tone="orange"
+  meta={['WKB variant', 'Delta coordinates', 'Varint encoding']}
+  links={[
+    {label: 'WKT module', to: '/docs/modules/wkt'},
+    {label: 'TWKBLoader', to: '/docs/modules/wkt/api-reference/twkb-loader'},
+    {label: 'TWKBWriter', to: '/docs/modules/wkt/api-reference/twkb-writer'}
+  ]}
+/>
+
+<DocOrientation
+  eyebrow="The TWKB record path"
+  title="Store the first position. Make nearby points inexpensive."
+  description="TWKB is useful when geometry is spatially local and transport size matters. The decoder reconstructs the coordinate sequence from compact integer deltas before exposing the common geometry result."
+  tone="orange"
+  items={[
+    {label: 'Coordinate model', value: 'Quantized integer coordinates and deltas'},
+    {label: 'Encoding', value: 'Variable-length integers with zigzag values'},
+    {label: 'Typical use', value: 'Compact vector geometry over APIs or mobile links'},
+    {label: 'Related formats', value: 'WKB for general binary geometry; WKT for readable text'}
+  ]}
+/>
+
+<ReferenceBoundary
+  title="TWKB layout and support details"
+  description="The reference below covers the compact encoding model, ecosystem support, and the loaders.gl APIs for reading and writing TWKB geometry."
+  tone="orange"
+/>
 
 - _[`@loaders.gl/wkt`](/docs/modules/wkt)_
 - _[TWKB specification](https://github.com/TWKB/Specification/blob/master/twkb.md)_

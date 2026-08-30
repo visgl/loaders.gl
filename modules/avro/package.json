@@ -1,0 +1,67 @@
+{
+  "name": "@loaders.gl/avro",
+  "version": "5.0.0-alpha.4",
+  "description": "Framework-independent loader and writer for Apache Avro",
+  "license": "MIT",
+  "type": "module",
+  "publishConfig": {
+    "access": "public"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/visgl/loaders.gl"
+  },
+  "keywords": [
+    "avro",
+    "apache avro",
+    "loader",
+    "writer",
+    "streaming"
+  ],
+  "types": "dist/index.d.ts",
+  "main": "dist/index.cjs",
+  "module": "dist/index.js",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
+    },
+    "./avro-loader": {
+      "types": "./dist/avro-loader.d.ts",
+      "import": "./dist/avro-loader.js"
+    },
+    "./avro-schema-loader": {
+      "types": "./dist/avro-schema-loader.d.ts",
+      "import": "./dist/avro-schema-loader.js"
+    },
+    "./avro-writer": {
+      "types": "./dist/avro-writer.d.ts",
+      "import": "./dist/avro-writer.js"
+    },
+    "./avro-stream": {
+      "types": "./dist/avro-stream.d.ts",
+      "import": "./dist/avro-stream.js"
+    },
+    "./avro-ocf": {
+      "types": "./dist/avro-ocf.d.ts",
+      "import": "./dist/avro-ocf.js"
+    },
+    "./avro-parser": {
+      "types": "./dist/avro-parser.d.ts",
+      "import": "./dist/avro-parser.js"
+    }
+  },
+  "sideEffects": false,
+  "files": [
+    "src",
+    "dist",
+    "README.md"
+  ],
+  "dependencies": {
+    "@loaders.gl/compression": "5.0.0-alpha.4",
+    "@loaders.gl/loader-utils": "5.0.0-alpha.4",
+    "@loaders.gl/schema": "5.0.0-alpha.4",
+    "apache-arrow": ">= 17.0.0"
+  }
+}

@@ -1,7 +1,7 @@
 {
   "name": "@loaders.gl/mlt",
   "description": "Loader for MapLibre Tile (MLT) format",
-  "version": "5.0.0-alpha.2",
+  "version": "5.0.0-alpha.4",
   "license": "MIT",
   "type": "module",
   "publishConfig": {
@@ -46,9 +46,9 @@
     "pre-build": "npx esbuild ../../node_modules/@maplibre/mlt/dist/index.js --bundle --format=cjs --outfile=src/libs/mlt-decoder.cjs && node -e \"const fs=require('fs'); const file='src/libs/mlt-decoder.cjs'; const header='// SPDX-License-Identifier: MIT\\n// Generated from @maplibre/mlt (MIT) for loaders.gl browser bundling.\\n// Source: https://github.com/maplibre/mlt\\n\\n'; const body=fs.readFileSync(file,'utf8'); if (!body.startsWith('// SPDX-License-Identifier: MIT')) { fs.writeFileSync(file, header + body); }\""
   },
   "dependencies": {
-    "@loaders.gl/gis": "5.0.0-alpha.2",
-    "@loaders.gl/loader-utils": "5.0.0-alpha.2",
-    "@loaders.gl/schema": "5.0.0-alpha.2",
+    "@loaders.gl/gis": "5.0.0-alpha.4",
+    "@loaders.gl/loader-utils": "5.0.0-alpha.4",
+    "@loaders.gl/schema": "5.0.0-alpha.4",
     "@maplibre/mlt": "^1.1.6"
   },
   "peerDependencies": {

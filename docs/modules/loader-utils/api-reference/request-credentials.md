@@ -1,4 +1,44 @@
-# Request credentials
+---
+title: Request credentials
+description: Attach scoped query or header credentials to matching service requests without leaking tokens across origins.
+hide_title: true
+page_style: designed
+---
+
+import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
+import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
+
+<DocPageHeader
+  eyebrow="Loader utilities / transport security"
+  title="Attach credentials only where the request needs them."
+  description="The credential helpers provide origin-scoped query and bearer-header policies for service sources. They keep token attachment, refresh decisions, and request context separate from format parsing."
+  tone="pink"
+  meta={['Origin scoping', 'Query and bearer tokens', 'Refresh callbacks']}
+  links={[
+    {label: 'Loader utilities', to: '/docs/modules/loader-utils'},
+    {label: 'Authentication guide', to: '/docs/developer-guide/authentication'},
+    {label: 'Service sources', to: '/docs/developer-guide/using-sources'}
+  ]}
+/>
+
+<DocOrientation
+  eyebrow="Credential boundary"
+  title="Make the destination part of the policy."
+  description="A credential should know which origins may receive it and when a failed request is allowed to refresh. The helpers expose those decisions as data and callbacks instead of scattering token logic across source implementations."
+  tone="pink"
+  items={[
+    {label: 'Scope', value: 'Allow exact HTTP(S) origins to receive a credential.'},
+    {label: 'Attach', value: 'Use a query parameter or Authorization-style header.'},
+    {label: 'Refresh', value: 'Replay once only for configured response statuses.'},
+    {label: 'Inspect', value: 'Receive redacted request context in the token provider.'}
+  ]}
+/>
+
+<ReferenceBoundary
+  title="Request credential reference"
+  description="The detailed reference covers query credentials, bearer credentials, token providers, refresh statuses, and origin matching."
+  tone="pink"
+/>
 
 `@loaders.gl/loader-utils` exposes transport-level building blocks for scoped query and header
 credentials. Most application code should use the provider presets in `@loaders.gl/services` and

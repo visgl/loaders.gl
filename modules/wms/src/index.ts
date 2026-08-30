@@ -139,7 +139,7 @@ export {DEFAULT_SERVICE_LOADERS, ServiceRequestError, ServiceRuntime} from './se
 export type {ServiceEndpoint, ServiceEndpointPreferences} from './capability-graph';
 export {CapabilityGraph, discoverServiceGraph} from './capability-graph';
 
-export {ImageSource} from '@loaders.gl/loader-utils';
+export {ImageSource} from './lib/deprecated/image-source-compatibility';
 export type {ImageType} from '@loaders.gl/images';
 export {createImageSource} from './lib/deprecated/create-image-source';
 

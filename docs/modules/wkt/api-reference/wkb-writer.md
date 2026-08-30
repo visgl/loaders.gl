@@ -1,8 +1,44 @@
-# WKBWriter
+---
+title: WKBWriter
+description: Encode loaders.gl geometry as compact OGC Well-Known Binary.
+hide_title: true
+page_style: designed
+---
 
-<p class="badges">
-  <img src="https://img.shields.io/badge/From-v2.2-blue.svg?style=flat-square" alt="From-v3.1" />
-</p>
+import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
+import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
+
+<DocPageHeader
+  eyebrow="WKT module · geometry writer"
+  title="WKBWriter"
+  description="Encode structured geometry as compact Well-Known Binary for database, GIS, Shapefile, and Arrow-oriented data paths."
+  tone="orange"
+  meta={['From v2.2', 'OGC WKB', 'Binary output']}
+  links={[
+    {label: 'WKB format', to: '/docs/modules/wkt/formats/wkb'},
+    {label: 'WKBLoader', to: '/docs/modules/wkt/api-reference/wkb-loader'},
+    {label: 'WKT module', to: '/docs/modules/wkt'}
+  ]}
+/>
+
+<DocOrientation
+  eyebrow="What it writes"
+  title="Put geometry into a compact, widely understood encoding."
+  description="WKBWriter is the binary counterpart to WKBLoader. It preserves geometry structure while leaving feature attributes and table metadata to the surrounding application."
+  tone="orange"
+  items={[
+    {label: 'Input', value: 'Structured geometry objects'},
+    {label: 'Output', value: 'Binary WKB geometry bytes'},
+    {label: 'Dimensions', value: 'Optional Z and M coordinates'},
+    {label: 'APIs', value: 'encode and encodeSync'}
+  ]}
+/>
+
+<ReferenceBoundary
+  title="WKBWriter reference"
+  description="The sections below document format metadata, installation, usage, dimensional options, and geometry details."
+  tone="orange"
+/>
 
 ![ogc-logo](../../../images/logos/ogc-logo-60.png)
 

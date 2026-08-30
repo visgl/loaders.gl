@@ -1,7 +1,46 @@
-# TileJSON / Tilestats
+---
+title: TileJSON and Tilestats
+description: Describe a vector tileset before the client starts requesting individual tiles.
+hide_title: true
+page_style: designed
+---
+
+import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
+import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
+
+<DocPageHeader
+  eyebrow="Vector tileset metadata"
+  title="Know what the tiles contain before loading them."
+  description="TileJSON describes a vector tileset’s URL template, layers, fields, and display metadata. Tilestats can add useful type, range, and sample information for clients planning a view."
+  tone="cyan"
+  meta={['TileJSON 3.0', 'Layer metadata', 'Optional tilestats']}
+  links={[
+    {label: 'MVT format', to: '/docs/modules/mvt/formats/mvt'},
+    {label: 'MVT module', to: '/docs/modules/mvt'}
+  ]}
+/>
+
+<DocOrientation
+  eyebrow="Metadata before payloads"
+  title="Describe the tileset once. Let clients plan around it."
+  description="A TileJSON document gives applications the service and layer vocabulary up front. Tilestats can help choose fields, types, and visual ranges without waiting for every tile to arrive."
+  tone="cyan"
+  items={[
+    {label: 'Tileset', value: 'Name, bounds, zooms, and tile URL template'},
+    {label: 'Layers', value: 'Fields and vector-layer descriptions'},
+    {label: 'Tilestats', value: 'Types, numeric ranges, and value samples'},
+    {label: 'Runtime', value: 'Typed metadata for tile-source setup'}
+  ]}
+/>
 
 - _[`@loaders.gl/mvt`](/docs/modules/mvt)_
 - _[TileJSON specification](https://github.com/mapbox/tilejson-spec/blob/master/3.0.0/README.md)_ - _[Tilestats information](https://github.com/mapbox/mapbox-geostats) - _[Tilestats generation](https://github.com/mapbox/mapbox-geostats#output-the-stats)
+
+<ReferenceBoundary
+  title="TileJSON fields and tilestats"
+  description="The sections below describe tileset metadata, optional statistics, the typed return value, and the supported fields."
+  tone="cyan"
+/>
 
 ## TileJSON
 

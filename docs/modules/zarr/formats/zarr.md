@@ -1,6 +1,42 @@
-# Zarr, GeoZarr, and OME-Zarr
+---
+title: Zarr, GeoZarr, and OME-Zarr formats
+description: Store typed multidimensional arrays as independently addressable chunks.
+hide_title: true
+page_style: designed
+---
 
-<p class="badges">
+import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
+import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
+import {RasterWindowGraphic} from '@site/src/components/docs/raster-window-graphic';
+
+<DocPageHeader
+  eyebrow="Chunked multidimensional data"
+  title="Read the array chunks that answer the question."
+  description="Zarr stores typed multidimensional arrays in independently addressable chunks. OME-Zarr and GeoZarr add conventions for images, coordinates, dimensions, transforms, and spatial metadata."
+  tone="pink"
+  meta={['Zarr v2 and v3', 'Chunked arrays', 'OME-Zarr and GeoZarr']}
+  links={[
+    {label: 'Zarr module', to: '/docs/modules/zarr'},
+    {label: 'Scan architecture', to: '/docs/developer-guide/common-scan-architecture'}
+  ]}
+/>
+
+<RasterWindowGraphic kind="zarr" />
+
+<DocOrientation
+  eyebrow="The array boundary"
+  title="Keep the dimensions named and the chunks independent."
+  description="The storage model stays multidimensional. loaders.gl can discover variables and dimensions, select windows or levels, and return typed raster data without flattening away the array’s meaning."
+  tone="pink"
+  items={[
+    {label: 'Storage', value: 'Typed arrays split into addressable chunks'},
+    {label: 'Conventions', value: 'OME-Zarr, GeoZarr, CF, and xarray metadata'},
+    {label: 'Selection', value: 'Windows, channels, levels, and named slices'},
+    {label: 'Output', value: 'Typed raster data with dimension metadata'}
+  ]}
+/>
+
+<p className="badges">
   <a href="/docs/developer-guide/common-scan-architecture">
     <img src="https://img.shields.io/badge/Scan-Supported-2f855a.svg?style=flat-square" alt="Scan supported" />
   </a>
@@ -15,6 +51,12 @@ bioimaging conventions such as multiscale image pyramids, channels, and labeled 
 GeoZarr and CF/xarray conventions add coordinate reference systems, transforms, coordinate arrays,
 and named scientific dimensions.
 
+<ReferenceBoundary
+  title="Array conventions and scan behavior"
+  description="The sections below compare Zarr generations and conventions, then describe chunk selection and raster query behavior."
+  tone="pink"
+/>
+
 ## Format support
 
 | Capability | Zarr v2 | Zarr v3 | OME-Zarr | GeoZarr / CF |
@@ -25,6 +67,21 @@ and named scientific dimensions.
 | Multiscale image levels | Format-specific | Format-specific | Supported | Not assumed |
 | Spatial CRS and transform | Not inherent | Not inherent | Not required | Supported |
 | Named time/z/band selection | Array-dependent | Array-dependent | Supported | Supported |
+| SpatialData container discovery | Supported | Supported | Images and labels | Tables and geometries by reference |
+
+## SpatialData support
+
+| Element | On-disk representation | loaders.gl integration |
+| --- | --- | --- |
+| Images | OME-Zarr image group | `OMEZarrImageSource` through `createRasterSource()` |
+| Labels | OME-Zarr label group | `OMEZarrImageSource` through `createRasterSource()` |
+| Points | Partitioned Parquet dataset | Typed `parquet-dataset` descriptor and canonical payload URL |
+| Shapes | GeoParquet file | Typed `geoparquet` descriptor and canonical payload URL |
+| Tables | AnnData-Zarr group | Generic array access through `createTableArraySource()` |
+
+`SpatialDataSourceLoader` discovers these elements from consolidated metadata without materializing
+pixel, geometry, or annotation payloads. It retains element axes, coordinate transformations,
+format versions, and original attributes for downstream interoperability.
 
 ## Scan support
 

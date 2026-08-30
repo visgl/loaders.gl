@@ -152,4 +152,104 @@ describe('PointCloudSourceLayer', () => {
     expect(tileset.root).toBeNull();
     expect(tileset.tiles).toEqual([]);
   });
+
+  test('updates traversal state and marks cached layers when props change', () => {
+    const layer = createLayer(createPointCloudSource());
+    const updateTileset = vi.fn();
+    layer.updateTileset = updateTileset;
+    layer.resolveSource = vi.fn();
+    layer.state.activeViewports = {main: {id: 'main'}};
+    layer.state.layerMap = {first: {}, second: {}};
+
+    layer.updateState({
+      props: {...layer.props, loaders: [{}]},
+      oldProps: {...layer.props, loaders: []},
+      changeFlags: {dataChanged: false, viewportChanged: true, propsChanged: true}
+    });
+
+    expect(layer.resolveSource).toHaveBeenCalledOnce();
+    expect(updateTileset).toHaveBeenCalledWith({main: {id: 'main'}});
+    expect(layer.state.lastUpdatedViewports).toEqual({main: {id: 'main'}});
+    expect(layer.state.activeViewports).toEqual({});
+    expect(layer.state.layerMap).toEqual({first: {needsUpdate: true}, second: {needsUpdate: true}});
+  });
+
+  test('renders selected tiles, refreshes cached layers, and skips incomplete content', () => {
+    const layer = createLayer(createPointCloudSource());
+    layer.props = {...layer.props, extensions: [], showTileBoundingBoxes: false};
+    expect(layer.renderLayers()).toBeNull();
+
+    const completeTile = {
+      id: 'complete',
+      selected: true,
+      content: {
+        data: {shape: 'mesh', attributes: {}, indices: null, mode: 0},
+        pointCount: 1,
+        cartographicOrigin: [0, 0, 0],
+        coordinateSystem: COORDINATE_SYSTEM.CARTESIAN
+      }
+    };
+    const emptyTile = {id: 'empty', selected: true, content: null};
+    const unselectedTile = {id: 'unselected', selected: false, content: completeTile.content};
+    layer.state.tileset3d = {tiles: [completeTile, emptyTile, unselectedTile]};
+
+    const firstLayers = layer.renderLayers() as any[];
+    expect(firstLayers).toHaveLength(1);
+    expect(firstLayers[0].props.coordinateOrigin).toBeUndefined();
+    layer.state.layerMap.complete.needsUpdate = true;
+    const secondLayers = layer.renderLayers() as any[];
+    expect(secondLayers).toHaveLength(1);
+    expect(layer.state.layerMap.complete.needsUpdate).toBe(false);
+  });
+
+  test('selects tiles asynchronously and forwards tile lifecycle events', async () => {
+    const source = createPointCloudSource();
+    const onPointCloudTileLoad = vi.fn();
+    const onPointCloudTileError = vi.fn();
+    const onPointCloudTilesetUpdate = vi.fn();
+    const layer = createLayer(source);
+    layer.props = {
+      ...layer.props,
+      onPointCloudTileLoad,
+      onPointCloudTileError,
+      onPointCloudTilesetUpdate
+    };
+    const tile = {id: 'tile'};
+    const tileset = {selectTiles: vi.fn(async () => 7)};
+    layer.state.tileset3d = tileset;
+    layer.context = {timeline: {getTime: () => 0}} as any;
+
+    layer.updateTileset(null);
+    layer.updateTileset({});
+    layer.updateTileset({main: {id: 'main'}});
+    await Promise.resolve();
+    await Promise.resolve();
+    expect(layer.state.frameNumber).toBe(7);
+    expect(layer.setNeedsUpdate).toHaveBeenCalled();
+
+    const error = new Error('tile failed');
+    layer.handleTileLoad(tile);
+    layer.handleTileError(tile, error);
+    layer.handleTilesetUpdate();
+    expect(onPointCloudTileLoad).toHaveBeenCalledWith(tile);
+    expect(onPointCloudTileError).toHaveBeenCalledWith(tile, error);
+    expect(onPointCloudTilesetUpdate).toHaveBeenCalledTimes(4);
+  });
+
+  test('finalizes isolated owned sources and permits non-tile helper layers', () => {
+    const close = vi.fn(async () => {});
+    const destroy = vi.fn();
+    const layer = createLayer(createPointCloudSource());
+    layer.state.tileset3d = {destroy};
+    layer.state.layerMap = {tile: {}};
+    layer.resolvedSource = {source: {close}, sourceType: 'point-cloud', owned: true};
+
+    expect(layer.filterSubLayer({layer: {props: {}}} as any)).toBe(true);
+    layer.finalizeState();
+
+    expect(destroy).toHaveBeenCalledOnce();
+    expect(close).toHaveBeenCalledOnce();
+    expect(layer.state.tileset3d).toBeNull();
+    expect(layer.state.layerMap).toEqual({});
+  });
 });

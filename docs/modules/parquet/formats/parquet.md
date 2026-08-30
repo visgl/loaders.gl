@@ -1,18 +1,60 @@
-import {ParquetDocsTabs} from '@site/src/components/docs/parquet-docs-tabs';
+---
+title: Parquet format
+description: A column-oriented storage format designed for compact files and selective reads.
+hide_title: true
+page_style: designed
+---
 
-# Parquet
+import {ParquetDocsTabs} from '@site/src/components/docs/parquet-docs-tabs';
+import {ParquetLayoutGraphic} from '@site/src/components/docs/parquet-layout-graphic';
+import {ParquetScanLiveExample} from '@site/src/components/docs/parquet-scan-live-example';
+import {CapabilityHero} from '@site/src/components/docs/capability-hero';
+import {DocOrientation} from '@site/src/components/docs/designed-doc';
+
+<CapabilityHero
+  capability="columnar"
+  eyebrow="Columnar file format"
+  title="Apache Parquet"
+  description="Organize data into independently useful row groups, column chunks, and pages so readers can fetch less and decode only what they need."
+  logos={[
+    {alt: 'Apache Parquet', src: '/images/format-logos/parquet-logo.png'}
+  ]}
+  links={[
+    {label: 'Parquet module', to: '/docs/modules/parquet'},
+    {label: 'ParquetLoader', to: '/docs/modules/parquet/api-reference/parquet-loader'}
+  ]}
+/>
+
+## Try a range-aware read
+
+Use the panel below to inspect Parquet metadata, select columns, and limit the Arrow rows returned
+from a remote file. The reader can plan the request from the footer before decoding the selected
+data ranges.
+
+<ParquetScanLiveExample />
 
 <ParquetDocsTabs active="overview" />
 
-<p class="badges">
+<ParquetLayoutGraphic />
+
+<DocOrientation
+  eyebrow="The storage model"
+  title="Metadata first. Data second."
+  description="A Parquet reader can inspect the footer, select columns and row groups, then issue only the ranges needed for the request. This is the foundation for cloud-native scans."
+  tone="mint"
+  items={[
+    {label: 'Footer', value: 'Describes schema, statistics, and physical ranges'},
+    {label: 'Row groups', value: 'Natural units for parallel reads and pruning'},
+    {label: 'Pages', value: 'Compressed units for decoding and page indexes'},
+    {label: 'Output', value: 'Object rows, Arrow tables, or incremental batches'}
+  ]}
+/>
+
+<p className="badges">
   <a href="/docs/developer-guide/common-scan-architecture">
     <img src="https://img.shields.io/badge/Scan-Supported-2f855a.svg?style=flat-square" alt="Scan supported" />
   </a>
 </p>
-
-![parquet-logo](../images/parquet-logo-small.png)
-&emsp;
-![apache-logo](../../../images/logos/apache-logo.png)
 
 - _[`@loaders.gl/parquet`](/docs/modules/parquet)_
 - _[Apache Parquet format specification](https://github.com/apache/parquet-format)_

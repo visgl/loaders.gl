@@ -1,4 +1,44 @@
-# Vector
+---
+title: Vector
+description: Access one logical Apache Arrow column across one or more typed data chunks.
+hide_title: true
+page_style: designed
+---
+
+import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
+import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
+
+<DocPageHeader
+  eyebrow="Arrow JS API · column view"
+  title="A Vector is a column you can work with."
+  description="Vector presents one logical Arrow column over one or more Data chunks. Use it for indexed access, iteration, slicing, child columns, and typed values without flattening the underlying storage first."
+  tone="blue"
+  meta={['Logical column', 'Chunked storage', 'Nested child access']}
+  links={[
+    {label: 'Data', to: '/docs/arrowjs/api-reference/data'},
+    {label: 'Table', to: '/docs/arrowjs/api-reference/table'},
+    {label: 'Vector helpers', to: '/docs/arrowjs/api-reference/vectors'}
+  ]}
+/>
+
+<DocOrientation
+  eyebrow="The Vector model"
+  title="Read one column without losing its storage model."
+  description="A Vector is logical rather than necessarily contiguous. Arrow JS can keep multiple chunks behind one column interface, which lets streaming and IPC data remain efficient while applications use familiar accessors."
+  tone="blue"
+  items={[
+    {label: 'Logical type', value: 'One DataType for the vector'},
+    {label: 'Storage', value: 'One or more Data chunks'},
+    {label: 'Access', value: 'get, iteration, slicing, and validity checks'},
+    {label: 'Nested data', value: 'Child vectors for lists, structs, maps, and unions'}
+  ]}
+/>
+
+<ReferenceBoundary
+  title="Vector reference"
+  description="The sections below document construction, fields, indexed access, iteration, slicing, child vectors, and validity behavior."
+  tone="blue"
+/>
 
 :::info
 This page is aligned to Apache Arrow JS v21.x (`apache-arrow`).

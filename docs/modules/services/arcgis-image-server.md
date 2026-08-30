@@ -1,9 +1,57 @@
+---
+title: ArcGIS ImageServer
+description: Access rendered imagery and analytical raster data through ArcGIS ImageServer.
+hide_title: true
+page_style: designed
+---
+
 import {ClientExample} from '@site/src/components';
 import {WmsDocsTabs} from '@site/src/components/docs/wms-docs-tabs';
+import {ServiceSourceGraphic} from '@site/src/components/docs/service-source-graphic';
+import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
+import {DocLiveExample} from '@site/src/components/docs/doc-live-example';
+import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
 
-# ArcGIS ImageServer
+<DocPageHeader
+  eyebrow="Services module · ArcGIS raster source"
+  title="ArcGIS ImageServer"
+  description="Access rendered imagery and analytical raster data through ImageSource and TileSource contracts, including viewport exports and LERC responses."
+  tone="violet"
+  logos={[{alt: 'ArcGIS', src: '/images/format-logos/arcgis-logo.svg'}]}
+  meta={['ImageServer', 'Images and tiles', 'LERC raster output']}
+  links={[
+    {label: 'Services module', to: '/docs/modules/services'},
+    {label: 'ArcGIS service API', to: '/docs/modules/services/api-reference/arcgis'},
+    {label: 'CRS guide', to: '/docs/developer-guide/coordinate-reference-systems'}
+  ]}
+/>
+
+<DocLiveExample label="ArcGIS ImageServer example" height="440px">
+  <ClientExample kind="wms" format="ArcGIS Image Server" />
+</DocLiveExample>
 
 <WmsDocsTabs active="arcgis-image-server" />
+
+<ServiceSourceGraphic kind="arcgis" />
+
+<DocOrientation
+  eyebrow="What it provides"
+  title="Choose rendered pixels or analytical raster values."
+  description="ImageServer can serve display-ready images or typed raster data. loaders.gl keeps those paths explicit so an application can choose the right representation for rendering or analysis."
+  tone="violet"
+  items={[
+    {label: 'Metadata', value: 'Extent, CRS, bands, and service details'},
+    {label: 'Images', value: 'Viewport exports and tiled imagery'},
+    {label: 'Raster', value: 'LERC values, masks, and NoData metadata'},
+    {label: 'Requests', value: 'Rules, bands, formats, and credentials'}
+  ]}
+/>
+
+<ReferenceBoundary
+  title="ImageServer reference"
+  description="The sections below cover support, authentication, viewport images, analytical raster output, tiles, and parameters."
+  tone="violet"
+/>
 
 ArcGIS ImageServer endpoints expose rendered imagery and analytical raster data. loaders.gl offers
 an `ImageSource` for viewport exports and a `TileSource` for tiled visualization or analysis.
@@ -131,14 +179,6 @@ const layer = new SourceLayer({
 
 Use `core.type: 'arcgis-image-server-tiles'` in `sourceOptions` when tiled export is preferred over
 one viewport-sized image.
-
-## Live examples
-
-### Viewport image
-
-<div style={{height: '520px'}}>
-  <ClientExample kind="wms" format="ArcGIS Image Server" />
-</div>
 
 - [ImageServer export tiles](/examples/tiles/arcgis-image-server-tiles)
 - [Analytical ImageServer LERC](/examples/tiles/arcgis-image-server-lerc)

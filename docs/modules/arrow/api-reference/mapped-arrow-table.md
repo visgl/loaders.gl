@@ -1,6 +1,46 @@
-# MappedArrowTable
+---
+title: MappedArrowTable
+description: Add stable string-keyed lookup to an indexed Arrow table without copying the backing rows.
+hide_title: true
+page_style: designed
+---
+
+import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
+import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
+
+<DocPageHeader
+  eyebrow="Mapped Arrow table"
+  title="MappedArrowTable"
+  description="`MappedArrowTable` presents an `IndexedArrowTable` through a stable string-keyed view. Filtering, sorting, slicing, and concatenation remain table operations while keyed lookups stay predictable."
+  tone="cyan"
+  meta={['Indexed Arrow table', 'String-keyed lookup', 'Readonly view']}
+  links={[
+    {label: 'Arrow module', to: '/docs/modules/arrow'},
+    {label: 'Arrow format', to: '/docs/modules/arrow/formats/arrow'},
+    {label: 'Table category', to: '/docs/specifications/category-table'}
+  ]}
+/>
+
+<DocOrientation
+  eyebrow="The mapped-table boundary"
+  title="Map keys to rows. Keep table transforms composable."
+  description="The mapped view separates application identity from physical row order, so callers can use keys without converting the Arrow table into a JavaScript object graph."
+  tone="cyan"
+  items={[
+    {label: 'Backing data', value: 'An indexed Apache Arrow table'},
+    {label: 'Mapping', value: 'String keys to visible row indexes'},
+    {label: 'Transforms', value: 'Filter, sort, slice, and concatenate'},
+    {label: 'Lookup', value: 'Last-wins keys with materialized rows on demand'}
+  ]}
+/>
 
 `MappedArrowTable` is a readonly string-keyed row lookup view over an `IndexedArrowTable`.
+
+<ReferenceBoundary
+  title="Mapped lookup and transform details"
+  description="The reference below covers key semantics, constructor inputs, row lookup, mapped transforms, concatenation, and inherited table operations."
+  tone="cyan"
+/>
 
 Use it when an Arrow table has a stable application-level key, such as an id column, and you want
 fast keyed row lookup while still preserving indexed-table operations such as filtering, sorting,

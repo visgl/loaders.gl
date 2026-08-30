@@ -1,10 +1,11 @@
 import React, {useEffect, useState} from 'react';
-import styled from 'styled-components';
 import type {Table as ArrowTable} from 'apache-arrow';
 import type {ParquetPredicate} from '@loaders.gl/parquet';
 import type {ScanQueryMetadata} from '@loaders.gl/scan';
 import {ExampleUrlInputCard, type UrlOption} from 'examples/website/shared/url-input-card';
 import {ScanQueryPanel, type ScanQueryPanelState} from './scan-query-panel';
+
+import styles from './iceberg-scan-live-example.module.css';
 
 type IcebergDemoState = {
   /** Current stage reached by the browser demo. */
@@ -138,28 +139,30 @@ export function IcebergScanLiveExample(): JSX.Element {
   }, [selectedTableUrl, submittedAst, submittedQueryState]);
 
   return (
-    <ExampleFrame aria-label="Live Iceberg scan example">
-      <ExampleHeader>
+    <section className={styles.exampleFrame} aria-label="Live Iceberg scan example">
+      <div className={styles.exampleHeader}>
         <div>
-          <ExampleTitle>Iceberg snapshot → Arrow batches</ExampleTitle>
-          <ExampleDescription>
+          <h3 className={styles.exampleTitle}>Iceberg snapshot → Arrow batches</h3>
+          <p className={styles.exampleDescription}>
             A public Iceberg table is discovered in the browser, its snapshot and manifests are
             planned, and the selected Parquet data is emitted as Arrow batches.
-          </ExampleDescription>
+          </p>
         </div>
-        <StageBadge $stage={state.stage}>{getStageLabel(state.stage)}</StageBadge>
-      </ExampleHeader>
-      <StageRow>
-        <StageBlock $active={state.stage !== 'loading'}>Metadata</StageBlock>
-        <StageArrow>→</StageArrow>
-        <StageBlock $active={state.stage !== 'loading'}>Manifest plan</StageBlock>
-        <StageArrow>→</StageArrow>
-        <StageBlock $active={state.stage === 'scanned'}>Parquet scan</StageBlock>
-        <StageArrow>→</StageArrow>
-        <StageBlock $active={state.stage === 'scanned'}>Arrow batches</StageBlock>
-      </StageRow>
-      <SourcePicker>
-        <SourcePickerLabel>Iceberg table source</SourcePickerLabel>
+        <span className={`${styles.stageBadge} ${state.stage === 'failed' ? styles.stageFailed : styles.stageReady}`}>
+          {getStageLabel(state.stage)}
+        </span>
+      </div>
+      <div className={styles.stageRow}>
+        <div className={`${styles.stageBlock} ${state.stage !== 'loading' ? styles.stageActive : ''}`}>Metadata</div>
+        <div className={styles.stageArrow}>→</div>
+        <div className={`${styles.stageBlock} ${state.stage !== 'loading' ? styles.stageActive : ''}`}>Manifest plan</div>
+        <div className={styles.stageArrow}>→</div>
+        <div className={`${styles.stageBlock} ${state.stage === 'scanned' ? styles.stageActive : ''}`}>Parquet scan</div>
+        <div className={styles.stageArrow}>→</div>
+        <div className={`${styles.stageBlock} ${state.stage === 'scanned' ? styles.stageActive : ''}`}>Arrow batches</div>
+      </div>
+      <div className={styles.sourcePicker}>
+        <div className={styles.sourcePickerLabel}>Iceberg table source</div>
         <ExampleUrlInputCard<IcebergExample>
           format="Iceberg"
           storageKey="iceberg-tables"
@@ -175,18 +178,18 @@ export function IcebergScanLiveExample(): JSX.Element {
           }}
           onUrlChange={url => setSelectedTableUrl(url)}
         />
-        <SourceHint>Choose a curated public table or load a table root or metadata JSON URL.</SourceHint>
-      </SourcePicker>
-      <QueryForm
+        <div className={styles.sourceHint}>Choose a curated public table or load a table root or metadata JSON URL.</div>
+      </div>
+      <form className={styles.queryForm}
         onSubmit={event => {
           event.preventDefault();
           setSubmittedAst(astText);
         }}
       >
-        <QueryEditors>
-          <QueryEditor>
-            <QueryInputLabel htmlFor="iceberg-sql">SQL</QueryInputLabel>
-            <QueryInput
+        <div className={styles.queryEditors}>
+          <div className={styles.queryEditor}>
+            <label className={styles.queryInputLabel} htmlFor="iceberg-sql">SQL</label>
+            <textarea className={styles.queryInput}
               id="iceberg-sql"
               value={sqlText}
               onChange={event => {
@@ -200,10 +203,10 @@ export function IcebergScanLiveExample(): JSX.Element {
               }}
               aria-label="Editable Iceberg SQL query"
             />
-          </QueryEditor>
-          <QueryEditor>
-            <QueryInputLabel htmlFor="iceberg-query">Predicate AST</QueryInputLabel>
-            <QueryInput
+          </div>
+          <div className={styles.queryEditor}>
+            <label className={styles.queryInputLabel} htmlFor="iceberg-query">Predicate AST</label>
+            <textarea className={styles.queryInput}
               id="iceberg-query"
               value={astText}
               onChange={event => {
@@ -217,14 +220,14 @@ export function IcebergScanLiveExample(): JSX.Element {
               }}
               aria-label="Editable Iceberg predicate AST"
             />
-          </QueryEditor>
-        </QueryEditors>
-        <QueryButton type="submit">Run</QueryButton>
-        <QueryHint>
+          </div>
+        </div>
+        <button className={styles.queryButton} type="submit">Run</button>
+        <div className={styles.queryHint}>
           Edit either view and the other stays synchronized. Supported SQL is SELECT * FROM table
           WHERE column operator value; Run applies the predicate to Iceberg and Parquet.
-        </QueryHint>
-      </QueryForm>
+        </div>
+      </form>
       <ScanQueryPanel
         metadata={queryMetadata}
         loading={state.stage === 'loading' && !queryMetadata}
@@ -236,46 +239,46 @@ export function IcebergScanLiveExample(): JSX.Element {
         title="Iceberg scan parameters"
       />
       {state.stage === 'failed' ? (
-        <ErrorMessage>{state.error}</ErrorMessage>
+        <div className={styles.errorMessage}>{state.error}</div>
       ) : (
         <>
-          <PlanPanel>
-            <PlanHeader>
+          <div className={styles.planPanel}>
+            <div className={styles.planHeader}>
               <strong>Query plan</strong>
               <span>Iceberg snapshot → Parquet → Arrow</span>
-            </PlanHeader>
-            <PlanStats>
-              <Metric>
-                <MetricValue>{state.filesSelected}</MetricValue>
-                <MetricLabel>files</MetricLabel>
-              </Metric>
-              <Metric>
-                <MetricValue>{state.rowsScanned || '—'}</MetricValue>
-                <MetricLabel>rows</MetricLabel>
-              </Metric>
-              <Metric>
-                <MetricValue>{state.metadataVersion ? `v${state.metadataVersion}` : '—'}</MetricValue>
-                <MetricLabel>metadata</MetricLabel>
-              </Metric>
-            </PlanStats>
-          </PlanPanel>
+            </div>
+            <div className={styles.planStats}>
+              <div className={styles.metric}>
+                <div className={styles.metricValue}>{state.filesSelected}</div>
+                <div className={styles.metricLabel}>files</div>
+              </div>
+              <div className={styles.metric}>
+                <div className={styles.metricValue}>{state.rowsScanned || '—'}</div>
+                <div className={styles.metricLabel}>rows</div>
+              </div>
+              <div className={styles.metric}>
+                <div className={styles.metricValue}>{state.metadataVersion ? `v${state.metadataVersion}` : '—'}</div>
+                <div className={styles.metricLabel}>metadata</div>
+              </div>
+            </div>
+          </div>
           {state.preview ? <DataPreview preview={state.preview} /> : null}
         </>
       )}
-    </ExampleFrame>
+    </section>
   );
 }
 
 /** Renders the first Arrow rows as a compact table without materializing the full scan. */
 function DataPreview({preview}: {preview: IcebergTablePreview}): JSX.Element {
   return (
-    <PreviewFrame>
-      <PreviewHeading>
+    <div className={styles.previewFrame}>
+      <div className={styles.previewHeading}>
         <strong>Loaded table data</strong>
         <span>first {preview.rows.length} rows from Arrow</span>
-      </PreviewHeading>
-      <PreviewScroll>
-        <PreviewTable>
+      </div>
+      <div className={styles.previewScroll}>
+        <table className={styles.previewTable}>
           <thead>
             <tr>
               {preview.columns.map(column => <th key={column}>{column}</th>)}
@@ -288,9 +291,9 @@ function DataPreview({preview}: {preview: IcebergTablePreview}): JSX.Element {
               </tr>
             ))}
           </tbody>
-        </PreviewTable>
-      </PreviewScroll>
-    </PreviewFrame>
+        </table>
+      </div>
+    </div>
   );
 }
 
@@ -425,251 +428,3 @@ async function fetchWithExposedContentRange(
     headers
   });
 }
-
-const ExampleFrame = styled.div`
-  border: 1px solid var(--ifm-color-gray-400);
-  border-radius: 8px;
-  margin: 28px 0;
-  padding: 18px;
-`;
-
-const ExampleHeader = styled.div`
-  align-items: start;
-  display: flex;
-  gap: 16px;
-  justify-content: space-between;
-`;
-
-const ExampleTitle = styled.h3`
-  font-size: 18px;
-  margin: 0;
-`;
-
-const ExampleDescription = styled.p`
-  color: var(--ifm-color-gray-700);
-  font-size: 13px;
-  margin: 6px 0 0;
-  max-width: 720px;
-`;
-
-const StageBadge = styled.div<{$stage: IcebergDemoState['stage']}>`
-  background: ${props => (props.$stage === 'failed' ? 'rgba(211, 47, 47, 0.1)' : 'rgba(76, 175, 80, 0.12)')};
-  border: 1px solid ${props => (props.$stage === 'failed' ? 'rgba(211, 47, 47, 0.45)' : 'rgba(76, 175, 80, 0.55)')};
-  border-radius: 999px;
-  color: var(--ifm-color-gray-900);
-  font-size: 12px;
-  font-weight: 800;
-  padding: 7px 10px;
-  white-space: nowrap;
-`;
-
-const StageRow = styled.div`
-  align-items: center;
-  display: flex;
-  gap: 8px;
-  margin-top: 18px;
-`;
-
-const StageBlock = styled.div<{$active: boolean}>`
-  background: ${props => (props.$active ? 'rgba(0, 173, 230, 0.12)' : 'var(--ifm-color-white)')};
-  border: 1px solid ${props => (props.$active ? 'rgba(0, 173, 230, 0.65)' : 'var(--ifm-color-gray-400)')};
-  border-radius: 8px;
-  color: var(--ifm-color-gray-900);
-  font-size: 12px;
-  font-weight: 800;
-  flex: 1 1 0;
-  min-width: 0;
-  padding: 9px 6px;
-  text-align: center;
-`;
-
-const StageArrow = styled.div`
-  color: var(--ifm-color-gray-600);
-  flex: 0 0 24px;
-  font-weight: 800;
-  text-align: center;
-
-  @media (max-width: 640px) {
-    flex-basis: 16px;
-  }
-`;
-
-const SourcePicker = styled.div`
-  margin-top: 16px;
-`;
-
-const SourcePickerLabel = styled.div`
-  color: var(--ifm-color-gray-700);
-  font-size: 11px;
-  font-weight: 800;
-  text-transform: uppercase;
-`;
-
-const SourceHint = styled.div`
-  color: var(--ifm-color-gray-600);
-  font-size: 10px;
-  margin-top: 5px;
-`;
-
-const QueryForm = styled.form`
-  margin-top: 16px;
-`;
-
-const QueryInputLabel = styled.label`
-  color: var(--ifm-color-gray-700);
-  display: block;
-  font-size: 11px;
-  font-weight: 800;
-  margin-bottom: 5px;
-  text-transform: uppercase;
-`;
-
-const QueryEditors = styled.div`
-  display: grid;
-  gap: 10px;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-`;
-
-const QueryEditor = styled.div`
-  min-width: 0;
-`;
-
-const QueryInput = styled.textarea`
-  background: var(--ifm-color-white);
-  border: 1px solid var(--ifm-color-gray-400);
-  border-radius: 6px;
-  color: var(--ifm-color-gray-900);
-  flex: 1;
-  font-family: var(--ifm-font-family-monospace);
-  font-size: 12px;
-  min-height: 62px;
-  min-width: 0;
-  padding: 8px 9px;
-  resize: vertical;
-  width: 100%;
-`;
-
-const QueryButton = styled.button`
-  background: var(--ifm-color-primary);
-  border: 0;
-  border-radius: 6px;
-  color: white;
-  font-size: 12px;
-  font-weight: 800;
-  margin-top: 10px;
-  padding: 7px 14px;
-`;
-
-const QueryHint = styled.div`
-  color: var(--ifm-color-gray-600);
-  font-size: 10px;
-  margin-top: 5px;
-`;
-
-const PlanPanel = styled.div`
-  background: var(--ifm-color-gray-200);
-  border: 1px solid var(--ifm-color-gray-300);
-  border-radius: 8px;
-  margin-top: 16px;
-  padding: 10px 12px;
-`;
-
-const PlanHeader = styled.div`
-  align-items: baseline;
-  color: var(--ifm-color-gray-900);
-  display: flex;
-  font-size: 12px;
-  gap: 8px;
-  justify-content: space-between;
-
-  span {
-    color: var(--ifm-color-gray-700);
-    font-size: 11px;
-  }
-`;
-
-const PlanStats = styled.div`
-  display: flex;
-  gap: 18px;
-  margin-top: 8px;
-`;
-
-const Metric = styled.div`
-  align-items: baseline;
-  display: flex;
-  gap: 5px;
-`;
-
-const MetricValue = styled.div`
-  color: var(--ifm-color-gray-900);
-  font-size: 15px;
-  font-weight: 800;
-`;
-
-const MetricLabel = styled.div`
-  color: var(--ifm-color-gray-700);
-  font-size: 11px;
-`;
-
-const ErrorMessage = styled.div`
-  background: rgba(211, 47, 47, 0.08);
-  border: 1px solid rgba(211, 47, 47, 0.35);
-  border-radius: 8px;
-  color: var(--ifm-color-gray-900);
-  font-size: 13px;
-  margin-top: 16px;
-  padding: 10px;
-`;
-
-const PreviewFrame = styled.div`
-  border: 1px solid var(--ifm-color-gray-400);
-  border-radius: 8px;
-  margin-top: 16px;
-  overflow: hidden;
-`;
-
-const PreviewHeading = styled.div`
-  align-items: baseline;
-  background: var(--ifm-color-gray-200);
-  color: var(--ifm-color-gray-900);
-  display: flex;
-  font-size: 12px;
-  gap: 8px;
-  justify-content: space-between;
-  padding: 10px 12px;
-
-  span {
-    color: var(--ifm-color-gray-700);
-    font-size: 11px;
-  }
-`;
-
-const PreviewScroll = styled.div`
-  max-width: 100%;
-  overflow-x: auto;
-`;
-
-const PreviewTable = styled.table`
-  border-collapse: collapse;
-  color: var(--ifm-color-gray-900);
-  font-size: 11px;
-  margin: 0;
-  min-width: 100%;
-  white-space: nowrap;
-
-  th,
-  td {
-    border-bottom: 1px solid var(--ifm-color-gray-300);
-    padding: 7px 9px;
-    text-align: left;
-  }
-
-  th {
-    background: var(--ifm-color-white);
-    font-weight: 800;
-  }
-
-  tr:last-child td {
-    border-bottom: 0;
-  }
-`;

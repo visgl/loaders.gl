@@ -1,4 +1,40 @@
-# STAC
+---
+title: STAC format
+description: A catalog standard for discovering geospatial assets by space, time, collection, and links.
+hide_title: true
+page_style: designed
+---
+
+import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
+import {DatasetDiscoveryGraphic} from '@site/src/components/docs/dataset-discovery-graphic';
+import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
+
+<DocPageHeader
+  eyebrow="Dataset catalog format"
+  title="STAC"
+  description="STAC connects catalog, collection, and item metadata to the files or services that carry the actual data. It adds spatial and temporal discovery without replacing the native format loader."
+  tone="mint"
+  meta={['Catalogs and Items', 'Space and time', 'Asset links']}
+  links={[
+    {label: 'STAC module', to: '/docs/modules/stac'},
+    {label: 'STAC source API', to: '/docs/modules/stac/api-reference/stac-source-loader'}
+  ]}
+/>
+
+<DatasetDiscoveryGraphic kind="stac" />
+
+<DocOrientation
+  eyebrow="Discovery before decoding"
+  title="Find the item. Choose the asset. Decode it natively."
+  description="STAC makes discovery portable while keeping parsing specialized. A selected asset can continue into a GeoTIFF, Parquet, Zarr, PMTiles, or other loaders.gl source without losing its catalog context."
+  tone="mint"
+  items={[
+    {label: 'Catalog', value: 'Organizes collections and linked child documents'},
+    {label: 'Search', value: 'Filters by collection, bbox, time, and extensions'},
+    {label: 'Item', value: 'Describes one spatiotemporal asset or observation'},
+    {label: 'Asset', value: 'Carries the media type, roles, and download link'}
+  ]}
+/>
 
 The [SpatioTemporal Asset Catalog](https://stacspec.org/) specification describes geospatial assets
 using JSON and GeoJSON documents connected by typed links. STAC metadata points to data; it does
@@ -13,6 +49,12 @@ not prescribe how a GeoTIFF, GeoParquet file, Zarr store, PMTiles archive, or ot
   such as CQL2.
 
 STAC extension fields are preserved by `@loaders.gl/stac` rather than discarded.
+
+<ReferenceBoundary
+  title="STAC objects and access modes"
+  description="The sections below compare catalogs and APIs, explain composition with native format sources, and document browser access constraints."
+  tone="mint"
+/>
 
 ## Static catalogs and APIs
 

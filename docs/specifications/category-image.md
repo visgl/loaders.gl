@@ -1,6 +1,47 @@
-# Image Loaders
+---
+title: Image category
+description: Decode raster images into consistent browser and Node.js data structures.
+hide_title: true
+page_style: designed
+---
+
+import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
+import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
+import {CategoryDataConcept} from '@site/src/components/home/concepts';
+
+<DocPageHeader
+  eyebrow="Loader category"
+  title="Images in a shape your application can use."
+  description="Image loaders hide browser-specific decoding details and expose predictable pixel data, dimensions, and image metadata. Choose an ImageBitmap when a renderer can use it directly, or a decoded image object when you need the pixels."
+  tone="cyan"
+  links={[
+    {label: 'Images module', to: '/docs/modules/images'},
+    {label: 'Texture category', to: '/docs/specifications/category-texture'}
+  ]}
+/>
+
+<CategoryDataConcept initialCategoryId="image" initialRepresentationId="plain" />
+
+<DocOrientation
+  eyebrow="What comes back"
+  title="Decode once, then hand the pixels to the next layer."
+  description="The category separates ordinary raster images from GPU texture containers. That keeps image decoding useful for maps, previews, analysis, and rendering without forcing one runtime representation."
+  tone="cyan"
+  items={[
+    {label: 'Browser path', value: 'ImageBitmap for direct rendering'},
+    {label: 'Portable path', value: 'Decoded image data with typed pixels'},
+    {label: 'Formats', value: 'PNG, JPEG, WebP, GIF, and other browser-supported inputs'},
+    {label: 'Node.js', value: 'Use @loaders.gl/polyfills for image decoding support'}
+  ]}
+/>
 
 The image loader category documents common data formats, options, conventions, and utilities for loaders and writers that work with raster images under loaders.gl conventions.
+
+<ReferenceBoundary
+  title="Image decoding details"
+  description="The sections below cover loader selection, return shapes, browser and Node.js behavior, and writer conventions."
+  tone="cyan"
+/>
 
 ## Image Category Loaders
 
@@ -86,7 +127,7 @@ Compressed GPU texture containers and texture-level return shapes are documented
 The image category also provides a few utilities:
 
 - Detecting ("sniffing") mime type and size of image files before parsing them
-- Getting image data (arrays of pixels) from an image without knowing which type was loaded (TBA)
+- Getting image data (arrays of pixels) from an image without knowing which type was loaded with [`getImageData`](/docs/modules/images/api-reference/image-loader)
 
 ## Remarks
 

@@ -1,6 +1,50 @@
-# Using Loaders
+---
+title: Using loaders
+description: Choose, configure, and run format loaders through the shared loaders.gl core API.
+hide_title: true
+page_style: designed
+---
 
-loaders.gl has parser functions that use so called "loaders" to convert the raw data loaded from files into parsed objects. Each loader encapsulates a parsing function for one file format (or a group of related file formats) together with some metadata (like the loader name, common file extensions for the format etc).
+import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
+import {LoaderSelectionGraphic} from '@site/src/components/docs/loader-selection-graphic';
+import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
+
+<DocPageHeader
+  eyebrow="Core API"
+  title="Using loaders"
+  description="Keep application code focused on the result: choose a loader explicitly, or let loaders.gl select one from the formats your app supports."
+  tone="pink"
+  meta={['load() and parse()', 'TypeScript-aware', 'Explicit or automatic selection']}
+  links={[
+    {label: 'Get started', to: '/docs/developer-guide/get-started'},
+    {label: 'Loader object format', to: '/docs/specifications/loader-object-format'}
+  ]}
+/>
+
+<LoaderSelectionGraphic />
+
+<DocOrientation
+  eyebrow="The loader path"
+  title="Choose how much the application wants to know."
+  description="Use one known loader when the format is part of the application contract, a list when the input may vary, or the shared registry when discovery belongs to the runtime."
+  tone="pink"
+  items={[
+    {label: 'Explicit', value: 'Pass one loader and retain precise result types'},
+    {label: 'Multiple', value: 'Offer compatible loaders for automatic selection'},
+    {label: 'Registered', value: 'Add application-wide defaults with registerLoaders()'},
+    {label: 'Result', value: 'Use load(), parse(), or loadInBatches() for the chosen shape'}
+  ]}
+/>
+
+loaders.gl has parser functions that use so-called **loaders** to convert raw file data into parsed
+objects. Each loader combines a parser for one format (or related group of formats) with metadata
+such as its name, supported extensions, and input type.
+
+<ReferenceBoundary
+  title="Selection, options, and runtime behavior"
+  description="The guide below covers installation, explicit and automatic selection, TypeScript inference, options, composite loaders, and error handling."
+  tone="pink"
+/>
 
 ## Installing loaders
 
@@ -14,14 +58,14 @@ Loaders are passed into utility functions in the loaders.gl core API to enable p
 import {load} from '@loaders.gl/core';
 import {CSVLoader} from '@loaders.gl/csv';
 
-data = await load(url, CSVLoader);
+const data = await load(url, CSVLoader);
 // Application code here
 ...
 ```
 
 ## Specifying Loaders
 
-As seen above can be specified directly in a call to `load` or any of the `parse` functions:
+As shown above, loaders can be specified directly in a call to `load` or any of the `parse` functions:
 
 ```typescript
 import {load} from '@loaders.gl/core';
@@ -36,7 +80,7 @@ const pointCloud = await load(url, [PCDLoader, LASLoader]);
 
 ### Loaders and TypeScript
 
-Since v4.0, all loaders are typed, meaning that loaders.gl can infer types for returned data and loader options from the supplied loader
+Since v4.0, all loaders are typed, meaning that loaders.gl can infer types for returned data and loader options from the supplied loader.
 
 Note that type inference only works when single loader is provided:
 
@@ -52,21 +96,23 @@ const lasPointCloud = await load(url, LASLoader); // => type LASMesh
 const pointCloud = await load(url, [PCDLoader, LASLoader]); // => type unknown
 ```
 
-Note that you can use selectLoader and a switch statement to remain typed
+You can use `selectLoader` and a `switch` statement when the input format is unknown but the result should remain typed:
 
 ```typescript
-import {load} from '@loaders.gl/core';
+import {load, selectLoader} from '@loaders.gl/core';
 import {PCDLoader} from '@loaders.gl/pcd';
 import {LASLoader} from '@loaders.gl/las';
 
 const loader = await selectLoader(url, [PCDLoader, LASLoader]);
 switch (loader.id) {
-  case: 'pcd':
+  case 'pcd': {
     const pcdPointCloud = await load(url, PCDLoader); // => type PCDMesh
     break;
-  case 'las':
+  }
+  case 'las': {
     const lasPointCloud = await load(url, LASLoader); // => type LASMesh
     break;
+  }
 }
 ```
 
@@ -82,7 +128,7 @@ import {CSVLoader} from '@loaders.gl/csv';
 
 registerLoaders([CSVLoader]);
 
-data = await load('url.csv'); // => CSVLoader selected from pre-registered loaders
+const data = await load('url.csv'); // => CSVLoader selected from pre-registered loaders
 ```
 
 Note that in this case the loader type is not known and the return type will be unknown.
@@ -103,7 +149,7 @@ import {selectLoader} from '@loaders.gl/core';
 import {ArrowLoader} from '@loaders.gl/arrow';
 import {CSVLoader} from '@loaders.gl/csv';
 
-selectLoader([ArrowLoader, CSVLoader], 'filename.csv'); // => CSVLoader
+const loader = await selectLoader('filename.csv', [ArrowLoader, CSVLoader]); // => CSVLoader
 ```
 
 Note: Selection works on urls and/or data

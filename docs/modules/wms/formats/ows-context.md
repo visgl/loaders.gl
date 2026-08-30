@@ -1,4 +1,44 @@
-# OWS Context
+---
+title: OWS Context
+description: Understand the OGC context format and the service APIs that handle its referenced resources.
+hide_title: true
+page_style: designed
+---
+
+import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
+import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
+
+<DocPageHeader
+  eyebrow="OGC context format"
+  title="Treat OWS Context as a resource map, not a data service."
+  description="OWS Context packages configured geospatial resources and service links. loaders.gl does not expose a dedicated context loader, but its service sources can load the referenced WMS, WMTS, WFS, and catalog endpoints."
+  tone="violet"
+  meta={['OWS Context', 'Atom and JSON', 'Referenced services']}
+  links={[
+    {label: 'WMS module', to: '/docs/modules/wms'},
+    {label: 'Using sources', to: '/docs/developer-guide/using-sources'},
+    {label: 'Service sources', to: '/docs/modules/services'}
+  ]}
+/>
+
+<DocOrientation
+  eyebrow="Implementation boundary"
+  title="Use the context to discover; use sources to load."
+  description="The context document describes what is available and where. Parse its Atom or JSON representation, then hand each referenced endpoint to the source API that understands that service."
+  tone="violet"
+  items={[
+    {label: 'Document', value: 'Configured geospatial resources and links'},
+    {label: 'Encodings', value: 'Atom/XML and JSON variants'},
+    {label: 'Service APIs', value: 'WMS, WMTS, WFS, and catalog sources'},
+    {label: 'Status', value: 'No dedicated OWS Context loader in v5'}
+  ]}
+/>
+
+<ReferenceBoundary
+  title="OWS Context details"
+  description="The support matrix below clarifies what is represented by the context document and which loaders handle its referenced services."
+  tone="violet"
+/>
 
 ![ogc-logo](../../../images/logos/ogc-logo-60.png)
 

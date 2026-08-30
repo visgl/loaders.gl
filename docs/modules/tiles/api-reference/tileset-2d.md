@@ -1,8 +1,44 @@
-# Tileset2D
+---
+title: Tileset2D
+description: Share cache and request state across viewport-driven 2D tile consumers.
+hide_title: true
+page_style: designed
+---
 
-<p class="badges">
-  <img src="https://img.shields.io/badge/From-v5.0-blue.svg?style=flat-square" alt="From-v5.0" />
-</p>
+import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
+import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
+
+<DocPageHeader
+  eyebrow="Tiles module · 2D runtime"
+  title="Tileset2D"
+  description="A shared runtime for source-backed 2D tile loading, separating reusable fetched content from per-view selection and visibility state."
+  tone="cyan"
+  meta={['From v5.0', '2D tile runtime', 'Shared cache']}
+  links={[
+    {label: 'Tiles module', to: '/docs/modules/tiles'},
+    {label: 'MVT source', to: '/docs/modules/mvt/api-reference/mvt-source-loader'},
+    {label: 'Using sources', to: '/docs/developer-guide/using-sources'}
+  ]}
+/>
+
+<DocOrientation
+  eyebrow="The 2D runtime"
+  title="Reuse tile content without sharing view state."
+  description="Tileset2D lets multiple consumers share fetched tiles while keeping their own viewport selection, visibility, and traversal state."
+  tone="cyan"
+  items={[
+    {label: 'Content', value: 'Shared cache entries and request results'},
+    {label: 'View', value: 'Per-consumer selection and visibility'},
+    {label: 'Requests', value: 'Bounded concurrent tile loading'},
+    {label: 'Source', value: 'Direct callbacks or a TileSource adapter'}
+  ]}
+/>
+
+<ReferenceBoundary
+  title="Tileset2D reference"
+  description="The sections below document construction, source integration, cache limits, zoom range, and lifecycle callbacks."
+  tone="cyan"
+/>
 
 `Tileset2D` is the shared runtime for source-backed 2D tile loading in loaders.gl.
 

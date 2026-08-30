@@ -1,11 +1,46 @@
-# Overview
+---
+title: '@loaders.gl/zarr'
+description: Read chunked multidimensional arrays and spatial windows from Zarr, GeoZarr, and OME-Zarr datasets.
+hide_title: true
+page_style: designed
+---
+
+import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
+import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
+import {RasterWindowGraphic} from '@site/src/components/docs/raster-window-graphic';
+
+<DocPageHeader
+  eyebrow="Chunked array module"
+  title="Read the chunks that cover the question."
+  description="The Zarr module opens chunked multidimensional data and exposes source APIs for spatial, multiscale, and named-dimension selection. It supports Earth-science rasters as well as OME-Zarr bioimaging data."
+  tone="orange"
+  meta={['Zarr v2 / v3', 'GeoZarr', 'OME-Zarr']}
+  links={[
+    {label: 'Scan architecture', to: '/docs/developer-guide/common-scan-architecture'},
+    {label: 'CRS guide', to: '/docs/developer-guide/coordinate-reference-systems'}
+  ]}
+/>
+
+<RasterWindowGraphic kind="zarr" />
+
+<DocOrientation
+  eyebrow="The chunked-array path"
+  title="Discover the array, then select a window."
+  description="Zarr stores large arrays as independently addressable chunks. Source metadata identifies dimensions, scales, variables, and coordinate meaning before a request reads the selected region."
+  tone="orange"
+  items={[
+    {label: 'Datasets', value: 'GeoZarr, OME-Zarr, and generic Zarr arrays'},
+    {label: 'Selection', value: 'Spatial windows, bands, channels, time, and levels'},
+    {label: 'Access', value: 'Chunk reads from local files or object storage'},
+    {label: 'Output', value: 'Typed raster data with source metadata'}
+  ]}
+/>
 
 See [Coordinate Reference Systems](/docs/developer-guide/coordinate-reference-systems) for GeoZarr
 CRS discovery, current native-CRS behavior, and the raster-warping roadmap.
 
-<p class="badges">
+<p className="badges">
   <img src="https://img.shields.io/badge/From-v5.0-blue.svg?style=flat-square" alt="From-v5.0" />
-  &nbsp;
   <img src="https://img.shields.io/badge/Status-Work--In--Progress-orange.svg?style=flat-square" alt="Status: Work-In-Progress" />
   <a href="/docs/developer-guide/common-scan-architecture">
     <img src="https://img.shields.io/badge/Scan-Supported-2f855a.svg?style=flat-square" alt="Scan supported" />
@@ -15,6 +50,12 @@ CRS discovery, current native-CRS behavior, and the raster-warping roadmap.
 The `@loaders.gl/zarr` module reads chunked, multidimensional [Zarr](https://zarr.dev/)
 arrays. It supports the existing pixel-pyramid API, an OME-Zarr source API for bioimaging, and a
 GeoZarr/CF source API for georeferenced Earth-science rasters.
+
+<ReferenceBoundary
+  title="Zarr source and array details"
+  description="The sections below cover installation, source APIs, metadata discovery, chunk selection, and the supported Zarr conventions."
+  tone="orange"
+/>
 
 ## Installation
 
@@ -29,6 +70,9 @@ npm install @loaders.gl/core @loaders.gl/zarr
 - [`GeoZarrSourceLoader`](/docs/modules/zarr/api-reference/geo-zarr-source-loader) opens one
   georeferenced Zarr data variable and reads native spatial windows with named time, vertical, or
   band selections.
+- [`SpatialDataSourceLoader`](/docs/modules/zarr/api-reference/spatial-data-source-loader) discovers named images, labels, points, shapes, and tables from a
+  SpatialData root. It opens Zarr-backed raster and AnnData array elements directly and reports
+  interoperable Parquet-dataset and GeoParquet URLs for points and shapes.
 - `loadZarrConsolidatedMetadata()` probes `.zmetadata`, `zmetadata`, and `zarr.json` documents and
   reports top-level arrays and groups.
 - `loadZarr()` and `ZarrPixelSource` provide the legacy Zarr v2 pixel-pyramid API.
@@ -74,7 +118,7 @@ store directly from S3 and renders monthly solar irradiance on an interactive ma
 | Viewport-driven geospatial windows | — | — | — | Yes | Available |
 | Typed planar or interleaved channel output | Yes | Yes | Yes | Yes | Available |
 | Zarrita-backed v2/v3 implementation | Yes | Yes | Yes | Yes | Available |
-| SpatialData tables, points, and shapes | — | — | Planned | — | Planned |
+| SpatialData images, labels, points, shapes, and tables | — | — | Yes | — | Discovery and typed storage references available |
 | Codec expansion and broader multiscale layouts | Partial | Partial | Planned | Planned | Planned |
 | Common raster query execution | — | — | Levels, channels, and slices | Native spatial windows and named selections | Available |
 
@@ -97,6 +141,28 @@ array output, but their query vocabulary reflects the kind of array being opened
 Query metadata is suitable for populating source-neutral controls before pixel data is requested.
 GeoZarr bounds must use the source CRS; callers should reproject the viewport before requesting a
 window when necessary.
+
+## SpatialData containers
+
+`SpatialDataSourceLoader` normalizes the five standard SpatialData namespaces without loading
+element payloads. Each element retains its axes, coordinate transformations, format version, and
+original attributes. Image and label descriptors use `ome-zarr`; point descriptors use
+`parquet-dataset`; shape descriptors use `geoparquet`; and table descriptors use `anndata-zarr`.
+
+```ts
+import {createDataSource} from '@loaders.gl/core';
+import {SpatialDataSourceLoader} from '@loaders.gl/zarr';
+
+const source = createDataSource(rootUrl, [SpatialDataSourceLoader]);
+const metadata = await source.getMetadata();
+const image = await source.createRasterSource('image', metadata.images[0].name);
+const expression = await source.createTableArraySource('annotations', 'X');
+```
+
+SpatialData points are Dask-style Parquet datasets and shapes are GeoParquet files. Their normalized
+descriptors expose the canonical `points.parquet` and `shapes.parquet` URLs so applications can
+hand them to the corresponding loaders.gl Parquet sources without coupling the lightweight Zarr
+module to the complete Parquet runtime.
 
 ## Attributions
 

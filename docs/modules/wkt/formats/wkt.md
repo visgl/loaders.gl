@@ -1,4 +1,37 @@
-# WKT - Well-Known Text
+---
+title: Well-Known Text format
+description: A human-readable text representation for vector geometries and their coordinate values.
+hide_title: true
+page_style: designed
+---
+
+import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
+import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
+
+<DocPageHeader
+  eyebrow="Geometry text format"
+  title="Make a geometry readable at a glance."
+  description="Well-Known Text (WKT) represents points, lines, polygons, collections, and coordinate dimensions as text. It is useful for inspection, interchange, and database-facing workflows."
+  tone="mint"
+  meta={['OGC Simple Features', 'Geometry text', 'WKT and WKB']}
+  links={[
+    {label: 'WKT module', to: '/docs/modules/wkt'},
+    {label: 'WKTLoader', to: '/docs/modules/wkt/api-reference/wkt-loader'}
+  ]}
+/>
+
+<DocOrientation
+  eyebrow="The geometry vocabulary"
+  title="Name the geometry, then list its coordinates."
+  description="WKT makes the topological shape explicit before the coordinate sequence. Use WKB when the same geometry needs a compact binary representation, or GeoJSON when application interoperability is the priority."
+  tone="mint"
+  items={[
+    {label: 'Shape', value: 'Point, line, polygon, or a collection'},
+    {label: 'Dimensions', value: 'XY, XYZ, XYM, or XYZM coordinate values'},
+    {label: 'Reference', value: 'WKT geometry is distinct from WKT CRS'},
+    {label: 'Alternative', value: 'WKB for binary storage, GeoJSON for JSON APIs'}
+  ]}
+/>
 
 ![ogc-logo](../../../images/logos/ogc-logo-60.png)
 
@@ -6,6 +39,12 @@
 - [Wikipedia](https://en.wikipedia.org/wiki/Well-known_text_representation_of_geometry)
 
 Well-known text (WKT) for geometry is a text markup language for representing vector geometry objects. It is specified in the OGC Simple Feature Access standard (ISO/IEC 13249-3:2016).
+
+<ReferenceBoundary
+  title="WKT syntax and geometry support"
+  description="The sections below cover standards references, examples, dimensional variants, alternatives, and the geometry families supported by loaders.gl."
+  tone="mint"
+/>
 
 - WKT should not be confused with [WKT CRS](./wkt-crs) which describes spatial reference systems.
 - WKT has a binary equivalent, well-known binary [WKB](./wkb), which is a more compact, but non human-readable form.

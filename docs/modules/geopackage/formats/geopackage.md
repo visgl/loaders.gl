@@ -1,16 +1,56 @@
-import {GeoPackageDocsTabs} from '@site/src/components/docs/geopackage-docs-tabs';
+---
+title: GeoPackage format
+description: A SQLite-based package for portable geospatial feature tables, tiles, and metadata.
+hide_title: true
+page_style: designed
+---
 
-# Geopackage
+import {GeoPackageDocsTabs} from '@site/src/components/docs/geopackage-docs-tabs';
+import {DatasetDiscoveryGraphic} from '@site/src/components/docs/dataset-discovery-graphic';
+import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
+import {DocLiveExample} from '@site/src/components/docs/doc-live-example';
+import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
+import {ClientExample} from '@site/src/components';
+
+<DocPageHeader
+  eyebrow="Portable geospatial package"
+  title="GeoPackage"
+  description="GeoPackage uses SQLite to package geospatial tables and metadata in one portable file. loaders.gl can discover a feature table and expose it through the common table shape."
+  tone="orange"
+  logos={[{alt: 'Open Geospatial Consortium', src: '/images/format-logos/ogc-logo-transparent.png'}]}
+  meta={['SQLite container', 'OGC standard', 'Feature tables']}
+  links={[
+    {label: 'GeoPackage module', to: '/docs/modules/geopackage'},
+    {label: 'Scan architecture', to: '/docs/developer-guide/common-scan-architecture'}
+  ]}
+/>
+
+<DocLiveExample label="GeoPackage format example" height="420px">
+  <ClientExample kind="geospatial" format="GeoPackage" />
+</DocLiveExample>
 
 <GeoPackageDocsTabs active="overview" />
 
-<p class="badges">
+<DatasetDiscoveryGraphic kind="geopackage" />
+
+<DocOrientation
+  eyebrow="The package boundary"
+  title="Discover the table before reading the rows."
+  description="A GeoPackage may contain several feature tables. The source first discovers the package catalog, then reads the selected table into a consistent Arrow feature shape."
+  tone="orange"
+  items={[
+    {label: 'Container', value: 'SQLite database in one file'},
+    {label: 'Catalog', value: 'Feature tables, geometry columns, and bounds'},
+    {label: 'Output', value: 'Arrow feature table with geometry metadata'},
+    {label: 'Execution', value: 'Materialized read with residual filtering'}
+  ]}
+/>
+
+<p className="badges">
   <a href="/docs/developer-guide/common-scan-architecture">
     <img src="https://img.shields.io/badge/Scan-Supported-2f855a.svg?style=flat-square" alt="Scan supported" />
   </a>
 </p>
-
-![ogc-logo](../../../images/logos/ogc-logo-60.png)
 
 The `@loaders.gl/geopackage` module handles the OGC [GeoPackage](https://www.geopackage.org/) format.
 
@@ -33,3 +73,9 @@ query pushdown.
 Choose the feature table through the source options before calling `getQueryMetadata()` or
 `read()`. Predicate columns remain available for filtering even when they are absent from the final
 projection.
+
+<ReferenceBoundary
+  title="GeoPackage structure and execution"
+  description="The sections below cover package metadata, feature-table selection, geometry handling, and the current scan execution boundary."
+  tone="orange"
+/>

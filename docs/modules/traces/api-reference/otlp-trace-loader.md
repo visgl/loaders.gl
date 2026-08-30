@@ -1,10 +1,49 @@
+---
+title: OtlpTraceLoader
+description: Read OTLP protobuf or protobuf-JSON into a shared Arrow trace projection.
+hide_title: true
+page_style: designed
+---
+
 {/* SPDX-License-Identifier: MIT */}
 
 import {TracesDocsTabs} from '@site/src/components/docs/traces-docs-tabs';
+import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
+import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
 
-# OTLP Trace Loaders
+<DocPageHeader
+  eyebrow="Traces module · loader API"
+  title="OTLP trace loaders"
+  description="Read binary OTLP protobuf, protobuf-JSON, or JSON Lines into the shared five-table Arrow projection used across the trace module."
+  tone="violet"
+  meta={['OTLP protobuf', 'Protobuf-JSON', 'Shared Arrow tables']}
+  links={[
+    {label: 'OTLP format', to: '/docs/modules/traces/formats/otlp-trace'},
+    {label: 'OTLP writers', to: '/docs/modules/traces/api-reference/otlp-trace-writer'},
+    {label: 'Traces module', to: '/docs/modules/traces'}
+  ]}
+/>
 
 <TracesDocsTabs active="otlptraceloader" />
+
+<DocOrientation
+  eyebrow="What it returns"
+  title="Make trace sources comparable."
+  description="Both OTLP input encodings resolve to the same relational Arrow model, so applications can analyze or transform traces without branching on the wire representation."
+  tone="violet"
+  items={[
+    {label: 'Resources', value: 'Service and resource attributes'},
+    {label: 'Scopes', value: 'Instrumentation scope metadata'},
+    {label: 'Spans', value: 'Span timing, status, and relationships'},
+    {label: 'Events', value: 'Events and links as related tables'}
+  ]}
+/>
+
+<ReferenceBoundary
+  title="OTLP trace loader reference"
+  description="The sections below document binary and JSON loaders, parser access, result tables, options, and batch behavior."
+  tone="violet"
+/>
 
 `OtlpTraceLoader` reads binary OTLP protobuf. `OtlpTraceJsonLoader` reads OTLP protobuf-JSON and
 JSON Lines. Both return the same five-table [`OtlpTrace`](../formats/otlp-trace) Arrow projection.

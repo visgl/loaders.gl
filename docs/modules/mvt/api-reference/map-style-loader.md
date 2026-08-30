@@ -1,8 +1,44 @@
-# MapStyleLoader
+---
+title: MapStyleLoader
+description: Resolve MapLibre and Mapbox style metadata for tile workflows.
+hide_title: true
+page_style: designed
+---
 
-<p class="badges">
-  <img src="https://img.shields.io/badge/From-v4.4-blue.svg?style=flat-square" alt="From-v4.4" />
-</p>
+import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
+import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
+
+<DocPageHeader
+  eyebrow="MVT module · style API"
+  title="MapStyleLoader"
+  description="Parse a MapLibre or Mapbox style document and resolve its tile-source metadata into a form that applications can inspect or pass into tile workflows."
+  tone="blue"
+  meta={['From v4.4', 'Map styles', 'TileJSON resolution']}
+  links={[
+    {label: 'Map style format', to: '/docs/modules/mvt/formats/map-style'},
+    {label: 'MVT source', to: '/docs/modules/mvt/api-reference/mvt-source-loader'},
+    {label: 'MVT module', to: '/docs/modules/mvt'}
+  ]}
+/>
+
+<DocOrientation
+  eyebrow="What it resolves"
+  title="Turn a style document into usable source metadata."
+  description="MapStyleLoader preserves the style while resolving relative URLs and referenced TileJSON documents, so applications can derive tile endpoints without reimplementing URL handling."
+  tone="blue"
+  items={[
+    {label: 'Input', value: 'MapLibre or Mapbox style JSON'},
+    {label: 'Sources', value: 'Resolved URLs and TileJSON fields'},
+    {label: 'Layers', value: 'Preserved style layers and unknown fields'},
+    {label: 'Boundary', value: 'Metadata resolution, not rendering'}
+  ]}
+/>
+
+<ReferenceBoundary
+  title="MapStyleLoader reference"
+  description="The sections below document loading, URL resolution, direct resolution, and the fields handled by the loader."
+  tone="blue"
+/>
 
 The `MapStyleLoader` parses MapLibre / Mapbox style JSON and returns a normalized style object with
 resolved tile-source metadata.

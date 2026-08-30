@@ -1,4 +1,44 @@
-# Worker Processing
+---
+title: Worker processing
+description: Run atomic and streaming work in reusable browser or Node.js workers.
+hide_title: true
+page_style: designed
+---
+
+import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
+import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
+
+<DocPageHeader
+  eyebrow="Worker utilities · processing API"
+  title="Worker processing"
+  description="Run loader, writer, and application-defined work off the main thread with bounded pools, transferable data, cancellation, and stateful streaming sessions."
+  tone="blue"
+  meta={['Browser and Node.js', 'Atomic and batched', 'Reusable pools']}
+  links={[
+    {label: 'Worker utilities', to: '/docs/modules/worker-utils'},
+    {label: 'Worker loaders guide', to: '/docs/developer-guide/using-worker-loaders'},
+    {label: 'Worker threads', to: '/docs/developer-guide/concepts/worker-threads'}
+  ]}
+/>
+
+<DocOrientation
+  eyebrow="The worker boundary"
+  title="Move the expensive part. Keep the data flow understandable."
+  description="The processing APIs cover both one-shot operations and stateful batch sessions, with backpressure and transferable ownership keeping memory and queue growth bounded."
+  tone="blue"
+  items={[
+    {label: 'Atomic', value: 'One input, one result on a pooled worker'},
+    {label: 'Batched', value: 'Stateful async input and output iterators'},
+    {label: 'Transport', value: 'Transferable ArrayBuffer ownership'},
+    {label: 'Lifecycle', value: 'Preload, reuse, cancellation, and replacement'}
+  ]}
+/>
+
+<ReferenceBoundary
+  title="Worker processing reference"
+  description="The sections below document atomic work, batch sessions, worker creation, preload, transfer, and pool lifecycle behavior."
+  tone="blue"
+/>
 
 `@loaders.gl/worker-utils` runs atomic and streaming operations on bounded pools of browser Web
 Workers or Node.js worker threads.

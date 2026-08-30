@@ -1,6 +1,45 @@
-# Loader Object
+---
+title: Loader object format
+description: The metadata and parser contract that lets a format participate in loaders.gl core APIs.
+hide_title: true
+page_style: designed
+---
+
+import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
+import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
+
+<DocPageHeader
+  eyebrow="Loader contract"
+  title="Describe a format once. Plug it into the runtime."
+  description="A loader object combines format identity, recognition metadata, and the parser functions an application can use. Core APIs then add fetching, workers, batching, and option handling around that contract."
+  tone="cyan"
+  meta={['Format metadata', 'Parser functions', 'Core integration']}
+  links={[
+    {label: 'Creating loaders', to: '/docs/developer-guide/creating-loaders-and-writers'},
+    {label: 'Loader categories', to: '/docs/developer-guide/loader-categories'}
+  ]}
+/>
+
+<DocOrientation
+  eyebrow="The loader boundary"
+  title="Identify the input, then expose the right parser."
+  description="The object stays deliberately small. It tells core how to recognize the input and whether the format supports asynchronous, synchronous, streaming, or worker-backed parsing."
+  tone="cyan"
+  items={[
+    {label: 'Identify', value: 'Name, extensions, encoding, and format'},
+    {label: 'Recognize', value: 'Magic bytes or text probes when available'},
+    {label: 'Parse', value: 'Async, sync, text, batch, or worker entry points'},
+    {label: 'Compose', value: 'Context-aware sub-loader calls when needed'}
+  ]}
+/>
 
 To be compatible with the parsing/loading functions in `@loaders.gl/core` such as `parse` and `load`, a parser needs to be described by a "loader object" conforming to the following specification.
+
+<ReferenceBoundary
+  title="Loader fields and parser functions"
+  description="The sections below define common metadata, test functions, parser variants, signatures, and parser context."
+  tone="cyan"
+/>
 
 ## Loader Object Format v1.0
 

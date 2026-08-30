@@ -1,8 +1,42 @@
+---
+title: 3D Tiles resource resolution and content detection
+description: Resolve tile references and identify nested tilesets, binary tile content, and extensionless resources safely.
+hide_title: true
+page_style: designed
+---
+
 import {Tiles3DDocsTabs} from '@site/src/components/docs/tiles-3d-docs-tabs';
+import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
+import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
 
-# Resource Resolution and Content Detection
+<DocPageHeader
+  eyebrow="3D Tiles runtime / resources"
+  title="Resolve the resource before interpreting it."
+  description="Tiles can point to signed URLs, extensionless responses, nested tilesets, binary content, or archive entries. loaders.gl resolves the reference and classifies the bytes without relying on a filename."
+  tone="blue"
+  meta={['Relative and signed URLs', 'Magic-byte detection', 'Nested tilesets']}
+/>
 
-<Tiles3DDocsTabs active="resources" />
+<Tiles3DDocsTabs active="runtime" />
+
+<DocOrientation
+  eyebrow="Resource boundary"
+  title="Address first. Parse second."
+  description="Keeping URL resolution, response classification, and content parsing separate makes the loader predictable when servers omit extensions or when a tileset contains several resource layers."
+  tone="blue"
+  items={[
+    {label: 'Resolve', value: 'Apply base URLs and inherited query parameters.'},
+    {label: 'Inspect', value: 'Use binary magic before making a JSON assumption.'},
+    {label: 'Classify', value: 'Distinguish tilesets, glTF, subtrees, and tile payloads.'},
+    {label: 'Cache', value: 'Reuse normalized resource addresses without caching bodies.'}
+  ]}
+/>
+
+<ReferenceBoundary
+  title="Resolution and detection details"
+  description="The sections below describe the exact order of resolution, classification, caching, and failure handling."
+  tone="blue"
+/>
 
 A 3D Tiles runtime repeatedly turns references in tileset metadata into fetchable resources. The reference may be relative, signed, extensionless, or stored inside a 3TZ archive. After fetching it, loaders.gl must distinguish another tileset from renderable content without trusting a filename. This page describes that resource boundary and the caches used to keep it inexpensive.
 

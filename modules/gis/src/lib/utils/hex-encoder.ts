@@ -20,8 +20,8 @@ export class HexEncoder {
   /** Decode hexadecimal */
   decode(array: Uint8Array, result: Uint8Array): Uint8Array {
     for (let i = 0; i < array.byteLength / 2; ++i) {
-      const halfByte1 = hexDecode(array[i]);
-      const halfByte2 = hexDecode(array[i + 1]);
+      const halfByte1 = hexDecode(array[i * 2]);
+      const halfByte2 = hexDecode(array[i * 2 + 1]);
       result[i] = halfByte1 * 16 + halfByte2;
     }
     // Check if final half byte (is that legal?)
@@ -35,8 +35,8 @@ export class HexEncoder {
   encode(array: Uint8Array, result: Uint8Array): Uint8Array {
     for (let i = 0; i < array.byteLength; ++i) {
       const byte = array[i];
-      result[i * 2] = hexEncode(byte & 0x0f);
-      result[i * 2 + 1] = hexEncode(byte & 0xf0);
+      result[i * 2] = hexEncode((byte & 0xf0) >> 4);
+      result[i * 2 + 1] = hexEncode(byte & 0x0f);
     }
     return result;
   }
@@ -50,11 +50,11 @@ function hexEncode(value: number): number {
 }
 
 function hexDecode(value: number): number {
-  if (value >= 65) {
-    return value - 65 + 10; // ASCII of A
-  }
   if (value >= 97) {
     return value - 97 + 10; // ASCII of a
+  }
+  if (value >= 65) {
+    return value - 65 + 10; // ASCII of A
   }
   return value - 48; // ASCII of 0
 }

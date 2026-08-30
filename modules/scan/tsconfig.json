@@ -8,6 +8,7 @@
     "outDir": "dist"
   },
   "references": [
+    {"path": "../parquet"},
     {"path": "../loader-utils"},
     {"path": "../schema"},
     {"path": "../sql"}

@@ -1,12 +1,56 @@
-import {TexturesDocsTabs} from '@site/src/components/docs/textures-docs-tabs';
+---
+title: Compressed Textures
+description: Understand GPU-native texture containers, mip chains, and portable supercompression.
+hide_title: true
+page_style: designed
+---
 
-# Compressed Textures
+import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
+import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
+import {TexturesDocsTabs} from '@site/src/components/docs/textures-docs-tabs';
+import {TextureTranscodeGraphic} from '@site/src/components/docs/texture-transcode-graphic';
+
+<DocPageHeader
+  eyebrow="Texture formats"
+  title="Keep compressed texture data compressed until the GPU needs it."
+  description="Compressed texture containers package GPU-readable mip levels, arrays, and cube faces. Supercompressed formats add a portable transport layer that can be transcoded to the device’s supported GPU format."
+  tone="cyan"
+  meta={['KTX and DDS', 'Mipmap containers', 'Basis supercompression']}
+  links={[
+    {label: 'Textures module', to: '/docs/modules/textures'},
+    {label: 'Texture category', to: '/docs/specifications/category-texture'},
+    {label: 'Basis format', to: '/docs/modules/textures/formats/basis'}
+  ]}
+/>
+
+<TexturesDocsTabs active="compressed-textures" />
+
+<TextureTranscodeGraphic />
+
+<DocOrientation
+  eyebrow="Container, payload, device"
+  title="Choose the container. Preserve the mip chain. Upload the supported format."
+  description="The container carries dimensions, levels, and format metadata. The payload stays opaque to the CPU while the application selects a compatible GPU path."
+  tone="cyan"
+  items={[
+    {label: 'Container', value: 'KTX, DDS, or PVR stores texture levels'},
+    {label: 'Payload', value: 'GPU-compressed blocks or supercompressed data'},
+    {label: 'Transcode', value: 'Basis Universal chooses a device target'},
+    {label: 'Upload', value: 'Hand levels to WebGL, WebGPU, or a rendering library'}
+  ]}
+/>
 
 <TexturesDocsTabs active="compressed-textures" />
 
 **Compressed textures** are different from compressed images in that they do not have to be decompressed, they can be used directly by a supporting GPU. However, a compressed texture typically consists of a collection of compressed subimages, representing mipmaps etc. These compressed subimages are stored as an array of "binary blobs" in a container file. Only the container file is parsed, extracting metadata and the binary buffers representing subimages. The binary subimages can then be passed directly to a GPU that understands how to read pixels directly from them without decompressing them first.
 
 **Supercompressed textures** are an intermediate format whose subimages are compressed in a common format. This format can be cheaply transcoded on to a real compressed texture format supported on the current client, without decompressing and recompressing the texture. This allows a single supercompressed texture to be portably used on multiple platforms even though those platforms do not support the same compressed texture formats.
+
+<ReferenceBoundary
+  title="Compression and GPU format details"
+  description="The reference below covers containers, mipmaps, supported compression families, runtime upload, WebGL/WebGPU considerations, and writer prerequisites."
+  tone="cyan"
+/>
 
 ## Performance Considerations
 

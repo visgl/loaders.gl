@@ -7,9 +7,11 @@ import type {ParquetKeyRetriever} from './lib/parquet-encryption';
 
 /** Shared row-level options supported by both Parquet backends. */
 type ParquetCommonLoaderOptions = {
+  /** @deprecated Use `_scan.limit` instead. */
   limit?: number;
   offset?: number;
   batchSize?: number;
+  /** @deprecated Use `_scan.columns` instead for logical projection. */
   columns?: string[];
   preserveBinary?: boolean;
   /** Decode legacy INT96 values as Arrow timestamp-nanosecond values. */

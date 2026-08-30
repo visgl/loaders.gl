@@ -16,6 +16,19 @@ const result = engine.query(table, {
 });
 ```
 
+The experimental asynchronous path is available on the same engine. It preserves the result
+semantics while allowing a registered backend to schedule remote or compiled work:
+
+```typescript
+const result = await engine.queryAsync(table, {
+  predicate: parseSQLPredicate('population >= 1000000'),
+  limit: 100
+});
+```
+
+Synchronous backends are wrapped automatically. GPU backends may use this boundary as a staging
+point, but GPU graph compilation and resource ownership remain backend-specific.
+
 Optional backends can register a lazy loader without adding backend-specific imports to application
 code:
 

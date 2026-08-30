@@ -1,7 +1,7 @@
 {
   "name": "@loaders.gl/scan",
   "description": "Optional scan planning and execution for loaders.gl",
-  "version": "5.0.0-alpha.2",
+  "version": "5.0.0-alpha.4",
   "license": "MIT",
   "type": "module",
   "publishConfig": {
@@ -26,6 +26,21 @@
       "types": "./dist/index.d.ts",
       "import": "./dist/index.js",
       "require": "./dist/index.cjs"
+    },
+    "./iceberg": {
+      "types": "./dist/iceberg.d.ts",
+      "import": "./dist/iceberg.js",
+      "require": "./dist/iceberg.cjs"
+    },
+    "./delta": {
+      "types": "./dist/delta.d.ts",
+      "import": "./dist/delta.js",
+      "require": "./dist/delta.cjs"
+    },
+    "./hudi": {
+      "types": "./dist/hudi.d.ts",
+      "import": "./dist/hudi.js",
+      "require": "./dist/hudi.cjs"
     }
   },
   "sideEffects": false,
@@ -39,10 +54,12 @@
     "build-bundle": "ocular-bundle ./bundle.ts --output=dist/dist.min.js"
   },
   "dependencies": {
-    "@loaders.gl/loader-utils": "5.0.0-alpha.2",
-    "@loaders.gl/schema": "5.0.0-alpha.2",
-    "@loaders.gl/schema-utils": "5.0.0-alpha.2",
-    "@loaders.gl/sql": "5.0.0-alpha.2",
+    "@loaders.gl/geoarrow": "5.0.0-alpha.4",
+    "@loaders.gl/loader-utils": "5.0.0-alpha.4",
+    "@loaders.gl/parquet": "5.0.0-alpha.4",
+    "@loaders.gl/schema": "5.0.0-alpha.4",
+    "@loaders.gl/schema-utils": "5.0.0-alpha.4",
+    "@loaders.gl/sql": "5.0.0-alpha.4",
     "apache-arrow": ">= 17.0.0"
   }
 }

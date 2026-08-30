@@ -1,84 +1,119 @@
-import {CapabilityHero} from '@site/src/components/docs/capability-hero';
-import {StreamingConcept} from '@site/src/components/home/concepts';
+---
+title: Streaming loaders
+description: Process large files incrementally with async iterators, batched loaders, and transforms.
+hide_title: true
+page_style: designed
+---
 
-# Using Batched Loaders
+import {CapabilityHero} from '@site/src/components/docs/capability-hero';
+import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
+import {StreamingConcept} from '@site/src/components/home/concepts';
 
 <CapabilityHero capability="streaming" />
 
 <StreamingConcept />
 
-## Start here
+<DocOrientation
+  eyebrow="Streaming in one minute"
+  title="Start using the data before the download finishes."
+  description="A batched loader turns a response or byte stream into an async sequence of useful results. Your application handles one batch at a time with ordinary JavaScript."
+  items={[
+    {label: 'Use it when', value: 'Files are large, memory is limited, or latency matters.'},
+    {label: 'Core API', value: 'loadInBatches() and parseInBatches()'},
+    {label: 'Input → output', value: 'Response or byte stream → async data batches'},
+    {label: 'Works with', value: 'CSV, JSON, GeoJSON, Parquet, and more'}
+  ]}
+/>
 
-Use a batched loader when data is too large to wait for or can be useful before the full download
-finishes. Process each batch with an ordinary `for await...of` loop; no separate streaming framework
-is required.
+## The basic loop
 
-A major feature of loaders.gl is the availability of a number of batched (or streaming) loaders.
+If you can use `for await...of`, you can use a streaming loader. Each iteration receives parsed data
+that can immediately be filtered, displayed, stored, or passed to another transform.
 
-The advantages and characteristics of streaming are descriped in more detail in the [streaming](./concepts/streaming) concepts section, but the highlights are:
+```typescript title="Process batches as they arrive"
+import {loadInBatches} from '@loaders.gl/core';
+import {CSVLoader} from '@loaders.gl/csv';
 
-- Ability to parse large data sources that exceed browser memory limits (maximum allocation limits for a single `string` or `ArrayBuffer` etc tends to be less tha 1GB in most browsers).
-- While parsing is done on smaller chunks and does not freeze the main thread.
-- data can be processed (and displayed) as it arrives over the network, rather than at the end of a long request, leading to a more interactive experience.
-- transforms can be applied incrementally to the incoming data, e.g. to cryptographically hash or decrypt data
-
-## Batches: Async Iterator based Streaming
-
-The loaders.gl streaming architecture is built around ES2018 async iterators rather than the more traditional `Stream`s. Async iterators are arguably easier to work with than streams, are consistent across browsers and Node.js, and enable a "callback-less" programming style supported by built-in JavaScript language features, such as `for await (... of ...)` and `async function *`.
-
-Note: `Stream` input sources is still accepted by loaders.gl functions, however internally processing is done via async iterators and the output of a batched parsing operation is an async iterator that yields "batches" of parsed data.
-
-```typescript
-import {JSONLoader} from '@loaders.gl/json';
-import {load} from '@loaders.gl/core';
-
-const data = await load(url, JSONLoader, {json: options});
-```
-
-The JSONLoader supports streaming JSON parsing, in which case it will yield "batches" of rows from the first array it encounters in the JSON. To e.g. parse a stream of GeoJSON:
-
-```typescript
-import {GeoJSONLoader} from '@loaders.gl/json';
-import {load} from '@loaders.gl/core';
-
-const batches = await loadInBatches('geojson.json', GeoJSONLoader);
+const batches = await loadInBatches('records.csv', CSVLoader);
 
 for await (const batch of batches) {
-  // batch.data will contain a number of rows
+  updateApplication(batch.data);
+}
+```
+
+The application does not need a separate streaming framework. loaders.gl handles the input stream,
+incremental parsing, and batch boundaries; the loop remains normal asynchronous JavaScript.
+
+## Why batches help
+
+- **Lower memory use.** The complete file does not need to fit in one `string` or `ArrayBuffer`.
+- **Earlier results.** Applications can respond as soon as the first useful records are parsed.
+- **Responsive processing.** Parsing and transforms are distributed across smaller units of work.
+- **Composable pipelines.** Hashing, decryption, filtering, and conversion can run incrementally.
+
+:::tip[One useful rule]
+
+Use `load` when you need one complete result. Use `loadInBatches` when partial results are useful or
+the complete input may be too large to hold in memory comfortably.
+
+:::
+
+<ReferenceBoundary
+  title="How batched loading works"
+  description="The rest of this guide covers the iterator model, supported inputs, transforms, and the details needed to build production pipelines."
+/>
+
+## Async iterators and batches
+
+The loaders.gl streaming architecture uses ES2018 async iterators rather than requiring applications
+to adopt Node.js or DOM stream APIs. Async iterators work in browsers and Node.js and support the
+built-in `for await...of` syntax.
+
+Stream input sources are still accepted. Internally, loaders.gl converts them to async iterators and
+returns an async iterator that yields parsed batches.
+
+For example, `GeoJSONLoader` can yield features from a large GeoJSON document in batches:
+
+```typescript title="Inspect streamed GeoJSON features"
+import {loadInBatches} from '@loaders.gl/core';
+import {GeoJSONLoader} from '@loaders.gl/json';
+
+const batches = await loadInBatches('features.geojson', GeoJSONLoader);
+
+for await (const batch of batches) {
   for (const feature of batch.data) {
-    switch (feature.geometry.type) {
-      case 'Polygon':
-      ...
+    if (feature.geometry.type === 'Polygon') {
+      displayPolygon(feature);
     }
   }
 }
 ```
 
-## Streaming Data Sources
+## Supported input sources
 
-While the primary input for `parseInBatches` is an async iterator many input types are supported:
+The primary input for `parseInBatches` is an async iterator, but applications can provide several
+common streaming types:
 
-- `AsyncIterable<ArrayBuffer>` (i.e. the iterator must yield `ArrayBuffer` chunks).
-- `Stream` instances can be used as input to `parseInBatches`. An async iterator will automatically be created from the stream.
-- `Response` objects can also be used as input (the `Response.body` stream will be used).
+- `AsyncIterable<ArrayBuffer>` yielding binary chunks.
+- A DOM or Node.js `Stream`, which loaders.gl converts to an async iterator.
+- A `Response`; its `body` stream supplies the incoming bytes.
 
-In addition, note that applications can easily wrap many data types in a `Response` object (e.g. `FormData`, `Blob`, `File`, `string`, `ArrayBuffer` etc), which makes it possible to do streaming loads from almost any data source.
+Applications can also wrap `FormData`, `Blob`, `File`, `string`, or `ArrayBuffer` values in a
+`Response`. This provides one consistent path for network responses and local data.
 
-## Applying Transforms
+## Applying transforms
 
-<p class="badges">
-  <img src="https://img.shields.io/badge/From-v2.3-blue.svg?style=flat-square" alt="From-v2.3" />
-</p>
+Transforms process each incoming chunk without waiting for the complete source. This example
+calculates a checksum while CSV batches are being parsed:
 
-Example of using a transform to calculate a cryptographic hash:
-
-```typescript
+```typescript title="Calculate a checksum incrementally"
 import {loadInBatches} from '@loaders.gl/core';
 import {CRC32HashTransform} from '@loaders.gl/crypto';
+import {CSVLoader} from '@loaders.gl/csv';
 
 let hash;
 
-const csvIterator = await loadInBatches(CSV_URL, CSVLoader, {
+const batches = await loadInBatches('records.csv', CSVLoader, {
   transforms: [CRC32HashTransform],
   crypto: {
     onEnd: (result) => {
@@ -87,11 +122,28 @@ const csvIterator = await loadInBatches(CSV_URL, CSVLoader, {
   }
 });
 
-let csv;
-for await (const batch of csvIterator) {
+for await (const batch of batches) {
+  storeRows(batch.data);
 }
 
 console.log(hash);
 ```
 
-Note that by using a transform, the hash is calculated incrementally as batches are loaded and parsed, and does not require having the entire data source loaded into memory. It also distributes the potentially heavy hash calculation over the batches, keeping the main thread responsive.
+The transform sees data incrementally, so it does not require a second in-memory copy of the entire
+source. Expensive work is also spread across batches instead of happening in one long operation.
+
+## Choosing a batch size
+
+Batch size balances responsiveness and throughput. Smaller batches can produce the first visible
+result sooner, while larger batches reduce per-batch overhead. Start with the loader default and tune
+only when measurements show that latency or throughput needs attention.
+
+The available option and exact batch shape depend on the loader. Consult the loader's API page for
+format-specific behavior.
+
+## Related reading
+
+- [Streaming concepts](./concepts/streaming)
+- [Using workers](./using-worker-loaders)
+- [Loader categories](./loader-categories)
+- [`loadInBatches` API](../modules/core/api-reference/load-in-batches)

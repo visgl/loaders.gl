@@ -1,0 +1,94 @@
+.frame {
+  --doc-live-example-height: 420px;
+  background: #081321;
+  border-radius: 22px;
+  height: var(--doc-live-example-height);
+  margin: 1.25rem 0 2.25rem;
+  overflow: hidden;
+  position: relative;
+}
+
+.frame[data-fullscreen] {
+  border-radius: 0;
+  height: 100%;
+}
+
+.content {
+  height: 100%;
+  position: relative;
+}
+
+.content > :global(*) {
+  height: 100%;
+}
+
+.fullscreenButton {
+  align-items: center;
+  backdrop-filter: blur(10px);
+  background: rgba(7, 16, 29, 0.82);
+  border: 1px solid rgba(190, 226, 249, 0.3);
+  border-radius: 10px;
+  box-shadow: 0 10px 28px rgba(2, 8, 18, 0.34);
+  color: #f6f9fc;
+  cursor: pointer;
+  display: flex;
+  font-size: 1.2rem;
+  height: 2.4rem;
+  justify-content: center;
+  line-height: 1;
+  padding: 0;
+  position: absolute;
+  right: 0.85rem;
+  top: 0.85rem;
+  width: 2.4rem;
+  z-index: 4;
+}
+
+.fullscreenButton:hover,
+.fullscreenButton:focus-visible {
+  background: rgba(23, 52, 84, 0.94);
+  border-color: rgba(112, 199, 255, 0.72);
+}
+
+.fullscreenButton:focus-visible,
+.interactionGate:focus-visible {
+  outline: 3px solid rgba(112, 199, 255, 0.42);
+  outline-offset: 2px;
+}
+
+.interactionGate {
+  align-items: flex-end;
+  background: linear-gradient(180deg, transparent 66%, rgba(4, 11, 20, 0.58));
+  border: 0;
+  color: #d9edfc;
+  cursor: zoom-in;
+  display: flex;
+  inset: 0;
+  justify-content: center;
+  padding: 1rem;
+  position: absolute;
+  z-index: 3;
+}
+
+.interactionGate > span {
+  backdrop-filter: blur(10px);
+  background: rgba(7, 16, 29, 0.78);
+  border: 1px solid rgba(190, 226, 249, 0.24);
+  border-radius: 999px;
+  box-shadow: 0 10px 28px rgba(2, 8, 18, 0.3);
+  font-size: 0.78rem;
+  font-weight: 750;
+  letter-spacing: 0.02em;
+  padding: 0.55rem 0.8rem;
+}
+
+.frame :global(.deck-widget) {
+  z-index: 2;
+}
+
+@media (max-width: 560px) {
+  .frame {
+    border-radius: 16px;
+    height: min(var(--doc-live-example-height), 56vh);
+  }
+}

@@ -1,6 +1,39 @@
-# createDataSource
+---
+title: createDataSource
+description: Create a queryable source for datasets that need metadata, tiles, or repeated requests.
+hide_title: true
+page_style: designed
+---
 
-<p class="badges">
+import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
+import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
+
+<DocPageHeader
+  eyebrow="Core source API"
+  title="Keep the dataset open when one request is not enough."
+  description="`createDataSource()` turns a URL or loaded resource into a source object with an API for metadata, tiles, windows, searches, or other repeated requests."
+  tone="mint"
+  meta={['Queryable source', 'Metadata first', 'Repeated requests']}
+  links={[
+    {label: 'Core module', to: '/docs/modules/core'},
+    {label: 'Using sources', to: '/docs/developer-guide/using-sources'}
+  ]}
+/>
+
+<DocOrientation
+  eyebrow="The source boundary"
+  title="Open once. Discover and request many times."
+  description="A source keeps format-specific state behind a common interface. That is useful for tiled archives, catalogs, image services, and cloud datasets where a single parse call cannot express the workflow."
+  tone="mint"
+  items={[
+    {label: 'Open', value: 'URL, Blob, Response, or source-supported resource'},
+    {label: 'Select', value: 'One source loader or best-effort matching'},
+    {label: 'Discover', value: 'Metadata, schema, bounds, layers, or assets'},
+    {label: 'Request', value: 'Tiles, windows, features, scans, or pages'}
+  ]}
+/>
+
+<p className="badges">
   <img src="https://img.shields.io/badge/From-v4.2-blue.svg?style=flat-square" alt="From v4.2" />
 </p>
 
@@ -8,6 +41,12 @@ This function creates a `DataSource` for an
 (i.e. parses the entire data set in one operation). It can be called on "already loaded" data such as `ArrayBuffer` and `string` objects.
 
 In contrast to `load` and `parse` which parse a single file, the returned `DataSource` is a a class instance that offers an API for querying additional data (such as tiles from a tile server).
+
+<ReferenceBoundary
+  title="Data source construction and options"
+  description="The sections below document source selection, metadata and request methods, nested options, and examples using tiled data sources."
+  tone="mint"
+/>
 
 ## Usage
 

@@ -1,14 +1,62 @@
-import {JsonDocsTabs} from '@site/src/components/docs/json-docs-tabs';
+---
+title: GeoJSONLoader
+description: Stream or decode GeoJSON features into familiar geometry and table shapes.
+hide_title: true
+page_style: designed
+---
 
-# GeoJSONLoader
+import {JsonDocsTabs} from '@site/src/components/docs/json-docs-tabs';
+import {GeoArrowFlowGraphic} from '@site/src/components/docs/geoarrow-flow-graphic';
+import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
+import {DocLiveExample} from '@site/src/components/docs/doc-live-example';
+import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
+import {ClientExample} from '@site/src/components';
+
+<DocPageHeader
+  eyebrow="GeoJSON loader"
+  title="GeoJSONLoader"
+  description="GeoJSONLoader preserves the familiar feature and geometry model while supporting binary geometry, Arrow tables, and incremental parsing for larger documents."
+  tone="cyan"
+  logos={[{alt: 'GeoJSON', src: '/images/format-logos/geojson-logo.svg'}]}
+  meta={['RFC 7946', 'Streaming parser', 'Arrow and binary output']}
+  links={[
+    {label: 'GeoJSON format', to: '/docs/modules/json/formats/geojson'},
+    {label: 'JSON module', to: '/docs/modules/json'}
+  ]}
+/>
+
+<DocLiveExample label="GeoJSONLoader map example" height="420px">
+  <ClientExample kind="geospatial" format="GeoJSON" />
+</DocLiveExample>
 
 <JsonDocsTabs active="geojsonloader" tryItHref="/examples/geospatial/geojson" />
 
-<p class="badges">
+<GeoArrowFlowGraphic />
+
+<DocOrientation
+  eyebrow="One loader, several useful shapes"
+  title="Use objects for clarity and columns for throughput."
+  description="Choose the output that matches the next stage of the application. The source document stays GeoJSON; the returned representation can be convenient objects or typed binary columns."
+  tone="cyan"
+  items={[
+    {label: 'Features', value: 'GeoJSON table for mapping and inspection'},
+    {label: 'Binary', value: 'Compact geometry buffers'},
+    {label: 'Arrow', value: 'Typed columns with WKB geometry'},
+    {label: 'Batches', value: 'Incremental results for NDJSON and large inputs'}
+  ]}
+/>
+
+<p className="badges">
   <img src="https://img.shields.io/badge/From-v1.0-blue.svg?style=flat-square" alt="From-v1.0" />
 </p>
 
 Streaming loader for GeoJSON encoded files.
+
+<ReferenceBoundary
+  title="GeoJSON usage and output shapes"
+  description="The sections below cover simple loading, alternate shapes, streaming, reprojection, and loader options."
+  tone="cyan"
+/>
 
 GeoJSON is a geospatial interchange format that uses JSON encoding. Use `GeoJSONLoader` for GeoJSON semantics such as features, geometries, feature collections, and GeoArrow WKB output; use `JSONLoader` for arbitrary JSON documents.
 

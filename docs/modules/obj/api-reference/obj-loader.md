@@ -1,10 +1,52 @@
-import {ObjDocsTabs} from '@site/src/components/docs/obj-docs-tabs';
+---
+title: OBJLoader
+description: Parse Wavefront OBJ and MTL geometry into Mesh objects or Mesh Arrow tables.
+hide_title: true
+page_style: designed
+---
 
-# OBJLoader
+import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
+import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
+import {ObjDocsTabs} from '@site/src/components/docs/obj-docs-tabs';
+import {LoaderLiveExample} from '@site/src/components/docs/loader-live-example';
+
+<DocPageHeader
+  eyebrow="OBJ loader"
+  title="Bring Wavefront geometry into a shared mesh pipeline."
+  description="`OBJLoader` parses the classic OBJ/MTL text format and can return a legacy Mesh object or Mesh Arrow table. For large vertex-only files, it also exposes a batched point-cloud path."
+  tone="violet"
+  meta={['OBJ and MTL', 'Mesh and Arrow table', 'Point-cloud batches']}
+  links={[
+    {label: 'OBJ module', to: '/docs/modules/obj'},
+    {label: 'Mesh category', to: '/docs/specifications/category-mesh'},
+    {label: 'OBJWriter', to: '/docs/modules/obj/api-reference/obj-writer'}
+  ]}
+/>
+
+<DocOrientation
+  eyebrow="The OBJ path"
+  title="Read text geometry. Preserve the representation you need."
+  description="OBJ is human-readable and widely supported, but its records are not columnar. The loader resolves faces, materials, and attributes before exposing a renderer-friendly or Arrow-backed result."
+  tone="violet"
+  items={[
+    {label: 'Input', value: 'OBJ geometry with optional MTL materials'},
+    {label: 'Records', value: 'Vertices, normals, UVs, colors, and faces'},
+    {label: 'Output', value: 'Mesh object or Mesh Arrow table'},
+    {label: 'Streaming', value: 'Batched vertex parsing for point clouds'}
+  ]}
+/>
 
 <ObjDocsTabs active="objloader" />
 
-<p class="badges">
+<LoaderLiveExample />
+
+<ReferenceBoundary
+  title="OBJ parsing and output details"
+  description="The reference below covers output shapes, material and geometry records, batched parsing, and loader options."
+  tone="violet"
+/>
+
+<p className="badges">
   <img src="https://img.shields.io/badge/From-v1.0-blue.svg?style=flat-square" alt="From-v1.0" />
 </p>
 

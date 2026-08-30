@@ -1,8 +1,47 @@
-import {XmlDocsTabs} from '@site/src/components/docs/xml-docs-tabs';
+---
+title: XML and HTML format
+description: Parse XML and simple HTML markup into JavaScript object trees for protocol and document loaders.
+hide_title: true
+page_style: designed
+---
 
-# XML Format
+import {XmlDocsTabs} from '@site/src/components/docs/xml-docs-tabs';
+import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
+import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
+
+<DocPageHeader
+  eyebrow="Markup format"
+  title="Keep verbose service documents navigable."
+  description="The XML module turns XML and supported HTML input into object trees that protocol-specific loaders can validate and normalize. It stays intentionally general so WMS, KML, GPX, and other consumers can define their own schemas."
+  tone="violet"
+  meta={['XML and HTML', 'Object-tree output', 'Protocol-loader foundation']}
+  links={[
+    {label: 'XML module', to: '/docs/modules/xml'},
+    {label: 'XMLLoader', to: '/docs/modules/xml/api-reference/xml-loader'},
+    {label: 'KML and GPX', to: '/docs/modules/kml'}
+  ]}
+/>
 
 <XmlDocsTabs active="format" />
+
+<DocOrientation
+  eyebrow="Markup data path"
+  title="Parse the tree here. Interpret the protocol next."
+  description="XMLLoader handles syntax and tree construction; higher-level modules decide what the elements mean. That separation keeps the general parser small and lets service loaders expose typed contracts."
+  tone="violet"
+  items={[
+    {label: 'Input', value: 'XML documents and supported HTML markup.'},
+    {label: 'Parse', value: 'Construct a free-form JavaScript object tree.'},
+    {label: 'Normalize', value: 'Let KML, WMS, GPX, or other modules apply protocol semantics.'},
+    {label: 'Use', value: 'Inspect metadata or pass a typed result to application code.'}
+  ]}
+/>
+
+<ReferenceBoundary
+  title="XML format and API details"
+  description="The reference below covers accepted markup, object-tree conventions, HTML compatibility, and the parser entry points."
+  tone="violet"
+/>
 
 | Characteristic       | Value                                                                                      |
 | -------------------- | ------------------------------------------------------------------------------------------ |

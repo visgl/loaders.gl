@@ -1,6 +1,5 @@
-import test from 'test/utils/vitest-tape';
+import {expect, test} from 'vitest';
 import transform from 'json-map-transform';
-
 const inputData = {
   a: 'Some string - a',
   b: {
@@ -8,8 +7,7 @@ const inputData = {
     bb: 123.123
   }
 };
-
-test('tile-converter(i3s)#json transform - should fill input data into the template', async t => {
+test('tile-converter(i3s)#json transform - should fill input data into the template', async () => {
   const template = {
     b: {
       path: 'b',
@@ -17,13 +15,11 @@ test('tile-converter(i3s)#json transform - should fill input data into the templ
     }
   };
   const result = transform(inputData, template);
-  t.deepEqual(result, {
+  expect(result).toEqual({
     b: 'Some string - ba - 123.123'
   });
-  t.end();
 });
-
-test('tile-converter(i3s)#json transform - should fill the result object with the default value in absense of a corresponding value', async t => {
+test('tile-converter(i3s)#json transform - should fill the result object with the default value in absense of a corresponding value', async () => {
   const template = {
     b: {
       path: 'b',
@@ -35,9 +31,8 @@ test('tile-converter(i3s)#json transform - should fill the result object with th
     }
   };
   const result = transform(inputData, template);
-  t.deepEqual(result, {
+  expect(result).toEqual({
     b: 'Some string - ba - 123.123',
     d: 'Default text'
   });
-  t.end();
 });

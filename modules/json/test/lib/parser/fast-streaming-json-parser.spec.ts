@@ -146,6 +146,66 @@ test('FastStreamingJSONParser tolerates incomplete trailing JSON', () => {
   expect(parser.write(''), 'closed incomplete input does not emit partial rows').toEqual([]);
   expect(parser.getPartialResult(), 'root streaming metadata is initialized').toEqual([]);
 });
+
+test('FastStreamingJSONParser seeks through every JSON value shape before the target', () => {
+  const json = JSON.stringify({
+    emptyObject: {},
+    emptyArray: [],
+    text: 'ignored',
+    escaped: '\b\f\n\r\t/\\"',
+    primitive: false,
+    nested: [{value: null}, [1, 2]],
+    rows: [{id: 1}, {id: 2}]
+  });
+  const output = collectParserOutput(FastStreamingJSONParser, json, 1, ['$.rows']);
+  expect(output.rows).toEqual([{id: 1}, {id: 2}]);
+  expect(output.partialResult).toEqual({
+    emptyObject: {},
+    emptyArray: [],
+    text: 'ignored',
+    escaped: '\b\f\n\r\t/\\"',
+    primitive: false,
+    nested: [{value: null}, [1, 2]],
+    rows: []
+  });
+});
+
+test('FastStreamingJSONParser decodes every escaped key character', () => {
+  const escapedKeys = [
+    ['quote\\"key', 'quote"key'],
+    ['slash\\\\key', 'slash\\key'],
+    ['solidus\\/key', 'solidus/key'],
+    ['backspace\\bkey', 'backspace\bkey'],
+    ['formfeed\\fkey', 'formfeed\fkey'],
+    ['newline\\nkey', 'newline\nkey'],
+    ['return\\rkey', 'return\rkey'],
+    ['tab\\tkey', 'tab\tkey']
+  ];
+  for (const [encodedKey, decodedKey] of escapedKeys) {
+    const output = collectParserOutput(
+      FastStreamingJSONParser,
+      `{\"${encodedKey}\":0,\"rows\":[1]}`,
+      1,
+      ['$.rows']
+    );
+    expect(output.rows, decodedKey).toEqual([1]);
+  }
+});
+
+test('FastStreamingJSONParser keeps raw-field rewriting conservative for non-object rows', () => {
+  const parser = new FastStreamingJSONParser({rawJsonUtf8Fields: ['raw']});
+  const rows = parser.write('[1,"two",null,{"raw":3},{"other":{"x":1}}]');
+  parser.close();
+  expect(rows).toEqual([1, 'two', null, {raw: 3}, {other: {x: 1}}]);
+});
+
+test('FastStreamingJSONParser safely emits syntactically complete complex rows only', () => {
+  const parser = new FastStreamingJSONParser({metadata: false});
+  expect(parser.write('[[{"text":"} ] \\\" \\u2603"}],')).toEqual([[{text: '} ] " ☃'}]]);
+  expect(parser.write('{"nested":[1,2]}] trailing text')).toEqual([{nested: [1, 2]}]);
+  parser.close();
+  expect(parser.getPartialResult()).toBeNull();
+});
 /**
  * Collects rows and metadata from a streaming parser for comparison.
  */

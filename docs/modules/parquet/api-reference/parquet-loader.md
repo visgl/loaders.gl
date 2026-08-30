@@ -1,13 +1,47 @@
-import {ParquetDocsTabs} from '@site/src/components/docs/parquet-docs-tabs';
-import BrowserOnly from '@docusaurus/BrowserOnly';
+---
+title: ParquetLoader
+description: Read Parquet files with object rows, Arrow tables, and streaming batches.
+hide_title: true
+page_style: designed
+---
 
-# ParquetLoader
+import {ParquetDocsTabs} from '@site/src/components/docs/parquet-docs-tabs';
+import {ParquetLayoutGraphic} from '@site/src/components/docs/parquet-layout-graphic';
+import BrowserOnly from '@docusaurus/BrowserOnly';
+import {CapabilityHero} from '@site/src/components/docs/capability-hero';
+import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
+
+<CapabilityHero
+  capability="columnar"
+  eyebrow="Parquet module / loader"
+  title="ParquetLoader"
+  description="Start with a familiar load call, then opt into Arrow output, batches, or the selective source API as the dataset grows."
+  links={[
+    {label: 'Parquet format', to: '/docs/modules/parquet/formats/parquet'},
+    {label: 'Parquet source', to: '/docs/modules/parquet/api-reference/parquet-source-loader'}
+  ]}
+/>
 
 <ParquetDocsTabs active="parquetloader" />
 
-<p class="badges">
+<ParquetLayoutGraphic />
+
+<DocOrientation
+  eyebrow="What ParquetLoader returns"
+  title="Start with rows. Keep a columnar path open."
+  description="ParquetLoader can return familiar object rows, Arrow-compatible tables, or incremental batches. The same entry point can stay useful as files become wider, larger, and more selective."
+  tone="mint"
+  items={[
+    {label: 'Default', value: 'Object-row tables for straightforward application code'},
+    {label: 'Columnar', value: "ArrowTable output with parquet.shape: 'arrow-table'"},
+    {label: 'Streaming', value: 'Batches for incremental processing and lower peak memory'},
+    {label: 'Selective path', value: 'Use ParquetSourceLoader for footer and range-aware reads'}
+  ]}
+/>
+
+<p className="badges">
   <img src="https://img.shields.io/badge/From-v3.1-blue.svg?style=flat-square" alt="From-v3.1" />
-  &nbsp;
+  <img src="https://img.shields.io/badge/From-v5.0-blue.svg?style=flat-square" alt="From-v5.0" />
   <img src="https://img.shields.io/badge/Status-Experimental-orange.svg?style=flat-square" alt="Status: Experimental" />
 </p>
 
@@ -15,10 +49,14 @@ Streaming loader for Apache Parquet encoded files. `ParquetLoader` is the primar
 `ParquetJSLoader` is the experimental TypeScript loader variant. Both return object rows by default
 and support Arrow tables through `parquet.shape: 'arrow-table'`.
 
-<img src="https://img.shields.io/badge/From-v5.0-blue.svg?style=flat-square" alt="From-v5.0" />
-
 Please refer to the `parquet` format page for information on
 which [Parquet format features](/docs/modules/parquet/formats/parquet) are supported.
+
+<ReferenceBoundary
+  title="Loader usage and compatibility"
+  description="The sections below cover row and Arrow shapes, streaming, geospatial metadata, loader variants, and the options that control decoding."
+  tone="mint"
+/>
 
 ## Usage
 
@@ -28,8 +66,9 @@ Load a Parquet file as object rows.
 import {ParquetJSLoader, ParquetLoader} from '@loaders.gl/parquet';
 import {load} from '@loaders.gl/core';
 
-const wasmRows = await load(url, ParquetLoader, {parquet: options});
-const typeScriptRows = await load(url, ParquetJSLoader, {parquet: options});
+const loaderOptions = {parquet: {batchSize: 10_000}};
+const wasmRows = await load(url, ParquetLoader, loaderOptions);
+const typeScriptRows = await load(url, ParquetJSLoader, loaderOptions);
 ```
 
 Applications normally import metadata loaders from the package root. Code that needs a
@@ -43,6 +82,7 @@ Load a Parquet file as Arrow using the primary loader.
 import {ParquetLoader} from '@loaders.gl/parquet';
 import {load} from '@loaders.gl/core';
 
+const abortController = new AbortController();
 const arrowTable = await load(url, ParquetLoader, {
   core: {
     worker: true
@@ -119,8 +159,6 @@ and Zstandard pages. Those probes come from a lightweight entrypoint with no cod
 codec-backed implementations are loaded only when native support is unavailable. Native Zstandard
 support is not yet widely available, so inject `zstd-codec` for broad compatibility; when
 provided, it takes precedence over the native path. LZ4 still requires `lz4js`.
-<img src="https://img.shields.io/badge/From-v5.0-blue.svg?style=flat-square" alt="From-v5.0" />
-
 ```typescript
 import {ParquetLoader} from '@loaders.gl/parquet';
 import {load} from '@loaders.gl/core';
@@ -164,7 +202,7 @@ Supports table category options such as `batchType` and `batchSize`.
 
 | Option | Type | Default | Description |
 | ------ | ---- | ------- | ----------- |
-| `parquet.shape` | `'object-row-table' \| 'arrow-table'` | `'object-row-table'` | Selects the returned table shape for `ParquetLoader` and `ParquetJSLoader`. <img src="https://img.shields.io/badge/From-v5.0-blue.svg?style=flat-square" alt="From-v5.0" /> |
+| `parquet.shape` | `'object-row-table' \| 'arrow-table'` | `'object-row-table'` | Selects the returned table shape for `ParquetLoader` and `ParquetJSLoader`. |
 | `parquet.limit` | `number` | `undefined` | Maximum number of rows to return. |
 | `parquet.offset` | `number` | `0` | Number of rows to skip before returning data. |
 | `parquet.batchSize` | `number` | `undefined` | Target number of rows per batch when streaming. |

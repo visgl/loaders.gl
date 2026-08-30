@@ -1,8 +1,44 @@
-# WKTCRSLoader
+---
+title: WKTCRSLoader
+description: Parse WKT coordinate reference system syntax into a value-preserving AST.
+hide_title: true
+page_style: designed
+---
 
-<p class="badges">
-  <img src="https://img.shields.io/badge/From-v4.0-blue.svg?style=flat-square" alt="From-v4.0" />
-</p>
+import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
+import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
+
+<DocPageHeader
+  eyebrow="WKT module · CRS loader"
+  title="WKTCRSLoader"
+  description="Parse WKT coordinate reference system syntax into a value-preserving AST, keeping the source structure available for inspection and faithful re-encoding."
+  tone="violet"
+  meta={['From v4.0', 'WKT-CRS', 'Value-preserving AST']}
+  links={[
+    {label: 'WKT-CRS format', to: '/docs/modules/wkt/formats/wkt-crs'},
+    {label: 'CRS guide', to: '/docs/developer-guide/coordinate-reference-systems'},
+    {label: 'WKTCRSWriter', to: '/docs/modules/wkt/api-reference/wkt-crs-writer'}
+  ]}
+/>
+
+<DocOrientation
+  eyebrow="What it preserves"
+  title="Read the CRS definition without flattening it."
+  description="The AST retains keyword spelling, delimiters, value order, repeated and unknown nodes, and numeric lexemes so applications can inspect or re-encode the definition faithfully."
+  tone="violet"
+  items={[
+    {label: 'Input', value: 'WKT1, WKT2, GDAL, or ESRI syntax'},
+    {label: 'Output', value: 'A value-preserving WKTCRSAst'},
+    {label: 'Validation', value: 'Optional profile and strict checks'},
+    {label: 'Boundary', value: 'Syntax parsing, not coordinate reprojection'}
+  ]}
+/>
+
+<ReferenceBoundary
+  title="WKTCRSLoader reference"
+  description="The sections below document installation, usage, AST structure, profiles, and compatibility behavior."
+  tone="violet"
+/>
 
 Parses [WKT coordinate reference system syntax](../formats/wkt-crs) into the value-preserving
 `WKTCRSAst` from `@math.gl/crs`. See [Coordinate Reference Systems](/docs/developer-guide/coordinate-reference-systems)

@@ -26,6 +26,19 @@ test('creates the Arrow reference engine by default', async () => {
   expect(result.data.toArray().map(row => row?.toJSON())).toEqual([{name: 'b'}]);
 });
 
+test('reports synchronous Arrow query failures as rejected promises', async () => {
+  const engine = await createScanEngine();
+  const controller = new AbortController();
+  controller.abort(new Error('query cancelled'));
+
+  const queryPromise = engine.queryAsync(makeArrowTable({value: [1]}), {
+    signal: controller.signal
+  });
+
+  expect(queryPromise).toBeInstanceOf(Promise);
+  await expect(queryPromise).rejects.toThrow('Arrow query was aborted.');
+});
+
 test('exposes the shared metadata vocabulary from the optional scan package', () => {
   const table = makeArrowTable({name: ['a'], value: [1]});
   const metadata = createScanQueryMetadata({
@@ -49,9 +62,11 @@ test('exposes the shared metadata vocabulary from the optional scan package', ()
 });
 
 test('loads a registered backend through the same root API', async () => {
+  const asynchronousTable = makeArrowTable({value: [2]});
   registerScanBackend('test', async () => ({
     name: 'test',
     query: sourceTable => sourceTable,
+    queryAsync: async () => asynchronousTable,
     explain: () => ({}) as never
   }));
 
@@ -60,6 +75,26 @@ test('loads a registered backend through the same root API', async () => {
 
   expect(engine.name).toBe('test');
   expect(engine.query(table)).toBe(table);
+  await expect(engine.queryAsync(table)).resolves.toBe(asynchronousTable);
+});
+
+test('preserves prototype methods and receiver when loading class backends', async () => {
+  class ClassBackend {
+    readonly name = 'class-backend' as const;
+    readonly prefix = 'class';
+    query(sourceTable: ArrowTable) {
+      if (this.prefix !== 'class') throw new Error('backend receiver was lost');
+      return sourceTable;
+    }
+    explain() {
+      return {} as never;
+    }
+  }
+  registerScanBackend('class-backend', () => new ClassBackend());
+  const engine = await createScanEngine({backend: 'class-backend'});
+  const table = makeArrowTable({value: [1]});
+  expect(engine.query(table)).toBe(table);
+  await expect(engine.queryAsync(table)).resolves.toBe(table);
 });
 
 test('validates backend registrations and loader names', async () => {

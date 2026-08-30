@@ -1,4 +1,44 @@
-# ZipWriter
+---
+title: ZipWriter
+description: Encode a loaders.gl file map as a ZIP archive with optional progress reporting.
+hide_title: true
+page_style: designed
+---
+
+import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
+import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
+
+<DocPageHeader
+  eyebrow="ZIP API · archive writer"
+  title="Package named resources into one archive."
+  description="ZipWriter accepts a file map and emits a valid ZIP archive. Paths can represent nested files or explicit directories, while progress and JSZip options remain available when needed."
+  tone="violet"
+  meta={['File map input', 'ArrayBuffer output', 'Progress callbacks']}
+  links={[
+    {label: 'ZIP module', to: '/docs/modules/zip'},
+    {label: 'ZIP format', to: '/docs/modules/zip/formats/zip'},
+    {label: 'ZipLoader', to: '/docs/modules/zip/api-reference/zip-loader'}
+  ]}
+/>
+
+<DocOrientation
+  eyebrow="The archive writing path"
+  title="Build the archive from the paths your application already owns."
+  description="Use a file map to describe archive contents without manually managing ZIP records. The writer preserves nested paths and can report progress while JSZip creates the final bytes."
+  tone="violet"
+  items={[
+    {label: 'Input', value: 'Object of archive paths and string or binary contents'},
+    {label: 'Directories', value: 'Trailing slash keys become directory entries'},
+    {label: 'Output', value: 'ArrayBuffer containing a ZIP archive'},
+    {label: 'Control', value: 'Progress callback, folder creation, and JSZip options'}
+  ]}
+/>
+
+<ReferenceBoundary
+  title="ZipWriter reference"
+  description="The sections below document file-map input, nested paths, output behavior, progress callbacks, and archive options."
+  tone="violet"
+/>
 
 Encodes a filemap into a Zip Archive. Returns an `ArrayBuffer` that is a valid Zip Archive and can be written to file.
 

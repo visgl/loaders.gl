@@ -1,11 +1,51 @@
-# SPLAT, KSPLAT, SPZ, and RAD
+---
+title: SPLAT, KSPLAT, SPZ, and RAD
+description: Compare the binary Gaussian splat containers supported by loaders.gl.
+hide_title: true
+page_style: designed
+---
 
-<p class="badges">
+import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
+import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
+
+<DocPageHeader
+  eyebrow="Gaussian splat formats"
+  title="Several containers. One renderer-facing table."
+  description="SPLAT, KSPLAT, SPZ, and RAD store Gaussian splats with different tradeoffs in headers, compression, and paging. loaders.gl brings them into a shared Mesh Arrow table shape."
+  tone="violet"
+  meta={['SPLAT', 'KSPLAT', 'SPZ', 'RAD']}
+  links={[
+    {label: 'Splats module', to: '/docs/modules/splats'},
+    {label: 'SPLATLoader', to: '/docs/modules/splats/api-reference/splat-loader'},
+    {label: 'RAD source', to: '/docs/modules/splats/api-reference/rad-source-loader'}
+  ]}
+/>
+
+<DocOrientation
+  eyebrow="The format family"
+  title="Choose the container for the access pattern."
+  description="Raw files are simple and portable; optimized containers add compression or paging. The output contract can remain the same even when the storage strategy changes."
+  tone="violet"
+  items={[
+    {label: 'SPLAT', value: 'Simple fixed-width records for complete files'},
+    {label: 'KSPLAT', value: 'Sectioned GaussianSplats3D container'},
+    {label: 'SPZ', value: 'Compressed independent attribute streams'},
+    {label: 'RAD', value: 'Paged level-of-detail chunks for remote scenes'}
+  ]}
+/>
+
+<p className="badges">
   <img src="https://img.shields.io/badge/From-v5.0-blue.svg?style=flat-square" alt="From-v5.0" />
   <img src="https://img.shields.io/badge/Status-Experimental-orange.svg?style=flat-square" alt="Status: Experimental" />
 </p>
 
 `@loaders.gl/splats` supports binary Gaussian splat formats used by web Gaussian splatting viewers.
+
+<ReferenceBoundary
+  title="Container and attribute details"
+  description="The reference below covers record layouts, headers, compression, paging, version support, and the common Mesh Arrow output."
+  tone="violet"
+/>
 
 - _[`@loaders.gl/splats`](/docs/modules/splats)_
 - _[Spark loading splats documentation](https://sparkjs.dev/docs/loading-splats/)_

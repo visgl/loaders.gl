@@ -1,12 +1,47 @@
+---
+title: ShapefileLoader
+description: Load Shapefile geometry, attributes, indexes, and CRS metadata into geospatial tables.
+hide_title: true
+page_style: designed
+---
+
 import {ShapefileDocsTabs} from '@site/src/components/docs/shapefile-docs-tabs';
+import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
+import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
 
-# ShapefileLoader
-
-<p class="badges">
-  <img src="https://img.shields.io/badge/From-v2.3-blue.svg?style=flat-square" alt="From-v2.3" />
-</p>
+<DocPageHeader
+  eyebrow="Shapefile module · loader API"
+  title="ShapefileLoader"
+  description="Load a Shapefile dataset as one geospatial table, coordinating its geometry, attributes, index, projection, and optional text-encoding sidecars."
+  tone="orange"
+  meta={['From v2.3', 'SHP + sidecars', 'GeoJSON / Arrow tables']}
+  links={[
+    {label: 'Shapefile format', to: '/docs/modules/shapefile/formats/shapefile'},
+    {label: 'SHP sub-loader', to: '/docs/modules/shapefile/api-reference/shp-loader'},
+    {label: 'Shapefile module', to: '/docs/modules/shapefile'}
+  ]}
+/>
 
 <ShapefileDocsTabs active="loader" />
+
+<DocOrientation
+  eyebrow="What it assembles"
+  title="Treat the sidecars as one dataset."
+  description="ShapefileLoader joins geometry and attributes, then carries projection and encoding information through the result so applications do not have to coordinate the files themselves."
+  tone="orange"
+  items={[
+    {label: 'Geometry', value: 'SHP records and multipart shapes'},
+    {label: 'Attributes', value: 'DBF fields and text encoding'},
+    {label: 'Metadata', value: 'SHX index and PRJ coordinate system'},
+    {label: 'Output', value: 'Legacy, GeoJSON, or Arrow table shapes'}
+  ]}
+/>
+
+<ReferenceBoundary
+  title="ShapefileLoader reference"
+  description="The sections below document usage, output shapes, options, and the structure of the assembled result."
+  tone="orange"
+/>
 
 The `ShapefileLoader` parses Shapefile datasets into loaders.gl geometry tables.
 

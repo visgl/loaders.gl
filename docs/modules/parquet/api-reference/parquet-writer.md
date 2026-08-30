@@ -1,20 +1,60 @@
-import {ParquetDocsTabs} from '@site/src/components/docs/parquet-docs-tabs';
+---
+title: ParquetWriter
+description: Encode loaders.gl and Arrow tables as Parquet with typed columns and geospatial metadata.
+hide_title: true
+page_style: designed
+---
 
-# ParquetWriter
+import {ParquetDocsTabs} from '@site/src/components/docs/parquet-docs-tabs';
+import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
+import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
+import {WriterPipelineGraphic} from '@site/src/components/docs/writer-pipeline-graphic';
+
+<DocPageHeader
+  eyebrow="Parquet writer"
+  title="ParquetWriter"
+  description="ParquetWriter encodes loaders.gl table data, including Arrow-backed tables, into typed columnar Parquet. GeoArrow metadata can be carried into GeoParquet schema metadata when the input describes geometry columns."
+  tone="cyan"
+  logos={[{alt: 'Apache Parquet', src: '/images/format-logos/parquet-logo.png'}]}
+  meta={['Parquet', 'Arrow input', 'GeoParquet metadata']}
+  links={[
+    {label: 'GeoParquet format', to: '/docs/modules/parquet/formats/geoparquet'},
+    {label: 'ArrowWriter', to: '/docs/modules/arrow/api-reference/arrow-writer'}
+  ]}
+/>
 
 <ParquetDocsTabs active="parquetwriter" />
 
-<p class="badges">
+<WriterPipelineGraphic />
+
+<DocOrientation
+  eyebrow="The encode path"
+  title="Keep types, columns, and spatial metadata together."
+  description="The writer accepts loaders.gl tables and Arrow input, then emits Parquet columns. When geometry metadata is present, the writer can synthesize the GeoParquet schema description needed by downstream readers."
+  tone="cyan"
+  items={[
+    {label: 'Input', value: 'Row, columnar, or Arrow table data'},
+    {label: 'Output', value: 'Typed Parquet columns and row groups'},
+    {label: 'Geospatial', value: 'GeoArrow metadata to GeoParquet metadata'},
+    {label: 'Runtime', value: 'Wasm-backed writer with a TypeScript compatibility path'}
+  ]}
+/>
+
+<p className="badges">
   <img src="https://img.shields.io/badge/From-v3.1-blue.svg?style=flat-square" alt="From-v3.1" />
-  &nbsp;
+  <img src="https://img.shields.io/badge/From-v5.0-blue.svg?style=flat-square" alt="From-v5.0" />
   <img src="https://img.shields.io/badge/Status-Experimental-orange.svg?style=flat-square" alt="Status: Experimental" />
 </p>
 
 `ParquetWriter` accepts loaders.gl tables, including Arrow tables, and encodes them through the wasm-backed Parquet writer path.
 
-`ParquetJSWriter` is the plain-table writer for the experimental TypeScript parquetjs backend.
-<img src="https://img.shields.io/badge/From-v5.0-blue.svg?style=flat-square" alt="From-v5.0" />
+<ReferenceBoundary
+  title="ParquetWriter details"
+  description="The sections below cover usage, geospatial metadata precedence, options, and writer compatibility."
+  tone="cyan"
+/>
 
+`ParquetJSWriter` is the plain-table writer for the experimental TypeScript parquetjs backend.
 The legacy `ParquetJSONWriter` compatibility alias has been removed. Use `ParquetWriter`.
 
 ```typescript

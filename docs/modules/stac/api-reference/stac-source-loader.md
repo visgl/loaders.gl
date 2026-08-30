@@ -1,4 +1,40 @@
-# STACSourceLoader
+---
+title: STACSourceLoader
+description: Discover and search static catalogs or STAC APIs before handing selected assets to native loaders.
+hide_title: true
+page_style: designed
+---
+
+import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
+import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
+import {DatasetDiscoveryGraphic} from '@site/src/components/docs/dataset-discovery-graphic';
+
+<DocPageHeader
+  eyebrow="STAC source"
+  title="STACSourceLoader"
+  description="STACSourceLoader handles static catalog traversal and API Item Search, returning metadata and asset links while leaving the selected file to its native format loader."
+  tone="mint"
+  meta={['Static catalogs', 'Item Search', 'Asset selection']}
+  links={[
+    {label: 'STAC module', to: '/docs/modules/stac'},
+    {label: 'Cloud-native formats', to: '/docs/specifications/cloud-native-geospatial'}
+  ]}
+/>
+
+<DatasetDiscoveryGraphic kind="stac" />
+
+<DocOrientation
+  eyebrow="Discovery before decoding"
+  title="Search the catalog. Select the asset. Load it natively."
+  description="The source keeps catalog traversal and asset selection separate from parsing. That lets a single discovery workflow lead to GeoTIFF, Parquet, Zarr, or another specialized loader."
+  tone="mint"
+  items={[
+    {label: 'Mode', value: 'Static linked catalog or STAC API'},
+    {label: 'Search', value: 'Collections, bbox, time, and pagination'},
+    {label: 'Traverse', value: 'Bounded child and asset discovery'},
+    {label: 'Return', value: 'Items, collections, and role-filtered assets'}
+  ]}
+/>
 
 The `STACSourceLoader` creates a lightweight source for static STAC catalogs and STAC APIs.
 
@@ -17,6 +53,12 @@ import {STACSourceLoader} from '@loaders.gl/stac/stac-source';
 
 const source = createDataSource('https://example.com/stac', STACSourceLoader);
 ```
+
+<ReferenceBoundary
+  title="STAC source methods"
+  description="The sections below cover construction, metadata, collections, search, traversal, pagination, and asset selection."
+  tone="mint"
+/>
 
 ## Methods
 

@@ -91,11 +91,17 @@ export default class App extends PureComponent<AppProps> {
       droppedFile: null,
       examplesByCategory: null,
       selectedExample: null,
+      isFullscreen: false,
       category: INITIAL_EXAMPLE_CATEGORY,
       name: INITIAL_EXAMPLE_NAME
     };
 
     this._deckRef = null;
+    this._fullscreenWidget = createDeckFullscreenWidget('3d-tiles-fullscreen', {
+      onFullscreenChange: (isFullscreen) => this.setState({isFullscreen})
+    });
+    this._tile3dLayer = null;
+    this._tile3dLayerKey = null;
     this._onTilesetLoad = this._onTilesetLoad.bind(this);
     this._onTilesetChange = this._onTilesetChange.bind(this);
     this._onTilesetError = this._onTilesetError.bind(this);
@@ -174,6 +180,8 @@ export default class App extends PureComponent<AppProps> {
 
   // Called by ControlPanel when user selects a new example
   _onSelectExample({example, category, name}) {
+    this._tile3dLayer = null;
+    this._tile3dLayerKey = null;
     this.setState({selectedExample: example, category, name, error: null, tileset: null});
   }
 
@@ -258,11 +266,14 @@ export default class App extends PureComponent<AppProps> {
 
   /** Lazily creates the deck.gl stats widget used by the example. */
   _getDeckWidgets() {
-    if (!this._deckStatsWidget) {
-      this._deckStatsWidget = createDeckStatsWidget('3d-tiles-deck-stats');
+    const widgets = [this._fullscreenWidget];
+    if (!this.props.hideChrome) {
+      if (!this._deckStatsWidget) {
+        this._deckStatsWidget = createDeckStatsWidget('3d-tiles-deck-stats');
+      }
+      widgets.push(this._deckStatsWidget);
     }
-
-    return [createDeckFullscreenWidget('3d-tiles-fullscreen'), this._deckStatsWidget];
+    return widgets;
   }
 
   _renderTile3DLayer() {
@@ -273,6 +284,11 @@ export default class App extends PureComponent<AppProps> {
 
     const {ionAssetId, ionAccessToken, maximumScreenSpaceError, tilesetUrl} = selectedExample;
     const dataUrl = ionAssetId ? `${TILESET_SERVER_URL}/${ionAssetId}/tileset.json` : tilesetUrl;
+    const layerKey = `${dataUrl}|${ionAccessToken || ''}|${maximumScreenSpaceError || ''}`;
+    if (this._tile3dLayer && this._tile3dLayerKey === layerKey) {
+      return this._tile3dLayer;
+    }
+
     const loadOptions = {
       'cesium-ion': {accessToken: ionAccessToken, onError: this._onTilesetError}
     };
@@ -280,7 +296,8 @@ export default class App extends PureComponent<AppProps> {
       loadOptions.maximumScreenSpaceError = maximumScreenSpaceError;
     }
 
-    return new SourceLayer({
+    this._tile3dLayerKey = layerKey;
+    this._tile3dLayer = new SourceLayer({
       id: 'tile-3d-layer',
       data: dataUrl,
       loaders: [ionAssetId ? CesiumIonLoader : Tiles3DLoader],
@@ -293,6 +310,7 @@ export default class App extends PureComponent<AppProps> {
       onTileUnload: this._onTilesetChange,
       onTileError: this._onTilesetChange
     });
+    return this._tile3dLayer;
   }
 
   _renderError() {
@@ -305,8 +323,11 @@ export default class App extends PureComponent<AppProps> {
   }
 
   render() {
-    const {viewState, selectedMapStyle} = this.state;
+    const {isFullscreen, viewState, selectedMapStyle} = this.state;
     const tile3DLayer = this._renderTile3DLayer();
+    const controller = this.props.hideChrome && !isFullscreen
+      ? false
+      : {type: MapController, maxPitch: 85, inertia: true};
 
     return (
       <div style={{position: 'relative', height: '100%'}}>
@@ -316,8 +337,8 @@ export default class App extends PureComponent<AppProps> {
           layers={[tile3DLayer]}
           viewState={viewState}
           onViewStateChange={this._onViewStateChange.bind(this)}
-          controller={{type: MapController, maxPitch: 85, inertia: true}}
-          widgets={this.props.hideChrome ? [] : this._getDeckWidgets()}
+          controller={controller}
+          widgets={this._getDeckWidgets()}
           onAfterRender={() => this._updateStatWidgets()}
         >
           <Map reuseMaps mapLib={maplibregl} mapStyle={selectedMapStyle} preventStyleDiffing />

@@ -1,0 +1,40 @@
+.exampleContainer {
+  background: transparent;
+  border-radius: 22px;
+  margin: 1.25rem 0 2rem;
+  position: relative;
+  overflow: hidden;
+}
+
+.exampleContainer :global(.deck-widget) {
+  --button-background: rgba(13, 25, 43, 0.82);
+  --button-backdrop-filter: blur(8px);
+  --button-corner-radius: 10px;
+  --button-icon-hover: #ffffff;
+  --button-icon-idle: #bfe7ff;
+  --button-inner-stroke: 1px solid rgba(112, 199, 255, 0.22);
+  --button-shadow: 0 8px 24px rgba(4, 10, 20, 0.28);
+  --button-size: 34px;
+  --button-stroke: rgba(112, 199, 255, 0.36);
+  --widget-margin: 14px;
+}
+
+.visualExample {
+  height: 420px;
+}
+
+.tableExample {
+  height: auto;
+}
+
+.loadingContainer {
+  width: 100%;
+}
+
+.loadingContainer.visualExample {
+  height: 420px;
+}
+
+.loadingContainer.tableExample {
+  height: 160px;
+}

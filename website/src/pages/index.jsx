@@ -1,8 +1,7 @@
 import React from 'react';
 import {ClientExample, Home} from '../components';
 import Layout from '@theme/Layout';
-import Concepts from '../components/home/concepts';
-import Features from '../components/home/features';
+import Features, {HOME_FEATURE_IDS} from '../components/home/features';
 
 /** Renders the homepage example behind the shared client-only loading boundary. */
 function HeroExample() {
@@ -11,10 +10,12 @@ function HeroExample() {
 
 export default function IndexPage() {
   return (
-    <Layout title="Home" description="deck.gl">
+    <Layout
+      title="Home"
+      description="A standards-obsessed toolkit for loading, scanning, transforming, and visualizing the data formats that power modern cloud compute and web visualization."
+    >
       <Home HeroExample={HeroExample}>
-        <Features />
-        <Concepts />
+        <Features showVisuals={false} featureIds={HOME_FEATURE_IDS} />
       </Home>
     </Layout>
   );

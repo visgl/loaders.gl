@@ -1,8 +1,42 @@
+---
+title: 3D Tiles request scheduling and priorities
+description: Understand how required tile requests are ordered while a camera moves, without changing the final level-of-detail target.
+hide_title: true
+page_style: designed
+---
+
 import {Tiles3DDocsTabs} from '@site/src/components/docs/tiles-3d-docs-tabs';
+import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
+import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
 
-# Request Scheduling and Priorities
+<DocPageHeader
+  eyebrow="3D Tiles runtime / requests"
+  title="Bring the most useful detail first."
+  description="Traversal decides which content is needed. Scheduling decides which of those requests should use the next available slot, especially while the camera is moving."
+  tone="pink"
+  meta={['Progressive coverage', 'Foveated priority', 'RequestScheduler']}
+/>
 
-<Tiles3DDocsTabs active="requests" />
+<Tiles3DDocsTabs active="runtime" />
+
+<DocOrientation
+  eyebrow="Request order"
+  title="Timing changes. The target does not."
+  description="Progressive and foveated policies improve first useful coverage by changing request order and timing. They do not silently relax the final screen-space-error requirement."
+  tone="pink"
+  items={[
+    {label: 'Select', value: 'Find visible tiles whose desired content is missing.'},
+    {label: 'Rank', value: 'Combine distance, coarse coverage, and view direction.'},
+    {label: 'Schedule', value: 'Compete for ordinary network and decode slots.'},
+    {label: 'Refine', value: 'Return to traversal after content or subtree metadata arrives.'}
+  ]}
+/>
+
+<ReferenceBoundary
+  title="Priority and scheduling details"
+  description="The sections below separate selection from scheduling and define progressive resolution, foveated deferral, and implicit-subtree behavior."
+  tone="pink"
+/>
 
 A **foveated request** is an ordinary tile content request whose start time is influenced by its position in the view. It is not a new HTTP method, endpoint, file format, or server feature. The term describes client-side prioritization inspired by human vision: central detail is usually more noticeable than peripheral detail while a camera is moving.
 

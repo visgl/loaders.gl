@@ -1,0 +1,59 @@
+{
+  "name": "@loaders.gl/config",
+  "version": "5.0.0-alpha.4",
+  "description": "Framework-independent loaders for YAML and TOML formats",
+  "license": "MIT",
+  "type": "module",
+  "publishConfig": {
+    "access": "public"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/visgl/loaders.gl"
+  },
+  "keywords": [
+    "loader",
+    "parser",
+    "YAML",
+    "TOML"
+  ],
+  "types": "dist/index.d.ts",
+  "main": "dist/index.cjs",
+  "module": "dist/index.js",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
+    },
+    "./unbundled": {
+      "types": "./dist/unbundled.d.ts",
+      "import": "./dist/unbundled.js"
+    },
+    "./bundled": {
+      "types": "./dist/bundled.d.ts",
+      "import": "./dist/bundled.js"
+    },
+    "./yaml-loader": {
+      "types": "./dist/yaml-loader.d.ts",
+      "import": "./dist/yaml-loader.js"
+    },
+    "./toml-loader": {
+      "types": "./dist/toml-loader.d.ts",
+      "import": "./dist/toml-loader.js"
+    }
+  },
+  "sideEffects": false,
+  "files": [
+    "src",
+    "dist",
+    "README.md"
+  ],
+  "dependencies": {
+    "@loaders.gl/loader-utils": "5.0.0-alpha.4"
+  },
+  "peerDependencies": {
+    "@loaders.gl/core": "~5.0.0-alpha.0"
+  },
+  "gitHead": "8a9e77743ea90a7be4ebec572416bb50ca9d73c3"
+}

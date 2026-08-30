@@ -1,8 +1,50 @@
-import {JsonDocsTabs} from '@site/src/components/docs/json-docs-tabs';
+---
+title: NDJSONLoader
+description: Stream newline-delimited JSON into rows or Arrow batches.
+hide_title: true
+page_style: designed
+---
 
-# NDJSONLoader
+import {JsonDocsTabs} from '@site/src/components/docs/json-docs-tabs';
+import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
+import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
+import {LoaderLiveExample} from '@site/src/components/docs/loader-live-example';
+
+<DocPageHeader
+  eyebrow="JSON module · streaming loader"
+  title="NDJSONLoader"
+  description="Read one JSON value per line and process the stream incrementally, with row-table defaults and optional Arrow batches for columnar pipelines."
+  tone="yellow"
+  meta={['NDJSON / JSONL', 'Streaming', 'Arrow output']}
+  links={[
+    {label: 'JSON module', to: '/docs/modules/json'},
+    {label: 'JSONTableLoader', to: '/docs/modules/json/api-reference/json-table-loader'},
+    {label: 'Parse in batches', to: '/docs/modules/core/api-reference/parse-in-batches'}
+  ]}
+/>
 
 <JsonDocsTabs active="ndjsonloader" />
+
+<LoaderLiveExample />
+
+<DocOrientation
+  eyebrow="What it reads"
+  title="Treat each line as a record as soon as it arrives."
+  description="NDJSON is deliberately line-oriented, which makes it a practical format for logs, exports, and large table streams. NDJSONLoader turns those lines into bounded batches."
+  tone="yellow"
+  items={[
+    {label: 'Formats', value: 'NDJSON, JSONL, and LDJSON'},
+    {label: 'Input', value: 'One JSON value per line'},
+    {label: 'Output', value: 'Row tables or Arrow tables'},
+    {label: 'APIs', value: 'Atomic and incremental loading'}
+  ]}
+/>
+
+<ReferenceBoundary
+  title="NDJSONLoader reference"
+  description="The sections below cover format metadata, atomic and streaming usage, Arrow output, and parsing options."
+  tone="yellow"
+/>
 
 Streaming loader for NDJSON encoded files and related formats (LDJSON and JSONL).
 

@@ -1,3 +1,45 @@
+---
+title: Reading and writing Arrow data
+description: Move Arrow tables through files, streams, and JavaScript pipelines without changing their columnar shape.
+hide_title: true
+page_style: designed
+---
+
+import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
+import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
+
+<DocPageHeader
+  eyebrow="Arrow JavaScript · I/O"
+  title="Read and write tables without changing their shape."
+  description="Arrow IPC can be treated as a file, a stream, or a sequence of record batches. Choose the boundary that fits the pipeline and keep the data columnar on both sides."
+  tone="cyan"
+  meta={['Arrow IPC', 'Record batches', 'Streams and files']}
+  links={[
+    {label: 'Arrow JS guide', to: '/docs/arrowjs'},
+    {label: 'RecordBatchReader', to: '/docs/arrowjs/api-reference/record-batch-reader'},
+    {label: 'RecordBatchWriter', to: '/docs/arrowjs/api-reference/record-batch-writer'}
+  ]}
+/>
+
+<DocOrientation
+  eyebrow="Choose the boundary"
+  title="One table model, several transport choices."
+  description="Use a complete IPC read when the data is small or already local. Use readers and writers when records should move incrementally through a browser, worker, process, or service."
+  tone="cyan"
+  items={[
+    {label: 'File', value: 'A self-contained IPC file with schema and batches'},
+    {label: 'Stream', value: 'A sequence of batches for progressive processing'},
+    {label: 'Reader', value: 'Async iteration over incoming record batches'},
+    {label: 'Writer', value: 'Encode batches to IPC or JSON output'}
+  ]}
+/>
+
+<ReferenceBoundary
+  title="Arrow I/O details"
+  description="The examples below cover complete reads, incremental readers, multiple tables, writers, and process pipelines."
+  tone="cyan"
+/>
+
 # Reading and Writing Arrow Data
 
 ## About RecordBatches

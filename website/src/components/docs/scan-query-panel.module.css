@@ -1,0 +1,161 @@
+.panel {
+  margin: 14px 0;
+  padding: 14px;
+  border: 1px solid rgba(173, 200, 219, 0.16);
+  border-radius: 14px;
+  background: rgba(6, 15, 27, 0.5);
+  color: #e4edf6;
+}
+
+.panelHeader {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 10px;
+}
+
+.panelHint,
+.fieldHint,
+.emptyState {
+  color: rgba(219, 231, 244, 0.56);
+}
+
+.panelHint {
+  font-size: 0.82rem;
+}
+
+.metadataSummary {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-bottom: 10px;
+  color: rgba(219, 231, 244, 0.72);
+  font-size: 0.82rem;
+}
+
+.supportBadge {
+  border-radius: 999px;
+  padding: 2px 8px;
+  font-weight: 600;
+}
+
+.supported {
+  color: #a8f0c7;
+  background: rgba(33, 143, 88, 0.18);
+}
+
+.unsupported {
+  color: #ffccb8;
+  background: rgba(180, 72, 39, 0.18);
+}
+
+.supportMessage {
+  margin: -4px 0 12px;
+  color: #ffccb8;
+  font-size: 0.82rem;
+}
+
+.fieldGroup {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.fieldLabel {
+  font-size: 0.82rem;
+  font-weight: 600;
+}
+
+.fieldHint {
+  font-size: 0.76rem;
+}
+
+.columnGrid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.columnOption {
+  align-items: center;
+  display: inline-flex;
+  gap: 4px;
+  padding: 5px 7px;
+  border: 1px solid rgba(173, 200, 219, 0.18);
+  border-radius: 5px;
+  background: rgba(13, 27, 46, 0.82);
+  color: #e4edf6;
+  font-size: 0.82rem;
+}
+
+.columnType {
+  color: rgba(219, 231, 244, 0.5);
+  font-size: 0.7rem;
+}
+
+.inlineFields {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 12px;
+}
+
+.textInput,
+.select {
+  min-width: 180px;
+  padding: 7px;
+  border: 1px solid rgba(173, 200, 219, 0.2);
+  border-radius: 5px;
+  background: rgba(7, 16, 29, 0.82);
+  color: #e4edf6;
+}
+
+.select {
+  background: rgba(7, 16, 29, 0.82);
+}
+
+.applyButton {
+  margin-top: 12px;
+  padding: 8px 12px;
+  border: 0;
+  border-radius: 5px;
+  color: #ffffff;
+  background: #3479d8;
+  cursor: pointer;
+}
+
+.applyButton:hover:not(:disabled),
+.applyButton:focus-visible {
+  background: #458be8;
+}
+
+.applyButton:focus-visible,
+.textInput:focus-visible,
+.select:focus-visible,
+.columnOption:has(input:focus-visible) {
+  outline: 3px solid rgba(50, 120, 216, 0.25);
+  outline-offset: 2px;
+}
+
+.applyButton:disabled {
+  background: #42526a;
+  cursor: not-allowed;
+}
+
+.emptyState {
+  font-size: 0.84rem;
+}
+
+@media (max-width: 640px) {
+  .panelHeader {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  .textInput,
+  .select {
+    width: 100%;
+  }
+}

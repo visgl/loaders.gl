@@ -1,6 +1,6 @@
 {
   "name": "@loaders.gl/lance",
-  "version": "5.0.0-alpha.2",
+  "version": "5.0.0-alpha.4",
   "description": "Read-only loader and data source scaffold for Lance datasets",
   "license": "MIT",
   "type": "module",
@@ -60,8 +60,8 @@
     "README.md"
   ],
   "dependencies": {
-    "@loaders.gl/loader-utils": "5.0.0-alpha.2",
-    "@loaders.gl/schema": "5.0.0-alpha.2",
+    "@loaders.gl/loader-utils": "5.0.0-alpha.4",
+    "@loaders.gl/schema": "5.0.0-alpha.4",
     "apache-arrow": ">= 17.0.0"
   },
   "peerDependencies": {

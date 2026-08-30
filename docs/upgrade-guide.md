@@ -1,4 +1,46 @@
-# Upgrade Guide
+---
+title: Upgrade guide
+description: Plan loaders.gl upgrades with focused notes on removals, deprecations, and behavior changes.
+hide_title: true
+page_style: designed
+---
+
+import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
+import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
+
+<DocPageHeader
+  eyebrow="Migration guide"
+  title="Upgrade with the data path in view."
+  description="Use this guide to identify breaking changes, deprecated APIs, dependency alignment, and new defaults before moving an application to a newer loaders.gl release."
+  tone="orange"
+  meta={['v4.5 and v5.0', 'Breaking changes', 'Migration examples']}
+  links={[
+    {label: 'What’s new', to: '/docs/whats-new'},
+    {label: 'Get started', to: '/docs/developer-guide/get-started'},
+    {label: 'Apache Arrow', to: '/docs/developer-guide/apache-arrow'}
+  ]}
+/>
+
+<DocOrientation
+  eyebrow="Before you upgrade"
+  title="Check the boundary that changed."
+  description="Most migrations are local to a package or return shape. Read the relevant section, update imports and options, then verify the resulting table, source, worker, or writer contract with the linked documentation."
+  tone="orange"
+  items={[
+    {label: 'Imports', value: 'Packages, subpaths, and renamed APIs'},
+    {label: 'Data shapes', value: 'Arrow tables, batches, and discriminated results'},
+    {label: 'Runtime behavior', value: 'Caching, traversal, workers, and source lifecycles'},
+    {label: 'Dependencies', value: 'Optional codecs, Arrow versions, and peer packages'}
+  ]}
+/>
+
+<ReferenceBoundary
+  title="Version-by-version migration details"
+  description="The sections below record v4.5 additions and v5 deprecations, removals, defaults, and compatibility notes."
+  tone="orange"
+/>
+
+## Upgrade Guide
 
 ## Upgrading to v4.5
 
@@ -114,6 +156,45 @@ Concrete runtime classes are unchanged. For example:
 - `TableTileSourceLoader` still creates `TableVectorTileSource`
 
 The old top-level `*Source` aliases have been removed, so imports must be updated explicitly.
+
+### Source capability interfaces
+
+`ImageSource`, `VectorSource`, and `RasterSource` are now type-only capability interfaces, matching
+the existing tile, catalog, and scan source contracts. `DataSource` remains the implementation base
+class. The obsolete `type` and `testURL` statics were removed from the capability contracts;
+runtime source selection continues to use the corresponding fields on `SourceLoader`.
+
+Custom sources that extended one of the old abstract classes should instead extend `DataSource`
+and implement one or more capability interfaces:
+
+```ts
+import {DataSource} from '@loaders.gl/loader-utils';
+import type {
+  DataSourceOptions,
+  GetImageParameters,
+  ImageSource,
+  ImageSourceMetadata,
+  ImageType
+} from '@loaders.gl/loader-utils';
+
+class CustomImageSource
+  extends DataSource<string, DataSourceOptions>
+  implements ImageSource
+{
+  async getMetadata(): Promise<ImageSourceMetadata> {
+    throw new Error('Return normalized image-source metadata.');
+  }
+
+  async getImage(parameters: GetImageParameters): Promise<ImageType> {
+    throw new Error('Load the requested image.');
+  }
+}
+```
+
+Import these contracts with `import type`; they are no longer runtime constructor values. Concrete
+source classes and operational methods such as `getMetadata()`, `getImage()`, `getRaster()`, and
+`getFeatures()` are unchanged. `@loaders.gl/wms` temporarily retains a deprecated structural
+`ImageSource` runtime guard for deck.gl 9.x compatibility; it is not a constructor or base class.
 
 ### Arrow loader and writer variant removal
 

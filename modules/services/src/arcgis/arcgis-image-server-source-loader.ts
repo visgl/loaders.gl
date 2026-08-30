@@ -8,10 +8,11 @@ import type {
   CoreAPI,
   SourceLoader,
   DataSourceOptions,
+  ImageSource,
   ImageSourceMetadata,
   GetImageParameters
 } from '@loaders.gl/loader-utils';
-import {DataSource, ImageSource} from '@loaders.gl/loader-utils';
+import {DataSource} from '@loaders.gl/loader-utils';
 import type {LERCData} from '@loaders.gl/lerc';
 import {LERCLoader} from '@loaders.gl/lerc';
 import {buildArcGISResourceURL} from './arcgis-url-utils';

@@ -1,4 +1,42 @@
-# 3D Tiles correctness and conformance
+---
+title: 3D Tiles correctness and conformance
+description: Use observable runtime invariants to reason about parsing, transforms, traversal, LOD, and I3S isolation.
+hide_title: true
+page_style: designed
+---
+
+import {Tiles3DDocsTabs} from '@site/src/components/docs/tiles-3d-docs-tabs';
+import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
+import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
+
+<DocPageHeader
+  eyebrow="3D Tiles runtime / conformance"
+  title="Make correctness observable."
+  description="Conformance is more useful when each guarantee has a fixture, a runtime measurement, and a clear boundary between loader behavior and renderer policy."
+  tone="violet"
+  meta={['Invariants and fixtures', 'Runtime measurements', 'Renderer boundary']}
+/>
+
+<Tiles3DDocsTabs active="runtime" />
+
+<DocOrientation
+  eyebrow="Conformance contract"
+  title="Check the values that drive the frame."
+  description="A correct runtime preserves source semantics while making its decisions inspectable: transformed error, selected coverage, content state, request eligibility, and extension handling."
+  tone="violet"
+  items={[
+    {label: 'Preserve', value: 'Keep source metadata and unknown extensions available.'},
+    {label: 'Separate', value: 'Keep traversal, rendering, and application styling boundaries clear.'},
+    {label: 'Exercise', value: 'Use focused fixtures for hierarchy, volumes, LOD, and lifecycle.'},
+    {label: 'Inspect', value: 'Compare public runtime fields against expected invariants.'}
+  ]}
+/>
+
+<ReferenceBoundary
+  title="Correctness and conformance details"
+  description="The sections below record guarantees, test tranches, debugging values, and the parts of the renderer intentionally outside this package."
+  tone="violet"
+/>
 
 The 3D Tiles runtime is view-dependent: parsing, transform composition, culling, LOD selection, and request scheduling must agree before a tile can be considered correct. This page is the working conformance contract for loaders.gl.
 

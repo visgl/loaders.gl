@@ -1,10 +1,49 @@
-# Attribute-driven colorization
+---
+title: Attribute-driven colorization
+description: Color I3S scene features from the attributes carried by each object.
+hide_title: true
+page_style: designed
+---
 
-import {ClientExample} from '@site/src/components';
+import {ClientExample, DocLiveExample} from '@site/src/components';
+import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
+import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
 
-<div style={{height: '50vh'}}>
+<DocPageHeader
+  eyebrow="I3S recipe · scene attributes"
+  title="Let the scene data drive the color."
+  description="Use feature attributes such as building height to derive colors, labels, or opacity in a rendered I3S scene. The example below makes the relationship visible before the implementation details begin."
+  tone="orange"
+  meta={['3D Object layers', 'Feature attributes', 'deck.gl integration']}
+  links={[
+    {label: 'I3S module', to: '/docs/modules/i3s'},
+    {label: 'I3S format', to: '/docs/modules/i3s/formats/i3s'},
+    {label: 'I3S examples', to: '/examples/i3s-arcgis'}
+  ]}
+/>
+
+<DocLiveExample label="I3S attribute-driven colorization">
   <ClientExample kind="i3s-colorization-by-attributes" />
-</div>
+</DocLiveExample>
+
+<DocOrientation
+  eyebrow="What this recipe demonstrates"
+  title="Read metadata once. Turn it into a visual encoding."
+  description="I3S associates mesh vertices with feature ids and stores attributes alongside the node resources. An application can use those values to build a color scale while the tile remains in the normal Tile3DLayer pipeline."
+  tone="orange"
+  items={[
+    {label: 'Choose a field', value: 'Read layer fields and attribute storage metadata.'},
+    {label: 'Find the range', value: 'Load statistics when a stable minimum and maximum are needed.'},
+    {label: 'Apply the scale', value: 'Map values to colors, opacity, labels, or other effects.'},
+    {label: 'Keep traversal', value: 'Use the ordinary I3S loader and tile layer lifecycle.'}
+  ]}
+/>
+
+<ReferenceBoundary
+  title="Attribute discovery and rendering details"
+  description="The rest of this recipe covers fields, statistics resources, DataDrivenTile3DLayer integration, and the complete example source."
+  tone="orange"
+/>
 Please find source code of the example [here](https://github.com/visgl/loaders.gl/tree/master/examples/website/i3s-colorization-by-attributes)
 
 In I3S, a feature represents a real-world object within a node. For example, a building within a 3D object scene layer. Node resources such as geometry buffer and attributes can belong to a feature and can be accessed by an object-ID.

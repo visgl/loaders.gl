@@ -1,9 +1,48 @@
-# GeoArrow Converters
+---
+title: GeoArrow converters
+description: Move between GeoArrow table shapes and geometry encodings without losing spatial metadata.
+hide_title: true
+page_style: designed
+---
+
+import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
+import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
+
+<DocPageHeader
+  eyebrow="Geospatial conversion"
+  title="Change the geometry encoding without changing the table contract."
+  description="GeoArrow conversions separate table-shape conversion from geometry-encoding conversion. That lets applications choose a representation for storage, transport, analysis, or rendering while preserving the surrounding columns and metadata."
+  tone="cyan"
+  meta={['GeoArrow tables', 'Geometry encodings', 'Metadata-aware conversion']}
+  links={[
+    {label: 'GeoArrow format', to: '/docs/modules/arrow/formats/geoarrow'},
+    {label: 'Table converters', to: '/docs/developer-guide/converters/table-and-arrow-converters'}
+  ]}
+/>
+
+<DocOrientation
+  eyebrow="Two conversion jobs"
+  title="Move the wrapper, or rewrite the geometry."
+  description="A table converter changes how a table is wrapped. A geometry converter changes how its geometry columns are encoded. Keeping those operations separate makes each transformation easier to reason about."
+  tone="cyan"
+  items={[
+    {label: 'Table shape', value: 'GeoArrow, Arrow, columnar, row, or GeoJSON-like wrappers'},
+    {label: 'Geometry shape', value: 'WKB, WKT, native point/line/polygon, or unions'},
+    {label: 'Preserves', value: 'Non-spatial columns and column-level metadata'},
+    {label: 'Use it for', value: 'Parquet, IPC, scans, workers, rendering, and export'}
+  ]}
+/>
 
 GeoArrow conversions split into two jobs:
 
 1. table-shape conversion
 2. geometry-encoding conversion
+
+<ReferenceBoundary
+  title="GeoArrow converter details"
+  description="The sections below document converter contracts, supported targets, metadata behavior, and usage boundaries."
+  tone="cyan"
+/>
 
 ## GeoArrowTableConverter
 

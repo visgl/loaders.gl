@@ -1,4 +1,4 @@
-import test from 'test/utils/vitest-tape';
+import {expect, test} from 'vitest';
 import {load} from '@loaders.gl/core';
 import {Tiles3DLoader} from '@loaders.gl/3d-tiles';
 import {
@@ -7,24 +7,19 @@ import {
   mergePreprocessData
 } from '../../../src/i3s-converter/helpers/preprocess-3d-tiles';
 import {GLTFPrimitiveModeString} from '../../../src/i3s-converter/types';
-
 const FRANKFURT_B3DM_FILE_PATH =
   '@loaders.gl/tile-converter/test/data/Frankfurt/L5/OF/474_5548_-1_lv5_group_0.osgb_3.b3dm';
-
-test('tile-converter(i3s)#analyzeTileContent', async t => {
+test('tile-converter(i3s)#analyzeTileContent', async () => {
   const tileContentNoArrayBuffer = await load(FRANKFURT_B3DM_FILE_PATH, Tiles3DLoader);
   const noArrayBufferResult = await analyzeTileContent(tileContentNoArrayBuffer);
-  t.deepEqual(Array.from(noArrayBufferResult.meshTopologyTypes), []);
-
+  expect(Array.from(noArrayBufferResult.meshTopologyTypes)).toEqual([]);
   const tileContent = await load(FRANKFURT_B3DM_FILE_PATH, Tiles3DLoader, {
     ['3d-tiles']: {loadGLTF: false}
   });
   const result = await analyzeTileContent(tileContent);
-  t.deepEqual(Array.from(result.meshTopologyTypes), [GLTF_PRIMITIVE_MODES[4]]);
-  t.end();
+  expect(Array.from(result.meshTopologyTypes)).toEqual([GLTF_PRIMITIVE_MODES[4]]);
 });
-
-test('tile-converter(i3s)#mergePreprocessData', async t => {
+test('tile-converter(i3s)#mergePreprocessData', async () => {
   const targetMeshTypeSet = new Set<GLTFPrimitiveModeString>();
   targetMeshTypeSet.add(GLTF_PRIMITIVE_MODES[0]);
   const targetMetadataClassesSet = new Set<string>();
@@ -33,7 +28,6 @@ test('tile-converter(i3s)#mergePreprocessData', async t => {
     meshTopologyTypes: targetMeshTypeSet,
     metadataClasses: targetMetadataClassesSet
   };
-
   const meshTypeSet = new Set<GLTFPrimitiveModeString>();
   meshTypeSet.add(GLTF_PRIMITIVE_MODES[4]);
   const metadataClassesSet = new Set<string>();
@@ -42,7 +36,6 @@ test('tile-converter(i3s)#mergePreprocessData', async t => {
     meshTopologyTypes: meshTypeSet,
     metadataClasses: metadataClassesSet
   });
-  t.deepEqual(Array.from(target.meshTopologyTypes), ['POINTS', 'TRIANGLES']);
-  t.deepEqual(Array.from(target.metadataClasses), ['metadata_class', 'metadata_class_2']);
-  t.end();
+  expect(Array.from(target.meshTopologyTypes)).toEqual(['POINTS', 'TRIANGLES']);
+  expect(Array.from(target.metadataClasses)).toEqual(['metadata_class', 'metadata_class_2']);
 });

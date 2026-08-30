@@ -1,6 +1,41 @@
-# Iceberg table source
+---
+title: Iceberg table source
+description: Plan reads over Iceberg metadata and manifests, then stream selected Parquet data as Arrow.
+hide_title: true
+page_style: designed
+---
 
-<p class="badges">
+import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
+import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
+import apacheLogo from '../../../images/logos/apache-logo.png';
+
+<DocPageHeader
+  eyebrow="Versioned table source"
+  title="IcebergTableSource"
+  description="IcebergTableSource reads table metadata and manifests, selects the relevant Parquet data files, and delegates physical decoding to the shared Parquet source path."
+  tone="violet"
+  logos={[{alt: 'Apache Software Foundation', src: apacheLogo}]}
+  meta={['Apache Iceberg', 'Manifest planning', 'Arrow batches']}
+  links={[
+    {label: 'Scan architecture', to: '/docs/developer-guide/common-scan-architecture'},
+    {label: 'Parquet source', to: '/docs/modules/parquet/api-reference/parquet-source-loader'}
+  ]}
+/>
+
+<DocOrientation
+  eyebrow="The manifest path"
+  title="Use table metadata before opening data files."
+  description="Iceberg metadata provides the snapshot and manifest structure. The source uses it to choose active files before Parquet handles row groups, pages, columns, and byte ranges."
+  tone="violet"
+  items={[
+    {label: 'Discover', value: 'Table metadata, schemas, snapshots, and manifests'},
+    {label: 'Select', value: 'Active data files for the requested snapshot'},
+    {label: 'Delegate', value: 'Parquet row-group, page, and range planning'},
+    {label: 'Return', value: 'Streaming Arrow batches with query semantics'}
+  ]}
+/>
+
+<p className="badges">
   <a href="/docs/developer-guide/common-scan-architecture">
     <img src="https://img.shields.io/badge/Scan-Supported-2f855a.svg?style=flat-square" alt="Scan supported" />
   </a>
@@ -9,8 +44,14 @@
 `IcebergTableSource` reads an Apache Iceberg table's metadata and manifest files, selects Parquet
 data files, and delegates the actual file reads to `ParquetDatasetSource`.
 
+<ReferenceBoundary
+  title="Iceberg source details"
+  description="The sections below cover construction, metadata and manifest planning, query options, and Arrow results."
+  tone="violet"
+/>
+
 ```ts
-import {IcebergTableSource} from '@loaders.gl/parquet/iceberg-table-source';
+import {IcebergTableSource} from '@loaders.gl/scan/iceberg';
 
 const source = new IcebergTableSource('https://data.example.com/events/metadata/v12.metadata.json', {
   iceberg: {
@@ -32,9 +73,8 @@ for await (const batch of source.scan({
 await source.close();
 ```
 
-The root package also exports `IcebergTableSource`, `IcebergScanOptions`, and the Iceberg planning
-types. The explicit subpath is useful when applications want to keep table-source code out of a
-metadata-only bundle.
+The adapter is incubating under `@loaders.gl/scan/iceberg`. It is intentionally an explicit
+subpath so importing Parquet alone does not include table-format planning code.
 
 ## API surface
 
@@ -201,7 +241,7 @@ The small `IcebergRestCatalog` adapter loads a table response and returns an
 `IcebergTableSource`; it does not become a catalog-wide API or add write operations:
 
 ```ts
-import {IcebergRestCatalog} from '@loaders.gl/parquet/iceberg-rest-catalog';
+import {IcebergRestCatalog} from '@loaders.gl/scan/iceberg';
 
 const catalog = new IcebergRestCatalog({endpoint: 'https://catalog.example.com'});
 const table = await catalog.loadTable({namespace: ['analytics'], table: 'events'});
@@ -252,14 +292,14 @@ introduce a second worker protocol or a second range-reader implementation.
 
 ## Delta Lake adapter
 
-`DeltaTableSource` is the read-only Delta adapter exported from `@loaders.gl/parquet`. It accepts a
+`DeltaTableSource` is the read-only Delta adapter incubating under `@loaders.gl/scan`. It accepts a
 commit-log URL or an in-memory `Blob`, replays all JSON commits through the selected version, and
 delegates active Parquet files to `ParquetDatasetSource`. A commit URL with a twenty-digit version
 selects that snapshot automatically; callers can override it with `delta.version` or per-scan
 `version`.
 
 ```ts
-import {DeltaTableSource} from '@loaders.gl/parquet/delta-source';
+import {DeltaTableSource} from '@loaders.gl/scan/delta';
 
 const source = new DeltaTableSource(
   'https://data.example.com/events/_delta_log/00000000000000000042.json',

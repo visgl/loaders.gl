@@ -1,8 +1,44 @@
-# MVTSourceLoader
+---
+title: MVTSourceLoader
+description: Load vector tiles dynamically from tiled services and cloud hierarchies.
+hide_title: true
+page_style: designed
+---
 
-<p class="badges">
-  <img src="https://img.shields.io/badge/From-v4.0-blue.svg?style=flat-square" alt="From-v4.0" />
-</p>
+import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
+import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
+
+<DocPageHeader
+  eyebrow="MVT module · source API"
+  title="MVTSourceLoader"
+  description="Resolve TileJSON or tile templates, then fetch individual Mapbox Vector Tiles as an application requests them."
+  tone="blue"
+  meta={['From v4.0', 'Tile source', 'Cloud-friendly']}
+  links={[
+    {label: 'MVT format', to: '/docs/modules/mvt/formats/mvt'},
+    {label: 'TileJSONLoader', to: '/docs/modules/mvt/api-reference/tilejson-loader'},
+    {label: 'MVT module', to: '/docs/modules/mvt'}
+  ]}
+/>
+
+<DocOrientation
+  eyebrow="What it does"
+  title="Keep the service metadata separate from tile requests."
+  description="MVTSourceLoader handles the source boundary: load the service description, resolve tile URLs, apply credentials, and return tiles as they are requested."
+  tone="blue"
+  items={[
+    {label: 'Source', value: 'TileJSON or a tiled service URL'},
+    {label: 'Requests', value: 'Individual z / x / y vector tiles'},
+    {label: 'Auth', value: 'Shared core credentials and Mapbox tokens'},
+    {label: 'Errors', value: 'Empty tiles and text responses handled explicitly'}
+  ]}
+/>
+
+<ReferenceBoundary
+  title="MVTSourceLoader reference"
+  description="The sections below document source creation, authentication, options, empty tiles, and service error behavior."
+  tone="blue"
+/>
 
 The `MVTSourceLoader` dynamically loads tiles, typically from big pre-tiled hierarchies on cloud storage.
 

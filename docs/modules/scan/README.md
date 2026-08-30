@@ -1,8 +1,44 @@
-# @loaders.gl/scan
+---
+title: '@loaders.gl/scan'
+description: A portable query runtime for bounded, selective reads across local and cloud data.
+hide_title: true
+page_style: designed
+---
 
-<p class="badges">
+import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
+import {CrossFormatScanEngineGraphic} from '@site/src/components/docs/cross-format-scan-engine-graphic';
+import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
+
+<DocPageHeader
+  eyebrow="Module overview"
+  title="@loaders.gl/scan"
+  description="Describe the rows, columns, bounds, and limits you need once, then let each source plan the most useful reads it can perform."
+  tone="violet"
+  meta={['Arrow results', 'Range-aware sources', 'Portable query contract']}
+  links={[
+    {label: 'Scan architecture', to: '/docs/developer-guide/common-scan-architecture'},
+    {label: 'Get started', to: '/docs/developer-guide/get-started'}
+  ]}
+/>
+
+<p className="badges">
   <img src="https://img.shields.io/badge/From-v5.0-blue.svg?style=flat-square" alt="From v5.0" />
 </p>
+
+<CrossFormatScanEngineGraphic />
+
+<DocOrientation
+  eyebrow="The scan module"
+  title="Describe the work. Let the source plan the reads."
+  description="The scan runtime keeps query intent separate from the storage format, so an application can ask for columns, predicates, bounds, and limits while each source reports what it can execute."
+  tone="violet"
+  items={[
+    {label: 'Intent', value: 'Columns, predicates, bounds, limits, and ordering'},
+    {label: 'Planning', value: 'Source metadata distinguishes pushdown from residual work'},
+    {label: 'Execution', value: 'Arrow tables, addressed tiles, or bounded feature requests'},
+    {label: 'Federation', value: 'Ordered append with schema reconciliation and provenance'}
+  ]}
+/>
 
 `@loaders.gl/scan` is the optional application-facing runtime for portable queries. It collects the
 reference Arrow executor, query parsing, source-neutral query metadata, ordered append federation,
@@ -12,14 +48,51 @@ Format packages do not depend on this runtime. They implement lightweight contra
 `@loaders.gl/loader-utils`, so applications that only load or decode a format do not pay the scan
 runtime bundle cost.
 
+## Incubating Hudi source
+
+The opt-in `@loaders.gl/scan/hudi` subpath provides a minimal, read-only Hudi Copy-on-Write proof
+of concept. It consumes a JSON snapshot descriptor listing Parquet base files and delegates query
+execution to the shared Parquet dataset source.
+
+```ts
+import {HudiTableSource} from '@loaders.gl/scan/hudi';
+
+const source = new HudiTableSource(snapshotDescriptorBlob);
+const fragments = await source.getScanFragments();
+```
+
+Merge-on-Read logs, incremental timeline queries, deletes/updates, compaction, and the Hudi
+metadata table are intentionally unsupported until a dedicated decoder is available. The Hudi
+adapter is not imported by the scan root.
+
 See the [common scan architecture](/docs/developer-guide/common-scan-architecture) for the complete
 support matrix and execution semantics.
+
+<ReferenceBoundary
+  title="Scan APIs and execution semantics"
+  description="The reference below covers installation, table execution, source metadata, federation, vector views, cancellation, and backend registration."
+  tone="violet"
+/>
 
 ## Installation
 
 ```bash
 npm install @loaders.gl/scan apache-arrow
 ```
+
+## Incubating table formats
+
+Iceberg and Delta Lake adapters are currently incubating behind explicit subpaths:
+
+```ts
+import {IcebergTableSource} from '@loaders.gl/scan/iceberg';
+import {DeltaTableSource} from '@loaders.gl/scan/delta';
+```
+
+These adapters discover snapshots and files, then delegate physical Parquet reads to the Parquet
+module. They are not imported by `@loaders.gl/scan` itself, so applications using only the core
+query engine do not pay for table-format code. The subpaths are experimental and may become
+dedicated packages after their APIs stabilize.
 
 ## Query an Arrow table
 
@@ -36,6 +109,20 @@ const result = engine.query(table, {
   limit: 100
 });
 ```
+
+For backends that schedule asynchronous or compiled work, use the experimental `queryAsync()`
+path. The built-in Arrow backend supports it, and synchronous custom backends receive an automatic
+compatibility wrapper:
+
+```ts
+const result = await engine.queryAsync(table, {
+  predicate: parseSQLPredicate("status = 'active'"),
+  limit: 100
+});
+```
+
+This remains an Arrow-in/Arrow-out boundary. GPU graph compilation and GPU-resident result
+ownership are backend-specific and are not implied by `queryAsync()`.
 
 The query is immutable and follows `filter -> project -> limit` semantics. Predicate columns do not
 need to appear in the result projection, and a limit counts only rows that survive filtering.

@@ -1,4 +1,44 @@
-# I3S
+---
+title: I3S format
+description: A hierarchical scene-layer format for streaming large 3D geospatial datasets.
+hide_title: true
+page_style: designed
+---
+
+import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
+import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
+import {TiledSceneGraphic} from '@site/src/components/docs/tiled-scene-graphic';
+
+<DocPageHeader
+  eyebrow="Hierarchical scene-layer format"
+  title="I3S"
+  description="Stream only the scene content the view can use. I3S organizes geometry, textures, attributes, and level-of-detail metadata into a node tree delivered through REST resources or Scene Layer Packages."
+  tone="orange"
+  meta={['I3S 1.7', 'OGC I3S 1.3', 'REST and SLPK']}
+  logos={[
+    {alt: 'ArcGIS', src: '/images/format-logos/arcgis-logo.svg'},
+    {alt: 'Open Geospatial Consortium', src: '/images/format-logos/ogc-logo-transparent.png'}
+  ]}
+  links={[
+    {label: 'I3S module', to: '/docs/modules/i3s'},
+    {label: '3D data formats', to: '/docs/developer-guide/3d-data-formats'}
+  ]}
+/>
+
+<TiledSceneGraphic />
+
+<DocOrientation
+  eyebrow="The layer contract"
+  title="Metadata, hierarchy, and payloads travel together."
+  description="An I3S layer describes its profile and spatial reference before the source requests nodes. The runtime can then schedule geometry, textures, attributes, and point data according to visibility and level of detail."
+  tone="orange"
+  items={[
+    {label: 'Profiles', value: '3D Object, Integrated Mesh, Building, Point'},
+    {label: 'Delivery', value: 'REST resources or .slpk archives'},
+    {label: 'Traversal', value: 'Node pages, bounds, and level of detail'},
+    {label: 'Payloads', value: 'Mesh, textures, attributes, or LEPCC points'}
+  ]}
+/>
 
 - _[`@loaders.gl/i3s`](/docs/modules/i3s)_
 - _[I3S community specification](https://github.com/Esri/i3s-spec)_
@@ -8,6 +48,12 @@ Indexed 3D Scene Layer (I3S) is a hierarchical, streamable format for large geos
 datasets. A scene layer organizes geometry, textures, attributes, and level-of-detail information
 into a node tree. It can be delivered through REST resources or packaged as a Scene Layer Package
 (`.slpk`).
+
+<ReferenceBoundary
+  title="I3S profiles and conformance"
+  description="The sections below cover supported profiles, specification generations, delivery forms, and the exact loaders.gl compatibility boundaries."
+  tone="orange"
+/>
 
 ## Compatibility at a glance
 

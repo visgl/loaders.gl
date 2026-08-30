@@ -1,8 +1,42 @@
+---
+title: 3D Tiles implicit tiling and lazy subtrees
+description: Understand availability-driven quadtree and octree hierarchies without downloading every tile header up front.
+hide_title: true
+page_style: designed
+---
+
 import {Tiles3DDocsTabs} from '@site/src/components/docs/tiles-3d-docs-tabs';
+import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
+import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
 
-# Implicit Tiling and Lazy Subtrees
+<DocPageHeader
+  eyebrow="3D Tiles runtime / implicit tiling"
+  title="Expand a hierarchy only where the view needs it."
+  description="Implicit tiling describes regular spatial trees with templates and availability data. loaders.gl keeps subtree metadata lazy, so traversal can grow a large hierarchy one visible boundary at a time."
+  tone="mint"
+  meta={['QUADTREE and OCTREE', 'Availability bitstreams', 'Lazy materialization']}
+/>
 
-<Tiles3DDocsTabs active="implicit" />
+<Tiles3DDocsTabs active="runtime" />
+
+<DocOrientation
+  eyebrow="Availability-driven hierarchy"
+  title="The subtree says what exists."
+  description="A subtree availability file is not a second tileset. It is a compact answer about which coordinates have tile content or lead to another subtree."
+  tone="mint"
+  items={[
+    {label: 'Template', value: 'Derive resource URLs from level and spatial coordinates.'},
+    {label: 'Availability', value: 'Read tile, content, and child-subtree presence.'},
+    {label: 'Materialize', value: 'Install only the visible headers needed by traversal.'},
+    {label: 'Continue', value: 'Leave deeper subtree roots lazy until they become relevant.'}
+  ]}
+/>
+
+<ReferenceBoundary
+  title="Subtree mechanics"
+  description="The detailed guide covers coordinate arithmetic, content streams, lifecycle states, cache scope, and diagnostic counters."
+  tone="mint"
+/>
 
 Implicit tiling describes a regular quadtree or octree with coordinate templates instead of listing every tile header in the root tileset JSON. Availability files called **subtrees** say which tiles, content resources, and deeper subtrees exist. loaders.gl loads these availability files lazily so a large implicit tileset can become traversable without downloading its complete hierarchy.
 

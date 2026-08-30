@@ -1,10 +1,50 @@
-# GML - Geography Markup Language
+---
+title: GML - Geography Markup Language
+description: Parse the interoperable feature and geometry subset commonly returned by WFS services.
+hide_title: true
+page_style: designed
+---
+
+import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
+import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
+
+<DocPageHeader
+  eyebrow="OGC feature encoding"
+  title="Read structured features from XML without guessing their geometry."
+  description="GML is an extensible XML grammar rather than one fixed schema. loaders.gl focuses on the feature and geometry subset used in production WFS responses and can emit features incrementally as the document arrives."
+  tone="mint"
+  meta={['GML 2 and 3', 'Streaming XML', 'GeoJSON and Arrow through WFS']}
+  links={[
+    {label: 'WMS module', to: '/docs/modules/wms'},
+    {label: 'WFS format', to: '/docs/modules/wms/formats/wfs'},
+    {label: 'XML module', to: '/docs/modules/xml'}
+  ]}
+/>
+
+<DocOrientation
+  eyebrow="The GML parsing path"
+  title="Frame feature members. Normalize geometry. Preserve unknown properties."
+  description="The parser follows XML structure instead of searching text with regular expressions. Applications can supply known scalar types while retaining unrecognized application-schema content."
+  tone="mint"
+  items={[
+    {label: 'Input', value: 'GML feature collection or WFS response'},
+    {label: 'Parse', value: 'Namespaces, feature members, and coordinate encodings'},
+    {label: 'Normalize', value: 'Points, lines, polygons, and multiparts'},
+    {label: 'Stream', value: 'Feature batches for large XML responses'}
+  ]}
+/>
 
 ![ogc-logo](../../../images/logos/ogc-logo-60.png)
 
 GML is the OGC XML grammar for geographical features. loaders.gl focuses on the feature and
 geometry subset encountered in production WFS responses, with incremental parsing for large
 collections.
+
+<ReferenceBoundary
+  title="GML grammar and parser details"
+  description="The reference below covers supported geometry encodings, CRS metadata, streaming behavior, scalar type hints, and the boundary between GML and WFS."
+  tone="mint"
+/>
 
 ## Feature support
 

@@ -11,12 +11,20 @@ type GltfDocsTab = {
 };
 
 /** glTF documentation tab identifiers. */
-export type GltfDocsTabId = 'overview' | 'format' | 'gltf-loader' | 'post-processing';
+export type GltfDocsTabId =
+  | 'overview'
+  | 'format'
+  | 'gltf-loader'
+  | 'iterator'
+  | 'scenegraph'
+  | 'post-processing';
 
 const GLTF_DOCS_TABS: GltfDocsTab[] = [
   {id: 'overview', label: 'Overview', href: '/docs/modules/gltf'},
   {id: 'format', label: 'glTF Format', href: '/docs/modules/gltf/formats/gltf'},
   {id: 'gltf-loader', label: 'GLTFLoader', href: '/docs/modules/gltf/api-reference/gltf-loader'},
+  {id: 'iterator', label: 'Iterator', href: '/docs/modules/gltf/api-reference/gltf-iterator'},
+  {id: 'scenegraph', label: 'Scenegraph', href: '/docs/modules/gltf/api-reference/gltf-scenegraph'},
   {
     id: 'post-processing',
     label: 'Post-processing',

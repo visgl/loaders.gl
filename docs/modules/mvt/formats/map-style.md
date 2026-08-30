@@ -1,4 +1,38 @@
-# Map Styles
+---
+title: Map Styles
+description: Resolve tiled map sources and preserve style metadata for a renderer to apply.
+hide_title: true
+page_style: designed
+---
+
+import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
+import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
+
+<DocPageHeader
+  eyebrow="Map style format"
+  title="Keep the style document separate from the tile data."
+  description="Map style JSON describes sources, layer order, and rendering intent; it does not contain the tiles themselves. `MapStyleLoader` resolves the resource graph while leaving full rendering decisions to the application."
+  tone="mint"
+  meta={['Mapbox Style Spec', 'MapLibre Style Spec', 'TileJSON resolution']}
+  links={[
+    {label: 'MVT module', to: '/docs/modules/mvt'},
+    {label: 'MapStyleLoader', to: '/docs/modules/mvt/api-reference/map-style-loader'},
+    {label: 'TileJSON format', to: '/docs/modules/mvt/formats/tilejson'}
+  ]}
+/>
+
+<DocOrientation
+  eyebrow="The style path"
+  title="Read the document. Resolve its sources. Hand rendering rules to the client."
+  description="A style file is a small resource graph: source URLs may point to TileJSON, layers reference those sources, and the renderer applies paint, layout, symbols, and expressions."
+  tone="mint"
+  items={[
+    {label: 'Document', value: 'Metadata, camera hints, sprites, and glyphs'},
+    {label: 'Sources', value: 'Vector, raster, terrain, GeoJSON, or image sources'},
+    {label: 'Layers', value: 'Ordered rendering declarations and filters'},
+    {label: 'Boundary', value: 'Loader resolves resources; renderer applies style semantics'}
+  ]}
+/>
 
 - _[`@loaders.gl/mvt`](/docs/modules/mvt)_
 - _[Mapbox Style Specification](https://docs.mapbox.com/style-spec/guides/)_
@@ -16,6 +50,12 @@ an ordered layer list that tells a renderer which source to read from and how to
 - resolving relative source URLs
 - dereferencing TileJSON-backed sources
 - normalizing tile template URLs so downstream code can fetch tiles directly
+
+<ReferenceBoundary
+  title="Style document and resource details"
+  description="The reference below covers top-level metadata, sources, layers, subresources, URL resolution, and the rendering boundary."
+  tone="mint"
+/>
 
 It does not implement the full style rendering model. Expressions, paint rules, symbol placement,
 fonts, sprites, and renderer-specific behavior are preserved as metadata for an application to use.

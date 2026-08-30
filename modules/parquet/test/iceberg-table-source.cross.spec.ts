@@ -10,7 +10,7 @@ import {encode} from '@loaders.gl/core';
 import {DataSourceManager} from '@loaders.gl/loader-utils';
 import {FederatedTableScanSource} from '@loaders.gl/scan';
 import {IcebergTableSource} from '../src/iceberg-table-source';
-import {AvroWriter} from '../src/avro-writer';
+import {AvroWriter} from '@loaders.gl/avro';
 import {ParquetJSWriter} from '../src/parquet-js-writer';
 
 function createMetadataUrl(metadata: unknown): string {

@@ -1,7 +1,7 @@
 import React, {useState} from 'react';
 import Link from '@docusaurus/Link';
 import styled from 'styled-components';
-import SourceLoaderGraphic from '../source-loader-graphic';
+import {NaturalBreaks} from '../natural-breaks';
 
 const categoryTabs = [
   {
@@ -150,7 +150,7 @@ const categoryTabs = [
       plain: {
         data: 'JSON-style data',
         detail: 'Objects / arrays',
-        loaders: ['JSONLoader', 'BSONLoader', 'XMLLoader', 'HTMLLoader'],
+        loaders: ['JSONLoader', 'BSONLoader', 'XMLLoader', 'HTMLLoader', 'YAMLLoader', 'TOMLLoader'],
         writers: ['JSONWriter', 'BSONWriter']
       }
     }
@@ -252,7 +252,9 @@ const loaderDocumentationLinks = {
   Tiles3DLoader: '/docs/modules/3d-tiles/api-reference/tiles-3d-loader',
   WKBLoader: '/docs/modules/wkt/api-reference/wkb-loader',
   WKTLoader: '/docs/modules/wkt/api-reference/wkt-loader',
-  XMLLoader: '/docs/modules/xml/api-reference/xml-loader'
+  XMLLoader: '/docs/modules/xml/api-reference/xml-loader',
+  TOMLLoader: '/docs/modules/config/api-reference/toml-loader',
+  YAMLLoader: '/docs/modules/config/api-reference/yaml-loader'
 };
 
 const writerDocumentationLinks = {
@@ -286,114 +288,9 @@ const streamingProcessingBlocks = ['loadInBatches()', 'parseInBatches()', 'trans
 
 const streamingOutputs = ['Table batches', 'GeoJSON batches', 'Arrow batches'];
 
-const ConceptsSection = styled.section`
-  background:
-    linear-gradient(180deg, var(--ifm-color-white) 0%, var(--ifm-color-gray-200) 100%),
-    var(--ifm-color-gray-200);
-  color: var(--ifm-color-gray-900);
-  padding: 88px 64px 96px;
-
-  @media screen and (max-width: 996px) {
-    padding: 72px 32px 80px;
-  }
-
-  @media screen and (max-width: 640px) {
-    padding: 56px 20px 64px;
-  }
-`;
-
-const Content = styled.div`
-  margin: 0 auto;
-  max-width: 1180px;
-`;
-
-const Intro = styled.div`
-  display: grid;
-  grid-template-columns: minmax(0, 0.8fr) minmax(280px, 1.2fr);
-  gap: 40px;
-  align-items: end;
-  margin-bottom: 40px;
-
-  @media screen and (max-width: 900px) {
-    grid-template-columns: 1fr;
-    gap: 20px;
-  }
-`;
-
-const Eyebrow = styled.p`
-  color: var(--ifm-color-primary-darkest);
-  font-size: 13px;
-  font-weight: 700;
-  line-height: 1.4;
-  margin: 0 0 14px;
-  text-transform: uppercase;
-`;
-
-const Title = styled.h2`
-  color: var(--ifm-color-black);
-  font-size: 42px;
-  font-weight: 800;
-  line-height: 1.08;
-  margin: 0;
-
-  @media screen and (max-width: 640px) {
-    font-size: 32px;
-  }
-`;
-
-const Lead = styled.p`
-  color: var(--ifm-color-gray-800);
-  font-size: 18px;
-  line-height: 1.65;
-  margin: 0;
-`;
-
-const LinkBar = styled.div`
-  display: flex;
-  flex-wrap: wrap;
-  gap: 10px;
-  margin: 0 0 36px;
-`;
-
-const GuideLink = styled(Link)`
-  align-items: center;
-  background: var(--ifm-color-white);
-  border: 1px solid var(--ifm-color-gray-400);
-  border-radius: 8px;
-  color: var(--ifm-color-gray-900);
-  display: inline-flex;
-  font-size: 13px;
-  font-weight: 700;
-  gap: 8px;
-  line-height: 1;
-  padding: 11px 14px;
-  text-decoration: none;
-  transition:
-    border-color 160ms ease,
-    color 160ms ease,
-    transform 160ms ease;
-
-  &:hover {
-    border-color: var(--ifm-color-primary);
-    color: var(--ifm-color-primary-darkest);
-    text-decoration: none;
-    transform: translateY(-1px);
-  }
-`;
-
-const PanelGrid = styled.div`
-  display: grid;
-  grid-template-columns: minmax(0, 1.1fr) minmax(0, 0.9fr);
-  gap: 22px;
-
-  @media screen and (max-width: 1080px) {
-    grid-template-columns: 1fr;
-  }
-`;
-
 const Panel = styled.article`
-  background: rgba(255, 255, 255, 0.92);
-  border: 1px solid var(--ifm-color-gray-400);
+  background: var(--docs-surface);
+  border: 1px solid var(--docs-border-subtle);
   border-radius: 8px;
   box-shadow: 0 24px 70px rgba(43, 56, 72, 0.14);
   overflow: hidden;
@@ -404,14 +301,14 @@ const WidePanel = styled(Panel)`
 `;
 
 const PanelHeader = styled.div`
-  border-bottom: 1px solid var(--ifm-color-gray-300);
+  border-bottom: 1px solid var(--docs-border-subtle);
   display: grid;
   gap: 8px;
   padding: 24px 26px 18px;
 `;
 
 const PanelLabel = styled.p`
-  color: ${(props) => props.$color || 'var(--ifm-color-primary-darkest)'};
+  color: ${(props) => props.$color || 'var(--docs-accent-text)'};
   font-size: 12px;
   font-weight: 800;
   letter-spacing: 0;
@@ -421,7 +318,7 @@ const PanelLabel = styled.p`
 `;
 
 const PanelTitle = styled.h3`
-  color: var(--ifm-color-black);
+  color: var(--docs-text-strong);
   font-size: 24px;
   font-weight: 800;
   line-height: 1.2;
@@ -429,7 +326,7 @@ const PanelTitle = styled.h3`
 `;
 
 const PanelText = styled.p`
-  color: var(--ifm-color-gray-800);
+  color: var(--docs-text-muted);
   font-size: 15px;
   line-height: 1.6;
   margin: 0;
@@ -461,11 +358,11 @@ const RepresentationTabs = styled(TabList)`
 
 const TabButton = styled.button`
   background: ${(props) =>
-    props.$active ? 'rgba(0, 173, 230, 0.12)' : 'var(--ifm-color-white)'};
+    props.$active ? 'rgba(0, 173, 230, 0.12)' : 'var(--docs-surface-raised)'};
   border: 1px solid
-    ${(props) => (props.$active ? 'rgba(0, 173, 230, 0.7)' : 'var(--ifm-color-gray-400)')};
+    ${(props) => (props.$active ? 'rgba(0, 173, 230, 0.7)' : 'var(--docs-border-subtle)')};
   border-radius: 8px;
-  color: ${(props) => (props.$active ? 'var(--ifm-color-primary-darkest)' : 'var(--ifm-color-gray-800)')};
+  color: ${(props) => (props.$active ? 'var(--ifm-color-primary)' : 'var(--docs-text-muted)')};
   cursor: pointer;
   font-size: 13px;
   font-weight: 800;
@@ -527,7 +424,7 @@ const ConceptColumn = styled.div`
 `;
 
 const StageLabel = styled.p`
-  color: var(--ifm-color-primary-darkest);
+  color: var(--docs-accent-text);
   font-size: 11px;
   font-weight: 800;
   line-height: 1;
@@ -549,19 +446,21 @@ const LoaderGrid = styled.div`
 
 const Node = styled.div`
   align-items: center;
-  background: ${(props) => props.$background || 'var(--ifm-color-white)'};
-  border: 1px solid ${(props) => props.$border || 'var(--ifm-color-gray-400)'};
+  background: ${(props) => props.$background || 'var(--docs-surface-raised)'};
+  border: 1px solid ${(props) => props.$border || 'var(--docs-border-subtle)'};
   border-radius: 8px;
-  color: var(--ifm-color-gray-900);
+  color: var(--docs-text-strong);
   display: flex;
   font-size: ${(props) => (props.$compactText ? '12px' : '14px')};
   font-weight: 750;
   justify-content: space-between;
   line-height: 1.25;
   min-height: 44px;
-  overflow-wrap: anywhere;
+  min-width: 0;
+  overflow-wrap: normal;
   padding: 12px 14px;
   position: relative;
+  word-break: normal;
 `;
 
 const LinkedNode = styled(Node).attrs({as: Link})`
@@ -591,15 +490,15 @@ const CompactNode = styled(Node)`
 `;
 
 const EmptyNode = styled(Node)`
-  background: var(--ifm-color-gray-200);
+  background: var(--docs-surface-muted);
   border-style: dashed;
-  color: var(--ifm-color-gray-700);
+  color: var(--docs-text-muted);
 `;
 
 const CategoryNode = styled(Node)`
   background: ${(props) => props.$background};
   border-color: ${(props) => props.$border};
-  color: var(--ifm-color-black);
+  color: var(--docs-text-strong);
   font-weight: 800;
 `;
 
@@ -650,7 +549,7 @@ const MethodGrid = styled.div`
 `;
 
 const TinyLabel = styled.span`
-  color: var(--ifm-color-gray-700);
+  color: var(--docs-text-muted);
   font-size: 11px;
   font-weight: 800;
   line-height: 1;
@@ -665,9 +564,9 @@ const NodeMeta = styled.span`
 
 const SourceTag = styled.span`
   background: transparent;
-  border: 1px solid var(--ifm-color-gray-400);
+  border: 1px solid var(--docs-border-subtle);
   border-radius: 999px;
-  color: var(--ifm-color-gray-700);
+  color: var(--docs-text-muted);
   flex: 0 0 auto;
   font-size: 8px;
   font-weight: 500;
@@ -677,7 +576,7 @@ const SourceTag = styled.span`
 `;
 
 const LinkMark = styled.span`
-  color: var(--ifm-color-primary-darkest);
+  color: var(--docs-accent-text);
   flex: 0 0 auto;
   font-size: 11px;
   font-weight: 800;
@@ -686,7 +585,7 @@ const LinkMark = styled.span`
 
 const Connector = styled.div`
   align-items: center;
-  color: var(--ifm-color-primary-darkest);
+  color: var(--docs-accent-text);
   display: flex;
   font-size: 18px;
   font-weight: 800;
@@ -695,7 +594,7 @@ const Connector = styled.div`
 
   &::before {
     border-bottom: 9px solid transparent;
-    border-left: 15px solid var(--ifm-color-primary-darkest);
+    border-left: 15px solid var(--docs-accent-text);
     border-top: 9px solid transparent;
     content: '';
     height: 0;
@@ -744,10 +643,10 @@ const SplitPanel = styled.div`
 `;
 
 const Note = styled.div`
-  background: var(--ifm-color-gray-200);
+  background: var(--docs-surface-muted);
   border-left: 4px solid ${(props) => props.$color || 'var(--ifm-color-primary)'};
   border-radius: 8px;
-  color: var(--ifm-color-gray-800);
+  color: var(--docs-text-muted);
   font-size: 14px;
   line-height: 1.55;
   padding: 14px 16px;
@@ -818,7 +717,7 @@ export function CategoryDataConcept({
                     to={loaderDocumentationLinks[loader]}
                     $compactText={loader.length > 20}
                   >
-                    <span>{loader}</span>
+                    <NaturalBreaks>{loader}</NaturalBreaks>
                     <LinkMark aria-hidden="true">↗</LinkMark>
                   </LinkedNode>
                 ))
@@ -857,7 +756,7 @@ export function CategoryDataConcept({
                     $background="rgba(53, 173, 107, 0.12)"
                     $border="rgba(53, 173, 107, 0.55)"
                   >
-                    <span>{writer}</span>
+                    <NaturalBreaks>{writer}</NaturalBreaks>
                     <LinkMark aria-hidden="true">↗</LinkMark>
                   </LinkedCategoryNode>
                 ))
@@ -892,8 +791,12 @@ export function StreamingConcept() {
             <StageLabel>Streaming loaders</StageLabel>
             <LoaderGrid>
               {streamingLoaders.map((loader) => (
-                <LinkedNode key={loader} to={loaderDocumentationLinks[loader]}>
-                  <span>{loader}</span>
+                <LinkedNode
+                  key={loader}
+                  to={loaderDocumentationLinks[loader]}
+                  $compactText={loader.length > 10}
+                >
+                  <NaturalBreaks>{loader}</NaturalBreaks>
                   <LinkMark aria-hidden="true">↗</LinkMark>
                 </LinkedNode>
               ))}
@@ -906,7 +809,9 @@ export function StreamingConcept() {
               <span>Process while loading</span>
               <MethodGrid>
                 {streamingProcessingBlocks.map((block) => (
-                  <CompactNode key={block}>{block}</CompactNode>
+                  <CompactNode key={block} $compactText={block.length > 12}>
+                    <NaturalBreaks>{block}</NaturalBreaks>
+                  </CompactNode>
                 ))}
               </MethodGrid>
             </DataSourceNode>
@@ -932,100 +837,55 @@ export function StreamingConcept() {
   );
 }
 
-/** Renders the homepage section that explains loaders.gl concept flows. */
-export default function Concepts() {
+/** Renders the composite-loader delegation flow used on the composite loaders guide. */
+export function CompositeConcept() {
   return (
-    <ConceptsSection>
-      <Content>
-        <Intro>
-          <div>
-            <Eyebrow>How loaders.gl fits together</Eyebrow>
-            <Title>Different formats. Common data shapes. Portable pipelines.</Title>
-          </div>
-          <Lead>
-            Loaders decode files and services into category data that applications can use
-            consistently. Writers encode compatible data back out. Sources handle datasets that need
-            metadata, tiles, or repeated requests.
-          </Lead>
-        </Intro>
-
-        <LinkBar aria-label="Concept guide links">
-          <GuideLink to="/docs/developer-guide/loader-categories">Loader categories</GuideLink>
-          <GuideLink to="/docs/developer-guide/using-loaders">Using loaders</GuideLink>
-          <GuideLink to="/docs/developer-guide/using-writers">Using writers</GuideLink>
-          <GuideLink to="/docs/developer-guide/using-sources">Using sources</GuideLink>
-          <GuideLink to="/docs/developer-guide/common-scan-architecture">Using scans</GuideLink>
-          <GuideLink to="/docs/developer-guide/composite-loaders">Composite loaders</GuideLink>
-        </LinkBar>
-
-        <PanelGrid>
-          <CategoryDataConcept />
-
-          <Panel>
-            <PanelHeader>
-              <PanelLabel $color="#287A4B">Data sources</PanelLabel>
-              <PanelTitle>Load incrementally from tiles or services.</PanelTitle>
-              <PanelText>
-                SourceLoaders encapsulate incremental loading for vector, raster, imagery, and 3D
-                data from cloud archives and web services.
-              </PanelText>
-            </PanelHeader>
-            <Diagram>
-              <SourceLoaderGraphic />
-            </Diagram>
-          </Panel>
-
-          <Panel>
-            <PanelHeader>
-              <PanelLabel $color="#B54F49">Composite loading</PanelLabel>
-              <PanelTitle>Complex formats invoke sub loaders.</PanelTitle>
-              <PanelText>
-                Composite loaders resolve linked assets and delegate embedded content without
-                pushing that work into application code.
-              </PanelText>
-            </PanelHeader>
-            <Diagram>
-              <SplitPanel>
-                <CompactFlow>
-                  <Stack>
-                    <LinkedNode to={loaderDocumentationLinks.GLTFLoader}>
-                      <span>GLTFLoader</span>
-                      <LinkMark aria-hidden="true">↗</LinkMark>
-                    </LinkedNode>
-                    <LinkedNode to={loaderDocumentationLinks.Tiles3DLoader}>
-                      <span>Tiles3DLoader</span>
-                      <LinkMark aria-hidden="true">↗</LinkMark>
-                    </LinkedNode>
-                  </Stack>
-                  <VerticalConnector $label="calls" />
-                  <Stack>
-                    {subloaders.map((subloader) => (
-                      <LinkedNode
-                        key={subloader}
-                        to={loaderDocumentationLinks[subloader]}
-                        $compactText={subloader.length > 20}
-                      >
-                        <span>{subloader}</span>
-                        <LinkMark aria-hidden="true">↗</LinkMark>
-                      </LinkedNode>
-                    ))}
-                  </Stack>
-                  <VerticalConnector $label="returns" />
-                  <LabelOnlyNode $background="rgba(181, 79, 73, 0.1)" $border="rgba(181, 79, 73, 0.5)">
-                    <span>glTF data</span>
-                  </LabelOnlyNode>
-                </CompactFlow>
-                <Note $color="#B54F49">
-                  A single top-level load can fetch linked buffers, images, compressed meshes, and
-                  tile content while preserving the same loaders.gl API surface.
-                </Note>
-              </SplitPanel>
-            </Diagram>
-          </Panel>
-
-          <StreamingConcept />
-        </PanelGrid>
-      </Content>
-    </ConceptsSection>
+    <WidePanel>
+      <PanelHeader>
+        <PanelLabel $color="#B54F49">Composite loading</PanelLabel>
+        <PanelTitle>Complex formats invoke sub loaders.</PanelTitle>
+        <PanelText>
+          Composite loaders resolve linked assets and delegate embedded content without pushing
+          that work into application code.
+        </PanelText>
+      </PanelHeader>
+      <Diagram>
+        <SplitPanel>
+          <CompactFlow>
+            <Stack>
+              <LinkedNode to={loaderDocumentationLinks.GLTFLoader}>
+                <NaturalBreaks>GLTFLoader</NaturalBreaks>
+                <LinkMark aria-hidden="true">↗</LinkMark>
+              </LinkedNode>
+              <LinkedNode to={loaderDocumentationLinks.Tiles3DLoader}>
+                <NaturalBreaks>Tiles3DLoader</NaturalBreaks>
+                <LinkMark aria-hidden="true">↗</LinkMark>
+              </LinkedNode>
+            </Stack>
+            <VerticalConnector $label="calls" />
+            <Stack>
+              {subloaders.map((subloader) => (
+                <LinkedNode
+                  key={subloader}
+                  to={loaderDocumentationLinks[subloader]}
+                  $compactText={subloader.length > 20}
+                >
+                  <NaturalBreaks>{subloader}</NaturalBreaks>
+                  <LinkMark aria-hidden="true">↗</LinkMark>
+                </LinkedNode>
+              ))}
+            </Stack>
+            <VerticalConnector $label="returns" />
+            <LabelOnlyNode $background="rgba(181, 79, 73, 0.1)" $border="rgba(181, 79, 73, 0.5)">
+              <span>glTF data</span>
+            </LabelOnlyNode>
+          </CompactFlow>
+          <Note $color="#B54F49">
+            A single top-level load can fetch linked buffers, images, compressed meshes, and tile
+            content while preserving the same loaders.gl API surface.
+          </Note>
+        </SplitPanel>
+      </Diagram>
+    </WidePanel>
   );
 }
