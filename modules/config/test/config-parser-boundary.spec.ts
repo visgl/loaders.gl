@@ -47,6 +47,42 @@ single: 'it''s fine'
     expect(parseYAMLSync('')).toBeNull();
   });
 
+  test('parses anchors, aliases, merge keys, and commas in block plain scalars', () => {
+    const value = parseYAMLSync(`
+defaults: &defaults
+  color: cyan
+  width: 2
+secondary: &secondary
+  color: yellow
+  opacity: 0.5
+copy: *defaults
+road:
+  color: purple
+  <<: *defaults
+combined:
+  <<:
+    - *defaults
+    - *secondary
+flow-aliases: [*defaults, {copy: *secondary}]
+"<<": literal
+fill: rgba(136, 45, 23, 0.9)
+flow: [first, second]
+`) as Record<string, unknown>;
+
+    expect(value).toEqual({
+      defaults: {color: 'cyan', width: 2},
+      secondary: {color: 'yellow', opacity: 0.5},
+      copy: {color: 'cyan', width: 2},
+      road: {color: 'purple', width: 2},
+      combined: {color: 'cyan', width: 2, opacity: 0.5},
+      'flow-aliases': [{color: 'cyan', width: 2}, {copy: {color: 'yellow', opacity: 0.5}}],
+      '<<': 'literal',
+      fill: 'rgba(136, 45, 23, 0.9)',
+      flow: ['first', 'second']
+    });
+    expect(value.copy).toBe(value.defaults);
+  });
+
   test.each([
     ['duplicate mapping key', 'a: 1\na: 2', {uniqueKeys: true}, 'Duplicate mapping key'],
     ['unknown alias', 'value: *missing', {}, 'Unknown YAML alias'],

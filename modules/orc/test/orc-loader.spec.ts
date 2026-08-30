@@ -468,6 +468,72 @@ test('ORCLoader#parse decodes patched-base RLEv2 integers', async () => {
   }
 });
 
+test.each([
+  ['short-repeat', Uint8Array.from([0x00, 5]), [5, 5, 5]],
+  ['direct', Uint8Array.from([0x40, 2, 0x40]), [0, -1, 0]],
+  ['delta', Uint8Array.from([0xc0, 2, 20, 4]), [10, 12, 14]]
+])('ORCLoader#parse decodes %s RLEv2 integers', async (_name, bytes, expected) => {
+  const fixture = buildORCFixture({
+    rowCount: 3,
+    streams: [{kind: 1, column: 1, bytes}],
+    types: [{kind: 12, subtypes: [1], fieldNames: ['value']}, {kind: 3}],
+    encodingKinds: [0, 2]
+  });
+  const result = await ORCLoaderWithParser.parse(fixture.buffer);
+  expect(result.shape).toBe('arrow-table');
+  if (result.shape === 'arrow-table') {
+    expect(getColumnValues(result.data, 'value')).toEqual(expected);
+  }
+});
+
+test('ORCLoader#parse reports malformed primitive and RLE streams', async () => {
+  for (const [bytes, message] of [
+    [Uint8Array.from([0x38]), 'short-repeat'],
+    [Uint8Array.from([0x40]), 'direct'],
+    [Uint8Array.from([0x80]), 'patched-base'],
+    [Uint8Array.from([0xc0, 1]), 'variable-length integer']
+  ] as const) {
+    await expect(
+      ORCLoaderWithParser.parse(
+        buildORCFixture({
+          rowCount: 1,
+          streams: [{kind: 1, column: 1, bytes}],
+          types: [{kind: 12, subtypes: [1], fieldNames: ['value']}, {kind: 3}],
+          encodingKinds: [0, 2]
+        }).buffer
+      )
+    ).rejects.toThrow(message);
+  }
+
+  for (const [kind, bytes] of [
+    [ORCTypeKind.FLOAT, Uint8Array.from([1, 2, 3])],
+    [ORCTypeKind.DOUBLE, Uint8Array.from([1, 2, 3, 4])]
+  ] as const) {
+    await expect(
+      ORCLoaderWithParser.parse(
+        buildORCFixture({
+          rowCount: 1,
+          streams: [{kind: 1, column: 1, bytes}],
+          types: [{kind: 12, subtypes: [1], fieldNames: ['value']}, {kind}]
+        }).buffer
+      )
+    ).rejects.toThrow('Truncated ORC numeric stream');
+  }
+
+  await expect(
+    ORCLoaderWithParser.parse(
+      buildORCFixture({
+        rowCount: 1,
+        streams: [
+          {kind: 1, column: 1, bytes: new TextEncoder().encode('x')},
+          {kind: 2, column: 1, bytes: Uint8Array.from([0xff, 2])}
+        ],
+        types: [{kind: 12, subtypes: [1], fieldNames: ['value']}, {kind: ORCTypeKind.STRING}]
+      }).buffer
+    )
+  ).rejects.toThrow('Truncated ORC string stream');
+});
+
 test('ORCLoader#parse reconstructs LIST child streams', async () => {
   const lengths = Uint8Array.from([0xfd, 0x02, 0x00, 0x01]);
   const values = Uint8Array.from([0xfd, 0x14, 0x16, 0x18]);
@@ -725,6 +791,7 @@ function buildORCFixture(options: {
   rowCount: number;
   streams: Array<{kind: number; column: number; bytes: Uint8Array}>;
   types: Array<{kind: number; subtypes?: number[]; fieldNames?: string[]}>;
+  encodingKinds?: number[];
 }): Uint8Array {
   const data = concatBytes(...options.streams.map(stream => stream.bytes));
   const stripeFooter = encodeMessage([
@@ -744,7 +811,7 @@ function buildORCFixture(options: {
         [
           2,
           encodeMessage([
-            [1, 0],
+            [1, options.encodingKinds?.[column] ?? 0],
             [3, column]
           ])
         ] as [number, Uint8Array]

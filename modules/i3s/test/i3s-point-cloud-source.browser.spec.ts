@@ -4,7 +4,7 @@
 
 import {fetchFile} from '@loaders.gl/core';
 import {I3SPointCloudSource} from '@loaders.gl/i3s';
-import {expect, test} from 'vitest';
+import {describe, expect, test} from 'vitest';
 
 const XYZ_FIXTURE = '@loaders.gl/i3s/test/data/point-cloud/SMALL_AUTZEN_LAS_All.pccxyz';
 const INTENSITY_FIXTURE = '@loaders.gl/i3s/test/data/point-cloud/SMALL_AUTZEN_LAS_All.pccint';
@@ -234,4 +234,181 @@ test('I3SPointCloudSource traverses node pages and decodes content', async () =>
   await expect(invalidVerticalSource.initialize()).rejects.toThrow(
     'Unsupported I3S vertical unit furlong'
   );
+});
+
+describe('I3SPointCloudSource boundary coverage', () => {
+  const node = {
+    resourceId: 7,
+    obb: {center: [10, 20, 30], halfSize: [1, 2, 3], quaternion: [0, 0, 0, 1]},
+    vertexCount: 1,
+    lodThreshold: 0
+  };
+
+  function makeInitializedSource(
+    coordinateSystem?: 'default' | 'cartesian' | 'lnglat' | 'lnglat-offsets' | 'meter-offsets',
+    fetchResource: (url: string) => Promise<Response> = async () => new Response(new ArrayBuffer(8))
+  ) {
+    const source = new I3SPointCloudSource('https://example.com/layer///', {
+      i3s: {coordinateSystem},
+      core: {loadOptions: {core: {fetch: fetchResource}}}
+    });
+    source.isReady = true;
+    source.metadata = {
+      layerType: 'PointCloud',
+      store: {},
+      nodePages: {},
+      attributeInfo: []
+    } as any;
+    (source as any).baseUrl = 'https://example.com/layer';
+    (source as any).nodes.set('0', node);
+    (source as any).decoder.decodeXyz = () => new Float64Array([11, 22, 33]);
+    return source;
+  }
+
+  test('normalizes every renderer coordinate system with tiny synthetic content', async () => {
+    const expected = {
+      default: {system: 'lnglat-offsets', origin: [10, 20, 30]},
+      'lnglat-offsets': {system: 'lnglat-offsets', origin: [10, 20, 30]},
+      lnglat: {system: 'lnglat', origin: [0, 0, 0]},
+      'meter-offsets': {system: 'meter-offsets', origin: [10, 20, 30]},
+      cartesian: {system: 'cartesian', origin: [0, 0, 0]}
+    } as const;
+    for (const coordinateSystem of Object.keys(expected) as Array<keyof typeof expected>) {
+      const source = makeInitializedSource(coordinateSystem);
+      const tile = await source.getRootTile();
+      const content = await source.loadTileContent(tile);
+      expect(content?.coordinateSystem).toBe(expected[coordinateSystem].system);
+      expect(content?.cartographicOrigin).toEqual(expected[coordinateSystem].origin);
+      expect(content?.pointCount).toBe(1);
+    }
+  });
+
+  test('decodes raw point attributes and resolves their public names', () => {
+    const source = makeInitializedSource();
+    const sourceInternals = source as any;
+    sourceInternals.decoder.getBlobType = () => {
+      throw new Error('not compressed');
+    };
+    const cases = [
+      ['Float32', new Float32Array([1, 2]).buffer, Float32Array],
+      ['Float64', new Float64Array([1, 2]).buffer, Float64Array],
+      ['UInt16', new Uint16Array([1, 2]).buffer, Uint16Array],
+      ['Int32', new Int32Array([1, 2]).buffer, Int32Array],
+      ['UInt8', new Uint8Array([1, 2]).buffer, Uint8Array]
+    ] as const;
+    for (const [valueType, bytes, constructor] of cases) {
+      const decoded = sourceInternals.decodeAttribute(bytes, {
+        name: 'custom',
+        attributeValues: {valueType, valuesPerElement: 2}
+      });
+      expect(decoded.value).toBeInstanceOf(constructor);
+      expect(decoded.size).toBe(2);
+      expect(sourceInternals.getAttributeName({name: 'custom'}, decoded.kind)).toBe('custom');
+    }
+
+    sourceInternals.decoder.getBlobType = () => 'rgb';
+    sourceInternals.decoder.decodeRgb = () => new Uint8Array([1, 2, 3]);
+    expect(sourceInternals.decodeAttribute(new ArrayBuffer(1), {}).kind).toBe('rgb');
+    sourceInternals.decoder.getBlobType = () => 'intensity';
+    sourceInternals.decoder.decodeIntensity = () => new Uint16Array([4]);
+    expect(sourceInternals.decodeAttribute(new ArrayBuffer(1), {}).kind).toBe('intensity');
+    sourceInternals.decoder.getBlobType = () => 'flagBytes';
+    sourceInternals.decoder.decodeFlagBytes = () => new Uint8Array([5]);
+    expect(sourceInternals.decodeAttribute(new ArrayBuffer(1), {}).kind).toBe('flags');
+    expect(sourceInternals.getAttributeName({}, 'rgb')).toBe('COLOR_0');
+    expect(sourceInternals.getAttributeName({}, 'intensity')).toBe('intensity');
+    expect(sourceInternals.getAttributeName({}, 'flagBytes')).toBe('flags');
+    expect(sourceInternals.getAttributeName({key: 'key'}, 'raw')).toBe('key');
+    expect(sourceInternals.getAttributeName({}, 'raw')).toBe('attribute');
+  });
+
+  test('covers hierarchy caches, absent content, request fallbacks, and count checks', async () => {
+    const requestedUrls: string[] = [];
+    const source = makeInitializedSource(undefined, async url => {
+      requestedUrls.push(url);
+      if (url.includes('/first/') || url.endsWith('/missing')) {
+        return new Response(null, {status: 404});
+      }
+      return new Response(Uint8Array.from([1, 2, 3]));
+    });
+    const sourceInternals = source as any;
+    expect(await source.getMetadata()).toBe(source.metadata);
+    const root = await source.getRootTile();
+    expect(await source.getRootTile()).toBe(root);
+    expect(await source.getChildren(root)).toEqual([]);
+    expect(source.getViewState()).toEqual({});
+    source.metadata = {...source.metadata, fullExtent: {xmin: 1, ymin: 2}} as any;
+    expect(source.getViewState()).toEqual({cartographicCenter: [1, 2, 0]});
+
+    sourceInternals.nodes.delete('0');
+    expect(await source.loadTileContent(root)).toBeNull();
+    sourceInternals.nodes.set('0', node);
+    sourceInternals.decoder.decodeXyz = () => new Float64Array(0);
+    await expect(source.loadTileContent(root)).rejects.toThrow(/geometry count mismatch/);
+
+    expect(sourceInternals.resourceCandidates('nodes/0/attributes/first/0', 'second')).toEqual([
+      'nodes/0/attributes/first/0',
+      'nodes/0/attributes/second/0'
+    ]);
+    expect(
+      await sourceInternals.readBinary([
+        'nodes/0/attributes/first/0',
+        'nodes/0/attributes/second/0'
+      ])
+    ).toBeInstanceOf(ArrayBuffer);
+    expect(requestedUrls.slice(-2)).toEqual([
+      'https://example.com/layer/nodes/0/attributes/first/0',
+      'https://example.com/layer/nodes/0/attributes/second/0'
+    ]);
+    expect(await sourceInternals.readBinaryOptional('missing')).toBeNull();
+
+    sourceInternals.nodes.clear();
+    sourceInternals.nodePages.set(0, {nodes: []});
+    await expect(sourceInternals.getNode(0)).rejects.toThrow(/is not present/);
+  });
+
+  test('initializes REST metadata once and reports unresolved resource failures', async () => {
+    let requestCount = 0;
+    const layer = {
+      id: 1,
+      layerType: 'PointCloud',
+      version: '2.1',
+      spatialReference: {wkid: 4326},
+      capabilities: [],
+      disablePopup: false,
+      store: {
+        profile: 'pointcloud',
+        version: '2.1',
+        index: {nodePerIndexBlock: 1},
+        defaultGeometrySchema: {geometryType: 'points', encoding: 'lepcc-xyz'}
+      },
+      nodePages: {rootIndex: 0},
+      attributeStorageInfo: []
+    };
+    const source = new I3SPointCloudSource('https://example.com/layer///', {
+      i3s: {token: 'secret'},
+      core: {
+        loadOptions: {
+          core: {
+            fetch: async (url: string) => {
+              requestCount++;
+              return new Response(new TextEncoder().encode(JSON.stringify(layer)));
+            }
+          }
+        }
+      }
+    });
+    await source.initialize();
+    await source.initialize();
+    expect(requestCount).toBe(1);
+    expect((source as any).baseUrl).toBe('https://example.com/layer');
+    expect((source as any).nodesPerPage).toBe(1);
+
+    const failingSource = makeInitializedSource(undefined, async () => {
+      throw 'failure';
+    });
+    await expect((failingSource as any).readBinary('missing')).rejects.toThrow(
+      'I3S resource request failed'
+    );
+  });
 });

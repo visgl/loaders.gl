@@ -21,6 +21,7 @@ type YAMLLine = {
 class YAMLParser {
   private readonly lines: YAMLLine[];
   private readonly options: YAMLParseOptions;
+  private readonly anchors = new Map<string, unknown>();
   private lineIndex = 0;
 
   /** Creates a parser for one YAML document. */
@@ -153,7 +154,8 @@ class YAMLParser {
     if (separatorIndex < 0) {
       throw this.error('Expected a mapping entry', this.lineIndex - 1);
     }
-    const key = this.parseKey(entry.slice(0, separatorIndex).trim());
+    const keyText = entry.slice(0, separatorIndex).trim();
+    const key = this.parseKey(keyText);
     if (this.options.stringKeys && typeof key !== 'string') {
       throw this.error('Mapping keys must be strings', this.lineIndex - 1);
     }
@@ -162,9 +164,14 @@ class YAMLParser {
       throw this.error(`Duplicate mapping key: ${keyString}`, this.lineIndex - 1);
     }
     const valueText = entry.slice(separatorIndex + 1).trimStart();
-    result[keyString] = valueText
+    const parsedValue = valueText
       ? this.parseValue(valueText, indent)
       : this.parseNestedValue(indent);
+    if (keyText === '<<') {
+      this.mergeMapping(result, parsedValue);
+    } else {
+      result[keyString] = parsedValue;
+    }
   }
 
   /** Parses a nested block following a mapping or empty sequence item. */
@@ -183,10 +190,15 @@ class YAMLParser {
       const anchoredValue = anchorMatch[2]
         ? this.parseValue(anchorMatch[2], parentIndent)
         : this.parseNestedValue(parentIndent);
+      this.anchors.set(anchorMatch[1], anchoredValue);
       return anchoredValue;
     }
-    if (value.startsWith('*')) {
-      throw this.error(`Unknown YAML alias: ${value.slice(1)}`, this.lineIndex - 1);
+    const aliasMatch = value.match(/^\*([^ ]+)$/);
+    if (aliasMatch) {
+      if (!this.anchors.has(aliasMatch[1])) {
+        throw this.error(`Unknown YAML alias: ${aliasMatch[1]}`, this.lineIndex - 1);
+      }
+      return this.resolveAlias(aliasMatch[1]);
     }
     if (
       value === '|' ||
@@ -204,8 +216,11 @@ class YAMLParser {
     ) {
       return this.parseBlockScalar(parentIndent, value, true);
     }
-    return new YAMLFlowParser(value, this.options, message =>
-      this.error(message, this.lineIndex - 1)
+    return new YAMLFlowParser(
+      value,
+      this.options,
+      message => this.error(message, this.lineIndex - 1),
+      name => this.resolveAlias(name)
     ).parse();
   }
 
@@ -237,9 +252,35 @@ class YAMLParser {
 
   /** Parses a mapping key using the same scalar rules as values. */
   private parseKey(key: string): unknown {
-    return new YAMLFlowParser(key, this.options, message =>
-      this.error(message, this.lineIndex - 1)
+    return new YAMLFlowParser(
+      key,
+      this.options,
+      message => this.error(message, this.lineIndex - 1),
+      name => this.resolveAlias(name)
     ).parse();
+  }
+
+  /** Resolves a previously declared anchor. */
+  private resolveAlias(name: string): unknown {
+    if (!this.anchors.has(name)) {
+      throw this.error(`Unknown YAML alias: ${name}`, this.lineIndex - 1);
+    }
+    return this.anchors.get(name);
+  }
+
+  /** Merges aliased mappings into a mapping without replacing explicit keys. */
+  private mergeMapping(result: YAMLMapping, value: unknown): void {
+    const mappings = Array.isArray(value) ? value : [value];
+    for (const mapping of mappings) {
+      if (!mapping || typeof mapping !== 'object' || Array.isArray(mapping)) {
+        throw this.error('Merge keys require mapping aliases', this.lineIndex - 1);
+      }
+      for (const [key, entryValue] of Object.entries(mapping)) {
+        if (!Object.prototype.hasOwnProperty.call(result, key)) {
+          result[key] = entryValue;
+        }
+      }
+    }
   }
 
   /** Finds a colon that separates a mapping key from its value. */
@@ -305,13 +346,20 @@ class YAMLFlowParser {
   private readonly text: string;
   private readonly options: YAMLParseOptions;
   private readonly errorFactory: (message: string) => Error;
+  private readonly resolveAlias: (name: string) => unknown;
   private index = 0;
 
   /** Creates a flow-value parser. */
-  constructor(text: string, options: YAMLParseOptions, errorFactory: (message: string) => Error) {
+  constructor(
+    text: string,
+    options: YAMLParseOptions,
+    errorFactory: (message: string) => Error,
+    resolveAlias: (name: string) => unknown
+  ) {
     this.text = text;
     this.options = options;
     this.errorFactory = errorFactory;
+    this.resolveAlias = resolveAlias;
   }
 
   /** Parses one value and rejects trailing characters. */
@@ -326,7 +374,7 @@ class YAMLFlowParser {
   }
 
   /** Parses a flow collection, quoted scalar, or plain scalar. */
-  private parseValue(stopAtColon = false): unknown {
+  private parseValue({stopAtColon = false, stopAtComma = false} = {}): unknown {
     const character = this.text[this.index];
     if (character === '[') {
       return this.parseArray();
@@ -337,7 +385,24 @@ class YAMLFlowParser {
     if (character === '"' || character === "'") {
       return this.parseQuotedString(character);
     }
-    return this.parseScalar(this.readPlainValue(stopAtColon));
+    if (character === '*') {
+      return this.parseAlias();
+    }
+    return this.parseScalar(this.readPlainValue(stopAtColon, stopAtComma));
+  }
+
+  /** Parses and resolves an alias inside a flow collection. */
+  private parseAlias(): unknown {
+    this.index++;
+    const start = this.index;
+    while (this.index < this.text.length && !/[\s,\]}]/.test(this.text[this.index])) {
+      this.index++;
+    }
+    const name = this.text.slice(start, this.index);
+    if (!name) {
+      throw this.errorFactory('Expected an alias name');
+    }
+    return this.resolveAlias(name);
   }
 
   /** Parses a flow sequence. */
@@ -350,7 +415,7 @@ class YAMLFlowParser {
         this.index++;
         return result;
       }
-      result.push(this.parseValue());
+      result.push(this.parseValue({stopAtComma: true}));
       this.skipWhitespace();
       if (this.text[this.index] === ',') {
         this.index++;
@@ -370,13 +435,13 @@ class YAMLFlowParser {
         this.index++;
         return result;
       }
-      const key = this.parseValue(true);
+      const key = this.parseValue({stopAtColon: true});
       this.skipWhitespace();
       if (this.text[this.index++] !== ':') {
         throw this.errorFactory('Expected colon in flow mapping');
       }
       this.skipWhitespace();
-      const value = this.parseValue();
+      const value = this.parseValue({stopAtComma: true});
       if (this.options.stringKeys && typeof key !== 'string') {
         throw this.errorFactory('Mapping keys must be strings');
       }
@@ -434,7 +499,7 @@ class YAMLFlowParser {
   }
 
   /** Reads a plain scalar until flow syntax. */
-  private readPlainValue(stopAtColon: boolean): string {
+  private readPlainValue(stopAtColon: boolean, stopAtComma: boolean): string {
     const start = this.index;
     let depth = 0;
     while (this.index < this.text.length) {
@@ -446,7 +511,10 @@ class YAMLFlowParser {
           break;
         }
         depth--;
-      } else if ((character === ',' || (stopAtColon && character === ':')) && depth === 0) {
+      } else if (
+        ((stopAtComma && character === ',') || (stopAtColon && character === ':')) &&
+        depth === 0
+      ) {
         break;
       }
       this.index++;
