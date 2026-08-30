@@ -85,57 +85,73 @@ export class WKBBuilder {
 
   /** Begins a geometry by type, optionally writing its count field. */
   beginGeometry(type: WKBGeometryType | WKBGeometryTypeName, count?: number): void {
-    this.builder.beginGeometry(getGeometryTypeName(type), count);
+    const geometryTypeName = getGeometryTypeName(type);
+    if (!geometryTypeName) {
+      throw new Error('Unsupported WKB geometry type');
+    }
+    this.callBuilder(() => this.builder.beginGeometry(geometryTypeName, count));
   }
 
   /** Begins one point geometry. */
   beginPoint(): void {
-    this.builder.beginPoint();
+    this.callBuilder(() => this.builder.beginPoint());
   }
 
   /** Begins one linestring geometry. */
   beginLineString(pointCount: number): void {
-    this.builder.beginLineString(pointCount);
+    this.callBuilder(() => this.builder.beginLineString(pointCount));
   }
 
   /** Begins one polygon geometry. */
   beginPolygon(ringCount: number): void {
-    this.builder.beginPolygon(ringCount);
+    this.callBuilder(() => this.builder.beginPolygon(ringCount));
   }
 
   /** Begins one linear ring inside a polygon. */
   beginLinearRing(pointCount: number): void {
-    this.builder.beginLinearRing(pointCount);
+    this.callBuilder(() => this.builder.beginLinearRing(pointCount));
   }
 
   /** Begins one multipoint geometry. */
   beginMultiPoint(pointCount: number): void {
-    this.builder.beginMultiPoint(pointCount);
+    this.callBuilder(() => this.builder.beginMultiPoint(pointCount));
   }
 
   /** Begins one multilinestring geometry. */
   beginMultiLineString(lineCount: number): void {
-    this.builder.beginMultiLineString(lineCount);
+    this.callBuilder(() => this.builder.beginMultiLineString(lineCount));
   }
 
   /** Begins one multipolygon geometry. */
   beginMultiPolygon(polygonCount: number): void {
-    this.builder.beginMultiPolygon(polygonCount);
+    this.callBuilder(() => this.builder.beginMultiPolygon(polygonCount));
   }
 
   /** Writes one coordinate using the builder's dimensional options. */
   writeCoordinate(x: number, y: number, z?: number, m?: number): void {
-    this.builder.writeCoordinate(x, y, z, m);
+    this.callBuilder(() => this.builder.writeCoordinate(x, y, z, m));
   }
 
   /** Finishes the current geometry and returns its byte length. */
   finishGeometry(): number {
-    return this.builder.finishGeometry();
+    return this.callBuilder(() => this.builder.finishGeometry());
   }
 
   /** Returns the number of bytes measured or written by this builder. */
   getByteLength(): number {
-    return this.builder.finishGeometry();
+    return this.callBuilder(() => this.builder.finishGeometry());
+  }
+
+  /** Runs a math.gl builder operation while preserving the legacy facade error text. */
+  private callBuilder<T>(callback: () => T): T {
+    try {
+      return callback();
+    } catch (error) {
+      if (error instanceof Error && error.message.includes('target buffer overflow')) {
+        throw new Error('WKBBuilder overflow');
+      }
+      throw error;
+    }
   }
 
   /** Measures geometry writer callbacks and returns Arrow Binary offsets. */

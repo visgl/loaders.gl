@@ -4,8 +4,6 @@
 
 import * as arrow from 'apache-arrow';
 import {scanWKB} from '@math.gl/wkb';
-import type {Geometry} from '@loaders.gl/schema';
-import {convertWKTToGeometry} from '@loaders.gl/gis';
 
 import {
   isGeoArrowBox,
@@ -131,44 +129,8 @@ function getGeoarrowDataVertexCount(data: arrow.Data): number {
 
 /** Counts vertices in one Arrow UTF-8 WKT data chunk. */
 function getWKTDataVertexCount(data: arrow.Data): number {
-  const vector = new arrow.Vector([data]);
-  let vertexCount = 0;
-
-  for (let rowIndex = 0; rowIndex < vector.length; rowIndex++) {
-    const value = vector.get(rowIndex);
-    if (value == null) continue;
-    const geometry = convertWKTToGeometry(String(value));
-    if (!geometry) throw new Error(`Invalid WKT geometry at row ${rowIndex}.`);
-    vertexCount += countGeometryVertices(geometry);
-  }
-
-  return vertexCount;
-}
-
-/** Counts coordinate tuples in a parsed GeoJSON geometry, including nested collections. */
-function countGeometryVertices(geometry: Geometry): number {
-  switch (geometry.type) {
-    case 'Point':
-      return geometry.coordinates.length > 0 ? 1 : 0;
-    case 'MultiPoint':
-    case 'LineString':
-      return geometry.coordinates.length;
-    case 'Polygon':
-      return geometry.coordinates.reduce((count, ring) => count + ring.length, 0);
-    case 'MultiLineString':
-      return geometry.coordinates.reduce((count, line) => count + line.length, 0);
-    case 'MultiPolygon':
-      return geometry.coordinates.reduce(
-        (count, polygon) =>
-          count + polygon.reduce((polygonCount, ring) => polygonCount + ring.length, 0),
-        0
-      );
-    case 'GeometryCollection':
-      return geometry.geometries.reduce(
-        (count, childGeometry) => count + countGeometryVertices(childGeometry),
-        0
-      );
-  }
+  void data;
+  throw new Error('WKT vertex counting is not supported.');
 }
 
 /**
@@ -196,5 +158,12 @@ function getWKBDataVertexCount(data: arrow.Data): number {
  * @returns Number of source vertices encoded by the WKB geometry.
  */
 function getWKBVertexCount(wkb: ArrayBufferLike | ArrayBufferView): number {
-  return scanWKB(wkb).coordinateCount;
+  try {
+    return scanWKB(wkb).coordinateCount;
+  } catch (error) {
+    if (error instanceof Error && error.message.startsWith('Unsupported WKB geometry type')) {
+      throw new Error('Unsupported geometry type');
+    }
+    throw error;
+  }
 }

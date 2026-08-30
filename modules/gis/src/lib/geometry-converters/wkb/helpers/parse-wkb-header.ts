@@ -37,11 +37,9 @@ export function isWKT(input: string | ArrayBufferLike): boolean {
  */
 export function getWKTGeometryType(input: string | ArrayBufferLike): WKBGeometryType | null {
   if (typeof input === 'string') {
-    const match = input
-      .trim()
-      .match(
-        /^(POINT|LINESTRING|POLYGON|MULTIPOINT|MULTILINESTRING|MULTIPOLYGON|GEOMETRYCOLLECTION)(?:\s+(?:ZM|Z|M))?(?:\s|\()/i
-      );
+    const match = input.match(
+      /^(POINT|LINESTRING|POLYGON|MULTIPOINT|MULTILINESTRING|MULTIPOLYGON|GEOMETRYCOLLECTION)(?:\s+(?:ZM|Z|M))?(?:\s|\()/i
+    );
     if (!match?.[1]) return null;
     const geometryType = WKT_MAGIC_STRINGS.findIndex(magicString =>
       magicString.startsWith(match[1].toUpperCase())
@@ -92,7 +90,23 @@ export function isWKB(arrayBuffer: ArrayBufferLike): boolean {
  * @returns a header object describing the WKB data
  */
 export function parseWKBHeader(dataView: DataView, target?: WKBHeader): WKBHeader {
-  const header = inspectWKBHeader(dataView, target?.byteOffset ?? 0);
+  const text = new TextDecoder().decode(
+    new Uint8Array(dataView.buffer, dataView.byteOffset, dataView.byteLength)
+  );
+  if (isWKT(text)) {
+    throw new Error('Cannot parse WKT');
+  }
+  let header: ReturnType<typeof inspectWKBHeader>;
+  try {
+    header = inspectWKBHeader(dataView, target?.byteOffset ?? 0);
+  } catch (error) {
+    const littleEndian = dataView.getUint8(0) === 1;
+    const geometryCode = dataView.getUint32(1, littleEndian);
+    if (geometryCode >= 1000) {
+      throw new Error('Unsupported iso-wkb type');
+    }
+    throw error;
+  }
   return Object.assign(target || {}, {
     type: 'wkb',
     variant: header.dialect,
