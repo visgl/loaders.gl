@@ -7,14 +7,16 @@ page_style: designed
 
 import {ArrowDocsTabs} from '@site/src/components/docs/arrow-docs-tabs';
 import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
+import {DocLiveExample} from '@site/src/components/docs/doc-live-example';
 import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
-import {LoaderLiveExample} from '@site/src/components/docs/loader-live-example';
+import {ClientExample} from '@site/src/components';
 
 <DocPageHeader
   eyebrow="GeoArrow loader"
-  title="Read geospatial tables without flattening geometry."
+  title="GeoArrowLoader"
   description="GeoArrowLoader parses Arrow IPC data and recognizes GeoArrow extension metadata so geometry columns remain typed and discoverable alongside their attributes."
   tone="cyan"
+  logos={[{alt: 'Apache Arrow', src: '/images/format-logos/apache-arrow-logo.png'}]}
   meta={['Arrow IPC', 'GeoArrow extensions', 'Feature tables']}
   links={[
     {label: 'GeoArrow format', to: '/docs/modules/arrow/formats/geoarrow'},
@@ -22,9 +24,11 @@ import {LoaderLiveExample} from '@site/src/components/docs/loader-live-example';
   ]}
 />
 
-<ArrowDocsTabs active="geoarrowloader" />
+<DocLiveExample label="GeoArrowLoader map example" height="420px">
+  <ClientExample kind="geospatial" format="GeoArrow" />
+</DocLiveExample>
 
-<LoaderLiveExample />
+<ArrowDocsTabs active="geoarrowloader" />
 
 <DocOrientation
   eyebrow="A geospatial Arrow entry point"

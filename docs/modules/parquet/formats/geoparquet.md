@@ -8,19 +8,26 @@ page_style: designed
 import {ParquetDocsTabs} from '@site/src/components/docs/parquet-docs-tabs';
 import {GeoArrowFlowGraphic} from '@site/src/components/docs/geoarrow-flow-graphic';
 import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
+import {DocLiveExample} from '@site/src/components/docs/doc-live-example';
 import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
+import {ClientExample} from '@site/src/components';
 
 <DocPageHeader
   eyebrow="Geospatial columnar format"
-  title="Put geometry into the Parquet table contract."
+  title="GeoParquet"
   description="GeoParquet adds geospatial metadata and encoding conventions to Parquet. The result is still a Parquet table, but readers can discover geometry columns, encodings, bounds, and coordinate meaning without a sidecar format."
   tone="cyan"
+  logos={[{alt: 'Apache Parquet', src: '/images/format-logos/parquet-logo.png'}]}
   meta={['Parquet', 'Geo metadata', 'WKB and GeoArrow encodings']}
   links={[
     {label: 'Parquet format', to: '/docs/modules/parquet/formats/parquet'},
     {label: 'GeoArrow format', to: '/docs/modules/arrow/formats/geoarrow'}
   ]}
 />
+
+<DocLiveExample label="GeoParquet table map example" height="420px">
+  <ClientExample kind="geospatial" format="GeoParquet" />
+</DocLiveExample>
 
 <ParquetDocsTabs active="geoparquet" />
 
@@ -44,10 +51,6 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
     <img src="https://img.shields.io/badge/Scan-Supported-2f855a.svg?style=flat-square" alt="Scan supported" />
   </a>
 </p>
-
-![parquet-logo](../images/parquet-logo-small.png)
-&emsp;
-![apache-logo](../../../images/logos/apache-logo.png)
 
 - _[`loaders.gl/parquet`](/docs/modules/parquet)_
 - _[geoparquet.org](https://geoparquet.org)_

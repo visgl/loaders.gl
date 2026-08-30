@@ -9,12 +9,14 @@ import {ArrowDocsTabs} from '@site/src/components/docs/arrow-docs-tabs';
 import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
 import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
 import {WriterPipelineGraphic} from '@site/src/components/docs/writer-pipeline-graphic';
+import apacheLogo from '../../../images/logos/apache-logo.png';
 
 <DocPageHeader
   eyebrow="Arrow writer"
-  title="Write the table shape your next system can reuse."
+  title="ArrowWriter"
   description="ArrowWriter turns typed arrays and table-oriented data into Apache Arrow IPC bytes. Use it when a result should remain columnar across files, streams, workers, or another language."
   tone="cyan"
+  logos={[{alt: 'Apache Software Foundation', src: apacheLogo}]}
   meta={['Arrow IPC', 'Typed columns', 'File and stream output']}
   links={[
     {label: 'Arrow format', to: '/docs/modules/arrow/formats/arrow'},

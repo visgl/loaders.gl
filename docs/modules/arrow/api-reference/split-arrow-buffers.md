@@ -10,7 +10,7 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
 
 <DocPageHeader
   eyebrow="Arrow buffer utility"
-  title="Transfer only the bytes this table owns."
+  title="splitArrowBuffers"
   description="splitArrowBuffers rebuilds Arrow JS objects so typed-array views that point into larger buffers become standalone when necessary. Full-buffer views can still be reused."
   tone="blue"
   meta={['Worker-safe transfer', 'Sliced buffers', 'Arrow JS objects']}

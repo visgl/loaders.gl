@@ -7,12 +7,14 @@ page_style: designed
 
 import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
 import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
+import apacheLogo from '../../../images/logos/apache-logo.png';
 
 <DocPageHeader
   eyebrow="Versioned table source"
-  title="Turn manifests into a bounded table read."
+  title="IcebergTableSource"
   description="IcebergTableSource reads table metadata and manifests, selects the relevant Parquet data files, and delegates physical decoding to the shared Parquet source path."
   tone="violet"
+  logos={[{alt: 'Apache Software Foundation', src: apacheLogo}]}
   meta={['Apache Iceberg', 'Manifest planning', 'Arrow batches']}
   links={[
     {label: 'Scan architecture', to: '/docs/developer-guide/common-scan-architecture'},

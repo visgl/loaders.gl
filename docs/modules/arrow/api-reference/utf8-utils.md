@@ -10,7 +10,7 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
 
 <DocPageHeader
   eyebrow="Arrow UTF-8 utilities"
-  title="Inspect text columns without leaving the byte path."
+  title="UTF-8 utilities"
   description="These helpers compare UTF-8 values and parse numeric text directly from Arrow byte ranges. They are designed for hot paths where allocating JavaScript strings would add avoidable work."
   tone="cyan"
   meta={['Utf8 and LargeUtf8', 'Byte-range parsing', 'Allocation-aware']}

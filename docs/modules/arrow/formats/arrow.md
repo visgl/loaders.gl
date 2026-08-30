@@ -25,6 +25,13 @@ import apacheLogo from '../../../images/logos/apache-logo.png';
   ]}
 />
 
+## Try a selective read
+
+Use the panel below to inspect Arrow IPC metadata, choose columns, and limit the rows returned from a
+remote table. The same source contract is used by the broader scan architecture.
+
+<ArrowScanLiveExample />
+
 <ArrowDocsTabs active="overview" />
 
 <ArrowDataPlaneGraphic />
@@ -66,13 +73,6 @@ Arrow stores values by column rather than by row. This layout improves cache loc
 ## Arrow JS
 
 `@loaders.gl/arrow` uses Apache Arrow JS for IPC parsing, writing, and table access. The loaders.gl wrapper adds loader metadata, worker integration, table shape conversion, and utilities for common Arrow table workflows.
-
-## Try a selective read
-
-Use the panel below to inspect Arrow IPC metadata, choose columns, and limit the rows returned from a
-remote table. The same source contract is used by the broader scan architecture.
-
-<ArrowScanLiveExample />
 
 ## Scan support
 

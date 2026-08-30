@@ -8,14 +8,16 @@ page_style: designed
 import {JsonDocsTabs} from '@site/src/components/docs/json-docs-tabs';
 import {GeoArrowFlowGraphic} from '@site/src/components/docs/geoarrow-flow-graphic';
 import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
+import {DocLiveExample} from '@site/src/components/docs/doc-live-example';
 import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
-import {LoaderLiveExample} from '@site/src/components/docs/loader-live-example';
+import {ClientExample} from '@site/src/components';
 
 <DocPageHeader
   eyebrow="GeoJSON loader"
-  title="Start with features. Convert later when you need to."
+  title="GeoJSONLoader"
   description="GeoJSONLoader preserves the familiar feature and geometry model while supporting binary geometry, Arrow tables, and incremental parsing for larger documents."
   tone="cyan"
+  logos={[{alt: 'GeoJSON', src: '/images/format-logos/geojson-logo.svg'}]}
   meta={['RFC 7946', 'Streaming parser', 'Arrow and binary output']}
   links={[
     {label: 'GeoJSON format', to: '/docs/modules/json/formats/geojson'},
@@ -23,9 +25,11 @@ import {LoaderLiveExample} from '@site/src/components/docs/loader-live-example';
   ]}
 />
 
-<JsonDocsTabs active="geojsonloader" tryItHref="/examples/geospatial/geojson" />
+<DocLiveExample label="GeoJSONLoader map example" height="420px">
+  <ClientExample kind="geospatial" format="GeoJSON" />
+</DocLiveExample>
 
-<LoaderLiveExample />
+<JsonDocsTabs active="geojsonloader" tryItHref="/examples/geospatial/geojson" />
 
 <GeoArrowFlowGraphic />
 

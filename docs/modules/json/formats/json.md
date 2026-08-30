@@ -12,7 +12,7 @@ import {StructuredDataPathGraphic} from '@site/src/components/docs/structured-da
 
 <DocPageHeader
   eyebrow="Structured text format"
-  title="Start with readable data. Stream it when it grows."
+  title="JSON"
   description="JSON represents nested values in a form that works naturally across browsers, services, and configuration files. loaders.gl also provides line-oriented loaders when records should arrive incrementally."
   tone="cyan"
   meta={['JSON documents', 'NDJSON and JSONL', 'Table output']}

@@ -9,12 +9,14 @@ import {ArrowDocsTabs} from '@site/src/components/docs/arrow-docs-tabs';
 import {ArrowDataPlaneGraphic} from '@site/src/components/docs/arrow-data-plane-graphic';
 import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
 import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
+import apacheLogo from '../../images/logos/apache-logo.png';
 
 <DocPageHeader
   eyebrow="Binary columnar data"
-  title="One table shape for the whole pipeline."
+  title="Apache Arrow"
   description="Apache Arrow keeps columns typed and contiguous as they move between decoders, scanners, workers, analytical code, and writers. loaders.gl provides the format adapters and common table contracts around that physical model."
   tone="cyan"
+  logos={[{alt: 'Apache Software Foundation', src: apacheLogo}]}
   meta={['Arrow IPC file and stream', 'Typed columns', 'Zero-copy handoffs']}
   links={[
     {label: 'Arrow overview', to: '/docs/modules/arrow/formats/arrow'},

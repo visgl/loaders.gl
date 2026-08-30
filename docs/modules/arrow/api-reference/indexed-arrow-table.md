@@ -10,7 +10,7 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
 
 <DocPageHeader
   eyebrow="Arrow table view"
-  title="Reorder the rows before you materialize them."
+  title="IndexedArrowTable"
   description="IndexedArrowTable and IndexedArrowVector add a readonly index over Arrow data. Filtering, sorting, slicing, and repeated row views can stay as indexes until an application explicitly asks for copied values."
   tone="blue"
   meta={['Readonly view', 'Lazy materialization', 'Arrow JS']}

@@ -8,12 +8,15 @@ page_style: designed
 import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
 import {CrossFormatScanEngineGraphic} from '@site/src/components/docs/cross-format-scan-engine-graphic';
 import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
+import {OrcCloudLiveExample} from '@site/src/components/docs/orc-cloud-live-example';
+import apacheLogo from '../../images/logos/apache-logo.png';
 
 <DocPageHeader
   eyebrow="ORC module"
-  title="Bring ORC tables into the common data path."
+  title="@loaders.gl/orc"
   description="`@loaders.gl/orc` reads and writes Apache ORC files. Its source API exposes metadata and a portable scan contract while keeping the current materialized execution model explicit."
   tone="yellow"
+  logos={[{alt: 'Apache Software Foundation', src: apacheLogo}]}
   meta={['Apache ORC', 'Read and write', 'Arrow tables']}
   links={[
     {label: 'ORC format', to: '/docs/modules/orc/formats/orc'},
@@ -21,6 +24,8 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
     {label: 'Scan architecture', to: '/docs/developer-guide/common-scan-architecture'}
   ]}
 />
+
+<OrcCloudLiveExample />
 
 <CrossFormatScanEngineGraphic />
 

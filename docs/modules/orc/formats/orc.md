@@ -9,18 +9,22 @@ import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
 import {CrossFormatScanEngineGraphic} from '@site/src/components/docs/cross-format-scan-engine-graphic';
 import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
 import {OrcCloudLiveExample} from '@site/src/components/docs/orc-cloud-live-example';
+import apacheLogo from '../../../images/logos/apache-logo.png';
 
 <DocPageHeader
   eyebrow="Columnar file format"
-  title="Read typed columns from a striped file."
+  title="Apache ORC"
   description="Apache ORC stores a schema, encoded column streams, and statistics in a compact file layout. Its footer makes the structure discoverable before the data is materialized."
   tone="violet"
+  logos={[{alt: 'Apache Software Foundation', src: apacheLogo}]}
   meta={['Apache ORC', 'Columnar stripes', 'Arrow output']}
   links={[
     {label: 'ORC module', to: '/docs/modules/orc'},
     {label: 'Scan architecture', to: '/docs/developer-guide/common-scan-architecture'}
   ]}
 />
+
+<OrcCloudLiveExample />
 
 <CrossFormatScanEngineGraphic />
 
@@ -36,8 +40,6 @@ import {OrcCloudLiveExample} from '@site/src/components/docs/orc-cloud-live-exam
     {label: 'Output', value: 'Arrow tables with portable scan semantics'}
   ]}
 />
-
-<OrcCloudLiveExample />
 
 <p className="badges">
   <a href="/docs/developer-guide/common-scan-architecture">

@@ -12,9 +12,10 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
 
 <DocPageHeader
   eyebrow="Delimited text format"
-  title="Turn a text stream into a table."
+  title="CSV, TSV, and DSV"
   description="CSV, TSV, and related delimiter-separated files are simple to transport but varied in headers, quoting, types, and line endings. The CSV module makes those choices explicit and returns the same table shapes used by other loaders."
   tone="mint"
+  logos={[{alt: 'CSV', src: '/images/format-logos/csv-logo.svg'}]}
   meta={['CSV / TSV / DSV', 'Streaming parser', 'Arrow-compatible output']}
   links={[
     {label: 'CSV module', to: '/docs/modules/csv'},

@@ -10,7 +10,7 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
 
 <DocPageHeader
   eyebrow="Versioned table source"
-  title="Read a Delta snapshot as a table, not a log."
+  title="DeltaTableSource"
   description="DeltaTableSource replays the transaction log to determine the active Parquet files, then uses the common source and scan contracts for metadata, filtering, projection, limits, and streaming Arrow results."
   tone="violet"
   meta={['Delta Lake', 'Snapshot replay', 'Parquet and Arrow']}

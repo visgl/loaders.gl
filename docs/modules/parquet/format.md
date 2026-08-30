@@ -11,9 +11,10 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
 
 <DocPageHeader
   eyebrow="Columnar file format"
-  title="Read the columns the application actually needs."
+  title="Apache Parquet"
   description="Parquet stores typed columns in independently addressable pages. loaders.gl combines its format reader with Arrow output, metadata-first sources, range requests, and GeoParquet conventions for cloud-friendly data access."
   tone="orange"
+  logos={[{alt: 'Apache Parquet', src: '/images/format-logos/parquet-logo.png'}]}
   meta={['Column and page pruning', 'Arrow output', 'GeoParquet metadata']}
   links={[
     {label: 'Parquet overview', to: '/docs/modules/parquet/formats/parquet'},

@@ -10,7 +10,7 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
 
 <DocPageHeader
   eyebrow="GeoJSON geometry"
-  title="Keep geometry simple at the interchange boundary."
+  title="GeoJSON Geometry"
   description="GeoJSON geometry objects describe coordinates and their type without carrying feature properties. They are useful on their own when a pipeline needs geometry before it assembles complete features."
   tone="mint"
   meta={['Point and line', 'Polygon and multiparts', 'JSON interchange']}
