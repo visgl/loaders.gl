@@ -5,29 +5,23 @@ hide_title: true
 page_style: designed
 ---
 
-import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
 import {CapabilityHero} from '@site/src/components/docs/capability-hero';
 import {ArrowDataPlaneGraphic} from '@site/src/components/docs/arrow-data-plane-graphic';
 import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
+import apacheLogo from '../../images/logos/apache-logo.png';
 
-<CapabilityHero capability="arrow" />
-
-<DocPageHeader
+<CapabilityHero
+  capability="arrow"
   eyebrow="Module overview"
   title="@loaders.gl/arrow"
   description="Use Apache Arrow as the common table shape between format loaders, workers, transforms, and writers."
-  tone="cyan"
-  meta={['Apache Arrow', 'GeoArrow', 'Tables and transport']}
+  logos={[{alt: 'Apache Software Foundation', src: apacheLogo}]}
   links={[
     {label: 'Arrow format', to: '/docs/modules/arrow/formats/arrow'},
     {label: 'ArrowLoader', to: '/docs/modules/arrow/api-reference/arrow-loader'},
     {label: 'ArrowWriter', to: '/docs/modules/arrow/api-reference/arrow-writer'}
   ]}
 />
-
-![arrow-logo](./images/apache-arrow-small.png)
-&emsp;
-![apache-logo](../../images/logos/apache-logo.png)
 
 <ArrowDataPlaneGraphic />
 

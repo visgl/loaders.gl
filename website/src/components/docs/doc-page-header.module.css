@@ -84,16 +84,6 @@
   text-transform: uppercase;
 }
 
-.identity {
-  color: var(--header-accent);
-  font-family: var(--ifm-font-family-monospace);
-  font-size: clamp(1.55rem, 3vw, 2.2rem);
-  font-weight: 700;
-  letter-spacing: -0.04em;
-  line-height: 1.2;
-  margin: 0 0 0.85rem;
-}
-
 .title {
   color: #f6f9fc;
   font-family: var(--ifm-heading-font-family);
@@ -114,7 +104,7 @@
 
 .description :global(code) {
   background: rgba(112, 199, 255, 0.1) !important;
-  border: 1px solid rgba(112, 199, 255, 0.24) !important;
+  border: 0 !important;
   border-radius: 0.25rem;
   box-shadow: none !important;
   color: var(--header-accent) !important;

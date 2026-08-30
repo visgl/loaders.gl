@@ -11,10 +11,14 @@ import {TiledSceneGraphic} from '@site/src/components/docs/tiled-scene-graphic';
 
 <DocPageHeader
   eyebrow="Hierarchical scene-layer format"
-  title="Stream the scene layer the view can use."
-  description="I3S organizes geometry, textures, attributes, and level-of-detail metadata into a node tree delivered through REST resources or Scene Layer Packages."
+  title="I3S"
+  description="Stream only the scene content the view can use. I3S organizes geometry, textures, attributes, and level-of-detail metadata into a node tree delivered through REST resources or Scene Layer Packages."
   tone="orange"
   meta={['I3S 1.7', 'OGC I3S 1.3', 'REST and SLPK']}
+  logos={[
+    {alt: 'ArcGIS', src: '/images/format-logos/arcgis-logo.svg'},
+    {alt: 'Open Geospatial Consortium', src: '/images/format-logos/ogc-logo-transparent.png'}
+  ]}
   links={[
     {label: 'I3S module', to: '/docs/modules/i3s'},
     {label: '3D data formats', to: '/docs/developer-guide/3d-data-formats'}
@@ -39,8 +43,6 @@ import {TiledSceneGraphic} from '@site/src/components/docs/tiled-scene-graphic';
 - _[`@loaders.gl/i3s`](/docs/modules/i3s)_
 - _[I3S community specification](https://github.com/Esri/i3s-spec)_
 - _[OGC I3S Community Standard](https://www.ogc.org/standard/i3s/)_
-
-![arcgis-logo](../../../images/logos/arcgis-logo.svg)
 
 Indexed 3D Scene Layer (I3S) is a hierarchical, streamable format for large geospatial 3D
 datasets. A scene layer organizes geometry, textures, attributes, and level-of-detail information

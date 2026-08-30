@@ -1,0 +1,105 @@
+.catalog {
+  margin: 2.5rem 0 4rem;
+}
+
+.section + .section {
+  margin-top: 5rem;
+}
+
+.sectionHeader {
+  margin: 0 auto 1.5rem;
+  max-width: 72ch;
+}
+
+.sectionHeader > p,
+.eyebrow {
+  color: #9b8cff;
+  font-size: 0.7rem;
+  font-weight: 760;
+  letter-spacing: 0.13em;
+  margin: 0 0 0.65rem;
+  text-transform: uppercase;
+}
+
+.sectionHeader h2 {
+  font-size: clamp(2rem, 4vw, 3rem);
+  letter-spacing: -0.05em;
+  line-height: 1;
+  margin: 0;
+}
+
+.sectionHeader > span {
+  color: var(--ifm-font-color-secondary);
+  display: block;
+  font-size: 1.03rem;
+  line-height: 1.65;
+  margin-top: 0.85rem;
+  max-width: 48rem;
+}
+
+.grid {
+  display: grid;
+  gap: 0.85rem;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.card {
+  background:
+    radial-gradient(circle at 92% 8%, rgba(117, 95, 255, 0.16), transparent 15rem),
+    linear-gradient(145deg, rgba(16, 30, 49, 0.97), rgba(10, 22, 38, 0.98));
+  border: 1px solid rgba(155, 140, 255, 0.24);
+  border-radius: 18px;
+  box-shadow: 0 18px 44px rgba(0, 0, 0, 0.16);
+  color: #f4f8fb;
+  min-height: 15rem;
+  padding: 1.35rem;
+}
+
+.card h3 {
+  color: #f6f9fc;
+  font-size: 1.55rem;
+  letter-spacing: -0.035em;
+  margin: 0;
+}
+
+.description {
+  color: rgba(219, 231, 244, 0.72);
+  line-height: 1.55;
+  margin: 0.7rem 0 1.15rem;
+}
+
+.links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+}
+
+.links a {
+  background: rgba(8, 18, 31, 0.52);
+  border: 1px solid rgba(206, 228, 240, 0.18);
+  border-radius: 0.55rem;
+  color: #b9adff;
+  font-size: 0.72rem;
+  font-weight: 720;
+  line-height: 1;
+  padding: 0.5rem 0.58rem;
+  text-decoration: none;
+}
+
+.links a:hover,
+.links a:focus-visible {
+  background: rgba(155, 140, 255, 0.14);
+  border-color: rgba(155, 140, 255, 0.5);
+  color: #fff;
+  text-decoration: none;
+}
+
+@media (max-width: 760px) {
+  .grid {
+    grid-template-columns: 1fr;
+  }
+
+  .card {
+    min-height: 0;
+  }
+}

@@ -5,7 +5,7 @@ hide_title: true
 page_style: designed
 ---
 
-import {ClientExample} from '@site/src/components';
+import {ClientExample, DocLiveExample} from '@site/src/components';
 import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
 import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
 
@@ -22,9 +22,9 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
   ]}
 />
 
-<div style={{height: '50vh'}}>
+<DocLiveExample label="I3S attribute-driven colorization">
   <ClientExample kind="i3s-colorization-by-attributes" />
-</div>
+</DocLiveExample>
 
 <DocOrientation
   eyebrow="What this recipe demonstrates"

@@ -6,22 +6,31 @@ page_style: designed
 ---
 
 import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
+import {ClientExample, DocLiveExample} from '@site/src/components';
 import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
 import {TiledSceneGraphic} from '@site/src/components/docs/tiled-scene-graphic';
 
 <DocPageHeader
   eyebrow="I3S loader"
-  title="Load ArcGIS scene layers as traversable data."
-  description="Load ArcGIS scene layers as traversable data. `I3SLoader` reads Indexed 3D Scene layers, their geometry and texture resources, and the metadata needed by the shared tiles runtime. Use it for mesh, point, and scene-layer content delivered as JSON, binary nodes, or an SLPK archive."
+  title="I3SLoader"
+  description="Read ArcGIS scene layers, geometry, textures, and the metadata needed by the shared tiles runtime. Use it for mesh, point, and scene-layer content delivered as JSON, binary nodes, or an SLPK archive."
   hideTitle
   tone="orange"
   meta={['I3S 1.x and 2.x', 'Scene and point layers', 'JSON and binary resources']}
+  logos={[
+    {alt: 'ArcGIS', src: '/images/format-logos/arcgis-logo.svg'},
+    {alt: 'Open Geospatial Consortium', src: '/images/format-logos/ogc-logo-transparent.png'}
+  ]}
   links={[
     {label: 'I3S module', to: '/docs/modules/i3s'},
     {label: 'I3S format', to: '/docs/modules/i3s/formats/i3s'},
     {label: 'I3S source', to: '/docs/modules/tiles/api-reference/i3s-source'}
   ]}
 />
+
+<DocLiveExample label="I3S building scene" height="430px">
+  <ClientExample kind="i3s-building-scene-layer" />
+</DocLiveExample>
 
 <TiledSceneGraphic />
 

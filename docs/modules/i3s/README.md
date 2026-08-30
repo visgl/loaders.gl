@@ -6,6 +6,7 @@ page_style: designed
 ---
 
 import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
+import {ClientExample, DocLiveExample} from '@site/src/components';
 import {TiledSceneGraphic} from '@site/src/components/docs/tiled-scene-graphic';
 import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
 
@@ -15,6 +16,10 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
   description="Read ArcGIS Indexed 3D Scene Layers through the same source and traversal building blocks used for large browser-rendered scenes."
   tone="orange"
   meta={['I3S profiles', 'Scene and point cloud', 'ArcGIS services']}
+  logos={[
+    {alt: 'ArcGIS', src: '/images/format-logos/arcgis-logo.svg'},
+    {alt: 'Open Geospatial Consortium', src: '/images/format-logos/ogc-logo-transparent.png'}
+  ]}
   links={[
     {label: 'I3S format', to: '/docs/modules/i3s/formats/i3s'},
     {label: 'I3SLoader', to: '/docs/modules/i3s/api-reference/i3s-loader'},
@@ -22,9 +27,9 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
   ]}
 />
 
-![ogc-logo](../../images/logos/ogc-logo-60.png)
-&nbsp;
-![arcgis-logo](../../images/logos/arcgis-logo.svg)
+<DocLiveExample label="I3S building scene" height="430px">
+  <ClientExample kind="i3s-building-scene-layer" />
+</DocLiveExample>
 
 <TiledSceneGraphic />
 
