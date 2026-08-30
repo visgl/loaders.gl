@@ -1,14 +1,97 @@
 import {expect, test} from 'vitest';
 import {
+  createLAZChunkDecoder,
   createLAZChunkEncoder,
   createLAZChunkDecoderCursor,
   decodeLAZChunk,
+  decodeLAZChunkInBatches,
   decodeLAZChunkTable,
   encodeLAZChunk,
   encodeLASzipVLR,
   encodeLAZChunkTable,
   getLAZChunkByteLength
 } from '@loaders.gl/loader-utils';
+
+test('LAZChunkDecoder#supports feedable and batched layered decoding', async () => {
+  const {rawPointData, metadata} = createLAZEncodingFixture(8);
+  const compressed = encodeLAZChunk(rawPointData, metadata);
+  const decoder = createLAZChunkDecoder(metadata);
+
+  expect(decoder.remainingPointCount).toBe(metadata.pointCount);
+  expect(() => decoder.decode()).toThrow(/input is not closed/);
+  decoder.feed(compressed.subarray(0, 8));
+  expect(decoder.readBatch(7)).toBeNull();
+  decoder.feed(compressed.subarray(8));
+
+  const batches: Uint8Array[] = [];
+  for (let batch = decoder.readBatch(7); batch; batch = decoder.readBatch(7)) {
+    batches.push(batch);
+  }
+  expect(decoder.remainingPointCount).toBe(0);
+  expect(concatenateTestBytes(batches)).toEqual(rawPointData);
+
+  decoder.close();
+  expect(() => decoder.feed(new Uint8Array(1))).toThrow(/closed LAZ chunk decoder/);
+  expect(decoder.decode()).toEqual(rawPointData);
+
+  const streamed: Uint8Array[] = [];
+  for await (const batch of decodeLAZChunkInBatches(
+    [compressed.subarray(0, 17), compressed.subarray(17)],
+    metadata,
+    {batchSize: 9}
+  )) {
+    streamed.push(batch);
+  }
+  expect(streamed.map(batch => batch.byteLength / metadata.pointDataRecordLength)).toEqual([
+    9, 9, 9, 5
+  ]);
+  expect(concatenateTestBytes(streamed)).toEqual(rawPointData);
+});
+
+test('LAZChunkDecoder#validates progressive point-data selections', () => {
+  const target = {
+    positions: new Float64Array(3),
+    pointOffset: 0,
+    scale: [1, 1, 1] as [number, number, number],
+    offset: [0, 0, 0] as [number, number, number]
+  };
+
+  expect(() =>
+    createLAZChunkDecoder({
+      pointCount: 1,
+      pointDataRecordFormat: 5,
+      pointDataRecordLength: 63
+    }).readPointDataBatch(target, 1)
+  ).toThrow(/require point formats 6-10/);
+  expect(() =>
+    createLAZChunkDecoder({
+      pointCount: 1,
+      pointDataRecordFormat: 6,
+      pointDataRecordLength: 30
+    }).readPointDataBatch({...target, colors: new Uint8Array(4)}, 1)
+  ).toThrow(/does not contain RGB/);
+  expect(() =>
+    createLAZChunkDecoder({
+      pointCount: 1,
+      pointDataRecordFormat: 7,
+      pointDataRecordLength: 36
+    }).readPointDataBatch({...target, nir: new Uint16Array(1)}, 1)
+  ).toThrow(/NIR output requires/);
+  expect(() =>
+    createLAZChunkDecoder({
+      pointCount: 1,
+      pointDataRecordFormat: 8,
+      pointDataRecordLength: 38
+    }).readPointDataBatch({...target, waveforms: new Uint8Array(29)}, 1)
+  ).toThrow(/Waveform output requires/);
+  expect(() =>
+    createLAZChunkDecoder({
+      pointCount: 1,
+      pointDataRecordFormat: 8,
+      pointDataRecordLength: 38
+    }).readPositionDataBatch({...target, rawColors: new Uint16Array(3)}, 1)
+  ).toThrow(/cannot request color or NIR/);
+});
 test('LAZChunkEncoder#encodes LASzip v3 PDRF 6-8 chunks', () => {
   for (const pointDataRecordFormat of [6, 7, 8]) {
     const {rawPointData, metadata} = createLAZEncodingFixture(pointDataRecordFormat);
@@ -169,6 +252,59 @@ test('LAZChunkEncoder#validates input and item versions', () => {
     () => encodeLAZChunk(rawPointData, {...metadata, point14ItemVersion: 4}),
     'unsupported Point14 versions are rejected'
   ).toThrow(/only supports Point14 item version 3/);
+  expect(() => encodeLAZChunk(new Uint8Array(0), {...metadata, pointCount: -1})).toThrow(
+    /Invalid LAZ chunk point count/
+  );
+  expect(() =>
+    encodeLAZChunk(new Uint8Array(0), {...metadata, pointCount: 0, pointDataRecordFormat: 11})
+  ).toThrow(/does not support point format/);
+  expect(() =>
+    encodeLAZChunk(new Uint8Array(0), {...metadata, pointCount: 0, pointDataRecordLength: 29})
+  ).toThrow(/Invalid point record length/);
+  const colorFixture = createLAZEncodingFixture(7);
+  expect(() =>
+    encodeLAZChunk(colorFixture.rawPointData, {
+      ...colorFixture.metadata,
+      rgb14ItemVersion: 4
+    })
+  ).toThrow(/only supports RGB14 item version 3/);
+  expect(() => encodeLAZChunk(rawPointData, {...metadata, byte14ItemVersion: 4})).toThrow(
+    /only supports Byte14 item version 3/
+  );
+});
+
+test('LAZChunkEncoder#describes every LAS point format and validates chunk tables', () => {
+  const recordLengths = [20, 28, 26, 34, 57, 63, 30, 36, 38, 59, 67];
+  for (let pointDataRecordFormat = 0; pointDataRecordFormat <= 10; pointDataRecordFormat++) {
+    const baseLength = recordLengths[pointDataRecordFormat];
+    const vlr = encodeLASzipVLR({
+      pointDataRecordFormat,
+      pointDataRecordLength: baseLength + 2,
+      chunkSize: 1024
+    });
+    const dataView = new DataView(vlr.buffer, vlr.byteOffset, vlr.byteLength);
+    expect(dataView.getUint16(18, true)).toBe(22204);
+    expect(dataView.getUint16(54 + 32, true)).toBeGreaterThan(1);
+  }
+
+  expect(
+    encodeLAZChunk(new Uint8Array(0), {
+      pointCount: 0,
+      pointDataRecordFormat: 6,
+      pointDataRecordLength: 30
+    })
+  ).toEqual(new Uint8Array(0));
+  expect(encodeLAZChunkTable([])).toEqual(new Uint8Array(0));
+  expect(() => encodeLAZChunkTable([{pointCount: 1, byteLength: 0}])).toThrow(
+    /Invalid LAZ chunk byte length/
+  );
+  expect(() =>
+    encodeLASzipVLR({
+      pointDataRecordFormat: 11,
+      pointDataRecordLength: 67,
+      chunkSize: 1
+    })
+  ).toThrow(/Invalid point record length/);
 });
 test('LAZChunkEncoder#roundtrips legacy waveform items', () => {
   for (const pointDataRecordFormat of [4, 5] as const) {
@@ -412,4 +548,15 @@ function createLAZEncodingFixture(pointDataRecordFormat: number) {
       byte14ItemVersion: 3 as const
     }
   };
+}
+
+/** Concatenate byte batches without depending on implementation helpers. */
+function concatenateTestBytes(chunks: readonly Uint8Array[]): Uint8Array {
+  const result = new Uint8Array(chunks.reduce((sum, chunk) => sum + chunk.byteLength, 0));
+  let offset = 0;
+  for (const chunk of chunks) {
+    result.set(chunk, offset);
+    offset += chunk.byteLength;
+  }
+  return result;
 }

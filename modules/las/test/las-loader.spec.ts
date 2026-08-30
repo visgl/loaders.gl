@@ -21,6 +21,51 @@ const PDRF_10_LAS_URL = '@loaders.gl/las/test/data/pdrf10-1.4.las';
 const PDRF_10_LAZ_URL = '@loaders.gl/las/test/data/pdrf10-1.4.laz';
 const POINT_COUNT = 1024;
 
+test('LASLoader#LAS 1.5 exposes and validates its extended header', async () => {
+  const source = await fetchFile('@loaders.gl/las/test/data/pdrf9-1.5.las').then(response =>
+    response.arrayBuffer()
+  );
+  const header = parseLASHeader(source);
+  expect(header.versionAsString).toBe('1.5');
+  expect(header.headerSize).toBeGreaterThanOrEqual(393);
+  expect(header.userHeaderData).toBeUndefined();
+  expect(header.metadata).toMatchObject({maxGpsTime: 0, minGpsTime: 0, timeOffset: 0});
+
+  const extendedSource = source.slice(0);
+  new DataView(extendedSource).setUint16(94, 400, true);
+  new Uint8Array(extendedSource, 393, 7).set([1, 2, 3, 4, 5, 6, 7]);
+  expect(Array.from(parseLASHeader(extendedSource).userHeaderData!)).toEqual([1, 2, 3, 4, 5, 6, 7]);
+
+  const invalidCases: Array<[number, number, RegExp]> = [
+    [104, 5, /LAS 1.5 requires point data record/],
+    [6, 0x30, /Global Encoding contains reserved bits/],
+    [6, 0x50, /Time Offset Flag requires GPS Time Type/]
+  ];
+  for (const [offset, value, error] of invalidCases) {
+    const invalid = source.slice(0);
+    const view = new DataView(invalid);
+    if (offset === 104) view.setUint8(offset, value);
+    else view.setUint16(offset, value, true);
+    expect(() => parseLASHeader(invalid)).toThrow(error);
+  }
+
+  const invalidHeader = source.slice(0, 375);
+  new DataView(invalidHeader).setUint16(94, 375, true);
+  expect(() => parseLASHeader(invalidHeader)).toThrow(/LAS 1.5 header must be at least 393/);
+
+  for (const [maximum, minimum] of [
+    [Number.NaN, 0],
+    [0, Number.POSITIVE_INFINITY],
+    [1, 2]
+  ]) {
+    const invalid = source.slice(0);
+    const view = new DataView(invalid);
+    view.setFloat64(375, maximum, true);
+    view.setFloat64(383, minimum, true);
+    expect(() => parseLASHeader(invalid)).toThrow(/GPS time range is invalid/);
+  }
+});
+
 test('LASLoader#loader conformance', () => {
   validateLoader(LASLoader, 'LASLoader');
   validateLoader(LASWorkerLoader, 'LASWorkerLoader');

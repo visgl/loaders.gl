@@ -861,3 +861,18 @@ test('clarinet resume and close lifecycle exposes parser misuse', () => {
   unknownStateParser.write('x');
   expect(unknownStateParser.error?.message).toContain('Unknown state: 999');
 });
+
+test('clarinet preserves every string escape across single-character chunks', () => {
+  const values = [];
+  const chunks = [];
+  const parser = new ClarinetParser({
+    onvalue: value => values.push(value),
+    onchunkparsed: () => chunks.push(true)
+  });
+  const document = '["\\u0041\\n\\r\\t\\f\\b\\/\\\\\\\""]';
+  for (const character of document) parser.write(character);
+  parser.close();
+
+  expect(values).toEqual(['A\n\r\t\f\b/\\"']);
+  expect(chunks).toHaveLength(document.length);
+});

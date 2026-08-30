@@ -68,6 +68,96 @@ describe('Parquet VARIANT binary encoding', () => {
     );
   });
 
+  test('decodes the complete primitive type family', () => {
+    const metadata = createMetadata([]);
+    const float32 = new Uint8Array(5);
+    float32[0] = 14 << 2;
+    new DataView(float32.buffer).setFloat32(1, 1.5, true);
+    const float64 = new Uint8Array(9);
+    float64[0] = 7 << 2;
+    new DataView(float64.buffer).setFloat64(1, -2.25, true);
+
+    expect(decodeVariant(metadata, new Uint8Array([3 << 2, 0xff]))).toBe(-1);
+    expect(decodeVariant(metadata, new Uint8Array([4 << 2, 0x00, 0x80]))).toBe(-32768);
+    expect(decodeVariant(metadata, float32)).toBe(1.5);
+    expect(decodeVariant(metadata, float64)).toBe(-2.25);
+    expect(decodeVariant(metadata, new Uint8Array([8 << 2, 2, 0xd2, 0x04, 0, 0]))).toBe(
+      '12.34'
+    );
+    expect(
+      decodeVariant(metadata, new Uint8Array([9 << 2, 0, 42, 0, 0, 0, 0, 0, 0, 0]))
+    ).toBe(42);
+    expect(
+      decodeVariant(metadata, new Uint8Array([10 << 2, 1, 0xff, ...new Array(15).fill(0xff)]))
+    ).toBe('-0.1');
+    expect(decodeVariant(metadata, new Uint8Array([11 << 2, 1, 0, 0, 0]))).toBe(1);
+    for (const primitiveType of [12, 13, 17, 18, 19]) {
+      expect(
+        decodeVariant(metadata, new Uint8Array([primitiveType << 2, 1, 0, 0, 0, 0, 0, 0, 0]))
+      ).toBe(1n);
+    }
+    expect(
+      decodeVariant(metadata, new Uint8Array([16 << 2, 3, 0, 0, 0, 0x66, 0x6f, 0x6f]))
+    ).toBe('foo');
+    expect(
+      decodeVariant(metadata, new Uint8Array([20 << 2, ...Array.from({length: 16}, (_, i) => i)]))
+    ).toEqual(Uint8Array.from({length: 16}, (_, i) => i));
+  });
+
+  test('validates metadata dictionaries, primitive bounds, and object fields', () => {
+    expect(() => decodeVariant(new Uint8Array([1]), new Uint8Array([0]))).toThrow('truncated');
+    expect(() => decodeVariant(new Uint8Array([1, 1, 0]), new Uint8Array([0]))).toThrow(
+      'offsets are truncated'
+    );
+    expect(() => decodeVariant(new Uint8Array([1, 1, 1, 0, 0x61]), new Uint8Array([0]))).toThrow(
+      'dictionary offset'
+    );
+    expect(() => decodeVariant(new Uint8Array([1, 0, 0, 0x61]), new Uint8Array([0]))).toThrow(
+      'does not consume'
+    );
+
+    const metadata = createMetadata(['field']);
+    expect(() => decodeVariant(metadata, new Uint8Array([0, 0]))).toThrow('trailing bytes');
+    expect(() => decodeVariant(metadata, new Uint8Array([15 << 2, 5, 0, 0, 0, 1]))).toThrow(
+      'truncated'
+    );
+    expect(() => decodeVariant(metadata, new Uint8Array([21 << 2]))).toThrow(
+      'unsupported VARIANT primitive type'
+    );
+    expect(() => decodeVariant(metadata, new Uint8Array([2, 1, 1, 0, 1, 0]))).toThrow(
+      'invalid VARIANT object field id'
+    );
+    expect(
+      () =>
+        decodeVariant(
+          metadata,
+          new Uint8Array([2, 2, 0, 0, 0, 1, 2, 0, 0])
+        )
+    ).toThrow('duplicate VARIANT object field');
+  });
+
+  test('rejects excessive Variant nesting with a small deterministic fixture', () => {
+    const metadata = createMetadata([]);
+    let nested = new Uint8Array([0]);
+    for (let depth = 0; depth < 1025; depth++) {
+      if (nested.length > 255) {
+        // Two-byte array offsets, encoded by setting the low value-header bit.
+        nested = new Uint8Array([
+          7,
+          1,
+          0,
+          0,
+          nested.length & 0xff,
+          nested.length >> 8,
+          ...nested
+        ]);
+      } else {
+        nested = new Uint8Array([3, 1, 0, nested.length, ...nested]);
+      }
+    }
+    expect(() => decodeVariant(metadata, nested)).toThrow('excessively nested');
+  });
+
   test('handles negative decimal scales and prototype-shaped field names', () => {
     const metadata = createMetadata(['__proto__']);
     // decimal4: primitive type 8, scale -2, unscaled value 123.

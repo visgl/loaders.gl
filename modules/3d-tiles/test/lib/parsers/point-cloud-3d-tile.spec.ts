@@ -112,3 +112,45 @@ test('loadDraco# Pass options to draco loader properly', async () => {
   };
   await loadDraco({shape: 'tile3d'}, dracoData, options, context);
 });
+
+test('loadDraco applies quantization metadata and batch-table attributes', async () => {
+  const positions = Object.assign(new Uint16Array([1, 2, 3]), {quantization: true});
+  const normals = Object.assign(new Uint8Array([4, 5]), {quantization: true});
+  const colors = new Uint8Array([10, 20, 30]);
+  const batchIds = new Uint16Array([7]);
+  const custom = new Float32Array([9]);
+  const context = {
+    coreApi,
+    _parse: async () => ({
+      attributes: {
+        POSITION: {value: positions},
+        COLOR_0: {value: colors},
+        NORMAL: {value: normals},
+        BATCH_ID: {value: batchIds},
+        CUSTOM: {value: custom}
+      },
+      POSITION: {data: {quantization: {range: 12, minValues: [1, 2, 3], quantizationBits: 4}}},
+      NORMAL: {data: {quantization: {quantizationBits: 6}}}
+    })
+  } as unknown as LoaderContext;
+  const tile: any = {shape: 'tile3d'};
+
+  await loadDraco(
+    tile,
+    {buffer: new ArrayBuffer(1), batchTableProperties: {CUSTOM: 4}},
+    {},
+    context
+  );
+
+  expect(tile.quantizedRange).toBe(15);
+  expect(Array.from(tile.quantizedVolumeScale)).toEqual([12, 12, 12]);
+  expect(Array.from(tile.quantizedVolumeOffset)).toEqual([1, 2, 3]);
+  expect(tile.octEncodedRange).toBe(63);
+  expect(tile.attributes).toMatchObject({
+    positions,
+    normals,
+    batchIds,
+    custom
+  });
+  await expect(loadDraco(tile, {buffer: new ArrayBuffer(0)})).resolves.toBeUndefined();
+});
