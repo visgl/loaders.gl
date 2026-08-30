@@ -22,8 +22,8 @@ __metadata:
     "@luma.gl/core": "npm:^9.3.2"
     "@luma.gl/engine": "npm:^9.3.2"
     "@luma.gl/shadertools": "npm:^9.3.2"
-    "@math.gl/core": "npm:^4.1.0"
-    "@math.gl/geospatial": "npm:^4.1.0"
+    "@math.gl/core": "npm:5.0.0-alpha.2"
+    "@math.gl/geospatial": "npm:5.0.0-alpha.2"
     "@probe.gl/stats": "npm:^4.1.1"
     "@probe.gl/stats-widget": "npm:^4.0.2"
     maplibre-gl: "npm:^3.6.2"
@@ -5889,11 +5889,11 @@ __metadata:
     "@loaders.gl/tiles": "npm:5.0.0-alpha.2"
     "@loaders.gl/worker-utils": "npm:5.0.0-alpha.2"
     "@loaders.gl/zip": "npm:5.0.0-alpha.2"
-    "@math.gl/core": "npm:^4.1.0"
-    "@math.gl/culling": "npm:^4.1.0"
-    "@math.gl/geoid": "npm:^4.1.0"
-    "@math.gl/geometry-utils": "npm:4.2.0-alpha.6"
-    "@math.gl/geospatial": "npm:^4.1.0"
+    "@math.gl/core": "npm:5.0.0-alpha.2"
+    "@math.gl/culling": "npm:5.0.0-alpha.2"
+    "@math.gl/geoid": "npm:5.0.0-alpha.2"
+    "@math.gl/geometry-utils": "npm:5.0.0-alpha.2"
+    "@math.gl/geospatial": "npm:5.0.0-alpha.2"
     "@types/express": "npm:^4.17.17"
     "@types/inquirer": "npm:^9.0.7"
     ajv: "npm:^8.12.0"
@@ -6392,15 +6392,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@math.gl/core@npm:4.2.0-alpha.6":
-  version: 4.2.0-alpha.6
-  resolution: "@math.gl/core@npm:4.2.0-alpha.6"
-  dependencies:
-    "@math.gl/types": "npm:4.2.0-alpha.6"
-  checksum: 10c0/3d88f1de4eb58a62fdebf8500e3b34ea74368333e138790e1b3a1f9b1e38a80163c742de056497e90e98faa588b60e8ae3f641a9aea43a41031f1dc8da5d0b18
-  languageName: node
-  linkType: hard
-
 "@math.gl/core@npm:5.0.0-alpha.2":
   version: 5.0.0-alpha.2
   resolution: "@math.gl/core@npm:5.0.0-alpha.2"
@@ -6474,25 +6465,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@math.gl/geoid@npm:^4.1.0":
-  version: 4.1.0
-  resolution: "@math.gl/geoid@npm:4.1.0"
-  dependencies:
-    "@math.gl/core": "npm:4.1.0"
-  checksum: 10c0/06b664112e10bcb78853d4887721abebe1113d39d9a3f3fabb49d2ce7c2bf48a582f0427a5ab842fc89a67c0c9cb39f75fba97cb69c7d2fe81177b216dec39a2
-  languageName: node
-  linkType: hard
-
-"@math.gl/geometry-utils@npm:4.2.0-alpha.6":
-  version: 4.2.0-alpha.6
-  resolution: "@math.gl/geometry-utils@npm:4.2.0-alpha.6"
-  dependencies:
-    "@math.gl/core": "npm:4.2.0-alpha.6"
-    "@math.gl/types": "npm:4.2.0-alpha.6"
-  checksum: 10c0/4f8edaa5ffc8bc86c58bdbf8b1415585d6aee96f8a38ec9294b3f6eb8e5a4ddf06424d7981753d4c0dc9392ef65ed599e430c651f99f20562899e268aadff009
-  languageName: node
-  linkType: hard
-
 "@math.gl/geometry-utils@npm:5.0.0-alpha.2":
   version: 5.0.0-alpha.2
   resolution: "@math.gl/geometry-utils@npm:5.0.0-alpha.2"
@@ -6511,16 +6483,6 @@ __metadata:
     "@math.gl/culling": "npm:5.0.0-alpha.2"
     "@math.gl/types": "npm:5.0.0-alpha.2"
   checksum: 10c0/9d53c882e7437ee9fcd5c15c8b76a4e0d2177e2ed46c6fd3e7d81e05fd0d977675fffb481f21fc3164289a2413a6a2f7a99ba929a7eb364502efc8563abd23d5
-  languageName: node
-  linkType: hard
-
-"@math.gl/geospatial@npm:^4.1.0":
-  version: 4.1.0
-  resolution: "@math.gl/geospatial@npm:4.1.0"
-  dependencies:
-    "@math.gl/core": "npm:4.1.0"
-    "@math.gl/types": "npm:4.1.0"
-  checksum: 10c0/fb7c24dc82dbc32e9982782cda256b242e1a42eb8db69f28fff5653e459d068b44af5dc5eab1da45e43f3502ee4cd741033b656b2adbc7dfc687702a25db7ec2
   languageName: node
   linkType: hard
 
@@ -6573,13 +6535,6 @@ __metadata:
   version: 4.1.0
   resolution: "@math.gl/types@npm:4.1.0"
   checksum: 10c0/3c4dfa5ac5c9e2cef24d31f56b89c1dde785a5d70fd1a7030386346cb7dd4fa2cce5ba983b89842c1971492e30870dd22a078d64893f9c66887e38367bf992fa
-  languageName: node
-  linkType: hard
-
-"@math.gl/types@npm:4.2.0-alpha.6":
-  version: 4.2.0-alpha.6
-  resolution: "@math.gl/types@npm:4.2.0-alpha.6"
-  checksum: 10c0/fd7e3e3782b3a6834b3aa0f5bb75867743baf390ce63ad8f28de2aa633606c0eeddc4b999d8913d8416463e93b37cb3dac458a5bc0fdf57a265c329d23c56b75
   languageName: node
   linkType: hard
 
@@ -19930,7 +19885,7 @@ __metadata:
     "@luma.gl/engine": "npm:^9.3.2"
     "@luma.gl/gltf": "npm:^9.3.2"
     "@luma.gl/shadertools": "npm:^9.3.2"
-    "@math.gl/core": "npm:^4.1.0"
+    "@math.gl/core": "npm:5.0.0-alpha.2"
     typescript: "npm:^5.6.0"
     vite: "npm:^7.2.7"
   languageName: unknown
