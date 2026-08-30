@@ -1,6 +1,6 @@
 {
   "name": "@loaders.gl/stac",
-  "version": "5.0.0-alpha.3",
+  "version": "5.0.0-alpha.4",
   "description": "Framework-independent source for SpatioTemporal Asset Catalogs",
   "license": "MIT",
   "type": "module",
@@ -40,7 +40,7 @@
     "README.md"
   ],
   "dependencies": {
-    "@loaders.gl/loader-utils": "5.0.0-alpha.3"
+    "@loaders.gl/loader-utils": "5.0.0-alpha.4"
   },
   "peerDependencies": {
     "@loaders.gl/core": "~5.0.0-alpha.0"

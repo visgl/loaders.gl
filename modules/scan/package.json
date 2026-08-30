@@ -1,7 +1,7 @@
 {
   "name": "@loaders.gl/scan",
   "description": "Optional scan planning and execution for loaders.gl",
-  "version": "5.0.0-alpha.3",
+  "version": "5.0.0-alpha.4",
   "license": "MIT",
   "type": "module",
   "publishConfig": {
@@ -54,12 +54,12 @@
     "build-bundle": "ocular-bundle ./bundle.ts --output=dist/dist.min.js"
   },
   "dependencies": {
-    "@loaders.gl/geoarrow": "5.0.0-alpha.3",
-    "@loaders.gl/loader-utils": "5.0.0-alpha.3",
-    "@loaders.gl/parquet": "5.0.0-alpha.3",
-    "@loaders.gl/schema": "5.0.0-alpha.3",
-    "@loaders.gl/schema-utils": "5.0.0-alpha.3",
-    "@loaders.gl/sql": "5.0.0-alpha.3",
+    "@loaders.gl/geoarrow": "5.0.0-alpha.4",
+    "@loaders.gl/loader-utils": "5.0.0-alpha.4",
+    "@loaders.gl/parquet": "5.0.0-alpha.4",
+    "@loaders.gl/schema": "5.0.0-alpha.4",
+    "@loaders.gl/schema-utils": "5.0.0-alpha.4",
+    "@loaders.gl/sql": "5.0.0-alpha.4",
     "apache-arrow": ">= 17.0.0"
   }
 }

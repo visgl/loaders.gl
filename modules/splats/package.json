@@ -1,6 +1,6 @@
 {
   "name": "@loaders.gl/splats",
-  "version": "5.0.0-alpha.3",
+  "version": "5.0.0-alpha.4",
   "description": "Framework-independent loaders for Gaussian splat formats",
   "license": "MIT",
   "type": "module",
@@ -78,9 +78,9 @@
     "build-bundle-dev": "ocular-bundle ./bundle.ts --env=dev --output=dist/dist.dev.js"
   },
   "dependencies": {
-    "@loaders.gl/compression": "5.0.0-alpha.3",
-    "@loaders.gl/loader-utils": "5.0.0-alpha.3",
-    "@loaders.gl/schema": "5.0.0-alpha.3",
+    "@loaders.gl/compression": "5.0.0-alpha.4",
+    "@loaders.gl/loader-utils": "5.0.0-alpha.4",
+    "@loaders.gl/schema": "5.0.0-alpha.4",
     "apache-arrow": ">= 17.0.0",
     "zod": "^4.1.12"
   },

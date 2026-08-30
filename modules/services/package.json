@@ -1,6 +1,6 @@
 {
   "name": "@loaders.gl/services",
-  "version": "5.0.0-alpha.3",
+  "version": "5.0.0-alpha.4",
   "description": "Framework-independent loaders and sources for geospatial services",
   "license": "MIT",
   "type": "module",
@@ -45,13 +45,13 @@
     "README.md"
   ],
   "dependencies": {
-    "@loaders.gl/gis": "5.0.0-alpha.3",
-    "@loaders.gl/i3s": "5.0.0-alpha.3",
-    "@loaders.gl/images": "5.0.0-alpha.3",
-    "@loaders.gl/lerc": "5.0.0-alpha.3",
-    "@loaders.gl/loader-utils": "5.0.0-alpha.3",
-    "@loaders.gl/mvt": "5.0.0-alpha.3",
-    "@loaders.gl/schema": "5.0.0-alpha.3"
+    "@loaders.gl/gis": "5.0.0-alpha.4",
+    "@loaders.gl/i3s": "5.0.0-alpha.4",
+    "@loaders.gl/images": "5.0.0-alpha.4",
+    "@loaders.gl/lerc": "5.0.0-alpha.4",
+    "@loaders.gl/loader-utils": "5.0.0-alpha.4",
+    "@loaders.gl/mvt": "5.0.0-alpha.4",
+    "@loaders.gl/schema": "5.0.0-alpha.4"
   },
   "peerDependencies": {
     "@loaders.gl/core": "~5.0.0-alpha.0"
