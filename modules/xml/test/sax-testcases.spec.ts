@@ -23,6 +23,7 @@ import './sax-ts/testcases/entity-mega.spec';
 import './sax-ts/testcases/entity-nan.spec';
 import './sax-ts/testcases/flush.spec';
 import './sax-ts/testcases/issue-23.spec';
+import './sax-ts/testcases/issue-30.spec';
 import './sax-ts/testcases/issue-35.spec';
 import './sax-ts/testcases/issue-47.spec';
 import './sax-ts/testcases/issue-49.spec';

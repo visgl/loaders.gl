@@ -122,6 +122,41 @@ test('GeoZarrRasterSource validates CRS and named selections', async () => {
     await expect(source.getRaster({ viewport, selection: { time: 0 } })).rejects.toThrow(/Unknown GeoZarr selection dimension time/);
     await expect(source.getRaster({ viewport, selection: { c: 3 } })).rejects.toThrow(/c index 3 is out of bounds/);
 });
+test('GeoZarrRasterSource returns typed empty rasters outside each supported dtype extent', async () => {
+    const dataTypes = ['uint8', 'uint16', 'uint32', 'int8', 'int16', 'int32', 'float32', 'float64'] as const;
+    const expectedConstructors = [Uint8Array, Uint16Array, Uint32Array, Int8Array, Int16Array, Int32Array, Float32Array, Float64Array];
+    for (let dataTypeIndex = 0; dataTypeIndex < dataTypes.length; dataTypeIndex++) {
+        const baseUrl = `https://example.com/${dataTypes[dataTypeIndex]}.zarr`;
+        const fetcher = createDirectGeoZarrFetcher(baseUrl, dataTypes[dataTypeIndex], ['y', 'x'], [2, 2]);
+        const source = new GeoZarrRasterSource(baseUrl, {
+            core: {loadOptions: {core: {fetch: fetcher}}},
+            zarr: {requireConsolidatedMetadata: false},
+            geozarr: {array: 'values'}
+        });
+        const raster = await source.getRaster({
+            viewport: createViewport([[10, 10], [11, 11]], 'EPSG:4326')
+        });
+        expect(raster.data).toBeInstanceOf(expectedConstructors[dataTypeIndex]);
+        expect(raster.data).toHaveLength(0);
+        expect(raster.width).toBe(0);
+        expect(raster.height).toBe(0);
+    }
+});
+test('GeoZarrRasterSource transposes physical x/y arrays into row-major raster order', async () => {
+    const baseUrl = 'https://example.com/transposed.zarr';
+    const fetcher = createDirectGeoZarrFetcher(baseUrl, 'uint8', ['x', 'y'], [2, 3], new Uint8Array([1, 2, 3, 4, 5, 6]));
+    const source = new GeoZarrRasterSource(baseUrl, {
+        core: {loadOptions: {core: {fetch: fetcher}}},
+        zarr: {requireConsolidatedMetadata: false},
+        geozarr: {array: 'values'}
+    });
+    const raster = await source.getRaster({
+        viewport: createViewport([[0, 0], [2, 3]], 'EPSG:4326')
+    });
+    expect(raster.width).toBe(2);
+    expect(raster.height).toBe(3);
+    expect(Array.from(raster.data as Uint8Array)).toEqual([1, 4, 2, 5, 3, 6]);
+});
 /** Creates an in-memory HTTP view of a small xarray-style Zarr v3 climate store. */
 function createCFZarrFetcher(baseUrl: string): typeof fetch {
     const responses = new Map<string, BodyInit>([
@@ -163,7 +198,7 @@ function createGroupMetadata(): Record<string, unknown> {
     return { zarr_format: 3, node_type: 'group', attributes: {} };
 }
 /** Creates minimal uncompressed Zarr v3 array metadata. */
-function createArrayMetadata(shape: number[], chunks: number[], dataType: 'uint8' | 'float64', dimensionNames: string[], attributes: Record<string, unknown>): Record<string, unknown> {
+function createArrayMetadata(shape: number[], chunks: number[], dataType: 'uint8' | 'uint16' | 'uint32' | 'int8' | 'int16' | 'int32' | 'float32' | 'float64', dimensionNames: string[], attributes: Record<string, unknown>): Record<string, unknown> {
     return {
         zarr_format: 3,
         node_type: 'array',
@@ -176,6 +211,24 @@ function createArrayMetadata(shape: number[], chunks: number[], dataType: 'uint8
         dimension_names: dimensionNames,
         attributes
     };
+}
+/** Creates an in-memory GeoZarr v3 array with direct affine metadata. */
+function createDirectGeoZarrFetcher(baseUrl: string, dataType: 'uint8' | 'uint16' | 'uint32' | 'int8' | 'int16' | 'int32' | 'float32' | 'float64', dimensionNames: [string, string], shape: [number, number], data?: Uint8Array): typeof fetch {
+    const responses = new Map<string, BodyInit>([
+        [`${baseUrl}/zarr.json`, encodeJson(createGroupMetadata())],
+        [`${baseUrl}/values/zarr.json`, encodeJson(createArrayMetadata(shape, shape, dataType, dimensionNames, {
+            'spatial:dimensions': ['y', 'x'],
+            'spatial:transform': [1, 0, 0, 0, 1, 0],
+            'spatial:bbox': [0, 0, 2, 3],
+            'proj:code': 'EPSG:4326'
+        }))],
+        [`${baseUrl}/values/c/0/0`, data || new Uint8Array(0)]
+    ]);
+    return (async input => {
+        const url = input instanceof Request ? input.url : String(input);
+        const body = responses.get(url);
+        return body === undefined ? new Response(null, {status: 404}) : new Response(body);
+    }) as typeof fetch;
 }
 /** Encodes JSON metadata as UTF-8 bytes. */
 function encodeJson(value: unknown): Uint8Array {

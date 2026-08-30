@@ -9,12 +9,18 @@ const VALID_JSONPATHS = [
   {jsonpath: '$.items[ : ]', expected: ['items'], canonical: '$.items'},
   {jsonpath: '$.items.*', expected: ['items'], canonical: '$.items'},
   {jsonpath: '$.items[0:10]', expected: ['items'], canonical: '$.items'},
-  {jsonpath: '$["feature-name"]', expected: ['feature-name'], canonical: "$['feature-name']"}
-  // {
-  //   jsonpath: '$["nested \\'quote\\' key"]',
-  //   expected: ["nested 'quote' key"],
-  //   canonical: "$['nested \\'quote\\' key']"
-  // }
+  {jsonpath: '$["feature-name"]', expected: ['feature-name'], canonical: "$['feature-name']"},
+  {
+    jsonpath: "$['nested \\'quote\\' and \\\\ key']",
+    expected: ["nested 'quote' and \\ key"],
+    canonical: "$['nested \\'quote\\' and \\\\ key']"
+  },
+  {
+    jsonpath: '  $.space_1.$value  ',
+    expected: ['space_1', '$value'],
+    canonical: '$.space_1.$value'
+  },
+  {jsonpath: '$.items[1:10:2]', expected: ['items'], canonical: '$.items'}
 ];
 const INVALID_JSONPATHS = [
   {jsonpath: 'features', message: /JSONPath must start with \$/},
@@ -32,7 +38,18 @@ const INVALID_JSONPATHS = [
   {
     jsonpath: '$["unclosed',
     message: /JSONPath string in bracket property selector is unterminated/
-  }
+  },
+  {jsonpath: '$[', message: /unterminated bracket/},
+  {jsonpath: '$[abc', message: /unterminated bracket/},
+  {jsonpath: '$[]', message: /bracket selectors cannot be empty/},
+  {jsonpath: '$[value]', message: /Unsupported bracket selector/},
+  {jsonpath: '$["value" trailing]', message: /property selectors must end with/},
+  {jsonpath: '$[""]', message: /property selectors cannot be empty/},
+  {jsonpath: '$.1value', message: /property names after period must start/},
+  {jsonpath: '$.@value', message: /current node selector/},
+  {jsonpath: '$@', message: /current node selector/},
+  {jsonpath: '$#', message: /Unexpected character/},
+  {jsonpath: '$.*.value', message: /wildcard selectors must terminate/}
 ];
 test('JSONPath#parsing', async () => {
   for (const testCase of VALID_JSONPATHS) {
@@ -73,4 +90,17 @@ test('JSONPath#deep set', async () => {
   expect(jsonpath.getFieldAtPath(deepValue), 'JSONPath.getFieldAtPath').toBe(1);
   jsonpath.setFieldAtPath(deepValue, 2);
   expect(jsonpath.getFieldAtPath(deepValue), 'JSONPath.setFieldAtPath').toBe(2);
+});
+test('JSONPath#mutable path operations and equality boundaries', () => {
+  const jsonpath = new _JSONPath();
+  jsonpath.push('items');
+  jsonpath.push('first');
+  expect(jsonpath.toString()).toBe('$.items.first');
+  jsonpath.set('second');
+  expect(jsonpath.pop()).toBe('second');
+  expect(jsonpath.toString()).toBe('$.items');
+  expect(jsonpath.equals(new _JSONPath('$.items'))).toBe(true);
+  expect(jsonpath.equals(new _JSONPath('$.other'))).toBe(false);
+  expect(jsonpath.equals(new _JSONPath('$.items.value'))).toBe(false);
+  expect(jsonpath.equals(null)).toBe(false);
 });
