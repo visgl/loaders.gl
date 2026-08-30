@@ -70,6 +70,9 @@ npm install @loaders.gl/core @loaders.gl/zarr
 - [`GeoZarrSourceLoader`](/docs/modules/zarr/api-reference/geo-zarr-source-loader) opens one
   georeferenced Zarr data variable and reads native spatial windows with named time, vertical, or
   band selections.
+- [`SpatialDataSourceLoader`](/docs/modules/zarr/api-reference/spatial-data-source-loader) discovers named images, labels, points, shapes, and tables from a
+  SpatialData root. It opens Zarr-backed raster and AnnData array elements directly and reports
+  interoperable Parquet-dataset and GeoParquet URLs for points and shapes.
 - `loadZarrConsolidatedMetadata()` probes `.zmetadata`, `zmetadata`, and `zarr.json` documents and
   reports top-level arrays and groups.
 - `loadZarr()` and `ZarrPixelSource` provide the legacy Zarr v2 pixel-pyramid API.
@@ -115,7 +118,7 @@ store directly from S3 and renders monthly solar irradiance on an interactive ma
 | Viewport-driven geospatial windows | — | — | — | Yes | Available |
 | Typed planar or interleaved channel output | Yes | Yes | Yes | Yes | Available |
 | Zarrita-backed v2/v3 implementation | Yes | Yes | Yes | Yes | Available |
-| SpatialData tables, points, and shapes | — | — | Planned | — | Planned |
+| SpatialData images, labels, points, shapes, and tables | — | — | Yes | — | Discovery and typed storage references available |
 | Codec expansion and broader multiscale layouts | Partial | Partial | Planned | Planned | Planned |
 | Common raster query execution | — | — | Levels, channels, and slices | Native spatial windows and named selections | Available |
 
@@ -138,6 +141,28 @@ array output, but their query vocabulary reflects the kind of array being opened
 Query metadata is suitable for populating source-neutral controls before pixel data is requested.
 GeoZarr bounds must use the source CRS; callers should reproject the viewport before requesting a
 window when necessary.
+
+## SpatialData containers
+
+`SpatialDataSourceLoader` normalizes the five standard SpatialData namespaces without loading
+element payloads. Each element retains its axes, coordinate transformations, format version, and
+original attributes. Image and label descriptors use `ome-zarr`; point descriptors use
+`parquet-dataset`; shape descriptors use `geoparquet`; and table descriptors use `anndata-zarr`.
+
+```ts
+import {createDataSource} from '@loaders.gl/core';
+import {SpatialDataSourceLoader} from '@loaders.gl/zarr';
+
+const source = createDataSource(rootUrl, [SpatialDataSourceLoader]);
+const metadata = await source.getMetadata();
+const image = await source.createRasterSource('image', metadata.images[0].name);
+const expression = await source.createTableArraySource('annotations', 'X');
+```
+
+SpatialData points are Dask-style Parquet datasets and shapes are GeoParquet files. Their normalized
+descriptors expose the canonical `points.parquet` and `shapes.parquet` URLs so applications can
+hand them to the corresponding loaders.gl Parquet sources without coupling the lightweight Zarr
+module to the complete Parquet runtime.
 
 ## Attributions
 

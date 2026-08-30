@@ -1,4 +1,4 @@
-import test from 'test/utils/vitest-tape';
+import {expect, test} from 'vitest';
 import {Tiles3DLoader} from '@loaders.gl/3d-tiles';
 import {load, setLoaderOptions, isBrowser} from '@loaders.gl/core';
 import {WorkerFarm} from '@loaders.gl/worker-utils';
@@ -8,10 +8,8 @@ import convertB3dmToI3sGeometry, {
 import {PGMLoader} from '../../../src/pgm-loader';
 import {getAttributeTypesMapFromPropertyTable} from '../../../src/i3s-converter/helpers/feature-attributes';
 import {AttributeMetadataInfo} from '../../../src/i3s-converter/helpers/attribute-metadata-info';
-
 import {BoundingSphere, OrientedBoundingBox} from '@math.gl/culling';
 import {Matrix4} from '@math.gl/core';
-
 const PGM_FILE_PATH = '@loaders.gl/tile-converter/test/data/egm84-30.pgm';
 const FRANKFURT_B3DM_FILE_PATH =
   '@loaders.gl/tile-converter/test/data/Frankfurt/L5/OF/474_5548_-1_lv5_group_0.osgb_3.b3dm';
@@ -25,15 +23,12 @@ const TRIANGLE_STRIP_B3DM_FILE_PATH =
 const HELSINKI_GLB_FILE_PATH =
   '@loaders.gl/tile-converter/test/data/helsinki-glb-8-meshopt/0/0.glb';
 const BASEGLOBE_GLB_FILE_PATH = '@loaders.gl/tile-converter/test/data/baseglobe/0/0/0/0.glb';
-
 setLoaderOptions({
   _worker: 'test'
 });
-
 // TODO app breakout
-test.skip('tile-converter(i3s)#convert B3dmToI3sGeometry - should convert Frankfurt tile content', async t => {
+test.skip('tile-converter(i3s)#convert B3dmToI3sGeometry - should convert Frankfurt tile content', async () => {
   if (isBrowser) {
-    t.end();
     return;
   }
   async function testTileContent(draco, generateBoundingVolumes) {
@@ -66,11 +61,11 @@ test.skip('tile-converter(i3s)#convert B3dmToI3sGeometry - should convert Frankf
         geoidHeightModel,
         libraries: {}
       });
-      t.ok(convertedResources);
+      expect(convertedResources).toBeTruthy();
       if (!convertedResources) {
         return;
       }
-      t.equals(convertedResources.length, 1, 'Returns 1 node');
+      expect(convertedResources.length, 'Returns 1 node').toBe(1);
       const nodeResources = convertedResources[0];
       await checkNodeResources(
         nodeResources,
@@ -89,17 +84,17 @@ test.skip('tile-converter(i3s)#convert B3dmToI3sGeometry - should convert Frankf
           },
           // biome-ignore format: preserve intentional fixture layout
           boundingVolumes: generateBoundingVolumes
-            ? {
-              mbs: [8.622161535185821, 50.0841151227351, -188.79808730024337, 633.1951829721843],
-              obb: {
-                center: [8.622050871641566, 50.084076204176576, -194.3917133680221],
-                halfSize: [611.3686583875675, 484.1319449471776, 365.7073438855587],
-                quaternion: [
-                  0.478909280552476, -0.3432001871992151, 0.5224020278817846, 0.6164054297068876
-                ]
-              }
-            }
-            : false
+                    ? {
+                        mbs: [8.622161535185821, 50.0841151227351, -188.79808730024337, 633.1951829721843],
+                        obb: {
+                            center: [8.622050871641566, 50.084076204176576, -194.3917133680221],
+                            halfSize: [611.3686583875675, 484.1319449471776, 365.7073438855587],
+                            quaternion: [
+                                0.478909280552476, -0.3432001871992151, 0.5224020278817846, 0.6164054297068876
+                            ]
+                        }
+                    }
+                    : false
         },
         t
       );
@@ -109,18 +104,13 @@ test.skip('tile-converter(i3s)#convert B3dmToI3sGeometry - should convert Frankf
       workerFarm.destroy();
     }
   }
-
   await testTileContent(true, false);
   await testTileContent(false, false);
   await testTileContent(true, true);
-
-  t.end();
 });
-
 // eslint-disable-next-line max-statements
-test('tile-converter(i3s)#convertB3dmToI3sGeometry - should convert Berlin tile content', async t => {
+test('tile-converter(i3s)#convertB3dmToI3sGeometry - should convert Berlin tile content', async () => {
   if (isBrowser) {
-    t.end();
     return;
   }
   let nodeId = 1;
@@ -152,11 +142,11 @@ test('tile-converter(i3s)#convertB3dmToI3sGeometry - should convert Berlin tile 
       geoidHeightModel,
       libraries: {}
     });
-    t.ok(convertedResources);
+    expect(convertedResources).toBeTruthy();
     if (!convertedResources) {
       return;
     }
-    t.equals(convertedResources.length, 40, 'Returns 40 nodes');
+    expect(convertedResources.length, 'Returns 40 nodes').toBe(40);
     await checkNodeResources(
       convertedResources[0],
       {
@@ -192,14 +182,10 @@ test('tile-converter(i3s)#convertB3dmToI3sGeometry - should convert Berlin tile 
     const workerFarm = WorkerFarm.getWorkerFarm({});
     workerFarm.destroy();
   }
-
-  t.end();
 });
-
 // eslint-disable-next-line max-statements
-test('tile-converter(i3s)#convertB3dmToI3sGeometry - should convert New York tile content', async t => {
+test('tile-converter(i3s)#convertB3dmToI3sGeometry - should convert New York tile content', async () => {
   if (isBrowser) {
-    t.end();
     return;
   }
   let nodeId = 1;
@@ -233,11 +219,11 @@ test('tile-converter(i3s)#convertB3dmToI3sGeometry - should convert New York til
       geoidHeightModel,
       libraries: {}
     });
-    t.ok(convertedResources);
+    expect(convertedResources).toBeTruthy();
     if (!convertedResources) {
       return;
     }
-    t.equals(convertedResources.length, 1, 'Returns 1 node');
+    expect(convertedResources.length, 'Returns 1 node').toBe(1);
     const nodeResources = convertedResources[0];
     await checkNodeResources(
       nodeResources,
@@ -256,14 +242,10 @@ test('tile-converter(i3s)#convertB3dmToI3sGeometry - should convert New York til
     const workerFarm = WorkerFarm.getWorkerFarm({});
     workerFarm.destroy();
   }
-
-  t.end();
 });
-
 // eslint-disable-next-line max-statements
-test('tile-converter(i3s)#convertB3dmToI3sGeometry - should convert Ferry tile content', async t => {
+test('tile-converter(i3s)#convertB3dmToI3sGeometry - should convert Ferry tile content', async () => {
   if (isBrowser) {
-    t.end();
     return;
   }
   let nodeId = 1;
@@ -299,11 +281,11 @@ test('tile-converter(i3s)#convertB3dmToI3sGeometry - should convert Ferry tile c
       geoidHeightModel,
       libraries: {}
     });
-    t.ok(convertedResources);
+    expect(convertedResources).toBeTruthy();
     if (!convertedResources) {
       return;
     }
-    t.equals(convertedResources.length, 1, 'Returns 1 node');
+    expect(convertedResources.length, 'Returns 1 node').toBe(1);
     const nodeResources = convertedResources[0];
     await checkNodeResources(
       nodeResources,
@@ -328,19 +310,13 @@ test('tile-converter(i3s)#convertB3dmToI3sGeometry - should convert Ferry tile c
     const workerFarm = WorkerFarm.getWorkerFarm({});
     workerFarm.destroy();
   }
-
-  t.end();
 });
-
 // eslint-disable-next-line max-statements
-test('tile-converter(i3s)#convertB3dmToI3sGeometry - TRIANGLE_STRIPS should be converted to independent TRIANGLES', async t => {
+test('tile-converter(i3s)#convertB3dmToI3sGeometry - TRIANGLE_STRIPS should be converted to independent TRIANGLES', async () => {
   const EXPECT_VERTEX_COUNT = [42891, 12861];
-
   if (isBrowser) {
-    t.end();
     return;
   }
-
   let nodeId = 1;
   const addNodeToNodePage = async () => nodeId++;
   const featuresHashArray = [];
@@ -373,27 +349,23 @@ test('tile-converter(i3s)#convertB3dmToI3sGeometry - TRIANGLE_STRIPS should be c
       geoidHeightModel,
       libraries: {}
     });
-    t.ok(convertedResources);
+    expect(convertedResources).toBeTruthy();
     if (!convertedResources) {
       return;
     }
-    t.equals(convertedResources.length, 2, 'Returns 2 nodes');
+    expect(convertedResources.length, 'Returns 2 nodes').toBe(2);
     for (let i = 0; i < convertedResources.length; i++) {
       const nodeResources = convertedResources[i];
-      t.equals(nodeResources.vertexCount, EXPECT_VERTEX_COUNT[i]);
+      expect(nodeResources.vertexCount).toBe(EXPECT_VERTEX_COUNT[i]);
     }
   } finally {
     // Clean up worker pools
     const workerFarm = WorkerFarm.getWorkerFarm({});
     workerFarm.destroy();
   }
-
-  t.end();
 });
-
-test('tile-converter(i3s)#convertB3dmToI3sGeometry - should not convert point geometry', async t => {
+test('tile-converter(i3s)#convertB3dmToI3sGeometry - should not convert point geometry', async () => {
   if (isBrowser) {
-    t.end();
     return;
   }
   let nodeId = 1;
@@ -429,43 +401,35 @@ test('tile-converter(i3s)#convertB3dmToI3sGeometry - should not convert point ge
       geoidHeightModel,
       libraries: {}
     });
-    t.fail('The conversion should fail');
+    (() => {
+      throw new Error('The conversion should fail');
+    })();
   } catch (e) {
     // @ts-ignore 'e' is of type 'unknown'
-    t.equal(e.message, 'Primitive - unsupported mode 0');
+    expect(e.message).toBe('Primitive - unsupported mode 0');
   } finally {
     // Clean up worker pools
     const workerFarm = WorkerFarm.getWorkerFarm({});
     workerFarm.destroy();
   }
-
-  t.end();
 });
-
-test('tile-converter(i3s)#getPropertyTable - should get the property table from EXT_feature_metadata extension', async t => {
+test('tile-converter(i3s)#getPropertyTable - should get the property table from EXT_feature_metadata extension', async () => {
   const propertyTableExpected = {
     'r3dm::uncertainty_ce90sum': [33, 35, 29, 32, 24, 28, 25, 39, 30, 34, 27, 36, 31, 37, 23]
   };
-
   if (isBrowser) {
-    t.end();
     return;
   }
   const tileContent = await load(MUSCATATUCK_GLB_FILE_PATH, Tiles3DLoader);
   const propertyTable = getPropertyTable(tileContent, 'r3dm::uncertainty_ce90sum');
-  t.deepEquals(propertyTable, propertyTableExpected, 'Returns property table');
-
+  expect(propertyTable, 'Returns property table').toEqual(propertyTableExpected);
   // Clean up worker pools
   const workerFarm = WorkerFarm.getWorkerFarm({});
   workerFarm.destroy();
-
-  t.end();
 });
-
 // eslint-disable-next-line max-statements
-test('tile-converter(i3s)#convertB3dmToI3sGeometry - should convert tile content with EXT_feature_metadata extension', async t => {
+test('tile-converter(i3s)#convertB3dmToI3sGeometry - should convert tile content with EXT_feature_metadata extension', async () => {
   if (isBrowser) {
-    t.end();
     return;
   }
   let nodeId = 1;
@@ -496,11 +460,11 @@ test('tile-converter(i3s)#convertB3dmToI3sGeometry - should convert tile content
       libraries: {},
       metadataClass: 'r3dm::uncertainty_ce90sum'
     });
-    t.ok(convertedResources);
+    expect(convertedResources).toBeTruthy();
     if (!convertedResources) {
       return;
     }
-    t.equals(convertedResources.length, 1, 'Returns 1 node');
+    expect(convertedResources.length, 'Returns 1 node').toBe(1);
     const nodeResources = convertedResources[0];
     await checkNodeResources(
       nodeResources,
@@ -525,29 +489,24 @@ test('tile-converter(i3s)#convertB3dmToI3sGeometry - should convert tile content
     const workerFarm = WorkerFarm.getWorkerFarm({});
     workerFarm.destroy();
   }
-
-  t.end();
 });
-
 // eslint-disable-next-line max-statements
-test('tile-converter(i3s)#convertB3dmToI3sGeometry - array of UINTxx should be converted to a node attibute of type string', async t => {
+test('tile-converter(i3s)#convertB3dmToI3sGeometry - array of UINTxx should be converted to a node attibute of type string', async () => {
   if (isBrowser) {
-    t.end();
     return;
   }
-
   /*
-  This is "color" attributes that is actually an array[8] of arrays[3] of UINT8:
-  255,0,0
-  255,255,0
-  255,125,0
-  0,255,0
-  0,255,125
-  63,255,0
-  63,170,0
-  0,0,255
-  It should be converted to the following attributes buffer:
-  */
+    This is "color" attributes that is actually an array[8] of arrays[3] of UINT8:
+    255,0,0
+    255,255,0
+    255,125,0
+    0,255,0
+    0,255,125
+    63,255,0
+    63,170,0
+    0,0,255
+    It should be converted to the following attributes buffer:
+    */
   const expectedArray = new Uint8Array([
     8, 0, 0, 0, 72, 0, 0, 0, 8, 0, 0, 0, 10, 0, 0, 0, 10, 0, 0, 0, 8, 0, 0, 0, 10, 0, 0, 0, 9, 0, 0,
     0, 9, 0, 0, 0, 8, 0, 0, 0, 50, 53, 53, 44, 48, 44, 48, 0, 50, 53, 53, 44, 50, 53, 53, 44, 48, 0,
@@ -555,7 +514,6 @@ test('tile-converter(i3s)#convertB3dmToI3sGeometry - array of UINTxx should be c
     49, 50, 53, 0, 54, 51, 44, 50, 53, 53, 44, 48, 0, 54, 51, 44, 49, 55, 48, 44, 48, 0, 48, 44, 48,
     44, 50, 53, 53, 0
   ]);
-
   let nodeId = 1;
   const addNodeToNodePage = async () => nodeId++;
   const featuresHashArray = [];
@@ -590,23 +548,18 @@ test('tile-converter(i3s)#convertB3dmToI3sGeometry - array of UINTxx should be c
       metadataClass
     });
     const attributes = convertedResources?.[0].attributes?.[1];
-    t.deepEquals(new Uint8Array(attributes || []), expectedArray, 'Array represents ');
+    expect(new Uint8Array(attributes || []), 'Array represents ').toEqual(expectedArray);
   } finally {
     // Clean up worker pools
     const workerFarm = WorkerFarm.getWorkerFarm({});
     workerFarm.destroy();
   }
-
-  t.end();
 });
-
 // eslint-disable-next-line max-statements
-test.skip('tile-converter(i3s)#convertB3dmToI3sGeometry - should convert 64-bit attributes to strings', async t => {
+test.skip('tile-converter(i3s)#convertB3dmToI3sGeometry - should convert 64-bit attributes to strings', async () => {
   if (isBrowser) {
-    t.end();
     return;
   }
-
   const propertyTable = {
     color: [11n, 22n, 33n, 44n, 55n, 66n, 77n, 88n, 99n, 111n, 222n, 333n],
     component: [
@@ -625,13 +578,12 @@ test.skip('tile-converter(i3s)#convertB3dmToI3sGeometry - should convert 64-bit 
     ]
   };
   /*
-    'color' 64-bit values from propertyTable should be converted to strings hat are in attributeBufferExpected.
-  */
+      'color' 64-bit values from propertyTable should be converted to strings hat are in attributeBufferExpected.
+    */
   const attributeBufferExpected = [
     3, 0, 0, 0, 12, 0, 0, 0, 3, 0, 0, 0, 4, 0, 0, 0, 5, 0, 0, 0, 51, 51, 0, 50, 50, 50, 0, 110, 117,
     108, 108, 0
   ];
-
   let nodeId = 1;
   const addNodeToNodePage = async () => nodeId++;
   const featuresHashArray = [];
@@ -669,23 +621,19 @@ test.skip('tile-converter(i3s)#convertB3dmToI3sGeometry - should convert 64-bit 
     }
     const attributes = new Uint8Array(convertedResources[0].attributes[1]);
     const attributesExpected = new Uint8Array(attributeBufferExpected);
-    t.deepEquals(attributes, attributesExpected, '64-bit int values converted to strings');
+    expect(attributes, '64-bit int values converted to strings').toEqual(attributesExpected);
   } finally {
     // Clean up worker pools
     const workerFarm = WorkerFarm.getWorkerFarm({});
     workerFarm.destroy();
   }
-
-  t.end();
 });
-
 function getAttributeStorageInfo(propertyTable) {
   const attributeTypesMap = getAttributeTypesMapFromPropertyTable(propertyTable);
   const attributeMetadataInfo: AttributeMetadataInfo = new AttributeMetadataInfo();
   attributeMetadataInfo.addMetadataInfo(attributeTypesMap);
   return attributeMetadataInfo.attributeStorageInfo;
 }
-
 async function checkNodeResources(resources, expectedValues, t) {
   const {
     draco,
@@ -697,30 +645,27 @@ async function checkNodeResources(resources, expectedValues, t) {
     texture,
     boundingVolumes
   } = expectedValues;
-  t.equals(resources.vertexCount, vertexCount);
-  t.equals(resources.attributes.length, attributesLength);
-  t.equals(resources.featureCount, featureCount);
-  t.equals(resources.geometry.length, nonCompressedGeometryByteLength);
-
+  expect(resources.vertexCount).toBe(vertexCount);
+  expect(resources.attributes.length).toBe(attributesLength);
+  expect(resources.featureCount).toBe(featureCount);
+  expect(resources.geometry.length).toBe(nonCompressedGeometryByteLength);
   if (draco) {
-    t.ok(resources.compressedGeometry instanceof Promise);
+    expect(resources.compressedGeometry instanceof Promise).toBeTruthy();
     const compressedGeometry = await resources.compressedGeometry;
-    t.equals(compressedGeometry.byteLength, compressedGeometryByteLength);
+    expect(compressedGeometry.byteLength).toBe(compressedGeometryByteLength);
   }
-
   if (texture) {
-    t.equals(resources.texture.mimeType, texture.mimeType);
-    t.equals(resources.texture.image.width, texture.width);
-    t.equals(resources.texture.image.height, texture.height);
-    t.equals(resources.texture.image.data.length, texture.bitmapByteLength);
-    t.ok(resources.texture.bufferView);
+    expect(resources.texture.mimeType).toBe(texture.mimeType);
+    expect(resources.texture.image.width).toBe(texture.width);
+    expect(resources.texture.image.height).toBe(texture.height);
+    expect(resources.texture.image.data.length).toBe(texture.bitmapByteLength);
+    expect(resources.texture.bufferView).toBeTruthy();
   } else {
-    t.notOk(resources.texture);
+    expect(resources.texture).toBeFalsy();
   }
-
   if (boundingVolumes) {
-    t.equals(JSON.stringify(resources.boundingVolumes), JSON.stringify(boundingVolumes));
+    expect(JSON.stringify(resources.boundingVolumes)).toBe(JSON.stringify(boundingVolumes));
   } else {
-    t.notOk(resources.boundingVolumes);
+    expect(resources.boundingVolumes).toBeFalsy();
   }
 }

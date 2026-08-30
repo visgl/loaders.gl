@@ -1,9 +1,7 @@
-import test from 'test/utils/vitest-tape';
+import {expect, test} from 'vitest';
 import transform from 'json-map-transform';
-
 import {SHARED_RESOURCES as sharedResourcesTemplate} from '../../../src/i3s-converter/json-templates/shared-resources';
-
-test('tile-converter(i3s)#json-templates - shared-resources - Verify the default shared data', async t => {
+test('tile-converter(i3s)#json-templates - shared-resources - Verify the default shared data', async () => {
   const SHARED_RESOURCES_ENTRY = {
     materialDefinitionInfos: [
       {
@@ -12,7 +10,6 @@ test('tile-converter(i3s)#json-templates - shared-resources - Verify the default
     ],
     nodePath: '1'
   };
-
   const EXPECTED_DATA = {
     Mat10: {
       name: 'standard',
@@ -30,8 +27,6 @@ test('tile-converter(i3s)#json-templates - shared-resources - Verify the default
       }
     }
   };
-
   const sharedData = transform(SHARED_RESOURCES_ENTRY, sharedResourcesTemplate());
-  t.deepEquals(sharedData ? sharedData.materialDefinitions : {}, EXPECTED_DATA);
-  t.end();
+  expect(sharedData ? sharedData.materialDefinitions : {}).toEqual(EXPECTED_DATA);
 });
