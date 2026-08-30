@@ -1,0 +1,193 @@
+// loaders.gl
+// SPDX-License-Identifier: MIT
+// Copyright (c) vis.gl contributors
+
+import {expect, test} from 'vitest';
+import type {MeshArrowTable} from '@loaders.gl/schema';
+import {parseLAS, parseLASInBatches} from '../src/lib/typescript/parse-las';
+
+const POINT_FORMAT_LENGTHS = [20, 28, 26, 34, 57, 63, 30, 36, 38, 59, 67] as const;
+const ALL_COLUMNS = [
+  'POSITION',
+  'intensity',
+  'classification',
+  'synthetic',
+  'keyPoint',
+  'withheld',
+  'overlap',
+  'COLOR_0',
+  'GPS_TIME',
+  'NIR',
+  'scanAngle',
+  'userData',
+  'pointSourceId',
+  'returnNumber',
+  'numberOfReturns',
+  'scannerChannel',
+  'scanDirectionFlag',
+  'edgeOfFlightLine',
+  'WAVEFORM',
+  'EXTRA_BYTES'
+] as const;
+
+test.each(
+  Array.from({length: 11}, (_, index) => index)
+)('TypeScript LAS parses every selected field from PDRF %i', pointDataRecordFormat => {
+  const source = createLASFixture(pointDataRecordFormat, true);
+  const table = parseLAS(source, {
+    las: {columns: ALL_COLUMNS, colorDepth: 'auto', fp64: true}
+  });
+  const names = table.data.schema.fields.map(field => field.name);
+
+  expect(table.data.numRows).toBe(3);
+  const positionColumn = table.data.getChild('POSITION')!;
+  expect(Array.from({length: 3}, (_, index) => Array.from(positionColumn.get(index)))).toEqual([
+    [510, -3980, 230],
+    [510.5, -3978, 234],
+    [511, -3976, 238]
+  ]);
+  expect(table.data.getChild('intensity')!.toArray()).toEqual(new Uint16Array([200, 217, 234]));
+  expect(table.data.getChild('classification')!.toArray()).toEqual(
+    pointDataRecordFormat <= 5 ? new Uint8Array([3, 4, 5]) : new Uint8Array([20, 21, 22])
+  );
+  const extraBytesColumn = table.data.getChild('EXTRA_BYTES')!;
+  expect(Array.from({length: 3}, (_, index) => Array.from(extraBytesColumn.get(index)))).toEqual([
+    [0, 255],
+    [1, 254],
+    [2, 253]
+  ]);
+  expect(names.includes('GPS_TIME')).toBe(
+    [1, 3, 4, 5, 6, 7, 8, 9, 10].includes(pointDataRecordFormat)
+  );
+  expect(names.includes('COLOR_0')).toBe([2, 3, 5, 7, 8, 10].includes(pointDataRecordFormat));
+  expect(names.includes('NIR')).toBe(pointDataRecordFormat === 8 || pointDataRecordFormat === 10);
+  expect(names.includes('WAVEFORM')).toBe([4, 5, 9, 10].includes(pointDataRecordFormat));
+});
+
+test('TypeScript LAS color selection covers explicit and auto 8-bit paths', () => {
+  const source = createLASFixture(7, false);
+  for (const colorDepth of [8, 16, 'auto', undefined] as const) {
+    const table = parseLAS(source, {
+      las: {columns: ['POSITION', 'COLOR_0'], colorDepth}
+    });
+    const colors = table.data.getChild('COLOR_0')!;
+    expect(colors.length).toBe(3);
+    const firstColor = Array.from(colors.get(0));
+    expect(firstColor).toHaveLength(4);
+    expect(firstColor[3]).toBe(255);
+  }
+});
+
+test('TypeScript LAS streams fragmented modern records into exact batches', async () => {
+  const source = createLASFixture(10, true);
+  const chunks = [
+    new Uint8Array(source, 0, 111),
+    new DataView(source, 111, 277),
+    source.slice(388)
+  ];
+  const batches: MeshArrowTable[] = [];
+
+  for await (const batch of parseLASInBatches(chunks, {
+    batchSize: 2,
+    las: {columns: ALL_COLUMNS, colorDepth: 16, fp64: true}
+  })) {
+    batches.push(batch);
+  }
+
+  expect(batches.map(batch => batch.data.numRows)).toEqual([2, 1]);
+  expect(batches.map(batch => batch.progress)).toEqual([2 / 3, 1]);
+  expect(batches[1].data.getChild('GPS_TIME')!.get(0)).toBe(1002.5);
+  expect(Array.from(batches[1].data.getChild('NIR')!.toArray())).toEqual([902]);
+});
+
+/** Create three deterministic uncompressed LAS records with two Extra Bytes. */
+function createLASFixture(pointDataRecordFormat: number, highColor: boolean): ArrayBuffer {
+  const headerLength = 375;
+  const pointCount = 3;
+  const baseRecordLength = POINT_FORMAT_LENGTHS[pointDataRecordFormat];
+  const pointDataRecordLength = baseRecordLength + 2;
+  const arrayBuffer = new ArrayBuffer(headerLength + pointCount * pointDataRecordLength);
+  const bytes = new Uint8Array(arrayBuffer);
+  const view = new DataView(arrayBuffer);
+  bytes.set(new TextEncoder().encode('LASF'));
+  bytes[24] = 1;
+  bytes[25] = 4;
+  view.setUint16(94, headerLength, true);
+  view.setUint32(96, headerLength, true);
+  view.setUint32(100, 0, true);
+  bytes[104] = pointDataRecordFormat;
+  view.setUint16(105, pointDataRecordLength, true);
+  view.setUint32(107, pointCount, true);
+  view.setBigUint64(247, BigInt(pointCount), true);
+  view.setFloat64(131, 0.5, true);
+  view.setFloat64(139, 2, true);
+  view.setFloat64(147, 4, true);
+  view.setFloat64(155, 10, true);
+  view.setFloat64(163, 20, true);
+  view.setFloat64(171, 30, true);
+
+  for (let pointIndex = 0; pointIndex < pointCount; pointIndex++) {
+    const pointOffset = headerLength + pointIndex * pointDataRecordLength;
+    view.setInt32(pointOffset, 1000 + pointIndex, true);
+    view.setInt32(pointOffset + 4, -2000 + pointIndex, true);
+    view.setInt32(pointOffset + 8, 50 + pointIndex, true);
+    view.setUint16(pointOffset + 12, 200 + pointIndex * 17, true);
+    if (pointDataRecordFormat <= 5) {
+      bytes[pointOffset + 14] = 0xc9;
+      bytes[pointOffset + 15] = 0xe3 + pointIndex;
+      view.setInt8(pointOffset + 16, -5 + pointIndex);
+      bytes[pointOffset + 17] = 30 + pointIndex;
+      view.setUint16(pointOffset + 18, 400 + pointIndex, true);
+    } else {
+      bytes[pointOffset + 14] = 0x31;
+      bytes[pointOffset + 15] = 0xf9;
+      bytes[pointOffset + 16] = 20 + pointIndex;
+      bytes[pointOffset + 17] = 30 + pointIndex;
+      view.setInt16(pointOffset + 18, -500 + pointIndex, true);
+      view.setUint16(pointOffset + 20, 400 + pointIndex, true);
+    }
+
+    if ([1, 3, 4, 5].includes(pointDataRecordFormat)) {
+      view.setFloat64(pointOffset + 20, 1000.5 + pointIndex, true);
+    } else if (pointDataRecordFormat >= 6) {
+      view.setFloat64(pointOffset + 22, 1000.5 + pointIndex, true);
+    }
+
+    const colorOffset = getColorOffset(pointDataRecordFormat);
+    if (colorOffset >= 0) {
+      const multiplier = highColor ? 256 : 1;
+      view.setUint16(pointOffset + colorOffset, (10 + pointIndex) * multiplier, true);
+      view.setUint16(pointOffset + colorOffset + 2, (20 + pointIndex) * multiplier, true);
+      view.setUint16(pointOffset + colorOffset + 4, (30 + pointIndex) * multiplier, true);
+    }
+    if (pointDataRecordFormat === 8 || pointDataRecordFormat === 10) {
+      view.setUint16(pointOffset + 36, 900 + pointIndex, true);
+    }
+    const waveformOffset = getWaveformOffset(pointDataRecordFormat);
+    if (waveformOffset >= 0) {
+      for (let index = 0; index < 29; index++) {
+        bytes[pointOffset + waveformOffset + index] = pointIndex * 29 + index;
+      }
+    }
+    bytes[pointOffset + baseRecordLength] = pointIndex;
+    bytes[pointOffset + baseRecordLength + 1] = 255 - pointIndex;
+  }
+  return arrayBuffer;
+}
+
+/** Return the RGB field offset for a LAS point format. */
+function getColorOffset(pointDataRecordFormat: number): number {
+  if (pointDataRecordFormat === 2) return 20;
+  if (pointDataRecordFormat === 3 || pointDataRecordFormat === 5) return 28;
+  if ([7, 8, 10].includes(pointDataRecordFormat)) return 30;
+  return -1;
+}
+
+/** Return the waveform packet-reference offset for a LAS point format. */
+function getWaveformOffset(pointDataRecordFormat: number): number {
+  if (pointDataRecordFormat === 4) return 28;
+  if (pointDataRecordFormat === 5) return 34;
+  if (pointDataRecordFormat === 9) return 30;
+  if (pointDataRecordFormat === 10) return 38;
+  return -1;
+}
