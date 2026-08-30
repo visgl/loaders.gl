@@ -7,9 +7,7 @@ page_style: designed
 
 import {GeoTiffDocsTabs} from '@site/src/components/docs/geotiff-docs-tabs';
 import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
-import {DocLiveExample} from '@site/src/components/docs/doc-live-example';
 import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
-import {ClientExample} from '@site/src/components';
 
 <DocPageHeader
   eyebrow="GeoTIFF loader"
@@ -23,10 +21,6 @@ import {ClientExample} from '@site/src/components';
     {label: 'GeoTIFF module', to: '/docs/modules/geotiff'}
   ]}
 />
-
-<DocLiveExample label="GeoTIFF raster example" height="420px">
-  <ClientExample kind="geotiff" />
-</DocLiveExample>
 
 <GeoTiffDocsTabs active="geotiffloader" />
 

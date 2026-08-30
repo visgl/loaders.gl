@@ -6,10 +6,8 @@ page_style: designed
 ---
 
 import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
-import {DocLiveExample} from '@site/src/components/docs/doc-live-example';
 import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
 import {GeoPackageDocsTabs} from '@site/src/components/docs/geopackage-docs-tabs';
-import {ClientExample} from '@site/src/components';
 
 <DocPageHeader
   eyebrow="GeoPackage source"
@@ -24,10 +22,6 @@ import {ClientExample} from '@site/src/components';
     {label: 'Arrow data plane', to: '/docs/developer-guide/apache-arrow'}
   ]}
 />
-
-<DocLiveExample label="GeoPackage source example" height="420px">
-  <ClientExample kind="geospatial" format="GeoPackage" />
-</DocLiveExample>
 
 <DocOrientation
   eyebrow="The database-file path"
