@@ -20,6 +20,8 @@ export type ScanBackend = Readonly<{
   name: ScanBackendName;
   /** Executes a query over one in-memory Arrow table. */
   query(sourceTable: ArrowTable, options?: ArrowQueryOptions): ArrowTable;
+  /** Optional asynchronous execution hook for backends that compile or schedule work. */
+  queryAsync?: (sourceTable: ArrowTable, options?: ArrowQueryOptions) => Promise<ArrowTable>;
   /** Explains a query without evaluating table rows. */
   explain(sourceTable: ArrowTable, options?: ArrowQueryOptions): TableQueryExplain<SQLPredicate>;
 }>;
@@ -34,13 +36,17 @@ export type ScanEngineOptions = Readonly<{
 }>;
 
 /** Stable application-facing scan engine returned by {@link createScanEngine}. */
-export type ScanEngine = ScanBackend;
+export type ScanEngine = ScanBackend & {
+  /** Executes a query asynchronously, allowing backends to schedule remote or compiled work. */
+  queryAsync: (sourceTable: ArrowTable, options?: ArrowQueryOptions) => Promise<ArrowTable>;
+};
 
 const scanBackendLoaders = new Map<ScanBackendName, ScanBackendLoader>();
 
 const arrowScanBackend: ScanBackend = Object.freeze({
   name: 'arrow',
   query: queryArrowTable,
+  queryAsync: async (sourceTable, options) => queryArrowTable(sourceTable, options),
   explain: explainArrowTableQuery
 });
 
@@ -80,5 +86,11 @@ export async function createScanEngine(options: ScanEngineOptions = {}): Promise
       `Scan backend loader returned "${backend.name}" while "${backendName}" was requested.`
     );
   }
-  return backend;
+  const query = backend.query.bind(backend);
+  const explain = backend.explain.bind(backend);
+  const queryAsync = backend.queryAsync
+    ? backend.queryAsync.bind(backend)
+    : async (sourceTable: ArrowTable, queryOptions?: ArrowQueryOptions) =>
+        backend.query.call(backend, sourceTable, queryOptions);
+  return Object.freeze({...backend, query, explain, queryAsync});
 }

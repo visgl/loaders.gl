@@ -43,6 +43,8 @@ export type {
   LoaderArrayBatchType
 } from './loader-types';
 
+export type {ExperimentalScanOptions} from './lib/scan-utils/experimental-scan-options';
+
 export {parseFromContext, parseSyncFromContext, parseInBatchesFromContext} from './loader-types';
 
 // writers

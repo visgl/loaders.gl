@@ -7,6 +7,7 @@ import {FetchLike, TransformBatches} from './types';
 import {ReadableFile} from './lib/files/file';
 import type {CoreAPI} from './lib/sources/data-source';
 import type {RequestCredential} from './lib/request-utils/request-credentials';
+import type {ExperimentalScanOptions} from './lib/scan-utils/experimental-scan-options';
 
 // LOADERS
 
@@ -14,6 +15,8 @@ import type {RequestCredential} from './lib/request-utils/request-credentials';
  * Core Loader Options
  */
 export type StrictLoaderOptions = {
+  /** Experimental common scan request. Format loaders implement the fields they support. */
+  _scan?: ExperimentalScanOptions;
   core?: {
     /** Base URL for resolving relative paths */
     baseUrl?: string;
@@ -88,6 +91,8 @@ export type StrictLoaderOptions = {
  * Core Loader Options
  */
 export type LoaderOptions = {
+  /** Experimental common scan request. Format loaders implement the fields they support. */
+  _scan?: ExperimentalScanOptions;
   core?: StrictLoaderOptions['core'];
   modules?: StrictLoaderOptions['modules'];
 

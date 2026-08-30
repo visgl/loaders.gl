@@ -110,6 +110,20 @@ const result = engine.query(table, {
 });
 ```
 
+For backends that schedule asynchronous or compiled work, use the experimental `queryAsync()`
+path. The built-in Arrow backend supports it, and synchronous custom backends receive an automatic
+compatibility wrapper:
+
+```ts
+const result = await engine.queryAsync(table, {
+  predicate: parseSQLPredicate("status = 'active'"),
+  limit: 100
+});
+```
+
+This remains an Arrow-in/Arrow-out boundary. GPU graph compilation and GPU-resident result
+ownership are backend-specific and are not implied by `queryAsync()`.
+
 The query is immutable and follows `filter -> project -> limit` semantics. Predicate columns do not
 need to appear in the result projection, and a limit counts only rows that survive filtering.
 
