@@ -67,6 +67,21 @@ and named scientific dimensions.
 | Multiscale image levels | Format-specific | Format-specific | Supported | Not assumed |
 | Spatial CRS and transform | Not inherent | Not inherent | Not required | Supported |
 | Named time/z/band selection | Array-dependent | Array-dependent | Supported | Supported |
+| SpatialData container discovery | Supported | Supported | Images and labels | Tables and geometries by reference |
+
+## SpatialData support
+
+| Element | On-disk representation | loaders.gl integration |
+| --- | --- | --- |
+| Images | OME-Zarr image group | `OMEZarrImageSource` through `createRasterSource()` |
+| Labels | OME-Zarr label group | `OMEZarrImageSource` through `createRasterSource()` |
+| Points | Partitioned Parquet dataset | Typed `parquet-dataset` descriptor and canonical payload URL |
+| Shapes | GeoParquet file | Typed `geoparquet` descriptor and canonical payload URL |
+| Tables | AnnData-Zarr group | Generic array access through `createTableArraySource()` |
+
+`SpatialDataSourceLoader` discovers these elements from consolidated metadata without materializing
+pixel, geometry, or annotation payloads. It retains element axes, coordinate transformations,
+format versions, and original attributes for downstream interoperability.
 
 ## Scan support
 

@@ -14,6 +14,7 @@ This module contains loaders for the Zarr format.
 - `OMEZarrSourceLoader` / `OMEZarrImageSource` for `createDataSource()` and `load()`
 - `GeoZarrSourceLoader` / `GeoZarrRasterSource` for georeferenced Zarr data variables
 - `loadZarrConsolidatedMetadata()` for probing consolidated Zarr roots
+- `SpatialDataSourceLoader` / `SpatialDataSource` for typed SpatialData element discovery
 
 ## GeoZarr SourceLoader
 
@@ -68,27 +69,20 @@ const raster = await source.getRaster({channels: [0, 1, 2]});
 
 ## Example: SpatialData-style root browsing
 
-This mirrors the split used in SpatialData.js: first browse consolidated metadata at the store root, then open an image group with the source loader.
+`SpatialDataSourceLoader` discovers typed elements and opens Zarr-backed images, labels, and AnnData
+arrays directly.
 
 ```ts
 import {createDataSource} from '@loaders.gl/core';
-import {loadZarrConsolidatedMetadata, OMEZarrSourceLoader} from '@loaders.gl/zarr';
+import {SpatialDataSourceLoader} from '@loaders.gl/zarr';
 
 const rootUrl = 'https://example.com/spatialdata.zarr';
-const consolidated = await loadZarrConsolidatedMetadata(rootUrl);
-
-console.log(consolidated.topLevelGroups);
-// ['images', 'labels', 'points', 'shapes', 'tables']
-console.log(consolidated.topLevelArrays);
-// []
-
-const imageSource = createDataSource(rootUrl, [OMEZarrSourceLoader], {
-  zarr: {
-    path: 'images/example-image'
-  },
-  omezarr: {}
-});
-
+const spatialDataSource = createDataSource(rootUrl, [SpatialDataSourceLoader]);
+const spatialDataMetadata = await spatialDataSource.getMetadata();
+const imageSource = await spatialDataSource.createRasterSource(
+  'image',
+  spatialDataMetadata.images[0].name
+);
 const imageMetadata = await imageSource.getMetadata();
 ```
 
