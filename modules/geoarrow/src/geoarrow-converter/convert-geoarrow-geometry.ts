@@ -3,6 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import * as arrow from 'apache-arrow';
+import {getGeoArrowDimensionSize} from '@math.gl/geoarrow';
 import {convertGeometryToWKB, convertGeometryToWKT} from '@loaders.gl/gis';
 import type {Geometry, Position} from '@loaders.gl/schema';
 import {convertGeoArrowGeometryToGeoJSON} from '../lib/geometry-converters/convert-geoarrow-to-geojson';
@@ -599,15 +600,13 @@ function tryDecodeWKBPointVector(
   }
   const coordinateSize = dimensionName
     ? getTargetDimension([], dimensionName)
-    : Math.max(...inspection.dimensions.map(getDimensionSize), 2);
-  if (inspection.dimensions.some(dimension => getDimensionSize(dimension) !== coordinateSize)) {
+    : Math.max(...inspection.dimensions.map(getGeoArrowDimensionSize), 2);
+  if (
+    inspection.dimensions.some(dimension => getGeoArrowDimensionSize(dimension) !== coordinateSize)
+  ) {
     return null;
   }
   return decodeWKBPointVector(column, coordinateSize as 2 | 3 | 4);
-}
-
-function getDimensionSize(dimension: GeoArrowDimension): number {
-  return dimension === 'xy' ? 2 : dimension === 'xyz' || dimension === 'xym' ? 3 : 4;
 }
 
 /** Uses the direct LineString kernel when WKB headers prove a uniform vector. */
@@ -624,8 +623,10 @@ function tryDecodeWKBLineStringVector(
   }
   const coordinateSize = options?.dimension
     ? getTargetDimension([], options.dimension)
-    : Math.max(...inspection.dimensions.map(getDimensionSize), 2);
-  if (inspection.dimensions.some(dimension => getDimensionSize(dimension) !== coordinateSize)) {
+    : Math.max(...inspection.dimensions.map(getGeoArrowDimensionSize), 2);
+  if (
+    inspection.dimensions.some(dimension => getGeoArrowDimensionSize(dimension) !== coordinateSize)
+  ) {
     return null;
   }
   return decodeWKBLineStringVector(column, coordinateSize as 2 | 3 | 4, options?.offsetType);

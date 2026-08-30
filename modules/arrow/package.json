@@ -83,7 +83,7 @@
     "@loaders.gl/schema-utils": "5.0.0-alpha.2",
     "@loaders.gl/wkt": "5.0.0-alpha.2",
     "@loaders.gl/worker-utils": "5.0.0-alpha.2",
-    "@math.gl/polygon": "4.2.0-alpha.6",
+    "@math.gl/polygon": "5.0.0-alpha.2",
     "apache-arrow": ">= 17.0.0"
   },
   "peerDependencies": {

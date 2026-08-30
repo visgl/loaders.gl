@@ -20,12 +20,13 @@ const TILE_SIZE = 512;
 const DEFAULT_EXTENT: Bounds = [-Infinity, -Infinity, Infinity, Infinity];
 
 /** Applies a model transform to an axis-aligned bounding box. */
-export function transformBox(bbox: Bounds, modelMatrix: Matrix4): Bounds {
+export function transformBox(bbox: Bounds, modelMatrix: readonly number[]): Bounds {
+  const matrix = new Matrix4(modelMatrix);
   const transformedCoords = [
-    modelMatrix.transformAsPoint([bbox[0], bbox[1]]),
-    modelMatrix.transformAsPoint([bbox[2], bbox[1]]),
-    modelMatrix.transformAsPoint([bbox[0], bbox[3]]),
-    modelMatrix.transformAsPoint([bbox[2], bbox[3]])
+    matrix.transformAsPoint([bbox[0], bbox[1]]),
+    matrix.transformAsPoint([bbox[2], bbox[1]]),
+    matrix.transformAsPoint([bbox[0], bbox[3]]),
+    matrix.transformAsPoint([bbox[2], bbox[3]])
   ];
   return [
     Math.min(...transformedCoords.map(item => item[0])),
@@ -119,7 +120,7 @@ function getCullBoundsInViewport(
 function getIndexingCoords(
   bbox: Bounds,
   scale: number,
-  modelMatrixInverse?: Matrix4 | null
+  modelMatrixInverse?: readonly number[] | null
 ): Bounds {
   if (modelMatrixInverse) {
     return transformBox(bbox, modelMatrixInverse).map(item => (item * scale) / TILE_SIZE) as Bounds;
@@ -158,7 +159,7 @@ function getIdentityTileIndices(
   z: number,
   tileSize: number,
   extent: Bounds,
-  modelMatrixInverse?: Matrix4 | null
+  modelMatrixInverse?: readonly number[] | null
 ): TileIndex[] {
   const bbox = getBoundingBox(viewport, null, extent);
   const scale = getScale(z, tileSize);

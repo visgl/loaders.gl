@@ -3,7 +3,9 @@
 // Copyright (c) vis.gl contributors
 
 import * as arrow from 'apache-arrow';
-import {getWKTDimension, getWKTGeometryType, parseWKBHeader, type WKBHeader} from '@loaders.gl/gis';
+import {getWKTDimension, getWKTGeometryType} from '@loaders.gl/gis';
+import {inspectWKBHeader} from '@math.gl/wkb';
+import type {WKBGeometryType} from '@math.gl/wkb';
 import type {GeoArrowEncoding, GeoParquetGeometryType} from '@loaders.gl/schema';
 import {
   getGeoArrowUnionDimension,
@@ -80,12 +82,9 @@ export function inspectGeoArrowVector(
     if (encoding === 'geoarrow.wkb') {
       const bytes = value as Uint8Array;
       try {
-        const header = parseWKBHeader(
-          new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength)
-        );
-        const dimension = header.coordinates;
-        dimensions.add(dimension);
-        geometryTypes.add(getGeometryTypeName(header, dimension));
+        const header = inspectWKBHeader(bytes);
+        dimensions.add(header.dimension);
+        geometryTypes.add(getGeometryTypeName(header.geometryType, header.dimension));
       } catch {
         malformedRowCount++;
       }
@@ -241,23 +240,12 @@ function getGeometryTypeNameFromCode(
 }
 
 function getGeometryTypeName(
-  header: WKBHeader,
+  geometryType: WKBGeometryType,
   dimension: 'xy' | 'xyz' | 'xym' | 'xyzm'
 ): GeoParquetGeometryType {
-  const names = [
-    'Point',
-    'LineString',
-    'Polygon',
-    'MultiPoint',
-    'MultiLineString',
-    'MultiPolygon',
-    'GeometryCollection'
-  ] as const;
-  const name = names[header.geometryType - 1];
-  if (!name) throw new Error(`Unsupported WKB geometry type ${header.geometryType}`);
   const suffix =
     dimension === 'xy' ? '' : ` ${dimension === 'xyz' ? 'Z' : dimension === 'xym' ? 'M' : 'ZM'}`;
-  return `${name}${suffix}` as GeoParquetGeometryType;
+  return `${geometryType}${suffix}` as GeoParquetGeometryType;
 }
 
 function inferNativeGeometryType(encoding: GeoArrowEncoding): GeoParquetGeometryType | null {

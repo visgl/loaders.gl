@@ -3,7 +3,6 @@
 // Copyright (c) vis.gl contributors
 
 import {RequestScheduler, type TileSource, type TileSourceMetadata} from '@loaders.gl/loader-utils';
-import type {Matrix4} from '@math.gl/core';
 import {Stats} from '@probe.gl/stats';
 import {SharedTile2DHeader} from './tile-2d-header';
 import type {Tileset2DAdapter, Tileset2DTileContext} from './adapter';
@@ -361,8 +360,8 @@ export class Tileset2D<DataT = any, ViewStateT = unknown> {
     maxZoom?: number;
     minZoom?: number;
     zRange: ZRange | null;
-    modelMatrix?: Matrix4 | null;
-    modelMatrixInverse?: Matrix4 | null;
+    modelMatrix?: readonly number[] | null;
+    modelMatrixInverse?: readonly number[] | null;
   }): TileIndex[] {
     const {adapter, tileSize, extent, zoomOffset} = this.opts;
     if (!adapter) {

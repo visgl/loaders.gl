@@ -3,6 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import * as arrow from 'apache-arrow';
+import {getGeoArrowDimensionSize} from '@math.gl/geoarrow';
 import type {GeoArrowDimension, GeoArrowEncoding, GeoParquetGeometryType} from '@loaders.gl/schema';
 import {
   getGeoArrowUnionDimension,
@@ -36,7 +37,7 @@ export function encodeGeoArrowWKBVector(
     const geometryValues = readGeometryValues(value, sourceEncoding);
     const effectiveDimension = dimension || getDimensionFromGeometryTypes(geometryTypes);
     const coordinateSize = effectiveDimension
-      ? getDimensionSize(effectiveDimension)
+      ? getGeoArrowDimensionSize(effectiveDimension)
       : findCoordinateSize(geometryValues) || getNativeCoordinateSize(column.type) || 2;
     if (!coordinateSize) return null;
     values.push(writeWKB(geometryValues, sourceEncoding, coordinateSize, effectiveDimension));
@@ -108,7 +109,7 @@ function encodeUnionValueToWKB(
   }
   const encoding = `geoarrow.${geometryKind.toLowerCase()}` as GeoArrowEncoding;
   const geometryValues = readGeometryValues(value, encoding);
-  return writeWKB(geometryValues, encoding, getDimensionSize(dimension), dimension);
+  return writeWKB(geometryValues, encoding, getGeoArrowDimensionSize(dimension), dimension);
 }
 
 function encodeGeometryCollectionToWKB(
@@ -138,7 +139,11 @@ function encodeGeometryCollectionToWKB(
   const bytes = new Uint8Array(byteLength);
   const dataView = new DataView(bytes.buffer);
   dataView.setUint8(0, 1);
-  dataView.setUint32(1, 7 + getDimensionOffset(getDimensionSize(dimension), dimension), true);
+  dataView.setUint32(
+    1,
+    7 + getDimensionOffset(getGeoArrowDimensionSize(dimension), dimension),
+    true
+  );
   dataView.setUint32(5, childBytes.length, true);
   let byteOffset = headerLength;
   for (const child of childBytes) {
@@ -480,10 +485,6 @@ function getDimensionOffset(coordinateSize: number, dimension?: GeoArrowDimensio
   if (dimension === 'xyz' || coordinateSize === 3) return 1000;
   if (coordinateSize === 4) return 3000;
   return 0;
-}
-
-function getDimensionSize(dimension: GeoArrowDimension): 2 | 3 | 4 {
-  return dimension === 'xy' ? 2 : dimension === 'xyzm' ? 4 : 3;
 }
 
 /** Returns a semantic dimension when every declared geometry type uses the same suffix. */

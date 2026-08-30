@@ -3,6 +3,8 @@
 // Copyright (c) vis.gl contributors
 
 import * as arrow from 'apache-arrow';
+import {getGeoArrowDimensionSize} from '@math.gl/geoarrow';
+import {inspectWKBHeader} from '@math.gl/wkb';
 import type {
   GeoArrowCoordinateLayout,
   GeoArrowDimension,
@@ -139,7 +141,7 @@ export function decodeWKBNativeVector(
   coordinates: GeoArrowCoordinateLayout = 'interleaved'
 ): arrow.Vector | null {
   const rows: (Uint8Array | null)[] = [];
-  let coordinateSize = dimensionName ? getDimensionSize(dimensionName) : 2;
+  let coordinateSize = dimensionName ? getGeoArrowDimensionSize(dimensionName) : 2;
   let inferredDimensionName: GeoArrowDimension | undefined;
   let nullCount = 0;
 
@@ -165,7 +167,7 @@ export function decodeWKBNativeVector(
   }
 
   if (dimensionName) {
-    coordinateSize = getDimensionSize(dimensionName);
+    coordinateSize = getGeoArrowDimensionSize(dimensionName);
   }
 
   const measured = createNativeBuffers(
@@ -1046,25 +1048,17 @@ function makeListData(data: arrow.Data, offsets: OffsetArray | number[]): arrow.
 }
 
 function readHeader(dataView: DataView, byteOffset: number): WKBHeader {
-  if (byteOffset + 5 > dataView.byteLength) throw new Error('Truncated WKB header');
-  const littleEndian = dataView.getUint8(byteOffset) === 1;
-  if (dataView.getUint8(byteOffset) > 1) throw new Error('Invalid WKB byte order');
-  const geometryCode = dataView.getUint32(byteOffset + 1, littleEndian);
-  const geometryType = geometryCode & 0x7;
-  if (geometryType < 1 || geometryType > 7) throw new Error('Unsupported WKB geometry type');
-  const hasZ = Boolean(geometryCode & 0x80000000);
-  const hasM = Boolean(geometryCode & 0x40000000);
-  const hasSrid = Boolean(geometryCode & 0x20000000);
-  let dimension: GeoArrowDimension = hasZ && hasM ? 'xyzm' : hasZ ? 'xyz' : hasM ? 'xym' : 'xy';
-  if (!hasZ && !hasM) {
-    const isoDimension = Math.floor((geometryCode - geometryType) / 1000);
-    dimension =
-      isoDimension === 1 ? 'xyz' : isoDimension === 2 ? 'xym' : isoDimension === 3 ? 'xyzm' : 'xy';
-  }
-  const coordinateSize = getDimensionSize(dimension);
-  const nextOffset = byteOffset + 5 + (hasSrid ? 4 : 0);
-  if (nextOffset > dataView.byteLength) throw new Error('Truncated WKB SRID');
-  return {geometryType, coordinateSize, dimension, littleEndian, byteOffset: nextOffset};
+  const header = inspectWKBHeader(dataView, byteOffset);
+  const geometryType = UNION_GEOMETRY_KINDS.indexOf(
+    header.geometryType as Exclude<UnionGeometryKind, 'GeometryCollection'>
+  );
+  return {
+    geometryType: header.geometryType === 'GeometryCollection' ? 7 : geometryType + 1,
+    coordinateSize: getGeoArrowDimensionSize(header.dimension),
+    dimension: header.dimension,
+    littleEndian: header.littleEndian,
+    byteOffset: header.bodyByteOffset
+  };
 }
 
 function readCount(dataView: DataView, byteOffset: number, littleEndian: boolean): number {
@@ -1123,10 +1117,6 @@ function skipGeometry(
 
 function getDataView(bytes: Uint8Array): DataView {
   return new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength);
-}
-
-function getDimensionSize(dimension: GeoArrowDimension): 2 | 3 | 4 {
-  return dimension === 'xy' ? 2 : dimension === 'xyzm' ? 4 : 3;
 }
 
 function getDimensionName(dimension: 2 | 3 | 4): GeoArrowDimension {

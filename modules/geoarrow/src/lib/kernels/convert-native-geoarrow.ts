@@ -3,6 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import * as arrow from 'apache-arrow';
+import {getGeoArrowDimensionSize} from '@math.gl/geoarrow';
 import type {
   GeoArrowCoordinateLayout,
   GeoArrowDimension,
@@ -57,7 +58,9 @@ export function convertNativeGeoArrowVector(
   const sourceDepth = getEncodingDepth(sourceEncoding);
   const targetDepth = getEncodingDepth(targetEncoding);
   const inferredDimension = inferVectorDimension(column);
-  const targetDimension = dimension ? getDimensionSize(dimension) : inferredDimension?.size || 2;
+  const targetDimension = dimension
+    ? getGeoArrowDimensionSize(dimension)
+    : inferredDimension?.size || 2;
   const targetDimensionName =
     dimension || inferredDimension?.name || getDimensionName(targetDimension);
   const coordinateType = getSourceCoordinateType(column.type) || new arrow.Float64();
@@ -130,7 +133,9 @@ export function convertNativeGeoArrowUnionVector(
   const targetDepth = getEncodingDepth(targetEncoding);
   const inferredDimension = inferUnionDimension(column.type);
   if (!dimension && !inferredDimension) return null;
-  const targetDimension = dimension ? getDimensionSize(dimension) : inferredDimension?.size || 2;
+  const targetDimension = dimension
+    ? getGeoArrowDimensionSize(dimension)
+    : inferredDimension?.size || 2;
   const targetDimensionName =
     dimension || inferredDimension?.name || getDimensionName(targetDimension);
   const nativeValues: (NativeCoordinates | null)[] = [];
@@ -261,7 +266,7 @@ function inferUnionDimension(
       type.typeIds[childIndex]
     );
     if (unionDimension) {
-      const dimension = {size: getDimensionSize(unionDimension), name: unionDimension};
+      const dimension = {size: getGeoArrowDimensionSize(unionDimension), name: unionDimension};
       if (inferredDimension && inferredDimension.name !== dimension.name) return null;
       inferredDimension = dimension;
       continue;
@@ -924,10 +929,6 @@ function getCoordinateNames(dimension: GeoArrowDimension): readonly string[] {
 
 function isCoordinate(value: NativeCoordinates): value is number[] {
   return Array.isArray(value) && (value.length === 0 || typeof value[0] === 'number');
-}
-
-function getDimensionSize(dimension: GeoArrowDimension): 2 | 3 | 4 {
-  return dimension === 'xy' ? 2 : dimension === 'xyzm' ? 4 : 3;
 }
 
 function isVectorLike(value: unknown): value is {length: number; get(index: number): unknown} {

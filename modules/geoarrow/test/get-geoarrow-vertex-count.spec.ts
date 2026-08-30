@@ -147,7 +147,7 @@ test('geoarrow#getGeoarrowVertexCount counts WKT rows and empty geometries', () 
 test('geoarrow#getGeoarrowVertexCount accepts Arrow view storage', () => {
   const wkt = arrow.vectorFromArray(['POINT (1 2)'], new arrow.Utf8View());
   const wkb = arrow.vectorFromArray(
-    [new Uint8Array([1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0])],
+    [new Uint8Array(convertGeometryToWKB({type: 'Point', coordinates: [0, 0]}))],
     new arrow.BinaryView()
   );
 
