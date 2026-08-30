@@ -165,6 +165,12 @@ export function createSource(
   const sourceLoader = getSourceLoader(loader);
   const lowerCaseUrl = typeof url === 'string' ? url.toLowerCase() : '';
 
+  if (url instanceof Blob && sourceLoader.id !== 'slpk' && sourceLoader.id !== '3tz') {
+    throw new Error(
+      'Tile3DSourceLayer Blob inputs require a 3TZ or SLPK archive loader so relative resources can be resolved.'
+    );
+  }
+
   if (sourceLoader.id === 'slpk' || lowerCaseUrl.endsWith('.slpk')) {
     const archiveConfig =
       sourceLoader.id === 'slpk'
