@@ -1,6 +1,5 @@
 import React, {useEffect, useRef, type ReactNode} from 'react';
 import Link from '@docusaurus/Link';
-import {useDoc} from '@docusaurus/plugin-content-docs/client';
 
 import styles from './doc-page-header.module.css';
 
@@ -52,7 +51,7 @@ export type DocPageHeaderProps = {
   notice?: ReactNode;
   /** Optional status and version badges moved out of the long-form reference content. */
   badges?: readonly ReactNode[];
-  /** Render the document identifier as the sole title, omitting the prose title line. */
+  /** @deprecated Page headers now always render exactly one title. */
   hideTitle?: boolean;
 };
 
@@ -77,10 +76,8 @@ export function DocPageHeader({
   links = [],
   logos = [],
   notice,
-  badges = [],
-  hideTitle = false
+  badges = []
 }: DocPageHeaderProps): ReactNode {
-  const {metadata} = useDoc();
   const headerReference = useRef<HTMLElement>(null);
 
   useEffect(() => {
@@ -101,8 +98,6 @@ export function DocPageHeader({
       badgeParagraph.remove();
     }
   }, []);
-
-  const renderIdentity = !hideTitle && metadata.title !== title;
 
   return (
     <section
@@ -137,18 +132,9 @@ export function DocPageHeader({
             </div>
           </div>
         </div>
-        {!renderIdentity ? (
-          <h1 className={styles.title} id="doc-page-header-title">
-            {title}
-          </h1>
-        ) : (
-          <>
-            <p className={styles.identity}>{metadata.title}</p>
-            <h1 className={styles.title} id="doc-page-header-title">
-              {title}
-            </h1>
-          </>
-        )}
+        <h1 className={styles.title} id="doc-page-header-title">
+          {title}
+        </h1>
         <p className={styles.description}>{renderDescription(description)}</p>
         {notice ? <div className={styles.notice}>{notice}</div> : null}
       </div>

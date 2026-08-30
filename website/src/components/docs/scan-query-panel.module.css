@@ -1,9 +1,10 @@
 .panel {
   margin: 14px 0;
   padding: 14px;
-  border: 1px solid #d8dee9;
-  border-radius: 8px;
-  background: #fbfcfe;
+  border: 1px solid rgba(173, 200, 219, 0.16);
+  border-radius: 14px;
+  background: rgba(6, 15, 27, 0.5);
+  color: #e4edf6;
 }
 
 .panelHeader {
@@ -16,7 +17,7 @@
 .panelHint,
 .fieldHint,
 .emptyState {
-  color: #667085;
+  color: rgba(219, 231, 244, 0.56);
 }
 
 .panelHint {
@@ -28,7 +29,7 @@
   flex-wrap: wrap;
   gap: 12px;
   margin-bottom: 10px;
-  color: #475467;
+  color: rgba(219, 231, 244, 0.72);
   font-size: 0.82rem;
 }
 
@@ -39,18 +40,18 @@
 }
 
 .supported {
-  color: #067647;
-  background: #ecfdf3;
+  color: #a8f0c7;
+  background: rgba(33, 143, 88, 0.18);
 }
 
 .unsupported {
-  color: #7a2e0e;
-  background: #fff4ed;
+  color: #ffccb8;
+  background: rgba(180, 72, 39, 0.18);
 }
 
 .supportMessage {
   margin: -4px 0 12px;
-  color: #7a2e0e;
+  color: #ffccb8;
   font-size: 0.82rem;
 }
 
@@ -81,14 +82,15 @@
   display: inline-flex;
   gap: 4px;
   padding: 5px 7px;
-  border: 1px solid #d0d5dd;
+  border: 1px solid rgba(173, 200, 219, 0.18);
   border-radius: 5px;
-  background: #ffffff;
+  background: rgba(13, 27, 46, 0.82);
+  color: #e4edf6;
   font-size: 0.82rem;
 }
 
 .columnType {
-  color: #667085;
+  color: rgba(219, 231, 244, 0.5);
   font-size: 0.7rem;
 }
 
@@ -103,12 +105,14 @@
 .select {
   min-width: 180px;
   padding: 7px;
-  border: 1px solid #d0d5dd;
+  border: 1px solid rgba(173, 200, 219, 0.2);
   border-radius: 5px;
+  background: rgba(7, 16, 29, 0.82);
+  color: #e4edf6;
 }
 
 .select {
-  background: #ffffff;
+  background: rgba(7, 16, 29, 0.82);
 }
 
 .applyButton {
@@ -117,13 +121,13 @@
   border: 0;
   border-radius: 5px;
   color: #ffffff;
-  background: #475467;
+  background: #3479d8;
   cursor: pointer;
 }
 
 .applyButton:hover:not(:disabled),
 .applyButton:focus-visible {
-  background: #344054;
+  background: #458be8;
 }
 
 .applyButton:focus-visible,
@@ -135,7 +139,7 @@
 }
 
 .applyButton:disabled {
-  background: #98a2b3;
+  background: #42526a;
   cursor: not-allowed;
 }
 

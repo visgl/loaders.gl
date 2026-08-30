@@ -9,13 +9,15 @@ import {CopcDocsTabs} from '@site/src/components/docs/copc-docs-tabs';
 import {CopcRangeGraphic} from '@site/src/components/docs/copc-range-graphic';
 import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
 import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
+import copcLogo from '../../images/logos/copc-logo-80.png';
 
 <DocPageHeader
   eyebrow="Point-cloud module"
-  title="Read only the points the view needs."
-  description="COPC packages a LAS point cloud as a range-readable LAZ file with an octree hierarchy. The module combines hierarchy selection, byte ranges, native TypeScript decoding, and Arrow output for cloud-hosted datasets."
+  title="@loaders.gl/copc"
+  description="Read only the points the view needs. COPC packages a LAS point cloud as a range-readable LAZ file with an octree hierarchy for selective cloud access."
   tone="violet"
   meta={['COPC 1.0', 'Cloud range reads', 'Arrow point tables']}
+  logos={[{alt: 'COPC', src: copcLogo}]}
   links={[
     {label: 'COPC format', to: '/docs/modules/copc/formats/copc'},
     {label: 'Scan architecture', to: '/docs/developer-guide/common-scan-architecture'}
@@ -24,8 +26,6 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
 
 See [Coordinate Reference Systems](/docs/developer-guide/coordinate-reference-systems) for the
 current COPC/LAS projection-record support and vertical/compound CRS roadmap.
-
-![copc-logo](../../images/logos/copc-logo-80.png)
 
 <p className="badges">
   <img src="https://img.shields.io/badge/From-v4.1-blue.svg?style=flat-square" alt="From-v4.1" />

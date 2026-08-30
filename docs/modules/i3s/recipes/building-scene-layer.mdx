@@ -5,7 +5,7 @@ hide_title: true
 page_style: designed
 ---
 
-import {ClientExample} from '@site/src/components';
+import {ClientExample, DocLiveExample} from '@site/src/components';
 import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
 import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
 
@@ -26,9 +26,9 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
   <img src="https://img.shields.io/badge/From-v3.2-blue.svg?style=flat-square" alt="From-v3.2" />
 </p>
 
-<div style={{height: '50vh'}}>
+<DocLiveExample label="I3S building scene layer">
   <ClientExample kind="i3s-building-scene-layer" />
-</div>
+</DocLiveExample>
 
 <DocOrientation
   eyebrow="What this recipe demonstrates"

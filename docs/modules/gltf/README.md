@@ -16,6 +16,7 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
   description="Bring glTF and GLB scenes into an application with linked assets, compressed meshes, typed traversal, and a standards-shaped result."
   tone="pink"
   meta={['glTF and GLB', 'Scenegraph data', 'Draco and meshopt']}
+  logos={[{alt: 'glTF', src: '/images/format-logos/gltf-logo.png'}]}
   links={[
     {label: 'glTF format', to: '/docs/modules/gltf/formats/gltf'},
     {label: 'GLTFLoader', to: '/docs/modules/gltf/api-reference/gltf-loader'},
@@ -24,8 +25,6 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
 />
 
 <GltfDocsTabs active="overview" />
-
-![logo](./images/gltf-small.png)
 
 <ThreeDDataFormatsGraphic />
 

@@ -6,18 +6,14 @@ page_style: designed
 ---
 
 import {CapabilityHero} from '@site/src/components/docs/capability-hero';
-import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
 import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
 import {ParquetLayoutGraphic} from '@site/src/components/docs/parquet-layout-graphic';
 
-<CapabilityHero capability="datasets" />
-
-<DocPageHeader
+<CapabilityHero
+  capability="datasets"
   eyebrow="Parquet source"
-  title="Ask a remote table for a bounded result."
-  description="ParquetSourceLoader discovers schema and row-group metadata, then reads only the columns and byte ranges needed for a request. Results arrive as Arrow batches through a reusable source."
-  tone="cyan"
-  meta={['Remote Parquet', 'Row-group selection', 'Arrow batches']}
+  title="ParquetSourceLoader"
+  description="Ask a remote table for a bounded result. The source discovers schema and row-group metadata, then reads only the columns and byte ranges needed for a request."
   links={[
     {label: 'Scan architecture', to: '/docs/developer-guide/common-scan-architecture'},
     {label: 'Parquet format', to: '/docs/modules/parquet/formats/parquet'}

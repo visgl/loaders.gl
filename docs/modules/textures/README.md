@@ -12,8 +12,8 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
 
 <DocPageHeader
   eyebrow="Texture module"
-  title="Ship one texture asset. Choose the GPU format at runtime."
-  description="The textures module handles containers, mip chains, arrays, cube maps, and compressed payloads. Basis Universal can be transcoded on the client to a format supported by the current device."
+  title="@loaders.gl/textures"
+  description="Ship one texture asset and choose the GPU format at runtime. Handle containers, mip chains, arrays, cube maps, and Basis Universal transcoding on the client."
   tone="cyan"
   meta={['KTX / KTX2', 'Basis Universal', 'GPU-oriented payloads']}
   links={[

@@ -8,18 +8,13 @@ page_style: designed
 import {ArrowDocsTabs} from '@site/src/components/docs/arrow-docs-tabs';
 import {ArrowJsStructureGraphic} from '@site/src/components/docs/arrow-js-structure-graphic';
 import {CapabilityHero} from '@site/src/components/docs/capability-hero';
-import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
 import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
 
-<CapabilityHero capability="arrow" />
-
-<DocPageHeader
+<CapabilityHero
+  capability="arrow"
   eyebrow="Arrow module / loader"
   title="ArrowLoader"
   description="Read Arrow IPC data and keep its typed, columnar structure as it enters your application."
-  hideTitle
-  tone="cyan"
-  meta={['Input: .arrow / .feather', 'Output: ArrowTable', 'Supports batches']}
   links={[
     {label: 'Arrow format', to: '/docs/modules/arrow/formats/arrow'},
     {label: 'ArrowWriter', to: '/docs/modules/arrow/api-reference/arrow-writer'}

@@ -1,4 +1,5 @@
-import React from 'react';
+import React, {useEffect, useRef} from 'react';
+import Link from '@docusaurus/Link';
 
 import {FEATURE_CARDS, RenderFeatureVisual} from '../home/features';
 import styles from './capability-hero.module.css';
@@ -15,11 +16,38 @@ const TONE_COLORS = {
 
 /**
  * Renders the welcoming capability card shared by a homepage tentpole and its documentation page.
- * @param {{capability: string}} props Component properties.
+ * @param {{capability: string, eyebrow?: string, title?: string, description?: string, links?: Array<{label: string, to: string}>, logos?: Array<{alt: string, href?: string, src: string}>}} props Component properties.
  * @returns {React.ReactElement} The documentation capability hero.
  */
-export function CapabilityHero({capability}) {
+export function CapabilityHero({
+  capability,
+  eyebrow,
+  title,
+  description,
+  links = [],
+  logos = []
+}) {
   const feature = FEATURE_CARDS.find((candidate) => candidate.id === capability);
+  const heroReference = useRef(null);
+
+  useEffect(() => {
+    const heroElement = heroReference.current;
+    const markdownElement = heroElement?.closest('.theme-doc-markdown');
+    const badgeTarget = heroElement?.querySelector('[data-capability-hero-badges]');
+
+    if (!markdownElement || !badgeTarget) {
+      return;
+    }
+
+    const badgeParagraphs = Array.from(markdownElement.children).filter(
+      (element) => element instanceof HTMLElement && element.classList.contains('badges')
+    );
+
+    for (const badgeParagraph of badgeParagraphs) {
+      badgeTarget.append(...Array.from(badgeParagraph.childNodes));
+      badgeParagraph.remove();
+    }
+  }, []);
 
   if (!feature) {
     throw new Error(`Unknown capability hero: ${capability}`);
@@ -31,15 +59,39 @@ export function CapabilityHero({capability}) {
     <section
       className={styles.hero}
       style={{'--card-accent': colors.accent, '--card-glow': colors.glow}}
-      aria-label={`${feature.eyebrow}: ${feature.title}`}
+      aria-labelledby="capability-hero-title"
+      ref={heroReference}
     >
       <div className={styles.body}>
-        <p className={styles.eyebrow}>
-          {feature.eyebrow}
-          {feature.badge && <span className={styles.badge}>{feature.badge}</span>}
-        </p>
-        <h2 className={styles.title}>{feature.title}</h2>
-        <p className={styles.description}>{feature.description}</p>
+        <div className={styles.topline}>
+          <p className={styles.eyebrow}>
+            {eyebrow || feature.eyebrow}
+            {feature.badge && <span className={styles.badge}>{feature.badge}</span>}
+          </p>
+          <div className={styles.toplineActions}>
+            {logos.length > 0 && (
+              <div className={styles.logos} aria-label="Standards and ecosystem logos">
+                {logos.map((logo) => {
+                  const image = <img src={logo.src} alt={logo.alt} />;
+                  return logo.href ? (
+                    <a className={styles.logoLink} href={logo.href} key={logo.src}>
+                      {image}
+                    </a>
+                  ) : (
+                    <span className={styles.logoLink} key={logo.src}>
+                      {image}
+                    </span>
+                  );
+                })}
+              </div>
+            )}
+            <div className={styles.statusBadges} data-capability-hero-badges aria-label="Page status" />
+          </div>
+        </div>
+        <h1 className={styles.title} id="capability-hero-title">
+          {title || feature.title}
+        </h1>
+        <p className={styles.description}>{description || feature.description}</p>
         <div className={styles.tags} aria-label="Capability highlights">
           {feature.tags.map((tag) => (
             <span className={styles.tag} key={tag}>
@@ -51,6 +103,15 @@ export function CapabilityHero({capability}) {
       <div className={styles.visual}>
         <RenderFeatureVisual type={feature.visual} wide />
       </div>
+      {links.length > 0 && (
+        <nav className={styles.links} aria-label="Related documentation">
+          {links.map((link) => (
+            <Link className={styles.link} key={link.to} to={link.to}>
+              {link.label} <span aria-hidden="true">↗</span>
+            </Link>
+          ))}
+        </nav>
+      )}
     </section>
   );
 }

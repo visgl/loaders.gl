@@ -11,16 +11,14 @@ import {ArrowJsStructureGraphic} from '@site/src/components/docs/arrow-js-struct
 import {ArrowScanLiveExample} from '@site/src/components/docs/arrow-scan-live-example';
 import {CapabilityHero} from '@site/src/components/docs/capability-hero';
 import {DocOrientation} from '@site/src/components/docs/designed-doc';
-import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
+import apacheLogo from '../../../images/logos/apache-logo.png';
 
-<CapabilityHero capability="arrow" />
-
-<DocPageHeader
+<CapabilityHero
+  capability="arrow"
   eyebrow="Binary columnar format"
   title="Apache Arrow"
   description="A typed table representation that keeps data compact, shareable, and ready for the next step in a JavaScript pipeline."
-  tone="cyan"
-  meta={['IPC file and stream', 'Typed columns', 'Worker-friendly']}
+  logos={[{alt: 'Apache Software Foundation', src: apacheLogo}]}
   links={[
     {label: 'Arrow module', to: '/docs/modules/arrow'},
     {label: 'Try Arrow', to: '/examples/table/arrow'}

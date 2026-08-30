@@ -9,13 +9,15 @@ import {CopcDocsTabs} from '@site/src/components/docs/copc-docs-tabs';
 import {CopcRangeGraphic} from '@site/src/components/docs/copc-range-graphic';
 import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
 import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
+import copcLogo from '../../../images/logos/copc-logo-80.png';
 
 <DocPageHeader
   eyebrow="COPC source"
-  title="Turn one cloud object into a selectable point source."
-  description="COPCSourceLoader connects the COPC hierarchy to loaders.gl's point-cloud source contract. It discovers metadata, selects nodes, range-reads LAZ chunks, and can emit normalized point tiles or Arrow batches."
+  title="COPCSourceLoader"
+  description="Turn one cloud object into a selectable point source. Discover metadata, select nodes, range-read LAZ chunks, and emit normalized point tiles or Arrow batches."
   tone="violet"
   meta={['COPC 1.0', 'Range requests', 'PointCloudTileset']}
+  logos={[{alt: 'COPC', src: copcLogo}]}
   links={[
     {label: 'COPC format', to: '/docs/modules/copc/formats/copc'},
     {label: 'Potree source', to: '/docs/modules/potree/api-reference/potree-source-loader'}

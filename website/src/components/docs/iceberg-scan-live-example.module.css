@@ -1,8 +1,11 @@
 .exampleFrame {
   margin: 28px 0;
   padding: 18px;
-  border: 1px solid var(--ifm-color-gray-400);
-  border-radius: 8px;
+  border: 1px solid rgba(112, 199, 255, 0.2);
+  border-radius: 18px;
+  background: linear-gradient(145deg, rgba(16, 30, 49, 0.97), rgba(10, 22, 38, 0.98));
+  box-shadow: 0 20px 54px rgba(0, 0, 0, 0.18);
+  color: #e4edf6;
 }
 
 .exampleHeader,
@@ -21,12 +24,13 @@
 .exampleTitle {
   margin: 0;
   font-size: 18px;
+  color: #f6f9fc;
 }
 
 .exampleDescription {
   max-width: 720px;
   margin: 6px 0 0;
-  color: var(--ifm-color-gray-700);
+  color: rgba(219, 231, 244, 0.72);
   font-size: 13px;
 }
 
@@ -34,7 +38,7 @@
   padding: 7px 10px;
   border: 1px solid rgba(76, 175, 80, 0.55);
   border-radius: 999px;
-  color: var(--ifm-color-gray-900);
+  color: #dff7e9;
   font-size: 12px;
   font-weight: 800;
   white-space: nowrap;
@@ -60,10 +64,10 @@
   flex: 1 1 0;
   min-width: 0;
   padding: 9px 6px;
-  border: 1px solid var(--ifm-color-gray-400);
+  border: 1px solid rgba(173, 200, 219, 0.16);
   border-radius: 8px;
-  background: var(--ifm-color-white);
-  color: var(--ifm-color-gray-900);
+  background: rgba(6, 15, 27, 0.5);
+  color: #e4edf6;
   font-size: 12px;
   font-weight: 800;
   text-align: center;
@@ -76,7 +80,7 @@
 
 .stageArrow {
   flex: 0 0 24px;
-  color: var(--ifm-color-gray-600);
+  color: rgba(219, 231, 244, 0.48);
   font-weight: 800;
   text-align: center;
 }
@@ -91,7 +95,7 @@
 
 .sourcePickerLabel,
 .queryInputLabel {
-  color: var(--ifm-color-gray-700);
+  color: rgba(219, 231, 244, 0.68);
   font-size: 11px;
   font-weight: 800;
   text-transform: uppercase;
@@ -101,7 +105,7 @@
 .queryHint,
 .planHeader span,
 .previewHeading span {
-  color: var(--ifm-color-gray-600);
+  color: rgba(219, 231, 244, 0.52);
   font-size: 10px;
 }
 
@@ -130,10 +134,10 @@
   min-width: 0;
   min-height: 62px;
   padding: 8px 9px;
-  border: 1px solid var(--ifm-color-gray-400);
+  border: 1px solid rgba(173, 200, 219, 0.2);
   border-radius: 6px;
-  background: var(--ifm-color-white);
-  color: var(--ifm-color-gray-900);
+  background: rgba(6, 15, 27, 0.68);
+  color: #e4edf6;
   font-family: var(--ifm-font-family-monospace);
   font-size: 12px;
   resize: vertical;
@@ -164,13 +168,13 @@
 
 .planPanel {
   padding: 10px 12px;
-  border: 1px solid var(--ifm-color-gray-300);
+  border: 1px solid rgba(173, 200, 219, 0.15);
   border-radius: 8px;
-  background: var(--ifm-color-gray-200);
+  background: rgba(6, 15, 27, 0.5);
 }
 
 .planHeader {
-  color: var(--ifm-color-gray-900);
+  color: #e4edf6;
   font-size: 12px;
 }
 
@@ -187,13 +191,13 @@
 }
 
 .metricValue {
-  color: var(--ifm-color-gray-900);
+  color: #f6f9fc;
   font-size: 15px;
   font-weight: 800;
 }
 
 .metricLabel {
-  color: var(--ifm-color-gray-700);
+  color: rgba(219, 231, 244, 0.68);
   font-size: 11px;
 }
 
@@ -202,20 +206,21 @@
   border: 1px solid rgba(211, 47, 47, 0.35);
   border-radius: 8px;
   background: rgba(211, 47, 47, 0.08);
-  color: var(--ifm-color-gray-900);
+  color: #f1d9df;
   font-size: 13px;
 }
 
 .previewFrame {
   overflow: hidden;
-  border: 1px solid var(--ifm-color-gray-400);
-  border-radius: 8px;
+  border: 1px solid rgba(173, 200, 219, 0.16);
+  border-radius: 14px;
+  background: rgba(6, 15, 27, 0.48);
 }
 
 .previewHeading {
   padding: 10px 12px;
-  background: var(--ifm-color-gray-200);
-  color: var(--ifm-color-gray-900);
+  background: rgba(26, 45, 70, 0.94);
+  color: #e4edf6;
   font-size: 12px;
 }
 
@@ -228,7 +233,7 @@
   min-width: 100%;
   margin: 0;
   border-collapse: collapse;
-  color: var(--ifm-color-gray-900);
+  color: #e4edf6;
   font-size: 11px;
   white-space: nowrap;
 }
@@ -236,13 +241,21 @@
 .previewTable th,
 .previewTable td {
   padding: 7px 9px;
-  border-bottom: 1px solid var(--ifm-color-gray-300);
+  border: 0 !important;
+  border-bottom: 1px solid rgba(165, 151, 184, 0.12) !important;
+  background: rgba(13, 27, 46, 0.82) !important;
+  color: #e4edf6 !important;
   text-align: left;
 }
 
 .previewTable th {
-  background: var(--ifm-color-white);
+  background: rgba(19, 39, 65, 0.94) !important;
+  color: #b9ddf7 !important;
   font-weight: 800;
+}
+
+.previewTable tbody tr:nth-child(even) td {
+  background: rgba(20, 35, 56, 0.86) !important;
 }
 
 .previewTable tr:last-child td {

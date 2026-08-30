@@ -25,9 +25,23 @@
 }
 
 .body {
-  max-width: 52%;
+  max-width: 58%;
   position: relative;
   z-index: 1;
+}
+
+.topline {
+  align-items: flex-start;
+  display: flex;
+  gap: 1rem;
+  justify-content: space-between;
+}
+
+.toplineActions {
+  align-items: flex-end;
+  display: flex;
+  flex-direction: column;
+  gap: 0.55rem;
 }
 
 .visual {
@@ -69,6 +83,42 @@
   max-width: 32rem;
 }
 
+.logos,
+.statusBadges {
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  justify-content: flex-end;
+}
+
+.logos img {
+  display: block;
+  filter: brightness(0) invert(1);
+  height: auto;
+  max-height: 2rem;
+  max-width: 7rem;
+  object-fit: contain;
+  opacity: 0.86;
+  width: auto;
+}
+
+.logoLink,
+.statusBadges a {
+  align-items: center;
+  display: inline-flex;
+  flex: 0 0 auto;
+}
+
+.statusBadges:empty {
+  display: none;
+}
+
+.statusBadges img {
+  display: block;
+  margin: 0;
+}
+
 .description {
   color: rgba(229, 240, 247, 0.72);
   font-size: 0.98rem;
@@ -94,6 +144,45 @@
   padding: 0.52rem 0.65rem;
 }
 
+.links {
+  align-items: stretch;
+  background: rgba(8, 18, 31, 0.66);
+  border: 1px solid rgba(206, 228, 240, 0.2);
+  border-radius: 0.7rem;
+  bottom: 1.5rem;
+  display: flex;
+  flex-wrap: wrap;
+  left: 2.1rem;
+  overflow: hidden;
+  position: absolute;
+  z-index: 2;
+}
+
+.link {
+  border-left: 1px solid rgba(206, 228, 240, 0.16);
+  color: var(--card-accent);
+  font-size: 0.72rem;
+  font-weight: 700;
+  line-height: 1;
+  padding: 0.58rem 0.72rem;
+  text-decoration: none;
+}
+
+.link:first-child {
+  border-left: 0;
+}
+
+.link:hover,
+.link:focus-visible {
+  background: color-mix(in srgb, var(--card-accent) 14%, transparent);
+  color: #fff;
+  text-decoration: none;
+}
+
+.hero:has(.links) {
+  padding-bottom: 5.1rem;
+}
+
 @media (max-width: 760px) {
   .hero {
     min-height: 0;
@@ -102,6 +191,17 @@
 
   .body {
     max-width: 100%;
+  }
+
+  .topline {
+    flex-direction: column;
+  }
+
+  .toplineActions,
+  .logos,
+  .statusBadges {
+    align-items: flex-start;
+    justify-content: flex-start;
   }
 
   .description {
@@ -118,6 +218,17 @@
   .visual > div {
     bottom: 0;
     right: 0;
+  }
+
+  .links {
+    bottom: auto;
+    left: auto;
+    margin-top: 1.25rem;
+    position: relative;
+  }
+
+  .hero:has(.links) {
+    padding-bottom: 26px;
   }
 }
 

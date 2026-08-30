@@ -9,18 +9,13 @@ import {ParquetDocsTabs} from '@site/src/components/docs/parquet-docs-tabs';
 import {ParquetLayoutGraphic} from '@site/src/components/docs/parquet-layout-graphic';
 import BrowserOnly from '@docusaurus/BrowserOnly';
 import {CapabilityHero} from '@site/src/components/docs/capability-hero';
-import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
 import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
 
-<CapabilityHero capability="columnar" />
-
-<DocPageHeader
+<CapabilityHero
+  capability="columnar"
   eyebrow="Parquet module / loader"
   title="ParquetLoader"
   description="Start with a familiar load call, then opt into Arrow output, batches, or the selective source API as the dataset grows."
-  hideTitle
-  tone="mint"
-  meta={['WASM-backed default', 'Arrow table option', 'Streaming batches']}
   links={[
     {label: 'Parquet format', to: '/docs/modules/parquet/formats/parquet'},
     {label: 'Parquet source', to: '/docs/modules/parquet/api-reference/parquet-source-loader'}
