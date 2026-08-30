@@ -10,7 +10,7 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
 
 <DocPageHeader
   eyebrow="Mapped Arrow table"
-  title="Keep Arrow columns. Add application-level keys."
+  title="MappedArrowTable"
   description="`MappedArrowTable` presents an `IndexedArrowTable` through a stable string-keyed view. Filtering, sorting, slicing, and concatenation remain table operations while keyed lookups stay predictable."
   tone="cyan"
   meta={['Indexed Arrow table', 'String-keyed lookup', 'Readonly view']}

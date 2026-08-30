@@ -6,20 +6,27 @@ page_style: designed
 ---
 
 import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
+import {DocLiveExample} from '@site/src/components/docs/doc-live-example';
 import {StructuredDataPathGraphic} from '@site/src/components/docs/structured-data-path-graphic';
 import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
+import {ClientExample} from '@site/src/components';
 
 <DocPageHeader
   eyebrow="Readable feature format"
-  title="Keep geometry and properties in one familiar object."
+  title="GeoJSON"
   description="GeoJSON represents geographic features as JSON objects with explicit geometry and application properties. It is easy to inspect, exchange, and connect to web mapping code."
   tone="cyan"
+  logos={[{alt: 'GeoJSON', src: '/images/format-logos/geojson-logo.svg'}]}
   meta={['RFC 7946', 'Feature collections', 'Human-readable']}
   links={[
     {label: 'JSON module', to: '/docs/modules/json'},
     {label: 'GeoJSON loader', to: '/docs/modules/json/api-reference/geojson-loader'}
   ]}
 />
+
+<DocLiveExample label="GeoJSON format map example" height="420px">
+  <ClientExample kind="geospatial" format="GeoJSON" />
+</DocLiveExample>
 
 <StructuredDataPathGraphic />
 

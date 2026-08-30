@@ -7,20 +7,27 @@ page_style: designed
 
 import {GeoTiffDocsTabs} from '@site/src/components/docs/geotiff-docs-tabs';
 import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
+import {DocLiveExample} from '@site/src/components/docs/doc-live-example';
 import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
 import {RasterWindowGraphic} from '@site/src/components/docs/raster-window-graphic';
+import {ClientExample} from '@site/src/components';
 
 <DocPageHeader
   eyebrow="Georeferenced raster format"
-  title="Keep the pixels and their location together."
+  title="GeoTIFF"
   description="GeoTIFF combines TIFF image storage with tags that describe the raster’s coordinate system, bounds, scale, and placement. Cloud Optimized GeoTIFF adds a layout that makes bounded reads practical."
   tone="mint"
+  logos={[{alt: 'Open Geospatial Consortium', src: '/images/format-logos/ogc-logo-transparent.png'}]}
   meta={['TIFF 6.0', 'GeoTIFF tags', 'COG range reads']}
   links={[
     {label: 'GeoTIFF module', to: '/docs/modules/geotiff'},
     {label: 'Scan architecture', to: '/docs/developer-guide/common-scan-architecture'}
   ]}
 />
+
+<DocLiveExample label="GeoTIFF raster format example" height="420px">
+  <ClientExample kind="geotiff" />
+</DocLiveExample>
 
 <GeoTiffDocsTabs active="format" />
 
@@ -44,8 +51,6 @@ import {RasterWindowGraphic} from '@site/src/components/docs/raster-window-graph
     <img src="https://img.shields.io/badge/Scan-Supported-2f855a.svg?style=flat-square" alt="Scan supported" />
   </a>
 </p>
-
-![ogc-logo](../../../images/logos/ogc-logo-60.png)
 
 - _[`@loaders.gl/geotiff`](/docs/modules/geotiff)_
 - _[OGC Standard](https://www.ogc.org/standard/geotiff/)_

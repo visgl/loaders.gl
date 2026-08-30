@@ -7,6 +7,7 @@ page_style: designed
 
 import {CapabilityHero} from '@site/src/components/docs/capability-hero';
 import {ParquetLayoutGraphic} from '@site/src/components/docs/parquet-layout-graphic';
+import {ParquetScanLiveExample} from '@site/src/components/docs/parquet-scan-live-example';
 import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
 
 <CapabilityHero
@@ -23,6 +24,8 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
     {label: 'Scan architecture', to: '/docs/developer-guide/common-scan-architecture'}
   ]}
 />
+
+<ParquetScanLiveExample />
 
 <p className="badges">
   <img src="https://img.shields.io/badge/From-v3.1-blue.svg?style=flat-square" alt="From-v3.1" />

@@ -10,7 +10,7 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
 
 <DocPageHeader
   eyebrow="GeoArrow geometry utility"
-  title="Turn WKB polygons into renderer-ready triangles."
+  title="triangulateWKBGeometryColumn"
   description="`triangulateWKBGeometryColumn` converts Polygon and MultiPolygon WKB values into Arrow columns for triangle indexes and source XY vertices, keeping one output row aligned with each input geometry."
   tone="cyan"
   meta={['GeoArrow WKB', 'Polygon triangulation', 'Arrow columns']}

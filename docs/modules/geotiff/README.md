@@ -7,20 +7,27 @@ page_style: designed
 
 import {GeoTiffDocsTabs} from '@site/src/components/docs/geotiff-docs-tabs';
 import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
+import {DocLiveExample} from '@site/src/components/docs/doc-live-example';
 import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
 import {RasterWindowGraphic} from '@site/src/components/docs/raster-window-graphic';
+import {ClientExample} from '@site/src/components';
 
 <DocPageHeader
   eyebrow="Raster module"
-  title="Read the raster window the application asked for."
+  title="@loaders.gl/geotiff"
   description="The GeoTIFF module handles georeferencing, tiled imagery, multiband data, and multiscale OME-TIFF. Its source APIs can select native windows and overviews before decoding the pixels."
   tone="orange"
+  logos={[{alt: 'Open Geospatial Consortium', src: '/images/format-logos/ogc-logo-transparent.png'}]}
   meta={['GeoTIFF / COG', 'OME-TIFF', 'Windowed raster reads']}
   links={[
     {label: 'GeoTIFF format', to: '/docs/modules/geotiff/formats/geotiff'},
     {label: 'CRS guide', to: '/docs/developer-guide/coordinate-reference-systems'}
   ]}
 />
+
+<DocLiveExample label="GeoTIFF raster source example" height="440px">
+  <ClientExample kind="geotiff" />
+</DocLiveExample>
 
 See [Coordinate Reference Systems](/docs/developer-guide/coordinate-reference-systems) for raster
 CRS discovery, current native-CRS behavior, and the raster-warping roadmap.

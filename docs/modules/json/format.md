@@ -11,7 +11,7 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
 
 <DocPageHeader
   eyebrow="Document and table format"
-  title="Start with JSON. Keep the next step open."
+  title="JSON"
   description="The JSON module handles arbitrary documents, row arrays, newline-delimited records, GeoJSON, and JSON output. Choose the result shape that matches the application instead of writing a new parser path for each variant."
   tone="blue"
   meta={['JSON and NDJSON', 'GeoJSON', 'Rows and Arrow tables']}

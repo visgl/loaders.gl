@@ -122,6 +122,8 @@ export const INITIAL_VIEW_STATE = {
 type AppProps = {
   /** Controls which examples are shown */
   format?: string;
+  /** Selects the initial loader for GeoParquet examples. */
+  parquetLoaderName?: ParquetLoaderName;
   /** Whether to hide the example controls, metadata, and descriptive overlay. */
   hideChrome?: boolean;
   /** Any informational text to display in the overlay */
@@ -150,7 +152,9 @@ type AppState = {
  */
 export default function App(props: AppProps = {}) {
   const [tableFormat, setTableFormat] = useState<TableFormat>('geoarrow');
-  const [parquetLoaderName, setParquetLoaderName] = useState<ParquetLoaderName>('parquet');
+  const [parquetLoaderName, setParquetLoaderName] = useState<ParquetLoaderName>(
+    props.parquetLoaderName ?? 'parquet'
+  );
   const previousTableFormat = useRef(tableFormat);
   const loadRequestIdRef = useRef(0);
   const availableExamples = useMemo(

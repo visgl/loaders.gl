@@ -6,20 +6,27 @@ page_style: designed
 ---
 
 import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
+import {DocLiveExample} from '@site/src/components/docs/doc-live-example';
 import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
 import {ServiceSourceGraphic} from '@site/src/components/docs/service-source-graphic';
+import {ClientExample} from '@site/src/components';
 
 <DocPageHeader
   eyebrow="OGC service module"
-  title="Treat geospatial services as data sources."
+  title="@loaders.gl/wms"
   description="The WMS module covers classic OGC Web Services, modern OGC APIs, and GML response parsing. It keeps capability discovery, request construction, and decoded results in explicit source contracts."
   tone="orange"
+  logos={[{alt: 'Open Geospatial Consortium', src: '/images/format-logos/ogc-logo-transparent.png'}]}
   meta={['WMS / WMTS', 'WFS / WCS', 'OGC APIs and GML']}
   links={[
     {label: 'Services module', to: '/docs/modules/services'},
     {label: 'Using sources', to: '/docs/developer-guide/using-sources'}
   ]}
 />
+
+<DocLiveExample label="OGC Web Map Service example" height="440px">
+  <ClientExample kind="wms" format="WMS" />
+</DocLiveExample>
 
 <ServiceSourceGraphic kind="ogc" />
 

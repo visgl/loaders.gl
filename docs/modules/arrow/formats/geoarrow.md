@@ -7,20 +7,27 @@ page_style: designed
 
 import {ArrowDocsTabs} from '@site/src/components/docs/arrow-docs-tabs';
 import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
+import {DocLiveExample} from '@site/src/components/docs/doc-live-example';
 import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
 import {GeoArrowFlowGraphic} from '@site/src/components/docs/geoarrow-flow-graphic';
+import {ClientExample} from '@site/src/components';
 
 <DocPageHeader
   eyebrow="Geospatial columnar format"
-  title="Put geometry columns on the Arrow path."
+  title="GeoArrow"
   description="GeoArrow defines the Arrow extension metadata and layouts that let geospatial features travel with typed attribute columns. It is a convention on top of Arrow, so a valid GeoArrow table remains an Arrow table."
   tone="cyan"
+  logos={[{alt: 'Apache Arrow', src: '/images/format-logos/apache-arrow-logo.png'}]}
   meta={['Apache Arrow extensions', 'Geometry columns', 'CRS metadata']}
   links={[
     {label: 'Arrow format', to: '/docs/modules/arrow/formats/arrow'},
     {label: 'CRS guide', to: '/docs/developer-guide/coordinate-reference-systems'}
   ]}
 />
+
+<DocLiveExample label="GeoArrow table map example" height="420px">
+  <ClientExample kind="geospatial" format="GeoArrow" />
+</DocLiveExample>
 
 See [Coordinate Reference Systems](/docs/developer-guide/coordinate-reference-systems) for
 GeoArrow CRS representations, column-specific metadata, and current preservation gaps.

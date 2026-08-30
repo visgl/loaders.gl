@@ -11,9 +11,10 @@ import {GeoPackageDocsTabs} from '@site/src/components/docs/geopackage-docs-tabs
 
 <DocPageHeader
   eyebrow="GeoPackage source"
-  title="Open a database file, then choose the table."
+  title="GeoPackageSource"
   description="`GeoPackageSource` exposes GeoPackage table metadata and reads a selected table into the common Arrow table shape. It keeps database discovery separate from the application’s table-processing path."
   tone="yellow"
+  logos={[{alt: 'Open Geospatial Consortium', src: '/images/format-logos/ogc-logo-transparent.png'}]}
   meta={['GeoPackage', 'Table discovery', 'Arrow output']}
   links={[
     {label: 'GeoPackage module', to: '/docs/modules/geopackage'},

@@ -9,6 +9,7 @@ import {ClientExample} from '@site/src/components';
 import {WmsDocsTabs} from '@site/src/components/docs/wms-docs-tabs';
 import {ServiceSourceGraphic} from '@site/src/components/docs/service-source-graphic';
 import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
+import {DocLiveExample} from '@site/src/components/docs/doc-live-example';
 import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
 
 <DocPageHeader
@@ -16,6 +17,7 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
   title="ArcGIS MapServer"
   description="Load cached or dynamically rendered ArcGIS maps through one TileSource, with automatic mode selection, normalized LOD metadata, and shared credentials."
   tone="violet"
+  logos={[{alt: 'ArcGIS', src: '/images/format-logos/arcgis-logo.svg'}]}
   meta={['MapServer', 'Cached or dynamic', 'TileSource']}
   links={[
     {label: 'Services module', to: '/docs/modules/services'},
@@ -23,6 +25,10 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
     {label: 'Tiles module', to: '/docs/modules/tiles'}
   ]}
 />
+
+<DocLiveExample label="ArcGIS MapServer example" height="440px">
+  <ClientExample kind="wms" format="ArcGIS MapServer" />
+</DocLiveExample>
 
 <WmsDocsTabs active="arcgis-map-server" />
 
@@ -128,12 +134,6 @@ const layer = new SourceLayer({
 ```
 
 `SourceLayer` uses the normalized tile grid and requests only visible tiles.
-
-## Live example
-
-<div style={{height: '520px'}}>
-  <ClientExample kind="wms" format="ArcGIS MapServer" />
-</div>
 
 ## References
 

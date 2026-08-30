@@ -6,14 +6,17 @@ page_style: designed
 ---
 
 import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
+import {DocLiveExample} from '@site/src/components/docs/doc-live-example';
 import {ServiceSourceGraphic} from '@site/src/components/docs/service-source-graphic';
 import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
+import {ClientExample} from '@site/src/components';
 
 <DocPageHeader
   eyebrow="Services module · ArcGIS 3D source"
   title="ArcGIS SceneServer"
   description="Connect an ArcGIS SceneServer layer to the loaders.gl 3D source runtime, delegating I3S mesh, point, and point-cloud decoding to the existing format implementations."
   tone="violet"
+  logos={[{alt: 'ArcGIS', src: '/images/format-logos/arcgis-logo.svg'}]}
   meta={['SceneServer', 'I3S', '3D source integration']}
   links={[
     {label: 'Services module', to: '/docs/modules/services'},
@@ -21,6 +24,10 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
     {label: 'I3S format', to: '/docs/modules/i3s/formats/i3s'}
   ]}
 />
+
+<DocLiveExample label="ArcGIS SceneServer I3S example" height="440px">
+  <ClientExample kind="i3s-building-scene-layer" />
+</DocLiveExample>
 
 <ServiceSourceGraphic kind="arcgis" />
 

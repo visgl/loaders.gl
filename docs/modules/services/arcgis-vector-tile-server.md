@@ -9,6 +9,7 @@ import {ClientExample} from '@site/src/components';
 import {WmsDocsTabs} from '@site/src/components/docs/wms-docs-tabs';
 import {ServiceSourceGraphic} from '@site/src/components/docs/service-source-graphic';
 import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
+import {DocLiveExample} from '@site/src/components/docs/doc-live-example';
 import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
 
 <DocPageHeader
@@ -16,6 +17,7 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
   title="ArcGIS VectorTileServer"
   description="Load ArcGIS vector tiles together with their tile grid, style, and sprite metadata, then expose raw or decoded MVT data to the application."
   tone="violet"
+  logos={[{alt: 'ArcGIS', src: '/images/format-logos/arcgis-logo.svg'}]}
   meta={['VectorTileServer', 'MVT and styles', 'VectorTileSource']}
   links={[
     {label: 'Services module', to: '/docs/modules/services'},
@@ -23,6 +25,10 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
     {label: 'MVT format', to: '/docs/modules/mvt/formats/mvt'}
   ]}
 />
+
+<DocLiveExample label="ArcGIS VectorTileServer example" height="440px">
+  <ClientExample kind="wms" format="ArcGIS VectorTileServer" />
+</DocLiveExample>
 
 <WmsDocsTabs active="arcgis-vector-tile-server" />
 
@@ -120,12 +126,6 @@ const layer = new SourceLayer({
 
 The ArcGIS style URL remains available in source metadata for applications that want to translate
 or selectively reuse the service's authored style.
-
-## Live example
-
-<div style={{height: '520px'}}>
-  <ClientExample kind="wms" format="ArcGIS VectorTileServer" />
-</div>
 
 ## References
 

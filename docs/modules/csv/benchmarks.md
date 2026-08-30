@@ -12,7 +12,7 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
 
 <DocPageHeader
   eyebrow="CSV module · live benchmark"
-  title="Measure the parse path your table actually uses."
+  title="CSV benchmarks"
   description="CSV performance depends on row width, quoting, conversion, and whether the application consumes one table or batches. This browser benchmark keeps the fixture and run visible so the result has useful context."
   tone="mint"
   meta={['CSV', 'Table output', 'Browser runtime']}

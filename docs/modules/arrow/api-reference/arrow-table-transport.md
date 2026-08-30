@@ -10,7 +10,7 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
 
 <DocPageHeader
   eyebrow="Arrow worker transport"
-  title="Move the table without moving unrelated memory."
+  title="Arrow table transport"
   description="The transport helpers prepare Arrow tables for structured clone or IPC transfer. They make sliced buffers safe to transfer and keep the schema explicit when data crosses a worker boundary."
   tone="blue"
   meta={['Worker transport', 'Transfer-safe buffers', 'Schema preservation']}

@@ -10,7 +10,7 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
 
 <DocPageHeader
   eyebrow="JSON module · streaming selection"
-  title="Point a streaming parser at the array that matters."
+  title="JSONPath"
   description="loaders.gl implements the JSONPath features needed to identify a streamable array while keeping parsing small and predictable. The selector describes a path, not a general-purpose query language."
   tone="yellow"
   meta={['RFC 9535 subset', 'Streaming arrays', 'Predictable selectors']}

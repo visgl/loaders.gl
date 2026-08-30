@@ -9,6 +9,7 @@ import {ClientExample} from '@site/src/components';
 import {WmsDocsTabs} from '@site/src/components/docs/wms-docs-tabs';
 import {ServiceSourceGraphic} from '@site/src/components/docs/service-source-graphic';
 import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
+import {DocLiveExample} from '@site/src/components/docs/doc-live-example';
 import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
 
 <DocPageHeader
@@ -16,6 +17,7 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
   title="ArcGIS FeatureServer"
   description="Query ArcGIS feature layers through the loaders.gl VectorSource contract, with normalized metadata, schemas, spatial requests, and GeoJSON, binary, or Arrow output."
   tone="violet"
+  logos={[{alt: 'ArcGIS', src: '/images/format-logos/arcgis-logo.svg'}]}
   meta={['FeatureServer', 'VectorSource', 'GeoJSON / binary / Arrow']}
   links={[
     {label: 'Services module', to: '/docs/modules/services'},
@@ -23,6 +25,10 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
     {label: 'Scan architecture', to: '/docs/developer-guide/common-scan-architecture'}
   ]}
 />
+
+<DocLiveExample label="ArcGIS FeatureServer example" height="440px">
+  <ClientExample kind="wms" format="ArcGIS Feature Server" />
+</DocLiveExample>
 
 <WmsDocsTabs active="arcgis-feature-server" />
 
@@ -157,12 +163,6 @@ const layer = new SourceLayer({
 ```
 
 The generic layer chooses a vector renderer and refreshes the query as the viewport changes.
-
-## Live example
-
-<div style={{height: '520px'}}>
-  <ClientExample kind="wms" format="ArcGIS Feature Server" />
-</div>
 
 ## References
 

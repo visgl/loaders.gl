@@ -7,20 +7,27 @@ page_style: designed
 
 import {GeoTiffDocsTabs} from '@site/src/components/docs/geotiff-docs-tabs';
 import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
+import {DocLiveExample} from '@site/src/components/docs/doc-live-example';
 import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
 import {RasterWindowGraphic} from '@site/src/components/docs/raster-window-graphic';
+import {ClientExample} from '@site/src/components';
 
 <DocPageHeader
   eyebrow="Cloud raster source"
-  title="Ask a remote raster for one useful window."
+  title="GeoTIFFSourceLoader"
   description="GeoTIFFSourceLoader discovers raster metadata, selects an overview and band set, and reads only the ranges needed for a viewport or bounded request."
   tone="mint"
+  logos={[{alt: 'Open Geospatial Consortium', src: '/images/format-logos/ogc-logo-transparent.png'}]}
   meta={['GeoTIFF and COG', 'Viewport-driven', 'HTTP ranges']}
   links={[
     {label: 'GeoTIFF format', to: '/docs/modules/geotiff/formats/geotiff'},
     {label: 'GeoTIFF module', to: '/docs/modules/geotiff'}
   ]}
 />
+
+<DocLiveExample label="Cloud-optimized GeoTIFF window example" height="440px">
+  <ClientExample kind="geotiff" />
+</DocLiveExample>
 
 <GeoTiffDocsTabs active="geotiffsource" />
 
@@ -43,8 +50,6 @@ import {RasterWindowGraphic} from '@site/src/components/docs/raster-window-graph
   <img src="https://img.shields.io/badge/From-v5.0-blue.svg?style=flat-square" alt="From-v5.0" />
   <img src="https://img.shields.io/badge/Status-Work--In--Progress-orange.svg?style=flat-square" alt="Status: Work-In-Progress" />
 </p>
-
-![ogc-logo](../../../images/logos/ogc-logo-60.png)
 
 `GeoTIFFSourceLoader` creates a viewport-driven raster source for GeoTIFF and Cloud Optimized GeoTIFF
 (COG) datasets.

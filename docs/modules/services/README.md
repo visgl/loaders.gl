@@ -6,20 +6,27 @@ page_style: designed
 ---
 
 import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
+import {DocLiveExample} from '@site/src/components/docs/doc-live-example';
 import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
 import {ServiceSourceGraphic} from '@site/src/components/docs/service-source-graphic';
+import {ClientExample} from '@site/src/components';
 
 <DocPageHeader
   eyebrow="Service sources"
   title="@loaders.gl/services"
   description="Treat remote service endpoints like other loaders.gl sources: discover capabilities, request only what is needed, and hand results to the application or renderer."
   tone="orange"
+  logos={[{alt: 'ArcGIS', src: '/images/format-logos/arcgis-logo.svg'}]}
   meta={['ArcGIS REST', 'Vector, raster, and tiles', 'Source contracts']}
   links={[
     {label: 'Using sources', to: '/docs/developer-guide/using-sources'},
     {label: 'Service catalog', to: '/docs'}
   ]}
 />
+
+<DocLiveExample label="ArcGIS feature service example" height="440px">
+  <ClientExample kind="wms" format="ArcGIS Feature Server" />
+</DocLiveExample>
 
 <ServiceSourceGraphic kind="arcgis" />
 

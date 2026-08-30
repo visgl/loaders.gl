@@ -11,7 +11,7 @@ import {DatasetDiscoveryGraphic} from '@site/src/components/docs/dataset-discove
 
 <DocPageHeader
   eyebrow="STAC source"
-  title="Find the right asset before downloading the data."
+  title="STACSourceLoader"
   description="STACSourceLoader handles static catalog traversal and API Item Search, returning metadata and asset links while leaving the selected file to its native format loader."
   tone="mint"
   meta={['Static catalogs', 'Item Search', 'Asset selection']}

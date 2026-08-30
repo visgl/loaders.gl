@@ -8,19 +8,26 @@ page_style: designed
 import {GeoPackageDocsTabs} from '@site/src/components/docs/geopackage-docs-tabs';
 import {DatasetDiscoveryGraphic} from '@site/src/components/docs/dataset-discovery-graphic';
 import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
+import {DocLiveExample} from '@site/src/components/docs/doc-live-example';
 import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
+import {ClientExample} from '@site/src/components';
 
 <DocPageHeader
   eyebrow="Portable geospatial package"
-  title="Carry feature tables and their metadata together."
+  title="GeoPackage"
   description="GeoPackage uses SQLite to package geospatial tables and metadata in one portable file. loaders.gl can discover a feature table and expose it through the common table shape."
   tone="orange"
+  logos={[{alt: 'Open Geospatial Consortium', src: '/images/format-logos/ogc-logo-transparent.png'}]}
   meta={['SQLite container', 'OGC standard', 'Feature tables']}
   links={[
     {label: 'GeoPackage module', to: '/docs/modules/geopackage'},
     {label: 'Scan architecture', to: '/docs/developer-guide/common-scan-architecture'}
   ]}
 />
+
+<DocLiveExample label="GeoPackage format example" height="420px">
+  <ClientExample kind="geospatial" format="GeoPackage" />
+</DocLiveExample>
 
 <GeoPackageDocsTabs active="overview" />
 
@@ -44,8 +51,6 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
     <img src="https://img.shields.io/badge/Scan-Supported-2f855a.svg?style=flat-square" alt="Scan supported" />
   </a>
 </p>
-
-![ogc-logo](../../../images/logos/ogc-logo-60.png)
 
 The `@loaders.gl/geopackage` module handles the OGC [GeoPackage](https://www.geopackage.org/) format.
 

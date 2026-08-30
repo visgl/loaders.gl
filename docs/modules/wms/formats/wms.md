@@ -8,19 +8,26 @@ page_style: designed
 import {WmsDocsTabs} from '@site/src/components/docs/wms-docs-tabs';
 import {ServiceSourceGraphic} from '@site/src/components/docs/service-source-graphic';
 import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
+import {DocLiveExample} from '@site/src/components/docs/doc-live-example';
 import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
+import {ClientExample} from '@site/src/components';
 
 <DocPageHeader
   eyebrow="OGC map-image service"
-  title="Ask a map service for the image the view needs."
+  title="WMS"
   description="WMS exposes georeferenced map images through capabilities, layer, style, dimension, and CRS parameters. loaders.gl keeps service discovery and image retrieval in a source API suitable for browser maps."
   tone="mint"
+  logos={[{alt: 'Open Geospatial Consortium', src: '/images/format-logos/ogc-logo-transparent.png'}]}
   meta={['WMS 1.3.0', 'GetCapabilities', 'GetMap and feature info']}
   links={[
     {label: 'WMS module', to: '/docs/modules/wms'},
     {label: 'WMTS format', to: '/docs/modules/wms/formats/wmts'}
   ]}
 />
+
+<DocLiveExample label="WMS map service example" height="440px">
+  <ClientExample kind="wms" format="WMS" />
+</DocLiveExample>
 
 <WmsDocsTabs active="wms" />
 
@@ -38,8 +45,6 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
     {label: 'Render', value: 'SourceLayer-compatible image tiles'}
   ]}
 />
-
-![ogc-logo](../../../images/logos/ogc-logo-60.png)
 
 - _[`@loaders.gl/wms`](/docs/modules/wms)_
 - _[Wikipedia article](https://en.wikipedia.org/wiki/Web_Map_Service)_
