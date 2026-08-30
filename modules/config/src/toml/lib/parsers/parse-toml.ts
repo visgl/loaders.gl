@@ -182,10 +182,18 @@ class TOMLValueParser {
       return parseTOMLInteger(normalized, Number.parseInt(normalized, 16), this.options);
     }
     if (/^[+-]?0o[0-7]+$/i.test(normalized)) {
-      return parseTOMLInteger(normalized, Number.parseInt(normalized, 8), this.options);
+      return parseTOMLInteger(
+        normalized,
+        Number.parseInt(normalized.replace(/^([+-]?)0o/i, '$1'), 8),
+        this.options
+      );
     }
     if (/^[+-]?0b[01]+$/i.test(normalized)) {
-      return parseTOMLInteger(normalized, Number.parseInt(normalized, 2), this.options);
+      return parseTOMLInteger(
+        normalized,
+        Number.parseInt(normalized.replace(/^([+-]?)0b/i, '$1'), 2),
+        this.options
+      );
     }
     if (/^[+-]?\d+$/.test(normalized)) {
       return parseTOMLInteger(normalized, Number(normalized), this.options);

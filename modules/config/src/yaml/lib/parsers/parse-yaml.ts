@@ -32,7 +32,7 @@ class YAMLParser {
   /** Parses the document root. */
   parse(): unknown {
     this.skipBlankLines();
-    if (this.lines.length === 0) {
+    if (this.lineIndex >= this.lines.length) {
       return null;
     }
     const value = this.parseBlock(this.lines[this.lineIndex].indent);
@@ -476,10 +476,10 @@ class YAMLFlowParser {
       return Number.parseInt(normalized, 16);
     }
     if (/^[-+]?0o[0-7]+$/i.test(normalized)) {
-      return Number.parseInt(normalized, 8);
+      return Number.parseInt(normalized.replace(/^([+-]?)0o/i, '$1'), 8);
     }
     if (/^[-+]?0b[01]+$/i.test(normalized)) {
-      return Number.parseInt(normalized, 2);
+      return Number.parseInt(normalized.replace(/^([+-]?)0b/i, '$1'), 2);
     }
     if (/^[-+]?(?:[0-9]+(?:\.[0-9]*)?|\.[0-9]+)(?:e[-+]?[0-9]+)?$/i.test(normalized)) {
       if (this.options.intAsBigInt && /^[-+]?\d+$/.test(normalized)) {

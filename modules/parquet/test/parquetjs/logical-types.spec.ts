@@ -10,20 +10,31 @@ import {decodeSchema} from '../../src/parquetjs/parser/decoders';
 import {toPrimitive} from '../../src/parquetjs/schema/types';
 import {
   ConvertedType,
+  BsonType,
+  DateType,
   DecimalType,
   EdgeInterpolationAlgorithm,
+  EnumType,
   FieldRepetitionType,
   Float16Type,
   GeographyType,
+  GeometryType,
   IntType,
+  JsonType,
   ListType,
   LogicalType,
+  MapType,
+  MicroSeconds,
   NanoSeconds,
+  NullType,
   SchemaElement,
+  StringType,
+  TimeType,
   TimeUnit,
   TimestampType,
   Type,
-  UUIDType
+  UUIDType,
+  VariantType
 } from '../../src/parquetjs/parquet-thrift';
 
 const REQUIRED = FieldRepetitionType.REQUIRED;
@@ -185,6 +196,192 @@ describe('Parquet 2.13 logical type schema decoding', () => {
       arrow.Utf8,
       arrow.Float16
     ]);
+  });
+
+  test('decodes the complete modern logical-type union', () => {
+    const logicalTypes = [
+      LogicalType.fromSTRING(new StringType()),
+      LogicalType.fromMAP(new MapType()),
+      LogicalType.fromLIST(new ListType()),
+      LogicalType.fromENUM(new EnumType()),
+      LogicalType.fromDATE(new DateType()),
+      LogicalType.fromTIME(
+        new TimeType({isAdjustedToUTC: true, unit: TimeUnit.fromMICROS(new MicroSeconds())})
+      ),
+      LogicalType.fromUNKNOWN(new NullType()),
+      LogicalType.fromJSON(new JsonType()),
+      LogicalType.fromBSON(new BsonType()),
+      LogicalType.fromUUID(new UUIDType()),
+      LogicalType.fromFLOAT16(new Float16Type()),
+      LogicalType.fromVARIANT(new VariantType({specification_version: 2})),
+      LogicalType.fromGEOMETRY(new GeometryType({crs: 'OGC:CRS84'})),
+      LogicalType.fromGEOGRAPHY(new GeographyType({crs: 'OGC:CRS84'}))
+    ];
+    const expectedTypes = [
+      'UTF8',
+      'BYTE_ARRAY',
+      'BYTE_ARRAY',
+      'ENUM',
+      'DATE',
+      'TIME_MICROS',
+      'UNKNOWN',
+      'JSON',
+      'BSON',
+      'UUID',
+      'FLOAT16',
+      'VARIANT',
+      'GEOMETRY',
+      'GEOGRAPHY'
+    ];
+    const elements = logicalTypes.map(
+      (logicalType, index) =>
+        new SchemaElement({
+          name: `field${index}`,
+          type: Type.BYTE_ARRAY,
+          repetition_type:
+            index === 0
+              ? FieldRepetitionType.OPTIONAL
+              : index === 1
+                ? FieldRepetitionType.REPEATED
+                : REQUIRED,
+          logicalType
+        })
+    );
+
+    const {schema} = decodeSchema(
+      [new SchemaElement({name: 'schema', num_children: elements.length}), ...elements],
+      1,
+      elements.length
+    );
+    expect(Object.values(schema).map(field => field.type)).toEqual(expectedTypes);
+    expect(schema.field0.optional).toBe(true);
+    expect(schema.field1.repeated).toBe(true);
+    expect(schema.field11.logicalType).toEqual({type: 'VARIANT', specificationVersion: 2});
+    expect(schema.field12.logicalType).toEqual({type: 'GEOMETRY', crs: 'OGC:CRS84'});
+    expect(schema.field13.logicalType).toEqual({
+      type: 'GEOGRAPHY',
+      crs: 'OGC:CRS84',
+      algorithm: undefined
+    });
+  });
+
+  test('decodes every legacy converted-type annotation', () => {
+    const convertedTypes = [
+      ConvertedType.UTF8,
+      ConvertedType.MAP,
+      ConvertedType.MAP_KEY_VALUE,
+      ConvertedType.LIST,
+      ConvertedType.ENUM,
+      ConvertedType.DECIMAL,
+      ConvertedType.DATE,
+      ConvertedType.TIME_MILLIS,
+      ConvertedType.TIME_MICROS,
+      ConvertedType.TIMESTAMP_MILLIS,
+      ConvertedType.TIMESTAMP_MICROS,
+      ConvertedType.UINT_8,
+      ConvertedType.UINT_16,
+      ConvertedType.UINT_32,
+      ConvertedType.UINT_64,
+      ConvertedType.INT_8,
+      ConvertedType.INT_16,
+      ConvertedType.INT_32,
+      ConvertedType.INT_64,
+      ConvertedType.JSON,
+      ConvertedType.BSON
+    ];
+    const elements = convertedTypes.map(
+      (convertedType, index) =>
+        new SchemaElement({
+          name: `legacy${index}`,
+          type: index === 5 ? Type.FIXED_LEN_BYTE_ARRAY : Type.BYTE_ARRAY,
+          type_length: index === 5 ? 8 : undefined,
+          repetition_type: REQUIRED,
+          converted_type: convertedType,
+          precision: 12,
+          scale: 2
+        })
+    );
+
+    const {schema} = decodeSchema(
+      [new SchemaElement({name: 'schema', num_children: elements.length}), ...elements],
+      1,
+      elements.length
+    );
+    expect(Object.values(schema).map(field => field.logicalType?.type)).toEqual([
+      'STRING',
+      'MAP',
+      'MAP',
+      'LIST',
+      'ENUM',
+      'DECIMAL',
+      'DATE',
+      'TIME',
+      'TIME',
+      'TIMESTAMP',
+      'TIMESTAMP',
+      'INTEGER',
+      'INTEGER',
+      'INTEGER',
+      'INTEGER',
+      'INTEGER',
+      'INTEGER',
+      'INTEGER',
+      'INTEGER',
+      'JSON',
+      'BSON'
+    ]);
+    expect(schema.legacy5).toMatchObject({type: 'DECIMAL_FIXED_LEN_BYTE_ARRAY', precision: 12, scale: 2});
+    expect(schema.legacy11.logicalType).toEqual({type: 'INTEGER', bitWidth: 8, isSigned: false});
+    expect(schema.legacy18.logicalType).toEqual({type: 'INTEGER', bitWidth: 64, isSigned: true});
+  });
+
+  test('rejects malformed logical schema annotations', () => {
+    expect(() =>
+      decodeSchema(
+        [
+          new SchemaElement({name: 'schema', num_children: 1}),
+          new SchemaElement({
+            name: 'invalid',
+            type: Type.INT32,
+            repetition_type: 99 as FieldRepetitionType
+          })
+        ],
+        1,
+        1
+      )
+    ).toThrow('Invalid ENUM value');
+    expect(() =>
+      decodeSchema(
+        [
+          new SchemaElement({name: 'schema', num_children: 1}),
+          new SchemaElement({
+            name: 'invalid',
+            type: Type.INT32,
+            repetition_type: REQUIRED,
+            logicalType: LogicalType.fromINTEGER(new IntType({bitWidth: 24, isSigned: true}))
+          })
+        ],
+        1,
+        1
+      )
+    ).toThrow('invalid INTEGER bit width');
+    expect(() =>
+      decodeSchema(
+        [
+          new SchemaElement({name: 'schema', num_children: 1}),
+          new SchemaElement({
+            name: 'invalid',
+            type: Type.INT64,
+            repetition_type: REQUIRED,
+            logicalType: LogicalType.fromTIME(
+              new TimeType({isAdjustedToUTC: false, unit: new TimeUnit({})})
+            )
+          })
+        ],
+        1,
+        1
+      )
+    ).toThrow('Cannot read a TUnion with no set value');
   });
 });
 
