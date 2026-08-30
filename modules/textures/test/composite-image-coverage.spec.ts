@@ -5,6 +5,8 @@
 import {expect, test} from 'vitest';
 import {
   getCompositeImageUrlTree,
+  loadCompositeImageManifest,
+  loadCompositeImageMember,
   normalizeCompositeImageOptions,
   parseCompositeImageManifest,
   resolveCompositeImageUrl,
@@ -111,4 +113,66 @@ test('composite image parser reports a valid but unexpected shape', async () => 
       'image-texture'
     )
   ).rejects.toThrow('Expected image-texture manifest, got image-texture-array');
+});
+
+test('composite image loading materializes every texture shape through loader context', async () => {
+  const requestedUrls: string[] = [];
+  const context = {
+    baseUrl: 'https://example.com/textures',
+    fetch: async (url: string) => {
+      requestedUrls.push(String(url));
+      return new Response(new Uint8Array([1, 2, 3]), {
+        headers: {'content-type': 'image/png'}
+      });
+    },
+    coreApi: {},
+    _parse: async () => new ImageData(8, 4)
+  } as any;
+  const cubeFaces = {
+    right: 'right.png',
+    left: 'left.png',
+    top: 'top.png',
+    bottom: 'bottom.png',
+    front: 'front.png',
+    back: 'back.png'
+  };
+  const manifests = [
+    {shape: 'image-texture', image: 'single.png'},
+    {shape: 'image-texture-array', layers: ['one.png', ['two-0.png', 'two-1.png']]},
+    {shape: 'image-texture-cube', faces: cubeFaces},
+    {shape: 'image-texture-cube-array', layers: [{faces: cubeFaces}, {faces: cubeFaces}]}
+  ] as const;
+  const expectedTypes = ['2d', '2d-array', 'cube', 'cube-array'];
+
+  for (let index = 0; index < manifests.length; index++) {
+    const texture = await loadCompositeImageManifest(manifests[index] as any, {}, context);
+    expect(texture.type).toBe(expectedTypes[index]);
+    expect(texture.format).toBe('rgba8unorm');
+  }
+  expect(requestedUrls.length).toBeGreaterThan(10);
+});
+
+test('composite image templates derive automatic mip counts from the level-zero image', async () => {
+  const context = {
+    baseUrl: 'https://example.com/textures',
+    fetch: async () => new Response(new Uint8Array([1])),
+    coreApi: {},
+    _parse: async () => new ImageData(8, 4)
+  } as any;
+  const urls = await getCompositeImageUrlTree(
+    {shape: 'image-texture', template: 'level-{lod}.png', mipLevels: 'auto'} as any,
+    {},
+    context
+  );
+  expect(urls).toEqual(['level-0.png', 'level-1.png', 'level-2.png', 'level-3.png']);
+
+  const member = await loadCompositeImageMember(
+    'direct.png',
+    {core: {baseUrl: '/root/a.json'}},
+    {
+      ...context,
+      baseUrl: undefined
+    }
+  );
+  expect(member).toBeInstanceOf(ImageData);
 });
