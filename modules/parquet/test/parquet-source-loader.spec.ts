@@ -11,6 +11,7 @@ import type {ObjectRowTable} from '@loaders.gl/schema';
 import {
   PARQUET_SOURCE_CAPABILITIES,
   type ParquetBatch,
+  type ParquetEncodedPageBatch,
   ParquetJSWriter,
   ParquetSourceLoader,
   type ParquetSourceLoaderOptions,
@@ -318,6 +319,57 @@ test('ParquetSource#read selects row groups and columns with exact provenance', 
     )).toBeTruthy();
   await source.close();
   });
+
+test('ParquetSource#readPages exposes projected and residual-filter pages without value decoding', async () => {
+  const fixture = await createSelectiveFixture();
+  const source = new ParquetSource(new Blob([fixture]), {core: {worker: false}});
+  const batches = await collectEncodedPageBatches(
+    source.readPages({
+      rowGroups: [1],
+      columns: ['source_id'],
+      predicate: {op: '>=', args: [{property: 'x'}, 2]}
+    })
+  );
+
+  expect(batches).toHaveLength(1);
+  expect(batches[0].shape).toBe('parquet-encoded-pages');
+  expect(batches[0].rowGroup.index).toBe(1);
+  expect(batches[0].projectedColumns).toEqual(['source_id']);
+  expect(batches[0].filterColumns).toEqual(['x']);
+  expect(batches[0].columns.map(column => column.path[0]).sort()).toEqual(['source_id', 'x']);
+  expect(batches[0].residualFilter?.predicate).toEqual({
+    op: '>=',
+    args: [{property: 'x'}, 2]
+  });
+  for (const column of batches[0].columns) {
+    expect(column.pages.length).toBeGreaterThan(0);
+    expect(column.pages.every(page => page.compressionState === 'decompressed')).toBeTruthy();
+    expect(column.pages.every(page => page.values !== undefined)).toBeTruthy();
+  }
+  await source.close();
+});
+
+test('ParquetSource#readPages preserves requested compression for a downstream GPU decoder', async () => {
+  const fixture = await loadFixture(
+    '@loaders.gl/parquet/test/data/apache/good/lz4_raw_compressed.parquet'
+  );
+  const source = new ParquetSource(new Blob([fixture]), {core: {worker: false}});
+  const schema = await source.getSchema();
+  const columnName = schema.fields[0].name;
+  const batches = await collectEncodedPageBatches(
+    source.readPages({columns: [columnName], preserveCompression: ['LZ4_RAW']})
+  );
+  const column = batches[0].columns[0];
+
+  expect(column.compression).toBe('LZ4_RAW');
+  expect(column.pages.some(page => page.compressionState === 'compressed')).toBeTruthy();
+  expect(
+    column.pages
+      .filter(page => page.type === 'data-v1' && page.compressionState === 'compressed')
+      .every(page => page.values === undefined)
+  ).toBeTruthy();
+  await source.close();
+});
 
 test('ParquetSource#executeScanPlan reuses selected row groups', async () => {
   const fixture = await createSelectiveFixture();
@@ -759,6 +811,15 @@ async function collectParquetBatches(batches: AsyncIterable<ParquetBatch>): Prom
   for await (const batch of batches) {
     result.push(batch);
   }
+  return result;
+}
+
+/** Collects deferred page batches for concise assertions. */
+async function collectEncodedPageBatches(
+  batches: AsyncIterable<ParquetEncodedPageBatch>
+): Promise<ParquetEncodedPageBatch[]> {
+  const result: ParquetEncodedPageBatch[] = [];
+  for await (const batch of batches) result.push(batch);
   return result;
 }
 

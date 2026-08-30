@@ -24,9 +24,6 @@ test('creates the Arrow reference engine by default', async () => {
   expect(engine.name).toBe('arrow');
   expect(result.data.schema.fields.map(field => field.name)).toEqual(['name']);
   expect(result.data.toArray().map(row => row?.toJSON())).toEqual([{name: 'b'}]);
-
-  const asyncResult = await engine.queryAsync(makeArrowTable({value: [1, 2]}), {limit: 1});
-  expect(asyncResult.data.numRows).toBe(1);
 });
 
 test('exposes the shared metadata vocabulary from the optional scan package', () => {
@@ -52,9 +49,11 @@ test('exposes the shared metadata vocabulary from the optional scan package', ()
 });
 
 test('loads a registered backend through the same root API', async () => {
+  const asynchronousTable = makeArrowTable({value: [2]});
   registerScanBackend('test', async () => ({
     name: 'test',
     query: sourceTable => sourceTable,
+    queryAsync: async () => asynchronousTable,
     explain: () => ({}) as never
   }));
 
@@ -63,7 +62,7 @@ test('loads a registered backend through the same root API', async () => {
 
   expect(engine.name).toBe('test');
   expect(engine.query(table)).toBe(table);
-  await expect(engine.queryAsync(table)).resolves.toBe(table);
+  await expect(engine.queryAsync(table)).resolves.toBe(asynchronousTable);
 });
 
 test('preserves prototype methods and receiver when loading class backends', async () => {

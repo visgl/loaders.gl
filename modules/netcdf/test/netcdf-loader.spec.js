@@ -1,7 +1,7 @@
 // loaders.gl
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
-import {describe, it, expect} from 'test/utils/expect-assertions';
+import {describe, expect, it} from 'vitest';
 import {NetCDFLoader} from '@loaders.gl/netcdf';
 import {load} from '@loaders.gl/core';
 const DATA_PATH = `@loaders.gl/netcdf/test/data`;

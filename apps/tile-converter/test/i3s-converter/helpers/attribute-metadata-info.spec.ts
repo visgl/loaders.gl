@@ -1,9 +1,7 @@
-import test from 'test/utils/vitest-tape';
+import {expect, test} from 'vitest';
 import {AttributeMetadataInfo} from '../../../src/i3s-converter/helpers/attribute-metadata-info';
-
-test('tile-converter(i3s)#createPopupInfo - Should create popup info', async t => {
+test('tile-converter(i3s)#createPopupInfo - Should create popup info', async () => {
   const attributeNames = ['OBJECTID', 'color', 'name', 'opt_uint8'];
-
   const popupInfoExpected = {
     title: '{OBJECTID}',
     mediaInfos: [],
@@ -66,22 +64,19 @@ test('tile-converter(i3s)#createPopupInfo - Should create popup info', async t =
     ],
     expressionInfos: []
   };
-
   const attributeMetadataInfo: AttributeMetadataInfo = new AttributeMetadataInfo();
   // @ts-expect-error
   // Calling a private method
   const popupInfo = attributeMetadataInfo.createPopupInfo(attributeNames);
-  t.deepEqual(popupInfo, popupInfoExpected, 'popupInfo');
+  expect(popupInfo, 'popupInfo').toEqual(popupInfoExpected);
 });
-
-test('tile-converter(i3s)#createStorageAttributes - Should create Attribute storage info', async t => {
+test('tile-converter(i3s)#createStorageAttributes - Should create Attribute storage info', async () => {
   /* eslint-disable camelcase */
   const attributeTypesMap1 = {
     color: 'string',
     name: 'string',
     opt_uint8: 'Int32'
   };
-
   const attributeTypesMap2 = {
     // The same attributes as in #1
     color: 'string',
@@ -93,9 +88,7 @@ test('tile-converter(i3s)#createStorageAttributes - Should create Attribute stor
     opt_enum: 'string'
   };
   /* eslint-enable camelcase */
-
   const attributeTypesMap3 = {};
-
   const attributeStorageInfoExpected1 = [
     {
       key: 'f_0',
@@ -176,7 +169,6 @@ test('tile-converter(i3s)#createStorageAttributes - Should create Attribute stor
       }
     }
   ];
-
   const fieldsExpected1 = [
     {
       name: 'OBJECTID',
@@ -199,7 +191,6 @@ test('tile-converter(i3s)#createStorageAttributes - Should create Attribute stor
       alias: 'opt_uint8'
     }
   ];
-
   const popupInfoExpected1 = {
     title: '{OBJECTID}',
     mediaInfos: [],
@@ -406,7 +397,6 @@ test('tile-converter(i3s)#createStorageAttributes - Should create Attribute stor
       }
     }
   ];
-
   const fieldsExpected2 = [
     {
       name: 'OBJECTID',
@@ -444,7 +434,6 @@ test('tile-converter(i3s)#createStorageAttributes - Should create Attribute stor
       alias: 'opt_enum'
     }
   ];
-
   const popupInfoExpected2 = {
     title: '{OBJECTID}',
     mediaInfos: [],
@@ -543,35 +532,24 @@ test('tile-converter(i3s)#createStorageAttributes - Should create Attribute stor
     ],
     expressionInfos: []
   };
-
   const attributeMetadataInfo: AttributeMetadataInfo = new AttributeMetadataInfo();
   attributeMetadataInfo.addMetadataInfo(attributeTypesMap1);
-
-  t.deepEqual(
-    attributeMetadataInfo.attributeStorageInfo,
-    attributeStorageInfoExpected1,
-    'attributeStorageInfo #1'
+  expect(attributeMetadataInfo.attributeStorageInfo, 'attributeStorageInfo #1').toEqual(
+    attributeStorageInfoExpected1
   );
-  t.deepEqual(attributeMetadataInfo.fields, fieldsExpected1, 'fields #1');
-  t.deepEqual(attributeMetadataInfo.popupInfo, popupInfoExpected1, 'popupInfo #1');
-
+  expect(attributeMetadataInfo.fields, 'fields #1').toEqual(fieldsExpected1);
+  expect(attributeMetadataInfo.popupInfo, 'popupInfo #1').toEqual(popupInfoExpected1);
   attributeMetadataInfo.addMetadataInfo(attributeTypesMap2);
-
-  t.deepEqual(
-    attributeMetadataInfo.attributeStorageInfo,
-    attributeStorageInfoExpected2,
-    'attributeStorageInfo #2'
+  expect(attributeMetadataInfo.attributeStorageInfo, 'attributeStorageInfo #2').toEqual(
+    attributeStorageInfoExpected2
   );
-  t.deepEqual(attributeMetadataInfo.fields, fieldsExpected2, 'fields #2');
-  t.deepEqual(attributeMetadataInfo.popupInfo, popupInfoExpected2, 'popupInfo #2');
-
+  expect(attributeMetadataInfo.fields, 'fields #2').toEqual(fieldsExpected2);
+  expect(attributeMetadataInfo.popupInfo, 'popupInfo #2').toEqual(popupInfoExpected2);
   attributeMetadataInfo.addMetadataInfo(attributeTypesMap3);
   // The result should be the same as for #2
-  t.deepEqual(
-    attributeMetadataInfo.attributeStorageInfo,
-    attributeStorageInfoExpected2,
-    'attributeStorageInfo #3'
+  expect(attributeMetadataInfo.attributeStorageInfo, 'attributeStorageInfo #3').toEqual(
+    attributeStorageInfoExpected2
   );
-  t.deepEqual(attributeMetadataInfo.fields, fieldsExpected2, 'fields #3');
-  t.deepEqual(attributeMetadataInfo.popupInfo, popupInfoExpected2, 'popupInfo #3');
+  expect(attributeMetadataInfo.fields, 'fields #3').toEqual(fieldsExpected2);
+  expect(attributeMetadataInfo.popupInfo, 'popupInfo #3').toEqual(popupInfoExpected2);
 });

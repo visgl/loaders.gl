@@ -207,20 +207,58 @@
         "node_type": "group",
         "attributes": {}
       },
+      "labels/nuclei": {
+        "zarr_format": 3,
+        "node_type": "group",
+        "attributes": {
+          "spatialdata_attrs": {"version": "0.3"},
+          "coordinateTransformations": [{"type": "identity"}]
+        }
+      },
       "points": {
         "zarr_format": 3,
         "node_type": "group",
         "attributes": {}
+      },
+      "points/transcripts": {
+        "zarr_format": 3,
+        "node_type": "group",
+        "attributes": {
+          "spatialdata_attrs": {"version": "0.2", "feature_key": "gene"},
+          "axes": ["x", "y"],
+          "coordinateTransformations": [{"type": "identity"}]
+        }
       },
       "shapes": {
         "zarr_format": 3,
         "node_type": "group",
         "attributes": {}
       },
+      "shapes/cells": {
+        "zarr_format": 3,
+        "node_type": "group",
+        "attributes": {
+          "spatialdata_attrs": {"version": "0.3"},
+          "axes": ["x", "y"]
+        }
+      },
       "tables": {
         "zarr_format": 3,
         "node_type": "group",
         "attributes": {}
+      },
+      "tables/annotations": {
+        "zarr_format": 3,
+        "node_type": "group",
+        "attributes": {
+          "encoding-type": "anndata",
+          "encoding-version": "0.1.0",
+          "version": "0.2",
+          "spatialdata-encoding-type": "ngff:regions_table",
+          "region": ["cells"],
+          "region_key": "region",
+          "instance_key": "cell_id"
+        }
       }
     }
   }
