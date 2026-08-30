@@ -57,7 +57,7 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
 | Loader APIs          | `load`, `parse`, `parseSync`, `parseInBatches`                                             |
 | Loader Worker Thread | Yes                                                                                        |
 | Loader Streaming     | Yes                                                                                        |
-| Writer APIs          | `encodeSync`                                                                               |
+| Writer APIs          | `encode`, `encodeSync`                                                                     |
 
 ## Loaders and Writers
 
@@ -81,13 +81,49 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
     <strong>ArrowWriter</strong>
     <span>Writes arrays as Apache Arrow IPC data.</span>
     <span className="docs-api-card__meta">Input: arrays</span>
-    <span className="docs-api-card__meta">APIs: encodeSync</span>
+    <span className="docs-api-card__meta">APIs: encode, encodeSync</span>
   </a>
 </div>
 
 ## IPC
 
 `ArrowLoader` reads Apache Arrow IPC file and stream data. IPC streams can be parsed in batches with `parseInBatches`.
+
+Feather V2 is the Arrow IPC file format with a `.feather` extension. Feather V1 is a different
+legacy format and is not supported.
+
+### Format capabilities
+
+| Capability | Arrow IPC stream | Arrow IPC file | Feather V2 | Feather V1 |
+| --- | :---: | :---: | :---: | :---: |
+| Decode complete table | ✅ | ✅ | ✅ | ❌ |
+| Decode record batches | ✅ | ✅ | ✅ | ❌ |
+| Decode in a worker | ✅ | ✅ | ✅ | ❌ |
+| Decode uncompressed data with Apache Arrow JS 17+ | ✅ | ✅ | ✅ | ❌ |
+| Decode LZ4-frame buffer compression with Apache Arrow JS 21.2+ | ✅ | ✅ | ✅ | ❌ |
+| Decode Zstandard buffer compression with Apache Arrow JS 21.2+ | ✅ | ✅ | ✅ | ❌ |
+| Encode with `ArrowWriter` | ✅ | ✅ | ✅ | ❌ |
+| Encode LZ4-frame buffer compression with Apache Arrow JS 21.2+ | ✅ | ✅ | ✅ | ❌ |
+| Encode Zstandard buffer compression with Apache Arrow JS 21.2+ | ✅¹ | ✅¹ | ✅¹ | ❌ |
+
+¹ Zstandard encoding uses asynchronous `encode()` so its codec can be initialized. LZ4 and
+uncompressed output support both `encode()` and `encodeSync()`.
+
+### Embedded compression
+
+Arrow IPC defines exactly two embedded record-batch buffer compression codecs. `ArrowLoader`
+supports both:
+
+| Codec | Decode | Encode | Notes |
+| --- | :---: | :---: | --- |
+| LZ4 Frame (`LZ4_FRAME`) | ✅ | ✅ | Each compressed buffer contains one LZ4 frame. |
+| Zstandard (`ZSTD`) | ✅ | ✅¹ | Standard Zstandard frame compression. |
+
+Individual buffers that a Feather writer leaves uncompressed because compression would not reduce
+their size are also supported. The codecs are registered only when the installed Apache Arrow JS
+runtime exposes IPC compression support (version 21.2.0 or later). Apache Arrow JS 17 through 21.1
+remain supported for uncompressed IPC data and report a targeted version requirement when a
+compressed record batch is encountered.
 
 ## GeoArrow
 

@@ -7,8 +7,10 @@ import type {Table, ArrowTableBatch} from '@loaders.gl/schema';
 import {ArrowLoaderOptions} from '../../exports/arrow-loader';
 import {convertArrowToTable} from '@loaders.gl/schema-utils';
 import {makeTableScanBatch, toArrayBufferIterator} from '@loaders.gl/loader-utils';
+import {registerArrowCompressionCodecs} from './arrow-compression';
 
 const UNSAFE_BIGINT_ERROR_REGEXP = /^(-?\d+) is not safe to convert to a number\.$/;
+const UNSUPPORTED_COMPRESSION_ERROR_REGEXP = /Record batch compression not implemented/i;
 
 /** Parses arrow to a loaders.gl table. Defaults to `arrow-table` */
 export function parseArrowSync(
@@ -22,6 +24,7 @@ export function parseArrowSync(
 
 /** Parses an Arrow IPC table, normalizing dictionary ids unsupported by Arrow JS. */
 function parseArrowTable(arrayBuffer: ArrayBuffer): arrow.Table {
+  const compressionSupported = registerArrowCompressionCodecs();
   try {
     return arrow.tableFromIPC([new Uint8Array(arrayBuffer)]);
   } catch (error) {
@@ -33,8 +36,20 @@ function parseArrowTable(arrayBuffer: ArrayBuffer): arrow.Table {
     if (normalizedArrayBuffer) {
       return arrow.tableFromIPC([new Uint8Array(normalizedArrayBuffer)]);
     }
+    if (!compressionSupported && isUnsupportedCompressionError(error)) {
+      throw new Error(
+        'Arrow IPC buffer compression requires apache-arrow 21.2.0 or later; the installed runtime only supports uncompressed IPC data',
+        {cause: error}
+      );
+    }
     throw error;
   }
+}
+
+/** Checks for the error emitted by Apache Arrow JS releases without IPC compression support. */
+function isUnsupportedCompressionError(error: unknown): boolean {
+  const message = error instanceof Error ? error.message : String(error);
+  return UNSUPPORTED_COMPRESSION_ERROR_REGEXP.test(message);
 }
 
 /** Rewrites unsafe int64 dictionary ids to small ids that Arrow JS can represent. */
@@ -95,6 +110,7 @@ export function parseArrowInBatches(
     | Iterable<ArrayBufferLike | ArrayBufferView>,
   options?: ArrowLoaderOptions
 ): AsyncIterable<ArrowTableBatch> {
+  registerArrowCompressionCodecs();
   // Creates the appropriate arrow.RecordBatchReader subclasses from the input
   // This will also close the underlying source in case of early termination or errors
 
