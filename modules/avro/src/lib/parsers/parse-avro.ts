@@ -178,10 +178,10 @@ export async function* parseAvroInBatchesFromUrl(
 ): AsyncIterable<ArrowTableBatch> {
   if (options?.encoding && options.encoding !== 'auto' && options.encoding !== 'ocf')
     throw new Error('URL-backed Avro loading currently supports OCF input only');
-  const batchSize = options?.batchSize || 10_000;
+  const batchSize = options?.batchSize ?? 10_000;
   if (!Number.isInteger(batchSize) || batchSize <= 0)
     throw new Error('Avro batchSize must be positive');
-  const rangeChunkSize = options?.rangeChunkSize || 1024 * 1024;
+  const rangeChunkSize = options?.rangeChunkSize ?? 1024 * 1024;
   if (!Number.isInteger(rangeChunkSize) || rangeChunkSize < 1024)
     throw new Error('Avro rangeChunkSize must be at least 1024 bytes');
   const initial = await fetchAvroRange(url, 0, rangeChunkSize - 1, options);
@@ -257,7 +257,7 @@ export async function* parseAvroInBatchesFromFile(
   file: ReadableFile,
   options?: AvroParseOptions & {batchSize?: number}
 ): AsyncIterable<ArrowTableBatch> {
-  const rangeChunkSize = options?.rangeChunkSize || 1024 * 1024;
+  const rangeChunkSize = options?.rangeChunkSize ?? 1024 * 1024;
   if (!Number.isInteger(rangeChunkSize) || rangeChunkSize < 1024)
     throw new Error('Avro rangeChunkSize must be at least 1024 bytes');
   const stat = file.stat ? await file.stat() : null;
@@ -277,7 +277,9 @@ export async function* parseAvroInBatchesFromFile(
   let offset = header.dataOffset;
   let blockIndex = 0;
   let batch: Record<string, unknown>[] = [];
-  const batchSize = options?.batchSize || 10_000;
+  const batchSize = options?.batchSize ?? 10_000;
+  if (!Number.isInteger(batchSize) || batchSize <= 0)
+    throw new Error('Avro batchSize must be positive');
   while (offset < fileSize) {
     const blockHeader = new Uint8Array(
       await file.read(offset, Math.min(32, fileSize - offset), options?.signal)
@@ -318,7 +320,7 @@ export async function* parseAvroInBatchesFromFile(
 }
 
 /** Decodes one Avro OCF block and applies the optional reader schema. */
-async function decodeAvroBlockRows(
+export async function decodeAvroBlockRows(
   compressedBytes: Uint8Array,
   rowCount: number,
   header: AvroOCFHeader,
@@ -617,15 +619,27 @@ function resolveReaderValue(
     return value;
   }
   if (readerSchema.type === 'array' && Array.isArray(value)) {
+    const writerItems =
+      !Array.isArray(writerSchema) &&
+      typeof writerSchema !== 'string' &&
+      writerSchema.type === 'array'
+        ? writerSchema.items
+        : writerSchema;
     return value.map(item =>
-      resolveReaderValue(item, writerSchema, readerSchema.items as AvroSchema)
+      resolveReaderValue(item, writerItems as AvroSchema, readerSchema.items as AvroSchema)
     );
   }
   if (readerSchema.type === 'map' && value instanceof Map) {
+    const writerValues =
+      !Array.isArray(writerSchema) &&
+      typeof writerSchema !== 'string' &&
+      writerSchema.type === 'map'
+        ? writerSchema.values
+        : writerSchema;
     return new Map(
       [...value.entries()].map(([key, item]) => [
         key,
-        resolveReaderValue(item, writerSchema, readerSchema.values as AvroSchema)
+        resolveReaderValue(item, writerValues as AvroSchema, readerSchema.values as AvroSchema)
       ])
     );
   }

@@ -46,6 +46,27 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
 
 GPX, or GPS Exchange Format, is an XML schema designed as a common GPS data
 format for software applications. It can be used to describe waypoints,
-tracks, and routes. ... Location data (and optionally elevation, time, and
-other information) is stored in tags and can be interchanged between GPS
+tracks, and routes. Location data, elevation, time, and application-specific
+extensions are stored in XML elements and can be exchanged between GPS
 devices and software.
+
+## Characteristics
+
+| Characteristic | Value |
+| --- | --- |
+| File extension | `.gpx` |
+| MIME type | `application/gpx+xml` |
+| Container | XML document |
+| Coordinate reference system | WGS84 longitude/latitude (`OGC:CRS84`) |
+
+## Feature matrix
+
+| Feature | Support | Output |
+| --- | --- | --- |
+| Waypoints (`wpt`) | Supported | Point features |
+| Routes (`rte`) | Supported | LineString features |
+| Tracks (`trk`) and segments (`trkseg`) | Supported | LineString or MultiLineString features |
+| Elevation and timestamps | Supported | Z coordinates and coordinate properties |
+| Common Garmin extensions | Supported | Normalized feature or coordinate properties |
+| Arrow, GeoJSON, and object-row tables | Supported | Arrow is the default |
+| Binary geometry output | Supported | Select `gpx.shape: 'binary-geometry'` |

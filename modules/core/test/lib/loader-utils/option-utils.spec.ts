@@ -4,7 +4,9 @@
 
 import {expect, test} from 'vitest';
 import {
+  getGlobalLoaderState,
   getGlobalLoaderOptions,
+  normalizeLoaderOptions,
   normalizeOptions,
   setGlobalOptions
 } from '@loaders.gl/core/lib/loader-utils/option-utils';
@@ -105,4 +107,72 @@ test('normalizeOptions#movesGlobalCoreOptions', () => {
     'deprecated top-level alias is removed after normalization'
   ).toBe(undefined);
   setGlobalOptions(originalClone);
+});
+
+test('normalizeLoaderOptions clones nested core options and migrates legacy aliases', () => {
+  const input = {
+    baseUri: 'legacy/',
+    worker: false,
+    _worker: 'module',
+    core: {baseUrl: 'explicit/', worker: true}
+  } as any;
+  const normalized = normalizeLoaderOptions(input);
+
+  expect(normalized.core).toMatchObject({
+    baseUrl: 'explicit/',
+    worker: true,
+    _workerType: 'module'
+  });
+  expect(normalized).not.toHaveProperty('worker');
+  expect(normalized).not.toHaveProperty('_worker');
+  expect(normalized.core).not.toBe(input.core);
+  expect(input.core).toEqual({baseUrl: 'explicit/', worker: true});
+});
+
+test('normalizeOptions covers loader validation, null logging, and fixed base URLs', () => {
+  const loader = {
+    id: 'example',
+    name: 'Example',
+    module: 'test',
+    version: 'latest',
+    extensions: ['example'],
+    mimeTypes: [],
+    options: {
+      core: {log: null},
+      batchSize: 10,
+      example: {shape: 'default', known: true}
+    },
+    deprecatedOptions: {example: {removed: 'example.known'}}
+  } as any;
+
+  const normalized = normalizeOptions(
+    {
+      core: {baseUrl: 'fixed/'},
+      batch: 2,
+      unrelated: {allowed: true},
+      example: {removed: true, workerUrl: 'worker.js', unknown: true}
+    },
+    loader,
+    loader,
+    'https://example.test/path/file.example?query=1'
+  );
+  expect(normalized.core.baseUrl).toBe('fixed/');
+  expect(normalized.core.log?.warn('ignored')).toBeTypeOf('function');
+  expect(normalized.example).toMatchObject({shape: 'default', known: true, removed: true});
+});
+
+test('normalizeOptions honors global scoped shape and initializes missing global state', () => {
+  const globalObject = globalThis as any;
+  const originalLoaders = globalObject.loaders;
+  try {
+    delete globalObject.loaders;
+    const state = getGlobalLoaderState();
+    expect(state).toEqual({});
+    setGlobalOptions({arrow: {shape: 'columnar-table'}});
+    expect(normalizeOptions({core: {shape: 'object-row-table'}}, ArrowLoader).arrow.shape).toBe(
+      'columnar-table'
+    );
+  } finally {
+    globalObject.loaders = originalLoaders;
+  }
 });

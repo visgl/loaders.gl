@@ -2,18 +2,18 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import type {Loader} from '@loaders.gl/loader-utils';
+import type {Loader, LoaderOptions} from '@loaders.gl/loader-utils';
 import type {ArrowTable, ArrowTableBatch} from '@loaders.gl/schema';
 
 import {LanceFormat} from './lance-format';
 import type {LanceFlatPrimitiveType} from './lance-decoder';
 
 /** Options for the read-only Lance loader. */
-export type LanceLoaderOptions = {
+export type LanceLoaderOptions = LoaderOptions & {
   lance?: {
-    /** Columns to project into the returned table. */
+    /** Columns to project into the returned table. (Physical projection is not yet part of `_scan`.) */
     columns?: string[];
-    /** Maximum number of rows to return. */
+    /** @deprecated Use `_scan.limit` instead. */
     limit?: number;
     /** Primitive type for each physical column in the MVP reader. */
     columnTypes?: LanceFlatPrimitiveType[];

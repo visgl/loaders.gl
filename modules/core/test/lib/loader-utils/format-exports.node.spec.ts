@@ -31,7 +31,7 @@ const FORMAT_EXPORTS = {
   ],
   images: ['ImageFormat', 'ImageBitmapFormat'],
   json: ['JSONFormat', 'GeoJSONFormat', 'NDJSONFormat', 'NDGeoJSONFormat'],
-  kml: ['KMLFormat', 'GPXFormat', 'TCXFormat'],
+  kml: ['KMLFormat', 'KMZFormat', 'GPXFormat', 'TCXFormat'],
   las: ['LASFormat'],
   lerc: ['LERCFormat'],
   mlt: ['MLTFormat'],

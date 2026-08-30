@@ -16,6 +16,7 @@ export const LanceLoaderWithParser = {
   ...LanceLoaderMetadata,
   parse(_arrayBuffer: ArrayBuffer, _options?: LanceLoaderOptions): Promise<ArrowTable> {
     const lanceOptions = _options?.lance;
+    const scanOptions = _options?._scan;
     if (!lanceOptions?.columnTypes) {
       return Promise.reject(new LanceDecoderUnavailableError());
     }
@@ -24,7 +25,7 @@ export const LanceLoaderWithParser = {
       parseLanceFileToArrow(_arrayBuffer, {
         columnTypes,
         columnNames: lanceOptions.columnNames,
-        limit: lanceOptions.limit
+        limit: scanOptions?.limit ?? lanceOptions.limit
       })
     );
   },

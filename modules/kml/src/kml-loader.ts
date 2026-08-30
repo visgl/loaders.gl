@@ -32,7 +32,7 @@ export const KMLLoader = {
   ...KMLFormat,
   version: VERSION,
   options: {
-    kml: {shape: 'geojson-table'},
+    kml: {shape: 'arrow-table'},
     gis: {}
   },
   preload

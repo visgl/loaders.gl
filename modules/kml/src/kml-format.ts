@@ -29,6 +29,20 @@ export const KMLFormat = {
   tests: [KML_HEADER]
 } as const satisfies Format;
 
+/** KMZ archive format containing a KML document and optional resources. */
+export const KMZFormat = {
+  name: 'KMZ (KML compressed archive)',
+  id: 'kmz',
+  module: 'kml',
+  encoding: 'zip',
+  format: 'kmz',
+  extensions: ['kmz'],
+  mimeTypes: ['application/vnd.google-earth.kmz', 'application/vnd.google-earth.kmz+zip'],
+  category: 'archive',
+  binary: true,
+  tests: ['PK']
+} as const satisfies Format;
+
 /** GPX geospatial XML format. */
 export const GPXFormat = {
   name: 'GPX (GPS exchange format)',

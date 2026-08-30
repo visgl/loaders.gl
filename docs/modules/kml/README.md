@@ -42,13 +42,19 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
 
 ![ogc-logo](../../images/logos/ogc-logo-60.png)
 
-The `@loaders.gl/kml` module supports the KML, GPX, and TCX formats.
+The `@loaders.gl/kml` module supports the KML, KMZ, GPX, and TCX formats.
 
 KML (Keyhole Markup Language) is an XML-based file format used to display geographic data in an Earth browser such as Google Earth (originally named "Keyhole Earth Viewer"). It can be used with any 2D or 3D maps.
 
 GPX (GPS Exchange Format) is an XML-based file format commonly used by GPS tracking software.
 
 TCX (Training Center XML) is an XML-based file format commonly used by fitness watches or similar GPS tracking software.
+
+All four parsers use the shared `@loaders.gl/xml` parser and return Arrow
+tables by default. KML and KMZ support is described in the [KML and KMZ
+format page](/docs/modules/kml/formats/kml); the [GPX](/docs/modules/kml/formats/gpx)
+and [TCX](/docs/modules/kml/formats/tcx) pages describe the sports-track
+formats.
 
 References:
 
@@ -62,7 +68,3 @@ References:
 ```bash
 npm install @loaders.gl/core @loaders.gl/kml
 ```
-
-## Attribution
-
-The three loaders use [`@tmcw/togeojson`](https://github.com/tmcw/togeojson) under the BSD-2-Clause license.

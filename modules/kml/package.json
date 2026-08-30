@@ -35,6 +35,10 @@
     "./bundled": {
       "types": "./dist/bundled.d.ts",
       "import": "./dist/bundled.js"
+    },
+    "./kmz-loader": {
+      "types": "./dist/kmz-loader.d.ts",
+      "import": "./dist/kmz-loader.js"
     }
   },
   "sideEffects": false,
@@ -53,8 +57,8 @@
     "@loaders.gl/loader-utils": "5.0.0-alpha.2",
     "@loaders.gl/schema": "5.0.0-alpha.2",
     "@loaders.gl/schema-utils": "5.0.0-alpha.2",
-    "@tmcw/togeojson": "^4.5.0",
-    "@xmldom/xmldom": "^0.8.12"
+    "@loaders.gl/xml": "5.0.0-alpha.2",
+    "@loaders.gl/zip": "5.0.0-alpha.2"
   },
   "peerDependencies": {
     "@loaders.gl/core": "~5.0.0-alpha.0"

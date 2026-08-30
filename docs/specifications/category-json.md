@@ -56,7 +56,12 @@ table-specific result shape. Its loaders can return:
 | [`BSONLoader`](/docs/modules/bson/api-reference/bson-loader) | Binary JSON documents                       |
 | [`XMLLoader`](/docs/modules/xml/api-reference/xml-loader)    | XML documents represented as JavaScript data |
 | [`HTMLLoader`](/docs/modules/xml/api-reference/html-loader)  | HTML documents and fragments               |
+| [`YAMLLoader`](/docs/modules/config/api-reference/yaml-loader) | Human-readable YAML documents; provided by `@loaders.gl/config`. |
+| [`TOMLLoader`](/docs/modules/config/api-reference/toml-loader) | Configuration-oriented TOML documents; provided by `@loaders.gl/config`. |
 
 ## Data Structure
 
 Objects and arrays can contain other objects, arrays, or primitive values.
+
+YAML and TOML are not JSON syntax, but their parsers produce the same general JavaScript data
+shapes and are therefore included here for discovery alongside other JSON-style loaders.

@@ -5,7 +5,11 @@
 import {expect, test} from 'vitest';
 import {validateLoader} from 'test/common/conformance';
 import * as fs from 'fs';
+import * as arrow from 'apache-arrow';
+import lz4js from 'lz4js';
+import {ZstdCodec} from 'zstd-codec';
 import {ArrowLoader} from '@loaders.gl/arrow';
+import {registerArrowCompressionCodecs} from '../src/lib/parsers/arrow-compression';
 import {
   isBrowser,
   makeIterator,
@@ -78,6 +82,64 @@ test('ArrowLoader#parseSync(dictionary.arrow)', async () => {
   if (columnarTable.shape === 'columnar-table') {
     expect(columnarTable.data['example-csv'], 'example-csv loaded').toBeTruthy();
   }
+});
+test('ArrowLoader#parseSync supports compressed Feather V2 files', async () => {
+  const compressionAPI = arrow as unknown as {
+    CompressionType?: {LZ4_FRAME?: number; ZSTD?: number};
+    compressionRegistry?: {
+      set: (compressionType: number, codec: {encode: (data: Uint8Array) => Uint8Array}) => void;
+    };
+    tableToIPC: (table: arrow.Table, type: 'file', compressionType: number) => Uint8Array;
+  };
+  const compressionRegistry = compressionAPI.compressionRegistry;
+  const compressionTypes = compressionAPI.CompressionType;
+  if (
+    !compressionRegistry ||
+    typeof compressionTypes?.LZ4_FRAME !== 'number' ||
+    typeof compressionTypes.ZSTD !== 'number'
+  ) {
+    return;
+  }
+  const sourceTable = arrow.tableFromArrays({
+    id: Int32Array.from({length: 2048}, (_, index) => index),
+    category: Array.from({length: 2048}, (_, index) => `category-${index % 4}`)
+  });
+  const zstd = await new Promise<any>(resolve => ZstdCodec.run(resolve));
+  const compressionCases = [
+    {
+      name: 'LZ4_FRAME',
+      type: compressionTypes.LZ4_FRAME,
+      encode: (data: Uint8Array): Uint8Array => lz4js.compress(data)
+    },
+    {
+      name: 'ZSTD',
+      type: compressionTypes.ZSTD,
+      encode: (data: Uint8Array): Uint8Array => new zstd.Simple().compress(data)
+    }
+  ];
+
+  for (const compressionCase of compressionCases) {
+    // Remove the decoder so this test verifies that ArrowLoader installs it while preserving the
+    // encoder used to construct a representative compressed Feather V2 file.
+    compressionRegistry.set(compressionCase.type, {encode: compressionCase.encode});
+    const compressedData = compressionAPI.tableToIPC(sourceTable, 'file', compressionCase.type);
+    expect(() => arrow.tableFromIPC(compressedData), compressionCase.name).toThrow(
+      /codec not found/
+    );
+
+    const table = await parse(compressedData.slice().buffer, ArrowLoader, {
+      core: {worker: false},
+      arrow: {shape: 'object-row-table'}
+    });
+    expect(table.shape, compressionCase.name).toBe('object-row-table');
+    if (table.shape === 'object-row-table') {
+      expect(table.data.length, compressionCase.name).toBe(2048);
+      expect(table.data[1025], compressionCase.name).toEqual({id: 1025, category: 'category-1'});
+    }
+  }
+});
+test('ArrowLoader compression registration tolerates Apache Arrow JS 17', () => {
+  expect(registerArrowCompressionCodecs({})).toBe(false);
 });
 test('ArrowLoader#parse(fetchFile(struct).arrow)', async () => {
   const columns = await parse(fetchFile(ARROW_STRUCT), ArrowLoader);

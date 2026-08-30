@@ -150,7 +150,7 @@ const categoryTabs = [
       plain: {
         data: 'JSON-style data',
         detail: 'Objects / arrays',
-        loaders: ['JSONLoader', 'BSONLoader', 'XMLLoader', 'HTMLLoader'],
+        loaders: ['JSONLoader', 'BSONLoader', 'XMLLoader', 'HTMLLoader', 'YAMLLoader', 'TOMLLoader'],
         writers: ['JSONWriter', 'BSONWriter']
       }
     }
@@ -252,7 +252,9 @@ const loaderDocumentationLinks = {
   Tiles3DLoader: '/docs/modules/3d-tiles/api-reference/tiles-3d-loader',
   WKBLoader: '/docs/modules/wkt/api-reference/wkb-loader',
   WKTLoader: '/docs/modules/wkt/api-reference/wkt-loader',
-  XMLLoader: '/docs/modules/xml/api-reference/xml-loader'
+  XMLLoader: '/docs/modules/xml/api-reference/xml-loader',
+  TOMLLoader: '/docs/modules/config/api-reference/toml-loader',
+  YAMLLoader: '/docs/modules/config/api-reference/yaml-loader'
 };
 
 const writerDocumentationLinks = {
