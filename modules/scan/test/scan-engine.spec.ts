@@ -49,9 +49,11 @@ test('exposes the shared metadata vocabulary from the optional scan package', ()
 });
 
 test('loads a registered backend through the same root API', async () => {
+  const asynchronousTable = makeArrowTable({value: [2]});
   registerScanBackend('test', async () => ({
     name: 'test',
     query: sourceTable => sourceTable,
+    queryAsync: async () => asynchronousTable,
     explain: () => ({}) as never
   }));
 
@@ -60,7 +62,7 @@ test('loads a registered backend through the same root API', async () => {
 
   expect(engine.name).toBe('test');
   expect(engine.query(table)).toBe(table);
-  await expect(engine.queryAsync(table)).resolves.toBe(table);
+  await expect(engine.queryAsync(table)).resolves.toBe(asynchronousTable);
 });
 
 test('preserves prototype methods and receiver when loading class backends', async () => {
