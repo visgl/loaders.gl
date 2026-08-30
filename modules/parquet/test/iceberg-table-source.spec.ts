@@ -449,7 +449,9 @@ test('IcebergTableSource conservatively handles malformed bounds and exhaustive 
     'format-version': 2,
     location: 'table',
     'current-schema-id': 1,
-    schemas: [{'schema-id': 1, fields: [{id: 1, name: 'geometry'}, {id: 2, name: 'value'}]}]
+    schemas: [
+      {'schema-id': 1, fields: [{id: 1, name: 'geometry'}, {id: 2, name: 'value', type: 'int'}]}
+    ]
   };
   const spatialCases = [
     [{geometry: [0, 0, 10, 10]}, {geometry: [0, 0, 10, 10]}, [-2, 2, -1, 3], 0],
