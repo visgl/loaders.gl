@@ -73,14 +73,14 @@ describe('encoded Parquet page scanning', () => {
     expect(encodedRlePage.definitionLevels).toEqual({byteOffset: 4, byteLength: 2});
     expect(encodedRlePage.values).toEqual({byteOffset: 6, byteLength: 4});
 
-    const bitPackedBody = new Uint8Array([0xff, 7, 0, 0, 0]);
-    const bitPackedPage = createV1Page(bitPackedBody, 8, Encoding.BIT_PACKED);
+    const bitPackedBody = new Uint8Array([0xff, 0xff, 0xff, 7, 0, 0, 0]);
+    const bitPackedPage = createV1Page(bitPackedBody, 3, Encoding.BIT_PACKED);
     const [encodedBitPackedPage] = await scanParquetEncodedPages(
       bitPackedPage,
-      optionalContext
+      {...optionalContext, column: {...optionalContext.column, dLevelMax: 7}}
     );
-    expect(encodedBitPackedPage.definitionLevels).toEqual({byteOffset: 0, byteLength: 1});
-    expect(encodedBitPackedPage.values).toEqual({byteOffset: 1, byteLength: 4});
+    expect(encodedBitPackedPage.definitionLevels).toEqual({byteOffset: 0, byteLength: 3});
+    expect(encodedBitPackedPage.values).toEqual({byteOffset: 3, byteLength: 4});
   });
 
   test('inflates only the compressed V2 values section', async () => {

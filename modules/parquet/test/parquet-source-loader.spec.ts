@@ -336,12 +336,12 @@ test('ParquetSource#readPages exposes projected and residual-filter pages withou
   expect(batches[0].rowGroup.index).toBe(1);
   expect(batches[0].projectedColumns).toEqual(['source_id']);
   expect(batches[0].filterColumns).toEqual(['x']);
-  expect(Object.keys(batches[0].columns).sort()).toEqual(['source_id', 'x']);
+  expect(batches[0].columns.map(column => column.path[0]).sort()).toEqual(['source_id', 'x']);
   expect(batches[0].residualFilter?.predicate).toEqual({
     op: '>=',
     args: [{property: 'x'}, 2]
   });
-  for (const column of Object.values(batches[0].columns)) {
+  for (const column of batches[0].columns) {
     expect(column.pages.length).toBeGreaterThan(0);
     expect(column.pages.every(page => page.compressionState === 'decompressed')).toBeTruthy();
     expect(column.pages.every(page => page.values !== undefined)).toBeTruthy();
@@ -359,7 +359,7 @@ test('ParquetSource#readPages preserves requested compression for a downstream G
   const batches = await collectEncodedPageBatches(
     source.readPages({columns: [columnName], preserveCompression: ['LZ4_RAW']})
   );
-  const column = Object.values(batches[0].columns)[0];
+  const column = batches[0].columns[0];
 
   expect(column.compression).toBe('LZ4_RAW');
   expect(column.pages.some(page => page.compressionState === 'compressed')).toBeTruthy();

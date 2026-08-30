@@ -774,7 +774,7 @@ export class ParquetReader {
     preserveCompression: ReadonlySet<string>,
     signal?: AbortSignal,
     rowGroupOrdinal = 0
-  ): Promise<Readonly<Record<string, ParquetEncodedColumnChunk>>> {
+  ): Promise<readonly ParquetEncodedColumnChunk[]> {
     await this.resolveColumnMetadata(rowGroup, rowGroupOrdinal, columnList);
     const selectedColumnChunks: Array<{
       columnChunk: ColumnChunk;
@@ -797,13 +797,13 @@ export class ParquetReader {
         });
       }
     }
-    const columnEntries: Array<readonly [string, ParquetEncodedColumnChunk]> = [];
+    const columns: ParquetEncodedColumnChunk[] = [];
     for (
       let batchStart = 0;
       batchStart < selectedColumnChunks.length;
       batchStart += MAXIMUM_CONCURRENT_COLUMN_READS
     ) {
-      columnEntries.push(
+      columns.push(
         ...(await Promise.all(
           selectedColumnChunks
             .slice(batchStart, batchStart + MAXIMUM_CONCURRENT_COLUMN_READS)
@@ -817,12 +817,12 @@ export class ParquetReader {
                 columnOrdinal,
                 metadata
               );
-              return [metadata.path_in_schema.join(), encodedColumn] as const;
+              return encodedColumn;
             })
         ))
       );
     }
-    return Object.freeze(Object.fromEntries(columnEntries));
+    return Object.freeze(columns);
   }
 
   /** Reads independently materializable non-repeated columns for one row range using page indexes. */

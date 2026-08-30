@@ -95,8 +95,8 @@ export type ParquetEncodedPageBatch = Readonly<{
   projectedColumns: readonly string[];
   /** Hidden columns included so a deferred decoder can evaluate residual filters. */
   filterColumns: readonly string[];
-  /** Column chunks keyed by their comma-joined Parquet schema path. */
-  columns: Readonly<Record<string, ParquetEncodedColumnChunk>>;
+  /** Ordered selected column chunks. Each chunk retains its complete nested schema path. */
+  columns: readonly ParquetEncodedColumnChunk[];
   /** Exact work left after loaders.gl's conservative statistics and Bloom-filter pruning. */
   residualFilter?: ParquetDeferredPageFilter;
 }>;

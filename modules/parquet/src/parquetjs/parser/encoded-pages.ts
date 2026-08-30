@@ -242,7 +242,9 @@ function readV1LevelSection(
     return createSection(byteOffset, byteLength);
   }
   if (encoding === 'BIT_PACKED') {
-    const byteLength = Math.ceil((valueCount * getBitWidth(maxLevel)) / 8);
+    // Legacy BIT_PACKED levels are padded to complete groups of eight values. This differs from
+    // simply rounding the total bit count and matters whenever bit width exceeds one.
+    const byteLength = Math.ceil(valueCount / 8) * getBitWidth(maxLevel);
     assertSectionBounds(data, offset, byteLength);
     return createSection(offset, byteLength);
   }
