@@ -2,6 +2,14 @@
 
 ## v5.0
 
+### v5.0.0-alpha.3
+
+- feat(scan): add the experimental shared `_scan` loader option and asynchronous scan execution path
+- feat(scan): add source federation, schema normalization, explain telemetry, provenance, and scan-panel integrations across compatible formats
+- feat(scan): incubate Hudi, Iceberg, and Delta Lake scan adapters behind the scan module
+- feat(avro): publish Avro as a standalone format module with lightweight package-root exports
+- feat(parquet): keep compression implementations in `@loaders.gl/compression` and reduce the Parquet package footprint
+
 ### v5.0.0-alpha.2
 
 - feat(crs): adopt the canonical `@math.gl/crs` spatial-reference descriptor and alpha.6 CRS/proj4 compatibility utilities
