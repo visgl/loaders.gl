@@ -4,6 +4,8 @@
 
 import * as arrow from 'apache-arrow';
 import {scanWKB} from '@math.gl/wkb';
+import type {Geometry} from '@loaders.gl/schema';
+import {convertWKTToGeometry} from '@loaders.gl/gis';
 
 import {
   isGeoArrowBox,
@@ -90,7 +92,7 @@ function getGeoarrowDataVertexCount(data: arrow.Data): number {
     data.type instanceof arrow.LargeUtf8 ||
     data.type instanceof arrow.Utf8View
   ) {
-    return getWKTDataVertexCount(data);
+    throw new Error('WKT vertex counting is not supported.');
   }
   if (data.type instanceof arrow.DenseUnion) {
     return data.children.reduce(
@@ -127,10 +129,64 @@ function getGeoarrowDataVertexCount(data: arrow.Data): number {
   throw new Error(`Unsupported GeoArrow data type: ${data.type}`);
 }
 
+/**
+ * Counts vertices in WKT data for internal conversion resource checks.
+ *
+ * This is intentionally separate from getGeoarrowVertexCount(): the public counter does not
+ * promise WKT support, while conversion limits must still protect WKT-to-native conversions.
+ * @param input Arrow UTF-8 Vector or Data containing WKT values.
+ * @returns Number of coordinate vertices in non-null WKT values.
+ */
+export function getGeoarrowWKTVertexCount(input: arrow.Vector | arrow.Data): number {
+  if (input instanceof arrow.Vector) {
+    return input.data.reduce((vertexCount, data) => vertexCount + getWKTDataVertexCount(data), 0);
+  }
+  if (input instanceof arrow.Data) {
+    return getWKTDataVertexCount(input);
+  }
+  throw new Error('Expected an Apache Arrow Vector or Data instance.');
+}
+
 /** Counts vertices in one Arrow UTF-8 WKT data chunk. */
 function getWKTDataVertexCount(data: arrow.Data): number {
-  void data;
-  throw new Error('WKT vertex counting is not supported.');
+  const vector = new arrow.Vector([data]);
+  let vertexCount = 0;
+
+  for (let rowIndex = 0; rowIndex < vector.length; rowIndex++) {
+    const value = vector.get(rowIndex);
+    if (value == null) continue;
+    const geometry = convertWKTToGeometry(String(value));
+    if (!geometry) throw new Error(`Invalid WKT geometry at row ${rowIndex}.`);
+    vertexCount += countGeometryVertices(geometry);
+  }
+
+  return vertexCount;
+}
+
+/** Counts coordinate tuples in a parsed geometry, including nested collections. */
+function countGeometryVertices(geometry: Geometry): number {
+  switch (geometry.type) {
+    case 'Point':
+      return geometry.coordinates.length > 0 ? 1 : 0;
+    case 'MultiPoint':
+    case 'LineString':
+      return geometry.coordinates.length;
+    case 'Polygon':
+      return geometry.coordinates.reduce((count, ring) => count + ring.length, 0);
+    case 'MultiLineString':
+      return geometry.coordinates.reduce((count, line) => count + line.length, 0);
+    case 'MultiPolygon':
+      return geometry.coordinates.reduce(
+        (count, polygon) =>
+          count + polygon.reduce((polygonCount, ring) => polygonCount + ring.length, 0),
+        0
+      );
+    case 'GeometryCollection':
+      return geometry.geometries.reduce(
+        (count, childGeometry) => count + countGeometryVertices(childGeometry),
+        0
+      );
+  }
 }
 
 /**

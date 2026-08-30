@@ -4,7 +4,7 @@
 
 import * as arrow from 'apache-arrow';
 import type {GeoArrowEncoding} from './metadata/geoarrow-metadata';
-import {getGeoarrowVertexCount} from './get-geoarrow-vertex-count';
+import {getGeoarrowVertexCount, getGeoarrowWKTVertexCount} from './get-geoarrow-vertex-count';
 
 /** Resource budgets accepted by GeoArrow conversion entry points. */
 export type GeoArrowResourceLimitOptions = {
@@ -47,7 +47,10 @@ export function assertGeoArrowResourceLimits(
   }
 
   if (maximumVertices !== undefined) {
-    const vertexCount = getGeoarrowVertexCount(column);
+    const vertexCount =
+      sourceEncoding === 'geoarrow.wkt'
+        ? getGeoarrowWKTVertexCount(column)
+        : getGeoarrowVertexCount(column);
     if (vertexCount > maximumVertices) {
       throw new Error(
         `Geometry vector exceeds maxGeometryVertices (${maximumVertices}); received ${vertexCount} vertices.`
