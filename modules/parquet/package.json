@@ -135,10 +135,8 @@
     "@probe.gl/log": "^4.1.1",
     "async-mutex": "^0.2.2",
     "isomorphic-ws": "^5.0.0",
-    "lz4js": "^0.2.0",
     "object-stream": "0.0.1",
     "parquet-wasm": "0.7.2",
-    "snappyjs": "^0.6.0",
     "varint": "^6.0.0"
   },
   "devDependencies": {
