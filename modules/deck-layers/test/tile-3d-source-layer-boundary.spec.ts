@@ -104,7 +104,7 @@ test('Tile3DSourceLayer selects, preloads, and merges URL loader credentials', a
   });
 });
 
-test('Tile3DSourceLayer supports Blob fallbacks, preload headers, and missing-loader errors', async () => {
+test('Tile3DSourceLayer validates Blob fallbacks, preload headers, and missing loaders', async () => {
   const loader = {
     id: 'tiles',
     preload: vi.fn(async () => ({headers: {authorization: 'token'}}))
@@ -114,7 +114,9 @@ test('Tile3DSourceLayer supports Blob fallbacks, preload headers, and missing-lo
   const {layer} = createLayer(blob, {loader});
   layer.props = {...layer.props, loaders: undefined, loader};
 
-  await expect(layer.loadSourceTileset(blob)).rejects.toThrow('lastIndexOf');
+  await expect(layer.loadSourceTileset(blob)).rejects.toThrow(
+    'Blob inputs require a 3TZ or SLPK archive loader'
+  );
   expect(tileLayerMocks.preload).toHaveBeenCalledWith(loader, {}, undefined);
 
   const stringLayer = createLayer('tileset.json', {loader}).layer;
