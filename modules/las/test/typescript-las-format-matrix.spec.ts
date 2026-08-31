@@ -202,6 +202,85 @@ test.each([
   expect(header.metadata?.maxGpsTime).toBeUndefined();
 });
 
+test.each([
+  ['major version', (bytes: Uint8Array) => (bytes[24] = 2), 'unsupported LAS version 2.5'],
+  [
+    'short header',
+    (_bytes: Uint8Array, view: DataView) => view.setUint16(94, 375, true),
+    'at least 393'
+  ],
+  [
+    'legacy point format',
+    (bytes: Uint8Array) => (bytes[104] = 5),
+    'requires point data record formats 6-10'
+  ],
+  [
+    'missing WKT flag',
+    (_bytes: Uint8Array, view: DataView) => view.setUint16(6, 0, true),
+    'requires the WKT'
+  ],
+  [
+    'reserved encoding bit',
+    (_bytes: Uint8Array, view: DataView) => view.setUint16(6, 0x30, true),
+    'reserved bits'
+  ],
+  [
+    'time offset without GPS type',
+    (_bytes: Uint8Array, view: DataView) => view.setUint16(6, 0x50, true),
+    'requires GPS Time Type'
+  ],
+  [
+    'non-finite GPS maximum',
+    (_bytes: Uint8Array, view: DataView) => view.setFloat64(375, Number.NaN, true),
+    'GPS time range'
+  ],
+  [
+    'reversed GPS range',
+    (_bytes: Uint8Array, view: DataView) => {
+      view.setFloat64(375, 1, true);
+      view.setFloat64(383, 2, true);
+    },
+    'GPS time range'
+  ]
+] as const)('TypeScript LAS 1.5 rejects %s', (_name, mutate, message) => {
+  const source = createLAS15Header();
+  mutate(new Uint8Array(source), new DataView(source));
+  expect(() => parseLASHeader(source)).toThrow(message);
+});
+
+test('TypeScript LAS 1.5 accepts its boundary header and GPS metadata', () => {
+  const source = createLAS15Header();
+  const view = new DataView(source);
+  view.setFloat64(375, 20, true);
+  view.setFloat64(383, 10, true);
+  const header = parseLASHeader(source);
+  expect(header.versionAsString).toBe('1.5');
+  expect(header.pointsFormatId).toBe(6);
+  expect(header.metadata?.maxGpsTime).toBe(20);
+  expect(header.metadata?.minGpsTime).toBe(10);
+});
+
+test('TypeScript LAS metadata tolerates truncated VLR and EVLR records', () => {
+  const truncatedHeader = createLASFixture(0, false).slice(0, 390);
+  const truncatedView = new DataView(truncatedHeader);
+  truncatedView.setUint32(100, 1, true);
+  expect(parseLASHeader(truncatedHeader).metadata?.variableLengthRecords).toBeUndefined();
+
+  const truncatedPayload = createLASFixture(0, false).slice(0, 430);
+  const payloadView = new DataView(truncatedPayload);
+  payloadView.setUint32(100, 1, true);
+  payloadView.setUint16(375 + 20, 1000, true);
+  expect(parseLASHeader(truncatedPayload).metadata?.variableLengthRecords).toBeUndefined();
+
+  const truncatedExtendedHeader = createLASFixture(0, false);
+  const extendedHeaderView = new DataView(truncatedExtendedHeader);
+  extendedHeaderView.setBigUint64(235, 430n, true);
+  extendedHeaderView.setUint32(243, 1, true);
+  expect(
+    parseLASHeader(truncatedExtendedHeader).metadata?.extendedVariableLengthRecords
+  ).toBeUndefined();
+});
+
 /** Collects all batches from the TypeScript streaming parser. */
 async function collectLASBatches(
   chunks: Iterable<ArrayBuffer | ArrayBufferView>
@@ -285,6 +364,22 @@ function createLASFixture(pointDataRecordFormat: number, highColor: boolean): Ar
     bytes[pointOffset + baseRecordLength] = pointIndex;
     bytes[pointOffset + baseRecordLength + 1] = 255 - pointIndex;
   }
+  return arrayBuffer;
+}
+
+/** Creates a valid empty LAS 1.5 header for mutation-based validation tests. */
+function createLAS15Header(): ArrayBuffer {
+  const arrayBuffer = new ArrayBuffer(393);
+  const bytes = new Uint8Array(arrayBuffer);
+  const view = new DataView(arrayBuffer);
+  bytes.set(new TextEncoder().encode('LASF'));
+  bytes[24] = 1;
+  bytes[25] = 5;
+  view.setUint16(6, 0x11, true);
+  view.setUint16(94, 393, true);
+  view.setUint32(96, 393, true);
+  bytes[104] = 6;
+  view.setUint16(105, POINT_FORMAT_LENGTHS[6], true);
   return arrayBuffer;
 }
 
