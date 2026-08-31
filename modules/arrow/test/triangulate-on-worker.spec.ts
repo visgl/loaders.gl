@@ -45,6 +45,19 @@ test('TriangulationWorker#plumbing', async () => {
     workerFarm.destroy();
   }
 });
+test('TriangulationWorker uses its module worker by default in browsers', async () => {
+  if (!isBrowser) {
+    return;
+  }
+  const result = await processOnWorker(
+    TriangulationWorker,
+    {operation: 'test', data: new ArrayBuffer(100)},
+    {reuseWorkers: false}
+  );
+
+  expect(result.operation).toBe('test');
+  expect(result.data.byteLength).toBe(100);
+});
 test.skip('triangulateOnWorker', async () => {
   expect(triangulateOnWorker, 'triangulateOnWorker imported ok').toBeTruthy();
 });

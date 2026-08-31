@@ -19,5 +19,5 @@ function resolveParquetSourceWorkerUrl(): string | true {
 
 /** Returns the generated selective source worker filename without triggering source bundling. */
 function getParquetSourceWorkerFile(): string {
-  return './parquet-source-worker.js';
+  return '../dist/parquet-source-worker.js';
 }

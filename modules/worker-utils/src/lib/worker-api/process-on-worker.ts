@@ -13,8 +13,15 @@ import type {
 import type WorkerJob from '../worker-farm/worker-job';
 import AsyncQueue from '../async-queue/async-queue';
 import WorkerFarm from '../worker-farm/worker-farm';
-import {getWorkerURL, getWorkerName} from './get-worker-url';
+import type {WorkerPoolTarget} from '../worker-farm/worker-pool';
+import {
+  getCustomWorkerURL,
+  getDefaultWorkerURL,
+  getWorkerURL,
+  getWorkerName
+} from './get-worker-url';
 import {getTransferListForWriter} from '../worker-utils/get-transfer-list';
+import {isBrowser} from '../env-utils/globals';
 
 /** Options for worker processing */
 export type ProcessOnWorkerOptions = WorkerOptions & {
@@ -43,7 +50,9 @@ export function canProcessOnWorker(worker: WorkerObject, options?: WorkerOptions
   }
 
   const workerOptions = options?.[worker.id];
-  return Boolean((worker.worker || workerOptions?.workerUrl) && options?.worker);
+  return Boolean(
+    (worker.worker || worker.loadWorker || workerOptions?.workerUrl) && options?.worker
+  );
 }
 
 /**
@@ -62,12 +71,7 @@ export async function processOnWorker(
   const name = getWorkerName(worker);
 
   const workerFarm = WorkerFarm.getWorkerFarm(options);
-  const {source} = options;
-  const workerPoolProps: {name: string; source?: string; url?: string} = {name, source};
-  if (!source) {
-    workerPoolProps.url = getWorkerURL(worker, options);
-  }
-  const workerPool = workerFarm.getWorkerPool(workerPoolProps);
+  const workerPool = workerFarm.getWorkerPool(getWorkerPoolTarget(worker, options, name));
 
   const jobName = options.jobName || worker.name;
   const job = await workerPool.startJob(
@@ -131,12 +135,7 @@ async function* processOnWorkerInBatchesIterator<InputBatch, OutputBatch>(
   throwIfAborted(options.signal);
   const name = getWorkerName(worker);
   const workerFarm = WorkerFarm.getWorkerFarm(options);
-  const {source} = options;
-  const workerPoolProps: {name: string; source?: string; url?: string} = {name, source};
-  if (!source) {
-    workerPoolProps.url = getWorkerURL(worker, options);
-  }
-  const workerPool = workerFarm.getWorkerPool(workerPoolProps);
+  const workerPool = workerFarm.getWorkerPool(getWorkerPoolTarget(worker, options, name));
   const outputBatches = new AsyncQueue<OutputBatch>();
   const inputIterator = getAsyncIterator(input);
   let outputFinished = false;
@@ -302,12 +301,7 @@ export async function preloadWorker(
 ): Promise<void> {
   const name = getWorkerName(worker);
   const workerFarm = WorkerFarm.getWorkerFarm(options);
-  const {source} = options;
-  const workerPoolProps: {name: string; source?: string; url?: string} = {name, source};
-  if (!source) {
-    workerPoolProps.url = getWorkerURL(worker, options);
-  }
-  const workerPool = workerFarm.getWorkerPool(workerPoolProps);
+  const workerPool = workerFarm.getWorkerPool(getWorkerPoolTarget(worker, options, name));
   const count = preloadOptions.count ?? options.maxConcurrency ?? options.core?.maxConcurrency ?? 1;
 
   const preloadJobs = Array.from({length: count}, async () => {
@@ -317,6 +311,39 @@ export async function preloadWorker(
   });
 
   await Promise.all(preloadJobs);
+}
+
+/**
+ * Resolves the worker source while preserving URL overrides and classic-worker fallbacks.
+ * @param worker Worker descriptor to resolve.
+ * @param options Options for the active worker operation.
+ * @param name Versioned worker name.
+ * @returns A target suitable for worker-pool lookup.
+ */
+function getWorkerPoolTarget(
+  worker: WorkerObject,
+  options: ProcessOnWorkerOptions,
+  name: string
+): WorkerPoolTarget {
+  if (options.source) {
+    return {name, source: options.source};
+  }
+
+  const customWorkerUrl = getCustomWorkerURL(worker, options);
+  if (customWorkerUrl) {
+    return {name, url: customWorkerUrl};
+  }
+
+  if (isBrowser && worker.loadWorker) {
+    return {
+      name,
+      loadWorker: worker.loadWorker,
+      getUrl: () => getWorkerURL(worker, options),
+      urlKey: getDefaultWorkerURL(worker)
+    };
+  }
+
+  return {name, url: getWorkerURL(worker, options)};
 }
 
 /**

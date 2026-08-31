@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import type {WorkerMessageType, WorkerMessagePayload} from '../../types';
+import type {LoadWorker, WorkerMessageType, WorkerMessagePayload} from '../../types';
 import {isMobile} from '../env-utils/globals';
 import WorkerThread from './worker-thread';
 import WorkerJob from './worker-job';
@@ -22,10 +22,22 @@ export type WorkerPoolProps = {
   name?: string;
   source?: string; // | Function;
   url?: string;
+  /** Lazily resolves a classic worker fallback URL. */
+  getUrl?: () => string;
+  /** Creates a browser Worker directly. */
+  loadWorker?: LoadWorker;
   maxConcurrency?: number;
   maxMobileConcurrency?: number;
   onDebug?: (options: OnDebugParameters) => any;
   reuseWorkers?: boolean;
+};
+
+/** Worker-pool target, including values used only to distinguish cached pools. */
+export type WorkerPoolTarget = WorkerPoolProps & {
+  /** Worker name used as the base pool identity. */
+  name: string;
+  /** Stable identity for a lazily resolved URL. */
+  urlKey?: string;
 };
 
 /** Private helper types */
@@ -46,6 +58,10 @@ export default class WorkerPool {
   name: string = 'unnamed';
   source?: string; // | Function;
   url?: string;
+  /** Lazily resolves a classic worker fallback URL. */
+  getUrl?: () => string;
+  /** Creates a browser Worker directly. */
+  loadWorker?: LoadWorker;
   maxConcurrency: number = 1;
   maxMobileConcurrency: number = 1;
   onDebug: (options: OnDebugParameters) => any = () => {};
@@ -69,6 +85,8 @@ export default class WorkerPool {
   constructor(props: WorkerPoolProps) {
     this.source = props.source;
     this.url = props.url;
+    this.getUrl = props.getUrl;
+    this.loadWorker = props.loadWorker;
     this.setProps(props);
   }
 
@@ -215,7 +233,13 @@ export default class WorkerPool {
     if (this.count < this._getMaxConcurrency()) {
       this.count++;
       const name = `${this.name.toLowerCase()} (#${this.count} of ${this.maxConcurrency})`;
-      return new WorkerThread({name, source: this.source, url: this.url});
+      return new WorkerThread({
+        name,
+        source: this.source,
+        url: this.url,
+        getUrl: this.getUrl,
+        loadWorker: this.loadWorker
+      });
     }
 
     // No worker available, have to wait
