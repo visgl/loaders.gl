@@ -50,6 +50,44 @@ test('OMEZarrImageSource validates browser raster selections', async () => {
     await expect(source.getRaster({ t: 1 })).rejects.toThrow(/time index 1 is out of bounds/);
     await expect(source.getRaster({ z: -1 })).rejects.toThrow(/z index -1 is out of bounds/);
 });
+test.each([
+    ['uint16', Uint16Array],
+    ['uint32', Uint32Array],
+    ['int8', Int8Array],
+    ['int16', Int16Array],
+    ['int32', Int32Array],
+    ['float32', Float32Array],
+    ['float64', Float64Array]
+] as const)('OMEZarrImageSource normalizes %s metadata and empty raster output', async (dataType, TypedArray) => {
+    const baseUrl = `https://example.com/browser-${dataType}.zarr`;
+    const source = new OMEZarrImageSource(baseUrl, {
+        core: { loadOptions: { core: { fetch: createOMEZarrFetcher(baseUrl, dataType) } } },
+        zarr: { requireConsolidatedMetadata: false }
+    });
+    const metadata = await source.getMetadata();
+    const raster = await source.getRaster({ channels: [0] });
+    expect(metadata.dtype).toBe(dataType);
+    expect(raster.data).toBeInstanceOf(TypedArray);
+});
+test('OMEZarrImageSource retries initialization after malformed metadata', async () => {
+    const baseUrl = 'https://example.com/malformed-ome.zarr';
+    let groupRequestCount = 0;
+    const fetcher = (async (input: RequestInfo | URL) => {
+        const url = input instanceof Request ? input.url : String(input);
+        if (url === `${baseUrl}/zarr.json`) {
+            groupRequestCount++;
+            return new Response(encodeJson({zarr_format: 3, node_type: 'group', attributes: {}}));
+        }
+        return new Response(null, {status: 404});
+    }) as typeof fetch;
+    const source = new OMEZarrImageSource(baseUrl, {
+        core: {loadOptions: {core: {fetch: fetcher}}},
+        zarr: {requireConsolidatedMetadata: false}
+    });
+    await expect(source.getMetadata()).rejects.toThrow(/requires multiscales metadata/);
+    await expect(source.getMetadata()).rejects.toThrow(/requires multiscales metadata/);
+    expect(groupRequestCount).toBe(2);
+});
 /** Creates an OME-Zarr source backed by a small in-memory Zarr v3 store. */
 function createInMemoryOMEZarrSource(): OMEZarrImageSource {
     const baseUrl = 'https://example.com/browser-ome.zarr';
@@ -60,13 +98,13 @@ function createInMemoryOMEZarrSource(): OMEZarrImageSource {
     return new OMEZarrImageSource(baseUrl, options);
 }
 /** Creates an in-memory HTTP view of a small OME-Zarr v3 store. */
-function createOMEZarrFetcher(baseUrl: string): typeof fetch {
+function createOMEZarrFetcher(baseUrl: string, dataType = 'uint8'): typeof fetch {
     const responses = new Map<string, BodyInit>([
         [`${baseUrl}/zarr.json`, encodeJson(createOMEGroupMetadata())],
-        [`${baseUrl}/0/zarr.json`, encodeJson(createOMEArrayMetadata())],
-        [`${baseUrl}/0/c/0/0/0/0/0`, new Uint8Array([1, 2, 3, 4, 5, 6])],
-        [`${baseUrl}/0/c/0/1/0/0/0`, new Uint8Array([11, 12, 13, 14, 15, 16])],
-        [`${baseUrl}/0/c/0/2/0/0/0`, new Uint8Array([21, 22, 23, 24, 25, 26])]
+        [`${baseUrl}/0/zarr.json`, encodeJson(createOMEArrayMetadata(dataType))],
+        [`${baseUrl}/0/c/0/0/0/0/0`, createTypedChunk(dataType, 1)],
+        [`${baseUrl}/0/c/0/1/0/0/0`, createTypedChunk(dataType, 11)],
+        [`${baseUrl}/0/c/0/2/0/0/0`, createTypedChunk(dataType, 21)]
     ]);
     return (async (input) => {
         const url = input instanceof Request ? input.url : String(input);
@@ -108,12 +146,12 @@ function createOMEGroupMetadata(): Record<string, unknown> {
     };
 }
 /** Creates uncompressed uint8 array metadata for the in-memory image. */
-function createOMEArrayMetadata(): Record<string, unknown> {
+function createOMEArrayMetadata(dataType = 'uint8'): Record<string, unknown> {
     return {
         zarr_format: 3,
         node_type: 'array',
         shape: [1, 3, 1, 2, 3],
-        data_type: 'uint8',
+        data_type: dataType,
         chunk_grid: { name: 'regular', configuration: { chunk_shape: [1, 1, 1, 2, 3] } },
         chunk_key_encoding: { name: 'default', configuration: { separator: '/' } },
         codecs: [{ name: 'bytes', configuration: { endian: 'little' } }],
@@ -125,4 +163,19 @@ function createOMEArrayMetadata(): Record<string, unknown> {
 /** Encodes Zarr metadata as UTF-8 bytes. */
 function encodeJson(value: unknown): Uint8Array {
     return new TextEncoder().encode(JSON.stringify(value));
+}
+/** Creates six little-endian scalar values for an uncompressed Zarr chunk. */
+function createTypedChunk(dataType: string, start: number): ArrayBufferView {
+    const values = Array.from({length: 6}, (_, index) => start + index);
+    const constructors: Record<string, new (values: number[]) => ArrayBufferView> = {
+        uint8: Uint8Array,
+        uint16: Uint16Array,
+        uint32: Uint32Array,
+        int8: Int8Array,
+        int16: Int16Array,
+        int32: Int32Array,
+        float32: Float32Array,
+        float64: Float64Array
+    };
+    return new constructors[dataType](values);
 }

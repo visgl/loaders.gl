@@ -45,4 +45,20 @@ test('extractLoadLibraryOptions # flattens core options and preserves modules', 
     modules
   });
 });
+test('library option normalization covers top-level overrides and invalid inputs', () => {
+  expect(
+    extractLoadLibraryOptions({
+      useLocalLibraries: false,
+      CDN: null,
+      core: {useLocalLibraries: true, CDN: 'https://legacy.example.com'}
+    })
+  ).toEqual({useLocalLibraries: false, CDN: null});
+  expect(extractLoadLibraryOptions()).toEqual({});
+  expect(() => getLibraryUrl('decoder.js', 'test', {core: {} as any} as any)).toThrow(
+    /must be pre-normalized/
+  );
+  expect(() => getLibraryUrl('decoder.js', 'test', {CDN: 42 as any})).toThrow(
+    /must be a string or null/
+  );
+});
 test('loadLibrary', () => {});

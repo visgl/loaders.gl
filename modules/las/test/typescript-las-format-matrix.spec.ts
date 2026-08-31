@@ -285,6 +285,83 @@ test('TypeScript LAS metadata tolerates truncated VLR and EVLR records', () => {
   expect(truncatedExtendedMetadata?.evlrs).toEqual([]);
 });
 
+test('TypeScript LAS resolves VLR and EVLR metadata families and GeoTIFF key values', () => {
+  const geoKeyDirectory = new Uint16Array([
+    1, 1, 0, 5, 1024, 0, 1, 4326, 2048, 34735, 2, 24, 2054, 34736, 1, 0, 3073, 34737, 5, 0, 4096,
+    999, 1, 0, 7, 8
+  ]);
+  const geoDoubleParameters = new Float64Array([12.5]);
+  const waveform = new Uint8Array(28);
+  const waveformView = new DataView(waveform.buffer);
+  waveform[2] = 16;
+  waveform[3] = 2;
+  waveformView.setUint32(4, 32, true);
+  waveformView.setUint32(8, 4, true);
+  waveformView.setFloat64(12, 1.5, true);
+  waveformView.setFloat64(20, -2.5, true);
+
+  const source = createLASMetadataFixture(
+    [
+      {userId: 'LASF_Spec', recordId: 100, data: waveform},
+      {userId: 'LASF_Projection', recordId: 2111, data: encodeLASString('TRANSFORM')},
+      {userId: 'LASF_Projection', recordId: 2112, data: encodeLASString('VLR_WKT')},
+      {
+        userId: 'LASF_Projection',
+        recordId: 34735,
+        data: new Uint8Array(geoKeyDirectory.buffer)
+      },
+      {
+        userId: 'LASF_Projection',
+        recordId: 34736,
+        data: new Uint8Array(geoDoubleParameters.buffer)
+      },
+      {userId: 'LASF_Projection', recordId: 34737, data: encodeLASString('EPSG|')}
+    ],
+    [{userId: 'LASF_Projection', recordId: 2112, data: encodeLASString('EVLR_WKT')}]
+  );
+  const metadata = parseLASHeader(source).metadata!;
+
+  expect(metadata.vlrs).toHaveLength(6);
+  expect(metadata.evlrs).toHaveLength(1);
+  expect(metadata.wktMathTransform).toBe('TRANSFORM');
+  expect(metadata.wkt).toBe('EVLR_WKT');
+  expect(metadata.waveformPacketDescriptors).toEqual([
+    {
+      recordId: 100,
+      bitsPerSample: 16,
+      compressionType: 2,
+      numberOfSamples: 32,
+      temporalSampleSpacing: 4,
+      digitizerGain: 1.5,
+      digitizerOffset: -2.5
+    }
+  ]);
+  expect(metadata.geotiff?.keyDirectory?.entries.map(entry => entry.value)).toEqual([
+    4326,
+    [7, 8],
+    12.5,
+    'EPSG',
+    undefined
+  ]);
+});
+
+test('TypeScript LAS rejects truncated waveform metadata and ignores incomplete GeoKeys', () => {
+  expect(() =>
+    parseLASHeader(
+      createLASMetadataFixture([{userId: 'LASF_Spec', recordId: 100, data: new Uint8Array(27)}])
+    )
+  ).toThrow('waveform descriptor VLR 100 is truncated');
+
+  const keys = new Uint16Array([1, 1, 0, 2, 1024, 0, 1, 4326]);
+  const metadata = parseLASHeader(
+    createLASMetadataFixture([
+      {userId: 'LASF_Projection', recordId: 34735, data: new Uint8Array(keys.buffer)}
+    ])
+  ).metadata;
+  expect(metadata?.geotiff?.keys).toEqual(keys);
+  expect(metadata?.geotiff?.keyDirectory).toBeUndefined();
+});
+
 /** Collects all batches from the TypeScript streaming parser. */
 async function collectLASBatches(
   chunks: Iterable<ArrayBuffer | ArrayBufferView>
@@ -385,6 +462,67 @@ function createLAS15Header(): ArrayBuffer {
   bytes[104] = 6;
   view.setUint16(105, POINT_FORMAT_LENGTHS[6], true);
   return arrayBuffer;
+}
+
+type TestLASMetadataRecord = {userId: string; recordId: number; data: Uint8Array};
+
+/** Creates an empty LAS 1.4 file containing caller-selected VLR and EVLR metadata records. */
+function createLASMetadataFixture(
+  vlrs: TestLASMetadataRecord[],
+  evlrs: TestLASMetadataRecord[] = []
+): ArrayBuffer {
+  const headerLength = 375;
+  const vlrByteLength = vlrs.reduce((sum, record) => sum + 54 + record.data.byteLength, 0);
+  const pointDataOffset = headerLength + vlrByteLength;
+  const evlrByteLength = evlrs.reduce((sum, record) => sum + 60 + record.data.byteLength, 0);
+  const arrayBuffer = new ArrayBuffer(pointDataOffset + evlrByteLength);
+  const bytes = new Uint8Array(arrayBuffer);
+  const view = new DataView(arrayBuffer);
+  bytes.set(new TextEncoder().encode('LASF'));
+  bytes[24] = 1;
+  bytes[25] = 4;
+  view.setUint16(94, headerLength, true);
+  view.setUint32(96, pointDataOffset, true);
+  view.setUint32(100, vlrs.length, true);
+  bytes[104] = 6;
+  view.setUint16(105, POINT_FORMAT_LENGTHS[6], true);
+  view.setBigUint64(235, evlrs.length ? BigInt(pointDataOffset) : 0n, true);
+  view.setUint32(243, evlrs.length, true);
+
+  let byteOffset = headerLength;
+  for (const record of vlrs) {
+    writeLASMetadataRecord(bytes, view, byteOffset, record, false);
+    byteOffset += 54 + record.data.byteLength;
+  }
+  for (const record of evlrs) {
+    writeLASMetadataRecord(bytes, view, byteOffset, record, true);
+    byteOffset += 60 + record.data.byteLength;
+  }
+  return arrayBuffer;
+}
+
+/** Writes one LAS metadata record header and payload. */
+function writeLASMetadataRecord(
+  bytes: Uint8Array,
+  view: DataView,
+  byteOffset: number,
+  record: TestLASMetadataRecord,
+  extended: boolean
+): void {
+  bytes.set(new TextEncoder().encode(record.userId), byteOffset + 2);
+  view.setUint16(byteOffset + 18, record.recordId, true);
+  if (extended) {
+    view.setBigUint64(byteOffset + 20, BigInt(record.data.byteLength), true);
+    bytes.set(record.data, byteOffset + 60);
+  } else {
+    view.setUint16(byteOffset + 20, record.data.byteLength, true);
+    bytes.set(record.data, byteOffset + 54);
+  }
+}
+
+/** Encodes one null-terminated LAS metadata string. */
+function encodeLASString(value: string): Uint8Array {
+  return new TextEncoder().encode(`${value}\0`);
 }
 
 /** Return the RGB field offset for a LAS point format. */

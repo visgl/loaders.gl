@@ -404,6 +404,102 @@ describe('Avro boundary coverage', () => {
     ).rejects.toThrow('no compatible branch');
   });
 
+  test.each([
+    ['null', true],
+    ['boolean', 'false'],
+    ['string', 1],
+    ['bytes', 1],
+    ['int', '1'],
+    [{type: ['string', 'null']}, null],
+    [{type: {type: 'boolean'}}, 'false'],
+    [{type: 'fixed', size: 1}, 1],
+    [{type: 'enum', symbols: ['A']}, 'B'],
+    [{type: 'array', items: 'int'}, {}],
+    [{type: 'map', values: 'int'}, []],
+    [{type: 'record', fields: []}, []]
+  ] as const)('rejects incompatible reader defaults for %j', async (fieldType, defaultValue) => {
+    const writerSchema = {type: 'record', name: 'Writer', fields: []};
+    const encoded = await encodeRaw(writerSchema, {});
+    await expect(
+      parseAvro(encoded, {
+        encoding: 'raw',
+        schema: writerSchema,
+        readerSchema: {
+          type: 'record',
+          name: 'Writer',
+          fields: [{name: 'added', type: fieldType as any, default: defaultValue}]
+        }
+      })
+    ).rejects.toThrow('default');
+  });
+
+  test('rejects reader enum, fixed, and primitive incompatibilities', async () => {
+    const writerSchema = {
+      type: 'record',
+      name: 'Writer',
+      fields: [
+        {name: 'kind', type: {type: 'enum', symbols: ['A', 'B']}},
+        {name: 'token', type: {type: 'fixed', size: 2}},
+        {name: 'count', type: 'int'}
+      ]
+    };
+    const encoded = await encodeRaw(writerSchema, {
+      kind: 'B',
+      token: new Uint8Array([1, 2]),
+      count: 3
+    });
+
+    await expect(
+      parseAvro(encoded, {
+        encoding: 'raw',
+        schema: writerSchema,
+        readerSchema: {
+          type: 'record',
+          name: 'Writer',
+          fields: [{name: 'kind', type: {type: 'enum', symbols: ['A']}}]
+        }
+      })
+    ).rejects.toThrow('not present in the reader schema');
+    await expect(
+      parseAvro(encoded, {
+        encoding: 'raw',
+        schema: writerSchema,
+        readerSchema: {
+          type: 'record',
+          name: 'Writer',
+          fields: [{name: 'token', type: {type: 'fixed', size: 3}}]
+        }
+      })
+    ).rejects.toThrow('incompatible sizes');
+    await expect(
+      parseAvro(encoded, {
+        encoding: 'raw',
+        schema: writerSchema,
+        readerSchema: {
+          type: 'record',
+          name: 'Writer',
+          fields: [{name: 'count', type: 'boolean'}]
+        }
+      })
+    ).rejects.toThrow('cannot promote');
+  });
+
+  test.each([
+    [[2, 1], 'unscaled value'],
+    [[6, 2, 1, 1], 'scale'],
+    [[8, 2, 1, 0, 0], 'scale']
+  ] as const)('rejects malformed big-decimal payload %j', async (bytes, message) => {
+    await expect(
+      parseAvro(Uint8Array.from(bytes).buffer, {
+        encoding: 'raw',
+        schema: {
+          type: 'record',
+          fields: [{name: 'value', type: {type: 'bytes', logicalType: 'big-decimal'}}]
+        }
+      })
+    ).rejects.toThrow(message);
+  });
+
   test('supports automatic single-object detection and optional fingerprint validation', async () => {
     const schema = {
       type: 'record',
