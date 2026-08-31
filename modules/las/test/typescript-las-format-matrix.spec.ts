@@ -264,21 +264,25 @@ test('TypeScript LAS metadata tolerates truncated VLR and EVLR records', () => {
   const truncatedHeader = createLASFixture(0, false).slice(0, 390);
   const truncatedView = new DataView(truncatedHeader);
   truncatedView.setUint32(100, 1, true);
-  expect(parseLASHeader(truncatedHeader).metadata?.variableLengthRecords).toBeUndefined();
+  expect(parseLASHeader(truncatedHeader).metadata).toBeUndefined();
 
   const truncatedPayload = createLASFixture(0, false).slice(0, 430);
   const payloadView = new DataView(truncatedPayload);
   payloadView.setUint32(100, 1, true);
   payloadView.setUint16(375 + 20, 1000, true);
-  expect(parseLASHeader(truncatedPayload).metadata?.variableLengthRecords).toBeUndefined();
+  const truncatedPayloadMetadata = parseLASHeader(truncatedPayload).metadata;
+  expect(truncatedPayloadMetadata).toBeDefined();
+  expect(truncatedPayloadMetadata?.vlrCount).toBe(1);
+  expect(truncatedPayloadMetadata?.vlrs).toEqual([]);
 
   const truncatedExtendedHeader = createLASFixture(0, false);
   const extendedHeaderView = new DataView(truncatedExtendedHeader);
   extendedHeaderView.setBigUint64(235, 430n, true);
   extendedHeaderView.setUint32(243, 1, true);
-  expect(
-    parseLASHeader(truncatedExtendedHeader).metadata?.extendedVariableLengthRecords
-  ).toBeUndefined();
+  const truncatedExtendedMetadata = parseLASHeader(truncatedExtendedHeader).metadata;
+  expect(truncatedExtendedMetadata).toBeDefined();
+  expect(truncatedExtendedMetadata?.evlrCount).toBe(1);
+  expect(truncatedExtendedMetadata?.evlrs).toEqual([]);
 });
 
 /** Collects all batches from the TypeScript streaming parser. */
