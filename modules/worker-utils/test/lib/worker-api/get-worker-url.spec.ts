@@ -2,15 +2,35 @@ import {expect, test} from 'vitest';
 import {isBrowser} from '@loaders.gl/core';
 import {NullWorker} from '@loaders.gl/worker-utils';
 import type {WorkerObject} from '../../../src/types';
-import {getWorkerURL} from '../../../src/lib/worker-api/get-worker-url';
+import {getCustomWorkerURL, getWorkerURL} from '../../../src/lib/worker-api/get-worker-url';
 test('getWorkerURL', () => {
   expect(
     getWorkerURL(NullWorker, {null: {workerUrl: 'custom-url'}}),
     'worker url with options.null.worker-url'
   ).toBe('custom-url');
   expect(
+    getCustomWorkerURL(NullWorker, {null: {workerUrl: 'custom-url'}}),
+    'custom worker URL omits the CDN fallback'
+  ).toBe('custom-url');
+  expect(
     getWorkerURL(NullWorker, {_workerType: 'test'}),
     'worker url with _useLocalWorkers options'
+  ).toBe(
+    isBrowser
+      ? 'modules/worker-utils/dist/null-worker.js'
+      : 'modules/worker-utils/src/workers/null-worker-node.ts'
+  );
+  expect(
+    getWorkerURL(NullWorker, {
+      null: {workerUrl: 'custom-url'},
+      _workerType: 'test'
+    }),
+    'explicit worker URL precedes the test worker URL'
+  ).toBe('custom-url');
+  expect(getCustomWorkerURL(NullWorker, {}), 'no configured URL').toBeNull();
+  expect(
+    getWorkerURL({...NullWorker, worker: 'descriptor-worker.js'}, {_workerType: 'test'}),
+    'test worker URL precedes a descriptor default'
   ).toBe(
     isBrowser
       ? 'modules/worker-utils/dist/null-worker.js'

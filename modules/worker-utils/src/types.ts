@@ -17,6 +17,14 @@ export type WorkerOptions = {
   [key: string]: any; // TODO
 };
 
+/**
+ * Creates a fresh browser Worker instance for a worker descriptor.
+ *
+ * Returning `null` delegates to the existing URL-based worker resolution. This lets packages
+ * expose bundler-resolved module workers without removing classic worker or CDN support.
+ */
+export type LoadWorker = () => Worker | null;
+
 export type WorkerContext = {
   process?: Process;
   processInBatches?: ProcessInBatches;
@@ -50,6 +58,8 @@ export type WorkerObject = {
   module: string;
   version: string;
   worker?: string | boolean;
+  /** Creates a built-in browser worker, typically using `type: 'module'`. */
+  loadWorker?: LoadWorker;
   /** Optional Node.js-specific worker filename (for example a `.cjs` asset). */
   workerNode?: string;
   options: {[key: string]: any};

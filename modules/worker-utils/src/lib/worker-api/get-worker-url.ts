@@ -23,13 +23,15 @@ export function getWorkerName(worker: WorkerObject): string {
 }
 
 /**
- * Generate a worker URL based on worker object and options
- * @returns A URL to one of the following:
- * - a published worker on unpkg CDN
- * - a local test worker
- * - a URL provided by the user in options
+ * Returns an explicitly configured, descriptor-provided, or test worker URL.
+ * @param worker Worker descriptor to resolve.
+ * @param options Worker options that can override the descriptor.
+ * @returns A worker URL, or `null` when URL-based fallback resolution is still required.
  */
-export function getWorkerURL(worker: WorkerObject, options: WorkerOptions = {}): string {
+export function getCustomWorkerURL(
+  worker: WorkerObject,
+  options: WorkerOptions = {}
+): string | null {
   const workerOptions = options[worker.id] || {};
 
   const workerFile = isBrowser
@@ -37,11 +39,6 @@ export function getWorkerURL(worker: WorkerObject, options: WorkerOptions = {}):
     : worker.workerNode || `${worker.id}-worker-node.js`;
 
   let url = workerOptions.workerUrl;
-
-  // A loader may publish a module-relative worker asset instead of relying on a CDN fallback.
-  if (!url && typeof worker.worker === 'string') {
-    url = worker.worker;
-  }
 
   // HACK: Allow for non-nested workerUrl for the CompressionWorker.
   // For the compression worker, workerOptions is currently not nested correctly. For most loaders,
@@ -56,7 +53,7 @@ export function getWorkerURL(worker: WorkerObject, options: WorkerOptions = {}):
   // If URL is test, generate local loaders.gl url
   // @ts-ignore _workerType
   const workerType = (options as any)._workerType || (options as any)?.core?._workerType;
-  if (workerType === 'test') {
+  if (!url && workerType === 'test') {
     if (isBrowser) {
       url = `modules/${worker.module}/dist/${workerFile}`;
     } else {
@@ -65,23 +62,48 @@ export function getWorkerURL(worker: WorkerObject, options: WorkerOptions = {}):
     }
   }
 
-  // If url override is not provided, generate a URL to published version on npm CDN unpkg.com
-  if (!url) {
-    // GENERATE
-    let version = worker.version;
-    // On master we need to load npm alpha releases published with the `beta` tag
-    if (version === 'latest') {
-      // throw new Error('latest worker version specified');
-      version = NPM_TAG;
-    }
-    const versionTag = version ? `@${version}` : '';
-    url = `https://unpkg.com/@loaders.gl/${worker.module}${versionTag}/dist/${workerFile}`;
-    warnIfUsingNpmTagFallback(worker, url);
+  // A loader may publish a module-relative worker asset instead of relying on a CDN fallback.
+  if (!url && typeof worker.worker === 'string') {
+    url = worker.worker;
   }
+
+  return url || null;
+}
+
+/**
+ * Generates a worker URL using overrides first and the published CDN artifact as a fallback.
+ * @param worker Worker descriptor to resolve.
+ * @param options Worker options that can override the descriptor.
+ * @returns A loadable worker URL.
+ */
+export function getWorkerURL(worker: WorkerObject, options: WorkerOptions = {}): string {
+  const url = getCustomWorkerURL(worker, options) || getDefaultWorkerURL(worker, true);
 
   assert(url);
 
   // Allow user to override location
+  return url;
+}
+
+/**
+ * Returns the generated URL for a published pre-built worker.
+ * @param worker Worker descriptor to resolve.
+ * @param warn Whether to warn when an uninjected development version uses the npm tag.
+ * @returns The CDN worker URL.
+ */
+export function getDefaultWorkerURL(worker: WorkerObject, warn: boolean = false): string {
+  const workerFile = isBrowser
+    ? `${worker.id}-worker.js`
+    : worker.workerNode || `${worker.id}-worker-node.js`;
+  let version = worker.version;
+  if (version === 'latest') {
+    version = NPM_TAG;
+  }
+  const versionTag = version ? `@${version}` : '';
+  const url = `https://unpkg.com/@loaders.gl/${worker.module}${versionTag}/dist/${workerFile}`;
+  if (warn) {
+    warnIfUsingNpmTagFallback(worker, url);
+  }
   return url;
 }
 

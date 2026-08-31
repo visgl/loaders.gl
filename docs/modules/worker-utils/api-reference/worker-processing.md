@@ -56,6 +56,28 @@ const result = await processOnWorker(MyWorker, input, {
 });
 ```
 
+A worker descriptor may provide a `loadWorker()` factory for its default browser worker.
+Bundler-facing packages typically use the standard static ES module construction pattern:
+
+```typescript
+const MyWorker = {
+  // ...worker metadata
+  worker: true,
+  loadWorker: () =>
+    new Worker(new URL('./workers/my-worker.js', import.meta.url), {type: 'module'})
+};
+```
+
+Each invocation must return a fresh `Worker`. Returning `null`, or throwing while constructing the
+worker, falls back to the descriptor's classic-worker URL or published CDN bundle. A classic worker
+is the browser's non-module worker format, not CommonJS. Errors raised after construction do not
+trigger automatic replay on a classic worker.
+
+Inline source, an explicit `workerUrl`, and local test-worker options take precedence over
+`loadWorker()`. Consequently, adding `loadWorker()` changes the default for compatible browser
+builds without breaking applications that configure or self-host an existing worker bundle. Node.js
+continues to use its platform-specific worker entry.
+
 The input and result use transferable `ArrayBuffer` ownership where possible. Transferred input
 buffers are detached on the calling thread.
 

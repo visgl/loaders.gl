@@ -7,6 +7,7 @@ import {VERSION} from './lib/env-utils/version';
 
 // TYPES
 export type {
+  LoadWorker,
   WorkerObject,
   WorkerOptions,
   WorkerContext,

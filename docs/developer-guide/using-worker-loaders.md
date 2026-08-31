@@ -137,12 +137,42 @@ Most applications do not need to process the raw binary data after parsing, so t
 rarely an issue. If you do, copy the data before parsing or disable worker execution (see
 above).
 
-## Specifying Worker Script URLs (Advanced)
+## Module and classic workers
 
-In JavaScript, worker threads are loaded from separate script files and are typically not
-part of the main application bundle. For ease of use, loaders.gl provides a default set
-of pre-built worker threads through the loaders.gl npm distribution and the `unpkg.com`
-CDN.
+In loaders.gl 5.0, a loader can provide a bundled ES module worker as its default browser worker.
+The loader uses the browser's standard module-worker pattern:
+
+```typescript
+new Worker(new URL('./workers/example-worker.js', import.meta.url), {type: 'module'});
+```
+
+Compatible bundlers can discover this static expression and include the worker module in the
+application build. This avoids a runtime CDN dependency and lets the worker use ES module imports.
+Arrow triangulation is the first loaders.gl API to provide this path.
+
+Loaders without a module-worker factory continue to use their existing pre-built worker. A loader
+with both formats selects its module worker by default and retains the pre-built worker as a
+compatibility fallback. In browser terminology this fallback is a **classic worker**: a standalone
+script loaded without `{type: 'module'}`. It is not a CommonJS worker. CommonJS is relevant to the
+Node.js package build, while browser classic workers normally use a self-contained bundle and may
+use `importScripts()`.
+
+Worker targets are selected in this order:
+
+1. Inline `source`, primarily for tests and advanced integrations.
+2. An explicit loader-scoped `workerUrl`.
+3. A local test worker when `_workerType: 'test'` is set.
+4. The loader's built-in module-worker factory, when available in a browser.
+5. The existing pre-built classic-worker bundle from the package or loaders.gl CDN.
+
+If the factory returns `null` or throws while creating the worker, loaders.gl uses the classic-worker
+URL. Failures that happen after the browser has successfully constructed the worker are reported as
+worker errors; loaders.gl cannot safely replay an in-flight job automatically.
+
+Explicit `workerUrl` settings retain classic-worker behavior. Existing classic workers are not
+deprecated by the module-worker API, and applications do not need to change their worker options.
+
+## Specifying Worker Script URLs (Advanced)
 
 As an advanced option, an application can specify an alternate URL for a pre-built
 worker loader instance.
