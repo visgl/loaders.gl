@@ -276,3 +276,67 @@ test('compatibility fallback selects dimension bands from declared geometry type
     expect(result.length).toBe(1);
   }
 });
+
+test('compatibility fallback extracts every dense-union family back to WKT', async () => {
+  const {convertGeoArrowVector} = await loadFallbackConverter();
+  const wkts = [
+    'POINT (1 2)',
+    'LINESTRING (0 0, 1 1)',
+    'POLYGON ((0 0, 1 0, 0 0))',
+    'MULTIPOINT ((1 2), (3 4))',
+    'MULTILINESTRING ((0 0, 1 1))',
+    'MULTIPOLYGON (((0 0, 1 0, 0 0)))',
+    'GEOMETRYCOLLECTION (POINT (9 8), LINESTRING (1 2, 3 4))',
+    null
+  ];
+  const union = convertGeoArrowVector(
+    arrow.vectorFromArray(wkts, new arrow.Utf8()),
+    'geoarrow.wkt',
+    'geoarrow.geometry',
+    {fallback: 'geojson', geometryTypes: ['Point', 'GeometryCollection']}
+  );
+  const roundTrip = convertGeoArrowVector(union, 'geoarrow.geometry', 'geoarrow.wkt', {
+    fallback: 'geojson'
+  });
+
+  expect(Array.from({length: roundTrip.length}, (_, index) => roundTrip.get(index))).toEqual(wkts);
+});
+
+test('compatibility fallback extracts nullable geometry collections to WKB and WKT', async () => {
+  const {convertGeoArrowVector, convertGeoArrowVectorCellToGeoJSON} = await loadFallbackConverter();
+  const source = arrow.vectorFromArray(
+    [
+      'GEOMETRYCOLLECTION (POINT Z (1 2 3), LINESTRING Z (0 0 0, 1 1 1))',
+      'GEOMETRYCOLLECTION EMPTY',
+      null
+    ],
+    new arrow.Utf8()
+  );
+  const collection = convertGeoArrowVector(source, 'geoarrow.wkt', 'geoarrow.geometrycollection', {
+    fallback: 'geojson',
+    coordinates: 'separated',
+    dimension: 'xyz',
+    offsetType: 'int64',
+    geometryTypes: ['GeometryCollection Z']
+  });
+  const wkb = convertGeoArrowVector(collection, 'geoarrow.geometrycollection', 'geoarrow.wkb', {
+    fallback: 'geojson',
+    dimension: 'xyz'
+  });
+  const roundTrip = convertGeoArrowVector(wkb, 'geoarrow.wkb', 'geoarrow.geometrycollection', {
+    fallback: 'geojson',
+    dimension: 'xyz',
+    geometryTypes: ['GeometryCollection Z']
+  });
+
+  expect(convertGeoArrowVectorCellToGeoJSON(roundTrip, 0, 'geoarrow.geometrycollection')).toEqual(
+    convertGeoArrowVectorCellToGeoJSON(collection, 0, 'geoarrow.geometrycollection')
+  );
+  expect(convertGeoArrowVectorCellToGeoJSON(roundTrip, 1, 'geoarrow.geometrycollection')).toEqual({
+    type: 'GeometryCollection',
+    geometries: []
+  });
+  expect(
+    convertGeoArrowVectorCellToGeoJSON(roundTrip, 2, 'geoarrow.geometrycollection')
+  ).toBeNull();
+});

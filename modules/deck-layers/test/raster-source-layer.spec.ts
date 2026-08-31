@@ -5,6 +5,7 @@
 import {COORDINATE_SYSTEM} from '@deck.gl/core';
 import {describe, expect, test, vi} from 'vitest';
 import type {RasterData, RasterSourceMetadata} from '@loaders.gl/loader-utils';
+import {RasterSet} from '@loaders.gl/tiles';
 import {
   RasterSourceLayer,
   colorizeRasterData,
@@ -320,6 +321,125 @@ describe('RasterSourceLayer lifecycle', () => {
     expect(layer.state.metadata).toBe(GEOGRAPHIC_METADATA);
     expect(layer.state.rasterSet).toBeTruthy();
     layer.releaseRasterSet();
+  });
+
+  test('forwards every RasterSet event and finalizes an owned source', async () => {
+    const callbacks = {
+      onLoadingStateChange: vi.fn(),
+      onMetadataLoad: vi.fn(),
+      onMetadataLoadError: vi.fn(),
+      onRasterLoadStart: vi.fn(),
+      onRasterLoad: vi.fn(),
+      onRasterLoadError: vi.fn()
+    };
+    const close = vi.fn(async () => {});
+    const source = {
+      async getMetadata() {
+        return GEOGRAPHIC_METADATA;
+      },
+      async getRaster() {
+        return createRaster(new Float32Array([0, 1, 2, 3]));
+      },
+      close
+    };
+    const sourceLoader = {
+      id: 'raster-source',
+      name: 'Raster source',
+      module: 'test',
+      version: '1',
+      extensions: ['raster'],
+      mimeTypes: [],
+      type: 'raster',
+      fromUrl: true,
+      fromBlob: false,
+      testURL: () => true,
+      createDataSource: () => source
+    };
+    let subscriber: any;
+    const rasterSet = {
+      metadata: null,
+      subscribe(value: any) {
+        subscriber = value;
+        return vi.fn();
+      },
+      loadMetadata: vi.fn(async () => {}),
+      requestRaster: vi.fn(),
+      finalize: vi.fn()
+    };
+    const fromRasterSource = vi
+      .spyOn(RasterSet, 'fromRasterSource')
+      .mockReturnValue(rasterSet as any);
+    const layer = createRasterLayer({
+      data: 'memory.raster',
+      sources: [sourceLoader],
+      ...callbacks
+    });
+    layer.context = {viewport: createViewport([-10, -5, 20, 15])};
+    layer.setState = (update: any) => Object.assign(layer.state, update);
+    layer.setNeedsUpdate = vi.fn();
+    layer.raiseError = vi.fn();
+    layer.initializeState();
+
+    await layer.resolveSource(layer.props);
+    subscriber.onLoadingStateChange(true);
+    subscriber.onMetadataLoadError(new Error('metadata'));
+    subscriber.onRasterLoadStart(7);
+    subscriber.onRasterLoadError(7, new Error('raster'));
+    subscriber.onUpdate();
+    subscriber.onMetadataLoad(GEOGRAPHIC_METADATA);
+    subscriber.onRasterLoad({
+      requestId: 7,
+      raster: createRaster(new Float32Array([0, 1, 2, 3])),
+      parameters: {viewport: createRasterViewport(layer.context.viewport, GEOGRAPHIC_METADATA)}
+    });
+
+    expect(callbacks.onLoadingStateChange).toHaveBeenCalledWith(true);
+    expect(callbacks.onMetadataLoadError).toHaveBeenCalledOnce();
+    expect(callbacks.onRasterLoadStart).toHaveBeenCalledWith(7);
+    expect(callbacks.onRasterLoadError).toHaveBeenCalledOnce();
+    expect(callbacks.onMetadataLoad).toHaveBeenCalledWith(GEOGRAPHIC_METADATA);
+    expect(callbacks.onRasterLoad).toHaveBeenCalledOnce();
+    expect(layer.setNeedsUpdate).toHaveBeenCalledOnce();
+
+    layer.context = null;
+    layer.finalizeState({} as any);
+    await Promise.resolve();
+    expect(close).toHaveBeenCalledOnce();
+    fromRasterSource.mockRestore();
+  });
+
+  test('reports incompatible sources and covers raster placement fallbacks', async () => {
+    const onSourceError = vi.fn();
+    const layer = createRasterLayer({
+      data: {
+        async getMetadata() {
+          return {layers: []};
+        },
+        async getSchema() {
+          return {fields: []};
+        },
+        async getFeatures() {
+          return {shape: 'geojson-table', type: 'FeatureCollection', features: []};
+        }
+      },
+      onSourceError
+    });
+    layer.initializeState();
+    layer.raiseError = vi.fn();
+    await layer.resolveSource(layer.props);
+    expect(onSourceError).toHaveBeenCalledOnce();
+
+    const metadata = {...GEOGRAPHIC_METADATA, boundingBox: undefined};
+    const viewport = createRasterViewport(createViewport([-1, -1, 1, 1]), metadata);
+    const result = createDefaultRasterRenderResult(
+      createRaster(new Float32Array([Number.NaN, Number.POSITIVE_INFINITY, 1, 1]), {
+        boundingBox: undefined
+      }),
+      {viewport: {...viewport, bounds: undefined}, bands: [0]},
+      metadata
+    );
+    expect(result.bounds).toEqual([0, 2, 2, 0]);
+    expect(Array.from((result.image as any).data)).toHaveLength(16);
   });
 });
 

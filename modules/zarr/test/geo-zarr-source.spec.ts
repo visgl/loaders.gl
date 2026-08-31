@@ -83,6 +83,61 @@ test('GeoZarrRasterSource transposes physical x/y arrays into row-major raster o
   expect(Array.from(raster.data as Uint8Array)).toEqual([1, 4, 2, 5, 3, 6]);
 });
 
+test('GeoZarrRasterSource validates structural metadata and retries failed initialization', async () => {
+  const cases: Array<{name: string; overrides: Record<string, unknown>; message: RegExp}> = [
+    {name: 'duplicate dimensions', overrides: {dimension_names: ['x', 'x']}, message: /unique Zarr dimension_names/},
+    {
+      name: 'missing spatial dimensions',
+      overrides: {dimension_names: ['row', 'column'], attributes: {'spatial:dimensions': null}},
+      message: /could not resolve two spatial dimensions/
+    },
+    {
+      name: 'missing affine transform',
+      overrides: {attributes: {'spatial:transform': null}},
+      message: /requires spatial:transform metadata/
+    },
+    {name: 'unsupported dtype', overrides: {data_type: 'bool'}, message: /dtype bool is not currently supported/}
+  ];
+
+  for (const testCase of cases) {
+    const baseUrl = `https://example.com/${testCase.name.replaceAll(' ', '-')}.zarr`;
+    const source = new GeoZarrRasterSource(baseUrl, {
+      core: {
+        loadOptions: {
+          core: {fetch: createDirectGeoZarrFetcher(baseUrl, 'uint8', ['y', 'x'], [2, 2], undefined, testCase.overrides)}
+        }
+      },
+      zarr: {requireConsolidatedMetadata: false},
+      geozarr: {array: 'values'}
+    });
+    await expect(source.getMetadata(), testCase.name).rejects.toThrow(testCase.message);
+    await expect(source.getMetadata(), `${testCase.name} retries`).rejects.toThrow(testCase.message);
+  }
+});
+
+test('GeoZarrRasterSource applies node registration and rejects rotated reads', async () => {
+  const baseUrl = 'https://example.com/rotated-node.zarr';
+  const fetcher = createDirectGeoZarrFetcher(
+    baseUrl,
+    'uint8',
+    ['y', 'x'],
+    [2, 2],
+    new Uint8Array([1, 2, 3, 4]),
+    {attributes: {'spatial:registration': 'node', 'spatial:transform': [1, 0.25, 0, 0.5, -1, 2]}}
+  );
+  const source = new GeoZarrRasterSource(baseUrl, {
+    core: {loadOptions: {core: {fetch: fetcher}}},
+    zarr: {requireConsolidatedMetadata: false},
+    geozarr: {array: 'values'}
+  });
+  const metadata = await source.getMetadata();
+  expect(metadata.registration).toBe('node');
+  expect(metadata.transform).toEqual([1, 0.25, -0.625, 0.5, -1, 2.25]);
+  await expect(
+    source.getRaster({viewport: createViewport(metadata.boundingBox!, 'EPSG:4326')})
+  ).rejects.toThrow(/rotated affine window reads/);
+});
+
 /** Creates the minimal viewport shape accepted by raster sources. */
 function createViewport(
   bounds: RasterBoundingBox,
@@ -108,9 +163,10 @@ function createDirectGeoZarrFetcher(
   dataType: (typeof DATA_TYPES)[number],
   dimensionNames: [string, string],
   shape: [number, number],
-  data?: Uint8Array
+  data?: Uint8Array,
+  arrayMetadataOverrides: Record<string, any> = {}
 ): typeof fetch {
-  const arrayMetadata = {
+  const baseArrayMetadata = {
     zarr_format: 3,
     node_type: 'array',
     shape,
@@ -125,6 +181,14 @@ function createDirectGeoZarrFetcher(
       'spatial:transform': [1, 0, 0, 0, 1, 0],
       'spatial:bbox': [0, 0, 2, 3],
       'proj:code': 'EPSG:4326'
+    }
+  };
+  const arrayMetadata = {
+    ...baseArrayMetadata,
+    ...arrayMetadataOverrides,
+    attributes: {
+      ...baseArrayMetadata.attributes,
+      ...arrayMetadataOverrides.attributes
     }
   };
   const responses = new Map<string, BodyInit>([

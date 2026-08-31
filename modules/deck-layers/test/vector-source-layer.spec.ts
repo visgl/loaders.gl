@@ -546,6 +546,87 @@ test('VectorSourceLayer metadata subscription covers automatic layer discovery a
   expect(vectorSet.updateViewport).toHaveBeenCalledOnce();
   fromVectorSource.mockRestore();
 });
+
+test('VectorSourceLayer reports incompatible sources and finalizes owned URL sources', async () => {
+  const onSourceError = vi.fn();
+  const incompatibleLayer = createLayer({
+    id: 'incompatible-vector-source',
+    data: {
+      async getMetadata() {
+        return {width: 1, height: 1, bandCount: 1, dtype: 'uint8'};
+      },
+      async getRaster() {
+        return {data: new Uint8Array([1]), width: 1, height: 1, bandCount: 1, dtype: 'uint8'};
+      }
+    } as any,
+    onSourceError
+  });
+  incompatibleLayer.initializeState();
+  incompatibleLayer.raiseError = vi.fn();
+  await incompatibleLayer.resolveVectorSource(incompatibleLayer.props);
+  expect(onSourceError).toHaveBeenCalledOnce();
+  expect(incompatibleLayer.raiseError).toHaveBeenCalledOnce();
+
+  const close = vi.fn(async () => {});
+  const source = {...TEST_VECTOR_SOURCE, close};
+  const sourceLoader = {
+    id: 'vector-source',
+    name: 'Vector source',
+    module: 'test',
+    version: '1',
+    extensions: ['vector'],
+    mimeTypes: [],
+    type: 'vector',
+    fromUrl: true,
+    fromBlob: false,
+    testURL: () => true,
+    createDataSource: () => source
+  };
+  const layer = createLayer({
+    id: 'owned-vector-source',
+    data: 'memory.vector',
+    sources: [sourceLoader] as any,
+    layers: []
+  });
+  layer.initializeState();
+  layer.setState = (update: Record<string, unknown>) => Object.assign(layer.state, update);
+  layer.context = {viewport: createViewport([0, 1, 2, 3])};
+  layer.raiseError = vi.fn();
+  await layer.resolveVectorSource(layer.props);
+  layer.context = null;
+  layer.finalizeState({} as any);
+  await flushMicrotasks();
+  expect(close).toHaveBeenCalledOnce();
+});
+
+test('VectorSourceLayer leaves auto layers idle when metadata has no named layer', async () => {
+  const layer = createLayer({
+    id: 'empty-auto-layers',
+    data: TEST_VECTOR_SOURCE as any,
+    layers: 'auto'
+  });
+  layer.initializeState();
+  layer.setState = (update: Record<string, unknown>) => Object.assign(layer.state, update);
+  let subscriber: any;
+  const vectorSet = {
+    layers: [],
+    setOptions: vi.fn(),
+    updateViewport: vi.fn(),
+    subscribe(callbacks: any) {
+      subscriber = callbacks;
+      return vi.fn();
+    },
+    finalize: vi.fn()
+  };
+  const fromVectorSource = vi
+    .spyOn(VectorSet, 'fromVectorSource')
+    .mockReturnValue(vectorSet as any);
+  layer.state.resolvedData = TEST_VECTOR_SOURCE;
+  (layer as any)._getOrCreateVectorSet(TEST_VECTOR_SOURCE, true);
+  subscriber.onMetadataLoad({layers: []});
+  expect(vectorSet.updateViewport).not.toHaveBeenCalled();
+  fromVectorSource.mockRestore();
+});
 function createArrowTable() {
   const schema = {
     fields: [

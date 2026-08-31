@@ -328,6 +328,97 @@ test('Tile2DSourceLayer updates existing tilesets and viewport callbacks', () =>
   expect(view.isTileVisible).toHaveBeenCalled();
 });
 
+test('Tile2DSourceLayer asynchronously resolves direct sources and reports invalid inputs', async () => {
+  const layer = createLayer({id: 'resolve', data: TEST_TILE_SOURCE as any});
+  layer.context = {viewport: {id: 'main'}, device: createDevice()} as any;
+  layer.initializeState();
+  layer.setState = (update: any) => Object.assign(layer.state, update);
+  layer.updateTilesetForProps = vi.fn();
+
+  layer.updateState({
+    props: layer.props,
+    oldProps: {...layer.props, data: null},
+    changeFlags: {dataChanged: true}
+  });
+  await Promise.resolve();
+  await Promise.resolve();
+
+  expect(layer.state.resolvedData).toBe(TEST_TILE_SOURCE);
+  expect(layer.updateTilesetForProps).toHaveBeenCalledWith(
+    TEST_TILE_SOURCE,
+    true,
+    expect.objectContaining({propsOrDataChanged: true})
+  );
+
+  const onSourceError = vi.fn();
+  const invalidLayer = createLayer({id: 'invalid', data: 42 as any, onSourceError});
+  invalidLayer.context = {} as any;
+  invalidLayer.initializeState();
+  invalidLayer.raiseError = vi.fn();
+  await invalidLayer.resolveTileSource(invalidLayer.props);
+  expect(onSourceError).toHaveBeenCalledWith(expect.any(Error));
+  expect(invalidLayer.raiseError).toHaveBeenCalledWith(
+    expect.any(Error),
+    'resolving 2D tile source'
+  );
+});
+
+test('Tile2DSourceLayer finalizes owned sources and rejects incompatible source types', async () => {
+  const close = vi.fn(async () => {});
+  const source = {...TEST_TILE_SOURCE, close};
+  const sourceLoader = {
+    ...TEST_SOURCE_FACTORY,
+    createDataSource: () => source
+  };
+  const layer = createLayer({
+    id: 'owned-tile-source',
+    data: 'memory.test',
+    sources: [sourceLoader as any]
+  });
+  layer.context = {device: createDevice()} as any;
+  layer.initializeState();
+  layer.setState = (update: any) => Object.assign(layer.state, update);
+  layer.updateTilesetForProps = vi.fn();
+  await layer.resolveTileSource(layer.props);
+  layer.context = null;
+  layer.finalizeState({} as any);
+  await Promise.resolve();
+  expect(close).toHaveBeenCalledOnce();
+
+  const onSourceError = vi.fn();
+  const incompatibleLayer = createLayer({
+    id: 'incompatible-tile-source',
+    data: {
+      async getMetadata() {
+        return {width: 1, height: 1, bandCount: 1, dtype: 'uint8'};
+      },
+      async getRaster() {
+        return {data: new Uint8Array([1]), width: 1, height: 1, bandCount: 1, dtype: 'uint8'};
+      }
+    } as any,
+    onSourceError
+  });
+  incompatibleLayer.context = {} as any;
+  incompatibleLayer.initializeState();
+  incompatibleLayer.raiseError = vi.fn();
+  await incompatibleLayer.resolveTileSource(incompatibleLayer.props);
+  expect(onSourceError).toHaveBeenCalledOnce();
+});
+
+test('Tile2DSourceLayer tracks changed and equivalent activated viewports', () => {
+  const layer = createLayer();
+  layer.context = {viewport: {id: 'main'}, device: createDevice()} as any;
+  layer.initializeState();
+  layer.setNeedsUpdate = vi.fn();
+  const firstViewport = {id: 'secondary', equals: vi.fn(() => false)};
+  layer.activateViewport(firstViewport);
+  expect(layer.setNeedsUpdate).toHaveBeenCalledOnce();
+  const equivalentViewport = {id: 'secondary', equals: vi.fn(() => true)};
+  layer._knownViewports.set('secondary', equivalentViewport);
+  layer.activateViewport(equivalentViewport);
+  expect(layer.setNeedsUpdate).toHaveBeenCalledOnce();
+});
+
 function createDevice(devicePixelRatio = 1) {
   return {
     getCanvasContext: () => ({getDevicePixelRatio: () => devicePixelRatio})
