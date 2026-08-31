@@ -5,6 +5,7 @@
 import {COORDINATE_SYSTEM} from '@deck.gl/core';
 import {expect, test, vi} from 'vitest';
 import {ImageSourceLayer, type ImageSourceLayerProps} from '@loaders.gl/deck-layers';
+import {ImageSet} from '@loaders.gl/tiles';
 const TEST_IMAGE_SOURCE = {
   async getMetadata() {
     return {name: 'test', keywords: [], layers: []};
@@ -51,6 +52,41 @@ test('ImageSourceLayer#resolves URL inputs with sources', () => {
 test('ImageSourceLayer#rejects Blob inputs without sources', () => {
   const layer = createLayer({id: 'test', data: new Blob(['test'])});
   expect(() => layer._resolveData(layer.props)).toThrow(/requires `sources`/);
+});
+test('ImageSourceLayer#resolves mixed loader lists and rejects unresolved strings', () => {
+  const parserLoader = {
+    id: 'parser',
+    name: 'parser',
+    module: 'test',
+    version: '1',
+    extensions: ['bin'],
+    mimeTypes: ['application/octet-stream'],
+    binary: true,
+    parse: async () => ({})
+  };
+  const layer = createLayer({
+    id: 'mixed',
+    data: 'https://example.com/wms',
+    serviceType: 'wms',
+    loaders: [parserLoader as any, TEST_SOURCE_FACTORY as any, TEST_SOURCE_FACTORY as any],
+    sourceOptions: {core: {loaders: [parserLoader as any]}},
+    loadOptions: {fetch: {headers: {'X-Test': 'yes'}}}
+  } as any);
+  expect(layer._resolveData(layer.props)).toBe(TEST_IMAGE_SOURCE);
+
+  expect(() =>
+    createLayer({id: 'missing', data: 'https://example.com/wms'})._resolveData({
+      id: 'missing',
+      data: 'https://example.com/wms'
+    })
+  ).toThrow(/requires `sources`/);
+  expect(createLayer()._resolveData({id: 'null', data: null} as any)).toBeNull();
+  expect(
+    createLayer()._resolveData({
+      id: 'tile',
+      data: {...TEST_IMAGE_SOURCE, getTileData() {}}
+    } as any)
+  ).toBeNull();
 });
 test('ImageSourceLayer#creates an ImageSet for resolved sources', () => {
   const layer = createLayer();
@@ -267,6 +303,84 @@ test('ImageSourceLayer releases and reuses image managers', () => {
   expect(unsubscribe).toHaveBeenCalled();
   expect(finalize).toHaveBeenCalled();
   expect(layer.state).toMatchObject({imageSet: null, resolvedLayers: []});
+});
+
+test('ImageSourceLayer forwards every ImageSet lifecycle event', () => {
+  const listeners: Record<string, (...args: any[]) => void> = {};
+  const unsubscribe = vi.fn();
+  const mockImageSet = {
+    setOptions: vi.fn(),
+    subscribe: vi.fn((listener: typeof listeners) => {
+      Object.assign(listeners, listener);
+      return unsubscribe;
+    }),
+    finalize: vi.fn()
+  };
+  const imageSetSpy = vi.spyOn(ImageSet, 'fromImageSource').mockReturnValue(mockImageSet as any);
+  const callbacks = {
+    onLoadingStateChange: vi.fn(),
+    onMetadataLoad: vi.fn(),
+    onMetadataLoadError: vi.fn(),
+    onImageLoadStart: vi.fn(),
+    onImageLoad: vi.fn(),
+    onImageLoadError: vi.fn()
+  };
+  const layer = createLayer({id: 'events', data: TEST_IMAGE_SOURCE as any, ...callbacks});
+  layer.state = {imageSet: null, resolvedLayers: [], unsubscribeImageSetEvents: null};
+  layer.setState = (update: any) => Object.assign(layer.state, update);
+  layer.setNeedsUpdate = vi.fn();
+  layer._getOrCreateImageSet(TEST_IMAGE_SOURCE, true);
+
+  const error = new Error('fixture');
+  listeners.onLoadingStateChange(true);
+  listeners.onMetadataLoad({name: 'metadata'});
+  listeners.onMetadataLoadError(error);
+  listeners.onImageLoadStart(4);
+  listeners.onImageLoad({requestId: 4});
+  listeners.onImageLoadError(4, error);
+  listeners.onUpdate();
+
+  expect(callbacks.onLoadingStateChange).toHaveBeenCalledWith(true);
+  expect(callbacks.onMetadataLoad).toHaveBeenCalledWith({name: 'metadata'});
+  expect(callbacks.onMetadataLoadError).toHaveBeenCalledWith(error);
+  expect(callbacks.onImageLoadStart).toHaveBeenCalledWith(4);
+  expect(callbacks.onImageLoad).toHaveBeenCalledWith(4);
+  expect(callbacks.onImageLoadError).toHaveBeenCalledWith(4, error);
+  expect(layer.setNeedsUpdate).toHaveBeenCalledTimes(2);
+  layer._releaseImageSet();
+  expect(unsubscribe).toHaveBeenCalledOnce();
+  imageSetSpy.mockRestore();
+});
+
+test('ImageSourceLayer uses scalar feature-info layers and finalizes owned state', async () => {
+  const getFeatureInfoText = vi.fn(async () => 'info');
+  const finalize = vi.fn();
+  const layer = createLayer();
+  layer.state = {
+    resolvedSource: {source: {finalize}, owned: true},
+    imageSet: {
+      imageSource: {getFeatureInfoText},
+      currentRequest: {
+        parameters: {
+          layers: 'roads',
+          boundingBox: [
+            [0, 0],
+            [1, 1]
+          ],
+          width: 1,
+          height: 1
+        }
+      }
+    }
+  };
+  await expect(layer.getFeatureInfoText(3, 4)).resolves.toBe('info');
+  expect(getFeatureInfoText).toHaveBeenCalledWith(
+    expect.objectContaining({query_layers: ['roads']})
+  );
+  layer._releaseImageSet = vi.fn();
+  layer.finalizeState({} as any);
+  await Promise.resolve();
+  expect(finalize).toHaveBeenCalledOnce();
 });
 
 test('ImageSourceLayer resolves direct sources and reports invalid source inputs', async () => {

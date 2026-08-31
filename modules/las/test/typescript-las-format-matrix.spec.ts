@@ -4,7 +4,12 @@
 
 import {expect, test} from 'vitest';
 import type {MeshArrowTable} from '@loaders.gl/schema';
-import {parseLAS, parseLASInBatches} from '../src/lib/typescript/parse-las';
+import {
+  parseLAS,
+  parseLASChunkedIterator,
+  parseLASHeader,
+  parseLASInBatches
+} from '../src/lib/typescript/parse-las';
 
 const POINT_FORMAT_LENGTHS = [20, 28, 26, 34, 57, 63, 30, 36, 38, 59, 67] as const;
 const ALL_COLUMNS = [
@@ -99,6 +104,114 @@ test('TypeScript LAS streams fragmented modern records into exact batches', asyn
   expect(batches[1].data.getChild('GPS_TIME')!.get(0)).toBe(1002.5);
   expect(Array.from(batches[1].data.getChild('NIR')!.toArray())).toEqual([902]);
 });
+
+test.each(ALL_COLUMNS)('TypeScript LAS independently selects the %s column', columnName => {
+  const table = parseLAS(createLASFixture(10, true), {
+    las: {columns: [columnName], colorDepth: 16, fp64: false}
+  });
+  expect(table.data.numRows).toBe(3);
+  expect(table.data.schema.fields.map(field => field.name)).toContain(columnName);
+});
+
+test('TypeScript LAS covers default, empty, and unsupported-per-format column selections', () => {
+  const source = createLASFixture(0, false);
+  const defaultTable = parseLAS(source);
+  expect(defaultTable.data.schema.fields.map(field => field.name)).toContain('POSITION');
+
+  const emptySelection = parseLAS(source, {las: {columns: []}});
+  expect(emptySelection.data.numRows).toBe(3);
+  expect(emptySelection.data.schema.fields.map(field => field.name)).toEqual(['POSITION']);
+
+  const unavailableSelection = parseLAS(source, {
+    las: {columns: ['COLOR_0', 'GPS_TIME', 'NIR', 'WAVEFORM']}
+  });
+  expect(unavailableSelection.data.numRows).toBe(3);
+  expect(unavailableSelection.data.schema.fields.map(field => field.name)).toEqual(['POSITION']);
+});
+
+test('TypeScript LAS chunk iterator covers exact, partial, and oversized batches', () => {
+  const source = createLASFixture(6, false);
+  expect(
+    Array.from(parseLASChunkedIterator(source, 1)).map(batch => batch.header.pointsCount)
+  ).toEqual([1, 1, 1]);
+  expect(
+    Array.from(parseLASChunkedIterator(source, 2)).map(batch => batch.header.pointsCount)
+  ).toEqual([2, 1]);
+  expect(
+    Array.from(parseLASChunkedIterator(source, 10)).map(batch => batch.header.pointsCount)
+  ).toEqual([3]);
+});
+
+test('TypeScript LAS streams synchronous and asynchronous chunk shapes', async () => {
+  const source = createLASFixture(8, true);
+  const synchronousChunks = [
+    new Uint8Array(source, 0, 227),
+    new DataView(source, 227, 148),
+    source.slice(375)
+  ];
+  const synchronousBatches: MeshArrowTable[] = [];
+  for await (const batch of parseLASInBatches(synchronousChunks, {
+    batchSize: 1,
+    las: {columns: ALL_COLUMNS, colorDepth: 'auto'}
+  })) {
+    synchronousBatches.push(batch);
+  }
+  expect(synchronousBatches.map(batch => batch.data.numRows)).toEqual([1, 1, 1]);
+
+  async function* getAsynchronousChunks() {
+    yield source.slice(0, 100);
+    yield new Uint8Array(source, 100, 275);
+    yield new DataView(source, 375);
+  }
+  const asynchronousBatches: MeshArrowTable[] = [];
+  for await (const batch of parseLASInBatches(getAsynchronousChunks(), {
+    batchSize: 10,
+    las: {columns: ['POSITION'], fp64: true}
+  })) {
+    asynchronousBatches.push(batch);
+  }
+  expect(asynchronousBatches).toHaveLength(1);
+  expect(asynchronousBatches[0].data.schema.fields[0].type.toString()).toContain('Float64');
+});
+
+test('TypeScript LAS streaming rejects incomplete headers, signatures, and point records', async () => {
+  await expect(collectLASBatches([new Uint8Array(100)])).rejects.toThrow('incomplete LAS header');
+
+  const invalidSignature = createLASFixture(0, false).slice(0, 300);
+  new Uint8Array(invalidSignature)[0] = 0;
+  await expect(collectLASBatches([invalidSignature])).rejects.toThrow('invalid LAS header');
+
+  const truncated = createLASFixture(0, false).slice(0, -1);
+  await expect(collectLASBatches([truncated])).rejects.toThrow('truncated LAS point data');
+});
+
+test.each([
+  0, 1, 2, 3, 4
+])('TypeScript LAS header covers legacy LAS 1.%i metadata', minorVersion => {
+  const source = createLASFixture(0, false);
+  const bytes = new Uint8Array(source);
+  const view = new DataView(source);
+  bytes[25] = minorVersion;
+  if (minorVersion < 4) {
+    view.setBigUint64(247, 0n, true);
+  }
+  const header = parseLASHeader(source);
+  expect(header.versionAsString).toBe(`1.${minorVersion}`);
+  expect(header.pointsCount).toBe(3);
+  expect(header.metadata?.pointsByReturn).toHaveLength(minorVersion >= 4 ? 15 : 5);
+  expect(header.metadata?.maxGpsTime).toBeUndefined();
+});
+
+/** Collects all batches from the TypeScript streaming parser. */
+async function collectLASBatches(
+  chunks: Iterable<ArrayBuffer | ArrayBufferView>
+): Promise<MeshArrowTable[]> {
+  const batches: MeshArrowTable[] = [];
+  for await (const batch of parseLASInBatches(chunks)) {
+    batches.push(batch);
+  }
+  return batches;
+}
 
 /** Create three deterministic uncompressed LAS records with two Extra Bytes. */
 function createLASFixture(pointDataRecordFormat: number, highColor: boolean): ArrayBuffer {

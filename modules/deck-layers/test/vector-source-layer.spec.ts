@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import {expect, test} from 'vitest';
+import {expect, test, vi} from 'vitest';
 import {convertGeometryToWKB} from '@loaders.gl/gis';
 import {VectorSourceLayer, type VectorSourceLayerProps} from '@loaders.gl/deck-layers';
 import {ArrowTableBuilder} from '@loaders.gl/schema-utils';
@@ -372,6 +372,179 @@ test('VectorSet accepts Arrow tables and VectorSourceLayer renders GeoJsonLayer 
     renderedLayer.props.getFillColor,
     'maps GeoArrowLayer point styling props to GeoJsonLayer props'
   ).toEqual([1, 2, 3, 4]);
+});
+
+test('VectorSourceLayer exhausts option, viewport, and reuse update branches', async () => {
+  const layer = createLayer({
+    id: 'vector-branch-matrix',
+    data: TEST_VECTOR_SOURCE as any,
+    layers: 'auto',
+    crs: 'EPSG:4326',
+    format: 'arrow',
+    debounceTime: 0
+  });
+  layer.initializeState();
+  layer.setState = (update: Record<string, unknown>) => Object.assign(layer.state, update);
+  const setOptions = vi.fn();
+  const updateViewport = vi.fn(async () => {});
+  const finalize = vi.fn();
+  const unsubscribe = vi.fn();
+  const vectorSet = {
+    layers: [] as string[],
+    data: null,
+    isLoaded: false,
+    setOptions,
+    updateViewport,
+    finalize
+  };
+  layer.state.resolvedData = TEST_VECTOR_SOURCE;
+  layer.state.vectorSet = vectorSet;
+  layer.state.unsubscribeVectorSetEvents = unsubscribe;
+  layer.context = {viewport: createViewport([0, 1, 2, 3])};
+  const stableProps = {
+    ...layer.props,
+    loaders: layer.props.loaders,
+    sources: layer.props.sources,
+    sourceOptions: layer.props.sourceOptions
+  };
+
+  layer.updateState({
+    props: {...stableProps, layers: ['roads'], crs: 'EPSG:3857'},
+    oldProps: stableProps,
+    changeFlags: {dataChanged: false, viewportChanged: false}
+  });
+  expect(setOptions).toHaveBeenCalledOnce();
+  expect(updateViewport).toHaveBeenCalledOnce();
+
+  setOptions.mockClear();
+  updateViewport.mockClear();
+  layer.updateState({
+    props: {...stableProps, debounceTime: 10},
+    oldProps: stableProps,
+    changeFlags: {dataChanged: false, viewportChanged: false}
+  });
+  expect(setOptions).toHaveBeenCalledOnce();
+  expect(updateViewport).not.toHaveBeenCalled();
+
+  layer.updateState({
+    props: stableProps,
+    oldProps: stableProps,
+    changeFlags: {dataChanged: false, viewportChanged: true}
+  });
+  expect(updateViewport).not.toHaveBeenCalled();
+  vectorSet.layers = ['metadata-layer'];
+  layer.updateState({
+    props: stableProps,
+    oldProps: stableProps,
+    changeFlags: {dataChanged: false, viewportChanged: true}
+  });
+  expect(updateViewport).toHaveBeenCalledOnce();
+  await (layer as any)._updateViewport();
+  expect(updateViewport).toHaveBeenCalledTimes(2);
+
+  layer.context = {viewport: null};
+  await (layer as any)._updateViewport();
+  layer.context = {viewport: createViewport([0, 1, 2, 3])};
+  layer.state.vectorSet = null;
+  await (layer as any)._updateViewport();
+
+  layer.state.vectorSet = vectorSet;
+  expect((layer as any)._getOrCreateVectorSet(TEST_VECTOR_SOURCE, false)).toBe(vectorSet);
+  (layer as any)._releaseVectorSet();
+  expect(unsubscribe).toHaveBeenCalledOnce();
+  expect(finalize).toHaveBeenCalledOnce();
+  expect(layer.state.vectorSet).toBeNull();
+});
+
+test('VectorSourceLayer covers option defaults, direct source validation, and table render shapes', () => {
+  const layer = createLayer({
+    id: 'vector-options',
+    data: TEST_VECTOR_SOURCE as any,
+    layers: undefined as any,
+    loaders: undefined as any,
+    sources: undefined as any,
+    sourceOptions: undefined as any
+  });
+  layer.initializeState();
+  layer.setState = (update: Record<string, unknown>) => Object.assign(layer.state, update);
+
+  expect(layer.shouldUpdateState()).toBe(true);
+  expect(layer._resolveData(layer.props)).toBe(TEST_VECTOR_SOURCE);
+  expect(() =>
+    layer._resolveData({...layer.props, data: 'https://example.com/data'} as any)
+  ).toThrow(/requires a SourceLoader/);
+  expect(() => layer._resolveData({...layer.props, data: new Blob()} as any)).toThrow(
+    /requires a SourceLoader/
+  );
+  expect(() => (layer as any)._getVectorSetOptions(layer.props)).toThrow(/has not been resolved/);
+
+  layer.state.resolvedData = TEST_VECTOR_SOURCE;
+  layer.state.vectorSet = {layers: ['auto-layer']};
+  expect((layer as any)._getVectorSetOptions(layer.props)).toMatchObject({
+    vectorSource: TEST_VECTOR_SOURCE,
+    layers: ['auto-layer']
+  });
+
+  expect(layer.renderLayers()).toBeNull();
+  layer.state.vectorSet.data = TABLE_A;
+  expect((layer.renderLayers() as any).props.data).toEqual({
+    type: 'FeatureCollection',
+    features: TABLE_A.features
+  });
+  const binaryTable = {shape: 'binary-feature-collection', points: {positions: []}};
+  layer.state.vectorSet.data = binaryTable;
+  expect((layer.renderLayers() as any).props.data).toBe(binaryTable);
+});
+
+test('VectorSourceLayer metadata subscription covers automatic layer discovery and callbacks', async () => {
+  const onMetadataLoad = vi.fn();
+  const onDataLoad = vi.fn();
+  const onError = vi.fn();
+  const onLoadingStateChange = vi.fn();
+  const layer = createLayer({
+    id: 'vector-subscriptions',
+    data: TEST_VECTOR_SOURCE as any,
+    layers: 'auto',
+    onMetadataLoad,
+    onDataLoad,
+    onError,
+    onLoadingStateChange
+  });
+  layer.initializeState();
+  layer.setState = (update: Record<string, unknown>) => Object.assign(layer.state, update);
+  layer.setNeedsUpdate = vi.fn();
+  layer.context = {viewport: createViewport([0, 1, 2, 3])};
+
+  let subscriber: any;
+  const vectorSet = {
+    layers: [],
+    setOptions: vi.fn(),
+    updateViewport: vi.fn(async () => {}),
+    finalize: vi.fn(),
+    subscribe(callbacks: any) {
+      subscriber = callbacks;
+      return vi.fn();
+    }
+  };
+  const fromVectorSource = vi
+    .spyOn(VectorSet, 'fromVectorSource')
+    .mockReturnValue(vectorSet as any);
+  layer.state.resolvedData = TEST_VECTOR_SOURCE;
+  expect((layer as any)._getOrCreateVectorSet(TEST_VECTOR_SOURCE, true)).toBe(vectorSet);
+  subscriber.onLoadingStateChange(true);
+  subscriber.onUpdate();
+  subscriber.onDataLoad(TABLE_A);
+  subscriber.onError(new Error('source error'));
+  subscriber.onMetadataLoad({layers: [{name: 'roads'}]});
+  await flushMicrotasks();
+
+  expect(onLoadingStateChange).toHaveBeenCalledWith(true);
+  expect(onDataLoad).toHaveBeenCalledWith(TABLE_A);
+  expect(onError).toHaveBeenCalledWith(expect.any(Error));
+  expect(onMetadataLoad).toHaveBeenCalledOnce();
+  expect(vectorSet.setOptions).toHaveBeenCalledWith(expect.objectContaining({layers: 'roads'}));
+  expect(vectorSet.updateViewport).toHaveBeenCalledOnce();
+  fromVectorSource.mockRestore();
 });
 function createArrowTable() {
   const schema = {
