@@ -14,6 +14,7 @@ const INPUT = new Uint8Array([1, 2, 3]);
 
 test('compress-utils direction-specific bindings copy atomic and streaming output', async () => {
   let destroyedStreams = 0;
+  const codecBuffer = new Uint8Array([255, ...INPUT, 255]);
   const createStream = async () => ({
     write: (input: Uint8Array) => input,
     finish: () => new Uint8Array([9]),
@@ -22,7 +23,7 @@ test('compress-utils direction-specific bindings copy atomic and streaming outpu
     }
   });
   const module = {
-    compress: async (input: Uint8Array) => input,
+    compress: async () => codecBuffer.subarray(1, 4),
     createCompressStream: createStream,
     decompress: async (input: Uint8Array) => input,
     createDecompressStream: createStream
@@ -34,6 +35,8 @@ test('compress-utils direction-specific bindings copy atomic and streaming outpu
 
   const compressed = await compressor.compress(INPUT.buffer);
   expect(new Uint8Array(compressed)).toEqual(INPUT);
+  expect(compressed.byteLength).toBe(INPUT.byteLength);
+  expect(compressed).not.toBe(codecBuffer.buffer);
   const compressedBatches = await collect(compressor.compressBatches([INPUT.buffer]));
   expect(compressedBatches.map(batch => Array.from(new Uint8Array(batch)))).toEqual([
     [1, 2, 3],
@@ -68,6 +71,10 @@ test('compress-utils combined binding supports both atomic directions', async ()
   expect(new Uint8Array(await compression.decompress(INPUT.buffer))).toEqual(
     new Uint8Array([0, 1, 2])
   );
+  const compressedBatches = await collect(compression.compressBatches([INPUT.buffer]));
+  const decompressedBatches = await collect(compression.decompressBatches([INPUT.buffer]));
+  expect(compressedBatches.map(batch => Array.from(new Uint8Array(batch)))).toEqual([[1, 2, 3]]);
+  expect(decompressedBatches.map(batch => Array.from(new Uint8Array(batch)))).toEqual([[1, 2, 3]]);
   expect(compression.options.compressUtils).toEqual({mode: 'test'});
 });
 

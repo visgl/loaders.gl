@@ -166,12 +166,14 @@ describe('ServiceRuntime', () => {
     const first = runtime.getSource('https://example.com/one.service');
     expect(runtime.getSource('https://example.com/one.service')).toBe(first);
     runtime.clearCache('https://example.com/one.service');
-    expect(runtime.getSource('https://example.com/one.service')).not.toBe(first);
+    const second = runtime.getSource('https://example.com/one.service');
+    expect(second).not.toBe(first);
     runtime.clearCache();
+    expect(runtime.getSource('https://example.com/one.service')).not.toBe(second);
     expect(() => runtime.getSource('https://example.com/other.json')).toThrow(
       'No geospatial service loader recognized URL'
     );
-    expect(created).toBe(2);
+    expect(created).toBe(3);
   });
 
   test('retries explicitly enabled non-idempotent requests', async () => {
