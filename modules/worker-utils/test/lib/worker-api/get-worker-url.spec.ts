@@ -29,6 +29,14 @@ test('getWorkerURL', () => {
   ).toBe('custom-url');
   expect(getCustomWorkerURL(NullWorker, {}), 'no configured URL').toBeNull();
   expect(
+    getCustomWorkerURL({...NullWorker, worker: 'descriptor-worker.js'}, {}),
+    'descriptor fallback is not a configured URL'
+  ).toBeNull();
+  expect(
+    getWorkerURL({...NullWorker, worker: 'descriptor-worker.js'}, {}),
+    'descriptor URL is used as the classic fallback'
+  ).toBe('descriptor-worker.js');
+  expect(
     getWorkerURL({...NullWorker, worker: 'descriptor-worker.js'}, {_workerType: 'test'}),
     'test worker URL precedes a descriptor default'
   ).toBe(

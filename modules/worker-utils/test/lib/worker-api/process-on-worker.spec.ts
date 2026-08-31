@@ -78,7 +78,7 @@ test('processOnWorker uses a built-in worker factory', async () => {
     ...NullWorker,
     id: 'module-null',
     name: 'module null',
-    worker: true,
+    worker: 'modules/worker-utils/dist/null-worker.js',
     loadWorker: () => {
       loadWorkerCalls++;
       const workerUrl = URL.createObjectURL(

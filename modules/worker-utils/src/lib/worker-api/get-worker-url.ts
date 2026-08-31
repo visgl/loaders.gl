@@ -23,7 +23,7 @@ export function getWorkerName(worker: WorkerObject): string {
 }
 
 /**
- * Returns an explicitly configured, descriptor-provided, or test worker URL.
+ * Returns an explicitly configured or test worker URL.
  * @param worker Worker descriptor to resolve.
  * @param options Worker options that can override the descriptor.
  * @returns A worker URL, or `null` when URL-based fallback resolution is still required.
@@ -62,11 +62,6 @@ export function getCustomWorkerURL(
     }
   }
 
-  // A loader may publish a module-relative worker asset instead of relying on a CDN fallback.
-  if (!url && typeof worker.worker === 'string') {
-    url = worker.worker;
-  }
-
   return url || null;
 }
 
@@ -77,7 +72,9 @@ export function getCustomWorkerURL(
  * @returns A loadable worker URL.
  */
 export function getWorkerURL(worker: WorkerObject, options: WorkerOptions = {}): string {
-  const url = getCustomWorkerURL(worker, options) || getDefaultWorkerURL(worker, true);
+  const customWorkerUrl = getCustomWorkerURL(worker, options);
+  const descriptorWorkerUrl = typeof worker.worker === 'string' ? worker.worker : null;
+  const url = customWorkerUrl || descriptorWorkerUrl || getDefaultWorkerURL(worker, true);
 
   assert(url);
 
