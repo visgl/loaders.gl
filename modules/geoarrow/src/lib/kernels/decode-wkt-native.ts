@@ -552,7 +552,11 @@ class WKTParser {
         this.geometryCollectionDepth--;
         break;
     }
-    if (coordinates === null || (coordinates === undefined && geometries === undefined))
+    if (
+      coordinates === null ||
+      geometries === null ||
+      (coordinates === undefined && geometries === undefined)
+    )
       return null;
     if (!this.readCharacter(')')) return null;
 
