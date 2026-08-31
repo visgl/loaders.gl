@@ -190,7 +190,10 @@ describe('compileSQLTableQuery', () => {
         join: {
           child: {
             source: 'other',
-            query: {columns: ['value'], orderBy: [{column: 'value', direction: 'asc'}]}
+            query: {
+              columns: ['value', 'measurement_id'],
+              orderBy: [{column: 'value', direction: 'asc'}]
+            }
           },
           left: 'id',
           right: 'measurement_id'
@@ -199,11 +202,13 @@ describe('compileSQLTableQuery', () => {
       {dialect: 'snowflake'}
     );
 
-    expect(compiled.sql).toContain('("a" + "b") AS "sumValue"');
-    expect(compiled.sql).toContain('("a" - "b") AS "difference"');
-    expect(compiled.sql).toContain('("a" * "b") AS "product"');
-    expect(compiled.sql).toContain('("a" / NULLIF("b", 0)) AS "ratio"');
-    expect(compiled.sql).toContain('JOIN (SELECT "value"');
-    expect(compiled.sql).toContain('ORDER BY "value" ASC');
+    expect(compiled.sql).toBe(
+      [
+        'SELECT ("a" + "b") AS "sumValue", ("a" - "b") AS "difference", ("a" * "b") AS "product", ("a" / NULLIF("b", 0)) AS "ratio", "other"."value"',
+        'FROM "measurements" JOIN (SELECT "value", "measurement_id"',
+        'FROM "other"',
+        'ORDER BY "value" ASC) AS "other" ON "measurements"."id" = "other"."measurement_id"'
+      ].join('\n')
+    );
   });
 });

@@ -3,6 +3,7 @@ import {parseLanceManifest} from '../src/lance-manifest';
 import {LanceSourceLoader} from '../src/lance-source-loader';
 import {LanceDecoderUnavailableError} from '../src/lance-errors';
 
+/** Encodes an unsigned integer as protobuf varint bytes. */
 function varint(value: number): number[] {
   const bytes: number[] = [];
   do {
@@ -14,19 +15,23 @@ function varint(value: number): number[] {
   return bytes;
 }
 
+/** Encodes a protobuf varint field. */
 function field(number: number, value: number | number[]): number[] {
   const bytes = varint(number << 3);
   return [...bytes, ...(Array.isArray(value) ? value : varint(value))];
 }
 
+/** Encodes a length-delimited protobuf byte field. */
 function bytesField(number: number, value: number[]): number[] {
   return [...varint((number << 3) | 2), ...varint(value.length), ...value];
 }
 
+/** Encodes a UTF-8 protobuf string field. */
 function stringField(number: number, value: string): number[] {
   return bytesField(number, Array.from(new TextEncoder().encode(value)));
 }
 
+/** Creates a compact Lance manifest containing optional and packed fields. */
 function createManifest(): Uint8Array {
   const fieldMessage = [
     ...field(1, 2),

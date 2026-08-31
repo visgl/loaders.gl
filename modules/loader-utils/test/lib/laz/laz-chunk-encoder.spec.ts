@@ -125,39 +125,24 @@ test.each([
     dataView.setInt32(offset + 4, -200 - pointIndex, true);
     dataView.setInt32(offset + 8, 300 + pointIndex, true);
     dataView.setUint16(offset + 12, 50 + pointIndex, true);
-    dataView.setUint8(offset + 14, 0x20 | pointIndex);
+    dataView.setUint8(offset + 14, 0x18 | (pointIndex + 1));
     dataView.setUint8(offset + 15, 4 + pointIndex);
     dataView.setInt8(offset + 16, -2 - pointIndex);
     dataView.setUint8(offset + 17, 9 + pointIndex);
     dataView.setUint16(offset + 18, 1000 + pointIndex, true);
     if (pointDataRecordFormat === 1 || pointDataRecordFormat === 3) {
-      dataView.setFloat64(offset + 20, 123.5 + pointIndex, true);
+      dataView.setFloat64(offset + 20, 123.5, true);
     }
-    if (pointDataRecordFormat === 3) {
-      dataView.setUint16(offset + 28, 100 + pointIndex, true);
-      dataView.setUint16(offset + 30, 200 + pointIndex, true);
-      dataView.setUint16(offset + 32, 300 + pointIndex, true);
+    if (pointDataRecordFormat === 2 || pointDataRecordFormat === 3) {
+      const colorOffset = pointDataRecordFormat === 2 ? offset + 20 : offset + 28;
+      dataView.setUint16(colorOffset, 100 + pointIndex, true);
+      dataView.setUint16(colorOffset + 2, 200 + pointIndex, true);
+      dataView.setUint16(colorOffset + 4, 300 + pointIndex, true);
     }
   }
   const metadata = {pointCount, pointDataRecordFormat, pointDataRecordLength: recordLength};
   const decoded = decodeLAZChunk(encodeLAZChunk(rawPointData, metadata), metadata);
-  const decodedDataView = new DataView(decoded.buffer, decoded.byteOffset, decoded.byteLength);
-  expect(decoded.byteLength).toBe(rawPointData.byteLength);
-  for (let pointIndex = 0; pointIndex < pointCount; pointIndex++) {
-    const offset = pointIndex * recordLength;
-    expect(
-      Math.abs(decodedDataView.getInt32(offset, true) - (100 + pointIndex))
-    ).toBeLessThanOrEqual(1);
-    expect(
-      Math.abs(decodedDataView.getInt32(offset + 4, true) + 200 + pointIndex)
-    ).toBeLessThanOrEqual(1);
-    expect(
-      Math.abs(decodedDataView.getInt32(offset + 8, true) - (300 + pointIndex))
-    ).toBeLessThanOrEqual(1);
-    expect(
-      Math.abs(decodedDataView.getUint16(offset + 12, true) - (50 + pointIndex))
-    ).toBeLessThanOrEqual(1);
-  }
+  expect(decoded).toEqual(rawPointData);
 });
 test('LAZChunkDecoder#decodes modern Extra Bytes directly into point-data targets', () => {
   for (const pointDataRecordFormat of [6, 7, 8]) {
