@@ -7,6 +7,7 @@ import {Tiles3DArchiveFileLoader, Tiles3DLoader} from '@loaders.gl/3d-tiles';
 import {I3SLoader, SLPKLoader} from '@loaders.gl/i3s';
 import {I3SSource, Tile3D, Tiles3DSource, Tileset3D} from '@loaders.gl/tiles';
 import {createSource, Tile3DSourceLayer} from '@loaders.gl/deck-layers';
+import {inferTilesetLoader} from '../src/tile-3d-source-layer';
 import {loadArrayBufferFromFile} from 'test/utils/readable-files';
 import {
   createSLPKArchiveResolver,
@@ -38,10 +39,34 @@ test('createSource#keeps non-archive loaders on standard source classes', () => 
   expect(tiles3DSource instanceof Tiles3DSource).toBeTruthy();
   expect(i3sSource instanceof I3SSource).toBeTruthy();
 });
+test('inferTilesetLoader#recognizes extensionless ArcGIS SceneServer urls', () => {
+  const loader = inferTilesetLoader(
+    'https://example.com/arcgis/rest/services/Buildings/SceneServer/layers/0?f=json',
+    [Tiles3DLoader, I3SLoader]
+  );
+  expect(loader).toBe(I3SLoader);
+});
+test('inferTilesetLoader#does not guess from ambiguous urls', () => {
+  const loader = inferTilesetLoader('https://example.com/root.json', [Tiles3DLoader, I3SLoader]);
+  expect(loader).toBeUndefined();
+});
 test('Tile3DSourceLayer#accepts source-backed data', () => {
   const source = createSource('https://example.com/data/test.slpk', SLPKLoader, {});
   const layer = new Tile3DSourceLayer({id: 'slpk-source-layer', data: source});
   expect(layer.props.data, 'preserves the source passed through the data prop').toBe(source);
+});
+test('Tile3DSourceLayer#installs source loading on every layer instance', () => {
+  const firstLayer = new Tile3DSourceLayer({
+    id: 'switchable-source-layer',
+    data: 'https://example.com/first/tileset.json'
+  });
+  const replacementLayer = new Tile3DSourceLayer({
+    id: 'switchable-source-layer',
+    data: 'https://example.com/second/tileset.json'
+  });
+  expect((firstLayer as any)._loadTileset).toBeTypeOf('function');
+  expect((replacementLayer as any)._loadTileset).toBeTypeOf('function');
+  expect((replacementLayer as any)._loadTileset).not.toBe((firstLayer as any)._loadTileset);
 });
 test('createSource#initializes Tileset3D from a 3tz url', async () => {
   const source = createSource(TILES_ARCHIVE_URL, Tiles3DLoader, {});

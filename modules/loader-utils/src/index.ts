@@ -157,6 +157,7 @@ export {
   createAuthenticatedFetch,
   createBearerTokenCredential,
   createQueryParameterCredential,
+  getAuthenticatedFetch,
   redactCredentialURL
 } from './lib/request-utils/request-credentials';
 export type {
