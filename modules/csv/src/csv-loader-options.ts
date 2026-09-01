@@ -3,6 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import type {LoaderOptions} from '@loaders.gl/loader-utils';
+import type {GeoArrowEncodingPreference} from '@loaders.gl/schema';
 import type {ArrowViewTypeMode} from '@loaders.gl/schema-utils';
 
 // __VERSION__ is injected by babel-plugin-version-inline
@@ -12,6 +13,8 @@ export const CSV_LOADER_VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION
 export const DEFAULT_CSV_SHAPE = 'object-row-table';
 
 export type CSVLoaderOptions = LoaderOptions & {
+  /** Preferred GeoArrow encoding for detected geometry columns. */
+  geoarrow?: {encodingPreference?: GeoArrowEncodingPreference};
   csv?: {
     /** Selects row-table, columnar-table, or Arrow-table output. */
     shape?: 'array-row-table' | 'object-row-table' | 'columnar-table' | 'arrow-table';
@@ -30,6 +33,8 @@ export type CSVLoaderOptions = LoaderOptions & {
     skipEmptyLinesIsExplicit?: boolean;
     detectGeometryColumns?: boolean;
     geometryEncoding?: 'wkb' | 'source';
+    /** Preferred GeoArrow encoding for detected geometry columns. */
+    geoarrow?: {encodingPreference?: GeoArrowEncodingPreference};
     delimitersToGuess?: string[];
   };
 };

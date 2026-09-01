@@ -5,7 +5,12 @@
 import type {Loader, LoaderOptions} from '@loaders.gl/loader-utils';
 // import {geojsonToBinary} from '@loaders.gl/gis';
 // import {GeoJSONTable} from '@loaders.gl/schema';
-import type {GeoJSONTable, ObjectRowTable, ArrowTable} from '@loaders.gl/schema';
+import type {
+  GeoArrowEncodingPreference,
+  GeoJSONTable,
+  ObjectRowTable,
+  ArrowTable
+} from '@loaders.gl/schema';
 import {KMLFormat} from './kml-format';
 
 // __VERSION__ is injected by babel-plugin-version-inline
@@ -13,8 +18,11 @@ import {KMLFormat} from './kml-format';
 const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : 'latest';
 
 export type KMLLoaderOptions = LoaderOptions & {
+  /** Preferred encoding for Arrow geometry output. */
+  geoarrow?: {encodingPreference?: GeoArrowEncodingPreference};
   kml?: {
     shape?: 'object-row-table' | 'geojson-table' | 'arrow-table' | 'raw';
+    geoarrow?: {encodingPreference?: GeoArrowEncodingPreference};
   };
 };
 

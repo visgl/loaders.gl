@@ -9,7 +9,8 @@ import type {
   FeatureCollection,
   ObjectRowTable,
   BinaryFeatureCollection,
-  ArrowTable
+  ArrowTable,
+  GeoArrowEncodingPreference
 } from '@loaders.gl/schema';
 import {gpx} from '@tmcw/togeojson';
 import {DOMParser} from '@xmldom/xmldom';
@@ -22,8 +23,11 @@ import {GPXLoader as GPXLoaderMetadata} from './gpx-loader';
 const {preload: _GPXLoaderPreload, ...GPXLoaderMetadataWithoutPreload} = GPXLoaderMetadata;
 
 export type GPXLoaderOptions = LoaderOptions & {
+  /** Preferred encoding for Arrow geometry output. */
+  geoarrow?: {encodingPreference?: GeoArrowEncodingPreference};
   gpx?: {
     shape?: 'object-row-table' | 'geojson-table' | 'arrow-table' | 'binary-geometry' | 'raw';
+    geoarrow?: {encodingPreference?: GeoArrowEncodingPreference};
   };
 };
 
@@ -86,7 +90,10 @@ function parseTextSync(
       return table;
     }
     case 'arrow-table':
-      return convertFeatureCollectionToArrowTable(geojson.features);
+      return convertFeatureCollectionToArrowTable(
+        geojson.features,
+        options?.geoarrow || gpxOptions.geoarrow
+      );
     case 'binary-geometry':
       return geojsonToBinary(geojson.features);
 

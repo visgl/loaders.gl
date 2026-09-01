@@ -46,7 +46,14 @@ const arrowTable = await load(url, GeoJSONLoader, {
 });
 ```
 
-`geojson.shape: 'arrow-table'` converts GeoJSON features to a GeoArrow-compatible Arrow table. Feature `properties` become regular columns and the geometry is written to a binary `geometry` column with `geoarrow.wkb` metadata. Use `json.geoarrowGeometryColumn` to choose a different geometry column name.
+`geojson.shape: 'arrow-table'` converts GeoJSON features to a GeoArrow-compatible Arrow table. Feature `properties` become regular columns and the geometry is written to a binary `geometry` column with `geoarrow.wkb` metadata by default. Set `geoarrow.encodingPreference` to `'optimized'` for native coordinate buffers or to `'geoarrow.geometry'` for a stable dense union. Use `json.geoarrowGeometryColumn` to choose a different geometry column name.
+
+```typescript
+const nativeTable = await load(url, GeoJSONLoader, {
+  geojson: {shape: 'arrow-table'},
+  geoarrow: {encodingPreference: 'optimized'}
+});
+```
 
 For larger files, GeoJSONLoader supports streaming JSON parsing, in which case it yields batches of rows from one array. By default, streamed GeoJSON reads `$.features`. You can override `options.json.jsonpaths` when the feature array is stored elsewhere.
 
@@ -122,6 +129,7 @@ Supports table category options such as `batchType` and `batchSize`.
 | `json.arrowConversion` |                                                                                       | `object`   | `{onTypeMismatch: 'error', onMissingField: 'error', onExtraField: 'error', integerConversion: 'error', logRecoveries: true}`                                                  | Optional Arrow conversion policy for `geojson.shape: 'arrow-table'`. `onTypeMismatch: 'null'`, `onMissingField: 'null'`, and `integerConversion: 'null'` write `null` only for nullable fields. `onExtraField: 'drop'` omits fields that are not in the schema. `integerConversion: 'clamp-and-round'` applies lossy integer conversion, and `'warn'` does the same while logging. |
 | `json.arrowConversion.viewTypes` |                                                                                | `'never' \| 'prefer' \| 'require'` | `'never'`                                                                                                                        | Controls whether supported Arrow runtimes emit `BinaryView` and `Utf8View`, with fallback in `'prefer'` mode. |
 | `json.geoarrowGeometryColumn` |                                                                                 | `string`   | `'geometry'`                                                                                                                                     | Geometry column name used for GeoArrow WKB output. Requires `geojson.shape: 'arrow-table'`. |
+| `geoarrow.encodingPreference` |                                                                                 | `'geoarrow.wkb' \| 'geoarrow.geometry' \| 'optimized'` | `'geoarrow.wkb'` | Arrow geometry representation. WKB is compact and compatible; `geoarrow.geometry` is a stable dense union; `optimized` selects a concrete native encoding for homogeneous data and a dense union for mixed data. |
 | `json.jsonpaths`       | [![Website shields.io](https://img.shields.io/badge/v2.2-blue.svg?style=flat-square)] | `string[]` | `['$.features']`                                                                                                                                 | A list of JSON paths (see below) indicating the array that can be streamed.                                                           |
 | `metadata` (top level) | [![Website shields.io](https://img.shields.io/badge/v2.2-blue.svg?style=flat-square)] | `boolean`  | If `true`, yields an initial and final batch containing the partial and final result (i.e. the root object, excluding the array being streamed). |
 

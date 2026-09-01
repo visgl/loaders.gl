@@ -3,7 +3,13 @@
 // Copyright (c) vis.gl contributors
 
 import type {StrictLoaderOptions, LoaderWithParser} from '@loaders.gl/loader-utils';
-import type {Batch, GeoJSONTable, ArrowTable, ArrowTableBatch} from '@loaders.gl/schema';
+import type {
+  Batch,
+  GeoArrowEncodingPreference,
+  GeoJSONTable,
+  ArrowTable,
+  ArrowTableBatch
+} from '@loaders.gl/schema';
 import {SHPLoaderOptions} from './shp-loader';
 import {
   parseShapefile,
@@ -25,9 +31,13 @@ const {preload: _ShapefileLoaderPreload, ...ShapefileLoaderMetadataWithoutPreloa
 export type ShapefileLoaderOptions = StrictLoaderOptions &
   SHPLoaderOptions &
   DBFLoaderOptions & {
+    /** Preferred encoding for Arrow geometry output. */
+    geoarrow?: {encodingPreference?: GeoArrowEncodingPreference};
     shapefile?: {
       shape?: 'geojson-table' | 'arrow-table' | 'v3';
       geoarrowEncoding?: SHPGeoArrowEncoding;
+      /** Preferred encoding for Arrow geometry output. */
+      geoarrow?: {encodingPreference?: GeoArrowEncodingPreference};
       batchSize?: number;
       /** @deprecated Worker URLs must be specified with .dbf.workerUrl * .shp.workerUrl */
       workerUrl?: never;

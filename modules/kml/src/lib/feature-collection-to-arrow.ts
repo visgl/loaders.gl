@@ -10,6 +10,8 @@ import type {
   GeoJsonProperties,
   Schema
 } from '@loaders.gl/schema';
+import type {GeoArrowEncodingPreference} from '@loaders.gl/schema';
+import {convertFeaturesToGeoArrowTable} from '@loaders.gl/gis';
 import {
   encodeWKBGeometryValue,
   getCoordinateDimensions as getCoordinateDimensionsFromGeometry,
@@ -29,7 +31,13 @@ const GEOMETRY_COLUMN_NAME = 'geometry';
  * @param features - Parsed GeoJSON features.
  * @returns Arrow table preserving properties and storing geometry as WKB bytes.
  */
-export function convertFeatureCollectionToArrowTable(features: Feature[]): ArrowTable {
+export function convertFeatureCollectionToArrowTable(
+  features: Feature[],
+  options: {encodingPreference?: GeoArrowEncodingPreference} = {}
+): ArrowTable {
+  if (options.encodingPreference && options.encodingPreference !== 'geoarrow.wkb') {
+    return convertFeaturesToGeoArrowTable(features, options);
+  }
   const propertyRows = features.map(feature => normalizeProperties(feature.properties));
   const propertySchema = getPropertySchema(propertyRows);
   const schema = buildFeatureArrowSchema(propertySchema, features);

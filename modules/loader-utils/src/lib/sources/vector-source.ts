@@ -2,7 +2,13 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import type {ArrowTable, BinaryFeatureCollection, GeoJSONTable, Schema} from '@loaders.gl/schema';
+import type {
+  ArrowTable,
+  BinaryFeatureCollection,
+  GeoArrowEncodingPreference,
+  GeoJSONTable,
+  Schema
+} from '@loaders.gl/schema';
 import type {CRSIdentifier, SpatialReference} from '@math.gl/crs';
 
 export type VectorSourceProps = {};
@@ -74,6 +80,8 @@ export type GetFeaturesParameters = {
    * `arrow` returns a loaders.gl `ArrowTable` with `shape: 'arrow-table'`.
    */
   format?: 'geojson' | 'binary' | 'arrow';
+  /** Preferred GeoArrow encoding when `format` is `arrow`. */
+  geoarrow?: {encodingPreference?: GeoArrowEncodingPreference};
   /** Abort signal for canceling in-flight requests. */
   signal?: AbortSignal;
 };

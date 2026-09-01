@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import type {Schema, ObjectRowTable} from '@loaders.gl/schema';
+import type {GeoArrowEncodingPreference, Schema, ObjectRowTable} from '@loaders.gl/schema';
 import type {StrictLoaderOptions} from '@loaders.gl/loader-utils';
 import type {Proj4CRSDefinition} from '@math.gl/proj4';
 
@@ -13,10 +13,14 @@ import type {Proj4CRSDefinition} from '@math.gl/proj4';
 export type SHPGeoArrowEncoding = 'geoarrow.wkb' | 'geoarrow';
 
 export type SHPLoaderOptions = StrictLoaderOptions & {
+  /** Preferred encoding for Arrow geometry output. */
+  geoarrow?: {encodingPreference?: GeoArrowEncodingPreference};
   shp?: {
     _maxDimensions?: number;
     shape?: 'arrow-table' | 'wkb';
     geoarrowEncoding?: SHPGeoArrowEncoding;
+    /** Preferred encoding for Arrow geometry output. */
+    geoarrow?: {encodingPreference?: GeoArrowEncodingPreference};
     batchSize?: number;
     /** Override the URL to the worker bundle (by default loads from unpkg.com) */
     workerUrl?: string;
@@ -39,6 +43,8 @@ export type ShapefileLoaderOptions = StrictLoaderOptions &
     shapefile?: {
       shape?: 'geojson-table' | 'arrow-table' | 'v3';
       geoarrowEncoding?: SHPGeoArrowEncoding;
+      /** Preferred encoding for Arrow geometry output. */
+      geoarrow?: {encodingPreference?: GeoArrowEncodingPreference};
       batchSize?: number;
     };
     gis?: {

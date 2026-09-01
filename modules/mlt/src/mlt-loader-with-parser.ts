@@ -3,6 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import type {Loader, LoaderWithParser, LoaderOptions} from '@loaders.gl/loader-utils';
+import type {GeoArrowEncodingPreference} from '@loaders.gl/schema';
 import {parseMLT} from './lib/parse-mlt';
 import {MLTWorkerLoader as MLTWorkerLoaderMetadata} from './mlt-loader';
 import {MLTLoader as MLTLoaderMetadata} from './mlt-loader';
@@ -12,6 +13,8 @@ const {preload: _MLTWorkerLoaderPreload, ...MLTWorkerLoaderMetadataWithoutPreloa
 const {preload: _MLTLoaderPreload, ...MLTLoaderMetadataWithoutPreload} = MLTLoaderMetadata;
 
 export type MLTLoaderOptions = LoaderOptions & {
+  /** Preferred encoding for Arrow geometry output. */
+  geoarrow?: {encodingPreference?: GeoArrowEncodingPreference};
   mlt?: {
     /** Shape of returned data */
     shape?: 'geojson-table' | 'binary-geometry' | 'arrow-table';
@@ -23,6 +26,8 @@ export type MLTLoaderOptions = LoaderOptions & {
     layerProperty?: string;
     /** Layer filter. If provided, only features belonging to the named layers will be included; otherwise features from all layers are returned. */
     layers?: string[];
+    /** Preferred encoding for Arrow geometry output. */
+    geoarrow?: {encodingPreference?: GeoArrowEncodingPreference};
   };
 };
 

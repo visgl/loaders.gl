@@ -19,6 +19,7 @@ import {
   makeWKBGeometryDataFromArray,
   setWKBGeometryColumnMetadata,
   transformGeoJsonCoords,
+  convertFeaturesToGeoArrowTable,
   type GeoParquetGeometryType
 } from '@loaders.gl/gis';
 import {WKBBuilder} from '@loaders.gl/gis';
@@ -42,6 +43,8 @@ export type ParseFlatGeobufOptions = {
   boundingBox?: [[number, number], [number, number]];
   crs?: Proj4CRSDefinition;
   reproject?: boolean;
+  /** Preferred encoding for Arrow geometry output. */
+  geoarrow?: {encodingPreference?: import('@loaders.gl/schema').GeoArrowEncodingPreference};
 };
 
 /** Portable FlatGeobuf query options, with an indexed spatial envelope. */
@@ -90,6 +93,12 @@ export function parseFlatGeobufToArrowTable(
   arrayBuffer: ArrayBuffer,
   options: ParseFlatGeobufOptions = {}
 ): ArrowTable {
+  const preference = options.geoarrow?.encodingPreference;
+  if (preference && preference !== 'geoarrow.wkb') {
+    return convertFeaturesToGeoArrowTable(makeGeoJsonTable(arrayBuffer, options).features, {
+      encodingPreference: preference
+    });
+  }
   const header = readFlatGeobufHeader(arrayBuffer);
   const schema = makeArrowSchema(header);
   const projection = getProjection(header, options.reproject, options.crs || 'WGS84');

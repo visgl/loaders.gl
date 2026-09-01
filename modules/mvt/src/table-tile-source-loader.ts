@@ -20,6 +20,7 @@ import type {
   BinaryFeatureCollection,
   ArrowTable
 } from '@loaders.gl/schema';
+import type {GeoArrowEncodingPreference} from '@loaders.gl/schema';
 import {convertFeaturesToWKBArrowTable} from '@loaders.gl/gis';
 import {deduceTableSchema} from '@loaders.gl/schema-utils';
 import {Stats, Stat} from '@probe.gl/stats';
@@ -35,6 +36,8 @@ import {wrapFeatures} from './lib/vector-tiler/features/wrap-features'; // date 
 
 /** Options to configure tiling */
 export type TableTileSourceLoaderOptions = DataSourceOptions & {
+  /** Preferred encoding for Arrow geometry output. */
+  geoarrow?: {encodingPreference?: GeoArrowEncodingPreference};
   table?: {
     coordinates?: 'local' | 'wgs84' | 'EPSG:4326';
     /** max zoom to preserve detail on */
@@ -59,6 +62,8 @@ export type TableTileSourceLoaderOptions = DataSourceOptions & {
     lineMetrics?: boolean;
     /** Shape of returned vector tile data. */
     shape?: 'geojson-table' | 'arrow-table';
+    /** Preferred encoding for Arrow geometry output. */
+    geoarrow?: {encodingPreference?: GeoArrowEncodingPreference};
   };
 };
 
@@ -202,7 +207,11 @@ export class TableVectorTileSource
     const table = this.getTileSync(tileIndex);
     log.info(2, 'getVectorTile', tileIndex, table)();
     return this.tableOptions.shape === 'arrow-table' && table
-      ? convertFeaturesToWKBArrowTable(table.features)
+      ? convertFeaturesToWKBArrowTable(table.features, {
+          encodingPreference:
+            (this.options as TableTileSourceLoaderOptions).geoarrow?.encodingPreference ||
+            this.tableOptions.geoarrow?.encodingPreference
+        })
       : table;
   }
 

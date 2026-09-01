@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import type {Schema} from '@loaders.gl/schema';
+import type {GeoArrowEncodingPreference, Schema} from '@loaders.gl/schema';
 import type {
   CoreAPI,
   SourceLoader,
@@ -36,12 +36,16 @@ export type PMTilesRangeRequestOptions = RangeRequestSchedulerProps & {
 };
 
 export type PMTilesSourceLoaderOptions = DataSourceOptions & {
+  /** Preferred encoding for Arrow geometry output. */
+  geoarrow?: {encodingPreference?: GeoArrowEncodingPreference};
   core?: DataSourceOptions['core'] & {
     loadOptions?: TileJSONLoaderOptions & MVTLoaderOptions & ImageBitmapLoaderOptions;
   };
   pmtiles?: {
     /** Shape of returned vector tile data. */
     shape?: 'geojson-table' | 'columnar-table' | 'binary-geometry' | 'arrow-table';
+    /** Preferred encoding for Arrow geometry output. */
+    geoarrow?: {encodingPreference?: GeoArrowEncodingPreference};
   };
   rangeRequests?: PMTilesRangeRequestOptions;
   /** @deprecated Use `rangeRequests`. */
@@ -194,7 +198,11 @@ export class PMTilesTileSource
         shape: this.options.pmtiles?.shape || inheritedMVTOptions?.shape || 'geojson-table',
         coordinates: 'wgs84',
         tileIndex: {x: tileParams.x, y: tileParams.y, z: tileParams.z},
-        layers: selectedLayers
+        layers: selectedLayers,
+        geoarrow:
+          (this.options as PMTilesSourceLoaderOptions).geoarrow ||
+          this.options.pmtiles?.geoarrow ||
+          inheritedMVTOptions?.geoarrow
       }
     };
 

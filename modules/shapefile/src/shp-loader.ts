@@ -3,7 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import type {Loader, StrictLoaderOptions} from '@loaders.gl/loader-utils';
-import type {ArrowTable, ArrowTableBatch} from '@loaders.gl/schema';
+import type {ArrowTable, ArrowTableBatch, GeoArrowEncodingPreference} from '@loaders.gl/schema';
 import type {SHPGeoArrowEncoding} from './lib/parsers/types';
 import {SHPFormat} from './shp-format';
 
@@ -15,10 +15,14 @@ export const SHP_MAGIC_NUMBER = [0x00, 0x00, 0x27, 0x0a];
 
 /** SHPLoader */
 export type SHPLoaderOptions = StrictLoaderOptions & {
+  /** Preferred encoding for Arrow geometry output. */
+  geoarrow?: {encodingPreference?: GeoArrowEncodingPreference};
   shp?: {
     _maxDimensions?: number;
     shape?: 'arrow-table' | 'wkb';
     geoarrowEncoding?: SHPGeoArrowEncoding;
+    /** Preferred encoding for Arrow geometry output. */
+    geoarrow?: {encodingPreference?: GeoArrowEncodingPreference};
     batchSize?: number;
     /** Override the URL to the worker bundle (by default loads from unpkg.com) */
     workerUrl?: string;

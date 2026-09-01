@@ -15,16 +15,21 @@ import type * as arrow from 'apache-arrow';
 import type {JSONLoaderOptions} from './json-loader';
 import {GeoJSONFormat} from './json-format';
 import type {ArrowConversionOptions} from './lib/parsers/convert-row-table-to-arrow';
+import type {GeoArrowEncodingPreference} from '@loaders.gl/schema';
 
 // __VERSION__ is injected by babel-plugin-version-inline
 // @ts-ignore TS2304: Cannot find name '__VERSION__'.
 const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : 'latest';
 
 export type GeoJSONLoaderOptions = Omit<JSONLoaderOptions, 'json'> & {
+  /** Preferred encoding for Arrow geometry output. */
+  geoarrow?: {encodingPreference?: GeoArrowEncodingPreference};
   /** GeoJSON-specific loader options. */
   geojson?: {
     /** Requested GeoJSON output shape. */
     shape?: 'geojson-table' | 'arrow-table' | 'binary-feature-collection';
+    /** Preferred encoding for Arrow geometry output. */
+    geoarrow?: {encodingPreference?: GeoArrowEncodingPreference};
   };
   /** JSON parser and GeoArrow conversion options used by GeoJSONLoader. */
   json?: Omit<NonNullable<JSONLoaderOptions['json']>, 'shape'> & {
@@ -34,6 +39,8 @@ export type GeoJSONLoaderOptions = Omit<JSONLoaderOptions, 'json'> & {
     arrowConversion?: ArrowConversionOptions;
     /** Geometry column name to use when converting GeoJSON features to GeoArrow WKB. */
     geoarrowGeometryColumn?: string;
+    /** Preferred encoding for Arrow geometry output. */
+    geoarrow?: {encodingPreference?: GeoArrowEncodingPreference};
   };
 };
 

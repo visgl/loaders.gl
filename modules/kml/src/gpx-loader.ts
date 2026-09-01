@@ -7,7 +7,8 @@ import type {
   GeoJSONTable,
   ObjectRowTable,
   BinaryFeatureCollection,
-  ArrowTable
+  ArrowTable,
+  GeoArrowEncodingPreference
 } from '@loaders.gl/schema';
 import {GPXFormat} from './kml-format';
 
@@ -16,8 +17,11 @@ import {GPXFormat} from './kml-format';
 const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : 'latest';
 
 export type GPXLoaderOptions = LoaderOptions & {
+  /** Preferred encoding for Arrow geometry output. */
+  geoarrow?: {encodingPreference?: GeoArrowEncodingPreference};
   gpx?: {
     shape?: 'object-row-table' | 'geojson-table' | 'arrow-table' | 'binary-geometry' | 'raw';
+    geoarrow?: {encodingPreference?: GeoArrowEncodingPreference};
   };
 };
 
