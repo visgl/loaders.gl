@@ -3,7 +3,10 @@
 // Copyright (c) vis.gl contributors
 
 import {describe, expect, test, vi} from 'vitest';
-import {processLoaderWorkerData} from '../../../src/lib/worker-loader-utils/create-loader-worker';
+import {
+  processLoaderWorkerBatches,
+  processLoaderWorkerData
+} from '../../../src/lib/worker-loader-utils/create-loader-worker';
 
 const BASE_LOADER = {
   id: 'test',
@@ -47,6 +50,75 @@ describe('processLoaderWorkerData', () => {
     expect(result).toEqual({parsed: true, serialized: true});
     expect(parse).toHaveBeenCalledOnce();
     expect(serializeWorkerResult).toHaveBeenCalledOnce();
+  });
+
+  test('retains parser state and serializes each output batch', async () => {
+    const parseInBatches = vi.fn(async function* (inputIterator: AsyncIterable<number>) {
+      let total = 0;
+      for await (const input of inputIterator) {
+        total += input;
+        yield {batchType: 'data', value: total};
+      }
+    });
+    const serializeWorkerBatch = vi.fn((batch: {batchType: string; value: number}) => ({
+      ...batch,
+      serialized: true
+    }));
+    const batches = [];
+
+    for await (const batch of processLoaderWorkerBatches(
+      {
+        ...BASE_LOADER,
+        parseInBatches,
+        serializeWorkerBatch
+      } as any,
+      [1, 2, 3] as any,
+      {core: {worker: false}}
+    )) {
+      batches.push(batch);
+    }
+
+    expect(batches).toEqual([
+      {batchType: 'data', value: 1, serialized: true},
+      {batchType: 'data', value: 3, serialized: true},
+      {batchType: 'data', value: 6, serialized: true}
+    ]);
+    expect(parseInBatches).toHaveBeenCalledOnce();
+    expect(serializeWorkerBatch).toHaveBeenCalledTimes(3);
+  });
+
+  test('propagates parser errors lazily and closes the parser iterator early', async () => {
+    const parserError = new Error('parser failed on second batch');
+    let parserClosed = false;
+    const parseInBatches = async function* (_inputIterator: AsyncIterable<number>) {
+      try {
+        yield {batchType: 'data', value: 1};
+        throw parserError;
+      } finally {
+        parserClosed = true;
+      }
+    };
+    const outputIterator = processLoaderWorkerBatches(
+      {...BASE_LOADER, parseInBatches} as any,
+      [1, 2] as any
+    )[Symbol.asyncIterator]();
+
+    expect(parserClosed).toBe(false);
+    await expect(outputIterator.next()).resolves.toMatchObject({
+      value: {batchType: 'data', value: 1},
+      done: false
+    });
+    await expect(outputIterator.next()).rejects.toBe(parserError);
+    expect(parserClosed).toBe(true);
+
+    parserClosed = false;
+    const closableIterator = processLoaderWorkerBatches(
+      {...BASE_LOADER, parseInBatches} as any,
+      [1, 2] as any
+    )[Symbol.asyncIterator]();
+    await closableIterator.next();
+    await closableIterator.return?.();
+    expect(parserClosed).toBe(true);
   });
 
   test('selects sync and text parsers', async () => {

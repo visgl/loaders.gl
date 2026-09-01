@@ -2,8 +2,18 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import {canProcessOnWorker, isBrowser, processOnWorker} from '@loaders.gl/worker-utils';
-import type {Loader, StrictLoaderOptions, LoaderContext} from '../../loader-types';
+import {
+  canProcessOnWorker,
+  isBrowser,
+  processOnWorker,
+  processOnWorkerInBatches
+} from '@loaders.gl/worker-utils';
+import type {
+  Loader,
+  LoaderWithParser,
+  StrictLoaderOptions,
+  LoaderContext
+} from '../../loader-types';
 
 type ParseOnMainThread = (
   arrayBuffer: ArrayBuffer,
@@ -86,6 +96,56 @@ export async function parseWithWorker(
   return isLoaderWithWorkerResultDeserializer(loader)
     ? loader.deserializeWorkerResult(result, options, context)
     : result;
+}
+
+/**
+ * Parses an input iterator through one stateful worker session.
+ * @param loader Parser-bearing loader with a batched worker implementation.
+ * @param inputIterator Input fragments to stream to the worker.
+ * @param options Loader and worker options.
+ * @param context Serializable loader context.
+ * @param parseOnMainThread Callback for worker requests that must run on the calling thread.
+ * @param signal Optional cancellation signal for this worker job.
+ */
+export async function* parseWithWorkerInBatches(
+  loader: LoaderWithParser,
+  inputIterator:
+    | AsyncIterable<ArrayBufferLike | ArrayBufferView>
+    | Iterable<ArrayBufferLike | ArrayBufferView>,
+  options?: StrictLoaderOptions,
+  context?: LoaderContext,
+  parseOnMainThread?: ParseOnMainThread,
+  signal?: AbortSignal
+): AsyncIterable<unknown> {
+  const workerSignal = signal || getWorkerAbortSignal(options);
+  const outputIterator = processOnWorkerInBatches(
+    loader,
+    inputIterator,
+    {...getWorkerOptions(options), signal: workerSignal},
+    {
+      process: async (input, processOptions, _workerContext, parseContext) => {
+        if (!parseOnMainThread) {
+          throw new Error('Worker not set up to parse on main thread');
+        }
+        const mainThreadContext = context
+          ? ({...context, ...(parseContext || {})} as LoaderContext)
+          : undefined;
+        return await callParseOnMainThread(
+          parseOnMainThread,
+          input,
+          processOptions,
+          mainThreadContext
+        );
+      }
+    },
+    getSerializableLoaderContext(context)
+  );
+
+  for await (const batch of outputIterator) {
+    yield loader.deserializeWorkerBatch
+      ? loader.deserializeWorkerBatch(batch, options, context)
+      : batch;
+  }
 }
 
 /** Returns the loader-specific abort signal used to cancel a worker job. */

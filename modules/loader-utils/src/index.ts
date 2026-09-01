@@ -102,8 +102,15 @@ export {registerJSModules} from './lib/module-utils/js-module-utils';
 export {checkJSModule, getJSModule, getJSModuleOrNull} from './lib/module-utils/js-module-utils';
 
 // LOADERS.GL-SPECIFIC WORKER UTILS
-export {createLoaderWorker} from './lib/worker-loader-utils/create-loader-worker';
-export {parseWithWorker, canParseWithWorker} from './lib/worker-loader-utils/parse-with-worker';
+export {
+  createLoaderWorker,
+  processLoaderWorkerBatches
+} from './lib/worker-loader-utils/create-loader-worker';
+export {
+  parseWithWorker,
+  parseWithWorkerInBatches,
+  canParseWithWorker
+} from './lib/worker-loader-utils/parse-with-worker';
 export {canEncodeWithWorker} from './lib/worker-loader-utils/encode-with-worker';
 
 // PARSER UTILS

@@ -13,8 +13,11 @@ import {createWorker} from '@loaders.gl/worker-utils';
  * @param loader
  */
 export async function createLoaderWorker(loader: LoaderWithParser) {
-  await createWorker((input, options, workerContext, loaderContext) =>
-    processLoaderWorkerData(loader, input, options, workerContext, loaderContext)
+  await createWorker(
+    (input, options, workerContext, loaderContext) =>
+      processLoaderWorkerData(loader, input, options, workerContext, loaderContext),
+    (inputIterator, options, workerContext, loaderContext) =>
+      processLoaderWorkerBatches(loader, inputIterator, options, workerContext, loaderContext)
   );
 }
 
@@ -42,6 +45,35 @@ export async function processLoaderWorkerData(
   return loader.serializeWorkerResult
     ? loader.serializeWorkerResult(result, options, loaderContext as LoaderContext)
     : result;
+}
+
+/** Processes a complete input stream using the loader's stateful batch parser. */
+export async function* processLoaderWorkerBatches(
+  loader: LoaderWithParser,
+  inputIterator:
+    | AsyncIterable<ArrayBufferLike | ArrayBufferView>
+    | Iterable<ArrayBufferLike | ArrayBufferView>,
+  options: {[key: string]: any} = {},
+  workerContext?: {
+    process?: (data: any, options?: LoaderOptions, context?: Record<string, any>) => any;
+  },
+  loaderContext: Record<string, any> = {}
+): AsyncIterable<unknown> {
+  if (!loader.parseInBatches) {
+    throw new Error(`${loader.id} loader does not support batched parsing`);
+  }
+
+  const resultIterator = loader.parseInBatches(inputIterator, options, {
+    ...loaderContext,
+    coreApi: createWorkerCoreApi(),
+    _parse: createParseOnMainThread(workerContext?.process)
+  } as LoaderContext);
+
+  for await (const batch of resultIterator) {
+    yield loader.serializeWorkerBatch
+      ? loader.serializeWorkerBatch(batch, options, loaderContext as LoaderContext)
+      : batch;
+  }
 }
 
 /**

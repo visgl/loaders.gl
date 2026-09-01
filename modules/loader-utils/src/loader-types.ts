@@ -256,6 +256,18 @@ export type LoaderWithParser<
     options?: LoaderOptionsT,
     context?: LoaderContext
   ) => AsyncIterable<BatchT>;
+  /** Serializes one parser batch before returning it from a worker. */
+  serializeWorkerBatch?: (
+    batch: BatchT,
+    options?: LoaderOptionsT,
+    context?: LoaderContext
+  ) => unknown;
+  /** Deserializes one parser batch returned from a worker. */
+  deserializeWorkerBatch?: (
+    batch: unknown,
+    options?: LoaderOptionsT,
+    context?: LoaderContext
+  ) => BatchT;
   /** For random access, file like sources, source that don't integrate with fetch. */
   parseFileInBatches?: (
     file: ReadableFile,
