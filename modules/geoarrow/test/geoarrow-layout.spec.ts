@@ -75,9 +75,17 @@ describe('GeoArrow physical layout oracle', () => {
         coordinates: 'separated',
         offsetType: 'int64'
       });
-      expect(native.schema.fields[0].metadata?.get('ARROW:extension:name')).toContain(
+      const nativeField = native.schema.fields[0];
+      const nativeLayout = inspectGeoArrowLayout(nativeField);
+      expect(nativeLayout).toMatchObject({
+        valid: true,
+        layout: {dimension: 'xyz', coordinates: 'separated'}
+      });
+      expect(nativeField.metadata?.get('ARROW:extension:name')).toContain(
         `geoarrow.${geometry.type.toLowerCase()}`
       );
+      const nativeWkt = convertGeoArrowGeometry(native, 'geoarrow.wkt', {dimension: 'xyz'});
+      expect(nativeWkt.getChildAt(0)!.get(0)).toContain(geometry.type.toUpperCase());
 
       const wkt = convertGeoArrowGeometry(source, 'geoarrow.wkt', {dimension: 'xyzm'});
       expect(wkt.getChildAt(0)!.get(0)).toContain(geometry.type.toUpperCase());
