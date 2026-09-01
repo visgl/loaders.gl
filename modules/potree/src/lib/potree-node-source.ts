@@ -874,9 +874,9 @@ export class PotreeNodesSource
 
     if (!Array.isArray(this.metadata.pointAttributes)) {
       return {
-        core: {
-          worker: false
-        },
+        // Preserve source-level worker/fetch settings while allowing the
+        // TypeScript LAS loader to use its packaged worker by default.
+        core: this.loadOptions.core,
         las: {
           colorDepth: 'auto'
         }

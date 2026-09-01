@@ -7,7 +7,7 @@
 import {Matrix4, Vector3} from '@math.gl/core';
 import {Ellipsoid} from '@math.gl/geospatial';
 import {Stats} from '@probe.gl/stats';
-import {RequestScheduler, LoaderWithParser, LoaderOptions} from '@loaders.gl/loader-utils';
+import {RequestScheduler, Loader, LoaderOptions} from '@loaders.gl/loader-utils';
 import {TilesetCache} from './tileset-cache';
 import {calculateTransformProps} from '../helpers/transform-utils';
 import {getFrameState, limitSelectedTiles, updateCameraMotionState} from '../helpers/frame-state';
@@ -322,7 +322,7 @@ export class Tileset3D {
 
   type: TILESET_TYPE;
   tileset: TilesetJSON | null;
-  loader: LoaderWithParser;
+  loader: Loader;
   url: string;
   basePath: string;
   modelMatrix: Matrix4;

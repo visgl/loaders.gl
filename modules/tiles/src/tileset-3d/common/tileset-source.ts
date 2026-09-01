@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import type {CoreAPI, LoaderOptions, LoaderWithParser} from '@loaders.gl/loader-utils';
+import type {CoreAPI, Loader, LoaderOptions} from '@loaders.gl/loader-utils';
 import type {Vector3} from '@math.gl/core';
 import type {TilesetTraverser, TilesetTraverserProps} from './tileset-traverser';
 import type {Tile3D} from './tile-3d';
@@ -24,18 +24,14 @@ export type TilesetSourceResolver = {
   /**
    * Loads and parses the root metadata resource for a source.
    */
-  loadRoot<DataT>(
-    url: string,
-    loader: LoaderWithParser<DataT>,
-    loadOptions: LoaderOptions
-  ): Promise<DataT>;
+  loadRoot<DataT>(url: string, loader: Loader<DataT>, loadOptions: LoaderOptions): Promise<DataT>;
 
   /**
    * Loads and parses an arbitrary source-relative resource.
    */
   loadResource<DataT>(
     url: string,
-    loader: LoaderWithParser<DataT>,
+    loader: Loader<DataT>,
     loadOptions: LoaderOptions
   ): Promise<DataT>;
 };
@@ -47,7 +43,7 @@ export type TilesetSourceRequest = {
   /** Absolute root metadata URL. */
   url: string;
   /** Loader used to fetch and parse the root metadata. */
-  loader: LoaderWithParser;
+  loader: Loader;
   /** Optional base path override for relative resources. */
   basePath?: string;
   /** Optional resource-loading strategy used for archive-backed datasets. */
@@ -119,8 +115,8 @@ export type TilesetSourceViewState = {
 export type TilesetSourceMetadata = {
   /** Format discriminator. */
   type: TILESET_TYPE;
-  /** Loader used for metadata and content requests. */
-  loader: LoaderWithParser;
+  /** Primary format loader used for metadata and default content requests. */
+  loader: Loader;
   /** Absolute root metadata URL. */
   url: string;
   /** Base path used for relative resource resolution. */
@@ -143,8 +139,8 @@ export type TilesetSourceMetadata = {
 export interface Tileset3DSource {
   /** Tileset format discriminator. */
   readonly type: TILESET_TYPE;
-  /** Loader used for content and metadata requests. */
-  readonly loader: LoaderWithParser;
+  /** Primary format loader used for metadata and default content requests. */
+  readonly loader: Loader;
   /** Absolute URL of the root tileset resource. */
   readonly url: string;
   /** Base directory used for relative resource resolution. */

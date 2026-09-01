@@ -228,7 +228,7 @@ export function createI3SLayerSource(
   coreApi?: CoreAPI
 ): I3SLayerSource {
   if (layer.layerType === 'PointCloud') {
-    return new I3SPointCloudSource(url, options);
+    return new I3SPointCloudSource(url, options, coreApi);
   }
 
   const loadOptions = {
