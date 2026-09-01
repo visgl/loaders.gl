@@ -59,23 +59,25 @@ export function canParseWithWorker(loader: Loader, options?: StrictLoaderOptions
  * @param data Original parse input, before materialization.
  * @param options Loader and worker options.
  * @param context Loader context.
+ * @param estimateLoader Optional metadata loader that owns the estimate hook.
  */
 export function shouldParseWithWorker(
   loader: Loader,
   data: DataType,
   options?: StrictLoaderOptions,
-  context?: LoaderContext
+  context?: LoaderContext,
+  estimateLoader: Loader = loader
 ): boolean {
   if (!canParseWithWorker(loader, options)) {
     return false;
   }
 
-  if (options?.core?.worker !== 'auto' || !loader.getWorkerEstimate) {
+  if (options?.core?.worker !== 'auto' || !estimateLoader.getWorkerEstimate) {
     return true;
   }
 
   try {
-    const estimate = loader.getWorkerEstimate(data, options, context);
+    const estimate = estimateLoader.getWorkerEstimate(data, options, context);
     if (estimate === undefined || !Number.isFinite(estimate) || estimate < 0 || estimate > 1) {
       return true;
     }

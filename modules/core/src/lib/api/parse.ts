@@ -156,7 +156,7 @@ async function parseWithLoader(
 
   const loaderWithParser = await getLoaderImplementation(loader, options, context.url);
 
-  if (shouldParseWithWorker(loaderWithParser, data, options, context)) {
+  if (shouldParseWithWorker(loaderWithParser, data, options, context, loader)) {
     data = await getArrayBufferFromData(data, options);
     return await parseWithWorker(loaderWithParser, data, options, context, parse);
   }

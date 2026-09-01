@@ -73,6 +73,23 @@ test('parse worker auto mode uses a worker for a large ArrayBuffer', async () =>
   expect(getWorkerEstimate).toHaveBeenCalledOnce();
 });
 
+test('parse worker auto mode preserves an estimator on a metadata loader after preload', async () => {
+  const getWorkerEstimate = vi.fn(() => 0.01);
+  const parserLoader = createTestLoader();
+  const metadataLoader = {
+    ...parserLoader,
+    parse: undefined,
+    getWorkerEstimate,
+    preload: async () => parserLoader
+  } as LoaderWithParser;
+
+  await expect(parse(new ArrayBuffer(32), metadataLoader, createOptions('auto'))).resolves.toEqual({
+    execution: 'main',
+    byteLength: 32
+  });
+  expect(getWorkerEstimate).toHaveBeenCalledOnce();
+});
+
 test.each([
   ['true', true, undefined],
   ['without an estimator', 'auto', undefined],
