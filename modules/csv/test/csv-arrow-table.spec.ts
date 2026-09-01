@@ -768,6 +768,53 @@ test('CSVLoader#arrow-table geometry detection supports byte and streaming input
   expect(batches.every(batch => batch.shape === 'arrow-table')).toBe(true);
 });
 
+test('CSVLoader#parseInBatches streams fragmented Arrow batches through one worker session', async () => {
+  const csvText = 'id,name\n1,Alice\n2,Bob\n3,Carol\n';
+  const bytes = new TextEncoder().encode(csvText);
+  // Copy each fragment because worker transport transfers ArrayBuffer ownership.
+  const chunks = [bytes.slice(0, 9), bytes.slice(9, 16), bytes.slice(16)];
+
+  async function collectRows(worker: boolean): Promise<{batchTypes: string[]; rows: unknown[][]}> {
+    const iterator = await parseInBatches(chunks, CSVLoader, {
+      core: {
+        worker,
+        batchSize: 1,
+        metadata: true,
+        _workerType: 'test',
+        reuseWorkers: false
+      },
+      csv: {header: true, shape: 'arrow-table', dynamicTyping: true, skipEmptyLines: false}
+    });
+    const batchTypes: string[] = [];
+    const rows: unknown[][] = [];
+    for await (const batch of iterator) {
+      batchTypes.push(batch.batchType);
+      if (batch.batchType === 'data') {
+        for (let rowIndex = 0; rowIndex < batch.data.numRows; rowIndex++) {
+          rows.push(
+            Array.from({length: batch.data.numCols}, (_, columnIndex) =>
+              batch.data.getChildAt(columnIndex)?.get(rowIndex)
+            )
+          );
+        }
+        expect(batch.data.getChild('id')?.get(0)).toEqual(expect.any(Number));
+      }
+    }
+    return {batchTypes, rows};
+  }
+
+  const mainThreadResult = await collectRows(false);
+  const workerResult = await collectRows(true);
+
+  expect(workerResult).toEqual(mainThreadResult);
+  expect(workerResult.batchTypes[0]).toBe('metadata');
+  expect(workerResult.rows).toEqual([
+    [1, 'Alice'],
+    [2, 'Bob'],
+    [3, 'Carol']
+  ]);
+});
+
 test('CSVLoader#worker transport serializes and hydrates Arrow table results', async () => {
   const table = await parse('city,population\nParis,2148000', CSVLoader, {
     core: {worker: false},

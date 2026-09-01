@@ -172,6 +172,13 @@ Release Date: 2026
 - Worker cancellation preserves `AbortSignal.reason`; closing a batch iterator terminates its
   leased worker so later jobs receive a clean replacement.
 
+**@loaders.gl/core and @loaders.gl/csv**
+
+- Browser `parseInBatches()` can route the CSV Arrow-table pilot through a stateful worker
+  session. One worker retains parser state across fragmented input, Arrow batches are hydrated
+  on the calling thread, and unsupported loaders retain their existing main-thread or atomic
+  worker fallbacks.
+
 **@loaders.gl/terrain**
 
 - [`QuantizedMeshWriter`](/docs/modules/terrain/api-reference/quantized-mesh-writer) NEW - writes quantized mesh terrain data.

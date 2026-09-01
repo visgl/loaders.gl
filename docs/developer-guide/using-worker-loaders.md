@@ -77,6 +77,30 @@ Most worker-enabled loaders use the same `load` and `parse` APIs as their main-t
 counterparts. The loader reference identifies whether a loader has a worker bundle and
 whether it needs additional codec assets.
 
+### Stateful batched parsing
+
+When a loader supports worker batching, `parseInBatches` keeps one worker leased for the
+life of the returned iterator. Input fragments are requested only as the worker needs them,
+and output batches are produced only as the application advances the iterator. This keeps
+both queues bounded while allowing parsers to retain state across record and UTF-8 boundaries.
+
+The worker is returned to the pool after normal completion, so `core.reuseWorkers` still
+controls whether its runtime can be reused by later jobs. Aborting, propagating a parse error,
+or closing the iterator early terminates that worker and the pool creates a clean replacement.
+Applications should therefore close abandoned iterators (for example with `return()`) and
+should not assume that parser state survives an interrupted session.
+
+Binary fragments are transferred to the worker when possible; transfer gives the worker
+ownership and can detach the source `ArrayBuffer`. Loader-specific batch serializers can
+restore richer values after the boundary. For example, CSV Arrow batches use the Arrow
+transport helpers so the application receives real Arrow tables with methods such as
+`getChild()` rather than structured-cloned plain objects.
+
+The current 5.0 pilot is CSV with `csv.shape: 'arrow-table'`. Other loaders continue to use
+their existing main-thread or atomic-worker paths until they opt into the same stateful
+batch contract. If a loader or runtime cannot provide a compatible worker, `parseInBatches`
+falls back to the loader's main-thread parser without changing its batch ordering.
+
 ## Loading files in parallel
 
 `DracoLoader` is a worker-enabled loader that parses Draco-compressed meshes away from

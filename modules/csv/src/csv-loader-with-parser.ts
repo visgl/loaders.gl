@@ -38,7 +38,12 @@ import {
   shouldFinalizeGeometryDetection
 } from './lib/csv-geometry';
 import {CSVLoader as CSVLoaderMetadata, type CSVLoaderOptions} from './csv-loader';
-import {deserializeCSVWorkerResult, serializeCSVWorkerResult} from './lib/csv-worker-transport';
+import {
+  deserializeCSVWorkerBatch,
+  deserializeCSVWorkerResult,
+  serializeCSVWorkerBatch,
+  serializeCSVWorkerResult
+} from './lib/csv-worker-transport';
 
 const {preload: _CSVLoaderPreload, ...CSVLoaderMetadataWithoutPreload} = CSVLoaderMetadata;
 
@@ -63,7 +68,9 @@ export const CSVLoaderWithParser = {
       ? parseCSVInArrowBatches(asyncIterator, options)
       : parseCSVInBatches(asyncIterator, options),
   serializeWorkerResult: serializeCSVWorkerResult,
-  deserializeWorkerResult: deserializeCSVWorkerResult
+  deserializeWorkerResult: deserializeCSVWorkerResult,
+  serializeWorkerBatch: serializeCSVWorkerBatch,
+  deserializeWorkerBatch: deserializeCSVWorkerBatch
 } as const satisfies LoaderWithParser<
   ObjectRowTable | ArrayRowTable | ColumnarTable | ArrowTable,
   TableBatch | ColumnarTableBatch | ArrowTableBatch,

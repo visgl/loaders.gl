@@ -4,7 +4,13 @@
 
 import type {DehydratedArrowTable, SplitArrowBuffersOptions} from '@loaders.gl/arrow/transport';
 import {dehydrateArrowTable, hydrateArrowTable} from '@loaders.gl/arrow/transport';
-import type {ArrayRowTable, ArrowTable, ColumnarTable, ObjectRowTable} from '@loaders.gl/schema';
+import type {
+  ArrayRowTable,
+  ArrowTable,
+  ArrowTableBatch,
+  ColumnarTable,
+  ObjectRowTable
+} from '@loaders.gl/schema';
 import type {CSVLoaderOptions} from '../csv-loader-options';
 
 type CSVWorkerResult = ArrowTable | ObjectRowTable | ArrayRowTable | ColumnarTable;
@@ -45,6 +51,16 @@ export function deserializeCSVWorkerResult(result: unknown): CSVWorkerResult {
   }
 
   return result as CSVWorkerResult;
+}
+
+/** Serializes one CSV parser batch using the same transport as an atomic result. */
+export function serializeCSVWorkerBatch(batch: unknown, options?: CSVLoaderOptions): unknown {
+  return serializeCSVWorkerResult(batch, options);
+}
+
+/** Rehydrates one CSV parser batch into a main-thread Arrow batch when needed. */
+export function deserializeCSVWorkerBatch(batch: unknown): ArrowTableBatch {
+  return deserializeCSVWorkerResult(batch) as ArrowTableBatch;
 }
 
 /**

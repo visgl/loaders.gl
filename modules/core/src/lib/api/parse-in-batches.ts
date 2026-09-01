@@ -19,7 +19,12 @@ import type {
   LoaderArrayBatchType,
   TransformBatches
 } from '@loaders.gl/loader-utils';
-import {concatenateArrayBuffersAsync} from '@loaders.gl/loader-utils';
+import {
+  canParseWithWorker,
+  concatenateArrayBuffersAsync,
+  isBrowser,
+  parseWithWorkerInBatches
+} from '@loaders.gl/loader-utils';
 import {isLoaderObject} from '../loader-utils/normalize-loader';
 import {normalizeOptions} from '../loader-utils/option-utils';
 import {getLoaderContext} from '../loader-utils/loader-context';
@@ -177,8 +182,12 @@ async function parseToOutputIterator(
     options?.core?.transforms || []
   );
 
-  // If loader supports parseInBatches, we are done
+  // Stream supported browser batch parsers through one stateful worker session.
   if (loader.parseInBatches) {
+    // The loader-level adapter is intentionally piloted with CSV Arrow batches first.
+    if (loader.id === 'csv' && isBrowser && canParseWithWorker(loader, options)) {
+      return parseWithWorkerInBatches(loader, transformedIterator, options, context, parse);
+    }
     return loader.parseInBatches(transformedIterator, options, context);
   }
 
