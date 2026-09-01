@@ -159,6 +159,11 @@ export class Tile3DSourceLayer<
           credentials: combinedCredentials
         };
         options.loadOptions.fetch = getAuthenticatedFetch(options.loadOptions);
+      } else if (preloadOptions.headers) {
+        options.loadOptions.fetch = {
+          ...options.loadOptions.fetch,
+          headers: preloadOptions.headers
+        };
       }
       Object.assign(options, preloadOptions);
     }
