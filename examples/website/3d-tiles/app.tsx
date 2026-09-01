@@ -28,7 +28,8 @@ import {TileFoldExtension, type TileFoldExtensionProps} from './tile-fold-extens
 
 const TILESET_SERVER_URL = 'https://assets.ion.cesium.com';
 
-const DREAM_SEQUENCE_DURATION = 11000;
+const DREAM_SEQUENCE_DURATION = 18000;
+const DREAM_AUTOPLAY_DELAY = 4200;
 const TILE_FOLD_EXTENSION = new TileFoldExtension();
 const EXAMPLES_VIEWSTATE = {
   latitude: 40.04248558075302,
@@ -176,11 +177,12 @@ type DreamKeyframe = {
 };
 
 const DREAM_KEYFRAMES: DreamKeyframe[] = [
-  {progress: 0, foldAmount: 0, bearingOffset: -8, pitch: 58, zoomOffset: 0.35},
-  {progress: 0.22, foldAmount: 0, bearingOffset: 2, pitch: 76, zoomOffset: 1.1},
-  {progress: 0.64, foldAmount: 1, bearingOffset: 18, pitch: 82, zoomOffset: 0.85},
-  {progress: 0.82, foldAmount: 1, bearingOffset: 58, pitch: 74, zoomOffset: 0.45},
-  {progress: 1, foldAmount: 0.92, bearingOffset: 118, pitch: 62, zoomOffset: 0.1}
+  {progress: 0, foldAmount: 0, bearingOffset: -12, pitch: 52, zoomOffset: 0.2},
+  {progress: 0.18, foldAmount: 0, bearingOffset: 0, pitch: 68, zoomOffset: 0.75},
+  {progress: 0.38, foldAmount: 0.35, bearingOffset: 24, pitch: 78, zoomOffset: 1.15},
+  {progress: 0.62, foldAmount: 1, bearingOffset: 96, pitch: 84, zoomOffset: 0.75},
+  {progress: 0.82, foldAmount: 1, bearingOffset: 204, pitch: 82, zoomOffset: 0.1},
+  {progress: 1, foldAmount: 1, bearingOffset: 302, pitch: 74, zoomOffset: -0.45}
 ];
 
 function interpolate(start: number, end: number, amount: number): number {
@@ -258,6 +260,7 @@ type AppState = {
 export default class App extends PureComponent<AppProps, AppState> {
   private _deckStatsWidget: any = null;
   private _dreamAnimationFrame: number | null = null;
+  private _dreamAutoplayTimeout: ReturnType<typeof setTimeout> | null = null;
   private _dreamSequenceStartedAt = 0;
   /** Cached ion credential providers, keyed by asset, so endpoint tokens survive React renders. */
   private _ionCredentials = new Map<string | number, RequestCredential>();
@@ -295,7 +298,7 @@ export default class App extends PureComponent<AppProps, AppState> {
       foldBearing: 0,
       foldGroundAltitude: 0,
       foldHinge: 120,
-      foldLength: 1400,
+      foldLength: 2400,
       isDreamSequencePlaying: false,
       sequenceBaseViewState: INITIAL_VIEW_STATE,
       sequenceProgress: 0
@@ -334,6 +337,7 @@ export default class App extends PureComponent<AppProps, AppState> {
   }
 
   componentWillUnmount() {
+    this._cancelDreamAutoplay();
     this._stopDreamSequence();
   }
 
@@ -396,6 +400,7 @@ export default class App extends PureComponent<AppProps, AppState> {
     category: string;
     name: string;
   }) {
+    this._cancelDreamAutoplay();
     this._tile3dLayer = null;
     this._tile3dLayerKey = null;
     this._stopDreamSequence();
@@ -429,6 +434,30 @@ export default class App extends PureComponent<AppProps, AppState> {
     this.setState({tileset, error: null});
     this._tilesetStatsWidget?.setStats(tileset.stats);
     this._centerViewOnTileset(tileset);
+    this._scheduleDreamAutoplay(tileset);
+  }
+
+  /** Starts the dream sequence after the first tileset has settled on screen. */
+  _scheduleDreamAutoplay(tileset: any) {
+    this._cancelDreamAutoplay();
+    this._dreamAutoplayTimeout = setTimeout(() => {
+      this._dreamAutoplayTimeout = null;
+      if (
+        this.state.tileset === tileset &&
+        !this.state.isDreamSequencePlaying &&
+        this.state.sequenceProgress === 0
+      ) {
+        this._startDreamSequence();
+      }
+    }, DREAM_AUTOPLAY_DELAY);
+  }
+
+  /** Cancels delayed playback when the viewer takes control or changes data. */
+  _cancelDreamAutoplay() {
+    if (this._dreamAutoplayTimeout !== null) {
+      clearTimeout(this._dreamAutoplayTimeout);
+      this._dreamAutoplayTimeout = null;
+    }
   }
 
   // Recenter view to cover the new tileset, with a fly-to transition
@@ -503,6 +532,7 @@ export default class App extends PureComponent<AppProps, AppState> {
   }
 
   _stopDreamSequence() {
+    this._cancelDreamAutoplay();
     if (this._dreamAnimationFrame !== null) {
       cancelAnimationFrame(this._dreamAnimationFrame);
       this._dreamAnimationFrame = null;
@@ -530,6 +560,7 @@ export default class App extends PureComponent<AppProps, AppState> {
   // Called by DeckGL when user interacts with the map
   _onViewStateChange({viewState, interactionState}: {viewState: any; interactionState: any}) {
     if (interactionState?.isDragging || interactionState?.isZooming) {
+      this._cancelDreamAutoplay();
       this._stopDreamSequence();
     }
     this.setState({viewState});
@@ -639,7 +670,7 @@ export default class App extends PureComponent<AppProps, AppState> {
               aria-label="Fold length"
               type="range"
               min="80"
-              max="4000"
+              max="6000"
               step="10"
               value={foldLength}
               onChange={(event) => this.setState({foldLength: Number(event.target.value)})}
@@ -780,7 +811,7 @@ export default class App extends PureComponent<AppProps, AppState> {
   }
 
   render() {
-    const {foldAmount, isFullscreen, viewState, selectedMapStyle} = this.state;
+    const {foldAmount, isFullscreen, sequenceProgress, viewState, selectedMapStyle} = this.state;
     const tile3DLayer = this._renderTile3DLayer();
     const controller = this.props.hideChrome && !isFullscreen
       ? false
@@ -802,7 +833,10 @@ export default class App extends PureComponent<AppProps, AppState> {
             reuseMaps
             mapLib={maplibregl}
             mapStyle={selectedMapStyle}
-            style={{opacity: Math.max(1 - foldAmount * 2.5, 0)}}
+            style={{
+              opacity: foldAmount > 0.02 || sequenceProgress > 0.14 ? 0 : 1,
+              transition: 'opacity 500ms ease'
+            }}
           />
         </DeckGL>
         {this._renderError()}

@@ -41,7 +41,9 @@ type TileFoldUniforms = {
 const PI = Math.PI;
 
 const SHAPE_SETTINGS: Record<TileFoldShape, {curl: number; mode: number}> = {
-  fold: {curl: PI, mode: 0},
+  // Keep the roll alive for a full turn so distant tiles continue rising
+  // overhead instead of switching to a straight tangent after the first half.
+  fold: {curl: PI * 2, mode: 0},
   box: {curl: PI, mode: 1},
   bowl: {curl: PI, mode: 2},
   tube: {curl: PI / 2, mode: 2}
