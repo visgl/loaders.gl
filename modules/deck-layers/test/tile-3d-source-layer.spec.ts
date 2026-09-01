@@ -6,7 +6,11 @@ import {expect, test, vi} from 'vitest';
 import {Tiles3DArchiveFileLoader, Tiles3DLoader} from '@loaders.gl/3d-tiles';
 import {I3SLoader, SLPKLoader} from '@loaders.gl/i3s';
 import {I3SSource, Tile3D, Tiles3DSource, Tileset3D} from '@loaders.gl/tiles';
-import {createSource, Tile3DSourceLayer} from '@loaders.gl/deck-layers';
+import {
+  createSource,
+  SourceDataDrivenTile3DLayer,
+  Tile3DSourceLayer
+} from '@loaders.gl/deck-layers';
 import {inferTilesetLoader} from '../src/tile-3d-source-layer';
 import {loadArrayBufferFromFile} from 'test/utils/readable-files';
 import {
@@ -67,6 +71,17 @@ test('Tile3DSourceLayer#installs source loading on every layer instance', () => 
   expect((firstLayer as any)._loadTileset).toBeTypeOf('function');
   expect((replacementLayer as any)._loadTileset).toBeTypeOf('function');
   expect((replacementLayer as any)._loadTileset).not.toBe((firstLayer as any)._loadTileset);
+});
+
+test('SourceDataDrivenTile3DLayer#installs source loading during initialization', () => {
+  const layer = new SourceDataDrivenTile3DLayer({
+    id: 'source-data-driven-layer',
+    data: 'https://example.com/tileset.json'
+  }) as any;
+
+  layer.initializeState();
+
+  expect(layer._loadTileset).toBeTypeOf('function');
 });
 
 test('Tile3DSourceLayer#initializes and retries traversal with cached viewports', () => {
