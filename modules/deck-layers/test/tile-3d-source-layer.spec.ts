@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import {expect, test} from 'vitest';
+import {expect, test, vi} from 'vitest';
 import {Tiles3DArchiveFileLoader, Tiles3DLoader} from '@loaders.gl/3d-tiles';
 import {I3SLoader, SLPKLoader} from '@loaders.gl/i3s';
 import {I3SSource, Tile3D, Tiles3DSource, Tileset3D} from '@loaders.gl/tiles';
@@ -67,6 +67,42 @@ test('Tile3DSourceLayer#installs source loading on every layer instance', () => 
   expect((firstLayer as any)._loadTileset).toBeTypeOf('function');
   expect((replacementLayer as any)._loadTileset).toBeTypeOf('function');
   expect((replacementLayer as any)._loadTileset).not.toBe((firstLayer as any)._loadTileset);
+});
+
+test('Tile3DSourceLayer#initializes and retries traversal with cached viewports', () => {
+  const layer = new Tile3DSourceLayer({
+    id: 'viewport-layer',
+    data: 'https://example.com/tileset.json'
+  }) as any;
+  const updateTileset = vi.fn();
+  layer._updateTileset = updateTileset;
+
+  layer.initializeState();
+  layer.state = {
+    ...layer.state,
+    activeViewports: {},
+    lastUpdatedViewports: {main: {id: 'main'}},
+    tileset3d: {},
+    frameNumber: undefined
+  };
+  layer.updateState({props: layer.props, oldProps: layer.props, changeFlags: {}});
+
+  expect(updateTileset).toHaveBeenCalledWith(layer.state.lastUpdatedViewports);
+});
+
+test('createSource#strips Cesium ion provider hooks from child loaders', () => {
+  const loader = {
+    id: 'cesium-ion',
+    parseUrl: vi.fn(),
+    preload: vi.fn(),
+    parse: vi.fn()
+  } as any;
+  const source = createSource('https://assets.ion.cesium.com/123/tileset.json', loader, {});
+
+  expect(source).toBeInstanceOf(Tiles3DSource);
+  expect((source as Tiles3DSource).loader).toMatchObject({id: 'cesium-ion', parse: loader.parse});
+  expect((source as Tiles3DSource).loader).not.toHaveProperty('parseUrl');
+  expect((source as Tiles3DSource).loader).not.toHaveProperty('preload');
 });
 test('createSource#initializes Tileset3D from a 3tz url', async () => {
   const source = createSource(TILES_ARCHIVE_URL, Tiles3DLoader, {});

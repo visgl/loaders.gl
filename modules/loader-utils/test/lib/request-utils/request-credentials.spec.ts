@@ -105,6 +105,73 @@ describe('request credentials', () => {
     expect(requests).toEqual([{authorization: 'Bearer secret', accept: 'application/json'}]);
   });
 
+  test('merges RequestInit fetch defaults from loader options', async () => {
+    const requests: Array<{url: string; headers: Headers}> = [];
+    const fetchFunction = vi.fn(async (url: string, options?: RequestInit) => {
+      requests.push({url, headers: new Headers(options?.headers)});
+      return new Response('ok');
+    });
+    vi.stubGlobal('fetch', fetchFunction);
+
+    try {
+      const authenticatedFetch = getAuthenticatedFetch({
+        fetch: {headers: {'x-default': 'default'}},
+        core: {
+          credentials: [
+            createBearerTokenCredential({
+              id: 'source-token',
+              origins: ['https://example.com'],
+              token: 'secret'
+            })
+          ]
+        }
+      });
+
+      await authenticatedFetch('https://example.com/data', {
+        headers: {'x-request': 'request'}
+      });
+
+      expect(requests[0].url).toBe('https://example.com/data');
+      expect(requests[0].headers.get('x-default')).toBe('default');
+      expect(requests[0].headers.get('x-request')).toBe('request');
+      expect(requests[0].headers.get('authorization')).toBe('Bearer secret');
+    } finally {
+      vi.unstubAllGlobals();
+    }
+  });
+
+  test('passes through non-http URLs and throws an AbortError before replay', async () => {
+    const passthroughFetch = vi.fn(async (url: string) => new Response(url));
+    const passthrough = createAuthenticatedFetch({
+      fetch: passthroughFetch,
+      credentials: [
+        createBearerTokenCredential({
+          id: 'source-token',
+          origins: ['https://example.com'],
+          token: 'secret'
+        })
+      ]
+    });
+    await expect(passthrough('not-a-url')).resolves.toHaveProperty('status', 200);
+    expect(passthroughFetch).toHaveBeenCalledWith('not-a-url', {});
+
+    const controller = new AbortController();
+    controller.abort();
+    const credential = createBearerTokenCredential({
+      id: 'refreshing-token',
+      origins: ['https://example.com'],
+      token: context => (context.reason === 'refresh' ? 'fresh' : 'expired')
+    });
+    const abortedFetch = createAuthenticatedFetch({
+      fetch: async () => new Response('', {status: 401}),
+      credentials: [credential]
+    });
+
+    await expect(
+      abortedFetch('https://example.com/data', {signal: controller.signal})
+    ).rejects.toMatchObject({name: 'AbortError'});
+  });
+
   test('refreshes an asynchronous credential and replays once', async () => {
     const reasons: string[] = [];
     const requestedTokens: (string | null)[] = [];
