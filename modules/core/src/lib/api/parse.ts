@@ -18,7 +18,7 @@ import type {
 } from '@loaders.gl/loader-utils';
 import {
   parseWithWorker,
-  canParseWithWorker,
+  shouldParseWithWorker,
   mergeOptions,
   isResponse,
   isBlob,
@@ -156,7 +156,7 @@ async function parseWithLoader(
 
   const loaderWithParser = await getLoaderImplementation(loader, options, context.url);
 
-  if (canParseWithWorker(loaderWithParser, options)) {
+  if (shouldParseWithWorker(loaderWithParser, data, options, context)) {
     data = await getArrayBufferFromData(data, options);
     return await parseWithWorker(loaderWithParser, data, options, context, parse);
   }

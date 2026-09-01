@@ -77,6 +77,35 @@ Most worker-enabled loaders use the same `load` and `parse` APIs as their main-t
 counterparts. The loader reference identifies whether a loader has a worker bundle and
 whether it needs additional codec assets.
 
+### Automatic worker selection
+
+Atomic `parse` calls can opt into loader-provided work estimates with
+`core.worker: 'auto'`. A loader may expose a synchronous `getWorkerEstimate(data, options,
+context)` hook. The hook receives the original input before it is materialized, so it can
+inspect metadata such as an `ArrayBuffer.byteLength`, `Blob.size`, or loader options without
+reading a stream. It returns a normalized score from `0` (negligible work) to `1` (clearly
+expensive work).
+
+The default `core.workerThreshold` is `0.1`: scores below the threshold stay on the calling
+thread, while scores at or above it use the normal worker path. Set a different finite value
+between `0` and `1` when the loader's parser or application workload has a different crossover
+point:
+
+```typescript
+const result = await parse(data, MyLoader, {
+  core: {worker: 'auto', workerThreshold: 0.2}
+});
+```
+
+`core.worker: true` and `core.worker: false` retain their existing behavior and do not consult
+the estimator. If the loader has no estimator, returns `undefined`, returns an invalid score,
+or throws while estimating, loaders.gl keeps the conservative worker-capable behavior. Unknown
+streams are therefore worker-bound by default; estimators must never buffer, consume, or advance
+an iterator. Scores should represent expected CPU work (for example, decompression, decoding,
+and row materialization), not only payload bytes. A small compressed file can still be expensive,
+and a large payload can be cheap to decode. Batched parsing keeps its existing worker-selection
+policy in this phase.
+
 ### Stateful batched parsing
 
 When a loader supports worker batching, `parseInBatches` keeps one worker leased for the

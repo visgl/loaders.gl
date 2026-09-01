@@ -4,7 +4,7 @@
 
 import type {Format} from './format-types';
 import type {LoadWorker} from '@loaders.gl/worker-utils';
-import {FetchLike, TransformBatches} from './types';
+import {DataType, FetchLike, TransformBatches} from './types';
 import {ReadableFile} from './lib/files/file';
 import type {CoreAPI} from './lib/sources/data-source';
 import type {RequestCredential} from './lib/request-utils/request-credentials';
@@ -65,8 +65,10 @@ export type StrictLoaderOptions = {
 
     /** CDN load workers from */
     CDN?: string | null;
-    /** Set to `false` to disable workers */
-    worker?: boolean;
+    /** Set to `false` to disable workers, or `'auto'` to use loader work estimates. */
+    worker?: boolean | 'auto';
+    /** Work-score threshold used by `worker: 'auto'`. */
+    workerThreshold?: number;
     /** Number of concurrent workers (per loader) on desktop browser */
     maxConcurrency?: number;
     /** Number of concurrent workers (per loader) on mobile browsers */
@@ -117,7 +119,7 @@ export type LoaderOptions = {
   /** @deprecated Use options.core.CDN */
   CDN?: string | null;
   /** @deprecated Use options.core.worker */
-  worker?: boolean;
+  worker?: boolean | 'auto';
   /** @deprecated Use options.core.maxConcurrency */
   maxConcurrency?: number;
   /** @deprecated Use options.core.maxMobileConcurrency */
@@ -191,6 +193,12 @@ export type Loader<DataT = any, BatchT = any, LoaderOptionsT = StrictLoaderOptio
     options?: LoaderOptionsT,
     context?: LoaderContext
   ) => DataT;
+  /** Estimates parser work without consuming the input. Scores range from 0 (trivial) to 1 (expensive). */
+  getWorkerEstimate?: (
+    data: DataType,
+    options?: LoaderOptionsT,
+    context?: LoaderContext
+  ) => number | undefined;
   // end Worker
 
   /** Human readable name */

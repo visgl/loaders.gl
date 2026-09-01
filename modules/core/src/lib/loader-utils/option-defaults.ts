@@ -21,6 +21,7 @@ export const DEFAULT_LOADER_OPTIONS: LoaderOptions = {
 
     CDN: 'https://unpkg.com/@loaders.gl',
     worker: true, // By default, use worker if provided by loader.
+    workerThreshold: 0.1,
     maxConcurrency: 3, // How many worker instances should be created for each loader.
     maxMobileConcurrency: 1, // How many worker instances should be created for each loader on mobile devices.
     reuseWorkers: isBrowser, // By default reuse workers in browser (Node.js refuses to terminate if browsers are running)
