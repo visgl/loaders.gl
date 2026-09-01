@@ -11,6 +11,119 @@ function extensionMetadata(encoding: string): Map<string, string> {
 }
 
 describe('GeoArrow physical layout oracle', () => {
+  test('converts every concrete geometry family through native, WKT, and WKB targets', () => {
+    const cases = [
+      {
+        type: 'Point' as const,
+        coordinates: [1, 2]
+      },
+      {
+        type: 'LineString' as const,
+        coordinates: [
+          [0, 0],
+          [1, 1]
+        ]
+      },
+      {
+        type: 'Polygon' as const,
+        coordinates: [
+          [
+            [0, 0],
+            [1, 0],
+            [1, 1],
+            [0, 0]
+          ]
+        ]
+      },
+      {
+        type: 'MultiPoint' as const,
+        coordinates: [
+          [0, 0],
+          [1, 1]
+        ]
+      },
+      {
+        type: 'MultiLineString' as const,
+        coordinates: [
+          [
+            [0, 0],
+            [1, 1]
+          ]
+        ]
+      },
+      {
+        type: 'MultiPolygon' as const,
+        coordinates: [
+          [
+            [
+              [0, 0],
+              [1, 0],
+              [1, 1],
+              [0, 0]
+            ]
+          ]
+        ]
+      }
+    ];
+
+    for (const geometry of cases) {
+      const source = convertFeaturesToGeoArrowTable([
+        {type: 'Feature', properties: {}, geometry}
+      ]).data;
+      const native = convertGeoArrowGeometry(source, 'native', {
+        dimension: 'xyz',
+        coordinates: 'separated',
+        offsetType: 'int64'
+      });
+      expect(native.schema.fields[0].metadata?.get('ARROW:extension:name')).toContain(
+        `geoarrow.${geometry.type.toLowerCase()}`
+      );
+
+      const wkt = convertGeoArrowGeometry(source, 'geoarrow.wkt', {dimension: 'xyzm'});
+      expect(wkt.getChildAt(0)!.get(0)).toContain(geometry.type.toUpperCase());
+
+      const wkb = convertGeoArrowGeometry(source, 'geoarrow.wkb');
+      expect(wkb.getChildAt(0)!.get(0)).toBeInstanceOf(Uint8Array);
+    }
+  });
+
+  test('converts and validates nested geometry collections with null members', () => {
+    const source = convertFeaturesToGeoArrowTable([
+      {
+        type: 'Feature',
+        properties: {},
+        geometry: {
+          type: 'GeometryCollection',
+          geometries: [
+            {type: 'Point', coordinates: [1, 2]},
+            {
+              type: 'LineString',
+              coordinates: [
+                [0, 0],
+                [1, 1]
+              ]
+            }
+          ]
+        }
+      },
+      {type: 'Feature', properties: {}, geometry: null}
+    ]).data;
+
+    const collection = convertGeoArrowGeometry(source, 'geoarrow.geometrycollection', {
+      offsetType: 'int64'
+    });
+    expect(collection.numRows).toBe(2);
+    expect(collection.schema.fields[0].type).toBeInstanceOf(arrow.LargeList);
+
+    const union = convertGeoArrowGeometry(source, 'geoarrow.geometry', {
+      geometryTypes: ['Point', 'LineString', 'GeometryCollection']
+    });
+    expect(union.numRows).toBe(2);
+    expect(() =>
+      convertGeoArrowGeometry(source, 'geoarrow.point', {geometryColumn: 'missing'})
+    ).toThrow('could not find geometry column');
+  });
+
   test('classifies native layouts and reports nested storage facts', () => {
     const coordinate = new arrow.FixedSizeList(
       2,
