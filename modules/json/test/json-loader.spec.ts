@@ -468,6 +468,80 @@ test('GeoJSONLoader#parseInBatches(arrow-table freezes inferred schema)', async 
     /unexpected field extra/
   );
 });
+test('GeoJSONLoader#parseInBatches(arrow-table keeps optimized union schema stable)', async () => {
+  const iterator = BundledGeoJSONLoader.parseInBatches?.(
+    makeChunkedTextIterator(
+      JSON.stringify({
+        type: 'FeatureCollection',
+        features: [
+          {
+            type: 'Feature',
+            geometry: {type: 'Point', coordinates: [1, 2]},
+            properties: {name: 'point'}
+          },
+          {
+            type: 'Feature',
+            geometry: {
+              type: 'Polygon',
+              coordinates: [
+                [
+                  [0, 0],
+                  [1, 0],
+                  [1, 1],
+                  [0, 0]
+                ]
+              ]
+            },
+            properties: {name: 'polygon'}
+          }
+        ]
+      }),
+      20
+    ),
+    {
+      batchSize: 1,
+      geojson: {shape: 'arrow-table'},
+      geoarrow: {encodingPreference: 'optimized'}
+    }
+  );
+  const batches = [];
+  for await (const batch of iterator) {
+    if (batch.batchType === 'data') batches.push(batch);
+  }
+  expect(batches).toHaveLength(2);
+  expect(batches[1].schema).toEqual(batches[0].schema);
+  expect(
+    batches[0].schema.fields.find(field => field.name === 'geometry')?.metadata?.[
+      'ARROW:extension:name'
+    ]
+  ).toBe('geoarrow.geometry');
+});
+test('GeoJSONLoader#parse(arrow-table applies custom geometry column and CRS)', () => {
+  const crs = {type: 'name', properties: {name: 'EPSG:4326'}};
+  const table = BundledGeoJSONLoader.parseTextSync?.(
+    JSON.stringify({
+      type: 'FeatureCollection',
+      crs,
+      features: [
+        {
+          type: 'Feature',
+          geometry: {type: 'Point', coordinates: [1, 2]},
+          properties: {name: 'A'}
+        }
+      ]
+    }),
+    {
+      geojson: {shape: 'arrow-table'},
+      geoarrow: {encodingPreference: 'optimized'},
+      json: {geoarrowGeometryColumn: 'shape'}
+    }
+  );
+  expect(table.schema.fields.find(field => field.name === 'shape')).toBeTruthy();
+  expect(table.schema.fields.find(field => field.name === 'geometry')).toBe(undefined);
+  const geoMetadata = getGeoMetadata(table.schema.metadata);
+  expect(geoMetadata?.columns.shape.geojson_crs).toEqual(crs);
+  expect((geoMetadata?.columns.shape.crs as any)?.id?.code).toBe(4326);
+});
 test('JSONTableLoader#parseInBatches(arrow-table preserves metadata batches)', async () => {
   const iterator = BundledJSONTableLoader.parseInBatches?.(
     makeChunkedTextIterator(NESTED_JSON_TEXT, 13),

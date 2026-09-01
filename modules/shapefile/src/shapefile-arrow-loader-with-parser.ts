@@ -76,7 +76,7 @@ export async function parseShapefileToArrow(
       geometryTable = convertFeaturesToGeoArrowTable(
         geometries.map(geometry => ({
           type: 'Feature' as const,
-          geometry: geometry ? convertWKBToGeometry(geometry.buffer) : null,
+          geometry: geometry ? convertWKBToGeometry(geometry.slice().buffer) : null,
           properties: {}
         })),
         {encodingPreference: 'geoarrow.geometry'}

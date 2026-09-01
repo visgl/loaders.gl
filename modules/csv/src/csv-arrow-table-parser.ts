@@ -209,7 +209,8 @@ export function parseCSVInArrowBatches(
           dynamicTyping: csvOptions.dynamicTyping
         }
       }),
-      csvOptions.viewTypes
+      csvOptions.viewTypes,
+      normalizedOptions.geoarrow?.encodingPreference || csvOptions.geoarrow?.encodingPreference
     );
   }
   const rawArrowCSVOptions = createRawArrowTableCSVOptions(normalizedOptions);
@@ -269,7 +270,8 @@ function convertCSVRowTableToArrowTable(
 /** Converts CSV row batches to Arrow batches while preserving the CSV-derived schema. */
 async function* convertCSVRowBatchesToArrowBatches(
   rowBatchIterator: AsyncIterable<TableBatch>,
-  viewTypes?: ArrowViewTypeMode
+  viewTypes?: ArrowViewTypeMode,
+  encodingPreference?: import('@loaders.gl/schema').GeoArrowEncodingPreference
 ): AsyncIterable<ArrowTableBatch> {
   for await (const rowBatch of rowBatchIterator) {
     if (
@@ -279,15 +281,11 @@ async function* convertCSVRowBatchesToArrowBatches(
       continue;
     }
 
-    const arrowTableBuilder = new ArrowTableBuilder(rowBatch.schema, {viewTypes});
-    for (const row of rowBatch.data) {
-      if (rowBatch.shape === 'object-row-table') {
-        arrowTableBuilder.addObjectRow(row as {[columnName: string]: unknown});
-      } else {
-        arrowTableBuilder.addArrayRow(row as unknown[]);
-      }
-    }
-    const arrowTable = arrowTableBuilder.finishTable();
+    const arrowTable = convertCSVRowTableToArrowTable(
+      rowBatch as ObjectRowTable | ArrayRowTable,
+      viewTypes,
+      encodingPreference
+    );
     yield {
       ...rowBatch,
       shape: 'arrow-table',

@@ -178,7 +178,18 @@ export function convertGeoJSONFeaturesToArrowTable(
     options?.geoarrow?.encodingPreference &&
     options.geoarrow.encodingPreference !== 'geoarrow.wkb'
   ) {
+    const geometryColumnName = options.geoarrowGeometryColumn || 'geometry';
+    const normalizedSchema = options.schema ? normalizeJSONArrowSchema(options.schema) : undefined;
+    const propertySchema = normalizedSchema
+      ? {
+          fields: normalizedSchema.fields.filter(field => field.name !== geometryColumnName),
+          metadata: normalizedSchema.metadata
+        }
+      : undefined;
     return convertFeaturesToGeoArrowTable(features, {
+      geometryColumnName,
+      propertySchema,
+      crs: options.crs,
       geoarrow: {encodingPreference: options.geoarrow.encodingPreference}
     });
   }
