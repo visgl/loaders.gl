@@ -9,11 +9,17 @@ import type {
   Field,
   Geometry,
   GeoJsonProperties,
+  GeoArrowEncodingPreference,
   GeoJSONTable,
   Schema
 } from '@loaders.gl/schema';
 import type {PROJJSONCRS} from '@math.gl/crs';
-import {ArrowTableBuilder} from '@loaders.gl/schema-utils';
+import * as arrow from 'apache-arrow';
+import {
+  ArrowTableBuilder,
+  convertArrowToSchema,
+  convertSchemaToArrow
+} from '@loaders.gl/schema-utils';
 import {convertGeometryToWKT} from '../geometry-converters/wkb/convert-geometry-to-wkt';
 import {
   encodeWKBGeometryValue,
@@ -26,6 +32,7 @@ import {
   setGeoMetadata,
   type GeoColumnMetadata
 } from '../geoarrow/geoparquet-metadata';
+import {GeoArrowBuilder, type GeoArrowBuilderEncoding} from '../geoarrow/geoarrow-builder';
 
 const DEFAULT_GEOMETRY_COLUMN_NAME = 'geometry';
 const DEFAULT_GEO_METADATA_VERSION = '1.1.0';
@@ -110,6 +117,8 @@ const EPSG_4326_PROJJSON = {
 /** Supported GeoArrow encodings for GeoJSON feature conversion. */
 export type GeoJSONToGeoArrowEncoding = 'wkb' | 'wkt';
 
+export type {GeoArrowEncodingPreference} from '@loaders.gl/schema';
+
 /** Legacy GeoJSON CRS object from pre-RFC 7946 GeoJSON documents. */
 export type LegacyGeoJSONCRS = {
   /** Legacy CRS descriptor type, commonly `name` or `link`. */
@@ -125,6 +134,14 @@ export type GeoJSONToGeoArrowOptions = {
   geometryColumnName?: string;
   /** Geometry encoding to use for the output geometry column. */
   encoding?: GeoJSONToGeoArrowEncoding;
+  /** Preferred GeoArrow output encoding. Exact targets remain converter-only. */
+  encodingPreference?: GeoArrowEncodingPreference;
+  /** Loader-facing GeoArrow output preferences. */
+  geoarrow?: {
+    encodingPreference?: GeoArrowEncodingPreference;
+  };
+  /** Optional property schema used to keep streamed Arrow batches compatible. */
+  propertySchema?: Schema;
   /** Optional legacy GeoJSON root CRS metadata to preserve on the geometry column. */
   crs?: LegacyGeoJSONCRS | null;
 };
@@ -160,6 +177,10 @@ export function convertFeaturesToGeoArrowTable(
   features: Feature[],
   options?: GeoJSONToGeoArrowOptions
 ): ArrowTable {
+  const preference = resolveGeoArrowEncodingPreference(options);
+  if (preference === 'geoarrow.geometry' || preference === 'optimized') {
+    return convertFeaturesToNativeGeoArrowTable(features, options, preference);
+  }
   const rows = makeGeoArrowFeatureRows(features, options);
   const schema = makeGeoArrowFeatureSchema(features, options);
   const arrowTableBuilder = new ArrowTableBuilder(schema);
@@ -169,6 +190,399 @@ export function convertFeaturesToGeoArrowTable(
   }
 
   return arrowTableBuilder.finishTable();
+}
+
+/** Converts GeoJSON features into a native or dense-union GeoArrow table. */
+function convertFeaturesToNativeGeoArrowTable(
+  features: Feature[],
+  options: GeoJSONToGeoArrowOptions | undefined,
+  preference: Exclude<GeoArrowEncodingPreference, 'geoarrow.wkb'>
+): ArrowTable {
+  const geometries = features.map(feature => feature.geometry || null);
+  const dimension = getFeatureDimension(geometries);
+  const encoding =
+    preference === 'geoarrow.geometry' ? preference : selectOptimizedEncoding(geometries);
+  const geometryVector =
+    encoding === 'geoarrow.geometry'
+      ? makeGeometryUnionVector(geometries, dimension)
+      : makeNativeGeometryVector(geometries, encoding, dimension);
+  const geometryColumnName = options?.geometryColumnName || DEFAULT_GEOMETRY_COLUMN_NAME;
+  const propertyRows = features.map(feature => {
+    const properties = normalizeProperties(feature.properties);
+    assertNoGeometryPropertyCollision(properties, geometryColumnName);
+    return properties;
+  });
+  const propertySchema = options?.propertySchema || getPropertySchema(propertyRows);
+  const schema = convertSchemaToArrow(propertySchema);
+  const inferredGeometryColumnMetadata: Record<string, unknown> = {
+    encoding,
+    geometry_types: inferGeoParquetGeometryTypes(geometries)
+  };
+  const existingGeoMetadata = getGeoMetadata(schema.metadata);
+  const existingGeometryColumnMetadata = existingGeoMetadata?.columns[geometryColumnName];
+  const geometryColumnMetadata: Record<string, unknown> = existingGeometryColumnMetadata
+    ? {...existingGeometryColumnMetadata}
+    : inferredGeometryColumnMetadata;
+  const extensionMetadata: Record<string, unknown> = existingGeometryColumnMetadata
+    ? {...existingGeometryColumnMetadata}
+    : inferredGeometryColumnMetadata;
+  if (isLegacyGeoJSONCRS(options?.crs)) {
+    const normalizedCRS = normalizeLegacyGeoJSONCRS(options.crs);
+    geometryColumnMetadata.geojson_crs = options.crs;
+    extensionMetadata.geojson_crs = options.crs;
+    if (normalizedCRS) {
+      geometryColumnMetadata.crs = normalizedCRS.projjson;
+      extensionMetadata.crs = normalizedCRS.projjson;
+      extensionMetadata.crs_type = 'projjson';
+    }
+  }
+  const geometryField = new arrow.Field(
+    geometryColumnName,
+    geometryVector.type,
+    true,
+    new Map([
+      ['ARROW:extension:name', encoding],
+      ['ARROW:extension:metadata', JSON.stringify(extensionMetadata)]
+    ])
+  );
+  const nextFields = [...schema.fields, geometryField];
+  const nextMetadata = new Map(schema.metadata || []);
+  nextMetadata.set(
+    'geo',
+    JSON.stringify({
+      version: DEFAULT_GEO_METADATA_VERSION,
+      primary_column: geometryColumnName,
+      columns: {
+        [geometryColumnName]: geometryColumnMetadata
+      }
+    })
+  );
+  const nextSchema = new arrow.Schema(nextFields, nextMetadata);
+  const propertyTableBuilder = new ArrowTableBuilder(propertySchema);
+  for (const row of propertyRows) {
+    propertyTableBuilder.addObjectRow(row);
+  }
+  const propertyTable = propertyTableBuilder.finishTable().data;
+  const propertyBatch = propertyTable.batches[0];
+  const children = nextFields.map((field, fieldIndex) =>
+    fieldIndex < schema.fields.length
+      ? propertyBatch?.getChildAt(fieldIndex)?.data[0]
+      : geometryVector.data[0]
+  );
+  const data = arrow.makeData({
+    type: new arrow.Struct(nextFields),
+    length: features.length,
+    nullCount: 0,
+    children
+  } as any);
+  return {
+    shape: 'arrow-table',
+    schema: convertArrowToSchema(nextSchema),
+    data: new arrow.Table(nextSchema, [new arrow.RecordBatch(nextSchema, data as any)])
+  };
+}
+
+/** Resolves the nested loader option and the bridge's direct option alias. */
+export function resolveGeoArrowEncodingPreference(
+  options?: Pick<GeoJSONToGeoArrowOptions, 'encodingPreference' | 'geoarrow'>
+): GeoArrowEncodingPreference | undefined {
+  return options?.geoarrow?.encodingPreference ?? options?.encodingPreference;
+}
+
+type GeoArrowNativeEncoding = Exclude<GeoArrowBuilderEncoding, 'geoarrow.box'>;
+type GeoArrowBuilderDimension = 'xy' | 'xyz' | 'xym' | 'xyzm';
+type GeoArrowGeometryKind =
+  | 'Point'
+  | 'LineString'
+  | 'Polygon'
+  | 'MultiPoint'
+  | 'MultiLineString'
+  | 'MultiPolygon'
+  | 'GeometryCollection';
+
+/** Selects the smallest native encoding that can represent all feature geometries. */
+function selectOptimizedEncoding(
+  geometries: (Geometry | null)[]
+): GeoArrowNativeEncoding | 'geoarrow.geometry' {
+  const geometryKinds = new Set(
+    geometries.filter(Boolean).map(geometry => (geometry as Geometry).type)
+  );
+  if (geometryKinds.size === 0 || geometryKinds.has('GeometryCollection')) {
+    return 'geoarrow.geometry';
+  }
+  if (geometryKinds.size === 1) {
+    return getNativeEncoding([...geometryKinds][0] as GeoArrowGeometryKind);
+  }
+  if (geometryKinds.size === 2) {
+    if (geometryKinds.has('Point') && geometryKinds.has('MultiPoint')) {
+      return 'geoarrow.multipoint';
+    }
+    if (geometryKinds.has('LineString') && geometryKinds.has('MultiLineString')) {
+      return 'geoarrow.multilinestring';
+    }
+    if (geometryKinds.has('Polygon') && geometryKinds.has('MultiPolygon')) {
+      return 'geoarrow.multipolygon';
+    }
+  }
+  return 'geoarrow.geometry';
+}
+
+/** Returns the maximum coordinate dimensionality present in a feature collection. */
+function getFeatureDimension(geometries: (Geometry | null)[]): GeoArrowBuilderDimension {
+  let coordinateSize = 2;
+  for (const geometry of geometries) {
+    coordinateSize = Math.max(coordinateSize, getGeometryCoordinateSize(geometry));
+  }
+  return coordinateSize >= 4 ? 'xyzm' : coordinateSize === 3 ? 'xyz' : 'xy';
+}
+
+/** Finds the dimensionality of the first coordinate tuple in a geometry. */
+function getGeometryCoordinateSize(geometry: Geometry | null): number {
+  if (!geometry) return 2;
+  if (geometry.type === 'GeometryCollection') {
+    return Math.max(2, ...geometry.geometries.map(getGeometryCoordinateSize));
+  }
+  let value: unknown = geometry.coordinates;
+  while (Array.isArray(value) && value.length > 0 && Array.isArray(value[0])) {
+    value = value[0];
+  }
+  return Array.isArray(value) && value.every(item => typeof item === 'number') ? value.length : 2;
+}
+
+/** Builds one concrete native GeoArrow vector from GeoJSON geometries. */
+function makeNativeGeometryVector(
+  geometries: (Geometry | null)[],
+  encoding: GeoArrowNativeEncoding,
+  dimension: GeoArrowBuilderDimension
+): arrow.Vector {
+  const writers = geometries.map(geometry =>
+    geometry ? builder => writeGeometryToBuilder(builder, geometry, encoding) : null
+  );
+  const geometryArray = GeoArrowBuilder.buildGeometryArray(writers, {encoding, dimension});
+  return arrow.makeVector(GeoArrowBuilder.makeGeometryData(geometryArray));
+}
+
+/** Builds a dense union vector with native child vectors and stable type identifiers. */
+function makeGeometryUnionVector(
+  geometries: (Geometry | null)[],
+  dimension: GeoArrowBuilderDimension,
+  includeGeometryCollections = true
+): arrow.Vector {
+  const childRows = new Map<GeoArrowGeometryKind, (Geometry | null)[]>();
+  const typeIds: number[] = [];
+  const valueOffsets: number[] = [];
+  const nullCarrierKind: GeoArrowGeometryKind = 'Point';
+  const allGeometryKinds: GeoArrowGeometryKind[] = [
+    'Point',
+    'LineString',
+    'Polygon',
+    'MultiPoint',
+    'MultiLineString',
+    'MultiPolygon',
+    ...(includeGeometryCollections ? ['GeometryCollection' as const] : [])
+  ];
+  for (const geometryKind of allGeometryKinds) {
+    childRows.set(geometryKind, []);
+  }
+
+  for (const geometry of geometries) {
+    const kind = geometry?.type || nullCarrierKind;
+    const rows = childRows.get(kind) || [];
+    valueOffsets.push(rows.length);
+    typeIds.push(getUnionTypeId(kind, dimension));
+    rows.push(geometry);
+    childRows.set(kind, rows);
+  }
+
+  const orderedKinds = [...childRows.keys()].sort(
+    (left, right) => getUnionTypeId(left, dimension) - getUnionTypeId(right, dimension)
+  );
+  const fields = orderedKinds.map(
+    kind =>
+      new arrow.Field(
+        getUnionFieldName(kind, dimension),
+        kind === 'GeometryCollection'
+          ? makeGeometryCollectionVector(childRows.get(kind)!, dimension).type
+          : makeNativeGeometryVector(childRows.get(kind)!, getNativeEncoding(kind), dimension).type,
+        true
+      )
+  );
+  const children = orderedKinds.map(kind => {
+    if (kind === 'GeometryCollection') {
+      return makeGeometryCollectionVector(childRows.get(kind)!, dimension).data[0];
+    }
+    return makeNativeGeometryVector(childRows.get(kind)!, getNativeEncoding(kind), dimension)
+      .data[0];
+  });
+  const unionType = new arrow.DenseUnion(
+    orderedKinds.map(kind => getUnionTypeId(kind, dimension)),
+    fields
+  );
+  return arrow.makeVector(
+    arrow.makeData({
+      type: unionType,
+      length: geometries.length,
+      nullCount: 0,
+      typeIds: Int8Array.from(typeIds),
+      valueOffsets: Int32Array.from(valueOffsets),
+      children
+    } as any)
+  );
+}
+
+/** Builds the list-of-union child used by GeometryCollection union members. */
+function makeGeometryCollectionVector(
+  geometries: (Geometry | null)[],
+  dimension: GeoArrowBuilderDimension
+): arrow.Vector {
+  const flattenedGeometries: (Geometry | null)[] = [];
+  const offsets = [0];
+  for (const geometry of geometries) {
+    if (geometry?.type === 'GeometryCollection') {
+      appendGeometryCollectionMembers(flattenedGeometries, geometry.geometries);
+    }
+    offsets.push(flattenedGeometries.length);
+  }
+  // Arrow cannot express a recursive union type. Flatten nested collections into
+  // the collection member union, which also gives every collection child a stable
+  // non-recursive schema.
+  const memberUnion = makeGeometryUnionVector(flattenedGeometries, dimension, false);
+  const listType = new arrow.List(new arrow.Field('geometries', memberUnion.type, true));
+  return arrow.makeVector(
+    arrow.makeData({
+      type: listType,
+      length: geometries.length,
+      nullCount: 0,
+      valueOffsets: Int32Array.from(offsets),
+      child: memberUnion.data[0]
+    } as any)
+  );
+}
+
+/** Appends collection members recursively while preserving null members. */
+function appendGeometryCollectionMembers(
+  target: (Geometry | null)[],
+  geometries: (Geometry | null)[]
+): void {
+  for (const geometry of geometries) {
+    if (geometry?.type === 'GeometryCollection') {
+      appendGeometryCollectionMembers(target, geometry.geometries);
+    } else {
+      target.push(geometry);
+    }
+  }
+}
+
+/** Writes one GeoJSON geometry, promoting single geometries into multi-encodings as needed. */
+function writeGeometryToBuilder(
+  builder: InstanceType<typeof GeoArrowBuilder>,
+  geometry: Geometry,
+  encoding: GeoArrowNativeEncoding
+): void {
+  switch (geometry.type) {
+    case 'Point':
+      if (encoding === 'geoarrow.multipoint') builder.beginMultiPoint(1);
+      builder.beginPoint();
+      writeCoordinateToBuilder(builder, geometry.coordinates);
+      return;
+    case 'MultiPoint':
+      builder.beginMultiPoint(geometry.coordinates.length);
+      for (const coordinate of geometry.coordinates) {
+        builder.beginPoint();
+        writeCoordinateToBuilder(builder, coordinate);
+      }
+      return;
+    case 'LineString':
+      if (encoding === 'geoarrow.multilinestring') builder.beginMultiLineString(1);
+      writeLineStringToBuilder(builder, geometry.coordinates);
+      return;
+    case 'MultiLineString':
+      builder.beginMultiLineString(geometry.coordinates.length);
+      for (const line of geometry.coordinates) writeLineStringToBuilder(builder, line);
+      return;
+    case 'Polygon':
+      if (encoding === 'geoarrow.multipolygon') builder.beginMultiPolygon(1);
+      writePolygonToBuilder(builder, geometry.coordinates);
+      return;
+    case 'MultiPolygon':
+      builder.beginMultiPolygon(geometry.coordinates.length);
+      for (const polygon of geometry.coordinates) writePolygonToBuilder(builder, polygon);
+      return;
+    case 'GeometryCollection':
+      throw new Error('GeometryCollection must be written through the dense union builder.');
+  }
+}
+
+function writeLineStringToBuilder(
+  builder: InstanceType<typeof GeoArrowBuilder>,
+  coordinates: number[][]
+): void {
+  builder.beginLineString(coordinates.length);
+  for (const coordinate of coordinates) writeCoordinateToBuilder(builder, coordinate);
+}
+
+function writePolygonToBuilder(
+  builder: InstanceType<typeof GeoArrowBuilder>,
+  coordinates: number[][][]
+): void {
+  builder.beginPolygon(coordinates.length);
+  for (const ring of coordinates) {
+    builder.beginLinearRing(ring.length);
+    for (const coordinate of ring) writeCoordinateToBuilder(builder, coordinate);
+  }
+}
+
+function writeCoordinateToBuilder(
+  builder: InstanceType<typeof GeoArrowBuilder>,
+  coordinate: number[]
+): void {
+  builder.writeCoordinate(
+    coordinate[0] ?? Number.NaN,
+    coordinate[1] ?? Number.NaN,
+    coordinate[2],
+    coordinate[3]
+  );
+}
+
+function getNativeEncoding(kind: GeoArrowGeometryKind): GeoArrowNativeEncoding {
+  switch (kind) {
+    case 'Point':
+      return 'geoarrow.point';
+    case 'LineString':
+      return 'geoarrow.linestring';
+    case 'Polygon':
+      return 'geoarrow.polygon';
+    case 'MultiPoint':
+      return 'geoarrow.multipoint';
+    case 'MultiLineString':
+      return 'geoarrow.multilinestring';
+    case 'MultiPolygon':
+      return 'geoarrow.multipolygon';
+    default:
+      throw new Error(`No native GeoArrow encoding exists for ${kind}.`);
+  }
+}
+
+function getUnionTypeId(kind: GeoArrowGeometryKind, dimension: GeoArrowBuilderDimension): number {
+  const baseTypeId: Record<GeoArrowGeometryKind, number> = {
+    Point: 1,
+    LineString: 2,
+    Polygon: 3,
+    MultiPoint: 4,
+    MultiLineString: 5,
+    MultiPolygon: 6,
+    GeometryCollection: 7
+  };
+  const dimensionOffset =
+    dimension === 'xyz' ? 10 : dimension === 'xym' ? 20 : dimension === 'xyzm' ? 30 : 0;
+  return baseTypeId[kind] + dimensionOffset;
+}
+
+function getUnionFieldName(
+  kind: GeoArrowGeometryKind,
+  dimension: GeoArrowBuilderDimension
+): string {
+  return dimension === 'xy' ? kind : `${kind} ${dimension.slice(1).toUpperCase()}`;
 }
 
 /** Builds object rows from GeoJSON features with properties flattened and geometry encoded. */

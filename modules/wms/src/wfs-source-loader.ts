@@ -325,7 +325,9 @@ export class WFSVectorSource extends DataSource<string, WFSourceOptions> impleme
         return geoJsonTable;
       case 'arrow':
       default:
-        return convertFeaturesToWKBArrowTable(geoJsonTable.features);
+        return convertFeaturesToWKBArrowTable(geoJsonTable.features, {
+          encodingPreference: parameters.geoarrow?.encodingPreference
+        });
     }
   }
 
@@ -357,7 +359,8 @@ export class WFSVectorSource extends DataSource<string, WFSourceOptions> impleme
       }
       yield convertWFSFeatures(
         parseGML(text, {...this.loadOptions, propertyTypes: this.options.wfs?.propertyTypes}),
-        parameters.format
+        parameters.format,
+        parameters.geoarrow?.encodingPreference
       );
       return;
     }
@@ -390,7 +393,7 @@ export class WFSVectorSource extends DataSource<string, WFSourceOptions> impleme
         propertyTypes: this.options.wfs?.propertyTypes
       }
     })) {
-      yield convertWFSFeatures(batch, parameters.format);
+      yield convertWFSFeatures(batch, parameters.format, parameters.geoarrow?.encodingPreference);
     }
   }
 
@@ -855,7 +858,8 @@ function isWFSExceptionDocument(text: string, contentType: string | null): boole
 /** Converts a GML feature collection into the generic vector source result. */
 function convertWFSFeatures(
   parsed: Geometry | GMLFeatureCollection | null,
-  format?: string
+  format?: string,
+  encodingPreference?: import('@loaders.gl/schema').GeoArrowEncodingPreference
 ): VectorSourceData {
   if (!parsed || parsed.type !== 'FeatureCollection') {
     throw new Error('WFS GetFeature did not return a GML FeatureCollection');
@@ -866,7 +870,9 @@ function convertWFSFeatures(
   if (format === 'binary') {
     return convertGeojsonToBinaryFeatureCollection(parsed.features as any);
   }
-  return convertFeaturesToWKBArrowTable(parsed.features as any);
+  return convertFeaturesToWKBArrowTable(parsed.features as any, {
+    encodingPreference
+  });
 }
 
 /** Adapts a browser response stream to the chunk iterator expected by GML. */

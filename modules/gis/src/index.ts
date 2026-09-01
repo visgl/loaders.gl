@@ -129,6 +129,7 @@ export {
 export type {
   LegacyGeoJSONCRS,
   GeoJSONToGeoArrowEncoding,
+  GeoArrowEncodingPreference,
   GeoJSONToGeoArrowOptions
 } from './lib/table-converters/convert-geojson-to-geoarrow';
 export {
@@ -138,7 +139,8 @@ export {
   isGeoJSONFeatureArray,
   isGeoJSONFeatureCollection,
   makeGeoArrowFeatureRows,
-  makeGeoArrowFeatureSchema
+  makeGeoArrowFeatureSchema,
+  resolveGeoArrowEncodingPreference
 } from './lib/table-converters/convert-geojson-to-geoarrow';
 export {
   convertFlatGeojsonToBinaryFeatureCollection,

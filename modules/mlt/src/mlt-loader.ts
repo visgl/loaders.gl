@@ -3,6 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import type {Loader, LoaderOptions} from '@loaders.gl/loader-utils';
+import type {GeoArrowEncodingPreference} from '@loaders.gl/schema';
 import {MLTFormat} from './mlt-format';
 
 // __VERSION__ is injected by babel-plugin-version-inline
@@ -10,6 +11,8 @@ import {MLTFormat} from './mlt-format';
 const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : 'latest';
 
 export type MLTLoaderOptions = LoaderOptions & {
+  /** Preferred encoding for Arrow geometry output. */
+  geoarrow?: {encodingPreference?: GeoArrowEncodingPreference};
   mlt?: {
     /** Shape of returned data */
     shape?: 'geojson-table' | 'binary-geometry' | 'arrow-table';
@@ -21,6 +24,8 @@ export type MLTLoaderOptions = LoaderOptions & {
     layerProperty?: string;
     /** Layer filter. If provided, only features belonging to the named layers will be included; otherwise features from all layers are returned. */
     layers?: string[];
+    /** Preferred encoding for Arrow geometry output. */
+    geoarrow?: {encodingPreference?: GeoArrowEncodingPreference};
   };
 };
 

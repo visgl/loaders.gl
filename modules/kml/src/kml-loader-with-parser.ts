@@ -5,7 +5,13 @@
 import type {LoaderWithParser, LoaderOptions} from '@loaders.gl/loader-utils';
 // import {geojsonToBinary} from '@loaders.gl/gis';
 // import {GeoJSONTable} from '@loaders.gl/schema';
-import {FeatureCollection, GeoJSONTable, ObjectRowTable, ArrowTable} from '@loaders.gl/schema';
+import {
+  FeatureCollection,
+  GeoJSONTable,
+  ObjectRowTable,
+  ArrowTable,
+  GeoArrowEncodingPreference
+} from '@loaders.gl/schema';
 import {
   buildFeatureTableSchema,
   convertFeatureCollectionToArrowTable
@@ -16,8 +22,11 @@ import {convertKMLDocumentToFeatureCollection, parseKMLDocument} from './kml-par
 const {preload: _KMLLoaderPreload, ...KMLLoaderMetadataWithoutPreload} = KMLLoaderMetadata;
 
 export type KMLLoaderOptions = LoaderOptions & {
+  /** Preferred encoding for Arrow geometry output. */
+  geoarrow?: {encodingPreference?: GeoArrowEncodingPreference};
   kml?: {
     shape?: 'object-row-table' | 'geojson-table' | 'arrow-table' | 'raw';
+    geoarrow?: {encodingPreference?: GeoArrowEncodingPreference};
   };
 };
 
@@ -72,7 +81,10 @@ function parseTextSync(
       return table;
     }
     case 'arrow-table':
-      return convertFeatureCollectionToArrowTable(geojson.features);
+      return convertFeatureCollectionToArrowTable(
+        geojson.features,
+        options?.geoarrow || kmlOptions.geoarrow
+      );
     // case 'raw':
     //   return doc;
     case 'object-row-table':

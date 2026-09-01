@@ -3,6 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import {expect, test} from 'vitest';
+import * as arrow from 'apache-arrow';
 import {GEOARROW_TEST_CASES} from '@loaders.gl/arrow/test/data/geoarrow/test-cases';
 import {fetchFile, parse} from '@loaders.gl/core';
 import {Feature, FeatureCollection} from '@loaders.gl/schema';
@@ -130,3 +131,78 @@ function makePointFeatures(): Feature[] {
     }
   ];
 }
+
+test('convertFeaturesToGeoArrowTable#supports encoding preferences', () => {
+  const features: Feature[] = [
+    {
+      type: 'Feature',
+      properties: {name: 'A'},
+      geometry: {type: 'Point', coordinates: [1, 2]}
+    },
+    {
+      type: 'Feature',
+      properties: {name: 'B'},
+      geometry: {type: 'Point', coordinates: [3, 4]}
+    }
+  ];
+
+  const wkbTable = convertFeaturesToGeoArrowTable(features, {
+    encodingPreference: 'geoarrow.wkb'
+  });
+  expect(wkbTable.data.schema.fields.at(-1)?.metadata?.get('ARROW:extension:name')).toBe(
+    'geoarrow.wkb'
+  );
+
+  const optimizedTable = convertFeaturesToGeoArrowTable(features, {
+    encodingPreference: 'optimized'
+  });
+  expect(optimizedTable.data.schema.fields.at(-1)?.metadata?.get('ARROW:extension:name')).toBe(
+    'geoarrow.point'
+  );
+
+  const unionTable = convertFeaturesToGeoArrowTable(features, {
+    encodingPreference: 'geoarrow.geometry'
+  });
+  expect(unionTable.data.schema.fields.at(-1)?.type).toBeInstanceOf(arrow.DenseUnion);
+});
+
+test('convertFeaturesToGeoArrowTable#uses a stable union for mixed and null geometries', () => {
+  const table = convertFeaturesToGeoArrowTable(
+    [
+      {type: 'Feature', properties: {}, geometry: {type: 'Point', coordinates: [1, 2]}},
+      {
+        type: 'Feature',
+        properties: {},
+        geometry: {
+          type: 'LineString',
+          coordinates: [
+            [0, 0],
+            [1, 1]
+          ]
+        }
+      },
+      {type: 'Feature', properties: {}, geometry: null}
+    ],
+    {encodingPreference: 'optimized'}
+  );
+
+  const geometryField = table.data.schema.fields.at(-1);
+  const geometryColumn = table.data.getChild('geometry');
+  expect(geometryField?.type).toBeInstanceOf(arrow.DenseUnion);
+  expect(geometryColumn?.length).toBe(3);
+  expect(geometryColumn?.get(2)).toBeNull();
+});
+
+test('convertFeaturesToGeoArrowTable#promotes single geometries into multi encodings', () => {
+  const table = convertFeaturesToGeoArrowTable(
+    [
+      {type: 'Feature', properties: {}, geometry: {type: 'Point', coordinates: [1, 2]}},
+      {type: 'Feature', properties: {}, geometry: {type: 'MultiPoint', coordinates: [[3, 4]]}}
+    ],
+    {encodingPreference: 'optimized'}
+  );
+
+  expect(table.data.schema.fields.at(-1)?.metadata?.get('ARROW:extension:name')).toBe(
+    'geoarrow.multipoint'
+  );
+});

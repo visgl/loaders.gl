@@ -110,7 +110,9 @@ export class OGCAPIFeaturesSource
       case 'binary':
         return convertGeojsonToBinaryFeatureCollection(geoJSONTable.features);
       case 'arrow':
-        return convertFeaturesToWKBArrowTable(geoJSONTable.features);
+        return convertFeaturesToWKBArrowTable(geoJSONTable.features, {
+          encodingPreference: parameters.geoarrow?.encodingPreference
+        });
       case 'geojson':
       default:
         return geoJSONTable;

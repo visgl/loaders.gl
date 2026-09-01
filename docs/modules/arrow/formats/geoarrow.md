@@ -128,6 +128,88 @@ CRS and unknown metadata, and reports scalar conflicts. Use `strict` to reject u
 
 ## Conversion Paths
 
+### Choosing geometry encoding
+
+Arrow-capable geospatial loaders accept a common encoding preference. The option is placed at
+`geoarrow.encodingPreference` alongside the loader-specific options:
+
+```typescript
+import {GeoJSONLoader} from '@loaders.gl/json';
+import {load} from '@loaders.gl/core';
+
+const table = await load('cities.geojson', GeoJSONLoader, {
+  geojson: {shape: 'arrow-table'},
+  geoarrow: {encodingPreference: 'optimized'}
+});
+```
+
+The three preferences have intentionally different guarantees:
+
+| Preference | Result | Use it when |
+| --- | --- | --- |
+| `geoarrow.wkb` | A binary geometry column with `geoarrow.wkb` metadata | You need compact, compatible interchange or persistence. This is the default for loaders. |
+| `geoarrow.geometry` | A stable `geoarrow.geometry` dense union | You need one schema that can represent mixed geometry families, including collections. |
+| `optimized` | A concrete native encoding for homogeneous data, otherwise `geoarrow.geometry` | You want the best compute layout without choosing a geometry family in advance. |
+
+`optimized` selects `geoarrow.point`, `geoarrow.multipoint`, `geoarrow.linestring`,
+`geoarrow.multilinestring`, `geoarrow.polygon`, or `geoarrow.multipolygon` when the column is
+homogeneous or contains only the corresponding single and multi family. Mixed columns and
+unknown streaming inputs use the dense union. The union schema is fixed before the first batch;
+it does not change when a later batch contains another geometry family.
+
+Loader defaults remain `geoarrow.wkb` for compatibility. Scan uses `optimized` when a spatial
+operation needs coordinates, and reuses that converted geometry batch for the rest of the plan.
+Choosing a preference affects Arrow output only; it does not change the default GeoJSON, binary,
+or row-table return values.
+
+For controlled conversions, exact native targets remain available:
+
+```typescript
+import {convertTableToGeoArrow} from '@loaders.gl/geoarrow';
+
+const polygons = convertTableToGeoArrow(table, {
+  geoarrow: {encoding: 'geoarrow.polygon', coordinates: 'separated'}
+});
+
+const adaptive = convertTableToGeoArrow(table, {
+  geoarrow: {encodingPreference: 'optimized'}
+});
+```
+
+`encoding` is for callers that know the target layout. `encodingPreference` is the portable
+policy used by loaders and applications. Supplying both is an error. Exact targets can fail when
+the input cannot be represented by that encoding; preferences may promote homogeneous single and
+multi types or fall back to the dense union.
+
+The preference does not discard table information. Geometry field metadata, CRS and edge
+algorithm, XYZM dimensionality, separated or interleaved coordinate layout, offset width, nulls,
+empty geometries, feature IDs, and non-geometry columns are preserved where the target encoding
+supports them. Existing native GeoArrow input is retained for identity conversions. Use
+`coordinates: 'separated'` or `coordinates: 'interleaved'` and `offsetType: 'int32'` or
+`offsetType: 'int64'` when the physical layout must be controlled.
+
+The preference is available on the Arrow-producing vector loaders and sources below. The
+loader-specific option controls the output shape; the common option controls only the geometry
+encoding.
+
+| Loader or source | Arrow output | Preference location |
+| --- | --- | --- |
+| GeoJSON | `geojson.shape: 'arrow-table'` | `geoarrow.encodingPreference` |
+| CSV | `csv.shape: 'arrow-table'` and `csv.detectGeometryColumns: true` | `geoarrow.encodingPreference` |
+| Shapefile | `shp.shape: 'arrow-table'` or `shapefile.shape: 'arrow-table'` | `geoarrow.encodingPreference` (legacy `shp.geoarrowEncoding` is also supported) |
+| FlatGeobuf, GeoPackage | Loader-specific Arrow shape | `geoarrow.encodingPreference` |
+| KML, GPX, TCX | Loader-specific Arrow shape | `geoarrow.encodingPreference` |
+| MVT, MLT, PMTiles/TableTiler | Tile or source Arrow table | `geoarrow.encodingPreference` |
+| ArcGIS, WFS, OGC API | Feature or streamed Arrow table | `geoarrow.encodingPreference` |
+
+For CSV geometry detection, use `csv.detectGeometryColumns: true` together with the common
+preference. For Shapefile, the legacy `shp.geoarrowEncoding: 'geoarrow'` option remains
+supported and means `optimized`.
+
+The lightweight format loaders only construct the requested Arrow geometry column. They do not
+depend on the full `@loaders.gl/geoarrow` package. Install that package when you need conversion,
+validation, bounds, coordinate iteration, or other processing APIs.
+
 Use `convertGeoArrowGeometry(table, 'native')` when a table will be processed or rendered from
 coordinates. The adaptive target selects concrete point, line, polygon, or multi-geometries for
 homogeneous columns and uses `geoarrow.geometry` for genuinely mixed columns. Set

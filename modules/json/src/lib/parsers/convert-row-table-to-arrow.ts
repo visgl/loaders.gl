@@ -14,6 +14,7 @@ import type {
 } from '@loaders.gl/schema';
 import {
   type LegacyGeoJSONCRS,
+  convertFeaturesToGeoArrowTable,
   makeGeoArrowFeatureRows,
   makeGeoArrowFeatureSchema
 } from '@loaders.gl/gis';
@@ -83,6 +84,8 @@ export type GeoJSONArrowConversionOptions = JSONArrowConversionOptions & {
   geoarrowGeometryColumn?: string;
   /** Optional legacy GeoJSON root CRS metadata to preserve on GeoArrow output. */
   crs?: LegacyGeoJSONCRS | null;
+  /** Preferred encoding for Arrow geometry output. */
+  geoarrow?: {encodingPreference?: import('@loaders.gl/schema').GeoArrowEncodingPreference};
 };
 
 type NormalizedArrowConversionOptions = Required<ArrowConversionOptions>;
@@ -171,6 +174,25 @@ export function convertGeoJSONFeaturesToArrowTable(
   features: Feature[],
   options?: GeoJSONArrowConversionOptions
 ): ArrowTable {
+  if (
+    options?.geoarrow?.encodingPreference &&
+    options.geoarrow.encodingPreference !== 'geoarrow.wkb'
+  ) {
+    const geometryColumnName = options.geoarrowGeometryColumn || 'geometry';
+    const normalizedSchema = options.schema ? normalizeJSONArrowSchema(options.schema) : undefined;
+    const propertySchema = normalizedSchema
+      ? {
+          fields: normalizedSchema.fields.filter(field => field.name !== geometryColumnName),
+          metadata: normalizedSchema.metadata
+        }
+      : undefined;
+    return convertFeaturesToGeoArrowTable(features, {
+      geometryColumnName,
+      propertySchema,
+      crs: options.crs,
+      geoarrow: {encodingPreference: options.geoarrow.encodingPreference}
+    });
+  }
   const geometryColumnName = options?.geoarrowGeometryColumn || 'geometry';
   const inferredSchema = makeGeoArrowFeatureSchema(features, {
     geometryColumnName,

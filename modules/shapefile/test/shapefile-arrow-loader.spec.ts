@@ -3,11 +3,12 @@
 // Copyright (c) vis.gl contributors
 
 import {expect, test} from 'vitest';
+import * as arrow from 'apache-arrow';
 import {validateLoader} from 'test/common/conformance';
 import {setLoaderOptions, fetchFile, load, loadInBatches} from '@loaders.gl/core';
 import {ShapefileLoader} from '@loaders.gl/shapefile';
 import {convertWKBTableToGeoJSON} from '@loaders.gl/gis';
-import {getGeoMetadata} from '@loaders.gl/geoarrow';
+import {convertGeoArrowVectorCellToGeoJSON, getGeoMetadata} from '@loaders.gl/geoarrow';
 setLoaderOptions({
   _workerType: 'test',
   worker: false
@@ -108,6 +109,22 @@ test('ShapefileLoader#load arrow-table can emit typed GeoArrow point geometry', 
   expect(geometryData.length, 'geometry data has one row per feature').toBe(table.data.numRows);
   expect(geometryData.children[0].values.length, 'coordinates are dense').toBe(
     table.data.numRows * 2
+  );
+});
+test('ShapefileLoader#load arrow-table decodes dense union geometry slices', async () => {
+  const filename = `${SHAPEFILE_JS_DATA_FOLDER}/points.shp`;
+  const table = await load(filename, ShapefileLoader, {
+    shapefile: {shape: 'arrow-table'},
+    geoarrow: {encodingPreference: 'geoarrow.geometry'}
+  });
+  const geometry = table.data.getChild('geometry');
+  expect(geometry?.type).toBeInstanceOf(arrow.DenseUnion);
+  expect(convertGeoArrowVectorCellToGeoJSON(geometry!, 0, 'geoarrow.geometry')).toEqual({
+    type: 'Point',
+    coordinates: [1, 2]
+  });
+  expect(convertGeoArrowVectorCellToGeoJSON(geometry!, 1, 'geoarrow.geometry')).not.toEqual(
+    convertGeoArrowVectorCellToGeoJSON(geometry!, 0, 'geoarrow.geometry')
   );
 });
 test('ShapefileLoader#loadInBatches arrow-table yields stable Arrow schema', async () => {

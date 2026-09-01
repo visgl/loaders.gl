@@ -6,7 +6,14 @@ import {
   convertFeatureCollectionToGeoArrowTable as convertGISFeatureCollectionToGeoArrowTable,
   convertFeaturesToGeoArrowTable as convertGISFeaturesToGeoArrowTable
 } from '@loaders.gl/gis';
-import type {ArrowTable, Feature, Geometry, GeoJSONTable, Table} from '@loaders.gl/schema';
+import type {
+  ArrowTable,
+  Feature,
+  Geometry,
+  GeoArrowEncodingPreference,
+  GeoJSONTable,
+  Table
+} from '@loaders.gl/schema';
 import {convertTableToArrow} from '@loaders.gl/schema-utils';
 import type * as arrow from 'apache-arrow';
 import {convertGeoArrowGeometry} from './geoarrow-converter/convert-geoarrow-geometry';
@@ -24,6 +31,8 @@ export type GeoArrowConvertFromOptions = {
   geoarrow?: GeoArrowGeometryConvertOptions & {
     /** Geometry encoding to write for GeoJSON feature inputs. */
     encoding?: GeoArrowConvertFromEncoding;
+    /** Preferred loader-facing output policy; mutually exclusive with `encoding`. */
+    encodingPreference?: GeoArrowEncodingPreference;
     /** Geometry field name to preserve when adapting generic row or column tables. */
     geometryColumnName?: string;
   };
@@ -39,7 +48,7 @@ export function convertTableToGeoArrow(
   table: Table,
   options?: GeoArrowConvertFromOptions
 ): arrow.Table {
-  const encoding = normalizeGeoArrowEncoding(options?.geoarrow?.encoding);
+  const encoding = resolveGeoArrowEncoding(options);
 
   switch (table.shape) {
     case 'arrow-table':
@@ -66,7 +75,7 @@ export function convertFeatureCollectionToGeoArrowTable(
   table: GeoJSONTable,
   options?: GeoArrowConvertFromOptions
 ): ArrowTable {
-  const encoding = normalizeGeoArrowEncoding(options?.geoarrow?.encoding);
+  const encoding = resolveGeoArrowEncoding(options);
   const arrowTable = convertGISFeatureCollectionToGeoArrowTable(table, {
     encoding: getGeoJSONStagingEncoding(encoding),
     geometryColumnName: options?.geoarrow?.geometryColumnName
@@ -84,7 +93,7 @@ export function convertFeaturesToGeoArrowTable(
   features: Feature[],
   options?: GeoArrowConvertFromOptions
 ): ArrowTable {
-  const encoding = normalizeGeoArrowEncoding(options?.geoarrow?.encoding);
+  const encoding = resolveGeoArrowEncoding(options);
   const arrowTable = convertGISFeaturesToGeoArrowTable(features, {
     encoding: getGeoJSONStagingEncoding(encoding),
     geometryColumnName: options?.geoarrow?.geometryColumnName
@@ -227,6 +236,21 @@ function normalizeGeoArrowEncoding(
     default:
       throw new Error(`Unknown GeoArrow encoding "${encoding}"`);
   }
+}
+
+/** Resolves an exact converter target or a loader-facing encoding preference. */
+function resolveGeoArrowEncoding(
+  options?: GeoArrowConvertFromOptions
+): GeoArrowGeometryTarget | undefined {
+  const exactEncoding = options?.geoarrow?.encoding;
+  const encodingPreference = options?.geoarrow?.encodingPreference;
+  if (exactEncoding !== undefined && encodingPreference !== undefined) {
+    throw new Error('GeoArrow conversion cannot specify both encoding and encodingPreference.');
+  }
+  if (encodingPreference === 'geoarrow.wkb') return 'geoarrow.wkb';
+  if (encodingPreference === 'geoarrow.geometry') return 'geoarrow.geometry';
+  if (encodingPreference === 'optimized') return 'native';
+  return normalizeGeoArrowEncoding(exactEncoding);
 }
 
 type GeoArrowGeometryTarget = GeoArrowEncoding | 'native';

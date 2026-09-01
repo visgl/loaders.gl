@@ -84,6 +84,7 @@ function parseTextSync(
         schema: options.json?.schema,
         arrowConversion: options.json?.arrowConversion,
         geoarrowGeometryColumn: options.json?.geoarrowGeometryColumn,
+        geoarrow: options.geoarrow || options.geojson?.geoarrow || options.json?.geoarrow,
         crs: getGeoJSONCRS(geojson),
         log: getGeoJSONLoaderLog(options)
       });
@@ -172,10 +173,20 @@ async function* makeGeoJSONArrowBatchIterator(
     }
 
     const featureBatch = batch as ObjectRowTable & TableBatch;
+    const configuredGeoArrowOptions =
+      options.geoarrow || options.geojson?.geoarrow || options.json?.geoarrow;
+    const configuredPreference = configuredGeoArrowOptions?.encodingPreference;
+    const streamingPreference =
+      configuredPreference && configuredPreference !== 'geoarrow.wkb'
+        ? 'geoarrow.geometry'
+        : configuredPreference;
     const arrowTable = convertGeoJSONFeaturesToArrowTable(featureBatch.data as Feature[], {
       schema: frozenSchema || undefined,
       arrowConversion: options.json?.arrowConversion,
       geoarrowGeometryColumn: options.json?.geoarrowGeometryColumn,
+      geoarrow: streamingPreference
+        ? {encodingPreference: streamingPreference}
+        : configuredGeoArrowOptions,
       crs,
       log: getGeoJSONLoaderLog(options)
     });

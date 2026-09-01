@@ -17,6 +17,11 @@ import {
   convertSchemaToArrow,
   type ArrowViewTypeMode
 } from '@loaders.gl/schema-utils';
+import {
+  convertFeaturesToGeoArrowTable,
+  convertWKBToGeometry,
+  convertWKTToGeometry
+} from '@loaders.gl/gis';
 import * as arrow from 'apache-arrow';
 
 import type {CSVLoaderOptions} from './csv-loader-options';
@@ -105,7 +110,11 @@ export async function parseCSVArrayBufferAsArrow(
         dynamicTyping: csvOptions.dynamicTyping
       }
     });
-    return convertCSVRowTableToArrowTable(rowTable as ObjectRowTable, csvOptions.viewTypes);
+    return convertCSVRowTableToArrowTable(
+      rowTable as ObjectRowTable,
+      csvOptions.viewTypes,
+      normalizedOptions.geoarrow?.encodingPreference || csvOptions.geoarrow?.encodingPreference
+    );
   }
   const rawArrowCSVOptions = createRawArrowTableCSVOptions(normalizedOptions);
 
@@ -146,7 +155,11 @@ export async function parseCSVTextAsArrow(
         dynamicTyping: csvOptions.dynamicTyping
       }
     });
-    return convertCSVRowTableToArrowTable(rowTable as ObjectRowTable, csvOptions.viewTypes);
+    return convertCSVRowTableToArrowTable(
+      rowTable as ObjectRowTable,
+      csvOptions.viewTypes,
+      normalizedOptions.geoarrow?.encodingPreference || csvOptions.geoarrow?.encodingPreference
+    );
   }
   const rawArrowCSVOptions = createRawArrowTableCSVOptions(normalizedOptions);
 
@@ -196,7 +209,8 @@ export function parseCSVInArrowBatches(
           dynamicTyping: csvOptions.dynamicTyping
         }
       }),
-      csvOptions.viewTypes
+      csvOptions.viewTypes,
+      normalizedOptions.geoarrow?.encodingPreference || csvOptions.geoarrow?.encodingPreference
     );
   }
   const rawArrowCSVOptions = createRawArrowTableCSVOptions(normalizedOptions);
@@ -209,8 +223,39 @@ export function parseCSVInArrowBatches(
 /** Converts CSV row-table output to an Arrow table using the supplied CSV schema. */
 function convertCSVRowTableToArrowTable(
   table: ObjectRowTable | ArrayRowTable,
-  viewTypes?: ArrowViewTypeMode
+  viewTypes?: ArrowViewTypeMode,
+  encodingPreference?: import('@loaders.gl/schema').GeoArrowEncodingPreference
 ): ArrowTable {
+  if (
+    encodingPreference &&
+    encodingPreference !== 'geoarrow.wkb' &&
+    table.shape === 'object-row-table'
+  ) {
+    const geometryFields = (table.schema?.fields || []).filter(
+      field =>
+        field.metadata?.['ARROW:extension:name'] === 'geoarrow.wkb' ||
+        field.metadata?.['ARROW:extension:name'] === 'geoarrow.wkt'
+    );
+    if (geometryFields.length === 1) {
+      const geometryColumnName = geometryFields[0].name;
+      const features = table.data.map(row => {
+        const geometryValue = row[geometryColumnName];
+        const geometry =
+          geometryValue instanceof Uint8Array
+            ? convertWKBToGeometry(geometryValue.slice().buffer)
+            : typeof geometryValue === 'string'
+              ? convertWKTToGeometry(geometryValue)
+              : null;
+        const properties = {...row};
+        delete properties[geometryColumnName];
+        return {type: 'Feature' as const, geometry, properties};
+      });
+      return convertFeaturesToGeoArrowTable(features as any, {
+        geometryColumnName,
+        encodingPreference
+      });
+    }
+  }
   const arrowTableBuilder = new ArrowTableBuilder(table.schema!, {viewTypes});
   for (const row of table.data) {
     if (table.shape === 'object-row-table') {
@@ -225,7 +270,8 @@ function convertCSVRowTableToArrowTable(
 /** Converts CSV row batches to Arrow batches while preserving the CSV-derived schema. */
 async function* convertCSVRowBatchesToArrowBatches(
   rowBatchIterator: AsyncIterable<TableBatch>,
-  viewTypes?: ArrowViewTypeMode
+  viewTypes?: ArrowViewTypeMode,
+  encodingPreference?: import('@loaders.gl/schema').GeoArrowEncodingPreference
 ): AsyncIterable<ArrowTableBatch> {
   for await (const rowBatch of rowBatchIterator) {
     if (
@@ -235,15 +281,11 @@ async function* convertCSVRowBatchesToArrowBatches(
       continue;
     }
 
-    const arrowTableBuilder = new ArrowTableBuilder(rowBatch.schema, {viewTypes});
-    for (const row of rowBatch.data) {
-      if (rowBatch.shape === 'object-row-table') {
-        arrowTableBuilder.addObjectRow(row as {[columnName: string]: unknown});
-      } else {
-        arrowTableBuilder.addArrayRow(row as unknown[]);
-      }
-    }
-    const arrowTable = arrowTableBuilder.finishTable();
+    const arrowTable = convertCSVRowTableToArrowTable(
+      rowBatch as ObjectRowTable | ArrayRowTable,
+      viewTypes,
+      encodingPreference
+    );
     yield {
       ...rowBatch,
       shape: 'arrow-table',

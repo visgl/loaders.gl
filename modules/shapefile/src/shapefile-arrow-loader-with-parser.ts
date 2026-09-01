@@ -13,6 +13,8 @@ import * as arrow from 'apache-arrow';
 import type {ArrowTable, ArrowTableBatch, Field, Schema as TableSchema} from '@loaders.gl/schema';
 import {ArrowTableBuilder, convertSchemaToArrow} from '@loaders.gl/schema-utils';
 import {
+  convertFeaturesToGeoArrowTable,
+  convertWKBToGeometry,
   type GeoParquetGeometryType,
   makeWKBGeometryField,
   setWKBGeometryColumnMetadata
@@ -65,6 +67,21 @@ export async function parseShapefileToArrow(
       header,
       transform
     );
+    if (
+      options?.geoarrow?.encodingPreference === 'geoarrow.geometry' ||
+      options?.shapefile?.geoarrow?.encodingPreference === 'geoarrow.geometry'
+    ) {
+      const geometryColumn = geometryTable.data.getChild(GEOMETRY_COLUMN_NAME);
+      const geometries = geometryColumn?.toArray() || [];
+      geometryTable = convertFeaturesToGeoArrowTable(
+        geometries.map(geometry => ({
+          type: 'Feature' as const,
+          geometry: geometry ? convertWKBToGeometry(geometry.slice().buffer) : null,
+          properties: {}
+        })),
+        {encodingPreference: 'geoarrow.geometry'}
+      );
+    }
   }
 
   let propertySchema: TableSchema | null = null;
@@ -320,7 +337,11 @@ function getReprojectionTransform(
 
 function getTypedGeoArrowEncoding(options?: ShapefileLoaderOptions): boolean {
   const encoding = options?.shapefile?.geoarrowEncoding || options?.shp?.geoarrowEncoding;
-  return encoding === 'geoarrow';
+  const preference =
+    options?.geoarrow?.encodingPreference ||
+    options?.shapefile?.geoarrow?.encodingPreference ||
+    options?.shp?.geoarrow?.encodingPreference;
+  return encoding === 'geoarrow' || preference === 'optimized';
 }
 
 /** Infers GeoParquet geometry type metadata from parsed geometries or the SHP header. */

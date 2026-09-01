@@ -114,7 +114,14 @@ Set `csv.viewTypes: 'prefer'` to emit `Utf8View` columns when the installed `apa
 
 ### Geometry Columns
 
-`CSVLoader` can detect WKT and hex-encoded WKB geometry columns when `csv.detectGeometryColumns` is enabled. Detected geometries are emitted as `geoarrow.wkb` by default. Set `csv.geometryEncoding: 'source'` to preserve WKT columns as `geoarrow.wkt`.
+`CSVLoader` can detect WKT and hex-encoded WKB geometry columns when `csv.detectGeometryColumns` is enabled. Detected geometries are emitted as `geoarrow.wkb` by default. Set the common `geoarrow.encodingPreference` option to `'optimized'` for native coordinate buffers or `'geoarrow.geometry'` for a stable dense union. Set `csv.geometryEncoding: 'source'` to preserve WKT columns as `geoarrow.wkt` when using the default WKT/WKB bridge.
+
+```typescript
+const table = await load(url, CSVLoader, {
+  csv: {shape: 'arrow-table', detectGeometryColumns: true},
+  geoarrow: {encodingPreference: 'optimized'}
+});
+```
 
 ## CSVLoader Options
 
@@ -132,6 +139,7 @@ Set `csv.viewTypes: 'prefer'` to emit `Utf8View` columns when the installed `apa
 | `csv.skipEmptyLines`        | `boolean \| 'greedy'`                                                                      | `true`                        | Skip empty lines; `'greedy'` also skips lines that only contain whitespace.                                                  |
 | `csv.detectGeometryColumns` | `boolean`                                                                                  | `false`                       | Detect geometry columns when producing geospatial table output.                                                              |
 | `csv.geometryEncoding`      | `'wkb' \| 'source'`                                                                        | `wkb`                         | Output encoding for detected geometry columns. `wkb` normalizes WKT and WKB to `geoarrow.wkb`; `source` preserves WKT.       |
+| `geoarrow.encodingPreference` | `'geoarrow.wkb' \| 'geoarrow.geometry' \| 'optimized'` | `'geoarrow.wkb'` | Representation for detected geometry columns. `optimized` uses concrete native GeoArrow for homogeneous data and dense union for mixed data. |
 | `csv.delimitersToGuess`     | `string[]`                                                                                 | `[',', '\t', '\|', ';']`      | Delimiters to try when no delimiter is specified.                                                                            |
 
 ## Remarks

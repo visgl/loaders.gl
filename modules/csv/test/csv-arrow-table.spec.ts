@@ -768,6 +768,33 @@ test('CSVLoader#arrow-table geometry detection supports byte and streaming input
   expect(batches.every(batch => batch.shape === 'arrow-table')).toBe(true);
 });
 
+test('CSVLoader#arrow-table applies GeoArrow encoding preference to detected WKT', async () => {
+  const bytes = new TextEncoder().encode(
+    'geometry,name\nPOINT (10 20),first\nPOINT (11 21),second'
+  );
+  const iterator = await parseInBatches([bytes], CSVLoader, {
+    core: {worker: false, batchSize: 1},
+    geoarrow: {encodingPreference: 'optimized'},
+    csv: {
+      shape: 'arrow-table',
+      header: true,
+      detectGeometryColumns: true,
+      geometryEncoding: 'source'
+    }
+  });
+  const batches: ArrowTableBatch[] = [];
+  for await (const batch of iterator) {
+    if (batch.batchType === 'data') batches.push(batch);
+  }
+  expect(batches).toHaveLength(1);
+  expect(
+    batches[0].schema.fields.find(field => field.name === 'geometry')?.metadata?.[
+      'ARROW:extension:name'
+    ]
+  ).toBe('geoarrow.point');
+  expect(batches[0].data.numRows).toBe(2);
+});
+
 test('CSVLoader#parseInBatches streams fragmented Arrow batches through one worker session', async () => {
   const csvText = 'id,name\n1,Alice\n2,Bob\n3,Carol\n';
   const bytes = new TextEncoder().encode(csvText);

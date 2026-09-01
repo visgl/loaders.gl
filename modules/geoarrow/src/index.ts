@@ -8,7 +8,12 @@ export {getBoundingBoxFromArrowPositions} from './mesharrow/get-bounding-box';
 export {getDeckBinaryDataFromArrowMesh} from './mesharrow/get-deck-binary-data';
 
 // GIS CATEGORY - GEOARROW
-export type {GeoArrowMetadata, GeoArrowEncoding, GeoArrowBox} from '@loaders.gl/schema';
+export type {
+  GeoArrowMetadata,
+  GeoArrowEncoding,
+  GeoArrowEncodingPreference,
+  GeoArrowBox
+} from '@loaders.gl/schema';
 export type {
   GeoArrowConvertToOptions,
   GeoArrowConvertFromOptions
