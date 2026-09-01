@@ -873,14 +873,17 @@ export class PotreeNodesSource
     }
 
     if (!Array.isArray(this.metadata.pointAttributes)) {
-      return {
-        // Preserve source-level worker/fetch settings while allowing the
-        // TypeScript LAS loader to use its packaged worker by default.
-        core: this.loadOptions.core,
+      // Preserve source-level worker/fetch settings while allowing the
+      // TypeScript LAS loader to use its packaged worker by default.
+      const loaderOptions: LoaderOptions = {
         las: {
           colorDepth: 'auto'
         }
       };
+      if (this.loadOptions.core) {
+        loaderOptions.core = this.loadOptions.core;
+      }
+      return loaderOptions;
     }
 
     const [tileMinBounds] = tileBoundingBox;
