@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
+import type {UpdateParameters} from '@deck.gl/core';
 import {Tile3DLayer, type Tile3DLayerProps} from '@deck.gl/geo-layers';
 import {
   I3SSource,
@@ -12,7 +13,12 @@ import {
   type Tileset3DSource
 } from '@loaders.gl/tiles';
 import {coreApi, preload, selectLoader} from '@loaders.gl/core';
-import type {LoaderOptions, LoaderWithParser, RequestCredential} from '@loaders.gl/loader-utils';
+import {
+  getAuthenticatedFetch,
+  type LoaderOptions,
+  type LoaderWithParser,
+  type RequestCredential
+} from '@loaders.gl/loader-utils';
 import {createSLPKArchiveResolver, createTiles3DArchiveResolver} from './archive-source-resolver';
 
 /**
@@ -46,12 +52,30 @@ export class Tile3DSourceLayer<
    */
   constructor(props: Tile3DSourceLayerProps<DataT> & ExtraProps) {
     super(props as Tile3DLayerProps<DataT> & ExtraProps);
+    // deck.gl creates a new layer instance on every render, while transferring the old state.
+    // Install the adapter on every instance so data-source changes cannot fall back to the base
+    // layer's legacy parsed-JSON loading path.
+    (this as any)._loadTileset = this.loadSourceTileset.bind(this);
   }
 
-  /** Install source-backed loading hooks after the base layer initializes its state. */
+  /** Initialize the underlying deck.gl tile layer state. */
   initializeState(): void {
     super.initializeState();
-    (this as any)._loadTileset = this.loadSourceTileset.bind(this);
+  }
+
+  /**
+   * Updates layer state and retries the initial traversal from the live deck.gl layer instance.
+   * @param parameters deck.gl layer update parameters.
+   */
+  updateState(parameters: UpdateParameters<this>): void {
+    super.updateState(parameters);
+
+    // A source can finish initializing after deck.gl has transferred state to a newer layer
+    // instance. The async instance cannot schedule work on the current layer, so retry from the
+    // next live update until the first selection records a frame number.
+    if (this.state.tileset3d && this.state.frameNumber === undefined) {
+      this.updateLoadedTileset();
+    }
   }
 
   /**
@@ -64,7 +88,8 @@ export class Tile3DSourceLayer<
       const tileset3d = new Tileset3D(data, {
         onTileLoad: (this as any)._onTileLoad.bind(this),
         onTileUnload: (this as any)._onTileUnload.bind(this),
-        onTileError: this.props.onTileError
+        onTileError: this.props.onTileError,
+        onUpdate: () => this.setNeedsUpdate()
       });
 
       this.setState({
@@ -73,7 +98,7 @@ export class Tile3DSourceLayer<
       });
 
       await tileset3d.tilesetInitializationPromise;
-      (this as any)._updateTileset(this.state.activeViewports);
+      this.updateLoadedTileset();
       this.props.onTilesetLoad?.(tileset3d);
       return;
     }
@@ -81,12 +106,15 @@ export class Tile3DSourceLayer<
     const tilesetUrl = data;
     const {loadOptions = {}} = this.props;
 
+    // `Tile3DLayer` supplies a default singular 3D Tiles loader. Prefer an explicitly
+    // provided list so callers can use `loaders: [I3SLoader]` as a format hint.
     // TODO: deprecate `loader` in v9.0
     // Prefer the explicit loader array over Tile3DLayer's default `loader` prop.
     // @ts-ignore
-    const loaders = this.props.loaders || this.props.loader;
+    const loaders = this.props.loaders?.length ? this.props.loaders : this.props.loader;
     const loaderCandidates = (Array.isArray(loaders) ? loaders : [loaders]).filter(Boolean);
     const selectedLoader =
+      inferTilesetLoader(tilesetUrl, loaderCandidates as LoaderWithParser[]) ||
       (await selectLoader(tilesetUrl, loaderCandidates as any, {
         ...loadOptions,
         core: {
@@ -94,7 +122,8 @@ export class Tile3DSourceLayer<
           ignoreRegisteredLoaders: true,
           nothrow: true
         }
-      })) || loaderCandidates[0];
+      })) ||
+      loaderCandidates[0];
     if (!selectedLoader) {
       throw new Error('Tile3DSourceLayer requires a loader for URL or Blob inputs.');
     }
@@ -104,8 +133,12 @@ export class Tile3DSourceLayer<
       typeof tilesetUrl === 'string' ? tilesetUrl : undefined
     );
 
+    const {tileset: tilesetOptions, ...remainingLoadOptions} = loadOptions as LoaderOptions & {
+      tileset?: Partial<Tileset3DProps>;
+    };
     const options: {loadOptions: LoaderOptions} & Partial<Tileset3DProps> = {
-      loadOptions: {...loadOptions}
+      loadOptions: {...remainingLoadOptions},
+      ...tilesetOptions
     };
     let actualTilesetUrl = tilesetUrl;
 
@@ -117,15 +150,15 @@ export class Tile3DSourceLayer<
 
       const credentials = preloadOptions.credentials as readonly RequestCredential[] | undefined;
       if (credentials?.length) {
+        const combinedCredentials = [
+          ...(options.loadOptions.core?.credentials || []),
+          ...credentials
+        ];
         options.loadOptions.core = {
           ...options.loadOptions.core,
-          credentials: [...(options.loadOptions.core?.credentials || []), ...credentials]
+          credentials: combinedCredentials
         };
-      } else if (preloadOptions.headers) {
-        options.loadOptions.fetch = {
-          ...options.loadOptions.fetch,
-          headers: preloadOptions.headers
-        };
+        options.loadOptions.fetch = getAuthenticatedFetch(options.loadOptions);
       }
       Object.assign(options, preloadOptions);
     }
@@ -135,6 +168,7 @@ export class Tile3DSourceLayer<
       onTileLoad: (this as any)._onTileLoad.bind(this),
       onTileUnload: (this as any)._onTileUnload.bind(this),
       onTileError: this.props.onTileError,
+      onUpdate: () => this.setNeedsUpdate(),
       ...options
     });
 
@@ -144,9 +178,39 @@ export class Tile3DSourceLayer<
     });
 
     await tileset3d.tilesetInitializationPromise;
-    (this as any)._updateTileset(this.state.activeViewports);
+    this.updateLoadedTileset();
     this.props.onTilesetLoad?.(tileset3d);
   }
+
+  /** Starts traversal with the viewport set that survived asynchronous source initialization. */
+  private updateLoadedTileset(): void {
+    const {activeViewports, lastUpdatedViewports} = this.state;
+    const viewports = Object.keys(activeViewports).length ? activeViewports : lastUpdatedViewports;
+    (this as any)._updateTileset(viewports);
+  }
+}
+
+/**
+ * Selects a format loader from URL conventions that do not expose a useful file extension.
+ * @param url Root tileset URL or in-memory blob.
+ * @param loaderCandidates Loaders supplied to the layer.
+ * @returns The matching loader, or `undefined` when the URL carries no reliable format signal.
+ * @internal
+ */
+export function inferTilesetLoader(
+  url: string | Blob,
+  loaderCandidates: LoaderWithParser[]
+): LoaderWithParser | undefined {
+  if (typeof url !== 'string') {
+    return undefined;
+  }
+
+  const lowerCaseUrl = url.toLowerCase();
+  if (lowerCaseUrl.includes('/sceneserver')) {
+    return loaderCandidates.find(loader => loader.id === 'i3s' || loader.id === 'slpk');
+  }
+
+  return undefined;
 }
 
 /**

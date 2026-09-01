@@ -3,6 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import type {FetchLike} from '../../types';
+import type {LoaderOptions} from '../../loader-types';
 
 /** Reason an application token provider is being invoked. */
 export type TokenProviderReason = 'request' | 'refresh';
@@ -173,6 +174,41 @@ export function createAuthenticatedFetch(options: AuthenticatedFetchOptions): Fe
     value: options.credentials
   });
   return authenticatedFetch;
+}
+
+/**
+ * Creates a credential-aware fetch function from standard loader options.
+ * @param options Loader options containing an optional fetch override and scoped credentials.
+ * @returns A fetch function that preserves request defaults and applies matching credentials.
+ */
+export function getAuthenticatedFetch(options: LoaderOptions = {}): FetchLike {
+  const fetchOption = options.fetch ?? options.core?.fetch;
+  let fetchFunction: FetchLike;
+
+  if (typeof fetchOption === 'function') {
+    fetchFunction = fetchOption;
+  } else if (fetchOption) {
+    fetchFunction = (url, requestOptions) =>
+      fetch(url, mergeFetchOptions(fetchOption, requestOptions));
+  } else {
+    fetchFunction = (url, requestOptions) => fetch(url, requestOptions);
+  }
+
+  return createAuthenticatedFetch({
+    fetch: fetchFunction,
+    credentials: options.core?.credentials || []
+  });
+}
+
+/** Combines default and per-request fetch options without replacing either header collection. */
+function mergeFetchOptions(defaultOptions: RequestInit, requestOptions?: RequestInit): RequestInit {
+  const mergedOptions = {...defaultOptions, ...requestOptions};
+  if (defaultOptions.headers || requestOptions?.headers) {
+    const headers = new Headers(defaultOptions.headers);
+    new Headers(requestOptions?.headers).forEach((value, key) => headers.set(key, value));
+    mergedOptions.headers = headers;
+  }
+  return mergedOptions;
 }
 
 /** Redacts credential-bearing query parameters from a URL used in diagnostics. */

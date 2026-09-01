@@ -1,4 +1,10 @@
-This is a standalone web app using `@loaders.gl/3d-tiles`.
+This is a standalone deck.gl app for exploring 3D Tiles and I3S with loaders.gl. It includes a
+GPU "Tile Fold" deformation and an authored camera sequence.
+
+The deformation is inspired by David Ronai's exceptional
+[Dreamfold](https://dreamfold.netlify.app/) experiment. Dreamfold's
+[MIT-licensed source](https://github.com/Makio64/dreamfold) explains the cylindrical bend and the
+streaming challenges in depth.
 
 ### Usage
 
@@ -7,8 +13,8 @@ Copy the content of this folder to your project.
 ```bash
 # install dependencies
 yarn
-# bundle and serve the app with webpack
-yarn start-local  # or yarn start
+# bundle and serve the app with Vite
+yarn start
 ```
 
 ### Load a local dataset

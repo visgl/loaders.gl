@@ -7,6 +7,7 @@ import {
   createAuthenticatedFetch,
   createBearerTokenCredential,
   createQueryParameterCredential,
+  getAuthenticatedFetch,
   redactCredentialURL
 } from '@loaders.gl/loader-utils';
 
@@ -73,6 +74,35 @@ describe('request credentials', () => {
         authorization: 'Bearer explicit-header'
       }
     ]);
+  });
+
+  test('builds an authenticated fetch function from loader options', async () => {
+    const requests: Array<{authorization: string | null; accept: string | null}> = [];
+    const authenticatedFetch = getAuthenticatedFetch({
+      core: {
+        fetch: async (_url, options) => {
+          const headers = new Headers(options?.headers);
+          requests.push({
+            authorization: headers.get('authorization'),
+            accept: headers.get('accept')
+          });
+          return new Response('ok');
+        },
+        credentials: [
+          createBearerTokenCredential({
+            id: 'source-token',
+            origins: ['https://example.com'],
+            token: 'secret'
+          })
+        ]
+      }
+    });
+
+    await authenticatedFetch('https://example.com/data', {
+      headers: {Accept: 'application/json'}
+    });
+
+    expect(requests).toEqual([{authorization: 'Bearer secret', accept: 'application/json'}]);
   });
 
   test('refreshes an asynchronous credential and replays once', async () => {
