@@ -4,7 +4,12 @@
 
 import {DataDrivenTile3DLayer} from './data-driven-tile-3d-layer';
 import {Tileset3D, type Tileset3DProps} from '@loaders.gl/tiles';
-import type {LoaderOptions, LoaderWithParser, RequestCredential} from '@loaders.gl/loader-utils';
+import {
+  getAuthenticatedFetch,
+  type LoaderOptions,
+  type LoaderWithParser,
+  type RequestCredential
+} from '@loaders.gl/loader-utils';
 import {createSource} from './tile-3d-source-layer';
 
 /**
@@ -51,10 +56,15 @@ export class SourceDataDrivenTile3DLayer<
 
       const credentials = preloadOptions.credentials as readonly RequestCredential[] | undefined;
       if (credentials?.length) {
+        const combinedCredentials = [
+          ...(options.loadOptions.core?.credentials || []),
+          ...credentials
+        ];
         options.loadOptions.core = {
           ...options.loadOptions.core,
-          credentials: [...(options.loadOptions.core?.credentials || []), ...credentials]
+          credentials: combinedCredentials
         };
+        options.loadOptions.fetch = getAuthenticatedFetch(options.loadOptions);
       } else if (preloadOptions.headers) {
         options.loadOptions.fetch = {
           ...options.loadOptions.fetch,

@@ -7,6 +7,8 @@ import {Tiles3DLoader} from './tiles-3d-loader';
 
 /**
  * Metadata for the 3D tiles from Cesium ION loader.
+ * @deprecated Use `Tiles3DLoader` with `createCesiumIonCredential()` from
+ * `@loaders.gl/services` in `loadOptions.core.credentials`.
  */
 export const CesiumIonLoader = {
   ...Tiles3DLoader,
