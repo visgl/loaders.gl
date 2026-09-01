@@ -17,6 +17,8 @@ export {SLPKLoader} from './i3s-slpk-loader';
 export type {SLPKSourceInput} from './i3s-slpk-source';
 export {SLPKSource} from './i3s-slpk-source';
 export {I3SContentLoader} from './i3s-content-loader';
+export {I3SLEPCCLoader} from './i3s-lepcc-loader-types';
+export type {I3SLEPCCLoaderOptions, I3SLEPCCLoaderResult} from './i3s-lepcc-loader-types';
 export {I3SAttributeLoader, loadFeatureAttributes} from './i3s-attribute-loader';
 export {I3SBuildingSceneLayerLoader} from './i3s-building-scene-layer-loader';
 export {I3SNodePageLoader} from './i3s-node-page-loader';

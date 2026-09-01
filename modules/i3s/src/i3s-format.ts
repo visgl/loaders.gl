@@ -31,6 +31,8 @@ export const I3SContentFormat = binary('I3S Content', 'i3s-content', 'i3s-conten
 export const I3SAttributeFormat = binary('I3S Attribute', 'i3s-attribute', 'i3s-attribute', [
   'bin'
 ]);
+/** Standalone LEPCC point-cloud geometry or attribute resource. */
+export const I3SLEPCCFormat = binary('I3S LEPCC', 'i3s-lepcc', 'i3s-lepcc', ['bin']);
 export const I3SNodePageFormat = json('I3S Node Page', 'i3s-node-page', 'i3s-node-page');
 export const SLPKFormat = {
   name: 'SLPK',

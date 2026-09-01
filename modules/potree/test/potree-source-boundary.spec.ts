@@ -132,6 +132,16 @@ test('Potree source covers loader fallbacks, failures, and color usability', asy
       [0, 0, 0],
       [1, 1, 1]
     ])
+  ).toEqual({las: {colorDepth: 'auto'}});
+
+  const sourceWithLoadOptions = createSource();
+  sourceWithLoadOptions.metadata = {version: '1.7', pointAttributes: 'LAZ'};
+  sourceWithLoadOptions.loadOptions = {core: {worker: false}};
+  expect(
+    sourceWithLoadOptions.getNodeContentLoaderOptions([
+      [0, 0, 0],
+      [1, 1, 1]
+    ])
   ).toMatchObject({
     core: {worker: false},
     las: {colorDepth: 'auto'}

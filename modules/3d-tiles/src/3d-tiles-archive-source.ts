@@ -3,7 +3,7 @@
 // Copyright vis.gl contributors
 
 import {IndexedArchiveTilesetSource, Tiles3DSource} from '@loaders.gl/tiles';
-import type {CoreAPI, Loader, LoaderOptions, LoaderWithParser} from '@loaders.gl/loader-utils';
+import type {CoreAPI, Loader, LoaderOptions} from '@loaders.gl/loader-utils';
 import {parse3DTilesArchive} from './3d-tiles-archive/3d-tiles-archive-parser';
 
 /** Constructor input for {@link Tiles3DArchiveSource}. */
@@ -47,7 +47,7 @@ export class Tiles3DArchiveSource extends Tiles3DSource {
     super(
       {
         url: archiveSource.sourceUrl,
-        loader: input.loader as LoaderWithParser,
+        loader: input.loader,
         basePath: input.basePath || archiveSource.sourceUrl,
         resolver: archiveSource,
         coreApi: input.coreApi

@@ -16,6 +16,8 @@ export {SLPKLoaderWithParser as SLPKLoader} from './i3s-slpk-loader-with-parser'
 export type {SLPKSourceInput} from './i3s-slpk-source';
 export {SLPKSource} from './i3s-slpk-source';
 export {I3SContentLoaderWithParser as I3SContentLoader} from './i3s-content-loader-with-parser';
+export {I3SLEPCCLoaderWithParser as I3SLEPCCLoader} from './i3s-lepcc-loader';
+export type {I3SLEPCCLoaderOptions, I3SLEPCCLoaderResult} from './i3s-lepcc-loader-types';
 export {
   I3SAttributeLoaderWithParser as I3SAttributeLoader,
   loadFeatureAttributes

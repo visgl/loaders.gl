@@ -5,7 +5,7 @@
 import {path, RequestCache} from '@loaders.gl/loader-utils';
 import {Ellipsoid} from '@math.gl/geospatial';
 import {Vector3} from '@math.gl/core';
-import type {CoreAPI, LoaderOptions, LoaderWithParser} from '@loaders.gl/loader-utils';
+import type {CoreAPI, Loader, LoaderOptions} from '@loaders.gl/loader-utils';
 import type {Tile3D} from '../common/tile-3d';
 import {Tileset3DTraverser} from './tileset-3d-traverser';
 import type {Tileset3D} from '../common/tileset-3d';
@@ -65,7 +65,7 @@ export class Tiles3DSource implements Tileset3DSource {
   /** 3D Tiles format discriminator. */
   readonly type = TILESET_TYPE.TILES3D;
   /** Loader used for tile content requests. */
-  readonly loader: LoaderWithParser;
+  readonly loader: Loader;
   /** Root tileset URL. */
   readonly url: string;
   /** Base path used for relative tile resource resolution. */
@@ -487,7 +487,7 @@ export class Tiles3DSource implements Tileset3DSource {
   private async loadWithCoreApi(
     url: string,
     options: LoaderOptions,
-    loader: LoaderWithParser = this.loader
+    loader: Loader = this.loader
   ): Promise<any> {
     if (!this.coreApi) {
       throw new Error('Tiles3DSource requires an injected coreApi to load tileset data');
@@ -513,7 +513,7 @@ export class Tiles3DSource implements Tileset3DSource {
   private async loadResourceData(
     url: string,
     options: LoaderOptions,
-    loader: LoaderWithParser = this.loader
+    loader: Loader = this.loader
   ): Promise<any> {
     if (this.resolver) {
       return await this.resolver.loadResource(url, loader, options);

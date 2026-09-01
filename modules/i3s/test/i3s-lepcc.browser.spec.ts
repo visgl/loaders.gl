@@ -2,8 +2,8 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import {fetchFile} from '@loaders.gl/core';
-import {I3SLEPCCDecoder} from '@loaders.gl/i3s';
+import {fetchFile, parse} from '@loaders.gl/core';
+import {I3SLEPCCDecoder, I3SLEPCCLoader} from '@loaders.gl/i3s';
 import {expect, test} from 'vitest';
 
 const XYZ_FIXTURE = '@loaders.gl/i3s/test/data/point-cloud/SMALL_AUTZEN_LAS_All.pccxyz';
@@ -47,4 +47,14 @@ test('I3SLEPCCDecoder decodes LEPCC attribute blobs', async () => {
   expect(Array.from(intensity.slice(0, 6))).toEqual([0, 238, 9, 29, 1, 65]);
   expect(Array.from(rgb.slice(0, 9))).toEqual([10, 40, 60, 20, 30, 60, 20, 40, 50]);
   expect(Array.from(flags.slice(0, 12))).toEqual([7, 3, 3, 3, 3, 3, 3, 3, 3, 3, 7, 3]);
+});
+
+test('I3SLEPCCLoader decodes resources in a worker', async () => {
+  const response = await fetchFile(XYZ_FIXTURE);
+  const result = await parse(await response.arrayBuffer(), I3SLEPCCLoader, {
+    core: {worker: true, reuseWorkers: false, _workerType: 'test'}
+  });
+  expect(result.type).toBe('xyz');
+  expect(result.value).toBeInstanceOf(Float64Array);
+  expect(result.value).toHaveLength(318);
 });

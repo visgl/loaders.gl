@@ -40,11 +40,21 @@
       "types": "./dist/unbundled.d.ts",
       "import": "./dist/unbundled.js"
     },
+    "./i3s-lepcc-loader": {
+      "types": "./dist/i3s-lepcc-loader.d.ts",
+      "import": "./dist/i3s-lepcc-loader.js"
+    },
     "./i3s-content-worker.js": {
       "import": "./dist/i3s-content-worker.js"
     },
     "./i3s-content-worker-node.js": {
       "import": "./dist/i3s-content-worker-node.js"
+    },
+    "./i3s-lepcc-worker.js": {
+      "import": "./dist/i3s-lepcc-worker.js"
+    },
+    "./i3s-lepcc-worker-node.js": {
+      "import": "./dist/i3s-lepcc-worker-node.js"
     },
     "./i3s-scene-layer.schema.json": "./dist/i3s-scene-layer.schema.json",
     "./i3s-node-page.schema.json": "./dist/i3s-node-page.schema.json",
@@ -57,12 +67,14 @@
     "README.md"
   ],
   "scripts": {
-    "pre-build": "npm run generate-json-schema && npm run build-bundle && npm run build-bundle-dev && npm run build-worker && npm run build-worker-node",
+    "pre-build": "npm run generate-json-schema && npm run build-bundle && npm run build-bundle-dev && npm run build-worker && npm run build-worker-node && npm run build-lepcc-worker && npm run build-lepcc-worker-node",
     "generate-json-schema": "node ../../scripts/generate-json-schema.mjs --schema ./dist/i3s-zod-schema.js --export I3SSceneLayerSchema --output ./dist/i3s-scene-layer.schema.json --id https://unpkg.com/@loaders.gl/i3s/i3s-scene-layer.schema.json --title 'loaders.gl I3S scene layer metadata' && node ../../scripts/generate-json-schema.mjs --schema ./dist/i3s-zod-schema.js --export I3SNodePageSchema --output ./dist/i3s-node-page.schema.json --id https://unpkg.com/@loaders.gl/i3s/i3s-node-page.schema.json --title 'loaders.gl I3S node page' && node ../../scripts/generate-json-schema.mjs --schema ./dist/i3s-zod-schema.js --export I3SPointCloudSceneLayerSchema --output ./dist/i3s-point-cloud-scene-layer.schema.json --id https://unpkg.com/@loaders.gl/i3s/i3s-point-cloud-scene-layer.schema.json --title 'loaders.gl I3S Point Cloud scene layer metadata'",
     "build-bundle": "ocular-bundle ./bundle.ts --output=dist/dist.min.js",
     "build-bundle-dev": "ocular-bundle ./bundle.ts --env=dev --output=dist/dist.dev.js",
     "build-worker": "esbuild src/workers/i3s-content-worker.ts --outfile=dist/i3s-content-worker.js --target=esnext --bundle --define:__VERSION__=\\\"$npm_package_version\\\"",
-    "build-worker-node": "esbuild src/workers/i3s-content-worker-node.ts --outfile=dist/i3s-content-worker-node.js --platform=node --target=node16 --minify --bundle --sourcemap --define:__VERSION__=\\\"$npm_package_version\\\""
+    "build-worker-node": "esbuild src/workers/i3s-content-worker-node.ts --outfile=dist/i3s-content-worker-node.js --platform=node --target=node16 --minify --bundle --sourcemap --define:__VERSION__=\\\"$npm_package_version\\\"",
+    "build-lepcc-worker": "esbuild src/workers/i3s-lepcc-worker.ts --outfile=dist/i3s-lepcc-worker.js --target=esnext --bundle --define:__VERSION__=\\\"$npm_package_version\\\"",
+    "build-lepcc-worker-node": "esbuild src/workers/i3s-lepcc-worker-node.ts --outfile=dist/i3s-lepcc-worker-node.js --platform=node --target=node16 --bundle --sourcemap --define:__VERSION__=\\\"$npm_package_version\\\""
   },
   "dependencies": {
     "@loaders.gl/compression": "5.0.0-alpha.5",
