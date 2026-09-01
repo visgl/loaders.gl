@@ -6,7 +6,7 @@ import {fetchFile, parse} from '@loaders.gl/core';
 import {DeflateDecompressor, GZipDecompressor, NoDecompressor} from '@loaders.gl/compression';
 import {MD5Hash} from '@loaders.gl/crypto';
 import {BlobFile, HttpFile, path} from '@loaders.gl/loader-utils';
-import type {LoaderOptions, LoaderWithParser, ReadableFile} from '@loaders.gl/loader-utils';
+import type {Loader, LoaderOptions, LoaderWithParser, ReadableFile} from '@loaders.gl/loader-utils';
 import type {TilesetSourceResolver} from '@loaders.gl/tiles';
 import {
   CD_HEADER_SIGNATURE,
@@ -33,21 +33,21 @@ type ArchiveAccessor = {
  * @returns Resolver and runtime loader for the standard 3D Tiles source.
  */
 export function createTiles3DArchiveResolver(data: ArchiveSourceData): {
-  loader: LoaderWithParser;
+  loader: Loader;
   resolver: TilesetSourceResolver;
 };
 export function createTiles3DArchiveResolver(
   data: ArchiveSourceData,
-  parserLoader: LoaderWithParser
+  parserLoader: Loader
 ): {
-  loader: LoaderWithParser;
+  loader: Loader;
   resolver: TilesetSourceResolver;
 };
 export function createTiles3DArchiveResolver(
   data: ArchiveSourceData,
-  parserLoader: LoaderWithParser = TILES_3D_RUNTIME_LOADER
+  parserLoader: Loader = TILES_3D_RUNTIME_LOADER
 ): {
-  loader: LoaderWithParser;
+  loader: Loader;
   resolver: TilesetSourceResolver;
 } {
   const sourceUrl = getArchiveSourceUrl(data, 'tileset.3tz');
@@ -74,21 +74,21 @@ export function createTiles3DArchiveResolver(
  * @returns Resolver and runtime loader for the standard I3S source.
  */
 export function createSLPKArchiveResolver(data: ArchiveSourceData): {
-  loader: LoaderWithParser;
+  loader: Loader;
   resolver: TilesetSourceResolver;
 };
 export function createSLPKArchiveResolver(
   data: ArchiveSourceData,
-  parserLoader: LoaderWithParser
+  parserLoader: Loader
 ): {
-  loader: LoaderWithParser;
+  loader: Loader;
   resolver: TilesetSourceResolver;
 };
 export function createSLPKArchiveResolver(
   data: ArchiveSourceData,
-  parserLoader: LoaderWithParser = I3S_RUNTIME_LOADER
+  parserLoader: Loader = I3S_RUNTIME_LOADER
 ): {
-  loader: LoaderWithParser;
+  loader: Loader;
   resolver: TilesetSourceResolver;
 } {
   const sourceUrl = getArchiveSourceUrl(data, 'tileset.slpk');
@@ -145,7 +145,7 @@ function createArchiveResolver(
   return {
     loadRoot<DataT>(
       _url: string,
-      loader: LoaderWithParser<DataT>,
+      loader: Loader<DataT>,
       loadOptions: LoaderOptions
     ): Promise<DataT> {
       return parseArchiveResource(accessor, rootUrl, rootPath, rootMode, loader, loadOptions);
@@ -153,7 +153,7 @@ function createArchiveResolver(
 
     loadResource<DataT>(
       url: string,
-      loader: LoaderWithParser<DataT>,
+      loader: Loader<DataT>,
       loadOptions: LoaderOptions
     ): Promise<DataT> {
       const pathInArchive = resolveArchivePath(url, url, accessor.sourceUrl);
@@ -167,7 +167,7 @@ async function parseArchiveResource<DataT>(
   resourceUrl: string,
   pathInArchive: string,
   mode: ArchiveFileMode,
-  loader: LoaderWithParser<DataT>,
+  loader: Loader<DataT>,
   loadOptions: LoaderOptions
 ): Promise<DataT> {
   const data = await accessor.loadFile(pathInArchive, mode);

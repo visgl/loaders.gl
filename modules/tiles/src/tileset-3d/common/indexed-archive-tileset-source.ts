@@ -3,12 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import {BlobFile, HttpFile, path} from '@loaders.gl/loader-utils';
-import type {
-  CoreAPI,
-  LoaderOptions,
-  LoaderWithParser,
-  ReadableFile
-} from '@loaders.gl/loader-utils';
+import type {CoreAPI, Loader, LoaderOptions, ReadableFile} from '@loaders.gl/loader-utils';
 import type {TilesetSourceResolver} from './tileset-source';
 
 /** Options for {@link IndexedArchiveTilesetSource}. */
@@ -63,7 +58,7 @@ export class IndexedArchiveTilesetSource<ArchiveT> implements TilesetSourceResol
    */
   async loadRoot<DataT>(
     url: string,
-    loader: LoaderWithParser<DataT>,
+    loader: Loader<DataT>,
     loadOptions: LoaderOptions
   ): Promise<DataT> {
     return await this.parseArchiveResource(
@@ -83,7 +78,7 @@ export class IndexedArchiveTilesetSource<ArchiveT> implements TilesetSourceResol
    */
   async loadResource<DataT>(
     url: string,
-    loader: LoaderWithParser<DataT>,
+    loader: Loader<DataT>,
     loadOptions: LoaderOptions
   ): Promise<DataT> {
     const pathInArchive = this.resolveArchivePath(url, url);
@@ -93,7 +88,7 @@ export class IndexedArchiveTilesetSource<ArchiveT> implements TilesetSourceResol
   private async parseArchiveResource<DataT>(
     resourceUrl: string,
     pathInArchive: string,
-    loader: LoaderWithParser<DataT>,
+    loader: Loader<DataT>,
     loadOptions: LoaderOptions,
     mode?: string
   ): Promise<DataT> {

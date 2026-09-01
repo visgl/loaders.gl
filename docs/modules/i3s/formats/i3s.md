@@ -128,7 +128,7 @@ those versions.
 
 | Capability | Status | Since | Notes |
 | --- | :---: | --- | --- |
-| LEPCC point-cloud attribute blobs | **Supported** | **v5.0** | `I3SLEPCCDecoder` decodes standalone `lepcc-xyz`, `lepcc-rgb`, `lepcc-intensity`, and bit-stuffed or Huffman flag-byte resources. `I3SPointCloudSource` maps them to Arrow point attributes. |
+| LEPCC point-cloud attribute blobs | **Supported** | **v5.0** | `I3SLEPCCDecoder` decodes standalone `lepcc-xyz`, `lepcc-rgb`, `lepcc-intensity`, and bit-stuffed or Huffman flag-byte resources. `I3SLEPCCLoader` exposes the same decode through a worker-capable loader, and `I3SPointCloudSource` maps the results to Arrow point attributes. |
 | Point Cloud standard attributes | **Partial** | **v5.0** | RGB, intensity, flags, and metadata-described scalar arrays are normalized. Classification, returns, and producer-defined bit fields are preserved as raw attributes when no canonical mapping is declared. |
 
 ### Point geometry and styling metadata

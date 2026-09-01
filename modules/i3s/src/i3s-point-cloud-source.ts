@@ -2,7 +2,12 @@
 // SPDX-License-Identifier: MIT
 // Copyright vis.gl contributors
 
-import type {DataSourceOptions, ReadableFile} from '@loaders.gl/loader-utils';
+import type {
+  CoreAPI,
+  DataSourceOptions,
+  ReadableFile,
+  StrictLoaderOptions
+} from '@loaders.gl/loader-utils';
 import {BlobFile, HttpFile} from '@loaders.gl/loader-utils';
 import {makeMeshArrowTable} from '@loaders.gl/schema-utils';
 import type {MeshAttributes} from '@loaders.gl/schema';
@@ -26,6 +31,7 @@ import {DataSource} from '@loaders.gl/loader-utils';
 import {parseSLPKArchive} from './lib/parsers/parse-slpk/parse-slpk';
 import type {SLPKArchive} from './lib/parsers/parse-slpk/slpk-archieve';
 import {I3SLEPCCDecoder} from './i3s-lepcc';
+import {I3SLEPCCLoader, type I3SLEPCCLoaderResult} from './i3s-lepcc-loader';
 import {I3SPointCloudNodePageSchema, I3SPointCloudSceneLayerSchema} from './i3s-zod-schema';
 import type {
   I3SPointCloudAttributeInfo,
@@ -94,8 +100,8 @@ export class I3SPointCloudSource
    * @param data Layer REST URL or an SLPK Blob/URL.
    * @param options Source and loader options.
    */
-  constructor(data: string | Blob, options: I3SPointCloudSourceOptions = {}) {
-    super(data, options);
+  constructor(data: string | Blob, options: I3SPointCloudSourceOptions = {}, coreApi?: CoreAPI) {
+    super(data, options, undefined, coreApi);
     this.decoder = new I3SLEPCCDecoder({verifyChecksum: options.i3s?.verifyChecksum});
   }
 
@@ -182,7 +188,11 @@ export class I3SPointCloudSource
     const geometryBytes = await this.readBinary(
       this.resourceCandidates(`nodes/${resourceId}/geometries/${geometryResource}`)
     );
-    const positions = this.decoder.decodeXyz(new Uint8Array(geometryBytes));
+    const geometry = await this.decodeLEPCC(geometryBytes);
+    if (geometry.type !== 'xyz' || !(geometry.value instanceof Float64Array)) {
+      throw new Error(`I3S PointCloud geometry resource decoded as ${geometry.type}, expected xyz`);
+    }
+    const positions = geometry.value;
     const pointCount = positions.length / 3;
     if (node.vertexCount && node.vertexCount !== pointCount) {
       throw new Error(
@@ -218,7 +228,7 @@ export class I3SPointCloudSource
         if (!bytes) {
           return;
         }
-        const decoded = this.decodeAttribute(bytes, descriptor);
+        const decoded = await this.decodeAttribute(bytes, descriptor);
         if (decoded.value.length !== pointCount * decoded.size) {
           throw new Error(
             `I3S PointCloud attribute ${descriptor.name || descriptor.key || 'unknown'} count mismatch`
@@ -384,14 +394,14 @@ export class I3SPointCloudSource
       []) as I3SPointCloudAttributeInfo[];
   }
 
-  private decodeAttribute(
+  private async decodeAttribute(
     bytes: ArrayBuffer,
     descriptor: I3SPointCloudAttributeInfo
-  ): {
+  ): Promise<{
     value: Float32Array | Float64Array | Uint8Array | Uint16Array | Int32Array;
     size: number;
     kind: string;
-  } {
+  }> {
     const data = new Uint8Array(bytes);
     const encoding = String(descriptor.encoding || '').toLowerCase();
     let magic = '';
@@ -402,13 +412,32 @@ export class I3SPointCloudSource
     }
     const kind = encoding || magic;
     if (magic === 'rgb' || encoding.includes('rgb')) {
-      return {value: this.decoder.decodeRgb(data), size: 3, kind: 'rgb'};
+      const decoded = magic ? await this.decodeLEPCC(bytes) : null;
+      return {
+        value: decoded?.value instanceof Uint8Array ? decoded.value : this.decoder.decodeRgb(data),
+        size: 3,
+        kind: 'rgb'
+      };
     }
     if (magic === 'intensity' || encoding.includes('intensity')) {
-      return {value: this.decoder.decodeIntensity(data), size: 1, kind: 'intensity'};
+      const decoded = magic ? await this.decodeLEPCC(bytes) : null;
+      return {
+        value:
+          decoded?.value instanceof Uint16Array
+            ? decoded.value
+            : this.decoder.decodeIntensity(data),
+        size: 1,
+        kind: 'intensity'
+      };
     }
     if (magic === 'flagBytes' || encoding.includes('flag')) {
-      return {value: this.decoder.decodeFlagBytes(data), size: 1, kind: 'flags'};
+      const decoded = magic ? await this.decodeLEPCC(bytes) : null;
+      return {
+        value:
+          decoded?.value instanceof Uint8Array ? decoded.value : this.decoder.decodeFlagBytes(data),
+        size: 1,
+        kind: 'flags'
+      };
     }
 
     const valueType = String(
@@ -428,6 +457,26 @@ export class I3SPointCloudSource
       return {value: new Int32Array(bytes), size: valueSize, kind};
     }
     return {value: new Uint8Array(bytes), size: valueSize, kind};
+  }
+
+  /** Decode a LEPCC resource using the shared worker pool when one is available. */
+  private async decodeLEPCC(bytes: ArrayBuffer): Promise<I3SLEPCCLoaderResult> {
+    const loaderOptions: StrictLoaderOptions = {
+      ...this.loadOptions,
+      'i3s-lepcc': {
+        verifyChecksum: this.options.i3s?.verifyChecksum
+      }
+    };
+    if (this.hasCoreApi && loaderOptions.core?.worker !== false) {
+      return (await this.coreApi.parse(bytes, I3SLEPCCLoader, {
+        ...loaderOptions
+      })) as I3SLEPCCLoaderResult;
+    }
+    const data = new Uint8Array(bytes);
+    return {
+      type: this.decoder.getBlobType(data),
+      value: this.decoder.decode(data)
+    };
   }
 
   private getAttributeName(descriptor: I3SPointCloudAttributeInfo, kind: string): string {

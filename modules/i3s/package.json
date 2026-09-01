@@ -40,11 +40,21 @@
       "types": "./dist/unbundled.d.ts",
       "import": "./dist/unbundled.js"
     },
+    "./i3s-lepcc-loader": {
+      "types": "./dist/i3s-lepcc-loader.d.ts",
+      "import": "./dist/i3s-lepcc-loader.js"
+    },
     "./i3s-content-worker.js": {
       "import": "./dist/i3s-content-worker.js"
     },
     "./i3s-content-worker-node.js": {
       "import": "./dist/i3s-content-worker-node.js"
+    },
+    "./i3s-lepcc-worker.js": {
+      "import": "./dist/i3s-lepcc-worker.js"
+    },
+    "./i3s-lepcc-worker-node.js": {
+      "import": "./dist/i3s-lepcc-worker-node.js"
     },
     "./i3s-scene-layer.schema.json": "./dist/i3s-scene-layer.schema.json",
     "./i3s-node-page.schema.json": "./dist/i3s-node-page.schema.json",

@@ -4,7 +4,11 @@
 
 import {expect, test} from 'vitest';
 import {coreApi} from '@loaders.gl/core';
-import {createQueryParameterCredential, type LoaderWithParser} from '@loaders.gl/loader-utils';
+import {
+  createQueryParameterCredential,
+  type Loader,
+  type LoaderWithParser
+} from '@loaders.gl/loader-utils';
 import {I3SLoader} from '@loaders.gl/i3s';
 import {Tiles3DLoader} from '@loaders.gl/3d-tiles';
 import {
@@ -260,6 +264,44 @@ test('I3SSource initializes promised roots and appends auth tokens to tile urls'
     'https://example.com/SceneServer/layers/0/nodes/1?token=secret-token'
   );
   expect(source.getTilesTotalCount()).toBe(7);
+});
+test('I3SSource routes binary tile content through the worker-capable content loader', async () => {
+  const resourceLoaders: Loader[] = [];
+  const resolver: TilesetSourceResolver = {
+    async loadRoot() {
+      throw new Error('preloaded metadata should not request a root resource');
+    },
+    async loadResource(_url, loader) {
+      resourceLoaders.push(loader);
+      return loader.id === 'i3s' ? {id: '1', refine: 'REPLACE'} : {vertexCount: 3};
+    }
+  };
+  const source = new I3SSource({
+    type: 'tileset',
+    url: 'https://example.com/SceneServer/layers/0',
+    loader: I3SLoader,
+    resolver,
+    root: {id: 'root-node', refine: 'REPLACE'},
+    lodMetricType: 'maxScreenThresholdSQ',
+    lodMetricValue: 4,
+    store: {}
+  } as any);
+  await source.initialize();
+  await source.loadChildTileHeader?.({} as Tile3D, '1', {} as any);
+
+  const tile = {
+    contentUrl: 'https://example.com/SceneServer/layers/0/nodes/1/geometries/0',
+    header: {},
+    tileset: {
+      options: {i3s: {}, spatial: {}},
+      spatialReference: {status: 'native'}
+    }
+  } as Tile3D;
+  await source.loadTileContent(tile);
+
+  expect(resourceLoaders.map(loader => loader.id)).toEqual(['i3s', 'i3s-content']);
+  expect(resourceLoaders[1].worker).toBe(true);
+  expect(tile.content).toEqual({vertexCount: 3});
 });
 test('I3SSource transforms traversal bounds and preserves a geographic view center', async () => {
   const source = new I3SSource({

@@ -7,6 +7,7 @@ import type {I3SLoaderOptions} from './i3s-loader';
 import type {I3STileContent} from './types';
 
 import {I3SContentFormat} from './i3s-format';
+import {I3S_LOADER_OPTIONS} from './i3s-loader-options';
 // __VERSION__ is injected by babel-plugin-version-inline
 // @ts-ignore TS2304: Cannot find name '__VERSION__'.
 
@@ -31,6 +32,7 @@ export const I3SContentLoader = {
     (await import('./i3s-content-loader-with-parser')).I3SContentLoaderWithParser,
   extensions: ['bin'],
   options: {
+    i3s: I3S_LOADER_OPTIONS,
     'i3s-content': {}
   }
 } as const satisfies Loader<I3STileContent | null, never, I3SLoaderOptions>;
