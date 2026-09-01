@@ -54,6 +54,36 @@ application.
 For the tradeoffs and lifecycle details, see the [Worker Threads](./concepts/worker-threads)
 article in the concepts section.
 
+### Choose the execution mode
+
+The same `load` and `parse` call works with or without a worker. Worker execution is enabled by
+default for loaders that provide a compatible worker in a browser; it is never a requirement for
+using a loader.
+
+| Goal | Option | Behavior |
+| --- | --- | --- |
+| Use the normal loaders.gl behavior | omit `core.worker` or set it to `true` | Use a worker when the loader and runtime support one; otherwise run on the calling thread. |
+| Avoid worker startup and messaging | `core.worker: false` | Always parse on the calling thread. |
+| Avoid workers for small atomic inputs | `core.worker: 'auto'` | Ask the loader for a synchronous CPU-work estimate before materializing the input. |
+
+```typescript
+import {load, parse} from '@loaders.gl/core';
+import {DracoLoader} from '@loaders.gl/draco';
+
+const mesh = await load('model.drc', DracoLoader); // worker when supported
+const localMesh = await parse(buffer, DracoLoader, {core: {worker: false}});
+```
+
+The worker moves the loader's decoding, decompression, and format transforms. Fetching, loader
+selection, option normalization, and application coordination remain on the calling thread. A
+worker does not make a parser asynchronous if the loader only exposes a synchronous API, and it
+does not make an unsupported loader worker-capable.
+
+For Node.js, browser workers are not available. Node worker threads remain opt-in through the
+advanced `core._nodeWorkers` option; otherwise the existing main-thread path is used. Individual
+loader pages are the authority for whether a loader supports browser workers, Node workers, or
+only main-thread parsing.
+
 <ReferenceBoundary
   title="The worker runtime"
   description="The detailed guide covers worker processing, parallel loading, reuse, transfer semantics, custom scripts, composite loaders, and debugging."
@@ -76,6 +106,35 @@ worker implementation, cancellation, transfer, and lifecycle guidance.
 Most worker-enabled loaders use the same `load` and `parse` APIs as their main-thread
 counterparts. The loader reference identifies whether a loader has a worker bundle and
 whether it needs additional codec assets.
+
+### Automatic worker selection
+
+Atomic `parse` calls can opt into loader-provided work estimates with
+`core.worker: 'auto'`. A loader may expose a synchronous `getWorkerEstimate(data, options,
+context)` hook. The hook receives the original input before it is materialized, so it can
+inspect metadata such as an `ArrayBuffer.byteLength`, `Blob.size`, or loader options without
+reading a stream. It returns a normalized score from `0` (negligible work) to `1` (clearly
+expensive work).
+
+The default `core.workerThreshold` is `0.1`: scores below the threshold stay on the calling
+thread, while scores at or above it use the normal worker path. Set a different finite value
+between `0` and `1` when the loader's parser or application workload has a different crossover
+point:
+
+```typescript
+const result = await parse(data, MyLoader, {
+  core: {worker: 'auto', workerThreshold: 0.2}
+});
+```
+
+`core.worker: true` and `core.worker: false` retain their existing behavior and do not consult
+the estimator. If the loader has no estimator, returns `undefined`, returns an invalid score,
+or throws while estimating, loaders.gl keeps the conservative worker-capable behavior. Unknown
+streams are therefore worker-bound by default; estimators must never buffer, consume, or advance
+an iterator. Scores should represent expected CPU work (for example, decompression, decoding,
+and row materialization), not only payload bytes. A small compressed file can still be expensive,
+and a large payload can be cheap to decode. Batched parsing keeps its existing worker-selection
+policy in this phase.
 
 ### Stateful batched parsing
 
@@ -126,6 +185,19 @@ async function loadWithoutWorker(url1) {
 }
 ```
 
+### When a worker cannot be used
+
+Worker options are a request, not a guarantee. loaders.gl uses the calling thread when the
+selected loader has no worker descriptor, the runtime cannot create workers, Node workers were
+not enabled, or a configured worker URL/factory is unavailable. This fallback preserves the
+loader result and API shape; it only changes where the work runs. A worker construction failure
+can fall back from a module worker to the loader's classic bundle, while an error after a worker
+has started is reported to the caller rather than replayed automatically.
+
+If a worker-specific result shape is not supported across the structured-clone boundary, the
+loader may deliberately disable worker execution for that shape. Check the loader reference when
+an option such as `shape: 'arrow-table'` changes transport or hydration requirements.
+
 ## Disabling worker reuse
 
 Applications reuse already-created workers by default. Some codec runtimes retain sizeable
@@ -160,6 +232,11 @@ no longer accessible in the calling thread.
 Most applications do not need to process the raw binary data after parsing, so this is
 rarely an issue. If you do, copy the data before parsing or disable worker execution (see
 above).
+
+The same ownership rule applies to fragments in `parseInBatches()`: once a fragment is transferred,
+the caller must treat its backing buffer as unavailable. Use a copy when the application needs to
+retain or inspect the bytes after yielding them. Results use structured clone unless the loader
+provides a transport hook (for example, CSV Arrow batches use Arrow hydration helpers).
 
 ## Module and classic workers
 
@@ -220,6 +297,10 @@ loaders.gl supports sub-loader invocation from worker loaders.
 A worker loader starts a separate thread with a JavaScript bundle that contains the code
 for that loader. If it invokes a sub-loader, the request may cross the main thread and
 another worker boundary, with loaders.gl transferring the input and result between them.
+
+Sub-loader calls can therefore create more than one worker boundary. Keep nested work small and
+prefer passing transferable binary data; object-heavy intermediate results can cost more to clone
+than the worker saves.
 
 ## Debugging Worker Loaders (Advanced)
 

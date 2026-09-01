@@ -58,6 +58,12 @@ const data = await parse(fetchFile(url), OBJLoader);
 ...
 ```
 
+For worker-enabled loaders, atomic `parse()` uses the worker by default when the runtime supports
+it. Use `core.worker: false` to keep the work on the calling thread, or opt into loader-provided
+cost estimates with `core.worker: 'auto'` and `core.workerThreshold` when small inputs should avoid
+worker startup and transfer overhead. See [Using worker loaders](/docs/developer-guide/using-worker-loaders)
+for worker availability, transfer ownership, and fallback behavior.
+
 <ReferenceBoundary
   title="Parsing details"
   description="The reference below covers async parsing, batch parsing, errors, supported input types, and loader selection."

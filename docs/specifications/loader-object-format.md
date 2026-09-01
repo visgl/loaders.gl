@@ -87,7 +87,52 @@ You are encouraged to provide the most capable parser function you can (e.g. `pa
 - `parseSync(data : ArrayBuffer, options : Object, context : Object) : Object`
 - `parseInBatches(data : AsyncIterator, options : Object, context : Object) : AsyncIterator`
 
-The `context` parameter will contain the foolowing fields
+The `context` parameter will contain the following fields
 
 - `parse` or `parseSync`
 - `url` if available
+
+### Worker support
+
+A loader opts into worker execution by exposing a worker descriptor (`worker: true` or a worker
+URL). Browser loaders can additionally provide `loadWorker()` to construct a bundler-resolved
+module worker. The worker entry point normally calls `createLoaderWorker(loader)` from
+`@loaders.gl/loader-utils`, which installs the loader's atomic `parse` function and, when present,
+its stateful `parseInBatches` function.
+
+Atomic worker selection is controlled by `options.core.worker`:
+
+- `true` uses the existing worker-capability checks.
+- `false` always uses the calling thread.
+- `'auto'` consults `getWorkerEstimate` before input materialization.
+
+`getWorkerEstimate(data, options, context)` must be synchronous and metadata-only. It receives the
+original `DataType` value, normalized options, and loader context, and returns a score from `0` to
+`1`. Scores below `options.core.workerThreshold` (default `0.1`) use the calling thread; scores at
+or above the threshold use a worker. Return `undefined` for unknown inputs. Missing, invalid, or
+throwing estimates conservatively retain the normal worker-capable behavior. Do not read a stream,
+advance an iterator, or buffer input from this hook.
+
+```typescript
+const MyLoader = {
+  // ...format metadata and parser
+  worker: true,
+  getWorkerEstimate(data, options) {
+    const byteLength =
+      data instanceof ArrayBuffer
+        ? data.byteLength
+        : data instanceof Blob
+          ? data.size
+          : undefined;
+    if (byteLength === undefined) {
+      return undefined;
+    }
+    // This score represents expected CPU work, not just transfer size.
+    return Math.min(1, byteLength / (4 * 1024 * 1024));
+  }
+};
+```
+
+If a loader returns values that do not survive structured cloning, provide
+`serializeWorkerResult`/`deserializeWorkerResult`. Batched parsers can use the corresponding
+`serializeWorkerBatch`/`deserializeWorkerBatch` hooks for per-batch transport and hydration.

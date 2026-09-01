@@ -109,7 +109,8 @@ export {
 export {
   parseWithWorker,
   parseWithWorkerInBatches,
-  canParseWithWorker
+  canParseWithWorker,
+  shouldParseWithWorker
 } from './lib/worker-loader-utils/parse-with-worker';
 export {canEncodeWithWorker} from './lib/worker-loader-utils/encode-with-worker';
 

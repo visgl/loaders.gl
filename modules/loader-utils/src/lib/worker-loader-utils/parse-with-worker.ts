@@ -8,6 +8,7 @@ import {
   processOnWorker,
   processOnWorkerInBatches
 } from '@loaders.gl/worker-utils';
+import type {DataType} from '../../types';
 import type {
   Loader,
   LoaderWithParser,
@@ -50,6 +51,41 @@ export function canParseWithWorker(loader: Loader, options?: StrictLoaderOptions
   }
 
   return Boolean(canProcessOnWorker(loader, workerOptions));
+}
+
+/**
+ * Determines whether an atomic parse should use a worker, including optional loader work estimates.
+ * @param loader Loader metadata or parser-bearing loader.
+ * @param data Original parse input, before materialization.
+ * @param options Loader and worker options.
+ * @param context Loader context.
+ * @param estimateLoader Optional metadata loader that owns the estimate hook.
+ */
+export function shouldParseWithWorker(
+  loader: Loader,
+  data: DataType,
+  options?: StrictLoaderOptions,
+  context?: LoaderContext,
+  estimateLoader: Loader = loader
+): boolean {
+  if (!canParseWithWorker(loader, options)) {
+    return false;
+  }
+
+  if (options?.core?.worker !== 'auto' || !estimateLoader.getWorkerEstimate) {
+    return true;
+  }
+
+  try {
+    const estimate = estimateLoader.getWorkerEstimate(data, options, context);
+    if (estimate === undefined || !Number.isFinite(estimate) || estimate < 0 || estimate > 1) {
+      return true;
+    }
+    return estimate >= (options.core?.workerThreshold ?? 0.1);
+  } catch {
+    // Estimation must never make a previously worker-capable parse fail.
+    return true;
+  }
 }
 
 /**
@@ -182,10 +218,16 @@ function callParseOnMainThread(
  */
 function getWorkerOptions(options: StrictLoaderOptions = {}) {
   const serializedOptions = JSON.parse(JSON.stringify(options));
-  return {
+  const workerOptions = {
     ...serializedOptions.core,
     ...serializedOptions
   };
+  // The decision has already been made before dispatch, so worker runtimes should
+  // receive the established boolean form even when the caller selected `auto`.
+  if (workerOptions.worker === 'auto') {
+    workerOptions.worker = true;
+  }
+  return workerOptions;
 }
 
 /**

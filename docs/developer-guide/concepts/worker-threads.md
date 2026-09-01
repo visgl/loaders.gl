@@ -76,11 +76,21 @@ loaders.gl will handle message passing behind the scenes. Loading on a worker th
 
 ## Build Configuration
 
-All worker enabled loaders come with a pre-built, minimal worker "executable" to enable zero-configuration use in applications.
+Worker-enabled loaders remain zero-configuration: each loader can provide a pre-built classic
+worker bundle for explicit URLs and compatibility. In loaders.gl 5.0, loaders may also provide a
+bundler-resolved ES module worker using a static `new Worker(new URL(...), {type: 'module'})`
+factory. Compatible bundlers include that worker in the application build; if the factory is not
+available or cannot construct a worker, loaders.gl falls back to the classic bundle. See [Module
+and classic workers](../using-worker-loaders#module-and-classic-workers) for precedence and URL
+details. In Node.js, worker threads use the loader's platform-specific entry and must be enabled
+explicitly with `core._nodeWorkers`.
 
 ## Bundle size concerns
 
-All worker enabled loaders provide separate loader objects to ensure that tree-shaking bundlers will be able to remove the code for the unused case.
+Worker-enabled loaders provide separate worker entry points so tree-shaking bundlers can remove
+unused format code. A module-worker factory is statically discoverable by bundlers, while an
+explicit `workerUrl` keeps the worker outside the application bundle. Pre-built classic workers
+are useful for CDN, self-hosted, and older build setups.
 
 ## Debugging and Benchmarking
 

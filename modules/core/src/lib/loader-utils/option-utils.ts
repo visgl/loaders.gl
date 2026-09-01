@@ -26,6 +26,7 @@ const CORE_LOADER_OPTION_KEYS = [
   'useLocalLibraries',
   'CDN',
   'worker',
+  'workerThreshold',
   'maxConcurrency',
   'maxMobileConcurrency',
   'reuseWorkers',
@@ -111,7 +112,10 @@ export function normalizeOptions(
   loaders = Array.isArray(loaders) ? loaders : [loaders];
 
   validateOptions(options, loaders);
-  return normalizeLoaderOptions(normalizeOptionsInternal(loader, options, url));
+  validateWorkerThreshold(options);
+  const normalizedOptions = normalizeLoaderOptions(normalizeOptionsInternal(loader, options, url));
+  validateWorkerThreshold(normalizedOptions);
+  return normalizedOptions;
 }
 
 /**
@@ -156,6 +160,14 @@ function validateOptions(options: LoaderOptions, loaders: Loader[]): void {
     // Validate loader specific options
     // @ts-ignore
     validateOptionsObject(idOptions, loader.id, loaderOptions, deprecatedOptions, loaders);
+  }
+}
+
+/** Validates the automatic worker-selection threshold. */
+function validateWorkerThreshold(options: LoaderOptions): void {
+  const threshold = options.core?.workerThreshold;
+  if (threshold !== undefined && (!Number.isFinite(threshold) || threshold < 0 || threshold > 1)) {
+    throw new Error('core.workerThreshold must be a finite number between 0 and 1');
   }
 }
 

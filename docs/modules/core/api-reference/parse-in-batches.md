@@ -43,6 +43,27 @@ When a loader does not implement a specialized batch parser, `parseInBatches()` 
 waiting for the complete input and emitting one batch. In that case it has the same memory profile
 as an atomic parse.
 
+### Worker-backed batch parsing
+
+Some loaders can keep a parser session on one worker while input fragments arrive. The worker is
+leased when the returned iterator starts and remains the same for that iterator, so state such as
+partial records, dictionaries, and UTF-8 boundaries can span fragments. Input and output are
+demand-driven: the source is not advanced until the worker requests another fragment, and the
+worker does not produce the next output until the application requests it. This keeps at most a
+bounded amount of data in flight.
+
+The worker is returned to the pool after normal completion. If the iterator is aborted, fails, or
+is closed early, its worker is terminated and a fresh worker is used for later sessions. Close an
+iterator that the application abandons (`await iterator.return?.()`) rather than leaving a session
+active. Transferred binary fragments can be detached on the calling thread; copy a fragment first
+if the application must retain its bytes. Loader-specific serializers can hydrate results such as
+Arrow tables after they cross the worker boundary.
+
+`core.worker: 'auto'` is currently an atomic `parse()` policy. Batched parsing keeps the loader's
+existing worker or main-thread behavior, including the CSV Arrow-table pilot. See the [worker
+loaders guide](/docs/developer-guide/using-worker-loaders) for lifecycle, fallback, and transport
+details.
+
 :::caution
 When calling a sub-loader from inside a loader, do not use this public function. Use the
 `parseInBatchesWithContext` counterparts in `@loaders.gl/loader-utils`.
