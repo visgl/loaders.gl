@@ -133,6 +133,40 @@ test('COPCSourceLoader#validates scan batch size and cancellation', async () => 
   await source.close();
 });
 
+test('COPCSourceLoader#validates progressive decoding options and unavailable nodes', async () => {
+  const source = COPCSourceLoader.createDataSource(await createEllipsoidSourceData(), {});
+  await source.initialize();
+
+  await expect(source.loadTileContentInBatches({id: '1-1-1-1'}).next()).resolves.toMatchObject({
+    done: true
+  });
+  const rootTile = await source.getRootTile();
+  for (const options of [
+    {batchSize: 0},
+    {batchSize: 1.5},
+    {rangeChunkSize: 0},
+    {rangeConcurrency: 0}
+  ]) {
+    await expect(source.loadTileContentInBatches(rootTile, options).next()).rejects.toThrow(
+      /positive integer/
+    );
+  }
+
+  await expect(
+    source.loadTileContentInBatches(rootTile, {columns: ['NIR']}).next()
+  ).rejects.toThrow('COPC NIR output requires PDRF 8');
+  await expect(
+    source.loadTileContentInBatches(rootTile, {columns: ['EXTRA_BYTES']}).next()
+  ).rejects.toThrow('typed Extra Bytes output requires an Extra Bytes VLR');
+
+  const abortController = new AbortController();
+  abortController.abort();
+  await expect(
+    source.loadTileContentInBatches(rootTile, {signal: abortController.signal}).next()
+  ).rejects.toThrow('was aborted');
+  await source.close();
+});
+
 test('COPCSourceLoader#loads normalized root and child tiles', async () => {
   const source = COPCSourceLoader.createDataSource(await createEllipsoidSourceData(), {});
   await source.initialize();

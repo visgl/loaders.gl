@@ -4,7 +4,9 @@
 
 import {expect, test} from 'vitest';
 import type {MeshArrowTable} from '@loaders.gl/schema';
+import {encodeLAZChunk} from '@loaders.gl/loader-utils';
 import {
+  decodeLAZChunkToArrowTable,
   parseLAS,
   parseLASChunkedIterator,
   parseLASHeader,
@@ -81,6 +83,68 @@ test('TypeScript LAS color selection covers explicit and auto 8-bit paths', () =
     expect(firstColor).toHaveLength(4);
     expect(firstColor[3]).toBe(255);
   }
+});
+
+test('TypeScript LAS directly decodes a modern LAZ chunk into Arrow columns', () => {
+  const source = createLASFixture(7, true);
+  const pointDataRecordLength = 36;
+  const rawPointData = new Uint8Array(3 * pointDataRecordLength);
+  for (let pointIndex = 0; pointIndex < 3; pointIndex++) {
+    rawPointData.set(
+      new Uint8Array(source, 375 + pointIndex * 38, pointDataRecordLength),
+      pointIndex * pointDataRecordLength
+    );
+  }
+  const metadata = {
+    pointDataRecordFormat: 7,
+    pointDataRecordLength,
+    pointCount: 3,
+    point14ItemVersion: 3 as const,
+    rgb14ItemVersion: 3 as const,
+    scale: [0.5, 2, 4] as [number, number, number],
+    offset: [10, 20, 30] as [number, number, number]
+  };
+  const compressed = encodeLAZChunk(rawPointData, metadata);
+  const table = decodeLAZChunkToArrowTable(compressed, metadata, {
+    las: {
+      columns: ['POSITION', 'COLOR_0', 'GPS_TIME', 'intensity', 'classification'],
+      colorDepth: 16
+    }
+  });
+
+  expect(table.data.numRows).toBe(3);
+  expect(Array.from(table.data.getChild('POSITION')!.get(0))).toEqual([510, -3980, 230]);
+  expect(Array.from(table.data.getChild('COLOR_0')!.get(0))).toEqual([2560, 5120, 7680]);
+  expect(table.data.getChild('GPS_TIME')!.get(2)).toBe(1002.5);
+});
+
+test('TypeScript LAS standalone LAZ Arrow decoding rejects unsupported formats and columns', () => {
+  const metadata = {
+    pointDataRecordFormat: 7,
+    pointDataRecordLength: 36,
+    pointCount: 1,
+    point14ItemVersion: 3 as const,
+    rgb14ItemVersion: 3 as const,
+    scale: [1, 1, 1] as [number, number, number],
+    offset: [0, 0, 0] as [number, number, number]
+  };
+  const compressed = encodeLAZChunk(new Uint8Array(36), metadata);
+  for (const pointDataRecordFormat of [5, 9]) {
+    expect(() =>
+      decodeLAZChunkToArrowTable(
+        compressed,
+        {...metadata, pointDataRecordFormat},
+        {las: {columns: ['POSITION']}}
+      )
+    ).toThrow(/supports PDRF 6-8/);
+  }
+  expect(() =>
+    decodeLAZChunkToArrowTable(
+      compressed,
+      {...metadata, pointDataRecordLength: 38},
+      {las: {columns: ['EXTRA_BYTES']}}
+    )
+  ).toThrow('only supports direct LAZ columns');
 });
 
 test('TypeScript LAS streams fragmented modern records into exact batches', async () => {
