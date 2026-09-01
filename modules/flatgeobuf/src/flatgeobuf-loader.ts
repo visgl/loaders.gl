@@ -9,6 +9,7 @@ import type {
   BinaryFeatureCollection
 } from '@loaders.gl/schema';
 import type {Loader, LoaderOptions} from '@loaders.gl/loader-utils';
+import type {GeoArrowEncodingPreference} from '@loaders.gl/schema';
 import type {Proj4CRSDefinition} from '@math.gl/proj4';
 import {FlatGeobufFormat} from './flatgeobuf-format';
 
@@ -20,11 +21,15 @@ const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : 'latest';
 const FGB_MAGIC_NUMBER = [0x66, 0x67, 0x62, 0x03, 0x66, 0x67, 0x62, 0x01];
 
 export type FlatGeobufLoaderOptions = LoaderOptions & {
+  /** Preferred encoding for Arrow geometry output. */
+  geoarrow?: {encodingPreference?: GeoArrowEncodingPreference};
   flatgeobuf?: {
     shape?: 'geojson-table' | 'columnar-table' | 'binary-geometry' | 'arrow-table';
     /** Override the URL to the worker bundle (by default loads from unpkg.com) */
     workerUrl?: string;
     boundingBox?: [[number, number], [number, number]];
+    /** Preferred encoding for Arrow geometry output. */
+    geoarrow?: {encodingPreference?: GeoArrowEncodingPreference};
   };
   gis?: {
     reproject?: boolean;

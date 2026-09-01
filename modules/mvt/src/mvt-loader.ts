@@ -3,6 +3,7 @@
 // Copyright vis.gl contributors
 
 import type {Loader, LoaderOptions} from '@loaders.gl/loader-utils';
+import type {GeoArrowEncodingPreference} from '@loaders.gl/schema';
 // import type {MVTOptions} from './lib/types';
 import {MVTFormat} from './mvt-format';
 import {deserializeMVTWorkerResult, serializeMVTWorkerResult} from './lib/mvt-worker-transport';
@@ -12,6 +13,8 @@ import {deserializeMVTWorkerResult, serializeMVTWorkerResult} from './lib/mvt-wo
 const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : 'latest';
 
 export type MVTLoaderOptions = LoaderOptions & {
+  /** Preferred encoding for Arrow geometry output. */
+  geoarrow?: {encodingPreference?: GeoArrowEncodingPreference};
   mvt?: {
     /** Shape of returned data */
     shape?: 'geojson-table' | 'columnar-table' | 'binary-geometry' | 'arrow-table';
@@ -25,6 +28,8 @@ export type MVTLoaderOptions = LoaderOptions & {
     layers?: string[];
     /** Override the URL to the worker bundle (by default loads from unpkg.com) */
     workerUrl?: string;
+    /** Preferred encoding for Arrow geometry output. */
+    geoarrow?: {encodingPreference?: GeoArrowEncodingPreference};
   };
   gis?: {
     /** @deprecated. Use options.mvt.shape */

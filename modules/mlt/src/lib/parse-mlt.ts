@@ -82,7 +82,10 @@ export function parseMLT(
       return binaryData;
     }
     case 'arrow-table':
-      return convertFeaturesToWKBArrowTable(parseToGeojsonFeatures(arrayBuffer, mltOptions));
+      return convertFeaturesToWKBArrowTable(parseToGeojsonFeatures(arrayBuffer, mltOptions), {
+        encodingPreference:
+          options?.geoarrow?.encodingPreference || mltOptions.geoarrow?.encodingPreference
+      });
     default:
       throw new Error(shape || 'undefined shape');
   }

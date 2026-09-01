@@ -155,7 +155,9 @@ export class ArcGISVectorSource
         return geoJsonTable;
       case 'arrow':
       default:
-        return convertFeaturesToWKBArrowTable(geoJsonTable.features);
+        return convertFeaturesToWKBArrowTable(geoJsonTable.features, {
+          encodingPreference: parameters.geoarrow?.encodingPreference
+        });
     }
   }
 

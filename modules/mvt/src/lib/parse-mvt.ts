@@ -50,7 +50,11 @@ export function parseMVT(arrayBuffer: ArrayBuffer, options?: MVTLoaderOptions) {
     }
     case 'arrow-table': {
       const table: ArrowTable = convertFeaturesToWKBArrowTable(
-        parseToGeojsonFeatures(arrayBuffer, mvtOptions)
+        parseToGeojsonFeatures(arrayBuffer, mvtOptions),
+        {
+          encodingPreference:
+            options?.geoarrow?.encodingPreference || mvtOptions.geoarrow?.encodingPreference
+        }
       );
       return table;
     }

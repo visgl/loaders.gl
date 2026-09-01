@@ -3,7 +3,12 @@
 // Copyright (c) vis.gl contributors
 
 import type {Loader, LoaderOptions} from '@loaders.gl/loader-utils';
-import type {Tables, GeoJSONTable, ArrowTable} from '@loaders.gl/schema';
+import type {
+  GeoArrowEncodingPreference,
+  Tables,
+  GeoJSONTable,
+  ArrowTable
+} from '@loaders.gl/schema';
 import type {Proj4CRSDefinition} from '@math.gl/proj4';
 import {DEFAULT_SQLJS_CDN} from './lib/parse-geopackage';
 import {GeoPackageFormat} from './geopackage-format';
@@ -14,6 +19,8 @@ import {GeoPackageFormat} from './geopackage-format';
 const VERSION = 'latest';
 
 export type GeoPackageLoaderOptions = LoaderOptions & {
+  /** Preferred encoding for Arrow geometry output. */
+  geoarrow?: {encodingPreference?: GeoArrowEncodingPreference};
   /** Options for the geopackage loader */
   geopackage?: {
     /** Shape of returned data */
@@ -24,6 +31,8 @@ export type GeoPackageLoaderOptions = LoaderOptions & {
     sqlJsCDN?: string | null;
     /** Override the URL to the worker bundle (by default loads from unpkg.com) */
     workerUrl?: string;
+    /** Preferred encoding for Arrow geometry output. */
+    geoarrow?: {encodingPreference?: GeoArrowEncodingPreference};
   };
   gis?: {
     reproject?: boolean;

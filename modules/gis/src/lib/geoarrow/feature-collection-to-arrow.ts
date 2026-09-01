@@ -10,6 +10,11 @@ import {
   makeWKBGeometryField,
   setWKBGeometrySchemaMetadata
 } from './wkb-geoarrow-utils';
+import {
+  convertFeaturesToGeoArrowTable,
+  resolveGeoArrowEncodingPreference,
+  type GeoArrowEncodingPreference
+} from '../table-converters/convert-geojson-to-geoarrow';
 
 const GEOMETRY_COLUMN_NAME = 'geometry';
 
@@ -19,7 +24,17 @@ const GEOMETRY_COLUMN_NAME = 'geometry';
  * @param features - GeoJSON features.
  * @returns Arrow table preserving feature properties and storing geometry as WKB bytes.
  */
-export function convertFeaturesToWKBArrowTable(features: Feature[]): ArrowTable {
+export function convertFeaturesToWKBArrowTable(
+  features: Feature[],
+  options: {
+    encodingPreference?: GeoArrowEncodingPreference;
+    geoarrow?: {encodingPreference?: GeoArrowEncodingPreference};
+  } = {}
+): ArrowTable {
+  const encodingPreference = resolveGeoArrowEncodingPreference(options);
+  if (encodingPreference && encodingPreference !== 'geoarrow.wkb') {
+    return convertFeaturesToGeoArrowTable(features, options);
+  }
   const propertyRows = features.map(feature => normalizeProperties(feature.properties));
   const propertySchema = getPropertySchema(propertyRows);
   const schema = buildFeatureArrowSchema(propertySchema, features);

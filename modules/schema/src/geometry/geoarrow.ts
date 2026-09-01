@@ -16,6 +16,9 @@ export type GeoArrowEncoding =
   | 'geoarrow.wkb'
   | 'geoarrow.wkt';
 
+/** Preferred output policy for loader-facing GeoArrow conversions. */
+export type GeoArrowEncodingPreference = 'geoarrow.wkb' | 'geoarrow.geometry' | 'optimized';
+
 /** Coordinate dimensions understood by GeoArrow and GeoParquet. */
 export type GeoArrowDimension = 'xy' | 'xyz' | 'xym' | 'xyzm';
 

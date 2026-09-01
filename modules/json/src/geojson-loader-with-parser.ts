@@ -84,6 +84,7 @@ function parseTextSync(
         schema: options.json?.schema,
         arrowConversion: options.json?.arrowConversion,
         geoarrowGeometryColumn: options.json?.geoarrowGeometryColumn,
+        geoarrow: options.geoarrow || options.geojson?.geoarrow || options.json?.geoarrow,
         crs: getGeoJSONCRS(geojson),
         log: getGeoJSONLoaderLog(options)
       });
@@ -176,6 +177,7 @@ async function* makeGeoJSONArrowBatchIterator(
       schema: frozenSchema || undefined,
       arrowConversion: options.json?.arrowConversion,
       geoarrowGeometryColumn: options.json?.geoarrowGeometryColumn,
+      geoarrow: options.geoarrow || options.geojson?.geoarrow || options.json?.geoarrow,
       crs,
       log: getGeoJSONLoaderLog(options)
     });

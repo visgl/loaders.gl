@@ -29,6 +29,7 @@ export {
 export type {Batch} from './types/batch';
 export type {
   GeoArrowEncoding,
+  GeoArrowEncodingPreference,
   GeoArrowDimension,
   GeoArrowCoordinateLayout,
   GeoArrowOffsetType,

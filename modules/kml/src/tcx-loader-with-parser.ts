@@ -9,7 +9,8 @@ import type {
   FeatureCollection,
   ObjectRowTable,
   BinaryFeatureCollection,
-  ArrowTable
+  ArrowTable,
+  GeoArrowEncodingPreference
 } from '@loaders.gl/schema';
 import {
   buildFeatureTableSchema,
@@ -21,8 +22,11 @@ import {parseTCXTextToFeatureCollection as parseTCXDocumentText} from './sports-
 const {preload: _TCXLoaderPreload, ...TCXLoaderMetadataWithoutPreload} = TCXLoaderMetadata;
 
 export type TCXLoaderOptions = LoaderOptions & {
+  /** Preferred encoding for Arrow geometry output. */
+  geoarrow?: {encodingPreference?: GeoArrowEncodingPreference};
   tcx?: {
     shape?: 'object-row-table' | 'geojson-table' | 'arrow-table' | 'binary-geometry' | 'raw';
+    geoarrow?: {encodingPreference?: GeoArrowEncodingPreference};
   };
 };
 
@@ -84,7 +88,10 @@ function parseTextSync(
       return table;
     }
     case 'arrow-table':
-      return convertFeatureCollectionToArrowTable(geojson.features);
+      return convertFeatureCollectionToArrowTable(
+        geojson.features,
+        options?.geoarrow || tcxOptions.geoarrow
+      );
     case 'binary-geometry':
       return geojsonToBinary(geojson.features);
 

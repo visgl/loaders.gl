@@ -23,6 +23,7 @@ import {
   reprojectWKBInPlace,
   transformGeoJsonCoords
 } from '@loaders.gl/gis';
+import {convertFeaturesToGeoArrowTable} from '@loaders.gl/gis';
 import {Proj4Projection, type Proj4CRSDefinition} from '@math.gl/proj4';
 import type {WKTCRSDefinition} from '@math.gl/crs';
 import initSqlJs, {Database, SqlJsStatic, Statement} from 'sql.js';
@@ -151,6 +152,18 @@ export async function parseGeoPackageToArrow(
   const selectedTable = selectGeoPackageVectorTable(vectorTables, options?.geopackage?.table);
   const projections = getProjections(database);
   const {reproject = false, _targetCrs = 'WGS84'} = options?.gis || {};
+
+  const preference =
+    options?.geoarrow?.encodingPreference || options?.geopackage?.geoarrow?.encodingPreference;
+  if (preference && preference !== 'geoarrow.wkb') {
+    const geoJSONTable = getGeoPackageGeoJSONTable(database, selectedTable, projections, {
+      reproject,
+      targetCrs: _targetCrs
+    });
+    return convertFeaturesToGeoArrowTable(geoJSONTable.features, {
+      encodingPreference: preference
+    });
+  }
 
   return getGeoPackageArrowTable(database, selectedTable, projections, {
     reproject,

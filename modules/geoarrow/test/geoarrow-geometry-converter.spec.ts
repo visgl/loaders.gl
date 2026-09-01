@@ -2216,3 +2216,15 @@ test.each([
     'FixedSizeList[2]<Float64>'
   );
 });
+
+test('table conversion rejects conflicting exact and preferred encodings', () => {
+  expect(() =>
+    convertTableToGeoArrow(
+      {
+        shape: 'object-row-table',
+        data: [{geometry: {type: 'Point', coordinates: [1, 2]}}]
+      },
+      {geoarrow: {encoding: 'geoarrow.point', encodingPreference: 'optimized'}}
+    )
+  ).toThrow('both encoding and encodingPreference');
+});

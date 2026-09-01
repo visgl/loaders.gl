@@ -9,6 +9,7 @@ import {getGeoarrowVertexCount} from '@loaders.gl/geoarrow';
 
 import {
   convertGeometryToWKB,
+  convertFeaturesToGeoArrowTable,
   convertWKBToGeometry,
   geojsonToBinary,
   makeWKBGeometryData,
@@ -47,6 +48,23 @@ export default async function gisBench(suite) {
   });
   suite.addAsync('geojsonToBinary(triangulate=false)', options, async () => {
     geojsonToBinary(features, {fixRingWinding: true, triangulate: false});
+  });
+
+  const preferenceFeatures = features.slice(0, Math.min(features.length, 1000));
+  const preferenceOptions = {multiplier: preferenceFeatures.length, unit: 'features'};
+  suite.group('geoarrow-encoding-preference');
+  suite.add('WKB', preferenceOptions, () => {
+    convertFeaturesToGeoArrowTable(preferenceFeatures, {
+      encodingPreference: 'geoarrow.wkb'
+    });
+  });
+  suite.add('dense union', preferenceOptions, () => {
+    convertFeaturesToGeoArrowTable(preferenceFeatures, {
+      encodingPreference: 'geoarrow.geometry'
+    });
+  });
+  suite.add('optimized native', preferenceOptions, () => {
+    convertFeaturesToGeoArrowTable(preferenceFeatures, {encodingPreference: 'optimized'});
   });
 }
 
