@@ -2,7 +2,7 @@
 
 ## Upgrading to v4.5
 
-v4.5 is additive. Existing loaders and defaults continue to work unchanged.
+Aside from the experimental writer prerequisite noted below, v4.5 is additive. Existing loaders and defaults continue to work unchanged.
 
 **@loaders.gl/splats**
 
@@ -17,6 +17,10 @@ v4.5 is additive. Existing loaders and defaults continue to work unchanged.
 **@loaders.gl/gltf**
 
 - No migration is required. `GLTFLoader` now handles per-texture UV transforms and selects AVIF texture sources when the active image decoder supports them.
+
+**@loaders.gl/textures**
+
+- `@loaders.gl/textures` no longer installs the deprecated `texture-compressor` package for every consumer. Applications that use the experimental `CompressedTextureWriter` must install `texture-compressor` explicitly. The CLI is invoked with `npx --no`, so it is never downloaded on demand; all other loaders and writers are unaffected.
 
 ## Upgrading to v4.4
 

@@ -5316,9 +5316,12 @@ __metadata:
     "@loaders.gl/worker-utils": "npm:4.5.0-alpha.1"
     "@math.gl/types": "npm:^4.1.0"
     ktx-parse: "npm:^0.7.0"
-    texture-compressor: "npm:^1.0.2"
   peerDependencies:
     "@loaders.gl/core": ~4.4.0
+    texture-compressor: ^1.0.2
+  peerDependenciesMeta:
+    texture-compressor:
+      optional: true
   languageName: unknown
   linkType: soft
 

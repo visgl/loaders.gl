@@ -80,11 +80,16 @@
     "@loaders.gl/schema": "4.5.0-alpha.1",
     "@loaders.gl/worker-utils": "4.5.0-alpha.1",
     "@math.gl/types": "^4.1.0",
-    "ktx-parse": "^0.7.0",
-    "texture-compressor": "^1.0.2"
+    "ktx-parse": "^0.7.0"
   },
   "peerDependencies": {
-    "@loaders.gl/core": "~4.4.0"
+    "@loaders.gl/core": "~4.4.0",
+    "texture-compressor": "^1.0.2"
+  },
+  "peerDependenciesMeta": {
+    "texture-compressor": {
+      "optional": true
+    }
   },
   "gitHead": "8a9e77743ea90a7be4ebec572416bb50ca9d73c3"
 }
