@@ -7,6 +7,17 @@
 
 > The experimental `CompressedTextureWriter` class can encode a binary encoded image into a compressed texture.
 
+The writer delegates compression to the optional
+[`texture-compressor`](https://github.com/TimvanScherpenzeel/texture-compressor) command-line
+tool. Install it alongside `@loaders.gl/textures` before using this Node.js-only writer:
+
+```sh
+npm install --save-dev texture-compressor
+```
+
+The CLI is invoked with `npx --no`, so it is never downloaded on demand. If it cannot be
+resolved locally, `encodeURLtoURL()` rejects.
+
 | Loader         | Characteristic                                         |
 | -------------- | ------------------------------------------------------ |
 | File Extension |                                                        |

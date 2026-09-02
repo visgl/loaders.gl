@@ -2,6 +2,10 @@
 
 ## v4.4
 
+### v4.4.6
+
+- fix(textures): make texture-compressor an optional peer dependency; applications using the experimental `CompressedTextureWriter` must install it explicitly
+
 ### v4.4.5
 
 - feat(gltf): support KHR_meshopt_compression (#3617)

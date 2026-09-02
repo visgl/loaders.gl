@@ -166,7 +166,7 @@ At the time of writing, only S3 texture compression has been specified:
 
 Texture compression code is usually not readily available, particulary not in JavaScript. Compression is typically done by binary programs, e.g. [PVRTexTool](https://www.imaginationtech.com/developers/powervr-sdk-tools/pvrtextool/).
 
-The loaders.gl `CompressedTextureWriter` can compress textures (under Node.js only) by executing a binary with the appropriate command line, and then loading back the output.
+The loaders.gl `CompressedTextureWriter` can compress textures (under Node.js only) by executing a binary with the appropriate command line, and then loading back the output. The binary is not installed by loaders.gl; applications that use this writer must install `texture-compressor` separately.
 
 ## IP and Patent Considerations
 
