@@ -2,6 +2,10 @@
 
 ## v4.5
 
+### v4.5.0-alpha.2
+
+- fix(textures): make texture-compressor an optional peer dependency; applications using the experimental `CompressedTextureWriter` must install it explicitly
+
 ### v4.5.0-alpha.1
 
 - feat(splats): add SPLAT, KSPLAT, SPZ, RAD, and RAD source loaders
