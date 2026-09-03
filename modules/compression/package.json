@@ -305,7 +305,7 @@
   "dependencies": {
     "@loaders.gl/loader-utils": "5.0.0-alpha.5",
     "@loaders.gl/worker-utils": "5.0.0-alpha.5",
-    "fflate": "0.7.4",
+    "fflate": "0.7.5",
     "fzstd": "0.1.1",
     "hysnappy": "^1.1.1",
     "snappyjs": "^0.6.1"
