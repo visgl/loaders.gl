@@ -38,6 +38,23 @@ function createBundlerPlugin() {
     name: 'loaders-gl-bundler-plugin',
     configureWebpack(_config, _isServer, {currentBundler}) {
       const bundler = currentBundler.instance;
+      const developmentWorkerReplacements = [];
+      if (process.env.NODE_ENV === 'development' && !_isServer) {
+        developmentWorkerReplacements.push(
+          new bundler.NormalModuleReplacementPlugin(
+            /parquet-source-worker-url$/,
+            resolve('./src/shims/parquet-source-worker-url.dev.js')
+          ),
+          new bundler.NormalModuleReplacementPlugin(
+            /parquet-source-worker-factory$/,
+            resolve('./src/shims/parquet-source-worker-factory.dev.js')
+          ),
+          new bundler.NormalModuleReplacementPlugin(
+            /loadersgl-worker-hmr$/,
+            resolve('./src/shims/loadersgl-worker-hmr.dev.js')
+          )
+        );
+      }
       return {
         // These modules intentionally use Node fallbacks or dynamic WASM paths that are replaced
         // in browser builds. Keep unrelated bundler warnings visible.
@@ -78,7 +95,8 @@ function createBundlerPlugin() {
             if (normalizedContext?.endsWith('/node_modules/geotiff/dist-module/compression')) {
               resource.request = resolve('./src/shims/geotiff-lerc-decoder.js');
             }
-          })
+          }),
+          ...developmentWorkerReplacements
         ]
       };
     }
