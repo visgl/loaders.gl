@@ -44,7 +44,7 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
 
 ## Upgrading to v4.5
 
-v4.5 is additive. Existing loaders and defaults continue to work unchanged.
+v4.5 is additive. Existing loaders and defaults continue to work unchanged, except for the explicit installation requirement for the experimental texture writer noted below.
 
 **@loaders.gl/splats**
 
@@ -56,9 +56,22 @@ v4.5 is additive. Existing loaders and defaults continue to work unchanged.
 - `ParquetLoader` and the deprecated Parquet JSON aliases retain their existing behavior.
 - To opt into the TypeScript parser, import `ParquetJSLoader` from `@loaders.gl/parquet` or `@loaders.gl/parquet/parquet-js-loader`.
 
+**@loaders.gl/traces**
+
+- Install `@loaders.gl/traces` to parse Chrome Trace Event JSON with `ChromeTraceLoader`. Use `shape: 'arrow-table'` for Arrow output or the exported streaming helpers for incremental events, Arrow batches, and file chunks.
+
+**@loaders.gl/mvt**
+
+- `MapStyleLoader` is additive. It resolves relative Mapbox/MapLibre source and TileJSON URLs while preserving style metadata. Pass `mapStyle.baseUrl`, `mapStyle.fetch`, or `mapStyle.fetchOptions` when resolving in-memory styles or supplying a custom request implementation.
+
 **@loaders.gl/gltf**
 
 - No migration is required. `GLTFLoader` now handles per-texture UV transforms and selects AVIF texture sources when the active image decoder supports them.
+- `KHR_meshopt_compression` support and portable `LINE_LOOP` / `TRIANGLE_FAN` normalization are enabled automatically; no application changes are required.
+
+**@loaders.gl/textures**
+
+- `@loaders.gl/textures` no longer installs the deprecated `texture-compressor` package for every consumer. Applications that use the experimental `CompressedTextureWriter` must install `texture-compressor` explicitly. The CLI is invoked with `npx --no`, so it is never downloaded on demand; all other loaders and writers are unaffected.
 
 ## Upgrading to v5.0
 
