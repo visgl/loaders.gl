@@ -130,13 +130,13 @@ async function parseChromeTraceArrowBatches(
  * Creates one comparable summary for a streamed replacement chunk sequence.
  */
 function summarizeChunks(chunks: TraceStreamChunk[]): unknown[] {
-  return chunks.map(chunk => ({
+  return chunks.map((chunk) => ({
     name: chunk.name,
     eventCount: chunk.replaceSnapshot?.traceFile.traceEvents.length,
     metadata: chunk.replaceSnapshot?.traceFile.metadata,
     processCount: chunk.replaceSnapshot?.trace.processes.length,
-    threadLabels: chunk.replaceSnapshot?.trace.processes.flatMap(process =>
-      process.threads.map(thread => thread.label)
+    threadLabels: chunk.replaceSnapshot?.trace.processes.flatMap((process) =>
+      process.threads.map((thread) => thread.label)
     )
   }));
 }
@@ -145,7 +145,7 @@ describe('chrome-trace-stream', () => {
   it('publishes replacement snapshots while consuming parsed event streams', async () => {
     const session = createTraceStreamSession({publishIntervalMs: 0});
     const snapshots: number[] = [];
-    session.subscribe(snapshot => {
+    session.subscribe((snapshot) => {
       snapshots.push(snapshot.sequence);
     });
 
@@ -165,7 +165,9 @@ describe('chrome-trace-stream', () => {
 
     expect(snapshot?.name).toBe('streamed-events');
     expect(
-      snapshot?.trace.processes.flatMap(process => process.threads).flatMap(thread => thread.spans)
+      snapshot?.trace.processes
+        .flatMap((process) => process.threads)
+        .flatMap((thread) => thread.spans)
     ).toHaveLength(2);
     expect(snapshots.length).toBeGreaterThanOrEqual(2);
   });
@@ -255,9 +257,8 @@ describe('chrome-trace-stream', () => {
     expect(
       chunks
         .at(-1)
-        ?.replaceSnapshot?.trace.processes
-        .flatMap(process => process.threads)
-        .flatMap(thread => thread.spans)
+        ?.replaceSnapshot?.trace.processes.flatMap((process) => process.threads)
+        .flatMap((thread) => thread.spans)
     ).toHaveLength(2);
   });
 
@@ -330,7 +331,7 @@ describe('chrome-trace-stream', () => {
       batches.push(batch as arrow.RecordBatch);
     }
 
-    expect(batches.map(batch => batch.getChild('name')?.get(0))).toEqual(['é', 'second']);
+    expect(batches.map((batch) => batch.getChild('name')?.get(0))).toEqual(['é', 'second']);
     expect(batches[0].getChild('args')?.get(0)).toBe('{"label":"é"}');
   });
 });

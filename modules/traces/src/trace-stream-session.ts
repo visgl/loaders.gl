@@ -104,7 +104,7 @@ export function createTraceStreamSession(
   const state = createTraceStreamSessionState(options);
 
   return {
-    applyChunk: chunk => {
+    applyChunk: (chunk) => {
       assertTraceStreamSessionOpen(state);
       applyTraceStreamChunk(state, chunk);
       scheduleTraceStreamPublish(state);
@@ -114,7 +114,7 @@ export function createTraceStreamSession(
       return publishTraceStreamSnapshot(state);
     },
     getPublishedSnapshot: () => state.publishedSnapshot,
-    subscribe: listener => {
+    subscribe: (listener) => {
       assertTraceStreamSessionOpen(state);
       state.listeners.add(listener);
 

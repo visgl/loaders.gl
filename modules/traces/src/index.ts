@@ -2,10 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-export {
-  ChromeTraceLoader,
-  type ChromeTraceLoaderOptions
-} from './chrome-trace-loader';
+export {ChromeTraceLoader, type ChromeTraceLoaderOptions} from './chrome-trace-loader';
 export {
   type ChromeTraceEventArrowRecordBatch,
   type ChromeTraceEventArrowTable

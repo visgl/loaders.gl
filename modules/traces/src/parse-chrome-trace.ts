@@ -152,7 +152,7 @@ export function parseChromeTrace(
           trackId,
           name: event.name,
           atMs: eventTimeMs,
-          scope: (event.scope ?? event.s ?? 't'),
+          scope: event.scope ?? event.s ?? 't',
           userData: event.args
         } satisfies ChromeTraceInstant);
         break;

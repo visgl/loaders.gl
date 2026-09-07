@@ -135,7 +135,7 @@ export function validateChromeTraceFile(
   } catch (error) {
     if (error instanceof ZodError) {
       const message = error.issues
-        .map(issue => `${issue.message}: ${issue.path.join('.')}`)
+        .map((issue) => `${issue.message}: ${issue.path.join('.')}`)
         .join('\n');
       throw new Error(message);
     }

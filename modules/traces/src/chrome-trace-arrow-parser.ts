@@ -208,59 +208,59 @@ function buildChromeTraceEventArrowColumns(events: readonly ChromeTraceEventSche
 } {
   return {
     name: arrow.vectorFromArray(
-      events.map(event => event.name),
+      events.map((event) => event.name),
       new arrow.Utf8()
     ),
     ph: arrow.vectorFromArray(
-      events.map(event => event.ph),
+      events.map((event) => event.ph),
       new arrow.Utf8()
     ),
     ts: arrow.vectorFromArray(
-      events.map(event => event.ts ?? null),
+      events.map((event) => event.ts ?? null),
       new arrow.Float64()
     ),
     pid: arrow.vectorFromArray(
-      events.map(event => normalizeChromeTraceIdLike(event.pid)),
+      events.map((event) => normalizeChromeTraceIdLike(event.pid)),
       new arrow.Utf8()
     ),
     tid: arrow.vectorFromArray(
-      events.map(event => normalizeChromeTraceIdLike(event.tid)),
+      events.map((event) => normalizeChromeTraceIdLike(event.tid)),
       new arrow.Utf8()
     ),
     cat: arrow.vectorFromArray(
-      events.map(event => event.cat ?? null),
+      events.map((event) => event.cat ?? null),
       new arrow.Utf8()
     ),
     dur: arrow.vectorFromArray(
-      events.map(event => event.dur ?? null),
+      events.map((event) => event.dur ?? null),
       new arrow.Float64()
     ),
     tdur: arrow.vectorFromArray(
-      events.map(event => event.tdur ?? null),
+      events.map((event) => event.tdur ?? null),
       new arrow.Float64()
     ),
     tts: arrow.vectorFromArray(
-      events.map(event => event.tts ?? null),
+      events.map((event) => event.tts ?? null),
       new arrow.Float64()
     ),
     id: arrow.vectorFromArray(
-      events.map(event => normalizeChromeTraceIdLike(event.id)),
+      events.map((event) => normalizeChromeTraceIdLike(event.id)),
       new arrow.Utf8()
     ),
     bind_id: arrow.vectorFromArray(
-      events.map(event => normalizeChromeTraceIdLike(event.bind_id)),
+      events.map((event) => normalizeChromeTraceIdLike(event.bind_id)),
       new arrow.Utf8()
     ),
     scope: arrow.vectorFromArray(
-      events.map(event => normalizeChromeTraceScope(event)),
+      events.map((event) => normalizeChromeTraceScope(event)),
       new arrow.Utf8()
     ),
     args: arrow.vectorFromArray(
-      events.map(event => serializeChromeTraceJson(event.args)),
+      events.map((event) => serializeChromeTraceJson(event.args)),
       new arrow.Utf8()
     ),
     extraJson: arrow.vectorFromArray(
-      events.map(event => buildChromeTraceExtraJson(event)),
+      events.map((event) => buildChromeTraceExtraJson(event)),
       new arrow.Utf8()
     )
   };

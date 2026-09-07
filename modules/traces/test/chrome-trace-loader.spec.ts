@@ -94,7 +94,7 @@ describe('ChromeTraceLoader', () => {
     });
     const table = parsed as arrow.Table;
 
-    expect(table.schema.fields.map(field => field.name)).toEqual([
+    expect(table.schema.fields.map((field) => field.name)).toEqual([
       'name',
       'ph',
       'ts',
@@ -111,7 +111,7 @@ describe('ChromeTraceLoader', () => {
       'extraJson'
     ]);
 
-    expect(table.schema.fields.map(field => field.nullable)).toEqual([
+    expect(table.schema.fields.map((field) => field.nullable)).toEqual([
       false,
       false,
       true,
@@ -128,7 +128,7 @@ describe('ChromeTraceLoader', () => {
       true
     ]);
 
-    expect(table.schema.fields.map(field => field.type.typeId)).toEqual([
+    expect(table.schema.fields.map((field) => field.type.typeId)).toEqual([
       new arrow.Utf8().typeId,
       new arrow.Utf8().typeId,
       new arrow.Float64().typeId,
@@ -205,7 +205,7 @@ describe('ChromeTraceLoader', () => {
     const combinedTable = new arrow.Table(batches[0].schema, batches);
     expect(combinedTable.numRows).toBe(table.numRows);
 
-    for (const fieldName of table.schema.fields.map(field => field.name)) {
+    for (const fieldName of table.schema.fields.map((field) => field.name)) {
       const expectedValues = Array.from({length: table.numRows}, (_, rowIndex) =>
         table.getChild(fieldName)?.get(rowIndex)
       );
