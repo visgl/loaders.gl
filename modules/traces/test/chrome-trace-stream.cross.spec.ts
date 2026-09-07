@@ -268,8 +268,7 @@ describe('chrome-trace-stream', () => {
     expect(
       chunks
         .at(-1)
-        ?.replaceSnapshot?.trace.processes
-        .flatMap(process => process.threads)
+        ?.replaceSnapshot?.trace.processes.flatMap(process => process.threads)
         .flatMap(thread => thread.spans)
     ).toHaveLength(2);
   });
@@ -337,7 +336,7 @@ describe('chrome-trace-stream', () => {
     }
 
     const batches = [];
-    for await (const batch of parseInBatches(source(), ChromeTraceLoader, {
+    for await (const batch of await parseInBatches(source(), ChromeTraceLoader, {
       chromeTrace: {shape: 'arrow-table', batchSize: 1}
     })) {
       batches.push(batch as arrow.RecordBatch);
