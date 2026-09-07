@@ -4,7 +4,6 @@
   "description": "Trace format parsers for Chrome Trace and Perfetto Trace",
   "license": "MIT",
   "type": "module",
-  "private": true,
   "repository": {
     "type": "git",
     "url": "https://github.com/visgl/loaders.gl"

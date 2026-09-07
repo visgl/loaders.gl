@@ -2,21 +2,11 @@
 
 ## Upgrading to v4.5
 
-Aside from the experimental writer prerequisite noted below, v4.5 is additive. Existing loaders and defaults continue to work unchanged.
+v4.5 is additive. Existing loaders and defaults continue to work unchanged, except for the explicit installation requirement for the experimental texture writer noted below.
 
 **@loaders.gl/splats**
 
-- Install the new experimental package with `npm install @loaders.gl/splats` and load SPLAT, KSPLAT, SPZ, or RAD data through its exported loaders.
-- SPZ and compressed RAD data require an application-provided `zstd-codec` module; pass it through `options.modules`.
-
-**@loaders.gl/parquet**
-
-- `ParquetLoader` and the deprecated Parquet JSON aliases retain their existing behavior.
-- To opt into the TypeScript parser, import `ParquetJSLoader` from `@loaders.gl/parquet` or `@loaders.gl/parquet/parquet-js-loader`.
-
-**@loaders.gl/gltf**
-
-- No migration is required. `GLTFLoader` now handles per-texture UV transforms and selects AVIF texture sources when the active image decoder supports them.
+- SPZ decoding requires an application-provided `zstd-codec` module passed through `options.modules`. RAD gzip chunks are decompressed internally and do not require `zstd-codec`.
 
 **@loaders.gl/textures**
 
