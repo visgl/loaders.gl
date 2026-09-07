@@ -165,7 +165,7 @@ describe('chrome-trace-stream', () => {
 
     expect(snapshot?.name).toBe('streamed-events');
     expect(
-      snapshot?.trace.processes.flatMap(process => process.threads.flatMap(thread => thread.spans))
+      snapshot?.trace.processes.flatMap(process => process.threads).flatMap(thread => thread.spans)
     ).toHaveLength(2);
     expect(snapshots.length).toBeGreaterThanOrEqual(2);
   });
@@ -255,9 +255,9 @@ describe('chrome-trace-stream', () => {
     expect(
       chunks
         .at(-1)
-        ?.replaceSnapshot?.trace.processes.flatMap(process =>
-          process.threads.flatMap(thread => thread.spans)
-        )
+        ?.replaceSnapshot?.trace.processes
+        .flatMap(process => process.threads)
+        .flatMap(thread => thread.spans)
     ).toHaveLength(2);
   });
 
