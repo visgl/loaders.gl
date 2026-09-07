@@ -2,6 +2,20 @@
 
 ## v4.5
 
+### v4.5.0
+
+- feat(splats): add SPLAT, KSPLAT, SPZ, RAD, and RAD source loaders
+- feat(parquet): add an experimental TypeScript-backed Parquet loader
+- feat(traces): add Chrome Trace JSON, Arrow, and streaming loaders
+- feat(mvt): add MapStyleLoader with relative source and TileJSON URL resolution
+- fix(gltf): support per-texture UV transforms, AVIF texture sources, meshopt compression, and portable primitive topologies
+- fix(textures): make texture-compressor optional for CompressedTextureWriter users
+- chore(deps): align the 4.5 release with deck.gl and luma.gl 9.4
+- fix(mvt): preserve feature IDs in GeoJSON output
+- fix(shapefile): normalize polygon winding
+- fix(las): make LAS 1.4 Rust loading safe
+- fix(zip): guard ZIP64 extra-field parsing against malformed input
+
 ### v4.5.0-alpha.2
 
 - fix(textures): make texture-compressor an optional peer dependency; applications using the experimental `CompressedTextureWriter` must install it explicitly
