@@ -165,4 +165,7 @@ jobs:
       - name: Post GitHub release and publish to NPM
         env:
           NPM_CONFIG_LOGLEVEL: verbose
+          # Force npm to use the configured GitHub Actions trusted publisher.
+          NODE_AUTH_TOKEN: ''
+          NPM_CONFIG_PROVENANCE: true
         run: npx ocular-publish from-git
