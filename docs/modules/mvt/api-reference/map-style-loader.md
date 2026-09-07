@@ -10,15 +10,15 @@ resolved tile-source metadata.
 It is designed for applications that need to inspect style documents, derive tile endpoints, or
 bridge style metadata into other runtimes such as deck.gl tile workflows.
 
-| Loader                | Characteristic                                           |
-| --------------------- | -------------------------------------------------------- |
-| File Extension        | `.json`                                                  |
-| File Type             | Text                                                     |
-| File Format           | [Map Styles](/docs/modules/mvt/formats/map-style)        |
-| Data Format           | `ResolvedMapStyle`                                       |
-| Decoder Type          | Asynchronous                                             |
-| Worker Thread Support | No                                                       |
-| Streaming Support     | No                                                       |
+| Loader                | Characteristic                                    |
+| --------------------- | ------------------------------------------------- |
+| File Extension        | `.json`                                           |
+| File Type             | Text                                              |
+| File Format           | [Map Styles](/docs/modules/mvt/formats/map-style) |
+| Data Format           | `ResolvedMapStyle`                                |
+| Decoder Type          | Asynchronous                                      |
+| Worker Thread Support | No                                                |
+| Streaming Support     | No                                                |
 
 ## Usage
 
@@ -160,11 +160,11 @@ Two details matter here:
 
 `MapStyleLoader` uses the `mapStyle` namespaced option group.
 
-| Option                  | Type             | Default | Description |
-| ----------------------- | ---------------- | ------- | ----------- |
-| `mapStyle.baseUrl`      | `string`         | `null`  | Base URL used to resolve relative source URLs and tile templates for in-memory styles. |
-| `mapStyle.fetch`        | `typeof fetch`   | global `fetch` | Fetch implementation used to load the style URL and source sub resources. |
-| `mapStyle.fetchOptions` | `RequestInit`    | `null`  | Request options forwarded to the selected fetch implementation. |
+| Option                  | Type           | Default        | Description                                                                            |
+| ----------------------- | -------------- | -------------- | -------------------------------------------------------------------------------------- |
+| `mapStyle.baseUrl`      | `string`       | `null`         | Base URL used to resolve relative source URLs and tile templates for in-memory styles. |
+| `mapStyle.fetch`        | `typeof fetch` | global `fetch` | Fetch implementation used to load the style URL and source sub resources.              |
+| `mapStyle.fetchOptions` | `RequestInit`  | `null`         | Request options forwarded to the selected fetch implementation.                        |
 
 ## Resolution Rules
 

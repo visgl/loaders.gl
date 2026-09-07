@@ -13,20 +13,20 @@ npm install @loaders.gl/core
 
 ## Loaders and Writers
 
-| Loader / Writer                                           |
-| --------------------------------------------------------- |
+| Loader / Writer                                                      |
+| -------------------------------------------------------------------- |
 | [`MapStyleLoader`](/docs/modules/mvt/api-reference/map-style-loader) |
-| [`MVTLoader`](/docs/modules/mvt/api-reference/mvt-loader) |
-| [`TileJSONLoader`](/docs/modules/mvt/api-reference/tilejson-loader) |
-| [`MVTWriter`](/docs/modules/mvt/api-reference/mvt-writer) |
+| [`MVTLoader`](/docs/modules/mvt/api-reference/mvt-loader)            |
+| [`TileJSONLoader`](/docs/modules/mvt/api-reference/tilejson-loader)  |
+| [`MVTWriter`](/docs/modules/mvt/api-reference/mvt-writer)            |
 
 ## Formats
 
-| Format |
-| ------ |
+| Format                                              |
+| --------------------------------------------------- |
 | [`Map Styles`](/docs/modules/mvt/formats/map-style) |
-| [`MVT`](/docs/modules/mvt/formats/mvt) |
-| [`TileJSON`](/docs/modules/mvt/formats/tilejson) |
+| [`MVT`](/docs/modules/mvt/formats/mvt)              |
+| [`TileJSON`](/docs/modules/mvt/formats/tilejson)    |
 
 ## Sources
 
