@@ -88,7 +88,7 @@
     "@loaders.gl/images": "^4.4.0",
     "@loaders.gl/i3s": "^4.4.0",
     "@loaders.gl/las": "^4.4.0",
-    "@loaders.gl/loader-utils": "^4.4.0",
+    "@loaders.gl/loader-utils": "^4.5.0",
     "@loaders.gl/math": "^4.4.0",
     "@loaders.gl/mvt": "^4.4.0",
     "@loaders.gl/obj": "^4.4.0",

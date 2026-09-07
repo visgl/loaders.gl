@@ -4968,19 +4968,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@loaders.gl/loader-utils@npm:^4.4.0":
-  version: 4.4.5
-  resolution: "@loaders.gl/loader-utils@npm:4.4.5"
-  dependencies:
-    "@loaders.gl/schema": "npm:4.4.5"
-    "@loaders.gl/worker-utils": "npm:4.4.5"
-    "@probe.gl/log": "npm:^4.1.1"
-    "@probe.gl/stats": "npm:^4.1.1"
-  checksum: 10c0/824ae9fbf6bb11c81920f972114f48bad6e42b4292ce1a76c25d7903f5a5ef18b4ee2454d4709f22b61720388dda8a81391c0fd86880b1e10a88d3309586ead3
-  languageName: node
-  linkType: hard
-
-"@loaders.gl/loader-utils@workspace:modules/loader-utils":
+"@loaders.gl/loader-utils@npm:^4.5.0, @loaders.gl/loader-utils@workspace:modules/loader-utils":
   version: 0.0.0-use.local
   resolution: "@loaders.gl/loader-utils@workspace:modules/loader-utils"
   dependencies:
