@@ -87,11 +87,11 @@
     "@loaders.gl/textures": "5.0.0-alpha.5",
     "@loaders.gl/tiles": "5.0.0-alpha.5",
     "@loaders.gl/zip": "5.0.0-alpha.5",
-    "@math.gl/core": "5.0.0-alpha.4",
-    "@math.gl/crs": "5.0.0-alpha.4",
-    "@math.gl/culling": "5.0.0-alpha.4",
-    "@math.gl/geometry-utils": "5.0.0-alpha.4",
-    "@math.gl/geospatial": "5.0.0-alpha.4",
+    "@math.gl/core": "5.0.0-alpha.5",
+    "@math.gl/crs": "5.0.0-alpha.5",
+    "@math.gl/culling": "5.0.0-alpha.5",
+    "@math.gl/geometry-utils": "5.0.0-alpha.5",
+    "@math.gl/geospatial": "5.0.0-alpha.5",
     "zod": "^4.1.12"
   },
   "peerDependencies": {

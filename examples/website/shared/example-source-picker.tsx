@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import {CustomPanel} from '@deck.gl-community/widgets';
+import {CustomPanel} from '@deck.gl-community/panels';
 import {
   getCuratedExample,
   getCuratedExamples,
