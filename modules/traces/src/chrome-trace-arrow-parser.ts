@@ -76,14 +76,12 @@ export async function* parseChromeTraceToArrowRecordBatches(
   let deferredBatchEvents: ChromeTraceEventSchema[] | null = null;
   let rawText = '';
   let tokenizedEventCount = 0;
+  const textDecoder = new TextDecoder();
 
-  for await (const chunk of source) {
-    const chunkText = decodeChromeTraceSourceChunk(chunk);
-    rawText += chunkText;
-
-    const events = appendChromeTraceFileChunk(tokenizer, chunkText);
+  const appendTokenizedEvents = (events: ChromeTraceEventSchema[]): ChromeTraceEventSchema[][] => {
+    const readyBatches: ChromeTraceEventSchema[][] = [];
     if (events.length === 0) {
-      continue;
+      return readyBatches;
     }
 
     tokenizedEventCount += events.length;
@@ -92,11 +90,35 @@ export async function* parseChromeTraceToArrowRecordBatches(
     while (pendingEvents.length >= normalizedBatchSize) {
       const batchEvents = pendingEvents.splice(0, normalizedBatchSize);
       if (deferredBatchEvents) {
-        yield buildChromeTraceEventArrowRecordBatch(deferredBatchEvents, {
-          displayTimeUnit: tokenizer.displayTimeUnit
-        });
+        readyBatches.push(deferredBatchEvents);
       }
       deferredBatchEvents = batchEvents;
+    }
+
+    return readyBatches;
+  };
+
+  for await (const chunk of source) {
+    const chunkText = decodeChromeTraceSourceChunk(chunk, textDecoder);
+    rawText += chunkText;
+
+    const events = appendChromeTraceFileChunk(tokenizer, chunkText);
+    for (const batchEvents of appendTokenizedEvents(events)) {
+      yield buildChromeTraceEventArrowRecordBatch(batchEvents, {
+        displayTimeUnit: tokenizer.displayTimeUnit
+      });
+    }
+  }
+
+  const trailingText = textDecoder.decode();
+  if (trailingText) {
+    rawText += trailingText;
+    for (const batchEvents of appendTokenizedEvents(
+      appendChromeTraceFileChunk(tokenizer, trailingText)
+    )) {
+      yield buildChromeTraceEventArrowRecordBatch(batchEvents, {
+        displayTimeUnit: tokenizer.displayTimeUnit
+      });
     }
   }
 
@@ -296,18 +318,24 @@ function parseChromeTraceFile(
 /**
  * Decodes one Chrome trace source chunk into UTF-8 text.
  */
-function decodeChromeTraceSourceChunk(chunk: string | ArrayBufferLike | ArrayBufferView): string {
+function decodeChromeTraceSourceChunk(
+  chunk: string | ArrayBufferLike | ArrayBufferView,
+  decoder?: TextDecoder
+): string {
   if (typeof chunk === 'string') {
-    return chunk;
+    return decoder ? decoder.decode() + chunk : chunk;
   }
 
+  const textDecoder = decoder ?? new TextDecoder();
+
   if (ArrayBuffer.isView(chunk)) {
-    return new TextDecoder().decode(
-      new Uint8Array(chunk.buffer, chunk.byteOffset, chunk.byteLength)
+    return textDecoder.decode(
+      new Uint8Array(chunk.buffer, chunk.byteOffset, chunk.byteLength),
+      decoder ? {stream: true} : undefined
     );
   }
 
-  return new TextDecoder().decode(new Uint8Array(chunk));
+  return textDecoder.decode(new Uint8Array(chunk), decoder ? {stream: true} : undefined);
 }
 
 /**
