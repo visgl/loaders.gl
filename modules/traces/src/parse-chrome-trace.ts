@@ -152,7 +152,7 @@ export function parseChromeTrace(
           trackId,
           name: event.name,
           atMs: eventTimeMs,
-          scope: (event.scope ?? event.s ?? 't') as 'g' | 'p' | 't',
+          scope: event.scope ?? event.s ?? 't',
           userData: event.args
         } satisfies ChromeTraceInstant);
         break;
@@ -170,18 +170,29 @@ export function parseChromeTrace(
 
       case 's':
       case 't':
-      case 'f':
+      case 'f': {
+        const flowScope = event.s ?? event.scope ?? 't';
+        const flowId = event.id != null ? String(event.id) : `${event.name}:${event.bind_id ?? ''}`;
+        const flowScopeKey =
+          flowScope === 'g'
+            ? 'g'
+            : flowScope === 'p'
+              ? `p:${processId}`
+              : `t:${processId}:${threadId}`;
+        const eventKey = `${flowScopeKey}:${flowId}`;
+
         thread.flows.push({
-          id: `${trackId}:${event.name}:${eventTimestamp}`,
+          id: `${eventKey}:${event.ph}:${eventTimestamp}`,
           bindId: String(event.bind_id ?? ''),
           kind: event.ph === 's' ? 'start' : event.ph === 't' ? 'step' : 'end',
-          eventKey: `${trackId}:${event.name}`,
+          eventKey,
           trackId,
           atMs: eventTimeMs,
           name: event.name,
           userData: event.args
         } satisfies ChromeTraceFlow);
         break;
+      }
 
       case 'M': {
         const metadataName = getChromeTraceMetadataName(event.args);

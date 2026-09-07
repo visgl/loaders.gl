@@ -8,10 +8,14 @@ import type {ChromeTraceEventSchema, ChromeTraceFileSchema} from './chrome-trace
  * Incremental tokenizer state for one streamed Chrome trace JSON file.
  */
 export type ChromeTraceFileTokenizer = {
+  /** Incremental UTF-8 decoder for binary source chunks. */
+  textDecoder: TextDecoder;
   /** Remaining undecoded text buffer. */
   buffer: string;
   /** Whether parsing has reached the `traceEvents` array. */
   insideTraceEventsArray: boolean;
+  /** Whether the trace-events array has been fully consumed. */
+  traceEventsArrayFinished: boolean;
   /** Whether parsing is currently inside a JSON string literal. */
   insideString: boolean;
   /** Whether the current string parser is escaping the next character. */
@@ -31,8 +35,10 @@ export function createChromeTraceFileTokenizer(
   displayTimeUnit: string | undefined
 ): ChromeTraceFileTokenizer {
   return {
+    textDecoder: new TextDecoder(),
     buffer: '',
     insideTraceEventsArray: false,
+    traceEventsArrayFinished: false,
     insideString: false,
     escapingCharacter: false,
     objectDepth: 0,
@@ -48,7 +54,7 @@ export function appendChromeTraceFileChunk(
   tokenizer: ChromeTraceFileTokenizer,
   chunk: string | ArrayBufferLike | ArrayBufferView
 ): ChromeTraceEventSchema[] {
-  tokenizer.buffer += decodeChromeTraceChunk(chunk);
+  tokenizer.buffer += decodeChromeTraceChunk(tokenizer, chunk);
   maybeExtractChromeTraceDisplayTimeUnit(tokenizer);
   return extractChromeTraceEventsFromTokenizer(tokenizer);
 }
@@ -68,18 +74,22 @@ export function tryParseChromeTraceFileText(text: string): ChromeTraceFileSchema
 /**
  * Decodes one streamed chunk into UTF-8 text.
  */
-function decodeChromeTraceChunk(chunk: string | ArrayBufferLike | ArrayBufferView): string {
+function decodeChromeTraceChunk(
+  tokenizer: ChromeTraceFileTokenizer,
+  chunk: string | ArrayBufferLike | ArrayBufferView
+): string {
   if (typeof chunk === 'string') {
-    return chunk;
+    return tokenizer.textDecoder.decode() + chunk;
   }
 
   if (ArrayBuffer.isView(chunk)) {
-    return new TextDecoder().decode(
-      new Uint8Array(chunk.buffer, chunk.byteOffset, chunk.byteLength)
+    return tokenizer.textDecoder.decode(
+      new Uint8Array(chunk.buffer, chunk.byteOffset, chunk.byteLength),
+      {stream: true}
     );
   }
 
-  return new TextDecoder().decode(new Uint8Array(chunk));
+  return tokenizer.textDecoder.decode(new Uint8Array(chunk), {stream: true});
 }
 
 /**
@@ -105,6 +115,9 @@ function extractChromeTraceEventsFromTokenizer(
   const parsedEvents: ChromeTraceEventSchema[] = [];
 
   if (!tokenizer.insideTraceEventsArray) {
+    if (tokenizer.traceEventsArrayFinished) {
+      return parsedEvents;
+    }
     const traceEventsKeyIndex = tokenizer.buffer.indexOf('"traceEvents"');
     const traceEventsArrayIndex =
       traceEventsKeyIndex >= 0 ? tokenizer.buffer.indexOf('[', traceEventsKeyIndex) : -1;
@@ -144,6 +157,8 @@ function extractChromeTraceEventsFromTokenizer(
         tokenizer.objectDepth = 1;
       } else if (character === ']') {
         trimIndex = index + 1;
+        tokenizer.traceEventsArrayFinished = true;
+        tokenizer.insideTraceEventsArray = false;
         break;
       }
       continue;
@@ -172,6 +187,14 @@ function extractChromeTraceEventsFromTokenizer(
   if (tokenizer.objectStartIndex != null) {
     tokenizer.buffer = tokenizer.buffer.slice(tokenizer.objectStartIndex);
     tokenizer.objectStartIndex = 0;
+    tokenizer.objectDepth = 0;
+    tokenizer.insideString = false;
+    tokenizer.escapingCharacter = false;
+    return parsedEvents;
+  }
+
+  if (tokenizer.traceEventsArrayFinished) {
+    tokenizer.buffer = '';
     return parsedEvents;
   }
 
