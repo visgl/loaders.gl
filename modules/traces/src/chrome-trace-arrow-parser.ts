@@ -78,6 +78,9 @@ export async function* parseChromeTraceToArrowRecordBatches(
   let tokenizedEventCount = 0;
   const textDecoder = new TextDecoder();
 
+  /**
+   * Appends tokenized events and returns batches ready for deferred emission.
+   */
   const appendTokenizedEvents = (events: ChromeTraceEventSchema[]): ChromeTraceEventSchema[][] => {
     const readyBatches: ChromeTraceEventSchema[][] = [];
     if (events.length === 0) {

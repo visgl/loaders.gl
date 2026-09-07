@@ -173,7 +173,13 @@ export function parseChromeTrace(
       case 'f': {
         const flowScope = event.s ?? event.scope ?? 't';
         const flowId = event.id != null ? String(event.id) : `${event.name}:${event.bind_id ?? ''}`;
-        const eventKey = `${flowScope}:${flowId}`;
+        const flowScopeKey =
+          flowScope === 'g'
+            ? 'g'
+            : flowScope === 'p'
+              ? `p:${processId}`
+              : `t:${processId}:${threadId}`;
+        const eventKey = `${flowScopeKey}:${flowId}`;
 
         thread.flows.push({
           id: `${eventKey}:${event.ph}:${eventTimestamp}`,
