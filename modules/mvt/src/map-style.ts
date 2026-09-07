@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import type {LoaderContext, LoaderOptions} from '@loaders.gl/loader-utils';
+import {path, type LoaderContext, type LoaderOptions} from '@loaders.gl/loader-utils';
 import {MapStyleSchema, MapStyleSourceSchema, ResolvedMapStyleSchema} from './map-style-schema';
 
 /**
@@ -31,8 +31,8 @@ export type MapStyleSource = {
 export type MapStyleLayer = {
   /** Unique layer identifier. */
   id: string;
-  /** Style layer type such as `background`, `fill`, `line`, `symbol`, or `raster`. */
-  type: string;
+  /** Style layer type, omitted for layers that use the style-spec `ref` property. */
+  type?: string;
   /** Referenced source identifier. */
   source?: string;
   /** Referenced vector source-layer identifier. */
@@ -118,11 +118,23 @@ export function normalizeMapStyleUrl(
     return url;
   }
 
+  if (isAbsoluteFilePath(baseUrl)) {
+    const basePath = baseUrl.endsWith('/') ? baseUrl : path.dirname(baseUrl);
+    return path.resolve(basePath, url);
+  }
+
   try {
     return decodeURI(new URL(url, baseUrl).toString());
   } catch {
     return url;
   }
+}
+
+/**
+ * Tests whether a base URL is an absolute filesystem path rather than a URL with a scheme.
+ */
+function isAbsoluteFilePath(url: string | undefined): url is string {
+  return Boolean(url && (/^\//.test(url) || /^[A-Za-z]:[\\/]/.test(url)));
 }
 
 /**

@@ -1,7 +1,7 @@
 # MapStyleLoader
 
 <p class="badges">
-  <img src="https://img.shields.io/badge/From-v4.4-blue.svg?style=flat-square" alt="From-v4.4" />
+  <img src="https://img.shields.io/badge/From-v4.5-blue.svg?style=flat-square" alt="From-v4.5" />
 </p>
 
 The `MapStyleLoader` parses MapLibre / Mapbox style JSON and returns a normalized style object with
@@ -114,7 +114,7 @@ type MapStyleSource = {
 ```typescript
 type MapStyleLayer = {
   id: string;
-  type: string;
+  type?: string;
   source?: string;
   'source-layer'?: string;
   minzoom?: number;
@@ -160,11 +160,11 @@ Two details matter here:
 
 `MapStyleLoader` uses the `mapStyle` namespaced option group.
 
-| Option                  | Type           | Default        | Description                                                                            |
-| ----------------------- | -------------- | -------------- | -------------------------------------------------------------------------------------- |
-| `mapStyle.baseUrl`      | `string`       | `null`         | Base URL used to resolve relative source URLs and tile templates for in-memory styles. |
-| `mapStyle.fetch`        | `typeof fetch` | global `fetch` | Fetch implementation used to load the style URL and source sub resources.              |
-| `mapStyle.fetchOptions` | `RequestInit`  | `null`         | Request options forwarded to the selected fetch implementation.                        |
+| Option                  | Type           | Default        | Description                                                                                                                                 |
+| ----------------------- | -------------- | -------------- | ------------------------------------------------------------------------------------------------------------------------------------------- |
+| `mapStyle.baseUrl`      | `string`       | `null`         | Base URL used to resolve relative source URLs and tile templates for in-memory styles.                                                      |
+| `mapStyle.fetch`        | `typeof fetch` | global `fetch` | Fetch implementation used for source subresources and direct `resolveMapStyle()` calls. For the initial `load()` request, use `core.fetch`. |
+| `mapStyle.fetchOptions` | `RequestInit`  | `null`         | Request options forwarded to the selected fetch implementation.                                                                             |
 
 ## Resolution Rules
 

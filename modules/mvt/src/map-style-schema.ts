@@ -19,7 +19,7 @@ const MapStyleSourceSchemaInternal = z
 const MapStyleLayerSchemaInternal = z
   .object({
     id: z.string(),
-    type: z.string(),
+    type: z.string().optional(),
     source: z.string().optional(),
     'source-layer': z.string().optional(),
     minzoom: z.number().optional(),

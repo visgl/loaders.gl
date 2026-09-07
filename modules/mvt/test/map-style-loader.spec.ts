@@ -17,6 +17,8 @@ const INLINE_STYLE_URL = new URL('./data/map-style/inline.style.json', import.me
 const STYLE_BASE_URL = 'https://example.com/styles/root.style.json';
 const TILEJSON_URL = 'https://example.com/styles/terrain.tilejson';
 const TILE_TEMPLATE_URL = 'https://example.com/styles/tiles/{z}/{x}/{y}.pbf';
+const FILE_STYLE_BASE_URL = '/tmp/styles/root.style.json';
+const FILE_TILEJSON_URL = '/tmp/styles/terrain.tilejson';
 
 function createJsonResponse(json: unknown, ok = true, status = 200) {
   return {
@@ -124,6 +126,48 @@ test('resolveMapStyle resolves TileJSON-backed sources', async (t) => {
     'kept',
     'existing source fields are preserved'
   );
+
+  t.end();
+});
+
+test('resolveMapStyle resolves filesystem paths and ref layers', async (t) => {
+  let requestedUrl = '';
+  const resolvedStyle = await resolveMapStyle(
+    {
+      version: 8,
+      sources: {
+        terrain: {
+          type: 'vector',
+          url: './terrain.tilejson'
+        }
+      },
+      layers: [
+        {id: 'terrain-fill', type: 'fill', source: 'terrain'},
+        {id: 'terrain-outline', ref: 'terrain-fill'}
+      ]
+    },
+    {
+      mapStyle: {
+        baseUrl: FILE_STYLE_BASE_URL,
+        fetch: async (url) => {
+          requestedUrl = String(url);
+          return createJsonResponse({tiles: ['./tiles/{z}/{x}/{y}.pbf']}) as Response;
+        }
+      }
+    }
+  );
+
+  t.equal(
+    requestedUrl,
+    FILE_TILEJSON_URL,
+    'relative TileJSON path is resolved from the style path'
+  );
+  t.equal(
+    resolvedStyle.sources.terrain.tiles?.[0],
+    '/tmp/styles/tiles/{z}/{x}/{y}.pbf',
+    'filesystem tile template is resolved from the TileJSON path'
+  );
+  t.equal(resolvedStyle.layers[1]?.type, undefined, 'ref layers may omit type');
 
   t.end();
 });
