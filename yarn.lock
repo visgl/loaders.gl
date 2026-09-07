@@ -2585,17 +2585,37 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@deck.gl-community/widgets@npm:^9.3.2":
-  version: 9.3.2
-  resolution: "@deck.gl-community/widgets@npm:9.3.2"
+"@deck.gl-community/panels@npm:^9.4.0-alpha.3":
+  version: 9.4.0-alpha.3
+  resolution: "@deck.gl-community/panels@npm:9.4.0-alpha.3"
+  dependencies:
+    "@probe.gl/stats": "npm:^4.1.1"
+    monaco-editor: "npm:^0.53.0"
+    preact: "npm:^10.17.0"
+  peerDependencies:
+    apache-arrow: ">=17"
+  peerDependenciesMeta:
+    apache-arrow:
+      optional: true
+  checksum: 10c0/0df293a726a1fb704b7f04d202e787fcea8588df524de5ceab1973219c1b6438eb96c133a14deb75c217df4435abf91ec2b0029ec5245dbbbeb4675ddcfcf30b
+  languageName: node
+  linkType: hard
+
+"@deck.gl-community/widgets@npm:^9.4.0-alpha.3":
+  version: 9.4.0-alpha.3
+  resolution: "@deck.gl-community/widgets@npm:9.4.0-alpha.3"
   dependencies:
     "@probe.gl/stats": "npm:^4.1.1"
     "@turf/helpers": "npm:^6.5.0"
     preact: "npm:^10.17.0"
     supercluster: "npm:^8.0.1"
   peerDependencies:
-    "@deck.gl/core": ~9.3.0
-  checksum: 10c0/2f2217b5d0c6b1d7cab3db6b52b2fb8f17ab97264682086f75406e08213c55170120b5ef997bfa37f8076fb475e46f7d3c27da9a2f7b9a26006b4f376be379e8
+    "@deck.gl-community/panels": ~9.4.0-alpha.0
+    "@deck.gl/core": ~9.4.0-alpha.2
+    "@luma.gl/core": ~9.4.0-alpha.1
+    "@luma.gl/webgl": ~9.4.0-alpha.1
+    "@luma.gl/webgpu": ~9.4.0-alpha.1
+  checksum: 10c0/1cf63e2e5e824383401eaa4e23264446688c4905cc50414ff5aab6751db54d41142b7712232f5f3648a5def28ff6f7c4641b931b77d480736fd7d295d47746f8
   languageName: node
   linkType: hard
 
@@ -11405,6 +11425,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@types/trusted-types@npm:^1.0.6":
+  version: 1.0.6
+  resolution: "@types/trusted-types@npm:1.0.6"
+  checksum: 10c0/4bc61ac65b8e42d17c77a23f29cdf94e498acd2e23f4c00cf15c8281de94263ac313d46cbcd7cd1d03c066d497f9396845e3210ff0074f5f90f212cb3e8aac28
+  languageName: node
+  linkType: hard
+
 "@types/trusted-types@npm:^2.0.2":
   version: 2.0.7
   resolution: "@types/trusted-types@npm:2.0.7"
@@ -19316,7 +19343,8 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "geospatial-loaders-example@workspace:examples/website/geospatial"
   dependencies:
-    "@deck.gl-community/widgets": "npm:^9.3.2"
+    "@deck.gl-community/panels": "npm:^9.4.0-alpha.3"
+    "@deck.gl-community/widgets": "npm:^9.4.0-alpha.3"
     "@deck.gl/core": "npm:^9.4.0"
     "@deck.gl/layers": "npm:^9.4.0"
     "@deck.gl/react": "npm:^9.4.0"
@@ -22941,7 +22969,8 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "loaders.gl-example-pointcloud-loaders@workspace:examples/website/pointcloud"
   dependencies:
-    "@deck.gl-community/widgets": "npm:^9.3.2"
+    "@deck.gl-community/panels": "npm:^9.4.0-alpha.3"
+    "@deck.gl-community/widgets": "npm:^9.4.0-alpha.3"
     "@deck.gl/core": "npm:^9.4.0"
     "@deck.gl/layers": "npm:^9.4.0"
     "@deck.gl/react": "npm:^9.4.0"
@@ -24783,6 +24812,15 @@ __metadata:
   version: 0.52.2
   resolution: "monaco-editor@npm:0.52.2"
   checksum: 10c0/5a92da64f1e2ab375c0ce99364137f794d057c97bed10ecc65a08d6e6846804b8ecbd377eacf01e498f7dfbe1b21e8be64f728256681448f0484df90e767b435
+  languageName: node
+  linkType: hard
+
+"monaco-editor@npm:^0.53.0":
+  version: 0.53.0
+  resolution: "monaco-editor@npm:0.53.0"
+  dependencies:
+    "@types/trusted-types": "npm:^1.0.6"
+  checksum: 10c0/016495f0b869ea3a4151b660e5b8653999e54da9834001b4e7e88edae5c749aee2f1b56020bfece51cd08fc8e7125cd9732f414e373aea554e2f2812ee8245f1
   languageName: node
   linkType: hard
 
@@ -31681,7 +31719,8 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "tiles-loaders-example@workspace:examples/website/tiles"
   dependencies:
-    "@deck.gl-community/widgets": "npm:^9.3.2"
+    "@deck.gl-community/panels": "npm:^9.4.0-alpha.3"
+    "@deck.gl-community/widgets": "npm:^9.4.0-alpha.3"
     "@deck.gl/core": "npm:^9.4.0"
     "@deck.gl/extensions": "npm:^9.4.0"
     "@deck.gl/geo-layers": "npm:^9.4.0"

@@ -11,7 +11,8 @@
     "serve": "vite preview"
   },
   "dependencies": {
-    "@deck.gl-community/widgets": "^9.3.2",
+    "@deck.gl-community/panels": "^9.4.0-alpha.3",
+    "@deck.gl-community/widgets": "^9.4.0-alpha.3",
     "@deck.gl/core": "^9.4.0",
     "@deck.gl/extensions": "^9.4.0",
     "@deck.gl/geo-layers": "^9.4.0",
