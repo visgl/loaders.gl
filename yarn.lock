@@ -5434,6 +5434,10 @@ __metadata:
 "@loaders.gl/traces@workspace:modules/traces":
   version: 0.0.0-use.local
   resolution: "@loaders.gl/traces@workspace:modules/traces"
+  dependencies:
+    "@loaders.gl/loader-utils": "npm:4.5.0-alpha.2"
+    apache-arrow: "npm:>= 17.0.0"
+    zod: "npm:^4.1.12"
   peerDependencies:
     "@loaders.gl/core": ~4.4.0
   languageName: unknown
