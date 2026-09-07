@@ -48,26 +48,7 @@ v4.5 is additive. Existing loaders and defaults continue to work unchanged, exce
 
 **@loaders.gl/splats**
 
-- Install the new experimental package with `npm install @loaders.gl/splats` and load SPLAT, KSPLAT, SPZ, or RAD data through its exported loaders.
-- SPZ and compressed RAD data require an application-provided `zstd-codec` module; pass it through `options.modules`.
-
-**@loaders.gl/parquet**
-
-- `ParquetLoader` and the deprecated Parquet JSON aliases retain their existing behavior.
-- To opt into the TypeScript parser, import `ParquetJSLoader` from `@loaders.gl/parquet` or `@loaders.gl/parquet/parquet-js-loader`.
-
-**@loaders.gl/traces**
-
-- Install `@loaders.gl/traces` to parse Chrome Trace Event JSON with `ChromeTraceLoader`. Use `shape: 'arrow-table'` for Arrow output or the exported streaming helpers for incremental events, Arrow batches, and file chunks.
-
-**@loaders.gl/mvt**
-
-- `MapStyleLoader` is additive. It resolves relative Mapbox/MapLibre source and TileJSON URLs while preserving style metadata. Pass `mapStyle.baseUrl`, `mapStyle.fetch`, or `mapStyle.fetchOptions` when resolving in-memory styles or supplying a custom request implementation.
-
-**@loaders.gl/gltf**
-
-- No migration is required. `GLTFLoader` now handles per-texture UV transforms and selects AVIF texture sources when the active image decoder supports them.
-- `KHR_meshopt_compression` support and portable `LINE_LOOP` / `TRIANGLE_FAN` normalization are enabled automatically; no application changes are required.
+- SPZ decoding requires an application-provided `zstd-codec` module passed through `options.modules`. RAD gzip chunks are decompressed internally and do not require `zstd-codec`.
 
 **@loaders.gl/textures**
 
