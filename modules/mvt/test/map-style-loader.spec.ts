@@ -119,7 +119,11 @@ test('resolveMapStyle resolves TileJSON-backed sources', async (t) => {
     'TileJSON tiles are resolved against the TileJSON URL'
   );
   t.equal(resolvedStyle.sources.terrain.minzoom, 2, 'TileJSON fields are merged');
-  t.equal(resolvedStyle.sources.terrain.attribution, 'kept', 'existing source fields are preserved');
+  t.equal(
+    resolvedStyle.sources.terrain.attribution,
+    'kept',
+    'existing source fields are preserved'
+  );
 
   t.end();
 });
