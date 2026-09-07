@@ -14,8 +14,8 @@ npm install @loaders.gl/core @loaders.gl/traces
 
 ## Loaders
 
-| Loader                                                                      | Description                                      |
-| --------------------------------------------------------------------------- | ------------------------------------------------ |
+| Loader                                                                        | Description                                     |
+| ----------------------------------------------------------------------------- | ----------------------------------------------- |
 | [`ChromeTraceLoader`](/docs/modules/traces/api-reference/chrome-trace-loader) | Loads Chrome Trace Event JSON as JSON or Arrow. |
 
 ## Additional APIs

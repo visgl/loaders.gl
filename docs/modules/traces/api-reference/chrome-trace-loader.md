@@ -23,11 +23,11 @@ const table = await load(url, ChromeTraceLoader, {
 
 ## Options
 
-| Option                    | Type                         | Default | Description                                      |
-| ------------------------- | ---------------------------- | ------- | ------------------------------------------------ |
-| `chromeTrace.shape`       | `'json' \| 'arrow-table'`    | `json`  | Selects the whole-file parser output shape.      |
-| `chromeTrace.batchSize`   | `number`                     | `256`   | Maximum events per Arrow record batch.           |
-| `maxLength`               | `number`                     |         | Maximum input byte length accepted by the loader. |
+| Option                  | Type                      | Default | Description                                       |
+| ----------------------- | ------------------------- | ------- | ------------------------------------------------- |
+| `chromeTrace.shape`     | `'json' \| 'arrow-table'` | `json`  | Selects the whole-file parser output shape.       |
+| `chromeTrace.batchSize` | `number`                  | `256`   | Maximum events per Arrow record batch.            |
+| `maxLength`             | `number`                  |         | Maximum input byte length accepted by the loader. |
 
 ## Streaming
 

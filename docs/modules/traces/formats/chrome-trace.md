@@ -27,14 +27,14 @@ table for columnar inspection and downstream processing.
 When `chromeTrace.shape: 'arrow-table'` is selected, the loader emits an Arrow table with stable
 columns for common trace fields:
 
-| Column      | Description                                       |
-| ----------- | ------------------------------------------------- |
-| `name`      | Trace event name.                                 |
-| `ph`        | Trace event phase code.                           |
-| `ts`        | Timestamp in the file's display time unit.        |
-| `pid`       | Process identifier, normalized to string values.  |
-| `tid`       | Thread identifier, normalized to string values.   |
-| `cat`       | Event category.                                   |
-| `dur`       | Complete-event duration.                          |
-| `args`      | JSON-encoded event arguments.                     |
+| Column      | Description                                         |
+| ----------- | --------------------------------------------------- |
+| `name`      | Trace event name.                                   |
+| `ph`        | Trace event phase code.                             |
+| `ts`        | Timestamp in the file's display time unit.          |
+| `pid`       | Process identifier, normalized to string values.    |
+| `tid`       | Thread identifier, normalized to string values.     |
+| `cat`       | Event category.                                     |
+| `dur`       | Complete-event duration.                            |
+| `args`      | JSON-encoded event arguments.                       |
 | `extraJson` | JSON-encoded fields that do not have fixed columns. |
