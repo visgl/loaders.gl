@@ -118,6 +118,14 @@ export function normalizeMapStyleUrl(
     return url;
   }
 
+  if (/^[A-Za-z][A-Za-z\d+.-]*:/.test(url) || url.startsWith('//')) {
+    try {
+      return decodeURI(new URL(url, baseUrl).toString());
+    } catch {
+      return url;
+    }
+  }
+
   if (isAbsoluteFilePath(baseUrl)) {
     const basePath = baseUrl.endsWith('/') ? baseUrl : path.dirname(baseUrl);
     return path.resolve(basePath, url);

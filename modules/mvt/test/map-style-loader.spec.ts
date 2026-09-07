@@ -172,6 +172,28 @@ test('resolveMapStyle resolves filesystem paths and ref layers', async (t) => {
   t.end();
 });
 
+test('normalizeMapStyleUrl preserves absolute URLs with filesystem bases', async (t) => {
+  const resolvedStyle = await resolveMapStyle(
+    {
+      sources: {
+        remote: {
+          type: 'vector',
+          tiles: ['https://cdn.example.com/tiles/{z}/{x}/{y}.pbf']
+        }
+      }
+    },
+    {mapStyle: {baseUrl: FILE_STYLE_BASE_URL}}
+  );
+
+  t.equal(
+    resolvedStyle.sources.remote.tiles?.[0],
+    'https://cdn.example.com/tiles/{z}/{x}/{y}.pbf',
+    'absolute URLs are not treated as filesystem-relative paths'
+  );
+
+  t.end();
+});
+
 test('MapStyleLoader honors custom fetch implementation', async (t) => {
   const arrayBuffer = new TextEncoder().encode(
     JSON.stringify({
