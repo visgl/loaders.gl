@@ -11,7 +11,7 @@ v4.5 adds experimental Gaussian splat and TypeScript Parquet support, Chrome Tra
 - **@loaders.gl/splats** - New loaders for raw SPLAT, KSPLAT, SPZ, and Spark RAD Gaussian-splat data. `RADSourceLoader` supports progressive chunk loading for paged RAD scenes.
 - **@loaders.gl/parquet** - New experimental `ParquetJSLoader` makes the TypeScript Parquet backend available through an explicit loader import.
 - **@loaders.gl/traces** - New `ChromeTraceLoader` parses Chrome Trace Event JSON as normalized JSON or Arrow tables. Streaming helpers support incremental event, Arrow-batch, and file parsing.
-- **@loaders.gl/mvt** - New `MapStyleLoader` parses Mapbox/MapLibre style JSON, resolves relative source and TileJSON URLs, preserves metadata, and supports custom fetch and base URL options.
+- **@loaders.gl/mvt** - New [`MapStyleLoader`](/docs/modules/mvt/api-reference/map-style-loader) parses Mapbox/MapLibre style JSON, resolves relative source and TileJSON URLs, preserves metadata, and supports custom fetch and base URL options.
 - **@loaders.gl/gltf** - `KHR_texture_transform` now supports independent transforms on textures that share a UV attribute, and `GLTFLoader` selects `EXT_texture_avif` sources when AVIF is available.
 - **@loaders.gl/textures** - The experimental `CompressedTextureWriter` no longer installs `texture-compressor` for every consumer; applications that use the writer can opt in explicitly.
 
