@@ -5523,7 +5523,7 @@ __metadata:
     "@math.gl/web-mercator": "npm:^4.1.0"
     "@probe.gl/stats": "npm:^4.1.1"
   peerDependencies:
-    "@loaders.gl/core": ~4.4.0
+    "@loaders.gl/core": ~4.5.0-alpha.2
   languageName: unknown
   linkType: soft
 
