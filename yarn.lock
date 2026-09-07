@@ -5056,6 +5056,7 @@ __metadata:
     "@probe.gl/stats": "npm:^4.1.1"
     "@types/pbf": "npm:^3.0.2"
     pbf: "npm:^3.2.1"
+    zod: "npm:^4.1.12"
   peerDependencies:
     "@loaders.gl/core": ~4.4.0
   languageName: unknown
