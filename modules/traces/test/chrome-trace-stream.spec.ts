@@ -285,7 +285,7 @@ describe('chrome-trace-stream', () => {
     const table = await parseChromeTraceArrowTable(traceFile);
 
     async function* tableSource() {
-      yield table as arrow.Table;
+      yield table;
     }
 
     const chunks: TraceStreamChunk[] = [];
@@ -306,5 +306,31 @@ describe('chrome-trace-stream', () => {
       id: 77,
       s: 'p'
     });
+  });
+
+  it('preserves UTF-8 text and partial events across binary chunk boundaries', async () => {
+    const traceFile: ChromeTraceFileSchema = {
+      traceEvents: [
+        {name: 'é', ph: 'X', pid: 1, tid: 1, ts: 1, dur: 1, args: {label: 'é'}},
+        {name: 'second', ph: 'X', pid: 1, tid: 1, ts: 2, dur: 1, args: {nested: {ok: true}}}
+      ]
+    };
+    const bytes = new TextEncoder().encode(JSON.stringify(traceFile));
+
+    async function* source(): AsyncIterable<Uint8Array> {
+      for (let startIndex = 0; startIndex < bytes.length; startIndex += 7) {
+        yield bytes.slice(startIndex, startIndex + 7);
+      }
+    }
+
+    const batches = [];
+    for await (const batch of parseInBatches(source(), ChromeTraceLoader, {
+      chromeTrace: {shape: 'arrow-table', batchSize: 1}
+    })) {
+      batches.push(batch as arrow.RecordBatch);
+    }
+
+    expect(batches.map(batch => batch.getChild('name')?.get(0))).toEqual(['é', 'second']);
+    expect(batches[0].getChild('args')?.get(0)).toBe('{"label":"é"}');
   });
 });

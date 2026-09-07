@@ -6,7 +6,7 @@ import {parse, parseInBatches} from '@loaders.gl/core';
 import * as arrow from 'apache-arrow';
 import {describe, expect, it} from 'vitest';
 
-import {ChromeTraceLoader} from '../src';
+import {ChromeTraceLoader, parseChromeTrace} from '../src';
 
 import type {ChromeTraceFileSchema} from '../src';
 
@@ -218,5 +218,26 @@ describe('ChromeTraceLoader', () => {
     expect(batches[1].schema.metadata.get('chromeTrace.metadataJson')).toBe(
       JSON.stringify(traceFile.metadata)
     );
+  });
+
+  it('correlates flow events using their source id and scope', () => {
+    const trace = parseChromeTrace({
+      traceEvents: [
+        {name: 'start', ph: 's', pid: 1, tid: 1, ts: 1, id: 'flow-1', s: 'p'},
+        {name: 'step', ph: 't', pid: 2, tid: 2, ts: 2, id: 'flow-1', s: 'p'},
+        {name: 'end', ph: 'f', pid: 1, tid: 1, ts: 3, id: 'flow-1', s: 'p'}
+      ]
+    });
+
+    const flowKeys: string[] = [];
+    for (const process of trace.processes) {
+      for (const thread of process.threads) {
+        for (const flow of thread.flows) {
+          flowKeys.push(flow.eventKey);
+        }
+      }
+    }
+
+    expect(flowKeys).toEqual(['p:flow-1', 'p:flow-1', 'p:flow-1']);
   });
 });
