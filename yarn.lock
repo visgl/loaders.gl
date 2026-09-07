@@ -5692,6 +5692,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@luma.gl/constants@npm:^9.4.0":
+  version: 9.4.0
+  resolution: "@luma.gl/constants@npm:9.4.0"
+  checksum: 10c0/023562528eedecf77f31c0b53a10d0dde1b81a098fd853a156d237b8b1549ed3c3c1adb62452c18c6b5a7782c2865a7c541e2c69210faa8c6dcdf9c12bc0807d
+  languageName: node
+  linkType: hard
+
 "@luma.gl/core@npm:^9.2.6, @luma.gl/core@npm:~9.2.6":
   version: 9.2.6
   resolution: "@luma.gl/core@npm:9.2.6"
@@ -24548,7 +24555,13 @@ __metadata:
     "@loaders.gl/ply": "npm:^4.4.0"
     "@loaders.gl/schema": "npm:^4.4.0"
     "@loaders.gl/schema-utils": "npm:^4.4.0"
+    "@luma.gl/constants": "npm:^9.4.0"
+    "@luma.gl/core": "npm:^9.4.0"
+    "@luma.gl/engine": "npm:^9.4.0"
     "@luma.gl/gltf": "npm:^9.4.0"
+    "@luma.gl/gpgpu": "npm:^9.4.0"
+    "@luma.gl/shadertools": "npm:^9.4.0"
+    "@luma.gl/webgl": "npm:^9.4.0"
     "@material-ui/core": "npm:^4.10.2"
     "@material-ui/icons": "npm:^4.9.1"
     "@material-ui/lab": "npm:^4.0.0-alpha.57"
