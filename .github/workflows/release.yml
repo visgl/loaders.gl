@@ -168,4 +168,7 @@ jobs:
           NPM_CONFIG_LOGLEVEL: verbose
           # npm uses the configured GitHub Actions trusted publisher via OIDC.
           NPM_CONFIG_PROVENANCE: true
-        run: npx ocular-publish from-git
+        run: |
+          npm config delete //registry.npmjs.org/:_authToken
+          unset NODE_AUTH_TOKEN
+          npx ocular-publish from-git
