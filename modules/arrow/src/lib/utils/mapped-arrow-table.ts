@@ -173,17 +173,24 @@ export class MappedArrowTable<T extends arrow.TypeMap> extends IndexedArrowTable
   }
 
   /**
-   * Concatenates this mapped view with other mapped views sharing the same Arrow schema.
+   * Concatenates this mapped view with indexed views sharing the same Arrow schema.
    *
    * The returned view owns a new backing Arrow table assembled from the input tables' record
-   * batches, preserves visible mapped-row order including duplicate keys, and resolves keyed
-   * lookups to the last visible occurrence.
+   * batches and preserves visible row order. When every input is mapped, duplicate keys are
+   * preserved and keyed lookups resolve to the last visible occurrence. A plain indexed input
+   * produces a plain indexed result because it has no mapped keys to preserve.
    *
-   * @param others - Additional mapped views to append after this view.
-   * @returns Mapped view over a concatenated backing Arrow table.
+   * @param others - Additional indexed or mapped views to append after this view.
+   * @returns Mapped view when every input is mapped, or a plain indexed view for mixed inputs.
    */
-  override concat(...others: MappedArrowTable<T>[]): MappedArrowTable<T> {
+  override concat(...others: MappedArrowTable<T>[]): MappedArrowTable<T>;
+  override concat(...others: IndexedArrowTable<T>[]): IndexedArrowTable<T>;
+  override concat(...others: IndexedArrowTable<T>[]): IndexedArrowTable<T> {
     const concatenatedIndexedTable = super.concat(...others);
+    if (!others.every((table): table is MappedArrowTable<T> => table instanceof MappedArrowTable)) {
+      return concatenatedIndexedTable;
+    }
+
     return createMappedArrowTableFromEntries(
       concatenatedIndexedTable.table,
       getConcatenatedMappedEntries([this, ...others])

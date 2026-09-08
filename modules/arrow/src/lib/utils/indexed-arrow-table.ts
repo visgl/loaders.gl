@@ -423,22 +423,42 @@ function areArrowSchemasCompatible<T extends arrow.TypeMap>(
     return false;
   }
 
-  return left.fields.every((field, fieldIndex) => {
-    const otherField = right.fields[fieldIndex];
-    return (
-      otherField !== null &&
-      otherField !== undefined &&
-      field.name === otherField.name &&
-      field.nullable === otherField.nullable &&
-      field.typeId === otherField.typeId &&
-      String(field.type) === String(otherField.type) &&
-      areArrowMetadataMapsEqual(field.metadata, otherField.metadata)
-    );
-  });
+  return left.fields.every((field, fieldIndex) =>
+    areArrowFieldsCompatible(field, right.fields[fieldIndex])
+  );
 }
 
 /**
- * Returns whether two Arrow metadata maps contain the same ordered key/value pairs.
+ * Compares complete Arrow fields, including nested child nullability and metadata.
+ */
+function areArrowFieldsCompatible(left: arrow.Field, right: arrow.Field): boolean {
+  if (left === right) {
+    return true;
+  }
+
+  if (
+    !right ||
+    left.name !== right.name ||
+    left.nullable !== right.nullable ||
+    left.typeId !== right.typeId ||
+    String(left.type) !== String(right.type) ||
+    !areArrowMetadataMapsEqual(left.metadata, right.metadata)
+  ) {
+    return false;
+  }
+
+  const leftChildren = left.type.children ?? [];
+  const rightChildren = right.type.children ?? [];
+  return (
+    leftChildren.length === rightChildren.length &&
+    leftChildren.every((field, fieldIndex) =>
+      areArrowFieldsCompatible(field, rightChildren[fieldIndex])
+    )
+  );
+}
+
+/**
+ * Returns whether two Arrow metadata maps contain the same key/value pairs.
  */
 function areArrowMetadataMapsEqual(
   left: ReadonlyMap<string, string>,

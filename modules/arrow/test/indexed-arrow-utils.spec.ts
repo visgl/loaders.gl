@@ -353,6 +353,70 @@ test('ArrowUtils#IndexedArrowTable concatenates filtered and sliced indexed view
   t.end();
 });
 
+test('ArrowUtils#IndexedArrowTable validates nested field nullability and metadata', (t) => {
+  const field = new arrow.Field(
+    'value',
+    new arrow.Int32(),
+    false,
+    new Map([
+      ['unit', 'count'],
+      ['label', 'sample']
+    ])
+  );
+  const matchingField = new arrow.Field(
+    'value',
+    new arrow.Int32(),
+    false,
+    new Map([
+      ['label', 'sample'],
+      ['unit', 'count']
+    ])
+  );
+  const nullableField = new arrow.Field('value', new arrow.Int32(), true, field.metadata);
+  const differentMetadataField = new arrow.Field(
+    'value',
+    new arrow.Int32(),
+    false,
+    new Map([
+      ['unit', 'seconds'],
+      ['label', 'sample']
+    ])
+  );
+  const matchingTypes = createNestedTestTypes(matchingField);
+  const nullableTypes = createNestedTestTypes(nullableField);
+  const differentMetadataTypes = createNestedTestTypes(differentMetadataField);
+
+  for (const [name, type] of Object.entries(createNestedTestTypes(field))) {
+    const view = new IndexedArrowTable(createEmptyNestedTable(type));
+    t.doesNotThrow(
+      () => view.concat(new IndexedArrowTable(createEmptyNestedTable(matchingTypes[name]))),
+      `${name}: accepts equivalent nested fields with reordered metadata entries`
+    );
+    t.equal(
+      String(type),
+      String(nullableTypes[name]),
+      `${name}: type strings alone do not capture child nullability`
+    );
+    t.throws(
+      () => view.concat(new IndexedArrowTable(createEmptyNestedTable(nullableTypes[name]))),
+      /identical Arrow schemas/,
+      `${name}: rejects different nested nullability`
+    );
+    t.equal(
+      String(type),
+      String(differentMetadataTypes[name]),
+      `${name}: type strings alone do not capture child metadata`
+    );
+    t.throws(
+      () =>
+        view.concat(new IndexedArrowTable(createEmptyNestedTable(differentMetadataTypes[name]))),
+      /identical Arrow schemas/,
+      `${name}: rejects different nested metadata`
+    );
+  }
+  t.end();
+});
+
 test('ArrowUtils#MappedArrowTable supports keyed lookup and mapped transforms', (t) => {
   const leftTable = createTestTableFromRows([
     {
@@ -436,6 +500,55 @@ test('ArrowUtils#MappedArrowTable supports keyed lookup and mapped transforms', 
     () => new MappedArrowTable(leftTable, new Map([['bad', 2]])),
     RangeError,
     'rejects out-of-range mapped indexes'
+  );
+  t.end();
+});
+
+test('ArrowUtils#MappedArrowTable preserves the indexed concat contract for mixed inputs', (t) => {
+  const table = createTestTable();
+  const mappedView = new MappedArrowTable(
+    table,
+    new Map([
+      ['last', 2],
+      ['first', 0]
+    ])
+  );
+  const indexedView = new IndexedArrowTable(table, [1, 1]);
+  const lastMappedView = new MappedArrowTable(table, new Map([['last', 2]]));
+  const baseView: IndexedArrowTable<TestArrowColumns> = mappedView;
+  const mixedFromBase: IndexedArrowTable<TestArrowColumns> = baseView.concat(indexedView);
+  const mixed: IndexedArrowTable<TestArrowColumns> = mappedView.concat(indexedView, lastMappedView);
+
+  t.equal(mixedFromBase.constructor, IndexedArrowTable, 'base-typed calls produce an indexed view');
+  t.deepEqual(
+    Array.from(mixedFromBase, (row) => row?.name),
+    ['gamma', 'alpha', 'beta', 'beta'],
+    'base-typed calls preserve selected row order and duplicate indexes'
+  );
+  t.equal(mixed.constructor, IndexedArrowTable, 'a mixed call does not invent mapped keys');
+  t.deepEqual(Array.from(mixed.indexes), [2, 0, 4, 4, 8], 'offsets all mixed input indexes');
+  t.deepEqual(
+    mixed.getChild('name')?.toArray(),
+    ['gamma', 'alpha', 'beta', 'beta', 'gamma'],
+    'preserves mixed input order and duplicate rows'
+  );
+  t.equal(mixed.table.numRows, 9, 'retains all backing batches');
+  t.deepEqual(mappedView.rowKeys, ['last', 'first'], 'does not mutate the mapped source keys');
+
+  const allMapped: MappedArrowTable<TestArrowColumns> = mappedView.concat(lastMappedView);
+  t.equal(allMapped.constructor, MappedArrowTable, 'mapped-only overload retains the mapped type');
+  t.deepEqual(allMapped.rowKeys, ['last', 'first', 'last'], 'preserves duplicate mapped keys');
+  t.equal(allMapped.getRowIndex('last'), 5, 'keeps last-wins mapped-key lookup');
+  const noArguments: MappedArrowTable<TestArrowColumns> = mappedView.concat();
+  t.deepEqual(noArguments.rowKeys, mappedView.rowKeys, 'empty concat remains mapped');
+
+  const incompatibleView = new IndexedArrowTable(
+    new arrow.Table({different: arrow.vectorFromArray([1], new arrow.Int32())})
+  );
+  t.throws(
+    () => baseView.concat(incompatibleView as unknown as IndexedArrowTable<TestArrowColumns>),
+    /identical Arrow schemas/,
+    'mixed concat still validates schemas'
   );
   t.end();
 });
@@ -562,6 +675,22 @@ test('ArrowUtils#indexed views preserve nullable Unicode and 64-bit values acros
   );
   t.end();
 });
+
+/** Builds nested type variants that must retain their complete child field contracts. */
+function createNestedTestTypes(field: arrow.Field): Record<string, arrow.DataType> {
+  return {
+    struct: new arrow.Struct([field]),
+    list: new arrow.List(field),
+    fixedSizeList: new arrow.FixedSizeList(2, field),
+    nestedList: new arrow.List(new arrow.Field('item', new arrow.Struct([field]), false)),
+    dictionary: new arrow.Dictionary(new arrow.Struct([field]), new arrow.Int32(), 17)
+  };
+}
+
+/** Builds an empty table to exercise nested schema validation without materializing rows. */
+function createEmptyNestedTable(type: arrow.DataType): arrow.Table<{nested: arrow.DataType}> {
+  return new arrow.Table(new arrow.Schema([new arrow.Field('nested', type, true)]));
+}
 
 /**
  * Builds one small Arrow table used by indexed and mapped view tests.

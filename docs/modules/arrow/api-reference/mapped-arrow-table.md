@@ -100,5 +100,10 @@ Concatenates this mapped view with other mapped views sharing an identical Arrow
 owns a new backing Arrow table, preserves visible mapped-row order including duplicate keys, and
 keeps last-wins keyed lookup behavior.
 
+Plain `IndexedArrowTable` inputs are also accepted, including calls through the base class. If any
+input is not mapped, the result is a plain `IndexedArrowTable` preserving every visible row in
+order; no mapped keys are invented for unkeyed rows. With only mapped inputs (or no arguments), the
+result remains a `MappedArrowTable`.
+
 All other `IndexedArrowTable` methods, including `getValue()`, `getChild()`,
 `materializeArrowTable()`, `toArray()`, and iteration, are inherited.

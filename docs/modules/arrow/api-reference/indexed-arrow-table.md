@@ -127,6 +127,8 @@ Returns a sorted indexed view over the same backing table.
 
 Concatenates this indexed view with other indexed views sharing an identical Arrow schema. The
 result owns a new backing Arrow table and preserves visible row order from each source view.
+Schema validation includes nested child fields, nullability, and metadata, not just top-level names
+and type strings.
 
 #### `find(predicate)` and `findIndex(predicate)`
 
