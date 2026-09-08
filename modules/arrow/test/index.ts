@@ -4,5 +4,6 @@
 
 import './arrow-loader.spec';
 import './arrow-writer.spec';
+import './indexed-arrow-utils.spec';
 
 import './triangulate-on-worker.spec';
