@@ -22,6 +22,20 @@ export {GeoArrowLoader} from './geoarrow-loader';
 // EXPERIMENTAL
 
 // Arrow Utils
+export {IndexedArrowVector} from './lib/utils/indexed-arrow-vector';
+export {
+  IndexedArrowTable,
+  type IndexedArrowTableComparator,
+  type IndexedArrowTableFindPredicate,
+  type IndexedArrowTablePredicate,
+  type IndexedArrowTableRow
+} from './lib/utils/indexed-arrow-table';
+export {
+  MappedArrowTable,
+  type MappedArrowTableComparator,
+  type MappedArrowTablePredicate
+} from './lib/utils/mapped-arrow-table';
+
 // getGeometryColumnsFromArrowTable,
 // getGeoArrowEncoding
 

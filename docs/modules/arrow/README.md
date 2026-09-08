@@ -28,6 +28,11 @@ See [Using with Apache Arrow](/docs/developer-guide/apache-arrow) for practical 
 
 ## Additional APIs
 
+| API                                                                                                | Description                                                                                                  |
+| -------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------ |
+| [`IndexedArrowTable`, `IndexedArrowVector`](/docs/modules/arrow/api-reference/indexed-arrow-table) | Readonly indexed views for filtering, sorting, slicing and reordering without eagerly copying Arrow columns. |
+| [`MappedArrowTable`](/docs/modules/arrow/api-reference/mapped-arrow-table)                         | String-keyed row lookup that preserves indexed table transforms.                                             |
+
 Arrow provides a rich JavaScript API for working with Arrow formatted data.
 Start with the [`ArrowJS API Reference`](/docs/arrowjs/api-reference).
 
