@@ -108,22 +108,29 @@ const geoJSONfeatures = await load(url, MLTLoader, {
 
 ### Output shapes
 
-| `shape` option        | Output                    |
-| --------------------- | ------------------------- |
-| `'geojson-table'` (default) | `GeoJSONTable`            |
-| `'binary-geometry'`         | binary feature collection |
+| `shape` option              | Output                    |
+| --------------------------- | ------------------------- |
+| `'geojson-table'` (default) | `GeoJSONTable`             |
+| `'binary-geometry'`         | binary feature collection  |
+| `'arrow-table'`             | Arrow table                |
 
 ## Options
 
 | Option              | Type                                       | Default     | Description                                                    |
 | ------------------- | ------------------------------------------ | ----------- | -------------------------------------------------------------- |
-| `mlt.shape`         | `'geojson-table' \| 'binary-geometry'` | `geojson-table` | Output shape: GeoJSON table or binary geometry |
+| `mlt.shape`         | `'geojson-table' \| 'binary-geometry' \| 'arrow-table'` | `geojson-table` | Output shape |
+| `geoarrow.encodingPreference` | `'geoarrow.wkb' \| 'geoarrow.geometry' \| 'optimized'` | `geoarrow.wkb` for Arrow output | Arrow geometry encoding preference |
 | `mlt.coordinates`   | `'local' \| 'wgs84'`                       | `local`     | Coordinate system for returned geometries                      |
 | `mlt.tileIndex`     | `{x: number, y: number, z: number}`        | N/A         | Required when `coordinates` is `wgs84`                         |
 | `mlt.layerProperty` | `string`                                   | `layerName` | Name of layer property added to feature properties             |
 | `mlt.layers`        | `string[]`                                 | N/A         | Restrict parsing to specific tile layers                       |
 
 `mlt.tileIndex` is required for WGS84 output.
+
+When `mlt.shape` is `'arrow-table'`, the decoder writes directly from MLT's decoded geometry and
+property columns. It does not materialize an intermediate GeoJSON feature collection. Use
+`geoarrow.encodingPreference` to select WKB, dense-union GeoArrow, or the optimized native
+GeoArrow encoding.
 
 ## Additional examples
 

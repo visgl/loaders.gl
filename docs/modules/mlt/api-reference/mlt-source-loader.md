@@ -45,7 +45,7 @@ The `MLTSourceLoader` dynamically loads MapLibre Tile (`.mlt`) data from URL bas
 | File Extension | `.mlt`                                         |
 | File Type      | Binary Archive                                 |
 | File Format    | [MapLibre Tile](/docs/modules/mlt/formats/mlt) |
-| Data Format    | GeoJSON                                        |
+| Data Format    | GeoJSON, binary geometry, or Arrow            |
 
 ## Usage
 
@@ -70,7 +70,8 @@ const features = await source.getTile({x: 0, y: 0, z: 0});
 | `mlt.extension`   | `string`                                  | `.mlt`            | Tile URL extension.                                                |
 | `mlt.metadataUrl` | `string \| null`                          | `null`            | Optional metadata URL override (`tile.json` by default is not assumed). |
 | `mlt.coordinates` | `'wgs84' \| 'local'`                      | `wgs84`           | Coordinates output from parsed tiles.                              |
-| `mlt.shape`       | `'geojson-table' \| 'binary-geometry'`    | `geojson-table`   | Returned geometry shape.                                           |
+| `mlt.shape`       | `'geojson-table' \| 'binary-geometry' \| 'arrow-table'` | `geojson-table` | Returned geometry shape. |
+| `geoarrow.encodingPreference` | `'geoarrow.wkb' \| 'geoarrow.geometry' \| 'optimized'` | `geoarrow.wkb` for Arrow output | Arrow geometry encoding preference. |
 | `mlt.layers`      | `string[]`                                | `N/A`             | Optional layer filter before decoding geometry.                    |
 
 ## Additional references

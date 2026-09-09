@@ -12,7 +12,7 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
 <DocPageHeader
   eyebrow="Binary vector-tile format"
   title="Put a tile’s geometry and attributes on one path."
-  description="MapLibre Tile (MLT) is a compact binary tile format for feature tables addressed by a tile coordinate. loaders.gl decodes its named tables into reusable GeoJSON or binary geometry data."
+  description="MapLibre Tile (MLT) is a compact binary tile format for feature tables addressed by a tile coordinate. loaders.gl decodes its named tables into reusable GeoJSON, binary geometry, or Arrow data."
   tone="cyan"
   meta={['MapLibre Tile', 'Binary geometry', 'Feature tables']}
   links={[
@@ -31,7 +31,7 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
   items={[
     {label: 'Address', value: 'Z/X/Y tile coordinates'},
     {label: 'Decode', value: 'Named feature tables and geometry families'},
-    {label: 'Choose', value: 'GeoJSON tables or binary geometry output'},
+    {label: 'Choose', value: 'GeoJSON, binary geometry, or Arrow output'},
     {label: 'Continue', value: 'Render, analyze, or pass data to another stage'}
   ]}
 />
@@ -45,7 +45,8 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
 A MapLibre Tile (MLT) file is a binary geospatial tile format used by vector tile services and tooling.
 
 The format stores one or more named feature tables, each containing geometry and attributes for a tile.
-`MLTLoader` decodes these tables into GeoJSON tables, or binary geometry data when `shape: 'binary-geometry'` is selected.
+`MLTLoader` can decode these tables into GeoJSON, binary geometry, or Arrow. Arrow output is built
+directly from MLT's decoded column vectors without an intermediate GeoJSON conversion.
 
 <ReferenceBoundary
   title="MLT structure and compatibility"

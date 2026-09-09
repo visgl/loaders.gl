@@ -9,13 +9,21 @@ import type {
   GetTileParameters,
   GetTileDataParameters
 } from '@loaders.gl/loader-utils';
-import type {ArrowTable, BinaryFeatureCollection, Feature, Schema} from '@loaders.gl/schema';
+import type {
+  ArrowTable,
+  BinaryFeatureCollection,
+  Feature,
+  Schema,
+  GeoArrowEncodingPreference
+} from '@loaders.gl/schema';
 import {TileSourceMetadata, DataSource, DataSourceOptions} from '@loaders.gl/loader-utils';
 import {MLTLoaderWithParser} from './mlt-loader-with-parser';
 import type {MLTLoaderOptions} from './mlt-loader';
 import {MLTFormat} from './mlt-format';
 
 export type MLTSourceLoaderOptions = DataSourceOptions & {
+  /** Preferred encoding for Arrow geometry output. */
+  geoarrow?: {encodingPreference?: GeoArrowEncodingPreference};
   mlt?: {
     /** Optional metadata URL. */
     metadataUrl?: string | null;
@@ -189,7 +197,8 @@ export class MLTTileSource
         coordinates,
         layers: options.mlt?.layers,
         tileIndex
-      }
+      },
+      geoarrow: options.geoarrow ?? (this.loadOptions as MLTLoaderOptions).geoarrow
     };
 
     const parsed = await MLTLoaderWithParser.parse(arrayBuffer, loadOptions);

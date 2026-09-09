@@ -114,6 +114,101 @@ describe('parseMLT', () => {
     expect(arrow.schema).toBeDefined();
   });
 
+  test('builds Arrow directly from MLT column vectors without materializing GeoJSON features', () => {
+    const geometries = [
+      [[{x: 0, y: 0}]],
+      [
+        [
+          {x: 0, y: 0},
+          {x: 4, y: 4}
+        ]
+      ],
+      [
+        [
+          {x: 0, y: 0},
+          {x: 4, y: 0},
+          {x: 4, y: 4},
+          {x: 0, y: 0}
+        ]
+      ],
+      [[{x: 0, y: 0}], [{x: 4, y: 4}]],
+      [
+        [
+          {x: 0, y: 0},
+          {x: 4, y: 4}
+        ],
+        [
+          {x: 4, y: 0},
+          {x: 0, y: 4}
+        ]
+      ],
+      [
+        [
+          {x: 0, y: 0},
+          {x: 4, y: 0},
+          {x: 4, y: 4},
+          {x: 0, y: 0}
+        ],
+        [
+          {x: 1, y: 1},
+          {x: 2, y: 1},
+          {x: 1, y: 1}
+        ]
+      ]
+    ];
+    const getFeaturesMock = vi.fn();
+    decodeTileMock.mockReturnValue([
+      {
+        name: 'all-geometries',
+        extent: 4,
+        geometryVector: {
+          numGeometries: geometries.length,
+          geometryType: (index: number) => index,
+          getGeometries: () => geometries
+        },
+        propertyVectors: [{name: 'kind', getValue: (index: number) => `feature-${index}`}],
+        getFeatures: getFeaturesMock
+      }
+    ] as any);
+
+    const result = parseMLT(new Uint8Array([1]).buffer, {
+      mlt: {shape: 'arrow-table', coordinates: 'local'}
+    }) as any;
+
+    expect(getFeaturesMock).not.toHaveBeenCalled();
+    expect(result.data.numRows).toBe(6);
+    expect(result.data.getChild('kind')?.get(0)).toBe('feature-0');
+    expect(result.data.getChild('geometry')?.length).toBe(6);
+    expect(result.schema.metadata?.geo).toContain('geometry');
+  });
+
+  test('honors native GeoArrow output preferences without GeoJSON conversion', () => {
+    const getFeaturesMock = vi.fn();
+    decodeTileMock.mockReturnValue([
+      {
+        name: 'points',
+        extent: 4,
+        geometryVector: {
+          numGeometries: 2,
+          geometryType: () => 0,
+          getGeometries: () => [[[{x: 0, y: 0}]], [[{x: 4, y: 4}]]]
+        },
+        getFeatures: getFeaturesMock
+      }
+    ] as any);
+
+    const result = parseMLT(new Uint8Array([1]).buffer, {
+      geoarrow: {encodingPreference: 'optimized'},
+      mlt: {shape: 'arrow-table', coordinates: 'local'}
+    }) as any;
+
+    expect(getFeaturesMock).not.toHaveBeenCalled();
+    expect(result.data.schema.fields.at(-1).metadata.get('ARROW:extension:name')).toBe(
+      'geoarrow.point'
+    );
+    expect(result.data.numRows).toBe(2);
+  });
+
   test('rejects unsupported output shapes and WGS84 options without a tile index', () => {
     expect(() => parseMLT(new ArrayBuffer(0), {mlt: {shape: 'unsupported'}} as any)).toThrow(
       'unsupported'
