@@ -51,7 +51,9 @@ export const STACSourceLoader = {
     }
   },
   testURL: (url: string): boolean =>
-    /(?:^|[/_.-])stac(?:[/_.?#-]|$)|\/(?:catalog|collection)\.json(?:$|[?#])/i.test(url),
+    /(?:^|[/_.-])(?:stac|portolan)(?:[/_.?#-]|$)|\/(?:catalog|collection)\.json(?:$|[?#])/i.test(
+      url
+    ),
   preload: preloadSTACSourceLoader,
   createDataSource(
     _data: string | Blob,

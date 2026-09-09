@@ -47,9 +47,29 @@ function getLoadableWorkerURLFromURL(url: string): string {
     return url;
   }
 
+  // Same-origin absolute URLs can also be initialized directly. Wrapping one
+  // in a Blob worker changes the request origin to an opaque origin, which
+  // requires CORS even when the script is served by the current host.
+  if (isSameOrigin(url)) {
+    return url;
+  }
+
   // A remote script, we need to use `importScripts` to load from different origin
   const workerSource = buildScriptSource(url);
   return getLoadableWorkerURLFromSource(workerSource);
+}
+
+/** Returns whether a worker URL is served by the current browser origin. */
+function isSameOrigin(url: string): boolean {
+  if (typeof location === 'undefined') {
+    return false;
+  }
+
+  try {
+    return new URL(url, location.href).origin === location.origin;
+  } catch {
+    return false;
+  }
 }
 
 /**

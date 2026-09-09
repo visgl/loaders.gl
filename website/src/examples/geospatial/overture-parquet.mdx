@@ -13,6 +13,8 @@ import {ParquetScanLiveExample} from '@site/src/components/docs/parquet-scan-liv
     [**`ParquetDatasetSource`**](/docs/modules/parquet/api-reference/parquet-source-loader#multi-file-datasets) combines live STAC discovery, selective GeoParquet range reads, Arrow batches, and deck.gl rendering without a server-side query runtime.
 
     Overture's ZSTD pages decode in the Parquet source worker using native `DecompressionStream` support when available and a lightweight JavaScript fallback otherwise.
+
+    The panel inspects the Overture STAC hierarchy and shows its declared Portolan profile version when one is present.
   </ClientExample>
 </div>
 

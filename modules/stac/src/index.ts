@@ -4,6 +4,12 @@
 
 export {STACSourceLoader} from './stac-source-loader-types';
 export type {STACSourceLoaderOptions} from './stac-source-loader-types';
+export {
+  PORTOLAN_EXTENSION_URL_PREFIX,
+  getPortolanExtension,
+  getPortolanVersion,
+  isPortolanObject
+} from './portolan-extension';
 export type {
   STACAsset,
   STACAssetSelection,
