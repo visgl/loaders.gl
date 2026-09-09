@@ -214,6 +214,93 @@ describe('parseMLT', () => {
     expect(result.data.numRows).toBe(2);
   });
 
+  test('covers native GeoArrow geometry encodings and optimized selection', () => {
+    const geometryCoordinates = [
+      [[{x: 0, y: 0}]],
+      [
+        [
+          {x: 0, y: 0},
+          {x: 4, y: 4}
+        ]
+      ],
+      [
+        [
+          {x: 0, y: 0},
+          {x: 4, y: 4}
+        ]
+      ],
+      [
+        [
+          {x: 0, y: 0},
+          {x: 4, y: 4}
+        ],
+        [
+          {x: 4, y: 0},
+          {x: 0, y: 4}
+        ]
+      ],
+      [
+        [
+          {x: 0, y: 0},
+          {x: 4, y: 4},
+          {x: 0, y: 0}
+        ]
+      ],
+      [
+        [
+          {x: 0, y: 0},
+          {x: 4, y: 4},
+          {x: 0, y: 0}
+        ]
+      ]
+    ];
+
+    const parseNative = (geometryTypes: number[], encodingPreference = 'optimized') => {
+      decodeTileMock.mockReturnValue([
+        {
+          name: 'native',
+          extent: 4,
+          geometryVector: {
+            numGeometries: geometryTypes.length,
+            geometryType: (index: number) => geometryTypes[index],
+            getGeometries: () =>
+              geometryTypes.map(geometryType => geometryCoordinates[geometryType])
+          },
+          propertyVectors: [
+            {name: 'missing', getValue: () => null},
+            {name: 'object', getValue: () => ({nested: true})}
+          ],
+          getFeatures: () => []
+        }
+      ] as any);
+
+      return parseMLT(new Uint8Array([1]).buffer, {
+        geoarrow: {encodingPreference: encodingPreference as any},
+        mlt: {shape: 'arrow-table', coordinates: 'local'}
+      }) as any;
+    };
+
+    for (const geometryType of [0, 1, 2, 3, 4, 5]) {
+      const result = parseNative([geometryType]);
+      expect(result.data.numRows).toBe(1);
+      expect(result.data.getChild('missing')?.get(0)).toBeNull();
+      expect(result.data.getChild('object')?.get(0)).toBe('{"nested":true}');
+    }
+
+    expect(parseNative([0, 3]).data.schema.fields.at(-1).metadata.get('ARROW:extension:name')).toBe(
+      'geoarrow.multipoint'
+    );
+    expect(parseNative([1, 4]).data.schema.fields.at(-1).metadata.get('ARROW:extension:name')).toBe(
+      'geoarrow.multilinestring'
+    );
+    expect(parseNative([2, 5]).data.schema.fields.at(-1).metadata.get('ARROW:extension:name')).toBe(
+      'geoarrow.multipolygon'
+    );
+    expect(parseNative([0, 1]).data.schema.fields.at(-1).metadata.get('ARROW:extension:name')).toBe(
+      'geoarrow.geometry'
+    );
+  });
+
   test('keeps dense GeoArrow union children stable across geometry-only tiles', () => {
     const parseGeometryTile = (geometryType: number) => {
       decodeTileMock.mockReturnValue([
