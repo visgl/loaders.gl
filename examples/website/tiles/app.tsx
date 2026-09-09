@@ -14,7 +14,8 @@ import {GeoJSONLoader} from '@loaders.gl/json';
 
 import DeckGL from '@deck.gl/react';
 import {MapView} from '@deck.gl/core';
-import {ColumnPanel, CustomPanel, SidebarWidget} from '@deck.gl-community/widgets';
+import {ColumnPanel, CustomPanel} from '@deck.gl-community/panels';
+import {SidebarPanelWidget} from '@deck.gl-community/widgets';
 import {SourceLayer} from '@loaders.gl/deck-layers';
 import {createDeckFullscreenWidget, createDeckStatsWidget} from '../shared/create-deck-stats-widget';
 import {
@@ -163,7 +164,7 @@ export default function App(props: AppProps = {}) {
     return [
       createDeckFullscreenWidget('tiles-fullscreen'),
       createDeckStatsWidget('tiles-stats'),
-      new SidebarWidget({
+      new SidebarPanelWidget({
         id: 'tiles-example-sidebar',
         placement: 'top-right',
         side: 'right',

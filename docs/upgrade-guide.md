@@ -44,21 +44,15 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
 
 ## Upgrading to v4.5
 
-v4.5 is additive. Existing loaders and defaults continue to work unchanged.
+v4.5 is additive. Existing loaders and defaults continue to work unchanged, except for the explicit installation requirement for the experimental texture writer noted below.
 
 **@loaders.gl/splats**
 
-- Install the new experimental package with `npm install @loaders.gl/splats` and load SPLAT, KSPLAT, SPZ, or RAD data through its exported loaders.
-- SPZ and compressed RAD data require an application-provided `zstd-codec` module; pass it through `options.modules`.
+- SPZ decoding requires an application-provided `zstd-codec` module passed through `options.modules`. RAD gzip chunks are decompressed internally and do not require `zstd-codec`.
 
-**@loaders.gl/parquet**
+**@loaders.gl/textures**
 
-- `ParquetLoader` and the deprecated Parquet JSON aliases retain their existing behavior.
-- To opt into the TypeScript parser, import `ParquetJSLoader` from `@loaders.gl/parquet` or `@loaders.gl/parquet/parquet-js-loader`.
-
-**@loaders.gl/gltf**
-
-- No migration is required. `GLTFLoader` now handles per-texture UV transforms and selects AVIF texture sources when the active image decoder supports them.
+- `@loaders.gl/textures` no longer installs the deprecated `texture-compressor` package for every consumer. Applications that use the experimental `CompressedTextureWriter` must install `texture-compressor` explicitly. The CLI is invoked with `npx --no`, so it is never downloaded on demand; all other loaders and writers are unaffected.
 
 ## Upgrading to v5.0
 
@@ -104,9 +98,15 @@ See [Caching and memory](/docs/modules/3d-tiles/concepts/caching-and-memory) for
 
 **@loaders.gl/mlt**
 
-- `MLTLoader` and `MLTSourceLoader` now return an Arrow table with WKB-compatible GeoArrow geometry by
-  default. Applications that expect the previous GeoJSON table default must set
-  `mlt.shape: 'geojson-table'` explicitly. `binary-geometry` remains available as an explicit shape.
+ - `MLTLoader` and `MLTSourceLoader` now return an Arrow table with WKB-compatible GeoArrow geometry by
+   default. Applications that expect the previous GeoJSON table default must set
+   `mlt.shape: 'geojson-table'` explicitly. `binary-geometry` remains available as an explicit shape.
+
+**@loaders.gl/pmtiles**
+
+ - PMTiles v3 archives with MapLibre Tile (MLT) payloads are supported through `@loaders.gl/mlt`.
+ - The `pmtiles.shape: 'columnar-table'` option remains supported for MVT archives only. Passing it
+   for an MLT archive now throws; use `geojson-table`, `binary-geometry`, or `arrow-table` instead.
 
 **@loaders.gl/compression**
 

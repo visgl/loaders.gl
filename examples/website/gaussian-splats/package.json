@@ -10,15 +10,15 @@
     "serve": "vite preview"
   },
   "dependencies": {
-    "@deck.gl/core": "^9.3.0",
-    "@deck.gl/react": "^9.3.0",
-    "@deck.gl/widgets": "^9.3.0",
+    "@deck.gl/core": "^9.4.0",
+    "@deck.gl/react": "^9.4.0",
+    "@deck.gl/widgets": "^9.4.0",
     "@loaders.gl/core": "workspace:*",
     "@loaders.gl/deck-layers": "workspace:*",
     "@loaders.gl/ply": "workspace:*",
     "@loaders.gl/schema": "workspace:*",
-    "@luma.gl/core": "^9.3.2",
-    "@luma.gl/webgpu": "^9.3.2",
+    "@luma.gl/core": "^9.4.0",
+    "@luma.gl/webgpu": "^9.4.0",
     "react": "^19.2.5",
     "react-dom": "^19.2.5"
   },

@@ -44,6 +44,7 @@ async function parseFileAsPMTiles(
   const {layers = []} = tilejson;
   switch (tileMIMEType) {
     case 'application/vnd.mapbox-vector-tile':
+    case 'application/vnd.maplibre-tile':
       return {
         shape: 'vector-source',
         layers: layers.map(layer => ({name: layer.name, schema: layer.schema})),

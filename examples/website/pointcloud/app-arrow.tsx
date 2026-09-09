@@ -15,7 +15,8 @@ import {
   type OrbitViewState
 } from '@deck.gl/core';
 import {PointCloudLayer} from '@deck.gl/layers';
-import {ColumnPanel, CustomPanel, SidebarWidget} from '@deck.gl-community/widgets';
+import {ColumnPanel, CustomPanel} from '@deck.gl-community/panels';
+import {SidebarPanelWidget} from '@deck.gl-community/widgets';
 
 import {load} from '@loaders.gl/core';
 import {getDeckBinaryDataFromArrowMesh, getBoundingBoxFromArrowPositions} from '@loaders.gl/geoarrow';
@@ -131,7 +132,7 @@ export default function App(props: AppProps = {}) {
     () => [
       createDeckFullscreenWidget('pointcloud-arrow-fullscreen'),
       createDeckStatsWidget('pointcloud-arrow-stats'),
-      new SidebarWidget({
+      new SidebarPanelWidget({
         id: 'pointcloud-arrow-example-sidebar',
         placement: 'top-right',
         side: 'right',

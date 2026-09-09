@@ -63,10 +63,10 @@
     "@loaders.gl/las": "5.0.0-alpha.5",
     "@loaders.gl/schema": "5.0.0-alpha.5",
     "@loaders.gl/schema-utils": "5.0.0-alpha.5",
-    "@math.gl/core": "5.0.0-alpha.4",
-    "@math.gl/crs": "5.0.0-alpha.4",
-    "@math.gl/geometry-utils": "5.0.0-alpha.4",
-    "@math.gl/proj4": "5.0.0-alpha.4",
+    "@math.gl/core": "5.0.0-alpha.5",
+    "@math.gl/crs": "5.0.0-alpha.5",
+    "@math.gl/geometry-utils": "5.0.0-alpha.5",
+    "@math.gl/proj4": "5.0.0-alpha.5",
     "zod": "^4.1.12"
   },
   "peerDependencies": {

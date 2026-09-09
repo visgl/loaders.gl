@@ -14,6 +14,6 @@ export const PMTilesFormat = {
   encoding: 'binary',
   format: 'pmtiles',
   extensions: ['pmtiles'],
-  mimeTypes: ['application/octet-stream'],
+  mimeTypes: ['application/vnd.pmtiles', 'application/octet-stream'],
   tests: ['PMTiles']
 } as const satisfies Format;

@@ -11,11 +11,11 @@
     "serve": "vite preview"
   },
   "dependencies": {
-    "@deck.gl/core": "^9.3.0",
-    "@deck.gl/widgets": "^9.3.0",
+    "@deck.gl/core": "^9.4.0",
+    "@deck.gl/widgets": "^9.4.0",
     "@loaders.gl/core": "workspace:*",
     "@loaders.gl/i3s": "workspace:*",
-    "@luma.gl/core": "^9.3.2",
+    "@luma.gl/core": "^9.4.0",
     "mapbox-gl": "npm:maplibre-gl@^3.6.2",
     "maplibre-gl": "^3.6.2",
     "prop-types": "^15.7.2",

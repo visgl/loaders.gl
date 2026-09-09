@@ -584,7 +584,7 @@ export class SplatEngine {
         size: COUNT_BUFFER_BYTE_LENGTH
       });
     }
-    this.device.submit(commandEncoder.finish({id: 'splat-compute-command-buffer'}));
+    this.device.submit(commandEncoder.finish());
 
     if (shouldReadCounts) {
       this.updateCountReadback();

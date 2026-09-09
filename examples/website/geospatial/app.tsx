@@ -11,7 +11,8 @@ import maplibregl from 'maplibre-gl';
 import {DeckGL} from '@deck.gl/react';
 import {MapController} from '@deck.gl/core';
 import {GeoJsonLayer} from '@deck.gl/layers';
-import {ColumnPanel, CustomPanel, SidebarWidget} from '@deck.gl-community/widgets';
+import {ColumnPanel, CustomPanel} from '@deck.gl-community/panels';
+import {SidebarPanelWidget} from '@deck.gl-community/widgets';
 import {GeoArrowLayer} from '@loaders.gl/deck-layers';
 import {createDeckFullscreenWidget, createDeckStatsWidget} from '../shared/create-deck-stats-widget';
 import {
@@ -234,7 +235,7 @@ export default function App(props: AppProps = {}) {
     return [
       createDeckFullscreenWidget('geospatial-fullscreen'),
       createDeckStatsWidget('geospatial-stats'),
-      new SidebarWidget({
+      new SidebarPanelWidget({
         id: 'geospatial-example-sidebar',
         placement: 'top-right',
         side: 'right',
