@@ -2,6 +2,11 @@
 
 ## v4.5
 
+### v4.5.1
+
+- Bump lerna version in 4.5-release branch (#3975)
+- Backport indexed Arrow views and public exports to 4.5 (#3973)
+
 ### v4.5.0
 
 - feat(splats): add SPLAT, KSPLAT, SPZ, RAD, and RAD source loaders
