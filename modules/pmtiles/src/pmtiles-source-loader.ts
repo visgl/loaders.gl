@@ -16,6 +16,7 @@ import type {
 } from '@loaders.gl/loader-utils';
 import {DataSource, DataSourceOptions, resolvePath} from '@loaders.gl/loader-utils';
 import {ImageBitmapLoader, ImageBitmapLoaderOptions} from '@loaders.gl/images';
+import {MLTLoader, MLTLoaderOptions} from '@loaders.gl/mlt';
 import {MVTLoader, MVTLoaderOptions, TileJSONLoaderOptions} from '@loaders.gl/mvt';
 import {PMTilesFormat} from './pmtiles-format';
 
@@ -39,7 +40,10 @@ export type PMTilesSourceLoaderOptions = DataSourceOptions & {
   /** Preferred encoding for Arrow geometry output. */
   geoarrow?: {encodingPreference?: GeoArrowEncodingPreference};
   core?: DataSourceOptions['core'] & {
-    loadOptions?: TileJSONLoaderOptions & MVTLoaderOptions & ImageBitmapLoaderOptions;
+    loadOptions?: TileJSONLoaderOptions &
+      MLTLoaderOptions &
+      MVTLoaderOptions &
+      ImageBitmapLoaderOptions;
   };
   pmtiles?: {
     /** Shape of returned vector tile data. */
@@ -162,6 +166,7 @@ export class PMTilesTileSource
     const metadata = await this.metadata;
     switch (metadata.tileMIMEType) {
       case 'application/vnd.mapbox-vector-tile':
+      case 'application/vnd.maplibre-tile':
         return await this.getVectorTile({x, y, z, layers: []});
       default:
         return await this.getImageTile({x, y, z, layers: []});
@@ -189,6 +194,34 @@ export class PMTilesTileSource
 
   async getVectorTile(tileParams: GetTileParameters): Promise<VectorTile | null> {
     const arrayBuffer = await this.getTile(tileParams);
+    const metadata = this.metadata ? await this.metadata : undefined;
+    const tileMIMEType = this.mimeType || metadata?.tileMIMEType;
+
+    if (tileMIMEType === 'application/vnd.maplibre-tile') {
+      const inheritedMLTOptions = (this.loadOptions as MLTLoaderOptions)?.mlt;
+      const loadOptions: MLTLoaderOptions = {
+        ...this.loadOptions,
+        mlt: {
+          ...inheritedMLTOptions,
+          shape:
+            normalizeMLTShape(this.options.pmtiles?.shape) ||
+            inheritedMLTOptions?.shape ||
+            'geojson-table',
+          coordinates: 'wgs84',
+          tileIndex: {x: tileParams.x, y: tileParams.y, z: tileParams.z},
+          layers: normalizeTileLayers(tileParams.layers) || inheritedMLTOptions?.layers,
+          geoarrow:
+            (this.options as PMTilesSourceLoaderOptions).geoarrow ||
+            this.options.pmtiles?.geoarrow ||
+            inheritedMLTOptions?.geoarrow
+        }
+      };
+
+      return arrayBuffer
+        ? ((await this.coreApi.parse(arrayBuffer, MLTLoader, loadOptions)) as VectorTile)
+        : null;
+    }
+
     const inheritedMVTOptions = (this.loadOptions as MVTLoaderOptions)?.mvt;
     const selectedLayers = normalizeTileLayers(tileParams.layers) || inheritedMVTOptions?.layers;
     const loadOptions: MVTLoaderOptions = {
@@ -258,6 +291,13 @@ export class PMTilesTileSource
 function normalizeTileLayers(layers?: string | string[]): string[] | undefined {
   const normalizedLayers = typeof layers === 'string' ? [layers] : layers;
   return normalizedLayers?.length ? normalizedLayers : undefined;
+}
+
+/** Maps the shared PMTiles shape options to shapes supported by the MLT decoder. */
+function normalizeMLTShape(
+  shape?: NonNullable<PMTilesSourceLoaderOptions['pmtiles']>['shape']
+): NonNullable<MLTLoaderOptions['mlt']>['shape'] | undefined {
+  return shape === 'columnar-table' ? 'geojson-table' : shape;
 }
 
 type PendingTileRequest = {

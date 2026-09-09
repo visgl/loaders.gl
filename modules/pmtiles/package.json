@@ -56,9 +56,10 @@
   "dependencies": {
     "@loaders.gl/images": "5.0.0-alpha.5",
     "@loaders.gl/loader-utils": "5.0.0-alpha.5",
+    "@loaders.gl/mlt": "5.0.0-alpha.5",
     "@loaders.gl/mvt": "5.0.0-alpha.5",
     "@loaders.gl/schema": "5.0.0-alpha.5",
-    "pmtiles": "^4.4.1"
+    "pmtiles": "^4.5.0"
   },
   "peerDependencies": {
     "@loaders.gl/core": "~5.0.0-alpha.0"

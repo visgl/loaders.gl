@@ -18,6 +18,7 @@ export type PMTilesMetadata = {
   /** MIME type for tile contents. Unknown tile types will return 'application/octet-stream */
   tileMIMEType:
     | 'application/vnd.mapbox-vector-tile'
+    | 'application/vnd.maplibre-tile'
     | 'image/png'
     | 'image/jpeg'
     | 'image/webp'
@@ -123,6 +124,7 @@ function decodeTileType(
   tileType: pmtiles.TileType
 ):
   | 'application/vnd.mapbox-vector-tile'
+  | 'application/vnd.maplibre-tile'
   | 'image/png'
   | 'image/jpeg'
   | 'image/webp'
@@ -131,6 +133,8 @@ function decodeTileType(
   switch (tileType) {
     case TileType.Mvt:
       return 'application/vnd.mapbox-vector-tile';
+    case TileType.Mlt:
+      return 'application/vnd.maplibre-tile';
     case TileType.Png:
       return 'image/png';
     case TileType.Jpeg:

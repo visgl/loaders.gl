@@ -5588,7 +5588,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@loaders.gl/mlt@workspace:*, @loaders.gl/mlt@workspace:modules/mlt":
+"@loaders.gl/mlt@npm:5.0.0-alpha.5, @loaders.gl/mlt@workspace:*, @loaders.gl/mlt@workspace:modules/mlt":
   version: 0.0.0-use.local
   resolution: "@loaders.gl/mlt@workspace:modules/mlt"
   dependencies:
@@ -5719,9 +5719,10 @@ __metadata:
   dependencies:
     "@loaders.gl/images": "npm:5.0.0-alpha.5"
     "@loaders.gl/loader-utils": "npm:5.0.0-alpha.5"
+    "@loaders.gl/mlt": "npm:5.0.0-alpha.5"
     "@loaders.gl/mvt": "npm:5.0.0-alpha.5"
     "@loaders.gl/schema": "npm:5.0.0-alpha.5"
-    pmtiles: "npm:^4.4.1"
+    pmtiles: "npm:^4.5.0"
   peerDependencies:
     "@loaders.gl/core": ~5.0.0-alpha.0
   languageName: unknown
@@ -26929,12 +26930,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"pmtiles@npm:^4.4.1":
-  version: 4.4.1
-  resolution: "pmtiles@npm:4.4.1"
+"pmtiles@npm:^4.5.0":
+  version: 4.5.0
+  resolution: "pmtiles@npm:4.5.0"
   dependencies:
     fflate: "npm:^0.8.2"
-  checksum: 10c0/39a14d9ce64230ddf3586d1c402375c42c5234095915a649fb14800a95155953f13315974f181faf53e6a3e0c55d86003e281482f5e10c56565018b065ba457e
+  checksum: 10c0/4f698991c1ace17447567e05f5793f9f192f085377cb1ba94e85e67461a01848096b6cf72972479abb698e171f3e8b61547d3d7a309f7cfa3ece2d545c618dc0
   languageName: node
   linkType: hard
 
