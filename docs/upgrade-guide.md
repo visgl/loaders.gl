@@ -96,6 +96,12 @@ See [Caching and memory](/docs/modules/3d-tiles/concepts/caching-and-memory) for
 - `load(url, SomeSourceLoader)` now returns the runtime `DataSource` instance created by that source loader instead of metadata or parsed payloads.
 - `parse()` and `parseSync()` no longer accept source loaders. Use `load()` for source loaders and keep `parse()` for parser loaders.
 
+**@loaders.gl/pmtiles**
+
+- PMTiles v3 archives with MapLibre Tile (MLT) payloads are supported through `@loaders.gl/mlt`.
+- The `pmtiles.shape: 'columnar-table'` option remains supported for MVT archives only. Passing it
+  for an MLT archive now throws; use `geojson-table`, `binary-geometry`, or `arrow-table` instead.
+
 **@loaders.gl/compression**
 
 - The compression package root now exports lightweight, library-neutral classes such as

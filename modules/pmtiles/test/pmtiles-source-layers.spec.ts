@@ -5,7 +5,9 @@
 import {afterEach, describe, expect, test, vi} from 'vitest';
 import type {Header} from 'pmtiles';
 import type {CoreAPI} from '@loaders.gl/loader-utils';
+import {MLTLoader} from '@loaders.gl/mlt';
 import type {MVTLoaderOptions} from '@loaders.gl/mvt';
+import {MVTLoader} from '@loaders.gl/mvt';
 import {PMTilesTileSource} from '../src/pmtiles-source-loader';
 
 /** Creates a valid compact PMTiles header for source metadata tests. */
@@ -46,11 +48,13 @@ afterEach(() => {
 
 test('PMTilesTileSource#getVectorTile forwards requested layers to the decoder', async () => {
   const receivedOptions: MVTLoaderOptions[] = [];
+  const receivedLoaders: unknown[] = [];
   const source = Object.assign(Object.create(PMTilesTileSource.prototype), {
     options: {pmtiles: {shape: 'arrow-table'}},
     loadOptions: {mvt: {layerProperty: 'sourceLayer', layers: ['fallback']}},
     coreApi: {
-      async parse(_data: unknown, _loaders: unknown, options: MVTLoaderOptions) {
+      async parse(_data: unknown, loaders: unknown, options: MVTLoaderOptions) {
+        receivedLoaders.push(loaders);
         receivedOptions.push(options);
         return {shape: 'arrow-table'};
       }
@@ -71,6 +75,57 @@ test('PMTilesTileSource#getVectorTile forwards requested layers to the decoder',
     layers: ['roads']
   });
   expect(receivedOptions[1].mvt?.layers).toEqual(['fallback']);
+  expect(receivedLoaders).toEqual([MVTLoader, MVTLoader]);
+});
+
+test('PMTilesTileSource#getVectorTile uses the MLT decoder for MLT archives', async () => {
+  let receivedLoader: unknown;
+  let receivedOptions: unknown;
+  const source = Object.assign(Object.create(PMTilesTileSource.prototype), {
+    options: {pmtiles: {shape: 'arrow-table'}},
+    loadOptions: {mlt: {layers: ['fallback']}},
+    mimeType: null,
+    metadata: Promise.resolve({tileMIMEType: 'application/vnd.maplibre-tile'}),
+    coreApi: {
+      async parse(_data: unknown, loaders: unknown, options: unknown) {
+        receivedLoader = loaders;
+        receivedOptions = options;
+        return {shape: 'arrow-table'};
+      }
+    } as unknown as CoreAPI,
+    async getTile() {
+      return new ArrayBuffer(1);
+    }
+  }) as PMTilesTileSource;
+
+  await source.getVectorTile({x: 2, y: 1, z: 3, layers: ['roads']});
+
+  expect(receivedLoader).toBe(MLTLoader);
+  expect(receivedOptions).toMatchObject({
+    mlt: {
+      shape: 'arrow-table',
+      coordinates: 'wgs84',
+      tileIndex: {x: 2, y: 1, z: 3},
+      layers: ['roads']
+    }
+  });
+});
+
+test('PMTilesTileSource#getVectorTile rejects columnar-table output for MLT archives', async () => {
+  const source = Object.assign(Object.create(PMTilesTileSource.prototype), {
+    options: {pmtiles: {shape: 'columnar-table'}},
+    loadOptions: {},
+    mimeType: null,
+    metadata: Promise.resolve({tileMIMEType: 'application/vnd.maplibre-tile'}),
+    coreApi: {} as CoreAPI,
+    async getTile() {
+      return new ArrayBuffer(1);
+    }
+  }) as PMTilesTileSource;
+
+  await expect(source.getVectorTile({x: 2, y: 1, z: 3, layers: ['roads']})).rejects.toThrow(
+    'columnar-table shape is not supported for MLT tiles'
+  );
 });
 
 describe('PMTilesTileSource runtime paths', () => {

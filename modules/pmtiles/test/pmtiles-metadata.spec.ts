@@ -39,8 +39,8 @@ test.each([
   [3, 'image/jpeg'],
   [4, 'image/webp'],
   [5, 'image/avif'],
-  [0, 'application/octet-stream'],
-  [6, 'application/octet-stream']
+  [6, 'application/vnd.maplibre-tile'],
+  [0, 'application/octet-stream']
 ])('parsePMTilesHeader#decodes tile type %s', (tileType, tileMIMEType) => {
   const metadata = parsePMTilesHeader(createHeader(tileType as TileType), null);
 
