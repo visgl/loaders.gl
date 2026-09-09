@@ -21,7 +21,7 @@ jobs:
           - node-version: 22
             full: false
             scope: 'build + node tests'
-          - node-version: 20
+          - node-version: 26
             full: false
             scope: 'build + node tests'
 
