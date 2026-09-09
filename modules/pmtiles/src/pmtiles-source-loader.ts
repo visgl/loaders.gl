@@ -204,7 +204,7 @@ export class PMTilesTileSource
         mlt: {
           ...inheritedMLTOptions,
           shape:
-            normalizeMLTShape(this.options.pmtiles?.shape) ||
+            getMLTShape(this.options.pmtiles?.shape) ||
             inheritedMLTOptions?.shape ||
             'geojson-table',
           coordinates: 'wgs84',
@@ -293,11 +293,14 @@ function normalizeTileLayers(layers?: string | string[]): string[] | undefined {
   return normalizedLayers?.length ? normalizedLayers : undefined;
 }
 
-/** Maps the shared PMTiles shape options to shapes supported by the MLT decoder. */
-function normalizeMLTShape(
+/** Returns a shape supported by the MLT decoder. */
+function getMLTShape(
   shape?: NonNullable<PMTilesSourceLoaderOptions['pmtiles']>['shape']
 ): NonNullable<MLTLoaderOptions['mlt']>['shape'] | undefined {
-  return shape === 'columnar-table' ? 'geojson-table' : shape;
+  if (shape === 'columnar-table') {
+    throw new Error('PMTilesTileSource: columnar-table shape is not supported for MLT tiles');
+  }
+  return shape;
 }
 
 type PendingTileRequest = {

@@ -111,6 +111,23 @@ test('PMTilesTileSource#getVectorTile uses the MLT decoder for MLT archives', as
   });
 });
 
+test('PMTilesTileSource#getVectorTile rejects columnar-table output for MLT archives', async () => {
+  const source = Object.assign(Object.create(PMTilesTileSource.prototype), {
+    options: {pmtiles: {shape: 'columnar-table'}},
+    loadOptions: {},
+    mimeType: null,
+    metadata: Promise.resolve({tileMIMEType: 'application/vnd.maplibre-tile'}),
+    coreApi: {} as CoreAPI,
+    async getTile() {
+      return new ArrayBuffer(1);
+    }
+  }) as PMTilesTileSource;
+
+  await expect(source.getVectorTile({x: 2, y: 1, z: 3, layers: ['roads']})).rejects.toThrow(
+    'columnar-table shape is not supported for MLT tiles'
+  );
+});
+
 describe('PMTilesTileSource runtime paths', () => {
   test('loads schema and normalized metadata', async () => {
     const source = Object.assign(Object.create(PMTilesTileSource.prototype), {
