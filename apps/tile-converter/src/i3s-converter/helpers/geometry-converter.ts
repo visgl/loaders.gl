@@ -1056,7 +1056,7 @@ async function mergeMaterials(
  * @param sourceMaterial - material object
  * @returns I3S material definition and texture
  */
-function convertMaterial(sourceMaterial: GLTFMaterialPostprocessed): I3SMaterialWithTexture {
+export function convertMaterial(sourceMaterial: GLTFMaterialPostprocessed): I3SMaterialWithTexture {
   const material: I3SMaterialDefinition = {
     doubleSided: sourceMaterial.doubleSided,
     emissiveFactor: sourceMaterial.emissiveFactor?.map(c => Math.round(c * 255)) as [
@@ -1069,9 +1069,9 @@ function convertMaterial(sourceMaterial: GLTFMaterialPostprocessed): I3SMaterial
     alphaMode: convertAlphaMode(sourceMaterial.alphaMode),
     pbrMetallicRoughness: {
       roughnessFactor:
-        sourceMaterial?.pbrMetallicRoughness?.roughnessFactor || DEFAULT_ROUGHNESS_FACTOR,
+        sourceMaterial?.pbrMetallicRoughness?.roughnessFactor ?? DEFAULT_ROUGHNESS_FACTOR,
       metallicFactor:
-        sourceMaterial?.pbrMetallicRoughness?.metallicFactor || DEFAULT_METALLIC_FACTOR
+        sourceMaterial?.pbrMetallicRoughness?.metallicFactor ?? DEFAULT_METALLIC_FACTOR
     }
   };
 
@@ -1095,6 +1095,8 @@ function convertMaterial(sourceMaterial: GLTFMaterialPostprocessed): I3SMaterial
     // Should use default baseColorFactor if it is not present in source material
     // https://github.com/KhronosGroup/glTF/tree/master/specification/2.0#reference-pbrmetallicroughness
     const baseColorFactor = sourceMaterial?.pbrMetallicRoughness?.baseColorFactor;
+    // This converter's I3S storage path uses byte-style color values; the I3S loader normalizes
+    // them when creating the glTF-compatible material consumed by deck/luma.
     material.pbrMetallicRoughness.baseColorFactor =
       ((baseColorFactor && baseColorFactor.map(c => Math.round(c * 255))) as [
         number,
