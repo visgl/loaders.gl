@@ -28,7 +28,7 @@
     "website"
   ],
   "engines": {
-    "node": ">=20.18.0"
+    "node": "^22.13.0 || ^24.0.0 || ^26.0.0"
   },
   "scripts": {
     "bootstrap": "ocular-bootstrap",
@@ -72,11 +72,13 @@
   "pre-push": "pre-push",
   "resolutions_notes": [
     "Ensure we use recent typescript",
+    "Align Lerna with master for OIDC trusted publishing through @vis.gl/dev-tools 1.x",
     "apache-arrow version should be aligned with parquet-wasm version"
   ],
   "resolutions": {
     "apache-arrow": "^21.0.0",
     "typescript": "^5.6.0",
+    "lerna": "^10.0.0",
     "@loaders.gl/3d-tiles": "^4.5.0",
     "@loaders.gl/compression": "^4.5.0",
     "@loaders.gl/core": "^4.5.0",
