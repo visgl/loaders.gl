@@ -49,8 +49,9 @@ optional feature ID column, and optional property columns. The tile metadata des
 streams in each column; the streams can be decoded independently and are laid out so that tables can
 be concatenated and accessed efficiently.
 
-`MLTLoader` can decode these tables into GeoJSON, binary geometry, or Arrow. Arrow output is built
-directly from MLT's decoded column vectors without an intermediate GeoJSON conversion.
+`MLTLoader` returns an Arrow table with GeoArrow geometry by default. It can also decode these tables
+into GeoJSON or binary geometry when explicitly requested. Arrow output is built directly from MLT's
+decoded column vectors without an intermediate GeoJSON conversion.
 
 For the normative format description, see the [MapLibre Tile specification](https://maplibre.org/maplibre-tile-spec/specification/)
 and its [encoding definitions](https://maplibre.org/maplibre-tile-spec/encodings/).
@@ -150,7 +151,8 @@ contain a logical type that the current JavaScript decoder or Arrow adapter cann
 
 ## Arrow output choices
 
-Arrow output uses `mlt.shape: 'arrow-table'`. The default geometry column is WKB-compatible GeoArrow.
+Arrow output uses `mlt.shape: 'arrow-table'`, which is the default. The default geometry column is
+WKB-compatible GeoArrow.
 Applications can request native GeoArrow with `geoarrow.encodingPreference`:
 
 | Preference | Result |

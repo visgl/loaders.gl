@@ -56,7 +56,7 @@ export const MLTSourceLoader = {
       extension: '.mlt',
       metadataUrl: null,
       coordinates: 'wgs84',
-      shape: undefined!,
+      shape: 'arrow-table',
       layers: undefined!
     }
   },
@@ -66,7 +66,7 @@ export const MLTSourceLoader = {
       extension: '.mlt',
       metadataUrl: null,
       coordinates: 'wgs84',
-      shape: undefined!,
+      shape: 'arrow-table',
       layers: undefined!
     }
   },
@@ -184,7 +184,7 @@ export class MLTTileSource
   ): Promise<Feature[] | BinaryFeatureCollection | ArrowTable | null> {
     const options: MLTSourceLoaderOptions = this.options;
     const coordinates = options.mlt?.coordinates || 'wgs84';
-    const shape = options.mlt?.shape || 'geojson-table';
+    const shape = options.mlt?.shape || 'arrow-table';
     const tileIndex =
       coordinates === 'wgs84'
         ? {x: tileParameters.x, y: tileParameters.y, z: tileParameters.z}

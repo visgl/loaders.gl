@@ -25,7 +25,7 @@ describe('parseMLT', () => {
   });
 
   test('returns an empty table without decoding an empty tile', () => {
-    const result = parseMLT(new ArrayBuffer(0));
+    const result = parseMLT(new ArrayBuffer(0), {mlt: {shape: 'geojson-table'}});
 
     expect(result).toEqual({shape: 'geojson-table', type: 'FeatureCollection', features: []});
     expect(decodeTileMock).not.toHaveBeenCalled();
@@ -54,7 +54,7 @@ describe('parseMLT', () => {
     ] as any);
 
     const result = parseMLT(new Uint8Array([1]).buffer, {
-      mlt: {layers: ['roads', 'areas'], layerProperty: 'source'}
+      mlt: {shape: 'geojson-table', layers: ['roads', 'areas'], layerProperty: 'source'}
     }) as any;
 
     expect(result.features).toHaveLength(6);
@@ -90,7 +90,9 @@ describe('parseMLT', () => {
       unnamed: {features: [createFeature(0, [[POINTS[0]]])]}
     } as any);
 
-    const result = parseMLT(new Uint8Array([1]).buffer, {mlt: {coordinates: 'local'}}) as any;
+    const result = parseMLT(new Uint8Array([1]).buffer, {
+      mlt: {shape: 'geojson-table', coordinates: 'local'}
+    }) as any;
 
     expect(result.features).toHaveLength(2);
     expect(result.features[0].geometry.coordinates).toEqual([1, 0.5]);
@@ -102,7 +104,9 @@ describe('parseMLT', () => {
       {name: 'points', features: [createFeature(0, [[{x: 0, y: 0}]])]}
     ] as any);
 
-    const options = {mlt: {coordinates: 'wgs84', tileIndex: {x: 1, y: 1, z: 2}}} as any;
+    const options = {
+      mlt: {shape: 'geojson-table', coordinates: 'wgs84', tileIndex: {x: 1, y: 1, z: 2}}
+    } as any;
     const geojson = parseMLT(new Uint8Array([1]).buffer, options) as any;
     expect(geojson.features[0].geometry.coordinates[0]).toBe(-90);
     expect(geojson.features[0].geometry.coordinates[1]).toBeCloseTo(66.513);
@@ -206,7 +210,44 @@ describe('parseMLT', () => {
     expect(result.data.schema.fields.at(-1).metadata.get('ARROW:extension:name')).toBe(
       'geoarrow.point'
     );
+    expect(result.schema?.fields.at(-1)?.name).toBe('geometry');
     expect(result.data.numRows).toBe(2);
+  });
+
+  test('keeps dense GeoArrow union children stable across geometry-only tiles', () => {
+    const parseGeometryTile = (geometryType: number) => {
+      decodeTileMock.mockReturnValue([
+        {
+          name: 'layer',
+          extent: 4,
+          geometryVector: {
+            numGeometries: 1,
+            geometryType: () => geometryType,
+            getGeometries: () => [[[{x: 0, y: 0}]]]
+          }
+        }
+      ] as any);
+
+      return parseMLT(new Uint8Array([1]).buffer, {
+        geoarrow: {encodingPreference: 'geoarrow.geometry'},
+        mlt: {shape: 'arrow-table', coordinates: 'local'}
+      }) as any;
+    };
+
+    const pointTable = parseGeometryTile(0);
+    const polygonTable = parseGeometryTile(2);
+    const getUnionChildren = (table: any) =>
+      table.data.getChild('geometry').type.children.map((field: any) => field.name);
+
+    expect(getUnionChildren(pointTable)).toEqual(getUnionChildren(polygonTable));
+    expect(getUnionChildren(pointTable)).toEqual([
+      'Point',
+      'LineString',
+      'Polygon',
+      'MultiPoint',
+      'MultiLineString',
+      'MultiPolygon'
+    ]);
   });
 
   test('rejects unsupported output shapes and WGS84 options without a tile index', () => {
@@ -232,7 +273,9 @@ describe('parseMLT', () => {
       notAFeatureTable: {name: 'not-a-table'}
     } as any);
 
-    const result = parseMLT(new Uint8Array([1]).buffer) as any;
+    const result = parseMLT(new Uint8Array([1]).buffer, {
+      mlt: {shape: 'geojson-table'}
+    }) as any;
 
     expect(result.features).toEqual([]);
   });

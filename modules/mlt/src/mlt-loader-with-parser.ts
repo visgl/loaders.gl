@@ -33,7 +33,7 @@ export type MLTLoaderOptions = LoaderOptions & {
 
 /** Default options for the MLT loader */
 export const MLT_DEFAULT_OPTIONS = {
-  shape: 'geojson-table' as const,
+  shape: 'arrow-table' as const,
   coordinates: 'local' as const,
   layerProperty: 'layerName' as const
 };

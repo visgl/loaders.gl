@@ -18,15 +18,20 @@ import {parse} from '@loaders.gl/core';
 const response = await fetch('https://example.com/tiles/0/0/0.mlt');
 const arrayBuffer = await response.arrayBuffer();
 
-// Parse as GeoJSON features (local tile coordinates)
-const features = await parse(arrayBuffer, MLTLoader);
+// Parse as an Arrow table with WKB-compatible GeoArrow geometry
+const arrowTable = await parse(arrayBuffer, MLTLoader);
 
-// Parse as GeoJSON features in WGS84 (lng/lat) coordinates
-const featuresWgs84 = await parse(arrayBuffer, MLTLoader, {
+// Parse as an Arrow table with WGS84 (lng/lat) coordinates
+const arrowTableWgs84 = await parse(arrayBuffer, MLTLoader, {
   mlt: {
     coordinates: 'wgs84',
     tileIndex: {x: 0, y: 0, z: 0}
   }
+});
+
+// Opt into the legacy GeoJSON table shape when needed
+const geojsonTable = await parse(arrayBuffer, MLTLoader, {
+  mlt: {shape: 'geojson-table'}
 });
 ```
 
@@ -48,9 +53,9 @@ The MapLibre Tile format is a column-oriented vector tile format that offers:
 
 - Significantly higher compression ratios compared to MVT (up to 6x on large tiles)
 - Optimized decoding performance
-- Support for 3D coordinates (including elevation)
+- Support for the 2D geometry surface exposed by the current JavaScript decoder
 - Advanced encoding (run-length, FastPFor, FSST)
-- Nested properties and complex data types
+- Additional MLT types remain decoder-dependent and are documented in the format reference
 
 ## Attribution
 

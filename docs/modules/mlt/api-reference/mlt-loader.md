@@ -12,9 +12,9 @@ import {LoaderLiveExample} from '@site/src/components/docs/loader-live-example';
 <DocPageHeader
   eyebrow="MLT API · vector tiles"
   title="Decode a compact tile into application data."
-  description="MLTLoader parses a MapLibre Tile payload and exposes its feature tables as GeoJSON or binary geometry data. Use it directly when tile addressing and repeated requests are handled elsewhere."
+  description="MLTLoader parses a MapLibre Tile payload and exposes its feature tables as an Arrow table with GeoArrow geometry by default, with GeoJSON and binary geometry available when requested."
   tone="cyan"
-  meta={['From v4.4', 'Binary vector tile', 'GeoJSON or binary geometry']}
+  meta={['From v4.4', 'Binary vector tile', 'Arrow and GeoArrow by default']}
   links={[
     {label: 'MLT module', to: '/docs/modules/mlt'},
     {label: 'MLT format', to: '/docs/modules/mlt/formats/mlt'},
@@ -32,7 +32,7 @@ import {LoaderLiveExample} from '@site/src/components/docs/loader-live-example';
   items={[
     {label: 'Input', value: 'One MapLibre Tile binary payload'},
     {label: 'Tables', value: 'Named feature tables with geometry and attributes'},
-    {label: 'Output', value: 'GeoJSON table or binary geometry data'},
+    {label: 'Output', value: 'Arrow table with GeoArrow geometry by default'},
     {label: 'Coordinates', value: 'Local tile space by default; WGS84 is optional'}
   ]}
 />
@@ -77,13 +77,14 @@ const tileFeatures = await load(url, MLTLoader);
 
 ### Geometry in local tile space
 
-By default, `MLTLoader` returns GeoJSON features using local tile coordinates in `[0, 1]` space:
+By default, `MLTLoader` returns an Arrow table with a WKB-compatible GeoArrow geometry column using
+local tile coordinates in `[0, 1]` space:
 
 ```typescript
 import {MLTLoader} from '@loaders.gl/mlt';
 import {load} from '@loaders.gl/core';
 
-const geoJSONfeatures = await load(url, MLTLoader);
+const arrowTable = await load(url, MLTLoader);
 ```
 
 ### Geometry in WGS84
@@ -110,15 +111,15 @@ const geoJSONfeatures = await load(url, MLTLoader, {
 
 | `shape` option              | Output                    |
 | --------------------------- | ------------------------- |
-| `'geojson-table'` (default) | `GeoJSONTable`             |
+| `'arrow-table'` (default)   | Arrow table with GeoArrow geometry |
 | `'binary-geometry'`         | binary feature collection  |
-| `'arrow-table'`             | Arrow table                |
+| `'geojson-table'`           | `GeoJSONTable`             |
 
 ## Options
 
 | Option              | Type                                       | Default     | Description                                                    |
 | ------------------- | ------------------------------------------ | ----------- | -------------------------------------------------------------- |
-| `mlt.shape`         | `'geojson-table' \| 'binary-geometry' \| 'arrow-table'` | `geojson-table` | Output shape |
+| `mlt.shape`         | `'geojson-table' \| 'binary-geometry' \| 'arrow-table'` | `arrow-table` | Output shape |
 | `geoarrow.encodingPreference` | `'geoarrow.wkb' \| 'geoarrow.geometry' \| 'optimized'` | `geoarrow.wkb` for Arrow output | Arrow geometry encoding preference |
 | `mlt.coordinates`   | `'local' \| 'wgs84'`                       | `local`     | Coordinate system for returned geometries                      |
 | `mlt.tileIndex`     | `{x: number, y: number, z: number}`        | N/A         | Required when `coordinates` is `wgs84`                         |
@@ -127,10 +128,12 @@ const geoJSONfeatures = await load(url, MLTLoader, {
 
 `mlt.tileIndex` is required for WGS84 output.
 
-When `mlt.shape` is `'arrow-table'`, the decoder writes directly from MLT's decoded geometry and
-property columns. It does not materialize an intermediate GeoJSON feature collection. Use
+When `mlt.shape` is `'arrow-table'` (the default), the decoder writes directly from MLT's decoded
+geometry and property columns. It does not materialize an intermediate GeoJSON feature collection. Use
 `geoarrow.encodingPreference` to select WKB, dense-union GeoArrow, or the optimized native
 GeoArrow encoding.
+
+To preserve the legacy GeoJSON default, set `mlt.shape: 'geojson-table'` explicitly.
 
 ## Additional examples
 

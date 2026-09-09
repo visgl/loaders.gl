@@ -102,6 +102,12 @@ See [Caching and memory](/docs/modules/3d-tiles/concepts/caching-and-memory) for
 - `load(url, SomeSourceLoader)` now returns the runtime `DataSource` instance created by that source loader instead of metadata or parsed payloads.
 - `parse()` and `parseSync()` no longer accept source loaders. Use `load()` for source loaders and keep `parse()` for parser loaders.
 
+**@loaders.gl/mlt**
+
+- `MLTLoader` and `MLTSourceLoader` now return an Arrow table with WKB-compatible GeoArrow geometry by
+  default. Applications that expect the previous GeoJSON table default must set
+  `mlt.shape: 'geojson-table'` explicitly. `binary-geometry` remains available as an explicit shape.
+
 **@loaders.gl/compression**
 
 - The compression package root now exports lightweight, library-neutral classes such as

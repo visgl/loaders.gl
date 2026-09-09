@@ -24,6 +24,7 @@ import {
 } from '@loaders.gl/gis';
 import {
   ArrowTableBuilder,
+  convertArrowToSchema,
   convertSchemaToArrow,
   getDataTypeFromArray
 } from '@loaders.gl/schema-utils';
@@ -303,6 +304,7 @@ function makeNativeArrowTable(
   } as any);
   return {
     shape: 'arrow-table',
+    schema: convertArrowToSchema(arrowSchema),
     data: new arrow.Table(new arrow.RecordBatch(arrowSchema, structData as any))
   };
 }
@@ -356,6 +358,17 @@ function makeGeoArrowUnionVector(
   dimension: GeoArrowBuilderDimension
 ): arrow.Vector {
   const geometryGroups = new Map<string, MLTGeometry[]>();
+  const supportedGeometryTypes = [
+    'Point',
+    'LineString',
+    'Polygon',
+    'MultiPoint',
+    'MultiLineString',
+    'MultiPolygon'
+  ];
+  for (const geometryType of supportedGeometryTypes) {
+    geometryGroups.set(geometryType, []);
+  }
   const typeIds: number[] = [];
   const valueOffsets: number[] = [];
   for (const geometry of geometries) {
