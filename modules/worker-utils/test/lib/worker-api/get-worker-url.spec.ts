@@ -29,5 +29,16 @@ test('getWorkerURL', (t) => {
     'worker url with _useLocalWorkers options'
   );
 
+  t.equals(
+    getWorkerURL(
+      {...NullWorker, id: 'wkb', module: 'wkt', workerFile: 'wkt-worker.js'},
+      {_workerType: 'test'}
+    ),
+    isBrowser
+      ? 'modules/wkt/dist/wkt-worker.js'
+      : 'modules/wkt/src/workers/wkb-worker-node.ts',
+    'test worker URL supports a shared worker filename'
+  );
+
   t.end();
 });

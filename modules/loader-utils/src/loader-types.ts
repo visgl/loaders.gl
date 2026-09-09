@@ -154,6 +154,8 @@ export type Loader<DataT = any, BatchT = any, LoaderOptionsT = StrictLoaderOptio
   version: string;
   /** A boolean, or a URL */
   worker?: string | boolean;
+  /** Browser worker filename when it differs from the loader id. */
+  workerFile?: string;
   // end Worker
 
   /** Human readable name */

@@ -5,7 +5,7 @@
 /* eslint-disable no-continue */
 
 import test from 'tape-promise/tape';
-import {fetchFile, parseSync} from '@loaders.gl/core';
+import {fetchFile, parse, parseSync} from '@loaders.gl/core';
 import {isWKB} from '@loaders.gl/gis';
 import {WKBLoader} from '@loaders.gl/wkt';
 import {parseTestCases} from '@loaders.gl/gis/test/data/wkt/parse-test-cases';
@@ -71,5 +71,15 @@ test('WKBLoader#Z', async (t) => {
     // }
   }
 
+  t.end();
+});
+
+test('WKBLoader#worker', async (t) => {
+  const result = await parse(
+    new Uint8Array([1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 240, 63, 0, 0, 0, 0, 0, 0, 64]).buffer,
+    WKBLoader,
+    {core: {worker: true, _workerType: 'test'}}
+  );
+  t.deepEqual(result, {type: 'Point', coordinates: [1, 2]});
   t.end();
 });
