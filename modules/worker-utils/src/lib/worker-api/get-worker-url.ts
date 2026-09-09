@@ -35,7 +35,7 @@ export function getCustomWorkerURL(
   const workerOptions = options[worker.id] || {};
 
   const workerFile = isBrowser
-    ? `${worker.id}-worker.js`
+    ? worker.workerFile || `${worker.id}-worker.js`
     : worker.workerNode || `${worker.id}-worker-node.js`;
 
   let url = workerOptions.workerUrl;
@@ -90,7 +90,7 @@ export function getWorkerURL(worker: WorkerObject, options: WorkerOptions = {}):
  */
 export function getDefaultWorkerURL(worker: WorkerObject, warn: boolean = false): string {
   const workerFile = isBrowser
-    ? `${worker.id}-worker.js`
+    ? worker.workerFile || `${worker.id}-worker.js`
     : worker.workerNode || `${worker.id}-worker-node.js`;
   let version = worker.version;
   if (version === 'latest') {

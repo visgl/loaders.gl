@@ -58,6 +58,8 @@ export type WorkerObject = {
   module: string;
   version: string;
   worker?: string | boolean;
+  /** Browser worker filename when it differs from the worker id. */
+  workerFile?: string;
   /** Creates a built-in browser worker, typically using `type: 'module'`. */
   loadWorker?: LoadWorker;
   /** Optional Node.js-specific worker filename (for example a `.cjs` asset). */

@@ -1,5 +1,5 @@
 import {expect, test} from 'vitest';
-import {fetchFile, parseSync} from '@loaders.gl/core';
+import {fetchFile, parse, parseSync} from '@loaders.gl/core';
 import {isWKB} from '@loaders.gl/gis';
 import {WKBLoader} from '@loaders.gl/wkt/bundled';
 import {parseTestCases} from '@loaders.gl/gis/test/data/wkt/parse-test-cases';
@@ -51,4 +51,13 @@ test('WKBLoader#Z', async () => {
       expect(result, title).toEqual(testCase.geoJSON);
     }
   }
+});
+
+test('WKBLoader#worker', async () => {
+  const result = await parse(
+    new Uint8Array([1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 240, 63, 0, 0, 0, 0, 0, 0, 64]).buffer,
+    WKBLoader,
+    {core: {worker: true, _workerType: 'test'}}
+  );
+  expect(result).toEqual({type: 'Point', coordinates: [1, 2]});
 });

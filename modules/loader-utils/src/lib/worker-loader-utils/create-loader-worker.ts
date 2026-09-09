@@ -11,13 +11,29 @@ import {createWorker} from '@loaders.gl/worker-utils';
 /**
  * Set up a WebWorkerGlobalScope to talk with the main thread
  * @param loader
+ * @param selectLoader Selects the parser used for each worker request.
  */
-export async function createLoaderWorker(loader: LoaderWithParser) {
+export async function createLoaderWorker(
+  loader: LoaderWithParser,
+  selectLoader: (options: {[key: string]: any}) => LoaderWithParser = () => loader
+) {
   await createWorker(
     (input, options, workerContext, loaderContext) =>
-      processLoaderWorkerData(loader, input, options, workerContext, loaderContext),
+      processLoaderWorkerData(
+        selectLoader(options || {}),
+        input,
+        options,
+        workerContext,
+        loaderContext
+      ),
     (inputIterator, options, workerContext, loaderContext) =>
-      processLoaderWorkerBatches(loader, inputIterator, options, workerContext, loaderContext)
+      processLoaderWorkerBatches(
+        selectLoader(options || {}),
+        inputIterator,
+        options,
+        workerContext,
+        loaderContext
+      )
   );
 }
 
