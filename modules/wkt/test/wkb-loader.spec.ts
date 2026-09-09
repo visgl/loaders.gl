@@ -76,7 +76,11 @@ test('WKBLoader#Z', async (t) => {
 
 test('WKBLoader#worker', async (t) => {
   const result = await parse(
-    new Uint8Array([1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 240, 63, 0, 0, 0, 0, 0, 0, 64]).buffer,
+    new Uint8Array([
+      1, 1, 0, 0, 0,
+      0, 0, 0, 0, 0, 0, 240, 63,
+      0, 0, 0, 0, 0, 0, 0, 64
+    ]).buffer,
     WKBLoader,
     {core: {worker: true, _workerType: 'test'}}
   );
