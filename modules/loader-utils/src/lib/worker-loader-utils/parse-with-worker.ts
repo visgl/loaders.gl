@@ -110,7 +110,7 @@ export async function parseWithWorker(
   const result = await processOnWorker(
     loader,
     data,
-    {...getWorkerOptions(options), signal: workerSignal},
+    {...getWorkerOptions(options, loader), signal: workerSignal},
     {
       process: async (input, processOptions, _workerContext, parseContext) => {
         if (!parseOnMainThread) {
@@ -215,10 +215,11 @@ function callParseOnMainThread(
 /**
  * Create worker options with deprecated top-level worker fields available to worker-utils.
  * @param options
+ * @param loader Loader whose parser will handle the worker request.
  */
-function getWorkerOptions(options: StrictLoaderOptions = {}) {
+function getWorkerOptions(options: StrictLoaderOptions = {}, loader?: Loader) {
   const serializedOptions = JSON.parse(JSON.stringify(options));
-  const workerOptions = {
+  const workerOptions: Record<string, any> = {
     ...serializedOptions.core,
     ...serializedOptions
   };
@@ -226,6 +227,9 @@ function getWorkerOptions(options: StrictLoaderOptions = {}) {
   // receive the established boolean form even when the caller selected `auto`.
   if (workerOptions.worker === 'auto') {
     workerOptions.worker = true;
+  }
+  if (loader) {
+    workerOptions._workerLoaderId = loader.id;
   }
   return workerOptions;
 }

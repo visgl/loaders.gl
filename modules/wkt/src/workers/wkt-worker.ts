@@ -7,5 +7,5 @@ import {WKTLoaderWithParser} from '../wkt-loader-with-parser';
 import {WKBLoaderWithParser} from '../wkb-loader-with-parser';
 
 createLoaderWorker(WKTLoaderWithParser, options =>
-  options.wkb ? WKBLoaderWithParser : WKTLoaderWithParser
+  options._workerLoaderId === 'wkb' ? WKBLoaderWithParser : WKTLoaderWithParser
 );
