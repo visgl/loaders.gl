@@ -74,13 +74,9 @@ test('WKBLoader#Z', async (t) => {
   t.end();
 });
 
-test('WKBLoader#worker', async (t) => {
+test('WKBLoader#worker', async t => {
   const result = await parse(
-    new Uint8Array([
-      1, 1, 0, 0, 0,
-      0, 0, 0, 0, 0, 0, 240, 63,
-      0, 0, 0, 0, 0, 0, 0, 64
-    ]).buffer,
+    new Uint8Array([1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 240, 63, 0, 0, 0, 0, 0, 0, 0, 64]).buffer,
     WKBLoader,
     {core: {worker: true, _workerType: 'test'}}
   );
@@ -88,7 +84,7 @@ test('WKBLoader#worker', async (t) => {
   t.end();
 });
 
-test('WKTLoader#worker with WKB options', async (t) => {
+test('WKTLoader#worker with WKB options', async t => {
   const result = await parse(new TextEncoder().encode('POINT (3 4)').buffer, WKTLoader, {
     wkb: {workerUrl: 'unused'},
     core: {worker: true, _workerType: 'test'}
