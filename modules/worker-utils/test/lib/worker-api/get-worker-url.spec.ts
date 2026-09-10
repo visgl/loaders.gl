@@ -44,6 +44,15 @@ test('getWorkerURL', () => {
       ? 'modules/worker-utils/dist/null-worker.js'
       : 'modules/worker-utils/src/workers/null-worker-node.ts'
   );
+  expect(
+    getWorkerURL(
+      {...NullWorker, id: 'wkb', module: 'wkt', workerFile: 'wkt-worker.js'},
+      {_workerType: 'test'}
+    ),
+    'test worker URL supports a shared worker filename'
+  ).toBe(
+    isBrowser ? 'modules/wkt/dist/wkt-worker.js' : 'modules/wkt/src/workers/wkb-worker-node.ts'
+  );
 });
 test('getWorkerURL#version fallback warning', () => {
   const warnings: string[] = [];

@@ -15,7 +15,9 @@ const {preload: _WKBLoaderPreload, ...WKBLoaderMetadataWithoutPreload} = WKBLoad
 export type WKBLoaderOptions = LoaderOptions & {
   wkb?: {
     /** Shape is deprecated, only geojson is supported */
-    shape: 'geojson-geometry';
+    shape?: 'geojson-geometry';
+    /** Override the URL to the shared WKT/WKB worker bundle. */
+    workerUrl?: string;
   };
 };
 

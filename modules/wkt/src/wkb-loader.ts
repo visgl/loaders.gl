@@ -10,7 +10,9 @@ import {WKBFormat} from './wkt-format';
 export type WKBLoaderOptions = LoaderOptions & {
   wkb?: {
     /** Shape is deprecated, only geojson is supported */
-    shape: 'geojson-geometry';
+    shape?: 'geojson-geometry';
+    /** Override the URL to the shared WKT/WKB worker bundle. */
+    workerUrl?: string;
   };
 };
 
@@ -31,6 +33,7 @@ export const WKBWorkerLoader = {
   ...WKBFormat,
   version: VERSION,
   worker: true,
+  workerFile: 'wkt-worker.js',
   options: {
     wkb: {
       shape: 'geojson-geometry'
