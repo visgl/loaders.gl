@@ -96,11 +96,17 @@ See [Caching and memory](/docs/modules/3d-tiles/concepts/caching-and-memory) for
 - `load(url, SomeSourceLoader)` now returns the runtime `DataSource` instance created by that source loader instead of metadata or parsed payloads.
 - `parse()` and `parseSync()` no longer accept source loaders. Use `load()` for source loaders and keep `parse()` for parser loaders.
 
+**@loaders.gl/mlt**
+
+ - `MLTLoader` and `MLTSourceLoader` now return an Arrow table with WKB-compatible GeoArrow geometry by
+   default. Applications that expect the previous GeoJSON table default must set
+   `mlt.shape: 'geojson-table'` explicitly. `binary-geometry` remains available as an explicit shape.
+
 **@loaders.gl/pmtiles**
 
-- PMTiles v3 archives with MapLibre Tile (MLT) payloads are supported through `@loaders.gl/mlt`.
-- The `pmtiles.shape: 'columnar-table'` option remains supported for MVT archives only. Passing it
-  for an MLT archive now throws; use `geojson-table`, `binary-geometry`, or `arrow-table` instead.
+ - PMTiles v3 archives with MapLibre Tile (MLT) payloads are supported through `@loaders.gl/mlt`.
+ - The `pmtiles.shape: 'columnar-table'` option remains supported for MVT archives only. Passing it
+   for an MLT archive now throws; use `geojson-table`, `binary-geometry`, or `arrow-table` instead.
 
 **@loaders.gl/compression**
 

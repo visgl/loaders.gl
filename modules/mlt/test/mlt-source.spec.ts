@@ -97,19 +97,13 @@ test('MLTTileSource#getTile returns data or null for HTTP responses', async () =
   expect(await source.getTile({x: 1, y: 2, z: 3})).toBeNull();
 });
 
-test('MLTTileSource#getTileData returns Feature[] by default', async () => {
-  const feature = {
-    type: 'Feature',
-    geometry: {type: 'Point', coordinates: [0, 0]},
-    properties: {name: 'test'}
-  } as Feature;
-
+test('MLTTileSource#getTileData returns Arrow by default', async () => {
   const originalParse = MLTLoader.parse;
   const parseOptions: {options?: unknown} = {};
 
   MLTLoader.parse = (async (arrayBuffer: ArrayBuffer, options?: unknown) => {
     parseOptions.options = options;
-    return {shape: 'geojson-table', type: 'FeatureCollection', features: [feature]};
+    return {shape: 'arrow-table', data: {numRows: 1}, schema: {fields: []}};
   }) as unknown as typeof MLTLoader.parse;
 
   const source = MLTSourceLoader.createDataSource('https://example.com/tiles', {});
@@ -120,11 +114,11 @@ test('MLTTileSource#getTileData returns Feature[] by default', async () => {
       id: '1/2/3',
       bbox: {west: 0, north: 0, east: 0, south: 0}
     });
-    expect((parseOptions.options as {mlt?: {shape?: string}})?.mlt?.shape).toBe('geojson-table');
+    expect((parseOptions.options as {mlt?: {shape?: string}})?.mlt?.shape).toBe('arrow-table');
     expect((parseOptions.options as {mlt?: {coordinates?: string}})?.mlt?.coordinates).toBe(
       'wgs84'
     );
-    expect(tile).toEqual([feature]);
+    expect((tile as {shape?: string})?.shape).toBe('arrow-table');
   } finally {
     MLTLoader.parse = originalParse;
   }
@@ -162,13 +156,18 @@ test('MLTTileSource#supports table shape by converting to Feature[]', async () =
 
 test('MLTTileSource#supports Arrow table shape', async () => {
   const originalParse = MLTLoader.parse;
-  MLTLoader.parse = (async () => ({
-    shape: 'arrow-table',
-    schema: {fields: [], metadata: {geo: '{}'}},
-    data: {numRows: 1}
-  })) as unknown as typeof MLTLoader.parse;
+  let parsedOptions: unknown;
+  MLTLoader.parse = (async (_arrayBuffer: ArrayBuffer, options?: unknown) => {
+    parsedOptions = options;
+    return {
+      shape: 'arrow-table',
+      schema: {fields: [], metadata: {geo: '{}'}},
+      data: {numRows: 1}
+    };
+  }) as unknown as typeof MLTLoader.parse;
 
   const source = MLTSourceLoader.createDataSource('https://example.com/tiles', {
+    geoarrow: {encodingPreference: 'optimized'},
     mlt: {shape: 'arrow-table'}
   });
   source.fetch = async () => new Response(new ArrayBuffer(8));
@@ -179,6 +178,9 @@ test('MLTTileSource#supports Arrow table shape', async () => {
       bbox: {west: 0, north: 0, east: 0, south: 0}
     });
     expect((tile as {shape?: string})?.shape).toBe('arrow-table');
+    expect((parsedOptions as {geoarrow?: {encodingPreference?: string}}).geoarrow).toEqual({
+      encodingPreference: 'optimized'
+    });
   } finally {
     MLTLoader.parse = originalParse;
   }

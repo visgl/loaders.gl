@@ -11,9 +11,9 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
 <DocPageHeader
   eyebrow="MLT source loader"
   title="Fetch compact vector tiles through a source."
-  description="`MLTSourceLoader` connects URL-addressed MapLibre Tile services to the loaders.gl source API. It resolves tile URLs, decodes MLT payloads, and can return GeoJSON-style tables or binary geometry."
+  description="`MLTSourceLoader` connects URL-addressed MapLibre Tile services to the loaders.gl source API. It resolves tile URLs, decodes MLT payloads, and returns Arrow tables with GeoArrow geometry by default."
   tone="blue"
-  meta={['MapLibre Tile', 'URL tile services', 'GeoJSON or binary output']}
+  meta={['MapLibre Tile', 'URL tile services', 'Arrow and GeoArrow by default']}
   links={[
     {label: 'MLT module', to: '/docs/modules/mlt'},
     {label: 'MLT format', to: '/docs/modules/mlt/formats/mlt'},
@@ -30,7 +30,7 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
     {label: 'Input', value: 'Tile service URL and optional metadata URL'},
     {label: 'Addressing', value: 'z/x/y tile coordinates with configurable extension'},
     {label: 'Decode', value: 'MLT layers, attributes, and geometry'},
-    {label: 'Output', value: 'GeoJSON table or binary geometry'}
+    {label: 'Output', value: 'Arrow table with GeoArrow geometry by default'}
   ]}
 />
 
@@ -45,7 +45,7 @@ The `MLTSourceLoader` dynamically loads MapLibre Tile (`.mlt`) data from URL bas
 | File Extension | `.mlt`                                         |
 | File Type      | Binary Archive                                 |
 | File Format    | [MapLibre Tile](/docs/modules/mlt/formats/mlt) |
-| Data Format    | GeoJSON                                        |
+| Data Format    | Arrow with GeoArrow, GeoJSON, or binary geometry |
 
 ## Usage
 
@@ -60,7 +60,7 @@ import {createDataSource} from '@loaders.gl/core';
 import {MLTSourceLoader} from '@loaders.gl/mlt';
 
 const source = createDataSource('https://example.com/tiles', [MLTSourceLoader]);
-const features = await source.getTile({x: 0, y: 0, z: 0});
+const arrowTable = await source.getTile({x: 0, y: 0, z: 0});
 ```
 
 ## Options
@@ -70,7 +70,8 @@ const features = await source.getTile({x: 0, y: 0, z: 0});
 | `mlt.extension`   | `string`                                  | `.mlt`            | Tile URL extension.                                                |
 | `mlt.metadataUrl` | `string \| null`                          | `null`            | Optional metadata URL override (`tile.json` by default is not assumed). |
 | `mlt.coordinates` | `'wgs84' \| 'local'`                      | `wgs84`           | Coordinates output from parsed tiles.                              |
-| `mlt.shape`       | `'geojson-table' \| 'binary-geometry'`    | `geojson-table`   | Returned geometry shape.                                           |
+| `mlt.shape`       | `'geojson-table' \| 'binary-geometry' \| 'arrow-table'` | `arrow-table` | Returned geometry shape. |
+| `geoarrow.encodingPreference` | `'geoarrow.wkb' \| 'geoarrow.geometry' \| 'optimized'` | `geoarrow.wkb` for Arrow output | Arrow geometry encoding preference. |
 | `mlt.layers`      | `string[]`                                | `N/A`             | Optional layer filter before decoding geometry.                    |
 
 ## Additional references

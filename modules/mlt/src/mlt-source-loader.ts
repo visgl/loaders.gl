@@ -9,13 +9,21 @@ import type {
   GetTileParameters,
   GetTileDataParameters
 } from '@loaders.gl/loader-utils';
-import type {ArrowTable, BinaryFeatureCollection, Feature, Schema} from '@loaders.gl/schema';
+import type {
+  ArrowTable,
+  BinaryFeatureCollection,
+  Feature,
+  Schema,
+  GeoArrowEncodingPreference
+} from '@loaders.gl/schema';
 import {TileSourceMetadata, DataSource, DataSourceOptions} from '@loaders.gl/loader-utils';
 import {MLTLoaderWithParser} from './mlt-loader-with-parser';
 import type {MLTLoaderOptions} from './mlt-loader';
 import {MLTFormat} from './mlt-format';
 
 export type MLTSourceLoaderOptions = DataSourceOptions & {
+  /** Preferred encoding for Arrow geometry output. */
+  geoarrow?: {encodingPreference?: GeoArrowEncodingPreference};
   mlt?: {
     /** Optional metadata URL. */
     metadataUrl?: string | null;
@@ -48,7 +56,7 @@ export const MLTSourceLoader = {
       extension: '.mlt',
       metadataUrl: null,
       coordinates: 'wgs84',
-      shape: undefined!,
+      shape: 'arrow-table',
       layers: undefined!
     }
   },
@@ -58,7 +66,7 @@ export const MLTSourceLoader = {
       extension: '.mlt',
       metadataUrl: null,
       coordinates: 'wgs84',
-      shape: undefined!,
+      shape: 'arrow-table',
       layers: undefined!
     }
   },
@@ -176,7 +184,7 @@ export class MLTTileSource
   ): Promise<Feature[] | BinaryFeatureCollection | ArrowTable | null> {
     const options: MLTSourceLoaderOptions = this.options;
     const coordinates = options.mlt?.coordinates || 'wgs84';
-    const shape = options.mlt?.shape || 'geojson-table';
+    const shape = options.mlt?.shape || 'arrow-table';
     const tileIndex =
       coordinates === 'wgs84'
         ? {x: tileParameters.x, y: tileParameters.y, z: tileParameters.z}
@@ -189,7 +197,8 @@ export class MLTTileSource
         coordinates,
         layers: options.mlt?.layers,
         tileIndex
-      }
+      },
+      geoarrow: options.geoarrow ?? (this.loadOptions as MLTLoaderOptions).geoarrow
     };
 
     const parsed = await MLTLoaderWithParser.parse(arrayBuffer, loadOptions);

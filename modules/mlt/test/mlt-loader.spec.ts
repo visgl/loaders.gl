@@ -14,7 +14,7 @@ test('MLTLoader#metadata', () => {
 });
 
 test('MLTLoader#options defaults', () => {
-  expect(MLTLoader.options.mlt.shape).toBe('geojson-table');
+  expect(MLTLoader.options.mlt.shape).toBe('arrow-table');
   expect(MLTLoader.options.mlt.coordinates).toBe('local');
   expect(MLTLoader.options.mlt.layerProperty).toBe('layerName');
 });
@@ -24,6 +24,12 @@ test('MLTLoader#parse empty tile', async () => {
   const result = await MLTLoader.parse(emptyBuffer, {mlt: {shape: 'geojson-table'}});
   expect(result.shape).toBe('geojson-table');
   expect(result.features).toHaveLength(0);
+});
+
+test('MLTLoader#parse defaults to an empty Arrow table', async () => {
+  const result = await MLTLoader.parse(new ArrayBuffer(0));
+  expect(result.shape).toBe('arrow-table');
+  expect(result.data.numRows).toBe(0);
 });
 
 test('MLTLoader#throws on wgs84 without tileIndex', async () => {
