@@ -6,4 +6,6 @@ import {createLoaderWorker} from '@loaders.gl/loader-utils';
 import {WKTLoader} from '../wkt-loader';
 import {WKBLoader} from '../wkb-loader';
 
-createLoaderWorker(WKTLoader, options => (options.wkb ? WKBLoader : WKTLoader));
+createLoaderWorker(WKTLoader, options =>
+  options._workerLoaderId === 'wkb' ? WKBLoader : WKTLoader
+);

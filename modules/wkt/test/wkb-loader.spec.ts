@@ -7,7 +7,7 @@
 import test from 'tape-promise/tape';
 import {fetchFile, parse, parseSync} from '@loaders.gl/core';
 import {isWKB} from '@loaders.gl/gis';
-import {WKBLoader} from '@loaders.gl/wkt';
+import {WKBLoader, WKTLoader} from '@loaders.gl/wkt';
 import {parseTestCases} from '@loaders.gl/gis/test/data/wkt/parse-test-cases';
 
 const WKB_2D_TEST_CASES = '@loaders.gl/gis/test/data/wkt/wkb-testdata2d.json';
@@ -85,5 +85,14 @@ test('WKBLoader#worker', async (t) => {
     {core: {worker: true, _workerType: 'test'}}
   );
   t.deepEqual(result, {type: 'Point', coordinates: [1, 2]});
+  t.end();
+});
+
+test('WKTLoader#worker with WKB options', async (t) => {
+  const result = await parse(new TextEncoder().encode('POINT (3 4)').buffer, WKTLoader, {
+    wkb: {workerUrl: 'unused'},
+    core: {worker: true, _workerType: 'test'}
+  });
+  t.deepEqual(result, {type: 'Point', coordinates: [3, 4]});
   t.end();
 });
