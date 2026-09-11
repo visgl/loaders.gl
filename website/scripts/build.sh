@@ -32,6 +32,13 @@ case $MODE in
     ;;
 esac
 
+# Development-only source-worker replacements must never enter production output.
+if rg -q 'new URL[^\n]*parquet-source-worker\.ts|parquet-source-worker-factory\.dev' "$OUTPUT_DIR" \
+  -g '*.js' -g '*.map' -g '*.json'; then
+  echo 'Development Parquet worker source leaked into website production output.' >&2
+  exit 1
+fi
+
 # # transpile workers
 # (
 #   cd ..

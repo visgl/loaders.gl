@@ -6,6 +6,7 @@ import type {Loader} from '@loaders.gl/loader-utils';
 import {canParseWithWorker, isBrowser, parseWithWorker} from '@loaders.gl/loader-utils';
 
 import {PARQUET_LOADER_BASE} from '../parquet-loader-base';
+import {PARQUET_SOURCE_WORKER_LOAD_WORKER} from '../parquet-source-worker-factory';
 import {PARQUET_SOURCE_WORKER_URL} from '../parquet-source-worker-url';
 import type {
   ParquetSourceWorkerInput,
@@ -18,7 +19,8 @@ const PARQUET_SOURCE_WORKER: Loader = {
   ...PARQUET_LOADER_BASE,
   id: 'parquet-source',
   name: 'ParquetSource',
-  worker: PARQUET_SOURCE_WORKER_URL
+  worker: PARQUET_SOURCE_WORKER_URL,
+  loadWorker: PARQUET_SOURCE_WORKER_LOAD_WORKER
 };
 
 /** Returns whether this runtime and option set can decode Parquet source rows on a worker. */
