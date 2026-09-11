@@ -145,8 +145,9 @@ class GLTFPostProcessor {
     assert(json);
 
     this.baseUri = baseUri;
-    this.buffers = (json.buffers || []).map((buffer, index) => ({
-      ...buffer,
+    const bufferCount = Math.max(json.buffers?.length || 0, buffers.length);
+    this.buffers = Array.from({length: bufferCount}, (_, index) => ({
+      ...(json.buffers?.[index] || {}),
       ...(buffers[index] || {})
     }));
     this.images = images;
