@@ -19,9 +19,9 @@ describe('getFetchFunction', () => {
       fetch: parentFetch
     } as any);
 
-    await fetchFunction('https://example.com/asset');
+    await fetchFunction('asset');
 
-    expect(requests).toEqual([{url: 'https://example.com/asset', signal: abortController.signal}]);
+    expect(requests).toEqual([{url: 'asset', signal: abortController.signal}]);
   });
 
   test('preserves fetch options when creating a subloader context', async () => {
@@ -37,14 +37,14 @@ describe('getFetchFunction', () => {
       _parse: async () => null
     } as any;
     const childContext = getLoaderContext(
-      {url: 'https://example.com/root.gltf'},
+      {url: 'root.gltf'},
       {core: {fetch: {signal: abortController.signal}}},
       parentContext
     );
 
-    await childContext.fetch('https://example.com/asset');
+    await childContext.fetch('asset');
 
-    expect(requests).toEqual([{url: 'https://example.com/asset', signal: abortController.signal}]);
+    expect(requests).toEqual([{url: 'asset', signal: abortController.signal}]);
   });
 
   test('composes core credentials with custom fetch options', async () => {
