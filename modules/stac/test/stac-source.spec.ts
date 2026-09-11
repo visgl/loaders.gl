@@ -6,7 +6,12 @@ import {describe, expect, test, vi} from 'vitest';
 
 import {STACSource, STACSourceLoaderWithParser} from '../src/stac-source';
 import {STACSourceLoader} from '../src/stac-source-loader-types';
-import type {STACItem} from '../src/stac-types';
+import {
+  getPortolanExtension,
+  getPortolanVersion,
+  isPortolanObject
+} from '../src/portolan-extension';
+import type {STACCatalog, STACCollection, STACItem} from '../src/stac-types';
 
 const ROOT_URL = 'https://example.test/catalog.json';
 
@@ -15,6 +20,7 @@ describe('STACSource metadata loader', () => {
     expect(STACSourceLoader.fromUrl).toBe(true);
     expect(STACSourceLoader.fromBlob).toBe(false);
     expect(STACSourceLoader.testURL(ROOT_URL)).toBe(true);
+    expect(STACSourceLoader.testURL('https://example.test/portolan/')).toBe(true);
     expect(STACSourceLoaderWithParser.createDataSource).toBeTypeOf('function');
     expect(STACSourceLoaderWithParser.createDataSource(ROOT_URL, {})).toBeInstanceOf(STACSource);
     await expect(STACSourceLoader.preload()).resolves.toBe(STACSourceLoaderWithParser);
@@ -23,9 +29,58 @@ describe('STACSource metadata loader', () => {
       /catalog URL/
     );
   });
+
+  test('recognizes Portolan profile schema URIs', () => {
+    const extensions = [
+      'https://stac-extensions.github.io/table/v1.2.0/schema.json',
+      'https://schemas.portolan-sdi.org/portolan/v0.2.0/schema.json'
+    ];
+    expect(getPortolanExtension(extensions)).toBe(extensions[1]);
+    expect(getPortolanVersion(extensions)).toBe('0.2.0');
+    expect(isPortolanObject({stac_extensions: extensions})).toBe(true);
+    expect(getPortolanExtension(['https://example.test/portolan/v0.2.0/schema.json'])).toBeNull();
+    expect(
+      getPortolanVersion(['https://schemas.portolan-sdi.org/portolan/schema.json'])
+    ).toBeNull();
+  });
 });
 
 describe('STACSource static catalogs', () => {
+  test('exposes Portolan metadata and collection-level assets', async () => {
+    const portolanExtension = 'https://schemas.portolan-sdi.org/portolan/v0.2.0/schema.json';
+    const collection = createCollection('roads', []);
+    collection.stac_extensions = [portolanExtension];
+    collection.assets = {
+      data: {
+        href: './roads.parquet',
+        type: 'application/vnd.apache.parquet',
+        roles: ['data']
+      }
+    };
+    const root = createCatalog('root', [{rel: 'child', href: 'roads/collection.json'}]);
+    root.stac_extensions = [portolanExtension];
+    const source = createSource(
+      ROOT_URL,
+      createFetch({
+        [ROOT_URL]: root,
+        'https://example.test/roads/collection.json': collection
+      })
+    );
+
+    await expect(source.getMetadata()).resolves.toMatchObject({
+      mode: 'static',
+      portolanExtension,
+      portolanVersion: '0.2.0'
+    });
+    const collections = await source.getCollections();
+    expect(source.getAssets(collections[0], {roles: ['data']})).toEqual([
+      expect.objectContaining({
+        key: 'data',
+        href: 'https://example.test/roads/roads.parquet'
+      })
+    ]);
+  });
+
   test('traverses relative links, avoids cycles, filters Items, and resolves assets', async () => {
     const documents: Record<string, unknown> = {
       [ROOT_URL]: createCatalog('root', [
@@ -406,7 +461,7 @@ function jsonResponse(value: unknown): Response {
   });
 }
 
-function createCatalog(id: string, links: Array<Record<string, unknown>>) {
+function createCatalog(id: string, links: Array<Record<string, unknown>>): STACCatalog {
   return {
     type: 'Catalog' as const,
     stac_version: '1.1.0',
@@ -416,7 +471,7 @@ function createCatalog(id: string, links: Array<Record<string, unknown>>) {
   };
 }
 
-function createCollection(id: string, links: Array<Record<string, unknown>>) {
+function createCollection(id: string, links: Array<Record<string, unknown>>): STACCollection {
   return {
     ...createCatalog(id, links),
     type: 'Collection' as const,

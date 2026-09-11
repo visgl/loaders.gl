@@ -50,6 +50,24 @@ not prescribe how a GeoTIFF, GeoParquet file, Zarr store, PMTiles archive, or ot
 
 STAC extension fields are preserved by `@loaders.gl/stac` rather than discarded.
 
+## Portolan catalogs
+
+[Portolan](https://www.portolan-sdi.org/) is a STAC publishing profile for static, cloud-native
+geospatial catalogs. A Portolan catalog identifies itself with a versioned schema URI in
+`stac_extensions`, for example:
+
+```json
+{
+  "stac_extensions": [
+    "https://schemas.portolan-sdi.org/portolan/v0.2.0/schema.json"
+  ]
+}
+```
+
+`STACSource.getMetadata()` exposes the declared URI as `portolanExtension` and the semantic
+version as `portolanVersion`. Portolan collections may also publish data assets directly on the
+Collection, which can be selected with `source.getAssets(collection, selection)`.
+
 <ReferenceBoundary
   title="STAC objects and access modes"
   description="The sections below compare catalogs and APIs, explain composition with native format sources, and document browser access constraints."

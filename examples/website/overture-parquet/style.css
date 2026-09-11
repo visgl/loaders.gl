@@ -50,6 +50,30 @@
   text-transform: uppercase;
 }
 
+.overture-portolan {
+  display: flex;
+  width: fit-content;
+  align-items: center;
+  gap: 8px;
+  margin-top: 10px;
+  padding: 5px 8px;
+  border: 1px solid rgba(255, 183, 165, 0.25);
+  border-radius: 999px;
+  background: rgba(255, 111, 76, 0.1);
+  color: var(--muted);
+  font-size: 0.68rem;
+}
+
+.overture-portolan span {
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.overture-portolan a {
+  color: #ffb7a5;
+  font-weight: 750;
+}
+
 .overture-panel h1 {
   margin: 8px 0 10px;
   color: var(--text);
