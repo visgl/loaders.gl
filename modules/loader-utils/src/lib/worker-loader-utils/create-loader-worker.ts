@@ -113,14 +113,17 @@ async function parseData({
     throw new Error(`Could not load data with ${loader.name} loader`);
   }
 
-  // Preserve worker-supplied module overrides (for example a caller-provided
-  // Draco URL) while still applying the loader's defaults. Functions cannot be
-  // structured-cloned, but URL strings and other serializable options can.
+  // Preserve worker-supplied URL module overrides while still applying the
+  // loader's defaults. JSON serialization turns runtime module objects into
+  // unusable objects, so only string values can override worker defaults here.
+  const workerModules = Object.fromEntries(
+    Object.entries(options.modules || {}).filter(([, value]) => typeof value === 'string')
+  );
   options = {
     ...options,
     modules: {
       ...((loader && loader.options && loader.options.modules) || {}),
-      ...(options.modules || {})
+      ...workerModules
     },
     core: {
       ...options.core,
