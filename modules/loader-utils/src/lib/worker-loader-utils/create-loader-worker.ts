@@ -118,10 +118,18 @@ async function parseData({
     throw new Error(`Could not load data with ${loader.name} loader`);
   }
 
-  // TODO - proper merge in of loader options...
+  // Preserve worker-supplied URL module overrides while still applying the
+  // loader's defaults. JSON serialization turns runtime module objects into
+  // unusable objects, so only string values can override worker defaults here.
+  const workerModules = Object.fromEntries(
+    Object.entries(options.modules || {}).filter(([, value]) => typeof value === 'string')
+  );
   options = {
     ...options,
-    modules: (loader && loader.options && loader.options.modules) || {},
+    modules: {
+      ...((loader && loader.options && loader.options.modules) || {}),
+      ...workerModules
+    },
     core: {
       ...options.core,
       worker: false
