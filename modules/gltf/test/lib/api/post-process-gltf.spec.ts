@@ -55,6 +55,21 @@ test('gltf#postProcessGLTF', () => {
     expect(json, testCase.name).toEqual(testCase.output);
   }
 });
+test('gltf#postProcessGLTF preserves loaded buffer data', () => {
+  const arrayBuffer = new Uint8Array([1, 2, 3, 4]).buffer;
+  const gltf = postProcessGLTF({
+    json: {
+      asset: {version: '2.0'},
+      buffers: [{byteLength: arrayBuffer.byteLength, uri: 'mesh.bin'}]
+    },
+    buffers: [{arrayBuffer, byteOffset: 0, byteLength: arrayBuffer.byteLength}]
+  } as GLTFWithBuffers);
+
+  expect(gltf.buffers[0].arrayBuffer, 'retains the loaded buffer').toBe(arrayBuffer);
+  expect(gltf.buffers[0].byteOffset, 'retains the loaded buffer offset').toBe(0);
+  expect(gltf.buffers[0].byteLength, 'retains the loaded buffer length').toBe(4);
+  expect(gltf.buffers[0].uri, 'retains the source buffer metadata').toBe('mesh.bin');
+});
 test('gltf#postProcessGLTF resolves a draft glTF 2.1 thumbnail', () => {
   const json = postProcessGLTF({
     json: {
