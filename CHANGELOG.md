@@ -5,6 +5,7 @@
 ### v5.0.0-alpha.5
 
 - feat(geoarrow): establish the GeoArrow tentpole contract with native columnar conversions, adaptive layouts, validation, resource limits, and format examples
+- feat(tiles): skip intermediate 3D Tiles content requests during Cesium-style skip-LOD traversal
 - chore(math.gl): align all loaders.gl-owned math.gl dependencies with `5.0.0-alpha.4`
 
 ### v5.0.0-alpha.4

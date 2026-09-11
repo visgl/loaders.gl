@@ -68,11 +68,13 @@ While a child subtree is loading, its existing tile stays the traversal boundary
 `ADD` means descendants augment their ancestors. The parent remains part of the result, so descendant requests can safely wait briefly while the camera moves.
 
 Set `skipLevelOfDetail: true` to enable skip-LOD replacement traversal. A ready replacement ancestor
-remains selected while traversal jumps over intermediate levels, so a deep tree can begin showing
-detail before every level is ready. The ancestor is fallback coverage, not a second LOD target: once
-descendants are available they refine independently, and progressive-resolution descendants remain
-urgent. The tradeoff is temporary overdraw and potentially higher bandwidth while the camera is
-moving. The default is `false`, preserving traditional all-required-children replacement behavior.
+remains selected while traversal jumps over intermediate levels without requesting their content,
+so a deep tree can begin showing detail without downloading every level. `baseScreenSpaceError`,
+`skipScreenSpaceErrorFactor`, and `skipLevels` control periodic intermediate coverage requests;
+`immediatelyLoadDesiredLevelOfDetail` disables those requests and loads only final SSE targets. The
+ancestor is fallback coverage, not a second LOD target: once descendants are available they refine
+independently, and progressive-resolution descendants remain urgent. The tradeoff is temporary
+overdraw. The default is `false`, preserving traditional all-required-children replacement behavior.
 
 ## Visibility, Selection, and Requests
 

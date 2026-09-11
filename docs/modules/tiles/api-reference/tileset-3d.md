@@ -250,9 +250,40 @@ For formulas, projection-specific behavior, transform scaling, and tuning guidan
 ### skipLevelOfDetail : Boolean
 
 Enables skip-LOD replacement traversal. When enabled, traversal may descend past one or more
-hierarchy levels without waiting for every intermediate child, while keeping ready replacement
-ancestors selected as temporary coverage. This can improve first-detail latency on deep trees at
-the cost of temporary ancestor/descendant overdraw. `ADD` refinement is unaffected.
+hierarchy levels without requesting every intermediate tile, while keeping ready replacement
+ancestors selected as temporary coverage. Request thresholds periodically load intermediate
+coverage on deep branches. This can improve first-detail latency at the cost of temporary
+ancestor/descendant overdraw. `ADD` refinement is unaffected.
+
+^default false
+
+### baseScreenSpaceError : Number
+
+When skip-LOD is enabled, replacement tiles above this SSE remain in the base traversal and are
+always requested. The active memory-adjusted SSE is used when it is higher than this value.
+
+^default 1024
+
+### skipScreenSpaceErrorFactor : Number
+
+Minimum SSE reduction from the nearest requested or loaded ancestor before another intermediate
+tile is requested. For example, with the default factor, an ancestor at SSE 1600 allows an
+intermediate request below SSE 100 once `skipLevels` is also satisfied.
+
+^default 16
+
+### skipLevels : Number
+
+Minimum number of hierarchy levels skipped between intermediate requests. Final desired tiles are
+still requested regardless of this value.
+
+^default 1
+
+### immediatelyLoadDesiredLevelOfDetail : Boolean
+
+When skip-LOD is enabled, requests only final tiles that meet the active SSE target. Base and
+intermediate threshold requests are disabled. If a suitable ancestor is already loaded, it remains
+selected as fallback coverage while the desired content loads.
 
 ^default false
 

@@ -495,7 +495,8 @@ export class Tile3D {
   // eslint-disable-next-line complexity
   private _calculateRequestPriority(allowUnloadedContent: boolean): number {
     const traverser = this.tileset._traverser;
-    const {skipLevelOfDetail} = traverser.options;
+    const skipLevelOfDetail =
+      traverser.options.skipLevelOfDetail && !traverser.disableSkipLevelOfDetail;
 
     /*
      * Tiles that are outside of the camera's frustum could be skipped if we are in 'ADD' mode
