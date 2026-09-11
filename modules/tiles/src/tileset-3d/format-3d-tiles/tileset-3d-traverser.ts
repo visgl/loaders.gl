@@ -230,18 +230,13 @@ export class Tileset3DTraverser extends TilesetTraverser {
    * @param frameState - Current culling state.
    */
   private selectDesiredTile(tile: Tile3D, frameState: FrameState): void {
-    if (tile.contentAvailable) {
-      this.selectTile(tile, frameState);
-      return;
-    }
-
-    let ancestor = tile.parent;
-    while (ancestor) {
-      if (ancestor.contentAvailable) {
-        this.selectTile(ancestor, frameState);
+    let fallbackTile: Tile3D | null = tile;
+    while (fallbackTile) {
+      if (this.shouldSelectTile(fallbackTile, frameState)) {
+        this.selectTile(fallbackTile, frameState);
         return;
       }
-      ancestor = ancestor.parent;
+      fallbackTile = fallbackTile.parent;
     }
     this.selectLoadedDescendants(tile, frameState);
   }

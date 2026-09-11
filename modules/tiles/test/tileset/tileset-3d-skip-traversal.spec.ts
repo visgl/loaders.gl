@@ -134,6 +134,21 @@ test('Tileset3DTraverser#skip LOD retains the nearest ready ancestor as coverage
   expect(root._selectedFrame).toBe(1);
 });
 
+test('Tileset3DTraverser#skip LOD continues past a culled loaded ancestor', () => {
+  const {root, intermediate, leaf} = createReplacementTree(true);
+  intermediate.contentAvailable = true;
+  intermediate.hasUnloadedContent = false;
+  intermediate.contentUnloaded = false;
+  intermediate.contentVisibility = () => 'outside';
+
+  const traverser = traverseReplacementTree(root, {
+    immediatelyLoadDesiredLevelOfDetail: true
+  });
+
+  expect(Object.keys(traverser.requestedTiles)).toEqual(['leaf']);
+  expect(Object.keys(traverser.selectedTiles)).toEqual(['root']);
+});
+
 test('Tileset3DTraverser#skip LOD ignores disabled progressive-resolution thresholds', () => {
   const {root, intermediate, threshold, leaf} = createReplacementTree();
   intermediate._screenSpaceErrorProgressiveResolution = 16;
