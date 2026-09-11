@@ -86,7 +86,7 @@ than one compression step.
 | VarInt and ZigZag | Packs integer values into variable-length bytes and efficiently represents signed deltas. | Transparent to the loader. |
 | Delta and RLE / delta-RLE | Stores differences or repeated runs instead of every value. | Transparent to the loader. |
 | Boolean-RLE and byte-RLE | Packs boolean presence/data streams and compact byte streams. | Transparent to the loader. |
-| SIMD-FastPFOR | Packs integer streams in blocks for compact, fast decoding. | Transparent to the loader when supported by the installed decoder. |
+| FastPFOR | Packs integer streams in blocks for compact, fast decoding. | Transparent to the loader when supported by the installed decoder. |
 | String dictionary / shared dictionary | Stores unique strings once and references them by integer index. | Returned as ordinary JavaScript string property values. |
 | FSST dictionary | Compresses repeated substrings in string dictionaries. | Returned as ordinary JavaScript string property values. |
 | Vertex dictionary | Stores unique geometry vertices and references them through offsets. | Reconstructed as coordinate arrays by the decoder. |
@@ -139,11 +139,13 @@ surface:
 - layer filtering, tile extents, local coordinates, and optional WGS84 projection; and
 - GeoJSON, binary geometry, WKB GeoArrow, and native GeoArrow output.
 
-The following specification features are not yet represented by the loaders.gl Arrow output:
+Nested/struct properties and Z/M/ZM coordinates were deferred from the MLT 0.1 specification due to
+scope and are not part of the current format surface. They are not represented by the current
+JavaScript decoder or loaders.gl Arrow adapter.
+
+The following remaining specification features are not yet represented by the loaders.gl Arrow output:
 
 - 8-bit integer property columns;
-- nested/struct property columns and vertex-scoped properties;
-- optional Z/M/ZM geometry coordinates; and
 - feature IDs as a dedicated Arrow column.
 
 These are distinct from compression support: a tile may use a supported compression scheme and still
