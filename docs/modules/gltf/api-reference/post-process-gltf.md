@@ -130,7 +130,7 @@ from their implicit-zero base and optional sparse substitutions before topology 
 
 ### Buffers
 
-The following fields will be populated from the supplied `gltf.buffers` parameter (this parameter is populated by the loader via `options.loadLinkedResources: true`):
+The following fields will be populated from the supplied `gltf.buffers` parameter (this parameter is populated by the loader when `options.gltf.loadBuffers: true`):
 
 - `buffer.arrayBuffer` -
 - `buffer.byteOffset` -
