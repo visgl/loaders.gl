@@ -48,7 +48,8 @@ export async function parseWithWorker(
   // options.log object contains functions which cannot be transferred
   // context.fetch & context.parse functions cannot be transferred
   // TODO - decide how to handle logging on workers
-  options = JSON.parse(JSON.stringify(options));
+  options = JSON.parse(JSON.stringify(options || {}));
+  (options as {[key: string]: any})._workerLoaderId = loader.id;
   context = JSON.parse(JSON.stringify(context || {}));
 
   const job = await workerPool.startJob(

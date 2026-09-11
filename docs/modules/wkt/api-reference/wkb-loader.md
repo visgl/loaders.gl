@@ -50,9 +50,22 @@ import {load} from '@loaders.gl/core';
 const data = await load(url, WKBLoader);
 ```
 
+Asynchronous parsing uses the bundled worker automatically when workers are enabled. When
+bundling with Vite, the worker URL can be supplied explicitly:
+
+```typescript
+import WKT_WORKER_URL from '@loaders.gl/wkt/wkt-worker.js?url';
+import {parse} from '@loaders.gl/core';
+import {WKBLoader} from '@loaders.gl/wkt';
+
+const data = await parse(buffer, WKBLoader, {wkb: {workerUrl: WKT_WORKER_URL}});
+```
+
 ## Options
 
-N/A
+| Option          | Type     | Default | Description                             |
+| --------------- | -------- | ------- | --------------------------------------- |
+| `wkb.workerUrl` | `string` | CDN URL | Override the shared WKT/WKB worker URL. |
 
 ## Format Summary
 

@@ -8,8 +8,12 @@ let requestId = 0;
 /**
  * Set up a WebWorkerGlobalScope to talk with the main thread
  * @param loader
+ * @param selectLoader Selects the parser used for each worker request.
  */
-export async function createLoaderWorker(loader: LoaderWithParser) {
+export async function createLoaderWorker(
+  loader: LoaderWithParser,
+  selectLoader: (options: {[key: string]: any}) => LoaderWithParser = () => loader
+) {
   // Check that we are actually in a worker thread
   if (!(await WorkerBody.inWorkerThread())) {
     return;
@@ -23,8 +27,9 @@ export async function createLoaderWorker(loader: LoaderWithParser) {
 
           const {input, options = {}, context = {}} = payload;
 
+          const selectedLoader = selectLoader(options);
           const result = await parseData({
-            loader,
+            loader: selectedLoader,
             arrayBuffer: input,
             options,
             // @ts-expect-error fetch missing

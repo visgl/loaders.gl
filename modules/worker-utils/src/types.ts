@@ -39,6 +39,8 @@ export type WorkerObject = {
   module: string;
   version: string;
   worker?: string | boolean;
+  /** Browser worker filename when it differs from the worker id. */
+  workerFile?: string;
   options: {[key: string]: any};
   deprecatedOptions?: object;
 
