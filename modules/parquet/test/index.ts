@@ -29,3 +29,4 @@ import './parquet-loader.spec';
 import './geoparquet-loader.spec';
 import './geospatial-metadata.spec';
 import './parquet-typed-array.spec';
+import './parquet-issue-3122.cross.spec';
