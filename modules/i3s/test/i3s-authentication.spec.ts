@@ -8,7 +8,7 @@ import {
   type LoaderContext
 } from '@loaders.gl/loader-utils';
 import {afterEach, describe, expect, test, vi} from 'vitest';
-import {readFileSync} from 'node:fs';
+import {fetchFile} from '@loaders.gl/core';
 import {loadFeatureAttributes} from '../src/i3s-attribute-loader-with-parser';
 import I3SNodePagesTiles from '../src/lib/helpers/i3s-nodepages-tiles';
 import {loadStatistics} from '../src/i3s-statistics';
@@ -63,8 +63,8 @@ describe('I3S authentication', () => {
   });
 
   test('applies core credentials to feature attribute requests', async () => {
-    const objectIds = readFixture('./data/attributes/f_0/0/index.bin');
-    const names = readFixture('./data/attributes/f_1/0/index.bin');
+    const objectIds = await readFixture('@loaders.gl/i3s/test/data/attributes/f_0/0/index.bin');
+    const names = await readFixture('@loaders.gl/i3s/test/data/attributes/f_1/0/index.bin');
     const requestedUrls: string[] = [];
     vi.stubGlobal(
       'fetch',
@@ -155,7 +155,6 @@ describe('I3S authentication', () => {
   });
 });
 
-function readFixture(path: string): ArrayBuffer {
-  const bytes = readFileSync(new URL(path, import.meta.url));
-  return bytes.buffer.slice(bytes.byteOffset, bytes.byteOffset + bytes.byteLength);
+async function readFixture(path: string): Promise<ArrayBuffer> {
+  return await (await fetchFile(path)).arrayBuffer();
 }
