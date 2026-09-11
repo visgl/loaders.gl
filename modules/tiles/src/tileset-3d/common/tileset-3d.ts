@@ -87,6 +87,26 @@ export type Tileset3DProps = {
    * @default false
    */
   skipLevelOfDetail?: boolean;
+  /**
+   * SSE above which tiles remain part of the non-skipping base traversal.
+   * @default 1024
+   */
+  baseScreenSpaceError?: number;
+  /**
+   * Required SSE reduction from the nearest requested or loaded ancestor before loading a tile.
+   * @default 16
+   */
+  skipScreenSpaceErrorFactor?: number;
+  /**
+   * Minimum hierarchy levels between requested tiles during skip-LOD traversal.
+   * @default 1
+   */
+  skipLevels?: number;
+  /**
+   * Requests only final tiles that meet the active SSE target when skip-LOD is enabled.
+   * @default false
+   */
+  immediatelyLoadDesiredLevelOfDetail?: boolean;
   /** Enables perspective dynamic SSE to reduce distant, horizon-facing refinement. */
   dynamicScreenSpaceError?: boolean;
   /** Base dynamic SSE fog density in inverse meters. */
@@ -154,6 +174,14 @@ type Props = {
   maximumScreenSpaceError: number;
   /** Whether replacement traversal may skip levels while retaining ancestor coverage. */
   skipLevelOfDetail: boolean;
+  /** SSE above which tiles remain part of the non-skipping base traversal. */
+  baseScreenSpaceError: number;
+  /** Required SSE reduction between requested skip-LOD tiles. */
+  skipScreenSpaceErrorFactor: number;
+  /** Minimum hierarchy levels between requested skip-LOD tiles. */
+  skipLevels: number;
+  /** Whether skip-LOD requests only the final desired tiles. */
+  immediatelyLoadDesiredLevelOfDetail: boolean;
   /** Whether perspective dynamic SSE is enabled. */
   dynamicScreenSpaceError: boolean;
   /** Base dynamic SSE fog density in inverse meters. */
@@ -282,6 +310,10 @@ const DEFAULT_PROPS: Props = {
   foveatedTimeDelay: 0.2,
   maximumScreenSpaceError: 8,
   skipLevelOfDetail: false,
+  baseScreenSpaceError: 1024,
+  skipScreenSpaceErrorFactor: 16,
+  skipLevels: 1,
+  immediatelyLoadDesiredLevelOfDetail: false,
   dynamicScreenSpaceError: true,
   dynamicScreenSpaceErrorDensity: 2.0e-4,
   dynamicScreenSpaceErrorFactor: 24,
