@@ -3,7 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import type {LoaderOptions, LoaderWithParser} from '@loaders.gl/loader-utils';
-import {resolvePath} from '@loaders.gl/loader-utils';
+import {getAuthenticatedFetch, resolvePath} from '@loaders.gl/loader-utils';
 import type {I3SLoaderOptions} from './i3s-loader';
 import type {I3STileAttributes} from './lib/parsers/parse-i3s-attribute';
 import type {Field} from './types';
@@ -70,30 +70,29 @@ export async function loadFeatureAttributes(tile, featureId, options = {}) {
 }
 
 async function loadAttribute(url: string, options: LoaderOptions): Promise<I3STileAttributes> {
-  const response = await fetchAttribute(url, options.fetch);
+  const response = await fetchAttribute(url, options);
   const arrayBuffer = await response.arrayBuffer();
   return parseI3STileAttribute(arrayBuffer, options);
 }
 
-async function fetchAttribute(
-  url: string,
-  fetchOptions?: LoaderOptions['fetch']
-): Promise<Response> {
+async function fetchAttribute(url: string, options: LoaderOptions): Promise<Response> {
   const resolvedUrl = resolvePath(url);
+  const fetchOptions = options.fetch ?? options.core?.fetch;
   const customFetch = typeof fetchOptions === 'function' ? fetchOptions : null;
   const requestInit =
     typeof fetchOptions === 'object' && fetchOptions !== null
       ? (fetchOptions as RequestInit)
       : undefined;
 
-  if (customFetch) {
-    return customFetch(resolvedUrl, requestInit);
-  }
-
-  if (globalThis.loaders?.fetchNode && !isRequestUrl(resolvedUrl) && !isDataUrl(resolvedUrl)) {
+  if (
+    !customFetch &&
+    globalThis.loaders?.fetchNode &&
+    !isRequestUrl(resolvedUrl) &&
+    !isDataUrl(resolvedUrl)
+  ) {
     return globalThis.loaders.fetchNode(resolvedUrl, requestInit);
   }
-  return fetch(resolvedUrl, requestInit);
+  return getAuthenticatedFetch(options)(resolvedUrl);
 }
 
 function isRequestUrl(url: string): boolean {

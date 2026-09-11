@@ -5,7 +5,8 @@
 import {I3SNodePageLoaderWithParser} from '../../i3s-node-page-loader-with-parser';
 import {normalizeTileNonUrlData} from '../parsers/parse-i3s';
 import {getUrlWithToken, generateTilesetAttributeUrls} from '../utils/url-utils';
-import type {LoaderOptions} from '@loaders.gl/loader-utils';
+import type {FetchLike, LoaderContext, LoaderOptions} from '@loaders.gl/loader-utils';
+import {getAuthenticatedFetch} from '@loaders.gl/loader-utils';
 import {
   LodSelection,
   NodePage,
@@ -50,6 +51,7 @@ export default class I3SNodePagesTiles {
   textureDefinitionsSelectedFormats: ({format: I3STextureFormat; name: string} | null)[] = [];
   nodesInNodePages: number;
   url: string;
+  private readonly fetchFunction: FetchLike;
   private textureLoaderOptions: {[key: string]: any} = {};
 
   /**
@@ -58,14 +60,21 @@ export default class I3SNodePagesTiles {
    * @param tileset - i3s tileset header ('layers/0')
    * @param url - tileset url
    * @param options - i3s loader options
+   * @param context - loader context carrying the authenticated fetch function
    */
-  constructor(tileset: SceneLayer3D, url: string = '', options: LoaderOptions) {
+  constructor(
+    tileset: SceneLayer3D,
+    url: string = '',
+    options: LoaderOptions,
+    context?: LoaderContext
+  ) {
     this.tileset = {...tileset}; // spread the tileset to avoid circular reference
     this.url = url;
     const nodePageDefinition = tileset.nodePages || tileset.pointNodePages;
     this.nodesPerPage = nodePageDefinition?.nodesPerPage || 64;
     this.lodSelectionMetricType = nodePageDefinition?.lodSelectionMetricType;
     this.options = options;
+    this.fetchFunction = context?.fetch || getAuthenticatedFetch(options);
     this.nodesInNodePages = 0;
 
     this.initSelectedFormatsForTextureDefinitions(tileset);
@@ -85,7 +94,7 @@ export default class I3SNodePagesTiles {
       );
       this.pendingNodePages[pageIndex] = {
         status: 'Pending',
-        promise: loadNodePage(nodePageUrl, this.options)
+        promise: loadNodePage(nodePageUrl, this.fetchFunction)
       };
       this.nodePages[pageIndex] = await this.pendingNodePages[pageIndex].promise;
       this.nodesInNodePages += this.nodePages[pageIndex].nodes.length;
@@ -392,20 +401,14 @@ export default class I3SNodePagesTiles {
   }
 }
 
-async function loadNodePage(url: string, options: LoaderOptions): Promise<NodePage> {
-  const fetchFunction =
-    typeof options.fetch === 'function'
-      ? options.fetch
-      : typeof options.core?.fetch === 'function'
-        ? options.core.fetch
-        : fetch;
+async function loadNodePage(url: string, fetchFunction: FetchLike): Promise<NodePage> {
   const response = await fetchFunction(url);
   if (!response.ok) {
     throw new Error(`Failed to load I3S node page: ${response.status} ${response.statusText}`);
   }
 
   const arrayBuffer = await response.arrayBuffer();
-  return await I3SNodePageLoaderWithParser.parse(arrayBuffer, options);
+  return await I3SNodePageLoaderWithParser.parse(arrayBuffer);
 }
 
 function getSupportedGPUTextureFormats(gl?: WebGLRenderingContext): Set<string> {
