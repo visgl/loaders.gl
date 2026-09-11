@@ -63,8 +63,8 @@ const data = await parse(buffer, WKBLoader, {wkb: {workerUrl: WKT_WORKER_URL}});
 
 ## Options
 
-| Option | Type | Default | Description |
-| --- | --- | --- | --- |
+| Option          | Type     | Default | Description                             |
+| --------------- | -------- | ------- | --------------------------------------- |
 | `wkb.workerUrl` | `string` | CDN URL | Override the shared WKT/WKB worker URL. |
 
 ## Format Summary
