@@ -139,9 +139,11 @@ surface:
 - layer filtering, tile extents, local coordinates, and optional WGS84 projection; and
 - GeoJSON, binary geometry, WKB GeoArrow, and native GeoArrow output.
 
-Nested/struct properties and Z/M/ZM coordinates were deferred from the MLT 0.1 specification due to
-scope and are not part of the current format surface. They are not represented by the current
-JavaScript decoder or loaders.gl Arrow adapter.
+General nested property hierarchies and Z/M/ZM coordinates were deferred from the MLT 0.1
+specification due to scope. The JavaScript decoder does support the STRUCT/shared-dictionary form
+with optional string children, but exposes those child vectors in flattened form; loaders.gl copies
+their values into top-level Arrow property columns without preserving the nested hierarchy or
+vertex-scoped properties. Z/M/ZM coordinates remain outside the current decoder and adapter path.
 
 The following remaining specification features are not yet represented by the loaders.gl Arrow output:
 
