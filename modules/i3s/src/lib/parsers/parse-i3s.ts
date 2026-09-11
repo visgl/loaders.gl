@@ -248,7 +248,7 @@ export async function normalizeTilesetData(tileset : SceneLayer3D, options : Loa
   let root: I3STileHeader | I3STilesetHeader;
   const nodePageDefinition = tileset.nodePages || tileset.pointNodePages;
   if (nodePageDefinition) {
-    nodePagesTile = new I3SNodePagesTiles(tileset, url, options);
+    nodePagesTile = new I3SNodePagesTiles(tileset, url, options, context);
     root = await nodePagesTile.formTileFromNodePages(nodePageDefinition.rootIndex || 0);
   } else {
     const parseOptions =
