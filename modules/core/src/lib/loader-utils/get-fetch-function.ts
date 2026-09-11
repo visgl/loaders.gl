@@ -27,8 +27,9 @@ export function getFetchFunction(
   if (typeof fetchOption === 'function') {
     fetchFunction = fetchOption;
   } else if (isObject(fetchOption)) {
+    const baseFetch = context?.fetch || fetchFile;
     fetchFunction = (url, requestOptions) =>
-      fetchFile(url, mergeFetchOptions(fetchOption as RequestInit, requestOptions));
+      baseFetch(url, mergeFetchOptions(fetchOption as RequestInit, requestOptions));
   } else if (context?.fetch) {
     fetchFunction = context.fetch;
   } else {
