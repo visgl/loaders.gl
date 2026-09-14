@@ -12,7 +12,7 @@ test('CryptoWorker', async () => {
   expect(hash, 'CRC32 Hash correct').toBe('khuskQ==');
   hash = await processOnWorker(CryptoWorker, binaryData.slice(0), {
     operation: 'crc32c',
-    workerLocation: 'test'
+    _workerType: 'test'
   });
   expect(hash, 'CRC32c Hash correct').toBe('PDGE8A==');
   hash = await processOnWorker(CryptoWorker, binaryData.slice(0), {
