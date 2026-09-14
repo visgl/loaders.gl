@@ -156,16 +156,16 @@ records i3dm orientation support, including octahedrally encoded instance direct
 ## Metadata topology
 
 The loader preserves metadata declarations at every currently representable level of the 3D Tiles
-hierarchy: inline schema and schema URI, tileset groups and metadata, explicit tile and content
-metadata, and the raw property-table references carried by implicit subtrees. Generated implicit
-headers expose subtree references through `implicitMetadata`; explicit and generated tile headers
-retain `metadata`, while content entries retain `metadata` and `group`.
+hierarchy: inline or external schemas, tileset groups and metadata, explicit tile and content
+metadata, and property-table references carried by implicit subtrees. For draft glTF subtrees it
+also decodes property-table rows and standard tile/content attribute accessors. Available rows are
+tightly packed, so sparse availability is mapped to the matching row before URI substitution or
+attribute overrides are applied.
 
-These fields are deliberately lossless rather than decoded. Applications can use the class and
-property references together with their own schema/property-table implementation, but loaders.gl
-does not yet resolve binary values, inheritance, or metadata-derived bounding volumes. See the
-[3D Tiles compatibility matrix](../formats/3d-tiles#extensions-and-metadata) for the current
-boundary.
+Generated implicit headers expose the decoded tile and content rows through `implicitMetadata`.
+Property-backed URI templates use content properties first, then tile properties, and finally the
+implicit coordinate placeholders. Supported standard attributes can override bounding volumes,
+geometric error, refinement, and transforms for their corresponding generated headers.
 
 ## URLs, Authentication, and Archives
 
@@ -221,9 +221,9 @@ The underscored SSE field is diagnostic rather than stable API. Use these values
 
 - Implicit multiple-content availability is materialized in source order. Applications still decide
   how to compose or render heterogeneous content types returned by the streams.
-- Subtree metadata references (`propertyTables`, `tileMetadata`, `contentMetadata`, and
-  `subtreeMetadata`) are preserved on generated headers as `implicitMetadata`. The runtime does not
-  yet decode property-table classes, enums, or values.
+- Subtree metadata references and decoded tile/content property rows are preserved on generated
+  headers as `implicitMetadata`. Subtree-level metadata inheritance and metadata-derived bounding
+  volumes beyond the supported standard attribute semantics are not applied automatically.
 - S2-derived implicit descendants use a conservative root oriented box rather than recomputing a tight S2 box in the `@loaders.gl/tiles` runtime.
 - Lazy hierarchy metadata is source-managed; custom source implementations must provide `loadTileChildren` to use the same traversal hook.
 

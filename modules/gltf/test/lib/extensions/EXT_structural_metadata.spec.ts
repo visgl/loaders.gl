@@ -477,6 +477,48 @@ test('gltf#EXT_structural_metadata decodes fixed numeric and enum property varia
   expect(properties.emptyArray.data).toEqual([]);
 });
 
+test('gltf#EXT_structural_metadata loads an external schema before decoding tables', async () => {
+  const bytes = new Uint8Array([7, 9]);
+  const gltf = {
+    buffers: [{arrayBuffer: bytes.buffer, byteOffset: 0, byteLength: bytes.byteLength}],
+    json: {
+      buffers: [{byteLength: bytes.byteLength}],
+      bufferViews: [{buffer: 0, byteOffset: 0, byteLength: bytes.byteLength}],
+      extensions: {
+        EXT_structural_metadata: {
+          schemaUri: 'metadata/schema.json',
+          propertyTables: [{class: 'Sample', count: 2, properties: {value: {values: 0}}}]
+        }
+      }
+    }
+  } as any;
+  const requestedUrls: string[] = [];
+
+  await decodeExtensions(gltf, {gltf: {loadBuffers: true, loadImages: false}}, {
+    baseUrl: 'https://example.com/models/',
+    fetch: async (url: string) => {
+      requestedUrls.push(url);
+      return new Response(
+        JSON.stringify({
+          id: 'external-schema',
+          classes: {
+            Sample: {
+              properties: {
+                value: {type: 'SCALAR', componentType: 'UINT8', required: true}
+              }
+            }
+          }
+        })
+      );
+    }
+  } as any);
+
+  expect(requestedUrls).toEqual(['https://example.com/models/metadata/schema.json']);
+  const extension = gltf.json.extensions.EXT_structural_metadata;
+  expect(extension.schema.id).toBe('external-schema');
+  expect(Array.from(extension.propertyTables[0].properties.value.data)).toEqual([7, 9]);
+});
+
 test('gltf#EXT_structural_metadata validates unsupported property definitions', async () => {
   const makeGLTF = (property: any, schema: any = {}) => ({
     buffers: [{arrayBuffer: new Uint8Array([1, 0]).buffer, byteOffset: 0, byteLength: 2}],

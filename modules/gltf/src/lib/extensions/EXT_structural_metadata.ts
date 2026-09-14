@@ -36,13 +36,34 @@ import {
   parseFixedLengthArrayNumeric,
   getPropertyDataString
 } from './utils/3d-tiles-utils';
-import {ensureArrayBuffer} from '@loaders.gl/loader-utils';
+import {ensureArrayBuffer, type LoaderContext} from '@loaders.gl/loader-utils';
+import {resolveUrl} from '../gltf-utils/resolve-url';
 
 const EXT_STRUCTURAL_METADATA_NAME = 'EXT_structural_metadata';
 export const name = EXT_STRUCTURAL_METADATA_NAME;
 
-export async function decode(gltfData: GLTFWithBuffers, options: GLTFLoaderOptions): Promise<void> {
+export async function decode(
+  gltfData: GLTFWithBuffers,
+  options: GLTFLoaderOptions,
+  context?: LoaderContext
+): Promise<void> {
   const iterator = new GLTFIterator(gltfData);
+  const extension: GLTF_EXT_structural_metadata_GLTF | undefined = iterator.getExtension(
+    EXT_STRUCTURAL_METADATA_NAME
+  );
+  if (options.gltf?.loadBuffers && extension?.schemaUri && !extension.schema) {
+    if (!context?.fetch) {
+      throw new Error('EXT_structural_metadata: a loader context is required to load schemaUri');
+    }
+    const schemaUrl = resolveUrl(extension.schemaUri, options, context);
+    const response = await context.fetch(schemaUrl);
+    if (!response.ok) {
+      throw new Error(
+        `EXT_structural_metadata: failed to load schemaUri ${schemaUrl} (${response.status})`
+      );
+    }
+    extension.schema = (await response.json()) as GLTF_EXT_structural_metadata_Schema;
+  }
   decodeExtStructuralMetadata(iterator, options);
 }
 

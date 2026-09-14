@@ -6,6 +6,7 @@ import {LOD_METRIC_TYPE, TILE_REFINEMENT, TILE_TYPE} from '../../constants';
 
 const QUADTREE_CHILD_COUNT = 4;
 const OCTREE_CHILD_COUNT = 8;
+const AVAILABILITY_RANK_CACHE = new WeakMap<ImplicitAvailability, Uint32Array>();
 
 /** Global coordinates of a tile in an implicit quadtree or octree. */
 export type ImplicitTileCoordinates = {
@@ -558,13 +559,20 @@ function getAvailabilityRank(availability: ImplicitAvailability, index: number):
   if (availability.constant === 1) {
     return index;
   }
-  let rank = 0;
-  for (let candidateIndex = 0; candidateIndex < index; candidateIndex++) {
-    if (getAvailabilityValue(availability, candidateIndex)) {
-      rank++;
-    }
+  if (availability.constant === 0) {
+    return 0;
   }
-  return rank;
+  let ranks = AVAILABILITY_RANK_CACHE.get(availability);
+  if (!ranks) {
+    const bitCount = (availability.explicitBitstream?.byteLength || 0) * 8;
+    ranks = new Uint32Array(bitCount + 1);
+    for (let candidateIndex = 0; candidateIndex < bitCount; candidateIndex++) {
+      ranks[candidateIndex + 1] =
+        ranks[candidateIndex] + Number(getAvailabilityValue(availability, candidateIndex));
+    }
+    AVAILABILITY_RANK_CACHE.set(availability, ranks);
+  }
+  return ranks[index];
 }
 
 /** Locates a concrete generated URI in a retained glTF package. */
@@ -615,9 +623,11 @@ function formatImplicitTileHeader(
   const primaryContentAvailability = Array.isArray(subtree.contentAvailability)
     ? subtree.contentAvailability[0]
     : subtree.contentAvailability;
-  const contentPropertyIndex = primaryContentAvailability
-    ? getAvailabilityRank(primaryContentAvailability, availabilityIndex)
-    : -1;
+  const contentPropertyIndex =
+    primaryContentAvailability &&
+    getAvailabilityValue(primaryContentAvailability, availabilityIndex)
+      ? getAvailabilityRank(primaryContentAvailability, availabilityIndex)
+      : -1;
   const contentProperties = subtree.contentPropertyRows?.[contentPropertyIndex];
   const tileTemplateProperties =
     subtree.tileTemplatePropertyRows?.[tilePropertyIndex] || tileProperties;

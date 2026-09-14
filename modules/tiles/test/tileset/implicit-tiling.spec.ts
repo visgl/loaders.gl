@@ -97,6 +97,32 @@ test('implicit tiling preserves content-header indexes for sparse streams', () =
   expect(result.root.contentUrl).toBe('https://example.com/b/0.json');
   expect(result.root.content).toEqual({group: 'b', uri: 'https://example.com/b/0.json'});
 });
+test('implicit tiling maps sparse content metadata and attributes only to available rows', () => {
+  const descriptor = createDescriptor({
+    contentUrlTemplate: 'https://example.com/content/{tileId}.b3dm',
+    maximumLevel: 1
+  });
+  const result = materializeImplicitSubtree(
+    {
+      tileAvailability: {constant: 1},
+      contentAvailability: {explicitBitstream: new Uint8Array([0b00010100])},
+      childSubtreeAvailability: {constant: 0},
+      contentAttributes: {
+        CONTENT_BOUNDING_SPHERE: new Float64Array([1, 2, 3, 4, 5, 6, 7, 8])
+      },
+      contentPropertyRows: [{tileId: 'first'}, {tileId: 'second'}]
+    },
+    createImplicitSubtreeReference(descriptor, {level: 0, x: 0, y: 0, z: 0})
+  );
+
+  expect(result.root.contentUrl).toBeFalsy();
+  expect(result.root.children[0].contentUrl).toBeFalsy();
+  expect(result.root.children[1].contentUrl).toBe('https://example.com/content/first.b3dm');
+  expect(result.root.children[1].content.boundingVolume.sphere).toEqual([1, 2, 3, 4]);
+  expect(result.root.children[2].contentUrl).toBeFalsy();
+  expect(result.root.children[3].contentUrl).toBe('https://example.com/content/second.b3dm');
+  expect(result.root.children[3].content.boundingVolume.sphere).toEqual([5, 6, 7, 8]);
+});
 test('implicit tiling treats maximumLevel as the last zero-based available level', () => {
   const descriptor = createDescriptor({maximumLevel: 1});
   const subtree: ParsedImplicitSubtree = {

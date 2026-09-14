@@ -64,7 +64,7 @@ Implicit subtree availability uses the same source boundary but a different life
 | `b3dm`, `i3dm`, `cmpt`, or `pnts` four-byte magic | Legacy 3D Tiles binary content | Uses the matching tile parser. Composite children inspect their own embedded magic. |
 | `glTF` four-byte magic | Binary glTF (`glb`) | Uses the glTF tile-content path. |
 | glTF or GLB with top-level `3DTILES_tileset` | Draft 2.0 tileset | Adapts the explicit node hierarchy and retains external assets for lazy loading. |
-| glTF or GLB with top-level `3DTILES_subtree` | Draft 2.0 subtree | Classifies deterministically; subtree interpretation is added by the implicit-spatial tranche. |
+| glTF or GLB with top-level `3DTILES_subtree` | Draft 2.0 subtree | Decodes availability, attributes, and property-table rows, then materializes one hierarchy chunk lazily. |
 | `subt` four-byte magic requested by an implicit reference | Parsed subtree availability | Materializes one hierarchy chunk and leaves child subtrees lazy. |
 | JSON with object-valued `asset` and `root` properties | External tileset | Validates required extensions, normalizes headers, and attaches the nested hierarchy. |
 | JSON with an object-valued `asset` property and no tileset `root` | JSON glTF (`gltf`) | Uses the glTF tile-content path. |
@@ -72,6 +72,10 @@ Implicit subtree availability uses the same source boundary but a different life
 This makes signed URLs such as `content/42?token=...`, extensionless endpoints, and misleading filename extensions behave consistently. The server MIME type is not used to choose between tileset and tile parsing.
 
 Unsupported binary magic, malformed JSON, non-object JSON, and JSON without a supported structure fail at the resource boundary. External tileset JSON is reused after classification rather than parsed a second time. glTF resources are likewise parsed once, then classified as render content, a draft tileset, or a draft subtree. Unknown optional extensions remain available in source metadata, while unsupported required extensions fail before header traversal begins.
+
+Draft glTF packages keep URI- and `bufferView`-backed `files` available to the same resolver. The
+loader fetches only the buffers required to interpret the current tileset or subtree hierarchy;
+content and child-subtree files remain lazy until traversal requests their concrete URI.
 
 ### The `isTileset` option
 
