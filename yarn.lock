@@ -4651,7 +4651,7 @@ __metadata:
     "@probe.gl/log": "npm:^4.1.1"
     long: "npm:^5.2.1"
   peerDependencies:
-    "@loaders.gl/core": ~4.4.0
+    "@loaders.gl/core": ~4.5.0
   languageName: unknown
   linkType: soft
 
@@ -4668,7 +4668,7 @@ __metadata:
     "@math.gl/polygon": "npm:^4.1.0"
     apache-arrow: "npm:>= 17.0.0"
   peerDependencies:
-    "@loaders.gl/core": ~4.4.0
+    "@loaders.gl/core": ~4.5.0
   languageName: unknown
   linkType: soft
 
@@ -4682,7 +4682,7 @@ __metadata:
     "@types/bson": "npm:4.2.0"
     bson: "npm:4.2.0"
   peerDependencies:
-    "@loaders.gl/core": ~4.4.0
+    "@loaders.gl/core": ~4.5.0
   languageName: unknown
   linkType: soft
 
@@ -4701,7 +4701,7 @@ __metadata:
     snappyjs: "npm:^0.6.1"
     zstd-codec: "npm:^0.1"
   peerDependencies:
-    "@loaders.gl/core": ~4.4.0
+    "@loaders.gl/core": ~4.5.0
   dependenciesMeta:
     "@types/brotli":
       optional: true
@@ -4747,7 +4747,7 @@ __metadata:
     "@types/crypto-js": "npm:^4.0.2"
     crypto-js: "npm:^3.0.0 || ^4.0.0"
   peerDependencies:
-    "@loaders.gl/core": ~4.4.0
+    "@loaders.gl/core": ~4.5.0
   languageName: unknown
   linkType: soft
 
@@ -4759,7 +4759,7 @@ __metadata:
     "@loaders.gl/schema": "npm:4.5.1"
     d3-dsv: "npm:^1.2.0"
   peerDependencies:
-    "@loaders.gl/core": ~4.4.0
+    "@loaders.gl/core": ~4.5.0
   languageName: unknown
   linkType: soft
 
@@ -4774,7 +4774,7 @@ __metadata:
     "@types/draco3d": "npm:^1.4.9"
     draco3d: "npm:1.5.7"
   peerDependencies:
-    "@loaders.gl/core": ~4.4.0
+    "@loaders.gl/core": ~4.5.0
   languageName: unknown
   linkType: soft
 
@@ -4786,7 +4786,7 @@ __metadata:
     "@loaders.gl/schema": "npm:4.5.1"
     xlsx: "npm:^0.18.5"
   peerDependencies:
-    "@loaders.gl/core": ~4.4.0
+    "@loaders.gl/core": ~4.5.0
   languageName: unknown
   linkType: soft
 
@@ -4801,7 +4801,7 @@ __metadata:
     flatgeobuf: "npm:3.27.2"
     stream-buffers: "npm:3.0.2"
   peerDependencies:
-    "@loaders.gl/core": ~4.4.0
+    "@loaders.gl/core": ~4.5.0
   languageName: unknown
   linkType: soft
 
@@ -4812,7 +4812,7 @@ __metadata:
     "@math.gl/polygon": "npm:^4.1.0"
     apache-arrow: "npm:>= 17.0.0"
   peerDependencies:
-    "@loaders.gl/core": ~4.4.0
+    "@loaders.gl/core": ~4.5.0
   languageName: unknown
   linkType: soft
 
@@ -4830,7 +4830,7 @@ __metadata:
     path: "npm:^0.12.7"
     sql.js: "npm:1.8.0"
   peerDependencies:
-    "@loaders.gl/core": ~4.4.0
+    "@loaders.gl/core": ~4.5.0
   languageName: unknown
   linkType: soft
 
@@ -4842,7 +4842,7 @@ __metadata:
     fast-xml-parser: "npm:^5.3.6"
     geotiff: "npm:^2.1.0"
   peerDependencies:
-    "@loaders.gl/core": ~4.4.0
+    "@loaders.gl/core": ~4.5.0
   languageName: unknown
   linkType: soft
 
@@ -4859,7 +4859,7 @@ __metadata:
     "@math.gl/proj4": "npm:^4.1.0"
     pbf: "npm:^3.2.1"
   peerDependencies:
-    "@loaders.gl/core": ~4.4.0
+    "@loaders.gl/core": ~4.5.0
   languageName: unknown
   linkType: soft
 
@@ -4875,7 +4875,7 @@ __metadata:
     "@math.gl/core": "npm:^4.1.0"
     meshoptimizer: "npm:^1.2.0"
   peerDependencies:
-    "@loaders.gl/core": ~4.4.0
+    "@loaders.gl/core": ~4.5.0
   languageName: unknown
   linkType: soft
 
@@ -4883,7 +4883,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@loaders.gl/graphs@workspace:modules/graphs"
   peerDependencies:
-    "@loaders.gl/core": ~4.4.0
+    "@loaders.gl/core": ~4.5.0
   languageName: unknown
   linkType: soft
 
@@ -4905,7 +4905,7 @@ __metadata:
     "@math.gl/culling": "npm:^4.1.0"
     "@math.gl/geospatial": "npm:^4.1.0"
   peerDependencies:
-    "@loaders.gl/core": ~4.4.0
+    "@loaders.gl/core": ~4.5.0
   languageName: unknown
   linkType: soft
 
@@ -4916,7 +4916,7 @@ __metadata:
     "@loaders.gl/loader-utils": "npm:4.5.1"
     "@types/get-pixels": "npm:^3.3.2"
   peerDependencies:
-    "@loaders.gl/core": ~4.4.0
+    "@loaders.gl/core": ~4.5.0
   languageName: unknown
   linkType: soft
 
@@ -4929,7 +4929,7 @@ __metadata:
     "@loaders.gl/schema": "npm:4.5.1"
     "@loaders.gl/schema-utils": "npm:4.5.1"
   peerDependencies:
-    "@loaders.gl/core": ~4.4.0
+    "@loaders.gl/core": ~4.5.0
   languageName: unknown
   linkType: soft
 
@@ -4943,7 +4943,7 @@ __metadata:
     "@tmcw/togeojson": "npm:^4.5.0"
     "@xmldom/xmldom": "npm:^0.8.12"
   peerDependencies:
-    "@loaders.gl/core": ~4.4.0
+    "@loaders.gl/core": ~4.5.0
   languageName: unknown
   linkType: soft
 
@@ -4956,7 +4956,7 @@ __metadata:
     "@loaders.gl/schema-utils": "npm:4.5.1"
     laz-perf: "npm:^0.0.6"
   peerDependencies:
-    "@loaders.gl/core": ~4.4.0
+    "@loaders.gl/core": ~4.5.0
   languageName: unknown
   linkType: soft
 
@@ -4987,7 +4987,7 @@ __metadata:
   dependencies:
     "@math.gl/core": "npm:^4.1.0"
   peerDependencies:
-    "@loaders.gl/core": ~4.4.0
+    "@loaders.gl/core": ~4.5.0
   languageName: unknown
   linkType: soft
 
@@ -5000,7 +5000,7 @@ __metadata:
     "@loaders.gl/schema": "npm:4.5.1"
     "@maplibre/mlt": "npm:^1.1.6"
   peerDependencies:
-    "@loaders.gl/core": ~4.4.0
+    "@loaders.gl/core": ~4.5.0
   languageName: unknown
   linkType: soft
 
@@ -5019,7 +5019,7 @@ __metadata:
     pbf: "npm:^3.2.1"
     zod: "npm:^4.1.12"
   peerDependencies:
-    "@loaders.gl/core": ~4.4.0
+    "@loaders.gl/core": ~4.5.0
   languageName: unknown
   linkType: soft
 
@@ -5029,7 +5029,7 @@ __metadata:
   dependencies:
     "@loaders.gl/loader-utils": "npm:4.5.1"
   peerDependencies:
-    "@loaders.gl/core": ~4.4.0
+    "@loaders.gl/core": ~4.5.0
   languageName: unknown
   linkType: soft
 
@@ -5041,7 +5041,7 @@ __metadata:
     "@loaders.gl/schema": "npm:4.5.1"
     "@loaders.gl/schema-utils": "npm:4.5.1"
   peerDependencies:
-    "@loaders.gl/core": ~4.4.0
+    "@loaders.gl/core": ~4.5.0
   languageName: unknown
   linkType: soft
 
@@ -5077,7 +5077,7 @@ __metadata:
     varint: "npm:^6.0.0"
     zstd-codec: "npm:^0.1"
   peerDependencies:
-    "@loaders.gl/core": ~4.4.0
+    "@loaders.gl/core": ~4.5.0
     apache-arrow: ">= 17.0.0"
   languageName: unknown
   linkType: soft
@@ -5090,7 +5090,7 @@ __metadata:
     "@loaders.gl/schema": "npm:4.5.1"
     "@loaders.gl/schema-utils": "npm:4.5.1"
   peerDependencies:
-    "@loaders.gl/core": ~4.4.0
+    "@loaders.gl/core": ~4.5.0
   languageName: unknown
   linkType: soft
 
@@ -5102,7 +5102,7 @@ __metadata:
     "@loaders.gl/schema": "npm:4.5.1"
     "@loaders.gl/schema-utils": "npm:4.5.1"
   peerDependencies:
-    "@loaders.gl/core": ~4.4.0
+    "@loaders.gl/core": ~4.5.0
   languageName: unknown
   linkType: soft
 
@@ -5116,7 +5116,7 @@ __metadata:
     "@loaders.gl/schema": "npm:4.5.1"
     pmtiles: "npm:^3.0.4"
   peerDependencies:
-    "@loaders.gl/core": ~4.4.0
+    "@loaders.gl/core": ~4.5.0
   languageName: unknown
   linkType: soft
 
@@ -5134,7 +5134,7 @@ __metadata:
     through: "npm:^2.3.8"
     web-streams-polyfill: "npm:^4.0.0"
   peerDependencies:
-    "@loaders.gl/core": ~4.4.0
+    "@loaders.gl/core": ~4.5.0
   languageName: unknown
   linkType: soft
 
@@ -5148,7 +5148,7 @@ __metadata:
     "@math.gl/core": "npm:^4.1.0"
     "@math.gl/proj4": "npm:^4.1.0"
   peerDependencies:
-    "@loaders.gl/core": ~4.4.0
+    "@loaders.gl/core": ~4.5.0
   languageName: unknown
   linkType: soft
 
@@ -5161,7 +5161,7 @@ __metadata:
     "@types/geojson": "npm:^7946.0.7"
     apache-arrow: "npm:>= 17.0.0"
   peerDependencies:
-    "@loaders.gl/core": ~4.4.0
+    "@loaders.gl/core": ~4.5.0
   languageName: unknown
   linkType: soft
 
@@ -5183,7 +5183,7 @@ __metadata:
     "@loaders.gl/schema": "npm:4.5.1"
     "@math.gl/proj4": "npm:^4.1.0"
   peerDependencies:
-    "@loaders.gl/core": ~4.4.0
+    "@loaders.gl/core": ~4.5.0
   languageName: unknown
   linkType: soft
 
@@ -5198,7 +5198,7 @@ __metadata:
     zod: "npm:^4.1.12"
     zstd-codec: "npm:^0.1.0"
   peerDependencies:
-    "@loaders.gl/core": ~4.5.0-alpha.1
+    "@loaders.gl/core": ~4.5.0
   languageName: unknown
   linkType: soft
 
@@ -5211,7 +5211,7 @@ __metadata:
     "@loaders.gl/schema": "npm:4.5.1"
     "@mapbox/martini": "npm:^0.2.0"
   peerDependencies:
-    "@loaders.gl/core": ~4.4.0
+    "@loaders.gl/core": ~4.5.0
   languageName: unknown
   linkType: soft
 
@@ -5226,7 +5226,7 @@ __metadata:
     "@math.gl/types": "npm:^4.1.0"
     ktx-parse: "npm:^0.7.0"
   peerDependencies:
-    "@loaders.gl/core": ~4.4.0
+    "@loaders.gl/core": ~4.5.0
     texture-compressor: ^1.0.2
   peerDependenciesMeta:
     texture-compressor:
@@ -5271,7 +5271,7 @@ __metadata:
     morgan: "npm:~1.9.1"
     uuid: "npm:^9.0.0"
   peerDependencies:
-    "@loaders.gl/core": ~4.4.0
+    "@loaders.gl/core": ~4.5.0
   bin:
     i3s-server: ./bin/i3s-server.js
     tile-converter: ./bin/converter.js
@@ -5291,7 +5291,7 @@ __metadata:
     "@math.gl/web-mercator": "npm:^4.1.0"
     "@probe.gl/stats": "npm:^4.1.1"
   peerDependencies:
-    "@loaders.gl/core": ~4.5.0-alpha.2
+    "@loaders.gl/core": ~4.5.0
   languageName: unknown
   linkType: soft
 
@@ -5303,7 +5303,7 @@ __metadata:
     apache-arrow: "npm:>= 17.0.0"
     zod: "npm:^4.1.12"
   peerDependencies:
-    "@loaders.gl/core": ~4.4.0
+    "@loaders.gl/core": ~4.5.0
   languageName: unknown
   linkType: soft
 
@@ -5315,7 +5315,7 @@ __metadata:
     "@loaders.gl/worker-utils": "npm:4.5.1"
     gifshot: "npm:^0.4.5"
   peerDependencies:
-    "@loaders.gl/core": ~4.4.0
+    "@loaders.gl/core": ~4.5.0
   languageName: unknown
   linkType: soft
 
@@ -5328,7 +5328,7 @@ __metadata:
     "@loaders.gl/schema": "npm:4.5.1"
     fuzzer: "npm:^0.2.1"
   peerDependencies:
-    "@loaders.gl/core": ~4.4.0
+    "@loaders.gl/core": ~4.5.0
   languageName: unknown
   linkType: soft
 
@@ -5343,7 +5343,7 @@ __metadata:
     "@turf/rewind": "npm:^5.1.5"
     deep-strict-equal: "npm:^0.2.0"
   peerDependencies:
-    "@loaders.gl/core": ~4.4.0
+    "@loaders.gl/core": ~4.5.0
   languageName: unknown
   linkType: soft
 
@@ -5351,7 +5351,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@loaders.gl/worker-utils@workspace:modules/worker-utils"
   peerDependencies:
-    "@loaders.gl/core": ~4.4.0
+    "@loaders.gl/core": ~4.5.0
   languageName: unknown
   linkType: soft
 
@@ -5363,7 +5363,7 @@ __metadata:
     "@loaders.gl/schema": "npm:4.5.1"
     fast-xml-parser: "npm:^5.3.6"
   peerDependencies:
-    "@loaders.gl/core": ~4.4.0
+    "@loaders.gl/core": ~4.5.0
   languageName: unknown
   linkType: soft
 
@@ -5373,7 +5373,7 @@ __metadata:
   dependencies:
     zarr: "npm:^0.5.0"
   peerDependencies:
-    "@loaders.gl/core": ~4.4.0
+    "@loaders.gl/core": ~4.5.0
   languageName: unknown
   linkType: soft
 
@@ -5387,7 +5387,7 @@ __metadata:
     jszip: "npm:^3.1.5"
     md5: "npm:^2.3.0"
   peerDependencies:
-    "@loaders.gl/core": ~4.4.0
+    "@loaders.gl/core": ~4.5.0
   languageName: unknown
   linkType: soft
 
@@ -23808,15 +23808,15 @@ __metadata:
     "@fortawesome/fontawesome-svg-core": "npm:^1.2.34"
     "@fortawesome/free-solid-svg-icons": "npm:^5.15.2"
     "@fortawesome/react-fontawesome": "npm:^0.1.14"
-    "@loaders.gl/core": "npm:^4.4.0"
-    "@loaders.gl/geopackage": "npm:^4.4.0"
-    "@loaders.gl/i3s": "npm:^4.4.0"
-    "@loaders.gl/las": "npm:^4.4.0"
-    "@loaders.gl/loader-utils": "npm:^4.4.0"
-    "@loaders.gl/obj": "npm:^4.4.0"
-    "@loaders.gl/ply": "npm:^4.4.0"
-    "@loaders.gl/schema": "npm:^4.4.0"
-    "@loaders.gl/schema-utils": "npm:^4.4.0"
+    "@loaders.gl/core": "npm:^4.5.0"
+    "@loaders.gl/geopackage": "npm:^4.5.0"
+    "@loaders.gl/i3s": "npm:^4.5.0"
+    "@loaders.gl/las": "npm:^4.5.0"
+    "@loaders.gl/loader-utils": "npm:^4.5.0"
+    "@loaders.gl/obj": "npm:^4.5.0"
+    "@loaders.gl/ply": "npm:^4.5.0"
+    "@loaders.gl/schema": "npm:^4.5.0"
+    "@loaders.gl/schema-utils": "npm:^4.5.0"
     "@luma.gl/constants": "npm:^9.4.0"
     "@luma.gl/core": "npm:^9.4.0"
     "@luma.gl/engine": "npm:^9.4.0"
