@@ -19,17 +19,20 @@ type LoaderContextProps = Omit<LoaderContext, 'fetch' | 'coreApi'> &
  *
  * @param context
  * @param options
- * @param previousContext
+ * @param parentContext
  */
 export function getLoaderContext(
   context: LoaderContextProps,
   options: StrictLoaderOptions,
   parentContext: LoaderContext | null
 ): LoaderContext {
-  // For recursive calls, we already have a context
+  // For recursive calls, preserve the context while applying this loader's options
   // TODO - add any additional loaders to context?
   if (parentContext) {
-    return parentContext;
+    return {
+      ...parentContext,
+      fetch: getFetchFunction(options, parentContext)
+    };
   }
 
   const newContext: LoaderContext = {

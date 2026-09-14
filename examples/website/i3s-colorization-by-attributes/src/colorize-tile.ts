@@ -1,5 +1,6 @@
 import {customizeColors} from '@loaders.gl/i3s';
 import {createFloat16Array, getFloat16Value, setFloat16Value} from '@loaders.gl/schema';
+import type {LoaderOptions} from '@loaders.gl/loader-utils';
 import type {Tile3D} from '@loaders.gl/tiles';
 
 import type {ColorsByAttribute} from './types';
@@ -28,6 +29,10 @@ export async function colorizeTile(
 
       (tile.content as any).customColors = colorsByAttribute;
 
+      const loadOptions = (tile.tileset.loadOptions || {}) as LoaderOptions & {
+        i3s?: {token?: string};
+      };
+
       const newColors = await customizeColors(
         tile.content.attributes.colors,
         tile.content.featureIds,
@@ -35,7 +40,8 @@ export async function colorizeTile(
         tile.tileset.tileset.fields,
         tile.tileset.tileset.attributeStorageInfo,
         colorsByAttribute,
-        (tile.tileset.loadOptions as any).i3s.token
+        loadOptions.i3s?.token,
+        loadOptions
       );
 
       if ((tile.content as any).customColors === colorsByAttribute) {

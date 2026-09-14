@@ -2,7 +2,9 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import {GLTFTextureInfoMetadata} from './gltf-json-schema';
+import type {NumericArray} from '@loaders.gl/loader-utils';
+import type {GLTFTextureInfoMetadata} from './gltf-json-schema';
+import type {GLTFImplicitFeatureIdRange} from './gltf-vector-topology';
 /* eslint-disable camelcase */
 
 /**
@@ -47,6 +49,8 @@ export type GLTF_EXT_mesh_features_featureId = {
   extensions?: Record<string, unknown>;
   extras?: unknown;
 
-  /** This is not part of the spec. GLTFLoader loads feature tables data into this property */
-  data?: unknown;
+  /** This is not part of the spec. GLTFLoader loads feature ID data into this property. */
+  data?: NumericArray;
+  /** Loader-derived zero-allocation range used when feature IDs are assigned by vertex index. */
+  implicit?: GLTFImplicitFeatureIdRange;
 };

@@ -10,6 +10,14 @@ import {FrameState} from '../helpers/frame-state';
 export type TilesetTraverserProps = {
   loadSiblings?: boolean;
   skipLevelOfDetail?: boolean;
+  /** SSE above which tiles remain part of the non-skipping base traversal. */
+  baseScreenSpaceError?: number;
+  /** Required SSE reduction from the nearest requested or loaded ancestor before loading a tile. */
+  skipScreenSpaceErrorFactor?: number;
+  /** Minimum hierarchy levels between requested tiles during skip-LOD traversal. */
+  skipLevels?: number;
+  /** Requests only final tiles that meet the active SSE target when skip-LOD is enabled. */
+  immediatelyLoadDesiredLevelOfDetail?: boolean;
   updateTransforms?: boolean;
   onTraversalEnd?: (frameState) => any;
   viewportTraversersMap?: Record<string, any>;
@@ -19,6 +27,10 @@ export type TilesetTraverserProps = {
 export const DEFAULT_PROPS: Required<TilesetTraverserProps> = {
   loadSiblings: false,
   skipLevelOfDetail: false,
+  baseScreenSpaceError: 1024,
+  skipScreenSpaceErrorFactor: 16,
+  skipLevels: 1,
+  immediatelyLoadDesiredLevelOfDetail: false,
   updateTransforms: true,
   onTraversalEnd: () => {},
   viewportTraversersMap: {},
@@ -27,6 +39,9 @@ export const DEFAULT_PROPS: Required<TilesetTraverserProps> = {
 
 export class TilesetTraverser {
   options: Required<TilesetTraverserProps>;
+
+  /** Whether loaded content has disabled skip-LOD traversal for this tileset. */
+  disableSkipLevelOfDetail: boolean = false;
 
   // fulfill in traverse call
   root: any = null;
@@ -56,6 +71,11 @@ export class TilesetTraverser {
   // TODO nested props
   constructor(options: TilesetTraverserProps) {
     this.options = {...DEFAULT_PROPS, ...options};
+  }
+
+  /** Returns whether skip-LOD traversal is enabled and supported by the loaded content. */
+  isSkipLevelOfDetailEnabled(): boolean {
+    return this.options.skipLevelOfDetail && !this.disableSkipLevelOfDetail;
   }
 
   // tiles should be visible
@@ -142,7 +162,7 @@ export class TilesetTraverser {
         this.loadTile(tile, frameState);
         // Skip-LOD keeps a ready ancestor selected while descendants stream in. This prevents
         // replacement holes when traversal jumps over one or more hierarchy levels.
-        if (stoppedRefining || this.options.skipLevelOfDetail) {
+        if (stoppedRefining || this.isSkipLevelOfDetailEnabled()) {
           this.selectTile(tile, frameState);
         }
       }
@@ -154,6 +174,11 @@ export class TilesetTraverser {
       tile._shouldRefine = shouldRefine && parentRefines;
     }
 
+    this.completeTraversal(frameState);
+  }
+
+  /** Notifies the owning tileset when traversal is complete or its debounce interval expires. */
+  protected completeTraversal(frameState: FrameState): void {
     const newTime = new Date().getTime();
     if (this.traversalFinished(frameState) || newTime - this.lastUpdate > this.updateDebounceTime) {
       this.lastUpdate = newTime;
@@ -170,7 +195,8 @@ export class TilesetTraverser {
 
   /* eslint-disable complexity, max-statements */
   updateAndPushChildren(tile: Tile3D, frameState: FrameState, stack, depth): boolean {
-    const {loadSiblings, skipLevelOfDetail} = this.options;
+    const {loadSiblings} = this.options;
+    const skipLevelOfDetail = this.isSkipLevelOfDetailEnabled();
 
     const children = tile.children;
 

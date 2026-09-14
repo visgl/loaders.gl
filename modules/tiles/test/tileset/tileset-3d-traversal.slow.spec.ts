@@ -264,7 +264,7 @@ test('Tileset3D#loadTiles option', async () => {
   expect(tileLoadCounter).toBe(0);
 });
 
-test('Tileset3D#skipLevelOfDetail retains replacement ancestors as coverage', async () => {
+test('Tileset3D#skipLevelOfDetail releases replacement ancestors after descendants load', async () => {
   expect.assertions(3);
   const tilesetJson = await load(TILESET_REPLACEMENT_URL, Tiles3DLoader);
   const viewport = VIEWPORTS[0];
@@ -281,6 +281,6 @@ test('Tileset3D#skipLevelOfDetail retains replacement ancestors as coverage', as
   await waitForCondition(() => tileLoadCounter > 0, ASYNC_TRAVERSAL_TIMEOUT);
   tileset.update(viewport);
   expect(tileset.options.skipLevelOfDetail).toBe(true);
-  expect(tileset.selectedTiles.some(tile => tile.depth === 0)).toBe(true);
+  expect(tileset.selectedTiles.every(tile => tile.depth > 0)).toBe(true);
   expect(tileset.selectedTiles.length).toBeGreaterThan(1);
 });

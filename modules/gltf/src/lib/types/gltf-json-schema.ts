@@ -560,6 +560,8 @@ export type GLTFMeshPrimitive = {
   }[];
   extensions?: Record<string, unknown>;
   extras?: any;
+  /** Loader-derived primitive-restart topology. This property is not serialized by glTF. */
+  primitiveRestart?: import('./gltf-vector-topology').GLTFPrimitiveRestartData;
   // [k: string]: any;
 };
 

@@ -27,6 +27,12 @@ export type GLTFBoundingVolume = {
   shape: number;
   /** Optional local transform applied to the referenced shape. */
   matrix?: number[];
+  /** Optional local translation, mutually exclusive with `matrix`. */
+  translation?: [number, number, number];
+  /** Optional local quaternion rotation, mutually exclusive with `matrix`. */
+  rotation?: [number, number, number, number];
+  /** Optional local scale, mutually exclusive with `matrix`. */
+  scale?: [number, number, number];
   extensions?: Record<string, unknown>;
   extras?: unknown;
 };

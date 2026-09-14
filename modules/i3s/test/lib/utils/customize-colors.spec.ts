@@ -3,6 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import {afterEach, expect, test, vi} from 'vitest';
+import {createQueryParameterCredential} from '@loaders.gl/loader-utils';
 
 import {customizeColors} from '../../../src/lib/utils/customize-colors';
 
@@ -112,6 +113,38 @@ test('customizeColors returns the original colors when required metadata is abse
       colorOptions
     )
   ).resolves.toBe(colors);
+});
+
+test('customizeColors applies core credentials to attribute requests', async () => {
+  const requestedUrls: string[] = [];
+  vi.stubGlobal('fetch', createAttributeFetch(requestedUrls));
+
+  await customizeColors(
+    colors,
+    [10, 20],
+    attributeUrls,
+    fields,
+    attributeStorageInfo,
+    colorOptions,
+    undefined,
+    {
+      core: {
+        credentials: [
+          createQueryParameterCredential({
+            id: 'arcgis-token',
+            origins: ['https://example.com'],
+            parameterName: 'token',
+            token: 'secret-token'
+          })
+        ]
+      }
+    }
+  );
+
+  expect(requestedUrls).toEqual([
+    'https://example.com/heights?token=secret-token',
+    'https://example.com/object-ids?token=secret-token'
+  ]);
 });
 
 test('customizeColors reports failed attribute responses', async () => {

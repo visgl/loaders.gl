@@ -4,6 +4,8 @@
 
 import {createFloat16Array, getFloat16Value, setFloat16Value} from '@loaders.gl/schema';
 import type {MeshAttribute, TypedArray} from '@loaders.gl/schema';
+import type {LoaderOptions} from '@loaders.gl/loader-utils';
+import {getAuthenticatedFetch} from '@loaders.gl/loader-utils';
 import type {AttributeStorageInfo, COLOR, Field} from '../../types';
 
 import {getAttributeValueType} from '../../i3s-attribute-loader';
@@ -34,6 +36,7 @@ type ColorsByAttribute = {
  * @param attributeStorageInfo - array of attributeStorageInfo
  * @param colorsByAttribute - attribute color options
  * @param token - access token
+ * @param options - optional loader options, including scoped credentials
  * @returns new colors attribute
  */
 // eslint-disable-next-line max-params
@@ -44,7 +47,8 @@ export async function customizeColors(
   fields: Field[],
   attributeStorageInfo: AttributeStorageInfo[],
   colorsByAttribute: ColorsByAttribute | null,
-  token?: string
+  token?: string,
+  options?: LoaderOptions
 ): Promise<MeshAttribute> {
   if (!colorsByAttribute) {
     return colors;
@@ -83,7 +87,8 @@ export async function customizeColors(
     colorizeAttributeField.name,
     attributeUrls,
     attributeStorageInfo,
-    token
+    token,
+    options
   );
   if (!colorizeAttributeData) {
     return colors;
@@ -98,7 +103,8 @@ export async function customizeColors(
     objectIdField.name,
     attributeUrls,
     attributeStorageInfo,
-    token
+    token,
+    options
   );
   if (!objectIdAttributeData) {
     return colors;
@@ -190,7 +196,8 @@ async function loadFeatureAttributeData(
   attributeName: string,
   attributeUrls: string[],
   attributeStorageInfo: AttributeStorageInfo[],
-  token?: string
+  token?: string,
+  options: LoaderOptions = {}
 ): Promise<I3STileAttributes | null> {
   const attributeIndex = attributeStorageInfo.findIndex(({name}) => attributeName === name);
   if (attributeIndex === -1) {
@@ -198,7 +205,7 @@ async function loadFeatureAttributeData(
   }
   const objectIdAttributeUrl = getUrlWithToken(attributeUrls[attributeIndex], token);
   const attributeType = getAttributeValueType(attributeStorageInfo[attributeIndex]);
-  const response = await fetch(objectIdAttributeUrl);
+  const response = await getAuthenticatedFetch(options)(objectIdAttributeUrl);
   if (!response.ok) {
     throw new Error(
       `Failed to load I3S attribute ${attributeName}: ${response.status} ${response.statusText}`

@@ -30,6 +30,242 @@ export class Tileset3DTraverser extends TilesetTraverser {
     return true;
   }
 
+  /**
+   * Runs normal replacement traversal or the dedicated skip-LOD traversal selected by options.
+   *
+   * @param root - Root of the runtime subtree to traverse.
+   * @param frameState - Current culling and LOD state.
+   */
+  executeTraversal(root: Tile3D, frameState: FrameState): void {
+    if (!this.isSkipLevelOfDetailEnabled()) {
+      super.executeTraversal(root, frameState);
+      return;
+    }
+    this.executeSkipTraversal(root, frameState);
+  }
+
+  /**
+   * Traverses visible replacement branches without requesting skipped intermediate content.
+   *
+   * Base-traversal tiles establish coarse coverage. Below that base, only final desired tiles and
+   * tiles that cross the configured depth/SSE thresholds are requested. Already available
+   * ancestors remain selectable while those requests stream in.
+   *
+   * @param root - Root of the runtime subtree to traverse.
+   * @param frameState - Current culling and LOD state.
+   */
+  private executeSkipTraversal(root: Tile3D, frameState: FrameState): void {
+    const stack: Tile3D[] = [root];
+    root._selectionDepth = root.parent ? root.parent._selectionDepth : 1;
+
+    while (stack.length > 0) {
+      const tile = stack.pop() as Tile3D;
+      const parentRefines = !tile.parent || tile.parent._shouldRefine;
+      const shouldRefine =
+        this.canTraverse(tile, frameState) &&
+        this.updateAndPushSkipChildren(tile, frameState, stack) &&
+        parentRefines;
+      const stoppedRefining = !shouldRefine && parentRefines;
+
+      if (!tile.hasRenderContent) {
+        this.emptyTiles[tile.id] = tile;
+        this.loadTile(tile, frameState);
+        if (stoppedRefining) {
+          this.selectDesiredTile(tile, frameState);
+        }
+      } else if (tile.refine === TILE_REFINEMENT.ADD) {
+        this.loadTile(tile, frameState);
+        this.selectDesiredTile(tile, frameState);
+      } else if (tile.refine === TILE_REFINEMENT.REPLACE) {
+        if (this.isInBaseTraversal(tile, frameState)) {
+          this.loadTile(tile, frameState);
+          if (stoppedRefining) {
+            this.selectDesiredTile(tile, frameState);
+          }
+        } else if (stoppedRefining) {
+          this.loadTile(tile, frameState);
+          this.selectDesiredTile(tile, frameState);
+        } else if (this.hasReachedSkippingThreshold(tile, frameState)) {
+          this.loadTile(tile, frameState);
+        }
+      }
+
+      this.touchTile(tile, frameState);
+      tile._shouldRefine = shouldRefine;
+    }
+
+    this.completeTraversal(frameState);
+  }
+
+  /**
+   * Updates and pushes visible children for skip traversal without requiring sibling readiness.
+   *
+   * @param tile - Parent whose children are considered.
+   * @param frameState - Current culling and LOD state.
+   * @param stack - Depth-first traversal stack.
+   * @returns `true` when at least one visible child continues refinement.
+   */
+  private updateAndPushSkipChildren(
+    tile: Tile3D,
+    frameState: FrameState,
+    stack: Tile3D[]
+  ): boolean {
+    this.updateChildTiles(tile, frameState);
+    tile.children.sort(this.compareDistanceToCamera.bind(this));
+
+    let hasVisibleChild = false;
+    for (const child of tile.children) {
+      child._selectionDepth = tile.hasRenderContent
+        ? tile._selectionDepth + 1
+        : tile._selectionDepth;
+      if (child.isVisibleAndInRequestVolume) {
+        stack.push(child);
+        hasVisibleChild = true;
+      } else if (this.options.loadSiblings) {
+        this.loadTile(child, frameState);
+        this.touchTile(child, frameState);
+      }
+    }
+    return hasVisibleChild;
+  }
+
+  /**
+   * Determines whether a tile belongs to the coarse non-skipping portion of the traversal.
+   *
+   * @param tile - Tile considered for loading.
+   * @param frameState - Current traversal frame.
+   * @returns `true` when the tile should always be requested for fallback coverage.
+   */
+  private isInBaseTraversal(tile: Tile3D, frameState: FrameState): boolean {
+    if (this.options.immediatelyLoadDesiredLevelOfDetail) {
+      return false;
+    }
+    if (!this.findNearestRequestedOrLoadedAncestor(tile, frameState)) {
+      return true;
+    }
+
+    const configuredBaseScreenSpaceError = Number.isFinite(this.options.baseScreenSpaceError)
+      ? Math.max(this.options.baseScreenSpaceError, 0)
+      : 1024;
+    const baseScreenSpaceError = Math.max(
+      configuredBaseScreenSpaceError,
+      tile.tileset.memoryAdjustedScreenSpaceError
+    );
+    if (tile._screenSpaceError === 0 && tile.parent) {
+      return tile.parent._screenSpaceError > baseScreenSpaceError;
+    }
+    return tile._screenSpaceError > baseScreenSpaceError;
+  }
+
+  /**
+   * Determines whether a skipped branch has crossed its configured request threshold.
+   *
+   * @param tile - Tile considered for loading.
+   * @param frameState - Current traversal frame.
+   * @returns `true` when the tile must be requested instead of skipped.
+   */
+  private hasReachedSkippingThreshold(tile: Tile3D, frameState: FrameState): boolean {
+    if (this.options.immediatelyLoadDesiredLevelOfDetail) {
+      return false;
+    }
+    const progressiveResolutionLeaf =
+      tile._priorityProgressiveResolution &&
+      tile._screenSpaceErrorProgressiveResolution <= tile.tileset.memoryAdjustedScreenSpaceError &&
+      Boolean(
+        tile.parent &&
+          tile.parent._screenSpaceErrorProgressiveResolution >
+            tile.tileset.memoryAdjustedScreenSpaceError
+      );
+    if (progressiveResolutionLeaf) {
+      return true;
+    }
+
+    const ancestor = this.findNearestRequestedOrLoadedAncestor(tile, frameState);
+    if (!ancestor) {
+      return false;
+    }
+    const skipScreenSpaceErrorFactor =
+      Number.isFinite(this.options.skipScreenSpaceErrorFactor) &&
+      this.options.skipScreenSpaceErrorFactor > 0
+        ? this.options.skipScreenSpaceErrorFactor
+        : 16;
+    const skipLevels = Number.isFinite(this.options.skipLevels)
+      ? Math.max(Math.floor(this.options.skipLevels), 0)
+      : 1;
+    return (
+      tile._screenSpaceError < ancestor._screenSpaceError / skipScreenSpaceErrorFactor &&
+      tile.depth > ancestor.depth + skipLevels
+    );
+  }
+
+  /**
+   * Finds the nearest ancestor whose render content is loaded, loading, or requested this frame.
+   *
+   * @param tile - Descendant whose request threshold needs an anchor.
+   * @param frameState - Current traversal frame.
+   * @returns The nearest request anchor, or `null` when none exists.
+   */
+  private findNearestRequestedOrLoadedAncestor(
+    tile: Tile3D,
+    frameState: FrameState
+  ): Tile3D | null {
+    let ancestor = tile.parent;
+    while (ancestor) {
+      const contentIsUsableAnchor =
+        ancestor.hasRenderContent &&
+        !ancestor.contentFailed &&
+        (!ancestor.hasUnloadedContent || ancestor._requestedFrame === frameState.frameNumber);
+      if (contentIsUsableAnchor) {
+        return ancestor;
+      }
+      ancestor = ancestor.parent;
+    }
+    return null;
+  }
+
+  /**
+   * Selects the desired tile, its nearest ready ancestor, or nearby ready descendants.
+   *
+   * @param tile - Tile that ended the desired refinement branch.
+   * @param frameState - Current culling state.
+   */
+  private selectDesiredTile(tile: Tile3D, frameState: FrameState): void {
+    let fallbackTile: Tile3D | null = tile;
+    while (fallbackTile) {
+      if (this.shouldSelectTile(fallbackTile, frameState)) {
+        this.selectTile(fallbackTile, frameState);
+        return;
+      }
+      fallbackTile = fallbackTile.parent;
+    }
+    this.selectLoadedDescendants(tile, frameState);
+  }
+
+  /**
+   * Selects ready descendants near an unavailable desired tile to reduce temporary empty regions.
+   *
+   * @param root - Unavailable tile whose descendants are searched.
+   * @param frameState - Current culling state.
+   */
+  private selectLoadedDescendants(root: Tile3D, frameState: FrameState): void {
+    const stack: Array<{tile: Tile3D; depth: number}> = [{tile: root, depth: 0}];
+    while (stack.length > 0) {
+      const {tile, depth} = stack.pop() as {tile: Tile3D; depth: number};
+      for (const child of tile.children) {
+        this.updateTile(child, frameState);
+        if (!child.isVisibleAndInRequestVolume) {
+          continue;
+        }
+        if (child.contentAvailable) {
+          this.selectTile(child, frameState);
+          this.touchTile(child, frameState);
+        } else if (depth < 1) {
+          stack.push({tile: child, depth: depth + 1});
+        }
+      }
+    }
+  }
+
   compareDistanceToCamera(a, b) {
     // Sort by farthest child first since this is going on a stack
     return b._distanceToCamera === 0 && a._distanceToCamera === 0

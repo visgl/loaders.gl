@@ -168,6 +168,7 @@ evolving specification and is intentionally marked separately from stable glTF 2
 | WebP and AVIF textures | 2.0 extensions | Complete | Complete | Optional decoder support; required-extension failures preserved |
 | Texture transforms | 2.0 extension | Complete | Partial | `KHR_texture_transform` metadata is exposed for rendering integrations |
 | Mesh features and structural metadata | 2.0 / 3D Tiles extensions | Complete | Partial | Loaders.gl helpers expose metadata tables and feature IDs |
+| Vector primitive topology | Draft 2.0 extensions | Complete | Partial | Primitive-restart ranges and polygon loops are decoded; rendering remains application-owned |
 | Punctual lights, unlit materials, and legacy techniques | 2.0 extensions | Complete | Partial | Parsed and retained; renderer-specific behavior remains application-owned |
 | Vendor and unknown extensions | 2.0 / 2.1 | Complete | Raw only | Unknown payloads are preserved without invented runtime semantics |
 | BVH construction and hierarchical traversal | 2.1 draft | Complete | Planned | Shape references are available; automatic BVH building is not yet provided |
@@ -199,6 +200,8 @@ when its image MIME type is unsupported.
 | [EXT_texture_avif](https://github.com/KhronosGroup/glTF/tree/main/extensions/2.0/Vendor/EXT_texture_avif) | Y | Selects the AVIF source when the active decoder supports it |
 | [EXT_mesh_features](#ext_mesh_features)                   | Y            | 3D tiles extension                                                                          |
 | [EXT_structural_metadata](#ext_structural_metadata)       | Y            | 3D tiles extension                                                                          |
+| [KHR_mesh_primitive_restart](#vector-primitive-topology)   | Y            | Draft restart-separated strip topology                                                      |
+| [EXT_mesh_polygon](#vector-primitive-topology)             | Y            | Draft polygon triangles, exterior rings, and interior rings                                  |
 | [KHR_lights_punctual](#khr_lights_punctual)               | Y\*          | Deprecated                                                                                  |
 | [KHR_materials_unlit](#khr_materials_unlit)               | Y\*          | Deprecated                                                                                  |
 | [EXT_feature_metadata](#ext_feature_metadata)             | Y\*          | Deprecated. 3D tiles extension                                                              |
@@ -362,3 +365,15 @@ encoding path.
 3D tiles extension by Cesium. This extension defines a means of storing structured metadata within a glTF 2.0 asset.
 
 [EXT_structural_metadata](https://github.com/CesiumGS/glTF/tree/3d-tiles-next/extensions/2.0/Vendor/EXT_structural_metadata)
+
+### Vector primitive topology
+
+Draft `KHR_mesh_primitive_restart` assets expose a loader-derived `primitiveRestart` descriptor
+on applicable indexed primitives. Its `restartIndex` identifies the component-type maximum and
+its `ranges` identify non-empty source-index runs without copying the index buffer.
+
+Draft `EXT_mesh_polygon` objects retain their serialized accessor references and add a `data`
+descriptor when buffers are loaded. The descriptor contains typed views of triangle offsets, loop
+indices, and loop offsets, plus random-access polygon ranges. Core triangle indices are retained as
+a rendering fallback. These extensions expose topology only; tessellation, line widening, styling,
+and rendering remain application responsibilities.

@@ -145,12 +145,17 @@ class GLTFPostProcessor {
     assert(json);
 
     this.baseUri = baseUri;
-    this.buffers = buffers;
+    const bufferCount = Math.max(json.buffers?.length || 0, buffers.length);
+    this.buffers = Array.from({length: bufferCount}, (_, index) => ({
+      ...(json.buffers?.[index] || {}),
+      ...(buffers[index] || {})
+    }));
     this.images = images;
     this.iterator = new GLTFIterator(gltf);
     this.jsonUnprocessed = json;
 
     this.json = this._resolveTree(gltf.json, options);
+    this.json.buffers = this.buffers;
 
     return this.json;
   }

@@ -73,9 +73,9 @@ const source = await load(featureServerUrl, ArcGISFeatureServerSourceLoader, {
 const features = await source.getFeatures({layers: ['0']});
 ```
 
-The exact same option works with `createDataSource` and with loaders that make nested requests.
-Explicit credentials already present on a request URL or in its headers take precedence over a
-configured credential.
+The exact same option works with `createDataSource`, source-backed tile layers, and loaders that
+make nested requests. Explicit credentials already present on a request URL or in its headers take
+precedence over a configured credential.
 
 ## Static tokens and refreshing tokens
 
@@ -164,21 +164,27 @@ legacy `cesium-ion.accessToken` option remains the shortest Cesium-specific entr
 `createCesiumIonCredential` is useful when the ion REST request shares a larger application
 credential registry.
 
-## deck.gl layers
+## I3S and deck.gl layers
 
-Pass credentials inside the usual `loadOptions`. `SourceLayer`, `Tile3DSourceLayer`, and their
-nested sources retain them for metadata, tiles, external tilesets, and other dependent resources:
+Pass credentials inside the usual `loadOptions`. The source-backed adapters retain them for I3S
+metadata, node pages, geometry, textures, attributes, and other dependent resources:
 
 ```ts
+import {I3SLoader} from '@loaders.gl/i3s';
+import {SourceLayer} from '@loaders.gl/deck-layers';
+
 const layer = new SourceLayer({
-  id: 'secured-service',
-  data: serviceUrl,
-  loaders: SERVICE_LOADERS,
+  id: 'secured-i3s',
+  data: i3sLayerUrl,
+  loaders: [I3SLoader],
   loadOptions: {core: {credentials}}
 });
 ```
 
-For a source created before the layer, put `core.credentials` in the source's options instead.
+For a `Tile3DSourceLayer`, pass the same `core.credentials` object in `loadOptions`. The older
+`@deck.gl/geo-layers` `Tile3DLayer` path remains compatible with the legacy `i3s.token` option;
+when using that path, put the token on the initial URL as well because the initial request occurs
+before the I3S parser receives its options.
 
 ## Security model
 
