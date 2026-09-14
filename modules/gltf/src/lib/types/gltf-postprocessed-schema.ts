@@ -587,6 +587,8 @@ export type GLTFMeshPrimitivePostprocessed = {
   }[];
   extensions?: any;
   extras?: any;
+  /** Loader-derived primitive-restart topology. */
+  primitiveRestart?: import('./gltf-vector-topology').GLTFPrimitiveRestartData;
   // [k: string]: any;
 };
 

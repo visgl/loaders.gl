@@ -14,6 +14,7 @@ import {GLTFWriterOptions} from '../../gltf-writer';
 // GLTF 2.0 Vendor extensions
 import * as EXT_mesh_features from '../extensions/EXT_mesh_features';
 import * as EXT_structural_metadata from '../extensions/EXT_structural_metadata';
+import * as EXT_mesh_polygon from '../extensions/EXT_mesh_polygon';
 
 // GLTF 2.0 Khronos extensions (decode/encode)
 import * as EXT_meshopt_compression from '../extensions/EXT_meshopt_compression';
@@ -23,6 +24,7 @@ import * as EXT_texture_avif from '../extensions/EXT_texture_avif';
 import * as KHR_texture_basisu from '../extensions/KHR_texture_basisu';
 import * as KHR_draco_mesh_compression from '../extensions/KHR_draco_mesh_compression';
 import * as KHR_texture_transform from '../extensions/KHR_texture_transform';
+import * as KHR_mesh_primitive_restart from '../extensions/KHR_mesh_primitive_restart';
 
 // Deprecated. These should be handled by rendering library (e.g. luma.gl), not the loader.
 import * as KHR_lights_punctual from '../extensions/deprecated/KHR_lights_punctual';
@@ -61,6 +63,8 @@ export const EXTENSIONS: GLTFExtensionPlugin[] = [
   // 2.0
   EXT_structural_metadata,
   EXT_mesh_features,
+  KHR_mesh_primitive_restart,
+  EXT_mesh_polygon,
   KHR_meshopt_compression,
   EXT_meshopt_compression,
   EXT_texture_avif,

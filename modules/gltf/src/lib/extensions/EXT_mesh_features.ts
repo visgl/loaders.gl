@@ -60,11 +60,6 @@ function processMeshPrimitiveFeatures(
   primitive: GLTFMeshPrimitive,
   options: GLTFLoaderOptions
 ): void {
-  // Processing of mesh primitive features requires buffers to be loaded.
-  if (!options?.gltf?.loadBuffers) {
-    return;
-  }
-
   const extension = iterator.getExtension<GLTF_EXT_mesh_features>(
     primitive,
     EXT_MESH_FEATURES_NAME
@@ -76,16 +71,22 @@ function processMeshPrimitiveFeatures(
   }
 
   for (const featureId of featureIds) {
-    let featureIdData: NumericArray;
+    let featureIdData: NumericArray | undefined;
     // Process "Feature ID by Vertex"
     if (typeof featureId.attribute !== 'undefined') {
+      if (!options?.gltf?.loadBuffers) {
+        continue;
+      }
       const accessorKey = `_FEATURE_ID_${featureId.attribute}`;
       const accessorIndex = primitive.attributes[accessorKey];
       featureIdData = iterator.getTypedArrayForAccessor(accessorIndex) as NumericArray;
     }
 
     // Process "Feature ID by Texture Coordinates"
-    else if (typeof featureId.texture !== 'undefined' && options?.gltf?.loadImages) {
+    else if (typeof featureId.texture !== 'undefined') {
+      if (!options?.gltf?.loadImages) {
+        continue;
+      }
       featureIdData = getPrimitiveTextureData(iterator, featureId.texture, primitive);
     }
 
@@ -96,11 +97,29 @@ function processMeshPrimitiveFeatures(
       then the feature ID value for each vertex is given implicitly, via the index of the vertex.
       In this case, the featureCount must match the number of vertices of the mesh primitive.
       */
-      // TODO: At the moment of writing we don't have a tileset with the data of that kind. Implement it later.
-      featureIdData = [];
+      const positionAccessorIndex = primitive.attributes.POSITION;
+      const vertexCount = iterator.data.accessors?.[positionAccessorIndex]?.count;
+      if (typeof vertexCount !== 'number' || !Number.isInteger(vertexCount) || vertexCount < 0) {
+        throw new Error('EXT_mesh_features: implicit feature IDs require a POSITION accessor');
+      }
+      if (featureId.featureCount !== vertexCount) {
+        throw new Error(
+          `EXT_mesh_features: implicit featureCount ${featureId.featureCount} does not match vertex count ${vertexCount}`
+        );
+      }
+      delete featureId.data;
+      Object.defineProperty(featureId, 'implicit', {
+        configurable: true,
+        enumerable: false,
+        writable: true,
+        value: {start: 0, count: vertexCount}
+      });
     }
 
-    featureId.data = featureIdData;
+    if (featureIdData) {
+      featureId.data = featureIdData;
+      delete featureId.implicit;
+    }
   }
 }
 
