@@ -39,7 +39,7 @@ export async function parsePointCloud3DTile(
 
   parsePositions(tile, featureTable, options);
   // @ts-expect-error TODO - do we need to assert on the batch table?
-  parseColors(tile, featureTable, batchTable);
+  parseColors(tile, featureTable, batchTable, options?.['3d-tiles']?.colorFormat || 'uint8norm');
   parseNormals(tile, featureTable);
 
   return byteOffset;
@@ -132,7 +132,8 @@ function parsePositions(
 function parseColors(
   tile: Tiles3DTileContent,
   featureTable: Tile3DFeatureTable,
-  batchTable: Tile3DBatchTable
+  batchTable: Tile3DBatchTable,
+  colorFormat: 'uint8norm' | 'float16' | 'float32'
 ): void {
   tile.attributes = tile.attributes || {
     positions: null,
@@ -152,7 +153,7 @@ function parseColors(
       tile.isRGB565 = true;
     }
 
-    tile.attributes.colors = normalize3DTileColorAttribute(tile, colors, batchTable);
+    tile.attributes.colors = normalize3DTileColorAttribute(tile, colors, batchTable, colorFormat);
   }
 
   if (featureTable.hasProperty('CONSTANT_RGBA')) {
@@ -323,8 +324,12 @@ export async function loadDraco(
   tile.attributes = {
     // @ts-expect-error
     positions: decodedPositions,
-    // @ts-expect-error
-    colors: normalize3DTileColorAttribute(tile, decodedColors, undefined),
+    colors: normalize3DTileColorAttribute(
+      tile,
+      decodedColors as Uint8ClampedArray | null,
+      undefined,
+      options?.['3d-tiles']?.colorFormat || 'uint8norm'
+    ),
     // @ts-expect-error
     normals: decodedNormals,
     // @ts-expect-error

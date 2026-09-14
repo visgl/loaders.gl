@@ -10,6 +10,7 @@ import {Matrix4, Vector3} from '@math.gl/core';
 import {TILESET_TYPE, LOD_METRIC_TYPE, TILE_TYPE, TILE_REFINEMENT} from '@loaders.gl/tiles';
 import type {ImplicitSubtreeReference} from '@loaders.gl/tiles';
 import type {TilesetSpatialReference} from '@loaders.gl/tiles';
+import type {TypedArray} from '@loaders.gl/schema';
 
 export type B3DMContent = {
   batchTableJson?: FeatureTableJson;
@@ -344,7 +345,13 @@ export type Tiles3DTileContent = {
     colors:
       | null
       | number[]
-      | {type: number; value: Uint8ClampedArray; size: number; normalized: boolean};
+      | {
+          type: number;
+          value: TypedArray;
+          size: number;
+          normalized: boolean;
+          componentType?: 'float16';
+        };
     normals: null | number[] | {type: number; size: number; value: Float32Array};
     batchIds: null | number[];
   };

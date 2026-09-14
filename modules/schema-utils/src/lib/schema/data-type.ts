@@ -3,6 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import {DataType, TypedArray, TypedArrayConstructor, ArrayType} from '@loaders.gl/schema';
+import {getFloat16ArrayConstructor} from '@math.gl/types';
 
 /** Deduce column types from values */
 export function getDataTypeFromValue(
@@ -47,6 +48,9 @@ export function getDataTypeFromArray(array: ArrayType): {type: DataType; nullabl
  * Deduces a simple data type "descriptor from a typed array instance
  */
 export function getDataTypeFromTypedArray(array: TypedArray): DataType {
+  if (typeof Float16Array !== 'undefined' && array instanceof Float16Array) {
+    return 'float16';
+  }
   switch (array.constructor) {
     case Int8Array:
       return 'int8';
@@ -92,6 +96,8 @@ export function getArrayTypeFromDataType(
         return Float32Array;
       case 'float64':
         return Float64Array;
+      case 'float16':
+        return getFloat16ArrayConstructor() as TypedArrayConstructor;
       default:
         break;
     }

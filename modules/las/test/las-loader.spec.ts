@@ -4,6 +4,7 @@
 
 import {expect, test} from 'vitest';
 import {fetchFile, parse, parseInBatches} from '@loaders.gl/core';
+import {getFloat16Value, isNativeFloat16Array} from '@loaders.gl/schema';
 import {LASLoader, LASWorkerLoader} from '@loaders.gl/las';
 import type {MeshArrowTable} from '@loaders.gl/schema';
 import {validateLoader} from 'test/common/conformance';
@@ -289,6 +290,19 @@ test('LASLoader#columns decodes only requested PDRF 7 Arrow columns', async () =
     core: {worker: false}
   });
   expect(Object.keys(positionsOnlyMesh.attributes)).toEqual(['POSITION']);
+});
+
+test('LASLoader#float16 preserves 16-bit colors as logical values', async () => {
+  const lasArrayBuffer = await fetchFile(PDRF_7_LAS_URL).then(response => response.arrayBuffer());
+  const mesh = await parse(lasArrayBuffer, LASLoader, {
+    las: {colorDepth: 16, colorFormat: 'float16'},
+    core: {worker: false}
+  });
+  const colors = mesh.attributes.COLOR_0;
+  expect(colors.componentType).toBe('float16');
+  expect(isNativeFloat16Array(colors.value) || colors.value instanceof Uint16Array).toBe(true);
+  expect(getFloat16Value(colors.value, 0)).toBeGreaterThanOrEqual(0);
+  expect(getFloat16Value(colors.value, 0)).toBeLessThanOrEqual(1);
 });
 
 test('LASLoader#parseInBatches preserves selected columns across chunked PDRF 7 input', async () => {

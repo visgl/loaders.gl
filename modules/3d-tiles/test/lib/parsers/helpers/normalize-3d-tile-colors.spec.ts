@@ -3,6 +3,7 @@
 // Copyright vis.gl contributors
 
 import {GL} from '@math.gl/geometry-utils';
+import {getFloat16Value} from '@loaders.gl/schema';
 import {expect, test} from 'vitest';
 import {normalize3DTileColorAttribute} from '../../../../src/lib/parsers/helpers/normalize-3d-tile-colors';
 import {Tiles3DTileContent} from '@loaders.gl/3d-tiles';
@@ -57,5 +58,39 @@ test('normalize3DTileColorAttribute', () => {
     expect(normalize3DTileColorAttribute(testCase.tile, testCase.colors), testCase.message).toEqual(
       testCase.expected
     )
+  );
+});
+
+test('normalize3DTileColorAttribute#float16', () => {
+  const attribute = normalize3DTileColorAttribute(
+    {shape: 'tile3d', pointCount: 1},
+    new Uint8ClampedArray([250, 150, 50]),
+    undefined,
+    'float16'
+  );
+  expect(attribute).toMatchObject({
+    type: 0x140b,
+    size: 3,
+    normalized: false,
+    componentType: 'float16'
+  });
+  expect(getFloat16Value(attribute!.value, 0)).toBeCloseTo(250 / 255, 3);
+  expect(getFloat16Value(attribute!.value, 1)).toBeCloseTo(150 / 255, 3);
+});
+
+test('normalize3DTileColorAttribute#float32', () => {
+  const attribute = normalize3DTileColorAttribute(
+    {shape: 'tile3d', pointCount: 1},
+    new Uint8ClampedArray([250, 150, 50]),
+    undefined,
+    'float32'
+  );
+  expect(attribute).toMatchObject({
+    type: GL.FLOAT,
+    size: 3,
+    normalized: false
+  });
+  expect(Array.from(attribute!.value as Float32Array)).toEqual(
+    Array.from(Float32Array.from([250 / 255, 150 / 255, 50 / 255]))
   );
 });

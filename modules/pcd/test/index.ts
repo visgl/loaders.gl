@@ -4,3 +4,4 @@
 
 import './pcd-loader.spec';
 import './pcd-writer.spec';
+import './color-format.spec';

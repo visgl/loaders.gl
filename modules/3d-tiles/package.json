@@ -79,6 +79,7 @@
     "@loaders.gl/gltf": "5.0.0-alpha.5",
     "@loaders.gl/images": "5.0.0-alpha.5",
     "@loaders.gl/loader-utils": "5.0.0-alpha.5",
+    "@loaders.gl/schema": "5.0.0-alpha.5",
     "@loaders.gl/tiles": "5.0.0-alpha.5",
     "@loaders.gl/zip": "5.0.0-alpha.5",
     "@math.gl/core": "5.0.0-alpha.5",

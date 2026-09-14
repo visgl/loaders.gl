@@ -2,6 +2,11 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
+// Float16Array is declared in a separate TypeScript library. Preserve this reference so
+// published declarations remain self-contained without changing the target or emitting runtime code.
+// eslint-disable-next-line spaced-comment
+/// <reference lib="es2025.float16" preserve="true" />
+
 /** Any typed array */
 export type TypedArray =
   | Int8Array
@@ -11,6 +16,7 @@ export type TypedArray =
   | Int32Array
   | Uint32Array
   | Uint8ClampedArray
+  | Float16Array
   | Float32Array
   | Float64Array;
 
@@ -23,6 +29,7 @@ export type TypedArrayConstructor =
   | Uint16ArrayConstructor
   | Int32ArrayConstructor
   | Uint32ArrayConstructor
+  | Float16ArrayConstructor
   | Float32ArrayConstructor
   | Float64ArrayConstructor;
 

@@ -877,7 +877,8 @@ export class PotreeNodesSource
       // TypeScript LAS loader to use its packaged worker by default.
       const loaderOptions: LoaderOptions = {
         las: {
-          colorDepth: 'auto'
+          colorDepth: 'auto',
+          colorFormat: this.loadOptions.potree?.colorFormat || 'uint8norm'
         }
       };
       if (this.loadOptions.core) {
@@ -898,7 +899,8 @@ export class PotreeNodesSource
         pointAttributes: this.metadata.pointAttributes,
         scale: this.metadata.scale,
         positionOrigin,
-        nodeBoundingBox: tileBoundingBox
+        nodeBoundingBox: tileBoundingBox,
+        colorFormat: this.loadOptions.potree?.colorFormat || 'uint8norm'
       }
     };
   }
