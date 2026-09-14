@@ -528,6 +528,42 @@ test('gltf#EXT_structural_metadata validates unsupported property definitions', 
   ).resolves.toBeUndefined();
 });
 
+test('gltf#EXT_structural_metadata decodes every table that shares a class', async () => {
+  const gltf = {
+    buffers: [{arrayBuffer: new Uint8Array([7, 9]).buffer, byteOffset: 0, byteLength: 2}],
+    json: {
+      buffers: [{byteLength: 2}],
+      bufferViews: [
+        {buffer: 0, byteOffset: 0, byteLength: 1},
+        {buffer: 0, byteOffset: 1, byteLength: 1}
+      ],
+      extensions: {
+        EXT_structural_metadata: {
+          schema: {
+            classes: {
+              Sample: {
+                properties: {
+                  value: {type: 'SCALAR', componentType: 'UINT8', required: true}
+                }
+              }
+            }
+          },
+          propertyTables: [
+            {class: 'Sample', count: 1, properties: {value: {values: 0}}},
+            {class: 'Sample', count: 1, properties: {value: {values: 1}}}
+          ]
+        }
+      }
+    }
+  } as any;
+
+  await decodeExtensions(gltf, {gltf: {loadBuffers: true, loadImages: false}});
+
+  const propertyTables = gltf.json.extensions.EXT_structural_metadata.propertyTables;
+  expect(Array.from(propertyTables[0].properties.value.data)).toEqual([7]);
+  expect(Array.from(propertyTables[1].properties.value.data)).toEqual([9]);
+});
+
 test('gltf#EXT_structural_metadata validates encoder attribute consistency', () => {
   const scenegraph = new GLTFScenegraph();
   expect(() =>

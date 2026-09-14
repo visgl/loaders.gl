@@ -64,6 +64,23 @@ test('glTF 2.1 accessor component types', () => {
     );
   }
 });
+test('glTF 2.1 decodes misaligned interleaved DOUBLE accessors', () => {
+  const arrayBuffer = new ArrayBuffer(36);
+  const dataView = new DataView(arrayBuffer);
+  dataView.setFloat64(4, Math.PI, true);
+  dataView.setFloat64(20, -0.25, true);
+  const scenegraph = new GLTFScenegraph({
+    json: {
+      asset: {version: '2.1'},
+      buffers: [{byteLength: arrayBuffer.byteLength}],
+      bufferViews: [{buffer: 0, byteOffset: 4, byteLength: 32, byteStride: 16}],
+      accessors: [{bufferView: 0, componentType: 5130, count: 2, type: 'SCALAR'}]
+    },
+    buffers: [{arrayBuffer, byteOffset: 0, byteLength: arrayBuffer.byteLength}]
+  });
+
+  expect(scenegraph.getTypedArrayForAccessor(0)).toEqual(new Float64Array([Math.PI, -0.25]));
+});
 test('GLTFScenegraph#addBinaryBuffer accepts 64-bit integer arrays', () => {
   const gltf = {json: {asset: {version: '2.1'}}, buffers: []};
   const scenegraph = new GLTFScenegraph(gltf);

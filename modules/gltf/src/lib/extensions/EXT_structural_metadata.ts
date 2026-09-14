@@ -172,31 +172,12 @@ function decodePropertyTables(
   const schemaClasses = schema.classes;
   const propertyTables = extension.propertyTables;
   if (schemaClasses && propertyTables) {
-    for (const schemaName in schemaClasses) {
-      const propertyTable = findPropertyTableByClass(propertyTables, schemaName);
-      if (propertyTable) {
+    for (const propertyTable of propertyTables) {
+      if (propertyTable.class && schemaClasses[propertyTable.class]) {
         processPropertyTable(iterator, schema, propertyTable);
       }
     }
   }
-}
-
-/**
- * Finds the property table by class name.
- * @param propertyTables - propertyTable definition taken from the top-level extension.
- * @param schemaClassName - class name in the extension schema.
- */
-function findPropertyTableByClass(
-  propertyTables: GLTF_EXT_structural_metadata_PropertyTable[],
-  schemaClassName: string
-): GLTF_EXT_structural_metadata_PropertyTable | null {
-  for (const propertyTable of propertyTables) {
-    if (propertyTable.class === schemaClassName) {
-      return propertyTable;
-    }
-  }
-
-  return null;
 }
 
 /**

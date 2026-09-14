@@ -136,6 +136,31 @@ test('Tile3D#preserves viewer request volume when an implicit root materializes 
     'retains the inherited traversal request-volume restriction'
   ).toBeTruthy();
 });
+test('Tile3D#applies subtree-root transform and metadata overrides', () => {
+  const originalTransform = new Matrix4().translate([2, 0, 0]);
+  const materializedTransform = new Matrix4().translate([5, 0, 0]);
+  const tile = new Tile3D(MOCK_TILESET as any, {
+    ...TILE_HEADER_WITH_BOUNDING_SPHERE,
+    transform: Array.from(originalTransform),
+    metadata: {properties: {zone: 1}}
+  });
+
+  tile.applyImplicitSubtreeHeader({
+    ...TILE_HEADER_WITH_BOUNDING_SPHERE,
+    transform: Array.from(materializedTransform),
+    transformMatrix: Array.from(materializedTransform),
+    contentUrl: 'content.glb',
+    content: {uri: 'content.glb', metadata: {properties: {material: 'stone'}}},
+    contentUrls: ['content.glb'],
+    metadata: {properties: {zone: 2}},
+    type: 'scenegraph'
+  });
+
+  expect(tile.transform[12]).toBe(5);
+  expect(tile.computedTransform[12]).toBe(5);
+  expect(tile.metadata).toEqual({properties: {zone: 2}});
+  expect(tile.contentMetadata).toEqual([{properties: {material: 'stone'}}]);
+});
 test('Tile3D#throws if boundingVolume is undefined', () => {
   const tileWithoutBoundingVolume = clone(TILE_HEADER_WITH_BOUNDING_SPHERE, true);
   delete tileWithoutBoundingVolume.boundingVolume;
