@@ -290,13 +290,15 @@ export class Tiles3DSource implements Tileset3DSource {
    */
   async loadTileContent(tile: Tile3D): Promise<TileContentLoadResult> {
     const contentUrls = (tile.contentUrls || [tile.contentUrl]).filter(Boolean);
-    let contentHeaders = this.tileContentHeaders.get(tile);
-    if (!contentHeaders) {
-      contentHeaders = Array.isArray(tile.header?.content)
+    const cachedContentHeaders = this.tileContentHeaders.get(tile);
+    const contentHeaders: Record<string, any>[] =
+      cachedContentHeaders ||
+      (Array.isArray(tile.header?.content)
         ? tile.header.content
         : tile.header?.content
           ? [tile.header.content]
-          : [];
+          : []);
+    if (!cachedContentHeaders) {
       this.tileContentHeaders.set(tile, contentHeaders);
     }
     const tilesetLoaderOptions =
