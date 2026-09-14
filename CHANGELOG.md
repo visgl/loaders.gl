@@ -2,6 +2,20 @@
 
 ## v5.0
 
+### v5.0.0-alpha.6
+
+- feat(gltf): decode draft vector-topology extensions and support JSON-only GLB v2 files
+- feat(mlt): decode Arrow tables directly and support MLT tile archives in PMTiles
+- feat(tiles): add Cesium-style skip-LOD traversal and extend TileFold experimentation
+- feat(core): propagate fetch options to subloaders and select workers from loader estimates
+- feat(i3s): decode LEPCC point clouds in workers and propagate credentials to nested requests
+- feat(worker-utils): add stateful batched workers with module-worker fallbacks
+- fix(gltf): preserve loaded buffers after post-processing
+- fix(wkt): support async WKB parsing in shared workers
+- fix(tile-converter): preserve zero-valued material factors
+- fix(traces): harden Chrome Trace streaming parsing
+- test(parquet): cover UTF8 byte-array strings and deepen cross-module coverage
+
 ### v5.0.0-alpha.5
 
 - feat(geoarrow): establish the GeoArrow tentpole contract with native columnar conversions, adaptive layouts, validation, resource limits, and format examples
