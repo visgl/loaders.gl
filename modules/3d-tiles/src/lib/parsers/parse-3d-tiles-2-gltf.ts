@@ -56,10 +56,18 @@ export function is3DTiles2Subtree(gltf: GLTFWithBuffers): boolean {
   return isRecord(gltf.json.extensions?.[SUBTREE_EXTENSION]);
 }
 
-/** Parses a draft glTF subtree into the shared lazy implicit-tiling representation. */
+/**
+ * Parses a draft glTF subtree into the shared lazy implicit-tiling representation.
+ *
+ * @param gltf - Parsed subtree glTF container.
+ * @param basePath - Base path used to resolve package references.
+ * @param inheritedPackageFiles - Parent package records available to embedded subtree resources.
+ * @returns Parsed subtree data and lazy package records.
+ */
 export function parse3DTiles2Subtree(
   gltf: GLTFWithBuffers,
-  basePath: string
+  basePath: string,
+  inheritedPackageFiles?: Tiles3DPackageFile[]
 ): ParsedImplicitSubtree {
   const extension = gltf.json.extensions?.[SUBTREE_EXTENSION] as DraftSubtreeExtension | undefined;
   if (!extension || !isRecord(extension.tileAvailability)) {
@@ -110,8 +118,65 @@ export function parse3DTiles2Subtree(
       extension.contentProperties,
       contentPropertyRows
     ),
-    resourceFiles: createPackageFiles(gltf, new CachedUriResolver(basePath))
+    resourceFiles: createPackageFiles(gltf, new CachedUriResolver(basePath), inheritedPackageFiles)
   };
+}
+
+/**
+ * Finds the buffers needed to decode a draft subtree hierarchy while leaving package content lazy.
+ *
+ * @param json - Parsed glTF JSON containing `3DTILES_subtree`.
+ * @returns Unique buffer indices referenced by availability, attributes, or property tables.
+ */
+export function get3DTiles2SubtreeBufferIndices(json: GLTF): number[] {
+  const bufferViewIndices = new Set<number>();
+  const addBufferView = (value: unknown): void => {
+    if (Number.isInteger(value)) {
+      bufferViewIndices.add(value as number);
+    }
+  };
+  const extension = json.extensions?.[SUBTREE_EXTENSION] as DraftSubtreeExtension | undefined;
+  const contentAvailability = extension?.contentAvailability as
+    | DraftAvailability
+    | DraftAvailability[]
+    | undefined;
+  const availabilityValues = [
+    extension?.tileAvailability,
+    extension?.childSubtreeAvailability,
+    ...(Array.isArray(contentAvailability) ? contentAvailability : [contentAvailability])
+  ];
+  for (const availability of availabilityValues) {
+    addBufferView(availability?.bitstream);
+  }
+  for (const attributes of [extension?.tileAttributes, extension?.contentAttributes]) {
+    for (const accessorValue of Object.values(attributes || {})) {
+      if (!Number.isInteger(accessorValue)) {
+        continue;
+      }
+      const accessor = json.accessors?.[accessorValue as number];
+      addBufferView(accessor?.bufferView);
+      addBufferView(accessor?.sparse?.indices.bufferView);
+      addBufferView(accessor?.sparse?.values.bufferView);
+    }
+  }
+  const structuralMetadata = json.extensions?.['EXT_structural_metadata'] as
+    | DraftStructuralMetadata
+    | undefined;
+  for (const propertyTable of structuralMetadata?.propertyTables || []) {
+    for (const property of Object.values(propertyTable.properties || {})) {
+      addBufferView(property.values);
+      addBufferView(property.arrayOffsets);
+      addBufferView(property.stringOffsets);
+    }
+  }
+  const bufferIndices = new Set<number>();
+  for (const bufferViewIndex of bufferViewIndices) {
+    const bufferIndex = json.bufferViews?.[bufferViewIndex]?.buffer;
+    if (Number.isInteger(bufferIndex)) {
+      bufferIndices.add(bufferIndex as number);
+    }
+  }
+  return Array.from(bufferIndices);
 }
 
 type DraftAvailability = {constant?: unknown; bitstream?: unknown};
@@ -150,6 +215,9 @@ type DraftStructuralMetadataClassProperty = {
 };
 type DraftStructuralMetadataTableProperty = {
   data?: ArrayLike<unknown>;
+  values?: number;
+  arrayOffsets?: number;
+  stringOffsets?: number;
   offset?: number | number[];
   scale?: number | number[];
 };
@@ -430,16 +498,21 @@ function normalizeInteger(value: number, componentType: string | undefined): num
  *
  * @param gltf - Parsed glTF container.
  * @param basePath - Base path of the tileset resource.
+ * @param inheritedPackageFiles - Parent package records available to embedded tilesets.
  * @returns A 1.x-shaped header tree tagged as draft 2.0.
  */
-export function parse3DTiles2Tileset(gltf: GLTFWithBuffers, basePath: string): Tiles3DTilesetJSON {
+export function parse3DTiles2Tileset(
+  gltf: GLTFWithBuffers,
+  basePath: string,
+  inheritedPackageFiles?: Tiles3DPackageFile[]
+): Tiles3DTilesetJSON {
   const json = gltf.json;
   validateTilesetStructure(json);
   const tilesetExtension = json.extensions?.[TILESET_EXTENSION] as {geometricError: number};
   const scene = json.scenes![json.scene!];
   const rootNodeIndex = scene.nodes![0];
   const resourceResolver = new CachedUriResolver(basePath);
-  const files = createPackageFiles(gltf, resourceResolver);
+  const files = createPackageFiles(gltf, resourceResolver, inheritedPackageFiles);
   const vectorExtension = json.extensions?.[VECTOR_EXTENSION] as {clip?: boolean} | undefined;
   if (vectorExtension?.clip !== undefined && typeof vectorExtension.clip !== 'boolean') {
     throw new Error('3DTILES_tileset_vectors: clip must be boolean when present');
@@ -643,10 +716,11 @@ function createContent(
 /** Creates structured-cloneable lazy file records for the complete package. */
 function createPackageFiles(
   gltf: GLTFWithBuffers,
-  resourceResolver: CachedUriResolver
+  resourceResolver: CachedUriResolver,
+  inheritedPackageFiles?: Tiles3DPackageFile[]
 ): Tiles3DPackageFile[] {
   return (gltf.json.files || []).map((file, fileIndex) =>
-    createPackageFile(gltf, file, fileIndex, resourceResolver)
+    createPackageFile(gltf, file, fileIndex, resourceResolver, inheritedPackageFiles)
   );
 }
 
@@ -655,7 +729,8 @@ function createPackageFile(
   gltf: GLTFWithBuffers,
   file: GLTFFile,
   fileIndex: number,
-  resourceResolver: CachedUriResolver
+  resourceResolver: CachedUriResolver,
+  inheritedPackageFiles?: Tiles3DPackageFile[]
 ): Tiles3DPackageFile {
   if (!file.mimeType) {
     throw new Error(`3DTILES_tileset: file ${fileIndex} requires mimeType`);
@@ -675,10 +750,25 @@ function createPackageFile(
         byteLength: loadedFile.byteLength
       };
     }
+    const resolvedUri = resourceResolver.resolve(file.uri);
+    const inheritedFile = inheritedPackageFiles?.find(
+      packageFile =>
+        packageFile.uri === resolvedUri ||
+        packageFile.originalUri === file.uri ||
+        packageFile.name === file.uri
+    );
+    if (inheritedFile) {
+      return {
+        ...inheritedFile,
+        name: file.name || inheritedFile.name,
+        mimeType: file.mimeType,
+        originalUri: file.uri
+      };
+    }
     return {
       name: file.name,
       mimeType: file.mimeType,
-      uri: resourceResolver.resolve(file.uri),
+      uri: resolvedUri,
       originalUri: file.uri,
       byteOffset: 0,
       byteLength: 0

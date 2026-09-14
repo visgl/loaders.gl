@@ -281,11 +281,21 @@ describe('get3DTilesSpatialReference', () => {
         }
       }
     });
+    const wrongAuthority = get3DTilesSpatialReference({
+      extensions: {
+        EXT_geospatial_crs: {
+          format: 'wkid',
+          extensions: {EXT_geospatial_crs_wkid: {authority: 'CUSTOM', wkid: 4978}}
+        }
+      }
+    });
 
     expect(geocentric.coordinateFrame).toBe('geocentric');
     expect(geocentric.units).toEqual(['meter', 'meter', 'meter']);
     expect(unknown.coordinateFrame).toBe('unknown');
     expect(unknown.units).toBeUndefined();
+    expect(wrongAuthority.coordinateFrame).toBe('unknown');
+    expect(wrongAuthority.units).toBeUndefined();
   });
 
   test('uses the specification frame established by a root region', () => {

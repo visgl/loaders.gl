@@ -346,6 +346,62 @@ describe('experimental explicit 3D Tiles 2.0', () => {
     expect(transferredSubtree.tileAttributes.TILE_GEOMETRIC_ERROR).toEqual(new Float64Array([12]));
   });
 
+  test('loads only hierarchy buffers while retaining external package buffers lazily', async () => {
+    const subtreeUrl = 'https://example.com/subtrees/root.gltf';
+    const hierarchyBufferUrl = 'https://example.com/subtrees/hierarchy.bin';
+    const requestedUrls: string[] = [];
+    const subtreeJson = {
+      asset: {version: '2.1'},
+      extensionsUsed: ['3DTILES_subtree'],
+      extensionsRequired: ['3DTILES_subtree'],
+      extensions: {
+        '3DTILES_subtree': {
+          tileAvailability: {bitstream: 0},
+          contentAvailability: {constant: 0},
+          childSubtreeAvailability: {constant: 0}
+        }
+      },
+      buffers: [
+        {uri: 'hierarchy.bin', byteLength: 1},
+        {uri: 'deferred-content.bin', byteLength: 4}
+      ],
+      bufferViews: [
+        {buffer: 0, byteLength: 1},
+        {buffer: 1, byteLength: 4}
+      ],
+      files: [{bufferView: 1, mimeType: 'application/octet-stream', name: 'content.bin'}]
+    };
+    const fetch = async (input: RequestInfo | URL): Promise<Response> => {
+      const url = input.toString();
+      requestedUrls.push(url);
+      if (url === subtreeUrl) {
+        return new Response(JSON.stringify(subtreeJson), {
+          headers: {'content-type': 'model/gltf+json'}
+        });
+      }
+      if (url === hierarchyBufferUrl) {
+        return new Response(new Uint8Array([1]));
+      }
+      throw new Error(`unexpected eager request: ${url}`);
+    };
+
+    const subtree = await load(subtreeUrl, Tiles3DLoader, {
+      worker: false,
+      fetch,
+      '3d-tiles': {isSubtree: true, loadGLTF: false}
+    });
+
+    expect(requestedUrls).toEqual([subtreeUrl, hierarchyBufferUrl]);
+    expect(subtree.tileAvailability.explicitBitstream).toEqual(new Uint8Array([1]));
+    expect(subtree.resourceFiles[0]).toMatchObject({
+      name: 'content.bin',
+      bufferUri: 'https://example.com/subtrees/deferred-content.bin',
+      byteOffset: 0,
+      byteLength: 4
+    });
+    expect(subtree.resourceFiles[0].data).toBeUndefined();
+  });
+
   test('traverses and caches glTF implicit subtrees lazily', async () => {
     const rootUrl = 'https://example.com/draft/root.resource?token=test';
     const subtreeUrl = 'https://example.com/draft/subtrees/0/0/0.resource?token=test';
@@ -428,6 +484,11 @@ describe('experimental explicit 3D Tiles 2.0', () => {
             uri: 'content/0/0/0.gltf',
             mimeType: 'model/gltf+json',
             name: 'content/0/0/0.gltf'
+          },
+          {
+            uri: 'unused.gltf',
+            mimeType: 'model/gltf+json',
+            name: 'unused.gltf'
           }
         ]
       })
@@ -477,6 +538,10 @@ describe('experimental explicit 3D Tiles 2.0', () => {
     await source.loadTileChildren(tileset.root!, {} as never);
     expect(tileset.root!.header.content._resource.fileIndex).toBe(0);
     expect(tileset.root!.header.content._resource.files[0].data).toBeInstanceOf(ArrayBuffer);
+    expect(tileset.root!.header.content._resource.files[1]).toMatchObject({
+      name: 'unused.gltf',
+      uri: 'gltf-package://0/unused.gltf'
+    });
     await tileset.root!.loadContent();
     expect(tileset.root!.content).toMatchObject({shape: 'tile3d'});
   });

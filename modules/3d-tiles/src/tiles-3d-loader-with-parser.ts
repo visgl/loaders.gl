@@ -29,9 +29,15 @@ import parse3DTilesSubtree from './lib/parsers/helpers/parse-3d-tile-subtree';
 import {
   is3DTiles2Subtree,
   is3DTiles2Tileset,
+  get3DTiles2SubtreeBufferIndices,
   parse3DTiles2Subtree,
-  parse3DTiles2Tileset
+  parse3DTiles2Tileset,
+  type Tiles3DPackageFile
 } from './lib/parsers/parse-3d-tiles-2-gltf';
+
+type Tiles3DLoaderContext = LoaderContext & {
+  _tiles3dPackageFiles?: Tiles3DPackageFile[];
+};
 
 /**
  * Required 3D Tiles extensions that this loader can process completely enough to load content.
@@ -146,7 +152,8 @@ async function parse(
     const resourceUrl = context?.url || options.core?.baseUrl || '';
     return parse3DTiles2Subtree(
       parsedSubtreeGltf,
-      getBaseUri(resourceUrl) || context?.baseUrl || ''
+      getGltfResourceBasePath(resourceUrl, context),
+      (context as Tiles3DLoaderContext | undefined)?._tiles3dPackageFiles
     ) as Subtree;
   }
   const preprocessedContent = preprocess3DTileContent(data);
@@ -168,7 +175,8 @@ async function parse(
       const resourceUrl = context?.url || options.core?.baseUrl || '';
       const tilesetJson = parse3DTiles2Tileset(
         parsedGltf,
-        getBaseUri(resourceUrl) || context?.baseUrl || ''
+        getGltfResourceBasePath(resourceUrl, context),
+        (context as Tiles3DLoaderContext | undefined)?._tiles3dPackageFiles
       );
       return parseTileset(tilesetJson, options, context, '2.0-draft');
     }
@@ -177,7 +185,8 @@ async function parse(
       const resourceUrl = context?.url || options.core?.baseUrl || '';
       return parse3DTiles2Subtree(
         parsedGltf,
-        getBaseUri(resourceUrl) || context?.baseUrl || ''
+        getGltfResourceBasePath(resourceUrl, context),
+        (context as Tiles3DLoaderContext | undefined)?._tiles3dPackageFiles
       ) as Subtree;
     }
     getIsTileset(preprocessedContent.contentType, loaderOptions.isTileset);
@@ -375,14 +384,14 @@ async function parseGltfForClassification(
     preprocessedContent.contentType === 'gltf' &&
     Boolean(preprocessedContent.jsonPayload.extensions?.['3DTILES_tileset']);
   const loadGLTF = options['3d-tiles']?.loadGLTF !== false;
-  const isEmbeddedPackage = context.baseUrl?.startsWith('gltf-package:') === true;
   const parseOptions = loadStructureBuffers
     ? {
         ...options,
         gltf: {
           ...(options.gltf as Record<string, unknown> | undefined),
           loadBuffers: true,
-          loadFiles: isEmbeddedPackage,
+          loadBufferIndices: get3DTiles2SubtreeBufferIndices,
+          loadFiles: false,
           loadExternalAssets: false,
           loadImages: false,
           decompressMeshes: false
@@ -409,6 +418,19 @@ async function parseGltfForClassification(
 type GltfPreprocessedContent =
   | Extract<Preprocessed3DTileContent, {contentType: 'gltf'}>
   | {contentType: 'glb'; binaryPayload: ArrayBuffer};
+
+/**
+ * Preserves the virtual base used to resolve files nested inside an embedded glTF package.
+ *
+ * @param resourceUrl - URL or package name of the current glTF resource.
+ * @param context - Loader context that may carry a virtual package base.
+ * @returns Base path for package-file resolution.
+ */
+function getGltfResourceBasePath(resourceUrl: string, context?: LoaderContext): string {
+  return context?.baseUrl?.startsWith('gltf-package:')
+    ? context.baseUrl
+    : getBaseUri(resourceUrl) || context?.baseUrl || '';
+}
 
 /** Converts a supported legacy asset version to the normalized public discriminator. */
 function getFormatVersion(version: string): '0.0' | '1.0' | '1.1' {

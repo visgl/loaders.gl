@@ -5,7 +5,7 @@
 import {path, RequestCache, sliceArrayBuffer} from '@loaders.gl/loader-utils';
 import {Ellipsoid} from '@math.gl/geospatial';
 import {Vector3} from '@math.gl/core';
-import type {CoreAPI, Loader, LoaderOptions} from '@loaders.gl/loader-utils';
+import type {CoreAPI, Loader, LoaderContext, LoaderOptions} from '@loaders.gl/loader-utils';
 import type {Tile3D} from '../common/tile-3d';
 import {Tileset3DTraverser} from './tileset-3d-traverser';
 import type {Tileset3D} from '../common/tileset-3d';
@@ -54,6 +54,11 @@ type PackageFile = {
 };
 
 type PackageResource = {fileIndex: number; files: PackageFile[]};
+
+type Tiles3DPackageLoaderContext = LoaderContext & {
+  /** Parent package records available while parsing an embedded tileset or subtree. */
+  _tiles3dPackageFiles: PackageFile[];
+};
 
 /** Diagnostics for source-managed implicit subtree loading. */
 export type ImplicitTilingStats = {
@@ -590,7 +595,7 @@ export class Tiles3DSource implements Tileset3DSource {
     }
 
     const data = await this.getPackageFileData(file);
-    const packageBaseUrl = `gltf-package:${packageResource.fileIndex}`;
+    const packageBaseUrl = `gltf-package://${packageResource.fileIndex}`;
     return await this.coreApi.parse(data, this.loader, options, {
       url: file.name || `${packageBaseUrl}/content`,
       filename: file.name || 'content',
@@ -598,6 +603,7 @@ export class Tiles3DSource implements Tileset3DSource {
       loaders: [this.loader],
       coreApi: this.coreApi,
       _parse: this.coreApi.parse,
+      _tiles3dPackageFiles: packageResource.files,
       fetch: async (resource: string, init?: RequestInit) => {
         const reference = resource.startsWith(`${packageBaseUrl}/`)
           ? resource.slice(packageBaseUrl.length + 1)
@@ -616,7 +622,7 @@ export class Tiles3DSource implements Tileset3DSource {
           headers: {'content-type': referencedFile.mimeType}
         });
       }
-    });
+    } as Tiles3DPackageLoaderContext);
   }
 
   /** Resolves a retained package-file byte range without eagerly copying other package files. */

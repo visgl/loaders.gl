@@ -283,7 +283,11 @@ function getDraftIdentifierCoordinateFrame(
   if (typeof sourceCrs !== 'string') {
     return 'unknown';
   }
-  const identifier = Number(sourceCrs.split(':').pop());
+  const epsgMatch = /^EPSG:(\d+)$/i.exec(sourceCrs);
+  if (!epsgMatch) {
+    return 'unknown';
+  }
+  const identifier = Number(epsgMatch[1]);
   if (identifier === 4978 || identifier === 7789) {
     return 'geocentric';
   }
