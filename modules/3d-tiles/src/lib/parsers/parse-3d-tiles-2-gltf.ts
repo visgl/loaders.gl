@@ -835,9 +835,24 @@ function createPackageFiles(
   resourceResolver: CachedUriResolver,
   inheritedPackageFiles?: Tiles3DPackageFile[]
 ): Tiles3DPackageFile[] {
-  return (gltf.json.files || []).map((file, fileIndex) =>
+  const localFiles = (gltf.json.files || []).map((file, fileIndex) =>
     createPackageFile(gltf, file, fileIndex, resourceResolver, inheritedPackageFiles)
   );
+  if (!inheritedPackageFiles?.length) {
+    return localFiles;
+  }
+  const localReferences = new Set(
+    localFiles.flatMap(file => [file.uri, file.originalUri, file.name].filter(Boolean) as string[])
+  );
+  return [
+    ...localFiles,
+    ...inheritedPackageFiles.filter(
+      file =>
+        ![file.uri, file.originalUri, file.name].some(
+          reference => reference && localReferences.has(reference)
+        )
+    )
+  ];
 }
 
 /** Creates one URI- or buffer-view-backed package file record. */

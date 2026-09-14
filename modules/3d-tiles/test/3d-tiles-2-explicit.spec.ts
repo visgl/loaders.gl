@@ -109,6 +109,53 @@ describe('experimental explicit 3D Tiles 2.0', () => {
     expect(tileset.root!.hasTilesetContent).toBe(true);
   });
 
+  test('retains inherited sibling files for a nested implicit tileset package', () => {
+    const inheritedSubtreeFile = {
+      name: 'subtrees/0/0/0.gltf',
+      mimeType: 'model/gltf+json',
+      uri: 'gltf-package://0/subtrees/0/0/0.gltf',
+      byteOffset: 0,
+      byteLength: 0
+    };
+    const gltf = {
+      json: createTilesetGltf({
+        extensionsUsed: ['3DTILES_tileset', '3DTILES_implicit_tiling'],
+        extensionsRequired: ['3DTILES_tileset', '3DTILES_implicit_tiling'],
+        files: [{uri: 'local.gltf', mimeType: 'model/gltf+json', name: 'local.gltf'}],
+        nodes: [
+          {
+            extensions: {
+              '3DTILES_tileset': {geometricError: 1, refine: 'REPLACE'},
+              '3DTILES_implicit_tiling': {
+                contentUri: 'content/{level}/{x}/{y}.gltf',
+                subtreeUri: 'subtrees/{level}/{x}/{y}.gltf',
+                subdivisionScheme: 'QUADTREE',
+                availableLevels: 1,
+                subtreeLevels: 1
+              }
+            },
+            boundingVolume: {shape: 0}
+          }
+        ]
+      }),
+      buffers: []
+    };
+
+    const tileset = parse3DTiles2Tileset(gltf as any, 'gltf-package://1/', [inheritedSubtreeFile]);
+
+    expect(tileset.root._implicitPackageFiles).toEqual([
+      {
+        name: 'local.gltf',
+        mimeType: 'model/gltf+json',
+        uri: 'gltf-package://1/local.gltf',
+        originalUri: 'local.gltf',
+        byteOffset: 0,
+        byteLength: 0
+      },
+      inheritedSubtreeFile
+    ]);
+  });
+
   test('resolves bufferView-backed package names and exposes vector topology on Tile3D', async () => {
     const childJson = {
       asset: {version: '2.0'},

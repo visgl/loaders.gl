@@ -248,11 +248,18 @@ function getPropertyDataFromBinarySource(
     iterator,
     classProperty,
     featureTableProperty,
-    numberOfFeatures
+    numberOfFeatures,
+    arrayOffsets
   );
 
   if (classProperty.type === 'STRING' || classProperty.componentType === 'STRING') {
-    data = getPropertyDataString(numberOfFeatures, dataArray, arrayOffsets, stringOffsets);
+    data = getPropertyDataString(
+      numberOfFeatures,
+      dataArray,
+      arrayOffsets,
+      stringOffsets,
+      classProperty.type === 'ARRAY' ? classProperty.componentCount : undefined
+    );
   } else if (isNumericProperty(classProperty)) {
     data = getPropertyDataNumeric(classProperty, numberOfFeatures, dataArray, arrayOffsets);
   }
@@ -304,6 +311,7 @@ function getArrayOffsetsForProperty(
  * @param scenegraph - Instance of the class for structured access to GLTF data.
  * @param propertyTableProperty - propertyTable's property metadata.
  * @param numberOfElements - The number of elements in each property array that propertyTableProperty contains. It's a number of rows in the table.
+ * @param arrayOffsets - Offsets for a variable-length array, when present.
  * @returns Typed array of offset values. The number of offsets in the array is equal to `numberOfElements` plus one.
  * @see https://github.com/CesiumGS/glTF/blob/c38f7f37e894004353c15cd0481bc5b7381ce841/extensions/2.0/Vendor/EXT_feature_metadata/schema/featureTable.property.schema.json#L50C10-L50C32
  */
@@ -311,17 +319,20 @@ function getStringOffsetsForProperty(
   iterator: GLTFIterator,
   classProperty: GLTF_EXT_feature_metadata_ClassProperty,
   propertyTableProperty: GLTF_EXT_feature_metadata_FeatureTableProperty,
-  numberOfElements: number
+  numberOfElements: number,
+  arrayOffsets: TypedArray | null
 ): TypedArray | null {
   if (
     typeof propertyTableProperty.stringOffsetBufferView !== 'undefined' // `stringOffsetBufferView` is an index of the buffer view containing offsets for strings.
   ) {
-    // Data are in a FIXED-length array
+    const numberOfStrings = arrayOffsets
+      ? Number(arrayOffsets[numberOfElements])
+      : numberOfElements * (classProperty.type === 'ARRAY' ? classProperty.componentCount || 1 : 1);
     return getOffsetsForProperty(
       iterator,
       propertyTableProperty.stringOffsetBufferView,
       propertyTableProperty.offsetType || 'UINT32', // offsetType is used both for stringOffsetBufferView and arrayOffsetBufferView
-      numberOfElements
+      numberOfStrings
     );
   }
   return null;
@@ -388,13 +399,7 @@ function getPropertyDataNumeric(
   if (isArray) {
     if (arrayOffsets) {
       // VARIABLE-length array
-      return parseVariableLengthArrayNumeric(
-        valuesData,
-        numberOfElements,
-        arrayOffsets,
-        valuesDataBytes.length,
-        elementSize
-      );
+      return parseVariableLengthArrayNumeric(valuesData, numberOfElements, arrayOffsets);
     }
     if (arrayCount) {
       // FIXED-length array

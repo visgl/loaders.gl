@@ -377,6 +377,7 @@ function getPropertyDataFromBinarySource(
   );
   const stringOffsets = getStringOffsetsForProperty(
     iterator,
+    classProperty,
     propertyTableProperty,
     numberOfElements,
     arrayOffsets
@@ -398,7 +399,13 @@ function getPropertyDataFromBinarySource(
       break;
     }
     case 'STRING': {
-      data = getPropertyDataString(numberOfElements, valuesDataBytes, arrayOffsets, stringOffsets);
+      data = getPropertyDataString(
+        numberOfElements,
+        valuesDataBytes,
+        arrayOffsets,
+        stringOffsets,
+        classProperty.array ? classProperty.count : undefined
+      );
       break;
     }
     case 'ENUM': {
@@ -498,6 +505,7 @@ function getArrayOffsetsForProperty(
 /**
  * Parses propertyTable.property.stringOffsets.
  * @param scenegraph - Instance of the class for structured access to GLTF data.
+ * @param classProperty - Class property declaration that determines fixed array length.
  * @param propertyTableProperty - propertyTable's property metadata.
  * @param numberOfElements - The number of elements in each property array that propertyTableProperty contains. It's a number of rows in the table.
  * @param arrayOffsets - Offsets for variable-length arrays. The final offset is the total number of string elements.
@@ -506,6 +514,7 @@ function getArrayOffsetsForProperty(
  */
 function getStringOffsetsForProperty(
   iterator: GLTFIterator,
+  classProperty: GLTF_EXT_structural_metadata_ClassProperty,
   propertyTableProperty: GLTF_EXT_structural_metadata_PropertyTable_Property,
   numberOfElements: number,
   arrayOffsets: TypedArray | null
@@ -513,7 +522,9 @@ function getStringOffsetsForProperty(
   if (
     typeof propertyTableProperty.stringOffsets !== 'undefined' // `stringOffsets` is an index of the buffer view containing offsets for strings.
   ) {
-    const numberOfStrings = arrayOffsets ? arrayOffsets[numberOfElements] : numberOfElements;
+    const numberOfStrings = arrayOffsets
+      ? Number(arrayOffsets[numberOfElements])
+      : numberOfElements * (classProperty.array ? classProperty.count || 1 : 1);
     return getOffsetsForProperty(
       iterator,
       propertyTableProperty.stringOffsets,
@@ -567,8 +578,6 @@ function getPropertyDataNumeric(
         valuesData,
         numberOfElements,
         arrayOffsets,
-        valuesDataBytes.length,
-        elementSize,
         componentCount
       );
     }

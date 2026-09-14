@@ -569,6 +569,73 @@ test('gltf#EXT_structural_metadata decodes packed Boolean properties and arrays'
   expect(tables[2].properties.value.data).toEqual([[true], [false, true, true]]);
 });
 
+test('gltf#EXT_structural_metadata treats numeric offsets as elements and groups fixed strings', async () => {
+  const binary = new Uint8Array(26);
+  new Uint16Array(binary.buffer, 0, 6).set([1, 2, 3, 4, 5, 6]);
+  binary.set([0, 2, 3], 12);
+  binary.set(new TextEncoder().encode('abbcdd'), 15);
+  binary.set([0, 1, 3, 4, 6], 21);
+  const gltf = {
+    buffers: [{arrayBuffer: binary.buffer, byteOffset: 0, byteLength: binary.byteLength}],
+    json: {
+      buffers: [{byteLength: binary.byteLength}],
+      bufferViews: [
+        {buffer: 0, byteOffset: 0, byteLength: 12},
+        {buffer: 0, byteOffset: 12, byteLength: 3},
+        {buffer: 0, byteOffset: 15, byteLength: 6},
+        {buffer: 0, byteOffset: 21, byteLength: 5}
+      ],
+      extensions: {
+        EXT_structural_metadata: {
+          schema: {
+            classes: {
+              Numeric: {
+                properties: {
+                  value: {
+                    type: 'VEC2',
+                    componentType: 'UINT16',
+                    array: true,
+                    required: true
+                  }
+                }
+              },
+              Strings: {
+                properties: {
+                  value: {type: 'STRING', array: true, count: 2, required: true}
+                }
+              }
+            }
+          },
+          propertyTables: [
+            {
+              class: 'Numeric',
+              count: 2,
+              properties: {value: {values: 0, arrayOffsets: 1, arrayOffsetType: 'UINT8'}}
+            },
+            {
+              class: 'Strings',
+              count: 2,
+              properties: {value: {values: 2, stringOffsets: 3, stringOffsetType: 'UINT8'}}
+            }
+          ]
+        }
+      }
+    }
+  };
+
+  await decodeExtensions(gltf as any, {gltf: {loadBuffers: true, loadImages: false}});
+
+  const tables = gltf.json.extensions.EXT_structural_metadata.propertyTables;
+  expect(tables[0].properties.value.data).toEqual([
+    new Uint16Array([1, 2, 3, 4]),
+    new Uint16Array([5, 6])
+  ]);
+  expect(tables[1].properties.value.data).toEqual([
+    ['a', 'bb'],
+    ['c', 'dd']
+  ]);
+});
+
 test('gltf#EXT_structural_metadata validates unsupported property definitions', async () => {
   const makeGLTF = (property: any, schema: any = {}) => ({
     buffers: [{arrayBuffer: new Uint8Array([1, 0]).buffer, byteOffset: 0, byteLength: 2}],
