@@ -140,6 +140,7 @@ type DraftStructuralMetadataClassProperty = {
   componentType?: string;
   enumType?: string;
   array?: boolean;
+  count?: number;
   required?: boolean;
   normalized?: boolean;
   noData?: unknown;
@@ -255,7 +256,12 @@ function decodePropertyTableRows(
     const row: Record<string, unknown> = {};
     for (const [propertyName, classProperty] of Object.entries(classDefinition.properties || {})) {
       const tableProperty = table.properties?.[propertyName];
-      const rawValue = getPropertyTableRowValue(tableProperty?.data, rowIndex, classProperty.type);
+      const rawValue = getPropertyTableRowValue(
+        tableProperty?.data,
+        rowIndex,
+        classProperty.type,
+        classProperty.array === true
+      );
       row[propertyName] = resolvePropertyValue(rawValue, classProperty, tableProperty);
     }
     return row;
@@ -286,15 +292,15 @@ function filterTemplatePropertyRows(
   );
 }
 
-/** Extracts one scalar, vector, or matrix row from decoded flat property-table data. */
+/** Extracts one scalar, vector, matrix, or array row from decoded property-table data. */
 function getPropertyTableRowValue(
   data: ArrayLike<unknown> | undefined,
   rowIndex: number,
-  propertyType: string | undefined
+  propertyType: string | undefined,
+  isArray: boolean
 ): unknown {
-  const componentCount =
-    {VEC2: 2, VEC3: 3, VEC4: 4, MAT2: 4, MAT3: 9, MAT4: 16}[propertyType || ''] || 1;
-  if (!data || componentCount === 1) {
+  const componentCount = getPropertyComponentCount(propertyType);
+  if (!data || isArray || componentCount === 1) {
     return data?.[rowIndex];
   }
   const offset = rowIndex * componentCount;
@@ -303,7 +309,7 @@ function getPropertyTableRowValue(
   );
 }
 
-/** Applies metadata no-data/default and scalar numeric transforms to one decoded value. */
+/** Applies metadata no-data/default and numeric transforms to one decoded value. */
 function resolvePropertyValue(
   rawValue: unknown,
   classProperty: DraftStructuralMetadataClassProperty,
@@ -312,10 +318,16 @@ function resolvePropertyValue(
   if (rawValue === undefined || Object.is(rawValue, classProperty.noData)) {
     return classProperty.default;
   }
-  if (Array.isArray(rawValue)) {
-    return rawValue.map((component, componentIndex) =>
+  if (Array.isArray(rawValue) || ArrayBuffer.isView(rawValue)) {
+    const componentCount = getPropertyComponentCount(classProperty.type);
+    return Array.from(rawValue as ArrayLike<unknown>, (component, componentIndex) =>
       typeof component === 'number'
-        ? applyNumericPropertyTransform(component, classProperty, tableProperty, componentIndex)
+        ? applyNumericPropertyTransform(
+            component,
+            classProperty,
+            tableProperty,
+            componentIndex % componentCount
+          )
         : component
     );
   }
@@ -323,6 +335,11 @@ function resolvePropertyValue(
     return rawValue;
   }
   return applyNumericPropertyTransform(rawValue, classProperty, tableProperty, 0);
+}
+
+/** Returns the number of numeric components in one metadata property element. */
+function getPropertyComponentCount(propertyType: string | undefined): number {
+  return {VEC2: 2, VEC3: 3, VEC4: 4, MAT2: 4, MAT3: 9, MAT4: 16}[propertyType || ''] || 1;
 }
 
 /** Applies normalization, scale, and offset to one numeric property component. */

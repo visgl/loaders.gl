@@ -276,7 +276,7 @@ function getDraft3DTilesSpatialReference(
   });
 }
 
-/** Classifies common authority identifiers used by the draft CRS extension. */
+/** Classifies only authority identifiers whose coordinate frames are known. */
 function getDraftIdentifierCoordinateFrame(
   sourceCrs: ReadonlyCRSDefinition | undefined
 ): TilesetSpatialReference['coordinateFrame'] {
@@ -284,7 +284,20 @@ function getDraftIdentifierCoordinateFrame(
     return 'unknown';
   }
   const identifier = Number(sourceCrs.split(':').pop());
-  return Number.isInteger(identifier) ? getIdentifierCoordinateFrame(identifier) : 'unknown';
+  if (identifier === 4978 || identifier === 7789) {
+    return 'geocentric';
+  }
+  if (identifier === 4326 || identifier === 4490 || identifier === 4979) {
+    return 'geographic';
+  }
+  if (
+    identifier === 3857 ||
+    (identifier >= 32601 && identifier <= 32660) ||
+    (identifier >= 32701 && identifier <= 32760)
+  ) {
+    return 'projected';
+  }
+  return 'unknown';
 }
 
 /** Parse the 3D Tiles decimal-year string while tolerating legacy numeric producer output. */

@@ -476,6 +476,8 @@ function getPropertyDataNumeric(
 ): BigTypedArray | BigTypedArray[] {
   const isArray = classProperty.array;
   const arrayCount = classProperty.count;
+  const componentCount =
+    {VEC2: 2, VEC3: 3, VEC4: 4, MAT2: 4, MAT3: 9, MAT4: 16}[classProperty.type] || 1;
 
   const elementSize = getArrayElementByteSize(classProperty.type, classProperty.componentType);
   const elementCount = valuesDataBytes.byteLength / elementSize;
@@ -502,12 +504,13 @@ function getPropertyDataNumeric(
         numberOfElements,
         arrayOffsets,
         valuesDataBytes.length,
-        elementSize
+        elementSize,
+        componentCount
       );
     }
     if (arrayCount) {
       // FIXED-length array
-      return parseFixedLengthArrayNumeric(valuesData, numberOfElements, arrayCount);
+      return parseFixedLengthArrayNumeric(valuesData, numberOfElements, arrayCount, componentCount);
     }
     return [];
   }

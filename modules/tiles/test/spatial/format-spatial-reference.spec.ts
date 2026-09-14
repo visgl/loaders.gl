@@ -264,6 +264,30 @@ describe('get3DTilesSpatialReference', () => {
     );
   });
 
+  test('classifies known draft WKIDs without guessing unknown authority identifiers', () => {
+    const geocentric = get3DTilesSpatialReference({
+      extensions: {
+        EXT_geospatial_crs: {
+          format: 'wkid',
+          extensions: {EXT_geospatial_crs_wkid: {authority: 'EPSG', wkid: 7789}}
+        }
+      }
+    });
+    const unknown = get3DTilesSpatialReference({
+      extensions: {
+        EXT_geospatial_crs: {
+          format: 'wkid',
+          extensions: {EXT_geospatial_crs_wkid: {authority: 'EPSG', wkid: 999999}}
+        }
+      }
+    });
+
+    expect(geocentric.coordinateFrame).toBe('geocentric');
+    expect(geocentric.units).toEqual(['meter', 'meter', 'meter']);
+    expect(unknown.coordinateFrame).toBe('unknown');
+    expect(unknown.units).toBeUndefined();
+  });
+
   test('uses the specification frame established by a root region', () => {
     const spatialReference = get3DTilesSpatialReference({
       root: {boundingVolume: {region: [0, 0, 1, 1, 0, 1]}}

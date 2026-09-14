@@ -136,7 +136,8 @@ async function parse(
       data,
       subtreeContent as GltfPreprocessedContent,
       options,
-      context
+      context,
+      true
     );
     if (!is3DTiles2Subtree(parsedSubtreeGltf)) {
       throw new Error('Expected a glTF 3DTILES_subtree resource');
@@ -350,12 +351,22 @@ async function parseTile(
   return tile.content;
 }
 
-/** Parses glTF exactly once so draft 3D Tiles structure can be classified independent of URL. */
+/**
+ * Parses glTF exactly once so draft 3D Tiles structure can be classified independent of URL.
+ *
+ * @param data - Original glTF or GLB resource bytes.
+ * @param preprocessedContent - Structure-first glTF payload classification.
+ * @param options - Loader options forwarded to the glTF parser.
+ * @param context - Loader context used for external glTF resources.
+ * @param loadStructureBuffers - Whether hierarchy data must load despite `loadGLTF: false`.
+ * @returns Parsed glTF with the data required to classify and normalize the resource.
+ */
 async function parseGltfForClassification(
   data: ArrayBuffer,
   preprocessedContent: GltfPreprocessedContent,
   options: Tiles3DLoaderOptions,
-  context?: LoaderContext
+  context?: LoaderContext,
+  loadStructureBuffers = false
 ): Promise<GLTFWithBuffers> {
   if (!context) {
     throw new Error('3D Tiles glTF parsing requires a loader context');
@@ -364,8 +375,19 @@ async function parseGltfForClassification(
     preprocessedContent.contentType === 'gltf' &&
     Boolean(preprocessedContent.jsonPayload.extensions?.['3DTILES_tileset']);
   const loadGLTF = options['3d-tiles']?.loadGLTF !== false;
-  const parseOptions =
-    isJsonTileset || !loadGLTF
+  const parseOptions = loadStructureBuffers
+    ? {
+        ...options,
+        gltf: {
+          ...(options.gltf as Record<string, unknown> | undefined),
+          loadBuffers: true,
+          loadFiles: true,
+          loadExternalAssets: false,
+          loadImages: false,
+          decompressMeshes: false
+        }
+      }
+    : isJsonTileset || !loadGLTF
       ? {
           ...options,
           gltf: {

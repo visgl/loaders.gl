@@ -357,6 +357,7 @@ function coordinatesToOffset(
  * @param arrayOffsets - Offsets of nested arrays in the flat values array.
  * @param valuesDataBytesLength - Data byte length.
  * @param valueSize - Value size in bytes.
+ * @param componentCount - Number of scalar components in each value.
  * @returns Array of typed arrays.
  */
 export function parseVariableLengthArrayNumeric(
@@ -364,7 +365,8 @@ export function parseVariableLengthArrayNumeric(
   numberOfElements: number,
   arrayOffsets: TypedArray,
   valuesDataBytesLength: number,
-  valueSize: number
+  valueSize: number,
+  componentCount = 1
 ): BigTypedArray[] {
   const attributeValueArray: BigTypedArray[] = [];
   for (let index = 0; index < numberOfElements; index++) {
@@ -373,8 +375,8 @@ export function parseVariableLengthArrayNumeric(
     if (arrayByteSize + arrayOffset > valuesDataBytesLength) {
       break;
     }
-    const typedArrayOffset = arrayOffset / valueSize;
-    const elementCount = arrayByteSize / valueSize;
+    const typedArrayOffset = (arrayOffset / valueSize) * componentCount;
+    const elementCount = (arrayByteSize / valueSize) * componentCount;
     attributeValueArray.push(valuesData.slice(typedArrayOffset, typedArrayOffset + elementCount));
   }
   return attributeValueArray;
@@ -387,17 +389,20 @@ export function parseVariableLengthArrayNumeric(
  * @param valuesData - Values in a flat typed array.
  * @param numberOfElements - Number of rows in the property table.
  * @param arrayCount - Nested arrays length.
+ * @param componentCount - Number of scalar components in each array element.
  * @returns Array of typed arrays.
  */
 export function parseFixedLengthArrayNumeric(
   valuesData: BigTypedArray,
   numberOfElements: number,
-  arrayCount: number
+  arrayCount: number,
+  componentCount = 1
 ): BigTypedArray[] {
   const attributeValueArray: BigTypedArray[] = [];
+  const rowComponentCount = arrayCount * componentCount;
   for (let index = 0; index < numberOfElements; index++) {
-    const elementOffset = index * arrayCount;
-    attributeValueArray.push(valuesData.slice(elementOffset, elementOffset + arrayCount));
+    const elementOffset = index * rowComponentCount;
+    attributeValueArray.push(valuesData.slice(elementOffset, elementOffset + rowComponentCount));
   }
   return attributeValueArray;
 }
