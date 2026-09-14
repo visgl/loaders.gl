@@ -2,10 +2,12 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import {getFloat16Value, setFloat16Value} from '@loaders.gl/schema';
+import {createFloat16Array, getFloat16Value, setFloat16Value} from '@loaders.gl/schema';
 import {expect, test} from 'vitest';
 
 test('Float16 fallback encodes and decodes binary16 words', () => {
+  expect(createFloat16Array(2)).toHaveLength(2);
+
   const storage = new Uint16Array(3);
   setFloat16Value(storage, 0, 0);
   setFloat16Value(storage, 1, 0.5);
