@@ -200,8 +200,9 @@ produced by `KHR_mesh_primitive_restart` or `EXT_mesh_polygon`. The `clip` flag 
 renderer and does not cause visual clipping in loaders.gl.
 
 Draft implicit tiling accepts glTF-based `3DTILES_subtree` resources with QUADTREE or OCTREE
-availability. Tile/content attributes and structural-metadata rows can override generated headers;
-property-backed URI templates resolve content properties before tile properties and coordinates.
+availability. Tile/content attributes can override generated bounds, geometric error, refinement,
+and transforms. Structural-metadata rows are exposed as metadata and can supply URI-template
+values; templates resolve content properties before tile properties and coordinates.
 Draft geometric errors remain in their declared world units, while the established 1.x path keeps
 transform scaling for backward compatibility.
 
