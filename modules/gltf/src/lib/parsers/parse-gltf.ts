@@ -200,14 +200,13 @@ function parseGLTFContainerSync(gltf, data, byteOffset, options: GLTFLoaderOptio
         uriLessBufferIndices.length === 1 &&
         uriLessBufferIndices[0] === 0 &&
         Boolean(implicitBinChunk));
+    const legacyImplicitBinChunk = gltf._glb.version < 3 ? binChunks[0] : implicitBinChunk;
 
-    if (usesLegacyImplicitBuffer && (gltf._glb.version < 3 || bufferDefinitions[0])) {
-      const binChunk = gltf._glb.version < 3 ? binChunks[0] : implicitBinChunk;
-      assert(binChunk);
+    if (usesLegacyImplicitBuffer && legacyImplicitBinChunk) {
       gltf.buffers[0] = {
-        arrayBuffer: binChunk.arrayBuffer,
-        byteOffset: binChunk.byteOffset,
-        byteLength: binChunk.byteLength
+        arrayBuffer: legacyImplicitBinChunk.arrayBuffer,
+        byteOffset: legacyImplicitBinChunk.byteOffset,
+        byteLength: legacyImplicitBinChunk.byteLength
       };
     }
 
