@@ -642,8 +642,6 @@ function getPropertyDataENUM(
         valuesData,
         numberOfElements,
         arrayOffsets,
-        valuesDataBytesLength: valuesDataBytes.length,
-        elementSize,
         enumEntry
       });
     }
@@ -665,8 +663,6 @@ function getPropertyDataENUM(
  * @param params.valuesData - Values in a flat typed array.
  * @param params.numberOfElements - The number of elements in each property array that propertyTableProperty contains. It's a number of rows in the table.
  * @param params.arrayOffsets - Offsets for variable-length arrays. It's null for fixed-length arrays or scalar types.
- * @param params.valuesDataBytesLength - Byte length of values array.
- * @param params.elementSize - Single element byte size.
  * @param params.enumEntry - Enums dictionary.
  * @returns Nested strings array.
  */
@@ -674,29 +670,23 @@ function parseVariableLengthArrayENUM(params: {
   valuesData: BigTypedArray;
   numberOfElements: number;
   arrayOffsets: TypedArray;
-  valuesDataBytesLength: number;
-  elementSize: number;
   enumEntry: GLTF_EXT_structural_metadata_Enum;
 }): string[][] {
-  const {
-    valuesData,
-    numberOfElements,
-    arrayOffsets,
-    valuesDataBytesLength,
-    elementSize,
-    enumEntry
-  } = params;
+  const {valuesData, numberOfElements, arrayOffsets, enumEntry} = params;
   const attributeValueArray: string[][] = [];
   for (let index = 0; index < numberOfElements; index++) {
-    const arrayOffset = arrayOffsets[index];
-    const arrayByteSize = arrayOffsets[index + 1] - arrayOffsets[index];
-    if (arrayByteSize + arrayOffset > valuesDataBytesLength) {
+    const arrayOffset = Number(arrayOffsets[index]);
+    const arrayLength = Number(arrayOffsets[index + 1]) - arrayOffset;
+    if (
+      !Number.isInteger(arrayOffset) ||
+      !Number.isInteger(arrayLength) ||
+      arrayOffset < 0 ||
+      arrayLength < 0 ||
+      arrayOffset + arrayLength > valuesData.length
+    ) {
       break;
     }
-
-    const typedArrayOffset = arrayOffset / elementSize;
-    const elementCount = arrayByteSize / elementSize;
-    const array: string[] = getEnumsArray(valuesData, typedArrayOffset, elementCount, enumEntry);
+    const array: string[] = getEnumsArray(valuesData, arrayOffset, arrayLength, enumEntry);
     attributeValueArray.push(array);
   }
   return attributeValueArray;

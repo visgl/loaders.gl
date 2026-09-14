@@ -498,6 +498,105 @@ describe('experimental explicit 3D Tiles 2.0', () => {
     expect(subtree.resourceFiles[0].data).toBeUndefined();
   });
 
+  test('auto-detects a meshopt-compressed subtree while keeping unrelated buffers lazy', async () => {
+    const subtreeUrl = 'https://example.com/subtrees/compressed.gltf';
+    const hierarchyBufferUrl = 'https://example.com/subtrees/hierarchy.meshopt';
+    const encodedHierarchy = new Uint8Array([
+      0xa0, 0x01, 0x3f, 0x00, 0x00, 0x00, 0x7e, 0x7d, 0x4c, 0x01, 0x3f, 0x00, 0x00, 0x00, 0xfd,
+      0xfd, 0xfe, 0x01, 0x3f, 0x00, 0x00, 0x00, 0x83, 0x82, 0x80, 0x01, 0x3f, 0x00, 0x00, 0x00,
+      0x7d, 0x3f, 0x7e, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+      0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+      0x00, 0x40, 0x7f, 0xc1, 0xff
+    ]);
+    const subtreeJson = {
+      asset: {version: '2.1'},
+      extensionsUsed: ['3DTILES_subtree', 'KHR_meshopt_compression', 'EXT_structural_metadata'],
+      extensionsRequired: ['3DTILES_subtree', 'KHR_meshopt_compression', 'EXT_structural_metadata'],
+      extensions: {
+        '3DTILES_subtree': {
+          tileAvailability: {bitstream: 0},
+          contentAvailability: {constant: 0},
+          childSubtreeAvailability: {constant: 0},
+          tileProperties: 0
+        },
+        EXT_structural_metadata: {
+          schema: {
+            classes: {
+              tile: {
+                properties: {
+                  category: {type: 'SCALAR', componentType: 'UINT8', required: true}
+                }
+              }
+            }
+          },
+          propertyTables: [{class: 'tile', count: 1, properties: {category: {values: 0}}}]
+        }
+      },
+      buffers: [
+        {byteLength: 16},
+        {uri: 'hierarchy.meshopt', byteLength: encodedHierarchy.byteLength},
+        {uri: 'deferred.meshopt', byteLength: encodedHierarchy.byteLength},
+        {byteLength: 16}
+      ],
+      bufferViews: [
+        {
+          buffer: 0,
+          byteLength: 16,
+          extensions: {
+            KHR_meshopt_compression: {
+              buffer: 1,
+              byteLength: encodedHierarchy.byteLength,
+              byteStride: 4,
+              count: 4,
+              mode: 'ATTRIBUTES',
+              filter: 'COLOR'
+            }
+          }
+        },
+        {
+          buffer: 3,
+          byteLength: 16,
+          extensions: {
+            KHR_meshopt_compression: {
+              buffer: 2,
+              byteLength: encodedHierarchy.byteLength,
+              byteStride: 4,
+              count: 4,
+              mode: 'ATTRIBUTES',
+              filter: 'COLOR'
+            }
+          }
+        }
+      ]
+    };
+    const requestedUrls: string[] = [];
+    const fetch = async (input: RequestInfo | URL): Promise<Response> => {
+      const url = input.toString();
+      requestedUrls.push(url);
+      if (url === subtreeUrl) {
+        return new Response(JSON.stringify(subtreeJson), {
+          headers: {'content-type': 'model/gltf+json'}
+        });
+      }
+      if (url === hierarchyBufferUrl) {
+        return new Response(encodedHierarchy);
+      }
+      throw new Error(`unexpected eager request: ${url}`);
+    };
+
+    const subtree = await load(subtreeUrl, Tiles3DLoader, {
+      worker: false,
+      fetch,
+      '3d-tiles': {loadGLTF: false}
+    });
+
+    expect(requestedUrls).toEqual([subtreeUrl, hierarchyBufferUrl]);
+    expect(subtree.tileAvailability.explicitBitstream.slice(0, 4)).toEqual(
+      new Uint8Array([254, 1, 0, 255])
+    );
+    expect(subtree.tilePropertyRows).toEqual([{category: 254}]);
+  });
+
   test('traverses and caches glTF implicit subtrees lazily', async () => {
     const rootUrl = 'https://example.com/draft/root.resource?token=test';
     const subtreeUrl = 'https://example.com/draft/subtrees/0/0/0.resource?token=test';
@@ -636,10 +735,97 @@ describe('experimental explicit 3D Tiles 2.0', () => {
     expect(tileset.root!.header.content._resource.files[0].data).toBeInstanceOf(ArrayBuffer);
     expect(tileset.root!.header.content._resource.files[1]).toMatchObject({
       name: 'unused.gltf',
-      uri: 'gltf-package://0/unused.gltf'
+      uri: 'gltf-package://0/subtrees/0/0/unused.gltf'
     });
     await tileset.root!.loadContent();
     expect(tileset.root!.content).toMatchObject({shape: 'tile3d'});
+  });
+
+  test('resolves resources relative to an embedded tileset directory', async () => {
+    const nestedTilesetBytes = new TextEncoder().encode(
+      JSON.stringify(
+        createTilesetGltf({
+          extensionsUsed: ['3DTILES_tileset', '3DTILES_implicit_tiling'],
+          extensionsRequired: ['3DTILES_tileset', '3DTILES_implicit_tiling'],
+          nodes: [
+            {
+              extensions: {
+                '3DTILES_tileset': {geometricError: 1, refine: 'REPLACE'},
+                '3DTILES_implicit_tiling': {
+                  contentUri: 'content/{level}/{x}/{y}.gltf',
+                  subtreeUri: 'subtrees/{level}/{x}/{y}.gltf',
+                  subdivisionScheme: 'QUADTREE',
+                  availableLevels: 1,
+                  subtreeLevels: 1
+                }
+              },
+              boundingVolume: {shape: 0}
+            }
+          ]
+        })
+      )
+    );
+    const subtreeBytes = new TextEncoder().encode(
+      JSON.stringify({
+        asset: {version: '2.1'},
+        extensionsUsed: ['3DTILES_subtree'],
+        extensionsRequired: ['3DTILES_subtree'],
+        extensions: {
+          '3DTILES_subtree': {
+            tileAvailability: {constant: 1},
+            contentAvailability: {constant: 1},
+            childSubtreeAvailability: {constant: 0}
+          }
+        }
+      })
+    );
+    const contentBytes = new TextEncoder().encode(
+      JSON.stringify({asset: {version: '2.0'}, scenes: [{nodes: []}], scene: 0})
+    );
+    const subtreeOffset = alignToFour(nestedTilesetBytes.byteLength);
+    const contentOffset = alignToFour(subtreeOffset + subtreeBytes.byteLength);
+    const binary = new Uint8Array(contentOffset + contentBytes.byteLength);
+    binary.set(nestedTilesetBytes);
+    binary.set(subtreeBytes, subtreeOffset);
+    binary.set(contentBytes, contentOffset);
+    const parent = createTilesetGltf({
+      buffers: [{byteLength: binary.byteLength}],
+      bufferViews: [
+        {buffer: 0, byteOffset: 0, byteLength: nestedTilesetBytes.byteLength},
+        {buffer: 0, byteOffset: subtreeOffset, byteLength: subtreeBytes.byteLength},
+        {buffer: 0, byteOffset: contentOffset, byteLength: contentBytes.byteLength}
+      ],
+      files: [
+        {bufferView: 0, mimeType: 'model/gltf+json', name: 'nested/tileset.gltf'},
+        {bufferView: 1, mimeType: 'model/gltf+json', name: 'nested/subtrees/0/0/0.gltf'},
+        {bufferView: 2, mimeType: 'model/gltf+json', name: 'nested/content/0/0/0.gltf'}
+      ],
+      externalAssets: [{file: 0}],
+      nodes: [
+        {
+          extensions: {'3DTILES_tileset': {geometricError: 0, refine: 'REPLACE'}},
+          boundingVolume: {shape: 0},
+          externalAsset: 0
+        }
+      ]
+    });
+    const rootTileset = await parse(encodeGlb(parent, binary), Tiles3DLoader, {worker: false});
+    const rootRuntime = new Tileset3D(
+      new Tiles3DSource({...rootTileset, coreApi}, {worker: false})
+    );
+    await rootRuntime.tilesetInitializationPromise;
+    const result = await rootRuntime.root!.loadContent();
+    const nestedTileset = result.nestedTileset!;
+
+    expect(nestedTileset.root.implicitSubtree.subtreeUrl).toBe(
+      'gltf-package://0/nested/subtrees/0/0/0.gltf'
+    );
+    const nestedSource = new Tiles3DSource({...nestedTileset, coreApi}, {worker: false});
+    const nestedRuntime = new Tileset3D(nestedSource);
+    await nestedRuntime.tilesetInitializationPromise;
+    await nestedSource.loadTileChildren(nestedRuntime.root!, {} as never);
+    await nestedRuntime.root!.loadContent();
+    expect(nestedRuntime.root!.content).toMatchObject({shape: 'tile3d'});
   });
 
   test('rejects malformed draft subtree declarations deterministically', async () => {

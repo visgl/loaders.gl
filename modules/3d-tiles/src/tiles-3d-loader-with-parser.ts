@@ -30,6 +30,7 @@ import {
   is3DTiles2Subtree,
   is3DTiles2Tileset,
   get3DTiles2SubtreeBufferIndices,
+  get3DTiles2SubtreeBufferViewIndices,
   parse3DTiles2Subtree,
   parse3DTiles2Tileset,
   type Tiles3DPackageFile
@@ -163,22 +164,27 @@ async function parse(
   }
 
   if (preprocessedContent.contentType === 'gltf' || preprocessedContent.contentType === 'glb') {
+    const loadStructureBuffers =
+      preprocessedContent.contentType === 'gltf' &&
+      Boolean(preprocessedContent.jsonPayload.extensions?.['3DTILES_subtree']);
     const parsedGltf = await parseGltfForClassification(
       data,
       preprocessedContent as GltfPreprocessedContent,
       options,
-      context
+      context,
+      loadStructureBuffers
     );
     if (is3DTiles2Tileset(parsedGltf)) {
       getIsTileset('tileset2', loaderOptions.isTileset);
       validateRequiredExtensions(parsedGltf.json.extensionsRequired, true);
       const resourceUrl = context?.url || options.core?.baseUrl || '';
+      const resourceBasePath = getGltfResourceBasePath(resourceUrl, context);
       const tilesetJson = parse3DTiles2Tileset(
         parsedGltf,
-        getGltfResourceBasePath(resourceUrl, context),
+        resourceBasePath,
         (context as Tiles3DLoaderContext | undefined)?._tiles3dPackageFiles
       );
-      return parseTileset(tilesetJson, options, context, '2.0-draft');
+      return parseTileset(tilesetJson, options, context, '2.0-draft', resourceBasePath);
     }
     if (is3DTiles2Subtree(parsedGltf)) {
       validateRequiredExtensions(parsedGltf.json.extensionsRequired, true, 'subtree');
@@ -253,19 +259,21 @@ function getIsTileset(
  * @param tilesetJson - JSON object classified as an external tileset.
  * @param options - Loader options forwarded to header normalization.
  * @param context - Loader context providing resource URL and subtree fetch.
+ * @param resourceBasePath - Optional resource base retained from a draft glTF package.
  * @returns Normalized tileset runtime metadata.
  */
 async function parseTileset(
   tilesetJson: Tiles3DTilesetJSON,
   options?: Tiles3DLoaderOptions,
   context?: LoaderContext,
-  formatVersion: Tiles3DFormatVersion = getFormatVersion(tilesetJson.asset.version)
+  formatVersion: Tiles3DFormatVersion = getFormatVersion(tilesetJson.asset.version),
+  resourceBasePath?: string
 ): Promise<Tiles3DTilesetJSONPostprocessed> {
   validateRequiredExtensions(tilesetJson.extensionsRequired, formatVersion === '2.0-draft');
   validateVectorPreviewExtensions(tilesetJson.root);
 
   const tilesetUrl = context?.url || options?.core?.baseUrl || '';
-  const basePath = getBaseUri(tilesetUrl) || context?.baseUrl || '';
+  const basePath = resourceBasePath || getBaseUri(tilesetUrl) || context?.baseUrl || '';
   const normalizedRoot = await normalizeTileHeaders(tilesetJson, basePath, options || {}, context);
   const tilesetJsonPostprocessed: Tiles3DTilesetJSONPostprocessed = {
     ...tilesetJson,
@@ -384,13 +392,15 @@ async function parseGltfForClassification(
     preprocessedContent.contentType === 'gltf' &&
     Boolean(preprocessedContent.jsonPayload.extensions?.['3DTILES_tileset']);
   const loadGLTF = options['3d-tiles']?.loadGLTF !== false;
-  const parseOptions = loadStructureBuffers
+  const loadSelectedStructureBuffers = loadStructureBuffers || !loadGLTF;
+  const parseOptions = loadSelectedStructureBuffers
     ? {
         ...options,
         gltf: {
           ...(options.gltf as Record<string, unknown> | undefined),
           loadBuffers: true,
           loadBufferIndices: get3DTiles2SubtreeBufferIndices,
+          decompressBufferViewIndices: get3DTiles2SubtreeBufferViewIndices,
           loadFiles: false,
           loadExternalAssets: false,
           loadImages: false,
@@ -427,9 +437,15 @@ type GltfPreprocessedContent =
  * @returns Base path for package-file resolution.
  */
 function getGltfResourceBasePath(resourceUrl: string, context?: LoaderContext): string {
-  return context?.baseUrl?.startsWith('gltf-package:')
-    ? context.baseUrl
-    : getBaseUri(resourceUrl) || context?.baseUrl || '';
+  if (context?.baseUrl?.startsWith('gltf-package:')) {
+    const packageBaseUrl = context.baseUrl.replace(/\/$/, '');
+    const packageRelativeUrl = resourceUrl.startsWith(`${packageBaseUrl}/`)
+      ? resourceUrl.slice(packageBaseUrl.length + 1)
+      : resourceUrl;
+    const resourceDirectory = getBaseUri(packageRelativeUrl);
+    return resourceDirectory ? `${packageBaseUrl}/${resourceDirectory}` : packageBaseUrl;
+  }
+  return getBaseUri(resourceUrl) || context?.baseUrl || '';
 }
 
 /** Converts a supported legacy asset version to the normalized public discriminator. */

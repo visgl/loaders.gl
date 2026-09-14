@@ -61,12 +61,13 @@ export const EXTENSIONS: GLTFExtensionPlugin[] = [
   // KHR_binary_gltf,
 
   // 2.0
+  // Compression must be decoded before metadata consumes buffer-view values.
+  KHR_meshopt_compression,
+  EXT_meshopt_compression,
   EXT_structural_metadata,
   EXT_mesh_features,
   KHR_mesh_primitive_restart,
   EXT_mesh_polygon,
-  KHR_meshopt_compression,
-  EXT_meshopt_compression,
   EXT_texture_avif,
   EXT_texture_webp,
   // Basisu should come after webp, we want basisu to be preferred if both are provided

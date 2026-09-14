@@ -569,12 +569,14 @@ test('gltf#EXT_structural_metadata decodes packed Boolean properties and arrays'
   expect(tables[2].properties.value.data).toEqual([[true], [false, true, true]]);
 });
 
-test('gltf#EXT_structural_metadata treats numeric offsets as elements and groups fixed strings', async () => {
-  const binary = new Uint8Array(26);
+test('gltf#EXT_structural_metadata treats array offsets as elements and groups fixed strings', async () => {
+  const binary = new Uint8Array(35);
   new Uint16Array(binary.buffer, 0, 6).set([1, 2, 3, 4, 5, 6]);
   binary.set([0, 2, 3], 12);
   binary.set(new TextEncoder().encode('abbcdd'), 15);
   binary.set([0, 1, 3, 4, 6], 21);
+  new Uint16Array(binary.buffer, 26, 3).set([10, 20, 30]);
+  binary.set([0, 2, 3], 32);
   const gltf = {
     buffers: [{arrayBuffer: binary.buffer, byteOffset: 0, byteLength: binary.byteLength}],
     json: {
@@ -583,7 +585,9 @@ test('gltf#EXT_structural_metadata treats numeric offsets as elements and groups
         {buffer: 0, byteOffset: 0, byteLength: 12},
         {buffer: 0, byteOffset: 12, byteLength: 3},
         {buffer: 0, byteOffset: 15, byteLength: 6},
-        {buffer: 0, byteOffset: 21, byteLength: 5}
+        {buffer: 0, byteOffset: 21, byteLength: 5},
+        {buffer: 0, byteOffset: 26, byteLength: 6},
+        {buffer: 0, byteOffset: 32, byteLength: 3}
       ],
       extensions: {
         EXT_structural_metadata: {
@@ -603,6 +607,21 @@ test('gltf#EXT_structural_metadata treats numeric offsets as elements and groups
                 properties: {
                   value: {type: 'STRING', array: true, count: 2, required: true}
                 }
+              },
+              Enums: {
+                properties: {
+                  value: {type: 'ENUM', enumType: 'Kind', array: true, required: true}
+                }
+              }
+            },
+            enums: {
+              Kind: {
+                valueType: 'UINT16',
+                values: [
+                  {name: 'first', value: 10},
+                  {name: 'second', value: 20},
+                  {name: 'third', value: 30}
+                ]
               }
             }
           },
@@ -616,6 +635,11 @@ test('gltf#EXT_structural_metadata treats numeric offsets as elements and groups
               class: 'Strings',
               count: 2,
               properties: {value: {values: 2, stringOffsets: 3, stringOffsetType: 'UINT8'}}
+            },
+            {
+              class: 'Enums',
+              count: 2,
+              properties: {value: {values: 4, arrayOffsets: 5, arrayOffsetType: 'UINT8'}}
             }
           ]
         }
@@ -634,6 +658,7 @@ test('gltf#EXT_structural_metadata treats numeric offsets as elements and groups
     ['a', 'bb'],
     ['c', 'dd']
   ]);
+  expect(tables[2].properties.value.data).toEqual([['first', 'second'], ['third']]);
 });
 
 test('gltf#EXT_structural_metadata validates unsupported property definitions', async () => {

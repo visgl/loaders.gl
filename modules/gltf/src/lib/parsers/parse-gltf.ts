@@ -31,6 +31,8 @@ export type ParseGLTFOptions = ParseGLBOptions & {
   loadBuffers?: boolean;
   /** @internal Restrict linked-buffer loading after the glTF JSON is available. */
   loadBufferIndices?: number[] | ((json: GLTF) => number[]);
+  /** @internal Restrict meshopt decompression to selected buffer views. */
+  decompressBufferViewIndices?: number[] | ((json: GLTF) => number[]);
   /** Resolve draft glTF 2.1 `files` entries. */
   loadFiles?: boolean;
   /** Recursively parse draft glTF 2.1 external assets referenced by nodes. */

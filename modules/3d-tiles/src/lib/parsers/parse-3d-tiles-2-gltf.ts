@@ -130,6 +130,31 @@ export function parse3DTiles2Subtree(
  * @returns Unique buffer indices referenced by availability, attributes, or property tables.
  */
 export function get3DTiles2SubtreeBufferIndices(json: GLTF): number[] {
+  const bufferViewIndices = get3DTiles2SubtreeBufferViewIndices(json);
+  const bufferIndices = new Set<number>();
+  for (const bufferViewIndex of bufferViewIndices) {
+    const bufferView = json.bufferViews?.[bufferViewIndex];
+    const bufferIndex = bufferView?.buffer;
+    if (Number.isInteger(bufferIndex)) {
+      bufferIndices.add(bufferIndex as number);
+    }
+    const meshoptExtension =
+      bufferView?.extensions?.KHR_meshopt_compression ||
+      bufferView?.extensions?.EXT_meshopt_compression;
+    if (Number.isInteger(meshoptExtension?.buffer)) {
+      bufferIndices.add(meshoptExtension.buffer);
+    }
+  }
+  return Array.from(bufferIndices);
+}
+
+/**
+ * Finds buffer views needed to decode a draft subtree hierarchy.
+ *
+ * @param json - Parsed glTF JSON containing `3DTILES_subtree`.
+ * @returns Unique buffer-view indices referenced by hierarchy data.
+ */
+export function get3DTiles2SubtreeBufferViewIndices(json: GLTF): number[] {
   const bufferViewIndices = new Set<number>();
   const addBufferView = (value: unknown): void => {
     if (Number.isInteger(value)) {
@@ -170,14 +195,7 @@ export function get3DTiles2SubtreeBufferIndices(json: GLTF): number[] {
       addBufferView(property.stringOffsets);
     }
   }
-  const bufferIndices = new Set<number>();
-  for (const bufferViewIndex of bufferViewIndices) {
-    const bufferIndex = json.bufferViews?.[bufferViewIndex]?.buffer;
-    if (Number.isInteger(bufferIndex)) {
-      bufferIndices.add(bufferIndex as number);
-    }
-  }
-  return Array.from(bufferIndices);
+  return Array.from(bufferViewIndices);
 }
 
 type DraftAvailability = {constant?: unknown; bitstream?: unknown};

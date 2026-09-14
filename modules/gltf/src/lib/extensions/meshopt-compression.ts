@@ -52,21 +52,45 @@ export async function decodeMeshoptCompression(
   extensionName: MeshoptCompressionExtensionName
 ): Promise<void> {
   // Meshopt needs both the compressed source and the parent buffer view's destination buffer.
-  if (!options.gltf?.decompressMeshes || !options.gltf.loadBuffers) {
+  if (
+    (!options.gltf?.decompressMeshes && options.gltf?.decompressBufferViewIndices === undefined) ||
+    !options.gltf?.loadBuffers
+  ) {
     return;
   }
 
   validateMeshoptCompressionExclusivity(gltfData.json);
 
   const iterator = new GLTFIterator(gltfData);
-  const promises = Array.from(iterator.bufferViews, bufferView =>
-    decodeMeshoptBufferView(iterator, bufferView, extensionName)
+  const configuredBufferViewIndices = options.gltf.decompressBufferViewIndices;
+  const selectedBufferViewIndices = configuredBufferViewIndices
+    ? new Set(
+        typeof configuredBufferViewIndices === 'function'
+          ? configuredBufferViewIndices(gltfData.json)
+          : configuredBufferViewIndices
+      )
+    : undefined;
+  const bufferViews = Array.from(iterator.bufferViews);
+  const promises = bufferViews.map((bufferView, bufferViewIndex) =>
+    selectedBufferViewIndices?.has(bufferViewIndex) === false
+      ? Promise.resolve()
+      : decodeMeshoptBufferView(iterator, bufferView, extensionName)
   );
 
   await Promise.all(promises);
 
+  if (selectedBufferViewIndices) {
+    for (const bufferViewIndex of selectedBufferViewIndices) {
+      const bufferView = bufferViews[bufferViewIndex];
+      if (bufferView) {
+        iterator.removeExtension(bufferView, extensionName);
+      }
+    }
+    return;
+  }
+
   // Preserve compressed source buffers, but remove capability markers after successful decoding.
-  for (const bufferView of iterator.bufferViews) {
+  for (const bufferView of bufferViews) {
     iterator.removeExtension(bufferView, extensionName);
   }
   for (const buffer of iterator.buffers) {
