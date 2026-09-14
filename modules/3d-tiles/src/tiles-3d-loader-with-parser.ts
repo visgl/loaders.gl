@@ -375,13 +375,14 @@ async function parseGltfForClassification(
     preprocessedContent.contentType === 'gltf' &&
     Boolean(preprocessedContent.jsonPayload.extensions?.['3DTILES_tileset']);
   const loadGLTF = options['3d-tiles']?.loadGLTF !== false;
+  const isEmbeddedPackage = context.baseUrl?.startsWith('gltf-package:') === true;
   const parseOptions = loadStructureBuffers
     ? {
         ...options,
         gltf: {
           ...(options.gltf as Record<string, unknown> | undefined),
           loadBuffers: true,
-          loadFiles: true,
+          loadFiles: isEmbeddedPackage,
           loadExternalAssets: false,
           loadImages: false,
           decompressMeshes: false

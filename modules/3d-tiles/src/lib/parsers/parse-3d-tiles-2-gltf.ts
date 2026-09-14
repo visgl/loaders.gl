@@ -315,7 +315,7 @@ function resolvePropertyValue(
   classProperty: DraftStructuralMetadataClassProperty,
   tableProperty: DraftStructuralMetadataTableProperty | undefined
 ): unknown {
-  if (rawValue === undefined || Object.is(rawValue, classProperty.noData)) {
+  if (rawValue === undefined || isMetadataValueEqual(rawValue, classProperty.noData)) {
     return classProperty.default;
   }
   if (Array.isArray(rawValue) || ArrayBuffer.isView(rawValue)) {
@@ -335,6 +335,33 @@ function resolvePropertyValue(
     return rawValue;
   }
   return applyNumericPropertyTransform(rawValue, classProperty, tableProperty, 0);
+}
+
+/** Compares scalar and composite metadata values without relying on array identity. */
+function isMetadataValueEqual(left: unknown, right: unknown): boolean {
+  if (Object.is(left, right)) {
+    return true;
+  }
+  const leftArray = getMetadataArray(left);
+  const rightArray = getMetadataArray(right);
+  return Boolean(
+    leftArray &&
+      rightArray &&
+      leftArray.length === rightArray.length &&
+      Array.from(leftArray).every((value, index) =>
+        isMetadataValueEqual(value, Reflect.get(rightArray, index))
+      )
+  );
+}
+
+/** Returns a metadata array value while excluding non-indexed DataView instances. */
+function getMetadataArray(value: unknown): ArrayLike<unknown> | undefined {
+  if (Array.isArray(value)) {
+    return value;
+  }
+  return ArrayBuffer.isView(value) && !(value instanceof DataView)
+    ? (value as unknown as ArrayLike<unknown>)
+    : undefined;
 }
 
 /** Returns the number of numeric components in one metadata property element. */
@@ -637,6 +664,17 @@ function createPackageFile(
     throw new Error(`3DTILES_tileset: file ${fileIndex} must define exactly one data source`);
   }
   if (file.uri !== undefined) {
+    const loadedFile = gltf.files?.[fileIndex];
+    if (loadedFile) {
+      return {
+        name: file.name,
+        mimeType: file.mimeType,
+        originalUri: file.uri,
+        data: loadedFile.arrayBuffer,
+        byteOffset: loadedFile.byteOffset,
+        byteLength: loadedFile.byteLength
+      };
+    }
     return {
       name: file.name,
       mimeType: file.mimeType,

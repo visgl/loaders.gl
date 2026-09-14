@@ -249,11 +249,12 @@ describe('experimental explicit 3D Tiles 2.0', () => {
   });
 
   test('parses glTF subtree availability, attributes and property-table rows', async () => {
-    const binary = new Uint8Array(24);
+    const binary = new Uint8Array(28);
     new Float64Array(binary.buffer, 0, 1)[0] = 12;
     new Uint16Array(binary.buffer, 8, 1)[0] = 7;
     new Uint16Array(binary.buffer, 10, 1)[0] = 9;
     new Uint16Array(binary.buffer, 12, 4).set([1, 2, 3, 4]);
+    new Uint16Array(binary.buffer, 20, 2).set([5, 6]);
     const subtree = await parse(
       encodeGlb(
         {
@@ -282,6 +283,12 @@ describe('experimental explicit 3D Tiles 2.0', () => {
                         array: true,
                         count: 2,
                         required: true
+                      },
+                      emptyBounds: {
+                        type: 'VEC2',
+                        componentType: 'UINT16',
+                        noData: [5, 6],
+                        default: [9, 10]
                       }
                     }
                   },
@@ -296,30 +303,44 @@ describe('experimental explicit 3D Tiles 2.0', () => {
                 {
                   class: 'tile',
                   count: 1,
-                  properties: {zone: {values: 1}, bounds: {values: 3}}
+                  properties: {
+                    zone: {values: 1},
+                    bounds: {values: 3},
+                    emptyBounds: {values: 4}
+                  }
                 },
                 {class: 'content', count: 1, properties: {zone: {values: 2}}}
               ]
             }
           },
           buffers: [{byteLength: binary.byteLength}],
+          files: [{uri: 'unused-content.gltf', mimeType: 'model/gltf+json'}],
           bufferViews: [
             {buffer: 0, byteOffset: 0, byteLength: 8},
             {buffer: 0, byteOffset: 8, byteLength: 2},
             {buffer: 0, byteOffset: 10, byteLength: 2},
-            {buffer: 0, byteOffset: 12, byteLength: 8}
+            {buffer: 0, byteOffset: 12, byteLength: 8},
+            {buffer: 0, byteOffset: 20, byteLength: 4}
           ],
           accessors: [{bufferView: 0, componentType: 5130, count: 1, type: 'SCALAR'}]
         },
         binary
       ),
       Tiles3DLoader,
-      {worker: false, '3d-tiles': {isSubtree: true, loadGLTF: false}}
+      {
+        worker: false,
+        fetch: async () => {
+          throw new Error('subtree package files must stay lazy');
+        },
+        '3d-tiles': {isSubtree: true, loadGLTF: false}
+      }
     );
 
     expect(subtree.tileAvailability).toEqual({constant: 1});
     expect(subtree.tileAttributes.TILE_GEOMETRIC_ERROR).toEqual(new Float64Array([12]));
-    expect(subtree.tilePropertyRows).toEqual([{zone: 7, bounds: [1, 2, 3, 4]}]);
+    expect(subtree.tilePropertyRows).toEqual([
+      {zone: 7, bounds: [1, 2, 3, 4], emptyBounds: [9, 10]}
+    ]);
     expect(subtree.contentPropertyRows).toEqual([{zone: 9}]);
     const transferredSubtree = structuredClone(Tiles3DLoader.serializeWorkerResult!(subtree));
     expect(transferredSubtree.tileAttributes.TILE_GEOMETRIC_ERROR).toEqual(new Float64Array([12]));
@@ -401,7 +422,14 @@ describe('experimental explicit 3D Tiles 2.0', () => {
             contentAvailability: {constant: 1},
             childSubtreeAvailability: {constant: 0}
           }
-        }
+        },
+        files: [
+          {
+            uri: 'content/0/0/0.gltf',
+            mimeType: 'model/gltf+json',
+            name: 'content/0/0/0.gltf'
+          }
+        ]
       })
     );
     const contentBytes = new TextEncoder().encode(
@@ -447,7 +475,8 @@ describe('experimental explicit 3D Tiles 2.0', () => {
     await tileset.tilesetInitializationPromise;
 
     await source.loadTileChildren(tileset.root!, {} as never);
-    expect(tileset.root!.header.content._resource.fileIndex).toBe(1);
+    expect(tileset.root!.header.content._resource.fileIndex).toBe(0);
+    expect(tileset.root!.header.content._resource.files[0].data).toBeInstanceOf(ArrayBuffer);
     await tileset.root!.loadContent();
     expect(tileset.root!.content).toMatchObject({shape: 'tile3d'});
   });
