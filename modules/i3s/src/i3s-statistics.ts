@@ -3,6 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import type {LoaderOptions} from '@loaders.gl/loader-utils';
+import {getAuthenticatedFetch} from '@loaders.gl/loader-utils';
 import type {StatisticsInfo, StatsInfo} from './types';
 import {getUrlWithToken} from './lib/utils/url-utils';
 
@@ -48,8 +49,7 @@ async function loadStatistic(
   const resolvedUrl = resolveStatisticsUrl(statistic.href, baseUrl);
   const url = getUrlWithToken(resolvedUrl, options.i3s?.token || null);
   try {
-    const fetchOptions = options.core?.fetch ?? options.fetch;
-    const response = await fetchStatisticsResource(url, fetchOptions);
+    const response = await fetchStatisticsResource(url, options);
     if (!response.ok) {
       return null;
     }
@@ -81,15 +81,9 @@ function resolveStatisticsUrl(href: string, baseUrl?: string): string {
 /**
  * Fetch a statistics resource with either a custom loader fetch function or request options.
  * @param url - resource URL
- * @param fetchOptions - custom fetch function or RequestInit
+ * @param options - loader options, including custom fetch and credentials
  * @returns resource response
  */
-async function fetchStatisticsResource(
-  url: string,
-  fetchOptions: LoaderOptions['fetch']
-): Promise<Response> {
-  if (typeof fetchOptions === 'function') {
-    return await fetchOptions(url);
-  }
-  return await fetch(url, fetchOptions as RequestInit | undefined);
+async function fetchStatisticsResource(url: string, options: LoaderOptions): Promise<Response> {
+  return await getAuthenticatedFetch(options)(url);
 }

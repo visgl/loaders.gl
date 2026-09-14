@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import type {LoaderOptions, LoaderWithParser} from '@loaders.gl/loader-utils';
+import type {LoaderContext, LoaderOptions, LoaderWithParser} from '@loaders.gl/loader-utils';
 import type {ArcGISWebSceneData} from './types';
 
 import {parseWebscene} from './lib/parsers/parse-arcgis-webscene';
@@ -26,7 +26,12 @@ export const ArcGISWebSceneLoaderWithParser = {
 /**
  * Parse ArcGIS webscene
  * @param data - WebScene JSON as text or encoded bytes.
+ * @param context - loader context used for authenticated metadata requests.
  */
-async function parse(data: string | ArrayBuffer): Promise<ArcGISWebSceneData> {
-  return parseWebscene(data);
+async function parse(
+  data: string | ArrayBuffer,
+  _options?: LoaderOptions,
+  context?: LoaderContext
+): Promise<ArcGISWebSceneData> {
+  return parseWebscene(data, context);
 }
