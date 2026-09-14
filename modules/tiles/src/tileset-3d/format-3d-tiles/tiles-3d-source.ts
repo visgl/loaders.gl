@@ -368,7 +368,7 @@ export class Tiles3DSource implements Tileset3DSource {
     }
 
     const subtreeUrl = this.getTileUrl(reference.subtreeUrl);
-    const subtree = await this.loadImplicitSubtreeResource(subtreeUrl);
+    const subtree = await this.loadImplicitSubtreeResource(subtreeUrl, reference.resource);
     if (this.destroyed || tile.isDestroyed()) {
       return {loaded: false, tileCount: 0, childSubtreeCount: 0};
     }
@@ -639,9 +639,13 @@ export class Tiles3DSource implements Tileset3DSource {
    * Returns a parsed subtree from the LRU cache or starts one source-managed request.
    *
    * @param subtreeUrl - Final subtree URL after query inheritance.
+   * @param packageResource - Optional glTF package file satisfying the subtree reference.
    * @returns Parsed subtree availability data.
    */
-  private async loadImplicitSubtreeResource(subtreeUrl: string): Promise<ParsedImplicitSubtree> {
+  private async loadImplicitSubtreeResource(
+    subtreeUrl: string,
+    packageResource?: PackageResource
+  ): Promise<ParsedImplicitSubtree> {
     const cachedSubtree = this.implicitSubtreeCache.get(subtreeUrl);
     if (cachedSubtree) {
       this.implicitTilingStats.cacheHits++;
@@ -651,14 +655,17 @@ export class Tiles3DSource implements Tileset3DSource {
     this.implicitTilingStats.requestedSubtrees++;
     const loaderOptions = (this.loadOptions[this.loader.id] as Record<string, unknown>) || {};
     return await this.implicitSubtreeCache.getOrLoad(subtreeUrl, async () => {
-      return (await this.loadResourceData(subtreeUrl, {
+      const options = {
         ...this.loadOptions,
         [this.loader.id]: {
           ...loaderOptions,
           isTileset: false,
           isSubtree: true
         }
-      })) as ParsedImplicitSubtree;
+      };
+      return (await (packageResource
+        ? this.loadContentResource(subtreeUrl, packageResource, options)
+        : this.loadResourceData(subtreeUrl, options))) as ParsedImplicitSubtree;
     });
   }
 

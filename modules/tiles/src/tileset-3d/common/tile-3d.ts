@@ -137,6 +137,9 @@ export class Tile3D {
    */
   private _unscaledLodMetricValue: number = 0;
 
+  /** Whether the source format defines geometric error in transform-local units. */
+  private _scaleGeometricError: boolean = true;
+
   /** @todo math.gl is not exporting BoundingVolume base type? */
   boundingVolume: any = null;
 
@@ -918,6 +921,10 @@ export class Tile3D {
 
   /** Initializes the tile's LOD metric from its header or its nearest available ancestor. */
   _initializeLodMetric(header: {[key: string]: any}): void {
+    this._scaleGeometricError =
+      typeof header._scaleGeometricError === 'boolean'
+        ? header._scaleGeometricError
+        : (this.parent?._scaleGeometricError ?? true);
     if ('lodMetricType' in header) {
       this.lodMetricType = header.lodMetricType;
     } else {
@@ -974,7 +981,7 @@ export class Tile3D {
    * I3S `maxScreenThreshold` is already a screen-space metric and must not be transform-scaled.
    */
   _updateLodMetricScale(): void {
-    if (this.lodMetricType !== LOD_METRIC_TYPE.GEOMETRIC_ERROR) {
+    if (this.lodMetricType !== LOD_METRIC_TYPE.GEOMETRIC_ERROR || !this._scaleGeometricError) {
       this.lodMetricValue = this._unscaledLodMetricValue;
       return;
     }

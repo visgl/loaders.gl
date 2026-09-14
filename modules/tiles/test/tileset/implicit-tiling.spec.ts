@@ -200,6 +200,89 @@ test('implicit URL templates replace coordinates case-insensitively', () => {
     '/3/4/5/6'
   );
 });
+test('draft subtree attributes and property rows override computed implicit values', () => {
+  const descriptor = createDescriptor({
+    contentUrlTemplate: 'https://example.com/{level}/{tileId}/{timestamp}.glb',
+    maximumLevel: 1,
+    scaleGeometricError: false
+  });
+  const tileBoundingBoxes = new Float64Array(5 * 16);
+  const tileTransforms = new Float64Array(5 * 16);
+  const contentBoundingSpheres = new Float64Array(5 * 4);
+  for (let rowIndex = 0; rowIndex < 5; rowIndex++) {
+    tileBoundingBoxes.set(
+      [2, 0, 0, 0, 0, 4, 0, 0, 0, 0, 6, 0, 10 + rowIndex, 20, 30, 1],
+      rowIndex * 16
+    );
+    tileTransforms.set([1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, rowIndex, 0, 0, 1], rowIndex * 16);
+    contentBoundingSpheres.set([rowIndex, 2, 3, 4], rowIndex * 4);
+  }
+  const result = materializeImplicitSubtree(
+    {
+      tileAvailability: {constant: 1},
+      contentAvailability: {constant: 1},
+      childSubtreeAvailability: {constant: 0},
+      tileAttributes: {
+        TILE_BOUNDING_BOX: tileBoundingBoxes,
+        TILE_GEOMETRIC_ERROR: new Float64Array([7, 6, 5, 4, 3]),
+        TILE_REFINE: new Uint8Array([0, 1, 1, 1, 1]),
+        TILE_TRANSFORM: tileTransforms
+      },
+      contentAttributes: {CONTENT_BOUNDING_SPHERE: contentBoundingSpheres},
+      tilePropertyRows: Array.from({length: 5}, (_unused, rowIndex) => ({
+        level: `tile-${rowIndex}`,
+        tileId: `tile-${rowIndex}`,
+        timestamp: 100 + rowIndex
+      })),
+      contentPropertyRows: Array.from({length: 5}, (_unused, rowIndex) => ({
+        level: `content-${rowIndex}`,
+        tileId: `content-${rowIndex}`
+      }))
+    },
+    createImplicitSubtreeReference(descriptor, {level: 0, x: 0, y: 0, z: 0})
+  );
+
+  expect(result.root.contentUrl).toBe('https://example.com/content-0/content-0/100.glb');
+  expect(result.root.boundingVolume.box).toEqual([10, 20, 30, 1, 0, 0, 0, 2, 0, 0, 0, 3]);
+  expect(result.root.content.boundingVolume.sphere).toEqual([0, 2, 3, 4]);
+  expect(result.root.lodMetricValue).toBe(7);
+  expect(result.root.refine).toBe(TILE_REFINEMENT.ADD);
+  expect(result.root.transform[12]).toBe(0);
+  expect(result.root.metadata.properties).toEqual({
+    level: 'tile-0',
+    tileId: 'tile-0',
+    timestamp: 100
+  });
+  expect(result.root.implicitMetadata?.contentProperties).toEqual({
+    level: 'content-0',
+    tileId: 'content-0'
+  });
+  expect(result.root._scaleGeometricError).toBe(false);
+});
+test('implicit tiling rejects availability and attribute counts that cannot describe a subtree', () => {
+  const descriptor = createDescriptor();
+  expect(() =>
+    materializeImplicitSubtree(
+      {
+        tileAvailability: {explicitBitstream: new Uint8Array(0)},
+        contentAvailability: {constant: 0},
+        childSubtreeAvailability: {constant: 0}
+      },
+      createImplicitSubtreeReference(descriptor, {level: 0, x: 0, y: 0, z: 0})
+    )
+  ).toThrow(/tile availability bitstream is too short/);
+  expect(() =>
+    materializeImplicitSubtree(
+      {
+        tileAvailability: {constant: 1},
+        contentAvailability: {constant: 0},
+        childSubtreeAvailability: {constant: 0},
+        tileAttributes: {TILE_GEOMETRIC_ERROR: new Float64Array([1])}
+      },
+      createImplicitSubtreeReference(descriptor, {level: 0, x: 0, y: 0, z: 0})
+    )
+  ).toThrow(/TILE_GEOMETRIC_ERROR count does not match availability/);
+});
 test('implicit subtree traversal requires visibility, request volume and SSE', async () => {
   let requestCount = 0;
   const tile = {

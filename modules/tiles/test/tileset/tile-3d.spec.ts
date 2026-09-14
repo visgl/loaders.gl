@@ -191,6 +191,24 @@ test('Tile3D#scales geometric error with the complete transform', () => {
     'ignores rotation and translation'
   ).toBe(1);
 });
+test('Tile3D#leaves draft 2.0 geometric error unscaled', () => {
+  const draftHeader = {
+    ...TILE_HEADER_WITH_BOUNDING_SPHERE,
+    lodMetricValue: 2,
+    transform: new Matrix4().scale([3, 4, 5]),
+    _scaleGeometricError: false
+  };
+  // @ts-ignore test uses the minimal tileset shape required by Tile3D
+  const parent = new Tile3D(MOCK_TILESET, draftHeader);
+  // @ts-ignore test uses the minimal tileset shape required by Tile3D
+  const child = new Tile3D(
+    MOCK_TILESET,
+    {...TILE_HEADER_WITH_BOUNDING_SPHERE, transform: new Matrix4().scale([6, 7, 8])},
+    parent
+  );
+  expect(parent.lodMetricValue).toBe(2);
+  expect(child.lodMetricValue, 'inherits draft version behavior from its parent').toBe(1);
+});
 test('Tile3D#recomputes geometric error without compounding transform scale', () => {
   // @ts-ignore test uses the minimal tileset shape required by Tile3D
   const tile = new Tile3D(MOCK_TILESET, TILE_HEADER_WITH_BOUNDING_SPHERE);

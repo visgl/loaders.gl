@@ -29,6 +29,7 @@ import parse3DTilesSubtree from './lib/parsers/helpers/parse-3d-tile-subtree';
 import {
   is3DTiles2Subtree,
   is3DTiles2Tileset,
+  parse3DTiles2Subtree,
   parse3DTiles2Tileset
 } from './lib/parsers/parse-3d-tiles-2-gltf';
 
@@ -49,6 +50,15 @@ const SUPPORTED_3D_TILES_EXTENSIONS: ReadonlySet<string> = new Set([
 
 const SUPPORTED_3D_TILES_2_EXTENSIONS: ReadonlySet<string> = new Set([
   '3DTILES_tileset',
+  '3DTILES_implicit_tiling',
+  '3DTILES_subtree',
+  '3DTILES_shape_ellipsoid_region',
+  '3DTILES_shape_s2',
+  '3DTILES_shape_cylinder_region',
+  'EXT_geospatial_crs',
+  'EXT_geospatial_crs_wkid',
+  'EXT_geospatial_crs_wkt2',
+  'EXT_georeference',
   'EXT_structural_metadata',
   'EXT_mesh_features',
   'KHR_mesh_primitive_restart',
@@ -118,7 +128,25 @@ async function parse(
 ): Promise<Tiles3DTileContent | Tiles3DTilesetJSONPostprocessed | Subtree> {
   const loaderOptions = options['3d-tiles'] || {};
   if (loaderOptions.isSubtree) {
-    return await parse3DTilesSubtree(data, options, context);
+    if (!isGltfSubtreeCandidate(data)) {
+      return await parse3DTilesSubtree(data, options, context);
+    }
+    const subtreeContent = preprocess3DTileContent(data);
+    const parsedSubtreeGltf = await parseGltfForClassification(
+      data,
+      subtreeContent as GltfPreprocessedContent,
+      options,
+      context
+    );
+    if (!is3DTiles2Subtree(parsedSubtreeGltf)) {
+      throw new Error('Expected a glTF 3DTILES_subtree resource');
+    }
+    validateRequiredExtensions(parsedSubtreeGltf.json.extensionsRequired, true, 'subtree');
+    const resourceUrl = context?.url || options.core?.baseUrl || '';
+    return parse3DTiles2Subtree(
+      parsedSubtreeGltf,
+      getBaseUri(resourceUrl) || context?.baseUrl || ''
+    ) as Subtree;
   }
   const preprocessedContent = preprocess3DTileContent(data);
   if (preprocessedContent.contentType === 'externalTileset') {
@@ -144,7 +172,12 @@ async function parse(
       return parseTileset(tilesetJson, options, context, '2.0-draft');
     }
     if (is3DTiles2Subtree(parsedGltf)) {
-      throw new Error('3DTILES_subtree: glTF subtree parsing is not supported by this tranche');
+      validateRequiredExtensions(parsedGltf.json.extensionsRequired, true, 'subtree');
+      const resourceUrl = context?.url || options.core?.baseUrl || '';
+      return parse3DTiles2Subtree(
+        parsedGltf,
+        getBaseUri(resourceUrl) || context?.baseUrl || ''
+      ) as Subtree;
     }
     getIsTileset(preprocessedContent.contentType, loaderOptions.isTileset);
     return parseTile(data, preprocessedContent, options, context, parsedGltf);
@@ -152,6 +185,29 @@ async function parse(
 
   getIsTileset(preprocessedContent.contentType, loaderOptions.isTileset);
   return parseTile(data, preprocessedContent, options, context);
+}
+
+/** Returns whether subtree bytes could contain a JSON glTF or GLB draft subtree resource. */
+function isGltfSubtreeCandidate(data: ArrayBuffer): boolean {
+  const bytes = new Uint8Array(data);
+  if (
+    bytes.length >= 4 &&
+    bytes[0] === 0x67 &&
+    bytes[1] === 0x6c &&
+    bytes[2] === 0x54 &&
+    bytes[3] === 0x46
+  ) {
+    return true;
+  }
+  const firstContentByte =
+    bytes.length >= 3 && bytes[0] === 0xef && bytes[1] === 0xbb && bytes[2] === 0xbf ? 3 : 0;
+  for (let byteIndex = firstContentByte; byteIndex < bytes.length; byteIndex++) {
+    const byte = bytes[byteIndex];
+    if (byte !== 0x09 && byte !== 0x0a && byte !== 0x0d && byte !== 0x20) {
+      return byte === 0x7b;
+    }
+  }
+  return false;
 }
 
 /**
@@ -231,10 +287,13 @@ async function parseTileset(
  */
 function validateRequiredExtensions(
   extensionsRequired: string[] | undefined,
-  isDraft2: boolean
+  isDraft2: boolean,
+  draftResource: 'tileset' | 'subtree' = 'tileset'
 ): void {
-  if (isDraft2 && !extensionsRequired?.includes('3DTILES_tileset')) {
-    throw new Error('3DTILES_tileset must be declared in extensionsRequired');
+  const requiredDraftExtension =
+    draftResource === 'subtree' ? '3DTILES_subtree' : '3DTILES_tileset';
+  if (isDraft2 && !extensionsRequired?.includes(requiredDraftExtension)) {
+    throw new Error(`${requiredDraftExtension} must be declared in extensionsRequired`);
   }
   const supportedExtensions = isDraft2
     ? SUPPORTED_3D_TILES_2_EXTENSIONS

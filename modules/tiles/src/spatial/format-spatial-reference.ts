@@ -40,6 +40,7 @@ type Tiles3DLike = {
   schemaUri?: string;
   metadata?: {class?: string; properties?: Record<string, unknown>};
   root?: {boundingVolume?: {region?: unknown}};
+  extensions?: Record<string, unknown>;
 };
 
 /**
@@ -159,6 +160,10 @@ function getI3SElevationMode(mode: string | undefined): TilesetElevationMode | u
  * @returns Normalized source spatial metadata.
  */
 export function get3DTilesSpatialReference(tileset: Tiles3DLike): TilesetSpatialReference {
+  const draftSpatialReference = getDraft3DTilesSpatialReference(tileset);
+  if (draftSpatialReference) {
+    return draftSpatialReference;
+  }
   const geocentricCrs = getTilesetSemanticValue(tileset, 'TILESET_CRS_GEOCENTRIC');
   const coordinateEpoch = getTilesetSemanticValue(tileset, 'TILESET_CRS_COORDINATE_EPOCH');
   const warnings: string[] = [];
@@ -200,6 +205,86 @@ export function get3DTilesSpatialReference(tileset: Tiles3DLike): TilesetSpatial
     provenance,
     warnings
   });
+}
+
+/** Resolves the draft glTF EXT_geospatial_crs WKID or WKT2 declaration. */
+function getDraft3DTilesSpatialReference(
+  tileset: Tiles3DLike
+): TilesetSpatialReference | undefined {
+  const extension = tileset.extensions?.EXT_geospatial_crs as
+    | {format?: unknown; extensions?: Record<string, unknown>}
+    | undefined;
+  if (!extension) {
+    return undefined;
+  }
+  const warnings: string[] = [];
+  let sourceCrs: ReadonlyCRSDefinition | undefined;
+  let verticalCrs: ReadonlyCRSDefinition | undefined;
+  let epoch: number | undefined;
+  let representation: 'identifier' | 'wkt' | undefined;
+  if (extension.format === 'wkid') {
+    const wkidExtension = extension.extensions?.EXT_geospatial_crs_wkid as
+      | {authority?: unknown; wkid?: unknown; vcsWkid?: unknown; epoch?: unknown}
+      | undefined;
+    if (typeof wkidExtension?.authority === 'string' && Number.isInteger(wkidExtension.wkid)) {
+      sourceCrs = `${wkidExtension.authority}:${wkidExtension.wkid}`;
+      representation = 'identifier';
+      if (Number.isInteger(wkidExtension.vcsWkid)) {
+        verticalCrs = `${wkidExtension.authority}:${wkidExtension.vcsWkid}`;
+      }
+      epoch = parseCoordinateEpoch(wkidExtension.epoch);
+      if (wkidExtension.epoch !== undefined && epoch === undefined) {
+        warnings.push('EXT_geospatial_crs_wkid epoch is not a finite decimal year');
+      }
+    } else {
+      warnings.push('EXT_geospatial_crs_wkid requires string authority and integer wkid');
+    }
+  } else if (extension.format === 'wkt2') {
+    const wktExtension = extension.extensions?.EXT_geospatial_crs_wkt2 as
+      | {wkt2?: unknown}
+      | undefined;
+    if (typeof wktExtension?.wkt2 === 'string' && wktExtension.wkt2.trim()) {
+      sourceCrs = wktExtension.wkt2;
+      representation = 'wkt';
+    } else {
+      warnings.push('EXT_geospatial_crs_wkt2 requires a nonempty wkt2 string');
+    }
+  } else {
+    warnings.push(`Unsupported EXT_geospatial_crs format ${String(extension.format)}`);
+  }
+  const coordinateFrame =
+    representation === 'wkt'
+      ? getWktCoordinateFrame(sourceCrs as string | undefined)
+      : getDraftIdentifierCoordinateFrame(sourceCrs);
+  return createTilesetSpatialReference({
+    sourceCrs,
+    sourceCrsState: sourceCrs ? 'explicit' : 'unknown',
+    sourceCrsRepresentation: representation,
+    verticalCrs,
+    coordinateEpoch: epoch,
+    units:
+      coordinateFrame === 'geocentric'
+        ? ['meter', 'meter', 'meter']
+        : coordinateFrame === 'geographic'
+          ? ['degree', 'degree', 'meter']
+          : undefined,
+    heightReference: sourceCrs ? 'ellipsoidal' : 'unknown',
+    coordinateFrame,
+    axisOrder: sourceCrs ? 'xyz' : 'unknown',
+    provenance: 'metadata',
+    warnings
+  });
+}
+
+/** Classifies common authority identifiers used by the draft CRS extension. */
+function getDraftIdentifierCoordinateFrame(
+  sourceCrs: ReadonlyCRSDefinition | undefined
+): TilesetSpatialReference['coordinateFrame'] {
+  if (typeof sourceCrs !== 'string') {
+    return 'unknown';
+  }
+  const identifier = Number(sourceCrs.split(':').pop());
+  return Number.isInteger(identifier) ? getIdentifierCoordinateFrame(identifier) : 'unknown';
 }
 
 /** Parse the 3D Tiles decimal-year string while tolerating legacy numeric producer output. */

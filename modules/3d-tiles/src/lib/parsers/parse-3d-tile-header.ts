@@ -372,7 +372,12 @@ export async function normalizeImplicitTileHeaders(
     refine: getRefine(normalizedTile.refine || tileset.root?.refine) || TILE_REFINEMENT.REPLACE,
     lodMetricType: LOD_METRIC_TYPE.GEOMETRIC_ERROR,
     rootLodMetricValue: normalizedTile.geometricError,
-    rootBoundingVolume: normalizedTile.boundingVolume
+    rootBoundingVolume: normalizedTile.boundingVolume,
+    scaleGeometricError:
+      (normalizedTile as Tiles3DTileJSON & {_scaleGeometricError?: boolean})
+        ._scaleGeometricError !== false,
+    resourceFiles: (normalizedTile as Tiles3DTileJSON & {_implicitPackageFiles?: any[]})
+      ._implicitPackageFiles
   };
   const implicitSubtree = createImplicitSubtreeReference(descriptor, {
     level: 0,
@@ -447,5 +452,5 @@ export async function normalizeImplicitTileData(
  * @returns
  */
 function getImplicitTilingExtensionData(tile: Tiles3DTileJSON | null): ImplicitTilingExensionData {
-  return tile?.extensions?.['3DTILES_implicit_tiling'] || tile?.implicitTiling;
+  return tile?.implicitTiling || tile?.extensions?.['3DTILES_implicit_tiling'];
 }

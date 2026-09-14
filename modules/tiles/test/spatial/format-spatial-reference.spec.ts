@@ -233,6 +233,37 @@ describe('get3DTilesSpatialReference', () => {
     expect(spatialReference.warnings).toContain('3D Tiles geocentric CRS is explicitly unknown');
   });
 
+  test('resolves draft glTF WKT2 CRS declarations', () => {
+    const wkt2 = 'PROJCRS["WGS 84 / UTM zone 11N",BASEGEOGCRS["WGS 84"],CS[Cartesian,2]]';
+    const spatialReference = get3DTilesSpatialReference({
+      extensions: {
+        EXT_geospatial_crs: {
+          format: 'wkt2',
+          extensions: {EXT_geospatial_crs_wkt2: {wkt2}}
+        }
+      }
+    });
+
+    expect(spatialReference).toMatchObject({
+      sourceCrs: wkt2,
+      coordinateFrame: 'projected',
+      provenance: 'metadata',
+      warnings: []
+    });
+  });
+
+  test('reports malformed draft CRS declarations without guessing', () => {
+    const spatialReference = get3DTilesSpatialReference({
+      extensions: {EXT_geospatial_crs: {format: 'wkid', extensions: {}}}
+    });
+
+    expect(spatialReference.sourceCrs).toBeUndefined();
+    expect(spatialReference.coordinateFrame).toBe('unknown');
+    expect(spatialReference.warnings).toContain(
+      'EXT_geospatial_crs_wkid requires string authority and integer wkid'
+    );
+  });
+
   test('uses the specification frame established by a root region', () => {
     const spatialReference = get3DTilesSpatialReference({
       root: {boundingVolume: {region: [0, 0, 1, 1, 0, 1]}}

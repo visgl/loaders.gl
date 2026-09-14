@@ -66,6 +66,12 @@ export function getTypedArrayForAccessor(
   // Creare an array of component's type where all components (not just elements) will reside
   if (typeof bufferView.byteStride === 'undefined' || bufferView.byteStride === elementByteSize) {
     // No iterleaving
+    if (byteOffset % componentByteSize !== 0) {
+      const bytes = new Uint8Array(arrayBuffer, byteOffset, length * componentByteSize);
+      const alignedBytes = new Uint8Array(bytes.byteLength);
+      alignedBytes.set(bytes);
+      return new ArrayType(alignedBytes.buffer, 0, length);
+    }
     const result: BigTypedArray = new ArrayType(arrayBuffer, byteOffset, length);
     return result;
   }
