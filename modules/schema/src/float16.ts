@@ -74,6 +74,11 @@ export function encodeFloat16(value: number): number {
     return sign;
   }
 
+  // Values at or above the midpoint between the largest finite half and
+  // infinity round to infinity using IEEE-754 round-to-nearest-even.
+  if (absoluteValue >= 65520) {
+    return sign | 0x7c00;
+  }
   if (absoluteValue >= 65504) {
     return sign | 0x7bff;
   }
