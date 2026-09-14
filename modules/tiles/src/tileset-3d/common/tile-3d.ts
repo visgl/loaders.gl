@@ -147,6 +147,8 @@ export class Tile3D {
   content: any = null;
   /** Loaded payloads in the same order as {@link contentUrls}; `content` remains the primary payload. */
   contents: any[] = [];
+  /** Decoded 3D Tiles vector topology for the primary loaded content, when present. */
+  vectorContent: unknown = null;
   /**
    * Metadata entity attached to this tile in the source tileset, if present.
    *
@@ -585,6 +587,8 @@ export class Tile3D {
         this.contents = loadResult.contents;
         this.content = this.contents[0] || null;
       }
+      this.vectorContent =
+        this.contents.find(content => Boolean(content?.vectorContent))?.vectorContent || null;
 
       if (this.tileset.options.contentLoader) {
         await this.tileset.options.contentLoader(this);
@@ -704,6 +708,7 @@ export class Tile3D {
     }
     this.contents = [];
     this.content = null;
+    this.vectorContent = null;
     if (this.header.content && this.header.content.destroy) {
       this.header.content.destroy();
     }

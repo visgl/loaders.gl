@@ -4,8 +4,10 @@
 
 import {parseFromContext, LoaderContext} from '@loaders.gl/loader-utils';
 import {_getMemoryUsageGLTF, GLTFLoader, postProcessGLTF} from '@loaders.gl/gltf';
+import type {GLTFWithBuffers} from '@loaders.gl/gltf';
 import type {Tiles3DLoaderOptions} from '../../tiles-3d-loader';
 import {Tiles3DTileContent} from '../../types';
+import {parse3DTileVectorContent} from './parse-3d-tile-vector-content';
 
 /**
  * Parses glTF content embedded in a 3D Tiles resource.
@@ -18,6 +20,7 @@ import {Tiles3DTileContent} from '../../types';
  * @param options - 3D Tiles and delegated glTF loader options.
  * @param context - Loader context used to load glTF external resources.
  * @param jsonPayload - Parsed JSON glTF object from resource preprocessing, when available.
+ * @param parsedGltf - glTF already parsed for draft 3D Tiles resource classification.
  * @returns Number of input bytes consumed.
  */
 export async function parseGltf3DTile(
@@ -25,7 +28,8 @@ export async function parseGltf3DTile(
   arrayBuffer: ArrayBuffer,
   options?: Tiles3DLoaderOptions,
   context?: LoaderContext,
-  jsonPayload?: Record<string, unknown>
+  jsonPayload?: Record<string, unknown>,
+  parsedGltf?: GLTFWithBuffers
 ): Promise<number> {
   // Set flags
   // glTF models need to be rotated from Y to Z up
@@ -40,11 +44,17 @@ export async function parseGltf3DTile(
     if (!context) {
       return arrayBuffer.byteLength;
     }
-    const gltfWithBuffers = jsonPayload
-      ? await parseParsedJsonGltf(jsonPayload, options, context)
-      : await parseFromContext(arrayBuffer, GLTFLoader, options, context);
+    const gltfWithBuffers =
+      parsedGltf ||
+      (jsonPayload
+        ? await parseParsedJsonGltf(jsonPayload, options, context)
+        : await parseFromContext(arrayBuffer, GLTFLoader, options, context));
     tile.gltf = postProcessGLTF(gltfWithBuffers);
     tile.gpuMemoryUsageInBytes = _getMemoryUsageGLTF(tile.gltf);
+    const vectorContent = options?.['3d-tiles']?.vectorContent;
+    if (vectorContent) {
+      tile.vectorContent = parse3DTileVectorContent(tile.gltf, vectorContent.clip);
+    }
   } else {
     tile.gltfArrayBuffer = arrayBuffer;
   }

@@ -154,6 +154,7 @@ class GLTFV1Normalizer {
     switch (json.asset && json.asset.version) {
       // We are converting to v2 format. Return if there is nothing to do
       case '2.0':
+      case '2.1':
         return this.report;
 
       // This class is written to convert 1.0

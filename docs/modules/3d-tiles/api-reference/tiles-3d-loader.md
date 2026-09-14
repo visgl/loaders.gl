@@ -45,6 +45,10 @@ import {Tiles3DDocsTabs} from '@site/src/components/docs/tiles-3d-docs-tabs';
 
 Parses a [3D Tiles](https://github.com/CesiumGS/3d-tiles) tileset.
 
+The loader also provides experimental, automatically detected support for the explicit hierarchy
+in the draft glTF-based 3D Tiles 2.0 representation. This is a loader and traversal capability;
+it does not add renderer-level vector styling, clipping, or drawing.
+
 | Loader                | Characteristic                                                                                                           |
 | --------------------- | ------------------------------------------------------------------------------------------------------------------------ |
 | File Extensions       | `.b3dm`,`.i3dm`, `.pnts`, `.cmpt`                                                                                        |
@@ -176,6 +180,25 @@ Can load both binary `.glb` files and JSON `.gltf` files.
 
 [3DTILES_content_gltf](https://github.com/CesiumGS/3d-tiles/tree/main/extensions/3DTILES_content_gltf) extension is supported. This extension allows a tileset to use glTF 2.0 assets directly as tile content. Both glTF JSON and GLB binary formats are supported.
 
+### Experimental glTF-based tilesets and vector content
+
+`3DTILES_tileset` resources are detected from their glTF structure, including for GLB, signed,
+and extensionless URLs. Explicit glTF node hierarchies are adapted to the normal `Tileset3D`
+header model. URI-backed external assets and buffer-view package files stay lazy until their tile
+is requested; embedded glTF assets can resolve sibling package files by `files[*].name`.
+
+Normalized tilesets expose `formatVersion`, with the values `'0.0'`, `'1.0'`, `'1.1'`, or
+`'2.0-draft'`. A draft tileset keeps its original glTF `asset` metadata, so its
+`asset.version` remains `'2.1'`.
+
+The 3D Tiles 1.1 `3DTILES_content_gltf_vector` preview and draft 2.0
+`3DTILES_tileset_vectors` designation both produce `Tiles3DVectorContent` when glTF parsing is
+enabled. Loaded tile content exposes it as `content.vectorContent`, and `Tile3D.vectorContent`
+points to the primary decoded descriptor. Each primitive is discriminated as `points`,
+`polylines`, or `polygons`; the descriptor retains its decoded glTF primitive and the topology
+produced by `KHR_mesh_primitive_restart` or `EXT_mesh_polygon`. The `clip` flag is metadata for a
+renderer and does not cause visual clipping in loaders.gl.
+
 ## Data Format
 
 Loaded data conforms to the 3D Tiles loader category specification with the following exceptions.
@@ -187,6 +210,7 @@ Loaded data conforms to the 3D Tiles loader category specification with the foll
 | `type`           | `String` | Value is `TILES3D`. Indicates the returned object is a Cesium `3D Tiles` tileset.                                                                                                                                                                                                                                          |
 | `lodMetricType`  | `String` | Root's Level of Detail (LoD) metric type, which is used to decide if a tile is sufficient for the current viewport. 3D Tiles uses [`geometricError`](https://github.com/CesiumGS/3d-tiles/blob/main/specification/README.md#geometric-error). |
 | `lodMetricValue` | `Number` | Root's level of detail (LoD) metric value.                                                                                                                                                                                                                                                                                 |
+| `formatVersion`  | `String` | Normalized source version: `0.0`, `1.0`, `1.1`, or experimental `2.0-draft`.                                                                                                                                                                                                                                              |
 
 ### Tile Object
 
@@ -214,6 +238,7 @@ After content is loaded, the following fields are guaranteed. But different tile
 | `modelMatrix`        | `Number[16]`  | Transforms tile geometry positions to fixed frame coordinates                                                                        |
 | `attributes`         | `Object`      | Each attribute follows luma.gl [accessor](https://github.com/visgl/luma.gl/blob/master/docs/api-reference/webgl/accessor) properties |
 | `featureIds`         | `Uint32Array` | An array of feature ids which specify which feature each vertex belongs to. Can be used for picking functionality.                   |
+| `vectorContent`      | `Tiles3DVectorContent` | Experimental point, polyline, and polygon topology plus the source `clip` flag when content is designated as vector data. |
 
 `attributes` contains following fields
 
