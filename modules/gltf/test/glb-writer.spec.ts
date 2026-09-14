@@ -5,8 +5,8 @@
 import {validateWriter} from 'test/common/conformance';
 import {describe, expect, test} from 'vitest';
 import {GLBWriter} from '@loaders.gl/gltf';
-import {parseSync} from '@loaders.gl/core';
-import {GLBLoader} from '@loaders.gl/gltf/bundled';
+import {parse, parseSync} from '@loaders.gl/core';
+import {GLBLoader, GLTFLoader} from '@loaders.gl/gltf/bundled';
 test('GLBWriter#loader conformance', () => {
   validateWriter(GLBWriter, 'GLBWriter');
 });
@@ -66,6 +66,39 @@ describe('GLBWriter', () => {
     const encoded = GLBWriter.encodeSync(glb);
     const decoded = parseSync(encoded, GLBLoader);
     expect(decoded.version).toBe(2);
+  });
+  test('encodeSync(v2) round trips a JSON-only GLB', async () => {
+    const glb = {
+      type: 'glTF',
+      version: 2,
+      header: {byteOffset: 0, byteLength: 0, hasBinChunk: false},
+      json: {asset: {version: '2.0'}},
+      jsonChunkIndex: 0,
+      binChunks: []
+    };
+    const encoded = GLBWriter.encodeSync(glb);
+    const decoded = await parse(encoded, GLTFLoader);
+    expect(decoded.json.asset.version).toBe('2.0');
+    expect(decoded.buffers).toEqual([]);
+  });
+  test('encodeSync(v2) preserves a URI buffer without a BIN chunk', async () => {
+    const glb = {
+      type: 'glTF',
+      version: 2,
+      header: {byteOffset: 0, byteLength: 0, hasBinChunk: false},
+      json: {
+        asset: {version: '2.0'},
+        buffers: [{uri: 'data:application/octet-stream;base64,AQIDBA==', byteLength: 4}]
+      },
+      jsonChunkIndex: 0,
+      binChunks: []
+    };
+    const encoded = GLBWriter.encodeSync(glb);
+    const decoded = await parse(encoded, GLTFLoader);
+    const buffer = decoded.buffers[0];
+    expect(
+      Array.from(new Uint8Array(buffer.arrayBuffer, buffer.byteOffset, buffer.byteLength))
+    ).toEqual([1, 2, 3, 4]);
   });
   test('encodeSync(v3) rejects unsupported chunk encodings', () => {
     const glb = {
