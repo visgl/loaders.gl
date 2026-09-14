@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import {path, RequestCache} from '@loaders.gl/loader-utils';
+import {path, RequestCache, sliceArrayBuffer} from '@loaders.gl/loader-utils';
 import {Ellipsoid} from '@math.gl/geospatial';
 import {Vector3} from '@math.gl/core';
 import type {CoreAPI, Loader, LoaderOptions} from '@loaders.gl/loader-utils';
@@ -41,6 +41,19 @@ const EMPTY_CONTENT_FORMATS: TilesetContentFormats = {
 };
 
 const DEFAULT_MAXIMUM_CACHED_SUBTREES = 32;
+
+type PackageFile = {
+  name?: string;
+  mimeType: string;
+  uri?: string;
+  originalUri?: string;
+  data?: ArrayBuffer;
+  byteOffset: number;
+  byteLength: number;
+  bufferUri?: string;
+};
+
+type PackageResource = {fileIndex: number; files: PackageFile[]};
 
 /** Diagnostics for source-managed implicit subtree loading. */
 export type ImplicitTilingStats = {
@@ -93,6 +106,8 @@ export class Tiles3DSource implements Tileset3DSource {
   private readonly queryParams: Record<string, string> = {};
   /** Final request URLs cached by unmodified tile content URL. */
   private readonly tileUrlCache: Map<string, string> = new Map();
+  /** Original content descriptors retained across {@link Tile3D.unloadContent} calls. */
+  private readonly tileContentHeaders = new WeakMap<Tile3D, Record<string, any>[]>();
   /** Parsed subtree requests keyed by final source URL for deduplication and LRU reuse. */
   private readonly implicitSubtreeCache: RequestCache<ParsedImplicitSubtree>;
   /** Mutable counters exposed as a defensive snapshot through {@link getImplicitTilingStats}. */
@@ -175,11 +190,12 @@ export class Tiles3DSource implements Tileset3DSource {
       throw new Error('Tileset must have an asset property.');
     }
     if (
+      this.rootTileset.formatVersion !== '2.0-draft' &&
       this.asset.version !== '0.0' &&
       this.asset.version !== '1.0' &&
       this.asset.version !== '1.1'
     ) {
-      throw new Error('The tileset must be 3D Tiles version either 0.0 or 1.0 or 1.1.');
+      throw new Error('The tileset must be 3D Tiles version 0.0, 1.0, 1.1, or 2.0-draft.');
     }
 
     if ('tilesetVersion' in this.asset) {
@@ -274,6 +290,17 @@ export class Tiles3DSource implements Tileset3DSource {
    */
   async loadTileContent(tile: Tile3D): Promise<TileContentLoadResult> {
     const contentUrls = (tile.contentUrls || [tile.contentUrl]).filter(Boolean);
+    const cachedContentHeaders = this.tileContentHeaders.get(tile);
+    const contentHeaders: Record<string, any>[] =
+      cachedContentHeaders ||
+      (Array.isArray(tile.header?.content)
+        ? tile.header.content
+        : tile.header?.content
+          ? [tile.header.content]
+          : []);
+    if (!cachedContentHeaders) {
+      this.tileContentHeaders.set(tile, contentHeaders);
+    }
     const tilesetLoaderOptions =
       (this.loadOptions[this.loader.id] as Record<string, unknown>) || {};
     const options = {
@@ -288,7 +315,27 @@ export class Tiles3DSource implements Tileset3DSource {
     };
 
     const contents = await Promise.all(
-      contentUrls.map(contentUrl => this.loadResourceData(this.getTileUrl(contentUrl), options))
+      contentUrls.map((contentUrl, contentIndex) => {
+        const contentHeader = contentHeaders[contentIndex] || {};
+        const vectorExtension = contentHeader.extensions?.['3DTILES_content_gltf_vector'];
+        const vectorContent =
+          contentHeader._vectorContent ||
+          (vectorExtension?.vector === true ? {clip: vectorExtension.clip === true} : undefined);
+        const contentOptions = vectorContent
+          ? {
+              ...options,
+              [this.loader.id]: {
+                ...(options[this.loader.id] as Record<string, unknown>),
+                vectorContent
+              }
+            }
+          : options;
+        return this.loadContentResource(
+          this.getTileUrl(contentUrl),
+          contentHeader._resource,
+          contentOptions
+        );
+      })
     );
     tile.contents = contents;
     tile.content = contents[0] || null;
@@ -520,6 +567,72 @@ export class Tiles3DSource implements Tileset3DSource {
     }
 
     return await this.loadWithCoreApi(url, options, loader);
+  }
+
+  /** Loads a URL content reference or parses a buffer-view file retained from a glTF package. */
+  private async loadContentResource(
+    url: string,
+    packageResource: PackageResource | undefined,
+    options: LoaderOptions
+  ): Promise<any> {
+    if (!packageResource) {
+      return await this.loadResourceData(url, options);
+    }
+    const file = packageResource.files[packageResource.fileIndex];
+    if (!file) {
+      throw new Error(`3D Tiles package references missing file ${packageResource.fileIndex}`);
+    }
+    if (file.uri) {
+      return await this.loadResourceData(this.getTileUrl(file.uri), options);
+    }
+    if (!this.coreApi) {
+      throw new Error('Tiles3DSource requires an injected coreApi to parse embedded package data');
+    }
+
+    const data = await this.getPackageFileData(file);
+    const packageBaseUrl = `gltf-package:${packageResource.fileIndex}`;
+    return await this.coreApi.parse(data, this.loader, options, {
+      url: file.name || `${packageBaseUrl}/content`,
+      filename: file.name || 'content',
+      baseUrl: packageBaseUrl,
+      loaders: [this.loader],
+      coreApi: this.coreApi,
+      _parse: this.coreApi.parse,
+      fetch: async (resource: string, init?: RequestInit) => {
+        const reference = resource.startsWith(`${packageBaseUrl}/`)
+          ? resource.slice(packageBaseUrl.length + 1)
+          : resource;
+        const referencedFile = packageResource.files.find(
+          packageFile => packageFile.name === reference || packageFile.originalUri === reference
+        );
+        if (!referencedFile) {
+          throw new Error(`3D Tiles glTF package does not contain file ${reference}`);
+        }
+        if (referencedFile.uri) {
+          return await this.coreApi!.fetchFile(this.getTileUrl(referencedFile.uri), init);
+        }
+        const referencedData = await this.getPackageFileData(referencedFile);
+        return new Response(referencedData, {
+          headers: {'content-type': referencedFile.mimeType}
+        });
+      }
+    });
+  }
+
+  /** Resolves a retained package-file byte range without eagerly copying other package files. */
+  private async getPackageFileData(file: PackageFile): Promise<ArrayBuffer> {
+    if (file.data) {
+      return sliceArrayBuffer(file.data, file.byteOffset, file.byteLength);
+    }
+    if (file.bufferUri && this.coreApi) {
+      const response = await this.coreApi.fetchFile(this.getTileUrl(file.bufferUri));
+      if (!response.ok) {
+        throw new Error(`Failed to fetch 3D Tiles package buffer: HTTP ${response.status}`);
+      }
+      const buffer = await response.arrayBuffer();
+      return sliceArrayBuffer(buffer, file.byteOffset, file.byteLength);
+    }
+    throw new Error('3D Tiles package file has no available byte source');
   }
 
   /**
