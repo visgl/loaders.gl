@@ -180,6 +180,7 @@ describe('SHP record geometry boundaries', () => {
   });
 });
 
+/** Creates a synthetic SHP point record with optional Z and M ordinates. */
 function createPointRecord(type: number, x: number, y: number, z?: number, m?: number): DataView {
   const dimensions = z === undefined ? 2 : m === undefined ? 3 : 4;
   const bytes = new ArrayBuffer(4 + dimensions * 8);
@@ -192,6 +193,7 @@ function createPointRecord(type: number, x: number, y: number, z?: number, m?: n
   return view;
 }
 
+/** Creates a synthetic SHP multipoint record with the supplied XY coordinates. */
 function createMultiPointRecord(type: number, points: Point[]): DataView {
   const bytes = new ArrayBuffer(4 + 32 + 4 + points.length * 16);
   const view = new DataView(bytes);
@@ -204,6 +206,7 @@ function createMultiPointRecord(type: number, points: Point[]): DataView {
   return view;
 }
 
+/** Creates a synthetic SHP polyline or polygon record from part lengths. */
 function createPolyRecord(type: number, points: Point[], parts: number[]): DataView {
   const bytes = new ArrayBuffer(4 + 32 + 8 + parts.length * 4 + points.length * 16);
   const view = new DataView(bytes);
@@ -223,6 +226,7 @@ function createPolyRecord(type: number, points: Point[], parts: number[]): DataV
   return view;
 }
 
+/** Copies a typed-array view into an exact-sized standalone ArrayBuffer. */
 function toArrayBuffer(bytes: Uint8Array): ArrayBuffer {
   return bytes.buffer.slice(bytes.byteOffset, bytes.byteOffset + bytes.byteLength) as ArrayBuffer;
 }
