@@ -14,9 +14,11 @@ describe('experimental 3D Tiles 2.0 conformance fixtures', () => {
   test.each([
     ['Cesium 1.1 vector preview', VECTOR_PREVIEW_URL, '1.1', false],
     ['native draft 2.0', NATIVE_DRAFT_URL, '2.0-draft', true]
-  ] as const)('loads %s through the worker and runtime boundaries', async (_name, url, version, clip) => {
-    const header = await load(url, Tiles3DLoader, {worker: true});
-    const source = new Tiles3DSource({...header, coreApi}, {worker: true});
+  ] as const)('loads %s through the transfer and runtime boundaries', async (_name, url, version, clip) => {
+    const parsedHeader = await load(url, Tiles3DLoader, {worker: false});
+    const serializedHeader = Tiles3DLoader.serializeWorkerResult!(parsedHeader);
+    const header = Tiles3DLoader.deserializeWorkerResult!(structuredClone(serializedHeader));
+    const source = new Tiles3DSource({...header, coreApi}, {worker: false});
     const tileset = new Tileset3D(source);
     await tileset.tilesetInitializationPromise;
     await tileset.root!.loadContent();
