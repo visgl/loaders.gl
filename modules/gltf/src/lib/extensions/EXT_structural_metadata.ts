@@ -356,7 +356,7 @@ function processPropertyTable(
  * @param classProperty - class property object.
  * @param numberOfElements - The number of elements in each property array that propertyTableProperty contains. It's a number of rows in the table.
  * @param propertyTableProperty - propertyTable's property metadata.
- * @returns {string[] | number[] | string[][] | number[][]}
+ * @returns Decoded scalar, Boolean, string, enum, vector, matrix, or array values.
  */
 function getPropertyDataFromBinarySource(
   iterator: GLTFIterator,
@@ -364,8 +364,8 @@ function getPropertyDataFromBinarySource(
   classProperty: GLTF_EXT_structural_metadata_ClassProperty,
   numberOfElements: number,
   propertyTableProperty: GLTF_EXT_structural_metadata_PropertyTable_Property
-): string[] | BigTypedArray | string[][] | BigTypedArray[] {
-  let data: string[] | BigTypedArray | string[][] | BigTypedArray[] = [];
+): boolean[] | string[] | BigTypedArray | boolean[][] | string[][] | BigTypedArray[] {
+  let data: boolean[] | string[] | BigTypedArray | boolean[][] | string[][] | BigTypedArray[] = [];
   const valuesBufferView = propertyTableProperty.values;
   const valuesDataBytes: Uint8Array = iterator.getTypedArrayForBufferView(valuesBufferView);
 
@@ -394,8 +394,8 @@ function getPropertyDataFromBinarySource(
       break;
     }
     case 'BOOLEAN': {
-      // TODO: implement it as soon as we have the corresponding tileset
-      throw new Error(`Not implemented - classProperty.type=${classProperty.type}`);
+      data = getPropertyDataBoolean(classProperty, numberOfElements, valuesDataBytes, arrayOffsets);
+      break;
     }
     case 'STRING': {
       data = getPropertyDataString(numberOfElements, valuesDataBytes, arrayOffsets, stringOffsets);
@@ -416,6 +416,49 @@ function getPropertyDataFromBinarySource(
   }
 
   return data;
+}
+
+/** Decodes least-significant-bit-first Boolean values and Boolean arrays. */
+function getPropertyDataBoolean(
+  classProperty: GLTF_EXT_structural_metadata_ClassProperty,
+  numberOfElements: number,
+  valuesDataBytes: Uint8Array,
+  arrayOffsets: TypedArray | null
+): boolean[] | boolean[][] {
+  if (!classProperty.array) {
+    return getBooleanValues(valuesDataBytes, 0, numberOfElements);
+  }
+  if (arrayOffsets) {
+    return Array.from({length: numberOfElements}, (_unused, rowIndex) => {
+      const start = Number(arrayOffsets[rowIndex]);
+      const end = Number(arrayOffsets[rowIndex + 1]);
+      if (!Number.isInteger(start) || !Number.isInteger(end) || start < 0 || end < start) {
+        throw new Error('EXT_structural_metadata: invalid BOOLEAN array offsets');
+      }
+      return getBooleanValues(valuesDataBytes, start, end - start);
+    });
+  }
+  if (classProperty.count === undefined) {
+    return [];
+  }
+  return Array.from({length: numberOfElements}, (_unused, rowIndex) =>
+    getBooleanValues(
+      valuesDataBytes,
+      rowIndex * (classProperty.count as number),
+      classProperty.count as number
+    )
+  );
+}
+
+/** Extracts a consecutive range of Boolean bits from a metadata value buffer. */
+function getBooleanValues(valuesDataBytes: Uint8Array, start: number, count: number): boolean[] {
+  if (start + count > valuesDataBytes.byteLength * 8) {
+    throw new Error('EXT_structural_metadata: BOOLEAN values exceed their buffer view');
+  }
+  return Array.from({length: count}, (_unused, index) => {
+    const bitIndex = start + index;
+    return Boolean(valuesDataBytes[Math.floor(bitIndex / 8)] & (1 << (bitIndex % 8)));
+  });
 }
 
 /**

@@ -443,9 +443,8 @@ function createLazyImplicitTileHeader(
   descriptor: ImplicitTilingDescriptor,
   coordinates: ImplicitTileCoordinates
 ): ImplicitTileHeader {
-  const childDescriptor = subtree.resourceFiles?.length
-    ? {...descriptor, resourceFiles: subtree.resourceFiles}
-    : descriptor;
+  const resourceFiles = mergeImplicitPackageFiles(descriptor.resourceFiles, subtree.resourceFiles);
+  const childDescriptor = resourceFiles ? {...descriptor, resourceFiles} : descriptor;
   const reference = createImplicitSubtreeReference(childDescriptor, coordinates);
   return {
     id: getImplicitTileId(reference, coordinates),
@@ -599,6 +598,31 @@ function findImplicitPackageResource(
   return fileIndex < 0 ? undefined : {fileIndex, files};
 }
 
+/** Layers files declared by a child package over inherited parent-package files. */
+function mergeImplicitPackageFiles(
+  parentFiles: ImplicitPackageFile[] | undefined,
+  childFiles: ImplicitPackageFile[] | undefined
+): ImplicitPackageFile[] | undefined {
+  if (!childFiles?.length) {
+    return parentFiles;
+  }
+  if (!parentFiles?.length) {
+    return childFiles;
+  }
+  const childReferences = new Set(
+    childFiles.flatMap(file => [file.uri, file.originalUri, file.name].filter(Boolean) as string[])
+  );
+  return [
+    ...childFiles,
+    ...parentFiles.filter(
+      file =>
+        ![file.uri, file.originalUri, file.name].some(
+          reference => reference && childReferences.has(reference)
+        )
+    )
+  ];
+}
+
 /**
  * Formats an available implicit tile as a runtime header.
  *
@@ -663,9 +687,7 @@ function formatImplicitTileHeader(
     })
     .filter((entry): entry is {contentIndex: number; contentUrl: string} => Boolean(entry));
   const availableContentUrls = contentEntries.map(entry => entry.contentUrl);
-  const resourceFiles = subtree.resourceFiles?.length
-    ? subtree.resourceFiles
-    : descriptor.resourceFiles;
+  const resourceFiles = mergeImplicitPackageFiles(descriptor.resourceFiles, subtree.resourceFiles);
   const content = contentEntries.map(({contentIndex, contentUrl}) => {
     const packageResource = findImplicitPackageResource(resourceFiles, contentUrl);
     return {

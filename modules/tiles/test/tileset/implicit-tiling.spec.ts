@@ -78,6 +78,44 @@ test('implicit tiling materializes multiple content streams in source order', ()
     {group: 'metadata', uri: 'https://example.com/metadata/0/0/0/0.json'}
   ]);
 });
+test('implicit subtree packages retain undeclared files inherited from their parent package', () => {
+  const parentSubtreeFile = {
+    name: 'subtrees/1/0/0/0.gltf',
+    mimeType: 'model/gltf+json',
+    uri: 'gltf-package://0/subtrees/1/0/0/0.gltf',
+    byteOffset: 0,
+    byteLength: 0
+  };
+  const localContentFile = {
+    name: 'content/0/0/0/0.gltf',
+    mimeType: 'model/gltf+json',
+    uri: 'gltf-package://0/content/0/0/0/0.gltf',
+    byteOffset: 0,
+    byteLength: 0
+  };
+  const descriptor = createDescriptor({
+    contentUrlTemplate: 'gltf-package://0/content/{level}/{x}/{y}/{z}.gltf',
+    subtreesUrlTemplate: 'gltf-package://0/subtrees/{level}/{x}/{y}/{z}.gltf',
+    subtreeLevels: 1,
+    maximumLevel: 1,
+    resourceFiles: [parentSubtreeFile]
+  });
+  const result = materializeImplicitSubtree(
+    {
+      tileAvailability: {constant: 1},
+      contentAvailability: {constant: 1},
+      childSubtreeAvailability: {explicitBitstream: new Uint8Array([1])},
+      resourceFiles: [localContentFile]
+    },
+    createImplicitSubtreeReference(descriptor, {level: 0, x: 0, y: 0, z: 0})
+  );
+
+  expect(result.root.content._resource.files).toEqual([localContentFile, parentSubtreeFile]);
+  expect(result.root.children[0].implicitSubtree?.resource).toMatchObject({
+    fileIndex: 1,
+    files: [localContentFile, parentSubtreeFile]
+  });
+});
 test('implicit tiling preserves content-header indexes for sparse streams', () => {
   const descriptor = createDescriptor({
     contentUrlTemplates: [

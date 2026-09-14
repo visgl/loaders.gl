@@ -519,6 +519,56 @@ test('gltf#EXT_structural_metadata loads an external schema before decoding tabl
   expect(Array.from(extension.propertyTables[0].properties.value.data)).toEqual([7, 9]);
 });
 
+test('gltf#EXT_structural_metadata decodes packed Boolean properties and arrays', async () => {
+  const binary = new Uint8Array([0b00000101, 0b00110101, 0b00001101, 0, 1, 4]);
+  const gltf = {
+    buffers: [{arrayBuffer: binary.buffer, byteOffset: 0, byteLength: binary.byteLength}],
+    json: {
+      buffers: [{byteLength: binary.byteLength}],
+      bufferViews: [
+        {buffer: 0, byteOffset: 0, byteLength: 1},
+        {buffer: 0, byteOffset: 1, byteLength: 1},
+        {buffer: 0, byteOffset: 2, byteLength: 1},
+        {buffer: 0, byteOffset: 3, byteLength: 3}
+      ],
+      extensions: {
+        EXT_structural_metadata: {
+          schema: {
+            classes: {
+              Scalars: {properties: {value: {type: 'BOOLEAN', required: true}}},
+              Fixed: {
+                properties: {value: {type: 'BOOLEAN', array: true, count: 3, required: true}}
+              },
+              Variable: {
+                properties: {value: {type: 'BOOLEAN', array: true, required: true}}
+              }
+            }
+          },
+          propertyTables: [
+            {class: 'Scalars', count: 3, properties: {value: {values: 0}}},
+            {class: 'Fixed', count: 2, properties: {value: {values: 1}}},
+            {
+              class: 'Variable',
+              count: 2,
+              properties: {value: {values: 2, arrayOffsets: 3, arrayOffsetType: 'UINT8'}}
+            }
+          ]
+        }
+      }
+    }
+  };
+
+  await decodeExtensions(gltf as any, {gltf: {loadBuffers: true, loadImages: false}});
+
+  const tables = gltf.json.extensions.EXT_structural_metadata.propertyTables;
+  expect(tables[0].properties.value.data).toEqual([true, false, true]);
+  expect(tables[1].properties.value.data).toEqual([
+    [true, false, true],
+    [false, true, true]
+  ]);
+  expect(tables[2].properties.value.data).toEqual([[true], [false, true, true]]);
+});
+
 test('gltf#EXT_structural_metadata validates unsupported property definitions', async () => {
   const makeGLTF = (property: any, schema: any = {}) => ({
     buffers: [{arrayBuffer: new Uint8Array([1, 0]).buffer, byteOffset: 0, byteLength: 2}],
@@ -537,11 +587,6 @@ test('gltf#EXT_structural_metadata validates unsupported property definitions', 
     }
   });
 
-  await expect(
-    decodeExtensions(makeGLTF({type: 'BOOLEAN'}) as any, {
-      gltf: {loadBuffers: true, loadImages: false}
-    })
-  ).rejects.toThrow(/Not implemented/);
   await expect(
     decodeExtensions(makeGLTF({type: 'FUTURE'}) as any, {
       gltf: {loadBuffers: true, loadImages: false}

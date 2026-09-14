@@ -255,6 +255,7 @@ describe('experimental explicit 3D Tiles 2.0', () => {
     new Uint16Array(binary.buffer, 10, 1)[0] = 9;
     new Uint16Array(binary.buffer, 12, 4).set([1, 2, 3, 4]);
     new Uint16Array(binary.buffer, 20, 2).set([5, 6]);
+    binary[24] = 1;
     const subtree = await parse(
       encodeGlb(
         {
@@ -277,6 +278,7 @@ describe('experimental explicit 3D Tiles 2.0', () => {
                   tile: {
                     properties: {
                       zone: {type: 'SCALAR', componentType: 'UINT16', required: true},
+                      enabled: {type: 'BOOLEAN', required: true},
                       bounds: {
                         type: 'VEC2',
                         componentType: 'UINT16',
@@ -305,6 +307,7 @@ describe('experimental explicit 3D Tiles 2.0', () => {
                   count: 1,
                   properties: {
                     zone: {values: 1},
+                    enabled: {values: 5},
                     bounds: {values: 3},
                     emptyBounds: {values: 4}
                   }
@@ -320,7 +323,8 @@ describe('experimental explicit 3D Tiles 2.0', () => {
             {buffer: 0, byteOffset: 8, byteLength: 2},
             {buffer: 0, byteOffset: 10, byteLength: 2},
             {buffer: 0, byteOffset: 12, byteLength: 8},
-            {buffer: 0, byteOffset: 20, byteLength: 4}
+            {buffer: 0, byteOffset: 20, byteLength: 4},
+            {buffer: 0, byteOffset: 24, byteLength: 1}
           ],
           accessors: [{bufferView: 0, componentType: 5130, count: 1, type: 'SCALAR'}]
         },
@@ -339,11 +343,56 @@ describe('experimental explicit 3D Tiles 2.0', () => {
     expect(subtree.tileAvailability).toEqual({constant: 1});
     expect(subtree.tileAttributes.TILE_GEOMETRIC_ERROR).toEqual(new Float64Array([12]));
     expect(subtree.tilePropertyRows).toEqual([
-      {zone: 7, bounds: [1, 2, 3, 4], emptyBounds: [9, 10]}
+      {zone: 7, enabled: true, bounds: [1, 2, 3, 4], emptyBounds: [9, 10]}
     ]);
     expect(subtree.contentPropertyRows).toEqual([{zone: 9}]);
     const transferredSubtree = structuredClone(Tiles3DLoader.serializeWorkerResult!(subtree));
     expect(transferredSubtree.tileAttributes.TILE_GEOMETRIC_ERROR).toEqual(new Float64Array([12]));
+  });
+
+  test('materializes sparse subtree attribute accessors over an implicit-zero base', async () => {
+    const binary = new Uint8Array(16);
+    binary[0] = 1;
+    new Float64Array(binary.buffer, 8, 1)[0] = 42;
+    const subtree = await parse(
+      encodeGlb(
+        {
+          asset: {version: '2.1'},
+          extensionsUsed: ['3DTILES_subtree'],
+          extensionsRequired: ['3DTILES_subtree'],
+          extensions: {
+            '3DTILES_subtree': {
+              tileAvailability: {constant: 1},
+              contentAvailability: {constant: 0},
+              childSubtreeAvailability: {constant: 0},
+              tileAttributes: {TILE_GEOMETRIC_ERROR: 0}
+            }
+          },
+          buffers: [{byteLength: binary.byteLength}],
+          bufferViews: [
+            {buffer: 0, byteOffset: 0, byteLength: 1},
+            {buffer: 0, byteOffset: 8, byteLength: 8}
+          ],
+          accessors: [
+            {
+              componentType: 5130,
+              count: 2,
+              type: 'SCALAR',
+              sparse: {
+                count: 1,
+                indices: {bufferView: 0, componentType: 5121},
+                values: {bufferView: 1}
+              }
+            }
+          ]
+        },
+        binary
+      ),
+      Tiles3DLoader,
+      {worker: false, '3d-tiles': {isSubtree: true}}
+    );
+
+    expect(subtree.tileAttributes.TILE_GEOMETRIC_ERROR).toEqual(new Float64Array([0, 42]));
   });
 
   test('loads only hierarchy buffers while retaining external package buffers lazily', async () => {

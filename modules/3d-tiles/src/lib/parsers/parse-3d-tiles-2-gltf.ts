@@ -4,6 +4,7 @@
 
 import type {
   GLTF,
+  GLTFAccessor,
   GLTFBoundingVolume,
   GLTFFile,
   GLTFNode,
@@ -273,9 +274,124 @@ function parseSubtreeAttributes(
       );
     }
     validateSubtreeAttributeAccessor(accessor, semantic, label);
-    result[semantic] = scenegraph.getTypedArrayForAccessor(accessorIndex) as ArrayLike<number>;
+    result[semantic] = getMaterializedSubtreeAccessor(scenegraph, accessorIndex, accessor);
   }
   return result;
+}
+
+/** Materializes a standard subtree accessor, including implicit-zero and sparse storage. */
+function getMaterializedSubtreeAccessor(
+  scenegraph: GLTFScenegraph,
+  accessorIndex: number,
+  accessor: GLTFAccessor
+): ArrayLike<number> {
+  const componentCount = getAccessorComponentCount(accessor.type);
+  const ArrayType = getSubtreeAccessorArrayType(accessor.componentType);
+  let values =
+    accessor.bufferView === undefined
+      ? new ArrayType(accessor.count * componentCount)
+      : (scenegraph.getTypedArrayForAccessor(accessorIndex) as NumericSubtreeArray);
+  if (!accessor.sparse) {
+    return values;
+  }
+  const materializedValues = new ArrayType(values.length);
+  materializedValues.set(values);
+  values = materializedValues;
+  const sparseIndices = getSubtreeBufferViewValues(
+    scenegraph,
+    accessor.sparse.indices.bufferView,
+    accessor.sparse.indices.byteOffset || 0,
+    getSubtreeAccessorArrayType(accessor.sparse.indices.componentType),
+    accessor.sparse.count,
+    `accessor ${accessorIndex} sparse indices`
+  );
+  const sparseValues = getSubtreeBufferViewValues(
+    scenegraph,
+    accessor.sparse.values.bufferView,
+    accessor.sparse.values.byteOffset || 0,
+    ArrayType,
+    accessor.sparse.count * componentCount,
+    `accessor ${accessorIndex} sparse values`
+  );
+  for (let sparseIndex = 0; sparseIndex < accessor.sparse.count; sparseIndex++) {
+    const targetIndex = Number(sparseIndices[sparseIndex]);
+    if (!Number.isInteger(targetIndex) || targetIndex < 0 || targetIndex >= accessor.count) {
+      throw new Error(`3DTILES_subtree: accessor ${accessorIndex} sparse index is out of bounds`);
+    }
+    for (let componentIndex = 0; componentIndex < componentCount; componentIndex++) {
+      values[targetIndex * componentCount + componentIndex] =
+        sparseValues[sparseIndex * componentCount + componentIndex];
+    }
+  }
+  return values;
+}
+
+type NumericSubtreeArray = Uint8Array | Uint16Array | Uint32Array | Float64Array;
+type NumericSubtreeArrayConstructor =
+  | Uint8ArrayConstructor
+  | Uint16ArrayConstructor
+  | Uint32ArrayConstructor
+  | Float64ArrayConstructor;
+
+/** Returns the typed-array constructor for supported subtree accessor components. */
+function getSubtreeAccessorArrayType(componentType: number): NumericSubtreeArrayConstructor {
+  switch (componentType) {
+    case 5121:
+      return Uint8Array;
+    case 5123:
+      return Uint16Array;
+    case 5125:
+      return Uint32Array;
+    case 5130:
+      return Float64Array;
+    default:
+      throw new Error(`3DTILES_subtree: unsupported accessor component type ${componentType}`);
+  }
+}
+
+/** Returns the number of scalar components in one accessor element. */
+function getAccessorComponentCount(accessorType: string): number {
+  const componentCount = {
+    SCALAR: 1,
+    VEC2: 2,
+    VEC3: 3,
+    VEC4: 4,
+    MAT2: 4,
+    MAT3: 9,
+    MAT4: 16
+  }[accessorType];
+  if (!componentCount) {
+    throw new Error(`3DTILES_subtree: unsupported accessor type ${accessorType}`);
+  }
+  return componentCount;
+}
+
+/** Reads tightly packed sparse components from one loaded subtree buffer view. */
+function getSubtreeBufferViewValues(
+  scenegraph: GLTFScenegraph,
+  bufferViewIndex: number,
+  localByteOffset: number,
+  ArrayType: NumericSubtreeArrayConstructor,
+  count: number,
+  label: string
+): NumericSubtreeArray {
+  const bufferView = scenegraph.gltf.json.bufferViews?.[bufferViewIndex];
+  const buffer = bufferView && scenegraph.gltf.buffers?.[bufferView.buffer];
+  const byteLength = count * ArrayType.BYTES_PER_ELEMENT;
+  if (!bufferView || !buffer) {
+    throw new Error(`3DTILES_subtree: ${label} references missing bufferView ${bufferViewIndex}`);
+  }
+  if (localByteOffset + byteLength > bufferView.byteLength) {
+    throw new Error(`3DTILES_subtree: ${label} exceeds bufferView ${bufferViewIndex}`);
+  }
+  const byteOffset = buffer.byteOffset + (bufferView.byteOffset || 0) + localByteOffset;
+  if (byteOffset % ArrayType.BYTES_PER_ELEMENT === 0) {
+    return new ArrayType(buffer.arrayBuffer, byteOffset, count);
+  }
+  const bytes = new Uint8Array(buffer.arrayBuffer, byteOffset, byteLength);
+  const alignedBytes = new Uint8Array(byteLength);
+  alignedBytes.set(bytes);
+  return new ArrayType(alignedBytes.buffer, 0, count);
 }
 
 /** Enforces the accessor layouts assigned to standard subtree attribute semantics. */
