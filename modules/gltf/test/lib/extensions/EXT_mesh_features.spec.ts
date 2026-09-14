@@ -179,6 +179,61 @@ test('gltf#EXT_mesh_features - Should decode', async () => {
     [1, 1, 1, 1]
   );
 });
+
+test('gltf#EXT_mesh_features - exposes implicit IDs as a range', async () => {
+  const gltf = {
+    json: {
+      asset: {version: '2.0'},
+      accessors: [{componentType: 5126, count: 3, type: 'VEC3'}],
+      meshes: [
+        {
+          primitives: [
+            {
+              attributes: {POSITION: 0},
+              extensions: {
+                EXT_mesh_features: {featureIds: [{featureCount: 3}]}
+              }
+            }
+          ]
+        }
+      ]
+    },
+    buffers: []
+  };
+
+  await decodeExtensions(gltf as any, {gltf: {loadBuffers: false}});
+
+  expect(
+    gltf.json.meshes[0].primitives[0].extensions.EXT_mesh_features.featureIds[0]
+  ).toMatchObject({implicit: {start: 0, count: 3}});
+  expect(JSON.stringify(gltf.json)).not.toContain('"implicit"');
+});
+
+test('gltf#EXT_mesh_features - rejects mismatched implicit feature counts', async () => {
+  const gltf = {
+    json: {
+      asset: {version: '2.0'},
+      accessors: [{componentType: 5126, count: 3, type: 'VEC3'}],
+      meshes: [
+        {
+          primitives: [
+            {
+              attributes: {POSITION: 0},
+              extensions: {
+                EXT_mesh_features: {featureIds: [{featureCount: 2}]}
+              }
+            }
+          ]
+        }
+      ]
+    },
+    buffers: []
+  };
+
+  await expect(decodeExtensions(gltf as any, {gltf: {loadBuffers: false}})).rejects.toThrow(
+    'does not match vertex count 3'
+  );
+});
 const PRIMITIVE_EXPECTED = {
   attributes: {TEXCOORD_0: 2, POSITION: 1, _FEATURE_ID_0: 3},
   indices: 0,

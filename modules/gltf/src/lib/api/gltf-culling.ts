@@ -6,6 +6,7 @@ import {BoxShape, CapsuleShape, CylinderShape, PlaneShape, SphereShape} from '@m
 import type {ImplicitShape} from '@math.gl/culling';
 import type {GLTFBoundingVolume, GLTFShape} from '../types/gltf-shape-schema';
 import type {GLTFWithBuffers} from '../types/gltf-types';
+import {Matrix4} from '@math.gl/core';
 
 /** Options for resolving a glTF 2.1 shape. */
 export type GLTFCullingShapeOptions = {
@@ -48,7 +49,26 @@ export function getGLTFNodeCullingShape(
   if (!node) throw new Error(`Invalid glTF node reference: /nodes/${nodeIndex}`);
   const boundingVolume = node.boundingVolume as GLTFBoundingVolume | undefined;
   if (!boundingVolume) return undefined;
-  const shape = getGLTFCullingShape(gltf, boundingVolume.shape, {matrix: boundingVolume.matrix});
+  const shape = getGLTFCullingShape(gltf, boundingVolume.shape, {
+    matrix: getBoundingVolumeMatrix(boundingVolume)
+  });
   if (shape && options.matrix) shape.transform(options.matrix);
   return shape;
+}
+
+/** Compose a bounding-volume matrix from its matrix or TRS representation. */
+function getBoundingVolumeMatrix(
+  boundingVolume: GLTFBoundingVolume
+): readonly number[] | undefined {
+  if (boundingVolume.matrix) {
+    return boundingVolume.matrix;
+  }
+  if (!boundingVolume.translation && !boundingVolume.rotation && !boundingVolume.scale) {
+    return undefined;
+  }
+  const rotationMatrix = new Matrix4().fromQuaternion(boundingVolume.rotation || [0, 0, 0, 1]);
+  return new Matrix4()
+    .translate(boundingVolume.translation || [0, 0, 0])
+    .multiplyRight(rotationMatrix)
+    .scale(boundingVolume.scale || [1, 1, 1]);
 }

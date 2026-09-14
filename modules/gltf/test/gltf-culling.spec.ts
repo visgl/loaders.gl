@@ -42,6 +42,46 @@ describe('glTF 2.1 culling shapes', () => {
     expect(shape?.containsPoint([5, 0, 0])).toBe(false);
   });
 
+  test('composes bounding-volume translation, rotation and scale', () => {
+    const gltf: GLTFWithBuffers = {
+      json: {
+        asset: {version: '2.1'},
+        shapes: [{type: 'box', box: {size: [2, 2, 2]}}],
+        nodes: [
+          {
+            boundingVolume: {
+              shape: 0,
+              translation: [3, 0, 0],
+              rotation: [0, 0, 0, 1],
+              scale: [2, 1, 1]
+            }
+          }
+        ]
+      },
+      buffers: []
+    };
+
+    const shape = getGLTFNodeCullingShape(gltf, 0);
+    expect(shape).toBeInstanceOf(BoxShape);
+    expect(shape?.containsPoint([4.9, 0, 0])).toBe(true);
+    expect(shape?.containsPoint([5.1, 0, 0])).toBe(false);
+  });
+
+  test('supports an untransformed node bounding volume', () => {
+    const gltf: GLTFWithBuffers = {
+      json: {
+        asset: {version: '2.1'},
+        shapes: [{type: 'sphere', sphere: {radius: 2}}],
+        nodes: [{boundingVolume: {shape: 0}}]
+      },
+      buffers: []
+    };
+
+    const shape = getGLTFNodeCullingShape(gltf, 0);
+    expect(shape).toBeInstanceOf(SphereShape);
+    expect(shape?.containsPoint([1.9, 0, 0])).toBe(true);
+  });
+
   test('supports capsule defaults and reports invalid references', () => {
     const gltf: GLTFWithBuffers = {
       json: {asset: {version: '2.1'}, shapes: [{type: 'capsule', capsule: {height: 2}}]},

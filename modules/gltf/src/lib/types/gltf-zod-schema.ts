@@ -49,6 +49,9 @@ export const GLTFBoundingVolumeSchema = z
   .object({
     shape: GLTFIdSchema,
     matrix: z.array(z.number()).length(16).optional(),
+    translation: z.tuple([z.number(), z.number(), z.number()]).optional(),
+    rotation: z.tuple([z.number(), z.number(), z.number(), z.number()]).optional(),
+    scale: z.tuple([z.number(), z.number(), z.number()]).optional(),
     ...GLTF_PROPERTY_SHAPE
   })
   .catchall(z.unknown());

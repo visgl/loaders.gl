@@ -33,6 +33,14 @@ export type {
 } from './lib/types/gltf-json-schema';
 
 export type {GLTFShape, GLTFBoundingVolume} from './lib/types/gltf-shape-schema';
+export type {
+  GLTF_EXT_mesh_polygon,
+  GLTFImplicitFeatureIdRange,
+  GLTFMeshPolygonData,
+  GLTFPolygon,
+  GLTFPrimitiveIndexRange,
+  GLTFPrimitiveRestartData
+} from './lib/types/gltf-vector-topology';
 
 // 3DTiles extensions
 export type {
@@ -71,6 +79,11 @@ export type {
 } from './lib/types/gltf-ext-mesh-features-schema';
 
 export {name as EXT_MESH_FEATURES} from './lib/extensions/EXT_mesh_features';
+export {name as EXT_MESH_POLYGON} from './lib/extensions/EXT_mesh_polygon';
+export {
+  name as KHR_MESH_PRIMITIVE_RESTART,
+  getPrimitiveRestartRanges
+} from './lib/extensions/KHR_mesh_primitive_restart';
 export {name as EXT_STRUCTURAL_METADATA} from './lib/extensions/EXT_structural_metadata';
 export {name as EXT_FEATURE_METADATA} from './lib/extensions/deprecated/EXT_feature_metadata';
 
