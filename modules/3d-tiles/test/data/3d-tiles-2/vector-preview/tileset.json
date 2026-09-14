@@ -2,6 +2,7 @@
   "asset": {"version": "1.1"},
   "geometricError": 4,
   "extensionsUsed": ["3DTILES_content_gltf_vector", "VENDOR_optional"],
+  "extensionsRequired": ["3DTILES_content_gltf_vector"],
   "root": {
     "boundingVolume": {"sphere": [0, 0, 0, 1]},
     "geometricError": 0,

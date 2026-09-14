@@ -1,7 +1,7 @@
 {
   "asset": {"version": "2.1", "generator": "loaders.gl conformance fixture"},
   "extensionsUsed": ["3DTILES_tileset", "3DTILES_tileset_vectors", "VENDOR_optional"],
-  "extensionsRequired": ["3DTILES_tileset"],
+  "extensionsRequired": ["3DTILES_tileset", "3DTILES_tileset_vectors"],
   "extensions": {
     "3DTILES_tileset": {"geometricError": 4},
     "3DTILES_tileset_vectors": {"clip": true},

@@ -52,11 +52,13 @@ const SUPPORTED_3D_TILES_EXTENSIONS: ReadonlySet<string> = new Set([
   '3DTILES_bounding_volume_S2',
   '3DTILES_batch_table_hierarchy',
   '3DTILES_draco_point_compression',
-  '3DTILES_content_gltf'
+  '3DTILES_content_gltf',
+  '3DTILES_content_gltf_vector'
 ]);
 
 const SUPPORTED_3D_TILES_2_EXTENSIONS: ReadonlySet<string> = new Set([
   '3DTILES_tileset',
+  '3DTILES_tileset_vectors',
   '3DTILES_implicit_tiling',
   '3DTILES_subtree',
   '3DTILES_shape_ellipsoid_region',
