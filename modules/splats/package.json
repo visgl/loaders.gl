@@ -88,6 +88,6 @@
     "zstd-codec": "^0.1.0"
   },
   "peerDependencies": {
-    "@loaders.gl/core": "~4.5.0-alpha.1"
+    "@loaders.gl/core": "~4.5.0"
   }
 }
