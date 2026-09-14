@@ -170,10 +170,12 @@ also decodes property-table rows and standard tile/content attribute accessors. 
 tightly packed, so sparse availability is mapped to the matching row before URI substitution or
 attribute overrides are applied.
 
-Generated implicit headers expose the decoded tile and content rows through `implicitMetadata`.
-Property-backed URI templates use content properties first, then tile properties, and finally the
-implicit coordinate placeholders. Supported standard attributes can override bounding volumes,
-geometric error, refinement, and transforms for their corresponding generated headers.
+For 1.1 subtrees these fields remain lossless references. Draft glTF `3DTILES_subtree` resources
+add decoded tile/content attributes and property-table rows. Generated headers apply availability
+first, then attribute overrides, then property values. A property-backed URI placeholder resolves
+from the content row, then the tile row, then the implicit coordinate (`level`, `x`, `y`, `z`).
+Direct box, sphere, ellipsoid-region, S2, and cylinder-region values are normalized to runtime
+volumes; conservative oriented boxes are used where the runtime has no exact native volume.
 
 ## URLs, Authentication, and Archives
 
@@ -229,9 +231,9 @@ The underscored SSE field is diagnostic rather than stable API. Use these values
 
 - Implicit multiple-content availability is materialized in source order. Applications still decide
   how to compose or render heterogeneous content types returned by the streams.
-- Subtree metadata references and decoded tile/content property rows are preserved on generated
-  headers as `implicitMetadata`. Subtree-level metadata inheritance and metadata-derived bounding
-  volumes beyond the supported standard attribute semantics are not applied automatically.
+- Legacy 1.1 subtree metadata references (`propertyTables`, `tileMetadata`, `contentMetadata`, and
+  `subtreeMetadata`) are preserved on generated headers as `implicitMetadata`; draft glTF subtree
+  rows are decoded only for the supported scalar, vector, matrix, string, and enum profile.
 - S2-derived implicit descendants use a conservative root oriented box rather than recomputing a tight S2 box in the `@loaders.gl/tiles` runtime.
 - Lazy hierarchy metadata is source-managed; custom source implementations must provide `loadTileChildren` to use the same traversal hook.
 
