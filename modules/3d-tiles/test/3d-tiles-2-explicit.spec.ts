@@ -146,6 +146,16 @@ describe('experimental explicit 3D Tiles 2.0', () => {
     expect(tileset.root!.content.gltf.meshes[0].primitives[0].attributes.POSITION.value).toEqual(
       new Float32Array([1, 2, 3])
     );
+
+    tileset.root!.unloadContent();
+    await tileset.root!.loadContent();
+    expect(tileset.root!.vectorContent).toMatchObject({
+      clip: true,
+      primitives: [{type: 'points', pointCount: 1}]
+    });
+    expect(tileset.root!.content.gltf.meshes[0].primitives[0].attributes.POSITION.value).toEqual(
+      new Float32Array([1, 2, 3])
+    );
   });
 
   test('normalizes the 1.1 vector preview to the same loaded contract', async () => {

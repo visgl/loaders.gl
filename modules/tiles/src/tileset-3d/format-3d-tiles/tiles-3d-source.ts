@@ -106,6 +106,8 @@ export class Tiles3DSource implements Tileset3DSource {
   private readonly queryParams: Record<string, string> = {};
   /** Final request URLs cached by unmodified tile content URL. */
   private readonly tileUrlCache: Map<string, string> = new Map();
+  /** Original content descriptors retained across {@link Tile3D.unloadContent} calls. */
+  private readonly tileContentHeaders = new WeakMap<Tile3D, Record<string, any>[]>();
   /** Parsed subtree requests keyed by final source URL for deduplication and LRU reuse. */
   private readonly implicitSubtreeCache: RequestCache<ParsedImplicitSubtree>;
   /** Mutable counters exposed as a defensive snapshot through {@link getImplicitTilingStats}. */
@@ -288,11 +290,15 @@ export class Tiles3DSource implements Tileset3DSource {
    */
   async loadTileContent(tile: Tile3D): Promise<TileContentLoadResult> {
     const contentUrls = (tile.contentUrls || [tile.contentUrl]).filter(Boolean);
-    const contentHeaders = Array.isArray(tile.header?.content)
-      ? tile.header.content
-      : tile.header?.content
-        ? [tile.header.content]
-        : [];
+    let contentHeaders = this.tileContentHeaders.get(tile);
+    if (!contentHeaders) {
+      contentHeaders = Array.isArray(tile.header?.content)
+        ? tile.header.content
+        : tile.header?.content
+          ? [tile.header.content]
+          : [];
+      this.tileContentHeaders.set(tile, contentHeaders);
+    }
     const tilesetLoaderOptions =
       (this.loadOptions[this.loader.id] as Record<string, unknown>) || {};
     const options = {
