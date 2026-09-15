@@ -11,7 +11,8 @@ import type {CullingResult} from '@math.gl/culling';
 import type {
   Tile3DContent,
   Tile3DFeatureIdSet,
-  Tile3DMetadataContext
+  Tile3DMetadataContext,
+  getTile3DFeatureIdSets
 } from './tile-3d-contracts';
 
 // Note: circular dependency
@@ -88,6 +89,15 @@ export function getContentVisibility(
     return 'outside';
   }
   return intersectingVolume ? 'intersecting' : 'inside';
+}
+
+
+function isNestedTilesetPayload(payload: unknown): boolean {
+  if (!payload || typeof payload !== 'object') {
+    return false;
+  }
+  const record = payload as Record<string, any>;
+  return record.shape === 'tileset3d' || record.type === 'tileset3d' || Boolean(record.tileset);
 }
 
 function defined(x) {
@@ -728,7 +738,15 @@ export class Tile3D {
     this.contentMetadata = contentHeaders
       .filter(Boolean)
       .map(contentHeader => contentHeader.metadata || null);
+    const firstContentHeader = contentHeaders.find(Boolean) || {};
+    const groupReference = firstContentHeader.group;
+    const group =
+      typeof groupReference === 'number'
+        ? this.tileset.groups?.[groupReference] || null
+        : groupReference || null;
     this.metadataContext = {
+      tileset: this.tileset.metadata || null,
+      group,
       tile: this.metadata,
       content: this.contentMetadata[0] || null,
       subtree: header.implicitMetadata || null
@@ -744,14 +762,22 @@ export class Tile3D {
         boundingVolume:
           entry.boundingVolume || this._contentBoundingVolumes[index] || this.boundingVolume,
         payload: entry.payload ?? this.contents[index] ?? null,
-        renderable: Boolean(entry.renderable && (entry.payload ?? this.contents[index]))
+        featureIds: entry.featureIds?.length
+          ? entry.featureIds
+          : getTile3DFeatureIdSets(entry.payload ?? this.contents[index]),
+        renderable: Boolean(
+          entry.renderable &&
+            (entry.payload ?? this.contents[index]) &&
+            !isNestedTilesetPayload(entry.payload ?? this.contents[index])
+        )
       }));
       return;
     }
     this.contentEntries = this.contentEntries.map((entry, index) => ({
       ...entry,
       payload: this.contents[index] ?? null,
-      renderable: Boolean(this.contents[index]) && !this.hasTilesetContent
+      featureIds: getTile3DFeatureIdSets(this.contents[index]),
+      renderable: Boolean(this.contents[index]) && !isNestedTilesetPayload(this.contents[index])
     }));
   }
 
@@ -776,7 +802,7 @@ export class Tile3D {
       const normalizedContentHeader = contentHeader || {};
       return {
         index,
-        uri: normalizedContentHeader.uri || normalizedContentHeader.url,
+        uri: this.contentUrls[index] || normalizedContentHeader.uri || normalizedContentHeader.url,
         type: normalizedContentHeader.type,
         payload: null,
         metadata: normalizedContentHeader.metadata || null,
