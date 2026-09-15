@@ -583,16 +583,22 @@ function findImplicitPackageResource(
     return undefined;
   }
   const urlWithoutQuery = resourceUrl.split('?')[0];
+  const packageRelativePath = /^gltf-package:\/\/[^/]+\/(.*)$/.exec(urlWithoutQuery)?.[1];
+  const exactFileIndex = files.findIndex(file => {
+    const reference = file.originalUri || file.name;
+    return (
+      file.uri === urlWithoutQuery ||
+      Boolean(reference && (urlWithoutQuery === reference || packageRelativePath === reference))
+    );
+  });
+  if (exactFileIndex >= 0) {
+    return {fileIndex: exactFileIndex, files};
+  }
   const fileIndex = files.findIndex(file => {
-    if (file.uri === urlWithoutQuery) {
-      return true;
-    }
     const reference = file.originalUri || file.name;
     return Boolean(
       reference &&
-        (urlWithoutQuery === reference ||
-          urlWithoutQuery.endsWith(`/${reference}`) ||
-          urlWithoutQuery.endsWith(`:${reference}`))
+        (urlWithoutQuery.endsWith(`/${reference}`) || urlWithoutQuery.endsWith(`:${reference}`))
     );
   });
   return fileIndex < 0 ? undefined : {fileIndex, files};

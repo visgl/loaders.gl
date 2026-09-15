@@ -116,6 +116,38 @@ test('implicit subtree packages retain undeclared files inherited from their par
     files: [localContentFile, parentSubtreeFile]
   });
 });
+test('implicit package lookup prefers exact package paths over basename suffixes', () => {
+  const rootContentFile = {
+    name: 'content.gltf',
+    uri: 'gltf-package://0/content.gltf',
+    byteOffset: 0,
+    byteLength: 0
+  };
+  const nestedContentFile = {
+    name: 'nested/content.gltf',
+    uri: 'gltf-package://0/nested/content.gltf',
+    byteOffset: 0,
+    byteLength: 0
+  };
+  const descriptor = createDescriptor({
+    contentUrlTemplate: 'gltf-package://0/nested/content.gltf',
+    subtreesUrlTemplate: 'gltf-package://0/subtree.gltf',
+    subtreeLevels: 1,
+    maximumLevel: 0,
+    resourceFiles: [rootContentFile, nestedContentFile]
+  });
+
+  const result = materializeImplicitSubtree(
+    {
+      tileAvailability: {constant: 1},
+      contentAvailability: {constant: 1},
+      childSubtreeAvailability: {constant: 0}
+    },
+    createImplicitSubtreeReference(descriptor, {level: 0, x: 0, y: 0, z: 0})
+  );
+
+  expect(result.root.content._resource.fileIndex).toBe(1);
+});
 test('implicit tiling preserves content-header indexes for sparse streams', () => {
   const descriptor = createDescriptor({
     contentUrlTemplates: [
