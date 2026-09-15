@@ -146,7 +146,7 @@ For 3D Tiles 1.x, the normal transform-aware path then converts that local value
 without transform scaling, including at implicit subtree roots. This version gate preserves
 existing 1.x SSE behavior while applying the draft-specific runtime interpretation consistently.
 
-Region volumes divide longitude and latitude at every level; octrees also divide height. Oriented boxes divide their half-axis vectors, so rotated boxes do not become axis-aligned accidentally. S2-derived root boxes are retained conservatively for lazy descendants in the lower-level runtime: this avoids incorrect culling while the S2 conversion implementation remains owned by `@loaders.gl/3d-tiles`.
+Region volumes divide longitude and latitude at every level; octrees also divide height. Oriented boxes divide their half-axis vectors, so rotated boxes do not become axis-aligned accidentally. S2-derived descendants use math.gl's Hilbert-aware hierarchy APIs to derive each child token and a matching geospatial oriented box. The original S2 metadata is retained on each generated header, and S2 boxes remain world-space when runtime tile transforms are applied.
 
 ## `ADD` and `REPLACE` While Metadata Loads
 
@@ -234,7 +234,7 @@ The underscored SSE field is diagnostic rather than stable API. Use these values
 - Legacy 1.1 subtree metadata references (`propertyTables`, `tileMetadata`, `contentMetadata`, and
   `subtreeMetadata`) are preserved on generated headers as `implicitMetadata`; draft glTF subtree
   rows are decoded only for the supported scalar, vector, matrix, string, and enum profile.
-- S2-derived implicit descendants use a conservative root oriented box rather than recomputing a tight S2 box in the `@loaders.gl/tiles` runtime.
+- S2-derived implicit descendants use math.gl S2 descendant indexing and recompute a matching oriented box in the `@loaders.gl/tiles` runtime.
 - Lazy hierarchy metadata is source-managed; custom source implementations must provide `loadTileChildren` to use the same traversal hook.
 
 See the [3D Tiles implicit tiling specification](https://docs.ogc.org/cs/22-025r4/22-025r4.html#implicit-tiling), [`Tiles3DLoader`](/docs/modules/3d-tiles/api-reference/tiles-3d-loader), [`Tiles3DSource`](/docs/modules/tiles/api-reference/tiles-3d-source), [`Tileset3D`](/docs/modules/tiles/api-reference/tileset-3d), and [`Tile3D`](/docs/modules/tiles/api-reference/tile-3d) for the surrounding APIs.

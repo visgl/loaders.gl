@@ -5890,6 +5890,7 @@ __metadata:
     "@math.gl/core": "npm:5.0.0-alpha.6"
     "@math.gl/crs": "npm:5.0.0-alpha.6"
     "@math.gl/culling": "npm:5.0.0-alpha.6"
+    "@math.gl/dggs": "npm:5.0.0-alpha.6"
     "@math.gl/geoid": "npm:5.0.0-alpha.6"
     "@math.gl/geometry-utils": "npm:5.0.0-alpha.6"
     "@math.gl/geospatial": "npm:5.0.0-alpha.6"

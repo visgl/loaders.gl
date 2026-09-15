@@ -3,6 +3,11 @@
 // Copyright vis.gl contributors
 
 import {LOD_METRIC_TYPE, TILE_REFINEMENT, TILE_TYPE} from '../../constants';
+// TypeScript's legacy `node` resolution does not inspect package `exports`, but this public
+// subpath is resolved by the package at runtime and avoids loading unrelated DGGS decoders.
+// @ts-expect-error Conditional package subpath exports require a modern module resolver.
+import {getS2DescendantIndex, getS2IndexFromToken, getS2TokenFromIndex} from '@math.gl/dggs/s2';
+import {convertS2BoundingVolumeToOBB, type S2VolumeInfo} from '../helpers/s2-bounding-volume';
 
 const QUADTREE_CHILD_COUNT = 4;
 const OCTREE_CHILD_COUNT = 8;
@@ -866,9 +871,8 @@ function getImplicitChildCount(subdivisionScheme: 'QUADTREE' | 'OCTREE'): number
  * Calculates the bounding volume for global implicit coordinates.
  *
  * Region volumes are divided in longitude/latitude and, for octrees, height. Oriented boxes are
- * divided along their half-axis vectors. S2-derived boxes retain the root box conservatively: the
- * lower-level tiles module intentionally does not duplicate the S2 geometry implementation owned
- * by `@loaders.gl/3d-tiles`, and a conservative volume avoids incorrect culling.
+ * divided along their half-axis vectors. S2 roots use math.gl's Hilbert-aware descendant indexing
+ * to produce the exact child token and a corresponding geospatial oriented box.
  *
  * @param rootBoundingVolume - Bounding volume of the complete implicit hierarchy.
  * @param coordinates - Global tile coordinates.
@@ -909,10 +913,10 @@ function calculateImplicitBoundingVolume(
   }
 
   if (rootBoundingVolume.box) {
-    if (
-      rootBoundingVolume.s2VolumeInfo ||
-      rootBoundingVolume.extensions?.['3DTILES_shape_cylinder_region']
-    ) {
+    if (rootBoundingVolume.s2VolumeInfo) {
+      return calculateS2ImplicitBoundingVolume(rootBoundingVolume, coordinates, subdivisionScheme);
+    }
+    if (rootBoundingVolume.extensions?.['3DTILES_shape_cylinder_region']) {
       return {
         ...rootBoundingVolume,
         box: [...rootBoundingVolume.box]
@@ -948,6 +952,56 @@ function calculateImplicitBoundingVolume(
   throw new Error(
     `Unsupported implicit 3D Tiles bounding volume: ${JSON.stringify(rootBoundingVolume)}`
   );
+}
+
+/**
+ * Calculates an implicit descendant of an S2 root using math.gl's canonical Hilbert hierarchy.
+ *
+ * @param rootBoundingVolume - Normalized S2 root volume.
+ * @param coordinates - Global implicit tile coordinates.
+ * @param subdivisionScheme - Quadtree or octree subdivision.
+ * @returns Child volume with updated S2 metadata and oriented box.
+ */
+function calculateS2ImplicitBoundingVolume(
+  rootBoundingVolume: Record<string, any>,
+  coordinates: ImplicitTileCoordinates,
+  subdivisionScheme: 'QUADTREE' | 'OCTREE'
+): Record<string, any> {
+  const rootS2VolumeInfo = rootBoundingVolume.s2VolumeInfo as S2VolumeInfo;
+  const rootIndex = getS2IndexFromToken(rootS2VolumeInfo.token);
+  const descendantIndex = getS2DescendantIndex(
+    rootIndex,
+    coordinates.level,
+    coordinates.x,
+    coordinates.y
+  );
+  const divisionCount = 2 ** coordinates.level;
+  const heightSize =
+    (rootS2VolumeInfo.maximumHeight - rootS2VolumeInfo.minimumHeight) / divisionCount;
+  const childS2VolumeInfo: S2VolumeInfo = {
+    token: getS2TokenFromIndex(descendantIndex),
+    minimumHeight:
+      rootS2VolumeInfo.minimumHeight +
+      (subdivisionScheme === 'OCTREE' ? heightSize * coordinates.z : 0),
+    maximumHeight:
+      rootS2VolumeInfo.minimumHeight +
+      (subdivisionScheme === 'OCTREE'
+        ? heightSize * (coordinates.z + 1)
+        : heightSize * divisionCount)
+  };
+  const extensions = rootBoundingVolume.extensions ? {...rootBoundingVolume.extensions} : undefined;
+  if (extensions?.['3DTILES_bounding_volume_S2']) {
+    extensions['3DTILES_bounding_volume_S2'] = childS2VolumeInfo;
+  }
+  if (extensions?.['3DTILES_shape_s2']) {
+    extensions['3DTILES_shape_s2'] = childS2VolumeInfo;
+  }
+  return {
+    ...rootBoundingVolume,
+    ...(extensions ? {extensions} : {}),
+    s2VolumeInfo: childS2VolumeInfo,
+    box: convertS2BoundingVolumeToOBB(childS2VolumeInfo)
+  };
 }
 
 /** Normalize a longitude while preserving the positive pi boundary for non-wrapped regions. */
