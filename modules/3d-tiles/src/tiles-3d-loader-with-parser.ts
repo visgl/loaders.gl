@@ -167,13 +167,26 @@ async function parse(
     const loadStructureBuffers =
       preprocessedContent.contentType === 'gltf' &&
       Boolean(preprocessedContent.jsonPayload.extensions?.['3DTILES_subtree']);
-    const parsedGltf = await parseGltfForClassification(
+    let parsedGltf = await parseGltfForClassification(
       data,
       preprocessedContent as GltfPreprocessedContent,
       options,
       context,
       loadStructureBuffers
     );
+    if (
+      is3DTiles2Subtree(parsedGltf) &&
+      !loadStructureBuffers &&
+      loaderOptions.loadGLTF === false
+    ) {
+      parsedGltf = await parseGltfForClassification(
+        data,
+        preprocessedContent as GltfPreprocessedContent,
+        options,
+        context,
+        true
+      );
+    }
     if (is3DTiles2Tileset(parsedGltf)) {
       getIsTileset('tileset2', loaderOptions.isTileset);
       validateRequiredExtensions(parsedGltf.json.extensionsRequired, true);

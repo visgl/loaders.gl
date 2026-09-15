@@ -498,6 +498,47 @@ describe('experimental explicit 3D Tiles 2.0', () => {
     expect(subtree.resourceFiles[0].data).toBeUndefined();
   });
 
+  test('auto-detects GLB subtrees before selectively loading hierarchy buffers', async () => {
+    const subtreeUrl = 'https://example.com/subtrees/root.glb';
+    const hierarchyBufferUrl = 'https://example.com/subtrees/hierarchy.bin';
+    const subtreeJson = {
+      asset: {version: '2.1'},
+      extensionsUsed: ['3DTILES_subtree'],
+      extensionsRequired: ['3DTILES_subtree'],
+      extensions: {
+        '3DTILES_subtree': {
+          tileAvailability: {bitstream: 0},
+          contentAvailability: {constant: 0},
+          childSubtreeAvailability: {constant: 0}
+        }
+      },
+      buffers: [{uri: 'hierarchy.bin', byteLength: 1}],
+      bufferViews: [{buffer: 0, byteLength: 1}]
+    };
+    const glb = encodeGlb(subtreeJson, new Uint8Array());
+    const requestedUrls: string[] = [];
+    const fetch = async (input: RequestInfo | URL): Promise<Response> => {
+      const url = input.toString();
+      requestedUrls.push(url);
+      if (url === subtreeUrl) {
+        return new Response(glb, {headers: {'content-type': 'model/gltf-binary'}});
+      }
+      if (url === hierarchyBufferUrl) {
+        return new Response(new Uint8Array([1]));
+      }
+      throw new Error(`unexpected request: ${url}`);
+    };
+
+    const subtree = await load(subtreeUrl, Tiles3DLoader, {
+      worker: false,
+      fetch,
+      '3d-tiles': {loadGLTF: false}
+    });
+
+    expect(requestedUrls).toEqual([subtreeUrl, hierarchyBufferUrl]);
+    expect(subtree.tileAvailability.explicitBitstream).toEqual(new Uint8Array([1]));
+  });
+
   test('auto-detects a meshopt-compressed subtree while keeping unrelated buffers lazy', async () => {
     const subtreeUrl = 'https://example.com/subtrees/compressed.gltf';
     const hierarchyBufferUrl = 'https://example.com/subtrees/hierarchy.meshopt';
@@ -772,11 +813,13 @@ describe('experimental explicit 3D Tiles 2.0', () => {
         extensionsRequired: ['3DTILES_subtree'],
         extensions: {
           '3DTILES_subtree': {
-            tileAvailability: {constant: 1},
+            tileAvailability: {bitstream: 0},
             contentAvailability: {constant: 1},
             childSubtreeAvailability: {constant: 0}
           }
-        }
+        },
+        buffers: [{uri: 'hierarchy.bin', byteLength: 1}],
+        bufferViews: [{buffer: 0, byteLength: 1}]
       })
     );
     const contentBytes = new TextEncoder().encode(
@@ -784,21 +827,29 @@ describe('experimental explicit 3D Tiles 2.0', () => {
     );
     const subtreeOffset = alignToFour(nestedTilesetBytes.byteLength);
     const contentOffset = alignToFour(subtreeOffset + subtreeBytes.byteLength);
-    const binary = new Uint8Array(contentOffset + contentBytes.byteLength);
+    const hierarchyOffset = alignToFour(contentOffset + contentBytes.byteLength);
+    const binary = new Uint8Array(hierarchyOffset + 1);
     binary.set(nestedTilesetBytes);
     binary.set(subtreeBytes, subtreeOffset);
     binary.set(contentBytes, contentOffset);
+    binary[hierarchyOffset] = 1;
     const parent = createTilesetGltf({
       buffers: [{byteLength: binary.byteLength}],
       bufferViews: [
         {buffer: 0, byteOffset: 0, byteLength: nestedTilesetBytes.byteLength},
         {buffer: 0, byteOffset: subtreeOffset, byteLength: subtreeBytes.byteLength},
-        {buffer: 0, byteOffset: contentOffset, byteLength: contentBytes.byteLength}
+        {buffer: 0, byteOffset: contentOffset, byteLength: contentBytes.byteLength},
+        {buffer: 0, byteOffset: hierarchyOffset, byteLength: 1}
       ],
       files: [
         {bufferView: 0, mimeType: 'model/gltf+json', name: 'nested/tileset.gltf'},
         {bufferView: 1, mimeType: 'model/gltf+json', name: 'nested/subtrees/0/0/0.gltf'},
-        {bufferView: 2, mimeType: 'model/gltf+json', name: 'nested/content/0/0/0.gltf'}
+        {bufferView: 2, mimeType: 'model/gltf+json', name: 'nested/content/0/0/0.gltf'},
+        {
+          bufferView: 3,
+          mimeType: 'application/octet-stream',
+          name: 'nested/subtrees/0/0/hierarchy.bin'
+        }
       ],
       externalAssets: [{file: 0}],
       nodes: [

@@ -136,7 +136,10 @@ Generated geometric error halves once per global level:
 tileGeometricError = rootGeometricError / 2^level
 ```
 
-The normal transform-aware path then converts that local value to world-space `lodMetricValue`. This prevents implicit tiles from bypassing transform-scaled SSE.
+For 3D Tiles 1.x, the normal transform-aware path then converts that local value to world-space
+`lodMetricValue`. In the experimental draft 2.0 profile, tiles retain the declared geometric error
+without transform scaling, including at implicit subtree roots. This version gate preserves
+existing 1.x SSE behavior while applying the draft-specific runtime interpretation consistently.
 
 Region volumes divide longitude and latitude at every level; octrees also divide height. Oriented boxes divide their half-axis vectors, so rotated boxes do not become axis-aligned accidentally. S2-derived root boxes are retained conservatively for lazy descendants in the lower-level runtime: this avoids incorrect culling while the S2 conversion implementation remains owned by `@loaders.gl/3d-tiles`.
 

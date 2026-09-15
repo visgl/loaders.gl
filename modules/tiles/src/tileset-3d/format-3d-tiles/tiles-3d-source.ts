@@ -595,18 +595,24 @@ export class Tiles3DSource implements Tileset3DSource {
     }
 
     const data = await this.getPackageFileData(file);
-    const packageBaseUrl = `gltf-package://${packageResource.fileIndex}`;
+    const packageRootUrl = `gltf-package://${packageResource.fileIndex}`;
+    const fileName = file.name || 'content';
+    const directorySeparatorIndex = fileName.lastIndexOf('/');
+    const packageBaseUrl =
+      directorySeparatorIndex >= 0
+        ? `${packageRootUrl}/${fileName.slice(0, directorySeparatorIndex)}`
+        : packageRootUrl;
     return await this.coreApi.parse(data, this.loader, options, {
-      url: file.name || `${packageBaseUrl}/content`,
-      filename: file.name || 'content',
+      url: `${packageRootUrl}/${fileName}`,
+      filename: fileName,
       baseUrl: packageBaseUrl,
       loaders: [this.loader],
       coreApi: this.coreApi,
       _parse: this.coreApi.parse,
       _tiles3dPackageFiles: packageResource.files,
       fetch: async (resource: string, init?: RequestInit) => {
-        const reference = resource.startsWith(`${packageBaseUrl}/`)
-          ? resource.slice(packageBaseUrl.length + 1)
+        const reference = resource.startsWith(`${packageRootUrl}/`)
+          ? resource.slice(packageRootUrl.length + 1)
           : resource;
         const referencedFile = packageResource.files.find(
           packageFile => packageFile.name === reference || packageFile.originalUri === reference
