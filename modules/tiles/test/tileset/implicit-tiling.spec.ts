@@ -3,6 +3,8 @@
 // Copyright vis.gl contributors
 
 import {expect, test} from 'vitest';
+// @ts-expect-error Conditional package subpath exports require a modern module resolver.
+import {getS2DescendantIndex, getS2IndexFromToken, getS2TokenFromIndex} from '@math.gl/dggs/s2';
 import {
   createImplicitSubtreeReference,
   LOD_METRIC_TYPE,
@@ -12,6 +14,7 @@ import {
   type ImplicitTilingDescriptor,
   type ParsedImplicitSubtree
 } from '@loaders.gl/tiles';
+import {convertS2BoundingVolumeToOBB} from '@loaders.gl/tiles';
 import {Tileset3DTraverser} from '../../src/tileset-3d/format-3d-tiles/tileset-3d-traverser';
 /** Creates a compact descriptor that individual tests can override. */
 function createDescriptor(
@@ -267,6 +270,78 @@ test('implicit region subdivision preserves antimeridian-crossing longitude inte
   ).root.children;
   expect(children[0].boundingVolume.region).toEqual([3, -0.5, Math.PI, 0, 0, 20]);
   expect(children[1].boundingVolume.region).toEqual([Math.PI, -0.5, -3, 0, 0, 20]);
+});
+test('implicit S2 subdivision follows Hilbert descendants and updates runtime bounds', () => {
+  const descriptor = createDescriptor({
+    subtreeLevels: 1,
+    maximumLevel: 1,
+    rootBoundingVolume: {
+      s2VolumeInfo: {token: '1', minimumHeight: 10, maximumHeight: 110},
+      box: convertS2BoundingVolumeToOBB({token: '1', minimumHeight: 10, maximumHeight: 110}),
+      extensions: {
+        '3DTILES_bounding_volume_S2': {token: '1', minimumHeight: 10, maximumHeight: 110}
+      }
+    }
+  });
+  const result = materializeImplicitSubtree(
+    {
+      tileAvailability: {constant: 1},
+      contentAvailability: {constant: 0},
+      childSubtreeAvailability: {explicitBitstream: new Uint8Array([0b00000010])}
+    },
+    createImplicitSubtreeReference(descriptor, {level: 0, x: 0, y: 0, z: 0})
+  );
+  const rootIndex = getS2IndexFromToken('1');
+  const expectedToken = getS2TokenFromIndex(getS2DescendantIndex(rootIndex, 1, 1, 0));
+  const child = result.root.children.find(candidate => candidate.id.endsWith('#implicit=1/1/0/0'));
+  expect(child?.boundingVolume.s2VolumeInfo.token).toBe(expectedToken);
+  expect(child?.boundingVolume.extensions['3DTILES_bounding_volume_S2'].token).toBe(expectedToken);
+  expect(child?.boundingVolume.box).not.toEqual(result.root.boundingVolume.box);
+});
+test('implicit S2 octrees split the vertical range independently of the S2 cell', () => {
+  const descriptor = createDescriptor({
+    subdivisionScheme: 'OCTREE',
+    subtreeLevels: 1,
+    maximumLevel: 1,
+    rootBoundingVolume: {
+      s2VolumeInfo: {token: '1', minimumHeight: 10, maximumHeight: 110},
+      box: convertS2BoundingVolumeToOBB({token: '1', minimumHeight: 10, maximumHeight: 110})
+    }
+  });
+  const result = materializeImplicitSubtree(
+    {
+      tileAvailability: {constant: 1},
+      contentAvailability: {constant: 0},
+      childSubtreeAvailability: {constant: 1}
+    },
+    createImplicitSubtreeReference(descriptor, {level: 0, x: 0, y: 0, z: 0})
+  );
+  const lower = result.root.children.find(candidate => candidate.id.endsWith('#implicit=1/0/0/0'));
+  const upper = result.root.children.find(candidate => candidate.id.endsWith('#implicit=1/0/0/1'));
+  expect(lower?.boundingVolume.s2VolumeInfo.minimumHeight).toBe(10);
+  expect(lower?.boundingVolume.s2VolumeInfo.maximumHeight).toBe(60);
+  expect(upper?.boundingVolume.s2VolumeInfo.minimumHeight).toBe(60);
+  expect(upper?.boundingVolume.s2VolumeInfo.maximumHeight).toBe(110);
+});
+test('implicit S2 subdivision rejects malformed root tokens before creating descendants', () => {
+  const descriptor = createDescriptor({
+    subtreeLevels: 1,
+    maximumLevel: 1,
+    rootBoundingVolume: {
+      s2VolumeInfo: {token: 'not-an-s2-token', minimumHeight: 0, maximumHeight: 1},
+      box: [0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1]
+    }
+  });
+  expect(() =>
+    materializeImplicitSubtree(
+      {
+        tileAvailability: {constant: 1},
+        contentAvailability: {constant: 0},
+        childSubtreeAvailability: {constant: 1}
+      },
+      createImplicitSubtreeReference(descriptor, {level: 0, x: 0, y: 0, z: 0})
+    )
+  ).toThrow();
 });
 test('implicit octree materializes all eight child coordinates from one availability byte', () => {
   const descriptor = createDescriptor({
