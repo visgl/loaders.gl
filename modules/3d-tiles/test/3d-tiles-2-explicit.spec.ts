@@ -296,7 +296,7 @@ describe('experimental explicit 3D Tiles 2.0', () => {
   });
 
   test('parses glTF subtree availability, attributes and property-table rows', async () => {
-    const binary = new Uint8Array(40);
+    const binary = new Uint8Array(48);
     new Float64Array(binary.buffer, 0, 1)[0] = 12;
     new Uint16Array(binary.buffer, 8, 1)[0] = 7;
     new Uint16Array(binary.buffer, 10, 1)[0] = 9;
@@ -304,6 +304,7 @@ describe('experimental explicit 3D Tiles 2.0', () => {
     new Uint16Array(binary.buffer, 20, 2).set([5, 6]);
     binary[24] = 1;
     new DataView(binary.buffer).setBigUint64(32, 5n, true);
+    new DataView(binary.buffer).setBigUint64(40, 0xffffffffffffffffn, true);
     const subtree = await parse(
       encodeGlb(
         {
@@ -345,6 +346,13 @@ describe('experimental explicit 3D Tiles 2.0', () => {
                         componentType: 'UINT64',
                         noData: '5',
                         default: 'missing'
+                      },
+                      normalizedIdentifier: {
+                        type: 'SCALAR',
+                        componentType: 'UINT64',
+                        normalized: true,
+                        scale: 2,
+                        offset: 1
                       }
                     }
                   },
@@ -364,7 +372,8 @@ describe('experimental explicit 3D Tiles 2.0', () => {
                     enabled: {values: 5},
                     bounds: {values: 3},
                     emptyBounds: {values: 4},
-                    largeIdentifier: {values: 6}
+                    largeIdentifier: {values: 6},
+                    normalizedIdentifier: {values: 7}
                   }
                 },
                 {class: 'content', count: 1, properties: {zone: {values: 2}}}
@@ -380,7 +389,8 @@ describe('experimental explicit 3D Tiles 2.0', () => {
             {buffer: 0, byteOffset: 12, byteLength: 8},
             {buffer: 0, byteOffset: 20, byteLength: 4},
             {buffer: 0, byteOffset: 24, byteLength: 1},
-            {buffer: 0, byteOffset: 32, byteLength: 8}
+            {buffer: 0, byteOffset: 32, byteLength: 8},
+            {buffer: 0, byteOffset: 40, byteLength: 8}
           ],
           accessors: [{bufferView: 0, componentType: 5130, count: 1, type: 'SCALAR'}]
         },
@@ -404,7 +414,8 @@ describe('experimental explicit 3D Tiles 2.0', () => {
         enabled: true,
         bounds: [1, 2, 3, 4],
         emptyBounds: [9, 10],
-        largeIdentifier: 'missing'
+        largeIdentifier: 'missing',
+        normalizedIdentifier: 3
       }
     ]);
     expect(subtree.contentPropertyRows).toEqual([{zone: 9}]);

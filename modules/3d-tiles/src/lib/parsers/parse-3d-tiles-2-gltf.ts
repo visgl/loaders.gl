@@ -523,7 +523,8 @@ function resolvePropertyValue(
   if (Array.isArray(rawValue) || ArrayBuffer.isView(rawValue)) {
     const componentCount = getPropertyComponentCount(classProperty.type);
     return Array.from(rawValue as ArrayLike<unknown>, (component, componentIndex) =>
-      typeof component === 'number'
+      typeof component === 'number' ||
+      (typeof component === 'bigint' && hasNumericPropertyTransform(classProperty, tableProperty))
         ? applyNumericPropertyTransform(
             component,
             classProperty,
@@ -533,10 +534,27 @@ function resolvePropertyValue(
         : component
     );
   }
-  if (typeof rawValue !== 'number') {
+  if (
+    typeof rawValue !== 'number' &&
+    (typeof rawValue !== 'bigint' || !hasNumericPropertyTransform(classProperty, tableProperty))
+  ) {
     return rawValue;
   }
   return applyNumericPropertyTransform(rawValue, classProperty, tableProperty, 0);
+}
+
+/** Reports whether structural metadata requires a decoded numeric component to be transformed. */
+function hasNumericPropertyTransform(
+  classProperty: DraftStructuralMetadataClassProperty,
+  tableProperty: DraftStructuralMetadataTableProperty | undefined
+): boolean {
+  return Boolean(
+    classProperty.normalized ||
+      tableProperty?.scale !== undefined ||
+      tableProperty?.offset !== undefined ||
+      classProperty.scale !== undefined ||
+      classProperty.offset !== undefined
+  );
 }
 
 /** Compares scalar and composite metadata values without relying on array identity. */
@@ -592,12 +610,12 @@ function getPropertyComponentCount(propertyType: string | undefined): number {
 
 /** Applies normalization, scale, and offset to one numeric property component. */
 function applyNumericPropertyTransform(
-  rawValue: number,
+  rawValue: number | bigint,
   classProperty: DraftStructuralMetadataClassProperty,
   tableProperty: DraftStructuralMetadataTableProperty | undefined,
   componentIndex: number
 ): number {
-  let value = rawValue;
+  let value = Number(rawValue);
   if (classProperty.normalized) {
     value = normalizeInteger(value, classProperty.componentType);
   }
@@ -634,7 +652,9 @@ function normalizeInteger(value: number, componentType: string | undefined): num
     INT16: [32767, true],
     UINT16: [65535, false],
     INT32: [2147483647, true],
-    UINT32: [4294967295, false]
+    UINT32: [4294967295, false],
+    INT64: [Number(0x7fffffffffffffffn), true],
+    UINT64: [Number(0xffffffffffffffffn), false]
   };
   const range = componentType && ranges[componentType];
   if (!range) {
