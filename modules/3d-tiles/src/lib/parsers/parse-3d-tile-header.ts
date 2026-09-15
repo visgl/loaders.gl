@@ -323,7 +323,7 @@ export async function normalizeImplicitTileHeaders(
     boundingVolume: normalizeS2BoundingVolume(
       getMetadataBoundingVolume(tile.metadata, 'TILE', tileset.schema) || tile.boundingVolume
     ) as Tile3DBoundingVolume,
-    content: tile.content,
+    content: tile.contents || tile.content,
     viewerRequestVolume: normalizeS2BoundingVolume(tile.viewerRequestVolume)
   };
   const normalizedContents = normalizeTileContents(

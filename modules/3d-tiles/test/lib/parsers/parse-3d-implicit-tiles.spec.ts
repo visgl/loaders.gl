@@ -114,6 +114,43 @@ test('normalizeImplicitTileHeaders#creates a contentless lazy root and validates
     )
   ).rejects.toThrow(/Unsupported implicit subdivision scheme/);
 });
+test('normalizeImplicitTileHeaders#preserves standard multiple-content templates', async () => {
+  const tile = {
+    geometricError: 16,
+    refine: 'REPLACE',
+    boundingVolume: {region: [0, 0, 1, 1, 0, 10]},
+    contents: [
+      {
+        uri: 'vector/{level}/{x}/{y}.glb',
+        extensions: {'3DTILES_content_gltf_vector': {vector: true, clip: true}}
+      },
+      {uri: 'metadata/{level}/{x}/{y}.json'}
+    ],
+    implicitTiling: {
+      subdivisionScheme: 'QUADTREE',
+      subtreeLevels: 1,
+      availableLevels: 1,
+      subtrees: {uri: 'subtrees/{level}/{x}/{y}.subtree'}
+    }
+  };
+
+  const normalizedTile = await normalizeImplicitTileHeaders(
+    tile as any,
+    {root: tile} as any,
+    'https://example.com/tiles',
+    tile.implicitTiling as any,
+    {}
+  );
+
+  expect(normalizedTile?.implicitSubtree.descriptor.contentUrlTemplates).toEqual([
+    'https://example.com/tiles/vector/{level}/{x}/{y}.glb',
+    'https://example.com/tiles/metadata/{level}/{x}/{y}.json'
+  ]);
+  expect(normalizedTile?.implicitSubtree.descriptor.contentHeaders?.[0]).toMatchObject({
+    extensions: {'3DTILES_content_gltf_vector': {vector: true, clip: true}}
+  });
+  expect(normalizedTile?.content).toBeUndefined();
+});
 test('implicit parser compatibility helpers materialize one subtree and replace URL coordinates', async () => {
   const implicitOptions: ImplicitOptions = {
     contentUrlTemplate: 'https://example.com/content/{level}/{x}/{y}.b3dm',
