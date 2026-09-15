@@ -731,19 +731,12 @@ function getEnumsArray(
 ): string[] {
   const array: string[] = [];
   for (let i = 0; i < count; i++) {
-    // At the moment we don't support BigInt. It requires additional calculations logic
-    // and might be an issue in Safari
-    if (valuesData instanceof BigInt64Array || valuesData instanceof BigUint64Array) {
-      array.push('');
+    const value = valuesData[offset + i];
+    const enumObject = getEnumByValue(enumEntry, value);
+    if (enumObject) {
+      array.push(enumObject.name);
     } else {
-      const value = valuesData[offset + i];
-
-      const enumObject = getEnumByValue(enumEntry, value);
-      if (enumObject) {
-        array.push(enumObject.name);
-      } else {
-        array.push('');
-      }
+      array.push('');
     }
   }
   return array;
@@ -752,15 +745,19 @@ function getEnumsArray(
 /**
  * Looks up ENUM whose `value` property matches the specified number in the parameter `value`.
  * @param {GLTF_EXT_structural_metadata_Enum} enumEntry - ENUM entry containing the array of possible enums.
- * @param {number} value - The value of the ENUM to locate.
+ * @param value - The decoded integer value of the ENUM to locate.
  * @returns {GLTF_EXT_structural_metadata_EnumValue | null} ENUM matcihng the specified value or null of no ENUM object was found.
  */
 function getEnumByValue(
   enumEntry: GLTF_EXT_structural_metadata_Enum,
-  value: number
+  value: number | bigint
 ): GLTF_EXT_structural_metadata_EnumValue | null {
   for (const enumValue of enumEntry.values) {
-    if (enumValue.value === value) {
+    const matchesValue =
+      typeof value === 'bigint'
+        ? Number.isSafeInteger(enumValue.value) && BigInt(enumValue.value) === value
+        : enumValue.value === value;
+    if (matchesValue) {
       return enumValue;
     }
   }

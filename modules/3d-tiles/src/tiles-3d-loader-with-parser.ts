@@ -6,7 +6,7 @@ import type {LoaderWithParser, StrictLoaderOptions, LoaderContext} from '@loader
 // / import type { GLTFLoaderOptions } from '@loaders.gl/gltf';
 import type {DracoLoaderOptions} from '@loaders.gl/draco';
 import type {ImageBitmapLoaderOptions} from '@loaders.gl/images';
-import {GLTFLoader} from '@loaders.gl/gltf';
+import {GLBLoader, GLTFLoader} from '@loaders.gl/gltf';
 import type {GLTFWithBuffers} from '@loaders.gl/gltf';
 
 import {path} from '@loaders.gl/loader-utils';
@@ -164,29 +164,20 @@ async function parse(
   }
 
   if (preprocessedContent.contentType === 'gltf' || preprocessedContent.contentType === 'glb') {
-    const loadStructureBuffers =
-      preprocessedContent.contentType === 'gltf' &&
-      Boolean(preprocessedContent.jsonPayload.extensions?.['3DTILES_subtree']);
-    let parsedGltf = await parseGltfForClassification(
+    const classificationJson = await getGltfClassificationJson(
+      data,
+      preprocessedContent as GltfPreprocessedContent
+    );
+    const isTileset = Boolean(classificationJson.extensions?.['3DTILES_tileset']);
+    const loadStructureBuffers = Boolean(classificationJson.extensions?.['3DTILES_subtree']);
+    const parsedGltf = await parseGltfForClassification(
       data,
       preprocessedContent as GltfPreprocessedContent,
       options,
       context,
-      loadStructureBuffers
+      loadStructureBuffers,
+      isTileset
     );
-    if (
-      is3DTiles2Subtree(parsedGltf) &&
-      !loadStructureBuffers &&
-      loaderOptions.loadGLTF === false
-    ) {
-      parsedGltf = await parseGltfForClassification(
-        data,
-        preprocessedContent as GltfPreprocessedContent,
-        options,
-        context,
-        true
-      );
-    }
     if (is3DTiles2Tileset(parsedGltf)) {
       getIsTileset('tileset2', loaderOptions.isTileset);
       validateRequiredExtensions(parsedGltf.json.extensionsRequired, true);
@@ -396,14 +387,12 @@ async function parseGltfForClassification(
   preprocessedContent: GltfPreprocessedContent,
   options: Tiles3DLoaderOptions,
   context?: LoaderContext,
-  loadStructureBuffers = false
+  loadStructureBuffers = false,
+  isTileset = false
 ): Promise<GLTFWithBuffers> {
   if (!context) {
     throw new Error('3D Tiles glTF parsing requires a loader context');
   }
-  const isJsonTileset =
-    preprocessedContent.contentType === 'gltf' &&
-    Boolean(preprocessedContent.jsonPayload.extensions?.['3DTILES_tileset']);
   const loadGLTF = options['3d-tiles']?.loadGLTF !== false;
   const loadSelectedStructureBuffers = loadStructureBuffers;
   const parseOptions = loadSelectedStructureBuffers
@@ -420,7 +409,7 @@ async function parseGltfForClassification(
           decompressMeshes: false
         }
       }
-    : isJsonTileset || !loadGLTF
+    : isTileset || !loadGLTF
       ? {
           ...options,
           gltf: {
@@ -436,6 +425,24 @@ async function parseGltfForClassification(
   const gltfLoaderWithParser = await GLTFLoader.preload();
   const input = preprocessedContent.contentType === 'gltf' ? preprocessedContent.jsonPayload : data;
   return await gltfLoaderWithParser.parse(input, parseOptions, context);
+}
+
+/**
+ * Reads only the glTF JSON needed to choose lazy structure-loading options.
+ *
+ * @param data - Original glTF or GLB bytes.
+ * @param preprocessedContent - Payload classification from the 3D Tiles preprocessor.
+ * @returns Parsed glTF JSON without loading URI-backed resources.
+ */
+async function getGltfClassificationJson(
+  data: ArrayBuffer,
+  preprocessedContent: GltfPreprocessedContent
+): Promise<Record<string, any>> {
+  if (preprocessedContent.contentType === 'gltf') {
+    return preprocessedContent.jsonPayload;
+  }
+  const glbLoaderWithParser = await GLBLoader.preload();
+  return glbLoaderWithParser.parseSync(data).json;
 }
 
 type GltfPreprocessedContent =

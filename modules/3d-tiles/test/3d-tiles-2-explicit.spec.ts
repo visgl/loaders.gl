@@ -109,6 +109,28 @@ describe('experimental explicit 3D Tiles 2.0', () => {
     expect(tileset.root!.hasTilesetContent).toBe(true);
   });
 
+  test('classifies GLB tilesets before loading URI-backed buffers', async () => {
+    const rootUrl = 'https://example.com/tiles/root.glb';
+    const requestedUrls: string[] = [];
+    const rootGlb = encodeGlb(
+      createTilesetGltf({buffers: [{uri: 'unselected.bin', byteLength: 4}]}),
+      new Uint8Array()
+    );
+    const fetch = async (input: RequestInfo | URL): Promise<Response> => {
+      const url = input.toString();
+      requestedUrls.push(url);
+      if (url === rootUrl) {
+        return new Response(rootGlb, {headers: {'content-type': 'model/gltf-binary'}});
+      }
+      throw new Error(`unexpected eager request: ${url}`);
+    };
+
+    const tileset = await load(rootUrl, Tiles3DLoader, {worker: false, fetch});
+
+    expect(tileset.formatVersion).toBe('2.0-draft');
+    expect(requestedUrls).toEqual([rootUrl]);
+  });
+
   test('retains inherited sibling files for a nested implicit tileset package', () => {
     const inheritedSubtreeFile = {
       name: 'subtrees/0/0/0.gltf',
@@ -296,7 +318,7 @@ describe('experimental explicit 3D Tiles 2.0', () => {
   });
 
   test('parses glTF subtree availability, attributes and property-table rows', async () => {
-    const binary = new Uint8Array(48);
+    const binary = new Uint8Array(56);
     new Float64Array(binary.buffer, 0, 1)[0] = 12;
     new Uint16Array(binary.buffer, 8, 1)[0] = 7;
     new Uint16Array(binary.buffer, 10, 1)[0] = 9;
@@ -305,6 +327,7 @@ describe('experimental explicit 3D Tiles 2.0', () => {
     binary[24] = 1;
     new DataView(binary.buffer).setBigUint64(32, 5n, true);
     new DataView(binary.buffer).setBigUint64(40, 0xffffffffffffffffn, true);
+    new DataView(binary.buffer).setBigUint64(48, 5n, true);
     const subtree = await parse(
       encodeGlb(
         {
@@ -323,6 +346,9 @@ describe('experimental explicit 3D Tiles 2.0', () => {
             EXT_structural_metadata: {
               schema: {
                 id: 'implicit',
+                enums: {
+                  Kind: {valueType: 'UINT64', values: [{name: 'building', value: 5}]}
+                },
                 classes: {
                   tile: {
                     properties: {
@@ -358,7 +384,8 @@ describe('experimental explicit 3D Tiles 2.0', () => {
                   },
                   content: {
                     properties: {
-                      zone: {type: 'SCALAR', componentType: 'UINT16', required: true}
+                      zone: {type: 'SCALAR', componentType: 'UINT16', required: true},
+                      kind: {type: 'ENUM', enumType: 'Kind', required: true}
                     }
                   }
                 }
@@ -376,7 +403,11 @@ describe('experimental explicit 3D Tiles 2.0', () => {
                     normalizedIdentifier: {values: 7}
                   }
                 },
-                {class: 'content', count: 1, properties: {zone: {values: 2}}}
+                {
+                  class: 'content',
+                  count: 1,
+                  properties: {zone: {values: 2}, kind: {values: 8}}
+                }
               ]
             }
           },
@@ -390,7 +421,8 @@ describe('experimental explicit 3D Tiles 2.0', () => {
             {buffer: 0, byteOffset: 20, byteLength: 4},
             {buffer: 0, byteOffset: 24, byteLength: 1},
             {buffer: 0, byteOffset: 32, byteLength: 8},
-            {buffer: 0, byteOffset: 40, byteLength: 8}
+            {buffer: 0, byteOffset: 40, byteLength: 8},
+            {buffer: 0, byteOffset: 48, byteLength: 8}
           ],
           accessors: [{bufferView: 0, componentType: 5130, count: 1, type: 'SCALAR'}]
         },
@@ -418,7 +450,8 @@ describe('experimental explicit 3D Tiles 2.0', () => {
         normalizedIdentifier: 3
       }
     ]);
-    expect(subtree.contentPropertyRows).toEqual([{zone: 9}]);
+    expect(subtree.contentPropertyRows).toEqual([{zone: 9, kind: 'building'}]);
+    expect(subtree.contentTemplatePropertyRows).toEqual([{zone: 9, kind: 'building'}]);
     const transferredSubtree = structuredClone(Tiles3DLoader.serializeWorkerResult!(subtree));
     expect(transferredSubtree.tileAttributes.TILE_GEOMETRIC_ERROR).toEqual(new Float64Array([12]));
   });
@@ -712,7 +745,11 @@ describe('experimental explicit 3D Tiles 2.0', () => {
 
     const rootTileset = await load(rootUrl, Tiles3DLoader, {worker: false, fetch});
     expect(requestedUrls).toEqual([rootUrl]);
-    expect(rootTileset.root.content._vectorContent).toEqual({clip: true});
+    expect(rootTileset.root.content).toBeUndefined();
+    expect(rootTileset.root.contentUrls).toEqual([]);
+    expect(rootTileset.root.implicitSubtree.descriptor.contentHeader._vectorContent).toEqual({
+      clip: true
+    });
     const source = new Tiles3DSource({...rootTileset, coreApi}, {worker: false, fetch});
     const tileset = new Tileset3D(source);
     await tileset.tilesetInitializationPromise;

@@ -419,7 +419,11 @@ test('Tiles3DLoader#normalizes an implicit octree without subtree requests', asy
   expect(tileset).toBeTruthy();
   expect(tileset.root).toBeTruthy();
   expect(tileset.root.implicitTiling).toEqual(IMPLICIT_TILING_EXPECTED);
-  expect(tileset.root.content.uri).toBe('content/{level}/{x}/{y}/{z}.glb');
+  expect(tileset.root.content).toBeUndefined();
+  expect(tileset.root.contentUrls).toEqual([]);
+  expect(tileset.root.implicitSubtree.descriptor.contentUrlTemplate).toMatch(
+    /\/content\/\{level\}\/\{x\}\/\{y\}\/\{z\}\.glb$/
+  );
   expect(tileset.root.lodMetricValue).toBe(32);
   expect(tileset.root.type).toBe('empty');
   expect(tileset.root.refine).toBe(1);
@@ -445,7 +449,11 @@ test('Tiles3DLoader#normalizes a legacy implicit quadtree as a lazy root', async
   expect(tileset.extensionsRequired[0]).toBe('3DTILES_implicit_tiling');
   expect(tileset.extensionsUsed[0]).toBe('3DTILES_implicit_tiling');
   expect(tileset.root).toBeTruthy();
-  expect(tileset.root.content.uri).toBe('content/{level}/{x}/{y}.b3dm');
+  expect(tileset.root.content).toBeUndefined();
+  expect(tileset.root.contentUrls).toEqual([]);
+  expect(tileset.root.implicitSubtree.descriptor.contentUrlTemplate).toMatch(
+    /\/content\/\{level\}\/\{x\}\/\{y\}\.b3dm$/
+  );
   expect(tileset.root.lodMetricValue).toBe(5000);
   expect(tileset.root.type).toBe('empty');
   expect(tileset.root.refine).toBe(1);
@@ -469,7 +477,11 @@ test('Tiles3DLoader#preserves ADD refinement on a lazy implicit root', async () 
   expect(tileset.extensionsRequired[0]).toBe('3DTILES_implicit_tiling');
   expect(tileset.extensionsUsed[0]).toBe('3DTILES_implicit_tiling');
   expect(tileset.root).toBeTruthy();
-  expect(tileset.root.content.uri).toBe('content/{level}/{x}/{y}.b3dm');
+  expect(tileset.root.content).toBeUndefined();
+  expect(tileset.root.contentUrls).toEqual([]);
+  expect(tileset.root.implicitSubtree.descriptor.contentUrlTemplate).toMatch(
+    /\/content\/\{level\}\/\{x\}\/\{y\}\.b3dm$/
+  );
   expect(tileset.root.lodMetricValue).toBe(5000);
   expect(tileset.root.type).toBe('empty');
   expect(tileset.root.refine).toBe(2);

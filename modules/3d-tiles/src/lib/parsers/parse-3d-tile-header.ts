@@ -397,8 +397,8 @@ export async function normalizeImplicitTileHeaders(
     refine: descriptor.refine,
     children: [],
     implicitSubtree,
-    content: normalizedContents.content,
-    contentUrls: normalizedContents.contentUrls
+    content: undefined,
+    contentUrls: []
   } as Tiles3DTileJSONPostprocessed;
 }
 

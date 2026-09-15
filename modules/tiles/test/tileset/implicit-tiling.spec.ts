@@ -347,13 +347,14 @@ test('implicit tiling rejects availability and attribute counts that cannot desc
     )
   ).toThrow(/TILE_GEOMETRIC_ERROR count does not match availability/);
 });
-test('implicit subtree traversal requires visibility, request volume and SSE', async () => {
+test('implicit subtree traversal materializes roots before applying SSE to deeper boundaries', async () => {
   let requestCount = 0;
   const tile = {
     id: 'implicit-root',
     hasUnloadedChildren: true,
     isVisibleAndInRequestVolume: false,
     children: [],
+    header: {implicitSubtree: {coordinates: {level: 0}}},
     tileset: {
       async _loadTileChildren() {
         requestCount++;
@@ -368,11 +369,16 @@ test('implicit subtree traversal requires visibility, request volume and SSE', a
   tile.isVisibleAndInRequestVolume = true;
   traverser.shouldRefine = () => false;
   traverser.updateChildTiles(tile, frameState);
-  expect(requestCount, 'does not request a subtree after the tile meets SSE').toBe(0);
+  await Promise.resolve();
+  expect(requestCount, 'materializes a visible implicit root even after it meets SSE').toBe(1);
+  tile.id = 'deeper-boundary';
+  tile.header.implicitSubtree.coordinates.level = 2;
+  traverser.updateChildTiles(tile, frameState);
+  expect(requestCount, 'keeps a deeper subtree boundary gated after it meets SSE').toBe(1);
   traverser.shouldRefine = () => true;
   traverser.updateChildTiles(tile, frameState);
   await Promise.resolve();
-  expect(requestCount, 'requests one eligible subtree').toBe(1);
+  expect(requestCount, 'requests the deeper subtree when refinement becomes eligible').toBe(2);
   expect(tile.children.length, 'retains the current traversal boundary while loading').toBe(0);
 });
 test('implicit subtree traversal preserves REPLACE coverage while availability is pending', () => {

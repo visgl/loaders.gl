@@ -477,6 +477,67 @@ test('gltf#EXT_structural_metadata decodes fixed numeric and enum property varia
   expect(properties.emptyArray.data).toEqual([]);
 });
 
+test('gltf#EXT_structural_metadata decodes signed and unsigned 64-bit enums', async () => {
+  const bytes = new Uint8Array(32);
+  const dataView = new DataView(bytes.buffer);
+  dataView.setBigInt64(0, -1n, true);
+  dataView.setBigInt64(8, 5n, true);
+  dataView.setBigUint64(16, 1n, true);
+  dataView.setBigUint64(24, 5n, true);
+  const gltf = {
+    buffers: [{arrayBuffer: bytes.buffer, byteOffset: 0, byteLength: bytes.byteLength}],
+    json: {
+      buffers: [{byteLength: bytes.byteLength}],
+      bufferViews: [
+        {buffer: 0, byteOffset: 0, byteLength: 16},
+        {buffer: 0, byteOffset: 16, byteLength: 16}
+      ],
+      extensions: {
+        EXT_structural_metadata: {
+          schema: {
+            classes: {
+              Sample: {
+                properties: {
+                  signed: {type: 'ENUM', enumType: 'SignedKind'},
+                  unsigned: {type: 'ENUM', enumType: 'UnsignedKind'}
+                }
+              }
+            },
+            enums: {
+              SignedKind: {
+                valueType: 'INT64',
+                values: [
+                  {name: 'negative', value: -1},
+                  {name: 'five', value: 5}
+                ]
+              },
+              UnsignedKind: {
+                valueType: 'UINT64',
+                values: [
+                  {name: 'one', value: 1},
+                  {name: 'five', value: 5}
+                ]
+              }
+            }
+          },
+          propertyTables: [
+            {
+              class: 'Sample',
+              count: 2,
+              properties: {signed: {values: 0}, unsigned: {values: 1}}
+            }
+          ]
+        }
+      }
+    }
+  } as any;
+
+  await decodeExtensions(gltf, {gltf: {loadBuffers: true, loadImages: false}});
+  const properties = gltf.json.extensions.EXT_structural_metadata.propertyTables[0].properties;
+  expect(properties.signed.data).toEqual(['negative', 'five']);
+  expect(properties.unsigned.data).toEqual(['one', 'five']);
+});
+
 test('gltf#EXT_structural_metadata loads an external schema before decoding tables', async () => {
   const bytes = new Uint8Array([7, 9]);
   const gltf = {
