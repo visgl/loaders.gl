@@ -9,7 +9,10 @@ const VERSION = '1.7';
 
 import {PotreeBinFormat} from './potree-format';
 export type PotreeSourceLoaderOptions = DataSourceOptions & {
-  potree?: {};
+  potree?: {
+    /** Color storage format. Defaults to uint8norm for backwards compatibility. */
+    colorFormat?: 'uint8norm' | 'float16' | 'float32';
+  };
 };
 
 /**
@@ -30,11 +33,11 @@ export const PotreeSourceLoader = {
   fromBlob: true,
 
   options: {
-    potree: {}
+    potree: {colorFormat: 'uint8norm'}
   },
 
   defaultOptions: {
-    potree: {}
+    potree: {colorFormat: 'uint8norm'}
   },
 
   testURL: (url: string) => url.endsWith('.js'),

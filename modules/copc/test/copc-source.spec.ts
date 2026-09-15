@@ -3,6 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import {expect, test, vi} from 'vitest';
+import * as arrow from 'apache-arrow';
 import {validateWriter} from 'test/common/conformance';
 import {createDataSource, encodeSync, fetchFile, isBrowser, parse} from '@loaders.gl/core';
 import {
@@ -17,6 +18,7 @@ import {
 import {LASLoader} from '@loaders.gl/las';
 import {decodeLAZChunk, decodeLAZChunkTable} from '@loaders.gl/loader-utils';
 import {deduceMeshSchema} from '@loaders.gl/schema-utils';
+import {getFloat16Value} from '@loaders.gl/schema';
 
 const ELLIPSOID_FILE_PATH = 'modules/copc/test/data/ellipsoid.copc.laz';
 const ELLIPSOID_BROWSER_URL = new URL('./data/ellipsoid.copc.laz', import.meta.url).href;
@@ -243,6 +245,26 @@ test('COPCSourceLoader#applies selected columns to atomic TypeScript decoding', 
   expect(content?.data.data.getChild('classification')).toBeTruthy();
   expect(content?.data.data.getChild('GPS_TIME')).toBeFalsy();
   expect(content?.data.data.getChild('scanAngle')).toBeFalsy();
+});
+
+test('COPCSourceLoader#float16 converts 16-bit colors for Arrow output', async () => {
+  const source = COPCSourceLoader.createDataSource(await createEllipsoidSourceData(), {
+    copc: {colorFormat: 'float16'},
+    core: {loadOptions: {core: {worker: false}}}
+  });
+  await source.initialize();
+
+  const rootTile = await source.getRootTile();
+  const content = await source.loadTileContent(rootTile, {columns: ['POSITION', 'COLOR_0']});
+  const colors = content!.data.data.getChild('COLOR_0')!;
+  expect(colors.type).toBeInstanceOf(arrow.FixedSizeList);
+  expect((colors.type as arrow.FixedSizeList).children[0].type).toBeInstanceOf(arrow.Float16);
+  expect(
+    content!.data.schema.fields.find(field => field.name === 'COLOR_0')!.metadata?.componentType
+  ).toBe('float16');
+  const values = colors.data[0].children[0].values;
+  expect(getFloat16Value(values, 0)).toBeGreaterThanOrEqual(0);
+  expect(getFloat16Value(values, 0)).toBeLessThanOrEqual(1);
 });
 
 test('COPCSourceLoader#uses the shared TypeScript LAS worker for atomic nodes', async () => {

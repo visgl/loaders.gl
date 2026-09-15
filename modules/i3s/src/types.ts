@@ -225,6 +225,8 @@ export type I3SParseOptions = {
   useCompressedTextures?: boolean;
   /** Set false if don't need to parse textures */
   decodeTextures?: boolean;
+  /** Color storage format. Defaults to uint8norm for backwards compatibility. */
+  colorFormat?: 'uint8norm' | 'float16' | 'float32';
   /** deck.gl compatible coordinate system.
    * https://github.com/visgl/deck.gl/blob/master/docs/developer-guide/coordinate-systems.md
    * Supported coordinate systems: `meter-offsets`, `lnglat-offsets`

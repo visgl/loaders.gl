@@ -11,7 +11,11 @@ import type {PCDHeader} from './pcd-types';
  * @param metadata
  * @returns Schema
  */
-export function getPCDSchema(PCDheader: PCDHeader, metadata: Record<string, string>): Schema {
+export function getPCDSchema(
+  PCDheader: PCDHeader,
+  metadata: Record<string, string>,
+  colorFormat: 'uint8norm' | 'float16' | 'float32' = 'uint8norm'
+): Schema {
   const fields: Field[] = [];
 
   for (const key of Object.keys(PCDheader.offset)) {
@@ -41,10 +45,15 @@ export function getPCDSchema(PCDheader: PCDHeader, metadata: Record<string, stri
         break;
 
       case 'rgb':
+        const colorType =
+          colorFormat === 'float16' ? 'float16' : colorFormat === 'float32' ? 'float32' : 'uint8';
         fields.push({
           name: 'COLOR_0',
-          type: {type: 'fixed-size-list', listSize: 3, children: [{name: 'rgb', type: 'uint8'}]},
-          metadata: {attribute: 'COLOR'}
+          type: {type: 'fixed-size-list', listSize: 3, children: [{name: 'rgb', type: colorType}]},
+          metadata: {
+            attribute: 'COLOR',
+            ...(colorFormat === 'float16' ? {componentType: 'float16'} : {})
+          }
         });
         break;
 

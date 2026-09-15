@@ -50,6 +50,8 @@ export type ParsePLYOptions = {
   /** Treat PLY data as a point cloud by reading only the leading vertex element. */
   pointCloud?: boolean;
   shape?: 'mesh' | 'arrow-table';
+  /** Color storage format. Defaults to uint8norm for backwards compatibility. */
+  colorFormat?: 'uint8norm' | 'float16' | 'float32';
 };
 
 /**
@@ -704,10 +706,10 @@ function getPLYMeshAttributes(attributes: PLYAttributes): MeshAttributes {
 function getPLYArrowVector(attribute: MeshAttribute): arrow.Vector {
   const {value, size} = attribute;
   if (size === 1) {
-    return arrow.makeVector(value);
+    return arrow.makeVector(value as any);
   }
 
-  const values = arrow.makeVector(value);
+  const values = arrow.makeVector(value as any);
   const child = values.data[0];
   const type = new arrow.FixedSizeList(size, new arrow.Field('value', child.type, false));
   const data = new arrow.Data(type, 0, value.length / size, 0, {}, [child]);

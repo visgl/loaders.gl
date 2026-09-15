@@ -6,7 +6,7 @@
 import type {LoaderWithParser} from '@loaders.gl/loader-utils';
 import type {MeshArrowTable} from '@loaders.gl/schema';
 import {convertMeshToTable, convertTableToMesh} from '@loaders.gl/schema-utils';
-import {LAS_LOADER_METADATA, type LASLoaderOptions} from './las-loader-shared';
+import {formatLASMeshColors, LAS_LOADER_METADATA, type LASLoaderOptions} from './las-loader-shared';
 import type {LASMesh} from './lib/las-types';
 import {parseCOPCLAS, parseCOPCLASInBatches} from './lib/copc/parse-las';
 
@@ -27,7 +27,8 @@ export const LASCOPCLoaderWithParser = {
 >;
 
 function convertLASMesh(mesh: LASMesh, options?: LASLoaderOptions): LASMesh | MeshArrowTable {
-  const table = convertMeshToTable(mesh, 'arrow-table');
+  const formattedMesh = formatLASMeshColors(mesh, options?.las?.colorFormat || 'uint8norm');
+  const table = convertMeshToTable(formattedMesh, 'arrow-table') as MeshArrowTable;
   if (options?.las?.shape === 'arrow-table') {
     return table;
   }

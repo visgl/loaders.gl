@@ -30,6 +30,8 @@ export type Tiles3DLoaderOptions = StrictLoaderOptions &
       maximumCachedSubtrees?: number;
       /** Controls which axis is "up" in glTF files */
       assetGltfUpAxis?: 'x' | 'y' | 'z' | null;
+      /** Color storage format. Defaults to uint8norm for backwards compatibility. */
+      colorFormat?: 'uint8norm' | 'float16' | 'float32';
       /** @internal Vector-content metadata supplied by a normalized tileset header. */
       vectorContent?: {clip: boolean};
     };
@@ -53,7 +55,8 @@ export const Tiles3DLoader = {
       decodeQuantizedPositions: false,
       isTileset: 'auto',
       maximumCachedSubtrees: 32,
-      assetGltfUpAxis: null
+      assetGltfUpAxis: null,
+      colorFormat: 'uint8norm'
     }
   }
 } as const satisfies Loader<

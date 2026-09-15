@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
+import {convertColorArrayToFloat16} from '@loaders.gl/schema';
 import type {TypedArray} from '@loaders.gl/schema';
 import {Vector3, Matrix4} from '@math.gl/core';
 import {Ellipsoid} from '@math.gl/geospatial';
@@ -365,7 +366,7 @@ async function parseI3SNodeGeometry(
   content.attributes = {
     positions: attributes.position,
     normals: attributes.normal,
-    colors: normalizeAttribute(attributes.color), // Normalize from UInt8
+    colors: normalizeAttribute(attributes.color, options?.i3s?.colorFormat || 'uint8norm'),
     uvRegions: normalizeAttribute(attributes.uvRegion || attributes.region) // Normalize from UInt16
   };
   copyTextureCoordinatesToContent(content.attributes, attributes);
@@ -557,12 +558,29 @@ function concatAttributes(
  * @param attribute - geometry attribute
  * @returns - geometry attribute in right format
  */
-function normalizeAttribute(attribute: I3SMeshAttribute): I3SMeshAttribute {
+function normalizeAttribute(
+  attribute: I3SMeshAttribute,
+  colorFormat: 'uint8norm' | 'float16' | 'float32' = 'uint8norm'
+): I3SMeshAttribute {
   if (!attribute) {
     return attribute;
   }
-  attribute.normalized = true;
-  return attribute;
+  if (colorFormat === 'float16' && !attribute.componentType) {
+    return {
+      ...attribute,
+      value: convertColorArrayToFloat16(attribute.value, 255),
+      normalized: false,
+      componentType: 'float16'
+    };
+  }
+  if (colorFormat === 'float32' && !attribute.componentType) {
+    return {
+      ...attribute,
+      value: Float32Array.from(attribute.value, value => value / 255),
+      normalized: false
+    };
+  }
+  return {...attribute, normalized: true};
 }
 
 function parseHeaders(

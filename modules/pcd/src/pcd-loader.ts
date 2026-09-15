@@ -15,6 +15,8 @@ export type PCDLoaderOptions = LoaderOptions & {
   pcd?: {
     /** Output shape. Defaults to a legacy PointCloud object. */
     shape?: 'mesh' | 'arrow-table';
+    /** Color storage format. Defaults to uint8norm for backwards compatibility. */
+    colorFormat?: 'uint8norm' | 'float16' | 'float32';
     /** Override the URL to the worker bundle (by default loads from unpkg.com) */
     workerUrl?: string;
   };
@@ -38,7 +40,7 @@ export const PCDWorkerLoader = {
   version: VERSION,
   worker: true,
   options: {
-    pcd: {}
+    pcd: {colorFormat: 'uint8norm'}
   },
   preload
 } as const satisfies Loader<PCDMesh | MeshArrowTable, never, PCDLoaderOptions>;
