@@ -17,6 +17,8 @@ export type PLYLoaderOptions = LoaderOptions & {
   ply?: ParsePLYOptions & {
     /** Output shape. Defaults to a legacy Mesh object. */
     shape?: 'mesh' | 'arrow-table';
+    /** Color storage format. Defaults to uint8norm for backwards compatibility. */
+    colorFormat?: 'uint8norm' | 'float16' | 'float32';
     /** Treat PLY data as a point cloud by reading only the leading vertex element. */
     pointCloud?: boolean;
     /** Override the URL to the worker bundle (by default loads from unpkg.com) */
@@ -46,7 +48,7 @@ export const PLYWorkerLoader = {
   version: VERSION,
   worker: true,
   options: {
-    ply: {}
+    ply: {colorFormat: 'uint8norm'}
   },
   preload
 } as const satisfies Loader<PLYMesh | MeshArrowTable, never, LoaderOptions>;

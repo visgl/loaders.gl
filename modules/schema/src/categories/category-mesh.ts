@@ -128,6 +128,8 @@ export type MeshAttribute = {
   byteOffset?: number;
   byteStride?: number;
   normalized?: boolean;
+  /** Logical component type when the storage array does not expose it directly. */
+  componentType?: 'float16';
   /** Transform required to reconstruct the logical attribute values. */
   transform?: MeshAttributeTransform;
 };

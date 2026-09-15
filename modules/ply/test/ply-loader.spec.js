@@ -2,7 +2,7 @@ import {expect, test} from 'vitest';
 import * as arrow from 'apache-arrow';
 import {validateLoader, validateMeshCategoryData} from 'test/common/conformance';
 import {validateArrowTableSchema} from '@loaders.gl/arrow';
-import {indexedMeshArrowSchema} from '@loaders.gl/schema';
+import {getFloat16Value, indexedMeshArrowSchema} from '@loaders.gl/schema';
 import {PLYLoader, PLYWorkerLoader} from '@loaders.gl/ply';
 import {parsePLYToElementTables} from '../src/lib/parse-ply-arrow';
 import {
@@ -51,6 +51,18 @@ end_header
 1 2 3 0.5
 4 5 6 0.75
 `;
+const ASCII_COLOR_PLY = `ply
+format ascii 1.0
+element vertex 1
+property float x
+property float y
+property float z
+property uchar red
+property uchar green
+property uchar blue
+end_header
+0 0 0 255 128 0
+`;
 setLoaderOptions({
   _workerType: 'test'
 });
@@ -84,6 +96,32 @@ test('PLYLoader#parse(shape: arrow-table)', async () => {
   expect(indicesColumn, 'indices column was found').toBeTruthy();
   expect(indicesColumn.get(0).length, 'indices were found in row 0').toBe(36);
   expect(indicesColumn.get(1), 'indices are null after row 0').toBe(null);
+});
+test('PLYLoader#parse(colorFormat) returns normalized colors', () => {
+  const float32Mesh = parseSync(ASCII_COLOR_PLY, PLYLoader, {
+    core: {worker: false},
+    ply: {colorFormat: 'float32'}
+  });
+  expect(float32Mesh.attributes.COLOR_0.value).toBeInstanceOf(Float32Array);
+  expect(float32Mesh.attributes.COLOR_0.value[0]).toBeCloseTo(1);
+  expect(float32Mesh.attributes.COLOR_0.value[1]).toBeCloseTo(128 / 255, 6);
+  expect(float32Mesh.attributes.COLOR_0.value[2]).toBe(0);
+
+  const float16Mesh = parseSync(ASCII_COLOR_PLY, PLYLoader, {
+    core: {worker: false},
+    ply: {colorFormat: 'float16'}
+  });
+  expect(float16Mesh.attributes.COLOR_0.componentType).toBe('float16');
+  expect(getFloat16Value(float16Mesh.attributes.COLOR_0.value, 1)).toBeCloseTo(128 / 255, 3);
+
+  const float32Table = parseSync(ASCII_COLOR_PLY, PLYLoader, {
+    core: {worker: false},
+    ply: {shape: 'arrow-table', colorFormat: 'float32'}
+  });
+  const tableColor = float32Table.data.getChild('COLOR_0').get(0);
+  expect(Array.from(tableColor)[0]).toBeCloseTo(1);
+  expect(Array.from(tableColor)[1]).toBeCloseTo(128 / 255, 6);
+  expect(Array.from(tableColor)[2]).toBe(0);
 });
 test('PLYLoader#parse(shape: arrow-table, pointCloud)', async () => {
   const table = await parse(fetchFile(PLY_CUBE_ATT_URL), PLYLoader, {

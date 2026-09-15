@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
+import {createFloat16Array, getFloat16Value, setFloat16Value} from '@loaders.gl/schema';
 import type {Mesh, MeshAttribute, ColumnarTable, ArrowTable, Schema} from '@loaders.gl/schema';
 import * as arrow from 'apache-arrow';
 import {getFixedSizeListSize} from '../arrow-utils/arrow-fixed-size-list-utils';
@@ -44,10 +45,11 @@ export function convertArrowTableToMesh(table: ArrowTable): Mesh {
     const attributeData = arrowTable.getChild(name)!;
     const size = getFixedSizeListSize(attributeData);
     const typedArray = getAttributeTypedArray(attributeData, size);
+    const metadata = getMeshAttributeMetadata(field.metadata);
     attributes[name] = {
-      value: typedArray,
+      value: metadata.componentType === 'float16' ? restoreFloat16Array(typedArray) : typedArray,
       size,
-      ...getMeshAttributeMetadata(field.metadata)
+      ...metadata
     };
   }
 
@@ -112,6 +114,9 @@ function getMeshAttributeMetadata(metadata: Record<string, string> = {}): Partia
   }
   if (metadata.normalized !== undefined) {
     result.normalized = metadata.normalized === 'true';
+  }
+  if (metadata.componentType === 'float16') {
+    result.componentType = 'float16';
   }
   if (metadata['loaders.gl.transform']) {
     try {
@@ -180,6 +185,15 @@ function getAttributeTypedArray(attributeData: arrow.Vector, size: number): any 
   }
 
   return typedArray;
+}
+
+/** Restore native Float16 storage when the runtime supports it. */
+function restoreFloat16Array(typedArray: any): Float16Array | Uint16Array {
+  const result = createFloat16Array(typedArray.length);
+  for (let index = 0; index < typedArray.length; index++) {
+    setFloat16Value(result, index, getFloat16Value(typedArray, index));
+  }
+  return result;
 }
 
 /** Return the mesh drawing mode stored in Arrow schema metadata. */

@@ -3,6 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import {describe, expect, test} from 'vitest';
+import {getFloat16Value} from '@loaders.gl/schema';
 
 import {parsePotreeBin} from '../../src/parsers/parse-potree-bin';
 import {
@@ -107,11 +108,27 @@ describe('Potree parser branches', () => {
       [51, -98, 153]
     ]);
 
+    const colorBuffer = buffer.slice(0, 15);
+
     const table = parsePotreeBin(buffer, 0, {
       potree: {pointAttributes, shape: 'arrow-table'}
     }) as any;
     expect(table.schema).toBeDefined();
     expect(table.data).toBeDefined();
+
+    const float32Mesh = parsePotreeBin(colorBuffer, 0, {
+      potree: {pointAttributes: ['POSITION_CARTESIAN', 'RGB_PACKED'], colorFormat: 'float32'}
+    }) as any;
+    expect(float32Mesh.attributes.COLOR_0.value).toBeInstanceOf(Float32Array);
+    expect(float32Mesh.attributes.COLOR_0.value[0]).toBeCloseTo(12 / 255, 6);
+    expect(float32Mesh.attributes.COLOR_0.value[1]).toBeCloseTo(13 / 255, 6);
+    expect(float32Mesh.attributes.COLOR_0.value[2]).toBeCloseTo(14 / 255, 6);
+
+    const float16Mesh = parsePotreeBin(colorBuffer, 0, {
+      potree: {pointAttributes: ['POSITION_CARTESIAN', 'RGB_PACKED'], colorFormat: 'float16'}
+    }) as any;
+    expect(float16Mesh.attributes.COLOR_0.componentType).toBe('float16');
+    expect(getFloat16Value(float16Mesh.attributes.COLOR_0.value, 0)).toBeCloseTo(12 / 255, 3);
   });
 
   test('rejects incomplete Potree records and missing metadata', () => {

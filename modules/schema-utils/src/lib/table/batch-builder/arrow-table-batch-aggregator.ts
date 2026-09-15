@@ -74,7 +74,7 @@ function getArrowVectors(arrowSchema, data): arrow.Vector[] {
   for (const field of arrowSchema.fields) {
     const vector = data[field.name];
     if (vector instanceof Float32Array) {
-      const arrowVector = arrow.makeVector(vector);
+      const arrowVector = arrow.makeVector(vector as any);
       arrowVectors.push(arrowVector);
     }
   }

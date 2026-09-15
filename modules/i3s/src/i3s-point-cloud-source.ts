@@ -10,6 +10,7 @@ import type {
 } from '@loaders.gl/loader-utils';
 import {BlobFile, HttpFile} from '@loaders.gl/loader-utils';
 import {makeMeshArrowTable} from '@loaders.gl/schema-utils';
+import {convertColorArrayToFloat16} from '@loaders.gl/schema';
 import type {MeshAttributes} from '@loaders.gl/schema';
 import {Matrix4, Vector3} from '@math.gl/core';
 import {Ellipsoid} from '@math.gl/geospatial';
@@ -55,6 +56,8 @@ export type I3SPointCloudSourceOptions = DataSourceOptions & {
     verifyChecksum?: boolean;
     /** Coordinate system used by the returned point attributes. */
     coordinateSystem?: PointCloudCoordinateSystem;
+    /** Color storage format. Defaults to uint8norm for backwards compatibility. */
+    colorFormat?: 'uint8norm' | 'float16' | 'float32';
   };
 };
 
@@ -237,10 +240,21 @@ export class I3SPointCloudSource
           );
         }
         const attributeName = this.getAttributeName(descriptor, decoded.kind);
-        attributes[attributeName] = {
-          value: decoded.value,
-          size: decoded.size
-        };
+        attributes[attributeName] =
+          attributeName === 'COLOR_0' && this.options.i3s?.colorFormat === 'float16'
+            ? {
+                value: convertColorArrayToFloat16(decoded.value, 255),
+                size: decoded.size,
+                normalized: false,
+                componentType: 'float16'
+              }
+            : attributeName === 'COLOR_0' && this.options.i3s?.colorFormat === 'float32'
+              ? {
+                  value: Float32Array.from(decoded.value, value => value / 255),
+                  size: decoded.size,
+                  normalized: false
+                }
+              : {value: decoded.value, size: decoded.size};
       })
     );
 

@@ -5,7 +5,15 @@
 import {expect, test} from 'vitest';
 import * as arrow from 'apache-arrow';
 import type {Mesh} from '@loaders.gl/schema';
-import {indexedMeshArrowSchema, meshArrowSchema} from '@loaders.gl/schema';
+import {
+  createFloat16Array,
+  encodeFloat16,
+  getFloat16Value,
+  indexedMeshArrowSchema,
+  meshArrowSchema,
+  isNativeFloat16Array,
+  setFloat16Value
+} from '@loaders.gl/schema';
 import {convertMeshToTable, convertTableToMesh, deduceMeshSchema} from '@loaders.gl/schema-utils';
 import {validateArrowTableSchema} from '@loaders.gl/arrow';
 test('meshArrowSchema', () => {
@@ -34,6 +42,76 @@ test('indexedMeshArrowSchema', () => {
     indicesField.type.children[0].type instanceof arrow.Int32,
     'indices values are int32'
   ).toBeTruthy();
+});
+
+test('convertMeshToTable#preserves logical Float16 colors', () => {
+  const colors = createFloat16Array(9);
+  setFloat16Value(colors, 0, 0);
+  setFloat16Value(colors, 1, 0.5);
+  setFloat16Value(colors, 2, 1);
+  setFloat16Value(colors, 3, 1);
+  setFloat16Value(colors, 4, 0.25);
+  setFloat16Value(colors, 5, 0.75);
+  setFloat16Value(colors, 6, 0.5);
+  setFloat16Value(colors, 7, 0.125);
+  setFloat16Value(colors, 8, 0.875);
+  const mesh = {
+    ...makeMesh(),
+    attributes: {
+      POSITION: makeMesh().attributes.POSITION,
+      COLOR_0: {value: colors, size: 3, componentType: 'float16' as const}
+    }
+  } as Mesh;
+
+  const table = convertMeshToTable(mesh, 'arrow-table');
+  const colorField = table.data.schema.fields.find(field => field.name === 'COLOR_0');
+  expect(colorField!.type instanceof arrow.FixedSizeList).toBeTruthy();
+  expect(colorField!.type.children[0].type instanceof arrow.Float16).toBeTruthy();
+  expect(colorField!.metadata.get('componentType')).toBe('float16');
+
+  const roundTripMesh = convertTableToMesh(table);
+  const roundTripColors = roundTripMesh.attributes.COLOR_0;
+  expect(roundTripColors.componentType).toBe('float16');
+  expect(getFloat16Value(roundTripColors.value, 1)).toBeCloseTo(0.5, 3);
+  expect(getFloat16Value(roundTripColors.value, 4)).toBeCloseTo(0.25, 3);
+});
+
+test('Float16 fallback stores binary16 words', () => {
+  const words = new Uint16Array([encodeFloat16(0), encodeFloat16(0.5), encodeFloat16(1)]);
+  expect(Array.from(words)).toEqual([0x0000, 0x3800, 0x3c00]);
+  expect(getFloat16Value(words, 1)).toBeCloseTo(0.5, 3);
+});
+
+test('convertMeshToTable#preserves Float32 colors', () => {
+  const colors = new Float32Array([0, 0.5, 1, 1, 0.25, 0.75]);
+  const attributes = {
+    POSITION: {value: new Float32Array([0, 0, 0, 1, 1, 1]), size: 3},
+    COLOR_0: {value: colors, size: 3, normalized: false}
+  };
+  const mesh: Mesh = {
+    attributes,
+    schema: deduceMeshSchema(attributes),
+    topology: 'point-list',
+    mode: 0
+  };
+
+  const table = convertMeshToTable(mesh, 'arrow-table');
+  const colorField = table.data.schema.fields.find(field => field.name === 'COLOR_0');
+  expect((colorField!.type as arrow.FixedSizeList).children[0].type).toBeInstanceOf(arrow.Float32);
+
+  const roundTripColors = convertTableToMesh(table).attributes.COLOR_0;
+  expect(roundTripColors.value).toBeInstanceOf(Float32Array);
+  expect(Array.from(roundTripColors.value)).toEqual(Array.from(colors));
+  expect(roundTripColors.normalized).toBe(false);
+});
+
+test('createFloat16Array selects native or fallback storage', () => {
+  const values = createFloat16Array(1);
+  if (typeof Float16Array !== 'undefined') {
+    expect(isNativeFloat16Array(values)).toBe(true);
+  } else {
+    expect(values).toBeInstanceOf(Uint16Array);
+  }
 });
 test('convertMeshToTable#unindexed mesh Arrow table round trip', () => {
   const mesh = makeMesh();
