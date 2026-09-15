@@ -1298,6 +1298,34 @@ describe('experimental explicit 3D Tiles 2.0', () => {
     ).rejects.toThrow(/must not define both content and contents/);
   });
 
+  test.each([
+    {contents: [], message: /contents array must contain at least one entry/},
+    {contents: null, message: /contents must be an array/},
+    {contents: 'content.glb', message: /contents must be an array/},
+    {contents: [{}], message: /content entries must be objects with a valid uri or url/},
+    {contents: ['content.glb'], message: /content entries must be objects with a valid uri or url/}
+  ])('rejects malformed canonical contents in direct loader parsing', async ({
+    contents,
+    message
+  }) => {
+    await expect(
+      parse(
+        encodeJson({
+          asset: {version: '1.1'},
+          geometricError: 1,
+          root: {
+            geometricError: 0,
+            refine: 'REPLACE',
+            boundingVolume: {sphere: [0, 0, 0, 1]},
+            contents
+          }
+        }),
+        Tiles3DLoader,
+        {worker: false}
+      )
+    ).rejects.toThrow(message);
+  });
+
   test('retains structured-cloneable draft state across the worker transfer boundary', async () => {
     const result = await parse(
       encodeGlb(createTilesetGltf({buffers: [{byteLength: 4}]}), new Uint8Array(4)),

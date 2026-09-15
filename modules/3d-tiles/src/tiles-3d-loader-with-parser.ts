@@ -35,6 +35,7 @@ import {
   parse3DTiles2Tileset,
   type Tiles3DPackageFile
 } from './lib/parsers/parse-3d-tiles-2-gltf';
+import {Tiles3DTileContentSchema} from './tileset-zod-schema';
 
 type Tiles3DLoaderContext = LoaderContext & {
   _tiles3dPackageFiles?: Tiles3DPackageFile[];
@@ -540,12 +541,21 @@ function validateVectorPreviewExtensions(
     if (tile.content !== undefined && tile.contents !== undefined) {
       throw new Error('3D Tiles tiles must not define both content and contents');
     }
+    if (tile.contents !== undefined && !Array.isArray(tile.contents)) {
+      throw new Error('3D Tiles tile contents must be an array');
+    }
+    if (tile.contents?.length === 0) {
+      throw new Error('3D Tiles tile contents array must contain at least one entry');
+    }
     const legacyContents = Array.isArray(tile.content)
       ? tile.content
       : tile.content
         ? [tile.content]
         : [];
     const contents = [...legacyContents, ...(tile.contents || [])];
+    if (contents.some(content => !Tiles3DTileContentSchema.safeParse(content).success)) {
+      throw new Error('3D Tiles tile content entries must be objects with a valid uri or url');
+    }
     for (const content of contents) {
       const extension = content.extensions?.['3DTILES_content_gltf_vector'] as
         | {vector?: unknown; clip?: unknown}
