@@ -1273,6 +1273,31 @@ describe('experimental explicit 3D Tiles 2.0', () => {
     expect(Array.isArray(tileset.root.content)).toBe(true);
   });
 
+  test('rejects conflicting content fields before validating vector designations', async () => {
+    await expect(
+      parse(
+        encodeJson({
+          asset: {version: '1.1'},
+          geometricError: 1,
+          root: {
+            geometricError: 0,
+            refine: 'REPLACE',
+            boundingVolume: {sphere: [0, 0, 0, 1]},
+            content: {
+              uri: 'discarded-vector.glb',
+              extensions: {'3DTILES_content_gltf_vector': {vector: true}}
+            },
+            contents: [{uri: 'render.glb'}]
+          },
+          extensionsUsed: ['3DTILES_content_gltf_vector'],
+          extensionsRequired: ['3DTILES_content_gltf_vector']
+        }),
+        Tiles3DLoader,
+        {worker: false}
+      )
+    ).rejects.toThrow(/must not define both content and contents/);
+  });
+
   test('retains structured-cloneable draft state across the worker transfer boundary', async () => {
     const result = await parse(
       encodeGlb(createTilesetGltf({buffers: [{byteLength: 4}]}), new Uint8Array(4)),

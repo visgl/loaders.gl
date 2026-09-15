@@ -30,6 +30,8 @@ export type ImplicitTilingDescriptor = {
   contentHeader?: Record<string, any>;
   /** Metadata inherited by every implicit content stream, in source order. */
   contentHeaders?: Array<Record<string, any>>;
+  /** Whether generated headers preserve the standard `contents` source representation. */
+  useCanonicalContents?: boolean;
   /** Absolute template URL for subtree availability files. */
   subtreesUrlTemplate: string;
   /** Spatial subdivision used by the hierarchy. */
@@ -720,6 +722,7 @@ function formatImplicitTileHeader(
     children,
     contentUrl,
     content: content.length > 1 ? content : content[0],
+    contents: descriptor.useCanonicalContents && content.length ? content : undefined,
     contentUrls: availableContentUrls,
     refine: tileAttributes.refine || descriptor.refine,
     type: getImplicitTileType(contentUrl),

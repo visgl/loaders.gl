@@ -373,6 +373,7 @@ export async function normalizeImplicitTileHeaders(
       uri: undefined,
       url: undefined
     })),
+    useCanonicalContents: Boolean(tile.contents),
     subtreesUrlTemplate: resourceResolver.resolve(implicitTilingExtension.subtrees.uri),
     subdivisionScheme: implicitTilingExtension.subdivisionScheme,
     subtreeLevels: implicitTilingExtension.subtreeLevels,

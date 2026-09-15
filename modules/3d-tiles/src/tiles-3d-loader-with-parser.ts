@@ -537,6 +537,9 @@ function validateVectorPreviewExtensions(
   let hasVectorDesignation = false;
   while (stack.length) {
     const tile = stack.pop()!;
+    if (tile.content !== undefined && tile.contents !== undefined) {
+      throw new Error('3D Tiles tiles must not define both content and contents');
+    }
     const legacyContents = Array.isArray(tile.content)
       ? tile.content
       : tile.content
