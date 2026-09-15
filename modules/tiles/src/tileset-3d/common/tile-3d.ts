@@ -765,7 +765,7 @@ export class Tile3D {
           ? entry.featureIds
           : getTile3DFeatureIdSets(entry.payload ?? this.contents[index]),
         renderable: Boolean(
-          entry.renderable &&
+          entry.renderable !== false &&
             (entry.payload ?? this.contents[index]) &&
             !isNestedTilesetPayload(entry.payload ?? this.contents[index])
         )
