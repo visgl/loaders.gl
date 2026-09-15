@@ -116,6 +116,44 @@ test('Tiles3DLoader#detects JSON glTF tile content from structure', async () => 
     gltfArrayBuffer
   );
 });
+test('Tiles3DLoader#does not decode render-content extensions when glTF loading is disabled', async () => {
+  const gltfJson = new TextEncoder().encode(
+    JSON.stringify({
+      asset: {version: '2.0'},
+      extensionsUsed: ['EXT_mesh_features'],
+      buffers: [{uri: 'features.bin', byteLength: 3}],
+      bufferViews: [{buffer: 0, byteLength: 3}],
+      accessors: [{bufferView: 0, componentType: 5121, count: 3, type: 'SCALAR'}],
+      meshes: [
+        {
+          primitives: [
+            {
+              attributes: {_FEATURE_ID_0: 0},
+              extensions: {
+                EXT_mesh_features: {featureIds: [{featureCount: 3, attribute: 0}]}
+              }
+            }
+          ]
+        }
+      ],
+      nodes: [{mesh: 0}],
+      scenes: [{nodes: [0]}],
+      scene: 0
+    })
+  );
+  const gltfArrayBuffer = gltfJson.buffer.slice(
+    gltfJson.byteOffset,
+    gltfJson.byteOffset + gltfJson.byteLength
+  ) as ArrayBuffer;
+
+  const tile = await parse(gltfArrayBuffer, Tiles3DLoader, {
+    worker: false,
+    '3d-tiles': {loadGLTF: false}
+  });
+
+  expect(tile.type).toBe('glTF');
+  expect(tile.gltfArrayBuffer).toBe(gltfArrayBuffer);
+});
 test('Tiles3DLoader#reuses preprocessed JSON glTF when parsing is enabled', async () => {
   const gltfJson = new TextEncoder().encode(
     JSON.stringify({asset: {version: '2.0'}, scenes: [{nodes: []}], scene: 0})

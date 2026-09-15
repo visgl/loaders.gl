@@ -392,7 +392,7 @@ async function parseGltfForClassification(
     preprocessedContent.contentType === 'gltf' &&
     Boolean(preprocessedContent.jsonPayload.extensions?.['3DTILES_tileset']);
   const loadGLTF = options['3d-tiles']?.loadGLTF !== false;
-  const loadSelectedStructureBuffers = loadStructureBuffers || !loadGLTF;
+  const loadSelectedStructureBuffers = loadStructureBuffers;
   const parseOptions = loadSelectedStructureBuffers
     ? {
         ...options,
