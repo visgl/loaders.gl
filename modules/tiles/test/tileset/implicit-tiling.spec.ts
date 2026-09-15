@@ -58,7 +58,8 @@ test('implicit tiling materializes multiple content streams in source order', ()
       'https://example.com/geometry/{level}/{x}/{y}/{z}.b3dm',
       'https://example.com/metadata/{level}/{x}/{y}/{z}.json'
     ],
-    contentHeaders: [{group: 'geometry'}, {group: 'metadata'}]
+    contentHeaders: [{group: 'geometry'}, {group: 'metadata'}],
+    useCanonicalContents: true
   });
   const result = materializeImplicitSubtree(
     {
@@ -77,6 +78,7 @@ test('implicit tiling materializes multiple content streams in source order', ()
     {group: 'geometry', uri: 'https://example.com/geometry/0/0/0/0.b3dm'},
     {group: 'metadata', uri: 'https://example.com/metadata/0/0/0/0.json'}
   ]);
+  expect(result.root.contents).toEqual(result.root.content);
 });
 test('implicit subtree packages retain undeclared files inherited from their parent package', () => {
   const parentSubtreeFile = {

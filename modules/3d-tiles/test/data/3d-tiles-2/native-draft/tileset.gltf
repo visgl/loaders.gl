@@ -1,0 +1,41 @@
+{
+  "asset": {"version": "2.1", "generator": "loaders.gl conformance fixture"},
+  "extensionsUsed": [
+    "3DTILES_tileset",
+    "3DTILES_tileset_vectors",
+    "3DTILES_implicit_tiling",
+    "VENDOR_optional"
+  ],
+  "extensionsRequired": [
+    "3DTILES_tileset",
+    "3DTILES_tileset_vectors",
+    "3DTILES_implicit_tiling"
+  ],
+  "extensions": {
+    "3DTILES_tileset": {"geometricError": 4},
+    "3DTILES_tileset_vectors": {"clip": true},
+    "VENDOR_optional": {"fixture": true}
+  },
+  "scenes": [{"nodes": [0]}],
+  "scene": 0,
+  "shapes": [{"type": "box", "box": {"size": [2, 2, 2]}}],
+  "files": [
+    {"uri": "content.gltf", "mimeType": "model/gltf+json"},
+    {"uri": "subtree.gltf", "mimeType": "model/gltf+json"}
+  ],
+  "nodes": [
+    {
+      "extensions": {
+        "3DTILES_tileset": {"geometricError": 0, "refine": "REPLACE"},
+        "3DTILES_implicit_tiling": {
+          "contentUri": "content.gltf",
+          "subtreeUri": "subtree.gltf",
+          "subdivisionScheme": "QUADTREE",
+          "availableLevels": 1,
+          "subtreeLevels": 1
+        }
+      },
+      "boundingVolume": {"shape": 0}
+    }
+  ]
+}
