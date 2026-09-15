@@ -816,21 +816,7 @@ export class Tile3D {
 
   /** Extracts renderer-neutral feature-id declarations without decoding property values. */
   private _getFeatureIdSets(contentHeader: Record<string, any>): Tile3DFeatureIdSet[] {
-    const featureIds = contentHeader.extensions?.EXT_mesh_features?.featureIds;
-    if (!Array.isArray(featureIds)) {
-      return [];
-    }
-    return featureIds.map((featureId: Record<string, any>) => ({
-      source:
-        featureId.propertyTable !== undefined
-          ? 'property-table'
-          : featureId.attribute !== undefined
-            ? 'attribute'
-            : 'constant',
-      attribute: featureId.attribute,
-      propertyTable: featureId.propertyTable,
-      constant: featureId.constant
-    }));
+    return getTile3DFeatureIdSets(contentHeader);
   }
 
   // Unloads the tile's content.
@@ -843,6 +829,12 @@ export class Tile3D {
     this.contents = [];
     this.content = null;
     this.vectorContent = null;
+    this.contentEntries = this.contentEntries.map(entry => ({
+      ...entry,
+      payload: null,
+      renderable: false
+    }));
+    this.featureIdSets = this.contentEntries.flatMap(entry => entry.featureIds);
     if (this.header.content && this.header.content.destroy) {
       this.header.content.destroy();
     }
