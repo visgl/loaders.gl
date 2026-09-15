@@ -101,6 +101,8 @@ export {PointCloudTileset} from './point-cloud/point-cloud-tileset';
 export {PointCloudTile} from './point-cloud/point-cloud-tile';
 export {createBoundingVolume} from './tileset-3d/helpers/bounding-volume';
 export {calculateTransformProps} from './tileset-3d/helpers/transform-utils';
+export {convertS2BoundingVolumeToOBB} from './tileset-3d/helpers/s2-bounding-volume';
+export type {S2VolumeInfo} from './tileset-3d/helpers/s2-bounding-volume';
 
 export type {
   CreateTilesetSpatialReferenceOptions,

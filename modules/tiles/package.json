@@ -47,6 +47,7 @@
     "@math.gl/core": "5.0.0-alpha.6",
     "@math.gl/crs": "5.0.0-alpha.6",
     "@math.gl/culling": "5.0.0-alpha.6",
+    "@math.gl/dggs": "5.0.0-alpha.6",
     "@math.gl/geoid": "5.0.0-alpha.6",
     "@math.gl/geometry-utils": "5.0.0-alpha.6",
     "@math.gl/geospatial": "5.0.0-alpha.6",
