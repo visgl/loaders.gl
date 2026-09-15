@@ -883,9 +883,11 @@ function calculateImplicitBoundingVolume(
   if (rootBoundingVolume.region) {
     const [west, south, east, north, minimumHeight, maximumHeight] = rootBoundingVolume.region;
     const divisionCount = 2 ** coordinates.level;
-    const longitudeSize = (east - west) / divisionCount;
+    const longitudeSpan = east >= west ? east - west : east + 2 * Math.PI - west;
+    const longitudeSize = longitudeSpan / divisionCount;
     const latitudeSize = (north - south) / divisionCount;
-    const childWest = west + longitudeSize * coordinates.x;
+    const childWest = normalizeRegionLongitude(west + longitudeSize * coordinates.x);
+    const childEast = normalizeRegionLongitude(west + longitudeSize * (coordinates.x + 1));
     const childSouth = south + latitudeSize * coordinates.y;
     let childMinimumHeight = minimumHeight;
     let childMaximumHeight = maximumHeight;
@@ -898,7 +900,7 @@ function calculateImplicitBoundingVolume(
       region: [
         childWest,
         childSouth,
-        childWest + longitudeSize,
+        childEast,
         childSouth + latitudeSize,
         childMinimumHeight,
         childMaximumHeight
@@ -946,6 +948,18 @@ function calculateImplicitBoundingVolume(
   throw new Error(
     `Unsupported implicit 3D Tiles bounding volume: ${JSON.stringify(rootBoundingVolume)}`
   );
+}
+
+/** Normalize a longitude while preserving the positive pi boundary for non-wrapped regions. */
+function normalizeRegionLongitude(longitude: number): number {
+  let normalizedLongitude = longitude;
+  while (normalizedLongitude > Math.PI) {
+    normalizedLongitude -= 2 * Math.PI;
+  }
+  while (normalizedLongitude < -Math.PI) {
+    normalizedLongitude += 2 * Math.PI;
+  }
+  return normalizedLongitude;
 }
 
 /**

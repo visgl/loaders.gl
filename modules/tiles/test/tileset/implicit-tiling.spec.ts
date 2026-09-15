@@ -257,15 +257,16 @@ test('implicit region subdivision preserves antimeridian-crossing longitude inte
     maximumLevel: 1,
     rootBoundingVolume: {region: [3, -0.5, -3, 0.5, 0, 20]}
   });
-  const child = materializeImplicitSubtree(
+  const children = materializeImplicitSubtree(
     {
       tileAvailability: {constant: 1},
       contentAvailability: {constant: 0},
-      childSubtreeAvailability: {explicitBitstream: new Uint8Array([0b00000001])}
+      childSubtreeAvailability: {explicitBitstream: new Uint8Array([0b00000011])}
     },
     createImplicitSubtreeReference(descriptor, {level: 0, x: 0, y: 0, z: 0})
-  ).root.children[0];
-  expect(child.boundingVolume.region).toEqual([3, -0.5, 0, 0, 0, 20]);
+  ).root.children;
+  expect(children[0].boundingVolume.region).toEqual([3, -0.5, Math.PI, 0, 0, 20]);
+  expect(children[1].boundingVolume.region).toEqual([Math.PI, -0.5, -3, 0, 0, 20]);
 });
 test('implicit octree materializes all eight child coordinates from one availability byte', () => {
   const descriptor = createDescriptor({
