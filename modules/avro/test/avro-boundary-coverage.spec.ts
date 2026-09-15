@@ -3,13 +3,16 @@
 // Copyright (c) vis.gl contributors
 
 import * as arrow from 'apache-arrow';
+import type {ReadableFile} from '@loaders.gl/loader-utils';
 import {afterEach, describe, expect, test, vi} from 'vitest';
 import {encodeAvro, encodeAvroInChunks} from '../src/lib/encoders/encode-avro';
 import {
   getAvroSchemaFingerprint,
   parseAvro,
+  parseAvroFromFile,
   parseAvroFromUrl,
   parseAvroInBatches,
+  parseAvroInBatchesFromFile,
   parseAvroInBatchesFromUrl,
   parseAvroOCF,
   parseAvroOCFHeader
@@ -44,7 +47,83 @@ async function collectBatches(iterator: AsyncIterable<any>): Promise<any[]> {
   return batches;
 }
 
+/** Minimal random-access file used to exercise Avro range reads without filesystem I/O. */
+class MemoryAvroFile implements ReadableFile {
+  readonly handle = undefined;
+  readonly size: number;
+  readonly bigsize: bigint;
+  readonly url = 'memory.avro';
+  readonly reads: {start: number; length: number}[] = [];
+
+  constructor(readonly bytes: Uint8Array) {
+    this.size = bytes.byteLength;
+    this.bigsize = BigInt(bytes.byteLength);
+  }
+
+  async read(start = 0, length = this.size): Promise<ArrayBuffer> {
+    const numericStart = Number(start);
+    this.reads.push({start: numericStart, length});
+    return this.bytes.slice(numericStart, numericStart + length).buffer;
+  }
+}
+
+/** Returns ordinary rows from the Arrow table carried by an Avro batch. */
+function getBatchRows(batch: any): Record<string, unknown>[] {
+  return batch.data.toArray().map((row: Record<string, unknown>) => ({...row}));
+}
+
+/** Creates a multi-row OCF so streaming tests exercise both full and partial batches. */
+async function createMultiRowOCF(): Promise<ArrayBuffer> {
+  return await encodeAvro(createStructuralTable([{id: 1}, {id: 2}, {id: 3}]), {
+    avro: {
+      schema: {type: 'record', name: 'Rows', fields: [{name: 'id', type: 'int'}]}
+    }
+  });
+}
+
 describe('Avro boundary coverage', () => {
+  test('streams OCF rows into bounded batches and selects blocks', async () => {
+    const encoded = await createMultiRowOCF();
+    const batches = await collectBatches(parseAvroInBatches(encoded, 2));
+
+    expect(batches.map(getBatchRows)).toEqual([[{id: 1}, {id: 2}], [{id: 3}]]);
+    await expect(collectBatches(parseAvroInBatches(encoded, 0))).rejects.toThrow(
+      'batchSize must be positive'
+    );
+    await expect(
+      collectBatches(parseAvroInBatches(encoded, 1, {blockIndices: [1]}))
+    ).rejects.toThrow('block index 1 is out of range');
+  });
+
+  test('loads OCF through bounded random-access file reads', async () => {
+    const schema = {
+      type: 'record',
+      name: 'Rows',
+      fields: [
+        {name: 'id', type: 'int'},
+        {name: 'label', type: 'string'}
+      ]
+    };
+    const rows = Array.from({length: 80}, (_, index) => ({
+      id: index,
+      label: `${index}-${'x'.repeat(40)}`
+    }));
+    const encoded = new Uint8Array(
+      await encodeAvro(createStructuralTable(rows), {avro: {schema, blockSize: 700}})
+    );
+    const file = new MemoryAvroFile(encoded);
+    const table = await parseAvroFromFile(file, {batchSize: 2, rangeChunkSize: 1024});
+    expect(table.data.toArray().map((row: any) => row.id)).toEqual(rows.map(row => row.id));
+    expect(file.reads[0]).toEqual({start: 0, length: 1024});
+    expect(file.reads.some(read => read.start > 0 && read.length <= 1024)).toBe(true);
+
+    const batches = await collectBatches(parseAvroInBatchesFromFile(file, {batchSize: 1}));
+    expect(batches.flatMap(getBatchRows)).toEqual(rows);
+    await expect(parseAvroFromFile(file, {rangeChunkSize: 512})).rejects.toThrow(
+      'rangeChunkSize must be at least 1024'
+    );
+  });
+
   test('fingerprints every parsing-canonical schema form', () => {
     const schemas = [
       'string',

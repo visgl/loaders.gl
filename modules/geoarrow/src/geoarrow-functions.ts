@@ -159,8 +159,14 @@ export function isGeoArrowMultiPolygon(type: DataType): type is GeoArrowMultiPol
 
 /** Checks both Arrow list widths used by the GeoArrow specification. */
 function isGeoArrowList(type: DataType): type is GeoArrowList<DataType> {
-  const LargeList = (arrow as unknown as OptionalArrowListConstructors).LargeList;
+  const LargeList = getOptionalArrowListConstructor('LargeList');
   return type instanceof List || Boolean(LargeList && type instanceof LargeList);
+}
+
+function getOptionalArrowListConstructor(
+  typeName: keyof OptionalArrowListConstructors
+): ArrowDataTypeConstructor | undefined {
+  return (arrow as unknown as OptionalArrowListConstructors)[typeName];
 }
 
 /**

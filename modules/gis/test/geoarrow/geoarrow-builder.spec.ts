@@ -55,3 +55,19 @@ test('GeoArrowBuilder legacy hasZ and hasM flags resolve to an exact dimension',
   expect(builder.hasZ).toBe(true);
   expect(builder.hasM).toBe(true);
 });
+
+test('GeoArrowBuilder discovers LargeList for 64-bit offsets', () => {
+  const geometryArray = GeoArrowBuilder.buildGeometryArray(
+    [
+      builder => {
+        builder.beginLineString(2);
+        builder.writeCoordinate(1, 2);
+        builder.writeCoordinate(3, 4);
+      }
+    ],
+    {encoding: 'geoarrow.linestring', offsetType: 'int64'}
+  );
+
+  const data = GeoArrowBuilder.makeGeometryData(geometryArray);
+  expect(data.type.constructor.name).toBe('LargeList');
+});

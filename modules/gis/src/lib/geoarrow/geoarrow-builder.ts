@@ -4,6 +4,10 @@
 
 import * as arrow from 'apache-arrow';
 
+type OptionalArrowConstructors = {
+  LargeList?: new (valueField: arrow.Field) => arrow.DataType;
+};
+
 /** GeoArrow nested geometry encodings supported by the incremental builder. */
 export type GeoArrowBuilderEncoding =
   | 'geoarrow.point'
@@ -737,11 +741,27 @@ function makeListData(
   return arrow.makeData({
     type:
       offsetType === 'int64'
-        ? new arrow.LargeList(new arrow.Field(fieldName, child.type, false))
+        ? makeLargeListType(new arrow.Field(fieldName, child.type, false))
         : new arrow.List(new arrow.Field(fieldName, child.type, false)),
     valueOffsets: offsets,
     child
   } as any);
+}
+
+function makeLargeListType(field: arrow.Field): arrow.DataType {
+  const LargeList = getOptionalArrowConstructor('LargeList');
+  if (!LargeList) {
+    throw new Error(
+      '64-bit GeoArrow offsets require an Apache Arrow runtime that exports LargeList'
+    );
+  }
+  return new LargeList(field);
+}
+
+function getOptionalArrowConstructor(
+  typeName: keyof OptionalArrowConstructors
+): OptionalArrowConstructors[keyof OptionalArrowConstructors] {
+  return (arrow as unknown as OptionalArrowConstructors)[typeName];
 }
 
 function makeCoordinateBuffers(
