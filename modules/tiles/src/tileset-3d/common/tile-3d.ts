@@ -772,16 +772,19 @@ export class Tile3D {
       : tileHeader.content
         ? [tileHeader.content]
         : [];
-    this.contentEntries = headers.map((contentHeader, index) => ({
-      index,
-      uri: contentHeader.uri || contentHeader.url,
-      type: contentHeader.type,
-      payload: null,
-      metadata: contentHeader.metadata || null,
-      boundingVolume: this._contentBoundingVolumes[index] || this.boundingVolume,
-      featureIds: this._getFeatureIdSets(contentHeader),
-      renderable: false
-    }));
+    this.contentEntries = headers.map((contentHeader, index) => {
+      const normalizedContentHeader = contentHeader || {};
+      return {
+        index,
+        uri: normalizedContentHeader.uri || normalizedContentHeader.url,
+        type: normalizedContentHeader.type,
+        payload: null,
+        metadata: normalizedContentHeader.metadata || null,
+        boundingVolume: this._contentBoundingVolumes[index] || this.boundingVolume,
+        featureIds: this._getFeatureIdSets(normalizedContentHeader),
+        renderable: false
+      };
+    });
   }
 
   /** Extracts renderer-neutral feature-id declarations without decoding property values. */
