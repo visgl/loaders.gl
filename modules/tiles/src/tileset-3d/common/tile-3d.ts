@@ -8,6 +8,12 @@
 import {Vector3, Matrix4} from '@math.gl/core';
 import {CullingVolume} from '@math.gl/culling';
 import type {CullingResult} from '@math.gl/culling';
+import type {
+  Tile3DContent,
+  Tile3DFeatureIdSet,
+  Tile3DMetadataContext,
+  Tile3DBoundingVolume
+} from './tile-3d-contracts';
 
 // Note: circular dependency
 import type {Tileset3D} from './tileset-3d';
@@ -150,6 +156,12 @@ export class Tile3D {
   content: any = null;
   /** Loaded payloads in the same order as {@link contentUrls}; `content` remains the primary payload. */
   contents: any[] = [];
+  /** Ordered renderer-neutral descriptors for each source content entry. */
+  contentEntries: Tile3DContent[] = [];
+  /** Raw metadata references inherited by this tile and its content. */
+  metadataContext: Tile3DMetadataContext = {};
+  /** Feature-id declarations normalized from supported content extensions. */
+  featureIdSets: Tile3DFeatureIdSet[] = [];
   /** Decoded 3D Tiles vector topology for the primary loaded content, when present. */
   vectorContent: unknown = null;
   /**
@@ -296,6 +308,7 @@ export class Tile3D {
     this._updateLodMetricScale();
     this._initializeBoundingVolumes(header);
     this._initializeContent(header);
+    this._initializeContentEntries(header);
     this._initializeRenderingState(header);
 
     Object.seal(this);
@@ -715,6 +728,63 @@ export class Tile3D {
       .map(contentHeader => contentHeader.metadata || null);
   }
 
+  /** Returns one ordered content descriptor, or null when the index is out of range. */
+  getContentEntry(index: number): Tile3DContent | null {
+    return this.contentEntries[index] || null;
+  }
+
+  /** Returns whether an ordered content entry currently has renderable payload. */
+  isContentRenderable(index: number): boolean {
+    return Boolean(this.contentEntries[index]?.renderable);
+  }
+
+  /** Initializes additive renderer-neutral descriptors from a normalized tile header. */
+  private _initializeContentEntries(tileHeader: Record<string, any>): void {
+    const headers = Array.isArray(tileHeader.content)
+      ? tileHeader.content
+      : tileHeader.content
+        ? [tileHeader.content]
+        : [];
+    this.contentEntries = headers.map((contentHeader, index) => ({
+      index,
+      uri: contentHeader.uri || contentHeader.url,
+      type: contentHeader.type,
+      payload: null,
+      metadata: contentHeader.metadata || null,
+      boundingVolume: null,
+      featureIds: this._getFeatureIdSets(contentHeader),
+      renderable: false
+    }));
+  }
+
+  /** Extracts renderer-neutral feature-id declarations without decoding property values. */
+  private _getFeatureIdSets(contentHeader: Record<string, any>): Tile3DFeatureIdSet[] {
+    const featureIds = contentHeader.extensions?.EXT_mesh_features?.featureIds;
+    if (!Array.isArray(featureIds)) {
+      return [];
+    }
+    return featureIds.map((featureId: Record<string, any>) => ({
+      source:
+        featureId.propertyTable !== undefined
+          ? 'property-table'
+          : featureId.attribute !== undefined
+            ? 'attribute'
+            : 'constant',
+      attribute: featureId.attribute,
+      propertyTable: featureId.propertyTable,
+      constant: featureId.constant
+    }));
+  }
+
+  /**
+   * Returns a descriptor for one content entry, preserving unloaded payload state.
+   * @param index - Zero-based content entry index.
+   * @returns Descriptor or null when the index is invalid.
+   */
+  getContentEntryForRenderer(index: number): Tile3DContent | null {
+    return this.getContentEntry(index);
+  }
+
   // Unloads the tile's content.
   unloadContent() {
     for (const content of this.contents.length ? this.contents : [this.content]) {
@@ -869,9 +939,15 @@ export class Tile3D {
    * @param frameState Current camera, culling, and optional clipping-plane state.
    * @returns The content visibility classification.
    */
-  contentVisibility(frameState: FrameState): CullingResult {
+  contentVisibility(frameState: FrameState, contentIndex?: number): CullingResult {
+    const contentVolumes =
+      contentIndex === undefined
+        ? this._contentBoundingVolumes
+        : this._contentBoundingVolumes[contentIndex]
+          ? [this._contentBoundingVolumes[contentIndex]]
+          : [];
     return getContentVisibility(
-      this._contentBoundingVolumes,
+      contentVolumes,
       this.boundingVolume,
       frameState.cullingVolume,
       this._visibilityPlaneMask,
