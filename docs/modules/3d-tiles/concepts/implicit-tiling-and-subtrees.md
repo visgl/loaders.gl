@@ -85,12 +85,17 @@ A lazy subtree is eligible only when all of these conditions hold:
 
 1. its root tile intersects the current view;
 2. the camera is inside its viewer request volume, when one is present;
-3. its screen-space error is greater than `maximumScreenSpaceError`;
+3. it is the level-zero subtree, or its screen-space error is greater than
+   `maximumScreenSpaceError`;
 4. its request receives a slot from the normal request scheduler.
+
+The visible level-zero subtree is requested once regardless of SSE because its placeholder has no
+materialized hierarchy to traverse. Deeper subtree boundaries retain the normal SSE gate.
 
 The request uses the tile's existing progressive-resolution and foveated priority. A subtree is not a special HTTP request and does not bypass `maxRequests`, authentication, custom `fetch`, query inheritance, or archive resolution. See [Request scheduling and priorities](./request-scheduling-and-priorities) for the priority calculation and [Screen-space error and LOD](./screen-space-error-and-lod) for the refinement threshold.
 
-If the tile is culled, outside its request volume, or already detailed enough, no subtree request is made.
+If the tile is culled or outside its request volume, no subtree request is made. An already detailed
+enough tile suppresses deeper subtree requests, but not the initial level-zero hierarchy request.
 
 ## One Request, One Subtree Boundary
 

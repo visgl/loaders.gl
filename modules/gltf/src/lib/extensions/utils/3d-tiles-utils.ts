@@ -113,9 +113,17 @@ export function getOffsetsForProperty(
     numberOfElements + 1 // The number of offsets is equal to the property table `count` plus one.
   );
 
-  // We don't support BigInt offsets at the moment. It requires additional logic and potential issues in Safari
   if (arrayOffsets instanceof BigInt64Array || arrayOffsets instanceof BigUint64Array) {
-    return null;
+    const numericOffsets = new Float64Array(arrayOffsets.length);
+    const maximumSafeOffset = BigInt(Number.MAX_SAFE_INTEGER);
+    for (let index = 0; index < arrayOffsets.length; index++) {
+      const offset = arrayOffsets[index];
+      if (offset < 0n || offset > maximumSafeOffset) {
+        throw new Error('EXT_structural_metadata: UINT64 offset exceeds the safe integer range');
+      }
+      numericOffsets[index] = Number(offset);
+    }
+    return numericOffsets;
   }
   return arrayOffsets;
 }

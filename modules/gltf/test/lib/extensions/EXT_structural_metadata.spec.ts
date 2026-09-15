@@ -10,6 +10,7 @@ import {
   type PropertyAttribute,
   GLTF_EXT_structural_metadata_GLTF
 } from '@loaders.gl/gltf';
+import {getOffsetsForProperty} from '../../../src/lib/extensions/utils/3d-tiles-utils';
 test('gltf#EXT_structural_metadata - Should decode', async () => {
   const binaryBufferData = [
     0, 0, 0, 0, 1, 0, 0, 0, 2, 0, 0, 0, 2, 0, 0, 0, 3, 0, 0, 0, 0, 0, 0, 0, 1, 33, 223, 70, 43, 39,
@@ -720,6 +721,25 @@ test('gltf#EXT_structural_metadata treats array offsets as elements and groups f
     ['c', 'dd']
   ]);
   expect(tables[2].properties.value.data).toEqual([['first', 'second'], ['third']]);
+});
+
+test('gltf#EXT_structural_metadata converts safe UINT64 offsets and rejects lossy values', () => {
+  const offsets = new BigUint64Array([0n, 2n, 3n]);
+  const gltf = {
+    buffers: [{arrayBuffer: offsets.buffer, byteOffset: 0, byteLength: offsets.byteLength}],
+    json: {
+      buffers: [{byteLength: offsets.byteLength}],
+      bufferViews: [{buffer: 0, byteOffset: 0, byteLength: offsets.byteLength}]
+    }
+  };
+  const scenegraph = new GLTFScenegraph(gltf as any);
+
+  expect(getOffsetsForProperty(scenegraph, 0, 'UINT64', 2)).toEqual(new Float64Array([0, 2, 3]));
+
+  offsets[2] = BigInt(Number.MAX_SAFE_INTEGER) + 1n;
+  expect(() => getOffsetsForProperty(scenegraph, 0, 'UINT64', 2)).toThrow(
+    /UINT64 offset exceeds the safe integer range/
+  );
 });
 
 test('gltf#EXT_structural_metadata validates unsupported property definitions', async () => {
