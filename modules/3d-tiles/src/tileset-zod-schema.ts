@@ -126,7 +126,7 @@ export const Tiles3DTileSchema: z.ZodType<Tiles3DTileJSON> = z.lazy(() =>
       transform: z.array(z.number()).length(16).optional(),
       // 3D Tiles 1.1 allows a tile to reference one or more independent contents.
       content: z.union([Tiles3DTileContentSchema, z.array(Tiles3DTileContentSchema)]).optional(),
-      contents: z.array(Tiles3DTileContentSchema).optional(),
+      contents: z.array(Tiles3DTileContentSchema).min(1).optional(),
       children: z.array(Tiles3DTileSchema).default([]),
       extensions: z.record(z.string(), z.unknown()).optional(),
       extras: z.unknown().optional(),
@@ -134,6 +134,10 @@ export const Tiles3DTileSchema: z.ZodType<Tiles3DTileJSON> = z.lazy(() =>
       implicitTiling: ImplicitTilingSchema.optional()
     })
     .passthrough()
+    .refine(tile => !(tile.content && tile.contents), {
+      message: 'Tile must not define both content and contents',
+      path: ['contents']
+    })
 );
 
 /** Common fields in raw 3D Tiles tileset JSON before loader normalization. */
