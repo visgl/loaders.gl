@@ -296,13 +296,14 @@ describe('experimental explicit 3D Tiles 2.0', () => {
   });
 
   test('parses glTF subtree availability, attributes and property-table rows', async () => {
-    const binary = new Uint8Array(28);
+    const binary = new Uint8Array(40);
     new Float64Array(binary.buffer, 0, 1)[0] = 12;
     new Uint16Array(binary.buffer, 8, 1)[0] = 7;
     new Uint16Array(binary.buffer, 10, 1)[0] = 9;
     new Uint16Array(binary.buffer, 12, 4).set([1, 2, 3, 4]);
     new Uint16Array(binary.buffer, 20, 2).set([5, 6]);
     binary[24] = 1;
+    new DataView(binary.buffer).setBigUint64(32, 5n, true);
     const subtree = await parse(
       encodeGlb(
         {
@@ -338,6 +339,12 @@ describe('experimental explicit 3D Tiles 2.0', () => {
                         componentType: 'UINT16',
                         noData: [5, 6],
                         default: [9, 10]
+                      },
+                      largeIdentifier: {
+                        type: 'SCALAR',
+                        componentType: 'UINT64',
+                        noData: '5',
+                        default: 'missing'
                       }
                     }
                   },
@@ -356,7 +363,8 @@ describe('experimental explicit 3D Tiles 2.0', () => {
                     zone: {values: 1},
                     enabled: {values: 5},
                     bounds: {values: 3},
-                    emptyBounds: {values: 4}
+                    emptyBounds: {values: 4},
+                    largeIdentifier: {values: 6}
                   }
                 },
                 {class: 'content', count: 1, properties: {zone: {values: 2}}}
@@ -371,7 +379,8 @@ describe('experimental explicit 3D Tiles 2.0', () => {
             {buffer: 0, byteOffset: 10, byteLength: 2},
             {buffer: 0, byteOffset: 12, byteLength: 8},
             {buffer: 0, byteOffset: 20, byteLength: 4},
-            {buffer: 0, byteOffset: 24, byteLength: 1}
+            {buffer: 0, byteOffset: 24, byteLength: 1},
+            {buffer: 0, byteOffset: 32, byteLength: 8}
           ],
           accessors: [{bufferView: 0, componentType: 5130, count: 1, type: 'SCALAR'}]
         },
@@ -390,7 +399,13 @@ describe('experimental explicit 3D Tiles 2.0', () => {
     expect(subtree.tileAvailability).toEqual({constant: 1});
     expect(subtree.tileAttributes.TILE_GEOMETRIC_ERROR).toEqual(new Float64Array([12]));
     expect(subtree.tilePropertyRows).toEqual([
-      {zone: 7, enabled: true, bounds: [1, 2, 3, 4], emptyBounds: [9, 10]}
+      {
+        zone: 7,
+        enabled: true,
+        bounds: [1, 2, 3, 4],
+        emptyBounds: [9, 10],
+        largeIdentifier: 'missing'
+      }
     ]);
     expect(subtree.contentPropertyRows).toEqual([{zone: 9}]);
     const transferredSubtree = structuredClone(Tiles3DLoader.serializeWorkerResult!(subtree));
@@ -782,7 +797,7 @@ describe('experimental explicit 3D Tiles 2.0', () => {
     expect(tileset.root!.header.content._resource.files[0].data).toBeInstanceOf(ArrayBuffer);
     expect(tileset.root!.header.content._resource.files[1]).toMatchObject({
       name: 'unused.gltf',
-      uri: 'gltf-package://0/subtrees/0/0/unused.gltf'
+      uri: 'gltf-package://0/0/subtrees/0/0/unused.gltf'
     });
     await tileset.root!.loadContent();
     expect(tileset.root!.content).toMatchObject({shape: 'tile3d'});
@@ -875,7 +890,7 @@ describe('experimental explicit 3D Tiles 2.0', () => {
     const nestedTileset = result.nestedTileset!;
 
     expect(nestedTileset.root.implicitSubtree.subtreeUrl).toBe(
-      'gltf-package://0/nested/subtrees/0/0/0.gltf'
+      'gltf-package://0/0/nested/subtrees/0/0/0.gltf'
     );
     const nestedSource = new Tiles3DSource({...nestedTileset, coreApi}, {worker: false});
     const nestedRuntime = new Tileset3D(nestedSource);

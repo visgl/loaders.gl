@@ -515,6 +515,46 @@ test('Tiles3DSource recognizes extensionless nested tilesets from parsed shape',
   expect(loadResult.nestedTileset).toBe(nestedTileset);
   expect(tile.content).toBe(nestedTileset);
 });
+test('Tiles3DSource namespaces independent embedded packages before local file indices', async () => {
+  const packageUrls: string[] = [];
+  const packageCoreApi = {
+    ...coreApi,
+    async parse(_data: ArrayBuffer, _loader: Loader, _options: unknown, context: {url: string}) {
+      packageUrls.push(context.url);
+      return {shape: 'mesh'};
+    }
+  } as typeof coreApi;
+  const source = new Tiles3DSource({
+    url: 'https://example.com/root.gltf',
+    loader: Tiles3DLoader,
+    coreApi: packageCoreApi
+  });
+  const createPackageFiles = () => [
+    {
+      name: 'content.gltf',
+      mimeType: 'model/gltf+json',
+      data: new ArrayBuffer(0),
+      byteOffset: 0,
+      byteLength: 0
+    }
+  ];
+
+  await (source as any).loadContentResource(
+    'first/content.gltf',
+    {fileIndex: 0, files: createPackageFiles()},
+    {worker: false}
+  );
+  await (source as any).loadContentResource(
+    'second/content.gltf',
+    {fileIndex: 0, files: createPackageFiles()},
+    {worker: false}
+  );
+
+  expect(packageUrls).toEqual([
+    'gltf-package://0/0/content.gltf',
+    'gltf-package://1/0/content.gltf'
+  ]);
+});
 test('Tiles3DSource invalidates cached URLs when inherited query state changes', async () => {
   const source = new Tiles3DSource({
     type: 'tileset',

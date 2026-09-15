@@ -161,6 +161,22 @@ test('Tile3D#applies subtree-root transform and metadata overrides', () => {
   expect(tile.metadata).toEqual({properties: {zone: 2}});
   expect(tile.contentMetadata).toEqual([{properties: {material: 'stone'}}]);
 });
+test('Tile3D#invalidates cached cartographic bounds after subtree overrides', () => {
+  const tile = new Tile3D(MOCK_TILESET as any, {
+    ...TILE_HEADER_WITH_BOUNDING_REGION,
+    boundingVolume: {region: [0, 0, 0.1, 0.1, 0, 1]}
+  });
+  const originalBoundingBox = tile.boundingBox;
+
+  tile.applyImplicitSubtreeHeader({
+    ...TILE_HEADER_WITH_BOUNDING_REGION,
+    boundingVolume: {region: [1, 1, 1.1, 1.1, 2, 3]}
+  });
+
+  expect(tile.boundingBox).not.toBe(originalBoundingBox);
+  expect(tile.boundingBox[0][0]).toBeCloseTo(57.29577951308232);
+  expect(tile.boundingBox[0][2]).toBe(2);
+});
 test('Tile3D#throws if boundingVolume is undefined', () => {
   const tileWithoutBoundingVolume = clone(TILE_HEADER_WITH_BOUNDING_SPHERE, true);
   delete tileWithoutBoundingVolume.boundingVolume;

@@ -113,6 +113,10 @@ export class Tiles3DSource implements Tileset3DSource {
   private readonly tileUrlCache: Map<string, string> = new Map();
   /** Original content descriptors retained across {@link Tile3D.unloadContent} calls. */
   private readonly tileContentHeaders = new WeakMap<Tile3D, Record<string, any>[]>();
+  /** Source-local namespaces assigned to distinct embedded glTF package file collections. */
+  private readonly packageNamespaces = new WeakMap<PackageFile[], number>();
+  /** Next source-local package namespace. */
+  private nextPackageNamespace = 0;
   /** Parsed subtree requests keyed by final source URL for deduplication and LRU reuse. */
   private readonly implicitSubtreeCache: RequestCache<ParsedImplicitSubtree>;
   /** Mutable counters exposed as a defensive snapshot through {@link getImplicitTilingStats}. */
@@ -595,7 +599,8 @@ export class Tiles3DSource implements Tileset3DSource {
     }
 
     const data = await this.getPackageFileData(file);
-    const packageRootUrl = `gltf-package://${packageResource.fileIndex}`;
+    const packageNamespace = this.getPackageNamespace(packageResource.files);
+    const packageRootUrl = `gltf-package://${packageNamespace}/${packageResource.fileIndex}`;
     const fileName = file.name || 'content';
     const directorySeparatorIndex = fileName.lastIndexOf('/');
     const packageBaseUrl =
@@ -629,6 +634,17 @@ export class Tiles3DSource implements Tileset3DSource {
         });
       }
     } as Tiles3DPackageLoaderContext);
+  }
+
+  /** Returns a stable source-local namespace for one embedded glTF package file collection. */
+  private getPackageNamespace(files: PackageFile[]): number {
+    const existingNamespace = this.packageNamespaces.get(files);
+    if (existingNamespace !== undefined) {
+      return existingNamespace;
+    }
+    const packageNamespace = this.nextPackageNamespace++;
+    this.packageNamespaces.set(files, packageNamespace);
+    return packageNamespace;
   }
 
   /** Resolves a retained package-file byte range without eagerly copying other package files. */

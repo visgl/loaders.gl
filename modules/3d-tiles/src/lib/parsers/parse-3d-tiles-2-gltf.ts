@@ -544,6 +544,11 @@ function isMetadataValueEqual(left: unknown, right: unknown): boolean {
   if (Object.is(left, right)) {
     return true;
   }
+  if (typeof left === 'bigint' || typeof right === 'bigint') {
+    const leftInteger = getMetadataBigInt(left);
+    const rightInteger = getMetadataBigInt(right);
+    return leftInteger !== undefined && rightInteger !== undefined && leftInteger === rightInteger;
+  }
   const leftArray = getMetadataArray(left);
   const rightArray = getMetadataArray(right);
   return Boolean(
@@ -554,6 +559,20 @@ function isMetadataValueEqual(left: unknown, right: unknown): boolean {
         isMetadataValueEqual(value, Reflect.get(rightArray, index))
       )
   );
+}
+
+/** Converts an exactly represented metadata integer or integer string to a 64-bit comparison value. */
+function getMetadataBigInt(value: unknown): bigint | undefined {
+  if (typeof value === 'bigint') {
+    return value;
+  }
+  if (typeof value === 'number' && Number.isSafeInteger(value)) {
+    return BigInt(value);
+  }
+  if (typeof value === 'string' && /^[+-]?\d+$/.test(value)) {
+    return BigInt(value);
+  }
+  return undefined;
 }
 
 /** Returns a metadata array value while excluding non-indexed DataView instances. */
