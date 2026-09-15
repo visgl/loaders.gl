@@ -384,6 +384,31 @@ describe('experimental explicit 3D Tiles 2.0', () => {
     ).rejects.toThrow(/one scene with one root node/);
   });
 
+  test.each([
+    ['missing', undefined],
+    ['null', null]
+  ])('rejects a %s required vector designation', async (_name, vectorDesignation) => {
+    const extensions: Record<string, unknown> = {
+      '3DTILES_tileset': {geometricError: 16}
+    };
+    if (vectorDesignation !== undefined) {
+      extensions['3DTILES_tileset_vectors'] = vectorDesignation;
+    }
+
+    await expect(
+      parse(
+        encodeJson(
+          createTilesetGltf({
+            extensionsRequired: ['3DTILES_tileset', '3DTILES_tileset_vectors'],
+            extensions
+          })
+        ),
+        Tiles3DLoader,
+        {worker: false}
+      )
+    ).rejects.toThrow(/3DTILES_tileset_vectors must define an extension object/);
+  });
+
   test('parses glTF subtree availability, attributes and property-table rows', async () => {
     const binary = new Uint8Array(56);
     new Float64Array(binary.buffer, 0, 1)[0] = 12;
@@ -1037,6 +1062,24 @@ describe('experimental explicit 3D Tiles 2.0', () => {
       parse(
         encodeJson({
           asset: {version: '2.1'},
+          extensionsUsed: ['3DTILES_subtree', '3DTILES_tileset_vectors'],
+          extensionsRequired: ['3DTILES_subtree', '3DTILES_tileset_vectors'],
+          extensions: {
+            '3DTILES_subtree': {
+              tileAvailability: {constant: 1},
+              childSubtreeAvailability: {constant: 0}
+            },
+            '3DTILES_tileset_vectors': {clip: true}
+          }
+        }),
+        Tiles3DLoader,
+        {worker: false}
+      )
+    ).rejects.toThrow(/Unsupported required 3D Tiles subtree extension: 3DTILES_tileset_vectors/);
+    await expect(
+      parse(
+        encodeJson({
+          asset: {version: '2.1'},
           extensionsUsed: ['3DTILES_subtree'],
           extensionsRequired: ['3DTILES_subtree'],
           extensions: {
@@ -1181,6 +1224,25 @@ describe('experimental explicit 3D Tiles 2.0', () => {
         {worker: false}
       )
     ).rejects.toThrow(/3DTILES_content_gltf_vector: vector must be true/);
+
+    await expect(
+      parse(
+        encodeJson({
+          asset: {version: '1.1'},
+          geometricError: 1,
+          root: {
+            geometricError: 0,
+            refine: 'REPLACE',
+            boundingVolume: {sphere: [0, 0, 0, 1]},
+            content: {uri: 'content.glb'}
+          },
+          extensionsUsed: ['3DTILES_content_gltf_vector'],
+          extensionsRequired: ['3DTILES_content_gltf_vector']
+        }),
+        Tiles3DLoader,
+        {worker: false}
+      )
+    ).rejects.toThrow(/3DTILES_content_gltf_vector must designate content/);
   });
 
   test('retains structured-cloneable draft state across the worker transfer boundary', async () => {

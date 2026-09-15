@@ -151,7 +151,12 @@ async function parse(
     if (!is3DTiles2Subtree(parsedSubtreeGltf)) {
       throw new Error('Expected a glTF 3DTILES_subtree resource');
     }
-    validateRequiredExtensions(parsedSubtreeGltf.json.extensionsRequired, true, 'subtree');
+    validateRequiredExtensions(
+      parsedSubtreeGltf.json.extensionsRequired,
+      true,
+      'subtree',
+      parsedSubtreeGltf.json.extensions
+    );
     const resourceUrl = context?.url || options.core?.baseUrl || '';
     return parse3DTiles2Subtree(
       parsedSubtreeGltf,
@@ -182,7 +187,12 @@ async function parse(
     );
     if (is3DTiles2Tileset(parsedGltf)) {
       getIsTileset('tileset2', loaderOptions.isTileset);
-      validateRequiredExtensions(parsedGltf.json.extensionsRequired, true);
+      validateRequiredExtensions(
+        parsedGltf.json.extensionsRequired,
+        true,
+        'tileset',
+        parsedGltf.json.extensions
+      );
       const resourceUrl = context?.url || options.core?.baseUrl || '';
       const resourceBasePath = getGltfResourceBasePath(resourceUrl, context);
       const tilesetJson = parse3DTiles2Tileset(
@@ -193,7 +203,12 @@ async function parse(
       return parseTileset(tilesetJson, options, context, '2.0-draft', resourceBasePath);
     }
     if (is3DTiles2Subtree(parsedGltf)) {
-      validateRequiredExtensions(parsedGltf.json.extensionsRequired, true, 'subtree');
+      validateRequiredExtensions(
+        parsedGltf.json.extensionsRequired,
+        true,
+        'subtree',
+        parsedGltf.json.extensions
+      );
       const resourceUrl = context?.url || options.core?.baseUrl || '';
       return parse3DTiles2Subtree(
         parsedGltf,
@@ -275,8 +290,16 @@ async function parseTileset(
   formatVersion: Tiles3DFormatVersion = getFormatVersion(tilesetJson.asset.version),
   resourceBasePath?: string
 ): Promise<Tiles3DTilesetJSONPostprocessed> {
-  validateRequiredExtensions(tilesetJson.extensionsRequired, formatVersion === '2.0-draft');
-  validateVectorPreviewExtensions(tilesetJson.root);
+  validateRequiredExtensions(
+    tilesetJson.extensionsRequired,
+    formatVersion === '2.0-draft',
+    'tileset',
+    tilesetJson.extensions
+  );
+  validateVectorPreviewExtensions(
+    tilesetJson.root,
+    tilesetJson.extensionsRequired?.includes('3DTILES_content_gltf_vector') || false
+  );
 
   const tilesetUrl = context?.url || options?.core?.baseUrl || '';
   const basePath = resourceBasePath || getBaseUri(tilesetUrl) || context?.baseUrl || '';
@@ -306,18 +329,40 @@ async function parseTileset(
  * check therefore runs before header normalization or subtree fetching to avoid partial work and
  * to provide a deterministic diagnostic at the tileset boundary.
  *
- * @param tilesetJson - Parsed, unnormalized tileset JSON.
+ * @param extensionsRequired - Extension names whose semantics are required by the resource.
+ * @param isDraft2 - Whether the resource uses the draft 2.0 representation.
+ * @param draftResource - Draft resource category used to select the structural extension.
+ * @param extensions - Top-level extension objects used to validate required designations.
  * @throws When one or more required extensions are unsupported.
  */
 function validateRequiredExtensions(
   extensionsRequired: string[] | undefined,
   isDraft2: boolean,
-  draftResource: 'tileset' | 'subtree' = 'tileset'
+  draftResource: 'tileset' | 'subtree' = 'tileset',
+  extensions?: Record<string, unknown>
 ): void {
   const requiredDraftExtension =
     draftResource === 'subtree' ? '3DTILES_subtree' : '3DTILES_tileset';
   if (isDraft2 && !extensionsRequired?.includes(requiredDraftExtension)) {
     throw new Error(`${requiredDraftExtension} must be declared in extensionsRequired`);
+  }
+  if (
+    isDraft2 &&
+    draftResource === 'subtree' &&
+    extensionsRequired?.includes('3DTILES_tileset_vectors')
+  ) {
+    throw new Error('Unsupported required 3D Tiles subtree extension: 3DTILES_tileset_vectors');
+  }
+  if (
+    isDraft2 &&
+    extensionsRequired?.includes('3DTILES_tileset_vectors') &&
+    (!extensions?.['3DTILES_tileset_vectors'] ||
+      typeof extensions['3DTILES_tileset_vectors'] !== 'object' ||
+      Array.isArray(extensions['3DTILES_tileset_vectors']))
+  ) {
+    throw new Error(
+      '3DTILES_tileset_vectors must define an extension object when declared in extensionsRequired'
+    );
   }
   const supportedExtensions = isDraft2
     ? SUPPORTED_3D_TILES_2_EXTENSIONS
@@ -478,9 +523,18 @@ function getFormatVersion(version: string): '0.0' | '1.0' | '1.1' {
   throw new Error(`Unsupported 3D Tiles version: ${version}`);
 }
 
-/** Validates the preview vector extension wherever it appears on explicit content headers. */
-function validateVectorPreviewExtensions(root: Tiles3DTilesetJSON['root']): void {
+/**
+ * Validates preview-vector designations on explicit content headers.
+ *
+ * @param root - Root of the explicit 1.x tile hierarchy.
+ * @param isRequired - Whether the tileset requires at least one preview-vector designation.
+ */
+function validateVectorPreviewExtensions(
+  root: Tiles3DTilesetJSON['root'],
+  isRequired: boolean
+): void {
   const stack = root ? [root] : [];
+  let hasVectorDesignation = false;
   while (stack.length) {
     const tile = stack.pop()!;
     const contents = Array.isArray(tile.content)
@@ -495,6 +549,7 @@ function validateVectorPreviewExtensions(root: Tiles3DTilesetJSON['root']): void
       if (!extension) {
         continue;
       }
+      hasVectorDesignation = true;
       if (
         extension.vector !== true ||
         (extension.clip !== undefined && typeof extension.clip !== 'boolean')
@@ -505,6 +560,11 @@ function validateVectorPreviewExtensions(root: Tiles3DTilesetJSON['root']): void
       }
     }
     stack.push(...(tile.children || []));
+  }
+  if (isRequired && !hasVectorDesignation) {
+    throw new Error(
+      '3DTILES_content_gltf_vector must designate content when declared in extensionsRequired'
+    );
   }
 }
 
