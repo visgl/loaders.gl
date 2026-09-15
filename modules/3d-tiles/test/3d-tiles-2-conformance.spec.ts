@@ -33,6 +33,9 @@ describe('experimental 3D Tiles 2.0 conformance fixtures', () => {
     const source = new Tiles3DSource({...header, coreApi}, {worker: false});
     const tileset = new Tileset3D(source);
     await tileset.tilesetInitializationPromise;
+    if (tileset.root!.header.implicitTiling) {
+      await source.loadTileChildren(tileset.root!, {} as never);
+    }
     await tileset.root!.loadContent();
 
     expect(header.formatVersion).toBe(version);
@@ -49,6 +52,10 @@ describe('experimental 3D Tiles 2.0 conformance fixtures', () => {
     const header = parsedHeaders[NATIVE_DRAFT_URL];
 
     expect(header.extensions.VENDOR_optional).toEqual({fixture: true});
-    expect(header.extensionsRequired).toEqual(['3DTILES_tileset', '3DTILES_tileset_vectors']);
+    expect(header.extensionsRequired).toEqual([
+      '3DTILES_tileset',
+      '3DTILES_tileset_vectors',
+      '3DTILES_implicit_tiling'
+    ]);
   });
 });
