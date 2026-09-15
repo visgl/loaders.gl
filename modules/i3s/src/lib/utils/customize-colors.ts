@@ -60,7 +60,7 @@ export async function customizeColors(
       colors.componentType === 'float16'
         ? createFloat16Array(colors.value.length)
         : colors.value instanceof Float32Array
-          ? new Float32Array(colors.value.length)
+          ? new Float32Array(colors.value)
           : new Uint8Array(colors.value)
   };
   if (colors.componentType === 'float16') {

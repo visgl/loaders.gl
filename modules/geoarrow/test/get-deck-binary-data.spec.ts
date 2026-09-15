@@ -39,3 +39,16 @@ test('getDeckBinaryDataFromArrowMesh#converts Float32 colors to byte colors', ()
     value: new Uint8Array([0, 128, 255])
   });
 });
+
+test('getDeckBinaryDataFromArrowMesh#preserves byte colors', () => {
+  const table = makeMeshArrowTable({
+    POSITION: {value: new Float32Array([0, 0, 0]), size: 3},
+    COLOR_0: {value: new Uint8Array([10, 20, 30]), size: 3}
+  });
+
+  const binaryData = getDeckBinaryDataFromArrowMesh(table.data);
+  expect(binaryData.attributes.getColor).toEqual({
+    size: 3,
+    value: new Uint8Array([10, 20, 30])
+  });
+});
