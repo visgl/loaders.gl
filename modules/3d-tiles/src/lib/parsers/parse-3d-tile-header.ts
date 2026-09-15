@@ -121,7 +121,8 @@ export function normalizeTileData(
   if (!tile) {
     return null;
   }
-  const normalizedContents = normalizeTileContents(tile.content, resourceResolver, schema);
+  const sourceContents = tile.contents || tile.content;
+  const normalizedContents = normalizeTileContents(sourceContents, resourceResolver, schema);
   const tileContentUrl = normalizedContents.contentUrls[0];
   const boundingVolume = normalizeS2BoundingVolume(
     getMetadataBoundingVolume(tile.metadata, 'TILE', schema) || tile.boundingVolume

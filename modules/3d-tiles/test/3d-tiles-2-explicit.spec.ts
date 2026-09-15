@@ -1245,6 +1245,34 @@ describe('experimental explicit 3D Tiles 2.0', () => {
     ).rejects.toThrow(/3DTILES_content_gltf_vector must designate content/);
   });
 
+  test('accepts required vector preview designations on standard multiple contents', async () => {
+    const tileset = await parse(
+      encodeJson({
+        asset: {version: '1.1'},
+        geometricError: 1,
+        root: {
+          geometricError: 0,
+          refine: 'REPLACE',
+          boundingVolume: {sphere: [0, 0, 0, 1]},
+          contents: [
+            {
+              uri: 'vector.glb',
+              extensions: {'3DTILES_content_gltf_vector': {vector: true, clip: true}}
+            },
+            {uri: 'metadata.json'}
+          ]
+        },
+        extensionsUsed: ['3DTILES_content_gltf_vector'],
+        extensionsRequired: ['3DTILES_content_gltf_vector']
+      }),
+      Tiles3DLoader,
+      {worker: false}
+    );
+
+    expect(tileset.root.contentUrls).toEqual(['/vector.glb', '/metadata.json']);
+    expect(Array.isArray(tileset.root.content)).toBe(true);
+  });
+
   test('retains structured-cloneable draft state across the worker transfer boundary', async () => {
     const result = await parse(
       encodeGlb(createTilesetGltf({buffers: [{byteLength: 4}]}), new Uint8Array(4)),

@@ -537,11 +537,12 @@ function validateVectorPreviewExtensions(
   let hasVectorDesignation = false;
   while (stack.length) {
     const tile = stack.pop()!;
-    const contents = Array.isArray(tile.content)
+    const legacyContents = Array.isArray(tile.content)
       ? tile.content
       : tile.content
         ? [tile.content]
         : [];
+    const contents = [...legacyContents, ...(tile.contents || [])];
     for (const content of contents) {
       const extension = content.extensions?.['3DTILES_content_gltf_vector'] as
         | {vector?: unknown; clip?: unknown}
