@@ -11,8 +11,7 @@ import type {CullingResult} from '@math.gl/culling';
 import type {
   Tile3DContent,
   Tile3DFeatureIdSet,
-  Tile3DMetadataContext,
-  Tile3DBoundingVolume
+  Tile3DMetadataContext
 } from './tile-3d-contracts';
 
 // Note: circular dependency
@@ -606,6 +605,8 @@ export class Tile3D {
         await this.tileset.options.contentLoader(this);
       }
 
+      this._updateContentEntriesAfterLoad(loadResult);
+
       this.contentState = TILE_CONTENT_STATE.READY;
       this._onContentLoaded();
       return loadResult;
@@ -728,6 +729,26 @@ export class Tile3D {
       .map(contentHeader => contentHeader.metadata || null);
   }
 
+  /** Updates payload and renderability while retaining immutable metadata descriptors. */
+  private _updateContentEntriesAfterLoad(loadResult: TileContentLoadResult): void {
+    if (loadResult.contentEntries) {
+      this.contentEntries = loadResult.contentEntries.map((entry, index) => ({
+        ...entry,
+        index,
+        boundingVolume:
+          entry.boundingVolume || this._contentBoundingVolumes[index] || this.boundingVolume,
+        payload: entry.payload ?? this.contents[index] ?? null,
+        renderable: Boolean(entry.renderable && entry.payload)
+      }));
+      return;
+    }
+    this.contentEntries = this.contentEntries.map((entry, index) => ({
+      ...entry,
+      payload: this.contents[index] ?? null,
+      renderable: Boolean(this.contents[index]) && !this.hasTilesetContent
+    }));
+  }
+
   /** Returns one ordered content descriptor, or null when the index is out of range. */
   getContentEntry(index: number): Tile3DContent | null {
     return this.contentEntries[index] || null;
@@ -751,7 +772,7 @@ export class Tile3D {
       type: contentHeader.type,
       payload: null,
       metadata: contentHeader.metadata || null,
-      boundingVolume: null,
+      boundingVolume: this._contentBoundingVolumes[index] || this.boundingVolume,
       featureIds: this._getFeatureIdSets(contentHeader),
       renderable: false
     }));
@@ -774,15 +795,6 @@ export class Tile3D {
       propertyTable: featureId.propertyTable,
       constant: featureId.constant
     }));
-  }
-
-  /**
-   * Returns a descriptor for one content entry, preserving unloaded payload state.
-   * @param index - Zero-based content entry index.
-   * @returns Descriptor or null when the index is invalid.
-   */
-  getContentEntryForRenderer(index: number): Tile3DContent | null {
-    return this.getContentEntry(index);
   }
 
   // Unloads the tile's content.
