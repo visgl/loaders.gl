@@ -233,6 +233,114 @@ describe('get3DTilesSpatialReference', () => {
     expect(spatialReference.warnings).toContain('3D Tiles geocentric CRS is explicitly unknown');
   });
 
+  test('resolves draft glTF WKT2 CRS declarations', () => {
+    const wkt2 = 'PROJCRS["WGS 84 / UTM zone 11N",BASEGEOGCRS["WGS 84"],CS[Cartesian,2]]';
+    const spatialReference = get3DTilesSpatialReference({
+      extensions: {
+        EXT_geospatial_crs: {
+          format: 'wkt2',
+          extensions: {EXT_geospatial_crs_wkt2: {wkt2}}
+        }
+      }
+    });
+
+    expect(spatialReference).toMatchObject({
+      sourceCrs: wkt2,
+      coordinateFrame: 'projected',
+      provenance: 'metadata',
+      warnings: []
+    });
+  });
+
+  test('reports malformed draft CRS declarations without guessing', () => {
+    const spatialReference = get3DTilesSpatialReference({
+      extensions: {EXT_geospatial_crs: {format: 'wkid', extensions: {}}}
+    });
+
+    expect(spatialReference.sourceCrs).toBeUndefined();
+    expect(spatialReference.coordinateFrame).toBe('unknown');
+    expect(spatialReference.warnings).toContain(
+      'EXT_geospatial_crs_wkid requires string authority and integer wkid'
+    );
+  });
+
+  test('classifies known draft WKIDs without guessing unknown authority identifiers', () => {
+    const geocentric = get3DTilesSpatialReference({
+      extensions: {
+        EXT_geospatial_crs: {
+          format: 'wkid',
+          extensions: {EXT_geospatial_crs_wkid: {authority: 'EPSG', wkid: 7789}}
+        }
+      }
+    });
+    const unknown = get3DTilesSpatialReference({
+      extensions: {
+        EXT_geospatial_crs: {
+          format: 'wkid',
+          extensions: {EXT_geospatial_crs_wkid: {authority: 'EPSG', wkid: 999999}}
+        }
+      }
+    });
+    const wrongAuthority = get3DTilesSpatialReference({
+      extensions: {
+        EXT_geospatial_crs: {
+          format: 'wkid',
+          extensions: {EXT_geospatial_crs_wkid: {authority: 'CUSTOM', wkid: 4978}}
+        }
+      }
+    });
+
+    expect(geocentric.coordinateFrame).toBe('geocentric');
+    expect(geocentric.units).toEqual(['meter', 'meter', 'meter']);
+    expect(unknown.coordinateFrame).toBe('unknown');
+    expect(unknown.units).toBeUndefined();
+    expect(wrongAuthority.coordinateFrame).toBe('unknown');
+    expect(wrongAuthority.units).toBeUndefined();
+  });
+
+  test('derives known draft vertical CRS units and height semantics', () => {
+    const spatialReference = get3DTilesSpatialReference({
+      extensions: {
+        EXT_geospatial_crs: {
+          format: 'wkid',
+          extensions: {
+            EXT_geospatial_crs_wkid: {authority: 'EPSG', wkid: 4326, vcsWkid: 6360}
+          }
+        }
+      }
+    });
+
+    expect(spatialReference).toMatchObject({
+      sourceCrs: 'EPSG:4326',
+      verticalCrs: 'EPSG:6360',
+      units: ['degree', 'degree', 'us-foot'],
+      heightReference: 'orthometric',
+      warnings: []
+    });
+    expect(spatialReference.verticalUnitScale).toBeCloseTo(1200 / 3937);
+  });
+
+  test('keeps unknown draft vertical CRS declarations unresolved', () => {
+    const spatialReference = get3DTilesSpatialReference({
+      extensions: {
+        EXT_geospatial_crs: {
+          format: 'wkid',
+          extensions: {
+            EXT_geospatial_crs_wkid: {authority: 'EPSG', wkid: 4326, vcsWkid: 999999}
+          }
+        }
+      }
+    });
+
+    expect(spatialReference.verticalCrs).toBe('EPSG:999999');
+    expect(spatialReference.units).toBeUndefined();
+    expect(Number.isNaN(spatialReference.verticalUnitScale)).toBe(true);
+    expect(spatialReference.heightReference).toBe('unknown');
+    expect(spatialReference.warnings).toContain(
+      'Unsupported vertical CRS EPSG:999999; vertical unit and height reference are unknown'
+    );
+  });
+
   test('uses the specification frame established by a root region', () => {
     const spatialReference = get3DTilesSpatialReference({
       root: {boundingVolume: {region: [0, 0, 1, 1, 0, 1]}}

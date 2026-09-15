@@ -1,0 +1,12 @@
+{
+  "asset": {"version": "2.1"},
+  "extensionsUsed": ["3DTILES_subtree"],
+  "extensionsRequired": ["3DTILES_subtree"],
+  "extensions": {
+    "3DTILES_subtree": {
+      "tileAvailability": {"constant": 1},
+      "contentAvailability": {"constant": 1},
+      "childSubtreeAvailability": {"constant": 0}
+    }
+  }
+}

@@ -2,19 +2,19 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import type {ReadonlyCRSDefinition, SpatialReferenceCoordinateFrame} from '@math.gl/crs';
-
-const GEOGRAPHIC_CRS = 'EPSG:4326';
-const GEOCENTRIC_CRS = 'EPSG:4978';
-
-/** Normalize common OGC URL and URN CRS spellings to authority identifiers. */
-function normalizeCrsIdentifier(identifier: string): string {
-  const normalizedIdentifier = identifier.trim().toUpperCase();
-  const ogcMatch = normalizedIdentifier.match(
-    /(?:\/DEF\/CRS\/|URN:OGC:DEF:CRS:)([A-Z0-9_-]+)(?:\/|::)(?:[^/:]*[/:])?([A-Z0-9_.-]+)$/
-  );
-  return ogcMatch ? `${ogcMatch[1]}:${ogcMatch[2]}` : normalizedIdentifier;
-}
+import {
+  inferCRSRepresentation,
+  parsePROJString,
+  parseWKTCRS,
+  type ReadonlyCRSDefinition,
+  type SpatialReferenceCoordinateFrame,
+  type WKTCRSNode
+} from '@math.gl/crs';
+import {
+  normalizeCrsIdentifier,
+  WGS84_GEOCENTRIC_CRS,
+  WGS84_GEOGRAPHIC_CRS
+} from './normalize-crs-identifier';
 
 /**
  * Classify a CRS definition into the broad coordinate frame used by 3D format adapters.
@@ -26,25 +26,14 @@ export function getSpatialCoordinateFrame(
   definition: ReadonlyCRSDefinition
 ): SpatialReferenceCoordinateFrame {
   if (typeof definition === 'string') {
-    const normalized = normalizeCrsIdentifier(definition);
-    if (normalized === GEOCENTRIC_CRS || /^GEOCCS\s*[\[(]/.test(normalized)) {
-      return 'geocentric';
+    const representation = inferCRSRepresentation(definition);
+    if (representation === 'wkt') {
+      return getWktCoordinateFrame(definition);
     }
-    if (
-      normalized === GEOGRAPHIC_CRS ||
-      normalized === 'EPSG:4490' ||
-      normalized === 'EPSG:4979' ||
-      normalized === 'OGC:CRS84' ||
-      normalized.includes('+PROJ=LONGLAT') ||
-      normalized.includes('+PROJ=LATLONG') ||
-      /^(?:GEOGCS|GEOGCRS|GEOGRAPHICCRS|GEOGRAPHIC2DCRS|GEOGRAPHIC3DCRS)\s*[\[(]/.test(normalized)
-    ) {
-      return 'geographic';
+    if (representation === 'proj-string') {
+      return getProjStringCoordinateFrame(definition);
     }
-    if (/^(?:GEODCRS|GEODETICCRS)\s*[\[(]/.test(normalized)) {
-      return /CS\s*[\[(]\s*CARTESIAN/.test(normalized) ? 'geocentric' : 'geographic';
-    }
-    return 'projected';
+    return getKnownCrsIdentifierCoordinateFrame(definition) || 'projected';
   }
 
   const projJsonDefinition = definition as {
@@ -70,5 +59,111 @@ export function getSpatialCoordinateFrame(
       ? 'geocentric'
       : 'geographic';
   }
-  return 'projected';
+  return 'unknown';
+}
+
+/**
+ * Classifies authority identifiers for which the tiles runtime has explicit frame knowledge.
+ *
+ * Unlike {@link getSpatialCoordinateFrame}, this function does not assume that an unrecognized
+ * authority identifier is projected. Draft formats use this strict result to avoid inventing
+ * semantics for unknown authorities or registry codes.
+ *
+ * @param definition - Serialized CRS identifier.
+ * @returns A known frame, or `undefined` when registry semantics are unavailable.
+ */
+export function getKnownCrsIdentifierCoordinateFrame(
+  definition: ReadonlyCRSDefinition | undefined
+): SpatialReferenceCoordinateFrame | undefined {
+  if (typeof definition !== 'string') {
+    return undefined;
+  }
+  const normalized = normalizeCrsIdentifier(definition);
+  if (normalized === WGS84_GEOCENTRIC_CRS) {
+    return 'geocentric';
+  }
+  if (normalized === WGS84_GEOGRAPHIC_CRS || normalized === 'OGC:CRS84') {
+    return 'geographic';
+  }
+  const epsgMatch = /^EPSG:(\d+)$/.exec(normalized);
+  if (!epsgMatch) {
+    return undefined;
+  }
+  const identifier = Number(epsgMatch[1]);
+  if (identifier === 7789) {
+    return 'geocentric';
+  }
+  if (identifier === 4490 || identifier === 4979) {
+    return 'geographic';
+  }
+  if (
+    identifier === 3857 ||
+    (identifier >= 32601 && identifier <= 32660) ||
+    (identifier >= 32701 && identifier <= 32760)
+  ) {
+    return 'projected';
+  }
+  return undefined;
+}
+
+/** Classifies a WKT definition using the syntax tree parsed by `@math.gl/crs`. */
+function getWktCoordinateFrame(definition: string): SpatialReferenceCoordinateFrame {
+  let root: WKTCRSNode;
+  try {
+    root = parseWKTCRS(definition).root;
+  } catch {
+    return 'unknown';
+  }
+  switch (root.keyword.toUpperCase()) {
+    case 'GEOCCS':
+      return 'geocentric';
+    case 'GEOGCS':
+    case 'GEOGCRS':
+    case 'GEOGRAPHICCRS':
+    case 'GEOGRAPHIC2DCRS':
+    case 'GEOGRAPHIC3DCRS':
+      return 'geographic';
+    case 'PROJCS':
+    case 'PROJCRS':
+    case 'PROJECTEDCRS':
+      return 'projected';
+    case 'GEODCRS':
+    case 'GEODETICCRS': {
+      const coordinateSystem = root.values.find(
+        (value): value is WKTCRSNode =>
+          value.type === 'node' && value.keyword.toUpperCase() === 'CS'
+      );
+      const subtype = coordinateSystem?.values[0];
+      if (subtype?.type !== 'enumeration' && subtype?.type !== 'string') {
+        return 'unknown';
+      }
+      return subtype.value.toUpperCase() === 'CARTESIAN'
+        ? 'geocentric'
+        : subtype.value.toUpperCase() === 'ELLIPSOIDAL'
+          ? 'geographic'
+          : 'unknown';
+    }
+    default:
+      return 'unknown';
+  }
+}
+
+/** Classifies a PROJ string using the syntax tree parsed by `@math.gl/crs`. */
+function getProjStringCoordinateFrame(definition: string): SpatialReferenceCoordinateFrame {
+  try {
+    const projection = parsePROJString(definition).parameters.find(
+      parameter => parameter.name.toLowerCase() === 'proj'
+    )?.value;
+    switch (projection?.toLowerCase()) {
+      case 'longlat':
+      case 'latlong':
+        return 'geographic';
+      case 'geocent':
+        return 'geocentric';
+      default:
+        return projection ? 'projected' : 'unknown';
+    }
+  } catch {
+    return 'unknown';
+  }
 }

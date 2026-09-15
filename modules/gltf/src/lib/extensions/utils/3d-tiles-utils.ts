@@ -113,9 +113,17 @@ export function getOffsetsForProperty(
     numberOfElements + 1 // The number of offsets is equal to the property table `count` plus one.
   );
 
-  // We don't support BigInt offsets at the moment. It requires additional logic and potential issues in Safari
   if (arrayOffsets instanceof BigInt64Array || arrayOffsets instanceof BigUint64Array) {
-    return null;
+    const numericOffsets = new Float64Array(arrayOffsets.length);
+    const maximumSafeOffset = BigInt(Number.MAX_SAFE_INTEGER);
+    for (let index = 0; index < arrayOffsets.length; index++) {
+      const offset = arrayOffsets[index];
+      if (offset < 0n || offset > maximumSafeOffset) {
+        throw new Error('EXT_structural_metadata: UINT64 offset exceeds the safe integer range');
+      }
+      numericOffsets[index] = Number(offset);
+    }
+    return numericOffsets;
   }
   return arrayOffsets;
 }
@@ -355,27 +363,31 @@ function coordinatesToOffset(
  * @param valuesData - Values in a flat typed array.
  * @param numberOfElements - Number of rows in the property table.
  * @param arrayOffsets - Offsets of nested arrays in the flat values array.
- * @param valuesDataBytesLength - Data byte length.
- * @param valueSize - Value size in bytes.
+ * @param componentCount - Number of scalar components in each value.
  * @returns Array of typed arrays.
  */
 export function parseVariableLengthArrayNumeric(
   valuesData: BigTypedArray,
   numberOfElements: number,
   arrayOffsets: TypedArray,
-  valuesDataBytesLength: number,
-  valueSize: number
+  componentCount = 1
 ): BigTypedArray[] {
   const attributeValueArray: BigTypedArray[] = [];
   for (let index = 0; index < numberOfElements; index++) {
-    const arrayOffset = arrayOffsets[index];
-    const arrayByteSize = arrayOffsets[index + 1] - arrayOffsets[index];
-    if (arrayByteSize + arrayOffset > valuesDataBytesLength) {
+    const arrayOffset = Number(arrayOffsets[index]);
+    const arrayLength = Number(arrayOffsets[index + 1]) - arrayOffset;
+    if (
+      !Number.isInteger(arrayOffset) ||
+      !Number.isInteger(arrayLength) ||
+      arrayOffset < 0 ||
+      arrayLength < 0 ||
+      (arrayOffset + arrayLength) * componentCount > valuesData.length
+    ) {
       break;
     }
-    const typedArrayOffset = arrayOffset / valueSize;
-    const elementCount = arrayByteSize / valueSize;
-    attributeValueArray.push(valuesData.slice(typedArrayOffset, typedArrayOffset + elementCount));
+    const componentOffset = arrayOffset * componentCount;
+    const componentLength = arrayLength * componentCount;
+    attributeValueArray.push(valuesData.slice(componentOffset, componentOffset + componentLength));
   }
   return attributeValueArray;
 }
@@ -387,17 +399,20 @@ export function parseVariableLengthArrayNumeric(
  * @param valuesData - Values in a flat typed array.
  * @param numberOfElements - Number of rows in the property table.
  * @param arrayCount - Nested arrays length.
+ * @param componentCount - Number of scalar components in each array element.
  * @returns Array of typed arrays.
  */
 export function parseFixedLengthArrayNumeric(
   valuesData: BigTypedArray,
   numberOfElements: number,
-  arrayCount: number
+  arrayCount: number,
+  componentCount = 1
 ): BigTypedArray[] {
   const attributeValueArray: BigTypedArray[] = [];
+  const rowComponentCount = arrayCount * componentCount;
   for (let index = 0; index < numberOfElements; index++) {
-    const elementOffset = index * arrayCount;
-    attributeValueArray.push(valuesData.slice(elementOffset, elementOffset + arrayCount));
+    const elementOffset = index * rowComponentCount;
+    attributeValueArray.push(valuesData.slice(elementOffset, elementOffset + rowComponentCount));
   }
   return attributeValueArray;
 }
@@ -408,13 +423,15 @@ export function parseFixedLengthArrayNumeric(
  * @param valuesDataBytes - Data taken from values property of the property table property.
  * @param arrayOffsets - Offsets for variable-length arrays. It's null for fixed-length arrays or scalar types.
  * @param stringOffsets - Index of the buffer view containing offsets for strings. It should be available for string type.
+ * @param fixedArrayCount - Number of strings in each fixed-length array row.
  * @returns String property values
  */
 export function getPropertyDataString(
   numberOfElements: number,
   valuesDataBytes: Uint8Array,
   arrayOffsets: TypedArray | null,
-  stringOffsets: TypedArray | null
+  stringOffsets: TypedArray | null,
+  fixedArrayCount?: number
 ): string[] | string[][] {
   const textDecoder = new TextDecoder('utf8');
 
@@ -446,21 +463,19 @@ export function getPropertyDataString(
   // Simple strings (stringOffsets only)
   if (stringOffsets) {
     const stringsArray: string[] = [];
-
-    let stringOffset = 0;
-    for (let index = 0; index < numberOfElements; index++) {
-      const stringByteSize = stringOffsets[index + 1] - stringOffsets[index];
-
-      if (stringByteSize + stringOffset <= valuesDataBytes.length) {
-        const stringData = valuesDataBytes.subarray(stringOffset, stringByteSize + stringOffset);
-        const stringAttribute = textDecoder.decode(stringData);
-
-        stringsArray.push(stringAttribute);
-        stringOffset += stringByteSize;
+    const stringCount = numberOfElements * (fixedArrayCount || 1);
+    for (let index = 0; index < stringCount; index++) {
+      const startByte = Number(stringOffsets[index]);
+      const endByte = Number(stringOffsets[index + 1]);
+      if (startByte >= 0 && endByte >= startByte && endByte <= valuesDataBytes.length) {
+        stringsArray.push(textDecoder.decode(valuesDataBytes.subarray(startByte, endByte)));
       }
     }
-
-    return stringsArray;
+    return fixedArrayCount
+      ? Array.from({length: numberOfElements}, (_unused, rowIndex) =>
+          stringsArray.slice(rowIndex * fixedArrayCount, (rowIndex + 1) * fixedArrayCount)
+        )
+      : stringsArray;
   }
   return [];
 }

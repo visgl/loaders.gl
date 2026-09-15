@@ -5,7 +5,16 @@
 /** A draft glTF 2.1 implicit shape definition. */
 export type GLTFShape = {
   /** Shape discriminator. */
-  type: 'box' | 'capsule' | 'cylinder' | 'plane' | 'sphere' | string;
+  type:
+    | 'box'
+    | 'capsule'
+    | 'cylinder'
+    | 'plane'
+    | 'sphere'
+    | 'ellipsoid region'
+    | 's2'
+    | 'cylinder region'
+    | string;
   /** Box parameters, when `type` is `box`. */
   box?: {size: [number, number, number]};
   /** Capsule parameters, when `type` is `capsule`. */

@@ -2,13 +2,11 @@
 // SPDX-License-Identifier: MIT
 // Copyright vis.gl contributors
 
-import {Vector3} from '@math.gl/core';
-import {OrientedBoundingBox, makeOrientedBoundingBoxFromPoints} from '@math.gl/culling';
-
-import type {S2HeightInfo} from '../../utils/s2/index';
-import {getS2OrientedBoundingBoxCornerPoints, getS2LngLat} from '../../utils/s2/index';
-
-import {Ellipsoid} from '@math.gl/geospatial';
+// TypeScript's legacy `node` resolution does not inspect package `exports`, but this public
+// subpath is resolved by the package at runtime and avoids loading unrelated DGGS decoders.
+// @ts-expect-error Conditional package subpath exports require a modern module resolver.
+import {getS2Bounds} from '@math.gl/dggs/s2';
+import {Ellipsoid, makeOBBFromRegion} from '@math.gl/geospatial';
 
 export type S2VolumeInfo = {
   /** S2 key or token */
@@ -25,30 +23,11 @@ export type S2VolumeInfo = {
  * @returns Oriented Bounding Box of type Box
  */
 export function convertS2BoundingVolumetoOBB(s2VolumeInfo: S2VolumeInfo): number[] {
-  const token: string = s2VolumeInfo.token;
-  const heightInfo: S2HeightInfo = {
-    minimumHeight: s2VolumeInfo.minimumHeight,
-    maximumHeight: s2VolumeInfo.maximumHeight
-  };
-
-  const corners: Vector3[] = getS2OrientedBoundingBoxCornerPoints(token, heightInfo);
-
-  // Add a point that doesn't allow the box dive under the Earth
-
-  const center = getS2LngLat(token);
-  const centerLng: number = center[0];
-  const centerLat: number = center[1];
-  const point = Ellipsoid.WGS84.cartographicToCartesian([
-    centerLng,
-    centerLat,
-    heightInfo.maximumHeight
-  ]);
-  const centerPointAdditional = new Vector3(point[0], point[1], point[2]);
-  corners.push(centerPointAdditional);
-
-  // corners should be an array of Vector3 (XYZ)
-  const obb: OrientedBoundingBox = makeOrientedBoundingBoxFromPoints(corners);
-  const box: number[] = [...obb.center, ...obb.halfAxes];
-
-  return box;
+  const [[west, south], [east, north]] = getS2Bounds(s2VolumeInfo.token);
+  const orientedBoundingBox = makeOBBFromRegion(
+    [west, south, east, north, s2VolumeInfo.minimumHeight, s2VolumeInfo.maximumHeight],
+    Ellipsoid.WGS84,
+    {units: 'degrees'}
+  );
+  return [...orientedBoundingBox.center, ...orientedBoundingBox.halfAxes];
 }

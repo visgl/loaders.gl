@@ -29,6 +29,27 @@ describe('3D Tiles multiple contents', () => {
     );
   });
 
+  test('rejects empty or conflicting standard multiple contents', () => {
+    const root = {
+      boundingVolume: {sphere: [0, 0, 0, 1]},
+      geometricError: 1,
+      children: []
+    };
+    const tileset = {asset: {version: '1.1'}, geometricError: 10};
+
+    expect(() => Tiles3DTilesetSchema.parse({...tileset, root: {...root, contents: []}})).toThrow();
+    expect(() =>
+      Tiles3DTilesetSchema.parse({
+        ...tileset,
+        root: {
+          ...root,
+          content: {uri: 'single.b3dm'},
+          contents: [{uri: 'first.b3dm'}]
+        }
+      })
+    ).toThrow();
+  });
+
   test('keeps single-content callers on the existing object shape', () => {
     const normalizedTile = normalizeTileData(
       {

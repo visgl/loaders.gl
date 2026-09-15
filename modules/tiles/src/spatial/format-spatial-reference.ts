@@ -4,6 +4,10 @@
 
 import type {ReadonlyCRSDefinition} from '@math.gl/crs';
 import {getI3SLinearUnitScale, getI3SVerticalUnitScale} from './i3s-elevation';
+import {
+  getKnownCrsIdentifierCoordinateFrame,
+  getSpatialCoordinateFrame
+} from './get-spatial-coordinate-frame';
 import {createTilesetSpatialReference} from './spatial-types';
 import type {TilesetElevationMode, TilesetSpatialReference} from './spatial-types';
 
@@ -40,6 +44,7 @@ type Tiles3DLike = {
   schemaUri?: string;
   metadata?: {class?: string; properties?: Record<string, unknown>};
   root?: {boundingVolume?: {region?: unknown}};
+  extensions?: Record<string, unknown>;
 };
 
 /**
@@ -68,8 +73,10 @@ export function getI3SSpatialReference(layer: I3SLayerLike): TilesetSpatialRefer
   const sourceIdentifier = getCrsIdentifier(spatialReference);
   const coordinateFrame =
     sourceIdentifier === undefined
-      ? getWktCoordinateFrame(spatialReference?.wkt)
-      : getIdentifierCoordinateFrame(sourceIdentifier);
+      ? sourceCrs
+        ? getSpatialCoordinateFrame(sourceCrs)
+        : 'unknown'
+      : getSpatialCoordinateFrame(`EPSG:${sourceIdentifier}`);
   const units = getI3SCoordinateUnits(coordinateFrame, verticalUnit, layer.ZFactor);
   const warnings: string[] = [];
   const elevationMode = getI3SElevationMode(layer.elevationInfo?.mode);
@@ -159,6 +166,10 @@ function getI3SElevationMode(mode: string | undefined): TilesetElevationMode | u
  * @returns Normalized source spatial metadata.
  */
 export function get3DTilesSpatialReference(tileset: Tiles3DLike): TilesetSpatialReference {
+  const draftSpatialReference = getDraft3DTilesSpatialReference(tileset);
+  if (draftSpatialReference) {
+    return draftSpatialReference;
+  }
   const geocentricCrs = getTilesetSemanticValue(tileset, 'TILESET_CRS_GEOCENTRIC');
   const coordinateEpoch = getTilesetSemanticValue(tileset, 'TILESET_CRS_COORDINATE_EPOCH');
   const warnings: string[] = [];
@@ -202,6 +213,120 @@ export function get3DTilesSpatialReference(tileset: Tiles3DLike): TilesetSpatial
   });
 }
 
+/** Resolves the draft glTF EXT_geospatial_crs WKID or WKT2 declaration. */
+function getDraft3DTilesSpatialReference(
+  tileset: Tiles3DLike
+): TilesetSpatialReference | undefined {
+  const extension = tileset.extensions?.EXT_geospatial_crs as
+    | {format?: unknown; extensions?: Record<string, unknown>}
+    | undefined;
+  if (!extension) {
+    return undefined;
+  }
+  const warnings: string[] = [];
+  let sourceCrs: ReadonlyCRSDefinition | undefined;
+  let verticalCrs: ReadonlyCRSDefinition | undefined;
+  let epoch: number | undefined;
+  let representation: 'identifier' | 'wkt' | undefined;
+  if (extension.format === 'wkid') {
+    const wkidExtension = extension.extensions?.EXT_geospatial_crs_wkid as
+      | {authority?: unknown; wkid?: unknown; vcsWkid?: unknown; epoch?: unknown}
+      | undefined;
+    if (typeof wkidExtension?.authority === 'string' && Number.isInteger(wkidExtension.wkid)) {
+      sourceCrs = `${wkidExtension.authority}:${wkidExtension.wkid}`;
+      representation = 'identifier';
+      if (Number.isInteger(wkidExtension.vcsWkid)) {
+        verticalCrs = `${wkidExtension.authority}:${wkidExtension.vcsWkid}`;
+      }
+      epoch = parseCoordinateEpoch(wkidExtension.epoch);
+      if (wkidExtension.epoch !== undefined && epoch === undefined) {
+        warnings.push('EXT_geospatial_crs_wkid epoch is not a finite decimal year');
+      }
+    } else {
+      warnings.push('EXT_geospatial_crs_wkid requires string authority and integer wkid');
+    }
+  } else if (extension.format === 'wkt2') {
+    const wktExtension = extension.extensions?.EXT_geospatial_crs_wkt2 as
+      | {wkt2?: unknown}
+      | undefined;
+    if (typeof wktExtension?.wkt2 === 'string' && wktExtension.wkt2.trim()) {
+      sourceCrs = wktExtension.wkt2;
+      representation = 'wkt';
+    } else {
+      warnings.push('EXT_geospatial_crs_wkt2 requires a nonempty wkt2 string');
+    }
+  } else {
+    warnings.push(`Unsupported EXT_geospatial_crs format ${String(extension.format)}`);
+  }
+  const coordinateFrame =
+    representation === 'wkt'
+      ? getSpatialCoordinateFrame(sourceCrs as string)
+      : getKnownCrsIdentifierCoordinateFrame(sourceCrs) || 'unknown';
+  const verticalSemantics = getDraftVerticalCrsSemantics(verticalCrs);
+  if (verticalCrs && !verticalSemantics) {
+    warnings.push(
+      `Unsupported vertical CRS ${String(verticalCrs)}; vertical unit and height reference are unknown`
+    );
+  }
+  const verticalUnit = verticalCrs ? verticalSemantics?.unit : 'meter';
+  return createTilesetSpatialReference({
+    sourceCrs,
+    sourceCrsState: sourceCrs ? 'explicit' : 'unknown',
+    sourceCrsRepresentation: representation,
+    verticalCrs,
+    coordinateEpoch: epoch,
+    units:
+      coordinateFrame === 'geocentric'
+        ? ['meter', 'meter', 'meter']
+        : coordinateFrame === 'geographic' && verticalUnit
+          ? ['degree', 'degree', verticalUnit]
+          : undefined,
+    verticalUnitScale: verticalCrs ? (verticalSemantics?.verticalUnitScale ?? Number.NaN) : 1,
+    heightReference: verticalCrs
+      ? (verticalSemantics?.heightReference ?? 'unknown')
+      : sourceCrs
+        ? 'ellipsoidal'
+        : 'unknown',
+    coordinateFrame,
+    axisOrder: sourceCrs ? 'xyz' : 'unknown',
+    provenance: 'metadata',
+    warnings
+  });
+}
+
+/** Known vertical CRS semantics needed to interpret draft 3D Tiles height values. */
+type DraftVerticalCrsSemantics = {
+  unit: string;
+  verticalUnitScale: number;
+  heightReference: 'orthometric';
+};
+
+/** Resolves vertical units and height interpretation for known EPSG vertical CRSs. */
+function getDraftVerticalCrsSemantics(
+  verticalCrs: ReadonlyCRSDefinition | undefined
+): DraftVerticalCrsSemantics | undefined {
+  if (typeof verticalCrs !== 'string') {
+    return undefined;
+  }
+  const epsgMatch = /^EPSG:(\d+)$/i.exec(verticalCrs);
+  if (!epsgMatch) {
+    return undefined;
+  }
+  switch (Number(epsgMatch[1])) {
+    case 5702: // NGVD29 height (ftUS)
+    case 6360: // NAVD88 height (ftUS)
+      return {
+        unit: 'us-foot',
+        verticalUnitScale: 1200 / 3937,
+        heightReference: 'orthometric'
+      };
+    case 5703: // NAVD88 height
+      return {unit: 'meter', verticalUnitScale: 1, heightReference: 'orthometric'};
+    default:
+      return undefined;
+  }
+}
+
 /** Parse the 3D Tiles decimal-year string while tolerating legacy numeric producer output. */
 function parseCoordinateEpoch(value: unknown): number | undefined {
   if (typeof value !== 'string' && typeof value !== 'number') {
@@ -236,57 +361,6 @@ function getI3SVerticalCrsDefinition(
 /** Return the preferred horizontal WKID. */
 function getCrsIdentifier(spatialReference?: I3SSpatialReferenceLike): number | undefined {
   return spatialReference?.latestWkid ?? spatialReference?.wkid;
-}
-
-/** Classify common EPSG identifiers used by I3S into their coordinate frames. */
-function getIdentifierCoordinateFrame(
-  identifier: number
-): TilesetSpatialReference['coordinateFrame'] {
-  if (identifier === 4978) {
-    return 'geocentric';
-  }
-  if (identifier === 4326 || identifier === 4490 || identifier === 4979) {
-    return 'geographic';
-  }
-  return 'projected';
-}
-
-/**
- * Classify a WKT root coordinate system without guessing when the declaration is ambiguous.
- *
- * WKT2 uses `GEODCRS` for both geographic and geocentric systems, so its `CS` declaration is
- * inspected before assigning a frame.
- */
-function getWktCoordinateFrame(wkt?: string): TilesetSpatialReference['coordinateFrame'] {
-  if (!wkt) {
-    return 'unknown';
-  }
-
-  const normalizedWkt = wkt.trim().toUpperCase();
-  const rootKeyword = normalizedWkt.match(/^([A-Z][A-Z0-9_]*)\s*[\[(]/)?.[1];
-  if (rootKeyword === 'GEOCCS') {
-    return 'geocentric';
-  }
-  if (
-    rootKeyword === 'GEOGCS' ||
-    rootKeyword === 'GEOGRAPHICCRS' ||
-    rootKeyword === 'GEOGRAPHIC2DCRS' ||
-    rootKeyword === 'GEOGRAPHIC3DCRS'
-  ) {
-    return 'geographic';
-  }
-  if (rootKeyword === 'PROJCS' || rootKeyword === 'PROJCRS' || rootKeyword === 'PROJECTEDCRS') {
-    return 'projected';
-  }
-  if (rootKeyword === 'GEODCRS' || rootKeyword === 'GEODETICCRS') {
-    if (/\bCS\s*[\[(]\s*CARTESIAN\s*,\s*3\b/.test(normalizedWkt)) {
-      return 'geocentric';
-    }
-    if (/\bCS\s*[\[(]\s*ELLIPSOIDAL\s*,\s*[23]\b/.test(normalizedWkt)) {
-      return 'geographic';
-    }
-  }
-  return 'unknown';
 }
 
 /** Resolve a tileset-wide structured metadata property by its standard semantic. */

@@ -5,6 +5,7 @@
 /* eslint-disable camelcase, max-statements, no-restricted-globals */
 import type {LoaderContext} from '@loaders.gl/loader-utils';
 import type {GLTFLoaderOptions} from '../../gltf-loader';
+import type {GLTF} from '../types/gltf-json-schema';
 import type {GLTFExternalFile, GLTFWithBuffers} from '../types/gltf-types';
 import type {GLB} from '../types/glb-types';
 import type {ParseGLBOptions} from './parse-glb';
@@ -28,6 +29,10 @@ export type ParseGLTFOptions = ParseGLBOptions & {
   loadImages?: boolean;
   /** Load linked and embedded buffers; required for meshopt decompression. @default true */
   loadBuffers?: boolean;
+  /** @internal Restrict linked-buffer loading after the glTF JSON is available. */
+  loadBufferIndices?: number[] | ((json: GLTF) => number[]);
+  /** @internal Restrict meshopt decompression to selected buffer views. */
+  decompressBufferViewIndices?: number[] | ((json: GLTF) => number[]);
   /** Resolve draft glTF 2.1 `files` entries. */
   loadFiles?: boolean;
   /** Recursively parse draft glTF 2.1 external assets referenced by nodes. */
@@ -91,7 +96,7 @@ async function parseGLTFWithExternalAssets(
 
   // Load linked buffers asynchronously and decodes base64 buffers in parallel
   if (options?.gltf?.loadBuffers && gltf.json.buffers) {
-    await loadBuffers(gltf, options, context);
+    await loadBuffers(gltf, options, context, options.gltf.loadBufferIndices);
   }
 
   if (options?.gltf?.loadFiles && gltf.json.files) {
@@ -249,7 +254,7 @@ type ExternalAssetLoadState = {
   packageIds: {next: number};
 };
 
-const PACKAGE_URL_PREFIX = 'gltf-package:';
+const PACKAGE_URL_PREFIX = 'gltf-package://';
 
 /** Recursively resolve external assets instantiated by nodes. */
 async function loadExternalAssets(
@@ -407,10 +412,25 @@ async function loadFiles(
 /** Asynchronously fetch and parse buffers, store in buffers array outside of json
  * TODO - traverse gltf and determine which buffers are actually needed
  */
-async function loadBuffers(gltf: GLTFWithBuffers, options, context: LoaderContext) {
+async function loadBuffers(
+  gltf: GLTFWithBuffers,
+  options: GLTFLoaderOptions,
+  context: LoaderContext,
+  configuredBufferIndices?: number[] | ((json: GLTF) => number[])
+) {
   // TODO
   const buffers = gltf.json.buffers || [];
+  const selectedBufferIndices = configuredBufferIndices
+    ? new Set(
+        typeof configuredBufferIndices === 'function'
+          ? configuredBufferIndices(gltf.json)
+          : configuredBufferIndices
+      )
+    : undefined;
   for (let i = 0; i < buffers.length; ++i) {
+    if (selectedBufferIndices && !selectedBufferIndices.has(i)) {
+      continue;
+    }
     const buffer = buffers[i];
     if (buffer.uri) {
       const {fetch} = context;

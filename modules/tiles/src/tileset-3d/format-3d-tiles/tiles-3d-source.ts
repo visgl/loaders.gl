@@ -5,7 +5,7 @@
 import {path, RequestCache, sliceArrayBuffer} from '@loaders.gl/loader-utils';
 import {Ellipsoid} from '@math.gl/geospatial';
 import {Vector3} from '@math.gl/core';
-import type {CoreAPI, Loader, LoaderOptions} from '@loaders.gl/loader-utils';
+import type {CoreAPI, Loader, LoaderContext, LoaderOptions} from '@loaders.gl/loader-utils';
 import type {Tile3D} from '../common/tile-3d';
 import {Tileset3DTraverser} from './tileset-3d-traverser';
 import type {Tileset3D} from '../common/tileset-3d';
@@ -54,6 +54,11 @@ type PackageFile = {
 };
 
 type PackageResource = {fileIndex: number; files: PackageFile[]};
+
+type Tiles3DPackageLoaderContext = LoaderContext & {
+  /** Parent package records available while parsing an embedded tileset or subtree. */
+  _tiles3dPackageFiles: PackageFile[];
+};
 
 /** Diagnostics for source-managed implicit subtree loading. */
 export type ImplicitTilingStats = {
@@ -108,6 +113,10 @@ export class Tiles3DSource implements Tileset3DSource {
   private readonly tileUrlCache: Map<string, string> = new Map();
   /** Original content descriptors retained across {@link Tile3D.unloadContent} calls. */
   private readonly tileContentHeaders = new WeakMap<Tile3D, Record<string, any>[]>();
+  /** Source-local namespaces assigned to distinct embedded glTF package file collections. */
+  private readonly packageNamespaces = new WeakMap<PackageFile[], number>();
+  /** Next source-local package namespace. */
+  private nextPackageNamespace = 0;
   /** Parsed subtree requests keyed by final source URL for deduplication and LRU reuse. */
   private readonly implicitSubtreeCache: RequestCache<ParsedImplicitSubtree>;
   /** Mutable counters exposed as a defensive snapshot through {@link getImplicitTilingStats}. */
@@ -368,7 +377,7 @@ export class Tiles3DSource implements Tileset3DSource {
     }
 
     const subtreeUrl = this.getTileUrl(reference.subtreeUrl);
-    const subtree = await this.loadImplicitSubtreeResource(subtreeUrl);
+    const subtree = await this.loadImplicitSubtreeResource(subtreeUrl, reference.resource);
     if (this.destroyed || tile.isDestroyed()) {
       return {loaded: false, tileCount: 0, childSubtreeCount: 0};
     }
@@ -590,17 +599,25 @@ export class Tiles3DSource implements Tileset3DSource {
     }
 
     const data = await this.getPackageFileData(file);
-    const packageBaseUrl = `gltf-package:${packageResource.fileIndex}`;
+    const packageNamespace = this.getPackageNamespace(packageResource.files);
+    const packageRootUrl = `gltf-package://${packageNamespace}/${packageResource.fileIndex}`;
+    const fileName = file.name || 'content';
+    const directorySeparatorIndex = fileName.lastIndexOf('/');
+    const packageBaseUrl =
+      directorySeparatorIndex >= 0
+        ? `${packageRootUrl}/${fileName.slice(0, directorySeparatorIndex)}`
+        : packageRootUrl;
     return await this.coreApi.parse(data, this.loader, options, {
-      url: file.name || `${packageBaseUrl}/content`,
-      filename: file.name || 'content',
+      url: `${packageRootUrl}/${fileName}`,
+      filename: fileName,
       baseUrl: packageBaseUrl,
       loaders: [this.loader],
       coreApi: this.coreApi,
       _parse: this.coreApi.parse,
+      _tiles3dPackageFiles: packageResource.files,
       fetch: async (resource: string, init?: RequestInit) => {
-        const reference = resource.startsWith(`${packageBaseUrl}/`)
-          ? resource.slice(packageBaseUrl.length + 1)
+        const reference = resource.startsWith(`${packageRootUrl}/`)
+          ? resource.slice(packageRootUrl.length + 1)
           : resource;
         const referencedFile = packageResource.files.find(
           packageFile => packageFile.name === reference || packageFile.originalUri === reference
@@ -616,7 +633,18 @@ export class Tiles3DSource implements Tileset3DSource {
           headers: {'content-type': referencedFile.mimeType}
         });
       }
-    });
+    } as Tiles3DPackageLoaderContext);
+  }
+
+  /** Returns a stable source-local namespace for one embedded glTF package file collection. */
+  private getPackageNamespace(files: PackageFile[]): number {
+    const existingNamespace = this.packageNamespaces.get(files);
+    if (existingNamespace !== undefined) {
+      return existingNamespace;
+    }
+    const packageNamespace = this.nextPackageNamespace++;
+    this.packageNamespaces.set(files, packageNamespace);
+    return packageNamespace;
   }
 
   /** Resolves a retained package-file byte range without eagerly copying other package files. */
@@ -639,9 +667,13 @@ export class Tiles3DSource implements Tileset3DSource {
    * Returns a parsed subtree from the LRU cache or starts one source-managed request.
    *
    * @param subtreeUrl - Final subtree URL after query inheritance.
+   * @param packageResource - Optional glTF package file satisfying the subtree reference.
    * @returns Parsed subtree availability data.
    */
-  private async loadImplicitSubtreeResource(subtreeUrl: string): Promise<ParsedImplicitSubtree> {
+  private async loadImplicitSubtreeResource(
+    subtreeUrl: string,
+    packageResource?: PackageResource
+  ): Promise<ParsedImplicitSubtree> {
     const cachedSubtree = this.implicitSubtreeCache.get(subtreeUrl);
     if (cachedSubtree) {
       this.implicitTilingStats.cacheHits++;
@@ -651,14 +683,17 @@ export class Tiles3DSource implements Tileset3DSource {
     this.implicitTilingStats.requestedSubtrees++;
     const loaderOptions = (this.loadOptions[this.loader.id] as Record<string, unknown>) || {};
     return await this.implicitSubtreeCache.getOrLoad(subtreeUrl, async () => {
-      return (await this.loadResourceData(subtreeUrl, {
+      const options = {
         ...this.loadOptions,
         [this.loader.id]: {
           ...loaderOptions,
           isTileset: false,
           isSubtree: true
         }
-      })) as ParsedImplicitSubtree;
+      };
+      return (await (packageResource
+        ? this.loadContentResource(subtreeUrl, packageResource, options)
+        : this.loadResourceData(subtreeUrl, options))) as ParsedImplicitSubtree;
     });
   }
 

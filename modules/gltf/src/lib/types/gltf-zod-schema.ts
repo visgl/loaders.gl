@@ -19,7 +19,7 @@ const GLTF_NAMED_PROPERTY_SHAPE = {
 /** Zod schema for a draft glTF 2.1 implicit shape. */
 export const GLTFShapeSchema = z
   .object({
-    type: z.enum(['box', 'capsule', 'cylinder', 'plane', 'sphere']),
+    type: z.union([z.enum(['box', 'capsule', 'cylinder', 'plane', 'sphere']), z.string()]),
     box: z.object({size: z.array(z.number()).length(3)}).optional(),
     capsule: z
       .object({
@@ -96,7 +96,8 @@ export const GLTFAccessorSchema = z
       z.literal(5122),
       z.literal(5123),
       z.literal(5125),
-      z.literal(5126)
+      z.literal(5126),
+      z.literal(5130)
     ]),
     normalized: z.boolean().optional(),
     count: z.number().int().positive(),

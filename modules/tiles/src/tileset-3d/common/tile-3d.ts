@@ -137,6 +137,9 @@ export class Tile3D {
    */
   private _unscaledLodMetricValue: number = 0;
 
+  /** Whether the source format defines geometric error in transform-local units. */
+  private _scaleGeometricError: boolean = true;
+
   /** @todo math.gl is not exporting BoundingVolume base type? */
   boundingVolume: any = null;
 
@@ -285,11 +288,7 @@ export class Tile3D {
     this.type = header.type;
     this.contentUrl = header.contentUrl;
     this.contentUrls = header.contentUrls || (header.contentUrl ? [header.contentUrl] : []);
-    this.metadata = header.metadata || null;
-    const contentHeaders = Array.isArray(header.content) ? header.content : [header.content];
-    this.contentMetadata = contentHeaders
-      .filter(Boolean)
-      .map(contentHeader => contentHeader.metadata || null);
+    this._initializeMetadata(header);
     this.childrenState = header.implicitSubtree ? 'unloaded' : 'ready';
 
     this._initializeLodMetric(header);
@@ -669,34 +668,51 @@ export class Tile3D {
   /**
    * Replaces a contentless implicit placeholder with its materialized subtree-root header.
    *
-   * Transform state is intentionally preserved: the placeholder already owns the composed
-   * transform, and reapplying the root transform here would double-transform bounds and geometric
-   * error. Content and raw geometric error are reinitialized from the newly available header.
+   * The placeholder transform is preserved when the subtree omits a root transform. An explicit
+   * subtree-root transform replaces it and is recomposed against the runtime parent. Content,
+   * metadata, bounds, and raw geometric error are reinitialized from the available header.
    *
    * @param materializedHeader - Available root header produced from one subtree resource.
    */
   applyImplicitSubtreeHeader(materializedHeader: Record<string, any>): void {
     const existingTransform = this.header.transform;
     const existingTransformMatrix = this.header.transformMatrix;
+    const hasMaterializedTransform = materializedHeader.transform !== undefined;
     this.header = {
       ...this.header,
       ...materializedHeader,
-      transform: existingTransform,
-      transformMatrix: existingTransformMatrix,
+      transform: hasMaterializedTransform ? materializedHeader.transform : existingTransform,
+      transformMatrix: hasMaterializedTransform
+        ? materializedHeader.transformMatrix
+        : existingTransformMatrix,
       implicitSubtree: undefined
     };
+    if (hasMaterializedTransform) {
+      this._initializeTransforms(this.header);
+    }
     this.refine = this._getRefine(materializedHeader.refine);
     this.type = materializedHeader.type;
     this.contentUrl = materializedHeader.contentUrl;
     this.contentUrls =
       materializedHeader.contentUrls ||
       (materializedHeader.contentUrl ? [materializedHeader.contentUrl] : []);
+    this._initializeMetadata(this.header);
     this._initializeLodMetric(materializedHeader);
     this._updateLodMetricScale();
     this._initializeBoundingVolumes(this.header);
+    this._boundingBox = undefined;
     // Use the merged header so inherited viewer-request-volume metadata remains available when a
     // materialized implicit tile has no render content of its own.
     this._initializeContent(this.header);
+  }
+
+  /** Refreshes tile and content metadata from a source or materialized tile header. */
+  private _initializeMetadata(header: Record<string, any>): void {
+    this.metadata = header.metadata || null;
+    const contentHeaders = Array.isArray(header.content) ? header.content : [header.content];
+    this.contentMetadata = contentHeaders
+      .filter(Boolean)
+      .map(contentHeader => contentHeader.metadata || null);
   }
 
   // Unloads the tile's content.
@@ -918,6 +934,10 @@ export class Tile3D {
 
   /** Initializes the tile's LOD metric from its header or its nearest available ancestor. */
   _initializeLodMetric(header: {[key: string]: any}): void {
+    this._scaleGeometricError =
+      typeof header._scaleGeometricError === 'boolean'
+        ? header._scaleGeometricError
+        : (this.parent?._scaleGeometricError ?? true);
     if ('lodMetricType' in header) {
       this.lodMetricType = header.lodMetricType;
     } else {
@@ -974,7 +994,7 @@ export class Tile3D {
    * I3S `maxScreenThreshold` is already a screen-space metric and must not be transform-scaled.
    */
   _updateLodMetricScale(): void {
-    if (this.lodMetricType !== LOD_METRIC_TYPE.GEOMETRIC_ERROR) {
+    if (this.lodMetricType !== LOD_METRIC_TYPE.GEOMETRIC_ERROR || !this._scaleGeometricError) {
       this.lodMetricValue = this._unscaledLodMetricValue;
       return;
     }

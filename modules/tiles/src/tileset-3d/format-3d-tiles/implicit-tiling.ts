@@ -6,6 +6,7 @@ import {LOD_METRIC_TYPE, TILE_REFINEMENT, TILE_TYPE} from '../../constants';
 
 const QUADTREE_CHILD_COUNT = 4;
 const OCTREE_CHILD_COUNT = 8;
+const AVAILABILITY_RANK_CACHE = new WeakMap<ImplicitAvailability, Uint32Array>();
 
 /** Global coordinates of a tile in an implicit quadtree or octree. */
 export type ImplicitTileCoordinates = {
@@ -29,6 +30,8 @@ export type ImplicitTilingDescriptor = {
   contentHeader?: Record<string, any>;
   /** Metadata inherited by every implicit content stream, in source order. */
   contentHeaders?: Array<Record<string, any>>;
+  /** Whether generated headers preserve the standard `contents` source representation. */
+  useCanonicalContents?: boolean;
   /** Absolute template URL for subtree availability files. */
   subtreesUrlTemplate: string;
   /** Spatial subdivision used by the hierarchy. */
@@ -45,6 +48,28 @@ export type ImplicitTilingDescriptor = {
   rootLodMetricValue: number;
   /** Bounding volume of the complete implicit hierarchy. */
   rootBoundingVolume: Record<string, any>;
+  /** Whether runtime transforms scale geometric error; false for draft 2.0. */
+  scaleGeometricError?: boolean;
+  /** Package files that may satisfy concrete content and subtree template references. */
+  resourceFiles?: ImplicitPackageFile[];
+};
+
+/** Structured-cloneable file retained from a draft glTF package. */
+export type ImplicitPackageFile = {
+  name?: string;
+  mimeType: string;
+  uri?: string;
+  originalUri?: string;
+  data?: ArrayBuffer;
+  byteOffset: number;
+  byteLength: number;
+  bufferUri?: string;
+};
+
+/** Package reference attached to a generated content or subtree URL. */
+export type ImplicitPackageResource = {
+  fileIndex: number;
+  files: ImplicitPackageFile[];
 };
 
 /** Lazy pointer from a runtime tile to the subtree that defines it and its descendants. */
@@ -55,6 +80,8 @@ export type ImplicitSubtreeReference = {
   subtreeUrl: string;
   /** Serializable hierarchy description used to materialize the subtree. */
   descriptor: ImplicitTilingDescriptor;
+  /** Embedded package resource matching {@link subtreeUrl}, when available. */
+  resource?: ImplicitPackageResource;
 };
 
 /** Constant or bitstream-backed availability declaration from a parsed subtree. */
@@ -84,6 +111,24 @@ export type ParsedImplicitSubtree = {
   contentMetadata?: unknown;
   /** Metadata entity attached to the subtree itself. */
   subtreeMetadata?: unknown;
+  /** Decoded standard attribute accessors keyed by tile semantic. */
+  tileAttributes?: Record<string, ArrayLike<number>>;
+  /** Decoded standard attribute accessors keyed by content semantic. */
+  contentAttributes?: Record<string, ArrayLike<number>>;
+  /** Index of the property table assigned to available tiles. */
+  tileProperties?: unknown;
+  /** Index of the property table assigned to available contents. */
+  contentProperties?: unknown;
+  /** Fully decoded property rows for available tiles, in availability order. */
+  tilePropertyRows?: Array<Record<string, unknown>>;
+  /** Fully decoded property rows for available contents, in availability order. */
+  contentPropertyRows?: Array<Record<string, unknown>>;
+  /** Tile property rows filtered to values permitted in URI templates. */
+  tileTemplatePropertyRows?: Array<Record<string, unknown>>;
+  /** Content property rows filtered to values permitted in URI templates. */
+  contentTemplatePropertyRows?: Array<Record<string, unknown>>;
+  /** Files retained by a glTF subtree package for later content/subtree resolution. */
+  resourceFiles?: ImplicitPackageFile[];
 };
 
 /** Runtime header produced for an available implicit tile. */
@@ -108,6 +153,10 @@ export type ImplicitSubtreeMetadata = {
   contentMetadata?: unknown;
   /** Subtree-level metadata entity. */
   subtreeMetadata?: unknown;
+  /** Decoded property-table row for this tile. */
+  tileProperties?: Record<string, unknown>;
+  /** Decoded property-table row for this tile's available content. */
+  contentProperties?: Record<string, unknown>;
 };
 
 /** Result of materializing exactly one subtree resource. */
@@ -134,7 +183,11 @@ export function createImplicitSubtreeReference(
   return {
     coordinates,
     subtreeUrl: replaceImplicitUrlTemplate(descriptor.subtreesUrlTemplate, coordinates),
-    descriptor
+    descriptor,
+    resource: findImplicitPackageResource(
+      descriptor.resourceFiles,
+      replaceImplicitUrlTemplate(descriptor.subtreesUrlTemplate, coordinates)
+    )
   };
 }
 
@@ -156,6 +209,7 @@ export function materializeImplicitSubtree(
 ): MaterializedImplicitSubtree {
   const {descriptor} = reference;
   validateImplicitDescriptor(descriptor);
+  validateImplicitSubtree(subtree, descriptor);
 
   const counters = {tileCount: 0, childSubtreeCount: 0};
   const root = materializeAvailableTile(
@@ -175,6 +229,101 @@ export function materializeImplicitSubtree(
   return {root, ...counters};
 }
 
+/** Validates availability lengths and tightly packed draft attribute/property row counts. */
+function validateImplicitSubtree(
+  subtree: ParsedImplicitSubtree,
+  descriptor: ImplicitTilingDescriptor
+): void {
+  const childCount = getImplicitChildCount(descriptor.subdivisionScheme);
+  const tileElementCount = (childCount ** descriptor.subtreeLevels - 1) / (childCount - 1);
+  const childSubtreeElementCount = childCount ** descriptor.subtreeLevels;
+  validateAvailabilityLength(subtree.tileAvailability, tileElementCount, 'tile');
+  const contentAvailabilityStreams = Array.isArray(subtree.contentAvailability)
+    ? subtree.contentAvailability
+    : subtree.contentAvailability
+      ? [subtree.contentAvailability]
+      : [];
+  for (const contentAvailability of contentAvailabilityStreams) {
+    validateAvailabilityLength(contentAvailability, tileElementCount, 'content');
+  }
+  validateAvailabilityLength(
+    subtree.childSubtreeAvailability,
+    childSubtreeElementCount,
+    'child subtree'
+  );
+  const availableTileCount = countAvailableElements(subtree.tileAvailability, tileElementCount);
+  const availableContentCount = contentAvailabilityStreams[0]
+    ? countAvailableElements(contentAvailabilityStreams[0], tileElementCount)
+    : 0;
+  validateAttributeLengths(subtree.tileAttributes, availableTileCount, 'tile');
+  validateAttributeLengths(subtree.contentAttributes, availableContentCount, 'content');
+  if (subtree.tilePropertyRows && subtree.tilePropertyRows.length !== availableTileCount) {
+    throw new Error('3DTILES_subtree: tile property-table count does not match availability');
+  }
+  if (subtree.contentPropertyRows && subtree.contentPropertyRows.length !== availableContentCount) {
+    throw new Error('3DTILES_subtree: content property-table count does not match availability');
+  }
+}
+
+/** Verifies that a bitstream contains every bit required by its implicit subtree. */
+function validateAvailabilityLength(
+  availability: ImplicitAvailability,
+  elementCount: number,
+  label: string
+): void {
+  if (availability.constant === 0 || availability.constant === 1) {
+    return;
+  }
+  if (
+    !availability.explicitBitstream ||
+    availability.explicitBitstream.byteLength * 8 < elementCount
+  ) {
+    throw new Error(`3DTILES_subtree: ${label} availability bitstream is too short`);
+  }
+}
+
+/** Counts available elements within the meaningful, unpadded part of an availability stream. */
+function countAvailableElements(availability: ImplicitAvailability, elementCount: number): number {
+  if (availability.constant === 1) {
+    return elementCount;
+  }
+  if (availability.constant === 0) {
+    return 0;
+  }
+  let availableCount = 0;
+  for (let index = 0; index < elementCount; index++) {
+    if (getAvailabilityValue(availability, index)) {
+      availableCount++;
+    }
+  }
+  return availableCount;
+}
+
+/** Validates standard subtree attribute accessor counts after availability expansion. */
+function validateAttributeLengths(
+  attributes: Record<string, ArrayLike<number>> | undefined,
+  availableCount: number,
+  label: string
+): void {
+  const componentCounts: Record<string, number> = {
+    TILE_BOUNDING_BOX: 16,
+    TILE_BOUNDING_SPHERE: 4,
+    TILE_GEOMETRIC_ERROR: 1,
+    TILE_REFINE: 1,
+    TILE_TRANSFORM: 16,
+    CONTENT_BOUNDING_BOX: 16,
+    CONTENT_BOUNDING_SPHERE: 4
+  };
+  for (const [semantic, values] of Object.entries(attributes || {})) {
+    const componentCount = componentCounts[semantic];
+    if (componentCount && values.length !== availableCount * componentCount) {
+      throw new Error(
+        `3DTILES_subtree: ${label} attribute ${semantic} count does not match availability`
+      );
+    }
+  }
+}
+
 /**
  * Replaces implicit coordinate placeholders in a content or subtree URL.
  *
@@ -184,17 +333,22 @@ export function materializeImplicitSubtree(
  */
 export function replaceImplicitUrlTemplate(
   templateUrl: string,
-  coordinates: ImplicitTileCoordinates
+  coordinates: ImplicitTileCoordinates,
+  properties: Record<string, unknown> = {}
 ): string {
-  const values: Record<string, number> = {
+  const values: Record<string, unknown> = {
     level: coordinates.level,
     x: coordinates.x,
     y: coordinates.y,
-    z: coordinates.z
+    z: coordinates.z,
+    ...properties
   };
-  return templateUrl.replace(/{(level|x|y|z)}/gi, (_match, coordinateName: string) =>
-    String(values[coordinateName.toLowerCase()])
-  );
+  return templateUrl.replace(/{([^{}]+)}/g, (match, propertyName: string) => {
+    const value = Object.hasOwn(values, propertyName)
+      ? values[propertyName]
+      : values[propertyName.toLowerCase()];
+    return value === undefined ? match : String(value);
+  });
 }
 
 /**
@@ -273,6 +427,7 @@ function materializeAvailableTile(
     descriptor,
     reference,
     globalCoordinates,
+    availabilityIndex,
     contentAvailability,
     children
   );
@@ -290,7 +445,9 @@ function createLazyImplicitTileHeader(
   descriptor: ImplicitTilingDescriptor,
   coordinates: ImplicitTileCoordinates
 ): ImplicitTileHeader {
-  const reference = createImplicitSubtreeReference(descriptor, coordinates);
+  const resourceFiles = mergeImplicitPackageFiles(descriptor.resourceFiles, subtree.resourceFiles);
+  const childDescriptor = resourceFiles ? {...descriptor, resourceFiles} : descriptor;
+  const reference = createImplicitSubtreeReference(childDescriptor, coordinates);
   return {
     id: getImplicitTileId(reference, coordinates),
     children: [],
@@ -305,8 +462,173 @@ function createLazyImplicitTileHeader(
     lodMetricValue: descriptor.rootLodMetricValue / 2 ** coordinates.level,
     refine: descriptor.refine,
     type: TILE_TYPE.EMPTY,
-    implicitMetadata: getImplicitSubtreeMetadata(subtree)
+    implicitMetadata: getImplicitSubtreeMetadata(subtree),
+    _scaleGeometricError: descriptor.scaleGeometricError !== false
   };
+}
+
+type ImplicitAttributeOverrides = {
+  boundingVolume?: Record<string, any>;
+  geometricError?: number;
+  refine?: TILE_REFINEMENT;
+  transform?: number[];
+};
+
+/** Decodes supported standard subtree attributes for one tightly packed available row. */
+function getSubtreeAttributeOverrides(
+  attributes: Record<string, ArrayLike<number>> | undefined,
+  rowIndex: number,
+  scope: 'tile' | 'content'
+): ImplicitAttributeOverrides {
+  if (!attributes || rowIndex < 0) {
+    return {};
+  }
+  const box = getAttributeComponents(
+    attributes[scope === 'tile' ? 'TILE_BOUNDING_BOX' : 'CONTENT_BOUNDING_BOX'],
+    rowIndex,
+    16
+  );
+  const sphere = getAttributeComponents(
+    attributes[scope === 'tile' ? 'TILE_BOUNDING_SPHERE' : 'CONTENT_BOUNDING_SPHERE'],
+    rowIndex,
+    4
+  );
+  const boundingVolume = box
+    ? {
+        box: [
+          box[12],
+          box[13],
+          box[14],
+          box[0] / 2,
+          box[1] / 2,
+          box[2] / 2,
+          box[4] / 2,
+          box[5] / 2,
+          box[6] / 2,
+          box[8] / 2,
+          box[9] / 2,
+          box[10] / 2
+        ]
+      }
+    : sphere
+      ? {sphere}
+      : undefined;
+  if (scope === 'content') {
+    return {boundingVolume};
+  }
+  const geometricError = getAttributeComponents(attributes.TILE_GEOMETRIC_ERROR, rowIndex, 1)?.[0];
+  if (geometricError !== undefined && (!Number.isFinite(geometricError) || geometricError < 0)) {
+    throw new Error('3DTILES_subtree: TILE_GEOMETRIC_ERROR must be nonnegative');
+  }
+  const refineValue = getAttributeComponents(attributes.TILE_REFINE, rowIndex, 1)?.[0];
+  if (refineValue !== undefined && refineValue !== 0 && refineValue !== 1) {
+    throw new Error('3DTILES_subtree: TILE_REFINE must be 0 or 1');
+  }
+  return {
+    boundingVolume,
+    geometricError,
+    refine:
+      refineValue === undefined
+        ? undefined
+        : refineValue === 0
+          ? TILE_REFINEMENT.ADD
+          : TILE_REFINEMENT.REPLACE,
+    transform: getAttributeComponents(attributes.TILE_TRANSFORM, rowIndex, 16)
+  };
+}
+
+/** Copies one logical accessor element and validates its available-row count. */
+function getAttributeComponents(
+  values: ArrayLike<number> | undefined,
+  rowIndex: number,
+  componentCount: number
+): number[] | undefined {
+  if (!values) {
+    return undefined;
+  }
+  const offset = rowIndex * componentCount;
+  if (offset + componentCount > values.length) {
+    throw new Error('3DTILES_subtree: attribute accessor is shorter than availability');
+  }
+  return Array.from({length: componentCount}, (_unused, componentIndex) =>
+    Number(values[offset + componentIndex])
+  );
+}
+
+/** Returns the tightly packed property/attribute row index for an available element. */
+function getAvailabilityRank(availability: ImplicitAvailability, index: number): number {
+  if (availability.constant === 1) {
+    return index;
+  }
+  if (availability.constant === 0) {
+    return 0;
+  }
+  let ranks = AVAILABILITY_RANK_CACHE.get(availability);
+  if (!ranks) {
+    const bitCount = (availability.explicitBitstream?.byteLength || 0) * 8;
+    ranks = new Uint32Array(bitCount + 1);
+    for (let candidateIndex = 0; candidateIndex < bitCount; candidateIndex++) {
+      ranks[candidateIndex + 1] =
+        ranks[candidateIndex] + Number(getAvailabilityValue(availability, candidateIndex));
+    }
+    AVAILABILITY_RANK_CACHE.set(availability, ranks);
+  }
+  return ranks[index];
+}
+
+/** Locates a concrete generated URI in a retained glTF package. */
+function findImplicitPackageResource(
+  files: ImplicitPackageFile[] | undefined,
+  resourceUrl: string
+): ImplicitPackageResource | undefined {
+  if (!files?.length) {
+    return undefined;
+  }
+  const urlWithoutQuery = resourceUrl.split('?')[0];
+  const packageRelativePath = /^gltf-package:\/\/[^/]+\/(.*)$/.exec(urlWithoutQuery)?.[1];
+  const exactFileIndex = files.findIndex(file => {
+    const reference = file.originalUri || file.name;
+    return (
+      file.uri === urlWithoutQuery ||
+      Boolean(reference && (urlWithoutQuery === reference || packageRelativePath === reference))
+    );
+  });
+  if (exactFileIndex >= 0) {
+    return {fileIndex: exactFileIndex, files};
+  }
+  const fileIndex = files.findIndex(file => {
+    const reference = file.originalUri || file.name;
+    return Boolean(
+      reference &&
+        (urlWithoutQuery.endsWith(`/${reference}`) || urlWithoutQuery.endsWith(`:${reference}`))
+    );
+  });
+  return fileIndex < 0 ? undefined : {fileIndex, files};
+}
+
+/** Layers files declared by a child package over inherited parent-package files. */
+function mergeImplicitPackageFiles(
+  parentFiles: ImplicitPackageFile[] | undefined,
+  childFiles: ImplicitPackageFile[] | undefined
+): ImplicitPackageFile[] | undefined {
+  if (!childFiles?.length) {
+    return parentFiles;
+  }
+  if (!parentFiles?.length) {
+    return childFiles;
+  }
+  const childReferences = new Set(
+    childFiles.flatMap(file => [file.uri, file.originalUri, file.name].filter(Boolean) as string[])
+  );
+  return [
+    ...childFiles,
+    ...parentFiles.filter(
+      file =>
+        ![file.uri, file.originalUri, file.name].some(
+          reference => reference && childReferences.has(reference)
+        )
+    )
+  ];
 }
 
 /**
@@ -324,9 +646,36 @@ function formatImplicitTileHeader(
   descriptor: ImplicitTilingDescriptor,
   reference: ImplicitSubtreeReference,
   coordinates: ImplicitTileCoordinates,
+  availabilityIndex: number,
   contentAvailability: boolean[],
   children: ImplicitTileHeader[]
 ): ImplicitTileHeader {
+  const tilePropertyIndex = getAvailabilityRank(subtree.tileAvailability, availabilityIndex);
+  const tileProperties = subtree.tilePropertyRows?.[tilePropertyIndex];
+  const primaryContentAvailability = Array.isArray(subtree.contentAvailability)
+    ? subtree.contentAvailability[0]
+    : subtree.contentAvailability;
+  const contentPropertyIndex =
+    primaryContentAvailability &&
+    getAvailabilityValue(primaryContentAvailability, availabilityIndex)
+      ? getAvailabilityRank(primaryContentAvailability, availabilityIndex)
+      : -1;
+  const contentProperties = subtree.contentPropertyRows?.[contentPropertyIndex];
+  const tileTemplateProperties =
+    subtree.tileTemplatePropertyRows?.[tilePropertyIndex] || tileProperties;
+  const contentTemplateProperties =
+    subtree.contentTemplatePropertyRows?.[contentPropertyIndex] || contentProperties;
+  const templateProperties = {...tileTemplateProperties, ...contentTemplateProperties};
+  const tileAttributes = getSubtreeAttributeOverrides(
+    subtree.tileAttributes,
+    tilePropertyIndex,
+    'tile'
+  );
+  const contentAttributes = getSubtreeAttributeOverrides(
+    subtree.contentAttributes,
+    contentPropertyIndex,
+    'content'
+  );
   const contentUrlTemplates = descriptor.contentUrlTemplates?.length
     ? descriptor.contentUrlTemplates
     : [descriptor.contentUrlTemplate];
@@ -335,39 +684,57 @@ function formatImplicitTileHeader(
       if (!contentAvailability[contentIndex] || !templateUrl) {
         return null;
       }
+      const contentUrl = replaceImplicitUrlTemplate(templateUrl, coordinates, templateProperties);
+      if (/{[^{}]+}/.test(contentUrl)) {
+        throw new Error(`Implicit content URI has unresolved template values: ${contentUrl}`);
+      }
       return {
         contentIndex,
-        contentUrl: replaceImplicitUrlTemplate(templateUrl, coordinates)
+        contentUrl
       };
     })
     .filter((entry): entry is {contentIndex: number; contentUrl: string} => Boolean(entry));
   const availableContentUrls = contentEntries.map(entry => entry.contentUrl);
-  const content = contentEntries.map(({contentIndex, contentUrl}) => ({
-    ...(descriptor.contentHeaders?.[contentIndex] ||
-      (contentIndex === 0 ? descriptor.contentHeader : {}) ||
-      {}),
-    uri: contentUrl
-  }));
+  const resourceFiles = mergeImplicitPackageFiles(descriptor.resourceFiles, subtree.resourceFiles);
+  const content = contentEntries.map(({contentIndex, contentUrl}) => {
+    const packageResource = findImplicitPackageResource(resourceFiles, contentUrl);
+    return {
+      ...(descriptor.contentHeaders?.[contentIndex] ||
+        (contentIndex === 0 ? descriptor.contentHeader : {}) ||
+        {}),
+      ...contentAttributes,
+      uri: contentUrl,
+      ...(contentProperties ? {metadata: {properties: contentProperties}} : {}),
+      ...(packageResource ? {_resource: packageResource} : {})
+    };
+  });
   const contentUrl = availableContentUrls[0];
-  const lodMetricValue = descriptor.rootLodMetricValue / 2 ** coordinates.level;
+  const computedLodMetricValue = descriptor.rootLodMetricValue / 2 ** coordinates.level;
+  const lodMetricValue = tileAttributes.geometricError ?? computedLodMetricValue;
+  const computedBoundingVolume = calculateImplicitBoundingVolume(
+    descriptor.rootBoundingVolume,
+    coordinates,
+    descriptor.subdivisionScheme
+  );
 
   return {
     id: getImplicitTileId(reference, coordinates),
     children,
     contentUrl,
     content: content.length > 1 ? content : content[0],
+    contents: descriptor.useCanonicalContents && content.length ? content : undefined,
     contentUrls: availableContentUrls,
-    refine: descriptor.refine,
+    refine: tileAttributes.refine || descriptor.refine,
     type: getImplicitTileType(contentUrl),
     lodMetricType: descriptor.lodMetricType,
     lodMetricValue,
     geometricError: lodMetricValue,
-    boundingVolume: calculateImplicitBoundingVolume(
-      descriptor.rootBoundingVolume,
-      coordinates,
-      descriptor.subdivisionScheme
-    ),
-    implicitMetadata: getImplicitSubtreeMetadata(subtree)
+    boundingVolume: tileAttributes.boundingVolume || computedBoundingVolume,
+    transform: tileAttributes.transform,
+    transformMatrix: tileAttributes.transform,
+    metadata: tileProperties ? {properties: tileProperties} : undefined,
+    implicitMetadata: getImplicitSubtreeMetadata(subtree, tileProperties, contentProperties),
+    _scaleGeometricError: descriptor.scaleGeometricError !== false
   };
 }
 
@@ -381,13 +748,17 @@ function formatImplicitTileHeader(
  * @returns Metadata references, or `undefined` when the subtree declares none.
  */
 function getImplicitSubtreeMetadata(
-  subtree: ParsedImplicitSubtree
+  subtree: ParsedImplicitSubtree,
+  tileProperties?: Record<string, unknown>,
+  contentProperties?: Record<string, unknown>
 ): ImplicitSubtreeMetadata | undefined {
   if (
     !subtree.propertyTables &&
     subtree.tileMetadata === undefined &&
     !subtree.contentMetadata &&
-    subtree.subtreeMetadata === undefined
+    subtree.subtreeMetadata === undefined &&
+    !tileProperties &&
+    !contentProperties
   ) {
     return undefined;
   }
@@ -395,7 +766,9 @@ function getImplicitSubtreeMetadata(
     propertyTables: subtree.propertyTables,
     tileMetadata: subtree.tileMetadata,
     contentMetadata: subtree.contentMetadata,
-    subtreeMetadata: subtree.subtreeMetadata
+    subtreeMetadata: subtree.subtreeMetadata,
+    tileProperties,
+    contentProperties
   };
 }
 
@@ -510,9 +883,11 @@ function calculateImplicitBoundingVolume(
   if (rootBoundingVolume.region) {
     const [west, south, east, north, minimumHeight, maximumHeight] = rootBoundingVolume.region;
     const divisionCount = 2 ** coordinates.level;
-    const longitudeSize = (east - west) / divisionCount;
+    const longitudeSpan = east >= west ? east - west : east + 2 * Math.PI - west;
+    const longitudeSize = longitudeSpan / divisionCount;
     const latitudeSize = (north - south) / divisionCount;
-    const childWest = west + longitudeSize * coordinates.x;
+    const childWest = normalizeRegionLongitude(west + longitudeSize * coordinates.x);
+    const childEast = normalizeRegionLongitude(west + longitudeSize * (coordinates.x + 1));
     const childSouth = south + latitudeSize * coordinates.y;
     let childMinimumHeight = minimumHeight;
     let childMaximumHeight = maximumHeight;
@@ -525,7 +900,7 @@ function calculateImplicitBoundingVolume(
       region: [
         childWest,
         childSouth,
-        childWest + longitudeSize,
+        childEast,
         childSouth + latitudeSize,
         childMinimumHeight,
         childMaximumHeight
@@ -534,8 +909,14 @@ function calculateImplicitBoundingVolume(
   }
 
   if (rootBoundingVolume.box) {
-    if (rootBoundingVolume.s2VolumeInfo) {
-      return {box: [...rootBoundingVolume.box], s2VolumeInfo: rootBoundingVolume.s2VolumeInfo};
+    if (
+      rootBoundingVolume.s2VolumeInfo ||
+      rootBoundingVolume.extensions?.['3DTILES_shape_cylinder_region']
+    ) {
+      return {
+        ...rootBoundingVolume,
+        box: [...rootBoundingVolume.box]
+      };
     }
     const box = rootBoundingVolume.box;
     const divisionCount = 2 ** coordinates.level;
@@ -567,6 +948,18 @@ function calculateImplicitBoundingVolume(
   throw new Error(
     `Unsupported implicit 3D Tiles bounding volume: ${JSON.stringify(rootBoundingVolume)}`
   );
+}
+
+/** Normalize a longitude while preserving the positive pi boundary for non-wrapped regions. */
+function normalizeRegionLongitude(longitude: number): number {
+  let normalizedLongitude = longitude;
+  while (normalizedLongitude > Math.PI) {
+    normalizedLongitude -= 2 * Math.PI;
+  }
+  while (normalizedLongitude < -Math.PI) {
+    normalizedLongitude += 2 * Math.PI;
+  }
+  return normalizedLongitude;
 }
 
 /**

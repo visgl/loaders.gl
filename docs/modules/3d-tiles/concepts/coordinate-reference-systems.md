@@ -50,10 +50,11 @@ For shared types, Proj4/geoid registration, and vertical conversion, see
 loaders.gl classifies the world frame in this order:
 
 1. an explicit application source override for incomplete or incorrect data;
-2. `TILESET_CRS_GEOCENTRIC` in the tileset metadata entity and schema;
-3. a root geographic `region`, which establishes the specification global frame;
-4. inherited placement from a parent or external tileset;
-5. unknown/local when no authoritative evidence exists.
+2. draft 2.0 `EXT_geospatial_crs` metadata on the tileset glTF;
+3. `TILESET_CRS_GEOCENTRIC` in the tileset metadata entity and schema;
+4. a root geographic `region`, which establishes the specification global frame;
+5. inherited placement from a parent or external tileset;
+6. unknown/local when no authoritative evidence exists.
 
 `TILESET_CRS_GEOCENTRIC: "UNKNOWN"` stays explicitly unknown and is not replaced by a region
 fallback. `TILESET_CRS_COORDINATE_EPOCH` is retained alongside the CRS. An unresolved external
@@ -66,6 +67,23 @@ console.log(tilesetJson.spatialMetadata);
 
 After source initialization the same normalized information is exposed on
 `tileset.spatialReference`. Original schema classes, metadata entities, and values remain intact.
+
+### Draft glTF CRS declarations
+
+Experimental 3D Tiles 2.0 resources can declare `EXT_geospatial_crs` with either a `wkid` or
+`wkt2` representation. For `wkid`, loaders.gl exposes the horizontal identifier as
+`authority:wkid`, preserves an optional coordinate epoch, and exposes a recognized `vcsWkid` as
+the vertical CRS. For `wkt2`, the complete WKT2 definition remains the source CRS. The normalized
+`coordinateFrame`, units, height reference, and diagnostics describe what loaders.gl could
+determine from that declaration; unknown identifiers and unsupported vertical CRSs remain
+explicitly unresolved rather than receiving a WGS84 fallback.
+
+`EXT_georeference` places a node's local right/up/forward frame at its longitude, latitude, and
+height before composing the node's matrix or TRS transform. The current affine implementation is
+valid only when `EXT_geospatial_crs` declares `EPSG:4978` without a separate vertical CRS.
+Projected, geographic, WKT2, and separate-vertical-CRS combinations are rejected because they
+require nonlinear projection or vertical-datum operations that cannot be represented by that
+single matrix.
 
 ## Regions and Cartesian bounds
 
@@ -129,6 +147,9 @@ precision match I3S so renderers receive one coordinate contract.
 | Coordinate epoch preservation | Implemented |
 | Explicit `UNKNOWN` and local-frame handling | Implemented |
 | Region-established global-frame discovery | Implemented |
+| Draft `EXT_geospatial_crs` WKID/WKT2 discovery | Experimental |
+| Draft `EXT_georeference` into `EPSG:4978` | Experimental |
+| Draft georeference into projected/geographic or separate vertical CRSs | Rejected |
 | Normalized loader/source/runtime metadata | Implemented |
 | Deterministic Proj4/geoid primitive | Implemented |
 | External schema semantic resolution | Planned source-loading integration |

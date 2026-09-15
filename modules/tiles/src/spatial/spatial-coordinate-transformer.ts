@@ -8,6 +8,11 @@ import {Ellipsoid} from '@math.gl/geospatial';
 import type {ReadonlyCRSDefinition} from '@math.gl/crs';
 import {Proj4Projection, toProj4CRSDefinition, type Proj4CRSDefinition} from '@math.gl/proj4';
 import {getGeoidModel} from './spatial-resource-registry';
+import {
+  normalizeCrsIdentifier,
+  WGS84_GEOCENTRIC_CRS,
+  WGS84_GEOGRAPHIC_CRS
+} from './normalize-crs-identifier';
 import type {
   TilesetHeightReference,
   TilesetSpatialOptions,
@@ -15,9 +20,6 @@ import type {
   TilesetTargetHeightReference
 } from './spatial-types';
 export {getSpatialCoordinateFrame} from './get-spatial-coordinate-frame';
-
-const GEOGRAPHIC_CRS = 'EPSG:4326';
-const GEOCENTRIC_CRS = 'EPSG:4978';
 
 /**
  * Deterministic coordinate transformer used by 3D tile format adapters.
@@ -90,13 +92,13 @@ export class SpatialCoordinateTransformer {
       if (!this.sourceIsGeographic && !this.sourceIsGeocentric) {
         this.geographicProjection = new Proj4Projection({
           from: getHorizontalProj4Definition(spatialReference.sourceCrs),
-          to: GEOGRAPHIC_CRS,
+          to: WGS84_GEOGRAPHIC_CRS,
           enforceAxis: false
         });
       }
       if (!this.outputIsGeographic && !this.outputIsGeocentric) {
         this.heightOutputProjection = new Proj4Projection({
-          from: GEOGRAPHIC_CRS,
+          from: WGS84_GEOGRAPHIC_CRS,
           to: getHorizontalProj4Definition(outputCrs),
           enforceAxis: false
         });
@@ -224,7 +226,9 @@ function validateTransformRequest(spatialReference: TilesetSpatialReference): vo
 
 /** Return whether a CRS definition identifies the WGS84 geocentric frame. */
 function isWgs84Geocentric(definition: unknown): boolean {
-  return typeof definition === 'string' && normalizeCrsIdentifier(definition) === GEOCENTRIC_CRS;
+  return (
+    typeof definition === 'string' && normalizeCrsIdentifier(definition) === WGS84_GEOCENTRIC_CRS
+  );
 }
 
 /** Return whether a CRS definition uses conventional WGS84 longitude/latitude coordinates. */
@@ -233,16 +237,9 @@ function isWgs84Geographic(definition: unknown): boolean {
     return false;
   }
   const identifier = normalizeCrsIdentifier(definition);
-  return identifier === GEOGRAPHIC_CRS || identifier === 'EPSG:4979' || identifier === 'OGC:CRS84';
-}
-
-/** Normalize common OGC URL and URN CRS spellings to authority identifiers. */
-function normalizeCrsIdentifier(identifier: string): string {
-  const normalizedIdentifier = identifier.trim().toUpperCase();
-  const ogcMatch = normalizedIdentifier.match(
-    /(?:\/DEF\/CRS\/|URN:OGC:DEF:CRS:)([A-Z0-9_-]+)(?:\/|::)(?:[^/:]*[/:])?([A-Z0-9_.-]+)$/
+  return (
+    identifier === WGS84_GEOGRAPHIC_CRS || identifier === 'EPSG:4979' || identifier === 'OGC:CRS84'
   );
-  return ogcMatch ? `${ogcMatch[1]}:${ogcMatch[2]}` : normalizedIdentifier;
 }
 
 /** Return whether source and target height interpretations differ. */

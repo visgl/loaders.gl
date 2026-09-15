@@ -85,12 +85,17 @@ A lazy subtree is eligible only when all of these conditions hold:
 
 1. its root tile intersects the current view;
 2. the camera is inside its viewer request volume, when one is present;
-3. its screen-space error is greater than `maximumScreenSpaceError`;
+3. it is the level-zero subtree, or its screen-space error is greater than
+   `maximumScreenSpaceError`;
 4. its request receives a slot from the normal request scheduler.
+
+The visible level-zero subtree is requested once regardless of SSE because its placeholder has no
+materialized hierarchy to traverse. Deeper subtree boundaries retain the normal SSE gate.
 
 The request uses the tile's existing progressive-resolution and foveated priority. A subtree is not a special HTTP request and does not bypass `maxRequests`, authentication, custom `fetch`, query inheritance, or archive resolution. See [Request scheduling and priorities](./request-scheduling-and-priorities) for the priority calculation and [Screen-space error and LOD](./screen-space-error-and-lod) for the refinement threshold.
 
-If the tile is culled, outside its request volume, or already detailed enough, no subtree request is made.
+If the tile is culled or outside its request volume, no subtree request is made. An already detailed
+enough tile suppresses deeper subtree requests, but not the initial level-zero hierarchy request.
 
 ## One Request, One Subtree Boundary
 
@@ -136,7 +141,10 @@ Generated geometric error halves once per global level:
 tileGeometricError = rootGeometricError / 2^level
 ```
 
-The normal transform-aware path then converts that local value to world-space `lodMetricValue`. This prevents implicit tiles from bypassing transform-scaled SSE.
+For 3D Tiles 1.x, the normal transform-aware path then converts that local value to world-space
+`lodMetricValue`. In the experimental draft 2.0 profile, tiles retain the declared geometric error
+without transform scaling, including at implicit subtree roots. This version gate preserves
+existing 1.x SSE behavior while applying the draft-specific runtime interpretation consistently.
 
 Region volumes divide longitude and latitude at every level; octrees also divide height. Oriented boxes divide their half-axis vectors, so rotated boxes do not become axis-aligned accidentally. S2-derived root boxes are retained conservatively for lazy descendants in the lower-level runtime: this avoids incorrect culling while the S2 conversion implementation remains owned by `@loaders.gl/3d-tiles`.
 
@@ -156,16 +164,18 @@ records i3dm orientation support, including octahedrally encoded instance direct
 ## Metadata topology
 
 The loader preserves metadata declarations at every currently representable level of the 3D Tiles
-hierarchy: inline schema and schema URI, tileset groups and metadata, explicit tile and content
-metadata, and the raw property-table references carried by implicit subtrees. Generated implicit
-headers expose subtree references through `implicitMetadata`; explicit and generated tile headers
-retain `metadata`, while content entries retain `metadata` and `group`.
+hierarchy: inline or external schemas, tileset groups and metadata, explicit tile and content
+metadata, and property-table references carried by implicit subtrees. For draft glTF subtrees it
+also decodes property-table rows and standard tile/content attribute accessors. Available rows are
+tightly packed, so sparse availability is mapped to the matching row before URI substitution or
+attribute overrides are applied.
 
-These fields are deliberately lossless rather than decoded. Applications can use the class and
-property references together with their own schema/property-table implementation, but loaders.gl
-does not yet resolve binary values, inheritance, or metadata-derived bounding volumes. See the
-[3D Tiles compatibility matrix](../formats/3d-tiles#extensions-and-metadata) for the current
-boundary.
+For 1.1 subtrees these fields remain lossless references. Draft glTF `3DTILES_subtree` resources
+add decoded tile/content attributes and property-table rows. Generated headers apply availability
+first, then attribute overrides, then property values. A property-backed URI placeholder resolves
+from the content row, then the tile row, then the implicit coordinate (`level`, `x`, `y`, `z`).
+Direct box, sphere, ellipsoid-region, S2, and cylinder-region values are normalized to runtime
+volumes; conservative oriented boxes are used where the runtime has no exact native volume.
 
 ## URLs, Authentication, and Archives
 
@@ -221,9 +231,9 @@ The underscored SSE field is diagnostic rather than stable API. Use these values
 
 - Implicit multiple-content availability is materialized in source order. Applications still decide
   how to compose or render heterogeneous content types returned by the streams.
-- Subtree metadata references (`propertyTables`, `tileMetadata`, `contentMetadata`, and
-  `subtreeMetadata`) are preserved on generated headers as `implicitMetadata`. The runtime does not
-  yet decode property-table classes, enums, or values.
+- Legacy 1.1 subtree metadata references (`propertyTables`, `tileMetadata`, `contentMetadata`, and
+  `subtreeMetadata`) are preserved on generated headers as `implicitMetadata`; draft glTF subtree
+  rows are decoded only for the supported scalar, vector, matrix, string, and enum profile.
 - S2-derived implicit descendants use a conservative root oriented box rather than recomputing a tight S2 box in the `@loaders.gl/tiles` runtime.
 - Lazy hierarchy metadata is source-managed; custom source implementations must provide `loadTileChildren` to use the same traversal hook.
 
