@@ -67,4 +67,25 @@ describe('Tiles3DTilesetSchema', () => {
     expect(serializedJsonSchema).toContain('schemaUri');
     expect(serializedJsonSchema).toContain('"not":{}');
   });
+
+  it('preserves tile content exclusivity in generated JSON Schema', () => {
+    const conflictingTileset = {
+      asset: {version: '1.1'},
+      geometricError: 1,
+      root: {
+        boundingVolume: {sphere: [0, 0, 0, 1]},
+        geometricError: 0,
+        content: {uri: 'single.glb'},
+        contents: [{uri: 'multiple.glb'}]
+      }
+    };
+    const jsonSchema = z.toJSONSchema(Tiles3DTilesetSchema, {target: 'draft-7'});
+    const schemaFromJson = z.fromJSONSchema(jsonSchema);
+
+    expect(Tiles3DTilesetSchema.safeParse(conflictingTileset).success).toBe(false);
+    expect(
+      schemaFromJson.safeParse(conflictingTileset).success,
+      'generated JSON Schema rejects the same content conflict'
+    ).toBe(false);
+  });
 });

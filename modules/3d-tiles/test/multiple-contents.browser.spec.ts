@@ -47,7 +47,7 @@ describe('3D Tiles multiple contents', () => {
           contents: [{uri: 'first.b3dm'}]
         }
       })
-    ).toThrow(/Tile must not define both content and contents/);
+    ).toThrow();
   });
 
   test('keeps single-content callers on the existing object shape', () => {

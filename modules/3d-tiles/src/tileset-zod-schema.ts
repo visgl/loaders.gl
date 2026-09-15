@@ -116,29 +116,43 @@ export const ImplicitTilingSchema = z
   .passthrough() satisfies z.ZodType<ImplicitTilingData>;
 
 /** Recursive Zod schema for one tile in a 3D Tiles tileset. */
-export const Tiles3DTileSchema: z.ZodType<Tiles3DTileJSON> = z.lazy(() =>
-  z
+export const Tiles3DTileSchema: z.ZodType<Tiles3DTileJSON> = z.lazy(() => {
+  const tileBaseSchema = z
     .object({
       boundingVolume: Tile3DBoundingVolumeSchema,
       viewerRequestVolume: Tile3DBoundingVolumeSchema.optional(),
       geometricError: z.number().nonnegative(),
       refine: z.string().optional(),
       transform: z.array(z.number()).length(16).optional(),
-      // 3D Tiles 1.1 allows a tile to reference one or more independent contents.
-      content: z.union([Tiles3DTileContentSchema, z.array(Tiles3DTileContentSchema)]).optional(),
-      contents: z.array(Tiles3DTileContentSchema).min(1).optional(),
       children: z.array(Tiles3DTileSchema).default([]),
       extensions: z.record(z.string(), z.unknown()).optional(),
       extras: z.unknown().optional(),
       metadata: Tiles3DMetadataEntitySchema.optional(),
       implicitTiling: ImplicitTilingSchema.optional()
     })
-    .passthrough()
-    .refine(tile => !(tile.content && tile.contents), {
-      message: 'Tile must not define both content and contents',
-      path: ['contents']
-    })
-);
+    .passthrough();
+  const tileContentSourceSchema = z.union([
+    z
+      .object({
+        content: z.union([Tiles3DTileContentSchema, z.array(Tiles3DTileContentSchema)]),
+        contents: z.never().optional()
+      })
+      .passthrough(),
+    z
+      .object({
+        content: z.never().optional(),
+        contents: z.array(Tiles3DTileContentSchema).min(1)
+      })
+      .passthrough(),
+    z
+      .object({
+        content: z.never().optional(),
+        contents: z.never().optional()
+      })
+      .passthrough()
+  ]);
+  return z.intersection(tileBaseSchema, tileContentSourceSchema);
+});
 
 /** Common fields in raw 3D Tiles tileset JSON before loader normalization. */
 const Tiles3DTilesetBaseSchema = z
