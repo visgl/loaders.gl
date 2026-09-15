@@ -15,9 +15,38 @@ describe('SpatialCoordinateTransformer', () => {
   test.each([
     ['GEOGCRS["WGS 84"]', 'geographic'],
     ['GEODCRS["WGS 84",CS[Cartesian,3]]', 'geocentric'],
-    ['PROJCRS["WGS 84 / Pseudo-Mercator"]', 'projected']
-  ] as const)('classifies WKT target frame %s', (definition, expectedFrame) => {
+    ['PROJCRS["WGS 84 / Pseudo-Mercator"]', 'projected'],
+    ['GEODCRS["Unclassified"]', 'unknown'],
+    ['COMPOUNDCRS["Unclassified"]', 'unknown'],
+    ['GEODCRS[', 'unknown'],
+    ['+proj=longlat +datum=WGS84', 'geographic'],
+    ['+proj=geocent +datum=WGS84', 'geocentric'],
+    ['+proj=utm +zone=11', 'projected'],
+    ['EPSG:7789', 'geocentric'],
+    ['https://www.opengis.net/def/crs/EPSG/0/4326', 'geographic']
+  ] as const)('classifies CRS target frame %s', (definition, expectedFrame) => {
     expect(getSpatialCoordinateFrame(definition)).toBe(expectedFrame);
+  });
+
+  test('classifies PROJJSON frames without inventing vertical CRS semantics', () => {
+    expect(
+      getSpatialCoordinateFrame({
+        type: 'BoundCRS',
+        name: 'Bound geographic CRS',
+        source_crs: {type: 'GeographicCRS', name: 'Source'},
+        target_crs: {type: 'GeographicCRS', name: 'Target'},
+        transformation: {name: 'Transformation'}
+      } as never)
+    ).toBe('geographic');
+    expect(
+      getSpatialCoordinateFrame({
+        type: 'CompoundCRS',
+        name: 'Compound CRS',
+        components: [{type: 'GeodeticCRS', coordinate_system: {subtype: 'Cartesian'}}]
+      } as never)
+    ).toBe('geocentric');
+    expect(getSpatialCoordinateFrame({type: 'ProjectedCRS'} as never)).toBe('projected');
+    expect(getSpatialCoordinateFrame({type: 'VerticalCRS'} as never)).toBe('unknown');
   });
 
   test('retains native coordinates and extra components', () => {

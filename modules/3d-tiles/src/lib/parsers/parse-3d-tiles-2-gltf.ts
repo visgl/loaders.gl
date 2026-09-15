@@ -15,7 +15,7 @@ import {GLTFScenegraph} from '@loaders.gl/gltf';
 import {Matrix4} from '@math.gl/core';
 import {Ellipsoid} from '@math.gl/geospatial';
 import {CachedUriResolver} from '@loaders.gl/loader-utils';
-import type {ParsedImplicitSubtree} from '@loaders.gl/tiles';
+import {get3DTilesSpatialReference, type ParsedImplicitSubtree} from '@loaders.gl/tiles';
 import type {
   Tile3DBoundingVolume,
   Tiles3DTileContentJSON,
@@ -1203,18 +1203,11 @@ function getNodeMatrix(json: GLTF, node: GLTFNode, nodeIndex: number): number[] 
  * transformations that cannot be represented by the affine node matrix alone.
  */
 function validateGeoreferenceCrs(json: GLTF, nodeIndex: number): void {
-  const crsExtension = json.extensions?.['EXT_geospatial_crs'] as
-    | {format?: unknown; extensions?: Record<string, unknown>}
-    | undefined;
-  const wkidExtension = crsExtension?.extensions?.['EXT_geospatial_crs_wkid'] as
-    | {authority?: unknown; wkid?: unknown; vcsWkid?: unknown}
-    | undefined;
+  const spatialReference = get3DTilesSpatialReference({extensions: json.extensions});
   if (
-    crsExtension?.format !== 'wkid' ||
-    typeof wkidExtension?.authority !== 'string' ||
-    wkidExtension.authority.toUpperCase() !== 'EPSG' ||
-    wkidExtension.wkid !== 4978 ||
-    wkidExtension.vcsWkid !== undefined
+    typeof spatialReference.sourceCrs !== 'string' ||
+    spatialReference.sourceCrs.toUpperCase() !== 'EPSG:4978' ||
+    spatialReference.verticalCrs !== undefined
   ) {
     throw new Error(
       `EXT_georeference: node ${nodeIndex} requires EPSG:4978 without a separate vertical CRS`
