@@ -298,6 +298,49 @@ describe('get3DTilesSpatialReference', () => {
     expect(wrongAuthority.units).toBeUndefined();
   });
 
+  test('derives known draft vertical CRS units and height semantics', () => {
+    const spatialReference = get3DTilesSpatialReference({
+      extensions: {
+        EXT_geospatial_crs: {
+          format: 'wkid',
+          extensions: {
+            EXT_geospatial_crs_wkid: {authority: 'EPSG', wkid: 4326, vcsWkid: 6360}
+          }
+        }
+      }
+    });
+
+    expect(spatialReference).toMatchObject({
+      sourceCrs: 'EPSG:4326',
+      verticalCrs: 'EPSG:6360',
+      units: ['degree', 'degree', 'us-foot'],
+      heightReference: 'orthometric',
+      warnings: []
+    });
+    expect(spatialReference.verticalUnitScale).toBeCloseTo(1200 / 3937);
+  });
+
+  test('keeps unknown draft vertical CRS declarations unresolved', () => {
+    const spatialReference = get3DTilesSpatialReference({
+      extensions: {
+        EXT_geospatial_crs: {
+          format: 'wkid',
+          extensions: {
+            EXT_geospatial_crs_wkid: {authority: 'EPSG', wkid: 4326, vcsWkid: 999999}
+          }
+        }
+      }
+    });
+
+    expect(spatialReference.verticalCrs).toBe('EPSG:999999');
+    expect(spatialReference.units).toBeUndefined();
+    expect(Number.isNaN(spatialReference.verticalUnitScale)).toBe(true);
+    expect(spatialReference.heightReference).toBe('unknown');
+    expect(spatialReference.warnings).toContain(
+      'Unsupported vertical CRS EPSG:999999; vertical unit and height reference are unknown'
+    );
+  });
+
   test('uses the specification frame established by a root region', () => {
     const spatialReference = get3DTilesSpatialReference({
       root: {boundingVolume: {region: [0, 0, 1, 1, 0, 1]}}

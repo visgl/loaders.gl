@@ -723,7 +723,7 @@ function convertNode(
   const nextAncestors = new Set(ancestorNodeIndices);
   nextAncestors.add(nodeIndex);
   const content = implicitTiling
-    ? ({uri: implicitTiling.contentUri} as Tiles3DTileContentJSON)
+    ? ({uri: implicitTiling.contentUri, _vectorContent: vectorContent} as Tiles3DTileContentJSON)
     : createContent(json, node, files, vectorContent, extension.content, nodeIndex);
   return {
     boundingVolume: convertBoundingVolume(json, node.boundingVolume, `node ${nodeIndex}`),

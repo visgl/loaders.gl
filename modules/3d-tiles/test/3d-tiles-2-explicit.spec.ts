@@ -643,8 +643,12 @@ describe('experimental explicit 3D Tiles 2.0', () => {
     const subtreeUrl = 'https://example.com/draft/subtrees/0/0/0.resource?token=test';
     const requestedUrls: string[] = [];
     const rootJson = createTilesetGltf({
-      extensionsUsed: ['3DTILES_tileset', '3DTILES_implicit_tiling'],
+      extensionsUsed: ['3DTILES_tileset', '3DTILES_implicit_tiling', '3DTILES_tileset_vectors'],
       extensionsRequired: ['3DTILES_tileset', '3DTILES_implicit_tiling'],
+      extensions: {
+        '3DTILES_tileset': {geometricError: 16},
+        '3DTILES_tileset_vectors': {clip: true}
+      },
       nodes: [
         {
           extensions: {
@@ -682,6 +686,7 @@ describe('experimental explicit 3D Tiles 2.0', () => {
 
     const rootTileset = await load(rootUrl, Tiles3DLoader, {worker: false, fetch});
     expect(requestedUrls).toEqual([rootUrl]);
+    expect(rootTileset.root.content._vectorContent).toEqual({clip: true});
     const source = new Tiles3DSource({...rootTileset, coreApi}, {worker: false, fetch});
     const tileset = new Tileset3D(source);
     await tileset.tilesetInitializationPromise;
@@ -692,6 +697,7 @@ describe('experimental explicit 3D Tiles 2.0', () => {
     expect(requestedUrls).toEqual([rootUrl, subtreeUrl]);
     expect(tileset.root!.contentUrl).toBe('https://example.com/draft/content/0/0/0.glb');
     expect(tileset.root!.children).toHaveLength(4);
+    expect(tileset.root!.header.content._vectorContent).toEqual({clip: true});
 
     const duplicateRoot = new Tile3D(tileset, rootHeader);
     await source.loadTileChildren(duplicateRoot, {} as never);

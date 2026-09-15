@@ -256,6 +256,13 @@ function getDraft3DTilesSpatialReference(
     representation === 'wkt'
       ? getWktCoordinateFrame(sourceCrs as string | undefined)
       : getDraftIdentifierCoordinateFrame(sourceCrs);
+  const verticalSemantics = getDraftVerticalCrsSemantics(verticalCrs);
+  if (verticalCrs && !verticalSemantics) {
+    warnings.push(
+      `Unsupported vertical CRS ${String(verticalCrs)}; vertical unit and height reference are unknown`
+    );
+  }
+  const verticalUnit = verticalCrs ? verticalSemantics?.unit : 'meter';
   return createTilesetSpatialReference({
     sourceCrs,
     sourceCrsState: sourceCrs ? 'explicit' : 'unknown',
@@ -265,15 +272,53 @@ function getDraft3DTilesSpatialReference(
     units:
       coordinateFrame === 'geocentric'
         ? ['meter', 'meter', 'meter']
-        : coordinateFrame === 'geographic'
-          ? ['degree', 'degree', 'meter']
+        : coordinateFrame === 'geographic' && verticalUnit
+          ? ['degree', 'degree', verticalUnit]
           : undefined,
-    heightReference: sourceCrs ? 'ellipsoidal' : 'unknown',
+    verticalUnitScale: verticalCrs ? (verticalSemantics?.verticalUnitScale ?? Number.NaN) : 1,
+    heightReference: verticalCrs
+      ? (verticalSemantics?.heightReference ?? 'unknown')
+      : sourceCrs
+        ? 'ellipsoidal'
+        : 'unknown',
     coordinateFrame,
     axisOrder: sourceCrs ? 'xyz' : 'unknown',
     provenance: 'metadata',
     warnings
   });
+}
+
+/** Known vertical CRS semantics needed to interpret draft 3D Tiles height values. */
+type DraftVerticalCrsSemantics = {
+  unit: string;
+  verticalUnitScale: number;
+  heightReference: 'orthometric';
+};
+
+/** Resolves vertical units and height interpretation for known EPSG vertical CRSs. */
+function getDraftVerticalCrsSemantics(
+  verticalCrs: ReadonlyCRSDefinition | undefined
+): DraftVerticalCrsSemantics | undefined {
+  if (typeof verticalCrs !== 'string') {
+    return undefined;
+  }
+  const epsgMatch = /^EPSG:(\d+)$/i.exec(verticalCrs);
+  if (!epsgMatch) {
+    return undefined;
+  }
+  switch (Number(epsgMatch[1])) {
+    case 5702: // NGVD29 height (ftUS)
+    case 6360: // NAVD88 height (ftUS)
+      return {
+        unit: 'us-foot',
+        verticalUnitScale: 1200 / 3937,
+        heightReference: 'orthometric'
+      };
+    case 5703: // NAVD88 height
+      return {unit: 'meter', verticalUnitScale: 1, heightReference: 'orthometric'};
+    default:
+      return undefined;
+  }
 }
 
 /** Classifies only authority identifiers whose coordinate frames are known. */
