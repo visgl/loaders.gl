@@ -9,7 +9,8 @@
  * @see https://github.com/geoarrow/geoarrow-js/
  */
 
-import {DataType, LargeList, List} from 'apache-arrow/type';
+import * as arrow from 'apache-arrow';
+import {DataType, List} from 'apache-arrow/type';
 
 import type {
   GeoArrowBoxType,
@@ -22,6 +23,11 @@ import type {
   GeoArrowMultiPolygon,
   GeoArrowGeometry
 } from './geoarrow-types';
+
+type ArrowDataTypeConstructor = new (...args: never[]) => DataType;
+type OptionalArrowListConstructors = {
+  LargeList?: ArrowDataTypeConstructor;
+};
 
 /** Checks whether the given Apache Arrow JS type is a canonical GeoArrow Box struct. */
 export function isGeoArrowBox(type: DataType): type is GeoArrowBoxType {
@@ -153,7 +159,8 @@ export function isGeoArrowMultiPolygon(type: DataType): type is GeoArrowMultiPol
 
 /** Checks both Arrow list widths used by the GeoArrow specification. */
 function isGeoArrowList(type: DataType): type is GeoArrowList<DataType> {
-  return type instanceof List || type instanceof LargeList;
+  const LargeList = (arrow as unknown as OptionalArrowListConstructors).LargeList;
+  return type instanceof List || Boolean(LargeList && type instanceof LargeList);
 }
 
 /**
