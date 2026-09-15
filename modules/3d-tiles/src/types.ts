@@ -2,7 +2,13 @@
 // SPDX-License-Identifier: MIT
 // Copyright vis.gl contributors
 
-import type {GLTFPostprocessed, FeatureTableJson} from '@loaders.gl/gltf';
+import type {
+  GLTFMeshPolygonData,
+  GLTFMeshPrimitivePostprocessed,
+  GLTFPostprocessed,
+  GLTFPrimitiveIndexRange,
+  FeatureTableJson
+} from '@loaders.gl/gltf';
 export type {FeatureTableJson};
 
 import {LoaderWithParser} from '@loaders.gl/loader-utils';
@@ -120,6 +126,9 @@ export type Tiles3DTilesetJSON = {
   spatialMetadata?: TilesetSpatialReference;
 };
 
+/** 3D Tiles format version identified at the resource boundary. */
+export type Tiles3DFormatVersion = '0.0' | '1.0' | '1.1' | '2.0-draft';
+
 /** Metadata about the complete 3D Tiles tileset asset. */
 export type Tiles3DTilesetAsset = {
   /** 3D Tiles version defining the tileset JSON contract and base tile formats. */
@@ -138,6 +147,8 @@ export type Tiles3DTilesetAsset = {
 export type Tiles3DTilesetJSONPostprocessed = Omit<Tiles3DTilesetJSON, 'root'> & {
   /** loaders.gl data shape discriminator added during parsing. */
   shape: 'tileset3d';
+  /** Normalized 3D Tiles format version; draft 2.0 keeps its original glTF asset metadata. */
+  formatVersion: Tiles3DFormatVersion;
   /** @deprecated Loader used */
   loader: LoaderWithParser;
   /** URL used to load a tileset resource */
@@ -318,6 +329,8 @@ export type Tiles3DTileContent = {
   gltfUrl?: string;
   gpuMemoryUsageInBytes?: number;
   gltf?: GLTFPostprocessed;
+  /** Vector topology exposed when this glTF content is designated as 3D Tiles vector data. */
+  vectorContent?: Tiles3DVectorContent;
 
   /** For Composite tiles */
   tilesLength?: number;
@@ -373,6 +386,54 @@ export type Tiles3DTileContent = {
   isQuantizedDraco?: boolean;
   octEncodedRange?: number;
   isOctEncodedDraco?: boolean;
+};
+
+/** Fields shared by all decoded vector mesh-primitive descriptors. */
+export type Tiles3DVectorPrimitiveBase = {
+  /** Index of the source glTF mesh. */
+  readonly meshIndex: number;
+  /** Index of the primitive within the source mesh. */
+  readonly primitiveIndex: number;
+  /** Decoded glTF primitive retaining attributes, indices, feature IDs, and fallback geometry. */
+  readonly primitive: GLTFMeshPrimitivePostprocessed;
+};
+
+/** A vector point primitive. */
+export type Tiles3DVectorPointPrimitive = Tiles3DVectorPrimitiveBase & {
+  /** Vector topology discriminator. */
+  readonly type: 'points';
+  /** Number of points supplied by the POSITION accessor. */
+  readonly pointCount: number;
+};
+
+/** A vector polyline primitive. */
+export type Tiles3DVectorPolylinePrimitive = Tiles3DVectorPrimitiveBase & {
+  /** Vector topology discriminator. */
+  readonly type: 'polylines';
+  /** Restart-separated polyline ranges in source-index coordinates. */
+  readonly ranges: readonly GLTFPrimitiveIndexRange[];
+};
+
+/** A vector polygon primitive. */
+export type Tiles3DVectorPolygonPrimitive = Tiles3DVectorPrimitiveBase & {
+  /** Vector topology discriminator. */
+  readonly type: 'polygons';
+  /** Triangle and loop topology decoded by `EXT_mesh_polygon`. */
+  readonly topology: GLTFMeshPolygonData;
+};
+
+/** One decoded vector primitive contained in a 3D Tiles glTF payload. */
+export type Tiles3DVectorPrimitive =
+  | Tiles3DVectorPointPrimitive
+  | Tiles3DVectorPolylinePrimitive
+  | Tiles3DVectorPolygonPrimitive;
+
+/** Loader-facing vector content contract shared by 1.1 preview and draft 2.0 tilesets. */
+export type Tiles3DVectorContent = {
+  /** Whether renderers should visually clip content to the tile bounding volume. */
+  readonly clip: boolean;
+  /** Point, polyline, and polygon descriptors in glTF mesh order. */
+  readonly primitives: readonly Tiles3DVectorPrimitive[];
 };
 
 /**

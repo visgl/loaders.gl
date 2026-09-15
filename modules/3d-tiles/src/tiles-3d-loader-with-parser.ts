@@ -6,6 +6,8 @@ import type {LoaderWithParser, StrictLoaderOptions, LoaderContext} from '@loader
 // / import type { GLTFLoaderOptions } from '@loaders.gl/gltf';
 import type {DracoLoaderOptions} from '@loaders.gl/draco';
 import type {ImageBitmapLoaderOptions} from '@loaders.gl/images';
+import {GLTFLoader} from '@loaders.gl/gltf';
+import type {GLTFWithBuffers} from '@loaders.gl/gltf';
 
 import {path} from '@loaders.gl/loader-utils';
 import {get3DTilesSpatialReference, TILESET_TYPE, LOD_METRIC_TYPE} from '@loaders.gl/tiles';
@@ -13,6 +15,7 @@ import {parse3DTile} from './lib/parsers/parse-3d-tile';
 import {normalizeTileHeaders} from './lib/parsers/parse-3d-tile-header';
 import {
   Subtree,
+  Tiles3DFormatVersion,
   Tiles3DTilesetJSON,
   Tiles3DTileContent,
   Tiles3DTilesetJSONPostprocessed
@@ -23,6 +26,11 @@ import {
   type Preprocessed3DTileContent
 } from './lib/parsers/preprocess-3d-tile-content';
 import parse3DTilesSubtree from './lib/parsers/helpers/parse-3d-tile-subtree';
+import {
+  is3DTiles2Subtree,
+  is3DTiles2Tileset,
+  parse3DTiles2Tileset
+} from './lib/parsers/parse-3d-tiles-2-gltf';
 
 /**
  * Required 3D Tiles extensions that this loader can process completely enough to load content.
@@ -37,6 +45,20 @@ const SUPPORTED_3D_TILES_EXTENSIONS: ReadonlySet<string> = new Set([
   '3DTILES_batch_table_hierarchy',
   '3DTILES_draco_point_compression',
   '3DTILES_content_gltf'
+]);
+
+const SUPPORTED_3D_TILES_2_EXTENSIONS: ReadonlySet<string> = new Set([
+  '3DTILES_tileset',
+  'EXT_structural_metadata',
+  'EXT_mesh_features',
+  'KHR_mesh_primitive_restart',
+  'EXT_mesh_polygon',
+  'KHR_draco_mesh_compression',
+  'KHR_meshopt_compression',
+  'EXT_meshopt_compression',
+  'KHR_texture_basisu',
+  'EXT_texture_webp',
+  'EXT_texture_avif'
 ]);
 
 const {preload: _Tiles3DLoaderPreload, ...Tiles3DLoaderMetadataWithoutPreload} =
@@ -64,6 +86,8 @@ export type Tiles3DLoaderOptions = StrictLoaderOptions &
       maximumCachedSubtrees?: number;
       /** Controls which axis is "up" in glTF files */
       assetGltfUpAxis?: 'x' | 'y' | 'z' | null;
+      /** @internal Vector-content metadata supplied by a normalized tileset header. */
+      vectorContent?: {clip: boolean};
     };
   };
 
@@ -97,9 +121,36 @@ async function parse(
     return await parse3DTilesSubtree(data, options, context);
   }
   const preprocessedContent = preprocess3DTileContent(data);
-  if (getIsTileset(preprocessedContent, loaderOptions.isTileset)) {
+  if (preprocessedContent.contentType === 'externalTileset') {
+    getIsTileset(preprocessedContent.contentType, loaderOptions.isTileset);
     return parseTileset(preprocessedContent.jsonPayload as Tiles3DTilesetJSON, options, context);
   }
+
+  if (preprocessedContent.contentType === 'gltf' || preprocessedContent.contentType === 'glb') {
+    const parsedGltf = await parseGltfForClassification(
+      data,
+      preprocessedContent as GltfPreprocessedContent,
+      options,
+      context
+    );
+    if (is3DTiles2Tileset(parsedGltf)) {
+      getIsTileset('tileset2', loaderOptions.isTileset);
+      validateRequiredExtensions(parsedGltf.json.extensionsRequired, true);
+      const resourceUrl = context?.url || options.core?.baseUrl || '';
+      const tilesetJson = parse3DTiles2Tileset(
+        parsedGltf,
+        getBaseUri(resourceUrl) || context?.baseUrl || ''
+      );
+      return parseTileset(tilesetJson, options, context, '2.0-draft');
+    }
+    if (is3DTiles2Subtree(parsedGltf)) {
+      throw new Error('3DTILES_subtree: glTF subtree parsing is not supported by this tranche');
+    }
+    getIsTileset(preprocessedContent.contentType, loaderOptions.isTileset);
+    return parseTile(data, preprocessedContent, options, context, parsedGltf);
+  }
+
+  getIsTileset(preprocessedContent.contentType, loaderOptions.isTileset);
   return parseTile(data, preprocessedContent, options, context);
 }
 
@@ -117,12 +168,12 @@ async function parse(
  * @throws If an explicit mode contradicts the detected payload.
  */
 function getIsTileset(
-  content: Preprocessed3DTileContent,
+  contentType: Preprocessed3DTileContent['contentType'] | 'tileset2',
   isTilesetOption: boolean | 'auto' | undefined
-): content is Extract<Preprocessed3DTileContent, {contentType: 'externalTileset'}> {
-  const detectedTileset = content.contentType === 'externalTileset';
+): boolean {
+  const detectedTileset = contentType === 'externalTileset' || contentType === 'tileset2';
   if (isTilesetOption === true && !detectedTileset) {
-    throw new Error(`Expected 3D Tiles tileset JSON; detected ${content.contentType}`);
+    throw new Error(`Expected 3D Tiles tileset JSON; detected ${contentType}`);
   }
   if (isTilesetOption === false && detectedTileset) {
     throw new Error('Expected 3D tile render content; detected external tileset JSON');
@@ -141,26 +192,29 @@ function getIsTileset(
 async function parseTileset(
   tilesetJson: Tiles3DTilesetJSON,
   options?: Tiles3DLoaderOptions,
-  context?: LoaderContext
+  context?: LoaderContext,
+  formatVersion: Tiles3DFormatVersion = getFormatVersion(tilesetJson.asset.version)
 ): Promise<Tiles3DTilesetJSONPostprocessed> {
-  validateRequiredExtensions(tilesetJson);
+  validateRequiredExtensions(tilesetJson.extensionsRequired, formatVersion === '2.0-draft');
+  validateVectorPreviewExtensions(tilesetJson.root);
 
-  const tilesetUrl = context?.url || '';
-  const basePath = getBaseUri(tilesetUrl);
+  const tilesetUrl = context?.url || options?.core?.baseUrl || '';
+  const basePath = getBaseUri(tilesetUrl) || context?.baseUrl || '';
   const normalizedRoot = await normalizeTileHeaders(tilesetJson, basePath, options || {}, context);
   const tilesetJsonPostprocessed: Tiles3DTilesetJSONPostprocessed = {
     ...tilesetJson,
     shape: 'tileset3d',
-    loader: Tiles3DLoaderWithParser,
+    formatVersion,
     url: tilesetUrl,
-    queryString: context?.queryString || '',
+    queryString: context?.queryString || getQueryString(tilesetUrl),
     basePath,
     root: normalizedRoot || tilesetJson.root,
     type: TILESET_TYPE.TILES3D,
     spatialMetadata: get3DTilesSpatialReference(tilesetJson),
     lodMetricType: LOD_METRIC_TYPE.GEOMETRIC_ERROR,
     lodMetricValue: tilesetJson.root?.geometricError || 0
-  };
+  } as Tiles3DTilesetJSONPostprocessed;
+  tilesetJsonPostprocessed.loader = Tiles3DLoaderWithParser;
   return tilesetJsonPostprocessed;
 }
 
@@ -175,12 +229,19 @@ async function parseTileset(
  * @param tilesetJson - Parsed, unnormalized tileset JSON.
  * @throws When one or more required extensions are unsupported.
  */
-function validateRequiredExtensions(tilesetJson: Tiles3DTilesetJSON): void {
+function validateRequiredExtensions(
+  extensionsRequired: string[] | undefined,
+  isDraft2: boolean
+): void {
+  if (isDraft2 && !extensionsRequired?.includes('3DTILES_tileset')) {
+    throw new Error('3DTILES_tileset must be declared in extensionsRequired');
+  }
+  const supportedExtensions = isDraft2
+    ? SUPPORTED_3D_TILES_2_EXTENSIONS
+    : SUPPORTED_3D_TILES_EXTENSIONS;
   const unsupportedExtensions = [
     ...new Set(
-      (tilesetJson.extensionsRequired || []).filter(
-        extensionName => !SUPPORTED_3D_TILES_EXTENSIONS.has(extensionName)
-      )
+      (extensionsRequired || []).filter(extensionName => !supportedExtensions.has(extensionName))
     )
   ];
 
@@ -207,7 +268,8 @@ async function parseTile(
   arrayBuffer: ArrayBuffer,
   preprocessedContent: Exclude<Preprocessed3DTileContent, {contentType: 'externalTileset'}>,
   options?: Tiles3DLoaderOptions,
-  context?: LoaderContext
+  context?: LoaderContext,
+  parsedGltf?: GLTFWithBuffers
 ): Promise<Tiles3DTileContent> {
   const tile: {content: Tiles3DTileContent} = {
     content: {
@@ -223,12 +285,106 @@ async function parseTile(
     context,
     tile.content,
     preprocessedContent.contentType,
-    preprocessedContent.contentType === 'gltf' ? preprocessedContent.jsonPayload : undefined
+    preprocessedContent.contentType === 'gltf' ? preprocessedContent.jsonPayload : undefined,
+    parsedGltf
   );
   return tile.content;
 }
 
+/** Parses glTF exactly once so draft 3D Tiles structure can be classified independent of URL. */
+async function parseGltfForClassification(
+  data: ArrayBuffer,
+  preprocessedContent: GltfPreprocessedContent,
+  options: Tiles3DLoaderOptions,
+  context?: LoaderContext
+): Promise<GLTFWithBuffers> {
+  if (!context) {
+    throw new Error('3D Tiles glTF parsing requires a loader context');
+  }
+  const isJsonTileset =
+    preprocessedContent.contentType === 'gltf' &&
+    Boolean(preprocessedContent.jsonPayload.extensions?.['3DTILES_tileset']);
+  const loadGLTF = options['3d-tiles']?.loadGLTF !== false;
+  const parseOptions =
+    isJsonTileset || !loadGLTF
+      ? {
+          ...options,
+          gltf: {
+            ...(options.gltf as Record<string, unknown> | undefined),
+            loadBuffers: false,
+            loadFiles: false,
+            loadExternalAssets: false,
+            loadImages: false,
+            decompressMeshes: false
+          }
+        }
+      : options;
+  const gltfLoaderWithParser = await GLTFLoader.preload();
+  const input = preprocessedContent.contentType === 'gltf' ? preprocessedContent.jsonPayload : data;
+  return await gltfLoaderWithParser.parse(input, parseOptions, context);
+}
+
+type GltfPreprocessedContent =
+  | Extract<Preprocessed3DTileContent, {contentType: 'gltf'}>
+  | {contentType: 'glb'; binaryPayload: ArrayBuffer};
+
+/** Converts a supported legacy asset version to the normalized public discriminator. */
+function getFormatVersion(version: string): '0.0' | '1.0' | '1.1' {
+  if (version === '0.0' || version === '1.0' || version === '1.1') {
+    return version;
+  }
+  throw new Error(`Unsupported 3D Tiles version: ${version}`);
+}
+
+/** Validates the preview vector extension wherever it appears on explicit content headers. */
+function validateVectorPreviewExtensions(root: Tiles3DTilesetJSON['root']): void {
+  const stack = root ? [root] : [];
+  while (stack.length) {
+    const tile = stack.pop()!;
+    const contents = Array.isArray(tile.content)
+      ? tile.content
+      : tile.content
+        ? [tile.content]
+        : [];
+    for (const content of contents) {
+      const extension = content.extensions?.['3DTILES_content_gltf_vector'] as
+        | {vector?: unknown; clip?: unknown}
+        | undefined;
+      if (!extension) {
+        continue;
+      }
+      if (
+        extension.vector !== true ||
+        (extension.clip !== undefined && typeof extension.clip !== 'boolean')
+      ) {
+        throw new Error(
+          '3DTILES_content_gltf_vector: vector must be true and clip must be boolean when present'
+        );
+      }
+    }
+    stack.push(...(tile.children || []));
+  }
+}
+
 /** Get base name */
 function getBaseUri(tilesetUrl: string): string {
+  if (!tilesetUrl) {
+    return '';
+  }
+  if (/^[a-z][0-9a-z+.-]*:/i.test(tilesetUrl)) {
+    try {
+      const baseUrl = new URL('.', tilesetUrl);
+      baseUrl.search = '';
+      return baseUrl.toString().replace(/\/$/, '');
+    } catch {
+      return '';
+    }
+  }
   return path.dirname(tilesetUrl);
+}
+
+/** Returns the query component without the leading question mark. */
+function getQueryString(resourceUrl: string): string {
+  const queryIndex = resourceUrl.indexOf('?');
+  return queryIndex >= 0 ? resourceUrl.slice(queryIndex + 1) : '';
 }
