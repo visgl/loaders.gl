@@ -1160,6 +1160,7 @@ function getNodeMatrix(json: GLTF, node: GLTFNode, nodeIndex: number): number[] 
   if (!json.extensions?.['EXT_geospatial_crs']) {
     throw new Error(`EXT_georeference: node ${nodeIndex} requires EXT_geospatial_crs`);
   }
+  validateGeoreferenceCrs(json, nodeIndex);
   if (
     typeof georeference.longitude !== 'number' ||
     !Number.isFinite(georeference.longitude) ||
@@ -1181,6 +1182,32 @@ function getNodeMatrix(json: GLTF, node: GLTFNode, nodeIndex: number): number[] 
       (georeference.height as number | undefined) || 0
     ).multiplyRight(nodeMatrix)
   );
+}
+
+/**
+ * Ensures the declared world CRS matches the WGS84 geocentric frame produced by georeferencing.
+ *
+ * Projected, geographic, WKT2, and separate vertical CRSs require nonlinear or vertical
+ * transformations that cannot be represented by the affine node matrix alone.
+ */
+function validateGeoreferenceCrs(json: GLTF, nodeIndex: number): void {
+  const crsExtension = json.extensions?.['EXT_geospatial_crs'] as
+    | {format?: unknown; extensions?: Record<string, unknown>}
+    | undefined;
+  const wkidExtension = crsExtension?.extensions?.['EXT_geospatial_crs_wkid'] as
+    | {authority?: unknown; wkid?: unknown; vcsWkid?: unknown}
+    | undefined;
+  if (
+    crsExtension?.format !== 'wkid' ||
+    typeof wkidExtension?.authority !== 'string' ||
+    wkidExtension.authority.toUpperCase() !== 'EPSG' ||
+    wkidExtension.wkid !== 4978 ||
+    wkidExtension.vcsWkid !== undefined
+  ) {
+    throw new Error(
+      `EXT_georeference: node ${nodeIndex} requires EPSG:4978 without a separate vertical CRS`
+    );
+  }
 }
 
 /** Creates the draft local-right/up/forward to WGS84 geocentric tangent-frame transform. */

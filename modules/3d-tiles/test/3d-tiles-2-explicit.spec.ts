@@ -1236,6 +1236,23 @@ describe('experimental explicit 3D Tiles 2.0', () => {
       'unsupported shape',
       (json: any) => (json.shapes[0] = {type: 'ellipsoid'}),
       /unsupported node 0 shape type ellipsoid/
+    ],
+    [
+      'georeference using a projected CRS',
+      (json: any) => {
+        json.extensions.EXT_geospatial_crs = {
+          format: 'wkid',
+          extensions: {
+            EXT_geospatial_crs_wkid: {authority: 'EPSG', wkid: 32611}
+          }
+        };
+        json.nodes[0].extensions.EXT_georeference = {
+          longitude: -117,
+          latitude: 34,
+          height: 0
+        };
+      },
+      /EXT_georeference: node 0 requires EPSG:4978/
     ]
   ])('rejects %s', (_name, mutate, expectedError) => {
     const json = createTilesetGltf();
