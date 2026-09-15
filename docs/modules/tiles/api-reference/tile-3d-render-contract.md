@@ -12,7 +12,7 @@ or nested-tileset content.
 
 ## Tile3DFeatureIdSet
 
-Feature identifiers are described as attribute, property-table, or constant sources. The
+Feature identifiers are described as attribute, property-table, constant, texture-backed, or implicit sources. The
 runtime preserves declarations and optional decoded values; it does not evaluate styles or perform
 picking. Unsupported extension forms remain available in raw payload metadata.
 
