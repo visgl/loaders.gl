@@ -54,7 +54,7 @@ export const FlatGeobufWorkerLoader = {
   tests: [new Uint8Array(FGB_MAGIC_NUMBER).buffer],
   options: {
     flatgeobuf: {
-      shape: 'geojson-table'
+      shape: 'arrow-table'
     },
     gis: {
       reproject: false

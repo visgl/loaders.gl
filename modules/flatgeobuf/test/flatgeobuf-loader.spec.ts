@@ -58,9 +58,10 @@ setLoaderOptions({
 test('FlatGeobufLoader#loader conformance', () => {
   validateLoader(FlatGeobufLoader, 'FlatGeobufLoader');
 });
-test('FlatGeobufLoader#load', async () => {
+test('FlatGeobufLoader#load geojson-table shape', async () => {
   const geojsonTable = await load(FLATGEOBUF_COUNTRIES_DATA_URL, FlatGeobufLoader, {
-    core: {worker: false}
+    core: {worker: false},
+    flatgeobuf: {shape: 'geojson-table'}
   });
   expect(geojsonTable.features.length).toBe(179);
   expect(geojsonTable.schema.fields.length).toBe(2);
@@ -68,11 +69,11 @@ test('FlatGeobufLoader#load', async () => {
 });
 test('FlatGeobufLoader#load arrow-table round-trips to GeoJSON', async () => {
   const arrowTable = await load(FLATGEOBUF_COUNTRIES_DATA_URL, FlatGeobufLoader, {
-    core: {worker: false},
-    flatgeobuf: {shape: 'arrow-table'}
+    core: {worker: false}
   });
   const geojsonTable = await load(FLATGEOBUF_COUNTRIES_DATA_URL, FlatGeobufLoader, {
-    core: {worker: false}
+    core: {worker: false},
+    flatgeobuf: {shape: 'geojson-table'}
   });
   expect(arrowTable.shape, 'returns Arrow table shape').toBe('arrow-table');
   expect(arrowTable.data.numRows, 'preserves row count').toBe(geojsonTable.features.length);
@@ -98,11 +99,11 @@ test('FlatGeobufLoader#load arrow-table round-trips to GeoJSON', async () => {
 test('FlatGeobufLoader#load arrow-table reprojects like geojson-table', async () => {
   const arrowTable = await load(FLATGEOBUF_COUNTRIES_DATA_URL, FlatGeobufLoader, {
     core: {worker: false},
-    flatgeobuf: {shape: 'arrow-table'},
     gis: {reproject: true, _targetCrs: 'EPSG:3857'}
   });
   const geojsonTable = await load(FLATGEOBUF_COUNTRIES_DATA_URL, FlatGeobufLoader, {
     core: {worker: false},
+    flatgeobuf: {shape: 'geojson-table'},
     gis: {reproject: true, _targetCrs: 'EPSG:3857'}
   });
   const roundTripped = convertGeoArrowToTable(arrowTable.data, 'geojson-table');
@@ -113,7 +114,8 @@ test('FlatGeobufLoader#load arrow-table reprojects like geojson-table', async ()
 });
 test('FlatGeobufLoader#loadInBatches', async () => {
   const iterator = await loadInBatches(FLATGEOBUF_COUNTRIES_DATA_URL, FlatGeobufLoader, {
-    core: {worker: false}
+    core: {worker: false},
+    flatgeobuf: {shape: 'geojson-table'}
   });
   expect(iterator).toBeTruthy();
   const features: any[] = [];
@@ -124,8 +126,7 @@ test('FlatGeobufLoader#loadInBatches', async () => {
 });
 test('FlatGeobufLoader#loadInBatches arrow-table yields stable schema', async () => {
   const iterator = await loadInBatches(FLATGEOBUF_COUNTRIES_DATA_URL, FlatGeobufLoader, {
-    core: {worker: false},
-    flatgeobuf: {shape: 'arrow-table'}
+    core: {worker: false}
   });
   let arrowTable = null;
   let schema = null;
@@ -137,7 +138,8 @@ test('FlatGeobufLoader#loadInBatches arrow-table yields stable schema', async ()
   expect(schema, 'Arrow batches expose schema').toBeTruthy();
   const roundTripped = convertGeoArrowToTable(arrowTable.data, 'geojson-table');
   const geojsonTable = await load(FLATGEOBUF_COUNTRIES_DATA_URL, FlatGeobufLoader, {
-    core: {worker: false}
+    core: {worker: false},
+    flatgeobuf: {shape: 'geojson-table'}
   });
   expect(
     normalizeFeatures(roundTripped.features),
