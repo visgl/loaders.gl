@@ -718,6 +718,7 @@ export class Tile3D {
     // Use the merged header so inherited viewer-request-volume metadata remains available when a
     // materialized implicit tile has no render content of its own.
     this._initializeContent(this.header);
+    this._initializeContentEntries(this.header);
   }
 
   /** Refreshes tile and content metadata from a source or materialized tile header. */
@@ -727,6 +728,11 @@ export class Tile3D {
     this.contentMetadata = contentHeaders
       .filter(Boolean)
       .map(contentHeader => contentHeader.metadata || null);
+    this.metadataContext = {
+      tile: this.metadata,
+      content: this.contentMetadata[0] || null,
+      subtree: header.implicitMetadata || null
+    };
   }
 
   /** Updates payload and renderability while retaining immutable metadata descriptors. */
