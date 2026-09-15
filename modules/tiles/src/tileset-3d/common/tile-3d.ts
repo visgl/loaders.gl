@@ -744,7 +744,7 @@ export class Tile3D {
         boundingVolume:
           entry.boundingVolume || this._contentBoundingVolumes[index] || this.boundingVolume,
         payload: entry.payload ?? this.contents[index] ?? null,
-        renderable: Boolean(entry.renderable && entry.payload)
+        renderable: Boolean(entry.renderable && (entry.payload ?? this.contents[index]))
       }));
       return;
     }
