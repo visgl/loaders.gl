@@ -22,7 +22,7 @@ import type {Table as ArrowTable} from 'apache-arrow';
 import maplibregl from 'maplibre-gl';
 import {Map} from 'react-map-gl';
 
-import {OverturePlacesCatalog} from './overture-catalog';
+import {OverturePlacesCatalog, type OverturePortolanInfo} from './overture-catalog';
 import './style.css';
 import 'maplibre-gl/dist/maplibre-gl.css';
 
@@ -37,7 +37,7 @@ const INITIAL_VIEW_STATE: MapViewState = {
   longitude: -71.064,
   latitude: 42.357,
   zoom: 12.2,
-  minZoom: 9,
+  minZoom: 3,
   maxZoom: 18,
   pitch: 25,
   bearing: 0
@@ -80,6 +80,7 @@ export default function App(props: AppProps = {}) {
   const [resultBatches, setResultBatches] = useState<ResultBatch[]>([]);
   const [telemetry, setTelemetry] = useState<ParquetDatasetTelemetry | null>(null);
   const [summary, setSummary] = useState<QuerySummary | null>(null);
+  const [portolanInfo, setPortolanInfo] = useState<OverturePortolanInfo | null>(null);
   const [status, setStatus] = useState('Ready to query the current map view');
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
@@ -111,6 +112,7 @@ export default function App(props: AppProps = {}) {
 
     try {
       const release = await catalog.getRelease();
+      setPortolanInfo(release.portolan);
       setStatus(`Reading Overture ${release.id} GeoParquet ranges…`);
       let batchIndex = 0;
       for await (const batch of source.read({
@@ -227,6 +229,19 @@ export default function App(props: AppProps = {}) {
             />
           </a>
           <div className="overture-eyebrow">STAC → ParquetDatasetSource → Arrow → deck.gl</div>
+          {portolanInfo ? (
+            <div className="overture-portolan">
+              <span>Portolan catalog</span>
+              <a
+                href={portolanInfo.catalogUrl}
+                target="_blank"
+                rel="noreferrer"
+                title={portolanInfo.extension}
+              >
+                {portolanInfo.version ? `v${portolanInfo.version}` : 'declared'}
+              </a>
+            </div>
+          ) : null}
           <h1>Query 73 million Overture places from your browser</h1>
           <p className="overture-copy">
             Move the map, then query the viewport. The browser discovers the latest release,

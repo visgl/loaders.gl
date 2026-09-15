@@ -187,6 +187,10 @@ export type STACSourceMetadata = {
   mode: STACMode;
   /** Declared API conformance classes. */
   conformsTo: readonly string[];
+  /** Portolan profile schema URI declared by the root, if any. */
+  portolanExtension: string | null;
+  /** Portolan profile version declared by the root, if it is versioned. */
+  portolanVersion: string | null;
 };
 
 /** Standard STAC API Item Search parameters supported without extensions. */

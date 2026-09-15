@@ -1,7 +1,8 @@
 # Overture Parquet browser query
 
 This example discovers the latest Overture Maps places release through STAC and queries its remote
-GeoParquet assets entirely in the browser. `ParquetDatasetSource` selects files and coordinates
+GeoParquet assets entirely in the browser. It also inspects the Overture STAC hierarchy for a
+declared Portolan profile. `ParquetDatasetSource` selects files and coordinates
 range-backed `ParquetSource` reads; Arrow batches render directly through `GeoArrowLayer`.
 
 ```bash

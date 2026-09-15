@@ -71,6 +71,9 @@ Returns the root Catalog or Collection, declared conformance classes, and the de
 
 The root document is fetched once and cached.
 
+When the root declares the Portolan publishing profile, the returned metadata also includes
+`portolanExtension` and `portolanVersion`.
+
 ### `getCollections(options?)`
 
 Returns Collections. For a STAC API it follows the Collections endpoint and `next` links. For a
@@ -101,10 +104,11 @@ Explicitly traverses `child` and `item` links in a static catalog. URLs are cycl
 bounded by `maxDepth` and `maxRequests`. The core `ids`, `collections`, `bbox`, and `datetime`
 constraints are evaluated locally before Items are yielded.
 
-### `getAssets(item, selection?)`
+### `getAssets(itemOrCollection, selection?)`
 
-Returns assets with URLs resolved against the Item document. Assets can be selected by `roles` and
-exact `mediaTypes`.
+Returns assets with URLs resolved against the Item or Collection document. Collection-level assets
+are useful for Portolan single-file collections. Assets can be selected by `roles` and exact
+`mediaTypes`.
 
 ## Options
 

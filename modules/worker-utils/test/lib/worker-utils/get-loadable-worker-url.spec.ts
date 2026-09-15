@@ -21,6 +21,13 @@ test('getLoadableWorkerURL', () => {
   expect(workerURL.startsWith('blob:'), 'Worker source generates Object URL').toBeTruthy();
   workerURL = getLoadableWorkerURL({url: LOCAL_WORKER_URL});
   expect(workerURL, 'Local worker URL is returned unchanged').toBe(LOCAL_WORKER_URL);
+  if (typeof location !== 'undefined') {
+    const sameOriginWorkerURL = `${location.origin}/modules/worker-utils/dist/null-worker.js`;
+    workerURL = getLoadableWorkerURL({url: sameOriginWorkerURL});
+    expect(workerURL, 'Same-origin absolute worker URL is returned unchanged').toBe(
+      sameOriginWorkerURL
+    );
+  }
   workerURL = getLoadableWorkerURL({url: REMOTE_WORKER_URL});
   expect(workerURL.startsWith('blob:'), 'Remote worker URL generates Object URL').toBeTruthy();
   expect(

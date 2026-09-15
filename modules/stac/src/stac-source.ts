@@ -12,6 +12,7 @@ import {DataSource} from '@loaders.gl/loader-utils';
 
 import {STACSourceLoader as STACSourceLoaderMetadata} from './stac-source-loader-types';
 import type {STACSourceLoaderOptions} from './stac-source-loader-types';
+import {getPortolanExtension, getPortolanVersion} from './portolan-extension';
 import type {
   STACAssetSelection,
   STACBoundingBox,
@@ -127,7 +128,9 @@ export class STACSource
     return {
       root,
       mode: findLink(root.links, 'search') || conformsTo.length > 0 ? 'api' : 'static',
-      conformsTo
+      conformsTo,
+      portolanExtension: getPortolanExtension(root.stac_extensions),
+      portolanVersion: getPortolanVersion(root.stac_extensions)
     };
   }
 
@@ -236,13 +239,22 @@ export class STACSource
     }
   }
 
-  /** Returns matching Item assets with document-relative URLs resolved to absolute URLs. */
-  getAssets(item: STACItem, selection: STACAssetSelection = {}): STACResolvedAsset[] {
-    const baseUrl = this.documentUrls.get(item) || this.url;
+  /**
+   * Returns matching Item or Collection assets with document-relative URLs resolved to absolute
+   * URLs.
+   *
+   * Collection-level assets are especially useful for Portolan single-file collections, which do
+   * not need an Item document around their data asset.
+   */
+  getAssets(
+    object: STACItem | STACCollection,
+    selection: STACAssetSelection = {}
+  ): STACResolvedAsset[] {
+    const baseUrl = this.documentUrls.get(object) || this.url;
     const requiredRoles = new Set(selection.roles || []);
     const requiredMediaTypes = new Set(selection.mediaTypes || []);
 
-    return Object.entries(item.assets)
+    return Object.entries(object.assets || {})
       .filter(([, asset]) => {
         const matchesRole =
           requiredRoles.size === 0 || asset.roles?.some(role => requiredRoles.has(role));

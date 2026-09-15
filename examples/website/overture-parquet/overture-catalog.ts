@@ -10,12 +10,24 @@ import type {
   STACLink
 } from '@loaders.gl/stac';
 import type {
+  ParquetDatasetBoundingBox,
   ParquetDatasetFile,
   ParquetDatasetFileQuery
 } from '@loaders.gl/parquet/parquet-dataset-source';
+import type {STACBoundingBox} from '@loaders.gl/stac';
 
 const OVERTURE_STAC_ROOT = 'https://stac.overturemaps.org/catalog.json';
 const PARQUET_MEDIA_TYPE = 'application/vnd.apache.parquet';
+
+/** Portolan profile metadata declared by the Overture STAC hierarchy. */
+export type OverturePortolanInfo = {
+  /** Public Portolan catalog URL. */
+  catalogUrl: string;
+  /** Portolan profile schema URI declared by the catalog. */
+  extension: string;
+  /** Portolan profile version declared by the catalog. */
+  version: string | null;
+};
 
 /** Resolved Overture release metadata used by the example panel and file provider. */
 export type OvertureRelease = {
@@ -23,6 +35,8 @@ export type OvertureRelease = {
   id: string;
   /** STAC Collection containing partitioned place assets. */
   collectionSource: STACSource;
+  /** Portolan metadata declared by the Overture STAC hierarchy. */
+  portolan: OverturePortolanInfo | null;
 };
 
 /**
@@ -50,7 +64,7 @@ export class OverturePlacesCatalog {
   async *getFiles(query: ParquetDatasetFileQuery): AsyncIterable<ParquetDatasetFile> {
     const release = await this.getRelease(query.signal);
     for await (const item of release.collectionSource.traverse({
-      bbox: query.bbox,
+      bbox: toSTACBoundingBox(query.bbox),
       signal: query.signal,
       maxDepth: 1,
       maxRequests: 32
@@ -84,11 +98,46 @@ export class OverturePlacesCatalog {
     const placesSource = new STACSource(placesLink.href, {});
     const placesCatalog = await placesSource.getRoot({signal});
     const collectionLink = getChildLink(placesCatalog, 'place');
+    const collectionSource = new STACSource(collectionLink.href, {});
     return {
       id: getReleaseId(root, releaseCatalog, releaseLink),
-      collectionSource: new STACSource(collectionLink.href, {})
+      collectionSource,
+      portolan: await getPortolanInfo(
+        [rootSource, releaseSource, placesSource, collectionSource],
+        signal
+      )
     };
   }
+}
+
+/** Adapts Parquet's optional Z/M dimensions to the two-dimensional STAC query contract. */
+function toSTACBoundingBox(bbox?: ParquetDatasetBoundingBox): STACBoundingBox | undefined {
+  if (!bbox) {
+    return undefined;
+  }
+  if (bbox.length === 8) {
+    return [bbox[0], bbox[1], bbox[4], bbox[5]];
+  }
+  return bbox;
+}
+
+/** Reads Portolan metadata declared by one of the Overture STAC hierarchy documents. */
+async function getPortolanInfo(
+  sources: STACSource[],
+  signal?: AbortSignal
+): Promise<OverturePortolanInfo | null> {
+  for (const source of sources) {
+    const metadata = await source.getMetadata({signal});
+    if (!metadata.portolanExtension) {
+      continue;
+    }
+    return {
+      catalogUrl: source.url,
+      extension: metadata.portolanExtension,
+      version: metadata.portolanVersion
+    };
+  }
+  return null;
 }
 
 /** Selects the CORS-enabled AWS HTTPS asset from one Overture Item. */
