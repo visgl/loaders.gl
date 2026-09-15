@@ -66,3 +66,30 @@ test('normalizeTileData#derives metadata bounding volume semantics', () => {
     region: [0, 0, 1, 1, 0, 10]
   });
 });
+
+test('normalizeTileData#normalizes standard multiple contents consistently', () => {
+  const tile = {
+    boundingVolume: {sphere: [0, 0, 0, 1]},
+    geometricError: 0,
+    contents: [
+      {
+        uri: 'first.b3dm',
+        metadata: {class: 'content', properties: {bounds: [0, 0, 1, 1, 0, 10]}}
+      },
+      {uri: 'second.b3dm'}
+    ],
+    children: []
+  } as any;
+  const schema = {
+    classes: {
+      content: {properties: {bounds: {semantic: 'CONTENT_BOUNDING_REGION'}}}
+    }
+  } as any;
+
+  const normalizedTile = normalizeTileData(tile, 'https://example.com/tiles', undefined, schema);
+
+  expect(normalizedTile?.contents).toEqual(normalizedTile?.content);
+  expect(normalizedTile?.contents?.[0].boundingVolume).toEqual({
+    region: [0, 0, 1, 1, 0, 10]
+  });
+});
