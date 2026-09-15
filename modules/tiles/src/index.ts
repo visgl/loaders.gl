@@ -144,7 +144,7 @@ export {
 } from './spatial/spatial-resource-registry';
 
 export {getFrameState} from './tileset-3d/helpers/frame-state';
-export type {GetFrameStateOptions} from './tileset-3d/helpers/frame-state';
+export type {FrameState, GetFrameStateOptions} from './tileset-3d/helpers/frame-state';
 export {getLodStatus} from './tileset-3d/helpers/i3s-lod';
 
 export {
