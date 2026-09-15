@@ -31,15 +31,21 @@ export type Tile3DContent = {
 /** Renderer-neutral feature-id declaration from a tile content payload. */
 export type Tile3DFeatureIdSet = {
   /** Source of the feature identifiers. */
-  source: 'attribute' | 'property-table' | 'constant';
+  source: 'attribute' | 'property-table' | 'constant' | 'texture' | 'implicit';
   /** glTF attribute name for attribute-backed identifiers. */
   attribute?: string;
   /** Structural-metadata property-table index. */
   propertyTable?: number;
   /** Constant feature identifier. */
   constant?: number;
+  /** Texture-backed identifier declaration, when present. */
+  texture?: Record<string, unknown>;
+  /** Implicit identifier declaration, when present. */
+  implicit?: Record<string, unknown>;
   /** Decoded identifier values, when supplied by a content loader. */
   values?: Uint32Array | Uint16Array | Uint8Array;
+  /** Unrecognized source fields preserved for forward compatibility. */
+  details?: Record<string, unknown>;
 };
 
 /** Raw metadata references inherited by a tile and its contents. */
@@ -55,3 +61,51 @@ export type Tile3DMetadataContext = {
   /** Implicit-subtree metadata entity. */
   subtree?: Record<string, unknown> | null;
 };
+
+/** Extracts mesh-feature declarations from a decoded glTF-like payload. */
+export function getTile3DFeatureIdSets(payload: unknown): Tile3DFeatureIdSet[] {
+  const featureIdSets: Tile3DFeatureIdSet[] = [];
+  const visited = new Set<object>();
+  const visit = (value: unknown): void => {
+    if (!value || typeof value !== 'object') {
+      return;
+    }
+    if (visited.has(value as object)) {
+      return;
+    }
+    visited.add(value as object);
+    const record = value as Record<string, any>;
+    const declarations = record.extensions?.EXT_mesh_features?.featureIds;
+    if (Array.isArray(declarations)) {
+      for (const declaration of declarations) {
+        if (!declaration || typeof declaration !== 'object') {
+          continue;
+        }
+        const source = declaration.texture
+          ? 'texture'
+          : declaration.implicit
+            ? 'implicit'
+            : declaration.attribute !== undefined
+              ? 'attribute'
+              : declaration.propertyTable !== undefined
+                ? 'property-table'
+                : 'constant';
+        featureIdSets.push({
+          source,
+          attribute: declaration.attribute,
+          propertyTable: declaration.propertyTable,
+          constant: declaration.constant,
+          texture: declaration.texture,
+          implicit: declaration.implicit,
+          values: declaration.values,
+          details: declaration
+        });
+      }
+    }
+    for (const child of Object.values(record)) {
+      visit(child);
+    }
+  };
+  visit(payload);
+  return featureIdSets;
+}
