@@ -34,5 +34,5 @@ Traversal still uses the tile bounding volume. Content visibility is render-only
 content entries form a union. Renderer implementations may add styling and GPU policy on top of this
 contract without changing loader behavior.
 
-See [3D Tiles correctness and conformance](../3d-tiles/concepts/correctness-and-conformance),
+See [3D Tiles correctness and conformance](../../3d-tiles/concepts/correctness-and-conformance),
 [Tile3D](./tile-3d), and [Tileset3D](./tileset-3d).
