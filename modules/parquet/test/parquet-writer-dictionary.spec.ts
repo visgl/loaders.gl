@@ -92,7 +92,10 @@ test('ParquetJSWriter multi-page dictionaries interoperate with maintained brows
   });
   const [typescriptTable, wasmTable, hyparquetRows] = await Promise.all([
     load(parquetBuffer, ParquetJSLoader, {core: {worker: false}}),
-    load(parquetBuffer, ParquetLoader, {core: {worker: false}}),
+    load(parquetBuffer, ParquetLoader, {
+      core: {worker: false},
+      parquet: {shape: 'object-row-table'}
+    }),
     parquetReadObjects({file: parquetBuffer, compressors})
   ]);
   const expectedRows = INPUT.data.map(({sequence, label}) => ({sequence, label}));

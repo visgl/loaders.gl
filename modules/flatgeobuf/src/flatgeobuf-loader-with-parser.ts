@@ -44,7 +44,7 @@ function getOptions(options: FlatGeobufLoaderOptions): ParseFlatGeobufOptions {
     gis: {...FlatGeobufLoaderWithParser.options.gis, ...options?.gis}
   };
   return {
-    shape: options?.flatgeobuf?.shape ?? 'geojson-table',
+    shape: options?.flatgeobuf?.shape ?? 'arrow-table',
     boundingBox: options?.flatgeobuf?.boundingBox,
     crs: options?.gis?._targetCrs || 'WGS84',
     reproject: options?.gis?.reproject || false,

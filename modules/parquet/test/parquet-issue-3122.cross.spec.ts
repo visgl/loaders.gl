@@ -19,7 +19,8 @@ test('ParquetLoader decodes UTF8 BYTE_ARRAY values as strings (#3122)', async ()
 
   const parquetBuffer = await encode(input, ParquetJSWriter, {worker: false});
   const output = await load(parquetBuffer, ParquetLoader, {
-    core: {worker: false}
+    core: {worker: false},
+    parquet: {shape: 'object-row-table'}
   });
 
   expect(output.shape).toBe('object-row-table');
