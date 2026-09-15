@@ -247,6 +247,73 @@ describe('experimental explicit 3D Tiles 2.0', () => {
     );
   });
 
+  test('resolves URI-backed files inherited by an embedded nested tileset', async () => {
+    const decoyContentBytes = new TextEncoder().encode('not glTF');
+    const contentBytes = new TextEncoder().encode(
+      JSON.stringify({asset: {version: '2.0'}, scenes: [{nodes: []}], scene: 0})
+    );
+    const nestedTilesetBytes = new TextEncoder().encode(
+      JSON.stringify(
+        createTilesetGltf({
+          files: [{uri: 'content.gltf', mimeType: 'model/gltf+json'}],
+          externalAssets: [{file: 0}],
+          nodes: [
+            {
+              extensions: {'3DTILES_tileset': {geometricError: 0, refine: 'REPLACE'}},
+              boundingVolume: {shape: 0},
+              externalAsset: 0
+            }
+          ]
+        })
+      )
+    );
+    const decoyContentOffset = alignToFour(nestedTilesetBytes.byteLength);
+    const contentOffset = alignToFour(decoyContentOffset + decoyContentBytes.byteLength);
+    const binary = new Uint8Array(contentOffset + contentBytes.byteLength);
+    binary.set(nestedTilesetBytes);
+    binary.set(decoyContentBytes, decoyContentOffset);
+    binary.set(contentBytes, contentOffset);
+    const parent = createTilesetGltf({
+      buffers: [{byteLength: binary.byteLength}],
+      bufferViews: [
+        {buffer: 0, byteOffset: 0, byteLength: nestedTilesetBytes.byteLength},
+        {buffer: 0, byteOffset: decoyContentOffset, byteLength: decoyContentBytes.byteLength},
+        {buffer: 0, byteOffset: contentOffset, byteLength: contentBytes.byteLength}
+      ],
+      files: [
+        {bufferView: 0, mimeType: 'model/gltf+json', name: 'nested/tileset.gltf'},
+        {bufferView: 1, mimeType: 'model/gltf+json', name: 'content.gltf'},
+        {bufferView: 2, mimeType: 'model/gltf+json', name: 'nested/content.gltf'}
+      ],
+      externalAssets: [{file: 0}],
+      nodes: [
+        {
+          extensions: {'3DTILES_tileset': {geometricError: 0, refine: 'REPLACE'}},
+          boundingVolume: {shape: 0},
+          externalAsset: 0
+        }
+      ]
+    });
+    const rootTileset = await parse(encodeGlb(parent, binary), Tiles3DLoader, {worker: false});
+    const rootRuntime = new Tileset3D(
+      new Tiles3DSource({...rootTileset, coreApi}, {worker: false})
+    );
+    await rootRuntime.tilesetInitializationPromise;
+    const nestedTileset = (await rootRuntime.root!.loadContent()).nestedTileset!;
+    expect(nestedTileset.root.content._resource.files[0]).toMatchObject({
+      name: 'nested/content.gltf',
+      originalUri: 'content.gltf',
+      byteLength: contentBytes.byteLength
+    });
+
+    const nestedRuntime = new Tileset3D(
+      new Tiles3DSource({...nestedTileset, coreApi}, {worker: false})
+    );
+    await nestedRuntime.tilesetInitializationPromise;
+    await nestedRuntime.root!.loadContent();
+    expect(nestedRuntime.root!.content).toMatchObject({shape: 'tile3d'});
+  });
+
   test('normalizes the 1.1 vector preview to the same loaded contract', async () => {
     const vectorGltf = {
       asset: {version: '2.0'},

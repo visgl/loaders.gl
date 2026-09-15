@@ -939,12 +939,15 @@ function createPackageFile(
       };
     }
     const resolvedUri = resourceResolver.resolve(file.uri);
-    const inheritedFile = inheritedPackageFiles?.find(
-      packageFile =>
-        packageFile.uri === resolvedUri ||
-        packageFile.originalUri === file.uri ||
-        packageFile.name === file.uri
-    );
+    const resolvedPackageName = getResolvedPackageFileName(resolvedUri);
+    const inheritedFile =
+      inheritedPackageFiles?.find(packageFile => packageFile.uri === resolvedUri) ||
+      (resolvedPackageName
+        ? inheritedPackageFiles?.find(packageFile => packageFile.name === resolvedPackageName)
+        : undefined) ||
+      inheritedPackageFiles?.find(
+        packageFile => packageFile.originalUri === file.uri || packageFile.name === file.uri
+      );
     if (inheritedFile) {
       return {
         ...inheritedFile,
@@ -989,6 +992,15 @@ function createPackageFile(
     };
   }
   throw new Error(`3DTILES_tileset: embedded file ${fileIndex} has no available buffer data`);
+}
+
+/** Extracts the package-root-relative name from a virtual embedded-resource URI. */
+function getResolvedPackageFileName(uri: string): string | undefined {
+  if (!uri.startsWith('gltf-package:')) {
+    return undefined;
+  }
+  const pathComponents = new URL(uri).pathname.split('/').filter(Boolean);
+  return pathComponents.slice(1).join('/');
 }
 
 /** Converts a supported draft glTF shape to the 3D Tiles runtime volume representation. */
