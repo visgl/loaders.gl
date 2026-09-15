@@ -61,3 +61,6 @@ export type {
 } from './data-driven-tile-3d-layer';
 export {DataDrivenTile3DLayer} from './data-driven-tile-3d-layer';
 export {SourceDataDrivenTile3DLayer} from './data-driven-tile-3d-source-layer';
+
+export {DEFAULT_TILE_3D_RENDER_CONTRACT} from './tile-3d-render-contract';
+export type {Tile3DRenderContract} from './tile-3d-render-contract';

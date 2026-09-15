@@ -10,6 +10,7 @@ import type {Tileset3D} from './tileset-3d';
 import type {FrameState} from '../helpers/frame-state';
 import type {TILESET_TYPE} from '../../constants';
 import type {TilesetSpatialReference} from '../../spatial/spatial-types';
+import type {Tile3DContent} from './tile-3d-contracts';
 
 /**
  * Parsed top-level tileset payload consumed by {@link Tileset3D} or a {@link Tileset3DSource}.
@@ -68,6 +69,8 @@ export type TileContentLoadResult = {
   loaded: boolean;
   /** All payloads loaded for a tile, in source order. */
   contents?: any[];
+  /** Optional normalized renderer-neutral descriptors for each content entry. */
+  contentEntries?: Tile3DContent[];
   /** Nested tileset metadata to install below the loaded tile, if any. */
   nestedTileset?: TilesetJSON;
   /** Nested tilesets found among multiple content payloads. */
