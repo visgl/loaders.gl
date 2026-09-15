@@ -6,5 +6,5 @@ This module contains a geometry loader for FlatGeobuf.
 
 ## Features
 
-- `FlatGeobufLoader` returns `arrow-table` output by default and supports `geojson-table`, `binary`, and `columnar-table` as explicit alternatives.
+- `FlatGeobufLoader` returns `arrow-table` output by default and supports `geojson-table`, `binary-geometry`, and `columnar-table` as explicit alternatives.
 - `FlatGeobufSourceLoader` provides indexed HTTP range access for remote `.fgb` datasets and can return `geojson`, `binary`, or `arrow` feature tables for a requested bounding box.

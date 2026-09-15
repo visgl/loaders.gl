@@ -14,7 +14,7 @@ import {ClientExample} from '@site/src/components';
 <DocPageHeader
   eyebrow="Parquet module · geospatial loader"
   title="GeoParquetLoader"
-  description="Read GeoParquet files into loaders.gl geospatial tables while preserving the metadata that describes geometry columns, coordinate systems, and encodings."
+  description="Read GeoParquet files into Arrow tables by default while preserving the metadata that describes geometry columns, coordinate systems, and encodings."
   tone="mint"
   logos={[{alt: 'Apache Parquet', src: '/images/format-logos/parquet-logo.png'}]}
   meta={['From v5.0', 'GeoParquet', 'Arrow output']}
@@ -37,8 +37,8 @@ import {ClientExample} from '@site/src/components';
   description="GeoParquetLoader exposes the data in a familiar table shape while carrying GeoParquet and GeoArrow metadata through the read boundary."
   tone="mint"
   items={[
-    {label: 'Rows', value: 'GeoJSON-oriented table for application code'},
-    {label: 'Columns', value: 'Arrow table with geospatial metadata'},
+    {label: 'Default', value: 'Arrow table with geospatial metadata'},
+    {label: 'Rows', value: "Object-row table with parquet.shape: 'object-row-table'"},
     {label: 'Geometry', value: 'Supported encodings mapped to GeoArrow fields'},
     {label: 'Metadata', value: 'GeoParquet schema metadata preserved'}
   ]}
@@ -50,7 +50,7 @@ import {ClientExample} from '@site/src/components';
   tone="mint"
 />
 
-`GeoParquetLoader` loads GeoParquet files into loaders.gl geospatial tables by default, or Arrow tables when `parquet.shape: 'arrow-table'` is selected.
+`GeoParquetLoader` loads GeoParquet files into loaders.gl `ArrowTable` objects by default. Set `parquet.shape: 'object-row-table'` when row-oriented output is required.
 
 ## Usage
 
@@ -58,9 +58,9 @@ import {ClientExample} from '@site/src/components';
 import {load} from '@loaders.gl/core';
 import {GeoParquetLoader} from '@loaders.gl/parquet';
 
-const table = await load(url, GeoParquetLoader, {parquet: options});
-const arrowTable = await load(url, GeoParquetLoader, {
-  parquet: {shape: 'arrow-table'}
+const arrowTable = await load(url, GeoParquetLoader);
+const rowTable = await load(url, GeoParquetLoader, {
+  parquet: {shape: 'object-row-table'}
 });
 ```
 
@@ -68,7 +68,7 @@ const arrowTable = await load(url, GeoParquetLoader, {
 
 | Shape              | Output                                          |
 | ------------------ | ----------------------------------------------- |
-| `object-row-table` | loaders.gl GeoJSON table                        |
+| `object-row-table` | loaders.gl object-row table                    |
 | `arrow-table`      | loaders.gl `ArrowTable` with geospatial metadata |
 
 ## Geospatial Metadata

@@ -10,6 +10,10 @@ import {
   FlatGeobufLoader as FlatGeobufLoaderMetadata,
   type FlatGeobufLoaderOptions
 } from './flatgeobuf-loader';
+import {
+  deserializeFlatGeobufWorkerResult,
+  serializeFlatGeobufWorkerResult
+} from './lib/flatgeobuf-worker-transport';
 
 const {preload: _FlatGeobufWorkerLoaderPreload, ...FlatGeobufWorkerLoaderMetadataWithoutPreload} = FlatGeobufWorkerLoaderMetadata;
 const {preload: _FlatGeobufLoaderPreload, ...FlatGeobufLoaderMetadataWithoutPreload} = FlatGeobufLoaderMetadata;
@@ -30,7 +34,9 @@ export const FlatGeobufLoaderWithParser = {
   ...FlatGeobufLoaderMetadataWithoutPreload,
   parse: async (arrayBuffer: ArrayBuffer, options: FlatGeobufLoaderOptions = {}) =>
     parseSync(arrayBuffer, options),
-  parseSync
+  parseSync,
+  serializeWorkerResult: serializeFlatGeobufWorkerResult,
+  deserializeWorkerResult: deserializeFlatGeobufWorkerResult
 } as const satisfies LoaderWithParser<any, any, FlatGeobufLoaderOptions>;
 
 function parseSync(arrayBuffer: ArrayBuffer, options: FlatGeobufLoaderOptions = {}) {

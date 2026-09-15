@@ -34,11 +34,11 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
 <DocOrientation
   eyebrow="Choose the boundary"
   title="Keep features familiar, or make columns explicit."
-  description="The default result is convenient for mapping. Arrow and columnar shapes are available when the next stage wants typed columns, binary geometry, or direct table interoperability."
+  description="The default result is an Arrow table for typed columns and direct table interoperability. GeoJSON and binary shapes remain available when application code needs them."
   tone="cyan"
   items={[
-    {label: 'Default', value: 'GeoJSONTable for application code'},
-    {label: 'Arrow', value: 'Typed columns with WKB geometry'},
+    {label: 'Default', value: 'ArrowTable with typed columns and WKB geometry'},
+    {label: 'GeoJSON', value: 'GeoJSONTable for application code'},
     {label: 'Index', value: 'Bounding-box filtering before decode'},
     {label: 'Streaming', value: 'Source APIs for incremental reads'}
   ]}
@@ -58,9 +58,9 @@ Loader for the [FlatGeobuf](/docs/modules/flatgeobuf/formats/flatgeobuf) format,
 import {FlatGeobufLoader} from '@loaders.gl/flatgeobuf';
 import {load} from '@loaders.gl/core';
 
-const geojsonFeatures = await load(url, FlatGeobufLoader);
-const arrowTable = await load(url, FlatGeobufLoader, {
-  flatgeobuf: {shape: 'arrow-table'}
+const arrowTable = await load(url, FlatGeobufLoader);
+const geojsonTable = await load(url, FlatGeobufLoader, {
+  flatgeobuf: {shape: 'geojson-table'}
 });
 ```
 
@@ -68,7 +68,7 @@ const arrowTable = await load(url, FlatGeobufLoader, {
 
 ### Shapes
 
-`FlatGeobufLoader` returns loaders.gl `GeoJSONTable` objects by default. Set `flatgeobuf.shape` to select another representation.
+`FlatGeobufLoader` returns loaders.gl `ArrowTable` objects by default. Set `flatgeobuf.shape` to select another representation.
 
 | Shape              | Output                                |
 | ------------------ | ------------------------------------- |
@@ -83,13 +83,13 @@ The parser will return an array of [GeoJSON `features`](https://tools.ietf.org/h
 
 ### Arrow
 
-Set `flatgeobuf.shape` to `'arrow-table'` to return an Apache Arrow table that preserves FlatGeobuf property columns and appends a WKB `geometry` column annotated with geospatial schema metadata. <img src="https://img.shields.io/badge/From-v5.0-blue.svg?style=flat-square" alt="From-v5.0" />
+By default, `FlatGeobufLoader` returns an Apache Arrow table that preserves FlatGeobuf property columns and appends a WKB `geometry` column annotated with geospatial schema metadata. Set `flatgeobuf.shape` to `'arrow-table'` explicitly when using another default or shared option bag. <img src="https://img.shields.io/badge/From-v5.0-blue.svg?style=flat-square" alt="From-v5.0" />
 
 ## Options
 
 | Option             | Type                                                     | Default           | Description                                                       |
 | ------------------ | -------------------------------------------------------- | ----------------- | ----------------------------------------------------------------- |
-| flatgeobuf.shape   | `string`                                                 | `'geojson-table'` | Output shape: `'geojson-table'`, `'arrow-table'`, `'columnar-table'`, or `'binary-geometry'`. |
+| flatgeobuf.shape   | `string`                                                 | `'arrow-table'` | Output shape: `'geojson-table'`, `'arrow-table'`, `'columnar-table'`, or `'binary-geometry'`. |
 | gis.reproject      | boolean                                                  | `false`           | Whether to reproject input data into the WGS84 coordinate system. |
 
 ## Remarks

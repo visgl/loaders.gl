@@ -5283,6 +5283,7 @@ __metadata:
     "@loaders.gl/schema": "npm:5.0.0-alpha.6"
     "@math.gl/crs": "npm:5.0.0-alpha.6"
     "@math.gl/proj4": "npm:5.0.0-alpha.6"
+    apache-arrow: "npm:>= 17.0.0"
     stream-buffers: "npm:3.0.2"
   peerDependencies:
     "@loaders.gl/core": ~5.0.0-alpha.0

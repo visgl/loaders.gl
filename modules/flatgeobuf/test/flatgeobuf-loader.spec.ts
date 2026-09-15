@@ -96,6 +96,15 @@ test('FlatGeobufLoader#load arrow-table round-trips to GeoJSON', async () => {
     normalizeFeatures(geojsonTable.features)
   );
 });
+test('FlatGeobufLoader#load arrow-table worker result is hydrated', async () => {
+  const arrowTable = await load(FLATGEOBUF_COUNTRIES_DATA_URL, FlatGeobufLoader, {
+    core: {worker: true}
+  });
+  expect(arrowTable.shape).toBe('arrow-table');
+  if (arrowTable.shape === 'arrow-table') {
+    expect(arrowTable.data.getChild('geometry')).toBeTruthy();
+  }
+});
 test('FlatGeobufLoader#load arrow-table reprojects like geojson-table', async () => {
   const arrowTable = await load(FLATGEOBUF_COUNTRIES_DATA_URL, FlatGeobufLoader, {
     core: {worker: false},
