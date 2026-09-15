@@ -615,10 +615,9 @@ export class Tile3D {
         await this.tileset.options.contentLoader(this);
       }
 
-      this._updateContentEntriesAfterLoad(loadResult);
-
       this.contentState = TILE_CONTENT_STATE.READY;
       this._onContentLoaded();
+      this._updateContentEntriesAfterLoad(loadResult);
       return loadResult;
     } catch (error) {
       // Tile is unloaded before the content finishes loading
@@ -771,6 +770,7 @@ export class Tile3D {
             !isNestedTilesetPayload(entry.payload ?? this.contents[index])
         )
       }));
+      this.featureIdSets = this.contentEntries.flatMap(entry => entry.featureIds);
       return;
     }
     this.contentEntries = this.contentEntries.map((entry, index) => ({
@@ -779,6 +779,7 @@ export class Tile3D {
       featureIds: getTile3DFeatureIdSets(this.contents[index]),
       renderable: Boolean(this.contents[index]) && !isNestedTilesetPayload(this.contents[index])
     }));
+    this.featureIdSets = this.contentEntries.flatMap(entry => entry.featureIds);
   }
 
   /** Returns one ordered content descriptor, or null when the index is out of range. */
