@@ -202,6 +202,7 @@ test('nested and parameterized Arrow types round-trip', () => {
     {type: 'decimal', bitWidth: 128, precision: 19, scale: 4},
     {type: 'fixed-size-binary', byteWidth: 16},
     {type: 'list', children: [valueField]},
+    {type: 'large-list', children: [valueField]},
     {type: 'fixed-size-list', listSize: 3, children: [valueField]},
     {type: 'struct', children: [keyField, valueField]},
     {

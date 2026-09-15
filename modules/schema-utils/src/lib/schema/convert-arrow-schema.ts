@@ -31,8 +31,10 @@ export type ArrowViewTypeSupport = {
 };
 
 type ArrowDataTypeConstructor = new () => arrow.DataType;
-type OptionalArrowViewConstructors = {
+type ArrowLargeListConstructor = new (field: arrow.Field) => arrow.DataType;
+type OptionalArrowConstructors = {
   BinaryView?: ArrowDataTypeConstructor;
+  LargeList?: ArrowLargeListConstructor;
   Utf8View?: ArrowDataTypeConstructor;
 };
 type OptionalArrowViewGuards = {
@@ -42,10 +44,9 @@ type OptionalArrowViewGuards = {
 
 /** Returns the variable-width view types exported by the installed Apache Arrow runtime. */
 export function getArrowViewTypeSupport(): ArrowViewTypeSupport {
-  const constructors = getArrowViewConstructors();
   return {
-    binaryView: typeof constructors.BinaryView === 'function',
-    utf8View: typeof constructors.Utf8View === 'function'
+    binaryView: typeof getOptionalArrowConstructor('BinaryView') === 'function',
+    utf8View: typeof getOptionalArrowConstructor('Utf8View') === 'function'
   };
 }
 
@@ -122,6 +123,13 @@ export function serializeArrowType(arrowType: arrow.DataType): DataType {
   }
   if (isArrowViewType(arrowType, 'Utf8View')) {
     return 'utf8-view';
+  }
+  if (isOptionalArrowType(arrowType, 'LargeList')) {
+    const largeListType = arrowType as arrow.DataType & {valueField: arrow.Field};
+    return {
+      type: 'large-list',
+      children: [serializeArrowField(largeListType.valueField)]
+    };
   }
 
   switch (arrowType.constructor) {
@@ -263,12 +271,6 @@ export function serializeArrowType(arrowType: arrow.DataType): DataType {
         type: 'list',
         children: [serializeArrowField(listField)]
       };
-    case arrow.LargeList:
-      const largeListType = arrowType as arrow.LargeList;
-      return {
-        type: 'large-list',
-        children: [serializeArrowField(largeListType.valueField)]
-      };
     case arrow.FixedSizeList:
       const fixedSizeList = arrowType as arrow.FixedSizeList;
       return {
@@ -330,7 +332,13 @@ export function deserializeArrowType(
       }
       case 'large-list': {
         const field = deserializeArrowField(dataType.children[0], options);
-        return new arrow.LargeList(field);
+        const LargeList = getOptionalArrowConstructor('LargeList');
+        if (!LargeList) {
+          throw new Error(
+            'LargeList requires an Apache Arrow runtime that exports the LargeList constructor'
+          );
+        }
+        return new LargeList(field);
       }
       case 'fixed-size-list': {
         const child = deserializeArrowField(dataType.children[0], options);
@@ -430,15 +438,17 @@ export function deserializeArrowType(
   }
 }
 
-function getArrowViewConstructors(): OptionalArrowViewConstructors {
-  return arrow as unknown as OptionalArrowViewConstructors;
+function getOptionalArrowConstructor<TypeName extends keyof OptionalArrowConstructors>(
+  typeName: TypeName
+): OptionalArrowConstructors[TypeName] {
+  return (arrow as unknown as OptionalArrowConstructors)[typeName];
 }
 
 function isArrowViewType(
   arrowType: arrow.DataType,
-  viewTypeName: keyof OptionalArrowViewConstructors
+  viewTypeName: 'BinaryView' | 'Utf8View'
 ): boolean {
-  const constructor = getArrowViewConstructors()[viewTypeName];
+  const constructor = getOptionalArrowConstructor(viewTypeName);
   if (constructor && arrowType instanceof constructor) {
     return true;
   }
@@ -448,8 +458,16 @@ function isArrowViewType(
   return Boolean(guard?.(arrowType));
 }
 
+function isOptionalArrowType(
+  arrowType: arrow.DataType,
+  typeName: keyof OptionalArrowConstructors
+): boolean {
+  const constructor = getOptionalArrowConstructor(typeName);
+  return Boolean(constructor && arrowType instanceof constructor);
+}
+
 function makeVariableWidthArrowType(
-  viewTypeName: keyof OptionalArrowViewConstructors,
+  viewTypeName: 'BinaryView' | 'Utf8View',
   fallbackType: arrow.DataType,
   options?: ArrowSchemaConversionOptions
 ): arrow.DataType {
@@ -458,7 +476,7 @@ function makeVariableWidthArrowType(
     return fallbackType;
   }
 
-  const constructor = getArrowViewConstructors()[viewTypeName];
+  const constructor = getOptionalArrowConstructor(viewTypeName);
   if (constructor) {
     return new constructor();
   }
@@ -470,10 +488,8 @@ function makeVariableWidthArrowType(
   return fallbackType;
 }
 
-function makeRequiredArrowViewType(
-  viewTypeName: keyof OptionalArrowViewConstructors
-): arrow.DataType {
-  const constructor = getArrowViewConstructors()[viewTypeName];
+function makeRequiredArrowViewType(viewTypeName: 'BinaryView' | 'Utf8View'): arrow.DataType {
+  const constructor = getOptionalArrowConstructor(viewTypeName);
   if (!constructor) {
     throw new Error(
       `${viewTypeName} requires apache-arrow 21.2.0 or later; the installed runtime does not support it`
