@@ -191,6 +191,8 @@ export type Tiles3DTileJSON = {
    * independent content objects; loaders.gl preserves the source shape during parsing.
    */
   content?: Tiles3DTileContentJSON | Tiles3DTileContentJSON[];
+  /** Multiple independent content objects, as represented by the 3D Tiles 1.1 `contents` field. */
+  contents?: Tiles3DTileContentJSON[];
   /** An array of objects that define child tiles. */
   children: Tiles3DTileJSON[];
   /** Dictionary object with extension-specific objects. */

@@ -121,7 +121,8 @@ export function normalizeTileData(
   if (!tile) {
     return null;
   }
-  const normalizedContents = normalizeTileContents(tile.content, resourceResolver, schema);
+  const sourceContents = tile.contents || tile.content;
+  const normalizedContents = normalizeTileContents(sourceContents, resourceResolver, schema);
   const tileContentUrl = normalizedContents.contentUrls[0];
   const boundingVolume = normalizeS2BoundingVolume(
     getMetadataBoundingVolume(tile.metadata, 'TILE', schema) || tile.boundingVolume
@@ -131,6 +132,9 @@ export function normalizeTileData(
     ...tile,
     boundingVolume,
     content: normalizedContents.content,
+    contents: tile.contents
+      ? (normalizedContents.content as Tiles3DTileJSON['contents'])
+      : undefined,
     contentUrls: normalizedContents.contentUrls,
     viewerRequestVolume,
     id: tileContentUrl,
@@ -317,19 +321,23 @@ export async function normalizeImplicitTileHeaders(
 ): Promise<Tiles3DTileJSONPostprocessed | null> {
   void options;
   void context;
+  const sourceContents = tile.contents || tile.content;
+  const normalizedContents = normalizeTileContents(
+    sourceContents,
+    resourceResolver,
+    tileset.schema
+  );
   const normalizedTile: Tiles3DTileJSON = {
     ...tile,
     boundingVolume: normalizeS2BoundingVolume(
       getMetadataBoundingVolume(tile.metadata, 'TILE', tileset.schema) || tile.boundingVolume
     ) as Tile3DBoundingVolume,
-    content: tile.content,
+    content: normalizedContents.content,
+    contents: tile.contents
+      ? (normalizedContents.content as Tiles3DTileJSON['contents'])
+      : undefined,
     viewerRequestVolume: normalizeS2BoundingVolume(tile.viewerRequestVolume)
   };
-  const normalizedContents = normalizeTileContents(
-    normalizedTile.content,
-    resourceResolver,
-    tileset.schema
-  );
   const maximumLevel = Number.isFinite(implicitTilingExtension.availableLevels)
     ? implicitTilingExtension.availableLevels - 1
     : implicitTilingExtension.maximumLevel;
@@ -365,6 +373,7 @@ export async function normalizeImplicitTileHeaders(
       uri: undefined,
       url: undefined
     })),
+    useCanonicalContents: Boolean(tile.contents),
     subtreesUrlTemplate: resourceResolver.resolve(implicitTilingExtension.subtrees.uri),
     subdivisionScheme: implicitTilingExtension.subdivisionScheme,
     subtreeLevels: implicitTilingExtension.subtreeLevels,

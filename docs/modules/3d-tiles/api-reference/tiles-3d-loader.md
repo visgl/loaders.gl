@@ -199,6 +199,18 @@ points to the primary decoded descriptor. Each primitive is discriminated as `po
 produced by `KHR_mesh_primitive_restart` or `EXT_mesh_polygon`. The `clip` flag is metadata for a
 renderer and does not cause visual clipping in loaders.gl.
 
+Draft implicit tiling accepts glTF-based `3DTILES_subtree` resources with QUADTREE or OCTREE
+availability. Tile/content attributes can override generated bounds, geometric error, refinement,
+and transforms. Structural-metadata rows are exposed as metadata and can supply URI-template
+values; templates resolve content properties before tile properties and coordinates.
+Draft geometric errors remain in their declared world units, while the established 1.x path keeps
+transform scaling for backward compatibility.
+
+This experimental profile is intentionally loader/runtime-only. It does not implement voxels,
+layers, visibility extensions, horizon-occlusion optimization, styling, visual clipping,
+wide-line tessellation, terrain draping, or terrain/tileset clamping. `clip` is exposed as source
+metadata, and applications remain responsible for rendering every vector primitive.
+
 ## Data Format
 
 Loaded data conforms to the 3D Tiles loader category specification with the following exceptions.
