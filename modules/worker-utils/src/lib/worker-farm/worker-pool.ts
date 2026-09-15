@@ -70,6 +70,7 @@ export default class WorkerPool {
   private props: WorkerPoolProps = {};
   private jobQueue: QueuedJob[] = [];
   private idleQueue: WorkerThread[] = [];
+  private activeJobs = new Set<WorkerJob>();
   private count = 0;
   private isDestroyed = false;
 
@@ -91,11 +92,13 @@ export default class WorkerPool {
   }
 
   /**
-   * Terminates all workers in the pool
+   * Terminates all workers in the pool and aborts active jobs.
+   * @param reason Optional error delivered to active jobs.
    * @note Can free up significant memory
    */
-  destroy(): void {
-    // Destroy idle workers, active Workers will be destroyed on completion
+  destroy(reason: unknown = new Error('Worker pool was destroyed')): void {
+    // Abort active jobs so callers receive an error when a development worker is invalidated.
+    this.activeJobs.forEach(job => job.abort(reason));
     this.idleQueue.forEach(worker => worker.destroy());
     this.isDestroyed = true;
   }
@@ -165,6 +168,7 @@ export default class WorkerPool {
 
       // Create a worker job to let the app access thread and manage job completion
       const job = new WorkerJob(queuedJob.name, workerThread);
+      this.activeJobs.add(job);
       workerThread.ref();
 
       // Set the worker thread's message handlers
@@ -181,6 +185,7 @@ export default class WorkerPool {
         // The job result promise carries worker errors back to the caller; do not duplicate-log
         // handled rejections here.
       } finally {
+        this.activeJobs.delete(job);
         this.returnWorkerToQueue(workerThread);
       }
     }

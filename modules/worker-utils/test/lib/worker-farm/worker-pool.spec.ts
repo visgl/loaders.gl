@@ -86,3 +86,21 @@ test('WorkerPool with reuseWorkers === true param', async () => {
   expect(workerPool.idleQueue.length).toBe(3);
   workerPool.destroy();
 });
+
+test('WorkerPool destroy aborts active jobs with its reason', async () => {
+  if (!hasWorker) {
+    console.log('Worker test is browser only');
+    return;
+  }
+  const workerPool = new WorkerPool({
+    source: testWorkerSource,
+    name: 'test-worker',
+    maxConcurrency: 1
+  });
+  const job = await workerPool.startJob('test-job');
+  job.postMessage('process', {input: 'pending'});
+  const reason = new Error('worker source invalidated');
+  workerPool.destroy(reason);
+
+  await expect(job.result).rejects.toBe(reason);
+});
