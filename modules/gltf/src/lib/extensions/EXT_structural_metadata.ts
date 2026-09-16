@@ -669,11 +669,7 @@ function applyNumericPropertyTransforms(
 ): BigTypedArray {
   const normalizationLimit = getNormalizationLimit(componentType);
   const hasNormalization = Boolean(normalized && normalizationLimit !== undefined);
-  if (
-    !hasNormalization &&
-    offset === undefined &&
-    scale === undefined
-  ) {
+  if (!hasNormalization && offset === undefined && scale === undefined) {
     return valuesData;
   }
   const numberOfComponents = getMetadataComponentCount(attributeType);
@@ -1132,4 +1128,3 @@ function createBufferView(typedArray: TypedArray, scenegraph: GLTFScenegraph): n
   });
   return scenegraph.addBufferView(typedArray);
 }
-
