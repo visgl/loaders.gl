@@ -1132,3 +1132,4 @@ function createBufferView(typedArray: TypedArray, scenegraph: GLTFScenegraph): n
   });
   return scenegraph.addBufferView(typedArray);
 }
+
