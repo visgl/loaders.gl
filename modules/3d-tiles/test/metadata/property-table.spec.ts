@@ -74,10 +74,9 @@ test('getStructuralMetadataRow slices flat vector columns and checks raw noData 
   expect(getStructuralMetadataRow(propertyTable, schemaClass, 0)).toEqual({
     position: [99, 99]
   });
-  expect(Array.from(getStructuralMetadataRow(propertyTable, schemaClass, 1)?.position as Float64Array)).toEqual([
-    4,
-    6
-  ]);
+  expect(
+    Array.from(getStructuralMetadataRow(propertyTable, schemaClass, 1)?.position as Float64Array)
+  ).toEqual([4, 6]);
 });
 
 test('getStructuralMetadataRow handles typed-array array sentinels and omitted defaults', () => {
@@ -110,9 +109,7 @@ test('getStructuralMetadataRow handles typed-array array sentinels and omitted d
     values: [7, 7],
     classification: 'unknown'
   });
-  expect(Array.from(getStructuralMetadataRow(propertyTable, schemaClass, 1)?.values as Float64Array)).toEqual([
-    2,
-    3
-  ]);
+  expect(
+    Array.from(getStructuralMetadataRow(propertyTable, schemaClass, 1)?.values as Float64Array)
+  ).toEqual([2, 3]);
 });
-
