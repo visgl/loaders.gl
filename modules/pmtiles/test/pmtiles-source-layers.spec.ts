@@ -8,7 +8,7 @@ import type {CoreAPI} from '@loaders.gl/loader-utils';
 import {MLTLoader} from '@loaders.gl/mlt';
 import type {MVTLoaderOptions} from '@loaders.gl/mvt';
 import {MVTLoader} from '@loaders.gl/mvt';
-import {PMTilesTileSource} from '../src/pmtiles-source-loader';
+import {PMTilesSourceLoader, PMTilesTileSource} from '../src/pmtiles-source-loader';
 
 /** Creates a valid compact PMTiles header for source metadata tests. */
 function createHeader(tileType = 1): Header {
@@ -44,6 +44,11 @@ function createHeader(tileType = 1): Header {
 
 afterEach(() => {
   vi.useRealTimers();
+});
+
+test('PMTilesSourceLoader#defaults vector tiles to arrow-table output', () => {
+  expect(PMTilesSourceLoader.options.pmtiles.shape).toBe('arrow-table');
+  expect(PMTilesSourceLoader.defaultOptions.pmtiles.shape).toBe('arrow-table');
 });
 
 test('PMTilesTileSource#getVectorTile forwards requested layers to the decoder', async () => {

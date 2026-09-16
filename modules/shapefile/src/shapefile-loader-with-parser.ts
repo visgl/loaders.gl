@@ -55,11 +55,11 @@ export type ShapefileLoaderOptions = StrictLoaderOptions &
 export const ShapefileLoaderWithParser = {
   ...ShapefileLoaderMetadataWithoutPreload,
   parse: (arrayBuffer, options, context) =>
-    options?.shapefile?.shape === 'arrow-table'
+    getShapefileShape(options) === 'arrow-table'
       ? parseShapefileToArrow(arrayBuffer, options, context)
       : parseShapefile(arrayBuffer, options, context),
   parseInBatches: (asyncIterator, options, context) =>
-    options?.shapefile?.shape === 'arrow-table'
+    getShapefileShape(options) === 'arrow-table'
       ? parseShapefileToArrowInBatches(asyncIterator, options, context)
       : parseShapefileInBatches(asyncIterator, options, context)
 } as const satisfies LoaderWithParser<
@@ -67,3 +67,9 @@ export const ShapefileLoaderWithParser = {
   ShapefileOutput | Batch | ArrowTableBatch,
   ShapefileLoaderOptions
 >;
+
+function getShapefileShape(
+  options?: ShapefileLoaderOptions
+): NonNullable<ShapefileLoaderOptions['shapefile']>['shape'] {
+  return options?.shapefile?.shape || 'arrow-table';
+}

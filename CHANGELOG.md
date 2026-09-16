@@ -6,6 +6,7 @@
 
 - feat(arrow): make CSV, JSON table, NDJSON, Excel, and ParquetJS loaders Arrow-primary by default while retaining explicit row-table shapes
 - feat(las): make LAS and LAZ loader variants Arrow-primary by default while retaining explicit mesh output
+- feat(geoarrow): make Shapefile, SHP, DBF, and PMTiles vector source outputs Arrow-primary by default while retaining explicit legacy shapes
 
 ### v5.0.0-alpha.6
 

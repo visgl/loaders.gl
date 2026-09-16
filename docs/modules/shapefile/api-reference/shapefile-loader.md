@@ -51,13 +51,13 @@ The `ShapefileLoader` parses Shapefile datasets into loaders.gl geometry tables.
 import {ShapefileLoader} from '@loaders.gl/shapefile';
 import {load} from '@loaders.gl/core';
 
-const data = await load(url, ShapefileLoader);
-const table = await load(url, ShapefileLoader, {shapefile: {shape: 'arrow-table'}});
+const table = await load(url, ShapefileLoader);
+const legacy = await load(url, ShapefileLoader, {shapefile: {shape: 'v3'}});
 ```
 
 ## Shapes
 
-`ShapefileLoader` returns the legacy v3 shapefile output by default. Set `shapefile.shape` to select another representation.
+`ShapefileLoader` returns an Apache Arrow table with GeoArrow-compatible geometry by default. Set `shapefile.shape: 'v3'` or `shapefile.shape: 'geojson-table'` for legacy representations.
 
 | Shape           | Output                                                      |
 | --------------- | ----------------------------------------------------------- |
@@ -69,17 +69,18 @@ const table = await load(url, ShapefileLoader, {shapefile: {shape: 'arrow-table'
 
 | Option                     | Type    | Default          | Description                                                                                                                                                                                                                                                                |
 | -------------------------- | ------- | ---------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| shapefile.shape            | String  | `'v3'`           | Output shape: `'v3'`, `'geojson-table'`, or `'arrow-table'`.                                                                                                                                                                                                               |
+| shapefile.shape            | String  | `'arrow-table'`  | Output shape: `'arrow-table'`, `'v3'`, or `'geojson-table'`.                                                                                                                                                                                                              |
 | shapefile.geoarrowEncoding | String  | `'geoarrow.wkb'` | Arrow geometry encoding when `shapefile.shape` is `'arrow-table'`: `'geoarrow.wkb'` or `'geoarrow'`. `'geoarrow'` infers a geometry-specific GeoArrow encoding from the SHP header.                                                                                        |
 | shp.\_maxDimensions        | Integer | `4`              | Shapefiles can hold up to 4 dimensions (XYZM). By default all dimensions are parsed; when set to `2` only the X and Y dimensions are parsed. Note that for some Shapefiles, the third dimension is M, not Z. `header.type` in the output designates the stored dimensions. |
 
 ## Output
 
-The `ShapefileLoader`'s output looks like the following. `data` holds an array
-of GeoJSON `Feature`s. `prj` contains the Shapefile's projection string.
-`header` contains the Shapefile's header values, including a bounding box of the
-data and the file's geometry type. Consult the [Shapefile
-specification][shapefile_spec] for the meaning of the numeric types.
+The default `ShapefileLoader` output is an `ArrowTable` whose property columns
+come from DBF and whose `geometry` column uses WKB or typed GeoArrow encoding.
+The table schema carries geospatial metadata and preserves the projection used
+for reprojection. When `shapefile.shape: 'v3'` is selected, the legacy output
+below is returned instead. Consult the [Shapefile specification][shapefile_spec]
+for the meaning of the numeric types.
 
 [shapefile_spec]: https://www.esri.com/library/whitepapers/pdfs/shapefile.pdf#page=8
 

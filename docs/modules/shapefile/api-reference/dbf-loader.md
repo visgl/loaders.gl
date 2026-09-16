@@ -31,7 +31,7 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
   tone="orange"
   items={[
     {label: 'Input', value: 'A `.dbf` dBase attribute file'},
-    {label: 'Output', value: 'Rows of decoded field values'},
+    {label: 'Output', value: 'An Arrow attribute table'},
     {label: 'Encoding', value: 'CPG-guided or explicitly selected'},
     {label: 'Boundary', value: 'Attributes only, without geometry'}
   ]}
@@ -55,18 +55,14 @@ The `DBFLoader` parses feature attributes from the Shapefile format.
 import {DBFLoader} from '@loaders.gl/shapefile';
 import {load} from '@loaders.gl/core';
 
-const options = {
-  dbf: {
-    encoding: 'utf8'
-  }
-};
-const data = await load(url, DBFLoader, options);
-// [{foo: null}, {foo: 'blue'}, {foo: 'green'}];
+const table = await load(url, DBFLoader, {dbf: {encoding: 'utf8'}});
+const rows = await load(url, DBFLoader, {dbf: {encoding: 'utf8', shape: 'rows'}});
 ```
 
 ## Options
 
 - `encoding`: text encoding of DBF file: usually either `utf8`, or `ascii`/`windows-1252`. For Shapefiles, there's often a `.cpg` file designating the encoding used.
+- `shape`: defaults to `'arrow-table'`; set `'rows'`, `'table'`, or `'object-row-table'` for legacy row-oriented output.
 
 ## Format Summary
 

@@ -66,5 +66,5 @@ export const SHPLoaderWithParser: LoaderWithParser<
 };
 
 function getSHPShape(options?: SHPLoaderOptions): NonNullable<SHPLoaderOptions['shp']>['shape'] {
-  return options?.shp?.shape;
+  return options?.shp?.shape || 'arrow-table';
 }

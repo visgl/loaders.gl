@@ -65,5 +65,5 @@ export const DBFLoaderWithParser: LoaderWithParser<
 };
 
 function getDBFShape(options?: DBFLoaderOptions): NonNullable<DBFLoaderOptions['dbf']>['shape'] {
-  return options?.dbf?.shape;
+  return options?.dbf?.shape || 'arrow-table';
 }

@@ -69,11 +69,15 @@ export const PMTilesSourceLoader = {
   fromBlob: true,
 
   options: {
-    pmtiles: {}
+    pmtiles: {
+      shape: 'arrow-table'
+    }
   },
 
   defaultOptions: {
-    pmtiles: {}
+    pmtiles: {
+      shape: 'arrow-table'
+    }
   },
 
   testURL: (url: string) => url.endsWith('.pmtiles'),
@@ -204,9 +208,7 @@ export class PMTilesTileSource
         mlt: {
           ...inheritedMLTOptions,
           shape:
-            getMLTShape(this.options.pmtiles?.shape) ||
-            inheritedMLTOptions?.shape ||
-            'geojson-table',
+            getMLTShape(this.options.pmtiles?.shape) || inheritedMLTOptions?.shape || 'arrow-table',
           coordinates: 'wgs84',
           tileIndex: {x: tileParams.x, y: tileParams.y, z: tileParams.z},
           layers: normalizeTileLayers(tileParams.layers) || inheritedMLTOptions?.layers,
@@ -228,7 +230,7 @@ export class PMTilesTileSource
       ...this.loadOptions,
       mvt: {
         ...inheritedMVTOptions,
-        shape: this.options.pmtiles?.shape || inheritedMVTOptions?.shape || 'geojson-table',
+        shape: this.options.pmtiles?.shape || inheritedMVTOptions?.shape || 'arrow-table',
         coordinates: 'wgs84',
         tileIndex: {x: tileParams.x, y: tileParams.y, z: tileParams.z},
         layers: selectedLayers,

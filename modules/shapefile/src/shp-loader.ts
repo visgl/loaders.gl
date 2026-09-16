@@ -45,7 +45,8 @@ export const SHPLoader: Loader<any, any, SHPLoaderOptions> = {
   worker: true,
   options: {
     shp: {
-      _maxDimensions: 4
+      _maxDimensions: 4,
+      shape: 'arrow-table'
     }
   },
   preload

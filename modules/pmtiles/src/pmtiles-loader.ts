@@ -24,7 +24,9 @@ export const PMTilesLoader = {
   ...PMTilesFormat,
   version: VERSION,
   options: {
-    pmtiles: {}
+    pmtiles: {
+      shape: 'arrow-table'
+    }
   },
   preload
 } as const satisfies Loader<VectorSourceInfo | ImageSourceInfo, never, PMTilesLoaderOptions>;

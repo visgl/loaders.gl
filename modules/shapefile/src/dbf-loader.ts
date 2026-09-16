@@ -40,7 +40,8 @@ export const DBFLoader: Loader<any, any, DBFLoaderOptions> = {
   mimeTypes: ['application/x-dbf'],
   options: {
     dbf: {
-      encoding: 'latin1'
+      encoding: 'latin1',
+      shape: 'arrow-table'
     }
   },
   preload
