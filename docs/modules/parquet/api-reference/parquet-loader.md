@@ -46,9 +46,8 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
 </p>
 
 Streaming loader for Apache Parquet encoded files. `ParquetLoader` is the primary wasm-backed loader
-and returns Arrow tables by default; `ParquetJSLoader` is the experimental TypeScript loader variant
-and retains object-row output by default. Both support explicit shape selection through
-`parquet.shape`.
+and `ParquetJSLoader` is the experimental TypeScript loader variant. Both return Arrow tables by
+default and support explicit shape selection through `parquet.shape`.
 
 Please refer to the `parquet` format page for information on
 which [Parquet format features](/docs/modules/parquet/formats/parquet) are supported.
@@ -97,7 +96,7 @@ const arrowTable = await load(url, ParquetLoader, {
 
 ## Shapes
 
-`ParquetLoader` returns loaders.gl `ArrowTable` objects by default. Set `parquet.shape: 'object-row-table'` when row objects are required. `ParquetJSLoader` retains its object-row default.
+Both `ParquetLoader` and `ParquetJSLoader` return loaders.gl `ArrowTable` objects by default. Set `parquet.shape: 'object-row-table'` when row objects are required.
 
 | Shape              | Output                                           |
 | ------------------ | ------------------------------------------------ |
@@ -112,7 +111,9 @@ The ParquetLoader supports streaming parsing, in which case it will yield "batch
 import {ParquetLoader} from '@loaders.gl/parquet';
 import {loadInBatches} from '@loaders.gl/core';
 
-const batches = await loadInBatches('geo.parquet', ParquetLoader, {parquet: options});
+const batches = await loadInBatches('geo.parquet', ParquetLoader, {
+  parquet: {...options, shape: 'object-row-table'}
+});
 
 for await (const batch of batches) {
   // batch.data will contain a number of rows
@@ -203,7 +204,7 @@ Supports table category options such as `batchType` and `batchSize`.
 
 | Option | Type | Default | Description |
 | ------ | ---- | ------- | ----------- |
-| `parquet.shape` | `'object-row-table' \| 'arrow-table'` | `'arrow-table'` for `ParquetLoader`; `'object-row-table'` for `ParquetJSLoader` | Selects the returned table shape. |
+| `parquet.shape` | `'object-row-table' \| 'arrow-table'` | `'arrow-table'` | Selects the returned table shape. |
 | `parquet.limit` | `number` | `undefined` | Maximum number of rows to return. |
 | `parquet.offset` | `number` | `0` | Number of rows to skip before returning data. |
 | `parquet.batchSize` | `number` | `undefined` | Target number of rows per batch when streaming. |

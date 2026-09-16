@@ -58,7 +58,7 @@ Streaming loader for JSON files that must resolve to loaders.gl table output.
 
 ## Usage
 
-Load object-row JSON as a table:
+Load JSON as an Arrow table (the default):
 
 ```typescript
 import {JSONTableLoader} from '@loaders.gl/json';
@@ -67,11 +67,11 @@ import {load} from '@loaders.gl/core';
 const table = await load(url, JSONTableLoader);
 ```
 
-Request Apache Arrow output with `json.shape: 'arrow-table'`:
+Request object rows with `json.shape: 'object-row-table'`:
 
 ```typescript
 const table = await load(url, JSONTableLoader, {
-  json: {shape: 'arrow-table'}
+  json: {shape: 'object-row-table'}
 });
 ```
 
@@ -116,7 +116,7 @@ Arrow `data` batches use a frozen schema. If `json.schema` is supplied, that sch
 | Option                 | Type                                                       | Default                                                                                                                                 | Description |
 | ---------------------- | ---------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------- | ----------- |
 | `json.backend`         | `'clarinet' \| 'fast'`                                    | `'clarinet'`                                                                                                                            | Selects the streaming parser backend. |
-| `json.shape`           | `'object-row-table' \| 'array-row-table' \| 'arrow-table'` | `'object-row-table'`                                                                                                                    | Selects the requested table output shape. |
+| `json.shape`           | `'object-row-table' \| 'array-row-table' \| 'arrow-table'` | `'arrow-table'`                                                                                                                         | Selects the requested table output shape. |
 | `json.schema`          | `Schema \| arrow.Schema`                                   | `undefined`                                                                                                                             | Optional schema used when `json.shape` is `'arrow-table'`. |
 | `json.arrowConversion` | `object`                                                   | `{onTypeMismatch: 'error', onMissingField: 'error', onExtraField: 'error', integerConversion: 'error', logRecoveries: true}`         | Optional Arrow conversion policy. |
 | `json.arrowConversion.viewTypes` | `'never' \| 'prefer' \| 'require'`                 | `'never'`                                                                                                                             | Controls whether supported Arrow runtimes emit `BinaryView` and `Utf8View`, with fallback in `'prefer'` mode. |

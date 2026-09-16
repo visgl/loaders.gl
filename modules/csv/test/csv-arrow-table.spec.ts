@@ -56,6 +56,25 @@ test('CSVLoader#bundled export includes parser methods', () => {
   expect(BundledCSVWorkerLoader).toBe(BundledCSVLoader);
 });
 
+test('CSVLoader direct parser methods honor the Arrow default', async () => {
+  const csvText = 'city,population\nParis,2148000';
+  const csvBytes = new TextEncoder().encode(csvText);
+
+  const parseSyncResult = BundledCSVLoader.parseSync(csvBytes.buffer);
+  expect(parseSyncResult.shape).toBe('arrow-table');
+  expect(parseSyncResult.data.getChild('city')?.get(0)).toBe('Paris');
+
+  const parseTextSyncResult = BundledCSVLoader.parseTextSync(csvText);
+  expect(parseTextSyncResult.shape).toBe('arrow-table');
+  expect(parseTextSyncResult.data.getChild('population')?.get(0)).toBe(2148000);
+
+  const parseResult = await BundledCSVLoader.parse(csvBytes.buffer);
+  expect(parseResult.shape).toBe('arrow-table');
+
+  const parseTextResult = await BundledCSVLoader.parseText(csvText);
+  expect(parseTextResult.shape).toBe('arrow-table');
+});
+
 test('CSVLoader#unbundled export preloads parser implementation', async () => {
   expect(preloadSync(UnbundledCSVLoader)).toBe(null);
   expect(UnbundledCSVWorkerLoader).toBe(UnbundledCSVLoader);

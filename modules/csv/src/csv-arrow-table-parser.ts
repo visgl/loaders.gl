@@ -221,7 +221,7 @@ export function parseCSVInArrowBatches(
 }
 
 /** Converts CSV row-table output to an Arrow table using the supplied CSV schema. */
-function convertCSVRowTableToArrowTable(
+export function convertCSVRowTableToArrowTable(
   table: ObjectRowTable | ArrayRowTable,
   viewTypes?: ArrowViewTypeMode,
   encodingPreference?: import('@loaders.gl/schema').GeoArrowEncodingPreference
