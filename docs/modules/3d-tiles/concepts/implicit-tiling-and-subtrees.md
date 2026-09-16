@@ -238,3 +238,13 @@ The underscored SSE field is diagnostic rather than stable API. Use these values
 - Lazy hierarchy metadata is source-managed; custom source implementations must provide `loadTileChildren` to use the same traversal hook.
 
 See the [3D Tiles implicit tiling specification](https://docs.ogc.org/cs/22-025r4/22-025r4.html#implicit-tiling), [`Tiles3DLoader`](/docs/modules/3d-tiles/api-reference/tiles-3d-loader), [`Tiles3DSource`](/docs/modules/tiles/api-reference/tiles-3d-source), [`Tileset3D`](/docs/modules/tiles/api-reference/tileset-3d), and [`Tile3D`](/docs/modules/tiles/api-reference/tile-3d) for the surrounding APIs.
+
+
+## Conformance and lifecycle guarantees
+
+The runtime materializes one subtree at a time. A visible boundary shares an in-flight request
+with concurrent traversals, remains a traversal boundary until metadata arrives, and can retry after
+a failed request. Availability at the final valid global level does not create another subtree
+reference. QUADTREE and OCTREE fixtures cover sparse availability, contentless connectors, region
+and oriented-box subdivision, multiple content streams, and transformed geometric error. These
+guarantees keep request count bounded without changing the eventual SSE-selected level.
