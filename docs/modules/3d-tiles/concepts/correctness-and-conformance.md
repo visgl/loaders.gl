@@ -66,7 +66,7 @@ Each tranche should add a focused fixture or unit test before changing runtime b
 
 ## Metadata value access
 
-3D Tiles metadata has two layers: the loader preserves the authored schema and property-table references, while glTF parsing (with `gltf.loadBuffers: true`) decodes property-table columns. Use `getStructuralMetadataRow(propertyTable, schemaClass, rowIndex)` from `@loaders.gl/3d-tiles` to read one normalized row. The helper applies class-level `default` values and `noData` sentinels and keeps vector/array values in their typed-array or nested-array form.
+3D Tiles metadata has two layers: the loader preserves the authored schema and property-table references, while glTF parsing (with `gltf.loadBuffers: true`) decodes property-table columns. Use `getStructuralMetadataRow(propertyTable, schemaClass, rowIndex)` from `@loaders.gl/3d-tiles` to read one normalized row. The helper applies class-level `default` values and `noData` sentinels and keeps vector/array values in their typed-array or nested-array form. Use `getStructuralMetadataProperty(...)` for one named value, or compose a renderer-neutral snapshot with `createTile3DStyleInput(...)`; the latter merges metadata scopes and optional hierarchy-aware batch-table values without evaluating styles.
 
 Decoding a row does not imply styling, picking, or GPU upload. Applications choose how decoded values map to feature IDs and visual attributes; raw extension objects remain available for forward-compatible fields and unsupported encodings.
 
