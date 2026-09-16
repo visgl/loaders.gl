@@ -57,6 +57,14 @@ export type LASLoaderOptions = LoaderOptions & {
   onProgress?: Function;
 };
 
+/** Default output shape for LAS and LAZ loaders. */
+export const DEFAULT_LAS_SHAPE = 'arrow-table' as const;
+
+/** Resolve the LAS output shape, including the Arrow-primary default. */
+export function getLASShape(options?: LASLoaderOptions): 'mesh' | 'columnar-table' | 'arrow-table' {
+  return options?.las?.shape || DEFAULT_LAS_SHAPE;
+}
+
 /** Parser-independent LAS loader metadata shared by each loader variant. */
 export const LAS_LOADER_METADATA = {
   ...LASFormat,
@@ -68,7 +76,7 @@ export const LAS_LOADER_METADATA = {
   worker: false,
   options: {
     las: {
-      shape: 'mesh',
+      shape: DEFAULT_LAS_SHAPE,
       fp64: false,
       colorDepth: 8,
       colorFormat: 'uint8norm',
