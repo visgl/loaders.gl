@@ -24,6 +24,12 @@ import {
 } from './shapefile-arrow-loader-with-parser';
 import {ShapefileLoader as ShapefileLoaderMetadata} from './shapefile-loader';
 import type {Proj4CRSDefinition} from '@math.gl/proj4';
+import {
+  deserializeShapefileWorkerBatch,
+  deserializeShapefileWorkerResult,
+  serializeShapefileWorkerBatch,
+  serializeShapefileWorkerResult
+} from './lib/shapefile-worker-transport';
 
 const {preload: _ShapefileLoaderPreload, ...ShapefileLoaderMetadataWithoutPreload} =
   ShapefileLoaderMetadata;
@@ -55,15 +61,25 @@ export type ShapefileLoaderOptions = StrictLoaderOptions &
 export const ShapefileLoaderWithParser = {
   ...ShapefileLoaderMetadataWithoutPreload,
   parse: (arrayBuffer, options, context) =>
-    options?.shapefile?.shape === 'arrow-table'
+    getShapefileShape(options) === 'arrow-table'
       ? parseShapefileToArrow(arrayBuffer, options, context)
       : parseShapefile(arrayBuffer, options, context),
   parseInBatches: (asyncIterator, options, context) =>
-    options?.shapefile?.shape === 'arrow-table'
+    getShapefileShape(options) === 'arrow-table'
       ? parseShapefileToArrowInBatches(asyncIterator, options, context)
-      : parseShapefileInBatches(asyncIterator, options, context)
+      : parseShapefileInBatches(asyncIterator, options, context),
+  serializeWorkerResult: serializeShapefileWorkerResult,
+  deserializeWorkerResult: deserializeShapefileWorkerResult,
+  serializeWorkerBatch: serializeShapefileWorkerBatch,
+  deserializeWorkerBatch: deserializeShapefileWorkerBatch
 } as const satisfies LoaderWithParser<
   ShapefileOutput | GeoJSONTable | ArrowTable,
   ShapefileOutput | Batch | ArrowTableBatch,
   ShapefileLoaderOptions
 >;
+
+function getShapefileShape(
+  options?: ShapefileLoaderOptions
+): NonNullable<ShapefileLoaderOptions['shapefile']>['shape'] {
+  return options?.shapefile?.shape || 'arrow-table';
+}

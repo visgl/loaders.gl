@@ -39,3 +39,13 @@ test('DBFLoader#parse arrow-table', async () => {
     }
   }
 });
+
+test('DBFLoader#defaults to arrow-table output', async () => {
+  const response = await fetchFile(`${SHAPEFILE_JS_DATA_FOLDER}/points.dbf`);
+  const table = await parse(await response.arrayBuffer(), DBFLoader, {
+    worker: false,
+    dbf: {encoding: 'utf8'}
+  });
+  expect(table.shape).toBe('arrow-table');
+  expect(table.data.numRows).toBeGreaterThan(0);
+});
