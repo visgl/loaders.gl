@@ -643,14 +643,13 @@ function applyNumericPropertyTransforms(
   for (let index = 0; index < valuesData.length; index++) {
     let value = Number(valuesData[index]);
     if (normalized && normalizationLimit) {
-      value =
-        componentType?.startsWith('INT')
-          ? Math.max(value / normalizationLimit, -1)
-          : value / normalizationLimit;
+      value = componentType?.startsWith('INT')
+        ? Math.max(value / normalizationLimit, -1)
+        : value / normalizationLimit;
     }
     const componentIndex = index % numberOfComponents;
-    const offsetValue = Array.isArray(offset) ? offset[componentIndex] ?? 0 : (offset ?? 0);
-    const scaleValue = Array.isArray(scale) ? scale[componentIndex] ?? 1 : (scale ?? 1);
+    const offsetValue = Array.isArray(offset) ? (offset[componentIndex] ?? 0) : (offset ?? 0);
+    const scaleValue = Array.isArray(scale) ? (scale[componentIndex] ?? 1) : (scale ?? 1);
     result[index] = value * scaleValue + offsetValue;
   }
   return result;
