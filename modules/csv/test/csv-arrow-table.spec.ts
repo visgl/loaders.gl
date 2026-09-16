@@ -73,6 +73,11 @@ test('CSVLoader direct parser methods honor the Arrow default', async () => {
 
   const parseTextResult = await BundledCSVLoader.parseText(csvText);
   expect(parseTextResult.shape).toBe('arrow-table');
+
+  const deprecatedShapeResult = await BundledCSVLoader.parse(csvBytes.buffer, {
+    shape: 'arrow-table'
+  } as any);
+  expect(deprecatedShapeResult.shape).toBe('arrow-table');
 });
 
 test('CSVLoader#unbundled export preloads parser implementation', async () => {
