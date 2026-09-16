@@ -38,7 +38,9 @@ setLoaderOptions({
 test('Point MVT to local coordinates JSON', async () => {
   const response = await fetchFile(MVT_POINTS_DATA_URL);
   const mvtArrayBuffer = await response.arrayBuffer();
-  const geometryTable = await parse(mvtArrayBuffer, MVTLoader);
+  const geometryTable = await parse(mvtArrayBuffer, MVTLoader, {
+    mvt: {shape: 'geojson-table'}
+  });
   expect(geometryTable.shape).toBe('geojson-table');
   expect(geometryTable.features).toEqual([
     {
@@ -61,7 +63,7 @@ test('Point MVT to Arrow table', async () => {
   const response = await fetchFile(MVT_POINTS_DATA_URL);
   const mvtArrayBuffer = await response.arrayBuffer();
   const geometryTable = await parse(mvtArrayBuffer, MVTLoader, {
-    mvt: {shape: 'arrow-table', coordinates: 'local', layerProperty: 'layerName'}
+    mvt: {coordinates: 'local', layerProperty: 'layerName'}
   });
   expect(geometryTable.shape).toBe('arrow-table');
   expect(geometryTable.data.getChild('geometry')?.length, 'preserves feature rows').toBe(1);
@@ -70,7 +72,9 @@ test('Point MVT to Arrow table', async () => {
 test('Line MVT to local coordinates JSON', async () => {
   const response = await fetchFile(MVT_LINES_DATA_URL);
   const mvtArrayBuffer = await response.arrayBuffer();
-  const geometryTable = await parse(mvtArrayBuffer, MVTLoader);
+  const geometryTable = await parse(mvtArrayBuffer, MVTLoader, {
+    mvt: {shape: 'geojson-table'}
+  });
   expect(geometryTable.shape).toBe('geojson-table');
   expect(geometryTable.features).toEqual([
     {
@@ -93,7 +97,9 @@ test('Line MVT to local coordinates JSON', async () => {
 test('Polygon MVT to local coordinates JSON', async () => {
   const response = await fetchFile(MVT_POLYGONS_DATA_URL);
   const mvtArrayBuffer = await response.arrayBuffer();
-  const geometryTable = await parse(mvtArrayBuffer, MVTLoader);
+  const geometryTable = await parse(mvtArrayBuffer, MVTLoader, {
+    mvt: {shape: 'geojson-table'}
+  });
   expect(geometryTable.shape).toBe('geojson-table');
   expect(geometryTable.features).toEqual(decodedPolygonsGeometry);
 });
@@ -206,7 +212,7 @@ test('Should add layer name to custom property', async () => {
   const response = await fetchFile(MVT_POINTS_DATA_URL);
   const mvtArrayBuffer = await response.arrayBuffer();
   const loaderOptions: MVTLoaderOptions = {
-    mvt: {layerProperty: 'layerSource'}
+    mvt: {shape: 'geojson-table', layerProperty: 'layerSource'}
   };
   const geometryTable = await parse(mvtArrayBuffer, MVTLoader, loaderOptions);
   expect(geometryTable.features[0].properties.layerSource).toBe('layer0');
@@ -215,7 +221,7 @@ test('Should return features from selected layers when layers property is provid
   const response = await fetchFile(MVT_MULTIPLE_LAYERS_DATA_URL);
   const mvtArrayBuffer = await response.arrayBuffer();
   const loaderOptions: MVTLoaderOptions = {
-    mvt: {layers: ['layer1']}
+    mvt: {shape: 'geojson-table', layers: ['layer1']}
   };
   const geometryTable = await parse(mvtArrayBuffer, MVTLoader, loaderOptions);
   const anyFeatureFromAnotherLayer = geometryTable.features.some(
@@ -250,7 +256,9 @@ test('MVTLoader#Parse geojson-to-binary', async () => {
   for (const filename of TEST_FILES) {
     const response = await fetchFile(filename);
     const mvtArrayBuffer = await response.arrayBuffer();
-    const geojsonTable = await parse(mvtArrayBuffer, MVTLoader);
+    const geojsonTable = await parse(mvtArrayBuffer, MVTLoader, {
+      mvt: {shape: 'geojson-table'}
+    });
     // Pass a fresh response otherwise get CI testing errors
     const response2 = await fetchFile(filename);
     const mvtArrayBuffer2 = await response2.arrayBuffer();

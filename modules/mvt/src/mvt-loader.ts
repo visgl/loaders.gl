@@ -52,7 +52,7 @@ export const MVTWorkerLoader = {
   worker: true,
   options: {
     mvt: {
-      shape: 'geojson-table',
+      shape: 'arrow-table',
       coordinates: 'local',
       layerProperty: 'layerName',
       layers: undefined!,
