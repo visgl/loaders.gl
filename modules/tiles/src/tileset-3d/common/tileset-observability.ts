@@ -56,9 +56,7 @@ export type Tileset3DTraversalSnapshot = {
  * @param tileset - Runtime whose most recent traversal should be inspected.
  * @returns A serializable snapshot suitable for logs, regression fixtures, and benchmark output.
  */
-export function getTileset3DTraversalSnapshot(
-  tileset: Tileset3D
-): Tileset3DTraversalSnapshot {
+export function getTileset3DTraversalSnapshot(tileset: Tileset3D): Tileset3DTraversalSnapshot {
   const selectedTiles = tileset.selectedTiles.slice();
   const requestedTiles = tileset.requestedTiles.slice();
   const emptyTiles = tileset.emptyTiles.slice();
