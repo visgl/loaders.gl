@@ -51,7 +51,7 @@ export type {
 export type {Tiles3DLoaderOptions} from './tiles-3d-loader';
 export {Tiles3DArchive} from './3d-tiles-archive/3d-tiles-archive-archive';
 
-export {getStructuralMetadataProperty, getStructuralMetadataRow} from './lib/metadata/property-table';
+export {\n  getStructuralMetadataProperty,\n  getStructuralMetadataRow\n} from './lib/metadata/property-table';
 export type {StructuralMetadataRow} from './lib/metadata/property-table';
 export {
   createTile3DStyleInput,
