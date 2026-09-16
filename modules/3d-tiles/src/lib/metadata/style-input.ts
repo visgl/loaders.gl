@@ -114,7 +114,12 @@ export function createTile3DStyleInput(
   addMetadataProperties(content.metadata, 'content-metadata');
 
   const featureId = options.featureId;
-  if (options.batchTable && typeof featureId === 'number' && Number.isInteger(featureId) && featureId >= 0) {
+  if (
+    options.batchTable &&
+    typeof featureId === 'number' &&
+    Number.isInteger(featureId) &&
+    featureId >= 0
+  ) {
     for (const [propertyName, value] of Object.entries(
       getTile3DBatchTableProperties(options.batchTable, featureId)
     )) {
