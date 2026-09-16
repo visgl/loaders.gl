@@ -173,7 +173,10 @@ function parseCSVTextSync(
 }
 
 function getCSVShape(options?: CSVLoaderOptions): NonNullable<CSVLoaderOptions['csv']>['shape'] {
-  return options?.csv?.shape || DEFAULT_CSV_SHAPE;
+  const deprecatedShape = (
+    options as {shape?: NonNullable<CSVLoaderOptions['csv']>['shape']} | undefined
+  )?.shape;
+  return options?.csv?.shape || deprecatedShape || DEFAULT_CSV_SHAPE;
 }
 
 // TODO - support batch size 0 = no batching/single batch?
@@ -392,15 +395,14 @@ function parseCSVInBatches(
       case 'array-row-table':
       case 'object-row-table':
       case 'columnar-table':
-      case 'arrow-table':
         return shape;
       default:
-        return DEFAULT_CSV_SHAPE;
+        return 'object-row-table';
     }
   }
 }
 
-type CSVBatchShape = 'array-row-table' | 'object-row-table' | 'columnar-table' | 'arrow-table';
+type CSVBatchShape = 'array-row-table' | 'object-row-table' | 'columnar-table';
 
 /**
  * Checks if a certain row is a header row
