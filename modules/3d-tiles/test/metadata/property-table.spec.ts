@@ -3,7 +3,10 @@
 // Copyright vis.gl contributors
 
 import {expect, test} from 'vitest';
-import {getStructuralMetadataProperty, getStructuralMetadataRow} from '@loaders.gl/3d-tiles';
+import {
+  getStructuralMetadataProperty,
+  getStructuralMetadataRow
+} from '@loaders.gl/3d-tiles';
 
 test('getStructuralMetadataRow returns decoded columns with class defaults', () => {
   const propertyTable = {
@@ -113,7 +116,6 @@ test('getStructuralMetadataRow handles typed-array array sentinels and omitted d
     Array.from(getStructuralMetadataRow(propertyTable, schemaClass, 1)?.values as Float64Array)
   ).toEqual([2, 3]);
 });
-
 
 test('getStructuralMetadataProperty reads a named decoded value', () => {
   const propertyTable = {
