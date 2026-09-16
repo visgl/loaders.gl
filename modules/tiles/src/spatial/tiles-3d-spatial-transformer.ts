@@ -3,6 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import {SpatialCoordinateTransformer} from './spatial-coordinate-transformer';
+import {Matrix4} from '@math.gl/core';
 import type {TilesetSpatialOptions, TilesetSpatialReference} from './spatial-types';
 
 /** Structural 3D Tiles volume shape used by the source adapter. */
@@ -42,8 +43,14 @@ export class Tiles3DSpatialTransformer {
   }
 
   /** Rebuild a conservative target-frame volume from a source volume. */
-  transformBoundingVolume(volume: Tiles3DSpatialBoundingVolume): Tiles3DSpatialBoundingVolume {
-    const samples = getVolumeSamples(volume);
+  transformBoundingVolume(
+    volume: Tiles3DSpatialBoundingVolume,
+    sourceTransform?: ArrayLike<number>
+  ): Tiles3DSpatialBoundingVolume {
+    const transform = sourceTransform ? new Matrix4(Array.from(sourceTransform)) : undefined;
+    const samples = getVolumeSamples(volume).map(sample =>
+      transform ? Array.from(transform.transformAsPoint(sample)) : sample
+    );
     if (!samples.length) {
       return volume;
     }
@@ -57,9 +64,12 @@ function getVolumeSamples(volume: Tiles3DSpatialBoundingVolume): number[][] {
     const center = volume.box.slice(0, 3);
     const axes = [volume.box.slice(3, 6), volume.box.slice(6, 9), volume.box.slice(9, 12)];
     const samples: number[][] = [];
-    for (const first of [-1, 1]) {
-      for (const second of [-1, 1]) {
-        for (const third of [-1, 1]) {
+    for (let firstIndex = 0; firstIndex <= 4; firstIndex++) {
+      for (let secondIndex = 0; secondIndex <= 4; secondIndex++) {
+        for (let thirdIndex = 0; thirdIndex <= 4; thirdIndex++) {
+          const first = firstIndex / 2 - 1;
+          const second = secondIndex / 2 - 1;
+          const third = thirdIndex / 2 - 1;
           samples.push([
             center[0] + first * axes[0][0] + second * axes[1][0] + third * axes[2][0],
             center[1] + first * axes[0][1] + second * axes[1][1] + third * axes[2][1],
@@ -72,7 +82,7 @@ function getVolumeSamples(volume: Tiles3DSpatialBoundingVolume): number[][] {
   }
   if (volume.sphere && volume.sphere.length >= 4) {
     const [x, y, z, radius] = volume.sphere;
-    return [
+    const samples = [
       [x - radius, y, z],
       [x + radius, y, z],
       [x, y - radius, z],
@@ -80,6 +90,11 @@ function getVolumeSamples(volume: Tiles3DSpatialBoundingVolume): number[][] {
       [x, y, z - radius],
       [x, y, z + radius]
     ];
+    for (let longitudeIndex = 0; longitudeIndex < 16; longitudeIndex++) {
+      const longitude = (longitudeIndex * Math.PI * 2) / 16;
+      samples.push([x + radius * Math.cos(longitude), y + radius * Math.sin(longitude), z]);
+    }
+    return samples;
   }
   // Regions are already WGS84 geographic volumes. Keep them unchanged until a dedicated
   // geographic-region adapter can account for longitude wrapping and datum semantics.
@@ -95,6 +110,11 @@ function createAxisAlignedBox(samples: number[][]): number[] {
       maximum[axis] = Math.max(maximum[axis], sample[axis]);
     }
   }
+  const padding = [
+    Math.max((maximum[0] - minimum[0]) * 0.01, 1e-9),
+    Math.max((maximum[1] - minimum[1]) * 0.01, 1e-9),
+    Math.max((maximum[2] - minimum[2]) * 0.01, 1e-9)
+  ];
   const center = [
     (minimum[0] + maximum[0]) / 2,
     (minimum[1] + maximum[1]) / 2,
@@ -102,14 +122,14 @@ function createAxisAlignedBox(samples: number[][]): number[] {
   ];
   return [
     ...center,
-    (maximum[0] - minimum[0]) / 2,
+    (maximum[0] - minimum[0]) / 2 + padding[0],
     0,
     0,
     0,
-    (maximum[1] - minimum[1]) / 2,
+    (maximum[1] - minimum[1]) / 2 + padding[1],
     0,
     0,
     0,
-    (maximum[2] - minimum[2]) / 2
+    (maximum[2] - minimum[2]) / 2 + padding[2]
   ];
 }

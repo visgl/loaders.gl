@@ -196,21 +196,13 @@ export class SpatialCoordinateTransformer {
         Number(normals[index + 1]),
         Number(normals[index + 2])
       ];
-      const transformedPosition = this.transformPosition(position);
-      const transformedTip = this.transformPosition([
-        position[0] + normal[0] * epsilon,
-        position[1] + normal[1] * epsilon,
-        position[2] + normal[2] * epsilon
-      ]);
-      const length = Math.hypot(
-        transformedTip[0] - transformedPosition[0],
-        transformedTip[1] - transformedPosition[1],
-        transformedTip[2] - transformedPosition[2]
-      );
+      const jacobian = getFiniteDifferenceJacobian(this, position, epsilon);
+      const transformedNormal = inverseTransposeMultiply(jacobian, normal);
+      const length = Math.hypot(...transformedNormal);
       if (length > 0 && Number.isFinite(length)) {
-        transformedNormals[index] = (transformedTip[0] - transformedPosition[0]) / length;
-        transformedNormals[index + 1] = (transformedTip[1] - transformedPosition[1]) / length;
-        transformedNormals[index + 2] = (transformedTip[2] - transformedPosition[2]) / length;
+        transformedNormals[index] = transformedNormal[0] / length;
+        transformedNormals[index + 1] = transformedNormal[1] / length;
+        transformedNormals[index + 2] = transformedNormal[2] / length;
       } else {
         transformedNormals[index] = normal[0];
         transformedNormals[index + 1] = normal[1];
@@ -241,6 +233,47 @@ export class SpatialCoordinateTransformer {
     }
     return this.heightOutputProjection!.project(coordinate.slice(0, 3));
   }
+}
+
+function getFiniteDifferenceJacobian(
+  transformer: SpatialCoordinateTransformer,
+  position: number[],
+  epsilon: number
+): number[][] {
+  const columns: number[][] = [];
+  for (let axis = 0; axis < 3; axis++) {
+    const plus = position.slice();
+    const minus = position.slice();
+    plus[axis] += epsilon;
+    minus[axis] -= epsilon;
+    const plusPosition = transformer.transformPosition(plus);
+    const minusPosition = transformer.transformPosition(minus);
+    columns.push([
+      (plusPosition[0] - minusPosition[0]) / (2 * epsilon),
+      (plusPosition[1] - minusPosition[1]) / (2 * epsilon),
+      (plusPosition[2] - minusPosition[2]) / (2 * epsilon)
+    ]);
+  }
+  return columns;
+}
+
+function inverseTransposeMultiply(jacobianColumns: number[][], vector: number[]): number[] {
+  const [a, b, c] = jacobianColumns;
+  const determinant =
+    a[0] * (b[1] * c[2] - b[2] * c[1]) -
+    b[0] * (a[1] * c[2] - a[2] * c[1]) +
+    c[0] * (a[1] * b[2] - a[2] * b[1]);
+  if (!Number.isFinite(determinant) || Math.abs(determinant) < 1e-15) {
+    return vector;
+  }
+  const inverseTranspose = [
+    [b[1] * c[2] - b[2] * c[1], a[2] * c[1] - a[1] * c[2], a[1] * b[2] - a[2] * b[1]],
+    [b[2] * c[0] - b[0] * c[2], a[0] * c[2] - a[2] * c[0], a[2] * b[0] - a[0] * b[2]],
+    [b[0] * c[1] - b[1] * c[0], a[1] * c[0] - a[0] * c[1], a[0] * b[1] - a[1] * b[0]]
+  ];
+  return inverseTranspose.map(
+    row => (row[0] * vector[0] + row[1] * vector[1] + row[2] * vector[2]) / determinant
+  );
 }
 
 /** Select the horizontal component that the proj4js runtime can execute. */

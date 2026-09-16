@@ -4,7 +4,7 @@
 
 import {path, RequestCache, sliceArrayBuffer} from '@loaders.gl/loader-utils';
 import {Ellipsoid} from '@math.gl/geospatial';
-import {Vector3} from '@math.gl/core';
+import {Matrix4, Vector3} from '@math.gl/core';
 import type {CoreAPI, Loader, LoaderContext, LoaderOptions} from '@loaders.gl/loader-utils';
 import type {Tile3D} from '../common/tile-3d';
 import {Tileset3DTraverser} from './tileset-3d-traverser';
@@ -136,7 +136,9 @@ export class Tiles3DSource implements Tileset3DSource {
   private readonly extensionsUsed: string[] = [];
   private readonly resolver?: TilesetSourceResolver;
   private rootTileset: TilesetJSON;
+  /** CRS transformer shared by this source's headers and decoded glTF content. */
   private spatialTransformer?: Tiles3DSpatialTransformer;
+  /** Root header after composing source-frame transforms and rebuilding target bounds. */
   private preparedRootHeader?: Record<string, any>;
 
   /**
@@ -270,7 +272,10 @@ export class Tiles3DSource implements Tileset3DSource {
       tileset.options.spatial
     );
     tileset.spatialReference = markTilesetSpatialReferenceTransformed(spatialReference);
-    this.preparedRootHeader = this.transformTileHeader(this.getMetadata().tileset.root);
+    this.preparedRootHeader = this.transformTileHeader(
+      this.getMetadata().tileset.root,
+      new Matrix4()
+    );
   }
 
   /**
@@ -388,26 +393,49 @@ export class Tiles3DSource implements Tileset3DSource {
   }
 
   /** Transform a tile header and its eagerly declared descendants. */
-  private transformTileHeader(header: Record<string, any>): Record<string, any> {
+  private transformTileHeader(
+    header: Record<string, any>,
+    parentTransform: Matrix4 = new Matrix4()
+  ): Record<string, any> {
     if (!this.spatialTransformer) {
       return header;
     }
+    const localTransform = header.transform ? new Matrix4(header.transform) : new Matrix4();
+    const composedTransform = new Matrix4(parentTransform).multiplyRight(localTransform);
+    const content = Array.isArray(header.content)
+      ? header.content.map((entry: Record<string, any>) =>
+          this.transformContentHeader(entry, composedTransform)
+        )
+      : header.content
+        ? this.transformContentHeader(header.content, composedTransform)
+        : header.content;
     return {
       ...header,
+      transform: undefined,
       boundingVolume: header.boundingVolume
-        ? this.spatialTransformer.transformBoundingVolume(header.boundingVolume)
+        ? this.spatialTransformer.transformBoundingVolume(header.boundingVolume, composedTransform)
         : header.boundingVolume,
-      content: header.content
-        ? {
-            ...header.content,
-            boundingVolume: header.content.boundingVolume
-              ? this.spatialTransformer.transformBoundingVolume(header.content.boundingVolume)
-              : header.content.boundingVolume
-          }
-        : header.content,
+      content,
       children: Array.isArray(header.children)
-        ? header.children.map((child: Record<string, any>) => this.transformTileHeader(child))
+        ? header.children.map((child: Record<string, any>) =>
+            this.transformTileHeader(child, composedTransform)
+          )
         : header.children
+    };
+  }
+
+  private transformContentHeader(
+    content: Record<string, any>,
+    composedTransform: Matrix4
+  ): Record<string, any> {
+    return {
+      ...content,
+      boundingVolume: content.boundingVolume
+        ? this.spatialTransformer!.transformBoundingVolume(
+            content.boundingVolume,
+            composedTransform
+          )
+        : content.boundingVolume
     };
   }
 
@@ -439,11 +467,14 @@ export class Tiles3DSource implements Tileset3DSource {
       subtreeUrl
     });
 
-    tile.applyImplicitSubtreeHeader(materializedSubtree.root);
+    const materializedRoot = this.spatialTransformer
+      ? this.transformTileHeader(materializedSubtree.root, new Matrix4())
+      : materializedSubtree.root;
+    tile.applyImplicitSubtreeHeader(materializedRoot);
     const materializedTileCount = this.initializeMaterializedChildren(
       tile.tileset,
       tile,
-      materializedSubtree.root.children
+      materializedRoot.children
     );
     this.implicitTilingStats.loadedSubtrees++;
     this.implicitTilingStats.materializedTiles += materializedTileCount;

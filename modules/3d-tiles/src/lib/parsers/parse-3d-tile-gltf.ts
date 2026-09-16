@@ -7,6 +7,7 @@ import {_getMemoryUsageGLTF, GLTFLoader, postProcessGLTF} from '@loaders.gl/gltf
 import type {GLTFWithBuffers} from '@loaders.gl/gltf';
 import {Tiles3DSpatialTransformer} from '@loaders.gl/tiles';
 import type {TilesetSpatialOptions, TilesetSpatialReference} from '@loaders.gl/tiles';
+import {Matrix4} from '@math.gl/core';
 import type {Tiles3DLoaderOptions} from '../../tiles-3d-loader';
 import {Tiles3DTileContent} from '../../types';
 import {parse3DTileVectorContent} from './parse-3d-tile-vector-content';
@@ -88,23 +89,108 @@ function transformGLTFSpatialContent(
     spatialReference,
     tilesetOptions?.spatialOptions
   );
+  const placements = getUniqueMeshPlacements(gltf);
   for (const mesh of gltf.meshes || []) {
+    const meshPlacement = placements.get(mesh);
+    if (placements.size && !meshPlacement) {
+      continue;
+    }
     for (const primitive of mesh.primitives || []) {
       const positionAccessor = primitive.attributes?.POSITION;
       if (!positionAccessor?.value || positionAccessor.value.length % 3 !== 0) {
         continue;
       }
       const sourcePositions = positionAccessor.value;
-      const transformedPositions = transformer.transformPositions(sourcePositions);
+      const placedPositions = meshPlacement
+        ? transformPositionsByMatrix(sourcePositions, meshPlacement)
+        : Float64Array.from(sourcePositions);
+      const transformedPositions = transformer.transformPositions(placedPositions);
       positionAccessor.value = Float32Array.from(transformedPositions);
       positionAccessor.min = getAttributeBounds(positionAccessor.value, 'min');
       positionAccessor.max = getAttributeBounds(positionAccessor.value, 'max');
       const normalAccessor = primitive.attributes?.NORMAL;
       if (normalAccessor?.value?.length === sourcePositions.length) {
-        normalAccessor.value = transformer.transformNormals(normalAccessor.value, sourcePositions);
+        const placedNormals = meshPlacement
+          ? transformDirectionsByMatrix(normalAccessor.value, meshPlacement)
+          : normalAccessor.value;
+        normalAccessor.value = transformer.transformNormals(placedNormals, placedPositions);
       }
     }
   }
+}
+
+/** Return static node placements for meshes with exactly one instance. */
+function getUniqueMeshPlacements(gltf: any): Map<any, Matrix4> {
+  const rawNodes = gltf.json?.nodes || [];
+  const parents = new Map<number, number>();
+  for (let nodeIndex = 0; nodeIndex < rawNodes.length; nodeIndex++) {
+    for (const childIndex of rawNodes[nodeIndex].children || []) {
+      parents.set(childIndex, nodeIndex);
+    }
+  }
+  const meshNodes = new Map<number, number[]>();
+  for (let nodeIndex = 0; nodeIndex < rawNodes.length; nodeIndex++) {
+    const meshIndex = rawNodes[nodeIndex].mesh;
+    if (typeof meshIndex === 'number') {
+      meshNodes.set(meshIndex, [...(meshNodes.get(meshIndex) || []), nodeIndex]);
+    }
+  }
+  const placements = new Map<any, Matrix4>();
+  for (const [meshIndex, nodeIndices] of meshNodes) {
+    if (nodeIndices.length !== 1 || !gltf.meshes?.[meshIndex]) {
+      continue;
+    }
+    let nodeIndex: number | undefined = nodeIndices[0];
+    const matrix = new Matrix4();
+    const chain: number[] = [];
+    while (nodeIndex !== undefined) {
+      chain.unshift(nodeIndex);
+      nodeIndex = parents.get(nodeIndex);
+    }
+    if (chain.length !== 1) {
+      continue;
+    }
+    for (const chainNodeIndex of chain) {
+      const node = rawNodes[chainNodeIndex];
+      const nodeMatrix = node.matrix
+        ? new Matrix4(node.matrix)
+        : new Matrix4()
+            .translate(node.translation || [0, 0, 0])
+            .multiplyRight(new Matrix4().fromQuaternion(node.rotation || [0, 0, 0, 1]))
+            .scale(node.scale || [1, 1, 1]);
+      matrix.multiplyRight(nodeMatrix);
+    }
+    if (gltf.nodes?.[chain[0]]) {
+      gltf.nodes[chain[0]].matrix = new Matrix4();
+      delete gltf.nodes[chain[0]].translation;
+      delete gltf.nodes[chain[0]].rotation;
+      delete gltf.nodes[chain[0]].scale;
+    }
+    placements.set(gltf.meshes[meshIndex], matrix);
+  }
+  return placements;
+}
+
+function transformPositionsByMatrix(values: ArrayLike<number>, matrix: Matrix4): Float64Array {
+  const result = new Float64Array(values.length);
+  for (let index = 0; index < values.length; index += 3) {
+    result.set(
+      matrix.transformAsPoint([values[index], values[index + 1], values[index + 2]]),
+      index
+    );
+  }
+  return result;
+}
+
+function transformDirectionsByMatrix(values: ArrayLike<number>, matrix: Matrix4): Float32Array {
+  const result = new Float32Array(values.length);
+  for (let index = 0; index < values.length; index += 3) {
+    result.set(
+      matrix.transformAsVector([values[index], values[index + 1], values[index + 2]]),
+      index
+    );
+  }
+  return result;
 }
 
 function getAttributeBounds(values: ArrayLike<number>, bound: 'min' | 'max'): number[] {
