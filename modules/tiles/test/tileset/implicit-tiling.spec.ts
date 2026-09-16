@@ -544,6 +544,7 @@ test('implicit subtree loading deduplicates concurrent requests and preserves th
 
   const firstRequest = Tile3D.prototype.loadChildren.call(tile, {} as any);
   const secondRequest = Tile3D.prototype.loadChildren.call(tile, {} as any);
+  await Promise.resolve();
   expect(requestCount).toBe(1);
   expect(tile.childrenState).toBe('loading');
 
