@@ -51,7 +51,7 @@ export function getStructuralMetadataRow(
 /** Returns one row from a decoded column while preserving typed-array values. */
 function readRowValue(data: unknown, rowIndex: number): unknown {
   if (Array.isArray(data) || ArrayBuffer.isView(data)) {
-    return data[rowIndex];
+    return (data as ArrayLike<unknown>)[rowIndex];
   }
   return undefined;
 }
