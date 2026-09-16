@@ -22,7 +22,9 @@ test('default 3D Tiles render contract exposes ordered content and metadata', ()
   } as any;
 
   expect(DEFAULT_TILE_3D_RENDER_CONTRACT.getContentEntries(tile)).toEqual([contentEntry]);
-  expect(DEFAULT_TILE_3D_RENDER_CONTRACT.getFeatureIds(contentEntry)).toEqual(contentEntry.featureIds);
+  expect(DEFAULT_TILE_3D_RENDER_CONTRACT.getFeatureIds(contentEntry)).toEqual(
+    contentEntry.featureIds
+  );
   expect(DEFAULT_TILE_3D_RENDER_CONTRACT.getMetadata(tile)).toEqual(tile.metadataContext);
   expect(DEFAULT_TILE_3D_RENDER_CONTRACT.getVisibility(tile, {} as any)).toBe('intersecting');
   expect(DEFAULT_TILE_3D_RENDER_CONTRACT.getVisibility(tile, {} as any, 0)).toBe('inside');
