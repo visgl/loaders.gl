@@ -28,7 +28,11 @@ import type {TilesetTraverser, TilesetTraverserProps} from '../common/tileset-tr
 import type {FrameState} from '../helpers/frame-state';
 import {get3DTilesSpatialReference} from '../../spatial/format-spatial-reference';
 import {Tiles3DSpatialTransformer} from '../../spatial/tiles-3d-spatial-transformer';
-import {markTilesetSpatialReferenceTransformed} from '../../spatial/spatial-types';
+import {
+  applyTilesetSpatialOptions,
+  markTilesetSpatialReferenceTransformed
+} from '../../spatial/spatial-types';
+import type {TilesetSpatialReference} from '../../spatial/spatial-types';
 import {
   materializeImplicitSubtree,
   type ImplicitSubtreeReference,
@@ -351,7 +355,7 @@ export class Tiles3DSource implements Tileset3DSource {
         isTileset: 'auto',
         assetGltfUpAxis: (this.asset && this.asset.gltfUpAxis) || 'Y',
         _tilesetOptions: {
-          spatialReference: tile.tileset?.spatialReference,
+          spatialReference: tile.header?._spatialReference || tile.tileset?.spatialReference,
           spatialOptions: tile.tileset?.options.spatial
         }
       }
@@ -400,25 +404,45 @@ export class Tiles3DSource implements Tileset3DSource {
     if (!this.spatialTransformer) {
       return header;
     }
+    return this.transformTileHeaderWithTransformer(
+      header,
+      this.spatialTransformer,
+      parentTransform
+    );
+  }
+
+  /** Rebuilds one header subtree using an explicitly selected CRS transformer. */
+  private transformTileHeaderWithTransformer(
+    header: Record<string, any>,
+    transformer: Tiles3DSpatialTransformer,
+    parentTransform: Matrix4,
+    spatialReference?: TilesetSpatialReference
+  ): Record<string, any> {
     const localTransform = header.transform ? new Matrix4(header.transform) : new Matrix4();
     const composedTransform = new Matrix4(parentTransform).multiplyRight(localTransform);
     const content = Array.isArray(header.content)
       ? header.content.map((entry: Record<string, any>) =>
-          this.transformContentHeader(entry, composedTransform)
+          this.transformContentHeader(entry, composedTransform, transformer)
         )
       : header.content
-        ? this.transformContentHeader(header.content, composedTransform)
+        ? this.transformContentHeader(header.content, composedTransform, transformer)
         : header.content;
     return {
       ...header,
       transform: undefined,
       boundingVolume: header.boundingVolume
-        ? this.spatialTransformer.transformBoundingVolume(header.boundingVolume, composedTransform)
+        ? transformer.transformBoundingVolume(header.boundingVolume, composedTransform)
         : header.boundingVolume,
+      _spatialReference: spatialReference,
       content,
       children: Array.isArray(header.children)
         ? header.children.map((child: Record<string, any>) =>
-            this.transformTileHeader(child, composedTransform)
+            this.transformTileHeaderWithTransformer(
+              child,
+              transformer,
+              composedTransform,
+              spatialReference
+            )
           )
         : header.children
     };
@@ -426,15 +450,13 @@ export class Tiles3DSource implements Tileset3DSource {
 
   private transformContentHeader(
     content: Record<string, any>,
-    composedTransform: Matrix4
+    composedTransform: Matrix4,
+    transformer: Tiles3DSpatialTransformer
   ): Record<string, any> {
     return {
       ...content,
       boundingVolume: content.boundingVolume
-        ? this.spatialTransformer!.transformBoundingVolume(
-            content.boundingVolume,
-            composedTransform
-          )
+        ? transformer.transformBoundingVolume(content.boundingVolume, composedTransform)
         : content.boundingVolume
     };
   }
@@ -467,8 +489,19 @@ export class Tiles3DSource implements Tileset3DSource {
       subtreeUrl
     });
 
-    const materializedRoot = this.spatialTransformer
-      ? this.transformTileHeader(materializedSubtree.root, new Matrix4())
+    const nestedSpatialReference = tile.header._spatialReference as
+      | TilesetSpatialReference
+      | undefined;
+    const subtreeTransformer = nestedSpatialReference
+      ? new Tiles3DSpatialTransformer(nestedSpatialReference, tile.tileset.options.spatial)
+      : this.spatialTransformer;
+    const materializedRoot = subtreeTransformer
+      ? this.transformTileHeaderWithTransformer(
+          materializedSubtree.root,
+          subtreeTransformer,
+          new Matrix4(),
+          nestedSpatialReference
+        )
       : materializedSubtree.root;
     tile.applyImplicitSubtreeHeader(materializedRoot);
     const materializedTileCount = this.initializeMaterializedChildren(
@@ -617,8 +650,57 @@ export class Tiles3DSource implements Tileset3DSource {
     const nestedTilesets =
       loadResult.nestedTilesets || (loadResult.nestedTileset ? [loadResult.nestedTileset] : []);
     for (const nestedTileset of nestedTilesets) {
-      tileset._initializeTileHeaders(nestedTileset, tile);
+      tileset._initializeTileHeaders(this.prepareNestedTileset(tileset, nestedTileset), tile);
     }
+  }
+
+  /**
+   * Resolves a nested tileset's CRS independently and adapts it to the owning tileset output frame.
+   *
+   * Nested resources may use a different source CRS from their parent. Their headers and glTF
+   * payloads must therefore use a transformer built from the nested descriptor, while the parent
+   * runtime continues to expose one requested output frame to traversal and rendering.
+   */
+  private prepareNestedTileset(tileset: Tileset3D, nestedTileset: TilesetJSON): TilesetJSON {
+    const nestedSpatialReference = nestedTileset.spatialMetadata;
+    if (!nestedSpatialReference) {
+      return nestedTileset;
+    }
+    const parentSpatialReference = tileset.spatialReference;
+    const outputCrs = parentSpatialReference.targetCrs || parentSpatialReference.sourceCrs;
+    if (!outputCrs || !nestedSpatialReference.sourceCrs) {
+      return addNestedSpatialReference(nestedTileset, nestedSpatialReference);
+    }
+
+    const nestedOutputReference = applyTilesetSpatialOptions(nestedSpatialReference, {
+      ...tileset.options.spatial,
+      outputCoordinates: 'target-crs',
+      targetCrs: outputCrs
+    });
+    if (nestedOutputReference.status === 'unresolved') {
+      throw new Error(
+        nestedOutputReference.warnings[0] ||
+          'Nested 3D Tiles CRS cannot be resolved in the parent output frame'
+      );
+    }
+    if (nestedOutputReference.status === 'native') {
+      return addNestedSpatialReference(nestedTileset, nestedOutputReference);
+    }
+
+    const nestedTransformer = new Tiles3DSpatialTransformer(
+      nestedOutputReference,
+      tileset.options.spatial
+    );
+    return {
+      ...nestedTileset,
+      spatialMetadata: nestedOutputReference,
+      root: this.transformTileHeaderWithTransformer(
+        nestedTileset.root,
+        nestedTransformer,
+        new Matrix4(),
+        nestedOutputReference
+      )
+    };
   }
 
   /**
@@ -841,4 +923,17 @@ function normalizeTiles3DRequest(input: TilesetSourceInput): TilesetSourceReques
     resolver: (input as TilesetSourceRequest).resolver,
     coreApi: (input as TilesetSourceRequest).coreApi
   };
+}
+
+/** Adds a nested CRS descriptor to each header without changing its native placement. */
+function addNestedSpatialReference(
+  nestedTileset: TilesetJSON,
+  spatialReference: TilesetSpatialReference
+): TilesetJSON {
+  const addToHeader = (header: Record<string, any>): Record<string, any> => ({
+    ...header,
+    _spatialReference: spatialReference,
+    children: Array.isArray(header.children) ? header.children.map(addToHeader) : header.children
+  });
+  return {...nestedTileset, root: addToHeader(nestedTileset.root)};
 }

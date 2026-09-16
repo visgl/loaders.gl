@@ -122,8 +122,10 @@ curve; bounds need adaptive edge/face sampling or a documented conservative geog
 ## Nested tilesets and epochs
 
 An external tileset may declare a different CRS or coordinate epoch from its parent. Its descriptor
-is resolved independently before placing the child root in the parent's requested output frame. A
-nonlinear datum or epoch operation is not approximated by one affine matrix.
+is resolved independently before placing the child root in the parent's requested output frame, and
+the same nested descriptor is passed to glTF content decoding. A nonlinear datum or epoch operation
+is not approximated by one affine matrix; unresolved nested operations fail before child headers are
+installed.
 
 Dynamic CRS epochs are preserved today. The current `@math.gl/proj4` API has no coordinate-epoch
 argument, so an operation that changes epoch rejects until an epoch-aware engine is available.
@@ -154,6 +156,7 @@ precision match I3S so renderers receive one coordinate contract.
 | Deterministic Proj4/geoid primitive | Implemented |
 | External schema semantic resolution | Planned source-loading integration |
 | Per-vertex nonlinear reprojection and bound rebuilding | Integration in progress |
+| Nested tileset CRS placement | Experimental |
 | Cross-epoch operations | Not yet executable |
 
 Conventional ECEF tilesets need no options. Overrides are for incomplete, mislabeled, or local

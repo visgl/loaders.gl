@@ -122,7 +122,7 @@ frames, and precision rules.
 | Region-established global frame | ✅ v5.0 | A root region establishes the specification frame without coordinate-magnitude guessing. |
 | Local or ambiguous frames | ✅ v5.0 | Stay unknown unless metadata or an expert override resolves them. |
 | Horizontal/geocentric transform primitive | ✅ v5.0 | Shared Proj4 pipeline and custom definition/grid registration are available. |
-| Complete nonlinear content reprojection | ◐ | Box/sphere/region bounds, decoded POSITION/NORMAL attributes, and traversal headers are transformed; nested CRS placement remains staged. |
+| Complete nonlinear content reprojection | ◐ | Box/sphere/region bounds, decoded POSITION/NORMAL attributes, traversal headers, and nested CRS placement are transformed; cross-epoch execution remains staged. |
 | Dynamic cross-epoch transformation | — | Epoch is preserved; current Proj4 bindings do not execute epoch operations. |
 
 ### Experimental 3D Tiles 2.0 exclusions
@@ -186,7 +186,7 @@ called out explicitly rather than being counted as parser support.
 | Spatial | Draft CRS and georeference extensions | ◐ v5.0 | Parse + runtime transform | WKID/WKT2 metadata and recognized frames are preserved; requested target CRS transforms decoded content and conservative box/sphere bounds. Cross-epoch execution remains excluded. |
 | Renderer | Vector drawing, styling, and clipping | — | Renderer | Vector descriptors and `clip` metadata are exposed without tessellation, styling, clipping, or draw calls. |
 | Renderer | Voxels, layers, visibility, and clamping | — | Renderer/runtime | Voxel/layer/visibility extensions, horizon optimization, terrain draping, and clamping are unsupported. |
-| Spatial | End-to-end nonlinear reprojection | ◐ | Runtime | Shared operations cover decoded content, traversal headers, normals, and conservative box/sphere/region bounds; nested-CRS composition remains staged. |
+| Spatial | End-to-end nonlinear reprojection | ◐ | Runtime | Shared operations cover decoded content, traversal headers, normals, conservative box/sphere/region bounds, and nested-CRS composition; cross-epoch execution remains staged. |
 | Renderer | Styling expressions | — | Renderer | Style evaluation and visual feature selection are outside this loader/runtime package. |
 | Renderer | GPU upload and draw policy | — | Renderer | Applications such as deck.gl or Cesium decide how normalized payloads become draw calls. |
 

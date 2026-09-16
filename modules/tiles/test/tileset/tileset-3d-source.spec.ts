@@ -20,6 +20,7 @@ import {
   Tiles3DSource,
   Tileset3D,
   TILE_REFINEMENT,
+  createTilesetSpatialReference,
   isTileset3DSource,
   type ImplicitTilingDescriptor,
   type TilesetJSON,
@@ -514,6 +515,58 @@ test('Tiles3DSource recognizes extensionless nested tilesets from parsed shape',
   const loadResult = await source.loadTileContent(tile);
   expect(loadResult.nestedTileset).toBe(nestedTileset);
   expect(tile.content).toBe(nestedTileset);
+});
+test('Tiles3DSource resolves nested CRS into the parent output frame', () => {
+  const source = new Tiles3DSource({
+    url: 'https://example.com/root',
+    loader: Tiles3DLoader,
+    asset: {version: '1.1'},
+    root: {refine: 'REPLACE'}
+  } as any);
+  const parentSpatialReference = createTilesetSpatialReference(
+    {
+      sourceCrs: 'EPSG:4978',
+      coordinateFrame: 'geocentric',
+      axisOrder: 'xyz',
+      heightReference: 'ellipsoidal',
+      provenance: 'metadata'
+    },
+    {targetCrs: 'EPSG:4978', outputCoordinates: 'target-crs'}
+  );
+  const nestedSpatialReference = createTilesetSpatialReference({
+    sourceCrs: 'EPSG:4326',
+    coordinateFrame: 'geographic',
+    axisOrder: 'xyz',
+    heightReference: 'ellipsoidal',
+    provenance: 'metadata'
+  });
+  let initializedNestedTileset: any;
+  const tileset = {
+    spatialReference: parentSpatialReference,
+    options: {spatial: {targetCrs: 'EPSG:4978', outputCoordinates: 'target-crs'}},
+    _initializeTileHeaders(nestedTileset: any) {
+      initializedNestedTileset = nestedTileset;
+    }
+  } as any;
+  const nestedTileset = {
+    shape: 'tileset3d',
+    asset: {version: '1.1'},
+    spatialMetadata: nestedSpatialReference,
+    root: {
+      boundingVolume: {box: [0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1]},
+      geometricError: 0,
+      content: {uri: 'content.glb'}
+    }
+  };
+
+  source.onTileLoaded(tileset, {contents: [], content: null} as any, {
+    loaded: true,
+    nestedTilesets: [nestedTileset]
+  });
+
+  expect(initializedNestedTileset.spatialMetadata.targetCrs).toBe('EPSG:4978');
+  expect(initializedNestedTileset.root._spatialReference.targetCrs).toBe('EPSG:4978');
+  expect(initializedNestedTileset.root.boundingVolume.box[0]).toBeGreaterThan(6_000_000);
 });
 test('Tiles3DSource namespaces independent embedded packages before local file indices', async () => {
   const packageUrls: string[] = [];
