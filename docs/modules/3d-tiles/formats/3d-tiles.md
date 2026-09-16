@@ -55,7 +55,7 @@ viewport instead of downloading the complete dataset.
 
 The checkboxes below describe loaders.gl behavior in the current 5.0 development line.
 
-Renderer-neutral content, feature-ID, metadata, and visibility contracts are available to deck.gl consumers. See the [renderer contract API](../../tiles/api-reference/tile-3d-render-contract). A checked
+Renderer-neutral content, feature-ID, metadata, and visibility descriptors are available from the public `@loaders.gl/tiles` runtime for renderer integrations. See the [Tile3D API](../../tiles/api-reference/tile-3d). A checked
 item means the loader parses and exposes the capability; it does not imply that every renderer
 provides a visual implementation for that feature.
 
