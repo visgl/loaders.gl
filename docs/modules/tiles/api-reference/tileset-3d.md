@@ -45,6 +45,8 @@ import {TiledSceneGraphic} from '@site/src/components/docs/tiled-scene-graphic';
 
 The `Tileset3D` class is the shared runtime for traversal, culling, selection, cache management, and request scheduling across source-backed 3D tilesets.
 
+For deterministic traversal snapshots and request/cache diagnostics, see [Runtime observability and benchmark baselines](/docs/modules/3d-tiles/concepts/observability-and-benchmarks).
+
 It is constructed with a [`Tileset3DSource`](/docs/modules/tiles/api-reference/tileset-3d-source), such as [`Tiles3DSource`](/docs/modules/tiles/api-reference/tiles-3d-source) or [`I3SSource`](/docs/modules/tiles/api-reference/i3s-source).
 
 ## Standards
