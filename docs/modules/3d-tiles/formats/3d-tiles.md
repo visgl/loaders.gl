@@ -107,7 +107,8 @@ provides a visual implementation for that feature.
 | Draft vector topology | ◐ v5.0 | Point, restart-separated polyline, and polygon topology is exposed; drawing and styling are renderer-owned. |
 | Metadata topology preservation | ✅ v5.0 | Schema, groups, tileset/tile/content entities, and implicit-subtree references are retained for application-level interpretation. Value/class decoding is not included. |
 | Metadata-derived bounding volumes | ✅ v5.0 | Direct numeric `TILE_BOUNDING_*` and `CONTENT_BOUNDING_*` semantic arrays are normalized; property-table value decoding remains application-owned. |
-| Renderer-neutral style inputs | ✅ v5.0 | Property-table rows, hierarchy-aware batch-table access, metadata precedence, and property-source diagnostics are exposed without style evaluation. |\n| Styling expressions | — | Rendering-side style evaluation is not provided by this module. |
+| Renderer-neutral style inputs | ✅ v5.0 | Property-table rows, hierarchy-aware batch-table access, metadata precedence, and property-source diagnostics are exposed without style evaluation. |
+| Styling expressions | — | Rendering-side style evaluation is not provided by this module. |
 
 ### Coordinate reference systems
 
