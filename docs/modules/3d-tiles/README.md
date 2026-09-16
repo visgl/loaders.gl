@@ -83,6 +83,7 @@ The [3D Tiles runtime concepts suite](/docs/modules/3d-tiles/concepts) explains 
 - [Request scheduling, progressive loading, and foveated requests](/docs/modules/3d-tiles/concepts/request-scheduling-and-priorities)
 - [Caching and memory](/docs/modules/3d-tiles/concepts/caching-and-memory)
 - [Runtime tuning and diagnostics](/docs/modules/3d-tiles/concepts/runtime-tuning-and-diagnostics)
+- [Runtime observability and benchmark baselines](/docs/modules/3d-tiles/concepts/observability-and-benchmarks)
 
 <ReferenceBoundary
   title="Module APIs and runtime concepts"
