@@ -4,6 +4,7 @@
 
 import type {
   GLTF_EXT_structural_metadata_Class,
+  GLTF_EXT_structural_metadata_ClassProperty,
   GLTF_EXT_structural_metadata_PropertyTable
 } from '@loaders.gl/gltf';
 
@@ -13,10 +14,11 @@ export type StructuralMetadataRow = Record<string, unknown>;
 /**
  * Reads one decoded property-table row without exposing the extension's column layout.
  *
- * The glTF extension decoder stores decoded columns on each property definition as `data`.
- * This helper applies class-level defaults and no-data sentinels while preserving typed-array
- * values for vector and array properties. It never decodes a binary buffer itself; callers must
- * parse the glTF with `gltf.loadBuffers` enabled first.
+ * The glTF extension decoder stores transformed columns on each property definition as `data`
+ * and preserves source-domain values as `rawData`. This helper checks `noData` against the raw
+ * values before returning transformed values, applies class defaults for sentinels and omitted
+ * optional columns, and preserves typed-array values for vector and array properties. It never
+ * decodes a binary buffer itself; callers must parse the glTF with `gltf.loadBuffers` enabled.
  *
  * @param propertyTable - Decoded property table containing column data.
  * @param schemaClass - Class declaration supplying defaults and no-data values.
@@ -34,35 +36,98 @@ export function getStructuralMetadataRow(
 
   const row: StructuralMetadataRow = {};
   const properties = propertyTable.properties || {};
-  for (const [propertyName, propertyDefinition] of Object.entries(properties)) {
+  const propertyNames = new Set([
+    ...Object.keys(schemaClass?.properties || {}),
+    ...Object.keys(properties)
+  ]);
+
+  for (const propertyName of propertyNames) {
+    const propertyDefinition = properties[propertyName];
     const classProperty = schemaClass?.properties?.[propertyName];
-    const data = propertyDefinition.data;
-    let value = readRowValue(data, rowIndex);
-    if (isNoDataValue(value, classProperty?.noData)) {
-      value = classProperty?.default;
-    }
-    if (value !== undefined) {
+    const data = propertyDefinition?.data;
+    const rawData = propertyDefinition?.rawData;
+    const value = readRowValue(data, rowIndex, classProperty);
+    const rawValue = readRowValue(rawData ?? data, rowIndex, classProperty);
+
+    if (isNoDataValue(rawValue, classProperty?.noData)) {
+      if (classProperty?.default !== undefined) {
+        row[propertyName] = classProperty.default;
+      }
+    } else if (value !== undefined) {
       row[propertyName] = value;
+    } else if (classProperty?.default !== undefined) {
+      row[propertyName] = classProperty.default;
     }
   }
   return row;
 }
 
-/** Returns one row from a decoded column while preserving typed-array values. */
-function readRowValue(data: unknown, rowIndex: number): unknown {
-  if (Array.isArray(data) || ArrayBuffer.isView(data)) {
-    return (data as ArrayLike<unknown>)[rowIndex];
+/** Returns one row from a decoded column while preserving vector and array shapes. */
+function readRowValue(
+  data: unknown,
+  rowIndex: number,
+  classProperty: GLTF_EXT_structural_metadata_ClassProperty | undefined
+): unknown {
+  if (!isArrayLikeData(data)) {
+    return undefined;
   }
-  return undefined;
+
+  const componentCount = getMetadataComponentCount(classProperty?.type);
+  if (!classProperty?.array && componentCount > 1) {
+    const start = rowIndex * componentCount;
+    return (data as {slice(start: number, end: number): unknown}).slice(
+      start,
+      start + componentCount
+    );
+  }
+  return (data as ArrayLike<unknown>)[rowIndex];
 }
 
-/** Compares decoded scalar/vector values with a class-level no-data sentinel. */
+/** Compares decoded source-domain values with a class-level no-data sentinel. */
 function isNoDataValue(value: unknown, noData: unknown): boolean {
   if (noData === undefined || value === undefined) {
     return false;
   }
-  if (Array.isArray(value) && Array.isArray(noData)) {
-    return value.length === noData.length && value.every((item, index) => item === noData[index]);
+  const valueArray = getArrayLikeValues(value);
+  const noDataArray = getArrayLikeValues(noData);
+  if (valueArray && noDataArray) {
+    return (
+      valueArray.length === noDataArray.length &&
+      valueArray.every((item, index) => item === noDataArray[index])
+    );
   }
   return value === noData;
+}
+
+/** Returns array-like values for normal and typed arrays. */
+function getArrayLikeValues(value: unknown): ArrayLike<unknown> | null {
+  return isArrayLikeData(value) ? (value as ArrayLike<unknown>) : null;
+}
+
+/** Identifies normal arrays and typed arrays with indexed values. */
+function isArrayLikeData(value: unknown): boolean {
+  return (
+    Array.isArray(value) ||
+    (ArrayBuffer.isView(value) && 'length' in value && typeof value.length === 'number')
+  );
+}
+
+/** Returns the number of scalar components represented by a metadata element type. */
+function getMetadataComponentCount(attributeType: string | undefined): number {
+  switch (attributeType) {
+    case 'VEC2':
+      return 2;
+    case 'VEC3':
+      return 3;
+    case 'VEC4':
+      return 4;
+    case 'MAT2':
+      return 4;
+    case 'MAT3':
+      return 9;
+    case 'MAT4':
+      return 16;
+    default:
+      return 1;
+  }
 }
