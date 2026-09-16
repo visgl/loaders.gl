@@ -391,7 +391,13 @@ function getPropertyDataFromBinarySource(
     case 'MAT2':
     case 'MAT3':
     case 'MAT4': {
-      data = getPropertyDataNumeric(classProperty, numberOfElements, valuesDataBytes, arrayOffsets);
+      data = getPropertyDataNumeric(
+        classProperty,
+        propertyTableProperty,
+        numberOfElements,
+        valuesDataBytes,
+        arrayOffsets
+      );
       break;
     }
     case 'BOOLEAN': {
@@ -545,6 +551,7 @@ function getStringOffsetsForProperty(
  */
 function getPropertyDataNumeric(
   classProperty: GLTF_EXT_structural_metadata_ClassProperty,
+  propertyTableProperty: GLTF_EXT_structural_metadata_PropertyTable_Property,
   numberOfElements: number,
   valuesDataBytes: Uint8Array,
   arrayOffsets: TypedArray | null
@@ -571,6 +578,19 @@ function getPropertyDataNumeric(
     valuesData = valuesDataBytes;
   }
 
+  const offset = propertyTableProperty.offset ?? classProperty.offset;
+  const scale = propertyTableProperty.scale ?? classProperty.scale;
+  if (classProperty.normalized || offset !== undefined || scale !== undefined) {
+    valuesData = applyNumericPropertyTransforms(
+      valuesData,
+      classProperty.componentType,
+      classProperty.type,
+      classProperty.normalized,
+      offset,
+      scale
+    );
+  }
+
   if (isArray) {
     if (arrayOffsets) {
       // VARIABLE-length array
@@ -589,6 +609,71 @@ function getPropertyDataNumeric(
   }
 
   return valuesData;
+}
+
+/**
+ * Applies metadata normalization, scale, and offset transforms in specification order.
+ *
+ * A transformed column uses Float64Array so normalized integer values retain their fractional
+ * precision. BigInt columns are left untouched because JavaScript cannot represent their scaled
+ * values without losing integer precision.
+ *
+ * @param valuesData - Decoded numeric property column.
+ * @param componentType - Source component type used for normalization limits.
+ * @param attributeType - SCALAR, VECN, or MATN shape.
+ * @param normalized - Whether integer values are normalized to a unit range.
+ * @param offset - Optional scalar or per-component offset.
+ * @param scale - Optional scalar or per-component scale.
+ * @returns Transformed numeric column.
+ */
+function applyNumericPropertyTransforms(
+  valuesData: BigTypedArray,
+  componentType: string | undefined,
+  attributeType: string,
+  normalized: boolean | undefined,
+  offset: number | number[] | undefined,
+  scale: number | number[] | undefined
+): BigTypedArray {
+  if (valuesData instanceof BigInt64Array || valuesData instanceof BigUint64Array) {
+    return valuesData;
+  }
+  const numberOfComponents = ATTRIBUTE_TYPE_TO_COMPONENTS[attributeType];
+  const result = new Float64Array(valuesData.length);
+  const normalizationLimit = getNormalizationLimit(componentType, valuesData);
+  for (let index = 0; index < valuesData.length; index++) {
+    let value = Number(valuesData[index]);
+    if (normalized && normalizationLimit) {
+      value =
+        componentType?.startsWith('INT')
+          ? Math.max(value / normalizationLimit, -1)
+          : value / normalizationLimit;
+    }
+    const componentIndex = index % numberOfComponents;
+    const offsetValue = Array.isArray(offset) ? offset[componentIndex] ?? 0 : (offset ?? 0);
+    const scaleValue = Array.isArray(scale) ? scale[componentIndex] ?? 1 : (scale ?? 1);
+    result[index] = value * scaleValue + offsetValue;
+  }
+  return result;
+}
+
+/** Returns the integer normalization denominator for a metadata component type. */
+function getNormalizationLimit(componentType: string | undefined, valuesData: BigTypedArray): number {
+  switch (componentType) {
+    case 'INT8':
+      return 127;
+    case 'UINT8':
+      return 255;
+    case 'INT16':
+      return 32767;
+    case 'UINT16':
+      return 65535;
+    case 'INT32':
+      return 2147483647;
+    case 'UINT32':
+      return 4294967295;
+    default:
+      return 0;
+  }
 }
 
 /**
