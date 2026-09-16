@@ -242,9 +242,10 @@ See the [3D Tiles implicit tiling specification](https://docs.ogc.org/cs/22-025r
 
 ## Conformance and lifecycle guarantees
 
-The runtime materializes one subtree at a time. A visible boundary shares an in-flight request
-with concurrent traversals, remains a traversal boundary until metadata arrives, and can retry after
-a failed request. Availability at the final valid global level does not create another subtree
+Each implicit boundary owns its own load lifecycle. Concurrent traversals of the same boundary
+share one in-flight request, while distinct boundaries may load concurrently through the request
+scheduler. A boundary remains a traversal boundary until metadata arrives and can retry after a
+failed request. Availability at the final valid global level does not create another subtree
 reference. QUADTREE and OCTREE fixtures cover sparse availability, contentless connectors, region
 and oriented-box subdivision, multiple content streams, and transformed geometric error. These
-guarantees keep request count bounded without changing the eventual SSE-selected level.
+guarantees keep duplicate requests bounded without changing the eventual SSE-selected level.
