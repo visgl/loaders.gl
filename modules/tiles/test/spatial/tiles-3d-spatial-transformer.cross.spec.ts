@@ -95,4 +95,31 @@ describe('Tiles3DSpatialTransformer', () => {
     expect(volume.box?.[0]).toBeLessThan(-6_000_000);
     expect(volume.box?.[7]).toBeGreaterThan(1_000);
   });
+
+  test('includes interior extrema and ignores tile transforms for regions', () => {
+    const spatialReference = createTilesetSpatialReference(
+      {
+        sourceCrs: 'EPSG:3857',
+        coordinateFrame: 'projected',
+        axisOrder: 'xyz',
+        heightReference: 'ellipsoidal',
+        provenance: 'metadata'
+      },
+      {targetCrs: 'EPSG:4978'}
+    );
+    const transformer = new Tiles3DSpatialTransformer(spatialReference);
+    const region = {
+      region: [-Math.PI, -Math.PI / 2, Math.PI, Math.PI / 2, 0, 0]
+    };
+    const identityVolume = transformer.transformBoundingVolume(region);
+    const translatedVolume = transformer.transformBoundingVolume(
+      region,
+      [1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 10_000_000, 20_000_000, 30_000_000, 1]
+    );
+
+    expect(identityVolume.box).toEqual(translatedVolume.box);
+    expect(identityVolume.box?.[3]).toBeGreaterThan(6_300_000);
+    expect(identityVolume.box?.[7]).toBeGreaterThan(6_300_000);
+    expect(identityVolume.box?.[11]).toBeGreaterThan(6_300_000);
+  });
 });

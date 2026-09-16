@@ -73,13 +73,13 @@ export class Tiles3DSpatialTransformer {
       return volume;
     }
     const transformed = volume.region
-      ? samples.map(sample => this.transformRegionSample(sample, transform))
+      ? samples.map(sample => this.transformRegionSample(sample))
       : samples.map(sample => this.coordinateTransformer.transformPosition(sample));
     return {box: createAxisAlignedBox(transformed)};
   }
 
   /** Transforms one WGS84 region sample into the selected output frame. */
-  private transformRegionSample(sample: number[], sourceTransform?: Matrix4): number[] {
+  private transformRegionSample(sample: number[]): number[] {
     const [longitudeDegrees, latitudeDegrees, height] = sample;
     const targetCrs = this.spatialReference.targetCrs || this.spatialReference.sourceCrs;
     if (targetCrs && getSpatialCoordinateFrame(targetCrs) === 'geocentric') {
@@ -88,7 +88,7 @@ export class Tiles3DSpatialTransformer {
         latitudeDegrees,
         height
       ]);
-      return Array.from(sourceTransform ? sourceTransform.transformAsPoint(cartesian) : cartesian);
+      return Array.from(cartesian);
     }
     return this.geographicCoordinateTransformer.transformPosition(sample);
   }
@@ -101,8 +101,8 @@ function getRegionSamples(region: number[]): number[][] {
   }
   const [west, south, east, north, minimumHeight, maximumHeight] = region;
   const longitudeEnd = east < west ? east + Math.PI * 2 : east;
-  const longitudes = [west, (west + longitudeEnd) / 2, longitudeEnd];
-  const latitudes = [south, (south + north) / 2, north];
+  const longitudes = getIntervalSamples(west, longitudeEnd);
+  const latitudes = getIntervalSamples(south, north);
   const samples: number[][] = [];
   for (const longitude of longitudes) {
     for (const latitude of latitudes) {
@@ -110,6 +110,22 @@ function getRegionSamples(region: number[]): number[][] {
         samples.push([(longitude * 180) / Math.PI, (latitude * 180) / Math.PI, height]);
       }
     }
+  }
+  return samples;
+}
+
+/** Includes interval endpoints and every quarter-turn where ECEF axes reach an extremum. */
+function getIntervalSamples(start: number, end: number): number[] {
+  const samples = [start, (start + end) / 2, end];
+  const angularStep = Math.PI / 2;
+  const firstCriticalIndex = Math.ceil(start / angularStep);
+  const lastCriticalIndex = Math.floor(end / angularStep);
+  for (
+    let criticalIndex = firstCriticalIndex;
+    criticalIndex <= lastCriticalIndex;
+    criticalIndex++
+  ) {
+    samples.push(criticalIndex * angularStep);
   }
   return samples;
 }
