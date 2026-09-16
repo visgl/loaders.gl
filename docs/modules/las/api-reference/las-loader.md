@@ -1,6 +1,6 @@
 ---
 title: LASLoader
-description: Parse LAS and LAZ point records into render-ready objects or Mesh Arrow tables.
+description: Parse LAS and LAZ point records into Arrow tables by default, with an explicit mesh compatibility shape.
 hide_title: true
 page_style: designed
 ---
@@ -12,7 +12,7 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
 <DocPageHeader
   eyebrow="LAS loader"
   title="LASLoader"
-  description="Choose the point shape that fits the next step. Read LAS and LAZ records into a render-ready point cloud, or select Arrow columns for analysis, workers, scans, and writers."
+  description="Read LAS and LAZ records into Arrow columns for analysis, scans, and writers, or request a render-ready mesh compatibility shape when needed."
   tone="blue"
   meta={['LAS / LAZ', 'TypeScript', 'Arrow output']}
   logos={[{alt: 'LAS', src: '/images/format-logos/las-logo.svg'}]}
@@ -30,8 +30,8 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
   description="The same point records can become a legacy point-cloud object or typed columns. Column selection keeps optional fields from expanding the result unnecessarily."
   tone="blue"
   items={[
-    {label: 'Default', value: 'PointCloud object for direct visualization'},
-    {label: 'Columnar', value: "Mesh Arrow table with shape: 'arrow-table'"},
+    {label: 'Default', value: "Mesh Arrow table with shape: 'arrow-table'"},
+    {label: 'Compatibility', value: "PointCloud object with shape: 'mesh'"},
     {label: 'Fields', value: 'Position, color, returns, time, NIR, waveform, and Extra Bytes'},
     {label: 'Variants', value: 'TypeScript, LASzip-compatible, and COPC decoding paths'}
   ]}
@@ -41,7 +41,7 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
   <img src="https://img.shields.io/badge/From-v1.0-blue.svg?style=flat-square" alt="From-v1.0" />
 </p>
 
-`LASLoader` is the primary, pure TypeScript LAS/LAZ loader. It parses point clouds into the legacy [PointCloud](/docs/specifications/category-mesh) object by default. Set `las.shape: 'arrow-table'` to return a [Mesh Arrow table](/docs/specifications/category-mesh#mesh-arrow-tables).
+`LASLoader` is the primary, pure TypeScript LAS/LAZ loader. It returns a [Mesh Arrow table](/docs/specifications/category-mesh#mesh-arrow-tables) by default. Set `las.shape: 'mesh'` to return the legacy [PointCloud](/docs/specifications/category-mesh) object for compatibility.
 
 <ReferenceBoundary
   title="LASLoader details"
@@ -55,14 +55,14 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
 import {LASLoader} from '@loaders.gl/las';
 import {load} from '@loaders.gl/core';
 
-const data = await load(url, LASLoader, options);
 const table = await load(url, LASLoader, {
   las: {
     ...options?.las,
-    shape: 'arrow-table',
     columns: ['POSITION', 'COLOR_0']
   }
 });
+
+const mesh = await load(url, LASLoader, {las: {shape: 'mesh'}});
 ```
 
 Select another implementation by importing its loader variant instead of setting an option:
@@ -91,7 +91,7 @@ selective field decoding, direct typed output, memory copies, and module startup
 
 | Option                   | Type                 | Default    | Description                                                                                                                                                      |
 | ------------------------ | -------------------- | ---------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `options.las.shape`      | `string`             | `mesh`     | Format of parsed data, e.g: `'mesh'`, `'columnar-table'`, `'arrow-table'`.                                                                                       |
+| `options.las.shape`      | `string`             | `arrow-table` | Format of parsed data, e.g: `'mesh'`, `'columnar-table'`, `'arrow-table'`.                                                                                   |
 | `options.las.fp64`       | `number`             | `false`    | If `true`, positions are stored in 64-bit floats instead of 32-bit.                                                                                              |
 | `options.las.colorDepth` | `number` or `string` | `8`        | Whether colors encoded using 8 or 16 bits? Can be set to `'auto'`. Note: LAS specification recommends 16 bits.                                                   |
 | `options.las.columns`    | `string[]`           | all        | Arrow columns to decode: `POSITION`, `intensity`, `classification`, `synthetic`, `keyPoint`, `withheld`, `overlap`, `COLOR_0`, `GPS_TIME`, `NIR`, `scanAngle`, `userData`, `pointSourceId`, `returnNumber`, `numberOfReturns`, `scannerChannel`, `scanDirectionFlag`, `edgeOfFlightLine`, `WAVEFORM`, and `EXTRA_BYTES`. `POSITION` is always returned; an empty array requests positions only. |
@@ -101,11 +101,11 @@ selective field decoding, direct typed output, memory copies, and module startup
 
 ## Worker Execution
 
-Atomic `load` and `parse` calls with `LASLoader` use the package's single prebuilt `las-worker.js` when workers are enabled. That worker contains the TypeScript implementation. The compatibility loaders parse on the calling thread by default and do not add more worker artifacts to the package.
+Atomic `load` and `parse` calls with `LASLoader` use the package's single prebuilt `las-worker.js` when workers are enabled and mesh output is requested. Arrow output stays on the calling thread because structured cloning would strip methods from the Arrow table wrapper. The compatibility loaders parse on the calling thread by default and do not add more worker artifacts to the package.
 
 Applications that need a compatibility loader in a worker can build one and provide it through `options.las.workerUrl`.
 
-`parseInBatches` runs on the calling thread because its async input and output iterators provide the streaming boundary directly. Set `core.worker: false` on atomic calls when the same main-thread behavior is required.
+`parseInBatches` runs on the calling thread because its async input and output iterators provide the streaming boundary directly. Set `core.worker: false` on atomic calls when the same main-thread behavior is required for mesh output as well.
 
 ## TypeScript LAZ Streaming
 

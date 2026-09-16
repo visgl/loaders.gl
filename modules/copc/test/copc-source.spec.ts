@@ -692,7 +692,10 @@ test('COPCWriter#encodes range-readable octree nodes', async () => {
     pointDataPositions.push(...readPointPositions(rawPointData, copc.header));
   }
   expect(pointDataPositions.sort()).toEqual(readMeshPositions(mesh).sort());
-  const lasData = await parse(arrayBuffer.slice(0), LASLoader, {core: {worker: false}});
+  const lasData = await parse(arrayBuffer.slice(0), LASLoader, {
+    core: {worker: false},
+    las: {shape: 'mesh'}
+  });
   expect(readFlatPositions(lasData.attributes.POSITION.value).sort()).toEqual(
     readMeshPositions(mesh).sort()
   );
