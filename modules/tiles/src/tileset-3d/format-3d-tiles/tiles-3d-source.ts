@@ -351,8 +351,8 @@ export class Tiles3DSource implements Tileset3DSource {
         isTileset: 'auto',
         assetGltfUpAxis: (this.asset && this.asset.gltfUpAxis) || 'Y',
         _tilesetOptions: {
-          spatialReference: tile.tileset.spatialReference,
-          spatialOptions: tile.tileset.options.spatial
+          spatialReference: tile.tileset?.spatialReference,
+          spatialOptions: tile.tileset?.options.spatial
         }
       }
     };
