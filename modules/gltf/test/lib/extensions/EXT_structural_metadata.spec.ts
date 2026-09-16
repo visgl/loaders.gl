@@ -774,8 +774,8 @@ test('gltf#EXT_structural_metadata applies normalized scale and offset transform
 
   await decodeExtensions(gltf, {gltf: {loadBuffers: true, loadImages: false}});
 
-  const values = gltf.json.extensions.EXT_structural_metadata.propertyTables[0].properties.value
-    .data;
+  const values =
+    gltf.json.extensions.EXT_structural_metadata.propertyTables[0].properties.value.data;
   expect(Array.from(values)).toEqual([10, 12]);
 });
 
