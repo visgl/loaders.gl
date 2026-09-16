@@ -33,7 +33,7 @@ export type Tile3DStyleInputOptions = {
   /** Feature identifier used to select one batch-table row. */
   featureId?: number;
   /** Parsed batch table associated with the content payload. */
-  batchTable?: Tile3DBatchTable | null;
+  batchTable?: Tile3DBatchTableLike | null;
 };
 
 /**
@@ -42,7 +42,7 @@ export type Tile3DStyleInputOptions = {
  * Keeping this structural makes the adapter usable with legacy and application-owned batch-table
  * implementations while preserving hierarchy-aware `getProperty` behavior.
  */
-export type Tile3DBatchTable = {
+export type Tile3DBatchTableLike = {
   /** Returns a property value for one feature, including inherited hierarchy values. */
   getProperty(batchId: number, name: string): unknown;
   /** Returns property names visible for one feature, including inherited hierarchy names. */
@@ -60,7 +60,7 @@ export type Tile3DBatchTable = {
  * @returns A new property bag containing defined properties for the feature.
  */
 export function getTile3DBatchTableProperties(
-  batchTable: Tile3DBatchTable | null | undefined,
+  batchTable: Tile3DBatchTableLike | null | undefined,
   featureId: number
 ): Record<string, unknown> {
   if (!batchTable) {
