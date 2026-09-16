@@ -337,14 +337,19 @@ function processPropertyTable(
 
     if (propertyTableProperty) {
       // Getting all elements (`numberOfElements`) of the array in the `propertyTableProperty`
+      const rawDataOutput: {value?: unknown} = {};
       const data = getPropertyDataFromBinarySource(
         iterator,
         schema,
         classProperty,
         numberOfElements,
-        propertyTableProperty
+        propertyTableProperty,
+        rawDataOutput
       );
       propertyTableProperty.data = data;
+      if (rawDataOutput.value !== undefined) {
+        propertyTableProperty.rawData = rawDataOutput.value;
+      }
     }
   }
 }
@@ -363,7 +368,8 @@ function getPropertyDataFromBinarySource(
   schema: GLTF_EXT_structural_metadata_Schema,
   classProperty: GLTF_EXT_structural_metadata_ClassProperty,
   numberOfElements: number,
-  propertyTableProperty: GLTF_EXT_structural_metadata_PropertyTable_Property
+  propertyTableProperty: GLTF_EXT_structural_metadata_PropertyTable_Property,
+  rawDataOutput?: {value?: unknown}
 ): boolean[] | string[] | BigTypedArray | boolean[][] | string[][] | BigTypedArray[] {
   let data: boolean[] | string[] | BigTypedArray | boolean[][] | string[][] | BigTypedArray[] = [];
   const valuesBufferView = propertyTableProperty.values;
@@ -391,13 +397,17 @@ function getPropertyDataFromBinarySource(
     case 'MAT2':
     case 'MAT3':
     case 'MAT4': {
-      data = getPropertyDataNumeric(
+      const numericData = getPropertyDataNumeric(
         classProperty,
         propertyTableProperty,
         numberOfElements,
         valuesDataBytes,
         arrayOffsets
       );
+      data = numericData.data;
+      if (rawDataOutput) {
+        rawDataOutput.value = numericData.rawData;
+      }
       break;
     }
     case 'BOOLEAN': {
@@ -555,7 +565,7 @@ function getPropertyDataNumeric(
   numberOfElements: number,
   valuesDataBytes: Uint8Array,
   arrayOffsets: TypedArray | null
-): BigTypedArray | BigTypedArray[] {
+): {data: BigTypedArray | BigTypedArray[]; rawData: BigTypedArray | BigTypedArray[]} {
   const isArray = classProperty.array;
   const arrayCount = classProperty.count;
   const componentCount =
@@ -578,37 +588,60 @@ function getPropertyDataNumeric(
     valuesData = valuesDataBytes;
   }
 
+  const rawValuesData = valuesData;
   const offset = propertyTableProperty.offset ?? classProperty.offset;
   const scale = propertyTableProperty.scale ?? classProperty.scale;
-  if (classProperty.normalized || offset !== undefined || scale !== undefined) {
-    valuesData = applyNumericPropertyTransforms(
-      valuesData,
-      classProperty.componentType,
-      classProperty.type,
-      classProperty.normalized,
-      offset,
-      scale
-    );
-  }
+  const transformedValuesData =
+    classProperty.normalized || offset !== undefined || scale !== undefined
+      ? applyNumericPropertyTransforms(
+          rawValuesData,
+          classProperty.componentType,
+          classProperty.type,
+          classProperty.normalized,
+          offset,
+          scale
+        )
+      : rawValuesData;
 
   if (isArray) {
     if (arrayOffsets) {
       // VARIABLE-length array
-      return parseVariableLengthArrayNumeric(
-        valuesData,
-        numberOfElements,
-        arrayOffsets,
-        componentCount
-      );
+      return {
+        data: parseVariableLengthArrayNumeric(
+          transformedValuesData,
+          numberOfElements,
+          arrayOffsets,
+          componentCount
+        ),
+        rawData: parseVariableLengthArrayNumeric(
+          rawValuesData,
+          numberOfElements,
+          arrayOffsets,
+          componentCount
+        )
+      };
     }
     if (arrayCount) {
       // FIXED-length array
-      return parseFixedLengthArrayNumeric(valuesData, numberOfElements, arrayCount, componentCount);
+      return {
+        data: parseFixedLengthArrayNumeric(
+          transformedValuesData,
+          numberOfElements,
+          arrayCount,
+          componentCount
+        ),
+        rawData: parseFixedLengthArrayNumeric(
+          rawValuesData,
+          numberOfElements,
+          arrayCount,
+          componentCount
+        )
+      };
     }
-    return [];
+    return {data: [], rawData: []};
   }
 
-  return valuesData;
+  return {data: transformedValuesData, rawData: rawValuesData};
 }
 
 /**
@@ -634,18 +667,23 @@ function applyNumericPropertyTransforms(
   offset: number | number[] | undefined,
   scale: number | number[] | undefined
 ): BigTypedArray {
-  if (valuesData instanceof BigInt64Array || valuesData instanceof BigUint64Array) {
+  const normalizationLimit = getNormalizationLimit(componentType);
+  const hasNormalization = Boolean(normalized && normalizationLimit !== undefined);
+  if (
+    !hasNormalization &&
+    offset === undefined &&
+    scale === undefined
+  ) {
     return valuesData;
   }
   const numberOfComponents = getMetadataComponentCount(attributeType);
   const result = new Float64Array(valuesData.length);
-  const normalizationLimit = getNormalizationLimit(componentType);
   for (let index = 0; index < valuesData.length; index++) {
     let value = Number(valuesData[index]);
-    if (normalized && normalizationLimit) {
+    if (hasNormalization) {
       value = componentType?.startsWith('INT')
-        ? Math.max(value / normalizationLimit, -1)
-        : value / normalizationLimit;
+        ? Math.max(value / (normalizationLimit as number), -1)
+        : value / (normalizationLimit as number);
     }
     const componentIndex = index % numberOfComponents;
     const offsetValue = Array.isArray(offset) ? (offset[componentIndex] ?? 0) : (offset ?? 0);
@@ -676,7 +714,7 @@ function getMetadataComponentCount(attributeType: string): number {
 }
 
 /** Returns the integer normalization denominator for a metadata component type. */
-function getNormalizationLimit(componentType: string | undefined): number {
+function getNormalizationLimit(componentType: string | undefined): number | undefined {
   switch (componentType) {
     case 'INT8':
       return 127;
@@ -690,8 +728,12 @@ function getNormalizationLimit(componentType: string | undefined): number {
       return 2147483647;
     case 'UINT32':
       return 4294967295;
+    case 'INT64':
+      return 2 ** 63 - 1;
+    case 'UINT64':
+      return 2 ** 64 - 1;
     default:
-      return 0;
+      return undefined;
   }
 }
 
