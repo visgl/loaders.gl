@@ -93,7 +93,7 @@ function isNoDataValue(value: unknown, noData: unknown): boolean {
   if (valueArray && noDataArray) {
     return (
       valueArray.length === noDataArray.length &&
-      valueArray.every((item, index) => item === noDataArray[index])
+      Array.from(valueArray).every((item, index) => item === noDataArray[index])
     );
   }
   return value === noData;
