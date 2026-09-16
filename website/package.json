@@ -60,6 +60,7 @@
     "@loaders.gl/schema-utils": "workspace:*",
     "@loaders.gl/services": "workspace:*",
     "@loaders.gl/splats": "workspace:*",
+    "@loaders.gl/stac": "workspace:*",
     "@loaders.gl/traces": "workspace:*",
     "@loaders.gl/xml": "workspace:*",
     "@loaders.gl/zarr": "workspace:*",
