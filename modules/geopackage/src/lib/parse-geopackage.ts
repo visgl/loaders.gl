@@ -94,6 +94,11 @@ export async function parseGeoPackage(
   arrayBuffer: ArrayBuffer,
   options?: GeoPackageLoaderOptions
 ): Promise<GeoJSONTable | ArrowTable> {
+  const shape = options?.geopackage?.shape || 'arrow-table';
+  if (shape === 'arrow-table') {
+    return parseGeoPackageToArrow(arrayBuffer, options);
+  }
+
   const database = await loadGeoPackageDatabase(
     arrayBuffer,
     options?.geopackage?.sqlJsCDN ?? DEFAULT_SQLJS_CDN
@@ -101,7 +106,6 @@ export async function parseGeoPackage(
   const vectorTables = listGeoPackageVectorTables(database);
   const projections = getProjections(database);
   const {reproject = false, _targetCrs = 'WGS84'} = options?.gis || {};
-  const shape = options?.geopackage?.shape || 'arrow-table';
 
   switch (shape) {
     case 'geojson-table': {
@@ -111,9 +115,6 @@ export async function parseGeoPackage(
         targetCrs: _targetCrs
       });
     }
-    case 'arrow-table':
-      return parseGeoPackageToArrow(arrayBuffer, options);
-
     default:
       throw new Error(`Unsupported GeoPackage output shape: ${shape}`);
   }
