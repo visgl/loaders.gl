@@ -71,7 +71,8 @@ test('ParquetWriter#encodes plain JS tables through Arrow adapter', async () => 
         worker: false
     });
     const newTable = await load(parquetBuffer, ParquetLoader, {
-        core: { worker: false }
+        core: { worker: false },
+        parquet: { shape: 'object-row-table' }
     });
     expect(newTable.shape).toBe('object-row-table');
     if (newTable.shape === 'object-row-table') {

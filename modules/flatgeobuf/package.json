@@ -59,7 +59,8 @@
     "@loaders.gl/loader-utils": "5.0.0-alpha.6",
     "@loaders.gl/schema": "5.0.0-alpha.6",
     "@math.gl/crs": "5.0.0-alpha.6",
-    "@math.gl/proj4": "5.0.0-alpha.6"
+    "@math.gl/proj4": "5.0.0-alpha.6",
+    "apache-arrow": ">= 17.0.0"
   },
   "devDependencies": {
     "stream-buffers": "3.0.2"
