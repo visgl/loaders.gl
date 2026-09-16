@@ -44,7 +44,8 @@ test('loadInBatches#non-batched loader (gis)', async () => {
 test('loadInBatches(options.limit)', async () => {
   // @ts-ignore
   const iterator = await loadInBatches(CSV_SAMPLE_VERY_LONG_URL, CSVLoader, {
-    limit: 100
+    limit: 100,
+    csv: {shape: 'object-row-table'}
   });
   const rows: unknown[] = [];
 

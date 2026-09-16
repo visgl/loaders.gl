@@ -17,12 +17,12 @@ import type {ParquetJSLoaderOptions} from './parquet-loader-options';
 // @ts-ignore TS2304: Cannot find name '__VERSION__'.
 const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : 'latest';
 
-/** Default option bag for the experimental parquetjs plain-row loader. */
+/** Default option bag for the experimental TypeScript-backed Parquet loader. */
 const DEFAULT_PARQUET_JS_OPTIONS = {
   columns: undefined,
   preserveBinary: false,
   verifyFooterSignature: true,
-  shape: 'object-row-table' as const
+  shape: 'arrow-table' as const
 };
 
 /** Preloads the parser-bearing TypeScript Parquet loader implementation. */

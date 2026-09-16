@@ -195,7 +195,8 @@ test('ParquetJSLoader#returns object rows through parquetjs adapter', async () =
     const table = (await load(url, ParquetJSLoader, {
         parquet: {
             limit: 2,
-            columns: ['id', 'bool_col']
+            columns: ['id', 'bool_col'],
+            shape: 'object-row-table'
         }
     })) as ObjectRowTable;
     expect(table.shape).toBe('object-row-table');
@@ -234,7 +235,8 @@ test('ParquetJSWriter#encodes plain JS tables through parquetjs adapter', async 
         worker: false
     });
     const newTable = await load(parquetBuffer, ParquetJSLoader, {
-        core: { worker: false }
+        core: { worker: false },
+        parquet: { shape: 'object-row-table' }
     });
     expect(newTable.shape).toBe('object-row-table');
     if (newTable.shape === 'object-row-table') {

@@ -111,7 +111,10 @@ test('ParquetJSWriter writes standard nested LIST and MAP fields', async () => {
     core: {worker: false},
     parquet: {shape: 'arrow-table'}
   });
-  const objectOutput = await load(parquetBuffer, ParquetJSLoader, {core: {worker: false}});
+  const objectOutput = await load(parquetBuffer, ParquetJSLoader, {
+    core: {worker: false},
+    parquet: {shape: 'object-row-table'}
+  });
   expect(objectOutput.shape).toBe('object-row-table');
   if (objectOutput.shape === 'object-row-table') {
     expect(objectOutput.data[0]).toMatchObject({id: 1});

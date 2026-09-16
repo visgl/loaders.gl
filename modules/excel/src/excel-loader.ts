@@ -38,7 +38,7 @@ export const ExcelLoader = {
   worker: true,
   options: {
     excel: {
-      shape: 'object-row-table',
+      shape: 'arrow-table',
       sheet: undefined // Load default Sheet
     }
   },

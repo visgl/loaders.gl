@@ -24,7 +24,10 @@ test.each([false, true])(
       worker: false,
       parquet: {pageSize: 2, useDataPageV2}
     });
-    const output = await load(parquetBuffer, ParquetJSLoader, {core: {worker: false}});
+    const output = await load(parquetBuffer, ParquetJSLoader, {
+      core: {worker: false},
+      parquet: {shape: 'object-row-table'}
+    });
     expect(output).toMatchObject({shape: 'object-row-table', data: INPUT.data});
 
     const reader = new ParquetReader(new BlobFile(parquetBuffer));

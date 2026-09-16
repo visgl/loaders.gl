@@ -89,7 +89,10 @@ async function readWithLoadersGl(
 ): Promise<CompatibilityResult> {
   try {
     const loader = backend === 'typescript' ? ParquetJSLoader : ParquetLoader;
-    const table = (await load(file, loader, {core: {worker: false}})) as ObjectRowTable;
+    const table = (await load(file, loader, {
+      core: {worker: false},
+      parquet: {shape: 'object-row-table'}
+    })) as ObjectRowTable;
     return {supported: true, rows: table.data};
   } catch (error) {
     return {supported: false, error: getErrorMessage(error)};

@@ -15,7 +15,7 @@ const PARQUET_DIR = '@loaders.gl/parquet/test/data/apache';
 setLoaderOptions({ _workerType: 'test' });
 function getParquetLoaderOptions(_url: string) {
     return {
-        parquet: {},
+        parquet: { shape: 'object-row-table' },
         core: { worker: false }
     };
 }
@@ -35,6 +35,14 @@ test('ParquetJSLoader#load alltypes_dictionary file', async () => {
     if (table.shape === 'object-row-table') {
         expect(table.data.length).toBe(2);
         expect(table.data).toEqual(ALL_TYPES_DICTIONARY_EXPECTED);
+    }
+});
+test('ParquetJSLoader#load defaults to Arrow table output', async () => {
+    const url = '@loaders.gl/parquet/test/data/apache/good/alltypes_dictionary.parquet';
+    const table = await load(url, ParquetJSLoader, { core: { worker: false } });
+    expect(table.shape).toBe('arrow-table');
+    if (table.shape === 'arrow-table') {
+        expect(table.data.numRows).toBe(2);
     }
 });
 test('ParquetJSLoader#load supports arrow-table shape', async () => {
@@ -474,7 +482,8 @@ test('ParquetJSLoader#loads through the explicit TypeScript implementation', asy
     const url = '@loaders.gl/parquet/test/data/geoparquet/example.parquet';
     const table = await load(url, ParquetJSLoader, {
         parquet: {
-            limit: 2
+            limit: 2,
+            shape: 'object-row-table'
         },
         core: { worker: false }
     });

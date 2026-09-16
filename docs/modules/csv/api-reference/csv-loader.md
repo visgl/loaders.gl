@@ -49,7 +49,7 @@ import {ClientExample} from '@site/src/components';
   tone="blue"
 />
 
-`CSVLoader` loads CSV and TSV data as loaders.gl row tables by default. Set `csv.shape: 'array-row-table'`, `csv.shape: 'columnar-table'`, or `csv.shape: 'arrow-table'` to request a different table shape.
+`CSVLoader` loads CSV and TSV data as loaders.gl `ArrowTable` objects by default. Set `csv.shape: 'object-row-table'`, `csv.shape: 'array-row-table'`, or `csv.shape: 'columnar-table'` to request a row or columnar table instead.
 
 ## Usage
 
@@ -58,7 +58,7 @@ import {load} from '@loaders.gl/core';
 import {CSVLoader} from '@loaders.gl/csv';
 
 const data = await load(url, CSVLoader);
-const table = await load(url, CSVLoader, {csv: {shape: 'arrow-table'}});
+const table = await load(url, CSVLoader);
 ```
 
 The root CSV export is metadata-only and works with async core APIs such as `load`, `parse`, and `parseInBatches`, which preload the parser implementation when needed. Applications that need a parser-bearing loader object directly can import the same named loader from `@loaders.gl/csv/bundled`:
@@ -87,7 +87,9 @@ import {load} from '@loaders.gl/core';
 import {CSVLoader} from '@loaders.gl/csv';
 
 const data = await load(urlToCSVWithHeader, CSVLoader, {csv: {header: true}});
-const rows = await load(urlToCSVWithoutHeader, CSVLoader, {csv: {header: false}});
+const rows = await load(urlToCSVWithoutHeader, CSVLoader, {
+  csv: {header: false, shape: 'object-row-table'}
+});
 ```
 
 ### Apache Arrow
@@ -127,7 +129,7 @@ const table = await load(url, CSVLoader, {
 
 | Option                      | Type                                                                                       | Default                       | Description                                                                                                                  |
 | --------------------------- | ------------------------------------------------------------------------------------------ | ----------------------------- | ---------------------------------------------------------------------------------------------------------------------------- |
-| `csv.shape`                 | `'object-row-table' \| 'array-row-table' \| 'columnar-table' \| 'arrow-table'`             | `object-row-table`            | Output rows as objects, arrays of values, columns, or Apache Arrow columns.                                                  |
+| `csv.shape`                 | `'object-row-table' \| 'array-row-table' \| 'columnar-table' \| 'arrow-table'`             | `arrow-table`                 | Output rows as objects, arrays of values, columns, or Apache Arrow columns.                                                  |
 | `csv.optimizeMemoryUsage`   | `boolean`                                                                                  | `false`                       | Optimize memory usage at the cost of additional parsing time.                                                                |
 | `csv.header`                | `boolean \| 'auto'`                                                                        | `auto`                        | If `true`, treat the first row as field names. If `false`, treat the first row as data. `'auto'` attempts to detect headers. |
 | `csv.columnPrefix`          | `string`                                                                                   | `column`                      | Prefix used when generating column names for files without headers, for example `column1`, `column2`, ...                    |

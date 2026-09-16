@@ -59,7 +59,7 @@ export const JSONTableLoader = {
   options: {
     json: {
       backend: 'clarinet',
-      shape: 'object-row-table',
+      shape: 'arrow-table',
       jsonpaths: [],
       schema: undefined,
       arrowConversion: undefined

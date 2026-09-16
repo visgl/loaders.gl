@@ -93,7 +93,9 @@ test('async-iterator#makeNumberedLineIterator', async () => {
 });
 test('async-iterator#parseNDJSONInBatches', async () => {
   const objects: Array<{id: number; field: string; flag: boolean}> = [];
-  for await (const batch of parseNDJSONInBatches(asyncNDJson())) {
+  for await (const batch of parseNDJSONInBatches(asyncNDJson(), {
+    ndjson: {shape: 'object-row-table'}
+  })) {
     // @ts-expect-error
     objects.push(batch.data[0]);
   }

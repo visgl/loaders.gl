@@ -59,7 +59,7 @@ Non-streaming table loaders for Excel files.
 
 ## ExcelLoader
 
-`ExcelLoader` loads Excel worksheets as loaders.gl row tables by default. Set `excel.shape: 'arrow-table'` to request Apache Arrow output.
+`ExcelLoader` loads Excel worksheets as loaders.gl `ArrowTable` objects by default. Set `excel.shape: 'object-row-table'` to request row-table output.
 
 ## Usage
 
@@ -92,7 +92,7 @@ const firstZipCode = zipCodeColumn?.get(0);
 | Option        | Type             | Default | Description                                       |
 | ------------- | ---------------- | ------- | ------------------------------------------------- |
 | `excel.sheet` | `string \| null` | `null`  | Which worksheet to load. Defaults to first sheet. |
-| `excel.shape` | [![Website shields.io](https://img.shields.io/badge/From-v5.0-blue.svg?style=flat-square)](http://shields.io) `'object-row-table' \| 'arrow-table'` | `object-row-table` | Selects row-table output or Apache Arrow output. |
+| `excel.shape` | [![Website shields.io](https://img.shields.io/badge/From-v5.0-blue.svg?style=flat-square)](http://shields.io) `'object-row-table' \| 'arrow-table'` | `arrow-table` | Selects row-table output or Apache Arrow output. |
 
 ## Attribution
 
