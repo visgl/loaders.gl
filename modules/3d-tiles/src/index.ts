@@ -51,5 +51,16 @@ export type {
 export type {Tiles3DLoaderOptions} from './tiles-3d-loader';
 export {Tiles3DArchive} from './3d-tiles-archive/3d-tiles-archive-archive';
 
-export {getStructuralMetadataRow} from './lib/metadata/property-table';
+export {getStructuralMetadataProperty, getStructuralMetadataRow} from './lib/metadata/property-table';
 export type {StructuralMetadataRow} from './lib/metadata/property-table';
+export {
+  createTile3DStyleInput,
+  getTile3DBatchTableProperties,
+  getTile3DStyleProperty
+} from './lib/metadata/style-input';
+export type {
+  Tile3DBatchTable,
+  Tile3DStyleInput,
+  Tile3DStyleInputOptions,
+  Tile3DStylePropertySource
+} from './lib/metadata/style-input';
