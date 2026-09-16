@@ -16,7 +16,9 @@ const KML_URL = '@loaders.gl/kml/test/data/kml/KML_Samples.kml';
 test.runIf(isBrowser)('loadInBatches#FileList', async () => {
   const response = await fetchFile(OBJ_ASCII_URL);
   const blob = await response.blob();
-  const iteratorPromises = await loadInBatches([blob, blob], OBJLoader);
+  const iteratorPromises = await loadInBatches([blob, blob], OBJLoader, {
+    obj: {shape: 'mesh'}
+  });
 
   for await (const iterator of iteratorPromises) {
     // @ts-ignore
