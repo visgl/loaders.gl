@@ -3,7 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import type {LoaderWithParser, LoaderOptions} from '@loaders.gl/loader-utils';
-import {Tables, GeoJSONTable, ArrowTable} from '@loaders.gl/schema';
+import {GeoJSONTable, ArrowTable} from '@loaders.gl/schema';
 import type {Proj4CRSDefinition} from '@math.gl/proj4';
 import {parseGeoPackage} from './lib/parse-geopackage';
 import {GeoPackageLoader as GeoPackageLoaderMetadata} from './geopackage-loader';
@@ -14,9 +14,9 @@ const {preload: _GeoPackageLoaderPreload, ...GeoPackageLoaderMetadataWithoutPrel
 export type GeoPackageLoaderOptions = LoaderOptions & {
   /** Options for the geopackage loader */
   geopackage?: {
-    /** Shape of returned data */
-    shape?: 'geojson-table' | 'arrow-table' | 'tables';
-    /** Name of table to load (defaults to first table), unless shape==='tables' */
+    /** Shape of the selected table returned by the loader. */
+    shape?: 'geojson-table' | 'arrow-table';
+    /** Name of table to load (defaults to the metadata-selected vector table). */
     table?: string;
     /** Use null in Node */
     sqlJsCDN?: string | null;
@@ -32,8 +32,4 @@ export type GeoPackageLoaderOptions = LoaderOptions & {
 export const GeoPackageLoaderWithParser = {
   ...GeoPackageLoaderMetadataWithoutPreload,
   parse: parseGeoPackage
-} as const satisfies LoaderWithParser<
-  GeoJSONTable | Tables<GeoJSONTable> | ArrowTable,
-  never,
-  GeoPackageLoaderOptions
->;
+} as const satisfies LoaderWithParser<GeoJSONTable | ArrowTable, never, GeoPackageLoaderOptions>;

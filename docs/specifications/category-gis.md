@@ -59,7 +59,7 @@ important.
 | `SHPLoader`                                               |        | `ArrowTable` (GeoArrow geometry)        | WKB geometries via explicit shape | -          | only geometries |
 | [`FlatGeobufLoader`](/docs/modules/flatgeobuf/api-reference/flatgeobuf-loader) |        | `FeatureCollection`                     | -                 | -          |
 | [`MVTLoader`](/docs/modules/mvt/api-reference/mvt-loader) | Layers | `FeatureCollections`                    |
-| [`GeoPackageLoader`](/docs/modules/geopackage/api-reference/geopackage-loader) | Layers | `FeatureCollections`                    | -                 | -          |
+| [`GeoPackageLoader`](/docs/modules/geopackage/api-reference/geopackage-loader) | Layers | `GeoJSONTable` / `ArrowTable`            | -                 | -          | selected table |
 | [`WKBLoader`](/docs/modules/wkt/api-reference/wkb-loader) | Single | a single geojson geometry (not feature) | -                 | -          | only geometry   |
 | [`WKTLoader`](/docs/modules/wkt/api-reference/wkt-loader) | Single | a single geojson geometry (not feature) | -                 | -          | only geometry   |
 
@@ -70,9 +70,8 @@ For loaders with shape selection, `options.core.shape` sets the default return s
 | Shape | Loaders | Notes |
 | --- | --- | --- |
 | `geojson-table` | `GeoJSONLoader`, [`FlatGeobufLoader`](/docs/modules/flatgeobuf/api-reference/flatgeobuf-loader), [`GeoPackageLoader`](/docs/modules/geopackage/api-reference/geopackage-loader), [`GPXLoader`](/docs/modules/kml/api-reference/gpx-loader), [`KMLLoader`](/docs/modules/kml/api-reference/kml-loader), [`MVTLoader`](/docs/modules/mvt/api-reference/mvt-loader), `ShapefileLoader`, [`TCXLoader`](/docs/modules/kml/api-reference/tcx-loader) | Shared feature-table target. Loader-specific overrides stay under each loader id, e.g. `options.mvt.shape`. |
-| `arrow-table` | `GeoJSONLoader`, [`FlatGeobufLoader`](/docs/modules/flatgeobuf/api-reference/flatgeobuf-loader), `ShapefileLoader`, `SHPLoader`, `DBFLoader`, [`MVTLoader`](/docs/modules/mvt/api-reference/mvt-loader) | GeoArrow-compatible Arrow table output with WKB or typed geometry metadata where supported. |
+| `arrow-table` | `GeoJSONLoader`, [`FlatGeobufLoader`](/docs/modules/flatgeobuf/api-reference/flatgeobuf-loader), `ShapefileLoader`, `SHPLoader`, `DBFLoader`, [`MVTLoader`](/docs/modules/mvt/api-reference/mvt-loader), [`GeoPackageLoader`](/docs/modules/geopackage/api-reference/geopackage-loader) | GeoArrow-compatible Arrow table output with WKB or typed geometry metadata where supported. |
 | `binary-feature-collection` | `GeoJSONLoader` | Deck.gl-style binary feature collection output selected with `options.geojson.shape`. |
-| `tables` | [`GeoPackageLoader`](/docs/modules/geopackage/api-reference/geopackage-loader) | Default GeoPackage output. |
 | `object-row-table` | [`GPXLoader`](/docs/modules/kml/api-reference/gpx-loader), [`KMLLoader`](/docs/modules/kml/api-reference/kml-loader), [`TCXLoader`](/docs/modules/kml/api-reference/tcx-loader) | Feature rows as plain objects. |
 | `columnar-table` | [`FlatGeobufLoader`](/docs/modules/flatgeobuf/api-reference/flatgeobuf-loader), [`MVTLoader`](/docs/modules/mvt/api-reference/mvt-loader) | Column-major geospatial output. |
 | `geojson` | [`MVTLoader`](/docs/modules/mvt/api-reference/mvt-loader), `MLTLoader` | Array of GeoJSON features instead of a table wrapper. |

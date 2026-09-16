@@ -14,7 +14,7 @@ import {ClientExample} from '@site/src/components';
 <DocPageHeader
   eyebrow="Geospatial database module"
   title="@loaders.gl/geopackage"
-  description="GeoPackage is a SQLite-based container for vector features, tiles, and metadata. The module exposes its tables and layers directly, with a source path for discovering and reading selected data."
+  description="GeoPackage is a SQLite-based container for vector features, tiles, and metadata. The loader reads one selected table, while the source path handles discovery and multi-table access."
   tone="orange"
   logos={[{alt: 'Open Geospatial Consortium', src: '/images/format-logos/ogc-logo-transparent.png'}]}
   meta={['OGC GeoPackage', 'SQLite', 'Layer and table access']}
@@ -32,13 +32,13 @@ import {ClientExample} from '@site/src/components';
 
 <DocOrientation
   eyebrow="The GeoPackage path"
-  title="Discover the container, then choose the layer."
-  description="A GeoPackage can hold several tables and geometry layers. The loader preserves that organization so applications can select the data they need instead of treating the file as one opaque payload."
+  title="Load one table, or explore the container."
+  description="A GeoPackage can hold several tables and geometry layers. The loader resolves one selected table into the common Arrow path; the source exposes discovery and multi-table access."
   tone="orange"
   items={[
     {label: 'Container', value: 'SQLite database with OGC-defined tables'},
     {label: 'Discovery', value: 'Layers, columns, geometry types, and metadata'},
-    {label: 'Output', value: 'Feature tables or source-backed reads'},
+    {label: 'Output', value: 'One Arrow feature table or GeoJSON table'},
     {label: 'Runtime', value: 'Local parsing with explicit CRS and layer information'}
   ]}
 />
@@ -61,8 +61,8 @@ npm install @loaders.gl/geopackage
 
 | Loader / Source | Description |
 | --------------- | ----------- |
-| [`GeoPackageLoader`](/docs/modules/geopackage/api-reference/geopackage-loader) | Loads GeoPackage files and exposes their tables and layers. |
-| [`GeoPackageSource`](/docs/modules/geopackage/api-reference/geopackage-source) | Provides access to GeoPackage tables as a data source. |
+| [`GeoPackageLoader`](/docs/modules/geopackage/api-reference/geopackage-loader) | Loads one selected GeoPackage vector table. |
+| [`GeoPackageSource`](/docs/modules/geopackage/api-reference/geopackage-source) | Discovers and queries multiple GeoPackage tables as a data source. |
 
 ## Attribution
 
