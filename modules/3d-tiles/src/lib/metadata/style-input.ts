@@ -2,11 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright vis.gl contributors
 
-import type {
-  Tile3DBatchTable,
-  Tile3DContent,
-  Tile3DMetadataContext
-} from '@loaders.gl/tiles';
+import type {Tile3DContent, Tile3DMetadataContext} from '@loaders.gl/tiles';
 
 /** Origin of a property exposed to a renderer-neutral style input. */
 export type Tile3DStylePropertySource =
