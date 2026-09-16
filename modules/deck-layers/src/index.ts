@@ -61,4 +61,3 @@ export type {
 } from './data-driven-tile-3d-layer';
 export {DataDrivenTile3DLayer} from './data-driven-tile-3d-layer';
 export {SourceDataDrivenTile3DLayer} from './data-driven-tile-3d-source-layer';
-
