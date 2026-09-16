@@ -52,3 +52,80 @@ test('Tileset3D#traverser base class', async () => {
     expect(traverser).toBeTruthy();
   }
 });
+
+test('TilesetTraverser#does not request replacement children outside viewer request volumes', () => {
+  const traverser = new TilesetTraverser({});
+  let requested = 0;
+  traverser.loadTile = () => {
+    requested++;
+  };
+  const child = {
+    _inRequestVolume: false,
+    isVisibleAndInRequestVolume: false,
+    hasRenderContent: true,
+    contentAvailable: false,
+    children: [],
+    parent: null
+  } as any;
+  const parent = {
+    refine: 'REPLACE',
+    hasRenderContent: true,
+    children: [child],
+    tileset: {},
+    _selectionDepth: 1
+  } as any;
+  child.parent = parent;
+
+  const shouldRefine = traverser.updateAndPushChildren(parent, {} as any, [], 2);
+
+  expect(shouldRefine, 'does not refine through an out-of-volume child').toBe(false);
+  expect(
+    requested,
+    'does not issue an off-volume request while checking replacement coverage'
+  ).toBe(0);
+});
+
+test('TilesetTraverser#keeps external tileset traversal available until expiration', () => {
+  const traverser = new TilesetTraverser({});
+  traverser.shouldRefine = () => false;
+  const externalTile = {
+    hasChildren: true,
+    hasTilesetContent: true,
+    contentExpired: false
+  } as any;
+
+  expect(
+    traverser.canTraverse(externalTile, {} as any),
+    'visits an external tileset root while its content is current'
+  ).toBe(true);
+  externalTile.contentExpired = true;
+  expect(
+    traverser.canTraverse(externalTile, {} as any),
+    'stops traversing an expired external tileset until it is refreshed'
+  ).toBe(false);
+});
+
+test('TilesetTraverser#does not require all children for additive refinement', () => {
+  const traverser = new TilesetTraverser({});
+  const child = {
+    _inRequestVolume: true,
+    isVisibleAndInRequestVolume: true,
+    hasRenderContent: true,
+    contentAvailable: false,
+    children: [],
+    parent: null
+  } as any;
+  const parent = {
+    refine: 'ADD',
+    hasRenderContent: true,
+    children: [child],
+    tileset: {},
+    _selectionDepth: 1
+  } as any;
+  child.parent = parent;
+
+  const stack = {find: () => false, delete: () => {}, push: () => {}} as any;
+  const shouldRefine = traverser.updateAndPushChildren(parent, {} as any, stack, 2);
+
+  expect(shouldRefine, 'additive refinement can continue while child content streams').toBe(true);
+});

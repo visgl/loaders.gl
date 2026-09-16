@@ -219,9 +219,10 @@ export class TilesetTraverser {
         }
         stack.push(child);
         hasVisibleChild = true;
-      } else if (checkRefines || loadSiblings) {
-        // Keep non-visible children loaded since they are still needed before the parent can refine.
-        // Or loadSiblings is true so always load tiles regardless of visibility.
+      } else if ((checkRefines || loadSiblings) && child._inRequestVolume) {
+        // Keep non-visible children loaded when they are inside their viewer request volume;
+        // they may still be needed before a replacement parent can refine. The request-volume
+        // check intentionally applies to sibling loading as well, preventing off-volume work.
         this.loadTile(child, frameState);
         this.touchTile(child, frameState);
       }
