@@ -48,7 +48,28 @@ afterEach(() => {
 
 test('PMTilesSourceLoader#defaults vector tiles to arrow-table output', () => {
   expect(PMTilesSourceLoader.options.pmtiles.shape).toBe('arrow-table');
-  expect(PMTilesSourceLoader.defaultOptions.pmtiles.shape).toBe('arrow-table');
+  expect(PMTilesSourceLoader.defaultOptions.pmtiles.shape).toBeUndefined();
+});
+
+test('PMTilesTileSource#getVectorTile falls back to Arrow without overriding inherited shape', async () => {
+  const receivedOptions: MVTLoaderOptions[] = [];
+  const source = Object.assign(Object.create(PMTilesTileSource.prototype), {
+    options: {pmtiles: {}},
+    loadOptions: {mvt: {shape: 'binary-geometry'}},
+    coreApi: {
+      async parse(_data: unknown, _loader: unknown, options: MVTLoaderOptions) {
+        receivedOptions.push(options);
+        return {shape: 'binary-geometry'};
+      }
+    } as unknown as CoreAPI,
+    async getTile() {
+      return new ArrayBuffer(1);
+    }
+  }) as PMTilesTileSource;
+
+  await source.getVectorTile({x: 2, y: 1, z: 3});
+
+  expect(receivedOptions[0].mvt?.shape).toBe('binary-geometry');
 });
 
 test('PMTilesTileSource#getVectorTile forwards requested layers to the decoder', async () => {

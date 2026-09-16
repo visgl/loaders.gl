@@ -15,6 +15,12 @@ import {
 import type {DBFHeader, DBFRowsOutput, DBFTableOutput} from './lib/parsers/types';
 import {DBFWorkerLoader as DBFWorkerLoaderMetadata} from './dbf-loader';
 import {DBFLoader as DBFLoaderMetadata} from './dbf-loader';
+import {
+  deserializeShapefileWorkerBatch,
+  deserializeShapefileWorkerResult,
+  serializeShapefileWorkerBatch,
+  serializeShapefileWorkerResult
+} from './lib/shapefile-worker-transport';
 
 const {preload: _DBFWorkerLoaderPreload, ...DBFWorkerLoaderMetadataWithoutPreload} =
   DBFWorkerLoaderMetadata;
@@ -61,7 +67,11 @@ export const DBFLoaderWithParser: LoaderWithParser<
     return getDBFShape(options) === 'arrow-table'
       ? parseDBFToArrowInBatches(arrayBufferIterator, options)
       : parseDBFToObjectRowsInBatches(arrayBufferIterator, options);
-  }
+  },
+  serializeWorkerResult: serializeShapefileWorkerResult,
+  deserializeWorkerResult: deserializeShapefileWorkerResult,
+  serializeWorkerBatch: serializeShapefileWorkerBatch,
+  deserializeWorkerBatch: deserializeShapefileWorkerBatch
 };
 
 function getDBFShape(options?: DBFLoaderOptions): NonNullable<DBFLoaderOptions['dbf']>['shape'] {

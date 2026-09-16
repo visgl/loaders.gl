@@ -75,9 +75,7 @@ export const PMTilesSourceLoader = {
   },
 
   defaultOptions: {
-    pmtiles: {
-      shape: 'arrow-table'
-    }
+    pmtiles: {}
   },
 
   testURL: (url: string) => url.endsWith('.pmtiles'),
