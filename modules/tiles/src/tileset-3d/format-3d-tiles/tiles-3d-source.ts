@@ -356,7 +356,8 @@ export class Tiles3DSource implements Tileset3DSource {
         assetGltfUpAxis: (this.asset && this.asset.gltfUpAxis) || 'Y',
         _tilesetOptions: {
           spatialReference: tile.header?._spatialReference || tile.tileset?.spatialReference,
-          spatialOptions: tile.tileset?.options.spatial
+          spatialOptions: tile.tileset?.options.spatial,
+          spatialTransform: tile.header?._spatialTransform
         }
       }
     };
@@ -434,6 +435,7 @@ export class Tiles3DSource implements Tileset3DSource {
         ? transformer.transformBoundingVolume(header.boundingVolume, composedTransform)
         : header.boundingVolume,
       _spatialReference: spatialReference,
+      _spatialTransform: composedTransform.toArray(),
       content,
       children: Array.isArray(header.children)
         ? header.children.map((child: Record<string, any>) =>
@@ -663,12 +665,52 @@ export class Tiles3DSource implements Tileset3DSource {
    */
   private prepareNestedTileset(tileset: Tileset3D, nestedTileset: TilesetJSON): TilesetJSON {
     const nestedSpatialReference = nestedTileset.spatialMetadata;
-    if (!nestedSpatialReference) {
-      return nestedTileset;
-    }
     const parentSpatialReference = tileset.spatialReference;
+
+    if (
+      nestedSpatialReference?.status === 'unresolved' ||
+      nestedSpatialReference?.crs.state === 'unknown'
+    ) {
+      throw new Error(
+        nestedSpatialReference.warnings[0] ||
+          'Nested 3D Tiles CRS is explicitly unresolved and cannot be placed in the parent frame'
+      );
+    }
+
+    if (!nestedSpatialReference || !nestedSpatialReference.sourceCrs) {
+      if (
+        this.spatialTransformer &&
+        (parentSpatialReference.status === 'transformable' ||
+          parentSpatialReference.status === 'transformed')
+      ) {
+        return {
+          ...nestedTileset,
+          spatialMetadata: parentSpatialReference,
+          root: this.transformTileHeaderWithTransformer(
+            nestedTileset.root,
+            this.spatialTransformer,
+            new Matrix4(),
+            parentSpatialReference
+          )
+        };
+      }
+      return addNestedSpatialReference(nestedTileset, parentSpatialReference);
+    }
+
+    const parentCoordinateEpoch = parentSpatialReference.coordinateEpoch;
+    const nestedCoordinateEpoch = nestedSpatialReference.coordinateEpoch;
+    if (
+      parentCoordinateEpoch !== undefined &&
+      nestedCoordinateEpoch !== undefined &&
+      parentCoordinateEpoch !== nestedCoordinateEpoch
+    ) {
+      throw new Error(
+        `Nested 3D Tiles coordinate epoch ${nestedCoordinateEpoch} differs from parent epoch ${parentCoordinateEpoch}; epoch-aware transformation is unavailable`
+      );
+    }
+
     const outputCrs = parentSpatialReference.targetCrs || parentSpatialReference.sourceCrs;
-    if (!outputCrs || !nestedSpatialReference.sourceCrs) {
+    if (!outputCrs) {
       return addNestedSpatialReference(nestedTileset, nestedSpatialReference);
     }
 
@@ -935,5 +977,9 @@ function addNestedSpatialReference(
     _spatialReference: spatialReference,
     children: Array.isArray(header.children) ? header.children.map(addToHeader) : header.children
   });
-  return {...nestedTileset, root: addToHeader(nestedTileset.root)};
+  return {
+    ...nestedTileset,
+    spatialMetadata: spatialReference,
+    root: addToHeader(nestedTileset.root)
+  };
 }
