@@ -682,6 +682,14 @@ export class Tileset3D {
       return;
     }
     const preparedViewports = viewports instanceof Array ? viewports : [viewports];
+    const activeViewportIds = new Set(preparedViewports.map(viewport => viewport.id));
+    // A viewport may be removed between frames. Discard its completed state before aggregating
+    // requested and selected tiles so observability reflects only the current traversal inputs.
+    for (const frameStateId of Object.keys(this.frameStateData)) {
+      if (!activeViewportIds.has(frameStateId)) {
+        delete this.frameStateData[frameStateId];
+      }
+    }
 
     this._cache.reset();
     this._frameNumber++;
