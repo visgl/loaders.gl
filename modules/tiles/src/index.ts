@@ -5,9 +5,7 @@
 export type {Tileset3DProps} from './tileset-3d/common/tileset-3d';
 export type {FoveatedInterpolationCallback} from './tileset-3d/helpers/tiles-3d-request-priority';
 export {Tileset3D} from './tileset-3d/common/tileset-3d';
-export {
-  getTileset3DTraversalSnapshot
-} from './tileset-3d/common/tileset-observability';
+export {getTileset3DTraversalSnapshot} from './tileset-3d/common/tileset-observability';
 export type {Tileset3DTraversalSnapshot} from './tileset-3d/common/tileset-observability';
 export type {
   TileContentLoadResult,
