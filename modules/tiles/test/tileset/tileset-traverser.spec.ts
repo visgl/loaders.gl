@@ -124,7 +124,8 @@ test('TilesetTraverser#does not require all children for additive refinement', (
   } as any;
   child.parent = parent;
 
-  const shouldRefine = traverser.updateAndPushChildren(parent, {} as any, [], 2);
+  const stack = {find: () => false, delete: () => {}, push: () => {}} as any;
+  const shouldRefine = traverser.updateAndPushChildren(parent, {} as any, stack, 2);
 
   expect(shouldRefine, 'additive refinement can continue while child content streams').toBe(true);
 });
