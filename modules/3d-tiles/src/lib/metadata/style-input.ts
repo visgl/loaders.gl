@@ -55,7 +55,8 @@ export type Tile3DBatchTableLike = {
  *
  * @param batchTable - Batch table exposing hierarchy-aware property access.
  * @param featureId - Zero-based feature identifier.
- * @returns A new property bag containing defined properties for the feature.
+ * @returns A new property bag containing defined properties for the feature. Returns an empty bag when
+ * the optional batch-table feature count identifies the ID as out of range.
  */
 export function getTile3DBatchTableProperties(
   batchTable: Tile3DBatchTableLike | null | undefined,
