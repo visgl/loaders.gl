@@ -24,7 +24,7 @@ const {preload: _OBJLoaderPreload, ...OBJLoaderMetadataWithoutPreload} = OBJLoad
 
 export type OBJLoaderOptions = LoaderOptions & {
   obj?: {
-    /** Output shape. Defaults to a legacy Mesh object. */
+    /** Output shape. Defaults to a Mesh Arrow table. */
     shape?: 'mesh' | 'arrow-table';
     /** Treat OBJ vertex records as a point cloud and stream `v` rows in batches. */
     pointCloud?: boolean;
@@ -48,7 +48,7 @@ type OBJParsedBatch = OBJMeshBatch | ArrowTableBatch;
 
 function convertOBJMesh(mesh: Mesh, options?: OBJLoaderOptions): Mesh | MeshArrowTable {
   const table = convertMeshToTable(mesh, 'arrow-table');
-  return options?.obj?.shape === 'arrow-table' ? table : convertTableToMesh(table);
+  return options?.obj?.shape === 'mesh' ? convertTableToMesh(table) : table;
 }
 
 /**
@@ -194,7 +194,7 @@ function parseOBJPointCloudMesh(vertexLines: string[]): Mesh {
 
 function makeOBJBatch(mesh: Mesh, options?: OBJLoaderOptions): OBJParsedBatch {
   const table = convertMeshToTable(mesh, 'arrow-table');
-  if (options?.obj?.shape !== 'arrow-table') {
+  if (options?.obj?.shape === 'mesh') {
     const convertedMesh = convertTableToMesh(table);
     return {
       shape: 'mesh',

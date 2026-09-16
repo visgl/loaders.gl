@@ -81,4 +81,4 @@ PCD files have an ASCII header. Point records can be stored as ASCII, binary, or
 
 ## Point Cloud Data
 
-PCD files are organized around named numeric fields. `PCDLoader` maps common fields such as `x`, `y`, `z`, normals, and color data to PointCloud attributes by default, or Mesh Arrow table columns when `pcd.shape: 'arrow-table'` is selected.
+PCD files are organized around named numeric fields. `PCDLoader` maps common fields such as `x`, `y`, `z`, normals, and color data to Mesh Arrow table columns by default, or legacy PointCloud attributes when `pcd.shape: 'mesh'` is selected.

@@ -13,7 +13,7 @@ const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : 'latest';
 
 export type PCDLoaderOptions = LoaderOptions & {
   pcd?: {
-    /** Output shape. Defaults to a legacy PointCloud object. */
+    /** Output shape. Defaults to a Mesh Arrow table. */
     shape?: 'mesh' | 'arrow-table';
     /** Color storage format. Defaults to uint8norm for backwards compatibility. */
     colorFormat?: 'uint8norm' | 'float16' | 'float32';
@@ -40,7 +40,7 @@ export const PCDLoader = {
   version: VERSION,
   worker: true,
   options: {
-    pcd: {colorFormat: 'uint8norm'}
+    pcd: {shape: 'arrow-table', colorFormat: 'uint8norm'}
   },
   preload
 } as const satisfies Loader<PCDMesh | MeshArrowTable, never, PCDLoaderOptions>;

@@ -50,14 +50,14 @@ import {LoaderLiveExample} from '@site/src/components/docs/loader-live-example';
   <img src="https://img.shields.io/badge/From-v1.0-blue.svg?style=flat-square" alt="From-v1.0" />
 </p>
 
-`OBJLoader` parses the OBJ half of the classic Wavefront OBJ/MTL format and returns a legacy [Mesh](/docs/specifications/category-mesh) object by default.
+`OBJLoader` parses the OBJ half of the classic Wavefront OBJ/MTL format and returns a [Mesh Arrow table](/docs/specifications/category-mesh#mesh-arrow-tables) by default.
 
-Set `obj.shape: 'arrow-table'` to return a [Mesh Arrow table](/docs/specifications/category-mesh#mesh-arrow-tables).
+Set `obj.shape: 'mesh'` when a legacy [Mesh](/docs/specifications/category-mesh) object is required.
 
 | Shape         | Output             | Use when                           |
 | ------------- | ------------------ | ---------------------------------- |
-| `mesh`        | `Mesh`             | You want the legacy mesh object.   |
 | `arrow-table` | `Mesh Arrow table` | You want columnar mesh attributes. |
+| `mesh`        | `Mesh`             | You need the legacy mesh object.   |
 
 ## Usage
 
@@ -93,7 +93,7 @@ for await (const batch of batches) {
 
 | Option | Type | Default | Description |
 | ------ | ---- | ------- | ----------- |
-| `obj.shape` | `'mesh' \| 'arrow-table'` | `'mesh'` | Selects Mesh or Mesh Arrow table output. |
+| `obj.shape` | `'mesh' \| 'arrow-table'` | `'arrow-table'` | Selects Mesh or Mesh Arrow table output. |
 | `obj.pointCloud` | `boolean` | `false` | Streams OBJ `v` records as point-cloud batches. Use only for known point-cloud OBJ inputs. |
 
 Remarks:

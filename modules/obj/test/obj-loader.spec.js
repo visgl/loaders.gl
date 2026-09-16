@@ -17,11 +17,16 @@ test('OBJLoader#loader objects', () => {
   validateLoader(OBJWorkerLoader, 'OBJWorkerLoader');
 });
 test('OBJLoader#parseText', async () => {
-  const data = await load(OBJ_ASCII_URL, OBJLoader);
+  const data = await load(OBJ_ASCII_URL, OBJLoader, {obj: {shape: 'mesh'}});
   validateMeshCategoryData(data);
   expect(data.mode, 'mode is TRIANGLES (4)').toBe(4);
   expect(data.attributes.POSITION.value.length, 'POSITION attribute was found').toBe(14904 * 3);
   expect(data.attributes.POSITION.size, 'POSITION attribute was found').toBe(3);
+});
+test('OBJLoader#parseText defaults to Arrow table', async () => {
+  const table = await load(OBJ_ASCII_URL, OBJLoader, {core: {worker: false}});
+  expect(table.shape, 'default output has arrow-table shape').toBe('arrow-table');
+  validateArrowTableSchema(table.data, meshArrowSchema, {schemaName: 'OBJLoader default table'});
 });
 test('OBJLoader#parseText(shape: arrow-table)', async () => {
   const table = await load(OBJ_ASCII_URL, OBJLoader, {
@@ -95,7 +100,7 @@ test('OBJLoader#parseInBatches(faces, arrow-table) falls back to atomic parse', 
   expect(batchRowCounts, 'face geometry emits one atomic Arrow batch').toEqual([3]);
 });
 test('OBJLoader#parse(SCHEMA)', async () => {
-  const data = await load(OBJ_NORMALS_URL, OBJLoader);
+  const data = await load(OBJ_NORMALS_URL, OBJLoader, {obj: {shape: 'mesh'}});
   validateMeshCategoryData(data);
   expect(data.schema.fields.length, 'schema field count is correct').toBe(3);
   expect(data.schema.metadata.mode, 'schema metadata is correct').toBe('4');
@@ -112,7 +117,7 @@ test('OBJLoader#parse(SCHEMA)', async () => {
   expect(data.indices, 'INDICES attribute was not found').toBeFalsy();
 });
 test('OBJLoader#parseText - object with normals', async () => {
-  const data = await load(OBJ_NORMALS_URL, OBJLoader);
+  const data = await load(OBJ_NORMALS_URL, OBJLoader, {obj: {shape: 'mesh'}});
   validateMeshCategoryData(data);
   expect(data.attributes.POSITION.value.length, 'POSITION attribute was found').toBe(108);
   expect(data.attributes.POSITION.size, 'POSITION attribute was found').toBe(3);
@@ -122,12 +127,12 @@ test('OBJLoader#parseText - object with normals', async () => {
   expect(data.attributes.TEXCOORD_0.size, 'TEXCOORD_0 attribute was found').toBe(2);
 });
 test('OBJLoader#parseText - multi-part object', async () => {
-  const data = await load(OBJ_MULTI_PART_URL, OBJLoader);
+  const data = await load(OBJ_MULTI_PART_URL, OBJLoader, {obj: {shape: 'mesh'}});
   validateMeshCategoryData(data);
   expect(data.header?.vertexCount, 'Vertices are loaded').toBe(1372 * 3);
 });
 test('OBJLoader#parseText - object with vertex colors', async () => {
-  const data = await load(OBJ_VERTEX_COLOR_URL, OBJLoader);
+  const data = await load(OBJ_VERTEX_COLOR_URL, OBJLoader, {obj: {shape: 'mesh'}});
   validateMeshCategoryData(data);
   expect(data.attributes.POSITION.value.length, 'POSITION attribute was found').toBe(108);
   expect(data.attributes.POSITION.size, 'POSITION attribute was found').toBe(3);
@@ -156,7 +161,7 @@ test('OBJWorkerLoader#parse(text)', async () => {
     console.log('Worker is not usable in non-browser environments');
     return;
   }
-  const data = await load(OBJ_ASCII_URL, OBJWorkerLoader);
+  const data = await load(OBJ_ASCII_URL, OBJWorkerLoader, {obj: {shape: 'mesh'}});
   validateMeshCategoryData(data);
   expect(data.mode, 'mode is TRIANGLES (4)').toBe(4);
   expect(data.attributes.POSITION.value.length, 'POSITION attribute was found').toBe(14904 * 3);
