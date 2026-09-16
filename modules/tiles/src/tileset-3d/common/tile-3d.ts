@@ -8,6 +8,8 @@
 import {Vector3, Matrix4} from '@math.gl/core';
 import {CullingVolume} from '@math.gl/culling';
 import type {CullingResult} from '@math.gl/culling';
+import {getTile3DFeatureIdSets} from './tile-3d-contracts';
+import type {Tile3DContent, Tile3DFeatureIdSet, Tile3DMetadataContext} from './tile-3d-contracts';
 
 // Note: circular dependency
 import type {Tileset3D} from './tileset-3d';
@@ -85,6 +87,14 @@ export function getContentVisibility(
   return intersectingVolume ? 'intersecting' : 'inside';
 }
 
+function isNestedTilesetPayload(payload: unknown): boolean {
+  if (!payload || typeof payload !== 'object') {
+    return false;
+  }
+  const record = payload as Record<string, any>;
+  return record.shape === 'tileset3d' || record.type === 'tileset3d' || Boolean(record.tileset);
+}
+
 function defined(x) {
   return x !== undefined && x !== null;
 }
@@ -150,6 +160,12 @@ export class Tile3D {
   content: any = null;
   /** Loaded payloads in the same order as {@link contentUrls}; `content` remains the primary payload. */
   contents: any[] = [];
+  /** Ordered renderer-neutral descriptors for each source content entry. */
+  contentEntries: Tile3DContent[] = [];
+  /** Raw metadata references inherited by this tile and its content. */
+  metadataContext: Tile3DMetadataContext = {};
+  /** Feature-id declarations normalized from supported content extensions. */
+  featureIdSets: Tile3DFeatureIdSet[] = [];
   /** Decoded 3D Tiles vector topology for the primary loaded content, when present. */
   vectorContent: unknown = null;
   /**
@@ -296,6 +312,7 @@ export class Tile3D {
     this._updateLodMetricScale();
     this._initializeBoundingVolumes(header);
     this._initializeContent(header);
+    this._initializeContentEntries(header);
     this._initializeRenderingState(header);
 
     Object.seal(this);
@@ -595,6 +612,7 @@ export class Tile3D {
 
       this.contentState = TILE_CONTENT_STATE.READY;
       this._onContentLoaded();
+      this._updateContentEntriesAfterLoad(loadResult);
       return loadResult;
     } catch (error) {
       // Tile is unloaded before the content finishes loading
@@ -704,6 +722,7 @@ export class Tile3D {
     // Use the merged header so inherited viewer-request-volume metadata remains available when a
     // materialized implicit tile has no render content of its own.
     this._initializeContent(this.header);
+    this._initializeContentEntries(this.header);
   }
 
   /** Refreshes tile and content metadata from a source or materialized tile header. */
@@ -713,6 +732,86 @@ export class Tile3D {
     this.contentMetadata = contentHeaders
       .filter(Boolean)
       .map(contentHeader => contentHeader.metadata || null);
+    const firstContentHeader = contentHeaders.find(Boolean) || {};
+    const groupReference = firstContentHeader.group;
+    const group =
+      typeof groupReference === 'number'
+        ? this.tileset.groups?.[groupReference] || null
+        : groupReference || null;
+    this.metadataContext = {
+      tileset: this.tileset.metadata || null,
+      group,
+      tile: this.metadata,
+      content: this.contentMetadata[0] || null,
+      subtree: header.implicitMetadata || null
+    };
+  }
+
+  /** Updates payload and renderability while retaining immutable metadata descriptors. */
+  private _updateContentEntriesAfterLoad(loadResult: TileContentLoadResult): void {
+    if (loadResult.contentEntries) {
+      this.contentEntries = loadResult.contentEntries.map((entry, index) => ({
+        ...entry,
+        index,
+        boundingVolume:
+          entry.boundingVolume || this._contentBoundingVolumes[index] || this.boundingVolume,
+        payload: entry.payload ?? this.contents[index] ?? null,
+        featureIds: entry.featureIds?.length
+          ? entry.featureIds
+          : getTile3DFeatureIdSets(entry.payload ?? this.contents[index]),
+        renderable: Boolean(
+          entry.renderable !== false &&
+            (entry.payload ?? this.contents[index]) &&
+            !isNestedTilesetPayload(entry.payload ?? this.contents[index])
+        )
+      }));
+      this.featureIdSets = this.contentEntries.flatMap(entry => entry.featureIds);
+      return;
+    }
+    this.contentEntries = this.contentEntries.map((entry, index) => ({
+      ...entry,
+      payload: this.contents[index] ?? null,
+      featureIds: getTile3DFeatureIdSets(this.contents[index]),
+      renderable: Boolean(this.contents[index]) && !isNestedTilesetPayload(this.contents[index])
+    }));
+    this.featureIdSets = this.contentEntries.flatMap(entry => entry.featureIds);
+  }
+
+  /** Returns one ordered content descriptor, or null when the index is out of range. */
+  getContentEntry(index: number): Tile3DContent | null {
+    return this.contentEntries[index] || null;
+  }
+
+  /** Returns whether an ordered content entry currently has renderable payload. */
+  isContentRenderable(index: number): boolean {
+    return Boolean(this.contentEntries[index]?.renderable);
+  }
+
+  /** Initializes additive renderer-neutral descriptors from a normalized tile header. */
+  private _initializeContentEntries(tileHeader: Record<string, any>): void {
+    const headers = Array.isArray(tileHeader.content)
+      ? tileHeader.content
+      : tileHeader.content
+        ? [tileHeader.content]
+        : [];
+    this.contentEntries = headers.map((contentHeader, index) => {
+      const normalizedContentHeader = contentHeader || {};
+      return {
+        index,
+        uri: this.contentUrls[index] || normalizedContentHeader.uri || normalizedContentHeader.url,
+        type: normalizedContentHeader.type,
+        payload: null,
+        metadata: normalizedContentHeader.metadata || null,
+        boundingVolume: this._contentBoundingVolumes[index] || this.boundingVolume,
+        featureIds: this._getFeatureIdSets(normalizedContentHeader),
+        renderable: false
+      };
+    });
+  }
+
+  /** Extracts renderer-neutral feature-id declarations without decoding property values. */
+  private _getFeatureIdSets(contentHeader: Record<string, any>): Tile3DFeatureIdSet[] {
+    return getTile3DFeatureIdSets(contentHeader);
   }
 
   // Unloads the tile's content.
@@ -725,6 +824,12 @@ export class Tile3D {
     this.contents = [];
     this.content = null;
     this.vectorContent = null;
+    this.contentEntries = this.contentEntries.map(entry => ({
+      ...entry,
+      payload: null,
+      renderable: false
+    }));
+    this.featureIdSets = this.contentEntries.flatMap(entry => entry.featureIds);
     if (this.header.content && this.header.content.destroy) {
       this.header.content.destroy();
     }
@@ -869,9 +974,15 @@ export class Tile3D {
    * @param frameState Current camera, culling, and optional clipping-plane state.
    * @returns The content visibility classification.
    */
-  contentVisibility(frameState: FrameState): CullingResult {
+  contentVisibility(frameState: FrameState, contentIndex?: number): CullingResult {
+    const contentVolumes =
+      contentIndex === undefined
+        ? this._contentBoundingVolumes
+        : this._contentBoundingVolumes[contentIndex]
+          ? [this._contentBoundingVolumes[contentIndex]]
+          : [];
     return getContentVisibility(
-      this._contentBoundingVolumes,
+      contentVolumes,
       this.boundingVolume,
       frameState.cullingVolume,
       this._visibilityPlaneMask,
