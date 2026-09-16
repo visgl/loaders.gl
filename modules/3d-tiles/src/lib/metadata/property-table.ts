@@ -132,7 +132,6 @@ function getMetadataComponentCount(attributeType: string | undefined): number {
   }
 }
 
-
 /**
  * Reads one named value from a decoded structural-metadata property-table row.
  *
