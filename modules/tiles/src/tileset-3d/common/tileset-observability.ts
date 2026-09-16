@@ -38,11 +38,17 @@ export type Tileset3DTraversalSnapshot = {
   maximumScreenSpaceError: number;
   /** Source-specific implicit subtree counters, when the source exposes them. */
   implicitTiling?: {
+    /** Number of subtree resources requested from the source. */
     requestedSubtrees: number;
+    /** Number of subtree resources successfully materialized. */
     loadedSubtrees: number;
+    /** Number of requests served by the parsed-subtree cache. */
     cacheHits: number;
+    /** Number of parsed subtrees currently retained for reuse. */
     cachedSubtrees: number;
+    /** Number of subtree requests currently in flight. */
     pendingSubtrees: number;
+    /** Number of runtime tile headers created from materialized subtrees. */
     materializedTiles: number;
   };
 };
