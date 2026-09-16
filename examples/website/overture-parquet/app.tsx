@@ -21,8 +21,9 @@ import {
 import type {Table as ArrowTable} from 'apache-arrow';
 import maplibregl from 'maplibre-gl';
 import {Map} from 'react-map-gl';
+import {CatalogExplorerPanel} from '@site/src/components/docs/catalog-explorer-panel';
 
-import {OverturePlacesCatalog} from './overture-catalog';
+import {OverturePlacesCatalog, type OvertureRelease} from './overture-catalog';
 import './style.css';
 import 'maplibre-gl/dist/maplibre-gl.css';
 
@@ -83,6 +84,18 @@ export default function App(props: AppProps = {}) {
   const [status, setStatus] = useState('Ready to query the current map view');
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const [discoveredRelease, setDiscoveredRelease] = useState<OvertureRelease | null>(null);
+  const catalogExplorerSources = useMemo(
+    () =>
+      discoveredRelease
+        ? [{
+            id: 'overture-places',
+            title: `Overture ${discoveredRelease.id} places`,
+            source: discoveredRelease.collectionSource
+          }]
+        : [],
+    [discoveredRelease]
+  );
 
   const runQuery = useCallback(async () => {
     const generation = ++queryGeneration.current;
@@ -111,6 +124,7 @@ export default function App(props: AppProps = {}) {
 
     try {
       const release = await catalog.getRelease();
+      setDiscoveredRelease(release);
       setStatus(`Reading Overture ${release.id} GeoParquet ranges…`);
       let batchIndex = 0;
       for await (const batch of source.read({
@@ -260,6 +274,12 @@ export default function App(props: AppProps = {}) {
             Spatial filtering uses STAC file extents plus the GeoParquet bbox covering to prune row
             groups and pages before exact per-row bbox filtering.
           </div>
+          {discoveredRelease ? (
+            <CatalogExplorerPanel
+              sources={catalogExplorerSources}
+              title="Explore the STAC catalog"
+            />
+          ) : null}
         </aside>
       ) : null}
     </div>

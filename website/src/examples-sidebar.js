@@ -81,6 +81,7 @@ const sidebars = {
       items: [
         'geospatial/fsq-places',
         'geospatial/overture-parquet',
+        'geospatial/stac',
         'cloud-native/iceberg'
       ]
     },
