@@ -12,7 +12,7 @@ const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : 'latest';
 
 export type OBJLoaderOptions = LoaderOptions & {
   obj?: {
-    /** Output shape. Defaults to a legacy Mesh object. */
+    /** Output shape. Defaults to a Mesh Arrow table. */
     shape?: 'mesh' | 'arrow-table';
     /** Treat OBJ vertex records as a point cloud and stream `v` rows in batches. */
     pointCloud?: boolean;
@@ -42,7 +42,7 @@ export const OBJLoader = {
   text: true,
   testText: testOBJFile,
   options: {
-    obj: {}
+    obj: {shape: 'arrow-table'}
   },
   preload
 } as const satisfies Loader<Mesh | MeshArrowTable, never, OBJLoaderOptions>;

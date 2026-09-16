@@ -22,7 +22,7 @@ const {preload: _PCDLoaderPreload, ...PCDLoaderMetadataWithoutPreload} = PCDLoad
 
 export type PCDLoaderOptions = LoaderOptions & {
   pcd?: {
-    /** Output shape. Defaults to a legacy PointCloud object. */
+    /** Output shape. Defaults to a Mesh Arrow table. */
     shape?: 'mesh' | 'arrow-table';
     /** Color storage format. Defaults to uint8norm for backwards compatibility. */
     colorFormat?: 'uint8norm' | 'float16' | 'float32';
@@ -35,7 +35,7 @@ type PCDParsedBatch = PCDMesh | ArrowTableBatch;
 
 function convertPCDMesh(mesh: PCDMesh, options?: PCDLoaderOptions): PCDMesh | MeshArrowTable {
   const table = convertMeshToTable(mesh, 'arrow-table');
-  return options?.pcd?.shape === 'arrow-table' ? table : convertPCDTableToMesh(table, mesh);
+  return options?.pcd?.shape === 'mesh' ? convertPCDTableToMesh(table, mesh) : table;
 }
 
 /**
@@ -130,7 +130,7 @@ function* parsePCDBinaryInBatches(
 
 function makePCDBatch(mesh: PCDMesh, options?: PCDLoaderOptions): PCDParsedBatch {
   const table = convertMeshToTable(mesh, 'arrow-table');
-  if (options?.pcd?.shape !== 'arrow-table') {
+  if (options?.pcd?.shape === 'mesh') {
     return convertPCDTableToMesh(table, mesh);
   }
 

@@ -41,7 +41,11 @@ export function canParseWithWorker(loader: Loader, options?: StrictLoaderOptions
     (loader.id === 'excel' &&
       (options as {excel?: {shape?: string}} | undefined)?.excel?.shape === 'arrow-table') ||
     (loader.id === 'ply' &&
-      (options as {ply?: {shape?: string}} | undefined)?.ply?.shape === 'arrow-table')
+      (options as {ply?: {shape?: string}} | undefined)?.ply?.shape === 'arrow-table') ||
+    (loader.id === 'obj' &&
+      (options as {obj?: {shape?: string}} | undefined)?.obj?.shape === 'arrow-table') ||
+    (loader.id === 'pcd' &&
+      (options as {pcd?: {shape?: string}} | undefined)?.pcd?.shape === 'arrow-table')
   ) {
     return false;
   }
