@@ -40,6 +40,10 @@ export type CatalogExplorerPanelProps = Readonly<{
 
 type CatalogQuerySource = CatalogSource<unknown, Record<string, unknown>, unknown> & {
   traverse?: (query: Record<string, unknown>) => AsyncIterable<unknown>;
+  getAssets?: (object: unknown) => Array<{key: string; href: string}>;
+};
+type CatalogAssetSource = CatalogSource<unknown, never, unknown> & {
+  getAssets?: (object: unknown) => Array<{key: string; href: string}>;
 };
 
 /** Renders source selection, capability-aware search controls, metadata, and catalog records. */
@@ -58,24 +62,25 @@ export function CatalogExplorerPanel({
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string>();
   const selectedSource = sources.find(source => source.id === selectedSourceId) || sources[0];
-  const capabilities = selectedSource?.source.capabilities;
+  const selectedSourceSource = selectedSource?.source;
+  const capabilities = selectedSourceSource?.capabilities;
 
   useEffect(() => {
-    if (!selectedSource) return;
+    if (!selectedSourceSource) return;
     const abortController = new AbortController();
     setLoading(true);
     setError(undefined);
     setRecords([]);
     void (async () => {
       try {
-        const nextMetadata = await selectedSource.source.getMetadata();
+        const nextMetadata = await selectedSourceSource.getMetadata();
         if (abortController.signal.aborted) return;
         setMetadata(nextMetadata);
         if (submittedQuery.text && !capabilities?.textFilter) {
           setRecords([]);
           return;
         }
-        const source = selectedSource.source as CatalogQuerySource;
+        const source = selectedSourceSource as CatalogQuerySource;
         const sourceQuery: Record<string, unknown> = {
           limit: submittedQuery.limit,
           datetime: submittedQuery.datetime || undefined,
@@ -103,7 +108,7 @@ export function CatalogExplorerPanel({
       }
     })();
     return () => abortController.abort();
-  }, [selectedSource, submittedQuery, capabilities]);
+  }, [selectedSourceSource, submittedQuery, capabilities]);
 
   const supportsSearch = capabilities?.search ?? false;
   return (
@@ -146,7 +151,7 @@ export function CatalogExplorerPanel({
           {error ? <ErrorMessage role="alert">{error}</ErrorMessage> : null}
           <ResultsHeader><strong>Results</strong><span>{records.length}{records.length === query.limit ? '+' : ''}</span></ResultsHeader>
           <ResultList>
-            {records.map((record, index) => <ResultRow key={`${recordKey(record)}-${index}`} type="button" onClick={() => onSelectRecord?.(record)}><ResultTitle>{recordTitle(record)}</ResultTitle><ResultSummary>{recordSummary(record)}</ResultSummary><Details>{recordAssets(record)}</Details></ResultRow>)}
+            {records.map((record, index) => <ResultRow key={`${recordKey(record)}-${index}`} type="button" onClick={() => onSelectRecord?.(record)}><ResultTitle>{recordTitle(record)}</ResultTitle><ResultSummary>{recordSummary(record)}</ResultSummary><Details>{recordAssets(record, selectedSourceSource)}</Details></ResultRow>)}
           </ResultList>
           {!loading && !error && records.length === 0 ? <EmptyState>{supportsSearch ? 'No records found.' : 'This source exposes metadata but not search.'}</EmptyState> : null}
         </>
@@ -155,22 +160,32 @@ export function CatalogExplorerPanel({
   );
 }
 
+/** Parses a comma-separated four-coordinate bounding box. */
 function parseBounds(value: string): readonly [number, number, number, number] | undefined {
   const values = value.split(',').map(part => Number(part.trim()));
   return values.length === 4 && values.every(Number.isFinite) ? [values[0], values[1], values[2], values[3]] : undefined;
 }
 
+/** Narrows an unknown catalog value to an object record. */
 function asRecord(value: unknown): Record<string, unknown> | undefined { return value && typeof value === 'object' ? value as Record<string, unknown> : undefined; }
+/** Returns a stable display key for a catalog record. */
 function recordKey(value: unknown): string { return String(asRecord(value)?.id || asRecord(value)?.title || 'record'); }
+/** Returns the best available human-readable title for a catalog record. */
 function recordTitle(value: unknown): string { const record = asRecord(value); return String(record?.title || record?.id || 'Untitled record'); }
+/** Returns a compact secondary description for a catalog record. */
 function recordSummary(value: unknown): string { const record = asRecord(value); return String(record?.description || record?.collection || record?.datetime || ''); }
-function recordAssets(value: unknown): JSX.Element | null {
+/** Renders the first few downloadable assets, resolving them through protocol-specific helpers. */
+function recordAssets(value: unknown, source?: CatalogAssetSource): JSX.Element | null {
+  const resolvedAssets = source?.getAssets
+    ? source.getAssets(value).map(asset => [asset.key, asset] as const)
+    : undefined;
   const assets = asRecord(asRecord(value)?.assets);
-  if (!assets) return null;
-  const links = Object.entries(assets).filter(([, asset]) => asRecord(asset)?.href);
+  const links = resolvedAssets || (assets ? Object.entries(assets).filter(([, asset]) => asRecord(asset)?.href).map(([name, asset]) => [name, asset] as const) : []);
   return links.length ? <AssetList>{links.slice(0, 4).map(([name, asset]) => <a key={name} href={String(asRecord(asset)?.href)} target="_blank" rel="noreferrer" onClick={event => event.stopPropagation()}>{name}</a>)}</AssetList> : null;
 }
+/** Lists the enabled protocol capabilities in a stable display order. */
 function formatCapabilities(capabilities?: CatalogSourceCapabilities): string[] { if (!capabilities) return []; return Object.entries(capabilities).filter(([, enabled]) => enabled).map(([name]) => name); }
+/** Formats the most useful identity from source metadata. */
 function formatMetadata(metadata: unknown): string { const record = asRecord(metadata); const root = asRecord(record?.root); return root ? `${String(root.title || root.id || 'Catalog')} · ${String(root.type || 'source')}` : metadata ? 'Metadata loaded' : 'Loading metadata…'; }
 
 const Panel = styled.section`border:1px solid #d8dee9;border-radius:8px;padding:14px;margin:14px 0;background:#fbfcfe;`;
@@ -185,14 +200,13 @@ const Field = styled.div`display:flex;flex-direction:column;gap:4px;flex:1;min-w
 const Label = styled.label`font-size:.78rem;font-weight:600;`;
 const Input = styled.input`border:1px solid #d0d5dd;border-radius:5px;padding:7px;min-width:0;`;
 const Select = styled.select`border:1px solid #d0d5dd;border-radius:5px;padding:7px;background:#fff;`;
-const ApplyButton = styled.button`border:0;border-radius:5px;padding:8px 12px;color:#fff;background:#475467;cursor:pointer;&:disabled{background:#98a2b3;cursor:not-allowed;}`;
+const ApplyButton = styled.button`&&{border:0;border-radius:5px;padding:8px 12px;color:#fff;background:#475467;cursor:pointer;}&&:disabled{background:#98a2b3;cursor:not-allowed;}`;
 const ErrorMessage = styled.div`color:#b42318;font-size:.82rem;margin-top:10px;`;
 const ResultsHeader = styled.div`display:flex;justify-content:space-between;margin-top:16px;padding-bottom:6px;border-bottom:1px solid #eaecf0;font-size:.82rem;color:#667085;`;
 const ResultList = styled.div`display:flex;flex-direction:column;`;
-const ResultRow = styled.button`display:block;text-align:left;border:0;border-bottom:1px solid #eaecf0;background:transparent;padding:10px 2px;cursor:pointer;&:hover{background:#f2f4f7;}`;
+const ResultRow = styled.button`&&{display:block;text-align:left;border:0;border-bottom:1px solid #eaecf0;background:transparent;padding:10px 2px;cursor:pointer;}&&:hover{background:#f2f4f7;}`;
 const ResultTitle = styled.div`font-weight:600;color:#344054;`;
 const ResultSummary = styled.div`color:#667085;font-size:.78rem;margin-top:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;`;
 const Details = styled.div`margin-top:5px;font-size:.74rem;`;
 const AssetList = styled.div`display:flex;gap:10px;flex-wrap:wrap;a{color:#175cd3;}`;
 const EmptyState = styled.div`color:#667085;font-size:.84rem;padding:14px 0;`;
-

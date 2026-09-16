@@ -85,6 +85,17 @@ export default function App(props: AppProps = {}) {
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [discoveredRelease, setDiscoveredRelease] = useState<OvertureRelease | null>(null);
+  const catalogExplorerSources = useMemo(
+    () =>
+      discoveredRelease
+        ? [{
+            id: 'overture-places',
+            title: `Overture ${discoveredRelease.id} places`,
+            source: discoveredRelease.collectionSource
+          }]
+        : [],
+    [discoveredRelease]
+  );
 
   const runQuery = useCallback(async () => {
     const generation = ++queryGeneration.current;
@@ -265,13 +276,7 @@ export default function App(props: AppProps = {}) {
           </div>
           {discoveredRelease ? (
             <CatalogExplorerPanel
-              sources={[
-                {
-                  id: 'overture-places',
-                  title: `Overture ${discoveredRelease.id} places`,
-                  source: discoveredRelease.collectionSource
-                }
-              ]}
+              sources={catalogExplorerSources}
               title="Explore the STAC catalog"
             />
           ) : null}
