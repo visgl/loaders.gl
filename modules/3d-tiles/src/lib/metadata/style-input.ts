@@ -116,9 +116,15 @@ export function createTile3DStyleInput(
   };
 
   addMetadataProperties(metadata.tileset, 'tileset-metadata');
+  const contentGroupIndex =
+    typeof content.group === 'number'
+      ? content.group
+      : typeof content.metadata?.group === 'number'
+        ? content.metadata.group
+        : undefined;
   const contentGroup =
-    typeof content.metadata?.group === 'number' && metadata.groups
-      ? metadata.groups[content.metadata.group] || null
+    contentGroupIndex !== undefined && metadata.groups
+      ? metadata.groups[contentGroupIndex] || null
       : metadata.group;
   addMetadataProperties(contentGroup, 'group-metadata');
   addMetadataProperties(metadata.tile, 'tile-metadata');
