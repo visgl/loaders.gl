@@ -21,7 +21,12 @@ export {isTileset3DSource} from './tileset-3d/common/tileset-source';
 export type {IndexedArchiveTilesetSourceOptions} from './tileset-3d/common/indexed-archive-tileset-source';
 export {IndexedArchiveTilesetSource} from './tileset-3d/common/indexed-archive-tileset-source';
 export {Tile3D} from './tileset-3d/common/tile-3d';
-export type {Tile3DContent, Tile3DFeatureIdSet, Tile3DMetadataContext, Tile3DBoundingVolume} from './tileset-3d/common/tile-3d-contracts';
+export type {
+  Tile3DContent,
+  Tile3DFeatureIdSet,
+  Tile3DMetadataContext,
+  Tile3DBoundingVolume
+} from './tileset-3d/common/tile-3d-contracts';
 export type {TileChildrenState} from './tileset-3d/common/tile-3d';
 export {Tiles3DSource} from './tileset-3d/format-3d-tiles/tiles-3d-source';
 export type {ImplicitTilingStats} from './tileset-3d/format-3d-tiles/tiles-3d-source';
