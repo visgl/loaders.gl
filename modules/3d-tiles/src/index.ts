@@ -59,7 +59,7 @@ export {
   getTile3DStyleProperty
 } from './lib/metadata/style-input';
 export type {
-  Tile3DBatchTable,
+  Tile3DBatchTableLike,
   Tile3DStyleInput,
   Tile3DStyleInputOptions,
   Tile3DStylePropertySource
