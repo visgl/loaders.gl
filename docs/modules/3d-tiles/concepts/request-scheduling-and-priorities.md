@@ -132,3 +132,17 @@ Suppose a pan reveals a coarse central building tile, a coarse edge tile, and fi
 - It does not make culled or unavailable tiles loadable.
 
 For symptoms and tuning sequences, see [Runtime tuning and diagnostics](./runtime-tuning-and-diagnostics).
+
+
+## Traversal safety boundaries
+
+Request priority is evaluated only after culling and viewer-request-volume checks. A tile whose
+camera is outside `viewerRequestVolume` is not enqueued, even when a replacement parent is waiting
+for child coverage; this prevents off-volume requests during broad sibling checks. External
+tilesets remain traversable while their content is current and stop traversal when expired so a
+refresh can replace them safely.
+
+Queued priorities are recomputed on each traversal frame. Camera jumps, cancellation, and a
+temporary foveated delay may reorder or defer work, but they never change the final SSE target.
+Additive refinement can continue while child content streams; replacement refinement retains the
+parent until required in-volume child coverage is ready.
