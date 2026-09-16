@@ -52,3 +52,35 @@ test('Tileset3D#traverser base class', async () => {
     expect(traverser).toBeTruthy();
   }
 });
+
+
+test('TilesetTraverser#does not request replacement children outside viewer request volumes', () => {
+  const traverser = new TilesetTraverser({});
+  let requested = 0;
+  traverser.loadTile = () => {
+    requested++;
+  };
+  const child = {
+    _inRequestVolume: false,
+    isVisibleAndInRequestVolume: false,
+    hasRenderContent: true,
+    contentAvailable: false,
+    children: [],
+    parent: null
+  } as any;
+  const parent = {
+    refine: 'REPLACE',
+    hasRenderContent: true,
+    children: [child],
+    tileset: {},
+    _selectionDepth: 1
+  } as any;
+  child.parent = parent;
+
+  const shouldRefine = traverser.updateAndPushChildren(parent, {} as any, [], 2);
+
+  expect(shouldRefine, 'does not refine through an out-of-volume child').toBe(false);
+  expect(requested, 'does not issue an off-volume request while checking replacement coverage').toBe(
+    0
+  );
+});
