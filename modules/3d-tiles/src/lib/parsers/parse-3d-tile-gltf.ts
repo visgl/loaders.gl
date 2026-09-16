@@ -56,7 +56,11 @@ export async function parseGltf3DTile(
     transformGLTFSpatialContent(
       tile.gltf,
       options?.['3d-tiles']?._tilesetOptions as
-        | {spatialReference?: TilesetSpatialReference; spatialOptions?: TilesetSpatialOptions}
+        | {
+            spatialReference?: TilesetSpatialReference;
+            spatialOptions?: TilesetSpatialOptions;
+            spatialTransform?: ArrayLike<number>;
+          }
         | undefined
     );
     tile.gpuMemoryUsageInBytes = _getMemoryUsageGLTF(tile.gltf);
@@ -76,6 +80,7 @@ function transformGLTFSpatialContent(
   tilesetOptions?: {
     spatialReference?: TilesetSpatialReference;
     spatialOptions?: TilesetSpatialOptions;
+    spatialTransform?: ArrayLike<number>;
   }
 ): void {
   const spatialReference = tilesetOptions?.spatialReference;
@@ -89,6 +94,9 @@ function transformGLTFSpatialContent(
     spatialReference,
     tilesetOptions?.spatialOptions
   );
+  const spatialTransform = tilesetOptions?.spatialTransform
+    ? new Matrix4(Array.from(tilesetOptions.spatialTransform))
+    : undefined;
   const placements = getUniqueMeshPlacements(gltf);
   for (const mesh of gltf.meshes || []) {
     const meshPlacement = placements.get(mesh);
@@ -101,18 +109,24 @@ function transformGLTFSpatialContent(
         continue;
       }
       const sourcePositions = positionAccessor.value;
-      const placedPositions = meshPlacement
+      const meshPlacedPositions = meshPlacement
         ? transformPositionsByMatrix(sourcePositions, meshPlacement)
         : Float64Array.from(sourcePositions);
+      const placedPositions = spatialTransform
+        ? transformPositionsByMatrix(meshPlacedPositions, spatialTransform)
+        : meshPlacedPositions;
       const transformedPositions = transformer.transformPositions(placedPositions);
       positionAccessor.value = Float32Array.from(transformedPositions);
       positionAccessor.min = getAttributeBounds(positionAccessor.value, 'min');
       positionAccessor.max = getAttributeBounds(positionAccessor.value, 'max');
       const normalAccessor = primitive.attributes?.NORMAL;
       if (normalAccessor?.value?.length === sourcePositions.length) {
-        const placedNormals = meshPlacement
+        const meshPlacedNormals = meshPlacement
           ? transformDirectionsByMatrix(normalAccessor.value, meshPlacement)
-          : normalAccessor.value;
+          : Float32Array.from(normalAccessor.value);
+        const placedNormals = spatialTransform
+          ? transformDirectionsByMatrix(meshPlacedNormals, spatialTransform)
+          : meshPlacedNormals;
         normalAccessor.value = transformer.transformNormals(placedNormals, placedPositions);
       }
     }
