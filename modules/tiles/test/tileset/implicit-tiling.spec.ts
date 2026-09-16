@@ -15,6 +15,7 @@ import {
   type ParsedImplicitSubtree
 } from '@loaders.gl/tiles';
 import {convertS2BoundingVolumeToOBB} from '@loaders.gl/tiles';
+import {Tile3D} from '../../src/tileset-3d/common/tile-3d';
 import {Tileset3DTraverser} from '../../src/tileset-3d/format-3d-tiles/tileset-3d-traverser';
 /** Creates a compact descriptor that individual tests can override. */
 function createDescriptor(
@@ -514,4 +515,79 @@ test('implicit subtree traversal preserves REPLACE coverage while availability i
     traverser.executeEmptyTraversal(root, {} as any),
     'retains the established explicit empty-leaf behavior after materialization'
   ).toBeTruthy();
+});
+
+
+test('implicit subtree loading deduplicates concurrent requests and preserves the boundary', async () => {
+  let resolveLoad!: (result: {loaded: boolean; tileCount: number; childSubtreeCount: number}) => void;
+  let requestCount = 0;
+  const pendingLoad = new Promise<{loaded: boolean; tileCount: number; childSubtreeCount: number}>(
+    resolve => {
+      resolveLoad = resolve;
+    }
+  );
+  const tile = {
+    header: {implicitSubtree: {subtreeUrl: 'https://example.com/0.subtree'}},
+    childrenState: 'unloaded',
+    _childrenPromise: null,
+    id: 'boundary',
+    tileset: {
+      source: {
+        loadTileChildren: async () => {
+          requestCount++;
+          return await pendingLoad;
+        }
+      },
+      _requestScheduler: {scheduleRequest: async () => ({done: () => {}})}
+    },
+    _loadChildrenWithScheduler: Tile3D.prototype['_loadChildrenWithScheduler'],
+    _getChildrenPriority: () => 0
+  } as any;
+
+  const firstRequest = Tile3D.prototype.loadChildren.call(tile, {} as any);
+  const secondRequest = Tile3D.prototype.loadChildren.call(tile, {} as any);
+  await Promise.resolve();
+  expect(requestCount).toBe(1);
+  expect(tile.childrenState).toBe('loading');
+
+  resolveLoad({loaded: true, tileCount: 1, childSubtreeCount: 0});
+  await expect(firstRequest).resolves.toEqual({loaded: true, tileCount: 1, childSubtreeCount: 0});
+  await expect(secondRequest).resolves.toEqual({loaded: true, tileCount: 1, childSubtreeCount: 0});
+  expect(tile.childrenState).toBe('ready');
+});
+
+test('implicit subtree loading retries after a failed request', async () => {
+  let requestCount = 0;
+  const tile = {
+    header: {implicitSubtree: {subtreeUrl: 'https://example.com/0.subtree'}},
+    childrenState: 'unloaded',
+    _childrenPromise: null,
+    id: 'retry-boundary',
+    _getChildrenPriority: () => 0,
+    _loadChildrenWithScheduler: Tile3D.prototype['_loadChildrenWithScheduler'],
+    tileset: {
+      source: {
+        loadTileChildren: async () => {
+          requestCount++;
+          if (requestCount === 1) {
+            throw new Error('temporary subtree failure');
+          }
+          return {loaded: true, tileCount: 2, childSubtreeCount: 0};
+        }
+      },
+      _requestScheduler: {scheduleRequest: async () => ({done: () => {}})}
+    }
+  } as any;
+
+  await expect(Tile3D.prototype.loadChildren.call(tile, {} as any)).rejects.toThrow(
+    'temporary subtree failure'
+  );
+  expect(tile.childrenState).toBe('failed');
+  await expect(Tile3D.prototype.loadChildren.call(tile, {} as any)).resolves.toEqual({
+    loaded: true,
+    tileCount: 2,
+    childSubtreeCount: 0
+  });
+  expect(requestCount).toBe(2);
+  expect(tile.childrenState).toBe('ready');
 });
