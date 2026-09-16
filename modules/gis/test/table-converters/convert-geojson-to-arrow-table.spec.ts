@@ -9,10 +9,33 @@ import {fetchFile, parse} from '@loaders.gl/core';
 import {Feature, FeatureCollection} from '@loaders.gl/schema';
 import {GeoArrowLoader} from '@loaders.gl/arrow';
 import {
+  convertFeaturesToWKBArrowTable,
   convertFeaturesToGeoArrowTable,
   getGeoMetadata,
   type LegacyGeoJSONCRS
 } from '@loaders.gl/gis';
+
+test('convertFeaturesToWKBArrowTable#preserves feature IDs and sparse properties', () => {
+  const table = convertFeaturesToWKBArrowTable([
+    {
+      type: 'Feature',
+      id: 'first',
+      properties: {},
+      geometry: {type: 'Point', coordinates: [1, 2]}
+    },
+    {
+      type: 'Feature',
+      id: 'second',
+      properties: {population: 42},
+      geometry: {type: 'Point', coordinates: [3, 4]}
+    }
+  ]);
+
+  expect(table.data.getChild('id')?.toArray()).toEqual(['first', 'second']);
+  const populationColumn = table.data.getChild('population');
+  expect(populationColumn?.get(0)).toBeNaN();
+  expect(populationColumn?.get(1)).toBe(42);
+});
 test('ArrowLoader#shape:geojson-table', async () => {
   for (const testCase of GEOARROW_TEST_CASES) {
     await testConversion(testCase[0], testCase[1]);

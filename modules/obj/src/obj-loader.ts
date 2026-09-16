@@ -32,7 +32,7 @@ async function preload() {
 /**
  * Metadata-only worker loader for the OBJ geometry format
  */
-export const OBJWorkerLoader = {
+export const OBJLoader = {
   ...OBJFormat,
 
   dataType: null as unknown as Mesh | MeshArrowTable,
@@ -52,11 +52,5 @@ function testOBJFile(text: string): boolean {
   return text[0] === 'v';
 }
 
-// OBJLoader
-
-/**
- * Metadata-only loader for the OBJ geometry format
- */
-export const OBJLoader = {
-  ...OBJWorkerLoader
-} as const satisfies Loader<Mesh | MeshArrowTable, never, OBJLoaderOptions>;
+/** @deprecated Use OBJLoader. */
+export const OBJWorkerLoader = OBJLoader;

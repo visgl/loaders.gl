@@ -27,7 +27,7 @@ async function preload() {
 /**
  * Metadata-only worker loader for WKB (Well-Known Binary)
  */
-export const WKBWorkerLoader = {
+export const WKBLoader = {
   dataType: null as unknown as Geometry,
   batchType: null as never,
   ...WKBFormat,
@@ -42,9 +42,5 @@ export const WKBWorkerLoader = {
   preload
 } as const satisfies Loader<Geometry, never, WKBLoaderOptions>;
 
-/**
- * Metadata-only loader for WKB (Well-Known Binary)
- */
-export const WKBLoader = {
-  ...WKBWorkerLoader
-} as const satisfies Loader<Geometry, never, WKBLoaderOptions>;
+/** @deprecated Use WKBLoader. */
+export const WKBWorkerLoader = WKBLoader;

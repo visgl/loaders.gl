@@ -43,8 +43,8 @@ async function preload() {
   return MVTLoaderWithParser;
 }
 
-/** Metadata-only worker loader for the Mapbox Vector Tile format. */
-export const MVTWorkerLoader = {
+/** Metadata-only loader for the Mapbox Vector Tile format. */
+export const MVTLoader = {
   ...MVTFormat,
   dataType: null as any,
   batchType: null as never,
@@ -61,20 +61,13 @@ export const MVTWorkerLoader = {
   },
   serializeWorkerResult: serializeMVTWorkerResult,
   deserializeWorkerResult: deserializeMVTWorkerResult,
-  preload
+  preload,
+  binary: true
 } as const satisfies Loader<
   any, // BinaryFeatureCollection | GeoJSONTable | Feature<Geometry, GeoJsonProperties>,
   never,
   MVTLoaderOptions
 >;
 
-/** Metadata-only loader for the Mapbox Vector Tile format. */
-export const MVTLoader = {
-  ...MVTWorkerLoader,
-  binary: true,
-  preload
-} as const satisfies Loader<
-  any, // BinaryFeatureCollection | GeoJSONTable | Feature<Geometry, GeoJsonProperties>,
-  never,
-  MVTLoaderOptions
->;
+/** @deprecated Use MVTLoader. */
+export const MVTWorkerLoader = MVTLoader;

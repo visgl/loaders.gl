@@ -33,7 +33,7 @@ async function preload() {
 /**
  * Metadata-only worker loader for PCD - Point Cloud Data
  */
-export const PCDWorkerLoader = {
+export const PCDLoader = {
   ...PCDFormat,
   dataType: null as unknown as PCDMesh | MeshArrowTable,
   batchType: null as never,
@@ -45,9 +45,5 @@ export const PCDWorkerLoader = {
   preload
 } as const satisfies Loader<PCDMesh | MeshArrowTable, never, PCDLoaderOptions>;
 
-/**
- * Metadata-only loader for PCD - Point Cloud Data
- */
-export const PCDLoader = {
-  ...PCDWorkerLoader
-} as const satisfies Loader<PCDMesh | MeshArrowTable, never, PCDLoaderOptions>;
+/** @deprecated Use PCDLoader. */
+export const PCDWorkerLoader = PCDLoader;

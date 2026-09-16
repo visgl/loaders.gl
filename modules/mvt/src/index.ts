@@ -54,5 +54,4 @@ export {TableTileSourceLoader, TableVectorTileSource} from './table-tile-source-
 export type {TableTileSourceLoaderOptions} from './table-tile-source-loader';
 
 // DEPRECATED EXPORTS
-/** @deprecated Use MVTLoader. */
 export {MVTWorkerLoader} from './mvt-loader';

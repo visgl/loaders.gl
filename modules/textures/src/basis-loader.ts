@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import type {Loader, LoaderOptions} from '@loaders.gl/loader-utils';
+import type {Loader} from '@loaders.gl/loader-utils';
 import type {TextureLevel} from '@loaders.gl/schema';
 import {BasisTextureFormat} from './texture-format';
 import {VERSION} from './lib/utils/version';
@@ -17,7 +17,7 @@ async function preload() {
 }
 
 /** Metadata-only worker loader for Basis super compressed textures. */
-export const BasisWorkerLoader = {
+export const BasisLoader = {
   ...BasisTextureFormat,
   dataType: null as unknown as TextureLevel[][],
   batchType: null as never,
@@ -40,8 +40,5 @@ export const BasisWorkerLoader = {
   preload
 } as const satisfies Loader<TextureLevel[][], never, BasisLoaderOptions>;
 
-/** Metadata-only loader for Basis super compressed textures. */
-export const BasisLoader = {
-  ...BasisWorkerLoader,
-  preload
-} as const satisfies Loader<TextureLevel[][], never, LoaderOptions>;
+/** @deprecated Use BasisLoader. */
+export const BasisWorkerLoader = BasisLoader;

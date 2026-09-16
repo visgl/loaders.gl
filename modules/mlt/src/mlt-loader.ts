@@ -43,12 +43,13 @@ async function preload() {
 }
 
 /** Metadata-only worker loader for the MapLibre Tile (MLT) format. */
-export const MLTWorkerLoader = {
+export const MLTLoader = {
   ...MLTFormat,
   dataType: null as any,
   batchType: null as never,
   version: VERSION,
   worker: false,
+  binary: true,
   options: {
     mlt: {
       ...MLT_DEFAULT_OPTIONS,
@@ -59,9 +60,5 @@ export const MLTWorkerLoader = {
   preload
 } as const satisfies Loader<any, never, MLTLoaderOptions>;
 
-/** Metadata-only loader for the MapLibre Tile (MLT) format. */
-export const MLTLoader = {
-  ...MLTWorkerLoader,
-  binary: true,
-  preload
-} as const satisfies Loader<any, never, MLTLoaderOptions>;
+/** @deprecated Use MLTLoader. */
+export const MLTWorkerLoader = MLTLoader;
