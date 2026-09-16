@@ -34,6 +34,8 @@ export type Tiles3DLoaderOptions = StrictLoaderOptions &
       colorFormat?: 'uint8norm' | 'float16' | 'float32';
       /** @internal Vector-content metadata supplied by a normalized tileset header. */
       vectorContent?: {clip: boolean};
+      /** @internal Spatial transform supplied by a Tiles3DSource. */
+      _tilesetOptions?: {spatialReference?: unknown; spatialOptions?: unknown};
     };
   };
 

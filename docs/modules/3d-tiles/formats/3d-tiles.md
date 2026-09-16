@@ -120,7 +120,7 @@ frames, and precision rules.
 | Region-established global frame | ✅ v5.0 | A root region establishes the specification frame without coordinate-magnitude guessing. |
 | Local or ambiguous frames | ✅ v5.0 | Stay unknown unless metadata or an expert override resolves them. |
 | Horizontal/geocentric transform primitive | ✅ v5.0 | Shared Proj4 pipeline and custom definition/grid registration are available. |
-| Complete nonlinear content reprojection | ◐ | Per-vertex content, nested placement, normals, bounds, and SSE integration are the next tranche. |
+| Complete nonlinear content reprojection | ◐ | Box/sphere bounds, decoded POSITION/NORMAL attributes, and traversal headers are transformed; geographic-region volumes and nested CRS placement remain staged. |
 | Dynamic cross-epoch transformation | — | Epoch is preserved; current Proj4 bindings do not execute epoch operations. |
 
 ### Experimental 3D Tiles 2.0 exclusions
@@ -181,10 +181,10 @@ called out explicitly rather than being counted as parser support.
 | Metadata | `EXT_structural_metadata` | ✅ v5.0 | Parse + preserve | Schema, property tables, groups, and entity links are exposed; value decoding is application-side. |
 | Metadata | Metadata-derived bounding volumes | ✅ v5.0 | Culling | Direct numeric semantic arrays are normalized into tile/content volumes; property-table decoding remains application-owned. |
 | Spatial | CRS and coordinate-epoch semantics | ✅ v5.0 | Parse + normalize | Inline semantics produce readonly `spatialMetadata`; explicit unknown and invalid epochs retain diagnostics. |
-| Spatial | Draft CRS and georeference extensions | ◐ v5.0 | Parse + affine composition | WKID/WKT2 metadata and recognized frames are preserved; nonlinear reprojection and cross-epoch execution are excluded. |
+| Spatial | Draft CRS and georeference extensions | ◐ v5.0 | Parse + runtime transform | WKID/WKT2 metadata and recognized frames are preserved; requested target CRS transforms decoded content and conservative box/sphere bounds. Cross-epoch execution remains excluded. |
 | Renderer | Vector drawing, styling, and clipping | — | Renderer | Vector descriptors and `clip` metadata are exposed without tessellation, styling, clipping, or draw calls. |
 | Renderer | Voxels, layers, visibility, and clamping | — | Renderer/runtime | Voxel/layer/visibility extensions, horizon optimization, terrain draping, and clamping are unsupported. |
-| Spatial | End-to-end nonlinear reprojection | ◐ | Runtime | Shared operations are implemented; content, hierarchy, bound, and orientation integration remains staged. |
+| Spatial | End-to-end nonlinear reprojection | ◐ | Runtime | Shared operations cover decoded content, traversal headers, normals, and conservative box/sphere bounds; region and nested-CRS composition remain staged. |
 | Renderer | Styling expressions | — | Renderer | Style evaluation and visual feature selection are outside this loader/runtime package. |
 | Renderer | GPU upload and draw policy | — | Renderer | Applications such as deck.gl or Cesium decide how normalized payloads become draw calls. |
 

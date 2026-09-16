@@ -27,6 +27,8 @@ import {TILESET_TYPE} from '../../constants';
 import type {TilesetTraverser, TilesetTraverserProps} from '../common/tileset-traverser';
 import type {FrameState} from '../helpers/frame-state';
 import {get3DTilesSpatialReference} from '../../spatial/format-spatial-reference';
+import {Tiles3DSpatialTransformer} from '../../spatial/tiles-3d-spatial-transformer';
+import {markTilesetSpatialReferenceTransformed} from '../../spatial/spatial-types';
 import {
   materializeImplicitSubtree,
   type ImplicitSubtreeReference,
@@ -134,6 +136,8 @@ export class Tiles3DSource implements Tileset3DSource {
   private readonly extensionsUsed: string[] = [];
   private readonly resolver?: TilesetSourceResolver;
   private rootTileset: TilesetJSON;
+  private spatialTransformer?: Tiles3DSpatialTransformer;
+  private preparedRootHeader?: Record<string, any>;
 
   /**
    * Creates a 3D Tiles source.
@@ -249,6 +253,26 @@ export class Tiles3DSource implements Tileset3DSource {
     return this.getMetadata().tileset;
   }
 
+  /** Prepare nonlinear CRS state before runtime headers are materialized. */
+  async prepareTileset(tileset: Tileset3D): Promise<void> {
+    const spatialReference = tileset.spatialReference;
+    if (spatialReference.status === 'unresolved') {
+      throw new Error(
+        spatialReference.warnings[0] ||
+          '3D Tiles spatial operations cannot be resolved from the supplied metadata and options'
+      );
+    }
+    if (spatialReference.status !== 'transformable' && spatialReference.status !== 'transformed') {
+      return;
+    }
+    this.spatialTransformer ||= new Tiles3DSpatialTransformer(
+      spatialReference,
+      tileset.options.spatial
+    );
+    tileset.spatialReference = markTilesetSpatialReferenceTransformed(spatialReference);
+    this.preparedRootHeader = this.transformTileHeader(this.getMetadata().tileset.root);
+  }
+
   /**
    * Builds explicit runtime headers while leaving implicit subtree references lazy.
    */
@@ -257,7 +281,8 @@ export class Tiles3DSource implements Tileset3DSource {
     tilesetJson: TilesetJSON,
     parentTile?: Tile3D | null
   ): Tile3D {
-    const rootTile = new Tile3DNode(tileset, tilesetJson.root, parentTile || undefined);
+    const rootHeader = parentTile ? tilesetJson.root : this.preparedRootHeader || tilesetJson.root;
+    const rootTile = new Tile3DNode(tileset, rootHeader, parentTile || undefined);
 
     if (parentTile) {
       parentTile.children.push(rootTile);
@@ -319,7 +344,11 @@ export class Tiles3DSource implements Tileset3DSource {
         // Content bytes, rather than URL suffixes, distinguish external tilesets from renderable
         // payloads. This is required for signed and extensionless resources.
         isTileset: 'auto',
-        assetGltfUpAxis: (this.asset && this.asset.gltfUpAxis) || 'Y'
+        assetGltfUpAxis: (this.asset && this.asset.gltfUpAxis) || 'Y',
+        _tilesetOptions: {
+          spatialReference: tile.tileset.spatialReference,
+          spatialOptions: tile.tileset.options.spatial
+        }
       }
     };
 
@@ -355,6 +384,30 @@ export class Tiles3DSource implements Tileset3DSource {
       contents,
       nestedTileset: nestedTilesets[0],
       nestedTilesets
+    };
+  }
+
+  /** Transform a tile header and its eagerly declared descendants. */
+  private transformTileHeader(header: Record<string, any>): Record<string, any> {
+    if (!this.spatialTransformer) {
+      return header;
+    }
+    return {
+      ...header,
+      boundingVolume: header.boundingVolume
+        ? this.spatialTransformer.transformBoundingVolume(header.boundingVolume)
+        : header.boundingVolume,
+      content: header.content
+        ? {
+            ...header.content,
+            boundingVolume: header.content.boundingVolume
+              ? this.spatialTransformer.transformBoundingVolume(header.content.boundingVolume)
+              : header.content.boundingVolume
+          }
+        : header.content,
+      children: Array.isArray(header.children)
+        ? header.children.map((child: Record<string, any>) => this.transformTileHeader(child))
+        : header.children
     };
   }
 

@@ -159,6 +159,67 @@ export class SpatialCoordinateTransformer {
     return result;
   }
 
+  /** Transform a packed sequence of xyz positions, preserving the input array type only when safe. */
+  transformPositions(positions: ArrayLike<number>): Float64Array {
+    if (positions.length % 3 !== 0) {
+      throw new Error('Packed spatial positions must contain a multiple of three components');
+    }
+    const transformedPositions = new Float64Array(positions.length);
+    for (let index = 0; index < positions.length; index += 3) {
+      const transformed = this.transformPosition([
+        Number(positions[index]),
+        Number(positions[index + 1]),
+        Number(positions[index + 2])
+      ]);
+      transformedPositions[index] = transformed[0];
+      transformedPositions[index + 1] = transformed[1];
+      transformedPositions[index + 2] = transformed[2];
+    }
+    return transformedPositions;
+  }
+
+  /** Transform packed xyz normals using a local finite-difference tangent approximation. */
+  transformNormals(normals: ArrayLike<number>, positions: ArrayLike<number>): Float32Array {
+    if (normals.length !== positions.length || normals.length % 3 !== 0) {
+      throw new Error('Spatial normals and positions must have matching xyz component counts');
+    }
+    const transformedNormals = new Float32Array(normals.length);
+    const epsilon = 1e-5;
+    for (let index = 0; index < normals.length; index += 3) {
+      const position = [
+        Number(positions[index]),
+        Number(positions[index + 1]),
+        Number(positions[index + 2])
+      ];
+      const normal = [
+        Number(normals[index]),
+        Number(normals[index + 1]),
+        Number(normals[index + 2])
+      ];
+      const transformedPosition = this.transformPosition(position);
+      const transformedTip = this.transformPosition([
+        position[0] + normal[0] * epsilon,
+        position[1] + normal[1] * epsilon,
+        position[2] + normal[2] * epsilon
+      ]);
+      const length = Math.hypot(
+        transformedTip[0] - transformedPosition[0],
+        transformedTip[1] - transformedPosition[1],
+        transformedTip[2] - transformedPosition[2]
+      );
+      if (length > 0 && Number.isFinite(length)) {
+        transformedNormals[index] = (transformedTip[0] - transformedPosition[0]) / length;
+        transformedNormals[index + 1] = (transformedTip[1] - transformedPosition[1]) / length;
+        transformedNormals[index + 2] = (transformedTip[2] - transformedPosition[2]) / length;
+      } else {
+        transformedNormals[index] = normal[0];
+        transformedNormals[index + 1] = normal[1];
+        transformedNormals[index + 2] = normal[2];
+      }
+    }
+    return transformedNormals;
+  }
+
   /** Convert one source coordinate to conventional WGS84 longitude, latitude, and height. */
   private toGeographic(coordinate: number[]): number[] {
     if (this.sourceIsGeocentric) {

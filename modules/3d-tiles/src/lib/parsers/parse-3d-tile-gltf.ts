@@ -5,6 +5,8 @@
 import {parseFromContext, LoaderContext} from '@loaders.gl/loader-utils';
 import {_getMemoryUsageGLTF, GLTFLoader, postProcessGLTF} from '@loaders.gl/gltf';
 import type {GLTFWithBuffers} from '@loaders.gl/gltf';
+import {Tiles3DSpatialTransformer} from '@loaders.gl/tiles';
+import type {TilesetSpatialOptions, TilesetSpatialReference} from '@loaders.gl/tiles';
 import type {Tiles3DLoaderOptions} from '../../tiles-3d-loader';
 import {Tiles3DTileContent} from '../../types';
 import {parse3DTileVectorContent} from './parse-3d-tile-vector-content';
@@ -50,6 +52,12 @@ export async function parseGltf3DTile(
         ? await parseParsedJsonGltf(jsonPayload, options, context)
         : await parseFromContext(arrayBuffer, GLTFLoader, options, context));
     tile.gltf = postProcessGLTF(gltfWithBuffers);
+    transformGLTFSpatialContent(
+      tile.gltf,
+      options?.['3d-tiles']?._tilesetOptions as
+        | {spatialReference?: TilesetSpatialReference; spatialOptions?: TilesetSpatialOptions}
+        | undefined
+    );
     tile.gpuMemoryUsageInBytes = _getMemoryUsageGLTF(tile.gltf);
     const vectorContent = options?.['3d-tiles']?.vectorContent;
     if (vectorContent) {
@@ -59,6 +67,58 @@ export async function parseGltf3DTile(
     tile.gltfArrayBuffer = arrayBuffer;
   }
   return arrayBuffer.byteLength;
+}
+
+/** Transform decoded glTF vertex attributes for a requested 3D Tiles target CRS. */
+function transformGLTFSpatialContent(
+  gltf: any,
+  tilesetOptions?: {
+    spatialReference?: TilesetSpatialReference;
+    spatialOptions?: TilesetSpatialOptions;
+  }
+): void {
+  const spatialReference = tilesetOptions?.spatialReference;
+  if (
+    !spatialReference ||
+    (spatialReference.status !== 'transformable' && spatialReference.status !== 'transformed')
+  ) {
+    return;
+  }
+  const transformer = new Tiles3DSpatialTransformer(
+    spatialReference,
+    tilesetOptions?.spatialOptions
+  );
+  for (const mesh of gltf.meshes || []) {
+    for (const primitive of mesh.primitives || []) {
+      const positionAccessor = primitive.attributes?.POSITION;
+      if (!positionAccessor?.value || positionAccessor.value.length % 3 !== 0) {
+        continue;
+      }
+      const sourcePositions = positionAccessor.value;
+      const transformedPositions = transformer.transformPositions(sourcePositions);
+      positionAccessor.value = Float32Array.from(transformedPositions);
+      positionAccessor.min = getAttributeBounds(positionAccessor.value, 'min');
+      positionAccessor.max = getAttributeBounds(positionAccessor.value, 'max');
+      const normalAccessor = primitive.attributes?.NORMAL;
+      if (normalAccessor?.value?.length === sourcePositions.length) {
+        normalAccessor.value = transformer.transformNormals(normalAccessor.value, sourcePositions);
+      }
+    }
+  }
+}
+
+function getAttributeBounds(values: ArrayLike<number>, bound: 'min' | 'max'): number[] {
+  const result =
+    bound === 'min' ? [Infinity, Infinity, Infinity] : [-Infinity, -Infinity, -Infinity];
+  for (let index = 0; index < values.length; index += 3) {
+    for (let axis = 0; axis < 3; axis++) {
+      result[axis] =
+        bound === 'min'
+          ? Math.min(result[axis], Number(values[index + axis]))
+          : Math.max(result[axis], Number(values[index + axis]));
+    }
+  }
+  return result;
 }
 
 /**
