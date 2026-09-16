@@ -538,7 +538,8 @@ test('implicit subtree loading deduplicates concurrent requests and preserves th
       }},
       _requestScheduler: {scheduleRequest: async () => ({done: () => {}})}
     },
-    _loadChildrenWithScheduler: Tile3D.prototype['_loadChildrenWithScheduler']
+    _loadChildrenWithScheduler: Tile3D.prototype['_loadChildrenWithScheduler'],
+    _getChildrenPriority: () => 0
   } as any;
 
   const firstRequest = Tile3D.prototype.loadChildren.call(tile, {} as any);
@@ -559,6 +560,8 @@ test('implicit subtree loading retries after a failed request', async () => {
     childrenState: 'unloaded',
     _childrenPromise: null,
     id: 'retry-boundary',
+    _getChildrenPriority: () => 0,
+    _loadChildrenWithScheduler: Tile3D.prototype['_loadChildrenWithScheduler'],
     tileset: {
       source: {
         loadTileChildren: async () => {
