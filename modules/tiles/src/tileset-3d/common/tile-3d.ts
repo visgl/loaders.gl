@@ -803,6 +803,7 @@ export class Tile3D {
       return {
         index,
         uri: this.contentUrls[index] || normalizedContentHeader.uri || normalizedContentHeader.url,
+        group: normalizedContentHeader.group,
         type: normalizedContentHeader.type,
         payload: null,
         metadata: normalizedContentHeader.metadata || null,
