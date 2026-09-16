@@ -19,7 +19,11 @@ export type Tile3DRenderContract = {
   /** Returns raw metadata references inherited by the tile. */
   getMetadata(tile: Tile3D): Tile3DMetadataContext;
   /** Returns union or indexed render-content visibility. */
-  getVisibility(\n    tile: Tile3D,\n    frameState: FrameState,\n    contentIndex?: number\n  ): ReturnType<Tile3D['contentVisibility']>;
+  getVisibility(
+    tile: Tile3D,
+    frameState: FrameState,
+    contentIndex?: number
+  ): ReturnType<Tile3D['contentVisibility']>;
 };
 
 /** Default pure adapter; it performs no renderer or GPU work. */
