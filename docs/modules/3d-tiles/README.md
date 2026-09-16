@@ -26,7 +26,12 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
 
 <TiledSceneGraphic />
 
-The `@loaders.gl/3d-tiles` module supports loading and traversing 3D Tiles.
+The `@loaders.gl/3d-tiles` module supports loading and traversing 3D Tiles 1.x and an experimental
+subset of the draft glTF-based 3D Tiles 2.0 representation. Draft resources are detected from
+their structure, so `.gltf`, `.glb`, signed, and extensionless URLs use the same loader entry point.
+
+Start with the [experimental 3D Tiles 2.0 profile](/docs/modules/3d-tiles/concepts/3d-tiles-2-0-experimental)
+to see the supported hierarchy, implicit tiling, CRS, vector-topology, and renderer-boundary behavior.
 
 See the [3D Tiles format compatibility matrix](/docs/modules/3d-tiles/formats/3d-tiles) for a capability-by-capability
 summary of parser, traversal, extension, and renderer-facing support.
@@ -71,6 +76,7 @@ the `@loaders.gl/tiles` module:
 The [3D Tiles runtime concepts suite](/docs/modules/3d-tiles/concepts) explains the complete path from hierarchy traversal to rendering:
 
 - [Resource resolution and content detection](/docs/modules/3d-tiles/concepts/resource-resolution-and-content-detection)
+- [Experimental 3D Tiles 2.0 profile](/docs/modules/3d-tiles/concepts/3d-tiles-2-0-experimental)
 - [Tile hierarchy and refinement](/docs/modules/3d-tiles/concepts/tile-hierarchy-and-refinement)
 - [Implicit tiling and lazy subtrees](/docs/modules/3d-tiles/concepts/implicit-tiling-and-subtrees)
 - [Screen-space error and level of detail](/docs/modules/3d-tiles/concepts/screen-space-error-and-lod)
