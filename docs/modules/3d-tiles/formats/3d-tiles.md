@@ -130,7 +130,10 @@ frames, and precision rules.
 The experimental profile does not support voxels, layers, visibility extensions,
 horizon-occlusion optimization, styling, visual clipping, terrain draping, or terrain/tileset
 clamping. These exclusions are not implied by successful parsing of an optional extension name.
-Unknown optional extensions are preserved; an unsupported name in `extensionsRequired` is rejected.
+Unknown optional extensions are preserved; an unsupported name in `extensionsRequired` is rejected
+during classification. Draft subtree classification may first resolve structural buffers needed to
+read availability and metadata, so this rejection does not promise that every subtree dependency
+is untouched.
 
 ## How to read the matrix
 
@@ -173,7 +176,7 @@ called out explicitly rather than being counted as parser support.
 | Scheduling | Progressive and foveated priorities | ✅ v5.0 | Request scheduling | Priorities affect request order and cancellation, not the final SSE threshold. |
 | Scheduling | Skip-level-of-detail traversal | ✅ v5.0 | Traversal | Ready ancestors remain selected while deep descendants stream; this can increase temporary overdraw and bandwidth. |
 | Cache | Byte-based tile cache | ✅ v5.0 | Runtime | Cache residency and overflow are measured in bytes; I3S defaults remain isolated. |
-| Extension | Required-extension validation | ✅ v5.0 | Parse boundary | Unsupported `extensionsRequired` names fail before normalization or network access. |
+| Extension | Required-extension validation | ✅ v5.0 | Parse boundary | Unsupported `extensionsRequired` names fail during classification and before header normalization; draft subtrees may first resolve structural buffers needed for classification. |
 | Extension | `3DTILES_implicit_tiling` | ✅ | Parse + traversal | Availability, subdivision scheme, and subtree references are normalized. |
 | Extension | `3DTILES_bounding_volume_S2` | ✅ v5.0 | Parse + culling input | S2 volumes become traversal-ready oriented boxes while source tokens are retained. |
 | Extension | `3DTILES_content_gltf` | ✅ | Content detection | glTF tile content is recognized independently of URL extension. |

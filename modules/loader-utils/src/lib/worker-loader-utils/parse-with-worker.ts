@@ -40,6 +40,9 @@ export function canParseWithWorker(loader: Loader, options?: StrictLoaderOptions
   if (
     (loader.id === 'excel' &&
       (options as {excel?: {shape?: string}} | undefined)?.excel?.shape === 'arrow-table') ||
+    (loader.id === 'las' &&
+      ((options as {las?: {shape?: string}} | undefined)?.las?.shape ?? 'arrow-table') ===
+        'arrow-table') ||
     (loader.id === 'ply' &&
       (options as {ply?: {shape?: string}} | undefined)?.ply?.shape === 'arrow-table') ||
     (loader.id === 'obj' &&

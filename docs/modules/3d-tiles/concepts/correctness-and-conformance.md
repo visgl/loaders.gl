@@ -49,7 +49,7 @@ The 3D Tiles runtime is view-dependent: parsing, transform composition, culling,
 | Hierarchy | `REPLACE` retains a renderable ancestor until required descendants are ready; `ADD` can select both levels. | Delay child content and inspect selected tiles during the loading frame. |
 | Content visibility | Multiple content volumes are a union. Clipping planes affect render content only and never prune traversal descendants. | Put one content volume outside the frustum and another inside; clip both and verify the return classification. |
 | Implicit tiling | Subtree availability uses zero-based global levels and materializes only the requested subtree boundary. | Verify exact `availableLevels`, QUADTREE/OCTREE indexes, sparse tiles, and child-subtree references. |
-| Extensions | Unsupported `extensionsRequired` names fail before normalization or network access; unknown `extensionsUsed` names are preserved. | Supply an unsupported required extension and assert that the resolver was never called. |
+| Extensions | Unsupported `extensionsRequired` names fail before header normalization; unknown `extensionsUsed` names are preserved. Draft subtree classification may resolve structural buffers before validation. | Supply an unsupported required extension and assert that no normalized headers are installed. |
 | I3S isolation | I3S screen-threshold metrics do not receive 3D Tiles geometric-error transform scaling. | Apply a non-uniform transform and compare the unchanged I3S metric. |
 
 ## Conformance tranches

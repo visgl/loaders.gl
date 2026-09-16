@@ -43,6 +43,7 @@ Loading a large 3D Tiles tileset is a continuous pipeline: traverse the hierarch
 | Guide | Question it answers |
 | --- | --- |
 | [Resource resolution and content detection](/docs/modules/3d-tiles/concepts/resource-resolution-and-content-detection) | How are relative references, inherited queries, and extensionless content handled? |
+| [Experimental 3D Tiles 2.0 profile](/docs/modules/3d-tiles/concepts/3d-tiles-2-0-experimental) | Which draft glTF-based 3D Tiles 2.0 structures and vector descriptors are supported? |
 | [Tile hierarchy and refinement](/docs/modules/3d-tiles/concepts/tile-hierarchy-and-refinement) | Which tiles can replace or augment their ancestors? |
 | [Implicit tiling and lazy subtrees](/docs/modules/3d-tiles/concepts/implicit-tiling-and-subtrees) | When are implicit availability files requested and materialized? |
 | [Screen-space error and LOD](/docs/modules/3d-tiles/concepts/screen-space-error-and-lod) | How much detail does the current view require? |
