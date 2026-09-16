@@ -26,7 +26,7 @@ async function preload() {
 }
 
 /** Metadata-only worker loader for numpy "tiles". */
-export const NPYWorkerLoader = {
+export const NPYLoader = {
   ...NPYFormat,
   dataType: null as any as NPYTile,
   batchType: null as never,
@@ -45,8 +45,5 @@ export const NPYWorkerLoader = {
   preload
 } as const satisfies Loader<NPYTile, never, NPYLoaderOptions>;
 
-/** Metadata-only loader for numpy "tiles". */
-export const NPYLoader = {
-  ...NPYWorkerLoader,
-  preload
-} as const satisfies Loader<any, any, NPYLoaderOptions>;
+/** @deprecated Use NPYLoader. */
+export const NPYWorkerLoader = NPYLoader;

@@ -10,5 +10,5 @@ export {MapStyleLoaderWithParser as MapStyleLoader} from './map-style-loader-wit
 export type {MVTLoaderOptions} from './mvt-loader-with-parser';
 export {
   MVTLoaderWithParser as MVTLoader,
-  MVTWorkerLoaderWithParser as MVTWorkerLoader
+  MVTLoaderWithParser as MVTWorkerLoader
 } from './mvt-loader-with-parser';

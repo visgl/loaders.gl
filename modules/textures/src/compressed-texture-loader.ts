@@ -27,7 +27,7 @@ async function preload() {
 }
 
 /** Metadata-only worker loader for KTX, DDS, and PVR texture container formats. */
-export const CompressedTextureWorkerLoader = {
+export const CompressedTextureLoader = {
   ...CompressedTextureFormat,
   dataType: null as unknown as any,
   batchType: null as never,
@@ -65,8 +65,5 @@ export const CompressedTextureWorkerLoader = {
   preload
 } as const satisfies Loader<any, never, CompressedTextureLoaderOptions>;
 
-/** Metadata-only loader for KTX, DDS, and PVR texture container formats. */
-export const CompressedTextureLoader = {
-  ...CompressedTextureWorkerLoader,
-  preload
-} as const satisfies Loader<any, never, CompressedTextureLoaderOptions>;
+/** @deprecated Use CompressedTextureLoader. */
+export const CompressedTextureWorkerLoader = CompressedTextureLoader;

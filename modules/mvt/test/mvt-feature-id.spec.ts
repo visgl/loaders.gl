@@ -30,3 +30,19 @@ test('MVTLoader preserves feature IDs as top-level GeoJSON members', () => {
     expect(feature.properties ?? {}).not.toHaveProperty('id');
   }
 });
+
+test('MVTLoader preserves feature IDs in the default Arrow output', async () => {
+  const response = await fetchFile(WITH_FEATURE_ID);
+  const mvtArrayBuffer = await response.arrayBuffer();
+  const arrowTable = await parse(mvtArrayBuffer, MVTLoader, {worker: false});
+  const expectedResponse = await fetchFile(WITH_FEATURE_ID);
+  const expectedArrayBuffer = await expectedResponse.arrayBuffer();
+  const expectedTable = await parse(expectedArrayBuffer, MVTLoader, {
+    worker: false,
+    mvt: {shape: 'geojson-table'}
+  });
+
+  expect(Array.from(arrowTable.data.getChild('id')?.toArray() || [])).toEqual(
+    expectedTable.features.map(feature => feature.id)
+  );
+});

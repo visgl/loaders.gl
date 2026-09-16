@@ -39,7 +39,7 @@ async function preload() {
  * links: ['http://paulbourke.net/dataformats/ply/',
  * 'https://en.wikipedia.org/wiki/PLY_(file_format)']
  */
-export const PLYWorkerLoader = {
+export const PLYLoader = {
   dataType: null as unknown as PLYMesh | MeshArrowTable,
   batchType: null as never,
 
@@ -53,9 +53,5 @@ export const PLYWorkerLoader = {
   preload
 } as const satisfies Loader<PLYMesh | MeshArrowTable, never, LoaderOptions>;
 
-/**
- * Metadata-only loader for PLY - Polygon File Format
- */
-export const PLYLoader = {
-  ...PLYWorkerLoader
-} as const satisfies Loader<PLYMesh | MeshArrowTable, any, PLYLoaderOptions>;
+/** @deprecated Use PLYLoader. */
+export const PLYWorkerLoader = PLYLoader;

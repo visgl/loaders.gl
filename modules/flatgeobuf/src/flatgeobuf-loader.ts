@@ -44,13 +44,14 @@ async function preload() {
 }
 
 /** Metadata-only FlatGeobuf worker loader. */
-export const FlatGeobufWorkerLoader = {
+export const FlatGeobufLoader = {
   ...FlatGeobufFormat,
 
   dataType: null as any,
   batchType: null as any,
   version: VERSION,
   worker: true,
+  binary: true,
   tests: [new Uint8Array(FGB_MAGIC_NUMBER).buffer],
   options: {
     flatgeobuf: {
@@ -67,9 +68,5 @@ export const FlatGeobufWorkerLoader = {
   FlatGeobufLoaderOptions
 >;
 
-/** Metadata-only FlatGeobuf loader. */
-export const FlatGeobufLoader = {
-  ...FlatGeobufWorkerLoader,
-  binary: true,
-  preload
-} as const satisfies Loader<any, any, FlatGeobufLoaderOptions>;
+/** @deprecated Use FlatGeobufLoader. */
+export const FlatGeobufWorkerLoader = FlatGeobufLoader;

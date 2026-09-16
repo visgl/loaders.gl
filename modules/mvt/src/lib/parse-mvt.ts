@@ -36,7 +36,8 @@ export function parseMVT(arrayBuffer: ArrayBuffer, options?: MVTLoaderOptions) {
   const shape: string | undefined =
     (options?.gis as {format?: string} | undefined)?.format ||
     options?.mvt?.shape ||
-    (options as {shape?: string} | undefined)?.shape;
+    (options as {shape?: string} | undefined)?.shape ||
+    'arrow-table';
   switch (shape) {
     case 'columnar-table': // binary + some JS arrays
       return {shape: 'columnar-table', data: parseToBinary(arrayBuffer, mvtOptions)};

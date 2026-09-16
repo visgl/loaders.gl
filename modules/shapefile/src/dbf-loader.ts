@@ -26,7 +26,7 @@ async function preload() {
 }
 
 /** Metadata-only DBF worker loader. */
-export const DBFWorkerLoader = {
+export const DBFLoader: Loader<any, any, DBFLoaderOptions> = {
   name: 'DBF',
   dataType: null as unknown,
   batchType: null as never,
@@ -46,8 +46,5 @@ export const DBFWorkerLoader = {
   preload
 } as const satisfies Loader<any | ArrowTable, any | ArrowTableBatch, DBFLoaderOptions>;
 
-/** Metadata-only DBF file loader. */
-export const DBFLoader: Loader<any, any, DBFLoaderOptions> = {
-  ...DBFWorkerLoader,
-  preload
-};
+/** @deprecated Use DBFLoader. */
+export const DBFWorkerLoader = DBFLoader;

@@ -2,16 +2,13 @@
 // SPDX-License-Identifier: MIT
 // Copyright vis.gl contributors
 
-import type {Loader, LoaderWithParser, LoaderOptions} from '@loaders.gl/loader-utils';
+import type {LoaderWithParser, LoaderOptions} from '@loaders.gl/loader-utils';
 import type {GeoArrowEncodingPreference} from '@loaders.gl/schema';
 // import type {MVTOptions} from './lib/types';
 import {parseMVT} from './lib/parse-mvt';
 import {deserializeMVTWorkerResult, serializeMVTWorkerResult} from './lib/mvt-worker-transport';
-import {MVTWorkerLoader as MVTWorkerLoaderMetadata} from './mvt-loader';
 import {MVTLoader as MVTLoaderMetadata} from './mvt-loader';
 
-const {preload: _MVTWorkerLoaderPreload, ...MVTWorkerLoaderMetadataWithoutPreload} =
-  MVTWorkerLoaderMetadata;
 const {preload: _MVTLoaderPreload, ...MVTLoaderMetadataWithoutPreload} = MVTLoaderMetadata;
 
 export type MVTLoaderOptions = LoaderOptions & {
@@ -40,17 +37,6 @@ export type MVTLoaderOptions = LoaderOptions & {
 };
 
 /**
- * Worker loader for the Mapbox Vector Tile format
- */
-export const MVTWorkerLoaderWithParser = {
-  ...MVTWorkerLoaderMetadataWithoutPreload
-} as const satisfies Loader<
-  any, // BinaryFeatureCollection | GeoJSONTable | Feature<Geometry, GeoJsonProperties>,
-  never,
-  MVTLoaderOptions
->;
-
-/**
  * Loader for the Mapbox Vector Tile format
  */
 export const MVTLoaderWithParser = {
@@ -64,3 +50,6 @@ export const MVTLoaderWithParser = {
   never,
   MVTLoaderOptions
 >;
+
+/** @deprecated Use MVTLoaderWithParser. */
+export const MVTWorkerLoaderWithParser = MVTLoaderWithParser;

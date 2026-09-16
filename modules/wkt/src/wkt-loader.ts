@@ -30,7 +30,7 @@ async function preload() {
 /**
  * Metadata-only Well-Known text worker loader
  */
-export const WKTWorkerLoader = {
+export const WKTLoader = {
   dataType: null as unknown as Geometry,
   batchType: null as never,
 
@@ -46,9 +46,5 @@ export const WKTWorkerLoader = {
   preload
 } as const satisfies Loader<Geometry, never, WKTLoaderOptions>;
 
-/**
- * Metadata-only Well-Known text loader
- */
-export const WKTLoader = {
-  ...WKTWorkerLoader
-} as const satisfies Loader<Geometry, never, WKTLoaderOptions>;
+/** @deprecated Use WKTLoader. */
+export const WKTWorkerLoader = WKTLoader;

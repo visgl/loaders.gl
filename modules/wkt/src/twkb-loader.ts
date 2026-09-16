@@ -3,7 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import type {Loader, LoaderOptions} from '@loaders.gl/loader-utils';
-import type {BinaryGeometry, Geometry} from '@loaders.gl/schema';
+import type {Geometry} from '@loaders.gl/schema';
 import {isTWKB} from '@loaders.gl/gis';
 import {VERSION} from './lib/version';
 import {TWKBFormat} from './wkt-format';
@@ -25,7 +25,7 @@ async function preload() {
 /**
  * Metadata-only worker loader for WKB (Well-Known Binary)
  */
-export const TWKBWorkerLoader = {
+export const TWKBLoader = {
   ...TWKBFormat,
   dataType: null as unknown as Geometry,
   batchType: null as never,
@@ -50,9 +50,5 @@ export const TWKBWorkerLoader = {
   preload
 } as const satisfies Loader<Geometry, never, WKBLoaderOptions>;
 
-/**
- * Metadata-only loader for WKB (Well-Known Binary)
- */
-export const TWKBLoader = {
-  ...TWKBWorkerLoader
-} as const satisfies Loader<BinaryGeometry | Geometry, never, WKBLoaderOptions>;
+/** @deprecated Use TWKBLoader. */
+export const TWKBWorkerLoader = TWKBLoader;

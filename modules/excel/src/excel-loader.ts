@@ -30,7 +30,7 @@ async function preload() {
 }
 
 /** Metadata-only worker loader for Excel files. */
-export const ExcelWorkerLoader = {
+export const ExcelLoader = {
   ...ExcelFormat,
   dataType: null as unknown as ObjectRowTable | ArrowTable,
   batchType: null as never,
@@ -45,8 +45,5 @@ export const ExcelWorkerLoader = {
   preload
 } as const satisfies Loader<ObjectRowTable | ArrowTable, never, ExcelLoaderOptions>;
 
-/** Metadata-only loader for Excel files. */
-export const ExcelLoader = {
-  ...ExcelWorkerLoader,
-  preload
-} as const satisfies Loader<ObjectRowTable | ArrowTable, never, ExcelLoaderOptions>;
+/** @deprecated Use ExcelLoader. */
+export const ExcelWorkerLoader = ExcelLoader;

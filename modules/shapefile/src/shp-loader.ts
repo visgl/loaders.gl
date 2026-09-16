@@ -36,7 +36,7 @@ async function preload() {
 }
 
 /** Metadata-only SHP worker loader. */
-export const SHPWorkerLoader = {
+export const SHPLoader: Loader<any, any, SHPLoaderOptions> = {
   dataType: null as unknown,
   batchType: null as never,
 
@@ -51,8 +51,5 @@ export const SHPWorkerLoader = {
   preload
 } as const satisfies Loader<any | ArrowTable, any | ArrowTableBatch, SHPLoaderOptions>;
 
-/** Metadata-only SHP file loader. */
-export const SHPLoader: Loader<any, any, SHPLoaderOptions> = {
-  ...SHPWorkerLoader,
-  preload
-};
+/** @deprecated Use SHPLoader. */
+export const SHPWorkerLoader = SHPLoader;
