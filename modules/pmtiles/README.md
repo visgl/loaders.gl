@@ -8,7 +8,7 @@ The loader supports PMTiles specification version 3 archives, including MVT, ras
 Tile (MLT) tile types. MLT tiles are decoded through `@loaders.gl/mlt` when requested from a
 `PMTilesTileSource`.
 
-MLT tiles support the MLT decoder's `geojson-table`, `binary-geometry`, and `arrow-table` shapes;
+Vector tiles return Arrow tables with GeoArrow-compatible geometry by default. MLT tiles support the MLT decoder's `geojson-table`, `binary-geometry`, and `arrow-table` shapes;
 the PMTiles `columnar-table` shape remains available for MVT tiles only.
 
 For documentation please visit the [website](https://loaders.gl).
