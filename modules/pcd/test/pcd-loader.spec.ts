@@ -2,6 +2,7 @@ import {expect, test} from 'vitest';
 import {validateLoader, validateMeshCategoryData} from 'test/common/conformance';
 import {validateArrowTableSchema} from '@loaders.gl/arrow';
 import {meshArrowSchema} from '@loaders.gl/schema';
+import {canParseWithWorker} from '@loaders.gl/loader-utils';
 import {PCDLoader, PCDWorkerLoader} from '@loaders.gl/pcd';
 import {setLoaderOptions, fetchFile, parse, load, parseInBatches} from '@loaders.gl/core';
 const PCD_ASCII_URL = '@loaders.gl/pcd/test/data/simple-ascii.pcd';
@@ -89,6 +90,11 @@ test('PCDLoader#parse defaults to Arrow table', async () => {
   validateArrowTableSchema(arrowTable.data, meshArrowSchema, {
     schemaName: 'PCDLoader default table'
   });
+});
+test('PCDLoader#Arrow output stays on the main thread', () => {
+  expect(canParseWithWorker(PCDLoader, {core: {worker: true}, pcd: {shape: 'arrow-table'}})).toBe(
+    false
+  );
 });
 test('PCDLoader#parse(shape: arrow-table)', async () => {
   const arrowTable = await parse(fetchFile(PCD_ASCII_URL), PCDLoader, {

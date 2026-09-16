@@ -2,6 +2,7 @@ import {expect, test} from 'vitest';
 import {validateLoader, validateMeshCategoryData} from 'test/common/conformance';
 import {validateArrowTableSchema} from '@loaders.gl/arrow';
 import {meshArrowSchema} from '@loaders.gl/schema';
+import {canParseWithWorker} from '@loaders.gl/loader-utils';
 import {OBJLoader, OBJWorkerLoader} from '@loaders.gl/obj';
 import {setLoaderOptions, load, parseInBatches} from '@loaders.gl/core';
 import {equals} from '@math.gl/core';
@@ -27,6 +28,11 @@ test('OBJLoader#parseText defaults to Arrow table', async () => {
   const table = await load(OBJ_ASCII_URL, OBJLoader, {core: {worker: false}});
   expect(table.shape, 'default output has arrow-table shape').toBe('arrow-table');
   validateArrowTableSchema(table.data, meshArrowSchema, {schemaName: 'OBJLoader default table'});
+});
+test('OBJLoader#Arrow output stays on the main thread', () => {
+  expect(canParseWithWorker(OBJLoader, {core: {worker: true}, obj: {shape: 'arrow-table'}})).toBe(
+    false
+  );
 });
 test('OBJLoader#parseText(shape: arrow-table)', async () => {
   const table = await load(OBJ_ASCII_URL, OBJLoader, {
