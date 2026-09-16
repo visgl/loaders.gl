@@ -55,7 +55,7 @@ vector extensions are not ratified, so the draft-facing API is experimental.
 | Implicit hierarchy | QUADTREE and OCTREE availability, lazy subtree loading/caching, tile/content overrides, property-table rows, and property-backed URI templates. |
 | Bounds and spatial semantics | Box, sphere, ellipsoid-region, S2, and cylinder-region inputs; CRS/georeference metadata and nested CRS placement are preserved or transformed when resolvable. |
 | Vector topology | Points, restart-separated polylines, and polygon loops/triangles are exposed through `Tiles3DVectorContent`. Both the 1.1 preview and draft 2.0 vector designations use this contract. |
-| Extensions | Unknown optional extensions are preserved. Unsupported required extensions fail deterministically before dependent resource loading. |
+| Extensions | Unknown optional extensions are preserved. Unsupported required extensions fail deterministically during classification. Draft subtrees may resolve structural buffers needed for classification before that validation runs. |
 
 See the [3D Tiles format compatibility matrix](../formats/3d-tiles) for the detailed capability,
 version, and limitation records.
