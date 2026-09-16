@@ -2,6 +2,10 @@
 
 ## v5.0
 
+### Unreleased
+
+- feat(arrow): make CSV, JSON table, NDJSON, Excel, and ParquetJS loaders Arrow-primary by default while retaining explicit row-table shapes
+
 ### v5.0.0-alpha.6
 
 - feat(gltf): decode draft vector-topology extensions and support JSON-only GLB v2 files

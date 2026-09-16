@@ -48,6 +48,7 @@ test.each(['AES_GCM_V1', 'AES_GCM_CTR_V1'] as const)(
     const output = await load(parquetBuffer, ParquetJSLoader, {
       core: {worker: false},
       parquet: {
+        shape: 'object-row-table',
         keyRetriever: keyMetadata => {
           expect(keyMetadata).toEqual(KEY_METADATA);
           return KEY;
@@ -85,6 +86,7 @@ test('ParquetJSWriter supports per-column encryption keys for key rotation', asy
   const output = await load(parquetBuffer, ParquetJSLoader, {
     core: {worker: false},
     parquet: {
+      shape: 'object-row-table',
       keyRetriever: keyMetadata => {
         const metadata = keyMetadata && new TextDecoder().decode(keyMetadata);
         expect([KEY_METADATA, COLUMN_KEY_METADATA].some(value => new TextDecoder().decode(value) === metadata)).toBe(true);
@@ -114,6 +116,7 @@ test('ParquetJSWriter emits a verifiable plaintext-footer signature', async () =
   const output = await load(parquetBuffer, ParquetJSLoader, {
     core: {worker: false},
     parquet: {
+      shape: 'object-row-table',
       keyRetriever: keyMetadata => {
         expect(keyMetadata).toEqual(KEY_METADATA);
         return KEY;
@@ -153,6 +156,7 @@ test('ParquetJSWriter combines a signed plaintext footer with encrypted columns'
   const output = await load(parquetBuffer, ParquetJSLoader, {
     core: {worker: false},
     parquet: {
+      shape: 'object-row-table',
       keyRetriever: keyMetadata => {
         const metadata = keyMetadata && new TextDecoder().decode(keyMetadata);
         return metadata === new TextDecoder().decode(COLUMN_KEY_METADATA) ? COLUMN_KEY : KEY;
@@ -199,7 +203,7 @@ test.each(['AES_GCM_V1', 'AES_GCM_CTR_V1'] as const)(
     });
     const output = await load(parquetBuffer, ParquetJSLoader, {
       core: {worker: false},
-      parquet: {keyRetriever: () => KEY}
+      parquet: {shape: 'object-row-table', keyRetriever: () => KEY}
     });
 
     expect(output).toMatchObject({shape: 'object-row-table', data: INPUT.data});

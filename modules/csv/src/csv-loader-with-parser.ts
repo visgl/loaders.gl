@@ -373,7 +373,9 @@ function parseCSVInBatches(
     const shape = deprecatedShape || csvOptions.shape || DEFAULT_CSV_SHAPE;
     switch (shape) {
       case 'array-row-table':
+      case 'object-row-table':
       case 'columnar-table':
+      case 'arrow-table':
         return shape;
       default:
         return DEFAULT_CSV_SHAPE;
@@ -381,7 +383,7 @@ function parseCSVInBatches(
   }
 }
 
-type CSVBatchShape = 'array-row-table' | 'object-row-table' | 'columnar-table';
+type CSVBatchShape = 'array-row-table' | 'object-row-table' | 'columnar-table' | 'arrow-table';
 
 /**
  * Checks if a certain row is a header row

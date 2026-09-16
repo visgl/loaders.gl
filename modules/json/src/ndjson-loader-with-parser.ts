@@ -47,7 +47,7 @@ export const NDJSONLoaderWithParser = {
  *
  * @param text - NDJSON text to parse.
  * @param options - Loader options including optional output shape.
- * @returns Row-table output by default, or an Arrow table when requested.
+ * @returns Arrow table output by default, or a row table when explicitly requested.
  */
 function parseNDJSONText(
   text: string,
