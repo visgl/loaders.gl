@@ -517,7 +517,6 @@ test('implicit subtree traversal preserves REPLACE coverage while availability i
   ).toBeTruthy();
 });
 
-
 test('implicit subtree loading deduplicates concurrent requests and preserves the boundary', async () => {
   let resolveLoad!: (result: {loaded: boolean; tileCount: number; childSubtreeCount: number}) => void;
   let requestCount = 0;
