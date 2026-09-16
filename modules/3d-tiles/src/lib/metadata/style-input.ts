@@ -113,7 +113,11 @@ export function createTile3DStyleInput(
   addMetadataProperties(metadata.tile, 'tile-metadata');
   addMetadataProperties(content.metadata, 'content-metadata');
 
-  const featureId = options.featureId;\n  if (options.batchTable && Number.isInteger(featureId) && featureId >= 0) {\n    for (const [propertyName, value] of Object.entries(\n      getTile3DBatchTableProperties(options.batchTable, featureId)\n    )) {
+  const featureId = options.featureId;
+  if (options.batchTable && Number.isInteger(featureId) && featureId >= 0) {
+    for (const [propertyName, value] of Object.entries(
+      getTile3DBatchTableProperties(options.batchTable, featureId)
+    )) {
       properties[propertyName] = value;
       propertySources[propertyName] = 'batch-table';
     }
