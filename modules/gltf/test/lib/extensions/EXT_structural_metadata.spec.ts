@@ -742,6 +742,43 @@ test('gltf#EXT_structural_metadata converts safe UINT64 offsets and rejects loss
   );
 });
 
+test('gltf#EXT_structural_metadata applies normalized scale and offset transforms', async () => {
+  const bytes = new Uint8Array([0, 255]);
+  const gltf = {
+    buffers: [{arrayBuffer: bytes.buffer, byteOffset: 0, byteLength: bytes.byteLength}],
+    json: {
+      buffers: [{byteLength: bytes.byteLength}],
+      bufferViews: [{buffer: 0, byteOffset: 0, byteLength: bytes.byteLength}],
+      extensions: {
+        EXT_structural_metadata: {
+          schema: {
+            classes: {
+              Sample: {
+                properties: {
+                  value: {
+                    type: 'SCALAR',
+                    componentType: 'UINT8',
+                    normalized: true,
+                    offset: 10,
+                    scale: 2
+                  }
+                }
+              }
+            }
+          },
+          propertyTables: [{class: 'Sample', count: 2, properties: {value: {values: 0}}}]
+        }
+      }
+    }
+  } as any;
+
+  await decodeExtensions(gltf, {gltf: {loadBuffers: true, loadImages: false}});
+
+  const values = gltf.json.extensions.EXT_structural_metadata.propertyTables[0].properties.value
+    .data;
+  expect(Array.from(values)).toEqual([10, 12]);
+});
+
 test('gltf#EXT_structural_metadata validates unsupported property definitions', async () => {
   const makeGLTF = (property: any, schema: any = {}) => ({
     buffers: [{arrayBuffer: new Uint8Array([1, 0]).buffer, byteOffset: 0, byteLength: 2}],
