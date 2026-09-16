@@ -104,3 +104,23 @@ test('WorkerPool destroy aborts active jobs with its reason', async () => {
 
   await expect(job.result).rejects.toBe(reason);
 });
+
+test('WorkerPool destroy rejects queued jobs with its reason', async () => {
+  if (!hasWorker) {
+    console.log('Worker test is browser only');
+    return;
+  }
+  const workerPool = new WorkerPool({
+    source: testWorkerSource,
+    name: 'test-worker',
+    maxConcurrency: 1
+  });
+  const activeJob = await workerPool.startJob('active-job');
+  activeJob.postMessage('process', {input: 'active'});
+  const queuedJobPromise = workerPool.startJob('queued-job');
+  const reason = new Error('worker source invalidated');
+  workerPool.destroy(reason);
+
+  await expect(queuedJobPromise).rejects.toBe(reason);
+  await expect(activeJob.result).rejects.toBe(reason);
+});

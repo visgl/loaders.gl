@@ -1,4 +1,8 @@
 // Development-only source worker factory. This file is injected only into browser dev builds.
+import {installWorkerHMR} from './loadersgl-worker-hmr.dev.js';
+
+installWorkerHMR();
+
 export const PARQUET_SOURCE_WORKER_LOAD_WORKER = () =>
   typeof Worker !== 'undefined'
     ? new Worker(

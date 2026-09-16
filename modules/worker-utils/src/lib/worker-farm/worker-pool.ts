@@ -49,6 +49,7 @@ type QueuedJob = {
   onMessage: OnMessage;
   onError: OnError;
   onStart: (value: any) => void; // Resolve job start promise
+  onReject: (reason: unknown) => void; // Reject job start promise
 };
 
 /**
@@ -99,6 +100,8 @@ export default class WorkerPool {
   destroy(reason: unknown = new Error('Worker pool was destroyed')): void {
     // Abort active jobs so callers receive an error when a development worker is invalidated.
     this.activeJobs.forEach(job => job.abort(reason));
+    const queuedJobs = this.jobQueue.splice(0);
+    queuedJobs.forEach(queuedJob => queuedJob.onReject(reason));
     this.idleQueue.forEach(worker => worker.destroy());
     this.isDestroyed = true;
   }
@@ -128,10 +131,13 @@ export default class WorkerPool {
     onMessage: OnMessage = (job, type, data) => job.done(data),
     onError: OnError = (job, error) => job.error(error)
   ): Promise<WorkerJob> {
+    if (this.isDestroyed) {
+      return Promise.reject(new Error('Worker pool was destroyed'));
+    }
     // Promise resolves when thread starts working on this job
-    const startPromise = new Promise<WorkerJob>(onStart => {
+    const startPromise = new Promise<WorkerJob>((onStart, onReject) => {
       // Promise resolves when thread completes or fails working on this job
-      this.jobQueue.push({name, onMessage, onError, onStart});
+      this.jobQueue.push({name, onMessage, onError, onStart, onReject});
       return this;
     });
     this._startQueuedJob(); // eslint-disable-line @typescript-eslint/no-floating-promises
