@@ -136,6 +136,8 @@ export {
 } from './spatial/format-spatial-reference';
 export {SpatialCoordinateTransformer} from './spatial/spatial-coordinate-transformer';
 export {getSpatialCoordinateFrame} from './spatial/spatial-coordinate-transformer';
+export {Tiles3DSpatialTransformer} from './spatial/tiles-3d-spatial-transformer';
+export type {Tiles3DSpatialBoundingVolume} from './spatial/tiles-3d-spatial-transformer';
 export type {
   I3SSpatialBounds,
   I3SSpatialObb,

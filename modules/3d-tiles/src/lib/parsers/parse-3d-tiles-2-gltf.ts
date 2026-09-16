@@ -15,7 +15,7 @@ import {GLTFScenegraph} from '@loaders.gl/gltf';
 import {Matrix4} from '@math.gl/core';
 import {Ellipsoid} from '@math.gl/geospatial';
 import {CachedUriResolver} from '@loaders.gl/loader-utils';
-import {get3DTilesSpatialReference, type ParsedImplicitSubtree} from '@loaders.gl/tiles';
+import {type ParsedImplicitSubtree} from '@loaders.gl/tiles';
 import type {
   Tile3DBoundingVolume,
   Tiles3DTileContentJSON,
@@ -1172,7 +1172,6 @@ function getNodeMatrix(json: GLTF, node: GLTFNode, nodeIndex: number): number[] 
   if (!json.extensions?.['EXT_geospatial_crs']) {
     throw new Error(`EXT_georeference: node ${nodeIndex} requires EXT_geospatial_crs`);
   }
-  validateGeoreferenceCrs(json, nodeIndex);
   if (
     typeof georeference.longitude !== 'number' ||
     !Number.isFinite(georeference.longitude) ||
@@ -1194,25 +1193,6 @@ function getNodeMatrix(json: GLTF, node: GLTFNode, nodeIndex: number): number[] 
       (georeference.height as number | undefined) || 0
     ).multiplyRight(nodeMatrix)
   );
-}
-
-/**
- * Ensures the declared world CRS matches the WGS84 geocentric frame produced by georeferencing.
- *
- * Projected, geographic, WKT2, and separate vertical CRSs require nonlinear or vertical
- * transformations that cannot be represented by the affine node matrix alone.
- */
-function validateGeoreferenceCrs(json: GLTF, nodeIndex: number): void {
-  const spatialReference = get3DTilesSpatialReference({extensions: json.extensions});
-  if (
-    typeof spatialReference.sourceCrs !== 'string' ||
-    spatialReference.sourceCrs.toUpperCase() !== 'EPSG:4978' ||
-    spatialReference.verticalCrs !== undefined
-  ) {
-    throw new Error(
-      `EXT_georeference: node ${nodeIndex} requires EPSG:4978 without a separate vertical CRS`
-    );
-  }
 }
 
 /** Creates the draft local-right/up/forward to WGS84 geocentric tangent-frame transform. */

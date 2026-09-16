@@ -4,7 +4,7 @@
 
 import {path, RequestCache, sliceArrayBuffer} from '@loaders.gl/loader-utils';
 import {Ellipsoid} from '@math.gl/geospatial';
-import {Vector3} from '@math.gl/core';
+import {Matrix4, Vector3} from '@math.gl/core';
 import type {CoreAPI, Loader, LoaderContext, LoaderOptions} from '@loaders.gl/loader-utils';
 import type {Tile3D} from '../common/tile-3d';
 import {Tileset3DTraverser} from './tileset-3d-traverser';
@@ -27,6 +27,8 @@ import {TILESET_TYPE} from '../../constants';
 import type {TilesetTraverser, TilesetTraverserProps} from '../common/tileset-traverser';
 import type {FrameState} from '../helpers/frame-state';
 import {get3DTilesSpatialReference} from '../../spatial/format-spatial-reference';
+import {Tiles3DSpatialTransformer} from '../../spatial/tiles-3d-spatial-transformer';
+import {markTilesetSpatialReferenceTransformed} from '../../spatial/spatial-types';
 import {
   materializeImplicitSubtree,
   type ImplicitSubtreeReference,
@@ -134,6 +136,10 @@ export class Tiles3DSource implements Tileset3DSource {
   private readonly extensionsUsed: string[] = [];
   private readonly resolver?: TilesetSourceResolver;
   private rootTileset: TilesetJSON;
+  /** CRS transformer shared by this source's headers and decoded glTF content. */
+  private spatialTransformer?: Tiles3DSpatialTransformer;
+  /** Root header after composing source-frame transforms and rebuilding target bounds. */
+  private preparedRootHeader?: Record<string, any>;
 
   /**
    * Creates a 3D Tiles source.
@@ -249,6 +255,29 @@ export class Tiles3DSource implements Tileset3DSource {
     return this.getMetadata().tileset;
   }
 
+  /** Prepare nonlinear CRS state before runtime headers are materialized. */
+  async prepareTileset(tileset: Tileset3D): Promise<void> {
+    const spatialReference = tileset.spatialReference;
+    if (spatialReference.status === 'unresolved') {
+      throw new Error(
+        spatialReference.warnings[0] ||
+          '3D Tiles spatial operations cannot be resolved from the supplied metadata and options'
+      );
+    }
+    if (spatialReference.status !== 'transformable' && spatialReference.status !== 'transformed') {
+      return;
+    }
+    this.spatialTransformer ||= new Tiles3DSpatialTransformer(
+      spatialReference,
+      tileset.options.spatial
+    );
+    tileset.spatialReference = markTilesetSpatialReferenceTransformed(spatialReference);
+    this.preparedRootHeader = this.transformTileHeader(
+      this.getMetadata().tileset.root,
+      new Matrix4()
+    );
+  }
+
   /**
    * Builds explicit runtime headers while leaving implicit subtree references lazy.
    */
@@ -257,7 +286,8 @@ export class Tiles3DSource implements Tileset3DSource {
     tilesetJson: TilesetJSON,
     parentTile?: Tile3D | null
   ): Tile3D {
-    const rootTile = new Tile3DNode(tileset, tilesetJson.root, parentTile || undefined);
+    const rootHeader = parentTile ? tilesetJson.root : this.preparedRootHeader || tilesetJson.root;
+    const rootTile = new Tile3DNode(tileset, rootHeader, parentTile || undefined);
 
     if (parentTile) {
       parentTile.children.push(rootTile);
@@ -319,7 +349,11 @@ export class Tiles3DSource implements Tileset3DSource {
         // Content bytes, rather than URL suffixes, distinguish external tilesets from renderable
         // payloads. This is required for signed and extensionless resources.
         isTileset: 'auto',
-        assetGltfUpAxis: (this.asset && this.asset.gltfUpAxis) || 'Y'
+        assetGltfUpAxis: (this.asset && this.asset.gltfUpAxis) || 'Y',
+        _tilesetOptions: {
+          spatialReference: tile.tileset?.spatialReference,
+          spatialOptions: tile.tileset?.options.spatial
+        }
       }
     };
 
@@ -358,6 +392,53 @@ export class Tiles3DSource implements Tileset3DSource {
     };
   }
 
+  /** Transform a tile header and its eagerly declared descendants. */
+  private transformTileHeader(
+    header: Record<string, any>,
+    parentTransform: Matrix4 = new Matrix4()
+  ): Record<string, any> {
+    if (!this.spatialTransformer) {
+      return header;
+    }
+    const localTransform = header.transform ? new Matrix4(header.transform) : new Matrix4();
+    const composedTransform = new Matrix4(parentTransform).multiplyRight(localTransform);
+    const content = Array.isArray(header.content)
+      ? header.content.map((entry: Record<string, any>) =>
+          this.transformContentHeader(entry, composedTransform)
+        )
+      : header.content
+        ? this.transformContentHeader(header.content, composedTransform)
+        : header.content;
+    return {
+      ...header,
+      transform: undefined,
+      boundingVolume: header.boundingVolume
+        ? this.spatialTransformer.transformBoundingVolume(header.boundingVolume, composedTransform)
+        : header.boundingVolume,
+      content,
+      children: Array.isArray(header.children)
+        ? header.children.map((child: Record<string, any>) =>
+            this.transformTileHeader(child, composedTransform)
+          )
+        : header.children
+    };
+  }
+
+  private transformContentHeader(
+    content: Record<string, any>,
+    composedTransform: Matrix4
+  ): Record<string, any> {
+    return {
+      ...content,
+      boundingVolume: content.boundingVolume
+        ? this.spatialTransformer!.transformBoundingVolume(
+            content.boundingVolume,
+            composedTransform
+          )
+        : content.boundingVolume
+    };
+  }
+
   /**
    * Loads, materializes, and installs exactly one implicit subtree.
    *
@@ -386,11 +467,14 @@ export class Tiles3DSource implements Tileset3DSource {
       subtreeUrl
     });
 
-    tile.applyImplicitSubtreeHeader(materializedSubtree.root);
+    const materializedRoot = this.spatialTransformer
+      ? this.transformTileHeader(materializedSubtree.root, new Matrix4())
+      : materializedSubtree.root;
+    tile.applyImplicitSubtreeHeader(materializedRoot);
     const materializedTileCount = this.initializeMaterializedChildren(
       tile.tileset,
       tile,
-      materializedSubtree.root.children
+      materializedRoot.children
     );
     this.implicitTilingStats.loadedSubtrees++;
     this.implicitTilingStats.materializedTiles += materializedTileCount;

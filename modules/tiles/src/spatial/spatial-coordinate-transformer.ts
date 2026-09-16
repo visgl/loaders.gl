@@ -159,6 +159,59 @@ export class SpatialCoordinateTransformer {
     return result;
   }
 
+  /** Transform a packed sequence of xyz positions, preserving the input array type only when safe. */
+  transformPositions(positions: ArrayLike<number>): Float64Array {
+    if (positions.length % 3 !== 0) {
+      throw new Error('Packed spatial positions must contain a multiple of three components');
+    }
+    const transformedPositions = new Float64Array(positions.length);
+    for (let index = 0; index < positions.length; index += 3) {
+      const transformed = this.transformPosition([
+        Number(positions[index]),
+        Number(positions[index + 1]),
+        Number(positions[index + 2])
+      ]);
+      transformedPositions[index] = transformed[0];
+      transformedPositions[index + 1] = transformed[1];
+      transformedPositions[index + 2] = transformed[2];
+    }
+    return transformedPositions;
+  }
+
+  /** Transform packed xyz normals using a local finite-difference tangent approximation. */
+  transformNormals(normals: ArrayLike<number>, positions: ArrayLike<number>): Float32Array {
+    if (normals.length !== positions.length || normals.length % 3 !== 0) {
+      throw new Error('Spatial normals and positions must have matching xyz component counts');
+    }
+    const transformedNormals = new Float32Array(normals.length);
+    const epsilon = 1e-5;
+    for (let index = 0; index < normals.length; index += 3) {
+      const position = [
+        Number(positions[index]),
+        Number(positions[index + 1]),
+        Number(positions[index + 2])
+      ];
+      const normal = [
+        Number(normals[index]),
+        Number(normals[index + 1]),
+        Number(normals[index + 2])
+      ];
+      const jacobian = getFiniteDifferenceJacobian(this, position, epsilon);
+      const transformedNormal = inverseTransposeMultiply(jacobian, normal);
+      const length = Math.hypot(...transformedNormal);
+      if (length > 0 && Number.isFinite(length)) {
+        transformedNormals[index] = transformedNormal[0] / length;
+        transformedNormals[index + 1] = transformedNormal[1] / length;
+        transformedNormals[index + 2] = transformedNormal[2] / length;
+      } else {
+        transformedNormals[index] = normal[0];
+        transformedNormals[index + 1] = normal[1];
+        transformedNormals[index + 2] = normal[2];
+      }
+    }
+    return transformedNormals;
+  }
+
   /** Convert one source coordinate to conventional WGS84 longitude, latitude, and height. */
   private toGeographic(coordinate: number[]): number[] {
     if (this.sourceIsGeocentric) {
@@ -180,6 +233,47 @@ export class SpatialCoordinateTransformer {
     }
     return this.heightOutputProjection!.project(coordinate.slice(0, 3));
   }
+}
+
+function getFiniteDifferenceJacobian(
+  transformer: SpatialCoordinateTransformer,
+  position: number[],
+  epsilon: number
+): number[][] {
+  const columns: number[][] = [];
+  for (let axis = 0; axis < 3; axis++) {
+    const plus = position.slice();
+    const minus = position.slice();
+    plus[axis] += epsilon;
+    minus[axis] -= epsilon;
+    const plusPosition = transformer.transformPosition(plus);
+    const minusPosition = transformer.transformPosition(minus);
+    columns.push([
+      (plusPosition[0] - minusPosition[0]) / (2 * epsilon),
+      (plusPosition[1] - minusPosition[1]) / (2 * epsilon),
+      (plusPosition[2] - minusPosition[2]) / (2 * epsilon)
+    ]);
+  }
+  return columns;
+}
+
+function inverseTransposeMultiply(jacobianColumns: number[][], vector: number[]): number[] {
+  const [a, b, c] = jacobianColumns;
+  const determinant =
+    a[0] * (b[1] * c[2] - b[2] * c[1]) -
+    b[0] * (a[1] * c[2] - a[2] * c[1]) +
+    c[0] * (a[1] * b[2] - a[2] * b[1]);
+  if (!Number.isFinite(determinant) || Math.abs(determinant) < 1e-15) {
+    return vector;
+  }
+  const inverseTranspose = [
+    [b[1] * c[2] - b[2] * c[1], a[2] * c[1] - a[1] * c[2], a[1] * b[2] - a[2] * b[1]],
+    [b[2] * c[0] - b[0] * c[2], a[0] * c[2] - a[2] * c[0], a[2] * b[0] - a[0] * b[2]],
+    [b[0] * c[1] - b[1] * c[0], a[1] * c[0] - a[0] * c[1], a[0] * b[1] - a[1] * b[0]]
+  ];
+  return inverseTranspose.map(
+    row => (row[0] * vector[0] + row[1] * vector[1] + row[2] * vector[2]) / determinant
+  );
 }
 
 /** Select the horizontal component that the proj4js runtime can execute. */

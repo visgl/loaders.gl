@@ -909,7 +909,7 @@ export class Tileset3D {
       if (
         initialMetadata?.tileset?.root &&
         typeof initialMetadata.tileset.root.then !== 'function' &&
-        !this.source.prepareTileset
+        (!this.source.prepareTileset || this.spatialReference?.status === 'native')
       ) {
         this.root = this._initializeTileHeaders(initialMetadata.tileset, null);
         this._applyViewState();
