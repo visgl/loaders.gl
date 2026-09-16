@@ -3,7 +3,6 @@ import {load, fetchFile} from '@loaders.gl/core';
 import {GeoPackageLoader} from '@loaders.gl/geopackage';
 import {getProjection, getSpatialReferenceSystemDefinition} from '../src/lib/parse-geopackage';
 import type {GeoPackageVectorTableInfo, SpatialRefSysRow} from '../src/lib/types';
-// import type {Tables, ObjectRowTable, Feature} from '@loaders.gl/schema';
 const GPKG_RIVERS = '@loaders.gl/geopackage/test/data/rivers_small.gpkg';
 const GPKG_RIVERS_GEOJSON = '@loaders.gl/geopackage/test/data/rivers_small.geojson';
 
@@ -36,24 +35,14 @@ test('GeoPackage prefers extension WKT2 and preserves undefined SRS semantics', 
   ).toBeUndefined();
 });
 
-test('GeoPackageLoader#load file as tables', async () => {
-  const result = await load(GPKG_RIVERS, GeoPackageLoader, {
-    geopackage: {
-      shape: 'tables'
-    }
-  });
+test('GeoPackageLoader#load file as one selected table', async () => {
+  const result = await load(GPKG_RIVERS, GeoPackageLoader);
   const response = await fetchFile(GPKG_RIVERS_GEOJSON);
   const json = await response.json();
-  expect(result.shape).toBe('tables');
-  if (result.shape === 'tables') {
-    const tableName = result.tables[0].name;
-    const table = result.tables[0].table;
-    expect(tableName, 'loaded correct table name').toBe('FEATURESriversds');
-    expect(table.features.length, 'Correct number of rows received').toBe(1);
-    expect(table.features[0], 'GeoPackage matches GeoJSON from OGR').toEqual(json.features[0]);
-    expect(table.schema).toBeTruthy();
-    expect(table.schema?.fields.length).toBe(5);
-  }
+  expect(result.shape).toBe('arrow-table');
+  expect(result.data.numRows, 'Correct number of rows received').toBe(1);
+  expect(result.schema).toBeTruthy();
+  expect(result.schema?.fields.length).toBe(5);
 });
 test('GeoPackageLoader#load supports core.shape', async () => {
   const result = await load(GPKG_RIVERS, GeoPackageLoader, {
@@ -66,31 +55,24 @@ test('GeoPackageLoader#load supports core.shape', async () => {
 });
 test('GeoPackageLoader#loader shape overrides core.shape', async () => {
   const result = await load(GPKG_RIVERS, GeoPackageLoader, {
-    core: {shape: 'geojson-table'},
-    geopackage: {shape: 'tables'}
+    core: {shape: 'arrow-table'},
+    geopackage: {shape: 'geojson-table'}
   });
-  expect(result.shape).toBe('tables');
+  expect(result.shape).toBe('geojson-table');
 });
 test('GeoPackageLoader#load file and reproject to WGS84', async () => {
   const result = await load(GPKG_RIVERS, GeoPackageLoader, {
-    geopackage: {shape: 'tables'},
+    geopackage: {shape: 'geojson-table'},
     gis: {reproject: true, _targetCrs: 'WGS84'}
   });
-  expect(result.shape).toBe('tables');
-  if (result.shape === 'tables') {
-    const tableName = result.tables[0].name;
-    const table = result.tables[0].table;
-    expect(tableName, 'loaded correct table name').toBe('FEATURESriversds');
-    expect(
-      // @ts-expect-error ignore geometry collection
-      table.features[0].geometry.coordinates.every(coord =>
-        insideBbox(coord, [-180, -90, 180, 90])
-      ),
-      'All coordinates in WGS84 lon-lat bounding box'
-    ).toBeTruthy();
-    expect(table.schema).toBeTruthy();
-    expect(table.schema?.fields.length).toBe(5);
-  }
+  expect(result.shape).toBe('geojson-table');
+  expect(
+    // @ts-expect-error ignore geometry collection
+    result.features[0].geometry.coordinates.every(coord => insideBbox(coord, [-180, -90, 180, 90])),
+    'All coordinates in WGS84 lon-lat bounding box'
+  ).toBeTruthy();
+  expect(result.schema).toBeTruthy();
+  expect(result.schema?.fields.length).toBe(5);
 });
 function insideBbox(coord: [number, number], bbox: number[]): boolean {
   const [minx, miny, maxx, maxy] = bbox;

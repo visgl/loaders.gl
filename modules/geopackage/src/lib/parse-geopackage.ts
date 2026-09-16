@@ -11,8 +11,7 @@ import type {
   Field,
   Geometry,
   GeoJSONTable,
-  Schema,
-  Tables
+  Schema
 } from '@loaders.gl/schema';
 import {ArrowTableBuilder} from '@loaders.gl/schema-utils';
 import {
@@ -90,11 +89,11 @@ const SQL_TYPE_MAPPING: Record<SQLiteTypes | GeoPackageGeometryTypes, DataType> 
 
 const DEFAULT_TABLE_MARKERS = new Set(['default', 'default table', 'main', 'primary']);
 
-/** Parses a GeoPackage into GeoJSON output using the existing GeoPackageLoader shapes. */
+/** Parses a GeoPackage into one selected vector table. */
 export async function parseGeoPackage(
   arrayBuffer: ArrayBuffer,
   options?: GeoPackageLoaderOptions
-): Promise<GeoJSONTable | Tables<GeoJSONTable> | ArrowTable> {
+): Promise<GeoJSONTable | ArrowTable> {
   const database = await loadGeoPackageDatabase(
     arrayBuffer,
     options?.geopackage?.sqlJsCDN ?? DEFAULT_SQLJS_CDN
@@ -102,7 +101,7 @@ export async function parseGeoPackage(
   const vectorTables = listGeoPackageVectorTables(database);
   const projections = getProjections(database);
   const {reproject = false, _targetCrs = 'WGS84'} = options?.gis || {};
-  const shape = options?.geopackage?.shape || 'tables';
+  const shape = options?.geopackage?.shape || 'arrow-table';
 
   switch (shape) {
     case 'geojson-table': {
@@ -114,25 +113,6 @@ export async function parseGeoPackage(
     }
     case 'arrow-table':
       return parseGeoPackageToArrow(arrayBuffer, options);
-
-    case 'tables': {
-      const outputTables: Tables<GeoJSONTable> = {
-        shape: 'tables',
-        tables: []
-      };
-
-      for (const vectorTable of vectorTables) {
-        outputTables.tables.push({
-          name: vectorTable.name,
-          table: getGeoPackageGeoJSONTable(database, vectorTable, projections, {
-            reproject,
-            targetCrs: _targetCrs
-          })
-        });
-      }
-
-      return outputTables;
-    }
 
     default:
       throw new Error(`Unsupported GeoPackage output shape: ${shape}`);

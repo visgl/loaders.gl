@@ -6,6 +6,7 @@
 
 - feat(arrow): make CSV, JSON table, NDJSON, Excel, and ParquetJS loaders Arrow-primary by default while retaining explicit row-table shapes
 - feat(las): make LAS and LAZ loader variants Arrow-primary by default while retaining explicit mesh output
+- feat(geopackage): make GeoPackageLoader return one selected Arrow table by default and move multi-table discovery to GeoPackageSource
 
 ### v5.0.0-alpha.6
 
