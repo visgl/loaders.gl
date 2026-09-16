@@ -3,7 +3,9 @@
 // Copyright (c) vis.gl contributors
 
 import {SpatialCoordinateTransformer} from './spatial-coordinate-transformer';
+import {getSpatialCoordinateFrame} from './get-spatial-coordinate-frame';
 import {Matrix4} from '@math.gl/core';
+import {Ellipsoid} from '@math.gl/geospatial';
 import type {TilesetSpatialOptions, TilesetSpatialReference} from './spatial-types';
 
 /** Structural 3D Tiles volume shape used by the source adapter. */
@@ -25,10 +27,24 @@ export class Tiles3DSpatialTransformer {
   /** Normalized reference describing the completed operation. */
   readonly spatialReference: TilesetSpatialReference;
   private readonly coordinateTransformer: SpatialCoordinateTransformer;
+  private readonly geographicCoordinateTransformer: SpatialCoordinateTransformer;
 
   /** Creates a 3D Tiles transformer for a requested target CRS. */
   constructor(spatialReference: TilesetSpatialReference, options: TilesetSpatialOptions = {}) {
     this.coordinateTransformer = new SpatialCoordinateTransformer(spatialReference, options);
+    // 3D Tiles regions are always encoded as WGS84 longitude/latitude radians, independently
+    // of the tileset's local CRS. Build a second pipeline for that fixed source frame.
+    const geographicSpatialReference = {
+      ...spatialReference,
+      sourceCrs: 'EPSG:4326' as const,
+      targetCrs: spatialReference.targetCrs || spatialReference.sourceCrs,
+      coordinateFrame: 'geographic' as const,
+      axisOrder: 'xy' as const
+    };
+    this.geographicCoordinateTransformer = new SpatialCoordinateTransformer(
+      geographicSpatialReference,
+      options
+    );
     this.spatialReference = spatialReference;
   }
 
@@ -48,15 +64,70 @@ export class Tiles3DSpatialTransformer {
     sourceTransform?: ArrayLike<number>
   ): Tiles3DSpatialBoundingVolume {
     const transform = sourceTransform ? new Matrix4(Array.from(sourceTransform)) : undefined;
-    const samples = getVolumeSamples(volume).map(sample =>
-      transform ? Array.from(transform.transformAsPoint(sample)) : sample
-    );
+    const samples = volume.region
+      ? getRegionSamples(volume.region)
+      : getVolumeSamples(volume).map(sample =>
+          transform ? Array.from(transform.transformAsPoint(sample)) : sample
+        );
     if (!samples.length) {
       return volume;
     }
-    const transformed = samples.map(sample => this.coordinateTransformer.transformPosition(sample));
+    const transformed = volume.region
+      ? samples.map(sample => this.transformRegionSample(sample))
+      : samples.map(sample => this.coordinateTransformer.transformPosition(sample));
     return {box: createAxisAlignedBox(transformed)};
   }
+
+  /** Transforms one WGS84 region sample into the selected output frame. */
+  private transformRegionSample(sample: number[]): number[] {
+    const [longitudeDegrees, latitudeDegrees, height] = sample;
+    const targetCrs = this.spatialReference.targetCrs || this.spatialReference.sourceCrs;
+    if (targetCrs && getSpatialCoordinateFrame(targetCrs) === 'geocentric') {
+      const cartesian = Ellipsoid.WGS84.cartographicToCartesian([
+        longitudeDegrees,
+        latitudeDegrees,
+        height
+      ]);
+      return Array.from(cartesian);
+    }
+    return this.geographicCoordinateTransformer.transformPosition(sample);
+  }
+}
+
+/** Samples region corners, center lines, and both height planes in degrees/meters. */
+function getRegionSamples(region: number[]): number[][] {
+  if (region.length < 6 || region.some(value => !Number.isFinite(value))) {
+    return [];
+  }
+  const [west, south, east, north, minimumHeight, maximumHeight] = region;
+  const longitudeEnd = east < west ? east + Math.PI * 2 : east;
+  const longitudes = getIntervalSamples(west, longitudeEnd);
+  const latitudes = getIntervalSamples(south, north);
+  const samples: number[][] = [];
+  for (const longitude of longitudes) {
+    for (const latitude of latitudes) {
+      for (const height of [minimumHeight, maximumHeight]) {
+        samples.push([(longitude * 180) / Math.PI, (latitude * 180) / Math.PI, height]);
+      }
+    }
+  }
+  return samples;
+}
+
+/** Includes interval endpoints and every quarter-turn where ECEF axes reach an extremum. */
+function getIntervalSamples(start: number, end: number): number[] {
+  const samples = [start, (start + end) / 2, end];
+  const angularStep = Math.PI / 2;
+  const firstCriticalIndex = Math.ceil(start / angularStep);
+  const lastCriticalIndex = Math.floor(end / angularStep);
+  for (
+    let criticalIndex = firstCriticalIndex;
+    criticalIndex <= lastCriticalIndex;
+    criticalIndex++
+  ) {
+    samples.push(criticalIndex * angularStep);
+  }
+  return samples;
 }
 
 function getVolumeSamples(volume: Tiles3DSpatialBoundingVolume): number[][] {
