@@ -34,7 +34,7 @@ Start with the [experimental 3D Tiles 2.0 profile](/docs/modules/3d-tiles/concep
 to see the supported hierarchy, implicit tiling, CRS, vector-topology, and renderer-boundary behavior.
 
 See the [3D Tiles format compatibility matrix](/docs/modules/3d-tiles/formats/3d-tiles) for a capability-by-capability
-summary of parser, traversal, extension, and renderer-facing support.
+summary of parser, traversal, extension, and renderer-facing support. The [styling and feature access guide](/docs/modules/3d-tiles/concepts/styling-and-feature-access) documents renderer-neutral property inputs without claiming style-expression or GPU support.
 
 <DocOrientation
   eyebrow="The 3D Tiles module"
@@ -83,7 +83,7 @@ The [3D Tiles runtime concepts suite](/docs/modules/3d-tiles/concepts) explains 
 - [Request scheduling, progressive loading, and foveated requests](/docs/modules/3d-tiles/concepts/request-scheduling-and-priorities)
 - [Caching and memory](/docs/modules/3d-tiles/concepts/caching-and-memory)
 - [Runtime tuning and diagnostics](/docs/modules/3d-tiles/concepts/runtime-tuning-and-diagnostics)
-- [Runtime observability and benchmark baselines](/docs/modules/3d-tiles/concepts/observability-and-benchmarks)
+- [Runtime observability and benchmark baselines](/docs/modules/3d-tiles/concepts/observability-and-benchmarks)\n- [Styling and feature access](/docs/modules/3d-tiles/concepts/styling-and-feature-access)
 
 <ReferenceBoundary
   title="Module APIs and runtime concepts"
