@@ -131,7 +131,7 @@ Do not treat a preserved metadata reference as a decoded property bag. Conversel
 ## Limitations and diagnostics
 
 - Style inputs are snapshots. Rebuild them after metadata or content reload.
-- Invalid or missing feature IDs skip batch-table lookup; the raw content and metadata remain available.
+- Missing feature IDs skip batch-table lookup. Out-of-range IDs are skipped when the batch table exposes featureCount; otherwise callers should rely on the batch-table implementation's range contract.
 - Property precedence is deterministic but does not implement a style-language fallback such as defined() or color().
 - Property-table values require glTF buffer loading and a supported component/type profile.
 - Unknown optional extensions remain available, while unsupported required extensions are rejected at parse time.
