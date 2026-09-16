@@ -50,7 +50,8 @@ Loading a large 3D Tiles tileset is a continuous pipeline: traverse the hierarch
 | [Request scheduling and priorities](/docs/modules/3d-tiles/concepts/request-scheduling-and-priorities) | Which required tile should use the next network slot? |
 | [Caching and memory](/docs/modules/3d-tiles/concepts/caching-and-memory) | Which loaded tiles remain resident, and when may the budget be exceeded? |
 | [Runtime tuning and diagnostics](/docs/modules/3d-tiles/concepts/runtime-tuning-and-diagnostics) | Which controls and measurements explain visible behavior? |
-| [Runtime observability and benchmark baselines](/docs/modules/3d-tiles/concepts/observability-and-benchmarks) | How can traversal decisions and performance budgets be compared? |\n| [Styling and feature access](/docs/modules/3d-tiles/concepts/styling-and-feature-access) | How can metadata, feature IDs, and batch-table rows become renderer-neutral style inputs? |
+| [Runtime observability and benchmark baselines](/docs/modules/3d-tiles/concepts/observability-and-benchmarks) | How can traversal decisions and performance budgets be compared? |
+| [Styling and feature access](/docs/modules/3d-tiles/concepts/styling-and-feature-access) | How can metadata, feature IDs, and batch-table rows become renderer-neutral style inputs? |
 
 The stages are related but not interchangeable. In particular, screen-space error determines the desired final LOD. Progressive and foveated scheduling normally change only the order and timing of requests needed to reach that LOD.
 
