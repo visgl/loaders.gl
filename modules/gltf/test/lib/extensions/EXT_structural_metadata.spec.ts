@@ -779,6 +779,43 @@ test('gltf#EXT_structural_metadata applies normalized scale and offset transform
   expect(Array.from(values)).toEqual([10, 12]);
 });
 
+test('gltf#EXT_structural_metadata normalizes UINT64 values before transforms', async () => {
+  const values = new BigUint64Array([0n, 18446744073709551615n]);
+  const gltf = {
+    buffers: [{arrayBuffer: values.buffer, byteOffset: 0, byteLength: values.byteLength}],
+    json: {
+      buffers: [{byteLength: values.byteLength}],
+      bufferViews: [{buffer: 0, byteOffset: 0, byteLength: values.byteLength}],
+      extensions: {
+        EXT_structural_metadata: {
+          schema: {
+            classes: {
+              Sample: {
+                properties: {
+                  value: {
+                    type: 'SCALAR',
+                    componentType: 'UINT64',
+                    normalized: true,
+                    scale: 2,
+                    offset: 1
+                  }
+                }
+              }
+            }
+          },
+          propertyTables: [{class: 'Sample', count: 2, properties: {value: {values: 0}}}]
+        }
+      }
+    }
+  } as any;
+
+  await decodeExtensions(gltf, {gltf: {loadBuffers: true, loadImages: false}});
+
+  const property = gltf.json.extensions.EXT_structural_metadata.propertyTables[0].properties.value;
+  expect(Array.from(property.data)).toEqual([1, 3]);
+  expect(Array.from(property.rawData)).toEqual([0n, 18446744073709551615n]);
+});
+
 test('gltf#EXT_structural_metadata validates unsupported property definitions', async () => {
   const makeGLTF = (property: any, schema: any = {}) => ({
     buffers: [{arrayBuffer: new Uint8Array([1, 0]).buffer, byteOffset: 0, byteLength: 2}],
