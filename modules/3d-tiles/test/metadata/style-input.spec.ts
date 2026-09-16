@@ -11,6 +11,7 @@ import {
 
 const content = {
   index: 0,
+  group: 1,
   payload: null,
   metadata: {properties: {material: 'content', shared: 'content'}},
   boundingVolume: null,
