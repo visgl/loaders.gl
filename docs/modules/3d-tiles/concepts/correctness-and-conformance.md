@@ -64,6 +64,12 @@ The tracker issue [#1245](https://github.com/visgl/loaders.gl/issues/1245) recor
 
 Each tranche should add a focused fixture or unit test before changing runtime behavior. Renderer-specific behavior (styling, Gaussian splats, vector/CAD, voxels, and GPU upload policy) remains outside the loader/runtime conformance boundary.
 
+## Metadata value access
+
+3D Tiles metadata has two layers: the loader preserves the authored schema and property-table references, while glTF parsing (with `gltf.loadBuffers: true`) decodes property-table columns. Use `getStructuralMetadataRow(propertyTable, schemaClass, rowIndex)` from `@loaders.gl/3d-tiles` to read one normalized row. The helper applies class-level `default` values and `noData` sentinels and keeps vector/array values in their typed-array or nested-array form.
+
+Decoding a row does not imply styling, picking, or GPU upload. Applications choose how decoded values map to feature IDs and visual attributes; raw extension objects remain available for forward-compatible fields and unsupported encodings.
+
 ## Experimental 3D Tiles 2.0 profile
 
 The draft-facing matrix is pinned to CesiumGS/glTF commit

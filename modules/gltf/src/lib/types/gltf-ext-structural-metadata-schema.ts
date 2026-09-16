@@ -315,8 +315,13 @@ export type GLTF_EXT_structural_metadata_PropertyTable_Property = {
   min?: number | number[];
   extensions?: Record<string, unknown>;
   extras?: unknown;
-  /** This is not part of the spec. GLTFLoader loads feature tables data into this property */
+  /** This is not part of the spec. GLTFLoader loads transformed feature-table data into this property. */
   data?: unknown;
+  /**
+   * This is not part of the spec. GLTFLoader preserves the decoded values before normalized, scale,
+   * and offset transforms so consumers can apply `noData` sentinels in the source value domain.
+   */
+  rawData?: unknown;
 };
 
 /**

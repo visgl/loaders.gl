@@ -337,14 +337,24 @@ function processPropertyTable(
 
     if (propertyTableProperty) {
       // Getting all elements (`numberOfElements`) of the array in the `propertyTableProperty`
+      const rawDataOutput: {value?: unknown} = {};
       const data = getPropertyDataFromBinarySource(
         iterator,
         schema,
         classProperty,
         numberOfElements,
-        propertyTableProperty
+        propertyTableProperty,
+        rawDataOutput
       );
       propertyTableProperty.data = data;
+      if (rawDataOutput.value !== undefined) {
+        Object.defineProperty(propertyTableProperty, 'rawData', {
+          value: rawDataOutput.value,
+          configurable: true,
+          enumerable: false,
+          writable: true
+        });
+      }
     }
   }
 }
@@ -363,7 +373,8 @@ function getPropertyDataFromBinarySource(
   schema: GLTF_EXT_structural_metadata_Schema,
   classProperty: GLTF_EXT_structural_metadata_ClassProperty,
   numberOfElements: number,
-  propertyTableProperty: GLTF_EXT_structural_metadata_PropertyTable_Property
+  propertyTableProperty: GLTF_EXT_structural_metadata_PropertyTable_Property,
+  rawDataOutput?: {value?: unknown}
 ): boolean[] | string[] | BigTypedArray | boolean[][] | string[][] | BigTypedArray[] {
   let data: boolean[] | string[] | BigTypedArray | boolean[][] | string[][] | BigTypedArray[] = [];
   const valuesBufferView = propertyTableProperty.values;
@@ -391,7 +402,17 @@ function getPropertyDataFromBinarySource(
     case 'MAT2':
     case 'MAT3':
     case 'MAT4': {
-      data = getPropertyDataNumeric(classProperty, numberOfElements, valuesDataBytes, arrayOffsets);
+      const numericData = getPropertyDataNumeric(
+        classProperty,
+        propertyTableProperty,
+        numberOfElements,
+        valuesDataBytes,
+        arrayOffsets
+      );
+      data = numericData.data;
+      if (rawDataOutput) {
+        rawDataOutput.value = numericData.rawData;
+      }
       break;
     }
     case 'BOOLEAN': {
@@ -545,10 +566,11 @@ function getStringOffsetsForProperty(
  */
 function getPropertyDataNumeric(
   classProperty: GLTF_EXT_structural_metadata_ClassProperty,
+  propertyTableProperty: GLTF_EXT_structural_metadata_PropertyTable_Property,
   numberOfElements: number,
   valuesDataBytes: Uint8Array,
   arrayOffsets: TypedArray | null
-): BigTypedArray | BigTypedArray[] {
+): {data: BigTypedArray | BigTypedArray[]; rawData: BigTypedArray | BigTypedArray[]} {
   const isArray = classProperty.array;
   const arrayCount = classProperty.count;
   const componentCount =
@@ -571,24 +593,149 @@ function getPropertyDataNumeric(
     valuesData = valuesDataBytes;
   }
 
+  const rawValuesData = valuesData;
+  const offset = propertyTableProperty.offset ?? classProperty.offset;
+  const scale = propertyTableProperty.scale ?? classProperty.scale;
+  const transformedValuesData =
+    classProperty.normalized || offset !== undefined || scale !== undefined
+      ? applyNumericPropertyTransforms(
+          rawValuesData,
+          classProperty.componentType,
+          classProperty.type,
+          classProperty.normalized,
+          offset,
+          scale
+        )
+      : rawValuesData;
+
   if (isArray) {
     if (arrayOffsets) {
       // VARIABLE-length array
-      return parseVariableLengthArrayNumeric(
-        valuesData,
-        numberOfElements,
-        arrayOffsets,
-        componentCount
-      );
+      return {
+        data: parseVariableLengthArrayNumeric(
+          transformedValuesData,
+          numberOfElements,
+          arrayOffsets,
+          componentCount
+        ),
+        rawData: parseVariableLengthArrayNumeric(
+          rawValuesData,
+          numberOfElements,
+          arrayOffsets,
+          componentCount
+        )
+      };
     }
     if (arrayCount) {
       // FIXED-length array
-      return parseFixedLengthArrayNumeric(valuesData, numberOfElements, arrayCount, componentCount);
+      return {
+        data: parseFixedLengthArrayNumeric(
+          transformedValuesData,
+          numberOfElements,
+          arrayCount,
+          componentCount
+        ),
+        rawData: parseFixedLengthArrayNumeric(
+          rawValuesData,
+          numberOfElements,
+          arrayCount,
+          componentCount
+        )
+      };
     }
-    return [];
+    return {data: [], rawData: []};
   }
 
-  return valuesData;
+  return {data: transformedValuesData, rawData: rawValuesData};
+}
+
+/**
+ * Applies metadata normalization, scale, and offset transforms in specification order.
+ *
+ * A transformed column uses Float64Array so normalized integer values retain their fractional
+ * precision. BigInt columns are left untouched because JavaScript cannot represent their scaled
+ * values without losing integer precision.
+ *
+ * @param valuesData - Decoded numeric property column.
+ * @param componentType - Source component type used for normalization limits.
+ * @param attributeType - SCALAR, VECN, or MATN shape.
+ * @param normalized - Whether integer values are normalized to a unit range.
+ * @param offset - Optional scalar or per-component offset.
+ * @param scale - Optional scalar or per-component scale.
+ * @returns Transformed numeric column.
+ */
+function applyNumericPropertyTransforms(
+  valuesData: BigTypedArray,
+  componentType: string | undefined,
+  attributeType: string,
+  normalized: boolean | undefined,
+  offset: number | number[] | undefined,
+  scale: number | number[] | undefined
+): BigTypedArray {
+  const normalizationLimit = getNormalizationLimit(componentType);
+  const hasNormalization = Boolean(normalized && normalizationLimit !== undefined);
+  if (!hasNormalization && offset === undefined && scale === undefined) {
+    return valuesData;
+  }
+  const numberOfComponents = getMetadataComponentCount(attributeType);
+  const result = new Float64Array(valuesData.length);
+  for (let index = 0; index < valuesData.length; index++) {
+    let value = Number(valuesData[index]);
+    if (hasNormalization) {
+      value = componentType?.startsWith('INT')
+        ? Math.max(value / (normalizationLimit as number), -1)
+        : value / (normalizationLimit as number);
+    }
+    const componentIndex = index % numberOfComponents;
+    const offsetValue = Array.isArray(offset) ? (offset[componentIndex] ?? 0) : (offset ?? 0);
+    const scaleValue = Array.isArray(scale) ? (scale[componentIndex] ?? 1) : (scale ?? 1);
+    result[index] = value * scaleValue + offsetValue;
+  }
+  return result;
+}
+
+/** Returns the number of scalar components represented by a metadata element type. */
+function getMetadataComponentCount(attributeType: string): number {
+  switch (attributeType) {
+    case 'VEC2':
+      return 2;
+    case 'VEC3':
+      return 3;
+    case 'VEC4':
+      return 4;
+    case 'MAT2':
+      return 4;
+    case 'MAT3':
+      return 9;
+    case 'MAT4':
+      return 16;
+    default:
+      return 1;
+  }
+}
+
+/** Returns the integer normalization denominator for a metadata component type. */
+function getNormalizationLimit(componentType: string | undefined): number | undefined {
+  switch (componentType) {
+    case 'INT8':
+      return 127;
+    case 'UINT8':
+      return 255;
+    case 'INT16':
+      return 32767;
+    case 'UINT16':
+      return 65535;
+    case 'INT32':
+      return 2147483647;
+    case 'UINT32':
+      return 4294967295;
+    case 'INT64':
+      return 2 ** 63 - 1;
+    case 'UINT64':
+      return 2 ** 64 - 1;
+    default:
+      return undefined;
+  }
 }
 
 /**
