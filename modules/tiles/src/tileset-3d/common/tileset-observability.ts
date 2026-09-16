@@ -64,9 +64,7 @@ export function getTileset3DTraversalSnapshot(
   const emptyTiles = tileset.emptyTiles.slice();
 
   const getTileIds = (tiles: readonly Tile3D[]): string[] =>
-    tiles
-      .map(tile => String(tile.id))
-      .sort();
+    tiles.map(tile => String(tile.id)).sort();
 
   const getStatCount = (name: string): number => {
     const count = tileset.stats.get(name).count;
@@ -84,7 +82,9 @@ export function getTileset3DTraversalSnapshot(
     requestedTileIds: getTileIds(requestedTiles),
     emptyTileIds: getTileIds(emptyTiles),
     visibleTileCount: selectedTiles.length,
-    renderableTileCount: selectedTiles.filter(tile => tile.contentAvailable && Boolean(tile.content)).length,
+    renderableTileCount: selectedTiles.filter(
+      tile => tile.contentAvailable && Boolean(tile.content)
+    ).length,
     loadingTileCount: getStatCount('Tiles Loading'),
     loadedTileCount: getStatCount('Tiles Loaded'),
     failedTileCount: getStatCount('Failed Tile Loads'),
