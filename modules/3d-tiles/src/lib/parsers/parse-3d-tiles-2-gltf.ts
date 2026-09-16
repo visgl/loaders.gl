@@ -233,7 +233,10 @@ type DraftStructuralMetadataClassProperty = {
   scale?: number | number[];
 };
 type DraftStructuralMetadataTableProperty = {
+  /** Values after structural-metadata transforms, as decoded by the glTF loader. */
   data?: ArrayLike<unknown>;
+  /** Source-domain values preserved for noData comparison before transforms. */
+  rawData?: ArrayLike<unknown>;
   values?: number;
   arrayOffsets?: number;
   stringOffsets?: number;
@@ -459,7 +462,7 @@ function decodePropertyTableRows(
     for (const [propertyName, classProperty] of Object.entries(classDefinition.properties || {})) {
       const tableProperty = table.properties?.[propertyName];
       const rawValue = getPropertyTableRowValue(
-        tableProperty?.data,
+        tableProperty?.rawData ?? tableProperty?.data,
         rowIndex,
         classProperty.type,
         classProperty.array === true
