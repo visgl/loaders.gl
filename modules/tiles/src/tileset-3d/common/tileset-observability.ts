@@ -45,7 +45,7 @@ export type Tileset3DTraversalSnapshot = {
     pendingSubtrees: number;
     materializedTiles: number;
   };
-}
+};
 
 /**
  * Creates a stable observability snapshot from public {@link Tileset3D} state.
