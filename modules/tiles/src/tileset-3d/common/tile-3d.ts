@@ -9,11 +9,7 @@ import {Vector3, Matrix4} from '@math.gl/core';
 import {CullingVolume} from '@math.gl/culling';
 import type {CullingResult} from '@math.gl/culling';
 import {getTile3DFeatureIdSets} from './tile-3d-contracts';
-import type {
-  Tile3DContent,
-  Tile3DFeatureIdSet,
-  Tile3DMetadataContext
-} from './tile-3d-contracts';
+import type {Tile3DContent, Tile3DFeatureIdSet, Tile3DMetadataContext} from './tile-3d-contracts';
 
 // Note: circular dependency
 import type {Tileset3D} from './tileset-3d';
@@ -90,7 +86,6 @@ export function getContentVisibility(
   }
   return intersectingVolume ? 'intersecting' : 'inside';
 }
-
 
 function isNestedTilesetPayload(payload: unknown): boolean {
   if (!payload || typeof payload !== 'object') {
@@ -803,8 +798,7 @@ export class Tile3D {
       const normalizedContentHeader = contentHeader || {};
       return {
         index,
-        uri:
-          this.contentUrls[index] || normalizedContentHeader.uri || normalizedContentHeader.url,
+        uri: this.contentUrls[index] || normalizedContentHeader.uri || normalizedContentHeader.url,
         type: normalizedContentHeader.type,
         payload: null,
         metadata: normalizedContentHeader.metadata || null,
