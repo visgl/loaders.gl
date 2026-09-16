@@ -741,6 +741,7 @@ export class Tile3D {
     this.metadataContext = {
       tileset: this.tileset.metadata || null,
       group,
+      groups: this.tileset.groups || undefined,
       tile: this.metadata,
       content: this.contentMetadata[0] || null,
       subtree: header.implicitMetadata || null
