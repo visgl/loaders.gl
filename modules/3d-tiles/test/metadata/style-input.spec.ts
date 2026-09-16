@@ -88,3 +88,34 @@ test('style input ignores invalid feature ids instead of querying a batch table'
   const styleInput = createTile3DStyleInput(content, {}, {featureId: -1, batchTable});
   expect(styleInput.properties).toEqual({material: 'content', shared: 'content'});
 });
+
+
+test('style input resolves the selected content group and skips out-of-range rows', () => {
+  const batchTable = {
+    featureCount: 1,
+    getPropertyNames: () => ['height'],
+    getProperty: () => 12
+  };
+  const styleInput = createTile3DStyleInput(
+    content,
+    {
+      groups: [{properties: {district: 'north'}}, {properties: {district: 'south'}}],
+      group: {properties: {district: 'wrong'}}
+    },
+    {featureId: 4, batchTable}
+  );
+
+  expect(styleInput.properties.district).toBe('south');
+  expect(styleInput.properties.height).toBeUndefined();
+  expect(styleInput.metadata.group).toEqual({properties: {district: 'south'}});
+});
+
+test('style input treats prototype property names as ordinary data', () => {
+  const styleInput = createTile3DStyleInput(
+    {...content, metadata: {properties: {'__proto__': 'authored'}}},
+    {},
+    {}
+  );
+  expect(getTile3DStyleProperty(styleInput, 'toString')).toBeUndefined();
+  expect(styleInput.properties['__proto__']).toBeUndefined();
+});
