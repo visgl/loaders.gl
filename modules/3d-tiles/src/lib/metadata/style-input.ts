@@ -43,6 +43,8 @@ export type Tile3DBatchTableLike = {
   getProperty(batchId: number, name: string): unknown;
   /** Returns property names visible for one feature, including inherited hierarchy names. */
   getPropertyNames(batchId: number, results?: string[]): string[];
+  /** Number of feature rows, when exposed by the batch-table implementation. */
+  featureCount?: number;
 };
 
 /**
@@ -63,7 +65,11 @@ export function getTile3DBatchTableProperties(
     return {};
   }
 
-  const properties: Record<string, unknown> = {};
+  if (batchTable.featureCount !== undefined && featureId >= batchTable.featureCount) {
+    return {};
+  }
+
+  const properties: Record<string, unknown> = Object.create(null);
   for (const propertyName of batchTable.getPropertyNames(featureId)) {
     const value = batchTable.getProperty(featureId, propertyName);
     if (value !== undefined) {
@@ -91,8 +97,8 @@ export function createTile3DStyleInput(
   metadata: Tile3DMetadataContext,
   options: Tile3DStyleInputOptions = {}
 ): Tile3DStyleInput {
-  const properties: Record<string, unknown> = {};
-  const propertySources: Record<string, Tile3DStylePropertySource> = {};
+  const properties: Record<string, unknown> = Object.create(null);
+  const propertySources: Record<string, Tile3DStylePropertySource> = Object.create(null);
 
   const addMetadataProperties = (
     entity: Record<string, unknown> | null | undefined,
@@ -109,7 +115,11 @@ export function createTile3DStyleInput(
   };
 
   addMetadataProperties(metadata.tileset, 'tileset-metadata');
-  addMetadataProperties(metadata.group, 'group-metadata');
+  const contentGroup =
+    typeof content.metadata?.group === 'number' && metadata.groups
+      ? metadata.groups[content.metadata.group] || null
+      : metadata.group;
+  addMetadataProperties(contentGroup, 'group-metadata');
   addMetadataProperties(metadata.tile, 'tile-metadata');
   addMetadataProperties(content.metadata, 'content-metadata');
 
@@ -130,7 +140,7 @@ export function createTile3DStyleInput(
 
   return {
     featureId: options.featureId,
-    metadata,
+    metadata: {...metadata, group: contentGroup, content: content.metadata},
     properties,
     propertySources
   };
