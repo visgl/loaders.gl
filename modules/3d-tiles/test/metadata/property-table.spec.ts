@@ -115,3 +115,4 @@ test('getStructuralMetadataRow handles typed-array array sentinels and omitted d
     3
   ]);
 });
+
