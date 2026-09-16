@@ -136,6 +136,7 @@ test('LAS loader variants preload explicit parser implementations', async () => 
 });
 test('LASLoader#parse(binary)', async () => {
   const data = await parse(fetchFile(LAS_BINARY_URL), LASLoader, {
+    las: {shape: 'mesh'},
     core: {worker: false}
   });
   validateMeshCategoryData(vitestAssertions, data);
@@ -150,6 +151,7 @@ test('LASLoader#parseInBatches(mesh)', async () => {
   const response = await fetchFile(LAS_BINARY_URL);
   const batches = await parseInBatches(makeIterator(response), LASLoader, {
     batchSize: 25000,
+    las: {shape: 'mesh'},
     core: {worker: false}
   });
   const batchVertexCounts: number[] = [];
@@ -202,7 +204,7 @@ test('LASLoader#parseInBatches(fp64)', async () => {
   const response = await fetchFile(LAS_BINARY_URL);
   const batches = await parseInBatches(makeIterator(response), LASLoader, {
     batchSize: 25000,
-    las: {fp64: true},
+    las: {shape: 'mesh', fp64: true},
     core: {worker: false}
   });
   for await (const batch of batches as AsyncIterable<any>) {
@@ -223,6 +225,7 @@ test('LAS loader variants parseInBatches', async () => {
     const response = await fetchFile(LAS_BINARY_URL);
     const batches = await parseInBatches(makeIterator(response), loader, {
       batchSize: 30000,
+      las: {shape: 'mesh'},
       core: {worker: false}
     });
     let totalVertexCount = 0;
@@ -240,18 +243,13 @@ test('LAS loader variants return Arrow tables', async () => {
     {name: 'COPC', loader: LASCOPCLoader},
     {name: 'laz-rs', loader: LAZRsLoader}
   ]) {
-    const table = await parse(arrayBuffer.slice(0), loader, {
-      core: {worker: false},
-      las: {shape: 'arrow-table'}
-    });
+    const table = await parse(arrayBuffer.slice(0), loader, {core: {worker: false}});
     expect(table.shape, `${name} variant returns an Arrow table`).toBe('arrow-table');
     expect(table.data.numRows, `${name} variant returns every point`).toBe(
       LAS_EXTRABYTES_POINT_COUNT
     );
   }
-  const syncTable = LAZPerfLoaderWithParser.parseSync(arrayBuffer, {
-    las: {shape: 'arrow-table'}
-  });
+  const syncTable = LAZPerfLoaderWithParser.parseSync(arrayBuffer);
   expect(syncTable.shape, 'laz-perf parseSync returns an Arrow table').toBe('arrow-table');
   expect(syncTable.data.numRows, 'laz-perf parseSync returns every point').toBe(
     LAS_EXTRABYTES_POINT_COUNT
@@ -259,9 +257,11 @@ test('LAS loader variants return Arrow tables', async () => {
 });
 test('LASLoader#parse LAZ 1.2 PDRF 3 matches laz-rs variant', async () => {
   const expected = await parse(fetchFile(LAS_BINARY_URL), LAZRsLoader, {
+    las: {shape: 'mesh'},
     core: {worker: false}
   });
   const actual = await parse(fetchFile(LAS_BINARY_URL), LASLoader, {
+    las: {shape: 'mesh'},
     core: {worker: false}
   });
   validateMeshCategoryData(vitestAssertions, actual);
@@ -280,12 +280,13 @@ test('LASLoader#parseInBatches split LAZ 1.2 PDRF 3 matches laz-rs variant', asy
     decodedChunkAllocations: 0
   };
   const expected = await parse(arrayBuffer.slice(0), LAZRsLoader, {
+    las: {shape: 'mesh'},
     core: {worker: false}
   });
   const batches = await parseInBatches(splitArrayBuffer(arrayBuffer, 257), LASLoader, {
     batchSize: 250,
     core: {worker: false},
-    las: {lazStreamingStats: streamingStats} as LASLoaderOptions['las'] & {
+    las: {shape: 'mesh', lazStreamingStats: streamingStats} as LASLoaderOptions['las'] & {
       lazStreamingStats: typeof streamingStats;
     }
   });
@@ -318,6 +319,7 @@ test('LASLoader#parseInBatches emits legacy LAZ rows before input ends', async (
     LASLoader,
     {
       batchSize: 250,
+      las: {shape: 'mesh'},
       core: {worker: false}
     }
   );
@@ -387,12 +389,17 @@ for (const fixture of [
     const lazArrayBuffer = await (await fetchFile(fixture.lazUrl)).arrayBuffer();
     // Bundled laz-rs rejects WavePacket13 item type 9; the raw test above uses current LASzip's
     // byte-exact round-trip as the codec oracle.
-    const expected = await parse(lasArrayBuffer, LASLoader, {core: {worker: false}});
+    const expected = await parse(lasArrayBuffer, LASLoader, {
+      las: {shape: 'mesh'},
+      core: {worker: false}
+    });
     const actual = await parse(lazArrayBuffer.slice(0), LASLoader, {
+      las: {shape: 'mesh'},
       core: {worker: false}
     });
     const batches = await parseInBatches(splitArrayBuffer(lazArrayBuffer, 257), LASLoader, {
       batchSize: 127,
+      las: {shape: 'mesh'},
       core: {worker: false}
     });
     const streamed = await collectMeshAttributes(batches as AsyncIterable<any>);
@@ -415,6 +422,7 @@ for (const fixture of [
 }
 test('LASCOPCLoader#parse LAS 1.4 fixture', async () => {
   const data = await parse(fetchFile(LAS_1_4_BINARY_URL), LASCOPCLoader, {
+    las: {shape: 'mesh'},
     core: {worker: false}
   });
   validateMeshCategoryData(vitestAssertions, data);
@@ -425,9 +433,11 @@ test('LASCOPCLoader#parse LAS 1.4 fixture', async () => {
 });
 test('LASLoader#parse LAS 1.4 fixture matches COPC variant', async () => {
   const expected = await parse(fetchFile(LAS_1_4_BINARY_URL), LASCOPCLoader, {
+    las: {shape: 'mesh'},
     core: {worker: false}
   });
   const data = await parse(fetchFile(LAS_1_4_BINARY_URL), LASLoader, {
+    las: {shape: 'mesh'},
     core: {worker: false}
   });
   validateMeshCategoryData(vitestAssertions, data);
@@ -439,11 +449,13 @@ test('LASLoader#parse LAS 1.4 fixture matches COPC variant', async () => {
 });
 test('LASLoader#parseInBatches matches COPC variant', async () => {
   const expected = await parse(fetchFile(LAS_1_4_BINARY_URL), LASCOPCLoader, {
+    las: {shape: 'mesh'},
     core: {worker: false}
   });
   const response = await fetchFile(LAS_1_4_BINARY_URL);
   const batches = await parseInBatches(makeIterator(response), LASLoader, {
     batchSize: 2,
+    las: {shape: 'mesh'},
     core: {worker: false}
   });
   const positions: number[] = [];
@@ -467,6 +479,7 @@ test('LASLoader#parseInBatches matches COPC variant', async () => {
 });
 test('LASCOPCLoader#parse LAZ 1.4 fixture', async () => {
   const data = await parse(fetchFile(LAZ_1_4_BINARY_URL), LASCOPCLoader, {
+    las: {shape: 'mesh'},
     core: {worker: false}
   });
   validateMeshCategoryData(vitestAssertions, data);
@@ -477,11 +490,13 @@ test('LASCOPCLoader#parse LAZ 1.4 fixture', async () => {
 });
 test('LASLoader#parse LAZ 1.4 matches other loader variants', async () => {
   const actual = await parse(fetchFile(LAZ_1_4_BINARY_URL), LASLoader, {
+    las: {shape: 'mesh'},
     core: {worker: false}
   });
   validateMeshCategoryData(vitestAssertions, actual);
   for (const {name, loader} of LAZ_1_4_PARITY_VARIANTS) {
     const expected = await parse(fetchFile(LAZ_1_4_BINARY_URL), loader, {
+      las: {shape: 'mesh'},
       core: {worker: false}
     });
     expect(actual.header.vertexCount, `TypeScript LAZ point count matches ${name}`).toBe(
@@ -494,11 +509,13 @@ test('LASLoader#parseInBatches LAZ 1.4 fixture', async () => {
   const response = await fetchFile(LAZ_1_4_BINARY_URL);
   const batches = await parseInBatches(makeIterator(response), LASLoader, {
     batchSize: 25000,
+    las: {shape: 'mesh'},
     core: {worker: false}
   });
   const actual = await collectMeshAttributes(batches as AsyncIterable<any>);
   for (const {name, loader} of LAZ_1_4_PARITY_VARIANTS) {
     const expected = await parse(fetchFile(LAZ_1_4_BINARY_URL), loader, {
+      las: {shape: 'mesh'},
       core: {worker: false}
     });
     compareCollectedMeshAttributes(
@@ -518,11 +535,13 @@ test('LASLoader#parseInBatches split LAZ 1.4 matches other loader variants', asy
   const arrayBuffer = await response.arrayBuffer();
   const batches = await parseInBatches(splitArrayBuffer(arrayBuffer, 257), LASLoader, {
     batchSize: 25000,
+    las: {shape: 'mesh'},
     core: {worker: false}
   });
   const actual = await collectMeshAttributes(batches as AsyncIterable<any>);
   for (const {name, loader} of LAZ_1_4_PARITY_VARIANTS) {
     const expected = await parse(arrayBuffer.slice(0), loader, {
+      las: {shape: 'mesh'},
       core: {worker: false}
     });
     compareCollectedMeshAttributes(
@@ -541,10 +560,12 @@ test('LASLoader#parseInBatches LAZ 1.4 accepts split file chunks', async () => {
   const response = await fetchFile(LAZ_1_4_BINARY_URL);
   const arrayBuffer = await response.arrayBuffer();
   const expected = await parse(arrayBuffer.slice(0), LASLoader, {
+    las: {shape: 'mesh'},
     core: {worker: false}
   });
   const batches = await parseInBatches(splitArrayBuffer(arrayBuffer, 257), LASLoader, {
     batchSize: 25000,
+    las: {shape: 'mesh'},
     core: {worker: false}
   });
   const actual = await collectMeshAttributes(batches as AsyncIterable<any>);
@@ -698,15 +719,20 @@ for (const fixture of [
       ).toEqual([0, 1, 2, 3]);
     }
   });
-  test(`LASLoader#parse and split streaming LAS ${fixture.version} ${label} preserve Arrow output`, async () => {
+  test(`LASLoader#parse and split streaming LAS ${fixture.version} ${label} preserve mesh output`, async () => {
     const lasArrayBuffer = await (await fetchFile(fixture.lasUrl)).arrayBuffer();
     const lazArrayBuffer = await (await fetchFile(fixture.lazUrl)).arrayBuffer();
-    const expected = await parse(lasArrayBuffer, LASLoader, {core: {worker: false}});
+    const expected = await parse(lasArrayBuffer, LASLoader, {
+      las: {shape: 'mesh'},
+      core: {worker: false}
+    });
     const actual = await parse(lazArrayBuffer.slice(0), LASLoader, {
+      las: {shape: 'mesh'},
       core: {worker: false}
     });
     const batches = await parseInBatches(splitArrayBuffer(lazArrayBuffer, 257), LASLoader, {
       batchSize: 127,
+      las: {shape: 'mesh'},
       core: {worker: false}
     });
     const streamed = await collectMeshAttributes(batches as AsyncIterable<any>);
@@ -730,6 +756,7 @@ for (const fixture of [
     );
     for (const {name, loader} of fixture.parityVariants) {
       const expected = await parse(lazArrayBuffer.slice(0), loader, {
+        las: {shape: 'mesh'},
         core: {worker: false}
       });
       compareMeshAttributes(actual, expected, `${label} TypeScript parse matches ${name}`);
@@ -863,9 +890,11 @@ test('LASLoader#parse variable-chunk LAZ 1.4 matches COPC variant', async () => 
   const response = await fetchFile(COPC_BINARY_URL);
   const arrayBuffer = await response.arrayBuffer();
   const expected = await parse(arrayBuffer.slice(0), LASCOPCLoader, {
+    las: {shape: 'mesh'},
     core: {worker: false}
   });
   const actual = await parse(arrayBuffer.slice(0), LASLoader, {
+    las: {shape: 'mesh'},
     core: {worker: false}
   });
   expect(actual.loaderData.versionAsString, 'fixture is LAS 1.4').toBe('1.4');
@@ -903,10 +932,12 @@ test('LASLoader#parseInBatches split variable-chunk LAZ 1.4 matches COPC', async
   const response = await fetchFile(COPC_BINARY_URL);
   const arrayBuffer = await response.arrayBuffer();
   const expected = await parse(arrayBuffer.slice(0), LASCOPCLoader, {
+    las: {shape: 'mesh'},
     core: {worker: false}
   });
   const batches = await parseInBatches(splitArrayBuffer(arrayBuffer, 257), LASLoader, {
     batchSize: 25000,
+    las: {shape: 'mesh'},
     core: {worker: false}
   });
   const actual = await collectMeshAttributes(batches as AsyncIterable<any>);
@@ -1443,7 +1474,7 @@ test('TypeScriptLAZ#encoder validates input and item versions', () => {
 });
 test('LASLoader#options', async () => {
   const data = await parse(fetchFile(LAS_BINARY_URL), LASLoader, {
-    las: {fp64: false},
+    las: {shape: 'mesh', fp64: false},
     core: {worker: false}
   });
   expect(
@@ -1451,7 +1482,7 @@ test('LASLoader#options', async () => {
     'POSITION attribute is Float32Array'
   ).toBeTruthy();
   const data64 = await parse(fetchFile(LAS_BINARY_URL), LASLoader, {
-    las: {fp64: true},
+    las: {shape: 'mesh', fp64: true},
     core: {worker: false}
   });
   expect(
@@ -1461,6 +1492,7 @@ test('LASLoader#options', async () => {
 });
 test('LASWorker#parse(binary) extra bytes', async () => {
   const data = await parse(fetchFile(LAS_EXTRABYTES_BINARY_URL), LASLoader, {
+    las: {shape: 'mesh'},
     core: {worker: false}
   });
   validateMeshCategoryData(vitestAssertions, data);
@@ -1476,7 +1508,7 @@ test('LASWorkerLoader#load(worker)', async () => {
     console.log('Worker is not usable in non-browser environments');
     return;
   }
-  const data = await load(LAS_BINARY_URL, LASWorkerLoader);
+  const data = await load(LAS_BINARY_URL, LASWorkerLoader, {las: {shape: 'mesh'}});
   validateMeshCategoryData(vitestAssertions, data);
   expect(data.attributes.POSITION.value.length, 'POSITION attribute was found').toBe(
     LAS_POINT_COUNT * 3

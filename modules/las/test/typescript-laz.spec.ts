@@ -496,9 +496,11 @@ test('LASLoader primary TypeScript variant uses its packaged worker', async () =
   const fixture = FIXTURES.find(({pointDataRecordFormat}) => pointDataRecordFormat === 7)!;
   const arrayBuffer = await loadArrayBuffer(fixture.lazUrl);
   const workerResult = (await parse(arrayBuffer.slice(0), LASLoader, {
+    las: {shape: 'mesh'},
     core: {worker: true, reuseWorkers: false, _workerType: 'test'}
   })) as LASMesh;
   const mainThreadResult = (await parse(arrayBuffer.slice(0), LASLoader, {
+    las: {shape: 'mesh'},
     core: {worker: false}
   })) as LASMesh;
 
@@ -507,6 +509,21 @@ test('LASLoader primary TypeScript variant uses its packaged worker', async () =
     mainThreadResult.attributes.POSITION.value
   );
   expect(workerResult.attributes.COLOR_0.value).toEqual(mainThreadResult.attributes.COLOR_0.value);
+});
+
+test('LASLoader Arrow output stays on the main thread', async () => {
+  if (!isBrowser) {
+    return;
+  }
+
+  const fixture = FIXTURES.find(({pointDataRecordFormat}) => pointDataRecordFormat === 7)!;
+  const arrayBuffer = await loadArrayBuffer(fixture.lazUrl);
+  const result = await parse(arrayBuffer, LASLoader, {
+    core: {worker: true, reuseWorkers: false, _workerType: 'test'}
+  });
+
+  expect(result.shape).toBe('arrow-table');
+  expect(result.data.getChild('POSITION')).toBeTruthy();
 });
 
 /** Load one local LAS/LAZ fixture. */

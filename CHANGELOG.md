@@ -2,6 +2,10 @@
 
 ## v5.0
 
+### Unreleased
+
+- feat(las): make LAS and LAZ loader variants Arrow-primary by default while retaining explicit mesh output
+
 ### v5.0.0-alpha.6
 
 - feat(gltf): decode draft vector-topology extensions and support JSON-only GLB v2 files
