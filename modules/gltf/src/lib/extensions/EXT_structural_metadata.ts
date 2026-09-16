@@ -348,7 +348,12 @@ function processPropertyTable(
       );
       propertyTableProperty.data = data;
       if (rawDataOutput.value !== undefined) {
-        propertyTableProperty.rawData = rawDataOutput.value;
+        Object.defineProperty(propertyTableProperty, 'rawData', {
+          value: rawDataOutput.value,
+          configurable: true,
+          enumerable: false,
+          writable: true
+        });
       }
     }
   }
