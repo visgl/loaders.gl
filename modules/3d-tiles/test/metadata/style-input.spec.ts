@@ -90,7 +90,6 @@ test('style input ignores invalid feature ids instead of querying a batch table'
   expect(styleInput.properties).toEqual({material: 'content', shared: 'content'});
 });
 
-
 test('style input resolves the selected content group and skips out-of-range rows', () => {
   const batchTable = {
     featureCount: 1,
