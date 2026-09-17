@@ -5,6 +5,10 @@
 import type {Loader, LoaderWithParser} from '@loaders.gl/loader-utils';
 import type {ArrowTable} from '@loaders.gl/schema';
 import type {DracoMesh} from './lib/draco-types';
+import {
+  deserializeArrowWorkerResult,
+  serializeArrowWorkerResult
+} from '@loaders.gl/arrow/transport';
 import {VERSION} from './lib/utils/version';
 import {DracoFormat} from './draco-format';
 import {
@@ -52,6 +56,8 @@ export const DracoLoader = {
   // shapes: ['mesh'],
   version: VERSION,
   worker: true,
+  serializeWorkerResult: serializeArrowWorkerResult,
+  deserializeWorkerResult: deserializeArrowWorkerResult,
   options: {
     draco: DRACO_LOADER_DEFAULT_OPTIONS
   },

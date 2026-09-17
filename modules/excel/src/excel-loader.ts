@@ -5,6 +5,10 @@
 import type {Loader, LoaderOptions} from '@loaders.gl/loader-utils';
 import type {ArrowTable, ObjectRowTable} from '@loaders.gl/schema';
 import {ExcelFormat} from './excel-format';
+import {
+  deserializeArrowWorkerResult,
+  serializeArrowWorkerResult
+} from '@loaders.gl/arrow/transport';
 
 // __VERSION__ is injected by babel-plugin-version-inline
 // @ts-ignore TS2304: Cannot find name '__VERSION__'.
@@ -36,6 +40,8 @@ export const ExcelLoader = {
   batchType: null as never,
   version: VERSION,
   worker: true,
+  serializeWorkerResult: serializeArrowWorkerResult,
+  deserializeWorkerResult: deserializeArrowWorkerResult,
   options: {
     excel: {
       shape: 'arrow-table',

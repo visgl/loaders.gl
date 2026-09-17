@@ -41,7 +41,7 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
 />
 
 `QuantizedMeshLoader` reconstructs mesh surfaces from the [quantized
-mesh][quantized_mesh] format. It returns the legacy [Mesh](/docs/specifications/category-mesh) object by default and can return a [Mesh Arrow table](/docs/specifications/category-mesh#mesh-arrow-tables) with `quantized-mesh.shape: 'arrow-table'`.
+mesh][quantized_mesh] format. It returns a [Mesh Arrow table](/docs/specifications/category-mesh#mesh-arrow-tables) by default. Set `quantized-mesh.shape: 'mesh'` for the legacy [Mesh](/docs/specifications/category-mesh) object.
 
 [quantized_mesh]: https://github.com/CesiumGS/quantized-mesh
 
@@ -84,7 +84,7 @@ const table = await load(url, QuantizedMeshLoader, {
 | Option                       | Type            | Default        | Description                                                                     |
 | ---------------------------- | --------------- | -------------- | ------------------------------------------------------------------------------- |
 | `quantized-mesh.bounds`      | `array<number>` | `[0, 0, 1, 1]` | Bounds of the image to fit x,y coordinates into. In `[minX, minY, maxX, maxY]`. |
-| `quantized-mesh.shape`       | `string`        | `mesh`         | Output shape: `'mesh'` or `'arrow-table'`.                                      |
+| `quantized-mesh.shape`       | `string`        | `arrow-table`  | Output shape: `'arrow-table'` or `'mesh'`.                                      |
 | `quantized-mesh.skirtHeight` | `number`        | `null`         | If set, create the skirt for the tile with particular height in meters          |
 
 ## Remarks

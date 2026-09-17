@@ -29,9 +29,9 @@ test('OBJLoader#parseText defaults to Arrow table', async () => {
   expect(table.shape, 'default output has arrow-table shape').toBe('arrow-table');
   validateArrowTableSchema(table.data, meshArrowSchema, {schemaName: 'OBJLoader default table'});
 });
-test('OBJLoader#Arrow output stays on the main thread', () => {
+test('OBJLoader#Arrow output supports workers', () => {
   expect(canParseWithWorker(OBJLoader, {core: {worker: true}, obj: {shape: 'arrow-table'}})).toBe(
-    false
+    true
   );
 });
 test('OBJLoader#parseText(shape: arrow-table)', async () => {

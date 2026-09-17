@@ -35,20 +35,11 @@ export function canParseWithWorker(loader: Loader, options?: StrictLoaderOptions
     return false;
   }
 
-  // Some Arrow table outputs need main-thread class instances; structured clone
-  // preserves data but strips methods like `table.getChild()` from Arrow tables.
+  // LAS has no Arrow worker transport yet, so keep its Arrow path on the main thread.
   if (
-    (loader.id === 'excel' &&
-      (options as {excel?: {shape?: string}} | undefined)?.excel?.shape === 'arrow-table') ||
-    (loader.id === 'las' &&
-      ((options as {las?: {shape?: string}} | undefined)?.las?.shape ?? 'arrow-table') ===
-        'arrow-table') ||
-    (loader.id === 'ply' &&
-      (options as {ply?: {shape?: string}} | undefined)?.ply?.shape === 'arrow-table') ||
-    (loader.id === 'obj' &&
-      (options as {obj?: {shape?: string}} | undefined)?.obj?.shape === 'arrow-table') ||
-    (loader.id === 'pcd' &&
-      (options as {pcd?: {shape?: string}} | undefined)?.pcd?.shape === 'arrow-table')
+    loader.id === 'las' &&
+    ((options as {las?: {shape?: string}} | undefined)?.las?.shape ?? 'arrow-table') ===
+      'arrow-table'
   ) {
     return false;
   }

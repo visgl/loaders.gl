@@ -5250,6 +5250,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@loaders.gl/draco@workspace:modules/draco"
   dependencies:
+    "@loaders.gl/arrow": "npm:5.0.0-alpha.6"
     "@loaders.gl/loader-utils": "npm:5.0.0-alpha.6"
     "@loaders.gl/schema": "npm:5.0.0-alpha.6"
     "@loaders.gl/schema-utils": "npm:5.0.0-alpha.6"
@@ -5264,6 +5265,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@loaders.gl/excel@workspace:modules/excel"
   dependencies:
+    "@loaders.gl/arrow": "npm:5.0.0-alpha.6"
     "@loaders.gl/loader-utils": "npm:5.0.0-alpha.6"
     "@loaders.gl/schema": "npm:5.0.0-alpha.6"
     "@loaders.gl/schema-utils": "npm:5.0.0-alpha.6"
@@ -5278,6 +5280,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@loaders.gl/flatgeobuf@workspace:modules/flatgeobuf"
   dependencies:
+    "@loaders.gl/arrow": "npm:5.0.0-alpha.6"
     "@loaders.gl/gis": "npm:5.0.0-alpha.6"
     "@loaders.gl/loader-utils": "npm:5.0.0-alpha.6"
     "@loaders.gl/schema": "npm:5.0.0-alpha.6"
@@ -5426,6 +5429,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@loaders.gl/json@workspace:modules/json"
   dependencies:
+    "@loaders.gl/arrow": "npm:5.0.0-alpha.6"
     "@loaders.gl/gis": "npm:5.0.0-alpha.6"
     "@loaders.gl/loader-utils": "npm:5.0.0-alpha.6"
     "@loaders.gl/schema": "npm:5.0.0-alpha.6"
@@ -5550,6 +5554,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@loaders.gl/obj@workspace:modules/obj"
   dependencies:
+    "@loaders.gl/arrow": "npm:5.0.0-alpha.6"
     "@loaders.gl/loader-utils": "npm:5.0.0-alpha.6"
     "@loaders.gl/schema": "npm:5.0.0-alpha.6"
     "@loaders.gl/schema-utils": "npm:5.0.0-alpha.6"
@@ -5607,6 +5612,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@loaders.gl/pcd@workspace:modules/pcd"
   dependencies:
+    "@loaders.gl/arrow": "npm:5.0.0-alpha.6"
     "@loaders.gl/loader-utils": "npm:5.0.0-alpha.6"
     "@loaders.gl/schema": "npm:5.0.0-alpha.6"
     "@loaders.gl/schema-utils": "npm:5.0.0-alpha.6"
@@ -5619,6 +5625,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@loaders.gl/ply@workspace:modules/ply"
   dependencies:
+    "@loaders.gl/arrow": "npm:5.0.0-alpha.6"
     "@loaders.gl/loader-utils": "npm:5.0.0-alpha.6"
     "@loaders.gl/schema": "npm:5.0.0-alpha.6"
     "@loaders.gl/schema-utils": "npm:5.0.0-alpha.6"
@@ -5809,6 +5816,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@loaders.gl/terrain@workspace:modules/terrain"
   dependencies:
+    "@loaders.gl/arrow": "npm:5.0.0-alpha.6"
     "@loaders.gl/images": "npm:5.0.0-alpha.6"
     "@loaders.gl/loader-utils": "npm:5.0.0-alpha.6"
     "@loaders.gl/schema": "npm:5.0.0-alpha.6"

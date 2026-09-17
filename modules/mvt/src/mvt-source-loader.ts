@@ -57,13 +57,13 @@ export const MVTSourceLoader = {
 
   options: {
     mvt: {
-      // TODO - add options here
+      shape: 'arrow-table'
     }
   },
 
   defaultOptions: {
     mvt: {
-      // TODO - add options here
+      shape: 'arrow-table'
     }
   },
 
@@ -247,7 +247,7 @@ export class MVTTileSource
       ...this.loadOptions,
       mvt: {
         ...inheritedMVTOptions,
-        shape: this.options.mvt?.shape || inheritedMVTOptions?.shape || 'geojson-table',
+        shape: this.options.mvt?.shape || inheritedMVTOptions?.shape || 'arrow-table',
         coordinates: 'wgs84',
         tileIndex: {x: tileParams.x, y: tileParams.y, z: tileParams.z},
         layers: selectedLayers

@@ -530,11 +530,15 @@ async function loadTable(
     );
   }
 
-  const table = await coreApi.load(
-    url,
-    loaders.length === 1 ? loaders[0] : loaders,
-    options.core?.loadOptions
-  );
+  const loadOptions = {
+    ...options.core?.loadOptions,
+    // This source's tiler consumes object-row GeoJSON features internally.
+    geojson: {
+      ...options.core?.loadOptions?.geojson,
+      shape: 'geojson-table'
+    }
+  };
+  const table = await coreApi.load(url, loaders.length === 1 ? loaders[0] : loaders, loadOptions);
   if (!isGeoJSONTable(table)) {
     throw new Error(
       'TableTileSourceLoader requires the configured parser loaders to return a GeoJSONTable.'

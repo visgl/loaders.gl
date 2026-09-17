@@ -13,6 +13,10 @@ import type {
   TableBatch
 } from '@loaders.gl/schema';
 import {geojsonToBinary, type LegacyGeoJSONCRS} from '@loaders.gl/gis';
+import {
+  deserializeArrowWorkerResult,
+  serializeArrowWorkerResult
+} from '@loaders.gl/arrow/transport';
 import {parseJSONInBatches} from './lib/parsers/parse-json-in-batches';
 import {
   convertGeoJSONFeaturesToArrowTable,
@@ -43,7 +47,9 @@ export const GeoJSONLoaderWithParser = {
   ...GeoJSONLoaderMetadataWithoutPreload,
   parse,
   parseTextSync,
-  parseInBatches
+  parseInBatches,
+  serializeWorkerBatch: serializeArrowWorkerResult,
+  deserializeWorkerBatch: deserializeArrowWorkerResult
 } as const satisfies LoaderWithParser<
   GeoJSONTable | BinaryFeatureCollection | ArrowTable,
   TableBatch | ArrowTableBatch,

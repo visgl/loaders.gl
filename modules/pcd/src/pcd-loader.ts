@@ -6,6 +6,10 @@ import type {Loader, LoaderOptions} from '@loaders.gl/loader-utils';
 import type {MeshArrowTable} from '@loaders.gl/schema';
 import type {PCDMesh} from './lib/pcd-types';
 import {PCDFormat} from './pcd-format';
+import {
+  deserializeArrowWorkerResult,
+  serializeArrowWorkerResult
+} from '@loaders.gl/arrow/transport';
 
 // __VERSION__ is injected by babel-plugin-version-inline
 // @ts-ignore TS2304: Cannot find name '__VERSION__'.
@@ -39,6 +43,8 @@ export const PCDLoader = {
   batchType: null as never,
   version: VERSION,
   worker: true,
+  serializeWorkerResult: serializeArrowWorkerResult,
+  deserializeWorkerResult: deserializeArrowWorkerResult,
   options: {
     pcd: {shape: 'arrow-table', colorFormat: 'uint8norm'}
   },

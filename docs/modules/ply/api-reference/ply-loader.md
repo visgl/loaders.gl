@@ -1,6 +1,6 @@
 ---
 title: PLYLoader
-description: Parse Polygon File Format meshes into legacy Mesh objects or Mesh Arrow tables.
+description: Parse Polygon File Format meshes into Mesh Arrow tables or legacy Mesh objects.
 hide_title: true
 page_style: designed
 ---
@@ -47,9 +47,9 @@ import {PlyDocsTabs} from '@site/src/components/docs/ply-docs-tabs';
   <img src="https://img.shields.io/badge/From-v1.0-blue.svg?style=flat-square" alt="From-v1.0" />
 </p>
 
-`PLYLoader` parses simple meshes in the Polygon File Format or the Stanford Triangle Format and returns a legacy [Mesh](/docs/specifications/category-mesh) object by default.
+`PLYLoader` parses simple meshes in the Polygon File Format or the Stanford Triangle Format and returns a [Mesh Arrow table](/docs/specifications/category-mesh#mesh-arrow-tables) by default.
 
-Set `ply.shape: 'arrow-table'` to return a [Mesh Arrow table](/docs/specifications/category-mesh#mesh-arrow-tables).
+Set `ply.shape: 'mesh'` to return the legacy [Mesh](/docs/specifications/category-mesh) object.
 
 | Shape         | Output             | Use when                           |
 | ------------- | ------------------ | ---------------------------------- |
@@ -87,4 +87,4 @@ for await (const batch of batches) {
 
 | Option | Type | Default | Description |
 | ------ | ---- | ------- | ----------- |
-| `ply.shape` | `'mesh' \| 'arrow-table'` | `'mesh'` | Selects Mesh or Mesh Arrow table output. |
+| `ply.shape` | `'mesh' \| 'arrow-table'` | `'arrow-table'` | Selects Mesh Arrow table or legacy Mesh output. |

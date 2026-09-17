@@ -867,6 +867,7 @@ test('GeoJSONLoader#parse(arrow-table options require Arrow shape)', async () =>
       BundledGeoJSONLoader.parseTextSync?.(
         JSON.stringify({type: 'FeatureCollection', features: []}),
         {
+          geojson: {shape: 'geojson-table'},
           json: {schema}
         }
       ),
@@ -877,6 +878,7 @@ test('GeoJSONLoader#parse(arrow-table options require Arrow shape)', async () =>
       BundledGeoJSONLoader.parseTextSync?.(
         JSON.stringify({type: 'FeatureCollection', features: []}),
         {
+          geojson: {shape: 'geojson-table'},
           json: {arrowConversion: {onExtraField: 'drop'}}
         }
       ),
@@ -887,6 +889,7 @@ test('GeoJSONLoader#parse(arrow-table options require Arrow shape)', async () =>
       BundledGeoJSONLoader.parseTextSync?.(
         JSON.stringify({type: 'FeatureCollection', features: []}),
         {
+          geojson: {shape: 'geojson-table'},
           json: {geoarrowGeometryColumn: 'geom'}
         }
       ),
@@ -1039,7 +1042,7 @@ test('GeoJSONLoader#exports official names only', () => {
     undefined
   );
 });
-test('GeoJSONLoader#parse(default geojson-table shape)', async () => {
+test('GeoJSONLoader#parse(default arrow-table shape)', async () => {
   const table = BundledGeoJSONLoader.parseTextSync?.(
     JSON.stringify({
       type: 'FeatureCollection',
@@ -1052,8 +1055,8 @@ test('GeoJSONLoader#parse(default geojson-table shape)', async () => {
       ]
     })
   );
-  expect(table.shape, 'returns GeoJSON table by default').toBe('geojson-table');
-  expect(table.features.length, 'returns features').toBe(1);
+  expect(table.shape, 'returns Arrow table by default').toBe('arrow-table');
+  expect(table.data.getChild('name')?.get(0), 'lifts properties as columns').toBe('A');
 });
 test('GeoJSONLoader#parse(binary-feature-collection shape)', async () => {
   const binary = BundledGeoJSONLoader.parseTextSync?.(

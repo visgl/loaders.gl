@@ -31,7 +31,7 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
   tone="blue"
   items={[
     {label: 'Input', value: 'Draco-compressed mesh or point cloud'},
-    {label: 'Default', value: 'Legacy Mesh object'},
+    {label: 'Default', value: 'Mesh Arrow table'},
     {label: 'Arrow', value: 'Mesh Arrow table with attribute columns'},
     {label: 'Execution', value: 'WASM, JavaScript, or injected Draco backend'}
   ]}
@@ -45,7 +45,7 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
 
 ![logo](../images/draco-small.png)
 
-`DracoLoader` decodes a mesh or point cloud (maps of attributes) using [DRACO](https://google.github.io/draco/) compression. It returns the legacy [Mesh](/docs/specifications/category-mesh) object by default and can return a [Mesh Arrow table](/docs/specifications/category-mesh#mesh-arrow-tables) with `draco.shape: 'arrow-table'`.
+`DracoLoader` decodes a mesh or point cloud (maps of attributes) using [DRACO](https://google.github.io/draco/) compression. It returns a [Mesh Arrow table](/docs/specifications/category-mesh#mesh-arrow-tables) by default. Set `draco.shape: 'mesh'` for the legacy [Mesh](/docs/specifications/category-mesh) object.
 
 ## Usage
 
@@ -62,7 +62,7 @@ const table = await load(url, DracoLoader, {
 
 ## Shapes
 
-`DracoLoader` returns legacy `Mesh` objects by default. Set `draco.shape` to select another representation.
+`DracoLoader` returns Mesh Arrow tables by default. Set `draco.shape` to select another representation.
 
 | Shape         | Output                                                      |
 | ------------- | ----------------------------------------------------------- |
@@ -96,7 +96,7 @@ Metadata Support:
 
 | Option | Type | Default | Description |
 | ------ | ---- | ------- | ----------- |
-| `draco.shape` | string | `'mesh'` | Output shape: `'mesh'` or `'arrow-table'`. |
+| `draco.shape` | string | `'arrow-table'` | Output shape: `'arrow-table'` or `'mesh'`. |
 | `draco.backend` | string | `'wasm'` when WebAssembly is available | Draco decoder backend: `'wasm'`, `'javascript'`, or `'draco3d'`. |
 | `draco.decoderType` | string | `'wasm'` when WebAssembly is available | Deprecated alias for selecting `'wasm'` or the JavaScript fallback. Use `draco.backend` instead. |
 | `draco.extraAttributes` | object | `{}` | Additional custom attributes to decode. |

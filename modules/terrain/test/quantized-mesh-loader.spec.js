@@ -13,7 +13,9 @@ test('QuantizedMeshLoader#loader objects', async () => {
   validateLoader(QuantizedMeshWorkerLoader, 'QuantizedMeshWorkerLoader');
 });
 test('QuantizedMeshLoader#parse tile-with-extensions', async () => {
-  const data = await load(TILE_WITH_EXTENSIONS_URL, QuantizedMeshLoader);
+  const data = await load(TILE_WITH_EXTENSIONS_URL, QuantizedMeshLoader, {
+    'quantized-mesh': {shape: 'mesh'}
+  });
   validateMeshCategoryData(data); // TODO: should there be a validateMeshCategoryData?
   expect(data.mode, 'mode is TRIANGLES (4)').toBe(4);
   expect(data.indices.value.length, 'indices was found').toBe(EXPECTED_TILE_TRIANGLE_COUNT * 3);
@@ -28,7 +30,7 @@ test('QuantizedMeshLoader#parse tile-with-extensions', async () => {
   expect(data.attributes.POSITION.size, 'POSITION attribute was found').toBe(3);
 });
 test('QuantizedMeshLoader#add skirt to tile-with-extensions', async () => {
-  const options = {'quantized-mesh': {skirtHeight: 50}};
+  const options = {'quantized-mesh': {skirtHeight: 50, shape: 'mesh'}};
   const data = await load(TILE_WITH_EXTENSIONS_URL, QuantizedMeshLoader, options);
   expect(data.indices.value.length, 'indices was found').toBe(1329 * 3);
   expect(data.attributes.TEXCOORD_0.value.length, 'TEXCOORD_0 attribute was found').toBe(781 * 2);
@@ -39,7 +41,9 @@ test('QuantizedMeshWorkerLoader#tile-with-extensions', async () => {
     console.log('Worker is not usable in non-browser environments');
     return;
   }
-  const data = await load(TILE_WITH_EXTENSIONS_URL, QuantizedMeshWorkerLoader);
+  const data = await load(TILE_WITH_EXTENSIONS_URL, QuantizedMeshWorkerLoader, {
+    'quantized-mesh': {shape: 'mesh'}
+  });
   validateMeshCategoryData(data); // TODO: should there be a validateMeshCategoryData?
   expect(data.mode, 'mode is TRIANGLES (4)').toBe(4);
   expect(data.indices.value.length, 'indices was found').toBe(EXPECTED_TILE_TRIANGLE_COUNT * 3);

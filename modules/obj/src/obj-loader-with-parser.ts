@@ -12,6 +12,10 @@ import {
   type LoaderWithParser
 } from '@loaders.gl/loader-utils';
 import type {ArrowTableBatch, Mesh, MeshArrowTable} from '@loaders.gl/schema';
+import {
+  deserializeArrowWorkerResult,
+  serializeArrowWorkerResult
+} from '@loaders.gl/arrow/transport';
 import {convertMeshToTable, convertTableToMesh, getMeshBoundingBox} from '@loaders.gl/schema-utils';
 import {getOBJSchema} from './lib/get-obj-schema';
 import {parseOBJ} from './lib/parse-obj';
@@ -91,7 +95,9 @@ export const OBJLoaderWithParser = {
     }
 
     yield* parseOBJPointCloudInBatches(text, options, batchSize);
-  }
+  },
+  serializeWorkerBatch: serializeArrowWorkerResult,
+  deserializeWorkerBatch: deserializeArrowWorkerResult
 } as const satisfies LoaderWithParser<Mesh | MeshArrowTable, OBJParsedBatch, OBJLoaderOptions>;
 
 /** Returns a numeric batch size when batching has an explicit row count. */

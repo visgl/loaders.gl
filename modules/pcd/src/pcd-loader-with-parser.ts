@@ -10,6 +10,10 @@ import {
   type LoaderWithParser
 } from '@loaders.gl/loader-utils';
 import type {ArrowTableBatch, MeshArrowTable} from '@loaders.gl/schema';
+import {
+  deserializeArrowWorkerResult,
+  serializeArrowWorkerResult
+} from '@loaders.gl/arrow/transport';
 import {convertMeshToTable, convertTableToMesh} from '@loaders.gl/schema-utils';
 import type {PCDMesh} from './lib/pcd-types';
 import {parsePCD, parsePCDHeader} from './lib/parse-pcd';
@@ -74,7 +78,9 @@ export const PCDLoaderWithParser = {
     }
 
     yield makePCDBatch(parsePCD(data, options), options);
-  }
+  },
+  serializeWorkerBatch: serializeArrowWorkerResult,
+  deserializeWorkerBatch: deserializeArrowWorkerResult
 } as const satisfies LoaderWithParser<PCDMesh | MeshArrowTable, PCDParsedBatch, PCDLoaderOptions>;
 
 /** Returns a numeric batch size when batching has an explicit row count. */

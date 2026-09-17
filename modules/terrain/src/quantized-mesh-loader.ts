@@ -6,6 +6,10 @@ import type {Loader, LoaderOptions} from '@loaders.gl/loader-utils';
 import type {Mesh, MeshArrowTable} from '@loaders.gl/schema';
 import {VERSION} from './lib/utils/version';
 import {QuantizedMeshFormat} from './terrain-format';
+import {
+  deserializeArrowWorkerResult,
+  serializeArrowWorkerResult
+} from '@loaders.gl/arrow/transport';
 
 /** QuantizedMeshLoader options */
 export type QuantizedMeshLoaderOptions = LoaderOptions & {
@@ -30,11 +34,14 @@ export const QuantizedMeshLoader = {
   ...QuantizedMeshFormat,
   version: VERSION,
   worker: true,
+  serializeWorkerResult: serializeArrowWorkerResult,
+  deserializeWorkerResult: deserializeArrowWorkerResult,
   /** Loads the parser-bearing quantized mesh loader implementation. */
   preload: async () =>
     (await import('./quantized-mesh-loader-with-parser')).QuantizedMeshLoaderWithParser,
   options: {
     'quantized-mesh': {
+      shape: 'arrow-table',
       bounds: [0, 0, 1, 1],
       skirtHeight: null
     }

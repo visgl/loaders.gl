@@ -16,6 +16,10 @@ import type {JSONLoaderOptions} from './json-loader';
 import {GeoJSONFormat} from './json-format';
 import type {ArrowConversionOptions} from './lib/parsers/convert-row-table-to-arrow';
 import type {GeoArrowEncodingPreference} from '@loaders.gl/schema';
+import {
+  deserializeArrowWorkerResult,
+  serializeArrowWorkerResult
+} from '@loaders.gl/arrow/transport';
 
 // __VERSION__ is injected by babel-plugin-version-inline
 // @ts-ignore TS2304: Cannot find name '__VERSION__'.
@@ -58,9 +62,11 @@ export const GeoJSONLoader = {
   ...GeoJSONFormat,
   version: VERSION,
   worker: true,
+  serializeWorkerResult: serializeArrowWorkerResult,
+  deserializeWorkerResult: deserializeArrowWorkerResult,
   options: {
     geojson: {
-      shape: 'geojson-table'
+      shape: 'arrow-table'
     },
     json: {
       jsonpaths: ['$.features'],

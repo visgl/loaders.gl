@@ -102,6 +102,8 @@ async function decompressPrimitive(
     ...options,
     draco: {
       ...options.draco,
+      // Internal glTF decoding consumes the legacy mesh contract.
+      shape: 'mesh',
       decoderProfile: options.draco?.decoderProfile || 'gltf',
       extraAttributes: dracoExtension.attributes
     }

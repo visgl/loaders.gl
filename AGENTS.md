@@ -45,6 +45,9 @@
 - If `gh` authentication fails, check whether the authenticated GitHub plugin is available before treating GitHub access as blocked.
 - When opening a pull request, verify that its description renders as properly formatted Markdown with real newlines, headings, and lists; do not submit a description with escaped or flattened newlines.
 - After opening a pull request, wait 15 minutes, then review and resolve any outstanding review comments, and verify that coverage and all CI checks are green. Continue addressing newly posted review comments and rechecking the checks until the pull request is ready.
+- When babysitting an open pull request, keep the branch current with `master`, resolve merge conflicts promptly, and recheck mergeability after every push.
+- Close the loop on every actionable review thread: implement the fix, reply with what changed, resolve the thread, and recheck for newly posted comments before declaring the pull request ready.
+- Treat CI as a final gate after review changes: rerun failed jobs when appropriate, investigate failures rather than dismissing them, and do not declare the pull request ready while required checks are failing or pending.
 
 ## Ready for merge
 

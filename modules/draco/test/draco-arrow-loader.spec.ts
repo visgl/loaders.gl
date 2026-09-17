@@ -43,6 +43,14 @@ test('DracoLoader#parse(mainthread, shape: arrow-table)', async () => {
   expect(positions, 'POSITION attribute was found').toBeTruthy();
   expect(data.schema, 'Has arrow-like schema').toBeTruthy();
 });
+test('DracoLoader#parse(mainthread) defaults to Arrow table', async () => {
+  if (skipBrowserDracoWasmTest()) {
+    return;
+  }
+  const table = await load(BUNNY_DRC_URL, DracoLoader, {worker: false});
+  validateDracoMeshArrowTable(table);
+  expect(table.data.getChild('POSITION'), 'POSITION attribute was found').toBeTruthy();
+});
 test('DracoLoader#draco3d npm package with shape: arrow-table', async () => {
   if (skipBrowserDracoWasmTest()) {
     return;

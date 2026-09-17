@@ -31,6 +31,6 @@ export const DRACO_LOADER_DEFAULT_OPTIONS = {
   decoderType: typeof WebAssembly === 'object' ? 'wasm' : 'js',
   extraAttributes: {},
   attributeNameEntry: undefined,
-  shape: 'mesh',
+  shape: 'arrow-table',
   decoderProfile: 'full'
 } as const;

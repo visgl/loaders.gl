@@ -51,16 +51,16 @@ The _mesh and pointcloud_ loader category is intended for simpler mesh and point
 | [`LASLoader`](/docs/modules/las/api-reference/las-loader) with `las.shape: 'arrow-table'`         | Mesh Arrow table          |
 | [`OBJLoader`](/docs/modules/obj/api-reference/obj-loader)                                        | Mesh Arrow table          |
 | [`PCDLoader`](/docs/modules/pcd/api-reference/pcd-loader)                                        | Mesh Arrow table          |
-| [`PLYLoader`](/docs/modules/ply/api-reference/ply-loader) with `ply.shape: 'arrow-table'`         | Mesh Arrow table          |
-| [`QuantizedMeshLoader`](/docs/modules/terrain/api-reference/quantized-mesh-loader) with `quantized-mesh.shape: 'arrow-table'` | Mesh Arrow table          |
-| [`TerrainLoader`](/docs/modules/terrain/api-reference/terrain-loader) with `terrain.shape: 'arrow-table'` | Mesh Arrow table          |
+| [`PLYLoader`](/docs/modules/ply/api-reference/ply-loader)         | Mesh Arrow table          |
+| [`QuantizedMeshLoader`](/docs/modules/terrain/api-reference/quantized-mesh-loader) | Mesh Arrow table          |
+| [`TerrainLoader`](/docs/modules/terrain/api-reference/terrain-loader) | Mesh Arrow table          |
 | [`DracoLoader`](/docs/modules/draco/api-reference/draco-loader)                                  | Legacy Mesh object        |
 | [`LASLoader`](/docs/modules/las/api-reference/las-loader)                                        | Legacy PointCloud object  |
 | [`OBJLoader`](/docs/modules/obj/api-reference/obj-loader) with `obj.shape: 'mesh'`               | Legacy Mesh object        |
 | [`PCDLoader`](/docs/modules/pcd/api-reference/pcd-loader) with `pcd.shape: 'mesh'`               | Legacy PointCloud object  |
-| [`PLYLoader`](/docs/modules/ply/api-reference/ply-loader)                                        | Legacy Mesh object        |
-| [`QuantizedMeshLoader`](/docs/modules/terrain/api-reference/quantized-mesh-loader)               | Legacy Mesh object        |
-| [`TerrainLoader`](/docs/modules/terrain/api-reference/terrain-loader)                            | Legacy Mesh object        |
+| [`PLYLoader`](/docs/modules/ply/api-reference/ply-loader) with `ply.shape: 'mesh'` | Legacy Mesh object        |
+| [`QuantizedMeshLoader`](/docs/modules/terrain/api-reference/quantized-mesh-loader) with `quantized-mesh.shape: 'mesh'` | Legacy Mesh object        |
+| [`TerrainLoader`](/docs/modules/terrain/api-reference/terrain-loader) with `terrain.shape: 'mesh'` | Legacy Mesh object        |
 
 ## Mesh/PointCloud Category Writers
 

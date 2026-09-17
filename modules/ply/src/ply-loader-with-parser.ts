@@ -11,6 +11,10 @@ import {
 } from '@loaders.gl/loader-utils';
 import {convertColorArrayToFloat16, convertColorArrayToFloat32} from '@loaders.gl/schema';
 import type {MeshArrowTable} from '@loaders.gl/schema';
+import {
+  deserializeArrowWorkerResult,
+  serializeArrowWorkerResult
+} from '@loaders.gl/arrow/transport';
 import type {PLYHeader, PLYMesh} from './lib/ply-types';
 import type {ParsePLYOptions} from './lib/parse-ply';
 import {convertMeshToTable, convertTableToMesh, deduceMeshSchema} from '@loaders.gl/schema-utils';
@@ -29,7 +33,7 @@ const {preload: _PLYLoaderPreload, ...PLYLoaderMetadataWithoutPreload} = PLYLoad
 
 export type PLYLoaderOptions = LoaderOptions & {
   ply?: ParsePLYOptions & {
-    /** Output shape. Defaults to a legacy Mesh object. */
+    /** Output shape. Defaults to a Mesh Arrow table. */
     shape?: 'mesh' | 'arrow-table';
     /** Color storage format. Defaults to uint8norm for backwards compatibility. */
     colorFormat?: 'uint8norm' | 'float16' | 'float32';
@@ -100,7 +104,9 @@ export const PLYLoaderWithParser = {
         : convertPLYMesh(meshOrTable, options);
       yield isMeshArrowTable(convertedData) ? makeTableScanBatch(convertedData) : convertedData;
     }
-  }
+  },
+  serializeWorkerBatch: serializeArrowWorkerResult,
+  deserializeWorkerBatch: deserializeArrowWorkerResult
 } as const satisfies LoaderWithParser<PLYMesh | MeshArrowTable, any, PLYLoaderOptions>;
 
 /** Return requested public PLY shape from the parser's Arrow table. */
