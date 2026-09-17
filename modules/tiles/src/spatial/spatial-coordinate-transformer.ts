@@ -8,6 +8,11 @@ import {Ellipsoid} from '@math.gl/geospatial';
 import type {ReadonlyCRSDefinition} from '@math.gl/crs';
 import {Proj4Projection, toProj4CRSDefinition, type Proj4CRSDefinition} from '@math.gl/proj4';
 import {getGeoidModel} from './spatial-resource-registry';
+import {
+  normalizeCrsIdentifier,
+  WGS84_GEOCENTRIC_CRS,
+  WGS84_GEOGRAPHIC_CRS
+} from './normalize-crs-identifier';
 import type {
   TilesetHeightReference,
   TilesetSpatialOptions,
@@ -15,9 +20,6 @@ import type {
   TilesetTargetHeightReference
 } from './spatial-types';
 export {getSpatialCoordinateFrame} from './get-spatial-coordinate-frame';
-
-const GEOGRAPHIC_CRS = 'EPSG:4326';
-const GEOCENTRIC_CRS = 'EPSG:4978';
 
 /**
  * Deterministic coordinate transformer used by 3D tile format adapters.
@@ -90,13 +92,13 @@ export class SpatialCoordinateTransformer {
       if (!this.sourceIsGeographic && !this.sourceIsGeocentric) {
         this.geographicProjection = new Proj4Projection({
           from: getHorizontalProj4Definition(spatialReference.sourceCrs),
-          to: GEOGRAPHIC_CRS,
+          to: WGS84_GEOGRAPHIC_CRS,
           enforceAxis: false
         });
       }
       if (!this.outputIsGeographic && !this.outputIsGeocentric) {
         this.heightOutputProjection = new Proj4Projection({
-          from: GEOGRAPHIC_CRS,
+          from: WGS84_GEOGRAPHIC_CRS,
           to: getHorizontalProj4Definition(outputCrs),
           enforceAxis: false
         });
@@ -157,6 +159,59 @@ export class SpatialCoordinateTransformer {
     return result;
   }
 
+  /** Transform a packed sequence of xyz positions, preserving the input array type only when safe. */
+  transformPositions(positions: ArrayLike<number>): Float64Array {
+    if (positions.length % 3 !== 0) {
+      throw new Error('Packed spatial positions must contain a multiple of three components');
+    }
+    const transformedPositions = new Float64Array(positions.length);
+    for (let index = 0; index < positions.length; index += 3) {
+      const transformed = this.transformPosition([
+        Number(positions[index]),
+        Number(positions[index + 1]),
+        Number(positions[index + 2])
+      ]);
+      transformedPositions[index] = transformed[0];
+      transformedPositions[index + 1] = transformed[1];
+      transformedPositions[index + 2] = transformed[2];
+    }
+    return transformedPositions;
+  }
+
+  /** Transform packed xyz normals using a local finite-difference tangent approximation. */
+  transformNormals(normals: ArrayLike<number>, positions: ArrayLike<number>): Float32Array {
+    if (normals.length !== positions.length || normals.length % 3 !== 0) {
+      throw new Error('Spatial normals and positions must have matching xyz component counts');
+    }
+    const transformedNormals = new Float32Array(normals.length);
+    const epsilon = 1e-5;
+    for (let index = 0; index < normals.length; index += 3) {
+      const position = [
+        Number(positions[index]),
+        Number(positions[index + 1]),
+        Number(positions[index + 2])
+      ];
+      const normal = [
+        Number(normals[index]),
+        Number(normals[index + 1]),
+        Number(normals[index + 2])
+      ];
+      const jacobian = getFiniteDifferenceJacobian(this, position, epsilon);
+      const transformedNormal = inverseTransposeMultiply(jacobian, normal);
+      const length = Math.hypot(...transformedNormal);
+      if (length > 0 && Number.isFinite(length)) {
+        transformedNormals[index] = transformedNormal[0] / length;
+        transformedNormals[index + 1] = transformedNormal[1] / length;
+        transformedNormals[index + 2] = transformedNormal[2] / length;
+      } else {
+        transformedNormals[index] = normal[0];
+        transformedNormals[index + 1] = normal[1];
+        transformedNormals[index + 2] = normal[2];
+      }
+    }
+    return transformedNormals;
+  }
+
   /** Convert one source coordinate to conventional WGS84 longitude, latitude, and height. */
   private toGeographic(coordinate: number[]): number[] {
     if (this.sourceIsGeocentric) {
@@ -178,6 +233,47 @@ export class SpatialCoordinateTransformer {
     }
     return this.heightOutputProjection!.project(coordinate.slice(0, 3));
   }
+}
+
+function getFiniteDifferenceJacobian(
+  transformer: SpatialCoordinateTransformer,
+  position: number[],
+  epsilon: number
+): number[][] {
+  const columns: number[][] = [];
+  for (let axis = 0; axis < 3; axis++) {
+    const plus = position.slice();
+    const minus = position.slice();
+    plus[axis] += epsilon;
+    minus[axis] -= epsilon;
+    const plusPosition = transformer.transformPosition(plus);
+    const minusPosition = transformer.transformPosition(minus);
+    columns.push([
+      (plusPosition[0] - minusPosition[0]) / (2 * epsilon),
+      (plusPosition[1] - minusPosition[1]) / (2 * epsilon),
+      (plusPosition[2] - minusPosition[2]) / (2 * epsilon)
+    ]);
+  }
+  return columns;
+}
+
+function inverseTransposeMultiply(jacobianColumns: number[][], vector: number[]): number[] {
+  const [a, b, c] = jacobianColumns;
+  const determinant =
+    a[0] * (b[1] * c[2] - b[2] * c[1]) -
+    b[0] * (a[1] * c[2] - a[2] * c[1]) +
+    c[0] * (a[1] * b[2] - a[2] * b[1]);
+  if (!Number.isFinite(determinant) || Math.abs(determinant) < 1e-15) {
+    return vector;
+  }
+  const inverseTranspose = [
+    [b[1] * c[2] - b[2] * c[1], a[2] * c[1] - a[1] * c[2], a[1] * b[2] - a[2] * b[1]],
+    [b[2] * c[0] - b[0] * c[2], a[0] * c[2] - a[2] * c[0], a[2] * b[0] - a[0] * b[2]],
+    [b[0] * c[1] - b[1] * c[0], a[1] * c[0] - a[0] * c[1], a[0] * b[1] - a[1] * b[0]]
+  ];
+  return inverseTranspose.map(
+    row => (row[0] * vector[0] + row[1] * vector[1] + row[2] * vector[2]) / determinant
+  );
 }
 
 /** Select the horizontal component that the proj4js runtime can execute. */
@@ -224,7 +320,9 @@ function validateTransformRequest(spatialReference: TilesetSpatialReference): vo
 
 /** Return whether a CRS definition identifies the WGS84 geocentric frame. */
 function isWgs84Geocentric(definition: unknown): boolean {
-  return typeof definition === 'string' && normalizeCrsIdentifier(definition) === GEOCENTRIC_CRS;
+  return (
+    typeof definition === 'string' && normalizeCrsIdentifier(definition) === WGS84_GEOCENTRIC_CRS
+  );
 }
 
 /** Return whether a CRS definition uses conventional WGS84 longitude/latitude coordinates. */
@@ -233,16 +331,9 @@ function isWgs84Geographic(definition: unknown): boolean {
     return false;
   }
   const identifier = normalizeCrsIdentifier(definition);
-  return identifier === GEOGRAPHIC_CRS || identifier === 'EPSG:4979' || identifier === 'OGC:CRS84';
-}
-
-/** Normalize common OGC URL and URN CRS spellings to authority identifiers. */
-function normalizeCrsIdentifier(identifier: string): string {
-  const normalizedIdentifier = identifier.trim().toUpperCase();
-  const ogcMatch = normalizedIdentifier.match(
-    /(?:\/DEF\/CRS\/|URN:OGC:DEF:CRS:)([A-Z0-9_-]+)(?:\/|::)(?:[^/:]*[/:])?([A-Z0-9_.-]+)$/
+  return (
+    identifier === WGS84_GEOGRAPHIC_CRS || identifier === 'EPSG:4979' || identifier === 'OGC:CRS84'
   );
-  return ogcMatch ? `${ogcMatch[1]}:${ogcMatch[2]}` : normalizedIdentifier;
 }
 
 /** Return whether source and target height interpretations differ. */

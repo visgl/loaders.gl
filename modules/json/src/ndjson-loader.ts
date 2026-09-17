@@ -54,7 +54,7 @@ export const NDJSONLoader = {
   version: VERSION,
   options: {
     ndjson: {
-      shape: 'object-row-table',
+      shape: 'arrow-table',
       schema: undefined,
       arrowConversion: undefined
     }

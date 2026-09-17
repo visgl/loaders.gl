@@ -20,6 +20,7 @@ import {
   Tiles3DSource,
   Tileset3D,
   TILE_REFINEMENT,
+  createTilesetSpatialReference,
   isTileset3DSource,
   type ImplicitTilingDescriptor,
   type TilesetJSON,
@@ -514,6 +515,193 @@ test('Tiles3DSource recognizes extensionless nested tilesets from parsed shape',
   const loadResult = await source.loadTileContent(tile);
   expect(loadResult.nestedTileset).toBe(nestedTileset);
   expect(tile.content).toBe(nestedTileset);
+});
+test('Tiles3DSource resolves nested CRS into the parent output frame', () => {
+  const source = new Tiles3DSource({
+    url: 'https://example.com/root',
+    loader: Tiles3DLoader,
+    asset: {version: '1.1'},
+    root: {refine: 'REPLACE'}
+  } as any);
+  const parentSpatialReference = createTilesetSpatialReference(
+    {
+      sourceCrs: 'EPSG:4978',
+      coordinateFrame: 'geocentric',
+      axisOrder: 'xyz',
+      heightReference: 'ellipsoidal',
+      provenance: 'metadata'
+    },
+    {targetCrs: 'EPSG:4978', outputCoordinates: 'target-crs'}
+  );
+  const nestedSpatialReference = createTilesetSpatialReference({
+    sourceCrs: 'EPSG:4326',
+    coordinateFrame: 'geographic',
+    axisOrder: 'xyz',
+    heightReference: 'ellipsoidal',
+    provenance: 'metadata'
+  });
+  let initializedNestedTileset: any;
+  const tileset = {
+    spatialReference: parentSpatialReference,
+    options: {spatial: {targetCrs: 'EPSG:4978', outputCoordinates: 'target-crs'}},
+    _initializeTileHeaders(nestedTileset: any) {
+      initializedNestedTileset = nestedTileset;
+    }
+  } as any;
+  const nestedTileset = {
+    shape: 'tileset3d',
+    asset: {version: '1.1'},
+    spatialMetadata: nestedSpatialReference,
+    root: {
+      transform: [1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0.0001, 0.0002, 0.0003, 1],
+      boundingVolume: {box: [0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1]},
+      geometricError: 0,
+      content: {uri: 'content.glb'}
+    }
+  };
+
+  source.onTileLoaded(tileset, {contents: [], content: null} as any, {
+    loaded: true,
+    nestedTilesets: [nestedTileset]
+  });
+
+  expect(initializedNestedTileset.spatialMetadata.targetCrs).toBe('EPSG:4978');
+  expect(initializedNestedTileset.root._spatialReference.targetCrs).toBe('EPSG:4978');
+  expect(initializedNestedTileset.root.boundingVolume.box[0]).toBeGreaterThan(6_000_000);
+  expect(initializedNestedTileset.root._spatialTransform.slice(12, 15)).toEqual([
+    0.0001, 0.0002, 0.0003
+  ]);
+});
+test('Tiles3DSource inherits the parent CRS for nested tilesets without metadata', () => {
+  const source = new Tiles3DSource({
+    url: 'https://example.com/root',
+    loader: Tiles3DLoader,
+    asset: {version: '1.1'},
+    root: {refine: 'REPLACE'}
+  } as any);
+  const parentSpatialReference = createTilesetSpatialReference({
+    sourceCrs: 'EPSG:4978',
+    coordinateFrame: 'geocentric',
+    axisOrder: 'xyz',
+    heightReference: 'ellipsoidal',
+    provenance: 'metadata'
+  });
+  let initializedNestedTileset: any;
+  const tileset = {
+    spatialReference: parentSpatialReference,
+    options: {spatial: {}},
+    _initializeTileHeaders(nestedTileset: any) {
+      initializedNestedTileset = nestedTileset;
+    }
+  } as any;
+  source.onTileLoaded(tileset, {contents: [], content: null} as any, {
+    loaded: true,
+    nestedTilesets: [{shape: 'tileset3d', asset: {version: '1.1'}, root: {}}]
+  });
+  expect(initializedNestedTileset.spatialMetadata).toBe(parentSpatialReference);
+  expect(initializedNestedTileset.root._spatialReference).toBe(parentSpatialReference);
+});
+test('Tiles3DSource rejects unresolved nested CRS metadata and epoch mismatches', () => {
+  const source = new Tiles3DSource({
+    url: 'https://example.com/root',
+    loader: Tiles3DLoader,
+    asset: {version: '1.1'},
+    root: {refine: 'REPLACE'}
+  } as any);
+  const parentSpatialReference = createTilesetSpatialReference({
+    sourceCrs: 'EPSG:4978',
+    coordinateFrame: 'geocentric',
+    axisOrder: 'xyz',
+    heightReference: 'ellipsoidal',
+    coordinateEpoch: 2020,
+    provenance: 'metadata'
+  });
+  const tileset = {
+    spatialReference: parentSpatialReference,
+    options: {spatial: {}},
+    _initializeTileHeaders() {}
+  } as any;
+  const unresolvedReference = createTilesetSpatialReference({
+    sourceCrsState: 'unknown',
+    coordinateFrame: 'unknown',
+    axisOrder: 'unknown',
+    heightReference: 'unknown',
+    provenance: 'metadata'
+  });
+  expect(() =>
+    source.onTileLoaded(tileset, {contents: [], content: null} as any, {
+      loaded: true,
+      nestedTilesets: [
+        {
+          shape: 'tileset3d',
+          asset: {version: '1.1'},
+          spatialMetadata: unresolvedReference,
+          root: {}
+        }
+      ]
+    })
+  ).toThrow(/unresolved/i);
+  const mismatchedReference = createTilesetSpatialReference({
+    sourceCrs: 'EPSG:4326',
+    coordinateFrame: 'geographic',
+    axisOrder: 'xyz',
+    heightReference: 'ellipsoidal',
+    coordinateEpoch: 2021,
+    provenance: 'metadata'
+  });
+  expect(() =>
+    source.onTileLoaded(tileset, {contents: [], content: null} as any, {
+      loaded: true,
+      nestedTilesets: [
+        {
+          shape: 'tileset3d',
+          asset: {version: '1.1'},
+          spatialMetadata: mismatchedReference,
+          root: {}
+        }
+      ]
+    })
+  ).toThrow(/epoch/i);
+});
+test('Tiles3DSource namespaces independent embedded packages before local file indices', async () => {
+  const packageUrls: string[] = [];
+  const packageCoreApi = {
+    ...coreApi,
+    async parse(_data: ArrayBuffer, _loader: Loader, _options: unknown, context: {url: string}) {
+      packageUrls.push(context.url);
+      return {shape: 'mesh'};
+    }
+  } as typeof coreApi;
+  const source = new Tiles3DSource({
+    url: 'https://example.com/root.gltf',
+    loader: Tiles3DLoader,
+    coreApi: packageCoreApi
+  });
+  const createPackageFiles = () => [
+    {
+      name: 'content.gltf',
+      mimeType: 'model/gltf+json',
+      data: new ArrayBuffer(0),
+      byteOffset: 0,
+      byteLength: 0
+    }
+  ];
+
+  await (source as any).loadContentResource(
+    'first/content.gltf',
+    {fileIndex: 0, files: createPackageFiles()},
+    {worker: false}
+  );
+  await (source as any).loadContentResource(
+    'second/content.gltf',
+    {fileIndex: 0, files: createPackageFiles()},
+    {worker: false}
+  );
+
+  expect(packageUrls).toEqual([
+    'gltf-package://0/0/content.gltf',
+    'gltf-package://1/0/content.gltf'
+  ]);
 });
 test('Tiles3DSource invalidates cached URLs when inherited query state changes', async () => {
   const source = new Tiles3DSource({

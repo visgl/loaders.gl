@@ -5,6 +5,8 @@
 export type {Tileset3DProps} from './tileset-3d/common/tileset-3d';
 export type {FoveatedInterpolationCallback} from './tileset-3d/helpers/tiles-3d-request-priority';
 export {Tileset3D} from './tileset-3d/common/tileset-3d';
+export {getTileset3DTraversalSnapshot} from './tileset-3d/common/tileset-observability';
+export type {Tileset3DTraversalSnapshot} from './tileset-3d/common/tileset-observability';
 export type {
   TileContentLoadResult,
   TileChildrenLoadResult,
@@ -21,6 +23,12 @@ export {isTileset3DSource} from './tileset-3d/common/tileset-source';
 export type {IndexedArchiveTilesetSourceOptions} from './tileset-3d/common/indexed-archive-tileset-source';
 export {IndexedArchiveTilesetSource} from './tileset-3d/common/indexed-archive-tileset-source';
 export {Tile3D} from './tileset-3d/common/tile-3d';
+export type {
+  Tile3DContent,
+  Tile3DFeatureIdSet,
+  Tile3DMetadataContext,
+  Tile3DBoundingVolume
+} from './tileset-3d/common/tile-3d-contracts';
 export type {TileChildrenState} from './tileset-3d/common/tile-3d';
 export {Tiles3DSource} from './tileset-3d/format-3d-tiles/tiles-3d-source';
 export type {ImplicitTilingStats} from './tileset-3d/format-3d-tiles/tiles-3d-source';
@@ -101,6 +109,8 @@ export {PointCloudTileset} from './point-cloud/point-cloud-tileset';
 export {PointCloudTile} from './point-cloud/point-cloud-tile';
 export {createBoundingVolume} from './tileset-3d/helpers/bounding-volume';
 export {calculateTransformProps} from './tileset-3d/helpers/transform-utils';
+export {convertS2BoundingVolumeToOBB} from './tileset-3d/helpers/s2-bounding-volume';
+export type {S2VolumeInfo} from './tileset-3d/helpers/s2-bounding-volume';
 
 export type {
   CreateTilesetSpatialReferenceOptions,
@@ -128,6 +138,8 @@ export {
 } from './spatial/format-spatial-reference';
 export {SpatialCoordinateTransformer} from './spatial/spatial-coordinate-transformer';
 export {getSpatialCoordinateFrame} from './spatial/spatial-coordinate-transformer';
+export {Tiles3DSpatialTransformer} from './spatial/tiles-3d-spatial-transformer';
+export type {Tiles3DSpatialBoundingVolume} from './spatial/tiles-3d-spatial-transformer';
 export type {
   I3SSpatialBounds,
   I3SSpatialObb,
@@ -143,7 +155,7 @@ export {
 } from './spatial/spatial-resource-registry';
 
 export {getFrameState} from './tileset-3d/helpers/frame-state';
-export type {GetFrameStateOptions} from './tileset-3d/helpers/frame-state';
+export type {FrameState, GetFrameStateOptions} from './tileset-3d/helpers/frame-state';
 export {getLodStatus} from './tileset-3d/helpers/i3s-lod';
 
 export {

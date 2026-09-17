@@ -4,6 +4,7 @@
 
 import {expect, test} from 'vitest';
 import {fetchFile, parse, parseInBatches} from '@loaders.gl/core';
+import {getFloat16Value, isNativeFloat16Array} from '@loaders.gl/schema';
 import {LASLoader, LASWorkerLoader} from '@loaders.gl/las';
 import type {MeshArrowTable} from '@loaders.gl/schema';
 import {validateLoader} from 'test/common/conformance';
@@ -74,7 +75,7 @@ test('LASLoader#loader conformance', () => {
 test('LASLoader#small uncompressed and compressed fixtures agree', async () => {
   const lasArrayBuffer = await (await fetchFile(PDRF_4_LAS_URL)).arrayBuffer();
   const lazArrayBuffer = await (await fetchFile(PDRF_4_LAZ_URL)).arrayBuffer();
-  const loaderOptions = {core: {worker: false}};
+  const loaderOptions = {las: {shape: 'mesh' as const}, core: {worker: false}};
   const uncompressed = await parse(lasArrayBuffer, LASLoader, loaderOptions);
   const compressed = await parse(lazArrayBuffer, LASLoader, loaderOptions);
 
@@ -92,6 +93,7 @@ test('LASLoader#small fixture streams requested mesh batches', async () => {
   const lazArrayBuffer = await (await fetchFile(PDRF_4_LAZ_URL)).arrayBuffer();
   const batches = await parseInBatches(lazArrayBuffer, LASLoader, {
     batchSize: 127,
+    las: {shape: 'mesh'},
     core: {worker: false}
   });
   const batchVertexCounts: number[] = [];
@@ -107,7 +109,6 @@ test('LASLoader#small fixture streams requested mesh batches', async () => {
 test('LASLoader#small fixture emits an Arrow table', async () => {
   const lazArrayBuffer = await (await fetchFile(PDRF_4_LAZ_URL)).arrayBuffer();
   const table = await parse(lazArrayBuffer, LASLoader, {
-    las: {shape: 'arrow-table'},
     core: {worker: false}
   });
 
@@ -285,10 +286,24 @@ test('LASLoader#columns decodes only requested PDRF 7 Arrow columns', async () =
   }
 
   const positionsOnlyMesh = await parse(lasArrayBuffer, LASLoader, {
-    las: {columns: []},
+    las: {shape: 'mesh', columns: []},
     core: {worker: false}
   });
   expect(Object.keys(positionsOnlyMesh.attributes)).toEqual(['POSITION']);
+});
+
+test('LASLoader#float16 preserves 16-bit colors as logical values', async () => {
+  const lasArrayBuffer = await fetchFile(PDRF_7_LAS_URL).then(response => response.arrayBuffer());
+  const mesh = await parse(lasArrayBuffer, LASLoader, {
+    core: {worker: false},
+    // This test validates the legacy mesh representation explicitly.
+    las: {shape: 'mesh', colorDepth: 16, colorFormat: 'float16'}
+  });
+  const colors = mesh.attributes.COLOR_0;
+  expect(colors.componentType).toBe('float16');
+  expect(isNativeFloat16Array(colors.value) || colors.value instanceof Uint16Array).toBe(true);
+  expect(getFloat16Value(colors.value, 0)).toBeGreaterThanOrEqual(0);
+  expect(getFloat16Value(colors.value, 0)).toBeLessThanOrEqual(1);
 });
 
 test('LASLoader#parseInBatches preserves selected columns across chunked PDRF 7 input', async () => {

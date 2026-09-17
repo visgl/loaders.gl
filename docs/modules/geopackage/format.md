@@ -61,8 +61,8 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
   <a className="docs-api-card" href="/docs/modules/geopackage/api-reference/geopackage-loader">
     <span className="docs-api-card__kind">Loader</span>
     <strong>GeoPackageLoader</strong>
-    <span>Loads GeoPackage vector tables as loaders.gl geometry tables.</span>
-    <span className="docs-api-card__meta">Output: Tables&lt;GeoJSONTable&gt;, GeoJSONTable, ArrowTable</span>
+    <span>Loads one selected GeoPackage vector table.</span>
+    <span className="docs-api-card__meta">Output: GeoJSONTable, ArrowTable</span>
     <span className="docs-api-card__meta">APIs: load, parse</span>
   </a>
   <a className="docs-api-card" href="/docs/modules/geopackage/api-reference/geopackage-source">

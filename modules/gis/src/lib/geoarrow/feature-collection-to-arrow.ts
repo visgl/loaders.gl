@@ -3,7 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import type {ArrowTable, Feature, Field, GeoJsonProperties, Schema} from '@loaders.gl/schema';
-import {ArrowTableBuilder, getDataTypeFromArray} from '@loaders.gl/schema-utils';
+import {ArrowTableBuilder} from '@loaders.gl/schema-utils';
 import {
   encodeWKBGeometryValue,
   inferGeoParquetGeometryTypes,
@@ -35,7 +35,14 @@ export function convertFeaturesToWKBArrowTable(
   if (encodingPreference && encodingPreference !== 'geoarrow.wkb') {
     return convertFeaturesToGeoArrowTable(features, options);
   }
-  const propertyRows = features.map(feature => normalizeProperties(feature.properties));
+  const hasFeatureIds = features.some(feature => feature.id !== undefined);
+  const propertyRows = features.map(feature => {
+    const properties = normalizeProperties(feature.properties);
+    if (hasFeatureIds) {
+      properties.id = normalizePropertyValue(feature.id);
+    }
+    return properties;
+  });
   const propertySchema = getPropertySchema(propertyRows);
   const schema = buildFeatureArrowSchema(propertySchema, features);
   const arrowTableBuilder = new ArrowTableBuilder(schema);
@@ -111,9 +118,12 @@ function getPropertySchema(propertyRows: Record<string, unknown>[]): Schema {
   return {
     metadata: {},
     fields: fieldNames.map((fieldName): Field => {
-      const inferredType = getDataTypeFromArray(
-        propertyRows.map(propertyRow => propertyRow[fieldName])
-      );
+      const values = propertyRows.map(propertyRow => propertyRow[fieldName]);
+      const firstDefinedValue = values.find(value => value !== null && value !== undefined);
+      const inferredType = {
+        type: getPropertyDataType(firstDefinedValue),
+        nullable: true
+      } as const;
       return {
         name: fieldName,
         type: inferredType.type === 'float32' ? 'float64' : inferredType.type,
@@ -121,6 +131,20 @@ function getPropertySchema(propertyRows: Record<string, unknown>[]): Schema {
       };
     })
   };
+}
+
+/** Infers the primitive Arrow type for a normalized feature property value. */
+function getPropertyDataType(value: unknown): Field['type'] {
+  if (typeof value === 'number') {
+    return 'float64';
+  }
+  if (typeof value === 'boolean') {
+    return 'bool';
+  }
+  if (typeof value === 'string') {
+    return 'utf8';
+  }
+  return 'null';
 }
 
 function getFieldNames(propertyRows: Record<string, unknown>[]): string[] {

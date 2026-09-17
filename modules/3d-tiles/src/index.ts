@@ -30,12 +30,18 @@ export type {
   Tiles3DTileJSONPostprocessed,
   Tiles3DTilesetJSON,
   Tiles3DTilesetAsset,
+  Tiles3DFormatVersion,
   Tiles3DMetadataEntity,
   Tiles3DMetadataGroup,
   Tiles3DMetadataSchema,
   Tiles3DTilesetJSONPostprocessed,
   ImplicitTilingData,
   Tiles3DTileContent,
+  Tiles3DVectorContent,
+  Tiles3DVectorPrimitive,
+  Tiles3DVectorPointPrimitive,
+  Tiles3DVectorPolylinePrimitive,
+  Tiles3DVectorPolygonPrimitive,
   ImplicitTilingExensionData,
   Subtree,
   Availability,
@@ -44,3 +50,20 @@ export type {
 } from './types';
 export type {Tiles3DLoaderOptions} from './tiles-3d-loader';
 export {Tiles3DArchive} from './3d-tiles-archive/3d-tiles-archive-archive';
+
+export {
+  getStructuralMetadataProperty,
+  getStructuralMetadataRow
+} from './lib/metadata/property-table';
+export type {StructuralMetadataRow} from './lib/metadata/property-table';
+export {
+  createTile3DStyleInput,
+  getTile3DBatchTableProperties,
+  getTile3DStyleProperty
+} from './lib/metadata/style-input';
+export type {
+  Tile3DBatchTableLike,
+  Tile3DStyleInput,
+  Tile3DStyleInputOptions,
+  Tile3DStylePropertySource
+} from './lib/metadata/style-input';

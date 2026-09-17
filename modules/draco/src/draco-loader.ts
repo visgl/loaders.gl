@@ -49,7 +49,7 @@ async function preload(
 }
 
 /** Metadata-only worker loader for Draco3D compressed geometries. */
-export const DracoWorkerLoader = {
+export const DracoLoader = {
   dataType: null as unknown as DracoMesh | ArrowTable,
   batchType: null as never,
   ...DracoFormat,
@@ -64,11 +64,8 @@ export const DracoWorkerLoader = {
   preload
 } as const satisfies Loader<DracoMesh | ArrowTable, never, DracoLoaderOptions>;
 
-/** Metadata-only loader for Draco3D compressed geometries. */
-export const DracoLoader = {
-  ...DracoWorkerLoader,
-  preload
-} as const satisfies Loader<DracoMesh | ArrowTable, never, DracoLoaderOptions>;
+/** @deprecated Use DracoLoader. */
+export const DracoWorkerLoader = DracoLoader;
 
 /** Resolves the Draco decoder backend from current and legacy loader options. */
 function getDracoBackend(options?: DracoLoaderOptions): DracoDecoderBackend {

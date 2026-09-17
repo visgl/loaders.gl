@@ -66,17 +66,28 @@ export function getTypedArrayForAccessor(
   // Creare an array of component's type where all components (not just elements) will reside
   if (typeof bufferView.byteStride === 'undefined' || bufferView.byteStride === elementByteSize) {
     // No iterleaving
+    if (byteOffset % componentByteSize !== 0) {
+      const bytes = new Uint8Array(arrayBuffer, byteOffset, length * componentByteSize);
+      const alignedBytes = new Uint8Array(bytes.byteLength);
+      alignedBytes.set(bytes);
+      return new ArrayType(alignedBytes.buffer, 0, length);
+    }
     const result: BigTypedArray = new ArrayType(arrayBuffer, byteOffset, length);
     return result;
   }
   // Iterleaving
   const result: BigTypedArray = new ArrayType(length);
   for (let i = 0; i < gltfAccessor.count; i++) {
-    const values = new ArrayType(
-      arrayBuffer,
-      byteOffset + i * elementAddressScale,
-      numberOfComponentsInElement
-    );
+    const elementByteOffset = byteOffset + i * elementAddressScale;
+    let values: any;
+    if (elementByteOffset % componentByteSize !== 0) {
+      const bytes = new Uint8Array(arrayBuffer, elementByteOffset, elementByteSize);
+      const alignedBytes = new Uint8Array(elementByteSize);
+      alignedBytes.set(bytes);
+      values = new ArrayType(alignedBytes.buffer, 0, numberOfComponentsInElement);
+    } else {
+      values = new ArrayType(arrayBuffer, elementByteOffset, numberOfComponentsInElement);
+    }
     result.set(values, i * numberOfComponentsInElement);
   }
   return result;

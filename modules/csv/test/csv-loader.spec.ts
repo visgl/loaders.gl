@@ -88,6 +88,7 @@ test('CSV unbundled metadata loaders expose preload and deprecated WorkerLoader 
 });
 test('CSVLoader#load(states.csv)', async () => {
   const table = await load(CSV_STATES_URL, CSVLoader);
+  expect(table.shape, 'CSV defaults to Arrow table output').toBe('arrow-table');
   expect(getTableLength(table)).toBe(110);
 });
 test('CSVLoader#load(numbers-100.csv, shape: arrow-table)', async () => {

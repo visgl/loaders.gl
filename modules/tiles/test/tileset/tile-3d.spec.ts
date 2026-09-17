@@ -136,6 +136,47 @@ test('Tile3D#preserves viewer request volume when an implicit root materializes 
     'retains the inherited traversal request-volume restriction'
   ).toBeTruthy();
 });
+test('Tile3D#applies subtree-root transform and metadata overrides', () => {
+  const originalTransform = new Matrix4().translate([2, 0, 0]);
+  const materializedTransform = new Matrix4().translate([5, 0, 0]);
+  const tile = new Tile3D(MOCK_TILESET as any, {
+    ...TILE_HEADER_WITH_BOUNDING_SPHERE,
+    transform: Array.from(originalTransform),
+    metadata: {properties: {zone: 1}}
+  });
+
+  tile.applyImplicitSubtreeHeader({
+    ...TILE_HEADER_WITH_BOUNDING_SPHERE,
+    transform: Array.from(materializedTransform),
+    transformMatrix: Array.from(materializedTransform),
+    contentUrl: 'content.glb',
+    content: {uri: 'content.glb', metadata: {properties: {material: 'stone'}}},
+    contentUrls: ['content.glb'],
+    metadata: {properties: {zone: 2}},
+    type: 'scenegraph'
+  });
+
+  expect(tile.transform[12]).toBe(5);
+  expect(tile.computedTransform[12]).toBe(5);
+  expect(tile.metadata).toEqual({properties: {zone: 2}});
+  expect(tile.contentMetadata).toEqual([{properties: {material: 'stone'}}]);
+});
+test('Tile3D#invalidates cached cartographic bounds after subtree overrides', () => {
+  const tile = new Tile3D(MOCK_TILESET as any, {
+    ...TILE_HEADER_WITH_BOUNDING_REGION,
+    boundingVolume: {region: [0, 0, 0.1, 0.1, 0, 1]}
+  });
+  const originalBoundingBox = tile.boundingBox;
+
+  tile.applyImplicitSubtreeHeader({
+    ...TILE_HEADER_WITH_BOUNDING_REGION,
+    boundingVolume: {region: [1, 1, 1.1, 1.1, 2, 3]}
+  });
+
+  expect(tile.boundingBox).not.toBe(originalBoundingBox);
+  expect(tile.boundingBox[0][0]).toBeCloseTo(57.29577951308232);
+  expect(tile.boundingBox[0][2]).toBe(2);
+});
 test('Tile3D#throws if boundingVolume is undefined', () => {
   const tileWithoutBoundingVolume = clone(TILE_HEADER_WITH_BOUNDING_SPHERE, true);
   delete tileWithoutBoundingVolume.boundingVolume;
@@ -190,6 +231,24 @@ test('Tile3D#scales geometric error with the complete transform', () => {
     new Tile3D(MOCK_TILESET, rigidTransformHeader).lodMetricValue,
     'ignores rotation and translation'
   ).toBe(1);
+});
+test('Tile3D#leaves draft 2.0 geometric error unscaled', () => {
+  const draftHeader = {
+    ...TILE_HEADER_WITH_BOUNDING_SPHERE,
+    lodMetricValue: 2,
+    transform: new Matrix4().scale([3, 4, 5]),
+    _scaleGeometricError: false
+  };
+  // @ts-ignore test uses the minimal tileset shape required by Tile3D
+  const parent = new Tile3D(MOCK_TILESET, draftHeader);
+  // @ts-ignore test uses the minimal tileset shape required by Tile3D
+  const child = new Tile3D(
+    MOCK_TILESET,
+    {...TILE_HEADER_WITH_BOUNDING_SPHERE, transform: new Matrix4().scale([6, 7, 8])},
+    parent
+  );
+  expect(parent.lodMetricValue).toBe(2);
+  expect(child.lodMetricValue, 'inherits draft version behavior from its parent').toBe(1);
 });
 test('Tile3D#recomputes geometric error without compounding transform scale', () => {
   // @ts-ignore test uses the minimal tileset shape required by Tile3D

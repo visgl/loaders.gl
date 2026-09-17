@@ -77,7 +77,7 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
 
 ## Mesh Data
 
-OBJ files describe mesh geometry through vertex positions, texture coordinates, normals, and face indices. `OBJLoader` returns legacy Mesh objects by default, or Mesh Arrow tables when `obj.shape: 'arrow-table'` is selected.
+OBJ files describe mesh geometry through vertex positions, texture coordinates, normals, and face indices. `OBJLoader` returns Mesh Arrow tables by default, or legacy Mesh objects when `obj.shape: 'mesh'` is selected.
 
 ## Materials
 

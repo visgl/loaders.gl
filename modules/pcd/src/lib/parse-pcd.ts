@@ -10,7 +10,8 @@
 // @author Filipe Caixeta / http://filipecaixeta.com.br
 // @author Mugen87 / https://github.com/Mugen87
 
-import {MeshAttribute, MeshAttributes} from '@loaders.gl/schema';
+import {convertColorArrayToFloat16} from '@loaders.gl/schema';
+import type {MeshAttribute, MeshAttributes} from '@loaders.gl/schema';
 import {getMeshBoundingBox} from '@loaders.gl/schema-utils';
 import {decompressLZF} from './decompress-lzf';
 import {getPCDSchema} from './get-pcd-schema';
@@ -30,10 +31,11 @@ type NormalizedAttributes = {
     value: Float32Array;
     size: number;
   };
-  COLOR_0?: {
-    value: Uint8Array;
-    size: number;
-  };
+  COLOR_0?: MeshAttribute;
+};
+
+type ParsePCDOptions = {
+  pcd?: {colorFormat?: 'uint8norm' | 'float16' | 'float32'};
 };
 
 type HeaderAttributes = {
@@ -47,7 +49,7 @@ const LITTLE_ENDIAN: boolean = true;
  * @param data
  * @returns
  */
-export function parsePCD(data: ArrayBufferLike): PCDMesh {
+export function parsePCD(data: ArrayBufferLike, options?: ParsePCDOptions): PCDMesh {
   // parse header (always ascii format)
   const textData = new TextDecoder().decode(data);
   const pcdHeader = parsePCDHeader(textData);
@@ -72,7 +74,7 @@ export function parsePCD(data: ArrayBufferLike): PCDMesh {
       throw new Error(`PCD: ${pcdHeader.data} files are not supported`);
   }
 
-  attributes = getMeshAttributes(attributes);
+  attributes = getMeshAttributes(attributes, options?.pcd?.colorFormat);
 
   const header = getMeshHeader(pcdHeader, attributes);
 
@@ -82,7 +84,7 @@ export function parsePCD(data: ArrayBufferLike): PCDMesh {
     ['boundingBox', JSON.stringify(header.boundingBox)]
   ]);
 
-  const schema = getPCDSchema(pcdHeader, schemaMetadata);
+  const schema = getPCDSchema(pcdHeader, schemaMetadata, options?.pcd?.colorFormat);
 
   return {
     loader: 'pcd',
@@ -114,7 +116,10 @@ function getMeshHeader(pcdHeader: PCDHeader, attributes: NormalizedAttributes): 
  * @param attributes
  * @returns Normalized attributes
  */
-function getMeshAttributes(attributes: HeaderAttributes): {[attributeName: string]: MeshAttribute} {
+function getMeshAttributes(
+  attributes: HeaderAttributes,
+  colorFormat: 'uint8norm' | 'float16' | 'float32' = 'uint8norm'
+): {[attributeName: string]: MeshAttribute} {
   const normalizedAttributes: MeshAttributes = {
     POSITION: {
       // Binary PCD is only 32 bit
@@ -132,29 +137,37 @@ function getMeshAttributes(attributes: HeaderAttributes): {[attributeName: strin
 
   if (attributes.color && attributes.color.length > 0) {
     // TODO - RGBA
-    normalizedAttributes.COLOR_0 = {
-      value: new Uint8Array(attributes.color),
-      size: 3
-    };
+    normalizedAttributes.COLOR_0 = makeColorAttribute(attributes.color, colorFormat);
   }
 
   if (attributes.intensity && attributes.intensity.length > 0) {
     // TODO - RGBA
-    normalizedAttributes.COLOR_0 = {
-      value: new Uint8Array(attributes.color),
-      size: 3
-    };
+    normalizedAttributes.COLOR_0 = makeColorAttribute(attributes.color, colorFormat);
   }
 
   if (!normalizedAttributes.COLOR_0 && attributes.label && attributes.label.length > 0) {
     // TODO - RGBA
-    normalizedAttributes.COLOR_0 = {
-      value: new Uint8Array(attributes.label),
-      size: 3
-    };
+    normalizedAttributes.COLOR_0 = makeColorAttribute(attributes.label, colorFormat);
   }
 
   return normalizedAttributes;
+}
+
+function makeColorAttribute(
+  values: number[],
+  colorFormat: 'uint8norm' | 'float16' | 'float32'
+): MeshAttribute {
+  if (colorFormat === 'float16') {
+    return {
+      value: convertColorArrayToFloat16(values, 255),
+      size: 3,
+      componentType: 'float16'
+    };
+  }
+  if (colorFormat === 'float32') {
+    return {value: Float32Array.from(values, value => value / 255), size: 3};
+  }
+  return {value: new Uint8Array(values), size: 3};
 }
 
 /**

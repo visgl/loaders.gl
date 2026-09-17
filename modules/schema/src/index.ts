@@ -12,6 +12,16 @@ export type {
   ArrayType,
   AnyArray
 } from './types/types';
+export {
+  createFloat16Array,
+  convertColorArrayToFloat16,
+  convertColorArrayToFloat32,
+  encodeFloat16,
+  getFloat16Storage,
+  getFloat16Value,
+  isNativeFloat16Array,
+  setFloat16Value
+} from './float16';
 
 // SCHEMAS AND DATA TYPES
 

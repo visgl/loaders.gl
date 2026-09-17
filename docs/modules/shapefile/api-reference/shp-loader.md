@@ -31,7 +31,7 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
   tone="orange"
   items={[
     {label: 'Input', value: 'A `.shp` geometry file'},
-    {label: 'Default', value: 'An array of WKB geometries'},
+    {label: 'Default', value: 'An Arrow geometry table'},
     {label: 'Arrow', value: 'WKB or typed GeoArrow geometry'},
     {label: 'Dimensions', value: 'X, Y, Z, and M where present'}
   ]}
@@ -53,22 +53,22 @@ Note: Most applications will want to use the `ShapefileLoader` instead of this l
 import {SHPLoader} from '@loaders.gl/shapefile';
 import {load} from '@loaders.gl/core';
 
-const data = await load(url, SHPLoader);
-const table = await load(url, SHPLoader, {shp: {shape: 'arrow-table'}});
+const table = await load(url, SHPLoader);
+const legacy = await load(url, SHPLoader, {shp: {shape: 'wkb'}});
 ```
 
 ## Options
 
 | Option                 | Type    | Default          | Description                                                                                                                                                                                                                                                                |
 | ---------------------- | ------- | ---------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| shp.shape              | String  | `'wkb'`          | Output shape: `'wkb'` for an array of WKB geometries, or `'arrow-table'` for an Arrow geometry column.                                                                                                                                                                     |
+| shp.shape              | String  | `'arrow-table'`  | Output shape: `'arrow-table'` for an Arrow geometry column, or `'wkb'` for an array of WKB geometries.                                                                                                                                                                     |
 | shp.geoarrowEncoding   | String  | `'geoarrow.wkb'` | Legacy Arrow geometry encoding when `shp.shape` is `'arrow-table'`: `'geoarrow.wkb'` or `'geoarrow'`. `'geoarrow'` maps to the adaptive `optimized` preference and infers a geometry-specific GeoArrow encoding from the SHP header.                                                                                              |
 | geoarrow.encodingPreference | String | `'geoarrow.wkb'` | Arrow geometry preference: `'geoarrow.wkb'` for compact compatibility, `'geoarrow.geometry'` for a stable dense union, or `'optimized'` for concrete native encoding when possible.                                                                 |
 | shp.\_maxDimensions    | Integer | `4`              | Shapefiles can hold up to 4 dimensions (XYZM). By default all dimensions are parsed; when set to `2` only the X and Y dimensions are parsed. Note that for some Shapefiles, the third dimension is M, not Z. `header.type` in the output designates the stored dimensions. |
 
 ## Output
 
-The `SHPLoader`'s default output looks like the following. `geometries` holds an
+The legacy `wkb` output looks like the following. `geometries` holds an
 array of WKB byte arrays, with `null` entries for Null Shape records. `header`
 contains the Shapefile's header values, including a bounding box of the data and
 the file's geometry type. Consult the [Shapefile specification][shapefile_spec]

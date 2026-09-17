@@ -64,7 +64,10 @@ test.each([false, true])(
         }
       }
     });
-    const output = await load(parquetBuffer, ParquetJSLoader, {core: {worker: false}});
+    const output = await load(parquetBuffer, ParquetJSLoader, {
+      core: {worker: false},
+      parquet: {shape: 'object-row-table'}
+    });
 
     expect(output.shape).toBe('object-row-table');
     if (output.shape === 'object-row-table') {

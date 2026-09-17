@@ -90,7 +90,7 @@ import {PCDLoader} from '@loaders.gl/pcd';
 import {LASLoader} from '@loaders.gl/las';
 
 // Single loader infers type
-const pcdPointCloud = await load(url, PCDLoader); // => type PCDMesh
+const pcdPointCloud = await load(url, PCDLoader); // => type MeshArrowTable
 const lasPointCloud = await load(url, LASLoader); // => type LASMesh
 
 const pointCloud = await load(url, [PCDLoader, LASLoader]); // => type unknown
@@ -106,7 +106,7 @@ import {LASLoader} from '@loaders.gl/las';
 const loader = await selectLoader(url, [PCDLoader, LASLoader]);
 switch (loader.id) {
   case 'pcd': {
-    const pcdPointCloud = await load(url, PCDLoader); // => type PCDMesh
+    const pcdPointCloud = await load(url, PCDLoader); // => type MeshArrowTable
     break;
   }
   case 'las': {

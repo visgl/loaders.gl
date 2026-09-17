@@ -21,6 +21,11 @@ test('SHPLoader#load polygons', async () => {
   expect(result.header, 'A header received').toBeTruthy();
   expect(result.geometries.length, 'Correct number of rows received').toBe(3);
 });
+test('SHPLoader#defaults to arrow-table output', async () => {
+  const result = await load(SHAPEFILE_POLYGON_PATH, SHPLoader, {core: {worker: false}});
+  expect(result.shape).toBe('arrow-table');
+  expect(result.data.numRows).toBe(3);
+});
 test('Shapefile JS Point tests', async () => {
   for (const testFileName of SHAPEFILE_JS_POINT_TEST_FILES) {
     const output = await load(

@@ -518,6 +518,26 @@ export class Tileset3D {
   }
 
   /**
+   * Returns the tiles requested during the most recent completed traversal.
+   *
+   * A defensive copy makes request ordering deterministic for diagnostics and prevents callers
+   * from mutating the scheduler's working set.
+   */
+  get requestedTiles(): readonly Tile3D[] {
+    return this._requestedTiles.slice();
+  }
+
+  /**
+   * Returns empty tiles considered during the most recent completed traversal.
+   *
+   * Empty tiles can still be useful hierarchy placeholders, but their IDs are included in
+   * observability snapshots so applications can distinguish traversal work from render content.
+   */
+  get emptyTiles(): readonly Tile3D[] {
+    return this._emptyTiles.slice();
+  }
+
+  /**
    * Gets or sets the soft target, in bytes, for cached tile content not needed this frame.
    *
    * Current-frame tiles remain protected even when their estimated memory exceeds this target.
@@ -662,6 +682,14 @@ export class Tileset3D {
       return;
     }
     const preparedViewports = viewports instanceof Array ? viewports : [viewports];
+    const activeViewportIds = new Set(preparedViewports.map(viewport => viewport.id));
+    // A viewport may be removed between frames. Discard its completed state before aggregating
+    // requested and selected tiles so observability reflects only the current traversal inputs.
+    for (const frameStateId of Object.keys(this.frameStateData)) {
+      if (!activeViewportIds.has(frameStateId)) {
+        delete this.frameStateData[frameStateId];
+      }
+    }
 
     this._cache.reset();
     this._frameNumber++;
@@ -909,7 +937,7 @@ export class Tileset3D {
       if (
         initialMetadata?.tileset?.root &&
         typeof initialMetadata.tileset.root.then !== 'function' &&
-        !this.source.prepareTileset
+        (!this.source.prepareTileset || this.spatialReference?.status === 'native')
       ) {
         this.root = this._initializeTileHeaders(initialMetadata.tileset, null);
         this._applyViewState();

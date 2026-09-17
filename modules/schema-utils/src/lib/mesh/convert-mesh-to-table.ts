@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
+import {getFloat16Storage, isNativeFloat16Array} from '@loaders.gl/schema';
 import type {
   Mesh,
   MeshAttribute,
@@ -124,10 +125,12 @@ export function makeMeshArrowTable(
   for (const attributeName of attributeNames) {
     const attribute = attributes[attributeName];
     const {value, size = 1} = attribute;
-    const column = getAttributeArrowVector(value, size);
+    const column = getAttributeArrowVector(value, size, attribute.componentType);
 
     columns[attributeName] = column;
-    fields.push(getAttributeArrowField(options.schema, attributeName, column));
+    fields.push(
+      getAttributeArrowField(options.schema, attributeName, column, attribute.componentType)
+    );
 
     if (attributeName === 'POSITION' && options.indices?.value?.length) {
       const indicesField = indexedMeshArrowSchema.fields.find(field => field.name === 'indices')!;
@@ -150,8 +153,22 @@ export function makeMeshArrowTable(
 }
 
 /** Return an Arrow vector for a mesh attribute. */
-function getAttributeArrowVector(value: MeshAttribute['value'], size: number): arrow.Vector {
-  return size === 1 ? arrow.makeVector(value) : getFixedSizeListVector(value, size);
+function getAttributeArrowVector(
+  value: MeshAttribute['value'],
+  size: number,
+  componentType?: MeshAttribute['componentType']
+): arrow.Vector {
+  if (componentType === 'float16') {
+    const storage = isNativeFloat16Array(value) ? getFloat16Storage(value) : value;
+    if (size === 1) {
+      const data = new arrow.Data(new arrow.Float16(), 0, storage.length, 0, {
+        [arrow.BufferType.DATA]: storage as Uint16Array
+      });
+      return new arrow.Vector([data]);
+    }
+    return getFixedSizeListVector(value, size, componentType);
+  }
+  return size === 1 ? arrow.makeVector(value as any) : getFixedSizeListVector(value, size);
 }
 
 /** Return mesh attribute names with predefined Mesh Arrow fields first. */
@@ -176,7 +193,8 @@ function hasMeshIndices(mesh: Mesh): mesh is Mesh & {indices: MeshAttribute} {
 function getAttributeArrowField(
   schema: Schema | undefined,
   attributeName: string,
-  column: arrow.Vector
+  column: arrow.Vector,
+  componentType?: MeshAttribute['componentType']
 ): arrow.Field {
   if (attributeName === 'POSITION' && isMeshPositionColumn(column)) {
     const canonicalField = meshArrowSchema.fields[0];
@@ -197,6 +215,20 @@ function getAttributeArrowField(
   }
 
   const field = schema?.fields.find(schemaField => schemaField.name === attributeName);
+  if (componentType === 'float16') {
+    const metadata = new Map(Object.entries(field?.metadata || {}));
+    metadata.set('componentType', 'float16');
+    return new arrow.Field(attributeName, column.type, false, metadata);
+  }
+  if (field && field.type.toString() !== column.type.toString()) {
+    const deserializedField = deserializeArrowField(field);
+    return new arrow.Field(
+      attributeName,
+      column.type,
+      deserializedField.nullable,
+      deserializedField.metadata
+    );
+  }
   return field ? deserializeArrowField(field) : new arrow.Field(attributeName, column.type, false);
 }
 

@@ -17,8 +17,10 @@ const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : 'latest';
 
 export type PCDLoaderOptions = LoaderOptions & {
   pcd?: {
-    /** Output shape. Defaults to a legacy PointCloud object. */
+    /** Output shape. Defaults to a Mesh Arrow table. */
     shape?: 'mesh' | 'arrow-table';
+    /** Color storage format. Defaults to uint8norm for backwards compatibility. */
+    colorFormat?: 'uint8norm' | 'float16' | 'float32';
     /** Override the URL to the worker bundle (by default loads from unpkg.com) */
     workerUrl?: string;
   };
@@ -35,7 +37,7 @@ async function preload() {
 /**
  * Metadata-only worker loader for PCD - Point Cloud Data
  */
-export const PCDWorkerLoader = {
+export const PCDLoader = {
   ...PCDFormat,
   dataType: null as unknown as PCDMesh | MeshArrowTable,
   batchType: null as never,
@@ -44,14 +46,10 @@ export const PCDWorkerLoader = {
   serializeWorkerResult: serializeArrowWorkerResult,
   deserializeWorkerResult: deserializeArrowWorkerResult,
   options: {
-    pcd: {}
+    pcd: {shape: 'arrow-table', colorFormat: 'uint8norm'}
   },
   preload
 } as const satisfies Loader<PCDMesh | MeshArrowTable, never, PCDLoaderOptions>;
 
-/**
- * Metadata-only loader for PCD - Point Cloud Data
- */
-export const PCDLoader = {
-  ...PCDWorkerLoader
-} as const satisfies Loader<PCDMesh | MeshArrowTable, never, PCDLoaderOptions>;
+/** @deprecated Use PCDLoader. */
+export const PCDWorkerLoader = PCDLoader;

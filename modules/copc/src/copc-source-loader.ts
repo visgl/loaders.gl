@@ -2,7 +2,15 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import type {Schema, Field, Mesh, MeshArrowTable, ArrowTableBatch} from '@loaders.gl/schema';
+import {convertColorArrayToFloat16, convertColorArrayToFloat32} from '@loaders.gl/schema';
+import type {
+  Schema,
+  Field,
+  Mesh,
+  MeshArrowTable,
+  ArrowTableBatch,
+  MeshAttribute
+} from '@loaders.gl/schema';
 import {ArrowTableBuilder, convertMeshToTable} from '@loaders.gl/schema-utils';
 import type {
   CoreAPI,
@@ -172,6 +180,8 @@ export type COPCSourceLoaderOptions = DataSourceOptions & {
     rangeConcurrency?: number;
     /** Maximum number of complete COPC nodes fetched and decoded concurrently. */
     decodeConcurrency?: number;
+    /** Color storage format. Defaults to uint8norm for backwards compatibility. */
+    colorFormat?: 'uint8norm' | 'float16' | 'float32';
   };
 };
 
@@ -261,11 +271,11 @@ export const COPCSourceLoader = {
   fromBlob: true,
 
   options: {
-    copc: {}
+    copc: {colorFormat: 'uint8norm'}
   },
 
   defaultOptions: {
-    copc: {}
+    copc: {colorFormat: 'uint8norm'}
   },
 
   testURL: (url: string) => /\.copc\.laz($|\?)/i.test(url),
@@ -1126,6 +1136,7 @@ export class COPCTileSource
         shape: 'mesh',
         fp64: true,
         colorDepth: 16,
+        colorFormat: 'uint8norm',
         columns,
         _chunk: {
           metadata: {
@@ -1213,7 +1224,22 @@ export class COPCTileSource
     pointData: COPCPointDataArrays | null = null
   ): COPCTileContent {
     const positionsAttribute = {value: positions, size: 3};
-    const colorsAttribute = colors ? {value: colors, size: 3, normalized: true} : undefined;
+    const colorsAttribute = colors
+      ? this.options.copc?.colorFormat === 'float16'
+        ? {
+            value: convertColorArrayToFloat16(colors, 65535),
+            size: 3,
+            normalized: false,
+            componentType: 'float16' as const
+          }
+        : this.options.copc?.colorFormat === 'float32'
+          ? {
+              value: convertColorArrayToFloat32(colors, 65535),
+              size: 3,
+              normalized: false
+            }
+          : {value: colors, size: 3, normalized: true}
+      : undefined;
     const data = this.createTileContentTable(
       pointCount,
       positionsAttribute,
@@ -1235,7 +1261,7 @@ export class COPCTileSource
   protected createTileContentTable(
     pointCount: number,
     positions: {value: Float32Array; size: number},
-    colors?: {value: Uint16Array; size: number; normalized: boolean},
+    colors?: MeshAttribute,
     nir?: {value: Uint16Array; size: number},
     pointData?: COPCPointDataArrays | null
   ): MeshArrowTable {

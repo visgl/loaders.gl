@@ -2,6 +2,7 @@ import {expect, test} from 'vitest';
 import {validateLoader, validateMeshCategoryData} from 'test/common/conformance';
 import {validateArrowTableSchema} from '@loaders.gl/arrow';
 import {meshArrowSchema} from '@loaders.gl/schema';
+import {canParseWithWorker} from '@loaders.gl/loader-utils';
 import {PCDLoader, PCDWorkerLoader} from '@loaders.gl/pcd';
 import {setLoaderOptions, fetchFile, parse, load, parseInBatches} from '@loaders.gl/core';
 const PCD_ASCII_URL = '@loaders.gl/pcd/test/data/simple-ascii.pcd';
@@ -55,7 +56,8 @@ test('PCDLoader#loader conformance', () => {
 });
 test('PCDLoader#parse(text)', async () => {
   const data = await parse(fetchFile(PCD_ASCII_URL), PCDLoader, {
-    core: {worker: false}
+    core: {worker: false},
+    pcd: {shape: 'mesh'}
   });
   validateMeshCategoryData(data);
   expect(Object.keys(data.schema.fields).length, 'schema field count is correct').toBe(2);
@@ -79,6 +81,20 @@ test('PCDLoader#parse(text)', async () => {
   expect(data.indices, 'INDICES attribute was not found').toBeFalsy();
   expect(data.attributes.POSITION.value.length, 'POSITION attribute was found').toBe(639);
   expect(data.attributes.COLOR_0.value.length, 'COLOR attribute was found').toBe(639);
+});
+test('PCDLoader#parse defaults to Arrow table', async () => {
+  const arrowTable = await parse(fetchFile(PCD_ASCII_URL), PCDLoader, {
+    core: {worker: false}
+  });
+  expect(arrowTable.shape).toBe('arrow-table');
+  validateArrowTableSchema(arrowTable.data, meshArrowSchema, {
+    schemaName: 'PCDLoader default table'
+  });
+});
+test('PCDLoader#Arrow output stays on the main thread', () => {
+  expect(canParseWithWorker(PCDLoader, {core: {worker: true}, pcd: {shape: 'arrow-table'}})).toBe(
+    false
+  );
 });
 test('PCDLoader#parse(shape: arrow-table)', async () => {
   const arrowTable = await parse(fetchFile(PCD_ASCII_URL), PCDLoader, {
@@ -122,7 +138,8 @@ test('PCDLoader#parseInBatches(ascii, arrow-table)', async () => {
 });
 test('PCDLoader#parse(binary)', async () => {
   const data = await parse(fetchFile(PCD_BINARY_URL), PCDLoader, {
-    core: {worker: false}
+    core: {worker: false},
+    pcd: {shape: 'mesh'}
   });
   validateMeshCategoryData(data);
   expect(data.mode, 'mode is POINTS (0)').toBe(0);
@@ -134,7 +151,8 @@ test('PCDLoader#parse(binary)', async () => {
 test('PCDLoader#parse(binary with counted fields)', async () => {
   const binaryArrayBuffer = createBinaryArrayBufferWithCountedField();
   const data = await parse(binaryArrayBuffer, PCDLoader, {
-    core: {worker: false}
+    core: {worker: false},
+    pcd: {shape: 'mesh'}
   });
   validateMeshCategoryData(data);
   expect(data.loaderData.rowSize, 'row size accounts for count values').toBe(20);
@@ -169,7 +187,7 @@ test('PCDWorkerLoader#parse(binary)', async () => {
     console.log('Worker is not usable in non-browser environments');
     return;
   }
-  const data = await load(PCD_BINARY_URL, PCDWorkerLoader);
+  const data = await load(PCD_BINARY_URL, PCDWorkerLoader, {pcd: {shape: 'mesh'}});
   validateMeshCategoryData(data);
   expect(data.mode, 'mode is POINTS (0)').toBe(0);
   expect(data.indices, 'indices were not preset').toBeFalsy();

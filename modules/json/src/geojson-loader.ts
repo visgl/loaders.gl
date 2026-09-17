@@ -55,7 +55,7 @@ async function preload() {
 }
 
 /** Metadata-only GeoJSON worker loader. */
-export const GeoJSONWorkerLoader = {
+export const GeoJSONLoader = {
   dataType: null as unknown as GeoJSONTable | BinaryFeatureCollection | ArrowTable,
   batchType: null as unknown as TableBatch | ArrowTableBatch,
 
@@ -82,11 +82,5 @@ export const GeoJSONWorkerLoader = {
   GeoJSONLoaderOptions
 >;
 
-/** Metadata-only GeoJSON loader. */
-export const GeoJSONLoader = {
-  ...GeoJSONWorkerLoader
-} as const satisfies Loader<
-  GeoJSONTable | BinaryFeatureCollection | ArrowTable,
-  TableBatch | ArrowTableBatch,
-  GeoJSONLoaderOptions
->;
+/** @deprecated Use GeoJSONLoader. */
+export const GeoJSONWorkerLoader = GeoJSONLoader;

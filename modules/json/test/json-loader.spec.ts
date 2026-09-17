@@ -216,10 +216,16 @@ test('JSONTableLoader#load(geojson.json, shape: arrow-table)', async () => {
   );
 });
 test('JSONTableLoader#parse returns requested row-table shapes', async () => {
+  const defaultTable = BundledJSONTableLoader.parseTextSync?.(JSON.stringify([{id: 1, name: 'A'}]));
+  expect(defaultTable.shape, 'defaults to Arrow table output').toBe('arrow-table');
+
   const objectRowTable = BundledJSONTableLoader.parseTextSync?.(
-    JSON.stringify([{id: 1, name: 'A'}])
+    JSON.stringify([{id: 1, name: 'A'}]),
+    {json: {shape: 'object-row-table'}}
   );
-  expect(objectRowTable.shape, 'defaults to object-row-table output').toBe('object-row-table');
+  expect(objectRowTable.shape, 'returns object-row-table output on request').toBe(
+    'object-row-table'
+  );
   const arrayRowTable = BundledJSONTableLoader.parseTextSync?.(
     JSON.stringify([{id: 1, name: 'A'}]),
     {json: {shape: 'array-row-table'}}
@@ -837,13 +843,16 @@ test('JSONTableLoader#parse(arrow-table schema options require Arrow shape)', as
     metadata: {}
   };
   expect(
-    () => BundledJSONTableLoader.parseTextSync?.(JSON.stringify([{id: 1}]), {json: {schema}}),
+    () =>
+      BundledJSONTableLoader.parseTextSync?.(JSON.stringify([{id: 1}]), {
+        json: {schema, shape: 'object-row-table'}
+      }),
     'schema without Arrow shape throws'
   ).toThrow(/require json.shape to be "arrow-table"/);
   expect(
     () =>
       BundledJSONTableLoader.parseTextSync?.(JSON.stringify([{id: 1}]), {
-        json: {arrowConversion: {onExtraField: 'drop'}}
+        json: {arrowConversion: {onExtraField: 'drop'}, shape: 'object-row-table'}
       }),
     'conversion policy without Arrow shape throws'
   ).toThrow(/require json.shape to be "arrow-table"/);

@@ -16,5 +16,6 @@ export const I3S_LOADER_OPTIONS = {
   useDracoGeometry: true,
   useCompressedTextures: true,
   decodeTextures: true,
+  colorFormat: 'uint8norm',
   coordinateSystem: COORDINATE_SYSTEM.METER_OFFSETS
 } as const;

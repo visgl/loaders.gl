@@ -4,6 +4,9 @@
 
 // Typed arrays
 
+// eslint-disable-next-line spaced-comment
+/// <reference lib="es2025.float16" preserve="true" />
+
 export type TypedIntArray =
   | Int8Array
   | Uint8Array
@@ -13,7 +16,7 @@ export type TypedIntArray =
   | Int32Array
   | Uint32Array;
 
-export type TypedFloatArray = Uint16Array | Float32Array | Float64Array;
+export type TypedFloatArray = Uint16Array | Float16Array | Float32Array | Float64Array;
 
 export type TypedArray = TypedIntArray | TypedFloatArray;
 
@@ -26,6 +29,7 @@ export type TypedArrayConstructor =
   | Uint16ArrayConstructor
   | Int32ArrayConstructor
   | Uint32ArrayConstructor
+  | Float16ArrayConstructor
   | Float32ArrayConstructor
   | Float64ArrayConstructor;
 

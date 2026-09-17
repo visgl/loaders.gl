@@ -20,7 +20,7 @@ test('Load GeoParquet#airports.parquet', async () => {
             preserveBinary: true
         }
     });
-    expect(table.shape).toBe('geojson-table');
+    expect(table.shape).toBe('arrow-table');
     expect(getTableLength(table)).toBe(1000);
     expect(table.schema?.fields.map((f) => f.name)).toEqual(['cartodb_id', 'gps_code', 'name', 'geom']);
 });
@@ -28,6 +28,7 @@ test('Load GeoParquet file', async () => {
     const table = await load(GEOPARQUET_EXAMPLE, GeoParquetLoader, {
         core: { worker: false }
     });
+    expect(table.shape).toBe('arrow-table');
     expect(getTableLength(table)).toBe(5);
     expect(table.schema?.fields.map((f) => f.name)).toEqual(['pop_est', 'continent', 'name', 'iso_a3', 'gdp_md_est', 'geometry']);
 });

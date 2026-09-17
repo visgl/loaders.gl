@@ -56,9 +56,9 @@ The `@loaders.gl/geopackage` module handles the OGC [GeoPackage](https://www.geo
 
 ## Scan support
 
-`GeoPackageSource` discovers the feature tables in a package and exposes one selected table as an
-Arrow feature table. The current implementation favors portability and correctness over SQLite
-query pushdown.
+`GeoPackageLoader` reads one selected feature table as an Arrow table by default. `GeoPackageSource`
+discovers the feature tables in a package and exposes one selected table as an Arrow feature table.
+The source path favors portability and correctness over SQLite query pushdown.
 
 | Capability | Support | Execution |
 | --- | --- | --- |

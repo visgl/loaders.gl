@@ -37,13 +37,16 @@ test('LASWriter#writer conformance', () => {
 });
 test('LASWriter#encode plain and Arrow mesh data', async () => {
   const arrayBuffer = await encode(mesh, LASWriter);
-  const data = await parse(arrayBuffer, LASLoader, {core: {worker: false}});
+  const data = await parse(arrayBuffer, LASLoader, {las: {shape: 'mesh'}, core: {worker: false}});
   validateMeshCategoryData(vitestAssertions, data);
   expect(data.mode, 'mode is POINTS (0)').toBe(0);
   expect(data.attributes.POSITION.value.length, 'POSITION attribute roundtripped').toBe(9);
   const arrowTable = convertMeshToTable(mesh, 'arrow-table');
   const arrowArrayBuffer = await encode(arrowTable, LASWriter);
-  const arrowData = await parse(arrowArrayBuffer, LASLoader, {core: {worker: false}});
+  const arrowData = await parse(arrowArrayBuffer, LASLoader, {
+    las: {shape: 'mesh'},
+    core: {worker: false}
+  });
   validateMeshCategoryData(vitestAssertions, arrowData);
   expect(arrowData.attributes.POSITION.value.length, 'Arrow POSITION attribute roundtripped').toBe(
     9
@@ -54,9 +57,11 @@ test('LASWriter#encode LAS 1.4 point format 7', async () => {
     las: {version: '1.4', pointDataRecordFormat: 7}
   });
   const data = await parse(arrayBuffer, LASLoader, {
+    las: {shape: 'mesh'},
     core: {worker: false}
   });
   const wasmData = await parse(arrayBuffer.slice(0), LASCOPCLoader, {
+    las: {shape: 'mesh'},
     core: {worker: false}
   });
   expect(data.loaderData.versionAsString, 'writes LAS 1.4 header').toBe('1.4');
@@ -87,7 +92,7 @@ test('LASWriter#encode LAS 1.5 point format 7 with WKT metadata', async () => {
     }
   });
   const dataView = new DataView(arrayBuffer);
-  const data = await parse(arrayBuffer, LASLoader, {core: {worker: false}});
+  const data = await parse(arrayBuffer, LASLoader, {las: {shape: 'mesh'}, core: {worker: false}});
   expect(data.loaderData.versionAsString, 'writes LAS 1.5 header').toBe('1.5');
   expect(data.loaderData.headerSize, 'writes the LAS 1.5 header size').toBe(393);
   expect(data.loaderData.pointsFormatId, 'writes modern point format 7').toBe(7);
@@ -136,8 +141,12 @@ test('LASWriter#encodes fixed-chunk LAZ point formats 6-8', async () => {
       chunkSize: 2,
       variable: false
     });
-    const data = await parse(arrayBuffer, LASLoader, {core: {worker: false}});
+    const data = await parse(arrayBuffer, LASLoader, {
+      las: {shape: 'mesh'},
+      core: {worker: false}
+    });
     const wasmData = await parse(arrayBuffer.slice(0), LASCOPCLoader, {
+      las: {shape: 'mesh'},
       core: {worker: false}
     });
     expect(
@@ -172,7 +181,7 @@ test('LASWriter#encodes legacy PDRF 0 LAZ', async () => {
   const arrayBuffer = await encode(mesh, LASWriter, {
     las: {format: 'laz', pointDataRecordFormat: 0, chunkSize: 2}
   });
-  const data = await parse(arrayBuffer, LASLoader, {core: {worker: false}});
+  const data = await parse(arrayBuffer, LASLoader, {las: {shape: 'mesh'}, core: {worker: false}});
   expect(data.loaderData.pointsFormatId, 'writes legacy point format 0').toBe(0);
   expect(data.loaderData.versionAsString, 'writes the default legacy LAS version').toBe('1.2');
   expect(Array.from(data.attributes.POSITION.value), 'legacy LAZ positions roundtrip').toEqual(
@@ -198,8 +207,12 @@ test('LASWriter#encodes legacy GPS and RGB LAZ point formats', async () => {
     const arrayBuffer = await encode(legacyMesh, LASWriter, {
       las: {format: 'laz', pointDataRecordFormat, chunkSize: 2}
     });
-    const data = await parse(arrayBuffer, LASLoader, {core: {worker: false}});
+    const data = await parse(arrayBuffer, LASLoader, {
+      las: {shape: 'mesh'},
+      core: {worker: false}
+    });
     const wasmData = await parse(arrayBuffer.slice(0), LASCOPCLoader, {
+      las: {shape: 'mesh'},
       core: {worker: false}
     });
     expect(data.loaderData.pointsFormatId, `writes PDRF ${pointDataRecordFormat}`).toBe(
@@ -274,8 +287,9 @@ test('LASWriter#encodes variable LAZ chunks', async () => {
     chunkSize: 0xffffffff,
     variable: true
   });
-  const data = await parse(arrayBuffer, LASLoader, {core: {worker: false}});
+  const data = await parse(arrayBuffer, LASLoader, {las: {shape: 'mesh'}, core: {worker: false}});
   const wasmData = await parse(arrayBuffer.slice(0), LASCOPCLoader, {
+    las: {shape: 'mesh'},
     core: {worker: false}
   });
   expect(dataView.getUint32(100, true), 'writes one LASzip VLR').toBe(1);
@@ -617,7 +631,7 @@ test('LASWriter#preserves LAZ fields through encodeInBatches', async () => {
   if (!arrayBuffer) {
     throw new Error('LASWriter did not emit a batch output');
   }
-  const data = await parse(arrayBuffer, LASLoader, {core: {worker: false}});
+  const data = await parse(arrayBuffer, LASLoader, {las: {shape: 'mesh'}, core: {worker: false}});
   const dataView = new DataView(arrayBuffer);
   const pointDataOffset = dataView.getUint32(96, true);
   const chunkTableOffset = readUint64(dataView, pointDataOffset);

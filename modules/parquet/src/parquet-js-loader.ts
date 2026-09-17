@@ -22,11 +22,12 @@ import type {ParquetJSLoaderOptions} from './parquet-loader-options';
 const {preload: _ParquetJSLoaderPreload, ...ParquetJSLoaderMetadataWithoutPreload} =
   ParquetJSLoaderMetadata;
 
-/** Default option bag for the experimental parquetjs plain-row loader. */
+/** Default option bag for the experimental TypeScript-backed Parquet loader. */
 const DEFAULT_PARQUET_JS_OPTIONS = {
   columns: undefined,
   preserveBinary: false,
-  verifyFooterSignature: true
+  verifyFooterSignature: true,
+  shape: 'arrow-table' as const
 };
 
 /** Parser-bearing TypeScript-only Parquet loader implementation. */

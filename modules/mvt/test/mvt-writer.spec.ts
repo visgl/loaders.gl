@@ -24,7 +24,7 @@ test('MVTWriter#roundtrip', async () => {
   const tileIndex = {x: 2, y: 1, z: 2};
   const response = await fetchFile('@loaders.gl/mvt/test/data/mvt/lines_2-2-1.mvt');
   const sourceTile = await response.arrayBuffer();
-  const loaderOptions = {mvt: {coordinates: 'local'}};
+  const loaderOptions = {mvt: {coordinates: 'local', shape: 'geojson-table'}};
   const geojsonTable = await parse(sourceTile, MVTLoader, loaderOptions);
   const roundtripBuffer = await encode(geojsonTable.features, MVTWriter, {
     mvt: {layerName: 'layer0', tileIndex}

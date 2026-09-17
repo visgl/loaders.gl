@@ -13,7 +13,7 @@ import {
   parseImplicitTiles,
   replaceContentUrlTemplate
 } from '../../../src/lib/parsers/helpers/parse-3d-implicit-tiles';
-import {LOD_METRIC_TYPE, TILE_REFINEMENT} from '@loaders.gl/tiles';
+import {LOD_METRIC_TYPE, materializeImplicitSubtree, TILE_REFINEMENT} from '@loaders.gl/tiles';
 test('parseImplicitTiles#supports a single available level', async () => {
   const subtree: Subtree = {
     buffers: [],
@@ -113,6 +113,57 @@ test('normalizeImplicitTileHeaders#creates a contentless lazy root and validates
       {}
     )
   ).rejects.toThrow(/Unsupported implicit subdivision scheme/);
+});
+test('normalizeImplicitTileHeaders#preserves standard multiple-content templates', async () => {
+  const tile = {
+    geometricError: 16,
+    refine: 'REPLACE',
+    boundingVolume: {region: [0, 0, 1, 1, 0, 10]},
+    contents: [
+      {
+        uri: 'vector/{level}/{x}/{y}.glb',
+        extensions: {'3DTILES_content_gltf_vector': {vector: true, clip: true}}
+      },
+      {uri: 'metadata/{level}/{x}/{y}.json'}
+    ],
+    implicitTiling: {
+      subdivisionScheme: 'QUADTREE',
+      subtreeLevels: 1,
+      availableLevels: 1,
+      subtrees: {uri: 'subtrees/{level}/{x}/{y}.subtree'}
+    }
+  };
+
+  const normalizedTile = await normalizeImplicitTileHeaders(
+    tile as any,
+    {root: tile} as any,
+    'https://example.com/tiles',
+    tile.implicitTiling as any,
+    {}
+  );
+
+  expect(normalizedTile?.implicitSubtree.descriptor.contentUrlTemplates).toEqual([
+    'https://example.com/tiles/vector/{level}/{x}/{y}.glb',
+    'https://example.com/tiles/metadata/{level}/{x}/{y}.json'
+  ]);
+  expect(normalizedTile?.implicitSubtree.descriptor.contentHeaders?.[0]).toMatchObject({
+    extensions: {'3DTILES_content_gltf_vector': {vector: true, clip: true}}
+  });
+  expect(normalizedTile?.content).toBeUndefined();
+
+  const materializedRoot = materializeImplicitSubtree(
+    {
+      tileAvailability: {constant: 1},
+      contentAvailability: [{constant: 1}, {constant: 1}],
+      childSubtreeAvailability: {constant: 0}
+    },
+    normalizedTile!.implicitSubtree
+  ).root;
+  const mergedHeader = {...normalizedTile, ...materializedRoot};
+  expect(mergedHeader.contents?.map(content => content.uri)).toEqual([
+    'https://example.com/tiles/vector/0/0/0.glb',
+    'https://example.com/tiles/metadata/0/0/0.json'
+  ]);
 });
 test('implicit parser compatibility helpers materialize one subtree and replace URL coordinates', async () => {
   const implicitOptions: ImplicitOptions = {

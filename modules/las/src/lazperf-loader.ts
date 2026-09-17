@@ -6,7 +6,12 @@
 import type {LoaderWithParser} from '@loaders.gl/loader-utils';
 import type {MeshArrowTable} from '@loaders.gl/schema';
 import {convertMeshToTable, convertTableToMesh} from '@loaders.gl/schema-utils';
-import {LAS_LOADER_METADATA, type LASLoaderOptions} from './las-loader-shared';
+import {
+  formatLASMeshColors,
+  getLASShape,
+  LAS_LOADER_METADATA,
+  type LASLoaderOptions
+} from './las-loader-shared';
 import type {LASMesh} from './lib/las-types';
 import {parseLAS, parseLASInBatches} from './lib/laz-perf/parse-las';
 
@@ -31,8 +36,9 @@ export const LAZPerfLoaderWithParser = {
 >;
 
 function convertLASMesh(mesh: LASMesh, options?: LASLoaderOptions): LASMesh | MeshArrowTable {
-  const table = convertMeshToTable(mesh, 'arrow-table');
-  if (options?.las?.shape === 'arrow-table') {
+  const formattedMesh = formatLASMeshColors(mesh, options?.las?.colorFormat || 'uint8norm');
+  const table = convertMeshToTable(formattedMesh, 'arrow-table') as MeshArrowTable;
+  if (getLASShape(options) === 'arrow-table') {
     return table;
   }
   return {

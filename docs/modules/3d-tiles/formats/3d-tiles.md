@@ -53,7 +53,9 @@ viewport instead of downloading the complete dataset.
 
 ## Compatibility at a glance
 
-The checkboxes below describe loaders.gl behavior in the current 5.0 development line. A checked
+The checkboxes below describe loaders.gl behavior in the current 5.0 development line.
+
+Renderer-neutral content, feature-ID, metadata, and visibility descriptors are available from the public `@loaders.gl/tiles` runtime for renderer integrations. See the [Tile3D API](../../tiles/api-reference/tile-3d). A checked
 item means the loader parses and exposes the capability; it does not imply that every renderer
 provides a visual implementation for that feature.
 
@@ -63,6 +65,7 @@ provides a visual implementation for that feature.
 | --- | :---: | --- |
 | 3D Tiles 1.0 tileset JSON | ✅ | Parsed and normalized by [`Tiles3DLoader`](../api-reference/tiles-3d-loader). |
 | 3D Tiles 1.1 tileset JSON | ✅ | Includes implicit-tiling and metadata declarations. |
+| Draft glTF-based 3D Tiles 2.0 | ◐ v5.0 | Experimental parsing, explicit/implicit traversal, spatial interpretation, and vector descriptors; renderer features are excluded. |
 | Explicit child hierarchies | ✅ | Traversed by [`Tileset3D`](../../tiles/api-reference/tileset-3d). |
 | Lazy implicit subtrees | ✅ v5.0 | Availability resources are requested after visibility and LOD checks. |
 | Implicit multiple contents | ✅ v5.0 | All declared content-availability streams produce ordered `content` and `contentUrls` entries. |
@@ -86,6 +89,7 @@ provides a visual implementation for that feature.
 | External tileset content | ✅ | Nested tilesets are installed below the owning tile. |
 | Multiple contents per tile | ✅ v5.0 | Explicit content arrays are normalized and loaded in source order; `Tile3D.content` remains the primary payload and `Tile3D.contents` exposes all payloads. |
 | `3tz` archive resources | ✅ v5.0 | Archive-backed sources use the same URL/content pipeline. |
+| Draft glTF package files | ✅ v5.0 | URI and buffer-view `files`/`externalAssets` resolve lazily, including nested tilesets and subtrees. |
 
 ### Extensions and metadata
 
@@ -99,8 +103,11 @@ provides a visual implementation for that feature.
 | `3DTILES_batch_table_hierarchy` | — | Parser scaffolding exists; complete hierarchy semantics remain planned. |
 | `EXT_mesh_features` | ✅ v5.0 | Feature identifiers are preserved for supported glTF payloads. |
 | `EXT_structural_metadata` | ✅ v5.0 | Schema and property-table metadata are exposed where present. |
+| Draft `3DTILES_subtree` | ◐ v5.0 | QUADTREE/OCTREE availability, attribute overrides, property rows, URI properties, and lazy caching are supported. |
+| Draft vector topology | ◐ v5.0 | Point, restart-separated polyline, and polygon topology is exposed; drawing and styling are renderer-owned. |
 | Metadata topology preservation | ✅ v5.0 | Schema, groups, tileset/tile/content entities, and implicit-subtree references are retained for application-level interpretation. Value/class decoding is not included. |
 | Metadata-derived bounding volumes | ✅ v5.0 | Direct numeric `TILE_BOUNDING_*` and `CONTENT_BOUNDING_*` semantic arrays are normalized; property-table value decoding remains application-owned. |
+| Renderer-neutral style inputs | ✅ v5.0 | Property-table rows, hierarchy-aware batch-table access, metadata precedence, and property-source diagnostics are exposed without style evaluation. |
 | Styling expressions | — | Rendering-side style evaluation is not provided by this module. |
 
 ### Coordinate reference systems
@@ -116,8 +123,18 @@ frames, and precision rules.
 | Region-established global frame | ✅ v5.0 | A root region establishes the specification frame without coordinate-magnitude guessing. |
 | Local or ambiguous frames | ✅ v5.0 | Stay unknown unless metadata or an expert override resolves them. |
 | Horizontal/geocentric transform primitive | ✅ v5.0 | Shared Proj4 pipeline and custom definition/grid registration are available. |
-| Complete nonlinear content reprojection | ◐ | Per-vertex content, nested placement, normals, bounds, and SSE integration are the next tranche. |
+| Complete nonlinear content reprojection | ◐ | Box/sphere/region bounds, decoded POSITION/NORMAL attributes, traversal headers, and nested CRS placement are transformed; cross-epoch execution remains staged. |
 | Dynamic cross-epoch transformation | — | Epoch is preserved; current Proj4 bindings do not execute epoch operations. |
+
+### Experimental 3D Tiles 2.0 exclusions
+
+The experimental profile does not support voxels, layers, visibility extensions,
+horizon-occlusion optimization, styling, visual clipping, terrain draping, or terrain/tileset
+clamping. These exclusions are not implied by successful parsing of an optional extension name.
+Unknown optional extensions are preserved; an unsupported name in `extensionsRequired` is rejected
+during classification. Draft subtree classification may first resolve structural buffers needed to
+read availability and metadata, so this rejection does not promise that every subtree dependency
+is untouched.
 
 ## How to read the matrix
 
@@ -138,6 +155,7 @@ called out explicitly rather than being counted as parser support.
 | --- | --- | :---: | --- | --- |
 | Version | 3D Tiles 1.0 tileset JSON | ✅ | Parse + normalize | Legacy tileset fields and explicit hierarchies are covered by loader fixtures. |
 | Version | 3D Tiles 1.1 tileset JSON | ✅ | Parse + normalize | Implicit tiling, multiple contents, and metadata declarations are retained. |
+| Version | Draft glTF-based 3D Tiles 2.0 | ◐ v5.0 | Parse + normalize + traversal | Supported against pinned draft revision `1737151386460f190ffd90239b38eb0e3f1949f5`; experimental APIs may change with the draft. |
 | Version | 3D Tiles Next declarations | ◐ | Parse + preserve | Unknown extension fields remain available as JSON; only listed extensions are interpreted. |
 | Container | JSON tileset and extensionless resources | ✅ | Resource resolution | Content is detected from structure or binary magic, not from a filename suffix. |
 | Container | `3tz` archive resources | ✅ v5.0 | Resource resolution | Archive-backed URLs use the same tile-content pipeline and URI cache. |
@@ -152,13 +170,14 @@ called out explicitly rather than being counted as parser support.
 | Hierarchy | `REPLACE` refinement | ✅ | Traversal | Ancestors remain usable until selected descendants are renderable. |
 | Hierarchy | `ADD` refinement | ✅ | Traversal | Ancestors and descendants may be selected together. |
 | Hierarchy | Implicit QUADTREE/OCTREE tiling | ✅ | Lazy traversal | Subtrees and availability bitstreams are requested only when traversal needs them. |
+| Hierarchy | Draft glTF `3DTILES_subtree` | ◐ v5.0 | Lazy traversal | Availability, supported attributes/property rows, embedded resources, and URI substitution are normalized. |
 | LOD | Transform-scaled geometric error | ✅ v5.0 | LOD metric | Raw error is retained; world-space error uses the conservative maximum composed scale. |
 | LOD | Perspective and orthographic SSE | ✅ v5.0 | LOD metric | Logical/CSS viewport pixels are used; invalid orthographic pixel scales fall back to perspective. |
 | LOD | Dynamic SSE | ✅ | Traversal tuning | Perspective distance-based adjustment is preserved; it does not change the declared error. |
 | Scheduling | Progressive and foveated priorities | ✅ v5.0 | Request scheduling | Priorities affect request order and cancellation, not the final SSE threshold. |
 | Scheduling | Skip-level-of-detail traversal | ✅ v5.0 | Traversal | Ready ancestors remain selected while deep descendants stream; this can increase temporary overdraw and bandwidth. |
 | Cache | Byte-based tile cache | ✅ v5.0 | Runtime | Cache residency and overflow are measured in bytes; I3S defaults remain isolated. |
-| Extension | Required-extension validation | ✅ v5.0 | Parse boundary | Unsupported `extensionsRequired` names fail before normalization or network access. |
+| Extension | Required-extension validation | ✅ v5.0 | Parse boundary | Unsupported `extensionsRequired` names fail during classification and before header normalization; draft subtrees may first resolve structural buffers needed for classification. |
 | Extension | `3DTILES_implicit_tiling` | ✅ | Parse + traversal | Availability, subdivision scheme, and subtree references are normalized. |
 | Extension | `3DTILES_bounding_volume_S2` | ✅ v5.0 | Parse + culling input | S2 volumes become traversal-ready oriented boxes while source tokens are retained. |
 | Extension | `3DTILES_content_gltf` | ✅ | Content detection | glTF tile content is recognized independently of URL extension. |
@@ -168,7 +187,10 @@ called out explicitly rather than being counted as parser support.
 | Metadata | `EXT_structural_metadata` | ✅ v5.0 | Parse + preserve | Schema, property tables, groups, and entity links are exposed; value decoding is application-side. |
 | Metadata | Metadata-derived bounding volumes | ✅ v5.0 | Culling | Direct numeric semantic arrays are normalized into tile/content volumes; property-table decoding remains application-owned. |
 | Spatial | CRS and coordinate-epoch semantics | ✅ v5.0 | Parse + normalize | Inline semantics produce readonly `spatialMetadata`; explicit unknown and invalid epochs retain diagnostics. |
-| Spatial | End-to-end nonlinear reprojection | ◐ | Runtime | Shared operations are implemented; content, hierarchy, bound, and orientation integration remains staged. |
+| Spatial | Draft CRS and georeference extensions | ◐ v5.0 | Parse + runtime transform | WKID/WKT2 metadata and recognized frames are preserved; requested target CRS transforms decoded content and conservative box/sphere bounds. Cross-epoch execution remains excluded. |
+| Renderer | Vector drawing, styling, and clipping | — | Renderer | Vector descriptors and `clip` metadata are exposed without tessellation, styling, clipping, or draw calls. |
+| Renderer | Voxels, layers, visibility, and clamping | — | Renderer/runtime | Voxel/layer/visibility extensions, horizon optimization, terrain draping, and clamping are unsupported. |
+| Spatial | End-to-end nonlinear reprojection | ◐ | Runtime | Shared operations cover decoded content, traversal headers, normals, conservative box/sphere/region bounds, and nested-CRS composition; cross-epoch execution remains staged. |
 | Renderer | Styling expressions | — | Renderer | Style evaluation and visual feature selection are outside this loader/runtime package. |
 | Renderer | GPU upload and draw policy | — | Renderer | Applications such as deck.gl or Cesium decide how normalized payloads become draw calls. |
 

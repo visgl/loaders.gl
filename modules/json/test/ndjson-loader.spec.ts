@@ -11,12 +11,15 @@ import * as unbundledJson from '@loaders.gl/json/unbundled';
 const NDJSON_PATH = '@loaders.gl/json/test/data/ndjson.ndjson';
 const NDJSON_EMPTY_OBJECTS_PATH = '@loaders.gl/json/test/data/ndjson-empty-objects.ndjson';
 const NDJSON_INVALID_PATH = '@loaders.gl/json/test/data/ndjson-invalid.ndjson';
-test('NDJSONLoader#load(ndjson.ndjson)', async () => {
+test('NDJSONLoader#load(ndjson.ndjson) defaults to Arrow', async () => {
   const table = await load(NDJSON_PATH, NDJSONLoader);
-  expect(table.data.length, 'Correct number of rows received').toBe(11);
+  expect(table.shape, 'Correct Arrow table type received').toBe('arrow-table');
+  expect(table.data.numRows, 'Correct number of rows received').toBe(11);
 });
 test('NDJSONLoader#load(ndjson.ndjson, shape: arrow-table)', async () => {
-  const classicTable = await load(NDJSON_PATH, NDJSONLoader);
+  const classicTable = await load(NDJSON_PATH, NDJSONLoader, {
+    ndjson: {shape: 'object-row-table'}
+  });
   const table = await load(NDJSON_PATH, NDJSONLoader, {ndjson: {shape: 'arrow-table'}});
   expect(table.shape, 'Correct Arrow table type received').toBe('arrow-table');
   expect(table.data.numRows, 'row count matches default NDJSONLoader').toBe(
@@ -49,7 +52,9 @@ test('NDJSONLoader#load(ndjson-invalid.ndjson)', async () => {
   ).rejects.toThrow(/failed to parse JSON on line 9/);
 });
 test('NDJSONLoader#loadInBatches(ndjson.ndjson, rows, batchSize = auto)', async () => {
-  const iterator = await loadInBatches(NDJSON_PATH, NDJSONLoader);
+  const iterator = await loadInBatches(NDJSON_PATH, NDJSONLoader, {
+    ndjson: {shape: 'object-row-table'}
+  });
   expect(
     isIterator(iterator) || isAsyncIterable(iterator),
     'loadInBatches returned iterator'
@@ -70,7 +75,8 @@ test('NDJSONLoader#loadInBatches(ndjson.ndjson, rows, batchSize = auto)', async 
 });
 test('NDJSONLoader#loadInBatches(ndjson.ndjson, rows, batchSize = 5)', async () => {
   const iterator = await loadInBatches(NDJSON_PATH, NDJSONLoader, {
-    batchSize: 5
+    batchSize: 5,
+    ndjson: {shape: 'object-row-table'}
   });
   expect(
     isIterator(iterator) || isAsyncIterable(iterator),
@@ -99,7 +105,8 @@ test('NDJSONLoader#loadInBatches(ndjson.ndjson, rows, batchSize = 5)', async () 
 });
 test('NDJSONLoader#loadInBatches(ndjson.ndjson, shape: arrow-table, batchSize = 5)', async () => {
   const classicIterator = await loadInBatches(NDJSON_PATH, NDJSONLoader, {
-    batchSize: 5
+    batchSize: 5,
+    ndjson: {shape: 'object-row-table'}
   });
   const classicBatches: any[] = [];
   for await (const batch of classicIterator) {
@@ -155,7 +162,9 @@ test('NDJSONLoader#load(ndjson-empty-objects.ndjson, shape: arrow-table)', async
   expect(table.data.numRows, 'Correct number of rows received').toBe(3);
 });
 test('NDJSONLoader#load(ndjson.ndjson, shape: arrow-table) matches rows', async () => {
-  const classicTable = await load(NDJSON_PATH, NDJSONLoader);
+  const classicTable = await load(NDJSON_PATH, NDJSONLoader, {
+    ndjson: {shape: 'object-row-table'}
+  });
   const table = await load(NDJSON_PATH, NDJSONLoader, {
     ndjson: {shape: 'arrow-table'}
   });
@@ -178,7 +187,8 @@ test('NDJSONLoader#load(ndjson-invalid.ndjson, shape: arrow-table)', async () =>
 });
 test('NDJSONLoader#loadInBatches(ndjson.ndjson, shape: arrow-table, batchSize = 5) matches rows', async () => {
   const classicIterator = await loadInBatches(NDJSON_PATH, NDJSONLoader, {
-    batchSize: 5
+    batchSize: 5,
+    ndjson: {shape: 'object-row-table'}
   });
   const classicBatches: any[] = [];
   for await (const batch of classicIterator) {
@@ -215,7 +225,9 @@ test('NDJSONLoader#loadInBatches(ndjson.ndjson, shape: arrow-table, batchSize = 
   expect(rowCount, 'Correct number of row received').toBe(11);
 });
 test('NDJSONLoader#load(ndjson-empty-objects.ndjson, shape: arrow-table) matches rows', async () => {
-  const classicTable = await load(NDJSON_EMPTY_OBJECTS_PATH, NDJSONLoader);
+  const classicTable = await load(NDJSON_EMPTY_OBJECTS_PATH, NDJSONLoader, {
+    ndjson: {shape: 'object-row-table'}
+  });
   const table = await load(NDJSON_EMPTY_OBJECTS_PATH, NDJSONLoader, {
     ndjson: {shape: 'arrow-table'}
   });

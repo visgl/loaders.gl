@@ -6,10 +6,6 @@ import type {Loader, StrictLoaderOptions} from '@loaders.gl/loader-utils';
 import type {ArrowTable, ArrowTableBatch, GeoArrowEncodingPreference} from '@loaders.gl/schema';
 import type {SHPGeoArrowEncoding} from './lib/parsers/types';
 import {SHPFormat} from './shp-format';
-import {
-  deserializeArrowWorkerResult,
-  serializeArrowWorkerResult
-} from '@loaders.gl/arrow/transport';
 
 // __VERSION__ is injected by babel-plugin-version-inline
 // @ts-ignore TS2304: Cannot find name '__VERSION__'.
@@ -40,25 +36,21 @@ async function preload() {
 }
 
 /** Metadata-only SHP worker loader. */
-export const SHPWorkerLoader = {
+export const SHPLoader: Loader<any, any, SHPLoaderOptions> = {
   dataType: null as unknown,
   batchType: null as never,
 
   ...SHPFormat,
   version: VERSION,
   worker: true,
-  serializeWorkerResult: serializeArrowWorkerResult,
-  deserializeWorkerResult: deserializeArrowWorkerResult,
   options: {
     shp: {
-      _maxDimensions: 4
+      _maxDimensions: 4,
+      shape: 'arrow-table'
     }
   },
   preload
 } as const satisfies Loader<any | ArrowTable, any | ArrowTableBatch, SHPLoaderOptions>;
 
-/** Metadata-only SHP file loader. */
-export const SHPLoader: Loader<any, any, SHPLoaderOptions> = {
-  ...SHPWorkerLoader,
-  preload
-};
+/** @deprecated Use SHPLoader. */
+export const SHPWorkerLoader = SHPLoader;

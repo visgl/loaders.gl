@@ -35,6 +35,15 @@ export function canParseWithWorker(loader: Loader, options?: StrictLoaderOptions
     return false;
   }
 
+  // LAS has no Arrow worker transport yet, so keep its Arrow path on the main thread.
+  if (
+    loader.id === 'las' &&
+    ((options as {las?: {shape?: string}} | undefined)?.las?.shape ?? 'arrow-table') ===
+      'arrow-table'
+  ) {
+    return false;
+  }
+
   if (loader.id === 'csv' && !shouldParseCSVWithWorker(options)) {
     return false;
   }

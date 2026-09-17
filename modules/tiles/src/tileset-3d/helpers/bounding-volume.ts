@@ -4,7 +4,7 @@
 // See LICENSE.md and https://github.com/AnalyticalGraphicsInc/cesium/blob/master/LICENSE.md
 
 /* eslint-disable */
-import {Quaternion, Vector3, Matrix3, degrees} from '@math.gl/core';
+import {Quaternion, Vector3, Matrix3, Matrix4, degrees} from '@math.gl/core';
 import {BoundingSphere, OrientedBoundingBox} from '@math.gl/culling';
 import {Ellipsoid, makeOBBFromRegion} from '@math.gl/geospatial';
 import {assert} from '@loaders.gl/loader-utils';
@@ -18,6 +18,7 @@ function defined(x) {
 // const scratchMatrix = new Matrix3();
 const scratchPoint = new Vector3();
 const scratchScale = new Vector3();
+const identityTransform = new Matrix4();
 // const scratchRectangle = new Rectangle();
 // const scratchOrientedBoundingBox = new OrientedBoundingBox();
 // const scratchTransform = new Matrix4();
@@ -35,7 +36,10 @@ export function createBoundingVolume(boundingVolumeHeader, transform, result?) {
   // boundingVolume schema:
   // https://github.com/AnalyticalGraphicsInc/3d-tiles/blob/master/specification/schema/boundingVolume.schema.json
   if (boundingVolumeHeader.box) {
-    return createBox(boundingVolumeHeader.box, transform, result);
+    // S2 cells and regions are geospatially anchored. Their conservative ECEF boxes are already
+    // world-space volumes and must not receive the tile/node transform a second time.
+    const boxTransform = boundingVolumeHeader.s2VolumeInfo ? identityTransform : transform;
+    return createBox(boundingVolumeHeader.box, boxTransform, result);
   }
   if (boundingVolumeHeader.region) {
     return makeOBBFromRegion(boundingVolumeHeader.region);

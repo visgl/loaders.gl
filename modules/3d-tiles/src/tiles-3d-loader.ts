@@ -10,6 +10,7 @@ import type {ImageBitmapLoaderOptions} from '@loaders.gl/images';
 import {VERSION} from './lib/utils/version';
 import type {Tiles3DTileContent, Tiles3DTilesetJSONPostprocessed} from './types';
 import {Tiles3DFormat} from './tiles-3d-format';
+import {deserialize3DTilesWorkerResult, serialize3DTilesWorkerResult} from './lib/worker-transport';
 
 export type Tiles3DLoaderOptions = StrictLoaderOptions &
   // GLTFLoaderOptions & - TODO not yet exported
@@ -29,6 +30,12 @@ export type Tiles3DLoaderOptions = StrictLoaderOptions &
       maximumCachedSubtrees?: number;
       /** Controls which axis is "up" in glTF files */
       assetGltfUpAxis?: 'x' | 'y' | 'z' | null;
+      /** Color storage format. Defaults to uint8norm for backwards compatibility. */
+      colorFormat?: 'uint8norm' | 'float16' | 'float32';
+      /** @internal Vector-content metadata supplied by a normalized tileset header. */
+      vectorContent?: {clip: boolean};
+      /** @internal Spatial transform supplied by a Tiles3DSource. */
+      _tilesetOptions?: {spatialReference?: unknown; spatialOptions?: unknown};
     };
   };
 
@@ -42,13 +49,16 @@ export const Tiles3DLoader = {
   version: VERSION,
   /** Loads the parser-bearing 3D Tiles loader implementation. */
   preload: async () => (await import('./tiles-3d-loader-with-parser')).Tiles3DLoaderWithParser,
+  serializeWorkerResult: serialize3DTilesWorkerResult,
+  deserializeWorkerResult: result => deserialize3DTilesWorkerResult(result, Tiles3DLoader),
   options: {
     '3d-tiles': {
       loadGLTF: true,
       decodeQuantizedPositions: false,
       isTileset: 'auto',
       maximumCachedSubtrees: 32,
-      assetGltfUpAxis: null
+      assetGltfUpAxis: null,
+      colorFormat: 'uint8norm'
     }
   }
 } as const satisfies Loader<

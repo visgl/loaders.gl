@@ -36,13 +36,34 @@ import {
   parseFixedLengthArrayNumeric,
   getPropertyDataString
 } from './utils/3d-tiles-utils';
-import {ensureArrayBuffer} from '@loaders.gl/loader-utils';
+import {ensureArrayBuffer, type LoaderContext} from '@loaders.gl/loader-utils';
+import {resolveUrl} from '../gltf-utils/resolve-url';
 
 const EXT_STRUCTURAL_METADATA_NAME = 'EXT_structural_metadata';
 export const name = EXT_STRUCTURAL_METADATA_NAME;
 
-export async function decode(gltfData: GLTFWithBuffers, options: GLTFLoaderOptions): Promise<void> {
+export async function decode(
+  gltfData: GLTFWithBuffers,
+  options: GLTFLoaderOptions,
+  context?: LoaderContext
+): Promise<void> {
   const iterator = new GLTFIterator(gltfData);
+  const extension: GLTF_EXT_structural_metadata_GLTF | undefined = iterator.getExtension(
+    EXT_STRUCTURAL_METADATA_NAME
+  );
+  if (options.gltf?.loadBuffers && extension?.schemaUri && !extension.schema) {
+    if (!context?.fetch) {
+      throw new Error('EXT_structural_metadata: a loader context is required to load schemaUri');
+    }
+    const schemaUrl = resolveUrl(extension.schemaUri, options, context);
+    const response = await context.fetch(schemaUrl);
+    if (!response.ok) {
+      throw new Error(
+        `EXT_structural_metadata: failed to load schemaUri ${schemaUrl} (${response.status})`
+      );
+    }
+    extension.schema = (await response.json()) as GLTF_EXT_structural_metadata_Schema;
+  }
   decodeExtStructuralMetadata(iterator, options);
 }
 
@@ -172,31 +193,12 @@ function decodePropertyTables(
   const schemaClasses = schema.classes;
   const propertyTables = extension.propertyTables;
   if (schemaClasses && propertyTables) {
-    for (const schemaName in schemaClasses) {
-      const propertyTable = findPropertyTableByClass(propertyTables, schemaName);
-      if (propertyTable) {
+    for (const propertyTable of propertyTables) {
+      if (propertyTable.class && schemaClasses[propertyTable.class]) {
         processPropertyTable(iterator, schema, propertyTable);
       }
     }
   }
-}
-
-/**
- * Finds the property table by class name.
- * @param propertyTables - propertyTable definition taken from the top-level extension.
- * @param schemaClassName - class name in the extension schema.
- */
-function findPropertyTableByClass(
-  propertyTables: GLTF_EXT_structural_metadata_PropertyTable[],
-  schemaClassName: string
-): GLTF_EXT_structural_metadata_PropertyTable | null {
-  for (const propertyTable of propertyTables) {
-    if (propertyTable.class === schemaClassName) {
-      return propertyTable;
-    }
-  }
-
-  return null;
 }
 
 /**
@@ -335,14 +337,24 @@ function processPropertyTable(
 
     if (propertyTableProperty) {
       // Getting all elements (`numberOfElements`) of the array in the `propertyTableProperty`
+      const rawDataOutput: {value?: unknown} = {};
       const data = getPropertyDataFromBinarySource(
         iterator,
         schema,
         classProperty,
         numberOfElements,
-        propertyTableProperty
+        propertyTableProperty,
+        rawDataOutput
       );
       propertyTableProperty.data = data;
+      if (rawDataOutput.value !== undefined) {
+        Object.defineProperty(propertyTableProperty, 'rawData', {
+          value: rawDataOutput.value,
+          configurable: true,
+          enumerable: false,
+          writable: true
+        });
+      }
     }
   }
 }
@@ -354,16 +366,17 @@ function processPropertyTable(
  * @param classProperty - class property object.
  * @param numberOfElements - The number of elements in each property array that propertyTableProperty contains. It's a number of rows in the table.
  * @param propertyTableProperty - propertyTable's property metadata.
- * @returns {string[] | number[] | string[][] | number[][]}
+ * @returns Decoded scalar, Boolean, string, enum, vector, matrix, or array values.
  */
 function getPropertyDataFromBinarySource(
   iterator: GLTFIterator,
   schema: GLTF_EXT_structural_metadata_Schema,
   classProperty: GLTF_EXT_structural_metadata_ClassProperty,
   numberOfElements: number,
-  propertyTableProperty: GLTF_EXT_structural_metadata_PropertyTable_Property
-): string[] | BigTypedArray | string[][] | BigTypedArray[] {
-  let data: string[] | BigTypedArray | string[][] | BigTypedArray[] = [];
+  propertyTableProperty: GLTF_EXT_structural_metadata_PropertyTable_Property,
+  rawDataOutput?: {value?: unknown}
+): boolean[] | string[] | BigTypedArray | boolean[][] | string[][] | BigTypedArray[] {
+  let data: boolean[] | string[] | BigTypedArray | boolean[][] | string[][] | BigTypedArray[] = [];
   const valuesBufferView = propertyTableProperty.values;
   const valuesDataBytes: Uint8Array = iterator.getTypedArrayForBufferView(valuesBufferView);
 
@@ -375,6 +388,7 @@ function getPropertyDataFromBinarySource(
   );
   const stringOffsets = getStringOffsetsForProperty(
     iterator,
+    classProperty,
     propertyTableProperty,
     numberOfElements,
     arrayOffsets
@@ -388,15 +402,31 @@ function getPropertyDataFromBinarySource(
     case 'MAT2':
     case 'MAT3':
     case 'MAT4': {
-      data = getPropertyDataNumeric(classProperty, numberOfElements, valuesDataBytes, arrayOffsets);
+      const numericData = getPropertyDataNumeric(
+        classProperty,
+        propertyTableProperty,
+        numberOfElements,
+        valuesDataBytes,
+        arrayOffsets
+      );
+      data = numericData.data;
+      if (rawDataOutput) {
+        rawDataOutput.value = numericData.rawData;
+      }
       break;
     }
     case 'BOOLEAN': {
-      // TODO: implement it as soon as we have the corresponding tileset
-      throw new Error(`Not implemented - classProperty.type=${classProperty.type}`);
+      data = getPropertyDataBoolean(classProperty, numberOfElements, valuesDataBytes, arrayOffsets);
+      break;
     }
     case 'STRING': {
-      data = getPropertyDataString(numberOfElements, valuesDataBytes, arrayOffsets, stringOffsets);
+      data = getPropertyDataString(
+        numberOfElements,
+        valuesDataBytes,
+        arrayOffsets,
+        stringOffsets,
+        classProperty.array ? classProperty.count : undefined
+      );
       break;
     }
     case 'ENUM': {
@@ -414,6 +444,49 @@ function getPropertyDataFromBinarySource(
   }
 
   return data;
+}
+
+/** Decodes least-significant-bit-first Boolean values and Boolean arrays. */
+function getPropertyDataBoolean(
+  classProperty: GLTF_EXT_structural_metadata_ClassProperty,
+  numberOfElements: number,
+  valuesDataBytes: Uint8Array,
+  arrayOffsets: TypedArray | null
+): boolean[] | boolean[][] {
+  if (!classProperty.array) {
+    return getBooleanValues(valuesDataBytes, 0, numberOfElements);
+  }
+  if (arrayOffsets) {
+    return Array.from({length: numberOfElements}, (_unused, rowIndex) => {
+      const start = Number(arrayOffsets[rowIndex]);
+      const end = Number(arrayOffsets[rowIndex + 1]);
+      if (!Number.isInteger(start) || !Number.isInteger(end) || start < 0 || end < start) {
+        throw new Error('EXT_structural_metadata: invalid BOOLEAN array offsets');
+      }
+      return getBooleanValues(valuesDataBytes, start, end - start);
+    });
+  }
+  if (classProperty.count === undefined) {
+    return [];
+  }
+  return Array.from({length: numberOfElements}, (_unused, rowIndex) =>
+    getBooleanValues(
+      valuesDataBytes,
+      rowIndex * (classProperty.count as number),
+      classProperty.count as number
+    )
+  );
+}
+
+/** Extracts a consecutive range of Boolean bits from a metadata value buffer. */
+function getBooleanValues(valuesDataBytes: Uint8Array, start: number, count: number): boolean[] {
+  if (start + count > valuesDataBytes.byteLength * 8) {
+    throw new Error('EXT_structural_metadata: BOOLEAN values exceed their buffer view');
+  }
+  return Array.from({length: count}, (_unused, index) => {
+    const bitIndex = start + index;
+    return Boolean(valuesDataBytes[Math.floor(bitIndex / 8)] & (1 << (bitIndex % 8)));
+  });
 }
 
 /**
@@ -453,6 +526,7 @@ function getArrayOffsetsForProperty(
 /**
  * Parses propertyTable.property.stringOffsets.
  * @param scenegraph - Instance of the class for structured access to GLTF data.
+ * @param classProperty - Class property declaration that determines fixed array length.
  * @param propertyTableProperty - propertyTable's property metadata.
  * @param numberOfElements - The number of elements in each property array that propertyTableProperty contains. It's a number of rows in the table.
  * @param arrayOffsets - Offsets for variable-length arrays. The final offset is the total number of string elements.
@@ -461,6 +535,7 @@ function getArrayOffsetsForProperty(
  */
 function getStringOffsetsForProperty(
   iterator: GLTFIterator,
+  classProperty: GLTF_EXT_structural_metadata_ClassProperty,
   propertyTableProperty: GLTF_EXT_structural_metadata_PropertyTable_Property,
   numberOfElements: number,
   arrayOffsets: TypedArray | null
@@ -468,7 +543,9 @@ function getStringOffsetsForProperty(
   if (
     typeof propertyTableProperty.stringOffsets !== 'undefined' // `stringOffsets` is an index of the buffer view containing offsets for strings.
   ) {
-    const numberOfStrings = arrayOffsets ? arrayOffsets[numberOfElements] : numberOfElements;
+    const numberOfStrings = arrayOffsets
+      ? Number(arrayOffsets[numberOfElements])
+      : numberOfElements * (classProperty.array ? classProperty.count || 1 : 1);
     return getOffsetsForProperty(
       iterator,
       propertyTableProperty.stringOffsets,
@@ -489,12 +566,15 @@ function getStringOffsetsForProperty(
  */
 function getPropertyDataNumeric(
   classProperty: GLTF_EXT_structural_metadata_ClassProperty,
+  propertyTableProperty: GLTF_EXT_structural_metadata_PropertyTable_Property,
   numberOfElements: number,
   valuesDataBytes: Uint8Array,
   arrayOffsets: TypedArray | null
-): BigTypedArray | BigTypedArray[] {
+): {data: BigTypedArray | BigTypedArray[]; rawData: BigTypedArray | BigTypedArray[]} {
   const isArray = classProperty.array;
   const arrayCount = classProperty.count;
+  const componentCount =
+    {VEC2: 2, VEC3: 3, VEC4: 4, MAT2: 4, MAT3: 9, MAT4: 16}[classProperty.type] || 1;
 
   const elementSize = getArrayElementByteSize(classProperty.type, classProperty.componentType);
   const elementCount = valuesDataBytes.byteLength / elementSize;
@@ -513,25 +593,149 @@ function getPropertyDataNumeric(
     valuesData = valuesDataBytes;
   }
 
+  const rawValuesData = valuesData;
+  const offset = propertyTableProperty.offset ?? classProperty.offset;
+  const scale = propertyTableProperty.scale ?? classProperty.scale;
+  const transformedValuesData =
+    classProperty.normalized || offset !== undefined || scale !== undefined
+      ? applyNumericPropertyTransforms(
+          rawValuesData,
+          classProperty.componentType,
+          classProperty.type,
+          classProperty.normalized,
+          offset,
+          scale
+        )
+      : rawValuesData;
+
   if (isArray) {
     if (arrayOffsets) {
       // VARIABLE-length array
-      return parseVariableLengthArrayNumeric(
-        valuesData,
-        numberOfElements,
-        arrayOffsets,
-        valuesDataBytes.length,
-        elementSize
-      );
+      return {
+        data: parseVariableLengthArrayNumeric(
+          transformedValuesData,
+          numberOfElements,
+          arrayOffsets,
+          componentCount
+        ),
+        rawData: parseVariableLengthArrayNumeric(
+          rawValuesData,
+          numberOfElements,
+          arrayOffsets,
+          componentCount
+        )
+      };
     }
     if (arrayCount) {
       // FIXED-length array
-      return parseFixedLengthArrayNumeric(valuesData, numberOfElements, arrayCount);
+      return {
+        data: parseFixedLengthArrayNumeric(
+          transformedValuesData,
+          numberOfElements,
+          arrayCount,
+          componentCount
+        ),
+        rawData: parseFixedLengthArrayNumeric(
+          rawValuesData,
+          numberOfElements,
+          arrayCount,
+          componentCount
+        )
+      };
     }
-    return [];
+    return {data: [], rawData: []};
   }
 
-  return valuesData;
+  return {data: transformedValuesData, rawData: rawValuesData};
+}
+
+/**
+ * Applies metadata normalization, scale, and offset transforms in specification order.
+ *
+ * A transformed column uses Float64Array so normalized integer values retain their fractional
+ * precision. BigInt columns are left untouched because JavaScript cannot represent their scaled
+ * values without losing integer precision.
+ *
+ * @param valuesData - Decoded numeric property column.
+ * @param componentType - Source component type used for normalization limits.
+ * @param attributeType - SCALAR, VECN, or MATN shape.
+ * @param normalized - Whether integer values are normalized to a unit range.
+ * @param offset - Optional scalar or per-component offset.
+ * @param scale - Optional scalar or per-component scale.
+ * @returns Transformed numeric column.
+ */
+function applyNumericPropertyTransforms(
+  valuesData: BigTypedArray,
+  componentType: string | undefined,
+  attributeType: string,
+  normalized: boolean | undefined,
+  offset: number | number[] | undefined,
+  scale: number | number[] | undefined
+): BigTypedArray {
+  const normalizationLimit = getNormalizationLimit(componentType);
+  const hasNormalization = Boolean(normalized && normalizationLimit !== undefined);
+  if (!hasNormalization && offset === undefined && scale === undefined) {
+    return valuesData;
+  }
+  const numberOfComponents = getMetadataComponentCount(attributeType);
+  const result = new Float64Array(valuesData.length);
+  for (let index = 0; index < valuesData.length; index++) {
+    let value = Number(valuesData[index]);
+    if (hasNormalization) {
+      value = componentType?.startsWith('INT')
+        ? Math.max(value / (normalizationLimit as number), -1)
+        : value / (normalizationLimit as number);
+    }
+    const componentIndex = index % numberOfComponents;
+    const offsetValue = Array.isArray(offset) ? (offset[componentIndex] ?? 0) : (offset ?? 0);
+    const scaleValue = Array.isArray(scale) ? (scale[componentIndex] ?? 1) : (scale ?? 1);
+    result[index] = value * scaleValue + offsetValue;
+  }
+  return result;
+}
+
+/** Returns the number of scalar components represented by a metadata element type. */
+function getMetadataComponentCount(attributeType: string): number {
+  switch (attributeType) {
+    case 'VEC2':
+      return 2;
+    case 'VEC3':
+      return 3;
+    case 'VEC4':
+      return 4;
+    case 'MAT2':
+      return 4;
+    case 'MAT3':
+      return 9;
+    case 'MAT4':
+      return 16;
+    default:
+      return 1;
+  }
+}
+
+/** Returns the integer normalization denominator for a metadata component type. */
+function getNormalizationLimit(componentType: string | undefined): number | undefined {
+  switch (componentType) {
+    case 'INT8':
+      return 127;
+    case 'UINT8':
+      return 255;
+    case 'INT16':
+      return 32767;
+    case 'UINT16':
+      return 65535;
+    case 'INT32':
+      return 2147483647;
+    case 'UINT32':
+      return 4294967295;
+    case 'INT64':
+      return 2 ** 63 - 1;
+    case 'UINT64':
+      return 2 ** 64 - 1;
+    default:
+      return undefined;
+  }
 }
 
 /**
@@ -585,8 +789,6 @@ function getPropertyDataENUM(
         valuesData,
         numberOfElements,
         arrayOffsets,
-        valuesDataBytesLength: valuesDataBytes.length,
-        elementSize,
         enumEntry
       });
     }
@@ -608,8 +810,6 @@ function getPropertyDataENUM(
  * @param params.valuesData - Values in a flat typed array.
  * @param params.numberOfElements - The number of elements in each property array that propertyTableProperty contains. It's a number of rows in the table.
  * @param params.arrayOffsets - Offsets for variable-length arrays. It's null for fixed-length arrays or scalar types.
- * @param params.valuesDataBytesLength - Byte length of values array.
- * @param params.elementSize - Single element byte size.
  * @param params.enumEntry - Enums dictionary.
  * @returns Nested strings array.
  */
@@ -617,29 +817,23 @@ function parseVariableLengthArrayENUM(params: {
   valuesData: BigTypedArray;
   numberOfElements: number;
   arrayOffsets: TypedArray;
-  valuesDataBytesLength: number;
-  elementSize: number;
   enumEntry: GLTF_EXT_structural_metadata_Enum;
 }): string[][] {
-  const {
-    valuesData,
-    numberOfElements,
-    arrayOffsets,
-    valuesDataBytesLength,
-    elementSize,
-    enumEntry
-  } = params;
+  const {valuesData, numberOfElements, arrayOffsets, enumEntry} = params;
   const attributeValueArray: string[][] = [];
   for (let index = 0; index < numberOfElements; index++) {
-    const arrayOffset = arrayOffsets[index];
-    const arrayByteSize = arrayOffsets[index + 1] - arrayOffsets[index];
-    if (arrayByteSize + arrayOffset > valuesDataBytesLength) {
+    const arrayOffset = Number(arrayOffsets[index]);
+    const arrayLength = Number(arrayOffsets[index + 1]) - arrayOffset;
+    if (
+      !Number.isInteger(arrayOffset) ||
+      !Number.isInteger(arrayLength) ||
+      arrayOffset < 0 ||
+      arrayLength < 0 ||
+      arrayOffset + arrayLength > valuesData.length
+    ) {
       break;
     }
-
-    const typedArrayOffset = arrayOffset / elementSize;
-    const elementCount = arrayByteSize / elementSize;
-    const array: string[] = getEnumsArray(valuesData, typedArrayOffset, elementCount, enumEntry);
+    const array: string[] = getEnumsArray(valuesData, arrayOffset, arrayLength, enumEntry);
     attributeValueArray.push(array);
   }
   return attributeValueArray;
@@ -684,19 +878,12 @@ function getEnumsArray(
 ): string[] {
   const array: string[] = [];
   for (let i = 0; i < count; i++) {
-    // At the moment we don't support BigInt. It requires additional calculations logic
-    // and might be an issue in Safari
-    if (valuesData instanceof BigInt64Array || valuesData instanceof BigUint64Array) {
-      array.push('');
+    const value = valuesData[offset + i];
+    const enumObject = getEnumByValue(enumEntry, value);
+    if (enumObject) {
+      array.push(enumObject.name);
     } else {
-      const value = valuesData[offset + i];
-
-      const enumObject = getEnumByValue(enumEntry, value);
-      if (enumObject) {
-        array.push(enumObject.name);
-      } else {
-        array.push('');
-      }
+      array.push('');
     }
   }
   return array;
@@ -705,15 +892,19 @@ function getEnumsArray(
 /**
  * Looks up ENUM whose `value` property matches the specified number in the parameter `value`.
  * @param {GLTF_EXT_structural_metadata_Enum} enumEntry - ENUM entry containing the array of possible enums.
- * @param {number} value - The value of the ENUM to locate.
+ * @param value - The decoded integer value of the ENUM to locate.
  * @returns {GLTF_EXT_structural_metadata_EnumValue | null} ENUM matcihng the specified value or null of no ENUM object was found.
  */
 function getEnumByValue(
   enumEntry: GLTF_EXT_structural_metadata_Enum,
-  value: number
+  value: number | bigint
 ): GLTF_EXT_structural_metadata_EnumValue | null {
   for (const enumValue of enumEntry.values) {
-    if (enumValue.value === value) {
+    const matchesValue =
+      typeof value === 'bigint'
+        ? Number.isSafeInteger(enumValue.value) && BigInt(enumValue.value) === value
+        : enumValue.value === value;
+    if (matchesValue) {
       return enumValue;
     }
   }

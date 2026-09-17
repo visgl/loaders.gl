@@ -10,6 +10,7 @@ import {
   type PropertyAttribute,
   GLTF_EXT_structural_metadata_GLTF
 } from '@loaders.gl/gltf';
+import {getOffsetsForProperty} from '../../../src/lib/extensions/utils/3d-tiles-utils';
 test('gltf#EXT_structural_metadata - Should decode', async () => {
   const binaryBufferData = [
     0, 0, 0, 0, 1, 0, 0, 0, 2, 0, 0, 0, 2, 0, 0, 0, 3, 0, 0, 0, 0, 0, 0, 0, 1, 33, 223, 70, 43, 39,
@@ -477,6 +478,344 @@ test('gltf#EXT_structural_metadata decodes fixed numeric and enum property varia
   expect(properties.emptyArray.data).toEqual([]);
 });
 
+test('gltf#EXT_structural_metadata decodes signed and unsigned 64-bit enums', async () => {
+  const bytes = new Uint8Array(32);
+  const dataView = new DataView(bytes.buffer);
+  dataView.setBigInt64(0, -1n, true);
+  dataView.setBigInt64(8, 5n, true);
+  dataView.setBigUint64(16, 1n, true);
+  dataView.setBigUint64(24, 5n, true);
+  const gltf = {
+    buffers: [{arrayBuffer: bytes.buffer, byteOffset: 0, byteLength: bytes.byteLength}],
+    json: {
+      buffers: [{byteLength: bytes.byteLength}],
+      bufferViews: [
+        {buffer: 0, byteOffset: 0, byteLength: 16},
+        {buffer: 0, byteOffset: 16, byteLength: 16}
+      ],
+      extensions: {
+        EXT_structural_metadata: {
+          schema: {
+            classes: {
+              Sample: {
+                properties: {
+                  signed: {type: 'ENUM', enumType: 'SignedKind'},
+                  unsigned: {type: 'ENUM', enumType: 'UnsignedKind'}
+                }
+              }
+            },
+            enums: {
+              SignedKind: {
+                valueType: 'INT64',
+                values: [
+                  {name: 'negative', value: -1},
+                  {name: 'five', value: 5}
+                ]
+              },
+              UnsignedKind: {
+                valueType: 'UINT64',
+                values: [
+                  {name: 'one', value: 1},
+                  {name: 'five', value: 5}
+                ]
+              }
+            }
+          },
+          propertyTables: [
+            {
+              class: 'Sample',
+              count: 2,
+              properties: {signed: {values: 0}, unsigned: {values: 1}}
+            }
+          ]
+        }
+      }
+    }
+  } as any;
+
+  await decodeExtensions(gltf, {gltf: {loadBuffers: true, loadImages: false}});
+  const properties = gltf.json.extensions.EXT_structural_metadata.propertyTables[0].properties;
+  expect(properties.signed.data).toEqual(['negative', 'five']);
+  expect(properties.unsigned.data).toEqual(['one', 'five']);
+});
+
+test('gltf#EXT_structural_metadata loads an external schema before decoding tables', async () => {
+  const bytes = new Uint8Array([7, 9]);
+  const gltf = {
+    buffers: [{arrayBuffer: bytes.buffer, byteOffset: 0, byteLength: bytes.byteLength}],
+    json: {
+      buffers: [{byteLength: bytes.byteLength}],
+      bufferViews: [{buffer: 0, byteOffset: 0, byteLength: bytes.byteLength}],
+      extensions: {
+        EXT_structural_metadata: {
+          schemaUri: 'metadata/schema.json',
+          propertyTables: [{class: 'Sample', count: 2, properties: {value: {values: 0}}}]
+        }
+      }
+    }
+  } as any;
+  const requestedUrls: string[] = [];
+
+  await decodeExtensions(gltf, {gltf: {loadBuffers: true, loadImages: false}}, {
+    baseUrl: 'https://example.com/models/',
+    fetch: async (url: string) => {
+      requestedUrls.push(url);
+      return new Response(
+        JSON.stringify({
+          id: 'external-schema',
+          classes: {
+            Sample: {
+              properties: {
+                value: {type: 'SCALAR', componentType: 'UINT8', required: true}
+              }
+            }
+          }
+        })
+      );
+    }
+  } as any);
+
+  expect(requestedUrls).toEqual(['https://example.com/models/metadata/schema.json']);
+  const extension = gltf.json.extensions.EXT_structural_metadata;
+  expect(extension.schema.id).toBe('external-schema');
+  expect(Array.from(extension.propertyTables[0].properties.value.data)).toEqual([7, 9]);
+});
+
+test('gltf#EXT_structural_metadata decodes packed Boolean properties and arrays', async () => {
+  const binary = new Uint8Array([0b00000101, 0b00110101, 0b00001101, 0, 1, 4]);
+  const gltf = {
+    buffers: [{arrayBuffer: binary.buffer, byteOffset: 0, byteLength: binary.byteLength}],
+    json: {
+      buffers: [{byteLength: binary.byteLength}],
+      bufferViews: [
+        {buffer: 0, byteOffset: 0, byteLength: 1},
+        {buffer: 0, byteOffset: 1, byteLength: 1},
+        {buffer: 0, byteOffset: 2, byteLength: 1},
+        {buffer: 0, byteOffset: 3, byteLength: 3}
+      ],
+      extensions: {
+        EXT_structural_metadata: {
+          schema: {
+            classes: {
+              Scalars: {properties: {value: {type: 'BOOLEAN', required: true}}},
+              Fixed: {
+                properties: {value: {type: 'BOOLEAN', array: true, count: 3, required: true}}
+              },
+              Variable: {
+                properties: {value: {type: 'BOOLEAN', array: true, required: true}}
+              }
+            }
+          },
+          propertyTables: [
+            {class: 'Scalars', count: 3, properties: {value: {values: 0}}},
+            {class: 'Fixed', count: 2, properties: {value: {values: 1}}},
+            {
+              class: 'Variable',
+              count: 2,
+              properties: {value: {values: 2, arrayOffsets: 3, arrayOffsetType: 'UINT8'}}
+            }
+          ]
+        }
+      }
+    }
+  };
+
+  await decodeExtensions(gltf as any, {gltf: {loadBuffers: true, loadImages: false}});
+
+  const tables = gltf.json.extensions.EXT_structural_metadata.propertyTables;
+  expect(tables[0].properties.value.data).toEqual([true, false, true]);
+  expect(tables[1].properties.value.data).toEqual([
+    [true, false, true],
+    [false, true, true]
+  ]);
+  expect(tables[2].properties.value.data).toEqual([[true], [false, true, true]]);
+});
+
+test('gltf#EXT_structural_metadata treats array offsets as elements and groups fixed strings', async () => {
+  const binary = new Uint8Array(35);
+  new Uint16Array(binary.buffer, 0, 6).set([1, 2, 3, 4, 5, 6]);
+  binary.set([0, 2, 3], 12);
+  binary.set(new TextEncoder().encode('abbcdd'), 15);
+  binary.set([0, 1, 3, 4, 6], 21);
+  new Uint16Array(binary.buffer, 26, 3).set([10, 20, 30]);
+  binary.set([0, 2, 3], 32);
+  const gltf = {
+    buffers: [{arrayBuffer: binary.buffer, byteOffset: 0, byteLength: binary.byteLength}],
+    json: {
+      buffers: [{byteLength: binary.byteLength}],
+      bufferViews: [
+        {buffer: 0, byteOffset: 0, byteLength: 12},
+        {buffer: 0, byteOffset: 12, byteLength: 3},
+        {buffer: 0, byteOffset: 15, byteLength: 6},
+        {buffer: 0, byteOffset: 21, byteLength: 5},
+        {buffer: 0, byteOffset: 26, byteLength: 6},
+        {buffer: 0, byteOffset: 32, byteLength: 3}
+      ],
+      extensions: {
+        EXT_structural_metadata: {
+          schema: {
+            classes: {
+              Numeric: {
+                properties: {
+                  value: {
+                    type: 'VEC2',
+                    componentType: 'UINT16',
+                    array: true,
+                    required: true
+                  }
+                }
+              },
+              Strings: {
+                properties: {
+                  value: {type: 'STRING', array: true, count: 2, required: true}
+                }
+              },
+              Enums: {
+                properties: {
+                  value: {type: 'ENUM', enumType: 'Kind', array: true, required: true}
+                }
+              }
+            },
+            enums: {
+              Kind: {
+                valueType: 'UINT16',
+                values: [
+                  {name: 'first', value: 10},
+                  {name: 'second', value: 20},
+                  {name: 'third', value: 30}
+                ]
+              }
+            }
+          },
+          propertyTables: [
+            {
+              class: 'Numeric',
+              count: 2,
+              properties: {value: {values: 0, arrayOffsets: 1, arrayOffsetType: 'UINT8'}}
+            },
+            {
+              class: 'Strings',
+              count: 2,
+              properties: {value: {values: 2, stringOffsets: 3, stringOffsetType: 'UINT8'}}
+            },
+            {
+              class: 'Enums',
+              count: 2,
+              properties: {value: {values: 4, arrayOffsets: 5, arrayOffsetType: 'UINT8'}}
+            }
+          ]
+        }
+      }
+    }
+  };
+
+  await decodeExtensions(gltf as any, {gltf: {loadBuffers: true, loadImages: false}});
+
+  const tables = gltf.json.extensions.EXT_structural_metadata.propertyTables;
+  expect(tables[0].properties.value.data).toEqual([
+    new Uint16Array([1, 2, 3, 4]),
+    new Uint16Array([5, 6])
+  ]);
+  expect(tables[1].properties.value.data).toEqual([
+    ['a', 'bb'],
+    ['c', 'dd']
+  ]);
+  expect(tables[2].properties.value.data).toEqual([['first', 'second'], ['third']]);
+});
+
+test('gltf#EXT_structural_metadata converts safe UINT64 offsets and rejects lossy values', () => {
+  const offsets = new BigUint64Array([0n, 2n, 3n]);
+  const gltf = {
+    buffers: [{arrayBuffer: offsets.buffer, byteOffset: 0, byteLength: offsets.byteLength}],
+    json: {
+      buffers: [{byteLength: offsets.byteLength}],
+      bufferViews: [{buffer: 0, byteOffset: 0, byteLength: offsets.byteLength}]
+    }
+  };
+  const scenegraph = new GLTFScenegraph(gltf as any);
+
+  expect(getOffsetsForProperty(scenegraph, 0, 'UINT64', 2)).toEqual(new Float64Array([0, 2, 3]));
+
+  offsets[2] = BigInt(Number.MAX_SAFE_INTEGER) + 1n;
+  expect(() => getOffsetsForProperty(scenegraph, 0, 'UINT64', 2)).toThrow(
+    /UINT64 offset exceeds the safe integer range/
+  );
+});
+
+test('gltf#EXT_structural_metadata applies normalized scale and offset transforms', async () => {
+  const bytes = new Uint8Array([0, 255]);
+  const gltf = {
+    buffers: [{arrayBuffer: bytes.buffer, byteOffset: 0, byteLength: bytes.byteLength}],
+    json: {
+      buffers: [{byteLength: bytes.byteLength}],
+      bufferViews: [{buffer: 0, byteOffset: 0, byteLength: bytes.byteLength}],
+      extensions: {
+        EXT_structural_metadata: {
+          schema: {
+            classes: {
+              Sample: {
+                properties: {
+                  value: {
+                    type: 'SCALAR',
+                    componentType: 'UINT8',
+                    normalized: true,
+                    offset: 10,
+                    scale: 2
+                  }
+                }
+              }
+            }
+          },
+          propertyTables: [{class: 'Sample', count: 2, properties: {value: {values: 0}}}]
+        }
+      }
+    }
+  } as any;
+
+  await decodeExtensions(gltf, {gltf: {loadBuffers: true, loadImages: false}});
+
+  const values =
+    gltf.json.extensions.EXT_structural_metadata.propertyTables[0].properties.value.data;
+  expect(Array.from(values)).toEqual([10, 12]);
+});
+
+test('gltf#EXT_structural_metadata normalizes UINT64 values before transforms', async () => {
+  const values = new BigUint64Array([0n, 18446744073709551615n]);
+  const gltf = {
+    buffers: [{arrayBuffer: values.buffer, byteOffset: 0, byteLength: values.byteLength}],
+    json: {
+      buffers: [{byteLength: values.byteLength}],
+      bufferViews: [{buffer: 0, byteOffset: 0, byteLength: values.byteLength}],
+      extensions: {
+        EXT_structural_metadata: {
+          schema: {
+            classes: {
+              Sample: {
+                properties: {
+                  value: {
+                    type: 'SCALAR',
+                    componentType: 'UINT64',
+                    normalized: true,
+                    scale: 2,
+                    offset: 1
+                  }
+                }
+              }
+            }
+          },
+          propertyTables: [{class: 'Sample', count: 2, properties: {value: {values: 0}}}]
+        }
+      }
+    }
+  } as any;
+
+  await decodeExtensions(gltf, {gltf: {loadBuffers: true, loadImages: false}});
+
+  const property = gltf.json.extensions.EXT_structural_metadata.propertyTables[0].properties.value;
+  expect(Array.from(property.data)).toEqual([1, 3]);
+  expect(Array.from(property.rawData)).toEqual([0n, 18446744073709551615n]);
+});
+
 test('gltf#EXT_structural_metadata validates unsupported property definitions', async () => {
   const makeGLTF = (property: any, schema: any = {}) => ({
     buffers: [{arrayBuffer: new Uint8Array([1, 0]).buffer, byteOffset: 0, byteLength: 2}],
@@ -495,11 +834,6 @@ test('gltf#EXT_structural_metadata validates unsupported property definitions', 
     }
   });
 
-  await expect(
-    decodeExtensions(makeGLTF({type: 'BOOLEAN'}) as any, {
-      gltf: {loadBuffers: true, loadImages: false}
-    })
-  ).rejects.toThrow(/Not implemented/);
   await expect(
     decodeExtensions(makeGLTF({type: 'FUTURE'}) as any, {
       gltf: {loadBuffers: true, loadImages: false}
@@ -526,6 +860,42 @@ test('gltf#EXT_structural_metadata validates unsupported property definitions', 
       gltf: {loadBuffers: true, loadImages: false}
     })
   ).resolves.toBeUndefined();
+});
+
+test('gltf#EXT_structural_metadata decodes every table that shares a class', async () => {
+  const gltf = {
+    buffers: [{arrayBuffer: new Uint8Array([7, 9]).buffer, byteOffset: 0, byteLength: 2}],
+    json: {
+      buffers: [{byteLength: 2}],
+      bufferViews: [
+        {buffer: 0, byteOffset: 0, byteLength: 1},
+        {buffer: 0, byteOffset: 1, byteLength: 1}
+      ],
+      extensions: {
+        EXT_structural_metadata: {
+          schema: {
+            classes: {
+              Sample: {
+                properties: {
+                  value: {type: 'SCALAR', componentType: 'UINT8', required: true}
+                }
+              }
+            }
+          },
+          propertyTables: [
+            {class: 'Sample', count: 1, properties: {value: {values: 0}}},
+            {class: 'Sample', count: 1, properties: {value: {values: 1}}}
+          ]
+        }
+      }
+    }
+  } as any;
+
+  await decodeExtensions(gltf, {gltf: {loadBuffers: true, loadImages: false}});
+
+  const propertyTables = gltf.json.extensions.EXT_structural_metadata.propertyTables;
+  expect(Array.from(propertyTables[0].properties.value.data)).toEqual([7]);
+  expect(Array.from(propertyTables[1].properties.value.data)).toEqual([9]);
 });
 
 test('gltf#EXT_structural_metadata validates encoder attribute consistency', () => {

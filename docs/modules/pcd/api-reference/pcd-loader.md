@@ -43,14 +43,14 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
   tone="violet"
 />
 
-`PCDLoader` parses point cloud data in the Point Cloud Data (PCD) format and returns a legacy [PointCloud](/docs/specifications/category-mesh) object by default.
+`PCDLoader` parses point cloud data in the Point Cloud Data (PCD) format and returns a [Mesh Arrow table](/docs/specifications/category-mesh#mesh-arrow-tables) by default.
 
-Set `pcd.shape: 'arrow-table'` to return a [Mesh Arrow table](/docs/specifications/category-mesh#mesh-arrow-tables).
+Set `pcd.shape: 'mesh'` when a legacy [PointCloud](/docs/specifications/category-mesh) object is required.
 
 | Shape         | Output             | Use when                                  |
 | ------------- | ------------------ | ----------------------------------------- |
-| `mesh`        | `PointCloud`       | You want the legacy point cloud object.   |
 | `arrow-table` | `Mesh Arrow table` | You want columnar point cloud attributes. |
+| `mesh`        | `PointCloud`       | You need the legacy point cloud object.   |
 
 Note: Currently supports `ascii`, `binary` and compressed binary files.
 
@@ -86,4 +86,4 @@ for await (const batch of batches) {
 
 | Option | Type | Default | Description |
 | ------ | ---- | ------- | ----------- |
-| `pcd.shape` | `'mesh' \| 'arrow-table'` | `'mesh'` | Selects PointCloud or Mesh Arrow table output. |
+| `pcd.shape` | `'mesh' \| 'arrow-table'` | `'arrow-table'` | Selects PointCloud or Mesh Arrow table output. |

@@ -47,7 +47,10 @@ test.each([false, true])(
         }
       }
     });
-    const output = await load(parquetBuffer, ParquetJSLoader, {core: {worker: false}});
+    const output = await load(parquetBuffer, ParquetJSLoader, {
+      core: {worker: false},
+      parquet: {shape: 'object-row-table'}
+    });
     expect(output).toMatchObject({shape: 'object-row-table', data: INPUT.data});
 
     const metadata = await new ParquetReader(new BlobFile(parquetBuffer)).getFileMetadata();

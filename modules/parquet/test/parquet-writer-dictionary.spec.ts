@@ -39,7 +39,10 @@ test.each([false, true])(
         columnDictionaries: {sequence: false, token: true}
       }
     });
-    const output = await load(parquetBuffer, ParquetJSLoader, {core: {worker: false}});
+    const output = await load(parquetBuffer, ParquetJSLoader, {
+      core: {worker: false},
+      parquet: {shape: 'object-row-table'}
+    });
     expect(output).toMatchObject({shape: 'object-row-table', data: INPUT.data});
 
     const metadata = await new ParquetReader(new BlobFile(parquetBuffer)).getFileMetadata();
@@ -91,8 +94,14 @@ test('ParquetJSWriter multi-page dictionaries interoperate with maintained brows
     }
   });
   const [typescriptTable, wasmTable, hyparquetRows] = await Promise.all([
-    load(parquetBuffer, ParquetJSLoader, {core: {worker: false}}),
-    load(parquetBuffer, ParquetLoader, {core: {worker: false}}),
+    load(parquetBuffer, ParquetJSLoader, {
+      core: {worker: false},
+      parquet: {shape: 'object-row-table'}
+    }),
+    load(parquetBuffer, ParquetLoader, {
+      core: {worker: false},
+      parquet: {shape: 'object-row-table'}
+    }),
     parquetReadObjects({file: parquetBuffer, compressors})
   ]);
   const expectedRows = INPUT.data.map(({sequence, label}) => ({sequence, label}));
@@ -114,7 +123,10 @@ test('ParquetJSWriter preserves the legacy PLAIN_DICTIONARY encoding declaration
     worker: false,
     parquet: {dictionary: true, columnEncodings: {label: 'PLAIN_DICTIONARY'}}
   });
-  const output = await load(parquetBuffer, ParquetJSLoader, {core: {worker: false}});
+  const output = await load(parquetBuffer, ParquetJSLoader, {
+    core: {worker: false},
+    parquet: {shape: 'object-row-table'}
+  });
   expect(output.data).toEqual(input.data);
 
   const metadata = await new ParquetReader(new BlobFile(parquetBuffer)).getFileMetadata();
@@ -142,7 +154,10 @@ test('ParquetJSWriter falls back from an oversized explicit PLAIN_DICTIONARY', a
       columnEncodings: {label: 'PLAIN_DICTIONARY'}
     }
   });
-  const output = await load(parquetBuffer, ParquetJSLoader, {core: {worker: false}});
+  const output = await load(parquetBuffer, ParquetJSLoader, {
+    core: {worker: false},
+    parquet: {shape: 'object-row-table'}
+  });
   expect(output.data).toEqual(input.data);
 
   const metadata = await new ParquetReader(new BlobFile(parquetBuffer)).getFileMetadata();

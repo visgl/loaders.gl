@@ -12,7 +12,6 @@ import type {Loader, LoaderOptions} from '@loaders.gl/loader-utils';
 import type {GeoArrowEncodingPreference} from '@loaders.gl/schema';
 import type {Proj4CRSDefinition} from '@math.gl/proj4';
 import {FlatGeobufFormat} from './flatgeobuf-format';
-import {deserializeArrowWorkerResult, serializeArrowWorkerResult} from '@loaders.gl/arrow/transport';
 
 // __VERSION__ is injected by babel-plugin-version-inline
 // @ts-ignore TS2304: Cannot find name '__VERSION__'.
@@ -45,19 +44,18 @@ async function preload() {
 }
 
 /** Metadata-only FlatGeobuf worker loader. */
-export const FlatGeobufWorkerLoader = {
+export const FlatGeobufLoader = {
   ...FlatGeobufFormat,
 
   dataType: null as any,
   batchType: null as any,
   version: VERSION,
   worker: true,
-  serializeWorkerResult: serializeArrowWorkerResult,
-  deserializeWorkerResult: deserializeArrowWorkerResult,
+  binary: true,
   tests: [new Uint8Array(FGB_MAGIC_NUMBER).buffer],
   options: {
     flatgeobuf: {
-      shape: 'geojson-table'
+      shape: 'arrow-table'
     },
     gis: {
       reproject: false
@@ -70,9 +68,5 @@ export const FlatGeobufWorkerLoader = {
   FlatGeobufLoaderOptions
 >;
 
-/** Metadata-only FlatGeobuf loader. */
-export const FlatGeobufLoader = {
-  ...FlatGeobufWorkerLoader,
-  binary: true,
-  preload
-} as const satisfies Loader<any, any, FlatGeobufLoaderOptions>;
+/** @deprecated Use FlatGeobufLoader. */
+export const FlatGeobufWorkerLoader = FlatGeobufLoader;

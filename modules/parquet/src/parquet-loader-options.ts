@@ -58,5 +58,5 @@ export type ParquetJSLoaderOptions = LoaderOptions & {
 export const PARQUET_LOADER_DEFAULT_OPTIONS = {
   columns: undefined,
   preserveBinary: false,
-  shape: 'object-row-table'
+  shape: 'arrow-table'
 } as const;

@@ -56,7 +56,10 @@ test('ParquetJSWriter round-trips nested structs, lists, maps, and nulls', async
   };
 
   const parquetBuffer = await encode(table, ParquetJSWriter, {worker: false});
-  const output = await load(parquetBuffer, ParquetJSLoader, {core: {worker: false}});
+  const output = await load(parquetBuffer, ParquetJSLoader, {
+    core: {worker: false},
+    parquet: {shape: 'object-row-table'}
+  });
 
   expect(output.shape).toBe('object-row-table');
   if (output.shape === 'object-row-table') {

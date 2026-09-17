@@ -42,7 +42,8 @@ function getEncryptedLoaderOptions() {
     core: {worker: false},
     parquet: {
       columns: ['double_field', 'float_field'],
-      keyRetriever: getEncryptedFixtureKey
+      keyRetriever: getEncryptedFixtureKey,
+      shape: 'object-row-table'
     }
   };
 }
@@ -109,7 +110,8 @@ test('ParquetJSLoader does not retrieve keys for unprojected encrypted columns',
     core: {worker: false},
     parquet: {
       columns: ['double_field'],
-      keyRetriever
+      keyRetriever,
+      shape: 'object-row-table'
     }
   });
 
@@ -178,7 +180,8 @@ test('ParquetReader resolves each encrypted key once per reader', async () => {
     core: {worker: false},
     parquet: {
       columns: ['double_field', 'float_field'],
-      keyRetriever
+      keyRetriever,
+      shape: 'object-row-table'
     }
   });
 

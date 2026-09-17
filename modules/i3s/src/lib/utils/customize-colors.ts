@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
+import {createFloat16Array, getFloat16Value, setFloat16Value} from '@loaders.gl/schema';
 import type {MeshAttribute, TypedArray} from '@loaders.gl/schema';
 import type {LoaderOptions} from '@loaders.gl/loader-utils';
 import {getAuthenticatedFetch} from '@loaders.gl/loader-utils';
@@ -55,8 +56,22 @@ export async function customizeColors(
 
   const resultColors = {
     ...colors,
-    value: new Uint8Array(colors.value)
+    value:
+      colors.componentType === 'float16'
+        ? createFloat16Array(colors.value.length)
+        : colors.value instanceof Float32Array
+          ? new Float32Array(colors.value)
+          : new Uint8Array(colors.value)
   };
+  if (colors.componentType === 'float16') {
+    for (let index = 0; index < colors.value.length; index++) {
+      setFloat16Value(
+        resultColors.value as any,
+        index,
+        getFloat16Value(colors.value as any, index)
+      );
+    }
+  }
 
   const colorizeAttributeField = fields.find(({name}) => name === colorsByAttribute?.attributeName);
   if (
@@ -117,10 +132,30 @@ export async function customizeColors(
     if (colorsByAttribute.mode === 'multiply') {
       // multiplying original mesh and calculated for attribute rgba colors in range 0-255
       color.forEach((colorItem, index) => {
-        resultColors.value[i * 4 + index] = (resultColors.value[i * 4 + index] * colorItem) / 255;
+        const colorIndex = i * 4 + index;
+        if (colors.componentType === 'float16') {
+          setFloat16Value(
+            resultColors.value as any,
+            colorIndex,
+            getFloat16Value(resultColors.value as any, colorIndex) * (colorItem / 255)
+          );
+        } else if (colors.value instanceof Float32Array) {
+          resultColors.value[colorIndex] = resultColors.value[colorIndex] * (colorItem / 255);
+        } else {
+          resultColors.value[colorIndex] = (resultColors.value[colorIndex] * colorItem) / 255;
+        }
       });
     } else {
-      resultColors.value.set(color, i * 4);
+      for (let index = 0; index < color.length; index++) {
+        const colorIndex = i * 4 + index;
+        if (colors.componentType === 'float16') {
+          setFloat16Value(resultColors.value as any, colorIndex, color[index] / 255);
+        } else if (colors.value instanceof Float32Array) {
+          resultColors.value[colorIndex] = color[index] / 255;
+        } else {
+          resultColors.value[colorIndex] = color[index];
+        }
+      }
     }
   }
 

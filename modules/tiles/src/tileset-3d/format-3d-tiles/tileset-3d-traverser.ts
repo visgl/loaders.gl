@@ -274,10 +274,12 @@ export class Tileset3DTraverser extends TilesetTraverser {
   }
 
   /**
-   * Starts an implicit subtree request only after culling, request-volume, and SSE eligibility.
+   * Starts an implicit subtree request after culling and request-volume eligibility.
    *
-   * The current parent remains the traversal boundary while metadata is loading, which preserves
-   * REPLACE coverage and ADD accumulation. Request scheduling reads the tile's existing
+   * The first subtree of an implicit hierarchy materializes independently of SSE because its
+   * placeholder has no render content. Deeper subtree boundaries remain SSE-gated. The current
+   * parent remains the traversal boundary while metadata is loading, which preserves REPLACE
+   * coverage and ADD accumulation. Request scheduling reads the tile's existing
    * progressive-resolution and foveated metrics, so subtree metadata follows the same priority
    * policy as render content. A completion notification lets the owning tileset publish the newly
    * materialized traversal result on the next update.
@@ -286,10 +288,11 @@ export class Tileset3DTraverser extends TilesetTraverser {
    * @param frameState - Current culling and LOD state.
    */
   updateChildTiles(tile: Tile3D, frameState: FrameState): void {
+    const isImplicitHierarchyRoot = tile.header.implicitSubtree?.coordinates.level === 0;
     if (
       tile.hasUnloadedChildren &&
       tile.isVisibleAndInRequestVolume &&
-      this.shouldRefine(tile, frameState)
+      (isImplicitHierarchyRoot || this.shouldRefine(tile, frameState))
     ) {
       const requestKey = `${frameState.viewport.id}:${tile.id}`;
       if (!this.pendingImplicitSubtrees.has(requestKey)) {

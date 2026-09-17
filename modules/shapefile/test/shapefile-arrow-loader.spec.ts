@@ -25,6 +25,20 @@ const TEST_FILES = [
 test('ShapefileLoader#loader conformance', () => {
   validateLoader(ShapefileLoader, 'ShapefileLoader');
 });
+test('ShapefileLoader#defaults to arrow-table output', async () => {
+  const filename = `${SHAPEFILE_JS_DATA_FOLDER}/points.shp`;
+  const table = await load(filename, ShapefileLoader, {core: {worker: false}});
+  expect(table.shape).toBe('arrow-table');
+  expect(table.data.numRows).toBeGreaterThan(0);
+  expect(table.data.schema.fields.some(field => field.name === 'geometry')).toBe(true);
+});
+test('ShapefileLoader#worker hydrates arrow-table output', async () => {
+  const filename = `${SHAPEFILE_JS_DATA_FOLDER}/points.shp`;
+  const table = await load(filename, ShapefileLoader, {core: {worker: true}});
+  expect(table.shape).toBe('arrow-table');
+  expect(table.data).toBeInstanceOf(arrow.Table);
+  expect(table.data.getChild('geometry')?.length).toBe(table.data.numRows);
+});
 test('ShapefileLoader#load arrow-table fixtures round-trip to GeoJSON', async () => {
   for (const testFileName of TEST_FILES) {
     const filename = `${SHAPEFILE_JS_DATA_FOLDER}/${testFileName}.shp`;

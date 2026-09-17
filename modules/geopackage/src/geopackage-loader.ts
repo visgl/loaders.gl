@@ -3,12 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import type {Loader, LoaderOptions} from '@loaders.gl/loader-utils';
-import type {
-  GeoArrowEncodingPreference,
-  Tables,
-  GeoJSONTable,
-  ArrowTable
-} from '@loaders.gl/schema';
+import type {GeoArrowEncodingPreference, GeoJSONTable, ArrowTable} from '@loaders.gl/schema';
 import type {Proj4CRSDefinition} from '@math.gl/proj4';
 import {DEFAULT_SQLJS_CDN} from './lib/parse-geopackage';
 import {GeoPackageFormat} from './geopackage-format';
@@ -23,9 +18,9 @@ export type GeoPackageLoaderOptions = LoaderOptions & {
   geoarrow?: {encodingPreference?: GeoArrowEncodingPreference};
   /** Options for the geopackage loader */
   geopackage?: {
-    /** Shape of returned data */
-    shape?: 'geojson-table' | 'arrow-table' | 'tables';
-    /** Name of table to load (defaults to first table), unless shape==='tables' */
+    /** Shape of the selected table returned by the loader. */
+    shape?: 'geojson-table' | 'arrow-table';
+    /** Name of table to load (defaults to the metadata-selected vector table). */
     table?: string;
     /** Use null in Node */
     sqlJsCDN?: string | null;
@@ -50,20 +45,16 @@ async function preload() {
 export const GeoPackageLoader = {
   ...GeoPackageFormat,
 
-  dataType: null as unknown as GeoJSONTable | Tables<GeoJSONTable> | ArrowTable,
+  dataType: null as unknown as GeoJSONTable | ArrowTable,
   batchType: null as never,
 
   version: VERSION,
   options: {
     geopackage: {
       sqlJsCDN: DEFAULT_SQLJS_CDN,
-      shape: 'tables'
+      shape: 'arrow-table'
     },
     gis: {}
   },
   preload
-} as const satisfies Loader<
-  GeoJSONTable | Tables<GeoJSONTable> | ArrowTable,
-  never,
-  GeoPackageLoaderOptions
->;
+} as const satisfies Loader<GeoJSONTable | ArrowTable, never, GeoPackageLoaderOptions>;

@@ -31,7 +31,7 @@ async function preload() {
 /**
  * Metadata-only loader for NETCDF.
  */
-export const NetCDFWorkerLoader = {
+export const NetCDFLoader = {
   ...NetCDFFormat,
   dataType: null as unknown as NetCDF,
   batchType: null as never,
@@ -47,6 +47,7 @@ export const NetCDFWorkerLoader = {
     // 'application/octet-stream'
   ],
   category: 'image',
+  binary: true,
   options: {
     netcdf: {
       loadVariables: false
@@ -55,10 +56,5 @@ export const NetCDFWorkerLoader = {
   preload
 } as const satisfies Loader<NetCDF, never, NetCDFLoaderOptions>;
 
-/**
- * Metadata-only loader for the NetCDF format.
- */
-export const NetCDFLoader = {
-  ...NetCDFWorkerLoader,
-  binary: true
-} as const satisfies Loader<NetCDF, never, NetCDFLoaderOptions>;
+/** @deprecated Use NetCDFLoader. */
+export const NetCDFWorkerLoader = NetCDFLoader;

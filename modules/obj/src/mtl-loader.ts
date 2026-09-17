@@ -26,7 +26,7 @@ async function preload() {
  * Metadata-only loader for the MTL material format
  * Parses a Wavefront .mtl file specifying materials
  */
-export const MTLWorkerLoader = {
+export const MTLLoader = {
   ...MTLFormat,
 
   dataType: null as unknown as MTLMaterial[],
@@ -42,11 +42,5 @@ export const MTLWorkerLoader = {
   preload
 } as const satisfies Loader<MTLMaterial[], never, LoaderOptions>;
 
-// MTLLoader
-
-/**
- * Metadata-only loader for the MTL material format
- */
-export const MTLLoader = {
-  ...MTLWorkerLoader
-} as const satisfies Loader<MTLMaterial[], never, MTLLoaderOptions>;
+/** @deprecated Use MTLLoader. */
+export const MTLWorkerLoader = MTLLoader;

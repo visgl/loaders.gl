@@ -20,13 +20,19 @@ test('OBJWriter#writer conformance', () => {
 });
 test('OBJWriter#encode plain and Arrow mesh data', async () => {
   const arrayBuffer = await encode(mesh, OBJWriter);
-  const data = await parse(arrayBuffer, OBJLoader, {core: {worker: false}});
+  const data = await parse(arrayBuffer, OBJLoader, {
+    core: {worker: false},
+    obj: {shape: 'mesh'}
+  });
   validateMeshCategoryData(data);
   expect(data.mode, 'mode is TRIANGLES (4)').toBe(4);
   expect(data.attributes.POSITION.value.length, 'POSITION attribute roundtripped').toBe(9);
   const arrowTable = convertMeshToTable(mesh, 'arrow-table');
   const arrowArrayBuffer = await encode(arrowTable, OBJWriter);
-  const arrowData = await parse(arrowArrayBuffer, OBJLoader, {core: {worker: false}});
+  const arrowData = await parse(arrowArrayBuffer, OBJLoader, {
+    core: {worker: false},
+    obj: {shape: 'mesh'}
+  });
   validateMeshCategoryData(arrowData);
   expect(arrowData.attributes.POSITION.value.length, 'Arrow POSITION attribute roundtripped').toBe(
     9

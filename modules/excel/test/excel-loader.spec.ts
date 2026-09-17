@@ -23,8 +23,14 @@ test('ExcelLoader#small XLSB and XLSX fixtures match CSV', async () => {
     core: {worker: false}
   })) as ObjectRowTable;
   const [xlsbTable, xlsxTable] = await Promise.all([
-    load(ZIPCODES_XLSB_PATH, ExcelLoader, {core: {worker: false}}),
-    load(ZIPCODES_XLSX_PATH, ExcelLoader, {core: {worker: false}})
+    load(ZIPCODES_XLSB_PATH, ExcelLoader, {
+      excel: {shape: 'object-row-table'},
+      core: {worker: false}
+    }),
+    load(ZIPCODES_XLSX_PATH, ExcelLoader, {
+      excel: {shape: 'object-row-table'},
+      core: {worker: false}
+    })
   ]);
 
   expect(xlsbTable.data).toHaveLength(ROW_COUNT);
@@ -42,6 +48,15 @@ test('ExcelLoader#small XLSX fixture supports Arrow output', async () => {
   expect(table.shape).toBe('arrow-table');
   expect(table.data.numRows).toBe(ROW_COUNT);
   expect(table.data.getChild('zip_code')?.get(0)).toBeTruthy();
+});
+
+test('ExcelLoader#small XLSX fixture defaults to Arrow output', async () => {
+  const table = await load(ZIPCODES_XLSX_PATH, ExcelLoader, {
+    core: {worker: false}
+  });
+
+  expect(table.shape).toBe('arrow-table');
+  expect(table.data.numRows).toBe(ROW_COUNT);
 });
 
 test('ExcelLoader#removed Arrow variant exports are absent', () => {

@@ -43,13 +43,16 @@ Loading a large 3D Tiles tileset is a continuous pipeline: traverse the hierarch
 | Guide | Question it answers |
 | --- | --- |
 | [Resource resolution and content detection](/docs/modules/3d-tiles/concepts/resource-resolution-and-content-detection) | How are relative references, inherited queries, and extensionless content handled? |
+| [Experimental 3D Tiles 2.0 profile](/docs/modules/3d-tiles/concepts/3d-tiles-2-0-experimental) | Which draft glTF-based 3D Tiles 2.0 structures and vector descriptors are supported? |
 | [Tile hierarchy and refinement](/docs/modules/3d-tiles/concepts/tile-hierarchy-and-refinement) | Which tiles can replace or augment their ancestors? |
 | [Implicit tiling and lazy subtrees](/docs/modules/3d-tiles/concepts/implicit-tiling-and-subtrees) | When are implicit availability files requested and materialized? |
 | [Screen-space error and LOD](/docs/modules/3d-tiles/concepts/screen-space-error-and-lod) | How much detail does the current view require? |
 | [Request scheduling and priorities](/docs/modules/3d-tiles/concepts/request-scheduling-and-priorities) | Which required tile should use the next network slot? |
 | [Caching and memory](/docs/modules/3d-tiles/concepts/caching-and-memory) | Which loaded tiles remain resident, and when may the budget be exceeded? |
 | [Runtime tuning and diagnostics](/docs/modules/3d-tiles/concepts/runtime-tuning-and-diagnostics) | Which controls and measurements explain visible behavior? |
+| [Runtime observability and benchmark baselines](/docs/modules/3d-tiles/concepts/observability-and-benchmarks) | How can traversal decisions and performance budgets be compared? |
+| [Styling and feature access](/docs/modules/3d-tiles/concepts/styling-and-feature-access) | How can metadata, feature IDs, and batch-table rows become renderer-neutral style inputs? |
 
 The stages are related but not interchangeable. In particular, screen-space error determines the desired final LOD. Progressive and foveated scheduling normally change only the order and timing of requests needed to reach that LOD.
 
-Start with [resource resolution and content detection](/docs/modules/3d-tiles/concepts/resource-resolution-and-content-detection) to understand how a tileset enters the runtime, continue with [tile hierarchy and refinement](/docs/modules/3d-tiles/concepts/tile-hierarchy-and-refinement), follow [implicit tiling and lazy subtrees](/docs/modules/3d-tiles/concepts/implicit-tiling-and-subtrees) for availability-driven hierarchies, or go directly to the [request-scheduling guide](/docs/modules/3d-tiles/concepts/request-scheduling-and-priorities) for foveated requests.
+Start with [resource resolution and content detection](/docs/modules/3d-tiles/concepts/resource-resolution-and-content-detection) to understand how a tileset enters the runtime, continue with [tile hierarchy and refinement](/docs/modules/3d-tiles/concepts/tile-hierarchy-and-refinement), follow [implicit tiling and lazy subtrees](/docs/modules/3d-tiles/concepts/implicit-tiling-and-subtrees) for availability-driven hierarchies, or go directly to the [request-scheduling guide](/docs/modules/3d-tiles/concepts/request-scheduling-and-priorities) for foveated requests. For feature metadata and style inputs, continue with [styling and feature access](/docs/modules/3d-tiles/concepts/styling-and-feature-access).

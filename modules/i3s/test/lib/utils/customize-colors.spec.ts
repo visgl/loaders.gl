@@ -4,6 +4,7 @@
 
 import {afterEach, expect, test, vi} from 'vitest';
 import {createQueryParameterCredential} from '@loaders.gl/loader-utils';
+import {createFloat16Array, getFloat16Value, setFloat16Value} from '@loaders.gl/schema';
 
 import {customizeColors} from '../../../src/lib/utils/customize-colors';
 
@@ -63,6 +64,66 @@ test('customizeColors replaces and multiplies colors from numeric I3S attributes
   );
   expect(Array.from(multiplied.value)).toEqual([19, 5, 1, 255, 44, 7, 3, 255, 10, 20, 30, 255]);
   expect(multiplied.value).not.toBe(colors.value);
+});
+
+test('customizeColors preserves normalized float32 and float16 color storage', async () => {
+  vi.stubGlobal('fetch', createAttributeFetch([]));
+
+  const float32Colors = {
+    value: new Float32Array([0.8, 0.4, 0.2, 1, 0.6, 0.2, 0.2, 1]),
+    size: 4
+  } as any;
+  const replacedFloat32 = await customizeColors(
+    float32Colors,
+    [10, 20],
+    attributeUrls,
+    fields,
+    attributeStorageInfo,
+    colorOptions
+  );
+  expect(replacedFloat32.value).toBeInstanceOf(Float32Array);
+  expect(replacedFloat32.value[0]).toBeCloseTo(25 / 255, 6);
+  expect(replacedFloat32.value[1]).toBeCloseTo(13 / 255, 6);
+  expect(replacedFloat32.value[2]).toBeCloseTo(6 / 255, 6);
+  expect(replacedFloat32.value[3]).toBe(1);
+
+  const multipliedFloat32 = await customizeColors(
+    float32Colors,
+    [10, 20],
+    attributeUrls,
+    fields,
+    attributeStorageInfo,
+    {...colorOptions, mode: 'multiply'}
+  );
+  expect(multipliedFloat32.value[0]).toBeCloseTo((0.8 * 25) / 255, 6);
+  expect(multipliedFloat32.value[1]).toBeCloseTo((0.4 * 13) / 255, 6);
+  expect(multipliedFloat32.value[2]).toBeCloseTo((0.2 * 6) / 255, 6);
+  expect(multipliedFloat32.value[3]).toBe(1);
+
+  const float16Colors = createFloat16Array(8);
+  for (let index = 0; index < float16Colors.length; index++) {
+    setFloat16Value(float16Colors, index, float32Colors.value[index]);
+  }
+  const replacedFloat16 = await customizeColors(
+    {value: float16Colors, size: 4, componentType: 'float16'},
+    [10, 20],
+    attributeUrls,
+    fields,
+    attributeStorageInfo,
+    colorOptions
+  );
+  expect(replacedFloat16.componentType).toBe('float16');
+  expect(getFloat16Value(replacedFloat16.value, 0)).toBeCloseTo(25 / 255, 3);
+
+  const multipliedFloat16 = await customizeColors(
+    {value: float16Colors, size: 4, componentType: 'float16'},
+    [10, 20],
+    attributeUrls,
+    fields,
+    attributeStorageInfo,
+    {...colorOptions, mode: 'multiply'}
+  );
+  expect(getFloat16Value(multipliedFloat16.value, 0)).toBeCloseTo((0.8 * 25) / 255, 3);
 });
 
 test('customizeColors returns the original colors when required metadata is absent', async () => {

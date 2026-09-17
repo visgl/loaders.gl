@@ -4,10 +4,6 @@
 
 import type {Loader, StrictLoaderOptions} from '@loaders.gl/loader-utils';
 import type {ArrowTable, ArrowTableBatch} from '@loaders.gl/schema';
-import {
-  deserializeArrowWorkerResult,
-  serializeArrowWorkerResult
-} from '@loaders.gl/arrow/transport';
 
 // __VERSION__ is injected by babel-plugin-version-inline
 // @ts-ignore TS2304: Cannot find name '__VERSION__'.
@@ -30,7 +26,7 @@ async function preload() {
 }
 
 /** Metadata-only DBF worker loader. */
-export const DBFWorkerLoader = {
+export const DBFLoader: Loader<any, any, DBFLoaderOptions> = {
   name: 'DBF',
   dataType: null as unknown,
   batchType: null as never,
@@ -39,21 +35,17 @@ export const DBFWorkerLoader = {
   module: 'shapefile',
   version: VERSION,
   worker: true,
-  serializeWorkerResult: serializeArrowWorkerResult,
-  deserializeWorkerResult: deserializeArrowWorkerResult,
   category: 'table',
   extensions: ['dbf'],
   mimeTypes: ['application/x-dbf'],
   options: {
     dbf: {
-      encoding: 'latin1'
+      encoding: 'latin1',
+      shape: 'arrow-table'
     }
   },
   preload
 } as const satisfies Loader<any | ArrowTable, any | ArrowTableBatch, DBFLoaderOptions>;
 
-/** Metadata-only DBF file loader. */
-export const DBFLoader: Loader<any, any, DBFLoaderOptions> = {
-  ...DBFWorkerLoader,
-  preload
-};
+/** @deprecated Use DBFLoader. */
+export const DBFWorkerLoader = DBFLoader;

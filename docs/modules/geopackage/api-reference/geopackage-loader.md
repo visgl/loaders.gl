@@ -61,25 +61,24 @@ The `GeoPackageLoader` depends on the [`sql.js`](https://github.com/sql-js/sql.j
 
 ## Usage
 
-To load all tables in a GeoPackage file as GeoJSON:
+The loader returns one selected vector table. With no table name supplied it uses the
+single table, the metadata-marked default, or the first vector table as a fallback:
 
 ```typescript
-import {GeoPackageLoader, GeoPackageLoaderOptions} from '@loaders.gl/geopackage';
+import {GeoPackageLoader} from '@loaders.gl/geopackage';
 import {load} from '@loaders.gl/core';
-import {Tables, ObjectRowTable, Feature} from '@loaders.gl/schema';
+import type {ArrowTable} from '@loaders.gl/schema';
 
-const optionsAsTable: GeoPackageLoaderOptions = {
-  geopackage: {
-    shape: 'tables',
-    sqlJsCDN: 'https://cdn.jsdelivr.net/npm/sql.js@1.14.1/dist/'
-  }
-};
-const tablesData: Tables<GeoJSONTable> = await load(url, GeoPackageLoader, optionsAsTable);
+const table: ArrowTable = await load(url, GeoPackageLoader);
 ```
 
 To load a specific table named `feature_table` in a GeoPackage file as GeoJSON:
 
 ```typescript
+import {GeoPackageLoader, GeoPackageLoaderOptions} from '@loaders.gl/geopackage';
+import {load} from '@loaders.gl/core';
+import type {GeoJSONTable} from '@loaders.gl/schema';
+
 const optionsAsGeoJson: GeoPackageLoaderOptions = {
   geopackage: {
     shape: 'geojson-table',
@@ -91,17 +90,19 @@ const optionsAsGeoJson: GeoPackageLoaderOptions = {
 const geoJsonData: GeoJSONTable = await load(url, GeoPackageLoader, optionsAsGeoJson);
 ```
 
-To load one vector table as Arrow instead of GeoJSON, use `geopackage.shape: 'arrow-table'`.
+The default output is an Arrow table. Use `geopackage.shape: 'geojson-table'` when a GeoJSON
+feature table is required.
 
 To inspect available tables first and then fetch a specific table, use [`GeoPackageSource`](/docs/modules/geopackage/api-reference/geopackage-source).
 
 ## Shapes
 
-`GeoPackageLoader` returns all vector tables by default. Set `geopackage.shape` and optionally `geopackage.table` to select another representation.
+`GeoPackageLoader` returns one selected vector table. Set `geopackage.shape` to choose the
+table representation and `geopackage.table` to select a table by name. To discover all tables
+and query them through a source API, use [`GeoPackageSource`](/docs/modules/geopackage/api-reference/geopackage-source).
 
 | Shape              | Output                                      |
 | ------------------ | ------------------------------------------- |
-| `tables`           | loaders.gl `Tables<GeoJSONTable>` object    |
 | `geojson-table`    | loaders.gl `GeoJSONTable` for one table     |
 | `arrow-table`      | loaders.gl `ArrowTable` with WKB geometry   |
 
@@ -109,17 +110,13 @@ To inspect available tables first and then fetch a specific table, use [`GeoPack
 
 | Option                | Type   | Default                                             | Description                                                                                                            |
 | --------------------- | ------ | --------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------- |
-| `geopackage.shape`    | String | `'tables'`                                          | Output shape: `'tables'`, `'geojson-table'`, or `'arrow-table'`.                                                       |
-| `geopackage.table`    | String | N/A                                                 | Name of table to load for one-table output shapes.                                                                     |
+| `geopackage.shape`    | String | `'arrow-table'`                                     | Output shape: `'arrow-table'` or `'geojson-table'`.                                                                     |
+| `geopackage.table`    | String | metadata-selected table                             | Name of the vector table to load.                                                                                      |
 | `geopackage.sqlJsCDN` | String | `'https://cdn.jsdelivr.net/npm/sql.js@1.14.1/dist/'` | CDN from which to load the SQL.js bundle. This is loaded asynchronously when the GeoPackage loader is called on a file. |
 
 ## Output
 
-The `GeoPackageLoader` currently loads GeoJSON features from GeoPackage vector tables.
-
-- If `geopackage.shape` is `'tables'` (the default):
-
-  Returns `Tables<ObjectRowTable>`, an object whose `.tables` member is an array of objects with `name` and `table` keys. Each `name` member holds the name of the GeoPackage table name, and each `.table` member holds a `Table` instance. The `Table.data` member is an array of GeoJSON features, while `Table.schema` describes the schema types of the original Sqlite3 table.
+The `GeoPackageLoader` loads one GeoPackage vector table.
 
 - If `geopackage.shape` is `'geojson-table'`:
 
@@ -128,6 +125,9 @@ The `GeoPackageLoader` currently loads GeoJSON features from GeoPackage vector t
 - If `geopackage.shape` is `'arrow-table'`:
 
   Returns an `ArrowTable` for the selected table with a WKB `geometry` column.
+
+Use [`GeoPackageSource`](/docs/modules/geopackage/api-reference/geopackage-source) when the
+application needs table discovery, metadata for multiple layers, or repeated table queries.
 
 ## Remarks
 

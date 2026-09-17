@@ -31,7 +31,7 @@ export function deduceMeshField(
   attribute: MeshAttribute,
   optionalMetadata?: Record<string, string>
 ): Field {
-  const type = getDataTypeFromTypedArray(attribute.value);
+  const type = attribute.componentType || getDataTypeFromTypedArray(attribute.value);
   const metadata = optionalMetadata ? optionalMetadata : makeMeshAttributeMetadata(attribute);
   const dataType: DataType =
     attribute.size === 1
@@ -74,6 +74,9 @@ export function makeMeshAttributeMetadata(attribute: MeshAttribute): Record<stri
   }
   if ('normalized' in attribute) {
     result.normalized = attribute.normalized!.toString();
+  }
+  if (attribute.componentType) {
+    result.componentType = attribute.componentType;
   }
   if (attribute.transform) {
     result['loaders.gl.transform'] = JSON.stringify(attribute.transform);

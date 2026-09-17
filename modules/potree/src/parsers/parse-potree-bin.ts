@@ -4,6 +4,7 @@
 
 import type {LoaderOptions} from '@loaders.gl/loader-utils';
 import type {Mesh, MeshAttributes, MeshArrowTable} from '@loaders.gl/schema';
+import {convertColorArrayToFloat16, convertColorArrayToFloat32} from '@loaders.gl/schema';
 import {convertMeshToTable, convertTableToMesh} from '@loaders.gl/schema-utils';
 import type {PotreeAttribute} from '../types/potree-metadata';
 
@@ -16,6 +17,8 @@ export type PotreeBinLoaderOptions = LoaderOptions & {
     scale?: number;
     positionOrigin?: [number, number, number];
     nodeBoundingBox?: [number[], number[]];
+    /** Color storage format. Defaults to uint8norm for backwards compatibility. */
+    colorFormat?: 'uint8norm' | 'float16' | 'float32';
   };
 };
 
@@ -24,6 +27,7 @@ type ResolvedPotreeBinOptions = {
   scale: number;
   positionOrigin: [number, number, number];
   nodeBoundingBox?: [number[], number[]];
+  colorFormat: 'uint8norm' | 'float16' | 'float32';
 };
 
 /**
@@ -219,7 +223,8 @@ export function parsePotreeBin(
     }
   };
 
-  const table = convertMeshToTable(mesh, 'arrow-table');
+  const formattedMesh = formatPotreeMeshColors(mesh, resolvedOptions.colorFormat);
+  const table = convertMeshToTable(formattedMesh, 'arrow-table');
   if (options?.potree?.shape === 'arrow-table') {
     return table;
   }
@@ -228,6 +233,37 @@ export function parsePotreeBin(
     loader: mesh.loader,
     loaderData: mesh.loaderData
   };
+}
+
+/** Apply the requested normalized color representation to a Potree mesh. */
+function formatPotreeMeshColors(
+  mesh: Mesh,
+  colorFormat: 'uint8norm' | 'float16' | 'float32'
+): Mesh {
+  if (colorFormat === 'uint8norm') {
+    return mesh;
+  }
+  const colorAttribute = mesh.attributes.COLOR_0;
+  if (!colorAttribute) {
+    return mesh;
+  }
+
+  const value =
+    colorFormat === 'float16'
+      ? convertColorArrayToFloat16(colorAttribute.value, 255)
+      : convertColorArrayToFloat32(colorAttribute.value, 255);
+  const attributes: MeshAttributes = {...mesh.attributes};
+  for (const [attributeName, attribute] of Object.entries(attributes)) {
+    if (attribute.value === colorAttribute.value) {
+      attributes[attributeName] = {
+        ...attribute,
+        value,
+        normalized: false,
+        ...(colorFormat === 'float16' ? {componentType: 'float16' as const} : {})
+      };
+    }
+  }
+  return {...mesh, attributes};
 }
 
 /**
@@ -244,7 +280,8 @@ function getResolvedPotreeBinOptions(options?: PotreeBinLoaderOptions): Resolved
     pointAttributes,
     scale: options?.potree?.scale ?? 1,
     positionOrigin: options?.potree?.positionOrigin ?? [0, 0, 0],
-    nodeBoundingBox: options?.potree?.nodeBoundingBox
+    nodeBoundingBox: options?.potree?.nodeBoundingBox,
+    colorFormat: options?.potree?.colorFormat || 'uint8norm'
   };
 }
 

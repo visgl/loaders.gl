@@ -4,13 +4,16 @@
 
 import type {ArrowTable, ArrowTableBatch, GeoJSONTable, BinaryFeatureCollection} from '@loaders.gl/schema';
 import type {Loader, LoaderWithParser} from '@loaders.gl/loader-utils';
-import {deserializeArrowWorkerResult, serializeArrowWorkerResult} from '@loaders.gl/arrow/transport';
 import {parseFlatGeobuf, ParseFlatGeobufOptions} from './lib/parse-flatgeobuf';
 import {
   FlatGeobufWorkerLoader as FlatGeobufWorkerLoaderMetadata,
   FlatGeobufLoader as FlatGeobufLoaderMetadata,
   type FlatGeobufLoaderOptions
 } from './flatgeobuf-loader';
+import {
+  deserializeFlatGeobufWorkerResult,
+  serializeFlatGeobufWorkerResult
+} from './lib/flatgeobuf-worker-transport';
 
 const {preload: _FlatGeobufWorkerLoaderPreload, ...FlatGeobufWorkerLoaderMetadataWithoutPreload} = FlatGeobufWorkerLoaderMetadata;
 const {preload: _FlatGeobufLoaderPreload, ...FlatGeobufLoaderMetadataWithoutPreload} = FlatGeobufLoaderMetadata;
@@ -32,8 +35,8 @@ export const FlatGeobufLoaderWithParser = {
   parse: async (arrayBuffer: ArrayBuffer, options: FlatGeobufLoaderOptions = {}) =>
     parseSync(arrayBuffer, options),
   parseSync,
-  serializeWorkerBatch: serializeArrowWorkerResult,
-  deserializeWorkerBatch: deserializeArrowWorkerResult
+  serializeWorkerResult: serializeFlatGeobufWorkerResult,
+  deserializeWorkerResult: deserializeFlatGeobufWorkerResult
 } as const satisfies LoaderWithParser<any, any, FlatGeobufLoaderOptions>;
 
 function parseSync(arrayBuffer: ArrayBuffer, options: FlatGeobufLoaderOptions = {}) {
@@ -47,7 +50,7 @@ function getOptions(options: FlatGeobufLoaderOptions): ParseFlatGeobufOptions {
     gis: {...FlatGeobufLoaderWithParser.options.gis, ...options?.gis}
   };
   return {
-    shape: options?.flatgeobuf?.shape ?? 'geojson-table',
+    shape: options?.flatgeobuf?.shape ?? 'arrow-table',
     boundingBox: options?.flatgeobuf?.boundingBox,
     crs: options?.gis?._targetCrs || 'WGS84',
     reproject: options?.gis?.reproject || false,

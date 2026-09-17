@@ -63,12 +63,13 @@ export default class WorkerFarm {
   }
 
   /**
-   * Terminate all workers in the farm
+   * Terminate all workers in the farm and abort active jobs.
+   * @param reason Optional error delivered to active jobs.
    * @note Can free up significant memory
    */
-  destroy(): void {
+  destroy(reason?: unknown): void {
     for (const workerPool of this.workerPools.values()) {
-      workerPool.destroy();
+      workerPool.destroy(reason);
     }
     this.workerPools = new Map<string, WorkerPool>();
   }

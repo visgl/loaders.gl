@@ -14,19 +14,22 @@ test('ExcelLoader#load(ZIPCODES)', async () => {
   const csvTable = (await load(ZIPCODES_CSV_PATH, CSVLoader, {
     csv: {shape: 'object-row-table'}
   })) as ObjectRowTable;
-  let table = await load(ZIPCODES_XLSB_PATH, ExcelLoader);
+  let table = await load(ZIPCODES_XLSB_PATH, ExcelLoader, {
+    excel: {shape: 'object-row-table'}
+  });
   expect(table.data.length, 'XLSB: Correct number of row received').toBe(42049);
   expect(table.data[0], 'XLSB: Data corresponds to CSV').toEqual(csvTable.data[0]);
-  table = await load(ZIPCODES_XLSX_PATH, ExcelLoader);
+  table = await load(ZIPCODES_XLSX_PATH, ExcelLoader, {
+    excel: {shape: 'object-row-table'}
+  });
   expect(table.data.length, 'XLSX: Correct number of row received').toBe(42049);
   expect(table.data[100], 'XLSX: Data corresponds to CSV').toEqual(csvTable.data[100]);
 });
 test('ExcelLoader#loadInBatches (on worker)', async () => {
   // This masquerades an atomic loader as batches
-  const batches = (await loadInBatches(
-    ZIPCODES_XLSX_PATH,
-    ExcelLoader
-  )) as unknown as AsyncIterable<ObjectRowTableBatch>;
+  const batches = (await loadInBatches(ZIPCODES_XLSX_PATH, ExcelLoader, {
+    excel: {shape: 'object-row-table'}
+  })) as unknown as AsyncIterable<ObjectRowTableBatch>;
   let firstBatch: ObjectRowTableBatch | null = null;
   for await (const batch of batches) {
     firstBatch = firstBatch || batch;
@@ -53,7 +56,9 @@ test('ExcelLoader#load(ZIPCODES, shape: arrow-table)', async () => {
   const csvTable = (await load(ZIPCODES_CSV_PATH, CSVLoader, {
     csv: {shape: 'object-row-table'}
   })) as ObjectRowTable;
-  const classicTable = await load(ZIPCODES_XLSX_PATH, ExcelLoader);
+  const classicTable = await load(ZIPCODES_XLSX_PATH, ExcelLoader, {
+    excel: {shape: 'object-row-table'}
+  });
   const table = await load(ZIPCODES_XLSX_PATH, ExcelLoader, {
     excel: {shape: 'arrow-table'}
   });
@@ -109,7 +114,9 @@ test('convertExcelRowsToArrowTable handles empty and nullable primitive rows', (
   expect(table.data.getChild('stringValue')?.get(1), 'String value is preserved').toBe('x');
 });
 test('ExcelLoader#loadInBatches(shape: arrow-table)', async () => {
-  const classicTable = await load(ZIPCODES_XLSX_PATH, ExcelLoader);
+  const classicTable = await load(ZIPCODES_XLSX_PATH, ExcelLoader, {
+    excel: {shape: 'object-row-table'}
+  });
   const batches = (await loadInBatches(ZIPCODES_XLSX_PATH, ExcelLoader, {
     excel: {shape: 'arrow-table'}
   })) as unknown as AsyncIterable<any>;

@@ -265,7 +265,7 @@ function makePLYPropertyVector(collector: PropertyCollector): arrow.Vector {
       Int32Array.from(collector.offsets || [0])
     );
   }
-  return arrow.makeVector(getTypedArray(collector.values, property.type));
+  return arrow.makeVector(getTypedArray(collector.values, property.type) as any);
 }
 
 /** Return the Mesh attributes represented by the PLY vertex table. */
@@ -409,10 +409,10 @@ function convertPLYMeshToArrowTable(mesh: Mesh): MeshArrowTable {
 function makeMeshAttributeVector(attribute: MeshAttribute): arrow.Vector {
   const {value, size} = attribute;
   if (size === 1) {
-    return arrow.makeVector(value);
+    return arrow.makeVector(value as any);
   }
 
-  const values = arrow.makeVector(value);
+  const values = arrow.makeVector(value as any);
   const child = values.data[0];
   const type = new arrow.FixedSizeList(size, new arrow.Field('value', child.type, false));
   const data = new arrow.Data(type, 0, value.length / size, 0, {}, [child]);

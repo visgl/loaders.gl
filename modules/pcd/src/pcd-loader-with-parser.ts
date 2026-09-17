@@ -26,8 +26,10 @@ const {preload: _PCDLoaderPreload, ...PCDLoaderMetadataWithoutPreload} = PCDLoad
 
 export type PCDLoaderOptions = LoaderOptions & {
   pcd?: {
-    /** Output shape. Defaults to a legacy PointCloud object. */
+    /** Output shape. Defaults to a Mesh Arrow table. */
     shape?: 'mesh' | 'arrow-table';
+    /** Color storage format. Defaults to uint8norm for backwards compatibility. */
+    colorFormat?: 'uint8norm' | 'float16' | 'float32';
     /** Override the URL to the worker bundle (by default loads from unpkg.com) */
     workerUrl?: string;
   };
@@ -37,7 +39,7 @@ type PCDParsedBatch = PCDMesh | ArrowTableBatch;
 
 function convertPCDMesh(mesh: PCDMesh, options?: PCDLoaderOptions): PCDMesh | MeshArrowTable {
   const table = convertMeshToTable(mesh, 'arrow-table');
-  return options?.pcd?.shape === 'arrow-table' ? table : convertPCDTableToMesh(table, mesh);
+  return options?.pcd?.shape === 'mesh' ? convertPCDTableToMesh(table, mesh) : table;
 }
 
 /**
@@ -52,8 +54,8 @@ export const PCDWorkerLoaderWithParser = {
  */
 export const PCDLoaderWithParser = {
   ...PCDLoaderMetadataWithoutPreload,
-  parse: async (arrayBuffer, options) => convertPCDMesh(parsePCD(arrayBuffer), options),
-  parseSync: (arrayBuffer, options) => convertPCDMesh(parsePCD(arrayBuffer), options),
+  parse: async (arrayBuffer, options) => convertPCDMesh(parsePCD(arrayBuffer, options), options),
+  parseSync: (arrayBuffer, options) => convertPCDMesh(parsePCD(arrayBuffer, options), options),
   parseInBatches: async function* (
     arrayBuffer:
       | AsyncIterable<ArrayBufferLike | ArrayBufferView>
@@ -75,7 +77,7 @@ export const PCDLoaderWithParser = {
       return;
     }
 
-    yield makePCDBatch(parsePCD(data), options);
+    yield makePCDBatch(parsePCD(data, options), options);
   },
   serializeWorkerBatch: serializeArrowWorkerResult,
   deserializeWorkerBatch: deserializeArrowWorkerResult
@@ -103,7 +105,7 @@ function* parsePCDASCIIInBatches(
   for (let rowIndex = 0; rowIndex < lines.length; rowIndex += normalizedBatchSize) {
     const batchLines = lines.slice(rowIndex, rowIndex + normalizedBatchSize);
     const batchText = `${makePCDHeaderText(pcdHeader, batchLines.length)}${batchLines.join('\n')}\n`;
-    yield makePCDBatch(parsePCD(new TextEncoder().encode(batchText).buffer), options);
+    yield makePCDBatch(parsePCD(new TextEncoder().encode(batchText).buffer, options), options);
   }
 }
 
@@ -128,13 +130,13 @@ function* parsePCDBinaryInBatches(
       dataBytes.subarray(rowByteOffset, rowByteOffset + rowByteLength),
       headerBytes.length
     );
-    yield makePCDBatch(parsePCD(batchBytes.buffer), options);
+    yield makePCDBatch(parsePCD(batchBytes.buffer, options), options);
   }
 }
 
 function makePCDBatch(mesh: PCDMesh, options?: PCDLoaderOptions): PCDParsedBatch {
   const table = convertMeshToTable(mesh, 'arrow-table');
-  if (options?.pcd?.shape !== 'arrow-table') {
+  if (options?.pcd?.shape === 'mesh') {
     return convertPCDTableToMesh(table, mesh);
   }
 

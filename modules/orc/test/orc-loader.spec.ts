@@ -389,6 +389,53 @@ test('ORC writer supports columnar and explicitly typed empty tables', async () 
   }
 });
 
+test('ORCLoader#parse decodes nested primitive Arrow types in one stripe', async () => {
+  const floatBytes = new Uint8Array(12);
+  const floatView = new DataView(floatBytes.buffer);
+  [1.5, -2.5, 3.25].forEach((value, index) => floatView.setFloat32(index * 4, value, true));
+  const doubleBytes = new Uint8Array(24);
+  const doubleView = new DataView(doubleBytes.buffer);
+  [10.5, -20.25, 30.75].forEach((value, index) => doubleView.setFloat64(index * 8, value, true));
+  const fixture = buildORCFixture({
+    rowCount: 3,
+    streams: [
+      {kind: 1, column: 1, bytes: Uint8Array.from([0x00, 7])},
+      {kind: 1, column: 2, bytes: floatBytes},
+      {kind: 1, column: 3, bytes: doubleBytes},
+      {kind: 1, column: 4, bytes: new TextEncoder().encode('abc')},
+      {kind: 2, column: 4, bytes: Uint8Array.from([0x00, 1])},
+      {kind: 2, column: 5, bytes: Uint8Array.from([0x00, 2])},
+      {kind: 1, column: 6, bytes: Uint8Array.from([0x00, 9, 0x00, 10])}
+    ],
+    types: [
+      {kind: 12, subtypes: [1, 2, 3, 4, 5], fieldNames: ['count', 'ratio', 'score', 'text']},
+      {kind: ORCTypeKind.LONG},
+      {kind: ORCTypeKind.FLOAT},
+      {kind: ORCTypeKind.DOUBLE},
+      {kind: ORCTypeKind.BINARY},
+      {kind: 10, subtypes: [6], fieldNames: []},
+      {kind: ORCTypeKind.INT}
+    ],
+    encodingKinds: [0, 2, 2, 2, 2, 2, 2]
+  });
+
+  const result = await ORCLoaderWithParser.parse(fixture.buffer);
+  expect(result.shape).toBe('arrow-table');
+  if (result.shape !== 'arrow-table') return;
+  expect(getColumnValues(result.data, 'count')).toEqual([7, 7, 7]);
+  expect(getColumnValues(result.data, 'ratio')).toEqual([1.5, -2.5, 3.25]);
+  expect(getColumnValues(result.data, 'score')).toEqual([10.5, -20.25, 30.75]);
+  expect(
+    result.data
+      .getChild('text')
+      ?.toArray()
+      .map(value => Array.from(value as Uint8Array))
+  ).toEqual([[97], [98], [99]]);
+  expect(Array.from(result.data.getChild('field_4')?.get(0)?.toArray() || [])).toEqual([9, 9]);
+  expect(Array.from(result.data.getChild('field_4')?.get(1)?.toArray() || [])).toEqual([9, 10]);
+  expect(Array.from(result.data.getChild('field_4')?.get(2)?.toArray() || [])).toEqual([10, 10]);
+});
+
 test('ORC writer rejects invalid shapes, stripe sizes, and unsupported types', () => {
   expect(() =>
     encodeORC(

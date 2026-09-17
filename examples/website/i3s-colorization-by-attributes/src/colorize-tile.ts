@@ -1,4 +1,5 @@
 import {customizeColors} from '@loaders.gl/i3s';
+import {createFloat16Array, getFloat16Value, setFloat16Value} from '@loaders.gl/schema';
 import type {LoaderOptions} from '@loaders.gl/loader-utils';
 import type {Tile3D} from '@loaders.gl/tiles';
 
@@ -16,9 +17,11 @@ export async function colorizeTile(
   if ((tile.content as any).customColors !== colorsByAttribute) {
     if (tile.content && colorsByAttribute) {
       if (!(tile.content as any).originalColorsAttributes) {
+        const colors = tile.content.attributes.colors;
+        const originalValue = createColorCopy(colors);
         (tile.content as any).originalColorsAttributes = {
-          ...tile.content.attributes.colors,
-          value: new Uint8Array(tile.content.attributes.colors.value)
+          ...colors,
+          value: originalValue
         };
       } else if (colorsByAttribute.mode === 'multiply') {
         tile.content.attributes.colors.value.set((tile.content as any).originalColorsAttributes.value);
@@ -53,4 +56,18 @@ export async function colorizeTile(
   }
 
   return result;
+}
+
+/** Clone byte, Float16, or Float32 color storage for later restoration. */
+function createColorCopy(colors: any): any {
+  if (colors.componentType !== 'float16') {
+    return colors.value instanceof Float32Array
+      ? new Float32Array(colors.value)
+      : new Uint8Array(colors.value);
+  }
+  const value = createFloat16Array(colors.value.length);
+  for (let index = 0; index < colors.value.length; index++) {
+    setFloat16Value(value, index, getFloat16Value(colors.value, index));
+  }
+  return value;
 }

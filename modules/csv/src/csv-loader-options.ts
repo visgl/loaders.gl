@@ -10,7 +10,8 @@ import type {ArrowViewTypeMode} from '@loaders.gl/schema-utils';
 // @ts-ignore TS2304: Cannot find name '__VERSION__'.
 export const CSV_LOADER_VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : 'latest';
 
-export const DEFAULT_CSV_SHAPE = 'object-row-table';
+/** Default output shape for CSV parsing. */
+export const DEFAULT_CSV_SHAPE = 'arrow-table';
 
 export type CSVLoaderOptions = LoaderOptions & {
   /** Preferred GeoArrow encoding for detected geometry columns. */

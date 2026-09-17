@@ -27,7 +27,8 @@ import {DEFAULT_CSV_SHAPE} from './csv-loader-options';
 import {
   parseCSVArrayBufferAsArrow,
   parseCSVInArrowBatches,
-  parseCSVTextAsArrow
+  parseCSVTextAsArrow,
+  convertCSVRowTableToArrowTable
 } from './csv-arrow-table-parser';
 import {
   deduceCSVSchemaFromRows,
@@ -53,18 +54,18 @@ export type {CSVLoaderOptions} from './csv-loader';
 export const CSVLoaderWithParser = {
   ...CSVLoaderMetadataWithoutPreload,
   parse: async (arrayBuffer: ArrayBuffer, options?: CSVLoaderOptions) =>
-    options?.csv?.shape === 'arrow-table'
+    getCSVShape(options) === 'arrow-table'
       ? parseCSVArrayBufferAsArrow(arrayBuffer, options)
       : parseCSVText(new TextDecoder().decode(arrayBuffer), options),
   parseSync: (arrayBuffer: ArrayBuffer, options?: CSVLoaderOptions) =>
     parseCSVTextSync(new TextDecoder().decode(arrayBuffer), options),
   parseText: (text: string, options?: CSVLoaderOptions) =>
-    options?.csv?.shape === 'arrow-table'
+    getCSVShape(options) === 'arrow-table'
       ? parseCSVTextAsArrow(text, options)
       : parseCSVText(text, options),
   parseTextSync: (text: string, options?: CSVLoaderOptions) => parseCSVTextSync(text, options),
   parseInBatches: (asyncIterator, options?: CSVLoaderOptions) =>
-    options?.csv?.shape === 'arrow-table'
+    getCSVShape(options) === 'arrow-table'
       ? parseCSVInArrowBatches(asyncIterator, options)
       : parseCSVInBatches(asyncIterator, options),
   serializeWorkerResult: serializeCSVWorkerResult,
@@ -80,16 +81,28 @@ export const CSVLoaderWithParser = {
 async function parseCSVText(
   csvText: string,
   options?: CSVLoaderOptions
-): Promise<ObjectRowTable | ArrayRowTable> {
+): Promise<ObjectRowTable | ArrayRowTable | ArrowTable> {
   return parseCSVTextSync(csvText, options);
 }
 
 function parseCSVTextSync(
   csvText: string,
   options?: CSVLoaderOptions
-): ObjectRowTable | ArrayRowTable {
+): ObjectRowTable | ArrayRowTable | ArrowTable {
   // Apps can call the parse method directly, so we apply default options here
   const csvOptions = {...CSVLoaderWithParser.options.csv, ...options?.csv};
+
+  if (csvOptions.shape === 'arrow-table') {
+    const rowTable = parseCSVTextSync(csvText, {
+      ...options,
+      csv: {...options?.csv, shape: 'object-row-table'}
+    });
+    return convertCSVRowTableToArrowTable(
+      rowTable as ObjectRowTable,
+      csvOptions.viewTypes,
+      options?.geoarrow?.encodingPreference || csvOptions.geoarrow?.encodingPreference
+    );
+  }
 
   const firstRowResult = readFirstRow(csvText, csvOptions.delimitersToGuess);
   const firstRow = firstRowResult.data[0] || [];
@@ -157,6 +170,13 @@ function parseCSVTextSync(
 
   table.schema = deduceCSVSchemaFromRows(table.data, headerRow, detectedGeometryColumns);
   return table;
+}
+
+function getCSVShape(options?: CSVLoaderOptions): NonNullable<CSVLoaderOptions['csv']>['shape'] {
+  const deprecatedShape = (
+    options as {shape?: NonNullable<CSVLoaderOptions['csv']>['shape']} | undefined
+  )?.shape;
+  return options?.csv?.shape || deprecatedShape || DEFAULT_CSV_SHAPE;
 }
 
 // TODO - support batch size 0 = no batching/single batch?
@@ -373,10 +393,11 @@ function parseCSVInBatches(
     const shape = deprecatedShape || csvOptions.shape || DEFAULT_CSV_SHAPE;
     switch (shape) {
       case 'array-row-table':
+      case 'object-row-table':
       case 'columnar-table':
         return shape;
       default:
-        return DEFAULT_CSV_SHAPE;
+        return 'object-row-table';
     }
   }
 }

@@ -58,6 +58,21 @@ yarn bootstrap
 
 Note that our primary development environment is MacOS, but it is also possible to build loaders.gl on Linux and Windows.
 
+### Website development workers
+
+The website development server can run the Parquet source worker directly from
+`modules/parquet/src/workers/parquet-source-worker.ts`. You do not need to run
+`yarn build-workers` before `cd website && yarn start`; the website-only
+development webpack configuration supplies a module-worker URL for that source
+file and watches it for changes. Editing the worker invalidates the development
+worker farm, so active jobs fail and the next request starts a fresh worker.
+
+This is intentionally a website development convenience, not a published
+package feature. Production and staging still use the generated
+`dist/parquet-source-worker.js` asset, and an explicit `parquet.workerUrl` always
+overrides the built-in target. The source-worker replacement is not enabled for
+server-side rendering, Node.js, or package builds.
+
 ### Develop on Windows
 
 It is possible to build loaders.gl on Windows 10, but not directly in the Windows command prompt. You will need to install a Linux command line environment.

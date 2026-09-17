@@ -21,6 +21,8 @@ export type PLYLoaderOptions = LoaderOptions & {
   ply?: ParsePLYOptions & {
     /** Output shape. Defaults to a Mesh Arrow table. */
     shape?: 'mesh' | 'arrow-table';
+    /** Color storage format. Defaults to uint8norm for backwards compatibility. */
+    colorFormat?: 'uint8norm' | 'float16' | 'float32';
     /** Treat PLY data as a point cloud by reading only the leading vertex element. */
     pointCloud?: boolean;
     /** Override the URL to the worker bundle (by default loads from unpkg.com) */
@@ -41,7 +43,7 @@ async function preload() {
  * links: ['http://paulbourke.net/dataformats/ply/',
  * 'https://en.wikipedia.org/wiki/PLY_(file_format)']
  */
-export const PLYWorkerLoader = {
+export const PLYLoader = {
   dataType: null as unknown as PLYMesh | MeshArrowTable,
   batchType: null as never,
 
@@ -52,14 +54,10 @@ export const PLYWorkerLoader = {
   serializeWorkerResult: serializeArrowWorkerResult,
   deserializeWorkerResult: deserializeArrowWorkerResult,
   options: {
-    ply: {shape: 'arrow-table'}
+    ply: {shape: 'arrow-table', colorFormat: 'uint8norm'}
   },
   preload
 } as const satisfies Loader<PLYMesh | MeshArrowTable, never, LoaderOptions>;
 
-/**
- * Metadata-only loader for PLY - Polygon File Format
- */
-export const PLYLoader = {
-  ...PLYWorkerLoader
-} as const satisfies Loader<PLYMesh | MeshArrowTable, any, PLYLoaderOptions>;
+/** @deprecated Use PLYLoader. */
+export const PLYWorkerLoader = PLYLoader;

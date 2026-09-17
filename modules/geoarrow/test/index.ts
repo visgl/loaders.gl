@@ -11,3 +11,5 @@ import './merge-geoarrow-schemas.spec';
 import './geoarrow-layout.spec';
 import './geoarrow-stream.spec';
 import './geoarrow-format-examples.spec';
+import './get-deck-binary-data.spec';
+import './get-deck-binary-data.spec';

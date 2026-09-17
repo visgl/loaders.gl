@@ -5,10 +5,6 @@
 import type {Loader, LoaderWithParser, StrictLoaderOptions} from '@loaders.gl/loader-utils';
 import type {ArrowTable, ArrowTableBatch, ObjectRowTable} from '@loaders.gl/schema';
 import {
-  deserializeArrowWorkerResult,
-  serializeArrowWorkerResult
-} from '@loaders.gl/arrow/transport';
-import {
   parseDBF as parseDBFToObjectRows,
   parseDBFInBatches as parseDBFToObjectRowsInBatches
 } from './lib/parsers/parse-dbf';
@@ -19,6 +15,12 @@ import {
 import type {DBFHeader, DBFRowsOutput, DBFTableOutput} from './lib/parsers/types';
 import {DBFWorkerLoader as DBFWorkerLoaderMetadata} from './dbf-loader';
 import {DBFLoader as DBFLoaderMetadata} from './dbf-loader';
+import {
+  deserializeShapefileWorkerBatch,
+  deserializeShapefileWorkerResult,
+  serializeShapefileWorkerBatch,
+  serializeShapefileWorkerResult
+} from './lib/shapefile-worker-transport';
 
 const {preload: _DBFWorkerLoaderPreload, ...DBFWorkerLoaderMetadataWithoutPreload} =
   DBFWorkerLoaderMetadata;
@@ -66,10 +68,12 @@ export const DBFLoaderWithParser: LoaderWithParser<
       ? parseDBFToArrowInBatches(arrayBufferIterator, options)
       : parseDBFToObjectRowsInBatches(arrayBufferIterator, options);
   },
-  serializeWorkerBatch: serializeArrowWorkerResult,
-  deserializeWorkerBatch: deserializeArrowWorkerResult
+  serializeWorkerResult: serializeShapefileWorkerResult,
+  deserializeWorkerResult: deserializeShapefileWorkerResult,
+  serializeWorkerBatch: serializeShapefileWorkerBatch,
+  deserializeWorkerBatch: deserializeShapefileWorkerBatch
 };
 
 function getDBFShape(options?: DBFLoaderOptions): NonNullable<DBFLoaderOptions['dbf']>['shape'] {
-  return options?.dbf?.shape;
+  return options?.dbf?.shape || 'arrow-table';
 }

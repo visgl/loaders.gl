@@ -97,6 +97,7 @@ typed aggregate counters for PMTiles range transport diagnostics.
 | `rangeRequests.maxConcurrentRequests` | `number` | `6`  | Reserved concurrency hint for range-request transports.                     |
 | `rangeRequests.stats`              | `Stats`   | none     | Optional probe.gl Stats object that receives range batching counters.       |
 | `rangeRequests.onEvent`            | `function` | none    | Optional diagnostics callback for queued, batched, completed, failed, and aborted range requests. |
+| `pmtiles.shape`                    | `string`  | `'arrow-table'` | Output shape for vector tiles: `'arrow-table'`, `'geojson-table'`, `'binary-geometry'`, or `'columnar-table'` (MVT only). |
 
 ## Notes
 

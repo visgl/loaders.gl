@@ -55,7 +55,7 @@ export const ShapefileLoader = {
   version: VERSION,
   options: {
     shapefile: {
-      shape: 'v3'
+      shape: 'arrow-table'
     },
     shp: {
       _maxDimensions: 4

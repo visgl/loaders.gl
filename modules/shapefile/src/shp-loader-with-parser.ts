@@ -4,10 +4,6 @@
 
 import type {Loader, LoaderWithParser, StrictLoaderOptions} from '@loaders.gl/loader-utils';
 import type {ArrowTable, ArrowTableBatch} from '@loaders.gl/schema';
-import {
-  deserializeArrowWorkerResult,
-  serializeArrowWorkerResult
-} from '@loaders.gl/arrow/transport';
 import {parseSHP, parseSHPInBatches} from './lib/parsers/parse-shp';
 import type {SHPResult} from './lib/parsers/parse-shp';
 import {parseSHPToArrow, parseSHPToArrowInBatches} from './lib/parsers/parse-shp-to-arrow';
@@ -15,6 +11,12 @@ import type {SHPHeader} from './lib/parsers/parse-shp-header';
 import type {SHPGeoArrowEncoding} from './lib/parsers/types';
 import {SHPWorkerLoader as SHPWorkerLoaderMetadata} from './shp-loader';
 import {SHPLoader as SHPLoaderMetadata} from './shp-loader';
+import {
+  deserializeShapefileWorkerBatch,
+  deserializeShapefileWorkerResult,
+  serializeShapefileWorkerBatch,
+  serializeShapefileWorkerResult
+} from './lib/shapefile-worker-transport';
 
 const {preload: _SHPWorkerLoaderPreload, ...SHPWorkerLoaderMetadataWithoutPreload} =
   SHPWorkerLoaderMetadata;
@@ -67,10 +69,12 @@ export const SHPLoaderWithParser: LoaderWithParser<
       : parseSHPInBatches(arrayBufferIterator, options)) as AsyncIterable<
       SHPHeader | (Uint8Array | null)[] | ArrowTableBatch
     >,
-  serializeWorkerBatch: serializeArrowWorkerResult,
-  deserializeWorkerBatch: deserializeArrowWorkerResult
+  serializeWorkerResult: serializeShapefileWorkerResult,
+  deserializeWorkerResult: deserializeShapefileWorkerResult,
+  serializeWorkerBatch: serializeShapefileWorkerBatch,
+  deserializeWorkerBatch: deserializeShapefileWorkerBatch
 };
 
 function getSHPShape(options?: SHPLoaderOptions): NonNullable<SHPLoaderOptions['shp']>['shape'] {
-  return options?.shp?.shape;
+  return options?.shp?.shape || 'arrow-table';
 }

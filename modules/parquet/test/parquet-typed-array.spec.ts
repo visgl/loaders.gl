@@ -255,13 +255,15 @@ test('ParquetReader and ParquetJSLoader parse without global Buffer', async () =
         const metadata = await reader.getSchemaMetadata();
         expect(metadata, 'reader metadata parsed').toEqual({ myuid: '420', fnord: 'dronf' });
         const binaryTable = await ParquetJSLoader.parse(toExactArrayBuffer(binaryBytes), {
-            core: { worker: false }
+            core: { worker: false },
+            parquet: { shape: 'object-row-table' }
         });
         expect(binaryTable.shape, 'binary table shape').toBe('object-row-table');
         expect(binaryTable.data[0].foo instanceof Uint8Array, 'raw binary field is Uint8Array').toBeTruthy();
         expect(Array.from(binaryTable.data[11].foo), 'raw binary bytes are preserved').toEqual([11]);
         const snappyTable = await ParquetJSLoader.parse(toExactArrayBuffer(snappyBytes), {
-            core: { worker: false }
+            core: { worker: false },
+            parquet: { shape: 'object-row-table' }
         });
         expect(snappyTable.data[0].id, 'compressed physical INT32 materializes as number').toBe(6);
         expect(snappyTable.data[0].date_string_col instanceof Uint8Array, 'compressed raw date_string_col BYTE_ARRAY is bytes').toBeTruthy();

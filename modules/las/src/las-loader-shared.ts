@@ -3,6 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import type {Loader, LoaderOptions} from '@loaders.gl/loader-utils';
+import {convertColorArrayToFloat16, convertColorArrayToFloat32} from '@loaders.gl/schema';
 import type {MeshArrowTable} from '@loaders.gl/schema';
 import {LASFormat} from './las-format';
 import type {LASMesh} from './lib/las-types';
@@ -43,6 +44,8 @@ export type LASLoaderOptions = LoaderOptions & {
     fp64?: boolean;
     /** Output color depth or automatic source-depth detection. */
     colorDepth?: number | string;
+    /** Color storage format. Defaults to uint8norm for backwards compatibility. */
+    colorFormat?: 'uint8norm' | 'float16' | 'float32';
     /** Arrow columns to decode. POSITION is always included. */
     columns?: readonly LASColumnName[];
     /** Decode Extra Bytes descriptors into typed attributes instead of raw bytes. */
@@ -53,6 +56,14 @@ export type LASLoaderOptions = LoaderOptions & {
   /** Called as point data is decoded on the main thread. */
   onProgress?: Function;
 };
+
+/** Default output shape for LAS and LAZ loaders. */
+export const DEFAULT_LAS_SHAPE = 'arrow-table' as const;
+
+/** Resolve the LAS output shape, including the Arrow-primary default. */
+export function getLASShape(options?: LASLoaderOptions): 'mesh' | 'columnar-table' | 'arrow-table' {
+  return options?.las?.shape || DEFAULT_LAS_SHAPE;
+}
 
 /** Parser-independent LAS loader metadata shared by each loader variant. */
 export const LAS_LOADER_METADATA = {
@@ -65,11 +76,43 @@ export const LAS_LOADER_METADATA = {
   worker: false,
   options: {
     las: {
-      shape: 'mesh',
+      shape: DEFAULT_LAS_SHAPE,
       fp64: false,
       colorDepth: 8,
+      colorFormat: 'uint8norm',
       columns: undefined,
       extraBytes: 'raw'
     }
   }
 } as const satisfies Loader<LASMesh | MeshArrowTable, LASMesh | MeshArrowTable, LASLoaderOptions>;
+
+/** Apply the requested normalized color representation to a decoded LAS mesh. */
+export function formatLASMeshColors(
+  mesh: LASMesh,
+  colorFormat: 'uint8norm' | 'float16' | 'float32'
+): LASMesh {
+  if (colorFormat === 'uint8norm' || !mesh.attributes.COLOR_0) {
+    return mesh;
+  }
+
+  const colorAttribute = mesh.attributes.COLOR_0;
+  const sourceScale = colorAttribute.value instanceof Uint16Array ? 65535 : 255;
+  const value =
+    colorFormat === 'float16'
+      ? convertColorArrayToFloat16(colorAttribute.value, sourceScale)
+      : convertColorArrayToFloat32(colorAttribute.value, sourceScale);
+  const attributes = {...mesh.attributes};
+
+  for (const [attributeName, attribute] of Object.entries(attributes)) {
+    if (attribute.value === colorAttribute.value) {
+      attributes[attributeName] = {
+        ...attribute,
+        value,
+        normalized: false,
+        ...(colorFormat === 'float16' ? {componentType: 'float16' as const} : {})
+      };
+    }
+  }
+
+  return {...mesh, attributes};
+}

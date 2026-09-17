@@ -49,7 +49,7 @@ The 3D Tiles runtime is view-dependent: parsing, transform composition, culling,
 | Hierarchy | `REPLACE` retains a renderable ancestor until required descendants are ready; `ADD` can select both levels. | Delay child content and inspect selected tiles during the loading frame. |
 | Content visibility | Multiple content volumes are a union. Clipping planes affect render content only and never prune traversal descendants. | Put one content volume outside the frustum and another inside; clip both and verify the return classification. |
 | Implicit tiling | Subtree availability uses zero-based global levels and materializes only the requested subtree boundary. | Verify exact `availableLevels`, QUADTREE/OCTREE indexes, sparse tiles, and child-subtree references. |
-| Extensions | Unsupported `extensionsRequired` names fail before normalization or network access; unknown `extensionsUsed` names are preserved. | Supply an unsupported required extension and assert that the resolver was never called. |
+| Extensions | Unsupported `extensionsRequired` names fail before header normalization; unknown `extensionsUsed` names are preserved. Draft subtree classification may resolve structural buffers before validation. | Supply an unsupported required extension and assert that no normalized headers are installed. |
 | I3S isolation | I3S screen-threshold metrics do not receive 3D Tiles geometric-error transform scaling. | Apply a non-uniform transform and compare the unchanged I3S metric. |
 
 ## Conformance tranches
@@ -63,6 +63,34 @@ The tracker issue [#1245](https://github.com/visgl/loaders.gl/issues/1245) recor
 5. **Lifecycle and conformance** — empty/external/expired content, viewer request volumes, cancellation, eviction/reload/destroy, statistics, and maintained Cesium comparison fixtures.
 
 Each tranche should add a focused fixture or unit test before changing runtime behavior. Renderer-specific behavior (styling, Gaussian splats, vector/CAD, voxels, and GPU upload policy) remains outside the loader/runtime conformance boundary.
+
+## Metadata value access
+
+3D Tiles metadata has two layers: the loader preserves the authored schema and property-table references, while glTF parsing (with `gltf.loadBuffers: true`) decodes property-table columns. Use `getStructuralMetadataRow(propertyTable, schemaClass, rowIndex)` from `@loaders.gl/3d-tiles` to read one normalized row. The helper applies class-level `default` values and `noData` sentinels and keeps vector/array values in their typed-array or nested-array form. Use `getStructuralMetadataProperty(...)` for one named value, or compose a renderer-neutral snapshot with `createTile3DStyleInput(...)`; the latter merges metadata scopes and optional hierarchy-aware batch-table values without evaluating styles.
+
+Decoding a row does not imply styling, picking, or GPU upload. Applications choose how decoded values map to feature IDs and visual attributes; raw extension objects remain available for forward-compatible fields and unsupported encodings.
+
+## Experimental 3D Tiles 2.0 profile
+
+The draft-facing matrix is pinned to CesiumGS/glTF commit
+[`1737151386460f190ffd90239b38eb0e3f1949f5`](https://github.com/CesiumGS/glTF/tree/1737151386460f190ffd90239b38eb0e3f1949f5/extensions/2.1/Vendor).
+It records parsing and traversal support, not renderer conformance.
+
+| Draft area | Status | Supported profile |
+| --- | :---: | --- |
+| `3DTILES_tileset` | ◐ | Automatic glTF/GLB detection, explicit node hierarchies, nested packages, required-extension validation. |
+| `3DTILES_subtree` | ◐ | QUADTREE/OCTREE availability, attributes, property rows, URI properties, lazy loading and caching. |
+| Vector encodings | ◐ | Cesium 1.1 preview and draft 2.0 normalize to point/polyline/polygon descriptors. No rendering claim. |
+| Bounding volumes | ◐ | Box, sphere, ellipsoid-region, S2, and cylinder-region inputs; conservative oriented boxes where exact runtime volumes do not exist. |
+| CRS/georeference | ◐ | WKID/WKT2 preservation, diagnostics, recognized coordinate frames, and affine georeference composition. |
+| LOD | ◐ | Draft geometric errors are unscaled; 1.x retains transform scaling for compatibility. |
+| Optional extensions | ✅ | Unknown optional declarations are preserved. |
+| Required extensions | ✅ | Unsupported required declarations fail deterministically. |
+| Renderer and advanced draft features | — | Voxels, layers, visibility extensions, horizon optimization, styling, visual clipping, terrain draping, and clamping are unsupported. |
+
+`◐` denotes the tested experimental subset rather than complete draft conformance. The public
+`formatVersion: '2.0-draft'` discriminator and `Tiles3DVectorContent` shape may evolve as the draft
+and Khronos vector extensions change.
 
 ## Debugging a mismatch
 
