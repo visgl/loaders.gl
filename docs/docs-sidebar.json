@@ -306,6 +306,10 @@
             "label": "Runtime Concepts",
             "items": [
               "modules/3d-tiles/concepts/README",
+              "modules/3d-tiles/concepts/renderer-contracts-and-metadata",
+              "modules/3d-tiles/concepts/styling-and-feature-access",
+              "modules/3d-tiles/concepts/observability-and-benchmarks",
+              "modules/3d-tiles/concepts/3d-tiles-2-0-experimental",
               "modules/3d-tiles/concepts/correctness-and-conformance",
               "modules/3d-tiles/concepts/coordinate-reference-systems",
               "modules/3d-tiles/concepts/resource-resolution-and-content-detection",

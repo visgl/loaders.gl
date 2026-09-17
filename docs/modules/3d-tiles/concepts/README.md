@@ -42,6 +42,10 @@ Loading a large 3D Tiles tileset is a continuous pipeline: traverse the hierarch
 
 | Guide | Question it answers |
 | --- | --- |
+| [Renderer contracts and metadata](/docs/modules/3d-tiles/concepts/renderer-contracts-and-metadata) | How do I enumerate content, distinguish raw metadata from decoded values, and inspect renderability? |
+| [Gaussian, vector, and voxel extensions](/docs/modules/3d-tiles/concepts/gaussian-vector-voxel-extensions) | Which new payloads are read, which require a decoder, and which still require a renderer? |
+| [Coordinate reference systems](/docs/modules/3d-tiles/concepts/coordinate-reference-systems) | How are coordinate frames, epochs, reprojection, and nested placements handled? |
+| [Correctness and conformance](/docs/modules/3d-tiles/concepts/correctness-and-conformance) | Which invariants and hermetic fixtures protect the runtime? |
 | [Resource resolution and content detection](/docs/modules/3d-tiles/concepts/resource-resolution-and-content-detection) | How are relative references, inherited queries, and extensionless content handled? |
 | [Experimental 3D Tiles 2.0 profile](/docs/modules/3d-tiles/concepts/3d-tiles-2-0-experimental) | Which draft glTF-based 3D Tiles 2.0 structures and vector descriptors are supported? |
 | [Tile hierarchy and refinement](/docs/modules/3d-tiles/concepts/tile-hierarchy-and-refinement) | Which tiles can replace or augment their ancestors? |

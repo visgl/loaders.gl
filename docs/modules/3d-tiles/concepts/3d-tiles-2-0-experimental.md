@@ -88,8 +88,10 @@ When using `Tileset3D`, decoded vector content is available as
 `Tiles3DVectorContent` describes decoded geometry and topology; it does not draw it. The
 `clip` flag is retained as source metadata for an application-owned renderer. Styling, wide-line
 tessellation, visual clipping, terrain draping, and GPU upload policy remain outside loaders.gl.
-The current profile also excludes voxels, layers, visibility extensions, horizon-occlusion
-optimization, and terrain/tileset clamping.
+The current tileset profile also excludes full voxel/layer/visibility runtime semantics,
+horizon-occlusion optimization, and terrain/tileset clamping. The separate glTF
+`EXT_primitive_voxels` reader now exposes metadata-first descriptors, but does not enable required
+draft tileset voxel extensions or dense decoding. See [Gaussian, vector, and voxel contracts](./gaussian-vector-voxel-extensions).
 
 ## Related guides
 

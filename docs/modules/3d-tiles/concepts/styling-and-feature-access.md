@@ -19,6 +19,10 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
 
 <Tiles3DDocsTabs active="runtime" />
 
+Start with [renderer contracts and metadata](./renderer-contracts-and-metadata) for ordered content,
+feature-ID declarations, raw metadata scopes, and lifecycle behavior. This guide builds on those
+contracts to prepare application-owned style inputs.
+
 <DocOrientation
   eyebrow="A deliberate boundary"
   title="Resolve data first; evaluate style later."

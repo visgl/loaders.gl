@@ -55,7 +55,7 @@ viewport instead of downloading the complete dataset.
 
 The checkboxes below describe loaders.gl behavior in the current 5.0 development line.
 
-Renderer-neutral content, feature-ID, metadata, and visibility descriptors are available from the public `@loaders.gl/tiles` runtime for renderer integrations. See the [Tile3D API](../../tiles/api-reference/tile-3d). A checked
+Renderer-neutral content, feature-ID, metadata, and visibility descriptors are available from the public `@loaders.gl/tiles` runtime for renderer integrations. See the [content contracts guide](../concepts/renderer-contracts-and-metadata) and [Tile3D API](../../tiles/api-reference/tile-3d). A checked
 item means the loader parses and exposes the capability; it does not imply that every renderer
 provides a visual implementation for that feature.
 
@@ -68,13 +68,16 @@ provides a visual implementation for that feature.
 | Draft glTF-based 3D Tiles 2.0 | ◐ v5.0 | Experimental parsing, explicit/implicit traversal, spatial interpretation, and vector descriptors; renderer features are excluded. |
 | Explicit child hierarchies | ✅ | Traversed by [`Tileset3D`](../../tiles/api-reference/tileset-3d). |
 | Lazy implicit subtrees | ✅ v5.0 | Availability resources are requested after visibility and LOD checks. |
-| Implicit multiple contents | ✅ v5.0 | All declared content-availability streams produce ordered `content` and `contentUrls` entries. |
+| Implicit multiple contents | ✅ v5.0 | Available streams produce ordered `contentUrls`, `contents`, and `contentEntries`; `content` remains the primary payload. |
 | `REPLACE` refinement | ✅ | Ancestors are replaced as children become renderable. |
 | `ADD` refinement | ✅ | Ancestors and descendants may render together. |
-| Geometric-error transform scaling | ✅ v5.0 | Uses the conservative maximum scale component. |
+| Geometric-error transform scaling | ✅ v5.0 | 1.x uses the conservative maximum composed scale; draft 2.0 error is unscaled. |
 | Perspective and orthographic SSE | ✅ v5.0 | Uses logical/CSS viewport pixels. |
 | Progressive and foveated request priority | ✅ v5.0 | Changes request order, not the final SSE target. |
 | Skip-level-of-detail traversal | ✅ v5.0 | Ready ancestors remain selected while deeper descendants stream. |
+| Viewer request volumes | ✅ v5.0 | Transformed volumes gate request eligibility separately from render culling. |
+| Indexed and union content visibility | ✅ v5.0 | Content bounds and clipping planes affect render visibility, not descendant traversal. |
+| Traversal snapshots | ✅ v5.0 | Deterministic selection/request IDs, cache counters, and optional implicit-subtree diagnostics. |
 
 ### Tile payloads
 
@@ -95,22 +98,23 @@ provides a visual implementation for that feature.
 
 | Capability | <span data-docs-table-status>Status</span> | Notes |
 | --- | :---: | --- |
-| Required-extension validation | ✅ v5.0 | Unsupported required names fail before normalization or network requests. |
+| Required-extension validation | ✅ v5.0 | Unsupported required names fail before header normalization; draft subtree classification may first load structural buffers. |
 | `3DTILES_implicit_tiling` | ✅ | QUADTREE and OCTREE availability are supported. |
 | `3DTILES_bounding_volume_S2` | ✅ v5.0 | S2 volumes are converted to traversal-ready oriented boxes. |
 | `3DTILES_content_gltf` | ✅ | glTF tile content is recognized. |
 | `3DTILES_draco_point_compression` | ✅ | Point-cloud Draco metadata is exposed to the decoder. |
-| `3DTILES_batch_table_hierarchy` | — | Parser scaffolding exists; complete hierarchy semantics remain planned. |
+| `3DTILES_batch_table_hierarchy` | ◐ v5.0 | Hierarchy-aware JSON batch-table property access is supported; binary hierarchy property access is not. |
 | `EXT_mesh_features` | ✅ v5.0 | Feature identifiers are preserved for supported glTF payloads. |
-| `EXT_structural_metadata` | ✅ v5.0 | Schema and property-table metadata are exposed where present. |
+| `EXT_structural_metadata` | ✅ v5.0 | Loaded property-table columns decode numeric, boolean, string, enum, vector/matrix, and array values; row helpers apply defaults/noData. |
 | Draft `3DTILES_subtree` | ◐ v5.0 | QUADTREE/OCTREE availability, attribute overrides, property rows, URI properties, and lazy caching are supported. |
 | Draft vector topology | ◐ v5.0 | Point, restart-separated polyline, and polygon topology is exposed; drawing and styling are renderer-owned. |
-| `KHR_gaussian_splatting` | [x] | Gaussian primitives are validated and exposed as normalized descriptors; styling, sorting, and GPU upload remain renderer-owned. |
-| SPZ v2/v3/v4 standalone content | [x] | `@loaders.gl/splats` decodes legacy gzip v2/v3 and current v4 containers into the existing Arrow-table representation. |
-| glTF SPZ2 compression | [~] | Buffer views and compressed bytes are preserved; an injected decoder can opt into explicit LUF decoding. |
-| `EXT_primitive_voxels` / `3DTILES_content_voxels` | [~] | Shape, dimensions, channels, and metadata references are exposed lazily; dense decoding and rendering are deferred. |
-| Metadata topology preservation | ✅ v5.0 | Schema, groups, tileset/tile/content entities, and implicit-subtree references are retained for application-level interpretation. Value/class decoding is not included. |
-| Metadata-derived bounding volumes | ✅ v5.0 | Direct numeric `TILE_BOUNDING_*` and `CONTENT_BOUNDING_*` semantic arrays are normalized; property-table value decoding remains application-owned. |
+| `KHR_gaussian_splatting` | ◐ v5.0 | Per-primitive descriptors and validation are available; node placement, accessor interpretation, and rendering remain consumer responsibilities. |
+| SPZ v2/v3/v4 standalone files | ✅ v5.0 | The separate `@loaders.gl/splats` loader decodes gzip v2/v3 and TLV/zstd v4 into Arrow tables; this is not a direct SPZ tile-content loader. |
+| glTF SPZ2 compression | ◐ v5.0 | Buffer views and loaded compressed bytes are preserved; an injected decoder receives an explicit LUF source-coordinate hint. |
+| `EXT_primitive_voxels` / `3DTILES_content_voxels` | ◐ v5.0 | Primitive shape/dimensions/accessor declarations are preserved and the 1.x content extension is recognized; no dense decoding or full draft voxel-profile support. |
+| Metadata topology preservation | ✅ v5.0 | Raw schema, groups, tileset/tile/content entities, and subtree references remain available alongside supported decoded columns. |
+| Metadata-derived bounding volumes | ✅ v5.0 | Supported `TILE_BOUNDING_*` and `CONTENT_BOUNDING_*` semantics feed normalized tile/content bounds; not every metadata encoding defines a usable bound. |
+| Renderer-neutral content contracts | ✅ v5.0 | Ordered entries expose payload, metadata, feature-ID declarations, transformed bounds, and renderability. |
 | Renderer-neutral style inputs | ✅ v5.0 | Property-table rows, hierarchy-aware batch-table access, metadata precedence, and property-source diagnostics are exposed without style evaluation. |
 | Styling expressions | — | Rendering-side style evaluation is not provided by this module. |
 
@@ -132,9 +136,11 @@ frames, and precision rules.
 
 ### Experimental 3D Tiles 2.0 exclusions
 
-The experimental profile does not support voxels, layers, visibility extensions,
-horizon-occlusion optimization, styling, visual clipping, terrain draping, or terrain/tileset
-clamping. These exclusions are not implied by successful parsing of an optional extension name.
+The experimental tileset profile does not implement the complete voxel, layer, or visibility
+extension families, horizon-occlusion optimization, styling, visual clipping, terrain draping, or
+terrain/tileset clamping. The glTF voxel primitive reader described above does not enable a required
+draft tileset voxel extension. Likewise, runtime clipping-plane classification does not itself draw
+clipped geometry. These capabilities are not implied by parsing an optional extension name.
 Unknown optional extensions are preserved; an unsupported name in `extensionsRequired` is rejected
 during classification. Draft subtree classification may first resolve structural buffers needed to
 read availability and metadata, so this rejection does not promise that every subtree dependency
@@ -175,7 +181,7 @@ called out explicitly rather than being counted as parser support.
 | Hierarchy | `ADD` refinement | ✅ | Traversal | Ancestors and descendants may be selected together. |
 | Hierarchy | Implicit QUADTREE/OCTREE tiling | ✅ | Lazy traversal | Subtrees and availability bitstreams are requested only when traversal needs them. |
 | Hierarchy | Draft glTF `3DTILES_subtree` | ◐ v5.0 | Lazy traversal | Availability, supported attributes/property rows, embedded resources, and URI substitution are normalized. |
-| LOD | Transform-scaled geometric error | ✅ v5.0 | LOD metric | Raw error is retained; world-space error uses the conservative maximum composed scale. |
+| LOD | Transform-scaled geometric error | ✅ v5.0 | LOD metric | 1.x raw error is retained and scaled once using the maximum composed scale; draft 2.0 error stays unscaled. |
 | LOD | Perspective and orthographic SSE | ✅ v5.0 | LOD metric | Logical/CSS viewport pixels are used; invalid orthographic pixel scales fall back to perspective. |
 | LOD | Dynamic SSE | ✅ | Traversal tuning | Perspective distance-based adjustment is preserved; it does not change the declared error. |
 | Scheduling | Progressive and foveated priorities | ✅ v5.0 | Request scheduling | Priorities affect request order and cancellation, not the final SSE threshold. |
@@ -186,14 +192,23 @@ called out explicitly rather than being counted as parser support.
 | Extension | `3DTILES_bounding_volume_S2` | ✅ v5.0 | Parse + culling input | S2 volumes become traversal-ready oriented boxes while source tokens are retained. |
 | Extension | `3DTILES_content_gltf` | ✅ | Content detection | glTF tile content is recognized independently of URL extension. |
 | Extension | `3DTILES_draco_point_compression` | ✅ | Parse + decode input | Point-cloud compression metadata is passed to the decoder. |
-| Extension | `3DTILES_batch_table_hierarchy` | ◐ | Parse validation | Parser scaffolding and boundary validation exist; complete hierarchy semantics remain planned. |
+| Extension | `3DTILES_batch_table_hierarchy` | ◐ v5.0 | Parse + property access | JSON class instances and inherited properties are accessible; unsupported binary hierarchy access rejects explicitly. |
 | Metadata | `EXT_mesh_features` | ✅ v5.0 | Parse + preserve | Feature identifiers are retained for supported glTF payloads. |
-| Metadata | `EXT_structural_metadata` | ✅ v5.0 | Parse + preserve | Schema, property tables, groups, and entity links are exposed; value decoding is application-side. |
-| Metadata | Metadata-derived bounding volumes | ✅ v5.0 | Culling | Direct numeric semantic arrays are normalized into tile/content volumes; property-table decoding remains application-owned. |
+| Metadata | `EXT_structural_metadata` | ✅ v5.0 | Parse + decode | Buffer-backed property-table columns decode when buffers are loaded. Raw values are retained for noData matching; row access applies class defaults. This does not decode arbitrary property textures. |
+| Metadata | Metadata-derived bounding volumes | ✅ v5.0 | Culling | Supported schema semantics and numeric values are normalized into tile/content volumes. |
+| Metadata | Style-input snapshots | ✅ v5.0 | Property access | Tileset/group/tile/content/batch precedence and source diagnostics; no style-language evaluation. |
+| Runtime | Viewer request volumes | ✅ v5.0 | Request gating | Camera containment in transformed request volumes governs eligibility independently of render-content visibility. |
+| Runtime | Traversal snapshots | ✅ v5.0 | Diagnostics | Sorted selection/request sets, counters, cache bytes, and optional implicit diagnostics; benchmark budgets are guidance, not performance guarantees. |
+| Contract | Ordered content and feature IDs | ✅ v5.0 | Renderer input | `contentEntries`, `getContentEntry`, `isContentRenderable`, and raw `metadataContext` preserve legacy primary-content access. |
+| Contract | Indexed/union visibility | ✅ v5.0 | Render culling | Explicit content bounds fall back to tile bounds; clipping planes do not prune the tile hierarchy. |
+| Extension | Gaussian primitives | ◐ v5.0 | Parse + descriptors | Mesh/primitive descriptors preserve attributes and raw JSON; node transforms remain in the glTF scene graph. |
+| Codec | SPZ v2/v3/v4 | ✅ v5.0 | Standalone decode | Public `SPZLoader` returns Arrow tables; explicit RUB/LUF options control coordinate conversion. |
+| Extension | Embedded SPZ2 | ◐ v5.0 | Optional decode hook | Preserves compressed bytes when loaded and accepts an injected decoder; no automatic SPZ-to-glTF attribute conversion or count reconciliation. |
+| Extension | Voxel primitives | ◐ v5.0 | Metadata-first reader | Shape index, positive dimensions, mode, and accessor references are checked; no dense sample decoding or shape interpretation. |
 | Spatial | CRS and coordinate-epoch semantics | ✅ v5.0 | Parse + normalize | Inline semantics produce readonly `spatialMetadata`; explicit unknown and invalid epochs retain diagnostics. |
 | Spatial | Draft CRS and georeference extensions | ◐ v5.0 | Parse + runtime transform | WKID/WKT2 metadata and recognized frames are preserved; requested target CRS transforms decoded content and conservative box/sphere bounds. Cross-epoch execution remains excluded. |
 | Renderer | Vector drawing, styling, and clipping | — | Renderer | Vector descriptors and `clip` metadata are exposed without tessellation, styling, clipping, or draw calls. |
-| Renderer | Voxels, layers, visibility, and clamping | — | Renderer/runtime | Voxel/layer/visibility extensions, horizon optimization, terrain draping, and clamping are unsupported. |
+| Renderer | Voxel rendering and advanced draft features | — | Renderer/runtime | Voxel textures/ray marching, layer/visibility runtime semantics, horizon optimization, terrain draping, and clamping are unsupported. |
 | Spatial | End-to-end nonlinear reprojection | ◐ | Runtime | Shared operations cover decoded content, traversal headers, normals, conservative box/sphere/region bounds, and nested-CRS composition; cross-epoch execution remains staged. |
 | Renderer | Styling expressions | — | Renderer | Style evaluation and visual feature selection are outside this loader/runtime package. |
 | Renderer | GPU upload and draw policy | — | Renderer | Applications such as deck.gl or Cesium decide how normalized payloads become draw calls. |

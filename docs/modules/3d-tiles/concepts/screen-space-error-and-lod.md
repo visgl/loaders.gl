@@ -42,6 +42,10 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
 
 This guide describes the loaders.gl 3D Tiles calculation. It also explains how projection, transforms, display pixel density, and traversal options affect the selected level of detail (LOD).
 
+The transform-scaling examples describe **3D Tiles 1.x**. The experimental glTF-based 2.0 profile
+uses unscaled geometric errors; its error enters the same projection calculation without the 1.x
+maximum-scale multiplier. See the [draft profile](./3d-tiles-2-0-experimental).
+
 ![3D Tiles correctness flow from transform-scaled geometric error through perspective or orthographic SSE to LOD refinement, plus early required-extension validation](../images/screen-space-error-and-lod.png)
 
 References:
@@ -199,7 +203,7 @@ loaders.gl therefore does not divide or multiply SSE by `window.devicePixelRatio
 
 ## Transforms and Geometric Error
 
-A tile's `transform` maps its local coordinates into its parent's coordinate system. The root also inherits the tileset `modelMatrix`. loaders.gl composes the full transform before calculating the world-space geometric error:
+A tile's `transform` maps its local coordinates into its parent's coordinate system. The root also inherits the tileset `modelMatrix`. For 3D Tiles 1.x, loaders.gl composes the full transform before calculating the world-space geometric error:
 
 ```text
 worldGeometricError = sourceGeometricError * maximumComputedTransformScale
@@ -247,7 +251,7 @@ Changing either value affects more than visual sharpness. Deeper traversal can i
 
 The following `Tile3D` properties are useful when diagnosing selection:
 
-- `tile.lodMetricValue`: world-space geometric error for 3D Tiles after transform scaling.
+- `tile.lodMetricValue`: world-space error after transform scaling for 3D Tiles 1.x, or unscaled error for the experimental 2.0 profile.
 - `tile.distanceToCamera`: distance used by perspective SSE.
 - `tile.screenSpaceError`: most recently calculated SSE.
 - `tile.selected`: whether the tile was selected for the current traversal frame.

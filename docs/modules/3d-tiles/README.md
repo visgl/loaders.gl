@@ -30,8 +30,11 @@ The `@loaders.gl/3d-tiles` module supports loading and traversing 3D Tiles 1.x a
 subset of the draft glTF-based 3D Tiles 2.0 representation. Draft resources are detected from
 their structure, so `.gltf`, `.glb`, signed, and extensionless URLs use the same loader entry point.
 
-Start with the [experimental 3D Tiles 2.0 profile](/docs/modules/3d-tiles/concepts/3d-tiles-2-0-experimental)
-to see the supported hierarchy, implicit tiling, CRS, vector-topology, and renderer-boundary behavior.
+The 5.0 development line brings a substantially richer runtime: ordered multi-content tiles,
+lazy implicit subtrees, transform-aware LOD, request prioritization, decoded metadata, and public
+renderer-neutral content contracts. These capabilities are available without adopting a particular
+renderer. The [experimental 3D Tiles 2.0 profile](/docs/modules/3d-tiles/concepts/3d-tiles-2-0-experimental)
+adds draft hierarchy, spatial, package, and vector-topology support with explicit compatibility limits.
 
 See the [3D Tiles format compatibility matrix](/docs/modules/3d-tiles/formats/3d-tiles) for a capability-by-capability
 summary of parser, traversal, extension, and renderer-facing support. The [styling and feature access guide](/docs/modules/3d-tiles/concepts/styling-and-feature-access) documents renderer-neutral property inputs without claiming style-expression or GPU support.
@@ -53,6 +56,21 @@ summary of parser, traversal, extension, and renderer-facing support. The [styli
 
 - [3D Tiles Specification](https://github.com/AnalyticalGraphicsInc/3d-tiles) - The living specification.
 - [3D Tiles Standard](https://www.opengeospatial.org/standards/3DTiles) - The official standard from [OGC](https://www.opengeospatial.org/), the Open Geospatial Consortium.
+
+## What's available in 5.0
+
+| Area | Landed capability | Learn more |
+| --- | --- | --- |
+| Content | Single and ordered multiple contents, nested tilesets, composites, archives, and structure-first resource detection. | [Content contracts](/docs/modules/3d-tiles/concepts/renderer-contracts-and-metadata) |
+| Hierarchy | Lazy QUADTREE/OCTREE subtrees, sparse availability, multiple content streams, and S2 descendants. | [Implicit tiling](/docs/modules/3d-tiles/concepts/implicit-tiling-and-subtrees) |
+| Selection | Transform-scaled 1.x geometric error, logical-pixel perspective/orthographic SSE, ADD/REPLACE and skip-LOD traversal. | [SSE and LOD](/docs/modules/3d-tiles/concepts/screen-space-error-and-lod) |
+| Requests and memory | Viewer-request-volume gating, progressive/foveated priority, cancellation, byte-based caching, and traversal snapshots. | [Scheduling](/docs/modules/3d-tiles/concepts/request-scheduling-and-priorities), [observability](/docs/modules/3d-tiles/concepts/observability-and-benchmarks) |
+| Metadata and features | Decoded property-table columns, default/noData-aware rows, hierarchy-aware batch-table access, feature-ID declarations, and style-input snapshots. | [Styling and feature access](/docs/modules/3d-tiles/concepts/styling-and-feature-access) |
+| Spatial data | Transformed content bounds, union/indexed render culling, CRS/epoch discovery, nonlinear reprojection, and nested CRS placement. | [Coordinate reference systems](/docs/modules/3d-tiles/concepts/coordinate-reference-systems) |
+| New payloads | Gaussian primitive descriptors, SPZ v2/v3/v4 decoding, an optional embedded SPZ2 decoder hook, vector topology, and metadata-first voxel descriptors. | [Extension contracts](/docs/modules/3d-tiles/concepts/gaussian-vector-voxel-extensions) |
+
+These are loader/runtime capabilities, not a claim of complete Cesium renderer parity. Consult the
+[format matrix](/docs/modules/3d-tiles/formats/3d-tiles) for partial support and experimental boundaries.
 
 ## Installation
 
@@ -85,6 +103,10 @@ The [3D Tiles runtime concepts suite](/docs/modules/3d-tiles/concepts) explains 
 - [Runtime tuning and diagnostics](/docs/modules/3d-tiles/concepts/runtime-tuning-and-diagnostics)
 - [Runtime observability and benchmark baselines](/docs/modules/3d-tiles/concepts/observability-and-benchmarks)
 - [Styling and feature access](/docs/modules/3d-tiles/concepts/styling-and-feature-access)
+- [Renderer contracts and metadata](/docs/modules/3d-tiles/concepts/renderer-contracts-and-metadata)
+- [Gaussian, vector, and voxel extensions](/docs/modules/3d-tiles/concepts/gaussian-vector-voxel-extensions)
+- [Coordinate reference systems](/docs/modules/3d-tiles/concepts/coordinate-reference-systems)
+- [Correctness and conformance](/docs/modules/3d-tiles/concepts/correctness-and-conformance)
 
 <ReferenceBoundary
   title="Module APIs and runtime concepts"
@@ -97,11 +119,12 @@ The [3D Tiles runtime concepts suite](/docs/modules/3d-tiles/concepts) explains 
 Basic API usage is illustrated in the following snippet. Load the tileset header, create a `Tileset3D` instance, and keep selecting tiles as the camera moves:
 
 ```typescript
+import {coreApi} from '@loaders.gl/core';
 import {Tiles3DLoader} from '@loaders.gl/3d-tiles';
 import {Tiles3DSource, Tileset3D} from '@loaders.gl/tiles';
 
 const tilesetUrl = 'https://example.com/tileset.json';
-const source = new Tiles3DSource({url: tilesetUrl, loader: Tiles3DLoader});
+const source = new Tiles3DSource({url: tilesetUrl, loader: Tiles3DLoader, coreApi});
 
 const tileset = new Tileset3D(source, {
   onTileLoad: (tile) => console.log(tile)
@@ -118,13 +141,17 @@ const visibleTiles = tileset.tiles.filter((tile) => tile.selected);
 // Visible tiles may change while content continues loading.
 ```
 
-## Remarks
+## Compatibility boundaries
 
-`@loaders.gl/3d-tiles` does not yet support the full 3D tiles standard. Notable omissions are:
+Region bounding volumes and viewer request volumes are supported. Tile volumes govern hierarchy
+traversal; per-content volumes and optional clipping planes govern render visibility. Request
+volumes gate requests and are not a replacement for either kind of culling.
 
-- [Region bounding volumes](https://github.com/AnalyticalGraphicsInc/3d-tiles/tree/master/specification#bounding-volume) are supported but not optimally
-- [Styling](https://github.com/AnalyticalGraphicsInc/3d-tiles/tree/master/specification/Styling) is not yet supported
-- [Viewer request volumes](https://github.com/AnalyticalGraphicsInc/3d-tiles/tree/master/specification#viewer-request-volume) are not yet supported
+Metadata decoding and style-input helpers do not evaluate a styling language or implement picking.
+GPU upload, draw policy, splat sorting, vector triangulation, and voxel ray marching belong to
+consumers. Voxel support is descriptor-only, and the SPZ2 bridge requires an application-supplied
+decoder. Draft 2.0 support is a tested subset, not full draft conformance. No native IFC, STEP, or
+DWG parser is included.
 
 ## Attribution
 
