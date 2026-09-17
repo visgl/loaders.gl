@@ -3,11 +3,10 @@ import {parse} from '@loaders.gl/core';
 import {validateArrowTableSchema} from '@loaders.gl/arrow';
 import {meshArrowSchema} from '@loaders.gl/schema';
 import {PotreeBinLoader} from '@loaders.gl/potree';
-test('PotreeBinLoader#parse(shape: arrow-table)', async () => {
+test('PotreeBinLoader#parse defaults to Arrow table', async () => {
   const arrayBuffer = makePotreeBinTile();
   const table = await parse(arrayBuffer, PotreeBinLoader, {
     potree: {
-      shape: 'arrow-table',
       pointAttributes: ['POSITION_CARTESIAN', 'RGB_PACKED'],
       scale: 0.01,
       positionOrigin: [10, 20, 30],

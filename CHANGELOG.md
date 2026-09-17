@@ -2,6 +2,8 @@
 
 ## v5.0
 
+- feat(arrow): make GeoJSON, MVT sources, PLY, Draco, Potree, Terrain, and Quantized Mesh loaders Arrow-primary by default; retain legacy shapes through explicit options
+
 ### v5.0.0-alpha.6
 
 - feat(gltf): decode draft vector-topology extensions and support JSON-only GLB v2 files

@@ -47,7 +47,7 @@ The `MVTSourceLoader` dynamically loads tiles, typically from big pre-tiled hier
 | File Extension | `.mvt` `.tilejson`                                   |
 | File Type      | Binary Archive                                       |
 | File Format    | [Mapbox Vector Tiles](/docs/modules/mvt/formats/mvt) |
-| Data Format    | GeoJSON                                              |
+| Data Format    | GeoArrow-compatible Arrow table                      |
 
 ## Usage
 
@@ -58,6 +58,9 @@ import {MVTSourceLoader} from '@loaders.gl/mvt';
 const source = createDataSource(url, [MVTSourceLoader]);
 const tile = await source.getTile(...);
 ```
+
+Vector tiles returned by `MVTSourceLoader` are Arrow tables by default, matching `MVTLoader`'s
+columnar path. Set `mvt.shape: 'geojson-table'` explicitly when object-row GeoJSON output is needed.
 
 ## Authentication
 
@@ -71,6 +74,7 @@ TileJSON URL or template take precedence. See the
 | Option                    | Type      | Default | Description                                                                                                                          |
 | ------------------------- | --------- | ------- | ------------------------------------------------------------------------------------------------------------------------------------ |
 | `mvt.ignoreTextResponses` | `boolean` | `false` | If enabled, reports successful responses with text, JSON, or XML MIME types through `core.onError` and returns `null` for those tiles. |
+| `mvt.shape` | `string` | `'arrow-table'` | Output shape for fetched vector tiles. Set `'geojson-table'` for object-row features. |
 
 ## Empty Tiles and Error Responses
 

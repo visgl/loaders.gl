@@ -8,6 +8,10 @@ import type {MeshArrowTable} from '@loaders.gl/schema';
 import type {PLYMesh} from './lib/ply-types';
 import type {ParsePLYOptions} from './lib/parse-ply';
 import {PLYFormat} from './ply-format';
+import {
+  deserializeArrowWorkerResult,
+  serializeArrowWorkerResult
+} from '@loaders.gl/arrow/transport';
 
 // __VERSION__ is injected by babel-plugin-version-inline
 // @ts-ignore TS2304: Cannot find name '__VERSION__'.
@@ -15,7 +19,7 @@ const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : 'latest';
 
 export type PLYLoaderOptions = LoaderOptions & {
   ply?: ParsePLYOptions & {
-    /** Output shape. Defaults to a legacy Mesh object. */
+    /** Output shape. Defaults to a Mesh Arrow table. */
     shape?: 'mesh' | 'arrow-table';
     /** Treat PLY data as a point cloud by reading only the leading vertex element. */
     pointCloud?: boolean;
@@ -45,8 +49,10 @@ export const PLYWorkerLoader = {
   // shapes: ['mesh', 'gltf', 'columnar-table'],
   version: VERSION,
   worker: true,
+  serializeWorkerResult: serializeArrowWorkerResult,
+  deserializeWorkerResult: deserializeArrowWorkerResult,
   options: {
-    ply: {}
+    ply: {shape: 'arrow-table'}
   },
   preload
 } as const satisfies Loader<PLYMesh | MeshArrowTable, never, LoaderOptions>;

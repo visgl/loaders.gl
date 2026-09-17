@@ -6,7 +6,7 @@ This module contains loaders for the PLY format.
 
 ## Gaussian splats
 
-Gaussian Splat PLY files can be parsed as Arrow tables by opting in to the `arrow-table` shape:
+PLY files now parse as Arrow tables by default. Gaussian Splat PLY files can use the same path:
 
 ```ts
 import {parse} from '@loaders.gl/core';
@@ -28,7 +28,6 @@ GraphDECO-style Gaussian Splat PLY files are identified with
 conventions such as `loaders_gl.gaussian_splats.encoding: log` for `scale_*` columns and
 `loaders_gl.gaussian_splats.encoding: logit` for `opacity`.
 
-The default PLY behavior remains unchanged. Without `shape: 'arrow-table'`, the loader returns
-mesh/point-cloud data.
+Set `ply.shape: 'mesh'` explicitly when legacy mesh/point-cloud data is required.
 
 For documentation please visit the [website](https://loaders.gl).

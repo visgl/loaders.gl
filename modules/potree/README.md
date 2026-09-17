@@ -2,6 +2,9 @@
 
 This module contains loaders for the [potree](https://github.com/potree/potree) format.
 
+`PotreeBinLoader` returns a Mesh Arrow table by default. Set `potree.shape: 'mesh'` when a legacy
+Mesh/PointCloud object is required.
+
 `PotreeNodesSource.scan()` executes portable point-cloud queries with hierarchy bounds and
 level-of-detail pruning, residual predicates, projection, global limits, cancellation, and bounded
 Arrow batches. Potree attributes including positions, colors, intensity, classification, and

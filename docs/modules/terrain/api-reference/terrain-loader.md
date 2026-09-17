@@ -40,7 +40,7 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
   tone="orange"
 />
 
-`TerrainLoader` reconstructs mesh surfaces from height map images, e.g. [Mapzen Terrain Tiles](https://github.com/tilezen/joerd/blob/master/docs/formats.md), which encodes elevation into R,G,B values. It returns the legacy [Mesh](/docs/specifications/category-mesh) object by default and can return a [Mesh Arrow table](/docs/specifications/category-mesh#mesh-arrow-tables) with `terrain.shape: 'arrow-table'`.
+`TerrainLoader` reconstructs mesh surfaces from height map images, e.g. [Mapzen Terrain Tiles](https://github.com/tilezen/joerd/blob/master/docs/formats.md), which encodes elevation into R,G,B values. It returns a [Mesh Arrow table](/docs/specifications/category-mesh#mesh-arrow-tables) by default. Set `terrain.shape: 'mesh'` for the legacy [Mesh](/docs/specifications/category-mesh) object.
 
 | Shape         | Output             | Use when                           |
 | ------------- | ------------------ | ---------------------------------- |
@@ -81,7 +81,7 @@ const table = await load(url, TerrainLoader, {
 | `terrain.bounds`           | `array<number>` | `null`    | Bounds of the image to fit x,y coordinates into. In `[minX, minY, maxX, maxY]`. If not supplied, x and y are in pixels relative to the image. |
 | `terrain.elevationDecoder` | `object`        | See below | See below                                                                                                                                     |
 | `terrain.tesselator`       | `string`        | `auto`    | See below                                                                                                                                     |
-| `terrain.shape`            | `string`        | `mesh`    | Output shape: `'mesh'` or `'arrow-table'`.                                                                                                     |
+| `terrain.shape`            | `string`        | `arrow-table` | Output shape: `'arrow-table'` or `'mesh'`.                                                                                                  |
 | `terrain.skirtHeight`      | `number`        | `null`    | If set, create the skirt for the tile with particular height in meters                                                                        |
 
 ### elevationDecoder

@@ -69,6 +69,21 @@ test('TerrainLoader#parse terrarium martini with shape: arrow-table', async () =
   expect(indicesColumn.get(0).length, 'indices were found in row 0').toBe(11188 * 3);
   expect(indicesColumn.get(1), 'indices are null after row 0').toBe(null);
 });
+test('TerrainLoader#parse defaults to Arrow table', async () => {
+  const table = await load(TERRARIUM_TERRAIN_PNG_URL, TerrainLoader, {
+    worker: false,
+    terrain: {
+      elevationDecoder: {rScaler: 256, gScaler: 1, bScaler: 1 / 256, offset: -32768},
+      meshMaxError: 10.0,
+      bounds: [83, 329.5, 83.125, 329.625],
+      tesselator: 'martini'
+    }
+  });
+  expect(table.shape, 'table has arrow-table shape').toBe('arrow-table');
+  validateArrowTableSchema(table.data, indexedMeshArrowSchema, {
+    schemaName: 'TerrainLoader IndexedMesh table'
+  });
+});
 test('QuantizedMeshLoader#parse tile-with-extensions with shape: arrow-table', async () => {
   const table = await load(TILE_WITH_EXTENSIONS_URL, QuantizedMeshLoader, {
     worker: false,
@@ -85,6 +100,14 @@ test('QuantizedMeshLoader#parse tile-with-extensions with shape: arrow-table', a
   expect(indicesColumn, 'indices column was found').toBeTruthy();
   expect(indicesColumn.get(0).length, 'indices were found in row 0').toBe(1175 * 3);
   expect(indicesColumn.get(1), 'indices are null after row 0').toBe(null);
+});
+test('QuantizedMeshLoader#parse defaults to Arrow table', async () => {
+  const table = await load(TILE_WITH_EXTENSIONS_URL, QuantizedMeshLoader, {worker: false});
+  expect(table.shape, 'table has arrow-table shape').toBe('arrow-table');
+  validateArrowTableSchema(table.data, indexedMeshArrowSchema, {
+    schemaName: 'QuantizedMeshLoader IndexedMesh table'
+  });
+  expect(getArrowTableRowCount(table), 'table has one row per vertex').toBe(627);
 });
 function getArrowTableRowCount(table) {
   const positionColumn =

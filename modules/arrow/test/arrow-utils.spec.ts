@@ -512,6 +512,24 @@ test('ArrowUtils#transport subpath exports Arrow table transport utilities', () 
   expect(arrowTransport.splitArrowTableBuffers, 'exports splitArrowTableBuffers').toBe(
     splitArrowTableBuffers
   );
+  expect(arrowTransport.serializeArrowWorkerResult, 'exports worker result serializer').toBeTypeOf(
+    'function'
+  );
+  expect(
+    arrowTransport.deserializeArrowWorkerResult,
+    'exports worker result deserializer'
+  ).toBeTypeOf('function');
+});
+test('ArrowUtils#worker transport round trips Arrow table wrappers', () => {
+  const table = createFloat64Table(new Float64Array([4, 5, 6]));
+  const wrapper = {shape: 'arrow-table' as const, data: table};
+  const serialized = arrowTransport.serializeArrowWorkerResult(wrapper);
+  const hydrated = arrowTransport.deserializeArrowWorkerResult(structuredClone(serialized));
+  expect((serialized as any).data.transport, 'uses Arrow JS transport').toBe('arrow-js');
+  expect((hydrated as any).data instanceof arrow.Table, 'hydrates an Arrow table').toBeTruthy();
+  expect(Array.from((hydrated as any).data.getChild('value') ?? []), 'preserves values').toEqual([
+    4, 5, 6
+  ]);
 });
 test('ArrowUtils#transport subpath round trips Arrow JS payloads', () => {
   const table = createFloat64Table(new Float64Array([1, 2, 3]));

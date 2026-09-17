@@ -4,6 +4,9 @@
 
 This module reconstructs mesh surfaces from height map images, e.g. [Mapzen Terrain Tiles](https://github.com/tilezen/joerd/blob/master/docs/formats.md), which encodes elevation into R,G,B values.
 
+`TerrainLoader` and `QuantizedMeshLoader` return Mesh Arrow tables by default. Set the relevant
+`shape: 'mesh'` option when legacy Mesh objects are required.
+
 For documentation please visit the [website](https://loaders.gl).
 
 `@loaders.gl/terrain` uses [MARTINI](https://github.com/mapbox/martini) for mesh reconstruction.

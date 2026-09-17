@@ -5,6 +5,10 @@
 import type {Loader, LoaderOptions} from '@loaders.gl/loader-utils';
 import type {Mesh, MeshArrowTable} from '@loaders.gl/schema';
 import {OBJFormat} from './obj-format';
+import {
+  deserializeArrowWorkerResult,
+  serializeArrowWorkerResult
+} from '@loaders.gl/arrow/transport';
 
 // __VERSION__ is injected by babel-plugin-version-inline
 // @ts-ignore TS2304: Cannot find name '__VERSION__'.
@@ -39,6 +43,8 @@ export const OBJWorkerLoader = {
   batchType: null as never,
   version: VERSION,
   worker: true,
+  serializeWorkerResult: serializeArrowWorkerResult,
+  deserializeWorkerResult: deserializeArrowWorkerResult,
   text: true,
   testText: testOBJFile,
   options: {

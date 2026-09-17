@@ -12,6 +12,7 @@ import type {Loader, LoaderOptions} from '@loaders.gl/loader-utils';
 import type {GeoArrowEncodingPreference} from '@loaders.gl/schema';
 import type {Proj4CRSDefinition} from '@math.gl/proj4';
 import {FlatGeobufFormat} from './flatgeobuf-format';
+import {deserializeArrowWorkerResult, serializeArrowWorkerResult} from '@loaders.gl/arrow/transport';
 
 // __VERSION__ is injected by babel-plugin-version-inline
 // @ts-ignore TS2304: Cannot find name '__VERSION__'.
@@ -51,6 +52,8 @@ export const FlatGeobufWorkerLoader = {
   batchType: null as any,
   version: VERSION,
   worker: true,
+  serializeWorkerResult: serializeArrowWorkerResult,
+  deserializeWorkerResult: deserializeArrowWorkerResult,
   tests: [new Uint8Array(FGB_MAGIC_NUMBER).buffer],
   options: {
     flatgeobuf: {

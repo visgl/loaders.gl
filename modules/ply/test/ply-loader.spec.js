@@ -63,10 +63,17 @@ test('PLYLoader#loader conformance', () => {
   validateLoader(PLYLoader, 'PLYLoader');
   validateLoader(PLYWorkerLoader, 'PLYWorkerLoader');
 });
-test('PLYLoader#parse(textFile)', async () => {
-  const data = await parse(fetchFile(PLY_CUBE_ATT_URL), PLYLoader, {});
+test('PLYLoader#parse(textFile, legacy mesh shape)', async () => {
+  const data = await parse(fetchFile(PLY_CUBE_ATT_URL), PLYLoader, {ply: {shape: 'mesh'}});
   validateMeshCategoryData(data);
   validateTextPLY(data);
+});
+test('PLYLoader#parse(textFile) defaults to Arrow table', async () => {
+  const table = await parse(fetchFile(PLY_CUBE_ATT_URL), PLYLoader);
+  expect(table.shape, 'table has arrow-table shape').toBe('arrow-table');
+  validateArrowTableSchema(table.data, indexedMeshArrowSchema, {
+    schemaName: 'PLYLoader IndexedMesh table'
+  });
 });
 test('PLYLoader#parse(shape: arrow-table)', async () => {
   const table = await parse(fetchFile(PLY_CUBE_ATT_URL), PLYLoader, {
@@ -122,13 +129,14 @@ test('PLYLoader#parse(raw element tables preserve list properties)', async () =>
   ).toBe(6);
 });
 test('PLYLoader#parse(binary)', async () => {
-  const data = await parse(fetchFile(PLY_BUN_BINARY_URL), PLYLoader);
+  const data = await parse(fetchFile(PLY_BUN_BINARY_URL), PLYLoader, {ply: {shape: 'mesh'}});
   validateMeshCategoryData(data);
   expect(data.attributes.POSITION.value.length, 'POSITION attribute was found').toBe(104502);
 });
 test('PLYLoader#parse(ascii)', async () => {
   const data = await parse(fetchFile(PLY_BUN_ZIPPER_URL), PLYLoader, {
-    core: {worker: false}
+    core: {worker: false},
+    ply: {shape: 'mesh'}
   });
   validateMeshCategoryData(data);
   expect(data.attributes.POSITION.value.length, 'POSITION attribute was found').toBe(107841);
@@ -327,9 +335,9 @@ test('PLYLoader#parseInBatches(binary vertex list properties, arrow-table)', asy
 test('PLYLoader#parse(arrow-first mesh parity with legacy parser)', async () => {
   const response = await fetchFile(PLY_CUBE_ATT_URL);
   const arrayBuffer = await response.arrayBuffer();
-  const arrowFirstMesh = parseSync(arrayBuffer, PLYLoader);
+  const arrowFirstMesh = parseSync(arrayBuffer, PLYLoader, {ply: {shape: 'mesh'}});
   const legacyMesh = parseSync(arrayBuffer, PLYLoader, {
-    ply: {_useLegacyParser: true}
+    ply: {_useLegacyParser: true, shape: 'mesh'}
   });
   expect(
     Array.from(arrowFirstMesh.attributes.POSITION.value),
@@ -390,7 +398,7 @@ function makeBinaryVertexListPLY() {
 }
 test('PLYLoader#parseSync(binary)', async () => {
   const arrayBuffer = await fetchFile(PLY_BUN_ZIPPER_URL).then(res => res.arrayBuffer());
-  const data = parseSync(arrayBuffer, PLYLoader);
+  const data = parseSync(arrayBuffer, PLYLoader, {ply: {shape: 'mesh'}});
   validateMeshCategoryData(data);
   expect(data.attributes.POSITION.value.length, 'POSITION attribute was found').toBe(107841);
   expect(data.attributes.confidence.value.length, 'confidence attribute was found').toBe(35947);
@@ -401,14 +409,16 @@ test('PLYLoader#parse(WORKER)', async () => {
     console.log('Worker is not usable in non-browser environments');
     return;
   }
-  const data = await load(PLY_BUN_ZIPPER_URL, PLYWorkerLoader);
+  const data = await load(PLY_BUN_ZIPPER_URL, PLYWorkerLoader, {ply: {shape: 'mesh'}});
   validateMeshCategoryData(data);
   expect(data.attributes.POSITION.value.length, 'POSITION attribute was found').toBe(107841);
 });
 // TODO - Update to use parseInBatches
 test('PLYLoader#parseInBatches(text)', async () => {
   const response = await fetchFile(PLY_CUBE_ATT_URL);
-  const batches = await parseInBatches(makeIterator(response), PLYLoader);
+  const batches = await parseInBatches(makeIterator(response), PLYLoader, {
+    ply: {shape: 'mesh'}
+  });
   for await (const data of batches) {
     validateMeshCategoryData(data);
     expect(data.indices.value.length, 'Indices found').toBe(36);

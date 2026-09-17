@@ -25,7 +25,8 @@ test('TerrainLoader#parse mapbox martini', async () => {
       },
       meshMaxError: 5.0,
       bounds: [83, 329.5, 83.125, 329.625], // note: not the real tile bounds
-      tesselator: 'martini'
+      tesselator: 'martini',
+      shape: 'mesh'
     },
     core: {worker: false}
   });
@@ -50,7 +51,8 @@ test('TerrainLoader#add skirt to mapbox martini', async () => {
       meshMaxError: 5.0,
       bounds: [83, 329.5, 83.125, 329.625], // note: not the real tile bounds
       tesselator: 'martini',
-      skirtHeight: 50
+      skirtHeight: 50,
+      shape: 'mesh'
     }
   });
   expect(data.indices.value.length, 'indices was found').toBe(105434 * 3);
@@ -68,7 +70,8 @@ test('TerrainLoader#parse terrarium martini', async () => {
       },
       meshMaxError: 10.0,
       bounds: [83, 329.5, 83.125, 329.625], // note: not the real tile bounds
-      tesselator: 'martini'
+      tesselator: 'martini',
+      shape: 'mesh'
     }
   });
   validateMeshCategoryData(data); // TODO: should there be a validateMeshCategoryData?
@@ -91,7 +94,8 @@ test('TerrainLoader#parse mapbox delatin', async () => {
       },
       meshMaxError: 5.0,
       bounds: [83, 329.5, 83.125, 329.625], // note: not the real tile bounds
-      tesselator: 'delatin'
+      tesselator: 'delatin',
+      shape: 'mesh'
     }
   });
   validateMeshCategoryData(data); // TODO: should there be a validateMeshCategoryData?
@@ -115,7 +119,8 @@ test('TerrainLoader#add skirt to mapbox delatin', async () => {
       meshMaxError: 5.0,
       bounds: [83, 329.5, 83.125, 329.625], // note: not the real tile bounds
       tesselator: 'delatin',
-      skirtHeight: 50
+      skirtHeight: 50,
+      shape: 'mesh'
     }
   });
   expect(data.indices.value.length, 'indices was found').toBe(90943 * 3);
@@ -133,7 +138,8 @@ test('TerrainLoader#parse terrarium delatin', async () => {
       },
       meshMaxError: 10.0,
       bounds: [83, 329.5, 83.125, 329.625], // note: not the real tile bounds
-      tesselator: 'delatin'
+      tesselator: 'delatin',
+      shape: 'mesh'
     }
   });
   validateMeshCategoryData(data); // TODO: should there be a validateMeshCategoryData?
@@ -160,7 +166,8 @@ test('TerrainWorkerLoader#parse terrarium martini', async () => {
       },
       meshMaxError: 10.0,
       bounds: [83, 329.5, 83.125, 329.625], // note: not the real tile bounds
-      tesselator: 'martini'
+      tesselator: 'martini',
+      shape: 'mesh'
     }
   });
   validateMeshCategoryData(data); // TODO: should there be a validateMeshCategoryData?
@@ -187,7 +194,8 @@ test('TerrainWorkerLoader#parse terrarium delatin', async () => {
       },
       meshMaxError: 10.0,
       bounds: [83, 329.5, 83.125, 329.625], // note: not the real tile bounds
-      tesselator: 'delatin'
+      tesselator: 'delatin',
+      shape: 'mesh'
     }
   });
   validateMeshCategoryData(data); // TODO: should there be a validateMeshCategoryData?

@@ -9,6 +9,10 @@ import {VERSION} from './lib/utils/version';
 
 import type {TerrainOptions} from './lib/parse-terrain';
 import {TerrainFormat} from './terrain-format';
+import {
+  deserializeArrowWorkerResult,
+  serializeArrowWorkerResult
+} from '@loaders.gl/arrow/transport';
 
 /** TerrainLoader options */
 export type TerrainLoaderOptions = ImageBitmapLoaderOptions & {
@@ -31,11 +35,14 @@ export const TerrainLoader = {
   ...TerrainFormat,
   version: VERSION,
   worker: true,
+  serializeWorkerResult: serializeArrowWorkerResult,
+  deserializeWorkerResult: deserializeArrowWorkerResult,
   /** Loads the parser-bearing terrain loader implementation. */
   preload: async () => (await import('./terrain-loader-with-parser')).TerrainLoaderWithParser,
   options: {
     terrain: {
       tesselator: 'auto',
+      shape: 'arrow-table',
       bounds: undefined!,
       meshMaxError: 10,
       elevationDecoder: {

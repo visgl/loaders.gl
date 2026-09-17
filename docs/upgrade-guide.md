@@ -102,6 +102,18 @@ See [Caching and memory](/docs/modules/3d-tiles/concepts/caching-and-memory) for
    default. Applications that expect the previous GeoJSON table default must set
    `mlt.shape: 'geojson-table'` explicitly. `binary-geometry` remains available as an explicit shape.
 
+**@loaders.gl/mvt**
+
+ - `MVTSourceLoader` now returns tiles in the Arrow-table shape by default, matching the source's
+   columnar query path. Set `mvt.shape: 'geojson-table'` explicitly for object-row GeoJSON tiles.
+
+**@loaders.gl/draco, @loaders.gl/potree, and @loaders.gl/terrain**
+
+ - `DracoLoader`, `PotreeBinLoader`, `TerrainLoader`, and `QuantizedMeshLoader` now return Mesh
+   Arrow tables by default. Set the corresponding loader option to `shape: 'mesh'` to preserve
+   the legacy Mesh object shape. Arrow results stay on the calling thread when worker execution
+   would strip Arrow table methods.
+
 **@loaders.gl/pmtiles**
 
  - PMTiles v3 archives with MapLibre Tile (MLT) payloads are supported through `@loaders.gl/mlt`.
@@ -296,14 +308,14 @@ This unifies top-level loading behavior:
 **@loaders.gl/json**
 
 - The underscored GeoJSON exports have been removed. Replace `_GeoJSONLoader`, `_GeoJSONWorkerLoader`, and `_GeoJSONWriter` with `GeoJSONLoader`, `GeoJSONWorkerLoader`, and `GeoJSONWriter`.
-- `GeoJSONLoader` no longer uses `options.gis.format`. Select output with `options.geojson.shape`: use `'geojson-table'` for the default feature table, `'binary-feature-collection'` for deck.gl-style binary features, or `'arrow-table'` for GeoArrow WKB output.
+- `GeoJSONLoader` now returns a GeoArrow-compatible Arrow table by default. Set `options.geojson.shape: 'geojson-table'` for the previous object-row feature table, or use `'binary-feature-collection'` for deck.gl-style binary features.
 - `JSONLoader` remains the arbitrary JSON document loader. Use `JSONTableLoader` for table-only JSON workflows and for `json.shape: 'arrow-table'`.
 - `JSONTableLoader` and `NDJSONLoader` no longer perform GeoJSON-specific Arrow conversion. Use `GeoJSONLoader` with `geojson.shape: 'arrow-table'` when GeoJSON features should become property columns plus a GeoArrow WKB `geometry` column.
 - `JSONTableLoader` and `NDJSONLoader` support strict schema-aware Arrow conversion through `json.schema`, `ndjson.schema`, `json.arrowConversion`, and `ndjson.arrowConversion`. These options require `shape: 'arrow-table'`.
 
 **@loaders.gl/ply, @loaders.gl/splats, and @loaders.gl/deck-layers**
 
-- Gaussian splat support is new and opt-in. Use `PLYLoader` with `ply.shape: 'arrow-table'`, or `SPLATLoader` / `KSPLATLoader` from `@loaders.gl/splats`, then pass the returned Mesh Arrow table to `SplatLayer`.
+- `PLYLoader` now returns a Mesh Arrow table by default. Set `ply.shape: 'mesh'` for the legacy Mesh object. `SPLATLoader` / `KSPLATLoader` also consume the Mesh Arrow path.
 - `SplatLayer`'s WebGPU path is experimental. It supports GPU projection, culling, binning, tile sorting, and oriented covariance rendering, but WebGPU picking is disabled in this initial implementation.
 - The CPU/WebGL fallback remains circular-billboard based. Applications that need the oriented Gaussian renderer should request `renderMode: 'gpu'` and handle the clear error raised when the current deck.gl device is not WebGPU.
 

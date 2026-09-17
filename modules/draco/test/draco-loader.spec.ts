@@ -17,7 +17,8 @@ test('DracoLoader#parse(mainthread)', async () => {
     return;
   }
   const data = await load(BUNNY_DRC_URL, DracoLoader, {
-    core: {worker: false}
+    core: {worker: false},
+    draco: {shape: 'mesh'}
   });
   validateMeshCategoryData(data);
   expect(data.attributes.POSITION.value.length, 'POSITION attribute was found').toBe(104502);
@@ -29,6 +30,7 @@ test('DracoLoader#draco3d npm package', async () => {
   }
   const data = await load(BUNNY_DRC_URL, DracoLoader, {
     core: {worker: false},
+    draco: {shape: 'mesh'},
     modules: {draco3d}
   });
   validateMeshCategoryData(data);
@@ -38,7 +40,7 @@ test('DracoLoader#JavaScript fallback decoder', async () => {
   const data = await load(BUNNY_DRC_URL, DracoLoader, {
     core: {worker: false},
     useLocalLibraries: true,
-    draco: {backend: 'javascript'}
+    draco: {backend: 'javascript', shape: 'mesh'}
   });
   validateMeshCategoryData(data);
   expect(data.attributes.POSITION.value.length, 'POSITION attribute was found').toBe(104502);
@@ -48,7 +50,8 @@ test('DracoLoader#parse custom attributes(mainthread)', async () => {
     return;
   }
   let data = await load(CESIUM_TILE_URL, DracoLoader, {
-    core: {worker: false}
+    core: {worker: false},
+    draco: {shape: 'mesh'}
   });
   expect(
     data.attributes.CUSTOM_ATTRIBUTE_2.value.length,
@@ -61,6 +64,7 @@ test('DracoLoader#parse custom attributes(mainthread)', async () => {
   data = await load(CESIUM_TILE_URL, DracoLoader, {
     core: {worker: false},
     draco: {
+      shape: 'mesh',
       extraAttributes: {
         Intensity: 2,
         Classification: 3
@@ -83,7 +87,10 @@ function skipBrowserDracoWasmTest() {
   return false;
 }
 test('DracoWorkerLoader#parse', async () => {
-  const data = await load(BUNNY_DRC_URL, DracoWorkerLoader, {_nodeWorkers: true});
+  const data = await load(BUNNY_DRC_URL, DracoWorkerLoader, {
+    _nodeWorkers: true,
+    draco: {shape: 'mesh'}
+  });
   validateMeshCategoryData(data);
   expect(data.attributes.POSITION.value.length, 'POSITION attribute was found').toBe(104502);
 });

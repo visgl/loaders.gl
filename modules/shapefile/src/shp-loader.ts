@@ -6,6 +6,10 @@ import type {Loader, StrictLoaderOptions} from '@loaders.gl/loader-utils';
 import type {ArrowTable, ArrowTableBatch, GeoArrowEncodingPreference} from '@loaders.gl/schema';
 import type {SHPGeoArrowEncoding} from './lib/parsers/types';
 import {SHPFormat} from './shp-format';
+import {
+  deserializeArrowWorkerResult,
+  serializeArrowWorkerResult
+} from '@loaders.gl/arrow/transport';
 
 // __VERSION__ is injected by babel-plugin-version-inline
 // @ts-ignore TS2304: Cannot find name '__VERSION__'.
@@ -43,6 +47,8 @@ export const SHPWorkerLoader = {
   ...SHPFormat,
   version: VERSION,
   worker: true,
+  serializeWorkerResult: serializeArrowWorkerResult,
+  deserializeWorkerResult: deserializeArrowWorkerResult,
   options: {
     shp: {
       _maxDimensions: 4

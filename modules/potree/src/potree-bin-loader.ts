@@ -31,6 +31,6 @@ export const PotreeBinLoader = {
   /** Loads the parser-bearing potree binary attribute loader implementation. */
   preload: async () => (await import('./potree-bin-loader-with-parser')).PotreeBinLoaderWithParser,
   binary: true,
-  options: {}
+  options: {potree: {shape: 'arrow-table'}}
   // @ts-ignore
 } as const satisfies Loader<Mesh | MeshArrowTable, never, PotreeBinLoaderOptions>;

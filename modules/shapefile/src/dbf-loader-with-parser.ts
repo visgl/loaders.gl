@@ -5,6 +5,10 @@
 import type {Loader, LoaderWithParser, StrictLoaderOptions} from '@loaders.gl/loader-utils';
 import type {ArrowTable, ArrowTableBatch, ObjectRowTable} from '@loaders.gl/schema';
 import {
+  deserializeArrowWorkerResult,
+  serializeArrowWorkerResult
+} from '@loaders.gl/arrow/transport';
+import {
   parseDBF as parseDBFToObjectRows,
   parseDBFInBatches as parseDBFToObjectRowsInBatches
 } from './lib/parsers/parse-dbf';
@@ -61,7 +65,9 @@ export const DBFLoaderWithParser: LoaderWithParser<
     return getDBFShape(options) === 'arrow-table'
       ? parseDBFToArrowInBatches(arrayBufferIterator, options)
       : parseDBFToObjectRowsInBatches(arrayBufferIterator, options);
-  }
+  },
+  serializeWorkerBatch: serializeArrowWorkerResult,
+  deserializeWorkerBatch: deserializeArrowWorkerResult
 };
 
 function getDBFShape(options?: DBFLoaderOptions): NonNullable<DBFLoaderOptions['dbf']>['shape'] {

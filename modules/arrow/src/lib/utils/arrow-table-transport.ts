@@ -13,6 +13,17 @@ import {
 } from '@loaders.gl/schema-utils';
 import {splitArrowBuffers, type SplitArrowBuffersOptions} from './split-arrow-buffers';
 
+type ArrowWorkerOptions = {
+  core?: {workerTransferBufferCopy?: SplitArrowBuffersOptions['copy']};
+  workerTransferBufferCopy?: SplitArrowBuffersOptions['copy'];
+};
+
+type SerializedArrowWorkerTable = {
+  shape: 'arrow-table';
+  data: DehydratedArrowTable;
+  [key: string]: unknown;
+};
+
 /** Structured-cloneable Arrow Data payload used by dehydrateArrowTable. */
 export type DehydratedArrowData<T extends arrow.DataType = arrow.DataType> = {
   type: DataType;
@@ -113,6 +124,50 @@ export function deserializeArrowTableFromIPC(
 ): arrow.Table {
   const data = isSerializedArrowTableIPC(table) ? table.data : table;
   return arrow.tableFromIPC(data);
+}
+
+/** Serializes any loaders.gl Arrow table wrapper for worker postMessage transport. */
+export function serializeArrowWorkerResult(result: unknown, options?: unknown): unknown {
+  if (!isArrowTableWrapper(result)) {
+    return result;
+  }
+  const workerOptions = options as ArrowWorkerOptions | undefined;
+  const bufferCopyMode =
+    workerOptions?.core?.workerTransferBufferCopy ?? workerOptions?.workerTransferBufferCopy;
+  return {
+    ...result,
+    data: dehydrateArrowTable(result.data, bufferCopyMode ? {copy: bufferCopyMode} : undefined)
+  };
+}
+
+/** Rehydrates any loaders.gl Arrow table wrapper returned from worker postMessage transport. */
+export function deserializeArrowWorkerResult(result: unknown): any {
+  if (!isDehydratedArrowTableWrapper(result)) {
+    return result;
+  }
+  return {...result, data: hydrateArrowTable(result.data)};
+}
+
+function isArrowTableWrapper(value: unknown): value is {shape: 'arrow-table'; data: arrow.Table} {
+  const table = value as {shape?: unknown; data?: unknown} | null;
+  return Boolean(
+    table &&
+      table.shape === 'arrow-table' &&
+      table.data &&
+      typeof table.data === 'object' &&
+      'batches' in table.data
+  );
+}
+
+function isDehydratedArrowTableWrapper(value: unknown): value is SerializedArrowWorkerTable {
+  const table = value as SerializedArrowWorkerTable | null;
+  return Boolean(
+    table &&
+      table.shape === 'arrow-table' &&
+      table.data &&
+      table.data.transport === 'arrow-js' &&
+      Array.isArray(table.data.batches)
+  );
 }
 
 /**

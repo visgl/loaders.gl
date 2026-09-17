@@ -4,6 +4,7 @@
 
 import type {ArrowTable, ArrowTableBatch, GeoJSONTable, BinaryFeatureCollection} from '@loaders.gl/schema';
 import type {Loader, LoaderWithParser} from '@loaders.gl/loader-utils';
+import {deserializeArrowWorkerResult, serializeArrowWorkerResult} from '@loaders.gl/arrow/transport';
 import {parseFlatGeobuf, ParseFlatGeobufOptions} from './lib/parse-flatgeobuf';
 import {
   FlatGeobufWorkerLoader as FlatGeobufWorkerLoaderMetadata,
@@ -30,7 +31,9 @@ export const FlatGeobufLoaderWithParser = {
   ...FlatGeobufLoaderMetadataWithoutPreload,
   parse: async (arrayBuffer: ArrayBuffer, options: FlatGeobufLoaderOptions = {}) =>
     parseSync(arrayBuffer, options),
-  parseSync
+  parseSync,
+  serializeWorkerBatch: serializeArrowWorkerResult,
+  deserializeWorkerBatch: deserializeArrowWorkerResult
 } as const satisfies LoaderWithParser<any, any, FlatGeobufLoaderOptions>;
 
 function parseSync(arrayBuffer: ArrayBuffer, options: FlatGeobufLoaderOptions = {}) {

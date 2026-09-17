@@ -4,4 +4,7 @@
 
 This module contains loader and writer for Draco compressed meshes and point clouds.
 
+`DracoLoader` returns a Mesh Arrow table by default. Set `draco.shape: 'mesh'` for the legacy
+Mesh object shape.
+
 For documentation please visit the [website](https://loaders.gl).

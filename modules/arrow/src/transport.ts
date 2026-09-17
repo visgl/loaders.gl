@@ -7,6 +7,8 @@ export {
   hydrateArrowTable,
   serializeArrowTableToIPC,
   deserializeArrowTableFromIPC,
+  serializeArrowWorkerResult,
+  deserializeArrowWorkerResult,
   type DehydratedArrowData,
   type DehydratedArrowRecordBatch,
   type DehydratedArrowTable,

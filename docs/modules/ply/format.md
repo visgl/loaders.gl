@@ -81,4 +81,4 @@ PLY supports ASCII, binary little-endian, and binary big-endian encodings. `PLYW
 
 ## Mesh Data
 
-PLY files describe mesh elements such as vertices and faces. `PLYLoader` maps common vertex properties to Mesh attributes by default, or Mesh Arrow table columns when `ply.shape: 'arrow-table'` is selected. Common attributes include `POSITION`, `NORMAL`, `TEXCOORD_0`, and `COLOR_0`.
+PLY files describe mesh elements such as vertices and faces. `PLYLoader` maps common vertex properties to Mesh Arrow table columns by default. Set `ply.shape: 'mesh'` for the legacy Mesh object. Common attributes include `POSITION`, `NORMAL`, `TEXCOORD_0`, and `COLOR_0`.
