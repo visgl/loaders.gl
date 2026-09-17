@@ -138,3 +138,30 @@ test('NDGeoJSON default batch size and ID collision handling do not lose data', 
   const noId = JSON.stringify({type: 'Feature', geometry: null, properties: {name: 'empty'}});
   expect((parseSync(noId, NDGeoJSONLoaderWithParser) as ArrowTable).data.numRows).toBe(1);
 });
+
+test.each([0, 'null-properties'])('NDGeoJSON preserves ID %s with null properties', async id => {
+  const feature: Feature = {
+    type: 'Feature',
+    id,
+    geometry: {type: 'Point', coordinates: [1, 2]},
+    properties: null
+  };
+  const input = JSON.stringify(feature);
+  const table = (await parse(input, NDGeoJSONLoader)) as ArrowTable;
+  expect(table.data.numRows).toBe(1);
+  expect(table.data.getChild('id')!.get(0)).toBe(id);
+  expect(table.data.getChild('geometry')!.get(0)).toBeInstanceOf(Uint8Array);
+
+  const batches = [];
+  for await (const batch of await parseInBatches([`${input}\n${input}`], NDGeoJSONLoader, {
+    core: {batchSize: 1}
+  })) {
+    batches.push(batch as ArrowTableBatch);
+  }
+  expect(batches.map(batch => batch.data.numRows)).toEqual([1, 1]);
+  expect(batches.map(batch => batch.data.getChild('id')!.get(0))).toEqual([id, id]);
+  const rows = (await parse(input, NDGeoJSONLoader, {
+    geojson: {shape: 'object-row-table'}
+  })) as ObjectRowTable;
+  expect(rows.data).toEqual([feature]);
+});
