@@ -13,6 +13,13 @@ import {Tiles3DFormat} from './tiles-3d-format';
 import {deserialize3DTilesWorkerResult, serialize3DTilesWorkerResult} from './lib/worker-transport';
 
 export type Tiles3DLoaderOptions = StrictLoaderOptions &
+  /** Options forwarded to the delegated glTF parser. */
+  {
+    gltf?: {
+      /** Optional decoder for embedded SPZ2 payloads; the callback receives explicit LUF coordinates. */
+      splatDecoder?: (data: ArrayBuffer, options: {sourceCoordinateSystem: 'LUF'; targetCoordinateSystem?: string}) => unknown | Promise<unknown>;
+    };
+  } &
   // GLTFLoaderOptions & - TODO not yet exported
   DracoLoaderOptions &
   ImageBitmapLoaderOptions & {
