@@ -38,6 +38,10 @@
       "types": "./dist/bundled.d.ts",
       "import": "./dist/bundled.js"
     },
+    "./ndgeojson-loader": {
+      "types": "./dist/ndgeojson-loader.d.ts",
+      "import": "./dist/ndgeojson-loader.js"
+    },
     "./ndjson-source": {
       "types": "./dist/ndjson-source.d.ts",
       "import": "./dist/ndjson-source.js"

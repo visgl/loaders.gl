@@ -384,16 +384,21 @@ export class WFSVectorSource extends DataSource<string, WFSourceOptions> impleme
     }
 
     const chunks = readResponseChunks(reader, initialChunks);
-    const {GMLLoaderWithParser} = await import('./gml-loader-with-parser');
+    const {GMLLoaderWithParser} = await import('./gml-loader');
     for await (const batch of GMLLoaderWithParser.parseInBatches!(chunks, {
       ...this.loadOptions,
       gml: {
         ...this.loadOptions.gml,
+        shape: 'geojson',
         batchSize: options.batchSize || 1000,
         propertyTypes: this.options.wfs?.propertyTypes
       }
     })) {
-      yield convertWFSFeatures(batch, parameters.format, parameters.geoarrow?.encodingPreference);
+      yield convertWFSFeatures(
+        batch as GMLFeatureCollection,
+        parameters.format,
+        parameters.geoarrow?.encodingPreference
+      );
     }
   }
 

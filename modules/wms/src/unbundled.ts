@@ -20,5 +20,5 @@ export type {WFSLoaderOptions as _WFSLoaderOptions} from './wfs-capabilities-loa
 export type {WFSCapabilities as _WFSCapabilities} from './wfs-capabilities-loader';
 export {WFSCapabilitiesLoader as _WFSCapabilitiesLoader} from './wfs-capabilities-loader';
 
-export type {GMLLoaderOptions as _GMLLoaderOptions} from './gml-loader';
-export {GMLLoader as _GMLLoader} from './gml-loader';
+export type {GMLLoaderOptions, GMLLoaderOptions as _GMLLoaderOptions} from './gml-loader-types';
+export {GMLLoader, GMLLoader as _GMLLoader} from './gml-loader-types';

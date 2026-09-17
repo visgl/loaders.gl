@@ -68,29 +68,30 @@ collections.
 
 ## Parse a document
 
-The package root exports metadata-only loaders. Import the parser-bearing loader from the bundled
-entry point when parsing directly:
+The package root exports metadata-only loaders; async core APIs preload the parser automatically:
 
 ```ts
 import {load} from '@loaders.gl/core';
-import {GMLLoader} from '@loaders.gl/wms/bundled';
+import {GMLLoader} from '@loaders.gl/wms';
 
-const featureCollection = await load('features.gml', GMLLoader);
+const table = await load('features.gml', GMLLoader);
+console.log(table.data.numRows);
 ```
 
 ## Stream a large response
 
 ```ts
 import {loadInBatches} from '@loaders.gl/core';
-import {GMLLoader} from '@loaders.gl/wms/bundled';
+import {GMLLoader} from '@loaders.gl/wms';
 
 for await (const batch of await loadInBatches(wfsResponse, GMLLoader)) {
   consume(batch.data);
 }
 ```
 
-The SAX-based parser frames features from XML structure rather than searching text with regular
-expressions, so a member can span arbitrary network chunks.
+The streaming parser buffers incomplete XML features across network chunks and returns Arrow
+table batches. Each batch infers its property schema independently. Use `gml.shape: 'geojson'`
+for FeatureCollection batches. Whole-file parsing also accepts bare geometries (one Arrow row).
 
 ## Preserve property types
 
@@ -98,7 +99,9 @@ GML application schemas often carry scalar types that cannot be inferred safely 
 known types from `DescribeFeatureType` or application metadata:
 
 ```ts
-const features = GMLLoader.parseTextSync!(xml, {
+import {GMLLoaderWithParser} from '@loaders.gl/wms/gml-loader';
+
+const table = GMLLoaderWithParser.parseTextSync(xml, {
   gml: {
     propertyTypes: {
       population: 'integer',
@@ -109,8 +112,9 @@ const features = GMLLoader.parseTextSync!(xml, {
 });
 ```
 
-Unknown or untyped properties remain strings or structured XML values. This preserves the server
-response without silently turning identifiers, codes, or zero-padded values into numbers.
+Unknown or untyped properties remain strings; structured XML properties are JSON-encoded in
+Arrow columns. Explicit `gml.shape: 'geojson'` retains the original structured property values.
+This avoids silently turning identifiers, codes, or zero-padded values into numbers.
 
 ## GML and WFS
 

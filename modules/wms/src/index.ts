@@ -63,8 +63,8 @@ export {WFSCapabilitiesLoader as _WFSCapabilitiesLoader} from './wfs-capabilitie
 // GML - Geographic Markup Language
 
 export type {GeoJSON as _GeoJSON} from '@loaders.gl/schema';
-export type {GMLLoaderOptions as _GMLLoaderOptions} from './gml-loader';
-export {GMLLoader as _GMLLoader} from './gml-loader';
+export type {GMLLoaderOptions, GMLLoaderOptions as _GMLLoaderOptions} from './gml-loader-types';
+export {GMLLoader, GMLLoader as _GMLLoader} from './gml-loader-types';
 
 // EXPERIMENTAL: DATA SOURCES
 

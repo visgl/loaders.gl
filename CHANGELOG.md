@@ -4,6 +4,8 @@
 
 ### Unreleased
 
+- feat(arrow): make NDGeoJSON, Chrome Trace, and GML loaders Arrow-primary while retaining explicit legacy output shapes
+
 - feat(arrow): make PLY, Draco, Potree BIN, Terrain, and Quantized Mesh loaders Arrow-primary by default while retaining explicit legacy shapes
 - feat(arrow): make CSV, JSON table, NDJSON, Excel, and ParquetJS loaders Arrow-primary by default while retaining explicit row-table shapes
 - feat(las): make LAS and LAZ loader variants Arrow-primary by default while retaining explicit mesh output

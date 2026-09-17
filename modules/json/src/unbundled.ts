@@ -8,6 +8,7 @@ export type {JSONTableLoaderOptions} from './json-table-loader';
 export {JSONTableLoader} from './json-table-loader';
 export type {NDJSONLoaderOptions} from './ndjson-loader';
 export {NDJSONLoader} from './ndjson-loader';
+export {NDGeoJSONLoader, type NDGeoJSONLoaderOptions} from './ndgeojson-loader-types';
 
 export type {GeoJSONLoaderOptions} from './geojson-loader';
 export {

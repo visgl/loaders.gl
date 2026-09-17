@@ -45,12 +45,12 @@ export const NDJSONFormat = {
 
 /** Newline-delimited GeoJSON row table format. */
 export const NDGeoJSONFormat = {
-  name: 'NDJSON',
-  id: 'ndjson',
+  name: 'NDGeoJSON',
+  id: 'ndgeojson',
   module: 'json',
   encoding: 'json',
   format: 'ndgeojson',
-  extensions: ['ndjson', 'ndgeojson'],
+  extensions: ['ndgeojson', 'geojsonl', 'ldgeojson', 'ndjson'],
   mimeTypes: [
     'application/geo+x-ndjson',
     'application/geo+x-ldjson',

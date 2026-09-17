@@ -11,7 +11,7 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
 <DocPageHeader
   eyebrow="WMS module · geospatial loader"
   title="GMLLoader"
-  description="Parse the practical feature and geometry subset of OGC Geography Markup Language into GeoJSON-style feature tables, including incremental feature batches for large responses."
+  description="Parse the practical feature and geometry subset of OGC Geography Markup Language into Arrow tables with GeoArrow geometry, including incremental feature batches for large responses."
   tone="cyan"
   meta={['From v3.3', 'GML', 'Streaming features']}
   links={[
@@ -29,7 +29,7 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
   items={[
     {label: 'Input', value: 'GML feature collections and responses'},
     {label: 'Geometry', value: 'Points, lines, polygons, and multiparts'},
-    {label: 'Output', value: 'GeoJSON-style features and properties'},
+    {label: 'Output', value: 'Arrow feature tables or explicit GeoJSON'},
     {label: 'Streaming', value: 'Feature batches for large WFS responses'}
   ]}
 />
@@ -57,10 +57,10 @@ the [OGC](https://www.opengeospatial.org/)-standardized [GML](https://www.ogc.or
 | File Extension        | `.gml`                                               |
 | File Type             | Text                                                 |
 | File Format           | [GML](https://en.wikipedia.org/wiki/Web_Map_Service) |
-| Data Format           | Data structure                                       |
+| Data Format           | Arrow table with GeoArrow WKB geometry               |
 | Decoder Type          | Synchronous                                          |
-| Worker Thread Support | Yes                                                  |
-| Streaming Support     | No                                                   |
+| Worker Thread Support | No                                                   |
+| Streaming Support     | Feature collections                                  |
 
 ## Usage
 
@@ -76,24 +76,43 @@ const data = await load(url, GMLLoader, options);
 
 ## Parsed Data Format
 
-The `GMLLoader` supports the standard geospatial subset of geometries (points, multipoints, lines, linestrings, polygons and multipolygons), and GML `FeatureCollection` documents are returned as GeoJSON-style feature collections with feature IDs and properties.
+The `GMLLoader` supports the standard geospatial subset of geometries (points, multipoints, lines,
+linestrings, polygons and multipolygons). By default, it returns
+`{shape: 'arrow-table', schema, data}`. Feature properties and IDs become columns and geometry uses
+`geoarrow.wkb`. A bare geometry becomes a one-row table; an empty result becomes an empty table.
+Coordinates are not reprojected, and CRS metadata is explicitly unknown (`crs: null`); this loader
+does not yet resolve GML `srsName` into Arrow CRS metadata.
+
+Set `gml.shape: 'geojson'` to retain the previous FeatureCollection, bare geometry, or null result.
+Arrow conversion rejects properties that collide with the output `geometry` column or a feature
+ID's `id` column; explicit GeoJSON retains both values.
+The root `GMLLoader` is metadata-only (`_GMLLoader` remains an alias). Synchronous parsing uses
+`GMLLoaderWithParser` from `@loaders.gl/wms/gml-loader`.
 
 For large WFS responses, the parser-bearing loader also supports incremental feature batches:
 
 ```typescript
-import {GMLLoader} from '@loaders.gl/wms/bundled';
+import {parseInBatches} from '@loaders.gl/core';
+import {GMLLoader} from '@loaders.gl/wms';
 
-for await (const batch of GMLLoader.parseInBatches!(response.body as any, {
+for await (const batch of await parseInBatches(response.body, GMLLoader, {
   gml: {batchSize: 500}
 })) {
-  renderFeatures(batch.features);
+  console.log(batch.data.numRows);
 }
 ```
 
-The streaming path emits complete `featureMember` elements as soon as they are available and keeps
-the final incomplete fragment buffered until the response ends.
+The streaming path emits complete `featureMember` / `featureMembers` features as they become
+available and keeps incomplete fragments buffered. Each Arrow batch infers its own property
+schema; heterogeneous batches can have different schemas. Bare geometries use whole-file parsing.
+Explicit `gml.shape: 'geojson'` returns FeatureCollection batches. WFS source output remains
+controlled by the WFS format option.
 
 ## Options
 
 | Option | Type | Default | Description |
 | ------ | ---- | ------- | ----------- |
+| `gml.shape` | `'arrow-table' \| 'geojson'` | `'arrow-table'` | Whole-file and streaming output shape. |
+| `gml.batchSize` | `number` | `1000` | Feature count per streaming batch. |
+| `gml.propertyTypes` | `Record<string, GMLPropertyType>` | — | XML Schema scalar types keyed by local property name. |
+| `gml.transformCoords` | `(...coordinates: number[]) => number[]` | Identity | Optional coordinate transformation. |

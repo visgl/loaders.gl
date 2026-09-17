@@ -162,7 +162,8 @@ describe('traces public API edge coverage', () => {
       traceEvents: [createSpan('valid'), {name: 'invalid', ph: 'not-a-phase', pid: 1, tid: 1}]
     };
     const bounded = (await parse(encodeJson(partlyInvalid), ChromeTraceLoader, {
-      maxLength: 1
+      maxLength: 1,
+      chromeTrace: {shape: 'json'}
     })) as ChromeTraceFileSchema;
     expect(bounded.traceEvents).toHaveLength(2);
 
@@ -177,7 +178,13 @@ describe('traces public API edge coverage', () => {
 
   it('supports current and legacy loader options and rejects JSON batch output', async () => {
     const input = encodeJson({traceEvents: [createSpan('span')]});
-    const json = (await parse(input, ChromeTraceLoader)) as ChromeTraceFileSchema;
+    const json = (await parse(input, ChromeTraceLoader, {
+      chromeTrace: {shape: 'json'}
+    })) as ChromeTraceFileSchema;
+    const legacyJson = (await parse(input, ChromeTraceLoader, {
+      shape: 'json'
+    })) as ChromeTraceFileSchema;
+    expect(legacyJson).toEqual(json);
     const arrowTable = (await parse(input, ChromeTraceLoader, {
       shape: 'arrow-table'
     })) as ChromeTraceEventArrowTable;
@@ -185,7 +192,9 @@ describe('traces public API edge coverage', () => {
     expect(json.traceEvents).toHaveLength(1);
     expect(arrowTable.numRows).toBe(1);
 
-    const batches = await parseInBatches([input], ChromeTraceLoader);
+    const batches = await parseInBatches([input], ChromeTraceLoader, {
+      chromeTrace: {shape: 'json'}
+    });
     await expect(async () => {
       for await (const _batch of batches) {
         // The public iterator throws before yielding when JSON output is requested.
@@ -198,24 +207,19 @@ describe('traces public API edge coverage', () => {
     const input = encodeJson({traceEvents: [createSpan('span')]});
 
     expect((await ChromeTraceLoader.preload()).id).toBe('chromeTrace');
-    expect((await ChromeTraceLoaderWithParser.parse(input)) as ChromeTraceFileSchema).toMatchObject(
-      {
-        traceEvents: [{name: 'span'}]
-      }
+    expect(await ChromeTraceLoaderWithParser.parse(input)).toHaveProperty('numRows', 1);
+    expect(ChromeTraceLoaderWithParser.parseSync(input)).toHaveProperty('numRows', 1);
+    expect(await ChromeTraceLoaderWithParser.parseText(text)).toHaveProperty('numRows', 1);
+    expect(ChromeTraceLoaderWithParser.parseTextSync(text) as arrow.Table).toHaveProperty(
+      'numRows',
+      1
     );
-    expect(ChromeTraceLoaderWithParser.parseSync(input) as ChromeTraceFileSchema).toMatchObject({
-      traceEvents: [{name: 'span'}]
-    });
-    expect(
-      (await ChromeTraceLoaderWithParser.parseText(text)) as ChromeTraceFileSchema
-    ).toMatchObject({traceEvents: [{name: 'span'}]});
-    expect(
-      ChromeTraceLoaderWithParser.parseTextSync(text, {shape: 'arrow-table'}) as arrow.Table
-    ).toHaveProperty('numRows', 1);
 
-    const table = (await parse(input, ChromeTraceLoader, {
-      chromeTrace: {shape: 'arrow-table'}
-    })) as ChromeTraceEventArrowTable;
+    const table = (await parse(input, ChromeTraceLoader)) as ChromeTraceEventArrowTable;
+    const batches = await parseInBatches([input], ChromeTraceLoader);
+    const streamed = [];
+    for await (const batch of batches) streamed.push(batch);
+    expect(streamed.map(batch => batch.numRows)).toEqual([1]);
     expect(await ChromeTraceWriter.encodeText(table)).toContain('"traceEvents"');
     expect(ChromeTraceWriter.encodeTextSync(table)).toContain('"traceEvents"');
     expect(new Uint8Array(await encode(table, ChromeTraceWriter))).not.toHaveLength(0);
