@@ -46,7 +46,10 @@ export type {
   GLTF_KHR_gaussian_splatting_compression_spz_2,
   GLTFGaussianSplatPrimitive
 } from './lib/types/gltf-ext-gaussian-splatting-schema';
-export type {GLTF_EXT_primitive_voxels, GLTFVoxelPrimitive} from './lib/types/gltf-ext-vector-voxel-schema';
+export type {
+  GLTF_EXT_primitive_voxels,
+  GLTFVoxelPrimitive
+} from './lib/types/gltf-ext-vector-voxel-schema';
 
 // 3DTiles extensions
 export type {
@@ -91,7 +94,10 @@ export {
   SPZ_COMPRESSION_EXTENSION_NAME,
   getGaussianSplatPrimitives
 } from './lib/extensions/KHR_gaussian_splatting';
-export {name as EXT_PRIMITIVE_VOXELS, getVoxelPrimitives} from './lib/extensions/EXT_primitive_voxels';
+export {
+  name as EXT_PRIMITIVE_VOXELS,
+  getVoxelPrimitives
+} from './lib/extensions/EXT_primitive_voxels';
 export {
   name as KHR_MESH_PRIMITIVE_RESTART,
   getPrimitiveRestartRanges

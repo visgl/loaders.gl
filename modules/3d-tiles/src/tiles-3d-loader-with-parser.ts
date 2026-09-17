@@ -85,17 +85,19 @@ const SUPPORTED_3D_TILES_2_EXTENSIONS: ReadonlySet<string> = new Set([
 const {preload: _Tiles3DLoaderPreload, ...Tiles3DLoaderMetadataWithoutPreload} =
   Tiles3DLoaderMetadata;
 
+/** Options forwarded to the delegated glTF parser. */
+type GLTFOptions = {
+  gltf?: {
+    /** Optional decoder for embedded SPZ2 payloads; the callback receives explicit LUF coordinates. */
+    splatDecoder?: (
+      data: ArrayBuffer,
+      options: {sourceCoordinateSystem: 'LUF'; targetCoordinateSystem?: string}
+    ) => unknown | Promise<unknown>;
+  };
+};
+
 export type Tiles3DLoaderOptions = StrictLoaderOptions &
-  /** Options forwarded to the delegated glTF parser. */
-  {
-    gltf?: {
-      /** Optional decoder for embedded SPZ2 payloads; the callback receives explicit LUF coordinates. */
-      splatDecoder?: (
-        data: ArrayBuffer,
-        options: {sourceCoordinateSystem: 'LUF'; targetCoordinateSystem?: string}
-      ) => unknown | Promise<unknown>;
-    };
-  } &
+  GLTFOptions &
   // GLTFLoaderOptions & - TODO not yet exported
   DracoLoaderOptions &
   ImageBitmapLoaderOptions & {
