@@ -3,10 +3,7 @@
 // Copyright vis.gl contributors
 
 import {expect, test} from 'vitest';
-import {
-  getStructuralMetadataProperty,
-  getStructuralMetadataRow
-} from '@loaders.gl/3d-tiles';
+import {getStructuralMetadataProperty, getStructuralMetadataRow} from '@loaders.gl/3d-tiles';
 
 test('getStructuralMetadataRow returns decoded columns with class defaults', () => {
   const propertyTable = {
