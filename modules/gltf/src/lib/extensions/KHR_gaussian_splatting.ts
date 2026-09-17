@@ -59,7 +59,7 @@ export async function decode(gltfData: GLTFWithBuffers, options: GLTFLoaderOptio
             );
           }
           if (decoder && descriptor.compressedBytes) {
-            descriptor.decoded = await decoder(descriptor.compressedBytes.buffer, {
+            descriptor.decoded = await decoder(descriptor.compressedBytes.buffer as ArrayBuffer, {
               sourceCoordinateSystem: 'LUF'
             });
           }

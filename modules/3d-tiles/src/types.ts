@@ -32,10 +32,6 @@ export type B3DMContent = {
   featureTableBinary?: Uint8Array;
   featureTableJson?: FeatureTableJson;
   gltf?: GLTFPostprocessed;
-  /** Normalized Gaussian splat descriptors discovered in embedded glTF content. */
-  gaussianSplatPrimitives?: GLTFGaussianSplatPrimitive[];
-  /** Lazy voxel descriptors discovered in embedded glTF content. */
-  voxelPrimitives?: GLTFVoxelPrimitive[];
   gltfUpAxis: string;
   header: GLTFHeader;
   magic: number;
@@ -337,6 +333,10 @@ export type Tiles3DTileContent = {
   gltfUrl?: string;
   gpuMemoryUsageInBytes?: number;
   gltf?: GLTFPostprocessed;
+  /** Renderer-neutral Gaussian splat descriptors discovered in embedded glTF content. */
+  gaussianSplatPrimitives?: GLTFGaussianSplatPrimitive[];
+  /** Lazy voxel descriptors discovered in embedded glTF content. */
+  voxelPrimitives?: GLTFVoxelPrimitive[];
   /** Vector topology exposed when this glTF content is designated as 3D Tiles vector data. */
   vectorContent?: Tiles3DVectorContent;
 
