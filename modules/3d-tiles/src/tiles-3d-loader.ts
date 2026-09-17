@@ -17,7 +17,10 @@ export type Tiles3DLoaderOptions = StrictLoaderOptions &
   {
     gltf?: {
       /** Optional decoder for embedded SPZ2 payloads; the callback receives explicit LUF coordinates. */
-      splatDecoder?: (data: ArrayBuffer, options: {sourceCoordinateSystem: 'LUF'; targetCoordinateSystem?: string}) => unknown | Promise<unknown>;
+      splatDecoder?: (
+        data: ArrayBuffer,
+        options: {sourceCoordinateSystem: 'LUF'; targetCoordinateSystem?: string}
+      ) => unknown | Promise<unknown>;
     };
   } &
   // GLTFLoaderOptions & - TODO not yet exported

@@ -40,7 +40,10 @@ export type ParseGLTFOptions = ParseGLBOptions & {
   /** Decompress Draco, `EXT_meshopt_compression`, and `KHR_meshopt_compression` data. @default true */
   decompressMeshes?: boolean;
   /** Optional decoder for embedded SPZ2 Gaussian payloads; bytes are explicitly in LUF coordinates. */
-  splatDecoder?: (data: ArrayBuffer, options: {sourceCoordinateSystem: 'LUF'; targetCoordinateSystem?: string}) => unknown | Promise<unknown>;
+  splatDecoder?: (
+    data: ArrayBuffer,
+    options: {sourceCoordinateSystem: 'LUF'; targetCoordinateSystem?: string}
+  ) => unknown | Promise<unknown>;
   excludeExtensions?: string[];
   /** @deprecated not supported in v4. `postProcessGLTF()` must be called by the application */
   postProcess?: never;
