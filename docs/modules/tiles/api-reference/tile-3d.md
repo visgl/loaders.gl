@@ -13,7 +13,7 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
   title="One tile, all the state traversal needs."
   description="Tile3D is the runtime record used by Tileset3D. It connects source headers to transformed volumes, content state, level-of-detail measurements, selection, and lazy-child lifecycle."
   tone="violet"
-  meta={['Internal runtime record', 'Volumes and LOD', 'Content lifecycle']}
+  meta={['Public runtime record', 'Volumes and LOD', 'Content lifecycle']}
   links={[
     {label: 'Tiles runtime', to: '/docs/modules/tiles'},
     {label: 'Tileset3D', to: '/docs/modules/tiles/api-reference/tileset-3d'},
@@ -50,49 +50,47 @@ Parameters:
 
 - `tileset` (Tileset3D) - `Tileset3D` instance which contains this tile
 - `header` (Object) - Source metadata for this tile
-- `parentHeader` (Object) - Source metadata for the parent tile
+- `parentHeader` (Tile3D, optional) - Parent runtime tile; omitted for the root
 
-#### Properties
+## Properties
 
-###### `childrenState` (String)
+### `childrenState` (String)
 
 For a lazy implicit subtree root, reports `unloaded`, `loading`, `ready`, or `failed`. Explicit tiles begin in `ready` because their child headers are already known.
 
-###### `hasUnloadedChildren` (Boolean)
+### `hasUnloadedChildren` (Boolean)
 
 Returns `true` when traversal may request a source-managed lazy child-header group. This is distinct from unloaded content: subtree metadata establishes hierarchy, while content requests load renderable payloads.
 
-###### `boundingVolume` (BoundingVolume)
+### `boundingVolume` (BoundingVolume)
 
-A bounding volume that encloses a tile or its content. Exactly one box, region, or sphere property is required. ([`Reference`](https://github.com/AnalyticalGraphicsInc/3d-tiles/tree/master/specification#bounding-volume))
+The transformed runtime volume used for hierarchy traversal, not the source JSON `box`, `region`,
+or `sphere` declaration. Content bounds may be tighter; they do not replace this traversal volume.
 
-###### `contentBoundingVolumes` (BoundingVolume[])
+### `contentBoundingVolumes` (BoundingVolume[])
 
 The transformed render-content bounding volumes, one for each content entry. Entries without an explicit content volume use the tile's transformed `boundingVolume` at the same index. These volumes are used for render culling; hierarchy traversal continues to use the tile's `boundingVolume`.
 
-###### `contentVisibility(frameState)`
-
-Returns the render-content visibility classification after culling against the viewport and any optional world-space clipping planes. Clipping planes affect rendering only; hierarchy traversal continues to use the tile bounding volume.
-
-###### `viewerRequestVolume` (BoundingVolume | null)
+### `viewerRequestVolume` (BoundingVolume | null)
 
 The transformed volume that limits when this tile may be requested. It is `null` when the tile does not declare a viewer request volume. This volume affects traversal/request eligibility, not render-content culling.
 
-###### `id` (Number`|`String)
+### `id` (Number`|`String)
 
 A unique number for the tile in the tileset. Default to the url of the tile.
 
-###### `contentState` (String)
+### `contentState` (Number)
 
-Indicate of the tile content state. Available options
+Numeric runtime content state (`TILE_CONTENT_STATE`):
 
-- `UNLOADED`: Has never been requested or has been destroyed.
-- `LOADING`: Is waiting on a pending request.
-- `PROCESSING`: Contents are being processed for rendering. Depending on the content, it might make its own requests for external data.
-- `READY`: All the resources are loaded and decoded.
-- `FAILED`: Request failed.
+- `UNLOADED` (0): Has never been requested or has been unloaded.
+- `LOADING` (1): Is waiting on a pending request.
+- `PROCESSING` (2): Contents are being processed and may request external data.
+- `READY` (3): Content loading has completed; inspect individual entries for renderability.
+- `EXPIRED` (4): Expired content is awaiting replacement.
+- `FAILED` (5): Request failed.
 
-###### `contentType` (String)
+### `contentType` (String)
 
 One of
 
@@ -100,60 +98,119 @@ One of
 - `render`: has content to render
 - `tileset`: tileset tile
 
-##### `_selectionDepth` (Number)
+### `_selectionDepth` (Number)
 
 The depth of the tile in the traversal tree.
 
-###### `content` (Object)
+### `content` (Object)
 
 The tile's content. This represents the actual tile's payload.
 
-###### `type` (String)
+### `contents` (unknown[])
+
+The ordered raw payload array for loaded content. `content` remains the primary payload for
+backward compatibility. Use `contentEntries` when consuming several payloads and their metadata.
+
+### `contentUrls` (String[])
+
+Ordered content resource URLs resolved from the normalized header.
+
+### `contentEntries` (Tile3DContent[])
+
+Ordered renderer-neutral descriptors with `index`, optional `uri`, `type`, and `group`, plus
+`payload`, `metadata`, `boundingVolume`, `featureIds`, and `renderable`. Entries exist before their
+payloads load; nested tileset content is not reported as renderable. Re-read entries after lifecycle
+updates. See the [contract fields](../../3d-tiles/concepts/renderer-contracts-and-metadata#tile3dcontent).
+
+### `metadataContext` (Tile3DMetadataContext)
+
+Raw tileset, group, tile, primary-content, and subtree metadata references, plus the optional groups
+array. For another content entry, inspect its `metadata` and `group`. This context is not a decoded
+property-table row; see [raw versus decoded metadata](../../3d-tiles/concepts/renderer-contracts-and-metadata#raw-context-versus-decoded-properties).
+
+### `featureIdSets` (Tile3DFeatureIdSet[])
+
+Feature-ID declarations aggregated from content entries. Attribute, property-table, constant,
+texture, and implicit sources are represented without implementing picking or sampling textures.
+Retained declarations alone do not imply that a payload is currently loaded.
+
+### `type` (String)
 
 One of `scenegraph`, `pointcloud`, `mesh`
 
-###### `parent` (Tile3D)
+### `parent` (Tile3D)
 
 Parent of this tile.
 
-###### `refine` (String)
+### `refine` (TILE_REFINEMENT)
 
 Specifies the type of refine that is used when traversing this tile for rendering. [`Reference`](https://github.com/AnalyticalGraphicsInc/3d-tiles/blob/master/specification/README.md#refinement)
 
-- `ADD`: high-resolution children tiles should be rendered in addition to lower-resolution parent tiles when level of details of parent tiles are not sufficient for current view.
-- `REPLACEMENT`: high-resolution children tiles should replace parent tiles when lower-resolution parent tiles are not sufficient for current view.
+- `ADD` (1): high-resolution children render in addition to lower-resolution parents when the parent does not meet the current LOD target.
+- `REPLACE` (2): high-resolution children replace parents once the required coverage is ready.
 
-###### `selected` (Boolean)
+### `selected` (Boolean)
 
 Whether this tile is selected for rendering in the current update frame and viewport. A selected
 tile has its content loaded and satisfies the current viewport requirements.
 
-###### `distanceToCamera` (Number)
+### `distanceToCamera` (Number)
 
-Distance from the tile's bounding volume center to the camera
+Potentially approximate distance in meters from the closest point of the tile bounding volume to
+the camera, or zero when the camera is inside the volume.
 
-###### `screenSpaceError` (Number)
+### `screenSpaceError` (Number)
 
-Screen space error for LOD selection
+Calculated error in logical/CSS pixels used for LOD selection. See
+[screen-space error and LOD](../../3d-tiles/concepts/screen-space-error-and-lod).
 
-###### `tileset` (Tileset3D)
+### `lodMetricValue` (Number)
+
+The runtime LOD metric: composed-transform-scaled geometric error for 3D Tiles 1.x, unscaled draft
+2.0 error, or the unchanged I3S screen-threshold metric. Do not interpret every format's metric as meters.
+
+### `tileset` (Tileset3D)
 
 The `Tileset3D` instance containing this tile.
 
-###### `header` (Object)
+### `header` (Object)
 
 The unprocessed tile header object passed in.
 
-#### Methods
+## Methods
 
-##### `destroy()`
+### `getContentEntry(index)`
+
+Returns the ordered `Tile3DContent` descriptor, or `null` when the index is out of range.
+
+### `isContentRenderable(index)`
+
+Returns whether the entry currently has render content. Unloaded, failed, empty, and nested tileset
+content are not renderable. This does not imply selection, visibility, or GPU readiness.
+
+### `contentVisibility(frameState, contentIndex?)`
+
+Returns `'outside'`, `'intersecting'`, or `'inside'` after render-content frustum and optional
+world-space clipping-plane checks. Omit `contentIndex` for the union of content volumes, or pass a
+valid entry index for one content. Missing explicit content bounds fall back to the tile volume.
+Clipping affects render visibility only; hierarchy traversal continues to use the tile volume.
+
+### `insideViewerRequestVolume(frameState)`
+
+Returns whether the camera is inside the transformed request volume. Returns `true` if no request
+volume is declared. Request gating is separate from content visibility.
+
+### `destroy()`
 
 Destroys the tile node, including its metadata, and unloads its content.
 
-##### `loadContent()`
+### `loadContent()`
 
 Loads the tile content.
 
-##### `unloadContent()`
+### `unloadContent()`
 
 Unloads the tile content.
+
+Clears `content`, `contents`, and descriptor payloads and marks entries non-renderable. Do not use
+retained feature declarations as a substitute for a fresh renderability check after unload/reload.

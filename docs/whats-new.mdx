@@ -49,7 +49,14 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
 
 ### 3D Tiles
 
-- Add reader-side Gaussian splat extension descriptors, SPZ v2/v3/v4 decoding with explicit coordinate options, and lazy voxel contracts for 3D Tiles; embedded SPZ2 bytes remain available for injected decoders while styling and rendering stay application-owned.
+- Add [Gaussian primitive descriptors](/docs/modules/3d-tiles/concepts/gaussian-vector-voxel-extensions) with per-primitive validation and preserved accessor/scene-graph references for mixed mesh and splat content.
+- Extend standalone [`SPZLoader`](/docs/modules/splats/api-reference/spz-loader) to v2/v3/v4 with explicit RUB/LUF coordinate options and unchanged Arrow-table output.
+- Add an optional embedded SPZ2 decoder callback with an explicit LUF source-coordinate hint; compressed bytes stay available when loaded. Attribute conversion and decoded-count reconciliation remain consumer responsibilities.
+- Add metadata-first voxel primitive descriptors and 1.x `3DTILES_content_voxels` recognition; dense decoding and voxel rendering remain deferred.
+- Improve [SSE/LOD](/docs/modules/3d-tiles/concepts/screen-space-error-and-lod) with transform-scaled 1.x error, orthographic pixel scales, and logical/CSS-pixel selection independent of DPR.
+- Add skip-LOD traversal, [progressive/foveated request priority](/docs/modules/3d-tiles/concepts/request-scheduling-and-priorities), and [byte-based cache controls](/docs/modules/3d-tiles/concepts/caching-and-memory).
+- Expand [resource handling](/docs/modules/3d-tiles/concepts/resource-resolution-and-content-detection) with structure-first detection, ordered multiple contents, nested packages, and archive-backed resources.
+- Add [CRS/epoch discovery and reprojection](/docs/modules/3d-tiles/concepts/coordinate-reference-systems), including nonlinear content/bounds transformation and nested CRS placement; dynamic cross-epoch execution remains excluded.
 - Implicit traversal conformance now covers sparse QUADTREE/OCTREE boundaries, multiple content streams, concurrent request deduplication, retry after failure, and final-level availability; lifecycle guarantees are documented.
 
 - Add experimental automatic detection and traversal for the pinned glTF-based 3D Tiles 2.0
@@ -60,11 +67,11 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
 - Expose tileset metadata topology (`schema`, `schemaUri`, `groups`, `metadata`, and `statistics`) on the shared `Tileset3D` runtime for application inspection.
 - Normalize direct numeric `TILE_BOUNDING_*` and `CONTENT_BOUNDING_*` metadata semantics into traversal-ready bounding volumes with metadata semantics taking precedence over ordinary header volumes.
 - Classify multi-content render volumes as a union, apply clipping planes only to render content, and document the 3D Tiles correctness/conformance contract for SSE, implicit boundaries, extensions, and lifecycle diagnostics.
-- Add normalized 3D Tiles metadata row access with default/noData handling while preserving raw schema and extension references.
+- Decode structural-metadata property-table columns and add normalized 3D Tiles row access with default/noData handling while preserving raw schema, values, and extension references.
 - Harden traversal conformance for viewer-request-volume gating, external-tileset expiration, additive/replacement refinement, and scheduler-safe camera movement.
-- Add renderer-neutral 3D Tiles contracts for ordered multi-content entries, feature-ID declarations, raw metadata context, and indexed or union content visibility.
-- Add renderer-neutral style-input helpers for deterministic metadata precedence, decoded structural-metadata property lookup, and hierarchy-aware batch-table rows without evaluating renderer styling expressions.
-- Add deterministic 3D Tiles traversal snapshots with sorted selection/request sets, tile/cache counters, resident-byte estimates, and implicit-subtree diagnostics, plus benchmark-budget guidance.
+- Add [renderer-neutral contracts](/docs/modules/3d-tiles/concepts/renderer-contracts-and-metadata) for ordered multi-content entries, feature-ID declarations, raw metadata context, and indexed or union content visibility.
+- Add [style-input helpers](/docs/modules/3d-tiles/concepts/styling-and-feature-access) for deterministic metadata precedence, decoded structural-metadata property lookup, and hierarchy-aware batch-table rows without evaluating renderer styling expressions.
+- Add deterministic [traversal snapshots](/docs/modules/3d-tiles/concepts/observability-and-benchmarks) with sorted selection/request sets, tile/cache counters, resident-byte estimates, and implicit-subtree diagnostics, plus benchmark-budget guidance.
 
 
 Release Date: 2026
