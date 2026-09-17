@@ -84,6 +84,9 @@ function detectSPZVersion(data: ArrayBuffer): number {
     // version is therefore read by parseLegacySPZ after decompression.
     return 0;
   }
+  if (data.byteLength < SPZ_HEADER_BYTE_LENGTH) {
+    throw new Error('SPZLoader: file must contain a 32-byte header.');
+  }
   return new DataView(data).getUint32(4, true);
 }
 

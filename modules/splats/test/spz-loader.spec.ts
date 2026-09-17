@@ -88,7 +88,7 @@ test.each([2, 3])('SPZLoader parses legacy v%d gzip payloads', async version => 
   expect(splats.splatCount).toBe(1);
   expect(Array.from(splats.positions)).toEqual([1, 2, -3]);
   expect(splats.rotations[0]).toBeCloseTo(1, 5);
-  expect(splats.sphericalHarmonics?.length).toBe(3);
+  expect(splats.sphericalHarmonics?.length).toBe(9);
 });
 
 test('SPZLoader applies explicit legacy coordinate conversion', async () => {
@@ -155,7 +155,7 @@ async function makeSPZFixture(compressStreams = true): Promise<ArrayBuffer> {
 
 /** Builds a one-point legacy SPZ v2 or v3 gzip fixture. */
 function makeLegacySPZFixture(version: 2 | 3): ArrayBuffer {
-  const payload = new Uint8Array(16 + 9 + 1 + 3 + 3 + 3 + (version === 2 ? 3 : 4) + 3);
+  const payload = new Uint8Array(16 + 9 + 1 + 3 + 3 + (version === 2 ? 3 : 4) + 9);
   const dataView = new DataView(payload.buffer);
   dataView.setUint32(0, 0x5053474e, true);
   dataView.setUint32(4, version, true);
@@ -183,7 +183,7 @@ function makeLegacySPZFixture(version: 2 | 3): ArrayBuffer {
     payload.set(encodeQuaternionSmallestThree([0, 0, 0, 1]), offset);
     offset += 4;
   }
-  payload.set([128, 128, 128], offset);
+  payload.set([128, 128, 128, 128, 128, 128, 128, 128, 128], offset);
   return new Uint8Array(new GZipFflateCompressor().compressSync(payload.buffer)).buffer;
 }
 /**
