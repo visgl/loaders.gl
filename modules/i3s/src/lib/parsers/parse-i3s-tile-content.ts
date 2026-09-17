@@ -241,6 +241,8 @@ async function parseI3SNodeGeometry(
       DracoLoader,
       {
         draco: {
+          // I3S geometry processing consumes the legacy mesh contract.
+          shape: 'mesh',
           attributeNameEntry: I3S_ATTRIBUTE_TYPE
         }
       },
