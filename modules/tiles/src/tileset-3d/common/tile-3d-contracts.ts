@@ -14,6 +14,8 @@ export type Tile3DContent = {
   index: number;
   /** Resolved content URI when declared by the tileset. */
   uri?: string;
+  /** Tileset group index declared by this content entry. */
+  group?: number;
   /** Normalized tile content kind, when detected. */
   type?: string;
   /** Decoded payload, or null while unloaded/failed. */
@@ -52,8 +54,10 @@ export type Tile3DFeatureIdSet = {
 export type Tile3DMetadataContext = {
   /** Tileset-level metadata entity. */
   tileset?: Record<string, unknown> | null;
-  /** Group metadata entity. */
+  /** Group metadata entity selected for the tile's primary content. */
   group?: Record<string, unknown> | null;
+  /** All tileset groups, used to resolve a selected content entry's group. */
+  groups?: readonly (Record<string, unknown> | null)[];
   /** Tile metadata entity. */
   tile?: Record<string, unknown> | null;
   /** Content metadata entity. */

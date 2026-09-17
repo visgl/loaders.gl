@@ -738,13 +738,17 @@ export class Tile3D {
       typeof groupReference === 'number'
         ? this.tileset.groups?.[groupReference] || null
         : groupReference || null;
-    this.metadataContext = {
+    const metadataContext: Tile3DMetadataContext = {
       tileset: this.tileset.metadata || null,
       group,
       tile: this.metadata,
       content: this.contentMetadata[0] || null,
       subtree: header.implicitMetadata || null
     };
+    if (this.tileset.groups) {
+      metadataContext.groups = this.tileset.groups;
+    }
+    this.metadataContext = metadataContext;
   }
 
   /** Updates payload and renderability while retaining immutable metadata descriptors. */
@@ -799,6 +803,7 @@ export class Tile3D {
       return {
         index,
         uri: this.contentUrls[index] || normalizedContentHeader.uri || normalizedContentHeader.url,
+        group: normalizedContentHeader.group,
         type: normalizedContentHeader.type,
         payload: null,
         metadata: normalizedContentHeader.metadata || null,

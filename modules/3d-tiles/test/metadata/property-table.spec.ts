@@ -3,7 +3,7 @@
 // Copyright vis.gl contributors
 
 import {expect, test} from 'vitest';
-import {getStructuralMetadataRow} from '@loaders.gl/3d-tiles';
+import {getStructuralMetadataProperty, getStructuralMetadataRow} from '@loaders.gl/3d-tiles';
 
 test('getStructuralMetadataRow returns decoded columns with class defaults', () => {
   const propertyTable = {
@@ -112,4 +112,17 @@ test('getStructuralMetadataRow handles typed-array array sentinels and omitted d
   expect(
     Array.from(getStructuralMetadataRow(propertyTable, schemaClass, 1)?.values as Float64Array)
   ).toEqual([2, 3]);
+});
+
+test('getStructuralMetadataProperty reads a named decoded value', () => {
+  const propertyTable = {
+    class: 'Building',
+    count: 1,
+    properties: {height: {values: 0, data: new Float32Array([18])}}
+  } as any;
+  const schemaClass = {properties: {height: {type: 'SCALAR'}}} as any;
+
+  expect(getStructuralMetadataProperty(propertyTable, schemaClass, 0, 'height')).toBe(18);
+  expect(getStructuralMetadataProperty(propertyTable, schemaClass, 0, 'missing')).toBeUndefined();
+  expect(getStructuralMetadataProperty(propertyTable, schemaClass, 1, 'height')).toBeUndefined();
 });

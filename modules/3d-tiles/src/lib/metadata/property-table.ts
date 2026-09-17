@@ -131,3 +131,25 @@ function getMetadataComponentCount(attributeType: string | undefined): number {
       return 1;
   }
 }
+
+/**
+ * Reads one named value from a decoded structural-metadata property-table row.
+ *
+ * This helper is intentionally a thin convenience wrapper around
+ * `getStructuralMetadataRow`. It does not evaluate styles, map feature IDs, or decode buffers;
+ * callers must provide a property table whose columns were already decoded by glTF parsing.
+ *
+ * @param propertyTable - Decoded property table containing column data.
+ * @param schemaClass - Class declaration supplying defaults and no-data values.
+ * @param rowIndex - Zero-based feature row index.
+ * @param propertyName - Property name to read.
+ * @returns The decoded property value, or `undefined` when the row/property is absent.
+ */
+export function getStructuralMetadataProperty(
+  propertyTable: GLTF_EXT_structural_metadata_PropertyTable,
+  schemaClass: GLTF_EXT_structural_metadata_Class | undefined,
+  rowIndex: number,
+  propertyName: string
+): unknown {
+  return getStructuralMetadataRow(propertyTable, schemaClass, rowIndex)?.[propertyName];
+}
