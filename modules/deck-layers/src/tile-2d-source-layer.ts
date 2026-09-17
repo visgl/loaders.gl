@@ -25,6 +25,7 @@ import type {
 } from '@loaders.gl/loader-utils';
 import {isSourceLoader} from '@loaders.gl/loader-utils';
 import type {ArrowTable} from '@loaders.gl/schema';
+import {getGeoMetadata} from '@loaders.gl/gis';
 import {SharedTile2DHeader, Tileset2D, type Tileset2DProps} from '@loaders.gl/tiles';
 import {Matrix4, type NumericArray} from '@math.gl/core';
 import {sharedTile2DDeckAdapter} from './shared-tile-2d/deck-tileset-adapter';
@@ -156,7 +157,7 @@ class MVTSourceLoaderLayer extends MVTLayer<any> {
     if (changeFlags.dataChanged && props.data) {
       this.setState({
         vectorTileSource: props.data,
-        binary: false
+        binary: props.data.mimeType === 'application/vnd.apache.arrow.stream'
       });
     }
   }
@@ -165,7 +166,8 @@ class MVTSourceLoaderLayer extends MVTLayer<any> {
   async getTileData(parameters: GetTileDataParameters): Promise<any> {
     try {
       const vectorTileSource = (this.state as any).vectorTileSource as TileSourceRuntime | null;
-      return vectorTileSource ? await vectorTileSource.getTileData(parameters) : null;
+      const data = vectorTileSource ? await vectorTileSource.getTileData(parameters) : null;
+      return getArrowTileRenderData(data);
     } catch (error) {
       this.props.onTileError?.(error, parameters);
       return null;
@@ -444,7 +446,8 @@ export class Tile2DSourceLayer<DataT = any> extends CompositeLayer<Tile2DSourceL
   /** Check if the current source supports MVT layer rendering with local coordinates. */
   sourceSupportsMVTLayer(tileSource: TileSourceRuntime): boolean {
     return (
-      tileSource.mimeType === 'application/vnd.mapbox-vector-tile' &&
+      (tileSource.mimeType === 'application/vnd.mapbox-vector-tile' ||
+        tileSource.mimeType === 'application/vnd.apache.arrow.stream') &&
       Boolean(tileSource.localCoordinates)
     );
   }
@@ -771,14 +774,13 @@ function defaultRenderSubLayers<DataT>(
   switch (tileSource.mimeType) {
     case 'application/vnd.mapbox-vector-tile':
     case 'application/vnd.maplibre-tile':
+    case 'application/vnd.apache.arrow.stream':
       layers.push(
         new GeoJsonLayer(
           props as any,
           {
             id: `${props.id}-geojson`,
-            data: isArrowTable(props.data)
-              ? convertGeoArrowTableToBinaryFeatureCollection(props.data)
-              : (props.data as any),
+            data: getArrowTileRenderData(props.data),
             pickable: true,
             autoHighlight: true,
             lineWidthScale: 500,
@@ -842,6 +844,16 @@ function defaultRenderSubLayers<DataT>(
   return layers;
 }
 
+/** Converts Arrow tile payloads only at the deck.gl rendering boundary. */
+function getArrowTileRenderData(data: unknown): unknown {
+  return isArrowTable(data)
+    ? convertGeoArrowTableToBinaryFeatureCollection(data, {
+        geometryColumn: getGeoMetadata(data.schema?.metadata)?.primary_column
+      })
+    : data;
+}
+
+/** Identifies the loaders.gl Arrow table wrapper. */
 function isArrowTable(data: unknown): data is ArrowTable {
   return (data as {shape?: string} | null)?.shape === 'arrow-table';
 }

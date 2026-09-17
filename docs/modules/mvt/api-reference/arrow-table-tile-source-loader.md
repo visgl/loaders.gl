@@ -1,3 +1,11 @@
+---
+title: ArrowTableTileSourceLoader
+---
+
+import {TileDocsTabs} from '@site/src/components/docs/tile-docs-tabs';
+
+<TileDocsTabs active="arrow-table-tile-source-loader" />
+
 # ArrowTableTileSourceLoader
 
 `ArrowTableTileSourceLoader` generates clipped, simplified vector tiles from an in-memory Arrow
@@ -53,13 +61,17 @@ in-memory tables do not require `@loaders.gl/core`.
   `geoarrow.wkb`. All other columns, including additional geometry columns, are selected unchanged
   from the source. Their types and field metadata are preserved, as is unrelated schema metadata.
 - Attribute columns are zero-copy views of selected source-row runs. Treat input and returned
-  attribute buffers as immutable. Geometry buffers are newly allocated per request. Tiles may
+attribute buffers as immutable. Geometry buffers are newly allocated per request. Tiles may
   contain multiple record batches; consume the full Arrow table, not just its first batch.
 - Output geometry metadata is refreshed: stale bounds/covering and input geometry types are not
   carried over. Local coordinates have an explicitly unknown CRS; geographic output uses CRS84.
 - Output is an Arrow table, **not** encoded MVT or Arrow IPC bytes. Rendering integrations must
   support Arrow tile data. The complete input table and geometry index remain in memory; this is
   client-side tiling, not out-of-core querying or a worker-backed source.
+
+The [interactive table tiler example](/examples/tiles/table-tiler) uses this source with
+`SourceLayer` from `@loaders.gl/deck-layers`. That adapter converts Arrow tiles to deck.gl's binary
+geometry representation at the rendering boundary, supporting both local and geographic output.
 
 ## Methods
 

@@ -223,5 +223,5 @@ const styles: Record<string, Record<string, string>> = {
   control: {boxSizing: 'border-box', width: '100%', minHeight: '30px', padding: '4px 6px', border: '1px solid rgba(148, 163, 184, 0.55)', borderRadius: '6px', font: 'inherit'},
   dropZone: {display: 'grid', gap: '4px', placeItems: 'center', padding: '8px', border: '1px dashed rgba(59, 130, 246, 0.65)', borderRadius: '6px', background: 'rgba(239, 246, 255, 0.7)', textAlign: 'center', fontSize: '11px'},
   fileInput: {maxWidth: '100%', fontSize: '11px'},
-  hint: {color: '#64748b', lineHeight: 1.4}
+  hint: {color: '#64748b', lineHeight: '1.4'}
 };

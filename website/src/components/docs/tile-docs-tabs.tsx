@@ -19,15 +19,21 @@ export type TileDocsTabId =
   | 'mvt'
   | 'pmtiles'
   | 'table-tile-source-loader'
+  | 'arrow-table-tile-source-loader'
   | 'mlt';
 
 const TILE_DOCS_TABS: TileDocsTab[] = [
   {id: 'mvt-example', label: 'Try MVT', href: '/examples/tiles/mvt'},
   {id: 'pmtiles-example', label: 'Try PMTiles', href: '/examples/tiles/pmtiles'},
-  {id: 'table-tiler-example', label: 'Try Table Tiler', href: '/examples/tiles/table-tiler'},
+  {id: 'table-tiler-example', label: 'Try Arrow Tiler', href: '/examples/tiles/table-tiler'},
   {id: 'mlt-example', label: 'Try MLT', href: '/examples/tiles/mlt'},
   {id: 'mvt', label: 'MVT', href: '/docs/modules/mvt/formats/mvt'},
   {id: 'pmtiles', label: 'PMTiles', href: '/docs/modules/pmtiles/formats/pmtiles'},
+  {
+    id: 'arrow-table-tile-source-loader',
+    label: 'Arrow Table Tiler',
+    href: '/docs/modules/mvt/api-reference/arrow-table-tile-source-loader'
+  },
   {
     id: 'table-tile-source-loader',
     label: 'TableTileSourceLoader',

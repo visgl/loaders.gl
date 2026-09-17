@@ -119,7 +119,7 @@ export class ArrowTableVectorTileSource
       {table: {...TableTileSourceLoader.defaultOptions.table, ...options.table, lineMetrics: false}}
     );
     this.getTileData = this.getTileData.bind(this);
-    this.ready = this.initialize(input);
+    this.ready = this.initializeTable(input);
   }
 
   /** Returns the output schema and supported detail range. */
@@ -175,7 +175,7 @@ export class ArrowTableVectorTileSource
   }
 
   /** Loads an Arrow table and indexes only its decoded geometry and source row numbers. */
-  private async initialize(
+  private async initializeTable(
     input: string | Blob | ArrowTableTileSourceInput | Promise<ArrowTableTileSourceInput>
   ): Promise<void> {
     await this.tiler.ready;
@@ -186,7 +186,12 @@ export class ArrowTableVectorTileSource
           'ArrowTableTileSourceLoader requires core.loaders and an injected core API for URL/Blob input'
         );
       }
-      loaded = await this.coreApi.load(loaded, this.options.core.loaders, this.loadOptions);
+      const loaders = this.options.core.loaders;
+      loaded = await this.coreApi.load(
+        loaded,
+        loaders.length === 1 ? loaders[0] : loaders,
+        this.loadOptions
+      );
     }
     const table = loaded instanceof arrow.Table ? loaded : (loaded as ArrowTable | null)?.data;
     if (!(table instanceof arrow.Table))
@@ -319,7 +324,8 @@ function createTileSchema(
   fieldMetadata.set('ARROW:extension:name', 'geoarrow.wkb');
   fieldMetadata.set(
     'ARROW:extension:metadata',
-    JSON.stringify(localCoordinates ? {crs: null} : {crs: 'OGC:CRS84', crs_type: 'authority_code'})
+    // GeoArrow omits unknown CRS; GeoParquet uses explicit null to avoid its CRS84 default.
+    JSON.stringify(localCoordinates ? {} : {crs: 'OGC:CRS84', crs_type: 'authority_code'})
   );
   const fields = schema.fields.map(field =>
     field === geometryField

@@ -6,6 +6,75 @@ import {expect, test, vi} from 'vitest';
 import {convertGeometryToWKB} from '@loaders.gl/gis';
 import {Tile2DSourceLayer, type Tile2DSourceLayerProps} from '@loaders.gl/deck-layers';
 import {ArrowTableBuilder} from '@loaders.gl/schema-utils';
+import {ArrowTableTileSourceLoader, MVTSourceLoader} from '@loaders.gl/mvt';
+import {GeoJSONLoader} from '@loaders.gl/json';
+import type {ArrowTable} from '@loaders.gl/schema';
+import {resolveVisualSource} from '../src/source-layer-utils';
+
+test.each([
+  'local',
+  'wgs84'
+] as const)('Tile2DSourceLayer renders the Arrow table example in %s coordinates', async coordinates => {
+  const resolved = await resolveVisualSource({
+    data: new Blob(
+      [
+        JSON.stringify({
+          type: 'FeatureCollection',
+          features: [
+            {
+              type: 'Feature',
+              geometry: {type: 'Point', coordinates: [-90, 0]},
+              properties: {name: 'point'}
+            }
+          ]
+        })
+      ],
+      {type: 'application/geo+json'}
+    ),
+    loaders: [MVTSourceLoader, ArrowTableTileSourceLoader, GeoJSONLoader],
+    sourceOptions: {
+      core: {type: 'table', loadOptions: {worker: false}},
+      table: {coordinates}
+    }
+  });
+  expect(resolved.sourceType).toBe('tile-2d');
+  const source = resolved.source as ReturnType<typeof ArrowTableTileSourceLoader.createDataSource>;
+  const index = {x: 0, y: 0, z: 0};
+  const tile = await source.getTileData({index});
+  expect(tile?.shape).toBe('arrow-table');
+  const layer = createLayer({id: 'arrow-table-example', data: source, showTileBorders: false});
+  expect(layer._resolveData(layer.props)).toBe(source);
+  expect(layer.sourceSupportsMVTLayer(source)).toBe(coordinates === 'local');
+  if (coordinates === 'local') {
+    layer.context = {device: createDevice()};
+    const [localLayer] = layer.renderMVTLayer(source);
+    localLayer.state = {vectorTileSource: source};
+    localLayer.setState = vi.fn();
+    localLayer.updateState({
+      props: localLayer.props,
+      oldProps: localLayer.props,
+      changeFlags: {dataChanged: true}
+    });
+    expect(localLayer.setState).toHaveBeenCalledWith({vectorTileSource: source, binary: true});
+    const renderData = await localLayer.getTileData({index});
+    expect(renderData.shape).toBe('binary-feature-collection');
+    expect([...renderData.points.positions.value]).toEqual([0.25, 0.5]);
+  } else {
+    const [renderedLayer] = layer.props.renderSubLayers({
+      ...layer.props,
+      id: 'arrow-table-tile',
+      data: tile as ArrowTable,
+      _offset: 0,
+      tile: {index, bbox: {west: -180, south: -85, east: 180, north: 85}},
+      tileSource: source
+    });
+    expect(renderedLayer.constructor.layerName).toBe('GeoJsonLayer');
+    expect(renderedLayer.props.data.shape).toBe('binary-feature-collection');
+    expect([...renderedLayer.props.data.points.positions.value]).toEqual([-90, 0]);
+    expect(renderedLayer.props.data.points.properties).toEqual([{name: 'point'}]);
+  }
+});
+
 const TEST_TILE_SOURCE = {
   mimeType: 'image/png',
   options: {},

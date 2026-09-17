@@ -67,6 +67,8 @@ test.each([
     });
   }
   expect(source.localCoordinates).toBe(true);
+  const geometryField = (await source.getSchema()).fields.find(field => field.name === 'geometry');
+  expect(geometryField?.metadata?.['ARROW:extension:metadata']).toBe('{}');
   expect(await source.getMetadata()).toMatchObject({
     minZoom: 0,
     maxZoom: 14,
@@ -277,7 +279,7 @@ test('Arrow tile source loads URLs and blobs through injected core and works thr
       coreApi
     );
     expect((await source.getTile(ROOT_TILE))?.data.numRows).toBe(1);
-    expect(load).toHaveBeenLastCalledWith(input, [GeoJSONLoader], {worker: false});
+    expect(load).toHaveBeenLastCalledWith(input, GeoJSONLoader, {worker: false});
   }
   const source = createDataSource(table, [ArrowTableTileSourceLoader], {});
   expect((await source.getVectorTile(ROOT_TILE))?.shape).toBe('arrow-table');
