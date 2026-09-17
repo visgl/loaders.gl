@@ -113,7 +113,7 @@ test('style input resolves the selected content group and skips out-of-range row
 
 test('style input treats prototype property names as ordinary data', () => {
   const styleInput = createTile3DStyleInput(
-    {...content, metadata: {properties: {'__proto__': 'authored'}}},
+    {...content, metadata: {properties: {__proto__: 'authored'}}},
     {},
     {}
   );
