@@ -272,6 +272,8 @@ export async function loadDraco(
     ...options,
     draco: {
       ...options?.draco,
+      // The 3D Tiles point-cloud path consumes the legacy mesh contract.
+      shape: 'mesh',
       extraAttributes: dracoData.batchTableProperties || {}
     }
   };

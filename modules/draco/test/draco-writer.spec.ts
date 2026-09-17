@@ -45,7 +45,15 @@ async function loadBunny() {
   const response = await fetchFile(BUNNY_DRC_URL);
   const arrayBuffer = await response.arrayBuffer();
   // Decode Loaded Mesh to use as input data for encoders
-  return await parse(arrayBuffer, DracoLoader, {useLocalLibraries: true});
+  return await parseMesh(arrayBuffer, {useLocalLibraries: true});
+}
+
+/** Decode Draco test fixtures using the legacy mesh shape consumed by these writer tests. */
+async function parseMesh(data: any, options: any = {}) {
+  return await parse(data, DracoLoader, {
+    ...options,
+    draco: {...options.draco, shape: 'mesh'}
+  });
 }
 test('DracoWriter#loader conformance', () => {
   validateWriter(DracoWriter, 'DracoWriter');
@@ -69,7 +77,7 @@ test('DracoWriter#preserves normalized MeshAttribute descriptors', async () => {
     DracoWriter,
     {useLocalLibraries: true}
   );
-  const decodedMesh = await parse(compressedMesh, DracoLoader, {
+  const decodedMesh = await parseMesh(compressedMesh, {
     core: {worker: false},
     useLocalLibraries: true
   });
@@ -106,7 +114,7 @@ test('DracoWriter#encode(bunny.drc)', async () => {
     // t.comment(`${tc.title} ${compressedMesh.byteLength} bytes, ratio ${ratio.toFixed(1)}`);
     if (!tc.options.pointcloud) {
       // Decode the mesh
-      const data2 = await parse(compressedMesh, DracoLoader);
+      const data2 = await parseMesh(compressedMesh);
       validateMeshCategoryData(data2);
       // t.comment(JSON.stringify(data));
       expect(
@@ -155,7 +163,7 @@ test('DracoWriter#Worker$encode(bunny.drc)', async () => {
     // t.comment(`${tc.title} ${compressedMesh.byteLength} bytes, ratio ${ratio.toFixed(1)}`);
     if (!tc.options.pointcloud) {
       // Decode the mesh
-      const data2 = await parse(compressedMesh, DracoLoader, {useLocalLibraries: true});
+      const data2 = await parseMesh(compressedMesh, {useLocalLibraries: true});
       validateMeshCategoryData(data2);
       // t.comment(JSON.stringify(data));
       expect(
@@ -193,7 +201,7 @@ test('DracoWriter#WorkerNodeJS#encode(bunny.drc)', async () => {
     // t.comment(`${tc.title} ${compressedMesh.byteLength} bytes, ratio ${ratio.toFixed(1)}`);
     if (!tc.options.pointcloud) {
       // Decode the mesh
-      const data2 = await parse(compressedMesh, DracoLoader);
+      const data2 = await parseMesh(compressedMesh);
       validateMeshCategoryData(data2);
       // t.comment(JSON.stringify(data));
       expect(
@@ -238,7 +246,7 @@ test('DracoWriter#encode via draco3d npm package (bunny.drc)', async () => {
     // t.comment(`${tc.title} ${compressedMesh.byteLength} bytes, ratio ${ratio.toFixed(1)}`);
     if (!tc.options.pointcloud) {
       // Decode the mesh
-      const data2 = await parse(compressedMesh, DracoLoader, {
+      const data2 = await parseMesh(compressedMesh, {
         modules: {
           draco3d
         }
@@ -274,7 +282,7 @@ test('DracoWriter#encode(bunny.drc)', async () => {
     // t.comment(`${tc.title} ${compressedMesh.byteLength} bytes, ratio ${ratio.toFixed(1)}`);
     if (!tc.options.pointcloud) {
       // Decode the mesh
-      const data2 = await parse(compressedMesh, DracoLoader);
+      const data2 = await parseMesh(compressedMesh);
       validateMeshCategoryData(data2);
       // t.comment(JSON.stringify(data));
       expect(
@@ -300,7 +308,7 @@ test('DracoWriter#should encode texCoord/texCoords attribute as TEX_COORD attrib
     indices: data.indices?.value
   };
   const compressedMesh = await encode(meshAttributes, DracoWriter);
-  const data2 = await parse(compressedMesh, DracoLoader);
+  const data2 = await parseMesh(compressedMesh);
   expect(data2.attributes.TEXCOORD_0.value.length, 'Decoded texCoord length matched').toBe(
     texCoord.length
   );
@@ -310,7 +318,7 @@ test('DracoWriter#should encode texCoord/texCoords attribute as TEX_COORD attrib
     indices: data.indices?.value
   };
   const compressedMesh2 = await encode(meshAttributes2, DracoWriter);
-  const data3 = await parse(compressedMesh2, DracoLoader);
+  const data3 = await parseMesh(compressedMesh2);
   expect(data3.attributes.TEXCOORD_0.value.length, 'Decoded texCoords length matched').toBe(
     texCoord.length
   );
@@ -346,7 +354,7 @@ test('DracoWriter#geometry metadata', async () => {
     'Correct length - different from encoded geometry without metadata'
   ).toBe(435614);
   // Decode the mesh
-  const data2 = await parse(compressedMesh, DracoLoader, {
+  const data2 = await parseMesh(compressedMesh, {
     core: {worker: false}
   });
   validateMeshCategoryData(data2);
@@ -399,7 +407,7 @@ test('DracoWriter#attributes metadata', async () => {
     'Correct length - different from encoded geometry without metadata'
   ).toBe(435682);
   // Decode the mesh
-  const data2 = await parse(compressedMesh, DracoLoader, {
+  const data2 = await parseMesh(compressedMesh, {
     core: {worker: false}
   });
   validateMeshCategoryData(data2);
@@ -427,7 +435,7 @@ test('DracoWriter#attributeNameEntry preserves custom attribute names', async ()
       attributeNameEntry: 'custom-attribute-name'
     }
   });
-  const data2 = await parse(compressedMesh, DracoLoader, {
+  const data2 = await parseMesh(compressedMesh, {
     core: {worker: false},
     draco: {
       attributeNameEntry: 'custom-attribute-name'
@@ -452,7 +460,7 @@ test('DracoWriter#preserves secondary glTF attribute semantics', async () => {
     DracoWriter,
     {core: {worker: false}, useLocalLibraries: true}
   );
-  const decodedMesh = await parse(compressedMesh, DracoLoader, {
+  const decodedMesh = await parseMesh(compressedMesh, {
     core: {worker: false},
     useLocalLibraries: true
   });
@@ -482,7 +490,7 @@ test('DracoWriter#applies independent quantization to attributes in one category
       }
     }
   );
-  const decodedMesh = await parse(compressedMesh, DracoLoader, {
+  const decodedMesh = await parseMesh(compressedMesh, {
     core: {worker: false},
     useLocalLibraries: true,
     draco: {quantizedAttributes: ['TEX_COORD']}
