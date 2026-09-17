@@ -4,6 +4,8 @@
 
 ### Unreleased
 
+- feat(mvt): add ArrowTableTileSourceLoader for Arrow input and GeoArrow WKB tiles with zero-copy attribute selection
+
 - feat(arrow): make NDGeoJSON, Chrome Trace, and GML loaders Arrow-primary while retaining explicit legacy output shapes
 
 - feat(arrow): make PLY, Draco, Potree BIN, Terrain, and Quantized Mesh loaders Arrow-primary by default while retaining explicit legacy shapes

@@ -53,5 +53,14 @@ export type {MVTSourceLoaderOptions} from './mvt-source-loader';
 export {TableTileSourceLoader, TableVectorTileSource} from './table-tile-source-loader';
 export type {TableTileSourceLoaderOptions} from './table-tile-source-loader';
 
+export {
+  ArrowTableTileSourceLoader,
+  ArrowTableVectorTileSource
+} from './arrow-table-tile-source-loader';
+export type {
+  ArrowTableTileSourceLoaderOptions,
+  ArrowTableTileSourceInput
+} from './arrow-table-tile-source-loader';
+
 // DEPRECATED EXPORTS
 export {MVTWorkerLoader} from './mvt-loader';

@@ -40,6 +40,9 @@ The `@loaders.gl/mvt` module handles the [Mapbox Vector Tile](/docs/modules/mvt/
 
 The modules also provides a `TableTileSourceLoader` class that can serve up dynamic tiles from an in-memory `GeoJSON` file.
 
+For Arrow input, `ArrowTableTileSourceLoader` generates GeoArrow WKB tiles while preserving typed
+attribute columns without a GeoJSON property round-trip.
+
 <ReferenceBoundary
   title="Vector tile module details"
   description="The sections below cover installation, loaders, writers, sources, formats, and tile-specific data behavior."
@@ -63,6 +66,7 @@ npm install @loaders.gl/core
 | [`MVTWriter`](/docs/modules/mvt/api-reference/mvt-writer) | Writes Mapbox Vector Tile data. |
 | [`MVTSourceLoader`](/docs/modules/mvt/api-reference/mvt-source-loader) | Dynamically loads tiles from pre-tiled MVT hierarchies. |
 | [`TableTileSourceLoader`](/docs/modules/mvt/api-reference/table-tile-source-loader) | Generates vector tiles from geospatial tables on the fly. |
+| [`ArrowTableTileSourceLoader`](/docs/modules/mvt/api-reference/arrow-table-tile-source-loader) | Generates Arrow vector tiles from in-memory Arrow tables. |
 
 ## Formats
 

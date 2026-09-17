@@ -47,6 +47,10 @@ The `TableTileSourceLoader` slices a GeoJSON table into small vector tiles on th
 enable rendering and interaction with a larger in-browser dataset without requiring the data to be
 pre-tiled or served from a tile server.
 
+For Arrow input and consistent Arrow tile output, use the separate
+[`ArrowTableTileSourceLoader`](./arrow-table-tile-source-loader). This source's GeoJSON behavior
+is unchanged.
+
 | Source         | Characteristic                                       |
 | -------------- | ---------------------------------------------------- |
 | File Extension | N/A - Any table with geometries                      |

@@ -65,3 +65,10 @@ npm install @loaders.gl/gis
 | Utility Function | Description |
 | --- | --- |
 | [`geojson-to-binary`](/docs/modules/gis/api-reference/geojson-to-binary) | Converts GeoJSON features into deck.gl-style binary feature collections |
+| `getGeoArrowNativeGeometry(column, rowIndex, encoding, maximumDepth = 64)` | Reads one native GeoArrow row as geometry coordinates without materializing feature properties; supports concrete, dense-union, and GeometryCollection encodings |
+| `getGeoArrowUnionGeometryKind(fieldName, typeId)` | Resolves a dense-union child's geometry family from its field name or canonical GeoArrow type ID |
+
+`getGeoArrowNativeGeometry` returns a geometry or `null` for null, unsupported, or out-of-range
+rows. WKB and WKT are handled by `GeometryConverter`, not this native-column reader. The native
+reader remains re-exported by `@loaders.gl/geoarrow` for compatibility; loaders can use the GIS
+export without depending on the richer GeoArrow processing module.
