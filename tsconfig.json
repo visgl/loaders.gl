@@ -238,6 +238,9 @@
       "@loaders.gl/mvt": [
         "modules/mvt/src"
       ],
+      "@loaders.gl/mvt/arrow-table-tile-source-loader": [
+        "modules/mvt/src/arrow-table-tile-source-loader.ts"
+      ],
       "@loaders.gl/mvt/test": [
         "modules/mvt/test"
       ],

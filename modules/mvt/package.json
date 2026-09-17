@@ -27,6 +27,11 @@
       "import": "./dist/index.js",
       "require": "./dist/index.cjs"
     },
+    "./arrow-table-tile-source-loader": {
+      "types": "./dist/arrow-table-tile-source-loader.d.ts",
+      "import": "./dist/arrow-table-tile-source-loader.js",
+      "require": "./dist/arrow-table-tile-source-loader.cjs"
+    },
     "./tilejson-zod-schema": {
       "types": "./dist/tilejson-zod-schema.d.ts",
       "import": "./dist/tilejson-zod-schema.js",
@@ -67,6 +72,7 @@
     "@loaders.gl/schema-utils": "5.0.0-alpha.6",
     "@math.gl/polygon": "5.0.0-alpha.6",
     "@probe.gl/stats": "^4.1.1",
+    "apache-arrow": "^21.2.0",
     "pbf": "^3.2.1",
     "zod": "^4.1.12"
   },

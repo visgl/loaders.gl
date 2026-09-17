@@ -136,7 +136,7 @@ callers that need another view should use the corresponding specialized source c
 
 While most `SourceLoader` implementations provide an interface for interacting with a specific web service or cloud archive file format (e.g. `PMTilesSourceLoader`), it is also possible to create adapters:
 
-- that provide a `SourceLoader` interface to local data (`TableTileSourceLoader`)
+- that provide a `SourceLoader` interface to local data (`ArrowTableTileSourceLoader`)
 - that adapt one type of source to another (e.g. `ImageTileSource` calling an `ImageSource` to generate each tile).
 
 ## Source auto-selection
@@ -192,21 +192,25 @@ A source loader can sometimes use one or more loaders internally to load sub res
 
 ## Example
 
-An advanced source loader is `TableTileSourceLoader`, which lets you dynamically generate MVT tiles from a table.
+An advanced source loader is `ArrowTableTileSourceLoader`, which dynamically generates clipped,
+simplified GeoArrow WKB tiles from an Arrow table. GeoJSONLoader returns Arrow by default in 5.0.
+These are Arrow tables, not encoded MVT bytes; the separate `TableTileSourceLoader` retains its
+GeoJSON interface.
 
 ```typescript
-import {createDataSource} from '@loaders.gl/core';
-import {TableTileSourceLoader} from '@loaders.gl/mvt';
+import {load} from '@loaders.gl/core';
+import {ArrowTableTileSourceLoader} from '@loaders.gl/mvt';
 import {GeoJSONLoader} from '@loaders.gl/json';
 
 // build an initial index of tiles.
-const tileSource = createDataSource(url, [TableTileSourceLoader], {
+const tileSource = await load(url, ArrowTableTileSourceLoader, {
   core: {
     loaders: [GeoJSONLoader]
-  }
+  },
+  table: {coordinates: 'wgs84'}
 });
 
 // request a particular tile
 const tile = await tileSource.getTile({z: 5, x: 10, y: 12});
-const features = tile?.features || [];
+const geometry = tile?.data.getChild('geometry'); // Arrow Binary vector containing WKB
 ```

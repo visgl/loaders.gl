@@ -12,6 +12,14 @@ export type {
 export {getWKBGeometryStatistics} from './lib/geometry-converters/wkb/get-wkb-geometry-statistics';
 
 // Geo Metadata
+export {
+  getGeoArrowNativeGeometry,
+  type GeoArrowNativeGeometry
+} from './lib/geoarrow/get-geoarrow-native-geometry';
+export {
+  getGeoArrowUnionGeometryKind,
+  type GeoArrowUnionGeometryKind
+} from './lib/geoarrow/geoarrow-union-kind';
 // import {default as GEOPARQUET_METADATA_SCHEMA} from './lib/geo/geoparquet-metadata-schema.json';
 // export {GEOPARQUET_METADATA_SCHEMA};
 // export {GEOPARQUET_METADATA_JSON_SCHEMA} from './lib/geoarrow/geoparquet-metadata-schema';

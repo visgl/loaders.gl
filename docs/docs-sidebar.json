@@ -233,6 +233,7 @@
           "modules/tiles/api-reference/tileset-3d-source",
           "modules/mvt/api-reference/mvt-source-loader",
           "modules/mvt/api-reference/table-tile-source-loader",
+          "modules/mvt/api-reference/arrow-table-tile-source-loader",
           "modules/mlt/api-reference/mlt-source-loader",
           "modules/wms/api-reference/csw-source-loader",
           "modules/wms/api-reference/wms-source-loader"

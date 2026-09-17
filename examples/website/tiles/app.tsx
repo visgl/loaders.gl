@@ -9,7 +9,7 @@ import type {RangeRequestEvent, RangeStats} from '@loaders.gl/loader-utils';
 import {createRangeStats, getRangeStats} from '@loaders.gl/loader-utils';
 import {PMTilesSourceLoader} from '@loaders.gl/pmtiles';
 import {MLTSourceLoader} from '@loaders.gl/mlt';
-import {MVTSourceLoader, TableTileSourceLoader} from '@loaders.gl/mvt';
+import {MVTSourceLoader, ArrowTableTileSourceLoader} from '@loaders.gl/mvt';
 import {GeoJSONLoader} from '@loaders.gl/json';
 
 import DeckGL from '@deck.gl/react';
@@ -32,11 +32,13 @@ import type {Example} from './examples';
 import {EXAMPLES, INITIAL_CATEGORY_NAME, INITIAL_EXAMPLE_NAME, INITIAL_MAP_STYLE} from './examples';
 import '@deck.gl/widgets/stylesheet.css';
 
-const TILE_SOURCE_FACTORIES = [
+/** Stable loader identities prevent metadata updates from restarting source resolution. */
+const TILE_LOADERS = [
   PMTilesSourceLoader,
-  TableTileSourceLoader,
+  ArrowTableTileSourceLoader,
   MVTSourceLoader,
-  MLTSourceLoader
+  MLTSourceLoader,
+  GeoJSONLoader
 ] as const;
 
 const INITIAL_VIEW_STATE = {latitude: 47.65, longitude: 7, zoom: 2, maxZoom: 20};
@@ -122,8 +124,7 @@ export default function App(props: AppProps = {}) {
               onEvent: onTileRangeRequest
             },
             table: {
-              generateId: true,
-              shape: 'geojson-table'
+              coordinates: 'wgs84'
             },
             mvt: {shape: 'arrow-table'},
             mlt: {shape: 'arrow-table'}
@@ -136,8 +137,9 @@ export default function App(props: AppProps = {}) {
     currentExample &&
     sourceOptions &&
     new SourceLayer({
+      id: 'tiles-example',
       data: currentExample.data,
-      loaders: [...TILE_SOURCE_FACTORIES, GeoJSONLoader],
+      loaders: TILE_LOADERS,
       sourceOptions,
       showTileBorders: props.showTileBorders ?? true,
       onTileError: onTileLoadError,
@@ -172,8 +174,8 @@ export default function App(props: AppProps = {}) {
         panel: new ColumnPanel({
           id: 'tiles-example-panel',
           title: '',
-          panels: {
-            source: createExampleSourcePanel({
+          panels: [
+            createExampleSourcePanel({
               surface: 'tiles',
               selectedLabel: state.selectedExampleName || undefined,
               selectedUrl: typeof currentExample?.data === 'string' ? currentExample.data : undefined,
@@ -181,7 +183,7 @@ export default function App(props: AppProps = {}) {
                 void loadExampleSource(source);
               }
             }),
-            controls: new CustomPanel({
+            new CustomPanel({
               id: 'tiles-example-controls',
               title: '',
               onRenderHTML: (rootElement) =>
@@ -203,7 +205,7 @@ export default function App(props: AppProps = {}) {
                   onHideBasemapChange: setHideBasemap
                 })
             })
-          }
+          ]
         })
       })
     ];
@@ -369,7 +371,6 @@ function createExampleSelect(options: {
   selectElement.style.border = '1px solid rgba(148, 163, 184, 0.55)';
   selectElement.style.borderRadius = '8px';
   selectElement.style.background = 'var(--menu-background, #fff)';
-  selectElement.value = `${options.selectedCategoryName}.${options.selectedExampleName}`;
   selectElement.addEventListener('change', (event) => {
     const [categoryName, exampleName] = (event.target as HTMLSelectElement).value.split('.');
     options.onExampleChange({categoryName, exampleName});
@@ -389,6 +390,17 @@ function createExampleSelect(options: {
     selectElement.appendChild(optGroupElement);
   }
 
+  const selectedValue = `${options.selectedCategoryName}.${options.selectedExampleName}`;
+  if (options.examples[options.selectedCategoryName || '']?.[options.selectedExampleName || '']) {
+    selectElement.value = selectedValue;
+  } else {
+    const customOption = document.createElement('option');
+    customOption.value = '';
+    customOption.textContent = `Custom source (${options.selectedCategoryName || 'loading'})`;
+    customOption.disabled = true;
+    selectElement.appendChild(customOption);
+    selectElement.value = '';
+  }
   section.appendChild(selectElement);
   return section;
 }

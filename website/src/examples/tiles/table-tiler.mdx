@@ -1,5 +1,5 @@
 ---
-title: "TableTileSourceLoader"
+title: "ArrowTableTileSourceLoader"
 hide_title: true
 ---
 
@@ -10,6 +10,6 @@ import {TileDocsTabs} from '@site/src/components/docs/tile-docs-tabs';
 
 <div style={{height: 'calc(100vh - var(--ifm-navbar-height) - 4rem)'}}> 
   <ClientExample kind="tiles" format="GeoJSON">
-    [**`TableTileSourceLoader`**](/docs/modules/mvt/api-reference/table-tile-source-loader) dynamically **generates** tiles from GeoJSON data loaded into the browser.
+    [**`ArrowTableTileSourceLoader`**](/docs/modules/mvt/api-reference/arrow-table-tile-source-loader) dynamically **generates GeoArrow tiles** from an Arrow table. GeoJSON is loaded into Arrow first; attributes stay columnar through clipping and simplification.
   </ClientExample>
 </div>
