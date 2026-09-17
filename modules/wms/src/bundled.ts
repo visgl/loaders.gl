@@ -21,9 +21,9 @@ export type {WFSCapabilities as _WFSCapabilities} from './wfs-capabilities-loade
 export {WFSCapabilitiesLoaderWithParser as WFSCapabilitiesLoader} from './wfs-capabilities-loader-with-parser';
 export {WFSCapabilitiesLoaderWithParser as _WFSCapabilitiesLoader} from './wfs-capabilities-loader-with-parser';
 
-export type {GMLLoaderOptions as _GMLLoaderOptions} from './gml-loader-with-parser';
-export {GMLLoaderWithParser as GMLLoader} from './gml-loader-with-parser';
-export {GMLLoaderWithParser as _GMLLoader} from './gml-loader-with-parser';
+export type {GMLLoaderOptions, GMLLoaderOptions as _GMLLoaderOptions} from './gml-loader-types';
+export {GMLLoaderWithParser as GMLLoader} from './gml-loader';
+export {GMLLoaderWithParser as _GMLLoader} from './gml-loader';
 export {WMSFeatureInfoLoaderWithParser as _WMSFeatureInfoLoader} from './wip/wms-feature-info-loader-with-parser';
 export {WMSLayerDescriptionLoaderWithParser as _WMSLayerDescriptionLoader} from './wip/wms-layer-description-loader-with-parser';
 export {WMTSCapabilitiesLoaderWithParser as _WMTSCapabilitiesLoader} from './wip/wmts-capabilities-loader-with-parser';

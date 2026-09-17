@@ -108,8 +108,9 @@ function parseChromeTraceTextSync(
 function resolveChromeTraceLoaderShape(
   options: ChromeTraceLoaderOptions | undefined
 ): 'json' | 'arrow-table' {
-  const shape = options?.chromeTrace?.shape ?? options?.shape;
-  return shape === 'arrow-table' ? 'arrow-table' : 'json';
+  // The explicit legacy option must override the namespaced loader default injected by core.
+  const shape = options?.shape ?? options?.chromeTrace?.shape;
+  return shape === 'json' ? 'json' : 'arrow-table';
 }
 
 /**

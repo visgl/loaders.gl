@@ -9,7 +9,7 @@ Framework-independent sources and response loaders for OGC geospatial services.
 | WFS | `WFSSourceLoader` | GeoJSON, binary, Arrow, or streaming GML features |
 | WCS | `WCSCoverageSourceLoader` | Binary coverages or decoded LERC |
 | CSW | `CSWSourceLoader` | Catalog records and referenced services |
-| GML | `GMLLoader` | GeoJSON feature collections and streaming batches |
+| GML | `GMLLoader` | Arrow feature tables and streaming batches; explicit GeoJSON output |
 | OGC API Features | `OGCAPIFeaturesSourceLoader` | GeoJSON, binary, or Arrow features |
 | OGC API Tiles | `OGCAPITilesSourceLoader` | Raw tile bytes from a template |
 | OGC API Coverages | `OGCAPICoveragesSourceLoader` | JSON or binary coverages |

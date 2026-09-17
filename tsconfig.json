@@ -193,6 +193,9 @@
       "@loaders.gl/json/test": [
         "modules/json/test"
       ],
+      "@loaders.gl/json/ndgeojson-loader": [
+        "modules/json/src/ndgeojson-loader.ts"
+      ],
       "@loaders.gl/config": [
         "modules/config/src"
       ],

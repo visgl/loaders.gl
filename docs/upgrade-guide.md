@@ -107,6 +107,18 @@ See [Caching and memory](/docs/modules/3d-tiles/concepts/caching-and-memory) for
  - `MVTSourceLoader` now returns tiles in the Arrow-table shape by default, matching the source's
    columnar query path. Set `mvt.shape: 'geojson-table'` explicitly for object-row GeoJSON tiles.
 
+**@loaders.gl/json, @loaders.gl/traces, and @loaders.gl/wms**
+
+- `NDGeoJSONLoader` now returns Arrow tables by default. Set `geojson.shape: 'object-row-table'`
+  to keep complete GeoJSON features as object rows. Its loader ID is now `ndgeojson` rather than
+  the ambiguous `ndjson`.
+- `ChromeTraceLoader` now defaults to its existing native Apache Arrow `Table` output. Set
+  `chromeTrace.shape: 'json'` (or the legacy top-level `shape: 'json'`) for the validated JSON
+  container. Batched parsing defaults to native Arrow record batches.
+- `GMLLoader` now defaults to a GeoArrow WKB table. Bare geometries become one-row tables.
+  Set `gml.shape: 'geojson'` for the previous geometry/FeatureCollection/null result, including
+  FeatureCollection batches. WFS source format selection is unchanged.
+
 **@loaders.gl/draco, @loaders.gl/potree, and @loaders.gl/terrain**
 
  - `DracoLoader`, `PotreeBinLoader`, `TerrainLoader`, and `QuantizedMeshLoader` now return Mesh

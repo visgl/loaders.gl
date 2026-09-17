@@ -27,7 +27,7 @@ export type ChromeTraceLoaderOptions = LoaderOptions &
 /** Default Chrome trace loader options. */
 export const CHROME_TRACE_LOADER_OPTIONS = {
   chromeTrace: {
-    shape: 'json',
+    shape: 'arrow-table',
     batchSize: 256
   }
 } as const satisfies ChromeTraceLoaderOptions;

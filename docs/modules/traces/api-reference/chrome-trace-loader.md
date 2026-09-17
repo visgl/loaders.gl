@@ -27,7 +27,7 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
 <DocOrientation
   eyebrow="What it returns"
   title="Keep the trace document—or work with typed events."
-  description="ChromeTraceLoader preserves the top-level JSON container by default and can project events into Arrow columns when the next step is filtering, joining, or batch processing."
+  description="ChromeTraceLoader returns typed Arrow events by default, preserving container metadata on the schema. Explicit JSON output retains the validated source container."
   tone="violet"
   items={[
     {label: 'JSON', value: 'Validated container with passthrough fields'},
@@ -43,8 +43,8 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
   tone="violet"
 />
 
-`ChromeTraceLoader` loads Chrome Trace Event JSON. It returns a validated JSON container by default
-or an Apache Arrow event table when `chromeTrace.shape` is `arrow-table`.
+`ChromeTraceLoader` loads Chrome Trace Event JSON. It returns an Apache Arrow event table by default,
+or a validated JSON container when `chromeTrace.shape` is `json`.
 
 ## Usage
 
@@ -52,9 +52,9 @@ or an Apache Arrow event table when `chromeTrace.shape` is `arrow-table`.
 import {load, parse} from '@loaders.gl/core';
 import {ChromeTraceLoader} from '@loaders.gl/traces';
 
-const traceFile = await load('trace.json', ChromeTraceLoader);
-const eventTable = await load('trace.json', ChromeTraceLoader, {
-  chromeTrace: {shape: 'arrow-table'}
+const eventTable = await load('trace.json', ChromeTraceLoader);
+const traceFile = await load('trace.json', ChromeTraceLoader, {
+  chromeTrace: {shape: 'json'}
 });
 const parsed = await parse(jsonText, ChromeTraceLoader);
 ```
@@ -74,16 +74,19 @@ import `ChromeTraceLoaderWithParser` from that subpath.
 
 | Option | Type | Default | Description |
 | --- | --- | --- | --- |
-| `chromeTrace.shape` | `'json' \| 'arrow-table'` | `'json'` | Whole-file result shape. |
+| `chromeTrace.shape` | `'json' \| 'arrow-table'` | `'arrow-table'` | Whole-file result shape. |
 | `chromeTrace.batchSize` | `number` | `256` | Maximum events per streamed Arrow record batch. |
 | `maxLength` | `number` | `1000` | Maximum number of events structurally validated; all events are still returned. |
 
-The legacy top-level `shape` option is also accepted. Prefer `chromeTrace.shape` in new code.
+The legacy top-level `shape` option is also accepted and takes precedence if supplied.
+Prefer `chromeTrace.shape` in new code. Arrow results retain this module's native Apache Arrow
+`Table` API (`table.numRows`), not a loaders.gl `{shape, data}` wrapper.
 
 ## Batched Parsing
 
-`parseInBatches` requires `chromeTrace.shape: 'arrow-table'` and yields
+`parseInBatches` defaults to Arrow and yields
 `ChromeTraceEventArrowRecordBatch` values with the same lossless schema used by whole-file parsing.
+Explicit JSON batch output is not supported.
 
 ```typescript
 import {parseInBatches} from '@loaders.gl/core';

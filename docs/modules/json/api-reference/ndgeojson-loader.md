@@ -31,8 +31,8 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
   tone="mint"
   items={[
     {label: 'Input', value: 'One GeoJSON feature per line'},
-    {label: 'Output', value: 'Incremental feature batches'},
-    {label: 'Geometry', value: 'GeoJSON geometry and properties'},
+    {label: 'Output', value: 'Arrow tables and bounded Arrow batches'},
+    {label: 'Geometry', value: 'GeoArrow WKB with feature property columns'},
     {label: 'Use cases', value: 'Large exports, maps, and stream processing'}
   ]}
 />
@@ -53,8 +53,48 @@ Streaming loader for NDJSON encoded files and related formats (LDJSON and JSONL)
 | Media Type     | `application/geo+x-ndjson`, `application/geo+x-ldjson`, `application/geo+json-seq` |
 | File Type      | Text                                                                               |
 | File Format    | [NDJSON][format_ndjson], [LDJSON][format_ldjson], [JSON Text Sequences][format_geojsonseq] |
-| Data Format    | [Classic Table](/docs/specifications/category-table)                               |
+| Data Format    | [Arrow table](/docs/specifications/category-table), or explicit object rows       |
 | Supported APIs | `load`, `parse`, `parseSync`, `parseInBatches`                                     |
+
+## Usage
+
+```typescript
+import {load, parseInBatches} from '@loaders.gl/core';
+import {NDGeoJSONLoader} from '@loaders.gl/json';
+
+const table = await load('features.ndgeojson', NDGeoJSONLoader);
+console.log(table.data.numRows);
+
+for await (const batch of await parseInBatches(chunks, NDGeoJSONLoader, {
+  core: {batchSize: 1000}
+})) {
+  console.log(batch.data.numRows);
+}
+```
+
+The package root exports a metadata-only loader. For `parseSync`, import
+`NDGeoJSONLoaderWithParser` from `@loaders.gl/json/ndgeojson-loader`.
+
+## Output and options
+
+The default result is `{shape: 'arrow-table', schema, data}`, where `data` is an Apache Arrow
+table. Feature properties and IDs become columns and geometry uses the `geoarrow.wkb` extension.
+Feature IDs use the `id` column. If a feature ID collides with an existing property named `id`,
+Arrow conversion throws instead of overwriting either value; explicit object rows preserve both.
+Set `geojson.shape: 'object-row-table'` to return `{shape: 'object-row-table', data: Feature[]}`
+with complete, unmodified GeoJSON feature objects.
+
+Arrow conversion accepts the same `json.schema`, `json.arrowConversion`,
+`json.geoarrowGeometryColumn`, and `geoarrow.encodingPreference` options as `GeoJSONLoader`.
+Streaming freezes the schema after the first nonempty batch; incompatible later records follow
+the shared JSON Arrow conversion policy. Provide `json.schema` when later records contain fields
+not represented in the first batch. Native/optimized geometry streams use a stable
+`geoarrow.geometry` union so later geometry types remain representable.
+
+Input must contain one complete GeoJSON Feature per line. Blank lines, CRLF, a final line without
+a newline, and optional record-separator prefixes are accepted. Multiline JSON Text Sequence
+records are not supported. Streaming handles arbitrary UTF-8 chunk boundaries and emits at most
+`core.batchSize` rows per batch (default `1000`).
 
 [format_geojsonl]: https://www.placemark.io/documentation/geojsonl
 [format_ndjson]: http://ndjson.org/
