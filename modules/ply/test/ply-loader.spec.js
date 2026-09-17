@@ -107,7 +107,7 @@ test('PLYLoader#parse(shape: arrow-table)', async () => {
 test('PLYLoader#parse(colorFormat) returns normalized colors', () => {
   const float32Mesh = parseSync(ASCII_COLOR_PLY, PLYLoader, {
     core: {worker: false},
-    ply: {colorFormat: 'float32'}
+    ply: {shape: 'mesh', colorFormat: 'float32'}
   });
   expect(float32Mesh.attributes.COLOR_0.value).toBeInstanceOf(Float32Array);
   expect(float32Mesh.attributes.COLOR_0.value[0]).toBeCloseTo(1);
@@ -116,7 +116,7 @@ test('PLYLoader#parse(colorFormat) returns normalized colors', () => {
 
   const float16Mesh = parseSync(ASCII_COLOR_PLY, PLYLoader, {
     core: {worker: false},
-    ply: {colorFormat: 'float16'}
+    ply: {shape: 'mesh', colorFormat: 'float16'}
   });
   expect(float16Mesh.attributes.COLOR_0.componentType).toBe('float16');
   expect(getFloat16Value(float16Mesh.attributes.COLOR_0.value, 1)).toBeCloseTo(128 / 255, 3);

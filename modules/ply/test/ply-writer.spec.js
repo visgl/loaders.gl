@@ -21,14 +21,20 @@ test('PLYWriter#writer conformance', () => {
 });
 test('PLYWriter#encode plain and Arrow mesh data', async () => {
   const arrayBuffer = await encode(mesh, PLYWriter);
-  const data = await parse(arrayBuffer, PLYLoader, {core: {worker: false}});
+  const data = await parse(arrayBuffer, PLYLoader, {
+    core: {worker: false},
+    ply: {shape: 'mesh'}
+  });
   validateMeshCategoryData(data);
   expect(data.mode, 'mode is TRIANGLES (4)').toBe(4);
   expect(data.attributes.POSITION.value.length, 'POSITION attribute roundtripped').toBe(9);
   expect(data.indices.value.length, 'indices roundtripped').toBe(3);
   const arrowTable = convertMeshToTable(mesh, 'arrow-table');
   const arrowArrayBuffer = await encode(arrowTable, PLYWriter);
-  const arrowData = await parse(arrowArrayBuffer, PLYLoader, {core: {worker: false}});
+  const arrowData = await parse(arrowArrayBuffer, PLYLoader, {
+    core: {worker: false},
+    ply: {shape: 'mesh'}
+  });
   validateMeshCategoryData(arrowData);
   expect(arrowData.attributes.POSITION.value.length, 'Arrow POSITION attribute roundtripped').toBe(
     9

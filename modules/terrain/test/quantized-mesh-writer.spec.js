@@ -17,7 +17,7 @@ test('QuantizedMeshWriter#writer conformance', () => {
   validateWriter(QuantizedMeshWriter, 'QuantizedMeshWriter');
 });
 test('QuantizedMeshWriter#encode plain and Arrow mesh data', async () => {
-  const options = {'quantized-mesh': {bounds: [0, 0, 1, 1]}};
+  const options = {'quantized-mesh': {bounds: [0, 0, 1, 1], shape: 'mesh'}};
   const arrayBuffer = await encode(mesh, QuantizedMeshWriter, options);
   const data = await parse(arrayBuffer, QuantizedMeshLoader, options);
   validateMeshCategoryData(data);
@@ -37,7 +37,7 @@ test('QuantizedMeshWriter#encodes non-sequential triangle indices', async () => 
     ...mesh,
     indices: {value: new Uint32Array([0, 2, 1]), size: 1}
   };
-  const options = {'quantized-mesh': {bounds: [0, 0, 1, 1]}};
+  const options = {'quantized-mesh': {bounds: [0, 0, 1, 1], shape: 'mesh'}};
   const arrayBuffer = await encode(reorderedMesh, QuantizedMeshWriter, options);
   const data = await parse(arrayBuffer, QuantizedMeshLoader, options);
   validateMeshCategoryData(data);

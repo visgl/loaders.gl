@@ -88,7 +88,8 @@ test('loadDraco# Pass options to draco loader properly', async () => {
   const resultObject = {
     draco: {
       decoderType: 'js',
-      extraAttributes: {test: 'yes'}
+      extraAttributes: {test: 'yes'},
+      shape: 'mesh'
     },
     worker: true,
     reuseWorkers: true

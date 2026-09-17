@@ -91,9 +91,9 @@ test('PCDLoader#parse defaults to Arrow table', async () => {
     schemaName: 'PCDLoader default table'
   });
 });
-test('PCDLoader#Arrow output stays on the main thread', () => {
+test('PCDLoader#Arrow output supports workers', () => {
   expect(canParseWithWorker(PCDLoader, {core: {worker: true}, pcd: {shape: 'arrow-table'}})).toBe(
-    false
+    true
   );
 });
 test('PCDLoader#parse(shape: arrow-table)', async () => {
