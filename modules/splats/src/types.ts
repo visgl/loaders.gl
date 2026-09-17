@@ -9,8 +9,15 @@ export type SplatsLoaderOptions = LoaderOptions & {
   splats?: {
     /** Output shape. V1 supports loaders.gl Mesh Arrow tables. */
     shape?: 'arrow-table';
+    /** Coordinate frame stored in the source SPZ payload. */
+    sourceCoordinateSystem?: SPZCoordinateSystem;
+    /** Coordinate frame expected by the caller. Defaults to the source frame. */
+    targetCoordinateSystem?: SPZCoordinateSystem;
   };
 };
+
+/** Coordinate-system labels used by the SPZ container and glTF bridge. */
+export type SPZCoordinateSystem = 'RUB' | 'LUF' | 'RUF' | 'UNSPECIFIED';
 
 /** Linear Gaussian splat values before Arrow table construction. */
 export type GaussianSplats = {

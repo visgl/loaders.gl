@@ -6,6 +6,8 @@ import type {
   GLTFMeshPolygonData,
   GLTFMeshPrimitivePostprocessed,
   GLTFPostprocessed,
+  GLTFGaussianSplatPrimitive,
+  GLTFVoxelPrimitive,
   GLTFPrimitiveIndexRange,
   FeatureTableJson
 } from '@loaders.gl/gltf';
@@ -30,6 +32,10 @@ export type B3DMContent = {
   featureTableBinary?: Uint8Array;
   featureTableJson?: FeatureTableJson;
   gltf?: GLTFPostprocessed;
+  /** Normalized Gaussian splat descriptors discovered in embedded glTF content. */
+  gaussianSplatPrimitives?: GLTFGaussianSplatPrimitive[];
+  /** Lazy voxel descriptors discovered in embedded glTF content. */
+  voxelPrimitives?: GLTFVoxelPrimitive[];
   gltfUpAxis: string;
   header: GLTFHeader;
   magic: number;

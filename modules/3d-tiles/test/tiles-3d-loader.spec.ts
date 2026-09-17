@@ -189,7 +189,9 @@ test('Tiles3DLoader#accepts supported required extensions', async () => {
     '3DTILES_bounding_volume_S2',
     '3DTILES_batch_table_hierarchy',
     '3DTILES_draco_point_compression',
-    '3DTILES_content_gltf'
+    '3DTILES_content_gltf',
+    '3DTILES_content_gltf_vector',
+    '3DTILES_content_voxels'
   ];
   const tileset = await parse(
     encodeTilesetJson({extensionsRequired, extensionsUsed: extensionsRequired}),

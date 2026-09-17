@@ -1,7 +1,8 @@
 import {expect, test} from 'vitest';
 import {parse} from '@loaders.gl/core';
 import {ZstdCompression} from '@loaders.gl/compression/zstd-compression';
-import {SPZLoader} from '@loaders.gl/splats';
+import {GZipFflateCompressor} from '@loaders.gl/compression/gzip-compressor-fflate';
+import {SPZLoader, parseSPZToGaussianSplats} from '@loaders.gl/splats';
 import {SPZLoaderWithParser} from '@loaders.gl/splats/spz-loader';
 import {ZstdCodec} from 'zstd-codec';
 const modules = {'zstd-codec': ZstdCodec};
@@ -78,6 +79,30 @@ test('SPZLoader validates header', async () => {
     'rejects unsupported version'
   ).rejects.toThrow(/version 3 is not supported/);
 });
+
+test.each([2, 3])('SPZLoader parses legacy v%d gzip payloads', async version => {
+  const data = makeLegacySPZFixture(version as 2 | 3);
+  const splats = await parseSPZToGaussianSplats(data, {
+    splats: {sourceCoordinateSystem: 'RUB'}
+  });
+  expect(splats.splatCount).toBe(1);
+  expect(Array.from(splats.positions)).toEqual([1, 2, -3]);
+  expect(splats.rotations[0]).toBeCloseTo(1, 5);
+  expect(splats.sphericalHarmonics?.length).toBe(3);
+});
+
+test('SPZLoader applies explicit legacy coordinate conversion', async () => {
+  const data = makeLegacySPZFixture(2);
+  const splats = await parseSPZToGaussianSplats(data, {
+    splats: {sourceCoordinateSystem: 'RUB', targetCoordinateSystem: 'LUF'}
+  });
+  expect(Array.from(splats.positions)).toEqual([-1, 2, 3]);
+});
+
+test('SPZLoader rejects malformed legacy gzip headers', async () => {
+  const malformed = new Uint8Array([0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00]).buffer;
+  await expect(parseSPZToGaussianSplats(malformed)).rejects.toThrow();
+});
 /**
  * Builds a deterministic two-row SPZ v4 fixture.
  *
@@ -126,6 +151,40 @@ async function makeSPZFixture(compressStreams = true): Promise<ArrayBuffer> {
     compressedOffset += compressedStreams[streamIndex].byteLength;
   }
   return data;
+}
+
+/** Builds a one-point legacy SPZ v2 or v3 gzip fixture. */
+function makeLegacySPZFixture(version: 2 | 3): ArrayBuffer {
+  const payload = new Uint8Array(16 + 9 + 1 + 3 + 3 + 3 + (version === 2 ? 3 : 4) + 3);
+  const dataView = new DataView(payload.buffer);
+  dataView.setUint32(0, 0x5053474e, true);
+  dataView.setUint32(4, version, true);
+  dataView.setUint32(8, 1, true);
+  dataView.setUint8(12, 1);
+  dataView.setUint8(13, 12);
+  dataView.setUint8(14, 0);
+  dataView.setUint8(15, 0);
+  let offset = 16;
+  writeFixed24(payload, offset, 4096);
+  writeFixed24(payload, offset + 3, 8192);
+  writeFixed24(payload, offset + 6, -12288);
+  offset += 9;
+  payload[offset++] = 255;
+  payload.set([128, 128, 128], offset);
+  offset += 3;
+  payload.set([160, 160, 160], offset);
+  offset += 3;
+  payload.set([128, 128, 128], offset);
+  offset += 3;
+  if (version === 2) {
+    payload.set([0, 0, 0], offset);
+    offset += 3;
+  } else {
+    payload.set(encodeQuaternionSmallestThree([0, 0, 0, 1]), offset);
+    offset += 4;
+  }
+  payload.set([128, 128, 128], offset);
+  return new Uint8Array(new GZipFflateCompressor().compressSync(payload.buffer)).buffer;
 }
 /**
  * Installs a pass-through native zstd stream and returns a restorer.

@@ -2,7 +2,6 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-export type {GaussianSplats, SplatsLoaderOptions} from './types';
 export type {
   RADChunkMetadata,
   RADChunkMetadataJSON,
@@ -16,6 +15,8 @@ export type {
   RADSplatEncoding
 } from './lib/parse-rad';
 export {SPLATFormat, KSPLATFormat, SPZFormat, RADFormat} from './splats-format';
+export type {GaussianSplats, SPZCoordinateSystem, SplatsLoaderOptions} from './types';
+export {parseSPZ, parseSPZToGaussianSplats} from './lib/parse-spz';
 export {SPLATLoader} from './splat-loader-types';
 export {KSPLATLoader} from './ksplat-loader-types';
 export {SPZLoader} from './spz-loader-types';
