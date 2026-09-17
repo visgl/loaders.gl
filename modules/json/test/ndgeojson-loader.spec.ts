@@ -6,9 +6,15 @@ import {expect, test} from 'vitest';
 import {parse, parseInBatches, parseSync} from '@loaders.gl/core';
 import {NDGeoJSONLoader, type NDGeoJSONLoaderOptions} from '@loaders.gl/json';
 import {NDGeoJSONLoaderWithParser} from '@loaders.gl/json/ndgeojson-loader';
-import type {ArrowTable, ArrowTableBatch, Feature, ObjectRowTable} from '@loaders.gl/schema';
+import type {
+  ArrowTable,
+  ArrowTableBatch,
+  Feature,
+  Geometry,
+  ObjectRowTable
+} from '@loaders.gl/schema';
 
-const features: Feature[] = [
+const features: Feature<Geometry | null>[] = [
   {
     type: 'Feature',
     id: 'one',
