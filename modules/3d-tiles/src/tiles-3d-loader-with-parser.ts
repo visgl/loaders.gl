@@ -122,7 +122,10 @@ export type Tiles3DLoaderOptions = StrictLoaderOptions &
       /** @internal Vector-content metadata supplied by a normalized tileset header. */
       vectorContent?: {clip: boolean};
       /** Optional decoder for embedded SPZ2 payloads; receives explicit LUF coordinates. */
-      splatDecoder?: (data: ArrayBuffer, options: {sourceCoordinateSystem: 'LUF'; targetCoordinateSystem?: string}) => unknown | Promise<unknown>;
+      splatDecoder?: (
+        data: ArrayBuffer,
+        options: {sourceCoordinateSystem: 'LUF'; targetCoordinateSystem?: string}
+      ) => unknown | Promise<unknown>;
     };
   };
 
