@@ -27,6 +27,11 @@
       "import": "./dist/index.js",
       "require": "./dist/index.cjs"
     },
+    "./arrow-table-tile-source-loader": {
+      "types": "./dist/arrow-table-tile-source-loader.d.ts",
+      "import": "./dist/arrow-table-tile-source-loader.js",
+      "require": "./dist/arrow-table-tile-source-loader.cjs"
+    },
     "./tilejson-zod-schema": {
       "types": "./dist/tilejson-zod-schema.d.ts",
       "import": "./dist/tilejson-zod-schema.js",

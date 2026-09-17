@@ -198,12 +198,12 @@ These are Arrow tables, not encoded MVT bytes; the separate `TableTileSourceLoad
 GeoJSON interface.
 
 ```typescript
-import {createDataSource} from '@loaders.gl/core';
+import {load} from '@loaders.gl/core';
 import {ArrowTableTileSourceLoader} from '@loaders.gl/mvt';
 import {GeoJSONLoader} from '@loaders.gl/json';
 
 // build an initial index of tiles.
-const tileSource = createDataSource(url, [ArrowTableTileSourceLoader], {
+const tileSource = await load(url, ArrowTableTileSourceLoader, {
   core: {
     loaders: [GeoJSONLoader]
   },

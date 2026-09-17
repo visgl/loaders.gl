@@ -53,14 +53,12 @@ export type {MVTSourceLoaderOptions} from './mvt-source-loader';
 export {TableTileSourceLoader, TableVectorTileSource} from './table-tile-source-loader';
 export type {TableTileSourceLoaderOptions} from './table-tile-source-loader';
 
-export {
-  ArrowTableTileSourceLoader,
-  ArrowTableVectorTileSource
-} from './arrow-table-tile-source-loader';
+export {ArrowTableTileSourceLoader} from './arrow-table-tile-source-loader-types';
+export type {ArrowTableVectorTileSource} from './arrow-table-tile-source-loader';
 export type {
   ArrowTableTileSourceLoaderOptions,
   ArrowTableTileSourceInput
-} from './arrow-table-tile-source-loader';
+} from './arrow-table-tile-source-types';
 
 // DEPRECATED EXPORTS
 export {MVTWorkerLoader} from './mvt-loader';

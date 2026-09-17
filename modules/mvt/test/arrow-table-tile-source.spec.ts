@@ -4,15 +4,59 @@
 
 import {expect, test, vi} from 'vitest';
 import * as arrow from 'apache-arrow';
-import {createDataSource} from '@loaders.gl/core';
+import {createDataSource, load} from '@loaders.gl/core';
 import type {CoreAPI} from '@loaders.gl/loader-utils';
 import {GeoJSONLoader} from '@loaders.gl/json';
-import {ArrowTableTileSourceLoader, ArrowTableVectorTileSource} from '@loaders.gl/mvt';
+import {ArrowTableTileSourceLoader as ArrowTableTileSourceLoaderMetadata} from '@loaders.gl/mvt';
+import {
+  ArrowTableTileSourceLoaderWithParser as ArrowTableTileSourceLoader,
+  ArrowTableVectorTileSource
+} from '@loaders.gl/mvt/arrow-table-tile-source-loader';
 import {convertFeaturesToGeoArrowTable, GeometryConverter, getGeoMetadata} from '@loaders.gl/gis';
 import type {ArrowTable, Geometry, GeoArrowEncodingPreference} from '@loaders.gl/schema';
 
 const ROOT_TILE = {x: 0, y: 0, z: 0};
 const POINT: Geometry = {type: 'Point', coordinates: [-90, 40]};
+
+test('Arrow tile source metadata preloads the runtime through async load', async () => {
+  expect(ArrowTableTileSourceLoaderMetadata.testURL()).toBe(false);
+  expect(() => ArrowTableTileSourceLoaderMetadata.createDataSource(makeTable([POINT]))).toThrow(
+    'requires async load()'
+  );
+  expect(await ArrowTableTileSourceLoaderMetadata.preload()).toBe(ArrowTableTileSourceLoader);
+  expect(ArrowTableTileSourceLoader).not.toHaveProperty('preload');
+  const source = await load(
+    new Blob([
+      JSON.stringify({
+        type: 'FeatureCollection',
+        features: [{type: 'Feature', geometry: POINT, properties: {identifier: 0}}]
+      })
+    ]),
+    ArrowTableTileSourceLoaderMetadata,
+    {core: {loaders: [GeoJSONLoader], loadOptions: {worker: false}}}
+  );
+  expect(source).toBeInstanceOf(ArrowTableVectorTileSource);
+  expect((await source.getTile(ROOT_TILE))?.data.numRows).toBe(1);
+});
+
+test('Arrow tile source rejects indexing beyond maxZoom', () => {
+  expect(
+    () =>
+      new ArrowTableVectorTileSource(makeTable([POINT]), {
+        table: {maxZoom: 1, indexMaxZoom: 2, maxPointsPerTile: 0}
+      })
+  ).toThrow('indexMaxZoom must be less than or equal to maxZoom');
+});
+
+test.each([0, 1])('Arrow tile source enforces maxZoom with indexMaxZoom=%s', async indexMaxZoom => {
+  const source = new ArrowTableVectorTileSource(makeTable([POINT]), {
+    table: {maxZoom: 1, indexMaxZoom, maxPointsPerTile: 0}
+  });
+  expect(await source.getMetadata()).toMatchObject({maxZoom: 1});
+  expect((await source.getTile({x: 0, y: 0, z: 1}))?.data.numRows).toBe(1);
+  expect(source.getTileSync({x: 1, y: 1, z: 2})).toBeNull();
+  expect(await source.getTile({x: 1, y: 1, z: 2})).toBeNull();
+});
 
 /** Creates a small deterministic geometry table with source row identifiers. */
 function makeTable(

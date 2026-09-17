@@ -6,7 +6,6 @@ import * as arrow from 'apache-arrow';
 import {
   DataSource,
   type CoreAPI,
-  type DataSourceOptions,
   type SourceLoader,
   type VectorTileSource,
   type GetTileParameters,
@@ -21,54 +20,26 @@ import {
   setGeoMetadata
 } from '@loaders.gl/gis';
 import {convertArrowToSchema} from '@loaders.gl/schema-utils';
-import {
-  TableVectorTileSource,
-  TableTileSourceLoader,
-  type TableTileSourceLoaderOptions
-} from './table-tile-source-loader';
+import {TableVectorTileSource, TableTileSourceLoader} from './table-tile-source-loader';
 import {convertFeaturesToProtoFeature} from './lib/vector-tiler/features/convert-feature';
 import type {ProtoFeature} from './lib/vector-tiler/features/proto-feature';
 import {wrapFeatures} from './lib/vector-tiler/features/wrap-features';
 import {createArrowTile} from './lib/vector-tiler/arrow-tile';
+import {ArrowTableTileSourceLoader} from './arrow-table-tile-source-loader-types';
+import type {
+  ArrowTableTileSourceInput,
+  ArrowTableTileSourceLoaderOptions
+} from './arrow-table-tile-source-types';
 
-/** In-memory Arrow tables accepted by the Arrow tile source. */
-export type ArrowTableTileSourceInput = ArrowTable | arrow.Table;
-
-/** Options for Arrow-native, two-dimensional client-side vector tiling. */
-export type ArrowTableTileSourceLoaderOptions = DataSourceOptions & {
-  /** Geometry selection and clipping/simplification options. */
-  table?: Pick<
-    NonNullable<TableTileSourceLoaderOptions['table']>,
-    | 'coordinates'
-    | 'maxZoom'
-    | 'indexMaxZoom'
-    | 'maxPointsPerTile'
-    | 'tolerance'
-    | 'extent'
-    | 'buffer'
-  > & {
-    /** Geometry column; defaults to GeoParquet's primary column or the sole GeoArrow field. */
-    geometryColumn?: string;
-  };
-};
+const {
+  preload: _preloadArrowTableTileSourceLoader,
+  createDataSource: _createMetadataDataSource,
+  ...ArrowTableTileSourceLoaderBase
+} = ArrowTableTileSourceLoader;
 
 /** Builds vector tiles from an Arrow table without converting its attributes to GeoJSON. */
-export const ArrowTableTileSourceLoader = {
-  dataType: null as unknown as ArrowTableVectorTileSource,
-  batchType: null as never,
-  name: 'ArrowTableTiler',
-  id: 'arrow-table-tiler',
-  module: 'mvt',
-  version: '0.0.0',
-  extensions: [],
-  mimeTypes: [],
-  type: 'table',
-  fromUrl: true,
-  fromBlob: true,
-  /** Selection is explicit because any Arrow-producing loader can supply the input. */
-  testURL: () => false,
-  options: {table: {coordinates: 'local'}},
-  defaultOptions: {table: {coordinates: 'local'}},
+export const ArrowTableTileSourceLoaderWithParser = {
+  ...ArrowTableTileSourceLoaderBase,
   /** Creates an Arrow tile source; URLs and blobs require an injected core API and loaders. */
   createDataSource(
     input: string | Blob | ArrowTableTileSourceInput | Promise<ArrowTableTileSourceInput>,
@@ -156,7 +127,7 @@ export class ArrowTableVectorTileSource
     if (
       ![tileIndex.x, tileIndex.y, tileIndex.z].every(Number.isInteger) ||
       tileIndex.z < 0 ||
-      tileIndex.z > 24 ||
+      tileIndex.z > this.tiler.tableOptions.maxZoom ||
       tileIndex.y < 0 ||
       tileIndex.y >= 2 ** tileIndex.z
     )
@@ -286,6 +257,9 @@ function validateTilingOptions(options: ArrowTableTileSourceLoaderOptions): void
     ) {
       throw new Error(`${name} must be an integer in the 0-24 range`);
     }
+  }
+  if (tableOptions.indexMaxZoom > tableOptions.maxZoom) {
+    throw new Error('indexMaxZoom must be less than or equal to maxZoom');
   }
   for (const name of ['extent', 'maxPointsPerTile', 'tolerance', 'buffer'] as const) {
     if (

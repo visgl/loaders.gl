@@ -13,10 +13,10 @@ table. It is a separate alternative to [`TableTileSourceLoader`](./table-tile-so
 input and output stay in Arrow, and attributes do not pass through GeoJSON objects.
 
 ```typescript
-import {ArrowTableTileSourceLoader} from '@loaders.gl/mvt';
+import {ArrowTableTileSourceLoaderWithParser} from '@loaders.gl/mvt/arrow-table-tile-source-loader';
 
 // table is a loaders.gl ArrowTable or an Apache Arrow Table (or a promise of either).
-const source = ArrowTableTileSourceLoader.createDataSource(table, {
+const source = ArrowTableTileSourceLoaderWithParser.createDataSource(table, {
   table: {coordinates: 'wgs84'}
 });
 const tile = await source.getVectorTile({z: 5, x: 10, y: 12});
@@ -25,15 +25,15 @@ const geometry = tile?.data.getChild('geometry'); // GeoArrow WKB vector
 
 ## Loading a file
 
-URLs and blobs work through `createDataSource` with an explicit Arrow-producing loader. The source
+URLs and blobs work through async `load` with an explicit Arrow-producing loader. The source
 does not select a parser or override its output options. Configure the parser to return Arrow.
 
 ```typescript
-import {createDataSource} from '@loaders.gl/core';
+import {load} from '@loaders.gl/core';
 import {GeoJSONLoader} from '@loaders.gl/json';
 import {ArrowTableTileSourceLoader} from '@loaders.gl/mvt';
 
-const source = createDataSource('/features.geojson', [ArrowTableTileSourceLoader], {
+const source = await load('/features.geojson', ArrowTableTileSourceLoader, {
   core: {loaders: [GeoJSONLoader]}, // Arrow-primary in loaders.gl 5
   table: {coordinates: 'wgs84'}
 });
@@ -41,7 +41,10 @@ const tile = await source.getTile({z: 0, x: 0, y: 0});
 ```
 
 Source selection must be explicit: this source has no file extension or URL autodetection.
-Direct `createDataSource` calls on the loader require an injected core API for URLs/blobs;
+The package-root export is lightweight metadata: async `load` preloads its implementation.
+Synchronous `createDataSource` calls require `ArrowTableTileSourceLoaderWithParser` from the explicit
+`@loaders.gl/mvt/arrow-table-tile-source-loader` subpath. That subpath also exports the
+`ArrowTableVectorTileSource` class. Direct construction requires an injected core API for URLs/blobs;
 in-memory tables do not require `@loaders.gl/core`.
 
 ## Input and output
@@ -86,7 +89,8 @@ The loader creates an `ArrowTableVectorTileSource` with these methods:
 | `getSchema()` | Promise of the output loaders.gl schema |
 | `getMetadata()` | Promise of `{schema, minZoom: 0, maxZoom}` |
 
-Empty or invalid tile requests return `null`. Tile x coordinates wrap around the world;
+Empty or invalid tile requests, including zooms above `table.maxZoom`, return `null`.
+Tile x coordinates wrap around the world;
 geographic output uses the canonical wrapped tile. Repeated requests do not mutate the index.
 `source.localCoordinates` reports the configured coordinate mode.
 
@@ -96,8 +100,8 @@ geographic output uses the canonical wrapped tile. Repeated requests do not muta
 | --- | --- | --- |
 | `table.geometryColumn` | Auto-detected | Geometry field to index and clip |
 | `table.coordinates` | `'local'` | Normalized tile-local XY, or `'wgs84'` / `'EPSG:4326'` longitude/latitude |
-| `table.maxZoom` | `14` | Zoom at which full geometry detail is retained; integer 0–24 |
-| `table.indexMaxZoom` | `5` | Maximum initial indexing zoom; integer 0–24 |
+| `table.maxZoom` | `14` | Maximum supported tile zoom, retaining full geometry detail; integer 0–24 |
+| `table.indexMaxZoom` | `5` | Maximum initial indexing zoom; integer 0–24, no greater than `maxZoom` |
 | `table.maxPointsPerTile` | `10000` | Point budget before initial index subdivision |
 | `table.tolerance` | `3` | Simplification tolerance in extent units |
 | `table.extent` | `4096` | Positive tile extent used for quantization |
@@ -105,3 +109,5 @@ geographic output uses the canonical wrapped tile. Repeated requests do not muta
 
 Existing identifier columns remain Arrow columns. GeoJSON-specific `promoteId`, `generateId`,
 `shape`, and `lineMetrics` options are not part of this source's API.
+
+When setting `maxZoom` below 5, also lower `indexMaxZoom` to avoid exceeding the maximum tile zoom.
