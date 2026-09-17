@@ -16,9 +16,17 @@ styling expressions, or picking. No import from the private `@loaders.gl/deck-la
 
 ## Ordered content and lifecycle
 
-`Tile3D.contentEntries` represents single-content tiles and explicit or implicit multiple contents
-in source order. `tile.content` remains the primary payload; `tile.contents` remains the ordered raw
-payload array. The additive descriptors do not replace either legacy field.
+For tiles backed by `Tiles3DSource`, `Tile3D.contentEntries` represents single-content tiles and
+explicit or implicit multiple contents in source order. `tile.content` remains the primary payload;
+`tile.contents` remains the ordered raw payload array. The additive descriptors do not replace
+either legacy field.
+
+These arrays are source-dependent. The current `I3SSource` assigns `tile.content` directly and leaves
+both `contents` and `contentEntries` empty after loading. I3S consumers must continue to use
+`tile.content`; an empty entries array or `isContentRenderable(index) === false` does not establish
+that an I3S tile lacks a loaded payload. Custom sources must supply normalized content headers and
+matching load-result payloads, or explicit `TileContentLoadResult.contentEntries`, to participate in
+the descriptor contract. The example below is for a `Tiles3DSource` tile.
 
 ```typescript
 import type {Tile3D} from '@loaders.gl/tiles';

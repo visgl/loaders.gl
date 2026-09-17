@@ -108,8 +108,10 @@ The tile's content. This represents the actual tile's payload.
 
 ### `contents` (unknown[])
 
-The ordered raw payload array for loaded content. `content` remains the primary payload for
-backward compatibility. Use `contentEntries` when consuming several payloads and their metadata.
+The ordered raw payload array populated by `Tiles3DSource` through its content-load result.
+`content` remains the primary payload for backward compatibility. The current `I3SSource` sets
+`content` directly and leaves `contents` empty, even after loading; I3S consumers should use
+`content`. Custom sources must return `TileContentLoadResult.contents` to populate this array.
 
 ### `contentUrls` (String[])
 
@@ -117,10 +119,14 @@ Ordered content resource URLs resolved from the normalized header.
 
 ### `contentEntries` (Tile3DContent[])
 
-Ordered renderer-neutral descriptors with `index`, optional `uri`, `type`, and `group`, plus
+For `Tiles3DSource` tiles, ordered renderer-neutral descriptors with `index`, optional `uri`, `type`, and `group`, plus
 `payload`, `metadata`, `boundingVolume`, `featureIds`, and `renderable`. Entries exist before their
 payloads load; nested tileset content is not reported as renderable. Re-read entries after lifecycle
 updates. See the [contract fields](../../3d-tiles/concepts/renderer-contracts-and-metadata#tile3dcontent).
+
+This is source-dependent, not a universal contract for every `Tile3D`. The current `I3SSource`
+leaves `contentEntries` empty. Custom sources need normalized `header.content` descriptors with
+matching ordered load-result payloads, or explicit `TileContentLoadResult.contentEntries`.
 
 ### `metadataContext` (Tile3DMetadataContext)
 
@@ -181,12 +187,15 @@ The unprocessed tile header object passed in.
 
 ### `getContentEntry(index)`
 
-Returns the ordered `Tile3DContent` descriptor, or `null` when the index is out of range.
+Returns the ordered `Tile3DContent` descriptor, or `null` when the index is out of range. Sources
+that do not populate `contentEntries`, including the current `I3SSource`, always return `null`.
 
 ### `isContentRenderable(index)`
 
 Returns whether the entry currently has render content. Unloaded, failed, empty, and nested tileset
 content are not renderable. This does not imply selection, visibility, or GPU readiness.
+It also returns `false` when no entry exists: do not use it to classify I3S payloads, which remain
+available through `content` without entries.
 
 ### `contentVisibility(frameState, contentIndex?)`
 
