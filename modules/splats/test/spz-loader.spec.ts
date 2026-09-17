@@ -174,8 +174,6 @@ function makeLegacySPZFixture(version: 2 | 3): ArrayBuffer {
   offset += 3;
   payload.set([160, 160, 160], offset);
   offset += 3;
-  payload.set([128, 128, 128], offset);
-  offset += 3;
   if (version === 2) {
     payload.set([0, 0, 0], offset);
     offset += 3;
