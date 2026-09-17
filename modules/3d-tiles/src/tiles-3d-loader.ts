@@ -12,7 +12,19 @@ import type {Tiles3DTileContent, Tiles3DTilesetJSONPostprocessed} from './types'
 import {Tiles3DFormat} from './tiles-3d-format';
 import {deserialize3DTilesWorkerResult, serialize3DTilesWorkerResult} from './lib/worker-transport';
 
+/** Options forwarded to the delegated glTF parser. */
+type GLTFOptions = {
+  gltf?: {
+    /** Optional decoder for embedded SPZ2 payloads; the callback receives explicit LUF coordinates. */
+    splatDecoder?: (
+      data: ArrayBuffer,
+      options: {sourceCoordinateSystem: 'LUF'; targetCoordinateSystem?: string}
+    ) => unknown | Promise<unknown>;
+  };
+};
+
 export type Tiles3DLoaderOptions = StrictLoaderOptions &
+  GLTFOptions &
   // GLTFLoaderOptions & - TODO not yet exported
   DracoLoaderOptions &
   ImageBitmapLoaderOptions & {

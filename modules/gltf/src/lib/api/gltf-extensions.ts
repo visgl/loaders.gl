@@ -14,6 +14,8 @@ import {GLTFWriterOptions} from '../../gltf-writer';
 // GLTF 2.0 Vendor extensions
 import * as EXT_mesh_features from '../extensions/EXT_mesh_features';
 import * as EXT_structural_metadata from '../extensions/EXT_structural_metadata';
+import * as KHR_gaussian_splatting from '../extensions/KHR_gaussian_splatting';
+import * as EXT_primitive_voxels from '../extensions/EXT_primitive_voxels';
 import * as EXT_mesh_polygon from '../extensions/EXT_mesh_polygon';
 
 // GLTF 2.0 Khronos extensions (decode/encode)
@@ -66,6 +68,8 @@ export const EXTENSIONS: GLTFExtensionPlugin[] = [
   EXT_meshopt_compression,
   EXT_structural_metadata,
   EXT_mesh_features,
+  KHR_gaussian_splatting,
+  EXT_primitive_voxels,
   KHR_mesh_primitive_restart,
   EXT_mesh_polygon,
   EXT_texture_avif,

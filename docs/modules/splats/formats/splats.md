@@ -76,7 +76,7 @@ The v1 loader supports complete in-memory `.ksplat` files and decodes compressio
 
 `SPZLoader` decodes complete in-memory SPZ version 4 files into the same Mesh Arrow table shape as `SPLATLoader` and `KSPLATLoader`, preserving SPZ header fields and extension bytes in `loaderData` where practical.
 
-Legacy SPZ versions 1 through 3 use a gzip-compressed single-stream layout and are not supported by `SPZLoader`.
+Legacy SPZ versions 2 and 3 use a gzip-compressed single-stream layout and are decoded alongside version 4 by `SPZLoader`.
 
 See the [SPZLoader](/docs/modules/splats/api-reference/spz-loader) API reference for usage and ZSTD module requirements.
 

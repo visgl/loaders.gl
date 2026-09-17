@@ -41,6 +41,15 @@ export type {
   GLTFPrimitiveIndexRange,
   GLTFPrimitiveRestartData
 } from './lib/types/gltf-vector-topology';
+export type {
+  GLTF_KHR_gaussian_splatting,
+  GLTF_KHR_gaussian_splatting_compression_spz_2,
+  GLTFGaussianSplatPrimitive
+} from './lib/types/gltf-ext-gaussian-splatting-schema';
+export type {
+  GLTF_EXT_primitive_voxels,
+  GLTFVoxelPrimitive
+} from './lib/types/gltf-ext-vector-voxel-schema';
 
 // 3DTiles extensions
 export type {
@@ -80,6 +89,15 @@ export type {
 
 export {name as EXT_MESH_FEATURES} from './lib/extensions/EXT_mesh_features';
 export {name as EXT_MESH_POLYGON} from './lib/extensions/EXT_mesh_polygon';
+export {
+  name as KHR_GAUSSIAN_SPLATTING,
+  SPZ_COMPRESSION_EXTENSION_NAME,
+  getGaussianSplatPrimitives
+} from './lib/extensions/KHR_gaussian_splatting';
+export {
+  name as EXT_PRIMITIVE_VOXELS,
+  getVoxelPrimitives
+} from './lib/extensions/EXT_primitive_voxels';
 export {
   name as KHR_MESH_PRIMITIVE_RESTART,
   getPrimitiveRestartRanges

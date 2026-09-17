@@ -105,6 +105,10 @@ provides a visual implementation for that feature.
 | `EXT_structural_metadata` | ✅ v5.0 | Schema and property-table metadata are exposed where present. |
 | Draft `3DTILES_subtree` | ◐ v5.0 | QUADTREE/OCTREE availability, attribute overrides, property rows, URI properties, and lazy caching are supported. |
 | Draft vector topology | ◐ v5.0 | Point, restart-separated polyline, and polygon topology is exposed; drawing and styling are renderer-owned. |
+| `KHR_gaussian_splatting` | [x] | Gaussian primitives are validated and exposed as normalized descriptors; styling, sorting, and GPU upload remain renderer-owned. |
+| SPZ v2/v3/v4 standalone content | [x] | `@loaders.gl/splats` decodes legacy gzip v2/v3 and current v4 containers into the existing Arrow-table representation. |
+| glTF SPZ2 compression | [~] | Buffer views and compressed bytes are preserved; an injected decoder can opt into explicit LUF decoding. |
+| `EXT_primitive_voxels` / `3DTILES_content_voxels` | [~] | Shape, dimensions, channels, and metadata references are exposed lazily; dense decoding and rendering are deferred. |
 | Metadata topology preservation | ✅ v5.0 | Schema, groups, tileset/tile/content entities, and implicit-subtree references are retained for application-level interpretation. Value/class decoding is not included. |
 | Metadata-derived bounding volumes | ✅ v5.0 | Direct numeric `TILE_BOUNDING_*` and `CONTENT_BOUNDING_*` semantic arrays are normalized; property-table value decoding remains application-owned. |
 | Renderer-neutral style inputs | ✅ v5.0 | Property-table rows, hierarchy-aware batch-table access, metadata precedence, and property-source diagnostics are exposed without style evaluation. |
@@ -200,6 +204,7 @@ implemented in the current module. This distinction prevents a parser-only capab
 mistaken for end-to-end renderer support.
 
 For the selection algorithm, see [screen-space error and LOD](../concepts/screen-space-error-and-lod).
+For Gaussian, vector/CAD, and voxel extension boundaries, see [extension contracts](../concepts/gaussian-vector-voxel-extensions).
 For hierarchy metadata and lazy requests, see [implicit tiling and subtrees](../concepts/implicit-tiling-and-subtrees).
 For cache and request behavior, see [caching and memory](../concepts/caching-and-memory) and
 [request scheduling and priorities](../concepts/request-scheduling-and-priorities).

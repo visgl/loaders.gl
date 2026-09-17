@@ -3,7 +3,13 @@
 // Copyright (c) vis.gl contributors
 
 import {parseFromContext, LoaderContext} from '@loaders.gl/loader-utils';
-import {_getMemoryUsageGLTF, GLTFLoader, postProcessGLTF} from '@loaders.gl/gltf';
+import {
+  _getMemoryUsageGLTF,
+  GLTFLoader,
+  getGaussianSplatPrimitives,
+  getVoxelPrimitives,
+  postProcessGLTF
+} from '@loaders.gl/gltf';
 import type {GLTFWithBuffers} from '@loaders.gl/gltf';
 import {Tiles3DSpatialTransformer} from '@loaders.gl/tiles';
 import type {TilesetSpatialOptions, TilesetSpatialReference} from '@loaders.gl/tiles';
@@ -52,6 +58,9 @@ export async function parseGltf3DTile(
       (jsonPayload
         ? await parseParsedJsonGltf(jsonPayload, options, context)
         : await parseFromContext(arrayBuffer, GLTFLoader, options, context));
+    tile.gaussianSplatPrimitives =
+      gltfWithBuffers.gaussianSplatPrimitives || getGaussianSplatPrimitives(gltfWithBuffers);
+    tile.voxelPrimitives = getVoxelPrimitives(gltfWithBuffers);
     tile.gltf = postProcessGLTF(gltfWithBuffers);
     transformGLTFSpatialContent(
       tile.gltf,

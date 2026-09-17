@@ -6,6 +6,8 @@ import type {
   GLTFMeshPolygonData,
   GLTFMeshPrimitivePostprocessed,
   GLTFPostprocessed,
+  GLTFGaussianSplatPrimitive,
+  GLTFVoxelPrimitive,
   GLTFPrimitiveIndexRange,
   FeatureTableJson
 } from '@loaders.gl/gltf';
@@ -331,6 +333,10 @@ export type Tiles3DTileContent = {
   gltfUrl?: string;
   gpuMemoryUsageInBytes?: number;
   gltf?: GLTFPostprocessed;
+  /** Renderer-neutral Gaussian splat descriptors discovered in embedded glTF content. */
+  gaussianSplatPrimitives?: GLTFGaussianSplatPrimitive[];
+  /** Lazy voxel descriptors discovered in embedded glTF content. */
+  voxelPrimitives?: GLTFVoxelPrimitive[];
   /** Vector topology exposed when this glTF content is designated as 3D Tiles vector data. */
   vectorContent?: Tiles3DVectorContent;
 

@@ -54,7 +54,8 @@ const SUPPORTED_3D_TILES_EXTENSIONS: ReadonlySet<string> = new Set([
   '3DTILES_batch_table_hierarchy',
   '3DTILES_draco_point_compression',
   '3DTILES_content_gltf',
-  '3DTILES_content_gltf_vector'
+  '3DTILES_content_gltf_vector',
+  '3DTILES_content_voxels'
 ]);
 
 const SUPPORTED_3D_TILES_2_EXTENSIONS: ReadonlySet<string> = new Set([
@@ -84,7 +85,19 @@ const SUPPORTED_3D_TILES_2_EXTENSIONS: ReadonlySet<string> = new Set([
 const {preload: _Tiles3DLoaderPreload, ...Tiles3DLoaderMetadataWithoutPreload} =
   Tiles3DLoaderMetadata;
 
+/** Options forwarded to the delegated glTF parser. */
+type GLTFOptions = {
+  gltf?: {
+    /** Optional decoder for embedded SPZ2 payloads; the callback receives explicit LUF coordinates. */
+    splatDecoder?: (
+      data: ArrayBuffer,
+      options: {sourceCoordinateSystem: 'LUF'; targetCoordinateSystem?: string}
+    ) => unknown | Promise<unknown>;
+  };
+};
+
 export type Tiles3DLoaderOptions = StrictLoaderOptions &
+  GLTFOptions &
   // GLTFLoaderOptions & - TODO not yet exported
   DracoLoaderOptions &
   ImageBitmapLoaderOptions & {
@@ -108,6 +121,11 @@ export type Tiles3DLoaderOptions = StrictLoaderOptions &
       assetGltfUpAxis?: 'x' | 'y' | 'z' | null;
       /** @internal Vector-content metadata supplied by a normalized tileset header. */
       vectorContent?: {clip: boolean};
+      /** Optional decoder for embedded SPZ2 payloads; receives explicit LUF coordinates. */
+      splatDecoder?: (
+        data: ArrayBuffer,
+        options: {sourceCoordinateSystem: 'LUF'; targetCoordinateSystem?: string}
+      ) => unknown | Promise<unknown>;
     };
   };
 

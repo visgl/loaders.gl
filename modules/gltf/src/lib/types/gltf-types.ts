@@ -6,6 +6,7 @@
 
 import {ImageType} from '@loaders.gl/images';
 import type {GLTF} from './gltf-json-schema';
+import type {GLTFGaussianSplatPrimitive} from './gltf-ext-gaussian-splatting-schema';
 
 /** GLTFLoader removes processed extensions from `extensionsUsed` and `extensionsUsed`
  * `processedExtensions` is used to track those extensions
@@ -19,6 +20,8 @@ export type GLTFWithBuffers = {
   files?: GLTFExternalFile[];
   /** Parsed draft glTF 2.1 external assets, parallel to `json.externalAssets`. */
   externalAssets?: Array<GLTFWithBuffers | null>;
+  /** Normalized Gaussian splat primitives discovered by KHR_gaussian_splatting. */
+  gaussianSplatPrimitives?: GLTFGaussianSplatPrimitive[];
 };
 
 export type GLTFExternalBuffer = {

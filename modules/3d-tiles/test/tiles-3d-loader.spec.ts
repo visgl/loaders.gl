@@ -189,10 +189,27 @@ test('Tiles3DLoader#accepts supported required extensions', async () => {
     '3DTILES_bounding_volume_S2',
     '3DTILES_batch_table_hierarchy',
     '3DTILES_draco_point_compression',
-    '3DTILES_content_gltf'
+    '3DTILES_content_gltf',
+    '3DTILES_content_gltf_vector',
+    '3DTILES_content_voxels'
   ];
   const tileset = await parse(
-    encodeTilesetJson({extensionsRequired, extensionsUsed: extensionsRequired}),
+    encodeTilesetJson({
+      extensionsRequired,
+      extensionsUsed: extensionsRequired,
+      root: {
+        geometricError: 0,
+        refine: 'REPLACE',
+        boundingVolume: {sphere: [0, 0, 0, 1]},
+        content: {
+          uri: 'tile.glb',
+          extensions: {
+            '3DTILES_content_gltf_vector': {vector: true},
+            '3DTILES_content_voxels': {}
+          }
+        }
+      }
+    }),
     Tiles3DLoader,
     {worker: false, '3d-tiles': {isTileset: true}}
   );

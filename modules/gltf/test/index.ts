@@ -21,6 +21,8 @@ import './lib/extensions/KHR_texture_transform.spec';
 import './lib/extensions/EXT_feature_metadata.spec';
 import './lib/extensions/EXT_structural_metadata.spec';
 import './lib/extensions/EXT_mesh_features.spec';
+import './lib/extensions/KHR_gaussian_splatting.spec';
+import './lib/extensions/EXT_primitive_voxels.spec';
 import './lib/extensions/vector-topology.spec';
 
 import './glb-loader.spec';
