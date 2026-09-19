@@ -57,11 +57,8 @@ test('WMSSourceLoader#getFeatureInfoURL maps WMS 1.3 coordinates and vendor para
         y: 34,
         width: 800,
         height: 600,
-        boundingBox: [
-          [30, 70],
-          [35, 75]
-        ]
-      } as any,
+        bbox: [30, 70, 35, 75]
+      },
       {token: 'request', empty: 0}
     )
   );

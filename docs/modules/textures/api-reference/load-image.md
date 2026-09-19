@@ -1,5 +1,5 @@
 ---
-title: loadImage
+title: loadImageTexture
 description: Load one image or a mip chain through the standard image decoding path.
 hide_title: true
 page_style: designed
@@ -11,7 +11,7 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
 <DocPageHeader
   eyebrow="Images API · basic helper"
   title="Load one image, or let the mip chain follow it."
-  description="loadImage is the small helper for a single image resource. With mipLevels enabled, the same callback can describe the lower-resolution images needed by a texture upload."
+  description="loadImageTexture is the small helper for a single image resource. With mipLevels enabled, the same callback can describe the lower-resolution images needed by a texture upload."
   tone="blue"
   meta={['Single image', 'Optional mip chain', 'ImageBitmapLoader options']}
   links={[
@@ -35,7 +35,7 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
 />
 
 <ReferenceBoundary
-  title="loadImage reference"
+  title="loadImageTexture reference"
   description="The reference below covers callback signatures, mip-level discovery, image options, and the returned image contract."
   tone="blue"
 />
@@ -44,18 +44,18 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
 
 ```typescript
 import '@loaders.gl/polyfills'; // only needed if using under Node
-import {loadImage} from `@loaders.gl/images`;
+import {loadImageTexture} from `@loaders.gl/textures`;
 
-const image = await loadImage(url);
+const image = await loadImageTexture(url);
 ```
 
 ```typescript
 import '@loaders.gl/polyfills'; // only needed if using under Node
-import {loadImage} from `@loaders.gl/images`;
+import {loadImageTexture} from `@loaders.gl/textures`;
 
 const URL = ...;
 
-const image = await loadImage(({lod}) => `${URL}-${lod}.jpg`, {
+const image = await loadImageTexture(({lod}) => `${URL}-${lod}.jpg`, {
   image: {
     mipLevels: 'auto'
   }
@@ -68,7 +68,7 @@ for (const lodImage of imageArray) {
 
 ## Function
 
-### loadImage(getUrl : String | Function, options? : Object]) : image | image[]
+### loadImageTexture(getUrl : String | Function, options? : Object) : image | image[]
 
 A basic image loading function for loading a single image (or an array of mipmap images representing a single image).
 

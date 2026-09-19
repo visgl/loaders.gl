@@ -45,8 +45,6 @@ export type ShapefileLoaderOptions = StrictLoaderOptions &
       /** Preferred encoding for Arrow geometry output. */
       geoarrow?: {encodingPreference?: GeoArrowEncodingPreference};
       batchSize?: number;
-      /** @deprecated Worker URLs must be specified with .dbf.workerUrl * .shp.workerUrl */
-      workerUrl?: never;
     };
     gis?: {
       reproject?: boolean;

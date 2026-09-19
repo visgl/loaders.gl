@@ -166,9 +166,3 @@ export type {
   ArrowBinaryFeatureCollection,
   BinaryFeatureCollectionLike
 } from './categories/category-gis';
-
-// DEPRECATED EXPORTS
-
-// MESH CATEGORY
-
-export {getMeshSize, getMeshBoundingBox} from './deprecated/mesh-utils';

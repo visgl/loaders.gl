@@ -106,6 +106,7 @@ See [Caching and memory](/docs/modules/3d-tiles/concepts/caching-and-memory) for
 
  - `MVTSourceLoader` now returns tiles in the Arrow-table shape by default, matching the source's
    columnar query path. Set `mvt.shape: 'geojson-table'` explicitly for object-row GeoJSON tiles.
+ - The `mvt.gis.format` compatibility alias has been removed. Use `mvt.shape` instead.
 
 **@loaders.gl/json, @loaders.gl/traces, and @loaders.gl/wms**
 
@@ -125,6 +126,22 @@ See [Caching and memory](/docs/modules/3d-tiles/concepts/caching-and-memory) for
    Arrow tables by default. Set the corresponding loader option to `shape: 'mesh'` to preserve
    the legacy Mesh object shape. Arrow results stay on the calling thread when worker execution
    would strip Arrow table methods.
+ - `draco.decoderType` has been removed. Use `draco.backend: 'wasm' | 'javascript' | 'draco3d'`.
+
+**Removed compatibility aliases**
+
+ - The nonfunctional `@loaders.gl/images` `loadImage()` placeholder has been removed. Use
+   `load(url, ImageBitmapLoader)` or the texture helpers in `@loaders.gl/textures`.
+ - `getMeshSize` and `getMeshBoundingBox` are no longer exported from `@loaders.gl/schema`;
+   import them from `@loaders.gl/schema-utils`.
+ - CRS forwarding exports (`PROJ4CRS`, `WKTCRS`, `parseWKTCRS`, and `encodeWKTCRS`) are no
+   longer exported from `@loaders.gl/gis`; import the canonical definitions and helpers from
+   `@math.gl/crs`.
+ - The parent-level `shapefile.workerUrl` option has been removed. Configure `shp.workerUrl`
+   and `dbf.workerUrl` independently.
+ - The PMTiles `tileRangeRequest` alias has been removed. Use `rangeRequests`.
+ - Generic image-source requests no longer accept `bbox`; pass `boundingBox` as two coordinate
+   pairs. Protocol-specific `bbox` request parameters remain unchanged.
 
 **@loaders.gl/pmtiles**
 
@@ -314,6 +331,9 @@ This unifies top-level loading behavior:
 - Unannotated Parquet `INT64` values now remain exact: Arrow output uses Arrow `Int64`, and object-row output uses JavaScript `bigint`. `ParquetJSWriter` accepts `bigint` and rejects unsafe `number` inputs for these fields rather than silently rounding them. Convert to `number` explicitly only when values are known to remain within JavaScript's safe integer range.
 
 **@loaders.gl/images**
+
+- The nonfunctional `loadImage()` placeholder export has been removed. Use the texture helpers in
+  `@loaders.gl/textures` or `load(url, ImageBitmapLoader)`.
 
 - ImageLoader now only returns ImageBitmap (never Image or data), with a polyfill under Node.js. There is a function to extract data from an ImageBitmap?
 

@@ -30,10 +30,6 @@ export type MVTLoaderOptions = LoaderOptions & {
     /** Preferred encoding for Arrow geometry output. */
     geoarrow?: {encodingPreference?: GeoArrowEncodingPreference};
   };
-  gis?: {
-    /** @deprecated. Use options.mvt.shape */
-    format?: 'geojson-table' | 'columnar-table' | 'binary-geometry' | 'arrow-table';
-  };
 };
 
 /**

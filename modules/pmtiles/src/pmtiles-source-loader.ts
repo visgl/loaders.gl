@@ -52,8 +52,6 @@ export type PMTilesSourceLoaderOptions = DataSourceOptions & {
     geoarrow?: {encodingPreference?: GeoArrowEncodingPreference};
   };
   rangeRequests?: PMTilesRangeRequestOptions;
-  /** @deprecated Use `rangeRequests`. */
-  tileRangeRequest?: PMTilesRangeRequestOptions;
 };
 
 /**
@@ -99,7 +97,7 @@ export class PMTilesTileSource
 
   constructor(data: string | Blob, options: PMTilesSourceLoaderOptions, coreApi?: CoreAPI) {
     super(data, options, PMTilesSourceLoader.defaultOptions, coreApi);
-    const rangeRequestOptions = options.rangeRequests || options.tileRangeRequest;
+    const rangeRequestOptions = options.rangeRequests;
     const urlOrBlob =
       typeof data === 'string'
         ? new RangeRequestSource(resolvePath(data), {
@@ -265,8 +263,7 @@ export class PMTilesTileSource
       return;
     }
 
-    const batchDelayMs =
-      this.options.rangeRequests?.batchDelayMs ?? this.options.tileRangeRequest?.batchDelayMs ?? 50;
+    const batchDelayMs = this.options.rangeRequests?.batchDelayMs ?? 50;
     this.tileBatchTimer = setTimeout(() => this.flushTileBatch(), batchDelayMs);
   }
 

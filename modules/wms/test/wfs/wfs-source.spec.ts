@@ -299,7 +299,7 @@ test('WFSSourceLoader exposes schema, metadata, and binary feature output', asyn
   expect(result.shape).toBe('binary-feature-collection');
 });
 
-test('WFSSourceLoader builds auxiliary service URLs and normalizes aliases', () => {
+test('WFSSourceLoader builds auxiliary service URLs', () => {
   const source = WFSSourceLoader.createDataSource(WFS_URL, {
     wfs: {vendorParameters: {token: 'base'}}
   }) as any;
@@ -318,10 +318,7 @@ test('WFSSourceLoader builds auxiliary service URLs and normalizes aliases', () 
         y: 5,
         width: 100,
         height: 50,
-        boundingBox: [
-          [1, 2],
-          [3, 4]
-        ],
+        bbox: [1, 2, 3, 4],
         crs: 'EPSG:4326'
       },
       {token: 'request'}
