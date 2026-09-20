@@ -111,9 +111,7 @@ export type WMSGetCapabilitiesParameters = {
 export type WMSGetMapParameters = {
   /** In case the endpoint supports multiple WMS versions */
   version?: '1.3.0' | '1.1.1';
-  /** bounding box of the requested map image `[[w, s], [e, n]]`  */
-  // boundingBox: [min: [x: number, y: number], max: [x: number, y: number]];
-  /** bounding box of the requested map image @deprecated Use .boundingBox */
+  /** WMS protocol bounding box of the requested map image. */
   bbox: [number, number, number, number];
   /** pixel width of returned image */
   width: number;
@@ -266,9 +264,9 @@ export class WMSImageSource
 
   async getImage(parameters: GetImageParameters): Promise<ImageType> {
     // Replace the GetImage `boundingBox` parameter with the WMS flat `bbox` parameter.
-    const {boundingBox, bbox, signal, ...rest} = parameters;
+    const {boundingBox, signal, ...rest} = parameters;
     const wmsParameters: WMSGetMapParameters = {
-      bbox: boundingBox ? [...boundingBox[0], ...boundingBox[1]] : bbox!,
+      bbox: [...boundingBox[0], ...boundingBox[1]],
       ...rest
     };
     return await this.getMap(wmsParameters, undefined, signal);
@@ -415,10 +413,6 @@ export class WMSImageSource
     vendorParameters?: Record<string, unknown>
   ): string {
     wmsParameters = this._getWMS130Parameters(wmsParameters);
-
-    // Replace the GetImage `boundingBox` parameter with the WMS flat `bbox` parameter.
-    const {boundingBox, bbox} = wmsParameters as any;
-    wmsParameters.bbox = boundingBox ? [...boundingBox[0], ...boundingBox[1]] : bbox!;
 
     const options: Required<WMSGetFeatureInfoParameters> = {
       version: this.wmsParameters.version,

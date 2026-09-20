@@ -18,8 +18,6 @@ export type DracoLoaderOptions = StrictLoaderOptions & {
     shape?: 'mesh' | 'arrow-table';
     /** Selects the full decoder or the smaller glTF-compatible decoder build. */
     decoderProfile?: DracoDecoderProfile;
-    /** @deprecated Use `backend: 'wasm'` or `backend: 'javascript'`. */
-    decoderType?: 'wasm' | 'js';
     /** Override the URL to the worker bundle (by default loads from unpkg.com) */
     workerUrl?: string;
   };
@@ -28,7 +26,6 @@ export type DracoLoaderOptions = StrictLoaderOptions & {
 /** Default option bag for the Draco loader. */
 export const DRACO_LOADER_DEFAULT_OPTIONS = {
   backend: typeof WebAssembly === 'object' ? 'wasm' : 'javascript',
-  decoderType: typeof WebAssembly === 'object' ? 'wasm' : 'js',
   extraAttributes: {},
   attributeNameEntry: undefined,
   shape: 'arrow-table',

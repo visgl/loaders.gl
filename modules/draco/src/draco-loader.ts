@@ -67,13 +67,10 @@ export const DracoLoader = {
 /** @deprecated Use DracoLoader. */
 export const DracoWorkerLoader = DracoLoader;
 
-/** Resolves the Draco decoder backend from current and legacy loader options. */
+/** Resolves the Draco decoder backend from loader options. */
 function getDracoBackend(options?: DracoLoaderOptions): DracoDecoderBackend {
   if (options?.draco?.backend) {
     return options.draco.backend === 'js' ? 'javascript' : options.draco.backend;
-  }
-  if (options?.draco?.decoderType) {
-    return options.draco.decoderType === 'js' ? 'javascript' : options.draco.decoderType;
   }
   return DracoLoader.options.draco.backend;
 }

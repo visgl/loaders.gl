@@ -215,11 +215,6 @@ export type {WKTGeometryOptions} from './lib/geometry-converters/wkb/convert-geo
 export {getWKTDimension} from './lib/geometry-converters/wkb/convert-wkt-to-geometry';
 
 // CRS
-export type {PROJ4CRS} from './lib/crs/crs';
-export type {WKTCRS, ParseWKTCRSOptions} from './lib/wkt-crs/parse-wkt-crs';
-export {parseWKTCRS} from './lib/wkt-crs/parse-wkt-crs';
-export type {EncodeWKTCRSOptions} from './lib/wkt-crs/encode-wkt-crs';
-export {encodeWKTCRS} from './lib/wkt-crs/encode-wkt-crs';
 
 // EXPERIMENTAL APIs
 

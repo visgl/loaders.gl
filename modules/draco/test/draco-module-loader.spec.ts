@@ -25,10 +25,6 @@ test('DracoLoader#preload selects backend loader', async () => {
     await DracoLoader.preload?.('', {draco: {backend: 'draco3d'}, modules: {draco3d}}),
     'selects the injected draco3d backend loader'
   ).toBe(Draco3DLoaderWithParser);
-  expect(
-    await DracoLoader.preload?.('', {draco: {decoderType: 'js'}}),
-    'maps legacy decoderType to the JavaScript backend loader'
-  ).toBe(DracoJavaScriptLoaderWithParser);
 });
 test('draco-module-loader#uses injected decoder module', async () => {
   if (isBrowser) {

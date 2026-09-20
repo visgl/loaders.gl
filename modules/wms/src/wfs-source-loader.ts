@@ -139,9 +139,7 @@ export type WFSGetCapabilitiesParameters = {
 export type WFSGetMapParameters = {
   /** In case the endpoint supports multiple WFS versions */
   version?: WFSVersion;
-  /** bounding box of the requested map image `[[w, s], [e, n]]`  */
-  // boundingBox: [min: [x: number, y: number], max: [x: number, y: number]];
-  /** bounding box of the requested map image @deprecated Use .boundingBox */
+  /** WFS protocol bounding box of the requested map image. */
   bbox: [number, number, number, number];
   /** pixel width of returned image */
   width: number;
@@ -556,10 +554,6 @@ export class WFSVectorSource extends DataSource<string, WFSourceOptions> impleme
     vendorParameters?: Record<string, unknown>
   ): string {
     wfsParameters = this._getWFS130Parameters(wfsParameters);
-
-    // Replace the GetImage `boundingBox` parameter with the WFS flat `bbox` parameter.
-    const {boundingBox, bbox} = wfsParameters as any;
-    wfsParameters.bbox = boundingBox ? [...boundingBox[0], ...boundingBox[1]] : bbox!;
 
     // @ts-expect-error
     const options: Required<WFSGetFeatureInfoParameters> = {

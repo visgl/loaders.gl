@@ -56,7 +56,7 @@ v4.5 is additive. Existing loaders and defaults continue to work unchanged, exce
 
 ## Upgrading to v5.0
 
-These deprecations and removals are being considered for v5.
+The sections below document the v5 removals, migrations, and deprecations that remain active.
 
 **@loaders.gl/math**
 
@@ -106,6 +106,7 @@ See [Caching and memory](/docs/modules/3d-tiles/concepts/caching-and-memory) for
 
  - `MVTSourceLoader` now returns tiles in the Arrow-table shape by default, matching the source's
    columnar query path. Set `mvt.shape: 'geojson-table'` explicitly for object-row GeoJSON tiles.
+ - The top-level `gis.format` compatibility alias has been removed. Use `mvt.shape` instead.
 
 **@loaders.gl/json, @loaders.gl/traces, and @loaders.gl/wms**
 
@@ -125,6 +126,23 @@ See [Caching and memory](/docs/modules/3d-tiles/concepts/caching-and-memory) for
    Arrow tables by default. Set the corresponding loader option to `shape: 'mesh'` to preserve
    the legacy Mesh object shape. Arrow results stay on the calling thread when worker execution
    would strip Arrow table methods.
+ - `draco.decoderType` has been removed. Use `draco.backend: 'wasm' | 'javascript' | 'draco3d'`.
+
+**Removed compatibility aliases**
+
+ - The nonfunctional `@loaders.gl/images` `loadImage()` placeholder has been removed. Use
+   `load(url, ImageBitmapLoader)` or the texture helpers in `@loaders.gl/textures`.
+ - `getMeshSize` is no longer exported from `@loaders.gl/schema`; import it from
+   `@loaders.gl/schema-utils`. `getMeshBoundingBox` remains as a temporary deprecated alias for
+   deck.gl 9.4 compatibility and should likewise migrate to `schema-utils`.
+ - CRS forwarding exports (`PROJ4CRS`, `WKTCRS`, `parseWKTCRS`, and `encodeWKTCRS`) are no
+   longer exported from `@loaders.gl/gis`; import the canonical definitions and helpers from
+   `@math.gl/crs`.
+ - The parent-level `shapefile.workerUrl` option has been removed. Configure `shp.workerUrl`
+   and `dbf.workerUrl` independently.
+ - The PMTiles `tileRangeRequest` alias has been removed. Use `rangeRequests`.
+ - Generic image-source requests no longer accept `bbox`; pass `boundingBox` as two coordinate
+   pairs. Protocol-specific `bbox` request parameters remain unchanged.
 
 **@loaders.gl/pmtiles**
 
@@ -315,6 +333,9 @@ This unifies top-level loading behavior:
 
 **@loaders.gl/images**
 
+- The nonfunctional `loadImage()` placeholder export has been removed. Use the texture helpers in
+  `@loaders.gl/textures` or `load(url, ImageBitmapLoader)`.
+
 - ImageLoader now only returns ImageBitmap (never Image or data), with a polyfill under Node.js. There is a function to extract data from an ImageBitmap?
 
 **@loaders.gl/json**
@@ -393,14 +414,6 @@ This unifies top-level loading behavior:
 **Recommendations**
 
 - For improved type checks, make sure you do not erase types of arrays of Loader objects: Replace `const loaders: Loader[] = [CSVLoader, JSONLoader];` with `const loaders = [CSVLoader, JSONLoader] as const satisfies Loader[];` or `const loaders: Loader[] = [CSVLoader, JSONLoader] as const;`.
-
-## Additional changes in v4.2
-
-**@loaders.gl/mvt**
-
-**Deprecations**
-
-- `loaders.gl/mvt` - `options.gis.format` is deprecated. Use `options.mvt.shape` instead.
 
 ## Upgrading to v4.2
 

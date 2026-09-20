@@ -114,10 +114,10 @@ export class ArcGISImageSource
 
   /** Requests an image from generic ImageSource parameters. */
   async getImage(parameters: GetImageParameters): Promise<ImageType> {
-    const {boundingBox, bbox, width, height, crs, format, signal} = parameters;
+    const {boundingBox, width, height, crs, format, signal} = parameters;
     const spatialReference = normalizeArcGISSpatialReference(crs) || '4326';
     const imageParameters: ArcGISExportImageParameters = {
-      bbox: boundingBox ? [...boundingBox[0], ...boundingBox[1]] : bbox!,
+      bbox: [...boundingBox[0], ...boundingBox[1]],
       bboxSR: spatialReference,
       imageSR: spatialReference,
       width,

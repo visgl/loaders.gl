@@ -87,7 +87,7 @@ test('point cloud tile#throws if the feature table does not contain POSITION or 
 test('loadDraco# Pass options to draco loader properly', async () => {
   const resultObject = {
     draco: {
-      decoderType: 'js',
+      backend: 'javascript',
       extraAttributes: {test: 'yes'},
       shape: 'mesh'
     },
@@ -105,7 +105,7 @@ test('loadDraco# Pass options to draco loader properly', async () => {
   const dracoData = {buffer: null, batchTableProperties: {test: 'yes'}};
   const options: DracoLoaderOptions = {
     draco: {
-      decoderType: 'js'
+      backend: 'javascript'
     },
     '3d-tiles': 'test 3d-tiles',
     worker: true,
