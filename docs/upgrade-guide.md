@@ -132,8 +132,9 @@ See [Caching and memory](/docs/modules/3d-tiles/concepts/caching-and-memory) for
 
  - The nonfunctional `@loaders.gl/images` `loadImage()` placeholder has been removed. Use
    `load(url, ImageBitmapLoader)` or the texture helpers in `@loaders.gl/textures`.
- - `getMeshSize` and `getMeshBoundingBox` are no longer exported from `@loaders.gl/schema`;
-   import them from `@loaders.gl/schema-utils`.
+ - `getMeshSize` is no longer exported from `@loaders.gl/schema`; import it from
+   `@loaders.gl/schema-utils`. `getMeshBoundingBox` remains as a temporary deprecated alias for
+   deck.gl 9.4 compatibility and should likewise migrate to `schema-utils`.
  - CRS forwarding exports (`PROJ4CRS`, `WKTCRS`, `parseWKTCRS`, and `encodeWKTCRS`) are no
    longer exported from `@loaders.gl/gis`; import the canonical definitions and helpers from
    `@math.gl/crs`.

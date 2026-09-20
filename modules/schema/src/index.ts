@@ -92,6 +92,8 @@ export type {
   MeshTopology
 } from './categories/category-mesh';
 export {meshArrowSchema, indexedMeshArrowSchema} from './categories/category-mesh';
+/** @deprecated Deck.gl 9.4 still imports this symbol from the schema root. Use schema-utils. */
+export {getMeshBoundingBox} from './deprecated/mesh-utils';
 
 // TEXTURES
 export type {
