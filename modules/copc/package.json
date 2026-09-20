@@ -1,7 +1,7 @@
 {
   "private": true,
   "name": "@loaders.gl/copc",
-  "version": "4.5.1",
+  "version": "4.5.2",
   "description": "Framework-independent loader for the COPC format",
   "license": "MIT",
   "type": "module",
@@ -41,9 +41,9 @@
     "build-bundle": "# ocular-bundle ./src/index.ts"
   },
   "dependencies": {
-    "@loaders.gl/images": "4.5.1",
-    "@loaders.gl/loader-utils": "4.5.1",
-    "@loaders.gl/mvt": "4.5.1",
+    "@loaders.gl/images": "4.5.2",
+    "@loaders.gl/loader-utils": "4.5.2",
+    "@loaders.gl/mvt": "4.5.2",
     "@loaders.gl/schema": "4.5.1",
     "copc": "0.0.6"
   },

@@ -2,6 +2,10 @@
 
 ## v4.5
 
+### v4.5.2
+
+- fix(release): align published peer dependency ranges with the 4.5 release (#4027)
+
 ### v4.5.1
 
 - Bump lerna version in 4.5-release branch (#3975)
