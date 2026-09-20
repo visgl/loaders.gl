@@ -56,7 +56,7 @@ v4.5 is additive. Existing loaders and defaults continue to work unchanged, exce
 
 ## Upgrading to v5.0
 
-These deprecations and removals are being considered for v5.
+The sections below document the v5 removals, migrations, and deprecations that remain active.
 
 **@loaders.gl/math**
 
@@ -414,14 +414,6 @@ This unifies top-level loading behavior:
 **Recommendations**
 
 - For improved type checks, make sure you do not erase types of arrays of Loader objects: Replace `const loaders: Loader[] = [CSVLoader, JSONLoader];` with `const loaders = [CSVLoader, JSONLoader] as const satisfies Loader[];` or `const loaders: Loader[] = [CSVLoader, JSONLoader] as const;`.
-
-## Additional changes in v4.2
-
-**@loaders.gl/mvt**
-
-**Deprecations**
-
-- `loaders.gl/mvt` - `options.gis.format` is deprecated. Use `options.mvt.shape` instead.
 
 ## Upgrading to v4.2
 
