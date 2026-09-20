@@ -106,7 +106,7 @@ See [Caching and memory](/docs/modules/3d-tiles/concepts/caching-and-memory) for
 
  - `MVTSourceLoader` now returns tiles in the Arrow-table shape by default, matching the source's
    columnar query path. Set `mvt.shape: 'geojson-table'` explicitly for object-row GeoJSON tiles.
- - The `mvt.gis.format` compatibility alias has been removed. Use `mvt.shape` instead.
+ - The top-level `gis.format` compatibility alias has been removed. Use `mvt.shape` instead.
 
 **@loaders.gl/json, @loaders.gl/traces, and @loaders.gl/wms**
 
