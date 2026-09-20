@@ -108,18 +108,24 @@ test('FlatGeobufLoader#load arrow-table worker result is hydrated', async () => 
 test('FlatGeobufLoader#load arrow-table reprojects like geojson-table', async () => {
   const arrowTable = await load(FLATGEOBUF_COUNTRIES_DATA_URL, FlatGeobufLoader, {
     core: {worker: false},
-    gis: {reproject: true, _targetCrs: 'EPSG:3857'}
+    gis: {reproject: true, targetCrs: 'EPSG:3857'}
   });
   const geojsonTable = await load(FLATGEOBUF_COUNTRIES_DATA_URL, FlatGeobufLoader, {
     core: {worker: false},
     flatgeobuf: {shape: 'geojson-table'},
-    gis: {reproject: true, _targetCrs: 'EPSG:3857'}
+    gis: {reproject: true, targetCrs: 'EPSG:3857'}
   });
   const roundTripped = convertGeoArrowToTable(arrowTable.data, 'geojson-table');
   expect(
     normalizeFeatures(roundTripped.features),
     'reprojected Arrow output matches GeoJSON output'
   ).toEqual(normalizeFeatures(geojsonTable.features));
+  expect(arrowTable.schema.metadata?.crs, 'Arrow metadata reports the transformed CRS').toBe(
+    'EPSG:3857'
+  );
+  expect(arrowTable.schema.metadata?.sourceCrs, 'Arrow metadata retains the source CRS').toContain(
+    'EPSG'
+  );
 });
 test('FlatGeobufLoader#loadInBatches', async () => {
   const iterator = await loadInBatches(FLATGEOBUF_COUNTRIES_DATA_URL, FlatGeobufLoader, {

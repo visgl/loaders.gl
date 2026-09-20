@@ -428,6 +428,11 @@ export type {
   VectorSourceLayer,
   VectorSourceMetadata
 } from './lib/sources/vector-source';
+export {CRSReprojectionError} from './lib/crs/crs-reprojection';
+export type {
+  CRSReprojectionOptions,
+  CRSReprojectionErrorCode
+} from './lib/crs/crs-reprojection';
 
 export type {TileSource, TileGrid} from './lib/sources/tile-source';
 export type {TileSourceMetadata, GetTileParameters} from './lib/sources/tile-source';

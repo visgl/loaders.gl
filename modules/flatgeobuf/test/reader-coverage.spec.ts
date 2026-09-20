@@ -3,6 +3,8 @@
 // Copyright (c) vis.gl contributors
 
 import {describe, expect, test} from 'vitest';
+import {fetchFile, resolvePath} from '@loaders.gl/core';
+import {CRSReprojectionError} from '@loaders.gl/loader-utils';
 
 import {
   decodeFlatGeobufGeometry,
@@ -11,7 +13,12 @@ import {
   getFlatGeobufCRSIdentifier,
   readFlatGeobufHeader
 } from '../src/lib/flatgeobuf-reader';
-import {getProjection, makeArrowSchema} from '../src/lib/parse-flatgeobuf';
+import {
+  getProjection,
+  makeArrowRow,
+  makeArrowSchema,
+  parseFlatGeobufInBatches
+} from '../src/lib/parse-flatgeobuf';
 
 const COLUMN_TYPES = [
   ['byte', FlatGeobufColumnType.Byte, 'int8'],
@@ -32,6 +39,18 @@ const COLUMN_TYPES = [
 ] as const;
 
 describe('FlatGeobuf reader metadata branches', () => {
+  test('encodes a feature row and streams a stable Arrow batch', async () => {
+    expect(
+      makeArrowRow({type: 'Feature', properties: {name: 'point'}, geometry: null} as any)
+    ).toEqual({name: 'point', geometry: null});
+
+    const response = await fetchFile(resolvePath('@loaders.gl/flatgeobuf/test/data/countries.fgb'));
+    const batches = parseFlatGeobufInBatches(response.body!, {});
+    const batch = await batches.next();
+    expect(batch.done).toBe(false);
+    expect(batch.value?.schema.fields.length).toBe(3);
+  });
+
   test.each([
     [new ArrayBuffer(0), 'Invalid or truncated FlatGeobuf buffer'],
     [new Uint8Array([0x66, 0x67, 0x78, 3, 0, 0, 0, 0, 0, 0, 0, 0]).buffer, 'Not a FlatGeobuf file'],
@@ -123,9 +142,15 @@ describe('FlatGeobuf reader metadata branches', () => {
 
   test('creates projections only from declared source CRS definitions', () => {
     expect(getProjection({}, false)).toBeUndefined();
-    expect(() => getProjection({crs: {}}, true)).toThrow(
-      'FlatGeobuf reprojection requires a source CRS in the file header'
-    );
+    expect(() => getProjection({crs: {}}, true)).toThrow(CRSReprojectionError);
+    try {
+      getProjection({crs: {}}, true);
+    } catch (error) {
+      expect(error).toMatchObject({
+        code: 'missing-source-crs',
+        message: 'FlatGeobuf reprojection requires a source CRS in the file header'
+      });
+    }
     expect(() => getProjection({crs: {wkt: 'not a CRS'}}, true)).toThrow(
       'FlatGeobuf reprojection failed'
     );

@@ -92,6 +92,42 @@ test('VectorSet#keeps only the latest viewport request and skips identical reque
   await vectorSet.updateViewport(secondViewport as any);
   expect(requestedParameters.length, 'does not refetch identical viewport parameters').toBe(2);
 });
+test('VectorSet forwards request CRS and refetches when it changes', async () => {
+  const requestedParameters: any[] = [];
+  const vectorSource = {
+    async getMetadata() {
+      return {name: 'roads', keywords: [], layers: []};
+    },
+    async getSchema() {
+      return {metadata: {}, fields: []};
+    },
+    async getFeatures(parameters: any) {
+      requestedParameters.push(parameters);
+      return TABLE_A as any;
+    }
+  };
+  const vectorSet = new VectorSet({
+    vectorSource: vectorSource as any,
+    layers: ['roads'],
+    crs: 'EPSG:3857',
+    requestCrs: 'EPSG:4326',
+    debounceTime: 0
+  });
+  const viewport = createViewport([0, 1, 2, 3]);
+  await vectorSet.updateViewport(viewport as any);
+  expect(requestedParameters[0]).toMatchObject({crs: 'EPSG:3857', requestCrs: 'EPSG:4326'});
+
+  vectorSet.setOptions({
+    vectorSource: vectorSource as any,
+    layers: ['roads'],
+    crs: 'EPSG:3857',
+    requestCrs: 'CRS84',
+    debounceTime: 0
+  });
+  await vectorSet.updateViewport(viewport as any);
+  expect(requestedParameters).toHaveLength(2);
+  expect(requestedParameters[1].requestCrs).toBe('CRS84');
+});
 test('VectorSet#emits loading state changes', async () => {
   const loadingStates: boolean[] = [];
   let resolveRequest;
@@ -409,11 +445,17 @@ test('VectorSourceLayer exhausts option, viewport, and reuse update branches', a
   };
 
   layer.updateState({
-    props: {...stableProps, layers: ['roads'], crs: 'EPSG:3857'},
+    props: {
+      ...stableProps,
+      layers: ['roads'],
+      crs: 'EPSG:3857',
+      requestCrs: 'EPSG:4326'
+    },
     oldProps: stableProps,
     changeFlags: {dataChanged: false, viewportChanged: false}
   });
   expect(setOptions).toHaveBeenCalledOnce();
+  expect(setOptions).toHaveBeenCalledWith(expect.objectContaining({requestCrs: 'EPSG:4326'}));
   expect(updateViewport).toHaveBeenCalledOnce();
 
   setOptions.mockClear();

@@ -3,12 +3,15 @@
 // Copyright (c) vis.gl contributors
 
 import * as arrow from 'apache-arrow';
-import {Proj4Projection, type Proj4CRSDefinition} from '@math.gl/proj4';
+import {Proj4Projection, toProj4CRSDefinition} from '@math.gl/proj4';
+import type {ReadonlyCRSDefinition} from '@math.gl/crs';
 import type {ArrowTable, ArrowTableBatch, Feature, Field, Schema, Table} from '@loaders.gl/schema';
 import {
   filterColumnarRowIndices,
   makeTableScanBatch,
   planTableQuery,
+  CRSReprojectionError,
+  type CRSReprojectionOptions,
   type ColumnarPredicate,
   type TableQueryOptions
 } from '@loaders.gl/loader-utils';
@@ -38,11 +41,9 @@ import {
 
 const GEOMETRY_COLUMN_NAME = 'geometry';
 
-export type ParseFlatGeobufOptions = {
+export type ParseFlatGeobufOptions = CRSReprojectionOptions & {
   shape?: 'geojson-table' | 'columnar-table' | 'binary-geometry' | 'arrow-table';
   boundingBox?: [[number, number], [number, number]];
-  crs?: Proj4CRSDefinition;
-  reproject?: boolean;
   /** Preferred encoding for Arrow geometry output. */
   geoarrow?: {encodingPreference?: import('@loaders.gl/schema').GeoArrowEncodingPreference};
 };
@@ -100,8 +101,11 @@ export function parseFlatGeobufToArrowTable(
     });
   }
   const header = readFlatGeobufHeader(arrayBuffer);
-  const schema = makeArrowSchema(header);
-  const projection = getProjection(header, options.reproject, options.crs || 'WGS84');
+  const projection = getProjection(header, options.reproject, options.targetCrs || 'WGS84');
+  const schema = makeArrowSchema(
+    header,
+    projection ? {targetCrs: options.targetCrs || 'WGS84'} : undefined
+  );
   const features = [...readFlatGeobufFeatures(arrayBuffer, header)].filter(feature =>
     matchesBoundingBox(arrayBuffer, feature.geometryOffset, header, options.boundingBox)
   );
@@ -185,7 +189,10 @@ export async function* parseFlatGeobufInBatches(
 }
 
 /** Creates the public Arrow schema from FlatGeobuf header metadata. */
-export function makeArrowSchema(header: FlatGeobufHeader | any): Schema {
+export function makeArrowSchema(
+  header: FlatGeobufHeader | any,
+  options?: {targetCrs?: ReadonlyCRSDefinition}
+): Schema {
   const fields: Field[] = header.columns.map(column => ({
     name: column.name,
     type: getArrowType(column.type),
@@ -201,24 +208,34 @@ export function makeArrowSchema(header: FlatGeobufHeader | any): Schema {
     }
   }));
   fields.push(makeWKBGeometryField(GEOMETRY_COLUMN_NAME));
+  const schemaMetadata: Record<string, string> = {
+    title: header.title || '',
+    description: header.description || '',
+    crs: serializeCRSMetadata(header.crs || {}),
+    metadata: header.metadata || '',
+    geometryType: String(header.geometryType),
+    indexNodeSize: String(header.indexNodeSize),
+    featureCount: String(header.featuresCount),
+    bounds: header.envelope?.join(',') || ''
+  };
+  if (options?.targetCrs !== undefined) {
+    schemaMetadata.sourceCrs = serializeCRSMetadata(header.crs || {});
+    schemaMetadata.crs = serializeCRSMetadata(options.targetCrs);
+  }
   const schema: Schema = {
     fields,
-    metadata: {
-      title: header.title || '',
-      description: header.description || '',
-      crs: JSON.stringify(header.crs || {}),
-      metadata: header.metadata || '',
-      geometryType: String(header.geometryType),
-      indexNodeSize: String(header.indexNodeSize),
-      featureCount: String(header.featuresCount),
-      bounds: header.envelope?.join(',') || ''
-    }
+    metadata: schemaMetadata
   };
   setWKBGeometryColumnMetadata(schema.metadata!, {
     geometryColumnName: GEOMETRY_COLUMN_NAME,
     geometryTypes: [getGeometryType(header.geometryType, header.hasZ)]
   });
   return schema;
+}
+
+/** Serializes a CRS metadata value without adding quotes around identifier strings. */
+function serializeCRSMetadata(crs: ReadonlyCRSDefinition | Record<string, unknown>): string {
+  return typeof crs === 'string' ? crs : JSON.stringify(crs);
 }
 
 /** Encodes one legacy source-loader feature as a WKB Arrow object row. */
@@ -241,7 +258,7 @@ function makeGeoJsonTable(arrayBuffer: ArrayBuffer, options: ParseFlatGeobufOpti
       geometry: decodeFlatGeobufGeometry(arrayBuffer, feature.geometryOffset, header)
     });
   }
-  const projection = getProjection(header, options.reproject, options.crs || 'WGS84');
+  const projection = getProjection(header, options.reproject, options.targetCrs || 'WGS84');
   if (projection)
     features = transformGeoJsonCoords(features, coordinates => projection.project(coordinates));
   return {
@@ -311,18 +328,26 @@ function getArrowType(type: FlatGeobufColumnType): Field['type'] {
 export function getProjection(
   header: FlatGeobufHeader | any,
   reproject = false,
-  crs: Proj4CRSDefinition = 'WGS84'
+  targetCrs: ReadonlyCRSDefinition = 'WGS84'
 ): Proj4Projection | undefined {
   if (!reproject) return undefined;
   const sourceCrs = header.crs?.wkt || getFlatGeobufCRSIdentifier(header.crs);
   if (!sourceCrs) {
-    throw new Error('FlatGeobuf reprojection requires a source CRS in the file header');
+    throw new CRSReprojectionError(
+      'missing-source-crs',
+      'FlatGeobuf reprojection requires a source CRS in the file header',
+      {targetCrs}
+    );
   }
   try {
-    return new Proj4Projection({from: sourceCrs, to: crs});
+    return new Proj4Projection({from: sourceCrs, to: toProj4CRSDefinition(targetCrs)});
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error);
-    throw new Error(`FlatGeobuf reprojection failed: ${message}`);
+    throw new CRSReprojectionError(
+      'transformation-failed',
+      `FlatGeobuf reprojection failed: ${message}`,
+      {sourceCrs, targetCrs, cause: error}
+    );
   }
 }
 function matchesBoundingBox(

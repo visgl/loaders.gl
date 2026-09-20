@@ -69,11 +69,11 @@ test('ShapefileLoader#load arrow-table reprojects like v3 output', async () => {
   const filename = `${SHAPEFILE_JS_DATA_FOLDER}/points.shp`;
   const arrowTable = await load(filename, ShapefileLoader, {
     shapefile: {shape: 'arrow-table'},
-    gis: {reproject: true, _targetCrs: 'EPSG:3857'}
+    gis: {reproject: true, targetCrs: 'EPSG:3857'}
   });
   const shapeTable = await load(filename, ShapefileLoader, {
     shapefile: {shape: 'v3'},
-    gis: {reproject: true, _targetCrs: 'EPSG:3857'}
+    gis: {reproject: true, targetCrs: 'EPSG:3857'}
   });
   const rows = getRowsFromArrowTable(arrowTable);
   const roundTripped = convertWKBTableToGeoJSON(

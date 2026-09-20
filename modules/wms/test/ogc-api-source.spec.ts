@@ -29,7 +29,9 @@ test('OGCAPIFeaturesSource#getFeatures uses standard bbox query', async () => {
     'ogc-api': {collectionId: 'roads'}
   });
   source.fetch = async (url, options) => {
-    expect(url).toBe(`${OGC_API_URL}/collections/roads/items?bbox=-10%2C-5%2C10%2C5&crs=CRS84`);
+    expect(url).toBe(
+      `${OGC_API_URL}/collections/roads/items?bbox=-10%2C-5%2C10%2C5&crs=CRS84&bbox-crs=CRS84`
+    );
     expect(new Headers(options?.headers).get('accept')).toContain('application/geo+json');
     return new Response(JSON.stringify({type: 'FeatureCollection', features: []}));
   };
@@ -43,6 +45,27 @@ test('OGCAPIFeaturesSource#getFeatures uses standard bbox query', async () => {
     crs: 'CRS84'
   });
   expect(result.shape).toBe('geojson-table');
+});
+
+test('OGCAPIFeaturesSource#getFeatures separates bbox and output CRS', async () => {
+  const source = OGCAPIFeaturesSourceLoader.createDataSource(OGC_API_URL, {
+    'ogc-api': {collectionId: 'roads'}
+  });
+  source.fetch = async url => {
+    expect(url).toBe(
+      `${OGC_API_URL}/collections/roads/items?bbox=-5%2C-10%2C5%2C10&crs=EPSG%3A3857&bbox-crs=EPSG%3A4326`
+    );
+    return new Response(JSON.stringify({type: 'FeatureCollection', features: []}));
+  };
+  await source.getFeatures({
+    layers: 'roads',
+    boundingBox: [
+      [-10, -5],
+      [10, 5]
+    ],
+    requestCrs: 'EPSG:4326',
+    crs: 'EPSG:3857'
+  });
 });
 
 test('OGCAPIFeaturesSource supports binary and Arrow output', async () => {

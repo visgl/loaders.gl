@@ -184,13 +184,15 @@ export class ArcGISVectorSource
   /** Builds a query URL from generic vector source parameters. */
   getFeaturesURL(parameters: GetFeaturesParameters): string {
     const defaultParameters = this.options['arcgis-feature-server']?.queryParameters || {};
-    const spatialReference = normalizeArcGISSpatialReference(parameters.crs) || 4326;
+    const outputSpatialReference = normalizeArcGISSpatialReference(parameters.crs) || 4326;
+    const requestSpatialReference =
+      normalizeArcGISSpatialReference(parameters.requestCrs) || outputSpatialReference;
     const queryParameters: ArcGISFeatureServiceQueryOptions = {
       returnGeometry: true,
       where: '1=1',
       outFields: '*',
-      outSR: spatialReference,
-      inSR: spatialReference,
+      outSR: outputSpatialReference,
+      inSR: requestSpatialReference,
       f: 'geojson',
       ...defaultParameters
     };

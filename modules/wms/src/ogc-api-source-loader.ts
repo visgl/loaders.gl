@@ -21,6 +21,7 @@ import {
   convertFeaturesToWKBArrowTable,
   convertGeojsonToBinaryFeatureCollection
 } from '@loaders.gl/gis';
+import {getServiceCRSAxisOrder} from './crs-utils';
 
 /** Options shared by the minimal OGC API source adapters. */
 export type OGCAPISourceOptions = DataSourceOptions & {
@@ -96,8 +97,10 @@ export class OGCAPIFeaturesSource
       ? `${this.url}/items`
       : `${this.getServiceURL()}/collections/${encodeURIComponent(collectionId)}/items`;
     const url = new URL(collectionURL);
-    url.searchParams.set('bbox', flattenBoundingBox(parameters.boundingBox).join(','));
+    const requestCrs = parameters.requestCrs || parameters.crs;
+    url.searchParams.set('bbox', flattenBoundingBox(parameters.boundingBox, requestCrs).join(','));
     if (parameters.crs) url.searchParams.set('crs', parameters.crs);
+    if (requestCrs) url.searchParams.set('bbox-crs', requestCrs);
     const response = await this.fetchJSON(
       url.toString(),
       'application/geo+json, application/json;q=0.9'
@@ -239,8 +242,15 @@ export const OGCAPITilesSourceLoader = {
 } as const satisfies SourceLoader<OGCAPITilesSource>;
 
 /** Converts the loaders.gl nested bounding box into the OGC comma-separated form. */
-function flattenBoundingBox(boundingBox: GetFeaturesParameters['boundingBox']): number[] {
-  return [boundingBox[0][0], boundingBox[0][1], boundingBox[1][0], boundingBox[1][1]];
+function flattenBoundingBox(
+  boundingBox: GetFeaturesParameters['boundingBox'],
+  requestCrs?: GetFeaturesParameters['requestCrs']
+): number[] {
+  const values = [boundingBox[0][0], boundingBox[0][1], boundingBox[1][0], boundingBox[1][1]];
+  if (getServiceCRSAxisOrder(requestCrs) === 'yx') {
+    return [values[1], values[0], values[3], values[2]];
+  }
+  return values;
 }
 
 /** Checks that a decoded response has the required GeoJSON feature-collection marker. */

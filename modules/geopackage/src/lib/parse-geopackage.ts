@@ -3,7 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 /* eslint-disable camelcase */
-import {isBrowser} from '@loaders.gl/loader-utils';
+import {CRSReprojectionError, isBrowser} from '@loaders.gl/loader-utils';
 import type {
   ArrowTable,
   DataType,
@@ -23,8 +23,8 @@ import {
   transformGeoJsonCoords
 } from '@loaders.gl/gis';
 import {convertFeaturesToGeoArrowTable} from '@loaders.gl/gis';
-import {Proj4Projection, type Proj4CRSDefinition} from '@math.gl/proj4';
-import type {WKTCRSDefinition} from '@math.gl/crs';
+import {Proj4Projection, toProj4CRSDefinition, type Proj4CRSDefinition} from '@math.gl/proj4';
+import type {ReadonlyCRSDefinition, WKTCRSDefinition} from '@math.gl/crs';
 import initSqlJs, {Database, SqlJsStatic, Statement} from 'sql.js';
 
 import type {GeoPackageLoaderOptions} from '../geopackage-loader';
@@ -105,14 +105,14 @@ export async function parseGeoPackage(
   );
   const vectorTables = listGeoPackageVectorTables(database);
   const projections = getProjections(database);
-  const {reproject = false, _targetCrs = 'WGS84'} = options?.gis || {};
+  const {reproject = false, targetCrs = 'WGS84'} = options?.gis || {};
 
   switch (shape) {
     case 'geojson-table': {
       const selectedTable = selectGeoPackageVectorTable(vectorTables, options?.geopackage?.table);
       return getGeoPackageGeoJSONTable(database, selectedTable, projections, {
         reproject,
-        targetCrs: _targetCrs
+        targetCrs
       });
     }
     default:
@@ -132,14 +132,14 @@ export async function parseGeoPackageToArrow(
   const vectorTables = listGeoPackageVectorTables(database);
   const selectedTable = selectGeoPackageVectorTable(vectorTables, options?.geopackage?.table);
   const projections = getProjections(database);
-  const {reproject = false, _targetCrs = 'WGS84'} = options?.gis || {};
+  const {reproject = false, targetCrs = 'WGS84'} = options?.gis || {};
 
   const preference =
     options?.geoarrow?.encodingPreference || options?.geopackage?.geoarrow?.encodingPreference;
   if (preference && preference !== 'geoarrow.wkb') {
     const geoJSONTable = getGeoPackageGeoJSONTable(database, selectedTable, projections, {
       reproject,
-      targetCrs: _targetCrs
+      targetCrs
     });
     return convertFeaturesToGeoArrowTable(geoJSONTable.features, {
       encodingPreference: preference
@@ -148,7 +148,7 @@ export async function parseGeoPackageToArrow(
 
   return getGeoPackageArrowTable(database, selectedTable, projections, {
     reproject,
-    targetCrs: _targetCrs
+    targetCrs
   });
 }
 
@@ -247,7 +247,7 @@ export function getGeoPackageGeoJSONTable(
   database: Database,
   vectorTable: GeoPackageVectorTableInfo,
   projections: ProjectionMapping,
-  options: {reproject: boolean; targetCrs: Proj4CRSDefinition}
+  options: {reproject: boolean; targetCrs: ReadonlyCRSDefinition}
 ): GeoJSONTable {
   const dataColumns = getDataColumns(database, vectorTable.name);
   const featureIdColumn = getFeatureIdName(database, vectorTable.name);
@@ -274,14 +274,14 @@ export function getGeoPackageArrowTable(
   database: Database,
   vectorTable: GeoPackageVectorTableInfo,
   projections: ProjectionMapping,
-  options: {reproject: boolean; targetCrs: Proj4CRSDefinition}
+  options: {reproject: boolean; targetCrs: ReadonlyCRSDefinition}
 ): ArrowTable {
   const queryResult = database.exec(`SELECT * FROM \`${vectorTable.name}\`;`)[0];
   const columns = queryResult?.columns || [];
   const values = queryResult?.values || [];
   const projection = getProjection(vectorTable, projections, options);
   const outputCrs = options.reproject
-    ? options.targetCrs
+    ? toProj4CRSDefinition(options.targetCrs)
     : vectorTable.srsId === undefined
       ? undefined
       : projections[vectorTable.srsId];
@@ -393,28 +393,41 @@ function constructArrowRow(
 export function getProjection(
   vectorTable: GeoPackageVectorTableInfo,
   projections: ProjectionMapping,
-  options: {reproject: boolean; targetCrs: Proj4CRSDefinition}
+  options: {reproject: boolean; targetCrs: ReadonlyCRSDefinition}
 ): Proj4Projection | null {
   if (!options.reproject) {
     return null;
   }
   if (vectorTable.srsId === undefined) {
-    throw new Error(
-      `GeoPackage reprojection requires a source CRS identifier for table "${vectorTable.name}"`
+    throw new CRSReprojectionError(
+      'missing-source-crs',
+      `GeoPackage reprojection requires a source CRS identifier for table "${vectorTable.name}"`,
+      {targetCrs: options.targetCrs}
     );
   }
 
   const sourceProjection = projections[vectorTable.srsId];
   if (!sourceProjection) {
-    throw new Error(
-      `GeoPackage reprojection requires a defined source CRS for SRS ${vectorTable.srsId}`
+    throw new CRSReprojectionError(
+      'missing-source-crs',
+      `GeoPackage reprojection requires a defined source CRS for SRS ${vectorTable.srsId}`,
+      {targetCrs: options.targetCrs}
     );
   }
 
-  return new Proj4Projection({
-    from: sourceProjection,
-    to: options.targetCrs
-  });
+  try {
+    return new Proj4Projection({
+      from: sourceProjection,
+      to: toProj4CRSDefinition(options.targetCrs)
+    });
+  } catch (error) {
+    const message = error instanceof Error ? error.message : String(error);
+    throw new CRSReprojectionError(
+      'transformation-failed',
+      `GeoPackage reprojection failed: ${message}`,
+      {sourceCrs: sourceProjection, targetCrs: options.targetCrs, cause: error}
+    );
+  }
 }
 
 function reprojectGeometry(

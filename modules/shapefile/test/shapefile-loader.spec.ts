@@ -66,7 +66,7 @@ test('ShapefileLoader#reprojects points', async () => {
   const table = await load(`${SHAPEFILE_DATA_FOLDER}/${fixtureName}.shp`, ShapefileLoader, {
     core: {worker: false},
     shapefile: {shape: 'v3'},
-    gis: {reproject: true, _targetCrs: 'EPSG:3857'}
+    gis: {reproject: true, targetCrs: 'EPSG:3857'}
   });
   const expected = await (await fetchFile(`${SHAPEFILE_DATA_FOLDER}/${fixtureName}.json`)).json();
   const projection = new Proj4Projection({from: 'WGS84', to: 'EPSG:3857'});
@@ -87,7 +87,7 @@ test.each([
     load(arrayBuffer, ShapefileLoader, {
       core: {worker: false},
       shapefile: {shape},
-      gis: {reproject: true, _targetCrs: 'EPSG:3857'}
+      gis: {reproject: true, targetCrs: 'EPSG:3857'}
     })
   ).rejects.toThrow('Shapefile reprojection requires a source CRS from the .prj sidecar file');
 });

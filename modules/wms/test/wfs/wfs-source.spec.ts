@@ -26,6 +26,22 @@ test('WFSSourceLoader#getFeaturesURL', () => {
   expect(featuresUrl.searchParams.get('SRSNAME')).toBe('EPSG:4326');
   expect(featuresUrl.searchParams.get('OUTPUTFORMAT')).toBe('application/json');
 });
+test('WFSSourceLoader#getFeaturesURL separates request and output CRS', () => {
+  const source = WFSSourceLoader.createDataSource(WFS_URL, {});
+  const featuresUrl = new URL(
+    source.getFeaturesURL({
+      boundingBox: [
+        [1, 2],
+        [3, 4]
+      ],
+      layers: ['roads'],
+      requestCrs: 'EPSG:4326',
+      crs: 'EPSG:3857'
+    })
+  );
+  expect(featuresUrl.searchParams.get('BBOX')).toBe('2,1,4,3,EPSG:4326');
+  expect(featuresUrl.searchParams.get('SRSNAME')).toBe('EPSG:3857');
+});
 test('WFSSourceLoader#getCapabilitiesURL defaults version', () => {
   const source = WFSSourceLoader.createDataSource(WFS_URL, {});
   const capabilitiesUrl = new URL(source.getCapabilitiesURL());

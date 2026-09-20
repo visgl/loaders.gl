@@ -56,3 +56,7 @@ identifier (for example `L04`) rather than assuming that a zoom level is its ide
 The axis-order helper reports the conventional service order for the common geographic CRS:
 `EPSG:4326` is `yx`, while `CRS:84` and projected CRSs are `xy`. Applications should still follow
 the individual service's capabilities when constructing coordinate arrays.
+
+The shared `VectorSource` contract keeps application geometry and bounding boxes in canonical `xy`
+order. For feature queries, pass `requestCrs` when the input bounding box uses a CRS different from
+the output `crs`; WFS and OGC API adapters translate the canonical values to their wire-axis rules.

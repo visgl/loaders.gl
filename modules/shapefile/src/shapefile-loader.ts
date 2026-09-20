@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import type {StrictLoaderOptions, Loader} from '@loaders.gl/loader-utils';
+import type {CRSReprojectionOptions, StrictLoaderOptions, Loader} from '@loaders.gl/loader-utils';
 import type {
   Batch,
   GeoArrowEncodingPreference,
@@ -14,7 +14,6 @@ import type {SHPLoaderOptions} from './shp-loader';
 import type {ShapefileOutput} from './lib/parsers/parse-shapefile';
 import type {DBFLoaderOptions} from './dbf-loader';
 import type {SHPGeoArrowEncoding} from './lib/parsers/types';
-import type {Proj4CRSDefinition} from '@math.gl/proj4';
 import {ShapefileFormat} from './shp-format';
 
 // __VERSION__ is injected by babel-plugin-version-inline
@@ -33,10 +32,8 @@ export type ShapefileLoaderOptions = StrictLoaderOptions &
       geoarrow?: {encodingPreference?: GeoArrowEncodingPreference};
       batchSize?: number;
     };
-    gis?: {
-      reproject?: boolean;
-      _targetCrs?: Proj4CRSDefinition;
-    };
+    /** Opt-in coordinate transformation for decoded feature coordinates. */
+    gis?: CRSReprojectionOptions;
   };
 
 /** Preloads the parser-bearing Shapefile loader implementation. */

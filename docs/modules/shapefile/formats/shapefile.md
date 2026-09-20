@@ -67,14 +67,17 @@ A common problem with shapefiles is that the user only opens the `.shp` file but
 | `.shp` | Binary | The geometry, i.e. the geometry column in the resulting table.                                                 |
 | `.dbf` | Binary | The attributes, i.e. the data columns in the resulting table.                                                  |
 | `.shx` | Binary | The index (technically required, however it is sometimes possible to open shapefiles without the index)        |
-| `.prj` | Text   | A small usually single line text file containing a WKT-CRS style projection. WGS84 is assumed if not present.  |
+| `.prj` | Text   | A small usually single line text file containing a WKT-CRS style projection. Without it, the source CRS is unknown. |
 | `.cpg` | Text   | A small text file containing a text encoding name for the DBF text fields. `latin1` is assumed if not present. |
 
 ### Coordinate Systems
 
 Arbitrary coordinate reference systems are supported for Shapefiles.
 
-Such coordinate systems are reprojected to WGS84 on import.
+Set `gis.reproject: true` to transform coordinates on import and use `gis.targetCrs` for a target
+other than the compatibility default WGS84. Reprojection requires a usable `.prj` source CRS;
+missing or unsupported definitions fail explicitly. Without reprojection, coordinates remain in
+their native source CRS.
 
 ### Encodings
 

@@ -113,6 +113,8 @@ and query them through a source API, use [`GeoPackageSource`](/docs/modules/geop
 | `geopackage.shape`    | String | `'arrow-table'`                                     | Output shape: `'arrow-table'` or `'geojson-table'`.                                                                     |
 | `geopackage.table`    | String | metadata-selected table                             | Name of the vector table to load.                                                                                      |
 | `geopackage.sqlJsCDN` | String | `'https://cdn.jsdelivr.net/npm/sql.js@1.14.1/dist/'` | CDN from which to load the SQL.js bundle. This is loaded asynchronously when the GeoPackage loader is called on a file. |
+| `gis.reproject`       | boolean | `false`                                             | Opt-in coordinate transformation; missing source CRS or unsupported transformations throw `CRSReprojectionError`.       |
+| `gis.targetCrs`       | `CRSDefinition` | `'WGS84'` when reprojection is enabled             | Output CRS for transformed coordinates.                                                                                 |
 
 ## Output
 

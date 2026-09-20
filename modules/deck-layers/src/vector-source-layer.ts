@@ -18,6 +18,7 @@ import {type GeometryColumnBinaryFeatureCollectionScratch} from '@loaders.gl/gis
 import type {GeoJSONTable} from '@loaders.gl/schema';
 import type {
   DataSourceOptions,
+  GetFeaturesParameters,
   Loader,
   SourceLoader,
   VectorSource,
@@ -48,7 +49,9 @@ export type VectorSourceLayerProps = Omit<CompositeLayerProps, 'data' | 'loaders
   /** Named source layers forwarded to `VectorSource#getFeatures`. */
   layers?: string | string[] | 'auto';
   /** Output CRS forwarded to `VectorSource#getFeatures`. */
-  crs?: string;
+  crs?: GetFeaturesParameters['crs'];
+  /** CRS of viewport bounds forwarded to `VectorSource#getFeatures`. */
+  requestCrs?: GetFeaturesParameters['requestCrs'];
   /** Output format forwarded to `VectorSource#getFeatures`. */
   format?: 'geojson' | 'binary' | 'arrow';
   /** Debounce interval applied before viewport requests are issued. */
@@ -84,6 +87,7 @@ const defaultProps: DefaultProps<VectorSourceLayerProps> = {
   sourceOptions: {type: 'object', compare: false, value: {}},
   layers: 'auto',
   crs: 'EPSG:4326',
+  requestCrs: undefined,
   format: 'arrow',
   debounceTime: 200,
   geoJsonLayerProps: {type: 'object', compare: false, value: {}},
@@ -347,6 +351,7 @@ export class VectorSourceLayer extends CompositeLayer<VectorSourceLayerProps> {
           ? this.state.vectorSet?.layers || []
           : props.layers,
       crs: props.crs,
+      requestCrs: props.requestCrs,
       format: props.format,
       debounceTime: props.debounceTime
     };

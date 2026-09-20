@@ -1,5 +1,6 @@
 import {expect, test} from 'vitest';
 import {load, fetchFile} from '@loaders.gl/core';
+import {CRSReprojectionError} from '@loaders.gl/loader-utils';
 import {GeoPackageLoader} from '@loaders.gl/geopackage';
 import {getProjection, getSpatialReferenceSystemDefinition} from '../src/lib/parse-geopackage';
 import type {GeoPackageVectorTableInfo, SpatialRefSysRow} from '../src/lib/types';
@@ -10,13 +11,14 @@ test('GeoPackage reprojection requires a declared source CRS', () => {
   const vectorTable = {name: 'roads'} as GeoPackageVectorTableInfo;
   const options = {reproject: true, targetCrs: 'WGS84' as const};
 
-  expect(() => getProjection(vectorTable, {}, options)).toThrow(
-    'GeoPackage reprojection requires a source CRS identifier for table "roads"'
-  );
+  expect(() => getProjection(vectorTable, {}, options)).toThrow(CRSReprojectionError);
   expect(() => getProjection({...vectorTable, srsId: 999}, {}, options)).toThrow(
     'GeoPackage reprojection requires a defined source CRS for SRS 999'
   );
   expect(getProjection({...vectorTable, srsId: 4326}, {4326: 'WGS84'}, options)).toBeDefined();
+  expect(() => getProjection({...vectorTable, srsId: 4326}, {4326: 'not a CRS'}, options)).toThrow(
+    'GeoPackage reprojection failed'
+  );
 });
 
 test('GeoPackage prefers extension WKT2 and preserves undefined SRS semantics', () => {
@@ -63,7 +65,7 @@ test('GeoPackageLoader#loader shape overrides core.shape', async () => {
 test('GeoPackageLoader#load file and reproject to WGS84', async () => {
   const result = await load(GPKG_RIVERS, GeoPackageLoader, {
     geopackage: {shape: 'geojson-table'},
-    gis: {reproject: true, _targetCrs: 'WGS84'}
+    gis: {reproject: true, targetCrs: 'WGS84'}
   });
   expect(result.shape).toBe('geojson-table');
   expect(

@@ -116,6 +116,10 @@ const features = await source.getFeatures({
 });
 ```
 
+Feature coordinates and `boundingBox` use canonical `xy` order. Set `requestCrs` when the bounding
+box is expressed in a different CRS from the returned features, and set `crs` for the output CRS;
+the source maps these values to ArcGIS `inSR` and `outSR` respectively.
+
 When the URL points to the FeatureServer root, `layers` chooses the layer used for the query:
 
 ```ts

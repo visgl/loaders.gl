@@ -748,7 +748,11 @@ export class WFSVectorSource extends DataSource<string, WFSourceOptions> impleme
       return null;
     }
 
-    const normalizedCRS = normalizeServiceCRS(wfsParameters.crs || wfsParameters.srsName);
+    const normalizedCRS = normalizeServiceCRS(
+      Array.isArray(bboxValue) && bboxValue.length === 5
+        ? String(bboxValue[4])
+        : wfsParameters.crs || wfsParameters.srsName
+    );
     const flipCoordinates =
       (wfsParameters.version === '1.1.0' || wfsParameters.version === '2.0.0') &&
       getServiceCRSAxisOrder(normalizedCRS) === 'yx' &&
@@ -799,7 +803,8 @@ export class WFSVectorSource extends DataSource<string, WFSourceOptions> impleme
     parameters: GetFeaturesParameters | WFSGetFeatureParameters
   ): WFSGetFeatureParameters {
     if ('boundingBox' in parameters) {
-      const crs = parameters.crs || 'EPSG:4326';
+      const outputCrs = parameters.crs || 'EPSG:4326';
+      const requestCrs = parameters.requestCrs || outputCrs;
       return {
         version: this.options.wfs?.wfsParameters?.version || '2.0.0',
         typeName: parameters.layers,
@@ -808,10 +813,10 @@ export class WFSVectorSource extends DataSource<string, WFSourceOptions> impleme
           parameters.boundingBox[0][1],
           parameters.boundingBox[1][0],
           parameters.boundingBox[1][1],
-          crs
+          requestCrs
         ],
-        crs,
-        srsName: crs
+        crs: outputCrs,
+        srsName: outputCrs
       };
     }
 
