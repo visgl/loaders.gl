@@ -4,7 +4,7 @@
 
 import type {Loader, LoaderWithParser, LoaderOptions} from '@loaders.gl/loader-utils';
 import type {Geometry} from '@loaders.gl/schema';
-import {convertWKBToGeometry} from '@loaders.gl/gis';
+import {parseWKB as parseMathWKB} from '@math.gl/wkb';
 import {WKBWorkerLoader as WKBWorkerLoaderMetadata} from './wkb-loader';
 import {WKBLoader as WKBLoaderMetadata} from './wkb-loader';
 
@@ -38,14 +38,40 @@ export const WKBLoaderWithParser = {
 } as const satisfies LoaderWithParser<Geometry, never, WKBLoaderOptions>;
 
 export function parseWKB(
-  arrayBuffer: ArrayBuffer,
+  arrayBuffer: ArrayBufferLike,
   options?: {shape?: 'geojson-geometry'}
 ): Geometry {
   const shape = options?.shape ?? 'geojson-geometry';
   switch (shape) {
     case 'geojson-geometry':
-      return convertWKBToGeometry(arrayBuffer);
+      return normalizeEmptyPoints(
+        parseMathWKB(new Uint8Array(arrayBuffer)).geometry as unknown as Geometry
+      );
     default:
       throw new Error(shape);
   }
+}
+
+/** Normalizes OGC empty points to loaders.gl's empty coordinate representation. */
+export function normalizeEmptyPoints(geometry: Geometry): Geometry {
+  if (geometry.type === 'Point') {
+    return geometry.coordinates.length > 0 && geometry.coordinates.every(Number.isNaN)
+      ? {...geometry, coordinates: []}
+      : geometry;
+  }
+  if (geometry.type === 'MultiPoint') {
+    const coordinates = geometry.coordinates.map(coordinate =>
+      coordinate.length > 0 && coordinate.every(Number.isNaN) ? [] : coordinate
+    );
+    return coordinates.some((coordinate, index) => coordinate !== geometry.coordinates[index])
+      ? {...geometry, coordinates}
+      : geometry;
+  }
+  if (geometry.type === 'GeometryCollection') {
+    const geometries = geometry.geometries.map(normalizeEmptyPoints);
+    return geometries.some((child, index) => child !== geometry.geometries[index])
+      ? {...geometry, geometries}
+      : geometry;
+  }
+  return geometry;
 }

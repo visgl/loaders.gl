@@ -4,10 +4,10 @@
 
 import type {LoaderWithParser} from '@loaders.gl/loader-utils';
 import type {Geometry} from '@loaders.gl/schema';
-import {convertWKBToGeometry, decodeHex} from '@loaders.gl/gis';
 
 import type {WKBLoaderOptions} from './wkb-loader';
 import {HexWKBLoader as HexWKBLoaderMetadata} from './hex-wkb-loader';
+import {parseWKB} from './wkb-loader-with-parser';
 
 const {preload: _HexWKBLoaderPreload, ...HexWKBLoaderMetadataWithoutPreload} = HexWKBLoaderMetadata;
 
@@ -24,8 +24,20 @@ export const HexWKBLoaderWithParser = {
 
 function parseHexWKB(text: string, options?: HexWKBLoaderOptions): Geometry {
   const uint8Array = decodeHex(text);
-  const binaryGeometry = convertWKBToGeometry(uint8Array.buffer); // , options?.wkb);
-  return binaryGeometry;
+  return parseWKB(uint8Array.buffer, options?.wkb);
+}
+
+/** Decodes a hexadecimal WKB string into bytes. */
+function decodeHex(string: string): Uint8Array {
+  const normalized = string.trim();
+  if (normalized.length % 2 !== 0 || !/^[0-9a-f]+$/i.test(normalized)) {
+    throw new Error('Invalid hexadecimal WKB');
+  }
+  const bytes = new Uint8Array(normalized.length / 2);
+  for (let index = 0; index < bytes.length; index++) {
+    bytes[index] = Number.parseInt(normalized.slice(index * 2, index * 2 + 2), 16);
+  }
+  return bytes;
 }
 
 /**

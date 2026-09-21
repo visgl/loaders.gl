@@ -4,9 +4,9 @@
 
 import type {WriterWithEncoder, WriterOptions} from '@loaders.gl/loader-utils';
 import type {Geometry} from '@loaders.gl/schema';
-import {convertGeometryToWKT} from '@loaders.gl/gis';
 import {VERSION} from './lib/version';
 import {WKTFormat} from './wkt-format';
+import {convertGeometryToWKT} from './geometry-to-wkt';
 
 export type WKTWriterOptions = WriterOptions & {
   wkt?: {};
