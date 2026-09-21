@@ -8,7 +8,7 @@ import {parseWKT} from '@math.gl/wkb';
 import type {WellKnownDimension} from '@math.gl/wkb';
 import {WKTWorkerLoader as WKTWorkerLoaderMetadata} from './wkt-loader';
 import {WKTLoader as WKTLoaderMetadata} from './wkt-loader';
-import {normalizeEmptyPoints} from './wkb-loader-with-parser';
+import {normalizeEmptyPoints} from './geometry-utils';
 
 const {preload: _WKTWorkerLoaderPreload, ...WKTWorkerLoaderMetadataWithoutPreload} =
   WKTWorkerLoaderMetadata;
@@ -51,14 +51,7 @@ function parseWKTGeometry(input: string, options?: WKTLoaderOptions['wkt']): Geo
     if (/\(\s*\)\s*$/s.test(text)) {
       return null as unknown as Geometry;
     }
-    const geometry = normalizeEmptyPoints(parseWKTWithCompatibility(text));
-    if (dimension && dimension !== 'xy') {
-      Object.defineProperty(geometry, '__geoarrowDimension', {
-        configurable: true,
-        enumerable: false,
-        value: dimension
-      });
-    }
+    const geometry = normalizeEmptyPoints(parseWKTWithCompatibility(text, dimension));
     if (options?.crs && srid !== undefined) {
       Object.defineProperty(geometry, 'crs', {
         configurable: true,
@@ -76,31 +69,78 @@ function parseWKTGeometry(input: string, options?: WKTLoaderOptions['wkt']): Geo
 }
 
 /** Parses WKT while accepting legacy untagged 3D and 4D coordinates. */
-function parseWKTWithCompatibility(text: string): Geometry {
+function parseWKTWithCompatibility(text: string, dimension?: WellKnownDimension): Geometry {
+  const header = splitWKTHeader(text);
+  const normalizedText = header.text;
+  const effectiveDimension = dimension ?? header.dimension;
+  const geometryCollectionMatch = normalizedText.match(/^\s*GEOMETRYCOLLECTION\s*\((.*)\)\s*$/is);
+  if (geometryCollectionMatch) {
+    const geometries = splitGeometryCollection(geometryCollectionMatch[1]).map(child =>
+      parseWKTWithCompatibility(child)
+    );
+    return addDimensionMarker({type: 'GeometryCollection', geometries}, effectiveDimension);
+  }
+
+  let geometry: Geometry;
+  let parsedDimension = effectiveDimension;
   try {
-    return parseWKT(text) as unknown as Geometry;
+    geometry = parseWKT(normalizedText) as unknown as Geometry;
   } catch (error) {
-    const typeMatch = text.match(
+    const typeMatch = normalizedText.match(
       /^(\s*(?:POINT|LINESTRING|POLYGON|MULTIPOINT|MULTILINESTRING|MULTIPOLYGON|GEOMETRYCOLLECTION))\s*\(/i
     );
     if (!typeMatch) {
       throw error;
     }
-    const coordinateText = text
+    const coordinateText = normalizedText
       .slice(typeMatch[0].length - 1)
       .replace(/^\s*(?:\(\s*)+/, '')
       .match(/^[^,)]+/)?.[0];
     const coordinateCount = coordinateText?.match(
       /[-+]?(?:\d+\.?\d*|\.\d+)(?:[eE][-+]?\d+)?/g
     )?.length;
-    const dimension = coordinateCount === 3 ? 'Z' : coordinateCount === 4 ? 'ZM' : undefined;
-    if (!dimension) {
+    const implicitDimension =
+      coordinateCount === 3 ? 'Z' : coordinateCount === 4 ? 'ZM' : undefined;
+    if (!implicitDimension) {
       throw error;
     }
-    return parseWKT(
-      `${typeMatch[1]} ${dimension} ${text.slice(typeMatch[0].length - 1)}`
+    parsedDimension = implicitDimension === 'Z' ? 'xyz' : 'xyzm';
+    geometry = parseWKT(
+      `${typeMatch[1]} ${implicitDimension} ${normalizedText.slice(typeMatch[0].length - 1)}`
     ) as unknown as Geometry;
   }
+  return addDimensionMarker(geometry, parsedDimension);
+}
+
+/** Splits a geometry collection at commas outside nested coordinate groups. */
+function splitGeometryCollection(text: string): string[] {
+  const geometries: string[] = [];
+  let start = 0;
+  let depth = 0;
+  for (let index = 0; index < text.length; index++) {
+    const character = text[index];
+    if (character === '(') depth++;
+    if (character === ')') depth--;
+    if (character === ',' && depth === 0) {
+      geometries.push(text.slice(start, index).trim());
+      start = index + 1;
+    }
+  }
+  const finalGeometry = text.slice(start).trim();
+  if (finalGeometry) geometries.push(finalGeometry);
+  return geometries;
+}
+
+/** Adds a non-enumerable dimension marker used by the WKT writer. */
+function addDimensionMarker(geometry: Geometry, dimension?: WellKnownDimension): Geometry {
+  if (dimension && dimension !== 'xy') {
+    Object.defineProperty(geometry, '__geoarrowDimension', {
+      configurable: true,
+      enumerable: false,
+      value: dimension
+    });
+  }
+  return geometry;
 }
 
 /** Separates an optional EWKT SRID prefix and root dimension token. */

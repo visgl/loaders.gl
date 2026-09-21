@@ -24,7 +24,7 @@ export function convertGeometryToWKT(geometry: Geometry, options?: WKTGeometryOp
     !options?.dimension &&
     !options?.hasZ &&
     !options?.hasM &&
-    hasMixedChildDimensions(geometry)
+    (hasMixedChildDimensions(geometry) || hasDeclaredChildDimensions(geometry))
   ) {
     if (geometry.geometries.length === 0) return 'GEOMETRYCOLLECTION EMPTY';
     return `GEOMETRYCOLLECTION (${geometry.geometries
@@ -66,6 +66,15 @@ function hasMixedChildDimensions(
 ): boolean {
   const dimensions = geometry.geometries.map(child => getCoordinateDimension(child));
   return dimensions.some(dimension => dimension !== dimensions[0]);
+}
+
+/** Returns whether a collection child carries an explicit WKT dimension marker. */
+function hasDeclaredChildDimensions(
+  geometry: Extract<Geometry, {type: 'GeometryCollection'}>
+): boolean {
+  return geometry.geometries.some(child =>
+    Boolean((child as Geometry & {__geoarrowDimension?: GeoArrowDimension}).__geoarrowDimension)
+  );
 }
 
 /** Finds the first coordinate dimension in a geometry. */
