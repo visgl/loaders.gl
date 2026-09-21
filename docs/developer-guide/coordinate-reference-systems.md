@@ -60,9 +60,9 @@ happens when a loader documents an opt-in transformation path.
 
 Axis order belongs to the CRS definition. `EPSG:4326` is latitude/longitude in authoritative axis
 order while `OGC:CRS84` is longitude/latitude. Code should not assume those identifiers are
-interchangeable. Existing loaders.gl reprojection paths normally use proj4's conventional
-`[longitude, latitude]` array order rather than enforcing authority axis order; this behavior must
-be made explicit by any future shared reprojection contract. A CRS may also be horizontal,
+interchangeable. loaders.gl geometry arrays and normalized bounds consistently use `xy` order
+(`x`/easting or longitude first); service adapters translate that canonical order to a protocol's
+wire order when required. A CRS may also be horizontal,
 vertical, or compound. Preserving only the horizontal component loses height datum information
 even when all coordinate values are retained.
 
@@ -122,6 +122,34 @@ if (spatialReference?.crs.state === 'explicit') {
   console.log(spatialReference.crs.definition, spatialReference.crs.representation);
 }
 ```
+
+## Reprojection contract
+
+Vector loader reprojection is opt-in and uses one public option shape:
+
+```ts
+type CRSReprojectionOptions = {
+  reproject?: boolean;
+  targetCrs?: ReadonlyCRSDefinition;
+};
+```
+
+For Shapefile, FlatGeobuf, and GeoPackage this is supplied as `gis: {reproject, targetCrs}`.
+When `reproject` is enabled without a target, the compatibility target is WGS84. A target by
+itself does not transform coordinates. The output geometry and output CRS metadata are updated
+together; source metadata remains available for provenance. Missing source CRS metadata or an
+unsupported transformation throws `CRSReprojectionError` with a stable `code`; loaders never
+silently return source coordinates after a different target was requested.
+
+Service vector requests distinguish `requestCrs` (the CRS of the input `boundingBox`) from `crs`
+(the CRS requested for returned feature coordinates). Service adapters preserve canonical `xy`
+application order and apply protocol-specific axis rules on the wire. Tile sources continue to
+use `spatial.targetCrs`, which controls requested output coordinates and is intentionally not
+aliased to `gis.targetCrs`.
+
+Unknown or absent CRS metadata is preserved as unknown/absent. It is never treated as WGS84 for
+transformation. A loader may return native coordinates when reprojection was not requested, but a
+requested transform with unknown source CRS fails explicitly.
 
 GeoArrow and GeoParquet need column-specific descriptors rather than one table-wide value. Raster,
 point-cloud, and service adoption will likewise retain format-specific details until the common
@@ -258,9 +286,9 @@ mean coordinate transformation.
 | --- | --- | --- | --- |
 | GeoArrow | Field `crs` plus `crs_type`: PROJJSON, WKT2:2019, authority code, opaque-string SRID, or another opaque string | Typed field metadata; partial across converters that rebuild Arrow schemas | None |
 | GeoParquet 1.1 / 2.0 | Per-column PROJJSON, `null`, omitted default, and coordinate `epoch` | Original `geo` JSON is retained; compatible GeoArrow field metadata is added | None |
-| Shapefile | `.prj` WKT sidecar | `.prj` is returned by legacy output; Arrow metadata is partial | Opt-in through `gis.reproject` and `_targetCrs` |
-| FlatGeobuf | Header authority code and WKT; common vector/scan `spatialReference` descriptor | Header metadata and alternate CRS representations are retained; Arrow CRS metadata is partial | Opt-in through `gis.reproject` and `_targetCrs` |
-| GeoPackage | Spatial reference system tables, preferring extension WKT2 over fallback WKT1 | Source and scan metadata retain the table CRS; Arrow geometry fields report the native or transformed output CRS | Opt-in through `gis.reproject` and `_targetCrs` |
+| Shapefile | `.prj` WKT sidecar | `.prj` is returned by legacy output; Arrow metadata is partial | Opt-in through `gis.reproject` and `targetCrs` |
+| FlatGeobuf | Header authority code and WKT; common vector/scan `spatialReference` descriptor | Header metadata and alternate CRS representations are retained; Arrow CRS metadata is partial | Opt-in through `gis.reproject` and `targetCrs` |
+| GeoPackage | Spatial reference system tables, preferring extension WKT2 over fallback WKT1 | Source and scan metadata retain the table CRS; Arrow geometry fields report the native or transformed output CRS | Opt-in through `gis.reproject` and `targetCrs` |
 | GeoJSON | Deprecated GeoJSON `crs` member when present; otherwise WGS84 semantics | Original legacy value is retained; recognized CRS84/EPSG:4326 values map to GeoArrow/GeoParquet metadata | None in the GeoJSON loader |
 | CSV WKT / WKB | Geometry values can contain EWKT/EWKB SRIDs, but CSV has no dataset CRS convention | Geometry-level SRID support is partial; no common table CRS descriptor | None |
 | GML | `srsName` on geometry/envelope elements | Parsed format data retains identifiers inconsistently across output shapes | Service/server dependent; no general client transform |
@@ -306,7 +334,8 @@ future normalized table descriptor must not collapse them into one table-wide va
 - LAS/LAZ/COPC expose projection records but do not yet assemble complete horizontal, vertical,
   dynamic, and compound CRS definitions.
 - GeoTIFF and GeoZarr return native-CRS raster data and do not warp or resample into a target CRS.
-- Existing vector reprojection options use the inconsistent, experimental `_targetCrs` name.
+- Vector loaders now use the shared `gis.targetCrs` name; the older `_targetCrs` spelling is not
+  part of the v5 public contract.
 - Some point-cloud-specific transforms still treat an unsupported or unparsable source definition
   as an unavailable transform and continue with source coordinates instead of rejecting the
   request.

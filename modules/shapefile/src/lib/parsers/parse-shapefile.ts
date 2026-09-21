@@ -4,6 +4,7 @@
 
 // import type {Feature} from '@loaders.gl/gis';
 import {
+  CRSReprojectionError,
   LoaderContext,
   parseInBatchesFromContext,
   parseFromContext,
@@ -18,8 +19,8 @@ import type {
   ObjectRowTable,
   ObjectRowTableBatch
 } from '@loaders.gl/schema';
-import {Proj4Projection, type Proj4CRSDefinition} from '@math.gl/proj4';
-import type {WKTCRSDefinition} from '@math.gl/crs';
+import {Proj4Projection, toProj4CRSDefinition} from '@math.gl/proj4';
+import type {ReadonlyCRSDefinition, WKTCRSDefinition} from '@math.gl/crs';
 
 import type {SHXOutput} from './parse-shx';
 import type {SHPResult} from './parse-shp';
@@ -48,7 +49,7 @@ export async function* parseShapefileInBatches(
   options?: ShapefileLoaderOptions,
   context?: LoaderContext
 ): AsyncIterable<ShapefileOutput> {
-  const {reproject = false, _targetCrs = 'WGS84'} = options?.gis || {};
+  const {reproject = false, targetCrs = 'WGS84'} = options?.gis || {};
   const {shx, cpg, prj} = await loadShapefileSidecarFiles(options, context);
 
   // parse geometries
@@ -134,7 +135,7 @@ export async function* parseShapefileInBatches(
     let features = joinProperties(geojsonGeometries, properties);
     if (reproject) {
       // @ts-ignore
-      features = reprojectFeatures(features, prj, _targetCrs);
+      features = reprojectFeatures(features, prj, targetCrs);
     }
     yield {
       encoding: cpg,
@@ -159,7 +160,7 @@ export async function parseShapefile(
   options?: ShapefileLoaderOptions,
   context?: LoaderContext
 ): Promise<ShapefileOutput | GeoJSONTable> {
-  const {reproject = false, _targetCrs = 'WGS84'} = options?.gis || {};
+  const {reproject = false, targetCrs = 'WGS84'} = options?.gis || {};
   const {shx, cpg, prj} = await loadShapefileSidecarFiles(options, context);
 
   // parse geometries
@@ -203,7 +204,7 @@ export async function parseShapefile(
 
   let features = joinProperties(geojsonGeometries, propertyTable?.data || []);
   if (reproject) {
-    features = reprojectFeatures(features, prj, _targetCrs);
+    features = reprojectFeatures(features, prj, targetCrs);
   }
 
   switch (options?.shapefile?.shape) {
@@ -277,20 +278,36 @@ function joinProperties(geometries: Geometry[], properties: GeoJsonProperties[])
  *
  * @param features parsed GeoJSON features
  * @param sourceCrs source coordinate reference system
- * @param targetCrs †arget coordinate reference system
+ * @param targetCrs Target coordinate reference system
  * @return Reprojected Features
  */
 function reprojectFeatures(
   features: Feature[],
   sourceCrs?: WKTCRSDefinition,
-  targetCrs?: Proj4CRSDefinition
+  targetCrs?: ReadonlyCRSDefinition
 ): Feature[] {
   if (!sourceCrs) {
-    throw new Error('Shapefile reprojection requires a source CRS from the .prj sidecar file');
+    throw new CRSReprojectionError(
+      'missing-source-crs',
+      'Shapefile reprojection requires a source CRS from the .prj sidecar file',
+      {targetCrs}
+    );
   }
 
-  const projection = new Proj4Projection({from: sourceCrs, to: targetCrs || 'WGS84'});
-  return transformGeoJsonCoords(features, coord => projection.project(coord));
+  try {
+    const projection = new Proj4Projection({
+      from: sourceCrs,
+      to: toProj4CRSDefinition(targetCrs || 'WGS84')
+    });
+    return transformGeoJsonCoords(features, coord => projection.project(coord));
+  } catch (error) {
+    const message = error instanceof Error ? error.message : String(error);
+    throw new CRSReprojectionError(
+      'transformation-failed',
+      `Shapefile reprojection failed: ${message}`,
+      {sourceCrs, targetCrs: targetCrs || 'WGS84', cause: error}
+    );
+  }
 }
 
 /**

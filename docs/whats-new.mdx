@@ -115,6 +115,10 @@ Release Date: 2026
   results.
 - Shapefile, FlatGeobuf, and GeoPackage reprojection now rejects missing or invalid source CRS
   metadata instead of returning untransformed coordinates or assuming WGS84.
+- Vector loaders share `gis: {reproject, targetCrs}` (the experimental `_targetCrs` spelling is no
+  longer public), while service feature requests use `requestCrs` for the input bounding box and
+  `crs` for returned features. Canonical application coordinates remain `xy`; protocol adapters
+  apply wire-axis rules and report opt-in failures as `CRSReprojectionError`.
 - GeoPackage prefers `definition_12_063` WKT2 metadata when available and exposes the selected
   table CRS through source, scan, and GeoArrow field metadata.
 - I3S mesh and Point Cloud sources now apply requested horizontal CRS transforms to vertices,

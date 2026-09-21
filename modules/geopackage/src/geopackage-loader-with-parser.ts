@@ -4,7 +4,6 @@
 
 import type {LoaderWithParser, LoaderOptions} from '@loaders.gl/loader-utils';
 import {GeoJSONTable, ArrowTable} from '@loaders.gl/schema';
-import type {Proj4CRSDefinition} from '@math.gl/proj4';
 import {parseGeoPackage} from './lib/parse-geopackage';
 import {GeoPackageLoader as GeoPackageLoaderMetadata} from './geopackage-loader';
 
@@ -23,10 +22,7 @@ export type GeoPackageLoaderOptions = LoaderOptions & {
     /** Override the URL to the worker bundle (by default loads from unpkg.com) */
     workerUrl?: string;
   };
-  gis?: {
-    reproject?: boolean;
-    _targetCrs?: Proj4CRSDefinition;
-  };
+  gis?: import('@loaders.gl/loader-utils').CRSReprojectionOptions;
 };
 
 export const GeoPackageLoaderWithParser = {

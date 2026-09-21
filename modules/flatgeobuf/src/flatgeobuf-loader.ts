@@ -8,9 +8,8 @@ import type {
   GeoJSONTable,
   BinaryFeatureCollection
 } from '@loaders.gl/schema';
-import type {Loader, LoaderOptions} from '@loaders.gl/loader-utils';
+import type {CRSReprojectionOptions, Loader, LoaderOptions} from '@loaders.gl/loader-utils';
 import type {GeoArrowEncodingPreference} from '@loaders.gl/schema';
-import type {Proj4CRSDefinition} from '@math.gl/proj4';
 import {FlatGeobufFormat} from './flatgeobuf-format';
 
 // __VERSION__ is injected by babel-plugin-version-inline
@@ -31,10 +30,8 @@ export type FlatGeobufLoaderOptions = LoaderOptions & {
     /** Preferred encoding for Arrow geometry output. */
     geoarrow?: {encodingPreference?: GeoArrowEncodingPreference};
   };
-  gis?: {
-    reproject?: boolean;
-    _targetCrs?: Proj4CRSDefinition;
-  };
+  /** Opt-in coordinate transformation for decoded feature coordinates. */
+  gis?: CRSReprojectionOptions;
 };
 
 /** Preloads the parser-bearing FlatGeobuf loader implementation. */

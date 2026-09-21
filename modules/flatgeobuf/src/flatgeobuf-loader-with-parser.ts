@@ -52,7 +52,7 @@ function getOptions(options: FlatGeobufLoaderOptions): ParseFlatGeobufOptions {
   return {
     shape: options?.flatgeobuf?.shape ?? 'arrow-table',
     boundingBox: options?.flatgeobuf?.boundingBox,
-    crs: options?.gis?._targetCrs || 'WGS84',
+    targetCrs: options?.gis?.targetCrs || 'WGS84',
     reproject: options?.gis?.reproject || false,
     geoarrow: options?.geoarrow || options?.flatgeobuf?.geoarrow
   };

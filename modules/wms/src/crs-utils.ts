@@ -2,8 +2,10 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
+import type {CRSIdentifier} from '@math.gl/crs';
+
 /** A CRS identifier accepted by OGC and ArcGIS services. */
-export type ServiceCRS = string | number;
+export type ServiceCRS = CRSIdentifier | number;
 
 /** Normalizes common OGC and ArcGIS CRS spellings to a stable identifier. */
 export function normalizeServiceCRS(crs: ServiceCRS | undefined): string | undefined {
@@ -41,7 +43,14 @@ export function selectServiceCRS(
   ).toString();
 }
 
-/** Returns the conventional axis order used in service request coordinates. */
+/**
+ * Returns the conventional axis order used on the service wire.
+ *
+ * Application bounding boxes and decoded geometry remain canonical `xy` (x/easting or longitude
+ * first); callers use this result only when constructing protocol-specific request coordinates.
+ * The rule intentionally covers the common WFS 1.1/2.0 EPSG:4326 case without claiming to be a
+ * complete authority-axis registry.
+ */
 export function getServiceCRSAxisOrder(crs: ServiceCRS | undefined): 'xy' | 'yx' {
   return normalizeServiceCRS(crs) === 'EPSG:4326' ? 'yx' : 'xy';
 }

@@ -368,6 +368,22 @@ test('ArcGISVectorSource#getFeaturesURL normalizes EPSG-prefixed spatial referen
   expect(featuresUrl.searchParams.get('outSR')).toBe('3857');
   expect(featuresUrl.searchParams.get('inSR')).toBe('3857');
 });
+test('ArcGISVectorSource#getFeaturesURL separates request and output CRS', () => {
+  const source = ArcGISFeatureServerSourceLoader.createDataSource(FEATURE_SERVER_URL, {});
+  const featuresUrl = new URL(
+    source.getFeaturesURL({
+      boundingBox: [
+        [1, 2],
+        [3, 4]
+      ],
+      layers: [],
+      requestCrs: 'EPSG:4326',
+      crs: 'EPSG:3857'
+    })
+  );
+  expect(featuresUrl.searchParams.get('inSR')).toBe('4326');
+  expect(featuresUrl.searchParams.get('outSR')).toBe('3857');
+});
 test('ArcGISVectorSource#getMetadata and getSchema', async () => {
   const source = ArcGISFeatureServerSourceLoader.createDataSource(FEATURE_SERVER_URL, {});
   source.fetch = async () =>

@@ -23,7 +23,6 @@ import {
   parseShapefileToArrowInBatches
 } from './shapefile-arrow-loader-with-parser';
 import {ShapefileLoader as ShapefileLoaderMetadata} from './shapefile-loader';
-import type {Proj4CRSDefinition} from '@math.gl/proj4';
 import {
   deserializeShapefileWorkerBatch,
   deserializeShapefileWorkerResult,
@@ -46,10 +45,7 @@ export type ShapefileLoaderOptions = StrictLoaderOptions &
       geoarrow?: {encodingPreference?: GeoArrowEncodingPreference};
       batchSize?: number;
     };
-    gis?: {
-      reproject?: boolean;
-      _targetCrs?: Proj4CRSDefinition;
-    };
+    gis?: import('@loaders.gl/loader-utils').CRSReprojectionOptions;
   };
 
 /**

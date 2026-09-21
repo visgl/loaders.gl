@@ -2,9 +2,8 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import type {Loader, LoaderOptions} from '@loaders.gl/loader-utils';
+import type {CRSReprojectionOptions, Loader, LoaderOptions} from '@loaders.gl/loader-utils';
 import type {GeoArrowEncodingPreference, GeoJSONTable, ArrowTable} from '@loaders.gl/schema';
-import type {Proj4CRSDefinition} from '@math.gl/proj4';
 import {DEFAULT_SQLJS_CDN} from './lib/parse-geopackage';
 import {GeoPackageFormat} from './geopackage-format';
 
@@ -29,10 +28,8 @@ export type GeoPackageLoaderOptions = LoaderOptions & {
     /** Preferred encoding for Arrow geometry output. */
     geoarrow?: {encodingPreference?: GeoArrowEncodingPreference};
   };
-  gis?: {
-    reproject?: boolean;
-    _targetCrs?: Proj4CRSDefinition;
-  };
+  /** Opt-in coordinate transformation for decoded feature coordinates. */
+  gis?: CRSReprojectionOptions;
 };
 
 /** Preloads the parser-bearing GeoPackage loader implementation. */

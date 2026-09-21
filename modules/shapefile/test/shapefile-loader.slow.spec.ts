@@ -78,7 +78,7 @@ test('ShapefileLoader#load and reproject (from files or URLs)', async () => {
   const filename = `${SHAPEFILE_JS_DATA_FOLDER}/${testFileName}.shp`;
   const data = await load(filename, ShapefileLoader, {
     shapefile: {shape: 'v3'},
-    gis: {reproject: true, _targetCrs: 'EPSG:3857'}
+    gis: {reproject: true, targetCrs: 'EPSG:3857'}
   });
   // Compare with parsed json
   // This is a special case with reprojected coordinates; otherwise use the

@@ -79,7 +79,7 @@ const geojsonTable = await load(url, FlatGeobufLoader, {
 
 ### GeoJSONTable
 
-The parser will return an array of [GeoJSON `features`](https://tools.ietf.org/html/rfc7946) in the coordinate system of the input data. If `gis.reproject` is enabled, coordinates will always be reprojected to WGS84.
+The parser will return an array of [GeoJSON `features`](https://tools.ietf.org/html/rfc7946) in the coordinate system of the input data. Set `gis.reproject: true` to transform coordinates; use `gis.targetCrs` to select the output CRS. If no target is provided, WGS84 is used for compatibility. Unknown source CRS metadata and unsupported requested transformations throw `CRSReprojectionError`.
 
 ### Arrow
 
@@ -90,7 +90,8 @@ By default, `FlatGeobufLoader` returns an Apache Arrow table that preserves Flat
 | Option             | Type                                                     | Default           | Description                                                       |
 | ------------------ | -------------------------------------------------------- | ----------------- | ----------------------------------------------------------------- |
 | flatgeobuf.shape   | `string`                                                 | `'arrow-table'` | Output shape: `'geojson-table'`, `'arrow-table'`, `'columnar-table'`, or `'binary-geometry'`. |
-| gis.reproject      | boolean                                                  | `false`           | Whether to reproject input data into the WGS84 coordinate system. |
+| gis.reproject      | boolean                                                  | `false`           | Whether to transform input data into `gis.targetCrs` (WGS84 when omitted). |
+| gis.targetCrs      | `CRSDefinition`                                          | `'WGS84'` when reprojection is enabled | Output CRS for transformed coordinates. |
 
 ## Remarks
 

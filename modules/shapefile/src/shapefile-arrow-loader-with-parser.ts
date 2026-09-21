@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import type {LoaderContext} from '@loaders.gl/loader-utils';
+import {CRSReprojectionError, type LoaderContext} from '@loaders.gl/loader-utils';
 import {
   makeTableScanBatch,
   parseFromContext,
@@ -19,7 +19,7 @@ import {
   makeWKBGeometryField,
   setWKBGeometryColumnMetadata
 } from '@loaders.gl/gis';
-import {Proj4Projection} from '@math.gl/proj4';
+import {Proj4Projection, toProj4CRSDefinition} from '@math.gl/proj4';
 import type {WKTCRSDefinition} from '@math.gl/crs';
 import {SHPLoaderWithParser} from './shp-loader-with-parser';
 import {DBFLoaderWithParser} from './dbf-loader-with-parser';
@@ -324,15 +324,31 @@ function getReprojectionTransform(
   sourceCrs: WKTCRSDefinition | undefined,
   options?: ShapefileLoaderOptions
 ): ((coordinate: number[]) => number[]) | undefined {
-  const {reproject = false, _targetCrs = 'WGS84'} = options?.gis || {};
+  const {reproject = false, targetCrs = 'WGS84'} = options?.gis || {};
   if (!reproject) {
     return undefined;
   }
   if (!sourceCrs) {
-    throw new Error('Shapefile reprojection requires a source CRS from the .prj sidecar file');
+    throw new CRSReprojectionError(
+      'missing-source-crs',
+      'Shapefile reprojection requires a source CRS from the .prj sidecar file',
+      {targetCrs}
+    );
   }
-  const projection = new Proj4Projection({from: sourceCrs, to: _targetCrs || 'WGS84'});
-  return coordinate => projection.project(coordinate);
+  try {
+    const projection = new Proj4Projection({
+      from: sourceCrs,
+      to: toProj4CRSDefinition(targetCrs || 'WGS84')
+    });
+    return coordinate => projection.project(coordinate);
+  } catch (error) {
+    const message = error instanceof Error ? error.message : String(error);
+    throw new CRSReprojectionError(
+      'transformation-failed',
+      `Shapefile reprojection failed: ${message}`,
+      {sourceCrs, targetCrs: targetCrs || 'WGS84', cause: error}
+    );
+  }
 }
 
 function getTypedGeoArrowEncoding(options?: ShapefileLoaderOptions): boolean {

@@ -18,8 +18,9 @@ export type VectorSourceData = GeoJSONTable | BinaryFeatureCollection | ArrowTab
 
 /**
  * VectorSource - data sources that allow features to be queried by (geospatial) extents
- * @note
- * - If geospatial, bounding box is expected to be in web mercator coordinates
+ * Coordinates in returned geometry and normalized bounds use `xy` order (x/easting or
+ * longitude first). Service requests may use a different wire-axis order; adapters translate
+ * from the canonical `xy` input according to the requested CRS.
  */
 export interface VectorSource {
   getSchema(): Promise<Schema>;
@@ -70,8 +71,10 @@ export type GetFeaturesParameters = {
   layers: string | string[];
   /** bounding box on the map (only return features within this bbox) */
   boundingBox: [min: [x: number, y: number], max: [x: number, y: number]];
-  /** crs for the returned features (not the bounding box) */
+  /** CRS for returned feature coordinates. */
   crs?: CRSIdentifier;
+  /** CRS in which `boundingBox` is expressed. Defaults to the service's native request CRS. */
+  requestCrs?: CRSIdentifier;
   /**
    * Requested feature encoding for the returned table.
    * `arrow` returns a loaders.gl `ArrowTable` with `shape: 'arrow-table'`.

@@ -96,11 +96,11 @@ test('GeoPackageLoader#load default table honors metadata heuristic', async () =
 test('GeoPackageLoader#load Arrow table reprojects like GeoJSON output', async () => {
   const arrowTable = await load(GPKG_RIVERS, GeoPackageLoader, {
     geopackage: {shape: 'arrow-table'},
-    gis: {reproject: true, _targetCrs: 'WGS84'}
+    gis: {reproject: true, targetCrs: 'WGS84'}
   });
   const geojsonTable = await load(GPKG_RIVERS, GeoPackageLoader, {
     geopackage: {shape: 'geojson-table'},
-    gis: {reproject: true, _targetCrs: 'WGS84'}
+    gis: {reproject: true, targetCrs: 'WGS84'}
   });
   const rows = getRowsFromArrowTable(arrowTable);
   const roundTripped = convertWKBTableToGeoJSON(

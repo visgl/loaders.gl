@@ -80,6 +80,9 @@ The sections below document the v5 removals, migrations, and deprecations that r
 - CRS metadata preservation does not reproject coordinates. See
   [Coordinate Reference Systems](/docs/developer-guide/coordinate-reference-systems) for current
   format support and the staged reprojection roadmap.
+- Vector loader reprojection options now use `gis.targetCrs` consistently. The experimental
+  `_targetCrs` spelling is not part of the v5 public contract. Service requests use `requestCrs`
+  for the input bounding box and `crs` for returned feature coordinates.
 
 **@loaders.gl/tiles**
 

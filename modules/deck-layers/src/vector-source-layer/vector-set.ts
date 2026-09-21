@@ -21,6 +21,8 @@ export type VectorSetOptions = {
   layers: string | string[];
   /** Output CRS forwarded to the vector source. */
   crs?: GetFeaturesParameters['crs'];
+  /** CRS of viewport bounds forwarded to the vector source. Defaults to the output CRS. */
+  requestCrs?: GetFeaturesParameters['requestCrs'];
   /** Output format forwarded to the vector source. */
   format?: GetFeaturesParameters['format'];
   /** Debounce interval applied before issuing viewport requests. */
@@ -71,6 +73,8 @@ export class VectorSet {
   layers: string | string[];
   /** Output CRS forwarded to `VectorSource#getFeatures`. */
   crs?: GetFeaturesParameters['crs'];
+  /** CRS of viewport bounds forwarded to `VectorSource#getFeatures`. */
+  requestCrs?: GetFeaturesParameters['requestCrs'];
   /** Output format forwarded to `VectorSource#getFeatures`. */
   format?: GetFeaturesParameters['format'];
   /** Debounce interval applied before issuing viewport requests. */
@@ -103,6 +107,7 @@ export class VectorSet {
     this.vectorSource = options.vectorSource;
     this.layers = options.layers;
     this.crs = options.crs;
+    this.requestCrs = options.requestCrs;
     this.format = options.format;
     this.debounceTime = options.debounceTime ?? 200;
   }
@@ -132,11 +137,13 @@ export class VectorSet {
     const sourceChanged = options.vectorSource !== this.vectorSource;
     const layersChanged = !areLayerSelectionsEqual(options.layers, this.layers);
     const crsChanged = options.crs !== this.crs;
+    const requestCrsChanged = options.requestCrs !== this.requestCrs;
     const formatChanged = options.format !== this.format;
 
     this.vectorSource = options.vectorSource;
     this.layers = options.layers;
     this.crs = options.crs;
+    this.requestCrs = options.requestCrs;
     this.format = options.format;
     this.debounceTime = options.debounceTime ?? this.debounceTime;
 
@@ -156,7 +163,7 @@ export class VectorSet {
       return;
     }
 
-    if (layersChanged || crsChanged || formatChanged) {
+    if (layersChanged || crsChanged || requestCrsChanged || formatChanged) {
       this.lastRequestKey = null;
     }
   }
@@ -289,6 +296,7 @@ export class VectorSet {
         [bounds[2], bounds[3]]
       ],
       crs: this.crs,
+      requestCrs: this.requestCrs,
       format: this.format
     };
   }
@@ -375,9 +383,10 @@ function isAbortError(error: unknown): boolean {
 function getRequestKey(parameters: GetFeaturesParameters): string {
   const layers = Array.isArray(parameters.layers) ? parameters.layers.join(',') : parameters.layers;
   const crs = parameters.crs || '';
+  const requestCrs = parameters.requestCrs || '';
   const format = parameters.format || '';
   const boundingBox = parameters.boundingBox.flat().join(',');
-  return `${layers}|${crs}|${format}|${boundingBox}`;
+  return `${layers}|${crs}|${requestCrs}|${format}|${boundingBox}`;
 }
 
 function areLayerSelectionsEqual(left: string | string[], right: string | string[]): boolean {
