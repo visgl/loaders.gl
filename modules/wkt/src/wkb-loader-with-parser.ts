@@ -4,9 +4,10 @@
 
 import type {Loader, LoaderWithParser, LoaderOptions} from '@loaders.gl/loader-utils';
 import type {Geometry} from '@loaders.gl/schema';
-import {convertWKBToGeometry} from '@loaders.gl/gis';
+import {parseWKB as parseMathWKB} from '@math.gl/wkb';
 import {WKBWorkerLoader as WKBWorkerLoaderMetadata} from './wkb-loader';
 import {WKBLoader as WKBLoaderMetadata} from './wkb-loader';
+import {normalizeEmptyPoints} from './geometry-utils';
 
 const {preload: _WKBWorkerLoaderPreload, ...WKBWorkerLoaderMetadataWithoutPreload} =
   WKBWorkerLoaderMetadata;
@@ -38,13 +39,15 @@ export const WKBLoaderWithParser = {
 } as const satisfies LoaderWithParser<Geometry, never, WKBLoaderOptions>;
 
 export function parseWKB(
-  arrayBuffer: ArrayBuffer,
+  arrayBuffer: ArrayBufferLike,
   options?: {shape?: 'geojson-geometry'}
 ): Geometry {
   const shape = options?.shape ?? 'geojson-geometry';
   switch (shape) {
     case 'geojson-geometry':
-      return convertWKBToGeometry(arrayBuffer);
+      return normalizeEmptyPoints(
+        parseMathWKB(new Uint8Array(arrayBuffer)).geometry as unknown as Geometry
+      );
     default:
       throw new Error(shape);
   }

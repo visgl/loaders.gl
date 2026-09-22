@@ -3,7 +3,34 @@
 // Copyright (c) vis.gl contributors
 
 import type {Format} from '@loaders.gl/loader-utils';
-import {isWKB, isWKT, WKT_MAGIC_STRINGS} from '@loaders.gl/gis';
+import {inspectWKBHeader} from '@math.gl/wkb';
+
+const WKT_MAGIC_STRINGS = [
+  'POINT(',
+  'LINESTRING(',
+  'POLYGON(',
+  'MULTIPOINT(',
+  'MULTILINESTRING(',
+  'MULTIPOLYGON(',
+  'GEOMETRYCOLLECTION('
+];
+
+/** Detects whether text begins with a supported WKT geometry type. */
+function isWKT(input: string): boolean {
+  return /^\s*(?:SRID=\d+\s*;\s*)?(?:POINT|LINESTRING|POLYGON|MULTIPOINT|MULTILINESTRING|MULTIPOLYGON|GEOMETRYCOLLECTION)(?:\s+(?:ZM|Z|M))?(?:\s|\()/i.test(
+    input
+  );
+}
+
+/** Detects whether a value begins with a supported WKB header. */
+function isWKB(input: ArrayBufferLike): boolean {
+  try {
+    inspectWKBHeader(input);
+    return true;
+  } catch {
+    return false;
+  }
+}
 
 /** Well-Known Text geometry format. */
 export const WKTFormat = {

@@ -98,6 +98,27 @@ test('WKTLoader', async () => {
       [5, 6, 7, 8]
     ]
   });
+  expect(parseSync('GEOMETRYCOLLECTION (POINT (1 2), POINT (3 4 5))', WKTLoader)).toEqual({
+    type: 'GeometryCollection',
+    geometries: [
+      {type: 'Point', coordinates: [1, 2]},
+      {type: 'Point', coordinates: [3, 4, 5]}
+    ]
+  });
+  const geometryCollectionWithMeasure = parseSync(
+    'GEOMETRYCOLLECTION (POINT M (1 2 3))',
+    WKTLoader
+  );
+  expect(geometryCollectionWithMeasure).toEqual({
+    type: 'GeometryCollection',
+    geometries: [{type: 'Point', coordinates: [1, 2, 3]}]
+  });
+  expect(
+    Object.getOwnPropertyDescriptor(
+      geometryCollectionWithMeasure.geometries[0],
+      '__geoarrowDimension'
+    )?.value
+  ).toBe('xym');
   expect(parseSync('SRID=3857;LINESTRING (30 10, 10 30, 40 40)', WKTLoader)).toEqual({
     type: 'LineString',
     coordinates: [

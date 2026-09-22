@@ -1,10 +1,20 @@
 import {expect, test} from 'vitest';
 import {fetchFile, parse, parseSync} from '@loaders.gl/core';
-import {isWKB} from '@loaders.gl/gis';
+import {inspectWKBHeader} from '@math.gl/wkb';
 import {WKBLoader, WKTLoader} from '@loaders.gl/wkt/bundled';
 import {parseTestCases} from '@loaders.gl/gis/test/data/wkt/parse-test-cases';
 const WKB_2D_TEST_CASES = '@loaders.gl/gis/test/data/wkt/wkb-testdata2d.json';
 const WKB_Z_TEST_CASES = '@loaders.gl/gis/test/data/wkt/wkb-testdataZ.json';
+
+function isWKB(input: ArrayBufferLike): boolean {
+  try {
+    inspectWKBHeader(input);
+    return true;
+  } catch {
+    return false;
+  }
+}
+
 test('WKBLoader#2D', async () => {
   const response = await fetchFile(WKB_2D_TEST_CASES);
   const TEST_CASES = parseTestCases(await response.json());

@@ -66,6 +66,12 @@ test('WKTWriter', () => {
   expect(
     encodeTextSync({type: 'GeometryCollection', geometries: [geojsonFeature.geometry]}, WKTWriter)
   ).toBe('GEOMETRYCOLLECTION (POINT (42 20))');
+
+  const measuredPoint = {type: 'Point' as const, coordinates: [1, 2, 3]};
+  Object.defineProperty(measuredPoint, '__geoarrowDimension', {value: 'xym'});
+  expect(encodeTextSync({type: 'GeometryCollection', geometries: [measuredPoint]}, WKTWriter)).toBe(
+    'GEOMETRYCOLLECTION (POINT M (1 2 3))'
+  );
 });
 
 test('WKT loader preloads the parser and writer supports binary output', async () => {
