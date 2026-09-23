@@ -620,3 +620,100 @@ test('Tile3D exposes memory, camera depth, selection, and expiration boundaries'
   expect(tile.contentExpired).toBe(true);
   expect(tile.contentAvailable).toBe(true);
 });
+
+test('Tile3D#updates nested region bounds with the tileset model matrix', () => {
+  const tileset = {...MOCK_TILESET, modelMatrix: new Matrix4().translate([100, 200, 300])};
+  const boundingVolume = {region: [0, 0, 0.01, 0.01, 0, 10]};
+  const header = {
+    ...TILE_HEADER_WITH_BOUNDING_REGION,
+    boundingVolume,
+    viewerRequestVolume: boundingVolume,
+    content: [
+      {uri: 'first.glb', boundingVolume},
+      {uri: 'second.glb', boundingVolume},
+      {uri: 'third.glb'}
+    ]
+  };
+  const originalTile = new Tile3D(MOCK_TILESET as any, header);
+  const originalVolume = originalTile.boundingVolume;
+  const parent = new Tile3D(tileset as any, {
+    ...header,
+    transform: Array.from(new Matrix4().translate([20, 30, 40]).rotateX(0.5).scale([2, 3, 4]))
+  });
+  const child = new Tile3D(
+    tileset as any,
+    {
+      ...header,
+      transform: Array.from(new Matrix4().translate([50, 60, 70]).rotateY(0.25))
+    },
+    parent
+  );
+
+  const modelMatrices = [
+    tileset.modelMatrix,
+    new Matrix4()
+      .rotateZ(Math.PI / 2)
+      .scale([2, 3, 4])
+      .translate([300, 200, 100]),
+    new Matrix4()
+  ];
+  for (const modelMatrix of modelMatrices) {
+    tileset.modelMatrix = modelMatrix;
+    parent._updateTransform(modelMatrix);
+    child._updateTransform(parent.computedTransform);
+
+    for (const tile of [parent, child]) {
+      for (const volume of [
+        tile.boundingVolume,
+        tile.viewerRequestVolume,
+        ...tile.contentBoundingVolumes
+      ]) {
+        const expectedCenter = modelMatrix.transformAsPoint(originalVolume.center);
+        expectedCenter.forEach((value, index) =>
+          expect(volume.center[index]).toBeCloseTo(value, 6)
+        );
+        for (let axis = 0; axis < 3; axis++) {
+          const expectedAxis = modelMatrix.transformAsVector(
+            originalVolume.halfAxes.getColumn(axis)
+          );
+          expectedAxis.forEach((value, index) =>
+            expect(volume.halfAxes[axis * 3 + index]).toBeCloseTo(value, 6)
+          );
+        }
+      }
+    }
+  }
+});
+
+test('Tile3D#cartographic region bounds follow initial and updated model matrices', () => {
+  // A vertical segment on the equator makes longitude and height changes exact.
+  const tileset = {...MOCK_TILESET, modelMatrix: new Matrix4().translate([100, 0, 0])};
+  const tile = new Tile3D(tileset as any, {
+    ...TILE_HEADER_WITH_BOUNDING_REGION,
+    boundingVolume: {region: [0, 0, 0, 0, 10, 20]},
+    transform: Array.from(new Matrix4().translate([200, 300, 400]))
+  });
+  const translatedBounds = tile.boundingBox;
+  expect(translatedBounds[0][0]).toBeCloseTo(0, 6);
+  expect(translatedBounds[1][0]).toBeCloseTo(0, 6);
+  expect(translatedBounds[0][2]).toBeCloseTo(110, 6);
+  expect(translatedBounds[1][2]).toBeCloseTo(120, 6);
+  expect(tile.boundingBox).toBe(translatedBounds);
+
+  tileset.modelMatrix = new Matrix4().rotateZ(Math.PI / 2);
+  tile._updateTransform(tileset.modelMatrix);
+  const rotatedBounds = tile.boundingBox;
+  expect(rotatedBounds).not.toBe(translatedBounds);
+  expect(rotatedBounds[0][0]).toBeCloseTo(90, 6);
+  expect(rotatedBounds[1][0]).toBeCloseTo(90, 6);
+  expect(rotatedBounds[0][2]).toBeCloseTo(10, 6);
+  expect(rotatedBounds[1][2]).toBeCloseTo(20, 6);
+
+  tileset.modelMatrix = new Matrix4();
+  tile._updateTransform(tileset.modelMatrix);
+  expect(tile.boundingBox).not.toBe(rotatedBounds);
+  expect(tile.boundingBox).toEqual([
+    [0, 0, 10],
+    [0, 0, 20]
+  ]);
+});

@@ -26,11 +26,18 @@ const identityTransform = new Matrix4();
 /**
  * Create a bounding volume from the tile's bounding volume header.
  * @param {Object} boundingVolumeHeader The tile's bounding volume header.
- * @param {Matrix4} transform The transform to apply to the bounding volume.
+ * @param {Matrix4} transform The current computed tile transform, including application transforms.
  * @param [result] The object onto which to store the result.
+ * @param initialTransform The accumulated JSON tile transform, excluded from region transforms.
+ * Defaults to transform so callers without application transforms keep geospatial regions fixed.
  * @returns The modified result parameter or a new TileBoundingVolume instance if none was provided.
  */
-export function createBoundingVolume(boundingVolumeHeader, transform, result?) {
+export function createBoundingVolume(
+  boundingVolumeHeader,
+  transform: Matrix4,
+  result?,
+  initialTransform: Matrix4 = transform
+) {
   assert(boundingVolumeHeader, '3D Tile: boundingVolume must be defined');
 
   // boundingVolume schema:
@@ -42,7 +49,16 @@ export function createBoundingVolume(boundingVolumeHeader, transform, result?) {
     return createBox(boundingVolumeHeader.box, boxTransform, result);
   }
   if (boundingVolumeHeader.region) {
-    return makeOBBFromRegion(boundingVolumeHeader.region);
+    const boundingVolume = makeOBBFromRegion(boundingVolumeHeader.region);
+    // Regions are already in world coordinates. Apply only the change from the JSON transform.
+    const regionTransform = transform.equals(initialTransform)
+      ? identityTransform
+      : transform.clone().multiplyRight(initialTransform.clone().invert());
+    return createBox(
+      [...boundingVolume.center, ...boundingVolume.halfAxes],
+      regionTransform,
+      result
+    );
   }
 
   if (boundingVolumeHeader.sphere) {
@@ -59,15 +75,17 @@ export type CartographicBounds = [min: number[], max: number[]];
  * Calculate the cartographic bounding box the tile's bounding volume.
  * @param {Object} boundingVolumeHeader The tile's bounding volume header.
  * @param {BoundingVolume} boundingVolume The bounding volume.
+ * @param isRegionTransformed Whether application transforms moved the region from its JSON bounds.
  * @returns {CartographicBounds}
  */
 export function getCartographicBounds(
   boundingVolumeHeader,
-  boundingVolume: OrientedBoundingBox | BoundingSphere
+  boundingVolume: OrientedBoundingBox | BoundingSphere,
+  isRegionTransformed = false
 ): CartographicBounds {
   // boundingVolume schema:
   // https://github.com/AnalyticalGraphicsInc/3d-tiles/blob/master/specification/schema/boundingVolume.schema.json
-  if (boundingVolumeHeader.box) {
+  if (boundingVolumeHeader.box || (boundingVolumeHeader.region && isRegionTransformed)) {
     return orientedBoundingBoxToCartographicBounds(boundingVolume as OrientedBoundingBox);
   }
   if (boundingVolumeHeader.region) {
@@ -145,61 +163,6 @@ function createBox(box, transform, result?) {
 
   return new OrientedBoundingBox(center, halfAxes);
 }
-
-/*
-function createBoxFromTransformedRegion(region, transform, initialTransform, result) {
-  const rectangle = Rectangle.unpack(region, 0, scratchRectangle);
-  const minimumHeight = region[4];
-  const maximumHeight = region[5];
-
-  const orientedBoundingBox = OrientedBoundingBox.fromRectangle(
-    rectangle,
-    minimumHeight,
-    maximumHeight,
-    Ellipsoid.WGS84,
-    scratchOrientedBoundingBox
-  );
-  const center = orientedBoundingBox.center;
-  const halfAxes = orientedBoundingBox.halfAxes;
-
-  // A region bounding volume is not transformed by the transform in the tileset JSON,
-  // but may be transformed by additional transforms applied in Cesium.
-  // This is why the transform is calculated as the difference between the initial transform and the current transform.
-  transform = Matrix4.multiplyTransformation(
-    transform,
-    Matrix4.inverseTransformation(initialTransform, scratchTransform),
-    scratchTransform
-  );
-  center = Matrix4.multiplyByPoint(transform, center, center);
-  const rotationScale = Matrix4.getRotation(transform, scratchMatrix);
-  halfAxes = Matrix3.multiply(rotationScale, halfAxes, halfAxes);
-
-  if (defined(result) && result instanceof TileOrientedBoundingBox) {
-    result.update(center, halfAxes);
-    return result;
-  }
-
-  return new TileOrientedBoundingBox(center, halfAxes);
-}
-
-function createRegion(region, transform, initialTransform, result) {
-  if (!Matrix4.equalsEpsilon(transform, initialTransform, CesiumMath.EPSILON8)) {
-    return createBoxFromTransformedRegion(region, transform, initialTransform, result);
-  }
-
-  if (defined(result)) {
-    return result;
-  }
-
-  const rectangleRegion = Rectangle.unpack(region, 0, scratchRectangle);
-
-  return new TileBoundingRegion({
-    rectangle: rectangleRegion,
-    minimumHeight: region[4],
-    maximumHeight: region[5]
-  });
-}
-*/
 
 function createSphere(sphere, transform, result?) {
   // Find the transformed center

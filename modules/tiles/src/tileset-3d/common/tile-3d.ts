@@ -249,6 +249,7 @@ export class Tile3D {
     return this._viewerRequestVolume;
   }
 
+  /** Accumulated tile transforms from the source JSON, excluding the tileset model matrix. */
   _initialTransform: Matrix4 = new Matrix4();
 
   // Used by traverser, cannot be marked private
@@ -425,12 +426,16 @@ export class Tile3D {
   }
 
   /**
-   * Get bounding box in cartographic coordinates
+   * Get the current world-space bounding volume in cartographic coordinates.
    * @returns [min, max] each in [longitude, latitude, altitude]
    */
   get boundingBox(): CartographicBounds {
     if (!this._boundingBox) {
-      this._boundingBox = getCartographicBounds(this.header.boundingVolume, this.boundingVolume);
+      this._boundingBox = getCartographicBounds(
+        this.header.boundingVolume,
+        this.boundingVolume,
+        !this.computedTransform.equals(this._initialTransform)
+      );
     }
     return this._boundingBox;
   }
@@ -1215,11 +1220,13 @@ export class Tile3D {
   }
 
   _updateBoundingVolume(header) {
+    this._boundingBox = undefined;
     // Update the bounding volumes
     this.boundingVolume = createBoundingVolume(
       header.boundingVolume,
       this.computedTransform,
-      this.boundingVolume
+      this.boundingVolume,
+      this._initialTransform
     );
 
     // Viewer request volumes constrain traversal, not just render content. A contentless implicit
@@ -1229,7 +1236,8 @@ export class Tile3D {
       this._viewerRequestVolume = createBoundingVolume(
         header.viewerRequestVolume,
         this.computedTransform,
-        this._viewerRequestVolume
+        this._viewerRequestVolume,
+        this._initialTransform
       );
     }
 
@@ -1247,7 +1255,12 @@ export class Tile3D {
     this._contentBoundingVolumes = contentHeaders.length
       ? contentHeaders.map(headerEntry =>
           headerEntry?.boundingVolume
-            ? createBoundingVolume(headerEntry.boundingVolume, this.computedTransform)
+            ? createBoundingVolume(
+                headerEntry.boundingVolume,
+                this.computedTransform,
+                undefined,
+                this._initialTransform
+              )
             : this.boundingVolume
         )
       : [this.boundingVolume];
