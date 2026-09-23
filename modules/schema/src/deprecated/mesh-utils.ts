@@ -2,41 +2,16 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-// Mesh category utilities
-// TODO - move to mesh category module, or to math.gl/geometry module
 import {MeshAttributes} from '../categories/category-mesh';
-import {TypedArray} from '../types/types';
 
-type TypedArrays = {[key: string]: TypedArray};
-
-/**
- * Holds an axis aligned bounding box
- * TODO - make sure AxisAlignedBoundingBox in math.gl/culling understands this format (or change this format)
- */
 type BoundingBox = [[number, number, number], [number, number, number]];
 
 /**
- * Get number of vertices in mesh
- * @param attributes
- * @deprecated Import from shema-utils
- */
-export function getMeshSize(attributes: TypedArrays): number {
-  let size = 0;
-  for (const attributeName in attributes) {
-    const attribute = attributes[attributeName];
-    if (ArrayBuffer.isView(attribute)) {
-      // @ts-ignore DataView doesn't have BYTES_PER_ELEMENT
-      size += attribute.byteLength * attribute.BYTES_PER_ELEMENT;
-    }
-  }
-  return size;
-}
-
-/**
- * Get the (axis aligned) bounding box of a mesh
- * @param attributes
- * @returns array of two vectors representing the axis aligned bounding box
- * @deprecated Import from shema-utils
+ * Get the (axis aligned) bounding box of a mesh.
+ * @param attributes Mesh attributes.
+ * @returns The axis aligned bounding box as minimum and maximum vectors.
+ * @deprecated Import `getMeshBoundingBox` from `@loaders.gl/schema-utils` instead. This root
+ * export remains temporarily for deck.gl 9.4 compatibility.
  */
 // eslint-disable-next-line complexity
 export function getMeshBoundingBox(attributes: MeshAttributes): BoundingBox {
@@ -48,12 +23,12 @@ export function getMeshBoundingBox(attributes: MeshAttributes): BoundingBox {
   let maxZ = -Infinity;
 
   const positions = attributes.POSITION ? attributes.POSITION.value : [];
-  const len = positions && positions.length;
+  const length = positions && positions.length;
 
-  for (let i = 0; i < len; i += 3) {
-    const x = positions[i];
-    const y = positions[i + 1];
-    const z = positions[i + 2];
+  for (let index = 0; index < length; index += 3) {
+    const x = positions[index];
+    const y = positions[index + 1];
+    const z = positions[index + 2];
 
     minX = x < minX ? x : minX;
     minY = y < minY ? y : minY;
@@ -63,6 +38,7 @@ export function getMeshBoundingBox(attributes: MeshAttributes): BoundingBox {
     maxY = y > maxY ? y : maxY;
     maxZ = z > maxZ ? z : maxZ;
   }
+
   return [
     [minX, minY, minZ],
     [maxX, maxY, maxZ]

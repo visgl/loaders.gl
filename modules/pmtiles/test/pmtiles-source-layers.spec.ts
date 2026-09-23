@@ -8,7 +8,11 @@ import type {CoreAPI} from '@loaders.gl/loader-utils';
 import {MLTLoader} from '@loaders.gl/mlt';
 import type {MVTLoaderOptions} from '@loaders.gl/mvt';
 import {MVTLoader} from '@loaders.gl/mvt';
-import {PMTilesSourceLoader, PMTilesTileSource} from '../src/pmtiles-source-loader';
+import {
+  PMTilesSourceLoader,
+  PMTilesTileSource,
+  type PMTilesSourceLoaderOptions
+} from '../src/pmtiles-source-loader';
 
 /** Creates a valid compact PMTiles header for source metadata tests. */
 function createHeader(tileType = 1): Header {
@@ -49,6 +53,19 @@ afterEach(() => {
 test('PMTilesSourceLoader#defaults vector tiles to arrow-table output', () => {
   expect(PMTilesSourceLoader.options.pmtiles.shape).toBe('arrow-table');
   expect(PMTilesSourceLoader.defaultOptions.pmtiles.shape).toBeUndefined();
+});
+
+test('PMTiles parser options use the core namespace, not the removed source alias', () => {
+  const options: PMTilesSourceLoaderOptions = {
+    core: {loadOptions: {mvt: {shape: 'binary-geometry'}}}
+  };
+  expect(options.core?.loadOptions?.mvt?.shape).toBe('binary-geometry');
+
+  // @ts-expect-error PMTiles parser options moved under core.loadOptions.
+  const legacyOptions: PMTilesSourceLoaderOptions = {
+    loadOptions: {mvt: {shape: 'binary-geometry'}}
+  };
+  expect(legacyOptions.loadOptions).toBeTruthy();
 });
 
 test('PMTilesTileSource#getVectorTile falls back to Arrow without overriding inherited shape', async () => {

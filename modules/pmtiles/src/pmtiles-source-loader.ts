@@ -37,6 +37,8 @@ export type PMTilesRangeRequestOptions = RangeRequestSchedulerProps & {
 };
 
 export type PMTilesSourceLoaderOptions = DataSourceOptions & {
+  /** @deprecated PMTiles parser settings belong under `core.loadOptions`. */
+  loadOptions?: never;
   /** Preferred encoding for Arrow geometry output. */
   geoarrow?: {encodingPreference?: GeoArrowEncodingPreference};
   core?: DataSourceOptions['core'] & {

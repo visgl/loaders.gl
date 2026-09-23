@@ -119,14 +119,10 @@ tileset.setProps({cacheBytes: 128 * MEBIBYTE});
 
 ## Migrating from MiB Options
 
-The older options remain available for compatibility but are deprecated:
-
-| Deprecated option | Replacement | Conversion |
-| --- | --- | --- |
-| `maximumMemoryUsage` | `cacheBytes` | `maximumMemoryUsage * 1024 * 1024` |
-| `memoryCacheOverflow` | `maximumCacheOverflowBytes` | `memoryCacheOverflow * 1024 * 1024` |
-
-If both forms are supplied, the byte-native option wins independently for its budget. The deprecated `maximumMemoryUsage` property remains synchronized with `cacheBytes`, allowing applications to migrate without a flag day.
+The v5 API removes the MiB-based `maximumMemoryUsage` and `memoryCacheOverflow` options and the
+`Tileset3D.maximumMemoryUsage` property. Replace them with the byte-native `cacheBytes` and
+`maximumCacheOverflowBytes` values. For example, convert a 256 MiB budget with
+`cacheBytes: 256 * 1024 * 1024`; do not pass the MiB number directly.
 
 The default policy changed from a 32 MiB target, 1 MiB overflow, and disabled memory adjustment to Cesium-compatible 512 MiB budgets with memory adjustment enabled. To retain the previous policy explicitly:
 

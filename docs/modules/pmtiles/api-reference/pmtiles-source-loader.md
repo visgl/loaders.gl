@@ -83,6 +83,10 @@ const tilePromises = source.getTileDataBatch?.([tileA, tileB, tileC]);
 See the [using range requests guide](../../../developer-guide/using-range-requests.md) for the
 shared scheduler model and option tradeoffs.
 
+Pass parser options through `core.loadOptions`; the former PMTiles-level `loadOptions` shortcut is
+not supported. For example, use `core.loadOptions.mvt` for vector-tile parser settings or
+`core.loadOptions.mlt` for MapLibre Tile settings.
+
 Use `createRangeStats()` and `getRangeStats()` from `@loaders.gl/loader-utils` when you need
 typed aggregate counters for PMTiles range transport diagnostics.
 
