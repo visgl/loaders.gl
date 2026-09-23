@@ -5,6 +5,7 @@
 import {expect, test} from 'vitest';
 import {WebMercatorViewport} from '@deck.gl/core';
 import {Matrix4} from '@math.gl/core';
+import {Ellipsoid} from '@math.gl/geospatial';
 import {createTilesetViewState} from '../examples/website/3d-tiles/create-tileset-view-state';
 
 const DEFAULT_VIEW_STATE = {longitude: 0, latitude: 0, zoom: 3, pitch: 0, bearing: 0};
@@ -58,4 +59,17 @@ test.each([
     previousViewState
   );
   expect(nextViewState.position).toEqual([0, 0, Number.isFinite(elevation) ? elevation : 0]);
+});
+
+test('3D Tiles example uses a surface target for Earth-centered global tilesets', () => {
+  // Same sentinel returned by Tiles3DSource.getViewState for TilesetGlobal's root volume.
+  const tileset = {cartographicCenter: [0, 0, -Ellipsoid.WGS84.radii[0]], zoom: 0};
+  const viewState = createTilesetViewState(tileset, DEFAULT_VIEW_STATE);
+  const viewport = new WebMercatorViewport({...viewState, width: 898, height: 320});
+  expect(viewState.position).toEqual([0, 0, 0]);
+  expect(viewport.unprojectPosition(viewport.center)[2]).toBe(0);
+  expect(viewport.unprojectPosition(viewport.cameraPosition)[2]).toBeGreaterThan(0);
+  expect(
+    createTilesetViewState(tileset, DEFAULT_VIEW_STATE, {position: [0, 0, 405]}).position
+  ).toEqual([0, 0, 405]);
 });

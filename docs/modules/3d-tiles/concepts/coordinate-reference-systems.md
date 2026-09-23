@@ -122,7 +122,8 @@ const viewState = {
 ```
 
 The website 3D Tiles example initializes this position from `tileset.cartographicCenter[2]`
-unless the example specifies its own `viewState.position`. The center is a viewing target,
+unless the example specifies its own `viewState.position`. Global roots centered at the Earth's
+center use a zero-elevation target instead of their cartographic sentinel. The center is a viewing target,
 not a terrain sample. For broad datasets, choose a local target elevation rather than treating
 the root region's minimum height as ground height everywhere. Preserve explicit application
 placement, including `[0, 0, 0]`, and avoid adding the same elevation twice.

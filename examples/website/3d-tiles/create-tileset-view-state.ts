@@ -3,6 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import type {MapViewState} from '@deck.gl/core';
+import {Ellipsoid} from '@math.gl/geospatial';
 
 /** Creates a camera target at the tileset center while preserving explicit example placement. */
 export function createTilesetViewState(
@@ -16,7 +17,11 @@ export function createTilesetViewState(
   preferredViewState: Partial<MapViewState> = {}
 ): MapViewState & Required<Pick<MapViewState, 'bearing' | 'pitch'>> {
   const {cartographicCenter, zoom} = tileset;
-  const elevation = Number.isFinite(cartographicCenter[2]) ? cartographicCenter[2] : 0;
+  // Tiles3DSource uses this finite sentinel when a global root's Cartesian center is [0, 0, 0].
+  const elevation =
+    Number.isFinite(cartographicCenter[2]) && cartographicCenter[2] !== -Ellipsoid.WGS84.radii[0]
+      ? cartographicCenter[2]
+      : 0;
   return {
     ...defaultViewState,
     longitude: cartographicCenter[0],
