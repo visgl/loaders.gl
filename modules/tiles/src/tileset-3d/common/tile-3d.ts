@@ -249,6 +249,7 @@ export class Tile3D {
     return this._viewerRequestVolume;
   }
 
+  /** Accumulated tile transforms from the source JSON, excluding the tileset model matrix. */
   _initialTransform: Matrix4 = new Matrix4();
 
   // Used by traverser, cannot be marked private
@@ -1219,7 +1220,8 @@ export class Tile3D {
     this.boundingVolume = createBoundingVolume(
       header.boundingVolume,
       this.computedTransform,
-      this.boundingVolume
+      this.boundingVolume,
+      this._initialTransform
     );
 
     // Viewer request volumes constrain traversal, not just render content. A contentless implicit
@@ -1229,7 +1231,8 @@ export class Tile3D {
       this._viewerRequestVolume = createBoundingVolume(
         header.viewerRequestVolume,
         this.computedTransform,
-        this._viewerRequestVolume
+        this._viewerRequestVolume,
+        this._initialTransform
       );
     }
 
@@ -1247,7 +1250,12 @@ export class Tile3D {
     this._contentBoundingVolumes = contentHeaders.length
       ? contentHeaders.map(headerEntry =>
           headerEntry?.boundingVolume
-            ? createBoundingVolume(headerEntry.boundingVolume, this.computedTransform)
+            ? createBoundingVolume(
+                headerEntry.boundingVolume,
+                this.computedTransform,
+                undefined,
+                this._initialTransform
+              )
             : this.boundingVolume
         )
       : [this.boundingVolume];

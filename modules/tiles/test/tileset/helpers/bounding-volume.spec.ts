@@ -40,3 +40,56 @@ test('Tiles bounding-volume#createBoundingVolume - keeps S2 ECEF boxes transform
   expect(s2BoundingVolume.center).toEqual([1, 2, 3]);
   expect(localBoundingVolume.center).toEqual([101, 202, 303]);
 });
+
+test.each<[string, Matrix4]>([
+  ['translation', new Matrix4().translate([100, 200, 300])],
+  ['rotation', new Matrix4().rotateZ(Math.PI / 2)],
+  ['scale', new Matrix4().scale([2, 3, 4])],
+  [
+    'combined',
+    new Matrix4()
+      .translate([100, 200, 300])
+      .rotateZ(Math.PI / 2)
+      .scale([2, 3, 4])
+  ]
+])('Tiles region bounds apply application %s and exclude JSON transforms', (_, modelMatrix) => {
+  const header = {region: [0, 0, 0.01, 0.01, 0, 10]};
+  const originalVolume = createBoundingVolume(header, new Matrix4());
+  const initialTransform = new Matrix4().translate([20, 30, 40]).rotateX(0.5).scale([2, 3, 4]);
+  const computedTransform = modelMatrix.clone().multiplyRight(initialTransform);
+  const initialValues = Array.from(initialTransform);
+  const computedValues = Array.from(computedTransform);
+  const result = new OrientedBoundingBox();
+  const transformedVolume = createBoundingVolume(
+    header,
+    computedTransform,
+    result,
+    initialTransform
+  );
+
+  expect(transformedVolume).toBe(result);
+  const expectedCenter = modelMatrix.transformAsPoint(originalVolume.center);
+  expectedCenter.forEach((value, index) => expect(result.center[index]).toBeCloseTo(value, 6));
+  for (let axis = 0; axis < 3; axis++) {
+    const expectedAxis = modelMatrix.transformAsVector(originalVolume.halfAxes.getColumn(axis));
+    expectedAxis.forEach((value, index) =>
+      expect(result.halfAxes[axis * 3 + index]).toBeCloseTo(value, 6)
+    );
+  }
+  expect(Array.from(initialTransform)).toEqual(initialValues);
+  expect(Array.from(computedTransform)).toEqual(computedValues);
+});
+
+test('Tiles region bounds ignore JSON transforms without an application transform', () => {
+  const header = {region: [0, 0, 0.01, 0.01, 0, 10]};
+  const originalVolume = createBoundingVolume(header, new Matrix4());
+  const initialTransform = new Matrix4().translate([100, 200, 300]).rotateX(0.5).scale([2, 3, 4]);
+
+  for (const volume of [
+    createBoundingVolume(header, initialTransform),
+    createBoundingVolume(header, initialTransform, undefined, initialTransform.clone())
+  ]) {
+    expect(volume.center).toEqual(originalVolume.center);
+    expect(volume.halfAxes).toEqual(originalVolume.halfAxes);
+  }
+});
