@@ -181,7 +181,7 @@ Gets an ellipsoid describing the shape of the globe.
 
 A [Matrix4](https://math.gl/modules/core/docs/api-reference/matrix4) instance (4x4 transformation matrix) that transforms the entire tileset.
 
-This includes `region` bounding volumes used for tile culling, content culling, and viewer requests. Regions ignore the tile transforms stored in the tileset JSON, as required by 3D Tiles, but respond to application transforms applied through `modelMatrix`. Updating `modelMatrix` updates these bounds during traversal when `updateTransforms` is enabled (the default).
+This includes `region` bounding volumes used for tile culling, content culling, and viewer requests. Regions ignore the tile transforms stored in the tileset JSON, as required by 3D Tiles, but respond to application transforms applied through `modelMatrix`. Updating `modelMatrix` updates these bounds during traversal when `updateTransforms` is enabled (the default). The tile's cartographic `boundingBox` is also recomputed from the transformed volume; untransformed regions retain their exact geographic bounds from the source JSON.
 
 ###### `root` (Tile3D)
 

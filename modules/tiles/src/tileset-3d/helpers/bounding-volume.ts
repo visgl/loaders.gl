@@ -75,15 +75,17 @@ export type CartographicBounds = [min: number[], max: number[]];
  * Calculate the cartographic bounding box the tile's bounding volume.
  * @param {Object} boundingVolumeHeader The tile's bounding volume header.
  * @param {BoundingVolume} boundingVolume The bounding volume.
+ * @param isRegionTransformed Whether application transforms moved the region from its JSON bounds.
  * @returns {CartographicBounds}
  */
 export function getCartographicBounds(
   boundingVolumeHeader,
-  boundingVolume: OrientedBoundingBox | BoundingSphere
+  boundingVolume: OrientedBoundingBox | BoundingSphere,
+  isRegionTransformed = false
 ): CartographicBounds {
   // boundingVolume schema:
   // https://github.com/AnalyticalGraphicsInc/3d-tiles/blob/master/specification/schema/boundingVolume.schema.json
-  if (boundingVolumeHeader.box) {
+  if (boundingVolumeHeader.box || (boundingVolumeHeader.region && isRegionTransformed)) {
     return orientedBoundingBoxToCartographicBounds(boundingVolume as OrientedBoundingBox);
   }
   if (boundingVolumeHeader.region) {

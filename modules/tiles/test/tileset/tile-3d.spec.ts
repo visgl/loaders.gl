@@ -684,3 +684,36 @@ test('Tile3D#updates nested region bounds with the tileset model matrix', () => 
     }
   }
 });
+
+test('Tile3D#cartographic region bounds follow initial and updated model matrices', () => {
+  // A vertical segment on the equator makes longitude and height changes exact.
+  const tileset = {...MOCK_TILESET, modelMatrix: new Matrix4().translate([100, 0, 0])};
+  const tile = new Tile3D(tileset as any, {
+    ...TILE_HEADER_WITH_BOUNDING_REGION,
+    boundingVolume: {region: [0, 0, 0, 0, 10, 20]},
+    transform: Array.from(new Matrix4().translate([200, 300, 400]))
+  });
+  const translatedBounds = tile.boundingBox;
+  expect(translatedBounds[0][0]).toBeCloseTo(0, 6);
+  expect(translatedBounds[1][0]).toBeCloseTo(0, 6);
+  expect(translatedBounds[0][2]).toBeCloseTo(110, 6);
+  expect(translatedBounds[1][2]).toBeCloseTo(120, 6);
+  expect(tile.boundingBox).toBe(translatedBounds);
+
+  tileset.modelMatrix = new Matrix4().rotateZ(Math.PI / 2);
+  tile._updateTransform(tileset.modelMatrix);
+  const rotatedBounds = tile.boundingBox;
+  expect(rotatedBounds).not.toBe(translatedBounds);
+  expect(rotatedBounds[0][0]).toBeCloseTo(90, 6);
+  expect(rotatedBounds[1][0]).toBeCloseTo(90, 6);
+  expect(rotatedBounds[0][2]).toBeCloseTo(10, 6);
+  expect(rotatedBounds[1][2]).toBeCloseTo(20, 6);
+
+  tileset.modelMatrix = new Matrix4();
+  tile._updateTransform(tileset.modelMatrix);
+  expect(tile.boundingBox).not.toBe(rotatedBounds);
+  expect(tile.boundingBox).toEqual([
+    [0, 0, 10],
+    [0, 0, 20]
+  ]);
+});

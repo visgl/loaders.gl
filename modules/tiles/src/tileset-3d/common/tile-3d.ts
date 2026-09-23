@@ -426,12 +426,16 @@ export class Tile3D {
   }
 
   /**
-   * Get bounding box in cartographic coordinates
+   * Get the current world-space bounding volume in cartographic coordinates.
    * @returns [min, max] each in [longitude, latitude, altitude]
    */
   get boundingBox(): CartographicBounds {
     if (!this._boundingBox) {
-      this._boundingBox = getCartographicBounds(this.header.boundingVolume, this.boundingVolume);
+      this._boundingBox = getCartographicBounds(
+        this.header.boundingVolume,
+        this.boundingVolume,
+        !this.computedTransform.equals(this._initialTransform)
+      );
     }
     return this._boundingBox;
   }
@@ -1216,6 +1220,7 @@ export class Tile3D {
   }
 
   _updateBoundingVolume(header) {
+    this._boundingBox = undefined;
     // Update the bounding volumes
     this.boundingVolume = createBoundingVolume(
       header.boundingVolume,
