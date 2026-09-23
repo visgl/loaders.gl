@@ -46,6 +46,8 @@ export type GeospatialViewport = Viewport & {
   cameraDirection: [number, number, number];
   /** @todo This field is not represented in Deck.gl viewports. Can be removed in the next version */
   cameraUp: [number, number, number];
+  /** Camera target offset in meters from longitude/latitude, including elevation. */
+  position?: number[];
   longitude: number;
   latitude: number;
   bearing: number;

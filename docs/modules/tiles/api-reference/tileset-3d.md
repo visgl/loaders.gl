@@ -173,6 +173,13 @@ Center of tileset in fixed frame coordinates.
 
 Center of the tileset in cartographic coordinates `[long, lat, elevation]`.
 
+When centering a standalone deck.gl view on an elevated geospatial tileset, use its elevation
+for the camera target as well as its longitude and latitude, for example
+`position: [0, 0, tileset.cartographicCenter[2]]`. Preserve any explicit application camera
+placement. This center is a viewing target, not necessarily ground height. See
+[Camera elevation and high-altitude content](/docs/modules/3d-tiles/concepts/coordinate-reference-systems#camera-elevation-and-high-altitude-content)
+for terrain-aware navigation and host-map integration.
+
 ###### `ellipsoid` ([`Ellipsoid`](https://math.gl/modules/geospatial/docs/api-reference/ellipsoid))
 
 Gets an ellipsoid describing the shape of the globe.

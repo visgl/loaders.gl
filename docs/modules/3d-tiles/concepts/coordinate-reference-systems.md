@@ -95,6 +95,51 @@ Tile affine transforms apply to box and sphere bounds. They do not transform a `
 describes a geographic world-space volume. S2 extension volumes similarly retain their geospatial
 meaning while normalizing to conservative runtime bounds.
 
+## Camera elevation and high-altitude content
+
+For a geospatial deck.gl viewport, use the same altitude frame for the camera and the tiles.
+`Tileset3D` derives its traversal camera and culling planes from the supplied render viewport;
+it does not add a terrain-height offset. Geographic `region` heights are meters above the WGS84
+ellipsoid, not heights above local ground or a geoid-based sea level.
+
+A default `WebMercatorViewport` targets elevation zero. At street zoom its camera can be below
+high-altitude content even when longitude and latitude are correct. For example, the 898 × 320,
+zoom 17, top-down Zürich viewport in [issue #3475](https://github.com/visgl/loaders.gl/issues/3475)
+puts the camera at about 194 m while nearby content starts around 405 m. That content is behind
+the downward-looking camera, so both rendering and traversal exclude it.
+
+In a standalone deck.gl application, initialize the camera target at a suitable elevation:
+
+```ts
+const viewState = {
+  longitude: 8.5391,
+  latitude: 47.3686,
+  zoom: 17,
+  pitch: 0,
+  bearing: 0,
+  position: [0, 0, 405] // Meter offsets from the longitude/latitude origin, including elevation.
+};
+```
+
+The website 3D Tiles example initializes this position from `tileset.cartographicCenter[2]`
+unless the example specifies its own `viewState.position`. The center is a viewing target,
+not a terrain sample. For broad datasets, choose a local target elevation rather than treating
+the root region's minimum height as ground height everywhere. Preserve explicit application
+placement, including `[0, 0, 0]`, and avoid adding the same elevation twice.
+
+For continued terrain-aware navigation, see deck.gl's
+[TerrainController guide](https://deck.gl/docs/developer-guide/base-maps/using-with-3d-tiles).
+Depth picking requires rendered content, so initialize the camera above the intended scene or
+start zoomed out before relying on surface picking. When using `MapboxOverlay`, the host map
+owns the camera: configure its terrain-aware view and pass that same viewport to traversal.
+Setting a standalone deck.gl `position` does not move the host map's camera.
+
+If content disappears at close zoom, compare
+`viewport.unprojectPosition(viewport.cameraPosition)[2]` with its region heights and inspect
+whether representative content points lie inside the render clip volume. Moving only the
+traversal camera may cause requests without making the content renderable, and also invalidates
+camera-distance and screen-space-error calculations.
+
 ## Tile and content transforms
 
 The complete position path may contain:

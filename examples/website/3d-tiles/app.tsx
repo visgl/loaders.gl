@@ -24,6 +24,7 @@ import {createCesiumIonCredential} from '@loaders.gl/services/authentication';
 import ControlPanel from './components/control-panel.jsx';
 import {loadExampleIndex, INITIAL_EXAMPLE_CATEGORY, INITIAL_EXAMPLE_NAME} from './examples';
 import {INITIAL_MAP_STYLE} from './constants';
+import {createTilesetViewState} from './create-tileset-view-state';
 import {TileFoldExtension, type TileFoldExtensionProps} from './tile-fold-extension';
 
 const TILESET_SERVER_URL = 'https://assets.ion.cesium.com';
@@ -227,6 +228,8 @@ type SelectedExample = {
     latitude?: number;
     longitude?: number;
     pitch?: number;
+    /** Camera target offset in meters, including an optional explicit elevation. */
+    position?: [number, number, number];
     zoom?: number;
   };
 };
@@ -460,18 +463,14 @@ export default class App extends PureComponent<AppProps, AppState> {
     }
   }
 
-  // Recenter view to cover the new tileset, with a fly-to transition
+  /** Recenters the render and traversal camera on the tileset, including its elevation. */
   _centerViewOnTileset(tileset: any) {
-    const {cartographicCenter, zoom} = tileset;
-    const preferredViewState = this.state.selectedExample?.viewState;
-    const sequenceBaseViewState = {
-      ...INITIAL_VIEW_STATE,
-      longitude: cartographicCenter[0],
-      latitude: cartographicCenter[1],
-      zoom: preferredViewState?.zoom ?? zoom,
-      bearing: preferredViewState?.bearing ?? INITIAL_VIEW_STATE.bearing,
-      pitch: preferredViewState?.pitch ?? INITIAL_VIEW_STATE.pitch
-    };
+    const {cartographicCenter} = tileset;
+    const sequenceBaseViewState = createTilesetViewState(
+      tileset,
+      INITIAL_VIEW_STATE,
+      this.state.selectedExample?.viewState
+    );
     this.setState({
       foldAmount: 0,
       foldBearing: sequenceBaseViewState.bearing,

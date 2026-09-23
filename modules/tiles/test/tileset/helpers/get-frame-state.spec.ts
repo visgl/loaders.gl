@@ -3,11 +3,12 @@
 // Copyright vis.gl contributors
 
 import {expect, test} from 'vitest';
-import {getFrameState} from '@loaders.gl/tiles';
+import {getFrameState, type Tile3D} from '@loaders.gl/tiles';
+import {getProjectedRadius} from '../../../src/tileset-3d/helpers/i3s-lod';
 import {updateCameraMotionState} from '../../../src/tileset-3d/helpers/frame-state';
 import {WebMercatorViewport, FirstPersonView} from '@deck.gl/core';
-import {equals, Vector3} from '@math.gl/core';
-import {Ellipsoid} from '@math.gl/geospatial';
+import {equals, Matrix4, radians, Vector3} from '@math.gl/core';
+import {Ellipsoid, makeOBBFromRegion} from '@math.gl/geospatial';
 const EPSILON = 1e-5;
 const expected = {
   camera: {
@@ -125,4 +126,117 @@ test('updateCameraMotionState#tracks position and direction changes', () => {
     1400
   );
   expect(rotatedUpdate.timeSinceMovement, 'records camera direction movement').toBe(0);
+});
+
+// Synthetic region near Zürich from issue #3475. No remote tiles or decoder assets are needed.
+test.each([
+  {
+    name: 'street-level default camera',
+    width: 898,
+    height: 320,
+    zoom: 17,
+    elevation: 0,
+    pitch: 0,
+    bearing: 0,
+    minimumHeight: 405,
+    visible: false
+  },
+  {
+    name: 'elevated camera',
+    width: 898,
+    height: 320,
+    zoom: 17,
+    elevation: 405,
+    pitch: 0,
+    bearing: 0,
+    minimumHeight: 405,
+    visible: true
+  },
+  {
+    name: 'wide default camera',
+    width: 1200,
+    height: 700,
+    zoom: 16.5,
+    elevation: 0,
+    pitch: 0,
+    bearing: 0,
+    minimumHeight: 405,
+    visible: true
+  },
+  {
+    name: 'pitched elevated camera',
+    width: 898,
+    height: 320,
+    zoom: 17,
+    elevation: 405,
+    pitch: 35,
+    bearing: 65,
+    minimumHeight: 405,
+    visible: true
+  },
+  {
+    name: 'sea-level content',
+    width: 898,
+    height: 320,
+    zoom: 17,
+    elevation: 0,
+    pitch: 0,
+    bearing: 0,
+    minimumHeight: 0,
+    visible: true
+  }
+])('getFrameState agrees with render clip space for $name', options => {
+  const longitude = 8.5391;
+  const latitude = 47.3686;
+  const viewport = new WebMercatorViewport({
+    ...options,
+    longitude,
+    latitude,
+    position: [0, 0, options.elevation]
+  });
+  const frameState = getFrameState(viewport, 1);
+  const region = makeOBBFromRegion([
+    radians(longitude - 0.00002),
+    radians(latitude - 0.00002),
+    radians(longitude + 0.00002),
+    radians(latitude + 0.00002),
+    options.minimumHeight,
+    options.minimumHeight + 33
+  ]);
+  const clipPosition = new Matrix4(viewport.viewProjectionMatrix).transform([
+    ...viewport.projectPosition([longitude, latitude, options.minimumHeight + 16.5]),
+    1
+  ]);
+  const insideClip =
+    clipPosition[3] > 0 &&
+    clipPosition.slice(0, 3).every(coordinate => Math.abs(coordinate) <= clipPosition[3]);
+  expect(insideClip).toBe(options.visible);
+  expect(frameState.cullingVolume.computeVisibility(region) !== 'outside').toBe(options.visible);
+  expect(frameState.camera.cartographicPosition).toEqual(
+    viewport.unprojectPosition(viewport.cameraPosition)
+  );
+  const cartographicCamera = Ellipsoid.WGS84.cartesianToCartographic(frameState.camera.position);
+  expect(cartographicCamera[2]).toBeCloseTo(frameState.camera.cartographicPosition[2], 5);
+});
+
+test('getFrameState preserves target elevation for projected I3S radius', () => {
+  const radii = [0, 405].map(elevation => {
+    const viewport = new WebMercatorViewport({
+      longitude: 8.5391,
+      latitude: 47.3686,
+      width: 898,
+      height: 320,
+      zoom: 17,
+      position: [0, 0, elevation]
+    });
+    const center = [8.5392, 47.3686, elevation];
+    const tile = {
+      header: {mbs: [...center, 10]},
+      boundingVolume: {center: Ellipsoid.WGS84.cartographicToCartesian(center)}
+    } as Tile3D;
+    return getProjectedRadius(tile, getFrameState(viewport, 1));
+  });
+  expect(radii[0]).toBeGreaterThan(0);
+  // Moving camera and sphere up together preserves apparent size, apart from ellipsoid curvature.
+  expect(radii[1]).toBeCloseTo(radii[0], 1);
 });
