@@ -63,17 +63,23 @@ function polygonToGeoJson(
     return {type: 'Polygon', coordinates};
   }
 
-  // MultiPolygon
+  // Read each polygon directly: repeated offsets for empty polygons do not narrow a
+  // recursive call's range and can otherwise recurse indefinitely.
   const coordinates: Position[][][] = [];
   for (let i = 0; i < polygonIndices.length - 1; i++) {
     const startPolygonIndex = polygonIndices[i];
     const endPolygonIndex = polygonIndices[i + 1];
-    const polygonCoordinates = polygonToGeoJson(
-      data,
-      startPolygonIndex,
-      endPolygonIndex
-    ).coordinates;
-    coordinates.push(polygonCoordinates as Position[][]);
+    const polygonCoordinates: Position[][] = [];
+    if (startPolygonIndex < endPolygonIndex) {
+      for (let ringIndex = 0; ringIndex < primitivePolygonIndices.length - 1; ringIndex++) {
+        const startRingIndex = primitivePolygonIndices[ringIndex];
+        const endRingIndex = primitivePolygonIndices[ringIndex + 1];
+        if (startRingIndex >= startPolygonIndex && endRingIndex <= endPolygonIndex) {
+          polygonCoordinates.push(ringToGeoJson(positions, startRingIndex, endRingIndex));
+        }
+      }
+    }
+    coordinates.push(polygonCoordinates);
   }
 
   return {type: 'MultiPolygon', coordinates};

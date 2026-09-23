@@ -47,6 +47,9 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
 
 ## v5.0 (In Development)
 
+- Fix binary-to-GeoJSON conversion of multipolygons with empty parts, preserving empty
+  polygons without overflowing the call stack.
+
 ### 3D Tiles
 
 - The website 3D Tiles example now preserves the tileset center's elevation when initializing
