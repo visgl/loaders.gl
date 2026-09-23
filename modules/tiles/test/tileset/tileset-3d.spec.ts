@@ -6,10 +6,12 @@
 // See LICENSE.md and https://github.com/AnalyticalGraphicsInc/cesium/blob/master/LICENSE.md
 
 import {expect, test} from 'vitest';
-import {coreApi, load} from '@loaders.gl/core';
+import {WebMercatorViewport} from '@deck.gl/core';
+import {coreApi, load, parse} from '@loaders.gl/core';
 import {I3SSource, Tile3D, Tiles3DSource, Tileset3D} from '@loaders.gl/tiles';
 import {Tiles3DLoader} from '@loaders.gl/3d-tiles';
 import {getI3sTileHeader} from '@loaders.gl/i3s/test/test-utils/load-utils';
+import {getFrameState} from '../../src/tileset-3d/helpers/frame-state';
 // import {loadTileset} from '../utils/load-utils';
 // Parent tile with content and four child tiles with content
 const TILESET_URL = '@loaders.gl/3d-tiles/test/data/CesiumJS/Tilesets/Tileset/tileset.json';
@@ -243,6 +245,85 @@ test('Tileset3D#handles global tilesets without error', async () => {
     (() => {
       throw new Error('exception thrown when loading tileset with bbox-center at [0,0,0]');
     })();
+  }
+});
+test('Tileset3D#traverses the Cesium OSM Buildings global region', async () => {
+  // Minimal root metadata from issue #3144. Traversal records requests without fetching content.
+  const tilesetJson = await parse(
+    new TextEncoder().encode(
+      JSON.stringify({
+        asset: {version: '1.0'},
+        geometricError: 154134.67955991725,
+        root: {
+          geometricError: 77067.33977995862,
+          refine: 'ADD',
+          boundingVolume: {
+            region: [
+              -3.1415925942485985, -1.4599681618940228, 3.141545370875028, 1.4502639200680947,
+              -385.0565011513918, 5967.300616082603
+            ]
+          },
+          content: {uri: 'root.b3dm'},
+          children: [
+            {
+              geometricError: 77067.33977995862,
+              boundingVolume: {
+                region: [
+                  -3.1415925942485985, -1.4599681618940228, 0.00003951949025290761,
+                  1.4502639200680947, -165.10238794752343, 5915.2067650589615
+                ]
+              },
+              content: {uri: '0-0-0.json'}
+            },
+            {
+              geometricError: 77067.33977995862,
+              boundingVolume: {
+                region: [
+                  -0.00003125012025695847, -1.4035456116211558, 3.141545370875028,
+                  1.4277331959733954, -385.0565011513918, 5967.300616082603
+                ]
+              },
+              content: {uri: '0-1-0.json'}
+            }
+          ]
+        }
+      })
+    ).buffer,
+    Tiles3DLoader
+  );
+  const source = new Tiles3DSource({...tilesetJson, coreApi});
+  const tileset = new Tileset3D(source);
+  await tileset.tilesetInitializationPromise;
+
+  try {
+    expect(tileset.cartographicCenter?.every(Number.isFinite)).toBe(true);
+    expect(Number.isFinite(tileset.zoom)).toBe(true);
+    // Check the source result too: Tileset3D substitutes a default zoom for NaN.
+    expect(Number.isFinite(source.getViewState(tileset.root).zoom)).toBe(true);
+    const traverser = source.createTraverser({});
+    const views = [
+      {longitude: -122.4, latitude: 37.8, contentUrl: '/0-0-0.json'},
+      {longitude: 103.8, latitude: 1.3, contentUrl: '/0-1-0.json'}
+    ];
+    for (const [index, view] of views.entries()) {
+      const viewport = new WebMercatorViewport({
+        id: 'osm-buildings',
+        width: 800,
+        height: 600,
+        longitude: view.longitude,
+        latitude: view.latitude,
+        zoom: 14,
+        pitch: 45
+      });
+      traverser.traverse(tileset.root, getFrameState(viewport, index + 1), tileset.options);
+
+      expect(tileset.root?.isVisible).toBe(true);
+      expect(Object.values(traverser.requestedTiles).map(tile => tile.contentUrl)).toContain(
+        view.contentUrl
+      );
+    }
+  } finally {
+    tileset.destroy();
   }
 });
 test('Tileset3D#hasExtension returns true if the tileset JSON file uses the specified extension', async () => {
