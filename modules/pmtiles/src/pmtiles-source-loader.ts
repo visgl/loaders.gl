@@ -72,7 +72,7 @@ export const PMTilesSourceLoader = {
     pmtiles: {
       shape: 'arrow-table'
     }
-  },
+  } as PMTilesSourceLoaderOptions,
 
   defaultOptions: {
     pmtiles: {}

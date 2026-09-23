@@ -4,6 +4,7 @@
 
 import {afterEach, describe, expect, test, vi} from 'vitest';
 import type {Header} from 'pmtiles';
+import {createDataSource} from '@loaders.gl/core';
 import type {CoreAPI} from '@loaders.gl/loader-utils';
 import {MLTLoader} from '@loaders.gl/mlt';
 import type {MVTLoaderOptions} from '@loaders.gl/mvt';
@@ -66,6 +67,19 @@ test('PMTiles parser options use the core namespace, not the removed source alia
     loadOptions: {mvt: {shape: 'binary-geometry'}}
   };
   expect(legacyOptions.loadOptions).toBeTruthy();
+});
+
+test('createDataSource rejects the removed PMTiles loadOptions alias', () => {
+  if (false) {
+    createDataSource('https://example.com/tiles.pmtiles', [PMTilesSourceLoader], {
+      core: {loadOptions: {mvt: {shape: 'binary-geometry'}}}
+    });
+
+    // @ts-expect-error PMTiles parser options moved under core.loadOptions.
+    createDataSource('https://example.com/tiles.pmtiles', [PMTilesSourceLoader], {
+      loadOptions: {mvt: {shape: 'binary-geometry'}}
+    });
+  }
 });
 
 test('PMTilesTileSource#getVectorTile falls back to Arrow without overriding inherited shape', async () => {
