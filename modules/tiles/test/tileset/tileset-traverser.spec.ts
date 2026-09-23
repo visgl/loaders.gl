@@ -2,7 +2,9 @@
 // SPDX-License-Identifier: MIT AND Apache-2.0
 // Copyright vis.gl contributors
 
-import {expect, test} from 'vitest';
+import {expect, test, vi} from 'vitest';
+import {radians} from '@math.gl/core';
+import {TILE_REFINEMENT} from '../../src/constants';
 import {WebMercatorViewport} from '@deck.gl/core';
 import {Tiles3DLoader} from '@loaders.gl/3d-tiles';
 import {coreApi} from '@loaders.gl/core';
@@ -128,4 +130,79 @@ test('TilesetTraverser#does not require all children for additive refinement', (
   const shouldRefine = traverser.updateAndPushChildren(parent, {} as any, stack, 2);
 
   expect(shouldRefine, 'additive refinement can continue while child content streams').toBe(true);
+});
+
+test('Tileset3D selects elevated content after the render camera moves above it', async () => {
+  const region = [
+    radians(8.53908),
+    radians(47.36858),
+    radians(8.53912),
+    radians(47.36862),
+    405,
+    438
+  ];
+  const source = new Tiles3DSource({
+    shape: 'tileset3d',
+    type: 'TILES3D',
+    url: '/elevated/tileset.json',
+    loader: Tiles3DLoader,
+    coreApi,
+    asset: {version: '1.0'},
+    lodMetricType: 'geometricError',
+    lodMetricValue: 100,
+    root: {
+      id: 'root',
+      refine: TILE_REFINEMENT.ADD,
+      boundingVolume: {region},
+      lodMetricType: 'geometricError',
+      lodMetricValue: 100,
+      children: [
+        {
+          id: 'building',
+          refine: TILE_REFINEMENT.ADD,
+          boundingVolume: {region},
+          contentUrl: '/elevated/building.b3dm',
+          lodMetricType: 'geometricError',
+          lodMetricValue: 0
+        }
+      ]
+    }
+  });
+  const loadContent = vi.spyOn(source, 'loadTileContent').mockResolvedValue({
+    loaded: true,
+    contents: [{type: 'b3dm', vertexCount: 3}]
+  });
+  const onTileLoad = vi.fn();
+  const tileset = new Tileset3D(source, {debounceTime: 0, foveatedTimeDelay: 0, onTileLoad});
+  const viewportOptions = {
+    id: 'zurich',
+    longitude: 8.5391,
+    latitude: 47.3686,
+    width: 898,
+    height: 320,
+    zoom: 17,
+    pitch: 0,
+    bearing: 0
+  };
+  try {
+    await tileset.selectTiles(new WebMercatorViewport(viewportOptions));
+    expect(loadContent).not.toHaveBeenCalled();
+    expect(tileset.selectedTiles).toHaveLength(0);
+    const root = tileset.roots.zurich;
+    const elevatedViewport = new WebMercatorViewport({...viewportOptions, position: [0, 0, 405]});
+    await tileset.selectTiles(elevatedViewport);
+    await vi.waitFor(() => expect(onTileLoad).toHaveBeenCalledTimes(1));
+    await tileset.selectTiles(elevatedViewport);
+    expect(tileset.roots.zurich).toBe(root);
+    expect(loadContent).toHaveBeenCalledTimes(1);
+    expect(tileset.selectedTiles.map(tile => tile.id)).toEqual(['building']);
+    expect(
+      tileset.selectedTiles[0].distanceToTile(getFrameState(elevatedViewport, 3))
+    ).toBeGreaterThan(150);
+    await tileset.selectTiles(new WebMercatorViewport(viewportOptions));
+    expect(tileset.selectedTiles).toHaveLength(0);
+  } finally {
+    tileset.destroy();
+    loadContent.mockRestore();
+  }
 });

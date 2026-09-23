@@ -49,6 +49,11 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
 
 ### 3D Tiles
 
+- The website 3D Tiles example now preserves the tileset center's elevation when initializing
+  its camera, while honoring explicit camera positions. See
+  [camera elevation guidance](/docs/modules/3d-tiles/concepts/coordinate-reference-systems#camera-elevation-and-high-altitude-content)
+  for viewing high-altitude content at close zoom.
+
 - Add [Gaussian primitive descriptors](/docs/modules/3d-tiles/concepts/gaussian-vector-voxel-extensions) with per-primitive validation and preserved accessor/scene-graph references for mixed mesh and splat content.
 - Extend standalone [`SPZLoader`](/docs/modules/splats/api-reference/spz-loader) to v2/v3/v4 with explicit RUB/LUF coordinate options and unchanged Arrow-table output.
 - Add an optional embedded SPZ2 decoder callback with an explicit LUF source-coordinate hint; compressed bytes stay available when loaded. Attribute conversion and decoded-count reconciliation remain consumer responsibilities.

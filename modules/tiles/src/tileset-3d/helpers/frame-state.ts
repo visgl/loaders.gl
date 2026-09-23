@@ -75,6 +75,10 @@ const cullingVolume = new CullingVolume([
 /**
  * Extracts a frame state appropriate for tile culling from a structural deck.gl viewport.
  *
+ * The viewport must describe the render camera, including its elevation. Geographic heights
+ * returned by `unprojectPosition` are used directly; adding a terrain offset only to traversal
+ * would make visibility, camera distances, and screen-space error disagree with rendering.
+ *
  * `options.timeSinceCameraMovement` can be supplied by a caller that retains camera pose across
  * calls. It defaults to a stationary camera so standalone callers do not defer requests.
  *
@@ -134,7 +138,7 @@ export function getFrameState(
   commonSpacePlanesToWGS84(viewport);
 
   const ViewportClass = viewport.constructor;
-  const {longitude, latitude, width, bearing, zoom} = viewport;
+  const {longitude, latitude, width, bearing, zoom, position} = viewport;
   // @ts-ignore
   const topDownViewport = new ViewportClass({
     longitude,
@@ -143,6 +147,7 @@ export function getFrameState(
     width,
     bearing,
     zoom,
+    position,
     pitch: 0
   });
 
