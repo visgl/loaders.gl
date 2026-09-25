@@ -10,6 +10,7 @@ const VITEST_CONFIG = 'vitest.config.ts';
 
 const modeArguments = {
   node: ['run', '--config', VITEST_CONFIG, '--project', 'node'],
+  'tile-converter': ['run', '--config', VITEST_CONFIG, '--project', 'tile-converter'],
   browser: ['run', '--config', VITEST_CONFIG, '--project', 'browser'],
   'browser-headless': ['run', '--config', VITEST_CONFIG, '--project', 'headless'],
   full: ['run', '--config', VITEST_CONFIG, '--project', 'node', '--project', 'headless'],
@@ -129,6 +130,7 @@ Modes:
   bench-headless   Run the repo benchmark suite in a headless browser
   full             Run Node-only tests, then browser tests in headless mode
   node             Run Node-only tests
+  tile-converter   Run tile-converter tests
   browser          Run browser tests in a headed browser
   browser-headless Run browser tests in a headless browser
   slow             Run hermetic slow tests in their designated runtimes

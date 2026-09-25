@@ -53,7 +53,7 @@ test('tile-converter(i3s)#handleBatchIdsExtensions - EXT_feature_metadata - Shou
   // @ts-ignore
   const batchIds = handleBatchIdsExtensions(attributes, primitive, images);
   const expectedResult = new Float32Array([1, 2, 3]);
-  expect(batchIds).toEqual(expectedResult);
+  expect(Array.from(batchIds)).toEqual(Array.from(expectedResult));
 });
 test('tile-converter(i3s)#handleBatchIdsExtensions - EXT_feature_metadata - Should return empty array for implicit batchIds if no POSITIONS', async () => {
   const attributes = {};
@@ -98,7 +98,7 @@ test('tile-converter(i3s)#handleBatchIdsExtensions - EXT_feature_metadata - Shou
   // @ts-ignore
   const batchIds = handleBatchIdsExtensions(attributes, primitive, images);
   const expectedResult = new Float32Array([0, 0, 0]);
-  expect(batchIds).toEqual(expectedResult);
+  expect(Array.from(batchIds)).toEqual(Array.from(expectedResult));
 });
 test('tile-converter(i3s)#handleBatchIdsExtensions - EXT_feature_metadata - Should return implicit batchIds for divisor = 1', async () => {
   const attributes = {
@@ -122,7 +122,7 @@ test('tile-converter(i3s)#handleBatchIdsExtensions - EXT_feature_metadata - Shou
   // @ts-ignore
   const batchIds = handleBatchIdsExtensions(attributes, primitive, images);
   const expectedResult = new Float32Array([0, 1, 2]);
-  expect(batchIds).toEqual(expectedResult);
+  expect(Array.from(batchIds)).toEqual(Array.from(expectedResult));
 });
 test('tile-converter(i3s)#handleBatchIdsExtensions - EXT_feature_metadata - Should return implicit batchIds for divisor = 2', async () => {
   const attributes = {
@@ -146,7 +146,7 @@ test('tile-converter(i3s)#handleBatchIdsExtensions - EXT_feature_metadata - Shou
   // @ts-ignore
   const batchIds = handleBatchIdsExtensions(attributes, primitive, images);
   const expectedResult = new Float32Array([0, 0, 1, 1, 2]);
-  expect(batchIds).toEqual(expectedResult);
+  expect(Array.from(batchIds)).toEqual(Array.from(expectedResult));
 });
 test('tile-converter(i3s)#handleBatchIdsExtensions - EXT_feature_metadata - Should return empty batchIds for compressed texture', () => {
   const attributes = {
@@ -213,7 +213,7 @@ test('tile-converter(i3s)#handleBatchIdsExtensions - EXT_feature_metadata - Shou
   ];
   // @ts-ignore
   const batchIds = handleBatchIdsExtensions(attributes, primitive, images, 'firstTextureName');
-  expect(batchIds).toEqual([33, 35, 29, 32, 24, 28]);
+  expect(Array.from(batchIds)).toEqual([33, 35, 29, 32, 24, 28]);
 });
 test('tile-converter(i3s)#handleBatchIdsExtensions - EXT_feature_metadata - Should return batchIds for texture', async () => {
   const attributes = {

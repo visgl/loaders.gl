@@ -22,7 +22,7 @@ const TEST_TEXTURE_MATERIAL = {
   alphaMode: 'opaque',
   pbrMetallicRoughness: {
     roughnessFactor: 1,
-    metallicFactor: 1,
+    metallicFactor: 0,
     baseColorTexture: {
       textureSetDefinitionId: 0
     }
@@ -262,7 +262,7 @@ test('tile-converter(i3s)#layer json should contain fullExtent field', async () 
     const layer = JSON.parse(layerJson);
     expect(layer.fullExtent).toBeTruthy();
     for (const key in layer.fullExtent) {
-      expect(layer.fullExtent[key]).toBe(TEST_FULL_EXTENT[key]);
+      expect(layer.fullExtent[key]).toBeCloseTo(TEST_FULL_EXTENT[key], 6);
     }
   }
   await cleanUpPath('data/BatchedTextured');

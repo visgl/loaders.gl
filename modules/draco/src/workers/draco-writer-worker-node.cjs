@@ -8,7 +8,7 @@ const fs = require('node:fs');
 const path = require('node:path');
 const Module = require('node:module');
 
-const filename = path.join(__dirname, '../../dist/draco-writer-worker-node.js');
+const filename = path.join(__dirname, '../../dist/draco-writer-worker-node.cjs');
 const code = fs.readFileSync(filename, 'utf8');
 
 const workerModule = new Module(filename);
