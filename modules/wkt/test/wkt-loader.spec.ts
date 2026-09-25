@@ -119,6 +119,29 @@ test('WKTLoader', async () => {
       '__geoarrowDimension'
     )?.value
   ).toBe('xym');
+  const mixedDimensionCollection = parseSync(
+    'GEOMETRYCOLLECTION ZM (POINT (1 2), POINT (3 4 5), POINT M (6 7 8))',
+    WKTLoader
+  );
+  expect(mixedDimensionCollection).toEqual({
+    type: 'GeometryCollection',
+    geometries: [
+      {type: 'Point', coordinates: [1, 2]},
+      {type: 'Point', coordinates: [3, 4, 5]},
+      {type: 'Point', coordinates: [6, 7, 8]}
+    ]
+  });
+  expect(
+    Object.getOwnPropertyDescriptor(mixedDimensionCollection, '__geoarrowDimension')?.value
+  ).toBe('xyzm');
+  expect(
+    Object.getOwnPropertyDescriptor(mixedDimensionCollection.geometries[1], '__geoarrowDimension')
+      ?.value
+  ).toBe('xyz');
+  expect(
+    Object.getOwnPropertyDescriptor(mixedDimensionCollection.geometries[2], '__geoarrowDimension')
+      ?.value
+  ).toBe('xym');
   expect(parseSync('SRID=3857;LINESTRING (30 10, 10 30, 40 40)', WKTLoader)).toEqual({
     type: 'LineString',
     coordinates: [

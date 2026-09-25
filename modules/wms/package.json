@@ -72,7 +72,7 @@
     "@loaders.gl/loader-utils": "5.0.0-alpha.6",
     "@loaders.gl/schema": "5.0.0-alpha.6",
     "@loaders.gl/xml": "5.0.0-alpha.6",
-    "@math.gl/crs": "5.0.0-alpha.6",
+    "@math.gl/crs": "5.0.0-alpha.9",
     "@turf/rewind": "^5.1.5"
   },
   "peerDependencies": {

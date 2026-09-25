@@ -70,7 +70,7 @@
     "@loaders.gl/loader-utils": "5.0.0-alpha.6",
     "@loaders.gl/schema": "5.0.0-alpha.6",
     "@loaders.gl/schema-utils": "5.0.0-alpha.6",
-    "@math.gl/polygon": "5.0.0-alpha.6",
+    "@math.gl/polygon": "5.0.0-alpha.9",
     "@probe.gl/stats": "^4.1.1",
     "apache-arrow": "^21.2.0",
     "pbf": "^3.2.1",
