@@ -12,8 +12,7 @@ on:
 
 jobs:
   tile-converter-tests:
-    name: Tile converter tests (experimental)
-    continue-on-error: true
+    name: Tile converter tests
     runs-on: ubuntu-22.04
     timeout-minutes: 20
     steps:

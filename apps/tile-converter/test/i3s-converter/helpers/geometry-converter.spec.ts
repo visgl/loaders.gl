@@ -533,7 +533,7 @@ test('tile-converter(i3s)#convertB3dmToI3sGeometry - array of UINTxx should be c
   }
 });
 // eslint-disable-next-line max-statements
-test.skip('tile-converter(i3s)#convertB3dmToI3sGeometry - should convert 64-bit attributes to strings', async () => {
+test('tile-converter(i3s)#convertB3dmToI3sGeometry - should convert 64-bit attributes to strings', async () => {
   if (isBrowser) {
     return;
   }
