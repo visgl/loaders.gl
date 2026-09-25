@@ -3,7 +3,11 @@
 // Copyright (c) vis.gl contributors
 
 import {expect, test} from 'vitest';
-import type {BinaryFeatureCollection, FeatureCollection} from '@loaders.gl/schema';
+import type {
+  BinaryFeatureCollection,
+  BinaryPolygonGeometry,
+  FeatureCollection
+} from '@loaders.gl/schema';
 import {fetchFile} from '@loaders.gl/core';
 import {binaryToGeojson, convertBinaryGeometryToGeometry} from '@loaders.gl/gis';
 import {GEOMETRY_TEST_CASES} from '@loaders.gl/gis/test/data/binary-features/geometry-test-cases';
@@ -32,6 +36,47 @@ test('binary-to-geojson geometries', () => {
     expect(convertBinaryGeometryToGeometry(binaryData)).toEqual(testCase.geoJSON);
   }
 });
+
+test.each([
+  {name: 'leading', polygonIndices: [0, 0, 4], emptyPolygonIndex: 0},
+  {name: 'middle', polygonIndices: [0, 4, 4, 8], emptyPolygonIndex: 1},
+  {name: 'trailing', polygonIndices: [0, 4, 4], emptyPolygonIndex: 1}
+])('binary-to-geojson preserves a $name empty polygon', ({polygonIndices, emptyPolygonIndex}) => {
+  const ring = [
+    [0, 0],
+    [1, 0],
+    [1, 1],
+    [0, 0]
+  ];
+  const polygonCount = polygonIndices.length - 1;
+  const rings = Array.from({length: polygonCount - 1}, () => ring);
+  const geometry: BinaryPolygonGeometry = {
+    type: 'Polygon',
+    positions: {value: new Float64Array(rings.flat(2)), size: 2},
+    polygonIndices: {value: new Uint16Array(polygonIndices), size: 1},
+    primitivePolygonIndices: {
+      value: new Uint16Array(Array.from({length: rings.length + 1}, (_, index) => index * 4)),
+      size: 1
+    }
+  };
+  const coordinates = Array.from({length: polygonCount}, (_, index) =>
+    index === emptyPolygonIndex ? [] : [ring]
+  );
+
+  expect(convertBinaryGeometryToGeometry(geometry)).toEqual({type: 'MultiPolygon', coordinates});
+});
+
+test('binary-to-geojson preserves an entirely empty multipolygon', () => {
+  expect(
+    convertBinaryGeometryToGeometry({
+      type: 'Polygon',
+      positions: {value: new Float64Array(), size: 2},
+      polygonIndices: {value: new Uint16Array([0, 0, 0]), size: 1},
+      primitivePolygonIndices: {value: new Uint16Array([0]), size: 1}
+    })
+  ).toEqual({type: 'MultiPolygon', coordinates: [[], []]});
+});
+
 test('binary-to-geojson !isHeterogeneousType', async () => {
   const response = await fetchFile(FEATURE_COLLECTION_TEST_CASES);
   const json = await response.json();
