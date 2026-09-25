@@ -12,7 +12,6 @@ import {
   type ParquetValueBuffer
 } from './declare';
 import {concatUint8Arrays, writeUInt32LE} from '../utils/binary-utils';
-import varint from 'varint';
 
 // eslint-disable-next-line max-statements, complexity
 export function encodeValues(
@@ -908,6 +907,21 @@ function readUnsignedVarIntNumber(cursor: CursorBuffer): number {
   throw new Error('invalid RLE run header');
 }
 
+/** Encodes a non-negative safe integer as a little-endian base-128 varint. */
+function encodeUnsignedVarIntNumber(value: number): Uint8Array {
+  if (!Number.isSafeInteger(value) || value < 0) {
+    throw new Error('RLE run header must be a non-negative safe integer');
+  }
+
+  const bytes: number[] = [];
+  while (value >= 0x80) {
+    bytes.push((value % 0x80) | 0x80);
+    value = Math.floor(value / 0x80);
+  }
+  bytes.push(value);
+  return Uint8Array.from(bytes);
+}
+
 /** Ensures an RLE read stays within the current cursor. */
 function assertReadable(cursor: CursorBuffer, byteLength: number): void {
   const size = cursor.size ?? cursor.buffer.length;
@@ -935,10 +949,7 @@ function encodeRunBitpacked(values: number[], opts: ParquetCodecOptions): Uint8A
     }
   }
 
-  return concatUint8Arrays([
-    Uint8Array.from(varint.encode(((paddedValues.length / 8) << 1) | 1)),
-    buf
-  ]);
+  return concatUint8Arrays([encodeUnsignedVarIntNumber(((paddedValues.length / 8) << 1) | 1), buf]);
 }
 
 function encodeRunRepeated(value: number, count: number, opts: ParquetCodecOptions): Uint8Array {
@@ -952,5 +963,5 @@ function encodeRunRepeated(value: number, count: number, opts: ParquetCodecOptio
     value = Math.floor(value / 256);
   }
 
-  return concatUint8Arrays([Uint8Array.from(varint.encode(count << 1)), buf]);
+  return concatUint8Arrays([encodeUnsignedVarIntNumber(count << 1), buf]);
 }

@@ -133,14 +133,9 @@
     "@loaders.gl/schema-utils": "5.0.0-alpha.6",
     "@loaders.gl/wkt": "5.0.0-alpha.6",
     "@probe.gl/log": "^4.1.1",
-    "async-mutex": "^0.2.2",
-    "isomorphic-ws": "^5.0.0",
-    "object-stream": "0.0.1",
-    "parquet-wasm": "0.7.2",
-    "varint": "^6.0.0"
+    "parquet-wasm": "0.7.2"
   },
   "devDependencies": {
-    "@types/varint": "^5.0.0",
     "brotli": "^1.3.2",
     "hyparquet": "1.29.0",
     "hyparquet-compressors": "1.1.1",

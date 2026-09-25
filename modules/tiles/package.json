@@ -49,10 +49,8 @@
     "@math.gl/culling": "5.0.0-alpha.9",
     "@math.gl/dggs": "5.0.0-alpha.9",
     "@math.gl/geoid": "5.0.0-alpha.9",
-    "@math.gl/geometry-utils": "5.0.0-alpha.9",
     "@math.gl/geospatial": "5.0.0-alpha.9",
     "@math.gl/proj4": "5.0.0-alpha.9",
-    "@math.gl/web-mercator": "5.0.0-alpha.9",
     "@probe.gl/stats": "^4.1.1"
   },
   "devDependencies": {
