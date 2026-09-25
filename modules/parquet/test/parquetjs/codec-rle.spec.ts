@@ -84,6 +84,22 @@ test('ParquetCodec::RLE#should encode repeated values', () => {
     });
     expect(buf).toEqual(bytes([0x10, 0x2a]));
 });
+test('ParquetCodec::RLE#encodes and decodes multi-byte repeated run headers', () => {
+    const values = new Array(64).fill(5);
+    const encoded = PARQUET_CODECS.RLE.encodeValues('INT32', values, {
+        disableEnvelope: true,
+        bitWidth: 3
+    });
+
+    expect(encoded.slice(0, 2)).toEqual(bytes([0x80, 0x01]));
+    const decoded = PARQUET_CODECS.RLE.decodeValues(
+        'INT32',
+        {buffer: encoded, offset: 0, size: encoded.length},
+        values.length,
+        {disableEnvelope: true, bitWidth: 3}
+    );
+    expect(Array.from(decoded)).toEqual(values);
+});
 test('ParquetCodec::RLE#should decode repeated values', () => {
     const vals = PARQUET_CODECS.RLE.decodeValues('INT32', {
         buffer: bytes([0x10, 0x2a]),

@@ -77,7 +77,6 @@
     "express": "~4.19.2",
     "inquirer": "^8.0.0",
     "json-map-transform": "^1.2.6",
-    "jszip": "^3.5.0",
     "md5": "^2.3.0",
     "morgan": "~1.9.1",
     "uuid": "^9.0.0"

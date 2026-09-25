@@ -36,10 +36,8 @@
   },
   "dependencies": {
     "@deck.gl/core": "^9.4.0",
-    "@deck.gl/extensions": "^9.4.0",
     "@deck.gl/geo-layers": "^9.4.0",
     "@deck.gl/layers": "^9.4.0",
-    "@deck.gl/mesh-layers": "^9.4.0",
     "@loaders.gl/arrow": "5.0.0-alpha.6",
     "@loaders.gl/compression": "5.0.0-alpha.6",
     "@loaders.gl/core": "5.0.0-alpha.6",
@@ -54,6 +52,9 @@
     "@luma.gl/core": "^9.4.0",
     "@luma.gl/engine": "^9.4.0",
     "@luma.gl/shadertools": "^9.4.0",
-    "@math.gl/culling": "5.0.0-alpha.9"
+    "@math.gl/core": "5.0.0-alpha.9",
+    "@math.gl/culling": "5.0.0-alpha.9",
+    "@math.gl/web-mercator": "5.0.0-alpha.9",
+    "apache-arrow": ">= 17.0.0"
   }
 }

@@ -125,7 +125,6 @@ export default getVitestConfig({
         'snappyjs',
         'sql.js',
         'thrift',
-        'varint',
         'vitest',
         'web-streams-polyfill',
         'xlsx',
