@@ -13,6 +13,11 @@ type TestTile = Tile3D & {
   childrenState: 'ready' | 'unloaded';
   children: TestTile[];
   loadContent(): Promise<{loaded: boolean; contents: unknown[]; nestedTilesets?: unknown[]}>;
+  loadContentForTraversal(): Promise<{
+    loaded: boolean;
+    contents: unknown[];
+    nestedTilesets?: unknown[];
+  }>;
 };
 
 function createTestTile(
@@ -29,6 +34,9 @@ function createTestTile(
     childrenState: header.implicitSubtree ? 'unloaded' : 'ready',
     children: [],
     async loadContent() {
+      return {loaded: false, contents: []};
+    },
+    async loadContentForTraversal() {
       const contents = this.contentUrls.map(uri => ({uri}));
       this.content = contents[0] || null;
       this.contentEntries = contents.map((payload, index) => ({
@@ -57,9 +65,19 @@ function createTestTileset(root: TestTile, type = TILESET_TYPE.TILES3D) {
         if (tile.header.implicitSubtree) {
           tile.children.push(createTestTile('implicit-child', ['implicit.glb']));
         } else {
+          const orderedChildren: TestTile[] = [];
           for (const childHeader of tile.header.children || []) {
-            tile.children.push(createTestTile(String(childHeader.id), [`${childHeader.id}.glb`]));
+            const childId = String(childHeader.id);
+            const existingChild = tile.children.find(
+              child => child.id === childId || child.header.id === childId
+            );
+            orderedChildren.push(existingChild || createTestTile(childId, [`${childId}.glb`]));
           }
+          const orderedChildSet = new Set(orderedChildren);
+          tile.children = [
+            ...orderedChildren,
+            ...tile.children.filter(child => !orderedChildSet.has(child))
+          ];
         }
         return {loaded: true, tileCount: tile.children.length, childSubtreeCount: 0};
       },
@@ -108,6 +126,10 @@ describe('traverseTilesetContents', () => {
 
   test('loads I3S child headers without a viewport', async () => {
     const root = createTestTile('i3s-root', [], {children: [{id: 'node-1'}, {id: 'node-2'}]});
+    root.children.push(
+      createTestTile('node-2', ['node-2.glb']),
+      createTestTile('node-1', ['node-1.glb'])
+    );
     const {tileset} = createTestTileset(root, TILESET_TYPE.I3S);
 
     const items = [];
@@ -116,6 +138,7 @@ describe('traverseTilesetContents', () => {
     }
 
     expect(items.map(item => item.tile.id)).toEqual(['i3s-root', 'node-1', 'node-2']);
+    expect(items.slice(1).map(item => item.contents[0].uri)).toEqual(['node-1.glb', 'node-2.glb']);
   });
 
   test('stops before visiting the next tile when cancelled', async () => {

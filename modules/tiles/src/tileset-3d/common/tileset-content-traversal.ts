@@ -77,11 +77,12 @@ export async function* traverseTilesetContents(
     throwIfAborted(options.signal);
     let loadResult: TileContentLoadResult | null = null;
     if (tile.contentUrls.length > 0 && !tile.content) {
-      loadResult = await tile.loadContent();
+      loadResult = await tile.loadContentForTraversal();
       throwIfAborted(options.signal);
-      if (loadResult.loaded) {
-        tileset.source.onTileLoaded?.(tileset, tile, loadResult);
+      if (!loadResult.loaded) {
+        throw new Error(`Unable to load tile content for tile ${tile.id}`);
       }
+      tileset.source.onTileLoaded?.(tileset, tile, loadResult);
     }
 
     yield {tile, contents: tile.contentEntries};

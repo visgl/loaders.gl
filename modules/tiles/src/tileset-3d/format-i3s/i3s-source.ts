@@ -8,6 +8,7 @@ import {Vector3} from '@math.gl/core';
 import type {CoreAPI, Loader, LoaderOptions} from '@loaders.gl/loader-utils';
 import type {Tile3D} from '../common/tile-3d';
 import {Tile3D as Tile3DNode} from '../common/tile-3d';
+import type {Tile3DContent} from '../common/tile-3d-contracts';
 import {I3STilesetTraverser} from './i3s-tileset-traverser';
 import type {Tileset3D} from '../common/tileset-3d';
 import type {FrameState} from '../helpers/frame-state';
@@ -220,7 +221,17 @@ export class I3SSource implements Tileset3DSource {
     };
 
     tile.content = await this.loadResourceData(contentUrl, options, this.contentLoader);
-    return {loaded: true};
+    const contentEntry: Tile3DContent = {
+      index: 0,
+      uri: tile.contentUrl,
+      type: tile.header.layerType,
+      payload: tile.content,
+      metadata: tile.header.metadata || null,
+      boundingVolume: tile.boundingVolume,
+      featureIds: tile.featureIdSets,
+      renderable: Boolean(tile.content)
+    };
+    return {loaded: true, contents: [tile.content], contentEntries: [contentEntry]};
   }
 
   /**
@@ -261,6 +272,7 @@ export class I3SSource implements Tileset3DSource {
   ): Promise<TileChildrenLoadResult> {
     const childHeaders = parentTile.header.children || [];
     let loadedChildren = 0;
+    const orderedChildren: Tile3D[] = [];
 
     for (const childHeader of childHeaders) {
       throwIfTraversalAborted(signal);
@@ -272,6 +284,7 @@ export class I3SSource implements Tileset3DSource {
         tile => tile.id === String(childId) || tile.header?.id === childId
       );
       if (existingChild) {
+        orderedChildren.push(existingChild);
         continue;
       }
 
@@ -283,9 +296,15 @@ export class I3SSource implements Tileset3DSource {
         parentTile,
         String(childId)
       );
-      parentTile.children.push(childTile);
+      orderedChildren.push(childTile);
       loadedChildren++;
     }
+
+    const orderedChildSet = new Set(orderedChildren);
+    parentTile.children = [
+      ...orderedChildren,
+      ...parentTile.children.filter(childTile => !orderedChildSet.has(childTile))
+    ];
 
     return {loaded: true, tileCount: loadedChildren, childSubtreeCount: 0};
   }
