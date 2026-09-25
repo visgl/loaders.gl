@@ -187,4 +187,9 @@ test('applySearchParamsToUrl preserves existing parameters and fragments', () =>
   expect(
     applySearchParamsToUrl('relative/layer', {searchParams: {token: 'secret', count: 2}})
   ).toBe('relative/layer?token=secret&count=2');
+  expect(
+    applySearchParamsToUrl('https://example.com/layer?encoded=%20&tilde=~&flag#fragment', {
+      searchParams: {token: 'secret'}
+    })
+  ).toBe('https://example.com/layer?encoded=%20&tilde=~&flag&token=secret#fragment');
 });

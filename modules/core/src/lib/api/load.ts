@@ -176,7 +176,10 @@ export async function load(
           ) => Promise<unknown>;
         }
       ).parseUrl;
-      if (parseUrl) return await parseUrl(url, resolvedOptions, context);
+      if (parseUrl) {
+        const requestUrl = applySearchParamsToUrl(url, resolvedOptions);
+        return await parseUrl(requestUrl, resolvedOptions, context);
+      }
     }
   }
 

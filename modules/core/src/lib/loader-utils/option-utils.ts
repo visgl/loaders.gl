@@ -60,16 +60,20 @@ export function applySearchParamsToUrl(url: string, options?: LoaderOptions): st
   const queryIndex = urlWithoutHash.indexOf('?');
   const path = queryIndex >= 0 ? urlWithoutHash.slice(0, queryIndex) : urlWithoutHash;
   const query = queryIndex >= 0 ? urlWithoutHash.slice(queryIndex + 1) : '';
-  const resolvedSearchParams = new URLSearchParams(query);
-
+  const existingSearchParams = new URLSearchParams(query);
+  const appendedSearchParams = new URLSearchParams();
   for (const [key, value] of Object.entries(searchParams)) {
-    if (!resolvedSearchParams.has(key)) {
-      resolvedSearchParams.set(key, String(value));
+    if (!existingSearchParams.has(key)) {
+      appendedSearchParams.set(key, String(value));
     }
   }
 
-  const serializedSearchParams = resolvedSearchParams.toString();
-  return `${path}${serializedSearchParams ? `?${serializedSearchParams}` : ''}${hash}`;
+  const serializedAppendedSearchParams = appendedSearchParams.toString();
+  return `${path}${queryIndex >= 0 ? `?${query}` : ''}${
+    serializedAppendedSearchParams
+      ? `${queryIndex >= 0 ? '&' : '?'}${serializedAppendedSearchParams}`
+      : ''
+  }${hash}`;
 }
 
 /**

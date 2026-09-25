@@ -27,6 +27,9 @@ test('i3s-utils#getUrlWithSearchParams preserves existing query parameters', () 
   expect(
     getUrlWithSearchParams('test?existing=value#fragment', {token: '12345', existing: 'replace'})
   ).toBe('test?existing=value&token=12345#fragment');
+  expect(getUrlWithSearchParams('test?encoded=%20&flag#fragment', {token: '12345'})).toBe(
+    'test?encoded=%20&flag&token=12345#fragment'
+  );
 });
 test('i3s-utils#generateTileAttributeUrls Should return attribute URLs for tile', async () => {
   const tile = {
