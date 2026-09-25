@@ -4,6 +4,8 @@
 
 ### Unreleased
 
+### v5.0.0-alpha.7
+
 - feat(mvt): add ArrowTableTileSourceLoader for Arrow input and GeoArrow WKB tiles with zero-copy attribute selection
 
 - feat(arrow): make NDGeoJSON, Chrome Trace, and GML loaders Arrow-primary while retaining explicit legacy output shapes
@@ -13,6 +15,7 @@
 - feat(las): make LAS and LAZ loader variants Arrow-primary by default while retaining explicit mesh output
 - feat(geoarrow): make Shapefile, SHP, DBF, and PMTiles vector source outputs Arrow-primary by default while retaining explicit legacy shapes
 - feat(geopackage): make GeoPackageLoader return one selected Arrow table by default and move multi-table discovery to GeoPackageSource
+- chore(wkt): adopt math.gl alpha.9 WKT metadata parsing and remove duplicated compatibility parsing
 
 ### v5.0.0-alpha.6
 
