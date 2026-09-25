@@ -113,8 +113,6 @@ Parameters:
   - `options.cacheBytes`=`536870912` (`Number`) - Soft target in bytes for estimated cached 3D Tiles content. Current-frame tiles remain protected. I3S retains a `33554432` default. See [Caching and memory](/docs/modules/3d-tiles/concepts/caching-and-memory).
   - `options.maximumCacheOverflowBytes`=`536870912` (`Number`) - Additional current-frame headroom in bytes before cache pressure raises the active SSE threshold. I3S retains a `1048576` default.
   - `options.memoryAdjustedScreenSpaceError`=`true` (`Boolean`) - Adapts the active SSE threshold when estimated usage exceeds `cacheBytes + maximumCacheOverflowBytes`. I3S retains its `false` default.
-  - `options.maximumMemoryUsage` (`Number`, deprecated) - MiB compatibility alias for `cacheBytes`; the byte-native option wins when both are supplied.
-  - `options.memoryCacheOverflow` (`Number`, deprecated) - MiB compatibility alias for `maximumCacheOverflowBytes`; the byte-native option wins when both are supplied.
   - `options.viewDistanceScale`=`1.0` (`Number`) - Multiplies calculated screen-space error. Lower values stop refinement earlier; higher values select more detail. See [Screen-space error and level of detail](/docs/modules/3d-tiles/concepts/screen-space-error-and-lod).
   - `options.progressiveResolutionHeightFraction`=`0.3` (`Number`) - Prioritizes coarse viewport coverage using SSE at a reduced logical viewport height. Set to `0` to disable; values above `0.5` are ignored. See [Request scheduling and priorities](/docs/modules/3d-tiles/concepts/request-scheduling-and-priorities).
   - `options.foveatedScreenSpaceError`=`true` (`Boolean`) - Prioritizes perspective requests near the camera view axis before peripheral detail. This changes request timing, not the final LOD target. See [Request scheduling and priorities](/docs/modules/3d-tiles/concepts/request-scheduling-and-priorities).
@@ -328,11 +326,6 @@ not change the base target used to evict unused tiles.
 
 ^default 536870912 \*
 ^exception `maximumCacheOverflowBytes` must be a finite number greater than or equal to zero.
-
-### maximumMemoryUsage : Number (Deprecated)
-
-Compatibility property and constructor option that expresses `cacheBytes` in mebibytes. Assignments
-remain synchronized with `cacheBytes`. Use the byte-native API for new code.
 
 ### root : Tile3D
 

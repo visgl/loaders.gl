@@ -86,8 +86,7 @@ The sections below document the v5 removals, migrations, and deprecations that r
 
 **@loaders.gl/tiles**
 
-- `Tileset3D.maximumMemoryUsage` and the `maximumMemoryUsage` constructor option are deprecated. Use byte-native `cacheBytes`; convert MiB with `maximumMemoryUsage * 1024 * 1024`.
-- `memoryCacheOverflow` is deprecated. Use byte-native `maximumCacheOverflowBytes`; the byte-native option takes precedence when both forms are supplied.
+- `Tileset3D.maximumMemoryUsage`, `maximumMemoryUsage`, and `memoryCacheOverflow` have been removed. Use `cacheBytes` and `maximumCacheOverflowBytes`, passing byte counts (for example, `256 * 1024 * 1024` for 256 MiB).
 - The default 3D Tiles cache policy is now a 512 MiB base target plus 512 MiB of current-view overflow headroom, with memory-adjusted SSE enabled. To preserve the previous 32 MiB/1 MiB policy, configure both byte budgets explicitly and set `memoryAdjustedScreenSpaceError: false`.
 
 See [Caching and memory](/docs/modules/3d-tiles/concepts/caching-and-memory) for migration examples and runtime behavior.
@@ -136,14 +135,17 @@ See [Caching and memory](/docs/modules/3d-tiles/concepts/caching-and-memory) for
  - The nonfunctional `@loaders.gl/images` `loadImage()` placeholder has been removed. Use
    `load(url, ImageBitmapLoader)` or the texture helpers in `@loaders.gl/textures`.
  - `getMeshSize` is no longer exported from `@loaders.gl/schema`; import it from
-   `@loaders.gl/schema-utils`. `getMeshBoundingBox` remains as a temporary deprecated alias for
-   deck.gl 9.4 compatibility and should likewise migrate to `schema-utils`.
+   `@loaders.gl/schema-utils`. The `getMeshBoundingBox` root export is deprecated and retained
+   temporarily for deck.gl 9.4 compatibility; migrate imports to `@loaders.gl/schema-utils`.
  - CRS forwarding exports (`PROJ4CRS`, `WKTCRS`, `parseWKTCRS`, and `encodeWKTCRS`) are no
    longer exported from `@loaders.gl/gis`; import the canonical definitions and helpers from
    `@math.gl/crs`.
  - The parent-level `shapefile.workerUrl` option has been removed. Configure `shp.workerUrl`
    and `dbf.workerUrl` independently.
  - The PMTiles `tileRangeRequest` alias has been removed. Use `rangeRequests`.
+ - PMTiles parser overrides belong under `core.loadOptions` (for example,
+   `core.loadOptions.mvt` or `core.loadOptions.mlt`); a PMTiles-level `loadOptions` alias is not
+   supported.
  - Generic image-source requests no longer accept `bbox`; pass `boundingBox` as two coordinate
    pairs. Protocol-specific `bbox` request parameters remain unchanged.
 

@@ -44,50 +44,35 @@ test('Tileset3D#cache defaults leave I3S behavior unchanged', async () => {
     'does not enable adaptive I3S LOD by default'
   ).toBe(false);
 });
-test('Tileset3D#cache byte options take precedence over deprecated MiB options', async () => {
-  const tileset = createTestTileset({
-    cacheBytes: 1234,
-    maximumCacheOverflowBytes: 5678,
-    maximumMemoryUsage: 2,
-    memoryCacheOverflow: 3
-  });
+test('Tileset3D#cache byte options configure public cache state', async () => {
+  const tileset = createTestTileset({cacheBytes: 1234, maximumCacheOverflowBytes: 5678});
   await tileset.tilesetInitializationPromise;
   expect(tileset.cacheBytes, 'uses the byte-native cache target exactly').toBe(1234);
   expect(tileset.maximumCacheOverflowBytes, 'uses the byte-native overflow value exactly').toBe(
     5678
   );
-  expect(tileset.maximumMemoryUsage, 'keeps the deprecated property synchronized').toBe(
-    1234 / BYTES_PER_MEBIBYTE
-  );
-  expect(tileset.options.memoryCacheOverflow, 'keeps the deprecated option synchronized').toBe(
-    5678 / BYTES_PER_MEBIBYTE
-  );
+  expect('maximumMemoryUsage' in tileset).toBe(false);
+  expect('memoryCacheOverflow' in tileset.options).toBe(false);
 });
-test('Tileset3D#deprecated MiB cache options remain compatible', async () => {
-  const tileset = createTestTileset({maximumMemoryUsage: 2, memoryCacheOverflow: 3});
-  await tileset.tilesetInitializationPromise;
-  expect(tileset.cacheBytes, 'converts the base budget to bytes').toBe(2 * BYTES_PER_MEBIBYTE);
-  expect(tileset.maximumCacheOverflowBytes, 'converts overflow headroom to bytes').toBe(
-    3 * BYTES_PER_MEBIBYTE
-  );
-  tileset.maximumMemoryUsage = 4;
-  expect(tileset.cacheBytes, 'synchronizes legacy assignments').toBe(4 * BYTES_PER_MEBIBYTE);
-  expect(tileset.options.cacheBytes, 'synchronizes public options').toBe(4 * BYTES_PER_MEBIBYTE);
+test('Tileset3D#removed MiB options are not part of the v5 type', () => {
+  // @ts-expect-error maximumMemoryUsage was removed in v5; use cacheBytes.
+  createTestTileset({maximumMemoryUsage: 2});
+  // @ts-expect-error memoryCacheOverflow was removed in v5; use maximumCacheOverflowBytes.
+  createTestTileset({memoryCacheOverflow: 3});
 });
 test('Tileset3D#setProps updates byte budgets without stale derived state', async () => {
   const tileset = createTestTileset({cacheBytes: 100, maximumCacheOverflowBytes: 20});
   await tileset.tilesetInitializationPromise;
-  tileset.setProps({maximumMemoryUsage: 2, maximumCacheOverflowBytes: 30});
-  expect(tileset.cacheBytes, 'updates from the deprecated base option').toBe(
+  tileset.setProps({cacheBytes: 2 * BYTES_PER_MEBIBYTE, maximumCacheOverflowBytes: 30});
+  expect(tileset.cacheBytes, 'updates from the byte-native base option').toBe(
     2 * BYTES_PER_MEBIBYTE
   );
   expect(tileset.maximumCacheOverflowBytes, 'updates the byte-native overflow option').toBe(30);
-  tileset.setProps({cacheBytes: 40, maximumMemoryUsage: 9, memoryCacheOverflow: 4});
-  expect(tileset.cacheBytes, 'byte-native base option wins during runtime updates').toBe(40);
-  expect(
-    tileset.maximumCacheOverflowBytes,
-    'an independently supplied legacy overflow option still converts correctly'
-  ).toBe(4 * BYTES_PER_MEBIBYTE);
+  tileset.setProps({cacheBytes: 40, maximumCacheOverflowBytes: 4 * BYTES_PER_MEBIBYTE});
+  expect(tileset.cacheBytes, 'runtime updates use byte-native values').toBe(40);
+  expect(tileset.maximumCacheOverflowBytes, 'runtime updates use byte-native overflow').toBe(
+    4 * BYTES_PER_MEBIBYTE
+  );
 });
 test('Tileset3D#cache byte budgets reject unstable thresholds', async () => {
   expect(() => createTestTileset({cacheBytes: -1}), 'rejects negative construction values').toThrow(
@@ -103,8 +88,8 @@ test('Tileset3D#cache byte budgets reject unstable thresholds', async () => {
     tileset.cacheBytes = Number.NaN;
   }).toThrow(/cacheBytes must be a finite number greater than or equal to 0/);
   expect(() => {
-    tileset.maximumMemoryUsage = -1;
-  }).toThrow(/maximumMemoryUsage must be a finite number greater than or equal to 0/);
+    tileset.maximumCacheOverflowBytes = -1;
+  }).toThrow(/maximumCacheOverflowBytes must be a finite number greater than or equal to 0/);
 });
 test('Tileset3D#memory-adjusted SSE uses base plus overflow as its pressure ceiling', async () => {
   const tileset = createTestTileset({

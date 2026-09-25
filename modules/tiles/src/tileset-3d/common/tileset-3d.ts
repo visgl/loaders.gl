@@ -58,17 +58,6 @@ export type Tileset3DProps = {
    * @default 536870912
    */
   maximumCacheOverflowBytes?: number;
-  /**
-   * Soft cache target in mebibytes.
-   * @deprecated Use {@link Tileset3DProps.cacheBytes}; when both are supplied, `cacheBytes` wins.
-   */
-  maximumMemoryUsage?: number;
-  /**
-   * Cache overflow headroom in mebibytes.
-   * @deprecated Use {@link Tileset3DProps.maximumCacheOverflowBytes}; when both are supplied, the
-   * byte-native option wins.
-   */
-  memoryCacheOverflow?: number;
   maximumTilesSelected?: number;
   debounceTime?: number;
 
@@ -158,10 +147,6 @@ type Props = {
   cacheBytes: number;
   /** Current-frame headroom, in bytes, before memory-adjusted SSE rises. */
   maximumCacheOverflowBytes: number;
-  /** @deprecated Byte-native code should use `cacheBytes`. */
-  maximumMemoryUsage: number;
-  /** @deprecated Byte-native code should use `maximumCacheOverflowBytes`. */
-  memoryCacheOverflow: number;
   maximumTilesSelected: number;
   debounceTime: number;
   onTileLoad: (tile: Tile3D) => void;
@@ -241,31 +226,21 @@ function validateCacheByteLength(value: number, optionName: string): number {
 }
 
 /**
- * Resolves the base cache target from byte-native or deprecated mebibyte options.
+ * Resolves the base cache target from the byte-native option or its fallback.
  *
- * The byte-native option takes precedence so mixed migration configurations are deterministic.
- * The fallback is already expressed in bytes and is used for both construction and runtime updates.
- *
- * @param options - Options that may contain byte-native or deprecated cache values.
+ * @param options - Options that may contain a byte-native cache value.
  * @param fallbackCacheBytes - Existing or default cache target in bytes.
  * @returns The resolved and validated cache target in bytes.
  */
 function resolveCacheBytes(options: Tileset3DProps, fallbackCacheBytes: number): number {
-  const cacheBytes =
-    options.cacheBytes ??
-    (options.maximumMemoryUsage !== undefined
-      ? options.maximumMemoryUsage * BYTES_PER_MEBIBYTE
-      : fallbackCacheBytes);
+  const cacheBytes = options.cacheBytes ?? fallbackCacheBytes;
   return validateCacheByteLength(cacheBytes, 'cacheBytes');
 }
 
 /**
- * Resolves cache overflow headroom from byte-native or deprecated mebibyte options.
+ * Resolves cache overflow headroom from the byte-native option or its fallback.
  *
- * The byte-native option takes precedence so callers can migrate the two cache controls
- * independently without unit ambiguity.
- *
- * @param options - Options that may contain byte-native or deprecated overflow values.
+ * @param options - Options that may contain a byte-native overflow value.
  * @param fallbackOverflowBytes - Existing or default overflow headroom in bytes.
  * @returns The resolved and validated overflow headroom in bytes.
  */
@@ -273,11 +248,7 @@ function resolveMaximumCacheOverflowBytes(
   options: Tileset3DProps,
   fallbackOverflowBytes: number
 ): number {
-  const maximumCacheOverflowBytes =
-    options.maximumCacheOverflowBytes ??
-    (options.memoryCacheOverflow !== undefined
-      ? options.memoryCacheOverflow * BYTES_PER_MEBIBYTE
-      : fallbackOverflowBytes);
+  const maximumCacheOverflowBytes = options.maximumCacheOverflowBytes ?? fallbackOverflowBytes;
   return validateCacheByteLength(maximumCacheOverflowBytes, 'maximumCacheOverflowBytes');
 }
 
@@ -289,8 +260,6 @@ const DEFAULT_PROPS: Props = {
   maxRequests: 64,
   cacheBytes: DEFAULT_CACHE_BYTES,
   maximumCacheOverflowBytes: DEFAULT_MAXIMUM_CACHE_OVERFLOW_BYTES,
-  maximumMemoryUsage: DEFAULT_CACHE_BYTES / BYTES_PER_MEBIBYTE,
-  memoryCacheOverflow: DEFAULT_MAXIMUM_CACHE_OVERFLOW_BYTES / BYTES_PER_MEBIBYTE,
   maximumTilesSelected: 0,
   debounceTime: 0,
   onTileLoad: () => {},
@@ -456,8 +425,6 @@ export class Tileset3D {
       ...suppliedOptions,
       cacheBytes,
       maximumCacheOverflowBytes,
-      maximumMemoryUsage: cacheBytes / BYTES_PER_MEBIBYTE,
-      memoryCacheOverflow: maximumCacheOverflowBytes / BYTES_PER_MEBIBYTE,
       memoryAdjustedScreenSpaceError:
         suppliedOptions.memoryAdjustedScreenSpaceError ?? usesTiles3DCacheDefaults
     };
@@ -552,7 +519,6 @@ export class Tileset3D {
   set cacheBytes(value: number) {
     this._cacheBytes = validateCacheByteLength(value, 'cacheBytes');
     this.options.cacheBytes = this._cacheBytes;
-    this.options.maximumMemoryUsage = this._cacheBytes / BYTES_PER_MEBIBYTE;
   }
 
   /**
@@ -569,19 +535,6 @@ export class Tileset3D {
   set maximumCacheOverflowBytes(value: number) {
     this._maximumCacheOverflowBytes = validateCacheByteLength(value, 'maximumCacheOverflowBytes');
     this.options.maximumCacheOverflowBytes = this._maximumCacheOverflowBytes;
-    this.options.memoryCacheOverflow = this._maximumCacheOverflowBytes / BYTES_PER_MEBIBYTE;
-  }
-
-  /**
-   * Gets or sets the soft cache target in mebibytes.
-   * @deprecated Use {@link Tileset3D.cacheBytes}. Assignments remain synchronized for compatibility.
-   */
-  get maximumMemoryUsage(): number {
-    return this.cacheBytes / BYTES_PER_MEBIBYTE;
-  }
-
-  set maximumMemoryUsage(value: number) {
-    this.cacheBytes = validateCacheByteLength(value * BYTES_PER_MEBIBYTE, 'maximumMemoryUsage');
   }
 
   get queryParams(): string {
@@ -591,10 +544,7 @@ export class Tileset3D {
   }
 
   /**
-   * Updates traversal and runtime options, synchronizing byte-native and deprecated cache values.
-   *
-   * For each budget, the byte-native option takes precedence when both unit forms are supplied.
-   * Unspecified budgets retain their current byte values, avoiding repeated MiB conversion.
+   * Updates traversal and runtime options while retaining unspecified byte budgets.
    *
    * @param props - Partial runtime options to apply.
    */
@@ -608,9 +558,7 @@ export class Tileset3D {
       ...this.options,
       ...props,
       cacheBytes,
-      maximumCacheOverflowBytes,
-      maximumMemoryUsage: cacheBytes / BYTES_PER_MEBIBYTE,
-      memoryCacheOverflow: maximumCacheOverflowBytes / BYTES_PER_MEBIBYTE
+      maximumCacheOverflowBytes
     };
     this._cacheBytes = cacheBytes;
     this._maximumCacheOverflowBytes = maximumCacheOverflowBytes;
