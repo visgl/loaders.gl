@@ -101,7 +101,7 @@ export class IcebergRestCatalog {
   private getSourceOptions(): IcebergSourceOptions {
     const options: IcebergSourceOptions = {iceberg: {headers: this.options.headers}};
     if (this.options.fetch) {
-      options.core = {loadOptions: {core: {fetch: this.options.fetch}}};
+      options.core = {fetch: this.options.fetch};
     }
     return options;
   }

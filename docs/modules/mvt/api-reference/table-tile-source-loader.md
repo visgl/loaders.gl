@@ -110,6 +110,9 @@ The tiles are in geojson table format.
 
 ## Options
 
+For shared loading controls and parser configuration, see
+[Source options](/docs/developer-guide/using-sources#options). The settings below are specific to this source.
+
 You can fine-tune the results with an options object,
 although the defaults are sensible and work well for most use cases.
 

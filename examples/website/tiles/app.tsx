@@ -108,26 +108,21 @@ export default function App(props: AppProps = {}) {
     () =>
       currentExample
         ? {
-            core: {
-              type: currentExample.sourceType,
-              worker: false,
-              attributions: currentExample.attributions,
-              loadOptions: {
-                core: {worker: false},
-                tilejson: {maxValues: 10}
-              }
-            },
+            tilejson: {maxValues: 10},
             pmtiles: {shape: 'arrow-table'},
             rangeRequests: {
               batchDelayMs: 50,
               stats: rangeStatsObjectRef.current,
               onEvent: onTileRangeRequest
             },
-            table: {
-              coordinates: 'wgs84'
-            },
+            table: {coordinates: 'wgs84'},
             mvt: {shape: 'arrow-table'},
-            mlt: {shape: 'arrow-table'}
+            mlt: {shape: 'arrow-table'},
+            core: {
+              worker: false,
+              type: currentExample.sourceType,
+              attributions: currentExample.attributions
+            }
           }
         : null,
     [currentExample]

@@ -57,10 +57,11 @@ export type GeoPackageSourceMetadata = {
   tables: GeoPackageSourceTableMetadata[];
 };
 
-export type GeoPackageSourceOptions = DataSourceOptions & {
-  geopackage?: GeoPackageLoaderOptions['geopackage'];
-  gis?: GeoPackageLoaderOptions['gis'];
-};
+export type GeoPackageSourceOptions = DataSourceOptions &
+  GeoPackageLoaderOptions & {
+    geopackage?: GeoPackageLoaderOptions['geopackage'];
+    gis?: GeoPackageLoaderOptions['gis'];
+  };
 
 /**
  * Source factory for GeoPackage datasets that expose table metadata and one-table Arrow reads.

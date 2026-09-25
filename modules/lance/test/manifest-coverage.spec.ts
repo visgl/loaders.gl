@@ -107,7 +107,7 @@ test('LanceSource resolves latest and explicit manifest URLs', async () => {
   };
 
   const latestSource = LanceSourceLoader.createDataSource('https://example.com/table.lance/', {
-    core: {loadOptions: {core: {fetch}}}
+    core: {fetch}
   } as any);
   expect((await latestSource.getMetadata()).manifestURL).toBe(
     'https://example.com/table.lance/_versions/9.manifest'
@@ -115,7 +115,7 @@ test('LanceSource resolves latest and explicit manifest URLs', async () => {
 
   const explicitSource = LanceSourceLoader.createDataSource('https://example.com/table.lance', {
     lance: {version: 4},
-    core: {loadOptions: {core: {fetch}}}
+    core: {fetch}
   } as any);
   expect((await explicitSource.getMetadata()).manifestURL).toBe(
     'https://example.com/table.lance/_versions/4.manifest'
@@ -125,7 +125,7 @@ test('LanceSource resolves latest and explicit manifest URLs', async () => {
 test('LanceSource reports manifest discovery and HTTP failures', async () => {
   const failingFetch = async () => new Response('missing', {status: 404});
   const source = LanceSourceLoader.createDataSource('https://example.com/table.lance', {
-    core: {loadOptions: {core: {fetch: failingFetch}}}
+    core: {fetch: failingFetch}
   } as any);
 
   await expect(source.getMetadata()).rejects.toThrow(
@@ -133,11 +133,7 @@ test('LanceSource reports manifest discovery and HTTP failures', async () => {
   );
 
   const invalidHintSource = LanceSourceLoader.createDataSource('https://example.com/table.lance', {
-    core: {
-      loadOptions: {
-        core: {fetch: async () => new Response(JSON.stringify({}), {status: 200})}
-      }
-    }
+    core: {fetch: async () => new Response(JSON.stringify({}), {status: 200})}
   } as any);
   await expect(invalidHintSource.getMetadata()).rejects.toThrow('does not contain a version');
 });

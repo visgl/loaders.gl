@@ -13,7 +13,8 @@ import type {
 } from '@loaders.gl/loader-utils';
 import {DataSource} from '@loaders.gl/loader-utils';
 
-import type {CSWCapabilities} from './csw-capabilities-loader';
+import type {CSWCapabilities, CSWLoaderOptions} from './csw-capabilities-loader';
+import type {WMSLoaderOptions} from './wms-error-loader';
 import {CSWCapabilitiesLoaderWithParser} from './csw-capabilities-loader-with-parser';
 
 import type {CSWRecords} from './csw-records-loader';
@@ -66,9 +67,11 @@ export type CSWGetDomainParameters = CSWCommonParameters & {
   // TBA
 };
 
-export type CSWSourceLoaderOptions = DataSourceOptions & {
-  csw?: Record<string, never>;
-};
+export type CSWSourceLoaderOptions = DataSourceOptions &
+  CSWLoaderOptions &
+  WMSLoaderOptions & {
+    csw?: Record<string, never>;
+  };
 
 /** One catalog record returned by a CSW `GetRecords` response. */
 export type CSWRecord = CSWRecords['records'][number];
@@ -210,10 +213,7 @@ export class CSWCatalogSource
     const response = await this.fetch(url);
     const arrayBuffer = await response.arrayBuffer();
     this._checkResponse(response, arrayBuffer);
-    const capabilities = await CSWCapabilitiesLoaderWithParser.parse(
-      arrayBuffer,
-      this.options.core.loadOptions
-    );
+    const capabilities = await CSWCapabilitiesLoaderWithParser.parse(arrayBuffer, this.loadOptions);
     return capabilities;
   }
 
@@ -226,7 +226,7 @@ export class CSWCatalogSource
     const response = await this.fetch(url);
     const arrayBuffer = await response.arrayBuffer();
     this._checkResponse(response, arrayBuffer);
-    return await CSWRecordsLoaderWithParser.parse(arrayBuffer, this.options.core.loadOptions);
+    return await CSWRecordsLoaderWithParser.parse(arrayBuffer, this.loadOptions);
   }
 
   /** Get Domain */
@@ -238,7 +238,7 @@ export class CSWCatalogSource
     const response = await this.fetch(url);
     const arrayBuffer = await response.arrayBuffer();
     this._checkResponse(response, arrayBuffer);
-    return await CSWDomainLoaderWithParser.parse(arrayBuffer, this.options.core.loadOptions);
+    return await CSWDomainLoaderWithParser.parse(arrayBuffer, this.loadOptions);
   }
 
   // Typed URL creators
@@ -317,17 +317,14 @@ export class CSWCatalogSource
   protected _checkResponse(response: Response, arrayBuffer: ArrayBuffer): void {
     const contentType = response.headers.get('content-type') || '';
     if (!response.ok || WMSErrorLoaderWithParser.mimeTypes.some(type => type === contentType)) {
-      const error = WMSErrorLoaderWithParser.parseSync?.(
-        arrayBuffer,
-        this.options.core.loadOptions
-      );
+      const error = WMSErrorLoaderWithParser.parseSync?.(arrayBuffer, this.loadOptions);
       throw new Error(error);
     }
   }
 
   /** Error situation detected */
   protected _parseError(arrayBuffer: ArrayBuffer): Error {
-    const error = WMSErrorLoaderWithParser.parseSync?.(arrayBuffer, this.options.core.loadOptions);
+    const error = WMSErrorLoaderWithParser.parseSync?.(arrayBuffer, this.loadOptions);
     return new Error(error);
   }
 }

@@ -386,7 +386,7 @@ describe('STACSource API', () => {
 });
 
 function createSource(url: string, fetch: typeof globalThis.fetch): STACSource {
-  return new STACSource(url, {core: {loadOptions: {core: {fetch}}}});
+  return new STACSource(url, {core: {fetch}});
 }
 
 function createFetch(documents: Record<string, unknown>): typeof globalThis.fetch {

@@ -51,7 +51,7 @@ export type ImageSourceLayerProps = Omit<CompositeLayerProps, 'data' | 'loaders'
   sources?: Readonly<SourceLoader[]>;
   /** Parser loaders and SourceLoaders used to resolve URL/blob inputs. */
   loaders?: ReadonlyArray<Loader | SourceLoader>;
-  /** Options forwarded to `createDataSource` when `sources` are supplied. */
+  /** Source and parser options forwarded to `createDataSource`. The layer's `loadOptions` prop is not forwarded. */
   sourceOptions?: DataSourceOptions;
   /** Called when metadata resolves successfully. */
   onMetadataLoad?: (metadata: ImageSourceMetadata) => void;
@@ -358,7 +358,6 @@ export class ImageSourceLayer extends CompositeLayer<ImageSourceLayerProps> {
         core: {
           ...sourceOptions?.core,
           type: props.serviceType,
-          loadOptions: props.loadOptions || sourceOptions?.core?.loadOptions,
           loaders: [...(sourceOptions?.core?.loaders || []), ...parserLoaders]
         }
       }) as unknown as ImageSource;

@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import type {ImageType} from '@loaders.gl/images';
+import type {ImageType, ImageLoaderOptions} from '@loaders.gl/images';
 import {ImageLoader} from '@loaders.gl/images';
 import type {
   CoreAPI,
@@ -24,27 +24,28 @@ import {parseWMTSCapabilities} from './lib/parsers/wmts/parse-wmts-capabilities'
 import {selectServiceCRS, type ServiceCRS} from './crs-utils';
 
 /** Options for a WMTS tile source. */
-export type WMTSSourceLoaderOptions = DataSourceOptions & {
-  wmts?: {
-    /** WMTS layer identifier. */
-    layer?: string;
-    /** WMTS tile matrix set identifier. */
-    tileMatrixSet?: string;
-    /** WMTS style identifier. */
-    style?: string;
-    /** Tile MIME type. */
-    format?: string;
-    /** REST template containing `{TileMatrix}`, `{TileRow}`, and `{TileCol}`. */
-    urlTemplate?: string;
-    /** Additional KVP parameters. */
-    parameters?: Record<string, string>;
-    /** Capabilities document or URL used to derive layer and tile matrix options. */
-    capabilities?: WMTSCapabilities;
-    capabilitiesUrl?: string;
-    /** Preferred coordinate reference system for matrix-set selection. */
-    crs?: ServiceCRS;
+export type WMTSSourceLoaderOptions = DataSourceOptions &
+  ImageLoaderOptions & {
+    wmts?: {
+      /** WMTS layer identifier. */
+      layer?: string;
+      /** WMTS tile matrix set identifier. */
+      tileMatrixSet?: string;
+      /** WMTS style identifier. */
+      style?: string;
+      /** Tile MIME type. */
+      format?: string;
+      /** REST template containing `{TileMatrix}`, `{TileRow}`, and `{TileCol}`. */
+      urlTemplate?: string;
+      /** Additional KVP parameters. */
+      parameters?: Record<string, string>;
+      /** Capabilities document or URL used to derive layer and tile matrix options. */
+      capabilities?: WMTSCapabilities;
+      capabilitiesUrl?: string;
+      /** Preferred coordinate reference system for matrix-set selection. */
+      crs?: ServiceCRS;
+    };
   };
-};
 
 /** A WMTS source that fetches image tiles through REST or KVP requests. */
 export class WMTSImageTileSource

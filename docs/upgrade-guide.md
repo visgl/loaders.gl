@@ -93,6 +93,35 @@ See [Caching and memory](/docs/modules/3d-tiles/concepts/caching-and-memory) for
 
 **@loaders.gl/core**
 
+- Sources no longer accept `core.loadOptions` or a top-level source `loadOptions` wrapper.
+  Move nested `core` settings into the outer `core`, and parser namespaces to the root. Use
+  `core.fetch`, `core.credentials`, and `core.worker` for source requests and internal parsers alike.
+  Legacy unscoped settings inside the removed bag (such as `fetch`) must also move into `core`.
+  This applies to `createDataSource`, `load` with a source loader, and direct source constructors.
+
+```typescript
+// Before
+createDataSource(url, [PMTilesSourceLoader], {
+  core: {loadOptions: {core: {worker: false}, mvt: {layerProperty: 'layer'}}},
+  pmtiles: {shape: 'arrow-table'}
+});
+
+// v5
+createDataSource(url, [PMTilesSourceLoader], {
+  core: {worker: false},
+  mvt: {layerProperty: 'layer'},
+  pmtiles: {shape: 'arrow-table'}
+});
+```
+
+When both the old outer and inner `core` had settings, merge them explicitly. Keep parser options
+beside source namespaces, not inside them. The unused `mvt.loadOptions` declaration is also removed.
+Explicit source settings (for example `pmtiles.shape`) still override parser settings.
+`ImageSourceLayer` no longer forwards the inherited deck.gl `loadOptions` prop into sources.
+Move those settings into `sourceOptions`, using the flat shape above. This matches
+`Tile2DSourceLayer` and avoids two competing source-options entry points. The deck.gl property
+itself and the separate `Tileset3D.loadOptions` API are not removed by this change.
+
 - Top-level loader options are no longer supported
 - `Source` has been replaced by `SourceLoader` for top-level runtime source factories.
 - `load(url, SomeSourceLoader)` now returns the runtime `DataSource` instance created by that source loader instead of metadata or parsed payloads.
@@ -143,9 +172,6 @@ See [Caching and memory](/docs/modules/3d-tiles/concepts/caching-and-memory) for
  - The parent-level `shapefile.workerUrl` option has been removed. Configure `shp.workerUrl`
    and `dbf.workerUrl` independently.
  - The PMTiles `tileRangeRequest` alias has been removed. Use `rangeRequests`.
- - PMTiles parser overrides belong under `core.loadOptions` (for example,
-   `core.loadOptions.mvt` or `core.loadOptions.mlt`); a PMTiles-level `loadOptions` alias is not
-   supported.
  - Generic image-source requests no longer accept `bbox`; pass `boundingBox` as two coordinate
    pairs. Protocol-specific `bbox` request parameters remain unchanged.
 

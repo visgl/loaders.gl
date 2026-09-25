@@ -111,10 +111,9 @@ test('WMSSourceLoader#WMS versions', async () => {
 });
 // TODO - move to image-source.spec.ts
 test('WMSSourceLoader#fetch override', async () => {
-  const loadOptions = {fetch: {headers: {Authorization: 'Bearer abc'}}};
   const wmsImageSource = WMSSourceLoader.createDataSource(WMS_SERVICE_URL, {
     core: {
-      loadOptions
+      fetch: {headers: {Authorization: 'Bearer abc'}}
     },
     wms: {
       substituteCRS84: true

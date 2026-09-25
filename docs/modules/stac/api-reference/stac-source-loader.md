@@ -108,6 +108,9 @@ exact `mediaTypes`.
 
 ## Options
 
+For shared loading controls and parser configuration, see
+[Source options](/docs/developer-guide/using-sources#options). The settings below are specific to this source.
+
 | Option | Type | Default | Description |
 | --- | --- | --- | --- |
 | `stac.maxDepth` | `number` | `32` | Default maximum static child-catalog depth. |

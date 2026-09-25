@@ -51,7 +51,7 @@ test('LanceSource uses ranged remote reads when manifest file sizes are availabl
   const fetch = vi.fn();
   const source = LanceSourceLoader.createDataSource('https://example.com/dataset', {
     lance: {columnTypes: ['float32', 'int64'], columnNames: ['x'], limit: 5},
-    core: {loadOptions: {core: {fetch}}}
+    core: {fetch}
   } as any) as any;
   source.getMetadata = vi.fn(async () => ({
     fields: [],
@@ -78,7 +78,7 @@ test('LanceSource falls back to whole-file reads when manifests omit file sizes'
   const fetch = vi.fn(async () => new Response(new Uint8Array([4, 5, 6])));
   const source = LanceSourceLoader.createDataSource('https://example.com/dataset/', {
     lance: {columnTypes: ['uint8']},
-    core: {loadOptions: {core: {fetch}}}
+    core: {fetch}
   } as any) as any;
   source.getMetadata = vi.fn(async () => ({
     fields: [],

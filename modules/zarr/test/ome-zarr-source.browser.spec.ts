@@ -61,8 +61,8 @@ test.each([
 ] as const)('OMEZarrImageSource normalizes %s metadata and empty raster output', async (dataType, TypedArray) => {
     const baseUrl = `https://example.com/browser-${dataType}.zarr`;
     const source = new OMEZarrImageSource(baseUrl, {
-        core: { loadOptions: { core: { fetch: createOMEZarrFetcher(baseUrl, dataType) } } },
-        zarr: { requireConsolidatedMetadata: false }
+      zarr: {requireConsolidatedMetadata: false},
+      core: {fetch: createOMEZarrFetcher(baseUrl, dataType)}
     });
     const metadata = await source.getMetadata();
     const raster = await source.getRaster({ channels: [0] });
@@ -80,10 +80,7 @@ test('OMEZarrImageSource retries initialization after malformed metadata', async
         }
         return new Response(null, {status: 404});
     }) as typeof fetch;
-    const source = new OMEZarrImageSource(baseUrl, {
-        core: {loadOptions: {core: {fetch: fetcher}}},
-        zarr: {requireConsolidatedMetadata: false}
-    });
+    const source = new OMEZarrImageSource(baseUrl, {zarr: {requireConsolidatedMetadata: false}, core: {fetch: fetcher}});
     await expect(source.getMetadata()).rejects.toThrow(/requires multiscales metadata/);
     await expect(source.getMetadata()).rejects.toThrow(/requires multiscales metadata/);
     expect(groupRequestCount).toBe(2);
@@ -92,8 +89,8 @@ test('OMEZarrImageSource retries initialization after malformed metadata', async
 function createInMemoryOMEZarrSource(): OMEZarrImageSource {
     const baseUrl = 'https://example.com/browser-ome.zarr';
     const options: ZarrSourceLoaderOptions = {
-        core: { loadOptions: { core: { fetch: createOMEZarrFetcher(baseUrl) } } },
-        zarr: { requireConsolidatedMetadata: false }
+      zarr: {requireConsolidatedMetadata: false},
+      core: {fetch: createOMEZarrFetcher(baseUrl)}
     };
     return new OMEZarrImageSource(baseUrl, options);
 }

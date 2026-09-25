@@ -27,23 +27,24 @@ import {TileJSONLoader, type TileJSONLoaderOptions} from './tilejson-loader';
 import type {TileJSON} from './lib/parse-tilejson';
 
 /** Properties for a Mapbox Vector Tile Source */
-export type MVTSourceLoaderOptions = DataSourceOptions & {
-  mvt?: {
-    // TODO - add options here
-    /** if not supplied, loads tilejson.json, If null does not load metadata */
-    metadataUrl?: string | null;
-    /** Override extension (necessary if no metadata) */
-    extension?: string;
-    /** Additional attribution, adds to any attribution loaded from tileset metadata */
-    attributions?: string[];
-    /** Specify load options for all sub loaders */
-    loadOptions?: TileJSONLoaderOptions & MVTLoaderOptions & ImageBitmapLoaderOptions;
-    /** Shape of returned vector tile data. */
-    shape?: 'geojson-table' | 'columnar-table' | 'binary-geometry' | 'arrow-table';
-    /** Ignore successful HTTP tile responses with text, JSON or XML MIME types, report an error, and return null. */
-    ignoreTextResponses?: boolean;
+export type MVTSourceLoaderOptions = DataSourceOptions &
+  MVTLoaderOptions &
+  TileJSONLoaderOptions &
+  ImageBitmapLoaderOptions & {
+    mvt?: {
+      // TODO - add options here
+      /** if not supplied, loads tilejson.json, If null does not load metadata */
+      metadataUrl?: string | null;
+      /** Override extension (necessary if no metadata) */
+      extension?: string;
+      /** Additional attribution, adds to any attribution loaded from tileset metadata */
+      attributions?: string[];
+      /** Shape of returned vector tile data. */
+      shape?: 'geojson-table' | 'columnar-table' | 'binary-geometry' | 'arrow-table';
+      /** Ignore successful HTTP tile responses with text, JSON or XML MIME types, report an error, and return null. */
+      ignoreTextResponses?: boolean;
+    };
   };
-};
 
 /** Creates an MVTTileSource */
 export const MVTSourceLoader = {

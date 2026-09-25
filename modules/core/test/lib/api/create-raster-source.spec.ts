@@ -207,16 +207,10 @@ test('GeoTIFFRasterSource uses RangeRequestScheduler for remote byte-range reads
   };
 
   const source = new GeoTIFFRasterSource('https://example.com/gfw-azores.tif', {
-    core: {
-      loadOptions: {
-        core: {
-          fetch: mockFetch as typeof fetch
-        }
-      }
-    },
     geotiff: {
       rangeScheduler
-    }
+    },
+    core: {fetch: mockFetch as typeof fetch}
   });
   const metadata = await source.getMetadata();
   const raster = await source.getRaster({
@@ -257,8 +251,8 @@ test('GeoTIFFRasterSource isolates clients that share a range scheduler', async 
     };
   const makeSource = (fetch: typeof globalThis.fetch) =>
     new GeoTIFFRasterSource('https://example.com/shared.tif', {
-      core: {loadOptions: {core: {fetch}}},
-      geotiff: {rangeScheduler}
+      geotiff: {rangeScheduler},
+      core: {fetch}
     });
   const firstSource = makeSource(makeFetch(firstRanges));
   const secondSource = makeSource(makeFetch(secondRanges));
@@ -293,19 +287,13 @@ test('GeoTIFFRasterSource preserves rangeSchedulerProps object references', asyn
   };
 
   const source = new GeoTIFFRasterSource('https://example.com/gfw-azores.tif', {
-    core: {
-      loadOptions: {
-        core: {
-          fetch: mockFetch as typeof fetch
-        }
-      }
-    },
     geotiff: {
       rangeSchedulerProps: {
         batchDelayMs: 0,
         stats: rangeStats
       }
-    }
+    },
+    core: {fetch: mockFetch as typeof fetch}
   });
 
   await source.getMetadata();
@@ -338,19 +326,13 @@ test('GeoTIFFRasterSource ignores late aborts without poisoning subsequent raste
   };
 
   const source = new GeoTIFFRasterSource('https://example.com/gfw-azores.tif', {
-    core: {
-      loadOptions: {
-        core: {
-          fetch: mockFetch as typeof fetch
-        }
-      }
-    },
     geotiff: {
       rangeSchedulerProps: {
         batchDelayMs: 0,
         stats: createRangeStats('geotiff-abort-recovery')
       }
-    }
+    },
+    core: {fetch: mockFetch as typeof fetch}
   });
   const metadata = await source.getMetadata();
   const abortController = new AbortController();

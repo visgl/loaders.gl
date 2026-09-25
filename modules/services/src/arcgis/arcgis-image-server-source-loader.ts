@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import type {ImageType} from '@loaders.gl/images';
+import type {ImageType, ImageLoaderOptions} from '@loaders.gl/images';
 import {ImageLoader} from '@loaders.gl/images';
 import type {
   CoreAPI,
@@ -18,12 +18,13 @@ import {LERCLoader} from '@loaders.gl/lerc';
 import {buildArcGISResourceURL} from './arcgis-url-utils';
 
 /** Options for the ArcGIS ImageServer source. */
-export type ArcGISImageSourceLoaderProps = DataSourceOptions & {
-  'arcgis-image-server'?: {
-    /** Default ArcGIS exportImage request parameters. */
-    exportImageParameters?: Partial<ArcGISExportImageParameters>;
+export type ArcGISImageSourceLoaderProps = DataSourceOptions &
+  ImageLoaderOptions & {
+    'arcgis-image-server'?: {
+      /** Default ArcGIS exportImage request parameters. */
+      exportImageParameters?: Partial<ArcGISExportImageParameters>;
+    };
   };
-};
 
 /** Parameters for ArcGIS ImageServer exportImage requests. */
 export type ArcGISExportImageParameters = {

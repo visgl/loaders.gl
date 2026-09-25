@@ -61,7 +61,7 @@ A `CSWService` instance provides type safe methods that make calls to the servic
 Get a normalized array of all the services and resources referenced by this catalog server:
 
 ```typescript
-const cswService = new CSWService({url: CSW_SERVICE_URL});
+const cswService = createDataSource(CSW_SERVICE_URL, [CSWSourceLoader]);
 const serviceDirectory = await cswService.getServiceDirectory({includeUnknown: true});
 console.log(serviceDirectory);
 ```
@@ -69,42 +69,22 @@ console.log(serviceDirectory);
 Capabilities metadata can be queried:
 
 ```typescript
-const cswService = new CSWService({url: CSW_SERVICE_URL});
+const cswService = createDataSource(CSW_SERVICE_URL, [CSWSourceLoader]);
 const capabilities = await cswService.getCapabilities({});
 // Check capabilities
 ```
 
-Custom fetch options, such as HTTP headers, and loader-specific options can be specified via the
-standard loaders.gl `loadOptions` argument, which is forwarded to all load and parse operations:
-
-```typescript
-const cswService = new CSWService({
-  url: CSW_SERVICE_URL,
-  loadOptions: {
-    fetch: {
-      headers: {
-        Authentication: 'Bearer abc...'
-      }
-    }
-  }
-});
-
-const serviceDirectory = await cswService.getServiceDirectory();
-```
+For shared loading controls and parser configuration, see
+[Source options](/docs/developer-guide/using-sources#options).
 
 ## Methods
 
 ### constructor()
 
-Creates a `CSWService` instance
+Creates a `CSWCatalogSource` instance. Prefer `createDataSource` to inject the core parsing API.
 
 ```typescript
-export type CSWServiceProps = {
-  url: string; // Base URL to the service
-  loadOptions?: LoaderOptions; // Passed to loaders used by CSWService methods
-};
-
-constructor(props: CSWServiceProps)
+constructor(url: string, options: CSWSourceLoaderOptions, coreApi?: CoreAPI)
 ```
 
 ### getCapabilities()

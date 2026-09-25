@@ -85,6 +85,9 @@ The source uses the native TypeScript COPC and LAZ readers for PDRF 6-8. Atomic 
 
 ## Options
 
+For shared loading controls and parser configuration, see
+[Source options](/docs/developer-guide/using-sources#options). The settings below are specific to this source.
+
 | Option | Type | Default | Description |
 | --- | --- | --- | --- |
 | `copc.sourceCoordinateSystem` | `string` | Auto-detected from COPC WKT | Coordinate system definition used when the source metadata does not include WKT. |

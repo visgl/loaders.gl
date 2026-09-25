@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import type {ImageType} from '@loaders.gl/images';
+import type {ImageType, ImageLoaderOptions} from '@loaders.gl/images';
 import {ImageLoader} from '@loaders.gl/images';
 import type {
   CoreAPI,
@@ -16,24 +16,25 @@ import type {
 import {DataSource} from '@loaders.gl/loader-utils';
 
 /** Options for an ArcGIS cached MapServer tile source. */
-export type ArcGISMapTileSourceLoaderOptions = DataSourceOptions & {
-  'arcgis-map-server'?: {
-    /** Select cached tiles, dynamic export tiles, or automatic metadata-based selection. */
-    mode?: 'cached' | 'dynamic' | 'auto';
-    /** Tile size used for dynamic export requests. */
-    tileSize?: number;
-    /** Optional custom tile URL template. */
-    urlTemplate?: string;
-    /** Optional service URL pool for simple request distribution. */
-    urls?: string[];
-    /** Additional query parameters sent to the metadata endpoint. */
-    parameters?: Record<string, string>;
-    /** Metadata document supplied by the application. */
-    metadata?: ArcGISMapServerMetadata;
-    /** Default parameters forwarded to MapServer `export` requests. */
-    exportParameters?: Record<string, string | number | boolean>;
+export type ArcGISMapTileSourceLoaderOptions = DataSourceOptions &
+  ImageLoaderOptions & {
+    'arcgis-map-server'?: {
+      /** Select cached tiles, dynamic export tiles, or automatic metadata-based selection. */
+      mode?: 'cached' | 'dynamic' | 'auto';
+      /** Tile size used for dynamic export requests. */
+      tileSize?: number;
+      /** Optional custom tile URL template. */
+      urlTemplate?: string;
+      /** Optional service URL pool for simple request distribution. */
+      urls?: string[];
+      /** Additional query parameters sent to the metadata endpoint. */
+      parameters?: Record<string, string>;
+      /** Metadata document supplied by the application. */
+      metadata?: ArcGISMapServerMetadata;
+      /** Default parameters forwarded to MapServer `export` requests. */
+      exportParameters?: Record<string, string | number | boolean>;
+    };
   };
-};
 
 /** Relevant normalized fields from an ArcGIS MapServer metadata document. */
 export type ArcGISMapServerMetadata = {

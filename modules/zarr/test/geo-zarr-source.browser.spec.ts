@@ -55,9 +55,9 @@ test('GeoZarrRasterSource validates browser viewport and dimension selections', 
 function createInMemoryGeoZarrSource(): GeoZarrRasterSource {
     const baseUrl = 'https://example.com/browser-cf.zarr';
     const options: GeoZarrSourceLoaderOptions = {
-        core: { loadOptions: { core: { fetch: createCFZarrFetcher(baseUrl) } } },
-        zarr: { requireConsolidatedMetadata: false },
-        geozarr: { array: 'temperature', defaultSelection: { time: 1 } }
+      zarr: {requireConsolidatedMetadata: false},
+      geozarr: {array: 'temperature', defaultSelection: {time: 1}},
+      core: {fetch: createCFZarrFetcher(baseUrl)}
     };
     return new GeoZarrRasterSource(baseUrl, options);
 }

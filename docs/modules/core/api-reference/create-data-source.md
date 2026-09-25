@@ -92,29 +92,6 @@ Creates a runtime `DataSource` either using the provided source loader or source
 
 ## Options
 
-Sources accept nested options, so that options for multiple sources can be specified:
-
-| Option              | Type            | Default  | Description                                                                                                                                                          |
-| ------------------- | --------------- | -------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `core.type`         | `string`        | `'auto'` | Specifies that a specific source should be created from the supplied `sources`. `'auto'` (default) makes a best effort to select the source that matches the `data`. |
-| `core.attributions` | `string[]`      | `[]`     | While sources make a best effort to extract attribution information from the source data, it is sometimes necessary to manually provide the required attributions.   |
-| `core.loadOptions`  | `LoaderOptions` | `{}`     | A source can sometimes use one or more loaders internally to load sub resources. The application can pass options to those loaders using this option.                |
-| `core.loaders`      | `Loader[]`      | `[]`     | If a source is using loaders to loader a subresource, the application can add additional loaders to support more formats.                                            |
-
-```ts
-import {createDataSource} from '@loaders.gl/core';
-import {PMTilesSourceLoader} from '@loaders.gl/pmtiles';
-import {MVTSourceLoader} from '@loaders.gl/mvt';
-
-const dataSource = createDataSource(url, [PMTilesSourceLoader, MVTSourceLoader], {
-  core: {
-    // Any common options for createDataSource
-  }
-  pmtiles: {
-    // Options specific to PMTilesSourceLoader, used if the URL is determined to reference a PMTiles file.
-  },
-  mvt: {
-    // Options specific to MVTSourceLoader, used if the URL is determined to reference an MVT file hierarchy.
-  }
-});
-```
+See [Source options](/docs/developer-guide/using-sources#options) for the shared options convention,
+loading controls, parser options, precedence, and TypeScript behavior. Source-specific settings
+are documented on each source loader’s reference page.

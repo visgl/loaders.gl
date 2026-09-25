@@ -113,7 +113,7 @@ test('ArcGISSceneServerSource accepts mesh, Point, and Point Cloud conformance f
 test('ArcGISSceneServerSource resolves a layer ID and preserves source tokens', async () => {
   const source = new ArcGISSceneServerSource(SCENE_SERVER_URL, {
     'arcgis-scene-server': {layerId: 2, token: 'secret'},
-    core: {loadOptions: {core: {fetch: async () => new Response(JSON.stringify(MESH_LAYER))}}}
+    core: {fetch: async () => new Response(JSON.stringify(MESH_LAYER))}
   });
   source.fetch = async url => {
     expect(url).toBe(`${SCENE_SERVER_URL}/layers/2?f=pjson&token=secret`);

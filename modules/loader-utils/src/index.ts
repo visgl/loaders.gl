@@ -282,10 +282,16 @@ export type {FileSystem, RandomAccessFileSystem} from './lib/filesystems/filesys
 export {NodeFileSystemFacade as NodeFilesystem} from './lib/filesystems/node-filesystem-facade';
 
 // EXPERIMENTAL: DATA SOURCES
-export type {SourceLoader, SourceArrayOptionsType, SourceArrayDataSourceType} from './source-types';
+export type {
+  SourceLoader,
+  SourcePropsType,
+  SourceArrayOptionsType,
+  SourceArrayDataSourceType
+} from './source-types';
 export {isSourceLoader} from './source-types';
 
 export type {CoreAPI, DataSourceOptions} from './lib/sources/data-source';
+export {getSourceLoaderOptions} from './lib/sources/data-source';
 export {DataSource} from './lib/sources/data-source';
 export type {
   ManageableDataSource,

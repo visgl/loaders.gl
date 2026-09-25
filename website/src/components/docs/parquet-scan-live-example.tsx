@@ -28,7 +28,7 @@ export function ParquetScanLiveExample(): JSX.Element {
       try {
         const {ParquetSource} = await import('@loaders.gl/parquet/parquet-source-loader');
         const source = new ParquetSource(url, {
-          core: {loadOptions: {core: {fetch: fetchWithExposedContentRange}}, worker: false}
+          core: {fetch: fetchWithExposedContentRange, worker: false}
         }) as ParquetSource;
         const metadata = await source.getQueryMetadata();
         let table: ArrowTable | undefined;

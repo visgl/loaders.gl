@@ -22,6 +22,7 @@ import type {WFSCapabilities} from './wfs-capabilities-loader';
 import {WFSCapabilitiesLoaderWithParser} from './wfs-capabilities-loader-with-parser';
 
 import type {WMSLoaderOptions} from './wms-error-loader';
+import type {GMLLoaderOptions} from './gml-loader-types';
 import {WMSErrorLoaderWithParser} from './wms-error-loader-with-parser';
 import {parseGML} from './lib/parsers/gml/parse-gml';
 import type {GMLFeatureCollection, GMLPropertyType} from './lib/parsers/gml/parse-gml';
@@ -31,18 +32,20 @@ import {getServiceCRSAxisOrder, normalizeServiceCRS} from './crs-utils';
 /* eslint-disable camelcase */ // WFS XML parameters use snake_case
 
 /** Properties for creating a enw WFS service */
-export type WFSourceOptions = DataSourceOptions & {
-  wfs?: {
-    /** In WFS 2.0.0, replaces references to EPSG:4326 with CRS:84. */
-    substituteCRS84?: boolean;
-    /** Default WFS parameters. If not provided here, must be provided in the various request */
-    wfsParameters?: WFSParameters;
-    /** Any additional service specific parameters */
-    vendorParameters?: Record<string, unknown>;
-    /** XML Schema scalar types for feature properties returned by GML. */
-    propertyTypes?: Record<string, GMLPropertyType>;
+export type WFSourceOptions = DataSourceOptions &
+  WMSLoaderOptions &
+  GMLLoaderOptions & {
+    wfs?: {
+      /** In WFS 2.0.0, replaces references to EPSG:4326 with CRS:84. */
+      substituteCRS84?: boolean;
+      /** Default WFS parameters. If not provided here, must be provided in the various request */
+      wfsParameters?: WFSParameters;
+      /** Any additional service specific parameters */
+      vendorParameters?: Record<string, unknown>;
+      /** XML Schema scalar types for feature properties returned by GML. */
+      propertyTypes?: Record<string, GMLPropertyType>;
+    };
   };
-};
 
 /** WFS protocol versions supported by the source URL builder. */
 export type WFSVersion = '1.1.0' | '2.0.0';

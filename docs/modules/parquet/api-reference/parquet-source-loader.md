@@ -416,6 +416,9 @@ Aborts active requests, closes the range-backed file, and permanently closes the
 
 ## Options
 
+For shared loading controls and parser configuration, see
+[Source options](/docs/developer-guide/using-sources#options). The settings below are specific to this source.
+
 Source defaults are configured under `parquet`; `read()` options override those defaults for an
 individual read.
 

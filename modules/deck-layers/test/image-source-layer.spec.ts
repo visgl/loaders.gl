@@ -69,8 +69,7 @@ test('ImageSourceLayer#resolves mixed loader lists and rejects unresolved string
     data: 'https://example.com/wms',
     serviceType: 'wms',
     loaders: [parserLoader as any, TEST_SOURCE_FACTORY as any, TEST_SOURCE_FACTORY as any],
-    sourceOptions: {core: {loaders: [parserLoader as any]}},
-    loadOptions: {fetch: {headers: {'X-Test': 'yes'}}}
+    sourceOptions: {core: {loaders: [parserLoader as any], fetch: {headers: {'X-Test': 'yes'}}}}
   } as any);
   expect(layer._resolveData(layer.props)).toBe(TEST_IMAGE_SOURCE);
 
@@ -88,6 +87,52 @@ test('ImageSourceLayer#resolves mixed loader lists and rejects unresolved string
     } as any)
   ).toBeNull();
 });
+test.each([
+  true,
+  false
+])('ImageSourceLayer uses only sourceOptions for source configuration (provided: %s)', hasSourceOptions => {
+  const sourceParser = {id: 'source-parser'};
+  const layerParser = {id: 'layer-parser'};
+  const ignoredParser = {id: 'ignored-parser'};
+  const sourceFactory = {
+    ...TEST_SOURCE_FACTORY,
+    createDataSource: vi.fn(() => TEST_IMAGE_SOURCE)
+  };
+  const sourceOptions = hasSourceOptions
+    ? {
+        core: {worker: false, loaders: [sourceParser], fetch: {headers: {'X-Source': 'yes'}}},
+        wms: {substituteCRS84: false}
+      }
+    : undefined;
+  const layer = createLayer({
+    id: 'source-options-only',
+    data: 'memory://image-source',
+    serviceType: 'wms',
+    loaders: [sourceFactory, layerParser],
+    sourceOptions,
+    // Inherited deck.gl loader options must neither override nor supply source options.
+    loadOptions: {
+      core: {worker: true, loaders: [ignoredParser], fetch: {headers: {'X-Legacy': 'no'}}},
+      wms: {substituteCRS84: true},
+      imagebitmap: {imageOrientation: 'flipY'}
+    }
+  } as ImageSourceLayerProps);
+
+  expect(layer._resolveData(layer.props)).toBe(TEST_IMAGE_SOURCE);
+  expect(sourceFactory.createDataSource).toHaveBeenCalledExactlyOnceWith(
+    'memory://image-source',
+    {
+      ...sourceOptions,
+      core: {
+        ...sourceOptions?.core,
+        type: 'wms',
+        loaders: hasSourceOptions ? [sourceParser, layerParser] : [layerParser]
+      }
+    },
+    expect.objectContaining({parse: expect.any(Function)})
+  );
+});
+
 test('ImageSourceLayer#creates an ImageSet for resolved sources', () => {
   const layer = createLayer();
   layer.state = {

@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import type {ImageType} from '@loaders.gl/images';
+import type {ImageType, ImageLoaderOptions} from '@loaders.gl/images';
 import {ImageLoader} from '@loaders.gl/images';
 import type {
   CoreAPI,
@@ -18,18 +18,19 @@ import type {LERCData} from '@loaders.gl/lerc';
 import {LERCLoader} from '@loaders.gl/lerc';
 
 /** Options for the ArcGIS ImageServer tile source. */
-export type ArcGISImageTileSourceLoaderOptions = DataSourceOptions & {
-  'arcgis-image-server-tiles'?: {
-    /** Tile size used for exportImage requests. */
-    tileSize?: number;
-    /** Optional service URL pool for simple request distribution. */
-    urls?: string[];
-    /** Additional exportImage parameters. */
-    parameters?: Record<string, string | number | boolean>;
-    /** Response format, using LERC for analytical raster tiles. */
-    format?: 'png32' | 'lerc';
+export type ArcGISImageTileSourceLoaderOptions = DataSourceOptions &
+  ImageLoaderOptions & {
+    'arcgis-image-server-tiles'?: {
+      /** Tile size used for exportImage requests. */
+      tileSize?: number;
+      /** Optional service URL pool for simple request distribution. */
+      urls?: string[];
+      /** Additional exportImage parameters. */
+      parameters?: Record<string, string | number | boolean>;
+      /** Response format, using LERC for analytical raster tiles. */
+      format?: 'png32' | 'lerc';
+    };
   };
-};
 
 /** A tile source that renders ArcGIS ImageServer exports as deck.gl tiles. */
 export class ArcGISImageTileSource

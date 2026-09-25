@@ -13,14 +13,10 @@ test('MVTTileSource#getTile forwards cancellation to the tile request', async ()
   let receivedSignal: AbortSignal | null = null;
   const source = new MVTTileSource('https://example.com/{z}/{x}/{y}.pbf', {
     core: {
-      loadOptions: {
-        core: {
-          fetch: async (url, options) => {
-            if (String(url).endsWith('tilejson.json')) return new Response(null, {status: 404});
-            receivedSignal = options?.signal || null;
-            return new Response(new Uint8Array([1, 2, 3]));
-          }
-        }
+      fetch: async (url, options) => {
+        if (String(url).endsWith('tilejson.json')) return new Response(null, {status: 404});
+        receivedSignal = options?.signal || null;
+        return new Response(new Uint8Array([1, 2, 3]));
       }
     }
   });
@@ -41,13 +37,13 @@ test('MVTTileSource#getVectorTile forwards requested layers to the decoder', asy
   const source = new MVTTileSource(
     'https://example.com/{z}/{x}/{y}.pbf',
     {
-      mvt: {metadataUrl: null, shape: 'arrow-table'},
-      core: {
-        loadOptions: {
-          core: {fetch: async () => new Response(new Uint8Array([1]))},
-          mvt: {layerProperty: 'sourceLayer', layers: ['fallback']}
-        }
-      }
+      mvt: {
+        layerProperty: 'sourceLayer',
+        layers: ['fallback'],
+        metadataUrl: null,
+        shape: 'arrow-table'
+      },
+      core: {fetch: async () => new Response(new Uint8Array([1]))}
     },
     coreApi
   );
@@ -67,23 +63,19 @@ test('MVTTileSource applies credentials to TileJSON and descendant tile requests
   const source = new MVTTileSource('https://api.mapbox.com/v4/example.tiles', {
     mvt: {extension: '.mvt'},
     core: {
-      loadOptions: {
-        core: {
-          credentials: [
-            createQueryParameterCredential({
-              id: 'mapbox-token',
-              origins: ['https://api.mapbox.com'],
-              parameterName: 'access_token',
-              token: 'public-token'
-            })
-          ],
-          fetch: async url => {
-            requestedURLs.push(String(url));
-            return String(url).includes('tilejson.json')
-              ? new Response(null, {status: 404})
-              : new Response(new Uint8Array([1]));
-          }
-        }
+      credentials: [
+        createQueryParameterCredential({
+          id: 'mapbox-token',
+          origins: ['https://api.mapbox.com'],
+          parameterName: 'access_token',
+          token: 'public-token'
+        })
+      ],
+      fetch: async url => {
+        requestedURLs.push(String(url));
+        return String(url).includes('tilejson.json')
+          ? new Response(null, {status: 404})
+          : new Response(new Uint8Array([1]));
       }
     }
   });

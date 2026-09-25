@@ -71,7 +71,7 @@ test('COPCSourceLoader#conclusively reports common scan support', async () => {
 
 test('COPCSourceLoader#scans bounded projected Arrow point batches with a global limit', async () => {
   const source = COPCSourceLoader.createDataSource(await createEllipsoidSourceData(), {
-    core: {loadOptions: {core: {worker: false}}}
+    core: {worker: false}
   });
   const metadata = await source.getQueryMetadata();
   const bounds = metadata.spatial?.bounds;
@@ -105,7 +105,7 @@ test('COPCSourceLoader#scans bounded projected Arrow point batches with a global
 
 test('COPCSourceLoader#normalizes boolean predicates and preserves empty projections', async () => {
   const source = COPCSourceLoader.createDataSource(await createEllipsoidSourceData(), {
-    core: {loadOptions: {core: {worker: false}}}
+    core: {worker: false}
   });
   const batches = [];
 
@@ -230,7 +230,7 @@ test('COPCSourceLoader#implements the TileSource getTileData contract', async ()
 
 test('COPCSourceLoader#applies selected columns to atomic TypeScript decoding', async () => {
   const source = COPCSourceLoader.createDataSource(await createEllipsoidSourceData(), {
-    core: {loadOptions: {core: {worker: false}}}
+    core: {worker: false}
   });
   await source.initialize();
 
@@ -250,7 +250,7 @@ test('COPCSourceLoader#applies selected columns to atomic TypeScript decoding', 
 test('COPCSourceLoader#float16 converts 16-bit colors for Arrow output', async () => {
   const source = COPCSourceLoader.createDataSource(await createEllipsoidSourceData(), {
     copc: {colorFormat: 'float16'},
-    core: {loadOptions: {core: {worker: false}}}
+    core: {worker: false}
   });
   await source.initialize();
 
@@ -270,17 +270,10 @@ test('COPCSourceLoader#float16 converts 16-bit colors for Arrow output', async (
 test('COPCSourceLoader#uses the shared TypeScript LAS worker for atomic nodes', async () => {
   const blob = await createEllipsoidBlob();
   const workerSource = createDataSource(blob, [COPCSourceLoader], {
-    core: {
-      type: 'copc',
-      loadOptions: {
-        core: {worker: true, reuseWorkers: false, _workerType: 'test'}
-      }
-    },
-    copc: {decodeConcurrency: 2}
+    copc: {decodeConcurrency: 2},
+    core: {worker: true, reuseWorkers: false, _workerType: 'test', type: 'copc'}
   });
-  const mainThreadSource = COPCSourceLoader.createDataSource(blob, {
-    core: {loadOptions: {core: {worker: false}}}
-  });
+  const mainThreadSource = COPCSourceLoader.createDataSource(blob, {core: {worker: false}});
   await Promise.all([workerSource.initialize(), mainThreadSource.initialize()]);
   const rootTile = await workerSource.getRootTile();
   const decodeNodeOnWorker = vi.spyOn(workerSource as any, 'decodeNodeOnWorker');
@@ -311,15 +304,10 @@ test.each([
 ] as const)('COPCSourceLoader#worker matches main-thread PDRF %i node decoding', async pointDataRecordFormat => {
   const blob = createWorkerCOPCBlob(pointDataRecordFormat);
   const workerSource = createDataSource(blob, [COPCSourceLoader], {
-    core: {
-      type: 'copc',
-      loadOptions: {core: {worker: true, _workerType: 'test'}}
-    },
-    copc: {decodeConcurrency: 2}
+    copc: {decodeConcurrency: 2},
+    core: {worker: true, _workerType: 'test', type: 'copc'}
   });
-  const mainThreadSource = COPCSourceLoader.createDataSource(blob, {
-    core: {loadOptions: {core: {worker: false}}}
-  });
+  const mainThreadSource = COPCSourceLoader.createDataSource(blob, {core: {worker: false}});
   await Promise.all([workerSource.initialize(), mainThreadSource.initialize()]);
   const rootTile = await workerSource.getRootTile();
   const decodeNodeOnWorker = vi.spyOn(workerSource as any, 'decodeNodeOnWorker');
@@ -345,7 +333,7 @@ test('COPCSourceLoader#bounds complete node fetch and decode concurrency', async
   const sourceBytes = new Uint8Array(await (await fetchFile(ELLIPSOID_BROWSER_URL)).arrayBuffer());
   const source = new TestCOPCTileSource(new Blob([sourceBytes]), {
     copc: {decodeConcurrency: 2},
-    core: {loadOptions: {core: {worker: false}}}
+    core: {worker: false}
   });
   await source.initialize();
   const rootTile = await source.getRootTile();
@@ -370,7 +358,7 @@ test('COPCSourceLoader#cancels an atomic node queued behind the concurrency boun
   const sourceBytes = new Uint8Array(await (await fetchFile(ELLIPSOID_BROWSER_URL)).arrayBuffer());
   const source = new TestCOPCTileSource(new Blob([sourceBytes]), {
     copc: {decodeConcurrency: 1},
-    core: {loadOptions: {core: {worker: false}}}
+    core: {worker: false}
   });
   await source.initialize();
   const rootTile = await source.getRootTile();

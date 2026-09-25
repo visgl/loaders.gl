@@ -168,27 +168,71 @@ applications that only need the common raster contract.
 
 ## Options
 
-Just like loaders, source loaders accept nested options, so that options for multiple source loaders can be specified:
+Sources and their internal parsers share one options object:
+
+- `core` contains shared loading controls and source selection.
+- Source-specific settings live in the source namespace, such as `pmtiles`.
+- Parser settings live in their usual namespaces, such as `mvt`, `mlt`, or `imagebitmap`.
+
+For a single source and parser, use the same namespace for both:
 
 ```ts
 import {createDataSource} from '@loaders.gl/core';
-import {PMTilesSourceLoader} from '@loaders.gl/pmtiles';
 import {MVTSourceLoader} from '@loaders.gl/mvt';
 
-const dataSource = createDataSource(url, [PMTilesSourceLoader, MVTSourceLoader], {
-  core: {
-    // Any common options for createDataSource
-  },
-  pmtiles: {
-    // Options specific to PMTilesSourceLoader, used if the URL is determined to reference a PMTiles file.
-  },
+const source = createDataSource(url, [MVTSourceLoader], {
+  core: {worker: false},
   mvt: {
-    // Options specific to MVTSourceLoader, used if the URL is determined to reference an MVT file hierarchy.
+    metadataUrl: null, // Source setting
+    layerProperty: 'sourceLayer' // Parser setting
   }
 });
 ```
 
-A source loader can sometimes use one or more loaders internally to load sub resources. In this case, the application can pass options to those loaders using the `core.loadOptions` property.
+For multiple candidate sources or multiple internal parsers, add their namespaces side by side:
+
+```typescript
+import {PMTilesSourceLoader} from '@loaders.gl/pmtiles';
+
+const source = createDataSource(url, [PMTilesSourceLoader, MVTSourceLoader], {
+  core: {worker: false, fetch: {headers: {Authorization: 'Bearer …'}}},
+  pmtiles: {shape: 'arrow-table'},
+  mvt: {layerProperty: 'sourceLayer', layers: ['roads']},
+  mlt: {layers: ['roads']}
+});
+```
+
+### Shared controls
+
+| Option | Purpose |
+| --- | --- |
+| `core.type` | Select a candidate source by its type. Defaults to `'auto'`. |
+| `core.fetch` | A custom fetch function or `RequestInit` settings, such as HTTP headers. |
+| `core.credentials` | Scoped credentials for authenticated requests. |
+| `core.worker` | Control worker use by internal parsers: `true`, `false`, or `'auto'`. |
+| `core.loaders` | Additional loaders for sources that support dynamic parser selection. |
+| `core.attributions` | Attribution text for the source. |
+| `core.onError` | Callback for source initialization or metadata errors. |
+
+### Forwarding and precedence
+
+`core.fetch` and `core.credentials` apply to source requests and parser subresources. A source
+forwards parser namespaces unchanged unless it must supply request-specific settings such as tile
+coordinates. Explicit source output settings, such as `pmtiles.shape`, take precedence over parser
+settings. When a source and its parser use the same namespace (for example `mvt`), their options
+are combined there. Source selection still uses `core.type`.
+
+This convention also applies to `load(url, SourceLoader, options)` and direct source constructors.
+The `core.loadOptions` and top-level source `loadOptions` wrappers are no longer accepted.
+Known parser namespaces are typed; additional namespaces remain extensible for dynamically chosen
+loaders. An unknown namespace is therefore not guaranteed to produce a TypeScript error.
+
+### Source-backed layer options
+
+When using `ImageSourceLayer` or `Tile2DSourceLayer`, put this flat options object in the layer's
+`sourceOptions` prop. This is the sole entry point for source configuration, including its internal
+parser settings. The inherited deck.gl `loadOptions` prop does not supply or override source options.
+Additional parsers can be provided through `sourceOptions.core.loaders` or the layer's `loaders` prop.
 
 ## Example
 

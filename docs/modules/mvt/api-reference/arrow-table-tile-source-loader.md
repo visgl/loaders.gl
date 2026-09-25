@@ -96,6 +96,9 @@ geographic output uses the canonical wrapped tile. Repeated requests do not muta
 
 ## Options
 
+For shared loading controls and parser configuration, see
+[Source options](/docs/developer-guide/using-sources#options). The settings below are specific to this source.
+
 | Option | Default | Description |
 | --- | --- | --- |
 | `table.geometryColumn` | Auto-detected | Geometry field to index and clip |
