@@ -212,7 +212,9 @@ when its image MIME type is unsupported.
 
 Supports compression of mesh attributes (geometry).
 
-The `GLTFLoader` by default fully decompresses draco compressed geometries, removing the draco extension and the compressed data from the parsed glTF data structure.
+The `GLTFLoader` by default fully decompresses Draco-compressed geometries and removes the Draco
+extension from the parsed glTF data structure. The original buffers remain available for other
+buffer views, including when decoding runs on worker threads.
 
 Specification: [KHR_draco_mesh_compression](https://github.com/KhronosGroup/glTF/tree/master/extensions/2.0/Khronos/KHR_draco_mesh_compression).
 

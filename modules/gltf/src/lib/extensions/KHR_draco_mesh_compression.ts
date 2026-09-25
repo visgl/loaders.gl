@@ -96,7 +96,8 @@ async function decompressPrimitive(
     iterator.gltf.buffers,
     dracoExtension.bufferView
   );
-  const compressedData = getExactArrayBuffer(buffer);
+  // A decoder worker can transfer its input, so it must not own the shared glTF buffer.
+  const compressedData = sliceArrayBuffer(buffer.buffer, buffer.byteOffset, buffer.byteLength);
 
   const dracoOptions: DracoLoaderOptions = {
     ...options,
@@ -151,16 +152,4 @@ function checkPrimitive(primitive: GLTFMeshPrimitive): void {
   if (!primitive.attributes || Object.keys(primitive.attributes).length === 0) {
     throw new Error('glTF: Empty primitive detected: Draco decompression failure?');
   }
-}
-
-/** Returns an exact ArrayBuffer for a compressed buffer view, copying only when required. */
-function getExactArrayBuffer(buffer: Uint8Array): ArrayBuffer {
-  if (
-    buffer.buffer instanceof ArrayBuffer &&
-    buffer.byteOffset === 0 &&
-    buffer.byteLength === buffer.buffer.byteLength
-  ) {
-    return buffer.buffer;
-  }
-  return sliceArrayBuffer(buffer.buffer, buffer.byteOffset, buffer.byteLength);
 }
