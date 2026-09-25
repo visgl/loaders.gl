@@ -113,10 +113,15 @@ export async function parseInBatches(
   }
 
   // Normalize options
+  const normalizedOptions = normalizeOptions(options, loader, loaderArray, url);
+  const authenticationLoader =
+    !loader.getAuthentications && normalizedOptions.core?.credentials?.length
+      ? await getLoaderImplementation(loader, normalizedOptions, url || context?.url)
+      : loader;
   const strictOptions = await resolveLoaderAuthenticationOptions(
-    loader,
+    authenticationLoader,
     url || '',
-    normalizeOptions(options, loader, loaderArray, url)
+    normalizedOptions
   );
   context = getLoaderContext(
     {url, _parseInBatches: parseInBatches, _parse: parse, loaders: loaderArray},

@@ -123,8 +123,12 @@ export async function parse(
   // Normalize options
   // @ts-expect-error candidateLoaders
   const normalizedOptions = normalizeOptions(options, loader, candidateLoaders, url); // Could be invalid...
+  const authenticationLoader =
+    !loader.getAuthentications && normalizedOptions.core?.credentials?.length
+      ? await getLoaderImplementation(loader, normalizedOptions, url || context?.url)
+      : loader;
   const strictOptions = await resolveLoaderAuthenticationOptions(
-    loader,
+    authenticationLoader,
     url || '',
     normalizedOptions
   );

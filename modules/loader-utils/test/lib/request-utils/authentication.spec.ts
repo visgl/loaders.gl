@@ -290,6 +290,64 @@ describe('request authentication callbacks', () => {
     expect(authenticate).toHaveBeenCalledTimes(2);
   });
 
+  test('nested wrappers reuse declarations without sharing instances across independent transports', async () => {
+    const constructed = vi.fn();
+    const signed = vi.fn();
+    /** Tracks the lifetime of an application-provided declarative signer. */
+    class SigningAuthentication implements RequestAuthentication {
+      /** Declarative registry discriminator. */
+      static readonly type = 'test-signer';
+      /** Callback runtime discriminator. */
+      readonly type = 'request';
+      /** Allowed signing destination. */
+      readonly origins = [ORIGIN];
+      /** Identifier supplied in the declaration. */
+      readonly id: string;
+      /** Records construction from a single declaration. */
+      constructor(configuration: {id: string}) {
+        this.id = configuration.id;
+        constructed(this.id);
+      }
+      /** Appends one deterministic signature for this credential. */
+      authenticate({url, options}: AuthenticationRequest) {
+        signed(this.id);
+        const target = new URL(url);
+        target.searchParams.append('signature', this.id);
+        return {url: target.href, options};
+      }
+    }
+    const transport = vi.fn<FetchLike>(async () => new Response('ok'));
+    const credentials = [{type: 'test-signer', id: 'first'}];
+    const authentications = [SigningAuthentication];
+    const parent = createAuthenticatedFetch({fetch: transport, credentials, authentications});
+    expect(createAuthenticatedFetch({fetch: parent, credentials, authentications})).toBe(parent);
+    const nested = createAuthenticatedFetch({
+      fetch: parent,
+      credentials: [...credentials],
+      authentications,
+      fetchOptions: {headers: {'x-default': 'value'}}
+    });
+    await nested(`${ORIGIN}/one`);
+    expect(transport.mock.calls[0][0]).toBe(`${ORIGIN}/one?signature=first`);
+    expect(constructed).toHaveBeenCalledTimes(1);
+    expect(signed).toHaveBeenCalledTimes(1);
+
+    const additional = {type: 'test-signer', id: 'second'};
+    const extended = createAuthenticatedFetch({
+      fetch: nested,
+      credentials: [additional, ...credentials],
+      authentications
+    });
+    await extended(`${ORIGIN}/two`);
+    expect(transport.mock.calls[1][0]).toBe(`${ORIGIN}/two?signature=second&signature=first`);
+    expect(constructed).toHaveBeenCalledTimes(2);
+    expect(signed.mock.calls.map(([id]) => id)).toEqual(['first', 'second', 'first']);
+
+    createAuthenticatedFetch({fetch: transport, credentials, authentications});
+    expect(constructed).toHaveBeenCalledTimes(3);
+    expect(credentials[0]).toEqual({type: 'test-signer', id: 'first'});
+  });
+
   test.each(['POST', 'PATCH'])('does not replay unsafe %s requests', async method => {
     const transport = vi.fn<FetchLike>(async () => new Response(null, {status: 403}));
     const fetch = createAuthenticatedFetch({

@@ -114,6 +114,8 @@ type AuthenticatedFetchMetadata = {
   fetch: FetchLike;
   /** Resolved credentials in application precedence order. */
   credentials: readonly Authentication[];
+  /** Declaration identities already instantiated by this transport pipeline. */
+  credentialResolutions: ReadonlyMap<Credential, Authentication>;
   /** Defaults applied before authentication. */
   fetchOptions?: RequestInit;
 };
@@ -204,10 +206,21 @@ export function createAuthenticatedFetch(options: AuthenticatedFetchOptions): Fe
   const existingMetadata = (
     suppliedFetch as FetchLike & {[AUTHENTICATED_FETCH]?: AuthenticatedFetchMetadata}
   )[AUTHENTICATED_FETCH];
-  const resolvedCredentials = resolveCredentials(options.credentials, options.authentications);
+  const credentialResolutions = new Map(existingMetadata?.credentialResolutions);
+  const resolvedCredentials = resolveCredentials(
+    options.credentials.map(credential => credentialResolutions.get(credential) || credential),
+    options.authentications
+  );
+  options.credentials.forEach((credential, index) => {
+    credentialResolutions.set(credential, resolvedCredentials[index]);
+  });
   if (
     !options.fetchOptions &&
-    (!resolvedCredentials.length || existingMetadata?.credentials === resolvedCredentials)
+    (!resolvedCredentials.length ||
+      (existingMetadata?.credentials.length === resolvedCredentials.length &&
+        resolvedCredentials.every(
+          (credential, index) => credential === existingMetadata.credentials[index]
+        )))
   )
     return suppliedFetch;
   const baseFetch = existingMetadata?.fetch || suppliedFetch;
@@ -284,7 +297,12 @@ export function createAuthenticatedFetch(options: AuthenticatedFetchOptions): Fe
   };
 
   Object.defineProperty(authenticatedFetch, AUTHENTICATED_FETCH, {
-    value: {fetch: baseFetch, credentials, fetchOptions} satisfies AuthenticatedFetchMetadata
+    value: {
+      fetch: baseFetch,
+      credentials,
+      credentialResolutions,
+      fetchOptions
+    } satisfies AuthenticatedFetchMetadata
   });
   return authenticatedFetch;
 }

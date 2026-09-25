@@ -40,7 +40,7 @@ order remains the order in `core.credentials` and multiple configurations can in
 same class. Unknown types, invalid constructor results, and constructor failures reject the load
 before its data request; diagnostics identify the entry index without printing configuration.
 
-The hook is on loader metadata, or on its resolved implementation when loading a URL. It is
+The hook is on loader metadata, or on its resolved implementation in the asynchronous load and parse APIs. It is
 discovery only and should not make credentialed data requests. `preload()` keeps its existing
 implementation-resolution contract. Synchronous `createDataSource()` accepts synchronous hooks;
 applications use `load()` when discovery is asynchronous. Direct source constructors require
@@ -49,6 +49,10 @@ application-provided classes in options because no loader discovery runs there.
 Resolved options carry credential instances to the parser, sources and child requests. The
 application's configuration objects are not modified. Instances are created once per load and
 reused within that load; supplying an existing instance explicitly permits sharing across loads.
+Nested authenticated transports also reuse instances for the same declaration objects, including
+when a new array contains those objects. Declarations are treated as immutable within that transport
+pipeline; use new configuration objects for changed credentials. Independent transports resolve
+their own instances.
 
 ## Request signing callbacks
 

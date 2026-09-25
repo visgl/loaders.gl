@@ -101,7 +101,15 @@ export async function parseFile(
 
   // @ts-expect-error candidateLoaders may be a single forced loader
   const normalizedOptions = normalizeOptions(options, loader, candidateLoaders, url);
-  const strictOptions = await resolveLoaderAuthenticationOptions(loader, url, normalizedOptions);
+  const authenticationLoader =
+    !loader.getAuthentications && normalizedOptions.core?.credentials?.length
+      ? await getLoaderImplementation(loader, normalizedOptions, url || context?.url)
+      : loader;
+  const strictOptions = await resolveLoaderAuthenticationOptions(
+    authenticationLoader,
+    url,
+    normalizedOptions
+  );
   context = getLoaderContext(
     // @ts-expect-error candidateLoaders may be a single forced loader
     {url, _parse: parse, loaders: candidateLoaders},

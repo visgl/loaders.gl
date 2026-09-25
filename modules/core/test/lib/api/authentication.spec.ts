@@ -3,8 +3,15 @@
 // Copyright (c) vis.gl contributors
 
 import {expect, test, vi} from 'vitest';
-import {createDataSource, load, loadInBatches, parse} from '@loaders.gl/core';
-import {BearerTokenAuthentication, DataSource} from '@loaders.gl/loader-utils';
+import {
+  createDataSource,
+  load,
+  loadInBatches,
+  parse,
+  parseFile,
+  parseInBatches
+} from '@loaders.gl/core';
+import {BearerTokenAuthentication, BlobFile, DataSource} from '@loaders.gl/loader-utils';
 import type {
   FetchLike,
   LoaderOptions,
@@ -123,6 +130,47 @@ test('URL loading discovers authentication on a lazily loaded parser implementat
     `${ORIGIN}/root.auth?signature=secret`,
     `${ORIGIN}/child?signature=secret`
   ]);
+});
+
+test.each([
+  'parse',
+  'parseInBatches',
+  'parseFile'
+] as const)('%s discovers lazy parser authentication before creating the nested fetch context', async api => {
+  TestAuthentication.constructions = 0;
+  const transport = vi.fn<FetchLike>(async () => new Response('child'));
+  const hook = vi.fn(() => [TestAuthentication]);
+  const implementation = {
+    ...TestLoader,
+    getAuthentications: hook,
+    parseFile: async (_file, _options, context) => (await context.fetch(`${ORIGIN}/child`)).text()
+  } satisfies LoaderWithParser;
+  const preload = vi.fn(async () => implementation);
+  const metadata = {
+    ...TestLoader,
+    parse: undefined,
+    parseInBatches: undefined,
+    getAuthentications: undefined,
+    preload
+  };
+  const options = getOptions(transport);
+  const data = new ArrayBuffer(1);
+  if (api === 'parse') {
+    expect(await parse(data, metadata, options)).toBe('child');
+  } else if (api === 'parseFile') {
+    expect(await parseFile(new BlobFile(data), metadata, options)).toBe('child');
+  } else {
+    const batches = await parseInBatches([data], metadata, options);
+    const results: unknown[] = [];
+    for await (const batch of batches) results.push(batch);
+    expect(results).toEqual(['child']);
+  }
+  expect(hook).toHaveBeenCalledTimes(1);
+  expect(preload).toHaveBeenCalledTimes(1);
+  expect(TestAuthentication.constructions).toBe(1);
+  expect(transport).toHaveBeenCalledTimes(1);
+  expect(transport.mock.calls[0][0]).toBe(`${ORIGIN}/child?signature=secret`);
+  expect(options.core?.credentials?.[0].type).toBe('test-signing');
 });
 
 /** Minimal source loader exercising the synchronous and async public source APIs. */
