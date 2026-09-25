@@ -74,6 +74,17 @@ A JavaScript API is also available:
 
 Note: the command line tools are implemented using this API and offer the same functions.
 
+### Runtime portability
+
+The converter currently requires Node.js. Binary conversion code uses `ArrayBuffer` and typed
+arrays, and I3S string attributes are encoded with the standard `TextEncoder` API. The string
+encoder is tested in both Chromium and Node.js as an initial step toward browser conversion.
+
+Browser execution still requires alternatives for filesystem output, Node.js worker resolution,
+and texture atlas generation through `join-images`/Sharp. The command-line tools and HTTP server
+also remain Node.js applications. The HTTP server retains a `Buffer` conversion at the Express
+response boundary so binary responses keep their existing behavior.
+
 ## References
 
 - The `@loaders.gl/i3s` module supports loading and traversing Indexed 3d Scene Layer (I3S).

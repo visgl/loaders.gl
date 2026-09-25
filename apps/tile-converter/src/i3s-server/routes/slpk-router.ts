@@ -29,6 +29,7 @@ router.get('*', (req, res, next) => {
         const json = JSON.parse(textDecoder.decode(file));
         res.send(json);
       } catch (_e) {
+        // Express 4 sends typed arrays as JSON; adapt only at this Node.js HTTP boundary.
         res.send(Buffer.from(file));
       }
     } else {
