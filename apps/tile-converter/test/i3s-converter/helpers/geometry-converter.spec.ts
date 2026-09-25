@@ -593,10 +593,9 @@ test('tile-converter(i3s)#convertB3dmToI3sGeometry - should convert 64-bit attri
       geoidHeightModel,
       libraries: {}
     });
-    if (!convertedResources?.[0].attributes?.[1]) {
-      return;
-    }
-    const attributes = new Uint8Array(convertedResources[0].attributes[1]);
+    const attribute = convertedResources?.[0].attributes?.[1];
+    expect(attribute, '64-bit attribute buffer is emitted').toBeTruthy();
+    const attributes = new Uint8Array(attribute as ArrayBuffer);
     const attributesExpected = new Uint8Array(attributeBufferExpected);
     expect(attributes, '64-bit int values converted to strings').toEqual(attributesExpected);
   } finally {
