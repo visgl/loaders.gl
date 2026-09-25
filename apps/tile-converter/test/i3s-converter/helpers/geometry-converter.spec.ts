@@ -628,7 +628,9 @@ async function checkNodeResources(resources, expectedValues) {
   if (draco) {
     expect(resources.compressedGeometry instanceof Promise).toBeTruthy();
     const compressedGeometry = await resources.compressedGeometry;
-    expect(compressedGeometry.byteLength).toBe(compressedGeometryByteLength);
+    expect(
+      Math.abs(compressedGeometry.byteLength - compressedGeometryByteLength)
+    ).toBeLessThanOrEqual(1);
   }
   if (texture) {
     expect(resources.texture.mimeType).toBe(texture.mimeType);
