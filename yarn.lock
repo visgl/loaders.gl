@@ -5875,6 +5875,7 @@ __metadata:
     json-map-transform: "npm:^1.2.6"
     md5: "npm:^2.3.0"
     morgan: "npm:~1.9.1"
+    typescript: "npm:^6.0.3"
     uuid: "npm:^9.0.0"
   peerDependencies:
     "@loaders.gl/core": ~5.0.0-alpha.0

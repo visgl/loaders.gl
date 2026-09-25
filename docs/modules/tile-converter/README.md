@@ -17,6 +17,7 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
   links={[
     {label: 'I3S converter', to: '/docs/modules/tile-converter/api-reference/i3s-converter'},
     {label: '3D Tiles converter', to: '/docs/modules/tile-converter/api-reference/3d-tiles-converter'},
+    {label: 'Experimental v5 core', to: '/docs/modules/tile-converter/api-reference/v5-conversion'},
     {label: 'Build instructions', to: '/docs/modules/tile-converter/api-reference/build-instructions'}
   ]}
 />
@@ -71,6 +72,7 @@ A JavaScript API is also available:
 
 - `I3SConverter` class that converts 3DTiles to I3S
 - `Tiles3DConverter` class that converts I3S to 3DTiles
+- The experimental [`@loaders.gl/tile-converter/v5` core](/docs/modules/tile-converter/api-reference/v5-conversion) for injected, platform-specific conversion adapters.
 
 Note: the command line tools are implemented using this API and offer the same functions.
 
