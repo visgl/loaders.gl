@@ -45,7 +45,8 @@
     "process": false
   },
   "scripts": {
-    "pre-build": "npm run build-converter-bundle && npm run build-i3s-server-bundle && npm run copy-certificates",
+    "build-package-entrypoint": "esbuild src/index.ts --bundle --packages=external --platform=node --format=esm --outfile=dist/index.js && esbuild src/index.ts --bundle --packages=external --platform=node --format=cjs --outfile=dist/index.cjs",
+    "pre-build": "npm run build-package-entrypoint && npm run build-converter-bundle && npm run build-i3s-server-bundle && npm run copy-certificates",
     "build-converter-bundle": "esbuild src/converter-cli.ts --outfile=dist/converter.min.cjs --platform=node --target=esnext,node14 --external:join-images --minify --bundle --define:__VERSION__=\\\"$npm_package_version\\\"",
     "build-i3s-server-bundle": "esbuild src/i3s-server/bin/www.ts --outfile=dist/i3s-server/bin/i3s-server.min.cjs --platform=node --target=esnext,node14 --minify --bundle --define:__VERSION__=\\\"$npm_package_version\\\"",
     "copy-certificates": "cp -R src/i3s-server/certs dist/i3s-server"
