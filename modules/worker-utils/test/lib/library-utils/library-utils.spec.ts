@@ -1,5 +1,10 @@
 import {expect, test} from 'vitest';
-import {extractLoadLibraryOptions, getLibraryUrl, isBrowser} from '@loaders.gl/worker-utils';
+import {
+  extractLoadLibraryOptions,
+  getLibraryUrl,
+  isBrowser,
+  loadLibrary
+} from '@loaders.gl/worker-utils';
 import {VERSION} from '../../../src/lib/env-utils/version';
 const DRACO_DECODER_URL =
   'https://www.gstatic.com/draco/versioned/decoders/1.5.6/draco_decoder.wasm';
@@ -40,6 +45,27 @@ test('getLibraryUrl # module override takes precedence over the default CDN URL'
     'draco_decoder.wasm'
   );
   expect(result).toBe('/assets/draco_decoder.wasm');
+});
+test('loadLibrary # returns injected binary and module values directly', async () => {
+  const wasmBinary = new ArrayBuffer(8);
+  const decoderModule = {createDecoderModule: () => Promise.resolve({})};
+
+  await expect(
+    loadLibrary(
+      'https://www.gstatic.com/draco/versioned/decoders/1.5.7/draco_decoder.wasm',
+      'draco',
+      {modules: {'draco_decoder.wasm': wasmBinary}},
+      'draco_decoder.wasm'
+    )
+  ).resolves.toBe(wasmBinary);
+  await expect(
+    loadLibrary(
+      'https://www.gstatic.com/draco/versioned/decoders/1.5.7/draco_wasm_wrapper.js',
+      'draco',
+      {modules: {'draco_wasm_wrapper.js': decoderModule}},
+      'draco_wasm_wrapper.js'
+    )
+  ).resolves.toBe(decoderModule);
 });
 test('extractLoadLibraryOptions # flattens core options and preserves modules', () => {
   const modules = {

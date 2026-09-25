@@ -79,6 +79,10 @@ export async function loadLibrary(
   libraryName: string | null = null
 ): Promise<any> {
   if (moduleName) {
+    const injectedLibrary = options.modules?.[libraryName || libraryUrl];
+    if (injectedLibrary !== undefined && typeof injectedLibrary !== 'string') {
+      return injectedLibrary;
+    }
     libraryUrl = getLibraryUrl(libraryUrl, moduleName, options, libraryName);
   }
   // Ensure libraries are only loaded once
@@ -104,7 +108,7 @@ export function getLibraryUrl(
   // Allow application to import and supply libraries through `options.modules`
   // TODO - See js-module-utils in loader-utils
   const modules = options.modules || {};
-  if (modules[libraryName]) {
+  if (typeof modules[libraryName] === 'string') {
     return modules[libraryName];
   }
 
