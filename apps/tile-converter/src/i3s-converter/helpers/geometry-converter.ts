@@ -34,6 +34,7 @@ import {
 import md5 from 'md5';
 import {v4 as uuidv4} from 'uuid';
 import {generateAttributes} from './geometry-attributes';
+import {encodeStringAttribute} from './encode-string-attribute';
 import {createBoundingVolumesFromGeometry} from './coordinate-converter';
 import {
   ConvertedAttributes,
@@ -1028,15 +1029,18 @@ async function mergeMaterials(
     material1.mergedMaterials &&
     material2.mergedMaterials
   ) {
-    const buffer1 = Buffer.from(material1.texture.bufferView.data);
-    const buffer2 = Buffer.from(material2.texture.bufferView.data);
+    const firstImageBytes = new Uint8Array(material1.texture.bufferView.data);
+    const secondImageBytes = new Uint8Array(material2.texture.bufferView.data);
     try {
       // @ts-ignore
       const {joinImages} = await import('join-images');
-      const sharpData = await joinImages([buffer1, buffer2], {direction: 'horizontal'});
-      material1.texture.bufferView.data = await sharpData
+      const sharpData = await joinImages([firstImageBytes, secondImageBytes], {
+        direction: 'horizontal'
+      });
+      const encodedImage = await sharpData
         .toFormat(material1.texture.mimeType === 'image/png' ? 'png' : 'jpeg')
         .toBuffer();
+      material1.texture.bufferView.data = new Uint8Array(encodedImage);
     } catch (error) {
       // eslint-disable-next-line no-console
       console.log(
@@ -1458,10 +1462,10 @@ function generateAttributeBuffer(type: string, value: any): ArrayBuffer {
       attributeBuffer = generateDoubleAttributeBuffer(value);
       break;
     case STRING_TYPE:
-      attributeBuffer = generateStringAttributeBuffer(value);
+      attributeBuffer = encodeStringAttribute(value);
       break;
     default:
-      attributeBuffer = generateStringAttributeBuffer(value);
+      attributeBuffer = encodeStringAttribute(value);
   }
 
   return attributeBuffer;
@@ -1497,7 +1501,7 @@ function getAttributeType(key: string, attributeStorageInfo: any[]): string {
 /**
  * Convert short integer to attribute arrayBuffer.
  * @param featureIds
- * @returns - Buffer with objectId data.
+ * @returns ArrayBuffer with objectId data.
  */
 function generateShortIntegerAttributeBuffer(featureIds: any[]): ArrayBuffer {
   const count = new Uint32Array([featureIds.length]);
@@ -1508,7 +1512,7 @@ function generateShortIntegerAttributeBuffer(featureIds: any[]): ArrayBuffer {
 /**
  * Convert double to attribute arrayBuffer.
  * @param featureIds
- * @returns - Buffer with objectId data.
+ * @returns ArrayBuffer with objectId data.
  */
 function generateDoubleAttributeBuffer(featureIds: any[]): ArrayBuffer {
   const count = new Uint32Array([featureIds.length]);
@@ -1516,36 +1520,6 @@ function generateDoubleAttributeBuffer(featureIds: any[]): ArrayBuffer {
   const valuesArray = new Float64Array(featureIds);
 
   return concatenateArrayBuffers(count.buffer, padding.buffer, valuesArray.buffer);
-}
-
-/**
- * Convert batch table attributes to array buffer with batch table data.
- * @param batchAttributes
- * @returns - Buffer with batch table data.
- */
-function generateStringAttributeBuffer(batchAttributes: any[]): ArrayBuffer {
-  const stringCountArray = new Uint32Array([batchAttributes.length]);
-  let totalNumberOfBytes = 0;
-  const stringSizesArray = new Uint32Array(batchAttributes.length);
-  const stringBufferArray: ArrayBuffer[] = [];
-
-  for (let index = 0; index < batchAttributes.length; index++) {
-    const currentString = `${String(batchAttributes[index])}\0`;
-    const currentStringBuffer = Buffer.from(currentString);
-    const currentStringSize = currentStringBuffer.length;
-    totalNumberOfBytes += currentStringSize;
-    stringSizesArray[index] = currentStringSize;
-    stringBufferArray.push(currentStringBuffer);
-  }
-
-  const totalBytes = new Uint32Array([totalNumberOfBytes]);
-
-  return concatenateArrayBuffers(
-    stringCountArray.buffer,
-    totalBytes.buffer,
-    stringSizesArray.buffer,
-    ...stringBufferArray
-  );
 }
 
 /**
