@@ -146,7 +146,7 @@ test('tile-converter(i3s)#handleBatchIdsExtensions - EXT_feature_metadata - Shou
   // @ts-ignore
   const batchIds = handleBatchIdsExtensions(attributes, primitive, images);
   const expectedResult = new Float32Array([0, 0, 1, 1, 2]);
-  expect(batchIds).toEqual(expectedResult);
+  expect(Array.from(batchIds)).toEqual(Array.from(expectedResult));
 });
 test('tile-converter(i3s)#handleBatchIdsExtensions - EXT_feature_metadata - Should return empty batchIds for compressed texture', () => {
   const attributes = {
