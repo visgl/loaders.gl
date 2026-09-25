@@ -40,7 +40,21 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
   tone="violet"
 />
 
-The tile-converter is capable to convert 3D tiles data of formats [3DTiles](https://github.com/CesiumGS/3d-tiles/tree/main/specification) and [I3S](https://github.com/Esri/i3s-spec). Both `3DTiles` and `I3S` are wide specifications which include many internal formats and data types. The tile-converter doesn't cover all features described in those specifications. This sheet summarises the compatibility of the tile-converter with different parts and features of `3DTiles` and `I3S`.
+The tile-converter converts data between [3D Tiles](https://github.com/CesiumGS/3d-tiles/tree/main/specification) and [I3S](https://github.com/Esri/i3s-spec). Both specifications include many internal formats and data types; the converter does not cover every feature. This sheet summarizes the current compatibility boundary.
+
+## Test evidence
+
+The compatibility tables describe the converter's stated capabilities. They do not imply that every version, source, extension, or combination has a hermetic regression test. The required **Tile converter tests** CI job runs `yarn test-tile-converter` after building packages and workers. Its local fixtures currently exercise representative conversions in both directions, Draco output, validation, generated bounds, metadata-class handling, SLPK and 3TZ paths, and graceful handling of failing tile content. The suite also smoke-tests the published package entrypoint.
+
+| Area | Evidence in required CI | Coverage boundary |
+| --- | --- | --- |
+| 3D Tiles to I3S | Representative local tileset conversion, Draco, validation, generated bounds, attributes and textures | Does not qualify every 3D Tiles version or extension combination |
+| I3S to 3D Tiles | SLPK conversion and glTF attribute conversion helpers | A full large-dataset round trip is not part of the fast job |
+| I3S archives | Local SLPK and 3TZ fixtures | Remote services and hosted sources are not contacted |
+| Partial input failure | A fixture with valid and failing content verifies that only available node meshes are written | This does not promise recovery from every malformed input |
+| Package entrypoint | Imports and constructs both exported converters through `@loaders.gl/tile-converter` | CLI installation and invocation are not covered by this smoke test |
+
+Large Frankfurt content checks remain outside the required fast job. Some excluded I3S-to-3D Tiles helper cases still depend on remote fixture URLs or private I3S test imports; they can move into a hermetic lane after those dependencies are removed.
 
 ## Layer types
 
