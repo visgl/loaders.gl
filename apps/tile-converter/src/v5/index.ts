@@ -3,7 +3,7 @@ export {
   inspectTileset,
   TileConversionError,
   validateTileset
-} from './conversion-api';
+} from './conversion-api.js';
 export type {
   ConvertTilesetOptions,
   TileConversionCodec,
@@ -14,4 +14,4 @@ export type {
   TileConversionSource,
   TileValidationReport,
   ValidateTilesetOptions
-} from './conversion-api';
+} from './conversion-api.js';

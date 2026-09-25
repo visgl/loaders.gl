@@ -119,6 +119,7 @@ test('tile-converter(v5)#convertTileset releases source iteration after cancella
   const controller = new AbortController();
   let sourceClosed = false;
   let sinkAborted = false;
+  let conversionCount = 0;
   const source: TileConversionSource<null, Uint8Array> = {
     inspect: async () => null,
     read: async function* () {
@@ -146,6 +147,7 @@ test('tile-converter(v5)#convertTileset releases source iteration after cancella
       sink,
       codec: {
         convert: async function* (resource) {
+          conversionCount++;
           yield resource;
         }
       },
@@ -156,4 +158,5 @@ test('tile-converter(v5)#convertTileset releases source iteration after cancella
   ).rejects.toThrow('cancelled by test');
   expect(sourceClosed).toBe(true);
   expect(sinkAborted).toBe(true);
+  expect(conversionCount).toBe(1);
 });

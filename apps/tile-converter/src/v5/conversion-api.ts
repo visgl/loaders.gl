@@ -206,6 +206,7 @@ export async function convertTileset<TInspection, TInput, TOutput>(
         }
         throwIfAborted(signal);
         await sink.write(outputResource, signal);
+        throwIfAborted(signal);
         outputResources++;
         outputBytes += outputResourceBytes;
         reportProgress('convert');
