@@ -99,12 +99,6 @@ export function getLibraryUrl(
   if (options?.core) {
     throw new Error('loadLibrary: options.core must be pre-normalized');
   }
-
-  // Check if already a URL
-  if (!options.useLocalLibraries && library.startsWith('http')) {
-    return library;
-  }
-
   libraryName = libraryName || library;
 
   // Allow application to import and supply libraries through `options.modules`
@@ -112,6 +106,12 @@ export function getLibraryUrl(
   const modules = options.modules || {};
   if (modules[libraryName]) {
     return modules[libraryName];
+  }
+
+  // Check if already a URL after checking overrides so callers can replace
+  // default CDN URLs with locally bundled assets.
+  if (!options.useLocalLibraries && library.startsWith('http')) {
+    return library;
   }
 
   // Load from local files, not from CDN scripts in Node.js

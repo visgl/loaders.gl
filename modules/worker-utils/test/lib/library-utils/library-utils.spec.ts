@@ -28,6 +28,19 @@ test('getLibraryUrl # should get url from modules option', () => {
   });
   expect(result).toBe('https://c.d.n/draco_decoder.wasm');
 });
+test('getLibraryUrl # module override takes precedence over the default CDN URL', () => {
+  const result = getLibraryUrl(
+    DRACO_DECODER_URL,
+    'draco',
+    {
+      modules: {
+        'draco_decoder.wasm': '/assets/draco_decoder.wasm'
+      }
+    },
+    'draco_decoder.wasm'
+  );
+  expect(result).toBe('/assets/draco_decoder.wasm');
+});
 test('extractLoadLibraryOptions # flattens core options and preserves modules', () => {
   const modules = {
     'draco_decoder.wasm': 'https://c.d.n/draco_decoder.wasm'
