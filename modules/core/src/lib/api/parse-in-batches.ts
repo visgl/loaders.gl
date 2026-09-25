@@ -4,6 +4,7 @@
 
 import type {Batch} from '@loaders.gl/schema';
 import {isTable, makeBatchFromTable} from '@loaders.gl/schema-utils';
+import {resolveLoaderAuthenticationOptions} from '@loaders.gl/loader-utils';
 import type {
   Loader,
   LoaderWithParser,
@@ -112,7 +113,11 @@ export async function parseInBatches(
   }
 
   // Normalize options
-  const strictOptions = normalizeOptions(options, loader, loaderArray, url);
+  const strictOptions = await resolveLoaderAuthenticationOptions(
+    loader,
+    url || '',
+    normalizeOptions(options, loader, loaderArray, url)
+  );
   context = getLoaderContext(
     {url, _parseInBatches: parseInBatches, _parse: parse, loaders: loaderArray},
     strictOptions,

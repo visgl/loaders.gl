@@ -10,11 +10,52 @@ import type {
 } from '@loaders.gl/loader-utils';
 import {
   createAuthenticatedFetch,
+  TokenAuthentication,
   createBearerTokenCredential,
   createQueryParameterCredential
 } from '@loaders.gl/loader-utils';
 
 const CESIUM_ION_API_ORIGIN = 'https://api.cesium.com';
+
+/** Declarative ArcGIS token authentication. */
+export class ArcGISAuthentication extends TokenAuthentication {
+  /** Discriminator used in `core.credentials`. */
+  static readonly type = 'arcgis';
+  /** Creates an exact-origin ArcGIS credential. */
+  constructor(options: ArcGISCredentialOptions) {
+    super(createArcGISCredential(options));
+  }
+}
+
+/** Declarative Mapbox access-token authentication. */
+export class MapboxAuthentication extends TokenAuthentication {
+  /** Discriminator used in `core.credentials`. */
+  static readonly type = 'mapbox';
+  /** Creates a Mapbox credential with the existing provider defaults. */
+  constructor(options: MapboxCredentialOptions) {
+    super(createMapboxCredential(options));
+  }
+}
+
+/** Declarative Google Maps API-key authentication. */
+export class GoogleMapsAuthentication extends TokenAuthentication {
+  /** Discriminator used in `core.credentials`. */
+  static readonly type = 'google-maps';
+  /** Creates a Google Maps credential with the existing provider defaults. */
+  constructor(options: GoogleMapsCredentialOptions) {
+    super(createGoogleMapsCredential(options));
+  }
+}
+
+/** Declarative Cesium ion authentication, including lazy asset-token exchange. */
+export class CesiumIonAuthentication extends TokenAuthentication {
+  /** Discriminator used in `core.credentials`. */
+  static readonly type = 'cesium-ion';
+  /** Creates an ion credential with the existing provider lifecycle. */
+  constructor(options: CesiumIonCredentialOptions) {
+    super(createCesiumIonCredential(options));
+  }
+}
 const CESIUM_ION_ASSET_ORIGINS = [
   'https://assets.ion.cesium.com',
   'https://assets.cesium.com'

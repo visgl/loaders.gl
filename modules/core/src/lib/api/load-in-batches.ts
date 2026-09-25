@@ -6,17 +6,19 @@ import type {
   Loader,
   LoaderOptions,
   LoaderContext,
-  FetchLike,
   BatchableDataType,
   LoaderBatchType,
   LoaderOptionsType,
   LoaderOptionsWithShape,
   LoaderShapeType
 } from '@loaders.gl/loader-utils';
+import {resolveLoaderAuthenticationOptions} from '@loaders.gl/loader-utils';
 import {isLoaderObject} from '../loader-utils/normalize-loader';
 import {getFetchFunction} from '../loader-utils/get-fetch-function';
 
 import {parseInBatches} from './parse-in-batches';
+import {selectLoader} from './select-loader';
+import {getLoaderImplementation} from './load-loader';
 
 type FileType = string | File | Blob | Response | (string | File | Blob | Response)[] | FileList;
 
@@ -73,18 +75,13 @@ export function loadInBatches(
     loadersArray = loaders as Loader | Loader[] | undefined;
   }
 
-  // Select fetch function
-  const fetch = getFetchFunction(options || {});
-
   // Single url/file
   if (!Array.isArray(files)) {
-    return loadOneFileInBatches(files, loadersArray!, options || {}, fetch);
+    return loadOneFileInBatches(files, loadersArray!, options || {});
   }
 
   // Multiple URLs / files
-  const promises = files.map(file =>
-    loadOneFileInBatches(file, loadersArray!, options || {}, fetch)
-  );
+  const promises = files.map(file => loadOneFileInBatches(file, loadersArray!, options || {}));
 
   // No point in waiting here for all responses before starting to stream individual streams?
   return promises;
@@ -93,11 +90,20 @@ export function loadInBatches(
 async function loadOneFileInBatches(
   file: FileType,
   loaders: Loader | Loader[],
-  options: LoaderOptions,
-  fetch: FetchLike
+  options: LoaderOptions
 ): Promise<AsyncIterable<unknown>> {
   if (typeof file === 'string') {
     const url = file;
+    const loader = await selectLoader(url, loaders, {
+      ...options,
+      core: {...options.core, nothrow: true}
+    });
+    const authenticationLoader =
+      loader && !loader.getAuthentications && options.core?.credentials?.length
+        ? await getLoaderImplementation(loader, options, url)
+        : loader;
+    options = await resolveLoaderAuthenticationOptions(authenticationLoader, url, options);
+    const fetch = getFetchFunction(options);
     const response = await fetch(url);
     // pick right overload
     return Array.isArray(loaders)

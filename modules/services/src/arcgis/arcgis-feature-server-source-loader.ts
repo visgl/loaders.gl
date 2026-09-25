@@ -2,6 +2,8 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
+import {ArcGISAuthentication} from '../authentication';
+
 import type {DataType, Schema, GeoJSONTable} from '@loaders.gl/schema';
 import {
   convertFeaturesToWKBArrowTable,
@@ -75,6 +77,8 @@ export const ArcGISFeatureServerSourceLoader = {
   id: 'arcgis-feature-server',
   module: 'services',
   version: '0.0.0',
+  /** Supplies the ArcGIS constructor for declarative service credentials. */
+  getAuthentications: () => [ArcGISAuthentication],
   extensions: [],
   mimeTypes: [],
   type: 'arcgis-feature-server',

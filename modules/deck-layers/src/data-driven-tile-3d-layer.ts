@@ -7,6 +7,7 @@ import type {DefaultProps, UpdateParameters, Viewport} from '@deck.gl/core';
 import {TILE_TYPE, Tile3D, Tileset3D} from '@loaders.gl/tiles';
 import {load} from '@loaders.gl/core';
 import type {RequestCredential} from '@loaders.gl/loader-utils';
+import {resolveLoaderAuthenticationOptions} from '@loaders.gl/loader-utils';
 
 /** Color ramp configuration applied to tile content using a numeric feature attribute. */
 export type ColorsByAttribute = {
@@ -124,12 +125,13 @@ export class DataDrivenTile3DLayer<
 
   /** Loads the root tileset and installs traversal hooks on the resolved `Tileset3D`. */
   private override async _loadTileset(tilesetUrl: string): Promise<void> {
-    const {loadOptions = {}} = this.props;
+    let {loadOptions = {}} = this.props;
 
     let loader: any = this.props.loader || this.props.loaders;
     if (Array.isArray(loader)) {
       loader = loader[0];
     }
+    loadOptions = await resolveLoaderAuthenticationOptions(loader, tilesetUrl, loadOptions);
 
     const options = {loadOptions: {...loadOptions}};
     if (loader.preload) {

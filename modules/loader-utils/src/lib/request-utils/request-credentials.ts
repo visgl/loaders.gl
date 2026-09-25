@@ -4,6 +4,14 @@
 
 import type {FetchLike} from '../../types';
 import type {LoaderOptions} from '../../loader-types';
+import type {
+  Authentication,
+  AuthenticationConstructor,
+  AuthenticationRequest,
+  Credential,
+  RequestAuthentication
+} from './authentication';
+import {resolveCredentials} from './authentication';
 
 /** Reason an application token provider is being invoked. */
 export type TokenProviderReason = 'request' | 'refresh';
@@ -87,7 +95,11 @@ export type AuthenticatedFetchOptions = {
   /** Fetch implementation wrapped by the credential pipeline. Defaults to global fetch. */
   fetch?: FetchLike;
   /** Credentials applied to matching request origins. */
-  credentials: readonly RequestCredential[];
+  credentials: readonly Credential[];
+  /** Classes available to instantiate declarative credential entries. */
+  authentications?: readonly AuthenticationConstructor[];
+  /** Static request defaults, merged before authentication and signing. */
+  fetchOptions?: RequestInit;
 };
 
 type ResolvedCredential = {credential: RequestCredential; token: string};
@@ -95,6 +107,16 @@ type ResolvedCredential = {credential: RequestCredential; token: string};
 const DEFAULT_REFRESH_STATUS_CODES = [401, 403] as const;
 const AUTHENTICATED_FETCH = Symbol('loaders.gl.authenticated-fetch');
 const refreshPromises = new WeakMap<RequestCredential, Promise<string | null>>();
+
+/** Metadata used to compose authenticated transports without applying signatures twice. */
+type AuthenticatedFetchMetadata = {
+  /** Original transport below the authentication pipeline. */
+  fetch: FetchLike;
+  /** Resolved credentials in application precedence order. */
+  credentials: readonly Authentication[];
+  /** Defaults applied before authentication. */
+  fetchOptions?: RequestInit;
+};
 
 /** Creates a token credential placed in a URL query parameter. */
 export function createQueryParameterCredential(
@@ -125,28 +147,111 @@ export function createBearerTokenCredential(
   };
 }
 
+/** Base for authentication classes that adapt configuration to a token credential. */
+export class TokenAuthentication implements RequestCredential {
+  /** Stable identifier used in diagnostics. */
+  readonly id: string;
+  /** Exact origins authorized to receive the token. */
+  readonly origins: readonly string[];
+  /** Transport placement of the token. */
+  readonly type: 'header' | 'query-parameter';
+  /** Header or query parameter name. */
+  readonly name: string;
+  /** Optional prefix for header values. */
+  readonly prefix?: string;
+  /** Static token or application-managed token provider. */
+  readonly token: TokenValue;
+  /** Statuses that permit one refresh and replay. */
+  readonly refreshStatusCodes: readonly number[];
+
+  /** Initializes the instance from an existing transport credential. */
+  constructor(credential: RequestCredential) {
+    this.id = credential.id;
+    this.origins = credential.origins;
+    this.type = credential.type;
+    this.name = credential.name;
+    this.prefix = credential.prefix;
+    this.token = credential.token;
+    this.refreshStatusCodes = credential.refreshStatusCodes;
+  }
+}
+
+/** Instantiates a query-token credential from declarative configuration. */
+export class QueryParameterAuthentication extends TokenAuthentication {
+  /** Discriminator used in `core.credentials`. */
+  static readonly type = 'query-parameter';
+
+  /** Creates a scoped query-token credential. */
+  constructor(options: QueryParameterCredentialOptions) {
+    super(createQueryParameterCredential(options));
+  }
+}
+
+/** Instantiates a bearer credential from declarative configuration. */
+export class BearerTokenAuthentication extends TokenAuthentication {
+  /** Discriminator used in `core.credentials`. */
+  static readonly type = 'bearer-token';
+
+  /** Creates a scoped bearer credential. */
+  constructor(options: BearerTokenCredentialOptions) {
+    super(createBearerTokenCredential(options));
+  }
+}
+
 /** Wraps a fetch function with exact-origin credential application and one refresh replay. */
 export function createAuthenticatedFetch(options: AuthenticatedFetchOptions): FetchLike {
-  const baseFetch = options.fetch || ((url, requestOptions) => fetch(url, requestOptions));
-  if (!options.credentials.length) return baseFetch;
-
+  const suppliedFetch = options.fetch || ((url, requestOptions) => fetch(url, requestOptions));
   const existingMetadata = (
-    baseFetch as FetchLike & {[AUTHENTICATED_FETCH]?: readonly RequestCredential[]}
+    suppliedFetch as FetchLike & {[AUTHENTICATED_FETCH]?: AuthenticatedFetchMetadata}
   )[AUTHENTICATED_FETCH];
-  if (existingMetadata === options.credentials) return baseFetch;
+  const resolvedCredentials = resolveCredentials(options.credentials, options.authentications);
+  if (
+    !options.fetchOptions &&
+    (!resolvedCredentials.length || existingMetadata?.credentials === resolvedCredentials)
+  )
+    return suppliedFetch;
+  const baseFetch = existingMetadata?.fetch || suppliedFetch;
+  const credentials = existingMetadata
+    ? [...new Set([...resolvedCredentials, ...existingMetadata.credentials])]
+    : resolvedCredentials;
+  const fetchOptions = mergeFetchOptions(
+    existingMetadata?.fetchOptions || {},
+    options.fetchOptions
+  );
+  const tokenCredentials = credentials.filter(
+    (credential): credential is RequestCredential => credential.type !== 'request'
+  );
+  const requestCredentials = credentials.filter(
+    (credential): credential is RequestAuthentication => credential.type === 'request'
+  );
+  // Validate scopes before any request, including custom scheme authorities for callbacks.
+  for (const credential of requestCredentials) normalizeRequestOrigins(credential.origins);
 
   const authenticatedFetch: FetchLike = async (url, requestOptions = {}) => {
+    requestOptions = mergeFetchOptions(fetchOptions, requestOptions);
+    if (requestOptions.signal?.aborted) throw createAbortError();
+    // Request defaults alone must not normalize URLs or defer the transport invocation.
+    if (!credentials.length) return baseFetch(url, requestOptions);
     const resolvedURL = parseHTTPURL(url);
-    if (!resolvedURL) return baseFetch(url, requestOptions);
-
-    const authorization = await authorizeRequest(resolvedURL, requestOptions, options.credentials);
-    const response = await baseFetch(authorization.url, authorization.options);
+    const authorization = resolvedURL
+      ? await authorizeRequest(resolvedURL, requestOptions, tokenCredentials)
+      : {url, options: requestOptions, credentials: []};
+    const signedRequest = await authenticateRequest(authorization, requestCredentials, 'request');
+    const response = await baseFetch(signedRequest.url, signedRequest.options);
     const refreshableCredentials = authorization.credentials.filter(
       ({credential}) =>
         typeof credential.token === 'function' &&
         credential.refreshStatusCodes.includes(response.status)
     );
-    if (!refreshableCredentials.length || !isReplayableRequest(requestOptions)) return response;
+    const shouldRetrySignature = signedRequest.credentials.some(credential =>
+      credential.refreshStatusCodes?.includes(response.status)
+    );
+    if (
+      (!refreshableCredentials.length && !shouldRetrySignature) ||
+      !isReplayableRequest(requestOptions) ||
+      !isReplayableRequest(signedRequest.options)
+    )
+      return response;
     if (requestOptions.signal?.aborted) throw createAbortError();
 
     const refreshedTokens = new Map<RequestCredential, string>();
@@ -156,22 +261,30 @@ export function createAuthenticatedFetch(options: AuthenticatedFetchOptions): Fe
         if (token) refreshedTokens.set(credential, token);
       })
     );
-    if (!refreshedTokens.size) return response;
+    if (!refreshedTokens.size && !shouldRetrySignature) return response;
 
     await response.body?.cancel().catch(() => {});
     if (requestOptions.signal?.aborted) throw createAbortError();
-    const replayAuthorization = await authorizeRequest(
-      resolvedURL,
-      requestOptions,
-      options.credentials,
-      refreshedTokens,
-      authorization.credentials
+    const replayAuthorization = resolvedURL
+      ? await authorizeRequest(
+          resolvedURL,
+          requestOptions,
+          tokenCredentials,
+          refreshedTokens,
+          authorization.credentials
+        )
+      : {url, options: requestOptions};
+    const replayRequest = await authenticateRequest(
+      replayAuthorization,
+      requestCredentials,
+      'retry',
+      response
     );
-    return baseFetch(replayAuthorization.url, replayAuthorization.options);
+    return baseFetch(replayRequest.url, replayRequest.options);
   };
 
   Object.defineProperty(authenticatedFetch, AUTHENTICATED_FETCH, {
-    value: options.credentials
+    value: {fetch: baseFetch, credentials, fetchOptions} satisfies AuthenticatedFetchMetadata
   });
   return authenticatedFetch;
 }
@@ -187,16 +300,15 @@ export function getAuthenticatedFetch(options: LoaderOptions = {}): FetchLike {
 
   if (typeof fetchOption === 'function') {
     fetchFunction = fetchOption;
-  } else if (fetchOption) {
-    fetchFunction = (url, requestOptions) =>
-      fetch(url, mergeFetchOptions(fetchOption, requestOptions));
   } else {
     fetchFunction = (url, requestOptions) => fetch(url, requestOptions);
   }
 
   return createAuthenticatedFetch({
     fetch: fetchFunction,
-    credentials: options.core?.credentials || []
+    fetchOptions: typeof fetchOption === 'object' && fetchOption ? fetchOption : undefined,
+    credentials: options.core?.credentials || [],
+    authentications: options.core?.authentications
   });
 }
 
@@ -212,22 +324,98 @@ function mergeFetchOptions(defaultOptions: RequestInit, requestOptions?: Request
 }
 
 /** Redacts credential-bearing query parameters from a URL used in diagnostics. */
-export function redactCredentialURL(
-  url: string,
-  credentials: readonly RequestCredential[]
-): string {
+export function redactCredentialURL(url: string, credentials: readonly Credential[]): string {
   const resolvedURL = parseHTTPURL(url);
   if (!resolvedURL) return url;
+  if (credentials.some(credential => credential.type === 'request')) {
+    // A signer can rewrite the destination; its input scope cannot identify output URLs.
+    for (const name of [...resolvedURL.searchParams.keys()]) {
+      resolvedURL.searchParams.set(name, '[REDACTED]');
+    }
+  }
   for (const credential of credentials) {
     if (
       credential.type === 'query-parameter' &&
+      Array.isArray(credential.origins) &&
       credential.origins.includes(resolvedURL.origin) &&
+      typeof credential.name === 'string' &&
       resolvedURL.searchParams.has(credential.name)
     ) {
       resolvedURL.searchParams.set(credential.name, '[REDACTED]');
     }
   }
   return resolvedURL.toString();
+}
+
+/** Applies request callbacks after token placement, preserving cancellation across URL rewrites. */
+async function authenticateRequest(
+  request: {url: string; options: RequestInit},
+  credentials: readonly RequestAuthentication[],
+  reason: AuthenticationRequest['reason'],
+  response?: Response
+): Promise<{url: string; options: RequestInit; credentials: RequestAuthentication[]}> {
+  const appliedCredentials: RequestAuthentication[] = [];
+  const signal = request.options.signal;
+  for (const credential of credentials) {
+    const origin = getRequestOrigin(request.url);
+    if (!origin || !normalizeRequestOrigins(credential.origins).includes(origin)) continue;
+    if (signal?.aborted) throw createAbortError();
+    const authenticatedRequest = await credential.authenticate({
+      url: request.url,
+      options: {...request.options, headers: new Headers(request.options.headers)},
+      reason,
+      response: response
+        ? {status: response.status, headers: new Headers(response.headers)}
+        : undefined
+    });
+    if (
+      !authenticatedRequest ||
+      typeof authenticatedRequest.url !== 'string' ||
+      !authenticatedRequest.options ||
+      typeof authenticatedRequest.options !== 'object'
+    ) {
+      throw new Error('Authentication callback returned an invalid request.');
+    }
+    request = {
+      url: authenticatedRequest.url,
+      options: {...authenticatedRequest.options, ...(signal ? {signal} : {})}
+    };
+    appliedCredentials.push(credential);
+  }
+  if (signal?.aborted) throw createAbortError();
+  return {...request, credentials: appliedCredentials};
+}
+
+/** Returns an exact origin or custom-scheme authority without collapsing opaque URL origins. */
+function getRequestOrigin(url: string): string | null {
+  try {
+    const parsedURL = new URL(url);
+    if (!parsedURL.host || parsedURL.username || parsedURL.password) return null;
+    return parsedURL.origin !== 'null'
+      ? parsedURL.origin
+      : `${parsedURL.protocol}//${parsedURL.host}`;
+  } catch {
+    return null;
+  }
+}
+
+/** Validates callback scopes, including custom scheme authorities such as `s3://bucket`. */
+function normalizeRequestOrigins(origins: readonly string[]): string[] {
+  if (!origins.length)
+    throw new Error('Request authentication requires at least one exact origin.');
+  return origins.map(origin => {
+    const resolvedOrigin = getRequestOrigin(origin);
+    let url: URL;
+    try {
+      url = new URL(origin);
+    } catch {
+      throw new Error('Invalid request authentication origin.');
+    }
+    if (!resolvedOrigin || (url.pathname && url.pathname !== '/') || url.search || url.hash) {
+      throw new Error('Invalid request authentication origin.');
+    }
+    return resolvedOrigin;
+  });
 }
 
 /** Resolves matching tokens and applies them to a fresh URL and header collection. */

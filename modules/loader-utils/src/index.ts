@@ -155,6 +155,21 @@ export {
 
 // REQUEST UTILS
 export {default as RequestScheduler} from './lib/request-utils/request-scheduler';
+export {
+  resolveCredentials,
+  resolveAuthenticationOptions,
+  resolveLoaderAuthenticationOptions
+} from './lib/request-utils/authentication';
+export type {
+  Authentication,
+  AuthenticationConstructor,
+  AuthenticationRequest,
+  AuthenticatedRequest,
+  AuthenticateRequest,
+  RequestAuthentication,
+  Credential,
+  CredentialOptions
+} from './lib/request-utils/authentication';
 export {RequestCache} from './lib/request-utils/request-cache';
 export type {
   RequestCacheProps,
@@ -163,6 +178,9 @@ export type {
 export {parseContentType} from './lib/request-utils/parse-content-type';
 export {
   createAuthenticatedFetch,
+  TokenAuthentication,
+  QueryParameterAuthentication,
+  BearerTokenAuthentication,
   createBearerTokenCredential,
   createQueryParameterCredential,
   getAuthenticatedFetch,

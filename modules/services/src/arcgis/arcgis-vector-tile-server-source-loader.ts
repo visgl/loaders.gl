@@ -2,6 +2,8 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
+import {ArcGISAuthentication} from '../authentication';
+
 import type {
   CoreAPI,
   DataSourceOptions,
@@ -207,6 +209,8 @@ export const ArcGISVectorTileServerSourceLoader = {
   id: 'arcgis-vector-tile-server',
   module: 'services',
   version: '0.0.0',
+  /** Supplies the ArcGIS constructor for declarative service credentials. */
+  getAuthentications: () => [ArcGISAuthentication],
   extensions: [],
   mimeTypes: ['application/vnd.mapbox-vector-tile', 'application/x-protobuf'],
   type: 'arcgis-vector-tile-server',

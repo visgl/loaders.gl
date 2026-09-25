@@ -66,6 +66,19 @@ Options interpreted by the core API and shared across loaders live under `option
 
 Deprecated top-level aliases such as `options.fetch`, `options.worker`, and `options.shape` are still accepted for compatibility, but new code should use `options.core`.
 
+### Authentication options
+
+`options.core.credentials` accepts an ordered array of runtime credentials or typed JSON
+configurations. `options.core.authentications` accepts authentication class constructors used to
+instantiate those configurations by matching their static `type`. The selected loader can also
+contribute constructors through `getAuthentications(url, options)`; application classes take
+precedence. There is no implicit global class registry.
+
+Credentials include origin-scoped header/query tokens and application request-signing callbacks.
+Callbacks run after request defaults and token credentials have been applied. See the
+[authentication guide](/docs/developer-guide/authentication) for declarative configuration,
+provider classes, callback contracts and worker restrictions.
+
 ## Loader specific options
 
 The options object can contain loader specific options. The options for each loader are supplied in a sub object,

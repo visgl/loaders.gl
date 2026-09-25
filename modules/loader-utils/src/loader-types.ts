@@ -7,7 +7,7 @@ import type {LoadWorker} from '@loaders.gl/worker-utils';
 import {DataType, FetchLike, TransformBatches} from './types';
 import {ReadableFile} from './lib/files/file';
 import type {CoreAPI} from './lib/sources/data-source';
-import type {RequestCredential} from './lib/request-utils/request-credentials';
+import type {Credential, AuthenticationConstructor} from './lib/request-utils/authentication';
 import type {ExperimentalScanOptions} from './lib/scan-utils/experimental-scan-options';
 
 // LOADERS
@@ -24,7 +24,9 @@ export type StrictLoaderOptions = {
     /** fetch options or a custom fetch function */
     fetch?: typeof fetch | FetchLike | RequestInit | null;
     /** Exact-origin credentials applied to top-level and nested requests. */
-    credentials?: readonly RequestCredential[];
+    credentials?: readonly Credential[];
+    /** Authentication classes used to instantiate typed entries in `credentials`. */
+    authentications?: readonly AuthenticationConstructor[];
     /** Do not throw on errors */
     nothrow?: boolean;
     /** Shared default shape for loaders that support shape selection. Loader-scoped `shape` options override this default. */
@@ -185,6 +187,11 @@ export type Loader<DataT = any, BatchT = any, LoaderOptionsT = StrictLoaderOptio
    * Can be used to avoid a later delay and may return a parser-bearing loader that also supports `parseSync`.
    */
   preload?: Preload;
+  /** Contributes authentication constructors before requests; application constructors take precedence. */
+  getAuthentications?: (
+    url: string,
+    options: LoaderOptions
+  ) => readonly AuthenticationConstructor[] | Promise<readonly AuthenticationConstructor[]>;
   /** Serializes parser output before returning it from a worker. */
   serializeWorkerResult?: (
     result: DataT,

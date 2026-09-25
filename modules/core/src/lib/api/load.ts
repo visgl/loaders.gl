@@ -19,10 +19,15 @@ import type {
   DataSourceOptions,
   LoaderWithParser
 } from '@loaders.gl/loader-utils';
-import {isBlob, isSourceLoader} from '@loaders.gl/loader-utils';
+import {
+  isBlob,
+  isSourceLoader,
+  resolveAuthenticationOptions,
+  resolveLoaderAuthenticationOptions
+} from '@loaders.gl/loader-utils';
 import {isLoaderObject} from '../loader-utils/normalize-loader';
 import {getFetchFunction} from '../loader-utils/get-fetch-function';
-import {normalizeLoaderOptions} from '../loader-utils/option-utils';
+import {normalizeLoaderOptions, getGlobalLoaderOptions} from '../loader-utils/option-utils';
 import {fetchFile} from '../fetch/fetch-file';
 
 import {parse} from './parse';
@@ -98,8 +103,15 @@ export async function load(
     resolvedOptions = options as LoaderOptions;
   }
 
+  resolvedOptions ||= getGlobalLoaderOptions();
+
   if (!Array.isArray(resolvedLoaders) && isSourceLoader(resolvedLoaders)) {
     const sourceLoader = await resolveSourceLoader(resolvedLoaders, url, resolvedOptions);
+    resolvedOptions = await resolveLoaderAuthenticationOptions(
+      resolvedLoaders.getAuthentications ? resolvedLoaders : sourceLoader,
+      typeof url === 'string' ? url : '',
+      resolvedOptions || {}
+    );
     const runtimeCoreApi = {
       fetchFile,
       parse,
@@ -122,6 +134,11 @@ export async function load(
     isSourceLoader(resolvedLoaders[0])
   ) {
     const sourceLoader = await resolveSourceLoader(resolvedLoaders[0], url, resolvedOptions);
+    resolvedOptions = await resolveLoaderAuthenticationOptions(
+      resolvedLoaders[0].getAuthentications ? resolvedLoaders[0] : sourceLoader,
+      typeof url === 'string' ? url : '',
+      resolvedOptions || {}
+    );
     const runtimeCoreApi = {
       fetchFile,
       parse,
@@ -146,6 +163,11 @@ export async function load(
 
     if (selectedLoader && isSourceLoader(selectedLoader)) {
       const sourceLoader = await resolveSourceLoader(selectedLoader, url, resolvedOptions);
+      resolvedOptions = await resolveLoaderAuthenticationOptions(
+        selectedLoader.getAuthentications ? selectedLoader : sourceLoader,
+        typeof url === 'string' ? url : '',
+        resolvedOptions || {}
+      );
       return sourceLoader.createDataSource(
         url,
         (resolvedOptions || {}) as LoaderOptionsType<SourceLoader>,
@@ -167,6 +189,11 @@ export async function load(
         resolvedOptions,
         url
       );
+      resolvedOptions = await resolveLoaderAuthenticationOptions(
+        selectedLoader.getAuthentications ? selectedLoader : loaderImplementation,
+        url,
+        resolvedOptions || {}
+      );
       const parseUrl = (
         loaderImplementation as LoaderWithParser & {
           parseUrl?: (
@@ -181,6 +208,7 @@ export async function load(
   }
 
   // Select fetch function
+  if (resolvedOptions) resolvedOptions = resolveAuthenticationOptions(resolvedOptions);
   const fetch = getFetchFunction(resolvedOptions);
 
   // at this point, `url` could be already loaded binary data

@@ -16,7 +16,11 @@ import type {
   ReadableFile,
   StrictLoaderOptions
 } from '@loaders.gl/loader-utils';
-import {isSourceLoader, mergeOptions} from '@loaders.gl/loader-utils';
+import {
+  isSourceLoader,
+  mergeOptions,
+  resolveLoaderAuthenticationOptions
+} from '@loaders.gl/loader-utils';
 import {validateWorkerVersion} from '@loaders.gl/worker-utils';
 import {isLoaderObject} from '../loader-utils/normalize-loader';
 import {normalizeOptions} from '../loader-utils/option-utils';
@@ -96,7 +100,8 @@ export async function parseFile(
   }
 
   // @ts-expect-error candidateLoaders may be a single forced loader
-  const strictOptions = normalizeOptions(options, loader, candidateLoaders, url);
+  const normalizedOptions = normalizeOptions(options, loader, candidateLoaders, url);
+  const strictOptions = await resolveLoaderAuthenticationOptions(loader, url, normalizedOptions);
   context = getLoaderContext(
     // @ts-expect-error candidateLoaders may be a single forced loader
     {url, _parse: parse, loaders: candidateLoaders},
