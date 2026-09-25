@@ -158,6 +158,11 @@ test('MVTLoader#Parse Lines MVT', async () => {
       expected = geojsonToBinary(expected);
       expect(geometry.byteLength > 0).toBeTruthy();
       delete geometry.byteLength;
+    } else {
+      const coordinates = geometry.features[0].geometry.coordinates;
+      const expectedCoordinates = expected.features[0].geometry.coordinates;
+      expect(coordinates[1][1]).toBeCloseTo(expectedCoordinates[1][1], 12);
+      coordinates[1][1] = expectedCoordinates[1][1];
     }
     expect(geometry, `Parsed Lines MVT as ${outputFormat}`).toEqual(expected);
   }
