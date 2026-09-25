@@ -141,7 +141,7 @@ export default getVitestConfig({
         color: 'blue',
         browser: {enabled: false},
         environment: 'node',
-        exclude: excludePatterns,
+        exclude: [...excludePatterns, 'test/tile-converter*.node.spec.{ts,js}'],
         include: [
           'modules/**/*.node.spec.{ts,js}',
           'modules/**/*.cross.spec.{ts,js}',
@@ -150,6 +150,21 @@ export default getVitestConfig({
         ],
         isolate: true,
         passWithNoTests: true,
+        pool: 'threads',
+        setupFiles: ['./test/vitest-setup-node.ts']
+      }
+    },
+    'tile-converter': {
+      test: {
+        browser: {enabled: false},
+        color: 'blue',
+        environment: 'node',
+        exclude: excludePatterns,
+        include: [
+          'apps/tile-converter/test/**/*.spec.{ts,js}',
+          'test/tile-converter*.node.spec.{ts,js}'
+        ],
+        isolate: true,
         pool: 'threads',
         setupFiles: ['./test/vitest-setup-node.ts']
       }

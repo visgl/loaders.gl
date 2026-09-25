@@ -49,6 +49,7 @@
     "test-modules": "node ./scripts/test.mjs full",
     "test-apps": "node ./scripts/run-app-commands.mjs test",
     "test-node": "node ./scripts/test.mjs node",
+    "test-tile-converter": "node ./scripts/test.mjs tile-converter",
     "test-browser": "node ./scripts/test.mjs browser",
     "test-headless": "node ./scripts/test.mjs browser-headless",
     "test-node-cover": "node ./scripts/test.mjs cover-node",
