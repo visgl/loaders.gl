@@ -521,6 +521,17 @@ export class Tiles3DSource implements Tileset3DSource {
     };
   }
 
+  /** Loads an implicit subtree for dataset traversal without camera state. */
+  async loadTileChildrenForTraversal(
+    tile: Tile3D,
+    signal?: AbortSignal
+  ): Promise<TileChildrenLoadResult> {
+    throwIfTraversalAborted(signal);
+    const result = await this.loadTileChildren(tile, {} as FrameState);
+    throwIfTraversalAborted(signal);
+    return result;
+  }
+
   /**
    * Returns a snapshot of implicit-subtree request, cache, and materialization counters.
    *
@@ -936,6 +947,13 @@ export class Tiles3DSource implements Tileset3DSource {
       }
     }
     return materializedTileCount;
+  }
+}
+
+/** Throws a cancellation reason before or after source-managed traversal work. */
+function throwIfTraversalAborted(signal?: AbortSignal): void {
+  if (signal?.aborted) {
+    throw signal.reason ?? new DOMException('The operation was aborted', 'AbortError');
   }
 }
 

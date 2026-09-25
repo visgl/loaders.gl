@@ -12,6 +12,7 @@ import {I3STilesetTraverser} from './i3s-tileset-traverser';
 import type {Tileset3D} from '../common/tileset-3d';
 import type {FrameState} from '../helpers/frame-state';
 import type {
+  TileChildrenLoadResult,
   TileContentLoadResult,
   TilesetContentFormats,
   TilesetJSON,
@@ -228,7 +229,7 @@ export class I3SSource implements Tileset3DSource {
   async loadChildTileHeader(
     _parentTile: Tile3D,
     childId: string,
-    _frameState: FrameState
+    _frameState: FrameState | null
   ): Promise<any> {
     const metadata = this.getMetadata();
     if (metadata.tileset.nodePages || metadata.tileset.pointNodePages) {
@@ -251,6 +252,42 @@ export class I3SSource implements Tileset3DSource {
 
     const header = await this.loadResourceData(nodeUrl, options);
     return await this.transformTileHeader(header);
+  }
+
+  /** Loads all declared I3S child headers without camera or visibility state. */
+  async loadTileChildrenForTraversal(
+    parentTile: Tile3D,
+    signal?: AbortSignal
+  ): Promise<TileChildrenLoadResult> {
+    const childHeaders = parentTile.header.children || [];
+    let loadedChildren = 0;
+
+    for (const childHeader of childHeaders) {
+      throwIfTraversalAborted(signal);
+      const childId = childHeader.id;
+      if (typeof childId !== 'string' && typeof childId !== 'number') {
+        throw new Error('I3S child header is missing its node ID');
+      }
+      const existingChild = parentTile.children.find(
+        tile => tile.id === String(childId) || tile.header?.id === childId
+      );
+      if (existingChild) {
+        continue;
+      }
+
+      const childTileHeader = await this.loadChildTileHeader(parentTile, String(childId), null);
+      throwIfTraversalAborted(signal);
+      const childTile = new Tile3DNode(
+        parentTile.tileset,
+        childTileHeader,
+        parentTile,
+        String(childId)
+      );
+      parentTile.children.push(childTile);
+      loadedChildren++;
+    }
+
+    return {loaded: true, tileCount: loadedChildren, childSubtreeCount: 0};
   }
 
   /**
@@ -446,6 +483,13 @@ export class I3SSource implements Tileset3DSource {
       spatialBoundingVolume: transformedBounds.spatialBoundingVolume,
       i3sLodMbs: transformedBounds.i3sLodMbs
     };
+  }
+}
+
+/** Throws a cancellation reason before or after source-managed traversal work. */
+function throwIfTraversalAborted(signal?: AbortSignal): void {
+  if (signal?.aborted) {
+    throw signal.reason ?? new DOMException('The operation was aborted', 'AbortError');
   }
 }
 
