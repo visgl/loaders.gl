@@ -23,7 +23,7 @@ import type {
   Loader,
   SourceLoader
 } from '@loaders.gl/loader-utils';
-import {isSourceLoader, mergeOptions} from '@loaders.gl/loader-utils';
+import {isSourceLoader} from '@loaders.gl/loader-utils';
 import {ImageSet, type ImageSetRequest} from '@loaders.gl/tiles';
 import {projectWGS84ToPseudoMercator} from './image-source-layer/utils';
 import {
@@ -51,7 +51,7 @@ export type ImageSourceLayerProps = Omit<CompositeLayerProps, 'data' | 'loaders'
   sources?: Readonly<SourceLoader[]>;
   /** Parser loaders and SourceLoaders used to resolve URL/blob inputs. */
   loaders?: ReadonlyArray<Loader | SourceLoader>;
-  /** Options forwarded to `createDataSource` when `sources` are supplied. */
+  /** Source and parser options forwarded to `createDataSource`. The layer's `loadOptions` prop is not forwarded. */
   sourceOptions?: DataSourceOptions;
   /** Called when metadata resolves successfully. */
   onMetadataLoad?: (metadata: ImageSourceMetadata) => void;
@@ -354,10 +354,9 @@ export class ImageSourceLayer extends CompositeLayer<ImageSourceLayerProps> {
     const parserLoaders = loaders.filter(loader => !isSourceLoader(loader));
     if ((typeof data === 'string' || data instanceof Blob) && sourceLoaders.length) {
       return createDataSource(data, sourceLoaders, {
-        ...mergeOptions(sourceOptions, props.loadOptions || {}),
+        ...sourceOptions,
         core: {
           ...sourceOptions?.core,
-          ...props.loadOptions?.core,
           type: props.serviceType,
           loaders: [...(sourceOptions?.core?.loaders || []), ...parserLoaders]
         }

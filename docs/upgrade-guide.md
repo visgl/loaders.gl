@@ -117,8 +117,10 @@ createDataSource(url, [PMTilesSourceLoader], {
 When both the old outer and inner `core` had settings, merge them explicitly. Keep parser options
 beside source namespaces, not inside them. The unused `mvt.loadOptions` declaration is also removed.
 Explicit source settings (for example `pmtiles.shape`) still override parser settings.
-This does not remove the separate `loadOptions` props on deck.gl layers or `Tileset3D`;
-the options object passed through those integrations uses the new flat shape when creating sources.
+`ImageSourceLayer` no longer forwards the inherited deck.gl `loadOptions` prop into sources.
+Move those settings into `sourceOptions`, using the flat shape above. This matches
+`Tile2DSourceLayer` and avoids two competing source-options entry points. The deck.gl property
+itself and the separate `Tileset3D.loadOptions` API are not removed by this change.
 
 - Top-level loader options are no longer supported
 - `Source` has been replaced by `SourceLoader` for top-level runtime source factories.

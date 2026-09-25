@@ -12,14 +12,14 @@ import {createAuthenticatedFetch} from '../request-utils/request-credentials';
 
 /** Common properties for all data sources */
 export type DataSourceOptions = StrictLoaderOptions & {
-  /** @deprecated Pass parser options directly in their loader namespaces. */
+  /** Removed in v5. Pass parser options directly in their loader namespaces. */
   loadOptions?: never;
   core?: StrictLoaderOptions['core'] & {
     /** Allows application to specify which source should be selected. Matches `Source.type`. Defaults to 'auto' */
     type?: string;
     /** Any dataset attributions (in case underlying metadata does not include attributions) */
     attributions?: string[];
-    /** @deprecated Move these options to `core` and the root loader namespaces. */
+    /** Removed in v5. Move these options to `core` and the root loader namespaces. */
     loadOptions?: never;
     /** Make additional loaders available to the data source */
     loaders?: Loader[];

@@ -227,6 +227,13 @@ The `core.loadOptions` and top-level source `loadOptions` wrappers are no longer
 Known parser namespaces are typed; additional namespaces remain extensible for dynamically chosen
 loaders. An unknown namespace is therefore not guaranteed to produce a TypeScript error.
 
+### Source-backed layer options
+
+When using `ImageSourceLayer` or `Tile2DSourceLayer`, put this flat options object in the layer's
+`sourceOptions` prop. This is the sole entry point for source configuration, including its internal
+parser settings. The inherited deck.gl `loadOptions` prop does not supply or override source options.
+Additional parsers can be provided through `sourceOptions.core.loaders` or the layer's `loaders` prop.
+
 ## Example
 
 An advanced source loader is `ArrowTableTileSourceLoader`, which dynamically generates clipped,
