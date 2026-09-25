@@ -27,6 +27,8 @@ export const BasisLoader = {
   module: 'textures',
   version: VERSION,
   worker: true,
+  /** Published CommonJS bundle for Node.js workers. */
+  workerNode: 'basis-worker-node.cjs',
   extensions: ['basis', 'ktx2'],
   mimeTypes: ['application/octet-stream', 'image/ktx2'],
   tests: ['sB'],

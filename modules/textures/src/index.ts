@@ -91,6 +91,8 @@ export const KTX2BasisWriterWorker = {
   version: VERSION,
   extensions: ['ktx2'],
   worker: true,
+  /** Published CommonJS bundle for Node.js workers. */
+  workerNode: 'ktx2-basis-writer-worker-node.cjs',
   options: {
     ['ktx2-basis-writer']: {
       format: 'etc1s',

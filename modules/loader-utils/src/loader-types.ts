@@ -176,6 +176,8 @@ export type Loader<DataT = any, BatchT = any, LoaderOptionsT = StrictLoaderOptio
   worker?: string | boolean;
   /** Browser worker filename when it differs from the loader id. */
   workerFile?: string;
+  /** Optional Node.js worker filename, such as a CommonJS `.cjs` bundle. */
+  workerNode?: string;
   /** Creates a built-in browser worker, typically using `type: 'module'`. */
   loadWorker?: LoadWorker;
   /**
