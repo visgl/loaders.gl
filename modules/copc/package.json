@@ -1,7 +1,7 @@
 {
   "private": true,
   "name": "@loaders.gl/copc",
-  "version": "5.0.0-alpha.6",
+  "version": "5.0.0-alpha.7",
   "description": "Framework-independent loader for the COPC format",
   "license": "MIT",
   "type": "module",
@@ -41,12 +41,12 @@
     "build-bundle": "# ocular-bundle ./src/index.ts"
   },
   "dependencies": {
-    "@loaders.gl/images": "5.0.0-alpha.6",
-    "@loaders.gl/las": "5.0.0-alpha.6",
-    "@loaders.gl/loader-utils": "5.0.0-alpha.6",
-    "@loaders.gl/mvt": "5.0.0-alpha.6",
-    "@loaders.gl/schema": "5.0.0-alpha.6",
-    "@loaders.gl/schema-utils": "5.0.0-alpha.6",
+    "@loaders.gl/images": "5.0.0-alpha.7",
+    "@loaders.gl/las": "5.0.0-alpha.7",
+    "@loaders.gl/loader-utils": "5.0.0-alpha.7",
+    "@loaders.gl/mvt": "5.0.0-alpha.7",
+    "@loaders.gl/schema": "5.0.0-alpha.7",
+    "@loaders.gl/schema-utils": "5.0.0-alpha.7",
     "@math.gl/crs": "5.0.0-alpha.9",
     "@math.gl/proj4": "5.0.0-alpha.9"
   },

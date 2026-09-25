@@ -1,6 +1,6 @@
 {
   "name": "@loaders.gl/pcd",
-  "version": "5.0.0-alpha.6",
+  "version": "5.0.0-alpha.7",
   "description": "Framework-independent loader for the PCD format",
   "license": "MIT",
   "type": "module",
@@ -53,10 +53,10 @@
     "build-worker": "esbuild src/workers/pcd-worker.ts --bundle --outfile=dist/pcd-worker.js --define:__VERSION__=\\\"$npm_package_version\\\""
   },
   "dependencies": {
-    "@loaders.gl/arrow": "5.0.0-alpha.6",
-    "@loaders.gl/loader-utils": "5.0.0-alpha.6",
-    "@loaders.gl/schema": "5.0.0-alpha.6",
-    "@loaders.gl/schema-utils": "5.0.0-alpha.6"
+    "@loaders.gl/arrow": "5.0.0-alpha.7",
+    "@loaders.gl/loader-utils": "5.0.0-alpha.7",
+    "@loaders.gl/schema": "5.0.0-alpha.7",
+    "@loaders.gl/schema-utils": "5.0.0-alpha.7"
   },
   "peerDependencies": {
     "@loaders.gl/core": "~5.0.0-alpha.0"

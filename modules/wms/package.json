@@ -1,6 +1,6 @@
 {
   "name": "@loaders.gl/wms",
-  "version": "5.0.0-alpha.6",
+  "version": "5.0.0-alpha.7",
   "description": "Framework-independent loaders for the WMS (Web Map Service) standard",
   "license": "MIT",
   "type": "module",
@@ -66,12 +66,12 @@
     "path": false
   },
   "dependencies": {
-    "@loaders.gl/gis": "5.0.0-alpha.6",
-    "@loaders.gl/images": "5.0.0-alpha.6",
-    "@loaders.gl/lerc": "5.0.0-alpha.6",
-    "@loaders.gl/loader-utils": "5.0.0-alpha.6",
-    "@loaders.gl/schema": "5.0.0-alpha.6",
-    "@loaders.gl/xml": "5.0.0-alpha.6",
+    "@loaders.gl/gis": "5.0.0-alpha.7",
+    "@loaders.gl/images": "5.0.0-alpha.7",
+    "@loaders.gl/lerc": "5.0.0-alpha.7",
+    "@loaders.gl/loader-utils": "5.0.0-alpha.7",
+    "@loaders.gl/schema": "5.0.0-alpha.7",
+    "@loaders.gl/xml": "5.0.0-alpha.7",
     "@math.gl/crs": "5.0.0-alpha.9",
     "@turf/rewind": "^5.1.5"
   },
