@@ -7,6 +7,7 @@ import {isBrowser} from '@loaders.gl/loader-utils';
 import {ConsoleLog} from './loggers';
 
 export const DEFAULT_LOADER_OPTIONS: LoaderOptions = {
+  searchParams: undefined,
   core: {
     baseUrl: undefined,
     // baseUrl

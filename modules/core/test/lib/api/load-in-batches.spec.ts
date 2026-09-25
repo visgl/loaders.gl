@@ -41,6 +41,23 @@ test('loadInBatches#non-batched loader (gis)', async () => {
   }
 });
 
+test('loadInBatches#applies searchParams before the initial request', async () => {
+  let requestedUrl = '';
+  const batches = await loadInBatches('https://example.com/data.csv', CSVLoader, {
+    searchParams: {token: 'secret-token'},
+    core: {
+      fetch: async url => {
+        requestedUrl = String(url);
+        return new Response('value\n1\n');
+      }
+    }
+  });
+  for await (const _batch of batches as AsyncIterable<unknown>) {
+    // Consume the stream to ensure the request and parser both complete.
+  }
+  expect(requestedUrl).toBe('https://example.com/data.csv?token=secret-token');
+});
+
 test('loadInBatches(options.limit)', async () => {
   // @ts-ignore
   const iterator = await loadInBatches(CSV_SAMPLE_VERY_LONG_URL, CSVLoader, {

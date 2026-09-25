@@ -22,7 +22,7 @@ import type {
 import {isBlob, isSourceLoader} from '@loaders.gl/loader-utils';
 import {isLoaderObject} from '../loader-utils/normalize-loader';
 import {getFetchFunction} from '../loader-utils/get-fetch-function';
-import {normalizeLoaderOptions} from '../loader-utils/option-utils';
+import {applySearchParamsToUrl, normalizeLoaderOptions} from '../loader-utils/option-utils';
 import {fetchFile} from '../fetch/fetch-file';
 
 import {parse} from './parse';
@@ -187,7 +187,7 @@ export async function load(
   let data = url;
   // url is a string, fetch the url
   if (typeof url === 'string') {
-    data = await fetch(url);
+    data = await fetch(applySearchParamsToUrl(url, resolvedOptions));
     // URL is Blob or File, fetchFile handles it (alt: we could generate ObjectURL here)
   }
 

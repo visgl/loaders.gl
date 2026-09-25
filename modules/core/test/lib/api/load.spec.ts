@@ -40,6 +40,21 @@ test('load#with fetch options', async () => {
   ).toEqual({abc: 1});
 });
 
+test('load#applies searchParams before the initial request', async () => {
+  let requestedUrl = '';
+  const data = await load('@loaders.gl/core/test/data/files/basic.json', JSONLoader, {
+    searchParams: {token: 'secret-token'},
+    core: {
+      fetch: async url => {
+        requestedUrl = String(url);
+        return new Response('{"loaded":true}');
+      }
+    }
+  });
+  expect(data).toEqual({loaded: true});
+  expect(requestedUrl).toContain('?token=secret-token');
+});
+
 test('load#auto detect loader', () => {
   const testLoader = {
     name: 'JSON',

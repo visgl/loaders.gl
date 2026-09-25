@@ -15,6 +15,7 @@ import type {
 } from '@loaders.gl/loader-utils';
 import {isLoaderObject} from '../loader-utils/normalize-loader';
 import {getFetchFunction} from '../loader-utils/get-fetch-function';
+import {applySearchParamsToUrl} from '../loader-utils/option-utils';
 
 import {parseInBatches} from './parse-in-batches';
 
@@ -98,7 +99,7 @@ async function loadOneFileInBatches(
 ): Promise<AsyncIterable<unknown>> {
   if (typeof file === 'string') {
     const url = file;
-    const response = await fetch(url);
+    const response = await fetch(applySearchParamsToUrl(url, options));
     // pick right overload
     return Array.isArray(loaders)
       ? await parseInBatches(response, loaders, options)

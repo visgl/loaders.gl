@@ -1,6 +1,7 @@
 import {expect, test} from 'vitest';
 import {
   getUrlWithToken,
+  getUrlWithSearchParams,
   generateTileAttributeUrls,
   generateTilesetAttributeUrls
   // @ts-expect-error
@@ -21,6 +22,11 @@ test('i3s-utils#getUrlWithToken Should return URL with token token if token exis
   const url = getUrlWithToken('test', '12345');
   expect(url).toBeTruthy();
   expect(url).toBe('test?token=12345');
+});
+test('i3s-utils#getUrlWithSearchParams preserves existing query parameters', () => {
+  expect(
+    getUrlWithSearchParams('test?existing=value#fragment', {token: '12345', existing: 'replace'})
+  ).toBe('test?existing=value&token=12345#fragment');
 });
 test('i3s-utils#generateTileAttributeUrls Should return attribute URLs for tile', async () => {
   const tile = {

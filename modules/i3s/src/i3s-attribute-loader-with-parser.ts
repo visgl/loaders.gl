@@ -8,7 +8,7 @@ import type {I3SLoaderOptions} from './i3s-loader';
 import type {I3STileAttributes} from './lib/parsers/parse-i3s-attribute';
 import type {Field} from './types';
 import {parseI3STileAttribute} from './lib/parsers/parse-i3s-attribute';
-import {getUrlWithToken} from './lib/utils/url-utils';
+import {getUrlWithSearchParams, getUrlWithToken} from './lib/utils/url-utils';
 import {I3SAttributeLoader as I3SAttributeLoaderMetadata} from './i3s-attribute-loader';
 
 const {preload: _I3SAttributeLoaderPreload, ...I3SAttributeLoaderMetadataWithoutPreload} =
@@ -36,7 +36,7 @@ export const I3SAttributeLoaderWithParser = {
  * @returns {Promise}
  */
 // eslint-disable-next-line complexity
-export async function loadFeatureAttributes(tile, featureId, options = {}) {
+export async function loadFeatureAttributes(tile, featureId, options: I3SLoaderOptions = {}) {
   const {attributeStorageInfo, attributeUrls, tilesetFields} = getAttributesData(tile);
 
   if (!attributeStorageInfo || !attributeUrls || featureId < 0) {
@@ -47,8 +47,10 @@ export async function loadFeatureAttributes(tile, featureId, options = {}) {
   const attributeLoadPromises: Promise<object>[] = [];
 
   for (let index = 0; index < attributeStorageInfo.length; index++) {
-    // @ts-ignore
-    const url = getUrlWithToken(attributeUrls[index], options.i3s?.token);
+    const url = getUrlWithSearchParams(
+      getUrlWithToken(attributeUrls[index], options.i3s?.token),
+      options.searchParams
+    );
     const attributeName = attributeStorageInfo[index].name;
     const attributeType = getAttributeValueType(attributeStorageInfo[index]);
     const loadOptions = {...options, attributeName, attributeType};

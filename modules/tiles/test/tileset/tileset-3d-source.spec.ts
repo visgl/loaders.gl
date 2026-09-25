@@ -446,6 +446,32 @@ test('I3SSource appends auth tokens before loading URL-backed root metadata', as
     'https://example.com/SceneServer/layers/0?redirect=https://host/path?a=1&token=secret-token'
   );
 });
+test('I3SSource applies generic searchParams before loading root metadata', async () => {
+  const requestedUrls: string[] = [];
+  const resolver: TilesetSourceResolver = {
+    async loadRoot(url) {
+      requestedUrls.push(url);
+      return {
+        type: 'tileset',
+        url,
+        loader: I3SLoader,
+        root: {id: 'root-node', refine: 'REPLACE'}
+      } as any;
+    },
+    async loadResource() {
+      return null;
+    }
+  };
+
+  const source = new I3SSource(
+    {url: 'https://example.com/SceneServer/layers/0', loader: I3SLoader, resolver},
+    {searchParams: {token: 'secret-token'}}
+  );
+
+  await source.initialize();
+
+  expect(requestedUrls).toEqual(['https://example.com/SceneServer/layers/0?token=secret-token']);
+});
 test('Tiles3DSource uses injected resolvers for root metadata and tile content', async () => {
   const rootTileset: TilesetJSON = {
     asset: {version: '1.0'},
