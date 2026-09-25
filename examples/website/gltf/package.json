@@ -21,7 +21,7 @@
     "@luma.gl/engine": "^9.4.0",
     "@luma.gl/gltf": "^9.4.0",
     "@luma.gl/shadertools": "^9.4.0",
-    "@math.gl/core": "5.0.0-alpha.6"
+    "@math.gl/core": "5.0.0-alpha.9"
   },
   "devDependencies": {
     "typescript": "^5.6.0",
