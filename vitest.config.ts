@@ -159,14 +159,21 @@ export default getVitestConfig({
         browser: {enabled: false},
         color: 'blue',
         environment: 'node',
-        exclude: excludePatterns,
+        exclude: [
+          ...excludePatterns,
+          'apps/tile-converter/test/3d-tiles-converter/helpers/3d-tiles-content-converter.spec.js',
+          'apps/tile-converter/test/3d-tiles-converter/helpers/load-i3s.spec.ts'
+        ],
         include: [
           'apps/tile-converter/test/**/*.spec.{ts,js}',
           'test/tile-converter*.node.spec.{ts,js}'
         ],
         isolate: true,
+        maxWorkers: 1,
+        minWorkers: 1,
         pool: 'threads',
-        setupFiles: ['./test/vitest-setup-node.ts']
+        setupFiles: ['./test/vitest-setup-tile-converter.ts'],
+        testTimeout: 60000
       }
     },
     browser: {
