@@ -5,6 +5,7 @@ import {cleanUpPath} from '../utils/file-utils';
 import {BROWSER_ERROR_MESSAGE} from '../../src/constants';
 import {parseSLPKArchive} from '@loaders.gl/i3s';
 import {NodeFile} from '@loaders.gl/loader-utils';
+import {getBinaryImageMetadata} from '@loaders.gl/images';
 const TILESET_URL = '@loaders.gl/3d-tiles/test/data/CesiumJS/Batched/BatchedColors/tileset.json';
 const TILESET_WITH_TEXTURES =
   '@loaders.gl/3d-tiles/test/data/CesiumJS/Batched/BatchedTextured/tileset.json';
@@ -116,105 +117,72 @@ test('tile-converter(i3s)#should create sharedResources json file', async () => 
   }
   await cleanUpPath('data/BatchedTextured');
 });
-test('tile-converter(i3s)#should generate KTX2 texture', async () => {
-  if (!isBrowser) {
-    const EXPECTED_TEXTURE_SET_DEFINITIONS = [
-      {
-        formats: [
-          {name: '0', format: 'jpg'},
-          {name: '1', format: 'ktx2'}
-        ]
-      },
-      {
-        formats: [
-          {name: '0', format: 'jpg'},
-          {name: '1', format: 'ktx2'}
-        ],
-        atlas: true
-      }
-    ];
+test.each([
+  {
+    name: 'generates KTX2 from JPEG',
+    inputUrl: TILESET_WITH_TEXTURES,
+    tilesetName: 'generated_ktx2',
+    generateTextures: true,
+    formats: [
+      {name: '0', format: 'jpg'},
+      {name: '1', format: 'ktx2'}
+    ]
+  },
+  {
+    name: 'preserves KTX2 without generating JPEG',
+    inputUrl: TILESET_WITH_KTX_2_TEXTURE,
+    tilesetName: 'ktx2_only',
+    generateTextures: false,
+    formats: [{name: '1', format: 'ktx2'}]
+  },
+  {
+    name: 'generates JPEG from KTX2',
+    inputUrl: TILESET_WITH_KTX_2_TEXTURE,
+    tilesetName: 'jpg_and_ktx2',
+    generateTextures: true,
+    formats: [
+      {name: '1', format: 'ktx2'},
+      {name: '0', format: 'jpg'}
+    ]
+  }
+])('tile-converter(i3s)#$name', async ({inputUrl, tilesetName, generateTextures, formats}) => {
+  const outputPath = `data/${tilesetName}`;
+  await cleanUpPath(outputPath);
+  let archiveFile: NodeFile | undefined;
+  try {
     const converter = new I3SConverter();
     await converter.convert({
-      inputUrl: TILESET_WITH_TEXTURES,
+      inputUrl,
       outputPath: 'data',
-      tilesetName: 'BatchedTextured',
-      generateTextures: true,
+      tilesetName,
+      generateTextures,
       egmFilePath: PGM_FILE_PATH
     });
-    const archive = await parseSLPKArchive(new NodeFile('data/BatchedTextured.slpk'));
-    const sharedResourcesJson = new TextDecoder().decode(await archive.getFile('', 'http'));
-    const ktx2Texture = new TextDecoder().decode(
-      await archive.getFile('nodes/1/textures/1', 'http')
+    archiveFile = new NodeFile(`${outputPath}.slpk`);
+    const archive = await parseSLPKArchive(archiveFile);
+    const layer = JSON.parse(new TextDecoder().decode(await archive.getFile('', 'http')));
+    const ktx2Texture = await archive.getFile('nodes/1/textures/1', 'http');
+    expect(new Uint8Array(ktx2Texture, 0, 12)).toEqual(
+      new Uint8Array([0xab, 0x4b, 0x54, 0x58, 0x20, 0x32, 0x30, 0xbb, 0x0d, 0x0a, 0x1a, 0x0a])
     );
-    const tileset0 = JSON.parse(sharedResourcesJson);
-    expect(ktx2Texture, 'ktx2 texture exists!').toBeTruthy();
-    expect(tileset0.textureSetDefinitions).toBeTruthy();
-    expect(tileset0.textureSetDefinitions).toEqual(EXPECTED_TEXTURE_SET_DEFINITIONS);
+    const ktx2Header = new DataView(ktx2Texture);
+    const width = ktx2Header.getUint32(20, true);
+    const height = ktx2Header.getUint32(24, true);
+    expect(width).toBeGreaterThan(0);
+    expect(height).toBeGreaterThan(0);
+    expect(layer.textureSetDefinitions).toEqual([{formats}, {formats, atlas: true}]);
+    if (formats.some(({format}) => format === 'jpg')) {
+      const jpegTexture = await archive.getFile('nodes/1/textures/0', 'http');
+      expect(getBinaryImageMetadata(jpegTexture)).toEqual({mimeType: 'image/jpeg', width, height});
+    } else {
+      await expect(archive.getFile('nodes/1/textures/0', 'http')).rejects.toThrow(
+        'No such file in the archive'
+      );
+    }
+  } finally {
+    await archiveFile?.close();
+    await cleanUpPath(outputPath);
   }
-  await cleanUpPath('data/BatchedTextured');
-});
-test('tile-converter(i3s)#Should not generate JPG texture if only KTX2 is provided and generateTextures = false', async () => {
-  if (!isBrowser) {
-    const EXPECTED_TEXTURE_SET_DEFINITIONS = [
-      {formats: [{name: '1', format: 'ktx2'}]},
-      {formats: [{name: '1', format: 'ktx2'}], atlas: true}
-    ];
-    const converter = new I3SConverter();
-    await converter.convert({
-      inputUrl: TILESET_WITH_KTX_2_TEXTURE,
-      outputPath: 'data',
-      tilesetName: 'ktx2_only',
-      generateTextures: false,
-      egmFilePath: PGM_FILE_PATH
-    });
-    const archive = await parseSLPKArchive(new NodeFile('data/ktx2_only.slpk'));
-    const sharedResourcesJson = new TextDecoder().decode(await archive.getFile('', 'http'));
-    const ktx2Texture = new TextDecoder().decode(
-      await archive.getFile('nodes/1/textures/1', 'http')
-    );
-    const tileset0 = JSON.parse(sharedResourcesJson);
-    expect(ktx2Texture, 'ktx2 texture exists!').toBeTruthy();
-    expect(tileset0.textureSetDefinitions).toBeTruthy();
-    expect(tileset0.textureSetDefinitions).toEqual(EXPECTED_TEXTURE_SET_DEFINITIONS);
-  }
-  await cleanUpPath('data/ktx2_only');
-});
-test('tile-converter(i3s)#Should generate JPG texture if only KTX2 is provided and generateTextures = true', async () => {
-  if (!isBrowser) {
-    const EXPECTED_TEXTURE_SET_DEFINITIONS = [
-      {
-        formats: [
-          {name: '1', format: 'ktx2'},
-          {name: '0', format: 'jpg'}
-        ]
-      },
-      {
-        formats: [
-          {name: '1', format: 'ktx2'},
-          {name: '0', format: 'jpg'}
-        ],
-        atlas: true
-      }
-    ];
-    const converter = new I3SConverter();
-    await converter.convert({
-      inputUrl: TILESET_WITH_KTX_2_TEXTURE,
-      outputPath: 'data',
-      tilesetName: 'jpg_and_ktx2',
-      generateTextures: true,
-      egmFilePath: PGM_FILE_PATH
-    });
-    const archive = await parseSLPKArchive(new NodeFile('data/jpg_and_ktx2.slpk'));
-    const sharedResourcesJson = new TextDecoder().decode(await archive.getFile('', 'http'));
-    const ktx2Texture = new TextDecoder().decode(
-      await archive.getFile('nodes/1/textures/1', 'http')
-    );
-    const tileset0 = JSON.parse(sharedResourcesJson);
-    expect(ktx2Texture, 'ktx2 texture exists!').toBeTruthy();
-    expect(tileset0.textureSetDefinitions).toBeTruthy();
-    expect(tileset0.textureSetDefinitions).toEqual(EXPECTED_TEXTURE_SET_DEFINITIONS);
-  }
-  await cleanUpPath('data/jpg_and_ktx2');
 });
 test('tile-converter(i3s)#should create only unique materials', async () => {
   if (!isBrowser) {

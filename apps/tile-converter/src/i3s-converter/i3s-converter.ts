@@ -49,7 +49,7 @@ import {validateNodeBoundingVolumes} from './helpers/node-debug';
 import {KTX2BasisWriterWorker} from '@loaders.gl/textures';
 import {LoaderWithParser} from '@loaders.gl/loader-utils';
 import {I3SMaterialDefinition, TextureSetDefinitionFormats} from '@loaders.gl/i3s';
-import {ImageWriter} from '@loaders.gl/images';
+import {getImageData, ImageWriter} from '@loaders.gl/images';
 import {GLTFImagePostprocessed} from '@loaders.gl/gltf';
 import {
   GLTFPrimitiveModeString,
@@ -143,7 +143,7 @@ export default class I3SConverter {
     basis: {
       format: 'rgba32',
       // We need to load local fs workers because nodejs can't load workers from the Internet
-      workerUrl: './modules/textures/dist/basis-worker-node.js'
+      workerUrl: './modules/textures/dist/basis-worker-node.cjs'
     },
     // We need to load local fs workers because nodejs can't load workers from the Internet
     draco: {workerUrl: './modules/draco/dist/draco-worker-node.js'},
@@ -1266,18 +1266,17 @@ export default class I3SConverter {
 
           if (this.generateTextures) {
             formats.push({name: '1', format: 'ktx2'});
-            // For Node.js texture.image.data is type of Buffer
-            const copyArrayBuffer = texture.image.data.subarray();
-            const arrayToEncode = new Uint8Array(copyArrayBuffer);
+            const imageData = getImageData(texture.image);
+            const arrayToEncode = new Uint8Array(imageData.data);
             const ktx2TextureData = encode(
-              {...texture.image, data: arrayToEncode},
+              {...imageData, data: arrayToEncode},
               // @ts-expect-error - Worker encoder typing is still WIP
               KTX2BasisWriterWorker,
               {
                 ...KTX2BasisWriterWorker.options,
                 ['ktx2-basis-writer']: {
                   // We need to load local fs workers because nodejs can't load workers from the Internet
-                  workerUrl: './modules/textures/dist/ktx2-basis-writer-worker-node.js'
+                  workerUrl: './modules/textures/dist/ktx2-basis-writer-worker-node.cjs'
                 },
                 reuseWorkers: true,
                 _nodeWorkers: true,

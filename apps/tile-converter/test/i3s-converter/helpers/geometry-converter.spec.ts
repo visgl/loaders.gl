@@ -2,6 +2,7 @@ import {expect, test} from 'vitest';
 import {Tiles3DLoader} from '@loaders.gl/3d-tiles';
 import {load, setLoaderOptions, isBrowser} from '@loaders.gl/core';
 import {WorkerFarm} from '@loaders.gl/worker-utils';
+import {getImageData} from '@loaders.gl/images';
 import convertB3dmToI3sGeometry, {
   getPropertyTable
 } from '../../../src/i3s-converter/helpers/geometry-converter';
@@ -47,7 +48,7 @@ test.skip('tile-converter(i3s)#convert B3dmToI3sGeometry - should convert Frankf
     const attributeStorageInfo = [];
     const shouldMergeMaterials = false;
     try {
-      const convertedResources = await convertB3dmToI3sGeometry({
+      const convertedResources = await convertAndCompressGeometry({
         tileContent,
         tileTransform,
         tileBoundingVolume,
@@ -124,7 +125,7 @@ test('tile-converter(i3s)#convertB3dmToI3sGeometry - should convert Berlin tile 
   const geoidHeightModel = await load(PGM_FILE_PATH, PGMLoader);
   const attributeStorageInfo = [];
   try {
-    const convertedResources = await convertB3dmToI3sGeometry({
+    const convertedResources = await convertAndCompressGeometry({
       tileContent,
       tileTransform,
       tileBoundingVolume,
@@ -193,7 +194,7 @@ test('tile-converter(i3s)#convertB3dmToI3sGeometry - should convert New York til
   const geoidHeightModel = await load(PGM_FILE_PATH, PGMLoader);
   const attributeStorageInfo = getAttributeStorageInfo(propertyTable);
   try {
-    const convertedResources = await convertB3dmToI3sGeometry({
+    const convertedResources = await convertAndCompressGeometry({
       tileContent,
       tileTransform,
       tileBoundingVolume,
@@ -251,7 +252,7 @@ test('tile-converter(i3s)#convertB3dmToI3sGeometry - should convert Ferry tile c
   const geoidHeightModel = await load(PGM_FILE_PATH, PGMLoader);
   const attributeStorageInfo = getAttributeStorageInfo(propertyTable);
   try {
-    const convertedResources = await convertB3dmToI3sGeometry({
+    const convertedResources = await convertAndCompressGeometry({
       tileContent,
       tileTransform,
       tileBoundingVolume,
@@ -315,7 +316,7 @@ test('tile-converter(i3s)#convertB3dmToI3sGeometry - TRIANGLE_STRIPS should be c
   const geoidHeightModel = await load(PGM_FILE_PATH, PGMLoader);
   const attributeStorageInfo = getAttributeStorageInfo(propertyTable);
   try {
-    const convertedResources = await convertB3dmToI3sGeometry({
+    const convertedResources = await convertAndCompressGeometry({
       tileContent,
       tileTransform,
       tileBoundingVolume,
@@ -367,7 +368,7 @@ test('tile-converter(i3s)#convertB3dmToI3sGeometry - should not convert point ge
   const geoidHeightModel = await load(PGM_FILE_PATH, PGMLoader);
   const attributeStorageInfo = getAttributeStorageInfo(propertyTable);
   try {
-    await convertB3dmToI3sGeometry({
+    await convertAndCompressGeometry({
       tileContent,
       tileTransform,
       tileBoundingVolume,
@@ -425,7 +426,7 @@ test('tile-converter(i3s)#convertB3dmToI3sGeometry - should convert tile content
   const geoidHeightModel = await load(PGM_FILE_PATH, PGMLoader);
   const attributeStorageInfo = getAttributeStorageInfo(propertyTable);
   try {
-    const convertedResources = await convertB3dmToI3sGeometry({
+    const convertedResources = await convertAndCompressGeometry({
       tileContent,
       tileTransform,
       tileBoundingVolume,
@@ -508,7 +509,7 @@ test('tile-converter(i3s)#convertB3dmToI3sGeometry - array of UINTxx should be c
   const geoidHeightModel = await load(PGM_FILE_PATH, PGMLoader);
   const attributeStorageInfo = getAttributeStorageInfo(propertyTable);
   try {
-    const convertedResources = await convertB3dmToI3sGeometry({
+    const convertedResources = await convertAndCompressGeometry({
       tileContent,
       tileTransform,
       tileBoundingVolume,
@@ -578,7 +579,7 @@ test.skip('tile-converter(i3s)#convertB3dmToI3sGeometry - should convert 64-bit 
   const geoidHeightModel = await load(PGM_FILE_PATH, PGMLoader);
   const attributeStorageInfo = getAttributeStorageInfo(propertyTable);
   try {
-    const convertedResources = await convertB3dmToI3sGeometry({
+    const convertedResources = await convertAndCompressGeometry({
       tileContent,
       tileTransform,
       tileBoundingVolume,
@@ -636,7 +637,7 @@ async function checkNodeResources(resources, expectedValues) {
     expect(resources.texture.mimeType).toBe(texture.mimeType);
     expect(resources.texture.image.width).toBe(texture.width);
     expect(resources.texture.image.height).toBe(texture.height);
-    expect(resources.texture.image.data.length).toBe(texture.bitmapByteLength);
+    expect(getImageData(resources.texture.image).data.length).toBe(texture.bitmapByteLength);
     expect(resources.texture.bufferView).toBeTruthy();
   } else {
     expect(resources.texture).toBeFalsy();
@@ -646,4 +647,20 @@ async function checkNodeResources(resources, expectedValues) {
   } else {
     expect(resources.boundingVolumes).toBeFalsy();
   }
+}
+
+/** Waits for every compression job before assertions or worker-pool cleanup. */
+async function convertAndCompressGeometry(
+  options: Parameters<typeof convertB3dmToI3sGeometry>[0]
+): Promise<Awaited<ReturnType<typeof convertB3dmToI3sGeometry>>> {
+  const resources = await convertB3dmToI3sGeometry(options);
+  const results = await Promise.allSettled(
+    resources?.map(resource => resource.compressedGeometry) || []
+  );
+  for (const result of results) {
+    if (result.status === 'rejected') {
+      throw result.reason;
+    }
+  }
+  return resources;
 }

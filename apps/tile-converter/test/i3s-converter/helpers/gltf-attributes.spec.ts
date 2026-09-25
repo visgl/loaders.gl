@@ -127,9 +127,7 @@ test('tile-converter(i3s)#prepareDataForAttributesConversion - Should generate a
           image: {
             width: 2,
             height: 1,
-            components: 4,
-            data: new Uint8Array([3, 3, 3, 255, 4, 4, 4, 255]),
-            shape: [2, 2, 4]
+            data: new Uint8Array([3, 3, 3, 255, 4, 4, 4, 255])
           }
         }
       ],

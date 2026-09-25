@@ -55,11 +55,17 @@ git clone git@github.com:visgl/loaders.gl.git
 cd loaders.gl
 ```
 
-3. Build modules
+3. Install dependencies and build modules and workers
 
 ```
-yarn bootstrap
+yarn install
+yarn build
+yarn build-workers
 ```
+
+The Node.js Basis decoder and KTX2 encoder workers are CommonJS `.cjs` bundles. Run
+`yarn build-workers` again after rebuilding modules, which clears their output directories.
+Run `yarn test-tile-converter` to check the converter with local fixtures.
 
 4. Install default Earth Gravity Model dependency:
 

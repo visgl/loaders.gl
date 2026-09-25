@@ -2,6 +2,7 @@ import type {Tiles3DTileContent} from '@loaders.gl/3d-tiles';
 import type {GLTFAccessorPostprocessed, GLTFNodePostprocessed} from '@loaders.gl/gltf';
 import {Matrix4, TypedArray, Vector3} from '@math.gl/core';
 import {BoundingSphere, OrientedBoundingBox} from '@math.gl/culling';
+import {getImageData} from '@loaders.gl/images';
 import {Ellipsoid} from '@math.gl/geospatial';
 import {GLTFAttributesData} from '../types';
 
@@ -30,15 +31,15 @@ export function prepareDataForAttributesConversion(
       if (imageObject?.image?.compressed) {
         return null;
       }
-      const data = imageObject?.image?.data;
+      const {data, width, height} = getImageData(imageObject.image);
       const dataCopy = new Uint8Array(data.length);
       dataCopy.set(data);
       return {
         data: dataCopy,
         compressed: false,
-        height: imageObject.image.height,
-        width: imageObject.image.width,
-        components: imageObject.image.components,
+        height,
+        width,
+        components: data.length / (width * height),
         mimeType: imageObject.mimeType
       };
     }) || [];

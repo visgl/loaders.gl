@@ -51,10 +51,10 @@ export class DepsInstaller {
     await this.installFromNpm('draco', 'draco-writer-worker-node.js');
 
     console.log('Installing "Basis Loader" worker'); // eslint-disable-line no-console
-    await this.installFromNpm('textures', 'basis-worker-node.js');
+    await this.installFromNpm('textures', 'basis-worker-node.cjs');
 
     console.log('Installing "KTX2 Basis Writer" worker'); // eslint-disable-line no-console
-    await this.installFromNpm('textures', 'ktx2-basis-writer-worker-node.js');
+    await this.installFromNpm('textures', 'ktx2-basis-writer-worker-node.cjs');
 
     console.log('Installing "Draco decoder" library'); // eslint-disable-line no-console
     await this.installFromUrl(
