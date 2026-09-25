@@ -67,23 +67,21 @@ test.skip('tile-converter(i3s)#convert B3dmToI3sGeometry - should convert Frankf
       }
       expect(convertedResources.length, 'Returns 1 node').toBe(1);
       const nodeResources = convertedResources[0];
-      await checkNodeResources(
-        nodeResources,
-        {
-          draco,
-          vertexCount: 148281,
-          attributesLength: 0,
-          featureCount: 1,
-          nonCompressedGeometryByteLength: 5338140,
-          compressedGeometryByteLength: 2016506,
-          texture: {
-            mimeType: 'image/jpeg',
-            width: 2048,
-            height: 1024,
-            bitmapByteLength: 8388608
-          },
-          // biome-ignore format: preserve intentional fixture layout
-          boundingVolumes: generateBoundingVolumes
+      await checkNodeResources(nodeResources, {
+        draco,
+        vertexCount: 148281,
+        attributesLength: 0,
+        featureCount: 1,
+        nonCompressedGeometryByteLength: 5338140,
+        compressedGeometryByteLength: 2016506,
+        texture: {
+          mimeType: 'image/jpeg',
+          width: 2048,
+          height: 1024,
+          bitmapByteLength: 8388608
+        },
+        // biome-ignore format: preserve intentional fixture layout
+        boundingVolumes: generateBoundingVolumes
                     ? {
                         mbs: [8.622161535185821, 50.0841151227351, -188.79808730024337, 633.1951829721843],
                         obb: {
@@ -95,9 +93,7 @@ test.skip('tile-converter(i3s)#convert B3dmToI3sGeometry - should convert Frankf
                         }
                     }
                     : false
-        },
-        t
-      );
+      });
     } finally {
       // Clean up worker pools
       const workerFarm = WorkerFarm.getWorkerFarm({});
@@ -147,36 +143,28 @@ test('tile-converter(i3s)#convertB3dmToI3sGeometry - should convert Berlin tile 
       return;
     }
     expect(convertedResources.length, 'Returns 40 nodes').toBe(40);
-    await checkNodeResources(
-      convertedResources[0],
-      {
-        draco,
-        vertexCount: 14025,
-        attributesLength: 0,
-        featureCount: 1,
-        nonCompressedGeometryByteLength: 392724,
-        compressedGeometryByteLength: 208506
-      },
-      t
-    );
-    await checkNodeResources(
-      convertedResources[1],
-      {
-        draco,
-        vertexCount: 69,
-        attributesLength: 0,
-        featureCount: 1,
-        nonCompressedGeometryByteLength: 2508,
-        compressedGeometryByteLength: 1673,
-        texture: {
-          mimeType: 'image/png',
-          width: 64,
-          height: 64,
-          bitmapByteLength: 16384
-        }
-      },
-      t
-    );
+    await checkNodeResources(convertedResources[0], {
+      draco,
+      vertexCount: 14025,
+      attributesLength: 0,
+      featureCount: 1,
+      nonCompressedGeometryByteLength: 392724,
+      compressedGeometryByteLength: 208506
+    });
+    await checkNodeResources(convertedResources[1], {
+      draco,
+      vertexCount: 69,
+      attributesLength: 0,
+      featureCount: 1,
+      nonCompressedGeometryByteLength: 2508,
+      compressedGeometryByteLength: 1673,
+      texture: {
+        mimeType: 'image/png',
+        width: 64,
+        height: 64,
+        bitmapByteLength: 16384
+      }
+    });
   } finally {
     // Clean up worker pools
     const workerFarm = WorkerFarm.getWorkerFarm({});
@@ -225,18 +213,14 @@ test('tile-converter(i3s)#convertB3dmToI3sGeometry - should convert New York til
     }
     expect(convertedResources.length, 'Returns 1 node').toBe(1);
     const nodeResources = convertedResources[0];
-    await checkNodeResources(
-      nodeResources,
-      {
-        draco,
-        vertexCount: 50286,
-        attributesLength: 10,
-        featureCount: 275,
-        nonCompressedGeometryByteLength: 1412416,
-        compressedGeometryByteLength: 608764
-      },
-      t
-    );
+    await checkNodeResources(nodeResources, {
+      draco,
+      vertexCount: 50286,
+      attributesLength: 10,
+      featureCount: 275,
+      nonCompressedGeometryByteLength: 1412416,
+      compressedGeometryByteLength: 608764
+    });
   } finally {
     // Clean up worker pools
     const workerFarm = WorkerFarm.getWorkerFarm({});
@@ -287,24 +271,20 @@ test('tile-converter(i3s)#convertB3dmToI3sGeometry - should convert Ferry tile c
     }
     expect(convertedResources.length, 'Returns 1 node').toBe(1);
     const nodeResources = convertedResources[0];
-    await checkNodeResources(
-      nodeResources,
-      {
-        draco,
-        vertexCount: 36858,
-        attributesLength: 3,
-        featureCount: 3,
-        nonCompressedGeometryByteLength: 1326944,
-        compressedGeometryByteLength: 1236750,
-        texture: {
-          mimeType: 'image/jpeg',
-          width: 355,
-          height: 356,
-          bitmapByteLength: 505520
-        }
-      },
-      t
-    );
+    await checkNodeResources(nodeResources, {
+      draco,
+      vertexCount: 36858,
+      attributesLength: 3,
+      featureCount: 3,
+      nonCompressedGeometryByteLength: 1326944,
+      compressedGeometryByteLength: 1236750,
+      texture: {
+        mimeType: 'image/jpeg',
+        width: 355,
+        height: 356,
+        bitmapByteLength: 505520
+      }
+    });
   } finally {
     // Clean up worker pools
     const workerFarm = WorkerFarm.getWorkerFarm({});
@@ -466,24 +446,20 @@ test('tile-converter(i3s)#convertB3dmToI3sGeometry - should convert tile content
     }
     expect(convertedResources.length, 'Returns 1 node').toBe(1);
     const nodeResources = convertedResources[0];
-    await checkNodeResources(
-      nodeResources,
-      {
-        draco,
-        vertexCount: 309,
-        attributesLength: 2,
-        featureCount: 12,
-        nonCompressedGeometryByteLength: 11324,
-        compressedGeometryByteLength: 5700,
-        texture: {
-          mimeType: 'image/jpeg',
-          width: 512,
-          height: 512,
-          bitmapByteLength: 1048576
-        }
-      },
-      t
-    );
+    await checkNodeResources(nodeResources, {
+      draco,
+      vertexCount: 309,
+      attributesLength: 2,
+      featureCount: 12,
+      nonCompressedGeometryByteLength: 11324,
+      compressedGeometryByteLength: 5700,
+      texture: {
+        mimeType: 'image/jpeg',
+        width: 512,
+        height: 512,
+        bitmapByteLength: 1048576
+      }
+    });
   } finally {
     // Clean up worker pools
     const workerFarm = WorkerFarm.getWorkerFarm({});
@@ -634,7 +610,7 @@ function getAttributeStorageInfo(propertyTable) {
   attributeMetadataInfo.addMetadataInfo(attributeTypesMap);
   return attributeMetadataInfo.attributeStorageInfo;
 }
-async function checkNodeResources(resources, expectedValues, t) {
+async function checkNodeResources(resources, expectedValues) {
   const {
     draco,
     vertexCount,
