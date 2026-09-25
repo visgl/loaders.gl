@@ -24,6 +24,11 @@
       "types": "./dist/index.d.ts",
       "import": "./dist/index.js",
       "require": "./dist/index.cjs"
+    },
+    "./v5": {
+      "types": "./dist/v5/index.d.ts",
+      "import": "./dist/v5/index.js",
+      "require": "./dist/v5/index.cjs"
     }
   },
   "sideEffects": false,
@@ -45,7 +50,9 @@
     "process": false
   },
   "scripts": {
-    "pre-build": "npm run build-converter-bundle && npm run build-i3s-server-bundle && npm run copy-certificates",
+    "pre-build": "npm run build-package-entrypoints && npm run build-converter-bundle && npm run build-i3s-server-bundle && npm run copy-certificates",
+    "build-package-entrypoints": "esbuild src/index.ts --bundle --packages=external --platform=node --format=esm --outfile=dist/index.js && esbuild src/index.ts --bundle --packages=external --platform=node --format=cjs --outfile=dist/index.cjs && esbuild src/v5/index.ts --bundle --packages=external --platform=node --format=esm --outfile=dist/v5/index.js && esbuild src/v5/index.ts --bundle --packages=external --platform=node --format=cjs --outfile=dist/v5/index.cjs && npm run build-v5-declarations",
+    "build-v5-declarations": "tsc --ignoreConfig --declaration --emitDeclarationOnly --skipLibCheck --target ES2022 --module NodeNext --moduleResolution NodeNext --outDir dist/v5 src/v5/index.ts",
     "build-converter-bundle": "esbuild src/converter-cli.ts --outfile=dist/converter.min.cjs --platform=node --target=esnext,node14 --external:join-images --minify --bundle --define:__VERSION__=\\\"$npm_package_version\\\"",
     "build-i3s-server-bundle": "esbuild src/i3s-server/bin/www.ts --outfile=dist/i3s-server/bin/i3s-server.min.cjs --platform=node --target=esnext,node14 --minify --bundle --define:__VERSION__=\\\"$npm_package_version\\\"",
     "copy-certificates": "cp -R src/i3s-server/certs dist/i3s-server"
@@ -87,7 +94,8 @@
   },
   "devDependencies": {
     "@types/express": "^4.17.17",
-    "@types/inquirer": "^9.0.7"
+    "@types/inquirer": "^9.0.7",
+    "typescript": "^6.0.3"
   },
   "peerDependencies": {
     "@loaders.gl/core": "~5.0.0-alpha.0"
