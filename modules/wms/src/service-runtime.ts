@@ -179,22 +179,12 @@ export class ServiceRuntime {
 
   private _getSourceOptions(options: DataSourceOptions): DataSourceOptions {
     if (!this.options.headers && !this.options.credentials?.length) return options;
-    const loadOptions = options.core?.loadOptions || {};
     return {
       ...options,
       core: {
         ...options.core,
-        loadOptions: {
-          ...loadOptions,
-          core: {
-            ...loadOptions.core,
-            credentials: [
-              ...(loadOptions.core?.credentials || []),
-              ...(this.options.credentials || [])
-            ]
-          },
-          fetch: this.options.headers ? {headers: this.options.headers} : loadOptions.fetch
-        }
+        credentials: [...(options.core?.credentials || []), ...(this.options.credentials || [])],
+        fetch: this.options.headers ? {headers: this.options.headers} : options.core?.fetch
       }
     };
   }

@@ -23,7 +23,7 @@ import type {
   Loader,
   SourceLoader
 } from '@loaders.gl/loader-utils';
-import {isSourceLoader} from '@loaders.gl/loader-utils';
+import {isSourceLoader, mergeOptions} from '@loaders.gl/loader-utils';
 import {ImageSet, type ImageSetRequest} from '@loaders.gl/tiles';
 import {projectWGS84ToPseudoMercator} from './image-source-layer/utils';
 import {
@@ -354,11 +354,11 @@ export class ImageSourceLayer extends CompositeLayer<ImageSourceLayerProps> {
     const parserLoaders = loaders.filter(loader => !isSourceLoader(loader));
     if ((typeof data === 'string' || data instanceof Blob) && sourceLoaders.length) {
       return createDataSource(data, sourceLoaders, {
-        ...sourceOptions,
+        ...mergeOptions(sourceOptions, props.loadOptions || {}),
         core: {
           ...sourceOptions?.core,
+          ...props.loadOptions?.core,
           type: props.serviceType,
-          loadOptions: props.loadOptions || sourceOptions?.core?.loadOptions,
           loaders: [...(sourceOptions?.core?.loaders || []), ...parserLoaders]
         }
       }) as unknown as ImageSource;

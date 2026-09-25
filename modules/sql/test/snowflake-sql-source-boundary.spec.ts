@@ -8,8 +8,14 @@ import {SnowflakeSQLDataSource} from '@loaders.gl/sql';
 /** Creates a Snowflake source whose SQL API requests stay entirely in memory. */
 function createSource(fetchFunction: typeof fetch, token = 'token'): SnowflakeSQLDataSource {
   return new SnowflakeSQLDataSource('snowflake://account', {
-    core: {loadOptions: {core: {fetch: fetchFunction}}},
-    snowflake: {token, database: 'database', schema: 'public', warehouse: 'warehouse', role: 'role'}
+    snowflake: {
+      token,
+      database: 'database',
+      schema: 'public',
+      warehouse: 'warehouse',
+      role: 'role'
+    },
+    core: {fetch: fetchFunction}
   });
 }
 

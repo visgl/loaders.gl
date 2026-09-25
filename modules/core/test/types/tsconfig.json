@@ -1,0 +1,11 @@
+{
+  "extends": "../../../../tsconfig.json",
+  "compilerOptions": {
+    "noEmit": true,
+    "moduleResolution": "bundler",
+    "paths": {
+      "@loaders.gl/*": ["modules/*/dist/index.d.ts"]
+    }
+  },
+  "include": ["source-options.ts"]
+}

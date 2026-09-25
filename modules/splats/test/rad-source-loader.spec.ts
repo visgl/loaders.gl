@@ -206,14 +206,10 @@ test('RADSourceLoader resolves and fetches sidecar RADC chunks', async () => {
   const fetchedUrls: string[] = [];
   const source = RADSourceLoader.createDataSource('https://example.com/assets/scene.rad', {
     core: {
-      loadOptions: {
-        core: {
-          fetch: async (url: string | RequestInfo | URL) => {
-            const urlString = String(url);
-            fetchedUrls.push(urlString);
-            return new Response(urlString.endsWith('.radc') ? chunk : rad);
-          }
-        }
+      fetch: async (url: string | RequestInfo | URL) => {
+        const urlString = String(url);
+        fetchedUrls.push(urlString);
+        return new Response(urlString.endsWith('.radc') ? chunk : rad);
       }
     }
   });
@@ -245,20 +241,16 @@ test('RADSourceLoader bounds concurrent pruned chunk table reads', async () => {
   let maxActiveChunkFetchCount = 0;
   const source = RADSourceLoader.createDataSource('https://example.com/assets/scene.rad', {
     core: {
-      loadOptions: {
-        core: {
-          fetch: async (url: string | RequestInfo | URL) => {
-            const urlString = String(url);
-            if (!urlString.endsWith('.radc')) {
-              return new Response(rad);
-            }
-            activeChunkFetchCount++;
-            maxActiveChunkFetchCount = Math.max(maxActiveChunkFetchCount, activeChunkFetchCount);
-            await new Promise(resolve => setTimeout(resolve, 10));
-            activeChunkFetchCount--;
-            return new Response(chunk);
-          }
+      fetch: async (url: string | RequestInfo | URL) => {
+        const urlString = String(url);
+        if (!urlString.endsWith('.radc')) {
+          return new Response(rad);
         }
+        activeChunkFetchCount++;
+        maxActiveChunkFetchCount = Math.max(maxActiveChunkFetchCount, activeChunkFetchCount);
+        await new Promise(resolve => setTimeout(resolve, 10));
+        activeChunkFetchCount--;
+        return new Response(chunk);
       }
     }
   });

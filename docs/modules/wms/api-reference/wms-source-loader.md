@@ -80,8 +80,7 @@ The WMS version as well as other default WMS parameters can be specified in the 
 ```typescript
 // Specify the older 1.1.1 version (1.3.0 is the default)
 const wmsService = createDataSource(WMS_SERVICE_URL, [WMSSourceLoader], {
-  version: '1.1.1',
-  layers: ['oms']
+  wms: {wmsParameters: {version: '1.1.1', layers: ['oms']}}
 });
 const getMap = await wmsService.getMap({
   width: 800,
@@ -90,29 +89,8 @@ const getMap = await wmsService.getMap({
 });
 ```
 
-Custom fetch options, such as HTTP headers, and loader-specific options can be specified via the
-standard loaders.gl `loadOptions` argument, which is forwarded to all load and parse operations:
-
-```typescript
-const wmsService = createDataSource(WMS_SERVICE_URL, [WMSSourceLoader], {
-  core: {
-    loadOptions: {
-      fetch: {
-        headers: {
-          Authentication: 'Bearer abc...'
-        }
-      }
-    }
-  }
-});
-
-const getMap = await wmsService.getMap({
-  width: 800,
-  height: 600,
-  bbox: [30, 70, 35, 75],
-  layers: ['oms']
-});
-```
+For shared loading controls and parser configuration, see
+[Source options](/docs/developer-guide/using-sources#options).
 
 For special use cases, is possible to use the `WMSSourceLoader` to just generate URLs, so that the application issue its own requests and parse responses.
 
@@ -132,30 +110,14 @@ const response = await myCustomFetch(getMapURL);
 
 ### constructor()
 
-Creates a `WMSSourceLoader` instance. Not normally called by the application, use
+Creates a `WMSImageSource` instance. Prefer `createDataSource` to inject the core parsing API.
 
 ```typescript
-export type WMSServiceProps = {
-  url: string; // Base URL to the service
-  loadOptions?: LoaderOptions; // Any load options to the loaders.gl Loaders used by the WMSSourceLoader methods
-  substituteCRS84?: boolean; // In WMS 1.3.0, replaces EPSG:4326 with CRS:84 to ensure lng,lat axis order. Default true.
-
-  wmsParameters: {
-    // Default WMS parameters can be provided here
-    version?: '1.3.0' | '1.1.1'; /** WMS version */
-    layers?: string[]; /** Layers to render */
-    query_layers?: string[]; /** Layers to query */
-    crs?: string; /** CRS for the image (not the bounding box) */
-    format?: 'image/png'; /** Requested format for the return image */
-    info_format?: 'text/plain' | 'application/vnd.ogc.gml'; /** Requested MIME type of returned feature info */
-    styles?: unknown; /** Styling */
-    transparent?: boolean; /** Render transparent pixels if no data */
-  },
-  vendorParameters
-};
-
-constructor(props: WMSServiceProps)
+constructor(url: string, options: WMSSourceLoaderOptions, coreApi?: CoreAPI)
 ```
+
+Put `substituteCRS84`, `wmsParameters`, and `vendorParameters` under `options.wms`.
+Shared fetch and worker controls belong under `options.core`.
 
 ### getCapabilities()
 

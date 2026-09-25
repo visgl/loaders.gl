@@ -33,7 +33,7 @@ test('Arrow tile source metadata preloads the runtime through async load', async
       })
     ]),
     ArrowTableTileSourceLoaderMetadata,
-    {core: {loaders: [GeoJSONLoader], loadOptions: {worker: false}}}
+    {core: {worker: false, loaders: [GeoJSONLoader]}}
   );
   expect(source).toBeInstanceOf(ArrowTableVectorTileSource);
   expect((await source.getTile(ROOT_TILE))?.data.numRows).toBe(1);
@@ -319,11 +319,14 @@ test('Arrow tile source loads URLs and blobs through injected core and works thr
   for (const input of ['memory.geojson', new Blob(['{}'])]) {
     const source = ArrowTableTileSourceLoader.createDataSource(
       input,
-      {core: {loaders: [GeoJSONLoader], loadOptions: {worker: false}}},
+      {core: {worker: false, loaders: [GeoJSONLoader]}},
       coreApi
     );
     expect((await source.getTile(ROOT_TILE))?.data.numRows).toBe(1);
-    expect(load).toHaveBeenLastCalledWith(input, GeoJSONLoader, {worker: false});
+    expect(load).toHaveBeenLastCalledWith(input, GeoJSONLoader, {
+      core: {worker: false},
+      table: {coordinates: 'local'}
+    });
   }
   const source = createDataSource(table, [ArrowTableTileSourceLoader], {});
   expect((await source.getVectorTile(ROOT_TILE))?.shape).toBe('arrow-table');
@@ -338,7 +341,7 @@ test('Arrow tile source loads URLs and blobs through injected core and works thr
       {type: 'application/geo+json'}
     ),
     [ArrowTableTileSourceLoader],
-    {core: {loaders: [GeoJSONLoader], loadOptions: {worker: false}}}
+    {core: {worker: false, loaders: [GeoJSONLoader]}}
   );
   expect((await blobSource.getTile(ROOT_TILE))?.data.numRows).toBe(1);
 });

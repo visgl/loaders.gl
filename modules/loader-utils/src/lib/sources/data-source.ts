@@ -5,28 +5,28 @@
 import type {Loader, LoaderContext, LoaderOptions, StrictLoaderOptions} from '../../loader-types';
 import type {BatchableDataType, DataType, SyncDataType} from '../../types';
 import type {ReadableFile} from '../files/file';
-import type {RequiredOptions} from '../option-utils/merge-options';
 import {mergeOptions} from '../option-utils/merge-options';
 import {resolvePath} from '../path-utils/file-aliases';
 import {log} from '../log-utils/log';
 import {createAuthenticatedFetch} from '../request-utils/request-credentials';
 
 /** Common properties for all data sources */
-export type DataSourceOptions = Partial<{
-  core: {
+export type DataSourceOptions = StrictLoaderOptions & {
+  /** @deprecated Pass parser options directly in their loader namespaces. */
+  loadOptions?: never;
+  core?: StrictLoaderOptions['core'] & {
     /** Allows application to specify which source should be selected. Matches `Source.type`. Defaults to 'auto' */
     type?: string;
     /** Any dataset attributions (in case underlying metadata does not include attributions) */
     attributions?: string[];
-    /** LoaderOptions provide an option to override `fetch`. Will also be passed to any sub loaders */
-    loadOptions?: StrictLoaderOptions;
+    /** @deprecated Move these options to `core` and the root loader namespaces. */
+    loadOptions?: never;
     /** Make additional loaders available to the data source */
     loaders?: Loader[];
     /** Called when source-level initialization or metadata loading fails. */
     onError?: (error: Error, source: DataSource<any, any>) => void;
   };
-  [key: string]: Record<string, unknown>;
-}>;
+};
 
 /** Runtime hooks injected when a DataSource is created through an integration layer such as `@loaders.gl/core`. */
 export type CoreAPI = Readonly<{
@@ -81,24 +81,23 @@ const UNAVAILABLE_CORE_API: CoreAPI = {
 
 /** base class of all data sources */
 export abstract class DataSource<DataT, OptionsT extends DataSourceOptions> {
-  static defaultOptions: Required<DataSourceOptions> = {
+  static defaultOptions = {
     core: {
       type: 'auto',
       attributions: [],
-      loadOptions: {},
       loaders: [],
       onError: undefined!
     }
-  };
+  } satisfies DataSourceOptions;
 
   optionsType?: OptionsT & DataSourceOptions;
   options: Required<OptionsT & DataSourceOptions>;
   readonly data: DataT;
   readonly url: string;
 
-  /** The actual load options, if calling a loaders.gl loader */
+  /** Shared parser options derived from the source options, excluding source-only core controls. */
   loadOptions: StrictLoaderOptions;
-  /** A resolved fetch function extracted from loadOptions prop */
+  /** A resolved fetch function extracted from the shared core options. */
   fetch: (url: string, options?: RequestInit) => Promise<Response>;
   /** Shared source-level runtime hooks, when supplied by the source factory. */
   readonly coreApi: CoreAPI;
@@ -109,19 +108,16 @@ export abstract class DataSource<DataT, OptionsT extends DataSourceOptions> {
   constructor(
     data: DataT,
     options: OptionsT,
-    defaultOptions?: Omit<RequiredOptions<OptionsT>, 'core'>,
+    defaultOptions?: Partial<OptionsT>,
     coreApi?: CoreAPI
   ) {
-    if (defaultOptions) {
-      // @ts-expect-error Typescript gets confused
-      this.options = mergeOptions({...defaultOptions, core: DataSource.defaultOptions}, options);
-    } else {
-      // @ts-expect-error
-      this.options = {...options};
-    }
+    this.options = mergeOptions<DataSourceOptions>(
+      mergeOptions<DataSourceOptions>(DataSource.defaultOptions, defaultOptions || {}),
+      options
+    ) as Required<OptionsT & DataSourceOptions>;
     this.data = data;
     this.url = typeof data === 'string' ? resolvePath(data) : '';
-    const loadOptions = normalizeDirectLoaderOptions(this.options.core?.loadOptions);
+    const loadOptions = getSourceLoaderOptions(this.options);
     this.loadOptions = loadOptions;
     const fetch = getFetchFunction(loadOptions);
     this.coreApi = coreApi || UNAVAILABLE_CORE_API;
@@ -130,7 +126,13 @@ export abstract class DataSource<DataT, OptionsT extends DataSourceOptions> {
   }
 
   setProps(options: OptionsT) {
-    this.options = Object.assign(this.options, options);
+    const mergedOptions = mergeOptions<DataSourceOptions>(this.options, options) as Required<
+      OptionsT & DataSourceOptions
+    >;
+    const loadOptions = getSourceLoaderOptions(mergedOptions);
+    this.options = mergedOptions;
+    this.loadOptions = loadOptions;
+    this.fetch = getFetchFunction(loadOptions);
     // TODO - add a shallow compare to avoid setting refresh if no change?
     this.setNeedsRefresh();
   }
@@ -208,10 +210,26 @@ function mergeHeaders(defaultHeaders?: HeadersInit, requestHeaders?: HeadersInit
   return headers;
 }
 
-function normalizeDirectLoaderOptions(options?: StrictLoaderOptions): StrictLoaderOptions {
-  const loadOptions = {...options};
+/**
+ * Derives parser options from flat source options without forwarding source controls to workers.
+ * Removed option wrappers are rejected so JavaScript callers receive actionable migration guidance.
+ */
+export function getSourceLoaderOptions(options: DataSourceOptions): StrictLoaderOptions {
+  if (options.loadOptions !== undefined || options.core?.loadOptions !== undefined) {
+    throw new Error(
+      'Source loadOptions and core.loadOptions were removed. Use core and root loader namespaces directly.'
+    );
+  }
+  const loadOptions: LoaderOptions = {...options};
   if (options?.core) {
     loadOptions.core = {...options.core};
+    const parserCore = loadOptions.core as Record<string, unknown>;
+    for (const key of ['type', 'attributions', 'loaders', 'onError', 'loadOptions']) {
+      delete parserCore[key];
+    }
+    if (Object.keys(parserCore).length === 0) {
+      delete loadOptions.core;
+    }
   }
 
   const topLevelBaseUri = typeof loadOptions.baseUri === 'string' ? loadOptions.baseUri : undefined;
@@ -226,7 +244,7 @@ function normalizeDirectLoaderOptions(options?: StrictLoaderOptions): StrictLoad
     delete loadOptions.baseUrl;
   }
 
-  return loadOptions;
+  return loadOptions as StrictLoaderOptions;
 }
 
 /** Normalizes arbitrary thrown values to `Error` instances for source-level reporting. */

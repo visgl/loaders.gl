@@ -845,10 +845,10 @@ function createRemoteSource(
   return createDataSource(REMOTE_URL, [ParquetSourceLoaderWithParser], {
     ...options,
     core: {
+      fetch: rangeFetch,
       ...options.core,
       type: 'parquet',
-      _workerType: options.core?._workerType ?? 'test',
-      loadOptions: {core: {fetch: rangeFetch}}
+      _workerType: options.core?._workerType ?? 'test'
     }
   }) as ParquetSource;
 }

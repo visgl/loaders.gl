@@ -237,7 +237,7 @@ async function fetchSnowflakeJson(
   authorization: string,
   requestInit: RequestInit
 ): Promise<any> {
-  const customFetch = context.options.core?.loadOptions?.core?.fetch;
+  const customFetch = context.options.core?.fetch;
   const headers = new Headers(requestInit.headers);
   headers.set(
     'Authorization',

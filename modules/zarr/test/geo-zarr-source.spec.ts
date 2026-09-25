@@ -33,9 +33,9 @@ test('GeoZarrRasterSource returns typed empty rasters outside each supported dty
     const baseUrl = `https://example.com/${DATA_TYPES[dataTypeIndex]}.zarr`;
     const fetcher = createDirectGeoZarrFetcher(baseUrl, DATA_TYPES[dataTypeIndex], ['y', 'x'], [2, 2]);
     const source = new GeoZarrRasterSource(baseUrl, {
-      core: {loadOptions: {core: {fetch: fetcher}}},
       zarr: {requireConsolidatedMetadata: false},
-      geozarr: {array: 'values'}
+      geozarr: {array: 'values'},
+      core: {fetch: fetcher}
     });
     const raster = await source.getRaster({
       viewport: createViewport(
@@ -64,9 +64,9 @@ test('GeoZarrRasterSource transposes physical x/y arrays into row-major raster o
     new Uint8Array([1, 2, 3, 4, 5, 6])
   );
   const source = new GeoZarrRasterSource(baseUrl, {
-    core: {loadOptions: {core: {fetch: fetcher}}},
     zarr: {requireConsolidatedMetadata: false},
-    geozarr: {array: 'values'}
+    geozarr: {array: 'values'},
+    core: {fetch: fetcher}
   });
   const raster = await source.getRaster({
     viewport: createViewport(
@@ -102,13 +102,18 @@ test('GeoZarrRasterSource validates structural metadata and retries failed initi
   for (const testCase of cases) {
     const baseUrl = `https://example.com/${testCase.name.replaceAll(' ', '-')}.zarr`;
     const source = new GeoZarrRasterSource(baseUrl, {
-      core: {
-        loadOptions: {
-          core: {fetch: createDirectGeoZarrFetcher(baseUrl, 'uint8', ['y', 'x'], [2, 2], undefined, testCase.overrides)}
-        }
-      },
       zarr: {requireConsolidatedMetadata: false},
-      geozarr: {array: 'values'}
+      geozarr: {array: 'values'},
+      core: {
+        fetch: createDirectGeoZarrFetcher(
+          baseUrl,
+          'uint8',
+          ['y', 'x'],
+          [2, 2],
+          undefined,
+          testCase.overrides
+        )
+      }
     });
     await expect(source.getMetadata(), testCase.name).rejects.toThrow(testCase.message);
     await expect(source.getMetadata(), `${testCase.name} retries`).rejects.toThrow(testCase.message);
@@ -126,9 +131,9 @@ test('GeoZarrRasterSource applies node registration and rejects rotated reads', 
     {attributes: {'spatial:registration': 'node', 'spatial:transform': [1, 0.25, 0, 0.5, -1, 2]}}
   );
   const source = new GeoZarrRasterSource(baseUrl, {
-    core: {loadOptions: {core: {fetch: fetcher}}},
     zarr: {requireConsolidatedMetadata: false},
-    geozarr: {array: 'values'}
+    geozarr: {array: 'values'},
+    core: {fetch: fetcher}
   });
   const metadata = await source.getMetadata();
   expect(metadata.registration).toBe('node');

@@ -80,13 +80,9 @@ test('GeoZarrRasterSource derives georeferencing from regular CF coordinate arra
     const baseUrl = 'https://example.com/cf.zarr';
     const fetcher = createCFZarrFetcher(baseUrl);
     const options: GeoZarrSourceLoaderOptions = {
-        core: {
-            loadOptions: {
-                core: { fetch: fetcher as typeof fetch }
-            }
-        },
-        zarr: { requireConsolidatedMetadata: false },
-        geozarr: { array: 'temperature', defaultSelection: { time: 1 } }
+      zarr: {requireConsolidatedMetadata: false},
+      geozarr: {array: 'temperature', defaultSelection: {time: 1}},
+      core: {fetch: fetcher as typeof fetch}
     };
     const source = new GeoZarrRasterSource(baseUrl, options);
     const metadata = await source.getMetadata();

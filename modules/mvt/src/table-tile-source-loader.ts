@@ -12,7 +12,12 @@ import type {
   GetTileDataParameters,
   GetTileParameters
 } from '@loaders.gl/loader-utils';
-import {DataSource, getRequiredOptions, log} from '@loaders.gl/loader-utils';
+import {
+  DataSource,
+  getRequiredOptions,
+  getSourceLoaderOptions,
+  log
+} from '@loaders.gl/loader-utils';
 import type {
   Schema,
   GeoJSONTable,
@@ -531,10 +536,10 @@ async function loadTable(
   }
 
   const loadOptions = {
-    ...options.core?.loadOptions,
+    ...getSourceLoaderOptions(options),
     // This source's tiler consumes object-row GeoJSON features internally.
     geojson: {
-      ...options.core?.loadOptions?.geojson,
+      ...(options.geojson as Record<string, unknown> | undefined),
       shape: 'geojson-table'
     }
   };

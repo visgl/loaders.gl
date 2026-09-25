@@ -158,10 +158,7 @@ test('federates an actual Delta snapshot with another table source', async () =>
     ]),
     {
       delta: {baseUrl: 'https://example.com/history/'},
-      core: {
-        worker: false,
-        loadOptions: {core: {fetch: createRangeFetch(dataUrl, parquetBytes)}}
-      }
+      core: {fetch: createRangeFetch(dataUrl, parquetBytes), worker: false}
     }
   );
   const arrowSource = new ArrowTableSource(

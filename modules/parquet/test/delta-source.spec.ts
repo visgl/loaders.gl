@@ -19,9 +19,7 @@ test('DeltaTableSource selects active files from commit actions', async () => {
 
 test('DeltaTableSource resolves commit URLs relative to the table root', async () => {
   const log = JSON.stringify({add: {path: 'part-0.parquet', size: 12, stats: {numRecords: 4}}});
-  const source = new DeltaTableSource('https://example.com/table/_delta_log/00000000000000000001.json', {
-    core: {loadOptions: {core: {fetch: async () => new Response(log)}}}
-  });
+  const source = new DeltaTableSource('https://example.com/table/_delta_log/00000000000000000001.json', {core: {fetch: async () => new Response(log)}});
   await expect(source.getScanFragments()).resolves.toEqual([
     expect.objectContaining({
       uri: 'https://example.com/table/part-0.parquet',
@@ -38,18 +36,14 @@ test('DeltaTableSource replays every commit through the selected snapshot versio
     {
       delta: {headers: {Authorization: 'Bearer test'}},
       core: {
-        loadOptions: {
-          core: {
-            fetch: async (url, options) => {
-              requestedURLs.push(`${url}:${options?.headers ? 'headers' : 'no-headers'}`);
-              const version = url.includes('00000000000000000000')
-                ? '{"add":{"path":"part-0.parquet"}}'
-                : url.includes('00000000000000000001')
-                  ? '{"remove":{"path":"part-0.parquet"}}\n{"add":{"path":"part-1.parquet"}}'
-                  : '{"add":{"path":"part-2.parquet"}}';
-              return new Response(version);
-            }
-          }
+        fetch: async (url, options) => {
+          requestedURLs.push(`${url}:${options?.headers ? 'headers' : 'no-headers'}`);
+          const version = url.includes('00000000000000000000')
+            ? '{"add":{"path":"part-0.parquet"}}'
+            : url.includes('00000000000000000001')
+              ? '{"remove":{"path":"part-0.parquet"}}\n{"add":{"path":"part-1.parquet"}}'
+              : '{"add":{"path":"part-2.parquet"}}';
+          return new Response(version);
         }
       }
     }

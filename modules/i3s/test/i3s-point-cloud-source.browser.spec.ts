@@ -83,7 +83,7 @@ test('I3SPointCloudSource traverses node pages and decodes content', async () =>
 
   const fetchResource = async (url: string) => new Response(resources.get(url));
   const source = new I3SPointCloudSource('https://example.com/layer', {
-    core: {loadOptions: {core: {fetch: fetchResource}}}
+    core: {fetch: fetchResource}
   });
   const root = await source.getRootTile();
   expect(root.id).toBe('0');
@@ -105,7 +105,7 @@ test('I3SPointCloudSource traverses node pages and decodes content', async () =>
 
   const cartesianSource = new I3SPointCloudSource('https://example.com/layer', {
     i3s: {coordinateSystem: 'cartesian'},
-    core: {loadOptions: {core: {fetch: fetchResource}}}
+    core: {fetch: fetchResource}
   });
   const cartesianRoot = await cartesianSource.getRootTile();
   (cartesianSource as any).decoder.decodeXyz = () => new Float64Array(106 * 3);
@@ -118,7 +118,7 @@ test('I3SPointCloudSource traverses node pages and decodes content', async () =>
 
   const transformedSource = new I3SPointCloudSource('https://example.com/layer', {
     spatial: {targetCrs: 'EPSG:3857'},
-    core: {loadOptions: {core: {fetch: fetchResource}}}
+    core: {fetch: fetchResource}
   });
   const transformedRoot = await transformedSource.getRootTile();
   const transformedPositions = new Float64Array(106 * 3);
@@ -146,7 +146,7 @@ test('I3SPointCloudSource traverses node pages and decodes content', async () =>
 
   const geographicTransformedSource = new I3SPointCloudSource('https://example.com/layer', {
     spatial: {targetCrs: 'EPSG:4326'},
-    core: {loadOptions: {core: {fetch: fetchResource}}}
+    core: {fetch: fetchResource}
   });
   const geographicTransformedRoot = await geographicTransformedSource.getRootTile();
   expect(geographicTransformedRoot.spatialBoundingVolume?.coordinateFrame).toBe('geographic');
@@ -188,7 +188,7 @@ test('I3SPointCloudSource traverses node pages and decodes content', async () =>
   };
   const placedSource = new I3SPointCloudSource('https://example.com/layer', {
     spatial: {targetCrs: 'EPSG:4326', terrainElevationProvider},
-    core: {loadOptions: {core: {fetch: fetchResource}}}
+    core: {fetch: fetchResource}
   });
   const placedRoot = await placedSource.getRootTile();
   const placedPositions = new Float64Array(106 * 3);
@@ -228,7 +228,7 @@ test('I3SPointCloudSource traverses node pages and decodes content', async () =>
     ).buffer
   );
   const invalidVerticalSource = new I3SPointCloudSource('https://example.com/layer', {
-    core: {loadOptions: {core: {fetch: fetchResource}}}
+    core: {fetch: fetchResource}
   });
 
   await expect(invalidVerticalSource.initialize()).rejects.toThrow(
@@ -250,7 +250,7 @@ describe('I3SPointCloudSource boundary coverage', () => {
   ) {
     const source = new I3SPointCloudSource('https://example.com/layer///', {
       i3s: {coordinateSystem},
-      core: {loadOptions: {core: {fetch: fetchResource}}}
+      core: {fetch: fetchResource}
     });
     source.isReady = true;
     source.metadata = {
@@ -388,13 +388,9 @@ describe('I3SPointCloudSource boundary coverage', () => {
     const source = new I3SPointCloudSource('https://example.com/layer///', {
       i3s: {token: 'secret'},
       core: {
-        loadOptions: {
-          core: {
-            fetch: async (url: string) => {
-              requestCount++;
-              return new Response(new TextEncoder().encode(JSON.stringify(layer)));
-            }
-          }
+        fetch: async (url: string) => {
+          requestCount++;
+          return new Response(new TextEncoder().encode(JSON.stringify(layer)));
         }
       }
     });

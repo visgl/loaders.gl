@@ -157,14 +157,10 @@ test('TableTileSourceLoader#getTile#polygon clipping on the boundary', async () 
 });
 test('TableTileSourceLoader#load#url input uses options.core.loaders', async () => {
   const source = await load(`${DATA_PATH}/us-states.json`, TableTileSourceLoader, {
-    core: {
-      worker: false,
-      loaders: [GeoJSONLoader],
-      loadOptions: {core: {worker: false}}
-    },
     table: {
       coordinates: 'wgs84'
-    }
+    },
+    core: {worker: false, loaders: [GeoJSONLoader]}
   });
   expect(
     source instanceof TableVectorTileSource,
@@ -175,14 +171,10 @@ test('TableTileSourceLoader#load#url input uses options.core.loaders', async () 
 });
 test('TableTileSourceLoader#createDataSource#url input uses options.core.loaders', async () => {
   const source = createDataSource(`${DATA_PATH}/us-states.json`, [TableTileSourceLoader], {
-    core: {
-      worker: false,
-      loaders: [GeoJSONLoader],
-      loadOptions: {core: {worker: false}}
-    },
     table: {
       coordinates: 'wgs84'
-    }
+    },
+    core: {worker: false, loaders: [GeoJSONLoader]}
   });
   expect(
     source instanceof TableVectorTileSource,

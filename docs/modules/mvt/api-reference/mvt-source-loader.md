@@ -71,6 +71,9 @@ TileJSON URL or template take precedence. See the
 
 ## Options
 
+For shared loading controls and parser configuration, see
+[Source options](/docs/developer-guide/using-sources#options). The settings below are specific to this source.
+
 | Option                    | Type      | Default | Description                                                                                                                          |
 | ------------------------- | --------- | ------- | ------------------------------------------------------------------------------------------------------------------------------------ |
 | `mvt.ignoreTextResponses` | `boolean` | `false` | If enabled, reports successful responses with text, JSON, or XML MIME types through `core.onError` and returns `null` for those tiles. |

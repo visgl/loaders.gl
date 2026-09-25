@@ -14,6 +14,9 @@ import type {
   LoaderArrayOptionsType,
   LoaderArrayReturnType,
   SourceLoader,
+  SourcePropsType,
+  SourceArrayOptionsType,
+  DataSourceOptions,
   LoaderWithParser
 } from '@loaders.gl/loader-utils';
 import {isBlob, isSourceLoader} from '@loaders.gl/loader-utils';
@@ -49,7 +52,7 @@ export async function load<
 >(
   url: string | DataType,
   loader: LoaderT,
-  options?: OptionsT,
+  options?: LoaderT extends SourceLoader ? SourcePropsType<LoaderT> & DataSourceOptions : OptionsT,
   context?: LoaderContext
 ): Promise<LoaderReturnType<LoaderT>>;
 
@@ -59,7 +62,7 @@ export async function load<
 >(
   url: string | DataType,
   loaders: LoaderArrayT,
-  options?: OptionsT,
+  options?: LoaderArrayT extends SourceLoader[] ? SourceArrayOptionsType<LoaderArrayT> : OptionsT,
   context?: LoaderContext
 ): Promise<LoaderArrayReturnType<LoaderArrayT>>;
 

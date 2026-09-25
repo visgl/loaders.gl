@@ -21,22 +21,23 @@ import {MLTLoaderWithParser} from './mlt-loader-with-parser';
 import type {MLTLoaderOptions} from './mlt-loader';
 import {MLTFormat} from './mlt-format';
 
-export type MLTSourceLoaderOptions = DataSourceOptions & {
-  /** Preferred encoding for Arrow geometry output. */
-  geoarrow?: {encodingPreference?: GeoArrowEncodingPreference};
-  mlt?: {
-    /** Optional metadata URL. */
-    metadataUrl?: string | null;
-    /** Override file extension (default: `.mlt`). */
-    extension?: string;
-    /** Coordinates for parsed tile geometries. */
-    coordinates?: 'wgs84' | 'local';
-    /** Shape of returned data. */
-    shape?: 'geojson-table' | 'binary-geometry' | 'arrow-table';
-    /** Optional layer filter. */
-    layers?: string[];
+export type MLTSourceLoaderOptions = DataSourceOptions &
+  MLTLoaderOptions & {
+    /** Preferred encoding for Arrow geometry output. */
+    geoarrow?: {encodingPreference?: GeoArrowEncodingPreference};
+    mlt?: {
+      /** Optional metadata URL. */
+      metadataUrl?: string | null;
+      /** Override file extension (default: `.mlt`). */
+      extension?: string;
+      /** Coordinates for parsed tile geometries. */
+      coordinates?: 'wgs84' | 'local';
+      /** Shape of returned data. */
+      shape?: 'geojson-table' | 'binary-geometry' | 'arrow-table';
+      /** Optional layer filter. */
+      layers?: string[];
+    };
   };
-};
 
 /**
  * Source factory for MapLibre Tile (`.mlt`) tiles

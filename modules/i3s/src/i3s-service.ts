@@ -3,6 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import type {CoreAPI, DataSourceOptions, LoaderOptions} from '@loaders.gl/loader-utils';
+import {getSourceLoaderOptions} from '@loaders.gl/loader-utils';
 import {getI3SSpatialReference, I3SSource} from '@loaders.gl/tiles';
 import type {TilesetSpatialReference} from '@loaders.gl/tiles';
 import {I3SLoaderWithParser} from './i3s-loader-with-parser';
@@ -231,12 +232,6 @@ export function createI3SLayerSource(
     return new I3SPointCloudSource(url, options, coreApi);
   }
 
-  const loadOptions = {
-    ...(options.core?.loadOptions || {}),
-    i3s: {
-      ...((options.core?.loadOptions?.i3s as Record<string, unknown> | undefined) || {}),
-      ...((options['i3s'] as Record<string, unknown> | undefined) || {})
-    }
-  } as LoaderOptions;
+  const loadOptions: LoaderOptions = getSourceLoaderOptions(options);
   return new I3SSource({url, loader: I3SLoaderWithParser, coreApi}, loadOptions);
 }

@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import {expect, test} from 'vitest';
+import {expect, test, vi} from 'vitest';
 import {
   _selectSource as selectSource,
   createDataSource,
@@ -38,6 +38,29 @@ const PMTILES_FIXTURE_URL = resolvePath(
   '@loaders.gl/pmtiles/test/data/pmtiles-v2/test_fixture_1.pmtiles'
 );
 const OME_ZARR_FIXTURE_URL = resolvePath('@loaders.gl/zarr/test/data/ome.zarr');
+
+test('source entrypoints share flat loading controls and parser namespaces', async () => {
+  const fetchResource = vi.fn(async () => new Response('ok'));
+  const options = {
+    core: {type: 'wms', fetch: fetchResource, worker: false},
+    wms: {substituteCRS84: false, minimalErrors: true},
+    imagebitmap: {imageOrientation: 'flipY' as const}
+  };
+  const selected = createDataSource(
+    'https://example.com/service',
+    [MVTSourceLoader, WMSSourceLoader],
+    options
+  );
+  const loaded = await load('https://example.com/service', WMSSourceLoader, options);
+  for (const source of [selected, loaded]) {
+    expect(source).toBeInstanceOf(WMSImageSource);
+    expect(source.loadOptions.wms).toEqual(options.wms);
+    expect(source.loadOptions.imagebitmap).toEqual(options.imagebitmap);
+    expect(source.loadOptions.core).toEqual({fetch: fetchResource, worker: false});
+    await source.fetch('memory://subresource');
+  }
+  expect(fetchResource).toHaveBeenCalledTimes(2);
+});
 
 async function createPmtilesFixtureBlob(): Promise<Blob> {
   const response = await fetchFile(PMTILES_FIXTURE_URL);

@@ -44,12 +44,13 @@ export type ArcGISVectorTileServiceMetadata = {
 };
 
 /** Options for the ArcGIS VectorTileServer source. */
-export type ArcGISVectorTileServerSourceLoaderOptions = DataSourceOptions & {
-  'arcgis-vector-tile-server'?: {
-    /** Optional MVT parser options. */
-    mvt?: MVTLoaderOptions['mvt'];
+export type ArcGISVectorTileServerSourceLoaderOptions = DataSourceOptions &
+  MVTLoaderOptions & {
+    'arcgis-vector-tile-server'?: {
+      /** Optional MVT parser options. */
+      mvt?: MVTLoaderOptions['mvt'];
+    };
   };
-};
 
 /** A source for ArcGIS VectorTileServer metadata and PBF tiles. */
 export class ArcGISVectorTileServerSource

@@ -36,25 +36,21 @@ export type PMTilesRangeRequestOptions = RangeRequestSchedulerProps & {
   maxConcurrentRequests?: number;
 };
 
-export type PMTilesSourceLoaderOptions = DataSourceOptions & {
-  /** @deprecated PMTiles parser settings belong under `core.loadOptions`. */
-  loadOptions?: never;
-  /** Preferred encoding for Arrow geometry output. */
-  geoarrow?: {encodingPreference?: GeoArrowEncodingPreference};
-  core?: DataSourceOptions['core'] & {
-    loadOptions?: TileJSONLoaderOptions &
-      MLTLoaderOptions &
-      MVTLoaderOptions &
-      ImageBitmapLoaderOptions;
-  };
-  pmtiles?: {
-    /** Shape of returned vector tile data. */
-    shape?: 'geojson-table' | 'columnar-table' | 'binary-geometry' | 'arrow-table';
+export type PMTilesSourceLoaderOptions = DataSourceOptions &
+  TileJSONLoaderOptions &
+  MLTLoaderOptions &
+  MVTLoaderOptions &
+  ImageBitmapLoaderOptions & {
     /** Preferred encoding for Arrow geometry output. */
     geoarrow?: {encodingPreference?: GeoArrowEncodingPreference};
+    pmtiles?: {
+      /** Shape of returned vector tile data. */
+      shape?: 'geojson-table' | 'columnar-table' | 'binary-geometry' | 'arrow-table';
+      /** Preferred encoding for Arrow geometry output. */
+      geoarrow?: {encodingPreference?: GeoArrowEncodingPreference};
+    };
+    rangeRequests?: PMTilesRangeRequestOptions;
   };
-  rangeRequests?: PMTilesRangeRequestOptions;
-};
 
 /**
  * Creates vector tile data sources for PMTiles urls or blobs
@@ -72,7 +68,7 @@ export const PMTilesSourceLoader = {
     pmtiles: {
       shape: 'arrow-table'
     }
-  } as PMTilesSourceLoaderOptions,
+  },
 
   defaultOptions: {
     pmtiles: {}

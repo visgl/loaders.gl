@@ -19,14 +19,8 @@ const EMPTY_BOUNDING_BOX: [[number, number], [number, number]] = [
 ];
 test('FlatGeobufSourceLoader#createDataSource selects FlatGeobuf source from URL', async () => {
   const source = createDataSource(REMOTE_FGB_URL, [FlatGeobufSourceLoader], {
-    core: {
-      loadOptions: {
-        core: {
-          fetch: await createRangeFetch()
-        }
-      }
-    },
-    flatgeobuf: {}
+    flatgeobuf: {},
+    core: {fetch: await createRangeFetch()}
   });
   expect(source instanceof FlatGeobufVectorSource, 'returns FlatGeobufVectorSource').toBeTruthy();
 });
@@ -236,14 +230,8 @@ test('FlatGeobufSourceLoader recognizes URL query and fragment suffixes', () => 
 test('FlatGeobufSourceLoader#getFeatures respects abort signals', async () => {
   const abortController = new AbortController();
   const delayedSource = createDataSource(REMOTE_FGB_URL, [FlatGeobufSourceLoader], {
-    core: {
-      loadOptions: {
-        core: {
-          fetch: await createRangeFetch({delayMs: 20})
-        }
-      }
-    },
-    flatgeobuf: {}
+    flatgeobuf: {},
+    core: {fetch: await createRangeFetch({delayMs: 20})}
   }) as FlatGeobufVectorSource;
   await delayedSource.getMetadata();
   const pending = delayedSource.getFeatures({
@@ -265,14 +253,8 @@ test('FlatGeobufSourceLoader#getFeatures respects abort signals', async () => {
 async function createSource(fetchOverride?: typeof fetch): Promise<FlatGeobufVectorSource> {
   const fetch = fetchOverride || (await createRangeFetch());
   return createDataSource(REMOTE_FGB_URL, [FlatGeobufSourceLoader], {
-    core: {
-      loadOptions: {
-        core: {
-          fetch
-        }
-      }
-    },
-    flatgeobuf: {}
+    flatgeobuf: {},
+    core: {fetch}
   }) as FlatGeobufVectorSource;
 }
 async function createRangeFetch(options: {delayMs?: number} = {}) {

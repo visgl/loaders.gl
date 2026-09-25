@@ -65,6 +65,9 @@ const arrowTable = await source.getTile({x: 0, y: 0, z: 0});
 
 ## Options
 
+For shared loading controls and parser configuration, see
+[Source options](/docs/developer-guide/using-sources#options). The settings below are specific to this source.
+
 | Option            | Type                                      | Default           | Description                                                        |
 | ----------------- | ----------------------------------------- | ----------------- | ------------------------------------------------------------------ |
 | `mlt.extension`   | `string`                                  | `.mlt`            | Tile URL extension.                                                |

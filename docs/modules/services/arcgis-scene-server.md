@@ -79,9 +79,9 @@ const source = new ArcGISSceneServerSource(SCENE_SERVER_URL, {
 });
 ```
 
-The source accepts custom fetch implementations through the normal `core.loadOptions` mechanism.
+For shared fetch and parser settings, see [Source options](/docs/developer-guide/using-sources#options).
 For new integrations, configure `createArcGISCredential` in
-`core.loadOptions.core.credentials`; it follows metadata and I3S resource requests without being
+`core.credentials`; it follows metadata and I3S resource requests without being
 sent to unrelated origins. The existing `arcgis-scene-server.token` and `i3s.token` options remain
 supported. See [authentication](/docs/developer-guide/authentication). Mesh, Point, and Point Cloud
 profiles are selected automatically.

@@ -49,6 +49,41 @@ function createHeader(tileType = 1): Header {
 
 afterEach(() => {
   vi.useRealTimers();
+  vi.restoreAllMocks();
+});
+
+test.each([
+  ['application/vnd.mapbox-vector-tile', 'mvt', MVTLoader],
+  ['application/vnd.maplibre-tile', 'mlt', MLTLoader]
+] as const)('PMTiles forwards flat parser options for %s with source shape precedence', async (tileMIMEType, namespace, loader) => {
+  vi.spyOn(PMTilesTileSource.prototype, 'getMetadata').mockResolvedValue({tileMIMEType} as Awaited<
+    ReturnType<PMTilesTileSource['getMetadata']>
+  >);
+  const parse = vi.fn(async () => ({shape: 'arrow-table'}));
+  const source = new PMTilesTileSource(
+    new Blob([]),
+    {
+      core: {worker: false},
+      pmtiles: {shape: 'arrow-table'},
+      mvt: {shape: 'geojson-table', layers: ['roads']},
+      mlt: {shape: 'geojson-table', layers: ['roads']}
+    },
+    {parse} as unknown as CoreAPI
+  );
+  vi.spyOn(source, 'getTile').mockResolvedValue(new ArrayBuffer(1));
+  await source.getVectorTile({x: 0, y: 0, z: 0});
+  expect(parse).toHaveBeenCalledWith(
+    expect.any(ArrayBuffer),
+    loader,
+    expect.objectContaining({
+      core: {worker: false},
+      [namespace]: expect.objectContaining({
+        shape: 'arrow-table',
+        layers: ['roads'],
+        tileIndex: {x: 0, y: 0, z: 0}
+      })
+    })
+  );
 });
 
 test('PMTilesSourceLoader#defaults vector tiles to arrow-table output', () => {
@@ -56,30 +91,17 @@ test('PMTilesSourceLoader#defaults vector tiles to arrow-table output', () => {
   expect(PMTilesSourceLoader.defaultOptions.pmtiles.shape).toBeUndefined();
 });
 
-test('PMTiles parser options use the core namespace, not the removed source alias', () => {
-  const options: PMTilesSourceLoaderOptions = {
-    core: {loadOptions: {mvt: {shape: 'binary-geometry'}}}
-  };
-  expect(options.core?.loadOptions?.mvt?.shape).toBe('binary-geometry');
-
-  // @ts-expect-error PMTiles parser options moved under core.loadOptions.
-  const legacyOptions: PMTilesSourceLoaderOptions = {
-    loadOptions: {mvt: {shape: 'binary-geometry'}}
-  };
-  expect(legacyOptions.loadOptions).toBeTruthy();
-});
-
-test('createDataSource rejects the removed PMTiles loadOptions alias', () => {
-  if (false) {
-    createDataSource('https://example.com/tiles.pmtiles', [PMTilesSourceLoader], {
-      core: {loadOptions: {mvt: {shape: 'binary-geometry'}}}
-    });
-
-    // @ts-expect-error PMTiles parser options moved under core.loadOptions.
-    createDataSource('https://example.com/tiles.pmtiles', [PMTilesSourceLoader], {
-      loadOptions: {mvt: {shape: 'binary-geometry'}}
-    });
-  }
+test.each([
+  {loadOptions: {mvt: {shape: 'binary-geometry'}}},
+  {core: {loadOptions: {mvt: {shape: 'binary-geometry'}}}}
+])('createDataSource rejects removed PMTiles option wrappers before fetching', options => {
+  expect(() =>
+    createDataSource(
+      'memory://tiles.pmtiles',
+      [PMTilesSourceLoader],
+      options as unknown as PMTilesSourceLoaderOptions
+    )
+  ).toThrow('Use core and root loader namespaces directly');
 });
 
 test('PMTilesTileSource#getVectorTile falls back to Arrow without overriding inherited shape', async () => {

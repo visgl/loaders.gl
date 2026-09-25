@@ -16,7 +16,7 @@ const FIXTURE_PATH = resolvePath('@loaders.gl/zarr/test/data/spatialdata-v3.zarr
 const FIXTURE_URL = pathToFileURL(FIXTURE_PATH).href;
 
 function createSpatialDataSource(): SpatialDataSource {
-  return new SpatialDataSource(FIXTURE_URL, {core: {loadOptions: {fetch: fetchFixtureFile}}});
+  return new SpatialDataSource(FIXTURE_URL, {core: {fetch: fetchFixtureFile}});
 }
 
 async function fetchFixtureFile(url: string): Promise<Response> {
@@ -78,23 +78,21 @@ describe('SpatialDataSource', () => {
     const source = new SpatialDataSource('https://example.com/legacy.zarr', {
       zarr: {metadataPath: 'zmetadata'},
       core: {
-        loadOptions: {
-          fetch: async () =>
-            new Response(
-              JSON.stringify({
-                metadata: {
-                  '.zgroup': {zarr_format: 2},
-                  '.zattrs': {spatialdata_attrs: {version: '0.1'}},
-                  'points/.zgroup': {zarr_format: 2},
-                  'points/cells/.zgroup': {zarr_format: 2},
-                  'points/cells/.zattrs': {
-                    spatialdata_attrs: {version: '0.1'},
-                    axes: ['x', 'y']
-                  }
+        fetch: async () =>
+          new Response(
+            JSON.stringify({
+              metadata: {
+                '.zgroup': {zarr_format: 2},
+                '.zattrs': {spatialdata_attrs: {version: '0.1'}},
+                'points/.zgroup': {zarr_format: 2},
+                'points/cells/.zgroup': {zarr_format: 2},
+                'points/cells/.zattrs': {
+                  spatialdata_attrs: {version: '0.1'},
+                  axes: ['x', 'y']
                 }
-              })
-            )
-        }
+              }
+            })
+          )
       }
     });
 
@@ -108,23 +106,21 @@ describe('SpatialDataSource', () => {
     const source = new SpatialDataSource('https://example.com/store.zarr', {
       zarr: {metadataPath: 'zmetadata', path: '/experiment/'},
       core: {
-        loadOptions: {
-          fetch: async () =>
-            new Response(
-              JSON.stringify({
-                metadata: {
-                  '.zgroup': {zarr_format: 2},
-                  'experiment/.zgroup': {zarr_format: 2},
-                  'experiment/.zattrs': {spatialdata_attrs: {version: '0.2'}},
-                  'experiment/images/.zgroup': {zarr_format: 2},
-                  'experiment/images/sample/.zgroup': {zarr_format: 2},
-                  'experiment/images/sample/.zattrs': {axes: ['y', 'x']},
-                  'experiment/tables/.zgroup': {zarr_format: 2},
-                  'experiment/tables/observations/.zgroup': {zarr_format: 2}
-                }
-              })
-            )
-        }
+        fetch: async () =>
+          new Response(
+            JSON.stringify({
+              metadata: {
+                '.zgroup': {zarr_format: 2},
+                'experiment/.zgroup': {zarr_format: 2},
+                'experiment/.zattrs': {spatialdata_attrs: {version: '0.2'}},
+                'experiment/images/.zgroup': {zarr_format: 2},
+                'experiment/images/sample/.zgroup': {zarr_format: 2},
+                'experiment/images/sample/.zattrs': {axes: ['y', 'x']},
+                'experiment/tables/.zgroup': {zarr_format: 2},
+                'experiment/tables/observations/.zgroup': {zarr_format: 2}
+              }
+            })
+          )
       }
     });
 

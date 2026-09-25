@@ -32,10 +32,7 @@ test.each([
       {type: 'application/geo+json'}
     ),
     loaders: [MVTSourceLoader, ArrowTableTileSourceLoader, GeoJSONLoader],
-    sourceOptions: {
-      core: {type: 'table', loadOptions: {worker: false}},
-      table: {coordinates}
-    }
+    sourceOptions: {table: {coordinates}, core: {worker: false, type: 'table'}}
   });
   expect(resolved.sourceType).toBe('tile-2d');
   const source = resolved.source as ReturnType<typeof ArrowTableTileSourceLoader.createDataSource>;

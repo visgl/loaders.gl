@@ -81,11 +81,7 @@ test('ArcGISVectorTileServerSource applies core credentials to metadata and tile
   );
   const source = ArcGISVectorTileServerSourceLoader.createDataSource(VECTOR_TILE_SERVER_URL, {
     core: {
-      loadOptions: {
-        core: {
-          credentials: [createArcGISCredential({token: 'secret', origins: ['https://example.com']})]
-        }
-      }
+      credentials: [createArcGISCredential({token: 'secret', origins: ['https://example.com']})]
     }
   });
 

@@ -22,7 +22,9 @@ import {selectLoaderSync} from './select-loader';
 export function createDataSource<SourceArrayT extends SourceLoader[]>(
   data: unknown,
   sources: Readonly<SourceArrayT>,
-  options: Readonly<SourceArrayOptionsType<SourceArrayT>>
+  options: Readonly<
+    SourceArrayOptionsType<SourceArrayT>
+  > = {} as SourceArrayOptionsType<SourceArrayT>
 ): SourceArrayDataSourceType<SourceArrayT> {
   const resolvedOptions = (options || {}) as SourceArrayOptionsType<SourceArrayT>;
   const type = resolvedOptions?.core?.type || (resolvedOptions.type as unknown as string) || 'auto';
@@ -41,7 +43,11 @@ export function createDataSource<SourceArrayT extends SourceLoader[]>(
   if (!source) {
     throw new Error('Not a valid source type');
   }
-  return source.createDataSource(data as string | Blob, resolvedOptions, coreApi);
+  return source.createDataSource(
+    data as string | Blob,
+    resolvedOptions,
+    coreApi
+  ) as SourceArrayDataSourceType<SourceArrayT>;
 }
 
 /** Guess service type from URL */

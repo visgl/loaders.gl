@@ -8,9 +8,9 @@ import {expect, test} from 'vitest';
 test('OMEZarrImageSource selects channels from an interleaved _c array', async () => {
   const baseUrl = 'https://example.com/interleaved.zarr';
   const source = new OMEZarrImageSource(baseUrl, {
-    core: {loadOptions: {core: {fetch: createInterleavedOMEFetcher(baseUrl)}}},
     zarr: {requireConsolidatedMetadata: false},
-    omezarr: {defaultChannels: [2, 0]}
+    omezarr: {defaultChannels: [2, 0]},
+    core: {fetch: createInterleavedOMEFetcher(baseUrl)}
   });
 
   expect(source.getRasterQueryCapabilities()).toBeDefined();

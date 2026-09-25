@@ -43,14 +43,8 @@ test('SnowflakeSQLSource executes SQL API queries through fetch', async () => {
     );
   };
   const dataSource = createDataSource('sql+snowflake://example-account', [SnowflakeSQLSource], {
-    core: {
-      loadOptions: {
-        core: {
-          fetch: fetchResponse
-        }
-      }
-    },
-    snowflake: {token: 'token'}
+    snowflake: {token: 'token'},
+    core: {fetch: fetchResponse}
   }) as SnowflakeSQLDataSource;
   const rows = await dataSource.queryRows('SELECT * FROM demo');
   expect(rows, 'returns SQL API rows across partitions').toEqual([

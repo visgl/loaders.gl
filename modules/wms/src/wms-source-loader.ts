@@ -13,7 +13,7 @@ import type {
 } from '@loaders.gl/loader-utils';
 import {DataSource, mergeOptions} from '@loaders.gl/loader-utils';
 
-import type {ImageType} from '@loaders.gl/images';
+import type {ImageType, ImageBitmapLoaderOptions} from '@loaders.gl/images';
 import {ImageBitmapLoader} from '@loaders.gl/images';
 
 import type {WMSCapabilities} from './wms-capabilities-loader';
@@ -29,17 +29,19 @@ import {WMSErrorLoaderWithParser} from './wms-error-loader-with-parser';
 import type {CRSIdentifier} from '@math.gl/crs';
 
 /** Properties for creating a enw WMS service */
-export type WMSSourceLoaderOptions = DataSourceOptions & {
-  wms?: {
-    // TODO - move parameters inside WMS scope
-    /** In 1.3.0, replaces references to EPSG:4326 with CRS:84 */
-    substituteCRS84?: boolean;
-    /** Default WMS parameters. If not provided here, must be provided in the various request */
-    wmsParameters?: WMSParameters;
-    /** Any additional service specific parameters */
-    vendorParameters?: Record<string, unknown>;
+export type WMSSourceLoaderOptions = DataSourceOptions &
+  WMSLoaderOptions &
+  ImageBitmapLoaderOptions & {
+    wms?: {
+      // TODO - move parameters inside WMS scope
+      /** In 1.3.0, replaces references to EPSG:4326 with CRS:84 */
+      substituteCRS84?: boolean;
+      /** Default WMS parameters. If not provided here, must be provided in the various request */
+      wmsParameters?: WMSParameters;
+      /** Any additional service specific parameters */
+      vendorParameters?: Record<string, unknown>;
+    };
   };
-};
 
 export const WMSSourceLoader = {
   dataType: null as unknown as WMSImageSource,
@@ -622,7 +624,7 @@ export class WMSImageSource
 
   /** Error situation detected */
   protected _parseError(arrayBuffer: ArrayBuffer): Error {
-    const error = WMSErrorLoaderWithParser.parseSync?.(arrayBuffer, this.options.core?.loadOptions);
+    const error = WMSErrorLoaderWithParser.parseSync?.(arrayBuffer, this.loadOptions);
     return new Error(error);
   }
 }

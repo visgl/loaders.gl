@@ -112,14 +112,10 @@ test('ORCSource clears failed URL fetches so a retry can succeed', async () => {
   let attempts = 0;
   const source = new ORCSource('https://example.com/data.orc', {
     core: {
-      loadOptions: {
-        core: {
-          fetch: async () => {
-            attempts++;
-            if (attempts === 1) throw new Error('temporary failure');
-            return new Response(encoded);
-          }
-        }
+      fetch: async () => {
+        attempts++;
+        if (attempts === 1) throw new Error('temporary failure');
+        return new Response(encoded);
       }
     }
   });

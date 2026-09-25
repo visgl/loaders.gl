@@ -47,6 +47,7 @@ import {Proj4Projection, type Proj4CRSDefinition} from '@math.gl/proj4';
 import {
   createLASTypedExtraBytesAttributes,
   LASLoader,
+  type LASLoaderOptions,
   populateLASTypedExtraBytes,
   type LASTypedExtraBytesAttribute
 } from '@loaders.gl/las';
@@ -171,19 +172,20 @@ import {
   type COPCRangeReader
 } from './lib/copc-reader';
 
-export type COPCSourceLoaderOptions = DataSourceOptions & {
-  copc?: {
-    sourceCoordinateSystem?: Proj4CRSDefinition;
-    /** Default byte size for progressive COPC node range requests. */
-    rangeChunkSize?: number;
-    /** Maximum number of COPC node ranges fetched ahead of decode. */
-    rangeConcurrency?: number;
-    /** Maximum number of complete COPC nodes fetched and decoded concurrently. */
-    decodeConcurrency?: number;
-    /** Color storage format. Defaults to uint8norm for backwards compatibility. */
-    colorFormat?: 'uint8norm' | 'float16' | 'float32';
+export type COPCSourceLoaderOptions = DataSourceOptions &
+  LASLoaderOptions & {
+    copc?: {
+      sourceCoordinateSystem?: Proj4CRSDefinition;
+      /** Default byte size for progressive COPC node range requests. */
+      rangeChunkSize?: number;
+      /** Maximum number of COPC node ranges fetched ahead of decode. */
+      rangeConcurrency?: number;
+      /** Maximum number of complete COPC nodes fetched and decoded concurrently. */
+      decodeConcurrency?: number;
+      /** Color storage format. Defaults to uint8norm for backwards compatibility. */
+      colorFormat?: 'uint8norm' | 'float16' | 'float32';
+    };
   };
-};
 
 /** Options for one complete COPC tile-content load. */
 export type COPCTileContentLoadOptions = {

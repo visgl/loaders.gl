@@ -90,7 +90,7 @@ export function IcebergScanLiveExample(): JSX.Element {
         const {IcebergTableSource} = await import('@loaders.gl/parquet/iceberg-table-source');
         const {metadataUrl, metadataVersion} = await resolveIcebergMetadata(selectedTableUrl);
         const source = new IcebergTableSource(metadataUrl, {
-          core: {loadOptions: {core: {fetch: fetchWithExposedContentRange}}, worker: false}
+          core: {fetch: fetchWithExposedContentRange, worker: false}
         });
         const metadata = await source.getQueryMetadata();
         if (isMounted) setQueryMetadata(metadata);

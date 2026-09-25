@@ -121,18 +121,14 @@ function makeContentTypeSource(
   return new MVTTileSource('https://example.com/{z}/{x}/{y}.pbf', {
     mvt: {ignoreTextResponses},
     core: {
-      onError,
-      loadOptions: {
-        core: {
-          fetch: async url =>
-            String(url).endsWith('tilejson.json')
-              ? new Response(null, {status: 404})
-              : new Response(payload, {
-                  status,
-                  headers: contentType ? {'content-type': contentType} : undefined
-                })
-        }
-      }
+      fetch: async url =>
+        String(url).endsWith('tilejson.json')
+          ? new Response(null, {status: 404})
+          : new Response(payload, {
+              status,
+              headers: contentType ? {'content-type': contentType} : undefined
+            }),
+      onError
     }
   });
 }

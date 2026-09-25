@@ -31,10 +31,7 @@ export type SourceLoader<
   fromBlob: boolean;
 
   /** Default options for creating the runtime data source */
-  defaultOptions: Omit<
-    Required<{[K in keyof DataSourceT['options']]: Required<DataSourceT['options'][K]>}>,
-    'core'
-  >;
+  defaultOptions: DataSourceT['optionsType'];
 
   /** Check if a URL can support this source loader */
   testURL: (url: string) => boolean;
@@ -52,17 +49,28 @@ export function isSourceLoader(loader?: unknown): loader is SourceLoader {
   return Boolean(loader && typeof loader === 'object' && 'createDataSource' in loader);
 }
 
-/** Typescript helper to extract input data type from a source type */
-export type SourcePropsType<SourceT extends SourceLoader> = Required<SourceT['options']>;
+/** Extracts the full public options contract, including fields absent from runtime defaults. */
+export type SourcePropsType<SourceT extends SourceLoader> = NonNullable<
+  Parameters<SourceT['createDataSource']>[1]
+>;
 
 /** Typescript helper to extract the source options type from a source type */
-export type SourceDataSourceType<SourceT extends SourceLoader> = SourceT['dataSource'];
+export type SourceDataSourceType<SourceT extends SourceLoader> = ReturnType<
+  SourceT['createDataSource']
+>;
+
+/** Combines options for all candidate sources instead of accepting one candidate's untyped keys. */
+type UnionToIntersection<Value> = (Value extends unknown ? (value: Value) => void : never) extends (
+  value: infer Intersection
+) => void
+  ? Intersection
+  : never;
 
 /** Typescript helper to extract options type from an array of source types */
 export type SourceArrayOptionsType<SourcesT extends SourceLoader[] = SourceLoader[]> =
-  SourcesT[number]['options'] & DataSourceOptions;
+  UnionToIntersection<SourcePropsType<SourcesT[number]>> & DataSourceOptions;
 
 /** Typescript helper to extract data type from a source type */
 export type SourceArrayDataSourceType<SourcesT extends SourceLoader[] = SourceLoader[]> =
-  SourcesT[number]['dataSource'];
+  SourceDataSourceType<SourcesT[number]>;
 /** Typescript helper to extract batch type from a source type */
