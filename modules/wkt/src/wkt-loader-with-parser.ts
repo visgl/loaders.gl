@@ -52,9 +52,10 @@ function parseWKTGeometry(input: string, options?: WKTLoaderOptions['wkt']): Geo
       return null as unknown as Geometry;
     }
     const collectionHeader = text.match(/^(\s*GEOMETRYCOLLECTION)\s+(?:ZM|Z|M)(?=\s|\()/i);
-    const parseText = collectionHeader
-      ? text.replace(collectionHeader[0], collectionHeader[1])
-      : text;
+    const parseText =
+      collectionHeader && dimension !== 'xym'
+        ? text.replace(collectionHeader[0], collectionHeader[1])
+        : text;
     const parsed = parseWKTWithMetadata(parseText, {inferDimensions: true});
     const geometry = toGeometryWithDimensionMetadata(
       parsed,

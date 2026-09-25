@@ -1,7 +1,8 @@
 import {expect, test} from 'vitest';
 import {validateLoader} from 'test/common/conformance';
 import {WKTLoader, WKTWorkerLoader} from '@loaders.gl/wkt/bundled';
-import {setLoaderOptions, fetchFile, parseSync} from '@loaders.gl/core';
+import {setLoaderOptions, fetchFile, parseSync, encodeTextSync} from '@loaders.gl/core';
+import {WKTWriter} from '@loaders.gl/wkt';
 import fuzzer from 'fuzzer';
 const GEOMETRYCOLLECTION_WKT_URL = '@loaders.gl/gis/test/data/wkt/geometrycollection.wkt';
 const GEOMETRYCOLLECTION_GEOJSON_URL = '@loaders.gl/gis/test/data/wkt/geometrycollection.geojson';
@@ -119,6 +120,14 @@ test('WKTLoader', async () => {
       '__geoarrowDimension'
     )?.value
   ).toBe('xym');
+  const inheritedMeasureCollection = parseSync('GEOMETRYCOLLECTION M (POINT (1 2 3))', WKTLoader);
+  expect(
+    Object.getOwnPropertyDescriptor(inheritedMeasureCollection.geometries[0], '__geoarrowDimension')
+      ?.value
+  ).toBe('xym');
+  expect(encodeTextSync(inheritedMeasureCollection, WKTWriter)).toBe(
+    'GEOMETRYCOLLECTION (POINT M (1 2 3))'
+  );
   const mixedDimensionCollection = parseSync(
     'GEOMETRYCOLLECTION ZM (POINT (1 2), POINT (3 4 5), POINT M (6 7 8))',
     WKTLoader
