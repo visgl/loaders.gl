@@ -5092,6 +5092,7 @@ __metadata:
     "@loaders.gl/schema-utils": "npm:5.0.0-alpha.6"
     "@loaders.gl/wkt": "npm:5.0.0-alpha.6"
     "@loaders.gl/worker-utils": "npm:5.0.0-alpha.6"
+    "@math.gl/wkb": "npm:5.0.0-alpha.9"
     apache-arrow: "npm:>= 17.0.0"
     lz4js: "npm:^0.2.0"
   peerDependencies:
