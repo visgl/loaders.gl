@@ -90,7 +90,8 @@
     "@loaders.gl/wkt": "5.0.0-alpha.9",
     "@loaders.gl/worker-utils": "5.0.0-alpha.9",
     "apache-arrow": ">= 17.0.0",
-    "lz4js": "^0.2.0"
+    "lz4js": "^0.2.0",
+    "@math.gl/wkb": "5.0.0-alpha.12"
   },
   "peerDependencies": {
     "@loaders.gl/core": "~5.0.0-alpha.0"
