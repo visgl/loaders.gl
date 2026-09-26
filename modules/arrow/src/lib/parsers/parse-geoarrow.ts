@@ -8,8 +8,8 @@ import type {
   ArrowTable,
   ArrowTableBatch
 } from '@loaders.gl/schema';
+import {convertGeoArrowTableToGeoJSON} from '@loaders.gl/gis';
 import {parseArrowSync, parseArrowInBatches} from './parse-arrow';
-import {convertGeoArrowToTable} from '@loaders.gl/geoarrow';
 
 // Parses arrow to a columnar table
 export function parseGeoArrowSync(
@@ -19,8 +19,12 @@ export function parseGeoArrowSync(
   // | BinaryGeometry
   const table = parseArrowSync(arrayBuffer, {shape: 'arrow-table'}) as ArrowTable;
   switch (options?.shape) {
-    case 'geojson-table':
-      return convertGeoArrowToTable(table.data, 'geojson-table');
+    case 'geojson-table': {
+      if (!table.schema) {
+        throw new Error('Arrow table is missing its schema');
+      }
+      return convertGeoArrowTableToGeoJSON(table.data, table.schema);
+    }
     default:
       return table;
   }

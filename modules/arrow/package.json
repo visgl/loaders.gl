@@ -78,7 +78,6 @@
   },
   "dependencies": {
     "@loaders.gl/compression": "5.0.0-alpha.6",
-    "@loaders.gl/geoarrow": "5.0.0-alpha.6",
     "@loaders.gl/gis": "5.0.0-alpha.6",
     "@loaders.gl/loader-utils": "5.0.0-alpha.6",
     "@loaders.gl/schema": "5.0.0-alpha.6",

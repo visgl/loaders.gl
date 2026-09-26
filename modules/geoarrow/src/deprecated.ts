@@ -7,7 +7,7 @@ import {
   convertFeaturesToGeoArrowTable as convertFeaturesToGeoArrowTableImplementation,
   convertTableToGeoArrow as convertTableToGeoArrowImplementation
 } from './convert-table-to-geoarrow';
-import {convertGeoArrowToBinaryFeatureCollection as convertGeoArrowToBinaryFeatureCollectionImplementation} from './lib/feature-collection-converters/convert-geoarrow-to-binary-features';
+import {convertGeoArrowToBinaryFeatureCollection as convertGeoArrowToBinaryFeatureCollectionImplementation} from '@loaders.gl/gis';
 import {convertGeoArrowGeometryToGeoJSON as convertGeoArrowGeometryToGeoJSONImplementation} from './lib/geometry-converters/convert-geoarrow-to-geojson';
 import {convertGeoArrowToTable as convertGeoArrowToTableImplementation} from './lib/table-converters/convert-geoarrow-table';
 import {convertWKBTableToGeoJSON as convertWKBTableToGeoJSONImplementation} from './lib/table-converters/convert-wkb-table-to-geojson';

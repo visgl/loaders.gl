@@ -4,10 +4,9 @@
 
 import * as arrow from 'apache-arrow';
 import {earcut} from '@math.gl/polygon';
-import type {BinaryFeatureCollection} from '@loaders.gl/schema';
+import type {BinaryFeatureCollection, GeoArrowEncoding} from '@loaders.gl/schema';
 import {TypedArray} from '@loaders.gl/loader-utils';
-import type {GeoArrowEncoding} from '../../metadata/geoarrow-metadata';
-import {updateBoundsFromGeoArrowSamples} from '../../get-arrow-bounds';
+import {updateBoundsFromGeoArrowSamples} from './update-geoarrow-bounds';
 
 enum BinaryGeometryType {
   points = 'points',

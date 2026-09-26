@@ -4,8 +4,11 @@
 
 import * as arrow from 'apache-arrow';
 import {createWorker} from '@loaders.gl/worker-utils';
-import type {BinaryDataFromGeoArrow} from '@loaders.gl/geoarrow';
-import {convertGeoArrowToBinaryFeatureCollection, getTriangleIndices} from '@loaders.gl/geoarrow';
+import {
+  convertGeoArrowToBinaryFeatureCollection,
+  getTriangleIndices,
+  type BinaryDataFromGeoArrow
+} from '@loaders.gl/gis';
 import type {
   TriangulationWorkerInput,
   TriangulateInput,
@@ -92,7 +95,7 @@ function parseGeoArrowBatch(data: ParseGeoArrowInput): ParseGeoArrowResult {
   const geometryColumn = arrow.makeVector(arrowData);
   if (geometryColumn) {
     // NOTE: for a rebuild arrow.Vector, there is only one chunk, so chunkIndex is always 0
-    const options = {calculateMeanCenters, triangle, chunkIndex: 0, chunkOffset};
+    const options = {calculateMeanCenters, triangulate: triangle, chunkIndex: 0, chunkOffset};
     binaryDataFromGeoArrow = convertGeoArrowToBinaryFeatureCollection(
       geometryColumn,
       geometryEncoding,
