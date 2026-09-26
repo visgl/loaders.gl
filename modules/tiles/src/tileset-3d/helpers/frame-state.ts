@@ -30,7 +30,8 @@ export type FrameState = {
   /** Optional world-space clipping planes applied to render-content culling. */
   clippingPlanes?: Plane[];
   frameNumber: number; // TODO: This can be the same between updates, what number is unique for between updates?
-  sseDenominator: number; // Assumes fovy = 60 degrees
+  /** Perspective projection factor: twice the tangent of half the vertical field of view. */
+  sseDenominator: number;
   /** View-dependent density used by perspective dynamic screen-space error for this traversal. */
   dynamicScreenSpaceErrorDensity: number;
 };
@@ -151,6 +152,11 @@ export function getFrameState(
     pitch: 0
   });
 
+  const verticalFieldOfView =
+    Number.isFinite(viewport.fovy) && Number(viewport.fovy) > 0 && Number(viewport.fovy) < 180
+      ? (Number(viewport.fovy) * Math.PI) / 180
+      : Math.PI / 3;
+
   // TODO: make a file/class for frameState and document what needs to be attached to this so that traversal can function
   return {
     camera: {
@@ -158,10 +164,7 @@ export function getFrameState(
       direction: cameraDirectionCartesian,
       up: cameraUpCartesian,
       cartographicPosition: cameraPositionCartographic,
-      verticalFieldOfView:
-        Number.isFinite(viewport.fovy) && Number(viewport.fovy) > 0
-          ? (Number(viewport.fovy) * Math.PI) / 180
-          : Math.PI / 3,
+      verticalFieldOfView,
       timeSinceMovement: options.timeSinceCameraMovement ?? Number.POSITIVE_INFINITY
     },
     viewport,
@@ -170,7 +173,7 @@ export function getFrameState(
     cullingVolume,
     clippingPlanes: viewport.clippingPlanes,
     frameNumber, // TODO: This can be the same between updates, what number is unique for between updates?
-    sseDenominator: 1.15, // Assumes fovy = 60 degrees
+    sseDenominator: 2 * Math.tan(verticalFieldOfView / 2),
     // Tileset3D fills this immediately before traversal because it depends on the root volume.
     dynamicScreenSpaceErrorDensity: 0
   };

@@ -132,7 +132,8 @@ const VIEWPORTS = [
     pitch: 45,
     projectionMatrix: null,
     width: 1848,
-    zoom: 12.660812211760435
+    // Keep the far view below the refinement threshold with its actual 50-degree projection.
+    zoom: 12
   }),
   new WebMercatorViewport({
     altitude: 1.5,
