@@ -158,7 +158,8 @@ export const EXAMPLES: Record<string, Record<string, Example>> = {
         stroked: true,
         filled: true,
         lineWidthMinPixels: 1,
-        getLineColor: [48, 68, 82, 180],
+        getLineWidth: 0.004,
+        getLineColor: [0, 80, 255, 220],
         getFillColor: [109, 166, 122, 150]
       }
     }
