@@ -6,6 +6,7 @@ import {DataDrivenTile3DLayer} from './data-driven-tile-3d-layer';
 import {Tileset3D, type Tileset3DProps} from '@loaders.gl/tiles';
 import {
   getAuthenticatedFetch,
+  resolveLoaderAuthenticationOptions,
   type LoaderOptions,
   type LoaderWithParser,
   type RequestCredential
@@ -36,12 +37,13 @@ export class SourceDataDrivenTile3DLayer<
    * @param tilesetUrl Root tileset metadata URL.
    */
   private async loadSourceTileset(tilesetUrl: string): Promise<void> {
-    const {loadOptions = {}} = this.props;
+    let {loadOptions = {}} = this.props;
 
     // TODO: deprecate `loader` in v9.0
     // @ts-ignore
     const loaders = this.props.loaders || this.props.loader;
     const loader = (Array.isArray(loaders) ? loaders[0] : loaders) as LoaderWithParser;
+    loadOptions = await resolveLoaderAuthenticationOptions(loader, tilesetUrl, loadOptions);
 
     const options: {loadOptions: LoaderOptions} & Partial<Tileset3DProps> = {
       loadOptions: {...loadOptions}

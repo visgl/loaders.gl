@@ -7,6 +7,7 @@ import {
   SourceArrayOptionsType,
   SourceArrayDataSourceType
 } from '@loaders.gl/loader-utils';
+import {resolveAuthenticationOptions} from '@loaders.gl/loader-utils';
 import {coreApi} from './core-api';
 import {selectLoaderSync} from './select-loader';
 
@@ -43,9 +44,31 @@ export function createDataSource<SourceArrayT extends SourceLoader[]>(
   if (!source) {
     throw new Error('Not a valid source type');
   }
+  const contributions = resolvedOptions.core?.credentials?.length
+    ? source.getAuthentications?.(typeof data === 'string' ? data : '', resolvedOptions)
+    : undefined;
+  if (contributions && 'then' in contributions) {
+    // Avoid an unhandled rejection from a hook that cannot be awaited by this sync API.
+    void contributions.catch(() => {});
+    throw new Error('Use load() with an asynchronous getAuthentications() hook.');
+  }
+  const authenticatedOptions = resolveAuthenticationOptions(
+    contributions?.length
+      ? {
+          ...resolvedOptions,
+          core: {
+            ...resolvedOptions.core,
+            authentications: [
+              ...(resolvedOptions.core?.authentications || []),
+              ...(contributions || [])
+            ]
+          }
+        }
+      : resolvedOptions
+  );
   return source.createDataSource(
     data as string | Blob,
-    resolvedOptions,
+    authenticatedOptions,
     coreApi
   ) as SourceArrayDataSourceType<SourceArrayT>;
 }

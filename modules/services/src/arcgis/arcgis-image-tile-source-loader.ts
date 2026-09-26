@@ -2,6 +2,8 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
+import {ArcGISAuthentication} from '../authentication';
+
 import type {ImageType, ImageLoaderOptions} from '@loaders.gl/images';
 import {ImageLoader} from '@loaders.gl/images';
 import type {
@@ -179,6 +181,8 @@ export const ArcGISImageTileSourceLoader = {
   id: 'arcgis-image-server-tiles',
   module: 'services',
   version: '0.0.0',
+  /** Supplies the ArcGIS constructor for declarative service credentials. */
+  getAuthentications: () => [ArcGISAuthentication],
   extensions: [],
   mimeTypes: [],
   type: 'arcgis-image-server-tiles',

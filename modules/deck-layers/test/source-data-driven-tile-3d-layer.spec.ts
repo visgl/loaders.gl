@@ -3,6 +3,18 @@
 // Copyright (c) vis.gl contributors
 
 import {beforeEach, expect, test, vi} from 'vitest';
+import {createBearerTokenCredential} from '@loaders.gl/loader-utils';
+
+const existingCredential = createBearerTokenCredential({
+  id: 'existing',
+  origins: ['https://example.com'],
+  token: 'existing'
+});
+const resolvedCredential = createBearerTokenCredential({
+  id: 'resolved',
+  origins: ['https://example.com'],
+  token: 'resolved'
+});
 
 const sourceLayerMocks = vi.hoisted(() => ({
   createSource: vi.fn(),
@@ -39,7 +51,7 @@ function createLayer(loader: Record<string, unknown>) {
     id: 'source-data-driven',
     data: 'tileset.json',
     loaders: [loader],
-    loadOptions: {core: {credentials: [{url: 'existing'}]}},
+    loadOptions: {core: {credentials: [existingCredential]}},
     onTilesetLoad
   } as any) as any;
   layer.state = {activeViewports: {main: {id: 'main'}}, tileset3d: null, layerMap: {old: {}}};
@@ -56,7 +68,7 @@ test('SourceDataDrivenTile3DLayer merges preload URLs and credentials', async ()
     id: 'tiles',
     preload: vi.fn(async () => ({
       url: 'resolved.json',
-      credentials: [{url: 'resolved'}],
+      credentials: [resolvedCredential],
       maximumMemoryUsage: 32
     }))
   };
@@ -67,7 +79,7 @@ test('SourceDataDrivenTile3DLayer merges preload URLs and credentials', async ()
   expect(sourceLayerMocks.createSource).toHaveBeenCalledWith(
     'resolved.json',
     loader,
-    expect.objectContaining({core: {credentials: [{url: 'existing'}, {url: 'resolved'}]}})
+    expect.objectContaining({core: {credentials: [existingCredential, resolvedCredential]}})
   );
   expect(sourceLayerMocks.tilesetOptions).toMatchObject({maximumMemoryUsage: 32});
   expect(layer.state.layerMap).toEqual({});

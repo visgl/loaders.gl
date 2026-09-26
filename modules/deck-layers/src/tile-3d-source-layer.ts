@@ -15,6 +15,7 @@ import {
 import {coreApi, preload, selectLoader} from '@loaders.gl/core';
 import {
   getAuthenticatedFetch,
+  resolveLoaderAuthenticationOptions,
   type LoaderOptions,
   type LoaderWithParser,
   type RequestCredential
@@ -104,7 +105,7 @@ export class Tile3DSourceLayer<
     }
 
     const tilesetUrl = data;
-    const {loadOptions = {}} = this.props;
+    let {loadOptions = {}} = this.props;
 
     // `Tile3DLayer` supplies a default singular 3D Tiles loader. Prefer an explicitly
     // provided list so callers can use `loaders: [I3SLoader]` as a format hint.
@@ -131,6 +132,11 @@ export class Tile3DSourceLayer<
       selectedLoader,
       loadOptions,
       typeof tilesetUrl === 'string' ? tilesetUrl : undefined
+    );
+    loadOptions = await resolveLoaderAuthenticationOptions(
+      selectedLoader.getAuthentications ? selectedLoader : loader,
+      typeof tilesetUrl === 'string' ? tilesetUrl : '',
+      loadOptions
     );
 
     const {tileset: tilesetOptions, ...remainingLoadOptions} = loadOptions as LoaderOptions & {
