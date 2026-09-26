@@ -96,11 +96,13 @@
   "pre-push": "pre-push",
   "resolutions_notes": [
     "Ensure we use recent typescript",
+    "Keep Playwright on 1.59.1: 1.63.0 closes Chromium during headless coverage shards",
     "apache-arrow version should be aligned with parquet-wasm version"
   ],
   "resolutions": {
     "apache-arrow": "^21.2.0",
     "typescript": "^6.0.3",
+    "playwright": "1.59.1",
     "@loaders.gl/3d-tiles": "^5.0.0-alpha.0",
     "@loaders.gl/compression": "^5.0.0-alpha.0",
     "@loaders.gl/core": "^5.0.0-alpha.0",

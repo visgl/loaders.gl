@@ -6,7 +6,7 @@ import type {SAXParserOptions} from '../../sax-ts/sax';
 import {uncapitalizeKeys} from '../xml-utils/uncapitalize';
 import {parseXMLInternal} from './parse-xml-internal';
 import {XMLParser as FastXMLParser} from 'fast-xml-parser';
-import type {X2jOptions} from 'fast-xml-parser';
+import type {MatcherView, X2jOptions} from 'fast-xml-parser';
 
 export type ParseXMLOptions = {
   /** XML is typically PascalCase, JavaScript prefects camelCase */
@@ -58,8 +58,13 @@ function parseXMLSyncFast(text: string, options?: ParseXMLOptions): any {
     textNodeName: options?.textNodeName,
 
     // Let's application specify keys that are always arrays
-    isArray: (name: string, jpath: string, isLeafNode: boolean, isAttribute: boolean) => {
-      const array = Boolean(options?.arrayPaths?.some(path => jpath === path));
+    isArray: (
+      name: string,
+      jpath: string | MatcherView,
+      isLeafNode: boolean,
+      isAttribute: boolean
+    ) => {
+      const array = Boolean(options?.arrayPaths?.some(path => jpath.toString() === path));
       return array;
     },
 
