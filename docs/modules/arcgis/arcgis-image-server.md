@@ -145,8 +145,8 @@ Use `exportRaster()` when pixel values must remain analysis-ready:
 ```ts
 const raster = await source.exportRaster({
   bbox: [-122.5, 37.7, -122.3, 37.85],
-  bboxSR: 'EPSG:4326',
-  imageSR: 'EPSG:4326',
+  bboxSR: 4326,
+  imageSR: 4326,
   width: 512,
   height: 512,
   pixelType: 'F32',
@@ -177,6 +177,8 @@ const layer = new SourceLayer({
 });
 ```
 
+For the tile viewer, also set `extent: [-180, -85.051129, 180, 85.051129]` on `SourceLayer`
+when service metadata bounds use projected coordinates.
 Use `core.type: 'arcgis-image-server-tiles'` in `sourceOptions` when tiled export is preferred over
 one viewport-sized image.
 

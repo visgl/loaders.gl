@@ -138,8 +138,7 @@ const source = await load(featureServerUrl, [ArcGISFeatureServerSourceLoader], {
     queryParameters: {
       where: 'status = 1',
       outFields: ['name', 'category'],
-      returnGeometry: true,
-      maxAllowableOffset: 2
+      returnGeometry: true
     }
   }
 });
@@ -159,6 +158,8 @@ const layer = new SourceLayer({
   id: 'bicycle-routes',
   data: featureServerUrl,
   loaders: ARCGIS_LOADERS,
+  crs: 'EPSG:4326',
+  requestCrs: 'EPSG:4326',
   layers: ['0'],
   pickable: true,
   getLineColor: [0, 80, 255],

@@ -198,13 +198,13 @@ claims stay aligned. Keep implementation status separate from roadmap priority. 
 green check mark for decoding, service access and rendering. This planning document is the seed
 for that inventory, not a requirement to create duplicate public tables manually.
 
-[F]: ../../../modules/services/src/arcgis/arcgis-feature-server-source-loader.ts
-[M]: ../../../modules/services/src/arcgis/arcgis-map-tile-source-loader.ts
-[I]: ../../../modules/services/src/arcgis/arcgis-image-server-source-loader.ts
-[IT]: ../../../modules/services/src/arcgis/arcgis-image-tile-source-loader.ts
-[V]: ../../../modules/services/src/arcgis/arcgis-vector-tile-server-source-loader.ts
-[S]: ../../../modules/services/src/arcgis/arcgis-scene-server-source-loader.ts
-[D]: ../../../modules/services/src/arcgis/arcgis-capability-graph.ts
+[F]: ../../../modules/arcgis/src/arcgis/arcgis-feature-server-source.ts
+[M]: ../../../modules/arcgis/src/arcgis/arcgis-map-tile-source.ts
+[I]: ../../../modules/arcgis/src/arcgis/arcgis-image-server-source.ts
+[IT]: ../../../modules/arcgis/src/arcgis/arcgis-image-tile-source.ts
+[V]: ../../../modules/arcgis/src/arcgis/arcgis-vector-tile-server-source.ts
+[S]: ../../../modules/arcgis/src/arcgis/arcgis-scene-server-source.ts
+[D]: ../../../modules/arcgis/src/arcgis/arcgis-capability-graph.ts
 [W]: ../../../modules/i3s/src/lib/parsers/parse-arcgis-webscene.ts
 [O]: ../../../modules/wms/src/index.ts
 

@@ -150,8 +150,9 @@ export const EXAMPLES: Record<string, Record<string, Example>> = {
       type: 'arcgis-vector-tile-server',
       url: 'https://basemaps.arcgis.com/arcgis/rest/services/World_Basemap_v2/VectorTileServer',
       description:
-        'ArcGIS-hosted MVT tiles decoded to WGS84 features by loaders.gl and rendered through SourceLayer.',
-      viewState: {longitude: -98, latitude: 39, zoom: 4},
+        'ArcGIS-hosted road tiles decoded to WGS84 GeoJSON and styled by the application.',
+      sourceOptions: {core: {worker: false}, mvt: {shape: 'geojson-table', layers: ['Road']}},
+      viewState: {longitude: -122.42, latitude: 37.77, zoom: 12},
       layerProps: {
         pickable: true,
         stroked: true,

@@ -130,6 +130,9 @@ const layer = new SourceLayer({
   id: 'city-service',
   data: serviceUrl,
   loaders: ARCGIS_LOADERS,
+  extent: [-180, -85.051129, 180, 85.051129],
+  crs: 'EPSG:4326',
+  requestCrs: 'EPSG:4326',
   layers: ['0'],
   pickable: true
 });

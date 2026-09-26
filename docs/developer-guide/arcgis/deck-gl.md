@@ -34,6 +34,8 @@ const layer = new SourceLayer({
   id: 'arcgis-features',
   data: featureLayerUrl,
   loaders: ARCGIS_LOADERS,
+  crs: 'EPSG:4326',
+  requestCrs: 'EPSG:4326',
   sourceOptions: {core: {type: 'arcgis-feature-server'}},
   pickable: true
 });
@@ -41,10 +43,18 @@ const layer = new SourceLayer({
 // Add layer to your Deck or DeckGL layers array.
 ```
 
+For feature layers, request geographic output and viewport bounds explicitly with `crs` and
+`requestCrs` so a service's native projected coordinates are not interpreted as longitude/latitude.
+
 Use `core.type: 'arcgis-image-server'` for a viewport image or
 `core.type: 'arcgis-image-server-tiles'` for exported image tiles. Both use ImageServer URLs, so
 explicit selection makes the intended representation clear. Add credentials through
 `sourceOptions.core.credentials`; see [authentication](/docs/developer-guide/arcgis/authentication).
+
+For tile sources, `SourceLayer.extent` uses longitude/latitude. Some ArcGIS services advertise
+projected metadata bounds; supply a geographic extent explicitly instead of interpreting those
+numbers as degrees. The gallery uses `extent: [-180, -85.051129, 180, 85.051129]` for its
+Web Mercator tile viewers. This does not add support for arbitrary tile grids.
 
 ## Style features for your application
 

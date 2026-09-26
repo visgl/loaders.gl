@@ -13,7 +13,7 @@ Each row distinguishes code that exists from missing or unverified integration.
 
 | Status | Meaning |
 | --- | --- |
-| Implemented subset | A dedicated adapter implements the named operations; other operations remain unsupported |
+| Implemented subset | A dedicated service client implements the named operations; other operations remain unsupported |
 | Partial / verify | Related code exists, but the complete workflow or stated variation needs validation |
 | Other package | A relevant format/protocol implementation exists elsewhere; ArcGIS deployment compatibility is not thereby established |
 | Not implemented | No dedicated service client or end-to-end workflow was found in the inspected source |
@@ -44,7 +44,7 @@ include Esri's [service catalog](https://developers.arcgis.com/rest/services-ref
 | [Image service: viewport export](/docs/modules/arcgis/arcgis-image-server) | `ImageServer/exportImage` | Implemented subset | Rendered images; output bounds/CRS; rendering/mosaic rules | No full catalog, identify, pixel sampling, multidimensional, or download API |
 | Image service: exported image tiles | `ImageServer/exportImage` for each requested tile | Implemented subset | PNG or LERC exports using Web Mercator tile bounds | These are dynamically exported tiles, not native cached ImageServer tile requests |
 | Image service: numerical raster export | `ImageServer/exportImage` with LERC | Implemented subset | Decoded bands, mask and raster metadata via LERC | Application chooses how to visualize values; band/rule passthrough does not imply complete analytical service support |
-| Image service: native cached imagery/elevation tiles | `ImageServer/tile/...` | Not implemented | Image and LERC decoders provide building blocks | Current ArcGIS image tile adapter uses `exportImage`; no dedicated cache traversal/sampling/terrain integration |
+| Image service: native cached imagery/elevation tiles | `ImageServer/tile/...` | Not implemented | Image and LERC decoders provide building blocks | Current ArcGIS image tile client uses `exportImage`; no dedicated cache traversal/sampling/terrain integration |
 | [Vector tile service: tile data](/docs/modules/arcgis/arcgis-vector-tile-server) | `VectorTileServer/tile/...` | Implemented subset | Metadata, raw PBF and decoded MVT; WGS84 features | No guaranteed arbitrary tile-grid support; publishing/export administration absent |
 | Vector tile service: cartographic styling | Style JSON, sprites and glyph resources | Partial / verify | Style/sprite URLs exposed as metadata | No full style evaluation, font/glyph loading, sprite rendering, label placement, or automatic style-to-deck.gl translation |
 | [Scene service: 3D object / mesh data](/docs/modules/arcgis/arcgis-scene-server) | `SceneServer/layers/{layerId}` | Implemented subset | Metadata and delegated I3S source | Validate each version/profile, geometry and texture encoding, CRS and renderer route separately |
@@ -149,8 +149,8 @@ These are adjacent resources/workflows, not all distinct service types.
 | WebMap | Not implemented | Individual data sources can be consumed | No web-map document composition, style, popup or expression implementation |
 | WebScene | Other package / partial | I3S WebScene loader handles selected operational layer types | Current parser checks WKID 4326; unsupported layers are reported; not a complete scene renderer |
 | Offline packaging and service export | Not implemented | File-format loaders can parse some independently obtained outputs | No package-generation, download, replica or synchronization workflow |
-| Sharing, publishing, users, groups and content management | Not implemented | None in the ArcGIS adapters | Use portal/content APIs outside this module |
-| Server / portal / notebook / mission / video administration | Not implemented | None in the ArcGIS adapters | No infrastructure or administrative client |
+| Sharing, publishing, users, groups and content management | Not implemented | None in the ArcGIS service clients | Use portal/content APIs outside this module |
+| Server / portal / notebook / mission / video administration | Not implemented | None in the ArcGIS service clients | No infrastructure or administrative client |
 
 See Esri's [item model](https://developers.arcgis.com/rest/users-groups-and-items/items-and-item-types/)
 and [API overview](https://developers.arcgis.com/rest/). A future item resolver should initially
@@ -174,7 +174,7 @@ publishes every listed protocol. See the current [WMS package reference](/docs/m
 
 ## Verification scope
 
-The current release tests the named operations with deterministic fixtures. Live-service compatibility
+The current test suite exercises the named operations with deterministic fixtures. Live-service compatibility
 depends on the deployment, advertised capabilities, credentials, spatial reference and data profile.
 No blanket ArcGIS Enterprise version or Esri endorsement is implied. Planned additions are not
 current support. Use the service pages for runnable examples and operation-specific limitations.

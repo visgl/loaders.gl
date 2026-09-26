@@ -36,8 +36,8 @@ const features = await source.getFeatures({
 
 Replace the example field names and predicate with fields from your layer. Abort obsolete requests
 when the viewport changes. Filter on the server and request only fields needed for rendering and
-interaction. Bounds use the coordinate system requested through `crs`; requesting an output CRS
-uses the service's reprojection capabilities rather than a local general-purpose projection engine.
+interaction. Bounds use `requestCrs`, which defaults to the output `crs` (EPSG:4326 by default).
+Requesting an output CRS uses the service's reprojection capabilities rather than a local general-purpose projection engine.
 
 ## Choose an output
 

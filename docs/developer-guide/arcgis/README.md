@@ -81,7 +81,7 @@ original data provider according to the service's item details and copyright inf
 [Open the interactive example](/examples/tiles/arcgis-feature-server) to explore viewport loading.
 
 `getFeatures()` currently makes one request. A service can limit the returned record count, and
-this adapter does not expose a completeness guarantee. Keep queries small and consult the
+this client does not expose a completeness guarantee. Keep queries small and consult the
 [query limitations](/docs/developer-guide/arcgis/feature-layers#record-limits-and-completeness)
 before using the result for a complete count or analysis.
 

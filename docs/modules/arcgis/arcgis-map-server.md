@@ -128,6 +128,7 @@ const layer = new SourceLayer({
   id: 'world-imagery',
   data: mapServerUrl,
   loaders: ARCGIS_LOADERS,
+  extent: [-180, -85.051129, 180, 85.051129],
   minZoom: 0,
   maxZoom: 19
 });

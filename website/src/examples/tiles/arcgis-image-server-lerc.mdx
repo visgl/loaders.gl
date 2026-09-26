@@ -24,8 +24,8 @@ const source = await load(url, [ArcGISImageServerSourceLoader], {
 
 const raster = await source.exportRaster({
   bbox: [-122.5, 37.7, -122.3, 37.85],
-  bboxSR: 'EPSG:4326',
-  imageSR: 'EPSG:4326',
+  bboxSR: 4326,
+  imageSR: 4326,
   width: 512,
   height: 512,
   format: 'lerc',

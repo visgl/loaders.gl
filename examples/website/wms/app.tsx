@@ -80,7 +80,8 @@ export default function App(props: AppProps = {}) {
     error: null,
   });
 
-  const layers = renderLayer(state.example);
+  // Keep source options stable when loading and metadata callbacks update React state.
+  const layers = useMemo(() => renderLayer(state.example), [state.example]);
   const widgets = useMemo(
     () => [createDeckFullscreenWidget('wms-fullscreen'), createDeckStatsWidget('wms-stats')],
     []
@@ -178,12 +179,26 @@ export default function App(props: AppProps = {}) {
         layers: example.layers || [],
         pickable: true,
         autoHighlight: true,
+        crs: isVector ? 'EPSG:4326' : undefined,
+        requestCrs: isVector ? 'EPSG:4326' : undefined,
+        // ArcGIS metadata can advertise projected bounds; these tile demos use geographic bounds.
+        extent: [
+          'arcgis-map-server',
+          'arcgis-image-server-tiles',
+          'arcgis-vector-tile-server'
+        ].includes(example.type) ? [-180, -85.051129, 180, 85.051129] : undefined,
         srs:
           example.type === 'wms' || example.type === 'arcgis-image-server'
             ? 'EPSG:4326'
             : 'auto',
+        onTilesLoad: () => setState(state => state.loading ? {...state, loading: false} : state),
+        onTileError: error => setState(state => ({
+          ...state,
+          loading: false,
+          error: error instanceof Error ? error.message : String(error)
+        })),
         onLoadingStateChange: isLoading =>
-          setState((state) => ({...state, loading: isLoading})),
+          setState(state => state.loading === isLoading ? state : {...state, loading: isLoading}),
         onMetadataLoad: (metadata) => {
           const typedMetadata = metadata as {title?: string; name?: string};
           globalThis.document.title = typedMetadata.title || typedMetadata.name || example.url;

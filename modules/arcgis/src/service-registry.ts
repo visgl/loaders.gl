@@ -9,7 +9,7 @@ import {ArcGISMapTileSourceLoader} from './arcgis/arcgis-map-tile-source-loader-
 import {ArcGISSceneServerSourceLoader} from './arcgis/arcgis-scene-server-source-loader-types';
 import {ArcGISVectorTileServerSourceLoader} from './arcgis/arcgis-vector-tile-server-source-loader-types';
 
-/** A source loader currently exposed through the services package. */
+/** A source loader currently exposed through the ArcGIS package. */
 export type ArcGISLoader =
   | typeof ArcGISFeatureServerSourceLoader
   | typeof ArcGISImageServerSourceLoader
