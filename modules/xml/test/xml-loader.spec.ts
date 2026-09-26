@@ -36,6 +36,11 @@ test('XMLLoader#internal parser#parity', () => {
       options: {arrayPaths: ['root.item']}
     },
     {
+      title: 'array paths work when fast-xml-parser uses matcher views',
+      xml: '<root><item>first</item></root>',
+      options: {arrayPaths: ['root.item'], _fastXML: {jPath: false}}
+    },
+    {
       title: 'self-closing element',
       xml: '<root><empty/></root>'
     },

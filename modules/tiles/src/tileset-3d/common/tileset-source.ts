@@ -222,6 +222,17 @@ export interface Tileset3DSource {
   loadTileChildren?(tile: Tile3D, frameState: FrameState): Promise<TileChildrenLoadResult>;
 
   /**
+   * Loads all source-managed child headers without requiring camera or visibility state.
+   *
+   * This hook is used by complete dataset operations such as conversion. Implementations retain
+   * ownership of implicit subtrees, node pages, archive resolution, and query inheritance.
+   */
+  loadTileChildrenForTraversal?(
+    tile: Tile3D,
+    signal?: AbortSignal
+  ): Promise<TileChildrenLoadResult>;
+
+  /**
    * Resolves a tile-relative path to the final request URL.
    */
   getTileUrl(tilePath: string): string;
@@ -239,7 +250,11 @@ export interface Tileset3DSource {
   /**
    * Loads child tile metadata on demand for formats that do not expose the full tree up front.
    */
-  loadChildTileHeader?(parentTile: Tile3D, childId: string, frameState: FrameState): Promise<any>;
+  loadChildTileHeader?(
+    parentTile: Tile3D,
+    childId: string,
+    frameState: FrameState | null
+  ): Promise<any>;
 
   /**
    * Updates source-managed bookkeeping after a tile finishes loading.

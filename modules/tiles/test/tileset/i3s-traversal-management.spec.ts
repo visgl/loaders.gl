@@ -91,6 +91,27 @@ describe('I3STilesetTraverser', () => {
     expect(traverser.updateTile).toHaveBeenCalledWith(availableChild, FRAME_STATE_1);
   });
 
+  test('reuses camera-independent child headers during viewport traversal', () => {
+    const traverser = new I3STilesetTraverser({});
+    const add = vi.fn();
+    const loadedChild = {id: 'child', header: {id: 'child'}};
+    const tile = {
+      header: {children: [{id: 'child'}]},
+      children: [loadedChild]
+    } as any;
+    (traverser as any)._tileManager = {
+      add,
+      update: vi.fn(),
+      find: vi.fn()
+    };
+    traverser.updateTile = vi.fn();
+
+    traverser.updateChildTiles(tile, FRAME_STATE_1);
+
+    expect(add).not.toHaveBeenCalled();
+    expect(traverser.updateTile).toHaveBeenCalledWith(loadedChild, FRAME_STATE_1);
+  });
+
   test('delegates child header loading and validates source capabilities', async () => {
     const traverser = new I3STilesetTraverser({});
     const loadChildTileHeader = vi.fn(async (_tile, nodeId, frameState) => ({
