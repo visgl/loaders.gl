@@ -87,8 +87,10 @@ perspectiveSSE =
 | `viewportHeight` | logical pixels | Height of the deck.gl viewport. |
 | `viewDistanceScale` | unitless | Application-controlled multiplier; defaults to `1`. |
 | `distanceToCamera` | meters | Shortest distance from the camera to the tile bounding volume. |
-| `sseDenominator` | unitless | Perspective projection factor, currently fixed at `1.15`. |
+| `sseDenominator` | unitless | `2 * tan(verticalFieldOfView / 2)`, using the viewport field of view in radians. |
 | `perspectiveSSE` | logical pixels | Estimated visible error used for traversal. |
+
+The vertical field of view comes from the viewport’s `fovy` in degrees. Structural viewports without a finite value between 0 and 180 degrees use a 60° fallback. Narrower fields of view produce larger SSE at the same distance and request more detail. The default deck.gl map camera uses a field of view of approximately 36.87°, giving a denominator of approximately `0.667`.
 
 The distance is clamped to a small positive value when the camera is inside or extremely close to the tile, avoiding division by zero while still requesting detail.
 
@@ -100,13 +102,13 @@ Assume:
 - viewport height: `900 px`
 - camera distance: `600 m`
 - `viewDistanceScale`: `1`
-- denominator: `1.15`
+- vertical field of view: `60°`, giving a denominator of approximately `1.1547`
 
 ```text
-perspectiveSSE = (8 * 900) / (600 * 1.15) = 10.43 px
+perspectiveSSE = (8 * 900) / (600 * 1.1547) ≈ 10.39 px
 ```
 
-With `maximumScreenSpaceError: 8`, the tile exceeds the tolerance and should refine. With a threshold of `16`, the tile is acceptable. Moving the camera to `300 m` doubles SSE to approximately `20.87 px`, making refinement more likely.
+With `maximumScreenSpaceError: 8`, the tile exceeds the tolerance and should refine. With a threshold of `16`, the tile is acceptable. Moving the camera to `300 m` doubles SSE to approximately `20.78 px`, making refinement more likely.
 
 ## Dynamic Perspective SSE
 
@@ -279,7 +281,7 @@ Compare a tile's `screenSpaceError` with the tileset's `maximumScreenSpaceError`
 
 ## Current Boundaries
 
-- The perspective denominator is currently fixed at `1.15`, corresponding approximately to the established 60-degree field-of-view assumption. Perspective behavior is intentionally preserved for compatibility rather than derived from every possible projection matrix.
+- Perspective SSE uses the viewport’s vertical `fovy`. Custom perspective viewports must expose a matching field of view; missing or invalid values use a 60° fallback. Arbitrary projection matrices are not inspected directly.
 - Orthographic SSE requires `metersPerPixel`; invalid values use the perspective-compatible fallback.
 - Dynamic SSE is a perspective optimization. It is not subtracted from orthographic SSE, including
   the perspective-compatible fallback used when an orthographic viewport has an invalid pixel scale.

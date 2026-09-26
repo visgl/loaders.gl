@@ -5,7 +5,9 @@
 import {expect, test} from 'vitest';
 import {Matrix4} from '@math.gl/core';
 import {Ellipsoid} from '@math.gl/geospatial';
-import {Tile3D} from '@loaders.gl/tiles';
+import {getFrameState, Tile3D} from '@loaders.gl/tiles';
+import {WebMercatorViewport} from '@deck.gl/core';
+import {TilesetTraverser} from '../../src/tileset-3d/common/tileset-traverser';
 import type {FrameState} from '../../src/tileset-3d/helpers/frame-state';
 import {
   calculateDynamicScreenSpaceErrorDensity,
@@ -74,6 +76,21 @@ test('getTiles3DScreenSpaceError#preserves perspective calculation', () => {
     getTiles3DScreenSpaceError(tile, createFrameState(), false),
     'projects geometric error using viewport height, distance, and denominator'
   ).toBe(50);
+});
+test('perspective refinement respects the render camera field of view', () => {
+  const tile = createTile();
+  tile.tileset.memoryAdjustedScreenSpaceError = 100;
+  const traverser = new TilesetTraverser({});
+  const refinementDecisions = [30, 90, 30].map(fieldOfView => {
+    const viewport = new WebMercatorViewport({width: 1000, height: 1000, fovy: fieldOfView});
+    const frameState = getFrameState(viewport, 1);
+    // Hold world-space error and camera distance fixed to isolate the projection change.
+    tile._screenSpaceError = tile.getScreenSpaceError(frameState, false);
+    expect(tile._screenSpaceError).toBeCloseTo(50 * viewport.projectionMatrix[5]);
+    return traverser.shouldRefine(tile, frameState);
+  });
+  // The old fixed denominator accepted the coarse tile in all three views.
+  expect(refinementDecisions).toEqual([true, false, true]);
 });
 test('getTiles3DScreenSpaceError#scales progressive-resolution perspective height', () => {
   const tile = createTile();

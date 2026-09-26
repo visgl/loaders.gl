@@ -18,7 +18,7 @@ const expected = {
   },
   height: 775,
   frameNumber: 1,
-  sseDenominator: 1.15
+  sseDenominator: 2 / 3
 };
 test('getFrameState', () => {
   const viewport = new WebMercatorViewport({
@@ -65,7 +65,9 @@ test('getFrameState', () => {
     results.camera.timeSinceMovement,
     'standalone frame states should not defer requests.'
   ).toBe(Number.POSITIVE_INFINITY);
-  expect(results.sseDenominator, 'sseDenominator should match.').toBe(results.sseDenominator);
+  expect(results.sseDenominator, 'matches the default deck.gl camera projection').toBeCloseTo(
+    expected.sseDenominator
+  );
   expect(results.cullingVolume.planes.length, 'Should have 6 planes.').toBe(6);
   const viewportCenterCartesian = Ellipsoid.WGS84.cartographicToCartesian(
     [viewport.longitude, viewport.latitude, 0],
@@ -78,6 +80,32 @@ test('getFrameState', () => {
     ).toBeTruthy();
   }
 });
+test.each([
+  30, 60, 90
+])('getFrameState matches the %s degree perspective projection', fieldOfView => {
+  const viewport = new WebMercatorViewport({width: 800, height: 600, fovy: fieldOfView});
+  const frameState = getFrameState(viewport, 1);
+  // The vertical projection scale provides an independent check of the SSE factor.
+  expect(frameState.sseDenominator).toBeCloseTo(2 / viewport.projectionMatrix[5]);
+});
+
+test.each([
+  undefined,
+  0,
+  -30,
+  180,
+  200,
+  Number.NaN,
+  Number.POSITIVE_INFINITY
+])('getFrameState falls back to 60 degrees for invalid or missing fovy %s', fieldOfView => {
+  const viewport = new WebMercatorViewport({width: 800, height: 600});
+  // Preserve a valid camera and frustum while emulating a structural viewport's missing metadata.
+  const structuralViewport = Object.create(viewport, {fovy: {value: fieldOfView}});
+  const frameState = getFrameState(structuralViewport, 1);
+  expect(frameState.camera.verticalFieldOfView).toBeCloseTo(Math.PI / 3);
+  expect(frameState.sseDenominator).toBeCloseTo(2 / Math.sqrt(3));
+});
+
 test('getFrameState#cullingVolume', () => {
   const viewport = new FirstPersonView({near: 1, far: 100}).makeViewport({
     width: 800,
