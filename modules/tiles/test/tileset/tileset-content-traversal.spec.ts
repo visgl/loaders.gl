@@ -157,4 +157,84 @@ describe('traverseTilesetContents', () => {
 
     expect(items.map(item => item.tile.id)).toEqual(['root']);
   });
+
+  test('rejects tilesets without an initialized root', async () => {
+    const root = createTestTile('root');
+    const {tileset} = createTestTileset(root);
+    (tileset as unknown as {root: null}).root = null;
+
+    await expect(async () => {
+      for await (const _item of traverseTilesetContents(tileset)) {
+        // No items should be yielded before root validation.
+      }
+    }).rejects.toThrow('without a root tile');
+  });
+
+  test('skips tile objects already visited through a shared child reference', async () => {
+    const root = createTestTile('root');
+    const child = createTestTile('child');
+    root.children.push(child, child);
+    const {tileset} = createTestTileset(root);
+    const itemIds: string[] = [];
+
+    for await (const item of traverseTilesetContents(tileset)) {
+      itemIds.push(item.tile.id);
+    }
+
+    expect(itemIds).toEqual(['root', 'child']);
+  });
+
+  test('reports unsupported and unsuccessful implicit subtree loading', async () => {
+    const root = createTestTile('implicit', [], {implicitSubtree: {uri: 'subtree'}});
+    const {tileset} = createTestTileset(root);
+    delete (tileset.source as {loadTileChildrenForTraversal?: unknown})
+      .loadTileChildrenForTraversal;
+
+    await expect(async () => {
+      for await (const _item of traverseTilesetContents(tileset)) {
+        // An implicit subtree cannot be skipped.
+      }
+    }).rejects.toThrow('does not support camera-independent subtree loading');
+
+    const unsuccessfulTileset = createTestTileset(root).tileset;
+    (
+      unsuccessfulTileset.source as unknown as {
+        loadTileChildrenForTraversal: () => Promise<{loaded: boolean}>;
+      }
+    ).loadTileChildrenForTraversal = async () => ({loaded: false});
+
+    await expect(async () => {
+      for await (const _item of traverseTilesetContents(unsuccessfulTileset)) {
+        // An incomplete subtree cannot be reported as complete traversal.
+      }
+    }).rejects.toThrow('Unable to load implicit subtree');
+  });
+
+  test('reports I3S child and content loads that did not complete', async () => {
+    const root = createTestTile('i3s-root', ['root.glb']);
+    const {tileset} = createTestTileset(root, TILESET_TYPE.I3S);
+    (
+      tileset.source as unknown as {
+        loadTileChildrenForTraversal: () => Promise<{loaded: boolean}>;
+      }
+    ).loadTileChildrenForTraversal = async () => ({loaded: false});
+
+    await expect(async () => {
+      for await (const _item of traverseTilesetContents(tileset)) {
+        // An unsuccessful I3S child request must be visible to callers.
+      }
+    }).rejects.toThrow('Unable to load I3S child nodes');
+
+    const contentTileset = createTestTileset(root).tileset;
+    (root as unknown as TestTile).loadContentForTraversal = async () => ({
+      loaded: false,
+      contents: []
+    });
+
+    await expect(async () => {
+      for await (const _item of traverseTilesetContents(contentTileset)) {
+        // Unloaded content must not be yielded as complete.
+      }
+    }).rejects.toThrow('Unable to load tile content');
+  });
 });

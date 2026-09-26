@@ -1,5 +1,7 @@
 import {expect, test} from 'vitest';
 import {
+  createI3SConversionSpatialContext,
+  createTiles3DConversionSpatialContext,
   convertTileset,
   inspectTileset,
   TileConversionError,
@@ -8,6 +10,11 @@ import {
   type TileConversionSink,
   type TileConversionSource
 } from '@loaders.gl/tile-converter/v5';
+import {
+  createTilesetSpatialReference,
+  get3DTilesSpatialReference,
+  getI3SSpatialReference
+} from '@loaders.gl/tiles';
 
 test('tile-converter(v5)#inspectTileset delegates to the injected source', async () => {
   const source: TileConversionSource<{format: string}, Uint8Array> = {
@@ -159,4 +166,123 @@ test('tile-converter(v5)#convertTileset releases source iteration after cancella
   expect(sourceClosed).toBe(true);
   expect(sinkAborted).toBe(true);
   expect(conversionCount).toBe(1);
+});
+
+test('tile-converter(v5)#3D Tiles spatial context transforms ECEF positions and bounds', () => {
+  const spatial = createTiles3DConversionSpatialContext(
+    get3DTilesSpatialReference({root: {boundingVolume: {region: [0, 0, 0.01, 0.01, 0, 100]}}}),
+    {targetCrs: 'EPSG:3857'}
+  );
+
+  const positions = spatial.transformPositions(new Float64Array([6378137.25, 0, 0]));
+  const bounds = spatial.transformBoundingVolume({
+    region: [0, 0, 0.01, 0.01, 0, 100]
+  });
+
+  expect(positions).toBeInstanceOf(Float64Array);
+  expect(positions[0]).toBeCloseTo(0, 4);
+  expect(positions[2]).toBeCloseTo(0.25, 3);
+  expect(spatial.spatialReference.status).toBe('transformed');
+  expect(bounds.box).toHaveLength(12);
+  expect(bounds.box?.every(Number.isFinite)).toBe(true);
+});
+
+test('tile-converter(v5)#spatial contexts retain targets from normalized references', () => {
+  const discovered = createTilesetSpatialReference(
+    {sourceCrs: 'EPSG:4326', heightReference: 'ellipsoidal', provenance: 'metadata'},
+    {targetCrs: 'EPSG:3857'}
+  );
+  const spatial = createTiles3DConversionSpatialContext(discovered);
+
+  expect(spatial.spatialReference.targetCrs).toBe('EPSG:3857');
+  expect(spatial.transformPositions([1, 1, 0])[0]).toBeCloseTo(111319.49, 1);
+});
+
+test('tile-converter(v5)#I3S spatial context normalizes vertical units and keeps stable origins', () => {
+  const spatial = createI3SConversionSpatialContext(
+    getI3SSpatialReference({
+      spatialReference: {wkid: 4326},
+      heightModelInfo: {heightModel: 'ellipsoidal', heightUnit: 'foot'}
+    }),
+    {targetCrs: 'EPSG:3857'}
+  );
+
+  const transformed = spatial.transformPositions(new Float64Array([0, 0, 100]), [0, 0, 0]);
+
+  expect(transformed.sourcePositions).toEqual(new Float64Array([0, 0, 30.48]));
+  expect(transformed.positions[2]).toBeCloseTo(30.48, 4);
+  expect(transformed.origin[2]).toBe(0);
+  expect(spatial.spatialReference.status).toBe('transformed');
+});
+
+test('tile-converter(v5)#spatial context rejects unknown CRS requests with diagnostics', () => {
+  try {
+    createTiles3DConversionSpatialContext({}, {targetCrs: 'EPSG:4326'});
+    throw new Error('Expected the spatial request to be rejected');
+  } catch (error) {
+    expect(error).toBeInstanceOf(TileConversionError);
+    expect(error).toMatchObject({
+      code: 'SPATIAL_REFERENCE_UNRESOLVED',
+      diagnostics: expect.arrayContaining([
+        expect.objectContaining({code: 'SPATIAL_REFERENCE_UNRESOLVED', severity: 'error'})
+      ])
+    });
+  }
+});
+
+test('tile-converter(v5)#spatial transformer initialization failures use typed diagnostics', () => {
+  const discovered = {
+    sourceCrs: 'EPSG:4326',
+    heightReference: 'orthometric' as const,
+    provenance: 'metadata' as const
+  };
+  const options = {
+    targetHeightReference: 'ellipsoidal' as const,
+    geoidModel: 'missing-test-geoid'
+  };
+
+  for (const createContext of [
+    () => createTiles3DConversionSpatialContext(discovered, options),
+    () => createI3SConversionSpatialContext(discovered, options)
+  ]) {
+    try {
+      createContext();
+      throw new Error('Expected spatial transformer initialization to fail');
+    } catch (error) {
+      expect(error).toBeInstanceOf(TileConversionError);
+      expect(error).toMatchObject({
+        code: 'SPATIAL_REFERENCE_UNRESOLVED',
+        diagnostics: expect.arrayContaining([
+          expect.objectContaining({
+            code: 'SPATIAL_REFERENCE_UNRESOLVED',
+            severity: 'error',
+            message: expect.stringContaining('geoid model')
+          })
+        ])
+      });
+    }
+  }
+});
+
+test('tile-converter(v5)#I3S spatial context applies an explicit async terrain provider', async () => {
+  const spatial = createI3SConversionSpatialContext(
+    getI3SSpatialReference({
+      spatialReference: {wkid: 4326},
+      heightModelInfo: {heightModel: 'ellipsoidal', heightUnit: 'meter'},
+      elevationInfo: {mode: 'relativeToGround'}
+    }),
+    {
+      targetCrs: 'EPSG:3857',
+      terrainElevationProvider: {
+        heightReference: 'ellipsoidal',
+        sampleElevations: async positions => positions.map(() => 100),
+        getElevationRange: async () => ({minimum: 100, maximum: 100})
+      }
+    }
+  );
+
+  const transformed = await spatial.transformPositionsAsync([0, 0, 5], [0, 0, 0]);
+
+  expect(transformed.positions).toEqual(new Float32Array([0, 0, 5]));
+  expect(transformed.sourcePositions).toEqual(new Float64Array([0, 0, 105]));
 });
