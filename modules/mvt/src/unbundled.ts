@@ -9,3 +9,5 @@ export {MapStyleLoader} from './map-style-loader';
 
 export type {MVTLoaderOptions} from './mvt-loader';
 export {MVTLoader, MVTWorkerLoader} from './mvt-loader';
+export type {MVTGeoJSONLoaderOptions} from './mvt-geojson-loader-types';
+export {MVTGeoJSONLoader} from './mvt-geojson-loader-types';

@@ -2,13 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright vis.gl contributors
 
-import type {
-  ArrowTable,
-  FlatFeature,
-  Feature,
-  GeoJSONTable,
-  BinaryFeatureCollection
-} from '@loaders.gl/schema';
+import type {ArrowTable, FlatFeature, BinaryFeatureCollection} from '@loaders.gl/schema';
 import {
   convertFeaturesToWKBArrowTable,
   flatGeojsonToBinary,
@@ -19,6 +13,7 @@ import Protobuf from 'pbf';
 
 import {VectorTile} from './vector-tile/vector-tile';
 import {VectorTileFeature} from './vector-tile/vector-tile-feature';
+import {parseMVTGeoJSON, parseToGeoJSONFeatures} from './parse-mvt-geojson';
 
 import type {MVTLoaderOptions} from '../mvt-loader';
 type MVTOptions = Required<MVTLoaderOptions>['mvt'];
@@ -38,17 +33,11 @@ export function parseMVT(arrayBuffer: ArrayBuffer, options?: MVTLoaderOptions) {
   switch (shape) {
     case 'columnar-table': // binary + some JS arrays
       return {shape: 'columnar-table', data: parseToBinary(arrayBuffer, mvtOptions)};
-    case 'geojson-table': {
-      const table: GeoJSONTable = {
-        shape: 'geojson-table',
-        type: 'FeatureCollection',
-        features: parseToGeojsonFeatures(arrayBuffer, mvtOptions)
-      };
-      return table;
-    }
+    case 'geojson-table':
+      return parseMVTGeoJSON(arrayBuffer, {mvt: mvtOptions});
     case 'arrow-table': {
       const table: ArrowTable = convertFeaturesToWKBArrowTable(
-        parseToGeojsonFeatures(arrayBuffer, mvtOptions),
+        parseToGeoJSONFeatures(arrayBuffer, mvtOptions),
         {
           encodingPreference:
             options?.geoarrow?.encodingPreference || mvtOptions.geoarrow?.encodingPreference
@@ -117,32 +106,6 @@ function parseToFlatGeoJson(
   return [features, geometryInfo];
 }
 
-function parseToGeojsonFeatures(arrayBuffer: ArrayBuffer, options: MVTOptions): Feature[] {
-  if (arrayBuffer.byteLength <= 0) {
-    return [];
-  }
-
-  const features: Feature[] = [];
-  const tile = new VectorTile(new Protobuf(arrayBuffer));
-
-  const selectedLayers = Array.isArray(options.layers) ? options.layers : Object.keys(tile.layers);
-
-  selectedLayers.forEach((layerName: string) => {
-    const vectorTileLayer = tile.layers[layerName];
-    if (!vectorTileLayer) {
-      return;
-    }
-
-    for (let i = 0; i < vectorTileLayer.length; i++) {
-      const vectorTileFeature = vectorTileLayer.getGeoJSONFeature(i);
-      const decodedFeature = getDecodedFeature(vectorTileFeature, options, layerName);
-      features.push(decodedFeature);
-    }
-  });
-
-  return features;
-}
-
 /** Check that options are good */
 function checkOptions(options?: MVTLoaderOptions): MVTOptions {
   const mvtOptions = options?.mvt as MVTOptions | undefined;
@@ -159,30 +122,6 @@ function checkOptions(options?: MVTLoaderOptions): MVTOptions {
   }
 
   return mvtOptions;
-}
-
-/**
- * @param feature
- * @param options
- * @returns decoded feature
- */
-function getDecodedFeature(
-  feature: VectorTileFeature,
-  options: MVTOptions,
-  layerName: string
-): Feature {
-  const decodedFeature = feature.toGeoJSONFeature(
-    options.coordinates || 'local',
-    options.tileIndex
-  );
-
-  // Add layer name to GeoJSON properties
-  if (options.layerProperty) {
-    decodedFeature.properties ||= {};
-    decodedFeature.properties[options.layerProperty] = layerName;
-  }
-
-  return decodedFeature;
 }
 
 /**

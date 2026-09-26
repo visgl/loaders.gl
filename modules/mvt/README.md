@@ -21,3 +21,21 @@ const arrayBuffer = await encode(geojson, MVTWriter, {
   mvt: {layerName: 'my-layer', version: 2, extent: 4096}
 });
 ```
+
+## Lightweight GeoJSON parsing
+
+Applications that only need GeoJSON can import the dedicated MVT parser entry
+instead of the full parser, which also supports Arrow and binary geometry:
+
+```typescript
+import {MVTGeoJSONLoaderWithParser} from '@loaders.gl/mvt/mvt-geojson-loader';
+
+const tile = MVTGeoJSONLoaderWithParser.parseSync(arrayBuffer, {
+  mvt: {coordinates: 'local', layerProperty: 'sourceLayer'}
+});
+```
+
+The package root exports the metadata-only `MVTGeoJSONLoader`; core APIs can
+preload its parser. The direct subpath is useful for custom workers and
+integrations such as Tangram that already own their worker lifecycle. This
+entry does not import Arrow or GIS converters.
