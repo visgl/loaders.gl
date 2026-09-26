@@ -241,6 +241,9 @@
       "@loaders.gl/mvt/arrow-table-tile-source-loader": [
         "modules/mvt/src/arrow-table-tile-source-loader.ts"
       ],
+      "@loaders.gl/mvt/mvt-geojson-loader": [
+        "modules/mvt/src/mvt-geojson-loader.ts"
+      ],
       "@loaders.gl/mvt/test": [
         "modules/mvt/test"
       ],
