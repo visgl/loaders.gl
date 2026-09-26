@@ -2,6 +2,7 @@ import {expect, test} from 'vitest';
 import {
   createI3SConversionSpatialContext,
   createTiles3DConversionSpatialContext,
+  convertFeatureAttributesToArrowBatches,
   convertTileset,
   inspectTileset,
   TileConversionError,
@@ -15,6 +16,7 @@ import {
   get3DTilesSpatialReference,
   getI3SSpatialReference
 } from '@loaders.gl/tiles';
+import type {Schema} from '@loaders.gl/schema';
 
 test('tile-converter(v5)#inspectTileset delegates to the injected source', async () => {
   const source: TileConversionSource<{format: string}, Uint8Array> = {
@@ -285,4 +287,124 @@ test('tile-converter(v5)#I3S spatial context applies an explicit async terrain p
 
   expect(transformed.positions).toEqual(new Float32Array([0, 0, 5]));
   expect(transformed.sourcePositions).toEqual(new Float64Array([0, 0, 105]));
+});
+
+test('tile-converter(v5)#feature attributes preserve exact IDs, nulls, lists, and raw metadata', () => {
+  const schema: Schema = {
+    fields: [
+      {name: 'feature_id', type: 'int64', nullable: false},
+      {name: 'name', type: 'utf8', nullable: true},
+      {
+        name: 'class_codes',
+        type: {type: 'list', children: [{name: 'item', type: 'uint16', nullable: false}]},
+        nullable: true
+      },
+      {name: 'raw_metadata', type: 'binary', nullable: true}
+    ],
+    metadata: {source: 'i3s'}
+  };
+  const batches = convertFeatureAttributesToArrowBatches(
+    [
+      {
+        featureId: 9007199254740993n,
+        metadataClass: 'Buildings',
+        properties: {name: 'Café', class_codes: [2, 7]},
+        rawMetadata: new Uint8Array([10, 11])
+      },
+      {
+        featureId: 9007199254740994n,
+        metadataClass: 'Buildings',
+        properties: {name: null, class_codes: null}
+      },
+      {
+        featureId: 9007199254740995n,
+        metadataClass: 'Buildings',
+        properties: {name: '雪', class_codes: [9]}
+      }
+    ],
+    {schema, rawMetadataField: 'raw_metadata', batchSize: 2}
+  );
+
+  expect(batches.map(batch => batch.length)).toEqual([2, 1]);
+  expect(batches[0].schema.metadata?.['loaders.gl:feature-class']).toBe('Buildings');
+  expect(batches[0].data.getChild('feature_id')?.get(0)).toBe(9007199254740993n);
+  expect(batches[0].data.getChild('name')?.get(0)).toBe('Café');
+  expect(batches[0].data.getChild('name')?.get(1)).toBeNull();
+  expect(batches[0].data.getChild('class_codes')?.get(0)?.toArray()).toEqual(
+    new Uint16Array([2, 7])
+  );
+  expect(batches[0].data.getChild('raw_metadata')?.get(0)).toEqual(new Uint8Array([10, 11]));
+  expect(batches[1].data.getChild('feature_id')?.get(0)).toBe(9007199254740995n);
+  expect(batches[1].data.getChild('name')?.get(0)).toBe('雪');
+});
+
+test('tile-converter(v5)#feature attributes reject unmapped values and unsafe numeric IDs', () => {
+  const schema: Schema = {
+    fields: [{name: 'feature_id', type: 'int64', nullable: false}],
+    metadata: {}
+  };
+  const baseFeature = {metadataClass: 'Parcels', properties: {unmapped: 'value'}};
+
+  expect(() =>
+    convertFeatureAttributesToArrowBatches([{...baseFeature, featureId: 1}], {schema})
+  ).toThrow('not declared in the Arrow schema');
+  expect(() =>
+    convertFeatureAttributesToArrowBatches(
+      [{metadataClass: 'Parcels', featureId: Number.MAX_SAFE_INTEGER + 1, properties: {}}],
+      {schema}
+    )
+  ).toThrow(TileConversionError);
+
+  expect(() =>
+    convertFeatureAttributesToArrowBatches(
+      [{metadataClass: 'Parcels', featureId: 1, properties: {count: 256}}],
+      {
+        schema: {
+          fields: [
+            {name: 'feature_id', type: 'int64', nullable: false},
+            {name: 'count', type: 'uint8', nullable: false}
+          ],
+          metadata: {}
+        }
+      }
+    )
+  ).toThrow('outside the range');
+});
+
+test('tile-converter(v5)#feature attributes validate nullability, integer schemas, and decimals', () => {
+  const feature = {featureId: 1, metadataClass: 'Parcels', properties: {}};
+
+  expect(() =>
+    convertFeatureAttributesToArrowBatches([feature], {
+      schema: {
+        fields: [
+          {name: 'feature_id', type: 'int64', nullable: false},
+          {name: 'optional', type: 'utf8'}
+        ],
+        metadata: {}
+      }
+    })
+  ).toThrow('has no value');
+
+  expect(() =>
+    convertFeatureAttributesToArrowBatches([feature], {
+      schema: {fields: [{name: 'feature_id', type: 'int'}], metadata: {}}
+    })
+  ).toThrow('explicit integer width and signedness');
+
+  expect(() =>
+    convertFeatureAttributesToArrowBatches([{...feature, properties: {amount: 1.25}}], {
+      schema: {
+        fields: [
+          {name: 'feature_id', type: 'int64', nullable: false},
+          {
+            name: 'amount',
+            type: {type: 'decimal', bitWidth: 128, precision: 8, scale: 2},
+            nullable: true
+          }
+        ],
+        metadata: {}
+      }
+    })
+  ).toThrow('unscaled bigint decimal value');
 });
