@@ -69,18 +69,20 @@ export interface I3SConversionSpatialContext {
  * Creates the shared spatial operations used to write 3D Tiles in a selected CRS and height frame.
  *
  * Source discovery remains format-specific and should use `get3DTilesSpatialReference` or the
- * initialized source's spatial metadata. The returned reference is the metadata to publish with
- * transformed output; unresolved requests fail instead of guessing a CRS or height datum.
+ * initialized source's spatial metadata. Target choices on a normalized, transformable reference
+ * are retained unless overridden in `options`. Do not reuse a reference already marked
+ * `transformed`; that would apply the operation twice. The returned reference is the metadata to
+ * publish with transformed output; unresolved requests fail instead of guessing a CRS or height datum.
  *
  * @param discovered - Source CRS, units, coordinate epoch, and height metadata.
  * @param options - Target CRS, height reference, and explicitly supplied geoid resources.
  * @returns Shared position, normal, and bound operations with matching output metadata.
  */
 export function createTiles3DConversionSpatialContext(
-  discovered: CreateTilesetSpatialReferenceOptions,
+  discovered: CreateTilesetSpatialReferenceOptions | TilesetSpatialReference,
   options: TilesetSpatialOptions = {}
 ): Tiles3DConversionSpatialContext {
-  const spatialReference = createTilesetSpatialReference(discovered, options);
+  const spatialReference = createConversionSpatialReference(discovered, options);
   if (spatialReference.status === 'unresolved') {
     throw createSpatialConversionError(spatialReference);
   }
@@ -88,7 +90,10 @@ export function createTiles3DConversionSpatialContext(
   const transformer =
     spatialReference.status === 'native'
       ? undefined
-      : new Tiles3DSpatialTransformer(spatialReference, options);
+      : createSpatialTransformer(
+          spatialReference,
+          () => new Tiles3DSpatialTransformer(spatialReference, options)
+        );
   const outputSpatialReference = transformer
     ? markTilesetSpatialReferenceTransformed(spatialReference)
     : spatialReference;
@@ -118,10 +123,10 @@ export function createTiles3DConversionSpatialContext(
  * @returns Shared position, normal, bound, and output-metadata operations.
  */
 export function createI3SConversionSpatialContext(
-  discovered: CreateTilesetSpatialReferenceOptions,
+  discovered: CreateTilesetSpatialReferenceOptions | TilesetSpatialReference,
   options: TilesetSpatialOptions = {}
 ): I3SConversionSpatialContext {
-  const spatialReference = createTilesetSpatialReference(discovered, options);
+  const spatialReference = createConversionSpatialReference(discovered, options);
   if (spatialReference.status === 'unresolved') {
     throw createSpatialConversionError(spatialReference);
   }
@@ -129,7 +134,10 @@ export function createI3SConversionSpatialContext(
   const transformer =
     spatialReference.status === 'native'
       ? undefined
-      : new I3SSpatialTransformer(spatialReference, options);
+      : createSpatialTransformer(
+          spatialReference,
+          () => new I3SSpatialTransformer(spatialReference, options)
+        );
   const outputSpatialReference = transformer ? transformer.spatialReference : spatialReference;
 
   return {
@@ -157,23 +165,85 @@ export function createI3SConversionSpatialContext(
 
 /** Raises a typed error and preserves discovery warnings for unresolved spatial operations. */
 function createSpatialConversionError(
-  spatialReference: TilesetSpatialReference
+  spatialReference: TilesetSpatialReference,
+  cause?: unknown
 ): TileConversionError {
   const diagnostics: TileConversionDiagnostic[] = spatialReference.warnings.map(message => ({
     code: 'SPATIAL_REFERENCE_WARNING',
     message,
     severity: 'warning' as const
   }));
+  const causeMessage = cause instanceof Error ? `: ${cause.message}` : '';
+  const message = causeMessage
+    ? `Spatial conversion could not be initialized${causeMessage}`
+    : 'The requested spatial conversion cannot be resolved from the available metadata';
   diagnostics.push({
     code: 'SPATIAL_REFERENCE_UNRESOLVED',
-    message: 'The requested spatial conversion cannot be resolved from the available metadata',
+    message,
     severity: 'error'
   });
-  return new TileConversionError(
-    'SPATIAL_REFERENCE_UNRESOLVED',
-    diagnostics[diagnostics.length - 1].message,
-    diagnostics
-  );
+  return new TileConversionError('SPATIAL_REFERENCE_UNRESOLVED', message, diagnostics);
+}
+
+/** Creates a conversion reference while retaining target choices from normalized source metadata. */
+function createConversionSpatialReference(
+  discovered: CreateTilesetSpatialReferenceOptions | TilesetSpatialReference,
+  options: TilesetSpatialOptions
+): TilesetSpatialReference {
+  if (!('status' in discovered)) {
+    return createTilesetSpatialReference(discovered, options);
+  }
+  if (discovered.status === 'transformed') {
+    throw createSpatialConversionError(
+      discovered,
+      new Error('coordinates are already transformed')
+    );
+  }
+
+  const sourceMetadata: CreateTilesetSpatialReferenceOptions = {
+    sourceCrs: discovered.sourceCrs,
+    sourceCrsState: discovered.crs.state,
+    sourceCrsRepresentation:
+      discovered.crs.state === 'explicit' || discovered.crs.state === 'default'
+        ? discovered.crs.representation
+        : undefined,
+    sourceCrsAlternatives:
+      discovered.crs.state === 'explicit' || discovered.crs.state === 'default'
+        ? discovered.crs.alternatives
+        : undefined,
+    verticalCrs: discovered.verticalCrs,
+    units: discovered.units,
+    verticalUnitScale: discovered.verticalUnitScale,
+    coordinateEpoch: discovered.coordinateEpoch,
+    heightReference: discovered.heightReference,
+    elevationMode: discovered.elevationMode,
+    elevationOffset: discovered.elevationOffset,
+    elevationUnit: discovered.elevationUnit,
+    elevationUnitScale: discovered.elevationUnitScale,
+    coordinateFrame: discovered.coordinateFrame,
+    axisOrder: discovered.axisOrder,
+    provenance: discovered.provenance,
+    warnings: discovered.warnings
+  };
+  const retainedOptions: TilesetSpatialOptions = {
+    ...options,
+    targetCrs: options.targetCrs ?? discovered.targetCrs,
+    targetHeightReference: options.targetHeightReference ?? discovered.targetHeightReference,
+    outputCoordinates: options.outputCoordinates ?? discovered.outputCoordinates
+  };
+  return createTilesetSpatialReference(sourceMetadata, retainedOptions);
+}
+
+/** Converts transformer initialization failures into the public typed diagnostic contract. */
+function createSpatialTransformer<T>(
+  spatialReference: TilesetSpatialReference,
+  createTransformer: () => T
+): T {
+  try {
+    return createTransformer();
+  } catch (error) {
+    throw createSpatialConversionError(spatialReference, error);
+  }
 }
 
 /** Clones bounds for native-coordinate output without changing caller-owned arrays. */

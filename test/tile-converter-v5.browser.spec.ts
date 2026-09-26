@@ -10,7 +10,11 @@ import {
   type TileConversionSink,
   type TileConversionSource
 } from '@loaders.gl/tile-converter/v5';
-import {get3DTilesSpatialReference, getI3SSpatialReference} from '@loaders.gl/tiles';
+import {
+  createTilesetSpatialReference,
+  get3DTilesSpatialReference,
+  getI3SSpatialReference
+} from '@loaders.gl/tiles';
 
 test('tile-converter(v5)#inspectTileset delegates to the injected source', async () => {
   const source: TileConversionSource<{format: string}, Uint8Array> = {
@@ -183,6 +187,17 @@ test('tile-converter(v5)#3D Tiles spatial context transforms ECEF positions and 
   expect(bounds.box?.every(Number.isFinite)).toBe(true);
 });
 
+test('tile-converter(v5)#spatial contexts retain targets from normalized references', () => {
+  const discovered = createTilesetSpatialReference(
+    {sourceCrs: 'EPSG:4326', heightReference: 'ellipsoidal', provenance: 'metadata'},
+    {targetCrs: 'EPSG:3857'}
+  );
+  const spatial = createTiles3DConversionSpatialContext(discovered);
+
+  expect(spatial.spatialReference.targetCrs).toBe('EPSG:3857');
+  expect(spatial.transformPositions([1, 1, 0])[0]).toBeCloseTo(111319.49, 1);
+});
+
 test('tile-converter(v5)#I3S spatial context normalizes vertical units and keeps stable origins', () => {
   const spatial = createI3SConversionSpatialContext(
     getI3SSpatialReference({
@@ -212,6 +227,40 @@ test('tile-converter(v5)#spatial context rejects unknown CRS requests with diagn
         expect.objectContaining({code: 'SPATIAL_REFERENCE_UNRESOLVED', severity: 'error'})
       ])
     });
+  }
+});
+
+test('tile-converter(v5)#spatial transformer initialization failures use typed diagnostics', () => {
+  const discovered = {
+    sourceCrs: 'EPSG:4326',
+    heightReference: 'orthometric' as const,
+    provenance: 'metadata' as const
+  };
+  const options = {
+    targetHeightReference: 'ellipsoidal' as const,
+    geoidModel: 'missing-test-geoid'
+  };
+
+  for (const createContext of [
+    () => createTiles3DConversionSpatialContext(discovered, options),
+    () => createI3SConversionSpatialContext(discovered, options)
+  ]) {
+    try {
+      createContext();
+      throw new Error('Expected spatial transformer initialization to fail');
+    } catch (error) {
+      expect(error).toBeInstanceOf(TileConversionError);
+      expect(error).toMatchObject({
+        code: 'SPATIAL_REFERENCE_UNRESOLVED',
+        diagnostics: expect.arrayContaining([
+          expect.objectContaining({
+            code: 'SPATIAL_REFERENCE_UNRESOLVED',
+            severity: 'error',
+            message: expect.stringContaining('geoid model')
+          })
+        ])
+      });
+    }
   }
 });
 
