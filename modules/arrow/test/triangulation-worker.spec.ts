@@ -11,8 +11,8 @@ const workerMocks = vi.hoisted(() => ({
   triangulateWKBColumn: vi.fn()
 }));
 
-vi.mock('@loaders.gl/geoarrow', async importOriginal => {
-  const original = await importOriginal<typeof import('@loaders.gl/geoarrow')>();
+vi.mock('@loaders.gl/gis', async importOriginal => {
+  const original = await importOriginal<typeof import('@loaders.gl/gis')>();
   return {
     ...original,
     getTriangleIndices: workerMocks.getTriangleIndices,
@@ -96,7 +96,7 @@ test('triangulation worker rebuilds GeoArrow batches and preserves chunk identit
   expect(result).toEqual({binaryDataFromGeoArrow: binaryData, chunkIndex: 4});
   expect(workerMocks.convertGeoArrow).toHaveBeenCalledWith(expect.anything(), 'geoarrow.point', {
     calculateMeanCenters: true,
-    triangle: false,
+    triangulate: false,
     chunkIndex: 0,
     chunkOffset: 10
   });
