@@ -28,6 +28,30 @@ const spatial = createI3SConversionSpatialContext(
 const transformed = spatial.transformPositions(positions, nodeOrigin);
 ```
 
+## V5 feature attributes
+
+`convertFeatureAttributesToArrowBatches` writes decoded feature attributes using an explicit Arrow
+schema. The schema owns property types, nested list/struct mappings, enum representations, and the
+feature ID type. IDs may be strings or exact integer values (`bigint` for values outside JavaScript's
+safe integer range). Unknown properties fail instead of disappearing. Supply a binary
+`rawMetadataField` to retain the original encoded metadata alongside interpreted values. Pass each
+source metadata class separately so its name remains attached to the batch schema.
+
+```ts
+import {convertFeatureAttributesToArrowBatches} from '@loaders.gl/tile-converter/v5';
+
+const batches = convertFeatureAttributesToArrowBatches(features, {
+  schema: {
+    fields: [
+      {name: 'feature_id', type: 'int64', nullable: false},
+      {name: 'name', type: 'utf8', nullable: true}
+    ],
+    metadata: {}
+  },
+  batchSize: 65536
+});
+```
+
 ## Installation
 
 ```bash
