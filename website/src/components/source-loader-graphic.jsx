@@ -137,11 +137,11 @@ const sourceTags = {
 };
 
 const sourceDocumentationLinks = {
-  ArcGISFeatureServerSourceLoader: '/docs/modules/services/arcgis-feature-server',
-  ArcGISImageServerSourceLoader: '/docs/modules/services/arcgis-image-server',
-  ArcGISImageTileSourceLoader: '/docs/modules/services/arcgis-image-server#image-tiles',
-  ArcGISMapTileSourceLoader: '/docs/modules/services/arcgis-map-server',
-  ArcGISVectorTileServerSourceLoader: '/docs/modules/services/arcgis-vector-tile-server',
+  ArcGISFeatureServerSourceLoader: '/docs/modules/arcgis/arcgis-feature-server',
+  ArcGISImageServerSourceLoader: '/docs/modules/arcgis/arcgis-image-server',
+  ArcGISImageTileSourceLoader: '/docs/modules/arcgis/arcgis-image-server#image-tiles',
+  ArcGISMapTileSourceLoader: '/docs/modules/arcgis/arcgis-map-server',
+  ArcGISVectorTileServerSourceLoader: '/docs/modules/arcgis/arcgis-vector-tile-server',
   COPCSourceLoader: '/docs/modules/copc/api-reference/copc-source-loader',
   CSWSourceLoader: '/docs/modules/wms/api-reference/csw-source-loader',
   DuckDBSQLSource: '/docs/modules/sql/api-reference/sql-source',

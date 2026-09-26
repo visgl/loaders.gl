@@ -1,0 +1,135 @@
+{
+  "name": "@loaders.gl/arcgis",
+  "version": "5.0.0-alpha.6",
+  "description": "ArcGIS REST data sources for geospatial visualization",
+  "license": "MIT",
+  "type": "module",
+  "publishConfig": {
+    "access": "public"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/visgl/loaders.gl"
+  },
+  "keywords": [
+    "ArcGIS",
+    "services",
+    "FeatureServer",
+    "ImageServer",
+    "MapServer",
+    "geospatial",
+    "loader"
+  ],
+  "types": "dist/index.d.ts",
+  "main": "dist/index.cjs",
+  "module": "dist/index.js",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
+    },
+    "./arcgis-feature-server-source-loader": {
+      "types": "./dist/arcgis/arcgis-feature-server-source-loader.d.ts",
+      "import": "./dist/arcgis/arcgis-feature-server-source-loader.js"
+    },
+    "./arcgis-feature-server-source": {
+      "types": "./dist/arcgis/arcgis-feature-server-source.d.ts",
+      "import": "./dist/arcgis/arcgis-feature-server-source.js"
+    },
+    "./arcgis-feature-server-source-options": {
+      "types": "./dist/arcgis/arcgis-feature-server-source-options.d.ts",
+      "import": "./dist/arcgis/arcgis-feature-server-source-options.js"
+    },
+    "./arcgis-image-server-source-loader": {
+      "types": "./dist/arcgis/arcgis-image-server-source-loader.d.ts",
+      "import": "./dist/arcgis/arcgis-image-server-source-loader.js"
+    },
+    "./arcgis-image-server-source": {
+      "types": "./dist/arcgis/arcgis-image-server-source.d.ts",
+      "import": "./dist/arcgis/arcgis-image-server-source.js"
+    },
+    "./arcgis-image-server-source-options": {
+      "types": "./dist/arcgis/arcgis-image-server-source-options.d.ts",
+      "import": "./dist/arcgis/arcgis-image-server-source-options.js"
+    },
+    "./arcgis-image-tile-source-loader": {
+      "types": "./dist/arcgis/arcgis-image-tile-source-loader.d.ts",
+      "import": "./dist/arcgis/arcgis-image-tile-source-loader.js"
+    },
+    "./arcgis-image-tile-source": {
+      "types": "./dist/arcgis/arcgis-image-tile-source.d.ts",
+      "import": "./dist/arcgis/arcgis-image-tile-source.js"
+    },
+    "./arcgis-image-tile-source-options": {
+      "types": "./dist/arcgis/arcgis-image-tile-source-options.d.ts",
+      "import": "./dist/arcgis/arcgis-image-tile-source-options.js"
+    },
+    "./arcgis-map-tile-source-loader": {
+      "types": "./dist/arcgis/arcgis-map-tile-source-loader.d.ts",
+      "import": "./dist/arcgis/arcgis-map-tile-source-loader.js"
+    },
+    "./arcgis-map-tile-source": {
+      "types": "./dist/arcgis/arcgis-map-tile-source.d.ts",
+      "import": "./dist/arcgis/arcgis-map-tile-source.js"
+    },
+    "./arcgis-map-tile-source-options": {
+      "types": "./dist/arcgis/arcgis-map-tile-source-options.d.ts",
+      "import": "./dist/arcgis/arcgis-map-tile-source-options.js"
+    },
+    "./arcgis-scene-server-source-loader": {
+      "types": "./dist/arcgis/arcgis-scene-server-source-loader.d.ts",
+      "import": "./dist/arcgis/arcgis-scene-server-source-loader.js"
+    },
+    "./arcgis-scene-server-source": {
+      "types": "./dist/arcgis/arcgis-scene-server-source.d.ts",
+      "import": "./dist/arcgis/arcgis-scene-server-source.js"
+    },
+    "./arcgis-scene-server-source-options": {
+      "types": "./dist/arcgis/arcgis-scene-server-source-options.d.ts",
+      "import": "./dist/arcgis/arcgis-scene-server-source-options.js"
+    },
+    "./arcgis-vector-tile-server-source-loader": {
+      "types": "./dist/arcgis/arcgis-vector-tile-server-source-loader.d.ts",
+      "import": "./dist/arcgis/arcgis-vector-tile-server-source-loader.js"
+    },
+    "./arcgis-vector-tile-server-source": {
+      "types": "./dist/arcgis/arcgis-vector-tile-server-source.d.ts",
+      "import": "./dist/arcgis/arcgis-vector-tile-server-source.js"
+    },
+    "./arcgis-vector-tile-server-source-options": {
+      "types": "./dist/arcgis/arcgis-vector-tile-server-source-options.d.ts",
+      "import": "./dist/arcgis/arcgis-vector-tile-server-source-options.js"
+    },
+    "./authentication": {
+      "types": "./dist/authentication.d.ts",
+      "import": "./dist/authentication.js"
+    },
+    "./discovery": {
+      "types": "./dist/discovery.d.ts",
+      "import": "./dist/discovery.js"
+    },
+    "./scene-aggregation": {
+      "types": "./dist/scene-aggregation.d.ts",
+      "import": "./dist/scene-aggregation.js"
+    }
+  },
+  "sideEffects": false,
+  "files": [
+    "src",
+    "dist",
+    "README.md"
+  ],
+  "dependencies": {
+    "@loaders.gl/gis": "5.0.0-alpha.6",
+    "@loaders.gl/i3s": "5.0.0-alpha.6",
+    "@loaders.gl/images": "5.0.0-alpha.6",
+    "@loaders.gl/lerc": "5.0.0-alpha.6",
+    "@loaders.gl/loader-utils": "5.0.0-alpha.6",
+    "@loaders.gl/mvt": "5.0.0-alpha.6",
+    "@loaders.gl/schema": "5.0.0-alpha.6"
+  },
+  "peerDependencies": {
+    "@loaders.gl/core": "~5.0.0-alpha.0"
+  }
+}

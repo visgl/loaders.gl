@@ -14,9 +14,7 @@ import {
   WMSSourceLoader,
   WMTSSourceLoader
 } from '@loaders.gl/wms';
-import {
-  SERVICE_LOADERS
-} from '@loaders.gl/services';
+import {ARCGIS_LOADERS} from '@loaders.gl/arcgis';
 
 import {Map} from 'react-map-gl';
 import maplibregl from 'maplibre-gl';
@@ -58,7 +56,7 @@ const SOURCE_FACTORIES = [
   WMSSourceLoader,
   WFSSourceLoader,
   WMTSSourceLoader,
-  ...SERVICE_LOADERS
+  ...ARCGIS_LOADERS
 ];
 
 /** Application state */

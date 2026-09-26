@@ -9,12 +9,9 @@ import {
   type FetchLike
 } from '@loaders.gl/loader-utils';
 import {
-  createArcGISCredential,
-  ArcGISAuthentication,
   MapboxAuthentication,
   GoogleMapsAuthentication,
   CesiumIonAuthentication,
-  SERVICE_LOADERS,
   createCesiumIonCredential,
   createGoogleMapsCredential,
   createMapboxCredential
@@ -23,36 +20,22 @@ import {
 describe('service authentication presets', () => {
   test('declarative classes preserve the existing provider presets', () => {
     const configurations = [
-      {type: 'arcgis', token: 'arcgis', origins: ['https://enterprise.example.com']},
       {type: 'mapbox', accessToken: 'mapbox'},
       {type: 'google-maps', apiKey: 'google'},
       {type: 'cesium-ion', accessToken: 'ion'}
     ] as const;
     const credentials = resolveCredentials(configurations, [
-      ArcGISAuthentication,
       MapboxAuthentication,
       GoogleMapsAuthentication,
       CesiumIonAuthentication
     ]);
     expect(credentials).toMatchObject([
-      createArcGISCredential(configurations[0]),
-      createMapboxCredential(configurations[1]),
-      createGoogleMapsCredential(configurations[2]),
-      createCesiumIonCredential(configurations[3])
+      createMapboxCredential(configurations[0]),
+      createGoogleMapsCredential(configurations[1]),
+      createCesiumIonCredential(configurations[2])
     ]);
-    for (const loader of SERVICE_LOADERS) {
-      expect(loader.getAuthentications()).toEqual([ArcGISAuthentication]);
-    }
   });
   test('uses provider-specific credential placement and origins', () => {
-    expect(
-      createArcGISCredential({token: 'arcgis', origins: ['https://enterprise.example.com']})
-    ).toMatchObject({
-      type: 'query-parameter',
-      name: 'token',
-      origins: ['https://enterprise.example.com'],
-      refreshStatusCodes: [401, 403, 498, 499]
-    });
     expect(createMapboxCredential({accessToken: 'mapbox'})).toMatchObject({
       type: 'query-parameter',
       name: 'access_token',

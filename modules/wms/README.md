@@ -36,7 +36,7 @@ WMS, WMTS, WFS, and OGC API Features implement visual source contracts understoo
 `@loaders.gl/deck-layers`. Analytical coverage and observation outputs remain explicit data until an
 application chooses a visual representation.
 
-ArcGIS REST source loaders are provided by `@loaders.gl/services`.
+ArcGIS REST source loaders are provided by `@loaders.gl/arcgis`.
 
 See the [complete OGC service guide](https://loaders.gl/docs/modules/wms) and the feature table on
 each service page.

@@ -2,19 +2,23 @@
 title: "ArcGIS ImageServer Analytical LERC"
 ---
 
-import {WmsDocsTabs} from '@site/src/components/docs/wms-docs-tabs';
+import {ClientExample} from '../../components';
+
+import {ArcGISDocsTabs} from '@site/src/components/docs/arcgis-docs-tabs';
 
 # ArcGIS ImageServer Analytical LERC
 
-<WmsDocsTabs active="arcgis-image-server-example" />
+<ArcGISDocsTabs service="arcgis-image-server" />
+
+<div style={{height: '650px'}}><ClientExample kind="arcgis-raster" /></div>
 
 ArcGIS ImageServer can return analysis-ready LERC rasters instead of display images:
 
 ```ts
-import {createDataSource} from '@loaders.gl/core';
-import {ArcGISImageServerSourceLoader} from '@loaders.gl/services';
+import {load} from '@loaders.gl/core';
+import {ArcGISImageServerSourceLoader} from '@loaders.gl/arcgis';
 
-const source = createDataSource(url, [ArcGISImageServerSourceLoader], {
+const source = await load(url, [ArcGISImageServerSourceLoader], {
   core: {type: 'arcgis-image-server'}
 });
 

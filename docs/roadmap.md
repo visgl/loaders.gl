@@ -96,7 +96,7 @@ abstraction. Costs are relative engineering estimates; impact describes the user
 
 | Tranche | Scope | Status | Cost | Impact |
 | --- | --- | --- | --- | --- |
-| 1 | Dedicated `@loaders.gl/services` module and ArcGIS source ownership | Complete | M | Clear package boundary for ArcGIS, Cesium ION, and future providers |
+| 1 | Dedicated `@loaders.gl/arcgis` source module and `@loaders.gl/services` provider helpers | Complete | M | Separate ArcGIS source ownership from provider credentials |
 | 2 | ArcGIS FeatureServer vector source and normalized Arrow/GeoJSON output | Complete | M | Production vector-service ingestion |
 | 3 | ArcGIS ImageServer imagery and analytical LERC output | Complete | M | Analysis-ready raster services |
 | 4 | ArcGIS MapServer and VectorTileServer tile sources | Complete | M | Cached, dynamic, and vector tile access |

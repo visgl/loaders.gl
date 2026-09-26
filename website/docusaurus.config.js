@@ -96,6 +96,12 @@ function createBundlerPlugin() {
               resource.request = resolve('./src/shims/geotiff-lerc-decoder.js');
             }
           }),
+          new bundler.NormalModuleReplacementPlugin(/^\.\/lerc-wasm-url$/, resource => {
+            const normalizedContext = resource.context?.replace(/\\/g, '/');
+            if (normalizedContext?.endsWith('/modules/lerc/src')) {
+              resource.request = resolve('./src/utils/lerc-wasm-url.js');
+            }
+          }),
           ...developmentWorkerReplacements
         ]
       };
@@ -239,6 +245,28 @@ const config = {
             '@loaders.gl/video': resolve('../modules/video/src'),
             '@loaders.gl/wkt': resolve('../modules/wkt/src'),
             '@loaders.gl/wms': resolve('../modules/wms/src'),
+            '@loaders.gl/arcgis/arcgis-feature-server-source-loader': resolve('../modules/arcgis/src/arcgis/arcgis-feature-server-source-loader'),
+            '@loaders.gl/arcgis/arcgis-feature-server-source': resolve('../modules/arcgis/src/arcgis/arcgis-feature-server-source'),
+            '@loaders.gl/arcgis/arcgis-feature-server-source-options': resolve('../modules/arcgis/src/arcgis/arcgis-feature-server-source-options'),
+            '@loaders.gl/arcgis/arcgis-image-server-source-loader': resolve('../modules/arcgis/src/arcgis/arcgis-image-server-source-loader'),
+            '@loaders.gl/arcgis/arcgis-image-server-source': resolve('../modules/arcgis/src/arcgis/arcgis-image-server-source'),
+            '@loaders.gl/arcgis/arcgis-image-server-source-options': resolve('../modules/arcgis/src/arcgis/arcgis-image-server-source-options'),
+            '@loaders.gl/arcgis/arcgis-image-tile-source-loader': resolve('../modules/arcgis/src/arcgis/arcgis-image-tile-source-loader'),
+            '@loaders.gl/arcgis/arcgis-image-tile-source': resolve('../modules/arcgis/src/arcgis/arcgis-image-tile-source'),
+            '@loaders.gl/arcgis/arcgis-image-tile-source-options': resolve('../modules/arcgis/src/arcgis/arcgis-image-tile-source-options'),
+            '@loaders.gl/arcgis/arcgis-map-tile-source-loader': resolve('../modules/arcgis/src/arcgis/arcgis-map-tile-source-loader'),
+            '@loaders.gl/arcgis/arcgis-map-tile-source': resolve('../modules/arcgis/src/arcgis/arcgis-map-tile-source'),
+            '@loaders.gl/arcgis/arcgis-map-tile-source-options': resolve('../modules/arcgis/src/arcgis/arcgis-map-tile-source-options'),
+            '@loaders.gl/arcgis/arcgis-scene-server-source-loader': resolve('../modules/arcgis/src/arcgis/arcgis-scene-server-source-loader'),
+            '@loaders.gl/arcgis/arcgis-scene-server-source': resolve('../modules/arcgis/src/arcgis/arcgis-scene-server-source'),
+            '@loaders.gl/arcgis/arcgis-scene-server-source-options': resolve('../modules/arcgis/src/arcgis/arcgis-scene-server-source-options'),
+            '@loaders.gl/arcgis/arcgis-vector-tile-server-source-loader': resolve('../modules/arcgis/src/arcgis/arcgis-vector-tile-server-source-loader'),
+            '@loaders.gl/arcgis/arcgis-vector-tile-server-source': resolve('../modules/arcgis/src/arcgis/arcgis-vector-tile-server-source'),
+            '@loaders.gl/arcgis/arcgis-vector-tile-server-source-options': resolve('../modules/arcgis/src/arcgis/arcgis-vector-tile-server-source-options'),
+            '@loaders.gl/arcgis/authentication': resolve('../modules/arcgis/src/authentication'),
+            '@loaders.gl/arcgis/discovery': resolve('../modules/arcgis/src/discovery'),
+            '@loaders.gl/arcgis/scene-aggregation': resolve('../modules/arcgis/src/scene-aggregation'),
+            '@loaders.gl/arcgis': resolve('../modules/arcgis/src'),
             '@loaders.gl/services': resolve('../modules/services/src'),
             '@loaders.gl/worker-utils': resolve('../modules/worker-utils/src'),
             '@loaders.gl/xml': resolve('../modules/xml/src'),
@@ -263,7 +291,7 @@ const config = {
         module: {
           rules: [
             {
-              test: /laz-perf\.wasm$/,
+              test: /(?:laz-perf|lerc-wasm)\.wasm$/,
               type: 'asset/resource'
             },
             // https://github.com/Esri/calcite-components/issues/2865

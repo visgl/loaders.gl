@@ -41,7 +41,7 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
 />
 
 `@loaders.gl/loader-utils` exposes transport-level building blocks for scoped query and header
-credentials. Most application code should use the provider presets in `@loaders.gl/services` and
+credentials. Most application code should use the provider presets in `@loaders.gl/arcgis/authentication` or `@loaders.gl/services` and
 pass the result as [`core.credentials`](/docs/developer-guide/authentication).
 
 ## `createQueryParameterCredential(options)`

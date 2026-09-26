@@ -19,7 +19,7 @@ import {ClientExample} from '@site/src/components';
   logos={[{alt: 'Open Geospatial Consortium', src: '/images/format-logos/ogc-logo-transparent.png'}]}
   meta={['WMS / WMTS', 'WFS / WCS', 'OGC APIs and GML']}
   links={[
-    {label: 'Services module', to: '/docs/modules/services'},
+    {label: 'ArcGIS module', to: '/docs/modules/arcgis'},
     {label: 'Using sources', to: '/docs/developer-guide/using-sources'}
   ]}
 />
@@ -74,7 +74,7 @@ features, coverages, environmental observations, and catalogs.
 operation. “Minimal” means a deliberately small interoperability adapter for the most common OGC
 API path.
 
-ArcGIS REST services are provided by [`@loaders.gl/services`](/docs/modules/services).
+ArcGIS REST services are provided by [`@loaders.gl/arcgis`](/docs/modules/arcgis).
 
 ## Installation
 

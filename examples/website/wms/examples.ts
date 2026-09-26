@@ -114,6 +114,13 @@ export const EXAMPLES: Record<string, Record<string, Example>> = {
     }
   },
   'ArcGIS MapServer': {
+    'Census dynamic export': {
+      type: 'arcgis-map-server',
+      url: 'https://sampleserver6.arcgisonline.com/arcgis/rest/services/Census/MapServer',
+      description: 'Dynamic MapServer export requests rendered as image tiles; no vector querying.',
+      viewState: {longitude: -98, latitude: 39, zoom: 3},
+      sourceOptions: {'arcgis-map-server': {mode: 'dynamic'}}
+    },
     'World Imagery cached tiles': {
       type: 'arcgis-map-server',
       url: 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer',

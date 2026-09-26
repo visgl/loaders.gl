@@ -13,6 +13,18 @@
   },
   {
     "type": "category",
+    "label": "Using ArcGIS",
+    "items": [
+      "developer-guide/arcgis/README",
+      "modules/arcgis/services",
+      "developer-guide/arcgis/authentication",
+      "developer-guide/arcgis/feature-layers",
+      "developer-guide/arcgis/deck-gl",
+      "developer-guide/arcgis/troubleshooting"
+    ]
+  },
+  {
+    "type": "category",
     "label": "Formats",
     "items": [
       "formats/README",
@@ -78,6 +90,7 @@
     "type": "category",
     "label": "Services",
     "items": [
+      "modules/arcgis/README",
       "modules/services/README",
       "developer-guide/authentication",
       "modules/wms/formats/csw",
@@ -87,12 +100,12 @@
       "modules/wms/formats/wms",
       "modules/wms/formats/wmts",
       "modules/wms/services/ogc-api",
-      "modules/services/arcgis-map-server",
-      "modules/services/arcgis-image-server",
-      "modules/services/arcgis-feature-server",
-      "modules/services/arcgis-vector-tile-server",
-      "modules/services/arcgis-scene-server",
-      "modules/services/api-reference/arcgis"
+      "modules/arcgis/arcgis-map-server",
+      "modules/arcgis/arcgis-image-server",
+      "modules/arcgis/arcgis-feature-server",
+      "modules/arcgis/arcgis-vector-tile-server",
+      "modules/arcgis/arcgis-scene-server",
+      "modules/arcgis/api-reference/arcgis"
     ]
   },
   {
