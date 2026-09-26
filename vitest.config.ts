@@ -97,7 +97,6 @@ export default getVitestConfig({
         '@tmcw/togeojson',
         '@turf/rewind',
         '@xmldom/xmldom',
-        '@loaders.gl/arrow-geometry',
         'apache-arrow',
         'apache-arrow/type',
         'brotli/decompress',
