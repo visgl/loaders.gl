@@ -139,6 +139,9 @@ function makeFeatureSchema(
       'Arrow schema fields must have unique names'
     );
   }
+  for (const field of sourceSchema.fields) {
+    validateFeatureSchemaType(field);
+  }
   const featureIdType = fieldsByName.get(featureIdField)?.type;
   if (!featureIdType) {
     throw new TileConversionError(
@@ -193,7 +196,7 @@ function validateFeatureIdentifier(featureId: string | number | bigint, dataType
 /** Rejects nulls, implicit coercions, and out-of-range values before Arrow writes a field. */
 function validateFeatureValue(field: Field, value: unknown, fieldPath: string): void {
   if (value === null || value === undefined) {
-    if (field.nullable === false) {
+    if (field.nullable !== true) {
       throw new TileConversionError(
         'FEATURE_VALUE_REQUIRED',
         `Required Arrow field "${fieldPath}" has no value`
@@ -246,8 +249,17 @@ function validateFeatureValue(field: Field, value: unknown, fieldPath: string): 
       return;
     }
     if (dataType.type === 'decimal') {
-      if (typeof value !== 'number' && typeof value !== 'bigint') {
-        throw createFeatureValueTypeError(fieldPath, 'a decimal number');
+      if (typeof value !== 'bigint') {
+        throw createFeatureValueTypeError(fieldPath, 'an unscaled bigint decimal value');
+      }
+      if (
+        value <= -(10n ** BigInt(dataType.precision)) ||
+        value >= 10n ** BigInt(dataType.precision)
+      ) {
+        throw new TileConversionError(
+          'FEATURE_VALUE_OUT_OF_RANGE',
+          `Value for Arrow decimal field "${fieldPath}" exceeds precision ${dataType.precision}`
+        );
       }
       return;
     }
@@ -327,7 +339,6 @@ function isIntegerIdentifier(value: unknown): value is number | bigint {
 /** Identifies all Arrow integer primitive types accepted for feature identifiers. */
 function isIntegerDataType(dataType?: DataType): boolean {
   return (
-    dataType === 'int' ||
     dataType === 'int8' ||
     dataType === 'int16' ||
     dataType === 'int32' ||
@@ -337,6 +348,29 @@ function isIntegerDataType(dataType?: DataType): boolean {
     dataType === 'uint32' ||
     dataType === 'uint64'
   );
+}
+
+/** Rejects generic integer types and nested mappings the Arrow table builder cannot materialize. */
+function validateFeatureSchemaType(field: Field): void {
+  const dataType = field.type;
+  if (dataType === 'int') {
+    throw new TileConversionError(
+      'FEATURE_INTEGER_TYPE_UNSUPPORTED',
+      `Arrow field "${field.name}" must declare an explicit integer width and signedness`
+    );
+  }
+  if (typeof dataType !== 'object') {
+    return;
+  }
+  let childFields: readonly Field[] = [];
+  if (dataType.type === 'dictionary' && dataType.indices) {
+    childFields = [{name: `${field.name} index`, type: dataType.indices, nullable: false}];
+  } else if ('children' in dataType) {
+    childFields = dataType.children;
+  }
+  for (const childField of childFields) {
+    validateFeatureSchemaType(childField);
+  }
 }
 
 /** Returns the inclusive numeric limits for the declared integer field. */

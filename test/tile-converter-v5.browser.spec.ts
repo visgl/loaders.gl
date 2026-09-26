@@ -370,3 +370,41 @@ test('tile-converter(v5)#feature attributes reject unmapped values and unsafe nu
     )
   ).toThrow('outside the range');
 });
+
+test('tile-converter(v5)#feature attributes validate nullability, integer schemas, and decimals', () => {
+  const feature = {featureId: 1, metadataClass: 'Parcels', properties: {}};
+
+  expect(() =>
+    convertFeatureAttributesToArrowBatches([feature], {
+      schema: {
+        fields: [
+          {name: 'feature_id', type: 'int64', nullable: false},
+          {name: 'optional', type: 'utf8'}
+        ],
+        metadata: {}
+      }
+    })
+  ).toThrow('has no value');
+
+  expect(() =>
+    convertFeatureAttributesToArrowBatches([feature], {
+      schema: {fields: [{name: 'feature_id', type: 'int'}], metadata: {}}
+    })
+  ).toThrow('explicit integer width and signedness');
+
+  expect(() =>
+    convertFeatureAttributesToArrowBatches([{...feature, properties: {amount: 1.25}}], {
+      schema: {
+        fields: [
+          {name: 'feature_id', type: 'int64', nullable: false},
+          {
+            name: 'amount',
+            type: {type: 'decimal', bitWidth: 128, precision: 8, scale: 2},
+            nullable: true
+          }
+        ],
+        metadata: {}
+      }
+    })
+  ).toThrow('unscaled bigint decimal value');
+});
