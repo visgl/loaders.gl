@@ -5,9 +5,8 @@
 import * as arrow from 'apache-arrow';
 import type {ArrowTable, Schema as TableSchema} from '@loaders.gl/schema';
 import {convertSchemaToArrow} from '@loaders.gl/schema-utils';
+import {GeoArrowBuilder, type GeoArrowBuilderEncoding} from '@loaders.gl/arrow/geometry';
 import {
-  GeoArrowBuilder,
-  type GeoArrowBuilderEncoding,
   type GeoParquetGeometryType,
   makeGeoArrowGeometryField,
   setGeoArrowGeometryColumnMetadata

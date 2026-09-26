@@ -13,16 +13,16 @@ import type {
   MultiLineString,
   MultiPolygon
 } from '@loaders.gl/schema';
-import {BinaryReader} from '../../utils/binary-reader';
-import {WKBGeometryType} from './helpers/wkb-types';
+import {TWKBReader as BinaryReader} from './twkb-io';
+import {TWKBGeometryType as WKBGeometryType} from './twkb-types';
 
 /**
  * Check if an array buffer might be a TWKB array buffer
  * @param arrayBuffer The array buffer to check
  * @returns false if this is definitely not a TWKB array buffer, true if it might be a TWKB array buffer
  */
-export function isTWKB(arrayBuffer: ArrayBuffer): boolean {
-  const binaryReader = new BinaryReader(arrayBuffer);
+export function isTWKB(arrayBuffer: ArrayBufferLike): boolean {
+  const binaryReader = new BinaryReader(toArrayBuffer(arrayBuffer));
 
   const type = binaryReader.readUInt8();
   const geometryType = type & 0x0f;
@@ -33,6 +33,13 @@ export function isTWKB(arrayBuffer: ArrayBuffer): boolean {
   }
 
   return true;
+}
+
+/** Copies shared-buffer input into an ArrayBuffer for DataView-based TWKB inspection. */
+function toArrayBuffer(arrayBuffer: ArrayBufferLike): ArrayBuffer {
+  return arrayBuffer instanceof ArrayBuffer
+    ? arrayBuffer
+    : new Uint8Array(arrayBuffer).slice().buffer;
 }
 
 /** Passed around between parsing functions, extracted from the header */

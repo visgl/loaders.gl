@@ -32,6 +32,21 @@
         "branches": 82
       }
     },
+    "@loaders.gl/arrow-geometry": {
+      "path": "modules/arrow-geometry",
+      "browser": {
+        "statements": 90,
+        "lines": 90,
+        "functions": 90,
+        "branches": 90
+      },
+      "merged": {
+        "statements": 90,
+        "lines": 90,
+        "functions": 90,
+        "branches": 90
+      }
+    },
     "@loaders.gl/avro": {
       "path": "modules/avro",
       "browser": {

@@ -3,7 +3,8 @@
 // Copyright (c) vis.gl contributors
 
 import {describe, expect, test} from 'vitest';
-import {convertWKBToGeometry, GeoArrowBuilder} from '@loaders.gl/gis';
+import {GeoArrowBuilder} from '@loaders.gl/arrow/geometry';
+import {convertWKBToGeometry} from '@loaders.gl/gis';
 import {
   getRecordWKBOptions,
   parseRecord,

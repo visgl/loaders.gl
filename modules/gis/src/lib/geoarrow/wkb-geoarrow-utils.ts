@@ -3,7 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import type {Field, Geometry, GeoArrowDimension, Schema} from '@loaders.gl/schema';
-import type {GeoArrowBuilderEncoding} from './geoarrow-builder';
+import type {GeoArrowBuilderEncoding} from '@loaders.gl/arrow-geometry';
 import {convertGeometryToWKB} from '../geometry-converters/wkb/convert-geometry-to-wkb';
 import {
   getGeoMetadata,

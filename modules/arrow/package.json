@@ -27,6 +27,11 @@
   "types": "dist/index.d.ts",
   "main": "dist/index.cjs",
   "module": "dist/index.js",
+  "typesVersions": {
+    "*": {
+      "geometry": ["dist/geometry/index.d.ts"]
+    }
+  },
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
@@ -48,6 +53,11 @@
     "./transport": {
       "types": "./dist/transport.d.ts",
       "import": "./dist/transport.js"
+    },
+    "./geometry": {
+      "types": "./dist/geometry/index.d.ts",
+      "import": "./dist/geometry/index.js",
+      "require": "./dist/geometry/index.cjs"
     },
     "./exports/*": {
       "types": "./dist/exports/*.d.ts",
@@ -77,8 +87,8 @@
     "build-worker2": "esbuild src/workers/arrow-worker.ts --bundle --outfile=dist/arrow-worker.js --platform=browser --external:{stream}"
   },
   "dependencies": {
+    "@loaders.gl/arrow-geometry": "5.0.0-alpha.6",
     "@loaders.gl/compression": "5.0.0-alpha.6",
-    "@loaders.gl/gis": "5.0.0-alpha.6",
     "@loaders.gl/loader-utils": "5.0.0-alpha.6",
     "@loaders.gl/schema": "5.0.0-alpha.6",
     "@loaders.gl/schema-utils": "5.0.0-alpha.6",

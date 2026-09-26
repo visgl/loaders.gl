@@ -8,8 +8,10 @@
     "outDir": "dist"
   },
   "references": [
+    {"path": "../arrow-geometry"},
     {"path": "../loader-utils"},
     {"path": "../schema"},
-    {"path": "../schema-utils"}
+    {"path": "../schema-utils"},
+    {"path": "../wkt"}
   ]
 }

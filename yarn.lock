@@ -5072,12 +5072,21 @@ __metadata:
   languageName: unknown
   linkType: soft
 
+"@loaders.gl/arrow-geometry@npm:5.0.0-alpha.6, @loaders.gl/arrow-geometry@workspace:modules/arrow-geometry":
+  version: 0.0.0-use.local
+  resolution: "@loaders.gl/arrow-geometry@workspace:modules/arrow-geometry"
+  dependencies:
+    "@math.gl/wkb": "npm:5.0.0-alpha.9"
+    apache-arrow: "npm:>= 17.0.0"
+  languageName: unknown
+  linkType: soft
+
 "@loaders.gl/arrow@npm:5.0.0-alpha.6, @loaders.gl/arrow@workspace:*, @loaders.gl/arrow@workspace:modules/arrow":
   version: 0.0.0-use.local
   resolution: "@loaders.gl/arrow@workspace:modules/arrow"
   dependencies:
+    "@loaders.gl/arrow-geometry": "npm:5.0.0-alpha.6"
     "@loaders.gl/compression": "npm:5.0.0-alpha.6"
-    "@loaders.gl/gis": "npm:5.0.0-alpha.6"
     "@loaders.gl/loader-utils": "npm:5.0.0-alpha.6"
     "@loaders.gl/schema": "npm:5.0.0-alpha.6"
     "@loaders.gl/schema-utils": "npm:5.0.0-alpha.6"
@@ -5346,9 +5355,11 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@loaders.gl/gis@workspace:modules/gis"
   dependencies:
+    "@loaders.gl/arrow-geometry": "npm:5.0.0-alpha.6"
     "@loaders.gl/loader-utils": "npm:5.0.0-alpha.6"
     "@loaders.gl/schema": "npm:5.0.0-alpha.6"
     "@loaders.gl/schema-utils": "npm:5.0.0-alpha.6"
+    "@loaders.gl/wkt": "npm:5.0.0-alpha.6"
     "@math.gl/crs": "npm:5.0.0-alpha.9"
     "@math.gl/geometry-utils": "npm:5.0.0-alpha.9"
     "@math.gl/polygon": "npm:5.0.0-alpha.9"

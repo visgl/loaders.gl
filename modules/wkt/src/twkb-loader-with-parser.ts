@@ -4,7 +4,7 @@
 
 import type {Loader, LoaderWithParser, LoaderOptions} from '@loaders.gl/loader-utils';
 import type {BinaryGeometry, Geometry} from '@loaders.gl/schema';
-import {convertTWKBToGeometry} from '@loaders.gl/gis';
+import {convertTWKBToGeometry} from './twkb/convert-twkb-to-geometry';
 import {TWKBWorkerLoader as TWKBWorkerLoaderMetadata} from './twkb-loader';
 import {TWKBLoader as TWKBLoaderMetadata} from './twkb-loader';
 
