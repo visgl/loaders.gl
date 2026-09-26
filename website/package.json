@@ -38,6 +38,7 @@
     "@fortawesome/free-solid-svg-icons": "^5.15.2",
     "@fortawesome/react-fontawesome": "^0.1.14",
     "@loaders.gl/arrow": "workspace:*",
+    "@loaders.gl/arrow-geometry": "workspace:*",
     "@loaders.gl/bson": "workspace:*",
     "@loaders.gl/core": "workspace:*",
     "@loaders.gl/csv": "workspace:*",

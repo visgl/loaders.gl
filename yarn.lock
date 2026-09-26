@@ -5072,7 +5072,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@loaders.gl/arrow-geometry@npm:5.0.0-alpha.6, @loaders.gl/arrow-geometry@workspace:modules/arrow-geometry":
+"@loaders.gl/arrow-geometry@npm:5.0.0-alpha.6, @loaders.gl/arrow-geometry@workspace:*, @loaders.gl/arrow-geometry@workspace:modules/arrow-geometry":
   version: 0.0.0-use.local
   resolution: "@loaders.gl/arrow-geometry@workspace:modules/arrow-geometry"
   dependencies:
@@ -28086,6 +28086,7 @@ __metadata:
     "@fortawesome/free-solid-svg-icons": "npm:^5.15.2"
     "@fortawesome/react-fontawesome": "npm:^0.1.14"
     "@loaders.gl/arrow": "workspace:*"
+    "@loaders.gl/arrow-geometry": "workspace:*"
     "@loaders.gl/bson": "workspace:*"
     "@loaders.gl/core": "workspace:*"
     "@loaders.gl/csv": "workspace:*"

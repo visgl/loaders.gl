@@ -186,6 +186,7 @@ const config = {
 
             '@loaders.gl/3d-tiles': resolve('../modules/3d-tiles/src'),
             '@loaders.gl/arrow': resolve('../modules/arrow/src'),
+            '@loaders.gl/arrow-geometry': resolve('../modules/arrow-geometry/src'),
             '@loaders.gl/avro': resolve('../modules/avro/src'),
             '@loaders.gl/bson': resolve('../modules/bson/src'),
             '@loaders.gl/compression': resolve('../modules/compression/src'),
