@@ -23,3 +23,5 @@ export type {
   I3SConversionSpatialContext,
   Tiles3DConversionSpatialContext
 } from './spatial-conversion.js';
+export {convertFeatureAttributesToArrowBatches} from './feature-arrow.js';
+export type {FeatureArrowBatchOptions, TileFeatureAttributes} from './feature-arrow.js';
