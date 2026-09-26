@@ -230,3 +230,21 @@ test('GeoArrowBuilder rejects geometry events that do not match the encoding', (
     expect(() => writeEvent(builder)).toThrow(`Cannot write ${geometryName} into geoarrow.point`);
   }
 });
+
+test('GeoArrowBuilder rejects unsupported geometry-array encodings', () => {
+  const geometryArray = {
+    encoding: 'geoarrow.unsupported',
+    dimension: 'xy',
+    coordinateLayout: 'interleaved',
+    offsetType: 'int32',
+    coordinateSize: 2,
+    length: 0,
+    nullCount: 0,
+    nullBitmap: new Uint8Array(0),
+    coordinates: new Float64Array(0)
+  } as unknown as Parameters<typeof GeoArrowBuilder.makeGeometryData>[0];
+
+  expect(() => GeoArrowBuilder.makeGeometryData(geometryArray)).toThrow(
+    'Unsupported GeoArrow encoding geoarrow.unsupported'
+  );
+});
