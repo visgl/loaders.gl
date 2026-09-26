@@ -1,0 +1,19 @@
+{
+  "extends": "../../tsconfig.json",
+  "include": ["src/**/*"],
+  "exclude": ["node_modules"],
+  "compilerOptions": {
+    "composite": true,
+    "rootDir": "src",
+    "outDir": "dist"
+  },
+  "references": [
+    {"path": "../gis"},
+    {"path": "../images"},
+    {"path": "../i3s"},
+    {"path": "../lerc"},
+    {"path": "../loader-utils"},
+    {"path": "../mvt"},
+    {"path": "../schema"}
+  ]
+}

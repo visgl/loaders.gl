@@ -826,6 +826,21 @@
         "functions": 91,
         "branches": 72
       }
+    },
+    "@loaders.gl/arcgis": {
+      "path": "modules/arcgis",
+      "browser": {
+        "statements": 95,
+        "lines": 95,
+        "functions": 97,
+        "branches": 77
+      },
+      "merged": {
+        "statements": 95,
+        "lines": 95,
+        "functions": 97,
+        "branches": 77
+      }
     }
   }
 }

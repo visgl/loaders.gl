@@ -11,7 +11,7 @@
     "serve": "vite preview"
   },
   "dependencies": {
-    "@loaders.gl/services": "workspace:*",
+    "@loaders.gl/arcgis": "workspace:*",
     "react": "^19.2.5",
     "react-dom": "^19.2.5"
   },

@@ -1,0 +1,149 @@
+---
+title: ArcGIS MapServer
+description: Load cached or dynamically rendered ArcGIS map tiles through one tile source.
+hide_title: true
+page_style: designed
+---
+
+import {ClientExample} from '@site/src/components';
+import {ArcGISDocsTabs} from '@site/src/components/docs/arcgis-docs-tabs';
+import {ServiceSourceGraphic} from '@site/src/components/docs/service-source-graphic';
+import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
+import {DocLiveExample} from '@site/src/components/docs/doc-live-example';
+import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
+
+<DocPageHeader
+  eyebrow="ArcGIS module · ArcGIS tile source"
+  title="ArcGIS MapServer"
+  description="Load cached or dynamically rendered ArcGIS maps through one TileSource, with automatic mode selection, normalized LOD metadata, and shared credentials."
+  tone="violet"
+  logos={[{alt: 'ArcGIS', src: '/images/format-logos/arcgis-logo.svg'}]}
+  meta={['MapServer', 'Cached or dynamic', 'TileSource']}
+  links={[
+    {label: 'ArcGIS module', to: '/docs/modules/arcgis'},
+    {label: 'ArcGIS service API', to: '/docs/modules/arcgis/api-reference/arcgis'},
+    {label: 'Tiles module', to: '/docs/modules/tiles'}
+  ]}
+/>
+
+<DocLiveExample label="ArcGIS MapServer example" height="440px">
+  <ClientExample kind="wms" format="ArcGIS MapServer" />
+</DocLiveExample>
+
+<ArcGISDocsTabs service="arcgis-map-server" />
+
+<ServiceSourceGraphic kind="arcgis" />
+
+<DocOrientation
+  eyebrow="What it provides"
+  title="Use the same tile interface for two server modes."
+  description="MapServer can expose a cache, a dynamic export endpoint, or both. The source normalizes those modes while keeping the choice explicit and configurable."
+  tone="violet"
+  items={[
+    {label: 'Cached', value: 'Advertised tile matrix and tile URLs'},
+    {label: 'Dynamic', value: 'Exported images for requested bounds'},
+    {label: 'Grid', value: 'ArcGIS LODs normalized to tile metadata'},
+    {label: 'Control', value: 'Mode, layers, format, time, and tokens'}
+  ]}
+/>
+
+<ReferenceBoundary
+  title="MapServer reference"
+  description="The sections below cover support, authentication, cached tiles, dynamic exports, and source options."
+  tone="violet"
+/>
+
+ArcGIS MapServer services expose cached map tiles, dynamically rendered maps, or both.
+`ArcGISMapTileSourceLoader` presents either mode through one loaders.gl `TileSource`.
+
+## Feature support
+
+| Capability | Support | API and behavior |
+| --- | --- | --- |
+| Cached tile services | Supported | Uses `/tile/{z}/{y}/{x}` when service metadata advertises `tileInfo` |
+| Dynamic map services | Supported | Uses `/export` with a Web Mercator tile bounding box |
+| Automatic mode selection | Supported | `mode: 'auto'` chooses cached tiles when available, otherwise export |
+| Explicit mode selection | Supported | Use `mode: 'cached'` or `mode: 'dynamic'` |
+| Service metadata | Supported | `getMetadata()` exposes bounds, CRS, layers, tile size, and ArcGIS LODs |
+| ArcGIS LOD grid | Supported | Advertised levels, origins, resolutions, and scale are normalized as a tile grid |
+| Dynamic rendering parameters | Supported | Layer visibility, format, transparency, time, and vendor parameters are forwarded |
+| Multiple service URLs | Supported | Optional URL pool distributes tile requests deterministically |
+| Authentication | Supported | URL tokens and standard fetch options are preserved |
+| Feature queries | Not provided | Use FeatureServer for vector queries or WMS `GetFeatureInfo` when available |
+| deck.gl rendering | First class | `SourceLayer` consumes the `TileSource` directly |
+
+## Authentication
+
+`createArcGISCredential` applies one exact-origin token to metadata, cached tiles, and dynamic
+exports, including requests issued through `SourceLayer`. Explicit URL tokens take precedence. See
+the [authentication guide](/docs/developer-guide/authentication).
+
+## Cached tiles
+
+```ts
+import {load} from '@loaders.gl/core';
+import {ArcGISMapTileSourceLoader} from '@loaders.gl/arcgis';
+
+const source = await load(
+  'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer',
+  [ArcGISMapTileSourceLoader]
+);
+
+const metadata = await source.getMetadata();
+const image = await source.getTile({x: 2, y: 1, z: 2});
+```
+
+## Dynamic export tiles
+
+Select export mode when a service is not cached or when dynamic layer, time, or rendering
+parameters are required:
+
+```ts
+const source = await load(mapServerUrl, [ArcGISMapTileSourceLoader], {
+  'arcgis-map-server': {
+    mode: 'dynamic',
+    tileSize: 512,
+    urls: ['https://tiles-a.example.com/MapServer', 'https://tiles-b.example.com/MapServer'],
+    exportParameters: {
+      layers: 'show:0,2',
+      format: 'png32',
+      transparent: true
+    }
+  }
+});
+
+source.updateParameters({time: '2024-01-01'});
+```
+
+Runtime parameters are merged into subsequent export requests, which makes time sliders and layer
+controls inexpensive to implement.
+
+## deck.gl integration
+
+```ts
+import {SourceLayer} from '@loaders.gl/deck-layers';
+import {ARCGIS_LOADERS} from '@loaders.gl/arcgis';
+
+const layer = new SourceLayer({
+  id: 'world-imagery',
+  data: mapServerUrl,
+  loaders: ARCGIS_LOADERS,
+  extent: [-180, -85.051129, 180, 85.051129],
+  minZoom: 0,
+  maxZoom: 19
+});
+```
+
+`SourceLayer` uses the normalized tile grid and requests only visible tiles.
+
+## References
+
+- [ArcGIS REST API Map Service](https://developers.arcgis.com/rest/services-reference/enterprise/map-service/)
+- [ArcGIS REST API Export Map](https://developers.arcgis.com/rest/services-reference/enterprise/export-map/)
+
+## Examples and source
+
+[Open the map example](/examples/tiles/arcgis-map-server). The example selector includes cached
+tiles and dynamic exports; the latter is an image request, not feature querying.
+
+[Runnable application source](https://github.com/visgl/loaders.gl/tree/master/examples/website/wms)

@@ -17,16 +17,6 @@ import {
 
 const CESIUM_ION_API_ORIGIN = 'https://api.cesium.com';
 
-/** Declarative ArcGIS token authentication. */
-export class ArcGISAuthentication extends TokenAuthentication {
-  /** Discriminator used in `core.credentials`. */
-  static readonly type = 'arcgis';
-  /** Creates an exact-origin ArcGIS credential. */
-  constructor(options: ArcGISCredentialOptions) {
-    super(createArcGISCredential(options));
-  }
-}
-
 /** Declarative Mapbox access-token authentication. */
 export class MapboxAuthentication extends TokenAuthentication {
   /** Discriminator used in `core.credentials`. */
@@ -67,14 +57,6 @@ export type ServiceCredentialOptions = {
   origins?: readonly string[];
 };
 
-/** Options for an ArcGIS REST service credential. */
-export type ArcGISCredentialOptions = {
-  /** ArcGIS token or application-managed token callback. */
-  token: TokenValue;
-  /** Exact ArcGIS Online or Enterprise origins authorized to receive the token. */
-  origins: readonly string[];
-};
-
 /** Options for a Mapbox API credential. */
 export type MapboxCredentialOptions = ServiceCredentialOptions & {
   /** Mapbox public access token or application-managed token callback. */
@@ -98,17 +80,6 @@ export type CesiumIonCredentialOptions = ServiceCredentialOptions & {
   /** Whether the supplied token is account-scoped or already asset-scoped. */
   tokenType?: 'account' | 'asset' | 'auto';
 };
-
-/** Creates an exact-origin ArcGIS `token` query credential. */
-export function createArcGISCredential(options: ArcGISCredentialOptions): RequestCredential {
-  return createQueryParameterCredential({
-    id: 'arcgis-token',
-    origins: options.origins,
-    parameterName: 'token',
-    token: options.token,
-    refreshStatusCodes: [401, 403, 498, 499]
-  });
-}
 
 /** Creates a Mapbox `access_token` query credential. */
 export function createMapboxCredential(options: MapboxCredentialOptions): RequestCredential {

@@ -1,0 +1,31 @@
+---
+title: ArcGIS examples
+description: Explore ArcGIS data access, images, vector tiles, numerical rasters and scene metadata.
+---
+
+# ArcGIS examples
+
+Use data already hosted in ArcGIS to build visualization applications. These examples run in your
+browser against public services; remote availability and CORS can affect them. Start with the
+[developer guide](/docs/developer-guide/arcgis) or check the
+[complete service inventory](/docs/modules/arcgis/services).
+
+| Example | What runs | Service guide | Application source |
+| --- | --- | --- | --- |
+| [Feature layers](/examples/tiles/arcgis-feature-server) | Viewport feature queries and deck.gl rendering | [FeatureServer](/docs/modules/arcgis/arcgis-feature-server) | [Source](https://github.com/visgl/loaders.gl/tree/master/examples/website/wms) |
+| [Map tiles and dynamic maps](/examples/tiles/arcgis-map-server) | Image tile rendering | [MapServer](/docs/modules/arcgis/arcgis-map-server) | [Source](https://github.com/visgl/loaders.gl/tree/master/examples/website/wms) |
+| [Viewport imagery](/examples/tiles/arcgis-image-server) | Image export for visible bounds | [ImageServer](/docs/modules/arcgis/arcgis-image-server) | [Source](https://github.com/visgl/loaders.gl/tree/master/examples/website/wms) |
+| [Exported imagery tiles](/examples/tiles/arcgis-image-server-tiles) | Per-tile `exportImage` requests | [ImageServer tiles](/docs/modules/arcgis/arcgis-image-server#image-tiles) | [Source](https://github.com/visgl/loaders.gl/tree/master/examples/website/wms) |
+| [Numerical raster](/examples/tiles/arcgis-image-server-lerc) | Fetch and inspect LERC bands with a color mapping | [Analytical rasters](/docs/modules/arcgis/arcgis-image-server) | [Source](https://github.com/visgl/loaders.gl/blob/master/website/src/examples/arcgis-raster-app.tsx) |
+| [Vector tiles](/examples/tiles/arcgis-vector-tile-server) | Decode MVT and apply application styling | [VectorTileServer](/docs/modules/arcgis/arcgis-vector-tile-server) | [Source](https://github.com/visgl/loaders.gl/tree/master/examples/website/wms) |
+| [SceneServer inspector](/examples/arcgis-scene-server) | Inspect layer metadata and profile; no scene rendering | [SceneServer](/docs/modules/arcgis/arcgis-scene-server) | [Source](https://github.com/visgl/loaders.gl/tree/master/examples/website/i3s-profile-gallery) |
+| [I3S building renderer](/examples/i3s-building-scene-layer) | Dedicated I3S building-layer path | [Building scenes](/docs/modules/i3s/recipes/building-scene-layer) | [Source](https://github.com/visgl/loaders.gl/tree/master/examples/website/i3s-building-scene-layer) |
+
+The same applications are embedded in the matching service pages. Open an embedded example
+fullscreen to interact with its controls. The SceneServer inspector demonstrates service access;
+the I3S renderer demonstrates a separate profile-specific rendering path. Neither implies support
+for every ArcGIS scene or WebScene document.
+
+For private data, follow the [authentication guide](/docs/developer-guide/arcgis/authentication).
+Do not put tokens in URLs you share or paste into public examples. Services without a loaders.gl
+adapter remain explicitly listed as gaps rather than appearing here as simulated integrations.

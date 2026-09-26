@@ -65,7 +65,7 @@ const loadOptions = {
 };
 ```
 
-Available service classes are `ArcGISAuthentication` (`arcgis`), `MapboxAuthentication`
+Available service classes are `ArcGISAuthentication` (`arcgis`, from `@loaders.gl/arcgis/authentication`), `MapboxAuthentication`
 (`mapbox`), `GoogleMapsAuthentication` (`google-maps`), and `CesiumIonAuthentication`
 (`cesium-ion`). They accept the same options as the corresponding `create*Credential`
 helpers. `@loaders.gl/loader-utils` also exports `BearerTokenAuthentication` (`bearer-token`)
@@ -151,15 +151,13 @@ S3 endpoint resolution and AWS signing remain application responsibilities.
 
 ## The minimal pattern
 
-Provider presets live in `@loaders.gl/services`. Pass the resulting credential through
+ArcGIS presets live in `@loaders.gl/arcgis/authentication`; other provider presets live in `@loaders.gl/services`. Pass the resulting credential through
 `core.credentials`:
 
 ```ts
 import {load} from '@loaders.gl/core';
-import {
-  ArcGISFeatureServerSourceLoader,
-  createArcGISCredential
-} from '@loaders.gl/services';
+import {ArcGISFeatureServerSourceLoader} from '@loaders.gl/arcgis';
+import {createArcGISCredential} from '@loaders.gl/arcgis/authentication';
 
 const credentials = [
   createArcGISCredential({
