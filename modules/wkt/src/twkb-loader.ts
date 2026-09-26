@@ -4,7 +4,7 @@
 
 import type {Loader, LoaderOptions} from '@loaders.gl/loader-utils';
 import type {Geometry} from '@loaders.gl/schema';
-import {isTWKB} from '@loaders.gl/gis';
+import {isTWKB} from './twkb/convert-twkb-to-geometry';
 import {VERSION} from './lib/version';
 import {TWKBFormat} from './wkt-format';
 

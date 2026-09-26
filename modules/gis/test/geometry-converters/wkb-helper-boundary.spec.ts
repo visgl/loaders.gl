@@ -12,7 +12,6 @@ import {
 } from '../../src/lib/geometry-converters/wkb/helpers/wkb-utils';
 import {
   getWKTGeometryType,
-  isTWKB,
   isWKB,
   isWKT,
   parseWKBHeader
@@ -74,15 +73,12 @@ describe('WKB helper boundary behavior', () => {
     expect(getCoordinateByteSize({hasZ: true, hasM: true})).toBe(32);
   });
 
-  test('recognizes WKT, TWKB, and valid WKB dialect headers', () => {
+  test('recognizes WKT and valid WKB dialect headers', () => {
     expect(isWKT('POINT(1 2)')).toBe(true);
     expect(getWKTGeometryType(new TextEncoder().encode('MULTIPOLYGON(').buffer)).toBe(
       WKBGeometryType.MultiPolygon
     );
     expect(isWKT(' point(1 2)')).toBe(false);
-    expect(isTWKB(new Uint8Array([1]).buffer)).toBe(true);
-    expect(isTWKB(new Uint8Array([0]).buffer)).toBe(false);
-    expect(isTWKB(new Uint8Array([8]).buffer)).toBe(false);
     expect(isWKB(makeHeader(1))).toBe(true);
     expect(isWKB(makeHeader(1002, false))).toBe(true);
     expect(isWKB(makeHeader(EWKB_FLAG_Z | 1))).toBe(true);

@@ -8,9 +8,9 @@
     "outDir": "dist"
   },
   "references": [
+    {"path": "../arrow-geometry"},
     {"path": "../compression"},
     {"path": "../core"},
-    {"path": "../gis"},
     {"path": "../geoarrow"},
     {"path": "../loader-utils"},
     {"path": "../schema"},

@@ -97,8 +97,8 @@ export type {
   GeoArrowBuilderWriteOptions,
   GeoArrowBuilderOptions,
   GeoArrowGeometryWriter
-} from './lib/geoarrow/geoarrow-builder';
-export {GeoArrowBuilder} from './lib/geoarrow/geoarrow-builder';
+} from '@loaders.gl/arrow-geometry';
+export {GeoArrowBuilder} from '@loaders.gl/arrow-geometry';
 
 //
 export type {GeojsonGeometryInfo} from './lib/geometry-api/geometry-info';
@@ -164,7 +164,6 @@ export {
 // GEOMETRY ENCODING DETECTION
 export {
   isWKB,
-  isTWKB,
   isWKT,
   getWKTGeometryType,
   parseWKBHeader
@@ -197,18 +196,17 @@ export type {
   WKBGeometryTypeName,
   WKBGeometryWriter,
   WKBCoordinateTransform
-} from './lib/geometry-converters/wkb/wkb-builder';
-export {WKBBuilder} from './lib/geometry-converters/wkb/wkb-builder';
-export {triangulateWKB} from './lib/geometry-converters/wkb/triangulate-wkb';
+} from '@loaders.gl/arrow-geometry';
+export {WKBBuilder, triangulateWKB} from '@loaders.gl/arrow-geometry';
 export {
   convertBinaryGeometryToGeometry,
   convertWKBTableToGeoJSON,
   convertWKTToGeometry,
   convertWKBToGeometry,
   convertWKBToBinaryGeometry,
-  convertTWKBToGeometry,
   convertGeometryToWKT,
   convertGeometryToWKB,
+  convertTWKBToGeometry,
   convertGeometryToTWKB
 } from './deprecated';
 export type {WKTGeometryOptions} from './lib/geometry-converters/wkb/convert-geometry-to-wkt';
