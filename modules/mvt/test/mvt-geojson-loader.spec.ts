@@ -6,6 +6,8 @@ import {describe, expect, test} from 'vitest';
 import {MVTWriter} from '../src/mvt-writer';
 import {parseMVT} from '../src/lib/parse-mvt';
 import {parseMVTGeoJSON} from '../src/lib/parse-mvt-geojson';
+import {MVTGeoJSONLoaderWithParser} from '../src/mvt-geojson-loader';
+import {MVTGeoJSONLoader} from '../src/mvt-geojson-loader-types';
 
 const geojson = {
   type: 'FeatureCollection',
@@ -61,5 +63,14 @@ describe('MVT GeoJSON-only parser', () => {
     expect(() => parseMVTGeoJSON(mvtTile, {mvt: {coordinates: 'wgs84'}})).toThrow(
       'MVT Loader: WGS84 coordinates need tileIndex property'
     );
+  });
+
+  test('declares and applies the default layer property through loader options', () => {
+    const result = MVTGeoJSONLoaderWithParser.parseSync(mvtTile, {
+      mvt: MVTGeoJSONLoader.options.mvt
+    });
+
+    expect(MVTGeoJSONLoader.options.mvt.layerProperty).toBe('layerName');
+    expect(result.features[0].properties?.layerName).toBe('places');
   });
 });

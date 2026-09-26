@@ -48,6 +48,7 @@ export const MVTGeoJSONLoader = {
     mvt: {
       shape: 'geojson-table',
       coordinates: 'local',
+      layerProperty: 'layerName',
       layers: undefined!,
       tileIndex: undefined!
     }
