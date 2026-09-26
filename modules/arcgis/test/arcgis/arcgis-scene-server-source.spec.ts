@@ -238,3 +238,23 @@ test('ArcGISSceneServerSource reports query and URL errors with typed details', 
   ).toThrow(/requires a \/SceneServer/);
   expect(() => new ArcGISSceneServerSource(SCENE_SERVER_URL).getLayerURL()).toThrow(/layerId/);
 });
+
+test.each([
+  '',
+  '?token=url-secret'
+])('ArcGISSceneServerSource normalizes long trailing separator runs with suffix %s', suffix => {
+  const source = new ArcGISSceneServerSource(
+    SCENE_SERVER_URL + '/layers/0' + '/'.repeat(16384) + suffix
+  );
+  expect(source.getLayerURL()).toBe(SCENE_SERVER_URL + '/layers/0');
+  if (suffix) {
+    expect(new URL(source.metadataURL()).searchParams.get('token')).toBe('url-secret');
+  }
+});
+
+test('ArcGISSceneServerSource rejects long internal separator runs without stripping them', () => {
+  const serviceUrl = SCENE_SERVER_URL + '/layers/0' + '/'.repeat(16384) + 'invalid';
+  const source = new ArcGISSceneServerSource(serviceUrl);
+  expect(source.url).toBe(serviceUrl);
+  expect(() => source.getLayerURL()).toThrow(/requires a/);
+});

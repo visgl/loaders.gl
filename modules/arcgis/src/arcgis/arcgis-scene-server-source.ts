@@ -40,7 +40,7 @@ export class ArcGISSceneServerSource extends DataSource<string, ArcGISSceneServe
 
   /** Creates a SceneServer source. */
   constructor(url: string, options: ArcGISSceneServerSourceOptions = {}, coreApi?: CoreAPI) {
-    super(url.replace(/\/+$/, ''), options, ARCGIS_SCENE_SERVER_SOURCE_DEFAULT_OPTIONS, coreApi);
+    super(trimTrailingSlashes(url), options, ARCGIS_SCENE_SERVER_SOURCE_DEFAULT_OPTIONS, coreApi);
   }
 
   /** Returns normalized SceneServer layer metadata. */
@@ -98,7 +98,7 @@ export class ArcGISSceneServerSource extends DataSource<string, ArcGISSceneServe
   /** Returns the layer URL, resolving an explicit layer ID when needed. */
   getLayerURL(): string {
     const url = new URL(this.url);
-    url.pathname = url.pathname.replace(/\/+$/, '');
+    url.pathname = trimTrailingSlashes(url.pathname);
     if (/\/SceneServer\/layers\/[^/]+$/i.test(url.pathname)) {
       url.search = '';
       url.hash = '';
@@ -182,4 +182,13 @@ export class ArcGISSceneServerSource extends DataSource<string, ArcGISSceneServe
     }
     return new URL(this.url).searchParams.get('token') || undefined;
   }
+}
+
+/** Removes trailing URL separators in linear time, including for untrusted service URLs. */
+function trimTrailingSlashes(value: string): string {
+  let endIndex = value.length;
+  while (endIndex > 0 && value[endIndex - 1] === '/') {
+    endIndex--;
+  }
+  return value.slice(0, endIndex);
 }
