@@ -38,7 +38,8 @@ export class I3STilesetTraverser extends TilesetTraverser {
     for (const child of children) {
       const extendedId = `${child.id}-${frameState.viewport.id}`;
       // if child tile is not fetched
-      const childTile = childTiles && childTiles.find(t => t.id === extendedId);
+      const childTile =
+        childTiles && childTiles.find(t => t.id === extendedId || t.header?.id === child.id);
       if (!childTile) {
         const request = () => this._loadTile(tile, child.id, frameState);
         const cachedRequest = this._tileManager.find(extendedId);

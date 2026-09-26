@@ -7,6 +7,11 @@ export type {FoveatedInterpolationCallback} from './tileset-3d/helpers/tiles-3d-
 export {Tileset3D} from './tileset-3d/common/tileset-3d';
 export {getTileset3DTraversalSnapshot} from './tileset-3d/common/tileset-observability';
 export type {Tileset3DTraversalSnapshot} from './tileset-3d/common/tileset-observability';
+export {traverseTilesetContents} from './tileset-3d/common/tileset-content-traversal';
+export type {
+  TilesetContentTraversalItem,
+  TraverseTilesetContentsOptions
+} from './tileset-3d/common/tileset-content-traversal';
 export type {
   TileContentLoadResult,
   TileChildrenLoadResult,

@@ -38,6 +38,25 @@ The shared `Tileset3DSource` contract owns:
 
 `Tileset3D` remains responsible for traversal, culling, request scheduling, selection, and cache management.
 
+### Camera-independent content traversal
+
+Conversion and inspection jobs can visit the complete dataset without creating a viewport:
+
+```ts
+import {traverseTilesetContents} from '@loaders.gl/tiles';
+
+for await (const {tile, contents} of traverseTilesetContents(tileset, {signal})) {
+  // `contents` preserves the tile's declared content order.
+  processTile(tile, contents);
+}
+```
+
+The traversal follows declared placements in depth-first order, resolves lazy 3D Tiles subtrees and
+I3S child headers through their source, and visits nested tilesets before descending into them.
+Repeated resource URLs remain separate visits when they appear at different placements, since each
+placement can have its own transform. The caller owns loaded-content lifetime and should unload or
+destroy the tileset when processing completes.
+
 For broader documentation please visit the [website](https://loaders.gl).
 
 ## Tileset2D

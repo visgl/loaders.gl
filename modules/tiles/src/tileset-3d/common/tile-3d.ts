@@ -602,23 +602,7 @@ export class Tile3D {
     }
 
     try {
-      const loadResult = await this.tileset.source.loadTileContent(this);
-
-      if (loadResult.contents) {
-        this.contents = loadResult.contents;
-        this.content = this.contents[0] || null;
-      }
-      this.vectorContent =
-        this.contents.find(content => Boolean(content?.vectorContent))?.vectorContent || null;
-
-      if (this.tileset.options.contentLoader) {
-        await this.tileset.options.contentLoader(this);
-      }
-
-      this.contentState = TILE_CONTENT_STATE.READY;
-      this._onContentLoaded();
-      this._updateContentEntriesAfterLoad(loadResult);
-      return loadResult;
+      return await this._loadContentFromSource();
     } catch (error) {
       // Tile is unloaded before the content finishes loading
       this.contentState = TILE_CONTENT_STATE.FAILED;
@@ -626,6 +610,44 @@ export class Tile3D {
     } finally {
       requestToken.done();
     }
+  }
+
+  /** Loads content for complete dataset operations without viewport-based request priority. */
+  async loadContentForTraversal(): Promise<TileContentLoadResult> {
+    if (this.hasEmptyContent) {
+      return {loaded: false};
+    }
+    if (this.content) {
+      return {loaded: true, contents: this.contents};
+    }
+
+    this.contentState = TILE_CONTENT_STATE.LOADING;
+    try {
+      return await this._loadContentFromSource();
+    } catch (error) {
+      this.contentState = TILE_CONTENT_STATE.FAILED;
+      throw error;
+    }
+  }
+
+  /** Loads source content and updates the tile's renderer-neutral payload state. */
+  private async _loadContentFromSource(): Promise<TileContentLoadResult> {
+    const loadResult = await this.tileset.source.loadTileContent(this);
+    if (loadResult.contents) {
+      this.contents = loadResult.contents;
+      this.content = this.contents[0] || null;
+    }
+    this.vectorContent =
+      this.contents.find(content => Boolean(content?.vectorContent))?.vectorContent || null;
+
+    if (this.tileset.options.contentLoader) {
+      await this.tileset.options.contentLoader(this);
+    }
+
+    this.contentState = TILE_CONTENT_STATE.READY;
+    this._onContentLoaded();
+    this._updateContentEntriesAfterLoad(loadResult);
+    return loadResult;
   }
 
   /**
