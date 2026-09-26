@@ -87,7 +87,7 @@ test('LanceSource falls back to whole-file reads when manifests omit file sizes'
 
   await collect(source.readBatches());
 
-  expect(fetch).toHaveBeenCalledWith('https://example.com/dataset/data/part.lance', undefined);
+  expect(fetch).toHaveBeenCalledWith('https://example.com/dataset/data/part.lance');
   expect(lanceMocks.parseFileToArrow).toHaveBeenCalledWith(expect.any(ArrayBuffer), {
     columnTypes: ['uint8'],
     columnNames: undefined,

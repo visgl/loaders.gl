@@ -30,7 +30,7 @@ test('source fetch utilities cover direct, static, and default fetch configurati
   const merged = mergeImageSourceLoaderProps({loadOptions: {fetch: directFetch}, marker: true});
   expect(merged.marker).toBe(true);
   await merged.loadOptions.fetch('merged-url');
-  expect(directFetch).toHaveBeenLastCalledWith('merged-url', undefined);
+  expect(directFetch).toHaveBeenLastCalledWith('merged-url');
 });
 
 test('TileSourceAdapter forwards metadata and converts tile requests to image requests', async () => {

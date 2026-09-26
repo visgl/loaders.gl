@@ -27,9 +27,7 @@ export function getFetchFunction(
   if (typeof fetchOption === 'function') {
     fetchFunction = fetchOption;
   } else if (isObject(fetchOption)) {
-    const baseFetch = context?.fetch || fetchFile;
-    fetchFunction = (url, requestOptions) =>
-      baseFetch(url, mergeFetchOptions(fetchOption as RequestInit, requestOptions));
+    fetchFunction = context?.fetch || fetchFile;
   } else if (context?.fetch) {
     fetchFunction = context.fetch;
   } else {
@@ -38,17 +36,8 @@ export function getFetchFunction(
 
   return createAuthenticatedFetch({
     fetch: fetchFunction,
-    credentials: loaderOptions.core?.credentials || []
+    credentials: loaderOptions.core?.credentials || [],
+    authentications: loaderOptions.core?.authentications,
+    fetchOptions: isObject(fetchOption) ? (fetchOption as RequestInit) : undefined
   });
-}
-
-/** Combines static and per-request fetch options without replacing either header collection. */
-function mergeFetchOptions(defaultOptions: RequestInit, requestOptions?: RequestInit): RequestInit {
-  const options = {...defaultOptions, ...requestOptions};
-  if (defaultOptions.headers || requestOptions?.headers) {
-    const headers = new Headers(defaultOptions.headers);
-    new Headers(requestOptions?.headers).forEach((value, key) => headers.set(key, value));
-    options.headers = headers;
-  }
-  return options;
 }

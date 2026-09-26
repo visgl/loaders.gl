@@ -48,6 +48,107 @@ application can return a usable token.
   tone="blue"
 />
 
+## Declarative credentials
+
+`core.credentials` can contain JSON configuration as well as existing credential objects.
+Supply constructors through `core.authentications`; each constructor's static `type` selects
+the matching configuration:
+
+```ts
+import {MapboxAuthentication} from '@loaders.gl/services';
+
+const loadOptions = {
+  core: {
+    authentications: [MapboxAuthentication],
+    credentials: [{type: 'mapbox', accessToken: mapboxToken}]
+  }
+};
+```
+
+Available service classes are `ArcGISAuthentication` (`arcgis`), `MapboxAuthentication`
+(`mapbox`), `GoogleMapsAuthentication` (`google-maps`), and `CesiumIonAuthentication`
+(`cesium-ion`). They accept the same options as the corresponding `create*Credential`
+helpers. `@loaders.gl/loader-utils` also exports `BearerTokenAuthentication` (`bearer-token`)
+and `QueryParameterAuthentication` (`query-parameter`). There is no implicit global registry.
+
+Loaders may contribute constructors through `getAuthentications(url, options)`. ArcGIS service
+loaders supply `ArcGISAuthentication` automatically when used through `load` or
+`createDataSource`. Application constructors take precedence for the same type. Unknown types
+fail before the data request. Classes receive one credential entry, are instantiated once per
+load, and their instances are reused by nested requests. Existing credential instances remain
+valid and can be mixed with declarations. Direct source constructors require classes in options.
+For asynchronous discovery hooks, use `load` instead of synchronous `createDataSource`.
+
+## Application request signing
+
+For signing that depends on the individual URL, method, headers or body, supply a callback
+credential. loaders.gl does not import an AWS/S3 SDK; the application provides its signer:
+
+```ts
+import type {RequestAuthentication} from '@loaders.gl/loader-utils';
+
+// signRequest is application code. It returns the complete {url, options} to send.
+const credential: RequestAuthentication = {
+  id: 'private-tiles',
+  type: 'request',
+  origins: ['s3://my-bucket', 'https://my-bucket.s3.us-east-1.amazonaws.com'],
+  authenticate: async ({url, options, reason}) => {
+    return signRequest({url, options, refresh: reason === 'retry'});
+  },
+  refreshStatusCodes: [401, 403]
+};
+
+const loadOptions = {core: {credentials: [credential]}};
+```
+
+The callback runs for every matching request, after static fetch defaults, per-request options,
+and ordinary token credentials have been applied. It can translate custom URLs to HTTPS, return
+a presigned URL, or sign headers. Preserve existing options such as range headers and body in the
+returned request. The caller's abort signal is retained automatically. Custom fetch implementations
+must send the signed fields without altering them. A callback is trusted application code and is
+responsible for handling explicitly signed input URLs and redacting provider-specific errors.
+
+Retries are opt-in, limited to one replay, and only allowed for replayable methods and bodies.
+Each replay is signed afresh from the original request; signatures are never reused between tiles.
+Provider credential refresh and refresh deduplication belong to the application signer.
+
+The same callback can be declared through JSON by supplying an application class:
+
+```ts
+import type {AuthenticationRequest, RequestAuthentication} from '@loaders.gl/loader-utils';
+
+class ApplicationSigningAuthentication implements RequestAuthentication {
+  static readonly type = 'application-signing';
+  readonly type = 'request';
+  readonly id = 'private-tiles';
+  readonly origins: readonly string[];
+
+  constructor(readonly configuration: {origins: string[]; region: string}) {
+    this.origins = configuration.origins;
+  }
+
+  authenticate(request: AuthenticationRequest) {
+    return signRequest({...request, region: this.configuration.region});
+  }
+}
+
+const loadOptions = {
+  core: {
+    authentications: [ApplicationSigningAuthentication],
+    credentials: [{
+      type: 'application-signing',
+      origins: ['https://my-bucket.s3.us-east-1.amazonaws.com'],
+      region: 'us-east-1'
+    }]
+  }
+};
+```
+
+Constructor references and callbacks live in JavaScript; the credential configuration can live
+in JSON. Request callbacks and token-provider functions keep parsing on the calling thread so
+nested requests retain authentication. Static resolved token credentials can still use workers.
+S3 endpoint resolution and AWS signing remain application responsibilities.
+
 ## The minimal pattern
 
 Provider presets live in `@loaders.gl/services`. Pass the resulting credential through

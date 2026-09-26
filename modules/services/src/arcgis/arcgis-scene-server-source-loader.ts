@@ -2,6 +2,8 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
+import {ArcGISAuthentication} from '../authentication';
+
 import type {CoreAPI, DataSourceOptions, SourceLoader} from '@loaders.gl/loader-utils';
 import {DataSource} from '@loaders.gl/loader-utils';
 import {
@@ -242,6 +244,8 @@ export const ArcGISSceneServerSourceLoader = {
   id: 'arcgis-scene-server',
   module: 'services',
   version: '0.0.0',
+  /** Supplies the ArcGIS constructor for declarative service credentials. */
+  getAuthentications: () => [ArcGISAuthentication],
   extensions: [],
   mimeTypes: ['application/json'],
   type: 'arcgis-scene-server',

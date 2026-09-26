@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
+import {resolveLoaderAuthenticationOptions} from '@loaders.gl/loader-utils';
 import type {
   Loader,
   LoaderContext,
@@ -121,7 +122,16 @@ export async function parse(
 
   // Normalize options
   // @ts-expect-error candidateLoaders
-  const strictOptions = normalizeOptions(options, loader, candidateLoaders, url); // Could be invalid...
+  const normalizedOptions = normalizeOptions(options, loader, candidateLoaders, url); // Could be invalid...
+  const authenticationLoader =
+    !loader.getAuthentications && normalizedOptions.core?.credentials?.length
+      ? await getLoaderImplementation(loader, normalizedOptions, url || context?.url)
+      : loader;
+  const strictOptions = await resolveLoaderAuthenticationOptions(
+    authenticationLoader,
+    url || '',
+    normalizedOptions
+  );
 
   // Get a context (if already present, will be unchanged)
   context = getLoaderContext(

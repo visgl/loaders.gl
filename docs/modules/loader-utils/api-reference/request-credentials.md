@@ -80,8 +80,46 @@ Wraps a `FetchLike` implementation. Matching credentials compose, explicit URL p
 headers win, abort signals are preserved, concurrent refreshes are deduplicated, and at most one
 safe replay is attempted.
 
+`credentials` accepts instantiated token/callback credentials and declarative entries.
+`authentications` supplies constructors with a static `type`; `fetchOptions` supplies request
+defaults to merge before signing. Request callbacks run after ordinary token placement.
+
+## Authentication classes and resolution
+
+`AuthenticationConstructor` has a static `type: string` and constructs an `Authentication` from
+one `CredentialOptions` entry. `Authentication` is either the existing `RequestCredential` or
+`RequestAuthentication`. `CredentialOptions` contains `type` plus provider-specific fields.
+
+`TokenAuthentication` adapts an existing `RequestCredential` into a class instance. The built-in
+`BearerTokenAuthentication` and `QueryParameterAuthentication` classes accept the corresponding
+factory options, with static types `bearer-token` and `query-parameter` respectively.
+
+`resolveCredentials(credentials, authentications)` preserves existing instances and resolves
+typed declarations using the first registered matching constructor. It throws for unknown types
+and invalid results. `resolveAuthenticationOptions(options)` returns options with resolved
+credentials without modifying input. `resolveLoaderAuthenticationOptions(loader, url, options)`
+also collects constructors from the optional `loader.getAuthentications(url, options)` hook;
+application classes precede loader classes. Already-resolved credentials need no discovery.
+
+## `RequestAuthentication`
+
+Callback credentials have `id`, `type: 'request'`, `origins`, `authenticate`, and optional
+`refreshStatusCodes` (default: no retries). Exact scopes may include custom-scheme authorities,
+such as `s3://bucket`, as well as HTTP(S) origins.
+
+`authenticate({url, options, reason, response?})` returns `{url, options}` or a promise for that
+value. `options` is the complete `RequestInit`; `reason` is `request` or `retry`; `response`
+exposes only failure status and headers. Return complete request options. The original abort
+signal is preserved. Callback credentials may also be class instances created from JSON.
+
+See [application request signing](/docs/developer-guide/authentication#application-request-signing)
+for an SDK-independent example and the worker execution constraints.
+
 ## `redactCredentialURL(url, credentials)`
 
 Replaces configured credential query values with `[REDACTED]` for diagnostics. Header credentials
 do not affect URLs. This utility does not sanitize arbitrary secrets unknown to the supplied
 credential registry.
+
+When callback credentials are present, all query values are redacted, including on rewritten
+destinations, because a signer may introduce arbitrary signature parameter names.

@@ -29,6 +29,16 @@ type ParseOnMainThread = (
  * @param options
  */
 export function canParseWithWorker(loader: Loader, options?: StrictLoaderOptions) {
+  // Request signers and token providers cannot be cloned into worker runtimes.
+  // Keep parsing on the caller so nested fetches retain these application callbacks.
+  if (
+    options?.core?.credentials?.some(
+      credential =>
+        credential.type === 'request' ||
+        ('token' in credential && typeof credential.token === 'function')
+    )
+  )
+    return false;
   const workerOptions = getWorkerOptions(options);
   const nodeWorkers = workerOptions._nodeWorkers;
   if (!isBrowser && !nodeWorkers) {
@@ -216,7 +226,12 @@ function callParseOnMainThread(
  * @param loader Loader whose parser will handle the worker request.
  */
 function getWorkerOptions(options: StrictLoaderOptions = {}, loader?: Loader) {
-  const serializedOptions = JSON.parse(JSON.stringify(options));
+  const serializedOptions = JSON.parse(
+    JSON.stringify({
+      ...options,
+      ...(options.core ? {core: {...options.core, authentications: undefined}} : {})
+    })
+  );
   const workerOptions: Record<string, any> = {
     ...serializedOptions.core,
     ...serializedOptions

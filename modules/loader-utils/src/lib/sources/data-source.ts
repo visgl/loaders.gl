@@ -8,7 +8,8 @@ import type {ReadableFile} from '../files/file';
 import {mergeOptions} from '../option-utils/merge-options';
 import {resolvePath} from '../path-utils/file-aliases';
 import {log} from '../log-utils/log';
-import {createAuthenticatedFetch} from '../request-utils/request-credentials';
+import {getAuthenticatedFetch} from '../request-utils/request-credentials';
+import {resolveAuthenticationOptions} from '../request-utils/authentication';
 
 /** Common properties for all data sources */
 export type DataSourceOptions = StrictLoaderOptions & {
@@ -117,7 +118,7 @@ export abstract class DataSource<DataT, OptionsT extends DataSourceOptions> {
     ) as Required<OptionsT & DataSourceOptions>;
     this.data = data;
     this.url = typeof data === 'string' ? resolvePath(data) : '';
-    const loadOptions = getSourceLoaderOptions(this.options);
+    const loadOptions = resolveAuthenticationOptions(getSourceLoaderOptions(this.options));
     this.loadOptions = loadOptions;
     const fetch = getFetchFunction(loadOptions);
     this.coreApi = coreApi || UNAVAILABLE_CORE_API;
@@ -129,7 +130,7 @@ export abstract class DataSource<DataT, OptionsT extends DataSourceOptions> {
     const mergedOptions = mergeOptions<DataSourceOptions>(this.options, options) as Required<
       OptionsT & DataSourceOptions
     >;
-    const loadOptions = getSourceLoaderOptions(mergedOptions);
+    const loadOptions = resolveAuthenticationOptions(getSourceLoaderOptions(mergedOptions));
     this.options = mergedOptions;
     this.loadOptions = loadOptions;
     this.fetch = getFetchFunction(loadOptions);
@@ -175,39 +176,7 @@ export abstract class DataSource<DataT, OptionsT extends DataSourceOptions> {
  * @param context
  */
 export function getFetchFunction(options?: StrictLoaderOptions) {
-  const fetchOption = options?.fetch ?? options?.core?.fetch;
-  let fetchFunction: (url: string, requestOptions?: RequestInit) => Promise<Response>;
-
-  // options.fetch can be a function
-  if (typeof fetchOption === 'function') {
-    fetchFunction = (url: string, fetchOptions?: RequestInit) => fetchOption(url, fetchOptions);
-  } else if (fetchOption) {
-    fetchFunction = (url, requestOptions) =>
-      fetch(url, mergeFetchOptions(fetchOption, requestOptions));
-  } else {
-    fetchFunction = (url, requestOptions) => fetch(url, requestOptions);
-  }
-
-  return createAuthenticatedFetch({
-    fetch: fetchFunction,
-    credentials: options?.core?.credentials || []
-  });
-}
-
-function mergeFetchOptions(fetchOptions: RequestInit, requestOptions?: RequestInit): RequestInit {
-  const mergedOptions: RequestInit = {...fetchOptions, ...requestOptions};
-  if (fetchOptions.headers || requestOptions?.headers) {
-    mergedOptions.headers = mergeHeaders(fetchOptions.headers, requestOptions?.headers);
-  }
-  return mergedOptions;
-}
-
-function mergeHeaders(defaultHeaders?: HeadersInit, requestHeaders?: HeadersInit): Headers {
-  const headers = new Headers(defaultHeaders);
-  if (requestHeaders) {
-    new Headers(requestHeaders).forEach((value, key) => headers.set(key, value));
-  }
-  return headers;
+  return getAuthenticatedFetch(options);
 }
 
 /**

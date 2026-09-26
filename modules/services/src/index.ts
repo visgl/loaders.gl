@@ -86,6 +86,10 @@ export {SERVICE_LOADERS, getServiceLoader} from './service-registry';
 
 export {
   createArcGISCredential,
+  ArcGISAuthentication,
+  MapboxAuthentication,
+  GoogleMapsAuthentication,
+  CesiumIonAuthentication,
   createCesiumIonCredential,
   createGoogleMapsCredential,
   createMapboxCredential
