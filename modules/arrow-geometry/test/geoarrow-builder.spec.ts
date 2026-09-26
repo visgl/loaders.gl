@@ -180,3 +180,53 @@ test('GeoArrowBuilder rejects a missing separated box coordinate buffer', () => 
     })
   ).toThrow('target box buffer overflow');
 });
+
+test('GeoArrowBuilder rejects missing or undersized separated coordinate buffers', () => {
+  const writers = [
+    builder => {
+      builder.beginPoint();
+      builder.writeCoordinate(1, 2);
+    }
+  ];
+  const missingCoordinate = GeoArrowBuilder.measureGeometryArray(writers, {
+    encoding: 'geoarrow.point',
+    coordinateLayout: 'separated'
+  });
+  (missingCoordinate.coordinates as {x?: Float64Array}).x = undefined;
+  expect(() =>
+    GeoArrowBuilder.writeGeometryArray(writers, missingCoordinate, {
+      encoding: 'geoarrow.point',
+      coordinateLayout: 'separated'
+    })
+  ).toThrow('target coordinate buffer overflow');
+
+  const undersizedCoordinate = GeoArrowBuilder.measureGeometryArray(writers, {
+    encoding: 'geoarrow.point',
+    coordinateLayout: 'separated'
+  });
+  (undersizedCoordinate.coordinates as {y: Float64Array}).y = new Float64Array(0);
+  expect(() =>
+    GeoArrowBuilder.writeGeometryArray(writers, undersizedCoordinate, {
+      encoding: 'geoarrow.point',
+      coordinateLayout: 'separated'
+    })
+  ).toThrow('target coordinate buffer overflow');
+});
+
+test('GeoArrowBuilder rejects geometry events that do not match the encoding', () => {
+  const invalidEvents: Array<[string, (builder: GeoArrowBuilder) => void]> = [
+    ['Box', builder => builder.beginBox()],
+    ['Box', builder => builder.writeBox(1, 2, 3, 4)],
+    ['LineString', builder => builder.beginLineString(1)],
+    ['Polygon', builder => builder.beginPolygon(1)],
+    ['LinearRing', builder => builder.beginLinearRing(1)],
+    ['MultiPoint', builder => builder.beginMultiPoint(1)],
+    ['MultiLineString', builder => builder.beginMultiLineString(1)],
+    ['MultiPolygon', builder => builder.beginMultiPolygon(1)]
+  ];
+
+  for (const [geometryName, writeEvent] of invalidEvents) {
+    const builder = new GeoArrowBuilder({encoding: 'geoarrow.point', mode: 'measure'});
+    expect(() => writeEvent(builder)).toThrow(`Cannot write ${geometryName} into geoarrow.point`);
+  }
+});

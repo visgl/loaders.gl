@@ -137,6 +137,18 @@ test('triangulates large hashed rings and difficult degenerate outlines', () => 
   expect(
     triangulateWKB(createPolygonWKB([selfIntersecting], {littleEndian: true})).length
   ).toBeGreaterThan(0);
+
+  const locallyCrossing: Position[] = [
+    [0, 0],
+    [2, 2],
+    [0, 2],
+    [2, 0],
+    [3, -1],
+    [0, 0]
+  ];
+  expect(
+    triangulateWKB(createPolygonWKB([locallyCrossing], {littleEndian: true})).length
+  ).toBeGreaterThan(0);
 });
 
 test('triangulates multipolygons with global vertex offsets and rejects invalid children', () => {
