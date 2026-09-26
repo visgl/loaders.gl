@@ -4,7 +4,10 @@
 
 import * as arrow from 'apache-arrow';
 import {getWKBGeometryStatistics} from '@loaders.gl/gis';
-import type {GeoArrowEncoding} from '@loaders.gl/schema';
+import type {BinaryPolygonGeometry, GeoArrowEncoding} from '@loaders.gl/schema';
+import {getGeoArrowRowBounds as getMathGeoArrowRowBounds} from '@math.gl/geoarrow';
+import {makeGeoArrowColumnFromBinaryPolygon} from './binary-polygon-to-geoarrow';
+import type {BinaryPolygonToGeoArrowOptions} from './binary-polygon-to-geoarrow';
 
 /** Axis-aligned XY bounds in minX, minY, maxX, maxY order. */
 export type GeoArrowBounds = readonly [number, number, number, number];
@@ -19,7 +22,27 @@ export type GeoArrowBounds = readonly [number, number, number, number];
 export function getGeoArrowRowBounds(
   column: arrow.Vector,
   encoding: GeoArrowEncoding
+): readonly (GeoArrowBounds | null)[];
+/** Computes one XY bound per binary polygon through math.gl, preserving empty rows as null. */
+export function getGeoArrowRowBounds(
+  column: BinaryPolygonGeometry,
+  options: BinaryPolygonToGeoArrowOptions
+): readonly (GeoArrowBounds | null)[];
+/** Dispatches Arrow vectors and legacy binary polygons to their buffer-based bounds paths. */
+export function getGeoArrowRowBounds(
+  column: arrow.Vector | BinaryPolygonGeometry,
+  encodingOrOptions: GeoArrowEncoding | BinaryPolygonToGeoArrowOptions
 ): readonly (GeoArrowBounds | null)[] {
+  if ('polygonIndices' in column) {
+    if (typeof encodingOrOptions === 'string') {
+      throw new Error('Binary polygon bounds require an explicit dimension option.');
+    }
+    return getMathGeoArrowRowBounds(makeGeoArrowColumnFromBinaryPolygon(column, encodingOrOptions));
+  }
+  if (typeof encodingOrOptions !== 'string') {
+    throw new Error('Arrow vector bounds require a GeoArrow encoding.');
+  }
+  const encoding = encodingOrOptions;
   const directBounds = getDirectNativeRowBounds(column, encoding);
   if (directBounds) return directBounds;
   const bounds: (GeoArrowBounds | null)[] = [];
