@@ -25,7 +25,7 @@ import {
   I3STileOptions,
   I3STilesetOptions
 } from '../../types';
-import {getUrlWithToken} from '../utils/url-utils';
+import {getUrlWithSearchParams, getUrlWithToken} from '../utils/url-utils';
 
 import {GL_TYPE_MAP, getConstructorForDataFormat, sizeOf, COORDINATE_SYSTEM} from './constants';
 import {I3SLoaderOptions} from '../../i3s-loader';
@@ -163,8 +163,11 @@ async function loadI3STexture(
   options: StrictLoaderOptions | undefined,
   context?: LoaderContext
 ): Promise<TileContentTexture | null> {
-  // @ts-expect-error options is not properly typed
-  const url = getUrlWithToken(textureUrl, options?.i3s?.token);
+  const i3sOptions = options?.i3s as {token?: string} | undefined;
+  const url = getUrlWithSearchParams(
+    getUrlWithToken(textureUrl, i3sOptions?.token),
+    options?.searchParams
+  );
   const loader = getLoaderForTextureFormat(textureFormat);
   const fetchFunc = context?.fetch || fetch;
   const response = await fetchFunc(url);

@@ -15,6 +15,7 @@ import type {
 import {resolveLoaderAuthenticationOptions} from '@loaders.gl/loader-utils';
 import {isLoaderObject} from '../loader-utils/normalize-loader';
 import {getFetchFunction} from '../loader-utils/get-fetch-function';
+import {applySearchParamsToUrl} from '../loader-utils/option-utils';
 
 import {parseInBatches} from './parse-in-batches';
 import {selectLoader} from './select-loader';
@@ -104,7 +105,7 @@ async function loadOneFileInBatches(
         : loader;
     options = await resolveLoaderAuthenticationOptions(authenticationLoader, url, options);
     const fetch = getFetchFunction(options);
-    const response = await fetch(url);
+    const response = await fetch(applySearchParamsToUrl(url, options));
     // pick right overload
     return Array.isArray(loaders)
       ? await parseInBatches(response, loaders, options)

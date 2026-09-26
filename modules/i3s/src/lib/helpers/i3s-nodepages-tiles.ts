@@ -4,7 +4,11 @@
 
 import {I3SNodePageLoaderWithParser} from '../../i3s-node-page-loader-with-parser';
 import {normalizeTileNonUrlData} from '../parsers/parse-i3s';
-import {getUrlWithToken, generateTilesetAttributeUrls} from '../utils/url-utils';
+import {
+  getUrlWithSearchParams,
+  getUrlWithToken,
+  generateTilesetAttributeUrls
+} from '../utils/url-utils';
 import type {FetchLike, LoaderContext, LoaderOptions} from '@loaders.gl/loader-utils';
 import {getAuthenticatedFetch} from '@loaders.gl/loader-utils';
 import {
@@ -87,10 +91,13 @@ export default class I3SNodePagesTiles {
   async getNodeById(id: number): Promise<NodeInPage> {
     const pageIndex = Math.floor(id / this.nodesPerPage);
     if (!this.nodePages[pageIndex] && !this.pendingNodePages[pageIndex]) {
-      const nodePageUrl = getUrlWithToken(
-        `${this.url}/nodepages/${pageIndex}`,
-        // @ts-expect-error this.options is not properly typed
-        this.options.i3s?.token
+      const nodePageUrl = getUrlWithSearchParams(
+        getUrlWithToken(
+          `${this.url}/nodepages/${pageIndex}`,
+          // @ts-expect-error this.options is not properly typed
+          this.options.i3s?.token
+        ),
+        this.options.searchParams
       );
       this.pendingNodePages[pageIndex] = {
         status: 'Pending',

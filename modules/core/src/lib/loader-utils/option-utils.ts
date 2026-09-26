@@ -43,6 +43,40 @@ const CORE_LOADER_OPTION_KEYS = [
 ] as const;
 
 /**
+ * Appends loader search parameters to a URL while preserving existing parameters and fragments.
+ * @param url URL to update
+ * @param options Loader options containing optional search parameters
+ * @returns URL with the configured parameters appended
+ */
+export function applySearchParamsToUrl(url: string, options?: LoaderOptions): string {
+  const searchParams = options?.searchParams;
+  if (!searchParams || Object.keys(searchParams).length === 0 || /^(?:data|blob):/i.test(url)) {
+    return url;
+  }
+
+  const hashIndex = url.indexOf('#');
+  const hash = hashIndex >= 0 ? url.slice(hashIndex) : '';
+  const urlWithoutHash = hashIndex >= 0 ? url.slice(0, hashIndex) : url;
+  const queryIndex = urlWithoutHash.indexOf('?');
+  const path = queryIndex >= 0 ? urlWithoutHash.slice(0, queryIndex) : urlWithoutHash;
+  const query = queryIndex >= 0 ? urlWithoutHash.slice(queryIndex + 1) : '';
+  const existingSearchParams = new URLSearchParams(query);
+  const appendedSearchParams = new URLSearchParams();
+  for (const [key, value] of Object.entries(searchParams)) {
+    if (!existingSearchParams.has(key)) {
+      appendedSearchParams.set(key, String(value));
+    }
+  }
+
+  const serializedAppendedSearchParams = appendedSearchParams.toString();
+  return `${path}${queryIndex >= 0 ? `?${query}` : ''}${
+    serializedAppendedSearchParams
+      ? `${queryIndex >= 0 ? '&' : '?'}${serializedAppendedSearchParams}`
+      : ''
+  }${hash}`;
+}
+
+/**
  * Global state for loaders.gl. Stored on `globalThis.loaders._state`
  */
 type GlobalLoaderState = {

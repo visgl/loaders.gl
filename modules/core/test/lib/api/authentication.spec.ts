@@ -112,6 +112,37 @@ test('unregistered declarative credentials fail before network access', async ()
   expect(transport).not.toHaveBeenCalled();
 });
 
+test.each([
+  'load',
+  'loadInBatches'
+] as const)('%s applies configured query parameters before signing the initial request', async api => {
+  const signedUrls = vi.fn();
+  /** Records the complete request URL received by an application signer. */
+  class QueryAwareAuthentication extends TestAuthentication {
+    /** Records query parameters before adding the signature. */
+    authenticate(request: AuthenticationRequest) {
+      signedUrls(request.url);
+      return super.authenticate(request);
+    }
+  }
+  const transport = vi.fn<FetchLike>(async () => new Response('loaded'));
+  const options = getOptions(transport);
+  options.core!.authentications = [QueryAwareAuthentication];
+  options.searchParams = {token: 'configured', revision: 2};
+  const url = `${ORIGIN}/root.auth?token=explicit`;
+  if (api === 'load') {
+    expect(await load(url, TestLoader, options)).toBe('loaded');
+  } else {
+    const batches = await loadInBatches(url, TestLoader, options);
+    const results: unknown[] = [];
+    for await (const batch of batches) results.push(batch);
+    expect(results).toEqual(['loaded']);
+  }
+  expect(signedUrls.mock.calls[0][0]).toBe(`${url}&revision=2`);
+  expect(transport.mock.calls[0][0]).toBe(`${url}&revision=2&signature=secret`);
+  expect(options.searchParams).toEqual({token: 'configured', revision: 2});
+});
+
 test('URL loading discovers authentication on a lazily loaded parser implementation', async () => {
   const transport = vi.fn<FetchLike>(async () => new Response('child'));
   const metadataLoader = {

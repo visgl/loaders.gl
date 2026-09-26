@@ -42,6 +42,7 @@ export type {
   LoaderArrayReturnType,
   LoaderArrayBatchType
 } from './loader-types';
+export type {SearchParams} from './loader-types';
 
 export type {ExperimentalScanOptions} from './lib/scan-utils/experimental-scan-options';
 

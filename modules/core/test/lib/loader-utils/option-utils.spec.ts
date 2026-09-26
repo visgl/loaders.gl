@@ -8,7 +8,8 @@ import {
   getGlobalLoaderOptions,
   normalizeLoaderOptions,
   normalizeOptions,
-  setGlobalOptions
+  setGlobalOptions,
+  applySearchParamsToUrl
 } from '@loaders.gl/core/lib/loader-utils/option-utils';
 import {GLTFLoader} from '@loaders.gl/gltf';
 import {LASLoader} from '@loaders.gl/las';
@@ -175,4 +176,20 @@ test('normalizeOptions honors global scoped shape and initializes missing global
   } finally {
     globalObject.loaders = originalLoaders;
   }
+});
+
+test('applySearchParamsToUrl preserves existing parameters and fragments', () => {
+  expect(
+    applySearchParamsToUrl('https://example.com/layer?existing=value#fragment', {
+      searchParams: {token: 'secret', existing: 'replacement'}
+    })
+  ).toBe('https://example.com/layer?existing=value&token=secret#fragment');
+  expect(
+    applySearchParamsToUrl('relative/layer', {searchParams: {token: 'secret', count: 2}})
+  ).toBe('relative/layer?token=secret&count=2');
+  expect(
+    applySearchParamsToUrl('https://example.com/layer?encoded=%20&tilde=~&flag#fragment', {
+      searchParams: {token: 'secret'}
+    })
+  ).toBe('https://example.com/layer?encoded=%20&tilde=~&flag&token=secret#fragment');
 });
