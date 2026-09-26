@@ -71,3 +71,112 @@ test('GeoArrowBuilder discovers LargeList for 64-bit offsets', () => {
   const data = GeoArrowBuilder.makeGeometryData(geometryArray);
   expect(data.type.constructor.name).toBe('LargeList');
 });
+
+test.each([
+  'xy',
+  'xyz',
+  'xym',
+  'xyzm'
+] as const)('GeoArrowBuilder writes %s boxes in both coordinate layouts', dimension => {
+  for (const coordinateLayout of ['interleaved', 'separated'] as const) {
+    const geometryArray = GeoArrowBuilder.buildGeometryArray(
+      [
+        builder => {
+          builder.beginBox();
+          builder.writeBox(1, 2, 5, 6, 3, 7, 4, 8);
+        }
+      ],
+      {encoding: 'geoarrow.box', dimension, coordinateLayout}
+    );
+
+    const data = GeoArrowBuilder.makeGeometryData(geometryArray);
+    expect(data.type.constructor.name).toBe('Struct');
+    expect(data.children).toHaveLength(dimension === 'xy' ? 4 : dimension === 'xyzm' ? 8 : 6);
+    if (coordinateLayout === 'interleaved') {
+      expect(Array.from(geometryArray.coordinates as Float64Array)).toEqual(
+        dimension === 'xy'
+          ? [1, 2, 5, 6]
+          : dimension === 'xyz'
+            ? [1, 2, 3, 5, 6, 7]
+            : dimension === 'xym'
+              ? [1, 2, 4, 5, 6, 8]
+              : [1, 2, 3, 4, 5, 6, 7, 8]
+      );
+    }
+  }
+});
+
+test('GeoArrowBuilder supports separated coordinates, transform fallback, and null rows', () => {
+  const writers = [
+    builder => {
+      builder.beginPoint();
+      builder.writeCoordinate(1, 2, 3, 4);
+    },
+    null
+  ];
+  const geometryArray = GeoArrowBuilder.buildGeometryArray(writers, {
+    encoding: 'geoarrow.point',
+    dimension: 'xyzm',
+    coordinateLayout: 'separated',
+    transform: coordinate => [coordinate[0] + 10]
+  });
+
+  expect(geometryArray.nullCount).toBe(1);
+  expect(geometryArray.length).toBe(2);
+  expect(geometryArray.coordinates).toMatchObject({
+    x: new Float64Array([11, 0]),
+    y: new Float64Array([2, 0]),
+    z: new Float64Array([3, 0]),
+    m: new Float64Array([4, 0])
+  });
+  expect(GeoArrowBuilder.makeGeometryData(geometryArray).nullCount).toBe(1);
+});
+
+test('GeoArrowBuilder rejects undersized coordinate and box targets', () => {
+  const pointWriter = [
+    builder => {
+      builder.beginPoint();
+      builder.writeCoordinate(1, 2);
+    }
+  ];
+  const measuredPoint = GeoArrowBuilder.measureGeometryArray(pointWriter, {
+    encoding: 'geoarrow.point'
+  });
+  measuredPoint.coordinates = new Float64Array(0);
+  expect(() =>
+    GeoArrowBuilder.writeGeometryArray(pointWriter, measuredPoint, {encoding: 'geoarrow.point'})
+  ).toThrow('target coordinate buffer overflow');
+
+  const boxWriter = [
+    builder => {
+      builder.beginBox();
+      builder.writeBox(1, 2, 3, 4);
+    }
+  ];
+  const measuredBox = GeoArrowBuilder.measureGeometryArray(boxWriter, {encoding: 'geoarrow.box'});
+  measuredBox.coordinates = new Float64Array(0);
+  expect(() =>
+    GeoArrowBuilder.writeGeometryArray(boxWriter, measuredBox, {encoding: 'geoarrow.box'})
+  ).toThrow('target box buffer overflow');
+});
+
+test('GeoArrowBuilder rejects a missing separated box coordinate buffer', () => {
+  const writers = [
+    builder => {
+      builder.beginBox();
+      builder.writeBox(1, 2, 3, 4);
+    }
+  ];
+  const measured = GeoArrowBuilder.measureGeometryArray(writers, {
+    encoding: 'geoarrow.box',
+    coordinateLayout: 'separated'
+  });
+  (measured.coordinates as {xmin?: Float64Array}).xmin = undefined;
+
+  expect(() =>
+    GeoArrowBuilder.writeGeometryArray(writers, measured, {
+      encoding: 'geoarrow.box',
+      coordinateLayout: 'separated'
+    })
+  ).toThrow('target box buffer overflow');
+});
