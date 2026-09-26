@@ -42,7 +42,7 @@ import type {
   I3SPointCloudNodePage,
   SceneLayer3D
 } from './types';
-import {getUrlWithToken} from './lib/utils/url-utils';
+import {getUrlWithSearchParams, getUrlWithToken} from './lib/utils/url-utils';
 
 /** Options for an {@link I3SPointCloudSource}. */
 export type I3SPointCloudSourceOptions = DataSourceOptions & {
@@ -297,7 +297,11 @@ export class I3SPointCloudSource
     if (this.data instanceof Blob) {
       return new BlobFile(this.data);
     }
-    return new HttpFile(getUrlWithToken(this.url, this.options.i3s?.token || null), {
+    const url = getUrlWithSearchParams(
+      getUrlWithToken(this.url, this.options.i3s?.token || null),
+      this.options.searchParams
+    );
+    return new HttpFile(url, {
       fetch: this.fetch
     });
   }
@@ -561,7 +565,11 @@ export class I3SPointCloudSource
           return await this.archive.getFile(path, 'http');
         }
         const url = path ? `${this.baseUrl || this.url}/${path}` : this.url;
-        const response = await this.fetch(getUrlWithToken(url, this.options.i3s?.token || null));
+        const resourceUrl = getUrlWithSearchParams(
+          getUrlWithToken(url, this.options.i3s?.token || null),
+          this.options.searchParams
+        );
+        const response = await this.fetch(resourceUrl);
         if (!response.ok) {
           throw new Error(`I3S resource request failed (${response.status}): ${url}`);
         }

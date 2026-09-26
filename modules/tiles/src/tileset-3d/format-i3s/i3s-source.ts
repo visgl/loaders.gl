@@ -265,24 +265,28 @@ export class I3SSource implements Tileset3DSource {
       return tilePath;
     }
 
-    const queryDelimiterIndex = tilePath.indexOf('?');
-    if (queryDelimiterIndex === -1) {
-      return `${tilePath}?${new URLSearchParams(this.queryParams).toString()}`;
-    }
-
-    const existingQuery = tilePath.slice(queryDelimiterIndex + 1);
-    const existingQueryKeys = new Set(
-      existingQuery.split('&').map(parameter => parameter.split('=', 1)[0])
-    );
+    const hashIndex = tilePath.indexOf('#');
+    const hash = hashIndex >= 0 ? tilePath.slice(hashIndex) : '';
+    const tilePathWithoutHash = hashIndex >= 0 ? tilePath.slice(0, hashIndex) : tilePath;
+    const queryDelimiterIndex = tilePathWithoutHash.indexOf('?');
+    const path =
+      queryDelimiterIndex === -1
+        ? tilePathWithoutHash
+        : tilePathWithoutHash.slice(0, queryDelimiterIndex);
+    const existingQuery =
+      queryDelimiterIndex === -1 ? '' : tilePathWithoutHash.slice(queryDelimiterIndex + 1);
+    const existingQueryParams = new URLSearchParams(existingQuery);
     const queryParams = new URLSearchParams();
     for (const [key, value] of Object.entries(this.queryParams)) {
-      if (!existingQueryKeys.has(key)) {
+      if (!existingQueryParams.has(key)) {
         queryParams.set(key, value);
       }
     }
 
     const queryString = queryParams.toString();
-    return queryString ? `${tilePath}${existingQuery ? '&' : ''}${queryString}` : tilePath;
+    return `${path}${existingQuery ? `?${existingQuery}` : ''}${
+      queryString ? `${existingQuery ? '&' : '?'}${queryString}` : ''
+    }${hash}`;
   }
 
   /**
@@ -403,6 +407,10 @@ export class I3SSource implements Tileset3DSource {
    * @param loadOptions Loader options that may contain an ArcGIS token.
    */
   private initializeQueryParams(loadOptions: LoaderOptions): void {
+    for (const [key, value] of Object.entries(loadOptions.searchParams || {})) {
+      this.queryParams[key] = String(value);
+    }
+
     const i3sOptions = loadOptions.i3s;
     if (i3sOptions && typeof i3sOptions === 'object' && 'token' in i3sOptions) {
       const token = (i3sOptions as Record<string, unknown>).token;

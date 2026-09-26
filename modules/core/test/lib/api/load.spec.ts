@@ -40,6 +40,46 @@ test('load#with fetch options', async () => {
   ).toEqual({abc: 1});
 });
 
+test('load#applies searchParams before the initial request', async () => {
+  let requestedUrl = '';
+  const data = await load('@loaders.gl/core/test/data/files/basic.json', JSONLoader, {
+    searchParams: {token: 'secret-token'},
+    core: {
+      fetch: async url => {
+        requestedUrl = String(url);
+        return new Response('{"loaded":true}');
+      }
+    }
+  });
+  expect(data).toEqual({loaded: true});
+  expect(requestedUrl).toContain('?token=secret-token');
+});
+
+test('load#applies searchParams before parseUrl', async () => {
+  let requestedUrl = '';
+  const loader = {
+    id: 'url-loader',
+    name: 'URL loader',
+    module: 'test',
+    version: '1.0.0',
+    extensions: ['url'],
+    mimeTypes: [],
+    options: {},
+    parse: async () => null,
+    parseUrl: async url => {
+      requestedUrl = url;
+      return 'loaded';
+    }
+  } as any;
+
+  const result = await load('https://example.com/data.url?existing=%20', loader, {
+    searchParams: {token: 'secret-token'}
+  });
+
+  expect(result).toBe('loaded');
+  expect(requestedUrl).toBe('https://example.com/data.url?existing=%20&token=secret-token');
+});
+
 test('load#auto detect loader', () => {
   const testLoader = {
     name: 'JSON',

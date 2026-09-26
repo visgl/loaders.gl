@@ -5,7 +5,7 @@
 import type {LoaderOptions} from '@loaders.gl/loader-utils';
 import {getAuthenticatedFetch} from '@loaders.gl/loader-utils';
 import type {StatisticsInfo, StatsInfo} from './types';
-import {getUrlWithToken} from './lib/utils/url-utils';
+import {getUrlWithSearchParams, getUrlWithToken} from './lib/utils/url-utils';
 
 /** Typed statistics keyed by the `statisticsInfo.key` value. */
 export type I3SStatistics = Record<string, StatsInfo | null>;
@@ -47,7 +47,10 @@ async function loadStatistic(
 ): Promise<StatsInfo | null> {
   const baseUrl = options.core?.baseUrl || options.baseUri;
   const resolvedUrl = resolveStatisticsUrl(statistic.href, baseUrl);
-  const url = getUrlWithToken(resolvedUrl, options.i3s?.token || null);
+  const url = getUrlWithSearchParams(
+    getUrlWithToken(resolvedUrl, options.i3s?.token || null),
+    options.searchParams
+  );
   try {
     const response = await fetchStatisticsResource(url, options);
     if (!response.ok) {

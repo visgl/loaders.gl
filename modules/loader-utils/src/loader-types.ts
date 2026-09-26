@@ -10,6 +10,9 @@ import type {CoreAPI} from './lib/sources/data-source';
 import type {RequestCredential} from './lib/request-utils/request-credentials';
 import type {ExperimentalScanOptions} from './lib/scan-utils/experimental-scan-options';
 
+/** Query parameters appended to URL-backed loader requests. */
+export type SearchParams = Record<string, string | number | boolean>;
+
 // LOADERS
 
 /**
@@ -18,6 +21,8 @@ import type {ExperimentalScanOptions} from './lib/scan-utils/experimental-scan-o
 export type StrictLoaderOptions = {
   /** Experimental common scan request. Format loaders implement the fields they support. */
   _scan?: ExperimentalScanOptions;
+  /** Query parameters appended to the initial URL request. */
+  searchParams?: SearchParams;
   core?: {
     /** Base URL for resolving relative paths */
     baseUrl?: string;
@@ -96,6 +101,8 @@ export type StrictLoaderOptions = {
 export type LoaderOptions = {
   /** Experimental common scan request. Format loaders implement the fields they support. */
   _scan?: ExperimentalScanOptions;
+  /** Query parameters appended to the initial URL request. */
+  searchParams?: SearchParams;
   core?: StrictLoaderOptions['core'];
   modules?: StrictLoaderOptions['modules'];
 
