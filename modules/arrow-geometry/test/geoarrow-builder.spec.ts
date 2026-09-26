@@ -3,7 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import {expect, test} from 'vitest';
-import {GeoArrowBuilder} from '@loaders.gl/gis';
+import {GeoArrowBuilder} from '@loaders.gl/arrow-geometry';
 
 test.each([
   ['xy', [1, 2], 2],

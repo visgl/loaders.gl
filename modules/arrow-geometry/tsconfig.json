@@ -6,10 +6,5 @@
     "composite": true,
     "rootDir": "src",
     "outDir": "dist"
-  },
-  "references": [
-    {"path": "../loader-utils"},
-    {"path": "../schema"},
-    {"path": "../schema-utils"}
-  ]
+  }
 }

@@ -3,7 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import {expect, test} from 'vitest';
-import {triangulateWKB} from '../../../src/lib/geometry-converters/wkb/triangulate-wkb';
+import {triangulateWKB} from '@loaders.gl/arrow-geometry';
 
 type Position = [number, number, ...number[]];
 

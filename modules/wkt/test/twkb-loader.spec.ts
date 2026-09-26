@@ -1,6 +1,6 @@
 import {expect, test} from 'vitest';
 import {fetchFile, parseSync} from '@loaders.gl/core';
-import {isTWKB} from '@loaders.gl/gis';
+import {isTWKB} from '../src/twkb/convert-twkb-to-geometry';
 import {TWKBLoader} from '@loaders.gl/wkt/bundled';
 import {parseTestCases} from '@loaders.gl/gis/test/data/wkt/parse-test-cases';
 const WKB_2D_TEST_CASES = '@loaders.gl/gis/test/data/wkt/wkb-testdata2d.json';

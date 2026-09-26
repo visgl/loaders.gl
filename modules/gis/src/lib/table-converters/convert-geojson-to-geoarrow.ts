@@ -32,7 +32,7 @@ import {
   setGeoMetadata,
   type GeoColumnMetadata
 } from '../geoarrow/geoparquet-metadata';
-import {GeoArrowBuilder, type GeoArrowBuilderEncoding} from '../geoarrow/geoarrow-builder';
+import {GeoArrowBuilder, type GeoArrowBuilderEncoding} from '@loaders.gl/arrow-geometry';
 
 const DEFAULT_GEOMETRY_COLUMN_NAME = 'geometry';
 const DEFAULT_GEO_METADATA_VERSION = '1.1.0';
