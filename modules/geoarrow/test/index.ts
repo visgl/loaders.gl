@@ -3,6 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import './geoarrow-metadata.spec';
+import './binary-polygon-to-geoarrow.spec';
 import './geoarrow-geometry-converter.spec';
 import './get-geoarrow-geometry-info.spec';
 import './get-geoarrow-vertex-count.spec';

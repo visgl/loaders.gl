@@ -102,6 +102,8 @@ export {inspectGeoArrowVector} from './geoarrow-inspection';
 export type {GeoArrowVectorInspection} from './geoarrow-inspection';
 export {getGeoArrowBounds, getGeoArrowRowBounds} from './geoarrow-bounds';
 export type {GeoArrowBounds} from './geoarrow-bounds';
+export {makeGeoArrowColumnFromBinaryPolygon} from './binary-polygon-to-geoarrow';
+export type {BinaryPolygonToGeoArrowOptions} from './binary-polygon-to-geoarrow';
 export {mapGeoArrowCoordinates} from './map-geoarrow-coordinates';
 export type {GeoArrowCoordinateMapper} from './map-geoarrow-coordinates';
 export {rewindGeoArrow} from './rewind-geoarrow';

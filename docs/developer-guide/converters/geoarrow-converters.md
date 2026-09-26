@@ -77,6 +77,41 @@ GeoArrow conversions split into two jobs:
 | `geoarrow.geometry` | Dense union over native geometry families |
 | `geoarrow.geometrycollection` | GeometryCollection storage |
 
+## Binary Polygon Buffers
+
+`makeGeoArrowColumnFromBinaryPolygon(binaryPolygons, {dimension})` adapts an existing
+`BinaryPolygonGeometry` to the Arrow-independent `GeoArrowColumn` descriptor from
+`@math.gl/geoarrow`. It produces one `geoarrow.polygon` row per polygon, including empty
+polygons. It does not reconstruct MultiPolygon grouping or original feature identity.
+
+```typescript
+import {
+  makeGeoArrowColumnFromBinaryPolygon,
+  getGeoArrowRowBounds
+} from '@loaders.gl/geoarrow';
+import {getGeoArrowBounds} from '@math.gl/geoarrow';
+
+const column = makeGeoArrowColumnFromBinaryPolygon(binaryPolygons, {dimension: 'xym'});
+const bounds = getGeoArrowBounds(column);
+const polygonBounds = getGeoArrowRowBounds(binaryPolygons, {dimension: 'xym'});
+```
+
+The required `dimension` is `xy`, `xyz`, `xym`, or `xyzm` and must match `positions.size`.
+The adapter borrows Float32 or Float64 positions and Int32 ring offsets, including typed-array
+subviews. Other numeric ring-offset arrays are validated and converted to Int32. It allocates
+polygon-to-ring offsets because legacy `polygonIndices` point to vertices instead of rings.
+Keep borrowed buffers unchanged while using the descriptor.
+
+Both index attributes must have size 1, start at zero, and include the terminal vertex count.
+Offsets must be ordered integers within the Int32 range, and polygon boundaries must match
+ring boundaries. Repeated polygon offsets preserve empty rows; use `[0]` for the ring offsets
+of an entirely empty geometry. Empty rings are rejected because vertex offsets cannot determine
+their polygon ownership. The adapter validates buffer structure, not polygon topology or ring
+closure; provide closed rings for GeoArrow consumers that require valid polygons.
+
+Triangle indices, feature IDs, and properties remain on the original object. No coordinates
+are transformed, and no CRS is inferred. Existing loader outputs are unchanged.
+
 ## GeometryCollection Support
 
 `GeoArrowGeometryConverter` now supports:
