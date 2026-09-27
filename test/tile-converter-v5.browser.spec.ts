@@ -2,12 +2,15 @@ import {expect, test} from 'vitest';
 import {
   createI3SConversionSpatialContext,
   createTiles3DConversionSpatialContext,
+  createDeterministicResourceId,
+  createManifestBackedTileConversionSink,
   convertFeatureAttributesToArrowBatches,
   convertTileset,
   inspectTileset,
   TileConversionError,
   validateTileset,
   type TileConversionDiagnostic,
+  type TileResourceManifest,
   type TileConversionSink,
   type TileConversionSource
 } from '@loaders.gl/tile-converter/v5';
@@ -168,6 +171,156 @@ test('tile-converter(v5)#convertTileset releases source iteration after cancella
   expect(sourceClosed).toBe(true);
   expect(sinkAborted).toBe(true);
   expect(conversionCount).toBe(1);
+});
+
+test('tile-converter(v5)#resource IDs encode path segments and reject traversal segments', () => {
+  expect(createDeterministicResourceId('tileset', 'tile/1', 'mesh.glb')).toBe(
+    'tileset/tile%2F1/mesh.glb'
+  );
+  expect(() => createDeterministicResourceId('tileset', '..', 'mesh.glb')).toThrow(
+    TileConversionError
+  );
+  expect(() => createDeterministicResourceId('')).toThrow(TileConversionError);
+});
+
+test('tile-converter(v5)#manifest-backed sinks resume matching resources and finalize manifests', async () => {
+  interface Resource {
+    readonly id: string;
+    readonly bytes: Uint8Array;
+  }
+
+  let manifest: TileResourceManifest | null = null;
+  const manifestStore = {
+    load: async () => manifest,
+    save: async (nextManifest: TileResourceManifest) => {
+      manifest = nextManifest;
+    }
+  };
+  const writtenResources: Resource[] = [];
+  let finalized = false;
+  const createSink = (): TileConversionSink<Resource> => ({
+    write: async resource => {
+      writtenResources.push(resource);
+    },
+    finalize: async () => {
+      finalized = true;
+    },
+    abort: async () => {}
+  });
+  const createResumableSink = () =>
+    createManifestBackedTileConversionSink({
+      sink: createSink(),
+      manifestStore,
+      getResourceId: resource => resource.id,
+      measureResourceBytes: resource => resource.bytes.byteLength,
+      fingerprintResource: resource => Array.from(resource.bytes).join(',')
+    });
+  const firstResource = {id: 'root/mesh.glb', bytes: new Uint8Array([1, 2])};
+  const secondResource = {id: 'child/mesh.glb', bytes: new Uint8Array([3])};
+  const report = {
+    state: 'completed' as const,
+    inputResources: 2,
+    outputResources: 2,
+    inputBytes: 3,
+    outputBytes: 3,
+    largestOutputResourceBytes: 2,
+    diagnostics: []
+  };
+
+  const interruptedSink = await createResumableSink();
+  await interruptedSink.write(firstResource);
+  await interruptedSink.abort(new Error('interrupted'));
+  expect(manifest?.complete).toBe(false);
+
+  const resumedSink = await createResumableSink();
+  await resumedSink.write(firstResource);
+  await resumedSink.write(secondResource);
+  await resumedSink.finalize(report);
+
+  expect(writtenResources).toEqual([firstResource, secondResource]);
+  expect(finalized).toBe(true);
+  expect(manifest).toMatchObject({
+    version: 1,
+    complete: true,
+    resources: [
+      {resourceId: 'child/mesh.glb', byteLength: 1, fingerprint: '3'},
+      {resourceId: 'root/mesh.glb', byteLength: 2, fingerprint: '1,2'}
+    ],
+    report
+  });
+});
+
+test('tile-converter(v5)#manifest-backed sinks reject changed content on resume', async () => {
+  interface Resource {
+    readonly id: string;
+    readonly bytes: Uint8Array;
+  }
+
+  let manifest: TileResourceManifest | null = null;
+  const manifestStore = {
+    load: async () => manifest,
+    save: async (nextManifest: TileResourceManifest) => {
+      manifest = nextManifest;
+    }
+  };
+  const writtenResources: Resource[] = [];
+  const createResumableSink = () =>
+    createManifestBackedTileConversionSink({
+      sink: {
+        write: async resource => {
+          writtenResources.push(resource);
+        },
+        finalize: async () => {},
+        abort: async () => {}
+      },
+      manifestStore,
+      getResourceId: resource => resource.id,
+      measureResourceBytes: resource => resource.bytes.byteLength,
+      fingerprintResource: resource => Array.from(resource.bytes).join(',')
+    });
+
+  const originalResource = {id: 'root/mesh.glb', bytes: new Uint8Array([1])};
+  const firstSink = await createResumableSink();
+  await firstSink.write(originalResource);
+  await firstSink.abort(new Error('interrupted'));
+
+  const resumedSink = await createResumableSink();
+  await expect(
+    resumedSink.write({id: 'root/mesh.glb', bytes: new Uint8Array([2])})
+  ).rejects.toMatchObject({code: 'RESOURCE_RESUME_MISMATCH'});
+  expect(writtenResources).toEqual([originalResource]);
+});
+
+test('tile-converter(v5)#manifest-backed sinks stop queued writes after a destination failure', async () => {
+  interface Resource {
+    readonly id: string;
+    readonly bytes: Uint8Array;
+  }
+
+  const attemptedIds: string[] = [];
+  const sink = await createManifestBackedTileConversionSink({
+    sink: {
+      write: async (resource: Resource) => {
+        attemptedIds.push(resource.id);
+        throw new Error('destination write failed');
+      },
+      finalize: async () => {},
+      abort: async () => {}
+    },
+    manifestStore: {
+      load: async () => null,
+      save: async () => {}
+    },
+    getResourceId: resource => resource.id,
+    measureResourceBytes: resource => resource.bytes.byteLength,
+    fingerprintResource: resource => Array.from(resource.bytes).join(',')
+  });
+
+  const firstWrite = sink.write({id: 'first.bin', bytes: new Uint8Array([1])});
+  const secondWrite = sink.write({id: 'second.bin', bytes: new Uint8Array([2])});
+  await expect(firstWrite).rejects.toThrow('destination write failed');
+  await expect(secondWrite).rejects.toThrow('destination write failed');
+  expect(attemptedIds).toEqual(['first.bin']);
 });
 
 test('tile-converter(v5)#3D Tiles spatial context transforms ECEF positions and bounds', () => {
