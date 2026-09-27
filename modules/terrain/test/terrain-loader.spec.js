@@ -34,6 +34,7 @@ test('TerrainLoader#parse mapbox martini', async () => {
   expect(data.mode, 'mode is TRIANGLES (4)').toBe(4);
   expect(data.indices.value.length, 'indices was found').toBe(103770 * 3);
   expect(data.indices.size, 'indices was found').toBe(1);
+  expect(data.indices.value).toBeInstanceOf(Uint32Array);
   expect(data.attributes.TEXCOORD_0.value.length, 'TEXCOORD_0 attribute was found').toBe(52302 * 2);
   expect(data.attributes.TEXCOORD_0.size, 'TEXCOORD_0 attribute was found').toBe(2);
   expect(data.attributes.POSITION.value.length, 'POSITION attribute was found').toBe(52302 * 3);
