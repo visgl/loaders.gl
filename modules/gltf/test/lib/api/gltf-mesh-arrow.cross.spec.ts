@@ -19,7 +19,7 @@ describe('convertGLTFToMeshArrow', () => {
     expect(positionValues.buffer).toBe(positions.buffer);
     expect(geometry.table.indices?.value).toEqual(new Uint16Array([0, 1]));
     expect(geometry.table.data.getChild('indices')?.get(0)?.toArray()).toEqual(
-      new Int32Array([0, 1])
+      new Uint32Array([0, 1])
     );
     expect(geometry.table.schema.metadata).toMatchObject({topology: 'triangle-list', mode: '4'});
     expect(geometry.attributes.POSITION.normalized).toBeUndefined();

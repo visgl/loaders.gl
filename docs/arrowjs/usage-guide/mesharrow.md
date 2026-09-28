@@ -66,10 +66,10 @@ The raw Arrow table has **one vertex per row**. Each vertex attribute is a scala
 | `NORMAL` | Numeric `FixedSizeList<3>` | Optional | One normal per row |
 | `COLOR_0` | Numeric `FixedSizeList<3 or 4>` | Optional | First vertex color |
 | `TEXCOORD_0`, `TEXCOORD_1` | Numeric `FixedSizeList<2>` | Optional | Texture coordinates |
-| `indices` | `List<Int32>` | Indexed meshes only | Complete primitive index list at row `0`; remaining rows are null |
+| `indices` | `List<Uint32>` | Indexed meshes only | Complete primitive index list at row `0`; remaining rows are null |
 | Custom | Numeric scalar or `FixedSizeList<1-4>` | Optional | Loader- or application-specific vertex attribute |
 
-`POSITION`, `NORMAL`, `COLOR_0`, and `TEXCOORD_n` use glTF attribute semantic names. The lowercase `indices` name follows the glTF primitive property; it is not a vertex attribute.
+`POSITION`, `NORMAL`, `COLOR_0`, and `TEXCOORD_n` use glTF attribute semantic names. The lowercase `indices` name follows the glTF primitive property; it is not a vertex attribute. Index values use unsigned 32-bit storage (`Uint32Array`) for GPU compatibility, including after conversion back to a `Mesh`. The Arrow list offsets remain signed 32-bit integers.
 
 `@loaders.gl/schema` exports `MeshArrowTable`, `MeshArrowColumns`, `MeshArrowTableData`, `IndexedMeshArrowColumns`, `IndexedMeshArrowTableData`, `meshArrowSchema`, and `indexedMeshArrowSchema` for this contract.
 

@@ -52,6 +52,12 @@ const batches = convertFeatureAttributesToArrowBatches(features, {
 });
 ```
 
+## V5 restartable output sinks
+
+`createManifestBackedTileConversionSink` resumes matching resources using caller-provided IDs and
+fingerprints. Applications provide an atomic manifest store and an idempotent resource sink, keeping
+filesystem and archive choices outside the conversion API.
+
 ## Installation
 
 ```bash

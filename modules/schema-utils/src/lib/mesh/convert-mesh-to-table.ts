@@ -247,8 +247,8 @@ function getIndicesVector(
   vertexCount: number,
   type: arrow.DataType
 ): arrow.Vector {
-  const indicesType = type as arrow.List<arrow.Int32>;
-  const values = indices instanceof Int32Array ? indices : Int32Array.from(indices);
+  const indicesType = type as arrow.List<arrow.Uint32>;
+  const values = indices instanceof Uint32Array ? indices : Uint32Array.from(indices);
   const valueOffsets = new Int32Array(vertexCount + 1);
   if (vertexCount > 0) {
     valueOffsets.fill(values.length, 1);
@@ -259,14 +259,14 @@ function getIndicesVector(
     nullBitmap[0] = 1;
   }
 
-  const valuesData = new arrow.Data<arrow.Int32>(
+  const valuesData = new arrow.Data<arrow.Uint32>(
     indicesType.children[0].type,
     0,
     values.length,
     0,
     {[arrow.BufferType.DATA]: values}
   );
-  const indicesData = new arrow.Data<arrow.List<arrow.Int32>>(
+  const indicesData = new arrow.Data<arrow.List<arrow.Uint32>>(
     indicesType,
     0,
     vertexCount,

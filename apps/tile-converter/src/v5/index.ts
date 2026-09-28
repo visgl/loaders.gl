@@ -25,3 +25,10 @@ export type {
 } from './spatial-conversion.js';
 export {convertFeatureAttributesToArrowBatches} from './feature-arrow.js';
 export type {FeatureArrowBatchOptions, TileFeatureAttributes} from './feature-arrow.js';
+export {createManifestBackedTileConversionSink} from './resource-manifest.js';
+export type {
+  ManifestBackedTileConversionSinkOptions,
+  TileResourceManifest,
+  TileResourceManifestEntry,
+  TileResourceManifestStore
+} from './resource-manifest.js';

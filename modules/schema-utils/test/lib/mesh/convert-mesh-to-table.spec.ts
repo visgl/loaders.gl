@@ -39,8 +39,8 @@ test('indexedMeshArrowSchema', () => {
   expect(indicesField.nullable, 'indices field is nullable').toBeTruthy();
   expect(indicesField.type instanceof arrow.List, 'indices is a list').toBeTruthy();
   expect(
-    indicesField.type.children[0].type instanceof arrow.Int32,
-    'indices values are int32'
+    indicesField.type.children[0].type instanceof arrow.Uint32,
+    'indices values are uint32'
   ).toBeTruthy();
 });
 
@@ -147,8 +147,12 @@ test('convertMeshToTable#unindexed mesh Arrow table round trip', () => {
   ).toEqual([10, 20, 30]);
   expect(roundTripMesh.attributes.intensity.size, 'round trip preserves scalar size').toBe(1);
 });
-test('convertMeshToTable#indexed mesh Arrow table round trip', () => {
-  const mesh = makeMesh(new Uint16Array([0, 1, 2]));
+test.each([
+  Uint8Array,
+  Uint16Array,
+  Uint32Array
+])('convertMeshToTable#indexed mesh Arrow table round trip from %s', IndexArray => {
+  const mesh = makeMesh(new IndexArray([0, 1, 2]));
   const table = convertMeshToTable(mesh, 'arrow-table');
   validateArrowTableSchema(table.data, indexedMeshArrowSchema, {
     schemaName: 'IndexedMesh Arrow table'
@@ -162,7 +166,8 @@ test('convertMeshToTable#indexed mesh Arrow table round trip', () => {
   expect(Array.from(indicesColumn!.get(0)!), 'indices are stored in row 0').toEqual([0, 1, 2]);
   expect(indicesColumn!.get(1), 'remaining rows have null indices').toBe(null);
   const roundTripMesh = convertTableToMesh(table);
-  expect(roundTripMesh.indices, 'round trip mesh restores top-level indices').toBeTruthy();
+  expect(roundTripMesh.indices!.value).toBeInstanceOf(Uint32Array);
+  expect(indicesColumn!.data[0].valueOffsets).toBeInstanceOf(Int32Array);
   expect(
     roundTripMesh.attributes.indices,
     'round trip mesh does not create an indices attribute'
@@ -170,6 +175,22 @@ test('convertMeshToTable#indexed mesh Arrow table round trip', () => {
   expect(Array.from(roundTripMesh.indices!.value), 'round trip mesh preserves indices').toEqual([
     0, 1, 2
   ]);
+});
+
+test('convertMeshToTable#preserves unsigned 32-bit index values and buffer views', () => {
+  // Exercise storage boundaries without allocating billions of vertex positions.
+  const indices = new Uint32Array([99, 0, 0x7fffffff, 0x80000000, 0xfffffffe, 99]).subarray(1, 5);
+  const table = convertMeshToTable(makeMesh(indices), 'arrow-table');
+  const values = convertTableToMesh(table).indices!.value;
+  expect(values).toBeInstanceOf(Uint32Array);
+  expect(Array.from(values)).toEqual([0, 0x7fffffff, 0x80000000, 0xfffffffe]);
+  expect(values.buffer).toBe(indices.buffer);
+  expect(values.byteOffset).toBe(indices.byteOffset);
+
+  const restoredTable = arrow.tableFromIPC(arrow.tableToIPC(table.data));
+  const restoredIndices = convertTableToMesh({...table, data: restoredTable}).indices!.value;
+  expect(restoredIndices).toBeInstanceOf(Uint32Array);
+  expect(Array.from(restoredIndices)).toEqual(Array.from(indices));
 });
 test('convertTableToMesh#honors FixedSizeList chunk offsets', () => {
   const attributes = {
@@ -231,7 +252,8 @@ test('convertTableToMesh#restores quantized position metadata and logical bounds
   expect(roundTripMesh.attributes.POSITION.transform).toEqual(mesh.attributes.POSITION.transform);
   expect(roundTripMesh.header?.boundingBox).toEqual(mesh.header?.boundingBox);
 });
-function makeMesh(indices?: Uint16Array): Mesh {
+/** Create a small mesh for attribute and index conversion tests. */
+function makeMesh(indices?: Uint8Array | Uint16Array | Uint32Array): Mesh {
   const attributes = {
     POSITION: {
       value: new Float32Array([0, 0, 0, 1, 0, 0, 0, 1, 0]),

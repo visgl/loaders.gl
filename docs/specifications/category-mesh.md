@@ -110,7 +110,7 @@ See the [Mesh Arrow usage guide](/docs/arrowjs/usage-guide/mesharrow) for the co
 | `MeshArrowTableData`         | Raw `arrow.Table<MeshArrowColumns>` alias.                                                   |
 | `IndexedMeshArrowTableData`  | Raw `arrow.Table<IndexedMeshArrowColumns>` alias.                                            |
 | `meshArrowSchema`            | Predefined mesh Arrow schema, starting with `POSITION: FixedSizeList<Float32>[3]`.           |
-| `indexedMeshArrowSchema`     | Predefined indexed mesh Arrow schema with `POSITION` plus nullable `indices: List<Int32>`.   |
+| `indexedMeshArrowSchema`     | Predefined indexed mesh Arrow schema with `POSITION` plus nullable `indices: List<Uint32>`.   |
 
 `IndexedMesh` uses a lowercase `indices` column because it mirrors glTF's primitive-level `indices` property. It is not an uppercase vertex attribute semantic like `POSITION`, `NORMAL`, or `TEXCOORD_0`.
 
@@ -123,7 +123,7 @@ Consumers can validate common columns with `meshArrowSchema` or `indexedMeshArro
 | Column       | Arrow Type                   | Nullable | Description                                                                                                                        |
 | ------------ | ---------------------------- | -------- | ---------------------------------------------------------------------------------------------------------------------------------- |
 | `POSITION`   | `FixedSizeList<Float32>[3]`  | No       | Required predefined vertex position column. Each row is one XYZ vertex position.                                                    |
-| `indices`    | `List<Int32>`                | Yes      | Required only for `IndexedMesh` Arrow tables. Row `0` stores the full primitive index list; remaining vertex rows store `null`.     |
+| `indices`    | `List<Uint32>`                | Yes      | Required only for `IndexedMesh` Arrow tables. Row `0` stores the full primitive index list; remaining vertex rows store `null`.     |
 | `NORMAL`     | `FixedSizeList<T>[3]`        | No       | Optional vertex normal column when present in the source mesh. `T` follows the source attribute typed array when possible.          |
 | `COLOR_0`    | `FixedSizeList<T>[3 or 4]`   | No       | Optional vertex color column when present in the source mesh. `T` follows the source attribute typed array when possible.           |
 | `TEXCOORD_0` | `FixedSizeList<T>[2]`        | No       | Optional first texture coordinate column when present in the source mesh. `T` follows the source attribute typed array when possible. |
