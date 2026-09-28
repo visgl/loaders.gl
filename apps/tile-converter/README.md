@@ -58,6 +58,12 @@ const batches = convertFeatureAttributesToArrowBatches(features, {
 fingerprints. Applications provide an atomic manifest store and an idempotent resource sink, keeping
 filesystem and archive choices outside the conversion API.
 
+## V5 browser entrypoint
+
+Import `@loaders.gl/tile-converter/v5/browser` for the portable conversion API and
+`createBoundedMemoryTileConversionSink`. The sink retains named Blob outputs up to a required total
+byte limit; applications remain responsible for packaging and triggering downloads.
+
 ## Installation
 
 ```bash
