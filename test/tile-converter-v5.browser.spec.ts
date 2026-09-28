@@ -1,4 +1,5 @@
 import {expect, test} from 'vitest';
+import {createBoundedMemoryTileConversionSink} from '@loaders.gl/tile-converter/v5/browser';
 import {
   createI3SConversionSpatialContext,
   createTiles3DConversionSpatialContext,
@@ -343,6 +344,58 @@ test('tile-converter(v5)#manifest-backed sink clears checkpoints before destinat
 
   expect(manifest).toMatchObject({complete: false, resources: []});
   expect(eventOrder).toEqual(['checkpoint-cleared', 'destination-abort']);
+});
+
+test('tile-converter(v5)#browser memory sink returns named Blobs within its byte budget', async () => {
+  const sink = createBoundedMemoryTileConversionSink({maxTotalBytes: 3});
+  await sink.write({
+    resourceId: 'tiles/b.glb',
+    parts: [new Uint8Array([2])],
+    contentType: 'model/gltf-binary'
+  });
+  await sink.write({resourceId: 'tiles/a.glb', parts: [new Uint8Array([1, 2])]});
+  await sink.finalize({
+    state: 'completed',
+    inputResources: 0,
+    outputResources: 2,
+    inputBytes: 0,
+    outputBytes: 3,
+    largestOutputResourceBytes: 2,
+    diagnostics: []
+  });
+
+  const files = sink.getFiles();
+  expect(files.map(file => file.resourceId)).toEqual(['tiles/a.glb', 'tiles/b.glb']);
+  await expect(files[0].blob.arrayBuffer()).resolves.toEqual(new Uint8Array([1, 2]).buffer);
+  expect(files[1].blob.type).toBe('model/gltf-binary');
+});
+
+test('tile-converter(v5)#browser memory sink rejects output beyond its byte budget and clears on abort', async () => {
+  const sink = createBoundedMemoryTileConversionSink({maxTotalBytes: 1});
+  await sink.write({resourceId: 'tiles/a.glb', parts: [new Uint8Array([1])]});
+
+  await expect(
+    sink.write({resourceId: 'tiles/b.glb', parts: [new Uint8Array([2])]})
+  ).rejects.toMatchObject({code: 'OUTPUT_MEMORY_LIMIT_EXCEEDED'});
+  await sink.abort(new Error('cancelled'));
+
+  expect(sink.getFiles()).toEqual([]);
+});
+
+test('tile-converter(v5)#browser memory sink accepts Blobs from another browser realm', async () => {
+  const iframe = document.createElement('iframe');
+  document.body.append(iframe);
+  try {
+    const foreignBlob = new iframe.contentWindow!.Blob([new Uint8Array([1, 2])]);
+    const sink = createBoundedMemoryTileConversionSink({maxTotalBytes: 2});
+    await sink.write({resourceId: 'tiles/a.glb', parts: [foreignBlob]});
+
+    const files = sink.getFiles();
+    expect(files).toHaveLength(1);
+    await expect(files[0].blob.arrayBuffer()).resolves.toEqual(new Uint8Array([1, 2]).buffer);
+  } finally {
+    iframe.remove();
+  }
 });
 
 test('tile-converter(v5)#3D Tiles spatial context transforms ECEF positions and bounds', () => {
