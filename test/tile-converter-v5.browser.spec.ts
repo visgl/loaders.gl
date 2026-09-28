@@ -229,7 +229,6 @@ test('tile-converter(v5)#manifest-backed sinks resume matching resources and fin
 
   const interruptedSink = await createResumableSink();
   await interruptedSink.write(firstResource);
-  await interruptedSink.abort(new Error('interrupted'));
   expect(manifest?.complete).toBe(false);
 
   const resumedSink = await createResumableSink();
@@ -282,7 +281,6 @@ test('tile-converter(v5)#manifest-backed sinks reject changed content on resume'
   const originalResource = {id: 'root/mesh.glb', bytes: new Uint8Array([1])};
   const firstSink = await createResumableSink();
   await firstSink.write(originalResource);
-  await firstSink.abort(new Error('interrupted'));
 
   const resumedSink = await createResumableSink();
   await expect(
@@ -321,6 +319,41 @@ test('tile-converter(v5)#manifest-backed sinks stop queued writes after a destin
   await expect(firstWrite).rejects.toThrow('destination write failed');
   await expect(secondWrite).rejects.toThrow('destination write failed');
   expect(attemptedIds).toEqual(['first.bin']);
+});
+
+test('tile-converter(v5)#manifest-backed sink clears checkpoints before destination cleanup', async () => {
+  interface Resource {
+    readonly id: string;
+    readonly bytes: Uint8Array;
+  }
+
+  let manifest: TileResourceManifest | null = null;
+  const eventOrder: string[] = [];
+  const sink = await createManifestBackedTileConversionSink({
+    sink: {
+      write: async () => {},
+      finalize: async () => {},
+      abort: async () => {
+        eventOrder.push('destination-abort');
+      }
+    },
+    manifestStore: {
+      load: async () => manifest,
+      save: async nextManifest => {
+        manifest = nextManifest;
+        if (nextManifest.resources.length === 0) eventOrder.push('checkpoint-cleared');
+      }
+    },
+    getResourceId: resource => resource.id,
+    measureResourceBytes: resource => resource.bytes.byteLength,
+    fingerprintResource: resource => Array.from(resource.bytes).join(',')
+  });
+
+  await sink.write({id: 'tile/mesh.glb', bytes: new Uint8Array([1])});
+  await sink.abort(new Error('conversion failed'));
+
+  expect(manifest).toMatchObject({complete: false, resources: []});
+  expect(eventOrder).toEqual(['checkpoint-cleared', 'destination-abort']);
 });
 
 test('tile-converter(v5)#3D Tiles spatial context transforms ECEF positions and bounds', () => {

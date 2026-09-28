@@ -74,14 +74,17 @@ export function createDeterministicResourceId(...segments: readonly string[]): s
 }
 
 /**
- * Creates a sink that skips matching completed resources when a conversion resumes.
+ * Creates a sink that skips matching checkpointed resources when a process restarts.
  *
  * The destination must write resources idempotently by the ID returned from `getResourceId`.
  * The manifest is persisted after every successful write; the store should replace snapshots
  * atomically. Existing IDs must retain their byte length and fingerprint or the resumed job fails
  * rather than silently mixing output from different conversion inputs. Writes are serialized even
  * when callers issue them concurrently. Reports count resources processed by the current run,
- * including writes skipped because the matching resource was already present.
+ * including writes skipped because the matching resource was already present. A graceful abort
+ * clears the manifest checkpoint before asking the destination to clean partial output, so the
+ * next run starts cleanly. A process interruption that does not call `abort` can resume from its
+ * last saved checkpoint.
  *
  * @param options - Destination, manifest store, stable IDs, byte measurement, and fingerprinting.
  * @returns A `TileConversionSink` with resumable per-resource progress.
@@ -166,8 +169,9 @@ export async function createManifestBackedTileConversionSink<TResource>(
       await writeChain;
       if (closed) return;
       closed = true;
-      await options.sink.abort(reason);
+      resources.clear();
       await persistManifest(false);
+      await options.sink.abort(reason);
     }
   };
 }
