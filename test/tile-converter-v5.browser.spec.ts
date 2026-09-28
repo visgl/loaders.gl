@@ -382,6 +382,22 @@ test('tile-converter(v5)#browser memory sink rejects output beyond its byte budg
   expect(sink.getFiles()).toEqual([]);
 });
 
+test('tile-converter(v5)#browser memory sink accepts Blobs from another browser realm', async () => {
+  const iframe = document.createElement('iframe');
+  document.body.append(iframe);
+  try {
+    const foreignBlob = new iframe.contentWindow!.Blob([new Uint8Array([1, 2])]);
+    const sink = createBoundedMemoryTileConversionSink({maxTotalBytes: 2});
+    await sink.write({resourceId: 'tiles/a.glb', parts: [foreignBlob]});
+
+    const files = sink.getFiles();
+    expect(files).toHaveLength(1);
+    await expect(files[0].blob.arrayBuffer()).resolves.toEqual(new Uint8Array([1, 2]).buffer);
+  } finally {
+    iframe.remove();
+  }
+});
+
 test('tile-converter(v5)#3D Tiles spatial context transforms ECEF positions and bounds', () => {
   const spatial = createTiles3DConversionSpatialContext(
     get3DTilesSpatialReference({root: {boundingVolume: {region: [0, 0, 0.01, 0.01, 0, 100]}}}),

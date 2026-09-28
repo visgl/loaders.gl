@@ -5,6 +5,8 @@
 import {TileConversionError} from './conversion-api.js';
 import type {TileConversionReport, TileConversionSink} from './conversion-api.js';
 
+const BLOB_SIZE_GETTER = Object.getOwnPropertyDescriptor(Blob.prototype, 'size')?.get;
+
 /** One named browser output resource. */
 export interface BrowserTileConversionResource {
   /** Stable relative output path supplied by the target profile. */
@@ -113,8 +115,12 @@ function measureBlobPart(part: BlobPart): number {
   if (typeof part === 'string') {
     return new TextEncoder().encode(part).byteLength;
   }
-  if (part instanceof Blob) {
-    return part.size;
+  if (BLOB_SIZE_GETTER) {
+    try {
+      return BLOB_SIZE_GETTER.call(part) as number;
+    } catch {
+      // Keep checking the remaining supported Blob part types.
+    }
   }
   if (part instanceof ArrayBuffer || ArrayBuffer.isView(part)) {
     return part.byteLength;
