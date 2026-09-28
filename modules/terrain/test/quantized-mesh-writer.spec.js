@@ -24,6 +24,7 @@ test('QuantizedMeshWriter#encode plain and Arrow mesh data', async () => {
   expect(data.mode, 'mode is TRIANGLES (4)').toBe(4);
   expect(data.attributes.POSITION.value.length, 'POSITION attribute roundtripped').toBe(9);
   expect(data.indices.value.length, 'indices roundtripped').toBe(3);
+  expect(data.indices.value).toBeInstanceOf(Uint32Array);
   const arrowTable = convertMeshToTable(mesh, 'arrow-table');
   const arrowArrayBuffer = await encode(arrowTable, QuantizedMeshWriter, options);
   const arrowData = await parse(arrowArrayBuffer, QuantizedMeshLoader, options);

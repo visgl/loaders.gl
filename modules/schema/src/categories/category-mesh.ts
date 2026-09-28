@@ -45,8 +45,8 @@ export type MeshTopology =
 
 /** Apache Arrow columns for an indexed mesh vertex table. */
 export type IndexedMeshArrowColumns = MeshArrowColumns & {
-  /** Primitive indices, stored in row 0 and null for remaining vertex rows. */
-  indices: arrow.List<arrow.Int32>;
+  /** Unsigned 32-bit primitive indices, stored in row 0 and null for remaining vertex rows. */
+  indices: arrow.List<arrow.Uint32>;
 };
 
 /** Raw Apache Arrow table data for a mesh vertex table. */
@@ -69,7 +69,7 @@ export const indexedMeshArrowSchema = new arrow.Schema<IndexedMeshArrowColumns>(
   ...meshArrowSchema.fields,
   new arrow.Field(
     'indices',
-    new arrow.List(new arrow.Field('item', new arrow.Int32(), false)),
+    new arrow.List(new arrow.Field('item', new arrow.Uint32(), false)),
     true
   )
 ]);
