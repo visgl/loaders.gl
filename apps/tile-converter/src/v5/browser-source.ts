@@ -114,31 +114,24 @@ async function readResponseBytes(
     );
   }
 
-  const chunks: Uint8Array[] = [];
+  const data = new Uint8Array(maxInputBytes);
   let totalBytes = 0;
   try {
     while (true) {
       throwIfAborted(signal);
       const {done, value} = await reader.read();
       if (done) break;
-      totalBytes += value.byteLength;
-      if (totalBytes > maxInputBytes) {
+      if (value.byteLength > maxInputBytes - totalBytes) {
         await reader.cancel();
         throw createInputLimitError(maxInputBytes);
       }
-      chunks.push(value);
+      data.set(value, totalBytes);
+      totalBytes += value.byteLength;
     }
   } finally {
     reader.releaseLock();
   }
-
-  const data = new Uint8Array(totalBytes);
-  let byteOffset = 0;
-  for (const chunk of chunks) {
-    data.set(chunk, byteOffset);
-    byteOffset += chunk.byteLength;
-  }
-  return data;
+  return data.subarray(0, totalBytes);
 }
 
 /** Returns a Blob's MIME type without requiring a same-realm Blob constructor. */
