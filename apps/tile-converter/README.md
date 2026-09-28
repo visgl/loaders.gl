@@ -60,9 +60,11 @@ filesystem and archive choices outside the conversion API.
 
 ## V5 browser entrypoint
 
-Import `@loaders.gl/tile-converter/v5/browser` for the portable conversion API and
-`createBoundedMemoryTileConversionSink`. The sink retains named Blob outputs up to a required total
-byte limit; applications remain responsible for packaging and triggering downloads.
+Import `@loaders.gl/tile-converter/v5/browser` for the portable conversion API,
+`createBrowserTileConversionSource`, and `createBoundedMemoryTileConversionSink`. The source reads one
+URL or Blob resource under a required input-byte limit. The sink retains named Blob outputs under a
+required total-byte limit; applications remain responsible for tileset traversal, codecs, packaging,
+and triggering downloads.
 
 ## Installation
 

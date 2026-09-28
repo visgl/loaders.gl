@@ -1,5 +1,8 @@
-import {expect, test} from 'vitest';
-import {createBoundedMemoryTileConversionSink} from '@loaders.gl/tile-converter/v5/browser';
+import {expect, test, vi} from 'vitest';
+import {
+  createBoundedMemoryTileConversionSink,
+  createBrowserTileConversionSource
+} from '@loaders.gl/tile-converter/v5/browser';
 import {
   createI3SConversionSpatialContext,
   createTiles3DConversionSpatialContext,
@@ -395,6 +398,55 @@ test('tile-converter(v5)#browser memory sink accepts Blobs from another browser 
     await expect(files[0].blob.arrayBuffer()).resolves.toEqual(new Uint8Array([1, 2]).buffer);
   } finally {
     iframe.remove();
+  }
+});
+
+test('tile-converter(v5)#browser source reads a Blob as one bounded resource', async () => {
+  const source = createBrowserTileConversionSource({
+    input: new Blob([new Uint8Array([1, 2, 3])], {type: 'model/gltf-binary'}),
+    resourceId: 'input.glb',
+    maxInputBytes: 3
+  });
+  const inspection = await source.inspect();
+  const iterator = source.read(inspection)[Symbol.asyncIterator]();
+  const {value, done} = await iterator.next();
+
+  expect(done).toBe(false);
+  expect(inspection).toMatchObject({resourceId: 'input.glb', contentType: 'model/gltf-binary'});
+  expect(value).toMatchObject({resourceId: 'input.glb', contentType: 'model/gltf-binary'});
+  expect(value?.data).toEqual(new Uint8Array([1, 2, 3]));
+  await expect(iterator.next()).resolves.toMatchObject({done: true});
+});
+
+test('tile-converter(v5)#browser URL source stops reading after its input byte limit', async () => {
+  let canceled = false;
+  const response = new Response(
+    new ReadableStream<Uint8Array>({
+      start(controller) {
+        controller.enqueue(new Uint8Array([1, 2]));
+        controller.enqueue(new Uint8Array([3]));
+      },
+      cancel() {
+        canceled = true;
+      }
+    }),
+    {headers: {'content-type': 'model/gltf-binary'}}
+  );
+  const fetchMock = vi.fn(async () => response);
+  vi.stubGlobal('fetch', fetchMock);
+  try {
+    const source = createBrowserTileConversionSource({
+      input: 'https://example.test/input.glb',
+      resourceId: 'input.glb',
+      maxInputBytes: 2
+    });
+    const iterator = source.read(await source.inspect())[Symbol.asyncIterator]();
+
+    await expect(iterator.next()).rejects.toMatchObject({code: 'INPUT_RESOURCE_TOO_LARGE'});
+    expect(fetchMock).toHaveBeenCalledWith('https://example.test/input.glb', {signal: undefined});
+    expect(canceled).toBe(true);
+  } finally {
+    vi.unstubAllGlobals();
   }
 });
 

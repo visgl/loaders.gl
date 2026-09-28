@@ -19,8 +19,12 @@ test('tile-converter(v5)#package export resolves to its built CommonJS entrypoin
 test('tile-converter(v5)#browser package export resolves to its browser entrypoint', () => {
   const require = createRequire(import.meta.url);
   const packagePath = require.resolve('@loaders.gl/tile-converter/v5/browser');
-  const {createBoundedMemoryTileConversionSink} = require('@loaders.gl/tile-converter/v5/browser');
+  const {
+    createBoundedMemoryTileConversionSink,
+    createBrowserTileConversionSource
+  } = require('@loaders.gl/tile-converter/v5/browser');
 
   expect(packagePath).toMatch(/apps[\\/]tile-converter[\\/]dist[\\/]v5[\\/]browser\.cjs$/);
   expect(createBoundedMemoryTileConversionSink).toBeTypeOf('function');
+  expect(createBrowserTileConversionSource).toBeTypeOf('function');
 });
