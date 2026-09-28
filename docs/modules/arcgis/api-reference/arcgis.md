@@ -67,8 +67,7 @@ from the URL, specify the table's loader type through `core.type`.
 
 ## Runtime source classes
 
-Import these classes from their explicit source subpaths, such as
-`@loaders.gl/arcgis/arcgis-feature-server-source`; the root exports metadata descriptors.
+Import source classes and service loaders directly from `@loaders.gl/arcgis`.
 
 | Source class | Source loader | Documentation |
 | --- | --- | --- |

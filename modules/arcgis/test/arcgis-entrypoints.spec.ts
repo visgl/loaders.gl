@@ -3,27 +3,21 @@
 // Copyright (c) vis.gl contributors
 
 import {describe, expect, test} from 'vitest';
-import {createDataSource, load} from '@loaders.gl/core';
-import {ARCGIS_LOADERS, ArcGISFeatureServerSourceLoader} from '@loaders.gl/arcgis';
-import {ArcGISFeatureServerSourceLoaderWithParser} from '@loaders.gl/arcgis/arcgis-feature-server-source-loader';
-import {ArcGISAuthentication, createArcGISCredential} from '@loaders.gl/arcgis/authentication';
+import {createDataSource} from '@loaders.gl/core';
+import {
+  ArcGISFeatureServerSourceLoader,
+  ARCGIS_LOADERS,
+  getArcGISLoader,
+  ArcGISAuthentication,
+  createArcGISCredential
+} from '@loaders.gl/arcgis';
 import {resolveCredentials} from '@loaders.gl/loader-utils';
 
 describe('ArcGIS public entrypoints', () => {
-  test.each(
-    ARCGIS_LOADERS.map(loader => [loader.id, loader] as const)
-  )('%s loads its runtime asynchronously and rejects synchronous metadata construction', async (_identifier, loader) => {
-    const sourceUrl = 'https://example.com/arcgis/rest/services/Test/SceneServer/layers/0';
-    expect(() => createDataSource(sourceUrl, [loader], {})).toThrow(/requires async load/);
-    const source = await load(sourceUrl, loader);
-    expect(typeof source.getMetadata).toBe('function');
-    expect(loader.getAuthentications()).toEqual([ArcGISAuthentication]);
-  });
-
-  test('the explicit runtime supports synchronous construction and a real query contract', async () => {
+  test('the package root supports synchronous construction and feature queries', async () => {
     const source = createDataSource(
       'https://example.com/arcgis/rest/services/Roads/FeatureServer/0',
-      [ArcGISFeatureServerSourceLoaderWithParser],
+      [ArcGISFeatureServerSourceLoader],
       {core: {fetch: async () => Response.json({type: 'FeatureCollection', features: []})}}
     );
     expect(await source.getFeatures({format: 'geojson'})).toMatchObject({
@@ -32,26 +26,40 @@ describe('ArcGIS public entrypoints', () => {
     });
   });
 
-  test('lazy loading retains declarative authentication for feature requests', async () => {
+  test.each([
+    ['arcgis-feature-server', 'Roads/FeatureServer/0'],
+    ['arcgis-image-server', 'Imagery/ImageServer'],
+    ['arcgis-image-server-tiles', 'Imagery/ImageServer'],
+    ['arcgis-map-server', 'Basemap/MapServer'],
+    ['arcgis-vector-tile-server', 'Basemap/VectorTileServer'],
+    ['arcgis-scene-server', 'City/SceneServer/layers/0']
+  ])('%s preserves URL detection, construction and scoped authentication', async (serviceType, endpoint) => {
+    const serviceUrl = `https://enterprise.example.com/arcgis/rest/services/${endpoint}`;
+    const loader = getArcGISLoader(serviceType)!;
+    expect(loader.testURL(serviceUrl)).toBe(true);
+    expect(loader.testURL('https://example.com/unrelated')).toBe(false);
+
     const requests: string[] = [];
-    const source = await load(
-      'https://enterprise.example.com/arcgis/rest/services/Roads/FeatureServer/0',
-      ArcGISFeatureServerSourceLoader,
-      {
-        core: {
-          credentials: [
-            {type: 'arcgis', origins: ['https://enterprise.example.com'], token: 'scoped-token'}
-          ],
-          fetch: async url => {
-            requests.push(String(url));
-            return Response.json({type: 'FeatureCollection', features: []});
-          }
+    const source = createDataSource(serviceUrl, ARCGIS_LOADERS, {
+      core: {
+        type: serviceType,
+        credentials: [
+          {type: 'arcgis', origins: ['https://enterprise.example.com'], token: 'scoped-token'}
+        ],
+        fetch: async url => {
+          requests.push(String(url));
+          return Response.json({});
         }
       }
-    );
-    await source.getFeatures({format: 'geojson'});
-    expect(requests).toHaveLength(1);
+    });
+    expect(requests).toEqual([]);
+    await source.fetch(serviceUrl);
+    // Both requests use the in-memory core.fetch above; only the origin differs.
+    const untrustedUrl = new URL(serviceUrl);
+    untrustedUrl.hostname = 'untrusted.example.com';
+    await source.fetch(untrustedUrl.href);
     expect(new URL(requests[0]).searchParams.get('token')).toBe('scoped-token');
+    expect(new URL(requests[1]).searchParams.has('token')).toBe(false);
   });
 
   test('the ArcGIS credential preset retains its scope and refresh statuses', () => {

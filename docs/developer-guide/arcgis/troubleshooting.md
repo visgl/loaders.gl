@@ -8,7 +8,6 @@ description: Diagnose incomplete data, authentication errors, coordinate problem
 | Symptom | Likely cause | What to check |
 | --- | --- | --- |
 | No source matches | Portal item URL, proxy URL, or ambiguous service type | Use a REST service/layer URL and explicit `core.type` |
-| Root loader throws during construction | Metadata passed to synchronous `createDataSource` | Use async `load()` or import the `*WithParser` runtime subpath |
 | Only some features appear | Record limit or query bounds | The feature client makes one request; use a paging client when completeness matters |
 | Invalid GeoJSON response | Esri JSON response or ArcGIS error envelope | Keep `f: 'geojson'`; inspect the original service response without logging credentials |
 | 401, 498 or 499 | Missing or expired token | Check the exact origin allowlist and the token callback |

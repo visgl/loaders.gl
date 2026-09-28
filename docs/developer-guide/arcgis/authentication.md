@@ -30,7 +30,7 @@ to sensitive organizational content.
 ```ts
 import {load} from '@loaders.gl/core';
 import {ArcGISFeatureServerSourceLoader} from '@loaders.gl/arcgis';
-import {createArcGISCredential} from '@loaders.gl/arcgis/authentication';
+import {createArcGISCredential} from '@loaders.gl/arcgis';
 
 const source = await load(serviceUrl, ArcGISFeatureServerSourceLoader, {
   core: {
@@ -106,7 +106,7 @@ Discovery currently takes an explicit fetch function. Wrap it with the shared cr
 
 ```ts
 import {createAuthenticatedFetch} from '@loaders.gl/loader-utils';
-import {discoverArcGISCapabilities} from '@loaders.gl/arcgis/discovery';
+import {discoverArcGISCapabilities} from '@loaders.gl/arcgis';
 
 const authenticatedFetch = createAuthenticatedFetch({credentials: [credential]});
 const graph = await discoverArcGISCapabilities(directoryUrl, {fetch: authenticatedFetch});

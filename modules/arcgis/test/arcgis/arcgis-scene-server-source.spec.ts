@@ -1,9 +1,11 @@
 import {fetchFile} from '@loaders.gl/core';
 import {I3SPointCloudSource} from '@loaders.gl/i3s';
 import {I3SSource} from '@loaders.gl/tiles';
-import {ArcGISSceneServerSource} from '@loaders.gl/arcgis/arcgis-scene-server-source';
-import {ArcGISSceneServerSourceLoaderWithParser as ArcGISSceneServerSourceLoader} from '@loaders.gl/arcgis/arcgis-scene-server-source-loader';
-import {aggregateArcGISSceneFeatures} from '@loaders.gl/arcgis/scene-aggregation';
+import {
+  ArcGISSceneServerSource,
+  ArcGISSceneServerSourceLoader,
+  aggregateArcGISSceneFeatures
+} from '@loaders.gl/arcgis';
 import {expect, test, vi} from 'vitest';
 
 const SCENE_SERVER_URL = 'https://example.com/arcgis/rest/services/City/SceneServer';

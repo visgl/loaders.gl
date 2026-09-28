@@ -1,10 +1,13 @@
 import {expect, test} from 'vitest';
 import {LERCLoader} from '@loaders.gl/lerc';
-import {ArcGISFeatureServerSourceLoaderWithParser as ArcGISFeatureServerSourceLoader} from '@loaders.gl/arcgis/arcgis-feature-server-source-loader';
-import {ArcGISVectorSource} from '@loaders.gl/arcgis/arcgis-feature-server-source';
-import {ArcGISImageServerSourceLoaderWithParser as ArcGISImageServerSourceLoader} from '@loaders.gl/arcgis/arcgis-image-server-source-loader';
-import {ArcGISImageTileSource} from '@loaders.gl/arcgis/arcgis-image-tile-source';
-import {ArcGISMapTileSource} from '@loaders.gl/arcgis/arcgis-map-tile-source';
+import {
+  ArcGISFeatureServerSourceLoader,
+  ArcGISVectorSource,
+  ArcGISImageServerSourceLoader,
+  ArcGISImageTileSource,
+  ArcGISMapTileSource
+} from '@loaders.gl/arcgis';
+
 const IMAGE_SERVER_URL = 'https://example.com/arcgis/rest/services/Imagery/ImageServer';
 const FEATURE_SERVER_URL = 'https://example.com/arcgis/rest/services/Roads/FeatureServer/0';
 test('ArcGISImageServerSourceLoader#testURL', () => {

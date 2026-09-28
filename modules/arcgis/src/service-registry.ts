@@ -2,12 +2,12 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import {ArcGISFeatureServerSourceLoader} from './arcgis/arcgis-feature-server-source-loader-types';
-import {ArcGISImageServerSourceLoader} from './arcgis/arcgis-image-server-source-loader-types';
-import {ArcGISImageTileSourceLoader} from './arcgis/arcgis-image-tile-source-loader-types';
-import {ArcGISMapTileSourceLoader} from './arcgis/arcgis-map-tile-source-loader-types';
-import {ArcGISSceneServerSourceLoader} from './arcgis/arcgis-scene-server-source-loader-types';
-import {ArcGISVectorTileServerSourceLoader} from './arcgis/arcgis-vector-tile-server-source-loader-types';
+import {ArcGISFeatureServerSourceLoader} from './arcgis/arcgis-feature-server-source-loader';
+import {ArcGISImageServerSourceLoader} from './arcgis/arcgis-image-server-source-loader';
+import {ArcGISImageTileSourceLoader} from './arcgis/arcgis-image-tile-source-loader';
+import {ArcGISMapTileSourceLoader} from './arcgis/arcgis-map-tile-source-loader';
+import {ArcGISSceneServerSourceLoader} from './arcgis/arcgis-scene-server-source-loader';
+import {ArcGISVectorTileServerSourceLoader} from './arcgis/arcgis-vector-tile-server-source-loader';
 
 /** A source loader currently exposed through the ArcGIS package. */
 export type ArcGISLoader =

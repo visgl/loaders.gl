@@ -6,12 +6,13 @@ import {
   ArcGISSceneServerSourceLoader,
   ArcGISVectorTileServerSourceLoader,
   ARCGIS_LOADERS,
-  getArcGISLoader
+  getArcGISLoader,
+  ArcGISVectorSource,
+  discoverArcGISCapabilities,
+  selectArcGISService,
+  getArcGISServices
 } from '@loaders.gl/arcgis';
-import {ArcGISVectorSource} from '@loaders.gl/arcgis/arcgis-feature-server-source';
-import {discoverArcGISCapabilities, selectArcGISService} from '@loaders.gl/arcgis/discovery';
 import {load} from '@loaders.gl/core';
-import {getArcGISServices} from '@loaders.gl/arcgis/discovery';
 import {describe, expect, test} from 'vitest';
 
 describe('@loaders.gl/arcgis', () => {

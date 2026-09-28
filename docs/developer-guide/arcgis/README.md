@@ -103,8 +103,8 @@ check browser CORS access, and authorize each trusted origin explicitly.
 
 ## How imports work
 
-The package root exports metadata-only loaders. `load()` selects and asynchronously imports the
-runtime implementation. `ARCGIS_LOADERS` can select among conventional service URLs; set
+The package root exports service loaders, source classes, credentials and discovery helpers.
+`ARCGIS_LOADERS` can select among conventional service URLs; set
 `core.type` explicitly when an ImageServer URL could mean either viewport imagery or tile exports.
 
 ```ts
@@ -116,15 +116,14 @@ const source = await load(serviceUrl, ARCGIS_LOADERS, {
 });
 ```
 
-For synchronous source construction, import the implementation explicitly:
+The same loader also supports synchronous source construction:
 
 ```ts
 import {createDataSource} from '@loaders.gl/core';
-import {ArcGISFeatureServerSourceLoaderWithParser} from '@loaders.gl/arcgis/arcgis-feature-server-source-loader';
+import {ArcGISFeatureServerSourceLoader} from '@loaders.gl/arcgis';
 
-const source = createDataSource(serviceUrl, [ArcGISFeatureServerSourceLoaderWithParser], {});
+const source = createDataSource(serviceUrl, [ArcGISFeatureServerSourceLoader], {});
 ```
 
-Source construction is synchronous in this example; network methods remain asynchronous. Passing
-root metadata directly to `createDataSource()` produces an actionable error. Authentication and
-discovery have dedicated subpaths, documented in their guides.
+Source construction is synchronous in this example; network methods remain asynchronous.
+Authentication and discovery helpers are also exported from `@loaders.gl/arcgis`.

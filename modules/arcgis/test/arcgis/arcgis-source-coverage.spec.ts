@@ -1,7 +1,9 @@
-import {ArcGISImageServerSourceLoaderWithParser as ArcGISImageServerSourceLoader} from '@loaders.gl/arcgis/arcgis-image-server-source-loader';
-import {ArcGISImageTileSourceLoaderWithParser as ArcGISImageTileSourceLoader} from '@loaders.gl/arcgis/arcgis-image-tile-source-loader';
-import {ArcGISMapTileSourceLoaderWithParser as ArcGISMapTileSourceLoader} from '@loaders.gl/arcgis/arcgis-map-tile-source-loader';
-import {getArcGISServices} from '@loaders.gl/arcgis/discovery';
+import {
+  ArcGISImageServerSourceLoader,
+  ArcGISImageTileSourceLoader,
+  ArcGISMapTileSourceLoader,
+  getArcGISServices
+} from '@loaders.gl/arcgis';
 import {expect, test, vi} from 'vitest';
 
 const IMAGE_SERVER_URL = 'https://example.com/arcgis/rest/services/Imagery/ImageServer';
