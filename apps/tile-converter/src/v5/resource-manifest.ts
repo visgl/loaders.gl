@@ -52,28 +52,6 @@ export interface ManifestBackedTileConversionSinkOptions<TResource> {
 }
 
 /**
- * Creates a deterministic slash-separated resource ID from logical path segments.
- *
- * Segments are URI-encoded independently, so embedded separators cannot alter the path structure.
- * Empty segments and dot-directory segments are rejected to keep IDs unambiguous and portable.
- *
- * @param segments - Logical resource path segments such as tileset, tile ID, and filename.
- * @returns Stable relative resource ID suitable for output manifests.
- */
-export function createDeterministicResourceId(...segments: readonly string[]): string {
-  if (
-    segments.length === 0 ||
-    segments.some(segment => segment.length === 0 || segment === '.' || segment === '..')
-  ) {
-    throw new TileConversionError(
-      'INVALID_RESOURCE_ID',
-      'Deterministic resource IDs require non-empty segments other than . or ..'
-    );
-  }
-  return segments.map(segment => encodeURIComponent(segment)).join('/');
-}
-
-/**
  * Creates a sink that skips matching checkpointed resources when a process restarts.
  *
  * The destination must write resources idempotently by the ID returned from `getResourceId`.

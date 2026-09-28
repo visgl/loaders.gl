@@ -2,7 +2,6 @@ import {expect, test} from 'vitest';
 import {
   createI3SConversionSpatialContext,
   createTiles3DConversionSpatialContext,
-  createDeterministicResourceId,
   createManifestBackedTileConversionSink,
   convertFeatureAttributesToArrowBatches,
   convertTileset,
@@ -171,16 +170,6 @@ test('tile-converter(v5)#convertTileset releases source iteration after cancella
   expect(sourceClosed).toBe(true);
   expect(sinkAborted).toBe(true);
   expect(conversionCount).toBe(1);
-});
-
-test('tile-converter(v5)#resource IDs encode path segments and reject traversal segments', () => {
-  expect(createDeterministicResourceId('tileset', 'tile/1', 'mesh.glb')).toBe(
-    'tileset/tile%2F1/mesh.glb'
-  );
-  expect(() => createDeterministicResourceId('tileset', '..', 'mesh.glb')).toThrow(
-    TileConversionError
-  );
-  expect(() => createDeterministicResourceId('')).toThrow(TileConversionError);
 });
 
 test('tile-converter(v5)#manifest-backed sinks resume matching resources and finalize manifests', async () => {

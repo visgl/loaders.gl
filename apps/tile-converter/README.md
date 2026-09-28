@@ -54,16 +54,9 @@ const batches = convertFeatureAttributesToArrowBatches(features, {
 
 ## V5 restartable output sinks
 
-`createManifestBackedTileConversionSink` decorates a resource sink with a caller-persisted manifest.
-Give resources deterministic IDs and stable fingerprints; completed matching resources are skipped
-when the same conversion resumes, while changed content under an existing ID fails explicitly. The
-manifest store must replace snapshots atomically, and the destination must make writes idempotent by
-resource ID. `createDeterministicResourceId` encodes logical path segments without allowing embedded
-slashes to change the path structure.
-
-The conversion API stays independent of filesystem and archive choices. Applications provide the
-manifest store and resource sink, so Node, browser, and service adapters can use their own durable
-storage and finalization behavior.
+`createManifestBackedTileConversionSink` resumes matching resources using caller-provided IDs and
+fingerprints. Applications provide an atomic manifest store and an idempotent resource sink, keeping
+filesystem and archive choices outside the conversion API.
 
 ## Installation
 
