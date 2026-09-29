@@ -241,3 +241,69 @@ test('RequestScheduler#setProps - preserves active requests', async () => {
     token4.done();
   });
 });
+
+test('RequestScheduler#new arrivals restart the quiet period', async () => {
+  await withFakeTimers(async () => {
+    const scheduler = new RequestScheduler({debounceTime: 10, maxRequests: 2});
+    const firstRequest = scheduler.scheduleRequest('first');
+    await advanceTimersAndFlush(5);
+    const secondRequest = scheduler.scheduleRequest('second');
+    await advanceTimersAndFlush(9);
+    expect(scheduler.activeRequestCount).toBe(0);
+    await advanceTimersAndFlush(1);
+    expect(scheduler.activeRequestCount).toBe(2);
+    (await firstRequest)!.done();
+    (await secondRequest)!.done();
+  });
+});
+
+test('RequestScheduler#completion preserves the pending quiet-period deadline', async () => {
+  await withFakeTimers(async () => {
+    const scheduler = new RequestScheduler({debounceTime: 10, maxRequests: 1});
+    const firstRequest = scheduler.scheduleRequest('first');
+    await advanceTimersAndFlush(10);
+    const firstToken = await expectIssuedRequest(firstRequest, 'issues first request');
+    const secondRequest = scheduler.scheduleRequest('second');
+    await advanceTimersAndFlush(5);
+    firstToken.done();
+    await advanceTimersAndFlush(4);
+    expect(scheduler.activeRequestCount, 'does not bypass the quiet period').toBe(0);
+    await advanceTimersAndFlush(1);
+    expect(scheduler.activeRequestCount, 'does not extend the quiet period').toBe(1);
+    (await secondRequest)!.done();
+  });
+});
+
+test('RequestScheduler#new arrivals replace a pending next-tick refill', async () => {
+  await withFakeTimers(async () => {
+    const scheduler = new RequestScheduler({debounceTime: 10, maxRequests: 2});
+    const firstRequest = scheduler.scheduleRequest('first');
+    await advanceTimersAndFlush(10);
+    (await firstRequest)!.done();
+    const secondRequest = scheduler.scheduleRequest('second');
+    await advanceTimersAndFlush(9);
+    expect(scheduler.activeRequestCount).toBe(0);
+    await advanceTimersAndFlush(1);
+    expect(scheduler.activeRequestCount).toBe(1);
+    (await secondRequest)!.done();
+  });
+});
+
+test('RequestScheduler#refills all freed slots after a debounce expires at capacity', async () => {
+  await withFakeTimers(async () => {
+    const scheduler = new RequestScheduler({debounceTime: 10, maxRequests: 2});
+    const firstRequest = scheduler.scheduleRequest('first');
+    const secondRequest = scheduler.scheduleRequest('second');
+    await advanceTimersAndFlush(10);
+    const thirdRequest = scheduler.scheduleRequest('third');
+    const fourthRequest = scheduler.scheduleRequest('fourth');
+    await advanceTimersAndFlush(10);
+    expect(scheduler.activeRequestCount).toBe(2);
+    (await firstRequest)!.done();
+    (await secondRequest)!.done();
+    await advanceTimersAndFlush();
+    expect(scheduler.activeRequestCount).toBe(2);
+    (await thirdRequest)!.done();
+    (await fourthRequest)!.done();
+  });
+});

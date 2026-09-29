@@ -36,7 +36,7 @@ export type RangeStats = {
 
 /** Options for the byte-range request scheduler. */
 export type RangeRequestSchedulerProps = {
-  /** Time to wait for sibling range requests before issuing HTTP requests. */
+  /** Fixed window from the first queued range; later arrivals and completions do not extend it. */
   batchDelayMs?: number;
   /** Maximum byte gap that can be over-fetched when merging two adjacent requests. */
   maxGapBytes?: number;
@@ -194,6 +194,7 @@ export class RangeRequestScheduler {
   readonly onEvent?: (event: RangeRequestEvent) => void;
 
   private pendingRequests: PendingRequest[] = [];
+  /** Pending batch window, independent of in-flight transport requests. */
   private flushTimer: ReturnType<typeof setTimeout> | null = null;
 
   /** Creates a scheduler for one group of byte-range-addressable resources. */
@@ -279,7 +280,7 @@ export class RangeRequestScheduler {
 
   /** Immediately starts loading the currently queued requests. */
   flush(): void {
-    if (this.flushTimer) {
+    if (this.flushTimer !== null) {
       clearTimeout(this.flushTimer);
       this.flushTimer = null;
     }
@@ -304,9 +305,9 @@ export class RangeRequestScheduler {
     }
   }
 
-  /** Schedules the next pending-request flush. */
+  /** Starts a fixed batch window only when no flush is already scheduled. */
   private scheduleFlush(): void {
-    if (this.flushTimer) {
+    if (this.flushTimer !== null) {
       return;
     }
 
