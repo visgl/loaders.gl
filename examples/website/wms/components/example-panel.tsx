@@ -25,6 +25,10 @@ const Container = styled.div`
   height: calc(100vh - 105px);
   width: 500px;
 
+  h3 {
+    color: #121212;
+  }
+
   .loading-indicator {
     margin: 0;
     text-align: center;
@@ -69,6 +73,8 @@ export type Example = {
     | 'wmts'
     | 'arcgis-map-server'
     | 'arcgis-image-server'
+    | 'arcgis-image-server-tiles'
+    | 'arcgis-vector-tile-server'
     | 'arcgis-feature-server'
     | 'wfs';
   url: string;

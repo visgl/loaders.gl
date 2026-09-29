@@ -69,7 +69,7 @@ export const ArcGISImageServerSourceLoader = {
   batchType: null as never,
   name: 'ArcGISImageServer',
   id: 'arcgis-image-server',
-  module: 'services',
+  module: 'arcgis',
   version: '0.0.0',
   /** Supplies the ArcGIS constructor for declarative service credentials. */
   getAuthentications: () => [ArcGISAuthentication],

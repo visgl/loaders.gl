@@ -96,6 +96,12 @@ function createBundlerPlugin() {
               resource.request = resolve('./src/shims/geotiff-lerc-decoder.js');
             }
           }),
+          new bundler.NormalModuleReplacementPlugin(/^\.\/lerc-wasm-url$/, resource => {
+            const normalizedContext = resource.context?.replace(/\\/g, '/');
+            if (normalizedContext?.endsWith('/modules/lerc/src')) {
+              resource.request = resolve('./src/utils/lerc-wasm-url.js');
+            }
+          }),
           ...developmentWorkerReplacements
         ]
       };
@@ -239,6 +245,7 @@ const config = {
             '@loaders.gl/video': resolve('../modules/video/src'),
             '@loaders.gl/wkt': resolve('../modules/wkt/src'),
             '@loaders.gl/wms': resolve('../modules/wms/src'),
+            '@loaders.gl/arcgis': resolve('../modules/arcgis/src'),
             '@loaders.gl/services': resolve('../modules/services/src'),
             '@loaders.gl/worker-utils': resolve('../modules/worker-utils/src'),
             '@loaders.gl/xml': resolve('../modules/xml/src'),
@@ -263,7 +270,7 @@ const config = {
         module: {
           rules: [
             {
-              test: /laz-perf\.wasm$/,
+              test: /(?:laz-perf|lerc-wasm)\.wasm$/,
               type: 'asset/resource'
             },
             // https://github.com/Esri/calcite-components/issues/2865

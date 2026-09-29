@@ -3,7 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import {resolveVisualSource} from '../src/source-layer-utils';
-import {SERVICE_LOADERS} from '@loaders.gl/services';
+import {ARCGIS_LOADERS} from '@loaders.gl/arcgis';
 import {describe, expect, test} from 'vitest';
 
 describe('SourceLayer service integration', () => {
@@ -16,7 +16,7 @@ describe('SourceLayer service integration', () => {
   ])('resolves %s as %s to the %s renderer', async (path, sourceType, rendererType) => {
     const resolvedSource = await resolveVisualSource({
       data: `https://example.com/arcgis/rest/services/${path}`,
-      loaders: SERVICE_LOADERS,
+      loaders: ARCGIS_LOADERS,
       sourceOptions: {core: {type: sourceType}}
     });
 

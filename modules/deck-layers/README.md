@@ -72,9 +72,9 @@ new SourceLayer({data: tilesetUrl, loaders: [Tiles3DLoader, I3SLoader, SLPKLoade
 Service packages expose ordered registries for a single clean integration point:
 
 ```ts
-import {SERVICE_LOADERS} from '@loaders.gl/services';
+import {ARCGIS_LOADERS} from '@loaders.gl/arcgis';
 
-new SourceLayer({data: arcgisUrl, loaders: SERVICE_LOADERS});
+new SourceLayer({data: arcgisUrl, loaders: ARCGIS_LOADERS});
 ```
 
 Use `sourceOptions.core.type` when a URL is ambiguous. The deprecated `sources` prop is merged with

@@ -21,6 +21,7 @@
     // This must be specified if "paths" is.
     "baseUrl": ".",
     "paths": {
+      "@loaders.gl/arcgis": ["modules/arcgis/src"],
       // Supoort modules
       "@loaders.gl/schema": [
         "modules/schema/src"

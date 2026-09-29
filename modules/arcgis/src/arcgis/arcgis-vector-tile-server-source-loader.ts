@@ -207,7 +207,7 @@ export const ArcGISVectorTileServerSourceLoader = {
   batchType: null as never,
   name: 'ArcGIS VectorTileServer',
   id: 'arcgis-vector-tile-server',
-  module: 'services',
+  module: 'arcgis',
   version: '0.0.0',
   /** Supplies the ArcGIS constructor for declarative service credentials. */
   getAuthentications: () => [ArcGISAuthentication],

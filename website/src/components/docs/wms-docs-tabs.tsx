@@ -47,7 +47,7 @@ const WMS_TAB_GROUPS: Record<string, WmsDocsTab[]> = {
     {
       id: 'arcgis-image-server',
       label: 'ArcGIS Image Server',
-      href: '/docs/modules/services/arcgis-image-server'
+      href: '/docs/modules/arcgis/arcgis-image-server'
     }
   ],
   arcgisFeatureServer: [
@@ -59,7 +59,7 @@ const WMS_TAB_GROUPS: Record<string, WmsDocsTab[]> = {
     {
       id: 'arcgis-feature-server',
       label: 'ArcGIS Feature Server',
-      href: '/docs/modules/services/arcgis-feature-server'
+      href: '/docs/modules/arcgis/arcgis-feature-server'
     }
   ],
   arcgisMapServer: [
@@ -71,7 +71,7 @@ const WMS_TAB_GROUPS: Record<string, WmsDocsTab[]> = {
     {
       id: 'arcgis-map-server',
       label: 'ArcGIS MapServer',
-      href: '/docs/modules/services/arcgis-map-server'
+      href: '/docs/modules/arcgis/arcgis-map-server'
     }
   ],
   arcgisVectorTileServer: [
@@ -83,7 +83,7 @@ const WMS_TAB_GROUPS: Record<string, WmsDocsTab[]> = {
     {
       id: 'arcgis-vector-tile-server',
       label: 'ArcGIS VectorTileServer',
-      href: '/docs/modules/services/arcgis-vector-tile-server'
+      href: '/docs/modules/arcgis/arcgis-vector-tile-server'
     }
   ],
   wcs: [{id: 'wcs', label: 'WCS', href: '/docs/modules/wms/formats/wcs'}],

@@ -6,22 +6,22 @@ page_style: designed
 ---
 
 import {ClientExample} from '@site/src/components';
-import {WmsDocsTabs} from '@site/src/components/docs/wms-docs-tabs';
+import {ArcGISDocsTabs} from '@site/src/components/docs/arcgis-docs-tabs';
 import {ServiceSourceGraphic} from '@site/src/components/docs/service-source-graphic';
 import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
 import {DocLiveExample} from '@site/src/components/docs/doc-live-example';
 import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
 
 <DocPageHeader
-  eyebrow="Services module · ArcGIS raster source"
+  eyebrow="ArcGIS module · ArcGIS raster source"
   title="ArcGIS ImageServer"
   description="Access rendered imagery and analytical raster data through ImageSource and TileSource contracts, including viewport exports and LERC responses."
   tone="violet"
   logos={[{alt: 'ArcGIS', src: '/images/format-logos/arcgis-logo.svg'}]}
   meta={['ImageServer', 'Images and tiles', 'LERC raster output']}
   links={[
-    {label: 'Services module', to: '/docs/modules/services'},
-    {label: 'ArcGIS service API', to: '/docs/modules/services/api-reference/arcgis'},
+    {label: 'ArcGIS module', to: '/docs/modules/arcgis'},
+    {label: 'ArcGIS service API', to: '/docs/modules/arcgis/api-reference/arcgis'},
     {label: 'CRS guide', to: '/docs/developer-guide/coordinate-reference-systems'}
   ]}
 />
@@ -30,7 +30,7 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
   <ClientExample kind="wms" format="ArcGIS Image Server" />
 </DocLiveExample>
 
-<WmsDocsTabs active="arcgis-image-server" />
+<ArcGISDocsTabs service="arcgis-image-server" />
 
 <ServiceSourceGraphic kind="arcgis" />
 
@@ -81,10 +81,10 @@ LERC requests. Configure it in `core.credentials`; explicit URL tokens take prec
 ## Viewport images
 
 ```ts
-import {createDataSource} from '@loaders.gl/core';
-import {ArcGISImageServerSourceLoader} from '@loaders.gl/services';
+import {load} from '@loaders.gl/core';
+import {ArcGISImageServerSourceLoader} from '@loaders.gl/arcgis';
 
-const source = createDataSource(imageServerUrl, [ArcGISImageServerSourceLoader]);
+const source = await load(imageServerUrl, [ArcGISImageServerSourceLoader]);
 
 const metadata = await source.getMetadata();
 const image = await source.getImage({
@@ -120,9 +120,9 @@ request.
 `ArcGISImageTileSourceLoader` requests one `/exportImage` response per Web Mercator tile:
 
 ```ts
-import {ArcGISImageTileSourceLoader} from '@loaders.gl/services';
+import {ArcGISImageTileSourceLoader} from '@loaders.gl/arcgis';
 
-const tileSource = createDataSource(imageServerUrl, [ArcGISImageTileSourceLoader], {
+const tileSource = await load(imageServerUrl, [ArcGISImageTileSourceLoader], {
   'arcgis-image-server-tiles': {
     tileSize: 512,
     format: 'png32',
@@ -145,8 +145,8 @@ Use `exportRaster()` when pixel values must remain analysis-ready:
 ```ts
 const raster = await source.exportRaster({
   bbox: [-122.5, 37.7, -122.3, 37.85],
-  bboxSR: 'EPSG:4326',
-  imageSR: 'EPSG:4326',
+  bboxSR: 4326,
+  imageSR: 4326,
   width: 512,
   height: 512,
   pixelType: 'F32',
@@ -167,16 +167,18 @@ domain, color ramp, and NoData policy appropriate to the dataset before uploadin
 
 ```ts
 import {SourceLayer} from '@loaders.gl/deck-layers';
-import {SERVICE_LOADERS} from '@loaders.gl/services';
+import {ARCGIS_LOADERS} from '@loaders.gl/arcgis';
 
 const layer = new SourceLayer({
   id: 'land-cover',
   data: imageServerUrl,
-  loaders: SERVICE_LOADERS,
+  loaders: ARCGIS_LOADERS,
   opacity: 0.8
 });
 ```
 
+For the tile viewer, also set `extent: [-180, -85.051129, 180, 85.051129]` on `SourceLayer`
+when service metadata bounds use projected coordinates.
 Use `core.type: 'arcgis-image-server-tiles'` in `sourceOptions` when tiled export is preferred over
 one viewport-sized image.
 
@@ -188,3 +190,15 @@ one viewport-sized image.
 - [ArcGIS REST API Image Service](https://developers.arcgis.com/rest/services-reference/enterprise/image-service/)
 - [ArcGIS REST API Export Image](https://developers.arcgis.com/rest/services-reference/enterprise/export-image/)
 - [LERC codec](https://esri.github.io/lerc/)
+
+## Explore numerical values
+
+This live example reads LERC bands and applies an illustrative numeric color ramp. It is not the
+service’s rendered legend. Missing values remain transparent.
+
+<DocLiveExample label="ArcGIS analytical raster example" height="560px">
+  <ClientExample kind="arcgis-raster" />
+</DocLiveExample>
+
+[Full numerical raster example](/examples/tiles/arcgis-image-server-lerc) ·
+[Exported tile example](/examples/tiles/arcgis-image-server-tiles)

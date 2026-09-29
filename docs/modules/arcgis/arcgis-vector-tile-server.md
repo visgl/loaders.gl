@@ -6,22 +6,22 @@ page_style: designed
 ---
 
 import {ClientExample} from '@site/src/components';
-import {WmsDocsTabs} from '@site/src/components/docs/wms-docs-tabs';
+import {ArcGISDocsTabs} from '@site/src/components/docs/arcgis-docs-tabs';
 import {ServiceSourceGraphic} from '@site/src/components/docs/service-source-graphic';
 import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
 import {DocLiveExample} from '@site/src/components/docs/doc-live-example';
 import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
 
 <DocPageHeader
-  eyebrow="Services module · ArcGIS vector-tile source"
+  eyebrow="ArcGIS module · ArcGIS vector-tile source"
   title="ArcGIS VectorTileServer"
   description="Load ArcGIS vector tiles together with their tile grid, style, and sprite metadata, then expose raw or decoded MVT data to the application."
   tone="violet"
   logos={[{alt: 'ArcGIS', src: '/images/format-logos/arcgis-logo.svg'}]}
   meta={['VectorTileServer', 'MVT and styles', 'VectorTileSource']}
   links={[
-    {label: 'Services module', to: '/docs/modules/services'},
-    {label: 'ArcGIS service API', to: '/docs/modules/services/api-reference/arcgis'},
+    {label: 'ArcGIS module', to: '/docs/modules/arcgis'},
+    {label: 'ArcGIS service API', to: '/docs/modules/arcgis/api-reference/arcgis'},
     {label: 'MVT format', to: '/docs/modules/mvt/formats/mvt'}
   ]}
 />
@@ -30,7 +30,7 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
   <ClientExample kind="wms" format="ArcGIS VectorTileServer" />
 </DocLiveExample>
 
-<WmsDocsTabs active="arcgis-vector-tile-server" />
+<ArcGISDocsTabs service="arcgis-vector-tile-server" />
 
 <ServiceSourceGraphic kind="arcgis" />
 
@@ -75,17 +75,16 @@ loaders.gl `VectorTileSource` contract.
 
 ## Authentication
 
-`createArcGISCredential` applies one exact-origin token to service metadata, styles, sprites, raw
-tiles, and decoded tile requests. Explicit URL tokens take precedence. See the
+`createArcGISCredential` applies an exact-origin token to metadata and tile requests made by this source. Explicit URL tokens take precedence. See the
 [authentication guide](/docs/developer-guide/authentication).
 
 ## Raw and decoded tiles
 
 ```ts
-import {createDataSource} from '@loaders.gl/core';
-import {ArcGISVectorTileServerSourceLoader} from '@loaders.gl/services';
+import {load} from '@loaders.gl/core';
+import {ArcGISVectorTileServerSourceLoader} from '@loaders.gl/arcgis';
 
-const source = createDataSource(vectorTileServiceUrl, [ArcGISVectorTileServerSourceLoader]);
+const source = await load(vectorTileServiceUrl, [ArcGISVectorTileServerSourceLoader]);
 
 const metadata = await source.getMetadata();
 const tileBytes = await source.getTile({z: 4, x: 6, y: 7});
@@ -100,7 +99,7 @@ needs decoded geometries and properties.
 MVT options are forwarded to `@loaders.gl/mvt`:
 
 ```ts
-const source = createDataSource(vectorTileServiceUrl, [ArcGISVectorTileServerSourceLoader], {
+const source = await load(vectorTileServiceUrl, [ArcGISVectorTileServerSourceLoader], {
   mvt: {
     shape: 'geojson-table',
     layers: ['roads', 'labels']
@@ -112,12 +111,13 @@ const source = createDataSource(vectorTileServiceUrl, [ArcGISVectorTileServerSou
 
 ```ts
 import {SourceLayer} from '@loaders.gl/deck-layers';
-import {SERVICE_LOADERS} from '@loaders.gl/services';
+import {ARCGIS_LOADERS} from '@loaders.gl/arcgis';
 
 const layer = new SourceLayer({
   id: 'arcgis-vector-tiles',
   data: vectorTileServiceUrl,
-  loaders: SERVICE_LOADERS,
+  loaders: ARCGIS_LOADERS,
+  extent: [-180, -85.051129, 180, 85.051129],
   pickable: true,
   getFillColor: [60, 140, 210],
   getLineColor: [20, 50, 80]

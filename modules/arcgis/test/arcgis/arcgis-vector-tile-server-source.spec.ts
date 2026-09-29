@@ -1,5 +1,5 @@
 import {afterEach, expect, test, vi} from 'vitest';
-import {ArcGISVectorTileServerSourceLoader, createArcGISCredential} from '@loaders.gl/services';
+import {ArcGISVectorTileServerSourceLoader, createArcGISCredential} from '@loaders.gl/arcgis';
 
 const VECTOR_TILE_SERVER_URL = 'https://example.com/arcgis/rest/services/World/VectorTileServer';
 

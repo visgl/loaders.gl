@@ -22,7 +22,7 @@ const SERVICE_CONTENT = {
     requestTags: ['where', 'bbox', 'outFields', 'size'],
     result: 'VectorSource · ImageSource · Tileset3DSource',
     resultNote: 'The application receives a source contract rather than a vendor-specific client.',
-    link: '/docs/modules/services'
+    link: '/docs/modules/arcgis'
   },
   ogc: {
     endpoint: 'OGC service endpoint',

@@ -5064,6 +5064,22 @@ __metadata:
   languageName: unknown
   linkType: soft
 
+"@loaders.gl/arcgis@workspace:*, @loaders.gl/arcgis@workspace:modules/arcgis":
+  version: 0.0.0-use.local
+  resolution: "@loaders.gl/arcgis@workspace:modules/arcgis"
+  dependencies:
+    "@loaders.gl/gis": "npm:5.0.0-alpha.6"
+    "@loaders.gl/i3s": "npm:5.0.0-alpha.6"
+    "@loaders.gl/images": "npm:5.0.0-alpha.6"
+    "@loaders.gl/lerc": "npm:5.0.0-alpha.6"
+    "@loaders.gl/loader-utils": "npm:5.0.0-alpha.6"
+    "@loaders.gl/mvt": "npm:5.0.0-alpha.6"
+    "@loaders.gl/schema": "npm:5.0.0-alpha.6"
+  peerDependencies:
+    "@loaders.gl/core": ~5.0.0-alpha.0
+  languageName: unknown
+  linkType: soft
+
 "@loaders.gl/arrow@npm:5.0.0-alpha.6, @loaders.gl/arrow@workspace:*, @loaders.gl/arrow@workspace:modules/arrow":
   version: 0.0.0-use.local
   resolution: "@loaders.gl/arrow@workspace:modules/arrow"
@@ -5720,13 +5736,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@loaders.gl/services@workspace:modules/services"
   dependencies:
-    "@loaders.gl/gis": "npm:5.0.0-alpha.6"
-    "@loaders.gl/i3s": "npm:5.0.0-alpha.6"
-    "@loaders.gl/images": "npm:5.0.0-alpha.6"
-    "@loaders.gl/lerc": "npm:5.0.0-alpha.6"
     "@loaders.gl/loader-utils": "npm:5.0.0-alpha.6"
-    "@loaders.gl/mvt": "npm:5.0.0-alpha.6"
-    "@loaders.gl/schema": "npm:5.0.0-alpha.6"
   peerDependencies:
     "@loaders.gl/core": ~5.0.0-alpha.0
   languageName: unknown
@@ -20787,7 +20797,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "i3s-profile-gallery-loaders-example@workspace:examples/website/i3s-profile-gallery"
   dependencies:
-    "@loaders.gl/services": "workspace:*"
+    "@loaders.gl/arcgis": "workspace:*"
     "@types/react": "npm:^19.2.14"
     "@types/react-dom": "npm:^19.2.3"
     react: "npm:^19.2.5"
@@ -28192,6 +28202,7 @@ __metadata:
     "@fortawesome/fontawesome-svg-core": "npm:^1.2.34"
     "@fortawesome/free-solid-svg-icons": "npm:^5.15.2"
     "@fortawesome/react-fontawesome": "npm:^0.1.14"
+    "@loaders.gl/arcgis": "workspace:*"
     "@loaders.gl/arrow": "workspace:*"
     "@loaders.gl/bson": "workspace:*"
     "@loaders.gl/core": "workspace:*"
@@ -34072,8 +34083,8 @@ __metadata:
     "@deck.gl/mesh-layers": "npm:^9.4.0"
     "@deck.gl/react": "npm:^9.4.0"
     "@deck.gl/widgets": "npm:^9.4.0"
+    "@loaders.gl/arcgis": "workspace:*"
     "@loaders.gl/core": "workspace:*"
-    "@loaders.gl/services": "workspace:*"
     "@loaders.gl/wms": "workspace:*"
     "@luma.gl/core": "npm:^9.4.0"
     "@luma.gl/engine": "npm:^9.4.0"

@@ -1,0 +1,51 @@
+{
+  "name": "@loaders.gl/arcgis",
+  "version": "5.0.0-alpha.6",
+  "description": "ArcGIS REST data sources for geospatial visualization",
+  "license": "MIT",
+  "type": "module",
+  "publishConfig": {
+    "access": "public"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/visgl/loaders.gl"
+  },
+  "keywords": [
+    "ArcGIS",
+    "services",
+    "FeatureServer",
+    "ImageServer",
+    "MapServer",
+    "geospatial",
+    "loader"
+  ],
+  "types": "dist/index.d.ts",
+  "main": "dist/index.cjs",
+  "module": "dist/index.js",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
+    }
+  },
+  "sideEffects": false,
+  "files": [
+    "src",
+    "dist",
+    "README.md"
+  ],
+  "dependencies": {
+    "@loaders.gl/gis": "5.0.0-alpha.6",
+    "@loaders.gl/i3s": "5.0.0-alpha.6",
+    "@loaders.gl/images": "5.0.0-alpha.6",
+    "@loaders.gl/lerc": "5.0.0-alpha.6",
+    "@loaders.gl/loader-utils": "5.0.0-alpha.6",
+    "@loaders.gl/mvt": "5.0.0-alpha.6",
+    "@loaders.gl/schema": "5.0.0-alpha.6"
+  },
+  "peerDependencies": {
+    "@loaders.gl/core": "~5.0.0-alpha.0"
+  }
+}

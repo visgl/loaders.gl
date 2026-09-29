@@ -5,19 +5,17 @@ import {
   ArcGISMapTileSourceLoader,
   ArcGISSceneServerSourceLoader,
   ArcGISVectorTileServerSourceLoader,
+  ARCGIS_LOADERS,
+  getArcGISLoader,
   ArcGISVectorSource,
-  SERVICE_LOADERS,
   discoverArcGISCapabilities,
-  getServiceLoader,
-  selectArcGISService
-} from '../src/index';
+  selectArcGISService,
+  getArcGISServices
+} from '@loaders.gl/arcgis';
 import {load} from '@loaders.gl/core';
-import {getArcGISServices} from '../src/arcgis/arcgis-server';
-import * as bundledServices from '../src/bundled';
-import * as unbundledServices from '../src/unbundled';
 import {describe, expect, test} from 'vitest';
 
-describe('@loaders.gl/services', () => {
+describe('@loaders.gl/arcgis', () => {
   test('exports the initial ArcGIS source family', () => {
     expect(ArcGISFeatureServerSourceLoader.id).toBe('arcgis-feature-server');
     expect(ArcGISImageServerSourceLoader.id).toBe('arcgis-image-server');
@@ -27,23 +25,23 @@ describe('@loaders.gl/services', () => {
     expect(ArcGISSceneServerSourceLoader.id).toBe('arcgis-scene-server');
   });
 
-  test('identifies services-owned loaders', () => {
-    expect(ArcGISFeatureServerSourceLoader.module).toBe('services');
-    expect(ArcGISImageServerSourceLoader.module).toBe('services');
-    expect(ArcGISMapTileSourceLoader.module).toBe('services');
-    expect(ArcGISImageTileSourceLoader.module).toBe('services');
-    expect(ArcGISVectorTileServerSourceLoader.module).toBe('services');
+  test('identifies ArcGIS-owned loaders', () => {
+    expect(ArcGISFeatureServerSourceLoader.module).toBe('arcgis');
+    expect(ArcGISImageServerSourceLoader.module).toBe('arcgis');
+    expect(ArcGISMapTileSourceLoader.module).toBe('arcgis');
+    expect(ArcGISImageTileSourceLoader.module).toBe('arcgis');
+    expect(ArcGISVectorTileServerSourceLoader.module).toBe('arcgis');
   });
 
   test('finds service loaders by id or type', () => {
-    expect(getServiceLoader('ArcGIS-Feature-Server')).toBe(ArcGISFeatureServerSourceLoader);
-    expect(getServiceLoader('arcgis-vector-tile-server')).toBe(ArcGISVectorTileServerSourceLoader);
-    expect(getServiceLoader('arcgis-scene-server')).toBe(ArcGISSceneServerSourceLoader);
-    expect(getServiceLoader('unknown-service')).toBeUndefined();
+    expect(getArcGISLoader('ArcGIS-Feature-Server')).toBe(ArcGISFeatureServerSourceLoader);
+    expect(getArcGISLoader('arcgis-vector-tile-server')).toBe(ArcGISVectorTileServerSourceLoader);
+    expect(getArcGISLoader('arcgis-scene-server')).toBe(ArcGISSceneServerSourceLoader);
+    expect(getArcGISLoader('unknown-service')).toBeUndefined();
   });
 
   test('exports one registry for core and deck.gl integration', () => {
-    expect(SERVICE_LOADERS).toEqual([
+    expect(ARCGIS_LOADERS).toEqual([
       ArcGISFeatureServerSourceLoader,
       ArcGISImageServerSourceLoader,
       ArcGISImageTileSourceLoader,
@@ -56,18 +54,11 @@ describe('@loaders.gl/services', () => {
   test('passes the service registry directly to load', async () => {
     const source = await load(
       'https://example.com/arcgis/rest/services/Roads/FeatureServer/0',
-      SERVICE_LOADERS,
+      ARCGIS_LOADERS,
       {core: {type: 'arcgis-feature-server'}}
     );
 
     expect(source).toBeInstanceOf(ArcGISVectorSource);
-  });
-
-  test('keeps the package entrypoints wired to the public exports', () => {
-    expect(bundledServices.ArcGISFeatureServerSourceLoader).toBe(ArcGISFeatureServerSourceLoader);
-    expect(unbundledServices.ArcGISFeatureServerSourceLoader).toBe(ArcGISFeatureServerSourceLoader);
-    expect(bundledServices.ArcGISSceneServerSourceLoader).toBe(ArcGISSceneServerSourceLoader);
-    expect(unbundledServices.ArcGISSceneServerSourceLoader).toBe(ArcGISSceneServerSourceLoader);
   });
 
   test('discovers services from ArcGIS server directories', async () => {

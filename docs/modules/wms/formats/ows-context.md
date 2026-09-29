@@ -17,7 +17,7 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
   links={[
     {label: 'WMS module', to: '/docs/modules/wms'},
     {label: 'Using sources', to: '/docs/developer-guide/using-sources'},
-    {label: 'Service sources', to: '/docs/modules/services'}
+    {label: 'OGC sources', to: '/docs/modules/wms'}
   ]}
 />
 

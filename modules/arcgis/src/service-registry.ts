@@ -9,8 +9,8 @@ import {ArcGISMapTileSourceLoader} from './arcgis/arcgis-map-tile-source-loader'
 import {ArcGISSceneServerSourceLoader} from './arcgis/arcgis-scene-server-source-loader';
 import {ArcGISVectorTileServerSourceLoader} from './arcgis/arcgis-vector-tile-server-source-loader';
 
-/** A source loader currently exposed through the services package. */
-export type ServiceLoader =
+/** A source loader currently exposed through the ArcGIS package. */
+export type ArcGISLoader =
   | typeof ArcGISFeatureServerSourceLoader
   | typeof ArcGISImageServerSourceLoader
   | typeof ArcGISImageTileSourceLoader
@@ -18,8 +18,8 @@ export type ServiceLoader =
   | typeof ArcGISVectorTileServerSourceLoader
   | typeof ArcGISSceneServerSourceLoader;
 
-/** All source loaders owned by `@loaders.gl/services`, in URL-selection order. */
-export const SERVICE_LOADERS: ServiceLoader[] = [
+/** All source loaders owned by `@loaders.gl/arcgis`, in URL-selection order. */
+export const ARCGIS_LOADERS: ArcGISLoader[] = [
   ArcGISFeatureServerSourceLoader,
   ArcGISImageServerSourceLoader,
   ArcGISImageTileSourceLoader,
@@ -34,9 +34,9 @@ export const SERVICE_LOADERS: ServiceLoader[] = [
  * The lookup is intentionally small and explicit. It provides discovery without
  * introducing a second request lifecycle or hiding provider-specific options.
  */
-export function getServiceLoader(serviceType: string): ServiceLoader | undefined {
+export function getArcGISLoader(serviceType: string): ArcGISLoader | undefined {
   const normalizedServiceType = serviceType.toLowerCase();
-  return SERVICE_LOADERS.find(
+  return ARCGIS_LOADERS.find(
     serviceLoader =>
       serviceLoader.id === normalizedServiceType || serviceLoader.type === normalizedServiceType
   );

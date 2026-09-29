@@ -56,7 +56,7 @@ the source's protocol-specific methods.
 | Telemetry | Supported | Emits request phase, URL, timing, and error events |
 | Consistent errors | Supported | `ServiceRequestError` carries operation and request context |
 | Custom loaders | Supported | Supply a narrowed or extended loader list |
-| ArcGIS loaders | Injectable | ArcGIS sources live in `@loaders.gl/services`, not the default OGC registry |
+| ArcGIS loaders | Injectable | ArcGIS sources live in `@loaders.gl/arcgis`, not the default OGC registry |
 | Persistent HTTP cache | Not provided | Integrate through the fetch layer or application cache |
 
 ## Usage

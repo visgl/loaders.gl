@@ -12,22 +12,26 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
 import {ClientExample} from '@site/src/components';
 
 <DocPageHeader
-  eyebrow="Services module · ArcGIS 3D source"
+  eyebrow="ArcGIS module · ArcGIS 3D source"
   title="ArcGIS SceneServer"
   description="Connect an ArcGIS SceneServer layer to the loaders.gl 3D source runtime, delegating I3S mesh, point, and point-cloud decoding to the existing format implementations."
   tone="violet"
   logos={[{alt: 'ArcGIS', src: '/images/format-logos/arcgis-logo.svg'}]}
   meta={['SceneServer', 'I3S', '3D source integration']}
   links={[
-    {label: 'Services module', to: '/docs/modules/services'},
-    {label: 'ArcGIS service API', to: '/docs/modules/services/api-reference/arcgis'},
+    {label: 'ArcGIS module', to: '/docs/modules/arcgis'},
+    {label: 'ArcGIS service API', to: '/docs/modules/arcgis/api-reference/arcgis'},
     {label: 'I3S format', to: '/docs/modules/i3s/formats/i3s'}
   ]}
 />
 
-<DocLiveExample label="ArcGIS SceneServer I3S example" height="440px">
-  <ClientExample kind="i3s-building-scene-layer" />
+<DocLiveExample label="ArcGIS SceneServer metadata inspector" height="440px">
+  <ClientExample kind="i3s-profile-gallery" />
 </DocLiveExample>
+
+The embedded inspector loads SceneServer metadata through this module. It does not render the
+scene. For 3D rendering, use the [I3S examples](/docs/modules/i3s/recipes/profile-gallery); building
+roots use a separate I3S loader.
 
 <ServiceSourceGraphic kind="arcgis" />
 
@@ -59,7 +63,7 @@ implementation.
 
 ```ts
 import {coreApi} from '@loaders.gl/core';
-import {ArcGISSceneServerSource} from '@loaders.gl/services';
+import {ArcGISSceneServerSource} from '@loaders.gl/arcgis';
 
 const source = new ArcGISSceneServerSource(
   'https://example.com/arcgis/rest/services/City/SceneServer/layers/0',

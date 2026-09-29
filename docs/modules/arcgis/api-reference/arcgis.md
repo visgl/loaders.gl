@@ -9,15 +9,15 @@ import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
 import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
 
 <DocPageHeader
-  eyebrow="Services module · ArcGIS"
+  eyebrow="ArcGIS module · ArcGIS"
   title="ArcGIS service sources"
   description="ArcGIS publishes several service families. loaders.gl maps the useful endpoint contracts onto sources for vectors, images, tiles, and scenes, with deterministic discovery and shared authentication."
   tone="violet"
   meta={['FeatureServer', 'ImageServer', 'MapServer and SceneServer']}
   links={[
-    {label: 'Services module', to: '/docs/modules/services'},
+    {label: 'ArcGIS module', to: '/docs/modules/arcgis'},
     {label: 'Service sources', to: '/docs/developer-guide/using-sources'},
-    {label: 'ArcGIS sources', to: '/docs/modules/services/arcgis-feature-server'}
+    {label: 'ArcGIS sources', to: '/docs/modules/arcgis/arcgis-feature-server'}
   ]}
 />
 
@@ -52,21 +52,22 @@ source loader per visual data contract and a shared registry for automatic selec
 | `arcgis-vector-tile-server` | `VectorTileServer` | `VectorTileSource` | `getMetadata`, `getTile`, `getVectorTile` | PBF or decoded vector tile |
 | `arcgis-scene-server` | `SceneServer` | `Tileset3DSource` or `PointCloudTilesetSource` | `getMetadata`, `getTilesetSource` | I3S mesh, Point, or Point Cloud source |
 
-`SERVICE_LOADERS` contains these loaders in deterministic selection order. Pass it to `load`,
-`createDataSource`, or deck.gl's `SourceLayer`:
+`ARCGIS_LOADERS` contains these loaders in deterministic selection order. Pass it to async `load()` or deck.gl's `SourceLayer`:
 
 ```ts
 import {load} from '@loaders.gl/core';
-import {SERVICE_LOADERS} from '@loaders.gl/services';
+import {ARCGIS_LOADERS} from '@loaders.gl/arcgis';
 
-const source = await load(serviceUrl, SERVICE_LOADERS);
+const source = await load(serviceUrl, ARCGIS_LOADERS);
 ```
 
 When endpoint rewriting hides `FeatureServer`, `ImageServer`, `MapServer`, `VectorTileServer`, or
 `SceneServer`
 from the URL, specify the table's loader type through `core.type`.
 
-## Exported classes
+## Runtime source classes
+
+Import source classes and service loaders directly from `@loaders.gl/arcgis`.
 
 | Source class | Source loader | Documentation |
 | --- | --- | --- |
@@ -81,7 +82,7 @@ from the URL, specify the table's loader type through `core.type`.
 
 `getArcGISServices()` reads an ArcGIS REST services directory.
 `discoverArcGISCapabilities()` enriches discovered endpoints with normalized service capabilities,
-and `selectArcGISService()` ranks them for an application requirement.
+and `selectArcGISService()` returns the first entry matching an application requirement.
 
 Provider-neutral metadata is intentionally smaller than each ArcGIS metadata document. Concrete
 sources retain access to provider-specific metadata and request controls where those details are

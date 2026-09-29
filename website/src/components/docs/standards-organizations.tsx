@@ -79,7 +79,7 @@ const STANDARD_FAMILIES: readonly StandardsGroup[] = [
       {label: 'WCS', to: '/docs/modules/wms/formats/wcs'},
       {label: 'CSW', to: '/docs/modules/wms/formats/csw'},
       {label: 'OGC API', to: '/docs/modules/wms/services/ogc-api'},
-      {label: 'ArcGIS REST', to: '/docs/modules/services'}
+      {label: 'ArcGIS REST', to: '/docs/modules/arcgis'}
     ]
   }
 ];
@@ -130,11 +130,11 @@ const ORGANIZATIONS: readonly StandardsGroup[] = [
     links: [
       {label: 'I3S / SLPK', to: '/docs/modules/i3s/formats/i3s'},
       {label: 'LERC', to: '/docs/modules/lerc/formats/lerc'},
-      {label: 'FeatureServer', to: '/docs/modules/services/arcgis-feature-server'},
-      {label: 'MapServer', to: '/docs/modules/services/arcgis-map-server'},
-      {label: 'ImageServer', to: '/docs/modules/services/arcgis-image-server'},
-      {label: 'VectorTileServer', to: '/docs/modules/services/arcgis-vector-tile-server'},
-      {label: 'SceneServer', to: '/docs/modules/services/arcgis-scene-server'}
+      {label: 'FeatureServer', to: '/docs/modules/arcgis/arcgis-feature-server'},
+      {label: 'MapServer', to: '/docs/modules/arcgis/arcgis-map-server'},
+      {label: 'ImageServer', to: '/docs/modules/arcgis/arcgis-image-server'},
+      {label: 'VectorTileServer', to: '/docs/modules/arcgis/arcgis-vector-tile-server'},
+      {label: 'SceneServer', to: '/docs/modules/arcgis/arcgis-scene-server'}
     ]
   },
   {

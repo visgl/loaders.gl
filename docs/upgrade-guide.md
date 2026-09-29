@@ -824,3 +824,13 @@ Also, Node support now requires installing `@loaders.gl/polyfills` before use.
 ## v1.0
 
 First official release of loaders.gl.
+
+## ArcGIS package extraction (v5)
+
+ArcGIS exports have moved out of `@loaders.gl/services`. Import service loaders, source classes,
+credentials, discovery and scene aggregation helpers from `@loaders.gl/arcgis`.
+`SERVICE_LOADERS` and `getServiceLoader` are replaced by `ARCGIS_LOADERS` and `getArcGISLoader`.
+No ArcGIS compatibility exports remain in services. Other providers’ credential helpers stay there.
+
+Source construction and service APIs are unchanged: both async `load()` and synchronous
+`createDataSource()` accept the service loaders exported from `@loaders.gl/arcgis`.

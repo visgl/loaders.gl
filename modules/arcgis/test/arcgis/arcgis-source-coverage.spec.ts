@@ -3,7 +3,7 @@ import {
   ArcGISImageTileSourceLoader,
   ArcGISMapTileSourceLoader,
   getArcGISServices
-} from '@loaders.gl/services';
+} from '@loaders.gl/arcgis';
 import {expect, test, vi} from 'vitest';
 
 const IMAGE_SERVER_URL = 'https://example.com/arcgis/rest/services/Imagery/ImageServer';

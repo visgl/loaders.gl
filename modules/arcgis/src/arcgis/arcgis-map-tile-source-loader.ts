@@ -270,7 +270,7 @@ export const ArcGISMapTileSourceLoader = {
   batchType: null as never,
   name: 'ArcGIS MapServer tiles',
   id: 'arcgis-map-server',
-  module: 'services',
+  module: 'arcgis',
   version: '0.0.0',
   /** Supplies the ArcGIS constructor for declarative service credentials. */
   getAuthentications: () => [ArcGISAuthentication],

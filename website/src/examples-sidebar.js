@@ -50,6 +50,10 @@ const sidebars = {
       type: 'category',
       label: 'ArcGIS Services',
       items: [
+        'arcgis',
+        'tiles/arcgis-image-server-tiles',
+        'tiles/arcgis-image-server-lerc',
+        'arcgis-scene-server',
         'tiles/arcgis-map-server',
         'tiles/arcgis-image-server',
         'tiles/arcgis-feature-server',

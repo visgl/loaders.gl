@@ -179,7 +179,7 @@ export const ArcGISImageTileSourceLoader = {
   batchType: null as never,
   name: 'ArcGIS ImageServer tiles',
   id: 'arcgis-image-server-tiles',
-  module: 'services',
+  module: 'arcgis',
   version: '0.0.0',
   /** Supplies the ArcGIS constructor for declarative service credentials. */
   getAuthentications: () => [ArcGISAuthentication],

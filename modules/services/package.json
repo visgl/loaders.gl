@@ -1,7 +1,7 @@
 {
   "name": "@loaders.gl/services",
   "version": "5.0.0-alpha.6",
-  "description": "Framework-independent loaders and sources for geospatial services",
+  "description": "Authentication presets for geospatial service providers",
   "license": "MIT",
   "type": "module",
   "publishConfig": {
@@ -12,13 +12,9 @@
     "url": "https://github.com/visgl/loaders.gl"
   },
   "keywords": [
-    "ArcGIS",
+    "authentication",
     "services",
-    "FeatureServer",
-    "ImageServer",
-    "MapServer",
-    "geospatial",
-    "loader"
+    "geospatial"
   ],
   "types": "dist/index.d.ts",
   "main": "dist/index.cjs",
@@ -49,13 +45,7 @@
     "README.md"
   ],
   "dependencies": {
-    "@loaders.gl/gis": "5.0.0-alpha.6",
-    "@loaders.gl/i3s": "5.0.0-alpha.6",
-    "@loaders.gl/images": "5.0.0-alpha.6",
-    "@loaders.gl/lerc": "5.0.0-alpha.6",
-    "@loaders.gl/loader-utils": "5.0.0-alpha.6",
-    "@loaders.gl/mvt": "5.0.0-alpha.6",
-    "@loaders.gl/schema": "5.0.0-alpha.6"
+    "@loaders.gl/loader-utils": "5.0.0-alpha.6"
   },
   "peerDependencies": {
     "@loaders.gl/core": "~5.0.0-alpha.0"

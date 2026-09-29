@@ -6,22 +6,22 @@ page_style: designed
 ---
 
 import {ClientExample} from '@site/src/components';
-import {WmsDocsTabs} from '@site/src/components/docs/wms-docs-tabs';
+import {ArcGISDocsTabs} from '@site/src/components/docs/arcgis-docs-tabs';
 import {ServiceSourceGraphic} from '@site/src/components/docs/service-source-graphic';
 import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
 import {DocLiveExample} from '@site/src/components/docs/doc-live-example';
 import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
 
 <DocPageHeader
-  eyebrow="Services module · ArcGIS vector source"
+  eyebrow="ArcGIS module · ArcGIS vector source"
   title="ArcGIS FeatureServer"
   description="Query ArcGIS feature layers through the loaders.gl VectorSource contract, with normalized metadata, schemas, spatial requests, and GeoJSON, binary, or Arrow output."
   tone="violet"
   logos={[{alt: 'ArcGIS', src: '/images/format-logos/arcgis-logo.svg'}]}
   meta={['FeatureServer', 'VectorSource', 'GeoJSON / binary / Arrow']}
   links={[
-    {label: 'Services module', to: '/docs/modules/services'},
-    {label: 'ArcGIS service API', to: '/docs/modules/services/api-reference/arcgis'},
+    {label: 'ArcGIS module', to: '/docs/modules/arcgis'},
+    {label: 'ArcGIS service API', to: '/docs/modules/arcgis/api-reference/arcgis'},
     {label: 'Scan architecture', to: '/docs/developer-guide/common-scan-architecture'}
   ]}
 />
@@ -30,7 +30,7 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
   <ClientExample kind="wms" format="ArcGIS Feature Server" />
 </DocLiveExample>
 
-<WmsDocsTabs active="arcgis-feature-server" />
+<ArcGISDocsTabs service="arcgis-feature-server" />
 
 <ServiceSourceGraphic kind="arcgis" />
 
@@ -78,7 +78,7 @@ ArcGIS FeatureServer endpoints expose queryable vector feature layers through th
 | Authentication | Supported | URL tokens, fetch headers, credentials, and custom fetch functions are preserved |
 | Pagination | Not automated | The source performs one ArcGIS query per `getFeatures()` call |
 | Editing and attachments | Not supported | The source is a read-only query client |
-| deck.gl rendering | First class | Pass the source loader or `SERVICE_LOADERS` to `SourceLayer` |
+| deck.gl rendering | First class | Pass the source loader or `ARCGIS_LOADERS` to `SourceLayer` |
 
 ## Optional scan table view
 
@@ -101,10 +101,10 @@ common client-side query contract after the service has returned the bounded fea
 ## Create and query a source
 
 ```ts
-import {createDataSource} from '@loaders.gl/core';
-import {ArcGISFeatureServerSourceLoader} from '@loaders.gl/services';
+import {load} from '@loaders.gl/core';
+import {ArcGISFeatureServerSourceLoader} from '@loaders.gl/arcgis';
 
-const source = createDataSource(
+const source = await load(
   'https://example.com/arcgis/rest/services/Roads/FeatureServer/0',
   [ArcGISFeatureServerSourceLoader]
 );
@@ -123,7 +123,7 @@ the source maps these values to ArcGIS `inSR` and `outSR` respectively.
 When the URL points to the FeatureServer root, `layers` chooses the layer used for the query:
 
 ```ts
-const source = createDataSource(featureServerUrl, [ArcGISFeatureServerSourceLoader]);
+const source = await load(featureServerUrl, [ArcGISFeatureServerSourceLoader]);
 const trails = await source.getFeatures({layers: ['3']});
 ```
 
@@ -133,13 +133,12 @@ ArcGIS query defaults live under `arcgis-feature-server`. Per-request viewport a
 combined with these parameters.
 
 ```ts
-const source = createDataSource(featureServerUrl, [ArcGISFeatureServerSourceLoader], {
+const source = await load(featureServerUrl, [ArcGISFeatureServerSourceLoader], {
   'arcgis-feature-server': {
     queryParameters: {
       where: 'status = 1',
       outFields: ['name', 'category'],
-      returnGeometry: true,
-      maxAllowableOffset: 2
+      returnGeometry: true
     }
   }
 });
@@ -153,12 +152,14 @@ cookies continue to use `core.fetch`. See [authentication](/docs/developer-guide
 
 ```ts
 import {SourceLayer} from '@loaders.gl/deck-layers';
-import {SERVICE_LOADERS} from '@loaders.gl/services';
+import {ARCGIS_LOADERS} from '@loaders.gl/arcgis';
 
 const layer = new SourceLayer({
   id: 'bicycle-routes',
   data: featureServerUrl,
-  loaders: SERVICE_LOADERS,
+  loaders: ARCGIS_LOADERS,
+  crs: 'EPSG:4326',
+  requestCrs: 'EPSG:4326',
   layers: ['0'],
   pickable: true,
   getLineColor: [0, 80, 255],

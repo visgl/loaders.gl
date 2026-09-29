@@ -6,22 +6,22 @@ page_style: designed
 ---
 
 import {ClientExample} from '@site/src/components';
-import {WmsDocsTabs} from '@site/src/components/docs/wms-docs-tabs';
+import {ArcGISDocsTabs} from '@site/src/components/docs/arcgis-docs-tabs';
 import {ServiceSourceGraphic} from '@site/src/components/docs/service-source-graphic';
 import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
 import {DocLiveExample} from '@site/src/components/docs/doc-live-example';
 import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
 
 <DocPageHeader
-  eyebrow="Services module · ArcGIS tile source"
+  eyebrow="ArcGIS module · ArcGIS tile source"
   title="ArcGIS MapServer"
   description="Load cached or dynamically rendered ArcGIS maps through one TileSource, with automatic mode selection, normalized LOD metadata, and shared credentials."
   tone="violet"
   logos={[{alt: 'ArcGIS', src: '/images/format-logos/arcgis-logo.svg'}]}
   meta={['MapServer', 'Cached or dynamic', 'TileSource']}
   links={[
-    {label: 'Services module', to: '/docs/modules/services'},
-    {label: 'ArcGIS service API', to: '/docs/modules/services/api-reference/arcgis'},
+    {label: 'ArcGIS module', to: '/docs/modules/arcgis'},
+    {label: 'ArcGIS service API', to: '/docs/modules/arcgis/api-reference/arcgis'},
     {label: 'Tiles module', to: '/docs/modules/tiles'}
   ]}
 />
@@ -30,7 +30,7 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
   <ClientExample kind="wms" format="ArcGIS MapServer" />
 </DocLiveExample>
 
-<WmsDocsTabs active="arcgis-map-server" />
+<ArcGISDocsTabs service="arcgis-map-server" />
 
 <ServiceSourceGraphic kind="arcgis" />
 
@@ -81,10 +81,10 @@ the [authentication guide](/docs/developer-guide/authentication).
 ## Cached tiles
 
 ```ts
-import {createDataSource} from '@loaders.gl/core';
-import {ArcGISMapTileSourceLoader} from '@loaders.gl/services';
+import {load} from '@loaders.gl/core';
+import {ArcGISMapTileSourceLoader} from '@loaders.gl/arcgis';
 
-const source = createDataSource(
+const source = await load(
   'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer',
   [ArcGISMapTileSourceLoader]
 );
@@ -99,7 +99,7 @@ Select export mode when a service is not cached or when dynamic layer, time, or 
 parameters are required:
 
 ```ts
-const source = createDataSource(mapServerUrl, [ArcGISMapTileSourceLoader], {
+const source = await load(mapServerUrl, [ArcGISMapTileSourceLoader], {
   'arcgis-map-server': {
     mode: 'dynamic',
     tileSize: 512,
@@ -122,12 +122,13 @@ controls inexpensive to implement.
 
 ```ts
 import {SourceLayer} from '@loaders.gl/deck-layers';
-import {SERVICE_LOADERS} from '@loaders.gl/services';
+import {ARCGIS_LOADERS} from '@loaders.gl/arcgis';
 
 const layer = new SourceLayer({
   id: 'world-imagery',
   data: mapServerUrl,
-  loaders: SERVICE_LOADERS,
+  loaders: ARCGIS_LOADERS,
+  extent: [-180, -85.051129, 180, 85.051129],
   minZoom: 0,
   maxZoom: 19
 });
@@ -139,3 +140,10 @@ const layer = new SourceLayer({
 
 - [ArcGIS REST API Map Service](https://developers.arcgis.com/rest/services-reference/enterprise/map-service/)
 - [ArcGIS REST API Export Map](https://developers.arcgis.com/rest/services-reference/enterprise/export-map/)
+
+## Examples and source
+
+[Open the map example](/examples/tiles/arcgis-map-server). The example selector includes cached
+tiles and dynamic exports; the latter is an image request, not feature querying.
+
+[Runnable application source](https://github.com/visgl/loaders.gl/tree/master/examples/website/wms)

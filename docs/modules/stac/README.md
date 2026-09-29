@@ -17,7 +17,7 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
   meta={['STAC catalogs', 'API Item Search', 'Asset links']}
   links={[
     {label: 'STAC source', to: '/docs/modules/stac/api-reference/stac-source-loader'},
-    {label: 'Services module', to: '/docs/modules/services'}
+    {label: 'Using sources', to: '/docs/developer-guide/using-sources'}
   ]}
 />
 
