@@ -112,6 +112,23 @@ test('RequestScheduler#debounce', async () => {
     token3.done();
   });
 });
+test('RequestScheduler#debounce - completed requests do not restart the debounce', async () => {
+  await withFakeTimers(async () => {
+    const scheduler = new RequestScheduler({debounceTime: 10, maxRequests: 1});
+    const request1 = scheduler.scheduleRequest({id: 1});
+    const request2 = scheduler.scheduleRequest({id: 2});
+
+    await flushScheduler(10);
+    const token1 = await expectIssuedRequest(request1, 'issues first request after debounce');
+
+    // Nothing new was queued, so the freed slot should be filled straight away
+    token1.done();
+    await flushScheduler();
+    expect(scheduler.activeRequestCount, 'issues queued request without waiting again').toBe(1);
+    const token2 = await expectIssuedRequest(request2, 'issues second request');
+    token2.done();
+  });
+});
 test('RequestScheduler#setProps - update maxRequests', async () => {
   await withFakeTimers(async () => {
     const scheduler = new RequestScheduler({maxRequests: 2});
