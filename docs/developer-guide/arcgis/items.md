@@ -18,7 +18,7 @@ The same transport is used for portal, service and selected-layer metadata.
 
 The public example needs no account. For private content, open **Configure sign-in**, supply your
 registered OAuth client ID and portal, and register the displayed page URL as a redirect URI.
-Enter the exact portal and service origins you trust to receive tokens. Sign in, resolve an item,
+Enter the exact portal and service origins you trust to receive tokens. Allow the sign-in popup. Sign in, resolve an item,
 choose a layer, then load it. The example caps queries at 5,000 records and reports partial results.
 Nonspatial tables display their first ten rows; other service families expose metadata here and have
 separate [rendering examples](/examples/arcgis). Reloading the page clears the in-memory session.

@@ -123,8 +123,10 @@ referenced resource.
 ## Runnable ArcGIS REST JS sign-in
 
 The [item explorer](/examples/arcgis-items) includes `beginOAuth2` and `completeOAuth2` with PKCE,
-a registered same-page redirect, an in-memory session and sign-out. Only non-secret configuration
-is retained in sessionStorage across the redirect. The SDK is an example dependency, not part of
+a registered same-page popup callback, an in-memory session and sign-out. The application keeps
+public configuration in the opener window only; it does not persist item input, configuration or tokens.
+REST JS manages its own temporary OAuth state and PKCE verifier in browser storage. Allow popups;
+if a popup is blocked or closed before completion, reload the example to start again. The SDK is an example dependency, not part of
 the lightweight ArcGIS package root.
 
 Bridge an existing `ArcGISIdentityManager` to one credential per trusted origin:

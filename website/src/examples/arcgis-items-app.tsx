@@ -11,8 +11,18 @@ import {createArcGISCredential} from '@loaders.gl/arcgis/authentication';
 import {createAuthenticatedFetch} from '@loaders.gl/loader-utils';
 import type {Feature} from '@loaders.gl/schema';
 
-/** Non-secret OAuth configuration survives only the redirect; tokens stay in memory. */
-const CONFIGURATION_KEY = 'loaders-arcgis-oauth-configuration';
+/** Public configuration shared only with a same-origin OAuth callback popup. */
+type OAuthWindow = Window & {
+  /** Configuration for the currently open popup; never contains tokens or item input. */
+  arcgisExampleOAuth?: {
+    /** Registered public OAuth client identifier. */
+    clientId: string;
+    /** User-configured portal REST endpoint. */
+    portal: string;
+    /** Registered same-origin callback page. */
+    redirectUri: string;
+  };
+};
 const PUBLIC_ITEM = '1bc3536f33374363b828e709b6f73597';
 
 /** Resolves public/private service items and displays explicitly selected feature layers. */
@@ -37,31 +47,42 @@ export default function ArcGISItemsApp(): React.ReactElement {
     const parameters = new URLSearchParams(window.location.search);
     if (!completedReference.current && (parameters.has('code') || parameters.has('error'))) {
       completedReference.current = true;
-      const configuration = sessionStorage.getItem(CONFIGURATION_KEY);
+      let configuration: OAuthWindow['arcgisExampleOAuth'];
+      try { configuration = (window.opener as OAuthWindow | null)?.arcgisExampleOAuth; } catch { /* Only same-origin openers are permitted. */ }
       if (configuration) {
-        const saved = JSON.parse(configuration);
-        setPortal(saved.portal); setClientId(saved.clientId); setOrigins(saved.origins); setInput(saved.input);
-        setBusy(true); setStatus('Completing sign-in…');
-        void ArcGISIdentityManager.completeOAuth2({...saved, popup: false, pkce: true}).then(identity => {
-          setSession(identity); setStatus('Signed in. Resolve an item to choose a layer.');
-        }).catch(() => setStatus('Sign-in failed. Check the registered redirect URL and portal configuration.')).finally(() => {
-          sessionStorage.removeItem(CONFIGURATION_KEY);
-          window.history.replaceState(null, '', window.location.pathname);
-          setBusy(false);
-        });
+        setStatus('Completing sign-in in the original window…');
+        const callbackOptions = {...configuration, popup: true, pkce: true};
+        void Promise.resolve().then(() => ArcGISIdentityManager.completeOAuth2(callbackOptions))
+          .catch(() => setStatus('Sign-in failed. Close this popup and try again in the original window.'));
+      } else {
+        setStatus('No active sign-in window. Close this callback and start sign-in from the example.');
       }
     }
-    return () => controllerReference.current?.abort();
+    return () => {
+      controllerReference.current?.abort();
+      delete (window as OAuthWindow).arcgisExampleOAuth;
+    };
   }, []);
 
   /** Starts Esri's browser PKCE flow using the current page as the registered callback. */
   async function signIn() {
+    const configuration = {clientId, portal, redirectUri: `${window.location.origin}${window.location.pathname}`};
+    const parentWindow = window as OAuthWindow;
+    if (parentWindow.arcgisExampleOAuth) {
+      setStatus('A sign-in is already active. Finish it in the popup, or reload this page to start again.');
+      return;
+    }
+    parentWindow.arcgisExampleOAuth = configuration;
+    setStatus('Finish signing in in the popup. Allow popups for this site; reload to restart a closed or blocked popup.');
     try {
-      const configuration = {clientId, portal, redirectUri: `${window.location.origin}${window.location.pathname}`, origins, input};
-      sessionStorage.setItem(CONFIGURATION_KEY, JSON.stringify(configuration));
-      await ArcGISIdentityManager.beginOAuth2({...configuration, popup: false, pkce: true});
+      const identity = await ArcGISIdentityManager.beginOAuth2({...configuration, popup: true, pkce: true});
+      if (!identity) throw new Error('The sign-in popup did not return a session.');
+      setSession(identity);
+      setStatus('Signed in. Resolve an item to choose a layer.');
     } catch {
-      setStatus('Unable to start sign-in. Check the client ID, portal and browser settings.');
+      setStatus('Sign-in failed. Check the client ID, portal and browser settings.');
+    } finally {
+      delete parentWindow.arcgisExampleOAuth;
     }
   }
 
