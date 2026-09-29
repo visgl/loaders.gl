@@ -47,6 +47,10 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
 
 ## v5.0 (In Development)
 
+- [Binary polygon buffers](/docs/developer-guide/converters/geoarrow-converters#binary-polygon-buffers)
+  can now be adapted to math.gl GeoArrow descriptors without copying coordinates. Explicit
+  dimensions preserve XYZ/XYM semantics, and row bounds can be computed directly from binary polygons.
+
 - [Declarative authentication](/docs/developer-guide/authentication#declarative-credentials)
   resolves JSON credentials through application- or loader-supplied classes. Generic request
   callbacks support per-tile signing and URL rewriting without adding S3/AWS dependencies.
