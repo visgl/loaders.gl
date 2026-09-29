@@ -5,10 +5,10 @@ import {WorkerFarm} from '@loaders.gl/worker-utils';
 import {getImageData} from '@loaders.gl/images';
 import convertB3dmToI3sGeometry, {
   getPropertyTable
-} from '../../../src/i3s-converter/helpers/geometry-converter';
-import {PGMLoader} from '../../../src/pgm-loader';
-import {getAttributeTypesMapFromPropertyTable} from '../../../src/i3s-converter/helpers/feature-attributes';
-import {AttributeMetadataInfo} from '../../../src/i3s-converter/helpers/attribute-metadata-info';
+} from '../../../src/v4/i3s-converter/helpers/geometry-converter';
+import {PGMLoader} from '../../../src/v4/pgm-loader';
+import {getAttributeTypesMapFromPropertyTable} from '../../../src/v4/i3s-converter/helpers/feature-attributes';
+import {AttributeMetadataInfo} from '../../../src/v4/i3s-converter/helpers/attribute-metadata-info';
 import {BoundingSphere, OrientedBoundingBox} from '@math.gl/culling';
 import {Matrix4} from '@math.gl/core';
 const PGM_FILE_PATH = '@loaders.gl/tile-converter/test/data/egm84-30.pgm';

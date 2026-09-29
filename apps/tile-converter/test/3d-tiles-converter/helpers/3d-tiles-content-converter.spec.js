@@ -1,7 +1,7 @@
 import {expect, test} from 'vitest';
 import {Tiles3DLoader} from '@loaders.gl/3d-tiles';
 import {loadI3STile} from '@loaders.gl/i3s/test/test-utils/load-utils';
-import {Tiles3DContentConverter} from '../../../src/3d-tiles-converter/helpers/3d-tiles-content-converter';
+import {Tiles3DContentConverter} from '../../../src/v4/3d-tiles-converter/helpers/3d-tiles-content-converter';
 import {isBrowser, parse, load} from '@loaders.gl/core';
 import {I3SAttributeLoader, COORDINATE_SYSTEM} from '@loaders.gl/i3s';
 import {Matrix4, Vector3} from '@math.gl/core';

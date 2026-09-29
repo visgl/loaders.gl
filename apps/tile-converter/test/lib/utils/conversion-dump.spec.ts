@@ -3,10 +3,10 @@ import {
   ConversionDump,
   ConversionDumpOptions,
   TextureSetDefinition
-} from '../../../src/lib/utils/conversion-dump';
+} from '../../../src/v4/lib/utils/conversion-dump';
 import {join} from 'path';
-import {isFileExists, openJson} from '../../../src/lib/utils/file-utils';
-import {DUMP_FILE_SUFFIX} from '../../../src/constants';
+import {isFileExists, openJson} from '../../../src/v4/lib/utils/file-utils';
+import {DUMP_FILE_SUFFIX} from '../../../src/v4/constants';
 import {cleanUpPath} from '../../utils/file-utils';
 import {I3SMaterialDefinition, Mbs} from '@loaders.gl/i3s';
 const testDumpMetadata = {

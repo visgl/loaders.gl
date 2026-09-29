@@ -1,5 +1,5 @@
 import {expect, test} from 'vitest';
-import {Progress} from '../../../src/i3s-converter/helpers/progress';
+import {Progress} from '../../../src/v4/i3s-converter/helpers/progress';
 // eslint-disable-next-line max-statements
 test('tile-converter(i3s)#Progress methods', async () => {
   let currentTimeMS: number = 0;

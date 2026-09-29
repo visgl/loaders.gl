@@ -1,5 +1,5 @@
 import {expect, test} from 'vitest';
-import {convertTextureAtlas} from '../../../src/3d-tiles-converter/helpers/texture-atlas';
+import {convertTextureAtlas} from '../../../src/v4/3d-tiles-converter/helpers/texture-atlas';
 test('tile-converter(3d-tiles)#convertTextureAtlas - should convert texture atlas', async () => {
   const UV = new Float32Array([0.12345, 0.54321]);
   const uvRegion = new Uint16Array([12345, 54321, 56789, 98765]);

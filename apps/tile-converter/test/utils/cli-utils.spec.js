@@ -4,7 +4,7 @@ import {
   getStringValue,
   getURLValue,
   validateOptionsWithEqual
-} from '../../src/lib/utils/cli-utils';
+} from '../../src/v4/lib/utils/cli-utils';
 import {expect, test} from 'vitest';
 test('tile-converter(utils)#reads a string value', async () => {
   expect(getStringValue(0, ['', 'string'])).toBe('string');

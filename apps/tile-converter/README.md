@@ -6,6 +6,12 @@ This module contains command line scripts and JavaScript APIs for converting bet
 
 For documentation please visit the [website](https://loaders.gl).
 
+## Source layout
+
+The original converter implementation lives in `src/v4`, and the newer conversion APIs live in
+`src/v5`. The package root remains the compatibility entrypoint for the original converter. Shared
+implementation belongs in `src/common` only when it is intentionally used by multiple versions.
+
 ## V5 spatial conversion
 
 The `@loaders.gl/tile-converter/v5` entrypoint can reuse the CRS and elevation operations from

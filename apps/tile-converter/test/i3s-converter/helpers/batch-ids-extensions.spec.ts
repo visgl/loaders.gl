@@ -1,5 +1,5 @@
 import {expect, test} from 'vitest';
-import {handleBatchIdsExtensions} from '../../../src/i3s-converter/helpers/batch-ids-extensions';
+import {handleBatchIdsExtensions} from '../../../src/v4/i3s-converter/helpers/batch-ids-extensions';
 test('tile-converter(i3s)#handleBatchIdsExtensions - Should return empty array if no extensions in primitive', async () => {
   const attributes = {};
   const primitive = {};

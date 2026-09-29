@@ -34,7 +34,7 @@ test('compressFileWithGzip resolves after writing a complete gzip file', async (
 
   await writeFile(inputPath, inputData);
 
-  const compressModulePath = resolve('apps/tile-converter/src/lib/utils/compress-util.ts');
+  const compressModulePath = resolve('apps/tile-converter/src/v4/lib/utils/compress-util.ts');
   const buildResult = await build({
     bundle: true,
     format: 'esm',
