@@ -19,7 +19,7 @@ an ArcGIS web map's styling, popups, expressions, or editing tools.
 | What you have | Next step |
 | --- | --- |
 | A feature layer | [Query and filter features](/docs/developer-guide/arcgis/feature-layers) |
-| An ArcGIS item page or item ID | Find the service URL on the item details page, then choose a layer |
+| An ArcGIS item page or item ID | [Resolve the item and choose a layer](/docs/developer-guide/arcgis/items) |
 | Secured organizational data | [Choose authentication](/docs/developer-guide/arcgis/authentication) |
 | Map, imagery, vector tile or scene data | [Check the service inventory](/docs/modules/arcgis/services) |
 | A visualization to build | [Use deck.gl](/docs/developer-guide/arcgis/deck-gl) or explore [examples](/examples/arcgis) |
@@ -89,8 +89,8 @@ before using results for analysis; counts can change while a live service is que
 
 | URL ending | Meaning | How to use it |
 | --- | --- | --- |
-| `/home/item.html?id=…` | Portal item page | Find its service URL; automatic item resolution is not implemented |
-| `/sharing/rest/content/items/{id}` | Portal item resource | Not a data-source URL; use an application portal client |
+| `/home/item.html?id=…` | Portal item page | Use `resolveArcGISItem` for the supported service item types |
+| `/sharing/rest/content/items/{id}` | Portal item resource | Resolve with `@loaders.gl/arcgis/items`, then choose a service/layer URL |
 | `/FeatureServer` | Service with layers and potentially tables | Select an explicit layer; do not assume layer 0 exists |
 | `/FeatureServer/0` | One feature layer | Pass the layer URL to the feature loader |
 | `/MapServer` | Map images or cached map tiles | Use the MapServer source; this does not query vector features |

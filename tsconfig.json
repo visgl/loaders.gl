@@ -22,6 +22,7 @@
     "baseUrl": ".",
     "paths": {
       "@loaders.gl/arcgis": ["modules/arcgis/src"],
+      "@loaders.gl/arcgis/items": ["modules/arcgis/src/arcgis-items"],
       "@loaders.gl/arcgis/authentication": ["modules/arcgis/src/authentication"],
       "@loaders.gl/arcgis/discovery": ["modules/arcgis/src/arcgis/arcgis-capability-graph"],
       "@loaders.gl/arcgis/scene-aggregation": ["modules/arcgis/src/arcgis/arcgis-scene-aggregation"],

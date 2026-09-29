@@ -81,6 +81,10 @@ test('built package exports resolve in Node without source aliases', () => {
     import {load, createDataSource} from '@loaders.gl/core';
     import * as root from '@loaders.gl/arcgis';
     import * as bundled from '@loaders.gl/arcgis/bundled';
+    import {resolveArcGISItem} from '@loaders.gl/arcgis/items';
+    assert.equal(typeof resolveArcGISItem, 'function');
+    assert.equal(resolveArcGISItem, bundled.resolveArcGISItem);
+    assert.equal(root.resolveArcGISItem, undefined);
     const serviceUrl = 'https://example.com/arcgis/rest/services/Test/SceneServer/layers/0';
     for (const loader of root.ARCGIS_LOADERS) {
       const runtime = await loader.preload();

@@ -241,3 +241,9 @@ remain the responsibility of the consuming renderer.
   analytical raster values.
 - LERC decoding preserves typed arrays, masks, NoData values, and statistics. Visualization remains
   explicit because a scientifically correct color mapping is application-specific.
+
+## Portal items
+
+Use `resolveArcGISItem` from `@loaders.gl/arcgis/items` to resolve service-backed portal items into
+explicit layer/table choices. See the [item guide and embedded example](/docs/developer-guide/arcgis/items)
+for supported item types, metadata, authentication and deployment verification.

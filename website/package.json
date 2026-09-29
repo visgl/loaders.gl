@@ -30,6 +30,7 @@
     "@docusaurus/core": "^3.10.2",
     "@docusaurus/faster": "^3.10.2",
     "@docusaurus/preset-classic": "^3.10.2",
+    "@esri/arcgis-rest-request": "^4",
     "@esri/react-arcgis": "^5.2.0",
     "@fontsource-variable/source-sans-3": "^5.2.7",
     "@fontsource-variable/space-grotesk": "^5.2.7",

@@ -40,6 +40,13 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
   tone="violet"
 />
 
+## ArcGIS service items and sign-in
+
+Resolve five service-backed ArcGIS item types into explicit layer/table choices, retaining publisher
+and field metadata. The [item explorer](/examples/arcgis-items) includes a configurable ArcGIS REST JS
+PKCE sign-in flow. ArcGIS token callbacks now also renew on small HTTP 200 JSON 498/499 errors.
+See [supported items and verification boundaries](/docs/developer-guide/arcgis/items).
+
 ## What's new
 
 - A new experimental `@loaders.gl/stac` module discovers static STAC catalogs and paginated STAC

@@ -79,6 +79,16 @@ load, and their instances are reused by nested requests. Existing credential ins
 valid and can be mixed with declarations. Direct source constructors require classes in options.
 For asynchronous discovery hooks, use `load` instead of synchronous `createDataSource`.
 
+## Provider-specific response errors
+
+A provider's `RequestCredential` may implement `shouldRefresh(response)` to detect authentication
+failures encoded in response bodies. It must inspect a clone so the original response stays readable.
+The hook is consulted only for an applied callback token and a replayable request. `canReplayRequest(url,
+options)` can additionally permit a provider's read-only POST operation; it is checked against both
+original and signed requests. The shared transport still permits at most one refresh/replay.
+`TokenAuthentication` preserves these hooks. ArcGIS uses them for bounded JSON 498/499 error detection
+and form-encoded layer queries; other credentials retain their existing HTTP-status behavior.
+
 ## Application request signing
 
 For signing that depends on the individual URL, method, headers or body, supply a callback

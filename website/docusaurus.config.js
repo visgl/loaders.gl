@@ -252,6 +252,7 @@ const config = {
             '@loaders.gl/arcgis/arcgis-scene-server-source-loader': resolve('../modules/arcgis/src/arcgis/arcgis-scene-server-source-loader'),
             '@loaders.gl/arcgis/arcgis-vector-tile-server-source-loader': resolve('../modules/arcgis/src/arcgis/arcgis-vector-tile-server-source-loader'),
             '@loaders.gl/arcgis/bundled': resolve('../modules/arcgis/src/bundled'),
+            '@loaders.gl/arcgis/items': resolve('../modules/arcgis/src/arcgis-items'),
             '@loaders.gl/arcgis/authentication': resolve('../modules/arcgis/src/authentication'),
             '@loaders.gl/arcgis/discovery': resolve('../modules/arcgis/src/arcgis/arcgis-capability-graph'),
             '@loaders.gl/arcgis/scene-aggregation': resolve('../modules/arcgis/src/arcgis/arcgis-scene-aggregation'),

@@ -147,7 +147,8 @@ These are adjacent resources/workflows, not all distinct service types.
 | --- | --- | --- | --- |
 | REST service directory | Implemented subset | Recursive directory enumeration and capability inspection | No unified credential option; URL-token preservation and error/partial-result handling need improvement |
 | Service selection | Implemented subset | First matching capability entry | No ranking; discovery is not a guarantee that a source or renderer supports the result |
-| Portal search and item resolution | Not implemented | Existing examples accept service URLs | No general item-ID/item-page-to-service resolver or search client |
+| [Portal item resolution](/docs/developer-guide/arcgis/items) | Implemented subset | Five service-backed item types; ID/item URLs, explicit layer/table choices, raw publisher and field metadata | No Web Map/Web Scene composition, file item download, related-item traversal or automatic trust expansion |
+| Portal search | Not implemented | Applications can supply known item IDs | No search, user-content listing or catalog browser |
 | WebMap | Not implemented | Individual data sources can be consumed | No web-map document composition, style, popup or expression implementation |
 | WebScene | Other package / partial | I3S WebScene loader handles selected operational layer types | Current parser checks WKID 4326; unsupported layers are reported; not a complete scene renderer |
 | Offline packaging and service export | Not implemented | File-format loaders can parse some independently obtained outputs | No package-generation, download, replica or synchronization workflow |
@@ -155,8 +156,8 @@ These are adjacent resources/workflows, not all distinct service types.
 | Server / portal / notebook / mission / video administration | Not implemented | None in the ArcGIS service clients | No infrastructure or administrative client |
 
 See Esri's [item model](https://developers.arcgis.com/rest/users-groups-and-items/items-and-item-types/)
-and [API overview](https://developers.arcgis.com/rest/). A future item resolver should initially
-handle a named subset of layer item types; it must not imply arbitrary WebMap/WebScene rendering.
+and [API overview](https://developers.arcgis.com/rest/). The item resolver supports only the named service item subset; it does not imply arbitrary
+WebMap/WebScene rendering.
 
 ## Open protocols and files available from ArcGIS
 
