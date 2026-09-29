@@ -20,9 +20,15 @@ export type {
   ValidateTilesetOptions
 } from './conversion-api.js';
 export {createBoundedMemoryTileConversionSink} from './browser-sink.js';
+export {createBrowserTileConversionSource} from './browser-source.js';
 export type {
   BoundedMemoryTileConversionSink,
   BoundedMemoryTileConversionSinkOptions,
   BrowserTileConversionFile,
   BrowserTileConversionResource
 } from './browser-sink.js';
+export type {
+  BrowserTileConversionInspection,
+  BrowserTileConversionInputResource,
+  BrowserTileConversionSourceOptions
+} from './browser-source.js';
