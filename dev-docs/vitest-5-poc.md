@@ -7,7 +7,7 @@ Evaluate Vitest 5.0.2 against the Vitest 4.1.11 version locked on master, preser
 ## Compatibility changes
 
 - Pin Vitest, the Playwright provider, and V8 coverage to the same version.
-- Align the browser packages pulled in by @vis.gl/dev-tools, which still declares Vitest 4 dependencies and peers. This is a POC override; upstream Vitest 5 support remains an adoption dependency.
+- Align the browser packages pulled in by @vis.gl/dev-tools, which still declares Vitest 4 dependencies and peers. This is a POC override; upstream Vitest 5 support remains an adoption dependency, tracked in [dev-tools #59](https://github.com/visgl/dev-tools/pull/59).
 - Keep explicit, unique browser blob report paths in CI so existing artifact upload and merge steps continue to work despite Vitest 5's changed defaults.
 - Ignore the new .vitest artifact directory.
 
@@ -53,3 +53,11 @@ The full-suite durations are single-run observations, not a benchmark. The focus
 | 5.0.2 repeat after rebuild | 11.122 | 14.530 | 11.902 | 11.902 |
 
 The initial Vitest 5 median improved, but the repeat series was slower and variable. These runs share a development machine with other activity, so performance is inconclusive. Repeat on an otherwise idle host or comparable CI runners before adopting the upgrade for speed. The final repeat followed a rebuild and an update to master; the sampled module test sources did not change.
+
+## Full coverage validation
+
+The first CI run passed build, website, Node 22/24/26, both Chromium coverage shards, slow tests, and tile-converter tests. Report merging also worked, but the unchanged coverage gate exposed the still-published schema getMeshBoundingBox compatibility export under src/deprecated/mesh-utils.ts. The earlier four-test inventory probe did not import this file.
+
+Add focused public-entrypoint checks for extrema and missing, empty, and unpopulated position data. The schema Chromium coverage run now reaches 100% for statements, lines, functions, and branches, including this legacy export. No production behavior, coverage exclusions, or thresholds changed.
+
+A local full Chromium coverage run lost its browser connection partway through and is not evidence of complete coverage; CI runs both Chromium shards and merges them with Node and affected slow coverage before enforcing the gates.
