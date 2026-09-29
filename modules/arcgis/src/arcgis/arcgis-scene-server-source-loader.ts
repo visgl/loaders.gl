@@ -3,6 +3,12 @@
 // Copyright (c) vis.gl contributors
 
 import {ArcGISAuthentication} from '../authentication';
+import {ARCGIS_SCENE_SERVER_SOURCE_LOADER_METADATA} from '../arcgis-source-types';
+import type {
+  ArcGISSceneQueryOptions,
+  ArcGISSceneQueryResult,
+  ArcGISSceneServerSourceOptions
+} from '../arcgis-source-types';
 
 import type {CoreAPI, DataSourceOptions, SourceLoader} from '@loaders.gl/loader-utils';
 import {DataSource} from '@loaders.gl/loader-utils';
@@ -13,50 +19,6 @@ import {
 } from '@loaders.gl/i3s';
 import type {I3SLayerSource, I3SServiceMetadata, SceneLayer3D} from '@loaders.gl/i3s';
 import {buildArcGISResourceURL} from './arcgis-url-utils';
-
-/** Parameters accepted by the ArcGIS SceneServer query endpoint. */
-export type ArcGISSceneQueryOptions = {
-  /** SQL where clause. */
-  where?: string;
-  /** Object IDs to include. */
-  objectIds?: number[] | string;
-  /** Geometry filter encoded using ArcGIS REST geometry syntax. */
-  geometry?: unknown;
-  /** Geometry type for the geometry filter. */
-  geometryType?: string;
-  /** Spatial relationship for the geometry filter. */
-  spatialRel?: string;
-  /** Fields to return. */
-  outFields?: string | string[];
-  /** Whether feature geometry should be included. */
-  returnGeometry?: boolean;
-  /** Input spatial reference. */
-  inSR?: string | number | object;
-  /** Output spatial reference. */
-  outSR?: string | number | object;
-  /** ArcGIS result type. */
-  resultType?: string;
-  /** Result page offset. */
-  resultOffset?: number;
-  /** Maximum records in one page. */
-  resultRecordCount?: number;
-  /** Response format. */
-  f?: 'json' | 'pjson';
-  /** Abort signal for the request. */
-  signal?: AbortSignal;
-};
-
-/** Normalized result returned by a SceneServer query. */
-export type ArcGISSceneQueryResult = {
-  /** Returned SceneServer features. */
-  features: unknown[];
-  /** Field metadata advertised by the layer. */
-  fields?: unknown[];
-  /** Whether another page is available. */
-  exceededTransferLimit?: boolean;
-  /** Original response metadata for advanced consumers. */
-  rawMetadata?: unknown;
-};
 
 /** Error raised when a SceneServer query cannot be completed or decoded. */
 export class ArcGISSceneServerQueryError extends Error {
@@ -71,18 +33,6 @@ export class ArcGISSceneServerQueryError extends Error {
   }
 }
 
-/** Options for an ArcGIS SceneServer source. */
-export type ArcGISSceneServerSourceOptions = DataSourceOptions & {
-  'arcgis-scene-server'?: {
-    /** Layer identifier used when the input URL ends at `/SceneServer`. */
-    layerId?: number | string;
-    /** ArcGIS token applied to metadata and tile-resource requests. */
-    token?: string;
-    /** Optional metadata document for offline or preloaded use. */
-    metadata?: unknown;
-  };
-};
-
 /** Source facade for an ArcGIS SceneServer I3S layer. */
 export class ArcGISSceneServerSource extends DataSource<string, ArcGISSceneServerSourceOptions> {
   /** Cached normalized layer metadata. */
@@ -92,7 +42,12 @@ export class ArcGISSceneServerSource extends DataSource<string, ArcGISSceneServe
 
   /** Creates a SceneServer source. */
   constructor(url: string, options: ArcGISSceneServerSourceOptions = {}, coreApi?: CoreAPI) {
-    super(trimTrailingSlashes(url), options, ArcGISSceneServerSourceLoader.defaultOptions, coreApi);
+    super(
+      trimTrailingSlashes(url),
+      options,
+      ARCGIS_SCENE_SERVER_SOURCE_LOADER_METADATA.defaultOptions,
+      coreApi
+    );
   }
 
   /** Returns normalized SceneServer layer metadata. */
@@ -236,24 +191,14 @@ export class ArcGISSceneServerSource extends DataSource<string, ArcGISSceneServe
   }
 }
 
-/** Source loader for ArcGIS SceneServer I3S layers. */
-export const ArcGISSceneServerSourceLoader = {
+/** Runtime service loader for synchronous construction. */
+export const ArcGISSceneServerSourceLoaderWithParser = {
+  ...ARCGIS_SCENE_SERVER_SOURCE_LOADER_METADATA,
   dataType: null as unknown as ArcGISSceneServerSource,
   batchType: null as never,
-  name: 'ArcGIS SceneServer',
-  id: 'arcgis-scene-server',
-  module: 'arcgis',
-  version: '0.0.0',
-  /** Supplies the ArcGIS constructor for declarative service credentials. */
+  preload: undefined,
+  /** Supplies ArcGIS credentials after loading the selected implementation. */
   getAuthentications: () => [ArcGISAuthentication],
-  extensions: [],
-  mimeTypes: ['application/json'],
-  type: 'arcgis-scene-server',
-  fromUrl: true,
-  fromBlob: false,
-  options: {'arcgis-scene-server': {}},
-  defaultOptions: {'arcgis-scene-server': {}},
-  testURL: (url: string): boolean => /\/SceneServer(?:[\/?#]|$)/i.test(url),
   createDataSource: (
     url: string,
     options: ArcGISSceneServerSourceOptions = {},

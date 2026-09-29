@@ -1,5 +1,5 @@
 import {defineConfig} from 'vite';
 
 export default defineConfig({
-  optimizeDeps: {include: ['@loaders.gl/arcgis']}
+  optimizeDeps: {include: ['@loaders.gl/arcgis/bundled']}
 });

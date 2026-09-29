@@ -3,7 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import {describe, expect, test} from 'vitest';
-import {discoverArcGISCapabilities, selectArcGISService} from '@loaders.gl/arcgis';
+import {discoverArcGISCapabilities, selectArcGISService} from '@loaders.gl/arcgis/discovery';
 
 const ROOT_URL = 'https://example.com/arcgis/rest/services';
 

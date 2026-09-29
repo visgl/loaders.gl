@@ -3,6 +3,11 @@
 // Copyright (c) vis.gl contributors
 
 import {ArcGISAuthentication} from '../authentication';
+import {ARCGIS_FEATURE_SERVER_SOURCE_LOADER_METADATA} from '../arcgis-source-types';
+import type {
+  ArcGISFeatureServiceQueryOptions,
+  ArcGISFeatureServerSourceLoaderOptions
+} from '../arcgis-source-types';
 
 import type {DataType, Schema, GeoJSONTable} from '@loaders.gl/schema';
 import {
@@ -11,7 +16,6 @@ import {
 } from '@loaders.gl/gis';
 import type {
   CoreAPI,
-  DataSourceOptions,
   VectorSourceMetadata,
   GetFeaturesParameters,
   VectorSource,
@@ -21,81 +25,14 @@ import type {SourceLoader} from '@loaders.gl/loader-utils';
 import {DataSource} from '@loaders.gl/loader-utils';
 import {buildArcGISResourceURL} from './arcgis-url-utils';
 
-/** Parameters for ArcGIS FeatureServer query requests. */
-export type ArcGISFeatureServiceQueryOptions = {
-  /** Include feature geometries in the response. */
-  returnGeometry?: boolean;
-  /** SQL where clause. */
-  where?: string;
-  /** Output spatial reference. */
-  outSR?: string | number;
-  /** Output fields. */
-  outFields?: string | string[];
-  /** Input spatial reference for supplied geometry. */
-  inSR?: string | number;
-  /** Filter geometry as an ArcGIS REST geometry string. */
-  geometry?: string;
-  /** Filter geometry type. */
-  geometryType?:
-    | 'esriGeometryEnvelope'
-    | 'esriGeometryPoint'
-    | 'esriGeometryPolyline'
-    | 'esriGeometryPolygon';
-  /** Spatial relationship for geometry filters. */
-  spatialRel?:
-    | 'esriSpatialRelIntersects'
-    | 'esriSpatialRelContains'
-    | 'esriSpatialRelCrosses'
-    | 'esriSpatialRelEnvelopeIntersects'
-    | 'esriSpatialRelIndexIntersects'
-    | 'esriSpatialRelOverlaps'
-    | 'esriSpatialRelTouches'
-    | 'esriSpatialRelWithin';
-  /** Geometry precision. */
-  geometryPrecision?: number;
-  /** Query result type. */
-  resultType?: 'none' | 'standard' | 'tile';
-  /** ArcGIS response format. */
-  f?: 'geojson' | 'json' | 'pjson';
-};
-
-/** Options for the ArcGIS FeatureServer source. */
-export type ArcGISFeatureServerSourceLoaderOptions = DataSourceOptions & {
-  'arcgis-feature-server'?: {
-    /** Default ArcGIS query request parameters. */
-    queryParameters?: Partial<ArcGISFeatureServiceQueryOptions>;
-  };
-};
-
-/**
- * @see https://developers.arcgis.com/rest/services-reference/enterprise/feature-service.htm
- */
-export const ArcGISFeatureServerSourceLoader = {
+/** Runtime service loader for synchronous construction. */
+export const ArcGISFeatureServerSourceLoaderWithParser = {
+  ...ARCGIS_FEATURE_SERVER_SOURCE_LOADER_METADATA,
   dataType: null as unknown as ArcGISVectorSource,
   batchType: null as never,
-  name: 'ArcGISFeatureServer',
-  id: 'arcgis-feature-server',
-  module: 'arcgis',
-  version: '0.0.0',
-  /** Supplies the ArcGIS constructor for declarative service credentials. */
+  preload: undefined,
+  /** Supplies ArcGIS credentials after loading the selected implementation. */
   getAuthentications: () => [ArcGISAuthentication],
-  extensions: [],
-  mimeTypes: [],
-  type: 'arcgis-feature-server',
-  fromUrl: true,
-  fromBlob: false,
-
-  options: {
-    url: undefined!,
-    'arcgis-feature-server': {}
-  },
-
-  defaultOptions: {
-    url: undefined!,
-    'arcgis-feature-server': {}
-  },
-
-  testURL: (url: string): boolean => url.toLowerCase().includes('featureserver'),
   createDataSource: (
     url: string,
     options: ArcGISFeatureServerSourceLoaderOptions,
@@ -116,7 +53,7 @@ export class ArcGISVectorSource
   protected formatSpecificMetadata: Promise<any> | null = null;
 
   constructor(url: string, options: ArcGISFeatureServerSourceLoaderOptions, coreApi?: CoreAPI) {
-    super(url, options, ArcGISFeatureServerSourceLoader.defaultOptions, coreApi);
+    super(url, options, ARCGIS_FEATURE_SERVER_SOURCE_LOADER_METADATA.defaultOptions, coreApi);
   }
 
   /** Returns a schema inferred from ArcGIS FeatureServer metadata fields. */

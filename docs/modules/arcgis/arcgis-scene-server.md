@@ -63,7 +63,7 @@ implementation.
 
 ```ts
 import {coreApi} from '@loaders.gl/core';
-import {ArcGISSceneServerSource} from '@loaders.gl/arcgis';
+import {ArcGISSceneServerSource} from '@loaders.gl/arcgis/bundled';
 
 const source = new ArcGISSceneServerSource(
   'https://example.com/arcgis/rest/services/City/SceneServer/layers/0',

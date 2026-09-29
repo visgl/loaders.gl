@@ -1,3 +1,4 @@
+import {ArcGISVectorSource} from '@loaders.gl/arcgis/bundled';
 import {
   ArcGISFeatureServerSourceLoader,
   ArcGISImageServerSourceLoader,
@@ -6,12 +7,13 @@ import {
   ArcGISSceneServerSourceLoader,
   ArcGISVectorTileServerSourceLoader,
   ARCGIS_LOADERS,
-  getArcGISLoader,
-  ArcGISVectorSource,
+  getArcGISLoader
+} from '@loaders.gl/arcgis';
+import {
   discoverArcGISCapabilities,
   selectArcGISService,
   getArcGISServices
-} from '@loaders.gl/arcgis';
+} from '@loaders.gl/arcgis/discovery';
 import {load} from '@loaders.gl/core';
 import {describe, expect, test} from 'vitest';
 

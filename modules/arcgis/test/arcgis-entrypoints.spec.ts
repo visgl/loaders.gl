@@ -3,19 +3,18 @@
 // Copyright (c) vis.gl contributors
 
 import {describe, expect, test} from 'vitest';
-import {createDataSource} from '@loaders.gl/core';
+import {createDataSource, load} from '@loaders.gl/core';
+import {ArcGISFeatureServerSourceLoader, ARCGIS_LOADERS, getArcGISLoader} from '@loaders.gl/arcgis';
+import {ArcGISAuthentication, createArcGISCredential} from '@loaders.gl/arcgis/authentication';
 import {
-  ArcGISFeatureServerSourceLoader,
-  ARCGIS_LOADERS,
-  getArcGISLoader,
-  ArcGISAuthentication,
-  createArcGISCredential
-} from '@loaders.gl/arcgis';
+  ARCGIS_LOADERS as BUNDLED_ARCGIS_LOADERS,
+  getArcGISLoader as getBundledArcGISLoader
+} from '@loaders.gl/arcgis/bundled';
 import {resolveCredentials} from '@loaders.gl/loader-utils';
 
 describe('ArcGIS public entrypoints', () => {
-  test('the package root supports synchronous construction and feature queries', async () => {
-    const source = createDataSource(
+  test('the package root loads the FeatureServer implementation for queries', async () => {
+    const source = await load(
       'https://example.com/arcgis/rest/services/Roads/FeatureServer/0',
       [ArcGISFeatureServerSourceLoader],
       {core: {fetch: async () => Response.json({type: 'FeatureCollection', features: []})}}
@@ -40,7 +39,8 @@ describe('ArcGIS public entrypoints', () => {
     expect(loader.testURL('https://example.com/unrelated')).toBe(false);
 
     const requests: string[] = [];
-    const source = createDataSource(serviceUrl, ARCGIS_LOADERS, {
+    expect(() => createDataSource(serviceUrl, [loader], {})).toThrow(/async load.*bundled/);
+    const source = await load(serviceUrl, ARCGIS_LOADERS, {
       core: {
         type: serviceType,
         credentials: [
@@ -52,6 +52,12 @@ describe('ArcGIS public entrypoints', () => {
         }
       }
     });
+    const runtimeLoader = getBundledArcGISLoader(serviceType)!;
+    expect(runtimeLoader.preload).toBeUndefined();
+    const synchronousSource = createDataSource(serviceUrl, BUNDLED_ARCGIS_LOADERS, {
+      core: {type: serviceType}
+    });
+    expect(synchronousSource.constructor).toBe(source.constructor);
     expect(requests).toEqual([]);
     await source.fetch(serviceUrl);
     // Both requests use the in-memory core.fetch above; only the origin differs.
@@ -60,6 +66,11 @@ describe('ArcGIS public entrypoints', () => {
     await source.fetch(untrustedUrl.href);
     expect(new URL(requests[0]).searchParams.get('token')).toBe('scoped-token');
     expect(new URL(requests[1]).searchParams.has('token')).toBe(false);
+  });
+
+  test('bundled lookup returns runtime loaders and rejects unknown services', () => {
+    expect(getBundledArcGISLoader('ArcGIS-Feature-Server')).toBe(BUNDLED_ARCGIS_LOADERS[0]);
+    expect(getBundledArcGISLoader('unknown')).toBeUndefined();
   });
 
   test('the ArcGIS credential preset retains its scope and refresh statuses', () => {

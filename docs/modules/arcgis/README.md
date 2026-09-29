@@ -61,8 +61,10 @@ Read the [ArcGIS developer guide](/docs/developer-guide/arcgis),
 [examples gallery](/examples/arcgis). The [complete service inventory](/docs/modules/arcgis/services)
 includes unsupported operations and service families.
 
-The root exports service loaders, source classes, credentials and discovery helpers. Use async
-`load()` or synchronous `createDataSource()`; see
+The root exports lightweight service loaders. Credentials and discovery have dedicated
+`/authentication` and `/discovery` entrypoints. Async `load()`
+imports the selected implementation. For synchronous `createDataSource()` or direct source
+classes, use `@loaders.gl/arcgis/bundled`; see
 [import patterns](/docs/developer-guide/arcgis#how-imports-work).
 
 ## Service support
@@ -148,7 +150,7 @@ Use `createArcGISCredential` to scope a token to the exact ArcGIS Online, Enterp
 origin. The credential follows metadata, feature, image, tile, and deck.gl requests:
 
 ```ts
-import {createArcGISCredential} from '@loaders.gl/arcgis';
+import {createArcGISCredential} from '@loaders.gl/arcgis/authentication';
 
 const source = await load(serviceUrl, ARCGIS_LOADERS, {
   core: {
@@ -176,7 +178,7 @@ is already known.
 
 ```ts
 import {ARCGIS_LOADERS} from '@loaders.gl/arcgis';
-import {discoverArcGISCapabilities, selectArcGISService} from '@loaders.gl/arcgis';
+import {discoverArcGISCapabilities, selectArcGISService} from '@loaders.gl/arcgis/discovery';
 import {load} from '@loaders.gl/core';
 
 const graph = await discoverArcGISCapabilities('https://example.com/arcgis/rest/services');
@@ -196,7 +198,7 @@ endpoints. It normalizes layer metadata and delegates traversal and decoding to 
 mesh, Point, or Point Cloud source.
 
 ```ts
-import {ArcGISSceneServerSource} from '@loaders.gl/arcgis';
+import {ArcGISSceneServerSource} from '@loaders.gl/arcgis/bundled';
 import {coreApi} from '@loaders.gl/core';
 
 const service = new ArcGISSceneServerSource(

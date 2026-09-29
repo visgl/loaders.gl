@@ -827,10 +827,13 @@ First official release of loaders.gl.
 
 ## ArcGIS package extraction (v5)
 
-ArcGIS exports have moved out of `@loaders.gl/services`. Import service loaders, source classes,
-credentials, discovery and scene aggregation helpers from `@loaders.gl/arcgis`.
+ArcGIS exports have moved out of `@loaders.gl/services` into the `@loaders.gl/arcgis` package.
 `SERVICE_LOADERS` and `getServiceLoader` are replaced by `ARCGIS_LOADERS` and `getArcGISLoader`.
 No ArcGIS compatibility exports remain in services. Other providers’ credential helpers stay there.
 
-Source construction and service APIs are unchanged: both async `load()` and synchronous
-`createDataSource()` accept the service loaders exported from `@loaders.gl/arcgis`.
+The package root now exports lightweight service loaders for async `load()`. Synchronous
+`createDataSource()` and direct source-class imports move to `@loaders.gl/arcgis/bundled`, using the
+same export names. Credentials, discovery and aggregation helpers move to `/authentication`,
+`/discovery` and `/scene-aggregation`, respectively, and remain available through `/bundled`.
+Shared types remain at the root, including source instance types.
+Explicit per-service subpaths export `*WithParser` loaders for synchronous construction.

@@ -28,6 +28,46 @@
       "types": "./dist/index.d.ts",
       "import": "./dist/index.js",
       "require": "./dist/index.cjs"
+    },
+    "./bundled": {
+      "types": "./dist/bundled.d.ts",
+      "import": "./dist/bundled.js"
+    },
+    "./arcgis-feature-server-source-loader": {
+      "types": "./dist/arcgis/arcgis-feature-server-source-loader.d.ts",
+      "import": "./dist/arcgis/arcgis-feature-server-source-loader.js"
+    },
+    "./arcgis-image-server-source-loader": {
+      "types": "./dist/arcgis/arcgis-image-server-source-loader.d.ts",
+      "import": "./dist/arcgis/arcgis-image-server-source-loader.js"
+    },
+    "./arcgis-image-tile-source-loader": {
+      "types": "./dist/arcgis/arcgis-image-tile-source-loader.d.ts",
+      "import": "./dist/arcgis/arcgis-image-tile-source-loader.js"
+    },
+    "./arcgis-map-tile-source-loader": {
+      "types": "./dist/arcgis/arcgis-map-tile-source-loader.d.ts",
+      "import": "./dist/arcgis/arcgis-map-tile-source-loader.js"
+    },
+    "./arcgis-scene-server-source-loader": {
+      "types": "./dist/arcgis/arcgis-scene-server-source-loader.d.ts",
+      "import": "./dist/arcgis/arcgis-scene-server-source-loader.js"
+    },
+    "./arcgis-vector-tile-server-source-loader": {
+      "types": "./dist/arcgis/arcgis-vector-tile-server-source-loader.d.ts",
+      "import": "./dist/arcgis/arcgis-vector-tile-server-source-loader.js"
+    },
+    "./authentication": {
+      "types": "./dist/authentication.d.ts",
+      "import": "./dist/authentication.js"
+    },
+    "./discovery": {
+      "types": "./dist/arcgis/arcgis-capability-graph.d.ts",
+      "import": "./dist/arcgis/arcgis-capability-graph.js"
+    },
+    "./scene-aggregation": {
+      "types": "./dist/arcgis/arcgis-scene-aggregation.d.ts",
+      "import": "./dist/arcgis/arcgis-scene-aggregation.js"
     }
   },
   "sideEffects": false,

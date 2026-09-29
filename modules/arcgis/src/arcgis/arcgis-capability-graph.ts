@@ -3,6 +3,8 @@
 // Copyright (c) vis.gl contributors
 
 import {getArcGISServices} from './arcgis-server';
+export {getArcGISServices} from './arcgis-server';
+export type {Service as ArcGISService} from './arcgis-server';
 import type {ServiceCapabilities} from '@loaders.gl/loader-utils';
 import type {Service as ArcGISService} from './arcgis-server';
 

@@ -10,9 +10,11 @@ const source = await load(featureLayerUrl, ArcGISFeatureServerSourceLoader);
 const features = await source.getFeatures({format: 'geojson'});
 ```
 
-Import service loaders, source classes, credentials and discovery helpers from `@loaders.gl/arcgis`.
-The service loaders work with async `load()`, synchronous `createDataSource()`, and deck.gl
-`SourceLayer`. Source construction does not fetch data; service requests are asynchronous.
+Import lightweight service loaders from `@loaders.gl/arcgis`. Authentication and discovery helpers
+have dedicated `/authentication` and `/discovery` entrypoints.
+Async `load()` and deck.gl `SourceLayer` import the selected service implementation on demand.
+For synchronous `createDataSource()` or direct source classes, import the same names from
+`@loaders.gl/arcgis/bundled`. Service requests remain asynchronous.
 
 FeatureServer, MapServer, ImageServer, VectorTileServer and SceneServer adapters implement specific
 read operations, not full ArcGIS API parity. Feature queries currently issue one request; automatic
