@@ -2,7 +2,8 @@ import {expect, test, vi} from 'vitest';
 import {
   createBoundedMemoryTileConversionSink,
   createBrowserTileConversionSource,
-  createBrowserTilesetConversionSource
+  createBrowserTilesetConversionSource,
+  encodePointCloudTile
 } from '@loaders.gl/tile-converter/v5/browser';
 import {
   createI3SConversionSpatialContext,
@@ -18,12 +19,37 @@ import {
   type TileConversionSink,
   type TileConversionSource
 } from '@loaders.gl/tile-converter/v5';
+import {makeMeshArrowTable, convertTableToMesh} from '@loaders.gl/schema-utils';
+import {parse} from '@loaders.gl/core';
+import {Tiles3DLoader} from '@loaders.gl/3d-tiles/bundled';
 import {
   createTilesetSpatialReference,
   get3DTilesSpatialReference,
   getI3SSpatialReference
 } from '@loaders.gl/tiles';
 import type {Schema} from '@loaders.gl/schema';
+
+test('tile-converter(v5)#encodes a Mesh Arrow point batch as a PNTS resource', async () => {
+  const pointBatch = makeMeshArrowTable({
+    POSITION: {value: new Float32Array([10, 20, 30, 40, 50, 60]), size: 3},
+    COLOR_0: {value: new Uint8Array([255, 0, 0, 0, 255, 0]), size: 3}
+  });
+  const pnts = encodePointCloudTile(pointBatch, {rtcCenter: [10, 20, 30]});
+  const tile = await parse(pnts, Tiles3DLoader);
+
+  expect(Array.from(tile.attributes.positions!)).toEqual([0, 0, 0, 30, 30, 30]);
+  expect(Array.from(tile.attributes.colors!.value)).toEqual([255, 0, 0, 0, 255, 0]);
+  expect(tile.rtcCenter).toEqual([10, 20, 30]);
+
+  const mesh = convertTableToMesh(pointBatch);
+  mesh.attributes.POSITION = {
+    ...mesh.attributes.POSITION,
+    value: new Uint16Array([0, 0, 0, 65_535, 65_535, 65_535]),
+    transform: {type: 'quantization', bits: 16, origin: [10, 20, 30], range: 30}
+  };
+  const quantizedTile = await parse(encodePointCloudTile(mesh), Tiles3DLoader);
+  expect(Array.from(quantizedTile.attributes.positions!)).toEqual([10, 20, 30, 40, 50, 60]);
+});
 
 test('tile-converter(v5)#inspectTileset delegates to the injected source', async () => {
   const source: TileConversionSource<{format: string}, Uint8Array> = {
