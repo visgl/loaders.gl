@@ -16,6 +16,7 @@ export type RequestSchedulerProps = {
   id?: string;
   throttleRequests?: boolean;
   maxRequests?: number;
+  /** Quiet period after the most recent new request; completions never restart this timer. */
   debounceTime?: number;
 };
 
@@ -58,6 +59,7 @@ export default class RequestScheduler {
   /** Tracks the number of active requests and prioritizes/cancels queued requests. */
   private requestQueue: Request[] = [];
   private requestMap: Map<Handle, Promise<RequestResult>> = new Map();
+  /** Pending arrival debounce or next-tick refill; only new arrivals replace this timer. */
   private updateTimer: ReturnType<typeof setTimeout> | null = null;
 
   constructor(props: RequestSchedulerProps = {}) {
@@ -144,10 +146,7 @@ export default class RequestScheduler {
         // Stop tracking a request - it has completed, failed, cancelled etc
         this.requestMap.delete(handle);
         this.activeRequestCount--;
-        // A slot just freed up, so fill it on the next tick.
-        if (this.updateTimer === null) {
-          this.updateTimer = setTimeout(() => this._issueNewRequestsAsync(), 0);
-        }
+        this.scheduleRefill();
       }
     };
 
@@ -157,7 +156,15 @@ export default class RequestScheduler {
     return resolve ? resolve({done}) : Promise.resolve({done});
   }
 
-  /** We check requests asynchronously, to prevent multiple updates */
+  /** Refills freed slots on the next tick while preserving any pending arrival debounce. */
+  private scheduleRefill(): void {
+    if (this.updateTimer !== null) {
+      return;
+    }
+    this.updateTimer = setTimeout(() => this._issueNewRequestsAsync(), 0);
+  }
+
+  /** Restarts the quiet period when a new request enters the queue. */
   _issueNewRequests(): void {
     if (this.updateTimer !== null) {
       clearTimeout(this.updateTimer);
@@ -165,7 +172,7 @@ export default class RequestScheduler {
     this.updateTimer = setTimeout(() => this._issueNewRequestsAsync(), this.props.debounceTime);
   }
 
-  /** Refresh all requests  */
+  /** Clears timer ownership before updating priorities and dispatching queued requests. */
   _issueNewRequestsAsync() {
     if (this.updateTimer !== null) {
       clearTimeout(this.updateTimer);
