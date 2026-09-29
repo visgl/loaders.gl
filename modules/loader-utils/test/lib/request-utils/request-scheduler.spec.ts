@@ -88,9 +88,13 @@ test('RequestScheduler#debounce', async (t) => {
   t.is(scheduler.activeRequestCount, 0, 'no active requests on scheduler #1');
   t.is(schedulerDebounced.activeRequestCount, 0, 'no active requests on scheduler #2');
 
-  await sleep(50);
+  await sleep(0);
 
-  t.is(schedulerDebounced.activeRequestCount, 1, 'issues final debounced request after delay');
+  t.is(
+    schedulerDebounced.activeRequestCount,
+    1,
+    'refills freed slot without another debounce delay'
+  );
 
   const token3 = await request3;
 
