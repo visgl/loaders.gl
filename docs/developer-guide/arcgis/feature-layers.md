@@ -1,81 +1,142 @@
 ---
 title: Query ArcGIS feature layers
-description: Select fields, filter features, choose output formats and understand query limits.
+description: Retrieve complete bounded queries, stream pages, inspect completeness, and retain nonspatial records.
 ---
 
-# Query feature layers
+# Query feature layers and tables
 
-Use the URL of a particular layer, such as `/FeatureServer/3`, rather than a portal item page.
-Inspect the layer's metadata for fields, spatial reference and query capabilities before deciding
-how to visualize it.
+Use a layer URL such as `/FeatureServer/3` or a queryable `/MapServer/3`. A service root requires
+one explicit `layers` selection. Nonspatial table endpoints use the same source. Item URLs are not
+yet resolved automatically.
 
 ```ts
 import {load} from '@loaders.gl/core';
 import {ArcGISFeatureServerSourceLoader} from '@loaders.gl/arcgis';
 
-const source = await load(featureLayerUrl, ArcGISFeatureServerSourceLoader, {
-  'arcgis-feature-server': {
-    queryParameters: {
-      where: "CATEGORY = 'Bicycle'",
-      outFields: ['OBJECTID', 'CATEGORY'],
-      returnGeometry: true
-    }
-  }
+const source = await load(featureLayerUrl, ArcGISFeatureServerSourceLoader);
+const controller = new AbortController();
+const result = await source.queryFeatures({
+  query: {where: "CATEGORY = 'Bicycle'", outFields: ['OBJECTID', 'CATEGORY']},
+  boundingBox: [[-85.9, 37.6], [-85.6, 37.9]],
+  requestCrs: 'EPSG:4326',
+  pageSize: 500,
+  maxFeatures: 20000,
+  signal: controller.signal,
+  onProgress: ({loaded, expectedCount}) => console.log(loaded, expectedCount)
 });
 
-const metadata = await source.getMetadata({formatSpecificMetadata: true});
-const schema = await source.getSchema();
-const controller = new AbortController();
-const features = await source.getFeatures({
-  boundingBox: [[-85.9, 37.6], [-85.6, 37.9]],
-  crs: 'EPSG:4326',
-  format: 'geojson',
-  signal: controller.signal
-});
+if (!result.complete) {
+  console.warn(`Partial query: ${result.reason}`, result.loaded, result.expectedCount);
+}
+// result.data is a GeoJSON table. Display incomplete results only with an explicit label.
 ```
 
-Replace the example field names and predicate with fields from your layer. Abort obsolete requests
-when the viewport changes. Filter on the server and request only fields needed for rendering and
-interaction. Bounds use `requestCrs`, which defaults to the output `crs` (EPSG:4326 by default).
-Requesting an output CRS uses the service's reprojection capabilities rather than a local general-purpose projection engine.
+Replace field names and predicates with those from your layer. Source-wide defaults remain under
+`arcgis-feature-server.queryParameters`; per-request `query` values override them. The stable object
+ID field is added to selected output fields during complete retrieval and is retained as `feature.id`.
 
-## Choose an output
+## Choose the retrieval contract
 
-| Output | Result | Typical use |
-| --- | --- | --- |
-| `geojson` | GeoJSON table / FeatureCollection | Explicit GeoJsonLayer data, inspection and simple applications |
-| `binary` | Binary feature collection | Compatible binary geometry renderers; check the selected layer's contract |
-| `arrow` (default) | Arrow table with WKB geometry | Columnar workflows and compatible GeoArrow adapters |
-
-These are client-side conversions of a GeoJSON service response. They are not ArcGIS PBF feature
-query support, nor does every deck.gl layer accept every output. Keep `f: 'geojson'`; the legacy
-query-options type also lists JSON/PJSON, but this source does not decode Esri JSON feature sets.
-
-## Record limits and completeness
-
-`getFeatures()` makes **one query per call**. It does not automatically page, and its converted
-output does not retain the service's transfer-limit flag. Do not use its returned length as the
-count of all matching records unless you have independently established completeness.
-
-For complete datasets, use an ArcGIS query client with pagination and inspect the service's
-`maxRecordCount` and pagination capabilities. Convert or load its results for visualization.
-Automatic paging and a page-result API are planned follow-ups, not available methods in this
-module. See Esri's [query features guide](https://developers.arcgis.com/documentation/portal-and-data-services/data-services/feature-services/query-features/).
-
-For large visualizations, prefer bounded viewport queries, vector tiles, or a scene service when
-those representations fit the data. Avoid repeated full-dataset downloads during map interaction.
-
-## Current boundaries
-
-| Capability | Status |
+| Method | Contract |
 | --- | --- |
-| Spatial bounds, `where`, field selection | Implemented |
-| Layer metadata and common field types | Implemented subset; preserve raw metadata when exact ArcGIS field semantics matter |
-| GeoJSON / binary / Arrow conversion | Implemented from supported GeoJSON geometry |
-| Automatic pagination or completeness reporting | Not implemented |
-| Nonspatial tables and Esri JSON/PBF feature sets | Not verified / not implemented as dedicated result paths |
-| Counts, grouped statistics, attachments and related-record APIs | No first-class API |
-| Editing, replicas, offline synchronization | Not implemented |
+| `queryFeaturePage(options)` | One page, always marked `complete: false`, `reason: 'single-page'` |
+| `queryFeaturePages(options)` | Async iterator yielding pages of unique records and cumulative progress |
+| `queryFeatures(options)` | Collects the iterator into one result with explicit completeness evidence |
+| `getFeatures(parameters)` | Complete-query convenience for VectorSource; throws if retrieval is incomplete, then converts to GeoJSON, binary, or Arrow |
+| `queryCount(parameters)` | Current count for the same filters |
+| `queryObjectIds(parameters)` | IDs, their field name, and the explicit transfer-limit flag; not a completeness guarantee |
+| `queryExtent(parameters)` | Bounds with an explicit spatial reference, or null |
 
-[Explore the feature example](/examples/tiles/arcgis-feature-server) and
-[operation reference](/docs/modules/arcgis/arcgis-feature-server).
+A viewport query can be complete **for its bounds and filters** without containing the whole dataset.
+`scope` distinguishes `viewport` from a general `query`. `expectedCount` is the initial server count;
+`loaded` counts unique retained records. `pages` counts data pages, excluding metadata and summary
+requests. `duplicates` reports discarded repeat records.
+
+## Stream data into a visualization
+
+```ts
+const features = [];
+for await (const page of source.queryFeaturePages({
+  query: {where: '1=1'},
+  pageSize: 500,
+  maxFeatures: 20000,
+  signal: controller.signal
+})) {
+  features.push(...page.data.features);
+  // Update your GeoJsonLayer with a new data array and display page.loaded/page.expectedCount.
+  // Only page.complete permits labeling the selected query complete.
+}
+```
+
+Abort obsolete queries when filters change. Cancellation rejects with the signal's abort reason;
+it does not return a successful result. Pages already consumed remain partial data. Breaking out of
+the iterator closes it and prevents subsequent requests. ID batches can prefetch up to `concurrency`
+pages; offset pages are serial. The embedded [feature example](/examples/tiles/arcgis-feature-server)
+shows progressive rendering, cancellation, filters, and a deliberately selectable record cap.
+
+## Pagination and completeness
+
+`strategy: 'auto'` selects ordered offset pagination only when the layer advertises both
+`supportsPagination` and `supportsOrderBy`. Otherwise it enumerates object IDs and retrieves batches.
+Applications may explicitly select `offset` or `object-ids`. Spatial layers must advertise GeoJSON
+support when their supported formats are present; older JSON-only MapServer layers are rejected.
+
+| Control | Default | Meaning |
+| --- | ---: | --- |
+| `pageSize` | 1000 | Capped by `maxRecordCount`; must be a positive safe integer |
+| `maxFeatures` | 100000 | Maximum unique records retained; controls memory and query scope |
+| `concurrency` | 4 | Parallel ID batches; 1–8; does not parallelize offsets |
+
+Complete queries control ordering and offsets. Use `queryFeaturePage({query: {resultOffset: 100}})`
+for explicit pages. `getFeatures()` uses the complete-query defaults above; use `queryFeatures()`
+when you need different bounds or want to consume a labeled partial result.
+
+| Final reason | Interpretation |
+| --- | --- |
+| `complete` | Traversal finished and unique records matched the initial count |
+| `feature-limit` | The application cap stopped retrieval |
+| `id-limit` | ID enumeration was truncated or disagreed with the initial count |
+| `count-mismatch` | Returned records did not match the expected set/count |
+| `no-progress` | An offset page added no new records without establishing completion |
+| `single-page` | The caller requested only a page |
+
+`loading` describes intermediate pages. ID responses are checked against the initial count rather
+than assuming IDs-only requests are unlimited. Missing records and repeated pages never silently
+become a complete result. These checks do **not** establish a transactional snapshot: concurrent
+inserts, edits and deletes can change membership even when counts agree. Use immutable data or a
+service-specific snapshot workflow when strict temporal consistency matters. Token-based pagination,
+newer unique-ID query protocols, PBF feature responses, and snapshot/version management are outside
+this implementation. See Esri's [feature query reference](https://developers.arcgis.com/rest/services-reference/enterprise/query-feature-service-layer/).
+
+## Spatial references and record types
+
+Spatial output is GeoJSON in EPSG:4326, also used for subsequent binary/Arrow conversion.
+Use `requestCrs` for projected bounding boxes; the service performs reprojection. Numeric WKIDs and
+`EPSG:<number>` identifiers are accepted. Other CRS forms and projected GeoJSON output fail with an
+explicit message. Bounds use x/y order; split a bounding box that crosses the antimeridian.
+
+Nonspatial ArcGIS tables use JSON attribute records normalized to features with `geometry: null`.
+Null attributes and raw date values are preserved. No timezone conversion or domain-label substitution
+is performed. `getSchema()` describes ArcGIS field types; Arrow conversion infers the actual returned
+values, so an epoch-millisecond attribute remains numeric unless the application converts it.
+Numeric identities outside JavaScript's safe integer range are rejected rather than rounded for
+deduplication. The separate newer ArcGIS unique-ID protocol is not implemented.
+
+| Output | Use and limits |
+| --- | --- |
+| `geojson` | GeoJSON table / FeatureCollection, including null-geometry records |
+| `binary` | Binary geometry collection; rejects null geometries rather than dropping their rows |
+| `arrow` (default for `getFeatures`) | Arrow table with WKB geometry, retaining null-geometry rows |
+
+GeoJSON service responses supply spatial features; ArcGIS JSON geometry and PBF decoding are not
+implemented by this source. Its format hint cannot force a spatial JSON response. Grouped statistics,
+attachments, related records, editing and synchronization remain outside this tranche.
+
+## Errors and authentication
+
+Metadata and query operations recognize both HTTP failures and ArcGIS `error` objects delivered
+with HTTP 200. `ArcGISFeatureQueryError` exposes `code` and `details`; import its runtime class from
+`@loaders.gl/arcgis/bundled` or the feature implementation subpath when using `instanceof`.
+JSON authentication errors are surfaced, not automatically refreshed by this feature client.
+See the [authentication guide](/docs/developer-guide/arcgis/authentication) for scoped credentials
+and application-managed session renewal.

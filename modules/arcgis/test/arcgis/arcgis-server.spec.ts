@@ -427,7 +427,18 @@ test('ArcGISVectorSource#getFeatures defaults to Arrow', async () => {
       }
     ]
   };
-  source.fetch = async () => new Response(JSON.stringify(featureCollection));
+  source.fetch = async url => {
+    const parameters = new URL(url).searchParams;
+    if (parameters.get('returnCountOnly') === 'true') return Response.json({count: 1});
+    if (parameters.get('returnIdsOnly') === 'true')
+      return Response.json({objectIdFieldName: 'OBJECTID', objectIds: [1]});
+    if (!new URL(url).pathname.endsWith('/query'))
+      return Response.json({objectIdField: 'OBJECTID'});
+    return Response.json({
+      ...featureCollection,
+      features: featureCollection.features.map(feature => ({...feature, id: 1}))
+    });
+  };
   const table = await source.getFeatures({
     boundingBox: [
       [1, 2],
@@ -452,7 +463,18 @@ test('ArcGISVectorSource#getFeatures supports explicit GeoJSON', async () => {
       }
     ]
   };
-  source.fetch = async () => new Response(JSON.stringify(featureCollection));
+  source.fetch = async url => {
+    const parameters = new URL(url).searchParams;
+    if (parameters.get('returnCountOnly') === 'true') return Response.json({count: 1});
+    if (parameters.get('returnIdsOnly') === 'true')
+      return Response.json({objectIdFieldName: 'OBJECTID', objectIds: [1]});
+    if (!new URL(url).pathname.endsWith('/query'))
+      return Response.json({objectIdField: 'OBJECTID'});
+    return Response.json({
+      ...featureCollection,
+      features: featureCollection.features.map(feature => ({...feature, id: 1}))
+    });
+  };
   const table = await source.getFeatures({
     boundingBox: [
       [1, 2],
@@ -462,5 +484,9 @@ test('ArcGISVectorSource#getFeatures supports explicit GeoJSON', async () => {
     crs: '4326',
     format: 'geojson'
   });
-  expect(table).toEqual({shape: 'geojson-table', ...featureCollection});
+  expect(table).toEqual({
+    shape: 'geojson-table',
+    ...featureCollection,
+    features: featureCollection.features.map(feature => ({...feature, id: 1}))
+  });
 });

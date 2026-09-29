@@ -5,7 +5,8 @@
 import {ArcGISFeatureServerSourceLoaderWithParser as ArcGISFeatureServerSourceLoader} from './arcgis/arcgis-feature-server-source-loader';
 export {
   ArcGISFeatureServerSourceLoaderWithParser as ArcGISFeatureServerSourceLoader,
-  ArcGISVectorSource
+  ArcGISVectorSource,
+  ArcGISFeatureQueryError
 } from './arcgis/arcgis-feature-server-source-loader';
 import {ArcGISImageServerSourceLoaderWithParser as ArcGISImageServerSourceLoader} from './arcgis/arcgis-image-server-source-loader';
 export {

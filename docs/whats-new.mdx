@@ -57,6 +57,13 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
 - Fix binary-to-GeoJSON conversion of multipolygons with empty parts, preserving empty
   polygons without overflowing the call stack.
 
+### Complete ArcGIS feature queries
+
+The ArcGIS feature source now supports bounded paginated queries, progressive pages with completion
+evidence, cancellation, counts, IDs, extents, nonspatial tables, and queryable MapServer layers.
+`getFeatures()` rejects incomplete queries instead of silently returning a truncated page. See the
+[feature guide](/docs/developer-guide/arcgis/feature-layers) and embedded progressive example.
+
 ### 3D Tiles
 
 - The website 3D Tiles example now preserves the tileset center's elevation when initializing

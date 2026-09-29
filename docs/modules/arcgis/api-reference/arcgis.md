@@ -45,7 +45,7 @@ source loader per visual data contract and a shared registry for automatic selec
 
 | Loader type | ArcGIS endpoint | Source contract | Primary methods | Output |
 | --- | --- | --- | --- | --- |
-| `arcgis-feature-server` | `FeatureServer` | `VectorSource` | `getMetadata`, `getSchema`, `getFeatures` | GeoJSON, binary, Arrow |
+| `arcgis-feature-server` | `FeatureServer`, queryable `MapServer/{layerId}` | `VectorSource` | `getMetadata`, `getSchema`, `getFeatures`, `queryFeatures`, `queryFeaturePages`, `queryFeaturePage`, `queryCount`, `queryObjectIds`, `queryExtent` | GeoJSON, binary, Arrow; explicit query completion |
 | `arcgis-image-server` | `ImageServer` | `ImageSource` | `getMetadata`, `getImage`, `exportImage`, `exportRaster` | Image or LERC raster |
 | `arcgis-image-server-tiles` | `ImageServer` | `TileSource` | `getMetadata`, `getTile`, `updateParameters` | Image or LERC tile |
 | `arcgis-map-server` | `MapServer` | `TileSource` | `getMetadata`, `getTile`, `updateParameters` | Cached or exported image tile |

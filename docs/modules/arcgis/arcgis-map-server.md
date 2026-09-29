@@ -147,3 +147,11 @@ const layer = new SourceLayer({
 tiles and dynamic exports; the latter is an image request, not feature querying.
 
 [Runnable application source](https://github.com/visgl/loaders.gl/tree/master/examples/website/wms)
+
+## Query vector features and tables
+
+For a queryable `/MapServer/{layerId}`, use `ArcGISFeatureServerSourceLoader` and its
+[feature query API](/docs/developer-guide/arcgis/feature-layers). The registry selects this vector
+source for numbered MapServer layer URLs; MapServer root URLs retain the imagery source.
+Spatial layer queries require advertised GeoJSON support. Counts, IDs, extents and nonspatial
+tables share the feature-query implementation. This does not add `identify`, `find`, or legend APIs.
