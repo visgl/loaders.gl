@@ -17,7 +17,17 @@ describe('ArcGIS public entrypoints', () => {
     const source = await load(
       'https://example.com/arcgis/rest/services/Roads/FeatureServer/0',
       [ArcGISFeatureServerSourceLoader],
-      {core: {fetch: async () => Response.json({type: 'FeatureCollection', features: []})}}
+      {
+        core: {
+          fetch: async url => {
+            const parameters = new URL(String(url)).searchParams;
+            if (parameters.get('returnCountOnly') === 'true') return Response.json({count: 0});
+            if (parameters.get('returnIdsOnly') === 'true')
+              return Response.json({objectIdFieldName: 'OBJECTID', objectIds: []});
+            return Response.json({objectIdField: 'OBJECTID'});
+          }
+        }
+      }
     );
     expect(await source.getFeatures({format: 'geojson'})).toMatchObject({
       type: 'FeatureCollection',

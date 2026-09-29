@@ -80,10 +80,10 @@ This draws the requested features on a plain background. A basemap is optional. 
 original data provider according to the service's item details and copyright information.
 [Open the interactive example](/examples/tiles/arcgis-feature-server) to explore viewport loading.
 
-`getFeatures()` currently makes one request. A service can limit the returned record count, and
-this client does not expose a completeness guarantee. Keep queries small and consult the
-[query limitations](/docs/developer-guide/arcgis/feature-layers#record-limits-and-completeness)
-before using the result for a complete count or analysis.
+`getFeatures()` retrieves a bounded complete query and throws if it cannot establish completeness.
+Use `queryFeatures()` for progress, a configurable record cap, and explicit partial-result handling.
+Read the [completion contract](/docs/developer-guide/arcgis/feature-layers#pagination-and-completeness)
+before using results for analysis; counts can change while a live service is queried.
 
 ## Recognize ArcGIS URLs
 

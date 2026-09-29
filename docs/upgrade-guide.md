@@ -837,3 +837,12 @@ same export names. Credentials, discovery and aggregation helpers move to `/auth
 `/discovery` and `/scene-aggregation`, respectively, and remain available through `/bundled`.
 Shared types remain at the root, including source instance types.
 Explicit per-service subpaths export `*WithParser` loaders for synchronous construction.
+
+### ArcGIS single-response feature queries
+
+`ArcGISVectorSource.getFeatures()` no longer returns a potentially truncated single response.
+It retrieves a bounded complete query and throws when completeness cannot be established. Migrate
+applications that intentionally consume partial data to `queryFeaturePage()` or inspect the
+explicit `complete`/`reason` fields from `queryFeatures()` before displaying results. Spatial
+GeoJSON output is restricted to EPSG:4326; use `requestCrs` for projected input bounds. See the
+[query guide](/docs/developer-guide/arcgis/feature-layers) for the replacement contracts.

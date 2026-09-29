@@ -43,7 +43,17 @@ export type ArcGISFeatureServiceQueryOptions = {
   geometryPrecision?: number;
   /** Query result type. */
   resultType?: 'none' | 'standard' | 'tile';
-  /** ArcGIS response format. */
+  /** Restrict retrieval to these object IDs. */
+  objectIds?: (number | string)[] | string;
+  /** Time instant or extent in ArcGIS REST syntax. */
+  time?: string | number;
+  /** Explicit offset for queryFeaturePage(); complete queries manage this themselves. */
+  resultOffset?: number;
+  /** Explicit page limit for queryFeaturePage(). */
+  resultRecordCount?: number;
+  /** Explicit ordering for queryFeaturePage(); complete queries order by object ID. */
+  orderByFields?: string;
+  /** Response format hint; spatial reads use GeoJSON and nonspatial tables use JSON. */
   f?: 'geojson' | 'json' | 'pjson';
 };
 
@@ -268,7 +278,8 @@ export const ARCGIS_FEATURE_SERVER_SOURCE_LOADER_METADATA = {
     url: undefined!,
     'arcgis-feature-server': {}
   },
-  testURL: (url: string): boolean => url.toLowerCase().includes('featureserver')
+  testURL: (url: string): boolean =>
+    /\/featureserver(?:[/?#]|$)/i.test(url) || /\/mapserver\/\d+(?:[/?#]|$)/i.test(url)
 } as const satisfies ArcGISSourceMetadata;
 
 /** Shared ArcGISImageServerSourceLoader metadata, without runtime or lazy-loading dependencies. */

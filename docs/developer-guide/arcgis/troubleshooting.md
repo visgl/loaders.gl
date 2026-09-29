@@ -9,7 +9,7 @@ description: Diagnose incomplete data, authentication errors, coordinate problem
 | --- | --- | --- |
 | Root loader rejects synchronous construction | Lightweight descriptor passed to `createDataSource()` | Use async `load()`, or import the loader from `@loaders.gl/arcgis/bundled` |
 | No source matches | Portal item URL, proxy URL, or ambiguous service type | Use a REST service/layer URL and explicit `core.type` |
-| Only some features appear | Record limit or query bounds | The feature client makes one request; use a paging client when completeness matters |
+| Only some features appear | Record limit or query bounds | Inspect `queryFeatures()` completion/reason and bounds; raise `maxFeatures` deliberately or narrow the query |
 | Invalid GeoJSON response | Esri JSON response or ArcGIS error envelope | Keep `f: 'geojson'`; inspect the original service response without logging credentials |
 | 401, 498 or 499 | Missing or expired token | Check the exact origin allowlist and the token callback |
 | 403 after refresh | Insufficient access, restrictions, or wrong target server | Check service sharing, credential privileges, restrictions and federation |

@@ -51,3 +51,13 @@ export {ARCGIS_LOADERS, getArcGISLoader} from './service-registry';
 
 export type {ArcGISAuthentication} from './authentication';
 export type {ArcGISCredentialOptions} from './authentication';
+
+export type {
+  ArcGISFeatureQueryParameters,
+  ArcGISFeatureQueryOptions,
+  ArcGISFeatureQueryProgress,
+  ArcGISFeatureQueryResult,
+  ArcGISFeatureObjectIds,
+  ArcGISFeatureExtent
+} from './arcgis-feature-query-types';
+export type {ArcGISFeatureQueryError} from './arcgis/arcgis-feature-query';

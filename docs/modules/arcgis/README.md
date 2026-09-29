@@ -71,7 +71,7 @@ classes, use `@loaders.gl/arcgis/bundled`; see
 
 | Service | Source loader | Runtime contract | Primary output | deck.gl | Documentation |
 | --- | --- | --- | --- | --- | --- |
-| ArcGIS FeatureServer | `ArcGISFeatureServerSourceLoader` | `VectorSource` | GeoJSON, binary or Arrow features (one query) | `SourceLayer` | [FeatureServer](/docs/modules/arcgis/arcgis-feature-server) |
+| ArcGIS FeatureServer | `ArcGISFeatureServerSourceLoader` | `VectorSource` | Complete bounded GeoJSON, binary or Arrow queries; explicit page API | `SourceLayer` | [FeatureServer](/docs/modules/arcgis/arcgis-feature-server) |
 | ArcGIS ImageServer | `ArcGISImageServerSourceLoader` | `ImageSource` | Rendered image or decoded LERC raster | `SourceLayer` for rendered images | [ImageServer](/docs/modules/arcgis/arcgis-image-server) |
 | ArcGIS ImageServer tiles | `ArcGISImageTileSourceLoader` | `TileSource` | Image tiles or decoded LERC tiles | `SourceLayer` for image tiles | [ImageServer](/docs/modules/arcgis/arcgis-image-server) |
 | ArcGIS MapServer | `ArcGISMapTileSourceLoader` | `TileSource` | Cached or dynamically exported image tiles | `SourceLayer` | [MapServer](/docs/modules/arcgis/arcgis-map-server) |

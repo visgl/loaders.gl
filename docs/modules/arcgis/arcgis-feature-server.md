@@ -27,7 +27,7 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
 />
 
 <DocLiveExample label="ArcGIS FeatureServer example" height="440px">
-  <ClientExample kind="wms" format="ArcGIS Feature Server" />
+  <ClientExample kind="arcgis-feature-query" />
 </DocLiveExample>
 
 <ArcGISDocsTabs service="arcgis-feature-server" />
@@ -76,7 +76,10 @@ ArcGIS FeatureServer endpoints expose queryable vector feature layers through th
 | GeoJSON output | Supported | ArcGIS GeoJSON responses are parsed as vector-source data |
 | Binary and Arrow output | Supported | Select through the standard vector source `format` option |
 | Authentication | Supported | URL tokens, fetch headers, credentials, and custom fetch functions are preserved |
-| Pagination | Not automated | The source performs one ArcGIS query per `getFeatures()` call |
+| Complete queries and streaming | Supported subset | Ordered offset or ID batches, progress, cancellation, caps, and completeness evidence |
+| Counts, IDs and extents | Supported | `queryCount()`, `queryObjectIds()`, `queryExtent()` |
+| Nonspatial tables | Supported subset | JSON attributes retained as null-geometry records; GeoJSON or Arrow output |
+| Queryable MapServer layers | Supported subset | Same query source; spatial layers require GeoJSON support |
 | Editing and attachments | Not supported | The source is a read-only query client |
 | deck.gl rendering | First class | Pass the source loader or `ARCGIS_LOADERS` to `SourceLayer` |
 
@@ -117,8 +120,8 @@ const features = await source.getFeatures({
 ```
 
 Feature coordinates and `boundingBox` use canonical `xy` order. Set `requestCrs` when the bounding
-box is expressed in a different CRS from the returned features, and set `crs` for the output CRS;
-the source maps these values to ArcGIS `inSR` and `outSR` respectively.
+box is expressed in a different CRS. Spatial output must use EPSG:4326; unsupported CRS forms and
+projected GeoJSON output produce actionable errors.
 
 When the URL points to the FeatureServer root, `layers` chooses the layer used for the query:
 
@@ -126,6 +129,38 @@ When the URL points to the FeatureServer root, `layers` chooses the layer used f
 const source = await load(featureServerUrl, [ArcGISFeatureServerSourceLoader]);
 const trails = await source.getFeatures({layers: ['3']});
 ```
+
+## Complete queries, pages and summaries
+
+`getFeatures()` retrieves the complete filtered query up to a 100,000-record default cap. It throws
+if completeness cannot be established, so incomplete data does not silently reach a renderer.
+Use the explicit query API to inspect partial results or customize the cap:
+
+```ts
+const result = await source.queryFeatures({
+  query: {where: '1=1'},
+  pageSize: 500,
+  maxFeatures: 20000,
+  onProgress: ({loaded, expectedCount}) => console.log(loaded, expectedCount)
+});
+console.log(result.complete, result.reason, result.data);
+
+const count = await source.queryCount({query: {where: '1=1'}});
+const identifiers = await source.queryObjectIds();
+const bounds = await source.queryExtent();
+const page = await source.queryFeaturePage({query: {resultOffset: 0}, pageSize: 100});
+```
+
+`queryFeaturePages()` is the corresponding async iterator. Every yielded page includes `data`,
+`loaded`, `expectedCount`, `pages`, `duplicates`, `scope`, `strategy`, `complete`, and `reason`.
+`queryFeaturePage()` always labels its result as a single page, not a complete dataset.
+All query methods accept `signal`. Metadata, counts and page requests use the same authenticated
+transport. Public summary methods retain the selected filters.
+
+The [feature query guide](/docs/developer-guide/arcgis/feature-layers) specifies controls, termination
+conditions, table/date behavior, supported coordinate references, and concurrent-edit limitations.
+The embedded example above uses this API directly and retains a visible partial-result label on
+cancellation or when the selected record cap is reached.
 
 ## Request options
 
