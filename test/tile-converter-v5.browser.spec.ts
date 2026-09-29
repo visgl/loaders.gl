@@ -528,10 +528,46 @@ test('tile-converter(v5)#browser tileset source rejects implicit tiling and inpu
     code: 'UNSUPPORTED_BROWSER_TILESET'
   });
 
+  const legacyImplicitBytes = new TextEncoder().encode(
+    JSON.stringify({
+      asset: {version: '1.0'},
+      root: {extensions: {'3DTILES_implicit_tiling': {}}, content: {url: 'tile.b3dm'}}
+    })
+  );
+  const legacyImplicitSource = createBrowserTilesetConversionSource({
+    input: rootUrl,
+    maxInputBytes: 1024,
+    maxInputResources: 1,
+    fetcher: async () => new Response(legacyImplicitBytes)
+  });
+  await expect(legacyImplicitSource.inspect()).rejects.toMatchObject({
+    code: 'UNSUPPORTED_BROWSER_TILESET'
+  });
+
   let canceled = false;
   const explicitRootBytes = new TextEncoder().encode(
     JSON.stringify({asset: {version: '1.1'}, root: {content: {uri: 'tile.glb'}}})
   );
+  const nestedRootBytes = new TextEncoder().encode(
+    JSON.stringify({asset: {version: '1.1'}, root: {content: {uri: 'nested.json'}}})
+  );
+  const nestedSource = createBrowserTilesetConversionSource({
+    input: rootUrl,
+    maxInputBytes: 1024,
+    maxInputResources: 1,
+    fetcher: async input =>
+      String(input) === rootUrl
+        ? new Response(nestedRootBytes)
+        : new Response(`${' '.repeat(40)}{"asset":{"version":"1.1"}}`, {
+            headers: {'content-type': 'text/plain'}
+          })
+  });
+  const nestedInspection = await nestedSource.inspect();
+  const nestedIterator = nestedSource.read(nestedInspection)[Symbol.asyncIterator]();
+  await expect(nestedIterator.next()).rejects.toMatchObject({
+    code: 'UNSUPPORTED_BROWSER_TILESET_CONTENT'
+  });
+
   const source = createBrowserTilesetConversionSource({
     input: rootUrl,
     maxInputBytes: explicitRootBytes.byteLength,

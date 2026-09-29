@@ -12,6 +12,7 @@ type TilesetTile = {
   children?: TilesetTile[];
   transform?: number[];
   implicitTiling?: unknown;
+  extensions?: Record<string, unknown>;
 };
 type TilesetDocument = {asset?: {version?: string}; root?: TilesetTile};
 
@@ -165,7 +166,10 @@ function collectResources(
     if (!isRecord(tile)) {
       throw new TileConversionError('INVALID_BROWSER_TILESET', 'Tile entries must be objects');
     }
-    if (tile.implicitTiling) {
+    if (
+      tile.implicitTiling !== undefined ||
+      tile.extensions?.['3DTILES_implicit_tiling'] !== undefined
+    ) {
       throw new TileConversionError(
         'UNSUPPORTED_BROWSER_TILESET',
         'Browser tileset traversal does not yet support implicit tiling'
@@ -257,13 +261,10 @@ async function readResponseBytes(
 
 /** Detects JSON payloads that may declare an unsupported external tileset. */
 function isJsonContent(data: Uint8Array, contentType?: string): boolean {
-  return (
-    Boolean(contentType?.includes('json')) ||
-    new TextDecoder()
-      .decode(data.subarray(0, Math.min(data.byteLength, 32)))
-      .trimStart()
-      .startsWith('{')
-  );
+  if (contentType?.includes('json')) return true;
+  let byteOffset = data[0] === 0xef && data[1] === 0xbb && data[2] === 0xbf ? 3 : 0;
+  while ([0x09, 0x0a, 0x0d, 0x20].includes(data[byteOffset])) byteOffset++;
+  return data[byteOffset] === 0x7b;
 }
 
 /** Resolves a tile URI and carries root query parameters to same-origin relative resources. */
