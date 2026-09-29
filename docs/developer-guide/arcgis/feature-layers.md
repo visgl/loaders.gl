@@ -78,7 +78,8 @@ shows progressive rendering, cancellation, filters, and a deliberately selectabl
 
 `strategy: 'auto'` selects ordered offset pagination only when the layer advertises both
 `supportsPagination` and `supportsOrderBy`. Otherwise it enumerates object IDs and retrieves batches.
-Applications may explicitly select `offset` or `object-ids`. Spatial layers must advertise GeoJSON
+Applications may explicitly select `offset` or `object-ids`. Query parameters switch to a form-encoded
+POST body when the generated URL exceeds 2,000 characters; endpoint credentials stay in the URL. Spatial layers must advertise GeoJSON
 support when their supported formats are present; older JSON-only MapServer layers are rejected.
 
 | Control | Default | Meaning |

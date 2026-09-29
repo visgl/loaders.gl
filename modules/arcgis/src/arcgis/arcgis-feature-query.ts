@@ -52,9 +52,23 @@ export class ArcGISFeatureQueryClient {
     for (const [name, value] of Object.entries(parameters)) {
       if (value === undefined) requestUrl.searchParams.delete(name);
     }
-    const response = await this.fetch(requestUrl.toString(), {
-      signal: this.signal
-    });
+    const requestOptions: RequestInit = {signal: this.signal};
+    // Query is read-only and supports POST. Keep endpoint credentials in the URL so the shared
+    // credential transport can still honor explicit tokens and apply its origin restrictions.
+    if (path === 'query' && requestUrl.toString().length > 2000) {
+      const body = new URLSearchParams();
+      for (const name of Object.keys(parameters)) {
+        const value = requestUrl.searchParams.get(name);
+        if (value !== null) {
+          body.set(name, value);
+          requestUrl.searchParams.delete(name);
+        }
+      }
+      requestOptions.method = 'POST';
+      requestOptions.headers = {'Content-Type': 'application/x-www-form-urlencoded'};
+      requestOptions.body = body;
+    }
+    const response = await this.fetch(requestUrl.toString(), requestOptions);
     let json: any;
     try {
       json = await response.json();

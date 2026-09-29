@@ -32,6 +32,9 @@ function createService(
   source.fetch = vi.fn(async (url, options) => {
     options?.signal?.throwIfAborted();
     const request = new URL(url);
+    if (options?.body instanceof URLSearchParams) {
+      for (const [name, value] of options.body) request.searchParams.set(name, value);
+    }
     requests.push(request);
     expect(request.searchParams.get('token')).toBe('fixture');
     if (!request.pathname.endsWith('/query'))
@@ -591,4 +594,39 @@ test('field-based identities and metadata retries preserve schema discovery', as
     'int64'
   ]);
   expect((await source.getMetadata()).layers[0]).toMatchObject({name: '2', title: 'Records'});
+});
+
+test('long ID batches use form POST while preserving endpoint credentials and filters', async () => {
+  const objectIds = Array.from({length: 200}, (_, index) => 9007199254700000 + index);
+  const {source} = createService({
+    count: objectIds.length,
+    metadata: {maxRecordCount: 1000},
+    identifiers: {objectIdFieldName: 'OBJECTID', objectIds}
+  });
+  const fixtureFetch = source.fetch;
+  const postedRequests: RequestInit[] = [];
+  source.fetch = async (url, options) => {
+    if (options?.method === 'POST') {
+      const request = new URL(url);
+      expect(url.length).toBeLessThan(2000);
+      expect(request.searchParams.get('token')).toBe('fixture');
+      expect(request.searchParams.has('objectIds')).toBe(false);
+      expect(options.headers).toEqual({'Content-Type': 'application/x-www-form-urlencoded'});
+      const body = options.body as URLSearchParams;
+      expect(body.get('objectIds')).toBe(objectIds.join(','));
+      expect(body.get('where')).toBe('value IS NULL');
+      expect(body.get('f')).toBe('geojson');
+      expect(body.has('token')).toBe(false);
+      expect(options.signal?.aborted).toBe(false);
+      postedRequests.push(options);
+    }
+    return fixtureFetch(url, options);
+  };
+  const result = await source.queryFeatures({
+    strategy: 'object-ids',
+    query: {where: 'value IS NULL'}
+  });
+  expect(result).toMatchObject({complete: true, loaded: 200, pages: 1});
+  expect(result.data.features.map(feature => feature.id)).toEqual(objectIds);
+  expect(postedRequests).toHaveLength(1);
 });
