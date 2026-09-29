@@ -1,9 +1,9 @@
 import {describe, expect, test} from 'vitest';
 import {isBrowser} from '@loaders.gl/core';
-import {NodeIndexDocument} from '../../../src/i3s-converter/helpers/node-index-document';
-import I3SConverter from '../../../src/i3s-converter/i3s-converter';
-import WriteQueue from '../../../src/lib/utils/write-queue';
-import {ConversionDump} from '../../../src/lib/utils/conversion-dump';
+import {NodeIndexDocument} from '../../../src/v4/i3s-converter/helpers/node-index-document';
+import I3SConverter from '../../../src/v4/i3s-converter/i3s-converter';
+import WriteQueue from '../../../src/v4/lib/utils/write-queue';
+import {ConversionDump} from '../../../src/v4/lib/utils/conversion-dump';
 const getConverter = ({slpk, instantNodeWriting} = {slpk: false, instantNodeWriting: false}) => {
   const converter = new I3SConverter();
   converter.options = {

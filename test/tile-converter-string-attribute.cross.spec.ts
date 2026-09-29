@@ -1,5 +1,5 @@
 import {expect, test} from 'vitest';
-import {encodeStringAttribute} from '../apps/tile-converter/src/i3s-converter/helpers/encode-string-attribute';
+import {encodeStringAttribute} from '../apps/tile-converter/src/v4/i3s-converter/helpers/encode-string-attribute';
 
 test('I3S string attributes preserve the binary layout for ASCII and empty strings', () => {
   const result = encodeStringAttribute(['oak', '']);

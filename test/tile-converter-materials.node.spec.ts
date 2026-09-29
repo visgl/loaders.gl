@@ -1,7 +1,7 @@
 import {expect, test} from 'vitest';
 
 import type {GLTFMaterialPostprocessed} from '@loaders.gl/gltf';
-import {convertMaterial} from '../apps/tile-converter/src/i3s-converter/helpers/geometry-converter';
+import {convertMaterial} from '../apps/tile-converter/src/v4/i3s-converter/helpers/geometry-converter';
 
 function createMaterial(
   pbrMetallicRoughness: GLTFMaterialPostprocessed['pbrMetallicRoughness']

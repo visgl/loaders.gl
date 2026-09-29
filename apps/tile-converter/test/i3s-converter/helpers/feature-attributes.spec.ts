@@ -5,7 +5,7 @@ import {
   getAttributeTypesMapFromSchema,
   getAttributeTypesMapFromPropertyTable,
   getAttributeType
-} from '../../../src/i3s-converter/helpers/feature-attributes';
+} from '../../../src/v4/i3s-converter/helpers/feature-attributes';
 import type {GLTFPostprocessed} from '@loaders.gl/gltf';
 test('tile-converter(i3s)#flattenPropertyTableByFeatureIds - Should return flatten property table', async () => {
   const featureIdsMap = {0: 0, 1: 1, 3: 3};
