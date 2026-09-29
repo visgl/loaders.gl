@@ -80,7 +80,7 @@ jobs:
             playwright: true
             scope: 'headless tests 1/2'
             test-command: test-headless-cover
-            test-arguments: '--maxWorkers=1 --shard=1/2 --reporter=blob'
+            test-arguments: '--maxWorkers=1 --shard=1/2 --reporter=blob --outputFile.blob=.vitest-reports/blob-headless-1.json'
             profile-name: headless-1
           - node-version: 24
             coverage: true
@@ -88,7 +88,7 @@ jobs:
             playwright: true
             scope: 'headless tests 2/2'
             test-command: test-headless-cover
-            test-arguments: '--maxWorkers=1 --shard=2/2 --reporter=blob'
+            test-arguments: '--maxWorkers=1 --shard=2/2 --reporter=blob --outputFile.blob=.vitest-reports/blob-headless-2.json'
             profile-name: headless-2
           - node-version: 22
             coverage: false
