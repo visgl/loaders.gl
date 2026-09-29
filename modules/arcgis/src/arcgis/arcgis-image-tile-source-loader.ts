@@ -3,12 +3,13 @@
 // Copyright (c) vis.gl contributors
 
 import {ArcGISAuthentication} from '../authentication';
+import {ARCGIS_IMAGE_TILE_SOURCE_LOADER_METADATA} from '../arcgis-source-types';
+import type {ArcGISImageTileSourceLoaderOptions} from '../arcgis-source-types';
 
-import type {ImageType, ImageLoaderOptions} from '@loaders.gl/images';
+import type {ImageType} from '@loaders.gl/images';
 import {ImageLoader} from '@loaders.gl/images';
 import type {
   CoreAPI,
-  DataSourceOptions,
   GetTileDataParameters,
   GetTileParameters,
   SourceLoader,
@@ -18,21 +19,6 @@ import type {
 import {DataSource} from '@loaders.gl/loader-utils';
 import type {LERCData} from '@loaders.gl/lerc';
 import {LERCLoader} from '@loaders.gl/lerc';
-
-/** Options for the ArcGIS ImageServer tile source. */
-export type ArcGISImageTileSourceLoaderOptions = DataSourceOptions &
-  ImageLoaderOptions & {
-    'arcgis-image-server-tiles'?: {
-      /** Tile size used for exportImage requests. */
-      tileSize?: number;
-      /** Optional service URL pool for simple request distribution. */
-      urls?: string[];
-      /** Additional exportImage parameters. */
-      parameters?: Record<string, string | number | boolean>;
-      /** Response format, using LERC for analytical raster tiles. */
-      format?: 'png32' | 'lerc';
-    };
-  };
 
 /** A tile source that renders ArcGIS ImageServer exports as deck.gl tiles. */
 export class ArcGISImageTileSource
@@ -51,7 +37,12 @@ export class ArcGISImageTileSource
 
   /** Creates an ArcGIS ImageServer tile source. */
   constructor(url: string, options: ArcGISImageTileSourceLoaderOptions = {}, coreApi?: CoreAPI) {
-    super(url.replace(/\/$/, ''), options, ArcGISImageTileSourceLoader.defaultOptions, coreApi);
+    super(
+      url.replace(/\/$/, ''),
+      options,
+      ARCGIS_IMAGE_TILE_SOURCE_LOADER_METADATA.defaultOptions,
+      coreApi
+    );
     this.mimeType = this._getResponseFormat() === 'lerc' ? 'application/octet-stream' : 'image/png';
     this.getTileData = this.getTileData.bind(this);
   }
@@ -173,24 +164,14 @@ export class ArcGISImageTileSource
   }
 }
 
-/** Source loader for ArcGIS ImageServer export tiles. */
-export const ArcGISImageTileSourceLoader = {
+/** Runtime service loader for synchronous construction. */
+export const ArcGISImageTileSourceLoaderWithParser = {
+  ...ARCGIS_IMAGE_TILE_SOURCE_LOADER_METADATA,
   dataType: null as unknown as ArcGISImageTileSource,
   batchType: null as never,
-  name: 'ArcGIS ImageServer tiles',
-  id: 'arcgis-image-server-tiles',
-  module: 'arcgis',
-  version: '0.0.0',
-  /** Supplies the ArcGIS constructor for declarative service credentials. */
+  preload: undefined,
+  /** Supplies ArcGIS credentials after loading the selected implementation. */
   getAuthentications: () => [ArcGISAuthentication],
-  extensions: [],
-  mimeTypes: [],
-  type: 'arcgis-image-server-tiles',
-  fromUrl: true,
-  fromBlob: false,
-  options: {'arcgis-image-server-tiles': {}},
-  defaultOptions: {'arcgis-image-server-tiles': {}},
-  testURL: (url: string): boolean => /imageserver/i.test(url),
   createDataSource: (
     url: string,
     options: ArcGISImageTileSourceLoaderOptions = {},

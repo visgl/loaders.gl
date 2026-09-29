@@ -5,7 +5,7 @@ import {
   ArcGISSceneServerSource,
   ArcGISSceneServerSourceLoader,
   aggregateArcGISSceneFeatures
-} from '@loaders.gl/arcgis';
+} from '@loaders.gl/arcgis/bundled';
 import {expect, test, vi} from 'vitest';
 
 const SCENE_SERVER_URL = 'https://example.com/arcgis/rest/services/City/SceneServer';

@@ -103,7 +103,8 @@ check browser CORS access, and authorize each trusted origin explicitly.
 
 ## How imports work
 
-The package root exports service loaders, source classes, credentials and discovery helpers.
+The package root exports lightweight service descriptors and shared types. Async `load()` imports the selected service implementation before constructing
+a source. With ESM code splitting, unused service implementations stay out of the initial bundle.
 `ARCGIS_LOADERS` can select among conventional service URLs; set
 `core.type` explicitly when an ImageServer URL could mean either viewport imagery or tile exports.
 
@@ -116,14 +117,35 @@ const source = await load(serviceUrl, ARCGIS_LOADERS, {
 });
 ```
 
-The same loader also supports synchronous source construction:
+For synchronous construction, import the same loader name from `/bundled`:
 
 ```ts
 import {createDataSource} from '@loaders.gl/core';
-import {ArcGISFeatureServerSourceLoader} from '@loaders.gl/arcgis';
+import {ArcGISFeatureServerSourceLoader} from '@loaders.gl/arcgis/bundled';
 
 const source = createDataSource(serviceUrl, [ArcGISFeatureServerSourceLoader], {});
 ```
 
 Source construction is synchronous in this example; network methods remain asynchronous.
-Authentication and discovery helpers are also exported from `@loaders.gl/arcgis`.
+Authentication, discovery and scene aggregation have dedicated entrypoints so applications can
+import these helpers without retaining service implementations. `/bundled` also exports them for
+applications already using runtime source classes.
+
+
+| Import | Use |
+| --- | --- |
+| `@loaders.gl/arcgis` | Async `load()`, deck.gl `SourceLayer`, lightweight registry and shared types |
+| `@loaders.gl/arcgis/bundled` | Synchronous `createDataSource()`, runtime registry, direct source classes and helpers |
+| `@loaders.gl/arcgis/authentication` | `ArcGISAuthentication` and `createArcGISCredential` |
+| `@loaders.gl/arcgis/discovery` | `getArcGISServices`, `discoverArcGISCapabilities` and `selectArcGISService` |
+| `@loaders.gl/arcgis/scene-aggregation` | `aggregateArcGISSceneFeatures` |
+| `@loaders.gl/arcgis/arcgis-feature-server-source-loader` | One explicit implementation: `ArcGISFeatureServerSourceLoaderWithParser` and `ArcGISVectorSource` |
+
+Each service loader has an equivalent implementation subpath. Named ESM imports from `/bundled`
+can still be tree-shaken; importing its entire registry intentionally includes all six clients.
+The package-root loaders require async `load()` and report a helpful error if passed directly to
+synchronous `createDataSource()`.
+
+Lazy imports defer download and initialization; they do not eliminate the implementation's bytes
+when that service is used. The result depends on the application's bundler and whether ESM code
+splitting is enabled. CommonJS or single-file bundles may include all implementations eagerly.

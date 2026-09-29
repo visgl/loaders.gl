@@ -1366,3 +1366,8 @@ construction APIs, credentials and discovery helpers. It adds a
 [examples gallery](/examples/arcgis). Service pages embed their examples and distinguish data
 access from complete ArcGIS rendering fidelity. See the [upgrade guide](/docs/upgrade-guide)
 for moved imports.
+
+
+The ArcGIS package now defers service implementations through its lightweight root loaders.
+Use `@loaders.gl/arcgis/bundled` for synchronous construction and direct source classes; see
+[ArcGIS import patterns](/docs/developer-guide/arcgis#how-imports-work).

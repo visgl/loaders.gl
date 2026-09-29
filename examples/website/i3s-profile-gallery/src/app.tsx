@@ -1,6 +1,6 @@
 import React, {useState} from 'react';
 import {createRoot} from 'react-dom/client';
-import {ArcGISSceneServerSource} from '@loaders.gl/arcgis';
+import {ArcGISSceneServerSource} from '@loaders.gl/arcgis/bundled';
 import type {I3SServiceMetadata} from '@loaders.gl/i3s';
 
 const DEFAULT_URL =

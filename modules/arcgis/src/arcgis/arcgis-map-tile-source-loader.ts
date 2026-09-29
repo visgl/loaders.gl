@@ -3,12 +3,17 @@
 // Copyright (c) vis.gl contributors
 
 import {ArcGISAuthentication} from '../authentication';
+import {ARCGIS_MAP_TILE_SOURCE_LOADER_METADATA} from '../arcgis-source-types';
+import type {
+  ArcGISMapTileSourceLoaderOptions,
+  ArcGISMapServerMetadata,
+  ArcGISMapTileParameters
+} from '../arcgis-source-types';
 
-import type {ImageType, ImageLoaderOptions} from '@loaders.gl/images';
+import type {ImageType} from '@loaders.gl/images';
 import {ImageLoader} from '@loaders.gl/images';
 import type {
   CoreAPI,
-  DataSourceOptions,
   GetTileDataParameters,
   GetTileParameters,
   SourceLoader,
@@ -16,48 +21,6 @@ import type {
   TileSourceMetadata
 } from '@loaders.gl/loader-utils';
 import {DataSource} from '@loaders.gl/loader-utils';
-
-/** Options for an ArcGIS cached MapServer tile source. */
-export type ArcGISMapTileSourceLoaderOptions = DataSourceOptions &
-  ImageLoaderOptions & {
-    'arcgis-map-server'?: {
-      /** Select cached tiles, dynamic export tiles, or automatic metadata-based selection. */
-      mode?: 'cached' | 'dynamic' | 'auto';
-      /** Tile size used for dynamic export requests. */
-      tileSize?: number;
-      /** Optional custom tile URL template. */
-      urlTemplate?: string;
-      /** Optional service URL pool for simple request distribution. */
-      urls?: string[];
-      /** Additional query parameters sent to the metadata endpoint. */
-      parameters?: Record<string, string>;
-      /** Metadata document supplied by the application. */
-      metadata?: ArcGISMapServerMetadata;
-      /** Default parameters forwarded to MapServer `export` requests. */
-      exportParameters?: Record<string, string | number | boolean>;
-    };
-  };
-
-/** Relevant normalized fields from an ArcGIS MapServer metadata document. */
-export type ArcGISMapServerMetadata = {
-  name?: string;
-  description?: string;
-  serviceDescription?: string;
-  copyrightText?: string;
-  fullExtent?: {xmin: number; ymin: number; xmax: number; ymax: number; spatialReference?: unknown};
-  spatialReference?: unknown;
-  tileInfo?: {
-    lods?: {level: number}[];
-    rows?: number;
-    cols?: number;
-    format?: string;
-    spatialReference?: unknown;
-    origin?: {x: number; y: number};
-  };
-};
-
-/** Parameters that can be changed between ArcGIS map tile requests. */
-export type ArcGISMapTileParameters = Record<string, string | number | boolean>;
 
 /** ArcGIS MapServer source for cached `/tile/{z}/{y}/{x}` image tiles. */
 export class ArcGISMapTileSource
@@ -76,7 +39,12 @@ export class ArcGISMapTileSource
 
   /** Creates an ArcGIS MapServer tile source. */
   constructor(url: string, options: ArcGISMapTileSourceLoaderOptions = {}, coreApi?: CoreAPI) {
-    super(url.replace(/\/$/, ''), options, ArcGISMapTileSourceLoader.defaultOptions, coreApi);
+    super(
+      url.replace(/\/$/, ''),
+      options,
+      ARCGIS_MAP_TILE_SOURCE_LOADER_METADATA.defaultOptions,
+      coreApi
+    );
     this.getTileData = this.getTileData.bind(this);
   }
 
@@ -264,25 +232,14 @@ function getWebMercatorTileBounds(parameters: GetTileParameters): [number, numbe
   return [west, south, east, north];
 }
 
-/** Source loader for ArcGIS cached MapServer tiles. */
-export const ArcGISMapTileSourceLoader = {
+/** Runtime service loader for synchronous construction. */
+export const ArcGISMapTileSourceLoaderWithParser = {
+  ...ARCGIS_MAP_TILE_SOURCE_LOADER_METADATA,
   dataType: null as unknown as ArcGISMapTileSource,
   batchType: null as never,
-  name: 'ArcGIS MapServer tiles',
-  id: 'arcgis-map-server',
-  module: 'arcgis',
-  version: '0.0.0',
-  /** Supplies the ArcGIS constructor for declarative service credentials. */
+  preload: undefined,
+  /** Supplies ArcGIS credentials after loading the selected implementation. */
   getAuthentications: () => [ArcGISAuthentication],
-  extensions: [],
-  mimeTypes: [],
-  type: 'arcgis-map-server',
-  fromUrl: true,
-  fromBlob: false,
-  options: {'arcgis-map-server': {}},
-  defaultOptions: {'arcgis-map-server': {}},
-  testURL: (url: string): boolean =>
-    /mapserver/i.test(url) && !/imageserver|featureserver/i.test(url),
   createDataSource: (
     url: string,
     options: ArcGISMapTileSourceLoaderOptions = {},

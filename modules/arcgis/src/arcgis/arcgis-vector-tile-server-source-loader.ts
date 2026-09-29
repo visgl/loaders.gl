@@ -3,10 +3,14 @@
 // Copyright (c) vis.gl contributors
 
 import {ArcGISAuthentication} from '../authentication';
+import {ARCGIS_VECTOR_TILE_SERVER_SOURCE_LOADER_METADATA} from '../arcgis-source-types';
+import type {
+  ArcGISVectorTileServiceMetadata,
+  ArcGISVectorTileServerSourceLoaderOptions
+} from '../arcgis-source-types';
 
 import type {
   CoreAPI,
-  DataSourceOptions,
   GetTileDataParameters,
   GetTileParameters,
   SourceLoader,
@@ -17,42 +21,6 @@ import type {
 import {DataSource} from '@loaders.gl/loader-utils';
 import {MVTLoader, type MVTLoaderOptions} from '@loaders.gl/mvt';
 import type {Schema} from '@loaders.gl/schema';
-
-/** ArcGIS vector tile service metadata. */
-export type ArcGISVectorTileServiceMetadata = {
-  /** Human-readable service description. */
-  serviceDescription?: string;
-  /** Map name exposed by the service. */
-  mapName?: string;
-  /** Tile grid information. */
-  tileInfo?: {
-    /** Tile width in pixels. */
-    cols?: number;
-    /** Tile height in pixels. */
-    rows?: number;
-    /** Tile format, normally pbf. */
-    format?: string;
-    /** Tile origin. */
-    origin?: {x: number; y: number};
-    /** Tile grid spatial reference. */
-    spatialReference?: {wkid?: number; latestWkid?: number};
-    /** Levels of detail. */
-    lods?: Array<{level: number; resolution: number; scale?: number}>;
-  };
-  /** Full service extent. */
-  fullExtent?: {xmin: number; ymin: number; xmax: number; ymax: number};
-  /** Initial service extent. */
-  initialExtent?: {xmin: number; ymin: number; xmax: number; ymax: number};
-};
-
-/** Options for the ArcGIS VectorTileServer source. */
-export type ArcGISVectorTileServerSourceLoaderOptions = DataSourceOptions &
-  MVTLoaderOptions & {
-    'arcgis-vector-tile-server'?: {
-      /** Optional MVT parser options. */
-      mvt?: MVTLoaderOptions['mvt'];
-    };
-  };
 
 /** A source for ArcGIS VectorTileServer metadata and PBF tiles. */
 export class ArcGISVectorTileServerSource
@@ -79,7 +47,7 @@ export class ArcGISVectorTileServerSource
     super(
       `${serviceURL.origin}${serviceURL.pathname}`,
       options,
-      ArcGISVectorTileServerSourceLoader.defaultOptions,
+      ARCGIS_VECTOR_TILE_SERVER_SOURCE_LOADER_METADATA.defaultOptions,
       coreApi
     );
     this.serviceQueryParameters = new URLSearchParams(serviceURL.search);
@@ -201,24 +169,14 @@ export class ArcGISVectorTileServerSource
   }
 }
 
-/** Source loader for ArcGIS VectorTileServer services. */
-export const ArcGISVectorTileServerSourceLoader = {
+/** Runtime service loader for synchronous construction. */
+export const ArcGISVectorTileServerSourceLoaderWithParser = {
+  ...ARCGIS_VECTOR_TILE_SERVER_SOURCE_LOADER_METADATA,
   dataType: null as unknown as ArcGISVectorTileServerSource,
   batchType: null as never,
-  name: 'ArcGIS VectorTileServer',
-  id: 'arcgis-vector-tile-server',
-  module: 'arcgis',
-  version: '0.0.0',
-  /** Supplies the ArcGIS constructor for declarative service credentials. */
+  preload: undefined,
+  /** Supplies ArcGIS credentials after loading the selected implementation. */
   getAuthentications: () => [ArcGISAuthentication],
-  extensions: [],
-  mimeTypes: ['application/vnd.mapbox-vector-tile', 'application/x-protobuf'],
-  type: 'arcgis-vector-tile-server',
-  fromUrl: true,
-  fromBlob: false,
-  options: {'arcgis-vector-tile-server': {}},
-  defaultOptions: {'arcgis-vector-tile-server': {}},
-  testURL: (url: string): boolean => /\/vectortileserver(?:[\/?#]|$)/i.test(url),
   createDataSource: (
     url: string,
     options: ArcGISVectorTileServerSourceLoaderOptions = {},

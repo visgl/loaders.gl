@@ -7,6 +7,7 @@ description: Diagnose incomplete data, authentication errors, coordinate problem
 
 | Symptom | Likely cause | What to check |
 | --- | --- | --- |
+| Root loader rejects synchronous construction | Lightweight descriptor passed to `createDataSource()` | Use async `load()`, or import the loader from `@loaders.gl/arcgis/bundled` |
 | No source matches | Portal item URL, proxy URL, or ambiguous service type | Use a REST service/layer URL and explicit `core.type` |
 | Only some features appear | Record limit or query bounds | The feature client makes one request; use a paging client when completeness matters |
 | Invalid GeoJSON response | Esri JSON response or ArcGIS error envelope | Keep `f: 'geojson'`; inspect the original service response without logging credentials |

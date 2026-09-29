@@ -22,6 +22,16 @@
     "baseUrl": ".",
     "paths": {
       "@loaders.gl/arcgis": ["modules/arcgis/src"],
+      "@loaders.gl/arcgis/authentication": ["modules/arcgis/src/authentication"],
+      "@loaders.gl/arcgis/discovery": ["modules/arcgis/src/arcgis/arcgis-capability-graph"],
+      "@loaders.gl/arcgis/scene-aggregation": ["modules/arcgis/src/arcgis/arcgis-scene-aggregation"],
+      "@loaders.gl/arcgis/bundled": ["modules/arcgis/src/bundled"],
+      "@loaders.gl/arcgis/arcgis-feature-server-source-loader": ["modules/arcgis/src/arcgis/arcgis-feature-server-source-loader"],
+      "@loaders.gl/arcgis/arcgis-image-server-source-loader": ["modules/arcgis/src/arcgis/arcgis-image-server-source-loader"],
+      "@loaders.gl/arcgis/arcgis-image-tile-source-loader": ["modules/arcgis/src/arcgis/arcgis-image-tile-source-loader"],
+      "@loaders.gl/arcgis/arcgis-map-tile-source-loader": ["modules/arcgis/src/arcgis/arcgis-map-tile-source-loader"],
+      "@loaders.gl/arcgis/arcgis-scene-server-source-loader": ["modules/arcgis/src/arcgis/arcgis-scene-server-source-loader"],
+      "@loaders.gl/arcgis/arcgis-vector-tile-server-source-loader": ["modules/arcgis/src/arcgis/arcgis-vector-tile-server-source-loader"],
       // Supoort modules
       "@loaders.gl/schema": [
         "modules/schema/src"

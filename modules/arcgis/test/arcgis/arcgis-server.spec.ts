@@ -6,7 +6,7 @@ import {
   ArcGISImageServerSourceLoader,
   ArcGISImageTileSource,
   ArcGISMapTileSource
-} from '@loaders.gl/arcgis';
+} from '@loaders.gl/arcgis/bundled';
 
 const IMAGE_SERVER_URL = 'https://example.com/arcgis/rest/services/Imagery/ImageServer';
 const FEATURE_SERVER_URL = 'https://example.com/arcgis/rest/services/Roads/FeatureServer/0';
