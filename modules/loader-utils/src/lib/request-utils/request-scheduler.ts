@@ -140,8 +140,10 @@ export default class RequestScheduler {
         // Stop tracking a request - it has completed, failed, cancelled etc
         this.requestMap.delete(handle);
         this.activeRequestCount--;
-        // A slot just freed up, see if any queued requests are waiting
-        this._issueNewRequests();
+        // A slot just freed up, so fill it on the next tick.
+        if (this.updateTimer === null) {
+          this.updateTimer = setTimeout(() => this._issueNewRequestsAsync(), 0);
+        }
       }
     };
 
