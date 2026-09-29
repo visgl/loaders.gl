@@ -32,3 +32,10 @@ export type {
   BrowserTileConversionInputResource,
   BrowserTileConversionSourceOptions
 } from './browser-source.js';
+export {createBrowserTilesetConversionSource} from './browser-tileset-source.js';
+export type {
+  BrowserTilesetConversionInputResource,
+  BrowserTilesetConversionInspection,
+  BrowserTilesetConversionSourceOptions,
+  BrowserTilesetResourceDescriptor
+} from './browser-tileset-source.js';

@@ -67,10 +67,13 @@ filesystem and archive choices outside the conversion API.
 ## V5 browser entrypoint
 
 Import `@loaders.gl/tile-converter/v5/browser` for the portable conversion API,
-`createBrowserTileConversionSource`, and `createBoundedMemoryTileConversionSink`. The source reads one
-URL or Blob resource under a required input-byte limit. The sink retains named Blob outputs under a
-required total-byte limit; applications remain responsible for tileset traversal, codecs, packaging,
-and triggering downloads.
+`createBrowserTileConversionSource`, `createBrowserTilesetConversionSource`, and
+`createBoundedMemoryTileConversionSink`. The single-resource source reads one URL or Blob. The
+tileset source traverses explicit 3D Tiles 1.0 and 1.1 documents in depth-first order and reads each
+declared content placement under aggregate byte and resource limits. It rejects implicit tiling and
+nested JSON content. Both sources yield raw bytes to an application-provided codec. The sink retains
+named Blob outputs under a required total-byte limit; applications remain responsible for codecs,
+packaging, and triggering downloads.
 
 ## Installation
 
