@@ -13,7 +13,7 @@ manage requests for the visible area. Neither path requires an ArcGIS Maps SDK v
 
 | ArcGIS source | Data | Visualization path | Important limit |
 | --- | --- | --- | --- |
-| FeatureServer | GeoJSON | GeoJsonLayer, or SourceLayer's vector adapter | One query is not a complete-dataset guarantee |
+| FeatureServer | GeoJSON | GeoJsonLayer, or SourceLayer's vector adapter | Complete for selected bounds/filters or throws; configurable partial-result API available |
 | MapServer | Cached or exported images | SourceLayer's image tile adapter | No feature picking from pixels |
 | ImageServer | Viewport images / exported tiles | SourceLayer's image or tile adapter | Rendering rules are handled by the server |
 | ImageServer LERC | Numerical bands and masks | Application-selected raster visualization | Values need a color mapping and NoData handling |

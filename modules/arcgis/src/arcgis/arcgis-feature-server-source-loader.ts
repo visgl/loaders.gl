@@ -9,7 +9,7 @@ import type {
   ArcGISFeatureServerSourceLoaderOptions
 } from '../arcgis-source-types';
 
-import type {DataType, Schema, GeoJSONTable} from '@loaders.gl/schema';
+import type {DataType, Schema} from '@loaders.gl/schema';
 import {
   convertFeaturesToWKBArrowTable,
   convertGeojsonToBinaryFeatureCollection
@@ -24,6 +24,15 @@ import type {
 import type {SourceLoader} from '@loaders.gl/loader-utils';
 import {DataSource} from '@loaders.gl/loader-utils';
 import {buildArcGISResourceURL} from './arcgis-url-utils';
+import {ArcGISFeatureQueryClient} from './arcgis-feature-query';
+import type {
+  ArcGISFeatureQueryParameters,
+  ArcGISFeatureQueryOptions,
+  ArcGISFeatureQueryResult,
+  ArcGISFeatureObjectIds,
+  ArcGISFeatureExtent
+} from '../arcgis-feature-query-types';
+export {ArcGISFeatureQueryError} from './arcgis-feature-query';
 
 /** Runtime service loader for synchronous construction. */
 export const ArcGISFeatureServerSourceLoaderWithParser = {
@@ -52,6 +61,7 @@ export class ArcGISVectorSource
   /** Cached ArcGIS FeatureServer metadata request. */
   protected formatSpecificMetadata: Promise<any> | null = null;
 
+  /** Creates a query source for a FeatureServer or queryable MapServer layer. */
   constructor(url: string, options: ArcGISFeatureServerSourceLoaderOptions, coreApi?: CoreAPI) {
     super(url, options, ARCGIS_FEATURE_SERVER_SOURCE_LOADER_METADATA.defaultOptions, coreApi);
   }
@@ -78,42 +88,93 @@ export class ArcGISVectorSource
     return metadata;
   }
 
-  /** Requests features from the ArcGIS FeatureServer query endpoint. */
+  /** Retrieves the complete filtered query, rejecting partial results before format conversion. */
   async getFeatures(parameters: GetFeaturesParameters): Promise<VectorSourceData> {
-    const url = this.getFeaturesURL(parameters);
-    const response = await this.fetch(
-      url,
-      parameters.signal ? {signal: parameters.signal} : undefined
-    );
-    await this.checkResponse(response);
-    const geoJsonTable = parseGeoJSONTable(await response.json());
-    const format = parameters.format || 'arrow';
-
-    switch (format) {
+    const result = await this.queryFeatures(parameters);
+    if (!result.complete) {
+      throw new Error(
+        `Incomplete ArcGIS query (${result.reason}): ${result.loaded}/${result.expectedCount}. Use queryFeatures() to inspect partial results.`
+      );
+    }
+    const features = result.data.features;
+    switch (parameters.format || 'arrow') {
       case 'binary':
-        return convertGeojsonToBinaryFeatureCollection(geoJsonTable.features);
+        if (features.some(feature => !feature.geometry)) {
+          throw new Error('Binary output cannot retain null geometries; use geojson or arrow');
+        }
+        return convertGeojsonToBinaryFeatureCollection(features);
       case 'geojson':
-        return geoJsonTable;
-      case 'arrow':
+        return result.data;
       default:
-        return convertFeaturesToWKBArrowTable(geoJsonTable.features, {
+        return convertFeaturesToWKBArrowTable(features, {
           encodingPreference: parameters.geoarrow?.encodingPreference
         });
     }
+  }
+
+  /** Collects a bounded query and returns explicit completeness evidence alongside its data. */
+  async queryFeatures(
+    parameters: ArcGISFeatureQueryOptions = {}
+  ): Promise<ArcGISFeatureQueryResult> {
+    let result: ArcGISFeatureQueryResult | undefined;
+    const features: ArcGISFeatureQueryResult['data']['features'] = [];
+    for await (const page of this.queryFeaturePages(parameters)) {
+      for (const feature of page.data.features) features.push(feature);
+      result = page;
+    }
+    return {...result!, data: {shape: 'geojson-table', type: 'FeatureCollection', features}};
+  }
+
+  /** Streams unique records with cumulative progress; breaking iteration stops subsequent work. */
+  queryFeaturePages(
+    parameters: ArcGISFeatureQueryOptions = {}
+  ): AsyncGenerator<ArcGISFeatureQueryResult> {
+    return this.createQueryClient(parameters).getPages(parameters);
+  }
+
+  /** Requests one page, explicitly marked incomplete regardless of the server transfer flag. */
+  queryFeaturePage(parameters: ArcGISFeatureQueryOptions = {}): Promise<ArcGISFeatureQueryResult> {
+    return this.createQueryClient(parameters).getPage(parameters);
+  }
+
+  /** Returns the current count for the selected query filters. */
+  queryCount(parameters: ArcGISFeatureQueryParameters = {}): Promise<number> {
+    return this.createQueryClient(parameters).getCount();
+  }
+
+  /** Returns object IDs with truncation information; use queryFeatures() for complete retrieval. */
+  queryObjectIds(parameters: ArcGISFeatureQueryParameters = {}): Promise<ArcGISFeatureObjectIds> {
+    return this.createQueryClient(parameters).getObjectIds();
+  }
+
+  /** Returns query bounds and their explicit spatial reference. */
+  queryExtent(parameters: ArcGISFeatureQueryParameters = {}): Promise<ArcGISFeatureExtent> {
+    return this.createQueryClient(parameters).getExtent();
+  }
+
+  /** Shares transport and query filters across summary and data operations. */
+  private createQueryClient(parameters: ArcGISFeatureQueryParameters): ArcGISFeatureQueryClient {
+    return new ArcGISFeatureQueryClient(
+      this.getLayerURL(parameters),
+      this.fetch.bind(this),
+      this.getQueryParameters(parameters),
+      parameters.signal
+    );
   }
 
   /** Requests the raw ArcGIS FeatureServer metadata document. */
   protected async _getFormatSpecificMetadata() {
     // PJSON is formatted by a bit slower than JSON
     const url = this.metadataURL();
-    const response = await this.fetch(url);
-    await this.checkResponse(response);
-    return await response.json();
+    return await new ArcGISFeatureQueryClient(url, this.fetch.bind(this), {}).request('');
   }
 
   /** Loads and caches the raw ArcGIS FeatureServer metadata. */
   protected async getFormatSpecificMetadata(): Promise<any> {
-    this.formatSpecificMetadata ||= this._getFormatSpecificMetadata();
+    this.formatSpecificMetadata ||= this._getFormatSpecificMetadata().catch(error => {
+      this.formatSpecificMetadata = null;
+      throw error;
+    });
     return await this.formatSpecificMetadata;
   }
 
@@ -123,7 +184,41 @@ export class ArcGISVectorSource
   }
 
   /** Builds a query URL from generic vector source parameters. */
-  getFeaturesURL(parameters: GetFeaturesParameters): string {
+  getFeaturesURL(parameters: ArcGISFeatureQueryParameters): string {
+    return buildArcGISResourceURL(
+      this.getLayerURL(parameters),
+      'query',
+      this.getQueryParameters(parameters)
+    );
+  }
+
+  /** Selects exactly one layer; service roots must not silently query an unspecified layer. */
+  private getLayerURL(parameters: ArcGISFeatureQueryParameters): string {
+    const url = new URL(this.url);
+    const layerIdentifiers = Array.isArray(parameters.layers)
+      ? parameters.layers
+      : parameters.layers === undefined
+        ? []
+        : [parameters.layers];
+    if (layerIdentifiers.length > 1)
+      throw new Error('ArcGIS feature queries require exactly one layer');
+    const match = /\/(?:FeatureServer|MapServer)(?:\/(\d+))?\/?$/i.exec(url.pathname);
+    if (!match) throw new Error('Expected an ArcGIS FeatureServer or MapServer layer URL');
+    const layer = layerIdentifiers[0];
+    if (match[1]) {
+      if (layer !== undefined && String(layer) !== match[1])
+        throw new Error('Layer selection conflicts with the endpoint URL');
+      return url.toString();
+    }
+    if (layer === undefined || !/^\d+$/.test(String(layer)))
+      throw new Error('Select a layer ID when querying an ArcGIS service root');
+    return buildArcGISResourceURL(this.url, String(layer), {});
+  }
+
+  /** Applies source defaults and per-request filters consistently across all query operations. */
+  private getQueryParameters(
+    parameters: ArcGISFeatureQueryParameters
+  ): ArcGISFeatureServiceQueryOptions {
     const defaultParameters = this.options['arcgis-feature-server']?.queryParameters || {};
     const outputSpatialReference = normalizeArcGISSpatialReference(parameters.crs) || 4326;
     const requestSpatialReference =
@@ -135,24 +230,27 @@ export class ArcGISVectorSource
       outSR: outputSpatialReference,
       inSR: requestSpatialReference,
       f: 'geojson',
-      ...defaultParameters
+      ...defaultParameters,
+      ...parameters.query
     };
-
+    if (parameters.crs !== undefined) queryParameters.outSR = outputSpatialReference;
+    if (parameters.requestCrs !== undefined) queryParameters.inSR = requestSpatialReference;
     if (parameters.boundingBox) {
-      queryParameters.geometry = [
-        parameters.boundingBox[0][0],
-        parameters.boundingBox[0][1],
-        parameters.boundingBox[1][0],
-        parameters.boundingBox[1][1]
-      ].join(',');
+      const coordinates = parameters.boundingBox.flat();
+      if (
+        !coordinates.every(Number.isFinite) ||
+        coordinates[0] > coordinates[2] ||
+        coordinates[1] > coordinates[3]
+      ) {
+        throw new Error(
+          'ArcGIS boundingBox must contain finite ordered coordinates; split antimeridian queries'
+        );
+      }
+      queryParameters.geometry = coordinates.join(',');
       queryParameters.geometryType = 'esriGeometryEnvelope';
       queryParameters.spatialRel ||= 'esriSpatialRelIntersects';
     }
-
-    const layer = Array.isArray(parameters.layers) ? parameters.layers[0] : parameters.layers;
-    const isLayerEndpoint = /\/FeatureServer\/\d+\/?(?:\?|$)/i.test(this.url);
-    const resourcePath = isLayerEndpoint || !layer ? 'query' : `${layer}/query`;
-    return this.getUrl(resourcePath, queryParameters);
+    return queryParameters;
   }
 
   /** Builds an ArcGIS FeatureServer URL. */
@@ -163,20 +261,12 @@ export class ArcGISVectorSource
   ): string {
     return buildArcGISResourceURL(this.url, path, {...options, ...extra});
   }
-
-  /** Checks an ArcGIS FeatureServer response. */
-  protected async checkResponse(response: Response): Promise<void> {
-    if (!response.ok) {
-      throw new Error(
-        response.statusText || `ArcGIS FeatureServer request failed: ${response.status}`
-      );
-    }
-  }
 }
 
+/** Normalizes layer and nonspatial table metadata. */
 function parseArcGISFeatureServerMetadata(json: any): VectorSourceMetadata {
   const layers: VectorSourceMetadata['layers'] = [];
-  for (const layer of json.layers || []) {
+  for (const layer of [...(json.layers || []), ...(json.tables || [])]) {
     const extent = layer.extent;
     const spatialReference = layer.spatialReference || extent?.spatialReference;
     layers.push({
@@ -239,6 +329,9 @@ function normalizeArcGISSpatialReference(
       return match[1];
     }
   }
+  if (spatialReference !== undefined && !/^\d+$/.test(String(spatialReference))) {
+    throw new Error('ArcGIS query CRS must be a numeric WKID or EPSG identifier');
+  }
   return spatialReference;
 }
 
@@ -247,7 +340,10 @@ function parseArcGISFeatureServerSchema(json: any): Schema {
   const fields = Array.isArray(json.fields)
     ? json.fields.map((field: any) => ({
         name: field.name,
-        type: getSchemaTypeFromArcGISFieldType(field.type),
+        type:
+          field.type === 'esriFieldTypeOID' && field.length === 8
+            ? 'int64'
+            : getSchemaTypeFromArcGISFieldType(field.type),
         nullable: field.nullable
       }))
     : [];
@@ -262,8 +358,11 @@ function getSchemaTypeFromArcGISFieldType(type: string): DataType {
       return 'float64';
     case 'esriFieldTypeSingle':
       return 'float32';
-    case 'esriFieldTypeInteger':
     case 'esriFieldTypeSmallInteger':
+      return 'int16';
+    case 'esriFieldTypeBigInteger':
+      return 'int64';
+    case 'esriFieldTypeInteger':
     case 'esriFieldTypeOID':
       return 'int32';
     case 'esriFieldTypeDate':
@@ -271,17 +370,4 @@ function getSchemaTypeFromArcGISFieldType(type: string): DataType {
     default:
       return 'utf8';
   }
-}
-
-/** Parses a GeoJSON FeatureCollection into the loaders.gl GeoJSON table shape. */
-function parseGeoJSONTable(json: any): GeoJSONTable {
-  if (json?.type === 'FeatureCollection' && Array.isArray(json.features)) {
-    return {
-      shape: 'geojson-table',
-      type: 'FeatureCollection',
-      features: json.features
-    };
-  }
-
-  throw new Error('ArcGIS FeatureServer query did not return a GeoJSON FeatureCollection');
 }
