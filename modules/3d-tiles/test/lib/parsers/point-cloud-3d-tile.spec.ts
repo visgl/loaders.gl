@@ -7,8 +7,9 @@
 
 import {expect, test} from 'vitest';
 import type {DracoLoaderOptions} from '@loaders.gl/draco';
-import {load, parseSync, encodeSync, LoaderContext, coreApi} from '@loaders.gl/core';
-import {Tiles3DLoader, Tile3DWriter, TILE3D_TYPE} from '@loaders.gl/3d-tiles';
+import {load, parse, parseSync, encodeSync, LoaderContext, coreApi} from '@loaders.gl/core';
+import {Tile3DWriter, TILE3D_TYPE} from '@loaders.gl/3d-tiles';
+import {Tiles3DLoaderWithParser as Tiles3DLoader} from '../../../src/tiles-3d-loader-with-parser';
 import {loadDraco} from '../../../src/lib/parsers/parse-3d-tile-point-cloud';
 // import {loadRootTileFromTileset} from '../utils/load-utils';
 /*
@@ -84,6 +85,47 @@ test('point cloud tile#throws if the feature table does not contain POSITION or 
     'throws if feature table has no POSITION or POSITION_QUANTIZED'
   ).toThrow();
 });
+
+test('point cloud tile#encodes positions, colors, normals, and batch properties', async () => {
+  const arrayBuffer = encodeSync(
+    {
+      type: TILE3D_TYPE.POINT_CLOUD,
+      attributes: {
+        positions: new Float32Array([1, 2, 3, 4, 5, 6]),
+        colors: {
+          type: 5121,
+          value: new Uint8Array([255, 0, 0, 0, 255, 0]),
+          size: 3,
+          normalized: false
+        },
+        normals: {type: 5126, value: new Float32Array([0, 0, 1, 0, 1, 0]), size: 3},
+        batchIds: new Uint16Array([0, 1])
+      },
+      batchTableJson: {
+        name: ['first', 'second'],
+        dimensions: [
+          [1, 0, 0],
+          [0, 1, 0]
+        ]
+      }
+    },
+    Tile3DWriter
+  );
+  const tile = await parse(arrayBuffer, Tiles3DLoader);
+
+  expect(Array.from(tile.attributes.positions!)).toEqual([1, 2, 3, 4, 5, 6]);
+  expect(Array.from(tile.attributes.colors!.value)).toEqual([255, 0, 0, 0, 255, 0]);
+  expect(Array.from(tile.attributes.normals!.value)).toEqual([0, 0, 1, 0, 1, 0]);
+  expect(Array.from(tile.batchIds!)).toEqual([0, 1]);
+  expect(tile.batchTableJson).toEqual({
+    name: ['first', 'second'],
+    dimensions: [
+      [1, 0, 0],
+      [0, 1, 0]
+    ]
+  });
+});
+
 test('loadDraco# Pass options to draco loader properly', async () => {
   const resultObject = {
     draco: {

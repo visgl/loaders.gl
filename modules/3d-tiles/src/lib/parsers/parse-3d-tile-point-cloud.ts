@@ -324,7 +324,6 @@ export async function loadDraco(
   }
 
   tile.attributes = {
-    // @ts-expect-error
     positions: decodedPositions,
     colors: normalize3DTileColorAttribute(
       tile,
@@ -332,9 +331,7 @@ export async function loadDraco(
       undefined,
       options?.['3d-tiles']?.colorFormat || 'uint8norm'
     ),
-    // @ts-expect-error
     normals: decodedNormals,
-    // @ts-expect-error
     batchIds: decodedBatchIds,
     ...batchTableAttributes
   };
