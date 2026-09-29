@@ -1,7 +1,8 @@
 import {expect, test, vi} from 'vitest';
 import {
   createBoundedMemoryTileConversionSink,
-  createBrowserTileConversionSource
+  createBrowserTileConversionSource,
+  createBrowserTilesetConversionSource
 } from '@loaders.gl/tile-converter/v5/browser';
 import {
   createI3SConversionSpatialContext,
@@ -448,6 +449,111 @@ test('tile-converter(v5)#browser URL source stops reading after its input byte l
   } finally {
     vi.unstubAllGlobals();
   }
+});
+
+test('tile-converter(v5)#browser tileset source reads explicit content in order with placement transforms', async () => {
+  const rootUrl = 'https://example.test/tileset.json?token=fixture';
+  const rootBytes = new TextEncoder().encode(
+    JSON.stringify({
+      asset: {version: '1.1'},
+      root: {
+        transform: [1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 1, 0, 0, 1],
+        content: {uri: 'root.glb'},
+        children: [
+          {
+            transform: [1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 2, 0, 0, 1],
+            contents: [{uri: 'child.glb'}]
+          }
+        ]
+      }
+    })
+  );
+  const resourceBytes = new Map([
+    [rootUrl, rootBytes],
+    [`${new URL('root.glb', rootUrl).href}?token=fixture`, new Uint8Array([1])],
+    [`${new URL('child.glb', rootUrl).href}?token=fixture`, new Uint8Array([2, 3])]
+  ]);
+  const fetcher = async (input: RequestInfo | URL): Promise<Response> => {
+    const url = String(input);
+    const data = resourceBytes.get(url);
+    return new Response(data, {
+      headers: {
+        'content-type': url.endsWith('tileset.json?token=fixture') ? 'application/json' : ''
+      }
+    });
+  };
+  const source = createBrowserTilesetConversionSource({
+    input: rootUrl,
+    maxInputBytes: rootBytes.byteLength + 3,
+    maxInputResources: 2,
+    fetcher
+  });
+  const inspection = await source.inspect();
+  const output = [];
+  for await (const resource of source.read(inspection)) output.push(resource);
+
+  expect(output.map(resource => resource.resourceId)).toEqual([
+    'tile-root-content-0',
+    'tile-0-content-0'
+  ]);
+  expect(output.map(resource => [...resource.data])).toEqual([[1], [2, 3]]);
+  expect(output[1].transform[12]).toBe(3);
+
+  const limitedSource = createBrowserTilesetConversionSource({
+    input: rootUrl,
+    maxInputBytes: rootBytes.byteLength + 3,
+    maxInputResources: 1,
+    fetcher
+  });
+  await expect(limitedSource.inspect()).rejects.toMatchObject({
+    code: 'INPUT_RESOURCE_COUNT_EXCEEDED'
+  });
+});
+
+test('tile-converter(v5)#browser tileset source rejects implicit tiling and input byte overflow', async () => {
+  const rootUrl = 'https://example.test/tileset.json';
+  const rootBytes = new TextEncoder().encode(
+    JSON.stringify({
+      asset: {version: '1.1'},
+      root: {implicitTiling: {}, content: {uri: 'tile.glb'}}
+    })
+  );
+  const implicitSource = createBrowserTilesetConversionSource({
+    input: rootUrl,
+    maxInputBytes: 1024,
+    maxInputResources: 1,
+    fetcher: async () => new Response(rootBytes)
+  });
+  await expect(implicitSource.inspect()).rejects.toMatchObject({
+    code: 'UNSUPPORTED_BROWSER_TILESET'
+  });
+
+  let canceled = false;
+  const explicitRootBytes = new TextEncoder().encode(
+    JSON.stringify({asset: {version: '1.1'}, root: {content: {uri: 'tile.glb'}}})
+  );
+  const source = createBrowserTilesetConversionSource({
+    input: rootUrl,
+    maxInputBytes: explicitRootBytes.byteLength,
+    maxInputResources: 1,
+    fetcher: async input =>
+      String(input) === rootUrl
+        ? new Response(explicitRootBytes)
+        : new Response(
+            new ReadableStream<Uint8Array>({
+              start(controller) {
+                controller.enqueue(new Uint8Array([1]));
+              },
+              cancel() {
+                canceled = true;
+              }
+            })
+          )
+  });
+  const inspection = await source.inspect();
+  const iterator = source.read(inspection)[Symbol.asyncIterator]();
+  await expect(iterator.next()).rejects.toMatchObject({code: 'INPUT_RESOURCE_TOO_LARGE'});
+  expect(canceled).toBe(true);
 });
 
 test('tile-converter(v5)#3D Tiles spatial context transforms ECEF positions and bounds', () => {
