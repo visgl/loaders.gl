@@ -30,8 +30,7 @@
 
 /* eslint-disable */
 
-import type {WKBHeader} from './helpers/wkb-types';
-import {EWKB_FLAG_M, EWKB_FLAG_SRID, EWKB_FLAG_Z, WKBGeometryType} from './helpers/wkb-types';
+import {EWKB_FLAG_M, EWKB_FLAG_SRID, EWKB_FLAG_Z, WKBGeometryType} from './wkb-types';
 
 type WKBPolygonLayout = {
   ringStart: number;

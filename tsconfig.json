@@ -106,6 +106,9 @@
       "@loaders.gl/arrow": [
         "modules/arrow/src"
       ],
+      "@loaders.gl/arrow-geometry": [
+        "modules/arrow-geometry/src"
+      ],
       "@loaders.gl/arrow/transport": [
         "modules/arrow/src/transport"
       ],

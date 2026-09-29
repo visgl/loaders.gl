@@ -11,7 +11,7 @@ import type {
 import type {GeoParquetGeometryType} from '../../geoarrow/geoparquet-metadata';
 import {parseWKBHeader} from './helpers/parse-wkb-header';
 import {WKBGeometryType, type WKBHeader} from './helpers/wkb-types';
-import {WKBBuilder, type WKBCoordinateTransform} from './wkb-builder';
+import {WKBBuilder, type WKBCoordinateTransform} from '@loaders.gl/arrow-geometry';
 
 export type CoordinateTransform = WKBCoordinateTransform;
 

@@ -1,0 +1,30 @@
+{
+  "name": "@loaders.gl/arrow-geometry",
+  "version": "5.0.0-alpha.6",
+  "description": "Shared geometry builders and WKB operations for Arrow-based loaders",
+  "license": "MIT",
+  "type": "module",
+  "publishConfig": {
+    "access": "public"
+  },
+  "types": "dist/index.d.ts",
+  "main": "dist/index.cjs",
+  "module": "dist/index.js",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
+    }
+  },
+  "files": [
+    "src",
+    "dist",
+    "README.md"
+  ],
+  "sideEffects": false,
+  "dependencies": {
+    "@math.gl/wkb": "5.0.0-alpha.9",
+    "apache-arrow": ">= 17.0.0"
+  }
+}
