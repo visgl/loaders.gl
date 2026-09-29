@@ -6,8 +6,8 @@ The server provides I3S Rest endpoints per specification https://github.com/Esri
 ## Development
 
 - install tsx globally `yarn global add tsx`
-- uncomment "local debug" lines in `modules/tile-converter/src/i3s-server/app.ts` and `modules/tile-converter/src/i3s-server/bin/www.ts` (see comments);
-- run `PORT=8080 HTTPS_PORT=4443 I3sLayerPath="./path/to/dataset" DEBUG=i3s-server:* npx tsx ./src/i3s-server/bin/www.ts`
+- uncomment "local debug" lines in `src/v4/i3s-server/app.ts` and `src/v4/i3s-server/bin/www.ts` (see comments);
+- run `PORT=8080 HTTPS_PORT=4443 I3sLayerPath="./path/to/dataset" DEBUG=i3s-server:* npx tsx ./src/v4/i3s-server/bin/www.ts`
 
 ## Usage
 
