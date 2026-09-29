@@ -4,7 +4,7 @@
 
 import {RangeRequestScheduler, createRangeStats, getRangeStats} from '@loaders.gl/loader-utils';
 import {expect, test} from 'vitest';
-import {advanceTimersAndFlush, withFakeTimers} from '@loaders.gl/test-utils/vitest';
+import {advanceTimersAndFlush, createDeferred, withFakeTimers} from '@loaders.gl/test-utils/vitest';
 const BYTES = new Uint8Array(256).map((_, index) => index);
 test('RangeRequestScheduler#merges ranges within rangeExpansionBytes', async () => {
   await withFakeTimers(async () => {
@@ -606,5 +606,103 @@ test('RangeRequestScheduler#settles coalesced aborts without poisoning active si
     await secondRejection;
     expect(transportAbortCount, 'aborts transport after all children cancel').toBe(1);
     expect(getRangeStats(scheduler.stats).abortedLogicalRanges, 'tracks each abort once').toBe(2);
+  });
+});
+
+test('RangeRequestScheduler#new arrivals preserve the first range batching deadline', async () => {
+  await withFakeTimers(async () => {
+    const scheduler = new RangeRequestScheduler({batchDelayMs: 10});
+    const fetches: number[] = [];
+    const fetchRange = async (offset: number, length: number) => {
+      fetches.push(offset);
+      return BYTES.buffer.slice(offset, offset + length);
+    };
+    const firstRequest = scheduler.scheduleRequest({
+      sourceId: 'source',
+      offset: 0,
+      length: 1,
+      fetchRange
+    });
+    await advanceTimersAndFlush(5);
+    const secondRequest = scheduler.scheduleRequest({
+      sourceId: 'source',
+      offset: 1,
+      length: 1,
+      fetchRange
+    });
+    await advanceTimersAndFlush(4);
+    expect(fetches).toEqual([]);
+    await advanceTimersAndFlush(1);
+    expect(fetches).toEqual([0]);
+    expect(await firstRequest).toEqual(BYTES.buffer.slice(0, 1));
+    expect(await secondRequest).toEqual(BYTES.buffer.slice(1, 2));
+  });
+});
+
+test('RangeRequestScheduler#completion preserves a later batch deadline', async () => {
+  await withFakeTimers(async () => {
+    const scheduler = new RangeRequestScheduler({batchDelayMs: 10});
+    const firstTransport = createDeferred<ArrayBuffer>();
+    const fetches: number[] = [];
+    const fetchRange = async (offset: number, length: number) => {
+      fetches.push(offset);
+      return offset === 0 ? firstTransport.promise : BYTES.buffer.slice(offset, offset + length);
+    };
+    const firstRequest = scheduler.scheduleRequest({
+      sourceId: 'source',
+      offset: 0,
+      length: 1,
+      fetchRange
+    });
+    await advanceTimersAndFlush(10);
+    const secondRequest = scheduler.scheduleRequest({
+      sourceId: 'source',
+      offset: 1,
+      length: 1,
+      fetchRange
+    });
+    await advanceTimersAndFlush(5);
+    firstTransport.resolve(BYTES.buffer.slice(0, 1));
+    await firstRequest;
+    await advanceTimersAndFlush(4);
+    expect(fetches, 'completion does not flush early').toEqual([0]);
+    await advanceTimersAndFlush(1);
+    expect(fetches, 'completion does not postpone the batch').toEqual([0, 1]);
+    await secondRequest;
+  });
+});
+
+test('RangeRequestScheduler#later batches start while an earlier transport is pending', async () => {
+  await withFakeTimers(async () => {
+    const scheduler = new RangeRequestScheduler({batchDelayMs: 10});
+    const firstTransport = createDeferred<ArrayBuffer>();
+    const fetches: number[] = [];
+    const fetchRange = async (offset: number, length: number) => {
+      fetches.push(offset);
+      return offset === 0 ? firstTransport.promise : BYTES.buffer.slice(offset, offset + length);
+    };
+    const firstRequest = scheduler.scheduleRequest({
+      sourceId: 'source',
+      offset: 0,
+      length: 1,
+      fetchRange
+    });
+    scheduler.flush();
+    await advanceTimersAndFlush(5);
+    const secondRequest = scheduler.scheduleRequest({
+      sourceId: 'source',
+      offset: 1,
+      length: 1,
+      fetchRange
+    });
+    await advanceTimersAndFlush(5);
+    expect(fetches, 'manual flush cancelled the old timer').toEqual([0]);
+    await advanceTimersAndFlush(5);
+    expect(fetches, 'new batch proceeds without waiting for the old transport').toEqual([0, 1]);
+    await secondRequest;
+    firstTransport.resolve(BYTES.buffer.slice(0, 1));
+    await firstRequest;
+    await advanceTimersAndFlush(10);
+    expect(fetches, 'completion does not issue another transport').toEqual([0, 1]);
   });
 });

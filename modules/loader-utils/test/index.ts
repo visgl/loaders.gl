@@ -17,7 +17,7 @@ import './lib/path-utils/file-aliases.spec';
 import './lib/path-utils/cached-uri-resolver.spec';
 
 import './lib/request-utils/request-scheduler.spec';
-import './lib/request-utils/range-request-scheduler.node.spec';
+import './lib/request-utils/range-request-scheduler.spec';
 import './lib/request-utils/parse-content-type.spec';
 import './lib/javascript-utils/is-type.spec';
 import './lib/sources/data-source.spec';

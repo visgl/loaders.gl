@@ -76,7 +76,14 @@ if (requestToken) {
 - `maxRequests`?: number; — Maximum concurrent requests to be opened by this scheduler. Additional requests are queued until an open request has completed.
 - `debounceTime`?: number; — Queue requests until no new requests have been added for at least `debounceTime` milliseconds.
 
-When `throttleRequests` is disabled, `maxRequeusts` and `debounceTime` options have no effect.
+Each new queued request restarts the debounce window. Completing a request does not restart
+or bypass a pending window. Once the window has expired, freed slots are refilled on the next
+event-loop tick without another debounce delay.
+
+This differs from [RangeRequestScheduler](./range-request-scheduler.md), whose `batchDelayMs`
+starts a fixed batching window with the first queued range and is not extended by later arrivals.
+
+When `throttleRequests` is disabled, `maxRequests` and `debounceTime` options have no effect.
 
 ### `scheduleRequest(handle: any, getPriority?: () => number): Promise<{done: () => any)}>`
 

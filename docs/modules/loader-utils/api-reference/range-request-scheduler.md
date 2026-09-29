@@ -86,12 +86,19 @@ Creates a scheduler for one group of byte-range-addressable resources.
 
 | Prop | Type | Default | Description |
 | ---- | ---- | ------- | ----------- |
-| `batchDelayMs` | `number` | `50` | Time to wait before flushing the queue. |
+| `batchDelayMs` | `number` | `50` | Fixed wait from the first queued range before flushing the batch. |
 | `rangeExpansionBytes` | `number` | `65536` | Maximum gap to over-fetch between adjacent requests. |
 | `maxGapBytes` | `number` | `65536` | Compatibility alias for `rangeExpansionBytes`. |
 | `maxMergedBytes` | `number` | `8388608` | Maximum total byte length of one merged request. |
 | `stats` | `Stats` | created per scheduler | Optional probe.gl `Stats` object that receives the range counters. |
 | `onEvent` | `function` | none | Optional diagnostics callback for queued, batched, completed, failed, and aborted range requests. |
+
+The first queued range starts the batching window. Later arrivals join the batch without
+extending that window, and completed transports do not change it. Each flush starts all merged
+requests; later batches can start while earlier transports remain in flight.
+
+This differs from [RequestScheduler](./request-scheduler.md), which limits concurrency and
+restarts its `debounceTime` window when new requests arrive.
 
 ## Methods
 
