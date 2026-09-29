@@ -61,3 +61,9 @@ The first CI run passed build, website, Node 22/24/26, both Chromium coverage sh
 Add focused public-entrypoint checks for extrema and missing, empty, and unpopulated position data. The schema Chromium coverage run now reaches 100% for statements, lines, functions, and branches, including this legacy export. No production behavior, coverage exclusions, or thresholds changed.
 
 A local full Chromium coverage run lost its browser connection partway through and is not evidence of complete coverage; CI runs both Chromium shards and merges them with Node and affected slow coverage before enforcing the gates.
+
+## External Coveralls comparison
+
+The complete CI comparison with master found ten newly counted compatibility files, including glTF extension handlers and WMS source factories; the small inventory probe above saw only three. Eight covered compression initializer lines also became non-coverable. The separate Coveralls status fell from 87.6940% to 87.6198%, even though all internal per-package ratchets passed. A successful coverage upload does not imply a passing external status.
+
+Focused hermetic compatibility tests cover shader/program/texture resolution and unsupported shader input, incomplete metadata, legacy light serialization, and WMS source selection, option forwarding, and rejection. Keep the expanded denominator and verify both internal ratchets and the external status on the final CI run.
