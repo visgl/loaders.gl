@@ -4,7 +4,7 @@ import {load} from '@loaders.gl/core';
 import {
   loadNestedTileset,
   loadTile3DContent
-} from '../../../src/i3s-converter/helpers/load-3d-tiles';
+} from '../../../src/v4/i3s-converter/helpers/load-3d-tiles';
 const TILESET_URL = '@loaders.gl/3d-tiles/test/data/CesiumJS/Batched/BatchedColors/tileset.json';
 const NESTED_TILESET_URL =
   '@loaders.gl/3d-tiles/test/data/CesiumJS/Tilesets/TilesetOfTilesets/tileset.json';

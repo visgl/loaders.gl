@@ -1,7 +1,7 @@
 import {expect, test} from 'vitest';
 import {isBrowser} from '@loaders.gl/core';
 import {path} from '@loaders.gl/loader-utils';
-import {getFileByUrl, loadArchive} from '../../../src/i3s-server/controllers/slpk-controller';
+import {getFileByUrl, loadArchive} from '../../../src/v4/i3s-server/controllers/slpk-controller';
 const URL_PREFIX = '';
 const SLPK_URL = './modules/i3s/test/data/DA12_subset.slpk';
 const TEST_CASES = [

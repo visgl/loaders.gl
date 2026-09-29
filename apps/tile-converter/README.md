@@ -6,6 +6,12 @@ This module contains command line scripts and JavaScript APIs for converting bet
 
 For documentation please visit the [website](https://loaders.gl).
 
+## Source layout
+
+The original converter implementation lives in `src/v4`, and the newer conversion APIs live in
+`src/v5`. The package root remains the compatibility entrypoint for the original converter. Shared
+implementation belongs in `src/common` only when it is intentionally used by multiple versions.
+
 ## V5 spatial conversion
 
 The `@loaders.gl/tile-converter/v5` entrypoint can reuse the CRS and elevation operations from
@@ -61,10 +67,13 @@ filesystem and archive choices outside the conversion API.
 ## V5 browser entrypoint
 
 Import `@loaders.gl/tile-converter/v5/browser` for the portable conversion API,
-`createBrowserTileConversionSource`, and `createBoundedMemoryTileConversionSink`. The source reads one
-URL or Blob resource under a required input-byte limit. The sink retains named Blob outputs under a
-required total-byte limit; applications remain responsible for tileset traversal, codecs, packaging,
-and triggering downloads.
+`createBrowserTileConversionSource`, `createBrowserTilesetConversionSource`, and
+`createBoundedMemoryTileConversionSink`. The single-resource source reads one URL or Blob. The
+tileset source traverses explicit 3D Tiles 1.0 and 1.1 documents in depth-first order and reads each
+declared content placement under aggregate byte and resource limits. It rejects implicit tiling and
+nested JSON content. Both sources yield raw bytes to an application-provided codec. The sink retains
+named Blob outputs under a required total-byte limit; applications remain responsible for codecs,
+packaging, and triggering downloads.
 
 ## Installation
 

@@ -1,6 +1,6 @@
 import {expect, test} from 'vitest';
-import {ConvertedAttributes, GeometryAttributes} from '../../../src/i3s-converter/types';
-import {generateAttributes} from '../../../src/i3s-converter/helpers/geometry-attributes';
+import {ConvertedAttributes, GeometryAttributes} from '../../../src/v4/i3s-converter/types';
+import {generateAttributes} from '../../../src/v4/i3s-converter/helpers/geometry-attributes';
 import {areNumberArraysEqual} from '../../utils/compareArrays';
 test('tile-converter(i3s)#generateAttributes - Should re-arrange attributes by featureIds', async () => {
   const attributes: ConvertedAttributes = {

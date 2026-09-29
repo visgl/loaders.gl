@@ -6,7 +6,7 @@ import {Tiles3DLoader} from '@loaders.gl/3d-tiles';
 import {
   calculateTransformProps,
   prepareDataForAttributesConversion
-} from '../../../src/i3s-converter/helpers/gltf-attributes';
+} from '../../../src/v4/i3s-converter/helpers/gltf-attributes';
 import {areNumberArraysEqual} from '../../utils/compareArrays';
 const FRANKFURT_B3DM_FILE_PATH =
   '@loaders.gl/tile-converter/data/Frankfurt/L5/OF/474_5548_-1_lv5_group_0.osgb_3.b3dm';

@@ -1,5 +1,5 @@
 import {expect, test} from 'vitest';
-import {AttributeMetadataInfo} from '../../../src/i3s-converter/helpers/attribute-metadata-info';
+import {AttributeMetadataInfo} from '../../../src/v4/i3s-converter/helpers/attribute-metadata-info';
 test('tile-converter(i3s)#createPopupInfo - Should create popup info', async () => {
   const attributeNames = ['OBJECTID', 'color', 'name', 'opt_uint8'];
   const popupInfoExpected = {

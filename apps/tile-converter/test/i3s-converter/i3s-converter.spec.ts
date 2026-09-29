@@ -1,8 +1,8 @@
 import {expect, test} from 'vitest';
-import {default as I3SConverter} from '../../src/i3s-converter/i3s-converter';
+import {default as I3SConverter} from '../../src/v4/i3s-converter/i3s-converter';
 import {isBrowser, setLoaderOptions} from '@loaders.gl/core';
 import {cleanUpPath} from '../utils/file-utils';
-import {BROWSER_ERROR_MESSAGE} from '../../src/constants';
+import {BROWSER_ERROR_MESSAGE} from '../../src/v4/constants';
 import {parseSLPKArchive} from '@loaders.gl/i3s';
 import {NodeFile} from '@loaders.gl/loader-utils';
 import {getBinaryImageMetadata} from '@loaders.gl/images';

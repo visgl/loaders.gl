@@ -5,8 +5,8 @@ import {
   GLTF_PRIMITIVE_MODES,
   analyzeTileContent,
   mergePreprocessData
-} from '../../../src/i3s-converter/helpers/preprocess-3d-tiles';
-import {GLTFPrimitiveModeString} from '../../../src/i3s-converter/types';
+} from '../../../src/v4/i3s-converter/helpers/preprocess-3d-tiles';
+import {GLTFPrimitiveModeString} from '../../../src/v4/i3s-converter/types';
 const FRANKFURT_B3DM_FILE_PATH =
   '@loaders.gl/tile-converter/test/data/Frankfurt/L5/OF/474_5548_-1_lv5_group_0.osgb_3.b3dm';
 test('tile-converter(i3s)#analyzeTileContent', async () => {
