@@ -68,7 +68,7 @@ function selectIndices(
     !Array.isArray(selection) ||
     selection.length === 0 ||
     new Set(selection).size !== selection.length ||
-    !selection.every(index => Number.isInteger(index) && index >= 0 && index < count)
+    !Array.from(selection).every(index => Number.isInteger(index) && index >= 0 && index < count)
   ) {
     throw new Error(`GeoTIFFRasterLoader: ${name} must contain unique valid indices`);
   }

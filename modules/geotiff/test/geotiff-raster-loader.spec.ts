@@ -95,6 +95,14 @@ for (const selection of [[], [-1], [0.5], [0, 0], [2], [NaN]]) {
   });
 }
 
+test('rejects sparse selections instead of treating holes as sample indices', async () => {
+  await expect(
+    parse(nestedBytes, GeoTIFFRasterLoader, {
+      geotiff: {bands: new Array<number>(1)}
+    })
+  ).rejects.toThrow('unique valid indices');
+});
+
 test('multiple bands are planar and selection preserves band index and distinct GDAL metadata', async () => {
   const bytes = await (await fetchFile(fixture('multiband'))).arrayBuffer();
   const result = await parse(bytes, GeoTIFFRasterLoader, {geotiff: {bands: [1, 0]}});
