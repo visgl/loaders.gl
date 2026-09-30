@@ -78,6 +78,8 @@ export type TileGrid = {
   tileSize?: [number, number];
   /** Top-left origin in grid coordinates. */
   origin?: [number, number];
+  /** Coordinate units per pixel in matrix order, when CRS units are known. */
+  resolutions?: number[];
   /** Matrix identifiers in zoom order. */
   matrixIds?: string[];
   /** Matrix width and height in tile units in zoom order. */

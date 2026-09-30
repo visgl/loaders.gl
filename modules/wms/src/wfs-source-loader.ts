@@ -51,8 +51,7 @@ export type WFSourceOptions = DataSourceOptions &
 export type WFSVersion = '1.1.0' | '2.0.0';
 
 /**
- * @deprecated This is a WIP, not fully implemented
- * @see https://developers.arcgis.com/rest/services-reference/enterprise/feature-service.htm
+ * Read-only WFS source supporting extent queries and GeoJSON/GML responses.
  */
 export const WFSSourceLoader = {
   dataType: null as unknown as WFSVectorSource,
@@ -403,8 +402,21 @@ export class WFSVectorSource extends DataSource<string, WFSourceOptions> impleme
     }
   }
 
+  /** Exposes advertised feature types and projections through the vector-source contract. */
   normalizeMetadata(capabilities: WFSCapabilities): VectorSourceMetadata {
-    return capabilities as any;
+    return {
+      name: capabilities.serviceIdentification?.serviceType || 'WFS',
+      title: capabilities.serviceIdentification?.title,
+      abstract: capabilities.serviceIdentification?.abstract,
+      keywords: [],
+      layers: (capabilities.featureTypes || []).map(featureType => ({
+        name: featureType.name,
+        title: featureType.title,
+        crs: featureType.crs,
+        boundingBox: featureType.boundingBox
+      })),
+      formatSpecificMetadata: capabilities
+    };
   }
 
   // WFS Service API Stubs
@@ -538,16 +550,23 @@ export class WFSVectorSource extends DataSource<string, WFSourceOptions> impleme
   ): string {
     const requestParameters = this._normalizeGetFeatureParameters(parameters);
     const defaultParameters = this.options.wfs?.wfsParameters || {};
+    const {layers: defaultLayers, crs: defaultCRS, ...defaultRequestParameters} = defaultParameters;
     const options: WFSGetFeatureParameters & {version: WFSVersion} = {
-      ...defaultParameters,
+      ...defaultRequestParameters,
       ...requestParameters,
-      version: requestParameters.version || '2.0.0',
-      typeName: requestParameters.typeName,
+      version: requestParameters.version || defaultParameters.version || '2.0.0',
+      typeName: requestParameters.typeName || defaultLayers,
       bbox: requestParameters.bbox,
-      srsName: requestParameters.srsName || requestParameters.crs || 'EPSG:4326',
+      srsName:
+        requestParameters.srsName ||
+        requestParameters.crs ||
+        defaultParameters.srsName ||
+        defaultCRS ||
+        'EPSG:4326',
       outputFormat:
         requestParameters.outputFormat || defaultParameters.outputFormat || 'application/json'
     };
+    delete options.crs;
     return this._getWFSUrl('GetFeature', options, vendorParameters);
   }
 
@@ -629,8 +648,7 @@ export class WFSVectorSource extends DataSource<string, WFSourceOptions> impleme
     wfsParameters: {version?: WFSVersion; [key: string]: unknown},
     vendorParameters?: Record<string, unknown>
   ): string {
-    let url = this.url;
-    let first = true;
+    const url = new URL(this.url);
 
     // Add any vendor searchParams
     const allParameters = {
@@ -647,15 +665,21 @@ export class WFSVectorSource extends DataSource<string, WFSourceOptions> impleme
     for (const [key, value] of Object.entries(allParameters)) {
       // hack to preserve test cases. Not super clear if keys should be included when values are undefined
       if (value !== undefined && value !== null && (!IGNORE_EMPTY_KEYS.includes(key) || value)) {
-        url += first ? '?' : '&';
-        first = false;
-        url += this._getURLParameter(key, value, wfsParameters);
+        const encodedParameter = new URLSearchParams(
+          this._getURLParameter(key, value, wfsParameters)
+        );
+        for (const [parameterName, parameterValue] of encodedParameter) {
+          for (const existingName of [...url.searchParams.keys()]) {
+            if (existingName.toUpperCase() === parameterName) url.searchParams.delete(existingName);
+          }
+          url.searchParams.set(parameterName, parameterValue);
+        }
       }
     }
 
     // Parameter values are encoded individually in _getURLParameter. Encoding the
     // complete URL here would encode the percent signs a second time.
-    return url;
+    return url.toString();
   }
 
   _getWFS130Parameters<ParametersT extends {crs?: CRSIdentifier; srs?: CRSIdentifier}>(
@@ -699,6 +723,10 @@ export class WFSVectorSource extends DataSource<string, WFSourceOptions> impleme
         }
         break;
 
+      case 'typeName':
+        key = wfsParameters.version === '2.0.0' ? 'typeNames' : 'typeName';
+        break;
+
       case 'srsName':
         key = 'srsName';
         break;
@@ -737,7 +765,7 @@ export class WFSVectorSource extends DataSource<string, WFSourceOptions> impleme
 
     key = key.toUpperCase();
 
-    const parameterValue = Array.isArray(value) ? value.join(',') : value ? String(value) : '';
+    const parameterValue = Array.isArray(value) ? value.join(',') : String(value);
     return `${key}=${encodeURIComponent(parameterValue)}`;
   }
 
@@ -752,9 +780,7 @@ export class WFSVectorSource extends DataSource<string, WFSourceOptions> impleme
     }
 
     const normalizedCRS = normalizeServiceCRS(
-      Array.isArray(bboxValue) && bboxValue.length === 5
-        ? String(bboxValue[4])
-        : wfsParameters.crs || wfsParameters.srsName
+      bboxValue.length === 5 ? String(bboxValue[4]) : wfsParameters.srsName || wfsParameters.crs
     );
     const flipCoordinates =
       (wfsParameters.version === '1.1.0' || wfsParameters.version === '2.0.0') &&
@@ -806,7 +832,11 @@ export class WFSVectorSource extends DataSource<string, WFSourceOptions> impleme
     parameters: GetFeaturesParameters | WFSGetFeatureParameters
   ): WFSGetFeatureParameters {
     if ('boundingBox' in parameters) {
-      const outputCrs = parameters.crs || 'EPSG:4326';
+      const outputCrs =
+        parameters.crs ||
+        this.options.wfs?.wfsParameters?.srsName ||
+        this.options.wfs?.wfsParameters?.crs ||
+        'EPSG:4326';
       const requestCrs = parameters.requestCrs || outputCrs;
       return {
         version: this.options.wfs?.wfsParameters?.version || '2.0.0',

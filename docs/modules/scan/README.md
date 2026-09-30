@@ -152,7 +152,7 @@ from physical pushdown.
 | `registerScanBackend()` | Register an application-owned lazy backend | No eager backend import |
 | `FederatedTableScanSource` | Append managed table sources in stable order | Arrow batches with provenance |
 | `VectorTileTableScanSource` | Query one already-addressed MVT or vector PMTiles tile | One Arrow feature batch |
-| `VectorFeatureTableScanSource` | Query one already-bounded WFS or ArcGIS feature request | One Arrow feature batch |
+| `VectorFeatureTableScanSource` | Query one bounded WFS, OGC API Features, or ArcGIS feature request | One Arrow feature batch |
 | Query and metadata types | Build source-neutral controls | Serializable query state |
 
 ## Ordered append federation
@@ -189,6 +189,13 @@ This boundary is deliberate:
 
 The format page uses a blue **Scan table view** badge for this narrower participation mode rather
 than the green **Scan supported** badge used by sources with a native common scan entry point.
+
+`VectorFeatureTableScanSource` exposes `query()` for an Arrow table and `scan()` / `read()`
+for one Arrow result batch, plus `getQueryMetadata()` and `explain()`. See the
+[feature-service query example](/docs/developer-guide/spatial-queries#use-the-common-scanquery-interface)
+for filtering and projection over a bounded service request. Metadata describes the input bounds
+CRS independently of the output geometry CRS. The first execution materializes and caches the
+service response; table operators run locally and do not imply pagination or server-side pushdown.
 
 ## Bundle-size boundary
 

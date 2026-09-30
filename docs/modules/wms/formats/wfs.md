@@ -191,3 +191,18 @@ const layer = new SourceLayer({
 
 - [OGC Web Feature Service standard](https://www.ogc.org/standard/wfs/)
 - [GML support](./gml)
+
+## Selection and offscreen analysis
+
+See [Spatial queries beyond picking](/docs/developer-guide/spatial-queries) for cancelable extent
+loading, cache/retry responsibilities, feature-ID lookup, bounding-box selection, and nearest
+geometry queries on returned GeoArrow data. Local queries include offscreen loaded rows and do
+not depend on deck.gl picking.
+
+WFS 2.0 requests use `TYPENAMES` and `COUNT`; WFS 1.1 uses `TYPENAME` and `MAXFEATURES`.
+Endpoint query parameters are preserved, request parameters replace matching keys without
+regard to case, and zero-valued offsets are retained. A CRS supplied as the fifth `bbox` value
+controls bounding-box axis order independently of the output `srsName`.
+
+`getMetadata()` normalizes WFS 1.1/2.0 feature types into `layers`, including names, titles,
+advertised CRSs, and WGS84 bounds. The parsed capabilities remain in `formatSpecificMetadata`.
