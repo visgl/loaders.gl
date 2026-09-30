@@ -5,6 +5,7 @@ test('tile-converter(v5)#package export resolves to its built CommonJS entrypoin
   const require = createRequire(import.meta.url);
   const packagePath = require.resolve('@loaders.gl/tile-converter/v5');
   const {
+    convertPointCloudSource,
     convertTileset,
     inspectTileset,
     validateTileset
@@ -12,6 +13,7 @@ test('tile-converter(v5)#package export resolves to its built CommonJS entrypoin
 
   expect(packagePath).toMatch(/apps[\\/]tile-converter[\\/]dist[\\/]v5[\\/]index\.cjs$/);
   expect(convertTileset).toBeTypeOf('function');
+  expect(convertPointCloudSource).toBeTypeOf('function');
   expect(inspectTileset).toBeTypeOf('function');
   expect(validateTileset).toBeTypeOf('function');
 });
@@ -20,6 +22,7 @@ test('tile-converter(v5)#browser package export resolves to its browser entrypoi
   const require = createRequire(import.meta.url);
   const packagePath = require.resolve('@loaders.gl/tile-converter/v5/browser');
   const {
+    convertPointCloudSource,
     createBoundedMemoryTileConversionSink,
     createBrowserTileConversionSource,
     createBrowserTilesetConversionSource
@@ -27,6 +30,7 @@ test('tile-converter(v5)#browser package export resolves to its browser entrypoi
 
   expect(packagePath).toMatch(/apps[\\/]tile-converter[\\/]dist[\\/]v5[\\/]browser\.cjs$/);
   expect(createBoundedMemoryTileConversionSink).toBeTypeOf('function');
+  expect(convertPointCloudSource).toBeTypeOf('function');
   expect(createBrowserTileConversionSource).toBeTypeOf('function');
   expect(createBrowserTilesetConversionSource).toBeTypeOf('function');
 });
