@@ -59,3 +59,7 @@ WMTS sources enforce advertised layer tile limits and per-level matrix sizes bef
 dimension defaults configure REST and KVP requests, with explicit option/endpoint overrides.
 Native capabilities preserve dimension strings, intervals, and current support without guessing
 values. See the [WMTS support table](https://loaders.gl/docs/modules/wms/formats/wmts) for boundaries.
+
+WMTS feature-info methods query explicit tile/pixel coordinates through REST resources or KVP
+endpoints, reusing the rendered tile's layer, dimensions, and coverage limits. Native JSON responses
+are decoded; text, XML, and HTML remain service-specific text.

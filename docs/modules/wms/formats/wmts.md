@@ -91,7 +91,12 @@ metadata constraints explicit; **Not implemented** marks features that need addi
 | Dimensions | Automatic time/elevation/dimension defaults | Supported | Applies advertised defaults to REST and KVP; explicit `wmts.parameters` and endpoint dimension values take precedence |
 | Dimensions | String values, intervals, and current metadata | Supported | Preserves lexical values such as band `007`; does not expand ranges or guess a current/nearest value |
 | Dimensions | Dimension value validation and nearest-time selection | Not implemented | Service validates supplied values; no interval interpretation, temporal interpolation, or nearest-value selection |
-| Queries | WMTS `GetFeatureInfo` adapter | Not implemented | Feature-info templates do not become a query API |
+| Queries | WMTS `GetFeatureInfo` REST and KVP | Supported | `getFeatureInfoURL()`, `getFeatureInfo()`, and `getFeatureInfoText()` query explicit tile/pixel coordinates |
+| Queries | Advertised query endpoints and info formats | Supported | Parses `InfoFormat` and KVP GET bindings; selects matching `FeatureInfo` resources independently of tile templates |
+| Queries | Pixel bounds and layer coverage | Supported | Integer I/J bounded by per-level tile sizes; unavailable tiles skip query fetches |
+| Queries | Native JSON, text, XML, and HTML results | Supported | JSON formats decode to native values; other formats remain unchanged text |
+| Queries | HTTP/OWS errors and cancellation | Supported | Rejects HTTP failures and OWS exception reports, including HTTP 200; forwards query `AbortSignal` |
+| Queries | Unified feature schema and coordinate conversion | Not implemented | No universal service-result normalization or automatic longitude/latitude/screen-to-tile-pixel conversion |
 | Transport | SOAP encoding | Not implemented | KVP and REST tile retrieval are supported |
 
 ## Create a tile source
@@ -233,5 +238,70 @@ Generated GetTile fields remain authoritative: extra parameters cannot override 
 matrix, row, column, selected layer, style, or format.
 
 These rules follow the [WMTS 1.0.0 service metadata and GetTile definitions](https://docs.ogc.org/is/07-057r7/07-057r7.pdf).
-They do not add raster reprojection, arbitrary-grid rendering, interval expansion, or a feature-info
-query adapter; those remaining boundaries are marked in the support table above.
+They do not add raster reprojection, arbitrary-grid rendering, interval expansion, or automatic tile-pixel
+selection; those remaining boundaries are marked in the support table above.
+
+## Feature information
+
+Feature information is a server query for a pixel within a WMTS tile. It can inspect a tile that is
+not currently rendered. Applications supply tile indices and zero-based pixel coordinates; these
+are distinct from deck.gl picking coordinates and from longitude/latitude.
+
+```ts
+const source = new WMTSImageTileSource(wmtsUrl, {
+  wmts: {capabilitiesUrl, layer: 'imagery'}
+});
+const result = await source.getFeatureInfo({
+  x: 2, y: 1, z: 3,
+  pixelColumn: 132, // OGC I: column within the tile
+  pixelRow: 86     // OGC J: row within the tile
+});
+// JSON info formats return the service's native object (for example, GeoJSON).
+// Non-JSON formats return their original text. Unavailable tiles return null.
+```
+
+| API or option | Behavior |
+| --- | --- |
+| `getFeatureInfoURL(parameters)` | Builds a URL synchronously; load URL-based capabilities first |
+| `getFeatureInfo(parameters, signal?)` | Loads capabilities, then returns native JSON for `application/json` or `+json` MIME types, otherwise text |
+| `getFeatureInfoText(parameters, signal?)` | Same request and error handling, preserving the raw response text even for JSON |
+| `WMTSGetFeatureInfoParameters` | Tile `{x, y, z, layers?, format?, signal?}`, plus `pixelColumn`, `pixelRow`, and optional `infoFormat` |
+| `wmts.infoFormat` | Default query format, overridden by per-request `infoFormat`; otherwise use the first advertised info format or feature-info resource format |
+| `wmts.featureInfoUrlTemplate` | Explicit REST query template, independent of `wmts.urlTemplate` for tiles |
+| `wmts.featureInfoUrl` | Explicit KVP query endpoint, overriding the advertised GET endpoint |
+
+The source selects a `ResourceURL` with `resourceType="FeatureInfo"` matching the info format.
+It never uses a tile resource as a query template. REST placeholders include `{I}`, `{J}`,
+`{InfoFormat}`, and the same layer/style/matrix/dimension placeholders used by tile requests.
+Relative templates and query endpoints resolve against the source URL. Template values are URL
+encoded; placeholder and KVP names are matched without regard to case.
+
+Without a matching REST template, queries use an explicitly configured KVP endpoint, then the
+advertised KVP GET endpoint. When operation metadata is absent, the source endpoint is the legacy
+fallback. Metadata that explicitly lacks a supported KVP query binding requires a REST template or
+an explicit endpoint instead of silently treating a REST/SOAP binding as KVP. Selected endpoint
+query parameters are retained; query parameters from a different tile endpoint are not copied.
+Shared fetch/authentication options remain available.
+
+KVP queries carry the tile's `FORMAT`, layer, style, matrix set, matrix identifier, row/column, and
+selected dimension values, plus `INFOFORMAT`, `I`, and `J`. Dimension precedence is identical to
+tile retrieval. Generated fields override extra parameters so query coordinates and formats stay
+authoritative. A format outside a nonempty advertised info-format list is rejected. When no info
+format is advertised, an explicit format is required.
+
+Pixel indices must be nonnegative safe integers. Advertised per-level tile width/height bound
+pixels to `0..width-1` and `0..height-1`; missing sizes are unknown and are not guessed. Negative,
+fractional, nonfinite, or unsafe indices fail before discovery. Advertised pixel bounds are checked
+after metadata loads and before a feature-info request. `getFeatureInfoURL()` throws for unavailable tiles;
+async queries return `null` without a feature-info fetch. The optional signal argument overrides
+`parameters.signal`; capability discovery uses its shared cached request and is not separately
+canceled.
+
+HTTP failures and OWS `ExceptionReport` bodies reject, including reports returned with HTTP 200.
+`getFeatureInfo()` rejects malformed JSON; `getFeatureInfoText()` preserves it for caller inspection.
+XML/GML and HTML are returned as text: this adapter does not infer a universal feature schema,
+reproject returned geometry, convert results to Arrow/binary tables, or perform local spatial
+predicates. Use feature sources and [spatial query integration](../../../developer-guide/spatial-queries)
+for selection, snapping, and analysis across feature data.
+
+Request fields and pixel bounds follow the [WMTS 1.0.0 GetFeatureInfo definitions](https://docs.ogc.org/is/07-057r7/07-057r7.pdf).

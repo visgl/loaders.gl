@@ -84,6 +84,7 @@ under `contents`; the source uses it to select the layer, grid, limits, and dime
 type WMTSCapabilities = {
   serviceIdentification?: {title?: string; abstract?: string; serviceTypeVersion?: string};
   operationsMetadata?: Record<string, unknown>;
+  featureInfoUrl?: string | null;
   contents: {layers: WMTSLayer[]; tileMatrixSets: WMTSTileMatrixSet[]};
 };
 ```
@@ -91,7 +92,9 @@ type WMTSCapabilities = {
 | Native field | Content | Request use |
 | --- | --- | --- |
 | `contents.layers[].identifier` | Layer identifier | Select by `wmts.layer` or per-request layers |
-| `formats`, `styles`, `resourceURLs` | Formats, default styles, tile/feature-info templates | REST or KVP tile configuration |
+| `featureInfoUrl` | Advertised KVP query endpoint, `null` for metadata without a supported query binding | Feature-info endpoint discovery |
+| `infoFormats` | Optional array of advertised query MIME types | Feature-info format selection and validation |
+| `formats`, `styles`, `resourceURLs` | Formats, default styles, tile/feature-info templates | REST/KVP tile configuration and independent feature-info templates |
 | `tileMatrixSetLinks[].tileMatrixSet` | Linked matrix set identifier | Grid/CRS selection |
 | `tileMatrixSetLinks[].limits` | Optional `WMTSTileMatrixLimits[]` | Inclusive coverage check before tile fetch |
 | `dimensions` | Optional `WMTSDimension[]` | Preserve metadata and resolve default values |
@@ -118,3 +121,9 @@ request precedence, synchronous coverage queries, skipped tiles, and remaining r
 
 | Option | Type | Default | Description |
 | ------ | ---- | ------- | ----------- |
+
+`featureInfoUrl` selects an advertised HTTP GET `GetFeatureInfo` binding that permits KVP encoding.
+Endpoint, operation, and global `GetEncoding` constraints are respected; REST-only bindings are not used
+as KVP endpoints. If operation metadata is present without a supported query GET binding, this value
+is `null`. Missing operation metadata leaves it `undefined` for legacy/manual endpoint configuration.
+See [WMTS feature information](../formats/wmts#feature-information) for request and response APIs.
