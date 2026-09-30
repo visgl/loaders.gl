@@ -1,5 +1,5 @@
 import React, {useEffect, useId, useMemo, useRef, useState} from 'react';
-import DeckGL from '@deck.gl/react';
+import ArcGISMap from '../../../examples/website/shared/arcgis-map';
 import {GeoJsonLayer} from '@deck.gl/layers';
 import {WebMercatorViewport} from '@deck.gl/core';
 import {ArcGISIdentityManager} from '@esri/arcgis-rest-request';
@@ -7,8 +7,6 @@ import {load} from '@loaders.gl/core';
 import {ARCGIS_LOADERS, ArcGISFeatureServerSourceLoader} from '@loaders.gl/arcgis';
 import {SourceLayer} from '@loaders.gl/deck-layers';
 import type {SourceLayerProps} from '@loaders.gl/deck-layers';
-import {Map} from 'react-map-gl';
-import maplibregl from 'maplibre-gl';
 import {resolveArcGISItem} from '@loaders.gl/arcgis/items';
 import {ArcGISAuthentication} from '@loaders.gl/arcgis/authentication';
 import type {ArcGISItemLayer, ArcGISItemResolution} from '@loaders.gl/arcgis/items';
@@ -358,9 +356,11 @@ export default function ArcGISItemsApp(): React.ReactElement {
       aria-label="ArcGIS item explorer"
     >
       <style>{EXPLORER_STYLES}</style>
-      <DeckGL
-        initialViewState={viewState}
-        controller
+      <ArcGISMap
+        viewState={viewState}
+        onViewStateChange={setViewState}
+        showBasemap={showBasemap}
+        onError={error => setStatus(error.message)}
         layers={[
           previewLayer,
           new GeoJsonLayer({
@@ -386,15 +386,7 @@ export default function ArcGISItemsApp(): React.ReactElement {
               }
             : null
         }
-      >
-        {showBasemap && (
-          <Map
-            mapLib={maplibregl}
-            mapStyle="https://basemaps.cartocdn.com/gl/positron-gl-style/style.json"
-            attributionControl
-          />
-        )}
-      </DeckGL>
+      />
       <aside
         className={`arcgis-item-infobox ${collapsed ? 'is-collapsed' : ''}`}
         aria-label="Item and visualization controls"

@@ -6,7 +6,8 @@ import React, {useMemo, useState} from 'react';
 import {createRoot} from 'react-dom/client';
 
 import DeckGL from '@deck.gl/react';
-import {MapController} from '@deck.gl/core';
+import {MapController, type PickingInfo} from '@deck.gl/core';
+import ArcGISMap, {type ArcGISMapViewState} from '../shared/arcgis-map';
 
 import {SourceLayer} from '@loaders.gl/deck-layers';
 import {
@@ -66,7 +67,7 @@ type AppState = {
   /** Metadata loaded from the active source. */
   metadata: string;
   /** Current view state. */
-  viewState: Record<string, number>;
+  viewState: ArcGISMapViewState;
   loading: boolean;
   error: string | null;
 };
@@ -87,31 +88,51 @@ export default function App(props: AppProps = {}) {
     []
   );
 
+  const isArcGISExample =
+    state.example?.type.startsWith('arcgis-') || props.format?.startsWith('arcgis-');
+  const examplePanel = (
+    <ExamplePanel
+      examples={EXAMPLES}
+      format={props.format}
+      initialCategoryName={INITIAL_CATEGORY_NAME}
+      initialExampleName={INITIAL_EXAMPLE_NAME}
+      onExampleChange={onExampleChange}
+      loading={state.loading}
+    >
+      <MetadataViewer metadata={state.metadata} />
+      {state.error ? <div style={{color: 'red'}}>{state.error}</div> : ''}
+      <LngLatZoomView viewState={state.viewState} />
+    </ExamplePanel>
+  );
+
   return (
     <div style={{position: 'relative', height: '100%'}}>
-      <DeckGL
-        layers={layers}
-        viewState={state.viewState}
-        widgets={widgets}
-        onViewStateChange={onViewStateChange}
-        onError={(error: Error) => setState((state) => ({...state, error: error.message}))}
-        getTooltip={getTooltip}
-        controller={{type: MapController, maxPitch: 85}}
-      >
-        <ExamplePanel
-          examples={EXAMPLES}
-          format={props.format}
-          initialCategoryName={INITIAL_CATEGORY_NAME}
-          initialExampleName={INITIAL_EXAMPLE_NAME}
-          onExampleChange={onExampleChange}
-          loading={state.loading}
+      {isArcGISExample ? (
+        <>
+          <ArcGISMap
+            layers={layers || []}
+            viewState={state.viewState}
+            controlPosition="top-left"
+            onViewStateChange={viewState => onViewStateChange({viewState})}
+            onError={(error: Error) => setState(state => ({...state, error: error.message}))}
+            getTooltip={getTooltip}
+          />
+          {examplePanel}
+        </>
+      ) : (
+        <DeckGL
+          layers={layers || []}
+          viewState={state.viewState}
+          widgets={widgets}
+          onViewStateChange={onViewStateChange}
+          onError={(error: Error) => setState(state => ({...state, error: error.message}))}
+          getTooltip={getTooltip}
+          controller={{type: MapController, maxPitch: 85}}
         >
-          <MetadataViewer metadata={state.metadata} />
-          {state.error ? <div style={{color: 'red'}}>{state.error}</div> : ''}
-          <LngLatZoomView viewState={state.viewState} />
-        </ExamplePanel>
-        <Map reuseMaps mapLib={maplibregl} mapStyle={MAP_STYLE} preventStyleDiffing />
-      </DeckGL>
+          {examplePanel}
+          <Map reuseMaps mapLib={maplibregl} mapStyle={MAP_STYLE} preventStyleDiffing />
+        </DeckGL>
+      )}
     </div>
   );
 
@@ -122,7 +143,8 @@ export default function App(props: AppProps = {}) {
     }));
   }
 
-  function getTooltip({object}) {
+  /** Displays feature attributes for either map host. */
+  function getTooltip({object}: PickingInfo) {
     if (!object || !object.properties) {
       return null;
     }

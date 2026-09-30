@@ -69,9 +69,32 @@ Retain service/data attribution when adding a basemap or combining providers.
 
 ## ArcGIS Maps SDK applications
 
-Embedding deck.gl into an ArcGIS view is a separate integration supplied by deck.gl. Consult its
-[current basemap integration documentation](https://deck.gl/docs/get-started/using-with-map).
-This module reads service data; it does not create or manage an ArcGIS Maps SDK view.
+The 2D [ArcGIS examples](/examples/arcgis) host deck.gl overlays in ArcGIS `MapView` through
+[`DeckLayer`](https://deck.gl/docs/api-reference/arcgis/deck-layer). They use Esri’s public light gray
+basemap with native zoom, fullscreen and attribution controls. Item-explorer users can hide both
+basemap geometry and labels while inspecting a service.
+
+```ts
+import {DeckLayer} from '@deck.gl/arcgis';
+import ArcGISMap from '@arcgis/core/Map.js';
+import MapView from '@arcgis/core/views/MapView.js';
+
+const overlay = new DeckLayer({'deck.layers': [sourceLayer]});
+const view = new MapView({
+  container,
+  map: new ArcGISMap({basemap: 'gray-vector', layers: [overlay]}),
+  center: [-85.75, 37.75],
+  zoom: 7
+});
+// Call view.destroy() when the application removes this map.
+```
+
+Keep ArcGIS SDK imports and lifecycle in the application. The loaders.gl ArcGIS module does not
+acquire an Esri SDK dependency. The shared [example map host](https://github.com/visgl/loaders.gl/blob/master/examples/website/shared/arcgis-map.tsx)
+loads the SDK after mount for server-rendered pages, releases SDK resources on unmount, and explicitly
+aligns 512-pixel map LODs with deck.gl. Programmatic fits round zoom down to an integer level so all
+requested data stays visible. This integration is 2D; it does not make SceneServer profiles renderable
+in this map.
 
 ## Examples
 

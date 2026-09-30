@@ -29,7 +29,8 @@ Feature layers render as interactive deck.gl overlays with feature inspection an
 MapServer and ImageServer roots preview imagery, and VectorTileServer roots preview tile geometry
 with application styling. Nonspatial tables display their first 50 rows. Scene services expose
 metadata and link to the [dedicated scene examples](/examples/arcgis); they are not rendered here.
-The optional context map uses CARTO/OpenStreetMap and retains its attribution. Reloading the page clears the in-memory session.
+The optional context map is Esri’s light gray basemap, hosted by an ArcGIS `MapView` with
+`@deck.gl/arcgis` `DeckLayer` overlays and native attribution. Reloading the page clears the in-memory session.
 
 ## Supported item types
 

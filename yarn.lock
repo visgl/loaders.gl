@@ -2809,7 +2809,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@deck.gl/arcgis@npm:9.4.0, @deck.gl/arcgis@npm:^9.4.0":
+"@deck.gl/arcgis@npm:9.4.0":
   version: 9.4.0
   resolution: "@deck.gl/arcgis@npm:9.4.0"
   dependencies:
@@ -2821,6 +2821,21 @@ __metadata:
     "@luma.gl/engine": ~9.4.0
     "@luma.gl/webgl": ~9.4.0
   checksum: 10c0/f545016386c1a3083981baec8b432a1ab7c8287931811c63b18486e70965820e75e3b4c77befee9ef6807a382fc995c6a1b5ba4c0b50478d12b603a5c318ee94
+  languageName: node
+  linkType: hard
+
+"@deck.gl/arcgis@patch:@deck.gl/arcgis@npm%3A9.4.0#~/.yarn/patches/@deck.gl-arcgis-npm-9.4.0-4c40c78c8b.patch":
+  version: 9.4.0
+  resolution: "@deck.gl/arcgis@patch:@deck.gl/arcgis@npm%3A9.4.0#~/.yarn/patches/@deck.gl-arcgis-npm-9.4.0-4c40c78c8b.patch::version=9.4.0&hash=c68b05"
+  dependencies:
+    esri-loader: "npm:^3.7.0"
+  peerDependencies:
+    "@arcgis/core": ^4.0.0
+    "@deck.gl/core": ~9.4.0
+    "@luma.gl/core": ~9.4.0
+    "@luma.gl/engine": ~9.4.0
+    "@luma.gl/webgl": ~9.4.0
+  checksum: 10c0/c6667c4709ea4cc7aaf5a2c59e5d7f66bffc97f1ed95d4d03c9074ad15b354cbb233efea0eac47491cc6235ff7497e0c0a97b65642ff412e6026c50a2917b242
   languageName: node
   linkType: hard
 
@@ -20758,7 +20773,7 @@ __metadata:
   resolution: "i3s-arcgis-loaders-example@workspace:examples/website/i3s-arcgis"
   dependencies:
     "@arcgis/core": "npm:^4.25.0"
-    "@deck.gl/arcgis": "npm:^9.4.0"
+    "@deck.gl/arcgis": "patch:@deck.gl/arcgis@npm%3A9.4.0#~/.yarn/patches/@deck.gl-arcgis-npm-9.4.0-4c40c78c8b.patch"
     "@deck.gl/core": "npm:^9.4.0"
     "@deck.gl/extensions": "npm:^9.4.0"
     "@deck.gl/geo-layers": "npm:^9.4.0"
@@ -28270,8 +28285,8 @@ __metadata:
   dependencies:
     "@algolia/autocomplete-js": "npm:^1.17.0"
     "@algolia/client-search": "npm:^4.26.0"
-    "@arcgis/core": "npm:^4.25.0"
-    "@deck.gl/arcgis": "npm:^9.4.0"
+    "@arcgis/core": "npm:^4.34.8"
+    "@deck.gl/arcgis": "patch:@deck.gl/arcgis@npm%3A9.4.0#~/.yarn/patches/@deck.gl-arcgis-npm-9.4.0-4c40c78c8b.patch"
     "@deck.gl/core": "npm:^9.4.0"
     "@deck.gl/extensions": "npm:^9.4.0"
     "@deck.gl/geo-layers": "npm:^9.4.0"
@@ -34182,6 +34197,8 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "wms-loaders-example@workspace:examples/website/wms"
   dependencies:
+    "@arcgis/core": "npm:^4.34.8"
+    "@deck.gl/arcgis": "patch:@deck.gl/arcgis@npm%3A9.4.0#~/.yarn/patches/@deck.gl-arcgis-npm-9.4.0-4c40c78c8b.patch"
     "@deck.gl/core": "npm:^9.4.0"
     "@deck.gl/extensions": "npm:^9.4.0"
     "@deck.gl/geo-layers": "npm:^9.4.0"
