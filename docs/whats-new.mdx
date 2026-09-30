@@ -47,6 +47,11 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
 
 ## v5.0 (In Development)
 
+- Apply WMTS layer tile limits and per-level matrix bounds before fetching; unavailable tiles return
+  `null`, and `isTileAvailable()` exposes advertised coverage. Preserve dimension metadata and apply
+  advertised defaults to REST/KVP requests with caller overrides. Reject invalid indices instead
+  of wrapping or clamping them, and keep generated tile fields authoritative.
+
 - Add opt-in bounded pagination to WFS and OGC API Features sources. `getFeaturesInPages()` exposes
   progressive GeoJSON pages; configured `getFeatures()` collects pages before Arrow/binary conversion.
   Follow service next links, support WFS 2.0 numeric-count offsets, preserve GML paging metadata,
