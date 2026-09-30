@@ -76,8 +76,8 @@ function normalizeLayer(layer: any): WMTSLayer {
     format: resourceURL.format,
     resourceType: resourceURL.resourceType
   }));
-  const lowerCorner = parseNumbers(layer.wgs84BoundingBox?.lowerCorner);
-  const upperCorner = parseNumbers(layer.wgs84BoundingBox?.upperCorner);
+  const lowerCorner = parseNumbers((layer.wGS84BoundingBox || layer.wgs84BoundingBox)?.lowerCorner);
+  const upperCorner = parseNumbers((layer.wGS84BoundingBox || layer.wgs84BoundingBox)?.upperCorner);
   return {
     identifier: text(layer.identifier),
     title: text(layer.title),
@@ -137,10 +137,13 @@ function text(value: any): string {
 }
 
 function number(value: any): number | undefined {
+  if (!text(value).trim()) return undefined;
   const parsedValue = Number(text(value));
   return Number.isFinite(parsedValue) ? parsedValue : undefined;
 }
 
 function parseNumbers(value: any): number[] {
-  return text(value).trim().split(/\s+/).map(Number).filter(Number.isFinite);
+  return text(value).trim()
+    ? text(value).trim().split(/\s+/).map(Number).filter(Number.isFinite)
+    : [];
 }

@@ -131,11 +131,10 @@ function collectNativeBounds(
     if (!child || !values || coordinateSize < 2 || coordinateSize > 4) return false;
     for (let coordinateIndex = startIndex; coordinateIndex < endIndex; coordinateIndex++) {
       const logicalValueIndex = coordinateIndex * coordinateSize;
-      const physicalOffset = child.offset + data.offset * coordinateSize;
       updateNativeBounds(
         bounds,
-        readSlicedDataValue(values, physicalOffset, logicalValueIndex),
-        readSlicedDataValue(values, physicalOffset, logicalValueIndex + 1)
+        Number(values[logicalValueIndex]),
+        Number(values[logicalValueIndex + 1])
       );
     }
     return true;
@@ -148,12 +147,10 @@ function collectNativeBounds(
     const yValues = yIndex >= 0 ? data.children[yIndex]?.values : undefined;
     if (xIndex < 0 || yIndex < 0 || !xValues || !yValues) return false;
     for (let coordinateIndex = startIndex; coordinateIndex < endIndex; coordinateIndex++) {
-      const xChild = data.children[xIndex];
-      const yChild = data.children[yIndex];
       updateNativeBounds(
         bounds,
-        readDataValue(xValues, xChild, coordinateIndex),
-        readDataValue(yValues, yChild, coordinateIndex)
+        Number(xValues[coordinateIndex]),
+        Number(yValues[coordinateIndex])
       );
     }
     return true;
@@ -184,23 +181,8 @@ function collectBoxBounds(data: arrow.Data, rowIndex: number, bounds: MutableBou
 function readNativeChildValue(child: arrow.Data | undefined, rowIndex: number): number | undefined {
   const values = child?.values;
   if (!child || !values) return undefined;
-  return readDataValue(values, child, rowIndex);
-}
-
-/** Reads a value from either a full Arrow backing buffer or a sliced view. */
-function readDataValue(values: ArrayLike<number>, data: arrow.Data, index: number): number {
-  const offsetIndex = data.offset + index;
-  return Number(values[offsetIndex < values.length ? offsetIndex : index]);
-}
-
-/** Reads from a full backing buffer or a shortened sliced view. */
-function readSlicedDataValue(
-  values: ArrayLike<number>,
-  physicalOffset: number,
-  logicalIndex: number
-): number {
-  const physicalIndex = physicalOffset + logicalIndex;
-  return Number(values[physicalIndex < values.length ? physicalIndex : logicalIndex]);
+  // Arrow slices numeric value buffers; data.offset only applies to validity bits.
+  return Number(values[rowIndex]);
 }
 
 /** Resolves a dense-union buffer index for full and sliced Arrow union data. */

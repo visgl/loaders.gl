@@ -267,3 +267,163 @@ test('WMTSImageTileSource preserves an exact advertised matrix identifier', asyn
   await source.getMetadata();
   expect(source.getTileURL({x: 0, y: 0, z: 5})).toBe('https://tiles.example/5');
 });
+
+test('WMTS capabilities select tile resources, default styles, formats and CRS units', async () => {
+  const parser = await WMTSCapabilitiesLoader.preload();
+  const capabilities = parser.parseTextSync(`<Capabilities><Contents>
+    <Layer><Identifier>roads</Identifier><Format>image/jpeg</Format>
+      <Style isDefault="true"><Identifier>day time</Identifier></Style>
+      <TileMatrixSetLink><TileMatrixSet>geographic</TileMatrixSet></TileMatrixSetLink>
+      <ResourceURL resourceType="FeatureInfo" format="image/jpeg" template="https://example.com/info"/>
+      <ResourceURL resourceType="tile" format="image/jpeg" template="https://example.com/{Style}/{TileMatrixSet}/{TileMatrix}/{TileRow}/{TileCol}"/>
+    </Layer>
+    <TileMatrixSet><Identifier>geographic</Identifier><SupportedCRS>urn:ogc:def:crs:EPSG::4326</SupportedCRS>
+      <TileMatrix><Identifier>level0</Identifier><ScaleDenominator>1000</ScaleDenominator><TopLeftCorner>90 -180</TopLeftCorner><TileWidth>256</TileWidth><TileHeight>256</TileHeight><MatrixWidth>2</MatrixWidth><MatrixHeight>1</MatrixHeight></TileMatrix>
+      <TileMatrix><Identifier>level1</Identifier></TileMatrix>
+    </TileMatrixSet></Contents></Capabilities>`);
+  const source = new WMTSImageTileSource(WMTS_URL, {wmts: {capabilities}});
+  expect(source.getTileURL({x: 0, y: 0, z: 0})).toBe(
+    'https://example.com/day%20time/geographic/level0/0/0'
+  );
+  const metadata = await source.getMetadata();
+  expect(metadata.format).toBe('image/jpeg');
+  expect(metadata.tileGrid?.origin).toEqual([-180, 90]);
+  expect(metadata.tileGrid?.matrixSizes).toBeUndefined();
+  expect(capabilities.contents.tileMatrixSets[0].matrices[1].scaleDenominator).toBeUndefined();
+  capabilities.contents.tileMatrixSets[0].matrices.pop();
+  expect((await source.getMetadata()).tileGrid?.resolutions?.[0]).toBeCloseTo(
+    0.28 / ((2 * Math.PI * 6378137) / 360)
+  );
+  capabilities.contents.layers[0].resourceURLs = [];
+  const url = new URL(source.getTileURL({x: 0, y: 0, z: 0}));
+  expect(url.searchParams.get('STYLE')).toBe('day time');
+  expect(url.searchParams.get('FORMAT')).toBe('image/jpeg');
+  expect(() =>
+    new WMTSImageTileSource(WMTS_URL, {wmts: {capabilities, crs: 'EPSG:3857'}}).getTileURL({
+      x: 0,
+      y: 0,
+      z: 0
+    })
+  ).toThrow('supports');
+  expect(() =>
+    new WMTSImageTileSource(WMTS_URL, {wmts: {capabilities, tileMatrixSet: 'missing'}}).getTileURL({
+      x: 0,
+      y: 0,
+      z: 0
+    })
+  ).toThrow('not linked');
+  expect(() =>
+    new WMTSImageTileSource(WMTS_URL, {wmts: {capabilities, layer: 'missing'}}).getTileURL({
+      x: 0,
+      y: 0,
+      z: 0
+    })
+  ).toThrow('Unknown');
+});
+
+test('WMTS capabilities requests retry after a failure', async () => {
+  const source = new WMTSImageTileSource(WMTS_URL, {wmts: {capabilitiesUrl: WMTS_URL}});
+  let requests = 0;
+  source.fetch = async () =>
+    ++requests === 1
+      ? new Response('', {status: 503})
+      : new Response('<Capabilities><Contents/></Capabilities>');
+  await expect(source.getMetadata()).rejects.toThrow('503');
+  await source.getMetadata();
+  await source.getMetadata();
+  expect(requests).toBe(2);
+});
+
+test('WMTS template dimensions are encoded and missing values fail explicitly', () => {
+  const template = 'https://example.com/{Layer}/{Style}/{Time}/{TileMatrix}';
+  const source = new WMTSImageTileSource(WMTS_URL, {
+    wmts: {urlTemplate: template, layer: 'a/b', parameters: {Time: '2026-01-01T00:00:00Z'}}
+  });
+  expect(source.getTileURL({x: 0, y: 0, z: 0})).toBe(
+    'https://example.com/a%2Fb/default/2026-01-01T00%3A00%3A00Z/0'
+  );
+  const missing = new WMTSImageTileSource(WMTS_URL, {wmts: {urlTemplate: template}});
+  expect(() => missing.getTileURL({x: 0, y: 0, z: 0})).toThrow('Time');
+});
+
+test.each([
+  true,
+  false
+])('WMTS request-layer overrides select metadata (REST: %s)', useRestTemplate => {
+  const source = new WMTSImageTileSource(WMTS_URL, {
+    wmts: {
+      layer: 'basemap',
+      capabilities: {
+        contents: {
+          layers: [
+            {
+              identifier: 'basemap',
+              formats: ['image/png'],
+              styles: [],
+              tileMatrixSetLinks: [{tileMatrixSet: 'base-grid'}],
+              resourceURLs: []
+            },
+            {
+              identifier: 'roads/traffic',
+              formats: ['image/jpeg'],
+              styles: [{identifier: 'night time', isDefault: true}],
+              tileMatrixSetLinks: [{tileMatrixSet: 'road-grid'}],
+              resourceURLs: useRestTemplate
+                ? [
+                    {
+                      resourceType: 'tile',
+                      format: 'image/jpeg',
+                      template:
+                        'https://roads.example/{Layer}/{Style}/{TileMatrixSet}/{TileMatrix}/{TileRow}/{TileCol}'
+                    }
+                  ]
+                : []
+            }
+          ],
+          tileMatrixSets: [
+            {
+              identifier: 'base-grid',
+              supportedCRS: 'EPSG:3857',
+              matrices: [{identifier: 'base-zero'}]
+            },
+            {
+              identifier: 'road-grid',
+              supportedCRS: 'EPSG:3857',
+              matrices: [{identifier: 'road-zero'}]
+            }
+          ]
+        }
+      }
+    }
+  });
+  const tileUrl = source.getTileURL({x: 1, y: 2, z: 0, layers: 'roads/traffic'});
+  if (useRestTemplate) {
+    expect(tileUrl).toBe(
+      'https://roads.example/roads%2Ftraffic/night%20time/road-grid/road-zero/2/1'
+    );
+  } else {
+    const searchParameters = new URL(tileUrl).searchParams;
+    expect(searchParameters.get('LAYER')).toBe('roads/traffic');
+    expect(searchParameters.get('STYLE')).toBe('night time');
+    expect(searchParameters.get('TILEMATRIXSET')).toBe('road-grid');
+    expect(searchParameters.get('TILEMATRIX')).toBe('road-zero');
+    expect(searchParameters.get('FORMAT')).toBe('image/jpeg');
+  }
+  expect(new URL(source.getTileURL({x: 0, y: 0, z: 0})).searchParams.get('LAYER')).toBe('basemap');
+  expect(() => source.getTileURL({x: 0, y: 0, z: 0, layers: 'missing'})).toThrow(
+    'Unknown WMTS layer'
+  );
+});
+
+test('WMTS templates handle repeated unmatched opening braces', () => {
+  const malformedPrefix = '{{|'.repeat(1024);
+  const source = new WMTSImageTileSource(WMTS_URL, {
+    wmts: {
+      urlTemplate: `https://example.com/${malformedPrefix}{TileMatrix}/{Layer}`,
+      layer: 'default'
+    }
+  });
+  expect(source.getTileURL({x: 0, y: 0, z: 3, layers: 'requested/layer'})).toBe(
+    `https://example.com/${malformedPrefix}3/requested%2Flayer`
+  );
+});
