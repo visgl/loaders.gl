@@ -2,16 +2,42 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import type {RequestCredential, TokenValue} from '@loaders.gl/loader-utils';
-import {TokenAuthentication, createQueryParameterCredential} from '@loaders.gl/loader-utils';
+import type {
+  AuthenticatedFetchOptions,
+  FetchLike,
+  RequestCredential,
+  TokenValue
+} from '@loaders.gl/loader-utils';
+import {
+  TokenAuthentication,
+  createAuthenticatedFetch,
+  createQueryParameterCredential
+} from '@loaders.gl/loader-utils';
 
-/** Declarative ArcGIS token authentication. */
+/** ArcGIS token authentication independent of the application's sign-in SDK. */
 export class ArcGISAuthentication extends TokenAuthentication {
   /** Discriminator used in `core.credentials`. */
   static readonly type = 'arcgis';
   /** Creates an exact-origin ArcGIS credential. */
   constructor(options: ArcGISCredentialOptions) {
     super(createArcGISCredential(options));
+  }
+
+  /**
+   * Creates a fetch transport for discovery and service requests.
+   * Refreshes are isolated by trusted origin so server-specific tokens cannot cross hosts.
+   * Reuse the returned transport to deduplicate concurrent refreshes within each origin.
+   */
+  createFetch(options: Pick<AuthenticatedFetchOptions, 'fetch' | 'fetchOptions'> = {}): FetchLike {
+    return createAuthenticatedFetch({
+      ...options,
+      credentials: this.origins.map(origin =>
+        createArcGISCredential({
+          origins: [origin],
+          token: this.token
+        })
+      )
+    });
   }
 }
 

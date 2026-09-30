@@ -166,3 +166,62 @@ test('cancellation during renewal prevents replay', async () => {
   ).rejects.toMatchObject({name: 'AbortError'});
   expect(transport).toHaveBeenCalledTimes(1);
 });
+
+test('auth object isolates concurrent refresh tokens by origin and forwards fetch defaults', async () => {
+  const serverOrigin = 'https://server.example.com';
+  const refreshOrigins: string[] = [];
+  let releaseRefreshes = () => {};
+  const bothRefreshing = new Promise<void>(resolve => {
+    releaseRefreshes = resolve;
+  });
+  const token = vi.fn(async ({url, reason}) => {
+    const origin = new URL(url).origin;
+    if (reason === 'refresh') {
+      refreshOrigins.push(origin);
+      if (refreshOrigins.length === 2) releaseRefreshes();
+      await bothRefreshing;
+      return origin;
+    }
+    return 'expired';
+  });
+  const transport = vi.fn(async (url: string, _options?: RequestInit) => {
+    const requestUrl = new URL(url);
+    return requestUrl.searchParams.get('token') === requestUrl.origin
+      ? new Response(requestUrl.origin)
+      : new Response('', {status: 498});
+  });
+  const authenticatedFetch = new ArcGISAuthentication({
+    origins: [ORIGIN, serverOrigin],
+    token
+  }).createFetch({fetch: transport, fetchOptions: {headers: {'x-application': 'example'}}});
+  const responses = await Promise.all([
+    authenticatedFetch(`${ORIGIN}/sharing/rest/content/items/item`),
+    authenticatedFetch(`${serverOrigin}/FeatureServer/0`)
+  ]);
+  expect(await Promise.all(responses.map(response => response.text()))).toEqual([
+    ORIGIN,
+    serverOrigin
+  ]);
+  expect(refreshOrigins.sort()).toEqual([ORIGIN, serverOrigin]);
+  expect(transport).toHaveBeenCalledTimes(4);
+  for (const [, options] of transport.mock.calls) {
+    expect(new Headers(options?.headers).get('x-application')).toBe('example');
+  }
+  await authenticatedFetch('https://untrusted.example.com/FeatureServer');
+  expect(token).toHaveBeenCalledTimes(4);
+  expect(new URL(transport.mock.calls[4][0]).searchParams.has('token')).toBe(false);
+});
+
+test('auth object creates a transport using global fetch by default', async () => {
+  const transport = vi.spyOn(globalThis, 'fetch').mockResolvedValue(new Response('data'));
+  try {
+    const authenticatedFetch = new ArcGISAuthentication({
+      origins: [ORIGIN],
+      token: 'static'
+    }).createFetch();
+    expect(await (await authenticatedFetch(`${ORIGIN}/FeatureServer`)).text()).toBe('data');
+    expect(new URL(String(transport.mock.calls[0][0])).searchParams.get('token')).toBe('static');
+  } finally {
+    transport.mockRestore();
+  }
+});

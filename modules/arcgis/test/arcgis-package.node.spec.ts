@@ -29,7 +29,7 @@ beforeAll(async () => {
     bundleImport('@loaders.gl/arcgis', 'ARCGIS_LOADERS'),
     bundleImport('@loaders.gl/arcgis/bundled', 'ARCGIS_LOADERS'),
     bundleImport('@loaders.gl/arcgis/bundled', 'ArcGISFeatureServerSourceLoader'),
-    bundleImport('@loaders.gl/arcgis/authentication', 'createArcGISCredential')
+    bundleImport('@loaders.gl/arcgis/authentication', 'ArcGISAuthentication')
   ]);
 });
 
@@ -65,8 +65,9 @@ test('named synchronous imports tree-shake unrelated ArcGIS clients', () => {
   ).toBe(true);
 });
 
-test('credential-only imports do not retain service implementations', () => {
+test('authentication imports do not retain service implementations or an Esri SDK', () => {
   expect(credentials.initialInputs.some(input => /arcgis\/dist\/arcgis\//.test(input))).toBe(false);
+  expect(credentials.initialInputs.some(input => input.includes('@esri/'))).toBe(false);
 });
 
 test('built package exports resolve in Node without source aliases', () => {
@@ -82,9 +83,13 @@ test('built package exports resolve in Node without source aliases', () => {
     import * as root from '@loaders.gl/arcgis';
     import * as bundled from '@loaders.gl/arcgis/bundled';
     import {resolveArcGISItem} from '@loaders.gl/arcgis/items';
+    import {ArcGISAuthentication} from '@loaders.gl/arcgis/authentication';
     assert.equal(typeof resolveArcGISItem, 'function');
     assert.equal(resolveArcGISItem, bundled.resolveArcGISItem);
     assert.equal(root.resolveArcGISItem, undefined);
+    assert.equal(ArcGISAuthentication, bundled.ArcGISAuthentication);
+    assert.equal(root.ArcGISAuthentication, undefined);
+    assert.equal(typeof new ArcGISAuthentication({origins: ['https://example.com'], token: 'token'}).createFetch(), 'function');
     const serviceUrl = 'https://example.com/arcgis/rest/services/Test/SceneServer/layers/0';
     for (const loader of root.ARCGIS_LOADERS) {
       const runtime = await loader.preload();

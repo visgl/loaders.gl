@@ -30,11 +30,11 @@ to sensitive organizational content.
 ```ts
 import {load} from '@loaders.gl/core';
 import {ArcGISFeatureServerSourceLoader} from '@loaders.gl/arcgis';
-import {createArcGISCredential} from '@loaders.gl/arcgis/authentication';
+import {ArcGISAuthentication} from '@loaders.gl/arcgis/authentication';
 
 const source = await load(serviceUrl, ArcGISFeatureServerSourceLoader, {
   core: {
-    credentials: [createArcGISCredential({
+    credentials: [new ArcGISAuthentication({
       origins: ['https://services.example.com'],
       token: accessToken
     })]
@@ -62,7 +62,7 @@ Connect your session manager to a callback. `getAccessToken` and `renewSession` 
 functions, not loaders.gl APIs; implement them with your chosen OAuth/identity library.
 
 ```ts
-const credential = createArcGISCredential({
+const authentication = new ArcGISAuthentication({
   origins: ['https://services.example.com'],
   token: async ({reason}) => {
     if (reason === 'refresh') await renewSession();
@@ -71,7 +71,7 @@ const credential = createArcGISCredential({
 });
 
 const source = await load(serviceUrl, ArcGISFeatureServerSourceLoader, {
-  core: {credentials: [credential]}
+  core: {credentials: [authentication]}
 });
 ```
 
@@ -104,13 +104,12 @@ your application's origin. Client configuration cannot override server CORS poli
 
 ## Discovery and scene resources
 
-Discovery currently takes an explicit fetch function. Wrap it with the shared credential transport:
+Discovery and item resolution take an explicit fetch function. Create it with the auth object:
 
 ```ts
-import {createAuthenticatedFetch} from '@loaders.gl/loader-utils';
 import {discoverArcGISCapabilities} from '@loaders.gl/arcgis/discovery';
 
-const authenticatedFetch = createAuthenticatedFetch({credentials: [credential]});
+const authenticatedFetch = authentication.createFetch();
 const graph = await discoverArcGISCapabilities(directoryUrl, {fetch: authenticatedFetch});
 ```
 
@@ -129,27 +128,37 @@ REST JS manages its own temporary OAuth state and PKCE verifier in browser stora
 if a popup is blocked or closed before completion, reload the example to start again. The SDK is an example dependency, not part of
 the lightweight ArcGIS package root.
 
-Bridge an existing `ArcGISIdentityManager` to one credential per trusted origin:
+Keep sign-in, redirect handling, session storage and sign-out in the application, using the Esri SDK
+version suitable for your deployment or another identity library. `ArcGISAuthentication` is exported
+from `@loaders.gl/arcgis/authentication` and does not import an Esri SDK. Its token callback is the boundary between
+application-managed identity and loaders.gl request authentication.
+
+Bridge an existing `ArcGISIdentityManager` session with the auth object:
 
 ```ts
-import {createArcGISCredential} from '@loaders.gl/arcgis/authentication';
-import {createAuthenticatedFetch} from '@loaders.gl/loader-utils';
+import {ArcGISAuthentication} from '@loaders.gl/arcgis/authentication';
 
-const credentials = trustedOrigins.map(origin => createArcGISCredential({
-  origins: [origin],
+const authentication = new ArcGISAuthentication({
+  origins: trustedOrigins,
   token: async ({url, reason}) => {
     if (reason === 'refresh') await session.refreshCredentials();
     return session.getToken(url);
   }
-}));
-const transport = createAuthenticatedFetch({credentials});
+});
+const transport = authentication.createFetch();
 // resolveArcGISItem(itemId, {fetch: transport})
 // load(layerUrl, ArcGISFeatureServerSourceLoader, {core: {fetch: transport}})
 ```
 
+Reuse this transport across discovery, metadata and service requests. `createFetch()` creates a
+separate credential for each trusted origin, isolating concurrent refresh tokens between hosts.
+It accepts optional `fetch` and `fetchOptions` to wrap an application transport or supply defaults.
+A single-origin auth object can also be passed directly in `core.credentials`. The lower-level
+`createArcGISCredential` factory remains available at `@loaders.gl/arcgis/authentication`.
+
 `getToken(url)` allows REST JS to obtain a token appropriate for the target server. The example's
 explicit origin list controls where loaders.gl invokes it. SDK-internal federation/token exchange
-requests are managed by REST JS, not this transport. One credential per origin also prevents a
+requests are managed by REST JS, not this transport. The auth object's transport prevents a
 concurrent refresh from sharing a token across different origins. Deployments hosting multiple
 independent token authorities on one origin should supply their own request-authentication adapter.
 

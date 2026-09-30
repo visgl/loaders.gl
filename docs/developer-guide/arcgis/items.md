@@ -88,8 +88,9 @@ Descriptions and attribution may contain publisher HTML: render as text or sanit
 
 ## Private items and deployment verification
 
-Use `createAuthenticatedFetch` with [ArcGIS credentials](/docs/developer-guide/arcgis/authentication)
-and pass it as `fetch` here and as `core.fetch` to `load`. No discovered item, service or asset URL
+Use `ArcGISAuthentication.createFetch()` with an application-managed token callback; see
+[ArcGIS authentication](/docs/developer-guide/arcgis/authentication). Pass the returned transport as
+`fetch` here and as `core.fetch` to `load`. No discovered item, service or asset URL
 expands the credential's allowed origins. Resolving an item does not prove access to all its layers.
 
 | Workflow | Verification in this tranche | Remaining deployment work |

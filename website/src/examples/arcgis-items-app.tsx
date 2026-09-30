@@ -10,9 +10,8 @@ import type {SourceLayerProps} from '@loaders.gl/deck-layers';
 import {Map} from 'react-map-gl';
 import maplibregl from 'maplibre-gl';
 import {resolveArcGISItem} from '@loaders.gl/arcgis/items';
+import {ArcGISAuthentication} from '@loaders.gl/arcgis/authentication';
 import type {ArcGISItemLayer, ArcGISItemResolution} from '@loaders.gl/arcgis/items';
-import {createArcGISCredential} from '@loaders.gl/arcgis/authentication';
-import {createAuthenticatedFetch} from '@loaders.gl/loader-utils';
 import type {Feature} from '@loaders.gl/schema';
 
 /** Public configuration shared only with a same-origin OAuth callback popup. */
@@ -190,21 +189,16 @@ export default function ArcGISItemsApp(): React.ReactElement {
     });
   }
 
-  /** Creates one credential per explicitly trusted origin so server tokens are not shared. */
+  /** Bridges the application-managed Esri session to our scoped request transport. */
   function createTransport() {
-    return createAuthenticatedFetch({
-      credentials: session
-        ? origins.split(',').map(origin =>
-            createArcGISCredential({
-              origins: [origin.trim()],
-              token: async ({url, reason}) => {
-                if (reason === 'refresh') await session.refreshCredentials();
-                return session.getToken(url);
-              }
-            })
-          )
-        : []
-    });
+    if (!session) return window.fetch.bind(window);
+    return new ArcGISAuthentication({
+      origins: origins.split(',').map(origin => origin.trim()),
+      token: async ({url, reason}) => {
+        if (reason === 'refresh') await session.refreshCredentials();
+        return session.getToken(url);
+      }
+    }).createFetch();
   }
 
   /** Resolves the item and displays a bounded feature query or an existing service renderer on demand. */
