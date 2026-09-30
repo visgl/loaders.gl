@@ -124,10 +124,13 @@ test('encodePointCloudSourceTile#retains small offsets in large coordinates with
   expect(encoded!.cartographicOrigin).toEqual([0, 0, 0]);
 });
 
-test('encodePointCloudSource#selects batch metadata for non-empty tiles', async () => {
+test.each([
+  false,
+  true
+])('encodePointCloudSource#streams with batch metadata: %s', async withMetadata => {
   const pointData = makeMeshArrowTable({
     POSITION: {value: new Float32Array([1, 2, 3]), size: 3},
-    BATCH_ID: {value: new Uint16Array([0]), size: 1}
+    ...(withMetadata ? {BATCH_ID: {value: new Uint16Array([0]), size: 1}} : {})
   });
   const source = {
     isReady: true,
@@ -149,10 +152,12 @@ test('encodePointCloudSource#selects batch metadata for non-empty tiles', async 
   const selectedTileIds: string[] = [];
 
   for await (const tile of encodePointCloudSource(source, {
-    getTileEncodingOptions: sourceTile => {
-      selectedTileIds.push(sourceTile.header.id);
-      return {batchTableJson: {sourceTileId: [sourceTile.header.id]}};
-    }
+    getTileEncodingOptions: withMetadata
+      ? sourceTile => {
+          selectedTileIds.push(sourceTile.header.id);
+          return {batchTableJson: {sourceTileId: [sourceTile.header.id]}};
+        }
+      : undefined
   })) {
     encodedTiles.push(tile);
   }
@@ -160,8 +165,13 @@ test('encodePointCloudSource#selects batch metadata for non-empty tiles', async 
   expect(encodedTiles.map(tile => tile.id)).toEqual(['tile-0']);
   expect(encodedTiles[0].pointCount).toBe(1);
   expect(encodedTiles[0].pnts).toBeInstanceOf(ArrayBuffer);
-  expect(selectedTileIds).toEqual(['tile-0']);
+  expect(selectedTileIds).toEqual(withMetadata ? ['tile-0'] : []);
   const parsedTile = await parse(encodedTiles[0].pnts, Tiles3DLoader, {worker: false});
-  expect(parsedTile.batchTableJson).toEqual({sourceTileId: ['tile-0']});
-  expect(Array.from(parsedTile.batchIds!)).toEqual([0]);
+  if (withMetadata) {
+    expect(parsedTile.batchTableJson).toEqual({sourceTileId: ['tile-0']});
+    expect(Array.from(parsedTile.batchIds!)).toEqual([0]);
+  } else {
+    expect(Array.from(parsedTile.attributes.positions!)).toEqual([1, 2, 3]);
+    expect(parsedTile.attributes.batchIds).toBeNull();
+  }
 });
