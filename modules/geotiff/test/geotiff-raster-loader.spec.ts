@@ -8,6 +8,7 @@ import {GeoTIFFRasterLoader} from '@loaders.gl/geotiff';
 import type {GeoTIFFRasterData} from '@loaders.gl/geotiff';
 import {GeoTIFFRasterLoaderWithParser} from '@loaders.gl/geotiff/geotiff-raster-loader';
 
+/** Resolve an authored, local numeric TIFF fixture. */
 const fixture = (name: string) => `@loaders.gl/geotiff/test/data/numeric/${name}.tif`;
 let point: GeoTIFFRasterData;
 let nestedBytes: ArrayBuffer;
