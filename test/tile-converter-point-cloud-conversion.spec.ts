@@ -235,3 +235,30 @@ test('convertPointCloudSource aborts on invalid encoding options', async () => {
     expect.objectContaining({code: 'POINT_CLOUD_RTC_CENTER_INVALID'})
   );
 });
+
+test('convertPointCloudSource aborts before writing unsupported point attributes', async () => {
+  const source = createSource();
+  source.loadTileContent = vi.fn(async () => ({
+    data: makeMeshArrowTable({
+      POSITION: {value: new Float32Array([10, 20, 30]), size: 3},
+      classification: {value: new Uint8Array([2]), size: 1}
+    }),
+    pointCount: 1,
+    coordinateSystem: 'cartesian' as const,
+    cartographicOrigin: [0, 0, 0]
+  }));
+  const sink = createSink();
+
+  await expect(
+    convertPointCloudSource(source as PointCloudTilesetSource, {
+      sink,
+      measureInputBytes: () => 13
+    })
+  ).rejects.toMatchObject({code: 'POINT_CLOUD_ATTRIBUTE_UNSUPPORTED'});
+  expect(sink.write).not.toHaveBeenCalled();
+  expect(sink.finalize).not.toHaveBeenCalled();
+  expect(source.getChildren).not.toHaveBeenCalled();
+  expect(sink.abort).toHaveBeenCalledExactlyOnceWith(
+    expect.objectContaining({code: 'POINT_CLOUD_ATTRIBUTE_UNSUPPORTED'})
+  );
+});
