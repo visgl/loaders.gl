@@ -36,6 +36,10 @@
     "./bundled": {
       "types": "./dist/bundled.d.ts",
       "import": "./dist/bundled.js"
+    },
+    "./geotiff-raster-loader": {
+      "types": "./dist/geotiff-raster-loader.d.ts",
+      "import": "./dist/geotiff-raster-loader.js"
     }
   },
   "sideEffects": false,

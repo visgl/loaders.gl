@@ -16,6 +16,7 @@ export type GeoTiffDocsTabId =
   | 'ometiff-example'
   | 'overview'
   | 'format'
+  | 'geotiffrasterloader'
   | 'geotiffloader'
   | 'geotiffsource'
   | 'ometiffsource';
@@ -29,6 +30,11 @@ const GEOTIFF_DOCS_TABS: GeoTiffDocsTab[] = [
     id: 'geotiffloader',
     label: 'GeoTIFFLoader',
     href: '/docs/modules/geotiff/api-reference/geotiff-loader'
+  },
+  {
+    id: 'geotiffrasterloader',
+    label: 'GeoTIFFRasterLoader',
+    href: '/docs/modules/geotiff/api-reference/geotiff-raster-loader'
   },
   {
     id: 'geotiffsource',
