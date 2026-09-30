@@ -3,6 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import type {Vector} from 'apache-arrow';
+import {intersectsCoordinate, intersectsExtent} from './lib/geometry-predicates';
 import type {GeoArrowEncoding, Geometry} from '@loaders.gl/schema';
 import {getGeoArrowRowBounds, type GeoArrowBounds} from './geoarrow-bounds';
 import {
@@ -28,7 +29,8 @@ export type GeoArrowNearestFeature = {
  *
  * Queries include offscreen rows. Coordinates must share a planar CRS; this class neither
  * reprojects coordinates nor computes geodesic distances. Rebuild after changing the vector.
- * Extent queries use bounding boxes; nearest queries refine candidates against actual geometry.
+ * `getFeatureRowsInExtent` uses bounding boxes. Exact coordinate/extent and nearest queries
+ * refine candidates against actual geometry. Polygon boundaries, including hole boundaries, match.
  */
 export class GeoArrowSpatialIndex {
   /** Geometry vector retained for candidate refinement; callers must not mutate its buffers. */
@@ -84,6 +86,28 @@ export class GeoArrowSpatialIndex {
         rows.push(rowIndex);
     }
     return rows.sort((first, second) => first - second);
+  }
+
+  /** Returns rows intersecting a coordinate in planar XY, including polygon and line boundaries. */
+  getFeatureRowsAtCoordinate(coordinate: readonly [number, number]): number[] {
+    if (!coordinate.every(Number.isFinite)) throw new Error('Coordinate must be finite');
+    return this.getFeatureRowsInExtent([
+      coordinate[0],
+      coordinate[1],
+      coordinate[0],
+      coordinate[1]
+    ]).filter(rowIndex => {
+      const geometry = convertGeoArrowVectorCellToGeoJSON(this.column, rowIndex, this.encoding);
+      return Boolean(geometry && intersectsCoordinate(geometry, coordinate));
+    });
+  }
+
+  /** Returns rows whose actual geometry intersects a closed extent, excluding bounding-box false positives. */
+  getFeatureRowsIntersectingExtent(extent: GeoArrowBounds): number[] {
+    return this.getFeatureRowsInExtent(extent).filter(rowIndex => {
+      const geometry = convertGeoArrowVectorCellToGeoJSON(this.column, rowIndex, this.encoding);
+      return Boolean(geometry && intersectsExtent(geometry, extent));
+    });
   }
 
   /**

@@ -27,7 +27,7 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
   description="Each OGC API source follows the links and operations it understands, then returns a documented result. Applications can add service-specific parameters without adopting a universal abstraction."
   tone="cyan"
   items={[
-    {label: 'Features', value: 'Collections and items with bounding boxes, CRS, and paging links.'},
+    {label: 'Features', value: 'Collections and items with bounding boxes, CRS, and preserved paging links.'},
     {label: 'Tiles', value: 'Known tile links and templates returned as raw tile bytes.'},
     {label: 'Coverages', value: 'Collection subsets returned as JSON or binary coverage data.'},
     {label: 'EDR', value: 'Position, area, trajectory, corridor, cube, and radius queries.'}
@@ -59,20 +59,75 @@ cancellation, and custom transports.
 
 ## OGC API Features
 
-| Capability | Support | Behavior |
-| --- | --- | --- |
-| Landing page | Supported | `getLandingPage()` returns linked service metadata |
-| Collections | Supported | `getCollections()` returns advertised collection descriptions |
-| Collection metadata | Supported | Normalizes title, description, CRS, and first spatial extent |
-| Items request | Supported | Requests `/collections/{id}/items` |
-| Bounding box | Supported | Sends the standard `bbox` parameter |
-| Output CRS | Supported | Sends the requested `crs` parameter |
-| GeoJSON | Supported | Validates a FeatureCollection response |
-| Binary and Arrow | Supported | Converts through standard vector-source outputs |
-| Paging links | Application controlled | Returned pages are not traversed automatically |
-| CQL2 and advanced filters | Not normalized | Use service parameters or a custom request |
-| Transactions | Not supported | Read-only source |
-| deck.gl | First class | Implements `VectorSource` and works with `SourceLayer` |
+The Features path shares the vector-source, Arrow, managed-loading, and local-query integrations
+used by WFS. The table distinguishes implemented read operations from optional protocol classes.
+
+| Area | Capability | Status | API, guarantee, or boundary |
+| --- | --- | --- | --- |
+| Discovery | Landing page and collections | Supported | `getLandingPage()` and `getCollections()` |
+| Discovery | Collection URL or service URL | Supported | Collection inferred from URL or selected by `collectionId`/layers |
+| Discovery | Normalized metadata | Supported | Collection title, description, advertised CRSs, and first spatial extent |
+| Discovery | Automatic queryables/schema negotiation | Not implemented | Source schema is currently empty; materialized Arrow schemas are inferred |
+| Requests | Collection items | Supported | `/collections/{id}/items` and GeoJSON `Accept` negotiation |
+| Requests | Bounding box | Supported | Standard `bbox`, with canonical XY input and wire axis normalization |
+| Requests | Independent bounds and output CRSs | Supported | `requestCrs` sends `bbox-crs`; `crs` controls the requested response CRS |
+| Requests | Feature request cancellation | Supported | `AbortSignal` forwarded to the items fetch |
+| Requests | Credentials and custom transport | Supported | Common source fetch options |
+| Requests | Portable attribute predicate pushdown / CQL2 | Not implemented | Relational adapter evaluates predicates locally; custom HTTP requests remain possible |
+| Requests | Automatic next-link pagination | Supported with limits | Opt-in `ogc-api.pagination` gathers same-origin body/HTTP-header next links, with bounded requests and cancellation |
+| Requests | Page-size control | Supported | `pagination.pageSize` requests `limit`; services may cap it |
+| Requests | Item-by-ID and datetime convenience methods | Not implemented | Current normalized API focuses on bounding-box item requests |
+| Output | GeoJSON validation and foreign members | Supported | Requires FeatureCollection and a features array; single-page responses preserve links/counts |
+| Output | Binary feature collections | Supported | `format: 'binary'` |
+| Output | Arrow and GeoArrow encoding preferences | Supported | `format: 'arrow'`, WKB/native/mixed union preferences |
+| Loading | Complete extent reuse and uncovered rectangles | Supported via wrapper | `ManagedVectorSource` requires verified complete results and explicit equivalent CRSs |
+| Loading | Shared requests and independent cancellation | Supported via wrapper | Last waiting consumer can abort the underlying request |
+| Loading | Retry, invalidation, and bounded retention | Supported via wrapper | Failed, incomplete, and unknown-completeness pages do not establish coverage |
+| Loading | Stable-ID deduplication | Partial | Typed IDs or custom accessor; features without stable IDs are retained separately |
+| Queries | Common scan/query interface | Supported via adapter | `VectorFeatureTableScanSource` evaluates one materialized bounded result |
+| Queries | ID, bounds, exact intersection, nearest geometry | Supported locally | `GeoArrowSpatialIndex` includes offscreen loaded rows |
+| Rendering | deck.gl integration | Supported | Implements `VectorSource`; direct or managed source works with `SourceLayer` |
+| Mutation | Transactions and mutable feature-store events | Not implemented | Read-only adapter; explicit cache invalidation after external changes |
+| Conformance | All optional OGC API Features classes | Not implemented | Focused read client; no blanket standards certification claim |
+
+### Progressive pages and complete collection
+
+Configure `{'ogc-api': {pagination: {pageSize: 1000, maxPages: 100, maxFeatures: 100000}}}`
+to gather service pages in `getFeatures()` before converting to the requested encoding. Omit
+`pagination` to retain one-page behavior. The three positive-integer bounds default to those
+values. Exhausting a bound throws instead of returning a silently truncated aggregate.
+
+```ts
+import {OGCAPIFeaturesSource} from '@loaders.gl/wms';
+
+const source = new OGCAPIFeaturesSource(serviceUrl, {'ogc-api': {collectionId: 'roads'}});
+for await (const page of source.getFeaturesInPages({
+  layers: 'roads', boundingBox: [[-10, -5], [10, 5]], format: 'geojson', signal
+}, {pageSize: 500, maxPages: 20})) {
+  // Every yield is a normalized GeoJSON table, without fetching the next page ahead.
+  processFeatures(page.features);
+}
+```
+
+Traversal follows relative or absolute `rel: 'next'` links from the body or HTTP `Link` header,
+resolving against the response URL. It does not invent an offset parameter. Links must use the
+original origin and HTTP(S), without embedded credentials. Initial endpoint parameters are
+preserved, and opaque next URLs are followed as supplied by the service. A numeric total that
+exceeds the collected count without a next link is an error. An empty terminal page is allowed;
+an empty page with another continuation is rejected.
+
+Cancellation, failed later pages, inconsistent counts, repeated URLs/pages/IDs, and exhausted
+limits fail the traversal and prevent managed coverage from being established. Early loop exit
+stops further requests. Pages already yielded remain partial until traversal finishes. Stable
+paging depends on the service; concurrent dataset changes are not a transactional snapshot.
+
+Collected GeoJSON removes page-specific links/extents and updates `numberReturned`. Unknown
+`numberMatched` stays unknown; it never becomes fabricated completeness evidence.
+`ManagedVectorSource` can retain a collected result only when the service's numeric total matches
+its rows. Arrow and binary conversion happens once after collection; per-page GeoJSON remains
+materialized rather than a network-streamed feature parser. These rules follow
+[OGC API Features Core](https://docs.ogc.org/is/17-069r4/17-069r4.html#fc-response).
+
 
 ```ts
 import {createDataSource} from '@loaders.gl/core';

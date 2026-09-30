@@ -30,7 +30,12 @@ export type {EncodePointCloudTileOptions} from './point-cloud.js';
 export {traversePointCloudSource} from './point-cloud-source.js';
 export type {PointCloudSourceTile, TraversePointCloudSourceOptions} from './point-cloud-source.js';
 export {encodePointCloudSource, encodePointCloudSourceTile} from './point-cloud-source-encoder.js';
-export type {EncodedPointCloudSourceTile} from './point-cloud-source-encoder.js';
+export type {
+  EncodedPointCloudSourceTile,
+  EncodePointCloudSourceOptions
+} from './point-cloud-source-encoder.js';
+export {convertPointCloudSource} from './point-cloud-conversion.js';
+export type {ConvertPointCloudSourceOptions} from './point-cloud-conversion.js';
 export {createManifestBackedTileConversionSink} from './resource-manifest.js';
 export type {
   ManifestBackedTileConversionSinkOptions,

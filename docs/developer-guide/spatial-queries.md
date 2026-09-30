@@ -29,12 +29,64 @@ For different input/output CRSs, set `requestCrs` for the generic bounding box a
 the returned features, or use `getFeaturesURL()` with a five-element `bbox` ending in its CRS
 and an independent `srsName`. The server must support the requested output projection.
 
-On viewport changes, cancel the previous request with `controller.abort()` and discard stale
-responses before updating application state. Applications own extent caching and deduplication
-by stable feature ID. Only mark an extent loaded after a successful response so failures can be
-retried. A single request can be truncated by the server: use explicit `count`, `startIndex`, and
-stable `sortBy` with `getFeaturesURL()` when completeness matters. Do not assume an extent query
-has downloaded the entire dataset or that paging is supported by every server.
+## Manage loaded extents
+
+Wrap any GeoJSON-capable `VectorSource`, including WFS and OGC API Features, in
+`ManagedVectorSource` from `@loaders.gl/wms`:
+
+```ts
+import {ManagedVectorSource} from '@loaders.gl/wms';
+import type {GetFeaturesParameters} from '@loaders.gl/loader-utils';
+
+const managed = new ManagedVectorSource(source, {maxCachedExtents: 32});
+const request: GetFeaturesParameters = {
+  layers: ['workspace:roads'],
+  boundingBox: [[minimumX, minimumY], [maximumX, maximumY]],
+  requestCrs: 'EPSG:3857',
+  crs: 'EPSG:3857',
+  format: 'arrow'
+};
+const features = await managed.getFeatures(request);
+const loaded = managed.getLoadedExtents(request);
+// After external edits, evict intersecting complete requests, or clear everything:
+managed.invalidateExtent(request);
+managed.clear();
+```
+
+The wrapper subtracts verified loaded coverage from a new extent and requests only uncovered
+rectangles. Identical in-flight requests share one fetch. Each caller can cancel its own wait;
+the fetch continues for remaining callers and is aborted when no callers remain. Clearing or
+invalidating cancels pending work and prevents late responses from restoring stale coverage.
+Failed, aborted, or incomplete responses can be retried at the same extent.
+
+Completeness is conservative: by default a numeric `numberMatched` or `totalFeatures` must equal
+the returned feature count and there must be no next link. Unknown counts, truncated pages,
+and GML responses without count metadata do **not** establish coverage. A successful HTTP response
+alone is not proof of completeness. For a service whose complete-response guarantee you know,
+supply `isComplete(table, request)` to certify that guarantee. Enable `wfs.pagination` or `ogc-api.pagination` on the underlying source to gather service pages
+before returning. Numeric GML WFS counts also provide completion evidence; unknown totals remain
+uncertified. See [WFS pagination](/docs/modules/wms/formats/wfs#bounded-automatic-pagination) and
+[OGC API Features pagination](/docs/modules/wms/services/ogc-api#progressive-pages-and-complete-collection).
+
+The wrapper requests GeoJSON internally and returns GeoJSON by default, with Arrow or binary
+conversion available through `format`. Only complete responses are retained; the default limit
+is 32 extents, evicted in completion order. Eviction removes that entry's coverage and features,
+so a future query reloads the missing area. Partial responses still contribute features to their
+current query. Stable IDs deduplicate overlapping responses, newest response wins; numeric and
+string IDs differ. Use `getFeatureId(feature)` for property-based IDs. Features without IDs
+remain separate. Treat returned feature objects as immutable.
+
+Coverage reuse requires **explicit equivalent `requestCrs` and `crs`**, ordered positive-area
+bounds, and the same layer selection. Unknown/different CRSs and degenerate extents pass through
+unchanged, avoiding unsafe comparisons between request bounds and response geometry. Cached
+queries return geometry-bound candidates intersecting the requested area; null/empty geometries
+are excluded. Exact geometry refinement remains an explicit local query. No reprojection or
+antimeridian handling is added.
+
+Pass the managed source as `data` to `SourceLayer` or `VectorSourceLayer`; select explicit equivalent
+input/output CRSs in the layer options. The layer manages viewport request cancellation and stale
+response acceptance. The wrapper manages reusable service coverage. Continue using picking for
+rendered hover/click interactions.
 
 ## Use the common scan/query interface
 
@@ -71,7 +123,8 @@ for await (const batch of scanSource.scan(query)) {
 The service applies the bound extent. Predicates, projection, ordering, aggregates, and limits
 are evaluated locally on the materialized result. A query limit does not request a server page
 size, and results remain limited to the features returned by the service. The adapter does not
-translate portable predicates into WFS filters or follow service pagination.
+translate portable predicates into WFS filters. Pagination belongs to the bound source: enable
+its pagination option to materialize all advertised pages before local relational execution.
 
 The first metadata, explanation, query, or scan call fetches and caches the bound Arrow table;
 subsequent calls reuse it. `scan()` and `read()` emit one materialized result batch rather than
@@ -103,7 +156,9 @@ const index = new GeoArrowSpatialIndex(
   identifiers ? Array.from(identifiers) : undefined
 );
 
-const selectedRows = index.getFeatureRowsInExtent([100, 200, 300, 400]);
+const candidateRows = index.getFeatureRowsInExtent([100, 200, 300, 400]);
+const selectedRows = index.getFeatureRowsIntersectingExtent([100, 200, 300, 400]);
+const coordinateRows = index.getFeatureRowsAtCoordinate([150, 250]);
 const matchingRows = index.getFeatureRowsById('road.42');
 const snap = index.getClosestFeature([150, 250], {
   maxDistance: 10,
@@ -124,6 +179,8 @@ when it is sliced. Null geometry remains available by ID but cannot match spatia
 | --- | --- |
 | `getFeatureRowsById(id)` | All matching row indices in input order; empty array when absent |
 | `getFeatureRowsInExtent([minX, minY, maxX, maxY])` | Inclusive intersection with geometry **bounds**, in input order; may include false positives for concave polygons or holes |
+| `getFeatureRowsAtCoordinate([x, y])` | Actual geometry intersection; polygon interiors and all ring boundaries match, holes do not |
+| `getFeatureRowsIntersectingExtent([minX, minY, maxX, maxY])` | Actual geometry intersection with a closed rectangle; includes point/line extents and boundary contact |
 | `getClosestFeature([x, y], {maxDistance?, filter?})` | `{rowIndex, coordinate, distance}` or null; inclusive distance limit; equal distances choose the earliest row |
 
 Nearest queries refine bounds candidates against actual points, line segments, polygon areas,
@@ -132,11 +189,14 @@ The returned coordinate supports snapping to geometry, not a vertices-only snapp
 
 Coordinates and query extents must use the same CRS. Distances are planar XY coordinate units;
 Z and M are ignored. Project geographic data before metric-distance queries. This API does not
-provide geodesic distance, antimeridian wrapping, reprojection, or topology operations.
+provide geodesic distance, antimeridian wrapping, reprojection, or arbitrary topology operations.
+Exact intersection means geometry refinement using ordinary floating-point XY calculations, not
+adaptive-precision topology or a proximity tolerance.
 
 WKT vectors are converted once to WKB when constructing the index.
 Bounds are built once and sorted by minimum X; ID lookups use a map. Extent and nearest queries
-can still visit all rows in the worst case. Geometry is decoded only for nearest candidates.
+can still visit all rows in the worst case. Geometry is decoded only for exact-intersection and
+nearest candidates.
 Keep the vector buffers immutable and rebuild the index when data changes. This index covers
 only the rows supplied to it, including offscreen rows; it cannot query unloaded server data.
 For larger-than-memory analysis, use a source with server-side spatial queries or a spatial

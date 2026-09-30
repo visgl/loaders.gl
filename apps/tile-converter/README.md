@@ -74,6 +74,33 @@ its original header, coordinate system, origin, and transform. `encodePointCloud
 one yielded tile. Set `maxDepth` to bound traversal; pass an `AbortSignal` to stop between source
 operations. These helpers do not transform coordinates or package a tileset manifest.
 
+Pass encoder options directly to `encodePointCloudSourceTile`, or select them for each non-empty
+tile with `encodePointCloudSource`'s `getTileEncodingOptions` callback. A declared `rtcCenter` in the
+point-position coordinate frame is subtracted before float32 encoding and stored as PNTS
+`RTC_CENTER`, retaining small offsets in large double-precision coordinates. `batchTableJson`
+supplies properties for existing `BATCH_ID` values. An explicit `constantRGBA` overrides the source
+constant color; the source origin and placement transform remain attached to the encoded tile.
+
+`convertPointCloudSource` connects the same traversal and encoder to a
+`TileConversionSink<EncodedPointCloudSourceTile>`. Writes are awaited before reading the next tile;
+the sink is finalized on success and aborted on failures or cancellation. Set
+`maxOutputResourceBytes` to limit each PNTS resource and use `onProgress` for the shared v5 progress
+report. `maxDepth`, `signal`, and `getTileEncodingOptions` have the same meanings as above.
+Applications provide `measureInputBytes` for decoded input accounting, returning zero for empty
+tiles when appropriate. Reports count visited tile headers as inputs, including empty tiles, and
+encoded PNTS tiles as outputs. Applications own source cleanup and output naming and packaging.
+
+```ts
+import {convertPointCloudSource} from '@loaders.gl/tile-converter/v5';
+
+const report = await convertPointCloudSource(pointCloudSource, {
+  sink: outputSink,
+  measureInputBytes: measureDecodedTileBytes,
+  maxOutputResourceBytes: 8 * 1024 * 1024,
+  signal: abortController.signal
+});
+```
+
 ## V5 browser entrypoint
 
 Import `@loaders.gl/tile-converter/v5/browser` for the portable conversion API,

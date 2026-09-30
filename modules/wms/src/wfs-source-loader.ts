@@ -28,6 +28,13 @@ import {parseGML} from './lib/parsers/gml/parse-gml';
 import type {GMLFeatureCollection, GMLPropertyType} from './lib/parsers/gml/parse-gml';
 import type {CRSIdentifier} from '@math.gl/crs';
 import {getServiceCRSAxisOrder, normalizeServiceCRS} from './crs-utils';
+import type {FeaturePaginationOptions, FeaturePage} from './feature-pagination';
+import {
+  addNextLinkHeader,
+  collectFeaturePages,
+  getPaginationOptions,
+  iterateFeaturePages
+} from './feature-pagination';
 
 /* eslint-disable camelcase */ // WFS XML parameters use snake_case
 
@@ -36,6 +43,8 @@ export type WFSourceOptions = DataSourceOptions &
   WMSLoaderOptions &
   GMLLoaderOptions & {
     wfs?: {
+      /** Opt-in bounded pagination for getFeatures(); omitted keeps the single-page behavior. */
+      pagination?: FeaturePaginationOptions;
       /** In WFS 2.0.0, replaces references to EPSG:4326 with CRS:84. */
       substituteCRS84?: boolean;
       /** Default WFS parameters. If not provided here, must be provided in the various request */
@@ -301,21 +310,11 @@ export class WFSVectorSource extends DataSource<string, WFSourceOptions> impleme
     return this.normalizeMetadata(capabilities);
   }
 
+  /** Fetches one response, or gathers service pages when wfs.pagination is configured. */
   async getFeatures(parameters: GetFeaturesParameters): Promise<VectorSourceData> {
-    const url = this.getFeaturesURL(parameters);
-    const response = await this.fetch(
-      url,
-      parameters.signal ? {signal: parameters.signal} : undefined
-    );
-    const arrayBuffer = await response.arrayBuffer();
-    this._checkResponse(response, arrayBuffer);
-    const text = new TextDecoder().decode(arrayBuffer);
-    const featureCollection = parseWFSFeatureCollection(
-      text,
-      response.headers.get('content-type'),
-      {...this.loadOptions, propertyTypes: this.options.wfs?.propertyTypes}
-    );
-    const geoJsonTable = parseGeoJSONTable(featureCollection);
+    const geoJsonTable = this.options.wfs?.pagination
+      ? await collectFeaturePages(this.getFeaturesInPages(parameters, this.options.wfs.pagination))
+      : (await this.fetchFeaturePage(this.getFeaturesURL(parameters), parameters.signal)).table;
     const format = parameters.format || 'arrow';
 
     switch (format) {
@@ -329,6 +328,63 @@ export class WFSVectorSource extends DataSource<string, WFSourceOptions> impleme
           encodingPreference: parameters.geoarrow?.encodingPreference
         });
     }
+  }
+
+  /**
+   * Yields normalized GeoJSON pages, following next links or WFS 2.0 numeric-count offsets.
+   * Page boundaries differ from streaming GML batches. WFS 1.1 needs advertised next links.
+   * Bounds, output format, sort/filter settings and cancellation apply to every offset request.
+   */
+  getFeaturesInPages(
+    parameters: GetFeaturesParameters,
+    options: FeaturePaginationOptions = this.options.wfs?.pagination || {}
+  ): AsyncIterable<GeoJSONTable> {
+    const limits = getPaginationOptions(options);
+    const initialURL = new URL(this.getFeaturesURL(parameters, {count: limits.pageSize}));
+    if (
+      [...initialURL.searchParams].some(
+        ([name, value]) => name.toUpperCase() === 'RESULTTYPE' && value.toLowerCase() === 'hits'
+      )
+    )
+      throw new Error('Feature pagination requires resultType: results');
+    const version = initialURL.searchParams.get('VERSION');
+    const initialOffset = Number(
+      [...initialURL.searchParams].find(([name]) => name.toUpperCase() === 'STARTINDEX')?.[1] || 0
+    );
+    if (!Number.isSafeInteger(initialOffset) || initialOffset < 0)
+      throw new Error('Feature pagination requires a nonnegative integer startIndex');
+    return iterateFeaturePages(
+      initialURL.toString(),
+      url => this.fetchFeaturePage(url, parameters.signal),
+      limits,
+      parameters.signal,
+      (_pageURL, _table, featureCount, matched) => {
+        if (matched === undefined || initialOffset + featureCount >= matched) return undefined;
+        if (version !== '2.0.0')
+          throw new Error('WFS 1.1 pagination requires an advertised next link');
+        const nextURL = new URL(initialURL);
+        for (const name of [...nextURL.searchParams.keys()])
+          if (name.toUpperCase() === 'STARTINDEX') nextURL.searchParams.delete(name);
+        nextURL.searchParams.set('STARTINDEX', String(initialOffset + featureCount));
+        return nextURL.toString();
+      }
+    );
+  }
+
+  /** Fetches and validates one GeoJSON or GML page while preserving pagination metadata. */
+  private async fetchFeaturePage(url: string, signal?: AbortSignal): Promise<FeaturePage> {
+    const response = await this.fetch(url, signal ? {signal} : undefined);
+    const arrayBuffer = await response.arrayBuffer();
+    this._checkResponse(response, arrayBuffer);
+    const featureCollection = parseWFSFeatureCollection(
+      new TextDecoder().decode(arrayBuffer),
+      response.headers.get('content-type'),
+      {...this.loadOptions, propertyTypes: this.options.wfs?.propertyTypes}
+    );
+    return {
+      table: addNextLinkHeader(parseGeoJSONTable(featureCollection), response.headers.get('link')),
+      url: response.url || url
+    };
   }
 
   /**
@@ -861,6 +917,7 @@ export class WFSVectorSource extends DataSource<string, WFSourceOptions> impleme
 function parseGeoJSONTable(json: any): GeoJSONTable {
   if (json?.type === 'FeatureCollection' && Array.isArray(json.features)) {
     return {
+      ...json,
       shape: 'geojson-table',
       type: 'FeatureCollection',
       features: json.features
