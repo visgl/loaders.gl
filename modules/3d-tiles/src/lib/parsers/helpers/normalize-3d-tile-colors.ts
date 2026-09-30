@@ -20,14 +20,17 @@ export function normalize3DTileColorAttribute(
   normalized: boolean;
   componentType?: 'float16';
 } | null {
+  const hasBatchColors = Boolean(
+    tile?.batchIds?.length && batchTable?.hasProperty(tile.batchIds[0], 'dimensions')
+  );
   // no colors defined
-  if (!colors && (!tile || !tile.batchIds || !batchTable)) {
+  if (!colors && !hasBatchColors) {
     return null;
   }
 
   const {batchIds, isRGB565, pointCount = 0} = tile;
   // Batch table, look up colors in table
-  if (batchIds && batchTable) {
+  if (batchIds && batchTable && hasBatchColors) {
     const colorArray = new Uint8ClampedArray(pointCount * 3);
     for (let i = 0; i < pointCount; i++) {
       const batchId = batchIds[i];
