@@ -74,7 +74,7 @@ export function encodePointCloudSourceTile(
   return {
     id: header.id,
     header,
-    pnts: encodePointCloudTile(content.data),
+    pnts: encodePointCloudTile(content.data, {constantRGBA: content.constantRGBA}),
     pointCount: content.pointCount,
     coordinateSystem: content.coordinateSystem,
     cartographicOrigin: [...content.cartographicOrigin],

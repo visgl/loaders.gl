@@ -74,6 +74,25 @@ test('encodePointCloudSourceTile#returns null for a source tile without content'
   expect(encodePointCloudSourceTile({header: tileHeader, content: null})).toBeNull();
 });
 
+test('encodePointCloudSourceTile#preserves source-wide point color', async () => {
+  const pointData = makeMeshArrowTable({
+    POSITION: {value: new Float32Array([1, 2, 3]), size: 3}
+  });
+  const encoded = encodePointCloudSourceTile({
+    header: tileHeader,
+    content: {
+      data: pointData,
+      pointCount: 1,
+      cartographicOrigin: [0, 0, 0],
+      coordinateSystem: 'cartesian',
+      constantRGBA: [12, 34, 56, 255]
+    }
+  });
+  const parsedTile = await parse(encoded!.pnts, Tiles3DLoader, {worker: false});
+
+  expect(parsedTile.constantRGBA).toEqual([12, 34, 56, 255]);
+});
+
 test('encodePointCloudSource#streams encoded non-empty source tiles', async () => {
   const pointData = makeMeshArrowTable({
     POSITION: {value: new Float32Array([1, 2, 3]), size: 3}
