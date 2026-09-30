@@ -69,8 +69,10 @@ filesystem and archive choices outside the conversion API.
 `traversePointCloudSource` walks an I3S Point Cloud, COPC, or compatible source independently of a
 render camera. It yields each reachable tile's header and decoded Mesh Arrow content in
 depth-first order, retaining source bounds, coordinate-system metadata, and placement information
-for the output encoder. Set `maxDepth` to bound traversal; pass an `AbortSignal` to stop between
-source operations. The helper does not transform coordinates or package a tileset.
+for the output encoder. `encodePointCloudSource` streams non-empty PNTS resources, each paired with
+its original header, coordinate system, origin, and transform. `encodePointCloudSourceTile` encodes
+one yielded tile. Set `maxDepth` to bound traversal; pass an `AbortSignal` to stop between source
+operations. These helpers do not transform coordinates or package a tileset manifest.
 
 ## V5 browser entrypoint
 
