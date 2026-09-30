@@ -154,3 +154,5 @@ standard XYZ tile selection. Custom origins, per-level tile dimensions, geograph
 matrix limits require an application tile-selection adapter. Matrix-set limits and automatic
 WMTS dimension defaults are not currently applied. Choose an XYZ-compatible matrix set for the
 standard deck.gl tile path.
+
+`getTileURL({x, y, z, layers})` and `getTile({x, y, z, layers})` can override the configured layer for one request. With capabilities, the requested layer supplies its REST resource, default format and style, and linked tile matrix set. Unknown layer identifiers are rejected. WMTS requests select one layer at a time.

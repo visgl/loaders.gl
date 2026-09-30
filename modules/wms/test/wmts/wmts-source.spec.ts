@@ -345,3 +345,85 @@ test('WMTS template dimensions are encoded and missing values fail explicitly', 
   const missing = new WMTSImageTileSource(WMTS_URL, {wmts: {urlTemplate: template}});
   expect(() => missing.getTileURL({x: 0, y: 0, z: 0})).toThrow('Time');
 });
+
+test.each([
+  true,
+  false
+])('WMTS request-layer overrides select metadata (REST: %s)', useRestTemplate => {
+  const source = new WMTSImageTileSource(WMTS_URL, {
+    wmts: {
+      layer: 'basemap',
+      capabilities: {
+        contents: {
+          layers: [
+            {
+              identifier: 'basemap',
+              formats: ['image/png'],
+              styles: [],
+              tileMatrixSetLinks: [{tileMatrixSet: 'base-grid'}],
+              resourceURLs: []
+            },
+            {
+              identifier: 'roads/traffic',
+              formats: ['image/jpeg'],
+              styles: [{identifier: 'night time', isDefault: true}],
+              tileMatrixSetLinks: [{tileMatrixSet: 'road-grid'}],
+              resourceURLs: useRestTemplate
+                ? [
+                    {
+                      resourceType: 'tile',
+                      format: 'image/jpeg',
+                      template:
+                        'https://roads.example/{Layer}/{Style}/{TileMatrixSet}/{TileMatrix}/{TileRow}/{TileCol}'
+                    }
+                  ]
+                : []
+            }
+          ],
+          tileMatrixSets: [
+            {
+              identifier: 'base-grid',
+              supportedCRS: 'EPSG:3857',
+              matrices: [{identifier: 'base-zero'}]
+            },
+            {
+              identifier: 'road-grid',
+              supportedCRS: 'EPSG:3857',
+              matrices: [{identifier: 'road-zero'}]
+            }
+          ]
+        }
+      }
+    }
+  });
+  const tileUrl = source.getTileURL({x: 1, y: 2, z: 0, layers: 'roads/traffic'});
+  if (useRestTemplate) {
+    expect(tileUrl).toBe(
+      'https://roads.example/roads%2Ftraffic/night%20time/road-grid/road-zero/2/1'
+    );
+  } else {
+    const searchParameters = new URL(tileUrl).searchParams;
+    expect(searchParameters.get('LAYER')).toBe('roads/traffic');
+    expect(searchParameters.get('STYLE')).toBe('night time');
+    expect(searchParameters.get('TILEMATRIXSET')).toBe('road-grid');
+    expect(searchParameters.get('TILEMATRIX')).toBe('road-zero');
+    expect(searchParameters.get('FORMAT')).toBe('image/jpeg');
+  }
+  expect(new URL(source.getTileURL({x: 0, y: 0, z: 0})).searchParams.get('LAYER')).toBe('basemap');
+  expect(() => source.getTileURL({x: 0, y: 0, z: 0, layers: 'missing'})).toThrow(
+    'Unknown WMTS layer'
+  );
+});
+
+test('WMTS templates handle repeated unmatched opening braces', () => {
+  const malformedPrefix = '{{|'.repeat(1024);
+  const source = new WMTSImageTileSource(WMTS_URL, {
+    wmts: {
+      urlTemplate: `https://example.com/${malformedPrefix}{TileMatrix}/{Layer}`,
+      layer: 'default'
+    }
+  });
+  expect(source.getTileURL({x: 0, y: 0, z: 3, layers: 'requested/layer'})).toBe(
+    `https://example.com/${malformedPrefix}3/requested%2Flayer`
+  );
+});

@@ -119,7 +119,8 @@ export class WMTSImageTileSource
   /** Builds a REST-template or KVP WMTS GetTile URL. */
   getTileURL(parameters: GetTileParameters): string {
     const wmts = this.options.wmts || {};
-    const layer = this._getLayer(this._capabilities);
+    const layerName = parameters.layers ? String(parameters.layers) : wmts.layer;
+    const layer = this._getLayer(this._capabilities, layerName);
     const format = parameters.format || wmts.format || layer?.formats[0] || 'image/png';
     const style =
       wmts.style ||
@@ -137,14 +138,14 @@ export class WMTSImageTileSource
     if (urlTemplate) {
       const replacements: Record<string, string> = {
         ...wmts.parameters,
-        Layer: wmts.layer || layer?.identifier || '',
+        Layer: layerName || layer?.identifier || '',
         Style: style,
         TileMatrix: tileMatrixIdentifier,
         TileRow: String(parameters.y),
         TileCol: String(parameters.x),
         TileMatrixSet: tileMatrixSet?.identifier || wmts.tileMatrixSet || ''
       };
-      return urlTemplate.replace(/\{([^}]+)\}/g, (placeholder, key: string) => {
+      return urlTemplate.replace(/\{([^{}]+)\}/g, (placeholder, key: string) => {
         if (!(key in replacements)) throw new Error(`Missing WMTS template parameter: ${key}`);
         return encodeURIComponent(replacements[key]);
       });
@@ -154,7 +155,7 @@ export class WMTSImageTileSource
       SERVICE: 'WMTS',
       REQUEST: 'GetTile',
       VERSION: '1.0.0',
-      LAYER: parameters.layers ? String(parameters.layers) : wmts.layer || layer?.identifier || '',
+      LAYER: layerName || layer?.identifier || '',
       STYLE: style,
       TILEMATRIXSET: tileMatrixSet?.identifier || wmts.tileMatrixSet || '',
       TILEMATRIX: tileMatrixIdentifier,
@@ -196,8 +197,10 @@ export class WMTSImageTileSource
   }
 
   /** Resolves the requested layer and rejects unknown identifiers. */
-  private _getLayer(capabilities: WMTSCapabilities | null): WMTSLayer | undefined {
-    const layerName = this.options.wmts?.layer;
+  private _getLayer(
+    capabilities: WMTSCapabilities | null,
+    layerName: string | undefined = this.options.wmts?.layer
+  ): WMTSLayer | undefined {
     const layer = capabilities?.contents.layers.find(
       candidate => !layerName || candidate.identifier === layerName
     );
