@@ -56,3 +56,6 @@ yarn-error.log
 
 # local data
 data/**
+
+# Vitest reports, traces, and attachments
+.vitest/
