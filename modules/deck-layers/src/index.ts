@@ -19,6 +19,8 @@ export type {
 export type {ImageSourceLayerProps} from './image-source-layer';
 export {ImageSourceLayer} from './image-source-layer';
 export type {VectorSourceLayerProps} from './vector-source-layer';
+export {ClusterLayer} from './cluster-layer';
+export type {ClusterLayerProps} from './cluster-layer';
 export {VectorSourceLayer} from './vector-source-layer';
 export type {
   RasterBitmapImage,

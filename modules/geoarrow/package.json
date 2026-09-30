@@ -28,6 +28,18 @@
   "main": "dist/index.cjs",
   "module": "dist/index.js",
   "exports": {
+    "./cluster-index": {
+      "types": "./dist/clustering/cluster-index.d.ts",
+      "import": "./dist/clustering/cluster-index.js"
+    },
+    "./cluster-source": {
+      "types": "./dist/clustering/cluster-source.d.ts",
+      "import": "./dist/clustering/cluster-source.js"
+    },
+    "./get-representative-point": {
+      "types": "./dist/clustering/get-representative-point.d.ts",
+      "import": "./dist/clustering/get-representative-point.js"
+    },
     ".": {
       "types": "./dist/index.d.ts",
       "import": "./dist/index.js",

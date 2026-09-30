@@ -33,6 +33,14 @@ The exact `geoarrow.point`, `geoarrow.linestring`, `geoarrow.polygon`, and other
 remain available through `geoarrow.encoding` for controlled pipelines. Do not specify `encoding`
 and `encodingPreference` together.
 
+## Cluster features
+
+`ClusterIndex` builds an immutable zoom hierarchy directly from coordinate buffers.
+The experimental `ClusterSource` adapts complete GeoJSON or GeoArrow tables, preserving original
+rows for selection and supporting counts, numeric aggregates, member pagination and expansion zoom.
+Non-point geometries use an explicit representative-point policy. See the
+[clustering guide](https://loaders.gl/docs/developer-guide/clustering) for API details and examples.
+
 ## Inspect and process
 
 The public API includes field inspection and validation, bounds, coordinate mapping, ring

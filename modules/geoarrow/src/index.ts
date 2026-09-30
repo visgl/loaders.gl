@@ -2,6 +2,20 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
+// CLUSTERING
+
+export {ClusterIndex} from './clustering/cluster-index';
+export type {
+  ClusterBounds,
+  ClusterAggregation,
+  ClusterIndexOptions,
+  ClusterNode
+} from './clustering/cluster-index';
+export {ClusterSource} from './clustering/cluster-source';
+export type {ClusterSourceData, ClusterSourceOptions} from './clustering/cluster-source';
+export {getRepresentativePoint} from './clustering/get-representative-point';
+export type {RepresentativePointStrategy} from './clustering/get-representative-point';
+
 // MESH CATEGORY
 
 export {getBoundingBoxFromArrowPositions} from './mesharrow/get-bounding-box';

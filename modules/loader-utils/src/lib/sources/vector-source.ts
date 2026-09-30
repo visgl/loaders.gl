@@ -67,6 +67,8 @@ export type VectorSourceLayer = {
 
 /** Generic parameters for requesting an image from an image source */
 export type GetFeaturesParameters = {
+  /** Map zoom for scale-dependent sources such as clustering. Fractional values are allowed. */
+  zoom?: number;
   /** Layers to render */
   layers: string | string[];
   /** bounding box on the map (only return features within this bbox) */
