@@ -186,3 +186,7 @@ Use [capability-derived WMTS configuration](/docs/modules/wms/formats/wmts#confi
 for advertised tile styles, formats, matrix sets, and grid resolutions. The
 [spatial-query guide](/docs/developer-guide/spatial-queries) covers extent-based WFS loading and
 local GeoArrow selection and snapping, including offscreen data.
+
+The [remaining GIS work tranches](/docs/roadmap#remaining-sota-work-tranches) distinguish delivered
+source/query support from planned grid rendering, predicate pushdown, schema discovery, streaming,
+and global spatial semantics.

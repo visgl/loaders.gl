@@ -537,10 +537,9 @@ function validateFeatureInfoIndices(parameters: WMTSGetFeatureInfoParameters): v
 
 /** Recognizes OWS exception reports even when the service responds with HTTP 200. */
 function checkFeatureInfoException(text: string): void {
-  const exceptionRoot =
-    /^\s*(?:(?:<\?[\s\S]*?\?>|<!--[\s\S]*?-->)\s*)*<(?:[^\s<>:]+:)?ExceptionReport(?:\s|\/?>)/;
-  if (!exceptionRoot.test(text)) return;
-  const parsed = parseXMLTextSync(text, {
+  const rootOffset = getExceptionReportRootOffset(text);
+  if (rootOffset === undefined) return;
+  const parsed = parseXMLTextSync(text.slice(rootOffset), {
     xml: {
       _parser: 'internal',
       removeNSPrefix: true,
@@ -566,6 +565,28 @@ function checkFeatureInfoException(text: string): void {
     );
   });
   throw new Error('WMTS feature-info: ' + messages.join('; '));
+}
+
+/** Returns the exception root offset after a linear scan of XML whitespace, comments and instructions. */
+function getExceptionReportRootOffset(text: string): number | undefined {
+  let offset = 0;
+  while (offset < text.length) {
+    while (offset < text.length && /\s/.test(text[offset])) offset++;
+    const terminator = text.startsWith('<?', offset)
+      ? '?>'
+      : text.startsWith('<!--', offset)
+        ? '-->'
+        : undefined;
+    if (!terminator) {
+      return /^<(?:[^\s<>:]+:)?ExceptionReport(?:\s|\/?>)/.test(text.slice(offset))
+        ? offset
+        : undefined;
+    }
+    const ending = text.indexOf(terminator, offset + (terminator === '?>' ? 2 : 4));
+    if (ending === -1) return undefined;
+    offset = ending + terminator.length;
+  }
+  return undefined;
 }
 
 /** Merges case-insensitive KVP names so generated request fields cannot be overridden by extras. */

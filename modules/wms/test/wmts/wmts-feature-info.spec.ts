@@ -326,3 +326,39 @@ test.each([
   source.fetch = vi.fn(async () => new Response('0'));
   expect(await source.getFeatureInfo(PARAMETERS)).toBe(0);
 });
+
+test.each([
+  '<?query?>',
+  '<!--comment-->'
+])('WMTS scans repeated %s prolog tokens without backtracking or changing native text', async token => {
+  const {source} = createSource();
+  const prolog = token.repeat(2048);
+  const nativeText = prolog + '<result>native text</result>';
+  source.fetch = vi.fn(async () => new Response(nativeText));
+  expect(await source.getFeatureInfoText(PARAMETERS)).toBe(nativeText);
+  source.fetch = vi.fn(async () => new Response(prolog + '<ExceptionReport/>'));
+  await expect(source.getFeatureInfoText(PARAMETERS)).rejects.toThrow('server error');
+});
+
+test('WMTS recognizes exceptions after whitespace, BOM, declarations, instructions and comments', async () => {
+  const {source} = createSource();
+  const prolog = '\uFEFF<?xml version="1.0"?>\n<!--before--><?query?>\t';
+  source.fetch = vi.fn(
+    async () =>
+      new Response(prolog + '<ows:ExceptionReport xmlns:ows="http://www.opengis.net/ows/1.1"/>')
+  );
+  await expect(source.getFeatureInfoText(PARAMETERS)).rejects.toThrow('server error');
+});
+
+test.each([
+  '<?unterminated',
+  '<!--unterminated',
+  '<!--<ExceptionReport/>--><result/>',
+  '<ExceptionReportSuffix/>',
+  '<result><ExceptionReport/></result>',
+  ' \t<?query?> <!--comment--> '
+])('WMTS preserves non-exception text %s', async content => {
+  const {source} = createSource();
+  source.fetch = vi.fn(async () => new Response(content));
+  expect(await source.getFeatureInfoText(PARAMETERS)).toBe(content);
+});
