@@ -10,8 +10,10 @@ const source = await load(featureLayerUrl, ArcGISFeatureServerSourceLoader);
 const features = await source.getFeatures({format: 'geojson'});
 ```
 
-Import lightweight service loaders from `@loaders.gl/arcgis`. Authentication and discovery helpers
-have dedicated `/authentication` and `/discovery` entrypoints.
+Import lightweight service loaders from `@loaders.gl/arcgis` and `ArcGISAuthentication` from
+`@loaders.gl/arcgis/authentication`. The auth object accepts an application-managed token callback
+and provides `createFetch()` for scoped requests; sign-in SDKs remain application dependencies.
+Authentication and discovery helpers have dedicated `/authentication` and `/discovery` entrypoints.
 Async `load()` and deck.gl `SourceLayer` import the selected service implementation on demand.
 For synchronous `createDataSource()` or direct source classes, import the same names from
 `@loaders.gl/arcgis/bundled`. Service requests remain asynchronous.

@@ -2809,7 +2809,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@deck.gl/arcgis@npm:9.4.0, @deck.gl/arcgis@npm:^9.4.0":
+"@deck.gl/arcgis@npm:9.4.0":
   version: 9.4.0
   resolution: "@deck.gl/arcgis@npm:9.4.0"
   dependencies:
@@ -2821,6 +2821,21 @@ __metadata:
     "@luma.gl/engine": ~9.4.0
     "@luma.gl/webgl": ~9.4.0
   checksum: 10c0/f545016386c1a3083981baec8b432a1ab7c8287931811c63b18486e70965820e75e3b4c77befee9ef6807a382fc995c6a1b5ba4c0b50478d12b603a5c318ee94
+  languageName: node
+  linkType: hard
+
+"@deck.gl/arcgis@patch:@deck.gl/arcgis@npm%3A9.4.0#~/.yarn/patches/@deck.gl-arcgis-npm-9.4.0-4c40c78c8b.patch":
+  version: 9.4.0
+  resolution: "@deck.gl/arcgis@patch:@deck.gl/arcgis@npm%3A9.4.0#~/.yarn/patches/@deck.gl-arcgis-npm-9.4.0-4c40c78c8b.patch::version=9.4.0&hash=c68b05"
+  dependencies:
+    esri-loader: "npm:^3.7.0"
+  peerDependencies:
+    "@arcgis/core": ^4.0.0
+    "@deck.gl/core": ~9.4.0
+    "@luma.gl/core": ~9.4.0
+    "@luma.gl/engine": ~9.4.0
+    "@luma.gl/webgl": ~9.4.0
+  checksum: 10c0/c6667c4709ea4cc7aaf5a2c59e5d7f66bffc97f1ed95d4d03c9074ad15b354cbb233efea0eac47491cc6235ff7497e0c0a97b65642ff412e6026c50a2917b242
   languageName: node
   linkType: hard
 
@@ -4173,6 +4188,36 @@ __metadata:
   dependencies:
     xss: "npm:1.0.13"
   checksum: 10c0/c6b132f562831dc09c5059ec7c857f0d9d0ad8b5142a6bb98ffeaeb3805aa7c04f98dbe1d1964973475b98f86e4ede97c2a2fe594e46352998d91dd52817bf75
+  languageName: node
+  linkType: hard
+
+"@esri/arcgis-rest-fetch@npm:^4.11.1":
+  version: 4.11.1
+  resolution: "@esri/arcgis-rest-fetch@npm:4.11.1"
+  dependencies:
+    node-fetch: "npm:^3.2.10"
+  checksum: 10c0/48118baf83adccb02bcc658c59c5d1d53c86a4af78318d4cbffac10ecb540a7c47ef2c5b9908c9cb6c991229670ba11b59440b1549a34501abb700c5405b3442
+  languageName: node
+  linkType: hard
+
+"@esri/arcgis-rest-form-data@npm:^4.11.1":
+  version: 4.11.1
+  resolution: "@esri/arcgis-rest-form-data@npm:4.11.1"
+  dependencies:
+    formdata-node: "npm:^4.1.0"
+  checksum: 10c0/b87bc14aede990f50b2a5ba3771d932e48f0ccf4e3c456cd051a235244d0343efb6296612ef581460193a4c22503f23a599349012ac63167474badc0df04af4a
+  languageName: node
+  linkType: hard
+
+"@esri/arcgis-rest-request@npm:^4":
+  version: 4.11.1
+  resolution: "@esri/arcgis-rest-request@npm:4.11.1"
+  dependencies:
+    "@esri/arcgis-rest-fetch": "npm:^4.11.1"
+    "@esri/arcgis-rest-form-data": "npm:^4.11.1"
+    mitt: "npm:^3.0.0"
+    tslib: "npm:^2.3.1"
+  checksum: 10c0/a4a6e115b87a3502159b3fc6bac2b0206dbd9952dfefa69da5c3160c44e867a56664abcc9283b2b3524ac9f78daf2af053a3fac274069382a350b7c1218dfec3
   languageName: node
   linkType: hard
 
@@ -16533,6 +16578,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"data-uri-to-buffer@npm:^4.0.0":
+  version: 4.0.1
+  resolution: "data-uri-to-buffer@npm:4.0.1"
+  checksum: 10c0/20a6b93107597530d71d4cb285acee17f66bcdfc03fd81040921a81252f19db27588d87fc8fc69e1950c55cfb0bf8ae40d0e5e21d907230813eb5d5a7f9eb45b
+  languageName: node
+  linkType: hard
+
 "data-view-buffer@npm:^1.0.2":
   version: 1.0.2
   resolution: "data-view-buffer@npm:1.0.2"
@@ -18769,6 +18821,16 @@ __metadata:
   languageName: node
   linkType: hard
 
+"fetch-blob@npm:^3.1.2, fetch-blob@npm:^3.1.4":
+  version: 3.2.0
+  resolution: "fetch-blob@npm:3.2.0"
+  dependencies:
+    node-domexception: "npm:^1.0.0"
+    web-streams-polyfill: "npm:^3.0.3"
+  checksum: 10c0/60054bf47bfa10fb0ba6cb7742acec2f37c1f56344f79a70bb8b1c48d77675927c720ff3191fa546410a0442c998d27ab05e9144c32d530d8a52fbe68f843b69
+  languageName: node
+  linkType: hard
+
 "fflate@npm:0.7.4":
   version: 0.7.4
   resolution: "fflate@npm:0.7.4"
@@ -19095,6 +19157,25 @@ __metadata:
   version: 0.2.2
   resolution: "format@npm:0.2.2"
   checksum: 10c0/6032ba747541a43abf3e37b402b2f72ee08ebcb58bf84d816443dd228959837f1cddf1e8775b29fa27ff133f4bd146d041bfca5f9cf27f048edf3d493cf8fee6
+  languageName: node
+  linkType: hard
+
+"formdata-node@npm:^4.1.0":
+  version: 4.4.1
+  resolution: "formdata-node@npm:4.4.1"
+  dependencies:
+    node-domexception: "npm:1.0.0"
+    web-streams-polyfill: "npm:4.0.0-beta.3"
+  checksum: 10c0/74151e7b228ffb33b565cec69182694ad07cc3fdd9126a8240468bb70a8ba66e97e097072b60bcb08729b24c7ce3fd3e0bd7f1f80df6f9f662b9656786e76f6a
+  languageName: node
+  linkType: hard
+
+"formdata-polyfill@npm:^4.0.10":
+  version: 4.0.10
+  resolution: "formdata-polyfill@npm:4.0.10"
+  dependencies:
+    fetch-blob: "npm:^3.1.2"
+  checksum: 10c0/5392ec484f9ce0d5e0d52fb5a78e7486637d516179b0eb84d81389d7eccf9ca2f663079da56f761355c0a65792810e3b345dc24db9a8bbbcf24ef3c8c88570c6
   languageName: node
   linkType: hard
 
@@ -20692,7 +20773,7 @@ __metadata:
   resolution: "i3s-arcgis-loaders-example@workspace:examples/website/i3s-arcgis"
   dependencies:
     "@arcgis/core": "npm:^4.25.0"
-    "@deck.gl/arcgis": "npm:^9.4.0"
+    "@deck.gl/arcgis": "patch:@deck.gl/arcgis@npm%3A9.4.0#~/.yarn/patches/@deck.gl-arcgis-npm-9.4.0-4c40c78c8b.patch"
     "@deck.gl/core": "npm:^9.4.0"
     "@deck.gl/extensions": "npm:^9.4.0"
     "@deck.gl/geo-layers": "npm:^9.4.0"
@@ -24848,6 +24929,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"mitt@npm:^3.0.0":
+  version: 3.0.1
+  resolution: "mitt@npm:3.0.1"
+  checksum: 10c0/3ab4fdecf3be8c5255536faa07064d05caa3dd332bd318ff02e04621f7b3069ca1de9106cfe8e7ced675abfc2bec2ce4c4ef321c4a1bb1fb29df8ae090741913
+  languageName: node
+  linkType: hard
+
 "mixin-deep@npm:^1.2.0":
   version: 1.3.2
   resolution: "mixin-deep@npm:1.3.2"
@@ -25199,6 +25287,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"node-domexception@npm:1.0.0, node-domexception@npm:^1.0.0":
+  version: 1.0.0
+  resolution: "node-domexception@npm:1.0.0"
+  checksum: 10c0/5e5d63cda29856402df9472335af4bb13875e1927ad3be861dc5ebde38917aecbf9ae337923777af52a48c426b70148815e890a5d72760f1b4d758cc671b1a2b
+  languageName: node
+  linkType: hard
+
 "node-emoji@npm:^2.1.0":
   version: 2.2.0
   resolution: "node-emoji@npm:2.2.0"
@@ -25234,6 +25329,17 @@ __metadata:
     encoding:
       optional: true
   checksum: 10c0/b55786b6028208e6fbe594ccccc213cab67a72899c9234eb59dba51062a299ea853210fcf526998eaa2867b0963ad72338824450905679ff0fa304b8c5093ae8
+  languageName: node
+  linkType: hard
+
+"node-fetch@npm:^3.2.10":
+  version: 3.3.2
+  resolution: "node-fetch@npm:3.3.2"
+  dependencies:
+    data-uri-to-buffer: "npm:^4.0.0"
+    fetch-blob: "npm:^3.1.4"
+    formdata-polyfill: "npm:^4.0.10"
+  checksum: 10c0/f3d5e56190562221398c9f5750198b34cf6113aa304e34ee97c94fd300ec578b25b2c2906edba922050fce983338fde0d5d34fcb0fc3336ade5bd0e429ad7538
   languageName: node
   linkType: hard
 
@@ -28179,8 +28285,8 @@ __metadata:
   dependencies:
     "@algolia/autocomplete-js": "npm:^1.17.0"
     "@algolia/client-search": "npm:^4.26.0"
-    "@arcgis/core": "npm:^4.25.0"
-    "@deck.gl/arcgis": "npm:^9.4.0"
+    "@arcgis/core": "npm:^4.34.8"
+    "@deck.gl/arcgis": "patch:@deck.gl/arcgis@npm%3A9.4.0#~/.yarn/patches/@deck.gl-arcgis-npm-9.4.0-4c40c78c8b.patch"
     "@deck.gl/core": "npm:^9.4.0"
     "@deck.gl/extensions": "npm:^9.4.0"
     "@deck.gl/geo-layers": "npm:^9.4.0"
@@ -28195,6 +28301,7 @@ __metadata:
     "@docusaurus/plugin-content-docs": "npm:^3.10.2"
     "@docusaurus/preset-classic": "npm:^3.10.2"
     "@docusaurus/tsconfig": "npm:^3.10.2"
+    "@esri/arcgis-rest-request": "npm:^4"
     "@esri/react-arcgis": "npm:^5.2.0"
     "@fontsource-variable/source-sans-3": "npm:^5.2.7"
     "@fontsource-variable/space-grotesk": "npm:^5.2.7"
@@ -32253,7 +32360,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"tslib@npm:2.8.1, tslib@npm:^2.0.0, tslib@npm:^2.0.3, tslib@npm:^2.1.0, tslib@npm:^2.2.0, tslib@npm:^2.3.0, tslib@npm:^2.4.0, tslib@npm:^2.6.0, tslib@npm:^2.6.2, tslib@npm:^2.8.1":
+"tslib@npm:2.8.1, tslib@npm:^2.0.0, tslib@npm:^2.0.3, tslib@npm:^2.1.0, tslib@npm:^2.2.0, tslib@npm:^2.3.0, tslib@npm:^2.3.1, tslib@npm:^2.4.0, tslib@npm:^2.6.0, tslib@npm:^2.6.2, tslib@npm:^2.8.1":
   version: 2.8.1
   resolution: "tslib@npm:2.8.1"
   checksum: 10c0/9c4759110a19c53f992d9aae23aac5ced636e99887b51b9e61def52611732872ff7668757d4e4c61f19691e36f4da981cd9485e869b4a7408d689f6bf1f14e62
@@ -33422,6 +33529,20 @@ __metadata:
   languageName: node
   linkType: hard
 
+"web-streams-polyfill@npm:4.0.0-beta.3":
+  version: 4.0.0-beta.3
+  resolution: "web-streams-polyfill@npm:4.0.0-beta.3"
+  checksum: 10c0/a9596779db2766990117ed3a158e0b0e9f69b887a6d6ba0779940259e95f99dc3922e534acc3e5a117b5f5905300f527d6fbf8a9f0957faf1d8e585ce3452e8e
+  languageName: node
+  linkType: hard
+
+"web-streams-polyfill@npm:^3.0.3":
+  version: 3.3.3
+  resolution: "web-streams-polyfill@npm:3.3.3"
+  checksum: 10c0/64e855c47f6c8330b5436147db1c75cb7e7474d924166800e8e2aab5eb6c76aac4981a84261dd2982b3e754490900b99791c80ae1407a9fa0dcff74f82ea3a7f
+  languageName: node
+  linkType: hard
+
 "web-streams-polyfill@npm:^4.0.0":
   version: 4.3.0
   resolution: "web-streams-polyfill@npm:4.3.0"
@@ -34076,6 +34197,8 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "wms-loaders-example@workspace:examples/website/wms"
   dependencies:
+    "@arcgis/core": "npm:^4.34.8"
+    "@deck.gl/arcgis": "patch:@deck.gl/arcgis@npm%3A9.4.0#~/.yarn/patches/@deck.gl-arcgis-npm-9.4.0-4c40c78c8b.patch"
     "@deck.gl/core": "npm:^9.4.0"
     "@deck.gl/extensions": "npm:^9.4.0"
     "@deck.gl/geo-layers": "npm:^9.4.0"

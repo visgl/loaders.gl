@@ -97,7 +97,8 @@
   "resolutions_notes": [
     "Ensure we use recent typescript",
     "Keep Playwright on 1.59.1: 1.63.0 closes Chromium during headless coverage shards",
-    "apache-arrow version should be aligned with parquet-wasm version"
+    "apache-arrow version should be aligned with parquet-wasm version",
+    "Patch deck.gl/arcgis 9.4.0 to import MapView through the public core export; remove after the upstream packaging fix"
   ],
   "resolutions": {
     "apache-arrow": "^21.2.0",
@@ -129,6 +130,7 @@
     "@loaders.gl/traces": "^5.0.0-alpha.0",
     "@loaders.gl/worker-utils": "^5.0.0-alpha.0",
     "@loaders.gl/wms": "^5.0.0-alpha.0",
-    "@loaders.gl/zip": "^5.0.0-alpha.0"
+    "@loaders.gl/zip": "^5.0.0-alpha.0",
+    "@deck.gl/arcgis@npm:9.4.0": "patch:@deck.gl/arcgis@npm%3A9.4.0#~/.yarn/patches/@deck.gl-arcgis-npm-9.4.0-4c40c78c8b.patch"
   }
 }
