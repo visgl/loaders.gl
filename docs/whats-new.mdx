@@ -47,6 +47,12 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
 
 ## v5.0 (In Development)
 
+- Add opt-in bounded pagination to WFS and OGC API Features sources. `getFeaturesInPages()` exposes
+  progressive GeoJSON pages; configured `getFeatures()` collects pages before Arrow/binary conversion.
+  Follow service next links, support WFS 2.0 numeric-count offsets, preserve GML paging metadata,
+  and reject loops, inconsistent counts, cancellation, and exhausted limits. Collected numeric
+  totals enable verified `ManagedVectorSource` extent reuse; unknown totals stay uncertified.
+
 - Add exact coordinate and rectangle intersection to `GeoArrowSpatialIndex`, including polygon
   holes and boundaries. Add `ManagedVectorSource` for completeness-aware extent reuse, shared
   cancelable requests, stable-ID deduplication, invalidation, and bounded retention. Detailed

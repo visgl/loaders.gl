@@ -348,3 +348,54 @@ describe('GML geometry helpers', () => {
     expect(() => parseCompositeSurface({}, OPTIONS, CONTEXT)).toThrow('must have > 0 polygons');
   });
 });
+
+test('GML preserves WFS paging metadata and recognizes empty terminal collections', () => {
+  const collection = parseGML(
+    '<wfs:FeatureCollection xmlns:wfs="http://www.opengis.net/wfs/2.0" numberMatched="unknown" numberReturned="0" next="?cursor=two&amp;limit=1" previous="?cursor=one" />',
+    {}
+  );
+  expect(collection).toEqual({
+    type: 'FeatureCollection',
+    features: [],
+    numberMatched: 'unknown',
+    numberReturned: 0,
+    next: '?cursor=two&limit=1',
+    previous: '?cursor=one'
+  });
+  expect(
+    parseGML(
+      '<wfs:FeatureCollection xmlns:wfs="http://www.opengis.net/wfs/2.0" numberMatched="0" />',
+      {}
+    )
+  ).toMatchObject({numberMatched: 0, features: []});
+  expect(() =>
+    parseGML(
+      '<wfs:FeatureCollection xmlns:wfs="http://www.opengis.net/wfs/2.0" numberReturned="-1" />',
+      {}
+    )
+  ).toThrow('Invalid WFS');
+});
+
+test('GML recognizes an empty collection without count attributes', () => {
+  expect(parseGML('<FeatureCollection />', {})).toEqual({type: 'FeatureCollection', features: []});
+});
+
+test('GML decodes WFS 2.0 member elements and grouped XML paging attributes', () => {
+  const result = parseGML(
+    '<wfs:FeatureCollection xmlns:wfs="http://www.opengis.net/wfs/2.0" xmlns:app="urn:app" numberMatched="2" numberReturned="2"><wfs:member><app:road fid="one"><app:name>First</app:name></app:road></wfs:member><wfs:member><app:road fid="two"><app:name>Second</app:name></app:road></wfs:member></wfs:FeatureCollection>',
+    {}
+  );
+  expect(result).toMatchObject({
+    numberMatched: 2,
+    numberReturned: 2,
+    features: [
+      {id: 'one', properties: {name: 'First'}},
+      {id: 'two', properties: {name: 'Second'}}
+    ]
+  });
+  expect(
+    parseGMLFeatureCollection({
+      'wfs:FeatureCollection': {attributes: {numberMatched: '0', numberReturned: '0'}}
+    })
+  ).toMatchObject({numberMatched: 0, numberReturned: 0, features: []});
+});

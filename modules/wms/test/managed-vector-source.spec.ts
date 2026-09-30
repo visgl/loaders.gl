@@ -132,7 +132,8 @@ test.each([
   {numberMatched: 2},
   {numberMatched: 'unknown'},
   {},
-  {numberMatched: 1, links: [{rel: 'next'}]}
+  {numberMatched: 1, links: [{rel: 'next'}]},
+  {numberMatched: 1, next: '?cursor=two'}
 ])('unknown, truncated or next-page metadata never establishes coverage: %j', async metadata => {
   const source = makeSource(
     vi.fn(

@@ -74,9 +74,10 @@ used by WFS. The table distinguishes implemented read operations from optional p
 | Requests | Feature request cancellation | Supported | `AbortSignal` forwarded to the items fetch |
 | Requests | Credentials and custom transport | Supported | Common source fetch options |
 | Requests | Portable attribute predicate pushdown / CQL2 | Not implemented | Relational adapter evaluates predicates locally; custom HTTP requests remain possible |
-| Requests | Automatic next-link pagination | Not implemented | GeoJSON preserves links and counts; the adapter fetches one page |
-| Requests | Item-by-ID, datetime, and limit convenience methods | Not implemented | Current normalized API focuses on bounding-box item requests |
-| Output | GeoJSON validation and foreign members | Supported | Requires FeatureCollection; preserves response links/counts in GeoJSON output |
+| Requests | Automatic next-link pagination | Supported with limits | Opt-in `ogc-api.pagination` gathers same-origin body/HTTP-header next links, with bounded requests and cancellation |
+| Requests | Page-size control | Supported | `pagination.pageSize` requests `limit`; services may cap it |
+| Requests | Item-by-ID and datetime convenience methods | Not implemented | Current normalized API focuses on bounding-box item requests |
+| Output | GeoJSON validation and foreign members | Supported | Requires FeatureCollection and a features array; single-page responses preserve links/counts |
 | Output | Binary feature collections | Supported | `format: 'binary'` |
 | Output | Arrow and GeoArrow encoding preferences | Supported | `format: 'arrow'`, WKB/native/mixed union preferences |
 | Loading | Complete extent reuse and uncovered rectangles | Supported via wrapper | `ManagedVectorSource` requires verified complete results and explicit equivalent CRSs |
@@ -88,6 +89,45 @@ used by WFS. The table distinguishes implemented read operations from optional p
 | Rendering | deck.gl integration | Supported | Implements `VectorSource`; direct or managed source works with `SourceLayer` |
 | Mutation | Transactions and mutable feature-store events | Not implemented | Read-only adapter; explicit cache invalidation after external changes |
 | Conformance | All optional OGC API Features classes | Not implemented | Focused read client; no blanket standards certification claim |
+
+### Progressive pages and complete collection
+
+Configure `{'ogc-api': {pagination: {pageSize: 1000, maxPages: 100, maxFeatures: 100000}}}`
+to gather service pages in `getFeatures()` before converting to the requested encoding. Omit
+`pagination` to retain one-page behavior. The three positive-integer bounds default to those
+values. Exhausting a bound throws instead of returning a silently truncated aggregate.
+
+```ts
+import {OGCAPIFeaturesSource} from '@loaders.gl/wms';
+
+const source = new OGCAPIFeaturesSource(serviceUrl, {'ogc-api': {collectionId: 'roads'}});
+for await (const page of source.getFeaturesInPages({
+  layers: 'roads', boundingBox: [[-10, -5], [10, 5]], format: 'geojson', signal
+}, {pageSize: 500, maxPages: 20})) {
+  // Every yield is a normalized GeoJSON table, without fetching the next page ahead.
+  processFeatures(page.features);
+}
+```
+
+Traversal follows relative or absolute `rel: 'next'` links from the body or HTTP `Link` header,
+resolving against the response URL. It does not invent an offset parameter. Links must use the
+original origin and HTTP(S), without embedded credentials. Initial endpoint parameters are
+preserved, and opaque next URLs are followed as supplied by the service. A numeric total that
+exceeds the collected count without a next link is an error. An empty terminal page is allowed;
+an empty page with another continuation is rejected.
+
+Cancellation, failed later pages, inconsistent counts, repeated URLs/pages/IDs, and exhausted
+limits fail the traversal and prevent managed coverage from being established. Early loop exit
+stops further requests. Pages already yielded remain partial until traversal finishes. Stable
+paging depends on the service; concurrent dataset changes are not a transactional snapshot.
+
+Collected GeoJSON removes page-specific links/extents and updates `numberReturned`. Unknown
+`numberMatched` stays unknown; it never becomes fabricated completeness evidence.
+`ManagedVectorSource` can retain a collected result only when the service's numeric total matches
+its rows. Arrow and binary conversion happens once after collection; per-page GeoJSON remains
+materialized rather than a network-streamed feature parser. These rules follow
+[OGC API Features Core](https://docs.ogc.org/is/17-069r4/17-069r4.html#fc-response).
+
 
 ```ts
 import {createDataSource} from '@loaders.gl/core';

@@ -22,11 +22,25 @@ import {
   convertGeojsonToBinaryFeatureCollection
 } from '@loaders.gl/gis';
 import {getServiceCRSAxisOrder} from './crs-utils';
+import type {FeaturePaginationOptions, FeaturePage} from './feature-pagination';
+import {
+  addNextLinkHeader,
+  collectFeaturePages,
+  getPaginationOptions,
+  iterateFeaturePages
+} from './feature-pagination';
 
 /** Options shared by the minimal OGC API source adapters. */
 export type OGCAPISourceOptions = DataSourceOptions & {
   /** Optional collection identifier for an OGC API Features source. */
-  'ogc-api'?: {collectionId?: string; tileTemplate?: string};
+  'ogc-api'?: {
+    /** Collection to query. */
+    collectionId?: string;
+    /** Explicit tile template for the tiles adapter. */
+    tileTemplate?: string;
+    /** Opt-in bounded pagination for getFeatures(); omitted keeps the single-page behavior. */
+    pagination?: FeaturePaginationOptions;
+  };
 };
 
 /** A small representation of an OGC API link. */
@@ -90,26 +104,11 @@ export class OGCAPIFeaturesSource
     return {fields: [], metadata: {}};
   }
 
-  /** Fetches a page of GeoJSON features using the standard bbox parameters. */
+  /** Fetches one page, or gathers advertised pages when ogc-api.pagination is configured. */
   async getFeatures(parameters: GetFeaturesParameters): Promise<VectorSourceData> {
-    const collectionId = this.getCollectionId(parameters.layers);
-    const collectionURL = /\/collections\/[^/]+$/.test(this.url)
-      ? `${this.url}/items`
-      : `${this.getServiceURL()}/collections/${encodeURIComponent(collectionId)}/items`;
-    const url = new URL(collectionURL);
-    const requestCrs = parameters.requestCrs || parameters.crs;
-    url.searchParams.set('bbox', flattenBoundingBox(parameters.boundingBox, requestCrs).join(','));
-    if (parameters.crs) url.searchParams.set('crs', parameters.crs);
-    if (requestCrs) url.searchParams.set('bbox-crs', requestCrs);
-    const response = await this.fetchJSON(
-      url.toString(),
-      'application/geo+json, application/json;q=0.9',
-      parameters.signal
-    );
-    if (!isFeatureCollection(response)) {
-      throw new Error('OGC API Features response was not a GeoJSON FeatureCollection');
-    }
-    const geoJSONTable = {shape: 'geojson-table', ...response} as GeoJSONTable;
+    const geoJSONTable = this.options['ogc-api']?.pagination
+      ? await collectFeaturePages(this.getFeaturesInPages(parameters))
+      : (await this.fetchFeaturePage(this.getFeaturesURL(parameters), parameters.signal)).table;
     switch (parameters.format || 'geojson') {
       case 'binary':
         return convertGeojsonToBinaryFeatureCollection(geoJSONTable.features);
@@ -121,6 +120,66 @@ export class OGCAPIFeaturesSource
       default:
         return geoJSONTable;
     }
+  }
+
+  /**
+   * Yields GeoJSON pages by following advertised body or HTTP-header next links.
+   * Does not invent offset parameters. Page requests are sequential and independently bounded.
+   * Unknown totals remain unknown, so managed coverage still requires count evidence.
+   */
+  getFeaturesInPages(
+    parameters: GetFeaturesParameters,
+    options: FeaturePaginationOptions = this.options['ogc-api']?.pagination || {}
+  ): AsyncIterable<GeoJSONTable> {
+    const limits = getPaginationOptions(options);
+    const url = new URL(this.getFeaturesURL(parameters));
+    url.searchParams.set('limit', String(limits.pageSize));
+    return iterateFeaturePages(
+      url.toString(),
+      pageURL => this.fetchFeaturePage(pageURL, parameters.signal),
+      limits,
+      parameters.signal,
+      (_url, _table, featureCount, matched) => {
+        if (matched !== undefined && featureCount < matched)
+          throw new Error(
+            'OGC API Features pagination ended before numberMatched without a next link'
+          );
+        return undefined;
+      }
+    );
+  }
+
+  /** Builds a bounded items URL, preserving endpoint query parameters. */
+  private getFeaturesURL(parameters: GetFeaturesParameters): string {
+    const url = new URL(this.url);
+    const collectionId = this.getCollectionId(parameters.layers);
+    url.pathname = /\/collections\/[^/]+\/?$/.test(url.pathname)
+      ? `${url.pathname.replace(/\/$/, '')}/items`
+      : `${url.pathname.replace(/\/$/, '')}/collections/${encodeURIComponent(collectionId)}/items`;
+    const requestCrs = parameters.requestCrs || parameters.crs;
+    url.searchParams.set('bbox', flattenBoundingBox(parameters.boundingBox, requestCrs).join(','));
+    if (parameters.crs) url.searchParams.set('crs', parameters.crs);
+    if (requestCrs) url.searchParams.set('bbox-crs', requestCrs);
+    return url.toString();
+  }
+
+  /** Fetches one validated page, retaining body links and HTTP Link-header pagination. */
+  private async fetchFeaturePage(url: string, signal?: AbortSignal): Promise<FeaturePage> {
+    const response = await this.fetch(url, {
+      headers: {Accept: 'application/geo+json, application/json;q=0.9'},
+      signal
+    });
+    if (!response.ok) throw new Error(`OGC API request failed: ${response.status}`);
+    const json = await response.json();
+    if (!isFeatureCollection(json) || !Array.isArray(json.features))
+      throw new Error('OGC API Features response was not a GeoJSON FeatureCollection');
+    return {
+      table: addNextLinkHeader(
+        {shape: 'geojson-table', ...json} as GeoJSONTable,
+        response.headers.get('link')
+      ),
+      url: response.url || url
+    };
   }
 
   /** Fetches and decodes a JSON representation from the service. */
