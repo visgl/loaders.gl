@@ -861,6 +861,7 @@ export class WFSVectorSource extends DataSource<string, WFSourceOptions> impleme
 function parseGeoJSONTable(json: any): GeoJSONTable {
   if (json?.type === 'FeatureCollection' && Array.isArray(json.features)) {
     return {
+      ...json,
       shape: 'geojson-table',
       type: 'FeatureCollection',
       features: json.features

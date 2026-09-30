@@ -695,3 +695,31 @@ function createArrowTable() {
   });
   return builder.finishTable();
 }
+
+test('VectorSet retries the same extent after failure and aborts requests when replacing its source', async () => {
+  const getFeatures = vi
+    .fn()
+    .mockRejectedValueOnce(new Error('offline'))
+    .mockResolvedValue(TABLE_A);
+  const vectorSource = {...TEST_VECTOR_SOURCE, getFeatures};
+  const vectorSet = new VectorSet({vectorSource, layers: ['roads'], debounceTime: 0});
+  const viewport = createViewport([0, 0, 10, 10]) as any;
+  await vectorSet.updateViewport(viewport);
+  expect(vectorSet.error?.message).toBe('offline');
+  await vectorSet.updateViewport(viewport);
+  expect(getFeatures).toHaveBeenCalledTimes(2);
+  expect(vectorSet.data).toBe(TABLE_A);
+  const deferred = createDeferredPromise<any>();
+  getFeatures.mockReturnValueOnce(deferred.promise);
+  const request = vectorSet.updateViewport(createViewport([10, 0, 20, 10]) as any);
+  vectorSet.setOptions({
+    vectorSource: TEST_VECTOR_SOURCE as any,
+    layers: ['roads'],
+    debounceTime: 0
+  });
+  expect(getFeatures.mock.calls[2][0].signal.aborted).toBe(true);
+  deferred.resolvePromise(TABLE_B);
+  await request;
+  expect(vectorSet.data).toBeNull();
+  vectorSet.finalize();
+});

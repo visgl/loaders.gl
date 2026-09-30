@@ -170,3 +170,32 @@ test('WKT queries normalize serialized geometry without losing row alignment', (
   expect(query.getFeatureRowsInExtent([5, 6, 5, 6])).toEqual([1]);
   expect(query.getClosestFeature([5, 7])).toEqual({rowIndex: 1, coordinate: [5, 6], distance: 1});
 });
+
+test('exact queries refine candidates, include hole boundaries and retain offscreen rows', () => {
+  expect(index.getFeatureRowsIntersectingExtent([24, 4, 26, 6])).toEqual([]);
+  expect(index.getFeatureRowsIntersectingExtent([21, 3, 22, 6])).toEqual([1]);
+  expect(index.getFeatureRowsAtCoordinate([25, 5])).toEqual([]);
+  expect(index.getFeatureRowsAtCoordinate([22, 5])).toEqual([1]);
+  expect(index.getFeatureRowsAtCoordinate([5, 0])).toEqual([0]);
+  expect(index.getFeatureRowsAtCoordinate([1000, 1000])).toEqual([2]);
+  expect(index.getFeatureRowsIntersectingExtent([45, -1, 46, 1])).toEqual([]);
+  expect(() => index.getFeatureRowsAtCoordinate([NaN, 0])).toThrow('finite');
+  expect(() => index.getFeatureRowsAtCoordinate([Infinity, 0])).toThrow('finite');
+  expect(() => index.getFeatureRowsIntersectingExtent([2, 0, 1, 1])).toThrow('ordered');
+});
+
+test('exact queries work on native sliced vectors and normalized WKT', () => {
+  const table = convertFeaturesToGeoArrowTable(
+    [0, 2, 4].map(value => ({
+      type: 'Feature',
+      properties: {},
+      geometry: {type: 'Point', coordinates: [value, 0]}
+    }))
+  );
+  for (const encoding of ['geoarrow.point', 'geoarrow.wkt'] as const) {
+    const converted = convertGeoArrowGeometry(table.data, encoding);
+    const sliced = new GeoArrowSpatialIndex(converted.getChild('geometry')!.slice(1), encoding);
+    expect(sliced.getFeatureRowsAtCoordinate([2, 0])).toEqual([0]);
+    expect(sliced.getFeatureRowsIntersectingExtent([3, -1, 5, 1])).toEqual([1]);
+  }
+});

@@ -40,3 +40,13 @@ ArcGIS REST source loaders are provided by `@loaders.gl/arcgis`.
 
 See the [complete OGC service guide](https://loaders.gl/docs/modules/wms) and the feature table on
 each service page.
+
+## Manage feature coverage
+
+`ManagedVectorSource` wraps GeoJSON-capable vector sources with verified extent coverage,
+uncovered-rectangle loading, shared cancelable requests, stable-ID deduplication, bounded
+retention, and explicit invalidation. Unknown or truncated responses are never marked complete.
+Reuse requires explicit equivalent request/output CRSs; automatic pagination is not performed.
+
+See [spatial queries beyond picking](https://loaders.gl/docs/developer-guide/spatial-queries)
+for completeness policies and integration with map layers, scan/query, and exact local selection.

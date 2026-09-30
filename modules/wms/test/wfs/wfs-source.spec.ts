@@ -480,3 +480,30 @@ test.each([
   expect(source.capabilities?.featureTypes?.[0].formats).toEqual(['application/json']);
   expect(source.capabilities?.operationsMetadata).toHaveProperty('GetFeature');
 });
+
+test('WFS GeoJSON preserves count and paging metadata for completeness-aware loading', async () => {
+  const source = WFSSourceLoader.createDataSource(WFS_URL, {});
+  source.fetch = async () =>
+    new Response(
+      JSON.stringify({
+        type: 'FeatureCollection',
+        features: [],
+        numberMatched: 0,
+        numberReturned: 0,
+        links: [{rel: 'self', href: 'wfs'}]
+      })
+    );
+  const table = await source.getFeatures({
+    layers: 'roads',
+    boundingBox: [
+      [0, 0],
+      [1, 1]
+    ],
+    format: 'geojson'
+  });
+  expect(table).toMatchObject({
+    numberMatched: 0,
+    numberReturned: 0,
+    links: [{rel: 'self', href: 'wfs'}]
+  });
+});

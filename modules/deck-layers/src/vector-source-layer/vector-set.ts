@@ -149,6 +149,7 @@ export class VectorSet {
 
     if (sourceChanged) {
       this._cancelScheduledRequest();
+      this._abortActiveRequest();
       this.metadataPromise = null;
       this.schema = null;
       this.metadata = null;
@@ -267,6 +268,7 @@ export class VectorSet {
       this.emitDataLoad(table);
       this.emitUpdate();
     } catch (error) {
+      if (requestSequenceNumber === this.requestSequenceNumber) this.lastRequestKey = null;
       if (isAbortError(error)) {
         return;
       }
