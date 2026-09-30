@@ -36,12 +36,60 @@ retried. A single request can be truncated by the server: use explicit `count`, 
 stable `sortBy` with `getFeaturesURL()` when completeness matters. Do not assume an extent query
 has downloaded the entire dataset or that paging is supported by every server.
 
+## Use the common scan/query interface
+
+Wrap a `VectorSource` in `VectorFeatureTableScanSource` from the optional `@loaders.gl/scan`
+package. WFS, OGC API Features, and other sources that honor `format: 'arrow'` can use the same
+interface. Bind the service layers, extent, and input/output CRS when creating the table view:
+
+```ts
+import {VectorFeatureTableScanSource} from '@loaders.gl/scan';
+
+const scanSource = new VectorFeatureTableScanSource(source, {
+  request: {
+    layers: ['workspace:roads'],
+    boundingBox: [[minimumX, minimumY], [maximumX, maximumY]],
+    requestCrs: 'EPSG:3857',
+    crs: 'EPSG:3857'
+  }
+});
+const query = {
+  predicate: {op: '>', args: [{property: 'speedLimit'}, 50]},
+  columns: ['id', 'geometry', 'speedLimit'],
+  limit: 100
+} as const;
+
+const metadata = await scanSource.getQueryMetadata();
+const explanation = await scanSource.explain(query);
+const result = await scanSource.query(query); // ArrowTable
+for await (const batch of scanSource.scan(query)) {
+  // ArrowTableBatch; read(query) exposes the same batch interface.
+  console.log(batch.length, batch.data);
+}
+```
+
+The service applies the bound extent. Predicates, projection, ordering, aggregates, and limits
+are evaluated locally on the materialized result. A query limit does not request a server page
+size, and results remain limited to the features returned by the service. The adapter does not
+translate portable predicates into WFS filters or follow service pagination.
+
+The first metadata, explanation, query, or scan call fetches and caches the bound Arrow table;
+subsequent calls reuse it. `scan()` and `read()` emit one materialized result batch rather than
+streaming network pages. Create a new adapter to query a different extent or refresh server data.
+Failed initial loads can be retried. An `AbortSignal` cancels one caller's wait without canceling
+the shared fetch needed by other callers. Spatial metadata describes the request bounds in
+`requestCrs` (falling back to `crs`); returned geometries use the requested output CRS.
+
+The queried result can be passed to `GeoArrowSpatialIndex` for local geometry selection and
+snapping as shown below. Keep the geometry column in the projection when geometry queries are
+needed.
+
 ## Query a materialized GeoArrow table
 
 ```ts
 import {GeoArrowSpatialIndex, getGeoArrowFieldInfo} from '@loaders.gl/geoarrow';
 
-// `result` is the ArrowTable returned by the default WFS getFeatures() path.
+// `result` is an ArrowTable from WFS getFeatures() or the scan adapter query().
 const table = result.data;
 const field = table.schema.fields.find(candidate => candidate.name === 'geometry');
 const encoding = field && getGeoArrowFieldInfo(field)?.encoding;

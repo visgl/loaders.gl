@@ -123,6 +123,11 @@ export abstract class AddressedVectorTableScanSource {
     yield makeTableScanBatch(result);
   }
 
+  /** Scans the addressed query result through the same batch contract as `read()`. */
+  scan(options: ArrowQueryOptions = {}): AsyncIterableIterator<ArrowTableBatch> {
+    return this.read(options);
+  }
+
   /** Resolves and caches the addressed table while allowing failed loads to be retried. */
   private async getTable(signal?: AbortSignal): Promise<ArrowTable> {
     throwIfAborted(signal);
@@ -206,7 +211,8 @@ export class VectorFeatureTableScanSource extends AddressedVectorTableScanSource
         Object.freeze([...options.request.boundingBox[1]])
       ]) as GetFeaturesParameters['boundingBox']
     });
-    const coordinateReferenceSystems = typeof request.crs === 'string' ? [request.crs] : undefined;
+    const boundsCrs = request.requestCrs || request.crs;
+    const coordinateReferenceSystems = typeof boundsCrs === 'string' ? [boundsCrs] : undefined;
     super(options, {
       sourceType: 'vector-feature-table',
       description: `Vector feature request for ${normalizeLayers(request.layers).join(', ')}`,

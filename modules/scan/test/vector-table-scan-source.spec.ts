@@ -12,6 +12,7 @@ import type {
 } from '@loaders.gl/loader-utils';
 import type {ArrowTable} from '@loaders.gl/schema';
 import {convertArrowToSchema} from '@loaders.gl/schema-utils';
+import {OGCAPIFeaturesSource, WFSVectorSource} from '@loaders.gl/wms';
 import {
   VectorFeatureTableScanSource,
   VectorTileTableScanSource
@@ -268,3 +269,74 @@ function makeArrowTable(
   const data = arrow.tableFromArrays(columns);
   return {shape: 'arrow-table', schema: convertArrowToSchema(data.schema), data};
 }
+
+test.each([
+  'wfs',
+  'ogc-api'
+])('feature table scans query real %s source output', async sourceType => {
+  const source =
+    sourceType === 'wfs'
+      ? new WFSVectorSource('https://example.com/wfs', {})
+      : new OGCAPIFeaturesSource('https://example.com/ogcapi');
+  const requestedUrls: string[] = [];
+  source.fetch = async url => {
+    requestedUrls.push(url);
+    return new Response(
+      JSON.stringify({
+        type: 'FeatureCollection',
+        features: [1, 2, 3].map(score => ({
+          type: 'Feature',
+          geometry: {type: 'Point', coordinates: [score * 1000, score * 2000]},
+          properties: {name: `road.${score}`, score}
+        }))
+      }),
+      {headers: {'content-type': 'application/geo+json'}}
+    );
+  };
+  const scanSource = new VectorFeatureTableScanSource(source, {
+    request: {
+      layers: 'roads',
+      boundingBox: [
+        [0, 0],
+        [3, 6]
+      ],
+      requestCrs: 'CRS:84',
+      crs: 'EPSG:3857'
+    }
+  });
+  const metadata = await scanSource.getQueryMetadata();
+  expect(metadata.spatial).toEqual({
+    bounds: {minimum: [0, 0], maximum: [3, 6]},
+    coordinateReferenceSystems: ['CRS:84']
+  });
+  expect(metadata.columns.find(column => column.name === 'geometry')?.role).toBe('geometry');
+  expect(metadata.capabilities.table?.predicate).toBe('residual');
+  const queryOptions = {
+    predicate: {op: '>', args: [{property: 'score'}, 1]},
+    columns: ['name', 'geometry'],
+    limit: 1
+  } as const;
+  const result = await scanSource.query(queryOptions);
+  expect(result.data.getChild('name')?.get(0)).toBe('road.2');
+  expect(result.data.numRows).toBe(1);
+  expect(result.data.schema.fields.map(field => field.name)).toEqual(['name', 'geometry']);
+  expect(result.data.schema.fields[1].metadata.get('ARROW:extension:name')).toBe('geoarrow.wkb');
+  const explanation = await scanSource.explain(queryOptions);
+  expect(explanation.plan.map(step => step.kind)).toEqual(['scan', 'filter', 'project', 'limit']);
+  const scannedBatches = [];
+  for await (const batch of scanSource.scan(queryOptions)) scannedBatches.push(batch);
+  expect(scannedBatches).toHaveLength(1);
+  expect(scannedBatches[0].length).toBe(1);
+  expect(scannedBatches[0].data.getChild('name')?.get(0)).toBe('road.2');
+  expect(requestedUrls).toHaveLength(1);
+  const searchParameters = new URL(requestedUrls[0]).searchParams;
+  if (sourceType === 'wfs') {
+    expect(searchParameters.get('TYPENAMES')).toBe('roads');
+    expect(searchParameters.get('BBOX')).toBe('0,0,3,6,CRS:84');
+    expect(searchParameters.get('SRSNAME')).toBe('EPSG:3857');
+  } else {
+    expect(searchParameters.get('bbox')).toBe('0,0,3,6');
+    expect(searchParameters.get('bbox-crs')).toBe('CRS:84');
+    expect(searchParameters.get('crs')).toBe('EPSG:3857');
+  }
+});
