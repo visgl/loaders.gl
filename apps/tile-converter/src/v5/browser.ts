@@ -42,6 +42,8 @@ export type {
   EncodedPointCloudSourceTile,
   EncodePointCloudSourceOptions
 } from './point-cloud-source-encoder.js';
+export {convertPointCloudSource} from './point-cloud-conversion.js';
+export type {ConvertPointCloudSourceOptions} from './point-cloud-conversion.js';
 export type {
   BrowserTilesetConversionInputResource,
   BrowserTilesetConversionInspection,
