@@ -18,9 +18,13 @@ import {DataSource} from '@loaders.gl/loader-utils';
 import type {
   WMTSCapabilities,
   WMTSTileMatrixSet,
+  WMTSTileMatrix,
   WMTSLayer
 } from './lib/parsers/wmts/parse-wmts-capabilities';
-import {parseWMTSCapabilities} from './lib/parsers/wmts/parse-wmts-capabilities';
+import {
+  parseWMTSCapabilities,
+  validateTileMatrixLimits
+} from './lib/parsers/wmts/parse-wmts-capabilities';
 import {
   areServiceCRSEquivalent,
   getServiceCRSAxisOrder,
@@ -42,10 +46,11 @@ export type WMTSSourceLoaderOptions = DataSourceOptions &
       format?: string;
       /** REST template containing `{TileMatrix}`, `{TileRow}`, and `{TileCol}`. */
       urlTemplate?: string;
-      /** Additional KVP parameters. */
+      /** Dimension overrides and extra parameters. Generated GetTile fields take precedence. */
       parameters?: Record<string, string>;
       /** Capabilities document or URL used to derive layer and tile matrix options. */
       capabilities?: WMTSCapabilities;
+      /** URL used to load capabilities before async tile requests. */
       capabilitiesUrl?: string;
       /** Preferred coordinate reference system for matrix-set selection. */
       crs?: ServiceCRS;
@@ -93,9 +98,11 @@ export class WMTSImageTileSource
     };
   }
 
-  /** Fetches and decodes one WMTS image tile. */
+  /** Fetches and decodes one tile; returns null outside advertised coverage without a tile fetch. */
   async getTile(parameters: GetTileParameters, signal?: AbortSignal): Promise<ImageType | null> {
+    validateTileIndices(parameters);
     await this._loadCapabilities();
+    if (!this.isTileAvailable(parameters)) return null;
     const requestSignal = signal || parameters.signal;
     const response = await this.fetch(
       this.getTileURL(parameters),
@@ -116,8 +123,53 @@ export class WMTSImageTileSource
     return this.getTile(parameters.index, parameters.signal);
   }
 
-  /** Builds a REST-template or KVP WMTS GetTile URL. */
+  /**
+   * Tests the selected layer's advertised tile coverage, not the existence of a tile on the server.
+   * Await getMetadata() first when capabilities are supplied by URL. Invalid indices throw.
+   * Missing limits use full matrix dimensions; no capabilities means coverage is unknown/allowed.
+   */
+  isTileAvailable(parameters: GetTileParameters): boolean {
+    validateTileIndices(parameters);
+    const layerName = parameters.layers ? String(parameters.layers) : this.options.wmts?.layer;
+    const layer = this._getLayer(this._capabilities, layerName);
+    const tileMatrixSet = this._getTileMatrixSet(layer);
+    if (!tileMatrixSet) return true;
+    const matrix = getTileMatrix(tileMatrixSet, parameters.z);
+    if (!matrix) return false;
+    for (const size of [matrix.matrixWidth, matrix.matrixHeight]) {
+      if (size !== undefined && (!Number.isSafeInteger(size) || size < 1))
+        throw new Error('WMTS matrix dimensions require positive safe integers');
+    }
+    const limits = layer?.tileMatrixSetLinks.find(
+      link => link.tileMatrixSet === tileMatrixSet.identifier
+    )?.limits;
+    if (limits !== undefined) {
+      validateTileMatrixLimits(limits);
+      const limit = limits.find(candidate => candidate.tileMatrix === matrix.identifier);
+      if (!limit) return false;
+      if (
+        (matrix.matrixWidth !== undefined && limit.maximumTileColumn >= matrix.matrixWidth) ||
+        (matrix.matrixHeight !== undefined && limit.maximumTileRow >= matrix.matrixHeight)
+      )
+        throw new Error('WMTS tile matrix limits exceed matrix dimensions');
+      if (
+        parameters.x < limit.minimumTileColumn ||
+        parameters.x > limit.maximumTileColumn ||
+        parameters.y < limit.minimumTileRow ||
+        parameters.y > limit.maximumTileRow
+      )
+        return false;
+    }
+    return (
+      (matrix.matrixWidth === undefined || parameters.x < matrix.matrixWidth) &&
+      (matrix.matrixHeight === undefined || parameters.y < matrix.matrixHeight)
+    );
+  }
+
+  /** Builds a REST or KVP URL with dimension defaults; throws outside advertised tile coverage. */
   getTileURL(parameters: GetTileParameters): string {
+    if (!this.isTileAvailable(parameters))
+      throw new RangeError('WMTS tile is outside advertised coverage');
     const wmts = this.options.wmts || {};
     const layerName = parameters.layers ? String(parameters.layers) : wmts.layer;
     const layer = this._getLayer(this._capabilities, layerName);
@@ -134,36 +186,39 @@ export class WMTSImageTileSource
     );
     const urlTemplate = wmts.urlTemplate || resourceURL?.template;
     const tileMatrixSet = this._getTileMatrixSet(layer);
-    const tileMatrixIdentifier = getTileMatrixIdentifier(tileMatrixSet, parameters.z);
+    const tileMatrixIdentifier =
+      getTileMatrix(tileMatrixSet, parameters.z)?.identifier || String(parameters.z);
+    const dimensionParameters = this._getDimensionParameters(layer);
     if (urlTemplate) {
-      const replacements: Record<string, string> = {
-        ...wmts.parameters,
+      const replacements = mergeRequestParameters(dimensionParameters, {
         Layer: layerName || layer?.identifier || '',
         Style: style,
         TileMatrix: tileMatrixIdentifier,
         TileRow: String(parameters.y),
         TileCol: String(parameters.x),
         TileMatrixSet: tileMatrixSet?.identifier || wmts.tileMatrixSet || ''
-      };
+      });
       return urlTemplate.replace(/\{([^{}]+)\}/g, (placeholder, key: string) => {
-        if (!(key in replacements)) throw new Error(`Missing WMTS template parameter: ${key}`);
-        return encodeURIComponent(replacements[key]);
+        const value = getRequestParameter(replacements, key);
+        if (value === undefined) throw new Error(`Missing WMTS template parameter: ${key}`);
+        return encodeURIComponent(value);
       });
     }
     const url = new URL(this.url);
-    const searchParameters = new URLSearchParams({
-      SERVICE: 'WMTS',
-      REQUEST: 'GetTile',
-      VERSION: '1.0.0',
-      LAYER: layerName || layer?.identifier || '',
-      STYLE: style,
-      TILEMATRIXSET: tileMatrixSet?.identifier || wmts.tileMatrixSet || '',
-      TILEMATRIX: tileMatrixIdentifier,
-      TILEROW: String(parameters.y),
-      TILECOL: String(parameters.x),
-      FORMAT: format,
-      ...(wmts.parameters || {})
-    });
+    const searchParameters = new URLSearchParams(
+      mergeRequestParameters(dimensionParameters, {
+        SERVICE: 'WMTS',
+        REQUEST: 'GetTile',
+        VERSION: '1.0.0',
+        LAYER: layerName || layer?.identifier || '',
+        STYLE: style,
+        TILEMATRIXSET: tileMatrixSet?.identifier || wmts.tileMatrixSet || '',
+        TILEMATRIX: tileMatrixIdentifier,
+        TILEROW: String(parameters.y),
+        TILECOL: String(parameters.x),
+        FORMAT: format
+      })
+    );
     for (const [key, value] of searchParameters) {
       for (const existingKey of [...url.searchParams.keys()]) {
         if (existingKey.toUpperCase() === key.toUpperCase()) url.searchParams.delete(existingKey);
@@ -171,6 +226,22 @@ export class WMTSImageTileSource
       url.searchParams.set(key, value);
     }
     return url.toString();
+  }
+
+  /** Applies explicit options, then endpoint dimensions, then advertised defaults. */
+  private _getDimensionParameters(layer: WMTSLayer | undefined): Record<string, string> {
+    let parameters = mergeRequestParameters(this.options.wmts?.parameters || {});
+    const endpointParameters = Object.fromEntries(new URL(this.url).searchParams);
+    for (const dimension of layer?.dimensions || []) {
+      const value =
+        getRequestParameter(parameters, dimension.identifier) ??
+        getRequestParameter(endpointParameters, dimension.identifier) ??
+        dimension.default;
+      if (!dimension.identifier || value === undefined || !value.trim())
+        throw new Error('Missing WMTS dimension value: ' + (dimension.identifier || '(unnamed)'));
+      parameters = mergeRequestParameters(parameters, {[dimension.identifier]: value});
+    }
+    return parameters;
   }
 
   /** Loads and caches capabilities; failed requests can be retried. */
@@ -289,19 +360,39 @@ function getGridResolutions(tileMatrixSet: WMTSTileMatrixSet): Pick<TileGrid, 'r
   };
 }
 
-/** Selects the advertised WMTS matrix identifier for a deck.gl zoom level. */
-function getTileMatrixIdentifier(
+/** Selects an exact numeric identifier or matrix array index, without rounding or clamping. */
+function getTileMatrix(
   tileMatrixSet: WMTSTileMatrixSet | undefined,
   zoom: number
-): string {
+): WMTSTileMatrix | undefined {
   const matrices = tileMatrixSet?.matrices || [];
-  const exactMatrix = matrices.find(matrix => matrix.identifier === String(zoom));
-  if (exactMatrix) {
-    return exactMatrix.identifier;
-  }
+  return matrices.find(matrix => matrix.identifier === String(zoom)) || matrices[zoom];
+}
 
-  const matrixIndex = Math.max(0, Math.min(matrices.length - 1, Math.round(zoom)));
-  return matrices[matrixIndex]?.identifier || String(zoom);
+/** Rejects invalid indices before URL generation or network access; tiles never wrap implicitly. */
+function validateTileIndices(parameters: GetTileParameters): void {
+  for (const [name, value] of Object.entries({x: parameters.x, y: parameters.y, z: parameters.z})) {
+    if (!Number.isSafeInteger(value) || value < 0)
+      throw new RangeError('WMTS ' + name + ' must be a nonnegative safe integer');
+  }
+}
+
+/** Merges case-insensitive KVP names so generated tile fields cannot be overridden by extras. */
+function mergeRequestParameters(...groups: Record<string, string>[]): Record<string, string> {
+  const result: Record<string, string> = {};
+  for (const group of groups) {
+    for (const [name, value] of Object.entries(group)) {
+      for (const existingName of Object.keys(result))
+        if (existingName.toUpperCase() === name.toUpperCase()) delete result[existingName];
+      result[name] = value;
+    }
+  }
+  return result;
+}
+
+/** Looks up a dimension or template parameter without changing its value's case. */
+function getRequestParameter(parameters: Record<string, string>, name: string): string | undefined {
+  return Object.entries(parameters).find(([key]) => key.toUpperCase() === name.toUpperCase())?.[1];
 }
 
 /** Source loader for WMTS image tiles. */

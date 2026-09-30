@@ -76,30 +76,43 @@ const data = await load(url, WMTSCapabilitiesLoader, options);
 
 ## Parsed Data Format
 
+The root package exports `WMTSCapabilities`, `WMTSLayer`, `WMTSDimension`, `WMTSTileMatrixSetLink`,
+`WMTSTileMatrixLimits`, `WMTSTileMatrixSet`, and `WMTSTileMatrix` types. Native metadata is organized
+under `contents`; the source uses it to select the layer, grid, limits, and dimension defaults.
+
 ```typescript
-/** All capabilities of a WMTS service. Typed data structure extracted from XML */
-export type WMTSCapabilities = {
-  name: string;
-  title?: string;
-  abstract?: string;
-  keywords: string[];
-  layer: WMTSLayer;
-  requests: Record<string, WMTSRequest>;
-};
-
-type WMTSLayer = {
-  name: string;
-  title?: string;
-  srs?: string[];
-  boundingBox?: [number, number, number, number];
-  layers?: WMTSLayer[];
-};
-
-type WMTSRequest = {
-  name: string;
-  mimeTypes: string[];
+type WMTSCapabilities = {
+  serviceIdentification?: {title?: string; abstract?: string; serviceTypeVersion?: string};
+  operationsMetadata?: Record<string, unknown>;
+  contents: {layers: WMTSLayer[]; tileMatrixSets: WMTSTileMatrixSet[]};
 };
 ```
+
+| Native field | Content | Request use |
+| --- | --- | --- |
+| `contents.layers[].identifier` | Layer identifier | Select by `wmts.layer` or per-request layers |
+| `formats`, `styles`, `resourceURLs` | Formats, default styles, tile/feature-info templates | REST or KVP tile configuration |
+| `tileMatrixSetLinks[].tileMatrixSet` | Linked matrix set identifier | Grid/CRS selection |
+| `tileMatrixSetLinks[].limits` | Optional `WMTSTileMatrixLimits[]` | Inclusive coverage check before tile fetch |
+| `dimensions` | Optional `WMTSDimension[]` | Preserve metadata and resolve default values |
+| `bounds` | WGS84 lower/upper corners | Normalized source extent |
+| `contents.tileMatrixSets[].matrices` | Ordered identifiers, scale denominators, origins, tile/matrix sizes | Matrix selection and grid metadata |
+
+`WMTSTileMatrixLimits` contains `tileMatrix`, `minimumTileRow`, `maximumTileRow`, `minimumTileColumn`, and
+`maximumTileColumn`. The parser maps these from XML `MinTileRow`, `MaxTileRow`, `MinTileCol`,
+and `MaxTileCol`. Indices are nonnegative safe integers and bounds are inclusive. Missing or duplicate
+identifiers, missing/invalid indices, and reversed bounds are rejected while parsing. Omitted
+limits differ from an explicitly empty list: omission permits the full matrix, while a list allows
+only the matrices and ranges it contains. Supplied capabilities receive equivalent bound checks
+when the source tests coverage.
+
+`WMTSDimension` contains `identifier`, optional `title`, `abstract`, `unitsOfMeasure`, `unitSymbol`, `default`,
+`current`, and a `values` array. Values/defaults are strings, preserving zero, leading zeros,
+ISO8601 timestamps, intervals, and reserved keywords. Intervals are not expanded, and current
+support alone does not select `current`.
+
+See [WMTS coverage and dimension handling](../formats/wmts#coverage-limits-and-dimensions) for
+request precedence, synchronous coverage queries, skipped tiles, and remaining rendering limits.
 
 ## Options
 

@@ -18,9 +18,54 @@ export type WMTSLayer = {
   abstract?: string;
   formats: string[];
   styles: WMTSStyle[];
-  tileMatrixSetLinks: {tileMatrixSet: string}[];
+  /** Matrix sets and optional layer-specific tile coverage. */
+  tileMatrixSetLinks: WMTSTileMatrixSetLink[];
+  /** Advertised dimensions; omitted for legacy supplied capabilities. */
+  dimensions?: WMTSDimension[];
   resourceURLs: {template: string; format?: string; resourceType?: string}[];
   bounds?: [number, number, number, number];
+};
+
+/** A layer's reference to a tile matrix set and its inclusive coverage limits. */
+export type WMTSTileMatrixSetLink = {
+  /** Referenced matrix set identifier. */
+  tileMatrixSet: string;
+  /** Allowed matrices and tile ranges; undefined means the full matrix set. */
+  limits?: WMTSTileMatrixLimits[];
+};
+
+/** Inclusive row and column bounds for one layer's tile matrix. */
+export type WMTSTileMatrixLimits = {
+  /** Referenced tile matrix identifier. */
+  tileMatrix: string;
+  /** Minimum available row, inclusive. */
+  minimumTileRow: number;
+  /** Maximum available row, inclusive. */
+  maximumTileRow: number;
+  /** Minimum available column, inclusive. */
+  minimumTileColumn: number;
+  /** Maximum available column, inclusive. */
+  maximumTileColumn: number;
+};
+
+/** An advertised WMTS dimension; values and intervals retain their lexical representation. */
+export type WMTSDimension = {
+  /** Dimension name used in requests and resource templates. */
+  identifier: string;
+  /** Human-readable dimension title, when provided. */
+  title?: string;
+  /** Human-readable dimension description, when provided. */
+  abstract?: string;
+  /** Advertised units of measure. */
+  unitsOfMeasure?: string;
+  /** Display symbol for the dimension's units. */
+  unitSymbol?: string;
+  /** Advertised default; no value is guessed when it is absent. */
+  default?: string;
+  /** Whether the server advertises support for the current keyword. */
+  current?: boolean;
+  /** Advertised values or intervals, without expanding ranges. */
+  values: string[];
 };
 
 /** A WMTS tile matrix set. */
@@ -50,6 +95,8 @@ export function parseWMTSCapabilities(text: string, options?: unknown): WMTSCapa
     xml: {
       ...((options as any)?.xml || {}),
       _parser: 'internal',
+      textNodeName: '#text',
+      _fastXML: {...((options as any)?.xml?._fastXML || {}), parseTagValue: false},
       removeNSPrefix: true,
       uncapitalizeKeys: true
     }
@@ -88,14 +135,68 @@ function normalizeLayer(layer: any): WMTSLayer {
       title: text(style.title),
       isDefault: style.isDefault === true || style.isDefault === 'true'
     })),
-    tileMatrixSetLinks: asArray(layer.tileMatrixSetLink).map(link => ({
-      tileMatrixSet: text(link.tileMatrixSet)
-    })),
+    tileMatrixSetLinks: asArray(layer.tileMatrixSetLink).map(normalizeTileMatrixSetLink),
+    dimensions: asArray(layer.dimension).map(normalizeDimension),
     resourceURLs: resourceURLs.filter(resourceURL => resourceURL.template),
     bounds:
       lowerCorner.length >= 2 && upperCorner.length >= 2
         ? [lowerCorner[0], lowerCorner[1], upperCorner[0], upperCorner[1]]
         : undefined
+  };
+}
+
+/** Normalizes a link, distinguishing omitted limits from an explicitly empty limits list. */
+function normalizeTileMatrixSetLink(link: any): WMTSTileMatrixSetLink {
+  const limits =
+    link.tileMatrixSetLimits === undefined
+      ? undefined
+      : (asArray(link.tileMatrixSetLimits?.tileMatrixLimits).map(limit => ({
+          tileMatrix: text(limit.tileMatrix),
+          minimumTileRow: number(limit.minTileRow),
+          maximumTileRow: number(limit.maxTileRow),
+          minimumTileColumn: number(limit.minTileCol),
+          maximumTileColumn: number(limit.maxTileCol)
+        })) as WMTSTileMatrixLimits[]);
+  if (limits) validateTileMatrixLimits(limits);
+  return {tileMatrixSet: text(link.tileMatrixSet), limits};
+}
+
+/** Rejects malformed or ambiguous bounds for parsed and application-supplied capabilities. */
+export function validateTileMatrixLimits(limits: WMTSTileMatrixLimits[]): void {
+  const identifiers = new Set<string>();
+  for (const limit of limits) {
+    if (!limit.tileMatrix || identifiers.has(limit.tileMatrix))
+      throw new Error('WMTS tile matrix limits require unique matrix identifiers');
+    identifiers.add(limit.tileMatrix);
+    for (const value of [
+      limit.minimumTileRow,
+      limit.maximumTileRow,
+      limit.minimumTileColumn,
+      limit.maximumTileColumn
+    ]) {
+      if (!Number.isSafeInteger(value) || value < 0)
+        throw new Error('WMTS tile matrix limits require nonnegative safe integers');
+    }
+    if (
+      limit.minimumTileRow > limit.maximumTileRow ||
+      limit.minimumTileColumn > limit.maximumTileColumn
+    )
+      throw new Error('WMTS tile matrix limits have reversed bounds');
+  }
+}
+
+/** Preserves dimension strings, including zero, leading zeros, intervals and reserved keywords. */
+function normalizeDimension(dimension: any): WMTSDimension {
+  return {
+    identifier: text(dimension.identifier),
+    title: text(dimension.title) || undefined,
+    abstract: text(dimension.abstract) || undefined,
+    unitsOfMeasure: text(dimension.uOM || dimension.uom) || undefined,
+    unitSymbol: text(dimension.unitSymbol) || undefined,
+    default: dimension.default === undefined ? undefined : text(dimension.default),
+    current:
+      dimension.current === undefined ? undefined : ['true', '1'].includes(text(dimension.current)),
+    values: asArray(dimension.value).map(text)
   };
 }
 
