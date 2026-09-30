@@ -74,6 +74,13 @@ its original header, coordinate system, origin, and transform. `encodePointCloud
 one yielded tile. Set `maxDepth` to bound traversal; pass an `AbortSignal` to stop between source
 operations. These helpers do not transform coordinates or package a tileset manifest.
 
+Pass encoder options directly to `encodePointCloudSourceTile`, or select them for each non-empty
+tile with `encodePointCloudSource`'s `getTileEncodingOptions` callback. A declared `rtcCenter` in the
+point-position coordinate frame is subtracted before float32 encoding and stored as PNTS
+`RTC_CENTER`, retaining small offsets in large double-precision coordinates. `batchTableJson`
+supplies properties for existing `BATCH_ID` values. An explicit `constantRGBA` overrides the source
+constant color; the source origin and placement transform remain attached to the encoded tile.
+
 ## V5 browser entrypoint
 
 Import `@loaders.gl/tile-converter/v5/browser` for the portable conversion API,

@@ -6,7 +6,7 @@ import {GL} from '@math.gl/geometry-utils';
 import {getFloat16Value} from '@loaders.gl/schema';
 import {expect, test} from 'vitest';
 import {normalize3DTileColorAttribute} from '../../../../src/lib/parsers/helpers/normalize-3d-tile-colors';
-import {Tiles3DTileContent} from '@loaders.gl/3d-tiles';
+import {Tile3DBatchTable, type Tiles3DTileContent} from '@loaders.gl/3d-tiles';
 const TEST_CASES: {
   tile: Tiles3DTileContent;
   colors;
@@ -59,6 +59,31 @@ test('normalize3DTileColorAttribute', () => {
       testCase.expected
     )
   );
+});
+
+test.each([
+  {colors: null, expected: null},
+  {
+    colors: new Uint8ClampedArray([250, 150, 50]),
+    expected: {
+      type: GL.UNSIGNED_BYTE,
+      size: 3,
+      value: new Uint8ClampedArray([250, 150, 50]),
+      normalized: true
+    }
+  }
+])('normalize3DTileColorAttribute#handles ordinary batch metadata ($colors)', ({
+  colors,
+  expected
+}) => {
+  const tile: Tiles3DTileContent = {
+    shape: 'tile3d',
+    pointCount: 1,
+    batchIds: new Uint16Array([0])
+  };
+  const batchTable = new Tile3DBatchTable({featureId: ['point-0']}, undefined, 1);
+
+  expect(normalize3DTileColorAttribute(tile, colors, batchTable)).toEqual(expected);
 });
 
 test('normalize3DTileColorAttribute#float16', () => {
