@@ -38,10 +38,16 @@ import {
 } from './cluster-index';
 import {getRepresentativePoint, type RepresentativePointStrategy} from './get-representative-point';
 
-/** Complete materialized input; remote viewport subsets must be collected before indexing. */
+/**
+ * Complete materialized input; remote viewport subsets must be collected before indexing.
+ * @experimental
+ */
 export type ClusterSourceData = GeoJSONTable | ArrowTable;
 
-/** Cluster source construction options; inputs must use longitude/latitude. */
+/**
+ * Cluster source construction options; inputs must use longitude/latitude.
+ * @experimental
+ */
 export type ClusterSourceOptions = Omit<ClusterIndexOptions, 'rowIndices' | 'aggregations'> & {
   /** Arrow geometry column; inferred only when exactly one is declared. */
   geometryColumn?: string;
@@ -67,11 +73,14 @@ export type ClusterSourceOptions = Omit<ClusterIndexOptions, 'rowIndices' | 'agg
 };
 
 /**
- * VectorSource adapter for a complete point/geometry table and an immutable ClusterIndex.
+ * Experimental VectorSource adapter for a complete point/geometry table and an immutable
+ * ClusterIndex.
  *
  * Input positions and output are longitude/latitude. Query bounds are geographic, as in
  * VectorSourceLayer. Original geometries stay in data; returned features are representative
  * markers. Reconstruct the source after changing input, radius, filters or aggregation policy.
+ *
+ * @experimental The API may change in future releases.
  */
 export class ClusterSource extends DataSource<ClusterSourceData, {}> implements VectorSource {
   /** Immutable hierarchy exposed for member, expansion and columnar queries. */

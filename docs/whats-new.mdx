@@ -84,9 +84,10 @@ evidence, cancellation, counts, IDs, extents, nonspatial tables, and queryable M
 
 ### Clustering
 
-- Add independent [`ClusterIndex` and `ClusterSource`](/docs/developer-guide/clustering) APIs to
-  `@loaders.gl/geoarrow`, with typed coordinate input, a zoom hierarchy, antimeridian-aware
-  grouping, counts, numeric aggregates, member pagination, and expansion queries.
+- Add an independent [`ClusterIndex`](/docs/developer-guide/clustering) engine and experimental
+  [`ClusterSource`](/docs/developer-guide/clustering) adapter to `@loaders.gl/geoarrow`, with typed
+  coordinate input, a zoom hierarchy, antimeridian-aware grouping, counts, numeric aggregates,
+  member pagination, and expansion queries.
 - Add explicit representative-point policies for non-point geometries and an internal
   `ClusterLayer` integration for markers, counts, and picking.
 

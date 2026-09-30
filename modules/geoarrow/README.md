@@ -36,8 +36,8 @@ and `encodingPreference` together.
 ## Cluster features
 
 `ClusterIndex` builds an immutable zoom hierarchy directly from coordinate buffers.
-`ClusterSource` adapts complete GeoJSON or GeoArrow tables, preserving original rows for
-selection and supporting counts, numeric aggregates, member pagination and expansion zoom.
+The experimental `ClusterSource` adapts complete GeoJSON or GeoArrow tables, preserving original
+rows for selection and supporting counts, numeric aggregates, member pagination and expansion zoom.
 Non-point geometries use an explicit representative-point policy. See the
 [clustering guide](https://loaders.gl/docs/developer-guide/clustering) for API details and examples.
 

@@ -1,5 +1,7 @@
 # Clustering features
 
+> **Experimental:** `ClusterSource` and its construction options may change in future releases.
+
 `@loaders.gl/geoarrow` provides an independent, immutable clustering engine and a `ClusterSource`
 adapter for complete, materialized GeoJSON and GeoArrow tables. It does not depend on Supercluster.
 Clusters retain original row references, counts, numeric aggregates, and a hierarchy for member

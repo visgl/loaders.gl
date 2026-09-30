@@ -1,9 +1,10 @@
 # Interactive clustering
 
-A runnable `ClusterSource` and `ClusterLayer` example with 1,600 deterministic synthetic Bay Area
-sites. It demonstrates pixel-radius controls, count labels, click-to-expand, paginated original
-members, selection, a numeric capacity sum, and polygon-centroid clustering. Selecting a polygon
-member highlights its original footprint. The selected original row survives radius and geometry
+A runnable example of the experimental `ClusterSource` and internal `ClusterLayer`, with 1,600
+deterministic synthetic Bay Area sites. It demonstrates pixel-radius controls, count labels,
+click-to-expand, paginated original members, selection, a numeric capacity sum, and polygon-centroid
+clustering. Selecting a polygon member highlights its original footprint. The selected original row
+survives radius and geometry
 changes; cluster IDs are discarded whenever the index is rebuilt.
 
 From the repository root:
