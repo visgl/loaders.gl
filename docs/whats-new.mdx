@@ -47,6 +47,10 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
 
 ## v5.0 (In Development)
 
+- Query WMTS feature information through advertised REST templates or KVP GET endpoints. Validate
+  tile/pixel coordinates, reuse dimension defaults and coverage limits, decode native JSON or retain
+  response text, forward cancellation, and reject HTTP/OWS errors.
+
 - Apply WMTS layer tile limits and per-level matrix bounds before fetching; unavailable tiles return
   `null`, and `isTileAvailable()` exposes advertised coverage. Preserve dimension metadata and apply
   advertised defaults to REST/KVP requests with caller overrides. Reject invalid indices instead

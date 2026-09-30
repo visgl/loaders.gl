@@ -15,6 +15,7 @@ import type {
   TileSourceMetadata
 } from '@loaders.gl/loader-utils';
 import {DataSource} from '@loaders.gl/loader-utils';
+import {parseXMLTextSync} from './lib/parsers/xml/parse-xml-text';
 import type {
   WMTSCapabilities,
   WMTSTileMatrixSet,
@@ -46,7 +47,13 @@ export type WMTSSourceLoaderOptions = DataSourceOptions &
       format?: string;
       /** REST template containing `{TileMatrix}`, `{TileRow}`, and `{TileCol}`. */
       urlTemplate?: string;
-      /** Dimension overrides and extra parameters. Generated GetTile fields take precedence. */
+      /** Feature-info MIME type; defaults to the first advertised format. */
+      infoFormat?: string;
+      /** Explicit KVP feature-info endpoint, overriding advertised operation metadata. */
+      featureInfoUrl?: string;
+      /** REST feature-info template containing tile coordinates and pixel placeholders {I}/{J}. */
+      featureInfoUrlTemplate?: string;
+      /** Dimension overrides and extra parameters. Generated request fields take precedence. */
       parameters?: Record<string, string>;
       /** Capabilities document or URL used to derive layer and tile matrix options. */
       capabilities?: WMTSCapabilities;
@@ -57,7 +64,17 @@ export type WMTSSourceLoaderOptions = DataSourceOptions &
     };
   };
 
-/** A WMTS source that fetches image tiles through REST or KVP requests. */
+/** Tile and zero-based pixel coordinates for a WMTS GetFeatureInfo query. */
+export type WMTSGetFeatureInfoParameters = GetTileParameters & {
+  /** Pixel column within the tile (OGC I), independent of screen coordinates. */
+  pixelColumn: number;
+  /** Pixel row within the tile (OGC J), independent of screen coordinates. */
+  pixelRow: number;
+  /** Per-request feature-info MIME type, overriding the configured or advertised default. */
+  infoFormat?: string;
+};
+
+/** A WMTS source that fetches image tiles and feature information through REST or KVP requests. */
 export class WMTSImageTileSource
   extends DataSource<string, WMTSSourceLoaderOptions>
   implements TileSource
@@ -170,6 +187,112 @@ export class WMTSImageTileSource
   getTileURL(parameters: GetTileParameters): string {
     if (!this.isTileAvailable(parameters))
       throw new RangeError('WMTS tile is outside advertised coverage');
+    return this._getRequestURL(parameters);
+  }
+
+  /**
+   * Builds a feature-info URL for an available tile and valid pixel. Load URL-based metadata first.
+   * Advertised per-level tile dimensions bound I/J; unknown dimensions are not guessed.
+   */
+  getFeatureInfoURL(parameters: WMTSGetFeatureInfoParameters): string {
+    validateFeatureInfoIndices(parameters);
+    if (!this.isTileAvailable(parameters))
+      throw new RangeError('WMTS tile is outside advertised coverage');
+    const layer = this._getLayer(
+      this._capabilities,
+      parameters.layers ? String(parameters.layers) : undefined
+    );
+    const matrix = getTileMatrix(this._getTileMatrixSet(layer), parameters.z);
+    for (const [value, size] of [
+      [parameters.pixelColumn, matrix?.tileWidth],
+      [parameters.pixelRow, matrix?.tileHeight]
+    ]) {
+      if (size !== undefined) {
+        if (!Number.isSafeInteger(size) || size < 1)
+          throw new Error('WMTS tile dimensions require positive safe integers');
+        if (value! >= size)
+          throw new RangeError('WMTS feature-info pixel is outside tile dimensions');
+      }
+    }
+    return this._getRequestURL(parameters, this._getFeatureInfoFormat(parameters, layer));
+  }
+
+  /** Returns native JSON for JSON formats, or unchanged response text for other formats. */
+  async getFeatureInfo(
+    parameters: WMTSGetFeatureInfoParameters,
+    signal?: AbortSignal
+  ): Promise<unknown | null> {
+    const result = await this._getFeatureInfoResponse(parameters, signal);
+    if (result === null) return null;
+    const format = result.infoFormat.split(';')[0].trim().toLowerCase();
+    return format === 'application/json' || format.endsWith('+json')
+      ? JSON.parse(result.text)
+      : result.text;
+  }
+
+  /** Fetches feature-info text, forwarding cancellation; unavailable tiles return null without a query. */
+  async getFeatureInfoText(
+    parameters: WMTSGetFeatureInfoParameters,
+    signal?: AbortSignal
+  ): Promise<string | null> {
+    return (await this._getFeatureInfoResponse(parameters, signal))?.text ?? null;
+  }
+
+  /** Captures the negotiated format before fetching so later source-option updates cannot change decoding. */
+  private async _getFeatureInfoResponse(
+    parameters: WMTSGetFeatureInfoParameters,
+    signal?: AbortSignal
+  ): Promise<{
+    /** Format sent with this request. */
+    infoFormat: string;
+    /** Unmodified service response text. */
+    text: string;
+  } | null> {
+    validateFeatureInfoIndices(parameters);
+    await this._loadCapabilities();
+    if (!this.isTileAvailable(parameters)) return null;
+    const url = this.getFeatureInfoURL(parameters);
+    const layer = this._getLayer(
+      this._capabilities,
+      parameters.layers ? String(parameters.layers) : undefined
+    );
+    const infoFormat = this._getFeatureInfoFormat(parameters, layer);
+    const requestSignal = signal || parameters.signal;
+    const response = await this.fetch(url, requestSignal ? {signal: requestSignal} : undefined);
+    const text = await response.text();
+    checkFeatureInfoException(text);
+    if (!response.ok)
+      throw new Error(
+        'WMTS feature-info request failed: ' + response.status + ' ' + response.statusText
+      );
+    return {text, infoFormat};
+  }
+
+  /** Selects an explicit or advertised format without silently substituting an unsupported format. */
+  private _getFeatureInfoFormat(
+    parameters: WMTSGetFeatureInfoParameters,
+    layer: WMTSLayer | undefined
+  ): string {
+    const format =
+      parameters.infoFormat ||
+      this.options.wmts?.infoFormat ||
+      layer?.infoFormats?.[0] ||
+      layer?.resourceURLs.find(resource => resource.resourceType === 'FeatureInfo')?.format;
+    if (!format)
+      throw new Error(
+        'Missing WMTS feature-info format; configure or load queryable layer metadata'
+      );
+    if (layer?.infoFormats?.length && !layer.infoFormats.includes(format))
+      throw new Error('Unsupported WMTS feature-info format: ' + format);
+    return format;
+  }
+
+  /** Shares tile identity, dimensions, and authoritative request parameters between both operations. */
+  private _getRequestURL(
+    parameters: GetTileParameters | WMTSGetFeatureInfoParameters,
+    infoFormat?: string
+  ): string {
+    const featureInfo = infoFormat ? (parameters as WMTSGetFeatureInfoParameters) : undefined;
     const wmts = this.options.wmts || {};
     const layerName = parameters.layers ? String(parameters.layers) : wmts.layer;
     const layer = this._getLayer(this._capabilities, layerName);
@@ -181,10 +304,13 @@ export class WMTSImageTileSource
       'default';
     const resourceURL = layer?.resourceURLs.find(
       resource =>
-        (!resource.resourceType || resource.resourceType === 'tile') &&
-        (!resource.format || resource.format === format)
+        (featureInfo
+          ? resource.resourceType === 'FeatureInfo'
+          : !resource.resourceType || resource.resourceType === 'tile') &&
+        (!resource.format || resource.format === (infoFormat || format))
     );
-    const urlTemplate = wmts.urlTemplate || resourceURL?.template;
+    const urlTemplate =
+      (featureInfo ? wmts.featureInfoUrlTemplate : wmts.urlTemplate) || resourceURL?.template;
     const tileMatrixSet = this._getTileMatrixSet(layer);
     const tileMatrixIdentifier =
       getTileMatrix(tileMatrixSet, parameters.z)?.identifier || String(parameters.z);
@@ -193,22 +319,38 @@ export class WMTSImageTileSource
       const replacements = mergeRequestParameters(dimensionParameters, {
         Layer: layerName || layer?.identifier || '',
         Style: style,
+        Format: format,
+        ...(featureInfo
+          ? {
+              InfoFormat: infoFormat!,
+              I: String(featureInfo.pixelColumn),
+              J: String(featureInfo.pixelRow)
+            }
+          : {}),
         TileMatrix: tileMatrixIdentifier,
         TileRow: String(parameters.y),
         TileCol: String(parameters.x),
         TileMatrixSet: tileMatrixSet?.identifier || wmts.tileMatrixSet || ''
       });
-      return urlTemplate.replace(/\{([^{}]+)\}/g, (placeholder, key: string) => {
+      const expandedURL = urlTemplate.replace(/\{([^{}]+)\}/g, (placeholder, key: string) => {
         const value = getRequestParameter(replacements, key);
         if (value === undefined) throw new Error(`Missing WMTS template parameter: ${key}`);
         return encodeURIComponent(value);
       });
+      return featureInfo ? new URL(expandedURL, this.url).toString() : expandedURL;
     }
-    const url = new URL(this.url);
+    if (featureInfo && !wmts.featureInfoUrl && this._capabilities?.featureInfoUrl === null)
+      throw new Error(
+        'WMTS metadata advertises no KVP feature-info endpoint; configure a query URL or REST template'
+      );
+    const endpoint = featureInfo
+      ? wmts.featureInfoUrl || this._capabilities?.featureInfoUrl || this.url
+      : this.url;
+    const url = new URL(endpoint, this.url);
     const searchParameters = new URLSearchParams(
       mergeRequestParameters(dimensionParameters, {
         SERVICE: 'WMTS',
-        REQUEST: 'GetTile',
+        REQUEST: featureInfo ? 'GetFeatureInfo' : 'GetTile',
         VERSION: '1.0.0',
         LAYER: layerName || layer?.identifier || '',
         STYLE: style,
@@ -216,7 +358,14 @@ export class WMTSImageTileSource
         TILEMATRIX: tileMatrixIdentifier,
         TILEROW: String(parameters.y),
         TILECOL: String(parameters.x),
-        FORMAT: format
+        FORMAT: format,
+        ...(featureInfo
+          ? {
+              INFOFORMAT: infoFormat!,
+              I: String(featureInfo.pixelColumn),
+              J: String(featureInfo.pixelRow)
+            }
+          : {})
       })
     );
     for (const [key, value] of searchParameters) {
@@ -377,7 +526,49 @@ function validateTileIndices(parameters: GetTileParameters): void {
   }
 }
 
-/** Merges case-insensitive KVP names so generated tile fields cannot be overridden by extras. */
+/** Rejects invalid tile/pixel coordinates before capabilities or feature-info fetches. */
+function validateFeatureInfoIndices(parameters: WMTSGetFeatureInfoParameters): void {
+  validateTileIndices(parameters);
+  for (const value of [parameters.pixelColumn, parameters.pixelRow]) {
+    if (!Number.isSafeInteger(value) || value < 0)
+      throw new RangeError('WMTS feature-info pixels require nonnegative safe integers');
+  }
+}
+
+/** Recognizes OWS exception reports even when the service responds with HTTP 200. */
+function checkFeatureInfoException(text: string): void {
+  const exceptionRoot =
+    /^\s*(?:(?:<\?[\s\S]*?\?>|<!--[\s\S]*?-->)\s*)*<(?:[^\s<>:]+:)?ExceptionReport(?:\s|\/?>)/;
+  if (!exceptionRoot.test(text)) return;
+  const parsed = parseXMLTextSync(text, {
+    xml: {
+      _parser: 'internal',
+      removeNSPrefix: true,
+      uncapitalizeKeys: true,
+      textNodeName: '#text',
+      _fastXML: {parseTagValue: false}
+    }
+  });
+  const report = parsed.exceptionReport;
+  if (report === undefined) return;
+  const exceptions = Array.isArray(report?.exception) ? report.exception : [report?.exception];
+  const messages = exceptions.map((exception: any) => {
+    const values = Array.isArray(exception?.exceptionText)
+      ? exception.exceptionText
+      : [exception?.exceptionText];
+    return (
+      values
+        .map((value: any) => (typeof value === 'object' ? value?.['#text'] : value))
+        .filter(Boolean)
+        .join('; ') ||
+      exception?.exceptionCode ||
+      'server error'
+    );
+  });
+  throw new Error('WMTS feature-info: ' + messages.join('; '));
+}
+
+/** Merges case-insensitive KVP names so generated request fields cannot be overridden by extras. */
 function mergeRequestParameters(...groups: Record<string, string>[]): Record<string, string> {
   const result: Record<string, string> = {};
   for (const group of groups) {

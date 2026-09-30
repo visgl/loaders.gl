@@ -8,6 +8,8 @@ import {parseXMLTextSync} from '../xml/parse-xml-text';
 export type WMTSCapabilities = {
   serviceIdentification?: {title?: string; abstract?: string; serviceTypeVersion?: string};
   operationsMetadata?: Record<string, unknown>;
+  /** Advertised KVP GET endpoint; null means metadata advertises no supported KVP query binding. */
+  featureInfoUrl?: string | null;
   contents: {layers: WMTSLayer[]; tileMatrixSets: WMTSTileMatrixSet[]};
 };
 
@@ -17,6 +19,8 @@ export type WMTSLayer = {
   title?: string;
   abstract?: string;
   formats: string[];
+  /** Advertised feature-info MIME types; omitted for legacy supplied capabilities. */
+  infoFormats?: string[];
   styles: WMTSStyle[];
   /** Matrix sets and optional layer-specific tile coverage. */
   tileMatrixSetLinks: WMTSTileMatrixSetLink[];
@@ -113,8 +117,34 @@ export function parseWMTSCapabilities(text: string, options?: unknown): WMTSCapa
   return {
     serviceIdentification: normalizeServiceIdentification(capabilities.serviceIdentification),
     operationsMetadata: capabilities.operationsMetadata,
+    featureInfoUrl: getFeatureInfoUrl(capabilities.operationsMetadata),
     contents: {layers, tileMatrixSets}
   };
+}
+
+/** Extracts an advertised KVP GET endpoint, excluding REST-only operation bindings. */
+function getFeatureInfoUrl(operationsMetadata: any): string | null | undefined {
+  if (!operationsMetadata) return undefined;
+  const operation = asArray(operationsMetadata?.operation).find(
+    candidate => candidate.name === 'GetFeatureInfo'
+  );
+  for (const protocol of asArray(operation?.dCP)) {
+    for (const endpoint of asArray(protocol.hTTP?.get)) {
+      const encoding = [
+        ...asArray(endpoint.constraint),
+        ...asArray(operation.constraint),
+        ...asArray(operationsMetadata.constraint)
+      ].find(candidate => candidate.name === 'GetEncoding');
+      if (
+        !encoding ||
+        encoding.anyValue !== undefined ||
+        asArray(encoding.allowedValues?.value).some(value => text(value) === 'KVP')
+      ) {
+        if (endpoint.href) return endpoint.href;
+      }
+    }
+  }
+  return null;
 }
 
 function normalizeLayer(layer: any): WMTSLayer {
@@ -130,6 +160,7 @@ function normalizeLayer(layer: any): WMTSLayer {
     title: text(layer.title),
     abstract: text(layer.abstract),
     formats: asArray(layer.format).map(text).filter(Boolean),
+    infoFormats: asArray(layer.infoFormat).map(text).filter(Boolean),
     styles: asArray(layer.style).map(style => ({
       identifier: text(style.identifier),
       title: text(style.title),
