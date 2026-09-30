@@ -81,6 +81,12 @@ point-position coordinate frame is subtracted before float32 encoding and stored
 supplies properties for existing `BATCH_ID` values. An explicit `constantRGBA` overrides the source
 constant color; the source origin and placement transform remain attached to the encoded tile.
 
+The PNTS encoder accepts `POSITION`, `NORMAL`, `BATCH_ID`, and one color attribute (`COLOR_0` or
+`COLOR`). Other attributes, including classification, intensity, and an additional color column,
+raise `POINT_CLOUD_ATTRIBUTE_UNSUPPORTED` rather than silently disappearing. Applications must
+explicitly map unsupported fields to supported batch-table properties or remove them before
+encoding; this initial encoder does not automatically map point attributes.
+
 `convertPointCloudSource` connects the same traversal and encoder to a
 `TileConversionSink<EncodedPointCloudSourceTile>`. Writes are awaited before reading the next tile;
 the sink is finalized on success and aborted on failures or cancellation. Set
