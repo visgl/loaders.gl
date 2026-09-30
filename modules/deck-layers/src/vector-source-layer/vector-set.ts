@@ -295,6 +295,7 @@ export class VectorSet {
         [bounds[0], bounds[1]],
         [bounds[2], bounds[3]]
       ],
+      zoom: viewport.zoom,
       crs: this.crs,
       requestCrs: this.requestCrs,
       format: this.format
@@ -386,7 +387,7 @@ function getRequestKey(parameters: GetFeaturesParameters): string {
   const requestCrs = parameters.requestCrs || '';
   const format = parameters.format || '';
   const boundingBox = parameters.boundingBox.flat().join(',');
-  return `${layers}|${crs}|${requestCrs}|${format}|${boundingBox}`;
+  return `${layers}|${crs}|${requestCrs}|${format}|${boundingBox}|${parameters.zoom ?? ''}`;
 }
 
 function areLayerSelectionsEqual(left: string | string[], right: string | string[]): boolean {

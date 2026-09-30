@@ -745,6 +745,7 @@
           "developer-guide/using-loaders",
           "developer-guide/using-writers",
           "developer-guide/using-sources",
+          "developer-guide/clustering",
           "developer-guide/using-range-requests",
           "developer-guide/loader-categories",
           "developer-guide/using-unbundled-loaders",

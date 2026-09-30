@@ -64,6 +64,14 @@ evidence, cancellation, counts, IDs, extents, nonspatial tables, and queryable M
 `getFeatures()` rejects incomplete queries instead of silently returning a truncated page. See the
 [feature guide](/docs/developer-guide/arcgis/feature-layers) and embedded progressive example.
 
+### Clustering
+
+- Add independent [`ClusterIndex` and `ClusterSource`](/docs/developer-guide/clustering) APIs to
+  `@loaders.gl/geoarrow`, with typed coordinate input, a zoom hierarchy, antimeridian-aware
+  grouping, counts, numeric aggregates, member pagination, and expansion queries.
+- Add explicit representative-point policies for non-point geometries and an internal
+  `ClusterLayer` integration for markers, counts, and picking.
+
 ### 3D Tiles
 
 - The website 3D Tiles example now preserves the tileset center's elevation when initializing
