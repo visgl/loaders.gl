@@ -187,3 +187,6 @@ export {
   convertFeaturesToGeoArrowTable
 } from './deprecated';
 export type {GeoArrowConvertFromEncoding} from './convert-table-to-geoarrow';
+
+export {GeoArrowSpatialIndex} from './geoarrow-spatial-index';
+export type {GeoArrowFeatureId, GeoArrowNearestFeature} from './geoarrow-spatial-index';

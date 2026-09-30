@@ -179,3 +179,10 @@ capabilities parser.
 `@loaders.gl/wms` uses `@loaders.gl/xml` for XML parsing. Some test fixtures originated from
 OpenLayers and retain their licenses in the test data; no OpenLayers runtime code is included in the
 published module.
+
+## Spatial queries beyond picking
+
+Use [capability-derived WMTS configuration](/docs/modules/wms/formats/wmts#configure-from-capabilities)
+for advertised tile styles, formats, matrix sets, and grid resolutions. The
+[spatial-query guide](/docs/developer-guide/spatial-queries) covers extent-based WFS loading and
+local GeoArrow selection and snapping, including offscreen data.

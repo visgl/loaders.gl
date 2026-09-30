@@ -118,3 +118,29 @@ test('OGCAPITilesSource#getTileURL expands OGC templates', () => {
   });
   expect(source.getTileURL({z: 3, x: 4, y: 5})).toBe(`${OGC_API_URL}/tiles/3/5/4.png`);
 });
+
+test('OGC API Features forwards cancellation and preserves paging completion metadata', async () => {
+  const source = OGCAPIFeaturesSourceLoader.createDataSource(OGC_API_URL, {});
+  const controller = new AbortController();
+  source.fetch = async (_url, options) => {
+    expect(options?.signal).toBe(controller.signal);
+    return new Response(
+      JSON.stringify({
+        type: 'FeatureCollection',
+        features: [],
+        numberMatched: 0,
+        links: [{rel: 'self', href: 'items'}]
+      })
+    );
+  };
+  const table = await source.getFeatures({
+    layers: 'roads',
+    boundingBox: [
+      [0, 0],
+      [1, 1]
+    ],
+    format: 'geojson',
+    signal: controller.signal
+  });
+  expect(table).toMatchObject({numberMatched: 0, links: [{rel: 'self', href: 'items'}]});
+});

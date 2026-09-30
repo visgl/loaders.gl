@@ -39,6 +39,14 @@ export type GMLFeature = {
 export type GMLFeatureCollection = {
   type: 'FeatureCollection';
   features: GMLFeature[];
+  /** Total WFS 2.0 matches; unknown remains explicit. */
+  numberMatched?: number | 'unknown';
+  /** Number of members in this response, when advertised. */
+  numberReturned?: number;
+  /** WFS continuation link, resolved relative to the response URL by the source. */
+  next?: string;
+  /** Previous WFS page, when advertised. */
+  previous?: string;
 };
 
 function noTransform(...coords) {
@@ -93,13 +101,28 @@ export function parseGMLFeatureCollection(
   options: ParseGMLOptions = {}
 ): GMLFeatureCollection | null {
   const featureMembers = findFeatureMembers(inputXML);
-  if (featureMembers.length === 0) {
+  const collectionEntry = Object.entries(inputXML || {}).find(
+    ([key]) => stripNamespace(key) === 'FeatureCollection'
+  );
+  const collection = collectionEntry?.[1] as {attributes?: Record<string, string | number>} | undefined;
+  if (featureMembers.length === 0 && !collectionEntry) {
     return null;
   }
-  return {
+  const result: GMLFeatureCollection = {
     type: 'FeatureCollection',
     features: featureMembers.map(featureMember => parseGMLFeature(featureMember, options))
   };
+  for (const [name, value] of Object.entries(collection?.attributes || collection || {})) {
+    const key = stripNamespace(name);
+    if (key === 'numberMatched' && value === 'unknown') result.numberMatched = 'unknown';
+    else if (key === 'numberMatched' || key === 'numberReturned') {
+      const count = Number(value);
+      if (!String(value).trim() || !Number.isSafeInteger(count) || count < 0)
+        throw new Error(`Invalid WFS ${key} count`);
+      result[key] = count;
+    } else if (key === 'next' || key === 'previous') result[key] = String(value);
+  }
+  return result;
 }
 
 /** Parses one GML feature member into a GeoJSON feature. */
@@ -602,7 +625,7 @@ export function parseMultiSurface(
 function findFeatureMembers(root: any): any[] {
   if (!root || typeof root !== 'object') return [];
   for (const [key, value] of Object.entries(root)) {
-    if (stripNamespace(key) === 'featureMember') {
+    if (stripNamespace(key) === 'featureMember' || stripNamespace(key) === 'member') {
       return Array.isArray(value) ? value : [value];
     }
     if (stripNamespace(key) === 'featureMembers') {

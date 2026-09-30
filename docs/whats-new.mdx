@@ -47,6 +47,24 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
 
 ## v5.0 (In Development)
 
+- Add opt-in bounded pagination to WFS and OGC API Features sources. `getFeaturesInPages()` exposes
+  progressive GeoJSON pages; configured `getFeatures()` collects pages before Arrow/binary conversion.
+  Follow service next links, support WFS 2.0 numeric-count offsets, preserve GML paging metadata,
+  and reject loops, inconsistent counts, cancellation, and exhausted limits. Collected numeric
+  totals enable verified `ManagedVectorSource` extent reuse; unknown totals stay uncertified.
+
+- Add exact coordinate and rectangle intersection to `GeoArrowSpatialIndex`, including polygon
+  holes and boundaries. Add `ManagedVectorSource` for completeness-aware extent reuse, shared
+  cancelable requests, stable-ID deduplication, invalidation, and bounded retention. Detailed
+  WFS, WMTS, OGC API Features, and GeoArrow support tables identify implemented and missing features.
+
+- Improve WMTS capability-derived formats, styles, projection selection, and tile-grid metadata,
+  and normalize WFS feature-type discovery and extent requests. Add `GeoArrowSpatialIndex` for
+  local feature-ID lookup, extent selection, and nearest-geometry snapping, including offscreen
+  loaded data. See [spatial queries beyond picking](/docs/developer-guide/spatial-queries).
+- Feature table scan views expose `scan()` alongside `query()` and `read()`, with WFS and OGC API
+  Features examples and correct request-bounds CRS metadata.
+
 - [Declarative authentication](/docs/developer-guide/authentication#declarative-credentials)
   resolves JSON credentials through application- or loader-supplied classes. Generic request
   callbacks support per-tile signing and URL rewriting without adding S3/AWS dependencies.

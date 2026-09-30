@@ -70,9 +70,19 @@ export function normalizeWFSCapabilities(
     type: 'wfs',
     name: capabilities.serviceIdentification?.serviceType || '',
     title: capabilities.serviceIdentification?.title,
-    crs: [],
-    formats: unique(layers.flatMap(layer => layer.formats || [])),
-    layers: layers.map(layer => ({name: layer.identifier, title: layer.title})),
+    crs: unique((capabilities.featureTypes || []).flatMap(featureType => featureType.crs)),
+    formats: unique(
+      capabilities.featureTypes
+        ? capabilities.featureTypes.flatMap(featureType => featureType.formats)
+        : layers.flatMap(layer => layer.formats || [])
+    ),
+    layers: capabilities.featureTypes
+      ? capabilities.featureTypes.map(featureType => ({
+          name: featureType.name,
+          title: featureType.title,
+          crs: featureType.crs
+        }))
+      : layers.map(layer => ({name: layer.identifier, title: layer.title})),
     operations: Object.keys(capabilities.operationsMetadata || {}),
     formatSpecificMetadata: capabilities as unknown as Record<string, unknown>
   };

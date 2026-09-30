@@ -21,7 +21,12 @@ import type {
   WMTSLayer
 } from './lib/parsers/wmts/parse-wmts-capabilities';
 import {parseWMTSCapabilities} from './lib/parsers/wmts/parse-wmts-capabilities';
-import {selectServiceCRS, type ServiceCRS} from './crs-utils';
+import {
+  areServiceCRSEquivalent,
+  getServiceCRSAxisOrder,
+  normalizeServiceCRS,
+  type ServiceCRS
+} from './crs-utils';
 
 /** Options for a WMTS tile source. */
 export type WMTSSourceLoaderOptions = DataSourceOptions &
@@ -55,12 +60,15 @@ export class WMTSImageTileSource
   /** MIME type rendered by the generic deck.gl tile adapter. */
   readonly mimeType = 'image/png';
 
+  /** In-flight or successful capability request. */
   private _capabilitiesPromise: Promise<WMTSCapabilities | null> | null = null;
+  /** Parsed capabilities used by synchronous URL generation. */
   private _capabilities: WMTSCapabilities | null = null;
 
   /** Creates a WMTS source. */
   constructor(url: string, options: WMTSSourceLoaderOptions = {}, coreApi?: CoreAPI) {
     super(url, options, WMTSSourceLoader.defaultOptions, coreApi);
+    this._capabilities = options.wmts?.capabilities || null;
     this.getTileData = this.getTileData.bind(this);
   }
 
@@ -88,7 +96,11 @@ export class WMTSImageTileSource
   /** Fetches and decodes one WMTS image tile. */
   async getTile(parameters: GetTileParameters, signal?: AbortSignal): Promise<ImageType | null> {
     await this._loadCapabilities();
-    const response = await this.fetch(this.getTileURL(parameters), signal ? {signal} : undefined);
+    const requestSignal = signal || parameters.signal;
+    const response = await this.fetch(
+      this.getTileURL(parameters),
+      requestSignal ? {signal: requestSignal} : undefined
+    );
     if (!response.ok) {
       throw new Error(`WMTS tile request failed: ${response.status} ${response.statusText}`);
     }
@@ -107,40 +119,61 @@ export class WMTSImageTileSource
   /** Builds a REST-template or KVP WMTS GetTile URL. */
   getTileURL(parameters: GetTileParameters): string {
     const wmts = this.options.wmts || {};
-    const layer = this._getLayer(this._capabilities);
-    const resourceURL = layer?.resourceURLs.find(resource =>
-      resource.format ? resource.format === (parameters.format || wmts.format) : true
+    const layerName = parameters.layers ? String(parameters.layers) : wmts.layer;
+    const layer = this._getLayer(this._capabilities, layerName);
+    const format = parameters.format || wmts.format || layer?.formats[0] || 'image/png';
+    const style =
+      wmts.style ||
+      layer?.styles.find(candidate => candidate.isDefault)?.identifier ||
+      layer?.styles[0]?.identifier ||
+      'default';
+    const resourceURL = layer?.resourceURLs.find(
+      resource =>
+        (!resource.resourceType || resource.resourceType === 'tile') &&
+        (!resource.format || resource.format === format)
     );
     const urlTemplate = wmts.urlTemplate || resourceURL?.template;
     const tileMatrixSet = this._getTileMatrixSet(layer);
     const tileMatrixIdentifier = getTileMatrixIdentifier(tileMatrixSet, parameters.z);
     if (urlTemplate) {
-      return urlTemplate
-        .replaceAll('{TileMatrix}', tileMatrixIdentifier)
-        .replaceAll('{TileRow}', String(parameters.y))
-        .replaceAll('{TileCol}', String(parameters.x))
-        .replaceAll('{TileMatrixSet}', tileMatrixSet?.identifier || wmts.tileMatrixSet || '');
+      const replacements: Record<string, string> = {
+        ...wmts.parameters,
+        Layer: layerName || layer?.identifier || '',
+        Style: style,
+        TileMatrix: tileMatrixIdentifier,
+        TileRow: String(parameters.y),
+        TileCol: String(parameters.x),
+        TileMatrixSet: tileMatrixSet?.identifier || wmts.tileMatrixSet || ''
+      };
+      return urlTemplate.replace(/\{([^{}]+)\}/g, (placeholder, key: string) => {
+        if (!(key in replacements)) throw new Error(`Missing WMTS template parameter: ${key}`);
+        return encodeURIComponent(replacements[key]);
+      });
     }
     const url = new URL(this.url);
     const searchParameters = new URLSearchParams({
       SERVICE: 'WMTS',
       REQUEST: 'GetTile',
       VERSION: '1.0.0',
-      LAYER: parameters.layers ? String(parameters.layers) : wmts.layer || layer?.identifier || '',
-      STYLE: wmts.style || 'default',
+      LAYER: layerName || layer?.identifier || '',
+      STYLE: style,
       TILEMATRIXSET: tileMatrixSet?.identifier || wmts.tileMatrixSet || '',
       TILEMATRIX: tileMatrixIdentifier,
       TILEROW: String(parameters.y),
       TILECOL: String(parameters.x),
-      FORMAT: parameters.format || wmts.format || 'image/png',
+      FORMAT: format,
       ...(wmts.parameters || {})
     });
     for (const [key, value] of searchParameters) {
+      for (const existingKey of [...url.searchParams.keys()]) {
+        if (existingKey.toUpperCase() === key.toUpperCase()) url.searchParams.delete(existingKey);
+      }
       url.searchParams.set(key, value);
     }
     return url.toString();
   }
 
+  /** Loads and caches capabilities; failed requests can be retried. */
   private async _loadCapabilities(): Promise<WMTSCapabilities | null> {
     if (this._capabilitiesPromise) return this._capabilitiesPromise;
     const configuredCapabilities = this.options.wmts?.capabilities;
@@ -154,15 +187,25 @@ export class WMTSImageTileSource
             return parseWMTSCapabilities(await response.text());
           })
         : Promise.resolve(null);
-    this._capabilities = await this._capabilitiesPromise;
-    return this._capabilities;
+    try {
+      this._capabilities = await this._capabilitiesPromise;
+      return this._capabilities;
+    } catch (error) {
+      this._capabilitiesPromise = null;
+      throw error;
+    }
   }
 
-  private _getLayer(capabilities: WMTSCapabilities | null): WMTSLayer | undefined {
-    const layerName = this.options.wmts?.layer;
-    return capabilities?.contents.layers.find(
-      layer => !layerName || layer.identifier === layerName
+  /** Resolves the requested layer and rejects unknown identifiers. */
+  private _getLayer(
+    capabilities: WMTSCapabilities | null,
+    layerName: string | undefined = this.options.wmts?.layer
+  ): WMTSLayer | undefined {
+    const layer = capabilities?.contents.layers.find(
+      candidate => !layerName || candidate.identifier === layerName
     );
+    if (capabilities && layerName && !layer) throw new Error(`Unknown WMTS layer: ${layerName}`);
+    return layer;
   }
 
   /** Selects a linked tile matrix set using an explicit identifier or compatible CRS. */
@@ -176,20 +219,26 @@ export class WMTSImageTileSource
       ) || [];
     const requestedCRS = wmts.crs;
     if (wmts.tileMatrixSet) {
-      return capabilities?.contents.tileMatrixSets.find(
-        tileMatrixSet => tileMatrixSet.identifier === wmts.tileMatrixSet
-      );
+      const selected = candidates.find(candidate => candidate.identifier === wmts.tileMatrixSet);
+      if (capabilities && !selected)
+        throw new Error(`WMTS matrix set is not linked to layer: ${wmts.tileMatrixSet}`);
+      if (
+        selected &&
+        requestedCRS !== undefined &&
+        !areServiceCRSEquivalent(requestedCRS, selected.supportedCRS)
+      ) {
+        throw new Error(`WMTS matrix set does not support ${requestedCRS}`);
+      }
+      return selected;
     }
-    if (candidates.length) {
-      const selectedCRS = selectServiceCRS(
-        requestedCRS,
-        candidates.map(tileMatrixSet => tileMatrixSet.supportedCRS || '')
+    if (requestedCRS !== undefined && capabilities) {
+      const selected = candidates.find(candidate =>
+        areServiceCRSEquivalent(requestedCRS, candidate.supportedCRS)
       );
-      return (
-        candidates.find(tileMatrixSet => tileMatrixSet.supportedCRS === selectedCRS) ||
-        candidates[0]
-      );
+      if (!selected) throw new Error(`No linked WMTS matrix set supports ${requestedCRS}`);
+      return selected;
     }
+    if (candidates.length) return candidates[0];
     return undefined;
   }
 }
@@ -203,11 +252,40 @@ function toTileGrid(tileMatrixSet: WMTSTileMatrixSet | undefined): TileGrid | un
     tileSize: firstMatrix?.tileWidth
       ? [firstMatrix.tileWidth, firstMatrix.tileHeight || firstMatrix.tileWidth]
       : undefined,
-    origin: firstMatrix?.topLeftCorner,
+    origin:
+      firstMatrix?.topLeftCorner && getServiceCRSAxisOrder(tileMatrixSet.supportedCRS) === 'yx'
+        ? [firstMatrix.topLeftCorner[1], firstMatrix.topLeftCorner[0]]
+        : firstMatrix?.topLeftCorner,
+    ...getGridResolutions(tileMatrixSet),
     matrixIds: tileMatrixSet.matrices.map(matrix => matrix.identifier),
-    matrixSizes: tileMatrixSet.matrices
-      .filter(matrix => matrix.matrixWidth !== undefined && matrix.matrixHeight !== undefined)
-      .map(matrix => [matrix.matrixWidth!, matrix.matrixHeight!])
+    matrixSizes: tileMatrixSet.matrices.every(
+      matrix => matrix.matrixWidth !== undefined && matrix.matrixHeight !== undefined
+    )
+      ? tileMatrixSet.matrices.map(matrix => [matrix.matrixWidth!, matrix.matrixHeight!])
+      : undefined
+  };
+}
+
+/** Converts OGC scale denominators using a 0.28 mm pixel for known CRS units. */
+function getGridResolutions(tileMatrixSet: WMTSTileMatrixSet): Pick<TileGrid, 'resolutions'> {
+  const crs = normalizeServiceCRS(tileMatrixSet.supportedCRS);
+  const metersPerUnit =
+    crs === 'EPSG:4326' || crs === 'CRS:84'
+      ? (2 * Math.PI * 6378137) / 360
+      : areServiceCRSEquivalent(crs, 'EPSG:3857')
+        ? 1
+        : undefined;
+  if (
+    !metersPerUnit ||
+    !tileMatrixSet.matrices.every(
+      matrix => Number.isFinite(matrix.scaleDenominator) && matrix.scaleDenominator! > 0
+    )
+  )
+    return {};
+  return {
+    resolutions: tileMatrixSet.matrices.map(
+      matrix => (matrix.scaleDenominator! * 0.00028) / metersPerUnit
+    )
   };
 }
 

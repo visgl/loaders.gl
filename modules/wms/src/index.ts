@@ -86,8 +86,10 @@ export {
   selectServiceCRS,
   getServiceCRSAxisOrder
 } from './crs-utils';
+export type {FeaturePaginationOptions} from './feature-pagination';
 export {WFSSourceLoader, WFSVectorSource} from './wfs-source-loader';
-export type {WFSVersion} from './wfs-source-loader';
+export type {WFSVersion, WFSGetFeatureParameters, WFSourceOptions} from './wfs-source-loader';
+export type {WFSFeatureType} from './lib/parsers/wfs/parse-wfs-capabilities';
 export type {
   OGCAPICollection,
   OGCAPILandingPage,
@@ -146,3 +148,6 @@ export {createImageSource} from './lib/deprecated/create-image-source';
 // DEPRECATED EXPORTS
 /** @deprecated Use `WMSSourceLoader`. Kept for deck.gl compatibility. */
 export {WMSSourceLoader as WMSSource} from './wms-source-loader';
+
+export {ManagedVectorSource} from './managed-vector-source';
+export type {ManagedVectorSourceOptions} from './managed-vector-source';

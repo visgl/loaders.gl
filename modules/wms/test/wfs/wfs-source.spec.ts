@@ -21,7 +21,7 @@ test('WFSSourceLoader#getFeaturesURL', () => {
   expect(featuresUrl.searchParams.get('SERVICE')).toBe('WFS');
   expect(featuresUrl.searchParams.get('REQUEST')).toBe('GetFeature');
   expect(featuresUrl.searchParams.get('VERSION')).toBe('2.0.0');
-  expect(featuresUrl.searchParams.get('TYPENAME')).toBe('roads,bridges');
+  expect(featuresUrl.searchParams.get('TYPENAMES')).toBe('roads,bridges');
   expect(featuresUrl.searchParams.get('BBOX')).toBe('2,1,4,3,EPSG:4326');
   expect(featuresUrl.searchParams.get('SRSNAME')).toBe('EPSG:4326');
   expect(featuresUrl.searchParams.get('OUTPUTFORMAT')).toBe('application/json');
@@ -288,7 +288,11 @@ test('WFSSourceLoader exposes schema, metadata, and binary feature output', asyn
   const source = WFSSourceLoader.createDataSource(WFS_URL, {});
   await expect(source.getSchema()).resolves.toEqual({metadata: {}, fields: []});
   source.getCapabilities = async () => ({title: 'WFS service'}) as any;
-  await expect(source.getMetadata()).resolves.toEqual({title: 'WFS service'});
+  await expect(source.getMetadata()).resolves.toMatchObject({
+    name: 'WFS',
+    layers: [],
+    keywords: []
+  });
 
   source.fetch = async () =>
     new Response(
@@ -391,4 +395,115 @@ test('WFSSourceLoader rejects non-feature JSON and service errors', async () => 
   expect(source._parseError(errorBytes.buffer)).toBeInstanceOf(Error);
   source.fetch = async () => response;
   await expect(source._fetchArrayBuffer('https://example.com/error')).rejects.toThrow();
+});
+
+test('WFS extent queries preserve endpoint parameters, defaults, zero offsets and bbox CRS', () => {
+  const source = WFSSourceLoader.createDataSource(`${WFS_URL}?token=a%26b&request=old`, {
+    wfs: {wfsParameters: {version: '1.1.0', crs: 'EPSG:3857'}}
+  });
+  const generic = new URL(
+    source.getFeaturesURL({
+      layers: ['roads'],
+      boundingBox: [
+        [1, 2],
+        [3, 4]
+      ]
+    })
+  );
+  expect(generic.searchParams.get('token')).toBe('a&b');
+  expect(generic.searchParams.get('request')).toBeNull();
+  expect(generic.searchParams.get('REQUEST')).toBe('GetFeature');
+  expect(generic.searchParams.get('TYPENAME')).toBe('roads');
+  expect(generic.searchParams.get('SRSNAME')).toBe('EPSG:3857');
+  expect(generic.searchParams.get('BBOX')).toBe('1,2,3,4,EPSG:3857');
+  const protocol = new URL(
+    source.getFeaturesURL({
+      typeName: 'roads',
+      version: '2.0.0',
+      bbox: [1, 2, 3, 4, 'CRS:84'],
+      srsName: 'EPSG:4326',
+      startIndex: 0
+    })
+  );
+  expect(protocol.searchParams.get('TYPENAMES')).toBe('roads');
+  expect(protocol.searchParams.get('BBOX')).toBe('1,2,3,4,CRS:84');
+  expect(protocol.searchParams.get('STARTINDEX')).toBe('0');
+});
+
+test('WFS extent loading forwards cancellation and rejects failed requests', async () => {
+  const source = WFSSourceLoader.createDataSource(WFS_URL, {});
+  const controller = new AbortController();
+  source.fetch = async (_url, options) => {
+    expect(options?.signal).toBe(controller.signal);
+    return new Response('Unavailable', {status: 503});
+  };
+  await expect(
+    source.getFeatures({
+      layers: ['roads'],
+      boundingBox: [
+        [0, 0],
+        [1, 1]
+      ],
+      signal: controller.signal
+    })
+  ).rejects.toThrow();
+});
+
+test.each([
+  '1.1.0',
+  '2.0.0'
+] as const)('WFS %s discovers feature types, projections and extent metadata', async version => {
+  const source = WFSSourceLoader.createDataSource(WFS_URL, {});
+  const projectionTag = version === '2.0.0' ? 'DefaultCRS' : 'DefaultSRS';
+  source.fetch = async () =>
+    new Response(`<wfs:WFS_Capabilities xmlns:wfs="http://www.opengis.net/wfs" xmlns:ows="http://www.opengis.net/ows">
+    <ows:ServiceIdentification><ows:Title>Road service</ows:Title><ows:ServiceType>WFS</ows:ServiceType></ows:ServiceIdentification>
+    <ows:OperationsMetadata><ows:Operation name="GetFeature"/></ows:OperationsMetadata>
+    <wfs:FeatureTypeList><wfs:FeatureType><wfs:Name>workspace:roads</wfs:Name><wfs:Title>Roads</wfs:Title>
+      <wfs:${projectionTag}>EPSG:3857</wfs:${projectionTag}>
+      <wfs:OutputFormats><wfs:Format>application/json</wfs:Format></wfs:OutputFormats>
+      <ows:WGS84BoundingBox><ows:LowerCorner>-10 35</ows:LowerCorner><ows:UpperCorner>10 55</ows:UpperCorner></ows:WGS84BoundingBox>
+    </wfs:FeatureType></wfs:FeatureTypeList></wfs:WFS_Capabilities>`);
+  const metadata = await source.getMetadata();
+  expect(metadata.title).toBe('Road service');
+  expect(metadata.layers).toEqual([
+    {
+      name: 'workspace:roads',
+      title: 'Roads',
+      crs: ['EPSG:3857'],
+      boundingBox: [
+        [-10, 35],
+        [10, 55]
+      ]
+    }
+  ]);
+  expect(source.capabilities?.featureTypes?.[0].formats).toEqual(['application/json']);
+  expect(source.capabilities?.operationsMetadata).toHaveProperty('GetFeature');
+});
+
+test('WFS GeoJSON preserves count and paging metadata for completeness-aware loading', async () => {
+  const source = WFSSourceLoader.createDataSource(WFS_URL, {});
+  source.fetch = async () =>
+    new Response(
+      JSON.stringify({
+        type: 'FeatureCollection',
+        features: [],
+        numberMatched: 0,
+        numberReturned: 0,
+        links: [{rel: 'self', href: 'wfs'}]
+      })
+    );
+  const table = await source.getFeatures({
+    layers: 'roads',
+    boundingBox: [
+      [0, 0],
+      [1, 1]
+    ],
+    format: 'geojson'
+  });
+  expect(table).toMatchObject({
+    numberMatched: 0,
+    numberReturned: 0,
+    links: [{rel: 'self', href: 'wfs'}]
+  });
 });
