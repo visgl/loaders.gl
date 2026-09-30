@@ -162,6 +162,7 @@
       "@loaders.gl/geopackage/test": [
         "modules/geopackage/test"
       ],
+      "@loaders.gl/geotiff/geotiff-raster-loader": ["modules/geotiff/src/geotiff-raster-loader"],
       "@loaders.gl/geotiff": [
         "modules/geotiff/src"
       ],

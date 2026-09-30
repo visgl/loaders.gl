@@ -17,3 +17,11 @@ export {OMETiffSourceLoader, OMETiffImageSource} from './ometiff-source-loader';
 
 export {loadGeoTiff} from './lib/load-geotiff';
 export {TiffPixelSource} from './lib/tiff-pixel-source';
+
+export {GeoTIFFRasterLoader} from './geotiff-raster-loader-types';
+export type {
+  GeoTIFFRasterData,
+  GeoTIFFRasterImage,
+  GeoTIFFRasterBand,
+  GeoTIFFRasterLoaderOptions
+} from './geotiff-raster-types';

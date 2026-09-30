@@ -85,3 +85,6 @@ The loader returns an object containing:
 
 `GeoTIFFLoader` currently reads only the first image and uses `readRGB()`. It does not provide
 windowed reads, overview selection, or reprojection. Those operations belong to the source API.
+
+For original numeric samples, nodata, and per-band scale/offset metadata, use
+[`GeoTIFFRasterLoader`](/docs/modules/geotiff/api-reference/geotiff-raster-loader).

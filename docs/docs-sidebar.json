@@ -147,6 +147,7 @@
           "modules/parquet/api-reference/geoparquet-loader",
           "modules/geopackage/api-reference/geopackage-loader",
           "modules/geotiff/api-reference/geotiff-loader",
+          "modules/geotiff/api-reference/geotiff-raster-loader",
           "modules/gltf/api-reference/glb-loader",
           "modules/gltf/api-reference/gltf-loader",
           "modules/kml/api-reference/gpx-loader",
