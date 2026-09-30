@@ -64,6 +64,14 @@ const batches = convertFeatureAttributesToArrowBatches(features, {
 fingerprints. Applications provide an atomic manifest store and an idempotent resource sink, keeping
 filesystem and archive choices outside the conversion API.
 
+## V5 point-cloud sources
+
+`traversePointCloudSource` walks an I3S Point Cloud, COPC, or compatible source independently of a
+render camera. It yields each reachable tile's header and decoded Mesh Arrow content in
+depth-first order, retaining source bounds, coordinate-system metadata, and placement information
+for the output encoder. Set `maxDepth` to bound traversal; pass an `AbortSignal` to stop between
+source operations. The helper does not transform coordinates or package a tileset.
+
 ## V5 browser entrypoint
 
 Import `@loaders.gl/tile-converter/v5/browser` for the portable conversion API,

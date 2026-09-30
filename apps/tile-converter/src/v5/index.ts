@@ -27,6 +27,8 @@ export {convertFeatureAttributesToArrowBatches} from './feature-arrow.js';
 export type {FeatureArrowBatchOptions, TileFeatureAttributes} from './feature-arrow.js';
 export {encodePointCloudTile} from './point-cloud.js';
 export type {EncodePointCloudTileOptions} from './point-cloud.js';
+export {traversePointCloudSource} from './point-cloud-source.js';
+export type {PointCloudSourceTile, TraversePointCloudSourceOptions} from './point-cloud-source.js';
 export {createManifestBackedTileConversionSink} from './resource-manifest.js';
 export type {
   ManifestBackedTileConversionSinkOptions,

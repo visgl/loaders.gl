@@ -35,6 +35,8 @@ export type {
 export {createBrowserTilesetConversionSource} from './browser-tileset-source.js';
 export {encodePointCloudTile} from './point-cloud.js';
 export type {EncodePointCloudTileOptions} from './point-cloud.js';
+export {traversePointCloudSource} from './point-cloud-source.js';
+export type {PointCloudSourceTile, TraversePointCloudSourceOptions} from './point-cloud-source.js';
 export type {
   BrowserTilesetConversionInputResource,
   BrowserTilesetConversionInspection,
