@@ -362,19 +362,19 @@ export type Tiles3DTileContent = {
 
   /** For Pointcloud tiles */
   attributes?: {
-    positions: null | number[];
+    positions: null | number[] | TypedArray;
     colors:
       | null
       | number[]
       | {
           type: number;
-          value: TypedArray;
+          value: TypedArray | number[];
           size: number;
           normalized: boolean;
           componentType?: 'float16';
         };
-    normals: null | number[] | {type: number; size: number; value: Float32Array};
-    batchIds: null | number[];
+    normals: null | number[] | TypedArray | {type: number; size: number; value: TypedArray};
+    batchIds: null | number[] | TypedArray;
   };
   constantRGBA?: number[];
   isQuantized?: boolean;

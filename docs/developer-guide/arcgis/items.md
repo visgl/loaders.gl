@@ -16,12 +16,20 @@ The same transport is used for portal, service and selected-layer metadata.
   <ClientExample kind="arcgis-items" />
 </DocLiveExample>
 
-The public example needs no account. For private content, open **Configure sign-in**, supply your
+The public example needs no account. The **Public examples** dropdown includes Kentucky bicycle routes,
+World Imagery, historical US land cover (NLCD 2001), and World Basemap vector tiles. Each entry links
+to its ArcGIS source item. Selecting a public example automatically loads its representative layer
+or service preview and fits the map to its data. Bicycle routes load when the page opens.
+For a custom item, enter any supported item ID or URL, choose **Discover layers**, then use a layer’s
+visualization action. For private content, open **Configure sign-in**, supply your
 registered OAuth client ID and portal, and register the displayed page URL as a redirect URI.
 Enter the exact portal and service origins you trust to receive tokens. Allow the sign-in popup. Sign in, resolve an item,
-choose a layer, then load it. The example caps queries at 5,000 records and reports partial results.
-Nonspatial tables display their first ten rows; other service families expose metadata here and have
-separate [rendering examples](/examples/arcgis). Reloading the page clears the in-memory session.
+choose a layer in the collapsible map infobox, then select its visualization action. The example caps queries at 5,000 records and reports partial results.
+Feature layers render as interactive deck.gl overlays with feature inspection and fit-to-data controls.
+MapServer and ImageServer roots preview imagery, and VectorTileServer roots preview tile geometry
+with application styling. Nonspatial tables display their first 50 rows. Scene services expose
+metadata and link to the [dedicated scene examples](/examples/arcgis); they are not rendered here.
+The optional context map uses CARTO/OpenStreetMap and retains its attribution. Reloading the page clears the in-memory session.
 
 ## Supported item types
 
