@@ -52,6 +52,8 @@ collections.
 | --- | --- | --- |
 | GML 2 feature members | Supported | Common WFS feature collection structures and geometry properties |
 | GML 3 / 3.2 feature members | Supported | Namespace-prefix independent parsing |
+| Empty feature collections | Supported | Recognized as collections, including terminal paging responses |
+| WFS 2.0 counts and paging links | Supported | Whole-document parsing retains `numberMatched`, `numberReturned`, `next`, and `previous`; unknown totals remain unknown |
 | Point and MultiPoint | Supported | GML 2 and GML 3 coordinate encodings |
 | LineString, Curve, and multi-line geometry | Supported | Segment coordinates are normalized to GeoJSON-compatible lines |
 | Polygon, Surface, and multi-polygon geometry | Supported | Exterior and interior rings are preserved |

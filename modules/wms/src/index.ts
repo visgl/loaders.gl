@@ -86,6 +86,7 @@ export {
   selectServiceCRS,
   getServiceCRSAxisOrder
 } from './crs-utils';
+export type {FeaturePaginationOptions} from './feature-pagination';
 export {WFSSourceLoader, WFSVectorSource} from './wfs-source-loader';
 export type {WFSVersion, WFSGetFeatureParameters, WFSourceOptions} from './wfs-source-loader';
 export type {WFSFeatureType} from './lib/parsers/wfs/parse-wfs-capabilities';

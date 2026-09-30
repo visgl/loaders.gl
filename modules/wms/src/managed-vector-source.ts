@@ -56,7 +56,8 @@ export type ManagedVectorSourceOptions = {
  * Wraps a GeoJSON-capable source with managed coverage, request sharing and stable-ID deduplication.
  *
  * Coverage reuse requires explicit, equivalent request and output CRSs. Other requests pass
- * through unchanged. Coordinates remain XY; no reprojection or automatic pagination is performed.
+ * through unchanged. Coordinates remain XY; no reprojection is performed.
+ * Pagination is delegated to the underlying source.
  * Treat returned feature objects as immutable. Invalidate after changing service data or options.
  */
 export class ManagedVectorSource implements VectorSource {
@@ -292,12 +293,14 @@ function isCompleteResponse(table: GeoJSONTable): boolean {
     numberMatched?: unknown;
     totalFeatures?: unknown;
     links?: {rel?: string}[];
+    next?: string;
   };
   const count = metadata.numberMatched ?? metadata.totalFeatures;
   return (
     typeof count === 'number' &&
     Number.isInteger(count) &&
     count === table.features.length &&
+    !metadata.next &&
     !metadata.links?.some(link => link.rel === 'next')
   );
 }

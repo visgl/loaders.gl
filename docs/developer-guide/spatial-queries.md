@@ -60,11 +60,13 @@ invalidating cancels pending work and prevents late responses from restoring sta
 Failed, aborted, or incomplete responses can be retried at the same extent.
 
 Completeness is conservative: by default a numeric `numberMatched` or `totalFeatures` must equal
-the returned feature count and there must be no `rel: 'next'` link. Unknown counts, truncated pages,
+the returned feature count and there must be no next link. Unknown counts, truncated pages,
 and GML responses without count metadata do **not** establish coverage. A successful HTTP response
 alone is not proof of completeness. For a service whose complete-response guarantee you know,
-supply `isComplete(table, request)` to certify that guarantee. Automatic WFS/OGC API pagination
-is not implemented; use explicit WFS paging or a source that gathers all pages before returning.
+supply `isComplete(table, request)` to certify that guarantee. Enable `wfs.pagination` or `ogc-api.pagination` on the underlying source to gather service pages
+before returning. Numeric GML WFS counts also provide completion evidence; unknown totals remain
+uncertified. See [WFS pagination](/docs/modules/wms/formats/wfs#bounded-automatic-pagination) and
+[OGC API Features pagination](/docs/modules/wms/services/ogc-api#progressive-pages-and-complete-collection).
 
 The wrapper requests GeoJSON internally and returns GeoJSON by default, with Arrow or binary
 conversion available through `format`. Only complete responses are retained; the default limit
@@ -121,7 +123,8 @@ for await (const batch of scanSource.scan(query)) {
 The service applies the bound extent. Predicates, projection, ordering, aggregates, and limits
 are evaluated locally on the materialized result. A query limit does not request a server page
 size, and results remain limited to the features returned by the service. The adapter does not
-translate portable predicates into WFS filters or follow service pagination.
+translate portable predicates into WFS filters. Pagination belongs to the bound source: enable
+its pagination option to materialize all advertised pages before local relational execution.
 
 The first metadata, explanation, query, or scan call fetches and caches the bound Arrow table;
 subsequent calls reuse it. `scan()` and `read()` emit one materialized result batch rather than
