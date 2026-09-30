@@ -57,3 +57,14 @@ if (geometryField) {
 
 See the [GeoArrow format guide](https://loaders.gl/docs/modules/arrow/formats/geoarrow) for
 encoding selection, metadata, dimensions, streaming schema rules, and GeoParquet relationships.
+
+## Query loaded geometry
+
+`GeoArrowSpatialIndex` supports typed feature-ID lookup, bounding-box candidate selection, exact
+coordinate/rectangle intersection, and nearest geometry with a snapped coordinate. Exact checks
+account for polygon holes, boundaries, multipart geometries, and collections. Queries include
+offscreen rows and use planar XY in a shared CRS; rebuild after modifying the indexed vector.
+
+See [spatial queries beyond picking](https://loaders.gl/docs/developer-guide/spatial-queries)
+for APIs and [GeoArrow feature support](https://loaders.gl/docs/modules/arrow/formats/geoarrow#spatial-query-support)
+for implementation boundaries.

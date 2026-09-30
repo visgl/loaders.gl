@@ -54,22 +54,38 @@ loaders.gl `TileSource` and negotiates the layer, style, format, and grid from c
 
 ## Feature support
 
-| Capability | Support | API and behavior |
-| --- | --- | --- |
-| WMTS 1.0.0 | Supported | Capabilities parsing and KVP `GetTile` requests |
-| `GetCapabilities` | Supported | `WMTSCapabilitiesLoader` parses layers and matrix sets |
-| Normalized tile metadata | Supported | `getMetadata()` exposes extent, CRS, tile size, and tile grid |
-| `GetTile` | Supported | Fetches and decodes advertised image formats |
-| KVP request encoding | Supported | Standard query-parameter operation |
-| RESTful resource templates | Supported | Uses advertised `ResourceURL` templates or `wmts.urlTemplate` |
-| SOAP encoding | Not supported | Outside browser-oriented tile retrieval |
-| Layer selection | Supported | Select by advertised layer identifier |
-| Tile matrix-set selection | Supported | Explicit selection or compatibility-ranked automatic choice |
-| Style and image format | Supported | Select advertised identifiers and MIME types |
-| Non-numeric matrix identifiers | Supported | Zoom levels map to identifiers from capabilities |
-| CRS and axis metadata | Supported | Normalized from the chosen matrix set |
-| `GetFeatureInfo` | Not exposed | Use a direct request when supported by the server |
-| deck.gl rendering | First class | `SourceLayer` requests visible image tiles from the source |
+The adapter derives request configuration from advertised capabilities rather than requiring a
+handwritten tile URL. **Supported** describes the service adapter; **Partial** makes rendering or
+metadata constraints explicit; **Not implemented** marks features that need additional work.
+
+| Area | Capability | Status | API, guarantee, or boundary |
+| --- | --- | --- | --- |
+| Discovery | WMTS 1.0.0 capabilities | Supported | `WMTSCapabilitiesLoader` parses service, layers, styles, resource URLs, and matrix sets |
+| Discovery | Supplied capabilities or separate URL | Supported | `wmts.capabilities` avoids a fetch; `capabilitiesUrl` loads and caches XML |
+| Discovery | Retry after failed capabilities fetch | Supported | Failed discovery does not poison the cached promise |
+| Selection | Layer selection and validation | Supported | Configured layer or request override; unknown identifiers fail explicitly |
+| Selection | Linked tile matrix sets | Supported | Explicit identifier, first compatible advertised CRS, or first linked set |
+| Selection | Reject incompatible requested projection | Supported | Does not silently substitute a different CRS |
+| Selection | Style and image format defaults | Supported | Advertised default style and first format, with explicit overrides |
+| Requests | KVP `GetTile` | Supported | Standard parameters; existing endpoint parameters survive |
+| Requests | REST `ResourceURL` | Supported | Selects tile templates matching the image format; excludes feature-info resources |
+| Requests | URL placeholder expansion | Supported | Layer, style, matrix set, matrix ID, row, column, and caller parameters are URL encoded |
+| Requests | Missing template parameters | Supported | Unresolved placeholders produce an error |
+| Requests | Non-numeric tile matrix identifiers | Supported | Numeric zoom selects the advertised matrix identifier |
+| Requests | Tile fetch cancellation | Supported | Tile `AbortSignal` forwarded to fetch; capabilities fetch is not independently canceled |
+| Metadata | Layer title, extent, format, CRS | Supported | Normalized tile-source metadata |
+| Metadata | Origin axis normalization | Supported | EPSG:4326 top-left corners exposed in canonical XY |
+| Metadata | Resolution from scale denominator | Partial | Known geographic/Web Mercator units; omitted for unknown units or incomplete scales |
+| Metadata | Per-level matrix dimensions | Supported | Advertised sizes retained when complete and aligned with matrix IDs |
+| Metadata | Per-level origins and tile dimensions in normalized grid | Partial | Current normalized grid uses first-level origin and tile size |
+| Loading | Image decoding | Supported | `getTile()` and `getTileData()` decode through the image loader |
+| Rendering | Standard deck.gl XYZ grid | Supported | `SourceLayer` renders a compatible matrix set |
+| Rendering | Arbitrary origins, geographic grids, and per-level dimensions | Partial | Application must provide compatible tile selection |
+| Rendering | Automatic raster reprojection | Not implemented | Tiles retain the selected matrix-set projection |
+| Limits | Enforcing tile matrix-set limits | Not implemented | Advertised links do not automatically constrain requested rows/columns |
+| Dimensions | Automatic time/elevation/dimension defaults | Not implemented | Supply explicit values through `wmts.parameters` |
+| Queries | WMTS `GetFeatureInfo` adapter | Not implemented | Feature-info templates do not become a query API |
+| Transport | SOAP encoding | Not implemented | KVP and REST tile retrieval are supported |
 
 ## Create a tile source
 

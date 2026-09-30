@@ -103,7 +103,8 @@ export class OGCAPIFeaturesSource
     if (requestCrs) url.searchParams.set('bbox-crs', requestCrs);
     const response = await this.fetchJSON(
       url.toString(),
-      'application/geo+json, application/json;q=0.9'
+      'application/geo+json, application/json;q=0.9',
+      parameters.signal
     );
     if (!isFeatureCollection(response)) {
       throw new Error('OGC API Features response was not a GeoJSON FeatureCollection');
@@ -123,8 +124,12 @@ export class OGCAPIFeaturesSource
   }
 
   /** Fetches and decodes a JSON representation from the service. */
-  private async fetchJSON(url: string, accept = 'application/json'): Promise<unknown> {
-    const response = await this.fetch(url, {headers: {Accept: accept}});
+  private async fetchJSON(
+    url: string,
+    accept = 'application/json',
+    signal?: AbortSignal
+  ): Promise<unknown> {
+    const response = await this.fetch(url, {headers: {Accept: accept}, signal});
     if (!response.ok) throw new Error(`OGC API request failed: ${response.status}`);
     return response.json();
   }

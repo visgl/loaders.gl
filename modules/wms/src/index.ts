@@ -147,3 +147,6 @@ export {createImageSource} from './lib/deprecated/create-image-source';
 // DEPRECATED EXPORTS
 /** @deprecated Use `WMSSourceLoader`. Kept for deck.gl compatibility. */
 export {WMSSourceLoader as WMSSource} from './wms-source-loader';
+
+export {ManagedVectorSource} from './managed-vector-source';
+export type {ManagedVectorSourceOptions} from './managed-vector-source';
