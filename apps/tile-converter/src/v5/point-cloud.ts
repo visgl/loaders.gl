@@ -11,6 +11,8 @@ import {TileConversionError} from './conversion-api.js';
 export interface EncodePointCloudTileOptions {
   /** Optional origin subtracted from absolute positions and stored as the PNTS RTC_CENTER. */
   readonly rtcCenter?: readonly [number, number, number];
+  /** Optional source-wide RGBA color stored as the PNTS CONSTANT_RGBA property. */
+  readonly constantRGBA?: readonly number[];
   /** Optional per-point values indexed by the tile's `BATCH_ID` attribute. */
   readonly batchTableJson?: Readonly<Record<string, readonly (string | number)[]>>;
 }
@@ -19,8 +21,9 @@ export interface EncodePointCloudTileOptions {
  * Encodes one mesh or Mesh Arrow point batch as a PNTS resource.
  *
  * The input position field must be named `POSITION` and contain xyz values. `COLOR_0` or `COLOR`
- * is written when present, as are `NORMAL` and `BATCH_ID`. Arrow batches should be passed one at a
- * time so callers can bound memory and apply their own tiling and output policy.
+ * is written when present; `constantRGBA` supplies a fallback PNTS `CONSTANT_RGBA` feature-table
+ * property. `NORMAL` and `BATCH_ID` are also written when present. Arrow batches should be passed
+ * one at a time so callers can bound memory and apply their own tiling and output policy.
  *
  * @param pointBatch - Point data produced by a LAS, COPC, I3S, or other point source.
  * @param options - Optional RTC center and batch-table values.
@@ -49,6 +52,7 @@ export function encodePointCloudTile(
   }
 
   const colors = getColorAttribute(mesh.attributes.COLOR_0 || mesh.attributes.COLOR, pointCount);
+  const constantRGBA = colors ? null : getConstantRgba(options.constantRGBA);
   const normals = getNormalAttribute(mesh.attributes.NORMAL, pointCount);
   const batchIds = getBatchIds(mesh.attributes.BATCH_ID, pointCount);
   const batchTableJson = validateBatchTable(options.batchTableJson, batchIds);
@@ -56,12 +60,37 @@ export function encodePointCloudTile(
   return Tile3DWriter.encodeSync(
     {
       type: TILE3D_TYPE.POINT_CLOUD,
-      featureTableJson: options.rtcCenter ? {RTC_CENTER: [...options.rtcCenter]} : undefined,
+      featureTableJson:
+        options.rtcCenter || constantRGBA
+          ? {
+              ...(options.rtcCenter ? {RTC_CENTER: [...options.rtcCenter]} : {}),
+              ...(constantRGBA ? {CONSTANT_RGBA: constantRGBA} : {})
+            }
+          : undefined,
       batchTableJson,
       attributes: {positions, colors, normals, batchIds}
     },
     {}
   );
+}
+
+/** Validates an optional source-wide PNTS RGBA color. */
+function getConstantRgba(
+  constantRGBA?: readonly number[]
+): [number, number, number, number] | null {
+  if (!constantRGBA) {
+    return null;
+  }
+  if (
+    constantRGBA.length !== 4 ||
+    constantRGBA.some(value => !Number.isInteger(value) || value < 0 || value > 255)
+  ) {
+    throw new TileConversionError(
+      'POINT_CLOUD_CONSTANT_RGBA_INVALID',
+      'Point cloud constantRGBA must contain four unsigned byte values'
+    );
+  }
+  return [constantRGBA[0], constantRGBA[1], constantRGBA[2], constantRGBA[3]];
 }
 
 /** Decodes positions and offsets them relative to the optional RTC center. */
