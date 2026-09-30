@@ -179,3 +179,22 @@ test('getGeoArrowRowBounds reads sliced nullable XYZM boxes directly', () => {
   expect(validateGeoArrowVector(geometry!.slice(1, 2), 'geoarrow.box').valid).toBe(true);
   expect(getGeoArrowRowBounds(geometry!.slice(1, 2), 'geoarrow.box')).toEqual([[7, 8, 7, 8]]);
 });
+
+test.each([
+  'interleaved',
+  'separated'
+] as const)('getGeoArrowRowBounds preserves every row in a sliced %s point vector', coordinates => {
+  const source = convertFeaturesToGeoArrowTable(
+    [0, 2, 4, 6].map(value => ({
+      type: 'Feature',
+      properties: {},
+      geometry: {type: 'Point', coordinates: [value, value + 1]}
+    }))
+  );
+  const native = convertGeoArrowGeometry(source.data, 'geoarrow.point', {coordinates});
+  const geometry = native.getChild('geometry')!.slice(1, 3);
+  expect(getGeoArrowRowBounds(geometry, 'geoarrow.point')).toEqual([
+    [2, 3, 2, 3],
+    [4, 5, 4, 5]
+  ]);
+});

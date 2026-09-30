@@ -95,9 +95,9 @@ under `wmts`.
 ## Tile-grid negotiation
 
 WMTS matrix sets may use provider-specific identifiers, origins, resolutions, and limits. The source
-keeps the advertised grid rather than assuming a Google-style XYZ pyramid. Applications can select
-a matrix set explicitly; otherwise loaders.gl ranks compatible sets and normalizes the selected
-grid for consumers such as deck.gl.
+exposes the advertised grid metadata. Applications can select a linked matrix set explicitly,
+request a compatible CRS, or use the first linked set. Rendering still requires tile selection
+compatible with that grid; see the boundaries below.
 
 ## deck.gl integration
 
@@ -118,3 +118,39 @@ const layer = new SourceLayer({
 ## References
 
 - [OGC Web Map Tile Service standard](https://www.ogc.org/standard/wmts/)
+
+## Configure from capabilities
+
+```ts
+const source = createDataSource(wmtsUrl, [WMTSSourceLoader], {
+  wmts: {
+    capabilitiesUrl,
+    layer: 'imagery',
+    crs: 'EPSG:3857'
+  }
+});
+const metadata = await source.getMetadata();
+const tileUrl = source.getTileURL({x: 0, y: 0, z: 0});
+```
+
+A parsed `wmts.capabilities` document can also be supplied and is available immediately to
+`getTileURL()`. When using `capabilitiesUrl`, await `getMetadata()` first; `getTile()` loads
+capabilities automatically. Failed capability requests can be retried.
+
+The source selects the first advertised format and default style unless overridden, uses tile
+resources (excluding feature-info templates), and expands `{Style}`, `{Layer}`, and matrix
+placeholders with URL encoding. Additional template placeholders must be supplied in
+`wmts.parameters`; unresolved placeholders throw. KVP requests preserve endpoint parameters.
+Unknown layers, unlinked matrix sets, and explicitly requested CRSs without a compatible linked
+matrix set fail instead of silently requesting another projection.
+
+`tileGrid.origin` is XY (including EPSG:4326 axis normalization). `tileGrid.resolutions` contains
+coordinate units per pixel derived from OGC scale denominators for Web Mercator and geographic
+CRSs. For unknown CRS units or incomplete scale metadata, resolutions are omitted. Matrix sizes
+are omitted if incomplete, preserving alignment with matrix IDs.
+
+These metadata do not reproject image tiles or make arbitrary grids compatible with deck.gl's
+standard XYZ tile selection. Custom origins, per-level tile dimensions, geographic grids, and
+matrix limits require an application tile-selection adapter. Matrix-set limits and automatic
+WMTS dimension defaults are not currently applied. Choose an XYZ-compatible matrix set for the
+standard deck.gl tile path.

@@ -47,6 +47,11 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
 
 ## v5.0 (In Development)
 
+- Improve WMTS capability-derived formats, styles, projection selection, and tile-grid metadata,
+  and normalize WFS feature-type discovery and extent requests. Add `GeoArrowSpatialIndex` for
+  local feature-ID lookup, extent selection, and nearest-geometry snapping, including offscreen
+  loaded data. See [spatial queries beyond picking](/docs/developer-guide/spatial-queries).
+
 - [Declarative authentication](/docs/developer-guide/authentication#declarative-credentials)
   resolves JSON credentials through application- or loader-supplied classes. Generic request
   callbacks support per-tile signing and URL rewriting without adding S3/AWS dependencies.

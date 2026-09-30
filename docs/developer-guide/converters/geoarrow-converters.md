@@ -119,3 +119,10 @@ const mixedTable = convertGeoArrowGeometry(geoarrowTable, 'geoarrow.geometrycoll
   geometryColumns: ['geometry', 'centroid']
 });
 ```
+
+## Spatial queries
+
+`GeoArrowSpatialIndex` provides row lookup by feature ID, extent selection using cached bounds,
+and nearest-geometry queries with closest coordinates for snapping. See
+[Spatial queries beyond picking](/docs/developer-guide/spatial-queries) for examples, planar CRS
+requirements, and the distinction between local data queries, remote queries, and rendering picks.
