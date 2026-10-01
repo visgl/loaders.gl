@@ -50,7 +50,15 @@
     "./gltf-2.schema.json": "./dist/gltf-2.schema.json",
     "./gltf-2.1.schema.json": "./dist/gltf-2.1.schema.json",
     "./gltf-all.schema.json": "./dist/gltf-all.schema.json",
-    "./schemas/*": "./dist/schemas/*"
+    "./schemas/*": "./dist/schemas/*",
+    "./glb-loader-with-parser": {
+      "types": "./dist/glb-loader-with-parser.d.ts",
+      "import": "./dist/glb-loader-with-parser.js"
+    },
+    "./gltf-loader-with-parser": {
+      "types": "./dist/gltf-loader-with-parser.d.ts",
+      "import": "./dist/gltf-loader-with-parser.js"
+    }
   },
   "sideEffects": false,
   "files": [

@@ -181,6 +181,12 @@
       "@loaders.gl/gltf": [
         "modules/gltf/src"
       ],
+      "@loaders.gl/gltf/glb-loader-with-parser": [
+        "modules/gltf/src/glb-loader-with-parser.ts"
+      ],
+      "@loaders.gl/gltf/gltf-loader-with-parser": [
+        "modules/gltf/src/gltf-loader-with-parser.ts"
+      ],
       "@loaders.gl/gltf/test": [
         "modules/gltf/test"
       ],

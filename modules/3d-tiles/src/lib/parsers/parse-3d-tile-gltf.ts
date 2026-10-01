@@ -5,11 +5,11 @@
 import {parseFromContext, LoaderContext} from '@loaders.gl/loader-utils';
 import {
   _getMemoryUsageGLTF,
-  GLTFLoader,
   getGaussianSplatPrimitives,
   getVoxelPrimitives,
   postProcessGLTF
 } from '@loaders.gl/gltf';
+import {GLTFLoaderWithParser} from '@loaders.gl/gltf/gltf-loader-with-parser';
 import type {GLTFWithBuffers} from '@loaders.gl/gltf';
 import {Tiles3DSpatialTransformer} from '@loaders.gl/tiles';
 import type {TilesetSpatialOptions, TilesetSpatialReference} from '@loaders.gl/tiles';
@@ -57,7 +57,7 @@ export async function parseGltf3DTile(
       parsedGltf ||
       (jsonPayload
         ? await parseParsedJsonGltf(jsonPayload, options, context)
-        : await parseFromContext(arrayBuffer, GLTFLoader, options, context));
+        : await parseFromContext(arrayBuffer, GLTFLoaderWithParser, options, context));
     tile.gaussianSplatPrimitives =
       gltfWithBuffers.gaussianSplatPrimitives || getGaussianSplatPrimitives(gltfWithBuffers);
     tile.voxelPrimitives = getVoxelPrimitives(gltfWithBuffers);
@@ -248,6 +248,5 @@ async function parseParsedJsonGltf(
   options: Tiles3DLoaderOptions | undefined,
   context: LoaderContext
 ) {
-  const gltfLoaderWithParser = await GLTFLoader.preload();
-  return await gltfLoaderWithParser.parse(jsonPayload, options, context);
+  return await GLTFLoaderWithParser.parse(jsonPayload, options, context);
 }
