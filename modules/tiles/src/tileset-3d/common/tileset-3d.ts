@@ -73,7 +73,7 @@ export type Tileset3DProps = {
   /**
    * Enables replacement traversal that may skip hierarchy levels while retaining ready ancestors
    * as coverage. This trades temporary overdraw for faster refinement on deep trees.
-   * @default false
+   * Defaults to `true` for 3D Tiles and `false` for I3S. Set to `false` to request every level.
    */
   skipLevelOfDetail?: boolean;
   /**
@@ -425,6 +425,7 @@ export class Tileset3D {
       ...suppliedOptions,
       cacheBytes,
       maximumCacheOverflowBytes,
+      skipLevelOfDetail: suppliedOptions.skipLevelOfDetail ?? source.type === TILESET_TYPE.TILES3D,
       memoryAdjustedScreenSpaceError:
         suppliedOptions.memoryAdjustedScreenSpaceError ?? usesTiles3DCacheDefaults
     };
