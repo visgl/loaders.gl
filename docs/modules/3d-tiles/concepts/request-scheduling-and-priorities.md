@@ -60,6 +60,22 @@ coverage is ready, and the configured request limit still bounds concurrent load
 
 Implicit subtree metadata uses this same eligibility and priority path. A subtree is considered only after its placeholder is visible, inside its viewer request volume, and above the SSE threshold. Its request then competes for a normal scheduler slot using the tile's progressive and foveated metrics. Loading availability never recursively starts deeper subtrees; each new boundary returns to traversal for another view-dependent decision. See [Implicit tiling and lazy subtrees](./implicit-tiling-and-subtrees).
 
+## Skipping Intermediate Detail
+
+3D Tiles enables `skipLevelOfDetail` by default. Replacement traversal can request desired descendants
+without first downloading every intermediate mesh. Ready ancestors remain selected while the new
+content loads, so useful detail can arrive sooner with fewer content requests. The final SSE target
+and request concurrency limit stay the same.
+
+Cold traversal still requests coarse coverage and periodically requests intermediate levels on deep
+branches. The more aggressive `immediatelyLoadDesiredLevelOfDetail` option remains disabled by
+default. Temporary ancestor/descendant overlap can increase draw work while refinement is in progress.
+Set `skipLevelOfDetail: false` to use traditional replacement traversal. I3S retains its existing
+non-skipping default.
+
+See [skip-LOD options](/docs/modules/tiles/api-reference/tileset-3d#skiplevelofdetail--boolean) for
+the SSE and depth thresholds.
+
 ## Progressive Coarse Coverage
 
 `progressiveResolutionHeightFraction` calculates SSE at a reduced logical viewport height:

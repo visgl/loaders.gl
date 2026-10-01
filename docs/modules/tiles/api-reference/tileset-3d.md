@@ -264,7 +264,11 @@ ancestors selected as temporary coverage. Request thresholds periodically load i
 coverage on deep branches. This can improve first-detail latency at the cost of temporary
 ancestor/descendant overdraw. `ADD` refinement is unaffected.
 
-^default false
+Enabled by default for 3D Tiles. Set `skipLevelOfDetail: false` to request intermediate replacement
+levels as well. I3S retains its existing non-skipping default. Cold traversal still requests coarse
+coverage; `immediatelyLoadDesiredLevelOfDetail` remains disabled by default.
+
+^default true for 3D Tiles; false for I3S
 
 ### baseScreenSpaceError : Number
 
