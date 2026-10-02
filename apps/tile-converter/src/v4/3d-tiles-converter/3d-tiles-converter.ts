@@ -153,8 +153,11 @@ export default class Tiles3DConverter {
     try {
       validateI3SConversionSpatialReference(this.sourceTileset);
     } catch (error) {
-      this.slpkFilesystem?.destroy();
-      this.slpkFilesystem = null;
+      try {
+        await this.slpkFilesystem?.destroy();
+      } finally {
+        this.slpkFilesystem = null;
+      }
       throw error;
     }
     this.progress.startMonitoring();

@@ -700,9 +700,9 @@ export type NodeInPage = {
    */
   children?: number[];
   /**
-   * The mesh for this node. WARNING: only SINGLE mesh is supported at version 1.7 (i.e. length must be 0 or 1).
+   * The mesh for this node; missing or null values indicate a contentless node. WARNING: only SINGLE mesh is supported at version 1.7 (i.e. length must be 0 or 1).
    */
-  mesh?: NodeMesh;
+  mesh?: NodeMesh | null;
 };
 
 /**

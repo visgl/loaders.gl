@@ -3,7 +3,12 @@
 // Copyright vis.gl contributors
 
 import {describe, expect, test} from 'vitest';
-import {I3SSceneLayerSchema, I3SPointCloudSceneLayerSchema} from '../src/i3s-zod-schema';
+import {z} from 'zod';
+import {
+  I3SSceneLayerSchema,
+  I3SPointCloudSceneLayerSchema,
+  I3SNodePageSchema
+} from '../src/i3s-zod-schema';
 
 const SCENE_LAYER_SCHEMAS = [
   {
@@ -47,4 +52,29 @@ describe.each(SCENE_LAYER_SCHEMAS)('$name scene-layer popup defaults', ({schema,
   test.each(['false', null])('rejects invalid disablePopup=%s', disablePopup => {
     expect(() => schema.parse({...layer, disablePopup})).toThrow();
   });
+});
+
+test.each([undefined, null])('accepts a contentless node with mesh=%s', mesh => {
+  const node = {
+    index: 0,
+    obb: {center: [0, 0, 0], halfSize: [1, 1, 1], quaternion: [0, 0, 0, 1]},
+    children: [1],
+    mesh
+  };
+  expect(I3SNodePageSchema.parse({nodes: [node]}).nodes[0].mesh).toBe(mesh);
+});
+
+test('still rejects a malformed non-null mesh', () => {
+  const node = {
+    index: 0,
+    obb: {center: [0, 0, 0], halfSize: [1, 1, 1], quaternion: [0, 0, 0, 1]},
+    mesh: {}
+  };
+  expect(() => I3SNodePageSchema.parse({nodes: [node]})).toThrow();
+});
+
+test('published scene-layer JSON schema permits the omitted popup setting and declares its default', () => {
+  const jsonSchema = z.toJSONSchema(I3SSceneLayerSchema, {target: 'draft-7'});
+  expect(jsonSchema.required).not.toContain('disablePopup');
+  expect(jsonSchema.properties?.disablePopup).toMatchObject({type: 'boolean', default: false});
 });
