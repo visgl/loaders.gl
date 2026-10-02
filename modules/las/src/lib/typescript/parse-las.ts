@@ -3,7 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import type {MeshArrowTable, MeshAttributes} from '@loaders.gl/schema';
-import {makeMeshArrowTable} from '@loaders.gl/schema-utils';
+import {makeMeshArrowTable, type MeshArrowAttributes} from '@loaders.gl/schema-utils';
 import {
   BinaryChunkReader,
   createLAZChunkDecoder,
@@ -25,6 +25,7 @@ import {
   createLASTypedExtraBytesAttributes,
   createLASTypedExtraBytesValue,
   parseLASExtraBytes,
+  populateLASTypedExtraBytesComponent,
   type LASTypedExtraBytesAttribute
 } from '../las-extra-bytes';
 import type {
@@ -1561,7 +1562,7 @@ function makeLASArrowTableFromAttributes(
   extraBytes: Uint8Array | null,
   typedExtraBytes: LASTypedExtraBytesAttribute[] | null
 ): LASArrowTable {
-  const attributes: MeshAttributes = {
+  const attributes: MeshArrowAttributes = {
     POSITION: {value: positions, size: 3}
   };
   if (intensities) {
@@ -1630,7 +1631,16 @@ function makeLASArrowTableFromAttributes(
     }
   }
 
-  const schema = getLASSchema(lasHeader, attributes);
+  const numericAttributes: MeshAttributes = {};
+  for (const [name, attribute] of Object.entries(attributes)) {
+    if (
+      !(attribute.value instanceof BigInt64Array) &&
+      !(attribute.value instanceof BigUint64Array)
+    ) {
+      numericAttributes[name] = {...attribute, value: attribute.value};
+    }
+  }
+  const schema = getLASSchema(lasHeader, numericAttributes);
   return {
     ...makeMeshArrowTable(attributes, {
       schema,
@@ -2709,14 +2719,13 @@ function populateTypedExtraBytesFromDataView(
     const targetOffset = targetPointIndex * attribute.size;
     const sourceOffset = extraByteBaseOffset + attribute.byteOffset;
     for (let componentIndex = 0; componentIndex < attribute.size; componentIndex++) {
-      attribute.value[targetOffset + componentIndex] =
-        readExtraBytesValue(
-          dataView,
-          sourceOffset + componentIndex * getExtraBytesScalarByteLength(attribute.scalarDataType),
-          attribute.scalarDataType
-        ) *
-          attribute.scales[componentIndex] +
-        attribute.offsets[componentIndex];
+      populateLASTypedExtraBytesComponent(
+        dataView,
+        sourceOffset + componentIndex * getExtraBytesScalarByteLength(attribute.scalarDataType),
+        attribute,
+        targetOffset + componentIndex,
+        componentIndex
+      );
     }
   }
 }
@@ -2741,14 +2750,13 @@ function populateTypedExtraBytesFromPacked(
       const targetOffset = targetPointIndex * attribute.size;
       const scalarByteLength = getExtraBytesScalarByteLength(attribute.scalarDataType);
       for (let componentIndex = 0; componentIndex < attribute.size; componentIndex++) {
-        attribute.value[targetOffset + componentIndex] =
-          readExtraBytesValue(
-            dataView,
-            sourceOffset + attribute.byteOffset + componentIndex * scalarByteLength,
-            attribute.scalarDataType
-          ) *
-            attribute.scales[componentIndex] +
-          attribute.offsets[componentIndex];
+        populateLASTypedExtraBytesComponent(
+          dataView,
+          sourceOffset + attribute.byteOffset + componentIndex * scalarByteLength,
+          attribute,
+          targetOffset + componentIndex,
+          componentIndex
+        );
       }
     }
   }
@@ -2770,32 +2778,6 @@ function populateDecodedTypedExtraBytes(
     pointCount,
     state.typedExtraBytes
   );
-}
-
-/** Read one little-endian scalar Extra Bytes value without assuming alignment. */
-function readExtraBytesValue(dataView: DataView, offset: number, scalarDataType: number): number {
-  switch (scalarDataType) {
-    case 1:
-      return dataView.getUint8(offset);
-    case 2:
-      return dataView.getInt8(offset);
-    case 3:
-      return dataView.getUint16(offset, true);
-    case 4:
-      return dataView.getInt16(offset, true);
-    case 5:
-      return dataView.getUint32(offset, true);
-    case 6:
-      return dataView.getInt32(offset, true);
-    case 9:
-      return dataView.getFloat32(offset, true);
-    case 10:
-      return dataView.getFloat64(offset, true);
-    default:
-      throw new Error(
-        `LASLoader: unsupported typed Extra Bytes scalar data type ${scalarDataType}`
-      );
-  }
 }
 
 function getLAZStreamingDecodeStats(
