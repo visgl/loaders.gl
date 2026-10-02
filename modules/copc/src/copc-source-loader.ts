@@ -1801,6 +1801,8 @@ function getTypedArraySchemaType(value: LASTypedExtraBytesAttribute['value']): F
   if (value instanceof Int16Array) return 'int16';
   if (value instanceof Uint32Array) return 'uint32';
   if (value instanceof Int32Array) return 'int32';
+  if (value instanceof BigInt64Array) return 'int64';
+  if (value instanceof BigUint64Array) return 'uint64';
   if (value instanceof Float32Array) return 'float32';
   return 'float64';
 }
