@@ -68,3 +68,5 @@ export type {
 // DEPRECATED EXPORTS
 /** @deprecated Use LASLoader. */
 export {LASWorkerLoader} from './las-loader-types';
+
+export type {LASCompatibilityLayout} from './lib/las-compatibility';

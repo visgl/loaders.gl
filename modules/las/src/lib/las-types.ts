@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
+import type {LASCompatibilityLayout} from './las-compatibility';
 import type {Mesh} from '@loaders.gl/schema';
 import type {WKTCRSDefinition} from '@math.gl/crs';
 
@@ -162,6 +163,8 @@ export type LASMetadata = {
     /** Parsed and resolved GeoKey directory entries. */
     keyDirectory?: LASGeoTIFFKeyDirectory;
   };
+  /** Validated LASzip compatibility-mode layout and logical format. */
+  compatibility?: LASCompatibilityLayout;
   /** Extra Bytes descriptors parsed from the Extra Bytes VLR. */
   extraBytes: LASExtraBytesDescriptor[];
   /** Waveform packet descriptors parsed from waveform descriptor VLRs. */
