@@ -103,10 +103,12 @@ export interface ConvertTilesetOptions<TInspection, TInput, TOutput> {
   readonly codec: TileConversionCodec<TInspection, TInput, TOutput>;
   /** Injected destination writer. */
   readonly sink: TileConversionSink<TOutput>;
-  /** Return the byte size of an input resource. */
+  /** Return the decoded input byte size as a nonnegative safe integer. */
   readonly measureInputBytes: (resource: TInput) => number;
   /** Return the byte size of an output resource. */
   readonly measureOutputBytes: (resource: TOutput) => number;
+  /** Reject a decoded input resource above this byte limit before encoding. Defaults to no limit. */
+  readonly maxInputResourceBytes?: number;
   /** Reject any output resource larger than this configured byte limit. */
   readonly maxOutputResourceBytes?: number;
   /** Cancel inspection, conversion, validation, or writes. */
@@ -149,6 +151,8 @@ export async function inspectTileset<TInspection, TInput>(
 
 /**
  * Converts a stream of tileset resources through injected source, codec, and sink adapters.
+ * Decoded inputs are measured and checked against `maxInputResourceBytes` before encoding.
+ * This does not limit source decoding allocations or content retained by a source.
  * Writes are awaited one resource at a time, keeping queued output bytes bounded by the
  * largest emitted resource and the configured `maxOutputResourceBytes` limit.
  */
@@ -161,6 +165,7 @@ export async function convertTileset<TInspection, TInput, TOutput>(
     sink,
     measureInputBytes,
     measureOutputBytes,
+    maxInputResourceBytes = Number.POSITIVE_INFINITY,
     maxOutputResourceBytes = Number.POSITIVE_INFINITY,
     signal,
     onProgress
@@ -176,12 +181,34 @@ export async function convertTileset<TInspection, TInput, TOutput>(
   };
 
   try {
+    if (
+      maxInputResourceBytes !== Number.POSITIVE_INFINITY &&
+      (!Number.isSafeInteger(maxInputResourceBytes) || maxInputResourceBytes < 0)
+    ) {
+      throw new TileConversionError(
+        'INVALID_INPUT_RESOURCE_LIMIT',
+        'maxInputResourceBytes must be a nonnegative safe integer or Infinity'
+      );
+    }
     reportProgress('inspect');
     const inspection = await inspectTileset(source, signal);
     for await (const inputResource of source.read(inspection, signal)) {
       throwIfAborted(signal);
+      const inputResourceBytes = measureInputBytes(inputResource);
+      if (!Number.isSafeInteger(inputResourceBytes) || inputResourceBytes < 0) {
+        throw new TileConversionError(
+          'INVALID_INPUT_RESOURCE_SIZE',
+          'measureInputBytes must return a nonnegative safe integer'
+        );
+      }
+      if (inputResourceBytes > maxInputResourceBytes) {
+        throw new TileConversionError(
+          'INPUT_RESOURCE_TOO_LARGE',
+          `Input resource is ${inputResourceBytes} bytes, exceeding the configured limit of ${maxInputResourceBytes} bytes`
+        );
+      }
       inputResources++;
-      inputBytes += measureInputBytes(inputResource);
+      inputBytes += inputResourceBytes;
       reportProgress('convert');
       const convertedResources = await codec.convert(inputResource, inspection, signal);
       for await (const outputResource of convertedResources) {

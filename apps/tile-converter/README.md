@@ -30,6 +30,7 @@ const report = await convertTileset({
   sink: outputSink,
   measureInputBytes: measureDecodedTileBytes,
   measureOutputBytes: measureEncodedResourceBytes,
+  maxInputResourceBytes: 16 * 1024 * 1024,
   signal: abortController.signal
 });
 ```
@@ -39,6 +40,14 @@ tiles; applications own unloading and tileset destruction. This adapter does not
 input memory, apply CRS transforms, or supply a mesh codec or output packaging. Inspection observes
 cancellation before and after initialization; initialization and in-flight content reads retain the
 underlying source's cancellation behavior.
+
+`maxInputResourceBytes` limits one decoded input placement before the codec runs. The example
+allows up to 16 MiB as measured by the application's `measureInputBytes` callback, which must return
+a nonnegative safe integer and account for all decoded contents in the placement. Equality is
+allowed; zero permits only empty inputs. Omit the limit or use `Infinity` for no limit. Oversized
+inputs throw `INPUT_RESOURCE_TOO_LARGE`, close source iteration, and abort the destination.
+This check runs after the source read, so decoding allocations and retained source content still
+require source-level controls. `convertPointCloudSource` accepts the same option for decoded tiles.
 
 ## V5 spatial conversion
 

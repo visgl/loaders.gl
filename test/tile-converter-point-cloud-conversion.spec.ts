@@ -169,6 +169,27 @@ test('convertPointCloudSource rejects oversized output before writing', async ()
   );
 });
 
+test('convertPointCloudSource forwards the decoded input limit before choosing encoder options', async () => {
+  const source = createSource();
+  const sink = createSink();
+  const getTileEncodingOptions = vi.fn(() => ({}));
+  await expect(
+    convertPointCloudSource(source as unknown as PointCloudTilesetSource, {
+      sink,
+      measureInputBytes: () => 12,
+      maxInputResourceBytes: 11,
+      getTileEncodingOptions
+    })
+  ).rejects.toMatchObject({code: 'INPUT_RESOURCE_TOO_LARGE'});
+  expect(getTileEncodingOptions).not.toHaveBeenCalled();
+  expect(source.getChildren).not.toHaveBeenCalled();
+  expect(sink.write).not.toHaveBeenCalled();
+  expect(sink.finalize).not.toHaveBeenCalled();
+  expect(sink.abort).toHaveBeenCalledExactlyOnceWith(
+    expect.objectContaining({code: 'INPUT_RESOURCE_TOO_LARGE'})
+  );
+});
+
 test.each([
   'initialize',
   'loadTileContent',
