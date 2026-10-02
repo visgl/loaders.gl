@@ -14,6 +14,7 @@ import {load, isBrowser} from '@loaders.gl/core';
 import {I3SLoader, I3SAttributeLoader, COORDINATE_SYSTEM} from '@loaders.gl/i3s';
 import {Geoid} from '@math.gl/geoid';
 
+import {validateI3SConversionSpatialReference} from './helpers/validate-i3s-spatial-reference';
 import {PGMLoader} from '../pgm-loader';
 import {i3sObbTo3dTilesObb} from './helpers/i3s-obb-to-3d-tiles-obb';
 import {convertScreenThresholdToGeometricError} from '../lib/utils/lod-conversion-utils';
@@ -134,8 +135,6 @@ export default class Tiles3DConverter {
       }
     }
 
-    this.progress.startMonitoring();
-
     this.sourceTileset = await loadFromArchive(
       inputUrl,
       I3SLoader,
@@ -150,6 +149,15 @@ export default class Tiles3DConverter {
     if (!this.sourceTileset) {
       return undefined;
     }
+
+    try {
+      validateI3SConversionSpatialReference(this.sourceTileset);
+    } catch (error) {
+      this.slpkFilesystem?.destroy();
+      this.slpkFilesystem = null;
+      throw error;
+    }
+    this.progress.startMonitoring();
 
     const rootNode = this.sourceTileset?.root;
     if (!rootNode.obb) {

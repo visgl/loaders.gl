@@ -394,7 +394,7 @@ export type SceneLayer3D = {
   /** PopupInfo of the scene layer. */
   popupInfo?: PopupInfo;
   /** Indicates if client application will show the popup information. Default is FALSE. */
-  disablePopup: boolean;
+  disablePopup?: boolean;
   /**
    * The store object describes the exact physical storage of a layer and
    * enables the client to detect when multiple layers are served from

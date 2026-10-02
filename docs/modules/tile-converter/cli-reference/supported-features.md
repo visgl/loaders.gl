@@ -56,6 +56,15 @@ The compatibility tables describe the converter's stated capabilities. They do n
 
 Large Frankfurt content checks remain outside the required fast job. Some excluded I3S-to-3D Tiles helper cases still depend on remote fixture URLs or private I3S test imports; they can move into a hermetic lane after those dependencies are removed.
 
+## I3S coordinate systems
+
+The legacy I3S-to-3D Tiles CLI requires WGS-84 longitude/latitude input (EPSG:4326).
+Reproject projected I3S datasets, including Web Mercator (EPSG:3857), before conversion.
+Explicit unsupported layer, node-index, or vertex CRS declarations produce an error before
+output is written. Missing CRS declarations retain the legacy WGS-84 assumption.
+The portable v5 spatial APIs have a separate CRS option surface; their transformation
+support does not extend the legacy CLI's coordinate-system support.
+
 ## Layer types
 
 | Specification | Layer type           | Status                                                                                             |

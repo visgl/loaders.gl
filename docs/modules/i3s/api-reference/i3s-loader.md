@@ -53,6 +53,8 @@ import {TiledSceneGraphic} from '@site/src/components/docs/tiled-scene-graphic';
 
 A loader for loading an [Indexed 3d Scene (I3S) layer](https://github.com/Esri/i3s-spec), and its geometries and textures data.
 
+Scene-layer metadata may omit `disablePopup`; validation applies the I3S default of `false`. Explicit boolean values are preserved.
+
 :::info[Choose the entry point]
 
 - Use `I3SLoader` with `load` or `parse` when the application needs a parsed layer, node, or tile
