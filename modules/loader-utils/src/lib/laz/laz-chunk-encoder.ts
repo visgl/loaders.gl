@@ -1620,6 +1620,16 @@ class Byte14LayerEncoder {
 
 /** Validate that raw records can be represented by the supported LASzip item set. */
 function validateMetadata(rawBytes: Uint8Array, metadata: LAZChunkMetadata): void {
+  if (
+    [
+      metadata.point10ItemVersion,
+      metadata.gpsTime11ItemVersion,
+      metadata.rgb12ItemVersion,
+      metadata.byteItemVersion
+    ].some(version => version !== undefined && version !== 2)
+  ) {
+    throw new Error('TypeScript LAZ encoder only supports legacy item version 2');
+  }
   if (!Number.isInteger(metadata.pointCount) || metadata.pointCount < 0) {
     throw new Error(`Invalid LAZ chunk point count ${metadata.pointCount}`);
   }
