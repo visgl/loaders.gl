@@ -8,7 +8,7 @@ import {makeMeshArrowTable, convertTableToMesh} from '@loaders.gl/schema-utils';
 import {parseLAS, parseLASInBatches, decodeLAZFileInBatches} from '../src/lib/typescript/parse-las';
 
 /** Generate a tiny fixed-chunk file without involving a remote fixture. */
-function createFixture(pointDataRecordFormat: 3 | 6 | 10): ArrayBuffer {
+function createFixture(pointDataRecordFormat: 3 | 6 | 10, chunkSize = 2): ArrayBuffer {
   return LASWriter.encodeSync!(
     makeMeshArrowTable({
       POSITION: {
@@ -16,7 +16,7 @@ function createFixture(pointDataRecordFormat: 3 | 6 | 10): ArrayBuffer {
         size: 3
       }
     }),
-    {las: {format: 'laz', pointDataRecordFormat, chunkSize: 2}}
+    {las: {format: 'laz', pointDataRecordFormat, chunkSize}}
   );
 }
 
@@ -88,4 +88,21 @@ test('recovery rejects the interrupted marker when chunk point counts are variab
   expect(() => parseLAS(incomplete, {las: {recoverMissingChunkTable: true}})).toThrow(
     /variable-size/
   );
+});
+
+test('recovery rejects stale LAS counts that would omit layered records', async () => {
+  const incomplete = removeChunkTable(createFixture(6, 5));
+  new DataView(incomplete).setBigUint64(247, 4n, true);
+  const options = {las: {recoverMissingChunkTable: true}};
+  expect(() => parseLAS(incomplete, options)).toThrow(/contains 5 points; expected 4/);
+  await expect(async () => {
+    for await (const _batch of parseLASInBatches(splitInput(incomplete), options)) {
+      /* Consume the stream to verify the embedded count before emitting recovered points. */
+    }
+  }).rejects.toThrow(/contains 5 points; expected 4/);
+  await expect(async () => {
+    for await (const _batch of decodeLAZFileInBatches(splitInput(incomplete), options)) {
+      /* Exercise the independent raw streaming path. */
+    }
+  }).rejects.toThrow(/contains 5 points; expected 4/);
 });

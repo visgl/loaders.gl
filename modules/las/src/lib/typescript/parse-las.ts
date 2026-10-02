@@ -538,6 +538,9 @@ async function* decodeLAZFileWithParsedVLRInBatches(
     chunkByteLengths.push(chunkByteLength);
     recordReadBytesStats(reader, chunkByteLength, state.stats);
     const compressedChunk = reader.readBytes(chunkByteLength);
+    if (options.las?.recoverMissingChunkTable && chunkTableOffset === header.pointsOffset) {
+      validateRecoveredLayeredPointCount(compressedChunk, metadata);
+    }
     for (const batch of appendDecodedLAZChunk(compressedChunk, metadata, outputHeader, state)) {
       yield batch;
     }
@@ -865,7 +868,8 @@ async function* parsePendingLAZFileInArrowBatches(
       metadata,
       outputHeader,
       state,
-      options
+      options,
+      Boolean(options.las?.recoverMissingChunkTable && chunkTableOffset === header.pointsOffset)
     );
     chunkByteLengths.push(chunkByteLength);
 
@@ -895,7 +899,8 @@ async function* appendProgressiveLAZChunkToPointDataBatches(
   metadata: LAZChunkMetadata,
   header: LASHeader,
   state: PointDataBatchState,
-  options: LASLoaderOptions
+  options: LASLoaderOptions,
+  validateRecoveryPointCount: boolean
 ): AsyncGenerator<LASArrowTable, number> {
   const headerByteLength = getLAZChunkHeaderByteLength(metadata);
   await readUntilAvailable(
@@ -905,6 +910,7 @@ async function* appendProgressiveLAZChunkToPointDataBatches(
     'LASLoader: incomplete layered LAZ chunk header'
   );
   const compressedHeader = reader.readBytes(headerByteLength);
+  if (validateRecoveryPointCount) validateRecoveredLayeredPointCount(compressedHeader, metadata);
   const chunkByteLength = getLAZChunkDeclaredByteLength(compressedHeader, metadata);
   const decoder = createLAZChunkDecoder(metadata);
   decoder.feed(compressedHeader);
@@ -2548,6 +2554,7 @@ function recoverFixedLAZChunkTable(
       }
       byteLength = cursor.compressedByteOffset;
     } else {
+      validateRecoveredLayeredPointCount(compressed, metadata);
       byteLength = getLAZChunkDeclaredByteLength(compressed, metadata);
     }
     if (!byteLength || byteOffset + byteLength > bytes.byteLength) {
@@ -2561,6 +2568,23 @@ function recoverFixedLAZChunkTable(
     throw new Error('LASLoader: unexpected bytes after recovered LAZ chunks');
   }
   return chunks;
+}
+
+/** Require recovered layered chunks to agree with the inferred header point count. */
+function validateRecoveredLayeredPointCount(
+  compressed: Uint8Array,
+  metadata: LAZChunkMetadata
+): void {
+  if (compressed.byteLength < metadata.pointDataRecordLength + 4) {
+    throw new NeedsMoreData('LASLoader: truncated recovered layered LAZ chunk header');
+  }
+  const view = new DataView(compressed.buffer, compressed.byteOffset, compressed.byteLength);
+  const pointCount = view.getUint32(metadata.pointDataRecordLength, true);
+  if (pointCount !== metadata.pointCount) {
+    throw new Error(
+      `LASLoader: recovered layered LAZ chunk contains ${pointCount} points; expected ${metadata.pointCount}`
+    );
+  }
 }
 
 /** Decode and validate a LAZ chunk table whose first byte is the table version. */
