@@ -15,6 +15,7 @@ export type {
   TileValidationReport,
   ValidateTilesetOptions
 } from './conversion-api.js';
+export {createTilesetConversionSource} from './tileset-source.js';
 export {
   createI3SConversionSpatialContext,
   createTiles3DConversionSpatialContext

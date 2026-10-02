@@ -12,6 +12,34 @@ The original converter implementation lives in `src/v4`, and the newer conversio
 `src/v5`. The package root remains the compatibility entrypoint for the original converter. Shared
 implementation belongs in `src/common` only when it is intentionally used by multiple versions.
 
+## V5 source-backed mesh traversal
+
+`createTilesetConversionSource(tileset)` adapts an initializing or initialized `Tileset3D` backed
+by `Tiles3DSource`, `I3SSource`, or a compatible archive source to the v5 conversion core. Inspection
+returns normalized source metadata after initialization. Reading delegates to shared
+camera-independent traversal and yields one placement with all its ordered decoded content entries,
+including empty placements. A codec can inspect each content's payload, feature descriptors and
+bounds together with the tile's placement transform.
+
+```ts
+import {createTilesetConversionSource, convertTileset} from '@loaders.gl/tile-converter/v5';
+
+const report = await convertTileset({
+  source: createTilesetConversionSource(tileset),
+  codec: meshCodec,
+  sink: outputSink,
+  measureInputBytes: measureDecodedTileBytes,
+  measureOutputBytes: measureEncodedResourceBytes,
+  signal: abortController.signal
+});
+```
+
+Writes are awaited by the core before traversal advances. Loaded content stays attached to runtime
+tiles; applications own unloading and tileset destruction. This adapter does not bound aggregate
+input memory, apply CRS transforms, or supply a mesh codec or output packaging. Inspection observes
+cancellation before and after initialization; initialization and in-flight content reads retain the
+underlying source's cancellation behavior.
+
 ## V5 spatial conversion
 
 The `@loaders.gl/tile-converter/v5` entrypoint can reuse the CRS and elevation operations from

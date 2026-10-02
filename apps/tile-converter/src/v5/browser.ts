@@ -8,6 +8,7 @@ export {
   TileConversionError,
   validateTileset
 } from './conversion-api.js';
+export {createTilesetConversionSource} from './tileset-source.js';
 export type {
   ConvertTilesetOptions,
   TileConversionCodec,
