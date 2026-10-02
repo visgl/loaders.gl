@@ -2,7 +2,13 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import {DataType, TypedArray, TypedArrayConstructor, ArrayType} from '@loaders.gl/schema';
+import {
+  DataType,
+  BigTypedArray,
+  TypedArray,
+  TypedArrayConstructor,
+  ArrayType
+} from '@loaders.gl/schema';
 import {getFloat16ArrayConstructor} from '@math.gl/types';
 
 /** Deduce column types from values */
@@ -47,7 +53,7 @@ export function getDataTypeFromArray(array: ArrayType): {type: DataType; nullabl
 /**
  * Deduces a simple data type "descriptor from a typed array instance
  */
-export function getDataTypeFromTypedArray(array: TypedArray): DataType {
+export function getDataTypeFromTypedArray(array: BigTypedArray): DataType {
   if (typeof Float16Array !== 'undefined' && array instanceof Float16Array) {
     return 'float16';
   }
@@ -65,6 +71,10 @@ export function getDataTypeFromTypedArray(array: TypedArray): DataType {
       return 'int32';
     case Uint32Array:
       return 'uint32';
+    case BigInt64Array:
+      return 'int64';
+    case BigUint64Array:
+      return 'uint64';
     case Float32Array:
       return 'float32';
     case Float64Array:
