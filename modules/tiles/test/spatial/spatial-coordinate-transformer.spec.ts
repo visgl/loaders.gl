@@ -151,7 +151,7 @@ describe('SpatialCoordinateTransformer', () => {
     );
   });
 
-  test('rejects PROJJSON object types unsupported by proj4js', () => {
+  test('rejects a standalone vertical CRS for horizontal projection', () => {
     const spatialReference = createTilesetSpatialReference(
       {
         sourceCrs: {
@@ -170,7 +170,7 @@ describe('SpatialCoordinateTransformer', () => {
     );
 
     expect(() => new SpatialCoordinateTransformer(spatialReference)).toThrow(
-      'VerticalCRS is not supported by proj4js'
+      'Unsupported CRS type: VerticalCRS'
     );
   });
 

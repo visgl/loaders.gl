@@ -19,7 +19,7 @@ import {
   makeWKBGeometryField,
   setWKBGeometryColumnMetadata
 } from '@loaders.gl/gis';
-import {Proj4Projection, toProj4CRSDefinition} from '@math.gl/proj4';
+import {Projection, type Proj4CRSDefinition} from '@math.gl/proj4';
 import type {WKTCRSDefinition} from '@math.gl/crs';
 import {SHPLoaderWithParser} from './shp-loader-with-parser';
 import {DBFLoaderWithParser} from './dbf-loader-with-parser';
@@ -336,9 +336,9 @@ function getReprojectionTransform(
     );
   }
   try {
-    const projection = new Proj4Projection({
+    const projection = new Projection({
       from: sourceCrs,
-      to: toProj4CRSDefinition(targetCrs || 'WGS84')
+      to: (targetCrs || 'WGS84') as Proj4CRSDefinition
     });
     return coordinate => projection.project(coordinate);
   } catch (error) {
