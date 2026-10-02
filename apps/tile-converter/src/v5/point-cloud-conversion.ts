@@ -23,6 +23,8 @@ export interface ConvertPointCloudSourceOptions extends EncodePointCloudSourceOp
   readonly sink: TileConversionSink<EncodedPointCloudSourceTile>;
   /** Input byte accounting for each visited source tile, including tiles with null content. */
   readonly measureInputBytes: (sourceTile: PointCloudSourceTile) => number;
+  /** Maximum caller-measured bytes in one decoded source tile, checked before PNTS encoding. */
+  readonly maxInputResourceBytes?: number;
   /** Maximum bytes in one encoded PNTS resource. Defaults to no limit. */
   readonly maxOutputResourceBytes?: number;
   /** Receive conversion progress, including resource counts and caller-measured input bytes. */
@@ -70,6 +72,7 @@ export function convertPointCloudSource(
     sink: options.sink,
     measureInputBytes: options.measureInputBytes,
     measureOutputBytes: resource => resource.pnts.byteLength,
+    maxInputResourceBytes: options.maxInputResourceBytes,
     maxOutputResourceBytes: options.maxOutputResourceBytes,
     signal: options.signal,
     onProgress: options.onProgress
