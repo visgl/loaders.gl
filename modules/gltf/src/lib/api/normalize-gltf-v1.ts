@@ -367,14 +367,28 @@ class GLTFV1Normalizer {
         material.values?.diffuseTex ||
         material.values?.diffuse;
       const textureIndex = json.textures.findIndex(texture => texture.id === textureId);
-      if (textureIndex !== -1) {
-        material.pbrMetallicRoughness ||= {
-          baseColorFactor: [1, 1, 1, 1],
-          metallicFactor: 1,
-          roughnessFactor: 1
-        };
-        material.pbrMetallicRoughness.baseColorTexture = {index: textureIndex};
-      } else if (material.technique || material.values) {
+      const diffuse = material.values?.diffuse;
+      const diffuseColor = isUnitColorFactor(diffuse) ? diffuse : undefined;
+      if (textureIndex !== -1 || diffuseColor) {
+        const baseColorFactor = diffuseColor ? [...diffuseColor] : [1, 1, 1, 1];
+        const transparency = material.values?.transparency;
+        if (typeof transparency === 'number' && transparency >= 0 && transparency <= 1) {
+          baseColorFactor[3] *= transparency;
+        }
+        material.pbrMetallicRoughness ||= {};
+        material.pbrMetallicRoughness.metallicFactor ??= 0;
+        material.pbrMetallicRoughness.roughnessFactor ??= 1;
+        material.pbrMetallicRoughness.baseColorFactor ||= baseColorFactor;
+        if (textureIndex !== -1) {
+          material.pbrMetallicRoughness.baseColorTexture = {index: textureIndex};
+        }
+        if (material.pbrMetallicRoughness.baseColorFactor[3] < 1) {
+          material.alphaMode ||= 'BLEND';
+        }
+        this._warning('Approximated glTF v1 diffuse material values with PBR material factors.');
+      }
+      // Recognizing a conventional uniform does not translate its arbitrary shader program.
+      if (material.technique || material.values) {
         this._unsupported(`material technique ${material.technique || '<unnamed>'}`);
       }
     }
@@ -460,6 +474,15 @@ class GLTFV1Normalizer {
       );
     }
   }
+}
+
+/** Check whether a legacy diffuse value is a finite RGBA factor in the glTF 2 unit range. */
+function isUnitColorFactor(value: unknown): value is [number, number, number, number] {
+  return (
+    Array.isArray(value) &&
+    value.length === 4 &&
+    value.every(component => typeof component === 'number' && component >= 0 && component <= 1)
+  );
 }
 
 /** Normalize a glTF 1 asset in place, preserving the historical loader behavior. */

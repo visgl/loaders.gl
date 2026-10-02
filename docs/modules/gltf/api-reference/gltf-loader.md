@@ -73,7 +73,18 @@ For applications that need explicit conversion diagnostics, `normalizeGLTFV1()` 
 listing unsupported legacy features. Use `normalize: 'strict'` to reject those features instead of
 continuing with a best-effort conversion. `convertGLTFV1ToGLTF2()` performs the same conversion on
 a cloned JSON document and leaves the caller's asset untouched. Legacy techniques, programs, and
-shaders are preserved under `json.extras.gltf1Resources`; they are not guessed into PBR materials.
+shaders are preserved under `json.extras.gltf1Resources`; their shader behavior is not translated.
+
+Best-effort material conversion recognizes conventional `values.diffuse` RGBA factors and
+diffuse texture IDs (`tex`, `texture2d_0`, `diffuseTex`, or `diffuse`). It approximates these as
+non-metallic, rough PBR materials. A finite scalar `values.transparency` in `[0, 1]` multiplies
+the diffuse alpha, with `0` meaning transparent and `1` opaque; resulting alpha below `1`
+enables blending unless an alpha mode is already supplied. Explicit PBR factors are retained.
+Invalid diffuse factors are not emitted as PBR factors. The original technique and values
+remain in `material.extras.gltf1`, and the report identifies the approximation and unsupported
+technique. Strict mode rejects these legacy material techniques even when a diffuse texture
+or color is recognized. This does not reproduce arbitrary shaders, legacy lighting, or
+premultiplied-alpha rendering, and does not establish visual equivalence in downstream viewers.
 
 ## Usage
 
