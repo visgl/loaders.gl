@@ -1,0 +1,6 @@
+The LASzip item version 1 decoding algorithms in laz-chunk-decoder.ts are adapted
+from LASzip, https://github.com/LASzip/LASzip (src/lasreaditemcompressed_v1.cpp).
+Copyright (c) 2007-2022 rapidlasso GmbH.
+Licensed under the Apache License, Version 2.0; see LASZIP-LICENSE.
+The TypeScript adaptation, direct column output, and incremental input support
+were added by the vis.gl contributors.
