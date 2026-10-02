@@ -25,7 +25,7 @@ bounds together with the tile's placement transform.
 import {createTilesetConversionSource, convertTileset} from '@loaders.gl/tile-converter/v5';
 
 const report = await convertTileset({
-  source: createTilesetConversionSource(tileset),
+  source: createTilesetConversionSource(tileset, {unloadContent: true}),
   codec: meshCodec,
   sink: outputSink,
   measureInputBytes: measureDecodedTileBytes,
@@ -35,9 +35,15 @@ const report = await convertTileset({
 });
 ```
 
-Writes are awaited by the core before traversal advances. Loaded content stays attached to runtime
-tiles; applications own unloading and tileset destruction. This adapter does not bound aggregate
-input memory, apply CRS transforms, or supply a mesh codec or output packaging. Inspection observes
+Writes are awaited by the core before traversal advances. The example uses a runtime dedicated to
+conversion and enables `unloadContent` to release newly loaded payloads after their codec and writes
+finish. Cleanup also runs when iteration closes on failure or cancellation, including rejection by
+the input-size gate. Consume payloads before advancing; codecs and sinks must not retain them after
+their work completes. Preloaded payloads are retained. Omit the option to keep all loaded content
+attached, as before. Applications still own tileset destruction and source/archive lifetimes.
+
+This adapter does not bound aggregate input memory, apply CRS transforms, or supply a mesh codec
+or output packaging. Inspection observes
 cancellation before and after initialization; initialization and in-flight content reads retain the
 underlying source's cancellation behavior.
 

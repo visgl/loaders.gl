@@ -12,6 +12,12 @@ import {TILESET_TYPE} from '../../constants';
 export interface TraverseTilesetContentsOptions {
   /** Cancel traversal and stop issuing further source requests. */
   readonly signal?: AbortSignal;
+  /**
+   * Unload content loaded by this traversal when iteration advances or closes, including on error.
+   * Defaults to false. Preloaded content is retained. Use a runtime dedicated to this traversal;
+   * consume payloads before advancing and do not retain them or update the runtime concurrently.
+   */
+  readonly unloadContent?: boolean;
 }
 
 /** One tile placement and its ordered content entries from a completed source read. */
@@ -28,11 +34,12 @@ export interface TilesetContentTraversalItem {
  * Source implementations remain responsible for lazy subtree and node-page resolution. Children
  * are visited in declaration order, nested tilesets are installed by the source before descent,
  * and repeated resource URLs are not deduplicated because each placement can have a distinct
- * transform. Content stays attached to its tile until the caller unloads it or destroys the
- * tileset.
+ * transform. Content stays attached unless `unloadContent` is enabled. In that mode, newly loaded
+ * payloads are valid until iteration advances or closes. Tile placements and children remain
+ * available; callers still own the tileset, source, and archive lifetime.
  *
  * @param tileset - Initialized or initializing source-backed tileset runtime.
- * @param options - Cancellation options for source-managed requests.
+ * @param options - Cancellation and decoded-content lifetime options.
  * @returns One item for each visited tile placement in deterministic depth-first order.
  */
 export async function* traverseTilesetContents(
@@ -75,17 +82,23 @@ export async function* traverseTilesetContents(
     }
 
     throwIfAborted(options.signal);
-    let loadResult: TileContentLoadResult | null = null;
-    if (tile.contentUrls.length > 0 && !tile.content) {
-      loadResult = await tile.loadContentForTraversal();
-      throwIfAborted(options.signal);
-      if (!loadResult.loaded) {
-        throw new Error(`Unable to load tile content for tile ${tile.id}`);
+    const loadsContent = tile.contentUrls.length > 0 && !tile.content;
+    try {
+      if (loadsContent) {
+        const loadResult: TileContentLoadResult = await tile.loadContentForTraversal();
+        throwIfAborted(options.signal);
+        if (!loadResult.loaded) {
+          throw new Error(`Unable to load tile content for tile ${tile.id}`);
+        }
+        tileset.source.onTileLoaded?.(tileset, tile, loadResult);
       }
-      tileset.source.onTileLoaded?.(tileset, tile, loadResult);
-    }
 
-    yield {tile, contents: tile.contentEntries};
+      yield {tile, contents: tile.contentEntries};
+    } finally {
+      if (options.unloadContent && loadsContent) {
+        tile.unloadContent();
+      }
+    }
 
     for (let childIndex = tile.children.length - 1; childIndex >= 0; childIndex--) {
       stack.push(tile.children[childIndex]);
