@@ -312,6 +312,13 @@ rows have either landed or an explicit, versioned compatibility boundary. Render
 evaluation is intentionally outside the loader contract; loaders.gl guarantees typed metadata and
 loss-minimized preservation for downstream rendering systems.
 
+## Material color factors
+
+The loader preserves material color factors in the normalized 0–1 range specified by I3S.
+It also accepts legacy byte-valued factors, normalizing base-color and emissive factors together when
+any explicitly supplied color component exceeds 1. This applies to base color, alpha, and emissive factors, and
+prevents normalized white materials from dimming their textures during conversion.
+
 ## Related specifications and documentation
 
 - [Current I3S format specification](https://github.com/Esri/i3s-spec/blob/master/format/Indexed%203d%20Scene%20Layer%20Format%20Specification.md)

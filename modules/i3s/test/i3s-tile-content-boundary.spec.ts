@@ -21,6 +21,72 @@ const geometrySchema = {
 } as any;
 
 describe('I3S tile content boundaries', () => {
+  test.each([
+    {name: 'white', colorFactor: [1, 1, 1, 1]},
+    {name: 'fractional color and alpha', colorFactor: [0.25, 0.5, 0.75, 0.5]},
+    {name: 'opaque black', colorFactor: [0, 0, 0, 1]}
+  ])('preserves normalized $name material factors', async ({colorFactor}) => {
+    const materialDefinition = {
+      emissiveFactor: colorFactor.slice(0, 3),
+      pbrMetallicRoughness: {
+        baseColorFactor: [...colorFactor],
+        baseColorTexture: {textureSetDefinitionId: 0}
+      }
+    };
+    const content = await parseI3STileContent(
+      createGeometry(),
+      {mbs: [0, 0, 0], textureUrl: '/texture', textureFormat: 'jpg', materialDefinition} as any,
+      geometrySchema,
+      {i3s: {decodeTextures: false}} as any,
+      createContext()
+    );
+    expect(content.material.pbrMetallicRoughness.baseColorFactor).toEqual(colorFactor);
+    expect(content.material.emissiveFactor).toEqual(colorFactor.slice(0, 3));
+    expect(content.material.pbrMetallicRoughness.baseColorTexture.texture).toBeDefined();
+    expect(materialDefinition.pbrMetallicRoughness.baseColorFactor).toEqual(colorFactor);
+  });
+
+  test.each([
+    {
+      name: 'legacy low emissive',
+      emissiveFactor: [1, 1, 1],
+      baseColorFactor: [255, 255, 255, 255],
+      expectedEmissive: [1 / 255, 1 / 255, 1 / 255]
+    },
+    {
+      name: 'legacy emissive only',
+      emissiveFactor: [255, 128, 0],
+      baseColorFactor: undefined,
+      expectedEmissive: [1, 128 / 255, 0]
+    },
+    {
+      name: 'normalized emissive only',
+      emissiveFactor: [1, 0.5, 0],
+      baseColorFactor: undefined,
+      expectedEmissive: [1, 0.5, 0]
+    }
+  ])('uses consistent color encoding for $name', async ({
+    emissiveFactor,
+    baseColorFactor,
+    expectedEmissive
+  }) => {
+    const content = await parseI3STileContent(
+      createGeometry(),
+      {
+        mbs: [0, 0, 0],
+        materialDefinition: {
+          emissiveFactor,
+          ...(baseColorFactor ? {pbrMetallicRoughness: {baseColorFactor}} : {})
+        }
+      } as any,
+      geometrySchema,
+      {i3s: {decodeTextures: false}} as any,
+      createContext()
+    );
+    expect(content.material.emissiveFactor).toEqual(expectedEmissive);
+    expect(content.material.pbrMetallicRoughness.baseColorFactor).toEqual([1, 1, 1, 1]);
+  });
+
   test('routes every texture format and material texture slot with raw payloads', async () => {
     const textureFormats = ['jpg', 'png', 'ktx-etc2', 'dds', 'ktx2'] as const;
     const textureSlots = [
