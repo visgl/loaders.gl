@@ -802,6 +802,12 @@ function makePbrMaterial(
   textures: Record<string, TileContentTexture> = {},
   texture?: TileContentTexture
 ) {
+  const colorScale = [
+    materialDefinition?.emissiveFactor,
+    materialDefinition?.pbrMetallicRoughness?.baseColorFactor
+  ].some(colorFactor => colorFactor?.some(component => component > 1))
+    ? 255
+    : 1;
   let pbrMaterial;
   if (materialDefinition) {
     pbrMaterial = {
@@ -826,7 +832,7 @@ function makePbrMaterial(
               ? {...materialDefinition.pbrMetallicRoughness.metallicRoughnessTexture}
               : undefined
           }
-        : {baseColorFactor: [255, 255, 255, 255]}
+        : {baseColorFactor: [colorScale, colorScale, colorScale, colorScale]}
     };
   } else {
     pbrMaterial = {
@@ -835,7 +841,12 @@ function makePbrMaterial(
     if (texture) {
       pbrMaterial.pbrMetallicRoughness.baseColorTexture = {texCoord: 0};
     } else {
-      pbrMaterial.pbrMetallicRoughness.baseColorFactor = [255, 255, 255, 255];
+      pbrMaterial.pbrMetallicRoughness.baseColorFactor = [
+        colorScale,
+        colorScale,
+        colorScale,
+        colorScale
+      ];
     }
   }
 
@@ -849,11 +860,12 @@ function makePbrMaterial(
 
   // Convert colors from [255,255,255,255] to [1,1,1,1]
   if (pbrMaterial.emissiveFactor) {
-    pbrMaterial.emissiveFactor = convertColorFormat(pbrMaterial.emissiveFactor);
+    pbrMaterial.emissiveFactor = convertColorFormat(pbrMaterial.emissiveFactor, colorScale);
   }
   if (pbrMaterial.pbrMetallicRoughness && pbrMaterial.pbrMetallicRoughness.baseColorFactor) {
     pbrMaterial.pbrMetallicRoughness.baseColorFactor = convertColorFormat(
-      pbrMaterial.pbrMetallicRoughness.baseColorFactor
+      pbrMaterial.pbrMetallicRoughness.baseColorFactor,
+      colorScale
     );
   }
 
@@ -867,14 +879,15 @@ function makePbrMaterial(
 }
 
 /**
- * Convert color from [255,255,255,255] to [1,1,1,1]
+ * Preserve normalized I3S material factors and normalize legacy byte-valued factors.
+ * @param colorScale - shared scale inferred from explicitly supplied material factors.
  * @param colorFactor - color array
  * @returns - new color array
  */
-function convertColorFormat(colorFactor: number[]): number[] {
+function convertColorFormat(colorFactor: number[], colorScale: number): number[] {
   const normalizedColor = [...colorFactor];
   for (let index = 0; index < colorFactor.length; index++) {
-    normalizedColor[index] = colorFactor[index] / 255;
+    normalizedColor[index] = colorFactor[index] / colorScale;
   }
   return normalizedColor;
 }
