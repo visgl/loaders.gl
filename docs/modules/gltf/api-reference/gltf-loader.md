@@ -95,6 +95,11 @@ const gltf = await load(url, GLTFLoaderWithParser);
 binary-container parsing. The root `GLTFLoader` and `GLBLoader` exports remain metadata-only;
 applications that prefer lazy parser loading can continue using those exports.
 
+Repeated dynamic imports normally reuse the evaluated module. Linking the parser implementation
+removes repeated asynchronous dispatch and continuation overhead; it does not avoid a fresh parser
+download or initialization for every tile. The tradeoff is a larger initial dependency graph when
+the containing parser implementation first loads, which should be included in cold-start measurements.
+
 To decompress Draco-compressed meshes:
 
 ```ts

@@ -11,7 +11,8 @@
 // - Do we add an option to control this?
 // - Also, should we have hard dependency on gltf module or use injection or auto-discovery for gltf parser?
 
-import {GLTFLoader, postProcessGLTF, _getMemoryUsageGLTF} from '@loaders.gl/gltf';
+import {postProcessGLTF, _getMemoryUsageGLTF} from '@loaders.gl/gltf';
+import {GLTFLoaderWithParser} from '@loaders.gl/gltf/gltf-loader-with-parser';
 import {LoaderContext, sliceArrayBuffer, parseFromContext} from '@loaders.gl/loader-utils';
 import {Tiles3DTileContent} from '../../../types';
 import {Tiles3DLoaderOptions} from '../../../tiles-3d-loader';
@@ -89,7 +90,7 @@ export async function extractGLTF(
       // TODO - Should handle byteOffset... However, not used now...
       const gltfWithBuffers = await parseFromContext(
         tile.gltfArrayBuffer,
-        GLTFLoader,
+        GLTFLoaderWithParser,
         options,
         context
       );
