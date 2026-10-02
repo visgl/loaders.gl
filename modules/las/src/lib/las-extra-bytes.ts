@@ -13,7 +13,9 @@ export type LASTypedExtraBytesValue =
   | Uint32Array
   | Int32Array
   | Float32Array
-  | Float64Array;
+  | Float64Array
+  | BigInt64Array
+  | BigUint64Array;
 
 /** Prepared typed LAS Extra Bytes attribute and its source-record layout. */
 export type LASTypedExtraBytesAttribute = {
@@ -88,11 +90,6 @@ export function createLASTypedExtraBytesAttributes(
     if (descriptor.dataType < 1 || descriptor.dataType > 30 || !byteLength) {
       throw new Error(`Unsupported typed LAS Extra Bytes data type ${descriptor.dataType}`);
     }
-    if (scalarDataType === 7 || scalarDataType === 8) {
-      throw new Error(
-        `Typed LAS Extra Bytes data type ${descriptor.dataType} requires BigInt output`
-      );
-    }
     let name = `EXTRA_BYTES_${sanitizeExtraBytesName(descriptor.name)}`;
     if (name === 'EXTRA_BYTES_') {
       name = `EXTRA_BYTES_${descriptorIndex}`;
@@ -103,7 +100,16 @@ export function createLASTypedExtraBytesAttributes(
       name = `${baseName}_${suffix++}`;
     }
     usedNames.add(name);
-    const outputFloat64 = Boolean(descriptor.options & 0x18) && scalarDataType !== 10;
+    const scales =
+      descriptor.options & 0x08 ? descriptor.scales.slice(0, size) : new Array(size).fill(1);
+    const offsets =
+      descriptor.options & 0x10 ? descriptor.offsets.slice(0, size) : new Array(size).fill(0);
+    const isBigInt = scalarDataType === 7 || scalarDataType === 8;
+    const outputFloat64 =
+      scalarDataType !== 10 &&
+      (isBigInt
+        ? scales.some(scale => scale !== 1) || offsets.some(offset => offset !== 0)
+        : Boolean(descriptor.options & 0x18));
     attributes.push({
       name,
       value: createLASTypedExtraBytesValue(scalarDataType, pointCount * size, outputFloat64),
@@ -112,10 +118,8 @@ export function createLASTypedExtraBytesAttributes(
       byteOffset,
       byteLength,
       outputFloat64,
-      scales:
-        descriptor.options & 0x08 ? descriptor.scales.slice(0, size) : new Array(size).fill(1),
-      offsets:
-        descriptor.options & 0x10 ? descriptor.offsets.slice(0, size) : new Array(size).fill(0)
+      scales,
+      offsets
     });
     byteOffset += byteLength;
   }
@@ -149,14 +153,13 @@ export function populateLASTypedExtraBytes(
       const sourceOffset = recordOffset + attribute.byteOffset;
       const scalarByteLength = getExtraBytesScalarByteLength(attribute.scalarDataType);
       for (let componentIndex = 0; componentIndex < attribute.size; componentIndex++) {
-        attribute.value[targetOffset + componentIndex] =
-          readExtraBytesValue(
-            dataView,
-            sourceOffset + componentIndex * scalarByteLength,
-            attribute.scalarDataType
-          ) *
-            attribute.scales[componentIndex] +
-          attribute.offsets[componentIndex];
+        populateLASTypedExtraBytesComponent(
+          dataView,
+          sourceOffset + componentIndex * scalarByteLength,
+          attribute,
+          targetOffset + componentIndex,
+          componentIndex
+        );
       }
     }
   }
@@ -189,7 +192,11 @@ function getExtraBytesScalarByteLength(dataType: number): number {
   return 0;
 }
 
-function readExtraBytesValue(dataView: DataView, offset: number, scalarDataType: number): number {
+function readExtraBytesValue(
+  dataView: DataView,
+  offset: number,
+  scalarDataType: number
+): number | bigint {
   switch (scalarDataType) {
     case 1:
       return dataView.getUint8(offset);
@@ -203,6 +210,10 @@ function readExtraBytesValue(dataView: DataView, offset: number, scalarDataType:
       return dataView.getUint32(offset, true);
     case 6:
       return dataView.getInt32(offset, true);
+    case 7:
+      return dataView.getBigUint64(offset, true);
+    case 8:
+      return dataView.getBigInt64(offset, true);
     case 9:
       return dataView.getFloat32(offset, true);
     case 10:
@@ -232,11 +243,32 @@ export function createLASTypedExtraBytesValue(
       return new Uint32Array(length);
     case 6:
       return new Int32Array(length);
+    case 7:
+      return new BigUint64Array(length);
+    case 8:
+      return new BigInt64Array(length);
     case 9:
       return new Float32Array(length);
     case 10:
       return new Float64Array(length);
     default:
       throw new Error(`Unsupported typed LAS Extra Bytes scalar data type ${scalarDataType}`);
+  }
+}
+
+/** Decode one descriptor component, retaining integer precision unless a transform is requested. */
+export function populateLASTypedExtraBytesComponent(
+  dataView: DataView,
+  sourceOffset: number,
+  attribute: LASTypedExtraBytesAttribute,
+  targetOffset: number,
+  componentIndex: number
+): void {
+  const value = readExtraBytesValue(dataView, sourceOffset, attribute.scalarDataType);
+  if (attribute.value instanceof BigInt64Array || attribute.value instanceof BigUint64Array) {
+    attribute.value[targetOffset] = value as bigint;
+  } else {
+    attribute.value[targetOffset] =
+      Number(value) * attribute.scales[componentIndex] + attribute.offsets[componentIndex];
   }
 }

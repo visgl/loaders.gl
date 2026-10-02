@@ -57,6 +57,8 @@ describe('LAS Extra Bytes utilities', () => {
     [4, Int16Array],
     [5, Uint32Array],
     [6, Int32Array],
+    [7, BigUint64Array],
+    [8, BigInt64Array],
     [9, Float32Array],
     [10, Float64Array]
   ] as const)('allocates scalar data type %i with its native typed array', (dataType, ArrayType) => {
@@ -140,19 +142,53 @@ describe('LAS Extra Bytes utilities', () => {
     );
   });
 
-  test.each([0, 7, 8, 17, 18, 27, 28, 31])('rejects unsupported typed descriptor %i', dataType => {
+  test.each([0, 31])('rejects unsupported typed descriptor %i', dataType => {
     const payload = new Uint8Array(192);
     payload[2] = dataType;
     expect(() => createLASTypedExtraBytesAttributes(1, parseLASExtraBytes(payload), 0)).toThrow(
-      dataType === 7 ||
-        dataType === 8 ||
-        dataType === 17 ||
-        dataType === 18 ||
-        dataType === 27 ||
-        dataType === 28
-        ? /BigInt output/
-        : /Unsupported typed/
+      /Unsupported typed/
     );
+  });
+
+  test.each([
+    7, 8, 17, 18, 27, 28
+  ])('preserves the complete 64-bit range for descriptor %i', dataType => {
+    const size = dataType > 20 ? 3 : dataType > 10 ? 2 : 1;
+    const signed = dataType % 10 === 8;
+    const payload = new Uint8Array(192);
+    payload[2] = dataType;
+    const attributes = createLASTypedExtraBytesAttributes(3, parseLASExtraBytes(payload), size * 8);
+    const storage = new Uint8Array(1 + 3 * size * 8);
+    const rawValues = storage.subarray(1);
+    const rawView = new DataView(rawValues.buffer, rawValues.byteOffset, rawValues.byteLength);
+    const values = signed
+      ? [-(1n << 63n), -9007199254740993n, (1n << 63n) - 1n]
+      : [0n, 9007199254740993n, (1n << 64n) - 1n];
+    for (let index = 0; index < size * 3; index++) {
+      if (signed) rawView.setBigInt64(index * 8, values[Math.floor(index / size)], true);
+      else rawView.setBigUint64(index * 8, values[Math.floor(index / size)], true);
+    }
+    populateLASTypedExtraBytes(rawValues, 3, size * 8, attributes);
+    expect(attributes[0].value).toBeInstanceOf(signed ? BigInt64Array : BigUint64Array);
+    expect([...attributes[0].value]).toEqual(values.flatMap(value => new Array(size).fill(value)));
+  });
+
+  test('retains BigInt for identity transforms and uses Float64 for nonidentity transforms', () => {
+    const payload = new Uint8Array(192);
+    payload[2] = 8;
+    payload[3] = 0x18;
+    const descriptorView = new DataView(payload.buffer);
+    descriptorView.setFloat64(112, 1, true);
+    const identity = createLASTypedExtraBytesAttributes(1, parseLASExtraBytes(payload), 8);
+    expect(identity[0].value).toBeInstanceOf(BigInt64Array);
+    descriptorView.setFloat64(112, 0.5, true);
+    descriptorView.setFloat64(136, 10, true);
+    const transformed = createLASTypedExtraBytesAttributes(1, parseLASExtraBytes(payload), 8);
+    const rawValues = new Uint8Array(8);
+    new DataView(rawValues.buffer).setBigInt64(0, -20n, true);
+    populateLASTypedExtraBytes(rawValues, 1, 8, transformed);
+    expect(transformed[0].value).toBeInstanceOf(Float64Array);
+    expect(transformed[0].value[0]).toBe(0);
   });
 
   test('rejects descriptor layouts that do not match packed records', () => {

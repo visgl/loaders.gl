@@ -778,8 +778,8 @@ test('LASLoader#TypeScript rejects unsupported LASzip item versions', async () =
     {
       url: PDRF_4_LAZ_1_3_BINARY_URL,
       itemType: 6,
-      invalidVersion: 1,
-      error: /unsupported legacy LASzip item type 6 version 1/,
+      invalidVersion: 3,
+      error: /unsupported legacy LASzip item type 6 version 3/,
       label: 'Point10'
     },
     {

@@ -17,7 +17,7 @@ import {
 } from '@loaders.gl/copc';
 import {LASLoader} from '@loaders.gl/las';
 import {decodeLAZChunk, decodeLAZChunkTable} from '@loaders.gl/loader-utils';
-import {deduceMeshSchema} from '@loaders.gl/schema-utils';
+import {deduceMeshSchema, makeMeshArrowTable, convertTableToMesh} from '@loaders.gl/schema-utils';
 import {getFloat16Value} from '@loaders.gl/schema';
 
 const ELLIPSOID_FILE_PATH = 'modules/copc/test/data/ellipsoid.copc.laz';
@@ -608,6 +608,74 @@ test('COPCSourceLoader#includes typed Extra Bytes dimensions in its schema', asy
     nullable: false
   });
 });
+test('COPCSourceLoader#scans exact 64-bit Extra Bytes with scalar and vector schemas', async () => {
+  const file = encodeSync(
+    makeMeshArrowTable({
+      POSITION: {value: new Float64Array([1, 2, 3, 4, 5, 6, 7, 8, 9]), size: 3}
+    }),
+    COPCWriter,
+    {copc: {pointDataRecordFormat: 6}}
+  );
+  const source = COPCSourceLoader.createDataSource(new Blob([file]), {core: {worker: false}});
+  const root = await source.getRootTile();
+  const content = await source.loadTileContent(root);
+  expect(content).toBeTruthy();
+  const unsigned = new BigUint64Array([0n, 9007199254740993n, (1n << 64n) - 1n]);
+  const signed = new BigInt64Array([-(1n << 63n), -9007199254740993n, (1n << 63n) - 1n]);
+  const vector = new BigInt64Array([...signed, ...signed, ...signed]);
+  const data = makeMeshArrowTable({
+    ...convertTableToMesh(content!.data).attributes,
+    EXTRA_BYTES_unsigned: {value: unsigned, size: 1},
+    EXTRA_BYTES_signed: {value: signed, size: 1},
+    EXTRA_BYTES_vector: {value: vector, size: 3}
+  });
+  const metadata = await source.getMetadata();
+  metadata.formatSpecificMetadata.header.pointDataRecordLength += 40;
+  metadata.formatSpecificMetadata.extraBytesDescriptors = [
+    [7, 'unsigned'],
+    [8, 'signed'],
+    [28, 'vector']
+  ].map(([dataType, name]) => ({
+    dataType: Number(dataType),
+    options: 0,
+    name: String(name),
+    description: '',
+    scale: 0,
+    offset: 0,
+    scales: [0, 0, 0] as [number, number, number],
+    offsets: [0, 0, 0] as [number, number, number],
+    data: new Uint8Array(192)
+  }));
+  /** Supply the independently tested decoder columns at the scan integration boundary. */
+  async function* readInt64Batch() {
+    yield {...content!, data};
+  }
+  const mock = vi.spyOn(source, 'loadTileContentInBatches').mockImplementation(readInt64Batch);
+  try {
+    const schema = await source.getSchema();
+    expect(schema.fields.find(field => field.name === 'EXTRA_BYTES_unsigned')?.type).toBe('uint64');
+    expect(schema.fields.find(field => field.name === 'EXTRA_BYTES_signed')?.type).toBe('int64');
+    expect(schema.fields.find(field => field.name === 'EXTRA_BYTES_vector')?.type).toEqual({
+      type: 'fixed-size-list',
+      listSize: 3,
+      children: [{name: 'value', type: 'int64'}]
+    });
+    let scannedPointCount = 0;
+    for await (const batch of source.scan({maximumLevel: 0, limit: 3})) {
+      scannedPointCount += batch.length;
+      expect(batch.data.getChild('EXTRA_BYTES_unsigned')!.toArray()).toEqual(unsigned);
+      expect(batch.data.getChild('EXTRA_BYTES_signed')!.toArray()).toEqual(signed);
+      expect(
+        Array.from(batch.data.getChild('EXTRA_BYTES_vector')!, row => [...row.toArray()]).flat()
+      ).toEqual([...vector]);
+    }
+    expect(scannedPointCount).toBe(3);
+  } finally {
+    mock.mockRestore();
+    await source.close();
+  }
+});
+
 test('COPCSourceLoader#loads tile content from a Blob', async () => {
   const blob = await createEllipsoidBlob();
   const source = COPCSourceLoader.createDataSource(blob, {});
