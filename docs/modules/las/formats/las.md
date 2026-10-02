@@ -77,7 +77,7 @@ LAS file versions and LASzip codec versions are independent. A claim such as "LA
 | NIR | Exposed as `NIR` for PDRF 8 and 10. |
 | Classification, return, and scanner flags | `synthetic`, `keyPoint`, `withheld`, `overlap`, return fields, flight-line flags, and scanner channel are exposed as typed Arrow columns. Legacy PDRF 0-5 records report `overlap` as zero. |
 | Waveform packet fields | PDRF 4/5/9/10 packet references are exposed as the optional fixed-width `WAVEFORM` Arrow column. Exact uint64 offsets, waveform descriptor VLRs, internal LAS and external WDP range reads, 2-32-bit uncompressed samples, and descriptor-scaled amplitudes are supported through the waveform helper APIs. |
-| Extra bytes | Extra Bytes VLR descriptors are exposed as typed metadata; the raw per-point payload is available through `EXTRA_BYTES`, or descriptor-defined numeric attributes through `las.extraBytes: 'typed'`. Scalar data types 1-6 and 9-10 plus deprecated 2-component and 3-component vector codes based on those scalar types are supported with per-component descriptor scale/offset. 64-bit integer types 7-8 and vector codes based on them remain raw-only. Raw Extra Bytes are opt-in when `las.columns` is omitted; list `EXTRA_BYTES` explicitly. Typed Extra Bytes are included by default when `las.extraBytes: 'typed'` and `las.columns` is omitted. |
+| Extra bytes | Extra Bytes VLR descriptors are exposed as typed metadata; the raw per-point payload is available through `EXTRA_BYTES`, or descriptor-defined numeric attributes through `las.extraBytes: 'typed'`. Scalar data types 1-10 and deprecated 2-component and 3-component vector codes are supported with per-component descriptor scale/offset. Integer types 7-8 use exact Arrow Uint64/Int64 columns backed by BigUint64Array/BigInt64Array, including vector components. Nonidentity scale/offset transforms produce Float64 values and may lose integer precision; identity transforms preserve BigInt. Raw Extra Bytes are opt-in when `las.columns` is omitted; list `EXTRA_BYTES` explicitly. Typed Extra Bytes are included by default when `las.extraBytes: 'typed'` and `las.columns` is omitted. |
 | VLRs, EVLRs, CRS, WKT, GeoTIFF records | VLRs and complete EVLRs are preserved in metadata. WKT CRS records (coordinate-system and math-transform), GeoTIFF CRS payloads and resolved GeoKey entries, Extra Bytes, waveform descriptors, and LASzip records are recognized. Full CRS reprojection is outside the loader. |
 | `parseInBatches` | Incremental for uncompressed LAS and fixed-size LAZ chunks. Legacy LAZ preserves arithmetic and item state across input chunks without replay; layered PDRF 6-10 emits selected Arrow rows once their required layers arrive. Waveform references do not wait for trailing Extra Bytes, while raw or typed Extra Bytes become ready after their Byte14 layers arrive. Variable-length waveform samples are intentionally separate range reads. |
 
@@ -99,13 +99,13 @@ LAS file versions and LASzip codec versions are independent. A claim such as "LA
 
 | LASzip feature | Supported TypeScript combinations |
 | --- | --- |
-| Legacy PDRF 0-3 items | Compressor 2, arithmetic coder 0, Point10/GPS/RGB/Byte item version 2. Legacy item version 1 is rejected because it uses a different codec. |
-| Legacy waveform PDRF 4-5 | Compressor 2, arithmetic coder 0, Point10/GPS/RGB/Byte item version 2, and WavePacket13 item version 1. |
+| Legacy PDRF 0-3 items | Pointwise compressor 1 or chunked compressor 2, arithmetic coder 0, and Point10/GPS/RGB/Byte item versions 1 or 2. |
+| Legacy waveform PDRF 4-5 | Pointwise compressor 1 or chunked compressor 2, arithmetic coder 0, Point10/GPS/RGB/Byte item versions 1 or 2, and WavePacket13 item version 1. |
 | Modern PDRF 6-8 items | Layered compressor 3, arithmetic coder 0, and Point14/RGB14/RGBNIR14/Byte14 item versions 2, 3, or 4. |
 | Modern waveform PDRF 9-10 | Layered compressor 3, arithmetic coder 0, Point14/RGB14/RGBNIR14/Byte14 item versions 2-4, and WavePacket14 item version 3 or 4. |
-| Extra Bytes | Byte10 version 2 and Byte14 versions 2-4 are losslessly preserved in raw records. Extra Bytes VLR definitions can be exposed as typed scalar or vector Arrow columns for supported numeric types. |
+| Extra Bytes | Byte10 versions 1-2 and Byte14 versions 2-4 are losslessly preserved in raw records. Extra Bytes VLR definitions can be exposed as typed scalar or vector Arrow columns for supported numeric types. |
 | Chunk table | Version 0, fixed-size and variable-size chunks. Other chunk-table versions are rejected. |
-| Unsupported modes | Pointwise compressor 1, coders other than 0, and legacy item version 1. |
+| Unsupported modes | Coders other than 0 and legacy item versions other than 1 or 2. |
 
 ### TypeScript LAZ Encoder
 
@@ -145,6 +145,7 @@ LAS file versions and LASzip codec versions are independent. A claim such as "LA
 | Input case | First output can be emitted | Retained input / limitation |
 | --- | --- | --- |
 | Uncompressed LAS | After the header and enough complete point records arrive. | Only incomplete framing and the current output batch are retained. |
+| Pointwise legacy LAZ PDRF 0-5 | Before the compressed stream is complete, after enough bytes decode complete rows. | One persistent cursor, no chunk-table pointer, and bounded retained compressed input. |
 | Fixed-chunk legacy LAZ PDRF 0-5 | Before the current compressed chunk is complete, after enough bytes decode complete rows. | Preserves arithmetic and item predictors across feeds, retains a bounded lookahead, and never replays emitted rows. |
 | Fixed-chunk layered LAZ PDRF 6-8 | After all compressed layers required by the requested Arrow columns arrive. | Unrequested trailing layers do not delay the first batch. Raw and typed Extra Bytes are projected directly after their trailing Byte14 layers arrive. |
 | Fixed-chunk layered LAZ PDRF 9-10 | After the required Point14, RGB/NIR, WavePacket14, or Byte14 layers arrive. | Waveform rows can precede trailing Extra Bytes. Selecting Extra Bytes requires their final layers but no complete raw-record decode or copy. |

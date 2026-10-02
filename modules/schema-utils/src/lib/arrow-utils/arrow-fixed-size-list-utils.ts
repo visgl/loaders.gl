@@ -2,8 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import {TypedArray} from '@math.gl/types';
-import {DataType, getFloat16Storage, isNativeFloat16Array} from '@loaders.gl/schema';
+import {BigTypedArray, DataType, getFloat16Storage, isNativeFloat16Array} from '@loaders.gl/schema';
 import * as arrow from 'apache-arrow';
 import {getDataTypeFromArray} from '../schema/data-type';
 import {deserializeArrowType} from '../schema/convert-arrow-schema';
@@ -18,7 +17,7 @@ export function getFixedSizeListSize(vector: arrow.Vector): number {
 
 /** Get Arrow FixedSizeList vector from a typed array */
 export function getFixedSizeListVector(
-  typedArray: TypedArray,
+  typedArray: BigTypedArray,
   stride: number,
   logicalType?: DataType
 ): arrow.Vector<arrow.FixedSizeList> {
@@ -28,7 +27,7 @@ export function getFixedSizeListVector(
 
 /** Get Arrow FixedSizeList vector from a typed array */
 export function getFixedSizeListData(
-  typedArray: TypedArray,
+  typedArray: BigTypedArray,
   stride: number,
   logicalType?: DataType
 ): arrow.Data<arrow.FixedSizeList> {
@@ -63,7 +62,7 @@ export function getFixedSizeListData(
 
 /** Get Arrow FixedSizeList vector from a typed array */
 export function getFixedSizeListType(
-  typedArray: TypedArray,
+  typedArray: BigTypedArray,
   stride: number,
   logicalType?: DataType
 ): arrow.FixedSizeList {

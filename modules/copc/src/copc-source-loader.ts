@@ -11,7 +11,11 @@ import type {
   ArrowTableBatch,
   MeshAttribute
 } from '@loaders.gl/schema';
-import {ArrowTableBuilder, convertMeshToTable} from '@loaders.gl/schema-utils';
+import {
+  ArrowTableBuilder,
+  makeMeshArrowTable,
+  type MeshArrowAttributes
+} from '@loaders.gl/schema-utils';
 import type {
   CoreAPI,
   SourceLoader,
@@ -1243,7 +1247,6 @@ export class COPCTileSource
           : {value: colors, size: 3, normalized: true}
       : undefined;
     const data = this.createTileContentTable(
-      pointCount,
       positionsAttribute,
       colorsAttribute,
       nir ? {value: nir, size: 1} : undefined,
@@ -1261,13 +1264,12 @@ export class COPCTileSource
   }
 
   protected createTileContentTable(
-    pointCount: number,
     positions: {value: Float32Array; size: number},
     colors?: MeshAttribute,
     nir?: {value: Uint16Array; size: number},
     pointData?: COPCPointDataArrays | null
   ): MeshArrowTable {
-    const attributes: Mesh['attributes'] = {
+    const attributes: MeshArrowAttributes = {
       POSITION: positions
     };
     if (colors) {
@@ -1325,19 +1327,7 @@ export class COPCTileSource
       attributes[attribute.name] = {value: attribute.value, size: attribute.size};
     }
 
-    return convertMeshToTable(
-      {
-        topology: 'point-list',
-        mode: 0,
-        header: {vertexCount: pointCount},
-        schema: {
-          fields: [],
-          metadata: {}
-        },
-        attributes
-      },
-      'arrow-table'
-    );
+    return makeMeshArrowTable(attributes, {topology: 'point-list', mode: 0});
   }
 
   protected async ensureHierarchyLoaded(tileId: string): Promise<void> {
@@ -1811,6 +1801,8 @@ function getTypedArraySchemaType(value: LASTypedExtraBytesAttribute['value']): F
   if (value instanceof Int16Array) return 'int16';
   if (value instanceof Uint32Array) return 'uint32';
   if (value instanceof Int32Array) return 'int32';
+  if (value instanceof BigInt64Array) return 'int64';
+  if (value instanceof BigUint64Array) return 'uint64';
   if (value instanceof Float32Array) return 'float32';
   return 'float64';
 }
