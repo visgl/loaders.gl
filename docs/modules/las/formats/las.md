@@ -307,3 +307,7 @@ Within the documented version, PDRF, and codec matrix, the TypeScript implementa
 | Order | Work item | Impact | Cost | Acceptance target |
 | --- | --- | --- | --- | --- |
 | 1 | Complete LAS 1.5 conformance and writing | Medium | Medium | Add broader independent-reader fixtures and validate LAS 1.5 output across WKT, extension, EVLR, and modern PDRF combinations. |
+
+### LASzip compatibility profiles
+
+The TypeScript reader reconstructs modern point formats 6–10 stored in LASzip's legacy compatibility mode. The `lascompatible` control VLR and the exact named Extra Bytes descriptors are required. The output restores modern classification, return counts, scanner channel, overlap, scan angle, and optional NIR, while physical header metadata and raw bytes remain unchanged. Use `las.compatibilityMode: 'raw'` to retain the legacy columns. Independent LASzip fixtures validate the reconstruction for both uncompressed LAS and compressed LAZ.

@@ -1,0 +1,4 @@
+LASzip compatibility-mode reconstruction follows the LASzip reference implementation.
+Copyright (c) 2007-2022 rapidlasso GmbH.
+Licensed under Apache License 2.0; see LASZIP-LICENSE.
+Changes: adaptation to selected Arrow columns without rewriting the physical LAS header or raw point records.

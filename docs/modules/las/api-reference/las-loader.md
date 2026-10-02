@@ -99,6 +99,12 @@ selective field decoding, direct typed output, memory copies, and module startup
 | `options.las.workerUrl`  | `string`             | -          | Overrides the packaged `LASLoader` worker. Supplying a URL for another LAS loader opts that loader into an application-built worker.                            |
 | `options.onProgress`     | `function`           | -          | Callback when a new chunk of data is read. Only works on the main thread.                                                                                        |
 
+### LASzip compatibility mode
+
+LASzip can store modern LAS 1.4 point formats in legacy records with a `lascompatible` VLR and named Extra Bytes descriptors. `LASLoader` detects this explicit layout and restores classification, extended returns, overlap, scanner channel, scan angle, and NIR in the returned columns. Scan angles use modern 0.006-degree units after reconstruction. Complete and streaming LAS/LAZ parsing apply the same reconstruction, including selected columns.
+
+Set `las.compatibilityMode: 'raw'` to retain the physical legacy column values; the default is `'auto'`. Raw decompression always retains the original point-record bytes. `loaderData` preserves the physical file header and VLRs; `loaderData.metadata.compatibility` identifies the logical modern point format and version. Raw or typed Extra Bytes remain available independently of reconstruction.
+
 ## Worker Execution
 
 Atomic `load` and `parse` calls with `LASLoader` use the package's single prebuilt `las-worker.js` when workers are enabled and mesh output is requested. Arrow output stays on the calling thread because structured cloning would strip methods from the Arrow table wrapper. The compatibility loaders parse on the calling thread by default and do not add more worker artifacts to the package.

@@ -22,6 +22,11 @@ import type {
 import type {LASLoaderOptions} from '../../las-loader-types';
 import {getLASSchema} from '../get-las-schema';
 import {
+  getLASCompatibilityLayout,
+  populateLASCompatibilityPoint,
+  type LASCompatibilityLayout
+} from '../las-compatibility';
+import {
   createLASTypedExtraBytesAttributes,
   createLASTypedExtraBytesValue,
   parseLASExtraBytes,
@@ -152,6 +157,10 @@ type PointDataBatchState = {
   typedExtraBytes: LASTypedExtraBytesAttribute[] | null;
   /** Packed raw source used to project selected typed Extra Bytes without raw point records. */
   typedExtraBytesSource: Uint8Array | null;
+  /** Validated modern field reconstruction layout when enabled. */
+  compatibilityLayout: LASCompatibilityLayout | null;
+  /** Internal packed source when compatibility reconstruction alone requires Extra Bytes. */
+  compatibilityExtraBytesSource: Uint8Array | null;
   target: LAZPointDataTarget;
   batchPointCount: number;
   totalRead: number;
@@ -1227,6 +1236,7 @@ function parseLASMetadata(arrayBuffer: ArrayBufferLike, header: LASHeader): LASM
   )) {
     parseTypedLASMetadataRecord(record, metadata);
   }
+  metadata.compatibility = getLASCompatibilityLayout(header, metadata);
   resolveLASGeoTIFFKeyDirectory(metadata);
   return metadata;
 }
@@ -1482,7 +1492,10 @@ function parseLASArrowTableBatch(
       ? new Float64Array(batchSize)
       : null;
   const nir =
-    selection.nir && getNirOffset(lasHeader.pointsFormatId) >= 0
+    selection.nir &&
+    (getNirOffset(lasHeader.pointsFormatId) >= 0 ||
+      (options.las?.compatibilityMode !== 'raw' &&
+        lasHeader.metadata?.compatibility?.nirByteOffset !== undefined))
       ? new Uint16Array(batchSize)
       : null;
   const scanAngles = selection.scanAngle ? new Int16Array(batchSize) : null;
@@ -1860,6 +1873,16 @@ function populateLASAttributesFromDataView(
         pointsFormatId,
         targetPointIndex,
         typedExtraBytes
+      );
+    }
+
+    if (options.las?.compatibilityMode !== 'raw' && lasHeader.metadata?.compatibility) {
+      populateLASCompatibilityPoint(
+        dataView,
+        pointOffset + getLAZPointDataRecordBaseLength(pointsFormatId),
+        targetPointIndex,
+        lasHeader.metadata.compatibility,
+        target
       );
     }
 
@@ -2643,7 +2666,12 @@ function createPointDataBatchState(
       ? new Float64Array(batchSize)
       : null;
   const nir =
-    selection.nir && getNirOffset(header.pointsFormatId) >= 0 ? new Uint16Array(batchSize) : null;
+    selection.nir &&
+    (getNirOffset(header.pointsFormatId) >= 0 ||
+      (options.las?.compatibilityMode !== 'raw' &&
+        header.metadata?.compatibility?.nirByteOffset !== undefined))
+      ? new Uint16Array(batchSize)
+      : null;
   const scanAngles = selection.scanAngle ? new Int16Array(batchSize) : null;
   const userData = selection.userData ? new Uint8Array(batchSize) : null;
   const pointSourceIds = selection.pointSourceId ? new Uint16Array(batchSize) : null;
@@ -2670,6 +2698,22 @@ function createPointDataBatchState(
       : null;
   const typedExtraBytesSource =
     typedExtraBytes?.length && extraByteCount ? new Uint8Array(batchSize * extraByteCount) : null;
+  const reconstructColumns =
+    selection.classification ||
+    selection.returnNumber ||
+    selection.numberOfReturns ||
+    selection.scanAngle ||
+    selection.overlap ||
+    selection.scannerChannel ||
+    selection.nir;
+  const compatibilityLayout =
+    options.las?.compatibilityMode === 'raw' || !reconstructColumns
+      ? null
+      : header.metadata?.compatibility || null;
+  const compatibilityExtraBytesSource =
+    compatibilityLayout && !extraBytes && !typedExtraBytesSource
+      ? new Uint8Array(batchSize * extraByteCount)
+      : null;
   return {
     batchCapacity: batchSize,
     positions,
@@ -2695,6 +2739,8 @@ function createPointDataBatchState(
     extraBytes,
     typedExtraBytes,
     typedExtraBytesSource,
+    compatibilityLayout,
+    compatibilityExtraBytesSource,
     target: {
       positions,
       intensities,
@@ -2714,7 +2760,7 @@ function createPointDataBatchState(
       scanDirectionFlags,
       edgeOfFlightLines,
       waveforms,
-      extraBytes: extraBytes || typedExtraBytesSource,
+      extraBytes: extraBytes || typedExtraBytesSource || compatibilityExtraBytesSource,
       colors,
       rawColors,
       pointOffset: 0,
@@ -2811,6 +2857,25 @@ function populateDecodedTypedExtraBytes(
   pointOffset: number,
   pointCount: number
 ): void {
+  const compatibilityBytes =
+    state.extraBytes || state.typedExtraBytesSource || state.compatibilityExtraBytesSource;
+  if (state.compatibilityLayout && compatibilityBytes && pointCount) {
+    const view = new DataView(
+      compatibilityBytes.buffer,
+      compatibilityBytes.byteOffset,
+      compatibilityBytes.byteLength
+    );
+    const extraByteCount = compatibilityBytes.length / state.batchCapacity;
+    for (let pointIndex = pointOffset; pointIndex < pointOffset + pointCount; pointIndex++) {
+      populateLASCompatibilityPoint(
+        view,
+        pointIndex * extraByteCount,
+        pointIndex,
+        state.compatibilityLayout,
+        state
+      );
+    }
+  }
   if (!state.typedExtraBytesSource || !state.typedExtraBytes?.length || pointCount === 0) {
     return;
   }
@@ -3151,7 +3216,11 @@ function flushPointDataBatch(
     state.target.scanDirectionFlags = state.scanDirectionFlags;
     state.target.edgeOfFlightLines = state.edgeOfFlightLines;
     state.target.waveforms = state.waveforms;
-    state.target.extraBytes = state.extraBytes || state.typedExtraBytesSource;
+    state.compatibilityExtraBytesSource = state.compatibilityExtraBytesSource
+      ? new Uint8Array(state.compatibilityExtraBytesSource.length)
+      : null;
+    state.target.extraBytes =
+      state.extraBytes || state.typedExtraBytesSource || state.compatibilityExtraBytesSource;
   }
   return table;
 }
