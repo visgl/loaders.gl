@@ -106,6 +106,10 @@ function createLAZChunkMetadata(
     pointDataRecordFormat: header.pointsFormatId,
     pointDataRecordLength: header.pointsStructSize,
     pointCount,
+    point10ItemVersion: laszip.items.find(item => item.type === 6)?.version as 1 | 2 | undefined,
+    gpsTime11ItemVersion: laszip.items.find(item => item.type === 7)?.version as 1 | 2 | undefined,
+    rgb12ItemVersion: laszip.items.find(item => item.type === 8)?.version as 1 | 2 | undefined,
+    byteItemVersion: laszip.items.find(item => item.type === 0)?.version as 1 | 2 | undefined,
     point14ItemVersion: laszip.point14ItemVersion ?? undefined,
     rgb14ItemVersion: laszip.rgb14ItemVersion ?? undefined,
     wavePacketItemVersion: laszip.wavePacketItemVersion ?? undefined,
@@ -250,13 +254,10 @@ function parseCompleteLAZFileToArrowTable(
 ): LASArrowTable {
   const pointCount = header.pointsCount;
   const state = createPointDataBatchState(pointCount, header, options);
-  const chunkTableOffset = readLAZChunkTableOffset(
-    new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength),
-    header.pointsOffset
-  );
-  const chunkTable = readLAZChunkTable(bytes, header, laszip, chunkTableOffset);
+  const chunkTable = readLAZFileChunks(bytes, header, laszip);
   let decodedPointCount = 0;
-  let byteOffset = header.pointsOffset + LAZ_CHUNK_TABLE_POINTER_LENGTH;
+  let byteOffset =
+    header.pointsOffset + (laszip.compressor === 1 ? 0 : LAZ_CHUNK_TABLE_POINTER_LENGTH);
 
   for (const chunk of chunkTable) {
     decodeCompleteLAZChunkToPointData(
@@ -580,20 +581,25 @@ async function* decodePendingFixedLegacyLAZFileInBatches(
   await readUntilAvailable(
     reader,
     inputIterator,
-    header.pointsOffset + LAZ_CHUNK_TABLE_POINTER_LENGTH,
+    header.pointsOffset + (laszip.compressor === 1 ? 0 : LAZ_CHUNK_TABLE_POINTER_LENGTH),
     'LASLoader: incomplete compressed LAZ point data'
   );
   reader.skip(header.pointsOffset);
-  const chunkTableOffset = readStreamedLAZChunkTableOffset(
-    reader.getDataView(LAZ_CHUNK_TABLE_POINTER_LENGTH)!
-  );
+  const chunkTableOffset =
+    laszip.compressor === 1
+      ? 0
+      : readStreamedLAZChunkTableOffset(reader.getDataView(LAZ_CHUNK_TABLE_POINTER_LENGTH)!);
 
   let sourcePointIndex = 0;
   while (sourcePointIndex < header.pointsCount) {
-    const chunkPointCount = Math.min(laszip.chunkSize, header.pointsCount - sourcePointIndex);
+    const chunkPointCount =
+      laszip.compressor === 1
+        ? header.pointsCount
+        : Math.min(laszip.chunkSize, header.pointsCount - sourcePointIndex);
     const metadata = createLAZChunkMetadata(header, laszip, chunkPointCount);
     const cursor = createLAZChunkDecoderCursor(new Uint8Array(0), metadata);
     let fedByteLength = 0;
+    let consumedByteLength = 0;
     let inputDone = false;
 
     while (cursor.remainingPointCount > 0) {
@@ -601,7 +607,7 @@ async function* decodePendingFixedLegacyLAZFileInBatches(
       const requestedByteLength = getLegacyLAZFeedByteLength(
         availableByteLength,
         fedByteLength,
-        cursor.requiredInputByteLength
+        cursor.requiredInputByteLength - consumedByteLength
       );
       if (requestedByteLength > fedByteLength) {
         const checkpoint = reader.checkpoint();
@@ -621,6 +627,13 @@ async function* decodePendingFixedLegacyLAZFileInBatches(
         inputDone
       );
       if (decodedPointCount > 0) {
+        if (laszip.compressor === 1) {
+          const decodedByteLength = cursor.compressedByteOffset - consumedByteLength;
+          reader.skip(decodedByteLength);
+          fedByteLength -= decodedByteLength;
+          consumedByteLength = cursor.compressedByteOffset;
+          cursor.discardConsumedInput();
+        }
         state.batchPointCount += decodedPointCount;
         if (state.batchPointCount === batchSize) {
           const batch = flushRawPointBatch(outputHeader, state);
@@ -644,20 +657,22 @@ async function* decodePendingFixedLegacyLAZFileInBatches(
       }
     }
 
-    reader.skip(cursor.compressedByteOffset);
+    reader.skip(cursor.compressedByteOffset - consumedByteLength);
     chunkByteLengths.push(cursor.compressedByteOffset);
 
     sourcePointIndex += chunkPointCount;
   }
 
-  await validateStreamedFixedLAZChunkTable(
-    reader,
-    inputIterator,
-    header,
-    laszip,
-    chunkTableOffset,
-    chunkByteLengths
-  );
+  if (laszip.compressor !== 1) {
+    await validateStreamedFixedLAZChunkTable(
+      reader,
+      inputIterator,
+      header,
+      laszip,
+      chunkTableOffset,
+      chunkByteLengths
+    );
+  }
 
   const finalBatch = flushRawPointBatch(outputHeader, state);
   if (finalBatch) {
@@ -742,20 +757,25 @@ async function* parsePendingFixedLegacyLAZFileInArrowBatches(
   await readUntilAvailable(
     reader,
     inputIterator,
-    header.pointsOffset + LAZ_CHUNK_TABLE_POINTER_LENGTH,
+    header.pointsOffset + (laszip.compressor === 1 ? 0 : LAZ_CHUNK_TABLE_POINTER_LENGTH),
     'LASLoader: incomplete compressed LAZ point data'
   );
   reader.skip(header.pointsOffset);
-  const chunkTableOffset = readStreamedLAZChunkTableOffset(
-    reader.getDataView(LAZ_CHUNK_TABLE_POINTER_LENGTH)!
-  );
+  const chunkTableOffset =
+    laszip.compressor === 1
+      ? 0
+      : readStreamedLAZChunkTableOffset(reader.getDataView(LAZ_CHUNK_TABLE_POINTER_LENGTH)!);
 
   let sourcePointIndex = 0;
   while (sourcePointIndex < header.pointsCount) {
-    const chunkPointCount = Math.min(laszip.chunkSize, header.pointsCount - sourcePointIndex);
+    const chunkPointCount =
+      laszip.compressor === 1
+        ? header.pointsCount
+        : Math.min(laszip.chunkSize, header.pointsCount - sourcePointIndex);
     const metadata = createLAZChunkMetadata(header, laszip, chunkPointCount);
     const cursor = createLAZChunkDecoderCursor(new Uint8Array(0), metadata);
     let fedByteLength = 0;
+    let consumedByteLength = 0;
     let inputDone = false;
 
     while (cursor.remainingPointCount > 0) {
@@ -763,7 +783,7 @@ async function* parsePendingFixedLegacyLAZFileInArrowBatches(
       const requestedByteLength = getLegacyLAZFeedByteLength(
         availableByteLength,
         fedByteLength,
-        cursor.requiredInputByteLength
+        cursor.requiredInputByteLength - consumedByteLength
       );
       if (requestedByteLength > fedByteLength) {
         const checkpoint = reader.checkpoint();
@@ -783,6 +803,13 @@ async function* parsePendingFixedLegacyLAZFileInArrowBatches(
         inputDone
       );
       if (decodedPointCount > 0) {
+        if (laszip.compressor === 1) {
+          const decodedByteLength = cursor.compressedByteOffset - consumedByteLength;
+          reader.skip(decodedByteLength);
+          fedByteLength -= decodedByteLength;
+          consumedByteLength = cursor.compressedByteOffset;
+          cursor.discardConsumedInput();
+        }
         populateDecodedTypedExtraBytes(state, state.batchPointCount, decodedPointCount);
         state.batchPointCount += decodedPointCount;
         if (state.batchPointCount === state.batchCapacity) {
@@ -807,19 +834,21 @@ async function* parsePendingFixedLegacyLAZFileInArrowBatches(
       }
     }
 
-    reader.skip(cursor.compressedByteOffset);
+    reader.skip(cursor.compressedByteOffset - consumedByteLength);
     chunkByteLengths.push(cursor.compressedByteOffset);
     sourcePointIndex += chunkPointCount;
   }
 
-  await validateStreamedFixedLAZChunkTable(
-    reader,
-    inputIterator,
-    header,
-    laszip,
-    chunkTableOffset,
-    chunkByteLengths
-  );
+  if (laszip.compressor !== 1) {
+    await validateStreamedFixedLAZChunkTable(
+      reader,
+      inputIterator,
+      header,
+      laszip,
+      chunkTableOffset,
+      chunkByteLengths
+    );
+  }
 
   const finalBatch = flushPointDataBatch(outputHeader, state, options);
   if (finalBatch) {
@@ -974,12 +1003,9 @@ function* parseLAZChunkedIterator(
   const outputHeader = {...header, totalToRead: header.pointsCount};
   const state = createRawPointBatchState(batchSize, header.pointsStructSize);
   const bytes = new Uint8Array(arrayBuffer);
-  const chunkTableOffset = readLAZChunkTableOffset(
-    new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength),
-    header.pointsOffset
-  );
-  const chunkTable = readLAZChunkTable(bytes, header, laszip, chunkTableOffset);
-  let byteOffset = header.pointsOffset + 8;
+  const chunkTable = readLAZFileChunks(bytes, header, laszip);
+  let byteOffset =
+    header.pointsOffset + (laszip.compressor === 1 ? 0 : LAZ_CHUNK_TABLE_POINTER_LENGTH);
 
   for (const chunk of chunkTable) {
     const metadata = createLAZChunkMetadata(header, laszip, chunk.pointCount);
@@ -1010,12 +1036,9 @@ function* decodeLAZFileFromCompleteBytes(
     header.pointsStructSize,
     getLAZStreamingDecodeStats(options)
   );
-  const chunkTableOffset = readLAZChunkTableOffset(
-    new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength),
-    header.pointsOffset
-  );
-  const chunkTable = readLAZChunkTable(bytes, header, laszip, chunkTableOffset);
-  let byteOffset = header.pointsOffset + 8;
+  const chunkTable = readLAZFileChunks(bytes, header, laszip);
+  let byteOffset =
+    header.pointsOffset + (laszip.compressor === 1 ? 0 : LAZ_CHUNK_TABLE_POINTER_LENGTH);
 
   for (const chunk of chunkTable) {
     const compressedChunk = bytes.subarray(byteOffset, byteOffset + chunk.byteLength);
@@ -1023,10 +1046,12 @@ function* decodeLAZFileFromCompleteBytes(
       throw new NeedsMoreData('LASLoader: truncated legacy LAZ chunk');
     }
     const metadata = createLAZChunkMetadata(header, laszip, chunk.pointCount);
-    const rawChunk = decodeLAZChunk(compressedChunk, metadata);
-    recordDecodedChunkAllocation(rawChunk.byteLength, state.stats);
-    for (const batch of appendRawPointChunk(rawChunk, outputHeader, state)) {
-      yield batch;
+    if (laszip.compressor === 1) {
+      yield* appendDecodedLAZChunk(compressedChunk, metadata, outputHeader, state);
+    } else {
+      const rawChunk = decodeLAZChunk(compressedChunk, metadata);
+      recordDecodedChunkAllocation(rawChunk.byteLength, state.stats);
+      yield* appendRawPointChunk(rawChunk, outputHeader, state);
     }
     byteOffset += chunk.byteLength;
   }
@@ -1981,7 +2006,7 @@ function parseLASZipVLR(bytes: Uint8Array, header: LASHeader): LASZipVLR {
         const itemVersion = dataView.getUint16(itemOffset + 4, true);
         items.push({type: itemType, size: itemSize, version: itemVersion});
         if ([0, 6, 7, 8].includes(itemType)) {
-          if (itemVersion !== 2) {
+          if (itemVersion !== 1 && itemVersion !== 2) {
             throw new Error(
               `LASLoader: unsupported legacy LASzip item type ${itemType} version ${itemVersion}`
             );
@@ -2015,7 +2040,9 @@ function parseLASZipVLR(bytes: Uint8Array, header: LASHeader): LASZipVLR {
         compressor: dataView.getUint16(dataOffset, true),
         coder: dataView.getUint16(dataOffset + 2, true),
         chunkSize,
-        variableChunks: chunkSize === 0 || chunkSize === VARIABLE_CHUNK_SIZE,
+        variableChunks:
+          dataView.getUint16(dataOffset, true) !== 1 &&
+          (chunkSize === 0 || chunkSize === VARIABLE_CHUNK_SIZE),
         items,
         point14ItemVersion,
         rgb14ItemVersion,
@@ -2036,9 +2063,9 @@ function validateTypeScriptLAZSupport(header: LASHeader, laszip: LASZipVLR): voi
       `LASLoader: TypeScript LAZ streaming only supports point formats 0-10; received ${header.pointsFormatId}`
     );
   }
-  if (header.pointsFormatId <= 5 && laszip.compressor !== 2) {
+  if (header.pointsFormatId <= 5 && laszip.compressor !== 1 && laszip.compressor !== 2) {
     throw new Error(
-      `LASLoader: legacy TypeScript LAZ decoding requires LASzip compressor 2; received ${laszip.compressor}`
+      `LASLoader: legacy TypeScript LAZ decoding requires LASzip compressor 1 or 2; received ${laszip.compressor}`
     );
   }
   if (header.pointsFormatId >= 6 && laszip.compressor !== 3) {
@@ -2478,6 +2505,22 @@ function getLAZChunkSizeHeaderBaseCount(pointDataRecordFormat: number): number {
     default:
       throw new Error(`Unsupported LAS 1.4 point format ${pointDataRecordFormat}`);
   }
+}
+
+/** Describe a pointwise stream as one chunk, or read the compressed chunk table. */
+function readLAZFileChunks(
+  bytes: Uint8Array,
+  header: LASHeader,
+  laszip: LASZipVLR
+): LAZChunkTableEntry[] {
+  if (laszip.compressor === 1) {
+    return [{pointCount: header.pointsCount, byteLength: bytes.byteLength - header.pointsOffset}];
+  }
+  const chunkTableOffset = readLAZChunkTableOffset(
+    new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength),
+    header.pointsOffset
+  );
+  return readLAZChunkTable(bytes, header, laszip, chunkTableOffset);
 }
 
 function readLAZChunkTable(
