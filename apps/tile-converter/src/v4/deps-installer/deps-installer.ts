@@ -48,7 +48,7 @@ export class DepsInstaller {
     await this.installFromNpm('draco', 'draco-worker-node.js');
 
     console.log('Installing "Draco Writer" worker'); // eslint-disable-line no-console
-    await this.installFromNpm('draco', 'draco-writer-worker-node.js');
+    await this.installFromNpm('draco', 'draco-writer-worker-node.cjs');
 
     console.log('Installing "Basis Loader" worker'); // eslint-disable-line no-console
     await this.installFromNpm('textures', 'basis-worker-node.cjs');
@@ -101,13 +101,16 @@ export class DepsInstaller {
     console.log('All dependencies were installed succesfully.'); // eslint-disable-line no-console
   }
 
+  /** Download a published worker or library into the converter's local resource directory. */
   private async installFromNpm(module: string, name: string, extraPath: string = '') {
-    const fileResponse = await fetchFile(
-      `https://unpkg.com/@loaders.gl/${module}@${VERSION}/dist/${extraPath}/${name}`
-    );
+    const resourcePath = ['dist', extraPath, name].filter(Boolean).join('/');
+    const resourceUrl = `https://unpkg.com/@loaders.gl/${module}@${VERSION}/${resourcePath}`;
+    const fileResponse = await fetchFile(resourceUrl);
 
     if (fileResponse.status < 200 || fileResponse.status >= 300) {
-      throw new Error(`Failed to load resource ${name}`);
+      throw new Error(
+        `Failed to load resource ${name} from ${resourceUrl}: HTTP ${fileResponse.status}`
+      );
     }
 
     const fileData = await fileResponse.arrayBuffer();
