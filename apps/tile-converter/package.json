@@ -79,6 +79,7 @@
     "@loaders.gl/worker-utils": "5.0.0-alpha.6",
     "@loaders.gl/zip": "5.0.0-alpha.6",
     "@math.gl/core": "5.0.0-alpha.9",
+    "@math.gl/crs": "5.0.0-alpha.9",
     "@math.gl/culling": "5.0.0-alpha.9",
     "@math.gl/geoid": "5.0.0-alpha.9",
     "@math.gl/geometry-utils": "5.0.0-alpha.9",

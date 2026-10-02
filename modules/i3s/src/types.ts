@@ -394,7 +394,7 @@ export type SceneLayer3D = {
   /** PopupInfo of the scene layer. */
   popupInfo?: PopupInfo;
   /** Indicates if client application will show the popup information. Default is FALSE. */
-  disablePopup: boolean;
+  disablePopup?: boolean;
   /**
    * The store object describes the exact physical storage of a layer and
    * enables the client to detect when multiple layers are served from
@@ -700,9 +700,9 @@ export type NodeInPage = {
    */
   children?: number[];
   /**
-   * The mesh for this node. WARNING: only SINGLE mesh is supported at version 1.7 (i.e. length must be 0 or 1).
+   * The mesh for this node; missing or null values indicate a contentless node. WARNING: only SINGLE mesh is supported at version 1.7 (i.e. length must be 0 or 1).
    */
-  mesh?: NodeMesh;
+  mesh?: NodeMesh | null;
 };
 
 /**
