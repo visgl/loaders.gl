@@ -4,7 +4,7 @@
 
 import {expect, test, vi} from 'vitest';
 import {Tiles3DLoader} from '@loaders.gl/3d-tiles';
-import {Tiles3DSource, Tileset3D, traverseTilesetContents, type Tile3D} from '@loaders.gl/tiles';
+import {Tile3D, Tiles3DSource, Tileset3D, traverseTilesetContents} from '@loaders.gl/tiles';
 
 /** Creates a normalized header with a small sphere and ordered content descriptors. */
 function createHeader(id: string, contentUrls: string[] = []) {
@@ -119,21 +119,37 @@ test('early iterator closure preserves installed nested roots for the next trave
   }
 });
 
-test('normal content reload reuses attached roots and reinstalls only a detached slot', async () => {
+test.each([
+  0,
+  1,
+  'both'
+] as const)('normal content reload restores detached slot %s in declaration order', async detachedSlot => {
   const {tileset, source} = createFixture();
   try {
     await tileset.tilesetInitializationPromise;
     const parent = tileset.root!.children[0];
+    const declaredChild = new Tile3D(tileset, createHeader('declared-child'), parent);
+    parent.children.push(declaredChild);
     source.onTileLoaded(tileset, parent, await parent.loadContent());
-    const firstRoot = parent.children[0];
-    const detachedRoot = parent.children.pop()!;
+    const originalRoots = parent.children.slice(1);
+    const detachedRoots = originalRoots.filter(
+      (_, index) => detachedSlot === 'both' || index === detachedSlot
+    );
+    parent.children = parent.children.filter(child => !detachedRoots.includes(child));
     parent.unloadContent();
     source.onTileLoaded(tileset, parent, await parent.loadContent());
-    expect(parent.children).toHaveLength(2);
-    expect(parent.children[0]).toBe(firstRoot);
-    expect(parent.children[1]).not.toBe(detachedRoot);
-    expect(parent.children[1].id).toBe(detachedRoot.id);
-    detachedRoot.destroy();
+    expect(parent.children).toHaveLength(3);
+    expect(parent.children[0]).toBe(declaredChild);
+    for (const [index, originalRoot] of originalRoots.entries()) {
+      const replacementRoot = parent.children[index + 1];
+      if (detachedRoots.includes(originalRoot)) {
+        expect(replacementRoot).not.toBe(originalRoot);
+        expect(replacementRoot.id).toBe(originalRoot.id);
+        originalRoot.destroy();
+      } else {
+        expect(replacementRoot).toBe(originalRoot);
+      }
+    }
   } finally {
     tileset.destroy();
   }
