@@ -99,6 +99,10 @@ selective field decoding, direct typed output, memory copies, and module startup
 | `options.las.workerUrl`  | `string`             | -          | Overrides the packaged `LASLoader` worker. Supplying a URL for another LAS loader opts that loader into an application-built worker.                            |
 | `options.onProgress`     | `function`           | -          | Callback when a new chunk of data is read. Only works on the main thread.                                                                                        |
 
+### Interrupted LAZ writers
+
+`las.recoverMissingChunkTable: true` allows fixed-size LAZ chunks to be read when the LASzip chunk-table pointer equals the point-data offset, the marker left by an interrupted writer. The default remains strict. Recovery uses the header point count and fixed chunk size, verifies all point data, and rejects truncated records and unexpected trailing bytes. Variable-size chunks require their table; malformed existing tables are never bypassed. Recovery cannot restore points that the writer did not finish.
+
 ## Worker Execution
 
 Atomic `load` and `parse` calls with `LASLoader` use the package's single prebuilt `las-worker.js` when workers are enabled and mesh output is requested. Arrow output stays on the calling thread because structured cloning would strip methods from the Arrow table wrapper. The compatibility loaders parse on the calling thread by default and do not add more worker artifacts to the package.

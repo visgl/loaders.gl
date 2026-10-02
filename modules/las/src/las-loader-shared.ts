@@ -50,6 +50,8 @@ export type LASLoaderOptions = LoaderOptions & {
     columns?: readonly LASColumnName[];
     /** Decode Extra Bytes descriptors into typed attributes instead of raw bytes. */
     extraBytes?: 'raw' | 'typed';
+    /** Recover fixed-size LAZ chunks when the LASzip pointer marks an interrupted writer. */
+    recoverMissingChunkTable?: boolean;
     /** Override the URL to the worker bundle. */
     workerUrl?: string;
   };
@@ -81,7 +83,8 @@ export const LAS_LOADER_METADATA = {
       colorDepth: 8,
       colorFormat: 'uint8norm',
       columns: undefined,
-      extraBytes: 'raw'
+      extraBytes: 'raw',
+      recoverMissingChunkTable: false
     }
   }
 } as const satisfies Loader<LASMesh | MeshArrowTable, LASMesh | MeshArrowTable, LASLoaderOptions>;

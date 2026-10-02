@@ -306,3 +306,7 @@ Within the documented version, PDRF, and codec matrix, the TypeScript implementa
 | Order | Work item | Impact | Cost | Acceptance target |
 | --- | --- | --- | --- | --- |
 | 1 | Complete LAS 1.5 conformance and writing | Medium | Medium | Add broader independent-reader fixtures and validate LAS 1.5 output across WKT, extension, EVLR, and modern PDRF combinations. |
+
+### Missing chunk tables
+
+Like the LASzip reference reader, the TypeScript reader can recover fixed-size chunks from an interrupted writer's explicit missing-table marker. Enable `las.recoverMissingChunkTable` to request this behavior. Variable-size tables, truncated point data, and malformed existing tables remain errors.
