@@ -41,6 +41,9 @@ finish. Cleanup also runs when iteration closes on failure or cancellation, incl
 the input-size gate. Consume payloads before advancing; codecs and sinks must not retain them after
 their work completes. Preloaded payloads are retained. Omit the option to keep all loaded content
 attached, as before. Applications still own tileset destruction and source/archive lifetimes.
+With `Tiles3DSource`, repeated reads reuse installed nested roots and descendants while reloading
+their payloads. Separate content slots and parent placements retain their own nested roots even
+when they reference the same resource URL.
 
 This adapter does not bound aggregate input memory, apply CRS transforms, or supply a mesh codec
 or output packaging. Inspection observes
