@@ -18,12 +18,12 @@ test('gis#reproject GeoJSON', () => {
       properties: {}
     }
   ];
-  const expectedGeoJson: Feature[] = [
+  const expectedGeoJson = [
     {
       type: 'Feature',
       geometry: {
         type: 'Point',
-        coordinates: [-8237642.318702244, 5012341.663847514]
+        coordinates: [expect.closeTo(-8237642.318702244, 6), expect.closeTo(5012341.663847514, 6)]
       },
       properties: {}
     }

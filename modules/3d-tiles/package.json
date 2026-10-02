@@ -82,10 +82,10 @@
     "@loaders.gl/schema": "5.0.0-alpha.6",
     "@loaders.gl/tiles": "5.0.0-alpha.6",
     "@loaders.gl/zip": "5.0.0-alpha.6",
-    "@math.gl/core": "5.0.0-alpha.9",
-    "@math.gl/dggs": "5.0.0-alpha.9",
-    "@math.gl/geometry-utils": "5.0.0-alpha.9",
-    "@math.gl/geospatial": "5.0.0-alpha.9",
+    "@math.gl/core": "5.0.0-alpha.11",
+    "@math.gl/dggs": "5.0.0-alpha.11",
+    "@math.gl/geometry-utils": "5.0.0-alpha.11",
+    "@math.gl/geospatial": "5.0.0-alpha.11",
     "zod": "^4.1.12"
   },
   "peerDependencies": {

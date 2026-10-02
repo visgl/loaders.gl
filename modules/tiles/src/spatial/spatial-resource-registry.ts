@@ -3,7 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import {Geoid, parsePGM} from '@math.gl/geoid';
-import {Proj4Projection} from '@math.gl/proj4';
+import {Projection} from '@math.gl/proj4';
 import type {Proj4CRSDefinition} from '@math.gl/proj4';
 
 const geoidModels = new Map<string, Geoid>();
@@ -18,7 +18,7 @@ const geoidModels = new Map<string, Geoid>();
  */
 export function registerSpatialCrs(name: string, definition: Proj4CRSDefinition): void {
   validateResourceName(name, 'CRS');
-  Proj4Projection.defineProjectionAliases({[name]: definition});
+  Projection.defineProjectionAliases({[name]: definition});
 }
 
 /**
@@ -29,7 +29,7 @@ export function registerSpatialCrs(name: string, definition: Proj4CRSDefinition)
  */
 export function registerSpatialDatumGrid(name: string, data: ArrayBuffer): void {
   validateResourceName(name, 'datum grid');
-  Proj4Projection.registerDatumGrid(name, data);
+  Projection.registerDatumGrid(name, data);
 }
 
 /**

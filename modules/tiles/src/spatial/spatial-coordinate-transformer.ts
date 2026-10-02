@@ -6,7 +6,7 @@ import type {Geoid} from '@math.gl/geoid';
 import {Vector3} from '@math.gl/core';
 import {Ellipsoid} from '@math.gl/geospatial';
 import type {ReadonlyCRSDefinition} from '@math.gl/crs';
-import {Proj4Projection, toProj4CRSDefinition, type Proj4CRSDefinition} from '@math.gl/proj4';
+import {Projection, type Proj4CRSDefinition} from '@math.gl/proj4';
 import {getGeoidModel} from './spatial-resource-registry';
 import {
   normalizeCrsIdentifier,
@@ -33,13 +33,13 @@ export class SpatialCoordinateTransformer {
   readonly spatialReference: TilesetSpatialReference;
 
   /** Projection from the source CRS directly to the requested horizontal target CRS. */
-  private readonly horizontalProjection?: Proj4Projection;
+  private readonly horizontalProjection?: Projection;
 
   /** Projection from the source CRS to geographic longitude, latitude, and ellipsoidal height. */
-  private readonly geographicProjection?: Proj4Projection;
+  private readonly geographicProjection?: Projection;
 
   /** Projection from adjusted geographic coordinates to the requested output CRS. */
-  private readonly heightOutputProjection?: Proj4Projection;
+  private readonly heightOutputProjection?: Projection;
 
   /** Whether source coordinates use the WGS84 geocentric frame handled by math.gl. */
   private readonly sourceIsGeocentric: boolean;
@@ -77,7 +77,7 @@ export class SpatialCoordinateTransformer {
       !this.sourceIsGeocentric &&
       !this.outputIsGeocentric
     ) {
-      this.horizontalProjection = new Proj4Projection({
+      this.horizontalProjection = new Projection({
         from: getHorizontalProj4Definition(spatialReference.sourceCrs),
         to: getHorizontalProj4Definition(spatialReference.targetCrs),
         enforceAxis: false
@@ -90,14 +90,14 @@ export class SpatialCoordinateTransformer {
       this.outputIsGeocentric
     ) {
       if (!this.sourceIsGeographic && !this.sourceIsGeocentric) {
-        this.geographicProjection = new Proj4Projection({
+        this.geographicProjection = new Projection({
           from: getHorizontalProj4Definition(spatialReference.sourceCrs),
           to: WGS84_GEOGRAPHIC_CRS,
           enforceAxis: false
         });
       }
       if (!this.outputIsGeographic && !this.outputIsGeocentric) {
-        this.heightOutputProjection = new Proj4Projection({
+        this.heightOutputProjection = new Projection({
           from: WGS84_GEOGRAPHIC_CRS,
           to: getHorizontalProj4Definition(outputCrs),
           enforceAxis: false
@@ -276,14 +276,23 @@ function inverseTransposeMultiply(jacobianColumns: number[][], vector: number[])
   );
 }
 
-/** Select the horizontal component that the proj4js runtime can execute. */
+/** Select the horizontal CRS while height conversion is handled separately. */
 function getHorizontalProj4Definition(
   definition: ReadonlyCRSDefinition | undefined
 ): Proj4CRSDefinition {
   if (!definition) {
     throw new Error('Cannot construct a projection because the CRS is unknown');
   }
-  return toProj4CRSDefinition(definition, {mode: 'horizontal'});
+  if (typeof definition !== 'string' && definition.type === 'CompoundCRS') {
+    const horizontalComponents = definition.components.filter(
+      component => component.type !== 'VerticalCRS'
+    );
+    if (horizontalComponents.length !== 1) {
+      throw new Error('CompoundCRS requires exactly one horizontal component');
+    }
+    return getHorizontalProj4Definition(horizontalComponents[0]);
+  }
+  return definition as Proj4CRSDefinition;
 }
 
 /** Validate that all requested operations can be represented by the current runtime. */

@@ -80,3 +80,29 @@ function insideBbox(coord: [number, number], bbox: number[]): boolean {
   const [minx, miny, maxx, maxy] = bbox;
   return coord[0] >= minx && coord[0] <= maxx && coord[1] >= miny && coord[1] <= maxy;
 }
+
+test.each([
+  'EPSG',
+  'epsg'
+])('GeoPackage reprojects legacy Web Mercator declared by %s without replacing metadata', organization => {
+  const definition = `PROJCS["WGS 84 / Pseudo-Mercator",EXTENSION["PROJ4","+proj=merc"],AUTHORITY["${organization}","3857"]]`;
+  const spatialReferenceSystem = {definition} as SpatialRefSysRow;
+  expect(getSpatialReferenceSystemDefinition(spatialReferenceSystem)).toBe(definition);
+  const projection = getProjection(
+    {name: 'roads', srsId: 3857} as GeoPackageVectorTableInfo,
+    {3857: definition},
+    {reproject: true, targetCrs: 'WGS84'}
+  );
+  expect(projection?.project([1113194.9079327357, 0])[0]).toBeCloseTo(10, 8);
+});
+
+test('GeoPackage does not infer Web Mercator from a local SRS identifier', () => {
+  const definition = 'PROJCS["Custom",EXTENSION["PROJ4","+proj=merc"],AUTHORITY["LOCAL","3857"]]';
+  expect(() =>
+    getProjection(
+      {name: 'roads', srsId: 3857} as GeoPackageVectorTableInfo,
+      {3857: definition},
+      {reproject: true, targetCrs: 'WGS84'}
+    )
+  ).toThrow();
+});
