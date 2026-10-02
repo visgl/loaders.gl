@@ -47,14 +47,23 @@ function createTileset() {
   });
   const loadContent = vi.spyOn(source, 'loadTileContent').mockImplementation(async tile => ({
     loaded: true,
-    contents: tile.contentUrls.map(uri => ({uri, type: 'b3dm', vertexCount: 3, byteLength: 1}))
+    contents: tile.contentUrls.map(uri => ({
+      uri,
+      type: 'b3dm',
+      vertexCount: 3,
+      byteLength: 1,
+      destroy: vi.fn()
+    }))
   }));
   return {tileset: new Tileset3D(source), source, loadContent};
 }
 
-test('source-backed conversion retains empty placements and ordered contents with awaited writes', async () => {
+test.each([
+  false,
+  true
+])('source-backed conversion awaits writes with cleanup %s', async unloadContent => {
   const {tileset, source, loadContent} = createTileset();
-  const adapter = createTilesetConversionSource(tileset);
+  const adapter = createTilesetConversionSource(tileset, {unloadContent});
   const observed: TilesetContentTraversalItem[] = [];
   let notifyWrite!: () => void;
   let releaseWrite!: () => void;
@@ -91,6 +100,9 @@ test('source-backed conversion retains empty placements and ordered contents wit
       expect(loadContent).toHaveBeenCalledTimes(1);
       expect(observed.map(item => item.tile.id)).toEqual(['root', 'first']);
       expect(finalize).not.toHaveBeenCalled();
+      expect(
+        (observed[1].contents[0].payload as {destroy: () => void}).destroy
+      ).not.toHaveBeenCalled();
     } finally {
       releaseWrite();
     }
@@ -103,8 +115,20 @@ test('source-backed conversion retains empty placements and ordered contents wit
       'first-b.glb'
     ]);
     expect(observed[1].tile).toBe(tileset.root!.children[0]);
-    expect(observed[1].contents).toBe(observed[1].tile.contentEntries);
+    if (unloadContent) {
+      expect(observed[1].tile.content).toBeNull();
+      expect(observed[1].tile.contentEntries.every(content => content.payload === null)).toBe(true);
+    } else {
+      expect(observed[1].contents).toBe(observed[1].tile.contentEntries);
+    }
     expect(observed[1].contents.every(content => content.payload)).toBe(true);
+    for (const item of observed) {
+      for (const content of item.contents) {
+        expect((content.payload as {destroy: () => void}).destroy).toHaveBeenCalledTimes(
+          unloadContent ? 1 : 0
+        );
+      }
+    }
     expect(report).toMatchObject({
       state: 'completed',
       inputResources: 3,
@@ -114,6 +138,41 @@ test('source-backed conversion retains empty placements and ordered contents wit
     });
     expect(finalize).toHaveBeenCalledExactlyOnceWith(report);
     expect(abort).not.toHaveBeenCalled();
+  } finally {
+    tileset.destroy();
+  }
+});
+
+test('source-backed conversion releases oversized input before aborting the destination', async () => {
+  const {tileset, loadContent} = createTileset();
+  const abort = vi.fn(async () => {
+    expect(tileset.root!.children[0].content).toBeNull();
+  });
+  const write = vi.fn(async () => {});
+  const finalize = vi.fn(async () => {});
+  try {
+    await expect(
+      convertTileset({
+        source: createTilesetConversionSource(tileset, {unloadContent: true}),
+        codec: {
+          async *convert(item) {
+            for (const content of item.contents) yield content;
+          }
+        },
+        sink: {write, finalize, abort},
+        measureInputBytes: item => item.contents.length,
+        measureOutputBytes: () => 1,
+        maxInputResourceBytes: 1
+      })
+    ).rejects.toMatchObject({code: 'INPUT_RESOURCE_TOO_LARGE'});
+    expect(loadContent).toHaveBeenCalledOnce();
+    const loaded = (await loadContent.mock.results[0].value).contents!;
+    expect(loaded.every(content => content.destroy.mock.calls.length === 1)).toBe(true);
+    expect(write).not.toHaveBeenCalled();
+    expect(finalize).not.toHaveBeenCalled();
+    expect(abort).toHaveBeenCalledExactlyOnceWith(
+      expect.objectContaining({code: 'INPUT_RESOURCE_TOO_LARGE'})
+    );
   } finally {
     tileset.destroy();
   }

@@ -1,4 +1,4 @@
-import {describe, expect, test} from 'vitest';
+import {describe, expect, test, vi} from 'vitest';
 import {TILESET_TYPE} from '../../src/constants';
 import type {Tile3D} from '../../src/tileset-3d/common/tile-3d';
 import type {Tileset3D} from '../../src/tileset-3d/common/tileset-3d';
@@ -20,6 +20,7 @@ type TestTile = Tile3D & {
   }>;
 };
 
+/** Creates a small placement with observable decoded-content cleanup. */
 function createTestTile(
   id: string,
   contentUrls: string[] = [],
@@ -33,6 +34,11 @@ function createTestTile(
     contentEntries: [],
     childrenState: header.implicitSubtree ? 'unloaded' : 'ready',
     children: [],
+    unloadContent: vi.fn(function (this: TestTile) {
+      this.content = null;
+      this.contentEntries = [];
+      return true;
+    }),
     async loadContent() {
       return {loaded: false, contents: []};
     },
@@ -54,6 +60,7 @@ function createTestTile(
   return tile as TestTile;
 }
 
+/** Creates a minimal source that expands implicit and external child placements. */
 function createTestTileset(root: TestTile, type = TILESET_TYPE.TILES3D) {
   const loadedUrls: string[] = [];
   const tileset = {
@@ -95,6 +102,113 @@ function createTestTileset(root: TestTile, type = TILESET_TYPE.TILES3D) {
 }
 
 describe('traverseTilesetContents', () => {
+  test('uses AbortError when an aborted signal does not provide a reason', async () => {
+    const root = createTestTile('root', ['root.glb']);
+    const {tileset} = createTestTileset(root);
+    const controller = new AbortController();
+    controller.abort();
+    vi.spyOn(controller.signal, 'reason', 'get').mockReturnValue(undefined);
+    await expect(
+      traverseTilesetContents(tileset, {signal: controller.signal}).next()
+    ).rejects.toMatchObject({
+      name: 'AbortError'
+    });
+    expect(root.unloadContent).not.toHaveBeenCalled();
+  });
+
+  test('opt-in cleanup runs after consumption and retains preloaded content and external children', async () => {
+    const root = createTestTile('root', ['mesh.glb', 'external.json']);
+    const preloaded = createTestTile('preloaded', ['preloaded.glb']);
+    await preloaded.loadContentForTraversal();
+    const retainedContent = preloaded.content;
+    const empty = createTestTile('empty');
+    root.children.push(preloaded, empty);
+    const {tileset} = createTestTileset(root);
+    const reader = traverseTilesetContents(tileset, {unloadContent: true});
+    const first = await reader.next();
+    expect(first.value?.contents).toHaveLength(2);
+    expect(root.unloadContent).not.toHaveBeenCalled();
+    expect(root.content).not.toBeNull();
+    expect((await reader.next()).value?.tile).toBe(preloaded);
+    expect(root.unloadContent).toHaveBeenCalledOnce();
+    expect(root.content).toBeNull();
+    expect((await reader.next()).value?.tile).toBe(empty);
+    const external = (await reader.next()).value?.tile;
+    expect(external?.id).toBe('external-root');
+    expect(external?.unloadContent).not.toHaveBeenCalled();
+    expect(await reader.next()).toMatchObject({done: true});
+    expect(external?.unloadContent).toHaveBeenCalledOnce();
+    expect(preloaded.content).toBe(retainedContent);
+    expect(preloaded.unloadContent).not.toHaveBeenCalled();
+    expect(empty.unloadContent).not.toHaveBeenCalled();
+  });
+
+  test.each([
+    'return',
+    'cancel',
+    'consumer-error'
+  ] as const)('opt-in cleanup releases yielded content on %s', async phase => {
+    const root = createTestTile('root', ['root.glb']);
+    const child = createTestTile('child', ['child.glb']);
+    root.children.push(child);
+    const {tileset} = createTestTileset(root);
+    const controller = new AbortController();
+    const reason = new Error('stopped');
+    const reader = traverseTilesetContents(tileset, {
+      unloadContent: true,
+      signal: controller.signal
+    });
+    if (phase === 'consumer-error') {
+      await expect(async () => {
+        for await (const _item of reader) throw reason;
+      }).rejects.toBe(reason);
+    } else {
+      await reader.next();
+      if (phase === 'cancel') {
+        controller.abort(reason);
+        await expect(reader.next()).rejects.toBe(reason);
+      } else {
+        await reader.return(undefined);
+      }
+    }
+    expect(root.unloadContent).toHaveBeenCalledOnce();
+    expect(root.content).toBeNull();
+    expect(child.content).toBeNull();
+    expect(child.unloadContent).not.toHaveBeenCalled();
+  });
+
+  test.each([
+    'load-error',
+    'cancel-during-load',
+    'incomplete-load',
+    'source-hook-error'
+  ] as const)('opt-in cleanup releases newly attached content on %s before yielding', async phase => {
+    const root = createTestTile('root', ['root.glb']);
+    const {tileset} = createTestTileset(root);
+    const controller = new AbortController();
+    const reason = new Error('read failed');
+    const loadContent = root.loadContentForTraversal.bind(root);
+    root.loadContentForTraversal = async () => {
+      const result = await loadContent();
+      if (phase === 'load-error') throw reason;
+      if (phase === 'cancel-during-load') controller.abort(reason);
+      return {...result, loaded: phase !== 'incomplete-load'};
+    };
+    if (phase === 'source-hook-error') {
+      tileset.source.onTileLoaded = () => {
+        throw reason;
+      };
+    }
+    const read = traverseTilesetContents(tileset, {unloadContent: true, signal: controller.signal});
+    if (phase === 'incomplete-load') {
+      await expect(read.next()).rejects.toThrow('Unable to load tile content');
+    } else {
+      await expect(read.next()).rejects.toBe(reason);
+    }
+    expect(root.unloadContent).toHaveBeenCalledOnce();
+    expect(root.content).toBeNull();
+  });
+
   test('visits multi-content, implicit, and external placements in deterministic order', async () => {
     const root = createTestTile('root', ['root-mesh.glb', 'external.json'], {
       content: [{uri: 'root-mesh.glb'}, {uri: 'external.json'}]
