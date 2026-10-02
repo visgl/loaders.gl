@@ -103,6 +103,12 @@ selective field decoding, direct typed output, memory copies, and module startup
 
 `las.recoverMissingChunkTable: true` allows fixed-size LAZ chunks to be read when the LASzip chunk-table pointer equals the point-data offset, the marker left by an interrupted writer. The default remains strict. Recovery uses the header point count and fixed chunk size, verifies all point data, and rejects truncated records and unexpected trailing bytes. Variable-size chunks require their table; malformed existing tables are never bypassed. Recovery cannot restore points that the writer did not finish.
 
+### LASzip compatibility mode
+
+LASzip can store modern LAS 1.4 point formats in legacy records with a `lascompatible` VLR and named Extra Bytes descriptors. `LASLoader` detects this explicit layout and restores classification, extended returns, overlap, scanner channel, scan angle, and NIR in the returned columns. Scan angles use modern 0.006-degree units after reconstruction. Complete and streaming LAS/LAZ parsing apply the same reconstruction, including selected columns.
+
+Set `las.compatibilityMode: 'raw'` to retain the physical legacy column values; the default is `'auto'`. Raw decompression always retains the original point-record bytes. `loaderData` preserves the physical file header and VLRs; `loaderData.metadata.compatibility` identifies the logical modern point format and version. Raw or typed Extra Bytes remain available independently of reconstruction.
+
 ## Worker Execution
 
 Atomic `load` and `parse` calls with `LASLoader` use the package's single prebuilt `las-worker.js` when workers are enabled and mesh output is requested. Arrow output stays on the calling thread because structured cloning would strip methods from the Arrow table wrapper. The compatibility loaders parse on the calling thread by default and do not add more worker artifacts to the package.

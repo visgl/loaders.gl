@@ -52,6 +52,8 @@ export type LASLoaderOptions = LoaderOptions & {
     extraBytes?: 'raw' | 'typed';
     /** Recover fixed-size LAZ chunks when the LASzip pointer marks an interrupted writer. */
     recoverMissingChunkTable?: boolean;
+    /** Restore modern fields in LASzip compatibility-mode files, or retain their legacy columns. */
+    compatibilityMode?: 'auto' | 'raw';
     /** Override the URL to the worker bundle. */
     workerUrl?: string;
   };
@@ -84,7 +86,8 @@ export const LAS_LOADER_METADATA = {
       colorFormat: 'uint8norm',
       columns: undefined,
       extraBytes: 'raw',
-      recoverMissingChunkTable: false
+      recoverMissingChunkTable: false,
+      compatibilityMode: 'auto'
     }
   }
 } as const satisfies Loader<LASMesh | MeshArrowTable, LASMesh | MeshArrowTable, LASLoaderOptions>;

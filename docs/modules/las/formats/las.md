@@ -95,17 +95,32 @@ LAS file versions and LASzip codec versions are independent. A claim such as "LA
 
 ### TypeScript LAZ Decoder
 
-#### LASzip Codec Options
+#### LAZ Feature Support
 
-| LASzip feature | Supported TypeScript combinations |
-| --- | --- |
-| Legacy PDRF 0-3 items | Pointwise compressor 1 or chunked compressor 2, arithmetic coder 0, and Point10/GPS/RGB/Byte item versions 1 or 2. |
-| Legacy waveform PDRF 4-5 | Pointwise compressor 1 or chunked compressor 2, arithmetic coder 0, Point10/GPS/RGB/Byte item versions 1 or 2, and WavePacket13 item version 1. |
-| Modern PDRF 6-8 items | Layered compressor 3, arithmetic coder 0, and Point14/RGB14/RGBNIR14/Byte14 item versions 2, 3, or 4. |
-| Modern waveform PDRF 9-10 | Layered compressor 3, arithmetic coder 0, Point14/RGB14/RGBNIR14/Byte14 item versions 2-4, and WavePacket14 item version 3 or 4. |
-| Extra Bytes | Byte10 versions 1-2 and Byte14 versions 2-4 are losslessly preserved in raw records. Extra Bytes VLR definitions can be exposed as typed scalar or vector Arrow columns for supported numeric types. |
-| Chunk table | Version 0, fixed-size and variable-size chunks. Other chunk-table versions are rejected. |
-| Unsupported modes | Coders other than 0 and legacy item versions other than 1 or 2. |
+This matrix describes the TypeScript reader and `LASWriter`. Point data record format (PDRF), LAS header version, compressor, coder, and item version are separate compatibility dimensions. “Supported” applies to the combinations listed here, rather than every file carrying a `.laz` extension. Streaming describes forward-only `parseInBatches`; raw decompression preserves physical point-record bytes, while Arrow output exposes the selected logical fields.
+
+| LAZ feature / profile | Read support | Write support | Streaming behavior | Requirements and limits |
+| --- | --- | --- | --- | --- |
+| Legacy PDRF 0–3 | Supported: Point10, GPS time, RGB, and Byte10 item versions **1 or 2** as applicable. | Supported with item version **2**. | Incremental rows with persistent arithmetic/item state. | Arithmetic coder **0**; pointwise compressor **1** or chunked compressor **2**. Item versions are checked individually. |
+| Legacy waveform PDRF 4–5 | Supported: legacy items v1/v2 plus WavePacket13 **v1**. | Supported with legacy items v2 and WavePacket13 v1. | Incremental rows, including waveform packet references. | Waveform samples are separate from the 29-byte packet-reference records. |
+| Modern PDRF 6–8 | Supported: Point14, RGB14/RGBNIR14, and Byte14 item versions **2–4**. | Supported with item version **3**. | Selected Arrow rows become available after their required layers arrive. | Layered compressor **3**, arithmetic coder **0**. |
+| Modern waveform PDRF 9–10 | Supported: modern items v2–v4 and WavePacket14 **v3/v4**. | Supported with modern items v3 and WavePacket14 v3. | Waveform references can be emitted before unrequested trailing Byte14 layers. | Exact uint64 packet offsets are preserved; waveform sample access uses the waveform helpers. |
+| Pointwise legacy streams | Supported for PDRF 0–5, including legacy v1 files. | Not produced; the writer uses chunked compression. | Rows can be emitted before the stream finishes; bounded compressed input is retained. | Compressor **1** has no chunk-table pointer or chunk table. |
+| Fixed-size chunk tables | Supported: chunk-table **version 0**. | Supported. | Incremental legacy rows or progressive layered rows. | Final table entries are validated against decoded chunk lengths/counts. |
+| Variable-size chunk tables | Supported: chunk-table **version 0**. | Supported. | Forward-only sources are buffered until the EOF table is available. | Per-chunk point counts require the table; missing variable-size tables cannot be recovered. |
+| Missing-table recovery | **Opt-in** through `las.recoverMissingChunkTable: true`. | Not a writer mode; normal output includes its table. | Supported for fixed-size legacy and layered chunks. | Only the LASzip interrupted-write marker (pointer equals point-data offset) is accepted. Counts, point data, embedded layered counts, and EOF are validated. Truncated data, extra trailing bytes, and malformed existing tables remain errors. |
+| LASzip compatibility profiles | Supported: logical modern PDRF **6–10** stored in legacy records. | Not produced; the writer emits native requested PDRFs. | Complete and streaming parsing restore the same selected fields. | Requires the `lascompatible` control VLR, supported version/length, and exact named Extra Bytes layout. Default `las.compatibilityMode: 'auto'` restores classification, returns, scan angle, overlap, scanner channel, and optional NIR; `'raw'` retains legacy column values. |
+| Raw Extra Bytes | Lossless Byte10 **v1/v2** and Byte14 **v2–v4** payloads. | Supported through configured Extra Bytes. | Direct projection; layered payloads become ready after their Byte14 layers arrive. | Request `EXTRA_BYTES` explicitly for raw Arrow output. Raw record APIs always preserve the bytes. |
+| Typed Extra Bytes | Scalar descriptor types **1–10**, two-component types **11–20**, and three-component types **21–30**. | Configured descriptors and attributes are supported. | Shared typed projection for complete, streaming, and COPC output. | Use `las.extraBytes: 'typed'`; descriptor scale/offset applies per component. Type 0 remains a raw, undescribed byte payload. |
+| Signed/unsigned 64-bit Extra Bytes | Exact Arrow **Int64/Uint64**, including vector components and COPC scans. | Supported for configured 64-bit descriptors. | Exact BigInt values with identity transforms. | Types **7/8**, **17/18**, and **27/28** use BigUint64Array/BigInt64Array. Nonidentity scale/offset produces Float64 and can lose integer precision. |
+| Column selection | Supported with `las.columns`; `POSITION` is always returned. | Not applicable to decoding. | Modern omitted field layers can be skipped; legacy interleaved entropy must still be decoded. | Compatibility reconstruction reads its required extension fields even when raw Extra Bytes output is not requested. An empty column list requests positions only. |
+| COPC | Native hierarchy/range reading and modern LAZ node decoding through `@loaders.gl/copc`. | `COPCWriter` is a separate entry point. | Bounded node range reads and selected-layer decoding. | COPC is an indexed LAZ layout, not an alternate legacy item codec. |
+| Complete raw point records | All supported profile fields are decoded byte-for-byte. | Raw chunk encoders preserve represented record bytes. | Raw cursors retain decoder state across feeds. | Raw decompression does not rewrite compatibility records into modern physical records. Logical reconstruction is applied to parsed columns. |
+| Unsupported codec combinations | Rejected with an error. | Not produced. | No fallback for an unknown codec. | Coders other than **0**, chunk-table versions other than **0**, legacy item versions outside **1/2**, and modern/waveform item versions outside the combinations above are unsupported. |
+
+Legacy v1 and compatibility-mode support are checked against small independent LASzip fixtures, including raw-record parity and reconstructed modern fields. The interrupted-file recovery tests cover complete, raw streaming, and Arrow streaming paths. Supported point-record codecs do not imply complete LAS 1.5 header/metadata conformance; see the parser limits above.
+
+For comparison, [PDAL's LAS reader](https://pdal.io/en/stable/stages/readers.las.html) reads LAS/LAZ but documents exclusions for waveform PDRFs 4, 5, 9, and 10. [GDAL's vector driver list](https://gdal.org/en/stable/drivers/vector/index.html) does not include a native lidar LAS/LAZ driver; its [LOSLAS driver](https://gdal.org/en/stable/drivers/raster/loslas.html) handles NADCON datum-shift grids with a `.las` extension. LASzip is the codec interoperability reference used for these LAZ profiles.
 
 ### TypeScript LAZ Encoder
 
@@ -311,3 +326,7 @@ Within the documented version, PDRF, and codec matrix, the TypeScript implementa
 ### Missing chunk tables
 
 Like the LASzip reference reader, the TypeScript reader can recover fixed-size chunks from an interrupted writer's explicit missing-table marker. Enable `las.recoverMissingChunkTable` to request this behavior. Variable-size tables, truncated point data, and malformed existing tables remain errors.
+
+### LASzip compatibility profiles
+
+The TypeScript reader reconstructs modern point formats 6–10 stored in LASzip's legacy compatibility mode. The `lascompatible` control VLR and the exact named Extra Bytes descriptors are required. The output restores modern classification, return counts, scanner channel, overlap, scan angle, and optional NIR, while physical header metadata and raw bytes remain unchanged. Use `las.compatibilityMode: 'raw'` to retain the legacy columns. Independent LASzip fixtures validate the reconstruction for both uncompressed LAS and compressed LAZ.
