@@ -37,40 +37,40 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
   <img src="https://img.shields.io/badge/From-v4.2-blue.svg?style=flat-square" alt="From v4.2" />
 </p>
 
-This function creates a `DataSource` for an
-(i.e. parses the entire data set in one operation). It can be called on "already loaded" data such as `ArrayBuffer` and `string` objects.
+This function synchronously creates a runtime `DataSource` from a source-supported input, such as
+a URL, Blob, or an already loaded table. The returned object offers methods for requesting metadata
+and additional data; construction does not imply that the entire dataset has been loaded.
 
-In contrast to `load` and `parse` which parse a single file, the returned `DataSource` is a a class instance that offers an API for querying additional data (such as tiles from a tile server).
+Use `parse()` for parser loaders. `load()` can also accept a source loader and asynchronously return
+its runtime source, including resolving a lazy implementation when supported.
 
 <ReferenceBoundary
   title="Data source construction and options"
-  description="The sections below document source selection, metadata and request methods, nested options, and examples using tiled data sources."
+  description="The sections below document source selection, runtime construction, flat options, and examples using tiled data sources."
   tone="mint"
 />
 
 ## Usage
 
-The return value from `fetch` or `fetchFile` is a `Promise` that resolves to the fetch `Response` object and can be passed directly to the non-sync parser functions:
+Provide a source loader with a runtime factory and an input it supports:
 
 ```typescript
 import {createDataSource} from '@loaders.gl/core';
 import {PMTilesSourceLoader} from '@loaders.gl/pmtiles';
 
-const source = await createDataSource(url, [PMTilesSourceLoader]);
-// Application code here
-...
+const source = createDataSource(url, [PMTilesSourceLoader]);
+const metadata = await source.getMetadata();
 ```
 
 Automatic selection is performed with best-effort heuristics.
 
 ```typescript
-import {fetchFile, parseInBatches} from '@loaders.gl/core';
+import {createDataSource} from '@loaders.gl/core';
 import {PMTilesSourceLoader} from '@loaders.gl/pmtiles';
 import {MVTSourceLoader} from '@loaders.gl/mvt';
 
-const dataSource = await createDataSource(url, [PMTilesSourceLoader, MVTSourceLoader]);
-await dataSource.getMetadata(...);
-await dataSource.getTile(...);
+const dataSource = createDataSource(url, [PMTilesSourceLoader, MVTSourceLoader]);
+const metadata = await dataSource.getMetadata();
 ```
 
 ## Functions
@@ -83,10 +83,13 @@ createDataSource(data: unknown, sources: SourceLoader[], options?: DataSourceOpt
 
 Creates a runtime `DataSource` either using the provided source loader or source loaders.
 
-- `data`: The resource that the data source will load from. Note that the type of the data parameter is inferred from the supplied sources. Source may support urls, Blobs, or other types of input data.
-- `sources` - can be a single source loader or an array of source loaders. If a single source loader is provided, it will be used directly.
-- `options`
-  Returns:
+- `data`: The resource that the selected source will use. Supported inputs depend on the source.
+- `sources`: An array of source loaders with runtime factories. A one-element array uses that source
+  directly; multiple candidates use `core.type` or best-effort selection.
+- `options`: One flat options object, with shared `core` controls beside source and parser namespaces.
+  Options and the returned source type are inferred from the supplied factories.
+
+Returns:
 
 - A valid runtime data source.
 

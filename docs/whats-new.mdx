@@ -98,6 +98,24 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
 - Fix binary-to-GeoJSON conversion of multipolygons with empty parts, preserving empty
   polygons without overflowing the call stack.
 
+### v5 API finalization
+
+These release notes describe implemented work, not a declaration that the stable v5 API is frozen.
+See [v5 finalization](/docs/roadmap#v50-finalization) and
+[tracker #3316](https://github.com/visgl/loaders.gl/issues/3316) for the remaining contract decisions.
+
+- Source options are now flat: shared controls in `core` and parser namespaces sit beside source
+  namespaces. `core.loadOptions` and top-level source `loadOptions` are removed. Source-backed
+  deck.gl layers pass the same object through `sourceOptions`; this is a layer boundary, not another
+  loaders.gl options wrapper. See [Source options](/docs/developer-guide/using-sources#options)
+  and the [upgrade guide](/docs/upgrade-guide).
+- Tileset cache configuration uses byte budgets; the MiB aliases `maximumMemoryUsage` and
+  `memoryCacheOverflow` are removed. Vector reprojection uses `gis.targetCrs`, with distinct
+  service request/output CRS and explicit reprojection errors; see the migration guide for details.
+- Indexed Mesh Arrow columns now preserve unsigned indices as `List<Uint32>`. Indices remain
+  stored in row zero, with nulls in subsequent vertex rows; the final representation is still part
+  of the pre-release contract review.
+
 ### Complete ArcGIS feature queries
 
 The ArcGIS feature source now supports bounded paginated queries, progressive pages with completion

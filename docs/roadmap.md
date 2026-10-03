@@ -46,10 +46,39 @@ loaders.gl is developed under open governance by multiple contributors working w
 
 ## v5.0
 
-loaders.gl v4.4 will focus on cloud-native, binary data.
-A number of modules will expose "ArrowLoaders" will return binary data in the Apache Arrow and Apache GeoArrow formats.
+loaders.gl v5.0 focuses on cloud-native, binary data. Table and geospatial loaders increasingly
+return Apache Arrow tables and GeoArrow-compatible geometry columns by default. Explicit alternate
+shapes remain available where documented; this is not a blanket removal of shape selection.
 
-While no loader support has been removed, the flavor of the loaders.gl framework is changing.
+The release includes breaking API changes, listed in the [upgrade guide](/docs/upgrade-guide).
+Implemented capabilities are described in [What's new](/docs/whats-new); the
+[v5 release tracker](https://github.com/visgl/loaders.gl/issues/3316) records unresolved decisions.
+
+### v5.0 finalization
+
+Before stable v5.0, settle changes that would break applications during 5.x. The table below is a
+decision checklist, not a claim that the proposed changes have already been implemented.
+
+| Area | Remaining pre-v5 decision |
+| --- | --- |
+| Table and batch outputs | Freeze native Arrow versus loaders.gl envelopes, schema/metadata placement, `Batch.recordBatch` disposition, and explicit exceptions for atomic geometries. |
+| Mesh Arrow | Ratify or replace the current row-zero `List<Uint32>` index representation and optional top-level accessor. Unsigned storage is implemented; a future representation change would still be breaking. |
+| Shapes and options | Freeze Arrow-primary defaults and geometry interchange; decide remaining deprecated top-level parser aliases. Alternate shapes are currently supported, not globally deprecated. |
+| Scan/query | Decide the stability of `_scan` and `ExperimentalScanOptions` and their relationship to source `scan()`/`query()`, cancellation, partial results, and unsupported requests. |
+| Source lifecycle and imports | Review readiness, ownership, cleanup, lazy/runtime entry points, and service/authentication contracts without requiring a broad framework rewrite. |
+| Deprecations | Record a remove-now or retain-through-5.x decision for each remaining group, including consumer dependencies and usable replacement APIs. |
+
+Already implemented: flat source options ([#4042](https://github.com/visgl/loaders.gl/pull/4042)),
+the vector/service CRS contract ([#4029](https://github.com/visgl/loaders.gl/pull/4029)), and obsolete
+compatibility/cache alias removals ([#4028](https://github.com/visgl/loaders.gl/pull/4028),
+[#4031](https://github.com/visgl/loaders.gl/pull/4031)). Source and parser namespaces now share one
+options object; there is no source `core.loadOptions` or top-level `loadOptions` wrapper.
+
+After these decisions, reconcile migration and release documentation, validate packaged imports,
+workers and supported integrations, disposition release-blocking regressions, and publish v5.0.
+More adapters, faster parsers, additional reprojection backends, and broader worker execution may
+follow in 5.x if they preserve the frozen contracts. Output-envelope and other breaking decisions
+must not be deferred as ordinary minor-release features.
 
 **Apache Arrow as a core format**
 
@@ -60,8 +89,9 @@ While no loader support has been removed, the flavor of the loaders.gl framework
 
 **Improved `DataSource` APIs**
 
-- The `Source` and `DataSource` APIs have matured and are now easier to work with.
-- Consult the upgrade guide for migration details.
+- `SourceLoader` factories construct runtime `DataSource` objects for incremental requests.
+- See [Source options](/docs/developer-guide/using-sources#options) for the central options convention,
+  and the upgrade guide for removed wrappers and migration details.
 
 ### Per-module changes
 
@@ -70,24 +100,29 @@ While no loader support has been removed, the flavor of the loaders.gl framework
 
 - **`@loaders.gl/parquet`**
   - `ParquetLoader` can return Apache Arrow tables with `parquet.shape: 'arrow-table'` and leverages the high-performance `parquet-wasm` library.
-  - The v4 Parquet loader is still available as `ParquetJSONLoader`
+  - `ParquetJSLoader` is the explicit TypeScript/main-thread alternative; `ParquetJSONLoader` is removed.
 
 - **`@loaders.gl/schema-utils`**
-  - New module for working with and converting Apache Arrow data.
+  - Shared schema, table, mesh, and converter infrastructure.
 
 - **`@loaders.gl/gis`**
-  - Now provides support for working Apache GeoArrow data.
+  - Minimal geometry helpers needed by loaders, including GeoArrow WKB output.
 
+- **`@loaders.gl/geoarrow`**
+  - Richer GeoArrow conversion and processing APIs for applications.
 
 - **Cloud native** (raster/data): `GeoTIFFLoader`, `ZarrLoader`, kerchunk, NetCDF4, ...
-- **Cloud native** (point clouds): `COPCService`, `POTreeV2Service`...
-- Unbundled loaders (load non-worker loaders as separate bundle, similar to how workers are loaded today).
-- More comprehensive support for `options.shape` to control the output format of loaders.
+- **Cloud native** (point clouds): COPC and Potree source loaders.
+- Metadata-only loader roots with parser implementation subpaths and asynchronous preload.
+- Shared `core.shape` and loader-specific shape options for documented output alternatives.
 
-**Single output format per loader**
+**Explicit output formats**
 
-- The `shape` option that was introduced in loaders.gl v3 to allow loaders to return different data formats is now deprecated and will be removed in many places.
-- Instead, applications can use utilities in the `@loaders.gl/schema-utils` and `@loaders.gl/gis` modules to convert for Apache Arrow and Apache GeoArrow to more traditional (but less efficient) JavaScript formats.
+- Loaders document supported shapes and defaults. `core.shape` supplies a shared default where
+  supported, and loader-specific shape settings select the format explicitly.
+- Applications can also use explicit converters in `@loaders.gl/schema-utils` and
+  `@loaders.gl/geoarrow` to obtain other representations. Converters do not imply that every
+  loader-specific alternate shape has been removed.
 
 ## Geospatial service roadmap
 
