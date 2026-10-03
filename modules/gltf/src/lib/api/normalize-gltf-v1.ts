@@ -5,6 +5,8 @@
 /* eslint-disable camelcase */
 import * as KHR_binary_glTF from '../extensions/KHR_binary_gltf';
 import type {GLTFWithBuffers} from '../types/gltf-types';
+import {convertGLTFV1AccessorStrides} from './convert-gltf-v1-accessors';
+import {convertGLTFV1Skins} from './convert-gltf-v1-skins';
 
 // Binary format changes (mainly implemented by GLBLoader)
 // https://github.com/KhronosGroup/glTF/tree/master/extensions/1.0/Khronos/KHR_binary_glTF
@@ -210,6 +212,12 @@ class GLTFV1Normalizer {
 
     this._updateMaterial(json);
     this._updateAnimations(json);
+    convertGLTFV1AccessorStrides(json, feature => this._unsupported(feature));
+    convertGLTFV1Skins(
+      json,
+      nodeId => this._convertIdToIndex(nodeId, 'node'),
+      feature => this._unsupported(feature)
+    );
     this._updateNodes(json);
     this._preserveLegacyResources(json);
     this._removeEmptyCollections(json);

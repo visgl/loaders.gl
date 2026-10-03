@@ -18,7 +18,7 @@ describe('glTF 1 normalization', () => {
     expect(gltf.json.nodes?.[0].children).toEqual([1]);
     expect(gltf.json.nodes?.[1].mesh).toBe(1);
     expect(gltf.json.nodes?.[1].translation).toBeUndefined();
-    expect(gltf.json.animations?.[0].samplers?.[0]).toMatchObject({input: 0, output: 0});
+    expect(gltf.json.animations?.[0].samplers?.[0]).toMatchObject({input: 1, output: 2});
     expect(gltf.json.animations?.[0].channels?.[0]).toMatchObject({
       sampler: 0,
       target: {node: 0, path: 'translation'}
@@ -91,7 +91,9 @@ function makeGLTFV1(): GLTFWithBuffers {
         mesh1: {primitives: [{attributes: {POSITION: 'accessor0'}}]}
       },
       accessors: {
-        accessor0: {bufferView: 'bufferView0', componentType: 5126, count: 1, type: 'VEC3'}
+        accessor0: {bufferView: 'bufferView0', componentType: 5126, count: 1, type: 'VEC3'},
+        time: {bufferView: 'bufferView0', componentType: 5126, count: 1, type: 'SCALAR'},
+        translation: {bufferView: 'bufferView0', componentType: 5126, count: 1, type: 'VEC3'}
       },
       bufferViews: {
         bufferView0: {buffer: 'buffer0', byteLength: source.byteLength}
@@ -101,7 +103,7 @@ function makeGLTFV1(): GLTFWithBuffers {
       },
       animations: {
         animation0: {
-          samplers: {sampler0: {input: 'accessor0', output: 'accessor0'}},
+          samplers: {sampler0: {input: 'time', output: 'translation'}},
           channels: [{sampler: 'sampler0', target: {id: 'node0', path: 'translation'}}]
         }
       }
