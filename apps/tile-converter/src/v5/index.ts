@@ -45,3 +45,4 @@ export type {
   TileResourceManifestEntry,
   TileResourceManifestStore
 } from './resource-manifest.js';
+export {encodeMeshTile} from './mesh.js';
