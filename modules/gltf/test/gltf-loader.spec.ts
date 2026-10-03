@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import {expect, test} from 'vitest';
+import {expect, test, vi} from 'vitest';
 import {validateLoader} from 'test/common/conformance';
 import {registerLoaders, load, parse, parseSync, fetchFile, encodeSync} from '@loaders.gl/core';
 import {GLTFLoader, GLTFWriter, postProcessGLTF, type GLTFLoaderOptions} from '@loaders.gl/gltf';
@@ -13,11 +13,34 @@ import {getGLTFImageOptions} from '../src/lib/parsers/parse-gltf';
 import {createGLBV3} from './test-utils/create-glb-v3';
 import {createGLBV1} from './test-utils/create-glb-v1';
 import {createSkinAsset, BAKED_MATRICES} from './test-utils/create-gltf-v1-skin';
+import {createAccessorAsset} from './test-utils/create-gltf-v1-accessor';
 import {getTypedArrayForAccessor} from '../src/lib/gltf-utils/get-typed-array';
 const GLTF_BINARY_URL = '@loaders.gl/gltf/test/data/gltf-2.0/2CylinderEngine.glb';
 const GLTF_JSON_URL = '@loaders.gl/gltf/test/data/gltf-2.0/2CylinderEngine.gltf';
 const PNG_DATA_URL =
   'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAIAAAACAQMAAABIeJ9nAAAABGdBTUEAALGPC/xhBQAAAAFzUkdCAK7OHOkAAAAGUExURf///wAAAFXC034AAAAMSURBVAjXY3BgaAAAAUQAwetZAwkAAAAASUVORK5CYII=';
+
+test('GLTFLoader forwards core.log to diagnostics after linked glTF 1 buffers load', async () => {
+  const emitWarning = vi.fn();
+  const logger = {log: vi.fn(() => vi.fn()), warn: vi.fn(() => emitWarning)};
+  const source = createAccessorAsset(
+    {
+      accessors: {color: {bufferView: 'view', componentType: 5121, count: 1, type: 'VEC4'}},
+      meshes: {mesh: {primitives: [{attributes: {COLOR: 'color'}}]}}
+    },
+    4
+  );
+  (source.json.buffers as any).data.uri = 'data:application/octet-stream;base64,/4AA/w==';
+  const parsed = await parse(JSON.stringify(source.json), GLTFLoader, {
+    core: {log: logger},
+    gltf: {loadImages: false}
+  });
+  expect(parsed.json.accessors![0].normalized).toBe(true);
+  expect(logger.warn).toHaveBeenCalledWith(
+    expect.stringContaining('assumes normalized unsigned values')
+  );
+  expect(emitWarning).toHaveBeenCalledOnce();
+});
 // Extracted from Cesium 3D Tiles
 const GLB_TILE_WITH_DRACO_URL = '@loaders.gl/gltf/test/data/3d-tiles/143.glb';
 const GLB_V1_TILE_CESIUM_AIR_URL = '@loaders.gl/gltf/test/data/3d-tiles/Cesium_Air.glb';
@@ -119,6 +142,37 @@ test('GLTFLoader strict bind baking requires linked buffers to be loaded', async
       gltf: {normalize: 'strict', loadBuffers: false, loadImages: false}
     })
   ).rejects.toThrow(/loaded inverse-bind buffer/);
+});
+
+test('GLTFLoader repairs loaded glTF 1 strides and joint types before a GLB 2 round trip', async () => {
+  const source = createAccessorAsset(
+    {
+      accessors: {
+        joints: {bufferView: 'view', componentType: 5126, count: 1, type: 'VEC4'},
+        matrix: {bufferView: 'view', byteOffset: 16, componentType: 5121, count: 1, type: 'MAT3'}
+      },
+      meshes: {mesh: {primitives: [{attributes: {JOINT: 'joints'}}]}}
+    },
+    25
+  );
+  new Float32Array(source.buffers[0].arrayBuffer, 0, 4).set([0, 256, 1, 2]);
+  new Uint8Array(source.buffers[0].arrayBuffer, 16, 9).set([1, 2, 3, 4, 5, 6, 7, 8, 9]);
+  const rawJson = source.json as unknown as Record<string, unknown>;
+  (rawJson.buffers as Record<string, {uri: string}>).data.uri =
+    `data:application/octet-stream;base64,${encodeArrayBufferToBase64(source.buffers[0].arrayBuffer.slice(0, 25))}`;
+  const converted = await parse(JSON.stringify(rawJson), GLTFLoader, {
+    gltf: {normalize: 'strict', loadImages: false}
+  });
+  const roundTrip = await parse(encodeSync(converted, GLTFWriter), GLTFLoader, {
+    gltf: {loadImages: false}
+  });
+  expect(roundTrip.json.accessors![0].componentType).toBe(5123);
+  expect(Array.from(getTypedArrayForAccessor(roundTrip.json, roundTrip.buffers, 0))).toEqual([
+    0, 256, 1, 2
+  ]);
+  expect(Array.from(getTypedArrayForAccessor(roundTrip.json, roundTrip.buffers, 1))).toEqual([
+    1, 2, 3, 4, 5, 6, 7, 8, 9
+  ]);
 });
 
 test('GLTFLoader#parse(v3) resolves explicit buffer chunk indices', async () => {

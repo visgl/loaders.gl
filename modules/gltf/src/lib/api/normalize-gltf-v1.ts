@@ -8,6 +8,12 @@ import type {GLTFWithBuffers} from '../types/gltf-types';
 import {convertGLTFV1AccessorStrides} from './convert-gltf-v1-accessors';
 import {convertGLTFV1Skins} from './convert-gltf-v1-skins';
 import {bakeGLTFV1BindShapes} from './bake-gltf-v1-bind-shapes';
+import {
+  prepareGLTFV1AccessorConversions,
+  repackGLTFV1Accessors,
+  type GLTFV1AccessorConversion
+} from './repack-gltf-v1-accessors';
+import {cleanGLTFV1Fields, convertGLTFV1AttributeName} from './clean-gltf-v1-fields';
 
 // Binary format changes (mainly implemented by GLBLoader)
 // https://github.com/KhronosGroup/glTF/tree/master/extensions/1.0/Khronos/KHR_binary_glTF
@@ -87,14 +93,6 @@ const GLTF_KEYS = {
   texture: 'textures'
 };
 
-/** Conventional glTF 1 vertex semantics whose glTF 2 names changed. */
-const LEGACY_ATTRIBUTE_NAMES: Record<string, string> = {
-  JOINT: 'JOINTS_0',
-  WEIGHT: 'WEIGHTS_0',
-  TEXCOORD: 'TEXCOORD_0',
-  COLOR: 'COLOR_0'
-};
-
 /** Diagnostics emitted while converting a glTF 1 asset to glTF 2. */
 export type GLTFV1NormalizationReport = {
   /** Whether a glTF 1 asset was detected and converted. */
@@ -107,12 +105,22 @@ export type GLTFV1NormalizationReport = {
   warnings: string[];
 };
 
+/** Lazy logging methods compatible with probe.gl and loaders.gl core loggers. */
+export type GLTFV1NormalizationLog = {
+  /** Create a level-controlled informational callback. */
+  log(priority: number, message: string): () => void;
+  /** Create a warning callback. */
+  warn(message: string): () => void;
+};
+
 /** Options for glTF 1 to glTF 2 conversion. */
 export type GLTFV1NormalizationOptions = {
   /** Enable conversion. `'strict'` rejects unsupported features; other values are best effort. */
   normalize?: boolean | 'best-effort' | 'strict';
   /** Mutate the supplied JSON. Defaults to true for backwards compatibility. */
   mutate?: boolean;
+  /** Optional probe.gl-compatible logger; absent or null leaves diagnostics in the report only. */
+  log?: GLTFV1NormalizationLog | null;
 };
 
 /**
@@ -145,8 +153,14 @@ class GLTFV1Normalizer {
   };
   /** Whether unsupported legacy features should abort conversion. */
   strict = false;
+  /** Caller-owned logger receiving conversion notes and unsupported-feature warnings. */
+  log?: GLTFV1NormalizationLog | null;
   /** Whether binary baking and final diagnostics have already completed. */
   finished = false;
+  /** Accessors whose loaded payload needs alignment or stride repair. */
+  pendingAccessors = new Set<number>();
+  /** Separated consumer interpretations, captured before legacy strides are consumed. */
+  accessorConversions = new Map<number, GLTFV1AccessorConversion>();
 
   // constructor() {}
 
@@ -169,6 +183,7 @@ class GLTFV1Normalizer {
       return report;
     }
     this.strict = options.normalize === 'strict';
+    this.log = options.log;
     this.json = gltf.json;
     const json = gltf.json;
 
@@ -185,8 +200,6 @@ class GLTFV1Normalizer {
         break;
 
       default:
-        // eslint-disable-next-line no-undef, no-console
-        console.warn(`glTF: Unknown version ${json.asset.version}`);
         this._warning(`Unknown glTF version ${json.asset.version}`);
         return this.report;
     }
@@ -199,8 +212,7 @@ class GLTFV1Normalizer {
     this.report.converted = true;
     this.report.mutated = true;
 
-    // eslint-disable-next-line no-undef, no-console
-    console.warn('Converting glTF v1 to glTF v2 format. This is experimental and may fail.');
+    this.log?.log(1, 'glTF: Converting glTF v1 to glTF v2 using experimental normalization.')();
 
     this._addAsset(json);
     this._orderBinaryBufferPayloads(gltf);
@@ -220,7 +232,9 @@ class GLTFV1Normalizer {
 
     this._updateMaterial(json);
     this._updateAnimations(json);
-    convertGLTFV1AccessorStrides(json, feature => this._unsupported(feature));
+    cleanGLTFV1Fields(json, feature => this._unsupported(feature));
+    this.accessorConversions = prepareGLTFV1AccessorConversions(json);
+    convertGLTFV1AccessorStrides(json, accessorIndex => this.pendingAccessors.add(accessorIndex));
     convertGLTFV1Skins(
       json,
       nodeId => this._convertIdToIndex(nodeId, 'node'),
@@ -235,8 +249,15 @@ class GLTFV1Normalizer {
   /** Complete binary baking once linked buffers are available; repeated calls are harmless. */
   finishNormalization(gltf: GLTFWithBuffers): GLTFV1NormalizationReport {
     if (this.report.converted && !this.finished) {
+      repackGLTFV1Accessors(gltf, this.accessorConversions, this.pendingAccessors, feature =>
+        this._unsupported(feature)
+      );
       bakeGLTFV1BindShapes(gltf, feature => this._unsupported(feature));
       this._finishReport();
+      this.log?.log(
+        1,
+        `glTF: Completed glTF v1 normalization (${this.report.unsupported.length} unsupported features).`
+      )();
       this.finished = true;
     }
     return this.report;
@@ -245,6 +266,7 @@ class GLTFV1Normalizer {
   /** Record a feature that requires a lossy best-effort conversion. */
   _unsupported(feature: string): void {
     this.report.unsupported.push(feature);
+    this.log?.warn(`glTF v1 normalization does not support ${feature}`)();
     if (this.strict) {
       throw new Error(`glTF v1 normalization does not support ${feature}`);
     }
@@ -253,6 +275,7 @@ class GLTFV1Normalizer {
   /** Add a diagnostic without rejecting conversion. */
   _warning(message: string): void {
     this.report.warnings.push(message);
+    this.log?.warn(`glTF: ${message}`)();
   }
 
   // asset is now required, #642 https://github.com/KhronosGroup/glTF/issues/639
@@ -347,30 +370,23 @@ class GLTFV1Normalizer {
   _convertMeshIds(mesh) {
     for (const primitive of mesh.primitives) {
       const {attributes, indices, material} = primitive;
+      const convertedNames = new Map<string, string>();
       for (const attributeName in attributes) {
-        const convertedName = Object.hasOwn(LEGACY_ATTRIBUTE_NAMES, attributeName)
-          ? LEGACY_ATTRIBUTE_NAMES[attributeName]
-          : attributeName;
-        if (
-          convertedName !== attributeName &&
-          convertedName in attributes &&
-          attributes[convertedName] !== attributes[attributeName]
-        ) {
+        const convertedName = convertGLTFV1AttributeName(attributeName);
+        const previousName = convertedNames.get(convertedName);
+        if (previousName !== undefined && attributes[previousName] !== attributes[attributeName]) {
           throw new Error(
-            `glTF v1: conflicting attribute aliases ${attributeName} and ${convertedName}`
+            `glTF v1: conflicting attribute aliases ${previousName} and ${attributeName}`
           );
         }
+        convertedNames.set(convertedName, attributeName);
       }
-      primitive.attributes = {};
-      for (const attributeName in attributes) {
-        const convertedName = Object.hasOwn(LEGACY_ATTRIBUTE_NAMES, attributeName)
-          ? LEGACY_ATTRIBUTE_NAMES[attributeName]
-          : attributeName;
-        primitive.attributes[convertedName] = this._convertIdToIndex(
-          attributes[attributeName],
-          'accessor'
-        );
-      }
+      primitive.attributes = Object.fromEntries(
+        Object.entries(attributes).map(([attributeName, accessorId]) => [
+          convertGLTFV1AttributeName(attributeName),
+          this._convertIdToIndex(accessorId, 'accessor')
+        ])
+      );
       if (indices) {
         primitive.indices = this._convertIdToIndex(indices, 'accessor');
       }
@@ -398,7 +414,7 @@ class GLTFV1Normalizer {
   /** Go through all objects in a top-level array and replace ids with indices */
   _convertIdsToIndices(json, topLevelArrayName) {
     if (!json[topLevelArrayName]) {
-      console.warn(`gltf v1: json doesn't contain attribute ${topLevelArrayName}`); // eslint-disable-line no-console, no-undef
+      // Optional absent collections need no assumption or warning.
       json[topLevelArrayName] = [];
     }
     for (const object of json[topLevelArrayName]) {
@@ -566,7 +582,7 @@ class GLTFV1Normalizer {
   /** Finalize report diagnostics. */
   _finishReport(): void {
     if (this.report.unsupported.length) {
-      this._warning(
+      this.report.warnings.push(
         `Converted glTF v1 with unsupported features: ${this.report.unsupported.join(', ')}`
       );
     }
@@ -593,7 +609,7 @@ export function normalizeGLTFV1(
 /** Normalize parser JSON now, returning an internal completion step for linked-buffer baking. */
 export function normalizeGLTFV1WithDeferredBuffers(
   gltf: GLTFWithBuffers,
-  options: Pick<GLTFV1NormalizationOptions, 'normalize'> = {}
+  options: Pick<GLTFV1NormalizationOptions, 'normalize' | 'log'> = {}
 ): () => GLTFV1NormalizationReport {
   const normalizer = new GLTFV1Normalizer();
   normalizer.normalize(gltf, options, true);
@@ -608,7 +624,8 @@ export function convertGLTFV1ToGLTF2(
   const converted = {...gltf, json: JSON.parse(JSON.stringify(gltf.json))};
   const normalizationReport = normalizeGLTFV1(converted, {
     normalize: options.normalize || 'best-effort',
-    mutate: true
+    mutate: true,
+    log: options.log
   });
   normalizationReport.mutated = false;
   return {...converted, normalizationReport};

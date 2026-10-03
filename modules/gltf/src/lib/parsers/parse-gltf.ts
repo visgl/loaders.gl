@@ -97,7 +97,8 @@ async function parseGLTFWithExternalAssets(
   parseGLTFContainerSync(gltf, arrayBufferOrString, byteOffset, options);
 
   const finishNormalization = normalizeGLTFV1WithDeferredBuffers(gltf, {
-    normalize: options?.gltf?.normalize
+    normalize: options?.gltf?.normalize,
+    log: options?.core?.log
   });
 
   await preprocessExtensions(gltf, options, context);
