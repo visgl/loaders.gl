@@ -35,7 +35,7 @@ type SkinInstancePlan = {
 /**
  * Resolve glTF 1 joint names inside each instance's skeleton hierarchy.
  * Shared skins are cloned when instances use different joint nodes. Non-identity bind shapes
- * and unresolved or multiple-root bindings are preserved and reported instead of guessed.
+ * remain available for binary baking; unresolved or multiple-root bindings are reported.
  */
 export function convertGLTFV1Skins(
   json: GLTF,
@@ -57,11 +57,6 @@ export function convertGLTFV1Skins(
       new Set(jointNames).size !== jointNames.length
     ) {
       reportUnsupported(`skin ${skinIndex} has invalid joint names`);
-      hasUnconvertedSkin = true;
-      continue;
-    }
-    if (skin.bindShapeMatrix !== undefined && !isIdentityBindShape(skin.bindShapeMatrix)) {
-      reportUnsupported(`skin ${skinIndex} non-identity bindShapeMatrix`);
       hasUnconvertedSkin = true;
       continue;
     }
@@ -89,7 +84,9 @@ export function convertGLTFV1Skins(
           skeleton: plan.skeletonIndex
         };
         delete convertedSkin.jointNames;
-        delete convertedSkin.bindShapeMatrix;
+        if (skin.bindShapeMatrix !== undefined && isIdentityBindShape(skin.bindShapeMatrix)) {
+          delete convertedSkin.bindShapeMatrix;
+        }
         if (!hasFailedPlan && convertedBindings.size === 0) {
           convertedSkinIndex = skinIndex;
           skins[skinIndex] = convertedSkin;
@@ -200,6 +197,6 @@ function isIdentityBindShape(matrix: number[]): boolean {
   return (
     Array.isArray(matrix) &&
     matrix.length === 16 &&
-    matrix.every((value, index) => value === (index % 5 === 0 ? 1 : 0))
+    Array.from(matrix).every((value, index) => value === (index % 5 === 0 ? 1 : 0))
   );
 }

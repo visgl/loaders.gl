@@ -205,7 +205,7 @@ test('glTF 1 converts valid skin bindings while retaining a failed binding separ
   expect(converted.json.nodes?.[1]).toMatchObject({skin: 0, skeletons: ['badRoot']});
 });
 
-test('glTF 1 non-identity bind shapes are diagnosed instead of silently dropping their transforms', () => {
+test('glTF 1 non-identity bind shapes without matrix data are diagnosed instead of dropped', () => {
   const source = createLegacyAsset({
     skins: {
       skin: {
@@ -218,7 +218,7 @@ test('glTF 1 non-identity bind shapes are diagnosed instead of silently dropping
   const converted = convertGLTFV1ToGLTF2(source);
   expect(converted.json.skins?.[0]).toHaveProperty('bindShapeMatrix');
   expect(converted.normalizationReport.unsupported).toContain(
-    'skin 0 non-identity bindShapeMatrix'
+    'skin 0 non-identity bindShapeMatrix requires packed FLOAT MAT4 inverse-bind matrices'
   );
   expect(() => convertGLTFV1ToGLTF2(source, {normalize: 'strict'})).toThrow(
     /non-identity bindShapeMatrix/

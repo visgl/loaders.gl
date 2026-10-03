@@ -21,7 +21,7 @@ import {canonicalizeUrl, resolveUrl} from '../gltf-utils/resolve-url';
 import {findGLTFFileIndex, resolveGLTFFile} from '../gltf-utils/resolve-gltf-file';
 import {getTypedArrayForBufferView} from '../gltf-utils/get-typed-array';
 import {preprocessExtensions, decodeExtensions} from '../api/gltf-extensions';
-import {normalizeGLTFV1} from '../api/normalize-gltf-v1';
+import {normalizeGLTFV1WithDeferredBuffers} from '../api/normalize-gltf-v1';
 
 /**  */
 export type ParseGLTFOptions = ParseGLBOptions & {
@@ -96,7 +96,9 @@ async function parseGLTFWithExternalAssets(
 ): Promise<GLTFWithBuffers> {
   parseGLTFContainerSync(gltf, arrayBufferOrString, byteOffset, options);
 
-  normalizeGLTFV1(gltf, {normalize: options?.gltf?.normalize});
+  const finishNormalization = normalizeGLTFV1WithDeferredBuffers(gltf, {
+    normalize: options?.gltf?.normalize
+  });
 
   await preprocessExtensions(gltf, options, context);
 
@@ -104,6 +106,7 @@ async function parseGLTFWithExternalAssets(
   if (options?.gltf?.loadBuffers && gltf.json.buffers) {
     await loadBuffers(gltf, options, context, options.gltf.loadBufferIndices);
   }
+  finishNormalization();
 
   if (options?.gltf?.loadFiles && gltf.json.files) {
     await loadFiles(gltf, options, context);

@@ -4,13 +4,16 @@
 
 import {expect, test} from 'vitest';
 import {validateLoader} from 'test/common/conformance';
-import {registerLoaders, load, parse, parseSync, fetchFile} from '@loaders.gl/core';
-import {GLTFLoader, postProcessGLTF, type GLTFLoaderOptions} from '@loaders.gl/gltf';
+import {registerLoaders, load, parse, parseSync, fetchFile, encodeSync} from '@loaders.gl/core';
+import {GLTFLoader, GLTFWriter, postProcessGLTF, type GLTFLoaderOptions} from '@loaders.gl/gltf';
+import {encodeArrayBufferToBase64} from '@loaders.gl/loader-utils';
 import {DracoLoader} from '@loaders.gl/draco';
 import {ImageBitmapLoader} from '@loaders.gl/images';
 import {getGLTFImageOptions} from '../src/lib/parsers/parse-gltf';
 import {createGLBV3} from './test-utils/create-glb-v3';
 import {createGLBV1} from './test-utils/create-glb-v1';
+import {createSkinAsset, BAKED_MATRICES} from './test-utils/create-gltf-v1-skin';
+import {getTypedArrayForAccessor} from '../src/lib/gltf-utils/get-typed-array';
 const GLTF_BINARY_URL = '@loaders.gl/gltf/test/data/gltf-2.0/2CylinderEngine.glb';
 const GLTF_JSON_URL = '@loaders.gl/gltf/test/data/gltf-2.0/2CylinderEngine.gltf';
 const PNG_DATA_URL =
@@ -75,6 +78,49 @@ test('GLTFLoader#parse(v1) converts a reordered binary body and a data-URI buffe
     [1, 2, 3, 4]
   ]);
 });
+test.each([
+  'JSON',
+  'GLB 1'
+])('GLTFLoader bakes legacy bind shapes after loading %s buffers', async container => {
+  const source = createSkinAsset({bufferId: container === 'JSON' ? 'external' : 'binary_glTF'});
+  const buffer = source.buffers[0];
+  const payload = buffer.arrayBuffer.slice(
+    buffer.byteOffset,
+    buffer.byteOffset + buffer.byteLength
+  );
+  const rawJson = source.json as unknown as Record<string, unknown>;
+  if (container === 'JSON') {
+    (rawJson.buffers as Record<string, {uri: string}>).external.uri =
+      `data:application/octet-stream;base64,${encodeArrayBufferToBase64(payload)}`;
+  }
+  const input =
+    container === 'JSON' ? JSON.stringify(rawJson) : createGLBV1(rawJson, new Uint8Array(payload));
+  const converted = await parse(input, GLTFLoader, {
+    gltf: {normalize: 'strict', loadImages: false}
+  });
+  expect(converted.json.skins?.[0]).not.toHaveProperty('bindShapeMatrix');
+  expect(converted.buffers).toHaveLength(1);
+  expect(Array.from(getTypedArrayForAccessor(converted.json, converted.buffers, 2))).toEqual(
+    BAKED_MATRICES
+  );
+  const roundTrip = await parse(encodeSync(converted, GLTFWriter), GLTFLoader, {
+    gltf: {loadImages: false}
+  });
+  expect(roundTrip.json.asset.version).toBe('2.0');
+  expect(Array.from(getTypedArrayForAccessor(roundTrip.json, roundTrip.buffers, 2))).toEqual(
+    BAKED_MATRICES
+  );
+});
+
+test('GLTFLoader strict bind baking requires linked buffers to be loaded', async () => {
+  const source = createSkinAsset({bufferId: 'external', uri: 'matrices.bin'});
+  await expect(
+    parse(JSON.stringify(source.json), GLTFLoader, {
+      gltf: {normalize: 'strict', loadBuffers: false, loadImages: false}
+    })
+  ).rejects.toThrow(/loaded inverse-bind buffer/);
+});
+
 test('GLTFLoader#parse(v3) resolves explicit buffer chunk indices', async () => {
   const data = createGLBV3(
     {

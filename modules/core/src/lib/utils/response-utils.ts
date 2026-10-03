@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import {isResponse} from '@loaders.gl/loader-utils';
+import {encodeArrayBufferToBase64, isResponse} from '@loaders.gl/loader-utils';
 import {FetchError} from '../fetch/fetch-error';
 import {getResourceContentLength, getResourceUrl, getResourceMIMEType} from './resource-utils';
 import {shortenUrlForDisplay} from './url-utils';
@@ -120,18 +120,8 @@ async function getInitialDataUrl(
   }
   if (resource instanceof ArrayBuffer) {
     const slice = resource.slice(0, INITIAL_DATA_LENGTH);
-    const base64 = arrayBufferToBase64(slice);
+    const base64 = encodeArrayBufferToBase64(slice);
     return `data:base64,${base64}`;
   }
   return null;
-}
-
-// https://stackoverflow.com/questions/9267899/arraybuffer-to-base64-encoded-string
-function arrayBufferToBase64(buffer: ArrayBuffer): string {
-  let binary = '';
-  const bytes = new Uint8Array(buffer);
-  for (let i = 0; i < bytes.byteLength; i++) {
-    binary += String.fromCharCode(bytes[i]);
-  }
-  return btoa(binary);
 }

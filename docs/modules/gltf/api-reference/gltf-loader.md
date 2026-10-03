@@ -75,13 +75,20 @@ Setting `normalize: false` rejects glTF 1 input rather than returning an unconve
 
 Conversion includes camera dictionaries and references, conventional vertex attribute aliases
 (`JOINT`, `WEIGHT`, `TEXCOORD`, and `COLOR`), inverse-bind accessor references, and embedded
-`KHR_binary_glTF` images. External buffer URIs are retained; the named binary body is moved to
+`KHR_binary_glTF` images. Untouched external buffer URIs are retained; the named binary body is moved to
 buffer index zero with its references and loaded payloads. Compatible accessor strides move to
 separate buffer views without changing binary data. Joint names resolve in order within one skeleton
 root per instance, or globally when unique; shared skins are cloned for distinct bindings. Absent or
-identity bind shapes are consumed. Layouts requiring repacking, unresolved skin bindings, multiple
-skeleton roots, and non-identity bind shapes are reported and rejected in strict mode. Binary baking
-and complete skin/attribute validation remain unsupported.
+identity bind shapes are consumed. Finite affine non-identity bind shapes are baked into packed
+FLOAT MAT4 inverse-bind matrices after buffers load. The conversion appends aligned results to copied
+buffers, preserving original accessor data and palette order. Layouts requiring general repacking,
+unresolved skin bindings, multiple skeleton roots, and unsupported matrix data are reported and rejected
+in strict mode. Complete skin/attribute validation remains unsupported.
+
+The direct normalization helpers require loaded buffers for non-identity bind shapes. `GLTFLoader`
+completes baking after linked buffers load; `loadBuffers: false` can only bake already available embedded
+payloads. Missing payloads are reported in best-effort mode and rejected in strict mode. When direct
+conversion changes a URI-backed buffer, its URI becomes an updated data URI. Other URIs are retained.
 
 For applications that need explicit conversion diagnostics, `normalizeGLTFV1()` returns a report
 listing unsupported legacy features. Use `normalize: 'strict'` to reject those features instead of
