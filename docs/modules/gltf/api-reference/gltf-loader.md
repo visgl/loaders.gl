@@ -76,8 +76,12 @@ Setting `normalize: false` rejects glTF 1 input rather than returning an unconve
 Conversion includes camera dictionaries and references, conventional vertex attribute aliases
 (`JOINT`, `WEIGHT`, `TEXCOORD`, and `COLOR`), inverse-bind accessor references, and embedded
 `KHR_binary_glTF` images. External buffer URIs are retained; the named binary body is moved to
-buffer index zero with its references and loaded payloads. Skin joint conversion, bind-shape
-baking, and accessor-stride migration remain unsupported.
+buffer index zero with its references and loaded payloads. Compatible accessor strides move to
+separate buffer views without changing binary data. Joint names resolve in order within one skeleton
+root per instance, or globally when unique; shared skins are cloned for distinct bindings. Absent or
+identity bind shapes are consumed. Layouts requiring repacking, unresolved skin bindings, multiple
+skeleton roots, and non-identity bind shapes are reported and rejected in strict mode. Binary baking
+and complete skin/attribute validation remain unsupported.
 
 For applications that need explicit conversion diagnostics, `normalizeGLTFV1()` returns a report
 listing unsupported legacy features. Use `normalize: 'strict'` to reject those features instead of

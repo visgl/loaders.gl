@@ -162,16 +162,16 @@ subset is converted. **❌ Unsupported** means the converter does not perform th
 | Asset declaration | Set `asset.version` to `2.0` and retain applicable metadata. | ✅ Supported | Creates `asset` if absent, sets the version, and supplies a generator if absent. Updating the version does not establish glTF 2 conformance. |
 | Legacy asset fields | Remove or preserve outside core JSON the obsolete `asset.profile` and `asset.premultipliedAlpha` fields. | ❌ Unsupported | These fields remain in the output; premultiplied-alpha rendering is not translated. |
 | Object collections | Convert top-level dictionaries to indexed arrays and omit empty collections. | ✅ Supported | Converts all core collections, including cameras, and removes empty top-level collection and extension-declaration arrays. Source dictionary keys are retained as `id` fields. |
-| Common references | Replace string IDs with array indices. | ⚠️ Partial | Handles buffer, buffer-view, sampler, skin, inverse-bind accessor, camera, default-scene, primitive accessor/material, texture-image, node child/mesh, and scene-node references. Skin joint and skeleton references are not handled. |
-| Multiple meshes per node | Replace `node.meshes` with a single `node.mesh`, preserving placement and children. | ✅ Supported | Keeps the first mesh on the original node and creates child nodes for additional meshes. New children inherit the original node's transform rather than duplicating it. Skin conversion has separate gaps below. |
+| Common references | Replace string IDs with array indices. | ⚠️ Partial | Handles buffer, buffer-view, sampler, skin, inverse-bind accessor, camera, default-scene, primitive accessor/material, texture-image, node child/mesh, and scene-node references. Joint and skeleton references are resolved for the skin subset below; extension-specific references are not generally migrated. |
+| Multiple meshes per node | Replace `node.meshes` with a single `node.mesh`, preserving placement and children. | ✅ Supported | Keeps the first mesh on the original node and creates child nodes for additional meshes. New children inherit the original node's transform rather than duplicating it, and retain the converted skin binding. |
 | Cameras | Convert camera dictionaries and `node.camera` references; retain valid projection parameters. | ⚠️ Partial | Converts perspective and orthographic camera collections and references while preserving projection parameters. Projection constraints such as positive `yfov` and `aspectRatio` are not checked. |
-| Skin joints and skeleton | Resolve `skin.jointNames` through `node.jointName` into `skin.joints` node indices; map skeleton roots to `skin.skeleton`. | ❌ Unsupported | Joint names and `node.skeletons` are retained without constructing glTF 2 joint or skeleton references. |
-| Inverse bind matrices | Convert `skin.inverseBindMatrices` from an accessor ID to an accessor index. | ✅ Supported | Resolves the accessor reference and rejects unresolved IDs. Joint conversion and bind-shape baking remain separate gaps. |
-| Bind-shape matrix | Bake `skin.bindShapeMatrix` into mesh data or inverse bind matrices. | ❌ Unsupported | Binary data is not transformed, and the legacy matrix is not consumed. |
+| Skin joints and skeleton | Resolve `skin.jointNames` through `node.jointName` into ordered `skin.joints` indices; map skeleton roots to `skin.skeleton`. | ⚠️ Partial | Resolves unique names within one explicit skeleton root per instance, or globally when roots are absent; infers the nearest common ancestor. Clones shared skins for distinct instance bindings and preserves joint order. Reports ambiguous/missing names, multiple roots, cycles, and multiply-parented or disconnected joint hierarchies; strict mode rejects them. Does not validate scene membership or joint/weight payload semantics. |
+| Inverse bind matrices | Convert `skin.inverseBindMatrices` from an accessor ID to an accessor index. | ✅ Supported | Resolves the accessor reference and rejects unresolved IDs. Compatible packed matrix layouts retain their values; matrix count/value validation and non-identity bind-shape baking remain separate gaps. |
+| Bind-shape matrix | Bake `skin.bindShapeMatrix` into mesh data or inverse bind matrices. | ⚠️ Partial | Consumes absent or exact identity bind shapes without changing binary data. Non-identity matrices require baking, are preserved and reported, and cause strict mode to reject the skin. |
 | Vertex attribute names | Rename legacy `JOINT`/`WEIGHT` to `JOINTS_0`/`WEIGHTS_0`; use indexed `TEXCOORD_n`/`COLOR_n` names and underscore-prefixed custom semantics. | ⚠️ Partial | Renames `JOINT`, `WEIGHT`, `TEXCOORD`, and `COLOR` to their set-zero glTF 2 names and remaps accessors. Retains indexed names and custom names such as `_BATCHID`; does not infer semantics from shaders or add underscores to other custom names. Conflicting aliases are rejected. |
 | Integer attribute interpretation | Set `accessor.normalized` where the intended color, weight, or other attribute interpretation requires it. | ❌ Unsupported | Does not infer normalization from a legacy technique or shader. Existing component types and flags are retained. |
-| Accessor stride | Move glTF 1 `accessor.byteStride` to glTF 2 `bufferView.byteStride`, omitting zero strides and splitting views when layouts differ. | ❌ Unsupported | Accessor strides remain in place; buffer views and payloads are not reorganized. |
-| Buffer layout and alignment | Meet glTF 2 component/vertex alignment and matrix-column padding rules; separate incompatible buffer-view uses. | ❌ Unsupported | Does not repack binary data or adjust offsets. Padding a GLB container does not repair accessor layout. |
+| Accessor stride | Move glTF 1 `accessor.byteStride` to glTF 2 `bufferView.byteStride`, omitting zero strides and splitting views when layouts differ. | ⚠️ Partial | Converts aligned vertex strides of 4–252 bytes in multiples of four, including compatible packed attributes. Splits views by stride and core use; removes legacy strides from packed non-vertex accessors. Reports mixed accessor roles, strided non-vertex data, invalid spans, and layouts requiring repacking; strict mode rejects them. |
+| Buffer layout and alignment | Meet glTF 2 component/vertex alignment and matrix-column padding rules; separate incompatible buffer-view uses. | ⚠️ Partial | Creates separate views for vertex, index, animation, inverse-bind, and unused accessors without changing payloads or original image/extension views. Checks compatible component/vertex alignment and accessor spans. Does not repack data, adjust offsets, or add matrix-column padding; incompatible layouts are reported. Padding a GLB container does not repair accessor layout. |
 | Buffer lengths | Supply correct `buffer.byteLength` and `bufferView.byteLength`. | ❓ Not validated | Existing lengths are retained; the normalizer does not calculate missing lengths or reconcile them with payloads. |
 | Accessor bounds and types | Supply required bounds for `POSITION` and animation-input accessors; meet attribute-specific type and value constraints. | ❓ Not validated | Existing bounds, counts, and types are retained. Bounds are not computed, and normals, weights, quaternion values, and index ranges are not repaired. |
 | Buffer type and URI | Remove obsolete `buffer.type`; preserve external URIs and identify the GLB binary buffer correctly. | ✅ Supported | Removes `buffer.type`, preserves external and data URIs, and removes the URI only from the reserved `binary_glTF` buffer. Moves that buffer to index zero and keeps references and loaded payloads aligned. |
@@ -188,8 +188,8 @@ subset is converted. **❌ Unsupported** means the converter does not perform th
 | Final conformance and appearance | Validate the resulting glTF 2 document and verify rendering in an independent viewer. | ❓ Not validated | The normalizer does not run a complete schema/semantic validator or compare rendering. Retained legacy fields and unsupported features can still yield nonconforming or visually different output. |
 
 `normalize: 'strict'` rejects **reported** unsupported features; it is not a comprehensive glTF 2
-validator. In particular, skin conversion, camera projection validation, stride conversion,
-and other gaps above are not all added to
+validator. Skin-binding and accessor-layout gaps described above are reported, but camera projection,
+scene membership, attribute interpretation, texture formats, and other requirements are not all added to
 `normalizationReport.unsupported`. An empty report is therefore insufficient to establish a
 valid, visually equivalent conversion. Validate exported assets separately before relying on them.
 
@@ -201,11 +201,16 @@ Implementation evidence: [normalizer](https://github.com/visgl/loaders.gl/blob/m
 [binary-extension preprocessing](https://github.com/visgl/loaders.gl/blob/master/modules/gltf/src/lib/extensions/KHR_binary_gltf.ts),
 [normalization tests](https://github.com/visgl/loaders.gl/blob/master/modules/gltf/test/lib/api/normalize-gltf-v1.cross.spec.ts),
 the [JSON conversion tests](https://github.com/visgl/loaders.gl/blob/master/modules/gltf/test/lib/api/normalize-gltf-v1-json.spec.ts),
-and [material conversion tests](https://github.com/visgl/loaders.gl/blob/master/modules/gltf/test/lib/api/normalize-gltf-v1-materials.spec.ts).
+the [material conversion tests](https://github.com/visgl/loaders.gl/blob/master/modules/gltf/test/lib/api/normalize-gltf-v1-materials.spec.ts),
+the [accessor-layout converter](https://github.com/visgl/loaders.gl/blob/master/modules/gltf/src/lib/api/convert-gltf-v1-accessors.ts)
+and [tests](https://github.com/visgl/loaders.gl/blob/master/modules/gltf/test/lib/api/normalize-gltf-v1-layouts.spec.ts),
+and the [skin converter](https://github.com/visgl/loaders.gl/blob/master/modules/gltf/src/lib/api/convert-gltf-v1-skins.ts)
+and [tests](https://github.com/visgl/loaders.gl/blob/master/modules/gltf/test/lib/api/normalize-gltf-v1-skins.spec.ts).
 The tests cover common references, static multi-mesh nodes, animation reference conversion,
 camera and inverse-bind references, attribute aliases, binary/external buffer ordering, embedded images,
 empty collections, material approximations, strict rejection of reported legacy resources, and non-mutating APIs;
-they do not establish complete glTF 1 conversion coverage.
+they also verify decoded interleaved/packed values, shared skin instances, joint order, identity bind shapes,
+and strict rejection of reported layout and skin gaps. They do not establish complete glTF 1 conversion coverage.
 
 ## loaders.gl glTF Feature Coverage
 
