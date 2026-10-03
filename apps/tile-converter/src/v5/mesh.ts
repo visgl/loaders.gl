@@ -103,10 +103,10 @@ export function validateMeshGeometry(
     }
     attributes.NORMAL = {value: normals, size: 3};
   }
-  if (mesh.attributes.COLOR_0) {
+  if ('COLOR_0' in mesh.attributes) {
     const colors = mesh.attributes.COLOR_0;
-    validateAttributeLayout(colors, 'COLOR_0');
     if (
+      !colors ||
       !(colors.value instanceof Float32Array) ||
       (colors.size !== 3 && colors.size !== 4) ||
       colors.value.length / colors.size !== positions.length / 3 ||
@@ -117,6 +117,7 @@ export function validateMeshGeometry(
         'COLOR_0 must contain packed Float32 linear RGB/RGBA in [0, 1], one per vertex'
       );
     }
+    validateAttributeLayout(colors, 'COLOR_0');
     attributes.COLOR_0 = {value: colors.value, size: colors.size};
   }
   const indices = getMeshIndices(mesh.indices, positions.length / 3);

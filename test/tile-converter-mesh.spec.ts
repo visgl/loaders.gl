@@ -299,6 +299,20 @@ test.each([
 });
 
 test.each([
+  {label: 'null', descriptor: null},
+  {label: 'undefined', descriptor: undefined},
+  {label: 'false', descriptor: false},
+  {label: 'zero', descriptor: 0},
+  {label: 'empty string', descriptor: ''}
+])('mesh encoder rejects explicitly selected falsy color descriptors: $label', ({descriptor}) => {
+  const mesh = createMesh();
+  mesh.attributes.COLOR_0 = descriptor as unknown as MeshAttribute;
+  expect(() => encodeMeshTile(mesh)).toThrowError(
+    expect.objectContaining({code: 'MESH_COLOR_INVALID'})
+  );
+});
+
+test.each([
   'OPAQUE',
   'MASK',
   'BLEND'
