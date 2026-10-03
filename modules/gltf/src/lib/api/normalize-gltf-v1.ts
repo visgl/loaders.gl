@@ -56,6 +56,7 @@ const GLTF_ARRAYS = {
   animations: 'animation',
   buffers: 'buffer',
   bufferViews: 'bufferView',
+  cameras: 'camera',
   images: 'image',
   materials: 'material',
   meshes: 'mesh',
@@ -71,6 +72,8 @@ const GLTF_KEYS = {
   animations: 'animation',
   buffer: 'buffers',
   bufferView: 'bufferViews',
+  camera: 'cameras',
+  inverseBindMatrices: 'accessors',
   image: 'images',
   material: 'materials',
   mesh: 'meshes',
@@ -79,6 +82,14 @@ const GLTF_KEYS = {
   scene: 'scenes',
   skin: 'skins',
   texture: 'textures'
+};
+
+/** Conventional glTF 1 vertex semantics whose glTF 2 names changed. */
+const LEGACY_ATTRIBUTE_NAMES: Record<string, string> = {
+  JOINT: 'JOINTS_0',
+  WEIGHT: 'WEIGHTS_0',
+  TEXCOORD: 'TEXCOORD_0',
+  COLOR: 'COLOR_0'
 };
 
 /** Diagnostics emitted while converting a glTF 1 asset to glTF 2. */
@@ -110,6 +121,7 @@ class GLTFV1Normalizer {
     accessors: {},
     buffers: {},
     bufferViews: {},
+    cameras: {},
     images: {},
     materials: {},
     meshes: {},
@@ -181,6 +193,7 @@ class GLTFV1Normalizer {
     console.warn('Converting glTF v1 to glTF v2 format. This is experimental and may fail.');
 
     this._addAsset(json);
+    this._orderBinaryBufferPayloads(gltf);
 
     // In glTF2 top-level fields are Arrays not Object maps
     this._convertTopLevelObjectsToArrays(json);
@@ -199,6 +212,7 @@ class GLTFV1Normalizer {
     this._updateAnimations(json);
     this._updateNodes(json);
     this._preserveLegacyResources(json);
+    this._removeEmptyCollections(json);
     this._finishReport();
     return this.report;
   }
@@ -224,6 +238,24 @@ class GLTFV1Normalizer {
     json.asset.generator = json.asset.generator || 'Normalized to glTF 2.0 by loaders.gl';
   }
 
+  /** Keep loaded buffer payloads aligned when the GLB 1 body is moved to index zero. */
+  _orderBinaryBufferPayloads(gltf: GLTFWithBuffers): void {
+    const buffers = this.json.buffers;
+    if (!buffers || Array.isArray(buffers) || !buffers.binary_glTF) {
+      return;
+    }
+    const bufferIds = Object.keys(buffers);
+    const binaryBufferIndex = bufferIds.indexOf('binary_glTF');
+    if (binaryBufferIndex > 0) {
+      if (gltf.buffers?.length) {
+        gltf.buffers = [
+          gltf.buffers[binaryBufferIndex],
+          ...gltf.buffers.filter((buffer, bufferIndex) => bufferIndex !== binaryBufferIndex)
+        ];
+      }
+    }
+  }
+
   _convertTopLevelObjectsToArrays(json) {
     // TODO check that all arrays are covered
     for (const arrayName in GLTF_ARRAYS) {
@@ -241,7 +273,12 @@ class GLTFV1Normalizer {
     // Rewrite the top-level field as an array
     json[mapName] = [];
     // Copy the map key into object.id
-    for (const id in objectMap) {
+    const objectIds = Object.keys(objectMap);
+    const orderedIds =
+      mapName === 'buffers' && objectIds.includes('binary_glTF')
+        ? ['binary_glTF', ...objectIds.filter(id => id !== 'binary_glTF')]
+        : objectIds;
+    for (const id of orderedIds) {
       const object = objectMap[id];
       object.id = object.id || id; // Mutates the loaded object
       const index = json[mapName].length;
@@ -286,7 +323,28 @@ class GLTFV1Normalizer {
     for (const primitive of mesh.primitives) {
       const {attributes, indices, material} = primitive;
       for (const attributeName in attributes) {
-        attributes[attributeName] = this._convertIdToIndex(attributes[attributeName], 'accessor');
+        const convertedName = Object.hasOwn(LEGACY_ATTRIBUTE_NAMES, attributeName)
+          ? LEGACY_ATTRIBUTE_NAMES[attributeName]
+          : attributeName;
+        if (
+          convertedName !== attributeName &&
+          convertedName in attributes &&
+          attributes[convertedName] !== attributes[attributeName]
+        ) {
+          throw new Error(
+            `glTF v1: conflicting attribute aliases ${attributeName} and ${convertedName}`
+          );
+        }
+      }
+      primitive.attributes = {};
+      for (const attributeName in attributes) {
+        const convertedName = Object.hasOwn(LEGACY_ATTRIBUTE_NAMES, attributeName)
+          ? LEGACY_ATTRIBUTE_NAMES[attributeName]
+          : attributeName;
+        primitive.attributes[convertedName] = this._convertIdToIndex(
+          attributes[attributeName],
+          'accessor'
+        );
       }
       if (indices) {
         primitive.indices = this._convertIdToIndex(indices, 'accessor');
@@ -414,6 +472,7 @@ class GLTFV1Normalizer {
         samplers.push(sampler);
       }
       animation.samplers = samplers;
+      delete animation.parameters;
       for (const channel of animation.channels || []) {
         if (typeof channel.sampler === 'string') {
           channel.sampler = samplerIndices[channel.sampler];
@@ -463,6 +522,19 @@ class GLTFV1Normalizer {
     }
     if (Object.keys(resources).length) {
       json.extras = {...json.extras, gltf1Resources: resources};
+    }
+  }
+
+  /** Omit optional empty top-level arrays that violate glTF 2 collection constraints. */
+  _removeEmptyCollections(json): void {
+    for (const collectionName of [
+      ...Object.keys(GLTF_ARRAYS),
+      'extensionsUsed',
+      'extensionsRequired'
+    ]) {
+      if (Array.isArray(json[collectionName]) && json[collectionName].length === 0) {
+        delete json[collectionName];
+      }
     }
   }
 

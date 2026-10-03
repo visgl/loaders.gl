@@ -10,6 +10,7 @@ import {DracoLoader} from '@loaders.gl/draco';
 import {ImageBitmapLoader} from '@loaders.gl/images';
 import {getGLTFImageOptions} from '../src/lib/parsers/parse-gltf';
 import {createGLBV3} from './test-utils/create-glb-v3';
+import {createGLBV1} from './test-utils/create-glb-v1';
 const GLTF_BINARY_URL = '@loaders.gl/gltf/test/data/gltf-2.0/2CylinderEngine.glb';
 const GLTF_JSON_URL = '@loaders.gl/gltf/test/data/gltf-2.0/2CylinderEngine.gltf';
 const PNG_DATA_URL =
@@ -42,6 +43,37 @@ test('GLTFLoader#parse() loads a draft glTF 2.1 thumbnail image', async () => {
     GLTFLoader
   );
   expect(gltf.images?.[0], 'loads an image referenced only by asset.thumbnail').toBeTruthy();
+});
+test('GLTFLoader#parse(v1) converts a reordered binary body and a data-URI buffer by default', async () => {
+  const binary = createGLBV1(
+    {
+      asset: {version: '1.0'},
+      buffers: {
+        '0': {uri: 'data:application/octet-stream;base64,AQIDBA==', byteLength: 4},
+        binary_glTF: {uri: 'data:,', byteLength: 4}
+      },
+      bufferViews: {
+        external: {buffer: '0', byteLength: 4},
+        embedded: {buffer: 'binary_glTF', byteLength: 4}
+      }
+    },
+    new Uint8Array([5, 6, 7, 8])
+  );
+
+  const gltf = await parse(binary, GLTFLoader, {
+    gltf: {loadImages: false}
+  });
+
+  expect(gltf.json.asset.version).toBe('2.0');
+  expect(gltf.json.bufferViews).toMatchObject([{buffer: 1}, {buffer: 0}]);
+  expect(
+    gltf.buffers.map(buffer =>
+      Array.from(new Uint8Array(buffer.arrayBuffer, buffer.byteOffset, buffer.byteLength))
+    )
+  ).toEqual([
+    [5, 6, 7, 8],
+    [1, 2, 3, 4]
+  ]);
 });
 test('GLTFLoader#parse(v3) resolves explicit buffer chunk indices', async () => {
   const data = createGLBV3(

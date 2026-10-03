@@ -119,6 +119,8 @@ export function parseGLBSync(
 function parseGLBV1(glb: GLB, dataView: DataView, byteOffset: number): number {
   // Sanity: ensure file is big enough to hold at least the headers
   assert(glb.header.byteLength > GLB_V1_V2_FILE_HEADER_SIZE + GLB_V1_V2_CHUNK_HEADER_SIZE);
+  const fileEndByteOffset = glb.header.byteOffset + glb.header.byteLength;
+  assert(fileEndByteOffset <= dataView.byteLength);
 
   // Explanation of GLB structure:
   // https://cloud.githubusercontent.com/assets/3479527/22600725/36b87122-ea55-11e6-9d40-6fd42819fcab.png
@@ -128,13 +130,19 @@ function parseGLBV1(glb: GLB, dataView: DataView, byteOffset: number): number {
 
   // GLB v1 only supports a single chunk type
   assert(contentFormat === GLB_V1_CONTENT_FORMAT_JSON);
+  if (byteOffset + contentLength > fileEndByteOffset) {
+    throw new Error('GLB JSON content extends beyond the declared file length.');
+  }
 
   parseJSONChunk(glb, dataView, byteOffset, contentLength, 0);
   // No need to call the function padToBytes() from parseJSONChunk()
   byteOffset += contentLength;
-  byteOffset += parseBINChunk(glb, dataView, byteOffset, glb.header.byteLength, 1);
+  const bodyByteLength = fileEndByteOffset - byteOffset;
+  if (bodyByteLength > 0) {
+    parseBINChunk(glb, dataView, byteOffset, bodyByteLength, 1);
+  }
 
-  return byteOffset;
+  return fileEndByteOffset;
 }
 
 /**

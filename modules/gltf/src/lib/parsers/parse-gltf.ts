@@ -25,6 +25,7 @@ import {normalizeGLTFV1} from '../api/normalize-gltf-v1';
 
 /**  */
 export type ParseGLTFOptions = ParseGLBOptions & {
+  /** Best-effort glTF 1 conversion; strict rejects reported unsupported features. @default true */
   normalize?: boolean | 'best-effort' | 'strict';
   loadImages?: boolean;
   /** Load linked and embedded buffers; required for meshopt decompression. @default true */
@@ -166,7 +167,8 @@ function parseGLTFContainerSync(gltf, data, byteOffset, options: GLTFLoaderOptio
   // Create an external buffers array to hold binary data
   const buffers = gltf.json.buffers || [];
   const bufferDefinitions = Array.isArray(buffers) ? buffers : [];
-  gltf.buffers = new Array(buffers.length).fill(null);
+  const bufferIds = Array.isArray(buffers) ? [] : Object.keys(buffers);
+  gltf.buffers = new Array(Array.isArray(buffers) ? buffers.length : bufferIds.length).fill(null);
 
   // Resolve GLB chunks into the parallel buffers array.
   if (gltf._glb) {
@@ -211,9 +213,13 @@ function parseGLTFContainerSync(gltf, data, byteOffset, options: GLTFLoaderOptio
         uriLessBufferIndices[0] === 0 &&
         Boolean(implicitBinChunk));
     const legacyImplicitBinChunk = gltf._glb.version < 3 ? binChunks[0] : implicitBinChunk;
+    // glTF 1 dictionaries have no required key order. Normalization subsequently moves
+    // the named body and its payload to index zero for glTF 2.
+    const binaryBufferIndex =
+      gltf._glb.version === 1 && !Array.isArray(buffers) ? bufferIds.indexOf('binary_glTF') : 0;
 
-    if (usesLegacyImplicitBuffer && legacyImplicitBinChunk) {
-      gltf.buffers[0] = {
+    if (usesLegacyImplicitBuffer && legacyImplicitBinChunk && binaryBufferIndex >= 0) {
+      gltf.buffers[binaryBufferIndex] = {
         arrayBuffer: legacyImplicitBinChunk.arrayBuffer,
         byteOffset: legacyImplicitBinChunk.byteOffset,
         byteLength: legacyImplicitBinChunk.byteLength
