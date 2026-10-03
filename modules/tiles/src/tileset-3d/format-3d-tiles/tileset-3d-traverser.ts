@@ -70,7 +70,9 @@ export class Tileset3DTraverser extends TilesetTraverser {
       if (!tile.hasRenderContent) {
         this.emptyTiles[tile.id] = tile;
         this.loadTile(tile, frameState);
-        if (stoppedRefining) {
+        // A known empty terminal branch needs no fallback geometry. Lazy child groups still
+        // report hasChildren while unresolved, so they retain coverage until materialized.
+        if (stoppedRefining && (!tile.hasEmptyContent || tile.hasChildren)) {
           this.selectDesiredTile(tile, frameState);
         }
       } else if (tile.refine === TILE_REFINEMENT.ADD) {
@@ -121,7 +123,7 @@ export class Tileset3DTraverser extends TilesetTraverser {
       if (child.isVisibleAndInRequestVolume) {
         stack.push(child);
         hasVisibleChild = true;
-      } else if (this.options.loadSiblings) {
+      } else if (this.options.loadSiblings && child._inRequestVolume) {
         this.loadTile(child, frameState);
         this.touchTile(child, frameState);
       }
