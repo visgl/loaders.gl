@@ -6,7 +6,8 @@ import type {LoaderWithParser, StrictLoaderOptions, LoaderContext} from '@loader
 // / import type { GLTFLoaderOptions } from '@loaders.gl/gltf';
 import type {DracoLoaderOptions} from '@loaders.gl/draco';
 import type {ImageBitmapLoaderOptions} from '@loaders.gl/images';
-import {GLBLoader, GLTFLoader} from '@loaders.gl/gltf';
+import {GLBLoaderWithParser} from '@loaders.gl/gltf/glb-loader-with-parser';
+import {GLTFLoaderWithParser} from '@loaders.gl/gltf/gltf-loader-with-parser';
 import type {GLTFWithBuffers} from '@loaders.gl/gltf';
 
 import {path} from '@loaders.gl/loader-utils';
@@ -190,7 +191,7 @@ async function parse(
   }
 
   if (preprocessedContent.contentType === 'gltf' || preprocessedContent.contentType === 'glb') {
-    const classificationJson = await getGltfClassificationJson(
+    const classificationJson = getGltfClassificationJson(
       data,
       preprocessedContent as GltfPreprocessedContent
     );
@@ -488,9 +489,8 @@ async function parseGltfForClassification(
           }
         }
       : options;
-  const gltfLoaderWithParser = await GLTFLoader.preload();
   const input = preprocessedContent.contentType === 'gltf' ? preprocessedContent.jsonPayload : data;
-  return await gltfLoaderWithParser.parse(input, parseOptions, context);
+  return await GLTFLoaderWithParser.parse(input, parseOptions, context);
 }
 
 /**
@@ -500,15 +500,14 @@ async function parseGltfForClassification(
  * @param preprocessedContent - Payload classification from the 3D Tiles preprocessor.
  * @returns Parsed glTF JSON without loading URI-backed resources.
  */
-async function getGltfClassificationJson(
+function getGltfClassificationJson(
   data: ArrayBuffer,
   preprocessedContent: GltfPreprocessedContent
-): Promise<Record<string, any>> {
+): Record<string, any> {
   if (preprocessedContent.contentType === 'gltf') {
     return preprocessedContent.jsonPayload;
   }
-  const glbLoaderWithParser = await GLBLoader.preload();
-  return glbLoaderWithParser.parseSync(data).json;
+  return GLBLoaderWithParser.parseSync(data).json;
 }
 
 type GltfPreprocessedContent =

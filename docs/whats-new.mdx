@@ -51,6 +51,11 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
 
 ## v5.0 (In Development)
 
+- 3D Tiles links its glTF and GLB parsers when the lazy 3D Tiles implementation loads,
+  removing repeated asynchronous module imports from tile streaming. Explicit
+  `@loaders.gl/gltf/gltf-loader-with-parser` and `@loaders.gl/gltf/glb-loader-with-parser`
+  entry points are available; root loader exports remain metadata-only.
+
 - Query WMTS feature information through advertised REST templates or KVP GET endpoints. Validate
   tile/pixel coordinates, reuse dimension defaults and coverage limits, decode native JSON or retain
   response text, forward cancellation, and reject HTTP/OWS errors.

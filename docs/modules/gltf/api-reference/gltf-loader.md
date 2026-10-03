@@ -83,6 +83,23 @@ import {GLTFLoader} from '@loaders.gl/gltf';
 const gltf = await load(url, GLTFLoader);
 ```
 
+For a parser implementation that is available as soon as its module loads, import the explicit
+parser entry point. This is useful inside another lazily loaded parser that processes many assets:
+
+```ts
+import {GLTFLoaderWithParser} from '@loaders.gl/gltf/gltf-loader-with-parser';
+const gltf = await load(url, GLTFLoaderWithParser);
+```
+
+`GLBLoaderWithParser` is likewise available from `@loaders.gl/gltf/glb-loader-with-parser` for
+binary-container parsing. The root `GLTFLoader` and `GLBLoader` exports remain metadata-only;
+applications that prefer lazy parser loading can continue using those exports.
+
+Repeated dynamic imports normally reuse the evaluated module. Linking the parser implementation
+removes repeated asynchronous dispatch and continuation overhead; it does not avoid a fresh parser
+download or initialization for every tile. The tradeoff is a larger initial dependency graph when
+the containing parser implementation first loads, which should be included in cold-start measurements.
+
 To decompress Draco-compressed meshes:
 
 ```ts
