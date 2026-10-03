@@ -119,6 +119,8 @@ export class Tiles3DSource implements Tileset3DSource {
   private readonly tileUrlCache: Map<string, string> = new Map();
   /** Original content descriptors retained across {@link Tile3D.unloadContent} calls. */
   private readonly tileContentHeaders = new WeakMap<Tile3D, Record<string, any>[]>();
+  /** Installed nested roots by parent placement and ordered nested-content slot, across reloads. */
+  private readonly nestedTilesetRoots = new WeakMap<Tile3D, Tile3D[]>();
   /** Source-local namespaces assigned to distinct embedded glTF package file collections. */
   private readonly packageNamespaces = new WeakMap<PackageFile[], number>();
   /** Next source-local package namespace. */
@@ -645,7 +647,9 @@ export class Tiles3DSource implements Tileset3DSource {
   }
 
   /**
-   * Updates content-format flags and installs nested tileset subtrees.
+   * Updates content-format flags and installs nested tileset subtrees once per content slot.
+   * Reloading payloads retains attached roots and their descendants, including duplicate URLs
+   * declared in separate slots or parent placements. Detached roots are reinstalled in declaration order.
    */
   onTileLoaded(tileset: Tileset3D, tile: Tile3D, loadResult: TileContentLoadResult): void {
     const contents = tile.contents.length ? tile.contents : [tile.content];
@@ -662,8 +666,26 @@ export class Tiles3DSource implements Tileset3DSource {
 
     const nestedTilesets =
       loadResult.nestedTilesets || (loadResult.nestedTileset ? [loadResult.nestedTileset] : []);
-    for (const nestedTileset of nestedTilesets) {
-      tileset._initializeTileHeaders(this.prepareNestedTileset(tileset, nestedTileset), tile);
+    const installedRoots = this.nestedTilesetRoots.get(tile) || [];
+    for (const [nestedIndex, nestedTileset] of nestedTilesets.entries()) {
+      const installedRoot = installedRoots[nestedIndex];
+      if (installedRoot && tile.children.includes(installedRoot)) {
+        continue;
+      }
+      const nextRoot = installedRoots
+        .slice(nestedIndex + 1)
+        .find(root => tile.children.includes(root));
+      const nestedRoot = tileset._initializeTileHeaders(
+        this.prepareNestedTileset(tileset, nestedTileset),
+        tile
+      );
+      // Header installation appends roots; restore declaration order before any later retained slot.
+      if (nextRoot) {
+        tile.children.splice(tile.children.indexOf(nestedRoot), 1);
+        tile.children.splice(tile.children.indexOf(nextRoot), 0, nestedRoot);
+      }
+      installedRoots[nestedIndex] = nestedRoot;
+      this.nestedTilesetRoots.set(tile, installedRoots);
     }
   }
 
