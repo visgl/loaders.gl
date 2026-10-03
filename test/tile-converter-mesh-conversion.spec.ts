@@ -442,3 +442,71 @@ test('zero precision budget rejects loss of subnormal Float64 positions', async 
     code: 'MESH_POSITION_PRECISION_EXCEEDED'
   });
 });
+
+test('mesh codec preserves selected colors and material through spatial conversion and awaited output', async () => {
+  const input = createInput();
+  input.mesh.attributes.COLOR_0 = {value: new Float32Array([1, 0, 0, 0, 1, 0, 0, 0, 1]), size: 3};
+  const selectedInput = {
+    ...input,
+    material: {baseColorFactor: [0.5, 1, 1, 1] as const, metallicFactor: 0, roughnessFactor: 1}
+  };
+  const before = structuredClone(selectedInput);
+  const outputs: EncodedMeshConversionResource[] = [];
+  const report = await convertTileset({
+    source: {
+      inspect: async () => undefined,
+      read: async function* () {
+        yield selectedInput;
+      }
+    },
+    codec: createMeshConversionCodec({spatialContext: createSpatialContext(), maxPositionError: 0}),
+    measureInputBytes: () => 114,
+    measureOutputBytes: resource => resource.glb.byteLength,
+    sink: {
+      ...createSink(),
+      write: async output => {
+        outputs.push(output);
+      }
+    }
+  });
+  const scenegraph = new GLTFScenegraph(
+    await parse(outputs[0].glb, GLTFLoader, {gltf: {postProcess: false}})
+  );
+  const primitive = scenegraph.json.meshes![0].primitives[0];
+  expect(Array.from(scenegraph.getTypedArrayForAccessor(primitive.attributes.COLOR_0))).toEqual([
+    1, 0, 0, 0, 1, 0, 0, 0, 1
+  ]);
+  expect(scenegraph.json.materials![primitive.material!]).toMatchObject({
+    pbrMetallicRoughness: selectedInput.material
+  });
+  expect(report.outputResources).toBe(1);
+  expect(outputs[0].maximumPositionError).toBe(0);
+  expect(selectedInput).toEqual(before);
+});
+
+test('mesh codec aborts the sink instead of dropping unsupported selected material properties', async () => {
+  const input = {
+    ...createInput(),
+    material: {baseColorTexture: {index: 0}}
+  } as unknown as MeshConversionInput;
+  const sink = createSink();
+  await expect(
+    convertTileset({
+      source: {
+        inspect: async () => undefined,
+        read: async function* () {
+          yield input;
+        }
+      },
+      codec: createMeshConversionCodec({
+        spatialContext: createSpatialContext(),
+        maxPositionError: 0
+      }),
+      sink,
+      measureInputBytes: () => 78,
+      measureOutputBytes: resource => resource.glb.byteLength
+    })
+  ).rejects.toMatchObject({code: 'MESH_MATERIAL_UNSUPPORTED'});
+  expect(sink.write).not.toHaveBeenCalled();
+  expect(sink.abort).toHaveBeenCalledOnce();
+});

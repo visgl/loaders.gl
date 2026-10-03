@@ -7,7 +7,11 @@ import {parse} from '@loaders.gl/core';
 import {GLBLoader, GLTFLoader, GLTFScenegraph} from '@loaders.gl/gltf';
 import {GLTF2Schema} from '@loaders.gl/gltf/schema';
 import type {MeshAttribute, MeshGeometry} from '@loaders.gl/schema';
-import {encodeMeshTile, TileConversionError} from '@loaders.gl/tile-converter/v5';
+import {
+  encodeMeshTile,
+  TileConversionError,
+  type MeshTileMaterial
+} from '@loaders.gl/tile-converter/v5';
 import {encodeMeshTile as encodeBrowserMeshTile} from '@loaders.gl/tile-converter/v5/browser';
 
 /** Creates the smallest unindexed triangle in a local coordinate frame. */
@@ -109,7 +113,7 @@ test.each([
   [
     'unknown attribute',
     (mesh: MeshGeometry) => {
-      mesh.attributes.COLOR_0 = {value: new Uint8Array(9), size: 3};
+      mesh.attributes.TEXCOORD_0 = {value: new Float32Array(6), size: 2};
     },
     'MESH_ATTRIBUTE_UNSUPPORTED'
   ],
@@ -245,5 +249,153 @@ test('mesh encoder rejects primitive restart even when it is below vertex count'
   mesh.indices = {value: new Uint8Array([0, 1, 255]), size: 1};
   expect(() => encodeMeshTile(mesh)).toThrow(
     expect.objectContaining({code: 'MESH_INDEX_OUT_OF_RANGE'})
+  );
+});
+
+test.each([
+  3, 4
+])('mesh encoder preserves linear colors of size %s and input subviews', async size => {
+  const mesh = createMesh();
+  const values =
+    size === 3
+      ? [1, 0, 0.5, 0, 1, 0.5, 0, 0.5, 1]
+      : [1, 0, 0.5, 0.25, 0, 1, 0.5, 0.5, 0, 0.5, 1, 1];
+  const storage = new Float32Array([999, ...values, 999]);
+  const before = storage.slice();
+  mesh.attributes.COLOR_0 = {value: storage.subarray(1, storage.length - 1), size};
+  const output = encodeMeshTile(mesh);
+  const scenegraph = new GLTFScenegraph(
+    await parse(output, GLTFLoader, {gltf: {postProcess: false}})
+  );
+  const primitive = scenegraph.json.meshes![0].primitives[0];
+  const accessor = primitive.attributes.COLOR_0;
+  expect(scenegraph.json.accessors![accessor]).toMatchObject({
+    type: `VEC${size}`,
+    componentType: 5126,
+    count: 3
+  });
+  expect(Array.from(scenegraph.getTypedArrayForAccessor(accessor))).toEqual(values);
+  expect(GLTF2Schema.safeParse(scenegraph.json).success).toBe(true);
+  expect(storage).toEqual(before);
+  expect(primitive.material).toBeUndefined();
+});
+
+test.each([
+  {label: 'wrong type', attribute: {value: new Uint8Array(9), size: 3}},
+  {label: 'wrong size', attribute: {value: new Float32Array(6), size: 2}},
+  {label: 'wrong count', attribute: {value: new Float32Array(6), size: 3}},
+  {label: 'negative', attribute: {value: new Float32Array([-0.01, ...Array(8).fill(0)]), size: 3}},
+  {label: 'above one', attribute: {value: new Float32Array([1.01, ...Array(8).fill(0)]), size: 3}},
+  {label: 'nonfinite', attribute: {value: new Float32Array([NaN, ...Array(8).fill(0)]), size: 3}},
+  {label: 'normalized', attribute: {value: new Float32Array(9), size: 3, normalized: true}}
+])('mesh encoder rejects invalid colors: $label', ({attribute, label}) => {
+  const mesh = createMesh();
+  mesh.attributes.COLOR_0 = attribute;
+  expect(() => encodeMeshTile(mesh)).toThrowError(
+    expect.objectContaining({
+      code: label === 'normalized' ? 'MESH_ATTRIBUTE_LAYOUT_UNSUPPORTED' : 'MESH_COLOR_INVALID'
+    })
+  );
+});
+
+test.each([
+  {label: 'null', descriptor: null},
+  {label: 'undefined', descriptor: undefined},
+  {label: 'false', descriptor: false},
+  {label: 'zero', descriptor: 0},
+  {label: 'empty string', descriptor: ''}
+])('mesh encoder rejects explicitly selected falsy color descriptors: $label', ({descriptor}) => {
+  const mesh = createMesh();
+  mesh.attributes.COLOR_0 = descriptor as unknown as MeshAttribute;
+  expect(() => encodeMeshTile(mesh)).toThrowError(
+    expect.objectContaining({code: 'MESH_COLOR_INVALID'})
+  );
+});
+
+test.each([
+  'OPAQUE',
+  'MASK',
+  'BLEND'
+] as const)('mesh encoder preserves an explicit %s material', async alphaMode => {
+  const material: MeshTileMaterial = {
+    baseColorFactor: [0.25, 0.5, 1, 0.75],
+    metallicFactor: 0,
+    roughnessFactor: 1,
+    alphaMode,
+    doubleSided: true,
+    ...(alphaMode === 'MASK' ? {alphaCutoff: 0.25} : {})
+  };
+  const before = structuredClone(material);
+  const container = await parse(encodeMeshTile(createMesh(), {material}), GLBLoader, {
+    glb: {strict: true}
+  });
+  expect(container.json.meshes[0].primitives[0].material).toBe(0);
+  expect(container.json.materials).toEqual([
+    {
+      pbrMetallicRoughness: {
+        baseColorFactor: [0.25, 0.5, 1, 0.75],
+        metallicFactor: 0,
+        roughnessFactor: 1
+      },
+      alphaMode,
+      doubleSided: true,
+      ...(alphaMode === 'MASK' ? {alphaCutoff: 0.25} : {})
+    }
+  ]);
+  expect(GLTF2Schema.safeParse(container.json).success).toBe(true);
+  expect(material).toEqual(before);
+});
+
+test('mesh encoder retains glTF defaults when material properties are omitted', async () => {
+  const container = await parse(encodeMeshTile(createMesh(), {material: {}}), GLBLoader);
+  expect(container.json.materials).toEqual([{pbrMetallicRoughness: {}}]);
+  const boundary = await parse(
+    encodeMeshTile(createMesh(), {
+      material: {
+        baseColorFactor: [0, 1, 0, 1],
+        metallicFactor: 1,
+        roughnessFactor: 0,
+        alphaMode: 'MASK',
+        alphaCutoff: 2,
+        doubleSided: false
+      }
+    }),
+    GLBLoader
+  );
+  expect(boundary.json.materials[0]).toMatchObject({alphaCutoff: 2, doubleSided: false});
+  expect(GLTF2Schema.safeParse(boundary.json).success).toBe(true);
+});
+
+test.each([
+  {label: 'null', material: null},
+  {label: 'primitive', material: 1},
+  {label: 'array', material: []},
+  {label: 'color type', material: {baseColorFactor: 1}},
+  {label: 'color length', material: {baseColorFactor: [1, 1, 1]}},
+  {label: 'sparse color', material: {baseColorFactor: Array(4)}},
+  {label: 'negative color', material: {baseColorFactor: [-1, 1, 1, 1]}},
+  {label: 'high color', material: {baseColorFactor: [2, 1, 1, 1]}},
+  {label: 'nonfinite color', material: {baseColorFactor: [NaN, 1, 1, 1]}},
+  {label: 'nonfinite factor', material: {metallicFactor: Infinity}},
+  {label: 'negative factor', material: {roughnessFactor: -1}},
+  {label: 'high factor', material: {metallicFactor: 2}},
+  {label: 'alpha mode', material: {alphaMode: 'TRANSPARENT'}},
+  {label: 'ignored cutoff', material: {alphaCutoff: 0.5}},
+  {label: 'negative cutoff', material: {alphaMode: 'MASK', alphaCutoff: -1}},
+  {label: 'nonfinite cutoff', material: {alphaMode: 'MASK', alphaCutoff: Infinity}},
+  {label: 'double sided type', material: {doubleSided: 1}}
+])('mesh encoder rejects invalid material: $label', ({material}) => {
+  expect(() => encodeMeshTile(createMesh(), {material: material as MeshTileMaterial})).toThrowError(
+    expect.objectContaining({code: 'MESH_MATERIAL_INVALID'})
+  );
+});
+
+test.each([
+  'baseColorTexture',
+  'emissiveFactor',
+  'extensions'
+])('mesh encoder rejects unsupported material property %s', property => {
+  expect(() => encodeMeshTile(createMesh(), {material: {[property]: {}}})).toThrowError(
+    expect.objectContaining({code: 'MESH_MATERIAL_UNSUPPORTED'})
   );
 });

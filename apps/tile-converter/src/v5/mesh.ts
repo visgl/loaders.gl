@@ -6,24 +6,51 @@ import {GLTFScenegraph, GLTFWriter} from '@loaders.gl/gltf';
 import type {MeshAttribute, MeshGeometry} from '@loaders.gl/schema';
 import {TileConversionError} from './conversion-api.js';
 
+/** One untextured glTF metallic-roughness material, shared by every triangle in the mesh. */
+export interface MeshTileMaterial {
+  /** Linear RGBA base-color multiplier; components must be finite in [0, 1]. */
+  readonly baseColorFactor?: readonly [number, number, number, number];
+  /** Metallic weight in [0, 1]; omitted values use the glTF default of 1. */
+  readonly metallicFactor?: number;
+  /** Roughness weight in [0, 1]; omitted values use the glTF default of 1. */
+  readonly roughnessFactor?: number;
+  /** Alpha interpretation; omitted values use OPAQUE. */
+  readonly alphaMode?: 'OPAQUE' | 'MASK' | 'BLEND';
+  /** Finite nonnegative threshold, allowed only with MASK; omitted values use 0.5. */
+  readonly alphaCutoff?: number;
+  /** Whether both sides are rendered; omitted values use false. */
+  readonly doubleSided?: boolean;
+}
+
+/** Optional appearance for the single-mesh GLB profile. */
+export interface MeshTileOptions {
+  /** Explicitly selected material; textures and material extensions are unsupported. */
+  readonly material?: MeshTileMaterial;
+}
+
 /**
  * Encodes one untextured triangle mesh as a self-contained glTF 2.0 GLB resource.
  *
- * POSITION and optional NORMAL must contain packed finite Float32 xyz triples. Normals must have
+ * POSITION and optional NORMAL must contain packed finite Float32 xyz triples. COLOR_0 accepts
+ * packed Float32 linear RGB/RGBA in [0, 1] with matching vertex count. Normals must have
  * unit length within 0.0001. Optional indices use packed unsigned 8-, 16-, or 32-bit values.
  * Unsupported attributes, layouts, and encoded transforms fail rather than being discarded.
- * Coordinates are preserved: callers own CRS conversion, local origins, placement, materials,
+ * Coordinates are preserved: callers own CRS conversion, local origins, placement, source material mapping,
  * feature mappings, and tileset packaging. Input arrays are never modified.
  *
  * @param mesh - Triangle-list geometry in the caller's selected local coordinate frame.
+ * @param options - Optional single untextured material.
  * @returns An embedded-buffer GLB containing one mesh, node, and default scene.
  */
-export function encodeMeshTile(mesh: MeshGeometry): ArrayBuffer {
+export function encodeMeshTile(mesh: MeshGeometry, options: MeshTileOptions = {}): ArrayBuffer {
   const geometry = validateMeshGeometry(mesh);
   const scenegraph = new GLTFScenegraph({json: {asset: {version: '2.0', generator: 'loaders.gl'}}});
+  const material =
+    options.material === undefined ? undefined : validateMeshMaterial(options.material);
   const meshIndex = scenegraph.addMesh({
     attributes: geometry.attributes,
     indices: geometry.indices?.value,
+    material: material ? scenegraph.addMaterial(material) : undefined,
     mode: 4
   });
   const nodeIndex = scenegraph.addNode({meshIndex});
@@ -45,7 +72,7 @@ export function validateMeshGeometry(
     );
   }
   for (const name of Object.keys(mesh.attributes)) {
-    if (name !== 'POSITION' && name !== 'NORMAL') {
+    if (name !== 'POSITION' && name !== 'NORMAL' && name !== 'COLOR_0') {
       throw new TileConversionError(
         'MESH_ATTRIBUTE_UNSUPPORTED',
         `Mesh attribute ${name} is unsupported`
@@ -75,6 +102,23 @@ export function validateMeshGeometry(
       }
     }
     attributes.NORMAL = {value: normals, size: 3};
+  }
+  if ('COLOR_0' in mesh.attributes) {
+    const colors = mesh.attributes.COLOR_0;
+    if (
+      !colors ||
+      !(colors.value instanceof Float32Array) ||
+      (colors.size !== 3 && colors.size !== 4) ||
+      colors.value.length / colors.size !== positions.length / 3 ||
+      colors.value.some(value => !Number.isFinite(value) || value < 0 || value > 1)
+    ) {
+      throw new TileConversionError(
+        'MESH_COLOR_INVALID',
+        'COLOR_0 must contain packed Float32 linear RGB/RGBA in [0, 1], one per vertex'
+      );
+    }
+    validateAttributeLayout(colors, 'COLOR_0');
+    attributes.COLOR_0 = {value: colors.value, size: colors.size};
   }
   const indices = getMeshIndices(mesh.indices, positions.length / 3);
   if (!indices && positions.length % 9 !== 0) {
@@ -170,4 +214,59 @@ function validateAttributeLayout(attribute: MeshAttribute, name: string): void {
       `${name} must use packed, unnormalized contiguous storage`
     );
   }
+}
+
+/** Validates and maps the deliberately limited material profile without changing caller objects. */
+function validateMeshMaterial(material: MeshTileMaterial): object {
+  if (!material || typeof material !== 'object' || Array.isArray(material)) {
+    throw new TileConversionError('MESH_MATERIAL_INVALID', 'Material must be an object');
+  }
+  const allowedProperties = [
+    'baseColorFactor',
+    'metallicFactor',
+    'roughnessFactor',
+    'alphaMode',
+    'alphaCutoff',
+    'doubleSided'
+  ];
+  for (const name of Object.keys(material)) {
+    if (!allowedProperties.includes(name)) {
+      throw new TileConversionError(
+        'MESH_MATERIAL_UNSUPPORTED',
+        `Material property ${name} is unsupported`
+      );
+    }
+  }
+  const {baseColorFactor, metallicFactor, roughnessFactor, alphaMode, alphaCutoff, doubleSided} =
+    material;
+  if (
+    (baseColorFactor !== undefined &&
+      (!Array.isArray(baseColorFactor) ||
+        baseColorFactor.length !== 4 ||
+        Array.from(baseColorFactor).some(
+          value => !Number.isFinite(value) || value < 0 || value > 1
+        ))) ||
+    [metallicFactor, roughnessFactor].some(
+      value => value !== undefined && (!Number.isFinite(value) || value < 0 || value > 1)
+    ) ||
+    (alphaMode !== undefined && !['OPAQUE', 'MASK', 'BLEND'].includes(alphaMode)) ||
+    (alphaCutoff !== undefined &&
+      (alphaMode !== 'MASK' || !Number.isFinite(alphaCutoff) || alphaCutoff < 0)) ||
+    (doubleSided !== undefined && typeof doubleSided !== 'boolean')
+  ) {
+    throw new TileConversionError(
+      'MESH_MATERIAL_INVALID',
+      'Material values must satisfy the untextured glTF profile'
+    );
+  }
+  return {
+    pbrMetallicRoughness: {
+      baseColorFactor: baseColorFactor ? [...baseColorFactor] : undefined,
+      metallicFactor,
+      roughnessFactor
+    },
+    alphaMode,
+    alphaCutoff,
+    doubleSided
+  };
 }
