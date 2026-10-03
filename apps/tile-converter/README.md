@@ -87,6 +87,56 @@ coordinate frame and own CRS conversion, double-precision origins, placement, ma
 feature mappings, and tileset packaging. This geometry helper does not extract an entire
 source scene or preserve its metadata and appearance automatically.
 
+## V5 spatial mesh codec
+
+`createMeshConversionCodec` connects the untextured encoder to `convertTileset`. Supply
+selected triangle geometries with **absolute source-frame positions**, matching normals, a
+resource ID, and an explicit target-frame origin. Positions may be packed Float32 or Float64;
+the remaining geometry restrictions match `encodeMeshTile`.
+
+```ts
+import {
+  convertTileset,
+  createMeshConversionCodec,
+  createTiles3DConversionSpatialContext
+} from '@loaders.gl/tile-converter/v5/browser';
+
+const spatialContext = createTiles3DConversionSpatialContext(sourceSpatialReference, {
+  targetCrs: 'EPSG:3857'
+});
+const report = await convertTileset({
+  source: selectedMeshSource, // Yields {id, mesh, origin}; origin is in the target frame.
+  codec: createMeshConversionCodec({spatialContext, maxPositionError: 0.001}),
+  sink: meshSink,
+  measureInputBytes: measureDecodedMeshBytes,
+  measureOutputBytes: resource => resource.glb.byteLength,
+  maxInputResourceBytes: 16 * 1024 * 1024,
+  maxOutputResourceBytes: 16 * 1024 * 1024,
+  signal: abortController.signal
+});
+```
+
+The codec applies the shared position/normal operations once, subtracts the selected origin
+in double precision, then encodes local Float32 positions. `maxPositionError` is required,
+finite and nonnegative: it limits Euclidean reconstruction error per vertex in **target
+coordinate units** (0.001 meters for EPSG:3857). Equality is allowed; zero requires exact
+reconstruction. Geographic/unknown output frames are rejected. Native coordinates require
+an explicitly declared Cartesian frame in the discovered spatial metadata.
+
+Each output contains `{id, glb, origin, boundingBox, spatialReference, maximumPositionError}`.
+Accepted rounding is recorded as an informational `MESH_POSITION_ROUNDING` diagnostic in
+the conversion report, with its resource ID and measured error. Bounds describe the
+reconstructed encoded vertices in the target frame, including float32 rounding. Preserve
+this metadata when writing resources: the GLB itself contains local coordinates and does
+not embed its absolute origin or CRS. Source arrays are not mutated. The conversion core
+awaits writes, checks byte limits, reports progress, finalizes on success, and aborts on
+read/codec/write/cancellation failure.
+
+Applications still select source geometry, apply source placement and corresponding normal
+transforms before conversion, reconcile format axis conventions, and package hierarchy,
+refinement and geometric error. This increment does not extract complete scenes, convert
+I3S elevation placement, preserve materials/features, or emit a complete tileset.
+
 ## V5 spatial conversion
 
 The `@loaders.gl/tile-converter/v5` entrypoint can reuse the CRS and elevation operations from

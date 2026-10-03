@@ -53,3 +53,11 @@ export type {
   BrowserTilesetResourceDescriptor
 } from './browser-tileset-source.js';
 export {encodeMeshTile} from './mesh.js';
+export {createMeshConversionCodec} from './mesh-conversion.js';
+export type {
+  MeshConversionInput,
+  EncodedMeshConversionResource,
+  MeshConversionCodecOptions
+} from './mesh-conversion.js';
+export {createTiles3DConversionSpatialContext} from './spatial-conversion.js';
+export type {Tiles3DConversionSpatialContext} from './spatial-conversion.js';

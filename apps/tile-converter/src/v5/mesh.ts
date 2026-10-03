@@ -19,6 +19,25 @@ import {TileConversionError} from './conversion-api.js';
  * @returns An embedded-buffer GLB containing one mesh, node, and default scene.
  */
 export function encodeMeshTile(mesh: MeshGeometry): ArrayBuffer {
+  const geometry = validateMeshGeometry(mesh);
+  const scenegraph = new GLTFScenegraph({json: {asset: {version: '2.0', generator: 'loaders.gl'}}});
+  const meshIndex = scenegraph.addMesh({
+    attributes: geometry.attributes,
+    indices: geometry.indices?.value,
+    mode: 4
+  });
+  const nodeIndex = scenegraph.addNode({meshIndex});
+  const sceneIndex = scenegraph.addScene({nodeIndices: [nodeIndex]});
+  scenegraph.setDefaultScene(sceneIndex);
+  scenegraph.createBinaryChunk();
+  return GLTFWriter.encodeSync!(scenegraph.gltf);
+}
+
+/** Validates the shared mesh profile; spatial preparation may retain Float64 positions internally. */
+export function validateMeshGeometry(
+  mesh: MeshGeometry,
+  allowFloat64Positions = false
+): MeshGeometry {
   if (mesh.topology !== 'triangle-list' || mesh.mode !== 4) {
     throw new TileConversionError(
       'MESH_TOPOLOGY_UNSUPPORTED',
@@ -33,8 +52,8 @@ export function encodeMeshTile(mesh: MeshGeometry): ArrayBuffer {
       );
     }
   }
-  const positions = getFloatAttribute(mesh.attributes.POSITION, 'POSITION');
-  const attributes: Record<string, {value: Float32Array; size: number}> = {
+  const positions = getFloatAttribute(mesh.attributes.POSITION, 'POSITION', allowFloat64Positions);
+  const attributes: Record<string, {value: Float32Array | Float64Array; size: number}> = {
     POSITION: {value: positions, size: 3}
   };
   if (mesh.attributes.NORMAL) {
@@ -64,27 +83,33 @@ export function encodeMeshTile(mesh: MeshGeometry): ArrayBuffer {
       'Nonindexed meshes require complete triangles'
     );
   }
-  const scenegraph = new GLTFScenegraph({json: {asset: {version: '2.0', generator: 'loaders.gl'}}});
-  const meshIndex = scenegraph.addMesh({attributes, indices, mode: 4});
-  const nodeIndex = scenegraph.addNode({meshIndex});
-  const sceneIndex = scenegraph.addScene({nodeIndices: [nodeIndex]});
-  scenegraph.setDefaultScene(sceneIndex);
-  scenegraph.createBinaryChunk();
-  return GLTFWriter.encodeSync!(scenegraph.gltf);
+  return {
+    topology: 'triangle-list',
+    mode: 4,
+    attributes,
+    indices: indices ? {value: indices, size: 1} : undefined
+  };
 }
 
 /** Reads one finite packed xyz attribute without changing its storage. */
-function getFloatAttribute(attribute: MeshAttribute | undefined, name: string): Float32Array {
+function getFloatAttribute(
+  attribute: MeshAttribute | undefined,
+  name: string,
+  allowFloat64 = false
+): Float32Array | Float64Array {
   if (
     !attribute ||
-    !(attribute.value instanceof Float32Array) ||
+    !(
+      attribute.value instanceof Float32Array ||
+      (allowFloat64 && attribute.value instanceof Float64Array)
+    ) ||
     attribute.size !== 3 ||
     attribute.value.length === 0 ||
     attribute.value.length % 3 !== 0
   ) {
     throw new TileConversionError(
       'MESH_ATTRIBUTE_INVALID',
-      `${name} must contain packed Float32 xyz triples`
+      `${name} must contain packed ${allowFloat64 ? 'Float32 or Float64' : 'Float32'} xyz triples`
     );
   }
   validateAttributeLayout(attribute, name);
