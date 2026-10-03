@@ -49,8 +49,8 @@ Encodes a filemap into a Zip Archive. Returns an `ArrayBuffer` that is a valid Z
 | File Extension | `.zip`                                       |
 | File Type      | Binary                                       |
 | Encoder Type   | Asynchronous                                 |
-| Worker Thread  | No                                           |
-| Streaming      | No                                           |
+| Worker Thread  | ❌ No                                           |
+| Streaming      | ❌ No                                           |
 
 ## Usage
 

@@ -52,19 +52,19 @@ WCS provides analytical geospatial coverages rather than server-rendered map ima
 
 | Capability | Support | API and behavior |
 | --- | --- | --- |
-| `GetCapabilities` | Supported | Parses service metadata and advertised coverage summaries |
-| Normalized metadata | Supported | `getMetadata()` returns title, identifiers, formats, and bounds |
-| `GetCoverage` | Supported | Returns the requested binary coverage representation |
-| WCS 2.x subsets | Supported | `bbox` is converted to repeated axis subset expressions |
-| WCS 1.x bounding boxes | Supported | Legacy `bbox`, `crs`, and `responseCRS` parameters are generated |
-| Explicit subset expressions | Supported | Pass one or more server-specific `subset` values |
-| Output dimensions | Supported | Width and height are forwarded when accepted by the service |
-| CRS selection | Supported | Request and response CRS parameters are version-aware |
-| GeoTIFF and other binary formats | Preserved | Returned as `ArrayBuffer` for decoding by the appropriate loader |
-| LERC | Decoded | Returns typed per-band arrays, masks, NoData, and statistics |
-| `DescribeCoverage` | Not exposed | Use a custom request when detailed range metadata is required |
-| Coverage processing | Not provided | Resampling, algebra, and colorization remain application concerns |
-| deck.gl rendering | Explicit | Decode the format and choose a raster visualization policy first |
+| `GetCapabilities` | ✅ Supported | Parses service metadata and advertised coverage summaries |
+| Normalized metadata | ✅ Supported | `getMetadata()` returns title, identifiers, formats, and bounds |
+| `GetCoverage` | ✅ Supported | Returns the requested binary coverage representation |
+| WCS 2.x subsets | ✅ Supported | `bbox` is converted to repeated axis subset expressions |
+| WCS 1.x bounding boxes | ✅ Supported | Legacy `bbox`, `crs`, and `responseCRS` parameters are generated |
+| Explicit subset expressions | ✅ Supported | Pass one or more server-specific `subset` values |
+| Output dimensions | ✅ Supported | Width and height are forwarded when accepted by the service |
+| CRS selection | ✅ Supported | Request and response CRS parameters are version-aware |
+| GeoTIFF and other binary formats | ✅ Preserved | Returned as `ArrayBuffer` for decoding by the appropriate loader |
+| LERC | ✅ Decoded | Returns typed per-band arrays, masks, NoData, and statistics |
+| `DescribeCoverage` | ❌ Not exposed | Use a custom request when detailed range metadata is required |
+| Coverage processing | ❌ Not provided | Resampling, algebra, and colorization remain application concerns |
+| deck.gl rendering | ⚠️ Explicit | Decode the format and choose a raster visualization policy first |
 
 ## Retrieve a coverage
 

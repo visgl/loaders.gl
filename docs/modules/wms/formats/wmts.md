@@ -60,44 +60,44 @@ metadata constraints explicit; **Not implemented** marks features that need addi
 
 | Area | Capability | Status | API, guarantee, or boundary |
 | --- | --- | --- | --- |
-| Discovery | WMTS 1.0.0 capabilities | Supported | `WMTSCapabilitiesLoader` parses service, layers, styles, resource URLs, and matrix sets |
-| Discovery | Supplied capabilities or separate URL | Supported | `wmts.capabilities` avoids a fetch; `capabilitiesUrl` loads and caches XML |
-| Discovery | Dimensions and layer coverage limits | Supported | Native capabilities retain dimension defaults, current support, values/intervals, and inclusive `TileMatrixLimits` |
-| Discovery | Retry after failed capabilities fetch | Supported | Failed discovery does not poison the cached promise |
-| Selection | Layer selection and validation | Supported | Configured layer or request override; unknown identifiers fail explicitly |
-| Selection | Linked tile matrix sets | Supported | Explicit identifier, first compatible advertised CRS, or first linked set |
-| Selection | Reject incompatible requested projection | Supported | Does not silently substitute a different CRS |
-| Selection | Style and image format defaults | Supported | Advertised default style and first format, with explicit overrides |
-| Requests | KVP `GetTile` | Supported | Standard parameters; existing endpoint parameters survive |
-| Requests | REST `ResourceURL` | Supported | Selects tile templates matching the image format; excludes feature-info resources |
-| Requests | URL placeholder expansion | Supported | Layer, style, matrix set, matrix ID, row, column, and caller parameters are URL encoded |
-| Requests | Missing template parameters | Supported | Unresolved placeholders produce an error |
-| Requests | Non-numeric tile matrix identifiers | Supported | Integer zoom selects the exact numeric identifier or matrix array index; unavailable zooms are not clamped |
-| Requests | Reserved request fields | Supported | Generated layer, style, format, matrix, row, and column fields take precedence over extra parameters |
-| Requests | Tile fetch cancellation | Supported | Tile `AbortSignal` forwarded to fetch; capabilities fetch is not independently canceled |
-| Metadata | Layer title, extent, format, CRS | Supported | Normalized tile-source metadata |
-| Metadata | Origin axis normalization | Supported | EPSG:4326 top-left corners exposed in canonical XY |
-| Metadata | Resolution from scale denominator | Partial | Known geographic/Web Mercator units; omitted for unknown units or incomplete scales |
-| Metadata | Per-level matrix dimensions | Supported | Advertised sizes retained when complete and aligned with matrix IDs |
-| Metadata | Per-level origins and tile dimensions in normalized grid | Partial | Current normalized grid uses first-level origin and tile size |
-| Loading | Image decoding | Supported | `getTile()` and `getTileData()` decode through the image loader |
-| Rendering | Standard deck.gl XYZ grid | Supported | `SourceLayer` renders a compatible matrix set |
-| Rendering | Arbitrary origins, geographic grids, and per-level dimensions | Partial | Application must provide compatible tile selection |
-| Rendering | Automatic raster reprojection | Not implemented | Tiles retain the selected matrix-set projection |
-| Limits | Layer-specific tile matrix limits | Supported | Inclusive row/column bounds; matrices omitted from a limits list are unavailable |
-| Limits | Full matrix dimensions | Supported | Without layer limits, checks zero-based rows/columns against advertised per-level matrix sizes |
-| Limits | Coverage query and skipped requests | Supported | `isTileAvailable()` checks loaded metadata; `getTile()` returns `null` outside coverage without fetching a tile |
-| Limits | Invalid indices and malformed bounds | Supported | Rejects negative, fractional, or unsafe indices and malformed/ambiguous limits; no implicit wrapping |
-| Dimensions | Automatic time/elevation/dimension defaults | Supported | Applies advertised defaults to REST and KVP; explicit `wmts.parameters` and endpoint dimension values take precedence |
-| Dimensions | String values, intervals, and current metadata | Supported | Preserves lexical values such as band `007`; does not expand ranges or guess a current/nearest value |
-| Dimensions | Dimension value validation and nearest-time selection | Not implemented | Service validates supplied values; no interval interpretation, temporal interpolation, or nearest-value selection |
-| Queries | WMTS `GetFeatureInfo` REST and KVP | Supported | `getFeatureInfoURL()`, `getFeatureInfo()`, and `getFeatureInfoText()` query explicit tile/pixel coordinates |
-| Queries | Advertised query endpoints and info formats | Supported | Parses `InfoFormat` and KVP GET bindings; selects matching `FeatureInfo` resources independently of tile templates |
-| Queries | Pixel bounds and layer coverage | Supported | Integer I/J bounded by per-level tile sizes; unavailable tiles skip query fetches |
-| Queries | Native JSON, text, XML, and HTML results | Supported | JSON formats decode to native values; other formats remain unchanged text |
-| Queries | HTTP/OWS errors and cancellation | Supported | Rejects HTTP failures and OWS exception reports, including HTTP 200; forwards query `AbortSignal` |
-| Queries | Unified feature schema and coordinate conversion | Not implemented | No universal service-result normalization or automatic longitude/latitude/screen-to-tile-pixel conversion |
-| Transport | SOAP encoding | Not implemented | KVP and REST tile retrieval are supported |
+| Discovery | WMTS 1.0.0 capabilities | ✅ Supported | `WMTSCapabilitiesLoader` parses service, layers, styles, resource URLs, and matrix sets |
+| Discovery | Supplied capabilities or separate URL | ✅ Supported | `wmts.capabilities` avoids a fetch; `capabilitiesUrl` loads and caches XML |
+| Discovery | Dimensions and layer coverage limits | ✅ Supported | Native capabilities retain dimension defaults, current support, values/intervals, and inclusive `TileMatrixLimits` |
+| Discovery | Retry after failed capabilities fetch | ✅ Supported | Failed discovery does not poison the cached promise |
+| Selection | Layer selection and validation | ✅ Supported | Configured layer or request override; unknown identifiers fail explicitly |
+| Selection | Linked tile matrix sets | ✅ Supported | Explicit identifier, first compatible advertised CRS, or first linked set |
+| Selection | Reject incompatible requested projection | ✅ Supported | Does not silently substitute a different CRS |
+| Selection | Style and image format defaults | ✅ Supported | Advertised default style and first format, with explicit overrides |
+| Requests | KVP `GetTile` | ✅ Supported | Standard parameters; existing endpoint parameters survive |
+| Requests | REST `ResourceURL` | ✅ Supported | Selects tile templates matching the image format; excludes feature-info resources |
+| Requests | URL placeholder expansion | ✅ Supported | Layer, style, matrix set, matrix ID, row, column, and caller parameters are URL encoded |
+| Requests | Missing template parameters | ✅ Supported | Unresolved placeholders produce an error |
+| Requests | Non-numeric tile matrix identifiers | ✅ Supported | Integer zoom selects the exact numeric identifier or matrix array index; unavailable zooms are not clamped |
+| Requests | Reserved request fields | ✅ Supported | Generated layer, style, format, matrix, row, and column fields take precedence over extra parameters |
+| Requests | Tile fetch cancellation | ✅ Supported | Tile `AbortSignal` forwarded to fetch; capabilities fetch is not independently canceled |
+| Metadata | Layer title, extent, format, CRS | ✅ Supported | Normalized tile-source metadata |
+| Metadata | Origin axis normalization | ✅ Supported | EPSG:4326 top-left corners exposed in canonical XY |
+| Metadata | Resolution from scale denominator | ⚠️ Partial | Known geographic/Web Mercator units; omitted for unknown units or incomplete scales |
+| Metadata | Per-level matrix dimensions | ✅ Supported | Advertised sizes retained when complete and aligned with matrix IDs |
+| Metadata | Per-level origins and tile dimensions in normalized grid | ⚠️ Partial | Current normalized grid uses first-level origin and tile size |
+| Loading | Image decoding | ✅ Supported | `getTile()` and `getTileData()` decode through the image loader |
+| Rendering | Standard deck.gl XYZ grid | ✅ Supported | `SourceLayer` renders a compatible matrix set |
+| Rendering | Arbitrary origins, geographic grids, and per-level dimensions | ⚠️ Partial | Application must provide compatible tile selection |
+| Rendering | Automatic raster reprojection | ❌ Not implemented | Tiles retain the selected matrix-set projection |
+| Limits | Layer-specific tile matrix limits | ✅ Supported | Inclusive row/column bounds; matrices omitted from a limits list are unavailable |
+| Limits | Full matrix dimensions | ✅ Supported | Without layer limits, checks zero-based rows/columns against advertised per-level matrix sizes |
+| Limits | Coverage query and skipped requests | ✅ Supported | `isTileAvailable()` checks loaded metadata; `getTile()` returns `null` outside coverage without fetching a tile |
+| Limits | Invalid indices and malformed bounds | ✅ Supported | Rejects negative, fractional, or unsafe indices and malformed/ambiguous limits; no implicit wrapping |
+| Dimensions | Automatic time/elevation/dimension defaults | ✅ Supported | Applies advertised defaults to REST and KVP; explicit `wmts.parameters` and endpoint dimension values take precedence |
+| Dimensions | String values, intervals, and current metadata | ✅ Supported | Preserves lexical values such as band `007`; does not expand ranges or guess a current/nearest value |
+| Dimensions | Dimension value validation and nearest-time selection | ❌ Not implemented | Service validates supplied values; no interval interpretation, temporal interpolation, or nearest-value selection |
+| Queries | WMTS `GetFeatureInfo` REST and KVP | ✅ Supported | `getFeatureInfoURL()`, `getFeatureInfo()`, and `getFeatureInfoText()` query explicit tile/pixel coordinates |
+| Queries | Advertised query endpoints and info formats | ✅ Supported | Parses `InfoFormat` and KVP GET bindings; selects matching `FeatureInfo` resources independently of tile templates |
+| Queries | Pixel bounds and layer coverage | ✅ Supported | Integer I/J bounded by per-level tile sizes; unavailable tiles skip query fetches |
+| Queries | Native JSON, text, XML, and HTML results | ✅ Supported | JSON formats decode to native values; other formats remain unchanged text |
+| Queries | HTTP/OWS errors and cancellation | ✅ Supported | Rejects HTTP failures and OWS exception reports, including HTTP 200; forwards query `AbortSignal` |
+| Queries | Unified feature schema and coordinate conversion | ❌ Not implemented | No universal service-result normalization or automatic longitude/latitude/screen-to-tile-pixel conversion |
+| Transport | SOAP encoding | ❌ Not implemented | KVP and REST tile retrieval are supported |
 
 ## Create a tile source
 

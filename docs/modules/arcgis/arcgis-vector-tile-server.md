@@ -61,17 +61,17 @@ loaders.gl `VectorTileSource` contract.
 
 | Capability | Support | API and behavior |
 | --- | --- | --- |
-| Service metadata | Supported | `getMetadata()` exposes extent, CRS, LOD grid, style URL, and sprite URL |
-| Raw vector tiles | Supported | `getTile()` returns the original PBF bytes |
-| Decoded vector tiles | Supported | `getVectorTile()` decodes MVT through `@loaders.gl/mvt` |
-| deck.gl tile data | Supported | `getTileData()` returns decoded WGS84 feature data |
-| Geometry coordinates | WGS84 | Decoded features are transformed from tile-local coordinates for visualization |
-| Layer filtering | Supported | Forward MVT loader options to select named source layers |
-| Feature shape | Configurable | Standard MVT loader shape options are honored |
-| ArcGIS style discovery | Supported | Metadata includes the published root style and sprite resource URLs |
-| Style application | Application controlled | loaders.gl exposes style resources but does not translate the full ArcGIS style into deck props |
-| Authentication | Supported | URL tokens and standard fetch options are preserved for all resources |
-| deck.gl rendering | First class | `SourceLayer` consumes decoded vector tiles directly |
+| Service metadata | ✅ Supported | `getMetadata()` exposes extent, CRS, LOD grid, style URL, and sprite URL |
+| Raw vector tiles | ✅ Supported | `getTile()` returns the original PBF bytes |
+| Decoded vector tiles | ✅ Supported | `getVectorTile()` decodes MVT through `@loaders.gl/mvt` |
+| deck.gl tile data | ✅ Supported | `getTileData()` returns decoded WGS84 feature data |
+| Geometry coordinates | ⚠️ WGS84 | Decoded features are transformed from tile-local coordinates for visualization |
+| Layer filtering | ✅ Supported | Forward MVT loader options to select named source layers |
+| Feature shape | ✅ Configurable | Standard MVT loader shape options are honored |
+| ArcGIS style discovery | ✅ Supported | Metadata includes the published root style and sprite resource URLs |
+| Style application | ⚠️ Application controlled | loaders.gl exposes style resources but does not translate the full ArcGIS style into deck props |
+| Authentication | ✅ Supported | URL tokens and standard fetch options are preserved for all resources |
+| deck.gl rendering | ✅ First class | `SourceLayer` consumes decoded vector tiles directly |
 
 ## Authentication
 

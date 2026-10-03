@@ -49,8 +49,8 @@ The `ImageWriter` class can encode an image into `ArrayBuffer` both under browse
 | Data Format    | `ImageBitmap`, `Image` or "image data"                 |
 | File Format    | JPEG, PNG, ...                                         |
 | Encoder Type   | Asynchronous                                           |
-| Worker Thread  | No (but may run on separate native thread in browsers) |
-| Streaming      | No                                                     |
+| Worker Thread  | ❌ No (but may run on separate native thread in browsers) |
+| Streaming      | ❌ No                                                     |
 
 ## Usage
 

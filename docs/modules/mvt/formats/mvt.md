@@ -59,12 +59,12 @@ and expose its decoded features to the portable table executor.
 
 | Capability | Support |
 | --- | --- |
-| Tile address and layer selection | Specialized MVT source parameters |
-| Table metadata | Discovered after the bound tile is decoded |
-| Predicate, projection, expressions, ordering, aggregates, and limit | Residual Arrow execution |
-| Cancellation | Supported while resolving the tile and executing the table query |
-| Cross-tile scan planning | Not provided |
-| Tile-statistics pushdown | Not provided |
+| Tile address and layer selection | ✅ Specialized MVT source parameters |
+| Table metadata | ✅ Discovered after the bound tile is decoded |
+| Predicate, projection, expressions, ordering, aggregates, and limit | ✅ Residual Arrow execution |
+| Cancellation | ✅ Supported while resolving the tile and executing the table query |
+| Cross-tile scan planning | ❌ Not provided |
+| Tile-statistics pushdown | ❌ Not provided |
 
 The blue badge describes an optional view over one physically selected tile. It is intentionally
 different from a format-native common scan.

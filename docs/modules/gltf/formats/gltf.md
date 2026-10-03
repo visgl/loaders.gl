@@ -137,6 +137,76 @@ JavaScript runtimes supported by loaders.gl do not yet consistently provide `Flo
 
 - GLB was introduced as an extension.
 
+## glTF 1 to glTF 2 Conversion
+
+`GLTFLoader` automatically attempts best-effort normalization of glTF 1 inputs by default
+(`gltf.normalize: true`, equivalent to `'best-effort'`). Setting `gltf.normalize: false` rejects
+glTF 1 input. [`convertGLTFV1ToGLTF2()`](/docs/modules/gltf/api-reference/gltf-loader)
+provides the same conversion on cloned JSON and returns a `normalizationReport`.
+
+The table below inventories the transformations needed **when the input uses the corresponding
+glTF 1 feature**. It describes the current implementation, including the diffuse-material
+conversion added in [#4104](https://github.com/visgl/loaders.gl/pull/4104). It is based on the
+[glTF 1 specification](https://github.com/KhronosGroup/glTF/blob/main/specification/1.0/README.md),
+the final [glTF 2 specification](https://registry.khronos.org/glTF/specs/2.0/glTF-2.0.html), and
+the [Khronos migration discussion](https://github.com/KhronosGroup/glTF/issues/605). That discussion
+includes intermediate proposals; the final glTF 2 specification defines the target requirements.
+
+**✅ Supported** means the listed transformation is implemented. **⚠️ Partial** means only the stated
+subset is converted. **❌ Unsupported** means the converter does not perform the transformation.
+**📦 Preserved only** means source data is retained without equivalent glTF 2 behavior.
+**❓ Not validated** means the converter neither checks nor repairs the stated requirement.
+
+| Area | Required transformation or target requirement | Support | Current behavior and limits |
+| --- | --- | --- | --- |
+| Asset declaration | Set `asset.version` to `2.0` and retain applicable metadata. | ✅ Supported | Creates `asset` if absent, sets the version, and supplies a generator if absent. Updating the version does not establish glTF 2 conformance. |
+| Legacy asset fields | Remove or preserve outside core JSON the obsolete `asset.profile` and `asset.premultipliedAlpha` fields. | ❌ Unsupported | These fields remain in the output; premultiplied-alpha rendering is not translated. |
+| Object collections | Convert top-level dictionaries to indexed arrays and omit empty collections. | ✅ Supported | Converts all core collections, including cameras, and removes empty top-level collection and extension-declaration arrays. Source dictionary keys are retained as `id` fields. |
+| Common references | Replace string IDs with array indices. | ⚠️ Partial | Handles buffer, buffer-view, sampler, skin, inverse-bind accessor, camera, default-scene, primitive accessor/material, texture-image, node child/mesh, and scene-node references. Skin joint and skeleton references are not handled. |
+| Multiple meshes per node | Replace `node.meshes` with a single `node.mesh`, preserving placement and children. | ✅ Supported | Keeps the first mesh on the original node and creates child nodes for additional meshes. New children inherit the original node's transform rather than duplicating it. Skin conversion has separate gaps below. |
+| Cameras | Convert camera dictionaries and `node.camera` references; retain valid projection parameters. | ⚠️ Partial | Converts perspective and orthographic camera collections and references while preserving projection parameters. Projection constraints such as positive `yfov` and `aspectRatio` are not checked. |
+| Skin joints and skeleton | Resolve `skin.jointNames` through `node.jointName` into `skin.joints` node indices; map skeleton roots to `skin.skeleton`. | ❌ Unsupported | Joint names and `node.skeletons` are retained without constructing glTF 2 joint or skeleton references. |
+| Inverse bind matrices | Convert `skin.inverseBindMatrices` from an accessor ID to an accessor index. | ✅ Supported | Resolves the accessor reference and rejects unresolved IDs. Joint conversion and bind-shape baking remain separate gaps. |
+| Bind-shape matrix | Bake `skin.bindShapeMatrix` into mesh data or inverse bind matrices. | ❌ Unsupported | Binary data is not transformed, and the legacy matrix is not consumed. |
+| Vertex attribute names | Rename legacy `JOINT`/`WEIGHT` to `JOINTS_0`/`WEIGHTS_0`; use indexed `TEXCOORD_n`/`COLOR_n` names and underscore-prefixed custom semantics. | ⚠️ Partial | Renames `JOINT`, `WEIGHT`, `TEXCOORD`, and `COLOR` to their set-zero glTF 2 names and remaps accessors. Retains indexed names and custom names such as `_BATCHID`; does not infer semantics from shaders or add underscores to other custom names. Conflicting aliases are rejected. |
+| Integer attribute interpretation | Set `accessor.normalized` where the intended color, weight, or other attribute interpretation requires it. | ❌ Unsupported | Does not infer normalization from a legacy technique or shader. Existing component types and flags are retained. |
+| Accessor stride | Move glTF 1 `accessor.byteStride` to glTF 2 `bufferView.byteStride`, omitting zero strides and splitting views when layouts differ. | ❌ Unsupported | Accessor strides remain in place; buffer views and payloads are not reorganized. |
+| Buffer layout and alignment | Meet glTF 2 component/vertex alignment and matrix-column padding rules; separate incompatible buffer-view uses. | ❌ Unsupported | Does not repack binary data or adjust offsets. Padding a GLB container does not repair accessor layout. |
+| Buffer lengths | Supply correct `buffer.byteLength` and `bufferView.byteLength`. | ❓ Not validated | Existing lengths are retained; the normalizer does not calculate missing lengths or reconcile them with payloads. |
+| Accessor bounds and types | Supply required bounds for `POSITION` and animation-input accessors; meet attribute-specific type and value constraints. | ❓ Not validated | Existing bounds, counts, and types are retained. Bounds are not computed, and normals, weights, quaternion values, and index ranges are not repaired. |
+| Buffer type and URI | Remove obsolete `buffer.type`; preserve external URIs and identify the GLB binary buffer correctly. | ✅ Supported | Removes `buffer.type`, preserves external and data URIs, and removes the URI only from the reserved `binary_glTF` buffer. Moves that buffer to index zero and keeps references and loaded payloads aligned. |
+| Embedded images | Replace image `KHR_binary_glTF` data with core `bufferView` and `mimeType` fields and remove obsolete image fields. | ✅ Supported | Writes the core fields into image JSON, remaps the buffer-view reference, removes the ignored URI and processed extension, and omits extension-only dimensions. Other image extensions are retained; image format validation remains a separate gap. |
+| Texture definitions and image formats | Remove obsolete WebGL texture `format`, `internalFormat`, `target`, and `type` fields; use image formats accepted by glTF 2 core or an appropriate extension. | ❌ Unsupported | Remaps texture/image and sampler references, but does not clean up legacy texture fields or transcode unsupported images such as BMP/GIF. |
+| Diffuse material values | Map conventional diffuse color or texture values to a glTF 2 material. | ⚠️ Partial | Approximates valid RGBA `values.diffuse` and texture IDs under `tex`, `texture2d_0`, `diffuseTex`, or `diffuse`. Defaults to non-metallic, rough PBR factors and retains explicit PBR factors. Arbitrary uniform names and shader-derived colors are not interpreted. |
+| Opacity and render state | Express transparency, alpha testing, and face culling through glTF 2 material settings where equivalent. | ⚠️ Partial | Multiplies diffuse alpha by valid `values.transparency` in `[0, 1]` and sets `BLEND` for alpha below `1` unless an alpha mode exists. Does not translate technique blend functions, culling, alpha-test state, or premultiplied alpha. |
+| Other legacy lighting values | Translate ambient, emission, specular, and shininess behavior into an appropriate material model. | ❌ Unsupported | Does not map these values or reproduce legacy lighting. Original material values are retained in `material.extras.gltf1`. |
+| Techniques, programs, and shaders | Replace the glTF 1 programmable material pipeline with equivalent glTF 2 materials or a supported extension. | 📦 Preserved only | Moves top-level resources to `json.extras.gltf1Resources`; does not generate `KHR_techniques_webgl` or translate shaders. Reports these resources and legacy material techniques as unsupported; strict mode rejects them. |
+| Animation references | Convert sampler dictionaries to arrays, resolve parameter indirection, and change `channel.target.id` to `target.node`. | ⚠️ Partial | Converts dictionary-form samplers and channel references, removes consumed `animation.parameters`, and defaults missing interpolation to `LINEAR`. Malformed references and channel constraints are not comprehensively checked. |
+| Animation interpolation and payloads | Retain compatible interpolation and satisfy glTF 2 keyframe accessor requirements. | ⚠️ Partial | Carries existing interpolation through; does not resample data, generate spline tangents, or validate time ordering, output counts, and target-specific layouts. |
+| Legacy extensions | Translate extension-specific references and semantics; maintain accurate used/required extension declarations. | ⚠️ Partial | Removes processed `KHR_binary_glTF` declarations. Other extension payloads and declarations are carried through without a general glTF 1 extension migration, including `KHR_materials_common` and vendor extensions. |
+| GLB container | Read the GLB 1 header/body layout and serialize a GLB 2 header plus padded JSON/BIN chunks. | ⚠️ Partial | GLB 1 parsing and separate GLB 2 writing are available. The normalization helpers only rewrite JSON; they do not produce GLB 2 bytes. Re-encoding requires a writer with version `2` and does not fill the conversion gaps above. |
+| Final conformance and appearance | Validate the resulting glTF 2 document and verify rendering in an independent viewer. | ❓ Not validated | The normalizer does not run a complete schema/semantic validator or compare rendering. Retained legacy fields and unsupported features can still yield nonconforming or visually different output. |
+
+`normalize: 'strict'` rejects **reported** unsupported features; it is not a comprehensive glTF 2
+validator. In particular, skin conversion, camera projection validation, stride conversion,
+and other gaps above are not all added to
+`normalizationReport.unsupported`. An empty report is therefore insufficient to establish a
+valid, visually equivalent conversion. Validate exported assets separately before relying on them.
+
+New glTF 2 capabilities such as sparse accessors, morph targets, and `CUBICSPLINE` animation do
+not need to be synthesized for every glTF 1 asset. They are distinct from transformations needed
+to preserve features already present in the source.
+
+Implementation evidence: [normalizer](https://github.com/visgl/loaders.gl/blob/master/modules/gltf/src/lib/api/normalize-gltf-v1.ts),
+[binary-extension preprocessing](https://github.com/visgl/loaders.gl/blob/master/modules/gltf/src/lib/extensions/KHR_binary_gltf.ts),
+[normalization tests](https://github.com/visgl/loaders.gl/blob/master/modules/gltf/test/lib/api/normalize-gltf-v1.cross.spec.ts),
+the [JSON conversion tests](https://github.com/visgl/loaders.gl/blob/master/modules/gltf/test/lib/api/normalize-gltf-v1-json.spec.ts),
+and [material conversion tests](https://github.com/visgl/loaders.gl/blob/master/modules/gltf/test/lib/api/normalize-gltf-v1-materials.spec.ts).
+The tests cover common references, static multi-mesh nodes, animation reference conversion,
+camera and inverse-bind references, attribute aliases, binary/external buffer ordering, embedded images,
+empty collections, material approximations, strict rejection of reported legacy resources, and non-mutating APIs;
+they do not establish complete glTF 1 conversion coverage.
+
 ## loaders.gl glTF Feature Coverage
 
 The table below summarizes the level of glTF support exposed by `@loaders.gl/gltf`. “Raw” means
@@ -146,32 +216,32 @@ evolving specification and is intentionally marked separately from stable glTF 2
 
 | Feature | Version | Raw | Runtime | Tests / notes |
 | --- | --- | --- | --- | --- |
-| Core asset, scene, node, mesh, material, camera, skin, animation, texture, image, sampler, buffer, and accessor objects | 2.0 | Complete | Complete | Loader, writer, schema, and post-processing coverage |
-| `.gltf` JSON and external resources | 1.0 / 2.0 / 2.1 | Complete | Complete | URI and data-URI resolution |
-| GLB v1 and v2 | 1.0 / 2.0 | Complete | Complete | GLB loader and writer tests |
-| GLB v3 / multiple binary chunks | 2.1 draft | Complete | Partial | Draft parsing support; format may evolve |
-| GLB v3 writing and round-trip serialization | 2.1 draft | Complete | Complete | Opt-in `GLBWriter` path with 64-bit lengths and multiple BIN chunks |
-| glTF v1 to v2 normalization | 1.0 → 2.0 | Complete | Partial | Best-effort conversion via `gltf.normalize` |
-| Sparse accessors and normalized component values | 2.0 | Complete | Complete | Typed-array extraction and accessor utilities |
-| Draft 2.1 accessor component types | 2.1 draft | Complete | Partial | Includes 32-bit, 16-bit float words, and 64-bit integer representations |
-| Unified `files` references | 2.1 draft | Complete | Complete | URI, data-URI, and bufferView-backed files |
-| External asset composition | 2.1 draft | Complete | Complete | Recursive loading, caching, and cycle rejection |
-| Asset thumbnails | 2.1 draft | Complete | Complete | Thumbnail image loading and post-processing |
-| Implicit shapes and node bounding volumes | 2.1 draft | Complete | Partial | Box, capsule, cylinder, plane, and sphere adapters via `@math.gl/culling` |
-| WebGPU accessor transforms | 2.0 / 2.1 | Complete | Partial | GPU-oriented derived views are available without rewriting accessor JSON |
-| WebGPU texture format mapping | 2.0 / 2.1 | Complete | Planned | Raw image MIME and texture metadata are preserved; normalized GPU descriptors are the next tranche |
-| WebGPU sampler constants | 2.0 / 2.1 | Complete | Planned | Sampler JSON is preserved; WebGPU address/filter enum mapping is not yet a public helper |
-| WebGPU upload descriptors | 2.0 / 2.1 | Complete | Planned | Future non-mutating descriptors will combine image data, format, dimensions, and sampler state |
-| Mesh and buffer compression (Draco) | 2.0 extension | Complete | Partial | Decode plus opt-in async writer for single-buffer triangle meshes |
-| Mesh compression (meshopt) | 2.0 extension | Complete | Complete | `KHR_meshopt_compression` and `EXT_meshopt_compression` |
-| KTX2 / Basis Universal textures | 2.0 extension | Complete | Complete | `KHR_texture_basisu` |
-| WebP and AVIF textures | 2.0 extensions | Complete | Complete | Optional decoder support; required-extension failures preserved |
-| Texture transforms | 2.0 extension | Complete | Partial | `KHR_texture_transform` metadata is exposed for rendering integrations |
-| Mesh features and structural metadata | 2.0 / 3D Tiles extensions | Complete | Partial | Loaders.gl helpers expose metadata tables and feature IDs |
-| Vector primitive topology | Draft 2.0 extensions | Complete | Partial | Primitive-restart ranges and polygon loops are decoded; rendering remains application-owned |
-| Punctual lights, unlit materials, and legacy techniques | 2.0 extensions | Complete | Partial | Parsed and retained; renderer-specific behavior remains application-owned |
-| Vendor and unknown extensions | 2.0 / 2.1 | Complete | Raw only | Unknown payloads are preserved without invented runtime semantics |
-| BVH construction and hierarchical traversal | 2.1 draft | Complete | Planned | Shape references are available; automatic BVH building is not yet provided |
+| Core asset, scene, node, mesh, material, camera, skin, animation, texture, image, sampler, buffer, and accessor objects | 2.0 | ✅ Complete | ✅ Complete | Loader, writer, schema, and post-processing coverage |
+| `.gltf` JSON and external resources | 1.0 / 2.0 / 2.1 | ✅ Complete | ✅ Complete | URI and data-URI resolution |
+| GLB v1 and v2 | 1.0 / 2.0 | ✅ Complete | ✅ Complete | GLB loader and writer tests |
+| GLB v3 / multiple binary chunks | 2.1 draft | ✅ Complete | ⚠️ Partial | Draft parsing support; format may evolve |
+| GLB v3 writing and round-trip serialization | 2.1 draft | ✅ Complete | ✅ Complete | Opt-in `GLBWriter` path with 64-bit lengths and multiple BIN chunks |
+| glTF v1 to v2 normalization | 1.0 → 2.0 | ✅ Complete | ⚠️ Partial | Best-effort conversion via `gltf.normalize`; see the [conversion support table](#gltf-1-to-gltf-2-conversion) for known gaps |
+| Sparse accessors and normalized component values | 2.0 | ✅ Complete | ✅ Complete | Typed-array extraction and accessor utilities |
+| Draft 2.1 accessor component types | 2.1 draft | ✅ Complete | ⚠️ Partial | Includes 32-bit, 16-bit float words, and 64-bit integer representations |
+| Unified `files` references | 2.1 draft | ✅ Complete | ✅ Complete | URI, data-URI, and bufferView-backed files |
+| External asset composition | 2.1 draft | ✅ Complete | ✅ Complete | Recursive loading, caching, and cycle rejection |
+| Asset thumbnails | 2.1 draft | ✅ Complete | ✅ Complete | Thumbnail image loading and post-processing |
+| Implicit shapes and node bounding volumes | 2.1 draft | ✅ Complete | ⚠️ Partial | Box, capsule, cylinder, plane, and sphere adapters via `@math.gl/culling` |
+| WebGPU accessor transforms | 2.0 / 2.1 | ✅ Complete | ⚠️ Partial | GPU-oriented derived views are available without rewriting accessor JSON |
+| WebGPU texture format mapping | 2.0 / 2.1 | ✅ Complete | ❌ Planned | Raw image MIME and texture metadata are preserved; normalized GPU descriptors are the next tranche |
+| WebGPU sampler constants | 2.0 / 2.1 | ✅ Complete | ❌ Planned | Sampler JSON is preserved; WebGPU address/filter enum mapping is not yet a public helper |
+| WebGPU upload descriptors | 2.0 / 2.1 | ✅ Complete | ❌ Planned | Future non-mutating descriptors will combine image data, format, dimensions, and sampler state |
+| Mesh and buffer compression (Draco) | 2.0 extension | ✅ Complete | ⚠️ Partial | Decode plus opt-in async writer for single-buffer triangle meshes |
+| Mesh compression (meshopt) | 2.0 extension | ✅ Complete | ✅ Complete | `KHR_meshopt_compression` and `EXT_meshopt_compression` |
+| KTX2 / Basis Universal textures | 2.0 extension | ✅ Complete | ✅ Complete | `KHR_texture_basisu` |
+| WebP and AVIF textures | 2.0 extensions | ✅ Complete | ✅ Complete | Optional decoder support; required-extension failures preserved |
+| Texture transforms | 2.0 extension | ✅ Complete | ⚠️ Partial | `KHR_texture_transform` metadata is exposed for rendering integrations |
+| Mesh features and structural metadata | 2.0 / 3D Tiles extensions | ✅ Complete | ⚠️ Partial | Loaders.gl helpers expose metadata tables and feature IDs |
+| Vector primitive topology | Draft 2.0 extensions | ✅ Complete | ⚠️ Partial | Primitive-restart ranges and polygon loops are decoded; rendering remains application-owned |
+| Punctual lights, unlit materials, and legacy techniques | 2.0 extensions | ✅ Complete | ⚠️ Partial | Parsed and retained; renderer-specific behavior remains application-owned |
+| Vendor and unknown extensions | 2.0 / 2.1 | ✅ Complete | ⚠️ Raw only | Unknown payloads are preserved without invented runtime semantics |
+| BVH construction and hierarchical traversal | 2.1 draft | ✅ Complete | ❌ Planned | Shape references are available; automatic BVH building is not yet provided |
 
 This is a support snapshot rather than a compatibility guarantee. New 2.1 rows should be updated
 as the Khronos draft stabilizes, and each runtime claim should be backed by a focused conformance
@@ -191,20 +261,20 @@ when its image MIME type is unsupported.
 
 | Extension                                                 | Preprocessed | Description                                                                                 |
 | --------------------------------------------------------- | ------------ | ------------------------------------------------------------------------------------------- |
-| [KHR_draco_mesh_compression](#khr_draco_mesh_compression) | Y            | Decompresses draco-compressed geometries                                                    |
-| [KHR_meshopt_compression](#khr_meshopt_compression)       | Y            | Decompresses version 0 or 1 meshopt streams and supports the `COLOR` filter                  |
-| [EXT_meshopt_compression](#ext_meshopt_compression)       | Y            | Decompresses existing version 0 meshopt streams                                             |
-| [KHR_texture_basisu](#khr_texture_basisu)                 | Y            | Adds the ability to specify textures using KTX v2                                           |
-| [KHR_texture_transform](#khr_texture_transform)           | Y            | Adds transformation properties (translation, rotation, scale) for TEXCOORD\_ mesh attribute |
-| [EXT_texture_webp](https://github.com/KhronosGroup/glTF/tree/main/extensions/2.0/Vendor/EXT_texture_webp) | Y | Selects the WebP source when the active decoder supports it |
-| [EXT_texture_avif](https://github.com/KhronosGroup/glTF/tree/main/extensions/2.0/Vendor/EXT_texture_avif) | Y | Selects the AVIF source when the active decoder supports it |
-| [EXT_mesh_features](#ext_mesh_features)                   | Y            | 3D tiles extension                                                                          |
-| [EXT_structural_metadata](#ext_structural_metadata)       | Y            | 3D tiles extension                                                                          |
-| [KHR_mesh_primitive_restart](#vector-primitive-topology)   | Y            | Draft restart-separated strip topology                                                      |
-| [EXT_mesh_polygon](#vector-primitive-topology)             | Y            | Draft polygon triangles, exterior rings, and interior rings                                  |
-| [KHR_lights_punctual](#khr_lights_punctual)               | Y\*          | Deprecated                                                                                  |
-| [KHR_materials_unlit](#khr_materials_unlit)               | Y\*          | Deprecated                                                                                  |
-| [EXT_feature_metadata](#ext_feature_metadata)             | Y\*          | Deprecated. 3D tiles extension                                                              |
+| [KHR_draco_mesh_compression](#khr_draco_mesh_compression) | ✅ Y            | Decompresses draco-compressed geometries                                                    |
+| [KHR_meshopt_compression](#khr_meshopt_compression)       | ✅ Y            | Decompresses version 0 or 1 meshopt streams and supports the `COLOR` filter                  |
+| [EXT_meshopt_compression](#ext_meshopt_compression)       | ✅ Y            | Decompresses existing version 0 meshopt streams                                             |
+| [KHR_texture_basisu](#khr_texture_basisu)                 | ✅ Y            | Adds the ability to specify textures using KTX v2                                           |
+| [KHR_texture_transform](#khr_texture_transform)           | ✅ Y            | Adds transformation properties (translation, rotation, scale) for TEXCOORD\_ mesh attribute |
+| [EXT_texture_webp](https://github.com/KhronosGroup/glTF/tree/main/extensions/2.0/Vendor/EXT_texture_webp) | ✅ Y | Selects the WebP source when the active decoder supports it |
+| [EXT_texture_avif](https://github.com/KhronosGroup/glTF/tree/main/extensions/2.0/Vendor/EXT_texture_avif) | ✅ Y | Selects the AVIF source when the active decoder supports it |
+| [EXT_mesh_features](#ext_mesh_features)                   | ✅ Y            | 3D tiles extension                                                                          |
+| [EXT_structural_metadata](#ext_structural_metadata)       | ✅ Y            | 3D tiles extension                                                                          |
+| [KHR_mesh_primitive_restart](#vector-primitive-topology)   | ✅ Y            | Draft restart-separated strip topology                                                      |
+| [EXT_mesh_polygon](#vector-primitive-topology)             | ✅ Y            | Draft polygon triangles, exterior rings, and interior rings                                  |
+| [KHR_lights_punctual](#khr_lights_punctual)               | ✅ Y\*          | Deprecated                                                                                  |
+| [KHR_materials_unlit](#khr_materials_unlit)               | ✅ Y\*          | Deprecated                                                                                  |
+| [EXT_feature_metadata](#ext_feature_metadata)             | ✅ Y\*          | Deprecated. 3D tiles extension                                                              |
 
 ## Official Extensions
 

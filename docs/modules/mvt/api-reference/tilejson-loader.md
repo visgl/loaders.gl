@@ -49,8 +49,8 @@ The `TileJSONLoader` parses metadata from a TileJSON / tilestats file. It merges
 | File Format           | [TileJSON](/docs/modules/mvt/formats/tilejson) |
 | Data Format           | TileJSON                                       |
 | Decoder Type          | Synchronous                                    |
-| Worker Thread Support | No                                             |
-| Streaming Support     | No                                             |
+| Worker Thread Support | ❌ No                                             |
+| Streaming Support     | ❌ No                                             |
 
 ## Usage
 

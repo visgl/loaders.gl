@@ -49,12 +49,12 @@ resources and services.
 
 | Capability | Support | Recommendation |
 | --- | --- | --- |
-| OWS Context Atom encoding | Not implemented | Parse the XML with `@loaders.gl/xml` and adapt links in application code |
-| OWS Context JSON encoding | Not implemented | Load JSON normally and pass referenced endpoints to service loaders |
-| Referenced WMS services | Supported separately | Use `WMSSourceLoader` |
-| Referenced WMTS services | Supported separately | Use `WMTSSourceLoader` |
-| Referenced WFS services | Supported separately | Use `WFSSourceLoader` |
-| General service discovery | Supported separately | Use `discoverServiceGraph` or a `CSWSourceLoader` catalog |
+| OWS Context Atom encoding | ❌ Not implemented | Parse the XML with `@loaders.gl/xml` and adapt links in application code |
+| OWS Context JSON encoding | ❌ Not implemented | Load JSON normally and pass referenced endpoints to service loaders |
+| Referenced WMS services | ✅ Supported separately | Use `WMSSourceLoader` |
+| Referenced WMTS services | ✅ Supported separately | Use `WMTSSourceLoader` |
+| Referenced WFS services | ✅ Supported separately | Use `WFSSourceLoader` |
+| General service discovery | ✅ Supported separately | Use `discoverServiceGraph` or a `CSWSourceLoader` catalog |
 
 This page is retained to clarify the boundary between a context document and the services it can
 reference. loaders.gl v5 does not expose an OWS Context loader.

@@ -50,23 +50,23 @@ collections.
 
 | Capability | Support | Notes |
 | --- | --- | --- |
-| GML 2 feature members | Supported | Common WFS feature collection structures and geometry properties |
-| GML 3 / 3.2 feature members | Supported | Namespace-prefix independent parsing |
-| Empty feature collections | Supported | Recognized as collections, including terminal paging responses |
-| WFS 2.0 counts and paging links | Supported | Whole-document parsing retains `numberMatched`, `numberReturned`, `next`, and `previous`; unknown totals remain unknown |
-| Point and MultiPoint | Supported | GML 2 and GML 3 coordinate encodings |
-| LineString, Curve, and multi-line geometry | Supported | Segment coordinates are normalized to GeoJSON-compatible lines |
-| Polygon, Surface, and multi-polygon geometry | Supported | Exterior and interior rings are preserved |
-| `coord` / `coordinates` | Supported | Legacy GML 2 coordinate encodings |
-| `pos` / `posList` | Supported | Dimensional GML 3 coordinate encodings |
-| CRS identifiers | Preserved | `srsName` is read; reprojection is not silently applied by the parser |
-| Axis order | Service-aware | WFS source logic handles known CRS axis-order rules |
-| Streaming | Supported | `parseInBatches` emits collections as feature members arrive |
-| Schema-aware scalar properties | Supported | Supply string, boolean, integer, number, date, and date-time hints |
-| GeoJSON output | Supported | Default geospatial representation |
-| Binary and Arrow output | Through WFS | `WFSSourceLoader` converts parsed GML to standard vector outputs |
-| Arbitrary GML application schemas | Best effort | Unknown XML properties are preserved instead of guessed |
-| Topologies, solids, and every ISO geometry primitive | Not supported | Outside the practical WFS feature subset |
+| GML 2 feature members | ✅ Supported | Common WFS feature collection structures and geometry properties |
+| GML 3 / 3.2 feature members | ✅ Supported | Namespace-prefix independent parsing |
+| Empty feature collections | ✅ Supported | Recognized as collections, including terminal paging responses |
+| WFS 2.0 counts and paging links | ✅ Supported | Whole-document parsing retains `numberMatched`, `numberReturned`, `next`, and `previous`; unknown totals remain unknown |
+| Point and MultiPoint | ✅ Supported | GML 2 and GML 3 coordinate encodings |
+| LineString, Curve, and multi-line geometry | ✅ Supported | Segment coordinates are normalized to GeoJSON-compatible lines |
+| Polygon, Surface, and multi-polygon geometry | ✅ Supported | Exterior and interior rings are preserved |
+| `coord` / `coordinates` | ✅ Supported | Legacy GML 2 coordinate encodings |
+| `pos` / `posList` | ✅ Supported | Dimensional GML 3 coordinate encodings |
+| CRS identifiers | ✅ Preserved | `srsName` is read; reprojection is not silently applied by the parser |
+| Axis order | ⚠️ Service-aware | WFS source logic handles known CRS axis-order rules |
+| Streaming | ✅ Supported | `parseInBatches` emits collections as feature members arrive |
+| Schema-aware scalar properties | ✅ Supported | Supply string, boolean, integer, number, date, and date-time hints |
+| GeoJSON output | ✅ Supported | Default geospatial representation |
+| Binary and Arrow output | ✅ Through WFS | `WFSSourceLoader` converts parsed GML to standard vector outputs |
+| Arbitrary GML application schemas | ⚠️ Best effort | Unknown XML properties are preserved instead of guessed |
+| Topologies, solids, and every ISO geometry primitive | ❌ Not supported | Outside the practical WFS feature subset |
 
 ## Parse a document
 

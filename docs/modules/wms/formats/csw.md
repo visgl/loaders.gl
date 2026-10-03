@@ -50,17 +50,17 @@ contract.
 
 | Capability | Support | API and behavior |
 | --- | --- | --- |
-| `GetCapabilities` | Supported | `getCapabilities()` returns parsed, typed service metadata |
-| `GetRecords` | Supported | `getRecords()` and async `search()` return catalog records |
-| `GetDomain` | Supported | `getDomain()` parses advertised parameter domains |
-| Service directory | Supported | `getServiceDirectory()` extracts WMS, WMTS, and WFS references |
-| Normalized catalog contract | Supported | Implements read-only `CatalogSource` metadata and search |
-| Vendor query parameters | Supported | Appended to generated GET requests |
-| HTTP GET / KVP | Supported | All implemented operations use query parameters |
-| XML or form POST | Not supported | Request payload generation is outside the source |
-| `DescribeRecord` / `GetRecordById` | Not exposed | Use a custom request and the low-level XML loaders if needed |
-| Pagination and CQL filtering | Not normalized | The minimal catalog contract reports these capabilities as unavailable |
-| Harvest and transactions | Not supported | The source is read-only |
+| `GetCapabilities` | ✅ Supported | `getCapabilities()` returns parsed, typed service metadata |
+| `GetRecords` | ✅ Supported | `getRecords()` and async `search()` return catalog records |
+| `GetDomain` | ✅ Supported | `getDomain()` parses advertised parameter domains |
+| Service directory | ✅ Supported | `getServiceDirectory()` extracts WMS, WMTS, and WFS references |
+| Normalized catalog contract | ✅ Supported | Implements read-only `CatalogSource` metadata and search |
+| Vendor query parameters | ✅ Supported | Appended to generated GET requests |
+| HTTP GET / KVP | ✅ Supported | All implemented operations use query parameters |
+| XML or form POST | ❌ Not supported | Request payload generation is outside the source |
+| `DescribeRecord` / `GetRecordById` | ❌ Not exposed | Use a custom request and the low-level XML loaders if needed |
+| Pagination and CQL filtering | ❌ Not normalized | The minimal catalog contract reports these capabilities as unavailable |
+| Harvest and transactions | ❌ Not supported | The source is read-only |
 | deck.gl rendering | Not applicable | Select a referenced visual service, then pass that service to `SourceLayer` |
 
 ## Search a catalog

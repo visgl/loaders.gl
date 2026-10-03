@@ -58,8 +58,8 @@ mesh][quantized_mesh] format. It returns a [Mesh Arrow table](/docs/specificatio
 | Data Format           | [Mesh Arrow table](/docs/specifications/category-mesh#mesh-arrow-tables), [Mesh](/docs/specifications/category-mesh) |
 | Supported APIs        | `load`, `parse`, `parseSync`               |
 | Decoder Type          | Synchronous                                |
-| Worker Thread Support | Yes                                        |
-| Streaming Support     | No                                         |
+| Worker Thread Support | ✅ Yes                                        |
+| Streaming Support     | ❌ No                                         |
 
 ## Usage
 

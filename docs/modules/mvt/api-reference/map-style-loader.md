@@ -53,8 +53,8 @@ bridge style metadata into other runtimes such as deck.gl tile workflows.
 | File Format           | [Map Styles](/docs/modules/mvt/formats/map-style)        |
 | Data Format           | `ResolvedMapStyle`                                       |
 | Decoder Type          | Asynchronous                                             |
-| Worker Thread Support | No                                                       |
-| Streaming Support     | No                                                       |
+| Worker Thread Support | ❌ No                                                       |
+| Streaming Support     | ❌ No                                                       |
 
 ## Usage
 

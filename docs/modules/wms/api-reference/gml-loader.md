@@ -59,7 +59,7 @@ the [OGC](https://www.opengeospatial.org/)-standardized [GML](https://www.ogc.or
 | File Format           | [GML](https://en.wikipedia.org/wiki/Web_Map_Service) |
 | Data Format           | Arrow table with GeoArrow WKB geometry               |
 | Decoder Type          | Synchronous                                          |
-| Worker Thread Support | No                                                   |
+| Worker Thread Support | ❌ No                                                   |
 | Streaming Support     | Feature collections                                  |
 
 ## Usage

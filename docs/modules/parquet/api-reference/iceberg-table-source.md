@@ -110,20 +110,20 @@ exact residual filtering. The badge does not imply write support or a catalog-wi
 
 | Capability | Support | Notes |
 | --- | --- | --- |
-| Iceberg metadata JSON | Supported | Explicit `metadata.json` URL or equivalent fetchable URL. |
-| Current snapshot selection | Supported | Used when `snapshotId` is omitted. |
-| Named branches and tags | Supported | Pass `snapshotRef` to select a metadata `refs` entry. |
-| Explicit snapshot selection | Supported | Pass `snapshotId` to `scan`, `getScanPlan`, or file-discovery methods. |
-| Manifest-list discovery | Supported | Relative and absolute locations are resolved against table location. |
-| Data manifests | Supported | Active Parquet entries are returned in manifest order. |
-| Delete manifests | Supported | Delete files are discovered in `getScanPlan()`; position and equality deletes can be applied opt-in. |
-| Parquet projection and predicates | Supported | Delegated to the existing Parquet source. |
-| File partition pruning | Supported | Scalar manifest partition values use the shared dataset pruning path. |
-| File statistics pruning | Supported | Conservative lower/upper-bound pruning; unknown encodings are retained. |
-| Spatial envelope pruning | Supported | Opt-in conservative bounding-box pruning when Iceberg bounds expose a recognized geometry envelope. |
-| HTTP range requests | Preserved | Parquet transport and range behavior are unchanged. |
-| Workers and cancellation | Preserved | Options and signals continue through the Parquet dataset source. |
-| Avro/ORC data files | Not selected | The initial source dispatches Parquet data files only. |
+| Iceberg metadata JSON | ✅ Supported | Explicit `metadata.json` URL or equivalent fetchable URL. |
+| Current snapshot selection | ✅ Supported | Used when `snapshotId` is omitted. |
+| Named branches and tags | ✅ Supported | Pass `snapshotRef` to select a metadata `refs` entry. |
+| Explicit snapshot selection | ✅ Supported | Pass `snapshotId` to `scan`, `getScanPlan`, or file-discovery methods. |
+| Manifest-list discovery | ✅ Supported | Relative and absolute locations are resolved against table location. |
+| Data manifests | ✅ Supported | Active Parquet entries are returned in manifest order. |
+| Delete manifests | ✅ Supported | Delete files are discovered in `getScanPlan()`; position and equality deletes can be applied opt-in. |
+| Parquet projection and predicates | ✅ Supported | Delegated to the existing Parquet source. |
+| File partition pruning | ✅ Supported | Scalar manifest partition values use the shared dataset pruning path. |
+| File statistics pruning | ✅ Supported | Conservative lower/upper-bound pruning; unknown encodings are retained. |
+| Spatial envelope pruning | ✅ Supported | Opt-in conservative bounding-box pruning when Iceberg bounds expose a recognized geometry envelope. |
+| HTTP range requests | ✅ Preserved | Parquet transport and range behavior are unchanged. |
+| Workers and cancellation | ✅ Preserved | Options and signals continue through the Parquet dataset source. |
+| Avro/ORC data files | ❌ Not selected | The initial source dispatches Parquet data files only. |
 
 ## Planning versus decoding
 

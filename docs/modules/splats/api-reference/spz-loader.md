@@ -51,7 +51,7 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
 | ------------ | ------------------------------------------ |
 | File format  | [SPZ](/docs/modules/splats/formats/splats) |
 | Extensions   | `.spz`                                     |
-| Worker       | No                                         |
+| Worker       | ❌ No                                         |
 | Input type   | `ArrayBuffer`                              |
 | Output shape | `arrow-table`                              |
 

@@ -56,8 +56,8 @@ A compatibility image loader that preserves the older environment-dependent retu
 | File Format    | PNG, JPEG, GIF, WEBP, AVIF, BMP, SVG                                      |
 | Data Format    | `ImageBitmap`, `Image`, or raw image data                                 |
 | Supported APIs | `load`, `parse`                                                           |
-| Worker Thread  | No (but may run on separate native thread in browsers)                    |
-| Streaming      | No                                                                        |
+| Worker Thread  | ❌ No (but may run on separate native thread in browsers)                    |
+| Streaming      | ❌ No                                                                        |
 
 ## Usage
 

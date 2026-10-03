@@ -82,11 +82,11 @@ ingest step.
 | Capability | NDJSON / JSONL | General JSON document |
 | --- | --- | --- |
 | Common entry point | `read()` | Not provided |
-| Schema discovery | Supported | Use the JSON loaders directly |
+| Schema discovery | ✅ Supported | Use the JSON loaders directly |
 | Predicate | Residual | — |
-| Projection | Supported | — |
-| Global limit | Supported | — |
-| Streaming and cancellation | Supported | Depends on the selected JSON loader API |
+| Projection | ✅ Supported | — |
+| Global limit | ✅ Supported | — |
+| Streaming and cancellation | ✅ Supported | Depends on the selected JSON loader API |
 | Physical pruning | Linear record scan | — |
 
 ## JSON Encoding

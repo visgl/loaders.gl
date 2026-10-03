@@ -65,21 +65,21 @@ KML is an [Open Geospatial Consortium standard][kml_ogc_standard].
 
 | Feature | Support | Notes |
 | --- | --- | --- |
-| Point, LineString, LinearRing, Polygon | Supported | Coordinates preserve altitude when present |
-| MultiGeometry | Supported | Converted to GeoJSON geometry collections or normalized table geometry |
-| Folders and nested documents | Supported | Folder hierarchy is retained by the rich parser and source metadata |
-| Styles and StyleMaps | Supported | Common line, polygon, icon, and label properties are normalized |
-| ExtendedData and SchemaData | Supported | Values are exposed as feature properties |
-| TimeStamp and TimeSpan | Supported | Preserved as KML feature metadata when requested |
-| Ground, screen, and photo overlays | Supported | Metadata and relative resource paths are retained |
-| NetworkLink | Supported | Link metadata is retained; remote KML is not followed automatically |
-| Model | Supported | Location, orientation, scale, and resource reference metadata are retained |
-| `gx:Track` and `gx:MultiTrack` | Supported | Converted to line geometry with timestamp metadata |
-| KMZ `doc.kml` selection | Supported | Falls back to a root or first KML entry when needed |
-| KMZ relative resources | Supported | Lazy archive access through `openKMZArchive` and `KMZVectorSource` |
-| KML/KMZ writing | Supported | `KMLWriter` and `KMZWriter` cover common feature geometries and properties |
-| Arbitrary CRS transformation | Not implemented | KML/KMZ coordinates are interpreted as WGS84 longitude/latitude |
-| External NetworkLink fetching | Not implemented | Applications decide whether and how to fetch linked documents |
+| Point, LineString, LinearRing, Polygon | ✅ Supported | Coordinates preserve altitude when present |
+| MultiGeometry | ✅ Supported | Converted to GeoJSON geometry collections or normalized table geometry |
+| Folders and nested documents | ✅ Supported | Folder hierarchy is retained by the rich parser and source metadata |
+| Styles and StyleMaps | ✅ Supported | Common line, polygon, icon, and label properties are normalized |
+| ExtendedData and SchemaData | ✅ Supported | Values are exposed as feature properties |
+| TimeStamp and TimeSpan | ✅ Supported | Preserved as KML feature metadata when requested |
+| Ground, screen, and photo overlays | ✅ Supported | Metadata and relative resource paths are retained |
+| NetworkLink | ✅ Supported | Link metadata is retained; remote KML is not followed automatically |
+| Model | ✅ Supported | Location, orientation, scale, and resource reference metadata are retained |
+| `gx:Track` and `gx:MultiTrack` | ✅ Supported | Converted to line geometry with timestamp metadata |
+| KMZ `doc.kml` selection | ✅ Supported | Falls back to a root or first KML entry when needed |
+| KMZ relative resources | ✅ Supported | Lazy archive access through `openKMZArchive` and `KMZVectorSource` |
+| KML/KMZ writing | ✅ Supported | `KMLWriter` and `KMZWriter` cover common feature geometries and properties |
+| Arbitrary CRS transformation | ❌ Not implemented | KML/KMZ coordinates are interpreted as WGS84 longitude/latitude |
+| External NetworkLink fetching | ❌ Not implemented | Applications decide whether and how to fetch linked documents |
 
 ## Output
 

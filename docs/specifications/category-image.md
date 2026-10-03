@@ -88,9 +88,9 @@ Note that _type_ is independent of the _format_ of the image (see below).
 
 | Image Type    | Class                                                                | Availability         | Workers      | Description                                                                                                                 |
 | ------------- | -------------------------------------------------------------------- | -------------------- | ------------ | --------------------------------------------------------------------------------------------------------------------------- |
-| `data`        | Object with `{width: Number, height: Number, data: Uint8Array, ...}` | Node.js and browsers | No           | Compatible with headless GL and still supported by helper APIs.                                                             |
-| `imagebitmap` | `ImageBitmap`                                                        | Browser, Node.js     | Browser only | The preferred type returned by `ImageBitmapLoader`. Browsers use the native API, while Node.js uses the installed polyfill. |
-| `image`       | `Image` (aka `HTMLImageElement`)                                     | All browsers         | No           | The traditional DOM image class. It remains supported by helper APIs and by deprecated `ImageLoader`.                       |
+| `data`        | Object with `{width: Number, height: Number, data: Uint8Array, ...}` | Node.js and browsers | ❌ No           | Compatible with headless GL and still supported by helper APIs.                                                             |
+| `imagebitmap` | `ImageBitmap`                                                        | Browser, Node.js     | ⚠️ Browser only | The preferred type returned by `ImageBitmapLoader`. Browsers use the native API, while Node.js uses the installed polyfill. |
+| `image`       | `Image` (aka `HTMLImageElement`)                                     | All browsers         | ❌ No           | The traditional DOM image class. It remains supported by helper APIs and by deprecated `ImageLoader`.                       |
 
 ## Image Data
 

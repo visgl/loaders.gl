@@ -58,8 +58,8 @@ There are two major versions, known as "Lerc1" and "Lerc2".
 | File Format           | [LERC](https://en.wikipedia.org/wiki/Web_Map_Service) |
 | Data Format           | Data structure                                        |
 | Decoder Type          | Synchronous                                           |
-| Worker Thread Support | Yes                                                   |
-| Streaming Support     | No                                                    |
+| Worker Thread Support | ✅ Yes                                                   |
+| Streaming Support     | ❌ No                                                    |
 
 ## Usage
 

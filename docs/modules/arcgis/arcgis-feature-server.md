@@ -67,21 +67,21 @@ ArcGIS FeatureServer endpoints expose queryable vector feature layers through th
 
 | Capability | Support | API and behavior |
 | --- | --- | --- |
-| Service and layer endpoints | Supported | Accepts both `/FeatureServer` and `/FeatureServer/{layerId}` URLs |
-| Metadata and layer discovery | Supported | `getMetadata()` normalizes names, titles, bounds, CRS, and child layers |
-| Schema discovery | Supported | `getSchema()` maps ArcGIS fields to loaders.gl schema types |
-| Spatial queries | Supported | `getFeatures()` sends viewport bounds through the ArcGIS `query` operation |
-| Layer selection | Supported | Select with `layers`; a root service URL can target an explicit layer ID |
-| Server-side query parameters | Supported | Configure `where`, output fields, geometry filters, spatial relationship, and precision |
-| GeoJSON output | Supported | ArcGIS GeoJSON responses are parsed as vector-source data |
-| Binary and Arrow output | Supported | Select through the standard vector source `format` option |
-| Authentication | Supported | URL tokens, fetch headers, credentials, and custom fetch functions are preserved |
-| Complete queries and streaming | Supported subset | Ordered offset or ID batches, progress, cancellation, caps, and completeness evidence |
-| Counts, IDs and extents | Supported | `queryCount()`, `queryObjectIds()`, `queryExtent()` |
-| Nonspatial tables | Supported subset | JSON attributes retained as null-geometry records; GeoJSON or Arrow output |
-| Queryable MapServer layers | Supported subset | Same query source; spatial layers require GeoJSON support |
-| Editing and attachments | Not supported | The source is a read-only query client |
-| deck.gl rendering | First class | Pass the source loader or `ARCGIS_LOADERS` to `SourceLayer` |
+| Service and layer endpoints | ✅ Supported | Accepts both `/FeatureServer` and `/FeatureServer/{layerId}` URLs |
+| Metadata and layer discovery | ✅ Supported | `getMetadata()` normalizes names, titles, bounds, CRS, and child layers |
+| Schema discovery | ✅ Supported | `getSchema()` maps ArcGIS fields to loaders.gl schema types |
+| Spatial queries | ✅ Supported | `getFeatures()` sends viewport bounds through the ArcGIS `query` operation |
+| Layer selection | ✅ Supported | Select with `layers`; a root service URL can target an explicit layer ID |
+| Server-side query parameters | ✅ Supported | Configure `where`, output fields, geometry filters, spatial relationship, and precision |
+| GeoJSON output | ✅ Supported | ArcGIS GeoJSON responses are parsed as vector-source data |
+| Binary and Arrow output | ✅ Supported | Select through the standard vector source `format` option |
+| Authentication | ✅ Supported | URL tokens, fetch headers, credentials, and custom fetch functions are preserved |
+| Complete queries and streaming | ⚠️ Supported subset | Ordered offset or ID batches, progress, cancellation, caps, and completeness evidence |
+| Counts, IDs and extents | ✅ Supported | `queryCount()`, `queryObjectIds()`, `queryExtent()` |
+| Nonspatial tables | ⚠️ Supported subset | JSON attributes retained as null-geometry records; GeoJSON or Arrow output |
+| Queryable MapServer layers | ⚠️ Supported subset | Same query source; spatial layers require GeoJSON support |
+| Editing and attachments | ❌ Not supported | The source is a read-only query client |
+| deck.gl rendering | ✅ First class | Pass the source loader or `ARCGIS_LOADERS` to `SourceLayer` |
 
 ## Optional scan table view
 
@@ -91,12 +91,12 @@ parameters; the table view owns the relational operations over the returned feat
 
 | Capability | Support |
 | --- | --- |
-| Layer metadata and service request | ArcGIS source |
-| Bound request schema | Discovered from the Arrow result |
-| Predicate, projection, expressions, ordering, aggregates, and limit | Residual Arrow execution |
-| Cancellation | Covers the service request and table query |
-| Automatic ArcGIS SQL translation | Not provided by the table-view adapter |
-| Multi-layer or unbounded service federation | Not provided |
+| Layer metadata and service request | ✅ ArcGIS source |
+| Bound request schema | ✅ Discovered from the Arrow result |
+| Predicate, projection, expressions, ordering, aggregates, and limit | ✅ Residual Arrow execution |
+| Cancellation | ✅ Covers the service request and table query |
+| Automatic ArcGIS SQL translation | ❌ Not provided by the table-view adapter |
+| Multi-layer or unbounded service federation | ❌ Not provided |
 
 Use ArcGIS request parameters for server-side reduction whenever possible. The table view provides a
 common client-side query contract after the service has returned the bounded feature set.

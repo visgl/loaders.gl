@@ -53,8 +53,8 @@ The preferred image loader for new code. `ImageBitmapLoader` returns `ImageBitma
 | File Format    | PNG, JPEG, GIF, WEBP, AVIF, BMP, SVG                                      |
 | Data Format    | `ImageBitmap`                                                             |
 | Supported APIs | `load`, `parse`                                                           |
-| Worker Thread  | No (but may run on separate native thread in browsers)                    |
-| Streaming      | No                                                                        |
+| Worker Thread  | ❌ No (but may run on separate native thread in browsers)                    |
+| Streaming      | ❌ No                                                                        |
 
 ## Usage
 

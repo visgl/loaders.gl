@@ -62,13 +62,13 @@ The source path favors portability and correctness over SQLite query pushdown.
 
 | Capability | Support | Execution |
 | --- | --- | --- |
-| Entry point | `read()` | One materialized Arrow batch |
-| Table and schema discovery | Supported | GeoPackage catalog and selected feature table |
-| Geometry role and source bounds | Supported | Exposed through scan metadata |
-| Attribute predicate | Supported | Residual after decoding |
-| Projection and global limit | Supported | Residual |
-| Streaming and cancellation | Not advertised | The selected table is materialized |
-| SQLite or spatial-index pushdown | Not implemented | No pushdown claim is made |
+| Entry point | ✅ `read()` | One materialized Arrow batch |
+| Table and schema discovery | ✅ Supported | GeoPackage catalog and selected feature table |
+| Geometry role and source bounds | ✅ Supported | Exposed through scan metadata |
+| Attribute predicate | ✅ Supported | Residual after decoding |
+| Projection and global limit | ✅ Supported | Residual |
+| Streaming and cancellation | ❌ Not advertised | The selected table is materialized |
+| SQLite or spatial-index pushdown | ❌ Not implemented | No pushdown claim is made |
 
 Choose the feature table through the source options before calling `getQueryMetadata()` or
 `read()`. Predicate columns remain available for filtering even when they are absent from the final

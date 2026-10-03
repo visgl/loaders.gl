@@ -65,14 +65,14 @@ nodes before LAZ decoding; exact bounds and attribute predicates are then applie
 
 | Capability | Support | Execution |
 | --- | --- | --- |
-| Entry point | `scan()` | Ordered Arrow point batches |
-| Schema, bounds, CRS, and point count | Supported | Header, VLR, and hierarchy metadata |
-| Bounds, minimum/maximum level, target spacing | Supported | Hierarchy pushdown followed by exact point filtering |
-| Attribute predicate | Supported | Residual after point decoding |
-| Projection | Supported | Requested LAZ fields are decoded selectively where possible |
-| Global limit | Supported | Counts points after bounds and predicates across nodes |
-| Cancellation and early return | Supported | Covers hierarchy ranges, node ranges, workers, and decoding |
-| Explainable hierarchy plan | Supported | Selected and pruned nodes remain visible |
+| Entry point | ✅ `scan()` | Ordered Arrow point batches |
+| Schema, bounds, CRS, and point count | ✅ Supported | Header, VLR, and hierarchy metadata |
+| Bounds, minimum/maximum level, target spacing | ✅ Supported | Hierarchy pushdown followed by exact point filtering |
+| Attribute predicate | ✅ Supported | Residual after point decoding |
+| Projection | ✅ Supported | Requested LAZ fields are decoded selectively where possible |
+| Global limit | ✅ Supported | Counts points after bounds and predicates across nodes |
+| Cancellation and early return | ✅ Supported | Covers hierarchy ranges, node ranges, workers, and decoding |
+| Explainable hierarchy plan | ✅ Supported | Selected and pruned nodes remain visible |
 
 Coordinates and query bounds use the source coordinate system unless the documented COPC CRS path
 is configured to transform them. A global limit is never applied independently to each octree node.
@@ -83,24 +83,24 @@ The primary `@loaders.gl/copc` implementation is TypeScript-only. It does not re
 
 | Capability | Status | Current behavior |
 | --- | :---: | --- |
-| LAS 1.4 public header | **Full** | Validates the LAS signature, version, compressed PDRF, point counts, record length, scales, offsets, bounds, and VLR/EVLR offsets. |
-| COPC info VLR | **Full** | Parses the root cube, spacing, hierarchy range, and GPS time range. The info record must be the first VLR. |
-| VLR and EVLR discovery | **Full** | Walks record headers through exact range reads and retains user ID, record ID, description, payload offset, and payload length. |
-| Coordinate reference system | **Full** | Reads OGC WKT from VLR or EVLR record 2112 and projects tile bounds and positions when the WKT is supported by proj4. A caller-supplied CRS can be used as a fallback. |
-| Extra Bytes metadata | **Full** | Parses 192-byte descriptors and retains the raw VLR payload. Scalar and 2/3-component values, signedness, floating-point types, and descriptor scale/offset are preserved. |
-| Root and child hierarchy pages | **Full** | Parses native 32-byte hierarchy entries, follows page references lazily, caches loaded pages, and validates offsets, lengths, and point counts. |
-| Spatial node selection | **Full** | Resolves `depth-x-y-z` keys, computes octree bounds, exposes children, and fetches only selected node byte ranges. |
-| Node range input | **Full** | Supports HTTP range-readable URLs, browser `Blob` objects, and local files in Node.js with `@loaders.gl/polyfills`. Short or invalid ranges fail deterministically. |
-| PDRF 6 | **Full** | TypeScript Point14 decoding with positions and selectively requested scalar fields. |
-| PDRF 7 | **Full** | PDRF 6 plus progressive RGB decoding. |
-| PDRF 8 | **Full** | PDRF 7 plus progressive NIR decoding. |
-| LAZ codec | **Full for COPC** | Layered LASzip compressor 3, arithmetic coder 0, Point14/RGB14/RGBNIR14/Byte14 item versions 2-4. |
-| Arrow table output | **Full** | Atomic and batched APIs return Arrow tables directly without an intermediate object-per-point representation. |
-| Parallel atomic node decoding | **Full** | Atomic node loads created through `@loaders.gl/core` share the single prebuilt TypeScript LAS worker pool. Fetch plus decode concurrency is bounded per source. |
-| Selective field decoding | **Full** | Unrequested LAZ field layers are skipped, avoiding arithmetic decoder state, output arrays, and point traversal for those fields. |
-| Progressive node decoding | **Full at layer boundaries** | Node byte ranges are fed incrementally. Rows are emitted when all compressed layers required by the requested columns are available. |
-| Cancellation | **Full** | Abort signals cancel queued atomic loads, active range requests and worker jobs, hierarchy traversal, and progressive point decoding. |
-| COPC writing | **Full for represented attributes** | Writes LAS 1.4 PDRF 6-8, variable LAZ chunks, a version 0 chunk table, COPC info VLR, and a range-pageable hierarchy EVLR. |
+| LAS 1.4 public header | ✅ **Full** | Validates the LAS signature, version, compressed PDRF, point counts, record length, scales, offsets, bounds, and VLR/EVLR offsets. |
+| COPC info VLR | ✅ **Full** | Parses the root cube, spacing, hierarchy range, and GPS time range. The info record must be the first VLR. |
+| VLR and EVLR discovery | ✅ **Full** | Walks record headers through exact range reads and retains user ID, record ID, description, payload offset, and payload length. |
+| Coordinate reference system | ✅ **Full** | Reads OGC WKT from VLR or EVLR record 2112 and projects tile bounds and positions when the WKT is supported by proj4. A caller-supplied CRS can be used as a fallback. |
+| Extra Bytes metadata | ✅ **Full** | Parses 192-byte descriptors and retains the raw VLR payload. Scalar and 2/3-component values, signedness, floating-point types, and descriptor scale/offset are preserved. |
+| Root and child hierarchy pages | ✅ **Full** | Parses native 32-byte hierarchy entries, follows page references lazily, caches loaded pages, and validates offsets, lengths, and point counts. |
+| Spatial node selection | ✅ **Full** | Resolves `depth-x-y-z` keys, computes octree bounds, exposes children, and fetches only selected node byte ranges. |
+| Node range input | ✅ **Full** | Supports HTTP range-readable URLs, browser `Blob` objects, and local files in Node.js with `@loaders.gl/polyfills`. Short or invalid ranges fail deterministically. |
+| PDRF 6 | ✅ **Full** | TypeScript Point14 decoding with positions and selectively requested scalar fields. |
+| PDRF 7 | ✅ **Full** | PDRF 6 plus progressive RGB decoding. |
+| PDRF 8 | ✅ **Full** | PDRF 7 plus progressive NIR decoding. |
+| LAZ codec | ✅ **Full for COPC** | Layered LASzip compressor 3, arithmetic coder 0, Point14/RGB14/RGBNIR14/Byte14 item versions 2-4. |
+| Arrow table output | ✅ **Full** | Atomic and batched APIs return Arrow tables directly without an intermediate object-per-point representation. |
+| Parallel atomic node decoding | ✅ **Full** | Atomic node loads created through `@loaders.gl/core` share the single prebuilt TypeScript LAS worker pool. Fetch plus decode concurrency is bounded per source. |
+| Selective field decoding | ✅ **Full** | Unrequested LAZ field layers are skipped, avoiding arithmetic decoder state, output arrays, and point traversal for those fields. |
+| Progressive node decoding | ✅ **Full at layer boundaries** | Node byte ranges are fed incrementally. Rows are emitted when all compressed layers required by the requested columns are available. |
+| Cancellation | ✅ **Full** | Abort signals cancel queued atomic loads, active range requests and worker jobs, hierarchy traversal, and progressive point decoding. |
+| COPC writing | ✅ **Full for represented attributes** | Writes LAS 1.4 PDRF 6-8, variable LAZ chunks, a version 0 chunk table, COPC info VLR, and a range-pageable hierarchy EVLR. |
 | Waveform PDRF 9/10 | **Not part of COPC 1.0** | COPC 1.0 permits only PDRF 6, 7, and 8. |
 
 ### Arrow Columns
@@ -109,25 +109,25 @@ The primary `@loaders.gl/copc` implementation is TypeScript-only. It does not re
 
 | Arrow column | PDRF 6 | PDRF 7 | PDRF 8 | Source fields |
 | --- | :---: | :---: | :---: | --- |
-| `POSITION` | Yes | Yes | Yes | Scaled and offset X, Y, Z, transformed to tile-relative coordinates. |
-| `COLOR_0` | - | Yes | Yes | 16-bit red, green, and blue. |
-| `NIR` | - | - | Yes | 16-bit near-infrared channel. |
-| `intensity` | Yes | Yes | Yes | 16-bit pulse intensity. |
-| `classification` | Yes | Yes | Yes | LAS 1.4 classification code. |
-| `synthetic` | Yes | Yes | Yes | Synthetic classification flag. |
-| `keyPoint` | Yes | Yes | Yes | Key-point classification flag. |
-| `withheld` | Yes | Yes | Yes | Withheld classification flag. |
-| `overlap` | Yes | Yes | Yes | Overlap classification flag. |
-| `GPS_TIME` | Yes | Yes | Yes | 64-bit GPS time. |
-| `scanAngle` | Yes | Yes | Yes | LAS 1.4 signed scan angle. |
-| `pointSourceId` | Yes | Yes | Yes | 16-bit point source identifier. |
-| `userData` | Yes | Yes | Yes | 8-bit user data value. |
-| `returnNumber` | Yes | Yes | Yes | Return ordinal for the emitted pulse. |
-| `numberOfReturns` | Yes | Yes | Yes | Total returns for the emitted pulse. |
-| `scannerChannel` | Yes | Yes | Yes | LAS 1.4 scanner channel. |
-| `scanDirectionFlag` | Yes | Yes | Yes | Scan direction bit. |
-| `edgeOfFlightLine` | Yes | Yes | Yes | End-of-flight-line bit. |
-| `EXTRA_BYTES_*` | Yes | Yes | Yes | Named typed attributes from the Extra Bytes descriptor VLR, requested with `EXTRA_BYTES`. |
+| `POSITION` | ✅ Yes | ✅ Yes | ✅ Yes | Scaled and offset X, Y, Z, transformed to tile-relative coordinates. |
+| `COLOR_0` | - | ✅ Yes | ✅ Yes | 16-bit red, green, and blue. |
+| `NIR` | - | - | ✅ Yes | 16-bit near-infrared channel. |
+| `intensity` | ✅ Yes | ✅ Yes | ✅ Yes | 16-bit pulse intensity. |
+| `classification` | ✅ Yes | ✅ Yes | ✅ Yes | LAS 1.4 classification code. |
+| `synthetic` | ✅ Yes | ✅ Yes | ✅ Yes | Synthetic classification flag. |
+| `keyPoint` | ✅ Yes | ✅ Yes | ✅ Yes | Key-point classification flag. |
+| `withheld` | ✅ Yes | ✅ Yes | ✅ Yes | Withheld classification flag. |
+| `overlap` | ✅ Yes | ✅ Yes | ✅ Yes | Overlap classification flag. |
+| `GPS_TIME` | ✅ Yes | ✅ Yes | ✅ Yes | 64-bit GPS time. |
+| `scanAngle` | ✅ Yes | ✅ Yes | ✅ Yes | LAS 1.4 signed scan angle. |
+| `pointSourceId` | ✅ Yes | ✅ Yes | ✅ Yes | 16-bit point source identifier. |
+| `userData` | ✅ Yes | ✅ Yes | ✅ Yes | 8-bit user data value. |
+| `returnNumber` | ✅ Yes | ✅ Yes | ✅ Yes | Return ordinal for the emitted pulse. |
+| `numberOfReturns` | ✅ Yes | ✅ Yes | ✅ Yes | Total returns for the emitted pulse. |
+| `scannerChannel` | ✅ Yes | ✅ Yes | ✅ Yes | LAS 1.4 scanner channel. |
+| `scanDirectionFlag` | ✅ Yes | ✅ Yes | ✅ Yes | Scan direction bit. |
+| `edgeOfFlightLine` | ✅ Yes | ✅ Yes | ✅ Yes | End-of-flight-line bit. |
+| `EXTRA_BYTES_*` | ✅ Yes | ✅ Yes | ✅ Yes | Named typed attributes from the Extra Bytes descriptor VLR, requested with `EXTRA_BYTES`. |
 
 ### Streaming Boundaries
 

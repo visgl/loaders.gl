@@ -51,8 +51,8 @@ The `DracoWriter` encodes [Mesh](/docs/specifications/category-mesh) or [Mesh Ar
 | Data Format           | [Mesh Arrow table](/docs/specifications/category-mesh#mesh-arrow-tables), [Mesh](/docs/specifications/category-mesh) |
 | File Format           | [Draco](https://google.github.io/draco/)   |
 | Encoder Type          | Synchronous                                |
-| Worker Thread Support | Yes                                        |
-| Streaming Support     | No                                         |
+| Worker Thread Support | ✅ Yes                                        |
+| Streaming Support     | ❌ No                                         |
 
 ## Usage
 

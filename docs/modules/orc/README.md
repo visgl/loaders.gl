@@ -72,13 +72,13 @@ pushdown.
 
 | Capability | Support | Execution |
 | --- | --- | --- |
-| Entry point | `read()` or `query()` | Arrow batch or materialized Arrow table |
-| Schema and row-count discovery | Supported | ORC footer metadata |
-| Predicate | Supported | Residual after decoding |
-| Projection | Supported | Residual |
-| Global limit | Supported | Residual after filtering |
-| Streaming and cooperative cancellation | Not advertised | Complete-file execution |
-| Stripe, row-index, or range pruning | Not implemented | No pushdown claim is made |
+| Entry point | ✅ `read()` or `query()` | Arrow batch or materialized Arrow table |
+| Schema and row-count discovery | ✅ Supported | ORC footer metadata |
+| Predicate | ✅ Supported | Residual after decoding |
+| Projection | ✅ Supported | Residual |
+| Global limit | ✅ Supported | Residual after filtering |
+| Streaming and cooperative cancellation | ❌ Not advertised | Complete-file execution |
+| Stripe, row-index, or range pruning | ❌ Not implemented | No pushdown claim is made |
 
 ```ts
 import {createDataSource} from '@loaders.gl/core';

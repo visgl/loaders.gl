@@ -85,14 +85,14 @@ ranges, emits Arrow batches, and explains which layers rejected work.
 
 | Capability | Support | Execution |
 | --- | --- | --- |
-| Entry point | `read()` | Streaming Arrow batches |
-| Schema and statistics discovery | Supported | Footer metadata |
-| Projection | Supported | Column-chunk pushdown |
-| Predicate | Supported | Row-group/page/statistics/Bloom pruning plus exact residual evaluation |
-| Global limit | Supported | Counts rows after filtering across all batches and files |
-| Cancellation and early return | Supported | Stops pending ranges, decoding, and later files |
-| Multi-file datasets | Supported | Bounded concurrency with catalog-selected fragments |
-| Explain output | Supported | Logical, file, row-group, page, and range decisions |
+| Entry point | ✅ `read()` | Streaming Arrow batches |
+| Schema and statistics discovery | ✅ Supported | Footer metadata |
+| Projection | ✅ Supported | Column-chunk pushdown |
+| Predicate | ✅ Supported | Row-group/page/statistics/Bloom pruning plus exact residual evaluation |
+| Global limit | ✅ Supported | Counts rows after filtering across all batches and files |
+| Cancellation and early return | ✅ Supported | Stops pending ranges, decoding, and later files |
+| Multi-file datasets | ✅ Supported | Bounded concurrency with catalog-selected fragments |
+| Explain output | ✅ Supported | Logical, file, row-group, page, and range decisions |
 
 `IcebergTableSource` and `DeltaTableSource` select active Parquet files before delegating to this
 same executor. Iceberg supports snapshot and manifest planning. Delta supports read-only log replay;
@@ -369,7 +369,7 @@ rather than by individual missing methods.
 | Modular encryption | ✅ opt-in | Encrypted footer/column metadata, page/index/Bloom-filter reads, AES-GCM/AES-GCM-CTR pages, worker scans, footer-key and per-column-key encrypted-column writing, and plaintext-footer signatures | Broader encrypted-file interoperability and external key-management guidance |
 | Logical and legacy parity | ✅ core Arrow path | Logical Arrow mappings, canonical INT96 timestamp read/write and page statistics, nested LIST/MAP/VARIANT/geo types, legacy `BIT_PACKED` reads, and explicit `PLAIN_DICTIONARY` writes | Legacy nested/shredding variants, object-row compatibility policy, and exact Arrow fidelity across the remaining stable logical-type matrix |
 | Conformance and scale gate | ⚠️ ongoing | Hermetic feature tests, differential checks, and representative browser benchmarks | Apache corpus plus nested/repeated cases, every stable codec/encoding, differential validation, and large-file/selective-range benchmarks pass in CI |
-| Emerging-format lab | 🧪 experimental | Tracking links and isolated capability flags | ALP, PFOR, VECTOR, and format-versioning experiments remain opt-in until an upstream format and interoperability fixtures stabilize |
+| Emerging-format lab | ⚠️ experimental | Tracking links and isolated capability flags | ALP, PFOR, VECTOR, and format-versioning experiments remain opt-in until an upstream format and interoperability fixtures stabilize |
 
 The recent follow-up work adds conservative logical-statistics handling, repeated-page safety,
 zero-valued size statistics, legacy `BIT_PACKED` level decoding, explicit legacy

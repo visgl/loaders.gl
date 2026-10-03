@@ -81,11 +81,11 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
 
 | Format                                            | Extension    | MIME Media Type            | Support                                                       |
 | ------------------------------------------------- | ------------ | -------------------------- | ------------------------------------------------------------- |
-| [JSON](https://www.json.org/json-en.html)         | `.json`      | `application/json`         | `JSONLoader`                                                  |
-| [NewLine Delimited JSON](http://ndjson.org/)      | `.ndjson`    | `application/x-ndjson`     | `NDJSONLoader`                                                |
-| [JSON Lines](http://jsonlines.org/)               | `.jsonl`     | `application/x-ldjson`     | `NDJSONLoader`                                                |
-| [JSON Text Sequences](https://datatracker.ietf.org/doc/html/rfc7464) |              | `application/json-seq`     | `NDJSONLoader`. Partial records must not span multiple lines. |
-| [GeoJSON](https://geojson.org/)                   | `.geojson`   | `application/geo+json`     | `GeoJSONLoader`                                               |
-| [Newline Delimited GeoJSON](https://stevage.github.io/ndgeojson/) | `.ndgeojson` |                            | `NDGeoJSONLoader`                                             |
-| [GeoJSON Lines](https://www.placemark.io/documentation/geojsonl) | `.geojsonl`  |                            | `NDGeoJSONLoader`                                             |
-| [GeoJSON Text Sequences](https://datatracker.ietf.org/doc/html/rfc8142) |              | `application/geo+json-seq` | `NDGeoJSONLoader`                                             |
+| [JSON](https://www.json.org/json-en.html)         | `.json`      | `application/json`         | ✅ `JSONLoader`                                                  |
+| [NewLine Delimited JSON](http://ndjson.org/)      | `.ndjson`    | `application/x-ndjson`     | ✅ `NDJSONLoader`                                                |
+| [JSON Lines](http://jsonlines.org/)               | `.jsonl`     | `application/x-ldjson`     | ✅ `NDJSONLoader`                                                |
+| [JSON Text Sequences](https://datatracker.ietf.org/doc/html/rfc7464) |              | `application/json-seq`     | ⚠️ `NDJSONLoader`. Partial records must not span multiple lines. |
+| [GeoJSON](https://geojson.org/)                   | `.geojson`   | `application/geo+json`     | ✅ `GeoJSONLoader`                                               |
+| [Newline Delimited GeoJSON](https://stevage.github.io/ndgeojson/) | `.ndgeojson` |                            | ✅ `NDGeoJSONLoader`                                             |
+| [GeoJSON Lines](https://www.placemark.io/documentation/geojsonl) | `.geojsonl`  |                            | ✅ `NDGeoJSONLoader`                                             |
+| [GeoJSON Text Sequences](https://datatracker.ietf.org/doc/html/rfc8142) |              | `application/geo+json-seq` | ⚠️ `NDGeoJSONLoader`. Each Feature must fit on one line.                                             |

@@ -58,8 +58,8 @@ The `NPYLoader` parses an array from the [NPY format][npy-spec], a lightweight e
 | Data Format           | Array                        |
 | Supported APIs        | `load`, `parse`, `parseSync` |
 | Decoder Type          | Synchronous                  |
-| Worker Thread Support | Yes                          |
-| Streaming Support     | No                           |
+| Worker Thread Support | ✅ Yes                          |
+| Streaming Support     | ❌ No                           |
 
 ## Usage
 

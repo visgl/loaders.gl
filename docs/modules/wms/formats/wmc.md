@@ -46,10 +46,10 @@ layers.
 
 | Capability | Support | Recommendation |
 | --- | --- | --- |
-| WMC document parsing | Not implemented | Parse XML with `@loaders.gl/xml` when maintaining legacy applications |
-| WMC document writing | Not implemented | Keep application state in a modern JSON configuration |
-| Referenced WMS layers | Supported separately | Use `WMSSourceLoader` for each referenced service |
-| Modern context exchange | Not implemented | OWS Context is documented separately but also has no dedicated loader |
+| WMC document parsing | ❌ Not implemented | Parse XML with `@loaders.gl/xml` when maintaining legacy applications |
+| WMC document writing | ❌ Not implemented | Keep application state in a modern JSON configuration |
+| Referenced WMS layers | ✅ Supported separately | Use `WMSSourceLoader` for each referenced service |
+| Modern context exchange | ❌ Not implemented | OWS Context is documented separately but also has no dedicated loader |
 
 <ReferenceBoundary
   title="WMC format details"

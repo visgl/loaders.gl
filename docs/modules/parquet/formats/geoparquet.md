@@ -85,7 +85,7 @@ A GeoParquet file additionally follows these conventions:
 | XY, XYZ, XYM, and XYZM geometry type codes | ✅ | ✅ |
 | Native row-group bbox and geometry-type statistics | ✅ | ✅ |
 | GeoParquet 1.1 single-geometry encodings | ✅ metadata/layout pass-through | ✅ metadata/layout pass-through |
-| GeoParquet 1.1 `covering.bbox` | ✅ row-group, page, and exact-row filtering | preserved when supplied |
+| GeoParquet 1.1 `covering.bbox` | ✅ row-group, page, and exact-row filtering | ✅ preserved when supplied |
 | CRS metadata (`PROJJSON`, omitted default, explicit `null`, and coordinate epoch) | ✅ preserved | ✅ preserved when supplied |
 | CRS coordinate transformation | ❌ metadata preservation does not transform coordinates | ❌ |
 | Ring rewinding from `orientation` | ❌ | ❌ |
