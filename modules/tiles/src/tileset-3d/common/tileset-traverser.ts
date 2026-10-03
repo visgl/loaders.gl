@@ -236,11 +236,9 @@ export class TilesetTraverser {
         } else {
           childRefines = child.contentAvailable;
         }
+        // Readiness controls replacement, not discovery. Visit every sibling so
+        // one unavailable child cannot serialize requests or hide ready siblings.
         refines = refines && childRefines;
-
-        if (!refines) {
-          return false;
-        }
       }
     }
 
