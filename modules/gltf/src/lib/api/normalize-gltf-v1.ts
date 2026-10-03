@@ -7,6 +7,7 @@ import * as KHR_binary_glTF from '../extensions/KHR_binary_gltf';
 import type {GLTFWithBuffers} from '../types/gltf-types';
 import {convertGLTFV1AccessorStrides} from './convert-gltf-v1-accessors';
 import {convertGLTFV1Skins} from './convert-gltf-v1-skins';
+import {bakeGLTFV1BindShapes} from './bake-gltf-v1-bind-shapes';
 
 // Binary format changes (mainly implemented by GLBLoader)
 // https://github.com/KhronosGroup/glTF/tree/master/extensions/1.0/Khronos/KHR_binary_glTF
@@ -144,6 +145,8 @@ class GLTFV1Normalizer {
   };
   /** Whether unsupported legacy features should abort conversion. */
   strict = false;
+  /** Whether binary baking and final diagnostics have already completed. */
+  finished = false;
 
   // constructor() {}
 
@@ -152,8 +155,13 @@ class GLTFV1Normalizer {
    * @param gltf - object with json and binChunks
    * @param options
    * @param options normalize Whether to actually normalize
+   * @param deferBinaryBaking Complete matrix baking after the loader resolves linked buffers.
    */
-  normalize(gltf, options: GLTFV1NormalizationOptions = {}): GLTFV1NormalizationReport {
+  normalize(
+    gltf,
+    options: GLTFV1NormalizationOptions = {},
+    deferBinaryBaking = false
+  ): GLTFV1NormalizationReport {
     if (options.mutate === false) {
       const converted = {...gltf, json: JSON.parse(JSON.stringify(gltf.json))};
       const report = new GLTFV1Normalizer().normalize(converted, {...options, mutate: true});
@@ -221,7 +229,16 @@ class GLTFV1Normalizer {
     this._updateNodes(json);
     this._preserveLegacyResources(json);
     this._removeEmptyCollections(json);
-    this._finishReport();
+    return deferBinaryBaking ? this.report : this.finishNormalization(gltf);
+  }
+
+  /** Complete binary baking once linked buffers are available; repeated calls are harmless. */
+  finishNormalization(gltf: GLTFWithBuffers): GLTFV1NormalizationReport {
+    if (this.report.converted && !this.finished) {
+      bakeGLTFV1BindShapes(gltf, feature => this._unsupported(feature));
+      this._finishReport();
+      this.finished = true;
+    }
     return this.report;
   }
 
@@ -571,6 +588,16 @@ export function normalizeGLTFV1(
   options: GLTFV1NormalizationOptions = {}
 ): GLTFV1NormalizationReport {
   return new GLTFV1Normalizer().normalize(gltf, options);
+}
+
+/** Normalize parser JSON now, returning an internal completion step for linked-buffer baking. */
+export function normalizeGLTFV1WithDeferredBuffers(
+  gltf: GLTFWithBuffers,
+  options: Pick<GLTFV1NormalizationOptions, 'normalize'> = {}
+): () => GLTFV1NormalizationReport {
+  const normalizer = new GLTFV1Normalizer();
+  normalizer.normalize(gltf, options, true);
+  return () => normalizer.finishNormalization(gltf);
 }
 
 /** Convert glTF 1 JSON without mutating the caller-owned asset or its binary buffers. */

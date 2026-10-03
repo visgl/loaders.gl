@@ -140,6 +140,7 @@ export {
   copyPaddedStringToDataView
 } from './lib/binary-utils/dataview-copy-utils';
 export {getFirstCharacters, getMagicString} from './lib/binary-utils/get-first-characters';
+export {encodeArrayBufferToBase64} from './lib/binary-utils/encode-array-buffer-to-base64';
 
 // ITERATOR UTILS
 export {

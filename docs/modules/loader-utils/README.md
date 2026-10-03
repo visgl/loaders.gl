@@ -52,3 +52,5 @@ The `@loaders.gl/loader-utils` contains utilities for creating loaders.
 - [`RequestCache`](/docs/modules/loader-utils/api-reference/request-cache) deduplicates and bounds ordinary asynchronous request results.
 - [`RangeRequestCache`](/docs/modules/loader-utils/api-reference/range-request-cache) caches exact and contained byte ranges.
 - [`CachedUriResolver`](/docs/modules/loader-utils/api-reference/cached-uri-resolver) resolves resource references against one stable base and memoizes repeated derivations for a caller-controlled lifetime.
+
+- [`encodeArrayBufferToBase64`](/docs/modules/loader-utils/api-reference/encode-array-buffer-to-base64) encodes binary bytes as padded base64.
