@@ -52,3 +52,4 @@ export type {
   BrowserTilesetConversionSourceOptions,
   BrowserTilesetResourceDescriptor
 } from './browser-tileset-source.js';
+export {encodeMeshTile} from './mesh.js';

@@ -58,6 +58,35 @@ inputs throw `INPUT_RESOURCE_TOO_LARGE`, close source iteration, and abort the d
 This check runs after the source read, so decoding allocations and retained source content still
 require source-level controls. `convertPointCloudSource` accepts the same option for decoded tiles.
 
+## V5 single mesh encoding
+
+`encodeMeshTile(mesh)` is available from both `/v5` and `/v5/browser`. It encodes one
+untextured triangle-list `MeshGeometry` (`mode: 4`) into a self-contained glTF 2.0 GLB.
+
+```ts
+import {encodeMeshTile} from '@loaders.gl/tile-converter/v5/browser';
+
+const glb = encodeMeshTile({
+  topology: 'triangle-list',
+  mode: 4,
+  attributes: {
+    POSITION: {value: new Float32Array([0, 0, 0, 1, 0, 0, 0, 1, 0]), size: 3}
+  }
+});
+```
+
+The initial profile accepts finite packed Float32 `POSITION` and optional `NORMAL` xyz
+triples. Normals must have unit length within 0.0001 and match the vertex count. Optional
+indices are packed Uint8, Uint16, or Uint32 scalars forming complete triangles, referencing
+existing vertices and excluding each type's maximum primitive-restart value. Typed array
+subviews are supported; descriptor offsets/strides, normalization, and encoded transforms
+are rejected. Other attributes fail with typed diagnostics instead of disappearing.
+
+The encoder preserves coordinates and does not mutate input arrays. Callers select a local
+coordinate frame and own CRS conversion, double-precision origins, placement, materials,
+feature mappings, and tileset packaging. This geometry helper does not extract an entire
+source scene or preserve its metadata and appearance automatically.
+
 ## V5 spatial conversion
 
 The `@loaders.gl/tile-converter/v5` entrypoint can reuse the CRS and elevation operations from
