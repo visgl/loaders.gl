@@ -60,7 +60,7 @@ require source-level controls. `convertPointCloudSource` accepts the same option
 
 ## V5 single mesh encoding
 
-`encodeMeshTile(mesh)` is available from both `/v5` and `/v5/browser`. It encodes one
+`encodeMeshTile(mesh, {material})` is available from both `/v5` and `/v5/browser`. It encodes one
 untextured triangle-list `MeshGeometry` (`mode: 4`) into a self-contained glTF 2.0 GLB.
 
 ```ts
@@ -83,16 +83,47 @@ subviews are supported; descriptor offsets/strides, normalization, and encoded t
 are rejected. Other attributes fail with typed diagnostics instead of disappearing.
 
 The encoder preserves coordinates and does not mutate input arrays. Callers select a local
-coordinate frame and own CRS conversion, double-precision origins, placement, materials,
-feature mappings, and tileset packaging. This geometry helper does not extract an entire
+coordinate frame and own CRS conversion, double-precision origins, placement, source
+material mapping, feature mappings, and tileset packaging. This geometry helper does not extract an entire
 source scene or preserve its metadata and appearance automatically.
+
+### Selected appearance
+
+Optional `COLOR_0` contains packed Float32 linear RGB (`size: 3`) or RGBA (`size: 4`)
+values in [0, 1], one per position. Values and typed array subviews are preserved; byte
+colors, normalization, sRGB conversion, and other color sets are unsupported.
+
+One optional `MeshTileMaterial` applies to every triangle:
+
+```ts
+const glb = encodeMeshTile(mesh, {
+  material: {
+    baseColorFactor: [0.8, 0.5, 0.2, 0.75],
+    metallicFactor: 0,
+    roughnessFactor: 1,
+    alphaMode: 'BLEND',
+    doubleSided: true
+  }
+});
+```
+
+Base color is a linear RGBA multiplier in [0, 1], multiplied by `COLOR_0` when present.
+Metallic/roughness factors are in [0, 1]. Alpha mode is `OPAQUE`, `MASK`, or `BLEND`;
+finite nonnegative `alphaCutoff` is allowed only with `MASK`. Omitted properties retain
+[glTF defaults](https://registry.khronos.org/glTF/specs/2.0/glTF-2.0.html#materials):
+white base color, metallic/roughness 1, opaque alpha, mask cutoff 0.5, and single-sided rendering.
+No material is added unless explicitly supplied. Unsupported properties, including textures
+and extensions, fail with `MESH_MATERIAL_UNSUPPORTED`; invalid values fail with
+`MESH_MATERIAL_INVALID`. Invalid color values/counts/types fail with `MESH_COLOR_INVALID`.
+Inputs are not mutated. Applications explicitly map source colors and materials into this
+subset; textures, UVs, multiple materials, and feature mappings remain open work.
 
 ## V5 spatial mesh codec
 
 `createMeshConversionCodec` connects the untextured encoder to `convertTileset`. Supply
 selected triangle geometries with **absolute source-frame positions**, matching normals, a
-resource ID, and an explicit target-frame origin. Positions may be packed Float32 or Float64;
-the remaining geometry restrictions match `encodeMeshTile`.
+resource ID, an explicit target-frame origin, and an optional selected `material`. Positions
+may be packed Float32 or Float64; the remaining geometry restrictions match `encodeMeshTile`.
 
 ```ts
 import {
@@ -105,7 +136,7 @@ const spatialContext = createTiles3DConversionSpatialContext(sourceSpatialRefere
   targetCrs: 'EPSG:3857'
 });
 const report = await convertTileset({
-  source: selectedMeshSource, // Yields {id, mesh, origin}; origin is in the target frame.
+  source: selectedMeshSource, // Yields {id, mesh, origin, material?}; origin is in the target frame.
   codec: createMeshConversionCodec({spatialContext, maxPositionError: 0.001}),
   sink: meshSink,
   measureInputBytes: measureDecodedMeshBytes,
@@ -135,7 +166,7 @@ read/codec/write/cancellation failure.
 Applications still select source geometry, apply source placement and corresponding normal
 transforms before conversion, reconcile format axis conventions, and package hierarchy,
 refinement and geometric error. This increment does not extract complete scenes, convert
-I3S elevation placement, preserve materials/features, or emit a complete tileset.
+I3S elevation placement, map full source materials/features, or emit a complete tileset.
 
 ## V5 spatial conversion
 

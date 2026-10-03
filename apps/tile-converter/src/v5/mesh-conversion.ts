@@ -9,6 +9,7 @@ import {TileConversionError} from './conversion-api.js';
 import type {TileConversionCodec} from './conversion-api.js';
 import type {Tiles3DConversionSpatialContext} from './spatial-conversion.js';
 import {encodeMeshTile, validateMeshGeometry} from './mesh.js';
+import type {MeshTileMaterial} from './mesh.js';
 
 /** Explicitly selected geometry, with positions already in the spatial context's source frame. */
 export interface MeshConversionInput {
@@ -16,6 +17,8 @@ export interface MeshConversionInput {
   readonly id: string;
   /** Untextured triangle geometry with absolute packed Float32 or Float64 source positions. */
   readonly mesh: MeshGeometry;
+  /** Optional single untextured material, mapped explicitly by the source adapter. */
+  readonly material?: MeshTileMaterial;
   /** Finite xyz origin in the target frame, subtracted before float32 encoding. */
   readonly origin: readonly [number, number, number];
 }
@@ -139,7 +142,7 @@ export function createMeshConversionCodec<TInspection = unknown>(
           size: 3
         };
       }
-      const glb = encodeMeshTile(geometry);
+      const glb = encodeMeshTile(geometry, {material: resource.material});
       signal?.throwIfAborted();
       yield {
         id: resource.id,
