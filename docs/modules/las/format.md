@@ -51,8 +51,8 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
 | MIME Type            | Not standardized                                                                           |
 | File Type            | Binary                                                                                     |
 | Loader APIs          | `load`, `parse`, `parseSync`, `parseInBatches`                                             |
-| Loader Worker Thread | Yes                                                                                        |
-| Loader Streaming     | Yes                                                                                        |
+| Loader Worker Thread | ✅ Yes                                                                                        |
+| Loader Streaming     | ✅ Yes                                                                                        |
 | Writer APIs          | `encode`, `encodeSync`                                                                     |
 
 ## Loaders and Writers

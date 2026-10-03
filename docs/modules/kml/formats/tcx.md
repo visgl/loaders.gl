@@ -64,11 +64,11 @@ provides summary data in the form of laps.
 
 | Feature | Support | Output |
 | --- | --- | --- |
-| Activities and laps | Supported | Feature properties and line geometry |
-| Multiple tracks per lap | Supported | MultiLineString geometry |
-| Trackpoint timestamps | Supported | Coordinate properties |
-| Elevation | Supported | Z coordinates |
-| Heart rate, cadence, speed, and power | Supported | Coordinate properties or aligned arrays |
-| Lap summary metrics | Supported | Typed feature properties |
-| Arrow, GeoJSON, and object-row tables | Supported | Arrow is the default |
-| Binary geometry output | Supported | Select `tcx.shape: 'binary-geometry'` |
+| Activities and laps | ✅ Supported | Feature properties and line geometry |
+| Multiple tracks per lap | ✅ Supported | MultiLineString geometry |
+| Trackpoint timestamps | ✅ Supported | Coordinate properties |
+| Elevation | ✅ Supported | Z coordinates |
+| Heart rate, cadence, speed, and power | ✅ Supported | Coordinate properties or aligned arrays |
+| Lap summary metrics | ✅ Supported | Typed feature properties |
+| Arrow, GeoJSON, and object-row tables | ✅ Supported | Arrow is the default |
+| Binary geometry output | ✅ Supported | Select `tcx.shape: 'binary-geometry'` |

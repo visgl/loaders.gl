@@ -73,13 +73,13 @@ shape as COPC. Unsupported versions publish metadata with a reason and do not cl
 
 | Capability | Support | Execution |
 | --- | --- | --- |
-| Entry point | `scan()` for compatible sources | Ordered Arrow point batches |
-| Schema, bounds, CRS, and hierarchy | Supported | Potree metadata and hierarchy files |
-| Bounds, minimum/maximum level, target spacing | Supported | Hierarchy pushdown followed by exact point filtering |
-| Attribute predicate | Supported | Residual after node decoding |
-| Projection and global limit | Supported | Applied in caller column order across all nodes |
-| Cancellation and early return | Supported | Stops hierarchy, payload, and result work |
-| Unsupported layouts | Metadata only | Execution metadata contains the concrete reason |
+| Entry point | ⚠️ `scan()` for compatible sources | Ordered Arrow point batches |
+| Schema, bounds, CRS, and hierarchy | ✅ Supported | Potree metadata and hierarchy files |
+| Bounds, minimum/maximum level, target spacing | ✅ Supported | Hierarchy pushdown followed by exact point filtering |
+| Attribute predicate | ✅ Supported | Residual after node decoding |
+| Projection and global limit | ✅ Supported | Applied in caller column order across all nodes |
+| Cancellation and early return | ✅ Supported | Stops hierarchy, payload, and result work |
+| Unsupported layouts | ⚠️ Metadata only | Execution metadata contains the concrete reason |
 
 Potree currently decodes complete point records before projection. The capability metadata reports
 that distinction so applications do not confuse correct results with selective decoder pushdown.

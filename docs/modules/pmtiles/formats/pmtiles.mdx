@@ -67,11 +67,11 @@ Arrow table. `VectorTileTableScanSource` can then apply a portable query to thos
 
 | Capability | Support |
 | --- | --- |
-| Archive directory and tile range lookup | PMTiles source |
-| Tile address and layer selection | Specialized source parameters |
-| Predicate, projection, expressions, ordering, aggregates, and limit | Residual Arrow execution after tile decoding |
-| Cancellation | Supported while resolving the tile and executing the table query |
-| Cross-tile query | Not provided |
+| Archive directory and tile range lookup | ✅ PMTiles source |
+| Tile address and layer selection | ✅ Specialized source parameters |
+| Predicate, projection, expressions, ordering, aggregates, and limit | ✅ Residual Arrow execution after tile decoding |
+| Cancellation | ✅ Supported while resolving the tile and executing the table query |
+| Cross-tile query | ❌ Not provided |
 | Raster or terrain tile table view | Not applicable |
 
 The adapter does not scan the archive as one logical table and does not imply server-side or

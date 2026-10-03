@@ -85,13 +85,13 @@ records are parsed in source order and emitted as bounded Arrow batches.
 
 | Capability | Support | Execution |
 | --- | --- | --- |
-| Entry point | `read()` | Streaming Arrow batches |
-| Schema discovery | Supported | Columns are discovered from the CSV source |
-| Predicate | Supported | Residual, after record parsing |
-| Projection | Supported | Applied while producing result batches |
-| Limit | Supported | One global limit after filtering |
-| Cancellation | Supported | Stops parsing and batch production |
-| Random access or byte-range pruning | Not supported | The current adapter is a linear scan |
+| Entry point | ✅ `read()` | Streaming Arrow batches |
+| Schema discovery | ✅ Supported | Columns are discovered from the CSV source |
+| Predicate | ✅ Supported | Residual, after record parsing |
+| Projection | ✅ Supported | Applied while producing result batches |
+| Limit | ✅ Supported | One global limit after filtering |
+| Cancellation | ✅ Supported | Stops parsing and batch production |
+| Random access or byte-range pruning | ❌ Not supported | The current adapter is a linear scan |
 
 For a large CSV, projection reduces the result width and a limit can stop the scan early. A
 predicate is correct but does not avoid parsing preceding records.

@@ -71,16 +71,16 @@ for await (const batch of source.read({
 
 | Capability | Support | Notes |
 | --- | --- | --- |
-| Entry point | `read()`; `scan()` alias | Streaming Arrow batches from active Parquet files |
-| Query metadata | Supported | Schema, capabilities, row count, and byte length when available |
-| Version selection | Supported | Replays JSON commits from version 0 through the selected version |
-| Add/remove actions | Supported | Produces the active file set |
-| Projection, predicate, limit, cancellation | Supported | Delegated to the Parquet dataset executor |
-| Explain/plan | Supported | Active fragments plus delegated Parquet plans |
-| Checkpoint files | Not decoded | Supply a JSON commit log URL |
-| Deletion vectors | Rejected | The source fails explicitly rather than returning deleted rows |
-| Reader protocol above version 1 or reader features | Rejected | Unsupported protocol requirements fail explicitly |
-| Writes, CDC, and catalog discovery | Not provided | Read-only source |
+| Entry point | ✅ `read()`; `scan()` alias | Streaming Arrow batches from active Parquet files |
+| Query metadata | ✅ Supported | Schema, capabilities, row count, and byte length when available |
+| Version selection | ✅ Supported | Replays JSON commits from version 0 through the selected version |
+| Add/remove actions | ✅ Supported | Produces the active file set |
+| Projection, predicate, limit, cancellation | ✅ Supported | Delegated to the Parquet dataset executor |
+| Explain/plan | ✅ Supported | Active fragments plus delegated Parquet plans |
+| Checkpoint files | ❌ Not decoded | Supply a JSON commit log URL |
+| Deletion vectors | ❌ Rejected | The source fails explicitly rather than returning deleted rows |
+| Reader protocol above version 1 or reader features | ❌ Rejected | Unsupported protocol requirements fail explicitly |
+| Writes, CDC, and catalog discovery | ❌ Not provided | Read-only source |
 
 ## URL and version behavior
 

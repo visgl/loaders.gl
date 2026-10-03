@@ -51,8 +51,8 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
 | MIME Types           | `application/vnd.google-earth.kml+xml`, `application/vnd.google-earth.kmz`, `application/gpx+xml`, `application/vnd.garmin.tcx+xml` |
 | File Type            | Text/XML                                                                                   |
 | Loader APIs          | `load`, `parse`, `parseTextSync`                                                           |
-| Loader Worker Thread | No                                                                                         |
-| Loader Streaming     | No                                                                                         |
+| Loader Worker Thread | ❌ No                                                                                         |
+| Loader Streaming     | ❌ No                                                                                         |
 
 ## Loaders
 

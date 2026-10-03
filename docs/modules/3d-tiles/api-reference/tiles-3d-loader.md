@@ -56,8 +56,8 @@ it does not add renderer-level vector styling, clipping, or drawing.
 | File Format           | [3D Tiles](https://github.com/CesiumGS/3d-tiles/tree/main/specification#tile-format-specifications)       |
 | Data Format           | Data Formats (see below)                                                                                                 |
 | Decoder Type          | Asynchronous                                                                                                             |
-| Worker Thread Support | No                                                                                                                       |
-| Streaming Support     | No \*                                                                                                                    |
+| Worker Thread Support | ❌ No                                                                                                                       |
+| Streaming Support     | ❌ No \*                                                                                                                    |
 | Subloaders            | `DracoLoader` (`.pnts`), `GLTFLoader` (`.b3dm`, `.i3dm`), `ImageBitmapLoader` (`.jpg`, `.png`), `TextureLoader` (`.ktx`) |
 
 \* Streaming individual tile contents is not supported; however, tilesets are streamed so that only the tiles needed for the specified viewports are loaded.

@@ -58,7 +58,7 @@ Loader for hex encoded [Well-known binary][wkb] format for representation of geo
 | Data Format           | [Geometry](/docs/specifications/category-gis) |
 | Supported APIs        | `load`, `parse`, `parseSync`                  |
 | Decoder Type          | Synchronous                                   |
-| Worker Thread Support | Yes                                           |
+| Worker Thread Support | ✅ Yes                                           |
 
 ## Installation
 

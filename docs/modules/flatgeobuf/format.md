@@ -51,8 +51,8 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
 | MIME Type            | `application/octet-stream`                                                                 |
 | File Type            | Binary                                                                                     |
 | Loader APIs          | `load`, `loadInBatches`, `parse`, `parseSync`, `parseInBatches`                            |
-| Loader Worker Thread | Yes                                                                                        |
-| Loader Streaming     | Yes                                                                                        |
+| Loader Worker Thread | ✅ Yes                                                                                        |
+| Loader Streaming     | ✅ Yes                                                                                        |
 | Source APIs          | `createDataSource`, `getMetadata`, `getSchema`, `getFeatures`                              |
 
 ## Loaders and Sources

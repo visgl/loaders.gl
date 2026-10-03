@@ -63,10 +63,10 @@ devices and software.
 
 | Feature | Support | Output |
 | --- | --- | --- |
-| Waypoints (`wpt`) | Supported | Point features |
-| Routes (`rte`) | Supported | LineString features |
-| Tracks (`trk`) and segments (`trkseg`) | Supported | LineString or MultiLineString features |
-| Elevation and timestamps | Supported | Z coordinates and coordinate properties |
-| Common Garmin extensions | Supported | Normalized feature or coordinate properties |
-| Arrow, GeoJSON, and object-row tables | Supported | Arrow is the default |
-| Binary geometry output | Supported | Select `gpx.shape: 'binary-geometry'` |
+| Waypoints (`wpt`) | ✅ Supported | Point features |
+| Routes (`rte`) | ✅ Supported | LineString features |
+| Tracks (`trk`) and segments (`trkseg`) | ✅ Supported | LineString or MultiLineString features |
+| Elevation and timestamps | ✅ Supported | Z coordinates and coordinate properties |
+| Common Garmin extensions | ✅ Supported | Normalized feature or coordinate properties |
+| Arrow, GeoJSON, and object-row tables | ✅ Supported | Arrow is the default |
+| Binary geometry output | ✅ Supported | Select `gpx.shape: 'binary-geometry'` |

@@ -85,17 +85,17 @@ It records parsing and traversal support, not renderer conformance.
 
 | Draft area | Status | Supported profile |
 | --- | :---: | --- |
-| `3DTILES_tileset` | ◐ | Automatic glTF/GLB detection, explicit node hierarchies, nested packages, required-extension validation. |
-| `3DTILES_subtree` | ◐ | QUADTREE/OCTREE availability, attributes, property rows, URI properties, lazy loading and caching. |
-| Vector encodings | ◐ | Cesium 1.1 preview and draft 2.0 normalize to point/polyline/polygon descriptors. No rendering claim. |
-| Bounding volumes | ◐ | Box, sphere, ellipsoid-region, S2, and cylinder-region inputs; conservative oriented boxes where exact runtime volumes do not exist. |
-| CRS/georeference | ◐ | WKID/WKT2 preservation, recognized frames, affine/nonlinear content and bounds reprojection, and nested CRS placement. Cross-epoch execution remains excluded. |
-| LOD | ◐ | Draft geometric errors are unscaled; 1.x retains transform scaling for compatibility. |
+| `3DTILES_tileset` | ⚠️ | Automatic glTF/GLB detection, explicit node hierarchies, nested packages, required-extension validation. |
+| `3DTILES_subtree` | ⚠️ | QUADTREE/OCTREE availability, attributes, property rows, URI properties, lazy loading and caching. |
+| Vector encodings | ⚠️ | Cesium 1.1 preview and draft 2.0 normalize to point/polyline/polygon descriptors. No rendering claim. |
+| Bounding volumes | ⚠️ | Box, sphere, ellipsoid-region, S2, and cylinder-region inputs; conservative oriented boxes where exact runtime volumes do not exist. |
+| CRS/georeference | ⚠️ | WKID/WKT2 preservation, recognized frames, affine/nonlinear content and bounds reprojection, and nested CRS placement. Cross-epoch execution remains excluded. |
+| LOD | ⚠️ | Draft geometric errors are unscaled; 1.x retains transform scaling for compatibility. |
 | Optional extensions | ✅ | Unknown optional declarations are preserved. |
 | Required extensions | ✅ | Unsupported required declarations fail deterministically. |
-| Renderer and advanced draft features | — | Full voxel/layer/visibility runtime semantics, horizon optimization, styling, visual clipping, terrain draping, and clamping are unsupported. The separate glTF voxel reader is metadata-only. |
+| Renderer and advanced draft features | ❌ | Full voxel/layer/visibility runtime semantics, horizon optimization, styling, visual clipping, terrain draping, and clamping are unsupported. The separate glTF voxel reader is metadata-only. |
 
-`◐` denotes the tested experimental subset rather than complete draft conformance. The public
+`⚠️` denotes the tested experimental subset rather than complete draft conformance. The public
 `formatVersion: '2.0-draft'` discriminator and `Tiles3DVectorContent` shape may evolve as the draft
 and Khronos vector extensions change.
 

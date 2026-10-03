@@ -101,9 +101,9 @@ between the existing EXT extension and the newer KHR extension.
 
 | Extension                                                                                     | Preprocessed | Description                                |
 | --------------------------------------------------------------------------------------------- | ------------ | ------------------------------------------ |
-| [KHR_draco_mesh_compression](/docs/modules/gltf/formats/gltf#khr_draco_mesh_compression)       | Y            | Decompresses draco-compressed geometries   |
-| [KHR_meshopt_compression](/docs/modules/gltf/formats/gltf#khr_meshopt_compression)             | Y            | Decompresses meshopt-compressed geometries |
-| [EXT_meshopt_compression](/docs/modules/gltf/formats/gltf#ext_meshopt_compression)             | Y            | Decompresses meshopt-compressed geometries |
+| [KHR_draco_mesh_compression](/docs/modules/gltf/formats/gltf#khr_draco_mesh_compression)       | ✅ Y            | Decompresses draco-compressed geometries   |
+| [KHR_meshopt_compression](/docs/modules/gltf/formats/gltf#khr_meshopt_compression)             | ✅ Y            | Decompresses meshopt-compressed geometries |
+| [EXT_meshopt_compression](/docs/modules/gltf/formats/gltf#ext_meshopt_compression)             | ✅ Y            | Decompresses meshopt-compressed geometries |
 
 ## Detailed Post Processing Notes
 

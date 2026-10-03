@@ -59,14 +59,14 @@ then reads selected numeric variables and applies named dimension slices.
 
 | Capability | Support | Execution |
 | --- | --- | --- |
-| Entry point | `getRaster()` | Typed raster data |
-| Header and schema discovery | Supported | Bounded leading range for remote files |
-| Variable selection | Supported | Selected numeric variables |
-| Dimension slices | Supported | Residual after loading the classic file |
-| Slice syntax | Index or half-open `[start, stop)` | Named dimensions |
-| Bounds and level-of-detail | Unsupported | NetCDF dimensions are not assumed to be geospatial |
-| Cancellation | Supported | Request and cooperative slice materialization |
-| Streaming or chunk pruning | Not implemented | Current classic-file execution materializes the source |
+| Entry point | ✅ `getRaster()` | Typed raster data |
+| Header and schema discovery | ✅ Supported | Bounded leading range for remote files |
+| Variable selection | ✅ Supported | Selected numeric variables |
+| Dimension slices | ✅ Supported | Residual after loading the classic file |
+| Slice syntax | ✅ Index or half-open `[start, stop)` | Named dimensions |
+| Bounds and level-of-detail | ❌ Unsupported | NetCDF dimensions are not assumed to be geospatial |
+| Cancellation | ✅ Supported | Request and cooperative slice materialization |
+| Streaming or chunk pruning | ❌ Not implemented | Current classic-file execution materializes the source |
 
 ```ts
 import {NetCDFSource} from '@loaders.gl/netcdf/netcdf-source-loader';

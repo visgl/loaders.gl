@@ -77,10 +77,10 @@ const copcDecodedData = await load(url, LASCOPCLoader, options);
 
 | Loader variant | Decoder implementation | Packaged worker | Notes |
 | --- | --- | --- | --- |
-| `LASLoader` | Pure TypeScript | Yes | Primary implementation with LAS/LAZ streaming support. |
-| `LAZPerfLoader` | Vendored laz-perf | No | Compatibility variant limited to LAS/LAZ through LAS 1.3. |
-| `LASCOPCLoader` | laz-perf from the COPC package | No | Compatibility variant used by existing COPC/LAS paths. |
-| `LAZRsLoader` | Rust/WASM laz-rs | No | Compatibility and parity-testing variant. |
+| `LASLoader` | Pure TypeScript | ✅ Yes | Primary implementation with LAS/LAZ streaming support. |
+| `LAZPerfLoader` | Vendored laz-perf | ❌ No | Compatibility variant limited to LAS/LAZ through LAS 1.3. |
+| `LASCOPCLoader` | laz-perf from the COPC package | ❌ No | Compatibility variant used by existing COPC/LAS paths. |
+| `LAZRsLoader` | Rust/WASM laz-rs | ❌ No | Compatibility and parity-testing variant. |
 
 Loader variants are selected by the loader import. There is no runtime backend option.
 See [JavaScript and WebAssembly performance](/docs/developer-guide/concepts/javascript-and-wasm-performance)

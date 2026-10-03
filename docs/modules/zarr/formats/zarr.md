@@ -61,13 +61,13 @@ and named scientific dimensions.
 
 | Capability | Zarr v2 | Zarr v3 | OME-Zarr | GeoZarr / CF |
 | --- | --- | --- | --- | --- |
-| Metadata discovery | Supported | Supported | Supported | Supported |
-| Chunk reads and codecs | Supported | Supported | Supported | Supported |
-| Multidimensional arrays | Supported | Supported | Supported | Supported |
-| Multiscale image levels | Format-specific | Format-specific | Supported | Not assumed |
-| Spatial CRS and transform | Not inherent | Not inherent | Not required | Supported |
-| Named time/z/band selection | Array-dependent | Array-dependent | Supported | Supported |
-| SpatialData container discovery | Supported | Supported | Images and labels | Tables and geometries by reference |
+| Metadata discovery | ✅ Supported | ✅ Supported | ✅ Supported | ✅ Supported |
+| Chunk reads and codecs | ✅ Supported | ✅ Supported | ✅ Supported | ✅ Supported |
+| Multidimensional arrays | ✅ Supported | ✅ Supported | ✅ Supported | ✅ Supported |
+| Multiscale image levels | Format-specific | Format-specific | ✅ Supported | Not assumed |
+| Spatial CRS and transform | Not inherent | Not inherent | Not required | ✅ Supported |
+| Named time/z/band selection | Array-dependent | Array-dependent | ✅ Supported | ✅ Supported |
+| SpatialData container discovery | ✅ Supported | ✅ Supported | Images and labels | Tables and geometries by reference |
 
 ## SpatialData support
 
@@ -94,7 +94,7 @@ format versions, and original attributes for downstream interoperability.
 | Non-spatial selection | Channels, time, z | Named dimension indices |
 | Physical access | Selected chunks | Selected chunks |
 | Output | Typed image data | Typed raster data |
-| Reprojection | Not applicable to ordinary image coordinates | Not performed |
+| Reprojection | Not applicable to ordinary image coordinates | ❌ Not performed |
 
 The common contract standardizes discovery and query meaning; it does not hide the array's native
 dimension labels, chunk layout, or coordinate system.

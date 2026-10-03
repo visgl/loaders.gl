@@ -59,8 +59,8 @@ the [OGC](https://www.opengeospatial.org/) [WMTS](https://www.ogc.org/standards/
 | File Format           | [WMTS](https://en.wikipedia.org/wiki/Web_Map_Service) |
 | Data Format           | Data structure                                        |
 | Decoder Type          | Synchronous                                           |
-| Worker Thread Support | Yes                                                   |
-| Streaming Support     | No                                                    |
+| Worker Thread Support | ✅ Yes                                                   |
+| Streaming Support     | ❌ No                                                    |
 
 ## Usage
 

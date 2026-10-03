@@ -53,7 +53,7 @@ tables.
 | ---------- | ------------------------------------------ |
 | File format | [RAD](/docs/modules/splats/formats/splats) |
 | Extensions | `.rad`                                    |
-| Worker     | No                                        |
+| Worker     | ❌ No                                        |
 | Input type | `ArrayBuffer`, URL, or `Blob`             |
 | Output     | RAD metadata or `RADSource`               |
 

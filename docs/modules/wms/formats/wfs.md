@@ -64,35 +64,35 @@ These are implementation capabilities, not certification of every optional WFS c
 
 | Area | Capability | Status | API, guarantee, or boundary |
 | --- | --- | --- | --- |
-| Discovery | WFS 2.0.0 | Supported | Default request version; `TYPENAMES`, `COUNT`, and standard operation URLs |
-| Discovery | WFS 1.1.0 | Supported | Version-aware `TYPENAME`, `MAXFEATURES`, and axis handling |
-| Discovery | Capabilities and feature types | Supported | `getCapabilities()` and normalized `getMetadata()` layers, titles, CRSs, and WGS84 bounds |
-| Discovery | Original service metadata | Supported | Parsed capabilities retained in `formatSpecificMetadata` |
-| Discovery | Automatic `DescribeFeatureType` schema discovery | Not implemented | `getSchema()` currently returns an empty schema; result-table schemas are inferred separately |
-| Requests | Extent filtering | Supported | `getFeatures()` sends canonical XY bounds with protocol-aware wire axis order |
-| Requests | Separate bounds and output CRSs | Supported | `requestCrs` for the bounding box, `crs` for returned coordinates; server performs transformation |
-| Requests | CRS aliases | Supported | Common EPSG names, URNs, and URLs are normalized |
-| Requests | Paging controls | Partial | Low-level `count`, `startIndex`, and `sortBy`; WFS 1.1 offset support is server dependent |
-| Requests | Automatic pagination to complete an extent | Supported with limits | Opt-in `wfs.pagination` gathers next links or WFS 2.0 numeric-count offsets; WFS 1.1 requires next links |
-| Requests | Property projection and sorting | Supported | Low-level `propertyName` and `sortBy` controls |
-| Requests | FES XML filters | Partial | Caller-authored XML passes through; no portable predicate-to-FES translator |
-| Requests | Count-only request URLs | Supported | `resultType: 'hits'`; count parsing/planning remains application controlled |
-| Requests | Endpoint parameters and cancellation | Supported | Preserves endpoint parameters; `getFeatures()` forwards `AbortSignal` to fetch |
-| Ingestion | GeoJSON FeatureCollection | Supported | Validates the response shape and preserves count/paging foreign members in single-page output |
-| Ingestion | Common GML 2/3 features and geometry | Supported | SAX-based parsing; see the [GML support matrix](./gml) for geometry boundaries |
-| Ingestion | Network-streamed GML batches | Supported | `getFeaturesInBatches()` decodes chunk boundaries into bounded batches |
-| Ingestion | Progressive service pages | Supported | `getFeaturesInPages()` yields normalized GeoJSON pages; each page is materialized, without prefetch |
-| Ingestion | Network-streamed GeoJSON batches | Not implemented | GeoJSON feature responses are materialized one page at a time |
-| Ingestion | GML property type hints | Supported | Application-supplied hints guide typed properties |
-| Output | GeoJSON, binary features, and Arrow | Supported | Standard `format` parameter; Arrow is the WFS source default |
-| Output | GeoArrow encoding preferences | Supported | WKB, native optimization, or mixed geometry union through `geoarrow.encodingPreference` |
-| Loading | Coverage reuse and uncovered strips | Supported via wrapper | `ManagedVectorSource` caches verified complete responses with explicit equivalent input/output CRSs |
-| Loading | Shared requests, retry, invalidation, bounded retention | Supported via wrapper | Independent caller cancellation; failed/unknown/truncated responses never establish coverage |
-| Loading | Feature deduplication | Partial | Wrapper uses stable typed IDs or a custom ID accessor; unidentified features remain separate |
-| Queries | Portable scan/query interface | Supported via adapter | `VectorFeatureTableScanSource` applies relational operations to one materialized bounded request |
-| Queries | Exact coordinate/extent selection and nearest geometry | Supported locally | `GeoArrowSpatialIndex` queries loaded rows, including offscreen data; independent of picking |
-| Rendering | deck.gl source integration | Supported | `SourceLayer` consumes the vector source; a managed source can be supplied as `data` |
-| Mutation | WFS-T transactions, locks, and mutable feature store | Not implemented | Read-only protocol adapter; invalidate managed coverage after external edits |
+| Discovery | WFS 2.0.0 | ✅ Supported | Default request version; `TYPENAMES`, `COUNT`, and standard operation URLs |
+| Discovery | WFS 1.1.0 | ✅ Supported | Version-aware `TYPENAME`, `MAXFEATURES`, and axis handling |
+| Discovery | Capabilities and feature types | ✅ Supported | `getCapabilities()` and normalized `getMetadata()` layers, titles, CRSs, and WGS84 bounds |
+| Discovery | Original service metadata | ✅ Supported | Parsed capabilities retained in `formatSpecificMetadata` |
+| Discovery | Automatic `DescribeFeatureType` schema discovery | ❌ Not implemented | `getSchema()` currently returns an empty schema; result-table schemas are inferred separately |
+| Requests | Extent filtering | ✅ Supported | `getFeatures()` sends canonical XY bounds with protocol-aware wire axis order |
+| Requests | Separate bounds and output CRSs | ✅ Supported | `requestCrs` for the bounding box, `crs` for returned coordinates; server performs transformation |
+| Requests | CRS aliases | ✅ Supported | Common EPSG names, URNs, and URLs are normalized |
+| Requests | Paging controls | ⚠️ Partial | Low-level `count`, `startIndex`, and `sortBy`; WFS 1.1 offset support is server dependent |
+| Requests | Automatic pagination to complete an extent | ⚠️ Supported with limits | Opt-in `wfs.pagination` gathers next links or WFS 2.0 numeric-count offsets; WFS 1.1 requires next links |
+| Requests | Property projection and sorting | ✅ Supported | Low-level `propertyName` and `sortBy` controls |
+| Requests | FES XML filters | ⚠️ Partial | Caller-authored XML passes through; no portable predicate-to-FES translator |
+| Requests | Count-only request URLs | ✅ Supported | `resultType: 'hits'`; count parsing/planning remains application controlled |
+| Requests | Endpoint parameters and cancellation | ✅ Supported | Preserves endpoint parameters; `getFeatures()` forwards `AbortSignal` to fetch |
+| Ingestion | GeoJSON FeatureCollection | ✅ Supported | Validates the response shape and preserves count/paging foreign members in single-page output |
+| Ingestion | Common GML 2/3 features and geometry | ✅ Supported | SAX-based parsing; see the [GML support matrix](./gml) for geometry boundaries |
+| Ingestion | Network-streamed GML batches | ✅ Supported | `getFeaturesInBatches()` decodes chunk boundaries into bounded batches |
+| Ingestion | Progressive service pages | ✅ Supported | `getFeaturesInPages()` yields normalized GeoJSON pages; each page is materialized, without prefetch |
+| Ingestion | Network-streamed GeoJSON batches | ❌ Not implemented | GeoJSON feature responses are materialized one page at a time |
+| Ingestion | GML property type hints | ✅ Supported | Application-supplied hints guide typed properties |
+| Output | GeoJSON, binary features, and Arrow | ✅ Supported | Standard `format` parameter; Arrow is the WFS source default |
+| Output | GeoArrow encoding preferences | ✅ Supported | WKB, native optimization, or mixed geometry union through `geoarrow.encodingPreference` |
+| Loading | Coverage reuse and uncovered strips | ✅ Supported via wrapper | `ManagedVectorSource` caches verified complete responses with explicit equivalent input/output CRSs |
+| Loading | Shared requests, retry, invalidation, bounded retention | ✅ Supported via wrapper | Independent caller cancellation; failed/unknown/truncated responses never establish coverage |
+| Loading | Feature deduplication | ⚠️ Partial | Wrapper uses stable typed IDs or a custom ID accessor; unidentified features remain separate |
+| Queries | Portable scan/query interface | ✅ Supported via adapter | `VectorFeatureTableScanSource` applies relational operations to one materialized bounded request |
+| Queries | Exact coordinate/extent selection and nearest geometry | ✅ Supported locally | `GeoArrowSpatialIndex` queries loaded rows, including offscreen data; independent of picking |
+| Rendering | deck.gl source integration | ✅ Supported | `SourceLayer` consumes the vector source; a managed source can be supplied as `data` |
+| Mutation | WFS-T transactions, locks, and mutable feature store | ❌ Not implemented | Read-only protocol adapter; invalidate managed coverage after external edits |
 
 ## Bounded automatic pagination
 
@@ -157,12 +157,12 @@ and apply portable relational operations to the returned feature rows.
 
 | Capability | Support |
 | --- | --- |
-| Layer, bounds, CRS, paging, and service filters | WFS source parameters |
-| Table schema | Discovered from the bounded result |
-| Predicate, projection, expressions, ordering, aggregates, and limit | Residual Arrow execution |
-| Cancellation | Cancels a caller’s wait and table query; the shared initial fetch remains available to other callers |
-| Automatic `DescribeFeatureType` planning | Not provided by the table-view adapter |
-| Automatic translation of portable predicates to OGC filters | Not provided |
+| Layer, bounds, CRS, paging, and service filters | ✅ WFS source parameters |
+| Table schema | ✅ Discovered from the bounded result |
+| Predicate, projection, expressions, ordering, aggregates, and limit | ✅ Residual Arrow execution |
+| Cancellation | ⚠️ Cancels a caller’s wait and table query; the shared initial fetch remains available to other callers |
+| Automatic `DescribeFeatureType` planning | ❌ Not provided by the table-view adapter |
+| Automatic translation of portable predicates to OGC filters | ❌ Not provided |
 
 Prefer native WFS filters and paging when the service can reduce a large response. The table view is
 most useful for normalizing and refining an already-bounded result.

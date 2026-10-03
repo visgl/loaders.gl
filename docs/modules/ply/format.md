@@ -70,8 +70,8 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
 | MIME Type            | Not standardized                                                                           |
 | File Type            | Binary/Text                                                                                |
 | Loader Decoder Type  | Synchronous                                                                                |
-| Loader Worker Thread | Yes                                                                                        |
-| Loader Streaming     | No                                                                                         |
+| Loader Worker Thread | ✅ Yes                                                                                        |
+| Loader Streaming     | ❌ No                                                                                         |
 | Writer File Type     | Text                                                                                       |
 | Writer APIs          | `encode`, `encodeSync`, `encodeTextSync`                                                   |
 

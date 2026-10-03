@@ -53,8 +53,8 @@ Decodes a Zip Archive into a file map.
 | File Format    | [ZIP Archive](/docs/modules/zip/formats/zip) |
 | Data Format    | "File Map"                                   |
 | Decoder Type   | Asynchronous                                 |
-| Worker Thread  | No                                           |
-| Streaming      | No                                           |
+| Worker Thread  | ❌ No                                           |
+| Streaming      | ❌ No                                           |
 
 ## Usage
 

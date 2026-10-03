@@ -51,8 +51,8 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
 | MIME Type            | `application/geopackage+sqlite3`                                                           |
 | File Type            | Binary SQLite database                                                                     |
 | Loader APIs          | `load`, `parse`                                                                            |
-| Loader Worker Thread | No                                                                                         |
-| Loader Streaming     | No                                                                                         |
+| Loader Worker Thread | ❌ No                                                                                         |
+| Loader Streaming     | ❌ No                                                                                         |
 | Source APIs          | `createDataSource`, `getMetadata`, `getTable`                                               |
 
 ## Loaders and Sources

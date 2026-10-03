@@ -65,9 +65,19 @@ decoded extension data.
 | --- | --- | --- |
 | `.gltf` JSON, `.glb` binary, and draft glTF 2.1 assets | [Scenegraph category data](/docs/specifications/category-scenegraph): source `json` plus optional `buffers`, `images`, `files`, and `externalAssets` | `load`, `parse` |
 
-The loader also supports optional best-effort conversion of older glTF v1 files to glTF v2 with
-`options.gltf.normalize: true`. This conversion has limitations; use the normalization helpers
+The loader automatically attempts best-effort conversion of older glTF v1 files to glTF v2
+by default (`options.gltf.normalize: true`). This conversion has limitations; use the normalization helpers
 below when an application needs diagnostics or strict rejection of unsupported legacy features.
+See the [glTF 1 to glTF 2 conversion support table](/docs/modules/gltf/formats/gltf#gltf-1-to-gltf-2-conversion)
+for required transformations, implemented subsets, and known gaps. Strict mode only rejects
+reported unsupported features; it does not perform complete glTF 2 validation.
+Setting `normalize: false` rejects glTF 1 input rather than returning an unconverted asset.
+
+Conversion includes camera dictionaries and references, conventional vertex attribute aliases
+(`JOINT`, `WEIGHT`, `TEXCOORD`, and `COLOR`), inverse-bind accessor references, and embedded
+`KHR_binary_glTF` images. External buffer URIs are retained; the named binary body is moved to
+buffer index zero with its references and loaded payloads. Skin joint conversion, bind-shape
+baking, and accessor-stride migration remain unsupported.
 
 For applications that need explicit conversion diagnostics, `normalizeGLTFV1()` returns a report
 listing unsupported legacy features. Use `normalize: 'strict'` to reject those features instead of
@@ -162,7 +172,7 @@ Note: while supported, synchronous parsing of glTF (e.g. using `parseSync()`) ha
 | `gltf.loadExternalAssets` | Boolean | `false` | Recursively parse draft glTF 2.1 external assets instantiated by scene nodes. |
 | `gltf.loadImages`         | Boolean | `true`  | Load images referenced by textures or the draft glTF 2.1 thumbnail.          |
 | `gltf.decompressMeshes`   | Boolean | `true`  | Decompress Draco and [KHR/EXT meshopt](/docs/modules/gltf/formats/gltf#meshopt-compression) data. |
-| `gltf.normalize`          | Boolean | `true`  | Best-effort conversion of glTF v1 files to glTF v2 format.                   |
+| `gltf.normalize`          | Boolean or string | `true`  | Automatically attempt glTF 1 to 2 conversion. `true` / `'best-effort'` continue through reported gaps; `'strict'` rejects reported unsupported features; `false` rejects glTF 1 input. |
 
 ### Meshopt decompression
 

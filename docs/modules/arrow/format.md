@@ -57,8 +57,8 @@ import apacheLogo from '../../images/logos/apache-logo.png';
 | MIME Types           | `application/vnd.apache.arrow.file`, `application/vnd.apache.arrow.stream`                  |
 | File Type            | Binary                                                                                     |
 | Loader APIs          | `load`, `parse`, `parseSync`, `parseInBatches`                                             |
-| Loader Worker Thread | Yes                                                                                        |
-| Loader Streaming     | Yes                                                                                        |
+| Loader Worker Thread | ✅ Yes                                                                                        |
+| Loader Streaming     | ✅ Yes                                                                                        |
 | Writer APIs          | `encode`, `encodeSync`                                                                     |
 
 ## Loaders and Writers

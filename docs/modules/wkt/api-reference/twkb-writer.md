@@ -56,7 +56,7 @@ Writer for the [Tiny Well-known binary][twkb] format for representation of geome
 | Data Format           | [Geometry](/docs/specifications/category-gis) |
 | Supported APIs        | `encode`, `encodeSync`                        |
 | Encoder Type          | Synchronous                                   |
-| Worker Thread Support | Yes                                           |
+| Worker Thread Support | ✅ Yes                                           |
 
 ## Installation
 
