@@ -3,7 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import {expect, test, vi} from 'vitest';
-import {parse} from '@loaders.gl/core';
+import {fetchFile, parse} from '@loaders.gl/core';
 import {GLTFLoader, GLTFScenegraph} from '@loaders.gl/gltf';
 import {
   convertTileset,
@@ -487,7 +487,7 @@ test('mesh codec preserves selected colors and material through spatial conversi
 test('mesh codec aborts the sink instead of dropping unsupported selected material properties', async () => {
   const input = {
     ...createInput(),
-    material: {baseColorTexture: {index: 0}}
+    material: {normalTexture: {index: 0}}
   } as unknown as MeshConversionInput;
   const sink = createSink();
   await expect(
@@ -509,4 +509,36 @@ test('mesh codec aborts the sink instead of dropping unsupported selected materi
   ).rejects.toMatchObject({code: 'MESH_MATERIAL_UNSUPPORTED'});
   expect(sink.write).not.toHaveBeenCalled();
   expect(sink.abort).toHaveBeenCalledOnce();
+});
+
+test('mesh codec retains selected UVs and embedded image bytes while rebasing positions', async () => {
+  const data = new Uint8Array(
+    await (
+      await fetchFile(new URL('./data/tile-converter-texture.png', import.meta.url).href)
+    ).arrayBuffer()
+  );
+  const input = createInput();
+  input.mesh.attributes.TEXCOORD_0 = {value: new Float32Array([0, 0, 1, 0, 0, 1]), size: 2};
+  const selectedInput = {
+    ...input,
+    material: {baseColorTexture: {data, mimeType: 'image/png' as const}}
+  };
+  const before = structuredClone(selectedInput);
+  const output = await encodeInput(selectedInput);
+  const scenegraph = new GLTFScenegraph(
+    await parse(output.glb, GLTFLoader, {gltf: {postProcess: false, loadImages: false}})
+  );
+  const primitive = scenegraph.json.meshes![0].primitives[0];
+  expect(Array.from(scenegraph.getTypedArrayForAccessor(primitive.attributes.TEXCOORD_0))).toEqual([
+    0, 0, 1, 0, 0, 1
+  ]);
+  expect(
+    scenegraph.json.materials![primitive.material!].pbrMetallicRoughness!.baseColorTexture
+  ).toEqual({index: 0});
+  expect(scenegraph.getTypedArrayForBufferView(scenegraph.json.images![0].bufferView!)).toEqual(
+    data
+  );
+  expect(output.origin).toEqual(input.origin);
+  expect(output.maximumPositionError).toBe(0);
+  expect(selectedInput).toEqual(before);
 });

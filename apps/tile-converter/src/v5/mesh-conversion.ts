@@ -15,9 +15,9 @@ import type {MeshTileMaterial} from './mesh.js';
 export interface MeshConversionInput {
   /** Caller-owned resource identifier, forwarded to the output sink. */
   readonly id: string;
-  /** Untextured triangle geometry with absolute packed Float32 or Float64 source positions. */
+  /** Triangle geometry with absolute packed Float32 or Float64 source positions. */
   readonly mesh: MeshGeometry;
-  /** Optional single untextured material, mapped explicitly by the source adapter. */
+  /** Optional single material with an embedded base-color image, mapped explicitly by the source adapter. */
   readonly material?: MeshTileMaterial;
   /** Finite xyz origin in the target frame, subtracted before float32 encoding. */
   readonly origin: readonly [number, number, number];
@@ -48,7 +48,7 @@ export interface MeshConversionCodecOptions {
 }
 
 /**
- * Creates a concrete untextured mesh codec for `convertTileset`.
+ * Creates a concrete mesh codec for `convertTileset`.
  *
  * Source adapters must select geometry and apply source placement before supplying absolute
  * positions and matching normals. This codec applies the supplied spatial context once, rebases

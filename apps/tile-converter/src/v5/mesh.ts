@@ -3,13 +3,24 @@
 // Copyright (c) vis.gl contributors
 
 import {GLTFScenegraph, GLTFWriter} from '@loaders.gl/gltf';
+import {getBinaryImageMetadata} from '@loaders.gl/images';
 import type {MeshAttribute, MeshGeometry} from '@loaders.gl/schema';
 import {TileConversionError} from './conversion-api.js';
 
-/** One untextured glTF metallic-roughness material, shared by every triangle in the mesh. */
+/** One already encoded base-color image using TEXCOORD_0 and glTF's default sampler. */
+export interface MeshTileTexture {
+  /** Encoded PNG/JPEG bytes; a typed array subview selects only its own bytes. */
+  readonly data: Uint8Array;
+  /** Declared image format, checked against the encoded header. */
+  readonly mimeType: 'image/png' | 'image/jpeg';
+}
+
+/** One glTF metallic-roughness material, shared by every triangle in the mesh. */
 export interface MeshTileMaterial {
   /** Linear RGBA base-color multiplier; components must be finite in [0, 1]. */
   readonly baseColorFactor?: readonly [number, number, number, number];
+  /** Optional embedded image, multiplied by baseColorFactor and COLOR_0; requires TEXCOORD_0. */
+  readonly baseColorTexture?: MeshTileTexture;
   /** Metallic weight in [0, 1]; omitted values use the glTF default of 1. */
   readonly metallicFactor?: number;
   /** Roughness weight in [0, 1]; omitted values use the glTF default of 1. */
@@ -24,29 +35,31 @@ export interface MeshTileMaterial {
 
 /** Optional appearance for the single-mesh GLB profile. */
 export interface MeshTileOptions {
-  /** Explicitly selected material; textures and material extensions are unsupported. */
+  /** Explicitly selected material; other texture maps and material extensions are unsupported. */
   readonly material?: MeshTileMaterial;
 }
 
 /**
- * Encodes one untextured triangle mesh as a self-contained glTF 2.0 GLB resource.
+ * Encodes one triangle mesh as a self-contained glTF 2.0 GLB resource.
  *
  * POSITION and optional NORMAL must contain packed finite Float32 xyz triples. COLOR_0 accepts
  * packed Float32 linear RGB/RGBA in [0, 1] with matching vertex count. Normals must have
- * unit length within 0.0001. Optional indices use packed unsigned 8-, 16-, or 32-bit values.
+ * unit length within 0.0001. TEXCOORD_0 accepts packed finite Float32 UV pairs per vertex. Optional indices use packed unsigned 8-, 16-, or 32-bit values.
  * Unsupported attributes, layouts, and encoded transforms fail rather than being discarded.
  * Coordinates are preserved: callers own CRS conversion, local origins, placement, source material mapping,
  * feature mappings, and tileset packaging. Input arrays are never modified.
  *
  * @param mesh - Triangle-list geometry in the caller's selected local coordinate frame.
- * @param options - Optional single untextured material.
+ * @param options - Optional single material with an already encoded base-color image.
  * @returns An embedded-buffer GLB containing one mesh, node, and default scene.
  */
 export function encodeMeshTile(mesh: MeshGeometry, options: MeshTileOptions = {}): ArrayBuffer {
   const geometry = validateMeshGeometry(mesh);
   const scenegraph = new GLTFScenegraph({json: {asset: {version: '2.0', generator: 'loaders.gl'}}});
   const material =
-    options.material === undefined ? undefined : validateMeshMaterial(options.material);
+    options.material === undefined
+      ? undefined
+      : validateMeshMaterial(options.material, scenegraph, 'TEXCOORD_0' in geometry.attributes);
   const meshIndex = scenegraph.addMesh({
     attributes: geometry.attributes,
     indices: geometry.indices?.value,
@@ -72,7 +85,7 @@ export function validateMeshGeometry(
     );
   }
   for (const name of Object.keys(mesh.attributes)) {
-    if (name !== 'POSITION' && name !== 'NORMAL' && name !== 'COLOR_0') {
+    if (name !== 'POSITION' && name !== 'NORMAL' && name !== 'COLOR_0' && name !== 'TEXCOORD_0') {
       throw new TileConversionError(
         'MESH_ATTRIBUTE_UNSUPPORTED',
         `Mesh attribute ${name} is unsupported`
@@ -119,6 +132,23 @@ export function validateMeshGeometry(
     }
     validateAttributeLayout(colors, 'COLOR_0');
     attributes.COLOR_0 = {value: colors.value, size: colors.size};
+  }
+  if ('TEXCOORD_0' in mesh.attributes) {
+    const textureCoordinates = mesh.attributes.TEXCOORD_0;
+    if (
+      !textureCoordinates ||
+      !(textureCoordinates.value instanceof Float32Array) ||
+      textureCoordinates.size !== 2 ||
+      textureCoordinates.value.length / 2 !== positions.length / 3 ||
+      textureCoordinates.value.some(value => !Number.isFinite(value))
+    ) {
+      throw new TileConversionError(
+        'MESH_TEXCOORD_INVALID',
+        'TEXCOORD_0 must contain packed finite Float32 UV pairs, one per vertex'
+      );
+    }
+    validateAttributeLayout(textureCoordinates, 'TEXCOORD_0');
+    attributes.TEXCOORD_0 = {value: textureCoordinates.value, size: 2};
   }
   const indices = getMeshIndices(mesh.indices, positions.length / 3);
   if (!indices && positions.length % 9 !== 0) {
@@ -217,12 +247,17 @@ function validateAttributeLayout(attribute: MeshAttribute, name: string): void {
 }
 
 /** Validates and maps the deliberately limited material profile without changing caller objects. */
-function validateMeshMaterial(material: MeshTileMaterial): object {
+function validateMeshMaterial(
+  material: MeshTileMaterial,
+  scenegraph: GLTFScenegraph,
+  hasTextureCoordinates: boolean
+): object {
   if (!material || typeof material !== 'object' || Array.isArray(material)) {
     throw new TileConversionError('MESH_MATERIAL_INVALID', 'Material must be an object');
   }
   const allowedProperties = [
     'baseColorFactor',
+    'baseColorTexture',
     'metallicFactor',
     'roughnessFactor',
     'alphaMode',
@@ -256,17 +291,65 @@ function validateMeshMaterial(material: MeshTileMaterial): object {
   ) {
     throw new TileConversionError(
       'MESH_MATERIAL_INVALID',
-      'Material values must satisfy the untextured glTF profile'
+      'Material values must satisfy the selected glTF profile'
     );
   }
   return {
     pbrMetallicRoughness: {
       baseColorFactor: baseColorFactor ? [...baseColorFactor] : undefined,
       metallicFactor,
-      roughnessFactor
+      roughnessFactor,
+      baseColorTexture:
+        'baseColorTexture' in material
+          ? encodeBaseColorTexture(material.baseColorTexture, scenegraph, hasTextureCoordinates)
+          : undefined
     },
     alphaMode,
     alphaCutoff,
     doubleSided
   };
+}
+
+/** Embeds an explicitly selected image without decoding pixels or changing sampler/UV semantics. */
+function encodeBaseColorTexture(
+  texture: MeshTileTexture | undefined,
+  scenegraph: GLTFScenegraph,
+  hasTextureCoordinates: boolean
+): {index: number} {
+  if (
+    !texture ||
+    Object.keys(texture).some(name => name !== 'data' && name !== 'mimeType') ||
+    !(texture.data instanceof Uint8Array) ||
+    !['image/png', 'image/jpeg'].includes(texture.mimeType)
+  ) {
+    throw new TileConversionError(
+      'MESH_TEXTURE_INVALID',
+      'Base-color texture must supply only Uint8Array data and image/png or image/jpeg mimeType'
+    );
+  }
+  if (!hasTextureCoordinates) {
+    throw new TileConversionError(
+      'MESH_TEXCOORD_REQUIRED',
+      'Base-color texture requires TEXCOORD_0'
+    );
+  }
+  const image = new DataView(texture.data.buffer, texture.data.byteOffset, texture.data.byteLength);
+  let metadata;
+  try {
+    metadata = getBinaryImageMetadata(image);
+  } catch {
+    // Malformed encoded headers must produce the same typed diagnostic as unrecognized headers.
+  }
+  if (
+    !metadata ||
+    metadata.mimeType !== texture.mimeType ||
+    metadata.width <= 0 ||
+    metadata.height <= 0
+  ) {
+    throw new TileConversionError(
+      'MESH_TEXTURE_INVALID',
+      'Image header must match mimeType and declare positive dimensions'
+    );
+  }
+  return {index: scenegraph.addTexture({imageIndex: scenegraph.addImage(image, texture.mimeType)})};
 }
