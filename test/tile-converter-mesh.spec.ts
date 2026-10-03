@@ -523,7 +523,15 @@ test.each([
   {label: 'empty image', texture: () => ({data: new Uint8Array(), mimeType: 'image/png'})},
   {
     label: 'truncated header',
-    texture: () => ({data: pngImage.subarray(0, 20), mimeType: 'image/png'})
+    texture: () => ({data: pngImage.subarray(0, 24), mimeType: 'image/png'})
+  },
+  {
+    label: 'incomplete PNG signature',
+    texture: () => {
+      const data = pngImage.slice();
+      data[4] = 255;
+      return {data, mimeType: 'image/png'};
+    }
   },
   {
     label: 'zero width',
