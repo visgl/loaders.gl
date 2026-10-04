@@ -126,6 +126,7 @@ export default getVitestConfig({
         'react/jsx-runtime',
         'react/jsx-dev-runtime',
         'pmtiles',
+        'styled-components',
         'save-pixels',
         'slice-source',
         'snappyjs',

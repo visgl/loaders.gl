@@ -17,6 +17,7 @@ const resolvedCredential = createBearerTokenCredential({
 });
 
 const tileLayerMocks = vi.hoisted(() => ({
+  initializationError: null as Error | null,
   selectLoader: vi.fn(),
   preload: vi.fn(),
   tilesetOptions: null as Record<string, unknown> | null
@@ -32,7 +33,9 @@ vi.mock('@loaders.gl/tiles', async importOriginal => {
   return {
     ...original,
     Tileset3D: class {
-      tilesetInitializationPromise = Promise.resolve();
+      tilesetInitializationPromise = tileLayerMocks.initializationError
+        ? Promise.reject(tileLayerMocks.initializationError)
+        : Promise.resolve();
       constructor(_source: unknown, options: Record<string, unknown>) {
         tileLayerMocks.tilesetOptions = options;
       }
@@ -43,6 +46,7 @@ vi.mock('@loaders.gl/tiles', async importOriginal => {
 import {Tile3DSourceLayer} from '../src/tile-3d-source-layer';
 
 beforeEach(() => {
+  tileLayerMocks.initializationError = null;
   tileLayerMocks.selectLoader.mockReset();
   tileLayerMocks.preload.mockReset().mockImplementation(async loader => loader);
   tileLayerMocks.tilesetOptions = null;
@@ -140,4 +144,20 @@ test('Tile3DSourceLayer validates Blob fallbacks, preload headers, and missing l
 
   const missing = createLayer('tileset.json', {loader: undefined, loaders: []}).layer;
   await expect(missing.loadSourceTileset('tileset.json')).rejects.toThrow('requires a loader');
+});
+
+test('Tile3DSourceLayer reports rejected source initialization through the deck error callback', async () => {
+  const error = new Error('Invalid archive');
+  tileLayerMocks.initializationError = error;
+  const source = {
+    async initialize() {},
+    async getRootTileset() {},
+    async initializeTileHeaders() {},
+    async loadTileContent() {}
+  };
+  const {layer, onTilesetLoad} = createLayer(source);
+  layer.raiseError = vi.fn();
+  await expect(layer._loadTileset(source)).resolves.toBeUndefined();
+  expect(layer.raiseError).toHaveBeenCalledWith(error, 'loading source tileset');
+  expect(onTilesetLoad).not.toHaveBeenCalled();
 });

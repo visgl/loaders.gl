@@ -56,7 +56,8 @@ export class Tile3DSourceLayer<
     // deck.gl creates a new layer instance on every render, while transferring the old state.
     // Install the adapter on every instance so data-source changes cannot fall back to the base
     // layer's legacy parsed-JSON loading path.
-    (this as any)._loadTileset = this.loadSourceTileset.bind(this);
+    (this as any)._loadTileset = (data: string | Blob | Tileset3DSource) =>
+      this.loadSourceTileset(data).catch(error => this.raiseError(error, 'loading source tileset'));
   }
 
   /** Initialize the underlying deck.gl tile layer state. */
