@@ -57,7 +57,12 @@
       "import": "./dist/unbundled.js"
     },
     "./tileset.schema.json": "./dist/tileset.schema.json",
-    "./subtree.schema.json": "./dist/subtree.schema.json"
+    "./subtree.schema.json": "./dist/subtree.schema.json",
+    "./3d-tiles-archive-writer": {
+      "types": "./dist/3d-tiles-archive-writer.d.ts",
+      "import": "./dist/3d-tiles-archive-writer.js",
+      "require": "./dist/3d-tiles-archive-writer.cjs"
+    }
   },
   "sideEffects": false,
   "files": [

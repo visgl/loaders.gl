@@ -3,7 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import {beforeAll, expect, test} from 'vitest';
-import {parse} from '@loaders.gl/core';
+import {coreApi, parse} from '@loaders.gl/core';
 import {GLTFLoader, GLTFScenegraph} from '@loaders.gl/gltf';
 import {Tiles3DTilesetSchema} from '@loaders.gl/3d-tiles/tileset-zod-schema';
 import {Matrix4} from '@math.gl/core';
@@ -13,12 +13,16 @@ import {
   createMeshConversionCodec,
   createTiles3DConversionSpatialContext,
   createSingleMeshTilesetSink,
+  createSingleMeshTilesetArchive,
   type EncodedMeshConversionResource,
   type MeshConversionInput,
   type TileConversionReport,
   type TileConversionSource
 } from '@loaders.gl/tile-converter/v5/browser';
-import {createSingleMeshTilesetSink as createRootSink} from '@loaders.gl/tile-converter/v5';
+import {
+  createSingleMeshTilesetArchive as createRootArchive,
+  createSingleMeshTilesetSink as createRootSink
+} from '@loaders.gl/tile-converter/v5';
 
 /** A minimal completed report for direct sink lifecycle checks. */
 const REPORT: TileConversionReport = {
@@ -384,4 +388,52 @@ test('single mesh sink accepts explicit native meter units and zero geometric er
   });
   await sink.finalize(REPORT);
   expect(JSON.parse(await sink.getFiles()[1].blob.text()).geometricError).toBe(0);
+});
+
+test('single mesh package becomes a bounded indexed 3TZ Blob through both v5 entrypoints', async () => {
+  expect(createRootArchive).toBe(createSingleMeshTilesetArchive);
+  const sink = createSingleMeshTilesetSink({maxTotalBytes: 1024 * 1024, geometricError: 0.001});
+  await convertSource(sink);
+  const files = sink.getFiles();
+  const archiveBytes = files.reduce((total, file) => total + file.blob.size, 368);
+  const archive = await createSingleMeshTilesetArchive(files, {maxArchiveBytes: archiveBytes});
+  expect(archive.size).toBe(archiveBytes);
+  expect(archive.type).toBe('application/vnd.maxar.archive.3tz+zip');
+  const {Tiles3DArchiveSource, Tiles3DLoader} = await import('@loaders.gl/3d-tiles');
+  const source = new Tiles3DArchiveSource({url: archive, loader: Tiles3DLoader, coreApi});
+  await source.initialize();
+  const tileset = await source.getRootTileset();
+  expect(tileset.root.content.uri).toBe('mesh.glb');
+  await expect(
+    createSingleMeshTilesetArchive(files, {maxArchiveBytes: archiveBytes - 1})
+  ).rejects.toThrow('byte limit');
+});
+
+test.each([
+  -1,
+  Infinity,
+  NaN,
+  0.5
+])('single mesh archive rejects invalid budget %s', async maxArchiveBytes => {
+  await expect(createSingleMeshTilesetArchive([], {maxArchiveBytes})).rejects.toMatchObject({
+    code: 'INVALID_ARCHIVE_BYTE_LIMIT'
+  });
+});
+
+test.each(
+  [
+    [],
+    ['mesh.glb'],
+    ['mesh.glb', 'mesh.glb'],
+    ['tileset.json', 'tileset.json'],
+    ['mesh.glb', 'other.json'],
+    ['tileset.json', 'mesh.glb', 'extra.glb']
+  ].map(paths => ({paths}))
+)('single mesh archive rejects incomplete or unexpected sink files %#', async ({paths}) => {
+  await expect(
+    createSingleMeshTilesetArchive(
+      paths.map(resourceId => ({resourceId, blob: new Blob()})),
+      {maxArchiveBytes: 1024}
+    )
+  ).rejects.toMatchObject({code: 'INVALID_SINGLE_MESH_ARCHIVE'});
 });

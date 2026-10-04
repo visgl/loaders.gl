@@ -33,6 +33,11 @@
     "./bundled": {
       "types": "./dist/bundled.d.ts",
       "import": "./dist/bundled.js"
+    },
+    "./zip-writer": {
+      "types": "./dist/zip-writer.d.ts",
+      "import": "./dist/zip-writer.js",
+      "require": "./dist/zip-writer.cjs"
     }
   },
   "sideEffects": false,
