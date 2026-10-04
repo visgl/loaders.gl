@@ -94,6 +94,12 @@ export function createMeshConversionCodec<TInspection = unknown>(
     /** Prepares and encodes one geometry while honoring cancellation. */
     async *convert(resource, _inspection, signal) {
       signal?.throwIfAborted();
+      if ('features' in resource && resource.features) {
+        throw new TileConversionError(
+          'MESH_FEATURE_OUTPUT_UNSUPPORTED',
+          'The GLB codec requires an explicit feature metadata writer; use the I3S codec for supported feature-bearing meshes'
+        );
+      }
       const geometry = validateMeshGeometry(resource.mesh, true);
       const sourcePositions = geometry.attributes.POSITION.value;
       const origin: [number, number, number] = [...resource.origin];

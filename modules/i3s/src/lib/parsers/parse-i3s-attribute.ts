@@ -11,7 +11,7 @@ import {
   INT_16_ATTRIBUTE_TYPE
 } from './constants';
 
-type Attribute = string[] | TypedArray | null;
+type Attribute = (string | null)[] | TypedArray | null;
 export type I3STileAttributes = Record<string, Attribute>;
 
 /**
@@ -27,7 +27,9 @@ export function parseI3STileAttribute(arrayBuffer: ArrayBuffer, options): I3STil
     return {};
   }
   return {
-    [attributeName]: attributeType ? parseAttribute(attributeType, arrayBuffer) : null
+    [attributeName]: attributeType
+      ? parseAttribute(attributeType, arrayBuffer, options.i3s?.attributeValues === 'exact')
+      : null
   };
 }
 
@@ -37,10 +39,10 @@ export function parseI3STileAttribute(arrayBuffer: ArrayBuffer, options): I3STil
  * @param  arrayBuffer
  * @returns
  */
-function parseAttribute(attributeType, arrayBuffer: ArrayBuffer): Attribute {
+function parseAttribute(attributeType, arrayBuffer: ArrayBuffer, exactStrings = false): Attribute {
   switch (attributeType) {
     case STRING_ATTRIBUTE_TYPE:
-      return parseStringsAttribute(arrayBuffer);
+      return parseStringsAttribute(arrayBuffer, exactStrings);
     case OBJECT_ID_ATTRIBUTE_TYPE:
       return parseShortNumberAttribute(arrayBuffer);
     case FLOAT_64_TYPE:
@@ -157,11 +159,11 @@ function parseShortNumberAttribute(arrayBuffer: ArrayBuffer): Uint32Array {
  * @param arrayBuffer
  * @returns list of strings
  */
-function parseStringsAttribute(arrayBuffer: ArrayBuffer): string[] {
+function parseStringsAttribute(arrayBuffer: ArrayBuffer, exactStrings = false): (string | null)[] {
   const stringsCountOffset = 0;
   const dataOffset = 8;
   const bytesPerStringSize = 4;
-  const stringsArray: string[] = [];
+  const stringsArray: (string | null)[] = [];
 
   try {
     // Use DataView to avoid multiple of 4 error on Uint32Array constructor
@@ -176,10 +178,27 @@ function parseStringsAttribute(arrayBuffer: ArrayBuffer): string[] {
     for (const stringByteSize of stringSizes) {
       const textDecoder = new TextDecoder('utf-8');
       const stringAttribute = new Uint8Array(arrayBuffer, stringOffset, stringByteSize);
-      stringsArray.push(textDecoder.decode(stringAttribute));
+      if (exactStrings) {
+        if (stringByteSize === 0) stringsArray.push(null);
+        else {
+          if (stringAttribute[stringByteSize - 1] !== 0)
+            throw new Error('I3S string must end with a null terminator');
+          stringsArray.push(
+            new TextDecoder('utf-8', {fatal: true}).decode(stringAttribute.subarray(0, -1))
+          );
+        }
+      } else stringsArray.push(textDecoder.decode(stringAttribute));
       stringOffset += stringByteSize;
     }
+    if (
+      exactStrings &&
+      (stringOffset !== arrayBuffer.byteLength ||
+        new DataView(arrayBuffer).getUint32(4, true) !==
+          arrayBuffer.byteLength - dataOffset - stringsCount * bytesPerStringSize)
+    )
+      throw new Error('I3S string byte counts must match the resource length');
   } catch (error) {
+    if (exactStrings) throw error;
     console.error('Parse string attribute error: ', (error as Error).message); // eslint-disable-line
   }
 
