@@ -175,6 +175,9 @@ export type Loader<DataT = any, BatchT = any, LoaderOptionsT = StrictLoaderOptio
   /** The batched result type of this loader  */
   batchType?: BatchT;
 
+  /** Named metadata loaders used by this loader or source. */
+  subloaders?: Readonly<Record<string, Loader>>;
+
   /** Default Options */
   options: LoaderOptionsT;
   /** Deprecated Options */

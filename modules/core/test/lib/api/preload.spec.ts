@@ -2,8 +2,8 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import {describe, expect, test} from 'vitest';
-import {parse, parseInBatches, parseSync, preload, preloadSync} from '@loaders.gl/core';
+import {describe, expect, test, vi} from 'vitest';
+import {parse, parseInBatches, parseSync, preload, preloadSync, load} from '@loaders.gl/core';
 import {CSVLoader as UnbundledCSVLoader} from '@loaders.gl/csv/unbundled';
 
 const CSV_TEXT = 'city,population\nParis,2148000\nBerlin,3769000';
@@ -293,4 +293,119 @@ describe('preload', () => {
 
     expect(parseSync('abc', ParseSyncAfterPreloadLoader)).toBe('ABC');
   });
+});
+
+/** Creates a minimal parser fixture with optional declared dependencies. */
+function createDependencyLoader(id: string, subloaders = {}) {
+  return {
+    id,
+    name: id,
+    module: 'core',
+    version: 'latest',
+    extensions: ['bin'],
+    mimeTypes: [],
+    options: {},
+    subloaders,
+    parse: async (_data, options) => options?.[id]?.subloaders || id,
+    parseSync: (_data, options) => options?.[id]?.subloaders || id
+  };
+}
+
+describe('named subloaders', () => {
+  test('prepares nested dependencies and preserves scoped options', async () => {
+    const leaf = {
+      ...createDependencyLoader('leaf'),
+      parse: async (_data, options) => options.leaf.value
+    };
+    const middle = createDependencyLoader('middle', {LeafLoader: leaf});
+    const parent = createDependencyLoader('parent', {MiddleLoader: middle});
+    const prepared = await preload(parent, {leaf: {value: 42}});
+    const dependencies = await prepared.parse(new ArrayBuffer(0));
+    const nested = await dependencies.MiddleLoader.parse(new ArrayBuffer(0), {leaf: {value: 42}});
+    expect(await nested.LeafLoader.parse(new ArrayBuffer(0))).toBe(42);
+    expect(await nested.LeafLoader.parse(new ArrayBuffer(0), {leaf: {value: 43}})).toBe(43);
+    expect(parent.subloaders.MiddleLoader).toBe(middle);
+    expect(middle.subloaders.LeafLoader).toBe(leaf);
+  });
+
+  test('keeps concurrent overrides isolated and binds sync parsers', async () => {
+    const original = createDependencyLoader('original');
+    const replacement = createDependencyLoader('replacement');
+    const parent = createDependencyLoader('parent', {ChildLoader: original});
+    const [normal, custom] = await Promise.all([
+      preload(parent),
+      preload(parent, {parent: {subloaders: {ChildLoader: replacement}}})
+    ]);
+    expect(normal.parseSync!(new ArrayBuffer(0)).ChildLoader.id).toBe('original');
+    expect(custom.parseSync!(new ArrayBuffer(0)).ChildLoader.id).toBe('replacement');
+    expect(preloadSync(parent)).toBe(normal);
+    expect(await preload(parent)).toBe(normal);
+  });
+
+  test('rejects cycles and unknown override names', async () => {
+    const dependencies = {};
+    const parent = createDependencyLoader('cycle', dependencies);
+    dependencies['SelfLoader'] = parent;
+    await expect(preload(parent)).rejects.toThrow('Subloader cycle: cycle -> cycle');
+    const valid = createDependencyLoader('valid', {ChildLoader: createDependencyLoader('child')});
+    await expect(preload(valid, {valid: {subloaders: {TypoLoader: valid}}})).rejects.toThrow(
+      'unknown subloader TypoLoader'
+    );
+  });
+
+  test('starts dependencies concurrently, deduplicates shared imports, and retries failures', async () => {
+    let attempts = 0;
+    let release;
+    const gate = new Promise<void>(resolve => {
+      release = resolve;
+    });
+    const child = createDependencyLoader('child');
+    const metadata = {
+      ...child,
+      parse: undefined,
+      parseSync: undefined,
+      preload: async () => {
+        attempts++;
+        await gate;
+        if (attempts === 1) throw new Error('retry');
+        return child;
+      }
+    };
+    const parent = createDependencyLoader('parent', {
+      FirstLoader: metadata,
+      SecondLoader: metadata
+    });
+    const first = preload(parent);
+    await Promise.resolve();
+    expect(attempts).toBe(1);
+    release();
+    await expect(first).rejects.toThrow('retry');
+    const prepared = await preload(parent);
+    expect(attempts).toBe(2);
+    expect(prepared.subloaders!.FirstLoader).toBe(prepared.subloaders!.SecondLoader);
+  });
+});
+
+test('preloads a source dependency before synchronous source creation', async () => {
+  const dependency = createDependencyLoader('dependency');
+  const source = {
+    ...createDependencyLoader('source', {DependencyLoader: dependency}),
+    parse: undefined,
+    parseSync: undefined,
+    preload: vi.fn(async () => source),
+    type: 'source',
+    fromUrl: true,
+    fromBlob: false,
+    defaultOptions: {},
+    testURL: () => true,
+    createDataSource: (_data, options) => options.source.subloaders
+  };
+  const prepared = await preload(source as never);
+  expect((prepared as typeof source).createDataSource('', {}).DependencyLoader.id).toBe(
+    'dependency'
+  );
+  expect((await load('source://example', prepared as never)).DependencyLoader.id).toBe(
+    'dependency'
+  );
+  expect(source.preload).toHaveBeenCalledTimes(1);
 });

@@ -54,6 +54,9 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
 
 ## v5.0 (In Development)
 
+- Declare named `subloaders` and use core `preload()` to prepare nested parser dependencies
+  concurrently, with loader-scoped overrides and options. 3D Tiles declares GLTF/GLB dependencies.
+
 - Convert the supported `KHR_materials_common` subset to PBR/unlit materials, including emission,
   texture references, explicit transparency/double-sided flags, accurate extension declarations,
   and preserved fallback resources. Assumptions use the supplied logger; small JSON/GLB exports
