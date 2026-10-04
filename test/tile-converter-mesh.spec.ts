@@ -667,6 +667,7 @@ test.each([
   {offset: [NaN, 0]},
   {offset: Array(2)},
   {offset: ['0', 1]},
+  {scale: [1]},
   {scale: [1, Infinity]},
   {scale: null},
   {rotation: NaN},
@@ -721,4 +722,25 @@ test('mesh encoder UV transform renders through the shared glTF extension reader
   );
   expect(textureInfo.extensions).toBeUndefined();
   expect(scenegraph.json.extensionsRequired).not.toContain('KHR_texture_transform');
+});
+
+test.each([
+  'offset',
+  'scale'
+] as const)('mesh encoder reads selected transform %s components once', async property => {
+  let readCount = 0;
+  const coordinates: [number, number] = [0, 1];
+  Object.defineProperty(coordinates, '0', {get: () => (readCount++ === 0 ? 0 : NaN)});
+  const transform: MeshTileTextureTransform = {[property]: coordinates};
+  const container = await parse(
+    encodeMeshTile(createTexturedMesh(), {
+      material: {baseColorTexture: {data: pngImage, mimeType: 'image/png', transform}}
+    }),
+    GLBLoader
+  );
+  expect(
+    container.json.materials[0].pbrMetallicRoughness.baseColorTexture.extensions
+      .KHR_texture_transform[property]
+  ).toEqual([0, 1]);
+  expect(readCount).toBe(1);
 });
