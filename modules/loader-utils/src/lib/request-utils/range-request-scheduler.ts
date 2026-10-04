@@ -1,6 +1,6 @@
 // loaders.gl
 // SPDX-License-Identifier: MIT
-// Copyright (c) vis.gl contributors
+// SPDX-FileCopyrightText: Copyright (c) vis.gl contributors
 
 import {Stats} from '@probe.gl/stats';
 
@@ -44,6 +44,12 @@ export type RangeRequestSchedulerProps = {
   rangeExpansionBytes?: number;
   /** Maximum total byte length of one merged range request. */
   maxMergedBytes?: number;
+  /** Maximum simultaneous transports; defaults to six. */
+  maxConcurrency?: number;
+  /** Maximum unsettled logical requests; defaults to 4096. */
+  maxQueueSize?: number;
+  /** Maximum individual logical range length; defaults to 64 MiB. */
+  maxRangeBytes?: number;
   /** Optional probe.gl Stats object that receives range batching counters. */
   stats?: Stats;
   /** Optional event callback for range batching diagnostics. */
@@ -177,6 +183,9 @@ const DEFAULT_PROPS: Required<RangeRequestSchedulerProps> = {
   maxGapBytes: 65536,
   rangeExpansionBytes: 65536,
   maxMergedBytes: 8388608,
+  maxConcurrency: 6,
+  maxQueueSize: 4096,
+  maxRangeBytes: 64 * 1024 * 1024,
   stats: createRangeStats('range-request-scheduler-default'),
   onEvent: () => {}
 };
@@ -194,6 +203,18 @@ export class RangeRequestScheduler {
   readonly onEvent?: (event: RangeRequestEvent) => void;
 
   private pendingRequests: PendingRequest[] = [];
+  /** Merged transports waiting for a concurrency slot. */
+  private transportQueue: MergedRequest[] = [];
+  /** Number of active transports. */
+  private activeTransports = 0;
+  /** Number of unsettled logical requests. */
+  private queuedRequests = 0;
+  /** Unsettled requests retained until completion or disposal. */
+  private logicalRequests = new Set<PendingRequest>();
+  /** Controllers for transports owned by this scheduler. */
+  private transportControllers = new Set<AbortController>();
+  /** Disposal prevents further enqueueing. */
+  private finalized = false;
   /** Pending batch window, independent of in-flight transport requests. */
   private flushTimer: ReturnType<typeof setTimeout> | null = null;
 
@@ -205,8 +226,19 @@ export class RangeRequestScheduler {
       batchDelayMs: props.batchDelayMs ?? DEFAULT_PROPS.batchDelayMs,
       maxGapBytes: props.maxGapBytes ?? rangeExpansionBytes,
       rangeExpansionBytes,
-      maxMergedBytes: props.maxMergedBytes ?? DEFAULT_PROPS.maxMergedBytes
+      maxMergedBytes: props.maxMergedBytes ?? DEFAULT_PROPS.maxMergedBytes,
+      maxConcurrency: props.maxConcurrency ?? 6,
+      maxQueueSize: props.maxQueueSize ?? 4096,
+      maxRangeBytes: props.maxRangeBytes ?? 64 * 1024 * 1024
     };
+    for (const value of [
+      this.props.maxConcurrency,
+      this.props.maxQueueSize,
+      this.props.maxRangeBytes
+    ]) {
+      if (!Number.isSafeInteger(value) || value <= 0)
+        throw new Error('Range scheduler limits must be positive integers');
+    }
     this.stats = props.stats || createRangeStats('range-request-scheduler');
     this.onEvent = props.onEvent;
     initializeStats(this.stats);
@@ -216,20 +248,34 @@ export class RangeRequestScheduler {
    * Enqueues one byte range request and resolves with the exact requested byte slice.
    */
   scheduleRequest(request: RangeRequest): Promise<ArrayBuffer> {
+    if (this.finalized) return Promise.reject(new Error('Range scheduler is finalized'));
+    if (
+      !Number.isSafeInteger(request.offset) ||
+      request.offset < 0 ||
+      !Number.isSafeInteger(request.length) ||
+      request.length > this.props.maxRangeBytes ||
+      !Number.isSafeInteger(request.offset + request.length)
+    )
+      return Promise.reject(new Error('Invalid or oversized byte range'));
+    if (this.queuedRequests >= this.props.maxQueueSize)
+      return Promise.reject(new Error('Range scheduler queue limit exceeded'));
     if (request.length < 0) {
       return Promise.reject(new Error('Byte range length cannot be negative'));
     }
 
     if (request.signal?.aborted) {
-      return Promise.reject(createAbortError());
+      return Promise.reject(request.signal.reason ?? createAbortError());
     }
 
     if (request.length === 0) {
       return Promise.resolve(new ArrayBuffer(0));
     }
 
+    this.queuedRequests++;
+    let pendingRequest: PendingRequest;
     const promise = new Promise<ArrayBuffer>((resolve, reject) => {
-      const pendingRequest: PendingRequest = {...request, resolve, reject, settled: false};
+      pendingRequest = {...request, resolve, reject, settled: false};
+      this.logicalRequests.add(pendingRequest);
       if (request.signal) {
         pendingRequest.abortListener = () => {
           this.abortRequest(pendingRequest);
@@ -250,7 +296,12 @@ export class RangeRequestScheduler {
     });
 
     this.scheduleFlush();
-    return promise;
+    return promise.finally(() => {
+      if (pendingRequest.abortListener)
+        request.signal?.removeEventListener('abort', pendingRequest.abortListener);
+      this.queuedRequests--;
+      this.logicalRequests.delete(pendingRequest);
+    });
   }
 
   /**
@@ -300,8 +351,35 @@ export class RangeRequestScheduler {
     if (activeRequests.length > 0) {
       this.trackBatch(activeRequests, mergedRequests);
     }
-    for (const mergedRequest of mergedRequests) {
-      this.fetchMergedRequest(mergedRequest); // eslint-disable-line @typescript-eslint/no-floating-promises
+    this.transportQueue.push(...mergedRequests);
+    this.startQueuedTransports();
+  }
+
+  /** Cancels owned work and releases queued resources; borrowed users must not finalize shared schedulers. */
+  finalize(): void {
+    this.finalized = true;
+    if (this.flushTimer !== null) clearTimeout(this.flushTimer);
+    this.flushTimer = null;
+    for (const request of this.logicalRequests) {
+      this.abortRequest(request);
+      if (request.abortListener)
+        request.signal?.removeEventListener('abort', request.abortListener);
+    }
+    for (const controller of this.transportControllers) controller.abort();
+    this.transportQueue = [];
+    this.pendingRequests = [];
+    this.logicalRequests.clear();
+  }
+
+  /** Starts transports while respecting the configured concurrency bound. */
+  private startQueuedTransports(): void {
+    while (this.activeTransports < this.props.maxConcurrency && this.transportQueue.length) {
+      const request = this.transportQueue.shift()!;
+      this.activeTransports++;
+      void this.fetchMergedRequest(request).finally(() => {
+        this.activeTransports--;
+        this.startQueuedTransports();
+      });
     }
   }
 
@@ -351,9 +429,10 @@ export class RangeRequestScheduler {
   private async fetchMergedRequest(mergedRequest: MergedRequest): Promise<void> {
     const {offset, endOffset, fetchRange, requests} = mergedRequest;
     const abortController = new AbortController();
+    this.transportControllers.add(abortController);
     const requestStartTime = getTimestamp();
     const abortTransportIfUnused = () => {
-      if (requests.every(request => request.signal?.aborted)) {
+      if (requests.every(request => request.settled || request.signal?.aborted)) {
         abortController.abort();
       }
     };
@@ -422,16 +501,18 @@ export class RangeRequestScheduler {
         request.resolve(arrayBuffer.slice(start, start + request.length));
       }
     } catch (error) {
-      this.trackEvent({
-        type: 'error',
-        sourceId: mergedRequest.sourceId,
-        offset,
-        length: endOffset - offset,
-        logicalRequestCount: requests.length,
-        logicalBytes: getLogicalRequestBytes(requests),
-        networkTimeMs: getTimestamp() - requestStartTime,
-        error
-      });
+      if (!abortController.signal.aborted) {
+        this.trackEvent({
+          type: 'error',
+          sourceId: mergedRequest.sourceId,
+          offset,
+          length: endOffset - offset,
+          logicalRequestCount: requests.length,
+          logicalBytes: getLogicalRequestBytes(requests),
+          networkTimeMs: getTimestamp() - requestStartTime,
+          error
+        });
+      }
 
       for (const request of requests) {
         if (request.settled) {
@@ -445,6 +526,7 @@ export class RangeRequestScheduler {
         }
       }
     } finally {
+      this.transportControllers.delete(abortController);
       for (const request of requests) {
         if (request.abortListener) {
           request.signal?.removeEventListener('abort', request.abortListener);
@@ -460,7 +542,18 @@ export class RangeRequestScheduler {
       return;
     }
     request.settled = true;
-    request.reject(createAbortError());
+    this.pendingRequests = this.pendingRequests.filter(pending => pending !== request);
+    for (const group of this.transportQueue) {
+      group.requests = group.requests.filter(pending => !pending.settled);
+      if (group.requests.length) {
+        group.offset = Math.min(...group.requests.map(pending => pending.offset));
+        group.endOffset = Math.max(
+          ...group.requests.map(pending => pending.offset + pending.length)
+        );
+      }
+    }
+    this.transportQueue = this.transportQueue.filter(group => group.requests.length > 0);
+    request.reject(request.signal?.reason ?? createAbortError());
     this.trackEvent({
       type: 'abort',
       sourceId: request.sourceId,
@@ -761,9 +854,9 @@ function createAbortableFetchContext(parentSignal?: AbortSignal): {
   removeAbortListener: () => void;
 } {
   const abortController = new AbortController();
-  const abortListener = () => abortController.abort();
+  const abortListener = () => abortController.abort(parentSignal?.reason);
   if (parentSignal?.aborted) {
-    abortController.abort();
+    abortController.abort(parentSignal?.reason);
   } else {
     parentSignal?.addEventListener('abort', abortListener, {once: true});
   }

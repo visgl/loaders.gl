@@ -48,6 +48,7 @@ The `@loaders.gl/loader-utils` contains utilities for creating loaders.
 - [`ArrayBufferFile`](/docs/modules/loader-utils/api-reference/readable-file#adapting-an-arraybuffer) provides direct random access to in-memory data.
 - [`HttpFile`](/docs/modules/loader-utils/api-reference/http-file) validates random-access HTTP reads and remote object identity.
 - [`RequestScheduler`](/docs/modules/loader-utils/api-reference/request-scheduler) limits asynchronous request concurrency.
+- [Numeric raster data](/docs/modules/loader-utils/api-reference/raster-data) defines region, affine, validity and CPU sampling contracts.
 - [`RangeRequestScheduler`](/docs/modules/loader-utils/api-reference/range-request-scheduler) coalesces compatible byte ranges.
 - [`RequestCache`](/docs/modules/loader-utils/api-reference/request-cache) deduplicates and bounds ordinary asynchronous request results.
 - [`RangeRequestCache`](/docs/modules/loader-utils/api-reference/range-request-cache) caches exact and contained byte ranges.

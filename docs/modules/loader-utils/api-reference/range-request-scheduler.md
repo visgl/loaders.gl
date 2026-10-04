@@ -172,3 +172,15 @@ type RangeStats = {
 
 Use `stats` when several helper classes need to contribute to the same diagnostic counters.
 Use `onEvent` only when you need event-level logging or a UI refresh trigger.
+
+The scheduler bounds physical transport concurrency (`maxConcurrency`, default 6),
+outstanding logical requests (`maxQueueSize`, default 4096), and each transport range
+(`maxRangeBytes`, default 64 MiB). Limits must be positive safe integers. Oversized
+requests and queue overflow reject before transport; coalescing never grows a range
+past the limit. Canceling a queued subscriber releases its queue entry. A shared
+transport is aborted only when its final active subscriber cancels. A transport
+that ignores AbortSignal retains its physical concurrency slot until it settles.
+
+`finalize()` cancels owned work, releases queued groups, and rejects subsequent
+requests. A source using an injected scheduler must preserve that borrowed scheduler.
+Abort reasons are preserved when the runtime supports `AbortSignal.reason`.
