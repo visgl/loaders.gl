@@ -69,8 +69,10 @@ export interface MeshTileOptions {
  * Encodes one triangle mesh as a self-contained glTF 2.0 GLB resource.
  *
  * POSITION and optional NORMAL must contain packed finite Float32 xyz triples. COLOR_0 accepts
- * packed Float32 linear RGB/RGBA in [0, 1] with matching vertex count. Normals must have
- * unit length within 0.0001. TEXCOORD_0 accepts packed finite Float32 UV pairs per vertex. Optional indices use packed unsigned 8-, 16-, or 32-bit values.
+ * packed Float32 linear RGB/RGBA in [0, 1] or normalized Uint8/Uint16 colors per vertex.
+ * Normals must have unit length within 0.0001. TEXCOORD_0 accepts packed finite Float32
+ * or normalized Uint8/Uint16 UV pairs per vertex. Optional indices use packed unsigned
+ * 8-, 16-, or 32-bit values.
  * Unsupported attributes, layouts, and encoded transforms fail rather than being discarded.
  * Coordinates are preserved: callers own CRS conversion, local origins, placement, source material mapping,
  * feature mappings, and tileset packaging. Input arrays are never modified.
@@ -119,7 +121,7 @@ export function validateMeshGeometry(
     }
   }
   const positions = getFloatAttribute(mesh.attributes.POSITION, 'POSITION', allowFloat64Positions);
-  const attributes: Record<string, {value: Float32Array | Float64Array; size: number}> = {
+  const attributes: Record<string, MeshAttribute> = {
     POSITION: {value: positions, size: 3}
   };
   if (mesh.attributes.NORMAL) {
@@ -144,37 +146,48 @@ export function validateMeshGeometry(
   }
   if ('COLOR_0' in mesh.attributes) {
     const colors = mesh.attributes.COLOR_0;
+    const normalized = isNormalizedUnsignedAttribute(colors);
     if (
       !colors ||
-      !(colors.value instanceof Float32Array) ||
+      !(colors.value instanceof Float32Array || normalized) ||
       (colors.size !== 3 && colors.size !== 4) ||
       colors.value.length / colors.size !== positions.length / 3 ||
-      colors.value.some(value => !Number.isFinite(value) || value < 0 || value > 1)
+      (colors.value instanceof Float32Array &&
+        colors.value.some(value => !Number.isFinite(value) || value < 0 || value > 1))
     ) {
       throw new TileConversionError(
         'MESH_COLOR_INVALID',
-        'COLOR_0 must contain packed Float32 linear RGB/RGBA in [0, 1], one per vertex'
+        'COLOR_0 requires packed linear RGB/RGBA: Float32 in [0, 1] or normalized Uint8/Uint16, one per vertex'
       );
     }
-    validateAttributeLayout(colors, 'COLOR_0');
-    attributes.COLOR_0 = {value: colors.value, size: colors.size};
+    validateAttributeLayout(colors, 'COLOR_0', normalized);
+    attributes.COLOR_0 = {
+      value: colors.value,
+      size: colors.size,
+      ...(normalized ? {normalized: true} : {})
+    };
   }
   if ('TEXCOORD_0' in mesh.attributes) {
     const textureCoordinates = mesh.attributes.TEXCOORD_0;
+    const normalized = isNormalizedUnsignedAttribute(textureCoordinates);
     if (
       !textureCoordinates ||
-      !(textureCoordinates.value instanceof Float32Array) ||
+      !(textureCoordinates.value instanceof Float32Array || normalized) ||
       textureCoordinates.size !== 2 ||
       textureCoordinates.value.length / 2 !== positions.length / 3 ||
       textureCoordinates.value.some(value => !Number.isFinite(value))
     ) {
       throw new TileConversionError(
         'MESH_TEXCOORD_INVALID',
-        'TEXCOORD_0 must contain packed finite Float32 UV pairs, one per vertex'
+        'TEXCOORD_0 requires packed finite Float32 or normalized Uint8/Uint16 UV pairs, one per vertex'
       );
     }
-    validateAttributeLayout(textureCoordinates, 'TEXCOORD_0');
-    attributes.TEXCOORD_0 = {value: textureCoordinates.value, size: 2};
+    validateAttributeLayout(textureCoordinates, 'TEXCOORD_0', normalized);
+    attributes.TEXCOORD_0 = {
+      value: textureCoordinates.value,
+      size: 2,
+      ...(normalized ? {normalized: true} : {})
+    };
   }
   const indices = getMeshIndices(mesh.indices, positions.length / 3);
   if (!indices && positions.length % 9 !== 0) {
@@ -256,18 +269,30 @@ function getMeshIndices(
   return values;
 }
 
+/** Identifies explicitly normalized unsigned storage supported by the appearance profile. */
+function isNormalizedUnsignedAttribute(attribute: MeshAttribute | undefined): boolean {
+  return (
+    attribute?.normalized === true &&
+    (attribute.value instanceof Uint8Array || attribute.value instanceof Uint16Array)
+  );
+}
+
 /** Rejects descriptor layouts and transforms the initial mesh profile cannot represent. */
-function validateAttributeLayout(attribute: MeshAttribute, name: string): void {
+function validateAttributeLayout(
+  attribute: MeshAttribute,
+  name: string,
+  allowNormalized = false
+): void {
   if (
     (attribute.byteOffset ?? 0) !== 0 ||
     (attribute.byteStride ?? 0) !== 0 ||
-    attribute.normalized ||
+    (attribute.normalized && !allowNormalized) ||
     attribute.transform ||
     attribute.componentType
   ) {
     throw new TileConversionError(
       'MESH_ATTRIBUTE_LAYOUT_UNSUPPORTED',
-      `${name} must use packed, unnormalized contiguous storage`
+      `${name} must use packed contiguous storage with supported normalization`
     );
   }
 }

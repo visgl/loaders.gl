@@ -269,7 +269,13 @@ function transformPrimitive(
           // Take [u, v] couple from the arrayBuffer
           const uv = new ArrayType(arrayBuffer, byteOffset + i * elementAddressScale, 2);
           // Set and transform Vector3 per https://github.com/KhronosGroup/glTF/tree/main/extensions/2.0/Khronos/KHR_texture_transform#overview
-          scratchVector.set(uv[0], uv[1], 1);
+          const signed = accessor.componentType === 5120 || accessor.componentType === 5122;
+          const divisor = 2 ** (bytes * 8 - (signed ? 1 : 0)) - 1;
+          scratchVector.set(
+            accessor.normalized ? Math.max(uv[0] / divisor, -1) : uv[0],
+            accessor.normalized ? Math.max(uv[1] / divisor, -1) : uv[1],
+            1
+          );
           scratchVector.transformByMatrix3(matrix);
           // Save result in Float32Array
           result.set([scratchVector[0], scratchVector[1]], i * components);

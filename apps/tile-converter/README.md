@@ -79,8 +79,8 @@ The initial profile accepts finite packed Float32 `POSITION` and optional `NORMA
 triples. Normals must have unit length within 0.0001 and match the vertex count. Optional
 indices are packed Uint8, Uint16, or Uint32 scalars forming complete triangles, referencing
 existing vertices and excluding each type's maximum primitive-restart value. Typed array
-subviews are supported; descriptor offsets/strides, normalization, and encoded transforms
-are rejected. Other attributes fail with typed diagnostics instead of disappearing.
+subviews are supported; descriptor offsets/strides and encoded transforms
+are rejected. Normalization is supported only for the selected integer colors and UVs below. Other attributes fail with typed diagnostics instead of disappearing.
 
 The encoder preserves coordinates and does not mutate input arrays. Callers select a local
 coordinate frame and own CRS conversion, double-precision origins, placement, source
@@ -90,8 +90,10 @@ source scene or preserve its metadata and appearance automatically.
 ### Selected appearance
 
 Optional `COLOR_0` contains packed Float32 linear RGB (`size: 3`) or RGBA (`size: 4`)
-values in [0, 1], one per position. Values and typed array subviews are preserved; byte
-colors, normalization, sRGB conversion, and other color sets are unsupported.
+values in [0, 1], or packed `Uint8Array`/`Uint16Array` values with `normalized: true`, one per
+position. Integer colors represent linear values divided by 255 or 65535, including alpha;
+no sRGB conversion is performed. Component types, normalization, and subview values are preserved.
+Other color sets remain unsupported.
 
 One optional `MeshTileMaterial` applies to every triangle:
 
@@ -119,8 +121,12 @@ Inputs are not mutated. Applications explicitly map source colors and materials 
 subset; other texture maps, multiple materials, and
 feature mappings remain open work.
 
-Optional `TEXCOORD_0` contains packed finite Float32 UV pairs (`size: 2`), one per position.
-Values outside [0, 1] are allowed for repeating textures. A selected `baseColorTexture` requires
+Optional `TEXCOORD_0` contains packed finite Float32 or explicitly normalized Uint8/Uint16
+UV pairs (`size: 2`), one per position. Float32 values outside [0, 1] are allowed for repeating
+textures; integer values represent [0, 1] after division by 255 or 65535. Integer storage requires
+`normalized: true`; signed, Uint32, and normalized floating-point appearance attributes are rejected.
+The glTF writer pads vertex elements to four-byte alignment without changing their values.
+Texture transforms apply to the normalized UV values. A selected `baseColorTexture` requires
 these UVs and embeds an already encoded PNG or JPEG:
 
 ```ts
