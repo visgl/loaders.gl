@@ -661,11 +661,14 @@ function readProperties(
   const result: Record<string, unknown> = {};
   let offset = vector.offset;
   const end = offset + vector.length;
+  view.assertRange(offset, vector.length);
   while (offset < end) {
+    if (offset + 2 > end) throw new Error('Invalid or truncated FlatGeobuf property');
     const column = columns[view.uint16(offset)];
     offset += 2;
     if (!column) throw new Error('FlatGeobuf property references an unknown column');
     const value = readPropertyValue(view, offset, column.type);
+    if (value.offset > end) throw new Error('Invalid or truncated FlatGeobuf property');
     result[column.name] = value.value;
     offset = value.offset;
   }

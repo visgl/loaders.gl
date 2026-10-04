@@ -299,6 +299,9 @@ function fillParquetValueBuffer(
     return;
   }
   if (Array.isArray(output)) {
+    // Array#fill cannot grow a boxed destination when column metadata omitted its value count.
+    // Indexed writes grow those same destinations in the bit-packed path; run fills must too.
+    if (output.length < end) output.length = end;
     output.fill(value, start, end);
     return;
   }

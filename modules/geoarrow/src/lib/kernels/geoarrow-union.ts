@@ -49,7 +49,7 @@ export function getGeoArrowUnionCoordinateLayout(
   return null;
 }
 
-/** Infers the coordinate dimension from a concrete native Arrow type. */
+/** Infers coordinate dimensions, combining nested collection members before using union IDs. */
 function getPhysicalCoordinateDimension(
   type: arrow.DataType | undefined
 ): GeoArrowDimension | null {
@@ -74,6 +74,21 @@ function getPhysicalCoordinateDimension(
     if (names.has('m')) return 'xym';
     if (names.has('z')) return 'xyz';
     if (names.has('x') && names.has('y')) return 'xy';
+  }
+  if (coordinateType instanceof arrow.DenseUnion) {
+    let hasZ = false;
+    let hasM = false;
+    for (let childIndex = 0; childIndex < coordinateType.children.length; childIndex++) {
+      const child = coordinateType.children[childIndex];
+      const dimension = getGeoArrowUnionDimension(
+        child.name,
+        child.type,
+        coordinateType.typeIds[childIndex]
+      );
+      hasZ ||= dimension === 'xyz' || dimension === 'xyzm';
+      hasM ||= dimension === 'xym' || dimension === 'xyzm';
+    }
+    return hasZ && hasM ? 'xyzm' : hasZ ? 'xyz' : hasM ? 'xym' : 'xy';
   }
   return null;
 }

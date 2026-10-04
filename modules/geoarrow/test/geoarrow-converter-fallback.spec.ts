@@ -5,6 +5,7 @@
 import * as arrow from 'apache-arrow';
 import {expect, test, vi} from 'vitest';
 import type {GeoArrowEncoding} from '@loaders.gl/schema';
+import type {Geometry} from '@loaders.gl/schema';
 
 vi.mock('../src/lib/kernels/decode-wkt-native', async importOriginal => {
   const original = await importOriginal<typeof import('../src/lib/kernels/decode-wkt-native')>();
@@ -16,7 +17,12 @@ vi.mock('../src/lib/kernels/decode-wkt-native', async importOriginal => {
   };
 });
 
-/** Loads the converter after the optimized WKT kernels have been replaced by declining kernels. */
+vi.mock('../src/lib/kernels/encode-geoarrow-wkt', async importOriginal => {
+  const original = await importOriginal<typeof import('../src/lib/kernels/encode-geoarrow-wkt')>();
+  return {...original, encodeGeoArrowWKTVector: vi.fn(() => null)};
+});
+
+/** Loads the converter with declining WKT kernels to exercise the compatibility contract. */
 async function loadFallbackConverter(): Promise<
   typeof import('../src/geoarrow-converter/convert-geoarrow-geometry')
 > {
@@ -278,7 +284,7 @@ test('compatibility fallback selects dimension bands from declared geometry type
 });
 
 test('compatibility fallback extracts every dense-union family back to WKT', async () => {
-  const {convertGeoArrowVector} = await loadFallbackConverter();
+  const {convertGeoArrowVector, convertGeoArrowVectorCellToGeoJSON} = await loadFallbackConverter();
   const wkts = [
     'POINT (1 2)',
     'LINESTRING (0 0, 1 1)',
@@ -289,17 +295,20 @@ test('compatibility fallback extracts every dense-union family back to WKT', asy
     'GEOMETRYCOLLECTION (POINT (9 8), LINESTRING (1 2, 3 4))',
     null
   ];
-  const union = convertGeoArrowVector(
-    arrow.vectorFromArray(wkts, new arrow.Utf8()),
-    'geoarrow.wkt',
-    'geoarrow.geometry',
-    {fallback: 'geojson', geometryTypes: ['Point', 'GeometryCollection']}
-  );
+  const source = arrow.vectorFromArray(wkts, new arrow.Utf8());
+  const union = convertGeoArrowVector(source, 'geoarrow.wkt', 'geoarrow.geometry', {
+    fallback: 'geojson',
+    geometryTypes: ['Point', 'GeometryCollection']
+  });
   const roundTrip = convertGeoArrowVector(union, 'geoarrow.geometry', 'geoarrow.wkt', {
     fallback: 'geojson'
   });
 
-  expect(Array.from({length: roundTrip.length}, (_, index) => roundTrip.get(index))).toEqual(wkts);
+  expect(
+    wkts.map((_, index) => convertGeoArrowVectorCellToGeoJSON(roundTrip, index, 'geoarrow.wkt'))
+  ).toEqual(
+    wkts.map((_, index) => convertGeoArrowVectorCellToGeoJSON(source, index, 'geoarrow.wkt'))
+  );
 });
 
 test('compatibility fallback extracts nullable geometry collections to WKB and WKT', async () => {
@@ -339,4 +348,194 @@ test('compatibility fallback extracts nullable geometry collections to WKB and W
   expect(
     convertGeoArrowVectorCellToGeoJSON(roundTrip, 2, 'geoarrow.geometrycollection')
   ).toBeNull();
+  const text = convertGeoArrowVector(
+    collection.slice(0, 3),
+    'geoarrow.geometrycollection',
+    'geoarrow.wkt',
+    {dimension: 'xyz'}
+  );
+  expect(convertGeoArrowVectorCellToGeoJSON(text, 0, 'geoarrow.wkt')).toEqual(
+    convertGeoArrowVectorCellToGeoJSON(collection, 0, 'geoarrow.geometrycollection')
+  );
+  expect(convertGeoArrowVectorCellToGeoJSON(text, 1, 'geoarrow.wkt')).toEqual({
+    type: 'GeometryCollection',
+    geometries: []
+  });
+  expect(text.get(2)).toBeNull();
+});
+
+test.each([
+  ['geoarrow.point', 'POINT M (1 2 7)', {type: 'Point', coordinates: [1, 2, 7]}],
+  [
+    'geoarrow.linestring',
+    'LINESTRING M (1 2 7, 3 4 8)',
+    {
+      type: 'LineString',
+      coordinates: [
+        [1, 2, 7],
+        [3, 4, 8]
+      ]
+    }
+  ],
+  ['geoarrow.geometry', 'POINT M (1 2 7)', {type: 'Point', coordinates: [1, 2, 7]}]
+] as const)('compatibility %s separated XYM conversion keeps the measure under m', async (encoding, text, expectedGeometry) => {
+  const {convertGeoArrowVector, convertGeoArrowVectorCellToGeoJSON} = await loadFallbackConverter();
+  const vector = convertGeoArrowVector(
+    arrow.vectorFromArray([text, null], new arrow.Utf8()),
+    'geoarrow.wkt',
+    encoding,
+    {coordinates: 'separated', dimension: 'xym', offsetType: 'int64'}
+  );
+  expect(convertGeoArrowVectorCellToGeoJSON(vector, 0, encoding)).toEqual(expectedGeometry);
+  expect(convertGeoArrowVectorCellToGeoJSON(vector, 1, encoding)).toBeNull();
+  const coordinate = encoding === 'geoarrow.linestring' ? vector.get(0).get(0) : vector.get(0);
+  expect(coordinate.toJSON()).toEqual({x: 1, y: 2, m: 7});
+});
+
+test.each([
+  ['geoarrow.multipoint', 'POINT Z (1 2 3)', {type: 'MultiPoint', coordinates: [[1, 2, 3, 0]]}],
+  [
+    'geoarrow.multilinestring',
+    'LINESTRING (1 2, 3 4)',
+    {
+      type: 'MultiLineString',
+      coordinates: [
+        [
+          [1, 2, 0, 0],
+          [3, 4, 0, 0]
+        ]
+      ]
+    }
+  ],
+  [
+    'geoarrow.multipolygon',
+    'POLYGON ((0 0, 2 0, 0 2, 0 0))',
+    {
+      type: 'MultiPolygon',
+      coordinates: [
+        [
+          [
+            [0, 0, 0, 0],
+            [2, 0, 0, 0],
+            [0, 2, 0, 0],
+            [0, 0, 0, 0]
+          ]
+        ]
+      ]
+    }
+  ]
+] as const)('compatibility %s promotion preserves nesting and pads dimensions explicitly', async (encoding, text, expectedGeometry) => {
+  const {convertGeoArrowVector, convertGeoArrowVectorCellToGeoJSON} = await loadFallbackConverter();
+  const vector = convertGeoArrowVector(
+    arrow.vectorFromArray([text], new arrow.Utf8()),
+    'geoarrow.wkt',
+    encoding,
+    {dimension: 'xyzm', coordinates: 'separated', offsetType: 'int64'}
+  );
+  expect(convertGeoArrowVectorCellToGeoJSON(vector, 0, encoding)).toEqual(expectedGeometry);
+});
+
+test.each([
+  ['geoarrow.point', 'POINT EMPTY', 'Point'],
+  ['geoarrow.linestring', 'LINESTRING EMPTY', 'LineString'],
+  ['geoarrow.polygon', 'POLYGON EMPTY', 'Polygon'],
+  ['geoarrow.multipoint', 'MULTIPOINT EMPTY', 'MultiPoint'],
+  ['geoarrow.multilinestring', 'MULTILINESTRING EMPTY', 'MultiLineString'],
+  ['geoarrow.multipolygon', 'MULTIPOLYGON EMPTY', 'MultiPolygon']
+] as const)('compatibility %s distinguishes empty geometry from a null row', async (encoding, text, geometryKind) => {
+  const {convertGeoArrowVector, convertGeoArrowVectorCellToGeoJSON} = await loadFallbackConverter();
+  const vector = convertGeoArrowVector(
+    arrow.vectorFromArray([text, null], new arrow.Utf8()),
+    'geoarrow.wkt',
+    encoding,
+    {coordinates: 'separated'}
+  );
+  expect(vector.isValid(0)).toBe(true);
+  expect(convertGeoArrowVectorCellToGeoJSON(vector, 0, encoding)).toEqual({
+    type: geometryKind,
+    coordinates: []
+  });
+  expect(convertGeoArrowVectorCellToGeoJSON(vector, 1, encoding)).toBeNull();
+});
+
+test('compatibility union null carrier and seeded M children preserve values and schema', async () => {
+  const {convertGeoArrowVector, convertGeoArrowVectorCellToGeoJSON} = await loadFallbackConverter();
+  const vector = convertGeoArrowVector(
+    arrow.vectorFromArray([null, 'MULTIPOINT M ((1 2 7), (3 4 8))', null], new arrow.Utf8()),
+    'geoarrow.wkt',
+    'geoarrow.geometry',
+    {
+      geometryTypes: ['Point M', 'MultiPoint M', 'Polygon M'],
+      dimension: 'xym',
+      coordinates: 'separated'
+    }
+  );
+  expect(Array.from((vector.type as arrow.DenseUnion).typeIds)).toEqual([21, 23, 24]);
+  expect(Array.from(vector.data[0].typeIds)).toEqual([24, 24, 24]);
+  expect(Array.from(vector.data[0].valueOffsets)).toEqual([0, 1, 2]);
+  expect(
+    [0, 1, 2].map(index => convertGeoArrowVectorCellToGeoJSON(vector, index, 'geoarrow.geometry'))
+  ).toEqual([
+    null,
+    {
+      type: 'MultiPoint',
+      coordinates: [
+        [1, 2, 7],
+        [3, 4, 8]
+      ]
+    },
+    null
+  ]);
+  const empty = convertGeoArrowVector(
+    arrow.vectorFromArray([null, null], new arrow.Utf8()),
+    'geoarrow.wkt',
+    'native'
+  );
+  expect(Array.from((empty.type as arrow.DenseUnion).typeIds)).toEqual([1]);
+  expect(empty.get(0)).toBeNull();
+  expect(empty.get(1)).toBeNull();
+});
+
+test('compatibility serialization enforces nested collection depth before writing bytes', async () => {
+  const {convertGeoArrowVector, convertGeoArrowVectorCellToGeoJSON} = await loadFallbackConverter();
+  const source = arrow.vectorFromArray(
+    ['GEOMETRYCOLLECTION (GEOMETRYCOLLECTION (POINT (1 2)), POINT (3 4))', null],
+    new arrow.Utf8()
+  );
+  expect(() =>
+    convertGeoArrowVector(source, 'geoarrow.wkt', 'geoarrow.wkb', {maxGeometryCollectionDepth: 1})
+  ).toThrow('nesting exceeds maxGeometryCollectionDepth (1)');
+  const vector = convertGeoArrowVector(source, 'geoarrow.wkt', 'geoarrow.wkb', {
+    maxGeometryCollectionDepth: 2
+  });
+  const expected: Geometry = {
+    type: 'GeometryCollection',
+    geometries: [
+      {type: 'GeometryCollection', geometries: [{type: 'Point', coordinates: [1, 2]}]},
+      {type: 'Point', coordinates: [3, 4]}
+    ]
+  };
+  expect(convertGeoArrowVectorCellToGeoJSON(vector, 0, 'geoarrow.wkb')).toEqual(expected);
+  expect(vector.get(1)).toBeNull();
+});
+
+test.each([
+  ['xyz', 'POINT Z (1 2 3)', 'Point Z', 11, [1, 2, 3]],
+  ['xyzm', 'POINT ZM (1 2 3 4)', 'Point ZM', 31, [1, 2, 3, 4]]
+] as const)('compatibility %s unions use the semantic ID band and preserve sliced values', async (dimension, text, fieldName, typeId, coordinate) => {
+  const {convertGeoArrowVector, convertGeoArrowVectorCellToGeoJSON} = await loadFallbackConverter();
+  const vector = convertGeoArrowVector(
+    arrow.vectorFromArray([null, text, null], new arrow.Utf8()),
+    'geoarrow.wkt',
+    'geoarrow.geometry',
+    {dimension, coordinates: 'separated'}
+  );
+  expect(Array.from((vector.type as arrow.DenseUnion).typeIds)).toEqual([typeId]);
+  expect((vector.type as arrow.DenseUnion).children[0].name).toBe(fieldName);
+  const sliced = vector.slice(1, 3);
+  expect(convertGeoArrowVectorCellToGeoJSON(sliced, 0, 'geoarrow.geometry')).toEqual({
+    type: 'Point',
+    coordinates: coordinate
+  });
+  expect(convertGeoArrowVectorCellToGeoJSON(sliced, 1, 'geoarrow.geometry')).toBeNull();
 });

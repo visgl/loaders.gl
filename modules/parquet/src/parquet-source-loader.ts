@@ -2131,7 +2131,24 @@ async function filterParquetRowGroupsWithBloomFilters(
   let filtersRead = 0;
   let bytesRead = 0;
   for (const rowGroupIndex of rowGroupIndices) {
-    const rowGroup = initialization.metadata.rowGroups[rowGroupIndex];
+    let rowGroup = initialization.metadata.rowGroups[rowGroupIndex];
+    const rawRowGroup = initialization.fileMetadata.row_groups[rowGroupIndex];
+    if (rawRowGroup.columns.some(columnChunk => columnChunk.encrypted_column_metadata)) {
+      // The immutable source metadata predates selective column-metadata decryption. Resolve
+      // predicate columns before probing, without changing the plaintext planning path.
+      await initialization.reader.resolveColumnMetadata(
+        rawRowGroup,
+        rowGroupIndex,
+        getParquetPredicateColumns(predicate).map(column => [column])
+      );
+      throwIfAborted(signal);
+      rowGroup = {
+        ...rowGroup,
+        columns: rawRowGroup.columns
+          .filter(columnChunk => Boolean(columnChunk.meta_data))
+          .map(columnChunk => createColumnChunkMetadata(columnChunk, initialization.parquetSchema))
+      };
+    }
     const probes = getParquetBloomFilterProbes(predicate, rowGroup);
     let keepRowGroup = true;
     for (const probe of probes) {

@@ -839,7 +839,10 @@ function makePbrMaterial(
       pbrMetallicRoughness: {}
     };
     if (texture) {
-      pbrMaterial.pbrMetallicRoughness.baseColorTexture = {texCoord: 0};
+      pbrMaterial.pbrMetallicRoughness.baseColorTexture = {
+        texCoord: 0,
+        textureSetDefinitionId: 0
+      };
     } else {
       pbrMaterial.pbrMetallicRoughness.baseColorFactor = [
         colorScale,
@@ -851,7 +854,7 @@ function makePbrMaterial(
   }
 
   // Set default 0.25 per spec https://github.com/Esri/i3s-spec/blob/master/docs/1.7/materialDefinitions.cmn.md
-  pbrMaterial.alphaCutoff = pbrMaterial.alphaCutoff || 0.25;
+  pbrMaterial.alphaCutoff = pbrMaterial.alphaCutoff ?? 0.25;
 
   if (pbrMaterial.alphaMode) {
     // I3S contain alphaMode in lowerCase
