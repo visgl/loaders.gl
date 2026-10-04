@@ -70,3 +70,6 @@ export {createTiles3DConversionSpatialContext} from './spatial-conversion.js';
 export type {Tiles3DConversionSpatialContext} from './spatial-conversion.js';
 export {createSingleMeshTilesetSink} from './mesh-tileset-sink.js';
 export type {SingleMeshTilesetSink, SingleMeshTilesetSinkOptions} from './mesh-tileset-sink.js';
+
+export {createSingleMeshTilesetArchive} from './mesh-tileset-archive.js';
+export type {SingleMeshTilesetArchiveOptions} from './mesh-tileset-archive.js';

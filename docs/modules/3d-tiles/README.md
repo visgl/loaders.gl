@@ -157,3 +157,8 @@ DWG parser is included.
 
 `@loaders.gl/3d-tiles` includes code derived from the [Cesium repository](https://github.com/AnalyticalGraphicsInc/cesium)
 under the Apache 2.0 license and is maintained in collaboration with the Cesium engineering team.
+
+## Archive output
+
+Use [Tiles3DArchiveWriter](./api-reference/tiles-3d-archive-writer.md) to package already-authored
+3D Tiles resources as a portable indexed `.3tz` archive.
