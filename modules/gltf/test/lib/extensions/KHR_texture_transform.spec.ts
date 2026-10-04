@@ -285,3 +285,42 @@ test('GLTFLoader#KHR_texture_transform ignores texture-shaped application extras
   expect(gltfWithBuffers.json.accessors).toHaveLength(2);
   expect(gltfWithBuffers.buffers).toHaveLength(2);
 });
+
+test.each([
+  [Uint8Array, 5121, 255, 0],
+  [Uint16Array, 5123, 65535, 0],
+  [Int8Array, 5120, 127, -128],
+  [Int16Array, 5122, 32767, -32768]
+] as const)('KHR_texture_transform normalizes %s UVs before applying transforms', async (ArrayType, componentType, maximum, minimum) => {
+  const values = new ArrayType([minimum, 0, maximum, maximum]);
+  const before = values.slice();
+  const gltf: GLTFWithBuffers = {
+    json: {
+      asset: {version: '2.0'},
+      extensionsUsed: ['KHR_texture_transform'],
+      bufferViews: [{buffer: 0, byteOffset: 0, byteLength: values.byteLength}],
+      accessors: [{bufferView: 0, componentType, type: 'VEC2', count: 2, normalized: true}],
+      materials: [
+        {
+          pbrMetallicRoughness: {
+            baseColorTexture: {
+              index: 0,
+              extensions: {KHR_texture_transform: {offset: [1, 2], scale: [2, 3]}}
+            }
+          }
+        }
+      ],
+      meshes: [{primitives: [{attributes: {TEXCOORD_0: 0}, material: 0}]}]
+    },
+    buffers: [{arrayBuffer: values.buffer, byteOffset: 0, byteLength: values.byteLength}]
+  };
+  await decodeTextureTransform(gltf, {gltf: {loadBuffers: true}} as GLTFLoaderOptions);
+  const accessorIndex = gltf.json.meshes![0].primitives[0].attributes.TEXCOORD_1;
+  const accessor = gltf.json.accessors![accessorIndex];
+  expect(accessor).toMatchObject({componentType: 5126, count: 2});
+  expect(accessor.normalized).toBeUndefined();
+  expect(new Float32Array(gltf.buffers[1].arrayBuffer)).toEqual(
+    new Float32Array([minimum === 0 ? 1 : -1, 2, 3, 5])
+  );
+  expect(values).toEqual(before);
+});

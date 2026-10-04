@@ -567,3 +567,32 @@ test('mesh codec retains selected UVs, image sampling and transform while rebasi
   expect(output.maximumPositionError).toBe(0);
   expect(selectedInput).toEqual(before);
 });
+
+test('mesh codec retains integer appearance through spatial conversion', async () => {
+  const input = createInput();
+  input.mesh.attributes.COLOR_0 = {
+    value: new Uint16Array([0, 65535, 32768, 65535, 0, 1, 1, 0, 65535]),
+    size: 3,
+    normalized: true
+  };
+  input.mesh.attributes.TEXCOORD_0 = {
+    value: new Uint8Array([0, 0, 255, 0, 0, 255]),
+    size: 2,
+    normalized: true
+  };
+  const before = structuredClone(input);
+  const output = await encodeInput(input);
+  const scenegraph = new GLTFScenegraph(
+    await parse(output.glb, GLTFLoader, {gltf: {postProcess: false}})
+  );
+  const attributes = scenegraph.json.meshes![0].primitives[0].attributes;
+  for (const name of ['COLOR_0', 'TEXCOORD_0']) {
+    expect(scenegraph.json.accessors![attributes[name]].normalized).toBe(true);
+    expect(scenegraph.getTypedArrayForAccessor(attributes[name])).toEqual(
+      input.mesh.attributes[name].value
+    );
+  }
+  expect(output.origin).toEqual(input.origin);
+  expect(output.maximumPositionError).toBe(0);
+  expect(input).toEqual(before);
+});
