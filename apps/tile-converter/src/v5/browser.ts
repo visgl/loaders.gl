@@ -68,3 +68,5 @@ export type {
 } from './mesh-conversion.js';
 export {createTiles3DConversionSpatialContext} from './spatial-conversion.js';
 export type {Tiles3DConversionSpatialContext} from './spatial-conversion.js';
+export {createSingleMeshTilesetSink} from './mesh-tileset-sink.js';
+export type {SingleMeshTilesetSink, SingleMeshTilesetSinkOptions} from './mesh-tileset-sink.js';
