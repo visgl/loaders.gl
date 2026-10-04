@@ -10,6 +10,7 @@ import type {MeshAttribute, MeshGeometry} from '@loaders.gl/schema';
 import {
   encodeMeshTile,
   TileConversionError,
+  type MeshTileSampler,
   type MeshTileMaterial
 } from '@loaders.gl/tile-converter/v5';
 import {encodeMeshTile as encodeBrowserMeshTile} from '@loaders.gl/tile-converter/v5/browser';
@@ -516,7 +517,6 @@ test.each([
   {label: 'external URL', texture: () => ({uri: 'https://example.invalid/image.png'})},
   {label: 'ArrayBuffer', texture: () => ({data: pngImage.buffer, mimeType: 'image/png'})},
   {label: 'unsupported format', texture: () => ({data: pngImage, mimeType: 'image/webp'})},
-  {label: 'sampler', texture: () => ({data: pngImage, mimeType: 'image/png', sampler: {}})},
   {label: 'UV set', texture: () => ({data: pngImage, mimeType: 'image/png', texCoord: 1})},
   {label: 'transform', texture: () => ({data: pngImage, mimeType: 'image/png', extensions: {}})},
   {label: 'MIME mismatch', texture: () => ({data: pngImage, mimeType: 'image/jpeg'})},
@@ -561,4 +561,63 @@ test.each([
   expect(() => encodeMeshTile(createTexturedMesh(), {material})).toThrowError(
     expect.objectContaining({code: 'MESH_TEXTURE_INVALID'})
   );
+});
+
+test.each([
+  {},
+  {wrapS: undefined, wrapT: undefined, minFilter: undefined, magFilter: undefined},
+  ...[33071, 33648, 10497].map(value => ({wrapS: value, wrapT: value})),
+  ...[9728, 9729].map(value => ({magFilter: value})),
+  ...[9728, 9729, 9984, 9985, 9986, 9987].map(value => ({minFilter: value}))
+])('mesh encoder preserves explicit sampler %j without changing it', async selection => {
+  const sampler = selection as MeshTileSampler;
+  const before = structuredClone(sampler);
+  const output = encodeMeshTile(createTexturedMesh(), {
+    material: {baseColorTexture: {data: pngImage, mimeType: 'image/png', sampler}}
+  });
+  const container = await parse(output, GLBLoader, {glb: {strict: true}});
+  expect(GLTF2Schema.safeParse(container.json).success).toBe(true);
+  expect(container.json.textures).toEqual([{source: 0, sampler: 0}]);
+  expect(container.json.samplers).toEqual([JSON.parse(JSON.stringify(sampler))]);
+  expect(sampler).toEqual(before);
+});
+
+test.each([
+  null,
+  undefined,
+  false,
+  1,
+  0,
+  '',
+  [],
+  Object.create({wrapS: 0}),
+  {wrapS: 0},
+  {wrapT: 0},
+  {minFilter: 0},
+  {magFilter: 9987},
+  {wrapS: '33071'},
+  {wrapT: NaN},
+  {minFilter: Infinity},
+  {magFilter: null}
+])('mesh encoder rejects invalid selected sampler %j', selection => {
+  const sampler = selection as MeshTileSampler;
+  expect(() =>
+    encodeMeshTile(createTexturedMesh(), {
+      material: {baseColorTexture: {data: pngImage, mimeType: 'image/png', sampler}}
+    })
+  ).toThrowError(expect.objectContaining({code: 'MESH_SAMPLER_INVALID'}));
+});
+
+test.each([
+  'extensions',
+  'extras',
+  'name',
+  'anisotropy'
+])('mesh encoder rejects unsupported sampler property %s', property => {
+  const sampler = {[property]: {}} as MeshTileSampler;
+  expect(() =>
+    encodeMeshTile(createTexturedMesh(), {
+      material: {baseColorTexture: {data: pngImage, mimeType: 'image/png', sampler}}
+    })
+  ).toThrowError(expect.objectContaining({code: 'MESH_SAMPLER_UNSUPPORTED'}));
 });

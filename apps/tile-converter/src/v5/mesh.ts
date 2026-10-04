@@ -7,12 +7,26 @@ import {getBinaryImageMetadata} from '@loaders.gl/images';
 import type {MeshAttribute, MeshGeometry} from '@loaders.gl/schema';
 import {TileConversionError} from './conversion-api.js';
 
-/** One already encoded base-color image using TEXCOORD_0 and glTF's default sampler. */
+/** Explicit glTF wrapping and filtering for the selected base-color image. */
+export interface MeshTileSampler {
+  /** Horizontal wrapping: CLAMP_TO_EDGE, MIRRORED_REPEAT, or REPEAT; omitted values use REPEAT. */
+  readonly wrapS?: 33071 | 33648 | 10497;
+  /** Vertical wrapping: CLAMP_TO_EDGE, MIRRORED_REPEAT, or REPEAT; omitted values use REPEAT. */
+  readonly wrapT?: 33071 | 33648 | 10497;
+  /** Magnification: NEAREST or LINEAR; omission leaves filtering to the renderer. */
+  readonly magFilter?: 9728 | 9729;
+  /** Minification: NEAREST, LINEAR, or a glTF mipmap filter; omission leaves filtering to the renderer. */
+  readonly minFilter?: 9728 | 9729 | 9984 | 9985 | 9986 | 9987;
+}
+
+/** One already encoded base-color image using TEXCOORD_0. */
 export interface MeshTileTexture {
   /** Encoded PNG/JPEG bytes; a typed array subview selects only its own bytes. */
   readonly data: Uint8Array;
   /** Declared image format, checked against the encoded header. */
   readonly mimeType: 'image/png' | 'image/jpeg';
+  /** Optional wrapping/filtering; omission retains glTF's implicit sampler. */
+  readonly sampler?: MeshTileSampler;
 }
 
 /** One glTF metallic-roughness material, shared by every triangle in the mesh. */
@@ -318,13 +332,15 @@ function encodeBaseColorTexture(
 ): {index: number} {
   if (
     !texture ||
-    Object.keys(texture).some(name => name !== 'data' && name !== 'mimeType') ||
+    Object.keys(texture).some(
+      name => name !== 'data' && name !== 'mimeType' && name !== 'sampler'
+    ) ||
     !(texture.data instanceof Uint8Array) ||
     !['image/png', 'image/jpeg'].includes(texture.mimeType)
   ) {
     throw new TileConversionError(
       'MESH_TEXTURE_INVALID',
-      'Base-color texture must supply only Uint8Array data and image/png or image/jpeg mimeType'
+      'Base-color texture must supply Uint8Array data, image/png or image/jpeg mimeType, and an optional sampler'
     );
   }
   if (!hasTextureCoordinates) {
@@ -351,5 +367,52 @@ function encodeBaseColorTexture(
       'Image header must match mimeType and declare positive dimensions'
     );
   }
-  return {index: scenegraph.addTexture({imageIndex: scenegraph.addImage(image, texture.mimeType)})};
+  const samplerIndex =
+    'sampler' in texture ? scenegraph.addSampler(validateMeshSampler(texture.sampler)) : undefined;
+  return {
+    index: scenegraph.addTexture({
+      imageIndex: scenegraph.addImage(image, texture.mimeType),
+      samplerIndex
+    })
+  };
+}
+
+/** Validates the four sampling controls without silently discarding unsupported properties. */
+function validateMeshSampler(sampler: MeshTileSampler | undefined): MeshTileSampler {
+  if (!sampler || typeof sampler !== 'object' || Array.isArray(sampler)) {
+    throw new TileConversionError('MESH_SAMPLER_INVALID', 'Sampler must be an object');
+  }
+  const allowedValues = {
+    wrapS: [33071, 33648, 10497],
+    wrapT: [33071, 33648, 10497],
+    magFilter: [9728, 9729],
+    minFilter: [9728, 9729, 9984, 9985, 9986, 9987]
+  };
+  for (const name of Object.keys(sampler)) {
+    if (!Object.hasOwn(allowedValues, name)) {
+      throw new TileConversionError(
+        'MESH_SAMPLER_UNSUPPORTED',
+        `Sampler property ${name} is unsupported`
+      );
+    }
+  }
+  const selectedSampler = {
+    wrapS: sampler.wrapS,
+    wrapT: sampler.wrapT,
+    minFilter: sampler.minFilter,
+    magFilter: sampler.magFilter
+  };
+  for (const name of Object.keys(allowedValues)) {
+    const property = name as keyof MeshTileSampler;
+    if (
+      selectedSampler[property] !== undefined &&
+      !allowedValues[property].includes(selectedSampler[property]!)
+    ) {
+      throw new TileConversionError(
+        'MESH_SAMPLER_INVALID',
+        `Sampler ${name} must use a glTF wrapping/filtering value`
+      );
+    }
+  }
+  return selectedSampler;
 }

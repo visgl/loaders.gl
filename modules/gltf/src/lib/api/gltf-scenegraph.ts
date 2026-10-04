@@ -534,18 +534,31 @@ export class GLTFScenegraph {
   /**
    * Adds a texture to the json part
    * @todo: add more properties for texture initialization
-   * `sampler`, `name`, `extensions`, `extras`
+   * `name`, `extensions`, `extras`
    * https://github.com/KhronosGroup/glTF/tree/master/specification/2.0#texture
    */
-  addTexture(texture: {imageIndex: number}): number {
-    const {imageIndex} = texture;
+  addTexture(texture: {
+    /** Index of the image used by the texture. */
+    imageIndex: number;
+    /** Optional sampler index; omission retains glTF's implicit sampling defaults. */
+    samplerIndex?: number;
+  }): number {
+    const {imageIndex, samplerIndex} = texture;
     const glTFTexture = {
-      source: imageIndex
+      source: imageIndex,
+      ...(samplerIndex === undefined ? {} : {sampler: samplerIndex})
     };
 
     this.json.textures = this.json.textures || [];
     this.json.textures.push(glTFTexture);
     return this.json.textures.length - 1;
+  }
+
+  /** Adds a sampler to the JSON resources and returns its index; callers supply valid glTF properties. */
+  addSampler(sampler: GLTFSampler): number {
+    this.json.samplers = this.json.samplers || [];
+    this.json.samplers.push({...sampler});
+    return this.json.samplers.length - 1;
   }
 
   /** Adds a material to the json part */
