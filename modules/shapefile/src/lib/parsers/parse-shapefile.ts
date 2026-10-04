@@ -19,7 +19,7 @@ import type {
   ObjectRowTable,
   ObjectRowTableBatch
 } from '@loaders.gl/schema';
-import {Projection, type Proj4CRSDefinition} from '@math.gl/proj4';
+import {Projection} from '@math.gl/projection';
 import type {ReadonlyCRSDefinition, WKTCRSDefinition} from '@math.gl/crs';
 
 import type {SHXOutput} from './parse-shx';
@@ -297,7 +297,7 @@ function reprojectFeatures(
   try {
     const projection = new Projection({
       from: sourceCrs,
-      to: (targetCrs || 'WGS84') as Proj4CRSDefinition
+      to: (targetCrs || 'WGS84') as ReadonlyCRSDefinition
     });
     return transformGeoJsonCoords(features, coord => projection.project(coord));
   } catch (error) {

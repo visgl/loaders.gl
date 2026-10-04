@@ -87,7 +87,7 @@ export default getVitestConfig({
         '@math.gl/geospatial',
         '@math.gl/geometry-utils',
         '@math.gl/polygon',
-        '@math.gl/proj4',
+        '@math.gl/projection',
         '@math.gl/types',
         '@math.gl/web-mercator',
         '@probe.gl/env',

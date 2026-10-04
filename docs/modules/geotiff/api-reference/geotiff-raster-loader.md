@@ -96,8 +96,8 @@ that includes its plain-data input support:
 ```typescript
 import {load} from '@loaders.gl/core';
 import {GeoTIFFRasterLoader} from '@loaders.gl/geotiff';
-import {Projection} from '@math.gl/proj4';
-import {loadVerticalGeoTIFFGrid} from '@math.gl/proj4/grids/vertical-geotiff';
+import {Projection} from '@math.gl/projection';
+import {loadVerticalGeoTIFFGrid} from '@math.gl/projection/grids/vertical-geotiff';
 
 const dataset = await load('geoid.tif', GeoTIFFRasterLoader);
 const geoid = await loadVerticalGeoTIFFGrid(dataset);
@@ -117,4 +117,4 @@ north-up geographic degree grids with metre `geoid_undulation` bands and the
 remain valid loader output but are not necessarily valid geoid grids.
 
 The packages share a structural data contract, without a loaders.gl dependency on
-`@math.gl/proj4` or a math.gl dependency on a TIFF decoder.
+`@math.gl/projection` or a math.gl dependency on a TIFF decoder.

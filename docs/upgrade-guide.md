@@ -66,6 +66,10 @@ The sections below document the v5 removals, migrations, and deprecations that r
 
 **CRS and @loaders.gl/wkt**
 
+- Replace `@math.gl/proj4` imports with `@math.gl/projection` and `Proj4Projection` with
+  `Projection`. Import `ReadonlyCRSDefinition` from `@math.gl/crs` instead of the removed
+  `Proj4CRSDefinition` type. loaders.gl now uses math.gl 5.0.0-alpha.12.
+
 - Shared CRS definition types now come from `@math.gl/crs`. Replace new uses of the deprecated
   `PROJ4CRS` alias with `PROJStringDefinition` and import `CRSIdentifier`, `CRSDefinition`, WKT,
   PROJ, and PROJJSON types directly from `@math.gl/crs`.

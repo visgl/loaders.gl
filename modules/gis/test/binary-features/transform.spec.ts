@@ -5,9 +5,9 @@
 import {expect, test} from 'vitest';
 import {BinaryFeatureCollection, Feature} from '@loaders.gl/schema';
 import {transformBinaryCoords, transformGeoJsonCoords} from '@loaders.gl/gis';
-import {Proj4Projection} from '@math.gl/proj4';
+import {Projection} from '@math.gl/projection';
 test('gis#reproject GeoJSON', () => {
-  const projection = new Proj4Projection({from: 'WGS84', to: 'EPSG:3857'});
+  const projection = new Projection({from: 'WGS84', to: 'EPSG:3857'});
   const inputGeoJson: Feature[] = [
     {
       type: 'Feature',
@@ -32,7 +32,7 @@ test('gis#reproject GeoJSON', () => {
   expect(out).toEqual(expectedGeoJson);
 });
 test('gis#reproject binary', () => {
-  const projection = new Proj4Projection({from: 'WGS84', to: 'EPSG:3857'});
+  const projection = new Projection({from: 'WGS84', to: 'EPSG:3857'});
   const binaryData: BinaryFeatureCollection = {
     shape: 'binary-feature-collection',
     points: {

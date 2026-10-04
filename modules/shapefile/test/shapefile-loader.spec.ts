@@ -11,7 +11,7 @@ import {
   selectLoader
 } from '@loaders.gl/core';
 import {ShapefileLoader} from '@loaders.gl/shapefile';
-import {Proj4Projection} from '@math.gl/proj4';
+import {Projection} from '@math.gl/projection';
 
 const SHAPEFILE_DATA_FOLDER = '@loaders.gl/shapefile/test/data/shapefile-js';
 
@@ -69,7 +69,7 @@ test('ShapefileLoader#reprojects points', async () => {
     gis: {reproject: true, targetCrs: 'EPSG:3857'}
   });
   const expected = await (await fetchFile(`${SHAPEFILE_DATA_FOLDER}/${fixtureName}.json`)).json();
-  const projection = new Proj4Projection({from: 'WGS84', to: 'EPSG:3857'});
+  const projection = new Projection({from: 'WGS84', to: 'EPSG:3857'});
 
   expect(table.data[0].geometry.coordinates).toEqual(
     projection.project(expected.features[0].geometry.coordinates)

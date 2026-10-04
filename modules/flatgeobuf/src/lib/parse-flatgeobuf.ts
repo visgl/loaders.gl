@@ -3,7 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import * as arrow from 'apache-arrow';
-import {Projection, type Proj4CRSDefinition} from '@math.gl/proj4';
+import {Projection} from '@math.gl/projection';
 import type {ReadonlyCRSDefinition} from '@math.gl/crs';
 import type {ArrowTable, ArrowTableBatch, Feature, Field, Schema, Table} from '@loaders.gl/schema';
 import {
@@ -340,7 +340,7 @@ export function getProjection(
     );
   }
   try {
-    return new Projection({from: sourceCrs, to: targetCrs as Proj4CRSDefinition});
+    return new Projection({from: sourceCrs, to: targetCrs as ReadonlyCRSDefinition});
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error);
     throw new CRSReprojectionError(
