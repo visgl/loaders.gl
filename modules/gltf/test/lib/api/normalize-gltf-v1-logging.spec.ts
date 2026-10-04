@@ -11,7 +11,7 @@ function createAmbiguousColorAsset() {
   const source = createAccessorAsset(
     {
       accessors: {color: {bufferView: 'view', componentType: 5121, count: 1, type: 'VEC4'}},
-      meshes: {mesh: {primitives: [{attributes: {COLOR: 'color'}}]}}
+      meshes: {mesh: {primitives: [{mode: 0, attributes: {COLOR: 'color'}}]}}
     },
     4
   );

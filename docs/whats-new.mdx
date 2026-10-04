@@ -54,6 +54,8 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
 
 ## v5.0 (In Development)
 
+- Expand glTF 1 conversion with deterministic signed UV/color/weight conversion, global buffer/view span checks and safe URI length inference, and core attribute/topology diagnostics. Preserve source data and report assumptions through the supplied logger. Tiny skinned JSON/GLB exports run the Khronos validator. Techniques are explicitly marked as preserved data only; conversion remains unsupported.
+
 - Convert the supported `KHR_materials_common` subset to PBR/unlit materials, including emission,
   texture references, explicit transparency/double-sided flags, accurate extension declarations,
   and preserved fallback resources. Assumptions use the supplied logger; small JSON/GLB exports

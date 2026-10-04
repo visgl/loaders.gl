@@ -14,7 +14,7 @@ test.each([
   const source = createAccessorAsset(
     {
       accessors: {joints: {bufferView: 'view', componentType, type: 'VEC4', count: 1}},
-      meshes: {mesh: {primitives: [{attributes: {JOINT: 'joints'}}]}}
+      meshes: {mesh: {primitives: [{mode: 0, attributes: {JOINT: 'joints'}}]}}
     },
     4
   );
@@ -46,7 +46,7 @@ test.each([
           max: values
         }
       },
-      meshes: {mesh: {primitives: [{attributes: {JOINT_1: 'joints', _RAW: 'joints'}}]}}
+      meshes: {mesh: {primitives: [{mode: 0, attributes: {JOINT_0: 'joints', _RAW: 'joints'}}]}}
     },
     32,
     3
@@ -61,15 +61,15 @@ test.each([
   const bytes = new Uint8Array(source.buffers[0].arrayBuffer).slice();
   const converted = convertGLTFV1ToGLTF2(source, {normalize: 'strict'});
   const attributes = converted.json.meshes![0].primitives[0].attributes;
-  expect(attributes.JOINTS_1).not.toBe(attributes._RAW);
-  expect(converted.json.accessors![attributes.JOINTS_1]).toMatchObject({
+  expect(attributes.JOINTS_0).not.toBe(attributes._RAW);
+  expect(converted.json.accessors![attributes.JOINTS_0]).toMatchObject({
     componentType: target,
     type: 'VEC4'
   });
-  expect(converted.json.accessors![attributes.JOINTS_1]).not.toHaveProperty('min');
+  expect(converted.json.accessors![attributes.JOINTS_0]).not.toHaveProperty('min');
   expect(converted.json.accessors![attributes._RAW].componentType).toBe(componentType);
   expect(
-    Array.from(getTypedArrayForAccessor(converted.json, converted.buffers, attributes.JOINTS_1))
+    Array.from(getTypedArrayForAccessor(converted.json, converted.buffers, attributes.JOINTS_0))
   ).toEqual(values);
   expect(
     Array.from(getTypedArrayForAccessor(converted.json, converted.buffers, attributes._RAW))
@@ -87,7 +87,7 @@ test.each([
   const source = createAccessorAsset(
     {
       accessors: {joints: {bufferView: 'view', componentType: 5126, type: 'VEC4', count: 1}},
-      meshes: {mesh: {primitives: [{attributes: {JOINT: 'joints'}}]}}
+      meshes: {mesh: {primitives: [{mode: 0, attributes: {JOINT: 'joints'}}]}}
     },
     16
   );
@@ -109,7 +109,7 @@ test.each([
     accessors: {
       joints: {bufferView: 'view', componentType: 5121, type: 'VEC4', count: 1, ...overrides}
     },
-    meshes: {mesh: {primitives: [{attributes: {JOINT: 'joints'}}]}}
+    meshes: {mesh: {primitives: [{mode: 0, attributes: {JOINT: 'joints'}}]}}
   });
   expect(() => convertGLTFV1ToGLTF2(source, {normalize: 'strict'})).toThrow(
     /unnormalized|scalar\/vector/
@@ -128,7 +128,7 @@ test.each([
 }) => {
   const source = createAccessorAsset({
     accessors: {attribute: {bufferView: 'view', componentType, type, count: 1}},
-    meshes: {mesh: {primitives: [{attributes: {[semantic]: 'attribute'}}]}}
+    meshes: {mesh: {primitives: [{mode: 0, attributes: {[semantic]: 'attribute'}}]}}
   });
   if (componentType === 5121)
     new Uint8Array(source.buffers[0].arrayBuffer, 0, values.length).set(values);
@@ -151,7 +151,9 @@ test.each([
 }) => {
   const source = createAccessorAsset({
     accessors: {attribute: {bufferView: 'view', componentType, type: 'VEC4', count: 1}},
-    meshes: {mesh: {primitives: [{attributes: {[semantic]: 'attribute', RAW: 'attribute'}}]}}
+    meshes: {
+      mesh: {primitives: [{mode: 0, attributes: {[semantic]: 'attribute', RAW: 'attribute'}}]}
+    }
   });
   if (componentType === 5121) new Uint8Array(source.buffers[0].arrayBuffer, 0, 4).set(values);
   else new Uint16Array(source.buffers[0].arrayBuffer, 0, 4).set(values);
@@ -174,7 +176,7 @@ test('glTF 1 explicit normalized integer colors remain supported without assumpt
     accessors: {
       color: {bufferView: 'view', componentType: 5121, type: 'VEC4', count: 1, normalized: true}
     },
-    meshes: {mesh: {primitives: [{attributes: {COLOR: 'color'}}]}}
+    meshes: {mesh: {primitives: [{mode: 0, attributes: {COLOR: 'color'}}]}}
   });
   expect(
     convertGLTFV1ToGLTF2(source, {normalize: 'strict'}).normalizationReport.unsupported
@@ -191,7 +193,9 @@ test.each([
       first: {componentType: 5126, type: 'SCALAR', count: 1},
       second: {componentType: 5126, type: 'SCALAR', count: 1}
     },
-    meshes: {mesh: {primitives: [{attributes: {[firstName]: 'first', [secondName]: 'second'}}]}}
+    meshes: {
+      mesh: {primitives: [{mode: 0, attributes: {[firstName]: 'first', [secondName]: 'second'}}]}
+    }
   });
   expect(() => convertGLTFV1ToGLTF2(source)).toThrow(/conflicting attribute aliases/);
 });
@@ -217,7 +221,7 @@ test('glTF 1 custom namespaces and indexed aliases normalize safely', () => {
     ['_TEMPERATURE', 'VENDOR_data:VALUE', 'JOINTS_1']
   );
   const invalid = createAccessorAsset({
-    meshes: {mesh: {primitives: [{attributes: {JOINT_1000000000: 'attribute'}}]}}
+    meshes: {mesh: {primitives: [{mode: 0, attributes: {JOINT_1000000000: 'attribute'}}]}}
   });
   expect(() => convertGLTFV1ToGLTF2(invalid)).toThrow(/invalid attribute set index/);
 });
@@ -226,7 +230,7 @@ test('glTF 1 preserves a custom __proto__ attribute as an own JSON property', ()
   const converted = convertGLTFV1ToGLTF2(
     createAccessorAsset({
       accessors: {attribute: {componentType: 5126, type: 'SCALAR', count: 1}},
-      meshes: {mesh: {primitives: [{attributes: JSON.parse('{"__proto__":"attribute"}')}]}}
+      meshes: {mesh: {primitives: [{mode: 0, attributes: JSON.parse('{"__proto__":"attribute"}')}]}}
     })
   );
   const attributes = converted.json.meshes![0].primitives[0].attributes;
