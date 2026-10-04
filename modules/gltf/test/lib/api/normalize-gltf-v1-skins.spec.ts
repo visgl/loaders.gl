@@ -166,7 +166,7 @@ test.each([
   );
 });
 
-test('glTF 1 multiple-root instances remain reported rather than selecting an arbitrary pivot', () => {
+test('glTF 1 disconnected skeleton roots remain reported rather than selecting an arbitrary pivot', () => {
   const source = createLegacyAsset({
     skins: {skin: {jointNames: ['root']}},
     nodes: {
@@ -176,10 +176,10 @@ test('glTF 1 multiple-root instances remain reported rather than selecting an ar
     }
   });
   expect(convertGLTFV1ToGLTF2(source).normalizationReport.unsupported).toContain(
-    'skin 0 requires one skeleton root per instance'
+    'skin 0 joints have no unambiguous common hierarchy root'
   );
   expect(() => convertGLTFV1ToGLTF2(source, {normalize: 'strict'})).toThrow(
-    /requires one skeleton root/
+    /common hierarchy root/
   );
 });
 
@@ -257,7 +257,7 @@ test.each([
         : {root: {jointName: 'root'}, child: {jointName: 'child'}};
   const source = createLegacyAsset({skins: {skin: {jointNames: ['root', 'child']}}, nodes});
   expect(() => convertGLTFV1ToGLTF2(source, {normalize: 'strict'})).toThrow(
-    /common hierarchy root/
+    /common hierarchy root|invalid or overlapping skeleton subtrees/
   );
 });
 

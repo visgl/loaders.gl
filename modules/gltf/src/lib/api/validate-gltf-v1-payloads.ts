@@ -6,11 +6,10 @@ import type {GLTFWithBuffers} from '../types/gltf-types';
 import {
   validateGLTFV1AccessorSource,
   readGLTFV1AccessorComponent,
-  type GLTFV1AccessorSource
+  type GLTFV1AccessorSource,
+  type GLTFV1AccessorReader
 } from './repack-gltf-v1-accessors';
-
-/** Validated dense accessor reader shared by bounds, animation, and skin checks. */
-type ReadAccessor = (accessorIndex: number, label: string) => GLTFV1AccessorSource | null;
+import {validateGLTFV1Geometry} from './validate-gltf-v1-geometry';
 
 /** Validate supported core payload semantics and repair required bounds without changing source bytes. */
 export function validateGLTFV1Payloads(
@@ -22,7 +21,7 @@ export function validateGLTFV1Payloads(
   const failed = new Set<number>();
   const plans: Array<() => void> = [];
   /** Validate spans once, reporting unavailable or opaque bytes before any semantic read. */
-  const readAccessor: ReadAccessor = (accessorIndex, label) => {
+  const readAccessor: GLTFV1AccessorReader = (accessorIndex, label) => {
     let source = cache.get(accessorIndex);
     if (source === undefined) {
       source = validateGLTFV1AccessorSource(gltf, accessorIndex);
@@ -51,8 +50,39 @@ export function validateGLTFV1Payloads(
     planBounds(source, accessorIndex);
   }
   validateAnimations();
+  validateInverseBindMatrices();
   validateSkinInfluences(gltf, readAccessor, reportUnsupported);
+  validateGLTFV1Geometry(gltf, readAccessor, reportUnsupported);
   for (const apply of plans) apply();
+
+  /** Check all supplied inverse-bind data, including identity bind shapes and unused skins. */
+  function validateInverseBindMatrices(): void {
+    for (const [skinIndex, skin] of (gltf.json.skins || []).entries()) {
+      if (skin.inverseBindMatrices === undefined) continue;
+      const label = `skin ${skinIndex} inverse-bind matrices`;
+      const source = readAccessor(skin.inverseBindMatrices, label);
+      if (!source) continue;
+      if (!isFloatAccessor(source, 'MAT4') || source.accessor.count < (skin.joints?.length || 0)) {
+        reportUnsupported(`${label} require FLOAT MAT4 data with at least one matrix per joint`);
+        continue;
+      }
+      for (let matrixIndex = 0; matrixIndex < source.accessor.count; matrixIndex++) {
+        const matrix = Array.from({length: 16}, (_, componentIndex) =>
+          readGLTFV1AccessorComponent(source, matrixIndex, componentIndex)
+        );
+        if (
+          matrix.some(value => !Number.isFinite(value)) ||
+          matrix[3] !== 0 ||
+          matrix[7] !== 0 ||
+          matrix[11] !== 0 ||
+          matrix[15] !== 1
+        ) {
+          reportUnsupported(`${label} require finite affine matrices`);
+          break;
+        }
+      }
+    }
+  }
 
   /** Calculate finite raw extrema, committing only after all strict checks pass. */
   function planBounds(source: GLTFV1AccessorSource, accessorIndex: number): boolean {
@@ -182,7 +212,7 @@ function isFloatAccessor(source: GLTFV1AccessorSource, type: string): boolean {
 /** Validate supplied influence sets against every resolved skin that instantiates their mesh. */
 function validateSkinInfluences(
   gltf: GLTFWithBuffers,
-  readAccessor: ReadAccessor,
+  readAccessor: GLTFV1AccessorReader,
   reportUnsupported: (feature: string) => void
 ): void {
   const checkedBindings = new Set<string>();
@@ -203,7 +233,10 @@ function validateSkinInfluences(
         .filter(name => /^WEIGHTS_\d+$/.test(name))
         .map(name => Number(name.slice(8)))
         .sort((first, second) => first - second);
-      if (!jointSets.length && !weightSets.length) continue;
+      if (!jointSets.length && !weightSets.length) {
+        reportUnsupported(`${label} requires JOINTS_0 and WEIGHTS_0 skin influences`);
+        continue;
+      }
       if (
         JSON.stringify(jointSets) !== JSON.stringify(weightSets) ||
         jointSets.some((setIndex, index) => setIndex !== index)

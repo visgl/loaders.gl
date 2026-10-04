@@ -63,7 +63,10 @@ test.each([
 }) => {
   const source = createAccessorAsset(
     {
-      bufferViews: {view: {buffer: 'data', byteOffset: viewOffset, byteLength: 8}},
+      bufferViews: {
+        view: {buffer: 'data', byteOffset: viewOffset, byteLength: 8},
+        vertices: {buffer: 'data', byteOffset: 12, byteLength: 4}
+      },
       accessors: {
         indices: {
           bufferView: 'view',
@@ -71,9 +74,12 @@ test.each([
           componentType: 5123,
           count: 3,
           type: 'SCALAR'
-        }
+        },
+        vertices: {bufferView: 'vertices', componentType: 5121, count: 3, type: 'SCALAR'}
       },
-      meshes: {mesh: {primitives: [{attributes: {}, indices: 'indices'}]}}
+      meshes: {
+        mesh: {primitives: [{mode: 0, attributes: {_VERTEX: 'vertices'}, indices: 'indices'}]}
+      }
     },
     16,
     3
@@ -84,7 +90,8 @@ test.each([
   );
   const converted = convertGLTFV1ToGLTF2(source, {normalize: 'strict'});
   const view = converted.json.bufferViews![converted.json.accessors![0].bufferView!];
-  expect(view).toMatchObject({target: 34963, byteOffset: 16, byteLength: 6});
+  expect(view).toMatchObject({target: 34963, byteLength: 6});
+  expect(view.byteOffset! % 4).toBe(0);
   expect(view.byteStride).toBeUndefined();
   expect(Array.from(getTypedArrayForAccessor(converted.json, converted.buffers, 0))).toEqual([
     0, 2, 1

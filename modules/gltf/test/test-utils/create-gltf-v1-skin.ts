@@ -44,7 +44,7 @@ type SkinAssetOptions = {
 /** Two joints and one point, with padding and an unaligned borrowed backing-buffer offset. */
 export function createSkinAsset(options: SkinAssetOptions = {}): GLTFWithBuffers {
   const bufferId = options.bufferId || 'binary_glTF';
-  const backingBuffer = new ArrayBuffer(177);
+  const backingBuffer = new ArrayBuffer(197);
   new Uint8Array(backingBuffer).fill(0xa5);
   const backingData = new DataView(backingBuffer);
   for (const [componentIndex, value] of (options.matrixValues || ORIGINAL_MATRICES).entries()) {
@@ -52,13 +52,17 @@ export function createSkinAsset(options: SkinAssetOptions = {}): GLTFWithBuffers
   }
   for (const [componentIndex, value] of [1, 2, 3].entries())
     backingData.setFloat32(153 + componentIndex * 4, value, true);
+  new Uint8Array(backingBuffer, 165, 4).set([0, 1, 0, 0]);
+  [0.5, 0.5, 0, 0].forEach((value, index) => backingData.setFloat32(169 + index * 4, value, true));
   return {
     json: {
       asset: {version: '1.0'},
-      buffers: {[bufferId]: {byteLength: 161, uri: options.uri ?? 'data:,'}},
+      buffers: {[bufferId]: {byteLength: 181, uri: options.uri ?? 'data:,'}},
       bufferViews: {
         matrices: {buffer: bufferId, byteOffset: 4, byteLength: 140},
-        geometry: {buffer: bufferId, byteOffset: 148, byteLength: 12}
+        geometry: {buffer: bufferId, byteOffset: 148, byteLength: 12},
+        joints: {buffer: bufferId, byteOffset: 160, byteLength: 4},
+        weights: {buffer: bufferId, byteOffset: 164, byteLength: 16}
       },
       accessors: {
         matrices: {...MATRIX_ACCESSOR, ...options.matrixAccessorOverrides},
@@ -69,7 +73,9 @@ export function createSkinAsset(options: SkinAssetOptions = {}): GLTFWithBuffers
           type: 'VEC3',
           min: [1, 2, 3],
           max: [1, 2, 3]
-        }
+        },
+        joints: {bufferView: 'joints', componentType: 5121, count: 1, type: 'VEC4'},
+        weights: {bufferView: 'weights', componentType: 5126, count: 1, type: 'VEC4'}
       },
       skins: {
         skin: {
@@ -80,7 +86,13 @@ export function createSkinAsset(options: SkinAssetOptions = {}): GLTFWithBuffers
             : BIND_SHAPE
         }
       },
-      meshes: {point: {primitives: [{attributes: {POSITION: 'positions'}, mode: 0}]}},
+      meshes: {
+        point: {
+          primitives: [
+            {attributes: {POSITION: 'positions', JOINT: 'joints', WEIGHT: 'weights'}, mode: 0}
+          ]
+        }
+      },
       nodes: {
         root: {jointName: 'root', children: ['child']},
         child: {jointName: 'child'},
@@ -91,7 +103,7 @@ export function createSkinAsset(options: SkinAssetOptions = {}): GLTFWithBuffers
       ...options.jsonOverrides
     },
     buffers: [
-      {arrayBuffer: backingBuffer, byteOffset: 5, byteLength: 161, ...options.loadedBufferOverrides}
+      {arrayBuffer: backingBuffer, byteOffset: 5, byteLength: 181, ...options.loadedBufferOverrides}
     ]
   } as unknown as GLTFWithBuffers;
 }

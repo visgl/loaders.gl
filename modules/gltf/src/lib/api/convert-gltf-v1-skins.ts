@@ -35,7 +35,8 @@ type SkinInstancePlan = {
 /**
  * Resolve glTF 1 joint names inside each instance's skeleton hierarchy.
  * Shared skins are cloned when instances use different joint nodes. Non-identity bind shapes
- * remain available for binary baking; unresolved or multiple-root bindings are reported.
+ * remain available for binary baking. Multiple explicit roots are supported when their
+ * disjoint subtrees resolve every joint uniquely and share an unambiguous common ancestor.
  */
 export function convertGLTFV1Skins(
   json: GLTF,
@@ -109,7 +110,7 @@ export function convertGLTFV1Skins(
   }
 }
 
-/** Resolve ordered names within one explicit root, or uniquely across the document. */
+/** Resolve ordered names within explicit subtrees, or uniquely across the document. */
 function resolveSkinInstance(
   nodes: LegacyNode[],
   jointNames: string[],
@@ -118,15 +119,23 @@ function resolveSkinInstance(
   reportUnsupported: (feature: string) => void
 ): SkinInstancePlan | null {
   const skeletonIds = nodeIndex === undefined ? undefined : nodes[nodeIndex].skeletons;
-  if (skeletonIds !== undefined && (!Array.isArray(skeletonIds) || skeletonIds.length > 1)) {
-    reportUnsupported('requires one skeleton root per instance');
+  if (
+    skeletonIds !== undefined &&
+    (!Array.isArray(skeletonIds) ||
+      skeletonIds.some(id => typeof id !== 'string' || !id) ||
+      new Set(skeletonIds).size !== skeletonIds.length)
+  ) {
+    reportUnsupported('has invalid skeleton roots');
     return null;
   }
-  const explicitRoot = skeletonIds?.length ? resolveNodeId(skeletonIds[0]) : undefined;
-  const candidates =
-    explicitRoot === undefined
-      ? nodes.map((node, candidateIndex) => candidateIndex)
-      : collectSkeletonNodes(nodes, explicitRoot);
+  const explicitRoots = (skeletonIds || []).map(resolveNodeId);
+  const candidates = !explicitRoots.length
+    ? nodes.map((node, candidateIndex) => candidateIndex)
+    : collectSkeletonNodes(nodes, explicitRoots);
+  if (!candidates) {
+    reportUnsupported('has invalid or overlapping skeleton subtrees');
+    return null;
+  }
   const jointIndices: number[] = [];
   const namedCandidates = new Map<string, number[]>();
   for (const candidateIndex of candidates) {
@@ -144,21 +153,26 @@ function resolveSkinInstance(
     }
     jointIndices.push(matches[0]);
   }
-  const commonRoot = findCommonJointRoot(nodes, jointIndices);
+  const commonRoot = findCommonJointRoot(nodes, [...jointIndices, ...explicitRoots]);
   if (commonRoot === undefined) {
     reportUnsupported('joints have no unambiguous common hierarchy root');
     return null;
   }
-  return {nodeIndex, jointIndices, skeletonIndex: explicitRoot ?? commonRoot};
+  return {
+    nodeIndex,
+    jointIndices,
+    skeletonIndex: explicitRoots.length === 1 ? explicitRoots[0] : commonRoot
+  };
 }
 
-/** Collect descendants iteratively, bounding traversal even for malformed cyclic hierarchies. */
-function collectSkeletonNodes(nodes: LegacyNode[], rootIndex: number): number[] {
+/** Collect disjoint subtrees, rejecting missing nodes, cycles, and overlapping paths. */
+function collectSkeletonNodes(nodes: LegacyNode[], rootIndices: number[]): number[] | null {
   const visited = new Set<number>();
-  const pending = [rootIndex];
+  const pending = [...rootIndices];
   while (pending.length) {
     const nodeIndex = pending.pop()!;
-    if (visited.has(nodeIndex)) continue;
+    if (!Number.isSafeInteger(nodeIndex) || !nodes[nodeIndex] || visited.has(nodeIndex))
+      return null;
     visited.add(nodeIndex);
     pending.push(...(nodes[nodeIndex].children || []));
   }
@@ -170,7 +184,8 @@ function findCommonJointRoot(nodes: LegacyNode[], jointIndices: number[]): numbe
   const parents = new Map<number, number>();
   for (const [nodeIndex, node] of nodes.entries()) {
     for (const childIndex of node.children || []) {
-      if (parents.has(childIndex) && parents.get(childIndex) !== nodeIndex) return undefined;
+      if (!Number.isSafeInteger(childIndex) || !nodes[childIndex] || parents.has(childIndex))
+        return undefined;
       parents.set(childIndex, nodeIndex);
     }
   }

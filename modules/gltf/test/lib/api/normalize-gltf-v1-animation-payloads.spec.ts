@@ -128,10 +128,10 @@ test.each([
     message: 'unsupported interpolation'
   },
   {
-    label: 'matrix node',
+    label: 'conflicting matrix node',
     change: (json: any) =>
       (json.nodes.root.matrix = [1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1]),
-    message: 'TRS decomposition'
+    message: 'conflicting TRS'
   },
   {
     label: 'duplicate target',

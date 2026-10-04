@@ -20,6 +20,8 @@ export type GLTFV1AccessorConversion = {
   readonly mode: 'copy' | 'joints' | 'weights' | 'unit';
   /** Standard semantic requiring this interpretation, when relevant. */
   readonly semantic?: string;
+  /** Whether an opaque primitive extension may change index interpretation. */
+  readonly hasOpaqueConsumer?: boolean;
 };
 
 /** Validated legacy data span, with unpadded matrix columns. */
@@ -41,6 +43,12 @@ export type GLTFV1AccessorSource = {
   /** One for scalar/vector accessors. */
   readonly columns: number;
 };
+
+/** Cached dense reader reporting invalid or unavailable payloads before semantic validation. */
+export type GLTFV1AccessorReader = (
+  accessorIndex: number,
+  label: string
+) => GLTFV1AccessorSource | null;
 
 /** Supported component widths. */
 const COMPONENT_SIZES: Record<number, number> = {
@@ -80,7 +88,7 @@ export function prepareGLTFV1AccessorConversions(
     const source = accessors[sourceIndex];
     if (!source) return sourceIndex;
     const bindings = variants.get(sourceIndex) || new Map<string, number>();
-    const key = `${conversion.usage}:${conversion.mode}:${conversion.mode === 'unit' ? conversion.semantic?.split('_')[0] : ''}`;
+    const key = `${conversion.usage}:${conversion.mode}:${conversion.mode === 'unit' ? conversion.semantic?.split('_')[0] : ''}:${conversion.hasOpaqueConsumer ? 'opaque' : ''}`;
     let accessorIndex = bindings.get(key);
     if (accessorIndex === undefined) {
       accessorIndex = bindings.size ? accessors.length : sourceIndex;
@@ -112,7 +120,11 @@ export function prepareGLTFV1AccessorConversions(
         });
       }
       if (primitive.indices !== undefined)
-        primitive.indices = bindAccessor(primitive.indices, {usage: 'indices', mode: 'copy'});
+        primitive.indices = bindAccessor(primitive.indices, {
+          usage: 'indices',
+          mode: 'copy',
+          hasOpaqueConsumer: primitive.extensions !== undefined
+        });
     }
   for (const animation of json.animations || [])
     for (const sampler of animation.samplers) {
@@ -138,7 +150,8 @@ export function repackGLTFV1Accessors(
   gltf: GLTFWithBuffers,
   conversions: Map<number, GLTFV1AccessorConversion>,
   pending: Set<number>,
-  reportUnsupported: (feature: string) => void
+  reportUnsupported: (feature: string) => void,
+  reportNote: (message: string) => void
 ): void {
   const plans: GLTFV1BufferAppend[] = [];
   const metadataUpdates: Array<() => void> = [];
@@ -166,6 +179,7 @@ export function repackGLTFV1Accessors(
       !convertJoints &&
       !convertWeights &&
       !padInfluences &&
+      conversion.usage !== 'indices' &&
       conversion.mode !== 'unit'
     )
       continue;
@@ -191,6 +205,34 @@ export function repackGLTFV1Accessors(
     }
     let componentType = accessor.componentType;
     let normalized = accessor.normalized;
+    if (conversion.usage === 'indices') {
+      if (accessor.type !== 'SCALAR' || ![5121, 5123, 5125].includes(componentType) || normalized) {
+        reportUnsupported(
+          `index accessor ${accessorIndex} requires unnormalized unsigned SCALAR data`
+        );
+        continue;
+      }
+      let maximum = 0;
+      for (let elementIndex = 0; elementIndex < accessor.count; elementIndex++)
+        maximum = Math.max(maximum, readGLTFV1AccessorComponent(source, elementIndex, 0));
+      const sentinel = componentType === 5121 ? 255 : componentType === 5123 ? 65535 : 4294967295;
+      if (maximum === sentinel) {
+        if (conversion.hasOpaqueConsumer) {
+          reportUnsupported(
+            `index accessor ${accessorIndex} cannot widen opaque primitive extension semantics`
+          );
+          continue;
+        }
+        if (componentType === 5125) {
+          reportUnsupported(
+            `index accessor ${accessorIndex} contains the unrepresentable uint32 restart value`
+          );
+          continue;
+        }
+        componentType = componentType === 5121 ? 5123 : 5125;
+      }
+      if (!pending.has(accessorIndex) && componentType === accessor.componentType) continue;
+    }
     if (convertJoints || conversion.mode === 'unit') {
       if (convertJoints && accessor.normalized) {
         reportUnsupported(
@@ -282,6 +324,7 @@ export function repackGLTFV1Accessors(
               elementIndex * byteStride + columnIndex * columnSize + rowIndex * componentSize;
             if (componentType === 5126) outputData.setFloat32(outputOffset, value, true);
             else if (componentType === 5121) outputData.setUint8(outputOffset, value);
+            else if (componentType === 5125) outputData.setUint32(outputOffset, value, true);
             else outputData.setUint16(outputOffset, value, true);
           }
       }
@@ -295,6 +338,10 @@ export function repackGLTFV1Accessors(
           ? {target: 34963}
           : {}),
       apply: bufferViewIndex => {
+        if (conversion.usage === 'indices' && componentType !== accessor.componentType)
+          reportNote(
+            `Widened index accessor ${accessorIndex} to preserve a glTF 1 index reserved by glTF 2.`
+          );
         accessor.bufferView = bufferViewIndex;
         accessor.byteOffset = 0;
         delete (accessor as LegacyAccessor).byteStride;
