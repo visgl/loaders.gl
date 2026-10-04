@@ -251,7 +251,7 @@ frame. The supplied `geometricError` must be finite, nonnegative, and at least t
 measured reconstruction error. It is the application's responsibility to include source
 LOD or simplification error; the sink does not estimate it.
 
-`maxTotalBytes` includes the GLB and UTF-8 JSON Blob sizes. This bounds **retained output**,
+`maxTotalBytes` is captured when the sink is created and includes the GLB and UTF-8 JSON Blob sizes. This bounds **retained output**,
 not peak conversion or serialization memory. Conversion report counts/byte totals describe
 codec resources (one GLB), while this sink retains two files. Files are exposed only after
 successful finalization; failed writes, cancellation, zero/multiple meshes, or conversion
