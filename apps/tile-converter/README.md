@@ -61,7 +61,7 @@ require source-level controls. `convertPointCloudSource` accepts the same option
 ## V5 single mesh encoding
 
 `encodeMeshTile(mesh, {material})` is available from both `/v5` and `/v5/browser`. It encodes one
-untextured triangle-list `MeshGeometry` (`mode: 4`) into a self-contained glTF 2.0 GLB.
+triangle-list `MeshGeometry` (`mode: 4`) into a self-contained glTF 2.0 GLB.
 
 ```ts
 import {encodeMeshTile} from '@loaders.gl/tile-converter/v5/browser';
@@ -112,18 +112,44 @@ Metallic/roughness factors are in [0, 1]. Alpha mode is `OPAQUE`, `MASK`, or `BL
 finite nonnegative `alphaCutoff` is allowed only with `MASK`. Omitted properties retain
 [glTF defaults](https://registry.khronos.org/glTF/specs/2.0/glTF-2.0.html#materials):
 white base color, metallic/roughness 1, opaque alpha, mask cutoff 0.5, and single-sided rendering.
-No material is added unless explicitly supplied. Unsupported properties, including textures
-and extensions, fail with `MESH_MATERIAL_UNSUPPORTED`; invalid values fail with
+No material is added unless explicitly supplied. Unsupported material properties and extensions
+fail with `MESH_MATERIAL_UNSUPPORTED`; invalid values fail with
 `MESH_MATERIAL_INVALID`. Invalid color values/counts/types fail with `MESH_COLOR_INVALID`.
 Inputs are not mutated. Applications explicitly map source colors and materials into this
-subset; textures, UVs, multiple materials, and feature mappings remain open work.
+subset; other texture maps, custom samplers, texture transforms, multiple materials, and
+feature mappings remain open work.
+
+Optional `TEXCOORD_0` contains packed finite Float32 UV pairs (`size: 2`), one per position.
+Values outside [0, 1] are allowed for repeating textures. A selected `baseColorTexture` requires
+these UVs and embeds an already encoded PNG or JPEG:
+
+```ts
+const glb = encodeMeshTile(meshWithUvs, {
+  material: {
+    baseColorTexture: {data: encodedImageBytes, mimeType: 'image/png'},
+    metallicFactor: 0,
+    roughnessFactor: 1
+  }
+});
+```
+
+`MeshTileTexture.data` is a `Uint8Array`; subviews preserve only their selected bytes. The
+encoder checks header MIME type and positive dimensions, then copies the encoded bytes
+without decoding, re-encoding, flipping UVs, or changing glTF's default sampler. Applications
+supply valid encoded image payloads and map source sampling conventions explicitly. Base-color
+images use glTF's sRGB interpretation and multiply the linear material factor and vertex colors.
+External image URLs, other UV sets, custom samplers, and texture extensions are rejected.
+Invalid selected UVs fail with `MESH_TEXCOORD_INVALID`, missing UVs with
+`MESH_TEXCOORD_REQUIRED`, and invalid/unsupported image descriptors or headers with
+`MESH_TEXTURE_INVALID`. The spatial mesh codec forwards the same selected UVs and images.
 
 ## V5 spatial mesh codec
 
-`createMeshConversionCodec` connects the untextured encoder to `convertTileset`. Supply
+`createMeshConversionCodec` connects the mesh encoder to `convertTileset`. Supply
 selected triangle geometries with **absolute source-frame positions**, matching normals, a
 resource ID, an explicit target-frame origin, and an optional selected `material`. Positions
 may be packed Float32 or Float64; the remaining geometry restrictions match `encodeMeshTile`.
+The input byte estimator must include selected image bytes as well as geometry buffers.
 
 ```ts
 import {

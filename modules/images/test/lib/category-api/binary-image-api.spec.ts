@@ -92,3 +92,40 @@ test('isBinaryImage#jpeg detection edge case', async () => {
     'getBinaryImageMetadata has a false positive with floating point data matching first 3 bytes of jpeg magic'
   ).toBeFalsy();
 });
+
+/** A complete 2x2 RGBA PNG signature and IHDR chunk, including its CRC. */
+function createPngHeader(): Uint8Array {
+  return new Uint8Array([
+    137, 80, 78, 71, 13, 10, 26, 10, 0, 0, 0, 13, 73, 72, 68, 82, 0, 0, 0, 2, 0, 0, 0, 2, 8, 6, 0,
+    0, 0, 114, 182, 13, 36
+  ]);
+}
+
+test('PNG metadata requires a complete header and respects DataView subviews', () => {
+  const header = createPngHeader();
+  const storage = new Uint8Array(header.length + 2);
+  storage.set(header, 1);
+  expect(getBinaryImageMetadata(new DataView(storage.buffer, 1, header.length))).toEqual({
+    mimeType: 'image/png',
+    width: 2,
+    height: 2
+  });
+});
+
+test.each([
+  0, 4, 8, 12, 16, 24, 32
+])('PNG metadata rejects a %s-byte truncated header', byteLength => {
+  const header = createPngHeader();
+  expect(getBinaryImageMetadata(new DataView(header.buffer, 0, byteLength))).toBeNull();
+});
+
+test.each([
+  {label: 'first signature word', byteOffset: 0},
+  {label: 'remaining signature word', byteOffset: 4},
+  {label: 'IHDR length', byteOffset: 8},
+  {label: 'IHDR chunk type', byteOffset: 12}
+])('PNG metadata rejects invalid $label', ({byteOffset}) => {
+  const header = createPngHeader();
+  header[byteOffset] = 255;
+  expect(getBinaryImageMetadata(header.buffer)).toBeNull();
+});

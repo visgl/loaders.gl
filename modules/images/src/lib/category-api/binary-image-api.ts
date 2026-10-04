@@ -56,8 +56,14 @@ function getISOBMFFMetadata(binaryData: DataView | ArrayBuffer): BinaryImageMeta
 
 function getPngMetadata(binaryData: DataView | ArrayBuffer): BinaryImageMetadata | null {
   const dataView = toDataView(binaryData);
-  // Check file contains the first 4 bytes of the PNG signature.
-  const isPng = dataView.byteLength >= 24 && dataView.getUint32(0, BIG_ENDIAN) === 0x89504e47;
+  // Require the full eight-byte signature and first IHDR chunk (13 data bytes plus CRC).
+  // Matching only the first four signature bytes can misidentify arbitrary binary data as PNG.
+  const isPng =
+    dataView.byteLength >= 33 &&
+    dataView.getUint32(0, BIG_ENDIAN) === 0x89504e47 &&
+    dataView.getUint32(4, BIG_ENDIAN) === 0x0d0a1a0a &&
+    dataView.getUint32(8, BIG_ENDIAN) === 13 &&
+    dataView.getUint32(12, BIG_ENDIAN) === 0x49484452;
   if (!isPng) {
     return null;
   }

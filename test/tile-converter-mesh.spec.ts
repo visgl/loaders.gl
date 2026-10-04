@@ -2,8 +2,8 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import {expect, test} from 'vitest';
-import {parse} from '@loaders.gl/core';
+import {beforeAll, expect, test} from 'vitest';
+import {fetchFile, parse} from '@loaders.gl/core';
 import {GLBLoader, GLTFLoader, GLTFScenegraph} from '@loaders.gl/gltf';
 import {GLTF2Schema} from '@loaders.gl/gltf/schema';
 import type {MeshAttribute, MeshGeometry} from '@loaders.gl/schema';
@@ -113,7 +113,7 @@ test.each([
   [
     'unknown attribute',
     (mesh: MeshGeometry) => {
-      mesh.attributes.TEXCOORD_0 = {value: new Float32Array(6), size: 2};
+      mesh.attributes.TEXCOORD_1 = {value: new Float32Array(6), size: 2};
     },
     'MESH_ATTRIBUTE_UNSUPPORTED'
   ],
@@ -391,11 +391,174 @@ test.each([
 });
 
 test.each([
-  'baseColorTexture',
+  'normalTexture',
   'emissiveFactor',
   'extensions'
 ])('mesh encoder rejects unsupported material property %s', property => {
   expect(() => encodeMeshTile(createMesh(), {material: {[property]: {}}})).toThrowError(
     expect.objectContaining({code: 'MESH_MATERIAL_UNSUPPORTED'})
+  );
+});
+
+/** Tiny valid encoded images reused by header-boundary and GLB embedding cases. */
+let pngImage: Uint8Array;
+let jpegImage: Uint8Array;
+beforeAll(async () => {
+  [pngImage, jpegImage] = await Promise.all(
+    ['png', 'jpg'].map(
+      async extension =>
+        new Uint8Array(
+          await (
+            await fetchFile(
+              new URL(`./data/tile-converter-texture.${extension}`, import.meta.url).href
+            )
+          ).arrayBuffer()
+        )
+    )
+  );
+});
+
+/** Selects UVs that also exercise the default repeating sampler outside [0, 1]. */
+function createTexturedMesh(): MeshGeometry {
+  const mesh = createMesh();
+  mesh.attributes.TEXCOORD_0 = {value: new Float32Array([-1, 0, 1, 0, 0, 2]), size: 2};
+  return mesh;
+}
+
+test.each([
+  'image/png',
+  'image/jpeg'
+] as const)('mesh encoder embeds %s bytes and UV subviews without changing inputs', async mimeType => {
+  const image = mimeType === 'image/png' ? pngImage : jpegImage;
+  const imageStorage = new Uint8Array(image.length + 2);
+  imageStorage.set(image, 1);
+  const texture = {data: imageStorage.subarray(1, -1), mimeType};
+  const mesh = createTexturedMesh();
+  const coordinateStorage = new Float32Array([999, -1, 0, 1, 0, 0, 2, 999]);
+  mesh.attributes.TEXCOORD_0.value = coordinateStorage.subarray(1, -1);
+  const before = structuredClone({mesh, texture});
+  const output = encodeMeshTile(mesh, {material: {baseColorTexture: texture}});
+  const container = await parse(output, GLBLoader, {glb: {strict: true}});
+  expect(GLTF2Schema.safeParse(container.json).success).toBe(true);
+  const primitive = container.json.meshes[0].primitives[0];
+  expect(container.json.accessors[primitive.attributes.TEXCOORD_0]).toMatchObject({
+    type: 'VEC2',
+    componentType: 5126,
+    count: 3
+  });
+  expect(container.json.materials[primitive.material]).toEqual({
+    pbrMetallicRoughness: {baseColorTexture: {index: 0}}
+  });
+  expect(container.json.textures).toEqual([{source: 0}]);
+  expect(container.json.samplers).toBeUndefined();
+  expect(container.json.images[0]).toEqual({bufferView: 0, mimeType});
+  const imageView = container.json.bufferViews[0];
+  expect(
+    new Uint8Array(
+      container.binChunks[0].arrayBuffer,
+      container.binChunks[0].byteOffset + imageView.byteOffset,
+      imageView.byteLength
+    )
+  ).toEqual(image);
+  const scenegraph = new GLTFScenegraph(
+    await parse(output, GLTFLoader, {gltf: {postProcess: false, loadImages: false}})
+  );
+  expect(Array.from(scenegraph.getTypedArrayForAccessor(primitive.attributes.TEXCOORD_0))).toEqual([
+    -1, 0, 1, 0, 0, 2
+  ]);
+  expect({mesh, texture}).toEqual(before);
+  expect(coordinateStorage[0]).toBe(999);
+  expect(imageStorage[0]).toBe(0);
+});
+
+test('mesh encoder preserves UVs without requiring a material', async () => {
+  const container = await parse(encodeMeshTile(createTexturedMesh()), GLBLoader);
+  expect(container.json.meshes[0].primitives[0].attributes.TEXCOORD_0).toBeDefined();
+  expect(container.json.materials).toBeUndefined();
+});
+
+test.each([
+  {label: 'null', attribute: null},
+  {label: 'undefined', attribute: undefined},
+  {label: 'false', attribute: false},
+  {label: 'integer type', attribute: {value: new Uint16Array(6), size: 2}},
+  {label: 'size', attribute: {value: new Float32Array(6), size: 3}},
+  {label: 'count', attribute: {value: new Float32Array(4), size: 2}},
+  {label: 'nonfinite', attribute: {value: new Float32Array([NaN, 0, 0, 0, 0, 0]), size: 2}}
+])('mesh encoder rejects invalid selected UVs: $label', ({attribute}) => {
+  const mesh = createMesh();
+  mesh.attributes.TEXCOORD_0 = attribute as MeshAttribute;
+  expect(() => encodeMeshTile(mesh)).toThrowError(
+    expect.objectContaining({code: 'MESH_TEXCOORD_INVALID'})
+  );
+});
+
+test('mesh encoder rejects UV layouts it cannot preserve', () => {
+  const mesh = createTexturedMesh();
+  mesh.attributes.TEXCOORD_0.normalized = true;
+  expect(() => encodeMeshTile(mesh)).toThrowError(
+    expect.objectContaining({code: 'MESH_ATTRIBUTE_LAYOUT_UNSUPPORTED'})
+  );
+});
+
+test('mesh encoder requires UVs for a selected base-color image', () => {
+  expect(() =>
+    encodeMeshTile(createMesh(), {
+      material: {baseColorTexture: {data: pngImage, mimeType: 'image/png'}}
+    })
+  ).toThrowError(expect.objectContaining({code: 'MESH_TEXCOORD_REQUIRED'}));
+});
+
+test.each([
+  {label: 'null', texture: () => null},
+  {label: 'undefined', texture: () => undefined},
+  {label: 'false', texture: () => false},
+  {label: 'external URL', texture: () => ({uri: 'https://example.invalid/image.png'})},
+  {label: 'ArrayBuffer', texture: () => ({data: pngImage.buffer, mimeType: 'image/png'})},
+  {label: 'unsupported format', texture: () => ({data: pngImage, mimeType: 'image/webp'})},
+  {label: 'sampler', texture: () => ({data: pngImage, mimeType: 'image/png', sampler: {}})},
+  {label: 'UV set', texture: () => ({data: pngImage, mimeType: 'image/png', texCoord: 1})},
+  {label: 'transform', texture: () => ({data: pngImage, mimeType: 'image/png', extensions: {}})},
+  {label: 'MIME mismatch', texture: () => ({data: pngImage, mimeType: 'image/jpeg'})},
+  {label: 'empty image', texture: () => ({data: new Uint8Array(), mimeType: 'image/png'})},
+  {
+    label: 'truncated header',
+    texture: () => ({data: pngImage.subarray(0, 24), mimeType: 'image/png'})
+  },
+  {
+    label: 'incomplete PNG signature',
+    texture: () => {
+      const data = pngImage.slice();
+      data[4] = 255;
+      return {data, mimeType: 'image/png'};
+    }
+  },
+  {
+    label: 'zero width',
+    texture: () => {
+      const data = pngImage.slice();
+      data.fill(0, 16, 20);
+      return {data, mimeType: 'image/png'};
+    }
+  },
+  {
+    label: 'zero height',
+    texture: () => {
+      const data = pngImage.slice();
+      data.fill(0, 20, 24);
+      return {data, mimeType: 'image/png'};
+    }
+  },
+  {
+    label: 'malformed other format',
+    texture: () => ({
+      data: new Uint8Array([66, 77, 14, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]),
+      mimeType: 'image/png'
+    })
+  }
+])('mesh encoder rejects invalid selected texture: $label', ({texture}) => {
+  const material = {baseColorTexture: texture()} as unknown as MeshTileMaterial;
+  expect(() => encodeMeshTile(createTexturedMesh(), {material})).toThrowError(
+    expect.objectContaining({code: 'MESH_TEXTURE_INVALID'})
   );
 });
