@@ -409,3 +409,27 @@ test('preloads a source dependency before synchronous source creation', async ()
   );
   expect(source.preload).toHaveBeenCalledTimes(1);
 });
+
+test('forwards shared namespaces without applying a parent dependency override to its child', async () => {
+  const dependency = createDependencyLoader('shared');
+  const parent = createDependencyLoader('shared', {ChildLoader: dependency});
+  const replacement = {...dependency, parse: async (_data, options) => options.shared.value};
+  const prepared = await preload(parent, {
+    shared: {value: 9, subloaders: {ChildLoader: replacement}}
+  });
+  const dependencies = await prepared.parse(new ArrayBuffer(0));
+  expect(await dependencies.ChildLoader.parse(new ArrayBuffer(0))).toBe(9);
+  expect(parent.subloaders.ChildLoader).toBe(dependency);
+});
+
+test('retains preload settings through core option normalization and allows parse-time overrides', async () => {
+  const parent = {
+    ...createDependencyLoader('parent', {ChildLoader: createDependencyLoader('child')}),
+    options: {parent: {value: 1}},
+    parse: async (_data, options) => options.parent.value
+  };
+  const prepared = await preload(parent, {parent: {value: 2}});
+  expect(await parse(new ArrayBuffer(0), prepared)).toBe(2);
+  expect(await parse(new ArrayBuffer(0), prepared, {parent: {value: 3}})).toBe(3);
+  expect(parent.options.parent.value).toBe(1);
+});

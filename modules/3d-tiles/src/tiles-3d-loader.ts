@@ -62,6 +62,7 @@ export const Tiles3DLoader = {
   batchType: null as never,
   ...Tiles3DFormat,
   version: VERSION,
+  /** Named glTF dependencies that core preload() prepares before tile streaming. */
   subloaders: {GLTFLoader, GLBLoader},
   /** Loads the parser-bearing 3D Tiles loader implementation. */
   preload: async () => (await import('./tiles-3d-loader-with-parser')).Tiles3DLoaderWithParser,

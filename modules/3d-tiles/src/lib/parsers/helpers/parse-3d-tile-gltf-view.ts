@@ -89,7 +89,7 @@ export async function extractGLTF(
       // TODO - Should handle byteOffset... However, not used now...
       const gltfWithBuffers = await parseFromContext(
         tile.gltfArrayBuffer,
-        GLTFLoader,
+        options?.['3d-tiles']?.subloaders?.GLTFLoader || GLTFLoader,
         options,
         context
       );

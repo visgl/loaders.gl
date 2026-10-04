@@ -3,8 +3,15 @@
 // Copyright (c) vis.gl contributors
 
 import {expect, test, vi} from 'vitest';
-import {parse, preload} from '@loaders.gl/core';
+import {parse, preload, fetchFile, coreApi} from '@loaders.gl/core';
 import {GLBLoader, GLBWriter, GLTFLoader} from '@loaders.gl/gltf';
+import {DracoLoader} from '@loaders.gl/draco';
+import type {
+  Loader,
+  LoaderWithParser,
+  LoaderOptions,
+  LoaderContext
+} from '@loaders.gl/loader-utils';
 import {Tiles3DLoader} from '../src/tiles-3d-loader';
 
 /** Creates a tiny legacy tile around the same GLB used by the modern content case. */
@@ -72,4 +79,35 @@ test('uses a caller-specific glTF override with forwarded glTF options', async (
   expect(parseGltf).toHaveBeenCalledTimes(1);
   expect(parseGltf.mock.calls[0][1]?.gltf?.loadImages).toBe(false);
   expect(Tiles3DLoader.subloaders.GLTFLoader).toBe(GLTFLoader);
+});
+
+test('keeps nested decoder calls local when dependency bindings contain functions', async () => {
+  // The glTF parser's legacy Draco path forwards its own namespace to core parsing.
+  // A prepared nested dependency map must never be sent across the worker boundary.
+  const nestedGltfLoader = {...GLTFLoader, subloaders: {DracoLoader}};
+  const prepared = await preload(Tiles3DLoader, {
+    '3d-tiles': {subloaders: {GLTFLoader: nestedGltfLoader}}
+  });
+  const response = await fetchFile('@loaders.gl/3d-tiles/test/data/143.b3dm');
+  const parseDependency = vi.fn(
+    (data: ArrayBuffer, loader: Loader, options?: LoaderOptions, context?: LoaderContext) =>
+      parse(data, loader, options, context)
+  );
+  const context = {fetch, coreApi, _parse: parseDependency} as LoaderContext;
+  const tile = await prepared.parse(
+    await response.arrayBuffer(),
+    {core: {worker: true}, '3d-tiles': {loadGLTF: true}},
+    context
+  );
+  const decoderCalls = parseDependency.mock.calls.filter(([, loader]) => loader.id === 'draco');
+  expect(decoderCalls.length).toBeGreaterThan(0);
+  for (const [, , options] of decoderCalls) {
+    expect(options?.core?.worker).toBe(false);
+    const gltfOptions = options?.gltf as
+      | {subloaders?: Record<string, LoaderWithParser>}
+      | undefined;
+    expect(gltfOptions?.subloaders?.DracoLoader.parse).toBeTypeOf('function');
+  }
+  expect(tile.type).toBe('b3dm');
+  expect(tile.gltf.meshes.length).toBeGreaterThan(0);
 });

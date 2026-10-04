@@ -3,7 +3,12 @@
 // Copyright (c) vis.gl contributors
 
 import {isSourceLoader, mergeOptions} from '@loaders.gl/loader-utils';
-import type {Loader, LoaderOptions, LoaderWithParser} from '@loaders.gl/loader-utils';
+import type {
+  Loader,
+  LoaderOptions,
+  LoaderWithParser,
+  StrictLoaderOptions
+} from '@loaders.gl/loader-utils';
 
 const loaderImplementationPromises = new Map<Loader, Map<string, Promise<LoaderWithParser>>>();
 const loaderImplementations = new Map<Loader, Map<string, LoaderWithParser>>();
@@ -180,7 +185,16 @@ export async function preloadLoaderDependencies(
   url?: string
 ): Promise<LoaderWithParser> {
   if (preparedLoaders.has(loader)) return await getLoaderImplementation(loader, options, url);
-  validateSubloaderGraph(loader, options, []);
+  validateSubloaderGraph(loader, options);
+  return await prepareLoaderDependencies(loader, options, url);
+}
+
+/** Prepares a node after the complete dependency graph has been validated. */
+async function prepareLoaderDependencies(
+  loader: Loader,
+  options?: LoaderOptions,
+  url?: string
+): Promise<LoaderWithParser> {
   // Options can select nested backends or overrides; do not share their bindings.
   if (!options) {
     const cached = subloaderPreparations.get(loader);
@@ -200,27 +214,38 @@ export async function preloadLoaderDependencies(
 function getSubloaders(loader: Loader, options?: LoaderOptions): Record<string, Loader> {
   const scopedOptions = options?.[loader.id] as {subloaders?: Record<string, Loader>} | undefined;
   const overrides = scopedOptions?.subloaders || {};
-  for (const name of Object.keys(overrides)) {
-    if (!Object.hasOwn(loader.subloaders || {}, name)) {
-      throw new Error(`${loader.id}: unknown subloader ${name}`);
-    }
-  }
-  return {...loader.subloaders, ...overrides};
+  return Object.fromEntries(
+    Object.entries(loader.subloaders || {}).map(([name, dependency]) => [
+      name,
+      Object.hasOwn(overrides, name) ? overrides[name] : dependency
+    ])
+  );
 }
 
-/** Rejects dependency cycles before asynchronous preparation can deadlock. */
-function validateSubloaderGraph(
-  loader: Loader,
-  options: LoaderOptions | undefined,
-  ancestors: Loader[]
-): void {
-  if (ancestors.includes(loader)) {
-    throw new Error(
-      `Subloader cycle: ${[...ancestors, loader].map(value => value.id).join(' -> ')}`
-    );
+/** Rejects cycles and validates override names against all reachable declarations in each namespace. */
+function validateSubloaderGraph(loader: Loader, options?: LoaderOptions): void {
+  const declarations = new Map<string, Set<string>>();
+  visitLoader(loader, []);
+  for (const [loaderId, names] of declarations) {
+    const scopedOptions = options?.[loaderId] as {subloaders?: Record<string, Loader>} | undefined;
+    for (const name of Object.keys(scopedOptions?.subloaders || {})) {
+      if (!names.has(name)) throw new Error(`${loaderId}: unknown subloader ${name}`);
+    }
   }
-  for (const dependency of Object.values(getSubloaders(loader, options))) {
-    validateSubloaderGraph(dependency, options, [...ancestors, loader]);
+
+  /** Collects declarations from the resolved graph while detecting cycles along each path. */
+  function visitLoader(currentLoader: Loader, ancestors: Loader[]): void {
+    if (ancestors.includes(currentLoader)) {
+      throw new Error(
+        `Subloader cycle: ${[...ancestors, currentLoader].map(value => value.id).join(' -> ')}`
+      );
+    }
+    const names = declarations.get(currentLoader.id) || new Set<string>();
+    for (const name of Object.keys(currentLoader.subloaders || {})) names.add(name);
+    declarations.set(currentLoader.id, names);
+    for (const dependency of Object.values(getSubloaders(currentLoader, options))) {
+      visitLoader(dependency, [...ancestors, currentLoader]);
+    }
   }
 }
 
@@ -235,12 +260,18 @@ async function bindSubloaders(
     Promise.all(
       Object.entries(getSubloaders(loader, options)).map(
         async ([name, dependency]) =>
-          [name, await preloadLoaderDependencies(dependency, options, url)] as const
+          [name, await prepareLoaderDependencies(dependency, options, url)] as const
       )
     )
   ]);
   const subloaders = Object.fromEntries(entries);
-  const prepared = {...implementation, subloaders};
+  // Expose preload settings as defaults before core normalizes a later parse call.
+  const defaultOptions = mergeOptions(
+    implementation.options,
+    (options || {}) as StrictLoaderOptions
+  );
+  defaultOptions.core = {...defaultOptions.core, worker: false};
+  const prepared = {...implementation, options: defaultOptions, subloaders};
   delete prepared.preload;
   // Function-valued dependency bindings cannot be transferred to a worker.
   prepared.worker = false;
@@ -269,6 +300,7 @@ async function bindSubloaders(
           data,
           {
             ...forwardedOptions,
+            core: {...forwardedOptions.core, worker: false},
             [loader.id]: {...(forwardedOptions[loader.id] as object), subloaders}
           },
           context

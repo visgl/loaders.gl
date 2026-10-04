@@ -262,10 +262,13 @@ The Draco example requires the glTF loader to declare that named dependency.
 Preload options are retained as defaults by the prepared graph; parse-time options override
 those settings. Dependency bindings are fixed at preparation time: preload again to change
 an override. Two branches using the same loader ID share its option namespace; branch-specific
-options are not supported. Default preparations share in-flight imports, and failures can be
-retried. Caller-specific preparations keep their bindings separate.
+options are not supported. Overrides apply only to matching declared names at each node,
+so a source and its data loader can share an ID without inheriting each other's dependency roles.
+Default preparations share in-flight imports, and failures can be retried. Caller-specific preparations keep their bindings separate.
 
 Prepared dependency graphs run locally because their function-valued bindings cannot be
-transferred to a worker. Use the original metadata loader for normal worker dispatch.
+transferred to a worker. `core.worker` is forced to `false` in nested calls as well,
+even when parse-time options request workers. Use the original metadata loader for normal
+worker dispatch.
 `createDataSource()` remains synchronous; preload a source first when its dependencies must
 be available before source creation.
