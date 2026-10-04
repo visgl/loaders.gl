@@ -19,6 +19,10 @@ import {convertGLTFV1SkinScenes} from './convert-gltf-v1-skin-scenes';
 import {validateGLTFV1Cameras} from './validate-gltf-v1-cameras';
 import {validateGLTFV1Payloads} from './validate-gltf-v1-payloads';
 import {convertGLTFV1MatrixNodes} from './convert-gltf-v1-matrix-nodes';
+import {
+  convertGLTFV1Materials,
+  canPreserveGLTFV1MaterialFallbacks
+} from './convert-gltf-v1-materials';
 
 // Binary format changes (mainly implemented by GLBLoader)
 // https://github.com/KhronosGroup/glTF/tree/master/extensions/1.0/Khronos/KHR_binary_glTF
@@ -235,7 +239,11 @@ class GLTFV1Normalizer {
 
     this._updateObjects(json);
 
-    this._updateMaterial(json);
+    const commonMaterialFallbacks = convertGLTFV1Materials(
+      json,
+      feature => this._unsupported(feature),
+      message => this._warning(message)
+    );
     convertGLTFV1Animations(
       json,
       (reference, collection) => this._convertIdToIndex(reference, collection),
@@ -261,7 +269,7 @@ class GLTFV1Normalizer {
       feature => this._unsupported(feature),
       message => this._warning(message)
     );
-    this._preserveLegacyResources(json);
+    this._preserveLegacyResources(json, commonMaterialFallbacks);
     this._removeEmptyCollections(json);
     return deferBinaryBaking ? this.report : this.finishNormalization(gltf);
   }
@@ -478,50 +486,6 @@ class GLTFV1Normalizer {
     }
   }
 
-  /**
-   * Update material (set pbrMetallicRoughness)
-   * @param {*} json
-   */
-  _updateMaterial(json) {
-    for (const material of json.materials) {
-      material.extras = {
-        ...material.extras,
-        gltf1: {technique: material.technique, values: material.values}
-      };
-
-      const textureId =
-        material.values?.tex ||
-        material.values?.texture2d_0 ||
-        material.values?.diffuseTex ||
-        material.values?.diffuse;
-      const textureIndex = json.textures.findIndex(texture => texture.id === textureId);
-      const diffuse = material.values?.diffuse;
-      const diffuseColor = isUnitColorFactor(diffuse) ? diffuse : undefined;
-      if (textureIndex !== -1 || diffuseColor) {
-        const baseColorFactor = diffuseColor ? [...diffuseColor] : [1, 1, 1, 1];
-        const transparency = material.values?.transparency;
-        if (typeof transparency === 'number' && transparency >= 0 && transparency <= 1) {
-          baseColorFactor[3] *= transparency;
-        }
-        material.pbrMetallicRoughness ||= {};
-        material.pbrMetallicRoughness.metallicFactor ??= 0;
-        material.pbrMetallicRoughness.roughnessFactor ??= 1;
-        material.pbrMetallicRoughness.baseColorFactor ||= baseColorFactor;
-        if (textureIndex !== -1) {
-          material.pbrMetallicRoughness.baseColorTexture = {index: textureIndex};
-        }
-        if (material.pbrMetallicRoughness.baseColorFactor[3] < 1) {
-          material.alphaMode ||= 'BLEND';
-        }
-        this._warning('Approximated glTF v1 diffuse material values with PBR material factors.');
-      }
-      // Recognizing a conventional uniform does not translate its arbitrary shader program.
-      if (material.technique || material.values) {
-        this._unsupported(`material technique ${material.technique || '<unnamed>'}`);
-      }
-    }
-  }
-
   /** Split glTF 1 nodes that reference multiple meshes into glTF 2-compatible nodes. */
   _updateNodes(json): void {
     const nodes = json.nodes || [];
@@ -548,17 +512,20 @@ class GLTFV1Normalizer {
   }
 
   /** Preserve v1 techniques, programs, and shaders without pretending they are PBR materials. */
-  _preserveLegacyResources(json): void {
+  _preserveLegacyResources(json, commonMaterialFallbacks: Set<string>): void {
+    const coveredFallbacks = canPreserveGLTFV1MaterialFallbacks(json, commonMaterialFallbacks);
     const resources = {};
     for (const resourceName of ['techniques', 'programs', 'shaders']) {
       if (json[resourceName]) {
         resources[resourceName] = json[resourceName];
         delete json[resourceName];
-        this._unsupported(`legacy ${resourceName}`);
+        if (!coveredFallbacks) this._unsupported(`legacy ${resourceName}`);
       }
     }
     if (Object.keys(resources).length) {
       json.extras = {...json.extras, gltf1Resources: resources};
+      if (coveredFallbacks)
+        this._warning('Preserved shader resources overridden by converted common materials.');
     }
   }
 
@@ -583,15 +550,6 @@ class GLTFV1Normalizer {
       );
     }
   }
-}
-
-/** Check whether a legacy diffuse value is a finite RGBA factor in the glTF 2 unit range. */
-function isUnitColorFactor(value: unknown): value is [number, number, number, number] {
-  return (
-    Array.isArray(value) &&
-    value.length === 4 &&
-    value.every(component => typeof component === 'number' && component >= 0 && component <= 1)
-  );
 }
 
 /** Normalize a glTF 1 asset in place, preserving the historical loader behavior. */

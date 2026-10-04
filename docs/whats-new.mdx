@@ -54,6 +54,13 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
 
 ## v5.0 (In Development)
 
+- Convert the supported `KHR_materials_common` subset to PBR/unlit materials, including emission,
+  texture references, explicit transparency/double-sided flags, accurate extension declarations,
+  and preserved fallback resources. Assumptions use the supplied logger; small JSON/GLB exports
+  are checked with the official Khronos validator in Chromium tests.
+- `GLTFWriter` restores decoded unlit materials as required `KHR_materials_unlit` extensions,
+  cleans empty extension declarations, and omits empty binary buffers for assets without binary data.
+
 - Further expand glTF 1 conversion with common-ancestor multi-root skins, translation-only animated matrix decomposition, index widening, vertex count/index range checks, and independent inverse-bind and missing-influence validation. Safe conversions preserve source data; ambiguous or invalid cases use the supplied logger and normalization report.
 
 - Expand [glTF 1 conversion](/docs/modules/gltf/formats/gltf#gltf-1-to-gltf-2-conversion) with
