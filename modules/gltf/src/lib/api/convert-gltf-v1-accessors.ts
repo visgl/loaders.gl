@@ -37,11 +37,11 @@ const ELEMENT_COMPONENT_COUNTS: Record<string, number> = {
 /**
  * Move legacy strides to compatible buffer views without modifying binary payloads.
  * Views are split by usage and stride so packed and interleaved accessors cannot affect each other.
- * Layouts requiring binary repacking remain intact and are reported to the caller.
+ * Layouts requiring binary repacking remain intact and are queued until their buffers load.
  */
 export function convertGLTFV1AccessorStrides(
   json: GLTF,
-  reportUnsupported: (feature: string) => void
+  queueRepacking: (accessorIndex: number) => void
 ): void {
   const accessors = (json.accessors || []) as LegacyAccessor[];
   const bufferViews = json.bufferViews || [];
@@ -61,7 +61,11 @@ export function convertGLTFV1AccessorStrides(
       accessor.byteStride === 0 ? elementByteLength : (accessor.byteStride ?? elementByteLength);
     const byteOffset = accessor.byteOffset ?? 0;
     const bufferViewByteOffset = bufferView?.byteOffset ?? 0;
-    const componentByteLength = COMPONENT_BYTE_LENGTHS[accessor.componentType];
+    const componentByteLength =
+      typeof accessor.componentType === 'number' &&
+      Object.hasOwn(COMPONENT_BYTE_LENGTHS, accessor.componentType)
+        ? COMPONENT_BYTE_LENGTHS[accessor.componentType]
+        : 0;
     const isVertex = usage === 'vertex';
     const hasCompatibleStride = isVertex
       ? byteStride >= elementByteLength &&
@@ -91,7 +95,7 @@ export function convertGLTFV1AccessorStrides(
       !Number.isInteger(bufferView.byteLength) ||
       byteOffset + (accessor.count - 1) * byteStride + elementByteLength > bufferView.byteLength
     ) {
-      reportUnsupported(`accessor ${accessorIndex} layout requires binary repacking`);
+      queueRepacking(accessorIndex);
       continue;
     }
 
@@ -149,7 +153,11 @@ function collectAccessorUsages(json: GLTF): Map<number, AccessorUsage> {
 
 /** Return the legacy element width, excluding matrix layouts that require glTF 2 padding. */
 function getLegacyElementByteLength(accessor: GLTFAccessor): number {
-  const componentByteLength = COMPONENT_BYTE_LENGTHS[accessor.componentType];
+  const componentByteLength =
+    typeof accessor.componentType === 'number' &&
+    Object.hasOwn(COMPONENT_BYTE_LENGTHS, accessor.componentType)
+      ? COMPONENT_BYTE_LENGTHS[accessor.componentType]
+      : 0;
   const componentCount = Object.hasOwn(ELEMENT_COMPONENT_COUNTS, accessor.type)
     ? ELEMENT_COMPONENT_COUNTS[accessor.type]
     : 0;

@@ -75,15 +75,19 @@ describe('glTF 1 JSON conversion', () => {
       })
     );
 
-    expect(converted.json.meshes?.[0].primitives[0].attributes).toEqual({
-      JOINTS_0: 0,
-      WEIGHTS_0: 0,
-      TEXCOORD_0: 0,
-      COLOR_0: 0,
-      TEXCOORD_1: 0,
-      _BATCHID: 0,
-      POSITION: 0
-    });
+    const attributes = converted.json.meshes![0].primitives[0].attributes;
+    expect(Object.keys(attributes)).toEqual([
+      'JOINTS_0',
+      'WEIGHTS_0',
+      'TEXCOORD_0',
+      'COLOR_0',
+      'TEXCOORD_1',
+      '_BATCHID',
+      'POSITION'
+    ]);
+    expect(attributes.WEIGHTS_0).toBe(attributes.COLOR_0);
+    expect(attributes.JOINTS_0).not.toBe(attributes.POSITION);
+    expect(converted.json.accessors![attributes.JOINTS_0].type).toBe('VEC4');
   });
 
   test('rejects conflicting aliases rather than losing an attribute', () => {

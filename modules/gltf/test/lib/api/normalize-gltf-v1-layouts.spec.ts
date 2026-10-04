@@ -183,17 +183,16 @@ test.each([
     },
     meshes: {mesh: {primitives: [{attributes: {POSITION: 'positions'}}]}}
   });
-  expect(convertGLTFV1ToGLTF2(source).normalizationReport.unsupported).toContain(
-    'accessor 0 layout requires binary repacking'
-  );
+  expect(convertGLTFV1ToGLTF2(source).normalizationReport.unsupported).toEqual([
+    expect.stringContaining('accessor 0 layout requires binary repacking')
+  ]);
   expect(() => convertGLTFV1ToGLTF2(source, {normalize: 'strict'})).toThrow(
     /requires binary repacking/
   );
 });
 
 test.each([
-  {count: 2, byteStride: 16, byteLength: 24},
-  {count: 1, byteStride: 24, byteLength: 12}
+  {count: 2, byteStride: 16, byteLength: 24}
 ])('glTF 1 rejects a stride outside its buffer-view span ($count, $byteStride)', ({
   count,
   byteStride,
@@ -213,34 +212,21 @@ test.each([
   );
 });
 
-test('glTF 1 non-vertex strides requiring repacking are preserved with a diagnostic', () => {
+test('glTF 1 non-vertex strides are repacked without changing values or caller bytes', () => {
   const source = createLegacyAsset({
     accessors: {
       values: {bufferView: 'view', byteStride: 8, componentType: 5126, count: 2, type: 'SCALAR'}
     }
   });
-  const converted = convertGLTFV1ToGLTF2(source);
-  expect(converted.json.accessors?.[0]).toMatchObject({byteStride: 8, bufferView: 0});
-  expect(converted.normalizationReport.unsupported).toContain(
-    'accessor 0 layout requires binary repacking'
-  );
-  expect(() => convertGLTFV1ToGLTF2(source, {normalize: 'strict'})).toThrow(
-    /requires binary repacking/
-  );
-});
-
-test('glTF 1 matrix column layouts requiring glTF 2 padding are reported', () => {
-  const source = createLegacyAsset(
-    {
-      accessors: {
-        matrix: {bufferView: 'view', byteStride: 0, componentType: 5121, count: 1, type: 'MAT3'}
-      }
-    },
-    9
-  );
-  expect(() => convertGLTFV1ToGLTF2(source, {normalize: 'strict'})).toThrow(
-    /requires binary repacking/
-  );
+  new Float32Array(source.buffers[0].arrayBuffer, 0, 4).set([1, 99, 2, 99]);
+  const converted = convertGLTFV1ToGLTF2(source, {normalize: 'strict'});
+  expect(converted.json.accessors?.[0]).not.toHaveProperty('byteStride');
+  expect(converted.json.bufferViews?.[1].byteStride).toBeUndefined();
+  expect(Array.from(getTypedArrayForAccessor(converted.json, converted.buffers, 0))).toEqual([
+    1, 2
+  ]);
+  expect(converted.buffers[0].arrayBuffer).not.toBe(source.buffers[0].arrayBuffer);
+  expect(converted.normalizationReport.unsupported).toEqual([]);
 });
 
 test.each([
@@ -265,18 +251,21 @@ test.each([
   expect(converted.normalizationReport.unsupported).toEqual([]);
 });
 
-test('glTF 1 matrix data requires four-byte column alignment even with two-byte components', () => {
+test('glTF 1 matrix data is repacked to four-byte column alignment', () => {
   const source = createLegacyAsset({
     accessors: {
       matrix: {bufferView: 'view', byteOffset: 2, componentType: 5123, count: 1, type: 'MAT2'}
     }
   });
-  expect(() => convertGLTFV1ToGLTF2(source, {normalize: 'strict'})).toThrow(
-    /requires binary repacking/
-  );
+  const converted = convertGLTFV1ToGLTF2(source, {normalize: 'strict'});
+  const view = converted.json.bufferViews![converted.json.accessors![0].bufferView!];
+  expect(view.byteOffset! % 4).toBe(0);
+  expect(Array.from(getTypedArrayForAccessor(converted.json, converted.buffers, 0))).toEqual([
+    0, 0, 0, 0
+  ]);
 });
 
-test('glTF 1 mixed accessor roles are reported instead of applying a vertex stride to animation', () => {
+test('glTF 1 mixed accessor roles are separated without applying a vertex stride to animation', () => {
   const source = createLegacyAsset(
     {
       accessors: {
@@ -308,9 +297,17 @@ test('glTF 1 mixed accessor roles are reported instead of applying a vertex stri
     },
     32
   );
-  expect(() => convertGLTFV1ToGLTF2(source, {normalize: 'strict'})).toThrow(
-    /accessor 0 layout requires binary repacking/
-  );
+  new Float32Array(source.buffers[0].arrayBuffer).set([1, 2, 3, 4, 5, 6, 0, 1]);
+  const converted = convertGLTFV1ToGLTF2(source, {normalize: 'strict'});
+  const vertex = converted.json.meshes![0].primitives[0].attributes.POSITION;
+  const output = converted.json.animations![0].samplers[0].output;
+  expect(vertex).not.toBe(output);
+  expect(
+    converted.json.bufferViews![converted.json.accessors![output].bufferView!].byteStride
+  ).toBeUndefined();
+  expect(Array.from(getTypedArrayForAccessor(converted.json, converted.buffers, output))).toEqual([
+    1, 2, 3, 4, 5, 6
+  ]);
 });
 
 test('glTF 1 positive strides without a buffer view are reported', () => {
@@ -323,7 +320,6 @@ test('glTF 1 positive strides without a buffer view are reported', () => {
 });
 
 test.each([
-  {byteOffset: 2},
   {byteOffset: -4},
   {count: 0},
   {count: 1.5},
@@ -342,8 +338,6 @@ test.each([
 });
 
 test.each([
-  {accessorOffset: 1, viewOffset: 0},
-  {accessorOffset: 0, viewOffset: 1},
   {accessorOffset: 0, viewOffset: -2}
 ])('glTF 1 packed indices require component alignment: %j', ({accessorOffset, viewOffset}) => {
   const source = createLegacyAsset({

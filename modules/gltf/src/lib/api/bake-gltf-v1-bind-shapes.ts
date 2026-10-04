@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import {encodeArrayBufferToBase64, padToNBytes} from '@loaders.gl/loader-utils';
+import {appendGLTFV1BufferData} from './append-gltf-v1-buffer-data';
 import type {GLTFWithBuffers, GLTFSkin} from '../types/gltf-types';
 
 /** Skin metadata retained until its legacy transform has been baked. */
@@ -35,7 +35,7 @@ export function bakeGLTFV1BindShapes(
   reportUnsupported: (feature: string) => void
 ): void {
   const plannedBindings = new Map<string, BindShapeBake>();
-  const bufferGroups = new Map<number, BindShapeBake[]>();
+
   for (const [skinIndex, skin] of ((gltf.json.skins || []) as BindShapeSkin[]).entries()) {
     if (skin.bindShapeMatrix === undefined) continue;
     const bindShapeMatrix = skin.bindShapeMatrix;
@@ -63,55 +63,29 @@ export function bakeGLTFV1BindShapes(
       continue;
     }
     plannedBindings.set(bindingKey, plan);
-    const group = bufferGroups.get(plan.bufferIndex) || [];
-    group.push(plan);
-    bufferGroups.set(plan.bufferIndex, group);
   }
-
-  if (!bufferGroups.size) return;
-  // GLTFV1's non-mutating APIs initially share this array and its borrowed buffer descriptors.
-  gltf.buffers = [...gltf.buffers];
-  gltf.json.bufferViews ||= [];
-  gltf.json.accessors ||= [];
-  const bufferViews = gltf.json.bufferViews;
-  const accessors = gltf.json.accessors;
-  for (const [bufferIndex, plans] of bufferGroups) {
-    const bufferDefinition = gltf.json.buffers![bufferIndex];
-    const loadedBuffer = gltf.buffers[bufferIndex];
-    const originalByteLength = bufferDefinition.byteLength;
-    const appendByteOffset = padToNBytes(originalByteLength, 4);
-    const byteLength =
-      appendByteOffset + plans.reduce((length, plan) => length + plan.matrixBytes.byteLength, 0);
-    const arrayBuffer = new ArrayBuffer(byteLength);
-    const bytes = new Uint8Array(arrayBuffer);
-    bytes.set(
-      new Uint8Array(loadedBuffer.arrayBuffer, loadedBuffer.byteOffset, originalByteLength)
-    );
-    let byteOffset = appendByteOffset;
-    for (const plan of plans) {
-      bytes.set(new Uint8Array(plan.matrixBytes), byteOffset);
-      const bufferViewIndex = bufferViews.length;
-      bufferViews.push({buffer: bufferIndex, byteOffset, byteLength: plan.matrixBytes.byteLength});
-      const accessorIndex = accessors.length;
-      accessors.push({
-        bufferView: bufferViewIndex,
-        byteOffset: 0,
-        componentType: 5126,
-        count: plan.count,
-        type: 'MAT4'
-      });
-      for (const skin of plan.skins) {
-        skin.inverseBindMatrices = accessorIndex;
-        delete skin.bindShapeMatrix;
+  appendGLTFV1BufferData(
+    gltf,
+    Array.from(plannedBindings.values(), plan => ({
+      bufferIndex: plan.bufferIndex,
+      bytes: plan.matrixBytes,
+      apply: bufferViewIndex => {
+        gltf.json.accessors ||= [];
+        const accessorIndex = gltf.json.accessors.length;
+        gltf.json.accessors.push({
+          bufferView: bufferViewIndex,
+          byteOffset: 0,
+          componentType: 5126,
+          count: plan.count,
+          type: 'MAT4'
+        });
+        for (const skin of plan.skins) {
+          skin.inverseBindMatrices = accessorIndex;
+          delete skin.bindShapeMatrix;
+        }
       }
-      byteOffset += plan.matrixBytes.byteLength;
-    }
-    bufferDefinition.byteLength = byteLength;
-    if (bufferDefinition.uri !== undefined) {
-      bufferDefinition.uri = `data:application/octet-stream;base64,${encodeArrayBufferToBase64(arrayBuffer)}`;
-    }
-    gltf.buffers[bufferIndex] = {arrayBuffer, byteOffset: 0, byteLength};
-  }
+    }))
+  );
 }
 
 /** Validate the source and calculate a complete payload before committing any buffer changes. */

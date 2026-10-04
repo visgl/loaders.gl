@@ -77,24 +77,52 @@ Conversion includes camera dictionaries and references, conventional vertex attr
 (`JOINT`, `WEIGHT`, `TEXCOORD`, and `COLOR`), inverse-bind accessor references, and embedded
 `KHR_binary_glTF` images. Untouched external buffer URIs are retained; the named binary body is moved to
 buffer index zero with its references and loaded payloads. Compatible accessor strides move to
-separate buffer views without changing binary data. Joint names resolve in order within one skeleton
-root per instance, or globally when unique; shared skins are cloned for distinct bindings. Absent or
+separate buffer views. Other safe raw layouts are repacked after buffers load, repairing strides,
+component/vertex alignment, and matrix-column padding while preserving original bytes and image views.
+Joint names resolve in order within one skeleton root per instance, or globally when unique;
+shared skins are cloned for distinct bindings. Absent or
 identity bind shapes are consumed. Finite affine non-identity bind shapes are baked into packed
 FLOAT MAT4 inverse-bind matrices after buffers load. The conversion appends aligned results to copied
-buffers, preserving original accessor data and palette order. Layouts requiring general repacking,
-unresolved skin bindings, multiple skeleton roots, and unsupported matrix data are reported and rejected
-in strict mode. Complete skin/attribute validation remains unsupported.
+buffers, preserving original accessor data and palette order. Missing payloads, invalid spans or strides,
+unresolved skin bindings, multiple skeleton roots, unsupported matrix data, and sparse or extension-bearing
+data requiring repacking are reported and rejected in strict mode. Complete skin/attribute validation
+remains unsupported.
 
-The direct normalization helpers require loaded buffers for non-identity bind shapes. `GLTFLoader`
-completes baking after linked buffers load; `loadBuffers: false` can only bake already available embedded
-payloads. Missing payloads are reported in best-effort mode and rejected in strict mode. When direct
+The direct normalization helpers require loaded buffers for binary repacking, attribute component
+conversion, and non-identity bind shapes. `GLTFLoader` completes these conversions after linked
+buffers load; `loadBuffers: false` can only convert already available embedded payloads.
+Missing payloads are reported in best-effort mode and rejected in strict mode. When direct
 conversion changes a URI-backed buffer, its URI becomes an updated data URI. Other URIs are retained.
+
+Conventional indexed joint/weight names and custom attribute namespaces are normalized. Valid VEC4
+joint indices become unsigned byte/short data without changing palette indices; shared consumers keep
+separate accessor metadata. Unsigned integer color, weight, and UV values confined to `[0, 1]` become
+FLOAT values to retain their glTF 1 numeric inputs. Larger unsigned values are normalized by convention
+in best-effort mode, with an explicit unsupported-feature diagnostic; strict mode rejects that ambiguity.
+Explicit normalized integer accessors are retained. This does not interpret arbitrary shader code.
+
+Obsolete asset profile/premultiplied-alpha and texture format/type/target fields move under each
+object's `extras.gltf1.legacyFields`, preserving application extras. True premultiplied alpha and
+non-default texture settings are reported as requiring additional rendering conversion.
 
 For applications that need explicit conversion diagnostics, `normalizeGLTFV1()` returns a report
 listing unsupported legacy features. Use `normalize: 'strict'` to reject those features instead of
 continuing with a best-effort conversion. `convertGLTFV1ToGLTF2()` performs the same conversion on
 a cloned JSON document and leaves the caller's asset untouched. Legacy techniques, programs, and
 shaders are preserved under `json.extras.gltf1Resources`; their shader behavior is not translated.
+
+`GLTFLoader` sends conversion notes and warnings about assumptions and unsupported features through
+`options.core.log`, using probe.gl-compatible lazy logging methods. The direct helpers accept
+the same logger as `options.log`; absent or null loggers leave diagnostics in the report only.
+Informational start and completion messages use log level 1, and warnings are emitted as they occur,
+including before strict-mode rejection. The report's aggregate warning does not duplicate logger output.
+
+```ts
+const converted = convertGLTFV1ToGLTF2(gltfWithLoadedBuffers, {
+  normalize: 'best-effort',
+  log // A probe.gl-compatible logger supplied by the application.
+});
+```
 
 Best-effort material conversion recognizes conventional `values.diffuse` RGBA factors and
 diffuse texture IDs (`tex`, `texture2d_0`, `diffuseTex`, or `diffuse`). It approximates these as
