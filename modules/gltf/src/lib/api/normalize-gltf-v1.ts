@@ -540,8 +540,14 @@ class GLTFV1Normalizer {
     }
   }
 
-  /** Omit optional empty top-level arrays that violate glTF 2 collection constraints. */
+  /** Omit optional empty root collections, child lists, and scene roots rejected by glTF 2. */
   _removeEmptyCollections(json): void {
+    for (const node of json.nodes || []) {
+      if (Array.isArray(node.children) && node.children.length === 0) delete node.children;
+    }
+    for (const scene of json.scenes || []) {
+      if (Array.isArray(scene.nodes) && scene.nodes.length === 0) delete scene.nodes;
+    }
     for (const collectionName of [
       ...Object.keys(GLTF_ARRAYS),
       'extensionsUsed',

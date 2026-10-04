@@ -3,8 +3,9 @@
 // Copyright (c) vis.gl contributors
 
 import type {GLTFWithBuffers} from '../types/gltf-types';
+import {hasOpaqueGLTFV1Consumers, validateGLTFV1AccessorSource} from './repack-gltf-v1-accessors';
 
-/** Check all declared and borrowed buffer spans before conversion; infer only URI-backed lengths. */
+/** Validate buffer spans and plan only loaded, bounded buffer and dense accessor-view lengths. */
 export function validateGLTFV1Buffers(
   gltf: GLTFWithBuffers,
   uriBufferIndices: ReadonlySet<number>,
@@ -13,6 +14,7 @@ export function validateGLTFV1Buffers(
 ): void {
   const lengths = new Map<number, number>();
   const inferredLengths = new Map<number, number>();
+  const inferredViewLengths = new Map<number, number>();
   for (const [bufferIndex, definition] of (gltf.json.buffers || []).entries()) {
     const label = `buffer ${bufferIndex}`;
     const loaded = gltf.buffers[bufferIndex];
@@ -49,26 +51,77 @@ export function validateGLTFV1Buffers(
     if (validPayload && loaded.byteLength < byteLength)
       reportUnsupported(`${label} declared byteLength exceeds its loaded payload`);
   }
+  const hasOpaqueConsumers = hasOpaqueGLTFV1Consumers(gltf.json);
   for (const [viewIndex, view] of (gltf.json.bufferViews || []).entries()) {
     const byteOffset = view.byteOffset === undefined ? 0 : view.byteOffset;
     const bufferLength = lengths.get(view.buffer);
+    const byteLength =
+      view.byteLength === undefined && !hasOpaqueConsumers && bufferLength !== undefined
+        ? inferAccessorViewLength(gltf, viewIndex, lengths)
+        : view.byteLength;
+    if (view.byteLength === undefined && byteLength !== undefined)
+      inferredViewLengths.set(viewIndex, byteLength);
     if (
       !Number.isSafeInteger(view.buffer) ||
       view.buffer < 0 ||
       bufferLength === undefined ||
       !Number.isSafeInteger(byteOffset) ||
       byteOffset < 0 ||
-      !Number.isSafeInteger(view.byteLength) ||
-      view.byteLength < 1 ||
-      !Number.isSafeInteger(byteOffset + view.byteLength) ||
-      byteOffset + view.byteLength > bufferLength
+      !Number.isSafeInteger(byteLength) ||
+      (byteLength ?? 0) < 1 ||
+      !Number.isSafeInteger(byteOffset + (byteLength ?? 0)) ||
+      byteOffset + (byteLength ?? 0) > bufferLength
     )
       reportUnsupported(
         `bufferView ${viewIndex} requires a valid buffer reference and contained positive byte span`
       );
   }
+  for (const [viewIndex, byteLength] of inferredViewLengths) {
+    gltf.json.bufferViews![viewIndex].byteLength = byteLength;
+    reportNote(`Inferred bufferView ${viewIndex} byteLength from its dense accessor spans.`);
+  }
   for (const [bufferIndex, byteLength] of inferredLengths) {
     gltf.json.buffers![bufferIndex].byteLength = byteLength;
     reportNote(`Inferred buffer ${bufferIndex} byteLength from its loaded URI payload.`);
   }
+}
+
+/** Infer the smallest known accessor envelope without trimming or changing the source buffer. */
+function inferAccessorViewLength(
+  gltf: GLTFWithBuffers,
+  viewIndex: number,
+  lengths: ReadonlyMap<number, number>
+): number | undefined {
+  const view = gltf.json.bufferViews![viewIndex];
+  if (
+    gltf.json.images?.some(image => image.bufferView === viewIndex) ||
+    gltf.json.accessors?.some(accessor => Boolean(accessor.sparse))
+  )
+    return undefined;
+  const remainingLength = lengths.get(view.buffer)! - (view.byteOffset ?? 0);
+  const candidate = {
+    ...gltf,
+    json: {
+      ...gltf.json,
+      buffers: gltf.json.buffers!.map((buffer, index) => ({
+        ...buffer,
+        byteLength: lengths.get(index)!
+      })),
+      bufferViews: gltf.json.bufferViews!.map((bufferView, index) =>
+        index === viewIndex ? {...bufferView, byteLength: remainingLength} : bufferView
+      )
+    }
+  };
+  let byteLength = 0;
+  for (const [accessorIndex, accessor] of (gltf.json.accessors || []).entries()) {
+    if (accessor.bufferView !== viewIndex) continue;
+    const source = validateGLTFV1AccessorSource(candidate, accessorIndex);
+    if (typeof source === 'string') return undefined;
+    const accessorLength =
+      (accessor.byteOffset ?? 0) +
+      (accessor.count - 1) * source.byteStride +
+      source.rows * source.columns * source.componentSize;
+    byteLength = Math.max(byteLength, accessorLength);
+  }
+  return byteLength > 0 ? byteLength : undefined;
 }
