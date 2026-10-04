@@ -272,7 +272,11 @@ Add a material to the json part
 
 ### `addAccessor(bufferViewIndex, accessor)`
 
-Adds an accessor to a bufferView
+Adds an accessor to a bufferView. The optional `normalized` flag is preserved, including
+explicit `false`; omission retains the glTF default.
+
+`addMesh` preserves attribute normalization and pads packed vertex elements when needed for
+four-byte glTF alignment. Logical component values and typed array subviews are preserved.
 
 > The binary data will not be added to the gltf buffer until `createBinChunk()` is called.
 

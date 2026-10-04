@@ -744,3 +744,81 @@ test.each([
   ).toEqual([0, 1]);
   expect(readCount).toBe(1);
 });
+
+test.each([
+  [Uint8Array, 'COLOR_0', 3],
+  [Uint8Array, 'COLOR_0', 4],
+  [Uint16Array, 'COLOR_0', 3],
+  [Uint16Array, 'COLOR_0', 4],
+  [Uint8Array, 'TEXCOORD_0', 2],
+  [Uint16Array, 'TEXCOORD_0', 2]
+] as const)('mesh encoder preserves normalized %s %s size %s', async (ArrayType, name, size) => {
+  const maximum = ArrayType === Uint8Array ? 255 : 65535;
+  const values = Array.from({length: size * 3}, (_, index) => [0, maximum, 1][index % 3]);
+  const storage = new ArrayType([99, ...values, 99]);
+  const mesh = createMesh();
+  mesh.attributes[name] = {value: storage.subarray(1, -1), size, normalized: true};
+  const before = structuredClone(mesh);
+  const output = encodeMeshTile(
+    mesh,
+    name === 'TEXCOORD_0'
+      ? {
+          material: {
+            baseColorTexture: {
+              data: pngImage,
+              mimeType: 'image/png',
+              transform: {offset: [0, 1], scale: [1, -1]}
+            }
+          }
+        }
+      : undefined
+  );
+  const scenegraph = new GLTFScenegraph(
+    await parse(output, GLTFLoader, {gltf: {postProcess: false, loadImages: false}})
+  );
+  const accessorIndex = scenegraph.json.meshes![0].primitives[0].attributes[name];
+  expect(scenegraph.json.accessors![accessorIndex]).toMatchObject({
+    normalized: true,
+    componentType: ArrayType === Uint8Array ? 5121 : 5123,
+    type: `VEC${size}`,
+    count: 3
+  });
+  expect(scenegraph.getTypedArrayForAccessor(accessorIndex)).toBeInstanceOf(ArrayType);
+  expect(Array.from(scenegraph.getTypedArrayForAccessor(accessorIndex))).toEqual(values);
+  expect(GLTF2Schema.safeParse((await parse(output, GLBLoader)).json).success).toBe(true);
+  if (name === 'TEXCOORD_0') {
+    const primitive = scenegraph.json.meshes![0].primitives[0];
+    const textureInfo = scenegraph.json.materials![0].pbrMetallicRoughness!.baseColorTexture!;
+    const rendered = scenegraph.getTypedArrayForAccessor(
+      primitive.attributes[`TEXCOORD_${textureInfo.texCoord}`]
+    );
+    expect(rendered).toEqual(
+      new Float32Array(
+        values.map((value, index) => (index % 2 ? 1 - value / maximum : value / maximum))
+      )
+    );
+  }
+  expect(mesh).toEqual(before);
+});
+
+test.each([
+  {value: new Uint8Array(12)},
+  {value: new Uint16Array(12), normalized: false},
+  {value: new Uint8Array(12), normalized: 1},
+  {value: new Int8Array(12), normalized: true},
+  {value: new Uint32Array(12), normalized: true},
+  {value: new Float64Array(12), normalized: true}
+])('mesh encoder rejects unsupported integer appearance %j', attribute => {
+  for (const [name, size, code] of [
+    ['COLOR_0', 4, 'MESH_COLOR_INVALID'],
+    ['TEXCOORD_0', 2, 'MESH_TEXCOORD_INVALID']
+  ] as const) {
+    const mesh = createMesh();
+    mesh.attributes[name] = {
+      ...attribute,
+      value: attribute.value.subarray(0, size * 3),
+      size
+    } as MeshAttribute;
+    expect(() => encodeMeshTile(mesh)).toThrow(expect.objectContaining({code}));
+  }
+});

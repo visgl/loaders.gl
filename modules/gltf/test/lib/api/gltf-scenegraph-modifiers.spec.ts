@@ -204,3 +204,37 @@ test('GLTFScenegraph appends explicit samplers and links texture indices includi
   ]);
   expect(sampler).toEqual({wrapS: 33071, wrapT: 33648, magFilter: 9729, minFilter: 9987});
 });
+
+test.each([
+  true,
+  false,
+  undefined
+])('GLTFScenegraph preserves accessor normalization %s', normalized => {
+  const scenegraph = new GLTFScenegraph();
+  const accessor = scenegraph.addBinaryBuffer(new Uint8Array([0, 255]), {size: 1, normalized});
+  expect(scenegraph.json.accessors![accessor].normalized).toBe(normalized);
+  expect(Object.hasOwn(scenegraph.json.accessors![accessor], 'normalized')).toBe(
+    normalized !== undefined
+  );
+});
+
+test.each([
+  [Uint8Array, 2, 4],
+  [Uint8Array, 3, 4],
+  [Uint8Array, 4, 4],
+  [Uint16Array, 2, 4],
+  [Uint16Array, 3, 8]
+] as const)('GLTFScenegraph aligns %s size %s vertex elements', (ArrayType, size, stride) => {
+  const storage = new ArrayType([99, ...Array.from({length: size * 3}, (_, index) => index), 99]);
+  const values = storage.subarray(1, -1);
+  const before = storage.slice();
+  const scenegraph = new GLTFScenegraph();
+  scenegraph.addMesh({attributes: {_VALUES: {value: values, size, normalized: true}}});
+  scenegraph.createBinaryChunk();
+  const accessor = scenegraph.json.accessors![0];
+  const bufferView = scenegraph.json.bufferViews![accessor.bufferView!];
+  expect(bufferView.byteStride ?? size * values.BYTES_PER_ELEMENT).toBe(stride);
+  expect(accessor).toMatchObject({normalized: true, count: 3});
+  expect(scenegraph.getTypedArrayForAccessor(0)).toEqual(values);
+  expect(storage).toEqual(before);
+});
