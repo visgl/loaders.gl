@@ -1,18 +1,31 @@
 // loaders.gl
 // SPDX-License-Identifier: MIT
-// Copyright (c) vis.gl contributors
+// SPDX-FileCopyrightText: Copyright (c) vis.gl contributors
 
-import React, {useMemo, useRef, useState} from 'react';
+import React, {useCallback, useMemo, useRef, useState} from 'react';
 import {createRoot} from 'react-dom/client';
 import DeckGL from '@deck.gl/react';
 import {MapController, type MapViewState} from '@deck.gl/core';
 import {SourceLayer} from '@loaders.gl/deck-layers';
 import {GeoTIFFSourceLoader} from '@loaders.gl/geotiff';
-import type {RangeRequestEvent, RangeStats, RasterSourceMetadata} from '@loaders.gl/loader-utils';
-import {createRangeStats, getRangeStats} from '@loaders.gl/loader-utils';
+import type {
+  RangeRequestEvent,
+  RangeStats,
+  RasterSourceMetadata,
+  RasterData
+} from '@loaders.gl/loader-utils';
+import {
+  createRangeStats,
+  getRangeStats,
+  sampleRaster,
+  rasterCoordinateToPixel
+} from '@loaders.gl/loader-utils';
 import {Map} from 'react-map-gl';
 import maplibregl from 'maplibre-gl';
-import {createDeckFullscreenWidget, createDeckStatsWidget} from '../shared/create-deck-stats-widget';
+import {
+  createDeckFullscreenWidget,
+  createDeckStatsWidget
+} from '../shared/create-deck-stats-widget';
 
 const DATA_URL = '/gfw-azores.tif';
 const MAP_STYLE = 'https://basemaps.cartocdn.com/gl/positron-gl-style/style.json';
@@ -33,6 +46,11 @@ type AppProps = {
 
 /** Website demo for URL-plus-loader GeoTIFF rendering through SourceLayer. */
 export default function App(props: AppProps = {}) {
+  const acceptedRasterRef = useRef<RasterData | null>(null);
+  const [identifiedValue, setIdentifiedValue] = useState<string>(
+    'Move over the raster to identify'
+  );
+  const [acceptedCount, setAcceptedCount] = useState(0);
   const rangeStatsObjectRef = useRef(createRangeStats('geotiff-example-range-transport'));
   const [viewState, setViewState] = useState<MapViewState>(INITIAL_VIEW_STATE);
   const [metadata, setMetadata] = useState<RasterSourceMetadata | null>(null);
@@ -42,38 +60,52 @@ export default function App(props: AppProps = {}) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const layers = [
-    new SourceLayer({
-      id: 'geotiff-source',
-      data: DATA_URL,
-      loaders: [GeoTIFFSourceLoader],
-      sourceOptions: {
-        geotiff: {
-          rangeSchedulerProps: {
-            batchDelayMs: 50,
-            stats: rangeStatsObjectRef.current,
-            onEvent: onRangeRequest
+  const onRangeRequest = useCallback((event: RangeRequestEvent): void => {
+    if (['batch', 'response', 'error', 'abort'].includes(event.type)) {
+      setRangeStats(getRangeStats(rangeStatsObjectRef.current));
+    }
+  }, []);
+
+  const layers = useMemo(
+    () => [
+      new SourceLayer({
+        id: 'geotiff-source',
+        data: DATA_URL,
+        loaders: [GeoTIFFSourceLoader],
+        sourceOptions: {
+          geotiff: {
+            rangeSchedulerProps: {
+              batchDelayMs: 50,
+              stats: rangeStatsObjectRef.current,
+              onEvent: onRangeRequest
+            }
           }
+        },
+        rasterParameters: {resampleMethod: 'nearest'},
+        bitmapLayerProps: {opacity: 0.78},
+        pickable: true,
+        onMetadataLoad: nextMetadata => {
+          setMetadata(nextMetadata as RasterSourceMetadata);
+          setError(null);
+        },
+        onLoadingStateChange: setLoading,
+        onRasterLoad: request => {
+          acceptedRasterRef.current = request.raster;
+          setAcceptedCount(count => count + 1);
+          setLoading(false);
+        },
+        onSourceError: sourceError => {
+          setLoading(false);
+          setError(sourceError.message);
+        },
+        onRasterLoadError: (_requestId, rasterError) => {
+          setLoading(false);
+          setError(rasterError.message);
         }
-      },
-      rasterParameters: {resampleMethod: 'nearest'},
-      bitmapLayerProps: {opacity: 0.78},
-      onMetadataLoad: nextMetadata => {
-        setMetadata(nextMetadata as RasterSourceMetadata);
-        setError(null);
-      },
-      onLoadingStateChange: setLoading,
-      onRasterLoad: () => setLoading(false),
-      onSourceError: sourceError => {
-        setLoading(false);
-        setError(sourceError.message);
-      },
-      onRasterLoadError: (_requestId, rasterError) => {
-        setLoading(false);
-        setError(rasterError.message);
-      }
-    })
-  ];
+      })
+    ],
+    [onRangeRequest]
+  );
 
   const widgets = useMemo(
     () =>
@@ -90,6 +122,22 @@ export default function App(props: AppProps = {}) {
     <div style={{position: 'relative', height: '100%'}}>
       <DeckGL
         controller={{type: MapController}}
+        onHover={information => {
+          const raster = acceptedRasterRef.current;
+          if (!information.coordinate || !raster?.transform || raster.crs !== 'EPSG:4326') return;
+          const pixel = rasterCoordinateToPixel(
+            raster,
+            [information.coordinate[0], information.coordinate[1]],
+            raster.crs
+          );
+          const raw = sampleRaster(raster, pixel);
+          const physical = sampleRaster(raster, pixel, {domain: 'physical'});
+          setIdentifiedValue(
+            raw.valid.every(Boolean)
+              ? `Raw: ${raw.values.join(', ')} · Physical: ${physical.values.join(', ')}`
+              : 'No valid sample'
+          );
+        }}
         layers={layers}
         viewState={viewState}
         widgets={widgets}
@@ -110,19 +158,15 @@ export default function App(props: AppProps = {}) {
               : 'Discovering metadata…'}
           </div>
           <div>
-            {rangeStats.requestCount} range requests · {formatBytes(rangeStats.requestedBytes)}
+            {rangeStats.transportRanges} range requests · {formatBytes(rangeStats.requestedBytes)}
           </div>
+          <div>{acceptedCount} accepted view requests</div>
+          <div>{identifiedValue}</div>
           {props.children}
         </div>
       ) : null}
     </div>
   );
-
-  function onRangeRequest(event: RangeRequestEvent): void {
-    if (['batch', 'response', 'error', 'abort'].includes(event.type)) {
-      setRangeStats(getRangeStats(rangeStatsObjectRef.current));
-    }
-  }
 }
 
 /** Mounts the demo into a DOM container. */

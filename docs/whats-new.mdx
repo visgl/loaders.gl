@@ -110,6 +110,20 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
 - Fix binary-to-GeoJSON conversion of multipolygons with empty parts, preserving empty
   polygons without overflowing the call stack.
 
+### Shared numeric raster regions
+
+GeoTIFF sources support explicit CRS/bounds region requests with decoded-memory budgets,
+real overview selection, affine placement and internal validity masks. Shared CPU
+sampling supports raw/physical identify and bounded statistics over planar, interleaved
+and mixed numeric bands. RasterSet and range scheduling propagate cancellation and
+reject obsolete results. WMS keeps its image contract and existing axis-order rules.
+
+See the [GeoTIFF source API](./modules/geotiff/api-reference/geotiff-source-loader.md)
+for capabilities and remaining source limitations. Region resizing now uses sample-center
+coordinates and requires every contributing bilinear neighbor to be valid. The optional
+raster layer retains percentile stretching by default; min/max range stretching is opt-in.
+Unsupported projected CRSs require caller placement rather than guessed geographic bounds.
+
 ### v5 API finalization
 
 These release notes describe implemented work, not a declaration that the stable v5 API is frozen.
