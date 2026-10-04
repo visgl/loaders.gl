@@ -152,6 +152,7 @@
           "modules/gltf/api-reference/gltf-loader",
           "modules/kml/api-reference/gpx-loader",
           "modules/i3s/api-reference/i3s-loader",
+          "modules/i3s/api-reference/slpk-writer",
           "modules/images/api-reference/image-bitmap-loader",
           "modules/images/api-reference/image-loader",
           "modules/json/api-reference/json-loader",

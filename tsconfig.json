@@ -466,6 +466,7 @@
       "@loaders.gl/zarr/test": [
         "modules/zarr/test"
       ],
+      "@loaders.gl/zip/indexed-zip-writer": ["modules/zip/src/indexed-zip-writer"],
       "@loaders.gl/zip/zip-writer": ["modules/zip/src/zip-writer"],
       "@loaders.gl/3d-tiles/3d-tiles-archive-writer": ["modules/3d-tiles/src/3d-tiles-archive-writer"],
       "@loaders.gl/zip": [

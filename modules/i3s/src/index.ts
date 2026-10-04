@@ -74,6 +74,8 @@ export {
 } from './i3s-format';
 
 export {I3SLoader} from './i3s-loader';
+export {SLPKWriter} from './i3s-slpk-writer';
+export type {SLPKWriterFiles, SLPKWriterOptions} from './i3s-slpk-writer';
 export {SLPKLoader} from './i3s-slpk-loader';
 export type {SLPKSourceInput} from './i3s-slpk-source';
 export {SLPKSource} from './i3s-slpk-source';
