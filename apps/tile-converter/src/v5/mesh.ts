@@ -388,7 +388,7 @@ function validateMeshSampler(sampler: MeshTileSampler | undefined): MeshTileSamp
     magFilter: [9728, 9729],
     minFilter: [9728, 9729, 9984, 9985, 9986, 9987]
   };
-  for (const name of Object.keys(sampler)) {
+  for (const name in sampler) {
     if (!Object.hasOwn(allowedValues, name)) {
       throw new TileConversionError(
         'MESH_SAMPLER_UNSUPPORTED',

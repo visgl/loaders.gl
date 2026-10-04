@@ -608,13 +608,12 @@ test.each([
   ).toThrowError(expect.objectContaining({code: 'MESH_SAMPLER_INVALID'}));
 });
 
-test.each([
-  'extensions',
-  'extras',
-  'name',
-  'anisotropy'
-])('mesh encoder rejects unsupported sampler property %s', property => {
-  const sampler = {[property]: {}} as MeshTileSampler;
+test.each(
+  ['extensions', 'extras', 'name', 'anisotropy'].flatMap(property => [
+    {property, location: 'own', sampler: {[property]: {}}},
+    {property, location: 'inherited', sampler: Object.create({[property]: {}})}
+  ])
+)('mesh encoder rejects $location unsupported sampler property $property', ({sampler}) => {
   expect(() =>
     encodeMeshTile(createTexturedMesh(), {
       material: {baseColorTexture: {data: pngImage, mimeType: 'image/png', sampler}}
