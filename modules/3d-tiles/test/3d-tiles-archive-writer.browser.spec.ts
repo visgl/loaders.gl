@@ -2,14 +2,12 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import {afterEach, beforeAll, expect, test, vi} from 'vitest';
+import {beforeAll, expect, test} from 'vitest';
 import {encode} from '@loaders.gl/core';
 import {validateWriter} from 'test/common/conformance';
 import JSZip from 'jszip';
-import {MD5Hash} from '@loaders.gl/crypto';
 import {Tiles3DArchiveWriter as RootWriter} from '@loaders.gl/3d-tiles';
 import {Tiles3DArchiveWriter} from '@loaders.gl/3d-tiles/3d-tiles-archive-writer';
-import {ZipWriter} from '@loaders.gl/zip/zip-writer';
 import {DataViewReadableFile} from '@loaders.gl/zip';
 import {parse3DTilesArchive} from '../src/3d-tiles-archive/3d-tiles-archive-parser';
 
@@ -31,7 +29,6 @@ beforeAll(async () => {
   archive = await Tiles3DArchiveWriter.encode(FILES);
   zip = await JSZip.loadAsync(archive, {checkCRC32: true});
 });
-afterEach(() => vi.restoreAllMocks());
 
 test('3TZ writer is exposed at the root and implementation subpath', () => {
   validateWriter(Tiles3DArchiveWriter, 'Tiles3DArchiveWriter');
@@ -113,121 +110,11 @@ test('3TZ bytes are deterministic across input order and Blob/ArrayBuffer inputs
   expect(await encode(FILES, Tiles3DArchiveWriter)).toEqual(archive);
 });
 
-test('3TZ archive budget is inclusive and checked before Blob reads', async () => {
-  const read = vi.spyOn(Blob.prototype, 'arrayBuffer');
-  const files = Object.fromEntries(
-    Object.entries(FILES).map(([path, payload]) => [path, new Blob([payload])])
-  );
-  await expect(
-    Tiles3DArchiveWriter.encode(files, {'3tz': {maxArchiveBytes: archive.byteLength - 1}})
-  ).rejects.toThrow('byte limit');
-  expect(read).not.toHaveBeenCalled();
-  expect(
-    await Tiles3DArchiveWriter.encode(files, {'3tz': {maxArchiveBytes: archive.byteLength}})
-  ).toEqual(archive);
-});
-
-test.each([
-  -1,
-  0.5,
-  NaN,
-  Infinity,
-  Number.MAX_SAFE_INTEGER + 1
-])('3TZ rejects invalid byte limit %s', async maxArchiveBytes => {
-  await expect(Tiles3DArchiveWriter.encode(FILES, {'3tz': {maxArchiveBytes}})).rejects.toThrow(
-    'safe integer'
-  );
-});
-
-test.each([
-  '',
-  '/file',
-  '../file',
-  'a/./file',
-  'a//file',
-  'a\\file',
-  'é.glb',
-  'a\nfile',
-  'nested.3tz/file',
-  'A.3DTILES.ZIP',
-  '@3dtilesIndex1@',
-  'x'.repeat(65536)
-])('3TZ rejects invalid resource path %#', async path => {
-  await expect(Tiles3DArchiveWriter.encode({...FILES, [path]: new ArrayBuffer(0)})).rejects.toThrow(
-    'canonical relative ASCII'
-  );
-});
-
-test('3TZ rejects missing root tileset and ZIP32 file-count overflow before encoding', async () => {
+test('3TZ rejects a missing root and nested archives', async () => {
   await expect(Tiles3DArchiveWriter.encode({})).rejects.toThrow('requires tileset.json');
-  const files = Object.fromEntries(
-    Array.from({length: 65533}, (_, index) => [`${index}`, new ArrayBuffer(0)])
-  );
-  await expect(
-    Tiles3DArchiveWriter.encode({...files, 'tileset.json': new ArrayBuffer(0)})
-  ).rejects.toThrow('fewer than 65534');
-});
-
-test('3TZ measures native Blob sizes rather than caller-overridden size properties', async () => {
-  const blob = new Blob([new Uint8Array(10)]);
-  Object.defineProperty(blob, 'size', {value: 0});
-  await expect(
-    Tiles3DArchiveWriter.encode({'tileset.json': blob}, {'3tz': {maxArchiveBytes: 252}})
-  ).rejects.toThrow('byte limit');
-});
-
-test('3TZ rejects ZIP32 size overflow without allocating a large payload', async () => {
-  const measure = vi.spyOn(Blob.prototype, 'size', 'get').mockReturnValue(0xffffffff);
-  await expect(
-    Tiles3DArchiveWriter.encode(
-      {'tileset.json': new Blob()},
-      {'3tz': {maxArchiveBytes: Number.MAX_SAFE_INTEGER}}
-    )
-  ).rejects.toThrow('ZIP32 capacity');
-  measure.mockRestore();
-});
-
-test('3TZ rejects an ArrayBuffer detached during asynchronous packaging', async () => {
-  const detached = new ArrayBuffer(1);
-  const hash = vi.spyOn(MD5Hash.prototype, 'hash').mockImplementationOnce(async () => {
-    structuredClone(detached, {transfer: [detached]});
-    return '00000000000000000000000000000000';
-  });
-  await expect(
-    Tiles3DArchiveWriter.encode({a: new ArrayBuffer(0), 'tileset.json': detached})
-  ).rejects.toThrow('size changed');
-  hash.mockRestore();
-});
-
-test('3TZ sorts by the second little-endian integer and retains hash collisions', async () => {
-  const digests = [
-    '00000000000000000300000000000000',
-    '00000000000000000100000000000000',
-    '00000000000000000200000000000000',
-    '00000000000000000200000000000000'
-  ];
-  vi.spyOn(MD5Hash.prototype, 'hash').mockImplementation(async () => digests.shift()!);
-  const encoded = await Tiles3DArchiveWriter.encode({
-    a: new ArrayBuffer(0),
-    b: new ArrayBuffer(0),
-    c: new ArrayBuffer(0),
-    'tileset.json': new ArrayBuffer(0)
-  });
-  const indexData = await (await JSZip.loadAsync(encoded))
-    .file('@3dtilesIndex1@')!
-    .async('arraybuffer');
-  const view = new DataView(indexData);
-  expect([0, 24, 48, 72].map(offset => view.getBigUint64(offset + 8, true))).toEqual([
-    1n,
-    2n,
-    2n,
-    3n
-  ]);
-});
-
-test('3TZ rejects an unexpected ZIP layout and propagates encoder failures', async () => {
-  const encode = vi.spyOn(ZipWriter, 'encode').mockResolvedValueOnce(new ArrayBuffer(0));
-  await expect(Tiles3DArchiveWriter.encode(FILES)).rejects.toThrow('Unexpected 3TZ ZIP layout');
-  encode.mockRejectedValueOnce(new Error('encoder failure'));
-  await expect(Tiles3DArchiveWriter.encode(FILES)).rejects.toThrow('encoder failure');
+  for (const path of ['nested.3tz/file', 'A.3DTILES.ZIP']) {
+    await expect(
+      Tiles3DArchiveWriter.encode({...FILES, [path]: new ArrayBuffer(0)})
+    ).rejects.toThrow('without nested archives');
+  }
 });

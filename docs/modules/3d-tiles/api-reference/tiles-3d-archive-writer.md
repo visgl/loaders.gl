@@ -34,3 +34,7 @@ The result is an `ArrayBuffer`. For a browser download, wrap it in a Blob with M
 `application/vnd.maxar.archive.3tz+zip`, save as `.3tz`, and revoke object URLs when no longer
 needed. The v5 tile converter provides `createSingleMeshTilesetArchive` for its finalized
 single-mesh output. Existing 3TZ readers can read the resulting indexed archive.
+
+`createTileConversionArchive` also provides a general finalized-resource Blob handoff for
+3TZ and SLPK. Each format requires already-authored resources in its own layout. The shared
+`@loaders.gl/zip/indexed-zip-writer` encoder retains the existing deterministic 3TZ layout.

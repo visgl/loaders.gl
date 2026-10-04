@@ -38,6 +38,11 @@
       "types": "./dist/zip-writer.d.ts",
       "import": "./dist/zip-writer.js",
       "require": "./dist/zip-writer.cjs"
+    },
+    "./indexed-zip-writer": {
+      "types": "./dist/indexed-zip-writer.d.ts",
+      "import": "./dist/indexed-zip-writer.js",
+      "require": "./dist/indexed-zip-writer.cjs"
     }
   },
   "sideEffects": false,

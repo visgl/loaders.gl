@@ -58,7 +58,12 @@
     },
     "./i3s-scene-layer.schema.json": "./dist/i3s-scene-layer.schema.json",
     "./i3s-node-page.schema.json": "./dist/i3s-node-page.schema.json",
-    "./i3s-point-cloud-scene-layer.schema.json": "./dist/i3s-point-cloud-scene-layer.schema.json"
+    "./i3s-point-cloud-scene-layer.schema.json": "./dist/i3s-point-cloud-scene-layer.schema.json",
+    "./i3s-slpk-writer": {
+      "types": "./dist/i3s-slpk-writer.d.ts",
+      "import": "./dist/i3s-slpk-writer.js",
+      "require": "./dist/i3s-slpk-writer.cjs"
+    }
   },
   "sideEffects": false,
   "files": [

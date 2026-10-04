@@ -9,6 +9,7 @@ test('tile-converter(v5)#package export resolves to its built CommonJS entrypoin
     createMeshConversionCodec,
     createSingleMeshTilesetSink,
     createSingleMeshTilesetArchive,
+    createTileConversionArchive,
     encodeMeshTile,
     convertPointCloudSource,
     convertTileset,
@@ -24,6 +25,7 @@ test('tile-converter(v5)#package export resolves to its built CommonJS entrypoin
   expect(createMeshConversionCodec).toBeTypeOf('function');
   expect(createSingleMeshTilesetSink).toBeTypeOf('function');
   expect(createSingleMeshTilesetArchive).toBeTypeOf('function');
+  expect(createTileConversionArchive).toBeTypeOf('function');
   expect(inspectTileset).toBeTypeOf('function');
   expect(validateTileset).toBeTypeOf('function');
 });
@@ -35,6 +37,7 @@ test('tile-converter(v5)#browser package export resolves to its browser entrypoi
     createMeshConversionCodec,
     createSingleMeshTilesetSink,
     createSingleMeshTilesetArchive,
+    createTileConversionArchive,
     encodeMeshTile,
     convertPointCloudSource,
     createBoundedMemoryTileConversionSink,
@@ -50,6 +53,7 @@ test('tile-converter(v5)#browser package export resolves to its browser entrypoi
   expect(createMeshConversionCodec).toBeTypeOf('function');
   expect(createSingleMeshTilesetSink).toBeTypeOf('function');
   expect(createSingleMeshTilesetArchive).toBeTypeOf('function');
+  expect(createTileConversionArchive).toBeTypeOf('function');
   expect(createBrowserTileConversionSource).toBeTypeOf('function');
   expect(createBrowserTilesetConversionSource).toBeTypeOf('function');
   expect(createTilesetConversionSource).toBeTypeOf('function');

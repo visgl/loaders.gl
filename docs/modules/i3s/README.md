@@ -85,3 +85,8 @@ in the `@loaders.gl/tiles` module:
 ## Attribution
 
 MIT license, code is written for loaders.gl.
+
+## Archive output
+
+[SLPKWriter](/docs/modules/i3s/api-reference/slpk-writer) packages already-authored, individually
+compressed I3S resources into portable indexed SLPK archives with a complete output-size budget.
