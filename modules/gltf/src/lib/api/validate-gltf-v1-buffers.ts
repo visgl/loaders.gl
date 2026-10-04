@@ -3,7 +3,11 @@
 // Copyright (c) vis.gl contributors
 
 import type {GLTFWithBuffers} from '../types/gltf-types';
-import {hasOpaqueGLTFV1Consumers, validateGLTFV1AccessorSource} from './repack-gltf-v1-accessors';
+import {
+  hasOpaqueGLTFV1Consumers,
+  validateGLTFV1AccessorSource,
+  type GLTFV1AccessorSource
+} from './repack-gltf-v1-accessors';
 
 /** Validate buffer spans and plan only loaded, bounded buffer and dense accessor-view lengths. */
 export function validateGLTFV1Buffers(
@@ -94,6 +98,10 @@ function inferAccessorViewLength(
 ): number | undefined {
   const view = gltf.json.bufferViews![viewIndex];
   if (
+    (view.byteOffset !== undefined &&
+      (!Number.isSafeInteger(view.byteOffset) || view.byteOffset < 0)) ||
+    (view.byteStride !== undefined &&
+      (!Number.isSafeInteger(view.byteStride) || view.byteStride < 0)) ||
     gltf.json.images?.some(image => image.bufferView === viewIndex) ||
     gltf.json.accessors?.some(accessor => Boolean(accessor.sparse))
   )
@@ -115,6 +123,10 @@ function inferAccessorViewLength(
   let byteLength = 0;
   for (const [accessorIndex, accessor] of (gltf.json.accessors || []).entries()) {
     if (accessor.bufferView !== viewIndex) continue;
+    const legacyAccessor = accessor as GLTFV1AccessorSource['accessor'];
+    for (const value of [legacyAccessor.byteOffset, legacyAccessor.byteStride]) {
+      if (value !== undefined && (!Number.isSafeInteger(value) || value < 0)) return undefined;
+    }
     const source = validateGLTFV1AccessorSource(candidate, accessorIndex);
     if (typeof source === 'string') return undefined;
     const accessorLength =

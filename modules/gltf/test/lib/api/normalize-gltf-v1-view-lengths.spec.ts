@@ -99,6 +99,18 @@ test.each([
     label: 'overflow',
     change: (source: any) => (source.json.accessors.last.count = Number.MAX_SAFE_INTEGER)
   },
+  {
+    label: 'null accessor offset',
+    change: (source: any) => (source.json.accessors.last.byteOffset = null)
+  },
+  {
+    label: 'null accessor stride',
+    change: (source: any) => (source.json.accessors.last.byteStride = null)
+  },
+  {
+    label: 'null view stride',
+    change: (source: any) => (source.json.bufferViews.view.byteStride = null)
+  },
   {label: 'explicit zero', change: (source: any) => (source.json.bufferViews.view.byteLength = 0)},
   {
     label: 'explicit null offset',
@@ -109,6 +121,8 @@ test.each([
   change(source);
   const converted = convertGLTFV1ToGLTF2(source);
   expect(converted.normalizationReport.unsupported.length).toBeGreaterThan(0);
+  if (source.json.bufferViews.view.byteLength === undefined)
+    expect(converted.json.bufferViews![0].byteLength).toBeUndefined();
   expect(() => convertGLTFV1ToGLTF2(source, {normalize: 'strict'})).toThrow();
 });
 
