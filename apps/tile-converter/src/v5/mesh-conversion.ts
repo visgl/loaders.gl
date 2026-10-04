@@ -33,6 +33,8 @@ export interface EncodedMeshConversionResource {
   readonly origin: readonly [number, number, number];
   /** Target-frame bounds of the reconstructed encoded vertices, including float32 rounding. */
   readonly boundingBox: readonly [readonly number[], readonly number[]];
+  /** Bounds of encoded local vertices before adding the origin, without absolute-coordinate cancellation. */
+  readonly localBoundingBox: readonly [readonly number[], readonly number[]];
   /** Metadata describing the output coordinate operation and height reference. */
   readonly spatialReference: TilesetSpatialReference;
   /** Largest measured Euclidean reconstruction error in target coordinate units. */
@@ -114,10 +116,14 @@ export function createMeshConversionCodec<TInspection = unknown>(
       const localPositions = new Float32Array(targetPositions.length);
       const minimum = [Infinity, Infinity, Infinity];
       const maximum = [-Infinity, -Infinity, -Infinity];
+      const localMinimum = [Infinity, Infinity, Infinity];
+      const localMaximum = [-Infinity, -Infinity, -Infinity];
       let maximumPositionError = 0;
       for (let index = 0; index < targetPositions.length; index += 3) {
         for (let axis = 0; axis < 3; axis++) {
           localPositions[index + axis] = targetPositions[index + axis] - origin[axis];
+          localMinimum[axis] = Math.min(localMinimum[axis], localPositions[index + axis]);
+          localMaximum[axis] = Math.max(localMaximum[axis], localPositions[index + axis]);
           const reconstructed = localPositions[index + axis] + origin[axis];
           minimum[axis] = Math.min(minimum[axis], reconstructed);
           maximum[axis] = Math.max(maximum[axis], reconstructed);
@@ -149,6 +155,7 @@ export function createMeshConversionCodec<TInspection = unknown>(
         glb,
         origin,
         boundingBox: [minimum, maximum],
+        localBoundingBox: [localMinimum, localMaximum],
         spatialReference,
         maximumPositionError
       };

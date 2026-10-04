@@ -209,7 +209,9 @@ coordinate units** (0.001 meters for EPSG:3857). Equality is allowed; zero requi
 reconstruction. Geographic/unknown output frames are rejected. Native coordinates require
 an explicitly declared Cartesian frame in the discovered spatial metadata.
 
-Each output contains `{id, glb, origin, boundingBox, spatialReference, maximumPositionError}`.
+Each output contains `{id, glb, origin, boundingBox, localBoundingBox, spatialReference, maximumPositionError}`.
+`localBoundingBox` bounds the actual encoded Float32 positions before adding the origin; use
+it for packaging to avoid precision loss from subtracting large absolute coordinates.
 Accepted rounding is recorded as an informational `MESH_POSITION_ROUNDING` diagnostic in
 the conversion report, with its resource ID and measured error. Bounds describe the
 reconstructed encoded vertices in the target frame, including float32 rounding. Preserve
@@ -222,6 +224,40 @@ Applications still select source geometry, apply source placement and correspond
 transforms before conversion, reconcile format axis conventions, and package hierarchy,
 refinement and geometric error. This increment does not extract complete scenes, convert
 I3S elevation placement, map full source materials/features, or emit a complete tileset.
+
+## V5 single-mesh browser package
+
+`createSingleMeshTilesetSink` connects the spatial mesh codec to a bounded **3D Tiles 1.1**
+output package. It accepts exactly one unmodified codec output, with resolved **EPSG:4978**
+ECEF xyz coordinates in meters and ellipsoidal heights. The CRS must use the compact string
+`'EPSG:4978'`; other output frames and identifiers are rejected in this initial profile.
+
+```ts
+import {createSingleMeshTilesetSink} from '@loaders.gl/tile-converter/v5/browser';
+
+const meshSink = createSingleMeshTilesetSink({
+  maxTotalBytes: 16 * 1024 * 1024,
+  geometricError: 0.001 // Meters; include source geometric error and position rounding.
+});
+// Pass meshSink to convertTileset with a mesh codec targeting EPSG:4978.
+// After conversion completes, save both files together in the same directory:
+const files = meshSink.getFiles(); // [{resourceId: 'mesh.glb', blob}, {resourceId: 'tileset.json', blob}]
+```
+
+The package uses fixed relative names, a single root tile with `REPLACE` refinement, and
+explicit geometric error. The tile transform cancels the standard glTF y-up to z-up rotation
+and adds the ECEF origin; its box encloses encoded local positions in the corresponding tile
+frame. The supplied `geometricError` must be finite, nonnegative, and at least the codec's
+measured reconstruction error. It is the application's responsibility to include source
+LOD or simplification error; the sink does not estimate it.
+
+`maxTotalBytes` includes the GLB and UTF-8 JSON Blob sizes. This bounds **retained output**,
+not peak conversion or serialization memory. Conversion report counts/byte totals describe
+codec resources (one GLB), while this sink retains two files. Files are exposed only after
+successful finalization; failed writes, cancellation, zero/multiple meshes, or conversion
+failure abort and clear the package through the core lifecycle. The sink trusts codec GLB
+and local-bound metadata; applications must not alter them before writing. Download UI,
+archives, workers, multi-tile hierarchy, and source-scene extraction remain separate work.
 
 ## V5 spatial conversion
 
