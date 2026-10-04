@@ -4,6 +4,14 @@
 
 ### Unreleased
 
+### v5.0.0-alpha.9
+
+- chore(math.gl): upgrade to alpha.12 and migrate coordinate transformations to @math.gl/projection
+- feat(tile-converter): convert meshes to bounded tilesets and package browser output as indexed 3TZ archives
+- feat(tile-converter): preserve embedded textures, material colors, UV transforms, and texture sampling
+- feat(gltf): expand glTF 1 scene, skin, geometry, material, and attribute conversion with strict validation
+- test: expand hermetic coverage across loader modules and update Vitest tooling
+
 ### v5.0.0-alpha.8
 
 - chore(math.gl): upgrade to alpha.11 and use native TypeScript projections while preserving CRS metadata
