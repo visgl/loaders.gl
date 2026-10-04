@@ -269,19 +269,24 @@ test('Tileset3D#skipLevelOfDetail releases replacement ancestors after descendan
   expect.assertions(3);
   const tilesetJson = await load(TILESET_REPLACEMENT_URL, Tiles3DLoader);
   const viewport = VIEWPORTS[0];
-  let tileLoadCounter = 0;
   const tileset = new Tileset3D(new Tiles3DSource({...tilesetJson, coreApi}), {
     maximumScreenSpaceError: 0,
     skipLevelOfDetail: true,
     onTileLoad: () => {
       tileset.update(viewport);
-      tileLoadCounter++;
     }
   });
-  tileset.update(viewport);
-  await waitForCondition(() => tileLoadCounter > 0, ASYNC_TRAVERSAL_TIMEOUT);
-  tileset.update(viewport);
-  expect(tileset.options.skipLevelOfDetail).toBe(true);
-  expect(tileset.selectedTiles.every(tile => tile.depth > 0)).toBe(true);
-  expect(tileset.selectedTiles.length).toBeGreaterThan(1);
+  try {
+    tileset.update(viewport);
+    // The first load may be the ancestor; wait for replacement traversal, not just any tile.
+    await waitForCondition(
+      () => tileset.selectedTiles.length > 1 && tileset.selectedTiles.every(tile => tile.depth > 0),
+      ASYNC_TRAVERSAL_TIMEOUT
+    );
+    expect(tileset.options.skipLevelOfDetail).toBe(true);
+    expect(tileset.selectedTiles.every(tile => tile.depth > 0)).toBe(true);
+    expect(tileset.selectedTiles.length).toBeGreaterThan(1);
+  } finally {
+    tileset.destroy();
+  }
 });
