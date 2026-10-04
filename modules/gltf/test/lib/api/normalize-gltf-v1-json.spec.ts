@@ -85,7 +85,8 @@ describe('glTF 1 JSON conversion', () => {
       '_BATCHID',
       'POSITION'
     ]);
-    expect(attributes.WEIGHTS_0).toBe(attributes.COLOR_0);
+    expect(attributes.WEIGHTS_0).not.toBe(attributes.COLOR_0);
+    expect(converted.json.accessors![attributes.WEIGHTS_0].type).toBe('VEC4');
     expect(attributes.JOINTS_0).not.toBe(attributes.POSITION);
     expect(converted.json.accessors![attributes.JOINTS_0].type).toBe('VEC4');
   });
