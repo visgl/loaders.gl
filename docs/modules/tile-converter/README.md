@@ -87,6 +87,12 @@ and texture atlas generation through `join-images`/Sharp. The command-line tools
 also remain Node.js applications. The HTTP server retains a `Buffer` conversion at the Express
 response boundary so binary responses keep their existing behavior.
 
+## Experimental v5 archive output
+
+The experimental v5 `createTileConversionArchive` helper packages already-authored resources
+as bounded browser Blobs in either indexed 3TZ or SLPK format. See the
+[v5 conversion API](/docs/modules/tile-converter/api-reference/v5-conversion#archive-output-3tz-and-slpk).
+
 ## References
 
 - The `@loaders.gl/i3s` module supports loading and traversing Indexed 3d Scene Layer (I3S).
