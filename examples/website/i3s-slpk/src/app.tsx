@@ -1,18 +1,21 @@
-import React, {useMemo, useState} from 'react';
+import React, {useRef, useState} from 'react';
 import {createRoot} from 'react-dom/client';
 
-import {FlyToInterpolator, MapController} from '@deck.gl/core';
+import {MapController} from '@deck.gl/core';
+import {Ellipsoid} from '@math.gl/geospatial';
 import type {MapViewState} from '@deck.gl/core';
 import DeckGL from '@deck.gl/react';
 import {SourceLayer} from '@loaders.gl/deck-layers';
-import {I3SLoader, SLPKSource} from '@loaders.gl/i3s';
+import {createArchiveSource} from './archive-source';
+import type {ArchiveFormat} from './archive-source';
 import type {Tileset3D} from '@loaders.gl/tiles';
 import 'maplibre-gl/dist/maplibre-gl.css';
 import Map from 'react-map-gl/maplibre';
 
 import {ControlPanel} from './components/control-panel';
+import {I3SMeshExtension} from './i3s-mesh-extension';
 
-const TRANSITION_DURATION = 4000;
+const I3S_MESH_EXTENSION = new I3SMeshExtension();
 
 const MAP_CONTROLLER = {
   type: MapController,
@@ -34,65 +37,99 @@ const INITIAL_VIEW_STATE: MapViewState = {
   zoom: 3
 };
 
-type SLPKInput = string | File;
+type ArchiveInput = string | File;
 
-/** Returns a concise display label for an SLPK input. */
-function getSourceLabel(input: SLPKInput | null): string | null {
+/** Returns a concise display label for an archive input. */
+function getSourceLabel(input: ArchiveInput | null): string | null {
   if (!input) {
     return null;
   }
   return typeof input === 'string' ? input : input.name;
 }
 
-/** Renders local and remote SLPK archives through the same source-backed layer. */
+/** Renders local and remote SLPK/3TZ archives through the same source-backed layer. */
 export default function App() {
-  const [input, setInput] = useState<SLPKInput | null>(null);
+  const currentSource = useRef<ReturnType<typeof createArchiveSource> | null>(null);
+  const [source, setSource] = useState<ReturnType<typeof createArchiveSource> | null>(null);
+  const [selectionNumber, setSelectionNumber] = useState(0);
+  const [input, setInput] = useState<ArchiveInput | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [viewState, setViewState] = useState<MapViewState>(INITIAL_VIEW_STATE);
 
-  const source = useMemo(
-    () => (input ? new SLPKSource({url: input, loader: I3SLoader}) : null),
-    [input]
-  );
-
   /** Select a new archive and clear errors from the previous source. */
-  function handleSourceSelected(selectedInput: SLPKInput): void {
-    setError(null);
-    setInput(selectedInput);
+  function handleSourceSelected(selectedInput: ArchiveInput, format: ArchiveFormat = 'auto'): void {
+    try {
+      const nextSource = createArchiveSource(selectedInput, format);
+      setError(null);
+      setInput(selectedInput);
+      currentSource.current = nextSource;
+      setSource(nextSource);
+      setSelectionNumber(previous => previous + 1);
+    } catch (selectionError) {
+      setError(selectionError instanceof Error ? selectionError.message : String(selectionError));
+    }
   }
 
   /** Move the camera to the archive after its root tileset loads. */
   function handleTilesetLoad(tileset: Tileset3D): void {
     const [longitude = INITIAL_VIEW_STATE.longitude, latitude = INITIAL_VIEW_STATE.latitude] =
       tileset.cartographicCenter || [];
+    const center = tileset.root?.boundingVolume?.center;
+    const height = center
+      ? Ellipsoid.WGS84.cartesianToCartographic(center)[2]
+      : tileset.cartographicCenter?.[2] || 0;
     setViewState({
       ...INITIAL_VIEW_STATE,
       longitude,
       latitude,
-      zoom: tileset.zoom + 2,
-      transitionDuration: TRANSITION_DURATION,
-      transitionInterpolator: new FlyToInterpolator()
+      zoom: tileset.zoom,
+      position: [0, 0, Number.isFinite(height) ? height : 0]
     });
   }
 
   /** Surface tile loading failures in the example controls. */
-  function handleTileError(_tile: unknown, url: string, message: string): void {
-    setError(message || `Unable to load ${url}`);
+  function handleTileError(error: unknown): void {
+    setError(
+      error instanceof Error
+        ? error.message
+        : typeof error === 'string'
+          ? error
+          : 'Unable to load this archive.'
+    );
   }
 
   const layers = source
     ? [
         new SourceLayer<unknown>({
-          id: 'slpk-archive',
+          id: `tile-archive-${selectionNumber}`,
           data: source,
-          onTilesetLoad: handleTilesetLoad,
-          onTileError: handleTileError
+          _subLayerProps: {
+            'tile-3d': {_subLayerProps: {mesh: {extensions: [I3S_MESH_EXTENSION]}}}
+          },
+          onTilesetLoad: tileset => {
+            if (currentSource.current === source) handleTilesetLoad(tileset);
+          },
+          onError: error => {
+            if (currentSource.current === source) handleTileError(error);
+            return true;
+          },
+          onTileError: (tile: unknown, message?: unknown) => {
+            if (currentSource.current === source) handleTileError(message || tile);
+          }
         })
       ]
     : [];
 
   return (
-    <div style={{position: 'relative', height: '100%'}}>
+    <div
+      onDragOver={event => event.preventDefault()}
+      onDrop={event => {
+        event.preventDefault();
+        const file = event.dataTransfer.files[0];
+        if (file) handleSourceSelected(file);
+      }}
+      style={{position: 'relative', height: '100%'}}
+    >
       <DeckGL initialViewState={viewState} layers={layers} controller={MAP_CONTROLLER}>
         <Map
           reuseMaps
@@ -110,7 +147,7 @@ export default function App() {
   );
 }
 
-/** Mount the SLPK example in a standalone HTML page. */
+/** Mount the tile archive example in a standalone HTML page. */
 export function renderToDOM(container: HTMLElement): void {
   createRoot(container).render(<App />);
 }

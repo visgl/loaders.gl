@@ -752,7 +752,8 @@ test('I3SSource uses injected resolvers for root metadata and child headers', as
   let rootLoadCount = 0;
   const requestedUrls: string[] = [];
   const resolver: TilesetSourceResolver = {
-    async loadRoot() {
+    async loadRoot(_url, _loader, options) {
+      expect(options.i3s).toMatchObject({isTileset: true});
       rootLoadCount++;
       return {
         root: {id: 'root-node', refine: 'ADD'},
@@ -780,7 +781,13 @@ test('I3SSource uses injected resolvers for root metadata and child headers', as
   expect(requestedUrls).toEqual(['https://example.com/archive/test.slpk/nodes/7']);
   expect(childHeader?.id).toBe('7');
 });
-test('IndexedArchiveTilesetSource loads root metadata and nested resources from an archive', async () => {
+test.each([
+  'blob',
+  'https://example.invalid/scene.3tz?signature=1',
+  'https://example.invalid/download?signature=1#fragment'
+])('IndexedArchiveTilesetSource loads root metadata and nested resources from %s', async input => {
+  const sourceUrl = input === 'blob' ? 'memory://tileset.3tz' : input;
+  const resourceUrl = sourceUrl.split(/[?#]/, 1)[0] + '/tileset.json';
   const encoder = new TextEncoder();
   const decoder = new TextDecoder();
   const files: Record<string, string> = {
@@ -798,7 +805,7 @@ test('IndexedArchiveTilesetSource loads root metadata and nested resources from 
     },
     async parse(data: ArrayBuffer, _loader: any, _options: any, context: any) {
       const text = decoder.decode(data);
-      if (context.url === 'memory://tileset.3tz') {
+      if (context.url === resourceUrl) {
         const response = await context.fetch('models/tile.b3dm?token=1');
         return {text, nestedText: await response.text()};
       }
@@ -806,7 +813,7 @@ test('IndexedArchiveTilesetSource loads root metadata and nested resources from 
     }
   } as any;
   const archiveSource = new IndexedArchiveTilesetSource({
-    data: new Blob([encoder.encode('archive')]),
+    data: input === 'blob' ? new Blob([encoder.encode('archive')]) : input,
     fallbackFilename: 'tileset.3tz',
     archiveExtension: '3tz',
     rootPath: 'tileset.json',
@@ -821,8 +828,8 @@ test('IndexedArchiveTilesetSource loads root metadata and nested resources from 
     getCoreApi: () => coreApiMock,
     missingCoreApiMessage: 'missing core api'
   });
-  const root = await archiveSource.loadRoot('memory://tileset.3tz', {} as any, {});
-  expect(archiveSource.sourceUrl).toBe('memory://tileset.3tz');
+  const root = await archiveSource.loadRoot(sourceUrl, {} as any, {});
+  expect(archiveSource.sourceUrl).toBe(sourceUrl);
   expect(root).toEqual({text: 'root', nestedText: 'tile'});
   expect(parseArchiveCount, 'archive is opened and parsed once').toBe(1);
   expect(fileRequests).toEqual([
