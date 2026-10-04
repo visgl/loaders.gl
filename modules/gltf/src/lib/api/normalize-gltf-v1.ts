@@ -18,6 +18,7 @@ import {convertGLTFV1Animations} from './convert-gltf-v1-animations';
 import {convertGLTFV1SkinScenes} from './convert-gltf-v1-skin-scenes';
 import {validateGLTFV1Cameras} from './validate-gltf-v1-cameras';
 import {validateGLTFV1Payloads} from './validate-gltf-v1-payloads';
+import {validateGLTFV1Buffers} from './validate-gltf-v1-buffers';
 import {convertGLTFV1MatrixNodes} from './convert-gltf-v1-matrix-nodes';
 import {
   convertGLTFV1Materials,
@@ -170,6 +171,8 @@ class GLTFV1Normalizer {
   pendingAccessors = new Set<number>();
   /** Separated consumer interpretations, captured before legacy strides are consumed. */
   accessorConversions = new Map<number, GLTFV1AccessorConversion>();
+  /** URI origins retained because the loader removes fetched URIs before binary completion. */
+  uriBufferIndices = new Set<number>();
 
   // constructor() {}
 
@@ -238,6 +241,8 @@ class GLTFV1Normalizer {
     this._convertObjectIdsToArrayIndices(json);
 
     this._updateObjects(json);
+    for (const [bufferIndex, buffer] of (json.buffers || []).entries())
+      if (typeof buffer.uri === 'string') this.uriBufferIndices.add(bufferIndex);
 
     const commonMaterialFallbacks = convertGLTFV1Materials(
       json,
@@ -277,6 +282,12 @@ class GLTFV1Normalizer {
   /** Complete binary baking once linked buffers are available; repeated calls are harmless. */
   finishNormalization(gltf: GLTFWithBuffers): GLTFV1NormalizationReport {
     if (this.report.converted && !this.finished) {
+      validateGLTFV1Buffers(
+        gltf,
+        this.uriBufferIndices,
+        feature => this._unsupported(feature),
+        message => this._warning(message)
+      );
       repackGLTFV1Accessors(
         gltf,
         this.accessorConversions,

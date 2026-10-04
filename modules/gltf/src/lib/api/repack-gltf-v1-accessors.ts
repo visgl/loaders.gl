@@ -17,10 +17,10 @@ export type GLTFV1AccessorConversion = {
   /** Core consumer category. */
   readonly usage: 'vertex' | 'indices' | 'animation' | 'inverseBind' | 'unused';
   /** Required numeric interpretation. */
-  readonly mode: 'copy' | 'joints' | 'weights' | 'unit';
+  readonly mode: 'copy' | 'joints' | 'weights' | 'unit' | 'signed';
   /** Standard semantic requiring this interpretation, when relevant. */
   readonly semantic?: string;
-  /** Whether an opaque primitive extension may change index interpretation. */
+  /** Whether opaque extension consumers prevent interpreting or replacing source data. */
   readonly hasOpaqueConsumer?: boolean;
 };
 
@@ -77,6 +77,7 @@ export function prepareGLTFV1AccessorConversions(
   const accessors = (json.accessors || []) as LegacyAccessor[];
   const variants = new Map<number, Map<string, number>>();
   const conversions = new Map<number, GLTFV1AccessorConversion>();
+  const hasOpaqueConsumers = hasOpaqueAttributeConsumers(json);
   /** Reuse the same source/interpretation pair and clone only distinct consumers. */
   const bindAccessor = (sourceIndex: number, conversion: GLTFV1AccessorConversion): number => {
     if (
@@ -88,7 +89,7 @@ export function prepareGLTFV1AccessorConversions(
     const source = accessors[sourceIndex];
     if (!source) return sourceIndex;
     const bindings = variants.get(sourceIndex) || new Map<string, number>();
-    const key = `${conversion.usage}:${conversion.mode}:${conversion.mode === 'unit' ? conversion.semantic?.split('_')[0] : ''}:${conversion.hasOpaqueConsumer ? 'opaque' : ''}`;
+    const key = `${conversion.usage}:${conversion.mode}:${['unit', 'signed'].includes(conversion.mode) ? conversion.semantic?.split('_')[0] : ''}:${conversion.hasOpaqueConsumer ? 'opaque' : ''}`;
     let accessorIndex = bindings.get(key);
     if (accessorIndex === undefined) {
       accessorIndex = bindings.size ? accessors.length : sourceIndex;
@@ -107,16 +108,21 @@ export function prepareGLTFV1AccessorConversions(
           ? 'joints'
           : /^(COLOR|WEIGHTS|TEXCOORD)_\d+$/.test(semantic) &&
               accessor &&
-              [5121, 5123].includes(accessor.componentType) &&
-              !accessor.normalized
-            ? 'unit'
-            : /^WEIGHTS_\d+$/.test(semantic)
-              ? 'weights'
-              : 'copy';
+              [5120, 5122].includes(accessor.componentType)
+            ? 'signed'
+            : /^(COLOR|WEIGHTS|TEXCOORD)_\d+$/.test(semantic) &&
+                accessor &&
+                [5121, 5123].includes(accessor.componentType) &&
+                !accessor.normalized
+              ? 'unit'
+              : /^WEIGHTS_\d+$/.test(semantic)
+                ? 'weights'
+                : 'copy';
         primitive.attributes[semantic] = bindAccessor(accessorIndex, {
           usage: 'vertex',
           mode,
-          semantic
+          semantic,
+          ...(mode === 'signed' ? {hasOpaqueConsumer: hasOpaqueConsumers} : {})
         });
       }
       if (primitive.indices !== undefined)
@@ -169,6 +175,7 @@ export function repackGLTFV1Accessors(
       (accessor.type !== 'VEC4' ||
         ![5121, 5123, 5126].includes(accessor.componentType) ||
         (accessor.componentType === 5126 && accessor.normalized));
+    const convertSigned = conversion.mode === 'signed';
     const convertJoints =
       conversion.mode === 'joints' &&
       (![5121, 5123].includes(accessor.componentType) ||
@@ -178,6 +185,7 @@ export function repackGLTFV1Accessors(
       !pending.has(accessorIndex) &&
       !convertJoints &&
       !convertWeights &&
+      !convertSigned &&
       !padInfluences &&
       conversion.usage !== 'indices' &&
       conversion.mode !== 'unit'
@@ -205,6 +213,43 @@ export function repackGLTFV1Accessors(
     }
     let componentType = accessor.componentType;
     let normalized = accessor.normalized;
+    if (convertSigned) {
+      if (conversion.hasOpaqueConsumer) {
+        reportUnsupported(
+          `accessor ${accessorIndex} signed conversion cannot interpret opaque extension consumers`
+        );
+        continue;
+      }
+      const supportedTypes = conversion.semantic?.startsWith('COLOR_')
+        ? ['VEC3', 'VEC4']
+        : conversion.semantic?.startsWith('WEIGHTS_')
+          ? ['SCALAR', 'VEC2', 'VEC3', 'VEC4']
+          : ['VEC2'];
+      if (
+        !supportedTypes.includes(accessor.type) ||
+        (normalized !== undefined && typeof normalized !== 'boolean')
+      ) {
+        reportUnsupported(
+          `accessor ${accessorIndex} signed ${conversion.semantic} has incompatible shape or normalization`
+        );
+        continue;
+      }
+      let valid = true;
+      for (let elementIndex = 0; elementIndex < accessor.count; elementIndex++)
+        for (let componentIndex = 0; componentIndex < source.rows; componentIndex++) {
+          const value = readSignedAttributeComponent(source, elementIndex, componentIndex);
+          if (!conversion.semantic?.startsWith('TEXCOORD_') && (value < 0 || value > 1))
+            valid = false;
+        }
+      if (!valid) {
+        reportUnsupported(
+          `accessor ${accessorIndex} signed ${conversion.semantic} values must remain in [0, 1]`
+        );
+        continue;
+      }
+      componentType = 5126;
+      normalized = false;
+    }
     if (conversion.usage === 'indices') {
       if (accessor.type !== 'SCALAR' || ![5121, 5123, 5125].includes(componentType) || normalized) {
         reportUnsupported(
@@ -315,11 +360,9 @@ export function repackGLTFV1Accessors(
           );
         } else
           for (let rowIndex = 0; rowIndex < source.rows; rowIndex++) {
-            const value = readGLTFV1AccessorComponent(
-              source,
-              elementIndex,
-              columnIndex * source.rows + rowIndex
-            );
+            const value = (
+              convertSigned ? readSignedAttributeComponent : readGLTFV1AccessorComponent
+            )(source, elementIndex, columnIndex * source.rows + rowIndex);
             const outputOffset =
               elementIndex * byteStride + columnIndex * columnSize + rowIndex * componentSize;
             if (componentType === 5126) outputData.setFloat32(outputOffset, value, true);
@@ -338,6 +381,10 @@ export function repackGLTFV1Accessors(
           ? {target: 34963}
           : {}),
       apply: bufferViewIndex => {
+        if (convertSigned)
+          reportNote(
+            `Converted signed ${conversion.semantic} accessor ${accessorIndex} to FLOAT, preserving ${source.accessor.normalized ? 'explicitly normalized' : 'literal'} values.`
+          );
         if (conversion.usage === 'indices' && componentType !== accessor.componentType)
           reportNote(
             `Widened index accessor ${accessorIndex} to preserve a glTF 1 index reserved by glTF 2.`
@@ -358,6 +405,43 @@ export function repackGLTFV1Accessors(
   }
   appendGLTFV1BufferData(gltf, plans);
   for (const update of metadataUpdates) update();
+}
+
+/** Decode only explicitly normalized signed integers; otherwise retain literal shader inputs. */
+function readSignedAttributeComponent(
+  source: GLTFV1AccessorSource,
+  elementIndex: number,
+  componentIndex: number
+): number {
+  const value = readGLTFV1AccessorComponent(source, elementIndex, componentIndex);
+  return source.accessor.normalized === true
+    ? Math.max(value / (source.accessor.componentType === 5120 ? 127 : 32767), -1)
+    : value;
+}
+
+/** Unknown extension owners may reference source accessors outside the core consumer inventory. */
+function hasOpaqueAttributeConsumers(json: GLTF): boolean {
+  const pending: unknown[] = [json];
+  const visited = new Set<object>();
+  while (pending.length) {
+    const object = pending.pop();
+    if (!object || typeof object !== 'object' || visited.has(object)) continue;
+    visited.add(object);
+    for (const [field, value] of Object.entries(object)) {
+      if (field === 'extras') continue;
+      if (
+        field === 'extensions' &&
+        value &&
+        typeof value === 'object' &&
+        Object.keys(value).some(
+          name => !['KHR_materials_unlit', 'KHR_materials_common'].includes(name)
+        )
+      )
+        return true;
+      pending.push(value);
+    }
+  }
+  return false;
 }
 
 /** Validate logical and borrowed spans before reading any bytes; alignment can be repaired. */
