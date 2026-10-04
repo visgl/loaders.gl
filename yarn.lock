@@ -19902,6 +19902,9 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "gltf-loaders-example@workspace:examples/website/gltf"
   dependencies:
+    "@deck.gl/core": "npm:^9.4.0"
+    "@deck.gl/mesh-layers": "npm:^9.4.0"
+    "@deck.gl/react": "npm:^9.4.0"
     "@loaders.gl/core": "workspace:*"
     "@loaders.gl/gltf": "workspace:*"
     "@luma.gl/constants": "npm:^9.4.0"
@@ -19910,6 +19913,8 @@ __metadata:
     "@luma.gl/gltf": "npm:^9.4.0"
     "@luma.gl/shadertools": "npm:^9.4.0"
     "@math.gl/core": "npm:5.0.0-alpha.12"
+    react: "npm:^19.2.5"
+    react-dom: "npm:^19.2.5"
     typescript: "npm:^5.6.0"
     vite: "npm:^7.2.7"
   languageName: unknown
