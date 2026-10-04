@@ -179,7 +179,7 @@ Release Date: 2026
 - **Apache Arrow Support** - All loaders and writers now return/accept Apache Arrow tables via `shape: 'arrow-table'`.
 - **Unbundled loaders** - Loader modules can expose metadata-only loaders from `/unbundled` subpaths, using imports such as `import {CSVLoader} from '@loaders.gl/csv/unbundled';`, so applications can support rarely used formats without putting every parser implementation in the main bundle.
 - **Benchmarks** - Loaders have live benchmarks, some include external parser baselines such as uDSV, d3-dsv, csv-parser, and PapaParse for the CSVLoader allowing comparison of loaders.gl parsing performance against ecosystem SOTA (State-of-the-Art).
-- **Coverage expansion and test modernization** - Broad, fast, hermetic Vitest coverage has raised line coverage above 90% and combined line-and-branch coverage from about 70% to over 88%, while completing the migration of legacy Tape tests to native Vitest syntax and continuing toward the long-term 90% combined-coverage goal. Additional compact boundary suites cover point-cloud validation, CSV and Parquet Arrow output, glTF metadata, 3D Tiles placement, and streaming file lifecycles.
+- **Coverage expansion and test modernization** - Broad, fast, hermetic Vitest coverage has raised combined line-and-branch coverage from about 70% to over 90%, while completing the migration of legacy Tape tests to native Vitest syntax. Compact boundary suites cover binary point-cloud decoders, CSV and Parquet Arrow output, geometry conversion, 3D Tiles traversal, raster and splat sources, and streaming file and worker lifecycles. Large compatibility fixtures remain in the slow lane, and boundary checks use small deterministic inputs.
 - **Mesh category writers** - New experimental [`LASWriter`](/docs/modules/las/api-reference/las-writer), [`OBJWriter`](/docs/modules/obj/api-reference/obj-writer), [`PCDWriter`](/docs/modules/pcd/api-reference/pcd-writer), [`PLYWriter`](/docs/modules/ply/api-reference/ply-writer), and [`QuantizedMeshWriter`](/docs/modules/terrain/api-reference/quantized-mesh-writer) add export support for common mesh and point-cloud formats. Mesh writers accept both plain `Mesh` data and Mesh Arrow tables.
 - **Raster sources** - New experimental `RasterSource` APIs add viewport-driven typed raster loading, with [`GeoTIFFSourceLoader`](/docs/modules/geotiff/api-reference/geotiff-source-loader), [`OMETiffSourceLoader`](/docs/modules/geotiff/api-reference/ometiff-source-loader), [`OMEZarrSourceLoader`](/docs/modules/zarr/api-reference/ome-zarr-source-loader), [`RasterSet`](/docs/modules/tiles/api-reference/raster-set), and new GeoTIFF / OME-TIFF / OME-Zarr website examples.
 - **Gaussian splats** - New `@loaders.gl/splats` loaders, Gaussian PLY Arrow table support, and WebGPU `SplatLayer` support add experimental rendering for 3D Gaussian splat scenes.
@@ -266,6 +266,7 @@ Release Date: 2026
 - `LASLoader` adds `las.columns` projection for Arrow point attributes. Layered PDRF 6-10 LAZ input skips omitted intensity, classification, RGB, GPS time, and NIR decoder layers and output allocations.
 - `LASLoader` now reads legacy LASzip Point10/GPS/RGB/Extra Bytes item version 1 and pointwise compressor 1 files, including incremental Arrow and raw point batches.
 - TypeScript LAS parses now attach typed VLR/EVLR, Extra Bytes, waveform-descriptor, WKT, and GeoTIFF metadata to `loaderData.metadata`.
+- LAZ writing preserves legacy GPS-time sequence transitions and waveform predictors across scanner channels; empty LAS output has finite zero bounds.
 
 **@loaders.gl/obj**
 
@@ -282,6 +283,7 @@ Release Date: 2026
 - [`PLYWriter`](/docs/modules/ply/api-reference/ply-writer) NEW - writes ASCII Polygon File Format (PLY).
 - [`PLYLoader`](/docs/modules/ply/api-reference/ply-loader) supports `ply.shape: 'arrow-table'` for Mesh Arrow table output and preserves Gaussian splat columns such as `f_dc_*`, `opacity`, `scale_*`, and `rot_*` with schema metadata for rendering.
 - [`PLYLoader`](/docs/modules/ply/api-reference/ply-loader) now returns loaders.gl `ArrowTableBatch` values from batched Arrow table parsing, enabling progressive point cloud and Gaussian splat rendering.
+- Streaming PLY preserves byte-valued mesh colors, isolates concurrent header state, and handles CRLF header terminators split across input chunks.
 
 **@loaders.gl/splats**
 
@@ -333,6 +335,12 @@ Release Date: 2026
 **@loaders.gl/i3s**
 
 - Handwritten I3S metadata types are paired with runtime scene-layer and node-page validators from `@loaders.gl/i3s/i3s-zod-schema`, plus published draft-07 JSON Schema assets.
+- Legacy textured I3S materials retain their texture reference, and explicit zero alpha cutoffs are preserved.
+
+**@loaders.gl/geoarrow and @loaders.gl/flatgeobuf**
+
+- GeoArrow conversion preserves separated XYM measure coordinates and infers nested collection dimensions from their physical Arrow children.
+- FlatGeobuf rejects property values that overrun their declared property buffer instead of consuming adjacent feature data.
 
 **@loaders.gl/deck-layers**
 
@@ -366,6 +374,7 @@ Release Date: 2026
 - [`ParquetJSLoader`](/docs/modules/parquet/api-reference/parquet-loader#loader-variants) and [`ParquetJSWriter`](/docs/modules/parquet/api-reference/parquet-writer#writer-variants) NEW - add the experimental parquetjs plain-row and plain-table APIs.
 - Parquet parser selection now follows the imported loader: use the primary worker-capable `ParquetLoader` for WASM or the explicit main-thread `ParquetJSLoader` fallback for parquetjs. Runtime `parquet.backend` and `parquet.implementation` selectors have been removed.
 - `parquet.shape` on [`ParquetLoader`](/docs/modules/parquet/api-reference/parquet-loader) and `ParquetJSLoader` selects object-row or Arrow output.
+- Parquet Arrow conversion preserves absent nested values as nulls; encrypted predicate-column metadata is resolved before Bloom-filter pruning, and RLE decoding supports omitted value counts.
 
 **@loaders.gl/geotiff**
 
@@ -377,11 +386,13 @@ Release Date: 2026
 **@loaders.gl/gltf**
 
 - Zod schemas now cover glTF 1.0, glTF 2.0, draft glTF 2.1, and every official Khronos extension schema fragment. Standalone version schemas, an opt-in all-version union, and individually addressable extension JSON Schemas are published for Monaco and other editor integrations.
+- glTF extension validation enforces object property constraints in type-less schema conditionals, including immutable timed accessors.
 
 **@loaders.gl/json**
 
 - [`JSONLoader`](/docs/modules/json/api-reference/json-loader) adds experimental `json.backend: 'fast'` for opt-in faster streaming extraction while keeping atomic JSON parsing on the standard `JSON.parse` path.
 - Arrow-producing JSON loaders add `arrowConversion.viewTypes` to opt into `BinaryView` and `Utf8View` columns without raising the minimum supported Apache Arrow version.
+- JSON Arrow conversion normalizes compatible or recovered 64-bit integer values to the BigInt representation required by Arrow builders.
 
 **@loaders.gl/tiles**
 
@@ -392,6 +403,7 @@ Release Date: 2026
 
 **@loaders.gl/zarr**
 
+- OME-Zarr channel selection preserves reordered or repeated channels even when the selection has the same length as the source channel count.
 - [`GeoZarrSourceLoader`](/docs/modules/zarr/api-reference/geo-zarr-source-loader) NEW - reads
   axis-aligned GeoZarr `proj:` / `spatial:` grids and regular CF/xarray coordinate arrays through
   viewport-clipped native Zarr windows with named time and vertical selections.

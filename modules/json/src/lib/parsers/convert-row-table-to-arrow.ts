@@ -750,7 +750,7 @@ function normalizeValueForArrow(
 
   if (typeof field.type === 'string') {
     if (isPrimitiveValueCompatible(value, field.type)) {
-      return value;
+      return field.type === 'int64' || field.type === 'uint64' ? BigInt(value as number) : value;
     }
     if (
       (field.type === 'utf8' || field.type === 'utf8-view') &&
@@ -760,7 +760,16 @@ function normalizeValueForArrow(
       return String(value);
     }
     if (isIntegerFieldType(field.type) && typeof value === 'number') {
-      return recoverIntegerConversion(field, value, path, conversionOptions, conversionLogger);
+      const recoveredValue = recoverIntegerConversion(
+        field,
+        value,
+        path,
+        conversionOptions,
+        conversionLogger
+      );
+      return recoveredValue !== null && (field.type === 'int64' || field.type === 'uint64')
+        ? BigInt(recoveredValue)
+        : recoveredValue;
     }
     return recoverTypeMismatch(
       field,

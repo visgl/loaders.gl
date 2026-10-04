@@ -42,7 +42,6 @@ import {
 } from './parse-ply';
 import {convertPLYElementTablesToMeshArrowTable, parsePLYToElementTables} from './parse-ply-arrow';
 
-let currentElement: PLYElement;
 type MutablePLYAttributes = {[index: string]: number[]};
 type ByteArray = Uint8Array<ArrayBufferLike>;
 const DEFAULT_BINARY_BATCH_SIZE = 65536;
@@ -537,6 +536,12 @@ function findHeaderEnd(bytes: Uint8Array): number {
 
     if (matches) {
       let headerEnd = byteIndex + pattern.length;
+      if (
+        headerEnd === bytes.length ||
+        (bytes[headerEnd] === 0x0d && headerEnd + 1 === bytes.length)
+      ) {
+        return -1;
+      }
       if (bytes[headerEnd] === 0x0d && bytes[headerEnd + 1] === 0x0a) {
         headerEnd += 2;
       } else if (headerEnd < bytes.length && isWhitespaceByte(bytes[headerEnd])) {
@@ -592,6 +597,7 @@ async function parseASCIIHeader(
   lineIterator: AsyncIterable<string> | Iterable<string>,
   options: {[key: string]: any}
 ): Promise<PLYHeader> {
+  let currentElement: PLYElement | undefined;
   const header: PLYHeader = {
     comments: [],
     elements: []
@@ -646,7 +652,7 @@ async function parseASCIIHeader(
 
       case 'property':
         const property = makePLYElementProperty(lineValues, options.propertyNameMapping);
-        currentElement.properties.push(property);
+        currentElement?.properties.push(property);
         break;
 
       default:
@@ -801,7 +807,7 @@ function handleElement(
         buffer.uvs.push(element.s, element.t);
       }
       if ('red' in element && 'green' in element && 'blue' in element) {
-        buffer.colors.push(element.red / 255.0, element.green / 255.0, element.blue / 255.0);
+        buffer.colors.push(element.red, element.green, element.blue);
       }
       break;
 

@@ -442,7 +442,9 @@ function convertGeometryColumn(
   );
   const nativeValues =
     options?.coordinates === 'separated'
-      ? targetValues.map(value => separateCoordinateValues(value, targetDimension))
+      ? targetValues.map(value =>
+          separateCoordinateValues(value, targetDimension, targetDimensionName)
+        )
       : targetValues;
   return arrow.vectorFromArray(
     nativeValues,
@@ -934,7 +936,7 @@ function createUnionChildVector(
 
   const nativeValues =
     options?.coordinates === 'separated'
-      ? values.map(value => separateCoordinateValues(value, targetDimension))
+      ? values.map(value => separateCoordinateValues(value, targetDimension, dimensionName))
       : values;
   return arrow.vectorFromArray(
     nativeValues,
@@ -1047,10 +1049,10 @@ function getUnionBufferIndex(
  * @returns Base geometry kind.
  */
 function getDenseUnionGeometryKind(vector: arrow.Vector, rowIndex: number): GeoArrowGeometryKind {
-  const {typeId} = getDenseUnionCellInfo(vector, rowIndex);
   if (!(vector.type instanceof arrow.DenseUnion)) {
     throw new Error('GeoArrow geometry storage requires a DenseUnion vector.');
   }
+  const {typeId} = getDenseUnionCellInfo(vector, rowIndex);
   const childIndex = vector.type.typeIds.indexOf(typeId);
   const fieldName = childIndex >= 0 ? vector.type.children[childIndex]?.name : undefined;
   const geometryKind = getGeoArrowUnionGeometryKind(fieldName, typeId);
@@ -1934,16 +1936,20 @@ function createOffsetArray(
   return offsetType === 'int64' ? BigInt64Array.from(offsets, BigInt) : Int32Array.from(offsets);
 }
 
-/** Recursively converts interleaved coordinate tuples to separated struct values. */
-function separateCoordinateValues(value: unknown, targetDimension: 2 | 3 | 4): unknown {
+/** Recursively separates coordinate tuples, retaining the semantic measure name for XYM. */
+function separateCoordinateValues(
+  value: unknown,
+  targetDimension: 2 | 3 | 4,
+  dimensionName: GeoArrowDimension
+): unknown {
   if (!Array.isArray(value)) {
     return value;
   }
   if (value.length === 0 || (typeof value[0] !== 'number' && !value.every(item => item === null))) {
-    return value.map(item => separateCoordinateValues(item, targetDimension));
+    return value.map(item => separateCoordinateValues(item, targetDimension, dimensionName));
   }
 
-  const names = ['x', 'y', 'z', 'm'];
+  const names = dimensionName === 'xym' ? ['x', 'y', 'm'] : ['x', 'y', 'z', 'm'];
   return Object.fromEntries(
     names.slice(0, targetDimension).map((name, index) => [name, value[index]])
   );

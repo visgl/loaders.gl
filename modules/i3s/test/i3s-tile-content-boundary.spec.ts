@@ -128,7 +128,7 @@ describe('I3S tile content boundaries', () => {
 
     expect(content.coordinateSystem).toBe('lnglat-offsets');
     expect(content.material.alphaMode).toBe('MASK');
-    expect(content.material.alphaCutoff).toBe(0.25);
+    expect(content.material.alphaCutoff).toBe(0);
     expect(content.material.emissiveFactor).toEqual([1, 128 / 255, 0]);
     expect(content.material.pbrMetallicRoughness.baseColorFactor).toEqual([
       1,

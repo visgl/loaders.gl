@@ -373,7 +373,7 @@ function findBranchConstraintIssue(
     findJsonSchemaConstraintIssue(value, schema, rootSchema, defaultTarget, path)
   );
   const validBranchCount = issues.filter(issue => !issue).length;
-  if (validBranchCount === 0 && issues.length) {
+  if (validBranchCount === 0) {
     return issues.find(Boolean) || {message: 'Value violates a JSON Schema branch.', path};
   }
   if (requireExactlyOne && validBranchCount > 1) {
@@ -404,6 +404,13 @@ function matchesPreparedJsonSchema(
   }
   const schema = {
     ...schemaValue,
+    // Zod ignores properties when a required-only conditional omits the object type.
+    // Infer it only for object values so JSON Schema's treatment of other values is retained.
+    ...(schemaValue.type === undefined &&
+    isJsonSchemaRecord(schemaValue.properties) &&
+    isJsonSchemaRecord(value)
+      ? {type: 'object'}
+      : {}),
     ...(rootSchema.definitions ? {definitions: rootSchema.definitions} : {}),
     ...(rootSchema.$defs ? {$defs: rootSchema.$defs} : {})
   };
