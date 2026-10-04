@@ -232,7 +232,7 @@ network and licensing behavior, and lets each application choose its accuracy/re
 | Module | Responsibility | Deliberate boundary |
 | --- | --- | --- |
 | `@math.gl/crs` | Typed identifiers, WKT/PROJ syntax, and PROJJSON definitions | Does not look up definitions or transform coordinates |
-| `@math.gl/proj4` | Horizontal/projected/geocentric transformations and NTv2 grid registration | Not assumed to perform vertical datum or epoch operations |
+| `@math.gl/projection` | Horizontal/projected/geocentric transformations and NTv2 grid registration | Not assumed to perform vertical datum or epoch operations |
 | `@math.gl/geoid` | GeographicLib-compatible interpolation from application-supplied PGM data | Is not terrain and does not load a model automatically |
 | `@math.gl/geospatial` | Ellipsoid, cartographic/ECEF, and local-frame mathematics | Does not interpret format metadata |
 | loaders.gl adapters | Axis normalization, profile semantics, bounds, origins, normals, elevation placement, and diagnostics | Never silently invent missing metadata |

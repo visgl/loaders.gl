@@ -173,9 +173,9 @@ the same nested descriptor is passed to glTF content decoding. A nonlinear datum
 is not approximated by one affine matrix; unresolved nested operations fail before child headers are
 installed.
 
-Dynamic CRS epochs are preserved today. The current `@math.gl/proj4` API has no coordinate-epoch
-argument, so an operation that changes epoch rejects until an epoch-aware engine is available.
-Copying an epoch number while transforming dynamic frames would overstate accuracy.
+Dynamic CRS epochs are preserved today. The loaders.gl spatial transformer does not execute
+coordinate-epoch operations, so an operation that changes epoch rejects. Copying an epoch number
+while transforming dynamic frames would overstate accuracy.
 
 ## Ellipsoids and local frames
 
