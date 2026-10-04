@@ -6,7 +6,7 @@ import type {Geoid} from '@math.gl/geoid';
 import {Vector3} from '@math.gl/core';
 import {Ellipsoid} from '@math.gl/geospatial';
 import type {ReadonlyCRSDefinition} from '@math.gl/crs';
-import {Projection, type Proj4CRSDefinition} from '@math.gl/proj4';
+import {Projection} from '@math.gl/projection';
 import {getGeoidModel} from './spatial-resource-registry';
 import {
   normalizeCrsIdentifier,
@@ -78,8 +78,8 @@ export class SpatialCoordinateTransformer {
       !this.outputIsGeocentric
     ) {
       this.horizontalProjection = new Projection({
-        from: getHorizontalProj4Definition(spatialReference.sourceCrs),
-        to: getHorizontalProj4Definition(spatialReference.targetCrs),
+        from: getHorizontalProjectionDefinition(spatialReference.sourceCrs),
+        to: getHorizontalProjectionDefinition(spatialReference.targetCrs),
         enforceAxis: false
       });
     }
@@ -91,7 +91,7 @@ export class SpatialCoordinateTransformer {
     ) {
       if (!this.sourceIsGeographic && !this.sourceIsGeocentric) {
         this.geographicProjection = new Projection({
-          from: getHorizontalProj4Definition(spatialReference.sourceCrs),
+          from: getHorizontalProjectionDefinition(spatialReference.sourceCrs),
           to: WGS84_GEOGRAPHIC_CRS,
           enforceAxis: false
         });
@@ -99,7 +99,7 @@ export class SpatialCoordinateTransformer {
       if (!this.outputIsGeographic && !this.outputIsGeocentric) {
         this.heightOutputProjection = new Projection({
           from: WGS84_GEOGRAPHIC_CRS,
-          to: getHorizontalProj4Definition(outputCrs),
+          to: getHorizontalProjectionDefinition(outputCrs),
           enforceAxis: false
         });
       }
@@ -277,9 +277,9 @@ function inverseTransposeMultiply(jacobianColumns: number[][], vector: number[])
 }
 
 /** Select the horizontal CRS while height conversion is handled separately. */
-function getHorizontalProj4Definition(
+function getHorizontalProjectionDefinition(
   definition: ReadonlyCRSDefinition | undefined
-): Proj4CRSDefinition {
+): ReadonlyCRSDefinition {
   if (!definition) {
     throw new Error('Cannot construct a projection because the CRS is unknown');
   }
@@ -290,9 +290,9 @@ function getHorizontalProj4Definition(
     if (horizontalComponents.length !== 1) {
       throw new Error('CompoundCRS requires exactly one horizontal component');
     }
-    return getHorizontalProj4Definition(horizontalComponents[0]);
+    return getHorizontalProjectionDefinition(horizontalComponents[0]);
   }
-  return definition as Proj4CRSDefinition;
+  return definition as ReadonlyCRSDefinition;
 }
 
 /** Validate that all requested operations can be represented by the current runtime. */

@@ -47,7 +47,8 @@ import {
   type ReadableFile
 } from '@loaders.gl/loader-utils';
 import {createScanQueryMetadata, type PointCloudQueryCapabilities} from '@loaders.gl/loader-utils';
-import {Proj4Projection, type Proj4CRSDefinition} from '@math.gl/proj4';
+import {Projection} from '@math.gl/projection';
+import type {ReadonlyCRSDefinition} from '@math.gl/crs';
 import {
   createLASTypedExtraBytesAttributes,
   LASLoader,
@@ -179,7 +180,7 @@ import {
 export type COPCSourceLoaderOptions = DataSourceOptions &
   LASLoaderOptions & {
     copc?: {
-      sourceCoordinateSystem?: Proj4CRSDefinition;
+      sourceCoordinateSystem?: ReadonlyCRSDefinition;
       /** Default byte size for progressive COPC node range requests. */
       rangeChunkSize?: number;
       /** Maximum number of COPC node ranges fetched ahead of decode. */
@@ -320,7 +321,7 @@ export class COPCTileSource
   protected _readableFile: ReadableFile;
   protected _readRange: COPCRangeReader;
   protected _copc: COPCFile | null = null;
-  protected _projection: Proj4Projection | null = null;
+  protected _projection: Projection | null = null;
   protected _hierarchy: COPCHierarchy | null = null;
   protected _pageLoadPromises: Map<string, Promise<void>> = new Map();
   protected _closePromise: Promise<void> | null = null;
@@ -1819,13 +1820,13 @@ function getCOPCLAZChunkMetadata(copc: COPCFile, pointCount: number) {
   };
 }
 
-function createProjection(projectionData?: Proj4CRSDefinition): Proj4Projection | null {
+function createProjection(projectionData?: ReadonlyCRSDefinition): Projection | null {
   if (!projectionData) {
     return null;
   }
 
   try {
-    return new Proj4Projection({
+    return new Projection({
       from: normalizeProjectionDefinition(projectionData),
       to: 'WGS84'
     });
@@ -1834,7 +1835,9 @@ function createProjection(projectionData?: Proj4CRSDefinition): Proj4Projection 
   }
 }
 
-function normalizeProjectionDefinition(projectionData: Proj4CRSDefinition): Proj4CRSDefinition {
+function normalizeProjectionDefinition(
+  projectionData: ReadonlyCRSDefinition
+): ReadonlyCRSDefinition {
   if (typeof projectionData !== 'string') {
     return projectionData;
   }

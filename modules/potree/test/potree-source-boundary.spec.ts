@@ -4,7 +4,7 @@
 
 import {expect, test, vi} from 'vitest';
 import {PotreeNodesSource} from '../src/lib/potree-node-source';
-import {Proj4Projection} from '@math.gl/proj4';
+import {Projection} from '@math.gl/projection';
 
 class TestPotreeSource extends PotreeNodesSource {
   override async initialize(): Promise<void> {}
@@ -322,7 +322,7 @@ test('Potree bounds, URL layouts, loader options, and mesh normalization cover a
 
 test('Potree projects hierarchy bounds and normalizes native mesh offsets', async () => {
   const source = createSource();
-  source.projection = new Proj4Projection({from: 'EPSG:3857', to: 'WGS84'});
+  source.projection = new Projection({from: 'EPSG:3857', to: 'WGS84'});
   source.metadata = {
     version: '1.7',
     projection: 'EPSG:3857',
@@ -466,7 +466,7 @@ function createScanSource(): TestPotreeSource & Record<string, any> {
 
 test('Potree scans LAS scalar coordinates from projected offsets and skips unavailable nodes', async () => {
   const source = createScanSource();
-  source.projection = new Proj4Projection({from: 'EPSG:3857', to: 'WGS84'});
+  source.projection = new Projection({from: 'EPSG:3857', to: 'WGS84'});
   source.loadNodeContent = vi
     .fn()
     .mockResolvedValueOnce(null)

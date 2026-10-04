@@ -62,8 +62,8 @@
     "@loaders.gl/gis": "5.0.0-alpha.8",
     "@loaders.gl/loader-utils": "5.0.0-alpha.8",
     "@loaders.gl/schema": "5.0.0-alpha.8",
-    "@math.gl/crs": "5.0.0-alpha.11",
-    "@math.gl/wkb": "5.0.0-alpha.11"
+    "@math.gl/crs": "5.0.0-alpha.12",
+    "@math.gl/wkb": "5.0.0-alpha.12"
   },
   "peerDependencies": {
     "@loaders.gl/core": "~5.0.0-alpha.0"

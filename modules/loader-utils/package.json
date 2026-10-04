@@ -45,7 +45,7 @@
   "dependencies": {
     "@loaders.gl/schema": "5.0.0-alpha.8",
     "@loaders.gl/worker-utils": "5.0.0-alpha.8",
-    "@math.gl/crs": "5.0.0-alpha.11",
+    "@math.gl/crs": "5.0.0-alpha.12",
     "@probe.gl/log": "^4.1.1",
     "@probe.gl/stats": "^4.1.1"
   },
