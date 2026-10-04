@@ -66,3 +66,16 @@ export {createTileConversionArchive} from './conversion-archive.js';
 export type {TileConversionArchiveOptions} from './conversion-archive.js';
 export {createSingleMeshTilesetArchive} from './mesh-tileset-archive.js';
 export type {SingleMeshTilesetArchiveOptions} from './mesh-tileset-archive.js';
+
+export {createMeshTilesetConversionSource} from './mesh-source.js';
+export type {
+  MeshSourceResource,
+  MeshTilesetSourceOptions,
+  MeshSourceFeatureOptions
+} from './mesh-source.js';
+export {createI3SMeshConversionCodec, createSingleMeshI3SSink} from './i3s-mesh-conversion.js';
+export type {
+  I3SMeshConversionResource,
+  I3SMeshConversionCodecOptions,
+  SingleMeshI3SSink
+} from './i3s-mesh-conversion.js';

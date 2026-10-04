@@ -121,3 +121,11 @@ export type {
   I3SRendererMetadata,
   I3SFeatureSupportReport
 } from './i3s-service';
+
+export {encodeI3SMeshLayer} from './i3s-mesh-writer';
+export type {
+  I3SMeshWriterOptions,
+  EncodedI3SMeshLayer,
+  I3SMeshFeatures,
+  I3SMeshMaterial
+} from './i3s-mesh-writer';

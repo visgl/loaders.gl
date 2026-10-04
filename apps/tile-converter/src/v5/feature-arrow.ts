@@ -293,6 +293,8 @@ function validateFeatureValue(field: Field, value: unknown, fieldPath: string): 
   }
   if (dataType === 'utf8' || dataType === 'utf8-view') {
     if (typeof value !== 'string') throw createFeatureValueTypeError(fieldPath, 'a string');
+    if (new TextDecoder().decode(new TextEncoder().encode(value)) !== value)
+      throw createFeatureValueTypeError(fieldPath, 'a valid Unicode string');
     return;
   }
   if (dataType === 'bool') {

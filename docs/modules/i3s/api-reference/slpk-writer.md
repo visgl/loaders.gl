@@ -21,7 +21,7 @@ at the layer: exclude the service `SceneServer/layers/0` prefix. Root `3dSceneLa
 required. Supply valid I3S resources with their required archive names and GZIP compression
 already applied; image resources such as PNG/JPEG retain their own encoding. Inputs must
 remain unchanged while packaging. Metadata, geometry, reference closure, and compression
-validation remain the caller's responsibility. The writer does not author an I3S layer from GLB.
+validation remain the caller's responsibility. Use [encodeI3SMeshLayer](/docs/modules/i3s/api-reference/i3s-mesh-writer) to author the initial untextured mesh profile before packaging.
 
 The outer ZIP uses STORE, populated local headers, no directory entries or descriptors,
 and a fixed UTC timestamp. The last entry is the uncompressed `@specialIndexFileHASH128@`.

@@ -63,6 +63,11 @@
       "types": "./dist/i3s-slpk-writer.d.ts",
       "import": "./dist/i3s-slpk-writer.js",
       "require": "./dist/i3s-slpk-writer.cjs"
+    },
+    "./i3s-mesh-writer": {
+      "types": "./dist/i3s-mesh-writer.d.ts",
+      "import": "./dist/i3s-mesh-writer.js",
+      "require": "./dist/i3s-mesh-writer.cjs"
     }
   },
   "sideEffects": false,
