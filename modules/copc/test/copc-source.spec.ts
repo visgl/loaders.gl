@@ -34,9 +34,10 @@ class TestCOPCTileSource extends COPCTileSource {
   readNodeRanges(
     node: {pointCount: number; pointDataOffset: number; pointDataLength: number},
     rangeChunkSize: number,
-    rangeConcurrency: number
+    rangeConcurrency: number,
+    signal?: AbortSignal
   ): AsyncIterable<Uint8Array> {
-    return this.loadCOPCNodeRangeChunks(node, rangeChunkSize, rangeConcurrency);
+    return this.loadCOPCNodeRangeChunks(node, rangeChunkSize, rangeConcurrency, signal);
   }
 
   /** Expose child-key generation for maximum-depth coverage. */
@@ -44,6 +45,78 @@ class TestCOPCTileSource extends COPCTileSource {
     return this.getChildKeys(tileId);
   }
 }
+
+test('COPC scans every PDRF 8 field and preserves projected tile origins', async () => {
+  const source = new COPCTileSource(createWorkerCOPCBlob(8), {
+    core: {worker: false},
+    copc: {sourceCoordinateSystem: 'EPSG:3857', colorFormat: 'float32'}
+  });
+  try {
+    const metadata = await source.getQueryMetadata();
+    const columns = metadata.columns.map(column => column.name);
+    expect(columns).toContain('Infrared');
+    const batches = [];
+    for await (const batch of source.scan({columns, batchSize: 2, maximumLevel: 0}))
+      batches.push(batch);
+    expect(batches.reduce((count, batch) => count + batch.length, 0)).toBe(40);
+    expect(batches[0].data.getChild('Red')?.get(0)).toBe(0);
+    expect(batches[0].data.getChild('Infrared')?.get(1)).toBe(101);
+    const tile = await source.getRootTile();
+    const content = await source.loadTileContent(tile);
+    expect(content!.coordinateSystem).toBe('lnglat-offsets');
+    expect(content!.cartographicOrigin).toEqual([0, 0, 0]);
+    const position = content!.data.data.getChild('POSITION')!.get(0)!.toArray();
+    expect(position[0]).toBeCloseTo(-0.000179663, 8);
+    expect(position[1]).toBeCloseTo(-0.000107798, 8);
+    expect(position[2]).toBe(-15);
+    expect(content!.data.data.getChild('POSITION')!.get(0)!.toArray().every(Number.isFinite)).toBe(
+      true
+    );
+    expect(await source.scan({limit: 0}).next()).toMatchObject({done: true});
+  } finally {
+    await source.close();
+  }
+});
+
+test('COPC hierarchy streaming honors zero-page budgets and cancellation', async () => {
+  const source = new COPCTileSource(createWorkerCOPCBlob(6), {core: {worker: false}});
+  try {
+    expect(await source.loadHierarchyInBatches({maxPages: 0}).next()).toMatchObject({done: true});
+    const controller = new AbortController();
+    controller.abort();
+    await expect(source.loadHierarchyInBatches({signal: controller.signal}).next()).rejects.toThrow(
+      'hierarchy loading was aborted'
+    );
+  } finally {
+    await source.close();
+  }
+});
+
+test('COPC progressive range prefetch propagates failures and cancellation', async () => {
+  const source = new TestCOPCTileSource(createWorkerCOPCBlob(6), {core: {worker: false}});
+  try {
+    await source.initialize();
+    source.setRangeGetter(async () => {
+      throw new Error('range failed');
+    });
+    const node = {pointCount: 1, pointDataOffset: 0, pointDataLength: 10};
+    await expect(source.readNodeRanges(node, 1, 2)[Symbol.asyncIterator]().next()).rejects.toThrow(
+      'range failed'
+    );
+    const controller = new AbortController();
+    controller.abort();
+    await expect(
+      source.readNodeRanges(node, 1, 2, controller.signal)[Symbol.asyncIterator]().next()
+    ).rejects.toThrow('range request was aborted');
+  } finally {
+    await source.close();
+  }
+});
+
+test('COPC source metadata identifies only COPC LAZ URLs', () => {
+  expect(COPCSourceLoader.testURL?.('https://example.test/file.COPC.LAZ?key=1')).toBe(true);
+  expect(COPCSourceLoader.testURL?.('file.laz')).toBe(false);
+});
 
 test('COPCWriter#writer conformance', () => {
   validateWriter(COPCWriter, 'COPCWriter');

@@ -819,6 +819,74 @@ test('ORCLoader#parse validates root, stream, and container structure', async ()
   }
 });
 
+test.each([
+  ['ascending RLEv1', 0, [0, 2, 20], [10, 12, 14]],
+  ['descending RLEv1', 0, [0, 254, 20], [10, 8, 6]],
+  ['negative patched base', 2, [0x80, 2, 0, 0, 0x85, 0xa0], [-4, -5, -4]],
+  ['positive variable delta', 2, [0xc2, 2, 20, 4, 0], [10, 12, 12]],
+  ['negative variable delta', 2, [0xc2, 2, 20, 3, 0x40], [10, 8, 7]]
+])('ORC decodes %s integer predictor boundaries', async (_name, encoding, data, expected) => {
+  const fixture = buildORCFixture({
+    rowCount: 3,
+    streams: [{kind: 1, column: 1, bytes: Uint8Array.from(data as number[])}],
+    types: [{kind: 12, subtypes: [1], fieldNames: ['value']}, {kind: 3}],
+    encodingKinds: [0, Number(encoding)]
+  });
+  const result = await ORCLoaderWithParser.parse(fixture.buffer);
+  expect(getColumnValues((result as any).data, 'value')).toEqual(expected);
+});
+
+test.each([
+  [0, [], 'RLEv1 stream'],
+  [0, [0], 'RLEv1 run'],
+  [0, [0xff], 'RLEv1 literal'],
+  [0, [0, 0, ...new Array(10).fill(128)], 'too large'],
+  [2, [], 'RLEv2 stream'],
+  [2, [0x80, 0, 0, 0], 'patched-base value'],
+  [2, [0x80, 0, 0, 0x21, 0, 0, 0x80], 'patched-base gap']
+])('ORC rejects malformed integer encoding %i / %j', async (encoding, data, message) => {
+  const fixture = buildORCFixture({
+    rowCount: 1,
+    streams: [{kind: 1, column: 1, bytes: Uint8Array.from(data as number[])}],
+    types: [{kind: 12, subtypes: [1], fieldNames: ['value']}, {kind: 3}],
+    encodingKinds: [0, Number(encoding)]
+  });
+  await expect(ORCLoaderWithParser.parse(fixture.buffer)).rejects.toThrow(String(message));
+});
+
+test('ORC decodes byte-RLE presence and supports legacy raw presence bits', async () => {
+  const build = (bytes: number[]) =>
+    buildORCFixture({
+      rowCount: 17,
+      streams: [
+        {kind: 0, column: 1, bytes: Uint8Array.from(bytes)},
+        {kind: 1, column: 1, bytes: Uint8Array.from([0, 0xff])}
+      ],
+      types: [{kind: 12, subtypes: [1], fieldNames: ['flag']}, {kind: 0}]
+    });
+  const result = await ORCLoaderWithParser.parse(build([0, 0xff]).buffer);
+  expect(getColumnValues((result as any).data, 'flag')).toEqual(new Array(17).fill(true));
+  const rawPresence = await ORCLoaderWithParser.parse(build([0]).buffer);
+  expect(getColumnValues((rawPresence as any).data, 'flag')).toEqual(new Array(17).fill(null));
+});
+
+test.each([
+  ['patched base', [0x80, 0, 0, 1, 0, 0x80, 0x40, 0, 7], [3, 7, 7, 7]],
+  ['direct', [0x40, 0, 0, 0, 7], [0, 7, 7, 7]],
+  ['two-value delta', [0xc2, 1, 20, 4, 0, 7], [10, 12, 7, 7, 7]],
+  ['byte-width delta', [0xce, 2, 20, 4, 1, 0, 7], [10, 12, 13, 7, 7, 7]]
+])('ORC advances from %s to the next integer run without consuming padding or its header', async (_name, bytes, expected) => {
+  const fixture = buildORCFixture({
+    rowCount: expected.length,
+    streams: [{kind: 1, column: 1, bytes: Uint8Array.from(bytes as number[])}],
+    types: [{kind: 12, subtypes: [1], fieldNames: ['value']}, {kind: 3}],
+    encodingKinds: [0, 2]
+  });
+  const result = await ORCLoaderWithParser.parse(fixture.buffer);
+  expect(getColumnValues((result as any).data, 'value')).toEqual(expected);
+});
+
+/** Concatenates small fixture stream payloads. */
 function concatBytes(...arrays: Uint8Array[]): Uint8Array {
   const output = new Uint8Array(arrays.reduce((length, array) => length + array.length, 0));
   let offset = 0;

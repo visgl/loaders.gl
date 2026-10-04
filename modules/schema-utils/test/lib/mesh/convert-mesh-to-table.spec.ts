@@ -16,6 +16,20 @@ import {
 } from '@loaders.gl/schema';
 import {convertMeshToTable, convertTableToMesh, deduceMeshSchema} from '@loaders.gl/schema-utils';
 import {validateArrowTableSchema} from '@loaders.gl/arrow';
+test('convertMeshToTable preserves empty vector and scalar attribute schemas', () => {
+  const attributes = {
+    POSITION: {value: new Float32Array(0), size: 3},
+    intensity: {value: new Uint16Array(0), size: 1}
+  };
+  const table = convertMeshToTable(
+    {attributes, schema: deduceMeshSchema(attributes), topology: 'point-list', mode: 0},
+    'arrow-table'
+  );
+  expect(table.data.numRows).toBe(0);
+  expect(table.data.schema.fields.map(field => field.name)).toEqual(['POSITION', 'intensity']);
+  expect(table.data.getChild('POSITION')!.type).toBeInstanceOf(arrow.FixedSizeList);
+  expect(table.data.getChild('intensity')!.type).toBeInstanceOf(arrow.Uint16);
+});
 test('meshArrowSchema', () => {
   expect(meshArrowSchema.fields.length, 'mesh schema has one predefined field').toBe(1);
   const positionField = meshArrowSchema.fields[0];

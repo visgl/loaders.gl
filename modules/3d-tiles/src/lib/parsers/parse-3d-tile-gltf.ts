@@ -10,7 +10,7 @@ import {
   getVoxelPrimitives,
   postProcessGLTF
 } from '@loaders.gl/gltf';
-import type {GLTFWithBuffers} from '@loaders.gl/gltf';
+import type {GLTF, GLTFWithBuffers} from '@loaders.gl/gltf';
 import {Tiles3DSpatialTransformer} from '@loaders.gl/tiles';
 import type {TilesetSpatialOptions, TilesetSpatialReference} from '@loaders.gl/tiles';
 import {Matrix4} from '@math.gl/core';
@@ -70,7 +70,8 @@ export async function parseGltf3DTile(
             spatialOptions?: TilesetSpatialOptions;
             spatialTransform?: ArrayLike<number>;
           }
-        | undefined
+        | undefined,
+      gltfWithBuffers.json
     );
     tile.gpuMemoryUsageInBytes = _getMemoryUsageGLTF(tile.gltf);
     const vectorContent = options?.['3d-tiles']?.vectorContent;
@@ -86,11 +87,14 @@ export async function parseGltf3DTile(
 /** Transform decoded glTF vertex attributes for a requested 3D Tiles target CRS. */
 function transformGLTFSpatialContent(
   gltf: any,
-  tilesetOptions?: {
-    spatialReference?: TilesetSpatialReference;
-    spatialOptions?: TilesetSpatialOptions;
-    spatialTransform?: ArrayLike<number>;
-  }
+  tilesetOptions:
+    | {
+        spatialReference?: TilesetSpatialReference;
+        spatialOptions?: TilesetSpatialOptions;
+        spatialTransform?: ArrayLike<number>;
+      }
+    | undefined,
+  sourceGltf: GLTF
 ): void {
   const spatialReference = tilesetOptions?.spatialReference;
   if (
@@ -106,12 +110,9 @@ function transformGLTFSpatialContent(
   const spatialTransform = tilesetOptions?.spatialTransform
     ? new Matrix4(Array.from(tilesetOptions.spatialTransform))
     : undefined;
-  const placements = getUniqueMeshPlacements(gltf);
+  const placements = getUniqueMeshPlacements(gltf, sourceGltf);
   for (const mesh of gltf.meshes || []) {
     const meshPlacement = placements.get(mesh);
-    if (placements.size && !meshPlacement) {
-      continue;
-    }
     for (const primitive of mesh.primitives || []) {
       const positionAccessor = primitive.attributes?.POSITION;
       if (!positionAccessor?.value || positionAccessor.value.length % 3 !== 0) {
@@ -131,10 +132,10 @@ function transformGLTFSpatialContent(
       const normalAccessor = primitive.attributes?.NORMAL;
       if (normalAccessor?.value?.length === sourcePositions.length) {
         const meshPlacedNormals = meshPlacement
-          ? transformDirectionsByMatrix(normalAccessor.value, meshPlacement)
+          ? transformNormalsByMatrix(normalAccessor.value, meshPlacement)
           : Float32Array.from(normalAccessor.value);
         const placedNormals = spatialTransform
-          ? transformDirectionsByMatrix(meshPlacedNormals, spatialTransform)
+          ? transformNormalsByMatrix(meshPlacedNormals, spatialTransform)
           : meshPlacedNormals;
         normalAccessor.value = transformer.transformNormals(placedNormals, placedPositions);
       }
@@ -143,8 +144,13 @@ function transformGLTFSpatialContent(
 }
 
 /** Return static node placements for meshes with exactly one instance. */
-function getUniqueMeshPlacements(gltf: any): Map<any, Matrix4> {
-  const rawNodes = gltf.json?.nodes || [];
+function getUniqueMeshPlacements(gltf: any, sourceGltf: GLTF): Map<any, Matrix4> {
+  const rawNodes = sourceGltf.nodes || [];
+  const animatedNodes = new Set(
+    (sourceGltf.animations || []).flatMap(animation =>
+      animation.channels.map(channel => channel.target.node)
+    )
+  );
   const parents = new Map<number, number>();
   for (let nodeIndex = 0; nodeIndex < rawNodes.length; nodeIndex++) {
     for (const childIndex of rawNodes[nodeIndex].children || []) {
@@ -160,7 +166,11 @@ function getUniqueMeshPlacements(gltf: any): Map<any, Matrix4> {
   }
   const placements = new Map<any, Matrix4>();
   for (const [meshIndex, nodeIndices] of meshNodes) {
-    if (nodeIndices.length !== 1 || !gltf.meshes?.[meshIndex]) {
+    if (
+      nodeIndices.length !== 1 ||
+      !gltf.meshes?.[meshIndex] ||
+      animatedNodes.has(nodeIndices[0])
+    ) {
       continue;
     }
     let nodeIndex: number | undefined = nodeIndices[0];
@@ -205,13 +215,21 @@ function transformPositionsByMatrix(values: ArrayLike<number>, matrix: Matrix4):
   return result;
 }
 
-function transformDirectionsByMatrix(values: ArrayLike<number>, matrix: Matrix4): Float32Array {
+/** Transform normals by the inverse-transpose linear part of an affine placement. */
+function transformNormalsByMatrix(values: ArrayLike<number>, matrix: Matrix4): Float32Array {
+  const normalMatrix = new Matrix4(matrix).invert().transpose();
   const result = new Float32Array(values.length);
   for (let index = 0; index < values.length; index += 3) {
-    result.set(
-      matrix.transformAsVector([values[index], values[index + 1], values[index + 2]]),
-      index
-    );
+    // Use only the linear block; the transposed translation must not cause perspective division.
+    const normalX = values[index];
+    const normalY = values[index + 1];
+    const normalZ = values[index + 2];
+    result[index] =
+      normalMatrix[0] * normalX + normalMatrix[4] * normalY + normalMatrix[8] * normalZ;
+    result[index + 1] =
+      normalMatrix[1] * normalX + normalMatrix[5] * normalY + normalMatrix[9] * normalZ;
+    result[index + 2] =
+      normalMatrix[2] * normalX + normalMatrix[6] * normalY + normalMatrix[10] * normalZ;
   }
   return result;
 }

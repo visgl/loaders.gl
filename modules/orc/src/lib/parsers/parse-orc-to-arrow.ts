@@ -603,7 +603,7 @@ function readRLEv2Integers(bytes: Uint8Array, count: number, signed: boolean): n
         const encoded = bitReader.read(width);
         values.push(Number(signed ? decodeZigzag(encoded) : encoded));
       }
-      offset = bitReader.offset;
+      offset = bitReader.getNextByteOffset();
     } else if (encoding === 2) {
       if (offset + 3 > bytes.length) throw new Error('Truncated ORC patched-base header');
       const width = getRLEv2Width((header >> 1) & 0x1f);
@@ -626,7 +626,7 @@ function readRLEv2Integers(bytes: Uint8Array, count: number, signed: boolean): n
       }
       const baseReader = new BitReader(bytes, offset);
       const baseValues = Array.from({length: runLength}, () => baseReader.read(width));
-      offset = baseReader.offset;
+      offset = baseReader.getNextByteOffset();
       const patchReader = new BitReader(bytes, offset);
       const patchBits = patchGapWidth + patchWidth;
       let patchIndex = 0;
@@ -639,7 +639,7 @@ function readRLEv2Integers(bytes: Uint8Array, count: number, signed: boolean): n
         if (patchIndex >= baseValues.length) throw new Error('Invalid ORC patched-base gap');
         baseValues[patchIndex] |= patch << BigInt(width);
       }
-      offset = patchReader.offset;
+      offset = patchReader.getNextByteOffset();
       for (const value of baseValues) values.push(Number(base + value));
     } else if (encoding === 3) {
       const widthCode = (header >> 1) & 0x1f;
@@ -662,10 +662,13 @@ function readRLEv2Integers(bytes: Uint8Array, count: number, signed: boolean): n
         for (let index = 0; index < length && values.length < count; index++) {
           value += delta;
           values.push(value);
-          const magnitude = Number(bitReader.read(width));
-          delta = deltaBase.value < 0 ? -magnitude : magnitude;
+          // The first delta is already in the header; no magnitude follows the final value.
+          if (index + 1 < length) {
+            const magnitude = Number(bitReader.read(width));
+            delta = deltaBase.value < 0 ? -magnitude : magnitude;
+          }
         }
-        offset = bitReader.offset;
+        offset = bitReader.getNextByteOffset();
       }
     } else {
       throw new Error('ORC RLEv2 encoding is not supported yet');
@@ -739,6 +742,11 @@ class BitReader {
     offset: number
   ) {
     this.offset = offset;
+  }
+
+  /** Returns the start of the next byte-aligned RLE block, including padding bits. */
+  getNextByteOffset(): number {
+    return this.offset + Number(this.bitOffset !== 0);
   }
 
   read(width: number): bigint {
