@@ -14,6 +14,7 @@ import {createGLBV3} from './test-utils/create-glb-v3';
 import {createGLBV1} from './test-utils/create-glb-v1';
 import {createSkinAsset, BAKED_MATRICES} from './test-utils/create-gltf-v1-skin';
 import {createAccessorAsset} from './test-utils/create-gltf-v1-accessor';
+import {createGLTFV1ConformanceAsset} from './test-utils/create-gltf-v1-conformance';
 import {getTypedArrayForAccessor} from '../src/lib/gltf-utils/get-typed-array';
 const GLTF_BINARY_URL = '@loaders.gl/gltf/test/data/gltf-2.0/2CylinderEngine.glb';
 const GLTF_JSON_URL = '@loaders.gl/gltf/test/data/gltf-2.0/2CylinderEngine.gltf';
@@ -326,4 +327,37 @@ test('GLTFLoader#options+postProcessGLTF', async () => {
     'GLTFLoader+postProcessGLTF() resolves accessor value as typed array'
   ).toBeTruthy();
   expect(value.length, 'GLTFLoader+postProcessGLTF() resolves accessor value length').toBe(6036);
+});
+
+test.each([
+  'JSON',
+  'GLB 1'
+])('GLTFLoader completes scene, influence, and bounds conversion after loading %s buffers', async container => {
+  const source = createGLTFV1ConformanceAsset();
+  const buffer = source.buffers[0];
+  const payload = buffer.arrayBuffer.slice(
+    buffer.byteOffset,
+    buffer.byteOffset + buffer.byteLength
+  );
+  const json = source.json as any;
+  if (container === 'GLB 1') {
+    json.buffers.binary_glTF = json.buffers.data;
+    delete json.buffers.data;
+    json.bufferViews.view.buffer = 'binary_glTF';
+  } else {
+    json.buffers.data.uri = `data:application/octet-stream;base64,${encodeArrayBufferToBase64(payload)}`;
+  }
+  const input =
+    container === 'JSON' ? JSON.stringify(json) : createGLBV1(json, new Uint8Array(payload));
+  const converted = await parse(input, GLTFLoader, {
+    gltf: {normalize: 'strict', loadImages: false}
+  });
+  const roundTrip = await parse(encodeSync(converted, GLTFWriter), GLTFLoader, {
+    gltf: {loadImages: false}
+  });
+  expect(roundTrip.json.scenes![0].nodes).toEqual([2, 0]);
+  expect(roundTrip.json.accessors![0]).toMatchObject({min: [-1, 2, 2], max: [1, 5, 3]});
+  expect(Array.from(getTypedArrayForAccessor(roundTrip.json, roundTrip.buffers, 2))).toEqual([
+    0.25, 0.75, 0, 0, 1, 0, 0, 0
+  ]);
 });

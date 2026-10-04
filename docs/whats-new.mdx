@@ -54,6 +54,11 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
 
 ## v5.0 (In Development)
 
+- Expand [glTF 1 conversion](/docs/modules/gltf/formats/gltf#gltf-1-to-gltf-2-conversion) with
+  smaller skin influence padding, safe detached skeleton scene attachment, required position/time
+  bounds, and focused skin, animation, and camera checks. Best effort reports unsupported cases;
+  strict mode rejects them. Conversion notes use the supplied logger.
+
 - Query WMTS feature information through advertised REST templates or KVP GET endpoints. Validate
   tile/pixel coordinates, reuse dimension defaults and coverage limits, decode native JSON or retain
   response text, forward cancellation, and reject HTTP/OWS errors.

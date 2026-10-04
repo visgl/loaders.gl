@@ -14,6 +14,10 @@ import {
   type GLTFV1AccessorConversion
 } from './repack-gltf-v1-accessors';
 import {cleanGLTFV1Fields, convertGLTFV1AttributeName} from './clean-gltf-v1-fields';
+import {convertGLTFV1Animations} from './convert-gltf-v1-animations';
+import {convertGLTFV1SkinScenes} from './convert-gltf-v1-skin-scenes';
+import {validateGLTFV1Cameras} from './validate-gltf-v1-cameras';
+import {validateGLTFV1Payloads} from './validate-gltf-v1-payloads';
 
 // Binary format changes (mainly implemented by GLBLoader)
 // https://github.com/KhronosGroup/glTF/tree/master/extensions/1.0/Khronos/KHR_binary_glTF
@@ -231,7 +235,12 @@ class GLTFV1Normalizer {
     this._updateObjects(json);
 
     this._updateMaterial(json);
-    this._updateAnimations(json);
+    convertGLTFV1Animations(
+      json,
+      (reference, collection) => this._convertIdToIndex(reference, collection),
+      feature => this._unsupported(feature)
+    );
+    validateGLTFV1Cameras(json, feature => this._unsupported(feature));
     cleanGLTFV1Fields(json, feature => this._unsupported(feature));
     this.accessorConversions = prepareGLTFV1AccessorConversions(json);
     convertGLTFV1AccessorStrides(json, accessorIndex => this.pendingAccessors.add(accessorIndex));
@@ -241,6 +250,11 @@ class GLTFV1Normalizer {
       feature => this._unsupported(feature)
     );
     this._updateNodes(json);
+    convertGLTFV1SkinScenes(
+      json,
+      feature => this._unsupported(feature),
+      message => this._warning(message)
+    );
     this._preserveLegacyResources(json);
     this._removeEmptyCollections(json);
     return deferBinaryBaking ? this.report : this.finishNormalization(gltf);
@@ -253,6 +267,11 @@ class GLTFV1Normalizer {
         this._unsupported(feature)
       );
       bakeGLTFV1BindShapes(gltf, feature => this._unsupported(feature));
+      validateGLTFV1Payloads(
+        gltf,
+        feature => this._unsupported(feature),
+        message => this._warning(message)
+      );
       this._finishReport();
       this.log?.log(
         1,
@@ -489,39 +508,6 @@ class GLTFV1Normalizer {
       // Recognizing a conventional uniform does not translate its arbitrary shader program.
       if (material.technique || material.values) {
         this._unsupported(`material technique ${material.technique || '<unnamed>'}`);
-      }
-    }
-  }
-
-  /** Convert glTF 1 animation sampler maps and channel targets to glTF 2 arrays and indices. */
-  _updateAnimations(json): void {
-    for (const animation of json.animations || []) {
-      if (!animation.samplers || Array.isArray(animation.samplers)) {
-        continue;
-      }
-      const samplerIndices: Record<string, number> = {};
-      const samplers: any[] = [];
-      const parameters = animation.parameters || {};
-      for (const samplerId of Object.keys(animation.samplers)) {
-        const sampler = animation.samplers[samplerId];
-        const input = parameters[sampler.input] || sampler.input;
-        const output = parameters[sampler.output] || sampler.output;
-        sampler.input = this._convertIdToIndex(input, 'accessor');
-        sampler.output = this._convertIdToIndex(output, 'accessor');
-        sampler.interpolation ||= 'LINEAR';
-        samplerIndices[samplerId] = samplers.length;
-        samplers.push(sampler);
-      }
-      animation.samplers = samplers;
-      delete animation.parameters;
-      for (const channel of animation.channels || []) {
-        if (typeof channel.sampler === 'string') {
-          channel.sampler = samplerIndices[channel.sampler];
-        }
-        if (channel.target?.id !== undefined) {
-          channel.target.node = this._convertIdToIndex(channel.target.id, 'node');
-          delete channel.target.id;
-        }
       }
     }
   }

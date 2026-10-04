@@ -183,9 +183,9 @@ test.each([
     },
     meshes: {mesh: {primitives: [{attributes: {POSITION: 'positions'}}]}}
   });
-  expect(convertGLTFV1ToGLTF2(source).normalizationReport.unsupported).toEqual([
-    expect.stringContaining('accessor 0 layout requires binary repacking')
-  ]);
+  expect(convertGLTFV1ToGLTF2(source).normalizationReport.unsupported).toEqual(
+    expect.arrayContaining([expect.stringContaining('accessor 0 layout requires binary repacking')])
+  );
   expect(() => convertGLTFV1ToGLTF2(source, {normalize: 'strict'})).toThrow(
     /requires binary repacking/
   );

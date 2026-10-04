@@ -17,13 +17,13 @@ export type GLTFV1AccessorConversion = {
   /** Core consumer category. */
   readonly usage: 'vertex' | 'indices' | 'animation' | 'inverseBind' | 'unused';
   /** Required numeric interpretation. */
-  readonly mode: 'copy' | 'joints' | 'unit';
+  readonly mode: 'copy' | 'joints' | 'weights' | 'unit';
   /** Standard semantic requiring this interpretation, when relevant. */
   readonly semantic?: string;
 };
 
 /** Validated legacy data span, with unpadded matrix columns. */
-type AccessorSource = {
+export type GLTFV1AccessorSource = {
   /** Buffer receiving the converted payload. */
   readonly bufferIndex: number;
   /** Source accessor. */
@@ -71,6 +71,12 @@ export function prepareGLTFV1AccessorConversions(
   const conversions = new Map<number, GLTFV1AccessorConversion>();
   /** Reuse the same source/interpretation pair and clone only distinct consumers. */
   const bindAccessor = (sourceIndex: number, conversion: GLTFV1AccessorConversion): number => {
+    if (
+      !Number.isSafeInteger(sourceIndex) ||
+      sourceIndex < 0 ||
+      !Object.hasOwn(accessors, sourceIndex)
+    )
+      return sourceIndex;
     const source = accessors[sourceIndex];
     if (!source) return sourceIndex;
     const bindings = variants.get(sourceIndex) || new Map<string, number>();
@@ -96,7 +102,9 @@ export function prepareGLTFV1AccessorConversions(
               [5121, 5123].includes(accessor.componentType) &&
               !accessor.normalized
             ? 'unit'
-            : 'copy';
+            : /^WEIGHTS_\d+$/.test(semantic)
+              ? 'weights'
+              : 'copy';
         primitive.attributes[semantic] = bindAccessor(accessorIndex, {
           usage: 'vertex',
           mode,
@@ -136,29 +144,65 @@ export function repackGLTFV1Accessors(
   const metadataUpdates: Array<() => void> = [];
   for (const [accessorIndex, conversion] of conversions) {
     const accessor = gltf.json.accessors![accessorIndex];
+    const isInfluence =
+      conversion.mode === 'joints' ||
+      conversion.mode === 'weights' ||
+      conversion.semantic?.startsWith('WEIGHTS_');
+    const padInfluences = Boolean(
+      isInfluence && ['SCALAR', 'VEC2', 'VEC3'].includes(accessor.type)
+    );
+    const convertWeights =
+      conversion.mode === 'weights' &&
+      (accessor.type !== 'VEC4' ||
+        ![5121, 5123, 5126].includes(accessor.componentType) ||
+        (accessor.componentType === 5126 && accessor.normalized));
     const convertJoints =
       conversion.mode === 'joints' &&
       (![5121, 5123].includes(accessor.componentType) ||
         accessor.normalized ||
         accessor.type !== 'VEC4');
-    if (!pending.has(accessorIndex) && !convertJoints && conversion.mode !== 'unit') continue;
-    const source = validateAccessorSource(gltf, accessorIndex);
+    if (
+      !pending.has(accessorIndex) &&
+      !convertJoints &&
+      !convertWeights &&
+      !padInfluences &&
+      conversion.mode !== 'unit'
+    )
+      continue;
+    const source = validateGLTFV1AccessorSource(gltf, accessorIndex);
     if (typeof source === 'string') {
       reportUnsupported(`accessor ${accessorIndex} layout requires binary repacking: ${source}`);
+      continue;
+    }
+    if (isInfluence && !['SCALAR', 'VEC2', 'VEC3', 'VEC4'].includes(accessor.type)) {
+      reportUnsupported(`accessor ${accessorIndex} skin influences require scalar/vector data`);
+      continue;
+    }
+    if (
+      conversion.mode === 'weights' &&
+      (![5121, 5123, 5126].includes(accessor.componentType) ||
+        (accessor.componentType === 5126 && accessor.normalized) ||
+        (accessor.componentType !== 5126 && !accessor.normalized))
+    ) {
+      reportUnsupported(
+        `accessor ${accessorIndex} weights require FLOAT or normalized unsigned data`
+      );
       continue;
     }
     let componentType = accessor.componentType;
     let normalized = accessor.normalized;
     if (convertJoints || conversion.mode === 'unit') {
-      if (convertJoints && (accessor.type !== 'VEC4' || accessor.normalized)) {
-        reportUnsupported(`accessor ${accessorIndex} joint indices require unnormalized VEC4 data`);
+      if (convertJoints && accessor.normalized) {
+        reportUnsupported(
+          `accessor ${accessorIndex} joint indices require unnormalized scalar/vector data`
+        );
         continue;
       }
       if (conversion.mode === 'unit') {
         const supportedTypes = conversion.semantic?.startsWith('COLOR_')
           ? ['VEC3', 'VEC4']
           : conversion.semantic?.startsWith('WEIGHTS_')
-            ? ['VEC4']
+            ? ['SCALAR', 'VEC2', 'VEC3', 'VEC4']
             : ['VEC2'];
         if (!supportedTypes.includes(accessor.type)) {
           reportUnsupported(
@@ -175,7 +219,7 @@ export function repackGLTFV1Accessors(
           componentIndex < source.rows * source.columns;
           componentIndex++
         ) {
-          const value = readAccessorComponent(source, elementIndex, componentIndex);
+          const value = readGLTFV1AccessorComponent(source, elementIndex, componentIndex);
           if (!Number.isInteger(value) || value < 0 || (convertJoints && value > 65535))
             valid = false;
           maximum = Math.max(maximum, value);
@@ -198,7 +242,7 @@ export function repackGLTFV1Accessors(
           `accessor ${accessorIndex} ambiguous integer attribute normalization; best effort assumes normalized unsigned values`
         );
         normalized = true;
-        if (!pending.has(accessorIndex)) {
+        if (!pending.has(accessorIndex) && !padInfluences) {
           metadataUpdates.push(() => {
             accessor.normalized = true;
           });
@@ -206,11 +250,10 @@ export function repackGLTFV1Accessors(
         }
       }
     }
+    const targetRows = padInfluences ? 4 : source.rows;
     const componentSize = COMPONENT_SIZES[componentType];
     const columnSize =
-      source.columns > 1
-        ? padToNBytes(source.rows * componentSize, 4)
-        : source.rows * componentSize;
+      source.columns > 1 ? padToNBytes(source.rows * componentSize, 4) : targetRows * componentSize;
     const elementSize = columnSize * source.columns;
     const byteStride = conversion.usage === 'vertex' ? padToNBytes(elementSize, 4) : elementSize;
     const bytes = new ArrayBuffer(accessor.count * byteStride);
@@ -230,7 +273,7 @@ export function repackGLTFV1Accessors(
           );
         } else
           for (let rowIndex = 0; rowIndex < source.rows; rowIndex++) {
-            const value = readAccessorComponent(
+            const value = readGLTFV1AccessorComponent(
               source,
               elementIndex,
               columnIndex * source.rows + rowIndex
@@ -255,11 +298,12 @@ export function repackGLTFV1Accessors(
         accessor.bufferView = bufferViewIndex;
         accessor.byteOffset = 0;
         delete (accessor as LegacyAccessor).byteStride;
-        if (componentType !== accessor.componentType) {
+        if (componentType !== accessor.componentType || padInfluences) {
           delete accessor.min;
           delete accessor.max;
         }
         accessor.componentType = componentType;
+        if (padInfluences) accessor.type = 'VEC4';
         if (normalized) accessor.normalized = true;
         else delete accessor.normalized;
       }
@@ -270,19 +314,22 @@ export function repackGLTFV1Accessors(
 }
 
 /** Validate logical and borrowed spans before reading any bytes; alignment can be repaired. */
-function validateAccessorSource(
+export function validateGLTFV1AccessorSource(
   gltf: GLTFWithBuffers,
   accessorIndex: number
-): AccessorSource | string {
-  const accessor = gltf.json.accessors![accessorIndex] as LegacyAccessor;
+): GLTFV1AccessorSource | string {
+  const accessor = gltf.json.accessors?.[accessorIndex] as LegacyAccessor | undefined;
+  if (!accessor || !Number.isSafeInteger(accessorIndex) || accessorIndex < 0)
+    return 'invalid accessor reference';
   const componentSize =
     typeof accessor.componentType === 'number' &&
     Object.hasOwn(COMPONENT_SIZES, accessor.componentType)
       ? COMPONENT_SIZES[accessor.componentType]
       : undefined;
-  const dimensions = Object.hasOwn(DIMENSIONS, accessor.type)
-    ? DIMENSIONS[accessor.type]
-    : undefined;
+  const dimensions =
+    typeof accessor.type === 'string' && Object.hasOwn(DIMENSIONS, accessor.type)
+      ? DIMENSIONS[accessor.type]
+      : undefined;
   if (!componentSize || !dimensions || !Number.isSafeInteger(accessor.count) || accessor.count < 1)
     return 'invalid component type, shape, or count';
   const [rows, columns] = dimensions;
@@ -332,8 +379,8 @@ function validateAccessorSource(
 }
 
 /** Read one little-endian raw component without requiring backing-buffer alignment. */
-function readAccessorComponent(
-  source: AccessorSource,
+export function readGLTFV1AccessorComponent(
+  source: GLTFV1AccessorSource,
   elementIndex: number,
   componentIndex: number
 ): number {

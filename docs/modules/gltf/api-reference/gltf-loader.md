@@ -89,17 +89,32 @@ data requiring repacking are reported and rejected in strict mode. Complete skin
 remains unsupported.
 
 The direct normalization helpers require loaded buffers for binary repacking, attribute component
-conversion, and non-identity bind shapes. `GLTFLoader` completes these conversions after linked
+conversion, bounds calculation, payload checks, and non-identity bind shapes. `GLTFLoader` completes these conversions after linked
 buffers load; `loadBuffers: false` can only convert already available embedded payloads.
 Missing payloads are reported in best-effort mode and rejected in strict mode. When direct
 conversion changes a URI-backed buffer, its URI becomes an updated data URI. Other URIs are retained.
 
-Conventional indexed joint/weight names and custom attribute namespaces are normalized. Valid VEC4
-joint indices become unsigned byte/short data without changing palette indices; shared consumers keep
+Conventional indexed joint/weight names and custom attribute namespaces are normalized. Valid scalar/vector
+joint indices become unsigned byte/short VEC4 data without changing palette indices; smaller joint and
+weight vectors are padded with zeros. Shared consumers keep
 separate accessor metadata. Unsigned integer color, weight, and UV values confined to `[0, 1]` become
 FLOAT values to retain their glTF 1 numeric inputs. Larger unsigned values are normalized by convention
 in best-effort mode, with an explicit unsupported-feature diagnostic; strict mode rejects that ambiguity.
 Explicit normalized integer accessors are retained. This does not interpret arbitrary shader code.
+
+Fully detached skeleton hierarchies can be added to scenes that instantiate their skins when the
+hierarchy contains no renderable objects or opaque node extensions. Local transforms and palette
+order are preserved. Supplied joint/weight sets are checked per mesh/skin binding for compatible
+shapes/counts, contiguous pairing, palette ranges, finite weights, sums of one, and repeated weighted
+joints. Missing all influence sets remains outside these checks; weights are not renormalized.
+
+Required position and animation-input bounds are calculated from validated loaded bytes. Compatible
+LINEAR/STEP TRS animations retain their samples; checks cover time ordering, target/output shapes,
+key counts, finite values, unit rotation quaternions, duplicate targets, and unresolved references.
+Camera projection values are also checked. Invalid values are reported in best effort and rejected
+in strict mode. Matrix-node decomposition, spline generation, and complete conformance validation
+remain unsupported. These diagnostics and bounds checks also require loaded payloads when source
+bounds already exist.
 
 Obsolete asset profile/premultiplied-alpha and texture format/type/target fields move under each
 object's `extras.gltf1.legacyFields`, preserving application extras. True premultiplied alpha and

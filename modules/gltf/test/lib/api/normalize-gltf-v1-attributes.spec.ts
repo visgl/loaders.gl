@@ -103,7 +103,7 @@ test.each([
 
 test.each([
   {normalized: true},
-  {type: 'VEC3'}
+  {type: 'MAT2'}
 ])('glTF 1 joint interpretation rejects incompatible metadata: %j', overrides => {
   const source = createAccessorAsset({
     accessors: {
@@ -111,7 +111,9 @@ test.each([
     },
     meshes: {mesh: {primitives: [{attributes: {JOINT: 'joints'}}]}}
   });
-  expect(() => convertGLTFV1ToGLTF2(source, {normalize: 'strict'})).toThrow(/unnormalized VEC4/);
+  expect(() => convertGLTFV1ToGLTF2(source, {normalize: 'strict'})).toThrow(
+    /unnormalized|scalar\/vector/
+  );
 });
 
 test.each([
