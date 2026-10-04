@@ -521,7 +521,18 @@ test('mesh codec retains selected UVs and embedded image bytes while rebasing po
   input.mesh.attributes.TEXCOORD_0 = {value: new Float32Array([0, 0, 1, 0, 0, 1]), size: 2};
   const selectedInput = {
     ...input,
-    material: {baseColorTexture: {data, mimeType: 'image/png' as const}}
+    material: {
+      baseColorTexture: {
+        data,
+        mimeType: 'image/png' as const,
+        sampler: {
+          wrapS: 33071 as const,
+          wrapT: 33648 as const,
+          minFilter: 9987 as const,
+          magFilter: 9729 as const
+        }
+      }
+    }
   };
   const before = structuredClone(selectedInput);
   const output = await encodeInput(selectedInput);
@@ -538,6 +549,8 @@ test('mesh codec retains selected UVs and embedded image bytes while rebasing po
   expect(scenegraph.getTypedArrayForBufferView(scenegraph.json.images![0].bufferView!)).toEqual(
     data
   );
+  expect(scenegraph.json.textures![0].sampler).toBe(0);
+  expect(scenegraph.json.samplers).toEqual([selectedInput.material.baseColorTexture.sampler]);
   expect(output.origin).toEqual(input.origin);
   expect(output.maximumPositionError).toBe(0);
   expect(selectedInput).toEqual(before);
