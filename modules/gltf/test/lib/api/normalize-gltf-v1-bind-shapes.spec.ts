@@ -23,26 +23,26 @@ test('glTF 1 bind shapes bake in palette order without overwriting shared data o
   expect(converted.json.skins?.[0]).toMatchObject({
     joints: [1, 0],
     skeleton: 0,
-    inverseBindMatrices: 2
+    inverseBindMatrices: 4
   });
   expect(converted.json.skins?.[0]).not.toHaveProperty('bindShapeMatrix');
   expect(converted.json.buffers).toHaveLength(1);
-  expect(converted.json.buffers?.[0].byteLength).toBe(292);
-  expect(converted.json.bufferViews?.[4]).toEqual({buffer: 0, byteOffset: 164, byteLength: 128});
-  expect(readAccessor(converted, 2)).toEqual(BAKED_MATRICES);
+  expect(converted.json.buffers?.[0].byteLength).toBe(312);
+  expect(converted.json.bufferViews?.[8]).toEqual({buffer: 0, byteOffset: 184, byteLength: 128});
+  expect(readAccessor(converted, 4)).toEqual(BAKED_MATRICES);
   expect(readAccessor(converted, 0)).toEqual(ORIGINAL_MATRICES);
   expect(readAccessor(converted, 1)).toEqual([1, 2, 3]);
   // The first baked matrix sends [1,2,3,1] to [-2,7,19,1], matching B then the original IBM.
-  const matrix = readAccessor(converted, 2).slice(0, 16);
+  const matrix = readAccessor(converted, 4).slice(0, 16);
   expect([
     matrix[0] + 2 * matrix[4] + 3 * matrix[8] + matrix[12],
     matrix[1] + 2 * matrix[5] + 3 * matrix[9] + matrix[13],
     matrix[2] + 2 * matrix[6] + 3 * matrix[10] + matrix[14]
   ]).toEqual([-2, 7, 19]);
-  expect(new Uint8Array(converted.buffers[0].arrayBuffer, 0, 161)).toEqual(
-    originalBytes.subarray(5, 166)
+  expect(new Uint8Array(converted.buffers[0].arrayBuffer, 0, 181)).toEqual(
+    originalBytes.subarray(5, 186)
   );
-  expect(Array.from(new Uint8Array(converted.buffers[0].arrayBuffer, 161, 3))).toEqual([0, 0, 0]);
+  expect(Array.from(new Uint8Array(converted.buffers[0].arrayBuffer, 181, 3))).toEqual([0, 0, 0]);
   expect(JSON.stringify(source.json)).toBe(originalJson);
   expect(new Uint8Array(source.buffers[0].arrayBuffer)).toEqual(originalBytes);
   expect(converted.buffers[0].arrayBuffer).not.toBe(source.buffers[0].arrayBuffer);
@@ -83,34 +83,34 @@ test('glTF 1 distinct and identical bind shapes do not corrupt shared inverse-bi
     }),
     {normalize: 'strict'}
   );
-  expect(converted.json.skins?.map(skin => skin.inverseBindMatrices)).toEqual([2, 3, 0, 2]);
-  expect(converted.json.buffers?.[0].byteLength).toBe(420);
+  expect(converted.json.skins?.map(skin => skin.inverseBindMatrices)).toEqual([4, 5, 0, 4]);
+  expect(converted.json.buffers?.[0].byteLength).toBe(440);
   expect(readAccessor(converted, 0)).toEqual(ORIGINAL_MATRICES);
-  expect(readAccessor(converted, 2)).toEqual(BAKED_MATRICES);
+  expect(readAccessor(converted, 4)).toEqual(BAKED_MATRICES);
   const secondExpected = BAKED_MATRICES.map((value, index) =>
     index === 13 || index === 28 ? 8 : value
   );
-  expect(readAccessor(converted, 3)).toEqual(secondExpected);
+  expect(readAccessor(converted, 5)).toEqual(secondExpected);
 });
 
 test('glTF 1 baking updates URI-backed bytes at a nonzero buffer index and preserves other payloads', () => {
   const source = createSkinAsset({bufferId: 'external', uri: 'matrices.bin'});
   const otherBytes = new Uint8Array([1, 2, 3, 4]).buffer;
   source.json.buffers = {
-    external: {byteLength: 161, uri: 'matrices.bin'},
+    external: {byteLength: 181, uri: 'matrices.bin'},
     binary_glTF: {byteLength: 4, uri: 'data:,'}
   } as unknown as typeof source.json.buffers;
   source.buffers.push({arrayBuffer: otherBytes, byteOffset: 0, byteLength: 4});
   const originalJson = JSON.stringify(source.json);
   const converted = convertGLTFV1ToGLTF2(source, {normalize: 'strict'});
   expect(converted.buffers[0].arrayBuffer).toBe(otherBytes);
-  expect(converted.json.bufferViews?.[4].buffer).toBe(1);
+  expect(converted.json.bufferViews?.[8].buffer).toBe(1);
   expect(converted.json.buffers?.[1].uri).toMatch(/^data:application\/octet-stream;base64,/);
   const decoded = Uint8Array.from(atob(converted.json.buffers![1].uri!.split(',')[1]), character =>
     character.charCodeAt(0)
   );
   expect(decoded).toEqual(new Uint8Array(converted.buffers[1].arrayBuffer));
-  expect(readAccessor(converted, 2)).toEqual(BAKED_MATRICES);
+  expect(readAccessor(converted, 4)).toEqual(BAKED_MATRICES);
   expect(JSON.stringify(source.json)).toBe(originalJson);
   expect(source.buffers[1].arrayBuffer).toBe(otherBytes);
 });
@@ -119,12 +119,12 @@ test('glTF 1 deferred baking finishes once and supports already-normalized input
   const source = createSkinAsset();
   const finish = normalizeGLTFV1WithDeferredBuffers(source, {normalize: 'strict'});
   expect(source.json.skins?.[0]).toHaveProperty('bindShapeMatrix');
-  expect(source.json.buffers?.[0].byteLength).toBe(161);
+  expect(source.json.buffers?.[0].byteLength).toBe(181);
   expect(finish().unsupported).toEqual([]);
   const completedBuffer = source.buffers[0].arrayBuffer;
   expect(finish().unsupported).toEqual([]);
   expect(source.buffers[0].arrayBuffer).toBe(completedBuffer);
-  expect(source.json.accessors).toHaveLength(3);
+  expect(source.json.accessors).toHaveLength(5);
   const secondFinish = normalizeGLTFV1WithDeferredBuffers(source, {normalize: 'strict'});
   expect(secondFinish().converted).toBe(false);
   expect(source.buffers[0].arrayBuffer).toBe(completedBuffer);
@@ -246,7 +246,7 @@ test('glTF 1 strict baking does not commit valid plans if another bind shape fai
   const originalBuffer = source.buffers[0].arrayBuffer;
   expect(() => normalizeGLTFV1(source, {normalize: 'strict'})).toThrow(/finite affine matrix/);
   expect(source.buffers[0].arrayBuffer).toBe(originalBuffer);
-  expect(source.json.buffers?.[0].byteLength).toBe(161);
+  expect(source.json.buffers?.[0].byteLength).toBe(181);
   expect(source.json.skins?.[0]).toHaveProperty('bindShapeMatrix');
   const converted = convertGLTFV1ToGLTF2(
     createSkinAsset({
@@ -274,7 +274,7 @@ test('glTF 1 strict baking does not commit valid plans if another bind shape fai
     bindShapeMatrix: [1, 2]
   });
   expect(readAccessor(converted, 0)).toEqual(ORIGINAL_MATRICES);
-  expect(readAccessor(converted, 2)).toEqual(BAKED_MATRICES);
+  expect(readAccessor(converted, 4)).toEqual(BAKED_MATRICES);
 });
 
 test('glTF 1 cached bind baking still validates each skin palette length', () => {
@@ -328,8 +328,10 @@ test.each([
   {
     jsonOverrides: {
       bufferViews: {
-        matrices: {buffer: 'binary_glTF', byteOffset: 4, byteLength: 160},
-        geometry: {buffer: 'binary_glTF', byteOffset: 148, byteLength: 12}
+        matrices: {buffer: 'binary_glTF', byteOffset: 4, byteLength: 180},
+        geometry: {buffer: 'binary_glTF', byteOffset: 148, byteLength: 12},
+        joints: {buffer: 'binary_glTF', byteOffset: 160, byteLength: 4},
+        weights: {buffer: 'binary_glTF', byteOffset: 164, byteLength: 16}
       }
     }
   },

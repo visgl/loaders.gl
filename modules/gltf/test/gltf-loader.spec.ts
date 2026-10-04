@@ -124,16 +124,28 @@ test.each([
   });
   expect(converted.json.skins?.[0]).not.toHaveProperty('bindShapeMatrix');
   expect(converted.buffers).toHaveLength(1);
-  expect(Array.from(getTypedArrayForAccessor(converted.json, converted.buffers, 2))).toEqual(
-    BAKED_MATRICES
-  );
+  expect(
+    Array.from(
+      getTypedArrayForAccessor(
+        converted.json,
+        converted.buffers,
+        converted.json.skins![0].inverseBindMatrices!
+      )
+    )
+  ).toEqual(BAKED_MATRICES);
   const roundTrip = await parse(encodeSync(converted, GLTFWriter), GLTFLoader, {
     gltf: {loadImages: false}
   });
   expect(roundTrip.json.asset.version).toBe('2.0');
-  expect(Array.from(getTypedArrayForAccessor(roundTrip.json, roundTrip.buffers, 2))).toEqual(
-    BAKED_MATRICES
-  );
+  expect(
+    Array.from(
+      getTypedArrayForAccessor(
+        roundTrip.json,
+        roundTrip.buffers,
+        roundTrip.json.skins![0].inverseBindMatrices!
+      )
+    )
+  ).toEqual(BAKED_MATRICES);
 });
 
 test('GLTFLoader strict bind baking requires linked buffers to be loaded', async () => {
@@ -332,14 +344,19 @@ test('GLTFLoader#options+postProcessGLTF', async () => {
 test.each([
   'JSON',
   'GLB 1'
-])('GLTFLoader completes scene, influence, and bounds conversion after loading %s buffers', async container => {
+])('GLTFLoader completes multi-root, matrix, influence, and bounds conversion after loading %s buffers', async container => {
   const source = createGLTFV1ConformanceAsset();
+  const json = source.json as any;
+  json.nodes.root.matrix = [0, 2, 0, 0, -3, 0, 0, 0, 0, 0, 4, 0, 7, 0, 0, 1];
+  delete json.nodes.root.translation;
+  delete json.nodes.root.children;
+  json.nodes.common = {children: ['root', 'child'], translation: [5, 6, 7]};
+  json.nodes.instance.skeletons = ['root', 'child'];
   const buffer = source.buffers[0];
   const payload = buffer.arrayBuffer.slice(
     buffer.byteOffset,
     buffer.byteOffset + buffer.byteLength
   );
-  const json = source.json as any;
   if (container === 'GLB 1') {
     json.buffers.binary_glTF = json.buffers.data;
     delete json.buffers.data;
@@ -355,9 +372,52 @@ test.each([
   const roundTrip = await parse(encodeSync(converted, GLTFWriter), GLTFLoader, {
     gltf: {loadImages: false}
   });
-  expect(roundTrip.json.scenes![0].nodes).toEqual([2, 0]);
+  expect(roundTrip.json.scenes![0].nodes).toEqual([2, 3]);
+  expect(roundTrip.json.skins![0]).toMatchObject({joints: [0, 1], skeleton: 3});
+  expect(roundTrip.json.nodes![0]).toMatchObject({translation: [7, 0, 0], scale: [2, 3, 4]});
+  expect(roundTrip.json.nodes![0].matrix).toBeUndefined();
+  expect(roundTrip.json.nodes![0].rotation![2]).toBeCloseTo(Math.SQRT1_2);
+  expect(roundTrip.json.nodes![0].rotation![3]).toBeCloseTo(Math.SQRT1_2);
+  expect(roundTrip.json.nodes![3]).toMatchObject({translation: [5, 6, 7], children: [0, 1]});
   expect(roundTrip.json.accessors![0]).toMatchObject({min: [-1, 2, 2], max: [1, 5, 3]});
   expect(Array.from(getTypedArrayForAccessor(roundTrip.json, roundTrip.buffers, 2))).toEqual([
     0.25, 0.75, 0, 0, 1, 0, 0, 0
   ]);
+});
+
+test('GLTFLoader widens loaded legacy byte indices before a GLB 2 round trip', async () => {
+  const positions = new Float32Array(256 * 3);
+  positions[255 * 3] = 1;
+  const payload = new Uint8Array(positions.byteLength + 1);
+  payload.set(new Uint8Array(positions.buffer));
+  payload[positions.byteLength] = 255;
+  const source = {
+    asset: {version: '1.0'},
+    buffers: {
+      data: {
+        byteLength: payload.byteLength,
+        uri: `data:application/octet-stream;base64,${encodeArrayBufferToBase64(payload.buffer)}`
+      }
+    },
+    bufferViews: {
+      positions: {buffer: 'data', byteLength: positions.byteLength},
+      indices: {buffer: 'data', byteOffset: positions.byteLength, byteLength: 1}
+    },
+    accessors: {
+      positions: {bufferView: 'positions', componentType: 5126, type: 'VEC3', count: 256},
+      indices: {bufferView: 'indices', componentType: 5121, type: 'SCALAR', count: 1}
+    },
+    meshes: {
+      mesh: {primitives: [{mode: 0, attributes: {POSITION: 'positions'}, indices: 'indices'}]}
+    }
+  };
+  const converted = await parse(JSON.stringify(source), GLTFLoader, {
+    gltf: {normalize: 'strict', loadImages: false}
+  });
+  const roundTrip = await parse(encodeSync(converted, GLTFWriter), GLTFLoader, {
+    gltf: {loadImages: false}
+  });
+  expect(roundTrip.json.accessors![1].componentType).toBe(5123);
+  expect(Array.from(getTypedArrayForAccessor(roundTrip.json, roundTrip.buffers, 1))).toEqual([255]);
+  expect(roundTrip.json.accessors![0]).toMatchObject({min: [0, 0, 0], max: [1, 0, 0]});
 });

@@ -54,6 +54,8 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
 
 ## v5.0 (In Development)
 
+- Further expand glTF 1 conversion with common-ancestor multi-root skins, translation-only animated matrix decomposition, index widening, vertex count/index range checks, and independent inverse-bind and missing-influence validation. Safe conversions preserve source data; ambiguous or invalid cases use the supplied logger and normalization report.
+
 - Expand [glTF 1 conversion](/docs/modules/gltf/formats/gltf#gltf-1-to-gltf-2-conversion) with
   smaller skin influence padding, safe detached skeleton scene attachment, required position/time
   bounds, and focused skin, animation, and camera checks. Best effort reports unsupported cases;

@@ -18,6 +18,7 @@ import {convertGLTFV1Animations} from './convert-gltf-v1-animations';
 import {convertGLTFV1SkinScenes} from './convert-gltf-v1-skin-scenes';
 import {validateGLTFV1Cameras} from './validate-gltf-v1-cameras';
 import {validateGLTFV1Payloads} from './validate-gltf-v1-payloads';
+import {convertGLTFV1MatrixNodes} from './convert-gltf-v1-matrix-nodes';
 
 // Binary format changes (mainly implemented by GLBLoader)
 // https://github.com/KhronosGroup/glTF/tree/master/extensions/1.0/Khronos/KHR_binary_glTF
@@ -241,6 +242,11 @@ class GLTFV1Normalizer {
       feature => this._unsupported(feature)
     );
     validateGLTFV1Cameras(json, feature => this._unsupported(feature));
+    convertGLTFV1MatrixNodes(
+      json,
+      feature => this._unsupported(feature),
+      message => this._warning(message)
+    );
     cleanGLTFV1Fields(json, feature => this._unsupported(feature));
     this.accessorConversions = prepareGLTFV1AccessorConversions(json);
     convertGLTFV1AccessorStrides(json, accessorIndex => this.pendingAccessors.add(accessorIndex));
@@ -263,8 +269,12 @@ class GLTFV1Normalizer {
   /** Complete binary baking once linked buffers are available; repeated calls are harmless. */
   finishNormalization(gltf: GLTFWithBuffers): GLTFV1NormalizationReport {
     if (this.report.converted && !this.finished) {
-      repackGLTFV1Accessors(gltf, this.accessorConversions, this.pendingAccessors, feature =>
-        this._unsupported(feature)
+      repackGLTFV1Accessors(
+        gltf,
+        this.accessorConversions,
+        this.pendingAccessors,
+        feature => this._unsupported(feature),
+        message => this._warning(message)
       );
       bakeGLTFV1BindShapes(gltf, feature => this._unsupported(feature));
       validateGLTFV1Payloads(

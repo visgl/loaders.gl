@@ -79,12 +79,12 @@ Conversion includes camera dictionaries and references, conventional vertex attr
 buffer index zero with its references and loaded payloads. Compatible accessor strides move to
 separate buffer views. Other safe raw layouts are repacked after buffers load, repairing strides,
 component/vertex alignment, and matrix-column padding while preserving original bytes and image views.
-Joint names resolve in order within one skeleton root per instance, or globally when unique;
+Joint names resolve in order within explicit skeleton subtrees per instance, or globally when unique; multiple disjoint roots are supported when they share an unambiguous common ancestor;
 shared skins are cloned for distinct bindings. Absent or
 identity bind shapes are consumed. Finite affine non-identity bind shapes are baked into packed
 FLOAT MAT4 inverse-bind matrices after buffers load. The conversion appends aligned results to copied
 buffers, preserving original accessor data and palette order. Missing payloads, invalid spans or strides,
-unresolved skin bindings, multiple skeleton roots, unsupported matrix data, and sparse or extension-bearing
+unresolved or disconnected skin bindings, unsupported matrix data, and sparse or extension-bearing
 data requiring repacking are reported and rejected in strict mode. Complete skin/attribute validation
 remains unsupported.
 
@@ -106,15 +106,16 @@ Fully detached skeleton hierarchies can be added to scenes that instantiate thei
 hierarchy contains no renderable objects or opaque node extensions. Local transforms and palette
 order are preserved. Supplied joint/weight sets are checked per mesh/skin binding for compatible
 shapes/counts, contiguous pairing, palette ranges, finite weights, sums of one, and repeated weighted
-joints. Missing all influence sets remains outside these checks; weights are not renormalized.
+joints. Missing JOINTS_0/WEIGHTS_0 is reported; weights are not renormalized. Supplied inverse-bind matrices are validated for FLOAT MAT4 shape, sufficient count, finite values, and an affine fourth row, including absent/identity bind shapes and unused skins.
 
 Required position and animation-input bounds are calculated from validated loaded bytes. Compatible
 LINEAR/STEP TRS animations retain their samples; checks cover time ordering, target/output shapes,
 key counts, finite values, unit rotation quaternions, duplicate targets, and unresolved references.
 Camera projection values are also checked. Invalid values are reported in best effort and rejected
-in strict mode. Matrix-node decomposition, spline generation, and complete conformance validation
-remain unsupported. These diagnostics and bounds checks also require loaded payloads when source
+in strict mode. Translation-only animated matrices are decomposed to equivalent TRS fields when finite, affine, nonsingular, and free of shear. Their rotation/scale linear transform is preserved and checked by recomposition. Rotation or scale animation on matrix nodes requires an unambiguous basis and remains unsupported, as do conflicting TRS fields and opaque node extensions. Spline generation and complete conformance validation remain unsupported. These diagnostics and bounds checks also require loaded payloads when source
 bounds already exist.
+
+Primitive vertex attributes must have matching positive counts. Loaded indices are checked for unnormalized unsigned SCALAR storage and range against every consuming primitive. Byte indices containing `255` are widened to short storage; short indices containing `65535` are widened to integer storage. Widening preserves values and separates shared raw vertex consumers. The UINT32 maximum (`4294967295`) cannot be represented as a core glTF 2 index and is reported. Missing or opaque index bytes are also reported. A reserved index used by an opaque primitive extension is retained and reported, with a separate accessor for core consumers.
 
 Obsolete asset profile/premultiplied-alpha and texture format/type/target fields move under each
 object's `extras.gltf1.legacyFields`, preserving application extras. True premultiplied alpha and
