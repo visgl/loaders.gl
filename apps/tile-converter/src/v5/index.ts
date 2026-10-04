@@ -59,3 +59,5 @@ export type {
   EncodedMeshConversionResource,
   MeshConversionCodecOptions
 } from './mesh-conversion.js';
+export {createSingleMeshTilesetSink} from './mesh-tileset-sink.js';
+export type {SingleMeshTilesetSink, SingleMeshTilesetSinkOptions} from './mesh-tileset-sink.js';

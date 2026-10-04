@@ -412,6 +412,20 @@ test('tile-converter(v5)#browser memory sink rejects output beyond its byte budg
   expect(sink.getFiles()).toEqual([]);
 });
 
+test.each([
+  Infinity,
+  NaN
+])('tile-converter(v5)#browser memory sink retains its validated budget after caller mutation to %s', async changedLimit => {
+  const options = {maxTotalBytes: 1};
+  const sink = createBoundedMemoryTileConversionSink(options);
+  options.maxTotalBytes = changedLimit;
+  await sink.write({resourceId: 'a', parts: [new Uint8Array([1])]});
+  await expect(sink.write({resourceId: 'b', parts: [new Uint8Array([2])]})).rejects.toMatchObject({
+    code: 'OUTPUT_MEMORY_LIMIT_EXCEEDED'
+  });
+  expect(sink.getFiles().reduce((total, file) => total + file.blob.size, 0)).toBe(1);
+});
+
 test('tile-converter(v5)#browser memory sink accepts Blobs from another browser realm', async () => {
   const iframe = document.createElement('iframe');
   document.body.append(iframe);
