@@ -8,6 +8,7 @@ import {afterEach, describe, expect, test, vi} from 'vitest';
 import {encodeAvro, encodeAvroInChunks} from '../src/lib/encoders/encode-avro';
 import {
   getAvroSchemaFingerprint,
+  decodeAvroBlockRows,
   parseAvro,
   parseAvroFromFile,
   parseAvroFromUrl,
@@ -80,6 +81,89 @@ async function createMultiRowOCF(): Promise<ArrayBuffer> {
     }
   });
 }
+
+test.each([
+  ['string', ['null', 'string'], 'text', ['boolean', {type: 'string'}]],
+  ['boolean', ['null', 'boolean'], true, ['string', {type: 'boolean'}]],
+  ['number', ['null', 'int'], 42, ['null', {type: 'double'}]],
+  ['null', ['null', 'int'], null, ['string', 'null']],
+  ['wrapped union', ['null', 'int'], 7, [{type: ['string', 'double']}]],
+  ['wrapped primitive', 'int', 8, {type: 'long'}],
+  ['nested schema', 'int', 9, {type: {type: 'double'}}]
+])('Avro resolves %s writer/reader schema combinations', async (_name, writerType, value, readerType) => {
+  const schema = {type: 'record', name: 'Value', fields: [{name: 'value', type: writerType}]};
+  const source = await encodeRaw(schema, {value});
+  const rows = await decodeAvroBlockRows(
+    new Uint8Array(source),
+    1,
+    {schema, codec: 'null'} as any,
+    {
+      readerSchema: {
+        type: 'record',
+        name: 'Value',
+        fields: [{name: 'value', type: readerType}]
+      } as any
+    }
+  );
+  expect(rows).toEqual([{value}]);
+});
+
+test('Avro resolves reader unions containing record, enum, fixed, array, and map branches', async () => {
+  const types = [
+    {type: 'record', name: 'Child', fields: [{name: 'id', type: 'int'}]},
+    {type: 'enum', name: 'Choice', symbols: ['YES', 'NO']},
+    {type: 'fixed', name: 'Pair', size: 2},
+    {type: 'array', items: 'int'},
+    {type: 'map', values: 'int'}
+  ];
+  const row = {
+    record: {id: 4},
+    choice: 'YES',
+    fixed: new Uint8Array([2, 3]),
+    array: [5, 6],
+    map: new Map([['first', 7]])
+  };
+  const fields = ['record', 'choice', 'fixed', 'array', 'map'].map((name, index) => ({
+    name,
+    type: types[index]
+  }));
+  const schema = {type: 'record', name: 'Container', fields};
+  const source = await encodeRaw(schema, row);
+  const rows = await decodeAvroBlockRows(
+    new Uint8Array(source),
+    1,
+    {schema, codec: 'null'} as any,
+    {
+      readerSchema: {
+        ...schema,
+        fields: fields.map(field => ({...field, type: ['null', field.type]}))
+      } as any
+    }
+  );
+  expect(rows).toEqual([row]);
+});
+
+test('Avro raw and single-object batch parsing preserve records and bigint promotions', async () => {
+  const schema = {type: 'record', name: 'Value', fields: [{name: 'value', type: 'long'}]};
+  for (const encoding of ['raw', 'single-object'] as const) {
+    const source = await encodeAvro(createStructuralTable([{value: 123n}]), {
+      avro: {schema: schema as any, encoding}
+    });
+    const batches = await collectBatches(
+      parseAvroInBatches(source, 1, {
+        schema: schema as any,
+        encoding,
+        longType: 'bigint',
+        readerSchema: {
+          ...schema,
+          fields: [{name: 'value', type: 'double'}]
+        } as any
+      })
+    );
+    expect(batches).toHaveLength(1);
+    expect(batches[0].data.getChild('value').get(0)).toBe(123);
+  }
+});
 
 describe('Avro boundary coverage', () => {
   test('streams OCF rows into bounded batches and selects blocks', async () => {

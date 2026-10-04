@@ -22,6 +22,42 @@ function encode(text: string): ArrayBuffer {
 }
 
 describe('raw Arrow CSV parser', () => {
+  test('preserves escaped headers, multiline fields, missing cells, and extra cells on the general byte path', () => {
+    const table = parseRawArrowCSVBytes(
+      encode(
+        '"a""b","second","third"\r\n"one""two",tail,value,ignored\r\n"line\nwrapped",last\r\nplain,,\r\n'
+      ),
+      {
+        header: true,
+        delimiter: ',',
+        skipEmptyLines: false
+      }
+    );
+    expect(toRows(table!)).toEqual([
+      {'a"b': 'one"two', second: 'tail', third: 'value'},
+      {'a"b': 'line\nwrapped', second: 'last', third: null},
+      {'a"b': 'plain', second: '', third: ''}
+    ]);
+  });
+
+  test.each([
+    false,
+    'auto'
+  ] as const)('preserves a quoted numeric first row without explicit headers (%s)', header => {
+    const table = parseRawArrowCSVBytes(encode('"1","2"\r\n"3",4\r\n5'), {
+      header,
+      delimiter: ',',
+      dynamicTyping: true,
+      skipEmptyLines: false,
+      columnPrefix: 'field'
+    });
+    expect(toRows(table!)).toEqual([
+      {field1: '1', field2: '2'},
+      {field1: '3', field2: '4'},
+      {field1: '5', field2: null}
+    ]);
+  });
+
   test('covers direct byte parser boundaries with quoted data and uneven rows', () => {
     const quoted = parseRawArrowCSVBytes(
       encode(

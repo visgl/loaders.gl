@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import {expect, test} from 'vitest';
+import {expect, test, vi} from 'vitest';
 import {
   HttpFile,
   RangeRequestScheduler,
@@ -12,6 +12,95 @@ import {
 
 const DATA = Uint8Array.from({length: 32}, (_, index) => index);
 const URL = 'https://example.com/data.parquet';
+
+test('HttpFile#legacy response preserves identity headers and empty-range semantics', async () => {
+  const file = await HttpFile.open(URL, {
+    byteLength: DATA.length,
+    etag: '"version-1"',
+    lastModified: 'Mon, 01 Jan 2024 00:00:00 GMT',
+    fetch: async (_url, options) =>
+      createRangeResponse(options, {
+        etag: '"version-1"',
+        lastModified: 'Mon, 01 Jan 2024 00:00:00 GMT'
+      })
+  });
+  expect(file.bigsize).toBe(32n);
+  const response = await file.fetchRange(4n, 3);
+  expect(response.status).toBe(206);
+  expect(response.headers.get('Content-Range')).toBe('bytes 4-6/32');
+  expect(response.headers.get('ETag')).toBe('"version-1"');
+  expect(response.headers.get('Last-Modified')).toBe('Mon, 01 Jan 2024 00:00:00 GMT');
+  expect(Array.from(new Uint8Array(await response.arrayBuffer()))).toEqual([4, 5, 6]);
+  const empty = await file.fetchRange(32, 0);
+  expect(empty.headers.has('Content-Range')).toBe(false);
+  expect((await empty.arrayBuffer()).byteLength).toBe(0);
+  await file.close();
+  await expect(file.read()).rejects.toThrow('closed');
+  await expect(file.open()).rejects.toThrow('closed');
+  await expect(file.stat()).rejects.toThrow('closed');
+});
+
+test.each([
+  [-1, 1, 'offset'],
+  [0.5, 1, 'offset'],
+  [Number.MAX_SAFE_INTEGER + 1, 0, 'offset'],
+  [0, -1, 'length'],
+  [0, 0.5, 'length'],
+  [31, 2, 'beyond']
+])('HttpFile#rejects invalid range (%s, %s)', async (offset, length, message) => {
+  const fetch = vi.fn();
+  const file = new HttpFile(URL, {byteLength: 32, etag: '"known"', fetch});
+  await expect(file.read(offset, length)).rejects.toThrow(message);
+  expect(fetch).not.toHaveBeenCalled();
+});
+
+test('HttpFile#pre-aborted operations do not fetch and count cancellation once per operation', async () => {
+  const fetch = vi.fn();
+  const file = new HttpFile(URL, {fetch});
+  expect(file.size).toBe(0);
+  expect(file.bigsize).toBe(0n);
+  const controller = new AbortController();
+  controller.abort();
+  await expect(file.open(controller.signal)).rejects.toMatchObject({name: 'AbortError'});
+  await expect(file.read(0, 1, controller.signal)).rejects.toMatchObject({name: 'AbortError'});
+  expect(fetch).not.toHaveBeenCalled();
+  expect(file.getTelemetry().abortCount).toBe(2);
+});
+
+test('HttpFile#failed shared identity discovery can be retried', async () => {
+  let attempts = 0;
+  const file = new HttpFile(URL, {
+    fetch: async (_url, options) => {
+      attempts++;
+      if (attempts === 1) throw new Error('temporary probe failure');
+      return createRangeResponse(options);
+    }
+  });
+  await expect(file.open()).rejects.toThrow('temporary probe failure');
+  expect(file.getTelemetry().errorCount).toBe(1);
+  await file.open();
+  expect(file.size).toBe(32);
+  expect(attempts).toBe(2);
+});
+
+test('HttpFile#cancellable identity wait propagates discovery failure to every caller', async () => {
+  let rejectProbe!: (error: Error) => void;
+  const file = new HttpFile(URL, {
+    fetch: () =>
+      new Promise((_resolve, reject) => {
+        rejectProbe = reject;
+      })
+  });
+  const first = file.open(new AbortController().signal);
+  const second = file.open(new AbortController().signal);
+  const assertions = Promise.all([
+    expect(first).rejects.toThrow('shared probe failure'),
+    expect(second).rejects.toThrow('shared probe failure')
+  ]);
+  rejectProbe(new Error('shared probe failure'));
+  await assertions;
+  expect(file.getTelemetry().errorCount).toBe(1);
+});
 
 test('HttpFile#open recognizes an empty 416 identity probe', async () => {
   let requestedRange: string | null = null;

@@ -1,4 +1,4 @@
-import {expect, test} from 'vitest';
+import {beforeAll, expect, test} from 'vitest';
 import {parse} from '@loaders.gl/core';
 import {ZstdCompression} from '@loaders.gl/compression/zstd-compression';
 import {GZipFflateCompressor} from '@loaders.gl/compression/gzip-compressor-fflate';
@@ -6,6 +6,68 @@ import {SPZLoader, parseSPZToGaussianSplats} from '@loaders.gl/splats';
 import {SPZLoaderWithParser} from '@loaders.gl/splats/spz-loader';
 import {ZstdCodec} from 'zstd-codec';
 const modules = {'zstd-codec': ZstdCodec};
+let validationFixture: ArrayBuffer;
+beforeAll(async () => {
+  validationFixture = await makeSPZFixture();
+});
+
+test.each([
+  [12, 5, 'harmonics degree 5'],
+  [15, 4, 'expected 5 streams'],
+  [16, 1, 'table of contents byte offset'],
+  [16, 0xffffffff, 'table of contents byte offset']
+])('SPZ rejects invalid header field at byte %i', async (offset, value, message) => {
+  const source = validationFixture.slice(0);
+  const view = new DataView(source);
+  if (Number(offset) === 16) view.setUint32(Number(offset), Number(value), true);
+  else view.setUint8(Number(offset), Number(value));
+  await expect(parseSPZToGaussianSplats(source, {modules})).rejects.toThrow(String(message));
+});
+
+test.each([
+  [32, 9007199254740992n, 'Number.MAX_SAFE_INTEGER'],
+  [40, 1n, 'uncompressed bytes'],
+  [32, 1000000n, 'exceeds file byte length']
+])('SPZ validates stream length at byte %i', async (offset, value, message) => {
+  const source = validationFixture.slice(0);
+  new DataView(source).setBigUint64(Number(offset), value as bigint, true);
+  await expect(parseSPZToGaussianSplats(source, {modules})).rejects.toThrow(String(message));
+});
+
+test('SPZ rejects truncated and trailing container data', async () => {
+  await expect(parseSPZToGaussianSplats(new ArrayBuffer(7), {modules})).rejects.toThrow(
+    '8-byte header'
+  );
+  await expect(parseSPZToGaussianSplats(validationFixture.slice(0, 40), {modules})).rejects.toThrow(
+    'table of contents exceeds'
+  );
+  const trailing = new Uint8Array(validationFixture.byteLength + 1);
+  trailing.set(new Uint8Array(validationFixture));
+  await expect(parseSPZToGaussianSplats(trailing.buffer, {modules})).rejects.toThrow(
+    'do not match file byte length'
+  );
+  const tooShortLegacy = new GZipFflateCompressor().compressSync(new ArrayBuffer(8));
+  await expect(parseSPZToGaussianSplats(tooShortLegacy, {modules})).rejects.toThrow(
+    '16-byte header'
+  );
+});
+
+test.each([2, 3, 4])('SPZ decodes degree %i spherical harmonic streams', async degree => {
+  const source = await makeSPZFixture(true, degree);
+  const splats = await parseSPZToGaussianSplats(source, {modules});
+  expect(splats.sphericalHarmonics).toHaveLength([0, 9, 24, 45, 72][degree] * 2);
+  expect(Array.from(splats.sphericalHarmonics!)).toEqual(
+    new Array([0, 9, 24, 45, 72][degree] * 2).fill(0)
+  );
+});
+
+test('SPZ reverses the explicit LUF-to-RUB conversion', async () => {
+  const source = makeLegacySPZFixture(2);
+  const splats = await parseSPZToGaussianSplats(source, {
+    splats: {sourceCoordinateSystem: 'LUF', targetCoordinateSystem: 'RUB'}
+  });
+  expect(Array.from(splats.positions)).toEqual([-1, 2, 3]);
+});
 test('SPZLoader parses Niantic Spatial v4 Gaussian splats', async () => {
   const data = await makeSPZFixture();
   const formats: string[] = [];
@@ -107,9 +169,10 @@ test('SPZLoader rejects malformed legacy gzip headers', async () => {
  * Builds a deterministic two-row SPZ v4 fixture.
  *
  * @param compressStreams Whether to encode fixture streams with zstd-codec.
+ * @param shDegree Spherical harmonic degree encoded in an optional sixth stream.
  * @returns SPZ fixture data.
  */
-async function makeSPZFixture(compressStreams = true): Promise<ArrayBuffer> {
+async function makeSPZFixture(compressStreams = true, shDegree = 0): Promise<ArrayBuffer> {
   const streams = [
     makePositionStream(),
     new Uint8Array([128, 64]),
@@ -117,6 +180,7 @@ async function makeSPZFixture(compressStreams = true): Promise<ArrayBuffer> {
     makeScaleStream(),
     makeRotationStream()
   ];
+  if (shDegree) streams.push(new Uint8Array([0, 9, 24, 45, 72][shDegree] * 2).fill(128));
   let compressedStreams = streams;
   if (compressStreams) {
     const compression = new ZstdCompression({modules});
@@ -137,7 +201,7 @@ async function makeSPZFixture(compressStreams = true): Promise<ArrayBuffer> {
   dataView.setUint32(0, 0x5053474e, true);
   dataView.setUint32(4, 4, true);
   dataView.setUint32(8, 2, true);
-  dataView.setUint8(12, 0);
+  dataView.setUint8(12, shDegree);
   dataView.setUint8(13, 12);
   dataView.setUint8(14, 0);
   dataView.setUint8(15, compressedStreams.length);
