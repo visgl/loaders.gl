@@ -185,3 +185,22 @@ test('GLTFScenegraph covers extension mutation and compact scene construction', 
   expect(scenegraph.gltf.binary?.byteLength).toBe(scenegraph.byteLength);
   expect(scenegraph.gltf.buffers[0].byteLength).toBe(scenegraph.byteLength);
 });
+
+test('GLTFScenegraph appends explicit samplers and links texture indices including zero', () => {
+  const scenegraph = new GLTFScenegraph();
+  const sampler = {wrapS: 33071, wrapT: 33648, magFilter: 9729, minFilter: 9987};
+  expect(scenegraph.addSampler(sampler)).toBe(0);
+  expect(scenegraph.addSampler({})).toBe(1);
+  expect(scenegraph.getSampler(0)).toEqual(sampler);
+  expect(scenegraph.getSampler(0)).not.toBe(sampler);
+  expect(scenegraph.getSampler(1)).toEqual({});
+  expect(scenegraph.addTexture({imageIndex: 0, samplerIndex: 0})).toBe(0);
+  expect(scenegraph.addTexture({imageIndex: 1, samplerIndex: 1})).toBe(1);
+  expect(scenegraph.addTexture({imageIndex: 2})).toBe(2);
+  expect(scenegraph.json.textures).toEqual([
+    {source: 0, sampler: 0},
+    {source: 1, sampler: 1},
+    {source: 2}
+  ]);
+  expect(sampler).toEqual({wrapS: 33071, wrapT: 33648, magFilter: 9729, minFilter: 9987});
+});
