@@ -19,6 +19,16 @@ export interface MeshTileSampler {
   readonly minFilter?: 9728 | 9729 | 9984 | 9985 | 9986 | 9987;
 }
 
+/** Selected KHR_texture_transform controls for TEXCOORD_0. */
+export interface MeshTileTextureTransform {
+  /** Finite UV translation; omitted values use [0, 0]. */
+  readonly offset?: readonly [number, number];
+  /** Finite counterclockwise rotation in radians around the UV origin; omission uses 0. */
+  readonly rotation?: number;
+  /** Finite UV scale; zero and negative values are allowed, and omission uses [1, 1]. */
+  readonly scale?: readonly [number, number];
+}
+
 /** One already encoded base-color image using TEXCOORD_0. */
 export interface MeshTileTexture {
   /** Encoded PNG/JPEG bytes; a typed array subview selects only its own bytes. */
@@ -27,6 +37,8 @@ export interface MeshTileTexture {
   readonly mimeType: 'image/png' | 'image/jpeg';
   /** Optional wrapping/filtering; omission retains glTF's implicit sampler. */
   readonly sampler?: MeshTileSampler;
+  /** Optional UV transform, preserved as a required KHR_texture_transform extension. */
+  readonly transform?: MeshTileTextureTransform;
 }
 
 /** One glTF metallic-roughness material, shared by every triangle in the mesh. */
@@ -329,18 +341,18 @@ function encodeBaseColorTexture(
   texture: MeshTileTexture | undefined,
   scenegraph: GLTFScenegraph,
   hasTextureCoordinates: boolean
-): {index: number} {
+): {index: number; extensions?: {KHR_texture_transform: MeshTileTextureTransform}} {
   if (
     !texture ||
     Object.keys(texture).some(
-      name => name !== 'data' && name !== 'mimeType' && name !== 'sampler'
+      name => name !== 'data' && name !== 'mimeType' && name !== 'sampler' && name !== 'transform'
     ) ||
     !(texture.data instanceof Uint8Array) ||
     !['image/png', 'image/jpeg'].includes(texture.mimeType)
   ) {
     throw new TileConversionError(
       'MESH_TEXTURE_INVALID',
-      'Base-color texture must supply Uint8Array data, image/png or image/jpeg mimeType, and an optional sampler'
+      'Base-color texture must supply Uint8Array data, image/png or image/jpeg mimeType, and optional sampling/transform controls'
     );
   }
   if (!hasTextureCoordinates) {
@@ -369,7 +381,11 @@ function encodeBaseColorTexture(
   }
   const samplerIndex =
     'sampler' in texture ? scenegraph.addSampler(validateMeshSampler(texture.sampler)) : undefined;
+  const transform =
+    'transform' in texture ? validateMeshTextureTransform(texture.transform) : undefined;
+  if (transform) scenegraph.registerRequiredExtension('KHR_texture_transform');
   return {
+    ...(transform ? {extensions: {KHR_texture_transform: transform}} : {}),
     index: scenegraph.addTexture({
       imageIndex: scenegraph.addImage(image, texture.mimeType),
       samplerIndex
@@ -415,4 +431,45 @@ function validateMeshSampler(sampler: MeshTileSampler | undefined): MeshTileSamp
     }
   }
   return selectedSampler;
+}
+
+/** Copies finite UV controls and rejects unmapped extension semantics. */
+function validateMeshTextureTransform(
+  transform: MeshTileTextureTransform | undefined
+): MeshTileTextureTransform {
+  if (!transform || typeof transform !== 'object' || Array.isArray(transform)) {
+    throw new TileConversionError(
+      'MESH_TEXTURE_TRANSFORM_INVALID',
+      'Texture transform must be an object'
+    );
+  }
+  for (const name in transform) {
+    if (name !== 'offset' && name !== 'rotation' && name !== 'scale') {
+      throw new TileConversionError(
+        'MESH_TEXTURE_TRANSFORM_UNSUPPORTED',
+        `Texture transform property ${name} is unsupported`
+      );
+    }
+  }
+  const {offset, rotation, scale} = transform;
+  if (
+    [offset, scale].some(
+      value =>
+        value !== undefined &&
+        (!Array.isArray(value) ||
+          value.length !== 2 ||
+          Array.from(value).some(component => !Number.isFinite(component)))
+    ) ||
+    (rotation !== undefined && !Number.isFinite(rotation))
+  ) {
+    throw new TileConversionError(
+      'MESH_TEXTURE_TRANSFORM_INVALID',
+      'Texture transform requires finite UV pairs and a finite rotation'
+    );
+  }
+  return {
+    offset: offset === undefined ? undefined : [offset[0], offset[1]],
+    rotation,
+    scale: scale === undefined ? undefined : [scale[0], scale[1]]
+  };
 }

@@ -116,7 +116,7 @@ No material is added unless explicitly supplied. Unsupported material properties
 fail with `MESH_MATERIAL_UNSUPPORTED`; invalid values fail with
 `MESH_MATERIAL_INVALID`. Invalid color values/counts/types fail with `MESH_COLOR_INVALID`.
 Inputs are not mutated. Applications explicitly map source colors and materials into this
-subset; other texture maps, texture transforms, multiple materials, and
+subset; other texture maps, multiple materials, and
 feature mappings remain open work.
 
 Optional `TEXCOORD_0` contains packed finite Float32 UV pairs (`size: 2`), one per position.
@@ -129,7 +129,8 @@ const glb = encodeMeshTile(meshWithUvs, {
     baseColorTexture: {
       data: encodedImageBytes,
       mimeType: 'image/png',
-      sampler: {wrapS: 33071, wrapT: 33071, minFilter: 9729, magFilter: 9729}
+      sampler: {wrapS: 33071, wrapT: 33071, minFilter: 9729, magFilter: 9729},
+      transform: {offset: [0, 1], scale: [1, -1]}
     },
     metallicFactor: 0,
     roughnessFactor: 1
@@ -150,10 +151,20 @@ an explicitly selected `{}` emits an empty sampler using the same defaults. Inva
 or malformed selected samplers fail with `MESH_SAMPLER_INVALID`; unsupported sampler
 properties fail with `MESH_SAMPLER_UNSUPPORTED`. Inputs are not mutated. Mipmap filter
 selection does not generate mip levels; source adapters own sampling and image conventions.
-External image URLs, other UV sets, and texture extensions are rejected.
+Optional `MeshTileTextureTransform` preserves finite `offset`/`scale` UV pairs and a finite
+counterclockwise `rotation` in radians through
+[KHR_texture_transform](https://github.com/KhronosGroup/glTF/blob/main/extensions/2.0/Khronos/KHR_texture_transform/README.md).
+The reader applies scale, then rotation about the UV origin, then offset. Omitted controls use
+[0, 0], 0, and [1, 1]; zero/negative scales are supported. An omitted transform adds no extension;
+a selected `{}` adds the default transform. The extension is declared required because no baked
+fallback UV set is generated. UV/image bytes are unchanged and inputs are not mutated.
+Malformed/nonfinite controls fail with `MESH_TEXTURE_TRANSFORM_INVALID`; unsupported properties
+(including a `texCoord` override) fail with `MESH_TEXTURE_TRANSFORM_UNSUPPORTED`.
+Source transform extraction/mapping, external image URLs, other UV sets, and other texture
+extensions remain unsupported.
 Invalid selected UVs fail with `MESH_TEXCOORD_INVALID`, missing UVs with
 `MESH_TEXCOORD_REQUIRED`, and invalid/unsupported image descriptors or headers with
-`MESH_TEXTURE_INVALID`. The spatial mesh codec forwards the same selected UVs and images.
+`MESH_TEXTURE_INVALID`. The spatial mesh codec forwards the same selected UVs, images, sampling, and transforms.
 
 ## V5 spatial mesh codec
 

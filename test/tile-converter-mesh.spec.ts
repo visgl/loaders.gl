@@ -11,6 +11,7 @@ import {
   encodeMeshTile,
   TileConversionError,
   type MeshTileSampler,
+  type MeshTileTextureTransform,
   type MeshTileMaterial
 } from '@loaders.gl/tile-converter/v5';
 import {encodeMeshTile as encodeBrowserMeshTile} from '@loaders.gl/tile-converter/v5/browser';
@@ -452,6 +453,8 @@ test.each([
   });
   expect(container.json.textures).toEqual([{source: 0}]);
   expect(container.json.samplers).toBeUndefined();
+  expect(container.json.extensionsUsed).toBeUndefined();
+  expect(container.json.extensionsRequired).toBeUndefined();
   expect(container.json.images[0]).toEqual({bufferView: 0, mimeType});
   const imageView = container.json.bufferViews[0];
   expect(
@@ -619,4 +622,103 @@ test.each(
       material: {baseColorTexture: {data: pngImage, mimeType: 'image/png', sampler}}
     })
   ).toThrowError(expect.objectContaining({code: 'MESH_SAMPLER_UNSUPPORTED'}));
+});
+
+test.each([
+  {},
+  {offset: undefined, rotation: undefined, scale: undefined},
+  {offset: [-1, 2]},
+  {rotation: -Math.PI / 2},
+  {scale: [0, -1]},
+  {offset: [0, 1], rotation: Math.PI / 2, scale: [0.5, -0.5]}
+])('mesh encoder preserves selected UV transform %j without changing inputs', async selection => {
+  const transform = selection as MeshTileTextureTransform;
+  const mesh = createTexturedMesh();
+  const before = structuredClone({mesh, transform});
+  const container = await parse(
+    encodeBrowserMeshTile(mesh, {
+      material: {baseColorTexture: {data: pngImage, mimeType: 'image/png', transform}}
+    }),
+    GLBLoader,
+    {glb: {strict: true}}
+  );
+  expect(GLTF2Schema.safeParse(container.json).success).toBe(true);
+  expect(container.json.materials[0].pbrMetallicRoughness.baseColorTexture).toEqual({
+    index: 0,
+    extensions: {KHR_texture_transform: JSON.parse(JSON.stringify(transform))}
+  });
+  expect(container.json.extensionsUsed).toEqual(['KHR_texture_transform']);
+  expect(container.json.extensionsRequired).toEqual(['KHR_texture_transform']);
+  expect(container.json.extensions).toBeUndefined();
+  expect({mesh, transform}).toEqual(before);
+});
+
+test.each([
+  null,
+  undefined,
+  false,
+  0,
+  '',
+  [],
+  {offset: null},
+  {offset: [1]},
+  {offset: [1, 2, 3]},
+  {offset: new Float32Array(2)},
+  {offset: [NaN, 0]},
+  {offset: Array(2)},
+  {offset: ['0', 1]},
+  {scale: [1, Infinity]},
+  {scale: null},
+  {rotation: NaN},
+  {rotation: Infinity},
+  {rotation: null},
+  {rotation: '0'},
+  Object.create({rotation: NaN})
+])('mesh encoder rejects invalid selected UV transform %j', selection => {
+  const transform = selection as MeshTileTextureTransform;
+  expect(() =>
+    encodeMeshTile(createTexturedMesh(), {
+      material: {baseColorTexture: {data: pngImage, mimeType: 'image/png', transform}}
+    })
+  ).toThrowError(expect.objectContaining({code: 'MESH_TEXTURE_TRANSFORM_INVALID'}));
+});
+
+test.each(
+  ['texCoord', 'extensions', 'extras'].flatMap(property => [
+    {property, location: 'own', transform: {[property]: 1}},
+    {property, location: 'inherited', transform: Object.create({[property]: 1})}
+  ])
+)('mesh encoder rejects $location unsupported UV transform property $property', ({transform}) => {
+  expect(() =>
+    encodeMeshTile(createTexturedMesh(), {
+      material: {baseColorTexture: {data: pngImage, mimeType: 'image/png', transform}}
+    })
+  ).toThrowError(expect.objectContaining({code: 'MESH_TEXTURE_TRANSFORM_UNSUPPORTED'}));
+});
+
+test('mesh encoder UV transform renders through the shared glTF extension reader', async () => {
+  const output = encodeMeshTile(createTexturedMesh(), {
+    material: {
+      baseColorTexture: {
+        data: pngImage,
+        mimeType: 'image/png',
+        transform: {offset: [0, 1], rotation: Math.PI / 2, scale: [0.5, -0.5]}
+      }
+    }
+  });
+  const scenegraph = new GLTFScenegraph(
+    await parse(output, GLTFLoader, {
+      gltf: {postProcess: false, loadImages: false}
+    })
+  );
+  const primitive = scenegraph.json.meshes![0].primitives[0];
+  const textureInfo = scenegraph.json.materials![0].pbrMetallicRoughness!.baseColorTexture!;
+  const coordinates = scenegraph.getTypedArrayForAccessor(
+    primitive.attributes[`TEXCOORD_${textureInfo.texCoord}`]
+  );
+  [0, 0.5, 0, 1.5, 1, 1].forEach((value, index) =>
+    expect(coordinates[index]).toBeCloseTo(value, 6)
+  );
+  expect(textureInfo.extensions).toBeUndefined();
+  expect(scenegraph.json.extensionsRequired).not.toContain('KHR_texture_transform');
 });

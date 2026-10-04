@@ -511,7 +511,7 @@ test('mesh codec aborts the sink instead of dropping unsupported selected materi
   expect(sink.abort).toHaveBeenCalledOnce();
 });
 
-test('mesh codec retains selected UVs and embedded image bytes while rebasing positions', async () => {
+test('mesh codec retains selected UVs, image sampling and transform while rebasing positions', async () => {
   const data = new Uint8Array(
     await (
       await fetchFile(new URL('./data/tile-converter-texture.png', import.meta.url).href)
@@ -525,6 +525,7 @@ test('mesh codec retains selected UVs and embedded image bytes while rebasing po
       baseColorTexture: {
         data,
         mimeType: 'image/png' as const,
+        transform: {offset: [0, 1] as const, rotation: Math.PI / 2, scale: [0.5, -0.5] as const},
         sampler: {
           wrapS: 33071 as const,
           wrapT: 33648 as const,
@@ -537,7 +538,13 @@ test('mesh codec retains selected UVs and embedded image bytes while rebasing po
   const before = structuredClone(selectedInput);
   const output = await encodeInput(selectedInput);
   const scenegraph = new GLTFScenegraph(
-    await parse(output.glb, GLTFLoader, {gltf: {postProcess: false, loadImages: false}})
+    await parse(output.glb, GLTFLoader, {
+      gltf: {
+        postProcess: false,
+        loadImages: false,
+        excludeExtensions: {KHR_texture_transform: false}
+      }
+    })
   );
   const primitive = scenegraph.json.meshes![0].primitives[0];
   expect(Array.from(scenegraph.getTypedArrayForAccessor(primitive.attributes.TEXCOORD_0))).toEqual([
@@ -545,7 +552,12 @@ test('mesh codec retains selected UVs and embedded image bytes while rebasing po
   ]);
   expect(
     scenegraph.json.materials![primitive.material!].pbrMetallicRoughness!.baseColorTexture
-  ).toEqual({index: 0});
+  ).toEqual({
+    index: 0,
+    extensions: {KHR_texture_transform: selectedInput.material.baseColorTexture.transform}
+  });
+  expect(scenegraph.json.extensionsUsed).toContain('KHR_texture_transform');
+  expect(scenegraph.json.extensionsRequired).toContain('KHR_texture_transform');
   expect(scenegraph.getTypedArrayForBufferView(scenegraph.json.images![0].bufferView!)).toEqual(
     data
   );
