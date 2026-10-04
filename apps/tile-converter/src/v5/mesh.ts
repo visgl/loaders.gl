@@ -452,13 +452,16 @@ function validateMeshTextureTransform(
     }
   }
   const {offset, rotation, scale} = transform;
+  const offsetValues =
+    Array.isArray(offset) && offset.length === 2 ? [offset[0], offset[1]] : offset;
+  const scaleValues = Array.isArray(scale) && scale.length === 2 ? [scale[0], scale[1]] : scale;
   if (
-    [offset, scale].some(
+    [offsetValues, scaleValues].some(
       value =>
         value !== undefined &&
         (!Array.isArray(value) ||
           value.length !== 2 ||
-          Array.from(value).some(component => !Number.isFinite(component)))
+          value.some(component => !Number.isFinite(component)))
     ) ||
     (rotation !== undefined && !Number.isFinite(rotation))
   ) {
@@ -468,8 +471,8 @@ function validateMeshTextureTransform(
     );
   }
   return {
-    offset: offset === undefined ? undefined : [offset[0], offset[1]],
+    offset: offsetValues === undefined ? undefined : [offsetValues[0], offsetValues[1]],
     rotation,
-    scale: scale === undefined ? undefined : [scale[0], scale[1]]
+    scale: scaleValues === undefined ? undefined : [scaleValues[0], scaleValues[1]]
   };
 }
