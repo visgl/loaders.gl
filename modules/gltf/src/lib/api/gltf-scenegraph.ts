@@ -568,8 +568,15 @@ export class GLTFScenegraph {
     return this.json.materials.length - 1;
   }
 
-  /** Pack the binary chunk */
+  /** Pack binary data, omitting the optional chunk when no buffer is declared or populated. */
   createBinaryChunk(): void {
+    if (this.byteLength === 0 && !this.json.buffers?.length) {
+      delete this.json.buffers;
+      delete this.gltf.binary;
+      this.sourceBuffers = [];
+      this.gltf.buffers = [];
+      return;
+    }
     // Allocate total array
     const totalByteLength = this.byteLength;
     const arrayBuffer = new ArrayBuffer(totalByteLength);

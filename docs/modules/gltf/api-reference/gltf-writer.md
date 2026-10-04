@@ -59,6 +59,11 @@ import {encodeSync} from '@loaders.gl/core';
 const arrayBuffer = encodeSync(gltf, GLTFWriter, options);
 ```
 
+Materials annotated by the loader with `unlit: true` are written as required
+`KHR_materials_unlit` extensions. Existing raw optional unlit extensions remain optional.
+The writer omits empty extension declarations and does not invent a binary buffer or BIN chunk
+for assets without binary data. These repairs do not establish full glTF conformance.
+
 ## Options
 
 | Option        | Type                                                          | Default | Description                                                                                   |

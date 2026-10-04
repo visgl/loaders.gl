@@ -18,6 +18,21 @@ test('GLTFScenegraph#ctor', () => {
   const gltfScenegraph = new GLTFScenegraph();
   expect(gltfScenegraph).toBeTruthy();
 });
+
+test('GLTFScenegraph omits empty binary data and can subsequently pack appended data', () => {
+  const scenegraph = new GLTFScenegraph();
+  scenegraph.createBinaryChunk();
+  scenegraph.createBinaryChunk();
+  expect(scenegraph.json.buffers).toBeUndefined();
+  expect(scenegraph.gltf.binary).toBeUndefined();
+  expect(scenegraph.gltf.buffers).toEqual([]);
+
+  scenegraph.addBufferView(new Uint8Array([1, 2, 3]));
+  scenegraph.createBinaryChunk();
+  expect(scenegraph.json.buffers).toEqual([{byteLength: 4}]);
+  expect(Array.from(new Uint8Array(scenegraph.gltf.binary!))).toEqual([1, 2, 3, 0]);
+  expect(scenegraph.json.bufferViews).toEqual([{buffer: 0, byteOffset: 0, byteLength: 3}]);
+});
 test('GLTFScenegraph#addImage', () => {
   // Smallest valid png
   const gltfScenegraph = new GLTFScenegraph();

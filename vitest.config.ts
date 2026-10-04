@@ -110,6 +110,8 @@ export default getVitestConfig({
         'fuzzer',
         'geotiff',
         'get-pixels',
+        // The validator's compiled Dart CommonJS runtime requires browser prebundling.
+        'gltf-validator',
         'jszip',
         'lerc',
         'long',

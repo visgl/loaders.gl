@@ -85,6 +85,7 @@
     "@vis.gl/ts-plugins": "2.0.0-alpha.6",
     "@vitest/browser-playwright": "5.0.2",
     "@vitest/coverage-v8": "5.0.2",
+    "gltf-validator": "^2.0.0-dev.3.10",
     "playwright": "^1.59.1",
     "pre-commit": "^1.2.2",
     "pre-push": "^0.1.1",

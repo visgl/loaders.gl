@@ -151,6 +151,32 @@ technique. Strict mode rejects these legacy material techniques even when a diff
 or color is recognized. This does not reproduce arbitrary shaders, legacy lighting, or
 premultiplied-alpha rendering, and does not establish visual equivalence in downstream viewers.
 
+Material-level `KHR_materials_common` conversion resolves diffuse/emission texture IDs and supports
+LAMBERT and diffuse-only PHONG/BLINN with rough, non-metallic PBR factors. These lighting models are
+approximated, and the supplied logger and report receive a note even in strict mode. Nonzero ambient
+or specular lighting is reported as unsupported and rejected in strict mode; shininess has no effect
+when specular color is zero. Lit emission maps to emissive properties, with a white multiplier for
+texture-only emission. CONSTANT uses emission as unlit base color, never diffuse, and generates
+`KHR_materials_unlit`. Its default emission is black; ambient-dependent behavior remains unsupported.
+The loader's existing unlit decoder annotates these materials with `unlit: true`.
+`GLTFWriter` restores that annotation as a required `KHR_materials_unlit` extension for export;
+raw optional unlit extensions remain optional. Assets without binary data omit the optional BIN chunk.
+
+Common transparent and double-sided flags may occur in values or at the extension root. They must
+be booleans, default to false, and conflicting locations are reported. Valid transparency multiplies
+base-color alpha. The transparent flag controls BLEND versus OPAQUE independently of that alpha;
+explicit glTF 2 material fields take precedence. Recognized color values require finite RGBA factors
+in `[0, 1]`; images are not transcoded. All original common data is retained under
+`material.extras.gltf1.commonMaterial` without discarding existing application extras.
+
+Consumed common declarations are removed only when no live common payload remains. Unresolved
+common lights and unknown models retain their payloads and declarations. Generated unlit is required
+when the source common extension was required. Complete fallback technique/program/shader chains
+overridden by converted common materials are preserved without strict rejection; this exemption
+does not apply to unaccounted resources, remaining programmable materials, or opaque extension
+consumers. Small material exports are independently validated in tests; runtime conversion still
+does not provide a full validator or appearance guarantee.
+
 ## Usage
 
 ```ts
