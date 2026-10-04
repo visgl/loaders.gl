@@ -10,7 +10,7 @@ import {
   getVoxelPrimitives,
   postProcessGLTF
 } from '@loaders.gl/gltf';
-import type {GLTFWithBuffers} from '@loaders.gl/gltf';
+import type {GLTF, GLTFWithBuffers} from '@loaders.gl/gltf';
 import {Tiles3DSpatialTransformer} from '@loaders.gl/tiles';
 import type {TilesetSpatialOptions, TilesetSpatialReference} from '@loaders.gl/tiles';
 import {Matrix4} from '@math.gl/core';
@@ -70,7 +70,8 @@ export async function parseGltf3DTile(
             spatialOptions?: TilesetSpatialOptions;
             spatialTransform?: ArrayLike<number>;
           }
-        | undefined
+        | undefined,
+      gltfWithBuffers.json
     );
     tile.gpuMemoryUsageInBytes = _getMemoryUsageGLTF(tile.gltf);
     const vectorContent = options?.['3d-tiles']?.vectorContent;
@@ -86,11 +87,14 @@ export async function parseGltf3DTile(
 /** Transform decoded glTF vertex attributes for a requested 3D Tiles target CRS. */
 function transformGLTFSpatialContent(
   gltf: any,
-  tilesetOptions?: {
-    spatialReference?: TilesetSpatialReference;
-    spatialOptions?: TilesetSpatialOptions;
-    spatialTransform?: ArrayLike<number>;
-  }
+  tilesetOptions:
+    | {
+        spatialReference?: TilesetSpatialReference;
+        spatialOptions?: TilesetSpatialOptions;
+        spatialTransform?: ArrayLike<number>;
+      }
+    | undefined,
+  sourceGltf: GLTF
 ): void {
   const spatialReference = tilesetOptions?.spatialReference;
   if (
@@ -106,7 +110,7 @@ function transformGLTFSpatialContent(
   const spatialTransform = tilesetOptions?.spatialTransform
     ? new Matrix4(Array.from(tilesetOptions.spatialTransform))
     : undefined;
-  const placements = getUniqueMeshPlacements(gltf);
+  const placements = getUniqueMeshPlacements(gltf, sourceGltf);
   for (const mesh of gltf.meshes || []) {
     const meshPlacement = placements.get(mesh);
     if (placements.size && !meshPlacement) {
@@ -143,8 +147,8 @@ function transformGLTFSpatialContent(
 }
 
 /** Return static node placements for meshes with exactly one instance. */
-function getUniqueMeshPlacements(gltf: any): Map<any, Matrix4> {
-  const rawNodes = gltf.json?.nodes || [];
+function getUniqueMeshPlacements(gltf: any, sourceGltf: GLTF): Map<any, Matrix4> {
+  const rawNodes = sourceGltf.nodes || [];
   const parents = new Map<number, number>();
   for (let nodeIndex = 0; nodeIndex < rawNodes.length; nodeIndex++) {
     for (const childIndex of rawNodes[nodeIndex].children || []) {

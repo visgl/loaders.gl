@@ -149,7 +149,12 @@ export function makeMeshArrowTable(
   }
 
   const arrowSchema = new arrow.Schema(fields, getMeshArrowMetadata(options));
-  const table = new arrow.Table(arrowSchema, columns);
+  // Arrow's column-object constructor synthesizes an incompatible batch schema for empty
+  // fixed-size-list vectors. A schema-only table preserves the declared mesh fields instead.
+  const table =
+    columns[attributeNames[0]]?.length === 0
+      ? new arrow.Table(arrowSchema)
+      : new arrow.Table(arrowSchema, columns);
   const schema = serializeArrowSchema(table.schema);
 
   return {
