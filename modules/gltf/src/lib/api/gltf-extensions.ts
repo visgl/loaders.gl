@@ -87,7 +87,11 @@ export const EXTENSIONS: GLTFExtensionPlugin[] = [
 /**
  * List of extensions processed by the GLTFWriter
  */
-const EXTENSIONS_ENCODING: GLTFExtensionPlugin[] = [EXT_structural_metadata, EXT_mesh_features];
+const EXTENSIONS_ENCODING: GLTFExtensionPlugin[] = [
+  KHR_materials_unlit,
+  EXT_structural_metadata,
+  EXT_mesh_features
+];
 
 /** Call before any resource loading starts */
 export async function preprocessExtensions(gltf, options: GLTFLoaderOptions = {}, context?) {

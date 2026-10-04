@@ -270,7 +270,6 @@ const EXPECTED_GLTF_JSON_WITH_EXTENSION = {
       ]
     }
   },
-  extensionsRequired: [],
   extensionsUsed: ['EXT_structural_metadata'],
   bufferViews: [
     {buffer: 0, byteOffset: 0, byteLength: 16},
@@ -288,9 +287,7 @@ test('gltf#EXT_structural_metadata - Should encode', async () => {
   scenegraph1.createBinaryChunk();
   expect(tableIndex).toBe(0);
   expect(scenegraph1.gltf.buffers[0].byteLength).toBe(120);
-  expect(JSON.stringify(scenegraph1.gltf.json)).toEqual(
-    JSON.stringify(EXPECTED_GLTF_JSON_WITH_EXTENSION)
-  );
+  expect(scenegraph1.gltf.json).toEqual(EXPECTED_GLTF_JSON_WITH_EXTENSION);
 });
 test('gltf#EXT_structural_metadata - Roundtrip encoding/decoding', async () => {
   const scenegraph = new GLTFScenegraph();

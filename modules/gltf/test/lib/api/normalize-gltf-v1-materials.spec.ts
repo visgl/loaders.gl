@@ -77,6 +77,7 @@ describe('glTF 1 material conversion', () => {
       .material0;
     legacyMaterial.pbrMetallicRoughness = {
       baseColorFactor: [1, 0, 0, 0.25],
+      baseColorTexture: {index: 0, texCoord: 1},
       metallicFactor: 0.7,
       roughnessFactor: 0.3
     };
@@ -87,7 +88,7 @@ describe('glTF 1 material conversion', () => {
       baseColorFactor: [1, 0, 0, 0.25],
       metallicFactor: 0.7,
       roughnessFactor: 0.3,
-      baseColorTexture: {index: 0}
+      baseColorTexture: {index: 0, texCoord: 1}
     });
     expect(material.alphaMode).toBe('MASK');
   });
