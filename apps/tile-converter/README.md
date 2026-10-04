@@ -116,7 +116,7 @@ No material is added unless explicitly supplied. Unsupported material properties
 fail with `MESH_MATERIAL_UNSUPPORTED`; invalid values fail with
 `MESH_MATERIAL_INVALID`. Invalid color values/counts/types fail with `MESH_COLOR_INVALID`.
 Inputs are not mutated. Applications explicitly map source colors and materials into this
-subset; other texture maps, custom samplers, texture transforms, multiple materials, and
+subset; other texture maps, texture transforms, multiple materials, and
 feature mappings remain open work.
 
 Optional `TEXCOORD_0` contains packed finite Float32 UV pairs (`size: 2`), one per position.
@@ -126,7 +126,11 @@ these UVs and embeds an already encoded PNG or JPEG:
 ```ts
 const glb = encodeMeshTile(meshWithUvs, {
   material: {
-    baseColorTexture: {data: encodedImageBytes, mimeType: 'image/png'},
+    baseColorTexture: {
+      data: encodedImageBytes,
+      mimeType: 'image/png',
+      sampler: {wrapS: 33071, wrapT: 33071, minFilter: 9729, magFilter: 9729}
+    },
     metallicFactor: 0,
     roughnessFactor: 1
   }
@@ -135,10 +139,18 @@ const glb = encodeMeshTile(meshWithUvs, {
 
 `MeshTileTexture.data` is a `Uint8Array`; subviews preserve only their selected bytes. The
 encoder checks header MIME type and positive dimensions, then copies the encoded bytes
-without decoding, re-encoding, flipping UVs, or changing glTF's default sampler. Applications
+without decoding, re-encoding, flipping UVs, or changing the selected sampling controls. Applications
 supply valid encoded image payloads and map source sampling conventions explicitly. Base-color
 images use glTF's sRGB interpretation and multiply the linear material factor and vertex colors.
-External image URLs, other UV sets, custom samplers, and texture extensions are rejected.
+Optional `MeshTileSampler` preserves glTF `wrapS`/`wrapT` (33071 clamp-to-edge,
+33648 mirrored-repeat, 10497 repeat), `magFilter` (9728 nearest, 9729 linear), and
+`minFilter` (9728/9729 or mipmap filters 9984–9987). Omitted wrapping uses repeat;
+omitted filters are chosen by the renderer. An omitted sampler emits no sampler resource;
+an explicitly selected `{}` emits an empty sampler using the same defaults. Invalid values
+or malformed selected samplers fail with `MESH_SAMPLER_INVALID`; unsupported sampler
+properties fail with `MESH_SAMPLER_UNSUPPORTED`. Inputs are not mutated. Mipmap filter
+selection does not generate mip levels; source adapters own sampling and image conventions.
+External image URLs, other UV sets, and texture extensions are rejected.
 Invalid selected UVs fail with `MESH_TEXCOORD_INVALID`, missing UVs with
 `MESH_TEXCOORD_REQUIRED`, and invalid/unsupported image descriptors or headers with
 `MESH_TEXTURE_INVALID`. The spatial mesh codec forwards the same selected UVs and images.
