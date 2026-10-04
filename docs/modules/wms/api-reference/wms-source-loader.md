@@ -223,3 +223,12 @@ export type WMSGetLegendGraphicParameters = {};
 ## Limitations
 
 The `WMSSourceLoader` only supports WMS URL parameters generation and HTTP GET requests against a WMS server. The OGC WMS standard also allows WMS services to accept XML payloads with HTTP POST messages, however generation of such XML payloads is not supported.
+
+`getImage` accepts canonical x/y bounds and forwards its AbortSignal to GetMap.
+`getMap`, `getFeatureInfo`, and `getFeatureInfoText` also accept an optional third
+AbortSignal argument. Canceled decoding results are discarded. GetMap validates
+finite, ordered bounds and positive integer dimensions before transfer; configure
+`wms.maxPixels` (default 16 million) and `wms.maxDecodedBytes` (default 256 MiB,
+estimated RGBA output) to bound requested images. Each antimeridian split remains
+an independent image, with WMS version/CRS axis ordering handled by the existing URL
+builder. PNG responses retain their image type and do not acquire numeric bands.
