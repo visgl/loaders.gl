@@ -247,16 +247,16 @@ import {preload, parse} from '@loaders.gl/core';
 import {Tiles3DLoader} from '@loaders.gl/3d-tiles';
 
 const loader = await preload(Tiles3DLoader, {
-  core: {loaderOverrides: {GLTFLoader: CustomGLTFLoader}},
+  core: {subloaders: {GLTFLoader: CustomGLTFLoader}},
   gltf: {loadImages: true}
 });
 const tile = await parse(tileBytes, loader);
 ```
 
 Overrides replace declared loaders by name and must provide compatible parser methods and
-results. The flat `options.core.loaderOverrides` map applies throughout the graph: every
+results. The flat `options.core.subloaders` map applies throughout the graph: every
 occurrence of a declared name uses the same replacement. For example, a nested Draco override
-belongs in `options.core.loaderOverrides.DracoLoader`, while Draco settings stay in
+belongs in `options.core.subloaders.DracoLoader`, while Draco settings stay in
 `options.draco`. The Draco example requires the glTF loader to declare that named dependency.
 An overridden loader supplies its own declared dependencies. Dependency cycles reject preloading.
 Unused override names are allowed, so applications can share a map across pipelines and retain

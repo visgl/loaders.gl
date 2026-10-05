@@ -334,7 +334,7 @@ describe('named subloaders', () => {
     const parent = createDependencyLoader('parent', {ChildLoader: original});
     const [normal, custom] = await Promise.all([
       preload(parent),
-      preload(parent, {core: {loaderOverrides: {ChildLoader: replacement}}})
+      preload(parent, {core: {subloaders: {ChildLoader: replacement}}})
     ]);
     expect(normal.parseSync!(new ArrayBuffer(0)).ChildLoader.id).toBe('original');
     expect(custom.parseSync!(new ArrayBuffer(0)).ChildLoader.id).toBe('replacement');
@@ -348,7 +348,7 @@ describe('named subloaders', () => {
     dependencies['SelfLoader'] = parent;
     await expect(preload(parent)).rejects.toThrow('Subloader cycle: cycle -> cycle');
     const valid = createDependencyLoader('valid', {ChildLoader: createDependencyLoader('child')});
-    await expect(preload(valid, {core: {loaderOverrides: {ChildLoader: valid}}})).rejects.toThrow(
+    await expect(preload(valid, {core: {subloaders: {ChildLoader: valid}}})).rejects.toThrow(
       'Subloader cycle: valid -> valid'
     );
   });
@@ -415,7 +415,7 @@ test('forwards shared namespaces without applying a parent dependency override t
   const parent = createDependencyLoader('shared', {ChildLoader: dependency});
   const replacement = {...dependency, parse: async (_data, options) => options.shared.value};
   const prepared = await preload(parent, {
-    core: {loaderOverrides: {ChildLoader: replacement}},
+    core: {subloaders: {ChildLoader: replacement}},
     shared: {value: 9}
   });
   const dependencies = await prepared.parse(new ArrayBuffer(0));
@@ -441,14 +441,14 @@ test('forwards one flat override map through nested and sibling dependency paths
     ...createDependencyLoader('replacement'),
     parse: async (_data, options) => ({
       value: options.replacement.value,
-      overrides: options.core.loaderOverrides
+      overrides: options.core.subloaders
     })
   };
   const middle = createDependencyLoader('middle', {LeafLoader: original});
   const parent = createDependencyLoader('parent', {MiddleLoader: middle, LeafLoader: original});
   const overrides = {LeafLoader: replacement, LazyLoader: original};
   const prepared = await preload(parent, {
-    core: {loaderOverrides: overrides},
+    core: {subloaders: overrides},
     replacement: {value: 42}
   });
   const dependencies = await prepared.parse(new ArrayBuffer(0));

@@ -212,7 +212,7 @@ async function prepareLoaderDependencies(
 
 /** Returns declared dependencies with the shared flat override map applied. */
 function getSubloaders(loader: Loader, options?: LoaderOptions): Record<string, Loader> {
-  const overrides = options?.core?.loaderOverrides || {};
+  const overrides = options?.core?.subloaders || {};
   return Object.fromEntries(
     Object.entries(loader.subloaders || {}).map(([name, dependency]) => [
       name,
@@ -291,8 +291,7 @@ async function bindSubloaders(
             ...forwardedOptions,
             core: {
               ...forwardedOptions.core,
-              loaderOverrides:
-                options?.core?.loaderOverrides || parseOptions?.core?.loaderOverrides,
+              subloaders: options?.core?.subloaders || parseOptions?.core?.subloaders,
               worker: false
             },
             [loader.id]: {...(forwardedOptions[loader.id] as object), subloaders}
