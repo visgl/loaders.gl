@@ -1,0 +1,48 @@
+// loaders.gl
+// SPDX-License-Identifier: MIT
+// Copyright (c) vis.gl contributors
+
+// Format-specific codecs, feature mapping and archive packaging remain in the application.
+export {convertFeatureAttributesToArrowBatches} from './feature-arrow.js';
+export type {FeatureArrowBatchOptions, TileFeatureAttributes} from './feature-arrow.js';
+export {encodePointCloudTile} from './point-cloud.js';
+export type {EncodePointCloudTileOptions} from './point-cloud.js';
+export {encodePointCloudSource, encodePointCloudSourceTile} from './point-cloud-source-encoder.js';
+export type {
+  EncodedPointCloudSourceTile,
+  EncodePointCloudSourceOptions
+} from './point-cloud-source-encoder.js';
+export {convertPointCloudSource} from './point-cloud-conversion.js';
+export type {ConvertPointCloudSourceOptions} from './point-cloud-conversion.js';
+export {encodeMeshTile} from './mesh.js';
+export type {
+  MeshTileMaterial,
+  MeshTileOptions,
+  MeshTileTexture,
+  MeshTileSampler,
+  MeshTileTextureTransform
+} from './mesh.js';
+export {createMeshConversionCodec} from './mesh-conversion.js';
+export type {
+  MeshConversionInput,
+  EncodedMeshConversionResource,
+  MeshConversionCodecOptions
+} from './mesh-conversion.js';
+export {createSingleMeshTilesetSink} from './mesh-tileset-sink.js';
+export type {SingleMeshTilesetSink, SingleMeshTilesetSinkOptions} from './mesh-tileset-sink.js';
+export {createTileConversionArchive} from './conversion-archive.js';
+export type {TileConversionArchiveOptions} from './conversion-archive.js';
+export {createSingleMeshTilesetArchive} from './mesh-tileset-archive.js';
+export type {SingleMeshTilesetArchiveOptions} from './mesh-tileset-archive.js';
+export {createMeshTilesetConversionSource} from './mesh-source.js';
+export type {
+  MeshSourceResource,
+  MeshTilesetSourceOptions,
+  MeshSourceFeatureOptions
+} from './mesh-source.js';
+export {createI3SMeshConversionCodec, createSingleMeshI3SSink} from './i3s-mesh-conversion.js';
+export type {
+  I3SMeshConversionResource,
+  I3SMeshConversionCodecOptions,
+  SingleMeshI3SSink
+} from './i3s-mesh-conversion.js';

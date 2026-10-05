@@ -65,6 +65,9 @@ export type StrictLoaderOptions = {
 
     // module loading
 
+    /** Shared named loader replacements forwarded through recursive dependency preparation and parsing. */
+    loaderOverrides?: Readonly<Record<string, Loader>>;
+
     /** Force to load WASM libraries from local file system in NodeJS or from loaders.gl CDN in a web browser */
     useLocalLibraries?: boolean;
 

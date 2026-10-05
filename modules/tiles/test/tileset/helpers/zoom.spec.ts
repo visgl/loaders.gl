@@ -45,7 +45,7 @@ test('Tiles zoom#getZoomFromFullExtent', () => {
     cartographicCenter,
     Ellipsoid.WGS84.cartographicToCartesian(cartographicCenter, new Vector3())
   );
-  expect(zoom).toBe(11.00143423666113);
+  expect(zoom).toBeCloseTo(11.00143423666113, 10);
 });
 test('Tiles zoom#getZoomFromExtent', () => {
   const cartographicCenter = new Vector3([
@@ -59,5 +59,5 @@ test('Tiles zoom#getZoomFromExtent', () => {
     cartographicCenter,
     Ellipsoid.WGS84.cartographicToCartesian(cartographicCenter, new Vector3())
   );
-  expect(zoom).toBe(11.002543742881027);
+  expect(zoom).toBeCloseTo(11.002543742881027, 10);
 });

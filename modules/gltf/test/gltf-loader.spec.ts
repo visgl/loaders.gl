@@ -27,7 +27,7 @@ test('GLTFLoader forwards core.log to diagnostics after linked glTF 1 buffers lo
   const source = createAccessorAsset(
     {
       accessors: {color: {bufferView: 'view', componentType: 5121, count: 1, type: 'VEC4'}},
-      meshes: {mesh: {primitives: [{attributes: {COLOR: 'color'}}]}}
+      meshes: {mesh: {primitives: [{mode: 0, attributes: {COLOR: 'color'}}]}}
     },
     4
   );
@@ -164,7 +164,7 @@ test('GLTFLoader repairs loaded glTF 1 strides and joint types before a GLB 2 ro
         joints: {bufferView: 'view', componentType: 5126, count: 1, type: 'VEC4'},
         matrix: {bufferView: 'view', byteOffset: 16, componentType: 5121, count: 1, type: 'MAT3'}
       },
-      meshes: {mesh: {primitives: [{attributes: {JOINT: 'joints'}}]}}
+      meshes: {mesh: {primitives: [{mode: 0, attributes: {JOINT: 'joints'}}]}}
     },
     25
   );

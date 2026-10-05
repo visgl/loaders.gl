@@ -1,0 +1,27 @@
+{
+  "compilerOptions": {
+    "declaration": true,
+    "emitDeclarationOnly": true,
+    "skipLibCheck": true,
+    "target": "ES2022",
+    "module": "NodeNext",
+    "moduleResolution": "NodeNext",
+    "rootDir": "src/v5",
+    "outDir": "dist/v5",
+    "paths": {
+      "@loaders.gl/tile-converter/v5/core": [
+        "./src/v5/core.ts"
+      ],
+      "@loaders.gl/tile-converter/v5/adapters": [
+        "./src/v5/adapters.ts"
+      ]
+    },
+    "strict": true
+  },
+  "include": [
+    "src/v5/core.ts",
+    "src/v5/adapters.ts",
+    "src/v5/index.ts",
+    "src/v5/browser.ts"
+  ]
+}

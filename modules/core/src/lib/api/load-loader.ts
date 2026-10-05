@@ -210,10 +210,9 @@ async function prepareLoaderDependencies(
   return prepared;
 }
 
-/** Returns declared dependencies with loader-scoped overrides applied. */
+/** Returns declared dependencies with the shared flat override map applied. */
 function getSubloaders(loader: Loader, options?: LoaderOptions): Record<string, Loader> {
-  const scopedOptions = options?.[loader.id] as {subloaders?: Record<string, Loader>} | undefined;
-  const overrides = scopedOptions?.subloaders || {};
+  const overrides = options?.core?.loaderOverrides || {};
   return Object.fromEntries(
     Object.entries(loader.subloaders || {}).map(([name, dependency]) => [
       name,
@@ -222,27 +221,17 @@ function getSubloaders(loader: Loader, options?: LoaderOptions): Record<string, 
   );
 }
 
-/** Rejects cycles and validates override names against all reachable declarations in each namespace. */
+/** Rejects cycles in the dependency graph after applying the shared overrides. */
 function validateSubloaderGraph(loader: Loader, options?: LoaderOptions): void {
-  const declarations = new Map<string, Set<string>>();
   visitLoader(loader, []);
-  for (const [loaderId, names] of declarations) {
-    const scopedOptions = options?.[loaderId] as {subloaders?: Record<string, Loader>} | undefined;
-    for (const name of Object.keys(scopedOptions?.subloaders || {})) {
-      if (!names.has(name)) throw new Error(`${loaderId}: unknown subloader ${name}`);
-    }
-  }
 
-  /** Collects declarations from the resolved graph while detecting cycles along each path. */
+  /** Detects cycles along each resolved dependency path. */
   function visitLoader(currentLoader: Loader, ancestors: Loader[]): void {
     if (ancestors.includes(currentLoader)) {
       throw new Error(
         `Subloader cycle: ${[...ancestors, currentLoader].map(value => value.id).join(' -> ')}`
       );
     }
-    const names = declarations.get(currentLoader.id) || new Set<string>();
-    for (const name of Object.keys(currentLoader.subloaders || {})) names.add(name);
-    declarations.set(currentLoader.id, names);
     for (const dependency of Object.values(getSubloaders(currentLoader, options))) {
       visitLoader(dependency, [...ancestors, currentLoader]);
     }
@@ -300,7 +289,12 @@ async function bindSubloaders(
           data,
           {
             ...forwardedOptions,
-            core: {...forwardedOptions.core, worker: false},
+            core: {
+              ...forwardedOptions.core,
+              loaderOverrides:
+                options?.core?.loaderOverrides || parseOptions?.core?.loaderOverrides,
+              worker: false
+            },
             [loader.id]: {...(forwardedOptions[loader.id] as object), subloaders}
           },
           context

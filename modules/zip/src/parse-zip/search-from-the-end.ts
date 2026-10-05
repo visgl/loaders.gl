@@ -11,23 +11,26 @@ export type ZipSignature = Uint8Array;
 const buffLength = 1024;
 
 /**
- * looking for the last occurrence of the provided
- * @param file
- * @param target
- * @returns
+ * Finds the last four-byte ZIP signature without reading past the end of the file.
+ * @param file Random-access archive file.
+ * @param target Four-byte ZIP signature.
+ * @returns Signature offset, or -1 when it is absent.
  */
 export const searchFromTheEnd = async (
   file: ReadableFile,
   target: ZipSignature
 ): Promise<bigint> => {
   const fileLength = await getReadableFileSize(file);
-  const lastBytes = new Uint8Array(await readRange(file, fileLength - 3n, fileLength + 1n));
-  const searchWindow = [lastBytes[3], lastBytes[2], lastBytes[1], undefined];
+  if (fileLength < BigInt(target.length)) {
+    return -1n;
+  }
+  const lastBytes = new Uint8Array(await readRange(file, fileLength - 3n, fileLength));
+  const searchWindow = [lastBytes[0], lastBytes[1], lastBytes[2], undefined];
 
   let targetOffset = -1;
 
   // looking for the last record in the central directory
-  let point = fileLength - 4n;
+  let point = fileLength - 3n;
   do {
     const prevPoint = point;
     point -= BigInt(buffLength);

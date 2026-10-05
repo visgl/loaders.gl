@@ -70,7 +70,7 @@ test('uses a caller-specific glTF override with forwarded glTF options', async (
   const parseGltf = vi.fn(implementation.parse);
   const custom = {...implementation, parse: parseGltf};
   const prepared = await preload(Tiles3DLoader, {
-    '3d-tiles': {subloaders: {GLTFLoader: custom}},
+    core: {loaderOverrides: {GLTFLoader: custom}},
     gltf: {loadImages: false}
   });
   const json = {asset: {version: '2.0'}, scenes: [{nodes: []}], scene: 0};
@@ -86,7 +86,7 @@ test('keeps nested decoder calls local when dependency bindings contain function
   // A prepared nested dependency map must never be sent across the worker boundary.
   const nestedGltfLoader = {...GLTFLoader, subloaders: {DracoLoader}};
   const prepared = await preload(Tiles3DLoader, {
-    '3d-tiles': {subloaders: {GLTFLoader: nestedGltfLoader}}
+    core: {loaderOverrides: {GLTFLoader: nestedGltfLoader}}
   });
   const response = await fetchFile('@loaders.gl/3d-tiles/test/data/143.b3dm');
   const parseDependency = vi.fn(

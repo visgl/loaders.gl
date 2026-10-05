@@ -1,7 +1,7 @@
 {
   "private": true,
   "name": "i3s-slpk-loaders-example",
-  "description": "Render local and remote I3S SLPK archives in the browser.",
+  "description": "Render local and remote SLPK and 3TZ tile archives in the browser.",
   "version": "0.0.1",
   "license": "MIT",
   "type": "module",
@@ -13,9 +13,11 @@
   "dependencies": {
     "@deck.gl/core": "^9.4.0",
     "@deck.gl/react": "^9.4.0",
+    "@loaders.gl/3d-tiles": "workspace:*",
     "@loaders.gl/deck-layers": "workspace:*",
     "@loaders.gl/i3s": "workspace:*",
     "@loaders.gl/tiles": "workspace:*",
+    "@math.gl/geospatial": "5.0.0-alpha.12",
     "maplibre-gl": "^3.6.2",
     "react": "^19.2.5",
     "react-dom": "^19.2.5",

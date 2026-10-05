@@ -334,7 +334,7 @@ describe('named subloaders', () => {
     const parent = createDependencyLoader('parent', {ChildLoader: original});
     const [normal, custom] = await Promise.all([
       preload(parent),
-      preload(parent, {parent: {subloaders: {ChildLoader: replacement}}})
+      preload(parent, {core: {loaderOverrides: {ChildLoader: replacement}}})
     ]);
     expect(normal.parseSync!(new ArrayBuffer(0)).ChildLoader.id).toBe('original');
     expect(custom.parseSync!(new ArrayBuffer(0)).ChildLoader.id).toBe('replacement');
@@ -342,14 +342,14 @@ describe('named subloaders', () => {
     expect(await preload(parent)).toBe(normal);
   });
 
-  test('rejects cycles and unknown override names', async () => {
+  test('rejects cycles introduced by declarations or flat overrides', async () => {
     const dependencies = {};
     const parent = createDependencyLoader('cycle', dependencies);
     dependencies['SelfLoader'] = parent;
     await expect(preload(parent)).rejects.toThrow('Subloader cycle: cycle -> cycle');
     const valid = createDependencyLoader('valid', {ChildLoader: createDependencyLoader('child')});
-    await expect(preload(valid, {valid: {subloaders: {TypoLoader: valid}}})).rejects.toThrow(
-      'unknown subloader TypoLoader'
+    await expect(preload(valid, {core: {loaderOverrides: {ChildLoader: valid}}})).rejects.toThrow(
+      'Subloader cycle: valid -> valid'
     );
   });
 
@@ -415,7 +415,8 @@ test('forwards shared namespaces without applying a parent dependency override t
   const parent = createDependencyLoader('shared', {ChildLoader: dependency});
   const replacement = {...dependency, parse: async (_data, options) => options.shared.value};
   const prepared = await preload(parent, {
-    shared: {value: 9, subloaders: {ChildLoader: replacement}}
+    core: {loaderOverrides: {ChildLoader: replacement}},
+    shared: {value: 9}
   });
   const dependencies = await prepared.parse(new ArrayBuffer(0));
   expect(await dependencies.ChildLoader.parse(new ArrayBuffer(0))).toBe(9);
@@ -432,4 +433,33 @@ test('retains preload settings through core option normalization and allows pars
   expect(await parse(new ArrayBuffer(0), prepared)).toBe(2);
   expect(await parse(new ArrayBuffer(0), prepared, {parent: {value: 3}})).toBe(3);
   expect(parent.options.parent.value).toBe(1);
+});
+
+test('forwards one flat override map through nested and sibling dependency paths', async () => {
+  const original = createDependencyLoader('original');
+  const replacement = {
+    ...createDependencyLoader('replacement'),
+    parse: async (_data, options) => ({
+      value: options.replacement.value,
+      overrides: options.core.loaderOverrides
+    })
+  };
+  const middle = createDependencyLoader('middle', {LeafLoader: original});
+  const parent = createDependencyLoader('parent', {MiddleLoader: middle, LeafLoader: original});
+  const overrides = {LeafLoader: replacement, LazyLoader: original};
+  const prepared = await preload(parent, {
+    core: {loaderOverrides: overrides},
+    replacement: {value: 42}
+  });
+  const dependencies = await prepared.parse(new ArrayBuffer(0));
+  const nested = await dependencies.MiddleLoader.parse(new ArrayBuffer(0));
+  for (const dependency of [dependencies.LeafLoader, nested.LeafLoader]) {
+    expect(dependency.id).toBe('replacement');
+    const result = await dependency.parse(new ArrayBuffer(0));
+    expect(result.value).toBe(42);
+    expect(result.overrides).toBe(overrides);
+  }
+  expect(overrides.LeafLoader).toBe(replacement);
+  expect(parent.subloaders.LeafLoader).toBe(original);
+  expect(middle.subloaders.LeafLoader).toBe(original);
 });

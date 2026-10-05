@@ -220,7 +220,7 @@ test.each([
 ])('glTF 1 bind baking validates borrowed buffer spans: %j', loadedBufferOverrides => {
   const source = createSkinAsset({loadedBufferOverrides});
   expect(() => convertGLTFV1ToGLTF2(source, {normalize: 'strict'})).toThrow(
-    /invalid inverse-bind buffer layout/
+    /borrowed payload span|declared byteLength exceeds/
   );
 });
 

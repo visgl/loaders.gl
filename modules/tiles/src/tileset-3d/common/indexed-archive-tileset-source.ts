@@ -61,8 +61,12 @@ export class IndexedArchiveTilesetSource<ArchiveT> implements TilesetSourceResol
     loader: Loader<DataT>,
     loadOptions: LoaderOptions
   ): Promise<DataT> {
+    // Resolve root-relative URIs inside the archive rather than beside its download URL.
+    const resourceUrl = this.options.rootPath
+      ? `${stripQueryString(this.sourceUrl)}/${this.options.rootPath}`
+      : url;
     return await this.parseArchiveResource(
-      url,
+      resourceUrl,
       this.options.rootPath,
       loader,
       loadOptions,
@@ -170,7 +174,9 @@ export class IndexedArchiveTilesetSource<ArchiveT> implements TilesetSourceResol
       ? requestWithoutQuery
       : baseWithoutQuery === archiveRoot && !isAbsoluteRequest
         ? `${archiveRoot}/${requestWithoutQuery}`
-        : path.resolve(basePath, requestWithoutQuery);
+        : /^[a-z][a-z0-9+.-]*:\/\//i.test(baseWithoutQuery)
+          ? new URL(requestWithoutQuery, baseWithoutQuery).href
+          : path.resolve(basePath, requestWithoutQuery);
 
     if (absoluteRequest === archiveRoot) {
       return '';
@@ -195,6 +201,5 @@ function getArchiveSourceUrl(data: string | Blob, fallbackFilename: string): str
 }
 
 function stripQueryString(url: string): string {
-  const queryIndex = url.indexOf('?');
-  return queryIndex >= 0 ? url.slice(0, queryIndex) : url;
+  return url.split(/[?#]/, 1)[0];
 }

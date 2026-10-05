@@ -111,7 +111,7 @@ test('glTF 1 oversized and odd vertex strides are repaired while original image 
           type: 'VEC3'
         }
       },
-      meshes: {mesh: {primitives: [{attributes: {POSITION: 'position'}}]}},
+      meshes: {mesh: {primitives: [{mode: 0, attributes: {POSITION: 'position'}}]}},
       images: {image: {extensions: {KHR_binary_glTF: {bufferView: 'view', mimeType: 'image/png'}}}}
     },
     32,
@@ -139,7 +139,7 @@ test('glTF 1 a single element does not require unused trailing stride bytes', ()
       accessors: {
         position: {bufferView: 'view', byteStride: 24, componentType: 5126, count: 1, type: 'VEC3'}
       },
-      meshes: {mesh: {primitives: [{attributes: {POSITION: 'position'}}]}}
+      meshes: {mesh: {primitives: [{mode: 0, attributes: {POSITION: 'position'}}]}}
     },
     12
   );
@@ -166,7 +166,13 @@ test.each([
   });
   Object.assign(source.buffers[0], loaded);
   const originalBuffer = source.buffers[0].arrayBuffer;
-  expect(() => normalizeGLTFV1(source, {normalize: 'strict'})).toThrow(/requires binary repacking/);
+  expect(() => normalizeGLTFV1(source, {normalize: 'strict'})).toThrow(
+    loaded
+      ? /invalid borrowed payload span/
+      : view?.byteOffset !== undefined
+        ? /contained positive byte span/
+        : /requires binary repacking/
+  );
   expect(source.buffers[0].arrayBuffer).toBe(originalBuffer);
 });
 

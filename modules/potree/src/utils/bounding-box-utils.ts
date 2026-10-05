@@ -2,16 +2,16 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import {Proj4Projection} from '@math.gl/proj4';
+import {Projection} from '@math.gl/projection';
 
 /**
  * Calculate cartographic origin from Potree bounding box
- * @param projection - Proj4Projection instance to reproject coordinates
+ * @param projection - Projection instance to reproject coordinates
  * @param boundingBox - bounding box data
  * @returns - origin of boudngin box in [lng, lat, z] mode
  */
 export const getCartographicOriginFromBoundingBox = (
-  projection: Proj4Projection | null,
+  projection: Projection | null,
   boundingBox?: [number[], number[]]
 ): number[] => {
   if (!boundingBox) {

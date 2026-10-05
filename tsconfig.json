@@ -394,6 +394,12 @@
       "@loaders.gl/tile-converter/v5/browser": [
         "apps/tile-converter/src/v5/browser.ts"
       ],
+      "@loaders.gl/tile-converter/v5/core": [
+        "apps/tile-converter/src/v5/core.ts"
+      ],
+      "@loaders.gl/tile-converter/v5/adapters": [
+        "apps/tile-converter/src/v5/adapters.ts"
+      ],
       "@loaders.gl/tile-converter/test": [
         "apps/tile-converter/test"
       ],
@@ -466,6 +472,9 @@
       "@loaders.gl/zarr/test": [
         "modules/zarr/test"
       ],
+      "@loaders.gl/zip/indexed-zip-writer": ["modules/zip/src/indexed-zip-writer"],
+      "@loaders.gl/zip/zip-writer": ["modules/zip/src/zip-writer"],
+      "@loaders.gl/3d-tiles/3d-tiles-archive-writer": ["modules/3d-tiles/src/3d-tiles-archive-writer"],
       "@loaders.gl/zip": [
         "modules/zip/src"
       ],

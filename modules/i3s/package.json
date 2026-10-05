@@ -1,6 +1,6 @@
 {
   "name": "@loaders.gl/i3s",
-  "version": "5.0.0-alpha.8",
+  "version": "5.0.0-alpha.9",
   "description": "i3s .",
   "license": "MIT",
   "type": "module",
@@ -58,7 +58,17 @@
     },
     "./i3s-scene-layer.schema.json": "./dist/i3s-scene-layer.schema.json",
     "./i3s-node-page.schema.json": "./dist/i3s-node-page.schema.json",
-    "./i3s-point-cloud-scene-layer.schema.json": "./dist/i3s-point-cloud-scene-layer.schema.json"
+    "./i3s-point-cloud-scene-layer.schema.json": "./dist/i3s-point-cloud-scene-layer.schema.json",
+    "./i3s-slpk-writer": {
+      "types": "./dist/i3s-slpk-writer.d.ts",
+      "import": "./dist/i3s-slpk-writer.js",
+      "require": "./dist/i3s-slpk-writer.cjs"
+    },
+    "./i3s-mesh-writer": {
+      "types": "./dist/i3s-mesh-writer.d.ts",
+      "import": "./dist/i3s-mesh-writer.js",
+      "require": "./dist/i3s-mesh-writer.cjs"
+    }
   },
   "sideEffects": false,
   "files": [
@@ -77,21 +87,21 @@
     "build-lepcc-worker-node": "esbuild src/workers/i3s-lepcc-worker-node.ts --outfile=dist/i3s-lepcc-worker-node.js --platform=node --target=node16 --bundle --sourcemap --define:__VERSION__=\\\"$npm_package_version\\\""
   },
   "dependencies": {
-    "@loaders.gl/compression": "5.0.0-alpha.8",
-    "@loaders.gl/crypto": "5.0.0-alpha.8",
-    "@loaders.gl/draco": "5.0.0-alpha.8",
-    "@loaders.gl/images": "5.0.0-alpha.8",
-    "@loaders.gl/loader-utils": "5.0.0-alpha.8",
-    "@loaders.gl/schema": "5.0.0-alpha.8",
-    "@loaders.gl/schema-utils": "5.0.0-alpha.8",
-    "@loaders.gl/textures": "5.0.0-alpha.8",
-    "@loaders.gl/tiles": "5.0.0-alpha.8",
-    "@loaders.gl/zip": "5.0.0-alpha.8",
-    "@math.gl/core": "5.0.0-alpha.11",
-    "@math.gl/crs": "5.0.0-alpha.11",
-    "@math.gl/culling": "5.0.0-alpha.11",
-    "@math.gl/geometry-utils": "5.0.0-alpha.11",
-    "@math.gl/geospatial": "5.0.0-alpha.11",
+    "@loaders.gl/compression": "5.0.0-alpha.9",
+    "@loaders.gl/crypto": "5.0.0-alpha.9",
+    "@loaders.gl/draco": "5.0.0-alpha.9",
+    "@loaders.gl/images": "5.0.0-alpha.9",
+    "@loaders.gl/loader-utils": "5.0.0-alpha.9",
+    "@loaders.gl/schema": "5.0.0-alpha.9",
+    "@loaders.gl/schema-utils": "5.0.0-alpha.9",
+    "@loaders.gl/textures": "5.0.0-alpha.9",
+    "@loaders.gl/tiles": "5.0.0-alpha.9",
+    "@loaders.gl/zip": "5.0.0-alpha.9",
+    "@math.gl/core": "5.0.0-alpha.12",
+    "@math.gl/crs": "5.0.0-alpha.12",
+    "@math.gl/culling": "5.0.0-alpha.12",
+    "@math.gl/geometry-utils": "5.0.0-alpha.12",
+    "@math.gl/geospatial": "5.0.0-alpha.12",
     "zod": "^4.1.12"
   },
   "peerDependencies": {

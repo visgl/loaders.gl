@@ -164,6 +164,7 @@ const visibleTiles = tileset.tiles.filter(tile => tile.selected);
 | ----------------------------------- | ---------------- | ------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `options.i3s.isTileset`             | `boolean \| 'auto'` | `'auto'` | Treat the resource as a layer document instead of a node or content resource. Auto-detection follows I3S URL conventions. |
 | `options.i3s.isTileHeader`          | `boolean \| 'auto'` | `'auto'` | Treat the resource as a node header. Auto-detection follows `/nodes/...` URL conventions. |
+| `options.i3s.attributeValues` | `'legacy' \| 'exact'` | `'legacy'` | Attribute strings: exact mode preserves null versus empty strings, removes the terminator, and rejects malformed UTF-8 or byte counts. Legacy mode retains raw decoded strings. |
 | `options.i3s.token`                 | `string` | — | ArcGIS access token appended to source-managed requests. |
 | `options.i3s.useDracoGeometry`      | `boolean` | `true` | Decode Draco-compressed geometry when available. |
 | `options.i3s.useCompressedTextures` | `boolean` | `true` | Use DDS or KTX2 resources when the runtime supports them. |

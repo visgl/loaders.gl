@@ -3,10 +3,10 @@
 // Copyright (c) vis.gl contributors
 
 import type {Tiles3DTilesetJSON, Tiles3DTileJSON} from '@loaders.gl/3d-tiles';
-import {TileConversionError} from './conversion-api.js';
-import type {TileConversionSink} from './conversion-api.js';
-import {createBoundedMemoryTileConversionSink} from './browser-sink.js';
-import type {BrowserTileConversionFile} from './browser-sink.js';
+import {TileConversionError} from '@loaders.gl/tile-converter/v5/core';
+import type {TileConversionSink} from '@loaders.gl/tile-converter/v5/core';
+import {createBoundedMemoryTileConversionSink} from '@loaders.gl/tile-converter/v5/core';
+import type {BrowserTileConversionFile} from '@loaders.gl/tile-converter/v5/core';
 import type {EncodedMeshConversionResource} from './mesh-conversion.js';
 
 /** Limits and fidelity policy for one ECEF mesh tileset. */
@@ -29,8 +29,9 @@ export interface SingleMeshTilesetSink extends TileConversionSink<EncodedMeshCon
  * Requires resolved EPSG:4978 output identified by the compact string, with ellipsoidal heights.
  * The tile transform cancels the standard glTF y-up to z-up rotation and adds the ECEF origin.
  * Bounds come from encoded local vertices, avoiding subtraction of large absolute coordinates.
- * Fixed relative names keep the package deterministic. Applications save both files together;
- * downloading, archiving, workers, and source-scene extraction remain application responsibilities.
+ * Fixed relative names keep the package deterministic. Save both files together or pass them to
+ * createSingleMeshTilesetArchive for 3TZ packaging. Applications own downloads, workers, and
+ * source-scene extraction.
  * The byte limit bounds retained Blobs, not peak conversion/serialization memory. Input GLB and
  * local bounds must be unmodified codec outputs; this sink does not independently validate GLB.
  *

@@ -12,6 +12,19 @@ The original converter implementation lives in `src/v4`, and the newer conversio
 `src/v5`. The package root remains the compatibility entrypoint for the original converter. Shared
 implementation belongs in `src/common` only when it is intentionally used by multiple versions.
 
+## Portable core and format adapters
+
+The v5 implementation is split into two entrypoints inside this application:
+
+- `@loaders.gl/tile-converter/v5/core`: portable conversion orchestration, source traversal,
+  spatial preparation and bounded Blob or manifest-backed sinks.
+- `@loaders.gl/tile-converter/v5/adapters`: format encoders, source mesh extraction,
+  Arrow feature mapping, output packaging and archive helpers.
+
+The existing `/v5` and `/v5/browser` imports remain compatible. The adapters consume the
+same core functions, types and error class. No implementation or dependencies move into
+other packages; CLI and v4 code are unchanged. Applications supply platform I/O adapters.
+
 ## V5 source-backed mesh traversal
 
 `createTilesetConversionSource(tileset)` adapts an initializing or initialized `Tileset3D` backed
@@ -257,7 +270,37 @@ codec resources (one GLB), while this sink retains two files. Files are exposed 
 successful finalization; failed writes, cancellation, zero/multiple meshes, or conversion
 failure abort and clear the package through the core lifecycle. The sink trusts codec GLB
 and local-bound metadata; applications must not alter them before writing. Download UI,
-archives, workers, multi-tile hierarchy, and source-scene extraction remain separate work.
+workers, multi-tile hierarchy, and source-scene extraction remain separate work.
+
+### Download a 3TZ archive
+
+`createSingleMeshTilesetArchive` packages the finalized sink's two files into a **3TZ archive**
+with a final `@3dtilesIndex1@` path-hash index. The format writer lives in `@loaders.gl/3d-tiles`,
+uses typed arrays and native Blobs, and needs no filesystem or Node.js Buffer.
+
+```ts
+import {createSingleMeshTilesetArchive} from '@loaders.gl/tile-converter/v5/browser';
+
+const archive = await createSingleMeshTilesetArchive(meshSink.getFiles(), {
+  maxArchiveBytes: 16 * 1024 * 1024
+});
+const downloadUrl = URL.createObjectURL(archive);
+// Attach downloadUrl to an application-owned link with download="tileset.3tz".
+// When the link is no longer needed:
+URL.revokeObjectURL(downloadUrl);
+```
+
+The required budget includes all ZIP headers and the index (368 bytes of overhead for this
+fixed two-file profile) and is checked **before either Blob is read**. STORE compression,
+fixed timestamps, stable file order, and relative paths produce deterministic bytes. The
+returned Blob uses `application/vnd.maxar.archive.3tz+zip`; save it with `.3tz`. Inputs must be
+unmodified output from a successfully finalized sink. The budget covers archive size, not
+peak memory: the input Blobs and transient ZIP buffers remain additional allocations.
+Packaging is asynchronous but does not support mid-encoding cancellation or streaming.
+
+The legacy v4 I3S converter already writes **SLPK** archives. Portable v5 SLPK output requires
+an I3S scene-layer writer and its node/resource layout; a 3D Tiles package cannot be saved as
+SLPK merely by changing its extension.
 
 ## V5 spatial conversion
 

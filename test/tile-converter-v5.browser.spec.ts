@@ -2,14 +2,12 @@ import {expect, test, vi} from 'vitest';
 import {
   createBoundedMemoryTileConversionSink,
   createBrowserTileConversionSource,
-  createBrowserTilesetConversionSource,
-  encodePointCloudTile
-} from '@loaders.gl/tile-converter/v5/browser';
+  createBrowserTilesetConversionSource
+} from '@loaders.gl/tile-converter/v5/core';
 import {
   createI3SConversionSpatialContext,
   createTiles3DConversionSpatialContext,
   createManifestBackedTileConversionSink,
-  convertFeatureAttributesToArrowBatches,
   convertTileset,
   inspectTileset,
   TileConversionError,
@@ -18,7 +16,11 @@ import {
   type TileResourceManifest,
   type TileConversionSink,
   type TileConversionSource
-} from '@loaders.gl/tile-converter/v5';
+} from '@loaders.gl/tile-converter/v5/core';
+import {
+  encodePointCloudTile,
+  convertFeatureAttributesToArrowBatches
+} from '@loaders.gl/tile-converter/v5/adapters';
 import {makeMeshArrowTable, convertTableToMesh} from '@loaders.gl/schema-utils';
 import {parse} from '@loaders.gl/core';
 import {Tiles3DLoader} from '@loaders.gl/3d-tiles/bundled';

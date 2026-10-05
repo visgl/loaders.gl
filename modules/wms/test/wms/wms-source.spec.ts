@@ -1,6 +1,6 @@
 // loaders.gl
 // SPDX-License-Identifier: MIT
-// Copyright (c) vis.gl contributors
+// SPDX-FileCopyrightText: Copyright (c) vis.gl contributors
 
 import {expect, test} from 'vitest';
 import {withFetchMock, mockResults, requestInits} from '../test-utils/fetch-spy';
@@ -249,4 +249,74 @@ test('WMSSourceLoader reports image parse failures as WMS errors', async () => {
     throw new Error('image decode failed');
   };
   await expect(source.getLegendGraphic({}, {layer: 'roads'})).rejects.toThrow();
+});
+
+test.each([
+  ['1.1.1', 'EPSG:4326', '170,-10,180,10'],
+  ['1.3.0', 'EPSG:4326', '-10,170,10,180'],
+  ['1.1.1', 'CRS:84', '170,-10,180,10'],
+  ['1.3.0', 'CRS:84', '170,-10,180,10']
+])('WMS %s %s preserves independent dateline regions and service axis order', (version, crs, expectedBounds) => {
+  const source = WMSSourceLoader.createDataSource(WMS_SERVICE_URL, {
+    wms: {wmsParameters: {version}}
+  });
+  const east = source.getMapURL({
+    layers: ['imagery'],
+    crs,
+    bbox: [170, -10, 180, 10],
+    width: 64,
+    height: 64
+  });
+  const west = source.getMapURL({
+    layers: ['imagery'],
+    crs,
+    bbox: [-180, -10, -170, 10],
+    width: 64,
+    height: 64
+  });
+  expect(new URL(east).searchParams.get('BBOX')).toBe(expectedBounds);
+  expect(east).not.toBe(west);
+});
+
+test('WMS rejects excessive images before fetch and discards canceled image decode', async () => {
+  const source = WMSSourceLoader.createDataSource(WMS_SERVICE_URL, {wms: {maxPixels: 4}});
+  let transfers = 0;
+  source.fetch = async () => {
+    transfers++;
+    return new Response(new Uint8Array([1]));
+  };
+  const parameters = {bbox: [0, 0, 1, 1] as [number, number, number, number], width: 3, height: 2};
+  await expect(source.getMap(parameters)).rejects.toThrow('budget');
+  await expect(
+    source.getMap({...parameters, bbox: [170, 0, -170, 1], width: 1, height: 1})
+  ).rejects.toThrow('non-wrapped');
+  expect(transfers).toBe(0);
+  const controller = new AbortController();
+  const reason = new DOMException('projection replaced', 'AbortError');
+  let closedImages = 0;
+  source.coreApi.parse = async () => {
+    controller.abort(reason);
+    return {
+      width: 1,
+      height: 1,
+      close: () => {
+        closedImages++;
+      }
+    } as never;
+  };
+  await expect(
+    source.getMap({...parameters, width: 1, height: 1}, undefined, controller.signal)
+  ).rejects.toBe(reason);
+  expect(transfers).toBe(1);
+  expect(closedImages).toBe(1);
+  source.coreApi.parse = async () =>
+    ({
+      width: 2,
+      height: 1,
+      close: () => {
+        closedImages++;
+      }
+    }) as never;
+  await expect(source.getMap({...parameters, width: 1, height: 1})).rejects.toThrow('dimensions');
+  expect(closedImages).toBe(2);
 });

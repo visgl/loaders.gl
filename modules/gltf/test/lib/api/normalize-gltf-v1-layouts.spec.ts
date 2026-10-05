@@ -39,15 +39,15 @@ test('glTF 1 strides preserve interleaved attributes and packed colors in one so
       },
       meshes: {
         mesh: {
-          primitives: [{attributes: {POSITION: 'positions', NORMAL: 'normals', COLOR: 'colors'}}]
+          primitives: [
+            {mode: 0, attributes: {POSITION: 'positions', NORMAL: 'normals', COLOR: 'colors'}}
+          ]
         }
       }
     },
     56
   );
-  new Float32Array(source.buffers[0].arrayBuffer, 0, 12).set([
-    1, 2, 3, 10, 11, 12, 4, 5, 6, 13, 14, 15
-  ]);
+  new Float32Array(source.buffers[0].arrayBuffer, 0, 12).set([1, 2, 3, 0, 0, 1, 4, 5, 6, 0, 1, 0]);
   new Uint8Array(source.buffers[0].arrayBuffer, 48, 8).set([255, 0, 0, 255, 0, 255, 0, 255]);
   const originalJson = JSON.stringify(source.json);
   const originalBytes = Array.from(new Uint8Array(source.buffers[0].arrayBuffer));
@@ -68,7 +68,7 @@ test('glTF 1 strides preserve interleaved attributes and packed colors in one so
     1, 2, 3, 4, 5, 6
   ]);
   expect(Array.from(getTypedArrayForAccessor(converted.json, converted.buffers, 1))).toEqual([
-    10, 11, 12, 13, 14, 15
+    0, 0, 1, 0, 1, 0
   ]);
   expect(Array.from(getTypedArrayForAccessor(converted.json, converted.buffers, 2))).toEqual([
     255, 0, 0, 255, 0, 255, 0, 255
@@ -164,7 +164,7 @@ test.each([
         accessors: {
           positions: {bufferView: 'view', byteStride, componentType: 5126, count: 2, type: 'VEC3'}
         },
-        meshes: {mesh: {primitives: [{attributes: {POSITION: 'positions'}}]}}
+        meshes: {mesh: {primitives: [{mode: 0, attributes: {POSITION: 'positions'}}]}}
       },
       24
     ),
@@ -181,7 +181,7 @@ test.each([
     accessors: {
       positions: {bufferView: 'view', byteStride, componentType: 5126, count: 2, type: 'VEC3'}
     },
-    meshes: {mesh: {primitives: [{attributes: {POSITION: 'positions'}}]}}
+    meshes: {mesh: {primitives: [{mode: 0, attributes: {POSITION: 'positions'}}]}}
   });
   expect(convertGLTFV1ToGLTF2(source).normalizationReport.unsupported).toEqual(
     expect.arrayContaining([expect.stringContaining('accessor 0 layout requires binary repacking')])
@@ -203,7 +203,7 @@ test.each([
       accessors: {
         positions: {bufferView: 'view', byteStride, componentType: 5126, count, type: 'VEC3'}
       },
-      meshes: {mesh: {primitives: [{attributes: {POSITION: 'positions'}}]}}
+      meshes: {mesh: {primitives: [{mode: 0, attributes: {POSITION: 'positions'}}]}}
     },
     byteLength
   );
@@ -285,7 +285,7 @@ test('glTF 1 mixed accessor roles are separated without applying a vertex stride
           type: 'SCALAR'
         }
       },
-      meshes: {mesh: {primitives: [{attributes: {POSITION: 'positions'}}]}},
+      meshes: {mesh: {primitives: [{mode: 0, attributes: {POSITION: 'positions'}}]}},
       nodes: {node: {meshes: ['mesh']}},
       animations: {
         animation: {
@@ -330,7 +330,7 @@ test.each([
     accessors: {
       positions: {bufferView: 'view', componentType: 5126, count: 2, type: 'VEC3', ...overrides}
     },
-    meshes: {mesh: {primitives: [{attributes: {POSITION: 'positions'}}]}}
+    meshes: {mesh: {primitives: [{mode: 0, attributes: {POSITION: 'positions'}}]}}
   });
   expect(() => convertGLTFV1ToGLTF2(source, {normalize: 'strict'})).toThrow(
     /requires binary repacking/
@@ -354,7 +354,7 @@ test.each([
     meshes: {mesh: {primitives: [{attributes: {}, indices: 'indices'}]}}
   });
   expect(() => convertGLTFV1ToGLTF2(source, {normalize: 'strict'})).toThrow(
-    /requires binary repacking/
+    /contained positive byte span/
   );
 });
 

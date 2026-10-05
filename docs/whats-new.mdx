@@ -42,6 +42,9 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
 
 ## What's new
 
+- Upgrade math.gl dependencies to 5.0.0-alpha.12 and migrate coordinate transformations to
+  `@math.gl/projection`, the successor to `@math.gl/proj4`.
+
 - Preserve unique glTF node placements during 3D Tiles CRS conversion, retain empty mesh Arrow
   schemas, and correctly skip padding between ORC RLEv2 integer blocks.
 - glTF 1 best-effort conversion preserves conventional diffuse colors and opacity, uses non-metallic PBR defaults, and reports unsupported shader techniques even when a diffuse texture is recognized.
@@ -55,7 +58,8 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
 ## v5.0 (In Development)
 
 - Declare named `subloaders` and use core `preload()` to prepare nested parser dependencies
-  concurrently, with loader-scoped overrides and options. 3D Tiles declares GLTF/GLB dependencies.
+  concurrently, with a flat override map and normal loader option namespaces. 3D Tiles declares GLTF/GLB dependencies.
+- Expand glTF 1 conversion with deterministic signed UV/color/weight conversion, global buffer/view span checks and safe URI length inference, and core attribute/topology diagnostics. Preserve source data and report assumptions through the supplied logger. Tiny skinned JSON/GLB exports run the Khronos validator. Techniques are explicitly marked as preserved data only; conversion remains unsupported.
 
 - Convert the supported `KHR_materials_common` subset to PBR/unlit materials, including emission,
   texture references, explicit transparency/double-sided flags, accurate extension declarations,
@@ -107,6 +111,20 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
 
 - Fix binary-to-GeoJSON conversion of multipolygons with empty parts, preserving empty
   polygons without overflowing the call stack.
+
+### Shared numeric raster regions
+
+GeoTIFF sources support explicit CRS/bounds region requests with decoded-memory budgets,
+real overview selection, affine placement and internal validity masks. Shared CPU
+sampling supports raw/physical identify and bounded statistics over planar, interleaved
+and mixed numeric bands. RasterSet and range scheduling propagate cancellation and
+reject obsolete results. WMS keeps its image contract and existing axis-order rules.
+
+See the [GeoTIFF source API](./modules/geotiff/api-reference/geotiff-source-loader.md)
+for capabilities and remaining source limitations. Region resizing now uses sample-center
+coordinates and requires every contributing bilinear neighbor to be valid. The optional
+raster layer retains percentile stretching by default; min/max range stretching is opt-in.
+Unsupported projected CRSs require caller placement rather than guessed geographic bounds.
 
 ### v5 API finalization
 
@@ -252,12 +270,10 @@ Release Date: 2026
 
 **@loaders.gl/gltf**
 
-- [`GLBLoader`](/docs/modules/gltf/api-reference/glb-loader) adds draft GLB v3 parsing with 64-bit file and chunk lengths, multi-chunk traversal, and reserved chunk-encoding validation, advancing glTF 2.1 readiness.
+- **[glTF 2.1](/docs/modules/gltf/formats/gltf#loadersgl-gltf-feature-coverage)** (draft): Adds accessor component types, unified file references, external asset composition, thumbnails, and shape and bounding volume helpers. The support table distinguishes implemented features from partial and planned runtime support.
+- **[glTF 1](/docs/modules/gltf/formats/gltf#gltf-1-to-gltf-2-conversion)**: Automatically attempts best-effort conversion to glTF 2, with strict mode and diagnostics. Converts compatible integer normals/tangents, infers bounded dense accessor-view lengths, and omits legacy empty child/scene lists. The [glTF example](/examples/gltf) includes original Box and BoxAnimated files. The conversion table details supported transformations and limitations; techniques and shaders are preserved without equivalent rendering behavior.
+- **[GLB 3](/docs/modules/gltf/formats/glb#glb-3-support)** (draft): Parses and writes 64-bit container lengths and multiple binary chunks, with explicit `buffer.chunk` references. Writing is opt-in; GLB 2 remains the default. The support table lists container capabilities and limits.
 - [`postProcessGLTF()`](/docs/modules/gltf/api-reference/post-process-gltf) expands WebGL-only `LINE_LOOP` and `TRIANGLE_FAN` primitives into portable indexed `LINES` and `TRIANGLES` without mutating the loaded source data.
-- [`GLBLoader`](/docs/modules/gltf/api-reference/glb-loader) and [`GLTFLoader`](/docs/modules/gltf/api-reference/gltf-loader) add draft [GLB v3](/docs/modules/gltf/formats/glb) support for 64-bit lengths, multi-chunk traversal, reserved chunk-encoding validation, and explicit `buffer.chunk` references, advancing glTF 2.1 readiness.
-- [`GLTFLoader`](/docs/modules/gltf/api-reference/gltf-loader) adds draft [glTF 2.1 accessor component types](/docs/modules/gltf/formats/gltf#accessor-component-types), including signed 32-bit integers, 16- and 64-bit floats, and signed and unsigned 64-bit integers.
-- [`GLTFLoader`](/docs/modules/gltf/api-reference/gltf-loader) adds opt-in loading of draft glTF 2.1 [unified file references](/docs/modules/gltf/formats/gltf) from URIs or buffer views, plus virtual package lookup through `resolveGLTFFile()`.
-- [`GLTFLoader`](/docs/modules/gltf/api-reference/gltf-loader) can recursively load draft glTF 2.1 [external assets](/docs/modules/gltf/formats/gltf), including relative dependencies, embedded virtual packages, shared-reference caching, and cycle detection.
 - [`GLTFLoader`](/docs/modules/gltf/api-reference/gltf-loader) loads draft glTF 2.1 [thumbnail images](/docs/modules/gltf/formats/gltf#draft-gltf-21-thumbnails) referenced by `asset.thumbnail`, and [`postProcessGLTF()`](/docs/modules/gltf/api-reference/post-process-gltf) resolves the thumbnail index to the processed image.
 - [`GLTFLoader`](/docs/modules/gltf/api-reference/gltf-loader) supports the release-candidate [`KHR_meshopt_compression`](/docs/modules/gltf/formats/gltf#meshopt-compression) extension, including version 1 attribute streams and the `COLOR` filter, while retaining `EXT_meshopt_compression` support.
 - [`GLTFLoader`](/docs/modules/gltf/api-reference/gltf-loader) selects `EXT_texture_avif` image sources when the active image decoder supports AVIF, and applies independent `KHR_texture_transform` transforms for textures that share a UV attribute.

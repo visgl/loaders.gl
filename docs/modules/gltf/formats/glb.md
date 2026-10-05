@@ -60,6 +60,25 @@ GLB version 3 is being developed for glTF 2.1. In addition to 64-bit file and ch
 the draft format permits multiple BIN chunks and allows the glTF JSON chunk to follow custom
 chunks. The first JSON chunk contains the glTF document.
 
+## GLB 3 Support
+
+Draft GLB 3 support follows the evolving glTF 2.1 specification. **✅ Supported** means the
+stated container behavior is implemented; **⚠️ Partial** identifies a supported subset;
+**❌ Unsupported** means the behavior is not provided. Scene-feature support is described
+separately in the [glTF support table](/docs/modules/gltf/formats/gltf#loadersgl-gltf-feature-coverage).
+
+| Capability | Reading | Writing | Limits |
+| --- | --- | --- | --- |
+| 64-bit file and chunk lengths | ✅ | ✅ | Lengths must be JavaScript safe integers and fit available memory. |
+| Multiple BIN chunks | ✅ | ✅ | Preserves the binary chunks; glTF buffers select them by chunk index. |
+| Explicit `buffer.chunk` references | ✅ | ✅ | Resolves BIN references and rejects conflicting `uri` fields. The writer preserves supplied indices; applications must keep them consistent with chunk order. |
+| JSON following custom chunks | ✅ | ❌ | The loader uses the first JSON chunk. The writer always emits its JSON chunk first. |
+| Custom chunk payloads | ❌ | ✅ | The parser skips unknown payloads while counting their chunk positions. The writer accepts supplied generic `chunks`; unknown payloads are not automatically round-tripped. |
+| Classic implicit buffer 0 | ⚠️ | ✅ | Reading requires JSON at chunk 0, BIN at chunk 1, and exactly one URI-less buffer. |
+| Zero chunk encoding | ✅ | ✅ | The currently defined encoding is accepted. |
+| Nonzero chunk encodings | ❌ | ❌ | Rejected rather than silently interpreted. |
+| Lengths beyond `Number.MAX_SAFE_INTEGER` | ❌ | ❌ | Rejected to avoid precision loss. |
+
 ## GLB Version 3 Buffer Chunks
 
 In draft glTF 2.1 JSON, a buffer may use `chunk` instead of `uri` to select a BIN chunk in a

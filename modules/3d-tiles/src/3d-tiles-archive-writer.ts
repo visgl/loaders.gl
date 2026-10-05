@@ -1,0 +1,59 @@
+// loaders.gl
+// SPDX-License-Identifier: MIT
+// Copyright (c) vis.gl contributors
+
+import type {WriterOptions, WriterWithEncoder} from '@loaders.gl/loader-utils';
+import {encodeIndexedZip} from '@loaders.gl/zip/indexed-zip-writer';
+import {ThreeTZFormat} from './tiles-3d-format';
+import {VERSION} from './lib/utils/version';
+
+/** Portable resources with canonical relative ASCII paths; JSON and content must already be valid. */
+export type Tiles3DArchiveFiles = Readonly<Record<string, ArrayBuffer | Blob>>;
+
+/** Options for the bounded, uncompressed ZIP32 3TZ writer. */
+export type Tiles3DArchiveWriterOptions = WriterOptions & {
+  /** 3TZ packaging options. */
+  '3tz'?: {
+    /** Maximum archive bytes, including ZIP headers and the index; not a peak-memory limit. */
+    maxArchiveBytes?: number;
+  };
+};
+
+/** Largest supported archive, below the ZIP64 sentinel. */
+const MAX_ARCHIVE_BYTES = 0xfffffffe;
+/** Required final uncompressed index entry. */
+const INDEX_PATH = '@3dtilesIndex1@';
+
+/**
+ * Packages already-authored 3D Tiles resources as a deterministic indexed 3TZ archive.
+ * Uses STORE, populated local headers, a fixed timestamp, and a final case-sensitive MD5 index.
+ * Requires root tileset.json and canonical relative ASCII file paths; does not validate content
+ * or external references. ZIP64, compression, streaming, and scene authoring are separate APIs.
+ */
+export const Tiles3DArchiveWriter = {
+  ...ThreeTZFormat,
+  version: VERSION,
+  mimeTypes: ['application/vnd.maxar.archive.3tz+zip'],
+  options: {'3tz': {maxArchiveBytes: MAX_ARCHIVE_BYTES}},
+  encode: encodeArchive
+} as const satisfies WriterWithEncoder<Tiles3DArchiveFiles, never, Tiles3DArchiveWriterOptions>;
+
+/** Checks the 3TZ resource layout before delegating to the shared indexed ZIP encoder. */
+async function encodeArchive(
+  files: Tiles3DArchiveFiles,
+  options: Tiles3DArchiveWriterOptions = {}
+): Promise<ArrayBuffer> {
+  const paths = Object.keys(files);
+  if (!paths.includes('tileset.json')) {
+    throw new RangeError('3TZ requires tileset.json');
+  }
+  if (paths.some(path => /\.3tz|\.3dtiles\.zip/i.test(path))) {
+    throw new TypeError(
+      '3TZ requires canonical relative ASCII resource paths without nested archives'
+    );
+  }
+  return await encodeIndexedZip(files, {
+    indexPath: INDEX_PATH,
+    maxArchiveBytes: options['3tz']?.maxArchiveBytes ?? MAX_ARCHIVE_BYTES
+  });
+}

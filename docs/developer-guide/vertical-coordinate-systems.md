@@ -64,7 +64,7 @@ system inside loaders.gl:
 | Layer | Responsibility |
 | --- | --- |
 | `@math.gl/crs` | Canonical immutable source CRS, vertical CRS, coordinate order, coordinate frame, epoch, and per-component units |
-| `@math.gl/proj4` | Executable geographic, projected, and geocentric coordinate transformations |
+| `@math.gl/projection` | Executable geographic, projected, and geocentric coordinate transformations |
 | `@math.gl/geoid` | Ellipsoidal/orthometric height conversion using an application-supplied geoid model |
 | `@loaders.gl/tiles` | Transformation status, target selection, format diagnostics, and shared spatial orchestration |
 | I3S adapter | `ZFactor`, ArcGIS unit aliases, `elevationInfo`, surface providers, and geometry/bounds/origin placement |
