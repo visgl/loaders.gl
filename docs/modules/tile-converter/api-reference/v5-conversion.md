@@ -166,3 +166,12 @@ Unannotated resources can also use the existing GLB codec and 3D Tiles/3TZ sink.
 codec explicitly rejects feature-bearing resources until its target metadata writer is
 qualified. See [I3S mesh authoring](/docs/modules/i3s/api-reference/i3s-mesh-writer) for the
 precise target property/null profile.
+
+### Browser example
+
+The [tile archive example](/examples/i3s-slpk) can inspect an explicit 3D Tiles URL,
+convert one selected self-contained static mesh content to SLPK or 3TZ, and preview or
+download the partial archive. It demonstrates the separate core and adapters entrypoints,
+required byte/precision budgets, cancellation and explicit profile rejection. See the
+[example README](https://github.com/visgl/loaders.gl/tree/master/examples/website/i3s-slpk)
+for limits and supported inputs.
