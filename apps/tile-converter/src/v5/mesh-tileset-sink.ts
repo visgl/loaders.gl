@@ -192,7 +192,8 @@ export interface MeshTilesetSink extends TileConversionSink<EncodedMeshConversio
 /**
  * Packages independent codec outputs as a bounded 3D Tiles 1.1 leaf collection.
  * Each leaf retains its ECEF placement and encoded bounds; the contentless ADD root encloses
- * all leaves. This authors a flat partial dataset, not the source LOD hierarchy. Callers must
+ * all leaves. Its geometric error covers the enclosing diagonal; each leaf retains the
+ * supplied error. This authors a flat partial dataset, not the source LOD hierarchy. Callers must
  * exclude overlapping parent/descendant LOD representations and provide a conservative error.
  * Resource IDs identify placements, never output paths. Retained bytes include final JSON;
  * maxMeshes bounds hierarchy metadata, while neither limit bounds peak conversion memory.
@@ -270,9 +271,16 @@ export function createMeshTilesetSink(options: MeshTilesetSinkOptions): MeshTile
       state = 'writing';
       const center = minimum.map((value, axis) => value / 2 + maximum[axis] / 2);
       const halfSize = minimum.map((value, axis) => maximum[axis] / 2 - value / 2);
+      // The empty root's error bounds the omitted leaf extent.
+      const rootGeometricError = Math.max(geometricError, 2 * Math.hypot(...halfSize));
+      if (!Number.isFinite(rootGeometricError))
+        throw new TileConversionError(
+          'MESH_TILESET_BOUNDS_INVALID',
+          'Root bounds must have a finite diagonal'
+        );
       const json = JSON.stringify({
         asset: {version: '1.1'},
-        geometricError,
+        geometricError: rootGeometricError,
         root: {
           boundingVolume: {
             box: [
@@ -290,7 +298,7 @@ export function createMeshTilesetSink(options: MeshTilesetSinkOptions): MeshTile
               halfSize[2]
             ]
           },
-          geometricError,
+          geometricError: rootGeometricError,
           refine: 'ADD',
           children
         }

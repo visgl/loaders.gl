@@ -424,7 +424,9 @@ ellipsoidal-height requirements match `createSingleMeshTilesetSink`.
 
 Each unique placement gets `meshes/0.glb`, `meshes/1.glb`, etc.; source IDs never become paths.
 A contentless ADD root encloses all encoded leaf bounds, and each leaf retains its own
-transform. Files become visible through `getFiles()` only after successful finalization.
+transform. The contentless root's geometric error covers the enclosing box diagonal;
+leaf errors retain the supplied source/rounding budget. This keeps exact leaves discoverable
+when their error is zero. Files become visible through `getFiles()` only after successful finalization.
 Duplicate placement IDs, excess meshes, failed writes, cancellation and final-JSON budget
 failures clear output through the conversion core. The byte budget includes GLBs and JSON;
 the mesh count bounds retained hierarchy metadata. Neither bounds peak serialization memory.

@@ -154,15 +154,19 @@ export async function convertSelectedContent(
 }
 
 /** Retains a conservative source LOD error from the selected hierarchy, rather than guessing zero. */
-function getGeometricError(document: BrowserTilesetConversionInspection['tileset']): number {
+function getGeometricError(
+  document: BrowserTilesetConversionInspection['tileset'],
+  tilePath?: readonly number[]
+): number {
   let maximum = 0;
+  let depth = 0;
   let tile: typeof document.root = document.root;
   while (tile) {
     const error = (tile as typeof tile & {geometricError?: number}).geometricError;
     if (typeof error !== 'number' || !Number.isFinite(error) || error < 0)
       throw new Error('Each selected tile must declare a finite nonnegative geometricError.');
     maximum = Math.max(maximum, error);
-    tile = tile.children?.[0];
+    tile = tile.children?.[tilePath ? tilePath[depth++] : 0];
   }
   return maximum;
 }
@@ -272,8 +276,12 @@ export async function convertSelectedContents(
       );
   }
   signal.throwIfAborted();
-  const documents = descriptors.map(descriptor => selectContentDocument(inspection, descriptor));
-  const qualification = createSelectedRuntime(inspection, documents[0], new Uint8Array(), signal);
+  const qualification = createSelectedRuntime(
+    inspection,
+    selectContentDocument(inspection, descriptors[0]),
+    new Uint8Array(),
+    signal
+  );
   let spatialContext: ReturnType<typeof createTiles3DConversionSpatialContext>;
   try {
     await qualification.tilesetInitializationPromise;
@@ -294,11 +302,10 @@ export async function convertSelectedContents(
     /** Decodes and releases each selected placement in declaration order. */
     async *read() {
       let decodedBytes = 0;
-      let contentIndex = 0;
       for await (const raw of rawSource.read(selectedInspection, signal)) {
         const runtime = createSelectedRuntime(
           inspection,
-          documents[contentIndex++],
+          selectContentDocument(inspection, raw),
           raw.data,
           signal
         );
@@ -326,7 +333,9 @@ export async function convertSelectedContents(
     maxTotalBytes: CONVERSION_LIMITS.maxOutputBytes,
     maxMeshes: CONVERSION_LIMITS.maxSelectedResources,
     geometricError:
-      Math.max(...documents.map(getGeometricError)) + CONVERSION_LIMITS.maxPositionError
+      Math.max(
+        ...descriptors.map(descriptor => getGeometricError(inspection.tileset, descriptor.tilePath))
+      ) + CONVERSION_LIMITS.maxPositionError
   });
   const report = await convertTileset({
     source,

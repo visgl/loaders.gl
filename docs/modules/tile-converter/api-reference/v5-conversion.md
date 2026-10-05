@@ -182,7 +182,9 @@ for limits and supported inputs.
 `createMeshTilesetSink` (`/v5/adapters`) accepts independent mesh codec outputs with the
 same ECEF frame and precision requirements as the single-mesh sink. Required options are
 `maxTotalBytes`, `maxMeshes`, and `geometricError`. It emits deterministic relative GLB
-resources and a contentless ADD root enclosing every placed leaf. Unique source placement
+resources and a contentless ADD root enclosing every placed leaf. Its geometric error
+covers the enclosing diagonal; leaf errors retain the supplied source/rounding budget.
+Unique source placement
 IDs are required. Final JSON counts toward the retained-output budget; failed conversion
 aborts all output. Applications own source selection and conservative geometric error.
 This flat collection does not reproduce a source LOD hierarchy.

@@ -180,3 +180,32 @@ test('mesh collection includes final JSON in its byte budget and clears failed w
     expect(sink.getFiles()).toEqual([]);
   }
 });
+
+test('contentless root has nonzero enclosing error while exact leaves retain zero error', async () => {
+  const sink = createMeshTilesetSink({...OPTIONS, geometricError: 0});
+  await convertResources(sink, [RESOURCE]);
+  const document = JSON.parse(
+    await sink
+      .getFiles()
+      .find(file => file.resourceId === 'tileset.json')!
+      .blob.text()
+  );
+  expect(document.geometricError).toBe(Math.hypot(2, 3));
+  expect(document.root.geometricError).toBe(document.geometricError);
+  expect(document.root.children[0].geometricError).toBe(0);
+});
+
+test('mesh collection rejects an overflowing root diagonal instead of serializing null', async () => {
+  const sink = createMeshTilesetSink(OPTIONS);
+  const localBoundingBox = [
+    [0, 0, 0],
+    [0, 3, 0]
+  ] as const;
+  await expect(
+    convertResources(sink, [
+      {...RESOURCE, origin: [Number.MAX_VALUE, 0, 0], localBoundingBox},
+      {...RESOURCE, id: 'opposite', origin: [-Number.MAX_VALUE, 0, 0], localBoundingBox}
+    ])
+  ).rejects.toThrow(/finite diagonal/);
+  expect(sink.getFiles()).toEqual([]);
+});
