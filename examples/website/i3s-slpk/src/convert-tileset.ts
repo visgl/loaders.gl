@@ -136,13 +136,11 @@ export async function convertSelectedContent(
     )
   );
   try {
+    // Observe initialization even when subsequent source qualification or output setup rejects.
+    await runtime.tilesetInitializationPromise;
     const source = createMeshTilesetConversionSource(runtime, {unloadContent: true});
-    const spatialContext = createTiles3DConversionSpatialContext({
-      sourceCrs: 'EPSG:4978',
-      heightReference: 'ellipsoidal',
-      coordinateFrame: 'geocentric',
-      axisOrder: 'xyz'
-    });
+    const metadata = await source.inspect(signal);
+    const spatialContext = createTiles3DConversionSpatialContext(metadata.spatialReference!);
     const common = {
       source,
       signal,
