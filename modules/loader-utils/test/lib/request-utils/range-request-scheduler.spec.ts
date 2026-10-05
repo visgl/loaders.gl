@@ -1,6 +1,6 @@
 // loaders.gl
 // SPDX-License-Identifier: MIT
-// Copyright (c) vis.gl contributors
+// SPDX-FileCopyrightText: Copyright (c) vis.gl contributors
 
 import {RangeRequestScheduler, createRangeStats, getRangeStats} from '@loaders.gl/loader-utils';
 import {expect, test} from 'vitest';
@@ -552,7 +552,10 @@ test('RangeRequestScheduler#counts an in-flight abort', async () => {
 
     const rangeStats = getRangeStats(scheduler.stats);
     expect(rangeStats.abortedLogicalRanges, 'counts the aborted logical request').toBe(1);
-    expect(rangeStats.failedTransportRanges, 'counts the failed transport').toBe(1);
+    expect(
+      rangeStats.failedTransportRanges,
+      'expected cancellation is not a transport failure'
+    ).toBe(0);
   });
 });
 test('RangeRequestScheduler#settles coalesced aborts without poisoning active siblings', async () => {
@@ -705,4 +708,87 @@ test('RangeRequestScheduler#later batches start while an earlier transport is pe
     await advanceTimersAndFlush(10);
     expect(fetches, 'completion does not issue another transport').toEqual([0, 1]);
   });
+});
+
+test('range scheduler bounds transport concurrency and rejects queue/range overflow', async () => {
+  const scheduler = new RangeRequestScheduler({
+    batchDelayMs: 0,
+    maxConcurrency: 1,
+    maxQueueSize: 2,
+    maxRangeBytes: 4
+  });
+  let active = 0;
+  let maximumActive = 0;
+  const completions: (() => void)[] = [];
+  const fetchRange = async (_offset: number, length: number) => {
+    active++;
+    maximumActive = Math.max(maximumActive, active);
+    await new Promise<void>(resolve => completions.push(resolve));
+    active--;
+    return new ArrayBuffer(length);
+  };
+  const first = scheduler.scheduleRequest({sourceId: 'first', offset: 0, length: 4, fetchRange});
+  const second = scheduler.scheduleRequest({sourceId: 'second', offset: 0, length: 4, fetchRange});
+  await expect(
+    scheduler.scheduleRequest({sourceId: 'overflow', offset: 0, length: 1, fetchRange})
+  ).rejects.toThrow('queue');
+  scheduler.flush();
+  expect(active).toBe(1);
+  completions.shift()!();
+  await first;
+  await Promise.resolve();
+  await Promise.resolve();
+  completions.shift()!();
+  await second;
+  expect(maximumActive).toBe(1);
+  await expect(
+    scheduler.scheduleRequest({sourceId: 'large', offset: 0, length: 5, fetchRange})
+  ).rejects.toThrow('oversized');
+});
+
+test('range scheduler prunes canceled queued groups and disposes owned work', async () => {
+  const scheduler = new RangeRequestScheduler({
+    batchDelayMs: 0,
+    maxConcurrency: 1,
+    maxQueueSize: 2
+  });
+  const active = createDeferred<ArrayBuffer>();
+  const first = scheduler.scheduleRequest({
+    sourceId: 'active',
+    offset: 0,
+    length: 1,
+    fetchRange: () => active.promise
+  });
+  scheduler.flush();
+  let transfers = 0;
+  for (let index = 0; index < 20; index++) {
+    const controller = new AbortController();
+    const queued = scheduler.scheduleRequest({
+      sourceId: 'queued',
+      offset: index,
+      length: 1,
+      signal: controller.signal,
+      fetchRange: async () => {
+        transfers++;
+        return new ArrayBuffer(1);
+      }
+    });
+    scheduler.flush();
+    controller.abort();
+    await expect(queued).rejects.toMatchObject({name: 'AbortError'});
+  }
+  expect(transfers).toBe(0);
+  expect((scheduler as any).transportQueue).toHaveLength(0);
+  const canceled = expect(first).rejects.toMatchObject({name: 'AbortError'});
+  scheduler.finalize();
+  await canceled;
+  active.resolve(new ArrayBuffer(1));
+  await expect(
+    scheduler.scheduleRequest({
+      sourceId: 'disposed',
+      offset: 0,
+      length: 1,
+      fetchRange: async () => new ArrayBuffer(1)
+    })
+  ).rejects.toThrow('finalized');
 });

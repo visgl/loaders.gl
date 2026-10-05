@@ -1,17 +1,19 @@
 // loaders.gl
 // SPDX-License-Identifier: MIT
-// Copyright (c) vis.gl contributors
+// SPDX-FileCopyrightText: Copyright (c) vis.gl contributors
 
 import type {
   GetRasterParameters,
+  NumericRasterData,
   RasterData,
   RasterSource,
   RasterSourceMetadata
 } from '@loaders.gl/loader-utils';
+import {waitForPromiseWithSignals} from '@loaders.gl/loader-utils';
 
 /** Accepted raster request currently retained by {@link RasterSet}. */
 export type RasterSetRequest<
-  DataT extends RasterData = RasterData,
+  DataT extends NumericRasterData = RasterData,
   ParametersT extends object = GetRasterParameters
 > = {
   /** Unique request id assigned by the manager. */
@@ -24,7 +26,7 @@ export type RasterSetRequest<
 
 /** Arguments supplied to {@link RasterSetBaseProps.shouldRefetch}. */
 export type RasterSetShouldRefetchArgs<
-  DataT extends RasterData = RasterData,
+  DataT extends NumericRasterData = RasterData,
   ParametersT extends object = GetRasterParameters,
   MetadataT extends RasterSourceMetadata = RasterSourceMetadata
 > = {
@@ -38,12 +40,14 @@ export type RasterSetShouldRefetchArgs<
 
 /** Configuration shared by all {@link RasterSet} instances. */
 export type RasterSetBaseProps<
-  DataT extends RasterData = RasterData,
+  DataT extends NumericRasterData = RasterData,
   ParametersT extends object = GetRasterParameters,
   MetadataT extends RasterSourceMetadata = RasterSourceMetadata
 > = {
   /** Callback used to load source metadata. */
-  getMetadata: () => Promise<MetadataT>;
+  getMetadata: (options?: {
+    /** Metadata request cancellation. */ signal?: AbortSignal;
+  }) => Promise<MetadataT>;
   /** Callback used to load raster data for a viewport-derived request. */
   getRaster: (parameters: ParametersT) => Promise<DataT>;
   /** Debounce interval applied before issuing raster requests. */
@@ -54,7 +58,7 @@ export type RasterSetBaseProps<
 
 /** Options for creating a {@link RasterSet}. */
 export type RasterSetProps<
-  DataT extends RasterData = RasterData,
+  DataT extends NumericRasterData = RasterData,
   ParametersT extends object = GetRasterParameters,
   MetadataT extends RasterSourceMetadata = RasterSourceMetadata
 > = Partial<RasterSetBaseProps<DataT, ParametersT, MetadataT>> & {
@@ -64,7 +68,7 @@ export type RasterSetProps<
 
 /** Subscription callbacks emitted by {@link RasterSet}. */
 export type RasterSetListener<
-  DataT extends RasterData = RasterData,
+  DataT extends NumericRasterData = RasterData,
   ParametersT extends object = GetRasterParameters,
   MetadataT extends RasterSourceMetadata = RasterSourceMetadata
 > = {
@@ -111,7 +115,7 @@ const DEFAULT_RASTERSET_PROPS: Required<Omit<RasterSetProps, 'rasterSource'>> = 
  * @typeParam MetadataT Metadata returned by the source.
  */
 export class RasterSet<
-  DataT extends RasterData = RasterData,
+  DataT extends NumericRasterData = RasterData,
   ParametersT extends object = GetRasterParameters,
   MetadataT extends RasterSourceMetadata = RasterSourceMetadata
 > {
@@ -121,12 +125,17 @@ export class RasterSet<
   private _opts: Required<RasterSetProps<DataT, ParametersT, MetadataT>>;
   private _listeners = new Set<RasterSetListener<DataT, ParametersT, MetadataT>>();
   private _currentRequest: RasterSetRequest<DataT, ParametersT> | null = null;
-  private _lastAcceptedRequestId = -1;
   private _nextRequestId = 0;
   private _loadCounter = 0;
   private _timeoutId: ReturnType<typeof setTimeout> | null = null;
   private _abortController: AbortController | null = null;
+  /** Controller owned by the newest metadata request. */
+  private _metadataAbortController: AbortController | null = null;
   private _finalized = false;
+  /** Generation invalidates metadata from replaced sources. */
+  private _sourceGeneration = 0;
+  /** Monotonic metadata request identity. */
+  private _metadataRequestId = 0;
 
   /** Creates a raster manager from a source or direct callbacks. */
   constructor(opts: RasterSetProps<DataT, ParametersT, MetadataT>) {
@@ -140,7 +149,7 @@ export class RasterSet<
 
   /** Convenience factory for wrapping a loaders.gl {@link RasterSource}. */
   static fromRasterSource<
-    DataT extends RasterData = RasterData,
+    DataT extends NumericRasterData = RasterData,
     ParametersT extends GetRasterParameters = GetRasterParameters,
     MetadataT extends RasterSourceMetadata = RasterSourceMetadata
   >(
@@ -155,7 +164,7 @@ export class RasterSet<
 
   /** Convenience factory for sources whose requests are not viewport-shaped. */
   static fromCallbacks<
-    DataT extends RasterData = RasterData,
+    DataT extends NumericRasterData = RasterData,
     ParametersT extends object = GetRasterParameters,
     MetadataT extends RasterSourceMetadata = RasterSourceMetadata
   >(
@@ -193,7 +202,12 @@ export class RasterSet<
   /** Updates source callbacks or debounce settings, resetting state when the source changes. */
   setOptions(opts: RasterSetProps<DataT, ParametersT, MetadataT>): void {
     const previousRasterSource = this._opts.rasterSource;
-    const nextOptions = this._normalizeOptions({...this._opts, ...opts});
+    const mergedOptions: RasterSetProps<DataT, ParametersT, MetadataT> = {...this._opts, ...opts};
+    if (opts.rasterSource && opts.rasterSource !== previousRasterSource) {
+      mergedOptions.getRaster = opts.getRaster;
+      mergedOptions.getMetadata = opts.getMetadata;
+    }
+    const nextOptions = this._normalizeOptions(mergedOptions);
     const sourceChanged =
       previousRasterSource !== nextOptions.rasterSource ||
       this._opts.getRaster !== nextOptions.getRaster ||
@@ -203,20 +217,42 @@ export class RasterSet<
 
     if (sourceChanged) {
       this._cancelScheduledRaster();
+      this._abortActiveRequest();
+      this._metadataAbortController?.abort();
+      this._sourceGeneration++;
       this.metadata = null;
       this._currentRequest = null;
-      this._lastAcceptedRequestId = -1;
-      this._nextRequestId = 0;
+
       this._emitUpdate();
     }
   }
 
   /** Loads metadata from the current raster source or callbacks. */
-  async loadMetadata(): Promise<MetadataT> {
-    this._startLoading();
+  async loadMetadata(
+    options: {/** Caller cancellation for metadata. */ signal?: AbortSignal} = {}
+  ): Promise<MetadataT> {
+    if (this._finalized) throw new Error('RasterSet is finalized');
+    options.signal?.throwIfAborted();
+    this._metadataAbortController?.abort();
+    const abortController = new AbortController();
+    this._metadataAbortController = abortController;
+    const abortFromCaller = () => abortController.abort(options.signal?.reason);
+    options.signal?.addEventListener('abort', abortFromCaller, {once: true});
+    const metadataRequestId = ++this._metadataRequestId;
+    const generation = this._sourceGeneration;
     try {
-      const metadata = await this._opts.getMetadata();
-      if (this._finalized) {
+      this._startLoading();
+      abortController.signal.throwIfAborted();
+      const metadata = await waitForPromiseWithSignals(
+        signal => this._opts.getMetadata({signal}),
+        [abortController.signal]
+      );
+      abortController.signal.throwIfAborted();
+      if (
+        this._finalized ||
+        generation !== this._sourceGeneration ||
+        metadataRequestId !== this._metadataRequestId
+      ) {
         return metadata;
       }
       this.metadata = metadata;
@@ -226,26 +262,39 @@ export class RasterSet<
       this._emitUpdate();
       return metadata;
     } catch (error) {
+      if (abortController.signal.aborted) throw abortController.signal.reason;
+      if (isAbortError(error)) throw error;
       const normalizedError = normalizeRasterSetError(error, 'Raster metadata request failed');
-      if (!this._finalized) {
+      if (
+        !this._finalized &&
+        generation === this._sourceGeneration &&
+        metadataRequestId === this._metadataRequestId
+      ) {
         for (const listener of this._listeners) {
           listener.onMetadataLoadError?.(normalizedError);
         }
       }
       throw normalizedError;
     } finally {
+      options.signal?.removeEventListener('abort', abortFromCaller);
+      if (this._metadataAbortController === abortController) this._metadataAbortController = null;
       this._finishLoading();
     }
   }
 
   /** Debounces and issues a new raster request for the supplied parameters. */
   requestRaster(parameters: ParametersT, debounceTime = this._opts.debounceTime): number {
+    if (this._finalized) return -1;
     if (!this.shouldRefetchRaster(parameters)) {
+      this._cancelScheduledRaster();
+      this._abortActiveRequest();
+      this._nextRequestId++;
       return this._currentRequest?.requestId ?? -1;
     }
 
     const requestId = this._nextRequestId++;
     this._cancelScheduledRaster();
+    this._abortActiveRequest();
 
     if (debounceTime > 0) {
       this._timeoutId = setTimeout(() => {
@@ -273,6 +322,9 @@ export class RasterSet<
     this._finalized = true;
     this._cancelScheduledRaster();
     this._abortActiveRequest();
+    this._metadataAbortController?.abort();
+    this._metadataAbortController = null;
+    this._loadCounter = 0;
     this._listeners.clear();
   }
 
@@ -282,26 +334,29 @@ export class RasterSet<
       return;
     }
 
+    const callerSignal = (parameters as {signal?: AbortSignal}).signal;
+    if (callerSignal?.aborted) return;
+    const abortController = new AbortController();
+    this._abortController = abortController;
+    const abortFromCaller = () => abortController.abort(callerSignal?.reason);
+    callerSignal?.addEventListener('abort', abortFromCaller, {once: true});
     this._startLoading();
-    for (const listener of this._listeners) {
-      listener.onRasterLoadStart?.(requestId, parameters);
-    }
-
     try {
-      const abortController = new AbortController();
-      this._abortController = abortController;
-      const raster = await this._opts.getRaster(
-        withAbortSignal(parameters, abortController.signal)
+      abortController.signal.throwIfAborted();
+      for (const listener of this._listeners) listener.onRasterLoadStart?.(requestId, parameters);
+      abortController.signal.throwIfAborted();
+      const raster = await waitForPromiseWithSignals(
+        signal => this._opts.getRaster(withAbortSignal(parameters, signal)),
+        [abortController.signal]
       );
       if (
         this._finalized ||
         abortController.signal.aborted ||
-        requestId <= this._lastAcceptedRequestId
+        requestId !== this._nextRequestId - 1
       ) {
         return;
       }
 
-      this._lastAcceptedRequestId = requestId;
       this._currentRequest = {requestId, parameters, raster};
 
       for (const listener of this._listeners) {
@@ -309,17 +364,18 @@ export class RasterSet<
       }
       this._emitUpdate();
     } catch (error) {
-      if (isAbortError(error)) {
+      if (abortController.signal.aborted || isAbortError(error)) {
         return;
       }
       const normalizedError = normalizeRasterSetError(error, 'Raster request failed');
-      if (!this._finalized) {
+      if (!this._finalized && requestId === this._nextRequestId - 1) {
         for (const listener of this._listeners) {
           listener.onRasterLoadError?.(requestId, normalizedError, parameters);
         }
       }
     } finally {
-      this._abortController = null;
+      callerSignal?.removeEventListener('abort', abortFromCaller);
+      if (this._abortController === abortController) this._abortController = null;
       this._finishLoading();
     }
   }
@@ -335,9 +391,9 @@ export class RasterSet<
       rasterSource,
       getMetadata:
         opts.getMetadata ||
-        (() => {
+        (options => {
           if (rasterSource) {
-            return rasterSource.getMetadata();
+            return rasterSource.getMetadata(options);
           }
           return DEFAULT_RASTERSET_PROPS.getMetadata() as Promise<MetadataT>;
         }),
@@ -363,6 +419,7 @@ export class RasterSet<
 
   /** Emits one generic update notification to all subscribers. */
   private _emitUpdate(): void {
+    if (this._finalized) return;
     for (const listener of this._listeners) {
       listener.onUpdate?.();
     }
@@ -370,6 +427,7 @@ export class RasterSet<
 
   /** Emits one loading-state transition to all subscribers. */
   private _emitLoadingStateChange(isLoading: boolean): void {
+    if (this._finalized) return;
     for (const listener of this._listeners) {
       listener.onLoadingStateChange?.(isLoading);
     }
@@ -415,12 +473,11 @@ function withAbortSignal<ParametersT extends object>(
   parameters: ParametersT,
   signal: AbortSignal
 ): ParametersT {
+  const descriptors = Object.getOwnPropertyDescriptors(parameters);
+  delete descriptors.signal;
   const request = Array.isArray(parameters)
-    ? parameters.slice()
-    : Object.create(
-        Object.getPrototypeOf(parameters),
-        Object.getOwnPropertyDescriptors(parameters)
-      );
+    ? Object.defineProperties(parameters.slice(), descriptors)
+    : Object.create(Object.getPrototypeOf(parameters), descriptors);
   Object.defineProperty(request, 'signal', {
     configurable: true,
     enumerable: true,

@@ -1,6 +1,6 @@
 // loaders.gl
 // SPDX-License-Identifier: MIT
-// Copyright (c) vis.gl contributors
+// SPDX-FileCopyrightText: Copyright (c) vis.gl contributors
 
 // TYPES
 
@@ -482,3 +482,27 @@ export type {
   RasterOverview,
   RasterSourceMetadata
 } from './lib/sources/raster-source';
+
+export type {
+  RasterAffineTransform,
+  RasterBandMetadata,
+  RasterValidityMask,
+  RasterBandStatistics,
+  RasterDeclaredBandStatistics,
+  RasterRegionParameters,
+  RasterRegionSource
+} from './lib/sources/raster-source';
+export {
+  sampleRaster,
+  rasterCoordinateToPixel,
+  computeRasterStatistics,
+  isRasterSampleValid
+} from './lib/sources/raster-sampling';
+export type {RasterSample, RasterSampleOptions} from './lib/sources/raster-sampling';
+export {canReuseRasterCoverage} from './lib/sources/raster-coverage';
+export type {RasterCoverageIdentity} from './lib/sources/raster-coverage';
+
+export type {RasterMixedData, NumericRasterData} from './lib/sources/raster-source';
+export {waitForPromiseWithSignal, waitForPromiseWithSignals} from './lib/request-utils/abort-utils';
+
+export {validateRasterRegion} from './lib/sources/raster-region';

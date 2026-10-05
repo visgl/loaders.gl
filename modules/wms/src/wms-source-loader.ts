@@ -1,6 +1,6 @@
 // loaders.gl
 // SPDX-License-Identifier: MIT
-// Copyright (c) vis.gl contributors
+// SPDX-FileCopyrightText: Copyright (c) vis.gl contributors
 
 /* eslint-disable camelcase */
 import type {
@@ -11,7 +11,7 @@ import type {
   ImageSourceMetadata,
   GetImageParameters
 } from '@loaders.gl/loader-utils';
-import {DataSource, mergeOptions} from '@loaders.gl/loader-utils';
+import {DataSource, mergeOptions, validateRasterRegion} from '@loaders.gl/loader-utils';
 
 import type {ImageType, ImageBitmapLoaderOptions} from '@loaders.gl/images';
 import {ImageBitmapLoader} from '@loaders.gl/images';
@@ -33,6 +33,10 @@ export type WMSSourceLoaderOptions = DataSourceOptions &
   WMSLoaderOptions &
   ImageBitmapLoaderOptions & {
     wms?: {
+      /** Maximum decoded GetMap pixels; defaults to 16 million. */
+      maxPixels?: number;
+      /** Maximum estimated RGBA GetMap allocation; defaults to 256 MiB. */
+      maxDecodedBytes?: number;
       // TODO - move parameters inside WMS scope
       /** In 1.3.0, replaces references to EPSG:4326 with CRS:84 */
       substituteCRS84?: boolean;
@@ -300,41 +304,91 @@ export class WMSImageSource
     vendorParameters?: Record<string, unknown>,
     signal?: AbortSignal
   ): Promise<ImageType> {
+    signal?.throwIfAborted();
+    const parameters = {...this.wmsParameters, ...wmsParameters};
+    validateRasterRegion(
+      [
+        [parameters.bbox[0], parameters.bbox[1]],
+        [parameters.bbox[2], parameters.bbox[3]]
+      ],
+      parameters.width,
+      parameters.height,
+      4,
+      this.options.wms?.maxPixels,
+      this.options.wms?.maxDecodedBytes
+    );
     const url = this.getMapURL(wmsParameters, vendorParameters);
     const response = await this.fetch(url, signal ? {signal} : undefined);
     const arrayBuffer = await response.arrayBuffer();
+    signal?.throwIfAborted();
     this._checkResponse(response, arrayBuffer);
+    let image: ImageType;
     try {
-      return (await this.coreApi.parse(
+      image = (await this.coreApi.parse(
         arrayBuffer,
         ImageBitmapLoader,
         this.loadOptions
       )) as ImageType;
-    } catch {
-      throw this._parseError(arrayBuffer);
+    } catch (error) {
+      signal?.throwIfAborted();
+      let serviceError: Error;
+      try {
+        serviceError = this._parseError(arrayBuffer);
+      } catch {
+        throw error;
+      }
+      throw serviceError;
     }
+    try {
+      signal?.throwIfAborted();
+      validateRasterRegion(
+        [
+          [parameters.bbox[0], parameters.bbox[1]],
+          [parameters.bbox[2], parameters.bbox[3]]
+        ],
+        image.width,
+        image.height,
+        4,
+        this.options.wms?.maxPixels,
+        this.options.wms?.maxDecodedBytes
+      );
+      if (image.width !== parameters.width || image.height !== parameters.height)
+        throw new Error('WMS response dimensions do not match the requested region');
+    } catch (error) {
+      if ('close' in image && typeof image.close === 'function') image.close();
+      throw error;
+    }
+    return image;
   }
 
   /** Get Feature Info for a coordinate */
   async getFeatureInfo(
     wmsParameters: WMSGetFeatureInfoParameters,
-    vendorParameters?: Record<string, unknown>
+    vendorParameters?: Record<string, unknown>,
+    signal?: AbortSignal
   ): Promise<WMSFeatureInfo> {
+    signal?.throwIfAborted();
     const url = this.getFeatureInfoURL(wmsParameters, vendorParameters);
-    const response = await this.fetch(url);
+    const response = await this.fetch(url, signal ? {signal} : undefined);
     const arrayBuffer = await response.arrayBuffer();
+    signal?.throwIfAborted();
     this._checkResponse(response, arrayBuffer);
-    return await WMSFeatureInfoLoaderWithParser.parse(arrayBuffer, this.loadOptions);
+    const featureInfo = await WMSFeatureInfoLoaderWithParser.parse(arrayBuffer, this.loadOptions);
+    signal?.throwIfAborted();
+    return featureInfo;
   }
 
   /** Get Feature Info for a coordinate */
   async getFeatureInfoText(
     wmsParameters: WMSGetFeatureInfoParameters,
-    vendorParameters?: Record<string, unknown>
+    vendorParameters?: Record<string, unknown>,
+    signal?: AbortSignal
   ): Promise<string> {
+    signal?.throwIfAborted();
     const url = this.getFeatureInfoURL(wmsParameters, vendorParameters);
-    const response = await this.fetch(url);
+    const response = await this.fetch(url, signal ? {signal} : undefined);
     const arrayBuffer = await response.arrayBuffer();
+    signal?.throwIfAborted();
     this._checkResponse(response, arrayBuffer);
     return new TextDecoder().decode(arrayBuffer);
   }

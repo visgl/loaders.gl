@@ -1,6 +1,8 @@
 // loaders.gl
 // SPDX-License-Identifier: MIT
-// Copyright (c) vis.gl contributors
+// SPDX-FileCopyrightText: Copyright (c) vis.gl contributors
+
+import {waitForPromiseWithSignal} from '../request-utils/abort-utils';
 
 import type {ReadableFile, Stat} from './file';
 import type {RangeRequestTransportResult} from '../request-utils/range-request-scheduler';
@@ -262,32 +264,4 @@ function createAbortError(): Error {
   const error = new Error('Request aborted');
   error.name = 'AbortError';
   return error;
-}
-
-/** Lets one caller cancel its wait without cancelling a shared operation. */
-function waitForPromiseWithSignal<T>(promise: Promise<T>, signal?: AbortSignal): Promise<T> {
-  if (!signal) {
-    return promise;
-  }
-  if (signal.aborted) {
-    return Promise.reject(createAbortError());
-  }
-
-  return new Promise<T>((resolve, reject) => {
-    const abortListener = () => {
-      signal.removeEventListener('abort', abortListener);
-      reject(createAbortError());
-    };
-    signal.addEventListener('abort', abortListener, {once: true});
-    promise.then(
-      value => {
-        signal.removeEventListener('abort', abortListener);
-        resolve(value);
-      },
-      error => {
-        signal.removeEventListener('abort', abortListener);
-        reject(error);
-      }
-    );
-  });
 }

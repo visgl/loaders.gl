@@ -213,3 +213,98 @@ test('RasterSet#supports custom refetch policies', async () => {
   expect(rasterSet.currentRequest?.parameters.viewport.width).toBe(3);
   rasterSet.finalize();
 });
+
+test('RasterSet composes caller cancellation and keeps the newest controller after old cleanup', async () => {
+  const signals: AbortSignal[] = [];
+  const completions: (() => void)[] = [];
+  const rasterSet = RasterSet.fromCallbacks({
+    getMetadata: async () => ({width: 1, height: 1, bandCount: 1, dtype: 'uint8'}),
+    getRaster: (parameters: {signal?: AbortSignal}) => {
+      signals.push(parameters.signal!);
+      return new Promise(resolve =>
+        completions.push(() =>
+          resolve({data: new Uint8Array([1]), width: 1, height: 1, bandCount: 1, dtype: 'uint8'})
+        )
+      );
+    }
+  });
+  const caller = new AbortController();
+  rasterSet.requestRaster({signal: caller.signal});
+  rasterSet.requestRaster({signal: caller.signal});
+  expect(signals[0].aborted).toBe(true);
+  completions[0]();
+  await Promise.resolve();
+  await Promise.resolve();
+  caller.abort('caller reason');
+  expect(signals[1].reason).toBe('caller reason');
+  completions[1]();
+  await Promise.resolve();
+  expect(rasterSet.raster).toBeNull();
+  rasterSet.finalize();
+  expect(rasterSet.requestRaster({})).toBe(-1);
+});
+
+test('RasterSet releases loading state when immutable requests cancel and callbacks ignore signals', async () => {
+  let failWork!: (error: Error) => void;
+  const states: boolean[] = [];
+  const failures: Error[] = [];
+  const controller = new AbortController();
+  const parameters = Object.freeze({signal: controller.signal, selection: 'retained'});
+  let receivedParameters: typeof parameters | undefined;
+  const rasterSet = RasterSet.fromCallbacks({
+    getMetadata: async () => ({width: 1, height: 1, bandCount: 1, dtype: 'uint8'}),
+    getRaster: (request: typeof parameters) => {
+      receivedParameters = request;
+      return new Promise<any>((_resolve, reject) => {
+        failWork = reject;
+      });
+    }
+  });
+  rasterSet.subscribe({
+    onLoadingStateChange: state => states.push(state),
+    onRasterLoadError: (_requestId, error) => failures.push(error)
+  });
+  rasterSet.requestRaster(parameters);
+  expect(receivedParameters?.selection).toBe('retained');
+  expect(receivedParameters?.signal).not.toBe(controller.signal);
+  controller.abort('caller reason');
+  await new Promise(resolve => setTimeout(resolve, 0));
+  expect(states).toEqual([true, false]);
+  expect(parameters.signal).toBe(controller.signal);
+  failWork(new Error('obsolete callback failure'));
+  await Promise.resolve();
+  expect(failures).toEqual([]);
+  rasterSet.finalize();
+});
+
+test('RasterSet metadata cancellation never publishes obsolete data and replacement callbacks use the new source', async () => {
+  const borrowed = createRasterSource();
+  const rasterSet = RasterSet.fromRasterSource(borrowed as any);
+  const controller = new AbortController();
+  let complete!: (metadata: any) => void;
+  rasterSet.setOptions({
+    getMetadata: () =>
+      new Promise(resolve => {
+        complete = resolve;
+      })
+  });
+  const pending = rasterSet.loadMetadata({signal: controller.signal});
+  controller.abort('obsolete metadata');
+  await expect(pending).rejects.toBe('obsolete metadata');
+  complete({width: 9, height: 9, bandCount: 1, dtype: 'uint8'});
+  await Promise.resolve();
+  expect(rasterSet.metadata).toBeNull();
+  const replacement = {
+    ...createRasterSource(),
+    getMetadata: async () => ({
+      name: 'replacement',
+      width: 2,
+      height: 2,
+      bandCount: 1,
+      dtype: 'uint8' as const
+    })
+  };
+  rasterSet.setOptions({rasterSource: replacement as any});
+  expect((await rasterSet.loadMetadata()).name).toBe('replacement');
+  rasterSet.finalize();
+});

@@ -1,8 +1,8 @@
 // loaders.gl
 // SPDX-License-Identifier: MIT
-// Copyright (c) vis.gl contributors
+// SPDX-FileCopyrightText: Copyright (c) vis.gl contributors
 
-import {expect, test} from 'vitest';
+import {expect, test, vi} from 'vitest';
 import {validateLoader} from 'test/common/conformance';
 import {NPYLoader, NPYWorkerLoader} from '@loaders.gl/textures';
 import {setLoaderOptions, load} from '@loaders.gl/core';
@@ -33,4 +33,37 @@ test('NPYWorkerLoader#parse', async () => {
   const expectedHeader = {descr: '|u1', fortran_order: false, shape: [4]};
   expect(data, 'data matches').toEqual(expectedData);
   expect(header, 'header matches').toEqual(expectedHeader);
+});
+
+test('NPY loading forwards cancellation to transport', async () => {
+  const controller = new AbortController();
+  let transportAborted = false;
+  let markTransportStarted!: () => void;
+  const transportStarted = new Promise<void>(resolve => {
+    markTransportStarted = resolve;
+  });
+  const transport = vi.spyOn(globalThis, 'fetch').mockImplementation(
+    async (_url, options) =>
+      new Promise((_resolve, reject) => {
+        markTransportStarted();
+        const signal = options?.signal;
+        const abort = () => {
+          transportAborted = true;
+          reject(signal?.reason);
+        };
+        if (signal?.aborted) abort();
+        else signal?.addEventListener('abort', abort, {once: true});
+      })
+  );
+  try {
+    const pending = load('local-fixture.npy', NPYLoader, {
+      core: {worker: false, fetch: {signal: controller.signal}}
+    });
+    await transportStarted;
+    controller.abort(new DOMException('Obsolete NPY read', 'AbortError'));
+    await expect(pending).rejects.toMatchObject({name: 'AbortError'});
+    expect(transportAborted).toBe(true);
+  } finally {
+    transport.mockRestore();
+  }
 });
