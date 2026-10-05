@@ -4,7 +4,6 @@
   "description": "Graph format parsers for DOT, GraphML, and related formats",
   "license": "MIT",
   "type": "module",
-  "private": true,
   "repository": {
     "type": "git",
     "url": "https://github.com/visgl/loaders.gl"
@@ -24,6 +23,11 @@
       "types": "./dist/index.d.ts",
       "import": "./dist/index.js",
       "require": "./dist/index.cjs"
+    },
+    "./graphml-loader": {
+      "types": "./dist/graphml-loader.d.ts",
+      "import": "./dist/graphml-loader.js",
+      "require": "./dist/graphml-loader.cjs"
     }
   },
   "sideEffects": false,
@@ -38,5 +42,12 @@
   "peerDependencies": {
     "@loaders.gl/core": "~5.0.0-alpha.0"
   },
-  "gitHead": "f1a6da2c65e4ea06b59c61d1884819b6be577fe3"
+  "gitHead": "f1a6da2c65e4ea06b59c61d1884819b6be577fe3",
+  "publishConfig": {
+    "access": "public"
+  },
+  "dependencies": {
+    "@loaders.gl/loader-utils": "5.0.0-alpha.9",
+    "fast-xml-parser": "^5.5.3"
+  }
 }

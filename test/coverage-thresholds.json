@@ -17,6 +17,21 @@
         "branches": 59
       }
     },
+    "@loaders.gl/arcgis": {
+      "path": "modules/arcgis",
+      "browser": {
+        "statements": 95,
+        "lines": 95,
+        "functions": 97,
+        "branches": 77
+      },
+      "merged": {
+        "statements": 95,
+        "lines": 95,
+        "functions": 97,
+        "branches": 77
+      }
+    },
     "@loaders.gl/arrow": {
       "path": "modules/arrow",
       "browser": {
@@ -255,6 +270,21 @@
         "lines": 85,
         "functions": 84,
         "branches": 73
+      }
+    },
+    "@loaders.gl/graphs": {
+      "path": "modules/graphs",
+      "browser": {
+        "statements": 90,
+        "lines": 90,
+        "functions": 90,
+        "branches": 90
+      },
+      "merged": {
+        "statements": 90,
+        "lines": 90,
+        "functions": 90,
+        "branches": 90
       }
     },
     "@loaders.gl/i3s": {
@@ -542,6 +572,21 @@
         "branches": 66
       }
     },
+    "@loaders.gl/scan": {
+      "path": "modules/scan",
+      "browser": {
+        "statements": 100,
+        "lines": 100,
+        "functions": 100,
+        "branches": 100
+      },
+      "merged": {
+        "statements": 100,
+        "lines": 100,
+        "functions": 100,
+        "branches": 100
+      }
+    },
     "@loaders.gl/scene": {
       "path": "modules/scene",
       "browser": {
@@ -587,19 +632,19 @@
         "branches": 76
       }
     },
-    "@loaders.gl/scan": {
-      "path": "modules/scan",
+    "@loaders.gl/services": {
+      "path": "modules/services",
       "browser": {
-        "statements": 100,
-        "lines": 100,
-        "functions": 100,
-        "branches": 100
+        "statements": 62,
+        "lines": 64,
+        "functions": 71,
+        "branches": 35
       },
       "merged": {
-        "statements": 100,
-        "lines": 100,
-        "functions": 100,
-        "branches": 100
+        "statements": 62,
+        "lines": 64,
+        "functions": 71,
+        "branches": 35
       }
     },
     "@loaders.gl/shapefile": {
@@ -767,21 +812,6 @@
         "branches": 57
       }
     },
-    "@loaders.gl/services": {
-      "path": "modules/services",
-      "browser": {
-        "statements": 62,
-        "lines": 64,
-        "functions": 71,
-        "branches": 35
-      },
-      "merged": {
-        "statements": 62,
-        "lines": 64,
-        "functions": 71,
-        "branches": 35
-      }
-    },
     "@loaders.gl/worker-utils": {
       "path": "modules/worker-utils",
       "browser": {
@@ -825,21 +855,6 @@
         "lines": 87,
         "functions": 91,
         "branches": 72
-      }
-    },
-    "@loaders.gl/arcgis": {
-      "path": "modules/arcgis",
-      "browser": {
-        "statements": 95,
-        "lines": 95,
-        "functions": 97,
-        "branches": 77
-      },
-      "merged": {
-        "statements": 95,
-        "lines": 95,
-        "functions": 97,
-        "branches": 77
       }
     }
   }

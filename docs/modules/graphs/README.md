@@ -1,6 +1,6 @@
 ---
 title: Graphs
-description: A home for graph-format parsers as graph support develops.
+description: Load GraphML documents into framework-independent graph records.
 hide_title: true
 page_style: designed
 ---
@@ -10,10 +10,10 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
 
 <DocPageHeader
   eyebrow="Graphs module"
-  title="Keep graph data on the format roadmap."
-  description="`@loaders.gl/graphs` is reserved for parsers that bring graph serializations into loaders.gl. The module currently documents its intended scope while DOT, GraphML, and additional formats are being developed."
+  title="Load GraphML into reusable graph records."
+  description="`@loaders.gl/graphs` parses GraphML documents into nodes and edges with typed attributes and defaults."
   tone="violet"
-  meta={['Planned module', 'DOT', 'GraphML']}
+  meta={['GraphML 1.0', 'Nodes and edges', 'Typed attributes']}
   links={[
     {label: 'Loader categories', to: '/docs/developer-guide/loader-categories'},
     {label: 'GitHub repository', to: 'https://github.com/visgl/loaders.gl'}
@@ -23,26 +23,46 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
 <DocOrientation
   eyebrow="The graph data boundary"
   title="Parse a graph file into a reusable application model."
-  description="When graph parsers land, the module will keep serialization details at the edge so applications can work with nodes, edges, and graph metadata consistently."
+  description="The module keeps serialization details at the edge so applications can work with nodes and edges consistently."
   tone="violet"
   items={[
-    {label: 'Initial formats', value: 'DOT and GraphML'},
-    {label: 'Application data', value: 'Nodes, edges, and graph metadata'},
+    {label: 'Supported format', value: 'GraphML'},
+    {label: 'Application data', value: 'Nodes, edges, and attributes'},
     {label: 'Integration', value: 'Standard loaders.gl loader contracts'},
-    {label: 'Current status', value: 'Scope documented; implementation developing'}
+    {label: 'Current status', value: 'GraphML loader available'}
   ]}
 />
 
 <ReferenceBoundary
-  title="Current scope"
-  description="This page records the supported roadmap rather than promising parser APIs that are not yet available."
+  title="GraphML loader"
+  description="Use the asynchronous metadata loader or the synchronous parser subpath according to your application needs."
   tone="violet"
 />
 
-The `@loaders.gl/graphs` module will provide parsers for graph formats such as DOT and GraphML.
+Framework-independent graph format loaders. `GraphMLLoader` reads the first graph in a GraphML 1.0 document.
 
-## Scope
+```typescript
+import {load} from '@loaders.gl/core';
+import {GraphMLLoader} from '@loaders.gl/graphs';
 
-- DOT
-- GraphML
-- Additional graph serialization formats as they are added
+const graph = await load('network.graphml', GraphMLLoader);
+```
+
+For synchronous parsing, import `GraphMLLoaderWithParser` from
+`@loaders.gl/graphs/graphml-loader` and pass it to `parseSync` from `@loaders.gl/core`.
+The package root exports metadata only; asynchronous core APIs preload the implementation.
+
+The result is `GraphData` with `shape: 'plain-graph-data'`, `nodes`, and `edges`.
+Nodes have `id`, optional `label`, and optional `attributes`. Edges additionally have
+`sourceId`, `targetId`, and `directed`. This shape is compatible with
+`createGraphFromData` in `@deck.gl-community/graph-layers`.
+
+Supported constructs include node and edge identifiers, generated IDs for unnamed edges,
+`edgedefault` and per-edge direction overrides, node/edge/all keys, typed data and defaults,
+unknown data keys, and namespace-prefixed elements. Numeric and boolean keys become JavaScript
+values; other values remain strings. Nested XML data becomes a JSON string.
+
+Only the first graph is returned. Nested graphs, hyperedges, ports, and graph-level data are
+ignored. Nodes without IDs and edges without endpoints are skipped. This is a permissive
+parser, not a GraphML schema validator. Long integers use JavaScript numbers and may lose
+precision outside the safe integer range.

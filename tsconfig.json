@@ -21,6 +21,8 @@
     // This must be specified if "paths" is.
     "baseUrl": ".",
     "paths": {
+      "@loaders.gl/graphs": ["modules/graphs/src"],
+      "@loaders.gl/graphs/graphml-loader": ["modules/graphs/src/graphml-loader"],
       "@loaders.gl/arcgis": ["modules/arcgis/src"],
       "@loaders.gl/arcgis/authentication": ["modules/arcgis/src/authentication"],
       "@loaders.gl/arcgis/discovery": ["modules/arcgis/src/arcgis/arcgis-capability-graph"],
