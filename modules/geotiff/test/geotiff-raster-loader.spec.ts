@@ -122,3 +122,27 @@ test('multiple bands are planar and selection preserves band index and distinct 
 test('invalid TIFF input rejects without returning partial data', async () => {
   await expect(parse(new ArrayBuffer(32), GeoTIFFRasterLoader)).rejects.toThrow();
 });
+
+test('public numeric loader applies explicit backend policy and output limits', async () => {
+  const bytes = await (await fetchFile(fixture('point-float32'))).arrayBuffer();
+  const native = await parse(bytes, GeoTIFFRasterLoaderWithParser, {geotiff: {decoder: 'native'}});
+  const compatibility = await parse(bytes, GeoTIFFRasterLoaderWithParser, {
+    geotiff: {decoder: 'geotiff'}
+  });
+  expect(native.images[0].bands[0].data).toEqual(compatibility.images[0].bands[0].data);
+  await expect(
+    parse(bytes, GeoTIFFRasterLoaderWithParser, {geotiff: {maxPixels: 1}})
+  ).rejects.toThrow('budget');
+});
+
+test('public auto policy retains compressed numeric compatibility and native mode rejects it', async () => {
+  const bytes = await (await fetchFile(fixture('area-deflate'))).arrayBuffer();
+  const automatic = await parse(bytes, GeoTIFFRasterLoaderWithParser);
+  const compatibility = await parse(bytes, GeoTIFFRasterLoaderWithParser, {
+    geotiff: {decoder: 'geotiff'}
+  });
+  expect(automatic.images[0].bands[0].data).toEqual(compatibility.images[0].bands[0].data);
+  await expect(
+    parse(bytes, GeoTIFFRasterLoaderWithParser, {geotiff: {decoder: 'native'}})
+  ).rejects.toThrow('compatibility');
+});

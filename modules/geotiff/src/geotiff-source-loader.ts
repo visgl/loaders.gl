@@ -2,8 +2,8 @@
 // SPDX-License-Identifier: MIT
 // SPDX-FileCopyrightText: Copyright (c) vis.gl contributors
 
-import type {GeoTIFF as GeoTIFFDataset, GeoTIFFImage} from 'geotiff';
-import {fromBlob, GeoTIFF} from 'geotiff';
+import type {TiffSourceDecoder, TiffSourceImage} from './lib/tiff/tiff-source-decoder';
+import {openGeoTIFFSourceDecoder} from './lib/tiff/geotiff-source-adapter';
 
 import type {
   SourceLoader,
@@ -126,8 +126,8 @@ export const GeoTIFFSourceLoader = {
 } as const satisfies SourceLoader<GeoTIFFRasterSource>;
 
 type GeoTIFFInit = {
-  tiff: GeoTIFFDataset;
-  images: GeoTIFFImage[];
+  tiff: TiffSourceDecoder;
+  images: TiffSourceImage[];
   metadata: RasterSourceMetadata;
 };
 
@@ -763,7 +763,7 @@ export class GeoTIFFRasterSource
   }
 
   /** Opens the underlying GeoTIFF using Blob reads or range-scheduled HTTP access. */
-  private async _openGeoTIFF(signal?: AbortSignal): Promise<GeoTIFFDataset> {
+  private async _openGeoTIFF(signal?: AbortSignal): Promise<TiffSourceDecoder> {
     const initialization = this._initialization;
     if (typeof this.data === 'string') {
       const maxEntries = this.options.geotiff?.rangeCacheProps?.maxEntries ?? 128;
@@ -791,7 +791,7 @@ export class GeoTIFFRasterSource
       });
       // The library's BlockedSource retries interrupted shared blocks without a signal.
       // Adapt its buffer-source protocol directly; loaders.gl owns bounded caching and cancellation.
-      return await GeoTIFF.fromSource(
+      return await openGeoTIFFSourceDecoder(
         {
           /** Reads independently owned buffers in source request order. */
           fetch: (slices: GeoTIFFRangeSlice[], requestSignal?: AbortSignal) =>
@@ -803,12 +803,11 @@ export class GeoTIFFRasterSource
           /** Releases only this source's owned byte cache. */
           close: () => rangeCache.clear()
         },
-        {cache: false},
         signal
       );
     }
 
-    return await fromBlob(this.data, signal);
+    return await openGeoTIFFSourceDecoder(this.data, signal);
   }
 
   /** Returns the configured shared scheduler or lazily creates a per-source scheduler. */
@@ -828,7 +827,10 @@ export class GeoTIFFRasterSource
   }
 
   /** Normalizes one GeoTIFF image hierarchy into public raster-source metadata. */
-  private _getMetadata(referenceImage: GeoTIFFImage, images: GeoTIFFImage[]): RasterSourceMetadata {
+  private _getMetadata(
+    referenceImage: TiffSourceImage,
+    images: TiffSourceImage[]
+  ): RasterSourceMetadata {
     if (
       ![
         referenceImage.getWidth(),
@@ -1037,7 +1039,7 @@ function getGeoTIFFName(data: string | Blob): string | undefined {
 }
 
 /** Returns the source-coordinate bounds advertised by a GeoTIFF image. */
-function getImageBoundingBox(image: GeoTIFFImage): RasterBoundingBox | undefined {
+function getImageBoundingBox(image: TiffSourceImage): RasterBoundingBox | undefined {
   try {
     const [minX, minY, maxX, maxY] = image.getBoundingBox();
     return [
@@ -1051,8 +1053,8 @@ function getImageBoundingBox(image: GeoTIFFImage): RasterBoundingBox | undefined
 
 /** Estimates overview resolution relative to the full-resolution reference image. */
 function getImageResolution(
-  image: GeoTIFFImage,
-  referenceImage: GeoTIFFImage
+  image: TiffSourceImage,
+  referenceImage: TiffSourceImage
 ): [number, number] | undefined {
   const transform = getImageTransform(image, referenceImage);
   if (transform) {
@@ -1070,7 +1072,7 @@ function getImageResolution(
 }
 
 /** Returns a normalized CRS string for the GeoTIFF image when one is available. */
-function getImageCRS(image: GeoTIFFImage): CRSIdentifier | undefined {
+function getImageCRS(image: TiffSourceImage): CRSIdentifier | undefined {
   const geoKeys = image.getGeoKeys?.();
   const projectedCrs = geoKeys?.ProjectedCSTypeGeoKey;
   if (projectedCrs || geoKeys?.GTModelTypeGeoKey === 1) {
@@ -1086,7 +1088,7 @@ function getImageCRS(image: GeoTIFFImage): CRSIdentifier | undefined {
 }
 
 /** Converts GeoTIFF sample-format metadata to a public raster channel data type. */
-function getImageDataType(image: GeoTIFFImage, index = 0): RasterChannelDataType {
+function getImageDataType(image: TiffSourceImage, index = 0): RasterChannelDataType {
   const bitsPerSample = normalizeSampleValue(image.getBitsPerSample(index));
   const sampleFormat = normalizeSampleValue(image.getSampleFormat(index));
 
@@ -1418,8 +1420,8 @@ function parseUnsatisfiedContentRange(contentRange: string | null): number | nul
 
 /** Preserves TIFF rotation/shear, or resolves the explicit origin and signed pixel spacing. */
 function getImageTransform(
-  image: GeoTIFFImage,
-  referenceImage: GeoTIFFImage
+  image: TiffSourceImage,
+  referenceImage: TiffSourceImage
 ): RasterAffineTransform | undefined {
   const matrix = image.fileDirectory?.ModelTransformation;
   if (matrix) return [matrix[0], matrix[1], matrix[3], matrix[4], matrix[5], matrix[7]];
@@ -1474,7 +1476,7 @@ function parseFiniteMetadataValue(value: unknown): number | undefined {
 
 /** Interprets optional GDAL band attributes while retaining samples in the raw domain. */
 function getImageBandMetadata(
-  image: GeoTIFFImage,
+  image: TiffSourceImage,
   index: number,
   noData: number | null
 ): RasterBandMetadata {
@@ -1507,8 +1509,8 @@ function getImageBandMetadata(
     dtype: getImageDataType(image, index),
     categorical:
       index === 0 && image.fileDirectory?.PhotometricInterpretation === 3 ? true : undefined,
-    name: metadata.DESCRIPTION,
-    units: metadata.UNITTYPE,
+    name: typeof metadata.DESCRIPTION === 'string' ? metadata.DESCRIPTION : undefined,
+    units: typeof metadata.UNITTYPE === 'string' ? metadata.UNITTYPE : undefined,
     scale,
     offset,
     noData
@@ -1632,7 +1634,7 @@ function createRegionTransform(
 
 /** Estimates all concurrently decoded tiles intersecting a native window, including unselected channels. */
 function estimateImageTileBytes(
-  image: GeoTIFFImage,
+  image: TiffSourceImage,
   window: number[],
   bytesPerPixel: number
 ): number {

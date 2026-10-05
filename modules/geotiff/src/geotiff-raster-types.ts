@@ -47,6 +47,23 @@ export type GeoTIFFRasterData = {
 export type GeoTIFFRasterLoaderOptions = LoaderOptions & {
   /** Numeric raster selection. Samples and dimensions are never resampled. */
   geotiff?: {
+    /** Original core when supported, with geotiff.js fallback; native forbids fallback. Defaults to auto. */
+    decoder?: 'auto' | 'native' | 'geotiff';
+    /** Maximum output pixels per selected image; defaults to 16 million. */
+    maxPixels?: number;
+    /** Maximum output bytes per selected image; defaults to 256 MiB. */
+    maxDecodedBytes?: number;
+    /** Caller cancellation for metadata discovery and sample decoding. */
+    signal?: AbortSignal;
+    /** Checked TIFF directory graph budgets, applied to every backend. */
+    directoryLimits?: {
+      /** Maximum main-chain and SubIFD directories; defaults to 1024. */
+      maxDirectories?: number;
+      /** Maximum tags per directory; defaults to 4096. */
+      maxEntriesPerDirectory?: number;
+      /** Cumulative directory and tag-value byte budget; defaults to 16 MiB. */
+      maxMetadataBytes?: number;
+    };
     /** Zero-based image indices to decode. Defaults to every image in the IFD chain. */
     imageIndices?: readonly number[];
     /** Zero-based bands to decode in every selected image. Defaults to every band. */

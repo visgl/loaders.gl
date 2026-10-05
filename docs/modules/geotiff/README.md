@@ -99,3 +99,5 @@ and preserve GeoTIFF/COG range access, overview selection, band selection, and t
 ## Attributions
 
 This module imports and wraps [geotiff.js](https://github.com/geotiffjs/geotiff.js/) under MIT license.
+
+The [original TIFF decoder core](/docs/modules/geotiff/tiff-decoder-core) handles supported numeric files and retains geotiff.js compatibility fallback.
