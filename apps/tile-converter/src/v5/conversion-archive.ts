@@ -4,8 +4,8 @@
 
 import {Tiles3DArchiveWriter} from '@loaders.gl/3d-tiles/3d-tiles-archive-writer';
 import {SLPKWriter} from '@loaders.gl/i3s/i3s-slpk-writer';
-import {TileConversionError} from './conversion-api.js';
-import type {BrowserTileConversionFile} from './browser-sink.js';
+import {TileConversionError} from '@loaders.gl/tile-converter/v5/core';
+import type {BrowserTileConversionFile} from '@loaders.gl/tile-converter/v5/core';
 
 /** Output profile and required budget for packaging finalized conversion resources. */
 export interface TileConversionArchiveOptions {

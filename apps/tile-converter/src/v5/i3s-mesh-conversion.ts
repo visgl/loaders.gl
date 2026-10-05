@@ -4,13 +4,13 @@
 
 import {encodeI3SMeshLayer} from '@loaders.gl/i3s';
 import type {EncodedI3SMeshLayer, I3SMeshWriterOptions} from '@loaders.gl/i3s';
-import {TileConversionError} from './conversion-api.js';
-import type {TileConversionCodec, TileConversionSink} from './conversion-api.js';
-import type {Tiles3DConversionSpatialContext} from './spatial-conversion.js';
+import {TileConversionError} from '@loaders.gl/tile-converter/v5/core';
+import type {TileConversionCodec, TileConversionSink} from '@loaders.gl/tile-converter/v5/core';
+import type {Tiles3DConversionSpatialContext} from '@loaders.gl/tile-converter/v5/core';
 import type {MeshSourceResource} from './mesh-source.js';
 import {validateMeshGeometry} from './mesh.js';
-import {createBoundedMemoryTileConversionSink} from './browser-sink.js';
-import type {BrowserTileConversionFile} from './browser-sink.js';
+import {createBoundedMemoryTileConversionSink} from '@loaders.gl/tile-converter/v5/core';
+import type {BrowserTileConversionFile} from '@loaders.gl/tile-converter/v5/core';
 
 /** One authored mesh layer, ready for the single-layer sink. */
 export interface I3SMeshConversionResource extends EncodedI3SMeshLayer {

@@ -5,9 +5,9 @@
 import {getSpatialCoordinateFrame} from '@loaders.gl/tiles';
 import type {TilesetSpatialReference} from '@loaders.gl/tiles';
 import type {MeshGeometry} from '@loaders.gl/schema';
-import {TileConversionError} from './conversion-api.js';
-import type {TileConversionCodec} from './conversion-api.js';
-import type {Tiles3DConversionSpatialContext} from './spatial-conversion.js';
+import {TileConversionError} from '@loaders.gl/tile-converter/v5/core';
+import type {TileConversionCodec} from '@loaders.gl/tile-converter/v5/core';
+import type {Tiles3DConversionSpatialContext} from '@loaders.gl/tile-converter/v5/core';
 import {encodeMeshTile, validateMeshGeometry} from './mesh.js';
 import type {MeshTileMaterial} from './mesh.js';
 

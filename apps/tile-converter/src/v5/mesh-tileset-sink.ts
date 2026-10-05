@@ -3,10 +3,10 @@
 // Copyright (c) vis.gl contributors
 
 import type {Tiles3DTilesetJSON, Tiles3DTileJSON} from '@loaders.gl/3d-tiles';
-import {TileConversionError} from './conversion-api.js';
-import type {TileConversionSink} from './conversion-api.js';
-import {createBoundedMemoryTileConversionSink} from './browser-sink.js';
-import type {BrowserTileConversionFile} from './browser-sink.js';
+import {TileConversionError} from '@loaders.gl/tile-converter/v5/core';
+import type {TileConversionSink} from '@loaders.gl/tile-converter/v5/core';
+import {createBoundedMemoryTileConversionSink} from '@loaders.gl/tile-converter/v5/core';
+import type {BrowserTileConversionFile} from '@loaders.gl/tile-converter/v5/core';
 import type {EncodedMeshConversionResource} from './mesh-conversion.js';
 
 /** Limits and fidelity policy for one ECEF mesh tileset. */

@@ -5,8 +5,8 @@
 import {expect, test, vi} from 'vitest';
 import {Tiles3DLoader} from '@loaders.gl/3d-tiles';
 import {Tiles3DSource, Tileset3D, type TilesetContentTraversalItem} from '@loaders.gl/tiles';
-import {createTilesetConversionSource} from '../apps/tile-converter/src/v5/tileset-source';
-import {convertTileset} from '../apps/tile-converter/src/v5/conversion-api';
+import {createTilesetConversionSource} from '@loaders.gl/tile-converter/v5/core';
+import {convertTileset} from '@loaders.gl/tile-converter/v5/core';
 
 /** Creates a source-backed runtime with an empty root and two content-bearing placements. */
 function createTileset() {

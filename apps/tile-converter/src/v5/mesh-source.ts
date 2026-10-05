@@ -11,10 +11,10 @@ import type {
   GLTFMaterialPostprocessed
 } from '@loaders.gl/gltf';
 import type {Tileset3D, TilesetSourceMetadata} from '@loaders.gl/tiles';
-import {TileConversionError} from './conversion-api.js';
-import type {TileConversionSource} from './conversion-api.js';
-import {createTilesetConversionSource} from './tileset-source.js';
-import type {TilesetConversionSourceOptions} from './tileset-source.js';
+import {TileConversionError} from '@loaders.gl/tile-converter/v5/core';
+import type {TileConversionSource} from '@loaders.gl/tile-converter/v5/core';
+import {createTilesetConversionSource} from '@loaders.gl/tile-converter/v5/core';
+import type {TilesetConversionSourceOptions} from '@loaders.gl/tile-converter/v5/core';
 import type {MeshConversionInput} from './mesh-conversion.js';
 import type {MeshTileMaterial} from './mesh.js';
 import {validateMeshGeometry} from './mesh.js';

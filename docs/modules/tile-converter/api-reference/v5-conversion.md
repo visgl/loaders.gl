@@ -5,12 +5,12 @@ description: Experimental platform-neutral contracts for inspecting, converting,
 
 # Tile-converter v5 conversion core
 
-The `@loaders.gl/tile-converter/v5` entrypoint is the first part of the new conversion API. It has no Node.js imports. Input resolution, format codecs, destination writes, and validation are supplied by adapters so the core can run in browser or Node environments.
+The portable conversion core is available from `@loaders.gl/tile-converter/v5/core`. Format-specific codecs, Arrow mapping and archive packaging are available from `@loaders.gl/tile-converter/v5/adapters`. Both remain inside the tile-converter application; no code or dependencies are moved to the tiles module. The core has no Node.js imports. Input resolution, format codecs, destination writes, and validation are supplied by adapters so the core can run in browser or Node environments.
 
 The current API exports `inspectTileset`, `convertTileset`, and `validateTileset`, together with types for sources, codecs, sinks, diagnostics, progress, and reports. `convertTileset` reads and converts one input resource at a time, awaits each destination write before requesting more output, supports `AbortSignal`, and reports resource and byte totals. Set `maxOutputResourceBytes` to reject an output resource that exceeds the configured per-resource budget. Policy and validation failures use `TileConversionError` with a stable code and associated diagnostics.
 
 ```ts
-import {convertTileset} from '@loaders.gl/tile-converter/v5';
+import {convertTileset} from '@loaders.gl/tile-converter/v5/core';
 
 const report = await convertTileset({
   source,
@@ -24,7 +24,32 @@ const report = await convertTileset({
 });
 ```
 
-This entrypoint is experimental. Selected source adapters, mesh and point-cloud codecs, bounded browser sinks, and archive packaging are available. Applications still supply input/output integration for other profiles; the legacy `I3SConverter` and `Tiles3DConverter` remain separate.
+This API is experimental. The core provides source adapters and bounded browser sinks; the format adapters provide mesh and point-cloud codecs and archive packaging. Applications still supply input/output integration for other profiles; the legacy `I3SConverter` and `Tiles3DConverter` remain separate.
+
+## Core and format adapters
+
+The core entrypoint exports conversion contracts, inspection, validation, progress,
+cancellation, resource limits, source-backed traversal, point-cloud traversal, spatial
+preparation, bounded Blob sinks and manifest-backed sinks. It uses the existing tiles
+and math dependencies without importing format encoders, Arrow construction or archive
+writers. Applications initialize sources and supply codecs, sinks and validators.
+
+The adapters entrypoint exports the existing mesh and point-cloud encoders, source mesh
+extraction, Arrow feature mapping, single-mesh output sinks and archive packaging. It
+uses the core's shared functions, types and `TileConversionError`; there is one core
+implementation per module format.
+
+```ts
+import {convertTileset, createTiles3DConversionSpatialContext} from '@loaders.gl/tile-converter/v5/core';
+import {createMeshConversionCodec, createSingleMeshTilesetSink} from '@loaders.gl/tile-converter/v5/adapters';
+```
+
+Existing `/v5` and `/v5/browser` imports remain compatible and combine their previous
+core and adapter exports. The split adds no package dependencies. CLI, v4 and Node
+filesystem/service integration remain separate and unchanged. Core and adapters have
+ESM, CommonJS and TypeScript declaration exports. The app still declares its existing
+format and Node service dependencies; importing the core isolates its runtime and
+bundle imports, but does not remove those installation dependencies.
 
 ## Archive output: 3TZ and SLPK
 

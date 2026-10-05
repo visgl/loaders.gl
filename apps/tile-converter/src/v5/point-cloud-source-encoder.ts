@@ -10,8 +10,11 @@ import type {
 } from '@loaders.gl/tiles';
 import {encodePointCloudTile} from './point-cloud.js';
 import type {EncodePointCloudTileOptions} from './point-cloud.js';
-import {traversePointCloudSource} from './point-cloud-source.js';
-import type {PointCloudSourceTile, TraversePointCloudSourceOptions} from './point-cloud-source.js';
+import {traversePointCloudSource} from '@loaders.gl/tile-converter/v5/core';
+import type {
+  PointCloudSourceTile,
+  TraversePointCloudSourceOptions
+} from '@loaders.gl/tile-converter/v5/core';
 
 /** Traversal and per-tile encoding options for a point-cloud source. */
 export type EncodePointCloudSourceOptions = TraversePointCloudSourceOptions & {

@@ -3,7 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import {expect, test, vi} from 'vitest';
-import {convertTileset} from '../apps/tile-converter/src/v5/conversion-api';
+import {convertTileset} from '@loaders.gl/tile-converter/v5/core';
 
 /** Creates a tiny stream with observable conversion, destination, and reader cleanup. */
 function createConversionOptions(resourceSizes = [2, 1]) {
