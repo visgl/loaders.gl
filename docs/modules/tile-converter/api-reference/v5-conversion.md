@@ -175,3 +175,21 @@ download the partial archive. It demonstrates the separate core and adapters ent
 required byte/precision budgets, cancellation and explicit profile rejection. See the
 [example README](https://github.com/visgl/loaders.gl/tree/master/examples/website/i3s-slpk)
 for limits and supported inputs.
+
+
+### Partial mesh collections
+
+`createMeshTilesetSink` (`/v5/adapters`) accepts independent mesh codec outputs with the
+same ECEF frame and precision requirements as the single-mesh sink. Required options are
+`maxTotalBytes`, `maxMeshes`, and `geometricError`. It emits deterministic relative GLB
+resources and a contentless ADD root enclosing every placed leaf. Its geometric error
+covers the enclosing diagonal; leaf errors retain the supplied source/rounding budget.
+Unique source placement
+IDs are required. Final JSON counts toward the retained-output budget; failed conversion
+aborts all output. Applications own source selection and conservative geometric error.
+This flat collection does not reproduce a source LOD hierarchy.
+
+The [tile archive example](https://loaders.gl/examples/i3s-slpk) supports up to 64 explicitly
+selected leaf contents for partial 3TZ output, with aggregate input/decoded byte gates.
+SLPK output retains its single-mesh profile. Multi-node I3S authoring and preservation of
+broader source hierarchy, refinement and feature associations remain separate work.

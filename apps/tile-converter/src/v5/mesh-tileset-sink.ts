@@ -176,3 +176,149 @@ function createMeshTileset(
     }
   };
 }
+
+/** Limits for an explicit collection of independent ECEF mesh leaves. */
+export interface MeshTilesetSinkOptions extends SingleMeshTilesetSinkOptions {
+  /** Maximum mesh placements, including repeated content at distinct source placements. */
+  readonly maxMeshes: number;
+}
+
+/** Atomic mesh package with a contentless root and independently placed GLB leaves. */
+export interface MeshTilesetSink extends TileConversionSink<EncodedMeshConversionResource> {
+  /** Returns deterministically named GLBs and tileset JSON only after finalization. */
+  getFiles(): readonly BrowserTileConversionFile[];
+}
+
+/**
+ * Packages independent codec outputs as a bounded 3D Tiles 1.1 leaf collection.
+ * Each leaf retains its ECEF placement and encoded bounds; the contentless ADD root encloses
+ * all leaves. Its geometric error covers the enclosing diagonal; each leaf retains the
+ * supplied error. This authors a flat partial dataset, not the source LOD hierarchy. Callers must
+ * exclude overlapping parent/descendant LOD representations and provide a conservative error.
+ * Resource IDs identify placements, never output paths. Retained bytes include final JSON;
+ * maxMeshes bounds hierarchy metadata, while neither limit bounds peak conversion memory.
+ */
+export function createMeshTilesetSink(options: MeshTilesetSinkOptions): MeshTilesetSink {
+  const {geometricError, maxMeshes} = options;
+  if (
+    !Number.isFinite(geometricError) ||
+    geometricError < 0 ||
+    !Number.isSafeInteger(maxMeshes) ||
+    maxMeshes < 1
+  ) {
+    throw new TileConversionError(
+      'MESH_TILESET_OPTIONS_INVALID',
+      'A leaf collection requires finite nonnegative geometricError and positive maxMeshes'
+    );
+  }
+  const memory = createBoundedMemoryTileConversionSink(options);
+  const children: ReturnType<typeof createMeshTileset>['root'][] = [];
+  const identifiers = new Set<string>();
+  const minimum = [Infinity, Infinity, Infinity];
+  const maximum = [-Infinity, -Infinity, -Infinity];
+  let state: 'open' | 'writing' | 'closed' = 'open';
+  let completed = false;
+  return {
+    /** Exposes the complete package atomically. */
+    getFiles: () => (completed ? memory.getFiles() : []),
+    /** Retains one placement and its corresponding encoded GLB. */
+    async write(resource, signal) {
+      signal?.throwIfAborted();
+      if (state !== 'open')
+        throw new TileConversionError(
+          'MESH_TILESET_SINK_UNAVAILABLE',
+          'The mesh sink is busy or closed'
+        );
+      if (children.length >= maxMeshes || identifiers.has(resource.id))
+        throw new TileConversionError(
+          'MESH_TILESET_PLACEMENT_INVALID',
+          'Mesh count exceeds maxMeshes or a placement identifier is repeated'
+        );
+      const tile = createMeshTileset(resource, geometricError).root;
+      const lower = resource.localBoundingBox[0].map(
+        (value, axis) => value + resource.origin[axis]
+      );
+      const upper = resource.localBoundingBox[1].map(
+        (value, axis) => value + resource.origin[axis]
+      );
+      if ([...lower, ...upper].some(value => !Number.isFinite(value)))
+        throw new TileConversionError(
+          'MESH_TILESET_BOUNDS_INVALID',
+          'Absolute bounds must be finite'
+        );
+      const resourceId = `meshes/${children.length}.glb`;
+      tile.content = {uri: resourceId};
+      state = 'writing';
+      await memory.write(
+        {resourceId, parts: [resource.glb], contentType: 'model/gltf-binary'},
+        signal
+      );
+      children.push(tile);
+      identifiers.add(resource.id);
+      for (let axis = 0; axis < 3; axis++) {
+        minimum[axis] = Math.min(minimum[axis], lower[axis]);
+        maximum[axis] = Math.max(maximum[axis], upper[axis]);
+      }
+      state = 'open';
+    },
+    /** Writes the enclosing root only when every leaf has completed. */
+    async finalize(report) {
+      if (state !== 'open' || !children.length)
+        throw new TileConversionError(
+          'MESH_TILESET_SINK_INCOMPLETE',
+          'Finalization requires written mesh leaves'
+        );
+      state = 'writing';
+      const center = minimum.map((value, axis) => value / 2 + maximum[axis] / 2);
+      const halfSize = minimum.map((value, axis) => maximum[axis] / 2 - value / 2);
+      // The empty root's error bounds the omitted leaf extent.
+      const rootGeometricError = Math.max(geometricError, 2 * Math.hypot(...halfSize));
+      if (!Number.isFinite(rootGeometricError))
+        throw new TileConversionError(
+          'MESH_TILESET_BOUNDS_INVALID',
+          'Root bounds must have a finite diagonal'
+        );
+      const json = JSON.stringify({
+        asset: {version: '1.1'},
+        geometricError: rootGeometricError,
+        root: {
+          boundingVolume: {
+            box: [
+              center[0],
+              center[1],
+              center[2],
+              halfSize[0],
+              0,
+              0,
+              0,
+              halfSize[1],
+              0,
+              0,
+              0,
+              halfSize[2]
+            ]
+          },
+          geometricError: rootGeometricError,
+          refine: 'ADD',
+          children
+        }
+      });
+      await memory.write({
+        resourceId: 'tileset.json',
+        parts: [json],
+        contentType: 'application/json'
+      });
+      await memory.finalize(report);
+      state = 'closed';
+      completed = true;
+    },
+    /** Discards files and hierarchy metadata on failure or cancellation. */
+    async abort(error) {
+      state = 'closed';
+      completed = false;
+      children.length = 0;
+      identifiers.clear();
+      await memory.abort(error);
+    }
+  };
+}

@@ -413,3 +413,27 @@ packaging, and triggering downloads.
 ```bash
 npm install @loaders.gl/tile-converter
 ```
+
+
+## V5 partial mesh collections
+
+`createMeshTilesetSink` from `@loaders.gl/tile-converter/v5/adapters` packages independent
+`createMeshConversionCodec` outputs as a flat **3D Tiles 1.1** collection. Supply
+`maxTotalBytes`, `maxMeshes`, and a conservative `geometricError` in meters. The ECEF and
+ellipsoidal-height requirements match `createSingleMeshTilesetSink`.
+
+Each unique placement gets `meshes/0.glb`, `meshes/1.glb`, etc.; source IDs never become paths.
+A contentless ADD root encloses all encoded leaf bounds, and each leaf retains its own
+transform. The contentless root's geometric error covers the enclosing box diagonal;
+leaf errors retain the supplied source/rounding budget. This keeps exact leaves discoverable
+when their error is zero. Files become visible through `getFiles()` only after successful finalization.
+Duplicate placement IDs, excess meshes, failed writes, cancellation and final-JSON budget
+failures clear output through the conversion core. The byte budget includes GLBs and JSON;
+the mesh count bounds retained hierarchy metadata. Neither bounds peak serialization memory.
+Pass finalized files to `createTileConversionArchive` with `format: '3tz'`.
+
+Applications must explicitly select independent leaf representations and preserve source
+error in the supplied budget. This sink does not infer source LOD relationships or retile.
+The [browser example](../../examples/website/i3s-slpk/README.md) demonstrates up to 64
+selected leaf contents, aggregate transport/decoded byte gates, download and incremental
+preview. SLPK still uses the single-mesh sink; multi-node I3S authoring is a separate increment.

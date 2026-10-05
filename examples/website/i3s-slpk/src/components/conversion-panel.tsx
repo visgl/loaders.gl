@@ -2,7 +2,7 @@ import React, {useEffect, useRef, useState} from 'react';
 import type {BrowserTilesetConversionInspection} from '@loaders.gl/tile-converter/v5/core';
 import {
   inspectConversionInput,
-  convertSelectedContent,
+  convertSelectedContents,
   type ConversionFormat
 } from '../convert-tileset';
 
@@ -12,17 +12,17 @@ export type ConversionPanelProps = {
   readonly onPreview: (file: File) => void;
 };
 
-/** Inspects a URL, explicitly selects one content placement, and downloads a bounded partial archive. */
+/** Inspects a URL, explicitly selects content placements, and downloads a bounded partial archive. */
 export function ConversionPanel({onPreview}: ConversionPanelProps) {
   const controller = useRef<AbortController | null>(null);
   const [input, setInput] = useState('');
   const [inspection, setInspection] = useState<BrowserTilesetConversionInspection | null>(null);
-  const [resourceId, setResourceId] = useState('');
+  const [resourceIds, setResourceIds] = useState<string[]>([]);
   const [format, setFormat] = useState<ConversionFormat>('slpk');
   const [busy, setBusy] = useState(false);
   const [status, setStatus] = useState('');
   const [error, setError] = useState('');
-  const [result, setResult] = useState<Awaited<ReturnType<typeof convertSelectedContent>> | null>(
+  const [result, setResult] = useState<Awaited<ReturnType<typeof convertSelectedContents>> | null>(
     null
   );
   const [downloadUrl, setDownloadUrl] = useState('');
@@ -63,13 +63,13 @@ export function ConversionPanel({onPreview}: ConversionPanelProps) {
     setStatus(convert ? 'Loading selected content' : 'Inspecting tileset');
     if (!convert) {
       setInspection(null);
-      setResourceId('');
+      setResourceIds([]);
     }
     try {
       if (convert && inspection) {
-        const output = await convertSelectedContent(
+        const output = await convertSelectedContents(
           inspection,
-          resourceId,
+          resourceIds,
           format,
           operation.signal,
           message => {
@@ -84,7 +84,7 @@ export function ConversionPanel({onPreview}: ConversionPanelProps) {
         const inspected = await inspectConversionInput(input.trim(), operation.signal);
         if (controller.current === operation) {
           setInspection(inspected);
-          setStatus(`${inspected.resources.length} content placements. Select one explicitly.`);
+          setStatus(`${inspected.resources.length} content placements. Select explicitly.`);
         }
       }
     } catch (operationError) {
@@ -102,15 +102,16 @@ export function ConversionPanel({onPreview}: ConversionPanelProps) {
 
   return (
     <section style={{display: 'flex', flexDirection: 'column', gap: 6}}>
-      <strong>Convert a selected 3D Tiles mesh</strong>
+      <strong>Convert selected 3D Tiles meshes</strong>
       <small>
-        Partial output: one static untextured GLB/B3DM primitive, native ECEF. Textures, feature
-        metadata, external buffers, nested/implicit tilesets and multiple primitives are rejected.
+        Partial output: one static untextured GLB/B3DM primitive per content, native ECEF. Textures,
+        feature metadata, external buffers, nested/implicit tilesets and multiple primitives are
+        rejected.
       </small>
       <small>
-        Limits: 16 MiB input, 1,000 declared contents, 32 MiB output/archive, 1 cm position error.
-        These are not peak memory limits. Parsing runs on the main thread; cancel discards late
-        results.
+        3TZ accepts up to 64 selected leaf contents; SLPK accepts one. Limits: 16 MiB input, 1,000
+        declared contents, 32 MiB output/archive, 1 cm position error. These are not peak memory
+        limits. Parsing runs on the main thread; cancel discards late results.
       </small>
       <form
         onSubmit={event => {
@@ -130,7 +131,7 @@ export function ConversionPanel({onPreview}: ConversionPanelProps) {
           onChange={event => {
             setInput(event.target.value);
             setInspection(null);
-            setResourceId('');
+            setResourceIds([]);
             setResult(null);
             setError('');
             setStatus('');
@@ -142,17 +143,18 @@ export function ConversionPanel({onPreview}: ConversionPanelProps) {
       </form>
       {inspection && (
         <>
-          <label htmlFor="conversion-content">Content placement</label>
+          <label htmlFor="conversion-content">Content placements</label>
           <select
             id="conversion-content"
             disabled={busy}
-            value={resourceId}
+            multiple
+            size={Math.min(6, inspection.resources.length + 1)}
+            value={resourceIds}
             onChange={event => {
-              setResourceId(event.target.value);
+              setResourceIds(Array.from(event.target.selectedOptions, option => option.value));
               setResult(null);
             }}
           >
-            <option value="">Select content</option>
             {inspection.resources.map(resource => (
               <option key={resource.resourceId} value={resource.resourceId}>
                 {resource.resourceId}: {resource.uri}
@@ -169,10 +171,15 @@ export function ConversionPanel({onPreview}: ConversionPanelProps) {
               setResult(null);
             }}
           >
-            <option value="slpk">I3S / SLPK</option>
+            <option value="slpk" disabled={resourceIds.length > 1}>
+              I3S / SLPK
+            </option>
             <option value="3tz">3D Tiles / 3TZ</option>
           </select>
-          <button disabled={busy || !resourceId} onClick={() => void runOperation(true)}>
+          <button
+            disabled={busy || !resourceIds.length || (format === 'slpk' && resourceIds.length > 1)}
+            onClick={() => void runOperation(true)}
+          >
             Convert selected content
           </button>
         </>
