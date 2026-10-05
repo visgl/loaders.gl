@@ -3,8 +3,8 @@
 // Copyright (c) vis.gl contributors
 
 import {Tiles3DArchiveWriter} from '@loaders.gl/3d-tiles/3d-tiles-archive-writer';
-import {TileConversionError} from './conversion-api.js';
-import type {BrowserTileConversionFile} from './browser-sink.js';
+import {TileConversionError} from '@loaders.gl/tile-converter/v5/core';
+import type {BrowserTileConversionFile} from '@loaders.gl/tile-converter/v5/core';
 
 /** Output-size budget for a single-mesh 3TZ archive. */
 export interface SingleMeshTilesetArchiveOptions {

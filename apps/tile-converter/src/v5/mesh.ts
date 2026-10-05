@@ -5,7 +5,7 @@
 import {GLTFScenegraph, GLTFWriter} from '@loaders.gl/gltf';
 import {getBinaryImageMetadata} from '@loaders.gl/images';
 import type {MeshAttribute, MeshGeometry} from '@loaders.gl/schema';
-import {TileConversionError} from './conversion-api.js';
+import {TileConversionError} from '@loaders.gl/tile-converter/v5/core';
 
 /** Explicit glTF wrapping and filtering for the selected base-color image. */
 export interface MeshTileSampler {

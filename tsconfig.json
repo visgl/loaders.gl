@@ -394,6 +394,12 @@
       "@loaders.gl/tile-converter/v5/browser": [
         "apps/tile-converter/src/v5/browser.ts"
       ],
+      "@loaders.gl/tile-converter/v5/core": [
+        "apps/tile-converter/src/v5/core.ts"
+      ],
+      "@loaders.gl/tile-converter/v5/adapters": [
+        "apps/tile-converter/src/v5/adapters.ts"
+      ],
       "@loaders.gl/tile-converter/test": [
         "apps/tile-converter/test"
       ],

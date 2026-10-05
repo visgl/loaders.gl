@@ -3,14 +3,14 @@
 // Copyright (c) vis.gl contributors
 
 import type {PointCloudTilesetSource} from '@loaders.gl/tiles';
-import {convertTileset} from './conversion-api.js';
+import {convertTileset} from '@loaders.gl/tile-converter/v5/core';
 import type {
   TileConversionProgress,
   TileConversionReport,
   TileConversionSink
-} from './conversion-api.js';
-import {traversePointCloudSource} from './point-cloud-source.js';
-import type {PointCloudSourceTile} from './point-cloud-source.js';
+} from '@loaders.gl/tile-converter/v5/core';
+import {traversePointCloudSource} from '@loaders.gl/tile-converter/v5/core';
+import type {PointCloudSourceTile} from '@loaders.gl/tile-converter/v5/core';
 import {encodePointCloudSourceTile} from './point-cloud-source-encoder.js';
 import type {
   EncodedPointCloudSourceTile,

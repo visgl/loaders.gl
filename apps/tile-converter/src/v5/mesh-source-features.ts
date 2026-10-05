@@ -7,7 +7,7 @@ import type {GLTFPostprocessed, GLTFMeshPrimitivePostprocessed} from '@loaders.g
 import type {I3SMeshFeatures} from '@loaders.gl/i3s';
 import {convertFeatureAttributesToArrowBatches} from './feature-arrow.js';
 import type {FeatureArrowBatchOptions} from './feature-arrow.js';
-import {TileConversionError} from './conversion-api.js';
+import {TileConversionError} from '@loaders.gl/tile-converter/v5/core';
 
 /** Explicit source feature mapping; target type changes must be authorized separately. */
 export interface MeshSourceFeatureOptions extends FeatureArrowBatchOptions {

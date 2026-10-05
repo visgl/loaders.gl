@@ -5,7 +5,7 @@
 import {Tile3DWriter, TILE3D_TYPE} from '@loaders.gl/3d-tiles';
 import type {Mesh, MeshArrowTable, MeshAttribute} from '@loaders.gl/schema';
 import {convertTableToMesh} from '@loaders.gl/schema-utils';
-import {TileConversionError} from './conversion-api.js';
+import {TileConversionError} from '@loaders.gl/tile-converter/v5/core';
 
 /** Options for encoding one Arrow or mesh point batch as a 3D Tiles point tile. */
 export interface EncodePointCloudTileOptions {

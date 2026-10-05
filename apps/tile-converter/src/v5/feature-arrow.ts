@@ -4,7 +4,7 @@
 
 import {ArrowTableBuilder} from '@loaders.gl/schema-utils';
 import type {ArrowTableBatch, DataType, Field, Schema} from '@loaders.gl/schema';
-import {TileConversionError} from './conversion-api.js';
+import {TileConversionError} from '@loaders.gl/tile-converter/v5/core';
 
 const DEFAULT_FEATURE_ID_FIELD = 'feature_id';
 const FEATURE_CLASS_METADATA_KEY = 'loaders.gl:feature-class';
