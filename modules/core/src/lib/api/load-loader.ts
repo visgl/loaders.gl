@@ -2,7 +2,13 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import type {Loader, LoaderOptions, LoaderWithParser} from '@loaders.gl/loader-utils';
+import {isSourceLoader, mergeOptions} from '@loaders.gl/loader-utils';
+import type {
+  Loader,
+  LoaderOptions,
+  LoaderWithParser,
+  StrictLoaderOptions
+} from '@loaders.gl/loader-utils';
 
 const loaderImplementationPromises = new Map<Loader, Map<string, Promise<LoaderWithParser>>>();
 const loaderImplementations = new Map<Loader, Map<string, LoaderWithParser>>();
@@ -13,6 +19,15 @@ export async function getLoaderImplementation(
   options?: LoaderOptions,
   url?: string
 ): Promise<LoaderWithParser> {
+  if (isSourceLoader(loader)) {
+    const source = loader.preload ? await loader.preload(url || '', options) : loader;
+    if (!isSourceLoader(source)) {
+      throw new Error(
+        `${loader.id} source loader preload() did not return a runtime source loader`
+      );
+    }
+    return source as unknown as LoaderWithParser;
+  }
   if (isLoaderWithParser(loader)) {
     return loader;
   }
@@ -57,6 +72,11 @@ export async function getLoaderImplementation(
 
 /** Gets a cached parser-bearing implementation for a loader without loading it. */
 export function getLoaderImplementationSync(loader: Loader): LoaderWithParser | null {
+  if (loader.subloaders && !preparedLoaders.has(loader)) {
+    const prepared = preparedDefaults.get(loader);
+    if (prepared) return prepared;
+    if (!isLoaderWithParser(loader)) return null;
+  }
   if (isLoaderWithParser(loader)) {
     return loader;
   }
@@ -149,4 +169,139 @@ async function importLoaderImplementation(
   throw new Error(
     `Could not find parser implementation for ${loaderId} in ${implementationSpecifier}`
   );
+}
+
+/** Prepared loaders carry caller-local parser bindings rather than shared metadata. */
+const preparedLoaders = new WeakSet<Loader>();
+/** Successfully prepared default graphs used by synchronous parsing. */
+const preparedDefaults = new WeakMap<Loader, LoaderWithParser>();
+/** In-flight preparations for default dependency graphs. */
+const subloaderPreparations = new WeakMap<Loader, Promise<LoaderWithParser>>();
+
+/** Resolves declared dependencies and binds parser entry points to their implementations. */
+export async function preloadLoaderDependencies(
+  loader: Loader,
+  options?: LoaderOptions,
+  url?: string
+): Promise<LoaderWithParser> {
+  if (preparedLoaders.has(loader)) return await getLoaderImplementation(loader, options, url);
+  validateSubloaderGraph(loader, options);
+  return await prepareLoaderDependencies(loader, options, url);
+}
+
+/** Prepares a node after the complete dependency graph has been validated. */
+async function prepareLoaderDependencies(
+  loader: Loader,
+  options?: LoaderOptions,
+  url?: string
+): Promise<LoaderWithParser> {
+  // Options can select nested backends or overrides; do not share their bindings.
+  if (!options) {
+    const cached = subloaderPreparations.get(loader);
+    if (cached) return await cached;
+  }
+  const preparation = bindSubloaders(loader, options, url);
+  if (!options) {
+    subloaderPreparations.set(loader, preparation);
+    void preparation.catch(() => subloaderPreparations.delete(loader));
+  }
+  const prepared = await preparation;
+  if (!options) preparedDefaults.set(loader, prepared);
+  return prepared;
+}
+
+/** Returns declared dependencies with the shared flat override map applied. */
+function getSubloaders(loader: Loader, options?: LoaderOptions): Record<string, Loader> {
+  const overrides = options?.core?.loaderOverrides || {};
+  return Object.fromEntries(
+    Object.entries(loader.subloaders || {}).map(([name, dependency]) => [
+      name,
+      Object.hasOwn(overrides, name) ? overrides[name] : dependency
+    ])
+  );
+}
+
+/** Rejects cycles in the dependency graph after applying the shared overrides. */
+function validateSubloaderGraph(loader: Loader, options?: LoaderOptions): void {
+  visitLoader(loader, []);
+
+  /** Detects cycles along each resolved dependency path. */
+  function visitLoader(currentLoader: Loader, ancestors: Loader[]): void {
+    if (ancestors.includes(currentLoader)) {
+      throw new Error(
+        `Subloader cycle: ${[...ancestors, currentLoader].map(value => value.id).join(' -> ')}`
+      );
+    }
+    for (const dependency of Object.values(getSubloaders(currentLoader, options))) {
+      visitLoader(dependency, [...ancestors, currentLoader]);
+    }
+  }
+}
+
+/** Prepares dependencies concurrently and injects them into parser calls' scoped options. */
+async function bindSubloaders(
+  loader: Loader,
+  options?: LoaderOptions,
+  url?: string
+): Promise<LoaderWithParser> {
+  const [implementation, entries] = await Promise.all([
+    getLoaderImplementation(loader, options, url),
+    Promise.all(
+      Object.entries(getSubloaders(loader, options)).map(
+        async ([name, dependency]) =>
+          [name, await prepareLoaderDependencies(dependency, options, url)] as const
+      )
+    )
+  ]);
+  const subloaders = Object.fromEntries(entries);
+  // Expose preload settings as defaults before core normalizes a later parse call.
+  const defaultOptions = mergeOptions(
+    implementation.options,
+    (options || {}) as StrictLoaderOptions
+  );
+  defaultOptions.core = {...defaultOptions.core, worker: false};
+  const prepared = {...implementation, options: defaultOptions, subloaders};
+  delete prepared.preload;
+  // Function-valued dependency bindings cannot be transferred to a worker.
+  prepared.worker = false;
+  for (const method of [
+    'parseBlob',
+    'createDataSource',
+    'parse',
+    'parseSync',
+    'parseText',
+    'parseTextSync',
+    'parseInBatches',
+    'parseFile',
+    'parseFileInBatches',
+    'parseUrl'
+  ] as const) {
+    const parser = (implementation as Record<string, unknown>)[method];
+    if (typeof parser === 'function') {
+      (prepared as Record<string, unknown>)[method] = (
+        data: unknown,
+        parseOptions?: LoaderOptions,
+        context?: unknown
+      ) => {
+        const forwardedOptions = mergeOptions(options, parseOptions || {});
+        return parser.call(
+          implementation,
+          data,
+          {
+            ...forwardedOptions,
+            core: {
+              ...forwardedOptions.core,
+              loaderOverrides:
+                options?.core?.loaderOverrides || parseOptions?.core?.loaderOverrides,
+              worker: false
+            },
+            [loader.id]: {...(forwardedOptions[loader.id] as object), subloaders}
+          },
+          context
+        );
+      };
+    }
+  }
+  preparedLoaders.add(prepared);
+  return prepared;
 }

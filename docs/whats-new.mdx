@@ -57,6 +57,8 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
 
 ## v5.0 (In Development)
 
+- Declare named `subloaders` and use core `preload()` to prepare nested parser dependencies
+  concurrently, with a flat override map and normal loader option namespaces. 3D Tiles declares GLTF/GLB dependencies.
 - Expand glTF 1 conversion with deterministic signed UV/color/weight conversion, global buffer/view span checks and safe URI length inference, and core attribute/topology diagnostics. Preserve source data and report assumptions through the supplied logger. Tiny skinned JSON/GLB exports run the Khronos validator. Techniques are explicitly marked as preserved data only; conversion remains unsupported.
 
 - Convert the supported `KHR_materials_common` subset to PBR/unlit materials, including emission,

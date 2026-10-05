@@ -226,3 +226,53 @@ In this example:
 - The options will be passed through to the sub-loaders, so that the `GLTFLoader` will receive the `gltf` options, merged with any `gltf` options set by the `Tiles3DLoader`.
 
 This override system makes it easy for applications to test alternate sub-loaders or parameter options without having to modify any existing loader code.
+
+## Named subloaders
+
+A loader or source can declare the metadata loaders it delegates to using export names:
+
+```ts
+subloaders: {GLTFLoader, GLBLoader}
+```
+
+Core `preload(loader, options)` recursively prepares the declared dependencies concurrently.
+It returns a new loader with parser-bearing `subloaders`; shared metadata is not mutated.
+Parsers consume prepared dependencies from their own option namespace, for example
+`options['3d-tiles'].subloaders.GLTFLoader`. A prepared source receives the same bindings in
+its `createDataSource()` options. Calling a metadata object's own `preload()` hook directly
+only loads that object's implementation; use the core API to prepare the dependency graph.
+
+```ts
+import {preload, parse} from '@loaders.gl/core';
+import {Tiles3DLoader} from '@loaders.gl/3d-tiles';
+
+const loader = await preload(Tiles3DLoader, {
+  core: {loaderOverrides: {GLTFLoader: CustomGLTFLoader}},
+  gltf: {loadImages: true}
+});
+const tile = await parse(tileBytes, loader);
+```
+
+Overrides replace declared loaders by name and must provide compatible parser methods and
+results. The flat `options.core.loaderOverrides` map applies throughout the graph: every
+occurrence of a declared name uses the same replacement. For example, a nested Draco override
+belongs in `options.core.loaderOverrides.DracoLoader`, while Draco settings stay in
+`options.draco`. The Draco example requires the glTF loader to declare that named dependency.
+An overridden loader supplies its own declared dependencies. Dependency cycles reject preloading.
+Unused override names are allowed, so applications can share a map across pipelines and retain
+entries for dependencies discovered lazily. Prepared parser calls forward the same caller map
+without replacing it with resolved parser bindings; those bindings remain local to each loader.
+
+Preload options are retained as defaults by the prepared graph; parse-time options override
+ordinary settings. Dependency bindings and the preload override map are fixed at preparation
+time: preload again to change overrides. Branch-specific loader replacements are not supported.
+Two branches using the same loader ID share its ordinary option namespace. Default preparations
+share in-flight imports, and failures can be retried. Caller-specific preparations keep their
+bindings separate.
+
+Prepared dependency graphs run locally because their function-valued bindings cannot be
+transferred to a worker. `core.worker` is forced to `false` in nested calls as well,
+even when parse-time options request workers. Use the original metadata loader for normal
+worker dispatch.
+`createDataSource()` remains synchronous; preload a source first when its dependencies must
+be available before source creation.

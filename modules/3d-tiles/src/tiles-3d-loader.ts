@@ -7,6 +7,7 @@ import type {Loader, StrictLoaderOptions} from '@loaders.gl/loader-utils';
 import type {DracoLoaderOptions} from '@loaders.gl/draco';
 import type {ImageBitmapLoaderOptions} from '@loaders.gl/images';
 
+import {GLTFLoader, GLBLoader} from '@loaders.gl/gltf';
 import {VERSION} from './lib/utils/version';
 import type {Tiles3DTileContent, Tiles3DTilesetJSONPostprocessed} from './types';
 import {Tiles3DFormat} from './tiles-3d-format';
@@ -29,6 +30,8 @@ export type Tiles3DLoaderOptions = StrictLoaderOptions &
   DracoLoaderOptions &
   ImageBitmapLoaderOptions & {
     '3d-tiles'?: {
+      /** Named dependencies supplied by core preload(). */
+      subloaders?: Record<string, Loader>;
       /** Whether to parse any embedded glTF binaries (or extract memory for independent glTF parsing) */
       loadGLTF?: boolean;
       /** If renderer doesn't support quantized positions, loader can decode them on CPU */
@@ -59,6 +62,8 @@ export const Tiles3DLoader = {
   batchType: null as never,
   ...Tiles3DFormat,
   version: VERSION,
+  /** Named glTF dependencies that core preload() prepares before tile streaming. */
+  subloaders: {GLTFLoader, GLBLoader},
   /** Loads the parser-bearing 3D Tiles loader implementation. */
   preload: async () => (await import('./tiles-3d-loader-with-parser')).Tiles3DLoaderWithParser,
   serializeWorkerResult: serialize3DTilesWorkerResult,
