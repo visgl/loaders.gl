@@ -340,3 +340,50 @@ test('empty GDAL metadata remains an explicit empty record', async () => {
   expect(decoder.images[0].metadata).toEqual({});
   expect(decoder.images[0].bandMetadata).toEqual([{}]);
 });
+
+test.each([
+  {bigTiff: false, littleEndian: true},
+  {bigTiff: true, littleEndian: false}
+])('GeoKeys resolve referenced numeric and ASCII values: %j', async layout => {
+  const fixture = createTiffFixture({
+    ...layout,
+    tags: [
+      {
+        tag: 34735,
+        type: 3,
+        values: [
+          1, 1, 0, 4, 2057, 34736, 1, 0, 1026, 34737, 6, 0, 2053, 34736, 1, 1, 2052, 34735, 1, 20,
+          9001
+        ]
+      },
+      {tag: 34736, type: 12, values: [6378137, 0.001]},
+      {tag: 34737, type: 2, values: 'Earth|'}
+    ]
+  });
+  const decoder = await openTiffNumericDecoder(fixture.data, {decoder: 'native'});
+  expect(decoder.images[0].geoKeys).toEqual({
+    GeogSemiMajorAxisGeoKey: 6378137,
+    GTCitationGeoKey: 'Earth',
+    GeogLinearUnitSizeGeoKey: 0.001,
+    GeogLinearUnitsGeoKey: 9001
+  });
+});
+
+test.each(
+  [
+    [1, 1, 0, 1, 1026, 34737, 7, 0],
+    [1, 1, 0, 1, 2057, 34736, 1, 3],
+    [1, 1, 0, 1, 2048, 0, 2, 4326],
+    [1, 1, 0, 1, 2048, 1234, 1, 0],
+    [1, 1, 0, 2, 2048, 0, 1, 4326, 2048, 0, 1, 4326]
+  ].map(keys => ({keys}))
+)('invalid GeoKey storage fails without compatibility fallback: %j', async ({keys}) => {
+  const fixture = createTiffFixture({
+    tags: [
+      {tag: 34735, type: 3, values: keys},
+      {tag: 34736, type: 12, values: [6378137]},
+      {tag: 34737, type: 2, values: 'Earth|'}
+    ]
+  });
+  await expect(openTiffNumericDecoder(fixture.data)).rejects.toThrow('GeoTIFF key');
+});
