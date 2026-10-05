@@ -176,6 +176,8 @@ const config = {
         debug: true,
         resolve: {
           extensions: ['.ts', '.tsx', '.mjs', '.js', '.jsx', '.json'],
+          // NodeNext source entrypoints name emitted .js files; resolve their TypeScript sources.
+          extensionAlias: {'.js': ['.js', '.ts']},
           fallback: {path: false, fs: false, buffer: true},
           modules: [resolve('node_modules'), resolve('../node_modules')],
           alias: {
@@ -237,7 +239,8 @@ const config = {
             '@loaders.gl/sql': resolve('../modules/sql/src'),
             '@loaders.gl/terrain': resolve('../modules/terrain/src'),
             '@loaders.gl/textures': resolve('../modules/textures/src'),
-            '@loaders.gl/tile-converter': resolve('../apps/tile/converter/src-'),
+            '@loaders.gl/tile-converter/v5/core': resolve('../apps/tile-converter/src/v5/core.ts'),
+            '@loaders.gl/tile-converter/v5/adapters': resolve('../apps/tile-converter/src/v5/adapters.ts'),
             '@loaders.gl/tiles': resolve('../modules/tiles/src'),
             '@loaders.gl/tiles-2d': resolve('../modules/tiles-2d/src'),
             '@loaders.gl/traces': resolve('../modules/traces/src'),

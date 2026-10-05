@@ -199,16 +199,16 @@ test('archive example fits elevated scenes and ignores stale camera callbacks', 
   const second = layerMock.selections.at(-1);
   const tileset = {
     cartographicCenter: [0, 0, 0],
-    root: {boundingVolume: {center: [6378237, 0, 0]}},
+    root: {boundingVolume: {center: [6378237, 0, 0], halfAxes: [0, 0, 0, 0, 2, 0, 0, 0, 0]}},
     zoom: 18
   };
   await act(async () => second.onTilesetLoad(tileset));
   expect(layerMock.viewState).toMatchObject({
     longitude: 0,
     latitude: 0,
-    zoom: 18,
+    zoom: Math.log2(6356752.3142451793 / 2),
     position: [0, 0, 100]
   });
   await act(async () => first.onTilesetLoad({...tileset, zoom: 20}));
-  expect(layerMock.viewState.zoom).toBe(18);
+  expect(layerMock.viewState.zoom).toBeCloseTo(Math.log2(6356752.3142451793 / 2));
 });

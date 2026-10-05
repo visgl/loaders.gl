@@ -74,7 +74,23 @@ export default function App() {
   function handleTilesetLoad(tileset: Tileset3D): void {
     const [longitude = INITIAL_VIEW_STATE.longitude, latitude = INITIAL_VIEW_STATE.latitude] =
       tileset.cartographicCenter || [];
-    const center = tileset.root?.boundingVolume?.center;
+    const volume = tileset.root?.boundingVolume;
+    const center = volume?.center;
+    const halfAxes = volume?.halfAxes;
+    const radius =
+      volume?.radius ??
+      (halfAxes
+        ? Math.hypot(
+            halfAxes[0] + halfAxes[3] + halfAxes[6],
+            halfAxes[1] + halfAxes[4] + halfAxes[7],
+            halfAxes[2] + halfAxes[5] + halfAxes[8]
+          )
+        : NaN);
+    // The camera moves to the tile height below, so fit geometry without adding elevation again.
+    const zoom =
+      Number.isFinite(radius) && radius > 0
+        ? Math.log2(Ellipsoid.WGS84.radii[2] / radius)
+        : tileset.zoom;
     const height = center
       ? Ellipsoid.WGS84.cartesianToCartographic(center)[2]
       : tileset.cartographicCenter?.[2] || 0;
@@ -82,7 +98,7 @@ export default function App() {
       ...INITIAL_VIEW_STATE,
       longitude,
       latitude,
-      zoom: tileset.zoom,
+      zoom,
       position: [0, 0, Number.isFinite(height) ? height : 0]
     });
   }

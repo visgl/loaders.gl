@@ -2,6 +2,7 @@ import React, {useState} from 'react';
 import type {ChangeEvent, FormEvent} from 'react';
 import styled from 'styled-components';
 import type {ArchiveFormat} from '../archive-source';
+import {ConversionPanel} from './conversion-panel';
 
 const Panel = styled.div`
   position: absolute;
@@ -18,6 +19,8 @@ const Panel = styled.div`
   color: white;
   line-height: 1.4;
   z-index: 1;
+  max-height: calc(100% - 52px);
+  overflow-y: auto;
 `;
 
 const Heading = styled.strong`
@@ -127,6 +130,7 @@ export function ControlPanel({
           Tiles load as you pan and zoom.
         </Hint>
       )}
+      <ConversionPanel onPreview={onFileSelected} />
       {error && <ErrorMessage role="alert">{error}</ErrorMessage>}
     </Panel>
   );
