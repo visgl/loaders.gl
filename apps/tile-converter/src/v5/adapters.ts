@@ -28,8 +28,13 @@ export type {
   EncodedMeshConversionResource,
   MeshConversionCodecOptions
 } from './mesh-conversion.js';
-export {createSingleMeshTilesetSink} from './mesh-tileset-sink.js';
-export type {SingleMeshTilesetSink, SingleMeshTilesetSinkOptions} from './mesh-tileset-sink.js';
+export {createSingleMeshTilesetSink, createMeshTilesetSink} from './mesh-tileset-sink.js';
+export type {
+  SingleMeshTilesetSink,
+  SingleMeshTilesetSinkOptions,
+  MeshTilesetSink,
+  MeshTilesetSinkOptions
+} from './mesh-tileset-sink.js';
 export {createTileConversionArchive} from './conversion-archive.js';
 export type {TileConversionArchiveOptions} from './conversion-archive.js';
 export {createSingleMeshTilesetArchive} from './mesh-tileset-archive.js';

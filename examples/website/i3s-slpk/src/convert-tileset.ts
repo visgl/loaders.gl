@@ -9,6 +9,7 @@ import {
 } from '@loaders.gl/tile-converter/v5/core';
 import type {
   BrowserTilesetConversionInspection,
+  BrowserTilesetResourceDescriptor,
   BrowserTileConversionFile,
   TileConversionReport
 } from '@loaders.gl/tile-converter/v5/core';
@@ -18,6 +19,7 @@ import {
   createMeshConversionCodec,
   createI3SMeshConversionCodec,
   createSingleMeshTilesetSink,
+  createMeshTilesetSink,
   createSingleMeshI3SSink,
   createTileConversionArchive
 } from '@loaders.gl/tile-converter/v5/adapters';
@@ -30,6 +32,8 @@ export const CONVERSION_LIMITS = {
   maxInputBytes: 16 * 1024 * 1024,
   /** Maximum declared content placements inspected. */
   maxInputResources: 1000,
+  /** Maximum explicitly selected mesh placements in one partial archive. */
+  maxSelectedResources: 64,
   /** Maximum retained file bytes and final archive bytes. */
   maxOutputBytes: 32 * 1024 * 1024,
   /** Maximum measured reconstruction error in meters. */
@@ -86,55 +90,8 @@ export async function convertSelectedContent(
   const raw = await iterator.next();
   await iterator.return?.();
   if (raw.done) throw new Error('The selected content is empty.');
-  const document = structuredClone(inspection.tileset);
-  let tile = document.root!;
-  for (const childIndex of descriptor.tilePath) {
-    const child = tile.children![childIndex];
-    delete tile.content;
-    delete tile.contents;
-    tile.children = [child];
-    tile = child;
-  }
-  const contentIndex = inspection.resources
-    .filter(resource => resource.tilePath.join('/') === descriptor.tilePath.join('/'))
-    .findIndex(resource => resource.resourceId === resourceId);
-  const content = tile.contents?.[contentIndex] ?? tile.content!;
-  tile.content = content;
-  delete tile.contents;
-  delete tile.children;
-
-  /** Blocks external buffers, images, schemas, and decoder downloads outside the selected payload. */
-  const rejectExternalFetch: typeof fetch = async () => {
-    throw new TileConversionError(
-      'EXTERNAL_RESOURCE_UNSUPPORTED',
-      'Use self-contained GLB/B3DM content.'
-    );
-  };
-  const loadOptions = {
-    worker: false,
-    fetch: rejectExternalFetch,
-    gltf: {loadImages: false, decompressMeshes: false},
-    '3d-tiles': {loadGLTF: true}
-  };
-  const runtime = new Tileset3D(
-    new Tiles3DSource(
-      {
-        url: inspection.rootUrl,
-        loader: Tiles3DLoader,
-        resolver: {
-          /** Normalizes the selected hierarchy through the format loader, retaining ancestor transforms. */
-          loadRoot: async (_url, loader, options) =>
-            parse(new TextEncoder().encode(JSON.stringify(document)), loader, options),
-          /** Decodes only the selected bounded payload; no sibling content can be requested. */
-          loadResource: async (_url, loader, options) => {
-            signal.throwIfAborted();
-            return parse(raw.value.data, loader, options);
-          }
-        }
-      },
-      loadOptions
-    )
-  );
+  const document = selectContentDocument(inspection, descriptor);
+  const runtime = createSelectedRuntime(inspection, document, raw.value.data, signal);
   try {
     // Observe initialization even when subsequent source qualification or output setup rejects.
     await runtime.tilesetInitializationPromise;
@@ -146,11 +103,7 @@ export async function convertSelectedContent(
       signal,
       maxInputResourceBytes: CONVERSION_LIMITS.maxInputBytes,
       maxOutputResourceBytes: CONVERSION_LIMITS.maxOutputBytes,
-      measureInputBytes: (resource: MeshSourceResource) =>
-        Object.values(resource.mesh.attributes).reduce(
-          (bytes, attribute) => bytes + attribute.value.byteLength,
-          resource.mesh.indices?.value.byteLength ?? 0
-        ),
+      measureInputBytes: measureMeshBytes,
       onProgress: (progress: {phase: string}) => onProgress(progress.phase)
     };
     const sinkOptions = {maxTotalBytes: CONVERSION_LIMITS.maxOutputBytes};
@@ -212,4 +165,198 @@ function getGeometricError(document: BrowserTilesetConversionInspection['tileset
     tile = tile.children?.[0];
   }
   return maximum;
+}
+
+/** Clones one content path, retaining ancestor transforms and removing all unselected content. */
+function selectContentDocument(
+  inspection: BrowserTilesetConversionInspection,
+  descriptor: BrowserTilesetResourceDescriptor
+): BrowserTilesetConversionInspection['tileset'] {
+  const document = structuredClone(inspection.tileset);
+  let tile = document.root!;
+  for (const childIndex of descriptor.tilePath) {
+    const child = tile.children![childIndex];
+    delete tile.content;
+    delete tile.contents;
+    tile.children = [child];
+    tile = child;
+  }
+  const contentIndex = inspection.resources
+    .filter(resource => resource.tilePath.join('/') === descriptor.tilePath.join('/'))
+    .findIndex(resource => resource.resourceId === descriptor.resourceId);
+  const content = tile.contents?.[contentIndex] ?? tile.content!;
+  tile.content = content;
+  delete tile.contents;
+  delete tile.children;
+
+  return document;
+}
+
+/** Creates a dedicated runtime whose only content response is the bounded selected payload. */
+function createSelectedRuntime(
+  inspection: BrowserTilesetConversionInspection,
+  document: BrowserTilesetConversionInspection['tileset'],
+  data: Uint8Array,
+  signal: AbortSignal
+): Tileset3D {
+  /** Blocks external buffers, images, schemas, and decoder downloads outside the selected payload. */
+  const rejectExternalFetch: typeof fetch = async () => {
+    throw new TileConversionError(
+      'EXTERNAL_RESOURCE_UNSUPPORTED',
+      'Use self-contained GLB/B3DM content.'
+    );
+  };
+  const loadOptions = {
+    worker: false,
+    fetch: rejectExternalFetch,
+    gltf: {loadImages: false, decompressMeshes: false},
+    '3d-tiles': {loadGLTF: true}
+  };
+  return new Tileset3D(
+    new Tiles3DSource(
+      {
+        url: inspection.rootUrl,
+        loader: Tiles3DLoader,
+        resolver: {
+          /** Normalizes the selected hierarchy through the format loader, retaining ancestor transforms. */
+          loadRoot: async (_url, loader, options) =>
+            parse(new TextEncoder().encode(JSON.stringify(document)), loader, options),
+          /** Decodes only the selected bounded payload; no sibling content can be requested. */
+          loadResource: async (_url, loader, options) => {
+            signal.throwIfAborted();
+            return parse(data, loader, options);
+          }
+        }
+      },
+      loadOptions
+    )
+  );
+}
+
+/**
+ * Exports explicit independent leaf placements as a flat 3TZ collection. One selected content
+ * retains the existing SLPK/3TZ profile. Multi-selection rejects non-leaves and SLPK before I/O;
+ * it neither reproduces source LOD relationships nor selects parent/child approximations.
+ * Selected transport and decoded geometry share aggregate budgets. Each content must contain
+ * exactly one supported primitive, and failure of any placement discards the entire archive.
+ */
+export async function convertSelectedContents(
+  inspection: BrowserTilesetConversionInspection,
+  resourceIds: readonly string[],
+  format: ConversionFormat,
+  signal: AbortSignal,
+  onProgress: (message: string) => void,
+  fetcher: typeof fetch = fetch
+): Promise<ConversionResult> {
+  if (
+    !resourceIds.length ||
+    resourceIds.length > CONVERSION_LIMITS.maxSelectedResources ||
+    new Set(resourceIds).size !== resourceIds.length ||
+    resourceIds.some(
+      identifier => !inspection.resources.some(resource => resource.resourceId === identifier)
+    )
+  )
+    throw new Error('Select between 1 and 64 distinct content placements.');
+  if (resourceIds.length === 1)
+    return convertSelectedContent(inspection, resourceIds[0], format, signal, onProgress, fetcher);
+  if (format !== '3tz') throw new Error('Multiple mesh placements currently require 3TZ output.');
+  const descriptors = inspection.resources.filter(resource =>
+    resourceIds.includes(resource.resourceId)
+  );
+  for (const descriptor of descriptors) {
+    let tile = inspection.tileset.root!;
+    for (const childIndex of descriptor.tilePath) tile = tile.children![childIndex];
+    if (tile.children?.length)
+      throw new Error(
+        'Multi-selection requires leaf contents; source LOD hierarchy is not exported.'
+      );
+  }
+  signal.throwIfAborted();
+  const documents = descriptors.map(descriptor => selectContentDocument(inspection, descriptor));
+  const qualification = createSelectedRuntime(inspection, documents[0], new Uint8Array(), signal);
+  let spatialContext: ReturnType<typeof createTiles3DConversionSpatialContext>;
+  try {
+    await qualification.tilesetInitializationPromise;
+    const metadata = await createMeshTilesetConversionSource(qualification).inspect(signal);
+    spatialContext = createTiles3DConversionSpatialContext(metadata.spatialReference!);
+  } finally {
+    qualification.destroy();
+  }
+  const rawSource = createBrowserTilesetConversionSource({
+    input: inspection.rootUrl,
+    ...CONVERSION_LIMITS,
+    fetcher
+  });
+  const selectedInspection = {...inspection, resources: descriptors};
+  const source = {
+    /** Reuses inspected declarations without fetching the root again. */
+    inspect: async () => selectedInspection,
+    /** Decodes and releases each selected placement in declaration order. */
+    async *read() {
+      let decodedBytes = 0;
+      let contentIndex = 0;
+      for await (const raw of rawSource.read(selectedInspection, signal)) {
+        const runtime = createSelectedRuntime(
+          inspection,
+          documents[contentIndex++],
+          raw.data,
+          signal
+        );
+        try {
+          await runtime.tilesetInitializationPromise;
+          const meshSource = createMeshTilesetConversionSource(runtime, {unloadContent: true});
+          const metadata = await meshSource.inspect(signal);
+          let meshCount = 0;
+          for await (const resource of meshSource.read(metadata, signal)) {
+            if (++meshCount > 1)
+              throw new Error('Each selected content must contain exactly one mesh primitive.');
+            decodedBytes += measureMeshBytes(resource);
+            if (decodedBytes > CONVERSION_LIMITS.maxInputBytes)
+              throw new Error('Selected decoded geometry exceeds the aggregate input byte limit.');
+            yield {...resource, id: raw.resourceId};
+          }
+          if (!meshCount) throw new Error('Selected content has no mesh primitive.');
+        } finally {
+          runtime.destroy();
+        }
+      }
+    }
+  };
+  const sink = createMeshTilesetSink({
+    maxTotalBytes: CONVERSION_LIMITS.maxOutputBytes,
+    maxMeshes: CONVERSION_LIMITS.maxSelectedResources,
+    geometricError:
+      Math.max(...documents.map(getGeometricError)) + CONVERSION_LIMITS.maxPositionError
+  });
+  const report = await convertTileset({
+    source,
+    sink,
+    signal,
+    codec: createMeshConversionCodec({
+      spatialContext,
+      maxPositionError: CONVERSION_LIMITS.maxPositionError
+    }),
+    measureInputBytes: measureMeshBytes,
+    maxInputResourceBytes: CONVERSION_LIMITS.maxInputBytes,
+    measureOutputBytes: resource => resource.glb.byteLength,
+    maxOutputResourceBytes: CONVERSION_LIMITS.maxOutputBytes,
+    onProgress: progress => onProgress(progress.phase)
+  });
+  signal.throwIfAborted();
+  onProgress('Packaging archive');
+  signal.throwIfAborted();
+  const archive = await createTileConversionArchive(sink.getFiles(), {
+    format,
+    maxArchiveBytes: CONVERSION_LIMITS.maxOutputBytes
+  });
+  signal.throwIfAborted();
+  return {file: new File([archive], 'selected-meshes.3tz', {type: archive.type}), report};
+}
+
+/** Counts retained decoded geometry buffers without charging shared metadata or runtime caches. */
+function measureMeshBytes(resource: MeshSourceResource): number {
+  return Object.values(resource.mesh.attributes).reduce(
+    (bytes, attribute) => bytes + attribute.value.byteLength,
+    resource.mesh.indices?.value.byteLength ?? 0
+  );
 }

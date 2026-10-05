@@ -33,20 +33,33 @@ continue to work.
 
 ## Bounded browser conversion
 
-Enter a CORS-enabled HTTP(S) `tileset.json` URL in **Convert a selected 3D Tiles mesh**,
-inspect its declared content placements, then explicitly select one and choose SLPK or 3TZ.
-Only that content is fetched. The source hierarchy's ancestor transforms are retained; 3TZ also retains a conservative
+Enter a CORS-enabled HTTP(S) `tileset.json` URL in **Convert selected 3D Tiles meshes**,
+inspect its declared content placements, then explicitly select content and choose SLPK or 3TZ.
+Only selected content is fetched. Use the content list's multiple selection controls (Ctrl/Cmd-click) for 3TZ. The source hierarchy's ancestor transforms are retained; 3TZ also retains a conservative
 source geometric error. SLPK authors a single final mesh and does not reproduce the source LOD hierarchy. A successful archive can be downloaded or previewed with the same
 incremental viewer. This is a partial dataset export, not whole-tileset conversion.
 
-The initial profile accepts exactly one static, untextured primitive in self-contained
+Each selected content must contain exactly one static, untextured primitive in self-contained
 GLB/B3DM, with native EPSG:4978 coordinates and ellipsoidal heights established by root region bounds.
 Unknown/local frames are rejected. Feature metadata,
 textures, colors, animation, compressed meshes, external dependencies, multiple primitives,
 nested external tilesets and implicit tiling fail explicitly. No feature schema is inferred.
 
+### Multi-tile 3TZ profile
+
+Select up to 64 contents on **leaf tiles**. The output is a flat collection under a
+contentless ADD root, with deterministic relative mesh names and bounds enclosing all
+selected placements. Declaration order determines output order, independent of click order.
+Repeated source URLs at distinct placements remain distinct tiles. Ancestor transforms and
+source geometric error are retained, but the source LOD hierarchy is not reproduced.
+Non-leaf multi-selections are rejected to avoid exporting overlapping LOD approximations.
+Any failed, empty, or multi-primitive content aborts the entire output.
+
+SLPK continues to accept one mesh. Multi-node I3S authoring, broader hierarchy/refinement
+mapping, feature associations, workers and streaming packaging remain follow-up work.
+
 The demo caps root JSON plus selected content at 16 MiB, declarations at 1,000 contents,
-decoded geometry at 16 MiB, retained output and archive size at 32 MiB, and position error
+aggregate decoded geometry at 16 MiB, retained output and archive size at 32 MiB, and position error
 at 1 cm. These are byte gates, not a guarantee about peak decoder/serialization memory.
 Parsing and archive encoding run on the main thread. Cancel aborts transport and discards
 late results; it cannot interrupt synchronous decoding or archive serialization.
