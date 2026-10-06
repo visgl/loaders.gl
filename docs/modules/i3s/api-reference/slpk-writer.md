@@ -34,9 +34,22 @@ when lowercased, including the reserved index name, are rejected.
 `slpk.maxArchiveBytes` is a nonnegative safe integer, defaulting to `0x7fffffff`. The complete
 archive budget includes ZIP headers and the index and is checked before any Blob reads.
 The initial ZIP32 profile rejects output above 2 GiB and more than 65,533 resources. Larger
-SLPK output requires a future ZIP64 writer. Streaming, cancellation, resource compression,
+SLPK output requires a future ZIP64 writer. Streaming, resource compression,
 and peak-memory qualification are separate work; this budget bounds output size only.
 
 Returns an `ArrayBuffer`. Wrap it in an `application/octet-stream` Blob and save as `.slpk`.
 The v5 converter's `createTileConversionArchive` performs that Blob handoff for finalized
 browser-sink resources. Existing `parseSLPKArchive` readers can use the generated hash index.
+
+### Cancellation and temporary buffers
+
+Pass an optional `slpk.signal` (`AbortSignal`) to cancel between resource reads and entry
+encodes. Cancellation rejects with the signal's reason and returns no partial archive. An
+active Blob read or entry encode finishes before cancellation is observed; terminate a
+dedicated worker when immediate interruption is required.
+
+Entries are encoded one at a time into one final archive buffer. Temporary buffers for one
+Blob read and its encoded entry can be released before the next resource is read; all Blob
+read buffers are no longer retained together. Caller-owned inputs, the final archive, the
+current entry's temporary allocations, and later Blob/worker transfer copies still consume
+memory. This does not provide a total heap limit or stream output to external storage.

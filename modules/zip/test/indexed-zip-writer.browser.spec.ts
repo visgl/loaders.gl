@@ -172,3 +172,140 @@ test('Indexed ZIP rejects case-folded duplicate paths before reading resources',
   expect(Object.keys(zip.files)).toEqual(['index']);
   expect((await zip.file('index')!.async('arraybuffer')).byteLength).toBe(0);
 });
+
+test('Indexed ZIP serializes each Blob before reading the next and retains byte-identical output', async () => {
+  const events: string[] = [];
+  const read = Blob.prototype.arrayBuffer;
+  vi.spyOn(Blob.prototype, 'arrayBuffer').mockImplementation(function () {
+    events.push('read');
+    return read.call(this);
+  });
+  const encode = ZipWriter.encode;
+  vi.spyOn(ZipWriter, 'encode').mockImplementation(async (files, options) => {
+    events.push(`encode:${Object.keys(files).join(',')}`);
+    return encode(files, options);
+  });
+  const encoded = await encodeArchive({
+    'tileset.json': new Blob(['{}']),
+    'Models/A.glb': new Blob([new Uint8Array([1, 2, 3])])
+  });
+  expect(events).toEqual([
+    'read',
+    'encode:Models/A.glb',
+    'read',
+    'encode:tileset.json',
+    'encode:@3dtilesIndex1@'
+  ]);
+  const index = await (await JSZip.loadAsync(encoded))
+    .file('@3dtilesIndex1@')!
+    .async('arraybuffer');
+  expect(encoded).toEqual(
+    await encode(
+      {
+        'Models/A.glb': new Uint8Array([1, 2, 3]).buffer,
+        'tileset.json': new TextEncoder().encode('{}').buffer,
+        '@3dtilesIndex1@': index
+      },
+      {
+        jszip: {
+          compression: 'STORE',
+          streamFiles: false,
+          platform: 'DOS',
+          date: new Date('1980-01-01T00:00:00Z')
+        }
+      }
+    )
+  );
+});
+
+test('Indexed ZIP rejects an already cancelled operation before reading or encoding', async () => {
+  const reason = new Error('cancelled before packaging');
+  const read = vi.spyOn(Blob.prototype, 'arrayBuffer');
+  const encode = vi.spyOn(ZipWriter, 'encode');
+  await expect(
+    encodeIndexedZip(
+      {root: new Blob(['data'])},
+      {
+        indexPath: 'index',
+        maxArchiveBytes: 1000,
+        signal: AbortSignal.abort(reason)
+      }
+    )
+  ).rejects.toBe(reason);
+  expect(read).not.toHaveBeenCalled();
+  expect(encode).not.toHaveBeenCalled();
+});
+
+test('Indexed ZIP observes cancellation after a pending read and starts no encoding or further reads', async () => {
+  const controller = new AbortController();
+  const reason = new Error('cancelled during read');
+  let finishRead!: (data: ArrayBuffer) => void;
+  const read = vi.spyOn(Blob.prototype, 'arrayBuffer').mockImplementationOnce(
+    () =>
+      new Promise(resolve => {
+        finishRead = resolve;
+      })
+  );
+  const encode = vi.spyOn(ZipWriter, 'encode');
+  const pending = encodeIndexedZip(
+    {a: new Blob(['a']), b: new Blob(['b'])},
+    {
+      indexPath: 'index',
+      maxArchiveBytes: 1000,
+      signal: controller.signal
+    }
+  );
+  controller.abort(reason);
+  finishRead(new Uint8Array([97]).buffer);
+  await expect(pending).rejects.toBe(reason);
+  expect(read).toHaveBeenCalledTimes(1);
+  expect(encode).not.toHaveBeenCalled();
+});
+
+test.each([
+  'hash',
+  'entry',
+  'index'
+] as const)('Indexed ZIP observes cancellation after %s without publishing a partial archive', async phase => {
+  const controller = new AbortController();
+  const reason = new Error(`cancelled during ${phase}`);
+  const hash = MD5Hash.prototype.hash;
+  vi.spyOn(MD5Hash.prototype, 'hash').mockImplementation(async (...arguments_) => {
+    const digest = await hash.apply(new MD5Hash(), arguments_);
+    if (phase === 'hash') controller.abort(reason);
+    return digest;
+  });
+  const encode = ZipWriter.encode;
+  const serialize = vi.spyOn(ZipWriter, 'encode').mockImplementation(async (files, options) => {
+    const bytes = await encode(files, options);
+    if (phase === 'entry' || (phase === 'index' && 'index' in files)) controller.abort(reason);
+    return bytes;
+  });
+  await expect(
+    encodeIndexedZip(
+      {a: new ArrayBuffer(0)},
+      {
+        indexPath: 'index',
+        maxArchiveBytes: 1000,
+        signal: controller.signal
+      }
+    )
+  ).rejects.toBe(reason);
+  expect(serialize).toHaveBeenCalledTimes(phase === 'hash' ? 0 : phase === 'entry' ? 1 : 2);
+});
+
+test('Indexed ZIP propagates a Blob read failure without starting another entry', async () => {
+  const failure = new Error('read failed');
+  const read = vi.spyOn(Blob.prototype, 'arrayBuffer').mockRejectedValueOnce(failure);
+  await expect(encodeArchive({a: new Blob(), b: new Blob()})).rejects.toBe(failure);
+  expect(read).toHaveBeenCalledTimes(1);
+});
+
+test('Indexed ZIP rejects a current resource detached while hashing its path', async () => {
+  const data = new ArrayBuffer(1);
+  vi.spyOn(MD5Hash.prototype, 'hash').mockImplementationOnce(async () => {
+    structuredClone(data, {transfer: [data]});
+    return '00000000000000000000000000000000';
+  });
+  await expect(encodeArchive({a: data})).rejects.toThrow('size changed');
+});

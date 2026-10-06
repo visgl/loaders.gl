@@ -54,3 +54,18 @@ test('selecting SLPK does not silently relabel 3D Tiles resources', async () => 
     })
   ).rejects.toThrow('root 3dSceneLayer.json.gz');
 });
+
+test.each([
+  '3tz',
+  'slpk'
+] as const)('converter forwards cancellation to %s packaging', async format => {
+  const resourceId = format === '3tz' ? 'tileset.json' : '3dSceneLayer.json.gz';
+  const reason = new Error('cancel packaging');
+  await expect(
+    createTileConversionArchive([{resourceId, blob: new Blob()}], {
+      format,
+      maxArchiveBytes: 1000,
+      signal: AbortSignal.abort(reason)
+    })
+  ).rejects.toBe(reason);
+});

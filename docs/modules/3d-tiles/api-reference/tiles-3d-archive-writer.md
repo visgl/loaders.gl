@@ -28,7 +28,7 @@ The index has no file comment and excludes itself.
 archive size, including headers and index, is checked before reading Blobs or serializing.
 Archives exceeding that ZIP32 capacity, 65,533 resource files, noncanonical or non-ASCII
 paths, and nested archive paths are rejected. This first version does not support ZIP64,
-compression, streaming, or cancellation. The size budget is not a peak-memory limit.
+compression, or streaming. The size budget is not a peak-memory limit.
 
 The result is an `ArrayBuffer`. For a browser download, wrap it in a Blob with MIME type
 `application/vnd.maxar.archive.3tz+zip`, save as `.3tz`, and revoke object URLs when no longer
@@ -38,3 +38,16 @@ single-mesh output. Existing 3TZ readers can read the resulting indexed archive.
 `createTileConversionArchive` also provides a general finalized-resource Blob handoff for
 3TZ and SLPK. Each format requires already-authored resources in its own layout. The shared
 `@loaders.gl/zip/indexed-zip-writer` encoder retains the existing deterministic 3TZ layout.
+
+### Cancellation and temporary buffers
+
+Pass an optional `3tz.signal` (`AbortSignal`) to cancel between resource reads and entry
+encodes. Cancellation rejects with the signal's reason and returns no partial archive. An
+active Blob read or entry encode finishes before cancellation is observed; terminate a
+dedicated worker when immediate interruption is required.
+
+Entries are encoded one at a time into one final archive buffer. Temporary buffers for one
+Blob read and its encoded entry can be released before the next resource is read; all Blob
+read buffers are no longer retained together. Caller-owned inputs, the final archive, the
+current entry's temporary allocations, and later Blob/worker transfer copies still consume
+memory. This does not provide a total heap limit or stream output to external storage.

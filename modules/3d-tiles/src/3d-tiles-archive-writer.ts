@@ -16,6 +16,8 @@ export type Tiles3DArchiveWriterOptions = WriterOptions & {
   '3tz'?: {
     /** Maximum archive bytes, including ZIP headers and the index; not a peak-memory limit. */
     maxArchiveBytes?: number;
+    /** Cooperative cancellation between resource reads and entry encodes. */
+    signal?: AbortSignal;
   };
 };
 
@@ -54,6 +56,7 @@ async function encodeArchive(
   }
   return await encodeIndexedZip(files, {
     indexPath: INDEX_PATH,
-    maxArchiveBytes: options['3tz']?.maxArchiveBytes ?? MAX_ARCHIVE_BYTES
+    maxArchiveBytes: options['3tz']?.maxArchiveBytes ?? MAX_ARCHIVE_BYTES,
+    signal: options['3tz']?.signal
   });
 }

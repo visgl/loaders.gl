@@ -296,7 +296,12 @@ fixed timestamps, stable file order, and relative paths produce deterministic by
 returned Blob uses `application/vnd.maxar.archive.3tz+zip`; save it with `.3tz`. Inputs must be
 unmodified output from a successfully finalized sink. The budget covers archive size, not
 peak memory: the input Blobs and transient ZIP buffers remain additional allocations.
-Packaging is asynchronous but does not support mid-encoding cancellation or streaming.
+Both archive helpers accept an optional `signal` for cooperative cancellation between resource
+reads and entry encodes. Cancellation rejects with its reason and exposes no partial archive;
+active reads/encodes finish first. The example also terminates its worker for immediate cancellation.
+Packaging serializes each entry into one final archive buffer and releases temporary Blob-read
+buffers between resources. Caller-owned inputs, the current entry, final archive, and Blob/worker
+transfer copies still require memory. Streaming and total peak-memory qualification remain open.
 
 The legacy v4 I3S converter already writes **SLPK** archives. Portable v5 SLPK output requires
 an I3S scene-layer writer and its node/resource layout; a 3D Tiles package cannot be saved as

@@ -20,6 +20,8 @@ export type SLPKWriterOptions = WriterOptions & {
   slpk?: {
     /** Maximum final archive bytes, including headers/index; not peak serialization memory. */
     maxArchiveBytes?: number;
+    /** Cooperative cancellation between resource reads and entry encodes. */
+    signal?: AbortSignal;
   };
 };
 
@@ -54,6 +56,7 @@ async function encodeArchive(
   return await encodeIndexedZip(files, {
     indexPath: '@specialIndexFileHASH128@',
     maxArchiveBytes: Math.min(maxArchiveBytes, MAX_ARCHIVE_BYTES),
-    lowercasePaths: true
+    lowercasePaths: true,
+    signal: options.slpk?.signal
   });
 }

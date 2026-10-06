@@ -151,7 +151,8 @@ export async function convertSelectedContent(
     signal.throwIfAborted();
     const archive = await createTileConversionArchive(files, {
       format,
-      maxArchiveBytes: CONVERSION_LIMITS.maxOutputBytes
+      maxArchiveBytes: CONVERSION_LIMITS.maxOutputBytes,
+      signal
     });
     signal.throwIfAborted();
     return {file: new File([archive], `selected-mesh.${format}`, {type: archive.type}), report};
@@ -373,7 +374,8 @@ export async function convertSelectedContents(
   signal.throwIfAborted();
   const archive = await createTileConversionArchive(sink.getFiles(), {
     format,
-    maxArchiveBytes: CONVERSION_LIMITS.maxOutputBytes
+    maxArchiveBytes: CONVERSION_LIMITS.maxOutputBytes,
+    signal
   });
   signal.throwIfAborted();
   return {file: new File([archive], 'selected-meshes.3tz', {type: archive.type}), report};

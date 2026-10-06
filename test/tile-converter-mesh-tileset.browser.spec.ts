@@ -437,3 +437,16 @@ test.each(
     )
   ).rejects.toMatchObject({code: 'INVALID_SINGLE_MESH_ARCHIVE'});
 });
+
+test('single-mesh archive forwards packaging cancellation', async () => {
+  const reason = new Error('cancel packaging');
+  await expect(
+    createSingleMeshTilesetArchive(
+      [
+        {resourceId: 'mesh.glb', blob: new Blob()},
+        {resourceId: 'tileset.json', blob: new Blob()}
+      ],
+      {maxArchiveBytes: 1000, signal: AbortSignal.abort(reason)}
+    )
+  ).rejects.toBe(reason);
+});
