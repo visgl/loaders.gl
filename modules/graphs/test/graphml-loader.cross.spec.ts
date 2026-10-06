@@ -198,3 +198,16 @@ test.each([
   );
   expect(JSON.parse(String(graph.nodes[0].attributes?.vendor))).toEqual(expected);
 });
+
+test.each([
+  '',
+  '   ',
+  '\n  \t\n'
+])('treats blank GraphML boolean data and defaults as false (%j)', value => {
+  const graph = parseGraphML(`<graphml>
+    <key id="flag" for="node" attr.type="boolean"><default>${value}</default></key>
+    <graph><node id="explicit"><data key="flag">${value}</data></node>
+      <node id="default"/></graph>
+  </graphml>`);
+  expect(graph.nodes.map(node => node.attributes?.flag)).toEqual([false, false]);
+});
