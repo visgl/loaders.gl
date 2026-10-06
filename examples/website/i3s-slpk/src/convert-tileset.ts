@@ -13,7 +13,10 @@ import type {
   BrowserTileConversionFile,
   TileConversionReport
 } from '@loaders.gl/tile-converter/v5/core';
-import type {MeshSourceResource} from '@loaders.gl/tile-converter/v5/adapters';
+import type {
+  MeshSourceResource,
+  MeshSourceFeatureOptions
+} from '@loaders.gl/tile-converter/v5/adapters';
 import {
   createMeshTilesetConversionSource,
   createMeshConversionCodec,
@@ -28,7 +31,7 @@ import {
 export type ConversionFormat = 'slpk' | '3tz';
 /** Required transport, decoded geometry, retained output, and archive budgets for this demo. */
 export const CONVERSION_LIMITS = {
-  /** Root JSON plus selected content transport bytes; also the decoded geometry byte gate. */
+  /** Root JSON plus selected content transport bytes; also the decoded geometry/feature byte gate. */
   maxInputBytes: 16 * 1024 * 1024,
   /** Maximum declared content placements inspected. */
   maxInputResources: 1000,
@@ -64,7 +67,8 @@ export async function inspectConversionInput(
 
 /**
  * Converts only the explicitly selected content placement. The initial profile requires exactly
- * one static, untextured mesh primitive; unsupported metadata and scene features fail explicitly.
+ * one static, untextured mesh primitive. SLPK features require an explicit schema;
+ * 3TZ preserves supported vertex colors but rejects feature-bearing meshes.
  * Transport and retained output are bounded, but these limits do not bound peak decoder memory.
  */
 export async function convertSelectedContent(
@@ -73,8 +77,11 @@ export async function convertSelectedContent(
   format: ConversionFormat,
   signal: AbortSignal,
   onProgress: (message: string) => void,
-  fetcher: typeof fetch = fetch
+  fetcher: typeof fetch = fetch,
+  features?: MeshSourceFeatureOptions
 ): Promise<ConversionResult> {
+  if (features && format !== 'slpk')
+    throw new Error('Feature mappings currently require SLPK output.');
   const descriptor = inspection.resources.find(resource => resource.resourceId === resourceId);
   if (!descriptor) throw new Error('Select a content placement from the inspected tileset.');
   signal.throwIfAborted();
@@ -95,7 +102,7 @@ export async function convertSelectedContent(
   try {
     // Observe initialization even when subsequent source qualification or output setup rejects.
     await runtime.tilesetInitializationPromise;
-    const source = createMeshTilesetConversionSource(runtime, {unloadContent: true});
+    const source = createMeshTilesetConversionSource(runtime, {unloadContent: true, features});
     const metadata = await source.inspect(signal);
     const spatialContext = createTiles3DConversionSpatialContext(metadata.spatialReference!);
     const common = {
@@ -250,7 +257,8 @@ export async function convertSelectedContents(
   format: ConversionFormat,
   signal: AbortSignal,
   onProgress: (message: string) => void,
-  fetcher: typeof fetch = fetch
+  fetcher: typeof fetch = fetch,
+  features?: MeshSourceFeatureOptions
 ): Promise<ConversionResult> {
   if (
     !resourceIds.length ||
@@ -262,7 +270,16 @@ export async function convertSelectedContents(
   )
     throw new Error('Select between 1 and 64 distinct content placements.');
   if (resourceIds.length === 1)
-    return convertSelectedContent(inspection, resourceIds[0], format, signal, onProgress, fetcher);
+    return convertSelectedContent(
+      inspection,
+      resourceIds[0],
+      format,
+      signal,
+      onProgress,
+      fetcher,
+      features
+    );
+  if (features) throw new Error('Feature mappings currently require single-mesh SLPK output.');
   if (format !== '3tz') throw new Error('Multiple mesh placements currently require 3TZ output.');
   const descriptors = inspection.resources.filter(resource =>
     resourceIds.includes(resource.resourceId)
@@ -362,10 +379,23 @@ export async function convertSelectedContents(
   return {file: new File([archive], 'selected-meshes.3tz', {type: archive.type}), report};
 }
 
-/** Counts retained decoded geometry buffers without charging shared metadata or runtime caches. */
+/** Charges decoded geometry, triangle associations and Arrow column buffers after extraction. */
 function measureMeshBytes(resource: MeshSourceResource): number {
+  const featureBytes = resource.features
+    ? resource.features.triangleFeatureIndices.byteLength +
+      resource.features.batches.reduce(
+        (bytes, batch) =>
+          bytes +
+          batch.data.schema.fields.reduce(
+            (columnBytes, field) =>
+              columnBytes + (batch.data.getChild(field.name)?.byteLength ?? 0),
+            0
+          ),
+        0
+      )
+    : 0;
   return Object.values(resource.mesh.attributes).reduce(
     (bytes, attribute) => bytes + attribute.value.byteLength,
-    resource.mesh.indices?.value.byteLength ?? 0
+    (resource.mesh.indices?.value.byteLength ?? 0) + featureBytes
   );
 }

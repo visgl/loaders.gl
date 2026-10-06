@@ -1,4 +1,5 @@
 import React, {useEffect, useRef, useState} from 'react';
+import type {MeshSourceFeatureOptions} from '@loaders.gl/tile-converter/v5/adapters';
 import type {BrowserTilesetConversionInspection} from '@loaders.gl/tile-converter/v5/core';
 import {
   inspectConversionInput,
@@ -19,6 +20,7 @@ export function ConversionPanel({onPreview}: ConversionPanelProps) {
   const [inspection, setInspection] = useState<BrowserTilesetConversionInspection | null>(null);
   const [resourceIds, setResourceIds] = useState<string[]>([]);
   const [format, setFormat] = useState<ConversionFormat>('slpk');
+  const [featureMapping, setFeatureMapping] = useState('');
   const [busy, setBusy] = useState(false);
   const [status, setStatus] = useState('');
   const [error, setError] = useState('');
@@ -74,7 +76,9 @@ export function ConversionPanel({onPreview}: ConversionPanelProps) {
           operation.signal,
           message => {
             if (controller.current === operation) setStatus(message);
-          }
+          },
+          fetch,
+          parseFeatureMapping(featureMapping)
         );
         if (controller.current === operation) {
           setResult(output);
@@ -104,9 +108,9 @@ export function ConversionPanel({onPreview}: ConversionPanelProps) {
     <section style={{display: 'flex', flexDirection: 'column', gap: 6}}>
       <strong>Convert selected 3D Tiles meshes</strong>
       <small>
-        Partial output: one static untextured GLB/B3DM primitive per content, native ECEF. Textures,
-        feature metadata, external buffers, nested/implicit tilesets and multiple primitives are
-        rejected.
+        Partial output: one static untextured GLB/B3DM primitive per content, native ECEF. Material
+        factors are preserved. 3TZ supports vertex colors; SLPK supports explicitly mapped features.
+        Textures, external buffers, nested/implicit tilesets and multiple primitives are rejected.
       </small>
       <small>
         3TZ accepts up to 64 selected leaf contents; SLPK accepts one. Limits: 16 MiB input, 1,000
@@ -176,6 +180,24 @@ export function ConversionPanel({onPreview}: ConversionPanelProps) {
             </option>
             <option value="3tz">3D Tiles / 3TZ</option>
           </select>
+          <label htmlFor="conversion-features">SLPK feature mapping (optional JSON)</label>
+          <textarea
+            id="conversion-features"
+            disabled={busy}
+            value={featureMapping}
+            rows={4}
+            placeholder={
+              '{"metadataClass":"building","schema":{"fields":[{"name":"feature_id","type":"int32","nullable":false}]}}'
+            }
+            onChange={event => {
+              setFeatureMapping(event.target.value);
+              setResult(null);
+            }}
+          />
+          <small>
+            Declare every property and its Arrow type. No schema is inferred. Exact 64-bit values
+            require explicit decimal-string encoding; unsupported feature mappings fail.
+          </small>
           <button
             disabled={busy || !resourceIds.length || (format === 'slpk' && resourceIds.length > 1)}
             onClick={() => void runOperation(true)}
@@ -204,4 +226,19 @@ export function ConversionPanel({onPreview}: ConversionPanelProps) {
       )}
     </section>
   );
+}
+
+/** Reads an explicit feature mapping; detailed type/value and target validation belongs to the adapters. */
+function parseFeatureMapping(input: string): MeshSourceFeatureOptions | undefined {
+  if (!input.trim()) return undefined;
+  const mapping = JSON.parse(input) as MeshSourceFeatureOptions;
+  if (
+    !mapping ||
+    typeof mapping.metadataClass !== 'string' ||
+    !mapping.metadataClass.trim() ||
+    !Array.isArray(mapping.schema?.fields) ||
+    !mapping.schema.fields.length
+  )
+    throw new Error('Feature mapping requires metadataClass and schema.fields.');
+  return mapping;
 }

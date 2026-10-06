@@ -41,9 +41,44 @@ incremental viewer. This is a partial dataset export, not whole-tileset conversi
 
 Each selected content must contain exactly one static, untextured primitive in self-contained
 GLB/B3DM, with native EPSG:4978 coordinates and ellipsoidal heights established by root region bounds.
-Unknown/local frames are rejected. Feature metadata,
-textures, colors, animation, compressed meshes, external dependencies, multiple primitives,
+Unknown/local frames are rejected. Untextured metallic-roughness material factors, alpha controls
+and double-sided rendering are preserved. 3TZ also preserves packed linear Float32 or normalized
+Uint8/Uint16 vertex colors; SLPK rejects vertex colors. Textures, animation, compressed meshes, external dependencies, multiple primitives,
 nested external tilesets and implicit tiling fail explicitly. No feature schema is inferred.
+
+### Explicit SLPK features
+
+For feature-bearing input, fill **SLPK feature mapping (optional JSON)** before converting.
+The mapping supports one attribute-backed `EXT_mesh_features` set referencing one inline,
+decoded structural metadata table, or legacy B3DM `_BATCHID` and decoded batch columns.
+Declare the exact metadata class, every property, and the stable identifier field. All vertices
+of a triangle must reference the same row; each output feature must own geometry.
+
+```json
+{
+  "metadataClass": "building",
+  "sourceFeatureIdProperty": "source_id",
+  "featureIdField": "source_id",
+  "integer64Encoding": "decimal-string",
+  "schema": {
+    "fields": [
+      {"name": "source_id", "type": "uint64", "nullable": false},
+      {"name": "label", "type": "utf8", "nullable": true}
+    ]
+  }
+}
+```
+
+Supported target columns are `utf8`, `int32`, `float64`, and explicitly authorized `int64`/`uint64`
+as exact decimal strings. Nullable strings retain null versus empty values; numeric nulls are rejected.
+Omit `sourceFeatureIdProperty` to use explicit-schema content-local row IDs. Arrays, enums, noData,
+multiple classes/feature sets, texture IDs, and mixed-feature triangles are rejected. Every unmapped
+property fails. Decimal-string representation is reported in the completed diagnostics. Feature-bearing
+3TZ output remains unsupported and fails explicitly; providing a feature mapping with 3TZ rejects
+before content I/O.
+
+The decoded input gate includes Arrow column and triangle-association buffers after extraction.
+It does not bound allocations during metadata decoding or Arrow construction.
 
 ### Multi-tile 3TZ profile
 
