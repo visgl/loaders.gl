@@ -1,14 +1,20 @@
-import {convertSelectedContents} from './convert-tileset';
+import {encodeTileConversionArchiveInBatches} from '@loaders.gl/tile-converter/v5/adapters';
+import {
+  convertSelectedContentsToResources,
+  ARCHIVE_MIME_TYPES,
+  CONVERSION_LIMITS
+} from './convert-tileset';
+import {transferArchiveChunks, type ConversionWorkerScope} from './conversion-worker-stream';
 import type {ConversionWorkerRequest, ConversionWorkerMessage} from './conversion-worker-client';
 
-const workerScope = globalThis as unknown as Pick<Worker, 'onmessage' | 'postMessage'>;
+const workerScope = globalThis as unknown as ConversionWorkerScope;
 
-/** Accepts exactly one conversion in this disposable worker. */
+/** Accepts exactly one conversion, then pulls only acknowledged archive chunks. */
 workerScope.onmessage = async (event: MessageEvent<ConversionWorkerRequest>) => {
   workerScope.onmessage = null;
   try {
     const {inspection, resourceIds, format, features} = event.data;
-    const result = await convertSelectedContents(
+    const result = await convertSelectedContentsToResources(
       inspection,
       resourceIds,
       format,
@@ -18,17 +24,24 @@ workerScope.onmessage = async (event: MessageEvent<ConversionWorkerRequest>) => 
       fetch,
       features
     );
-    const buffer = await result.file.arrayBuffer();
-    workerScope.postMessage(
-      {
-        type: 'result',
-        buffer,
-        name: result.file.name,
-        mimeType: result.file.type,
-        report: result.report
-      } satisfies ConversionWorkerMessage,
-      [buffer]
+    workerScope.postMessage({
+      type: 'progress',
+      message: 'Packaging archive'
+    } satisfies ConversionWorkerMessage);
+    const totalBytes = await transferArchiveChunks(
+      encodeTileConversionArchiveInBatches(result.files, {
+        format,
+        maxArchiveBytes: CONVERSION_LIMITS.maxOutputBytes
+      }),
+      workerScope
     );
+    workerScope.postMessage({
+      type: 'result',
+      totalBytes,
+      name: result.name,
+      mimeType: ARCHIVE_MIME_TYPES[format],
+      report: result.report
+    } satisfies ConversionWorkerMessage);
   } catch (error) {
     workerScope.postMessage({
       type: 'error',

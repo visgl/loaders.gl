@@ -111,7 +111,8 @@ export function ConversionPanel({onPreview}: ConversionPanelProps) {
       <small>
         3TZ accepts up to 64 selected leaf contents; SLPK accepts one. Limits: 16 MiB input, 1,000
         declared contents, 32 MiB output/archive, 1 cm position error. These are not peak memory
-        limits. Conversion runs in a worker; cancel terminates its parsing and packaging.
+        limits. Conversion runs in a worker; cancel terminates its parsing and packaging. Archive
+        chunks are transferred on demand; the complete download is retained in memory.
       </small>
       <form
         onSubmit={event => {

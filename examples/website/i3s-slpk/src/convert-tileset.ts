@@ -24,7 +24,7 @@ import {
   createSingleMeshTilesetSink,
   createMeshTilesetSink,
   createSingleMeshI3SSink,
-  createTileConversionArchive
+  encodeTileConversionArchiveInBatches
 } from '@loaders.gl/tile-converter/v5/adapters';
 
 /** Formats authored by the example, rather than inferred from an output filename. */
@@ -50,6 +50,24 @@ export interface ConversionResult {
   /** Completed portable conversion report, including measured precision diagnostics. */
   readonly report: TileConversionReport;
 }
+
+/** Finalized resources, ready for packaging after the source runtime has been released. */
+export interface ConversionResources {
+  /** Immutable output files from the successfully finalized sink. */
+  readonly files: readonly BrowserTileConversionFile[];
+  /** Archive download filename. */
+  readonly name: string;
+  /** Completed portable conversion report. */
+  readonly report: TileConversionReport;
+}
+
+/** MIME types matching the existing format-specific archive writers. */
+export const ARCHIVE_MIME_TYPES = {
+  /** I3S scene layer package MIME type. */
+  slpk: 'application/octet-stream',
+  /** Indexed 3D Tiles archive MIME type. */
+  '3tz': 'application/vnd.maxar.archive.3tz+zip'
+} as const;
 
 /** Inspects a bounded explicit tileset without fetching its content resources. */
 export async function inspectConversionInput(
@@ -80,6 +98,28 @@ export async function convertSelectedContent(
   fetcher: typeof fetch = fetch,
   features?: MeshSourceFeatureOptions
 ): Promise<ConversionResult> {
+  const output = await convertSelectedContentToResources(
+    inspection,
+    resourceId,
+    format,
+    signal,
+    onProgress,
+    fetcher,
+    features
+  );
+  return createArchiveFile(output, format, signal, onProgress);
+}
+
+/** Authors one selected mesh and releases its source runtime before archive packaging. */
+async function convertSelectedContentToResources(
+  inspection: BrowserTilesetConversionInspection,
+  resourceId: string,
+  format: ConversionFormat,
+  signal: AbortSignal,
+  onProgress: (message: string) => void,
+  fetcher: typeof fetch = fetch,
+  features?: MeshSourceFeatureOptions
+): Promise<ConversionResources> {
   if (features && format !== 'slpk')
     throw new Error('Feature mappings currently require SLPK output.');
   const descriptor = inspection.resources.find(resource => resource.resourceId === resourceId);
@@ -147,15 +187,7 @@ export async function convertSelectedContent(
       files = sink.getFiles();
     }
     signal.throwIfAborted();
-    onProgress('Packaging archive');
-    signal.throwIfAborted();
-    const archive = await createTileConversionArchive(files, {
-      format,
-      maxArchiveBytes: CONVERSION_LIMITS.maxOutputBytes,
-      signal
-    });
-    signal.throwIfAborted();
-    return {file: new File([archive], `selected-mesh.${format}`, {type: archive.type}), report};
+    return {files, name: `selected-mesh.${format}`, report};
   } finally {
     runtime.destroy();
   }
@@ -261,6 +293,28 @@ export async function convertSelectedContents(
   fetcher: typeof fetch = fetch,
   features?: MeshSourceFeatureOptions
 ): Promise<ConversionResult> {
+  const output = await convertSelectedContentsToResources(
+    inspection,
+    resourceIds,
+    format,
+    signal,
+    onProgress,
+    fetcher,
+    features
+  );
+  return createArchiveFile(output, format, signal, onProgress);
+}
+
+/** Authors selected meshes without allocating an archive; used by the streaming worker. */
+export async function convertSelectedContentsToResources(
+  inspection: BrowserTilesetConversionInspection,
+  resourceIds: readonly string[],
+  format: ConversionFormat,
+  signal: AbortSignal,
+  onProgress: (message: string) => void,
+  fetcher: typeof fetch = fetch,
+  features?: MeshSourceFeatureOptions
+): Promise<ConversionResources> {
   if (
     !resourceIds.length ||
     resourceIds.length > CONVERSION_LIMITS.maxSelectedResources ||
@@ -271,7 +325,7 @@ export async function convertSelectedContents(
   )
     throw new Error('Select between 1 and 64 distinct content placements.');
   if (resourceIds.length === 1)
-    return convertSelectedContent(
+    return convertSelectedContentToResources(
       inspection,
       resourceIds[0],
       format,
@@ -370,15 +424,31 @@ export async function convertSelectedContents(
     onProgress: progress => onProgress(progress.phase)
   });
   signal.throwIfAborted();
-  onProgress('Packaging archive');
+  return {files: sink.getFiles(), name: 'selected-meshes.3tz', report};
+}
+
+/** Collects archive chunks as Blob parts for the main-thread integration helpers. */
+async function createArchiveFile(
+  output: ConversionResources,
+  format: ConversionFormat,
+  signal: AbortSignal,
+  onProgress: (message: string) => void
+): Promise<ConversionResult> {
   signal.throwIfAborted();
-  const archive = await createTileConversionArchive(sink.getFiles(), {
+  onProgress('Packaging archive');
+  const parts: Blob[] = [];
+  for await (const chunk of encodeTileConversionArchiveInBatches(output.files, {
     format,
     maxArchiveBytes: CONVERSION_LIMITS.maxOutputBytes,
     signal
-  });
+  })) {
+    parts.push(new Blob([chunk]));
+  }
   signal.throwIfAborted();
-  return {file: new File([archive], 'selected-meshes.3tz', {type: archive.type}), report};
+  return {
+    file: new File(parts, output.name, {type: ARCHIVE_MIME_TYPES[format]}),
+    report: output.report
+  };
 }
 
 /** Charges decoded geometry, triangle associations and Arrow column buffers after extraction. */
