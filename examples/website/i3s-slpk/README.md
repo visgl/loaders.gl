@@ -92,18 +92,24 @@ Non-leaf multi-selections are rejected to avoid exporting overlapping LOD approx
 Any failed, empty, or multi-primitive content aborts the entire output.
 
 SLPK continues to accept one mesh. Multi-node I3S authoring, broader hierarchy/refinement
-mapping, broader feature associations and streaming packaging remain follow-up work.
+mapping, broader feature associations and direct-to-storage downloads remain follow-up work.
 
 The demo caps root JSON plus selected content at 16 MiB, declarations at 1,000 contents,
 aggregate decoded geometry at 16 MiB, retained output and archive size at 32 MiB, and position error
 at 1 cm. These are byte gates, not a guarantee about peak decoder/serialization memory.
 Selected-content fetching, decoding, conversion and archive encoding run in a disposable module
-worker. Progress returns to the controls; the finalized archive is transferred as an `ArrayBuffer`
-and wrapped in a download `File`. Cancel and unmount terminate the worker, including synchronous
-decoding or packaging. Each retry starts a new worker; failed or canceled work publishes no archive.
-Inspection remains on the main thread. Workers do not impose a peak memory limit or stream output.
-Caller-owned inputs, the final archive, and the current entry's temporary buffers still consume
-memory inside the worker. Packaging releases each Blob read before starting the next entry.
+worker. Archive packaging transfers one byte-view chunk at a time. The main thread snapshots
+its exact byte range into a Blob part, checks the aggregate archive budget, and acknowledges it
+before the worker pulls another chunk. Only completed output becomes a downloadable/previewable
+`File`; chunk order and the final byte count are checked. Cancel and unmount terminate the worker,
+including synchronous decoding or packaging, and release partial Blob parts. Each retry starts a
+new worker; failed or canceled work publishes no archive.
+
+Inspection remains on the main thread. The worker no longer allocates or transfers a complete
+archive buffer. Finalized conversion resources, the current entry's temporary buffers, and the
+index/directory metadata still consume worker memory. The main thread retains the complete result
+as Blob parts for download/preview; this does not stream directly to disk or cap total peak memory.
+Packaging releases each Blob read before starting the next entry.
 Worker scripts and their module chunks must be served by the application and allowed by its content security policy.
 
 The example imports orchestration from `@loaders.gl/tile-converter/v5/core` and format

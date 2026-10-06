@@ -121,4 +121,6 @@ MIT License.
 
 For application-owned storage, `encodeTileConversionArchiveInBatches` streams finalized SLPK/3TZ
 resources with consumer-controlled backpressure and cancellation. Finalize storage only after
-iteration succeeds and discard partial output on failure. See the [v5 application guide](https://github.com/visgl/loaders.gl/tree/master/apps/tile-converter#stream-an-archive-to-storage).
+iteration succeeds and discard partial output on failure. The browser archive example transfers
+acknowledged archive chunks from its worker and retains Blob parts for download/preview, without a
+complete archive buffer in the worker. See the [v5 application guide](https://github.com/visgl/loaders.gl/tree/master/apps/tile-converter#stream-an-archive-to-storage).
