@@ -1,7 +1,66 @@
 # @loaders.gl/graphs
 
-[loaders.gl](https://loaders.gl/docs) is a collection of framework-independent 3D and geospatial parsers and encoders.
+Framework-independent loaders for GraphML and Graphviz DOT documents.
 
-The `@loaders.gl/graphs` module will host graph format parsers for DOT, GraphML, and related formats.
+## GraphML loader
 
-For documentation please visit the [website](https://loaders.gl).
+`GraphMLLoader` reads the first graph in a GraphML 1.0 document.
+
+```typescript
+import {load} from '@loaders.gl/core';
+import {GraphMLLoader} from '@loaders.gl/graphs';
+
+const graph = await load('network.graphml', GraphMLLoader);
+```
+
+Pass `GraphMLLoader` to `parseSync` from `@loaders.gl/core` for synchronous parsing.
+The direct parser subpath also exports `GraphMLLoaderWithParser` from
+`@loaders.gl/graphs/graphml-loader`.
+
+The result is `GraphData` with `shape: 'plain-graph-data'`, `nodes`, and `edges`.
+Nodes have `id`, optional `label`, and optional `attributes`. Edges additionally have
+`sourceId`, `targetId`, and `directed`. This shape is compatible with
+`createGraphFromData` in `@deck.gl-community/graph-layers`.
+
+Supported constructs include node and edge identifiers, generated IDs for unnamed edges,
+`edgedefault` and per-edge direction overrides, node/edge/all keys, typed data and defaults,
+unknown data keys, and namespace-prefixed elements. Numeric and boolean keys become JavaScript
+values; other values remain strings. Nested XML data becomes a JSON string.
+
+Only the first graph is returned. Nested graphs, hyperedges, ports, and graph-level data are
+ignored. Nodes without IDs and edges without endpoints are skipped. This is a permissive
+parser, not a GraphML schema validator. Long integers use JavaScript numbers and may lose
+precision outside the safe integer range.
+
+## DOT loader
+
+```typescript
+import {load} from '@loaders.gl/core';
+import {DOTLoader} from '@loaders.gl/graphs';
+
+const graph = await load('network.dot', DOTLoader);
+```
+
+Pass `DOTLoader` to `parseSync` for synchronous text or UTF-8 `ArrayBuffer` parsing.
+The direct parser subpath also exports `DOTLoaderWithParser` from
+`@loaders.gl/graphs/dot-loader`. `DOTLoader` recognizes `.dot` and `.gv` files.
+
+The loader returns the same plain `GraphData` node/edge shape as GraphML, plus typed
+DOT metadata: graph ID, direction, strictness, graph attributes, and subgraph descriptors.
+Identifiers remain strings, including numeric-looking IDs. Unquoted numeric attributes
+become numbers; quoted attributes remain strings. Node and edge `label` attributes are
+also exposed as record labels.
+
+Supported syntax includes `graph` and `digraph`, strict graphs with parallel-edge
+coalescing, implicit nodes, chained edges, repeated attribute lists, scoped node/edge
+defaults, graph attribute assignments, nested named and anonymous subgraphs, comments,
+quoted identifiers, and balanced HTML-like labels. Node and edge attributes include
+subgraph membership descriptors. Reopening a named subgraph retains its attributes and
+node/edge defaults; anonymous subgraph identifiers remain distinct from explicit names. An edge `id`, `Id`, or `ID` attribute supplies its ID;
+otherwise the loader generates an ID from its endpoints and a counter. `dir=none`
+marks an edge as undirected; other `dir` strings mark it as directed.
+
+This is a parser for the supported DOT subset, not a Graphviz renderer. Node ports,
+subgraph endpoints in edge statements, and concatenated quoted strings are unsupported.
+Port syntax is rejected; identifiers containing colons must be quoted. Truncated input,
+trailing content, and edge operators inconsistent with the graph declaration are rejected.
