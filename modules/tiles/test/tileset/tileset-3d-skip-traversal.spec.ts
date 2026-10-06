@@ -348,3 +348,35 @@ test('Tileset3DTraverser#skip LOD ignores disabled progressive-resolution thresh
   expect(Object.keys(traverser.requestedTiles)).toEqual(['root', 'leaf']);
   expect(traverser.requestedTiles[threshold.id]).toBeUndefined();
 });
+
+test('Tileset3DTraverser#zoom-out keeps drawn descendants alongside a coarse fallback', () => {
+  const {root, intermediate, threshold, leaf} = createReplacementTree(true);
+  intermediate._screenSpaceError = 4;
+  Object.assign(threshold, {contentAvailable: true, hasUnloadedContent: false, tileDrawn: true});
+  const traverser = traverseReplacementTree(root, {});
+  expect(Object.keys(traverser.selectedTiles).sort()).toEqual(['root', 'threshold']);
+  expect(traverser.requestedTiles[intermediate.id]).toBeDefined();
+  expect(traverser.requestedTiles[leaf.id]).toBeUndefined();
+
+  // Once the desired level arrives, the over-refined fallback can retire.
+  intermediate.contentAvailable = true;
+  intermediate.hasUnloadedContent = false;
+  traverser.traverse(root, {frameNumber: 2, viewport: {id: 'test'}} as any, {});
+  expect(Object.keys(traverser.selectedTiles)).toEqual(['intermediate']);
+});
+
+test.each([
+  'undrawn',
+  'culled',
+  'unloaded'
+])('Tileset3DTraverser#zoom-out does not restore %s descendant work', state => {
+  const {root, intermediate, threshold} = createReplacementTree(true);
+  intermediate._screenSpaceError = 4;
+  Object.assign(threshold, {
+    contentAvailable: state !== 'unloaded',
+    tileDrawn: state !== 'undrawn',
+    isVisibleAndInRequestVolume: state !== 'culled'
+  });
+  const traverser = traverseReplacementTree(root, {});
+  expect(Object.keys(traverser.selectedTiles)).toEqual(['root']);
+});

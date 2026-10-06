@@ -57,6 +57,10 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
 
 ## v5.0 (In Development)
 
+- `Tileset3D` retires drawn fallback tiles independently as each replacement region finishes.
+  Skip-LOD zoom-out reuses nearby drawn descendants while the desired coarse tile loads.
+  See [tile hierarchy and refinement](./modules/3d-tiles/concepts/tile-hierarchy-and-refinement.md).
+
 - `@loaders.gl/graphs`: Added `DOTLoader` for Graphviz DOT graphs, scoped attributes,
   strict edges, and subgraph metadata. See the [graphs module](./modules/graphs/README.md).
 

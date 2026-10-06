@@ -77,6 +77,12 @@ independently, and progressive-resolution descendants remain urgent. The tradeof
 overdraw. Set `skipLevelOfDetail: false` to use traditional all-required-children replacement
 behavior. I3S retains its existing non-skipping default.
 
+When zooming out to a level whose content is unavailable, skip-LOD traversal also keeps
+already-drawn descendants within two levels alongside the available ancestor. This reuses
+existing detail without requesting additional descendant content. The renderer's transition
+hold retains only previously drawn tiles and releases each region once its own selected
+replacement has drawn, so an unfinished region does not keep unrelated coarse tiles on screen.
+
 ## Visibility, Selection, and Requests
 
 These states answer different questions:

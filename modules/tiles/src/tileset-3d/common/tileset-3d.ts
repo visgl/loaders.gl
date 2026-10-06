@@ -788,14 +788,30 @@ export class Tileset3D {
 
     let heldBackCount = 0;
     if (hasUndrawnTiles) {
-      for (const tileId of selectedIds) {
-        this._heldTiles.add(tileId);
+      const selectedTilesById = new Map(this.selectedTiles.map(tile => [tile.id, tile]));
+      const descendantReadiness = new Map<Tile3D, boolean>();
+      for (const tile of this.selectedTiles) {
+        for (let ancestor = tile.parent; ancestor; ancestor = ancestor.parent) {
+          descendantReadiness.set(
+            ancestor,
+            (descendantReadiness.get(ancestor) ?? true) && tile.tileDrawn
+          );
+        }
+      }
+      // Drawing can finish between traversals. Promote only previously selected
+      // geometry that actually drew; pending tiles cannot provide visible fallback.
+      for (const tile of previousSelectedTiles) {
+        if (tile.tileDrawn) this._heldTiles.add(tile.id);
       }
       for (const tileId of this._heldTiles) {
         if (selectedIds.has(tileId)) continue;
 
         const tile = this._tiles[tileId];
-        if (tile && tile.contentAvailable) {
+        if (
+          tile &&
+          tile.contentAvailable &&
+          !this._hasDrawnReplacement(tile, selectedTilesById, descendantReadiness)
+        ) {
           tile._selectedFrame = this._frameNumber;
           this.selectedTiles.push(tile);
           heldBackCount++;
@@ -824,6 +840,25 @@ export class Tileset3D {
     if (this._tilesChanged(previousSelectedTiles, this.selectedTiles)) {
       this.options.onUpdate();
     }
+  }
+
+  /**
+   * Releases fallback geometry once its own selected replacement has drawn.
+   * Unrelated pending branches must not delay this region's handoff. When no related
+   * replacement is selected, retain the fallback until the complete selection has drawn.
+   */
+  private _hasDrawnReplacement(
+    tile: Tile3D,
+    selectedTilesById: Map<string, Tile3D>,
+    descendantReadiness: Map<Tile3D, boolean>
+  ): boolean {
+    for (let ancestor = tile.parent; ancestor; ancestor = ancestor.parent) {
+      const selectedAncestor = selectedTilesById.get(ancestor.id);
+      if (selectedAncestor) {
+        return selectedAncestor.tileDrawn;
+      }
+    }
+    return descendantReadiness.get(tile) === true;
   }
 
   _tilesChanged(oldSelectedTiles: Tile3D[], selectedTiles: Tile3D[]): boolean {

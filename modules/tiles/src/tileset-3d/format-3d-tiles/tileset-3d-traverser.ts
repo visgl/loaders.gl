@@ -236,6 +236,11 @@ export class Tileset3DTraverser extends TilesetTraverser {
     while (fallbackTile) {
       if (this.shouldSelectTile(fallbackTile, frameState)) {
         this.selectTile(fallbackTile, frameState);
+        if (fallbackTile !== tile) {
+          // On zoom-out the desired coarse level may still be unavailable. Preserve
+          // nearby detail that already drew while the ancestor fills uncovered pixels.
+          this.selectLoadedDescendants(tile, frameState, true);
+        }
         return;
       }
       fallbackTile = fallbackTile.parent;
@@ -248,8 +253,13 @@ export class Tileset3DTraverser extends TilesetTraverser {
    *
    * @param root - Unavailable tile whose descendants are searched.
    * @param frameState - Current culling state.
+   * @param drawnOnly - Reuse drawn detail without starting obsolete GPU work.
    */
-  private selectLoadedDescendants(root: Tile3D, frameState: FrameState): void {
+  private selectLoadedDescendants(
+    root: Tile3D,
+    frameState: FrameState,
+    drawnOnly: boolean = false
+  ): void {
     const stack: Array<{tile: Tile3D; depth: number}> = [{tile: root, depth: 0}];
     while (stack.length > 0) {
       const {tile, depth} = stack.pop() as {tile: Tile3D; depth: number};
@@ -258,7 +268,7 @@ export class Tileset3DTraverser extends TilesetTraverser {
         if (!child.isVisibleAndInRequestVolume) {
           continue;
         }
-        if (child.contentAvailable) {
+        if (this.shouldSelectTile(child, frameState) && (!drawnOnly || child.tileDrawn)) {
           this.selectTile(child, frameState);
           this.touchTile(child, frameState);
         } else if (depth < 1) {

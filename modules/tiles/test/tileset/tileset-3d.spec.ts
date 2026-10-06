@@ -5,7 +5,7 @@
 // This file is derived from the Cesium code base under Apache 2 license
 // See LICENSE.md and https://github.com/AnalyticalGraphicsInc/cesium/blob/master/LICENSE.md
 
-import {expect, test} from 'vitest';
+import {expect, test, vi} from 'vitest';
 import {WebMercatorViewport} from '@deck.gl/core';
 import {coreApi, load, parse} from '@loaders.gl/core';
 import {I3SSource, Tile3D, Tiles3DSource, Tileset3D} from '@loaders.gl/tiles';
@@ -511,6 +511,111 @@ test('Tileset3D#should detect ktx2 texture', async () => {
   await tileset._loadTile(tile);
   expect(tileset.contentFormats).toEqual({draco: false, meshopt: false, dds: false, ktx2: true});
 });
+test.each([
+  'refine',
+  'coarsen'
+])('Tileset3D#transition hold releases completed regions independently when they %s', direction => {
+  vi.useFakeTimers();
+  try {
+    const createTile = (id: string, parent: Tile3D | null = null, tileDrawn = true) =>
+      ({id, parent, tileDrawn, contentAvailable: true}) as Tile3D;
+    const root = createTile('root');
+    const readyParent = createTile('ready-parent', root);
+    const pendingParent = createTile('pending-parent', root, direction === 'refine');
+    const readyChildren = [
+      createTile('ready-child-0', readyParent),
+      createTile('ready-child-1', readyParent)
+    ];
+    const pendingChildren = [
+      createTile('pending-child-0', pendingParent),
+      createTile('pending-child-1', pendingParent, direction === 'coarsen')
+    ];
+    const unrelatedFallback = createTile('unrelated-fallback', root);
+    const previous =
+      direction === 'refine'
+        ? [readyParent, pendingParent]
+        : [...readyChildren, ...pendingChildren];
+    previous.push(unrelatedFallback);
+    const selected =
+      direction === 'refine'
+        ? [...readyChildren, ...pendingChildren]
+        : [readyParent, pendingParent];
+    const tileset = Object.assign(Object.create(Tileset3D.prototype), {
+      selectedTiles: previous,
+      _heldTiles: new Set(previous.map(tile => tile.id)),
+      _tiles: Object.fromEntries(previous.map(tile => [tile.id, tile])),
+      _frameNumber: 2,
+      frameStateData: {view: {selectedTiles: selected, _requestedTiles: [], _emptyTiles: []}},
+      options: {onTraversalComplete: (tiles: Tile3D[]) => tiles, onUpdate: vi.fn()},
+      _loadTiles: vi.fn(),
+      _unloadTiles: vi.fn(),
+      _updateStats: vi.fn(),
+      selectTiles: vi.fn().mockResolvedValue(2)
+    }) as Tileset3D;
+
+    tileset._updateTiles();
+    const held = direction === 'refine' ? [pendingParent] : pendingChildren;
+    expect(tileset.selectedTiles).toEqual([...selected, ...held, unrelatedFallback]);
+
+    pendingParent.tileDrawn = true;
+    pendingChildren[1].tileDrawn = true;
+    tileset._updateTiles();
+    expect(tileset.selectedTiles).toEqual(selected);
+  } finally {
+    vi.clearAllTimers();
+    vi.useRealTimers();
+  }
+});
+
+test('Tileset3D#transition hold does not retain superseded tiles that never drew', () => {
+  vi.useFakeTimers();
+  try {
+    const root = {id: 'root', parent: null, tileDrawn: false, contentAvailable: true} as Tile3D;
+    const intermediate = {
+      id: 'intermediate',
+      parent: root,
+      tileDrawn: false,
+      contentAvailable: true
+    } as Tile3D;
+    const leaf = {
+      id: 'leaf',
+      parent: intermediate,
+      tileDrawn: false,
+      contentAvailable: true
+    } as Tile3D;
+    const frame = {selectedTiles: [root], _requestedTiles: [], _emptyTiles: []};
+    const tileset = Object.assign(Object.create(Tileset3D.prototype), {
+      selectedTiles: [],
+      _heldTiles: new Set(),
+      _tiles: {},
+      _frameNumber: 2,
+      frameStateData: {view: frame},
+      options: {onTraversalComplete: (tiles: Tile3D[]) => tiles, onUpdate: vi.fn()},
+      _loadTiles: vi.fn(),
+      _unloadTiles: vi.fn(),
+      _updateStats: vi.fn(),
+      selectTiles: vi.fn().mockResolvedValue(2)
+    }) as Tileset3D;
+    tileset._updateTiles();
+    expect(tileset.selectedTiles).toEqual([root]);
+    // Drawing can finish without another traversal; the next frame must preserve it.
+    root.tileDrawn = true;
+    frame.selectedTiles = [intermediate];
+    tileset._updateTiles();
+    expect(tileset.selectedTiles).toEqual([intermediate, root]);
+    frame.selectedTiles = [leaf];
+    tileset._updateTiles();
+    // The root is real visible coverage; the intermediate has never contributed a pixel.
+    expect(tileset.selectedTiles).toEqual([leaf, root]);
+    leaf.tileDrawn = true;
+    tileset._updateTiles();
+    expect(tileset.selectedTiles).toEqual([leaf]);
+  } finally {
+    vi.clearAllTimers();
+    vi.useRealTimers();
+  }
+});
+
 test('Tileset3D#transition hold keeps tiles visible until replacements draw', async () => {
   const tilesetJson = await load(TILESET_URL, Tiles3DLoader);
   let onUpdateCount = 0;
