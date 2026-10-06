@@ -187,3 +187,14 @@ test('preserves GraphML string whitespace in explicit values and defaults', () =
   });
   expect(graph.nodes[1]).toMatchObject({label: '  default  ', attributes: {label: '  default  '}});
 });
+
+test.each([
+  ['compact', '<payload>value</payload>', {payload: 'value'}],
+  ['indented', '\n  <payload>value</payload>\n', {payload: 'value'}],
+  ['mixed content', '<payload>value</payload>tail', {payload: 'value', '#text': 'tail'}]
+])('preserves %s GraphML vendor XML structure', (_name, vendorXml, expected) => {
+  const graph = parseGraphML(
+    `<graphml><graph><node id="a"><data key="vendor">${vendorXml}</data></node></graph></graphml>`
+  );
+  expect(JSON.parse(String(graph.nodes[0].attributes?.vendor))).toEqual(expected);
+});

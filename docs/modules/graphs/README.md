@@ -87,6 +87,7 @@ for synchronous text or UTF-8 `ArrayBuffer` parsing. `DOTLoader` recognizes `.do
 The loader returns the same plain `GraphData` node/edge shape as GraphML, plus typed
 DOT metadata: graph ID, direction, strictness, graph attributes, and subgraph descriptors.
 Unknown backslash sequences are preserved for downstream attribute interpretation.
+Backslashes followed by physical line endings join quoted identifiers and labels across lines.
 Identifiers remain strings, including numeric-looking IDs. Unquoted numeric attributes
 become numbers; quoted attributes remain strings. Node and edge `label` attributes are
 also exposed as record labels.

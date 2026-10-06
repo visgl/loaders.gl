@@ -746,13 +746,17 @@ function readQuotedString(input: string, startIndex: number): {value: string; ne
   throw new Error('Unterminated string literal in DOT source.');
 }
 
-/** Decodes one quoted-string escape. */
+/** Decodes one quoted-string escape or removes a physical line continuation. */
 function readEscapedCharacter(
   input: string,
   startIndex: number
 ): {value: string; nextIndex: number} {
   const next = input[startIndex];
   switch (next) {
+    case '\n':
+      return {value: '', nextIndex: startIndex + 1};
+    case '\r':
+      return {value: '', nextIndex: startIndex + (input[startIndex + 1] === '\n' ? 2 : 1)};
     case 'n':
     case 'l':
     case 'L':

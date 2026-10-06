@@ -254,3 +254,12 @@ test.each(
     attributes: {[attributeName]: identifier, weight: 2}
   });
 });
+
+test.each([
+  ['LF', '\n'],
+  ['CRLF', '\r\n'],
+  ['CR', '\r']
+])('removes %s quoted line continuations from identifiers and labels', (_name, lineEnding) => {
+  const graph = parseDOT(`graph { "first\\${lineEnding}second" [label="a\\${lineEnding}b"]; }`);
+  expect(graph.nodes[0]).toMatchObject({id: 'firstsecond', label: 'ab'});
+});
