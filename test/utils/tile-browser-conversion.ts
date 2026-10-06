@@ -55,8 +55,16 @@ export function createInput(
 }
 
 /** Changes a controlled browser input through its native setter and bubbling input event. */
-export async function setInputValue(element: HTMLInputElement, value: string): Promise<void> {
-  Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value')!.set!.call(element, value);
+export async function setInputValue(
+  element: HTMLInputElement | HTMLTextAreaElement,
+  value: string
+): Promise<void> {
+  Object.getOwnPropertyDescriptor(
+    element instanceof HTMLTextAreaElement
+      ? HTMLTextAreaElement.prototype
+      : HTMLInputElement.prototype,
+    'value'
+  )!.set!.call(element, value);
   await act(async () => {
     element.dispatchEvent(new Event('input', {bubbles: true}));
   });

@@ -170,11 +170,15 @@ precise target property/null profile.
 ### Browser example
 
 The [tile archive example](/examples/i3s-slpk) can inspect an explicit 3D Tiles URL,
-convert one selected self-contained static mesh content to SLPK or 3TZ, and preview or
+convert selected self-contained static mesh contents to SLPK or 3TZ, and preview or
 download the partial archive. It demonstrates the separate core and adapters entrypoints,
 required byte/precision budgets, cancellation and explicit profile rejection. See the
 [example README](https://github.com/visgl/loaders.gl/tree/master/examples/website/i3s-slpk)
-for limits and supported inputs.
+for limits and supported inputs. The controls accept an explicit JSON `MeshSourceFeatureOptions`
+mapping for single-mesh SLPK output; no schema is inferred. The decoded byte gate charges geometry,
+Arrow columns and triangle associations after extraction. Exact 64-bit decimal-string mappings are
+reported as diagnostics. Untextured material factors are preserved in both formats; `COLOR_0` is
+preserved for 3TZ and rejected for SLPK. Feature-bearing 3TZ remains unsupported.
 
 
 ### Partial mesh collections

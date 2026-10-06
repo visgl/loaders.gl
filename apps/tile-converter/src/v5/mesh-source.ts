@@ -40,12 +40,12 @@ export interface MeshTilesetSourceOptions extends TilesetConversionSourceOptions
  * Shared traversal retains placement identity and unloads content according to the supplied policy.
  * The adapter applies node transforms, glTF up-axis correction, RTC translation, and tile placement
  * once, retaining Float64 absolute positions and inverse-transpose unit normals. Animation, skins,
- * morphs, instancing, textures, colors, unknown extensions, non-affine/mirrored placements, and
+ * morphs, instancing, textures, unknown extensions, non-affine/mirrored placements, and
  * metadata outside the declared feature profile fail explicitly. Multiple resources can be read;
  * the single-mesh I3S sink rejects a second resource and aborts the entire output.
  * @param tileset - Dedicated native EPSG:4978 runtime with decoded glTF content enabled.
  * @param options - Explicit feature schema/mapping and optional decoded-content cleanup.
- * @returns Portable conversion source usable with the I3S codec or unannotated GLB codec.
+ * @returns Portable conversion source; COLOR_0 is preserved for GLB, while I3S rejects vertex colors.
  */
 export function createMeshTilesetConversionSource(
   tileset: Tileset3D,
@@ -252,7 +252,7 @@ function extractPrimitive(
   const attributes: Record<string, MeshAttribute> = {};
   for (const [name, accessor] of Object.entries(primitive.attributes)) {
     if (name === '_BATCHID' || /^_FEATURE_ID_\d+$/.test(name)) continue;
-    if (!['POSITION', 'NORMAL'].includes(name))
+    if (!['POSITION', 'NORMAL', 'COLOR_0'].includes(name))
       throw new TileConversionError(
         'MESH_SOURCE_ATTRIBUTE_UNSUPPORTED',
         `Unsupported mesh attribute ${name}`

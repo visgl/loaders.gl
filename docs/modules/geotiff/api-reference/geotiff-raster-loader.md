@@ -51,8 +51,8 @@ precision before applying scale/offset. `NaN` nodata requires a non-finite check
 
 Images are returned in original file order. A reduced image, mask or nested grid
 remains a distinct image; the loader does not infer a parent-child relationship or
-silently choose an overview. Only the main IFD chain exposed by geotiff.js is
-traversed; SubIFDs are not recursively expanded. Geometry tags retain their exact
+silently choose an overview. Only the main IFD chain is returned as images; SubIFDs are validated by directory
+preflight but are not expanded into public images. Geometry tags retain their exact
 values, including nonzero tiepoint indices and rotated transforms.
 
 The output supports `structuredClone()` and transfer of band buffers to workers.
@@ -62,6 +62,13 @@ It contains no geotiff.js instances or reader methods.
 
 | Option | Type | Default | Description |
 | --- | --- | --- | --- |
+| `geotiff.decoder` | `'auto' \| 'native' \| 'geotiff'` | `'auto'` | Prefer the original decoder, require it, or use compatibility decoding. |
+| `geotiff.maxPixels` | `number` | 16,000,000 | Maximum pixels per selected image. |
+| `geotiff.maxDecodedBytes` | `number` | 268,435,456 | Maximum selected output bytes per image. |
+| `geotiff.signal` | `AbortSignal` | None | Cancel directory discovery and sample decoding. |
+| `geotiff.directoryLimits.maxDirectories` | `number` | 1024 | Maximum main-chain and SubIFD directories. |
+| `geotiff.directoryLimits.maxEntriesPerDirectory` | `number` | 4096 | Maximum tags per directory. |
+| `geotiff.directoryLimits.maxMetadataBytes` | `number` | 16,777,216 | Cumulative encoded directory and tag-value bytes. |
 | `geotiff.imageIndices` | `number[]` | All images | Select complete images by original zero-based IFD index. |
 | `geotiff.bands` | `number[]` | All bands | Select bands by original zero-based sample index in every selected image. |
 
@@ -85,7 +92,12 @@ import {GeoTIFFRasterLoaderWithParser} from '@loaders.gl/geotiff/geotiff-raster-
 ```
 
 TIFF decompression is asynchronous; there is no `parseSync()` implementation.
-The new loader adds no runtime dependency beyond the module's existing geotiff.js decoder.
+The original core handles uncompressed integer and floating-point samples. Auto mode
+uses geotiff.js for unsupported encodings or metadata; malformed directories and exhausted
+budgets fail without fallback. See [TIFF decoder core](/docs/modules/geotiff/tiff-decoder-core).
+Neither backend applies scale/offset. Array-valued native file-directory tags are plain
+arrays; compatibility tags may use typed arrays. Output budgets cover returned sample
+arrays; geotiff.js decompression scratch allocation is not bounded by these options.
 
 ## Using geoid grids with math.gl
 

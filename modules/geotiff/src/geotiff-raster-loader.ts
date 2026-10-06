@@ -3,7 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import type {LoaderWithParser, TypedArray} from '@loaders.gl/loader-utils';
-import {fromArrayBuffer} from 'geotiff';
+import {openTiffNumericDecoder} from './lib/tiff/tiff-numeric-decoder';
 import {GeoTIFFRasterLoader} from './geotiff-raster-loader-types';
 import type {GeoTIFFRasterData, GeoTIFFRasterLoaderOptions} from './geotiff-raster-types';
 
@@ -20,35 +20,44 @@ async function parseGeoTIFFRaster(
   data: ArrayBuffer,
   options?: GeoTIFFRasterLoaderOptions
 ): Promise<GeoTIFFRasterData> {
-  const tiff = await fromArrayBuffer(data);
+  const decoder = await openTiffNumericDecoder(data, {
+    decoder: options?.geotiff?.decoder,
+    ...options?.geotiff?.directoryLimits,
+    signal: options?.geotiff?.signal
+  });
   const imageIndices = selectIndices(
     options?.geotiff?.imageIndices,
-    await tiff.getImageCount(),
+    decoder.images.length,
     'imageIndices'
   );
   const images: GeoTIFFRasterData['images'] = [];
   for (const index of imageIndices) {
-    const image = await tiff.getImage(index);
-    const samples = selectIndices(options?.geotiff?.bands, image.getSamplesPerPixel(), 'bands');
-    const rasters = await image.readRasters({samples, interleave: false});
+    const image = decoder.images[index];
+    const samples = selectIndices(options?.geotiff?.bands, image.bandCount, 'bands');
+    const rasters = await image.readSamples({
+      bands: samples,
+      maxPixels: options?.geotiff?.maxPixels,
+      maxDecodedBytes: options?.geotiff?.maxDecodedBytes,
+      signal: options?.geotiff?.signal
+    });
     const bands = await Promise.all(
       samples.map(async (sample, position) => ({
         index: sample,
-        data: rasters[position] as TypedArray,
-        metadata: (await image.getGDALMetadata(sample)) ?? null
+        data: rasters.data[position] as TypedArray,
+        metadata: image.bandMetadata[sample] ?? null
       }))
     );
-    const geoKeys: Record<string, unknown> | null = image.getGeoKeys() ?? null;
+    const geoKeys: Record<string, unknown> | null = image.geoKeys;
     const code = geoKeys?.ProjectedCSTypeGeoKey ?? geoKeys?.GeographicTypeGeoKey;
     images.push({
       index,
-      width: image.getWidth(),
-      height: image.getHeight(),
+      width: image.width,
+      height: image.height,
       bands,
       geoKeys,
-      metadata: (await image.getGDALMetadata()) ?? null,
-      noData: image.getGDALNoData() ?? null,
-      fileDirectory: {...image.getFileDirectory()},
+      metadata: image.metadata,
+      noData: image.noData,
+      fileDirectory: {...image.fileDirectory},
       ...(typeof code === 'number' && Number.isInteger(code) && code > 0 && code < 32767
         ? {crs: `EPSG:${code}` as const}
         : {})
