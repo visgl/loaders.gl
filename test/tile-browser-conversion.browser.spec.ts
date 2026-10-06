@@ -312,11 +312,16 @@ test('conversion observes malformed root initialization before output setup can 
 });
 
 // UI lifecycle coverage uses an inline executor; real module workers are qualified separately.
-vi.mock('../examples/website/i3s-slpk/src/conversion-worker-client', async () => {
+vi.mock('../examples/website/i3s-slpk/src/conversion-worker-client', async importOriginal => {
+  const original =
+    await importOriginal<
+      typeof import('../examples/website/i3s-slpk/src/conversion-worker-client')
+    >();
   const {convertSelectedContents} = await import(
     '../examples/website/i3s-slpk/src/convert-tileset'
   );
   return {
+    ...original,
     convertSelectedContentsInWorker: (
       ...arguments_: Parameters<
         typeof import('../examples/website/i3s-slpk/src/conversion-worker-client').convertSelectedContentsInWorker

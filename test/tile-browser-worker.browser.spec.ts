@@ -2,7 +2,10 @@ import {afterEach, expect, test, vi} from 'vitest';
 import React, {act} from 'react';
 import {createRoot} from 'react-dom/client';
 import {ConversionPanel} from '../examples/website/i3s-slpk/src/components/conversion-panel';
-import {convertSelectedContentsInWorker} from '../examples/website/i3s-slpk/src/conversion-worker-client';
+import {
+  convertSelectedContentsInWorker,
+  saveSelectedContentsInWorker
+} from '../examples/website/i3s-slpk/src/conversion-worker-client';
 import {
   CONVERSION_LIMITS,
   inspectConversionInput
@@ -67,7 +70,7 @@ test('worker client forwards only cloneable selection, reports progress and rele
   expect(progress).toHaveBeenCalledExactlyOnceWith('encode');
   const firstBytes = new Uint8Array([9, 1, 2, 8]);
   for (const [sequence, chunk] of [firstBytes.subarray(1, 3), new Uint8Array([3])].entries()) {
-    worker.onmessage!.call(
+    await worker.onmessage!.call(
       worker as any,
       new MessageEvent('message', {data: {type: 'chunk', sequence, chunk}})
     );
@@ -260,7 +263,7 @@ test.each([
   if (failure === 'budget')
     Object.defineProperty(chunk, 'byteLength', {value: CONVERSION_LIMITS.maxOutputBytes + 1});
   if (failure === 'short-result') {
-    worker.onmessage!.call(
+    await worker.onmessage!.call(
       worker as any,
       new MessageEvent('message', {data: {type: 'chunk', sequence: 0, chunk}})
     );
@@ -360,4 +363,447 @@ test.each([
   await assertion;
   expect(closed).toBe(true);
   expect(scope.onmessage).toBeNull();
+});
+
+/** Provides explicit gates for destination backpressure and file finalization. */
+function createDeferred() {
+  let resolve!: () => void;
+  const promise = new Promise<void>(complete => {
+    resolve = complete;
+  });
+  return {promise, resolve};
+}
+
+/** Supplies terminal metadata without re-encoding a conversion fixture. */
+function sendCompletion(worker: ReturnType<typeof createWorkerHarness>['worker'], totalBytes = 2) {
+  return worker.onmessage!.call(
+    worker as any,
+    new MessageEvent('message', {
+      data: {
+        type: 'result',
+        totalBytes,
+        name: 'selected-mesh.3tz',
+        mimeType: 'application/zip',
+        report: {diagnostics: []}
+      }
+    })
+  );
+}
+
+test.each([
+  false,
+  true
+])('direct save awaits writes and close, releases its lock, and retains no Blob parts with transfer=%s', async transfer => {
+  const {worker} = createWorkerHarness();
+  const {inspection, controller, resourceIds} = await createOperation();
+  const writeGate = createDeferred();
+  const closeGate = createDeferred();
+  const received: number[][] = [];
+  const write = vi.fn(async (chunk: Uint8Array<ArrayBuffer>) => {
+    received.push(Array.from(chunk));
+    if (transfer) structuredClone(chunk, {transfer: [chunk.buffer]});
+    await writeGate.promise;
+  });
+  const close = vi.fn(() => closeGate.promise);
+  const destination = new WritableStream({write, close});
+  const blob = vi.spyOn(globalThis, 'Blob').mockImplementation(() => {
+    throw new Error('Archive Blob retention');
+  });
+  const result = saveSelectedContentsInWorker(
+    inspection,
+    resourceIds,
+    '3tz',
+    controller.signal,
+    () => {},
+    destination
+  );
+  const pendingWrite = worker.onmessage!.call(
+    worker as any,
+    new MessageEvent('message', {
+      data: {type: 'chunk', sequence: 0, chunk: new Uint8Array([9, 1, 2, 8]).subarray(1, 3)}
+    })
+  );
+  await expect.poll(() => write.mock.calls.length).toBe(1);
+  expect(worker.postMessage).toHaveBeenCalledOnce();
+  expect(received).toEqual([[1, 2]]);
+  expect(destination.locked).toBe(true);
+  writeGate.resolve();
+  await pendingWrite;
+  expect(worker.postMessage).toHaveBeenLastCalledWith({type: 'continue', sequence: 0});
+  await sendCompletion(worker);
+  await expect.poll(() => close.mock.calls.length).toBe(1);
+  let completed = false;
+  void result.then(() => {
+    completed = true;
+  });
+  expect(completed).toBe(false);
+  closeGate.resolve();
+  await expect(result).resolves.toEqual({size: 2, report: {diagnostics: []}});
+  expect(blob).not.toHaveBeenCalled();
+  expect(destination.locked).toBe(false);
+  expect(worker.terminate).toHaveBeenCalledOnce();
+});
+
+test('direct save cancellation during a pending write aborts without acknowledging or closing', async () => {
+  const {worker} = createWorkerHarness();
+  const {inspection, controller, resourceIds} = await createOperation();
+  const gate = createDeferred();
+  const abort = vi.fn();
+  const close = vi.fn();
+  const write = vi.fn(() => gate.promise);
+  const destination = new WritableStream({write, abort, close});
+  const result = saveSelectedContentsInWorker(
+    inspection,
+    resourceIds,
+    '3tz',
+    controller.signal,
+    () => {},
+    destination
+  );
+  const assertion = expect(result).rejects.toThrow('cancel file');
+  const pendingWrite = worker.onmessage!.call(
+    worker as any,
+    new MessageEvent('message', {
+      data: {
+        type: 'chunk',
+        sequence: 0,
+        chunk: new Uint8Array([1, 2])
+      }
+    })
+  );
+  await expect.poll(() => write.mock.calls.length).toBe(1);
+  const reason = new Error('cancel file');
+  controller.abort(reason);
+  expect(worker.terminate).toHaveBeenCalledOnce();
+  gate.resolve();
+  await pendingWrite;
+  await assertion;
+  expect(worker.postMessage).toHaveBeenCalledOnce();
+  expect(close).not.toHaveBeenCalled();
+  expect(abort).toHaveBeenCalledExactlyOnceWith(reason);
+  expect(destination.locked).toBe(false);
+});
+
+test.each([
+  'write',
+  'close',
+  'worker',
+  'constructor',
+  'callback',
+  'cancel-commit',
+  'abort'
+] as const)('direct save reports %s failure and releases the destination', async failure => {
+  const {worker, constructor} = createWorkerHarness();
+  const {inspection, controller, resourceIds} = await createOperation();
+  const abort = vi.fn(() => {
+    if (failure === 'abort') throw new Error('cleanup failed');
+  });
+  const close = vi.fn(() => {
+    if (failure === 'close') throw new Error('close failed');
+  });
+  const destination = new WritableStream({
+    write: () => {
+      if (failure === 'write') throw new Error('write failed');
+    },
+    abort,
+    close
+  });
+  if (failure === 'constructor')
+    constructor.mockImplementation(function () {
+      throw new Error('constructor failed');
+    });
+  const result = saveSelectedContentsInWorker(
+    inspection,
+    resourceIds,
+    '3tz',
+    controller.signal,
+    message => {
+      if (message === 'Saving archive') {
+        if (failure === 'callback') throw new Error('callback failed');
+        if (failure === 'cancel-commit') controller.abort(new Error('cancel-commit failed'));
+      }
+    },
+    destination
+  );
+  const assertion = expect(result).rejects.toThrow(
+    failure === 'abort' ? 'worker failed' : `${failure} failed`
+  );
+  if (failure !== 'constructor') {
+    await worker.onmessage!.call(
+      worker as any,
+      new MessageEvent('message', {
+        data: {
+          type: 'chunk',
+          sequence: 0,
+          chunk: new Uint8Array([1, 2])
+        }
+      })
+    );
+    if (failure === 'worker' || failure === 'abort')
+      await worker.onmessage!.call(
+        worker as any,
+        new MessageEvent('message', {data: {type: 'error', message: 'worker failed'}})
+      );
+    else if (failure !== 'write') await sendCompletion(worker);
+  }
+  await assertion;
+  expect(destination.locked).toBe(false);
+  if (failure !== 'close') expect(close).not.toHaveBeenCalled();
+  if (failure !== 'constructor') expect(worker.terminate).toHaveBeenCalledOnce();
+});
+
+test('an already canceled direct save aborts its fresh destination without allocating a worker', async () => {
+  const {constructor} = createWorkerHarness();
+  const {inspection, controller, resourceIds} = await createOperation();
+  const abort = vi.fn();
+  const destination = new WritableStream({abort});
+  controller.abort();
+  await expect(
+    saveSelectedContentsInWorker(
+      inspection,
+      resourceIds,
+      '3tz',
+      controller.signal,
+      () => {},
+      destination
+    )
+  ).rejects.toMatchObject({name: 'AbortError'});
+  expect(constructor).not.toHaveBeenCalled();
+  expect(abort).toHaveBeenCalledExactlyOnceWith(controller.signal.reason);
+  expect(destination.locked).toBe(false);
+});
+
+test('direct save finishes an already started commit despite later cancellation', async () => {
+  const {worker} = createWorkerHarness();
+  const {inspection, controller, resourceIds} = await createOperation();
+  const closeGate = createDeferred();
+  const close = vi.fn(() => closeGate.promise);
+  const destination = new WritableStream({close});
+  const result = saveSelectedContentsInWorker(
+    inspection,
+    resourceIds,
+    '3tz',
+    controller.signal,
+    () => {},
+    destination
+  );
+  await worker.onmessage!.call(
+    worker as any,
+    new MessageEvent('message', {data: {type: 'chunk', sequence: 0, chunk: new Uint8Array([1, 2])}})
+  );
+  await sendCompletion(worker);
+  await expect.poll(() => close.mock.calls.length).toBe(1);
+  controller.abort(); // Native file close is already committing and cannot be rolled back.
+  closeGate.resolve();
+  await expect(result).resolves.toMatchObject({size: 2});
+  expect(destination.locked).toBe(false);
+});
+
+test('direct save rejects completion before the pending chunk write finishes', async () => {
+  const {worker} = createWorkerHarness();
+  const {inspection, controller, resourceIds} = await createOperation();
+  const gate = createDeferred();
+  const close = vi.fn();
+  const destination = new WritableStream({write: () => gate.promise, close});
+  const result = saveSelectedContentsInWorker(
+    inspection,
+    resourceIds,
+    '3tz',
+    controller.signal,
+    () => {},
+    destination
+  );
+  const assertion = expect(result).rejects.toThrow('before acknowledgement');
+  const pendingWrite = worker.onmessage!.call(
+    worker as any,
+    new MessageEvent('message', {data: {type: 'chunk', sequence: 0, chunk: new Uint8Array([1, 2])}})
+  );
+  await sendCompletion(worker);
+  gate.resolve();
+  await pendingWrite;
+  await assertion;
+  expect(close).not.toHaveBeenCalled();
+  expect(worker.postMessage).toHaveBeenCalledOnce();
+  expect(destination.locked).toBe(false);
+});
+
+/** Opens and selects the tiny inspected document for native save control checks. */
+async function createSaveControls() {
+  const {fetcher} = createInput();
+  vi.stubGlobal('fetch', fetcher);
+  vi.stubGlobal('IS_REACT_ACT_ENVIRONMENT', true);
+  const container = document.createElement('div');
+  document.body.append(container);
+  const root = createRoot(container);
+  try {
+    await act(async () => root.render(React.createElement(ConversionPanel, {onPreview: vi.fn()})));
+    await setInputValue(container.querySelector('input')!, 'https://example.invalid/tileset.json');
+    await act(async () => {
+      container
+        .querySelector('form')!
+        .dispatchEvent(new Event('submit', {bubbles: true, cancelable: true}));
+    });
+    await expect
+      .poll(() => readSettledControl(() => container.querySelector('#conversion-content')))
+      .not.toBeNull();
+    const selection = container.querySelector<HTMLSelectElement>('#conversion-content')!;
+    selection.value = 'tile-0-content-1';
+    await act(async () => selection.dispatchEvent(new Event('change', {bubbles: true})));
+    return {
+      container,
+      /** Finds a button by its user-visible action. */
+      button: (label: string) =>
+        Array.from(container.querySelectorAll('button')).find(
+          button => button.textContent === label
+        ),
+      /** Releases the mounted panel and its active operation. */
+      dispose: async () => {
+        await act(async () => root.unmount());
+        container.remove();
+      }
+    };
+  } catch (error) {
+    await act(async () => root.unmount());
+    container.remove();
+    throw error;
+  }
+}
+
+test.each([
+  'slpk',
+  '3tz'
+] as const)('save controls choose %s before worker startup and publish only after file close', async format => {
+  const {worker, constructor} = createWorkerHarness();
+  const closeGate = createDeferred();
+  const write = vi.fn();
+  const close = vi.fn(() => closeGate.promise);
+  const destination = new WritableStream<Uint8Array<ArrayBuffer>>({write, close});
+  const createWritable = vi.fn(async () => destination);
+  const picker = vi.fn(async () => {
+    expect(constructor).not.toHaveBeenCalled();
+    return {name: `custom.${format}`, createWritable};
+  });
+  vi.stubGlobal('showSaveFilePicker', picker);
+  const controls = await createSaveControls();
+  const objectUrl = vi.spyOn(URL, 'createObjectURL');
+  try {
+    const output = controls.container.querySelector<HTMLSelectElement>('#conversion-format')!;
+    output.value = format;
+    await act(async () => output.dispatchEvent(new Event('change', {bubbles: true})));
+    await act(async () => controls.button('Convert and save to file')!.click());
+    expect(picker).toHaveBeenCalledExactlyOnceWith({
+      suggestedName: `selected-mesh.${format}`,
+      types: [
+        {
+          accept: {
+            [format === 'slpk'
+              ? 'application/octet-stream'
+              : 'application/vnd.maxar.archive.3tz+zip']: [`.${format}`]
+          }
+        }
+      ]
+    });
+    expect(createWritable).toHaveBeenCalledOnce();
+    await act(async () => {
+      await worker.onmessage!.call(
+        worker as any,
+        new MessageEvent('message', {
+          data: {type: 'chunk', sequence: 0, chunk: new Uint8Array([1, 2])}
+        })
+      );
+      await sendCompletion(worker);
+    });
+    expect(close).toHaveBeenCalledOnce();
+    expect(controls.button('Cancel')!.disabled).toBe(true);
+    expect(controls.container.querySelector('[role="status"]')!.textContent).toBe('Saving archive');
+    await act(async () => controls.button('Cancel')!.click());
+    await act(async () => closeGate.resolve());
+    await expect
+      .poll(() =>
+        readSettledControl(() => controls.container.querySelector('[role="status"]')!.textContent)
+      )
+      .toBe(`Saved custom.${format}: 2 bytes`);
+    expect(write).toHaveBeenCalledExactlyOnceWith(new Uint8Array([1, 2]), expect.anything());
+    expect(objectUrl).not.toHaveBeenCalled();
+    expect(controls.container.querySelector('a')).toBeNull();
+    expect(controls.button('Preview generated archive')).toBeUndefined();
+    expect(destination.locked).toBe(false);
+  } finally {
+    closeGate.resolve();
+    await controls.dispose();
+  }
+});
+
+test.each([
+  'dismiss',
+  'create-error',
+  'cancel-create',
+  'unsupported'
+] as const)('save controls handle %s without starting conversion or publishing output', async mode => {
+  const {constructor} = createWorkerHarness();
+  const gate = createDeferred();
+  const abort = vi.fn();
+  const destination = new WritableStream({abort});
+  const createWritable = vi.fn(async () => {
+    if (mode === 'create-error') throw new Error('Cannot open destination');
+    await gate.promise;
+    return destination;
+  });
+  vi.stubGlobal(
+    'showSaveFilePicker',
+    mode === 'unsupported'
+      ? undefined
+      : vi.fn(async () => {
+          if (mode === 'dismiss') throw new DOMException('Dismissed', 'AbortError');
+          return {name: 'custom.slpk', createWritable};
+        })
+  );
+  const controls = await createSaveControls();
+  try {
+    if (mode === 'unsupported') {
+      expect(controls.button('Convert and save to file')).toBeUndefined();
+      expect(controls.button('Convert selected content')!.disabled).toBe(false);
+    } else {
+      await act(async () => controls.button('Convert and save to file')!.click());
+      if (mode === 'cancel-create') {
+        await act(async () => controls.button('Cancel')!.click());
+        await act(async () => gate.resolve());
+        await expect.poll(() => abort.mock.calls.length).toBe(1);
+        expect(destination.locked).toBe(false);
+      }
+      expect(controls.container.querySelector('[role="status"]')!.textContent).toBe(
+        mode === 'create-error' ? 'Failed' : 'Canceled'
+      );
+      expect(controls.container.querySelector('[role="alert"]')?.textContent ?? '').toBe(
+        mode === 'create-error' ? 'Cannot open destination' : ''
+      );
+    }
+    expect(constructor).not.toHaveBeenCalled();
+    expect(controls.container.querySelector('a')).toBeNull();
+  } finally {
+    gate.resolve();
+    await controls.dispose();
+  }
+});
+
+test('download cancellation after terminal metadata discards the collected archive', async () => {
+  const {worker} = createWorkerHarness();
+  const {inspection, controller, resourceIds} = await createOperation();
+  const result = convertSelectedContentsInWorker(
+    inspection,
+    resourceIds,
+    '3tz',
+    controller.signal,
+    () => {}
+  );
+  const assertion = expect(result).rejects.toThrow('Canceled before publication');
+  await worker.onmessage!.call(
+    worker as any,
+    new MessageEvent('message', {data: {type: 'chunk', sequence: 0, chunk: new Uint8Array([1, 2])}})
+  );
+  const completion = sendCompletion(worker);
+  controller.abort(new Error('Canceled before publication'));
+  await completion;
+  await assertion;
+  expect(worker.terminate).toHaveBeenCalledOnce();
 });
