@@ -39,7 +39,7 @@ const graphmlParser = new XMLParser({
   ignoreAttributes: false,
   attributeNamePrefix: XML_ATTRIBUTE_PREFIX,
   textNodeName: XML_TEXT_KEY,
-  trimValues: true,
+  trimValues: false,
   parseAttributeValue: false,
   parseTagValue: false,
   removeNSPrefix: true
@@ -307,15 +307,14 @@ function extractTextContent(value: unknown): string | undefined {
 
   if (isObject(value)) {
     const text = value[XML_TEXT_KEY];
-    if (typeof text === 'string') {
-      return text;
-    }
-
     const nonAttributeEntries = Object.entries(value).filter(
-      ([key]) => !key.startsWith(XML_ATTRIBUTE_PREFIX)
+      ([key]) => !key.startsWith(XML_ATTRIBUTE_PREFIX) && key !== XML_TEXT_KEY
     );
     if (nonAttributeEntries.length === 0) {
-      return undefined;
+      return typeof text === 'string' ? text : undefined;
+    }
+    if (typeof text === 'string' && text.trim()) {
+      nonAttributeEntries.push([XML_TEXT_KEY, text]);
     }
     return JSON.stringify(Object.fromEntries(nonAttributeEntries));
   }
@@ -410,5 +409,5 @@ function parseBoolean(value: string): boolean {
   if (normalized === 'false' || normalized === '0' || normalized === 'no' || normalized === 'n') {
     return false;
   }
-  return Boolean(value);
+  return Boolean(normalized);
 }
