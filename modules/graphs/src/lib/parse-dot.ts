@@ -393,6 +393,10 @@ class DOTParser {
       const existingEdge = this.result.strict ? this.strictEdges.get(strictKey) : undefined;
       if (existingEdge) {
         existingEdge.attributes = {...existingEdge.attributes, ...explicitAttributes};
+        const explicitId = explicitAttributes.id ?? explicitAttributes.Id ?? explicitAttributes.ID;
+        if (typeof explicitId === 'string' || typeof explicitId === 'number') {
+          existingEdge.id = String(explicitId);
+        }
         existingEdge.directed = deriveDirectedFlag(existingEdge.attributes, directed);
         existingEdge.subgraphs = Array.from(new Set([...existingEdge.subgraphs, ...membership]));
         continue;
@@ -742,13 +746,17 @@ function readQuotedString(input: string, startIndex: number): {value: string; ne
   throw new Error('Unterminated string literal in DOT source.');
 }
 
-/** Decodes one quoted-string escape. */
+/** Decodes one quoted-string escape or removes a physical line continuation. */
 function readEscapedCharacter(
   input: string,
   startIndex: number
 ): {value: string; nextIndex: number} {
   const next = input[startIndex];
   switch (next) {
+    case '\n':
+      return {value: '', nextIndex: startIndex + 1};
+    case '\r':
+      return {value: '', nextIndex: startIndex + (input[startIndex + 1] === '\n' ? 2 : 1)};
     case 'n':
     case 'l':
     case 'L':
@@ -765,7 +773,7 @@ function readEscapedCharacter(
       if (typeof next === 'undefined') {
         throw new Error('Unterminated escape sequence in DOT source.');
       }
-      return {value: next, nextIndex: startIndex + 1};
+      return {value: `\\${next}`, nextIndex: startIndex + 1};
     }
   }
 }

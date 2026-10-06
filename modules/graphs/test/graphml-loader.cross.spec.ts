@@ -172,3 +172,29 @@ describe('GraphMLLoader', () => {
     expect(graph.nodes[0].attributes?.flag).toBe(!['false', '0', 'no', 'n'].includes(value));
   });
 });
+
+test('preserves GraphML string whitespace in explicit values and defaults', () => {
+  const graph = parseGraphML(`<graphml>
+    <key id="label" for="node" attr.name="label" attr.type="string"><default>  default  </default></key>
+    <key id="count" for="node" attr.type="int"/>
+    <key id="flag" for="node" attr.type="boolean"/>
+    <graph><node id="a"><data key="label">  padded  </data>
+      <data key="count">  7  </data><data key="flag"> true </data></node><node id="b"/></graph>
+  </graphml>`);
+  expect(graph.nodes[0]).toMatchObject({
+    label: '  padded  ',
+    attributes: {label: '  padded  ', count: 7, flag: true}
+  });
+  expect(graph.nodes[1]).toMatchObject({label: '  default  ', attributes: {label: '  default  '}});
+});
+
+test.each([
+  ['compact', '<payload>value</payload>', {payload: 'value'}],
+  ['indented', '\n  <payload>value</payload>\n', {payload: 'value'}],
+  ['mixed content', '<payload>value</payload>tail', {payload: 'value', '#text': 'tail'}]
+])('preserves %s GraphML vendor XML structure', (_name, vendorXml, expected) => {
+  const graph = parseGraphML(
+    `<graphml><graph><node id="a"><data key="vendor">${vendorXml}</data></node></graph></graphml>`
+  );
+  expect(JSON.parse(String(graph.nodes[0].attributes?.vendor))).toEqual(expected);
+});
