@@ -6,7 +6,7 @@ import {afterEach, beforeAll, expect, test, vi} from 'vitest';
 import {encode} from '@loaders.gl/core';
 import {validateWriter} from 'test/common/conformance';
 import {SLPKWriter as RootWriter, parseSLPKArchive} from '@loaders.gl/i3s';
-import {SLPKWriter} from '@loaders.gl/i3s/i3s-slpk-writer';
+import {SLPKWriter, encodeSLPKArchiveInBatches} from '@loaders.gl/i3s/i3s-slpk-writer';
 import {GZipCompressor} from '@loaders.gl/compression';
 import {DataViewReadableFile} from '@loaders.gl/zip';
 import JSZip from 'jszip';
@@ -123,4 +123,21 @@ test('SLPKWriter forwards packaging cancellation', async () => {
   await expect(SLPKWriter.encode(files, {slpk: {signal: AbortSignal.abort(reason)}})).rejects.toBe(
     reason
   );
+});
+
+test('SLPKWriter streaming matches buffered bytes and retains format validation', async () => {
+  const chunks: ArrayBuffer[] = [];
+  for await (const chunk of encodeSLPKArchiveInBatches(files))
+    chunks.push(new Uint8Array(chunk).buffer);
+  expect(await new Blob(chunks).arrayBuffer()).toEqual(archive);
+  const invalid = encodeSLPKArchiveInBatches({})[Symbol.asyncIterator]();
+  await expect(invalid.next()).rejects.toThrow('requires');
+});
+
+test('SLPKWriter forwards cancellation to streaming', async () => {
+  const reason = new Error('cancel streaming');
+  const iterator = encodeSLPKArchiveInBatches(files, {slpk: {signal: AbortSignal.abort(reason)}})[
+    Symbol.asyncIterator
+  ]();
+  await expect(iterator.next()).rejects.toBe(reason);
 });

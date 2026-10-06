@@ -117,3 +117,8 @@ The tile-converter module represents a major development effort and was funded a
 ![logo](./images/esri.jpeg)
 
 MIT License.
+
+
+For application-owned storage, `encodeTileConversionArchiveInBatches` streams finalized SLPK/3TZ
+resources with consumer-controlled backpressure and cancellation. Finalize storage only after
+iteration succeeds and discard partial output on failure. See the [v5 application guide](https://github.com/visgl/loaders.gl/tree/master/apps/tile-converter#stream-an-archive-to-storage).

@@ -34,8 +34,8 @@ when lowercased, including the reserved index name, are rejected.
 `slpk.maxArchiveBytes` is a nonnegative safe integer, defaulting to `0x7fffffff`. The complete
 archive budget includes ZIP headers and the index and is checked before any Blob reads.
 The initial ZIP32 profile rejects output above 2 GiB and more than 65,533 resources. Larger
-SLPK output requires a future ZIP64 writer. Streaming, resource compression,
-and peak-memory qualification are separate work; this budget bounds output size only.
+SLPK output requires a future ZIP64 writer. Resource compression and peak-memory
+qualification are separate work; this budget bounds output size only.
 
 Returns an `ArrayBuffer`. Wrap it in an `application/octet-stream` Blob and save as `.slpk`.
 The v5 converter's `createTileConversionArchive` performs that Blob handoff for finalized
@@ -52,4 +52,36 @@ Entries are encoded one at a time into one final archive buffer. Temporary buffe
 Blob read and its encoded entry can be released before the next resource is read; all Blob
 read buffers are no longer retained together. Caller-owned inputs, the final archive, the
 current entry's temporary allocations, and later Blob/worker transfer copies still consume
-memory. This does not provide a total heap limit or stream output to external storage.
+memory. This does not provide a total heap limit. For output to external storage, use the iterator below.
+
+### Stream to application-owned storage
+
+`encodeSLPKArchiveInBatches` is exported from the implementation subpath. It accepts the same
+resources/options and yields `Uint8Array` views with byte-identical archive content:
+
+```ts
+import {encodeSLPKArchiveInBatches} from '@loaders.gl/i3s/i3s-slpk-writer';
+
+try {
+  for await (const chunk of encodeSLPKArchiveInBatches(resources, {
+    slpk: {maxArchiveBytes: 32 * 1024 * 1024, signal}
+  })) {
+    await destination.write(chunk);
+  }
+  await destination.close();
+} catch (error) {
+  await destination.abort(error);
+  throw error;
+}
+```
+
+The first pull validates all declarations and the complete size budget before any output. Each
+pull encodes at most the next entry; awaiting writes provides backpressure, and returning from
+iteration prevents subsequent reads/encodes. The complete archive buffer is not allocated.
+Caller-owned resource inputs, one entry's temporary buffers, and index/directory metadata still
+require memory; the current resource is read/encoded as a whole. Index/directory storage grows
+with the declared entry count.
+
+Use each chunk's byte view rather than writing its entire backing buffer. Finalize storage only
+after iteration succeeds; failure, cancellation, or early exit may leave partial bytes that the
+application must discard. Cancellation remains cooperative during active reads/encodes.

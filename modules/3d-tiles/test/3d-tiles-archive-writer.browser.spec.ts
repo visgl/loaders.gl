@@ -7,7 +7,10 @@ import {encode} from '@loaders.gl/core';
 import {validateWriter} from 'test/common/conformance';
 import JSZip from 'jszip';
 import {Tiles3DArchiveWriter as RootWriter} from '@loaders.gl/3d-tiles';
-import {Tiles3DArchiveWriter} from '@loaders.gl/3d-tiles/3d-tiles-archive-writer';
+import {
+  Tiles3DArchiveWriter,
+  encodeTiles3DArchiveInBatches
+} from '@loaders.gl/3d-tiles/3d-tiles-archive-writer';
 import {DataViewReadableFile} from '@loaders.gl/zip';
 import {parse3DTilesArchive} from '../src/3d-tiles-archive/3d-tiles-archive-parser';
 
@@ -124,4 +127,21 @@ test('Tiles3DArchiveWriter forwards packaging cancellation', async () => {
   await expect(
     Tiles3DArchiveWriter.encode(FILES, {'3tz': {signal: AbortSignal.abort(reason)}})
   ).rejects.toBe(reason);
+});
+
+test('Tiles3DArchiveWriter streaming matches buffered bytes and retains format validation', async () => {
+  const chunks: ArrayBuffer[] = [];
+  for await (const chunk of encodeTiles3DArchiveInBatches(FILES))
+    chunks.push(new Uint8Array(chunk).buffer);
+  expect(await new Blob(chunks).arrayBuffer()).toEqual(archive);
+  const invalid = encodeTiles3DArchiveInBatches({})[Symbol.asyncIterator]();
+  await expect(invalid.next()).rejects.toThrow('requires');
+});
+
+test('Tiles3DArchiveWriter forwards cancellation to streaming', async () => {
+  const reason = new Error('cancel streaming');
+  const iterator = encodeTiles3DArchiveInBatches(FILES, {
+    '3tz': {signal: AbortSignal.abort(reason)}
+  })[Symbol.asyncIterator]();
+  await expect(iterator.next()).rejects.toBe(reason);
 });

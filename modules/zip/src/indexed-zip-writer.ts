@@ -37,6 +37,36 @@ export async function encodeIndexedZip(
   files: IndexedZipFiles,
   options: IndexedZipOptions
 ): Promise<ArrayBuffer> {
+  const layout = prepareArchiveLayout(files, options);
+  const archive = new Uint8Array(layout.archiveBytes);
+  let offset = 0;
+  for await (const chunk of encodeArchiveChunks(layout)) {
+    archive.set(chunk, offset);
+    offset += chunk.byteLength;
+  }
+  return archive.buffer;
+}
+
+/**
+ * Yields deterministic indexed ZIP32 chunks with consumer-controlled backpressure.
+ * All paths and the complete archive budget are checked on the first pull, before Blob reads
+ * or output. Retains one resource/entry encode plus index and central-header metadata, without
+ * allocating the complete archive. Chunks are byte views; consumers must respect their offsets
+ * and lengths. Inputs must stay unchanged. Stop iteration to prevent subsequent reads/encodes.
+ * Cancellation is cooperative; callers own discarding partial output and storage finalization.
+ * @param files - Already authored resources, excluding the generated index.
+ * @param options - Index profile, complete output-size budget, and optional cancellation signal.
+ * @returns Local entries followed by the central directory and ZIP end record.
+ */
+export async function* encodeIndexedZipInBatches(
+  files: IndexedZipFiles,
+  options: IndexedZipOptions
+): AsyncIterable<Uint8Array<ArrayBuffer>> {
+  yield* encodeArchiveChunks(prepareArchiveLayout(files, options));
+}
+
+/** Captures immutable resource descriptors and validates the complete ZIP32 layout before I/O. */
+function prepareArchiveLayout(files: IndexedZipFiles, options: IndexedZipOptions) {
   const {maxArchiveBytes, indexPath, lowercasePaths = false, signal} = options;
   signal?.throwIfAborted();
   validatePath(indexPath);
@@ -87,14 +117,16 @@ export async function encodeIndexedZip(
     throw new RangeError('Indexed ZIP archive exceeds the configured byte limit or ZIP32 capacity');
   }
 
+  return {resources, archiveBytes, indexPath, lowercasePaths, signal};
+}
+
+/** Serializes measured entries lazily, retaining only the index and central-directory records. */
+async function* encodeArchiveChunks(
+  layout: ReturnType<typeof prepareArchiveLayout>
+): AsyncIterable<Uint8Array<ArrayBuffer>> {
+  const {resources, archiveBytes, indexPath, lowercasePaths, signal} = layout;
   const entries: DataView[] = [];
-  // Keep one final allocation and at most one resource/entry encode, rather than all Blob reads.
-  const archive = new Uint8Array(archiveBytes);
-  const centralDirectoryOffset = resources.reduce(
-    (total, resource) => total + 30 + resource.path.length + resource.byteLength,
-    30 + indexPath.length + 24 * resources.length
-  );
-  let centralHeaderOffset = centralDirectoryOffset;
+  const centralHeaders: Uint8Array<ArrayBuffer>[] = [];
   const hash = new MD5Hash();
   let localHeaderOffset = 0;
   for (const resource of resources) {
@@ -121,35 +153,45 @@ export async function encodeIndexedZip(
     if (data.byteLength !== resource.byteLength) {
       throw new TypeError('Indexed ZIP resource size changed during packaging');
     }
-    await encodeEntry(archive, resource.path, data, localHeaderOffset, centralHeaderOffset);
+    const encoded = await encodeEntry(resource.path, data, localHeaderOffset);
     signal?.throwIfAborted();
-    localHeaderOffset += 30 + resource.path.length + resource.byteLength;
-    centralHeaderOffset += 46 + resource.path.length;
+    const localBytes = 30 + resource.path.length + resource.byteLength;
+    centralHeaders.push(new Uint8Array(encoded.slice(localBytes, -22)));
+    localHeaderOffset += localBytes;
+    yield new Uint8Array(encoded, 0, localBytes);
   }
   entries.sort(compareIndexEntries);
   const indexData = new Uint8Array(24 * entries.length);
   entries.forEach((entry, index) => indexData.set(new Uint8Array(entry.buffer), index * 24));
   signal?.throwIfAborted();
-  await encodeEntry(archive, indexPath, indexData.buffer, localHeaderOffset, centralHeaderOffset);
+  const encodedIndex = await encodeEntry(indexPath, indexData.buffer, localHeaderOffset);
+  signal?.throwIfAborted();
+  const indexLocalBytes = 30 + indexPath.length + indexData.byteLength;
+  centralHeaders.push(new Uint8Array(encodedIndex.slice(indexLocalBytes, -22)));
+  const centralDirectoryOffset = localHeaderOffset + indexLocalBytes;
+  yield new Uint8Array(encodedIndex, 0, indexLocalBytes);
+  for (const centralHeader of centralHeaders) {
+    signal?.throwIfAborted();
+    yield centralHeader;
+  }
   signal?.throwIfAborted();
   // ZIP32 end-of-central-directory record; disk numbers and comment length remain zero.
-  const endOfCentralDirectory = new DataView(archive.buffer, archiveBytes - 22);
+  const endOfCentralDirectory = new DataView(new ArrayBuffer(22));
   endOfCentralDirectory.setUint32(0, 0x06054b50, true);
   endOfCentralDirectory.setUint16(8, resources.length + 1, true);
   endOfCentralDirectory.setUint16(10, resources.length + 1, true);
   endOfCentralDirectory.setUint32(12, archiveBytes - 22 - centralDirectoryOffset, true);
   endOfCentralDirectory.setUint32(16, centralDirectoryOffset, true);
-  return archive.buffer;
+  yield new Uint8Array(endOfCentralDirectory.buffer);
+  signal?.throwIfAborted();
 }
 
-/** Copies one JSZip STORE entry into the final archive and rebases its central-header offset. */
+/** Encodes one STORE entry and rebases the local-header offset in its central-directory record. */
 async function encodeEntry(
-  archive: Uint8Array,
   path: string,
   data: ArrayBuffer,
-  localHeaderOffset: number,
-  centralHeaderOffset: number
-): Promise<void> {
+  localHeaderOffset: number
+): Promise<ArrayBuffer> {
   const localBytes = 30 + path.length + data.byteLength;
   const centralBytes = 46 + path.length;
   const encoded = await ZipWriter.encode(
@@ -166,9 +208,8 @@ async function encodeEntry(
   if (encoded.byteLength !== localBytes + centralBytes + 22) {
     throw new Error('Unexpected indexed ZIP layout');
   }
-  archive.set(new Uint8Array(encoded, 0, localBytes), localHeaderOffset);
-  archive.set(new Uint8Array(encoded, localBytes, centralBytes), centralHeaderOffset);
-  new DataView(archive.buffer).setUint32(centralHeaderOffset + 42, localHeaderOffset, true);
+  new DataView(encoded).setUint32(localBytes + 42, localHeaderOffset, true);
+  return encoded;
 }
 
 /** Compares MD5 values as two little-endian unsigned 64-bit integers, per the indexed archive specifications. */
