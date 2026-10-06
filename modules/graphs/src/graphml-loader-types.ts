@@ -3,7 +3,16 @@
 // Copyright (c) vis.gl contributors
 
 import type {Loader} from '@loaders.gl/loader-utils';
-import type {GraphData} from './graph-types';
+import type {GraphOutput, GraphShape} from './graph-types';
+
+/** Options for selecting the GraphML graph output representation. */
+export type GraphMLLoaderOptions = {
+  /** Format-specific graph options. */
+  graphml?: {
+    /** Representation of each named table; defaults to Arrow. */
+    shape?: GraphShape;
+  };
+};
 
 // @ts-ignore __VERSION__ is injected by the build.
 const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : 'latest';
@@ -24,8 +33,8 @@ export const GraphMLLoader = {
   mimeTypes: ['application/graphml+xml'],
   text: true,
   worker: false,
-  dataType: null as unknown as GraphData,
+  dataType: null as unknown as GraphOutput,
   batchType: null as never,
-  options: {},
+  options: {graphml: {shape: 'arrow-table'}},
   preload
-} as const satisfies Loader<GraphData, never>;
+} as const satisfies Loader<GraphOutput, never, GraphMLLoaderOptions>;

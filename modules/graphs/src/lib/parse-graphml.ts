@@ -4,16 +4,22 @@
 
 import {XMLParser} from 'fast-xml-parser';
 
-import type {GraphData, GraphEdge, GraphNode} from '../graph-types';
+import type {
+  GraphData,
+  GraphEdge,
+  GraphNode,
+  GraphOutput,
+  GraphShape,
+  GraphAttributeSchemas,
+  GraphAttributeType
+} from '../graph-types';
+import {buildGraphTables} from './build-graph-tables';
 
 const XML_ATTRIBUTE_PREFIX = '@_';
 const XML_TEXT_KEY = '#text';
 
 /** Supported key scopes. */
 type GraphMLDomain = 'all' | 'node' | 'edge' | 'graph';
-
-/** Supported scalar attribute types. */
-type GraphMLAttributeType = 'boolean' | 'int' | 'long' | 'float' | 'double' | 'string';
 
 /** A declared GraphML key and its default. */
 type GraphMLKeyDefinition = {
@@ -24,9 +30,11 @@ type GraphMLKeyDefinition = {
   /** Elements to which defaults apply. */
   domain: GraphMLDomain;
   /** Declared scalar type. */
-  type: GraphMLAttributeType;
+  type: GraphAttributeType;
   /** Typed default value. */
   defaultValue?: unknown;
+  /** Whether long values retain exact integer precision. */
+  lossless: boolean;
 };
 
 /** XML element representation emitted by fast-xml-parser. */
@@ -49,7 +57,12 @@ const graphmlParser = new XMLParser({
 export type GraphMLInput = string | ArrayBuffer | Uint8Array;
 
 /** Parses the first GraphML graph into framework-independent node and edge records. */
-export function parseGraphML(graphml: GraphMLInput): GraphData {
+export function parseGraphML(graphml: GraphMLInput): GraphData;
+export function parseGraphML(graphml: GraphMLInput, shape: GraphShape): GraphOutput;
+export function parseGraphML(
+  graphml: GraphMLInput,
+  shape: GraphShape = 'plain-graph-data'
+): GraphOutput {
   const xmlText = decodeGraphML(graphml);
   const document = graphmlParser.parse(xmlText) as GraphMLObject;
   const graphmlRoot = getGraphMLRoot(document);
@@ -62,22 +75,50 @@ export function parseGraphML(graphml: GraphMLInput): GraphData {
     throw new Error('GraphML document does not contain a <graph> element.');
   }
 
-  const keyDefinitions = collectKeyDefinitions(graphmlRoot, graphElement);
+  const keyDefinitions = collectKeyDefinitions(
+    graphmlRoot,
+    graphElement,
+    shape !== 'plain-graph-data'
+  );
   const defaultDirected = parseEdgeDefault(graphElement[`${XML_ATTRIBUTE_PREFIX}edgedefault`]);
 
-  const nodes = normalizeArray(graphElement.node).map(node => parseNode(node, keyDefinitions));
-  const edges = normalizeArray(graphElement.edge).map((edge, index) =>
-    parseEdge(edge, index, keyDefinitions, defaultDirected)
+  const declarations: GraphAttributeSchemas = {nodes: new Map(), edges: new Map()};
+  for (const definition of keyDefinitions.values()) {
+    if (definition.domain === 'all' || definition.domain === 'node')
+      declarations.nodes.set(definition.name, definition.type);
+    if (definition.domain === 'all' || definition.domain === 'edge')
+      declarations.edges.set(definition.name, definition.type);
+  }
+  return buildGraphTables(
+    iterateNodes(graphElement.node, keyDefinitions),
+    iterateEdges(graphElement.edge, keyDefinitions, defaultDirected),
+    shape,
+    declarations
   );
+}
 
-  const filteredNodes = nodes.filter((node): node is GraphNode => Boolean(node));
-  const filteredEdges = edges.filter((edge): edge is GraphEdge => Boolean(edge));
+/** Emits valid nodes directly to the selected output builder. */
+function* iterateNodes(
+  nodes: unknown,
+  definitions: Map<string, GraphMLKeyDefinition>
+): Iterable<GraphNode> {
+  for (const node of normalizeArray(nodes)) {
+    const record = parseNode(node, definitions);
+    if (record) yield record;
+  }
+}
 
-  return {
-    shape: 'plain-graph-data',
-    nodes: filteredNodes,
-    edges: filteredEdges
-  } satisfies GraphData;
+/** Emits valid edges while preserving generated IDs and document order. */
+function* iterateEdges(
+  edges: unknown,
+  definitions: Map<string, GraphMLKeyDefinition>,
+  directed: boolean
+): Iterable<GraphEdge> {
+  let index = 0;
+  for (const edge of normalizeArray(edges)) {
+    const record = parseEdge(edge, index++, definitions, directed);
+    if (record) yield record;
+  }
 }
 
 /** Decodes text or UTF-8 binary input. */
@@ -110,13 +151,18 @@ function getGraphMLRoot(document: GraphMLObject): GraphMLObject | null {
 /** Selects the first graph element. */
 function getGraphElement(graphmlRoot: GraphMLObject): GraphMLObject | null {
   const graph = graphmlRoot.graph;
+  if (typeof graph === 'string' && !graph.trim()) {
+    return {};
+  }
   if (!graph) {
     return null;
   }
 
   if (Array.isArray(graph)) {
-    const firstGraph = graph.find(entry => isObject(entry));
-    return isObject(firstGraph) ? firstGraph : null;
+    const firstGraph = graph.find(
+      entry => isObject(entry) || (typeof entry === 'string' && !entry.trim())
+    );
+    return isObject(firstGraph) ? firstGraph : typeof firstGraph === 'string' ? {} : null;
   }
 
   return isObject(graph) ? graph : null;
@@ -125,7 +171,8 @@ function getGraphElement(graphmlRoot: GraphMLObject): GraphMLObject | null {
 /** Collects scoped keys and typed defaults. */
 function collectKeyDefinitions(
   graphmlRoot: GraphMLObject,
-  graphElement: GraphMLObject
+  graphElement: GraphMLObject,
+  lossless: boolean
 ): Map<string, GraphMLKeyDefinition> {
   const keys = new Map<string, GraphMLKeyDefinition>();
 
@@ -140,9 +187,10 @@ function collectKeyDefinitions(
         const name = String(candidate[`${XML_ATTRIBUTE_PREFIX}attr.name`] ?? id).trim();
         const type = normalizeType(candidate[`${XML_ATTRIBUTE_PREFIX}attr.type`]);
         const defaultNode = candidate.default ?? null;
-        const defaultValue = defaultNode !== null ? castDataValue(defaultNode, type) : undefined;
+        const defaultValue =
+          defaultNode !== null ? castDataValue(defaultNode, type, lossless) : undefined;
 
-        keys.set(id, {id, domain, name, type, defaultValue});
+        keys.set(id, {id, domain, name, type, defaultValue, lossless});
       }
     }
   }
@@ -263,14 +311,14 @@ function assignAttributeFromDataEntry(
   const value =
     definition?.type === 'boolean' && extractTextContent(entry) === undefined
       ? false
-      : castDataValue(entry, definition?.type ?? 'string');
+      : castDataValue(entry, definition?.type ?? 'string', definition?.lossless);
   if (value !== undefined) {
     attributes[attributeName] = value;
   }
 }
 
 /** Converts GraphML scalar types while preserving unparseable numeric text. */
-function castDataValue(value: unknown, type: GraphMLAttributeType): unknown {
+function castDataValue(value: unknown, type: GraphAttributeType, lossless = false): unknown {
   if (value === null || typeof value === 'undefined') {
     return undefined;
   }
@@ -282,6 +330,9 @@ function castDataValue(value: unknown, type: GraphMLAttributeType): unknown {
 
   if (type === 'boolean') {
     return parseBoolean(text);
+  }
+  if (type === 'long' && lossless) {
+    return /^[+-]?\d+$/.test(text.trim()) ? BigInt(text.trim()) : text;
   }
   if (type === 'int' || type === 'long') {
     const parsed = Number.parseInt(text, 10);
@@ -352,7 +403,7 @@ function normalizeDomain(value: unknown): GraphMLDomain {
 }
 
 /** Normalizes supported GraphML scalar types. */
-function normalizeType(value: unknown): GraphMLAttributeType {
+function normalizeType(value: unknown): GraphAttributeType {
   if (typeof value !== 'string') {
     return 'string';
   }
@@ -370,7 +421,6 @@ function normalizeType(value: unknown): GraphMLAttributeType {
   return 'string';
 }
 
-/** Converts an edge element with its effective direction. */
 /** Reads the graph-wide default edge direction. */
 function parseEdgeDefault(value: unknown): boolean {
   if (typeof value !== 'string') {

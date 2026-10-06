@@ -5401,6 +5401,9 @@ __metadata:
   resolution: "@loaders.gl/graphs@workspace:modules/graphs"
   dependencies:
     "@loaders.gl/loader-utils": "npm:5.0.0-alpha.9"
+    "@loaders.gl/schema": "npm:5.0.0-alpha.9"
+    "@loaders.gl/schema-utils": "npm:5.0.0-alpha.9"
+    apache-arrow: "npm:>= 17.0.0"
     fast-xml-parser: "npm:^5.5.3"
   peerDependencies:
     "@loaders.gl/core": ~5.0.0-alpha.0
