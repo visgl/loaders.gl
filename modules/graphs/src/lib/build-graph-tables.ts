@@ -128,6 +128,19 @@ function inferAttributeType(
 /** Preserves declared scalar types where valid and infers nested DOT attributes. */
 function inferValueType(values: unknown[], declaration?: GraphAttributeType): DataType {
   const present = values.filter(value => value !== null && value !== undefined);
+  if (declaration && typeof declaration === 'object') {
+    if (!present.every(value => Array.isArray(value))) return new Utf8();
+    return new List(
+      new Field(
+        'item',
+        inferValueType(
+          present.flatMap(value => value as unknown[]),
+          declaration.list
+        ),
+        true
+      )
+    );
+  }
   if (declaration) {
     const declaredTypes = {
       boolean: new Bool(),

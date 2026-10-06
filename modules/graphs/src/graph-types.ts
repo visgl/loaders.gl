@@ -46,8 +46,18 @@ export type GraphTables<TableType = ArrowTable> = Tables<TableType> & {
 /** Graph loader output, with Arrow tables as the default representation. */
 export type GraphOutput = GraphTables | GraphTables<ObjectRowTable> | GraphData;
 
-/** Scalar types declared by GraphML attributes. */
-export type GraphAttributeType = 'boolean' | 'int' | 'long' | 'float' | 'double' | 'string';
+/** Scalar and list types declared by graph format attributes. */
+export type GraphAttributeType =
+  | 'boolean'
+  | 'int'
+  | 'long'
+  | 'float'
+  | 'double'
+  | 'string'
+  | {
+      /** Declared element type for a GEXF list attribute. */
+      list: GraphAttributeType;
+    };
 
 /** Declared application attribute schemas for each graph table. */
 export type GraphAttributeSchemas = {

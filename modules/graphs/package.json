@@ -1,7 +1,7 @@
 {
   "name": "@loaders.gl/graphs",
   "version": "5.0.0-alpha.9",
-  "description": "Graph format parsers for DOT, GraphML, and related formats",
+  "description": "Graph format parsers for DOT, GraphML, and GEXF",
   "license": "MIT",
   "type": "module",
   "repository": {
@@ -12,6 +12,7 @@
     "graph",
     "dot",
     "graphml",
+    "gexf",
     "parser",
     "loader"
   ],
@@ -33,6 +34,11 @@
       "types": "./dist/dot-loader.d.ts",
       "import": "./dist/dot-loader.js",
       "require": "./dist/dot-loader.cjs"
+    },
+    "./gexf-loader": {
+      "types": "./dist/gexf-loader.d.ts",
+      "import": "./dist/gexf-loader.js",
+      "require": "./dist/gexf-loader.cjs"
     }
   },
   "sideEffects": false,

@@ -11,3 +11,7 @@ export type {GraphShape, GraphTables, GraphOutput} from './graph-types';
 export type {DOTOutput} from './dot-types';
 export type {DOTLoaderOptions} from './dot-loader-types';
 export type {GraphMLLoaderOptions} from './graphml-loader-types';
+
+export {GEXFLoader} from './gexf-loader-types';
+export type {GEXFLoaderOptions} from './gexf-loader-types';
+export type {GEXFMetadata, GEXFOutput} from './gexf-types';
