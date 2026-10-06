@@ -28,6 +28,11 @@
       "types": "./dist/graphml-loader.d.ts",
       "import": "./dist/graphml-loader.js",
       "require": "./dist/graphml-loader.cjs"
+    },
+    "./dot-loader": {
+      "types": "./dist/dot-loader.d.ts",
+      "import": "./dist/dot-loader.js",
+      "require": "./dist/dot-loader.cjs"
     }
   },
   "sideEffects": false,

@@ -1,6 +1,6 @@
 ---
 title: Graphs
-description: Load GraphML documents into framework-independent graph records.
+description: Load GraphML and DOT documents into framework-independent graph records.
 hide_title: true
 page_style: designed
 ---
@@ -10,10 +10,10 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
 
 <DocPageHeader
   eyebrow="Graphs module"
-  title="Load GraphML into reusable graph records."
-  description="`@loaders.gl/graphs` parses GraphML documents into nodes and edges with typed attributes and defaults."
+  title="Load GraphML and DOT into reusable graph records."
+  description="`@loaders.gl/graphs` parses GraphML and DOT documents into nodes and edges with attributes and defaults."
   tone="violet"
-  meta={['GraphML 1.0', 'Nodes and edges', 'Typed attributes']}
+  meta={['GraphML and DOT', 'Nodes and edges', 'Graph attributes']}
   links={[
     {label: 'Loader categories', to: '/docs/developer-guide/loader-categories'},
     {label: 'GitHub repository', to: 'https://github.com/visgl/loaders.gl'}
@@ -26,20 +26,24 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
   description="The module keeps serialization details at the edge so applications can work with nodes and edges consistently."
   tone="violet"
   items={[
-    {label: 'Supported format', value: 'GraphML'},
+    {label: 'Supported format', value: 'GraphML and DOT'},
     {label: 'Application data', value: 'Nodes, edges, and attributes'},
     {label: 'Integration', value: 'Standard loaders.gl loader contracts'},
-    {label: 'Current status', value: 'GraphML loader available'}
+    {label: 'Current status', value: 'GraphML and DOT loaders available'}
   ]}
 />
 
 <ReferenceBoundary
-  title="GraphML loader"
+  title="Graph loaders"
   description="Use the asynchronous metadata loader or the synchronous parser subpath according to your application needs."
   tone="violet"
 />
 
-Framework-independent graph format loaders. `GraphMLLoader` reads the first graph in a GraphML 1.0 document.
+Framework-independent loaders for GraphML and Graphviz DOT documents.
+
+## GraphML loader
+
+`GraphMLLoader` reads the first graph in a GraphML 1.0 document.
 
 ```typescript
 import {load} from '@loaders.gl/core';
@@ -66,3 +70,36 @@ Only the first graph is returned. Nested graphs, hyperedges, ports, and graph-le
 ignored. Nodes without IDs and edges without endpoints are skipped. This is a permissive
 parser, not a GraphML schema validator. Long integers use JavaScript numbers and may lose
 precision outside the safe integer range.
+
+
+## DOT loader
+
+```typescript
+import {load} from '@loaders.gl/core';
+import {DOTLoader} from '@loaders.gl/graphs';
+
+const graph = await load('network.dot', DOTLoader);
+```
+
+Use `DOTLoaderWithParser` from `@loaders.gl/graphs/dot-loader` with `parseSync`
+for synchronous text or UTF-8 `ArrayBuffer` parsing. `DOTLoader` recognizes `.dot` and `.gv` files.
+
+The loader returns the same plain `GraphData` node/edge shape as GraphML, plus typed
+DOT metadata: graph ID, direction, strictness, graph attributes, and subgraph descriptors.
+Identifiers remain strings, including numeric-looking IDs. Unquoted numeric attributes
+become numbers; quoted attributes remain strings. Node and edge `label` attributes are
+also exposed as record labels.
+
+Supported syntax includes `graph` and `digraph`, strict graphs with parallel-edge
+coalescing, implicit nodes, chained edges, repeated attribute lists, scoped node/edge
+defaults, graph attribute assignments, nested named and anonymous subgraphs, comments,
+quoted identifiers, and balanced HTML-like labels. Node and edge attributes include
+subgraph membership descriptors. Reopening a named subgraph retains its attributes and
+node/edge defaults; anonymous subgraph identifiers remain distinct from explicit names. An edge `id`, `Id`, or `ID` attribute supplies its ID;
+otherwise the loader generates an ID from its endpoints and a counter. `dir=none`
+marks an edge as undirected; other `dir` strings mark it as directed.
+
+This is a parser for the supported DOT subset, not a Graphviz renderer. Node ports,
+subgraph endpoints in edge statements, and concatenated quoted strings are unsupported.
+Port syntax is rejected; identifiers containing colons must be quoted. Truncated input,
+trailing content, and edge operators inconsistent with the graph declaration are rejected.

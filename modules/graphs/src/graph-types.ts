@@ -6,9 +6,9 @@
 export type GraphNode = {
   /** Original node identifier. */
   id: string | number;
-  /** Label declared by a GraphML label key. */
+  /** Application node or edge label. */
   label?: string;
-  /** Typed GraphML data values indexed by attribute name. */
+  /** Application data values indexed by attribute name. */
   attributes?: Record<string, unknown>;
 };
 
