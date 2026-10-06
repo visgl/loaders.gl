@@ -14,7 +14,7 @@ import {
   type WKBBuilderBaseOptions,
   type WKBGeometryArray,
   type WKBGeometryWriter
-} from '../geometry-converters/wkb/wkb-builder';
+} from '@loaders.gl/arrow-geometry';
 
 /** WKB bytes accepted by shared GeoArrow WKB builders. */
 export type WKBGeometryValue = ArrayBuffer | ArrayBufferView | Uint8Array;
