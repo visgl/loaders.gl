@@ -117,3 +117,10 @@ test('SLPK requires ZIP64 for archives above its 2 GiB ceiling', async () => {
     )
   ).rejects.toThrow('byte limit');
 });
+
+test('SLPKWriter forwards packaging cancellation', async () => {
+  const reason = new Error('cancel packaging');
+  await expect(SLPKWriter.encode(files, {slpk: {signal: AbortSignal.abort(reason)}})).rejects.toBe(
+    reason
+  );
+});

@@ -13,6 +13,8 @@ export interface TileConversionArchiveOptions {
   readonly format: '3tz' | 'slpk';
   /** Maximum final archive bytes, including headers/index; not peak serialization memory. */
   readonly maxArchiveBytes: number;
+  /** Cooperative packaging cancellation; active Blob reads and entry encodes finish first. */
+  readonly signal?: AbortSignal;
 }
 
 /**
@@ -28,7 +30,7 @@ export async function createTileConversionArchive(
   files: readonly BrowserTileConversionFile[],
   options: TileConversionArchiveOptions
 ): Promise<Blob> {
-  const {format, maxArchiveBytes} = options;
+  const {format, maxArchiveBytes, signal} = options;
   if (!Number.isSafeInteger(maxArchiveBytes) || maxArchiveBytes < 0) {
     throw new TileConversionError(
       'INVALID_ARCHIVE_BYTE_LIMIT',
@@ -46,6 +48,6 @@ export async function createTileConversionArchive(
     );
   }
   const writer = format === '3tz' ? Tiles3DArchiveWriter : SLPKWriter;
-  const archive = await writer.encode(resources, {[format]: {maxArchiveBytes}});
+  const archive = await writer.encode(resources, {[format]: {maxArchiveBytes, signal}});
   return new Blob([archive], {type: writer.mimeTypes[0]});
 }
