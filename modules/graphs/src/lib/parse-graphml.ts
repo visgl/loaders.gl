@@ -308,7 +308,10 @@ function assignAttributeFromDataEntry(
 
   const definition = keyDefinitions.get(keyId);
   const attributeName = definition?.name ?? keyId;
-  const value = castDataValue(entry, definition?.type ?? 'string', definition?.lossless);
+  const value =
+    definition?.type === 'boolean' && extractTextContent(entry) === undefined
+      ? false
+      : castDataValue(entry, definition?.type ?? 'string', definition?.lossless);
   if (value !== undefined) {
     attributes[attributeName] = value;
   }

@@ -233,3 +233,17 @@ test.each([
   </graphml>`);
   expect(getPlainGraph(graph).nodes.map(node => node.attributes?.flag)).toEqual([false, false]);
 });
+
+test.each([
+  '<data key="flag"></data>',
+  '<data key="flag"/>'
+])('reads explicit empty boolean data independently of defaults: %s', data => {
+  for (const defaultXml of ['', '<default>true</default>']) {
+    const graph = parseGraphML(`<graphml>
+        <key id="flag" for="node" attr.type="boolean">${defaultXml}</key>
+        <graph><node id="explicit">${data}</node><node id="missing"/></graph>
+      </graphml>`);
+    expect(getPlainGraph(graph).nodes[0].attributes?.flag).toBe(false);
+    expect(getPlainGraph(graph).nodes[1].attributes?.flag).toBe(defaultXml ? true : undefined);
+  }
+});

@@ -101,9 +101,10 @@ Selected-content fetching, decoding, conversion and archive encoding run in a di
 worker. Progress returns to the controls; the finalized archive is transferred as an `ArrayBuffer`
 and wrapped in a download `File`. Cancel and unmount terminate the worker, including synchronous
 decoding or packaging. Each retry starts a new worker; failed or canceled work publishes no archive.
-Inspection remains on the main thread. Workers do not impose a peak memory limit or stream output;
-source, decoded data and packaging allocations still coexist inside the worker. Worker scripts and
-their module chunks must be served by the application and allowed by its content security policy.
+Inspection remains on the main thread. Workers do not impose a peak memory limit or stream output.
+Caller-owned inputs, the final archive, and the current entry's temporary buffers still consume
+memory inside the worker. Packaging releases each Blob read before starting the next entry.
+Worker scripts and their module chunks must be served by the application and allowed by its content security policy.
 
 The example imports orchestration from `@loaders.gl/tile-converter/v5/core` and format
 writers from `/v5/adapters`. Conversion code remains in the tile-converter application.

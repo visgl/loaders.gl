@@ -118,3 +118,10 @@ test('3TZ rejects a missing root and nested archives', async () => {
     ).rejects.toThrow('without nested archives');
   }
 });
+
+test('Tiles3DArchiveWriter forwards packaging cancellation', async () => {
+  const reason = new Error('cancel packaging');
+  await expect(
+    Tiles3DArchiveWriter.encode(FILES, {'3tz': {signal: AbortSignal.abort(reason)}})
+  ).rejects.toBe(reason);
+});
