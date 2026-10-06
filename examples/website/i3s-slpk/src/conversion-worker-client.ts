@@ -60,11 +60,15 @@ export interface ConversionWorkerAcknowledgement {
   readonly sequence: number;
 }
 
-/**
- * Runs conversion in a disposable worker and copies transferred chunks into bounded Blob parts.
- * Acknowledges each accepted chunk before pulling more output; exposes a File only on completion.
- * Cancellation terminates computation and releases partial parts. Byte gates do not cap total heap.
- */
+/** Completed direct save, without retaining a downloadable archive in JavaScript. */
+export interface SavedConversionResult {
+  /** Complete archive bytes accepted by the destination. */
+  readonly size: number;
+  /** Conversion diagnostics, published only after the destination closes successfully. */
+  readonly report: TileConversionReport;
+}
+
+/** Runs conversion in a disposable worker and collects bounded Blob parts for download/preview. */
 export async function convertSelectedContentsInWorker(
   inspection: BrowserTilesetConversionInspection,
   resourceIds: readonly string[],
@@ -73,15 +77,88 @@ export async function convertSelectedContentsInWorker(
   onProgress: (message: string) => void,
   features?: MeshSourceFeatureOptions
 ): Promise<ConversionResult> {
+  const archiveParts: Blob[] = [];
+  try {
+    const result = await runConversionWorker(
+      {inspection, resourceIds, format, features},
+      signal,
+      onProgress,
+      chunk => {
+        archiveParts.push(new Blob([chunk]));
+      }
+    );
+    signal.throwIfAborted();
+    return {
+      file: new File(archiveParts, result.name, {type: result.mimeType}),
+      report: result.report
+    };
+  } finally {
+    archiveParts.length = 0;
+  }
+}
+
+/**
+ * Saves worker output to an application-owned stream without collecting archive Blob parts.
+ * Owns the stream writer: awaits every write before acknowledging the next chunk, closes only on
+ * successful completion, aborts on failure/cancellation, and releases its lock on every path.
+ * Cancellation is accepted until close starts; the final close is a commit boundary.
+ * @param destination - Fresh writable stream; native file streams commit changes on close.
+ * @returns Completed byte count and diagnostics after successful finalization.
+ */
+export async function saveSelectedContentsInWorker(
+  inspection: BrowserTilesetConversionInspection,
+  resourceIds: readonly string[],
+  format: ConversionFormat,
+  signal: AbortSignal,
+  onProgress: (message: string) => void,
+  destination: WritableStream<Uint8Array<ArrayBuffer>>,
+  features?: MeshSourceFeatureOptions
+): Promise<SavedConversionResult> {
+  const writer = destination.getWriter();
+  try {
+    const result = await runConversionWorker(
+      {inspection, resourceIds, format, features},
+      signal,
+      onProgress,
+      chunk => writer.write(chunk)
+    );
+    signal.throwIfAborted();
+    onProgress('Saving archive');
+    signal.throwIfAborted();
+    await writer.close();
+    return {size: result.totalBytes, report: result.report};
+  } catch (error) {
+    // Preserve the conversion/write error even if the destination is already errored or closed.
+    try {
+      await writer.abort(error);
+    } catch {
+      /* The original failure remains authoritative. */
+    }
+    throw error;
+  } finally {
+    writer.releaseLock();
+  }
+}
+
+/** Drives one worker, rejecting out-of-order output while a destination write is pending. */
+async function runConversionWorker(
+  request: ConversionWorkerRequest,
+  signal: AbortSignal,
+  onProgress: (message: string) => void,
+  writeChunk: (chunk: Uint8Array<ArrayBuffer>) => void | Promise<void>
+): Promise<Extract<ConversionWorkerMessage, {type: 'result'}>> {
   signal.throwIfAborted();
   const worker = new Worker(new URL('./conversion-worker.ts', import.meta.url), {type: 'module'});
   return new Promise((resolve, reject) => {
     let settled = false;
+    let writing = false;
     let receivedBytes = 0;
     let nextSequence = 0;
-    const archiveParts: Blob[] = [];
     /** Releases the worker and signal subscription on every completion path. */
-    function finish(error?: unknown, result?: ConversionResult): void {
+    function finish(
+      error?: unknown,
+      result?: Extract<ConversionWorkerMessage, {type: 'result'}>
+    ): void {
       if (settled) return;
       settled = true;
       signal.removeEventListener('abort', cancel);
@@ -89,18 +166,18 @@ export async function convertSelectedContentsInWorker(
       worker.onerror = null;
       worker.onmessageerror = null;
       worker.terminate();
-      archiveParts.length = 0;
       if (result) resolve(result);
       else reject(error);
     }
-    /** Terminates pending transport and synchronous decoder/packager work. */
+    /** Terminates computation immediately; the stream owner awaits destination cleanup. */
     function cancel(): void {
       finish(signal.reason);
     }
     signal.addEventListener('abort', cancel, {once: true});
-    worker.onmessage = (event: MessageEvent<ConversionWorkerMessage>) => {
+    worker.onmessage = async (event: MessageEvent<ConversionWorkerMessage>) => {
       if (settled) return;
       try {
+        if (writing) throw new Error('Conversion worker sent output before acknowledgement.');
         const message = event.data;
         switch (message.type) {
           case 'progress':
@@ -113,9 +190,13 @@ export async function convertSelectedContentsInWorker(
               receivedBytes + message.chunk.byteLength > CONVERSION_LIMITS.maxOutputBytes
             )
               throw new Error('Invalid or over-budget conversion archive chunk.');
-            archiveParts.push(new Blob([message.chunk]));
-            receivedBytes += message.chunk.byteLength;
+            const byteLength = message.chunk.byteLength;
+            writing = true;
+            await writeChunk(message.chunk);
+            if (settled) return;
+            receivedBytes += byteLength;
             nextSequence++;
+            writing = false;
             worker.postMessage({
               type: 'continue',
               sequence: message.sequence
@@ -124,10 +205,7 @@ export async function convertSelectedContentsInWorker(
           case 'result':
             if (!nextSequence || message.totalBytes !== receivedBytes)
               throw new Error('Incomplete conversion archive.');
-            finish(undefined, {
-              file: new File(archiveParts, message.name, {type: message.mimeType}),
-              report: message.report
-            });
+            finish(undefined, message);
             break;
           case 'error':
             finish(new Error(message.message));
@@ -149,12 +227,7 @@ export async function convertSelectedContentsInWorker(
       return;
     }
     try {
-      worker.postMessage({
-        inspection,
-        resourceIds,
-        format,
-        features
-      } satisfies ConversionWorkerRequest);
+      worker.postMessage(request);
     } catch (error) {
       finish(error);
     }
