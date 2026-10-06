@@ -68,6 +68,10 @@
     "./scene-aggregation": {
       "types": "./dist/arcgis/arcgis-scene-aggregation.d.ts",
       "import": "./dist/arcgis/arcgis-scene-aggregation.js"
+    },
+    "./items": {
+      "types": "./dist/arcgis-items.d.ts",
+      "import": "./dist/arcgis-items.js"
     }
   },
   "sideEffects": false,

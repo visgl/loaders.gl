@@ -279,3 +279,56 @@ describe('request credentials', () => {
     ).toThrow(/only scheme, host, and port/);
   });
 });
+
+test('provider response hooks preserve bodies and permit one read-only POST replay', async () => {
+  const token = vi.fn(({reason}) => (reason === 'refresh' ? 'fresh' : 'expired'));
+  const shouldRefresh = vi.fn(async response => (await response.clone().json()).expired === true);
+  const canReplayRequest = vi.fn(
+    (url: string, options: RequestInit) =>
+      url.endsWith('/read') && options.method === 'POST' && typeof options.body === 'string'
+  );
+  const transport = vi.fn(async () => Response.json({expired: true}));
+  const authenticatedFetch = createAuthenticatedFetch({
+    fetch: transport,
+    credentials: [
+      {
+        ...createBearerTokenCredential({id: 'provider', origins: ['https://example.com'], token}),
+        shouldRefresh,
+        canReplayRequest
+      }
+    ]
+  });
+  const response = await authenticatedFetch('https://example.com/read', {
+    method: 'POST',
+    body: 'query'
+  });
+  expect(await response.json()).toEqual({expired: true});
+  expect(transport).toHaveBeenCalledTimes(2);
+  expect(shouldRefresh).toHaveBeenCalledTimes(1);
+  expect(canReplayRequest).toHaveBeenCalledTimes(2);
+  expect(token.mock.calls.map(([context]) => context.reason)).toEqual(['request', 'refresh']);
+});
+
+test('provider replay exceptions cannot bypass a nonreplayable signed body', async () => {
+  const token = vi.fn(() => 'token');
+  const transport = vi.fn(async () => new Response('', {status: 401}));
+  const authenticatedFetch = createAuthenticatedFetch({
+    fetch: transport,
+    credentials: [
+      {
+        ...createBearerTokenCredential({id: 'provider', origins: ['https://example.com'], token}),
+        canReplayRequest: (_url, options) =>
+          options.method === 'POST' && typeof options.body === 'string'
+      },
+      {
+        id: 'signer',
+        type: 'request',
+        origins: ['https://example.com'],
+        authenticate: ({url, options}) => ({url, options: {...options, body: new ReadableStream()}})
+      }
+    ]
+  });
+  await authenticatedFetch('https://example.com/read', {method: 'POST', body: 'query'});
+  expect(transport).toHaveBeenCalledTimes(1);
+  expect(token).toHaveBeenCalledTimes(1);
+});

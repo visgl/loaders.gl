@@ -10,8 +10,13 @@ browser against public services; remote availability and CORS can affect them. S
 [developer guide](/docs/developer-guide/arcgis) or check the
 [complete service inventory](/docs/modules/arcgis/services).
 
+The 2D map examples use Esri’s light gray basemap with native ArcGIS controls and attribution.
+`@deck.gl/arcgis` hosts the loaders.gl overlays in an ArcGIS `MapView`; numerical raster and scene
+inspectors retain their dedicated views.
+
 | Example | What runs | Service guide | Application source |
 | --- | --- | --- | --- |
+| [Bring your content](/examples/arcgis-items) | Public/private item lookup, explicit layer selection, PKCE sign-in configuration and feature visualization | [Items and metadata](/docs/developer-guide/arcgis/items) | [Source](https://github.com/visgl/loaders.gl/blob/master/website/src/examples/arcgis-items-app.tsx) |
 | [Feature layers](/examples/tiles/arcgis-feature-server) | Progressive complete queries, filters, record caps and cancellation | [FeatureServer](/docs/modules/arcgis/arcgis-feature-server) | [Source](https://github.com/visgl/loaders.gl/blob/master/website/src/examples/arcgis-feature-query-app.tsx) |
 | [Map tiles and dynamic maps](/examples/tiles/arcgis-map-server) | Image tile rendering | [MapServer](/docs/modules/arcgis/arcgis-map-server) | [Source](https://github.com/visgl/loaders.gl/tree/master/examples/website/wms) |
 | [Viewport imagery](/examples/tiles/arcgis-image-server) | Image export for visible bounds | [ImageServer](/docs/modules/arcgis/arcgis-image-server) | [Source](https://github.com/visgl/loaders.gl/tree/master/examples/website/wms) |

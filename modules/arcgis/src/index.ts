@@ -61,3 +61,10 @@ export type {
   ArcGISFeatureExtent
 } from './arcgis-feature-query-types';
 export type {ArcGISFeatureQueryError} from './arcgis/arcgis-feature-query';
+
+export type {
+  ArcGISItem,
+  ArcGISItemLayer,
+  ArcGISItemResolution,
+  ArcGISItemOptions
+} from './arcgis-items';
