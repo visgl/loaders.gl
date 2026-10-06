@@ -82,8 +82,9 @@ tokens cannot renew themselves. A permission failure can remain a permission fai
 The preset also detects HTTP 200 JSON errors with ArcGIS code 498 or 499. Detection inspects at
 most 16 KiB of a cloned JSON response, preserving successful data for the caller. Responses without
 a JSON content type, larger envelopes and other error codes do not trigger envelope renewal.
-Read-only form-encoded POST queries on numbered FeatureServer/MapServer layers may be replayed;
-POST mutation requests are not replayed by the ArcGIS preset. Failed renewal is surfaced to the application.
+Read-only form-encoded POST queries on numbered FeatureServer/MapServer layers may be replayed
+when the body is a string or `URLSearchParams`, including long queries sent by the feature client.
+POST mutation requests and streaming bodies are not replayed by the ArcGIS preset. Failed renewal is surfaced to the application.
 
 Explicit URL tokens and request headers take precedence. Remove an expired token embedded in the
 input URL if you expect a token callback to control authorization. Avoid placing tokens in shared

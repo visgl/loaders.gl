@@ -100,13 +100,13 @@ async function isArcGISAuthenticationError(response: Response): Promise<boolean>
   }
 }
 
-/** Permits only buffered form POST queries on numbered feature or map layers. */
+/** Permits string or URLSearchParams form POST queries on numbered feature or map layers. */
 function canReplayArcGISRequest(url: string, request: RequestInit): boolean {
   return (
     request.method?.toUpperCase() === 'POST' &&
     /\/(FeatureServer|MapServer)\/\d+\/query\/?$/i.test(new URL(url).pathname) &&
     new Headers(request.headers).get('content-type')?.split(';')[0] ===
       'application/x-www-form-urlencoded' &&
-    typeof request.body === 'string'
+    (typeof request.body === 'string' || request.body instanceof URLSearchParams)
   );
 }

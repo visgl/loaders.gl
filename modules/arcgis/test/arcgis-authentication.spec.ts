@@ -1,6 +1,7 @@
 import {expect, test, vi} from 'vitest';
 import {createAuthenticatedFetch} from '@loaders.gl/loader-utils';
 import {ArcGISAuthentication, createArcGISCredential} from '../src/authentication';
+import {ArcGISFeatureQueryClient} from '../src/arcgis/arcgis-feature-query';
 
 const ORIGIN = 'https://example.com';
 
@@ -87,7 +88,42 @@ test.each([
 });
 
 test.each([
+  ['/FeatureServer/0', 498],
+  ['/MapServer/2', 499]
+])('renews long feature queries with URLSearchParams form bodies: %s', async (path, code) => {
+  const where = `name IN ('${'value'.repeat(500)}')`;
+  const token = vi.fn(({reason}) => (reason === 'refresh' ? 'fresh' : 'expired'));
+  const transport = vi.fn(async (url: string, _options?: RequestInit) =>
+    new URL(url).searchParams.get('token') === 'fresh'
+      ? Response.json({count: 3})
+      : Response.json({error: {code}})
+  );
+  const controller = new AbortController();
+  const authenticatedFetch = new ArcGISAuthentication({origins: [ORIGIN], token}).createFetch({
+    fetch: transport
+  });
+  const query = new ArcGISFeatureQueryClient(
+    `${ORIGIN}${path}`,
+    authenticatedFetch,
+    {where},
+    controller.signal
+  );
+  expect(await query.getCount()).toBe(3);
+  expect(transport).toHaveBeenCalledTimes(2);
+  expect(token.mock.calls.map(([context]) => context.reason)).toEqual(['request', 'refresh']);
+  for (const [url, options] of transport.mock.calls) {
+    expect(new URL(url).pathname).toBe(`${path}/query`);
+    expect(new URL(url).searchParams.has('where')).toBe(false);
+    expect(options).toMatchObject({method: 'POST', signal: controller.signal});
+    expect(options?.body).toBeInstanceOf(URLSearchParams);
+    expect((options!.body as URLSearchParams).get('where')).toBe(where);
+    expect((options!.body as URLSearchParams).get('returnCountOnly')).toBe('true');
+  }
+});
+
+test.each([
   ['/FeatureServer/0/applyEdits', 'application/x-www-form-urlencoded', 'x=1'],
+  ['/FeatureServer/0/applyEdits', 'application/x-www-form-urlencoded', new URLSearchParams('x=1')],
   ['/FeatureServer/0/query', 'application/json', '{}'],
   ['/FeatureServer/0/query', 'application/x-www-form-urlencoded', new ReadableStream()]
 ])('never replays mutation or non-form POST requests', async (path, contentType, body) => {
