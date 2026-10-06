@@ -409,5 +409,5 @@ function parseBoolean(value: string): boolean {
   if (normalized === 'false' || normalized === '0' || normalized === 'no' || normalized === 'n') {
     return false;
   }
-  return Boolean(value);
+  return Boolean(normalized);
 }
