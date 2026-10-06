@@ -77,7 +77,9 @@ export function parseGEXF(
         name,
         type,
         defaultValue:
-          attribute.default === undefined ? undefined : castValue(String(attribute.default), type)
+          attribute.default === undefined
+            ? undefined
+            : castValue(readTextContent(attribute.default), type)
       });
     }
   }
@@ -126,7 +128,7 @@ export function parseGEXF(
   const metadataAttributes: Record<string, string> = Object.create(null);
   const meta = getContainer(root.meta);
   for (const name of ['creator', 'description', 'keywords']) {
-    if (typeof meta[name] === 'string') metadataAttributes[name] = meta[name];
+    if (meta[name] !== undefined) metadataAttributes[name] = readTextContent(meta[name]);
   }
   if (typeof meta['@_lastmodifieddate'] === 'string')
     metadataAttributes.lastmodifieddate = meta['@_lastmodifieddate'];
@@ -146,7 +148,7 @@ export function parseGEXF(
 
 /** Resolves inherited namespace bindings without treating foreign elements as GEXF. */
 function normalizeNamespaces(element: XMLElement, inherited: Record<string, string>): XMLElement {
-  const namespaces = {...inherited};
+  const namespaces: Record<string, string> = Object.assign(Object.create(null), inherited);
   for (const [name, value] of Object.entries(element)) {
     if (name === '@_xmlns') namespaces[''] = String(value);
     else if (name.startsWith('@_xmlns:')) namespaces[name.slice(8)] = String(value);
@@ -214,6 +216,13 @@ function getElement(value: unknown, name: string): XMLElement {
   throw new Error(`GEXF requires one <${name}> element.`);
 }
 
+/** Reads scalar text from elements that also declare local namespace bindings. */
+function readTextContent(value: unknown): string {
+  if (typeof value === 'string') return value;
+  const text = getElement(value, 'text')['#text'];
+  return typeof text === 'string' ? text : '';
+}
+
 /** Reads an optional container while rejecting repeated containers. */
 function getContainer(value: unknown): XMLElement {
   return value === undefined ? {} : getElement(value, 'container');
@@ -276,7 +285,11 @@ function castValue(text: string, type: GraphAttributeType): unknown {
   if (trimmed === 'INF') return Infinity;
   if (trimmed === '-INF') return -Infinity;
   if (trimmed === 'NaN') return NaN;
-  return /^[+-]?(?:\d+(?:\.\d*)?|\.\d+)(?:[eE][+-]?\d+)?$/.test(trimmed) ? Number(trimmed) : text;
+  if (!/^[+-]?(?:\d+(?:\.\d*)?|\.\d+)(?:[eE][+-]?\d+)?$/.test(trimmed)) return text;
+  const number = Number(trimmed);
+  const represented = type === 'float' ? Math.fround(number) : number;
+  const nonzero = /[1-9]/.test(trimmed.split(/[eE]/)[0]);
+  return Number.isFinite(represented) && (represented !== 0 || !nonzero) ? number : text;
 }
 
 /** Reads bracketed and legacy lists, preserving quoted delimiters and string whitespace. */

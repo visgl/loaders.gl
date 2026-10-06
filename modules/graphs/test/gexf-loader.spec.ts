@@ -228,6 +228,16 @@ describe('GEXFLoader', () => {
     expect(graph.nodes[0].attributes!.value).toEqual(expected);
   });
 
+  test('local namespace declarations preserve text defaults and metadata', () => {
+    const graph = parseGEXF(
+      `<gexf xmlns="http://gexf.net/1.3" version="1.3"><meta><creator xmlns="http://gexf.net/1.3">Local author</creator><description xmlns="http://gexf.net/1.3"/></meta><graph><attributes class="node"><attribute id="a" title="value" type="string"><g:default xmlns:g="http://gexf.net/1.3"> text </g:default></attribute></attributes><nodes><__proto__:node xmlns:__proto__="http://gexf.net/1.3" id="n"/></nodes></graph></gexf>`,
+      'plain-graph-data'
+    );
+    if (graph.shape !== 'plain-graph-data') throw new Error('Expected plain output.');
+    expect(graph.nodes[0].attributes!.value).toBe(' text ');
+    expect(graph.metadata.attributes).toEqual({creator: 'Local author', description: ''});
+  });
+
   test('list defaults are independent across plain node records', () => {
     const graph = getPlainGraph(
       wrapGraph(
@@ -260,6 +270,49 @@ describe('GEXFLoader', () => {
         )
       )
     ).toThrow(/GEXF list/);
+  });
+
+  test.each([
+    ['float', '1e39'],
+    ['float', '-1e39'],
+    ['float', '1e-100'],
+    ['double', '1e400'],
+    ['double', '-1e400'],
+    ['double', '1e-400']
+  ])('retains out-of-range %s literal %s as Utf8', (type, value) => {
+    const graph = getArrowTables(
+      parseGEXF(
+        wrapGraph(
+          `<attributes class="node"><attribute id="a" title="value" type="${type}"/></attributes><nodes><node id="a"><attvalues><attvalue for="a" value="${value}"/></attvalues></node><node id="b"><attvalues><attvalue for="a" value="1.5"/></attvalues></node></nodes>`
+        )
+      )
+    );
+    const attributes = graph.tables[0].table.data.getChild('attributes')!;
+    expect((attributes.type as Struct).children[0].type).toBeInstanceOf(Utf8);
+    expect(attributes.get(0).value).toBe(value);
+    expect(attributes.get(1).value).toBe('1.5');
+  });
+
+  test.each([
+    ['float', '0e9999', 0],
+    ['float', '-0', -0],
+    ['float', '1.401298464324817e-45', Math.fround(1.401298464324817e-45)],
+    ['float', '3.4028234663852886e38', Math.fround(3.4028234663852886e38)],
+    ['double', '5e-324', Number.MIN_VALUE],
+    ['double', '1.7976931348623157e308', Number.MAX_VALUE]
+  ])('retains representable %s boundary %s as a number', (type, value, expected) => {
+    const graph = getArrowTables(
+      parseGEXF(
+        wrapGraph(
+          `<attributes class="node"><attribute id="a" title="value" type="${type}"/></attributes><nodes><node id="a"><attvalues><attvalue for="a" value="${value}"/></attvalues></node></nodes>`
+        )
+      )
+    );
+    const attributes = graph.tables[0].table.data.getChild('attributes')!;
+    expect((attributes.type as Struct).children[0].type).toBeInstanceOf(
+      type === 'float' ? Float32 : Float64
+    );
+    expect(attributes.get(0).value).toBe(expected);
   });
 
   test('invalid and out-of-range scalar and list values promote to strings', () => {
