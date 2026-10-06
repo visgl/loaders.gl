@@ -79,9 +79,12 @@ The shared transport deduplicates concurrent refreshes for the same credential a
 one replay for an eligible request. The ArcGIS preset recognizes HTTP 401, 403, 498 and 499. Static
 tokens cannot renew themselves. A permission failure can remain a permission failure after renewal.
 
-The preset also detects HTTP 200 JSON errors with ArcGIS code 498 or 499. Detection inspects at
-most 16 KiB of a cloned JSON response, preserving successful data for the caller. Responses without
-a JSON content type, larger envelopes and other error codes do not trigger envelope renewal.
+The preset also detects HTTP 200 JSON errors with ArcGIS code 498 or 499. Detection skips cloning
+responses whose declared content length exceeds 16 KiB. For unknown lengths it retains at most
+16 KiB of inspection bytes, rejecting a chunk that exceeds the remaining budget before retaining
+it, and preserves the original body for the caller. Fetch and native stream buffering remain
+outside this inspection limit. Responses without a JSON content type, larger envelopes and other
+error codes do not trigger envelope renewal.
 Read-only form-encoded POST queries on numbered FeatureServer/MapServer layers may be replayed
 when the body is a string or `URLSearchParams`, including long queries sent by the feature client.
 POST mutation requests and streaming bodies are not replayed by the ArcGIS preset. Failed renewal is surfaced to the application.

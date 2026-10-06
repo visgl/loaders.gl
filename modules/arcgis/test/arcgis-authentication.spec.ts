@@ -61,6 +61,44 @@ test.each([
   expect(token).toHaveBeenCalledTimes(1);
 });
 
+test('skips cloning JSON responses whose declared size exceeds the inspection budget', async () => {
+  const body = JSON.stringify({features: [], padding: 'x'.repeat(16384)});
+  const response = new Response(body, {
+    headers: {'content-type': 'application/json', 'content-length': String(body.length)}
+  });
+  const cloneResponse = vi.spyOn(response, 'clone');
+  const token = vi.fn(() => 'token');
+  const authenticatedFetch = new ArcGISAuthentication({origins: [ORIGIN], token}).createFetch({
+    fetch: async () => response
+  });
+  const result = await authenticatedFetch(`${ORIGIN}/FeatureServer/0/query`);
+  expect(result).toBe(response);
+  expect(cloneResponse).not.toHaveBeenCalled();
+  expect(token).toHaveBeenCalledTimes(1);
+  expect(await result.text()).toBe(body);
+});
+
+test.each([
+  16383, 16384, 16385
+])('applies the JSON inspection budget at %i bytes without a size header', async size => {
+  const envelope = JSON.stringify({error: {code: 498}});
+  const body = envelope.padEnd(size, ' ');
+  const transport = vi.fn(async (url: string, _options?: RequestInit) =>
+    new URL(url).searchParams.get('token') === 'fresh'
+      ? new Response('data')
+      : new Response(body, {headers: {'content-type': 'application/json'}})
+  );
+  const token = vi.fn(({reason}) => (reason === 'refresh' ? 'fresh' : 'expired'));
+  const authenticatedFetch = new ArcGISAuthentication({origins: [ORIGIN], token}).createFetch({
+    fetch: transport
+  });
+  expect(await (await authenticatedFetch(`${ORIGIN}/FeatureServer/0/query`)).text()).toBe(
+    size <= 16384 ? 'data' : body
+  );
+  expect(transport).toHaveBeenCalledTimes(size <= 16384 ? 2 : 1);
+  expect(token).toHaveBeenCalledTimes(size <= 16384 ? 2 : 1);
+});
+
 test.each([
   '/FeatureServer/0/query',
   '/MapServer/2/query'

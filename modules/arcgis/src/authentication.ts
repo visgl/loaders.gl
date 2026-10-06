@@ -14,6 +14,9 @@ import {
   createQueryParameterCredential
 } from '@loaders.gl/loader-utils';
 
+/** Maximum JSON error bytes retained by the authentication detector. */
+const MAXIMUM_AUTHENTICATION_ERROR_BYTES = 16384;
+
 /** ArcGIS token authentication independent of the application's sign-in SDK. */
 export class ArcGISAuthentication extends TokenAuthentication {
   /** Discriminator used in `core.credentials`. */
@@ -71,12 +74,14 @@ export function createArcGISCredential(options: ArcGISCredentialOptions): Reques
 async function isArcGISAuthenticationError(response: Response): Promise<boolean> {
   if (response.status !== 200 || !response.headers.get('content-type')?.includes('json'))
     return false;
+  if (Number(response.headers.get('content-length')) > MAXIMUM_AUTHENTICATION_ERROR_BYTES)
+    return false;
   const reader = response.clone().body?.getReader();
   if (!reader) return false;
   const chunks: Uint8Array[] = [];
   let length = 0;
   try {
-    while (length <= 16384) {
+    while (true) {
       const {value, done} = await reader.read();
       if (done) {
         const bytes = new Uint8Array(length);
@@ -88,10 +93,11 @@ async function isArcGISAuthenticationError(response: Response): Promise<boolean>
         const json = JSON.parse(new TextDecoder().decode(bytes));
         return json?.error?.code === 498 || json?.error?.code === 499;
       }
-      length += value.length;
-      chunks.push(value);
+      if (value.byteLength > MAXIMUM_AUTHENTICATION_ERROR_BYTES - length) return false;
+      length += value.byteLength;
+      // Copy only accepted bytes so small views cannot retain oversized backing buffers.
+      chunks.push(value.slice());
     }
-    return false;
   } catch {
     return false;
   } finally {
