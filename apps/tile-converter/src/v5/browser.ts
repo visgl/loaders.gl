@@ -80,7 +80,10 @@ export type {
   SingleMeshTilesetSinkOptions
 } from '@loaders.gl/tile-converter/v5/adapters';
 
-export {createTileConversionArchive} from '@loaders.gl/tile-converter/v5/adapters';
+export {
+  createTileConversionArchive,
+  encodeTileConversionArchiveInBatches
+} from '@loaders.gl/tile-converter/v5/adapters';
 export type {TileConversionArchiveOptions} from '@loaders.gl/tile-converter/v5/adapters';
 export {createSingleMeshTilesetArchive} from '@loaders.gl/tile-converter/v5/adapters';
 export type {SingleMeshTilesetArchiveOptions} from '@loaders.gl/tile-converter/v5/adapters';

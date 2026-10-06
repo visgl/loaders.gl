@@ -3,7 +3,8 @@
 // Copyright (c) vis.gl contributors
 
 import type {WriterOptions, WriterWithEncoder} from '@loaders.gl/loader-utils';
-import {encodeIndexedZip} from '@loaders.gl/zip/indexed-zip-writer';
+import {encodeIndexedZip, encodeIndexedZipInBatches} from '@loaders.gl/zip/indexed-zip-writer';
+import type {IndexedZipOptions} from '@loaders.gl/zip/indexed-zip-writer';
 import {ThreeTZFormat} from './tiles-3d-format';
 import {VERSION} from './lib/utils/version';
 
@@ -45,6 +46,29 @@ async function encodeArchive(
   files: Tiles3DArchiveFiles,
   options: Tiles3DArchiveWriterOptions = {}
 ): Promise<ArrayBuffer> {
+  return await encodeIndexedZip(files, getArchiveOptions(files, options));
+}
+
+/**
+ * Streams the same deterministic archive bytes without allocating the complete output buffer.
+ * Validation occurs on first pull. Callers await each chunk write, finalize only on completion,
+ * and discard partial output on failure or cancellation. Chunks are Uint8Array views.
+ * @param files - Immutable resources already authored for this archive format.
+ * @param options - Complete output-size budget and cooperative cancellation signal.
+ * @returns Byte chunks suitable for an application-owned output stream.
+ */
+export async function* encodeTiles3DArchiveInBatches(
+  files: Tiles3DArchiveFiles,
+  options: Tiles3DArchiveWriterOptions = {}
+): AsyncIterable<Uint8Array<ArrayBuffer>> {
+  yield* encodeIndexedZipInBatches(files, getArchiveOptions(files, options));
+}
+
+/** Validates the format root/layout and captures the shared indexed ZIP profile. */
+function getArchiveOptions(
+  files: Tiles3DArchiveFiles,
+  options: Tiles3DArchiveWriterOptions
+): IndexedZipOptions {
   const paths = Object.keys(files);
   if (!paths.includes('tileset.json')) {
     throw new RangeError('3TZ requires tileset.json');
@@ -54,9 +78,9 @@ async function encodeArchive(
       '3TZ requires canonical relative ASCII resource paths without nested archives'
     );
   }
-  return await encodeIndexedZip(files, {
+  return {
     indexPath: INDEX_PATH,
     maxArchiveBytes: options['3tz']?.maxArchiveBytes ?? MAX_ARCHIVE_BYTES,
     signal: options['3tz']?.signal
-  });
+  };
 }

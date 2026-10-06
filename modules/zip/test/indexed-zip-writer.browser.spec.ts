@@ -5,7 +5,7 @@
 import {afterEach, beforeAll, expect, test, vi} from 'vitest';
 import JSZip from 'jszip';
 import {MD5Hash} from '@loaders.gl/crypto';
-import {encodeIndexedZip} from '@loaders.gl/zip/indexed-zip-writer';
+import {encodeIndexedZip, encodeIndexedZipInBatches} from '@loaders.gl/zip/indexed-zip-writer';
 import {ZipWriter} from '@loaders.gl/zip/zip-writer';
 
 /** Small resources used for encoder boundary coverage. */
@@ -308,4 +308,98 @@ test('Indexed ZIP rejects a current resource detached while hashing its path', a
     return '00000000000000000000000000000000';
   });
   await expect(encodeArchive({a: data})).rejects.toThrow('size changed');
+});
+
+/** Collects copied byte views only in tests, to compare the streamed and buffered encodings. */
+async function collectArchive(chunks: AsyncIterable<Uint8Array>): Promise<ArrayBuffer> {
+  const parts: ArrayBuffer[] = [];
+  for await (const chunk of chunks) parts.push(new Uint8Array(chunk).buffer);
+  return new Blob(parts).arrayBuffer();
+}
+
+test('Indexed ZIP streaming preserves the complete deterministic archive bytes', async () => {
+  expect(
+    await collectArchive(
+      encodeIndexedZipInBatches(FILES, {
+        indexPath: '@3dtilesIndex1@',
+        maxArchiveBytes: archive.byteLength
+      })
+    )
+  ).toEqual(archive);
+});
+
+test('Indexed ZIP streams lazily with backpressure and stops after consumer return', async () => {
+  const read = vi.spyOn(Blob.prototype, 'arrayBuffer');
+  const encode = vi.spyOn(ZipWriter, 'encode');
+  const iterator = encodeIndexedZipInBatches(
+    {a: new Blob(['a']), b: new Blob(['b']), c: new Blob(['c'])},
+    {
+      indexPath: 'index',
+      maxArchiveBytes: 1000
+    }
+  )[Symbol.asyncIterator]();
+  expect(read).not.toHaveBeenCalled();
+  expect(encode).not.toHaveBeenCalled();
+  const first = await iterator.next();
+  expect(first.done).toBe(false);
+  expect(first.value!.byteLength).toBe(32);
+  expect(read).toHaveBeenCalledTimes(1);
+  expect(encode).toHaveBeenCalledTimes(1);
+  // A paused consumer never queues the next read or encode.
+  await Promise.resolve();
+  expect(read).toHaveBeenCalledTimes(1);
+  const second = await iterator.next();
+  expect(second.done).toBe(false);
+  expect(read).toHaveBeenCalledTimes(2);
+  await iterator.return?.();
+  expect(read).toHaveBeenCalledTimes(2);
+  expect(encode).toHaveBeenCalledTimes(2);
+  expect((await iterator.next()).done).toBe(true);
+});
+
+test('Indexed ZIP streaming checks the complete budget before reads or output', async () => {
+  const read = vi.spyOn(Blob.prototype, 'arrayBuffer');
+  const iterator = encodeIndexedZipInBatches(
+    {'tileset.json': new Blob()},
+    {
+      indexPath: '@3dtilesIndex1@',
+      maxArchiveBytes: 0
+    }
+  )[Symbol.asyncIterator]();
+  await expect(iterator.next()).rejects.toThrow('byte limit');
+  expect(read).not.toHaveBeenCalled();
+});
+
+test.each([
+  1, 2, 3, 4, 5
+])('Indexed ZIP observes cancellation after streamed chunk %s', async chunkCount => {
+  const controller = new AbortController();
+  const reason = new Error('cancel suspended stream');
+  const encode = vi.spyOn(ZipWriter, 'encode');
+  const iterator = encodeIndexedZipInBatches(
+    {a: new Blob(['a'])},
+    {
+      indexPath: 'index',
+      maxArchiveBytes: 1000,
+      signal: controller.signal
+    }
+  )[Symbol.asyncIterator]();
+  for (let index = 0; index < chunkCount; index++) expect((await iterator.next()).done).toBe(false);
+  controller.abort(reason);
+  await expect(iterator.next()).rejects.toBe(reason);
+  expect(encode).toHaveBeenCalledTimes(chunkCount === 1 ? 1 : 2);
+});
+
+test('Indexed ZIP chunks remain usable when the consumer transfers their backing buffers', async () => {
+  const parts: ArrayBuffer[] = [];
+  for await (const chunk of encodeIndexedZipInBatches(FILES, {
+    indexPath: '@3dtilesIndex1@',
+    maxArchiveBytes: archive.byteLength
+  })) {
+    const offset = chunk.byteOffset;
+    const length = chunk.byteLength;
+    const transferred = structuredClone(chunk.buffer, {transfer: [chunk.buffer]});
+    parts.push(transferred.slice(offset, offset + length));
+  }
+  expect(await new Blob(parts).arrayBuffer()).toEqual(archive);
 });

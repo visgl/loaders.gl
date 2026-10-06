@@ -301,7 +301,39 @@ reads and entry encodes. Cancellation rejects with its reason and exposes no par
 active reads/encodes finish first. The example also terminates its worker for immediate cancellation.
 Packaging serializes each entry into one final archive buffer and releases temporary Blob-read
 buffers between resources. Caller-owned inputs, the current entry, final archive, and Blob/worker
-transfer copies still require memory. Streaming and total peak-memory qualification remain open.
+transfer copies still require memory. Total peak-memory qualification remains open.
+
+### Stream an archive to storage
+
+`encodeTileConversionArchiveInBatches` accepts the same finalized files and options as
+`createTileConversionArchive`, and yields byte-identical SLPK/3TZ output without allocating a
+complete archive buffer. Conversion code remains in this application; format layout and encoding
+stay in their owning modules.
+
+```ts
+import {encodeTileConversionArchiveInBatches} from '@loaders.gl/tile-converter/v5/adapters';
+
+try {
+  for await (const chunk of encodeTileConversionArchiveInBatches(sink.getFiles(), {
+    format: 'slpk', // or '3tz', with resources authored for that format
+    maxArchiveBytes: 32 * 1024 * 1024,
+    signal
+  })) {
+    await destination.write(chunk); // Application-owned storage; respect the byte view.
+  }
+  await destination.close();
+} catch (error) {
+  await destination.abort(error); // Discard partial output; do not publish it as a finished archive.
+  throw error;
+}
+```
+
+The iterator checks every declaration and the full budget on its first pull, before output. It
+reads/encodes the next entry only when pulled, so awaiting storage writes supplies backpressure.
+Returning early prevents further I/O. Callers own storage finalization and discarding partial bytes
+on failure/cancellation. Inputs, a whole current resource/entry encode, and index/directory metadata
+remain in memory; this does not cap total decoding/conversion heap usage or stream within a resource.
+
 
 The legacy v4 I3S converter already writes **SLPK** archives. Portable v5 SLPK output requires
 an I3S scene-layer writer and its node/resource layout; a 3D Tiles package cannot be saved as
