@@ -73,6 +73,12 @@ jobs:
         run: |
           yarn run test-cover
 
+      - name: Run graph tests
+        if: matrix.full
+        run: |
+          yarn playwright install --with-deps chromium
+          yarn test-graphs
+
       - name: Run node tests
         run: |
           yarn run test-node

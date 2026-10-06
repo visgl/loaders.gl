@@ -53,7 +53,8 @@
     "test-fast": "ocular-test fast",
     "pre-commit": "yarn lint",
     "pre-push": "yarn lint",
-    "metrics": "./scripts/metrics.sh && ocular-metrics"
+    "metrics": "./scripts/metrics.sh && ocular-metrics",
+    "test-graphs": "vitest run --config modules/graphs/vitest.config.ts"
   },
   "devDependencies": {
     "@probe.gl/bench": "^4.1.1",
@@ -62,10 +63,14 @@
     "@types/tape-promise": "^4.0.1",
     "@vis.gl/dev-tools": "^1.0.0",
     "@vis.gl/ts-plugins": "^1.0.0",
+    "@vitest/browser-playwright": "5.0.2",
+    "playwright": "1.59.1",
     "pre-commit": "^1.2.2",
     "pre-push": "^0.1.1",
     "puppeteer": "^23.4.0",
     "tap-spec": "^5.0.0",
+    "vite": "^8.0.0",
+    "vitest": "5.0.2",
     "zod": "^4.1.12"
   },
   "pre-commit": "pre-commit",
