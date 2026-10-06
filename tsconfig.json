@@ -24,6 +24,7 @@
       "@loaders.gl/graphs/dot-loader": ["modules/graphs/src/dot-loader"],
       "@loaders.gl/graphs": ["modules/graphs/src"],
       "@loaders.gl/graphs/graphml-loader": ["modules/graphs/src/graphml-loader"],
+      "@loaders.gl/graphs/gexf-loader": ["modules/graphs/src/gexf-loader"],
       "@loaders.gl/arcgis": ["modules/arcgis/src"],
       "@loaders.gl/arcgis/authentication": ["modules/arcgis/src/authentication"],
       "@loaders.gl/arcgis/discovery": ["modules/arcgis/src/arcgis/arcgis-capability-graph"],
