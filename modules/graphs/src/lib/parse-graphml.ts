@@ -39,7 +39,7 @@ const graphmlParser = new XMLParser({
   ignoreAttributes: false,
   attributeNamePrefix: XML_ATTRIBUTE_PREFIX,
   textNodeName: XML_TEXT_KEY,
-  trimValues: true,
+  trimValues: false,
   parseAttributeValue: false,
   parseTagValue: false,
   removeNSPrefix: true

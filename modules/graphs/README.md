@@ -25,7 +25,7 @@ Nodes have `id`, optional `label`, and optional `attributes`. Edges additionally
 Supported constructs include node and edge identifiers, generated IDs for unnamed edges,
 `edgedefault` and per-edge direction overrides, node/edge/all keys, typed data and defaults,
 unknown data keys, and namespace-prefixed elements. Numeric and boolean keys become JavaScript
-values; other values remain strings. Nested XML data becomes a JSON string.
+values; string values preserve their whitespace. Nested XML data becomes a JSON string.
 
 Only the first graph is returned. Nested graphs, hyperedges, ports, and graph-level data are
 ignored. Nodes without IDs and edges without endpoints are skipped. This is a permissive
@@ -47,6 +47,7 @@ for synchronous text or UTF-8 `ArrayBuffer` parsing. `DOTLoader` recognizes `.do
 
 The loader returns the same plain `GraphData` node/edge shape as GraphML, plus typed
 DOT metadata: graph ID, direction, strictness, graph attributes, and subgraph descriptors.
+Unknown backslash sequences are preserved for downstream attribute interpretation.
 Identifiers remain strings, including numeric-looking IDs. Unquoted numeric attributes
 become numbers; quoted attributes remain strings. Node and edge `label` attributes are
 also exposed as record labels.

@@ -393,6 +393,10 @@ class DOTParser {
       const existingEdge = this.result.strict ? this.strictEdges.get(strictKey) : undefined;
       if (existingEdge) {
         existingEdge.attributes = {...existingEdge.attributes, ...explicitAttributes};
+        const explicitId = explicitAttributes.id ?? explicitAttributes.Id ?? explicitAttributes.ID;
+        if (typeof explicitId === 'string' || typeof explicitId === 'number') {
+          existingEdge.id = String(explicitId);
+        }
         existingEdge.directed = deriveDirectedFlag(existingEdge.attributes, directed);
         existingEdge.subgraphs = Array.from(new Set([...existingEdge.subgraphs, ...membership]));
         continue;
@@ -765,7 +769,7 @@ function readEscapedCharacter(
       if (typeof next === 'undefined') {
         throw new Error('Unterminated escape sequence in DOT source.');
       }
-      return {value: next, nextIndex: startIndex + 1};
+      return {value: `\\${next}`, nextIndex: startIndex + 1};
     }
   }
 }

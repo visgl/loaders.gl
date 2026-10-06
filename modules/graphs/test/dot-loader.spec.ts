@@ -131,7 +131,7 @@ test.each([
   ['r', '\r'],
   ['"', '"'],
   ['\\', '\\'],
-  ['q', 'q']
+  ['q', '\\q']
 ])('decodes quoted escape %s', (escape, expected) => {
   const graph = parseDOT(`graph { a [label="before\\${escape}after"]; }`);
   expect(graph.nodes[0].label).toBe(`before${expected}after`);
@@ -231,4 +231,26 @@ test.each([
   expect(graph.nodes.find(node => node.id === 'b')?.attributes?.subgraphs).toMatchObject([
     {id: 'subgraph_2'}
   ]);
+});
+
+// Graphviz application escapes must survive tokenization for downstream rendering.
+test.each(['N', 'G', 'E', 'x'])('preserves the DOT application escape %s', escape => {
+  const graph = parseDOT(`graph { a [label="\\${escape}"]; }`);
+  expect(graph.nodes[0].label).toBe(`\\${escape}`);
+});
+
+test.each(
+  ['id', 'Id', 'ID'].flatMap(attributeName => [
+    [attributeName, 'updated'],
+    [attributeName, 5]
+  ])
+)('updates the %s identifier to %s on a strict repeated edge', (attributeName, identifier) => {
+  const graph = parseDOT(
+    `strict graph { a -- b; b -- a [${attributeName}=${identifier}]; a -- b [weight=2]; }`
+  );
+  expect(graph.edges).toHaveLength(1);
+  expect(graph.edges[0]).toMatchObject({
+    id: String(identifier),
+    attributes: {[attributeName]: identifier, weight: 2}
+  });
 });
