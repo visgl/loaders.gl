@@ -2,6 +2,12 @@
 
 ## v4.5
 
+### v4.5.3
+
+- feat(graphs): add GraphML and DOT loaders with Node.js and browser support (#4142)
+- fix(draco): preserve local decoder library overrides (#4041)
+- fix(loader-utils): preserve RequestScheduler debounce when a request finishes (#4074)
+
 ### v4.5.2
 
 - fix(release): align published peer dependency ranges with the 4.5 release (#4027)
