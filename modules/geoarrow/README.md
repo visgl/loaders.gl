@@ -41,6 +41,17 @@ rows for selection and supporting counts, numeric aggregates, member pagination 
 Non-point geometries use an explicit representative-point policy. See the
 [clustering guide](https://loaders.gl/docs/developer-guide/clustering) for API details and examples.
 
+## Adapt binary polygons
+
+`makeGeoArrowColumnFromBinaryPolygon(binaryPolygons, {dimension: 'xy'})` exposes existing
+binary polygon buffers as math.gl GeoArrow descriptors. Coordinates and compatible ring offsets
+are shared; polygon offsets are converted from vertex indices to ring indices. The dimension is
+explicit so XYZ and XYM remain distinct. `getGeoArrowRowBounds(binaryPolygons, {dimension: 'xy'})`
+uses the adapter and math.gl to compute one bound per polygon, with `null` for empty rows.
+
+See [binary polygon buffers](https://loaders.gl/docs/developer-guide/converters/geoarrow-converters#binary-polygon-buffers)
+for supported buffers, ownership, and validation requirements.
+
 ## Inspect and process
 
 The public API includes field inspection and validation, bounds, coordinate mapping, ring
