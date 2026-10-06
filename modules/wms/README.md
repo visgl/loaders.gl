@@ -53,3 +53,13 @@ omitting pagination preserves single-page `getFeatures()` behavior. Unknown tota
 
 See [spatial queries beyond picking](https://loaders.gl/docs/developer-guide/spatial-queries)
 for completeness policies and integration with map layers, scan/query, and exact local selection.
+
+WMTS sources enforce advertised layer tile limits and per-level matrix sizes before fetching.
+`isTileAvailable()` exposes that coverage check; unavailable tiles return `null`. Advertised
+dimension defaults configure REST and KVP requests, with explicit option/endpoint overrides.
+Native capabilities preserve dimension strings, intervals, and current support without guessing
+values. See the [WMTS support table](https://loaders.gl/docs/modules/wms/formats/wmts) for boundaries.
+
+WMTS feature-info methods query explicit tile/pixel coordinates through REST resources or KVP
+endpoints, reusing the rendered tile's layer, dimensions, and coverage limits. Native JSON responses
+are decoded; text, XML, and HTML remain service-specific text.

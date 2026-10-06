@@ -1,6 +1,8 @@
 import React, {useState} from 'react';
 import type {ChangeEvent, FormEvent} from 'react';
 import styled from 'styled-components';
+import type {ArchiveFormat} from '../archive-source';
+import {ConversionPanel} from './conversion-panel';
 
 const Panel = styled.div`
   position: absolute;
@@ -17,6 +19,8 @@ const Panel = styled.div`
   color: white;
   line-height: 1.4;
   z-index: 1;
+  max-height: calc(100% - 52px);
+  overflow-y: auto;
 `;
 
 const Heading = styled.strong`
@@ -52,13 +56,13 @@ export type ControlPanelProps = {
   selectedSource: string | null;
   /** Current loading error, if any. */
   error: string | null;
-  /** Called when the user selects a local SLPK. */
+  /** Called when the user selects a local SLPK/3TZ archive. */
   onFileSelected: (file: File) => void;
-  /** Called when the user submits a remote SLPK URL. */
-  onUrlSelected: (url: string) => void;
+  /** Called when the user submits a remote SLPK/3TZ URL. */
+  onUrlSelected: (url: string, format: ArchiveFormat) => void;
 };
 
-/** Selects a local or remote SLPK archive. */
+/** Selects a local or remote SLPK/3TZ archive. */
 export function ControlPanel({
   selectedSource,
   error,
@@ -66,12 +70,14 @@ export function ControlPanel({
   onUrlSelected
 }: ControlPanelProps) {
   const [url, setUrl] = useState('');
+  const [format, setFormat] = useState<ArchiveFormat>('auto');
 
   /** Forward a selected local file to the shared archive renderer. */
   function handleFileChange(event: ChangeEvent<HTMLInputElement>): void {
     const file = event.target.files?.[0];
     if (file) {
       onFileSelected(file);
+      event.currentTarget.value = '';
     }
   }
 
@@ -80,26 +86,36 @@ export function ControlPanel({
     event.preventDefault();
     const normalizedUrl = url.trim();
     if (normalizedUrl) {
-      onUrlSelected(normalizedUrl);
+      onUrlSelected(normalizedUrl, format);
     }
   }
 
   return (
     <Panel>
-      <Heading>Open an I3S SLPK archive</Heading>
+      <Heading>Tile archive viewer</Heading>
       <Section>
-        <label htmlFor="slpk-file">From this computer</label>
-        <input id="slpk-file" type="file" accept=".slpk" onChange={handleFileChange} />
+        <label htmlFor="slpk-file">Drop a .slpk or .3tz file anywhere, or choose one</label>
+        <input id="slpk-file" type="file" accept=".slpk,.3tz" onChange={handleFileChange} />
       </Section>
       <Section>
         <label htmlFor="slpk-url">From a URL</label>
+        <label htmlFor="archive-format">Archive format</label>
+        <select
+          id="archive-format"
+          value={format}
+          onChange={event => setFormat(event.target.value as ArchiveFormat)}
+        >
+          <option value="auto">Detect from URL</option>
+          <option value="slpk">I3S / SLPK</option>
+          <option value="3tz">3D Tiles / 3TZ</option>
+        </select>
         <UrlForm onSubmit={handleUrlSubmit}>
           <UrlInput
             id="slpk-url"
             type="url"
             value={url}
             placeholder="https://example.com/scene.slpk"
-            onChange={(event) => setUrl(event.target.value)}
+            onChange={event => setUrl(event.target.value)}
           />
           <button type="submit" disabled={!url.trim()}>
             Open
@@ -107,7 +123,14 @@ export function ControlPanel({
         </UrlForm>
         <Hint>The server must allow CORS and return HTTP byte-range responses.</Hint>
       </Section>
-      {selectedSource && <Hint>Selected: {selectedSource}</Hint>}
+      {selectedSource && (
+        <Hint>
+          Selected: {selectedSource}
+          <br />
+          Tiles load as you pan and zoom.
+        </Hint>
+      )}
+      <ConversionPanel onPreview={onFileSelected} />
       {error && <ErrorMessage role="alert">{error}</ErrorMessage>}
     </Panel>
   );

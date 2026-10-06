@@ -5,28 +5,29 @@ import {Ellipsoid} from '@math.gl/geospatial';
 test('tile-converter(i3s)#convertBoundingVolumeToI3SFullExtent', async () => {
   const sanFrancisco = [-122.43147634230891, 37.762614422522873, 104.40637177880853];
   const cartesianCenter = Ellipsoid.WGS84.cartographicToCartesian(sanFrancisco);
-  const mbs = new BoundingSphere([...cartesianCenter, 9669.8994140625], 9669.8994140625);
-  const fullExtent = convertBoundingVolumeToI3SFullExtent(mbs);
+  const boundingSphere = new BoundingSphere([...cartesianCenter, 9669.8994140625], 9669.8994140625);
+  const fullExtent = convertBoundingVolumeToI3SFullExtent(boundingSphere);
+  // Tight angular/metre tolerances allow only projection-engine floating-point rounding.
   expect(fullExtent).toEqual({
-    xmin: -122.46515906068359,
-    xmax: -122.39761505291817,
-    ymin: 37.620194593759,
-    ymax: 37.90522864642682,
-    zmin: -4505.453647678357,
-    zmax: 4754.999977323874
+    xmin: expect.closeTo(-122.46515906068359, 12),
+    xmax: expect.closeTo(-122.39761505291817, 12),
+    ymin: expect.closeTo(37.620194593759, 12),
+    ymax: expect.closeTo(37.90522864642682, 12),
+    zmin: expect.closeTo(-4505.453647678357, 7),
+    zmax: expect.closeTo(4754.999977323874, 7)
   });
-  const obb = new OrientedBoundingBox().fromCenterHalfSizeQuaternion(
+  const boundingBox = new OrientedBoundingBox().fromCenterHalfSizeQuaternion(
     cartesianCenter,
     [6821.31591796875, 7171.64501953125, 704.45751953125],
     [-0.49739304184913635, 0.74555933475494385, 0.18463276326656342, 0.40330156683921814]
   );
-  const fullExtentObb = convertBoundingVolumeToI3SFullExtent(obb);
-  expect(fullExtentObb).toEqual({
-    xmin: -122.4660370925878,
-    xmax: -122.39672756380504,
-    ymin: 37.61647458074144,
-    ymax: 37.908958954561705,
-    zmin: -4625.401184284537,
-    zmax: 4877.1047671450715
+  const boundingBoxExtent = convertBoundingVolumeToI3SFullExtent(boundingBox);
+  expect(boundingBoxExtent).toEqual({
+    xmin: expect.closeTo(-122.4660370925878, 12),
+    xmax: expect.closeTo(-122.39672756380504, 12),
+    ymin: expect.closeTo(37.61647458074144, 12),
+    ymax: expect.closeTo(37.908958954561705, 12),
+    zmin: expect.closeTo(-4625.401184284537, 7),
+    zmax: expect.closeTo(4877.1047671450715, 7)
   });
 });

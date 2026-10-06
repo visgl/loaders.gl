@@ -6,8 +6,8 @@ test('GeoTIFFLoader.', async () => {
   const geoimage = await load(TIFF_URL, GeoTIFFLoader);
   expect(geoimage, 'GeoTIFFLoader returned a result').toBeTruthy();
 });
-test('GeoTIFF raster query capabilities report cancellation conservatively', async () => {
+test('GeoTIFF raster query capabilities advertise supported cancellation', async () => {
   const source = GeoTIFFSourceLoader.createDataSource('https://example.com/data.tif', {});
   expect(source.getRasterQueryCapabilities().bounds).toBe('pushdown');
-  expect(source.getRasterQueryCapabilities().cancellation).toBeFalsy();
+  expect(source.getRasterQueryCapabilities().cancellation).toBe(true);
 });

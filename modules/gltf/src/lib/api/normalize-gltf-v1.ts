@@ -5,6 +5,25 @@
 /* eslint-disable camelcase */
 import * as KHR_binary_glTF from '../extensions/KHR_binary_gltf';
 import type {GLTFWithBuffers} from '../types/gltf-types';
+import {convertGLTFV1AccessorStrides} from './convert-gltf-v1-accessors';
+import {convertGLTFV1Skins} from './convert-gltf-v1-skins';
+import {bakeGLTFV1BindShapes} from './bake-gltf-v1-bind-shapes';
+import {
+  prepareGLTFV1AccessorConversions,
+  repackGLTFV1Accessors,
+  type GLTFV1AccessorConversion
+} from './repack-gltf-v1-accessors';
+import {cleanGLTFV1Fields, convertGLTFV1AttributeName} from './clean-gltf-v1-fields';
+import {convertGLTFV1Animations} from './convert-gltf-v1-animations';
+import {convertGLTFV1SkinScenes} from './convert-gltf-v1-skin-scenes';
+import {validateGLTFV1Cameras} from './validate-gltf-v1-cameras';
+import {validateGLTFV1Payloads} from './validate-gltf-v1-payloads';
+import {validateGLTFV1Buffers} from './validate-gltf-v1-buffers';
+import {convertGLTFV1MatrixNodes} from './convert-gltf-v1-matrix-nodes';
+import {
+  convertGLTFV1Materials,
+  canPreserveGLTFV1MaterialFallbacks
+} from './convert-gltf-v1-materials';
 
 // Binary format changes (mainly implemented by GLBLoader)
 // https://github.com/KhronosGroup/glTF/tree/master/extensions/1.0/Khronos/KHR_binary_glTF
@@ -56,6 +75,7 @@ const GLTF_ARRAYS = {
   animations: 'animation',
   buffers: 'buffer',
   bufferViews: 'bufferView',
+  cameras: 'camera',
   images: 'image',
   materials: 'material',
   meshes: 'mesh',
@@ -71,6 +91,8 @@ const GLTF_KEYS = {
   animations: 'animation',
   buffer: 'buffers',
   bufferView: 'bufferViews',
+  camera: 'cameras',
+  inverseBindMatrices: 'accessors',
   image: 'images',
   material: 'materials',
   mesh: 'meshes',
@@ -93,12 +115,22 @@ export type GLTFV1NormalizationReport = {
   warnings: string[];
 };
 
+/** Lazy logging methods compatible with probe.gl and loaders.gl core loggers. */
+export type GLTFV1NormalizationLog = {
+  /** Create a level-controlled informational callback. */
+  log(priority: number, message: string): () => void;
+  /** Create a warning callback. */
+  warn(message: string): () => void;
+};
+
 /** Options for glTF 1 to glTF 2 conversion. */
 export type GLTFV1NormalizationOptions = {
   /** Enable conversion. `'strict'` rejects unsupported features; other values are best effort. */
   normalize?: boolean | 'best-effort' | 'strict';
   /** Mutate the supplied JSON. Defaults to true for backwards compatibility. */
   mutate?: boolean;
+  /** Optional probe.gl-compatible logger; absent or null leaves diagnostics in the report only. */
+  log?: GLTFV1NormalizationLog | null;
 };
 
 /**
@@ -110,6 +142,7 @@ class GLTFV1Normalizer {
     accessors: {},
     buffers: {},
     bufferViews: {},
+    cameras: {},
     images: {},
     materials: {},
     meshes: {},
@@ -130,6 +163,16 @@ class GLTFV1Normalizer {
   };
   /** Whether unsupported legacy features should abort conversion. */
   strict = false;
+  /** Caller-owned logger receiving conversion notes and unsupported-feature warnings. */
+  log?: GLTFV1NormalizationLog | null;
+  /** Whether binary baking and final diagnostics have already completed. */
+  finished = false;
+  /** Accessors whose loaded payload needs alignment or stride repair. */
+  pendingAccessors = new Set<number>();
+  /** Separated consumer interpretations, captured before legacy strides are consumed. */
+  accessorConversions = new Map<number, GLTFV1AccessorConversion>();
+  /** URI origins retained because the loader removes fetched URIs before binary completion. */
+  uriBufferIndices = new Set<number>();
 
   // constructor() {}
 
@@ -138,8 +181,13 @@ class GLTFV1Normalizer {
    * @param gltf - object with json and binChunks
    * @param options
    * @param options normalize Whether to actually normalize
+   * @param deferBinaryBaking Complete matrix baking after the loader resolves linked buffers.
    */
-  normalize(gltf, options: GLTFV1NormalizationOptions = {}): GLTFV1NormalizationReport {
+  normalize(
+    gltf,
+    options: GLTFV1NormalizationOptions = {},
+    deferBinaryBaking = false
+  ): GLTFV1NormalizationReport {
     if (options.mutate === false) {
       const converted = {...gltf, json: JSON.parse(JSON.stringify(gltf.json))};
       const report = new GLTFV1Normalizer().normalize(converted, {...options, mutate: true});
@@ -147,6 +195,7 @@ class GLTFV1Normalizer {
       return report;
     }
     this.strict = options.normalize === 'strict';
+    this.log = options.log;
     this.json = gltf.json;
     const json = gltf.json;
 
@@ -163,8 +212,6 @@ class GLTFV1Normalizer {
         break;
 
       default:
-        // eslint-disable-next-line no-undef, no-console
-        console.warn(`glTF: Unknown version ${json.asset.version}`);
         this._warning(`Unknown glTF version ${json.asset.version}`);
         return this.report;
     }
@@ -177,10 +224,10 @@ class GLTFV1Normalizer {
     this.report.converted = true;
     this.report.mutated = true;
 
-    // eslint-disable-next-line no-undef, no-console
-    console.warn('Converting glTF v1 to glTF v2 format. This is experimental and may fail.');
+    this.log?.log(1, 'glTF: Converting glTF v1 to glTF v2 using experimental normalization.')();
 
     this._addAsset(json);
+    this._orderBinaryBufferPayloads(gltf);
 
     // In glTF2 top-level fields are Arrays not Object maps
     this._convertTopLevelObjectsToArrays(json);
@@ -194,18 +241,80 @@ class GLTFV1Normalizer {
     this._convertObjectIdsToArrayIndices(json);
 
     this._updateObjects(json);
+    for (const [bufferIndex, buffer] of (json.buffers || []).entries())
+      if (typeof buffer.uri === 'string') this.uriBufferIndices.add(bufferIndex);
 
-    this._updateMaterial(json);
-    this._updateAnimations(json);
+    const commonMaterialFallbacks = convertGLTFV1Materials(
+      json,
+      feature => this._unsupported(feature),
+      message => this._warning(message)
+    );
+    convertGLTFV1Animations(
+      json,
+      (reference, collection) => this._convertIdToIndex(reference, collection),
+      feature => this._unsupported(feature)
+    );
+    validateGLTFV1Cameras(json, feature => this._unsupported(feature));
+    convertGLTFV1MatrixNodes(
+      json,
+      feature => this._unsupported(feature),
+      message => this._warning(message)
+    );
+    cleanGLTFV1Fields(json, feature => this._unsupported(feature));
+    this.accessorConversions = prepareGLTFV1AccessorConversions(json);
+    convertGLTFV1AccessorStrides(json, accessorIndex => this.pendingAccessors.add(accessorIndex));
+    convertGLTFV1Skins(
+      json,
+      nodeId => this._convertIdToIndex(nodeId, 'node'),
+      feature => this._unsupported(feature)
+    );
     this._updateNodes(json);
-    this._preserveLegacyResources(json);
-    this._finishReport();
+    convertGLTFV1SkinScenes(
+      json,
+      feature => this._unsupported(feature),
+      message => this._warning(message)
+    );
+    this._preserveLegacyResources(json, commonMaterialFallbacks);
+    this._removeEmptyCollections(json);
+    return deferBinaryBaking ? this.report : this.finishNormalization(gltf);
+  }
+
+  /** Complete binary baking once linked buffers are available; repeated calls are harmless. */
+  finishNormalization(gltf: GLTFWithBuffers): GLTFV1NormalizationReport {
+    if (this.report.converted && !this.finished) {
+      validateGLTFV1Buffers(
+        gltf,
+        this.uriBufferIndices,
+        feature => this._unsupported(feature),
+        message => this._warning(message)
+      );
+      repackGLTFV1Accessors(
+        gltf,
+        this.accessorConversions,
+        this.pendingAccessors,
+        feature => this._unsupported(feature),
+        message => this._warning(message)
+      );
+      bakeGLTFV1BindShapes(gltf, feature => this._unsupported(feature));
+      validateGLTFV1Payloads(
+        gltf,
+        feature => this._unsupported(feature),
+        message => this._warning(message)
+      );
+      this._finishReport();
+      this.log?.log(
+        1,
+        `glTF: Completed glTF v1 normalization (${this.report.unsupported.length} unsupported features).`
+      )();
+      this.finished = true;
+    }
     return this.report;
   }
 
   /** Record a feature that requires a lossy best-effort conversion. */
   _unsupported(feature: string): void {
     this.report.unsupported.push(feature);
+    this.log?.warn(`glTF v1 normalization does not support ${feature}`)();
     if (this.strict) {
       throw new Error(`glTF v1 normalization does not support ${feature}`);
     }
@@ -214,6 +323,7 @@ class GLTFV1Normalizer {
   /** Add a diagnostic without rejecting conversion. */
   _warning(message: string): void {
     this.report.warnings.push(message);
+    this.log?.warn(`glTF: ${message}`)();
   }
 
   // asset is now required, #642 https://github.com/KhronosGroup/glTF/issues/639
@@ -222,6 +332,24 @@ class GLTFV1Normalizer {
     // We are normalizing to glTF v2, so change version to "2.0"
     json.asset.version = '2.0';
     json.asset.generator = json.asset.generator || 'Normalized to glTF 2.0 by loaders.gl';
+  }
+
+  /** Keep loaded buffer payloads aligned when the GLB 1 body is moved to index zero. */
+  _orderBinaryBufferPayloads(gltf: GLTFWithBuffers): void {
+    const buffers = this.json.buffers;
+    if (!buffers || Array.isArray(buffers) || !buffers.binary_glTF) {
+      return;
+    }
+    const bufferIds = Object.keys(buffers);
+    const binaryBufferIndex = bufferIds.indexOf('binary_glTF');
+    if (binaryBufferIndex > 0) {
+      if (gltf.buffers?.length) {
+        gltf.buffers = [
+          gltf.buffers[binaryBufferIndex],
+          ...gltf.buffers.filter((buffer, bufferIndex) => bufferIndex !== binaryBufferIndex)
+        ];
+      }
+    }
   }
 
   _convertTopLevelObjectsToArrays(json) {
@@ -241,7 +369,12 @@ class GLTFV1Normalizer {
     // Rewrite the top-level field as an array
     json[mapName] = [];
     // Copy the map key into object.id
-    for (const id in objectMap) {
+    const objectIds = Object.keys(objectMap);
+    const orderedIds =
+      mapName === 'buffers' && objectIds.includes('binary_glTF')
+        ? ['binary_glTF', ...objectIds.filter(id => id !== 'binary_glTF')]
+        : objectIds;
+    for (const id of orderedIds) {
       const object = objectMap[id];
       object.id = object.id || id; // Mutates the loaded object
       const index = json[mapName].length;
@@ -285,9 +418,23 @@ class GLTFV1Normalizer {
   _convertMeshIds(mesh) {
     for (const primitive of mesh.primitives) {
       const {attributes, indices, material} = primitive;
+      const convertedNames = new Map<string, string>();
       for (const attributeName in attributes) {
-        attributes[attributeName] = this._convertIdToIndex(attributes[attributeName], 'accessor');
+        const convertedName = convertGLTFV1AttributeName(attributeName);
+        const previousName = convertedNames.get(convertedName);
+        if (previousName !== undefined && attributes[previousName] !== attributes[attributeName]) {
+          throw new Error(
+            `glTF v1: conflicting attribute aliases ${previousName} and ${attributeName}`
+          );
+        }
+        convertedNames.set(convertedName, attributeName);
       }
+      primitive.attributes = Object.fromEntries(
+        Object.entries(attributes).map(([attributeName, accessorId]) => [
+          convertGLTFV1AttributeName(attributeName),
+          this._convertIdToIndex(accessorId, 'accessor')
+        ])
+      );
       if (indices) {
         primitive.indices = this._convertIdToIndex(indices, 'accessor');
       }
@@ -315,7 +462,7 @@ class GLTFV1Normalizer {
   /** Go through all objects in a top-level array and replace ids with indices */
   _convertIdsToIndices(json, topLevelArrayName) {
     if (!json[topLevelArrayName]) {
-      console.warn(`gltf v1: json doesn't contain attribute ${topLevelArrayName}`); // eslint-disable-line no-console, no-undef
+      // Optional absent collections need no assumption or warning.
       json[topLevelArrayName] = [];
     }
     for (const object of json[topLevelArrayName]) {
@@ -350,68 +497,6 @@ class GLTFV1Normalizer {
     }
   }
 
-  /**
-   * Update material (set pbrMetallicRoughness)
-   * @param {*} json
-   */
-  _updateMaterial(json) {
-    for (const material of json.materials) {
-      material.extras = {
-        ...material.extras,
-        gltf1: {technique: material.technique, values: material.values}
-      };
-
-      const textureId =
-        material.values?.tex ||
-        material.values?.texture2d_0 ||
-        material.values?.diffuseTex ||
-        material.values?.diffuse;
-      const textureIndex = json.textures.findIndex(texture => texture.id === textureId);
-      if (textureIndex !== -1) {
-        material.pbrMetallicRoughness ||= {
-          baseColorFactor: [1, 1, 1, 1],
-          metallicFactor: 1,
-          roughnessFactor: 1
-        };
-        material.pbrMetallicRoughness.baseColorTexture = {index: textureIndex};
-      } else if (material.technique || material.values) {
-        this._unsupported(`material technique ${material.technique || '<unnamed>'}`);
-      }
-    }
-  }
-
-  /** Convert glTF 1 animation sampler maps and channel targets to glTF 2 arrays and indices. */
-  _updateAnimations(json): void {
-    for (const animation of json.animations || []) {
-      if (!animation.samplers || Array.isArray(animation.samplers)) {
-        continue;
-      }
-      const samplerIndices: Record<string, number> = {};
-      const samplers: any[] = [];
-      const parameters = animation.parameters || {};
-      for (const samplerId of Object.keys(animation.samplers)) {
-        const sampler = animation.samplers[samplerId];
-        const input = parameters[sampler.input] || sampler.input;
-        const output = parameters[sampler.output] || sampler.output;
-        sampler.input = this._convertIdToIndex(input, 'accessor');
-        sampler.output = this._convertIdToIndex(output, 'accessor');
-        sampler.interpolation ||= 'LINEAR';
-        samplerIndices[samplerId] = samplers.length;
-        samplers.push(sampler);
-      }
-      animation.samplers = samplers;
-      for (const channel of animation.channels || []) {
-        if (typeof channel.sampler === 'string') {
-          channel.sampler = samplerIndices[channel.sampler];
-        }
-        if (channel.target?.id !== undefined) {
-          channel.target.node = this._convertIdToIndex(channel.target.id, 'node');
-          delete channel.target.id;
-        }
-      }
-    }
-  }
-
   /** Split glTF 1 nodes that reference multiple meshes into glTF 2-compatible nodes. */
   _updateNodes(json): void {
     const nodes = json.nodes || [];
@@ -438,24 +523,46 @@ class GLTFV1Normalizer {
   }
 
   /** Preserve v1 techniques, programs, and shaders without pretending they are PBR materials. */
-  _preserveLegacyResources(json): void {
+  _preserveLegacyResources(json, commonMaterialFallbacks: Set<string>): void {
+    const coveredFallbacks = canPreserveGLTFV1MaterialFallbacks(json, commonMaterialFallbacks);
     const resources = {};
     for (const resourceName of ['techniques', 'programs', 'shaders']) {
       if (json[resourceName]) {
         resources[resourceName] = json[resourceName];
         delete json[resourceName];
-        this._unsupported(`legacy ${resourceName}`);
+        if (!coveredFallbacks) this._unsupported(`legacy ${resourceName}`);
       }
     }
     if (Object.keys(resources).length) {
       json.extras = {...json.extras, gltf1Resources: resources};
+      if (coveredFallbacks)
+        this._warning('Preserved shader resources overridden by converted common materials.');
+    }
+  }
+
+  /** Omit optional empty root collections, child lists, and scene roots rejected by glTF 2. */
+  _removeEmptyCollections(json): void {
+    for (const node of json.nodes || []) {
+      if (Array.isArray(node.children) && node.children.length === 0) delete node.children;
+    }
+    for (const scene of json.scenes || []) {
+      if (Array.isArray(scene.nodes) && scene.nodes.length === 0) delete scene.nodes;
+    }
+    for (const collectionName of [
+      ...Object.keys(GLTF_ARRAYS),
+      'extensionsUsed',
+      'extensionsRequired'
+    ]) {
+      if (Array.isArray(json[collectionName]) && json[collectionName].length === 0) {
+        delete json[collectionName];
+      }
     }
   }
 
   /** Finalize report diagnostics. */
   _finishReport(): void {
     if (this.report.unsupported.length) {
-      this._warning(
+      this.report.warnings.push(
         `Converted glTF v1 with unsupported features: ${this.report.unsupported.join(', ')}`
       );
     }
@@ -470,6 +577,16 @@ export function normalizeGLTFV1(
   return new GLTFV1Normalizer().normalize(gltf, options);
 }
 
+/** Normalize parser JSON now, returning an internal completion step for linked-buffer baking. */
+export function normalizeGLTFV1WithDeferredBuffers(
+  gltf: GLTFWithBuffers,
+  options: Pick<GLTFV1NormalizationOptions, 'normalize' | 'log'> = {}
+): () => GLTFV1NormalizationReport {
+  const normalizer = new GLTFV1Normalizer();
+  normalizer.normalize(gltf, options, true);
+  return () => normalizer.finishNormalization(gltf);
+}
+
 /** Convert glTF 1 JSON without mutating the caller-owned asset or its binary buffers. */
 export function convertGLTFV1ToGLTF2(
   gltf: GLTFWithBuffers,
@@ -478,7 +595,8 @@ export function convertGLTFV1ToGLTF2(
   const converted = {...gltf, json: JSON.parse(JSON.stringify(gltf.json))};
   const normalizationReport = normalizeGLTFV1(converted, {
     normalize: options.normalize || 'best-effort',
-    mutate: true
+    mutate: true,
+    log: options.log
   });
   normalizationReport.mutated = false;
   return {...converted, normalizationReport};

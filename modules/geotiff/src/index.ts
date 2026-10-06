@@ -1,6 +1,6 @@
 // loaders.gl
 // SPDX-License-Identifier: MIT
-// Copyright (c) vis.gl contributors
+// SPDX-FileCopyrightText: Copyright (c) vis.gl contributors
 
 export {GeoTIFFLoader} from './geotiff-loader';
 export {GeoTIFFFormat, OMETiffFormat} from './geotiff-format';
@@ -17,3 +17,13 @@ export {OMETiffSourceLoader, OMETiffImageSource} from './ometiff-source-loader';
 
 export {loadGeoTiff} from './lib/load-geotiff';
 export {TiffPixelSource} from './lib/tiff-pixel-source';
+
+export {GeoTIFFRasterLoader} from './geotiff-raster-loader-types';
+export type {
+  GeoTIFFRasterData,
+  GeoTIFFRasterImage,
+  GeoTIFFRasterBand,
+  GeoTIFFRasterLoaderOptions
+} from './geotiff-raster-types';
+export {discoverGeoTIFF, isTIFFHeader} from './discover-geotiff';
+export type {DiscoverGeoTIFFOptions} from './discover-geotiff';

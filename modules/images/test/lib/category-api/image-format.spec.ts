@@ -48,6 +48,7 @@ test('Image Category#isImageFormatSupported', () => {
 });
 test('Image Category#getSupportedImageFormats', async () => {
   const supportedImageFormats = await getSupportedImageFormats();
+  expect(await getSupportedImageFormats()).toBe(supportedImageFormats);
   for (const tc of TEST_CASES) {
     const isSupported = supportedImageFormats.has(tc.mimeType);
     expect(isSupported, `${tc.mimeType} support ${isSupported}`).toBe(

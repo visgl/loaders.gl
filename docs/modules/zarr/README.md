@@ -104,23 +104,23 @@ store directly from S3 and renders monthly solar irradiance on an interactive ma
 
 | Capability | Zarr v2 | Zarr v3 | OME-Zarr | GeoZarr / CF | Status |
 | --- | --- | --- | --- | --- | --- |
-| Browser and Node.js reads | Yes | Yes | Yes | Yes | Available |
-| HTTP range/chunked access | Yes | Yes | Yes | Yes | Available |
-| Consolidated metadata discovery | `.zmetadata`, `zmetadata` | `zarr.json` | Yes | Yes | Available |
-| Multidimensional arrays and named dimensions | Yes | Yes | Yes | Yes | Available |
-| Chunk-aware raster reads | Yes | Yes | Yes | Yes | Available |
-| OME image channels, time, and z planes | — | — | Yes | — | Available |
-| OME multiscale pyramids | — | — | Yes | — | Available |
-| Automatic display-level selection | — | — | Yes | — | Available |
-| Scan metadata and source discovery | — | — | Yes | Yes | Available through both raster sources |
-| GeoZarr `proj:` and `spatial:` metadata | — | — | — | Yes | Available |
-| CF/xarray coordinates, time, vertical, and band selection | — | — | — | Yes | Available |
-| Viewport-driven geospatial windows | — | — | — | Yes | Available |
-| Typed planar or interleaved channel output | Yes | Yes | Yes | Yes | Available |
-| Zarrita-backed v2/v3 implementation | Yes | Yes | Yes | Yes | Available |
-| SpatialData images, labels, points, shapes, and tables | — | — | Yes | — | Discovery and typed storage references available |
-| Codec expansion and broader multiscale layouts | Partial | Partial | Planned | Planned | Planned |
-| Common raster query execution | — | — | Levels, channels, and slices | Native spatial windows and named selections | Available |
+| Browser and Node.js reads | ✅ Yes | ✅ Yes | ✅ Yes | ✅ Yes | ✅ Available |
+| HTTP range/chunked access | ✅ Yes | ✅ Yes | ✅ Yes | ✅ Yes | ✅ Available |
+| Consolidated metadata discovery | `.zmetadata`, `zmetadata` | `zarr.json` | ✅ Yes | ✅ Yes | ✅ Available |
+| Multidimensional arrays and named dimensions | ✅ Yes | ✅ Yes | ✅ Yes | ✅ Yes | ✅ Available |
+| Chunk-aware raster reads | ✅ Yes | ✅ Yes | ✅ Yes | ✅ Yes | ✅ Available |
+| OME image channels, time, and z planes | — | — | ✅ Yes | — | ✅ Available |
+| OME multiscale pyramids | — | — | ✅ Yes | — | ✅ Available |
+| Automatic display-level selection | — | — | ✅ Yes | — | ✅ Available |
+| Scan metadata and source discovery | — | — | ✅ Yes | ✅ Yes | ✅ Available through both raster sources |
+| GeoZarr `proj:` and `spatial:` metadata | — | — | — | ✅ Yes | ✅ Available |
+| CF/xarray coordinates, time, vertical, and band selection | — | — | — | ✅ Yes | ✅ Available |
+| Viewport-driven geospatial windows | — | — | — | ✅ Yes | ✅ Available |
+| Typed planar or interleaved channel output | ✅ Yes | ✅ Yes | ✅ Yes | ✅ Yes | ✅ Available |
+| Zarrita-backed v2/v3 implementation | ✅ Yes | ✅ Yes | ✅ Yes | ✅ Yes | ✅ Available |
+| SpatialData images, labels, points, shapes, and tables | — | — | ✅ Yes | — | ⚠️ Discovery and typed storage references available |
+| Codec expansion and broader multiscale layouts | ⚠️ Partial | ⚠️ Partial | ❌ Planned | ❌ Planned | ❌ Planned |
+| Common raster query execution | — | — | Levels, channels, and slices | Native spatial windows and named selections | ✅ Available |
 
 ## Scan support
 
@@ -136,7 +136,7 @@ array output, but their query vocabulary reflects the kind of array being opened
 | Non-spatial selection | Channels, time, and z slices | Named time, vertical, band, or other dimension indices |
 | Physical access | Selected Zarr chunks and codecs | Selected Zarr chunks and codecs |
 | Output | Typed planar or interleaved pixels | Typed raster data |
-| Reprojection | Not applicable to ordinary OME image coordinates | Not performed |
+| Reprojection | Not applicable to ordinary OME image coordinates | ❌ Not performed |
 
 Query metadata is suitable for populating source-neutral controls before pixel data is requested.
 GeoZarr bounds must use the source CRS; callers should reproject the viewport before requesting a

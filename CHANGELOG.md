@@ -4,6 +4,32 @@
 
 ### Unreleased
 
+### v5.0.0-alpha.9
+
+- chore(math.gl): upgrade to alpha.12 and migrate coordinate transformations to @math.gl/projection
+- feat(tile-converter): convert meshes to bounded tilesets and package browser output as indexed 3TZ archives
+- feat(tile-converter): preserve embedded textures, material colors, UV transforms, and texture sampling
+- feat(gltf): expand glTF 1 scene, skin, geometry, material, and attribute conversion with strict validation
+- test: expand hermetic coverage across loader modules and update Vitest tooling
+
+### v5.0.0-alpha.8
+
+- chore(math.gl): upgrade to alpha.11 and use native TypeScript projections while preserving CRS metadata
+- feat(tile-converter): add portable v5 point-cloud conversion, browser inputs and sinks, restartable manifests, modern source traversal, and bounded decoded resources
+- feat(arcgis): extract lightweight service entrypoints and add complete, observable feature queries
+- feat(gis): add spatial and table queries, exact predicates, managed extent loading, and GeoArrow marker clustering
+- feat(wms): add bounded feature pagination, WMTS feature-info queries, tile limits, and dimension defaults
+- feat(las): support legacy LASzip v1, compatibility-mode fields, typed 64-bit Extra Bytes, and opt-in recovery of interrupted fixed-chunk LAZ files
+- feat(geotiff): preserve numeric raster bands and geodetic metadata
+- feat(mvt): add a lightweight GeoJSON-only parser entrypoint
+- feat(loader-utils): add declarative authentication and request signing; clarify scheduler timing and fix debounce restarts
+- fix(tiles): derive perspective screen-space error from camera field of view and add camera-independent content traversal
+- fix(i3s): preserve normalized material colors and query parameters on initial requests
+- fix(mesh): preserve unsigned indices through Arrow conversion
+- chore(v5): flatten source parser options, remove deprecated aliases, reduce dependencies, and update test tooling
+
+### v5.0.0-alpha.7
+
 - feat(mvt): add ArrowTableTileSourceLoader for Arrow input and GeoArrow WKB tiles with zero-copy attribute selection
 
 - feat(arrow): make NDGeoJSON, Chrome Trace, and GML loaders Arrow-primary while retaining explicit legacy output shapes
@@ -13,6 +39,7 @@
 - feat(las): make LAS and LAZ loader variants Arrow-primary by default while retaining explicit mesh output
 - feat(geoarrow): make Shapefile, SHP, DBF, and PMTiles vector source outputs Arrow-primary by default while retaining explicit legacy shapes
 - feat(geopackage): make GeoPackageLoader return one selected Arrow table by default and move multi-table discovery to GeoPackageSource
+- chore(wkt): adopt math.gl alpha.9 WKT metadata parsing and remove duplicated compatibility parsing
 
 ### v5.0.0-alpha.6
 

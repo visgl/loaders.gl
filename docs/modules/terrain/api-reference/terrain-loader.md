@@ -55,8 +55,8 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
 | Data Format           | [Mesh Arrow table](/docs/specifications/category-mesh#mesh-arrow-tables), [Mesh](/docs/specifications/category-mesh) |
 | Supported APIs        | `load`, `parse`                            |
 | Decoder Type          | Asynchronous                               |
-| Worker Thread Support | Yes                                        |
-| Streaming Support     | No                                         |
+| Worker Thread Support | ✅ Yes                                        |
+| Streaming Support     | ❌ No                                         |
 
 ## Usage
 

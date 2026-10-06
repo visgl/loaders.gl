@@ -208,6 +208,7 @@ export {postProcessGLTF} from './lib/api/post-process-gltf';
 export {
   convertGLTFV1ToGLTF2,
   normalizeGLTFV1,
+  type GLTFV1NormalizationLog,
   type GLTFV1NormalizationOptions,
   type GLTFV1NormalizationReport
 } from './lib/api/normalize-gltf-v1';

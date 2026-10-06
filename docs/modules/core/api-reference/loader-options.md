@@ -40,7 +40,11 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
   tone="blue"
 />
 
-APIs in `@loaders.gl/core` takes an `options?: LoaderOptions` parameter. The options are documented on this page.
+Parser APIs in `@loaders.gl/core` accept an `options?: LoaderOptions` parameter. Shared controls
+live in `core`, beside format-specific namespaces. Sources use the same flat placement of shared
+controls and parser namespaces; see [Source options](/docs/developer-guide/using-sources#options)
+for source-specific settings, precedence, and type inference. Sources do not accept `core.loadOptions`
+or a top-level `loadOptions` wrapper.
 
 ## Core options
 
@@ -64,7 +68,10 @@ Options interpreted by the core API and shared across loaders live under `option
 | `options.core.CDN` (🚧 experimental) | `string`               | -          | Controls certain script loading from CDN. `true` loads from `unpkg.com/@loaders.gl`. `false` loads from local urls. `string` uses an alternate CDN url.                                                           |
 | `options.core.shape`                 | `string`               | per-loader | Shared default return shape for loaders that support shape selection. For example, `options.core.shape = 'object-row-table'` applies to row-table loaders unless a loader-specific option like `options.csv.shape` overrides it. <img src="https://img.shields.io/badge/From-v5.0-blue.svg?style=flat-square" alt="From-v5.0" /> |
 
-Deprecated top-level aliases such as `options.fetch`, `options.worker`, and `options.shape` are still accepted for compatibility, but new code should use `options.core`.
+Deprecated top-level parser aliases such as `options.fetch`, `options.worker`, and `options.shape`
+are still accepted by the current implementation, but new code should use `options.core`.
+This does not restore the removed source `loadOptions` wrappers. Final v5 disposition of these
+parser aliases remains an open decision in [the release tracker](https://github.com/visgl/loaders.gl/issues/3316).
 
 ### Authentication options
 
@@ -97,6 +104,16 @@ see the documentation for each loader for details:
   }
 }
 ```
+
+## Experimental scan requests
+
+Loaders that implement the scan protocol accept a root `_scan` request typed as
+`ExperimentalScanOptions`. Supported fields depend on the format; this is not a promise that every
+loader implements every scan operation. See the
+[common scan architecture](/docs/developer-guide/common-scan-architecture) and each loader's reference
+for supported behavior. The final stability and naming policy, including its relationship to source
+`scan()` and `query()` methods, remains a pre-v5 decision in
+[tracker #3316](https://github.com/visgl/loaders.gl/issues/3316).
 
 ## Batched parsing options
 

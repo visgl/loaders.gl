@@ -190,13 +190,13 @@ portable table query to the selected features.
 
 | Capability | Support | Execution |
 | --- | --- | --- |
-| Entry point | `read()` | Arrow feature batches |
-| Schema and bounds discovery | Supported | Header metadata |
-| Bounding box | Supported | Packed R-tree pushdown when the file contains an index |
-| Attribute predicate | Supported | Residual after feature decoding |
-| Projection and global limit | Supported | Applied to surviving features |
-| Cancellation | Supported | Covers range reads and result production |
-| Explain output | Supported | Distinguishes R-tree pruning from residual work |
+| Entry point | ✅ `read()` | Arrow feature batches |
+| Schema and bounds discovery | ✅ Supported | Header metadata |
+| Bounding box | ✅ Supported | Packed R-tree pushdown when the file contains an index |
+| Attribute predicate | ✅ Supported | Residual after feature decoding |
+| Projection and global limit | ✅ Supported | Applied to surviving features |
+| Cancellation | ✅ Supported | Covers range reads and result production |
+| Explain output | ✅ Supported | Distinguishes R-tree pruning from residual work |
 
 Spatial bounds use the source coordinate reference system. The adapter does not reproject query
 bounds.

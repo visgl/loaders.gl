@@ -60,16 +60,16 @@ an `ImageSource` for viewport exports and a `TileSource` for tiled visualization
 
 | Capability | Image source | Tile source | API and behavior |
 | --- | --- | --- | --- |
-| Service metadata | Supported | Supported | Normalizes title, description, extent, CRS, and attribution |
+| Service metadata | ✅ Supported | ✅ Supported | Normalizes title, description, extent, CRS, and attribution |
 | Rendered imagery | `getImage()` / `exportImage()` | `getTile()` | Decodes PNG, JPEG, and other browser image formats |
 | Analytical LERC | `exportRaster()` | `getTile()` with `format: 'lerc'` | Returns typed bands, mask, dimensions, statistics, and NoData metadata |
-| Bounding box and output CRS | Supported | Web Mercator tiles | Viewport exports accept `bboxSR` and `imageSR` |
-| Pixel type | Supported | Forwarded parameter | ArcGIS integer and floating-point pixel types are preserved by LERC |
-| Band selection | Supported | Forwarded parameter | Use `bandIds` or tile request parameters |
-| Rendering and mosaic rules | Supported | Supported | Pass ArcGIS JSON objects or serialized rules |
-| Runtime parameter updates | Per request | Supported | Tile source `updateParameters()` affects subsequent requests |
-| URL pools | Not applicable | Supported | Optional URL pool distributes tile exports deterministically |
-| Authentication | Supported | Supported | URL tokens and standard fetch options are preserved |
+| Bounding box and output CRS | ✅ Supported | Web Mercator tiles | Viewport exports accept `bboxSR` and `imageSR` |
+| Pixel type | ✅ Supported | Forwarded parameter | ArcGIS integer and floating-point pixel types are preserved by LERC |
+| Band selection | ✅ Supported | Forwarded parameter | Use `bandIds` or tile request parameters |
+| Rendering and mosaic rules | ✅ Supported | ✅ Supported | Pass ArcGIS JSON objects or serialized rules |
+| Runtime parameter updates | Per request | ✅ Supported | Tile source `updateParameters()` affects subsequent requests |
+| URL pools | Not applicable | ✅ Supported | Optional URL pool distributes tile exports deterministically |
+| Authentication | ✅ Supported | ✅ Supported | URL tokens and standard fetch options are preserved |
 | deck.gl rendering | First class for images | First class for image tiles | Analytical LERC requires an application-selected visualization |
 
 ## Authentication

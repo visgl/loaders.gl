@@ -85,6 +85,7 @@ and preserve GeoTIFF/COG range access, overview selection, band selection, and t
 | Loader / Source | Description |
 | ---------------- | ----------- |
 | [`GeoTIFFLoader`](/docs/modules/geotiff/api-reference/geotiff-loader) | Loads georeferenced GeoTIFF images. |
+| [`GeoTIFFRasterLoader`](/docs/modules/geotiff/api-reference/geotiff-raster-loader) | Loads original typed numeric bands and per-image / per-band metadata for geoid grids and scientific rasters. |
 | [`GeoTIFFSourceLoader`](/docs/modules/geotiff/api-reference/geotiff-source-loader) | Provides viewport-driven access to geospatial raster data. |
 | [`OMETiffSourceLoader`](/docs/modules/geotiff/api-reference/ometiff-source-loader) | Provides typed non-geospatial OME-TIFF planes selected by level, time, z, and channel. |
 
@@ -98,3 +99,5 @@ and preserve GeoTIFF/COG range access, overview selection, band selection, and t
 ## Attributions
 
 This module imports and wraps [geotiff.js](https://github.com/geotiffjs/geotiff.js/) under MIT license.
+
+The [original TIFF decoder core](/docs/modules/geotiff/tiff-decoder-core) handles supported numeric files and retains geotiff.js compatibility fallback.

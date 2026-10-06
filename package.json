@@ -83,13 +83,14 @@
     "@types/node": "^25.3.0",
     "@vis.gl/dev-tools": "2.0.0-alpha.6",
     "@vis.gl/ts-plugins": "2.0.0-alpha.6",
-    "@vitest/browser-playwright": "^4.1.10",
-    "@vitest/coverage-v8": "^4.1.10",
+    "@vitest/browser-playwright": "5.0.2",
+    "@vitest/coverage-v8": "5.0.2",
+    "gltf-validator": "^2.0.0-dev.3.10",
     "playwright": "^1.59.1",
     "pre-commit": "^1.2.2",
     "pre-push": "^0.1.1",
     "vite": "^8.0.0",
-    "vitest": "^4.1.10",
+    "vitest": "5.0.2",
     "zod": "^4.1.12"
   },
   "pre-commit": "pre-commit",
@@ -98,7 +99,8 @@
     "Ensure we use recent typescript",
     "Keep Playwright on 1.59.1: 1.63.0 closes Chromium during headless coverage shards",
     "apache-arrow version should be aligned with parquet-wasm version",
-    "Patch deck.gl/arcgis 9.4.0 to import MapView through the public core export; remove after the upstream packaging fix"
+    "Patch deck.gl/arcgis 9.4.0 to import MapView through the public core export; remove after the upstream packaging fix",
+    "POC: align the browser packages required by @vis.gl/dev-tools with Vitest 5; remove after upstream supports Vitest 5"
   ],
   "resolutions": {
     "apache-arrow": "^21.2.0",
@@ -131,6 +133,8 @@
     "@loaders.gl/worker-utils": "^5.0.0-alpha.0",
     "@loaders.gl/wms": "^5.0.0-alpha.0",
     "@loaders.gl/zip": "^5.0.0-alpha.0",
-    "@deck.gl/arcgis@npm:9.4.0": "patch:@deck.gl/arcgis@npm%3A9.4.0#~/.yarn/patches/@deck.gl-arcgis-npm-9.4.0-4c40c78c8b.patch"
+    "@deck.gl/arcgis@npm:9.4.0": "patch:@deck.gl/arcgis@npm%3A9.4.0#~/.yarn/patches/@deck.gl-arcgis-npm-9.4.0-4c40c78c8b.patch",
+    "@vitest/browser": "5.0.2",
+    "@vitest/browser-playwright": "5.0.2"
   }
 }

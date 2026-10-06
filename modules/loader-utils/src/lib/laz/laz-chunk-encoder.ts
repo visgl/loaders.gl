@@ -515,7 +515,7 @@ class GpsTime10LayerEncoder {
         this.encode(gpsTime);
         return;
       } else {
-        this.encoder.encodeSymbol(this.gpsTime0DiffModel, 1);
+        this.encoder.encodeSymbol(this.gpsTime0DiffModel, 2);
         this.startSequence(gpsTime);
       }
     } else if (differenceFits) {
@@ -565,7 +565,7 @@ class GpsTime10LayerEncoder {
       if (difference === BigInt.asIntN(32, difference)) {
         this.encoder.encodeSymbol(
           hasLastDifference ? this.gpsTimeMultiModel : this.gpsTime0DiffModel,
-          hasLastDifference ? GPS_TIME10_MULTI_CODE_FULL + index : index + 1
+          hasLastDifference ? GPS_TIME10_MULTI_CODE_FULL + index : index + 2
         );
         this.lastGpsSequence = sequence;
         return true;
@@ -821,8 +821,6 @@ class WavePacket14LayerEncoder {
     if (scannerChannel !== this.lastChannel) {
       if (!targetContext) {
         targetContext = new WavePacket14Context(this.encoder, previousContext.packet);
-        targetContext.lastOffsetDifference = previousContext.lastOffsetDifference;
-        targetContext.lastOffsetDifferenceSymbol = previousContext.lastOffsetDifferenceSymbol;
         this.contexts[scannerChannel] = targetContext;
         codingContext = targetContext;
       } else if (this.itemVersion < 4) {
@@ -1620,6 +1618,16 @@ class Byte14LayerEncoder {
 
 /** Validate that raw records can be represented by the supported LASzip item set. */
 function validateMetadata(rawBytes: Uint8Array, metadata: LAZChunkMetadata): void {
+  if (
+    [
+      metadata.point10ItemVersion,
+      metadata.gpsTime11ItemVersion,
+      metadata.rgb12ItemVersion,
+      metadata.byteItemVersion
+    ].some(version => version !== undefined && version !== 2)
+  ) {
+    throw new Error('TypeScript LAZ encoder only supports legacy item version 2');
+  }
   if (!Number.isInteger(metadata.pointCount) || metadata.pointCount < 0) {
     throw new Error(`Invalid LAZ chunk point count ${metadata.pointCount}`);
   }

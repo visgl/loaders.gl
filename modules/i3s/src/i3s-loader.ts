@@ -19,6 +19,8 @@ export type I3SLoaderOptions = StrictLoaderOptions & {
     attributeName?: string;
     /** For I3SAttributeLoader */
     attributeType?: string;
+    /** Exact mode preserves null strings and removes only their UTF-8 terminator; legacy retains raw strings. */
+    attributeValues?: 'legacy' | 'exact';
   };
 };
 

@@ -64,6 +64,10 @@ npm install @loaders.gl/geopackage
 | [`GeoPackageLoader`](/docs/modules/geopackage/api-reference/geopackage-loader) | Loads one selected GeoPackage vector table. |
 | [`GeoPackageSource`](/docs/modules/geopackage/api-reference/geopackage-source) | Discovers and queries multiple GeoPackage tables as a data source. |
 
+## Reprojection
+
+Reprojection uses the math.gl TypeScript projection engine. Legacy WKT1 Web Mercator definitions with a PROJ4 extension use the declared EPSG:3857 identifier. WKT2 definitions remain preferred when supplied. Unsupported projection operations raise an error.
+
 ## Attribution
 
 The GeoPackage loaders and source use [SQL.js](https://sql.js.org/) under the MIT license.

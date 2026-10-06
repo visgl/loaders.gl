@@ -57,8 +57,8 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
 | Data Format    | https://github.com/KhronosGroup/KTX-Specification/blob/main/ktxspec.adoc |
 | File Format    | KTX2                                                                     |
 | Encoder Type   | Asynchronous                                                             |
-| Worker Thread  | No (but may run on separate native thread in browsers)                   |
-| Streaming      | No                                                                       |
+| Worker Thread  | ❌ No (but may run on separate native thread in browsers)                   |
+| Streaming      | ❌ No                                                                       |
 
 ## Usage
 

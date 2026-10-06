@@ -51,7 +51,15 @@ export {WMSLayerDescriptionLoader as _WMSLayerDescriptionLoader} from './wip/wms
 // WMTS - Web Map Tile Service
 
 export type {WMTSLoaderOptions} from './wmts-capabilities-loader';
-export type {WMTSCapabilities} from './lib/parsers/wmts/parse-wmts-capabilities';
+export type {
+  WMTSCapabilities,
+  WMTSLayer,
+  WMTSDimension,
+  WMTSTileMatrixSetLink,
+  WMTSTileMatrixLimits,
+  WMTSTileMatrixSet,
+  WMTSTileMatrix
+} from './lib/parsers/wmts/parse-wmts-capabilities';
 export {WMTSCapabilitiesLoader} from './wmts-capabilities-loader';
 
 // WFS - Web Feature Service
@@ -77,7 +85,7 @@ export type {
 } from './csw-source-loader';
 export {CSWCatalogSource, CSWSourceLoader} from './csw-source-loader';
 export {WMSSourceLoader, WMSImageSource} from './wms-source-loader';
-export type {WMTSSourceLoaderOptions} from './wmts-source-loader';
+export type {WMTSSourceLoaderOptions, WMTSGetFeatureInfoParameters} from './wmts-source-loader';
 export {WMTSSourceLoader, WMTSImageTileSource} from './wmts-source-loader';
 export type {ServiceCRS} from './crs-utils';
 export {

@@ -154,3 +154,5 @@ export type {ArrowTableBuilderOptions} from './lib/table/batch-builder/arrow-tab
 export {getTypeInfo} from './lib/table/arrow-api/get-type-info';
 
 export {default as AsyncQueue} from './lib/utils/async-queue';
+
+export type {MeshArrowAttributes} from './lib/mesh/convert-mesh-to-table';

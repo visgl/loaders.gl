@@ -1,6 +1,6 @@
 {
   "name": "@loaders.gl/geotiff",
-  "version": "5.0.0-alpha.6",
+  "version": "5.0.0-alpha.9",
   "description": "Framework-independent loaders for tiff and geotiff",
   "license": "MIT",
   "type": "module",
@@ -36,6 +36,10 @@
     "./bundled": {
       "types": "./dist/bundled.d.ts",
       "import": "./dist/bundled.js"
+    },
+    "./geotiff-raster-loader": {
+      "types": "./dist/geotiff-raster-loader.d.ts",
+      "import": "./dist/geotiff-raster-loader.js"
     }
   },
   "sideEffects": false,
@@ -54,8 +58,8 @@
     "geotiff": "ilan-gold/geotiff.js#ilan-gold/viv_094"
   },
   "dependencies": {
-    "@loaders.gl/loader-utils": "5.0.0-alpha.6",
-    "@math.gl/crs": "5.0.0-alpha.9",
+    "@loaders.gl/loader-utils": "5.0.0-alpha.9",
+    "@math.gl/crs": "5.0.0-alpha.12",
     "fast-xml-parser": "^5.3.6",
     "geotiff": "^2.1.0"
   },

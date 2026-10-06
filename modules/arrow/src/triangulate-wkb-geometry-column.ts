@@ -3,7 +3,8 @@
 // Copyright (c) vis.gl contributors
 
 import * as arrow from 'apache-arrow';
-import {convertWKBToGeometry, triangulateWKB} from '@loaders.gl/gis';
+import {parseWKB} from '@math.gl/wkb';
+import {triangulateWKB} from '@loaders.gl/arrow-geometry';
 import type {Geometry, MultiPolygon, Polygon, Position} from '@loaders.gl/schema';
 
 /** Tessellated columns derived from a GeoArrow WKB geometry column. */
@@ -61,25 +62,18 @@ export function triangulateWKBGeometryColumn(
  * @returns XY vertex pairs.
  */
 function getWKBGeometryVertices(wkb: ArrayBufferLike | ArrayBufferView): number[][] {
-  return getGeometryVertices(convertWKBToGeometry(getWKBArrayBuffer(wkb)));
+  return getGeometryVertices(parseWKB(getWKBByteArray(wkb)).geometry as Geometry);
 }
 
 /**
- * Converts WKB input to an ArrayBuffer for helpers that do not accept typed array views.
+ * Converts WKB input to a byte view for math.gl's WKB parser.
  * @param wkb Binary WKB input.
- * @returns ArrayBuffer containing only the WKB bytes.
+ * @returns Byte view containing only the WKB bytes.
  */
-function getWKBArrayBuffer(wkb: ArrayBufferLike | ArrayBufferView): ArrayBufferLike {
-  if (!ArrayBuffer.isView(wkb)) {
-    return wkb;
-  }
-
-  const byteOffset = wkb.byteOffset;
-  const byteLength = wkb.byteLength;
-  const sourceBuffer = wkb.buffer;
-  return byteOffset === 0 && byteLength === sourceBuffer.byteLength
-    ? sourceBuffer
-    : sourceBuffer.slice(byteOffset, byteOffset + byteLength);
+function getWKBByteArray(wkb: ArrayBufferLike | ArrayBufferView): Uint8Array {
+  return ArrayBuffer.isView(wkb)
+    ? new Uint8Array(wkb.buffer, wkb.byteOffset, wkb.byteLength)
+    : new Uint8Array(wkb);
 }
 
 /**

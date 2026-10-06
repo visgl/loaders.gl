@@ -1,10 +1,9 @@
 {
   "name": "@loaders.gl/graphs",
-  "version": "5.0.0-alpha.6",
-  "description": "Graph format parsers for DOT, GraphML, and related formats",
+  "version": "5.0.0-alpha.9",
+  "description": "Graph format parsers for DOT, GraphML, and GEXF",
   "license": "MIT",
   "type": "module",
-  "private": true,
   "repository": {
     "type": "git",
     "url": "https://github.com/visgl/loaders.gl"
@@ -13,6 +12,7 @@
     "graph",
     "dot",
     "graphml",
+    "gexf",
     "parser",
     "loader"
   ],
@@ -24,6 +24,21 @@
       "types": "./dist/index.d.ts",
       "import": "./dist/index.js",
       "require": "./dist/index.cjs"
+    },
+    "./graphml-loader": {
+      "types": "./dist/graphml-loader.d.ts",
+      "import": "./dist/graphml-loader.js",
+      "require": "./dist/graphml-loader.cjs"
+    },
+    "./dot-loader": {
+      "types": "./dist/dot-loader.d.ts",
+      "import": "./dist/dot-loader.js",
+      "require": "./dist/dot-loader.cjs"
+    },
+    "./gexf-loader": {
+      "types": "./dist/gexf-loader.d.ts",
+      "import": "./dist/gexf-loader.js",
+      "require": "./dist/gexf-loader.cjs"
     }
   },
   "sideEffects": false,
@@ -38,5 +53,15 @@
   "peerDependencies": {
     "@loaders.gl/core": "~5.0.0-alpha.0"
   },
-  "gitHead": "f1a6da2c65e4ea06b59c61d1884819b6be577fe3"
+  "gitHead": "f1a6da2c65e4ea06b59c61d1884819b6be577fe3",
+  "publishConfig": {
+    "access": "public"
+  },
+  "dependencies": {
+    "@loaders.gl/loader-utils": "5.0.0-alpha.9",
+    "@loaders.gl/schema": "5.0.0-alpha.9",
+    "@loaders.gl/schema-utils": "5.0.0-alpha.9",
+    "apache-arrow": ">= 17.0.0",
+    "fast-xml-parser": "^5.5.3"
+  }
 }

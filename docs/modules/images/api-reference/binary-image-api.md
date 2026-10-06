@@ -73,6 +73,10 @@ Parameters:
 
 Returns a metadata object describing the image. Returns `null` if the binary data does not represent a known binary image format.
 
+PNG identification requires the full eight-byte signature and a complete first IHDR chunk
+with a 13-byte data length. This reads header metadata; it does not decode pixels, validate
+compressed image payloads, or verify chunk CRCs.
+
 ```typescript
 {
   mimeType: string;

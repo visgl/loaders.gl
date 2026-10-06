@@ -49,6 +49,12 @@ module.exports = function(context, opts = {
             )
           ];
         }
+        if (resolve.extensionAlias) {
+          _config.resolve.extensionAlias = {
+            ..._config.resolve.extensionAlias,
+            ...resolve.extensionAlias
+          };
+        }
         Object.assign(_config.resolve.alias, resolve.alias);
       }
 

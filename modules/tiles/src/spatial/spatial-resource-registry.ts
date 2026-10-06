@@ -3,22 +3,22 @@
 // Copyright (c) vis.gl contributors
 
 import {Geoid, parsePGM} from '@math.gl/geoid';
-import {Proj4Projection} from '@math.gl/proj4';
-import type {Proj4CRSDefinition} from '@math.gl/proj4';
+import {Projection} from '@math.gl/projection';
+import type {ReadonlyCRSDefinition} from '@math.gl/crs';
 
 const geoidModels = new Map<string, Geoid>();
 
 /**
- * Registers an application-supplied CRS alias for deterministic Proj4 transformations.
+ * Registers an application-supplied CRS alias for deterministic coordinate transformations.
  *
  * loaders.gl never downloads registry definitions implicitly.
  *
  * @param name - Identifier used by dataset metadata or application options.
- * @param definition - CRS definition understood by `@math.gl/proj4`.
+ * @param definition - CRS definition understood by `@math.gl/projection`.
  */
-export function registerSpatialCrs(name: string, definition: Proj4CRSDefinition): void {
+export function registerSpatialCrs(name: string, definition: ReadonlyCRSDefinition): void {
   validateResourceName(name, 'CRS');
-  Proj4Projection.defineProjectionAliases({[name]: definition});
+  Projection.defineProjectionAliases({[name]: definition});
 }
 
 /**
@@ -29,7 +29,7 @@ export function registerSpatialCrs(name: string, definition: Proj4CRSDefinition)
  */
 export function registerSpatialDatumGrid(name: string, data: ArrayBuffer): void {
   validateResourceName(name, 'datum grid');
-  Proj4Projection.registerDatumGrid(name, data);
+  Projection.registerDatumGrid(name, data);
 }
 
 /**

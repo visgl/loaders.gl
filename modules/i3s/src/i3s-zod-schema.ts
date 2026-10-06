@@ -56,7 +56,7 @@ export const I3SNodeInPageSchema = z
         attribute: z.object({resource: z.number().int().nonnegative()}).passthrough()
       })
       .passthrough()
-      .optional()
+      .nullish()
   })
   .passthrough() satisfies z.ZodType<NodeInPage>;
 
@@ -128,7 +128,7 @@ const I3SPointCloudSceneLayerBaseSchema = z
     spatialReference: I3SSpatialReferenceSchema.optional(),
     version: z.string().min(1),
     capabilities: z.array(z.string()),
-    disablePopup: z.boolean(),
+    disablePopup: z.boolean().default(false).optional(),
     store: I3SPointCloudStoreSchema,
     nodePages: z
       .object({
@@ -209,7 +209,7 @@ export const I3SSceneLayerSchema = z
     version: z.string().min(1),
     name: z.string().optional(),
     capabilities: z.array(z.string()),
-    disablePopup: z.boolean(),
+    disablePopup: z.boolean().default(false).optional(),
     store: z
       .object({
         profile: z.string().min(1),

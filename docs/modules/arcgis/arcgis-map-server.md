@@ -60,17 +60,17 @@ ArcGIS MapServer services expose cached map tiles, dynamically rendered maps, or
 
 | Capability | Support | API and behavior |
 | --- | --- | --- |
-| Cached tile services | Supported | Uses `/tile/{z}/{y}/{x}` when service metadata advertises `tileInfo` |
-| Dynamic map services | Supported | Uses `/export` with a Web Mercator tile bounding box |
-| Automatic mode selection | Supported | `mode: 'auto'` chooses cached tiles when available, otherwise export |
-| Explicit mode selection | Supported | Use `mode: 'cached'` or `mode: 'dynamic'` |
-| Service metadata | Supported | `getMetadata()` exposes bounds, CRS, layers, tile size, and ArcGIS LODs |
-| ArcGIS LOD grid | Supported | Advertised levels, origins, resolutions, and scale are normalized as a tile grid |
-| Dynamic rendering parameters | Supported | Layer visibility, format, transparency, time, and vendor parameters are forwarded |
-| Multiple service URLs | Supported | Optional URL pool distributes tile requests deterministically |
-| Authentication | Supported | URL tokens and standard fetch options are preserved |
-| Feature queries | Not provided | Use FeatureServer for vector queries or WMS `GetFeatureInfo` when available |
-| deck.gl rendering | First class | `SourceLayer` consumes the `TileSource` directly |
+| Cached tile services | ✅ Supported | Uses `/tile/{z}/{y}/{x}` when service metadata advertises `tileInfo` |
+| Dynamic map services | ✅ Supported | Uses `/export` with a Web Mercator tile bounding box |
+| Automatic mode selection | ✅ Supported | `mode: 'auto'` chooses cached tiles when available, otherwise export |
+| Explicit mode selection | ✅ Supported | Use `mode: 'cached'` or `mode: 'dynamic'` |
+| Service metadata | ✅ Supported | `getMetadata()` exposes bounds, CRS, layers, tile size, and ArcGIS LODs |
+| ArcGIS LOD grid | ✅ Supported | Advertised levels, origins, resolutions, and scale are normalized as a tile grid |
+| Dynamic rendering parameters | ✅ Supported | Layer visibility, format, transparency, time, and vendor parameters are forwarded |
+| Multiple service URLs | ✅ Supported | Optional URL pool distributes tile requests deterministically |
+| Authentication | ✅ Supported | URL tokens and standard fetch options are preserved |
+| Feature queries | ❌ Not provided | Use FeatureServer for vector queries or WMS `GetFeatureInfo` when available |
+| deck.gl rendering | ✅ First class | `SourceLayer` consumes the `TileSource` directly |
 
 ## Authentication
 

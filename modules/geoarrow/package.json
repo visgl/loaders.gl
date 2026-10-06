@@ -1,6 +1,6 @@
 {
   "name": "@loaders.gl/geoarrow",
-  "version": "5.0.0-alpha.6",
+  "version": "5.0.0-alpha.9",
   "description": "GeoArrow columnar geometry encoding and decoding",
   "license": "MIT",
   "type": "module",
@@ -28,6 +28,18 @@
   "main": "dist/index.cjs",
   "module": "dist/index.js",
   "exports": {
+    "./cluster-index": {
+      "types": "./dist/clustering/cluster-index.d.ts",
+      "import": "./dist/clustering/cluster-index.js"
+    },
+    "./cluster-source": {
+      "types": "./dist/clustering/cluster-source.d.ts",
+      "import": "./dist/clustering/cluster-source.js"
+    },
+    "./get-representative-point": {
+      "types": "./dist/clustering/get-representative-point.d.ts",
+      "import": "./dist/clustering/get-representative-point.js"
+    },
     ".": {
       "types": "./dist/index.d.ts",
       "import": "./dist/index.js",
@@ -93,14 +105,14 @@
     "build-bundle-dev": "ocular-bundle ./bundle.ts --env=dev --output=dist/dist.dev.js"
   },
   "dependencies": {
-    "@loaders.gl/gis": "5.0.0-alpha.6",
-    "@loaders.gl/loader-utils": "5.0.0-alpha.6",
-    "@loaders.gl/schema": "5.0.0-alpha.6",
-    "@loaders.gl/schema-utils": "5.0.0-alpha.6",
-    "@math.gl/geoarrow": "5.0.0-alpha.9",
-    "@math.gl/polygon": "5.0.0-alpha.9",
-    "@math.gl/types": "5.0.0-alpha.9",
-    "@math.gl/wkb": "5.0.0-alpha.9",
+    "@loaders.gl/gis": "5.0.0-alpha.9",
+    "@loaders.gl/loader-utils": "5.0.0-alpha.9",
+    "@loaders.gl/schema": "5.0.0-alpha.9",
+    "@loaders.gl/schema-utils": "5.0.0-alpha.9",
+    "@math.gl/geoarrow": "5.0.0-alpha.12",
+    "@math.gl/polygon": "5.0.0-alpha.12",
+    "@math.gl/types": "5.0.0-alpha.12",
+    "@math.gl/wkb": "5.0.0-alpha.12",
     "apache-arrow": ">= 17.0.0"
   },
   "peerDependencies": {

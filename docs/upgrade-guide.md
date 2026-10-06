@@ -58,6 +58,18 @@ v4.5 is additive. Existing loaders and defaults continue to work unchanged, exce
 
 The sections below document the v5 removals, migrations, and deprecations that remain active.
 
+### Graph loader output defaults
+
+`GraphMLLoader` and `DOTLoader` now default to a `shape: 'tables'` collection with
+named `nodes` and `edges` Arrow tables. Applications that consume `graph.nodes` and
+`graph.edges`, including plain graph-layer integrations, must explicitly select
+`{graphml: {shape: 'plain-graph-data'}}` or `{dot: {shape: 'plain-graph-data'}}`.
+
+For Arrow output, read `graph.tables[0].table.data` and `graph.tables[1].table.data`
+after checking the collection and table discriminators. Structural identifiers are
+strings; GraphML `long` attributes become exact `bigint` values. See the
+[graphs module](./modules/graphs/README.md) for schemas and object-row output.
+
 **@loaders.gl/math**
 
 - The temporary `@loaders.gl/math` package has been removed. Install `@math.gl/geometry-utils`
@@ -65,6 +77,10 @@ The sections below document the v5 removals, migrations, and deprecations that r
   utilities.
 
 **CRS and @loaders.gl/wkt**
+
+- Replace `@math.gl/proj4` imports with `@math.gl/projection` and `Proj4Projection` with
+  `Projection`. Import `ReadonlyCRSDefinition` from `@math.gl/crs` instead of the removed
+  `Proj4CRSDefinition` type. loaders.gl now uses math.gl 5.0.0-alpha.12.
 
 - Shared CRS definition types now come from `@math.gl/crs`. Replace new uses of the deprecated
   `PROJ4CRS` alias with `PROJStringDefinition` and import `CRSIdentifier`, `CRSDefinition`, WKT,
@@ -122,7 +138,11 @@ Move those settings into `sourceOptions`, using the flat shape above. This match
 `Tile2DSourceLayer` and avoids two competing source-options entry points. The deck.gl property
 itself and the separate `Tileset3D.loadOptions` API are not removed by this change.
 
-- Top-level loader options are no longer supported
+- Deprecated top-level parser option aliases such as `fetch`, `worker`, and `shape` are still
+  accepted by the current implementation. Migrate them to `core.fetch`, `core.worker`, and
+  `core.shape`. These aliases are distinct from the removed source `loadOptions` wrappers above;
+  their final v5 removal or retention decision is tracked in
+  [the v5 release tracker](https://github.com/visgl/loaders.gl/issues/3316).
 - `Source` has been replaced by `SourceLoader` for top-level runtime source factories.
 - `load(url, SomeSourceLoader)` now returns the runtime `DataSource` instance created by that source loader instead of metadata or parsed payloads.
 - `parse()` and `parseSync()` no longer accept source loaders. Use `load()` for source loaders and keep `parse()` for parser loaders.

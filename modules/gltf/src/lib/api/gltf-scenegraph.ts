@@ -478,13 +478,15 @@ export class GLTFScenegraph {
   }
 
   /**
-   * Adds an accessor to a bufferView
+   * Adds an accessor to a bufferView, preserving explicitly supplied normalization.
    * @param bufferViewIndex
    * @param accessor
    */
   addAccessor(bufferViewIndex: number, accessor: object): number {
+    const normalized = (accessor as Partial<GLTFAccessor>).normalized;
     const glTFAccessor = {
       bufferView: bufferViewIndex,
+      ...(normalized === undefined ? {} : {normalized}),
       // @ts-ignore
       type: getAccessorTypeFromSize(accessor.size),
       // @ts-ignore
@@ -534,18 +536,31 @@ export class GLTFScenegraph {
   /**
    * Adds a texture to the json part
    * @todo: add more properties for texture initialization
-   * `sampler`, `name`, `extensions`, `extras`
+   * `name`, `extensions`, `extras`
    * https://github.com/KhronosGroup/glTF/tree/master/specification/2.0#texture
    */
-  addTexture(texture: {imageIndex: number}): number {
-    const {imageIndex} = texture;
+  addTexture(texture: {
+    /** Index of the image used by the texture. */
+    imageIndex: number;
+    /** Optional sampler index; omission retains glTF's implicit sampling defaults. */
+    samplerIndex?: number;
+  }): number {
+    const {imageIndex, samplerIndex} = texture;
     const glTFTexture = {
-      source: imageIndex
+      source: imageIndex,
+      ...(samplerIndex === undefined ? {} : {sampler: samplerIndex})
     };
 
     this.json.textures = this.json.textures || [];
     this.json.textures.push(glTFTexture);
     return this.json.textures.length - 1;
+  }
+
+  /** Adds a sampler to the JSON resources and returns its index; callers supply valid glTF properties. */
+  addSampler(sampler: GLTFSampler): number {
+    this.json.samplers = this.json.samplers || [];
+    this.json.samplers.push({...sampler});
+    return this.json.samplers.length - 1;
   }
 
   /** Adds a material to the json part */
@@ -555,8 +570,15 @@ export class GLTFScenegraph {
     return this.json.materials.length - 1;
   }
 
-  /** Pack the binary chunk */
+  /** Pack binary data, omitting the optional chunk when no buffer is declared or populated. */
   createBinaryChunk(): void {
+    if (this.byteLength === 0 && !this.json.buffers?.length) {
+      delete this.json.buffers;
+      delete this.gltf.binary;
+      this.sourceBuffers = [];
+      this.gltf.buffers = [];
+      return;
+    }
     // Allocate total array
     const totalByteLength = this.byteLength;
     const arrayBuffer = new ArrayBuffer(totalByteLength);
@@ -598,14 +620,38 @@ export class GLTFScenegraph {
   }
 
   /**
-   * Add attributes to buffers and create `attributes` object which is part of `mesh`
+   * Add attributes to buffers with four-byte vertex alignment and create the mesh attribute map.
    */
   _addAttributes(attributes = {}) {
     const result = {};
     for (const attributeKey in attributes) {
       const attributeData = attributes[attributeKey];
       const attrName = this._getGltfAttributeName(attributeKey);
-      const accessor = this.addBinaryBuffer(attributeData.value, attributeData);
+      const values = attributeData.value;
+      const elementByteLength = values.BYTES_PER_ELEMENT * attributeData.size;
+      const byteStride = padToNBytes(elementByteLength, 4);
+      let accessor;
+      if (byteStride === elementByteLength) {
+        accessor = this.addBinaryBuffer(values, attributeData);
+      } else {
+        const count = values.length / attributeData.size;
+        const paddedBytes = new Uint8Array(count * byteStride);
+        const sourceBytes = new Uint8Array(values.buffer, values.byteOffset, values.byteLength);
+        for (let index = 0; index < count; index++) {
+          paddedBytes.set(
+            sourceBytes.subarray(index * elementByteLength, (index + 1) * elementByteLength),
+            index * byteStride
+          );
+        }
+        const bufferView = this.addBufferView(paddedBytes);
+        this.json.bufferViews![bufferView].byteStride = byteStride;
+        accessor = this.addAccessor(bufferView, {
+          ...this._getAccessorMinMax(values, attributeData.size),
+          ...attributeData,
+          componentType: getComponentTypeFromArray(values),
+          count
+        });
+      }
       result[attrName] = accessor;
     }
     return result;

@@ -89,12 +89,12 @@ transformation or a spatial index.
 
 | Capability | Support |
 | --- | --- |
-| Schema and geometry-role discovery | Supported |
-| Attribute predicates, projection, and limit | Supported |
-| Expressions, ordering, aggregates, unions, and joins | Supported for in-memory tables |
-| Geometry representation | Preserved when the selected columns retain it |
-| Spatial predicate or spatial-index pushdown | Not provided by the generic Arrow executor |
-| CRS transformation | Not performed |
+| Schema and geometry-role discovery | ✅ Supported |
+| Attribute predicates, projection, and limit | ✅ Supported |
+| Expressions, ordering, aggregates, unions, and joins | ✅ Supported for in-memory tables |
+| Geometry representation | ✅ Preserved when the selected columns retain it |
+| Spatial predicate or spatial-index pushdown | ❌ Not provided by the generic Arrow executor |
+| CRS transformation | ❌ Not performed |
 
 ## Spatial query support
 
@@ -104,29 +104,29 @@ conversion and metadata tools. The index covers every supplied row, including of
 
 | Area | Capability | Status | API, guarantee, or boundary |
 | --- | --- | --- | --- |
-| Index | Stable string, numeric, and bigint IDs | Supported | `getFeatureRowsById()` preserves duplicate rows and distinguishes typed IDs |
-| Index | Null geometry by ID | Supported | Nonspatial rows remain addressable; they never match spatial predicates |
-| Index | Geometry bounds and sliced vectors | Supported | Row-relative bounds are computed once; sorted minimum-X candidates prune extent queries |
-| Selection | Bounding-box extent candidates | Supported | `getFeatureRowsInExtent()`; fast inclusive bounds test may return geometry false positives |
-| Selection | Exact coordinate intersection | Supported | `getFeatureRowsAtCoordinate()`; actual point, line, or filled-polygon intersection |
-| Selection | Exact rectangle intersection | Supported | `getFeatureRowsIntersectingExtent()` removes bounds false positives |
-| Selection | Polygon holes and concavity | Supported | Hole interiors excluded, outer and hole boundaries included |
-| Selection | Point, line, polygon, multipart, and collections | Supported | Recursively refines all simple-feature families |
-| Selection | Degenerate query extents | Supported | Point and line extents use the same closed-boundary rules |
-| Selection | Empty and null geometry | Supported | Excluded from spatial matches; empty result is an empty row array |
-| Nearest | Nearest geometry and snapped coordinate | Supported | `getClosestFeature()` returns row, coordinate, and planar distance |
-| Nearest | Inclusive distance limit and row filter | Supported | `maxDistance` and optional predicate; ties choose the earliest row |
-| Nearest | Polygon interiors and holes | Supported | Filled interior distance is zero; hole queries find a ring boundary |
-| Encoding | Native geometry, WKB, and WKT queries | Supported | Native/WKB candidate decoding; WKT normalized to WKB once during index construction |
-| Coordinates | XY with Z/M retained in stored geometry | Supported | Spatial predicates and distances use XY only |
-| Coordinates | Geodesic distance, wrapping, reprojection | Not implemented by index | Supply data and queries in the same planar CRS |
-| Precision | Adaptive-precision topology and tolerance predicates | Not implemented | Standard floating-point segment/ring calculations; no implicit snapping tolerance |
-| Snapping | Pixel tolerance, vertex-only policy, segment intersection snapping | Not implemented by index | Returned closest coordinates are geometry based; application controls UI policies |
-| Lifecycle | Incremental edits and change events | Not implemented | Treat buffers as immutable and rebuild the index after mutation |
-| Scaling | Mutable R-tree or persistent spatial index | Not implemented | Current bounds index may inspect every row in the worst case |
-| Analysis | Arbitrary geometry predicates, spatial joins, buffers, topology | Not implemented by index | Exact APIs cover coordinate/rectangle intersections; use a spatial engine for richer operations |
-| Query integration | Portable relational scan/query | Supported separately | Arrow table predicates, projection, ordering, aggregates, unions, and joins |
-| Query integration | Exact predicate pushdown in generic Arrow scan | Not implemented | Use this index explicitly to select geometry rows |
+| Index | Stable string, numeric, and bigint IDs | ✅ Supported | `getFeatureRowsById()` preserves duplicate rows and distinguishes typed IDs |
+| Index | Null geometry by ID | ✅ Supported | Nonspatial rows remain addressable; they never match spatial predicates |
+| Index | Geometry bounds and sliced vectors | ✅ Supported | Row-relative bounds are computed once; sorted minimum-X candidates prune extent queries |
+| Selection | Bounding-box extent candidates | ✅ Supported | `getFeatureRowsInExtent()`; fast inclusive bounds test may return geometry false positives |
+| Selection | Exact coordinate intersection | ✅ Supported | `getFeatureRowsAtCoordinate()`; actual point, line, or filled-polygon intersection |
+| Selection | Exact rectangle intersection | ✅ Supported | `getFeatureRowsIntersectingExtent()` removes bounds false positives |
+| Selection | Polygon holes and concavity | ✅ Supported | Hole interiors excluded, outer and hole boundaries included |
+| Selection | Point, line, polygon, multipart, and collections | ✅ Supported | Recursively refines all simple-feature families |
+| Selection | Degenerate query extents | ✅ Supported | Point and line extents use the same closed-boundary rules |
+| Selection | Empty and null geometry | ✅ Supported | Excluded from spatial matches; empty result is an empty row array |
+| Nearest | Nearest geometry and snapped coordinate | ✅ Supported | `getClosestFeature()` returns row, coordinate, and planar distance |
+| Nearest | Inclusive distance limit and row filter | ✅ Supported | `maxDistance` and optional predicate; ties choose the earliest row |
+| Nearest | Polygon interiors and holes | ✅ Supported | Filled interior distance is zero; hole queries find a ring boundary |
+| Encoding | Native geometry, WKB, and WKT queries | ✅ Supported | Native/WKB candidate decoding; WKT normalized to WKB once during index construction |
+| Coordinates | XY with Z/M retained in stored geometry | ✅ Supported | Spatial predicates and distances use XY only |
+| Coordinates | Geodesic distance, wrapping, reprojection | ❌ Not implemented by index | Supply data and queries in the same planar CRS |
+| Precision | Adaptive-precision topology and tolerance predicates | ❌ Not implemented | Standard floating-point segment/ring calculations; no implicit snapping tolerance |
+| Snapping | Pixel tolerance, vertex-only policy, segment intersection snapping | ❌ Not implemented by index | Returned closest coordinates are geometry based; application controls UI policies |
+| Lifecycle | Incremental edits and change events | ❌ Not implemented | Treat buffers as immutable and rebuild the index after mutation |
+| Scaling | Mutable R-tree or persistent spatial index | ❌ Not implemented | Current bounds index may inspect every row in the worst case |
+| Analysis | Arbitrary geometry predicates, spatial joins, buffers, topology | ❌ Not implemented by index | Exact APIs cover coordinate/rectangle intersections; use a spatial engine for richer operations |
+| Query integration | Portable relational scan/query | ✅ Supported separately | Arrow table predicates, projection, ordering, aggregates, unions, and joins |
+| Query integration | Exact predicate pushdown in generic Arrow scan | ❌ Not implemented | Use this index explicitly to select geometry rows |
 
 ## Geometry Types
 

@@ -73,6 +73,8 @@ Run `yarn test-tile-converter` to check the converter with local fixtures.
 npx tile-converter --install-dependencies
 ```
 
+The dependency installer downloads workers and runtime libraries from the matching package version. If a download fails, the error includes the resource URL and HTTP status to help diagnose unavailable artifacts.
+
 You can use custom Earth Gravity Model or disable it using `--egm` option.
 
 5. [Convert some tileset](/docs/modules/tile-converter/cli-reference/tile-converter)

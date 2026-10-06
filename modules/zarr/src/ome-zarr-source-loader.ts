@@ -743,7 +743,11 @@ function selectInterleavedChannels(
   channels: number[],
   interleaved: boolean
 ): SupportedTypedArray | SupportedTypedArray[] {
-  if (channels.length === bandCount && interleaved) {
+  if (
+    channels.length === bandCount &&
+    interleaved &&
+    channels.every((channel, index) => channel === index)
+  ) {
     return data;
   }
 

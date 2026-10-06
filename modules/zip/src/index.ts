@@ -5,6 +5,8 @@
 export {ZipFormat} from './zip-format';
 export {ZipLoader} from './zip-loader';
 export {ZipWriter} from './zip-writer';
+export {encodeIndexedZip} from './indexed-zip-writer';
+export type {IndexedZipFiles, IndexedZipOptions} from './indexed-zip-writer';
 export {TarBuilder} from './tar-builder';
 
 export {

@@ -23,8 +23,8 @@ import {
   transformGeoJsonCoords
 } from '@loaders.gl/gis';
 import {convertFeaturesToGeoArrowTable} from '@loaders.gl/gis';
-import {Proj4Projection, toProj4CRSDefinition, type Proj4CRSDefinition} from '@math.gl/proj4';
-import type {ReadonlyCRSDefinition, WKTCRSDefinition} from '@math.gl/crs';
+import {Projection} from '@math.gl/projection';
+import {parseWKTCRS, type ReadonlyCRSDefinition, type WKTCRSDefinition} from '@math.gl/crs';
 import initSqlJs, {Database, SqlJsStatic, Statement} from 'sql.js';
 
 import type {GeoPackageLoaderOptions} from '../geopackage-loader';
@@ -281,7 +281,7 @@ export function getGeoPackageArrowTable(
   const values = queryResult?.values || [];
   const projection = getProjection(vectorTable, projections, options);
   const outputCrs = options.reproject
-    ? toProj4CRSDefinition(options.targetCrs)
+    ? (options.targetCrs as ReadonlyCRSDefinition)
     : vectorTable.srsId === undefined
       ? undefined
       : projections[vectorTable.srsId];
@@ -327,7 +327,7 @@ function constructGeoJsonFeature(
   vectorTable: GeoPackageVectorTableInfo,
   dataColumns: DataColumnsMapping | null,
   featureIdColumn: string | null,
-  projection: Proj4Projection | null
+  projection: Projection | null
 ): Feature<Geometry | null> {
   const featureIdIndex = featureIdColumn ? columns.indexOf(featureIdColumn) : -1;
   const geometryColumnIndex = columns.indexOf(vectorTable.geometryColumnName);
@@ -366,7 +366,7 @@ function constructArrowRow(
   columns: string[],
   row: unknown[],
   geometryColumnName: string,
-  projection: Proj4Projection | null
+  projection: Projection | null
 ): Record<string, unknown> {
   const arrowRow: Record<string, unknown> = {};
 
@@ -394,7 +394,7 @@ export function getProjection(
   vectorTable: GeoPackageVectorTableInfo,
   projections: ProjectionMapping,
   options: {reproject: boolean; targetCrs: ReadonlyCRSDefinition}
-): Proj4Projection | null {
+): Projection | null {
   if (!options.reproject) {
     return null;
   }
@@ -416,9 +416,9 @@ export function getProjection(
   }
 
   try {
-    return new Proj4Projection({
-      from: sourceProjection,
-      to: toProj4CRSDefinition(options.targetCrs)
+    return new Projection({
+      from: getProjectionDefinition(sourceProjection),
+      to: options.targetCrs as ReadonlyCRSDefinition
     });
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error);
@@ -430,10 +430,27 @@ export function getProjection(
   }
 }
 
-function reprojectGeometry(
-  geometry: Geometry | null,
-  projection: Proj4Projection
-): Geometry | null {
+/** Resolve legacy Web Mercator extensions without changing stored CRS metadata. */
+function getProjectionDefinition(definition: WKTCRSDefinition): ReadonlyCRSDefinition {
+  if (/^\s*PROJCS\s*\[/i.test(definition) && /EXTENSION\s*\[\s*"PROJ4"/i.test(definition)) {
+    const {root} = parseWKTCRS(definition);
+    const authority = root.values.find(
+      value => value.type === 'node' && value.keyword.toUpperCase() === 'AUTHORITY'
+    );
+    if (
+      authority?.type === 'node' &&
+      authority.values[0]?.type === 'string' &&
+      authority.values[0].value.toUpperCase() === 'EPSG' &&
+      authority.values[1]?.type === 'string' &&
+      authority.values[1].value === '3857'
+    ) {
+      return 'EPSG:3857';
+    }
+  }
+  return definition;
+}
+
+function reprojectGeometry(geometry: Geometry | null, projection: Projection): Geometry | null {
   if (!geometry) {
     return null;
   }
@@ -538,7 +555,7 @@ function getSchema(database: Database, tableName: string): Schema {
 export function getGeoPackageArrowSchema(
   database: Database,
   vectorTable: GeoPackageVectorTableInfo,
-  crs?: Proj4CRSDefinition
+  crs?: ReadonlyCRSDefinition
 ): Schema {
   const statement = database.prepare(`PRAGMA table_info(\`${vectorTable.name}\`)`);
   const fields: Field[] = [];
@@ -572,7 +589,7 @@ export function getGeoPackageArrowSchema(
 }
 
 /** Preserves a GeoPackage output CRS using the matching GeoArrow metadata representation. */
-function getGeoArrowCrsMetadata(crs: Proj4CRSDefinition): Record<string, unknown> {
+function getGeoArrowCrsMetadata(crs: ReadonlyCRSDefinition): Record<string, unknown> {
   if (typeof crs !== 'string') {
     return {crs, crs_type: 'projjson'};
   }

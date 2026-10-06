@@ -40,7 +40,7 @@ import {
 import {PotreeHierarchyChunkLoaderWithParser} from '../potree-hierarchy-chunk-loader-with-parser';
 import {PotreeBinLoaderWithParser} from '../potree-bin-loader-with-parser';
 import {parseVersion} from '../utils/parse-version';
-import {Proj4Projection} from '@math.gl/proj4';
+import {Projection} from '@math.gl/projection';
 import {LASMesh} from '@loaders.gl/las/src/lib/las-types';
 import {createProjection} from '../utils/projection-utils';
 import {
@@ -96,7 +96,7 @@ export class PotreeNodesSource
   /** Is data source ready to use after initial loading */
   isReady = false;
   /** local CRS to WGS84 projection */
-  projection: Proj4Projection | null = null;
+  projection: Projection | null = null;
   /** The data set minimum bounding box */
   boundingBox?: PotreeBoundingBox;
   /** The octree hierarchy bounding box in source coordinates */
@@ -1023,7 +1023,7 @@ export class PotreeNodesSource
    * Reproject a Potree bounding box into WGS84 longitude and latitude.
    */
   private projectBoundingBox(
-    projection: Proj4Projection,
+    projection: Projection,
     boundingBox: PotreeBoundingBox
   ): PotreeBoundingBox {
     const projectedCorners = [

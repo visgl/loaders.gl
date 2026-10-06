@@ -2,7 +2,12 @@
 // SPDX-License-Identifier: MIT
 // Copyright vis.gl contributors
 
-import type {LoaderWithParser, StrictLoaderOptions, LoaderContext} from '@loaders.gl/loader-utils';
+import type {
+  Loader,
+  LoaderWithParser,
+  StrictLoaderOptions,
+  LoaderContext
+} from '@loaders.gl/loader-utils';
 // / import type { GLTFLoaderOptions } from '@loaders.gl/gltf';
 import type {DracoLoaderOptions} from '@loaders.gl/draco';
 import type {ImageBitmapLoaderOptions} from '@loaders.gl/images';
@@ -102,6 +107,8 @@ export type Tiles3DLoaderOptions = StrictLoaderOptions &
   DracoLoaderOptions &
   ImageBitmapLoaderOptions & {
     '3d-tiles'?: {
+      /** Named dependencies supplied by core preload(). */
+      subloaders?: Record<string, Loader>;
       /**
        * Whether to parse embedded glTF binaries or retain their bytes for independent parsing.
        */
@@ -192,7 +199,8 @@ async function parse(
   if (preprocessedContent.contentType === 'gltf' || preprocessedContent.contentType === 'glb') {
     const classificationJson = await getGltfClassificationJson(
       data,
-      preprocessedContent as GltfPreprocessedContent
+      preprocessedContent as GltfPreprocessedContent,
+      options
     );
     const isTileset = Boolean(classificationJson.extensions?.['3DTILES_tileset']);
     const loadStructureBuffers = Boolean(classificationJson.extensions?.['3DTILES_subtree']);
@@ -488,7 +496,10 @@ async function parseGltfForClassification(
           }
         }
       : options;
-  const gltfLoaderWithParser = await GLTFLoader.preload();
+  const gltfLoaderWithParser =
+    (options?.['3d-tiles']?.subloaders?.GLTFLoader as Awaited<
+      ReturnType<typeof GLTFLoader.preload>
+    >) || (await GLTFLoader.preload());
   const input = preprocessedContent.contentType === 'gltf' ? preprocessedContent.jsonPayload : data;
   return await gltfLoaderWithParser.parse(input, parseOptions, context);
 }
@@ -502,12 +513,16 @@ async function parseGltfForClassification(
  */
 async function getGltfClassificationJson(
   data: ArrayBuffer,
-  preprocessedContent: GltfPreprocessedContent
+  preprocessedContent: GltfPreprocessedContent,
+  options?: Tiles3DLoaderOptions
 ): Promise<Record<string, any>> {
   if (preprocessedContent.contentType === 'gltf') {
     return preprocessedContent.jsonPayload;
   }
-  const glbLoaderWithParser = await GLBLoader.preload();
+  const glbLoaderWithParser =
+    (options?.['3d-tiles']?.subloaders?.GLBLoader as Awaited<
+      ReturnType<typeof GLBLoader.preload>
+    >) || (await GLBLoader.preload());
   return glbLoaderWithParser.parseSync(data).json;
 }
 

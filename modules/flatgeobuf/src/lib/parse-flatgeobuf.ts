@@ -3,7 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import * as arrow from 'apache-arrow';
-import {Proj4Projection, toProj4CRSDefinition} from '@math.gl/proj4';
+import {Projection} from '@math.gl/projection';
 import type {ReadonlyCRSDefinition} from '@math.gl/crs';
 import type {ArrowTable, ArrowTableBatch, Feature, Field, Schema, Table} from '@loaders.gl/schema';
 import {
@@ -25,7 +25,7 @@ import {
   convertFeaturesToGeoArrowTable,
   type GeoParquetGeometryType
 } from '@loaders.gl/gis';
-import {WKBBuilder} from '@loaders.gl/gis';
+import {WKBBuilder} from '@loaders.gl/arrow/geometry';
 import {convertSchemaToArrow, queryArrowTable} from '@loaders.gl/schema-utils';
 import {
   decodeFlatGeobufGeometry,
@@ -329,7 +329,7 @@ export function getProjection(
   header: FlatGeobufHeader | any,
   reproject = false,
   targetCrs: ReadonlyCRSDefinition = 'WGS84'
-): Proj4Projection | undefined {
+): Projection | undefined {
   if (!reproject) return undefined;
   const sourceCrs = header.crs?.wkt || getFlatGeobufCRSIdentifier(header.crs);
   if (!sourceCrs) {
@@ -340,7 +340,7 @@ export function getProjection(
     );
   }
   try {
-    return new Proj4Projection({from: sourceCrs, to: toProj4CRSDefinition(targetCrs)});
+    return new Projection({from: sourceCrs, to: targetCrs as ReadonlyCRSDefinition});
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error);
     throw new CRSReprojectionError(

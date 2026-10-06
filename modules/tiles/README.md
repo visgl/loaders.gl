@@ -54,8 +54,15 @@ for await (const {tile, contents} of traverseTilesetContents(tileset, {signal}))
 The traversal follows declared placements in depth-first order, resolves lazy 3D Tiles subtrees and
 I3S child headers through their source, and visits nested tilesets before descending into them.
 Repeated resource URLs remain separate visits when they appear at different placements, since each
-placement can have its own transform. The caller owns loaded-content lifetime and should unload or
-destroy the tileset when processing completes.
+placement can have its own transform. By default, the caller owns loaded-content lifetime and
+should unload or destroy the tileset when processing completes.
+
+Pass `{signal, unloadContent: true}` with a runtime dedicated to traversal to unload newly read
+content when the iterator advances or closes, including on cancellation and errors. Preloaded
+content is retained. Finish processing each placement before requesting the next one; do not retain
+payloads or concurrently update the runtime. Tile placements and children remain available, and the
+caller still owns tileset destruction and source/archive lifetimes. This limits content retention,
+not decoder allocations, source caches, or the full dataset's metadata.
 
 For broader documentation please visit the [website](https://loaders.gl).
 

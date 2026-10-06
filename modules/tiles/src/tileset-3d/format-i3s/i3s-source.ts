@@ -98,7 +98,10 @@ export class I3SSource implements Tileset3DSource {
    */
   async initialize(): Promise<void> {
     if (!this.rootTileset) {
-      this.rootTileset = await this.loadRootData(this.getTileUrl(this.url), this.loadOptions);
+      this.rootTileset = await this.loadRootData(this.getTileUrl(this.url), {
+        ...this.loadOptions,
+        i3s: {...(this.loadOptions.i3s as Record<string, unknown>), isTileset: true}
+      });
     }
     this.tileset = this.rootTileset;
 

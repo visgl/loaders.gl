@@ -51,8 +51,8 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
 | MIME Types           | `application/xml`, `text/xml`, `text/html`                                                  |
 | File Type            | Text                                                                                       |
 | Loader APIs          | `load`, `parse`, `parseTextSync`                                                           |
-| Loader Worker Thread | No                                                                                         |
-| Loader Streaming     | No                                                                                         |
+| Loader Worker Thread | ❌ No                                                                                         |
+| Loader Streaming     | ❌ No                                                                                         |
 
 ## Loaders
 

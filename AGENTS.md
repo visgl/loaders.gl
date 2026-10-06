@@ -44,10 +44,17 @@
 
 - If `gh` authentication fails, check whether the authenticated GitHub plugin is available before treating GitHub access as blocked.
 - When opening a pull request, verify that its description renders as properly formatted Markdown with real newlines, headings, and lists; do not submit a description with escaped or flattened newlines.
-- After opening a pull request, wait 15 minutes, then review and resolve any outstanding review comments, and verify that coverage and all CI checks are green. Continue addressing newly posted review comments and rechecking the checks until the pull request is ready.
-- When babysitting an open pull request, keep the branch current with `master`, resolve merge conflicts promptly, and recheck mergeability after every push.
-- Close the loop on every actionable review thread: implement the fix, reply with what changed, resolve the thread, and recheck for newly posted comments before declaring the pull request ready.
-- Treat CI as a final gate after review changes: rerun failed jobs when appropriate, investigate failures rather than dismissing them, and do not declare the pull request ready while required checks are failing or pending.
+
+### Babysitting pull requests
+
+- After opening a PR, or when asked to address reviews or babysit it, own the work until the latest revision is ready for merge. Continue after pushing fixes; local success alone does not finish the task.
+- Wait 15 minutes after opening a PR for review comments, as in luma.gl. Use that time to inspect CI and coverage, and address comments as they arrive.
+- Close the loop on every actionable review thread: implement the fix, add focused regression coverage when appropriate, run the required build/tests/formatting after the final changes, reply with what changed and how it was verified, then resolve the thread. Recheck for newly posted comments after each push.
+- Keep the branch current with `master`, resolve merge conflicts promptly, and recheck mergeability after every push.
+- Inspect all required CI checks and coverage on the latest head commit. Investigate failures; rerun transient jobs when the evidence supports it. Never lower coverage thresholds or add exclusions merely to make the PR pass.
+- Treat CI as the final gate after review changes. Older successful runs and focused local checks do not replace green required checks on the current revision. Do not declare readiness while checks are failing or pending.
+- Before finishing, recheck review threads, current `master`, mergeability, and the latest checks. A ready PR has no outstanding actionable review threads, passes every required check and coverage gate, and has an accurate Markdown description.
+- Report the PR link, review fixes, verification, and any remaining blockers. Do not merge unless the user asks to merge.
 
 ## Ready for merge
 

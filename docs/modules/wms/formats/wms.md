@@ -62,20 +62,20 @@ WMS (Web Map Service) is a protocol for serving geo-referenced **map images** ov
 
 | Capability | Support | API and behavior |
 | --- | --- | --- |
-| WMS 1.3.0 | Supported | Default protocol version with specification-correct axis order |
-| WMS 1.1.1 | Supported | Version-specific `SRS` and longitude/latitude request handling |
-| `GetCapabilities` | Supported | Parsed and normalized service, request, layer, CRS, extent, and dimension metadata |
-| `GetMap` | Supported | `getImage()` and `getMap()` return decoded image data |
-| `GetFeatureInfo` | Supported | Parsed feature information or raw text output |
-| `DescribeLayer` | Supported | Parses layer descriptions when the server advertises the operation |
-| `GetLegendGraphic` | Supported | Returns a decoded legend image |
-| Service exceptions | Supported | OGC XML errors are parsed and reported as request failures |
-| Layer hierarchy and inheritance | Supported | Parent metadata is inherited by renderable child layers |
-| Time, elevation, and custom dimensions | Supported | Standard and vendor parameters are forwarded |
-| CRS normalization and axis order | Supported | Handles the WMS 1.3.0 `EPSG:4326` axis-order change |
-| Server-side styling | Pass through | Named styles and vendor parameters are sent to the service |
-| Authentication | Supported | Standard fetch headers, credentials, proxies, and URL parameters |
-| deck.gl rendering | First class | Pass `WMSSourceLoader` to `SourceLayer` |
+| WMS 1.3.0 | ✅ Supported | Default protocol version with specification-correct axis order |
+| WMS 1.1.1 | ✅ Supported | Version-specific `SRS` and longitude/latitude request handling |
+| `GetCapabilities` | ✅ Supported | Parsed and normalized service, request, layer, CRS, extent, and dimension metadata |
+| `GetMap` | ✅ Supported | `getImage()` and `getMap()` return decoded image data |
+| `GetFeatureInfo` | ✅ Supported | Parsed feature information or raw text output |
+| `DescribeLayer` | ✅ Supported | Parses layer descriptions when the server advertises the operation |
+| `GetLegendGraphic` | ✅ Supported | Returns a decoded legend image |
+| Service exceptions | ✅ Supported | OGC XML errors are parsed and reported as request failures |
+| Layer hierarchy and inheritance | ✅ Supported | Parent metadata is inherited by renderable child layers |
+| Time, elevation, and custom dimensions | ✅ Supported | Standard and vendor parameters are forwarded |
+| CRS normalization and axis order | ✅ Supported | Handles the WMS 1.3.0 `EPSG:4326` axis-order change |
+| Server-side styling | ✅ Pass through | Named styles and vendor parameters are sent to the service |
+| Authentication | ✅ Supported | Standard fetch headers, credentials, proxies, and URL parameters |
+| deck.gl rendering | ✅ First class | Pass `WMSSourceLoader` to `SourceLayer` |
 
 ## Quick start
 
@@ -256,12 +256,12 @@ The WMS standard specifies protocol defined as a number of "request types" that 
 
 | **WMS Request**    | **loaders.gl support**                         | **Description**                                                                                                                                                                                                        |
 | ------------------ | ---------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `GetCapabilities`  | [`WMSCapabilitiesLoader`][capabilities_loader] | Returns WMS metadata (such as map image format and WMS version compatibility) and the available layers (map bounding box, coordinate reference systems, URI of the data and whether the layer is mostly opaque or not) |
-| `GetMap`           | [`ImageBitmapLoader`][image_bitmap_loader]     | returns a map image. Parameters include: width and height of the map, coordinate reference system, rendering style, image format                                                                                       |
-| `GetFeatureInfo`   | `WMSFeatureInfoLoader`][feature_info_loader]   | if a layer is marked as 'queryable' then you can request data about a coordinate of the map image.                                                                                                                     |
+| `GetCapabilities`  | ✅ [`WMSCapabilitiesLoader`][capabilities_loader] | Returns WMS metadata (such as map image format and WMS version compatibility) and the available layers (map bounding box, coordinate reference systems, URI of the data and whether the layer is mostly opaque or not) |
+| `GetMap`           | ✅ [`ImageBitmapLoader`][image_bitmap_loader]     | returns a map image. Parameters include: width and height of the map, coordinate reference system, rendering style, image format                                                                                       |
+| `GetFeatureInfo`   | ✅ `WMSFeatureInfoLoader`][feature_info_loader]   | if a layer is marked as 'queryable' then you can request data about a coordinate of the map image.                                                                                                                     |
 | `DescribeLayer`    |                                                | gets feature types of the specified layer or layers, which can be further described using WFS or WCS requests. (Styled Layer Descriptor (SLD) Profile of WMS).                                                         |
-| `GetLegendGraphic` | [`ImageBitmapLoader`][image_bitmap_loader]     | An image of the map's legend, giving a visual guide to map elements.                                                                                                                                                   |
-| Exceptions         | `WMSErrorLoader`                               | Parses an XML encoded WMS error response from any malformed request.                                                                                                                                                   |
+| `GetLegendGraphic` | ✅ [`ImageBitmapLoader`][image_bitmap_loader]     | An image of the map's legend, giving a visual guide to map elements.                                                                                                                                                   |
+| Exceptions         | ✅ `WMSErrorLoader`                               | Parses an XML encoded WMS error response from any malformed request.                                                                                                                                                   |
 
 Remarks:
 

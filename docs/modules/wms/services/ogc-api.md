@@ -64,31 +64,31 @@ used by WFS. The table distinguishes implemented read operations from optional p
 
 | Area | Capability | Status | API, guarantee, or boundary |
 | --- | --- | --- | --- |
-| Discovery | Landing page and collections | Supported | `getLandingPage()` and `getCollections()` |
-| Discovery | Collection URL or service URL | Supported | Collection inferred from URL or selected by `collectionId`/layers |
-| Discovery | Normalized metadata | Supported | Collection title, description, advertised CRSs, and first spatial extent |
-| Discovery | Automatic queryables/schema negotiation | Not implemented | Source schema is currently empty; materialized Arrow schemas are inferred |
-| Requests | Collection items | Supported | `/collections/{id}/items` and GeoJSON `Accept` negotiation |
-| Requests | Bounding box | Supported | Standard `bbox`, with canonical XY input and wire axis normalization |
-| Requests | Independent bounds and output CRSs | Supported | `requestCrs` sends `bbox-crs`; `crs` controls the requested response CRS |
-| Requests | Feature request cancellation | Supported | `AbortSignal` forwarded to the items fetch |
-| Requests | Credentials and custom transport | Supported | Common source fetch options |
-| Requests | Portable attribute predicate pushdown / CQL2 | Not implemented | Relational adapter evaluates predicates locally; custom HTTP requests remain possible |
-| Requests | Automatic next-link pagination | Supported with limits | Opt-in `ogc-api.pagination` gathers same-origin body/HTTP-header next links, with bounded requests and cancellation |
-| Requests | Page-size control | Supported | `pagination.pageSize` requests `limit`; services may cap it |
-| Requests | Item-by-ID and datetime convenience methods | Not implemented | Current normalized API focuses on bounding-box item requests |
-| Output | GeoJSON validation and foreign members | Supported | Requires FeatureCollection and a features array; single-page responses preserve links/counts |
-| Output | Binary feature collections | Supported | `format: 'binary'` |
-| Output | Arrow and GeoArrow encoding preferences | Supported | `format: 'arrow'`, WKB/native/mixed union preferences |
-| Loading | Complete extent reuse and uncovered rectangles | Supported via wrapper | `ManagedVectorSource` requires verified complete results and explicit equivalent CRSs |
-| Loading | Shared requests and independent cancellation | Supported via wrapper | Last waiting consumer can abort the underlying request |
-| Loading | Retry, invalidation, and bounded retention | Supported via wrapper | Failed, incomplete, and unknown-completeness pages do not establish coverage |
-| Loading | Stable-ID deduplication | Partial | Typed IDs or custom accessor; features without stable IDs are retained separately |
-| Queries | Common scan/query interface | Supported via adapter | `VectorFeatureTableScanSource` evaluates one materialized bounded result |
-| Queries | ID, bounds, exact intersection, nearest geometry | Supported locally | `GeoArrowSpatialIndex` includes offscreen loaded rows |
-| Rendering | deck.gl integration | Supported | Implements `VectorSource`; direct or managed source works with `SourceLayer` |
-| Mutation | Transactions and mutable feature-store events | Not implemented | Read-only adapter; explicit cache invalidation after external changes |
-| Conformance | All optional OGC API Features classes | Not implemented | Focused read client; no blanket standards certification claim |
+| Discovery | Landing page and collections | ✅ Supported | `getLandingPage()` and `getCollections()` |
+| Discovery | Collection URL or service URL | ✅ Supported | Collection inferred from URL or selected by `collectionId`/layers |
+| Discovery | Normalized metadata | ✅ Supported | Collection title, description, advertised CRSs, and first spatial extent |
+| Discovery | Automatic queryables/schema negotiation | ❌ Not implemented | Source schema is currently empty; materialized Arrow schemas are inferred |
+| Requests | Collection items | ✅ Supported | `/collections/{id}/items` and GeoJSON `Accept` negotiation |
+| Requests | Bounding box | ✅ Supported | Standard `bbox`, with canonical XY input and wire axis normalization |
+| Requests | Independent bounds and output CRSs | ✅ Supported | `requestCrs` sends `bbox-crs`; `crs` controls the requested response CRS |
+| Requests | Feature request cancellation | ✅ Supported | `AbortSignal` forwarded to the items fetch |
+| Requests | Credentials and custom transport | ✅ Supported | Common source fetch options |
+| Requests | Portable attribute predicate pushdown / CQL2 | ❌ Not implemented | Relational adapter evaluates predicates locally; custom HTTP requests remain possible |
+| Requests | Automatic next-link pagination | ⚠️ Supported with limits | Opt-in `ogc-api.pagination` gathers same-origin body/HTTP-header next links, with bounded requests and cancellation |
+| Requests | Page-size control | ✅ Supported | `pagination.pageSize` requests `limit`; services may cap it |
+| Requests | Item-by-ID and datetime convenience methods | ❌ Not implemented | Current normalized API focuses on bounding-box item requests |
+| Output | GeoJSON validation and foreign members | ✅ Supported | Requires FeatureCollection and a features array; single-page responses preserve links/counts |
+| Output | Binary feature collections | ✅ Supported | `format: 'binary'` |
+| Output | Arrow and GeoArrow encoding preferences | ✅ Supported | `format: 'arrow'`, WKB/native/mixed union preferences |
+| Loading | Complete extent reuse and uncovered rectangles | ✅ Supported via wrapper | `ManagedVectorSource` requires verified complete results and explicit equivalent CRSs |
+| Loading | Shared requests and independent cancellation | ✅ Supported via wrapper | Last waiting consumer can abort the underlying request |
+| Loading | Retry, invalidation, and bounded retention | ✅ Supported via wrapper | Failed, incomplete, and unknown-completeness pages do not establish coverage |
+| Loading | Stable-ID deduplication | ⚠️ Partial | Typed IDs or custom accessor; features without stable IDs are retained separately |
+| Queries | Common scan/query interface | ✅ Supported via adapter | `VectorFeatureTableScanSource` evaluates one materialized bounded result |
+| Queries | ID, bounds, exact intersection, nearest geometry | ✅ Supported locally | `GeoArrowSpatialIndex` includes offscreen loaded rows |
+| Rendering | deck.gl integration | ✅ Supported | Implements `VectorSource`; direct or managed source works with `SourceLayer` |
+| Mutation | Transactions and mutable feature-store events | ❌ Not implemented | Read-only adapter; explicit cache invalidation after external changes |
+| Conformance | All optional OGC API Features classes | ❌ Not implemented | Focused read client; no blanket standards certification claim |
 
 ### Progressive pages and complete collection
 
@@ -150,14 +150,14 @@ const features = await source.getFeatures({
 
 | Capability | Support | Behavior |
 | --- | --- | --- |
-| Landing-page metadata | Supported | Reads title and advertised tileset media type |
-| Explicit tile template | Required | Configure `ogc-api.tileTemplate` |
-| OGC placeholders | Supported | `{tileMatrix}`, `{tileRow}`, `{tileCol}` |
-| XYZ placeholders | Supported | `{z}`, `{y}`, `{x}` |
-| Tile retrieval | Supported | `getTile()` returns the original `ArrayBuffer` |
-| Matrix-set negotiation | Not implemented | Use WMTS for capability-driven grid selection |
-| Tile decoding | Not automatic | Parse bytes with the loader matching the advertised media type |
-| deck.gl | Foundation only | The generic tile contract is present; callers must provide the appropriate decoded tile type |
+| Landing-page metadata | ✅ Supported | Reads title and advertised tileset media type |
+| Explicit tile template | ✅ Required | Configure `ogc-api.tileTemplate` |
+| OGC placeholders | ✅ Supported | `{tileMatrix}`, `{tileRow}`, `{tileCol}` |
+| XYZ placeholders | ✅ Supported | `{z}`, `{y}`, `{x}` |
+| Tile retrieval | ✅ Supported | `getTile()` returns the original `ArrayBuffer` |
+| Matrix-set negotiation | ❌ Not implemented | Use WMTS for capability-driven grid selection |
+| Tile decoding | ❌ Not automatic | Parse bytes with the loader matching the advertised media type |
+| deck.gl | ⚠️ Foundation only | The generic tile contract is present; callers must provide the appropriate decoded tile type |
 
 ```ts
 import {createDataSource} from '@loaders.gl/core';
@@ -176,17 +176,17 @@ const tileBytes = await source.getTile({z: 3, x: 4, y: 5});
 
 | Capability | Support | Behavior |
 | --- | --- | --- |
-| Landing page | Supported | `getLandingPage()` |
-| Collections | Supported | `getCollections()` |
-| Collection coverage | Supported | Requests `/collections/{id}/coverage` |
-| Bounding box | Supported | Sends `bbox` |
-| Dimension subsets | Supported | Sends repeated `subset` parameters |
-| Time selection | Supported | Sends `datetime` |
-| Format negotiation | Supported | Sends `f` and an `Accept` header |
-| JSON representations | Supported | Returned as parsed objects |
-| Binary representations | Preserved | Returned as `ArrayBuffer` |
-| Coverage decoding | Application controlled | Pass binary output to GeoTIFF, LERC, or another appropriate loader |
-| Processing and visualization | Not provided | Values are not resampled or colorized implicitly |
+| Landing page | ✅ Supported | `getLandingPage()` |
+| Collections | ✅ Supported | `getCollections()` |
+| Collection coverage | ✅ Supported | Requests `/collections/{id}/coverage` |
+| Bounding box | ✅ Supported | Sends `bbox` |
+| Dimension subsets | ✅ Supported | Sends repeated `subset` parameters |
+| Time selection | ✅ Supported | Sends `datetime` |
+| Format negotiation | ✅ Supported | Sends `f` and an `Accept` header |
+| JSON representations | ✅ Supported | Returned as parsed objects |
+| Binary representations | ✅ Preserved | Returned as `ArrayBuffer` |
+| Coverage decoding | ⚠️ Application controlled | Pass binary output to GeoTIFF, LERC, or another appropriate loader |
+| Processing and visualization | ❌ Not provided | Values are not resampled or colorized implicitly |
 
 ```ts
 import {createDataSource} from '@loaders.gl/core';
@@ -211,18 +211,18 @@ level, and parameter.
 
 | Capability | Support | Behavior |
 | --- | --- | --- |
-| Landing page and collections | Supported | Common OGC API discovery methods |
-| Position query | Supported | Point observations |
-| Radius query | Supported | Observations around a position |
-| Area query | Supported | Polygon or bounding-area observations |
-| Cube query | Supported | Multidimensional bounding volume |
-| Trajectory query | Supported | Observations along a path |
-| Corridor query | Supported | Observations in a buffered path |
-| Time, vertical, parameter, and CRS controls | Supported | Standard query parameters are generated |
-| GeoJSON and CoverageJSON | Supported | JSON media types are returned as objects |
-| Binary representations | Preserved | Non-JSON responses are returned as `ArrayBuffer` |
-| Domain-specific interpretation | Application controlled | Unit conversion and scientific analysis remain explicit |
-| deck.gl | Not direct | Convert the selected response representation into a visual source first |
+| Landing page and collections | ✅ Supported | Common OGC API discovery methods |
+| Position query | ✅ Supported | Point observations |
+| Radius query | ✅ Supported | Observations around a position |
+| Area query | ✅ Supported | Polygon or bounding-area observations |
+| Cube query | ✅ Supported | Multidimensional bounding volume |
+| Trajectory query | ✅ Supported | Observations along a path |
+| Corridor query | ✅ Supported | Observations in a buffered path |
+| Time, vertical, parameter, and CRS controls | ✅ Supported | Standard query parameters are generated |
+| GeoJSON and CoverageJSON | ✅ Supported | JSON media types are returned as objects |
+| Binary representations | ✅ Preserved | Non-JSON responses are returned as `ArrayBuffer` |
+| Domain-specific interpretation | ⚠️ Application controlled | Unit conversion and scientific analysis remain explicit |
+| deck.gl | ❌ Not direct | Convert the selected response representation into a visual source first |
 
 ```ts
 import {createDataSource} from '@loaders.gl/core';

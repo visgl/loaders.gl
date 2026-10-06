@@ -49,8 +49,8 @@ Encodes a filemap into a Zip Archive. Returns an `ArrayBuffer` that is a valid Z
 | File Extension | `.zip`                                       |
 | File Type      | Binary                                       |
 | Encoder Type   | Asynchronous                                 |
-| Worker Thread  | No                                           |
-| Streaming      | No                                           |
+| Worker Thread  | ❌ No                                           |
+| Streaming      | ❌ No                                           |
 
 ## Usage
 
@@ -87,3 +87,18 @@ Archive output always uses `type: 'arraybuffer'`.
 | `jszip`             |                                                                                                               | `object`                                | `{}`       | Passes JSZip file and archive generation options through to the underlying writer as an escape hatch. |
 
 Explicit slash-suffixed keys are written as directory entries whether or not `zip.createFolders` is enabled.
+
+## Indexed ZIP packaging
+
+`encodeIndexedZip` is exported from `@loaders.gl/zip/indexed-zip-writer` and the package root.
+It is the portable shared encoder used by the 3TZ and SLPK format writers. Supply immutable
+`ArrayBuffer`/`Blob` resources and `{indexPath, maxArchiveBytes, lowercasePaths?}`. Paths must
+be canonical relative ASCII; the generated index name must be nonnumeric and absent from
+resources. Lowercasing hashes also rejects case-folded duplicate resource paths.
+
+The deterministic STORE ZIP32 has a final 24-byte MD5/local-header-offset index, a fixed UTC
+timestamp, populated local headers, and no descriptors/comments/directories. The complete
+size is measured before Blob reads. Format writers supply format-specific root requirements,
+index names, and size ceilings. Prefer those writers for 3TZ/SLPK. This function does not
+validate payloads or reference closure and does not support ZIP64, streaming, cancellation,
+or a peak-memory budget.

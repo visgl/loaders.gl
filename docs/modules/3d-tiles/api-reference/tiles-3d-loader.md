@@ -56,8 +56,8 @@ it does not add renderer-level vector styling, clipping, or drawing.
 | File Format           | [3D Tiles](https://github.com/CesiumGS/3d-tiles/tree/main/specification#tile-format-specifications)       |
 | Data Format           | Data Formats (see below)                                                                                                 |
 | Decoder Type          | Asynchronous                                                                                                             |
-| Worker Thread Support | No                                                                                                                       |
-| Streaming Support     | No \*                                                                                                                    |
+| Worker Thread Support | ❌ No                                                                                                                       |
+| Streaming Support     | ❌ No \*                                                                                                                    |
 | Subloaders            | `DracoLoader` (`.pnts`), `GLTFLoader` (`.b3dm`, `.i3dm`), `ImageBitmapLoader` (`.jpg`, `.png`), `TextureLoader` (`.ktx`) |
 
 \* Streaming individual tile contents is not supported; however, tilesets are streamed so that only the tiles needed for the specified viewports are loaded.
@@ -165,6 +165,34 @@ under `options.gltf` to control linked scene resources.
 Standard linked raster images are decoded through [`ImageBitmapLoader`](/docs/modules/images/api-reference/image-bitmap-loader).
 
 See [Resource resolution and content detection](/docs/modules/3d-tiles/concepts/resource-resolution-and-content-detection) for extensionless and signed URLs, nested tilesets, inherited query parameters, archive sources, validation behavior, and troubleshooting.
+
+## Overridable subloaders
+
+`Tiles3DLoader` declares the following direct dependencies. Core `preload()` prepares them
+recursively and accepts replacements through the flat `core.subloaders` map.
+
+| Override name | Default implementation | Purpose and compatibility |
+| --- | --- | --- |
+| `GLTFLoader` | [`GLTFLoader`](/docs/modules/gltf/api-reference/gltf-loader) | Parse glTF tile content and linked resources. Replacements must support asynchronous parsing of JSON and binary glTF and return the compatible glTF scene structure. |
+| `GLBLoader` | [`GLBLoader`](/docs/modules/gltf/api-reference/glb-loader) | Inspect GLB containers when classifying tile content. Replacements must support synchronous GLB parsing and expose the compatible JSON chunk. |
+
+```typescript
+import {preload, parse} from '@loaders.gl/core';
+import {Tiles3DLoader} from '@loaders.gl/3d-tiles';
+
+const loader = await preload(Tiles3DLoader, {
+  core: {subloaders: {GLTFLoader: CustomGLTFLoader}},
+  gltf: {loadImages: false}
+});
+const tile = await parse(tileBytes, loader);
+```
+
+`CustomGLTFLoader` is an application-supplied compatible loader. The same override map passes
+through nested dependencies; ordinary glTF settings remain under `options.gltf`. Resolved
+parser bindings are separate from the caller's map. See [Named subloaders](/docs/developer-guide/using-loaders#named-subloaders)
+for recursive forwarding, option precedence, and the local-execution requirement for prepared graphs.
+Dependency pages describe their own declared subloaders; undeclared dependencies cannot be
+replaced through this map.
 
 ## Notes about Tile Types
 

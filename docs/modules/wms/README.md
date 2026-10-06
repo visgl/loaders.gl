@@ -57,18 +57,18 @@ features, coverages, environmental observations, and catalogs.
 
 | Service or format | Primary source or loader | Data category | Status | Best use |
 | --- | --- | --- | --- | --- |
-| [WMS](/docs/modules/wms/formats/wms) | `WMSSourceLoader` | Rendered image | Supported | Dynamic maps, feature information, legends |
-| [WMTS](/docs/modules/wms/formats/wmts) | `WMTSSourceLoader` | Image tiles | Supported | Capability-driven tiled imagery |
-| [WFS](/docs/modules/wms/formats/wfs) | `WFSSourceLoader` | Vector features | Supported | GeoJSON or streaming GML feature queries |
-| [WCS](/docs/modules/wms/formats/wcs) | `WCSCoverageSourceLoader` | Analytical raster | Focused | Binary coverages and decoded LERC |
-| [CSW](/docs/modules/wms/formats/csw) | `CSWSourceLoader` | Catalog records | Focused | Read-only catalog search and service references |
-| [GML](/docs/modules/wms/formats/gml) | `GMLLoader` | Vector format | Supported subset | High-volume WFS feature ingestion |
-| [OGC API Features](/docs/modules/wms/services/ogc-api#ogc-api-features) | `OGCAPIFeaturesSourceLoader` | Vector features | Minimal | Common collections/items read path |
-| [OGC API Tiles](/docs/modules/wms/services/ogc-api#ogc-api-tiles) | `OGCAPITilesSourceLoader` | Tile bytes | Minimal | Known tile templates |
-| [OGC API Coverages](/docs/modules/wms/services/ogc-api#ogc-api-coverages) | `OGCAPICoveragesSourceLoader` | Coverage data | Minimal | Common collection coverage endpoint |
-| [OGC API EDR](/docs/modules/wms/services/ogc-api#ogc-api-edr) | `OGCAPIEDRSourceLoader` | Environmental observations | Focused | Position, area, cube, and path queries |
-| [WMC](/docs/modules/wms/formats/wmc) | None | Map context | Not implemented | Documented to clarify scope |
-| [OWS Context](/docs/modules/wms/formats/ows-context) | None | Service context | Not implemented | Documented to clarify scope |
+| [WMS](/docs/modules/wms/formats/wms) | `WMSSourceLoader` | Rendered image | ✅ Supported | Dynamic maps, feature information, legends |
+| [WMTS](/docs/modules/wms/formats/wmts) | `WMTSSourceLoader` | Image tiles | ✅ Supported | Capability-driven tiled imagery |
+| [WFS](/docs/modules/wms/formats/wfs) | `WFSSourceLoader` | Vector features | ✅ Supported | GeoJSON or streaming GML feature queries |
+| [WCS](/docs/modules/wms/formats/wcs) | `WCSCoverageSourceLoader` | Analytical raster | ⚠️ Focused | Binary coverages and decoded LERC |
+| [CSW](/docs/modules/wms/formats/csw) | `CSWSourceLoader` | Catalog records | ⚠️ Focused | Read-only catalog search and service references |
+| [GML](/docs/modules/wms/formats/gml) | `GMLLoader` | Vector format | ⚠️ Supported subset | High-volume WFS feature ingestion |
+| [OGC API Features](/docs/modules/wms/services/ogc-api#ogc-api-features) | `OGCAPIFeaturesSourceLoader` | Vector features | ⚠️ Minimal | Common collections/items read path |
+| [OGC API Tiles](/docs/modules/wms/services/ogc-api#ogc-api-tiles) | `OGCAPITilesSourceLoader` | Tile bytes | ⚠️ Minimal | Known tile templates |
+| [OGC API Coverages](/docs/modules/wms/services/ogc-api#ogc-api-coverages) | `OGCAPICoveragesSourceLoader` | Coverage data | ⚠️ Minimal | Common collection coverage endpoint |
+| [OGC API EDR](/docs/modules/wms/services/ogc-api#ogc-api-edr) | `OGCAPIEDRSourceLoader` | Environmental observations | ⚠️ Focused | Position, area, cube, and path queries |
+| [WMC](/docs/modules/wms/formats/wmc) | None | Map context | ❌ Not implemented | Documented to clarify scope |
+| [OWS Context](/docs/modules/wms/formats/ows-context) | None | Service context | ❌ Not implemented | Documented to clarify scope |
 
 “Focused” means the important read operations are implemented without claiming every optional
 operation. “Minimal” means a deliberately small interoperability adapter for the most common OGC
@@ -186,3 +186,7 @@ Use [capability-derived WMTS configuration](/docs/modules/wms/formats/wmts#confi
 for advertised tile styles, formats, matrix sets, and grid resolutions. The
 [spatial-query guide](/docs/developer-guide/spatial-queries) covers extent-based WFS loading and
 local GeoArrow selection and snapping, including offscreen data.
+
+The [remaining GIS work tranches](/docs/roadmap#remaining-sota-work-tranches) distinguish delivered
+source/query support from planned grid rendering, predicate pushdown, schema discovery, streaming,
+and global spatial semantics.

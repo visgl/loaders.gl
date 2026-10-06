@@ -1,6 +1,6 @@
 // loaders.gl
 // SPDX-License-Identifier: MIT
-// Copyright (c) vis.gl contributors
+// SPDX-FileCopyrightText: Copyright (c) vis.gl contributors
 
 import {COORDINATE_SYSTEM} from '@deck.gl/core';
 import {describe, expect, test, vi} from 'vitest';
@@ -457,3 +457,48 @@ function createRasterLayer(overrides: Record<string, unknown> = {}) {
     ...overrides
   } as any) as any;
 }
+
+test('raster placement retains affine shear and refuses to infer geographic projected coordinates', () => {
+  const raster = createRaster(new Float32Array([0, 1, 2, 3]), {
+    transform: [1, 0.5, 10, 0.25, -1, 20],
+    pixelRegistration: 'area'
+  });
+  const parameters = {
+    viewport: createRasterViewport(createViewport([-10, -5, 20, 15]), GEOGRAPHIC_METADATA)
+  };
+  expect(createDefaultRasterRenderResult(raster, parameters, GEOGRAPHIC_METADATA).bounds).toEqual([
+    [11, 18],
+    [10, 20],
+    [12, 20.5],
+    [13, 18.5]
+  ]);
+  const projected = {...raster, crs: 'EPSG:32633'};
+  expect(() =>
+    createDefaultRasterRenderResult(projected, parameters, {
+      ...GEOGRAPHIC_METADATA,
+      crs: 'EPSG:32633'
+    })
+  ).toThrow('unsupported source CRS');
+  const custom = createRasterRenderResult(
+    {requestId: 0, raster: projected, parameters},
+    {...GEOGRAPHIC_METADATA, crs: 'EPSG:32633'},
+    () => ({
+      image: colorizeRasterData(projected),
+      bounds: [0, 0, 1, 1],
+      coordinateSystem: COORDINATE_SYSTEM.CARTESIAN
+    })
+  );
+  expect(custom.coordinateSystem).toBe(COORDINATE_SYSTEM.CARTESIAN);
+});
+
+test('raster placement uses an affine when neither source nor payload supplies a bbox', () => {
+  const raster = createRaster(new Float32Array([0, 1, 2, 3]), {
+    transform: [1, 0, 10, 0, -1, 20],
+    pixelRegistration: 'area'
+  });
+  const metadata = {width: 2, height: 2, bandCount: 1, dtype: 'float32'} as RasterSourceMetadata;
+  const parameters = {viewport: createRasterViewport(createViewport([0, 0, 1, 1]), metadata)};
+  const result = createDefaultRasterRenderResult(raster, parameters, metadata);
+  expect(result.bounds).toEqual([10, 18, 12, 20]);
+  expect(result.coordinateSystem).toBe(COORDINATE_SYSTEM.CARTESIAN);
+});

@@ -85,8 +85,8 @@ the result representation used by the tabular scan adapters.
 | Entry point | `query()` or `read()` | `read()` |
 | Schema discovery | Available immediately | Available from IPC metadata |
 | Predicate | Portable predicate execution | Rejected as unsupported |
-| Projection | Supported | Pushdown |
-| Limit | Supported | Global limit across batches |
+| Projection | ✅ Supported | Pushdown |
+| Limit | ✅ Supported | Global limit across batches |
 | Streaming and cancellation | Materialized result | Streaming Arrow batches; cancellable |
 | Additional relational operators | Expressions, ordering, aggregates, unions, and joins | Not part of the IPC source contract |
 

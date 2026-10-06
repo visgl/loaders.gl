@@ -69,22 +69,22 @@ This is the end-user view of the architecture. The statuses are deliberately con
 
 | Format or source | Status | Common entry point | Supported scope |
 | --- | --- | --- | --- |
-| In-memory Arrow / GeoArrow | Supported | `read()` | Portable predicates, projection, limit, expressions, ordering, aggregates, unions, and joins; `query()` also returns a materialized table. |
-| Arrow IPC | Supported | `read()` | Schema discovery, residual predicates, projection, global limit, cancellation, explain output, and streaming Arrow batches. |
-| Parquet / Iceberg | Supported | `read()` | Projection, predicate and metadata pruning, global limits, cancellation, and streaming Arrow batches. |
-| Delta Lake | Supported | `read()` | Read-only versioned snapshot replay, active-file planning, Parquet filtering, global limits, cancellation, and explain output; tables with deletion vectors are rejected explicitly until decoding is available. |
-| FlatGeobuf | Supported | `read()` | R-tree bounding-box pruning, residual predicates, projection, limits, cancellation, and Arrow feature batches. |
-| CSV | Supported | `read()` | Streaming projection and limit with residual predicates. |
-| NDJSON / JSONL | Supported | `read()` | Streaming projection and limit with residual predicates. |
-| ORC | Supported | `read()` | Materialized Arrow reads with residual projection, predicate, and limit. |
-| GeoPackage | Supported | `read()` | Selected feature-table discovery and materialized Arrow reads with residual projection, predicate, and limit. |
-| GeoTIFF / COG | Supported | `getRaster()` | Bounds and overview selection, bands, typed output, and validated raster queries. |
-| OME-TIFF | Supported | `getRaster()` | Multiscale levels, channels, slices, typed output, and validated raster queries. |
-| GeoZarr / OME-Zarr | Supported | `getRaster()` | Chunk-aligned bounds, channels or variables, multiscale levels, slices, and typed output. |
-| COPC / Potree | Supported | `scan()` | Ordered hierarchy traversal, bounds and level-of-detail pruning, residual attribute predicates, caller-ordered projection, global limits, cancellation, and Arrow point batches. |
-| NetCDF | Supported | `getRaster()` | Numeric variable selection, named half-open dimension slices, typed output, cancellation, and validated raster queries. |
-| Lance / Shapefile / MLT / LAS / LAZ / PLY / PCD | Not implemented | — | Their existing loaders or specialized sources do not expose the common scan contract. |
-| DuckDB / Snowflake SQL | Supported | `query()` | Compiles the portable table query to bound SQL; this is a backend rather than a file-format adapter. |
+| In-memory Arrow / GeoArrow | ✅ Supported | `read()` | Portable predicates, projection, limit, expressions, ordering, aggregates, unions, and joins; `query()` also returns a materialized table. |
+| Arrow IPC | ✅ Supported | `read()` | Schema discovery, residual predicates, projection, global limit, cancellation, explain output, and streaming Arrow batches. |
+| Parquet / Iceberg | ✅ Supported | `read()` | Projection, predicate and metadata pruning, global limits, cancellation, and streaming Arrow batches. |
+| Delta Lake | ✅ Supported | `read()` | Read-only versioned snapshot replay, active-file planning, Parquet filtering, global limits, cancellation, and explain output; tables with deletion vectors are rejected explicitly until decoding is available. |
+| FlatGeobuf | ✅ Supported | `read()` | R-tree bounding-box pruning, residual predicates, projection, limits, cancellation, and Arrow feature batches. |
+| CSV | ✅ Supported | `read()` | Streaming projection and limit with residual predicates. |
+| NDJSON / JSONL | ✅ Supported | `read()` | Streaming projection and limit with residual predicates. |
+| ORC | ✅ Supported | `read()` | Materialized Arrow reads with residual projection, predicate, and limit. |
+| GeoPackage | ✅ Supported | `read()` | Selected feature-table discovery and materialized Arrow reads with residual projection, predicate, and limit. |
+| GeoTIFF / COG | ✅ Supported | `getRaster()` | Bounds and overview selection, bands, typed output, and validated raster queries. |
+| OME-TIFF | ✅ Supported | `getRaster()` | Multiscale levels, channels, slices, typed output, and validated raster queries. |
+| GeoZarr / OME-Zarr | ✅ Supported | `getRaster()` | Chunk-aligned bounds, channels or variables, multiscale levels, slices, and typed output. |
+| COPC / Potree | ✅ Supported | `scan()` | Ordered hierarchy traversal, bounds and level-of-detail pruning, residual attribute predicates, caller-ordered projection, global limits, cancellation, and Arrow point batches. |
+| NetCDF | ✅ Supported | `getRaster()` | Numeric variable selection, named half-open dimension slices, typed output, cancellation, and validated raster queries. |
+| Lance / Shapefile / MLT / LAS / LAZ / PLY / PCD | ❌ Not implemented | — | Their existing loaders or specialized sources do not expose the common scan contract. |
+| DuckDB / Snowflake SQL | ✅ Supported | `query()` | Compiles the portable table query to bound SQL; this is a backend rather than a file-format adapter. |
 | MVT / PMTiles / 3D Tiles / I3S | Outside protocol | — | Use tile and tileset source APIs; tile addressing and level-of-detail remain outside `TableQuery`. |
 | WMS / WFS / STAC and other services | Outside protocol | — | Use the service or catalog APIs; they are not normalized into the scan contract. |
 
@@ -836,21 +836,21 @@ and “Outside protocol” have the exact meanings defined at the top of this pa
 
 | Family and representative sources | Status | Execution | Correct behavior today | Remaining work |
 | --- | --- | --- | --- | --- |
-| In-memory Arrow / GeoArrow | Supported | `read()` | Portable relational execution; materialized `query()` is also available | Optimize vector paths and expand GeoArrow conformance |
-| Arrow IPC | Supported | `read()` | Residual predicates, projection, global limit, cancellation, explain, telemetry, Arrow batches | More selective IPC batch pruning |
-| Parquet / Iceberg | Supported | `read()` | Pushdown plus residual filtering and streaming | More pruning and explain detail |
-| Delta Lake | Supported | `read()` | Versioned snapshot replay, active-file planning, Parquet filtering, and explicit deletion-vector rejection | Checkpoints, CDC, and deletion-vector decoding |
-| FlatGeobuf | Supported | `read()` | Bounding-box pushdown and residual table query | More packed-index telemetry |
-| CSV / NDJSON | Supported | `read()` | Streaming projection and limit, residual predicates | Byte-range and record-index pruning |
-| ORC | Supported | `read()` | Materialized residual table query | Stripe and row-index pruning |
-| GeoPackage | Supported | `read()` | Materialized residual feature-table query | SQL and spatial-index pushdown |
-| Shapefile / MLT / Lance | Not implemented | — | No common scan claims | Add adapters only when end-to-end execution is available |
-| COPC / Potree | Supported | `scan()` | Ordered hierarchy selection, exact bounds, residual predicates, projection, global limit, cancellation, and Arrow batches | Finer decoder projection and hierarchy telemetry |
-| LAS / LAZ / PLY / PCD / splats | Not implemented | — | No common scan claims | Decide which formats justify sequential adapters |
-| GeoTIFF / COG / OME-TIFF | Supported | `getRaster()` | Windows, bands/channels, levels, typed output | More chunk telemetry and pushdown |
-| GeoZarr / OME-Zarr | Supported | `getRaster()` | Chunk-aligned windows, channels, levels, slices | More variable and dimension UI |
-| NetCDF | Supported | `getRaster()` | Numeric variables, named dimension index/range slices, typed output, and cancellation | Range reads, chunk pruning, and broader NetCDF variants |
-| Terrain / LERC | Not implemented | — | No common scan claims | Raster adapter design |
+| In-memory Arrow / GeoArrow | ✅ Supported | `read()` | Portable relational execution; materialized `query()` is also available | Optimize vector paths and expand GeoArrow conformance |
+| Arrow IPC | ✅ Supported | `read()` | Residual predicates, projection, global limit, cancellation, explain, telemetry, Arrow batches | More selective IPC batch pruning |
+| Parquet / Iceberg | ✅ Supported | `read()` | Pushdown plus residual filtering and streaming | More pruning and explain detail |
+| Delta Lake | ✅ Supported | `read()` | Versioned snapshot replay, active-file planning, Parquet filtering, and explicit deletion-vector rejection | Checkpoints, CDC, and deletion-vector decoding |
+| FlatGeobuf | ✅ Supported | `read()` | Bounding-box pushdown and residual table query | More packed-index telemetry |
+| CSV / NDJSON | ✅ Supported | `read()` | Streaming projection and limit, residual predicates | Byte-range and record-index pruning |
+| ORC | ✅ Supported | `read()` | Materialized residual table query | Stripe and row-index pruning |
+| GeoPackage | ✅ Supported | `read()` | Materialized residual feature-table query | SQL and spatial-index pushdown |
+| Shapefile / MLT / Lance | ❌ Not implemented | — | No common scan claims | Add adapters only when end-to-end execution is available |
+| COPC / Potree | ✅ Supported | `scan()` | Ordered hierarchy selection, exact bounds, residual predicates, projection, global limit, cancellation, and Arrow batches | Finer decoder projection and hierarchy telemetry |
+| LAS / LAZ / PLY / PCD / splats | ❌ Not implemented | — | No common scan claims | Decide which formats justify sequential adapters |
+| GeoTIFF / COG / OME-TIFF | ✅ Supported | `getRaster()` | Windows, bands/channels, levels, typed output | More chunk telemetry and pushdown |
+| GeoZarr / OME-Zarr | ✅ Supported | `getRaster()` | Chunk-aligned windows, channels, levels, slices | More variable and dimension UI |
+| NetCDF | ✅ Supported | `getRaster()` | Numeric variables, named dimension index/range slices, typed output, and cancellation | Range reads, chunk pruning, and broader NetCDF variants |
+| Terrain / LERC | ❌ Not implemented | — | No common scan claims | Raster adapter design |
 | MVT / PMTiles | Outside protocol; optional table view | `read()` after binding a vector tile | Tile addressing stays specialized; Arrow feature rows use portable residual queries | Cross-tile planning and tile-statistics discovery |
 | 3D Tiles / I3S | Outside protocol | — | Specialized tile APIs | Shared bounds, time, level-of-detail, and explain metadata |
 | WFS / ArcGIS FeatureServer | Outside protocol; optional table view | `read()` after binding a bounded request | Service controls stay specialized; Arrow feature rows use portable residual queries | DescribeFeatureType schema discovery and server-side filter translation |

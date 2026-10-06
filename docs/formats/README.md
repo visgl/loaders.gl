@@ -61,6 +61,11 @@ Loaders.gl support notes may appear in a clearly labeled column or section. They
 implementation boundary and should not be read as part of the format specification. For API
 behavior, follow the module and loader links instead.
 
+Support tables use ✅ for supported capabilities, ⚠️ for partial or experimental support, and
+❌ for unsupported capabilities, including planned work that is not available yet. Each marker
+applies to the scope named in its row and column; read the accompanying limits. “Not applicable”
+entries are kept separate from unsupported features.
+
 ## Scope and contributions
 
 This collection is selective. Some articles are concise research notes, while others document a

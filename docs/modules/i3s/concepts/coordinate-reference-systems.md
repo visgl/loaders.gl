@@ -164,16 +164,16 @@ independently of the renderer's requested output CRS.
 
 | Capability | Status |
 | --- | --- |
-| WKID/latestWKID and WKT discovery | Implemented |
-| VCS and height-model discovery | Implemented |
-| Normalized loader, source, service, and runtime metadata | Implemented |
-| Deterministic Proj4 and geoid primitive | Implemented |
-| Existing WGS84 mesh and Point Cloud output | Implemented |
-| Supported geographic/projected vertices, normals, origins, and bounds | Implemented for mesh and Point Cloud sources |
-| Vertical source units and elevation-offset units | Implemented for common metric, international, US survey, and legacy ArcGIS units |
-| All elevation placement modes | Implemented for mesh and Point Cloud; ground/scene modes require an application provider |
-| Provider and output height-reference conversion | Implemented with an application-supplied `@math.gl/geoid` model |
-| Dynamic coordinate-epoch operations | Not yet executable |
+| WKID/latestWKID and WKT discovery | ✅ Implemented |
+| VCS and height-model discovery | ✅ Implemented |
+| Normalized loader, source, service, and runtime metadata | ✅ Implemented |
+| Deterministic Proj4 and geoid primitive | ✅ Implemented |
+| Existing WGS84 mesh and Point Cloud output | ✅ Implemented |
+| Supported geographic/projected vertices, normals, origins, and bounds | ✅ Implemented for mesh and Point Cloud sources |
+| Vertical source units and elevation-offset units | ✅ Implemented for common metric, international, US survey, and legacy ArcGIS units |
+| All elevation placement modes | ✅ Implemented for mesh and Point Cloud; ground/scene modes require an application provider |
+| Provider and output height-reference conversion | ✅ Implemented with an application-supplied `@math.gl/geoid` model |
+| Dynamic coordinate-epoch operations | ❌ Not yet executable |
 
 Missing metadata or registered resources cause an actionable error. A requested operation never
 falls back to coordinates in a different CRS.

@@ -14,6 +14,8 @@ export {Tiles3DArchiveSource} from './3d-tiles-archive-source';
 
 // WRITERS
 export {Tile3DWriter} from './tile-3d-writer';
+export {Tiles3DArchiveWriter} from './3d-tiles-archive-writer';
+export type {Tiles3DArchiveFiles, Tiles3DArchiveWriterOptions} from './3d-tiles-archive-writer';
 
 // CLASSES
 export {default as Tile3DFeatureTable} from './lib/classes/tile-3d-feature-table';

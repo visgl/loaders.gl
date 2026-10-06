@@ -4,13 +4,13 @@
 
 import {getFloat16Storage, isNativeFloat16Array} from '@loaders.gl/schema';
 import type {
+  BigTypedArray,
   Mesh,
   MeshAttribute,
   MeshArrowTable,
   MeshTable,
   ArrowTable,
   ColumnarTable,
-  MeshAttributes,
   Schema
 } from '@loaders.gl/schema';
 import {indexedMeshArrowSchema, meshArrowSchema} from '@loaders.gl/schema';
@@ -21,6 +21,15 @@ import {
   deserializeArrowMetadata,
   serializeArrowSchema
 } from '../schema/convert-arrow-schema';
+
+/** Arrow column inputs, including exact 64-bit integers that are not GPU attributes. */
+export type MeshArrowAttributes = Record<
+  string,
+  Omit<MeshAttribute, 'value'> & {
+    /** Typed column values, retaining 64-bit integer precision. */
+    value: BigTypedArray;
+  }
+>;
 
 const MESH_ARROW_ATTRIBUTE_ORDER = ['POSITION'];
 
@@ -115,7 +124,7 @@ export function convertMeshToArrowTable(mesh: Mesh, batchSize?: number): MeshArr
  * @returns Mesh data as an Apache Arrow table wrapper.
  */
 export function makeMeshArrowTable(
-  attributes: MeshAttributes,
+  attributes: MeshArrowAttributes,
   options: MeshArrowTableOptions = {}
 ): MeshArrowTable {
   const fields: arrow.Field[] = [];
@@ -140,7 +149,12 @@ export function makeMeshArrowTable(
   }
 
   const arrowSchema = new arrow.Schema(fields, getMeshArrowMetadata(options));
-  const table = new arrow.Table(arrowSchema, columns);
+  // Arrow's column-object constructor synthesizes an incompatible batch schema for empty
+  // fixed-size-list vectors. A schema-only table preserves the declared mesh fields instead.
+  const table =
+    columns[attributeNames[0]]?.length === 0
+      ? new arrow.Table(arrowSchema)
+      : new arrow.Table(arrowSchema, columns);
   const schema = serializeArrowSchema(table.schema);
 
   return {
@@ -154,7 +168,7 @@ export function makeMeshArrowTable(
 
 /** Return an Arrow vector for a mesh attribute. */
 function getAttributeArrowVector(
-  value: MeshAttribute['value'],
+  value: BigTypedArray,
   size: number,
   componentType?: MeshAttribute['componentType']
 ): arrow.Vector {
@@ -172,7 +186,7 @@ function getAttributeArrowVector(
 }
 
 /** Return mesh attribute names with predefined Mesh Arrow fields first. */
-function getOrderedAttributeNames(attributes: MeshAttributes): string[] {
+function getOrderedAttributeNames(attributes: MeshArrowAttributes): string[] {
   const attributeNames = Object.keys(attributes);
   const orderedAttributeNames = MESH_ARROW_ATTRIBUTE_ORDER.filter(
     attributeName => attributeName in attributes

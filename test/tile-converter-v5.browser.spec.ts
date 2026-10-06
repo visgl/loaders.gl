@@ -2,14 +2,12 @@ import {expect, test, vi} from 'vitest';
 import {
   createBoundedMemoryTileConversionSink,
   createBrowserTileConversionSource,
-  createBrowserTilesetConversionSource,
-  encodePointCloudTile
-} from '@loaders.gl/tile-converter/v5/browser';
+  createBrowserTilesetConversionSource
+} from '@loaders.gl/tile-converter/v5/core';
 import {
   createI3SConversionSpatialContext,
   createTiles3DConversionSpatialContext,
   createManifestBackedTileConversionSink,
-  convertFeatureAttributesToArrowBatches,
   convertTileset,
   inspectTileset,
   TileConversionError,
@@ -18,7 +16,11 @@ import {
   type TileResourceManifest,
   type TileConversionSink,
   type TileConversionSource
-} from '@loaders.gl/tile-converter/v5';
+} from '@loaders.gl/tile-converter/v5/core';
+import {
+  encodePointCloudTile,
+  convertFeatureAttributesToArrowBatches
+} from '@loaders.gl/tile-converter/v5/adapters';
 import {makeMeshArrowTable, convertTableToMesh} from '@loaders.gl/schema-utils';
 import {parse} from '@loaders.gl/core';
 import {Tiles3DLoader} from '@loaders.gl/3d-tiles/bundled';
@@ -410,6 +412,20 @@ test('tile-converter(v5)#browser memory sink rejects output beyond its byte budg
   await sink.abort(new Error('cancelled'));
 
   expect(sink.getFiles()).toEqual([]);
+});
+
+test.each([
+  Infinity,
+  NaN
+])('tile-converter(v5)#browser memory sink retains its validated budget after caller mutation to %s', async changedLimit => {
+  const options = {maxTotalBytes: 1};
+  const sink = createBoundedMemoryTileConversionSink(options);
+  options.maxTotalBytes = changedLimit;
+  await sink.write({resourceId: 'a', parts: [new Uint8Array([1])]});
+  await expect(sink.write({resourceId: 'b', parts: [new Uint8Array([2])]})).rejects.toMatchObject({
+    code: 'OUTPUT_MEMORY_LIMIT_EXCEEDED'
+  });
+  expect(sink.getFiles().reduce((total, file) => total + file.blob.size, 0)).toBe(1);
 });
 
 test('tile-converter(v5)#browser memory sink accepts Blobs from another browser realm', async () => {

@@ -8,11 +8,10 @@ import {convertBinaryGeometryToGeometry} from '../convert-binary-geometry-to-geo
 import {convertBinaryGeometryToWKB} from '../wkb/convert-binary-geometry-to-wkb';
 import {convertGeometryToWKB} from '../wkb/convert-geometry-to-wkb';
 import {convertGeometryToWKT} from '../wkb/convert-geometry-to-wkt';
-import {convertGeometryToTWKB} from '../wkb/convert-geometry-to-twkb';
-import {convertTWKBToGeometry} from '../wkb/convert-twkb-to-geometry';
+import {convertGeometryToTWKB, convertTWKBToGeometry, isTWKB} from '@loaders.gl/wkt/twkb';
 import {convertWKBToGeometry} from '../wkb/convert-wkb-to-geometry';
 import {convertWKTToGeometry} from '../wkb/convert-wkt-to-geometry';
-import {isTWKB, isWKB} from '../wkb/helpers/parse-wkb-header';
+import {isWKB} from '../wkb/helpers/parse-wkb-header';
 
 /**
  * Shapes supported by the single-geometry converter.

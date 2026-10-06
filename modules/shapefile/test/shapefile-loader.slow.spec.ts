@@ -14,7 +14,7 @@ import {
 } from '@loaders.gl/core';
 import {ShapefileLoader} from '@loaders.gl/shapefile';
 import {DBFLoaderWithParser as DBFLoader} from '../src/dbf-loader-with-parser';
-import {Proj4Projection} from '@math.gl/proj4';
+import {Projection} from '@math.gl/projection';
 import {equals, withEpsilon} from '@math.gl/core';
 setLoaderOptions({
   _workerType: 'test',
@@ -85,7 +85,7 @@ test('ShapefileLoader#load and reproject (from files or URLs)', async () => {
   // testShapefileData helper
   const response = await fetchFile(`${SHAPEFILE_JS_DATA_FOLDER}/${testFileName}.json`);
   const json = await response.json();
-  const projection = new Proj4Projection({from: 'WGS84', to: 'EPSG:3857'});
+  const projection = new Projection({from: 'WGS84', to: 'EPSG:3857'});
   for (let i = 0; i < json.features.length; i++) {
     // @ts-ignore
     const shpFeature = data.data[i];

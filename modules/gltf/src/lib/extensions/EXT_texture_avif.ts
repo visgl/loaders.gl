@@ -33,6 +33,8 @@ export async function preprocess(
 ): Promise<void> {
   void options;
   const iterator = new GLTFIterator(gltfData);
+  // Do not probe window-only image APIs for documents that do not use AVIF.
+  if (!iterator.hasExtension(EXT_TEXTURE_AVIF)) return;
 
   const supportedImageFormats = await getSupportedImageFormats();
   if (!supportedImageFormats.has('image/avif')) {

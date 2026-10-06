@@ -27,7 +27,7 @@ export interface BrowserTileConversionFile {
 
 /** Memory limit for a browser conversion sink. */
 export interface BoundedMemoryTileConversionSinkOptions {
-  /** Maximum combined Blob size retained by this sink, in bytes. */
+  /** Maximum combined Blob size retained by this sink, captured at creation, in bytes. */
   readonly maxTotalBytes: number;
 }
 
@@ -50,7 +50,8 @@ export interface BoundedMemoryTileConversionSink
 export function createBoundedMemoryTileConversionSink(
   options: BoundedMemoryTileConversionSinkOptions
 ): BoundedMemoryTileConversionSink {
-  if (!Number.isSafeInteger(options.maxTotalBytes) || options.maxTotalBytes < 0) {
+  const {maxTotalBytes} = options;
+  if (!Number.isSafeInteger(maxTotalBytes) || maxTotalBytes < 0) {
     throw new TileConversionError(
       'INVALID_OUTPUT_MEMORY_LIMIT',
       'The browser output memory limit must be a non-negative safe integer'
@@ -85,10 +86,10 @@ export function createBoundedMemoryTileConversionSink(
       }
 
       const byteLength = resource.parts.reduce((total, part) => total + measureBlobPart(part), 0);
-      if (!Number.isSafeInteger(byteLength) || totalBytes + byteLength > options.maxTotalBytes) {
+      if (!Number.isSafeInteger(byteLength) || totalBytes + byteLength > maxTotalBytes) {
         throw new TileConversionError(
           'OUTPUT_MEMORY_LIMIT_EXCEEDED',
-          `Browser output exceeds the configured ${options.maxTotalBytes} byte memory limit`
+          `Browser output exceeds the configured ${maxTotalBytes} byte memory limit`
         );
       }
 

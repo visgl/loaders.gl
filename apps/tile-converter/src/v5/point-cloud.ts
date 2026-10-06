@@ -5,7 +5,7 @@
 import {Tile3DWriter, TILE3D_TYPE} from '@loaders.gl/3d-tiles';
 import type {Mesh, MeshArrowTable, MeshAttribute} from '@loaders.gl/schema';
 import {convertTableToMesh} from '@loaders.gl/schema-utils';
-import {TileConversionError} from './conversion-api.js';
+import {TileConversionError} from '@loaders.gl/tile-converter/v5/core';
 
 /** Options for encoding one Arrow or mesh point batch as a 3D Tiles point tile. */
 export interface EncodePointCloudTileOptions {
@@ -24,6 +24,7 @@ export interface EncodePointCloudTileOptions {
  * is written when present; `constantRGBA` supplies a fallback PNTS `CONSTANT_RGBA` feature-table
  * property. `NORMAL` and `BATCH_ID` are also written when present. Arrow batches should be passed
  * one at a time so callers can bound memory and apply their own tiling and output policy.
+ * Unsupported attributes, including a second color attribute, fail instead of being discarded.
  *
  * @param pointBatch - Point data produced by a LAS, COPC, I3S, or other point source.
  * @param options - Optional RTC center and batch-table values.
@@ -34,6 +35,7 @@ export function encodePointCloudTile(
   options: EncodePointCloudTileOptions = {}
 ): ArrayBuffer {
   const mesh = 'attributes' in pointBatch ? pointBatch : convertTableToMesh(pointBatch);
+  validatePointAttributes(mesh.attributes);
   const positionAttribute = mesh.attributes.POSITION;
   if (!positionAttribute || positionAttribute.size !== 3) {
     throw new TileConversionError(
@@ -72,6 +74,25 @@ export function encodePointCloudTile(
     },
     {}
   );
+}
+
+/** Rejects attributes that this PNTS encoder would otherwise silently discard. */
+function validatePointAttributes(attributes: Mesh['attributes']): void {
+  const supportedAttributes = new Set([
+    'POSITION',
+    'NORMAL',
+    'BATCH_ID',
+    attributes.COLOR_0 ? 'COLOR_0' : 'COLOR'
+  ]);
+  const unsupportedAttributes = Object.keys(attributes).filter(
+    name => !supportedAttributes.has(name)
+  );
+  if (unsupportedAttributes.length > 0) {
+    throw new TileConversionError(
+      'POINT_CLOUD_ATTRIBUTE_UNSUPPORTED',
+      `PNTS encoding does not support these point attributes: ${unsupportedAttributes.join(', ')}`
+    );
+  }
 }
 
 /** Validates an optional source-wide PNTS RGBA color. */

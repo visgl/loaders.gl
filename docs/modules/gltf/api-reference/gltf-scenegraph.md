@@ -94,7 +94,8 @@ const sceneIndex = gltfBuilder.addScene([nodeIndex]);
 gltfBuilder.setDefaultScene(sceneIndex);
 const imageBuffer = await encode(gltfData.images[0].image, ImageWriter);
 const imageIndex = gltfBuilder.addImage(imageBuffer, 'image/jpeg');
-const textureIndex = gltfBuilder.addTexture(imageIndex);
+const samplerIndex = gltfBuilder.addSampler({wrapS: 33071, wrapT: 33071});
+const textureIndex = gltfBuilder.addTexture({imageIndex, samplerIndex});
 const pbrMaterialInfo = {
   pbrMetallicRoughness: {
     baseColorTexture: textureIndex
@@ -253,9 +254,17 @@ Add one untyped source buffer, create a matching glTF `bufferView`, and return i
 
 > The binary data will not be added to the gltf buffer until `createBinChunk()` is called.
 
-### `addTexture(arguments: {imageIndex: number}): number;`
+### `addSampler(sampler: GLTFSampler): number`
+
+Appends a shallow copy of valid glTF sampler properties and returns its index. The caller
+validates the sampler properties. Omitted fields retain glTF defaults.
+
+### `addTexture(arguments: {imageIndex: number; samplerIndex?: number}): number;`
 
 Add a texture to the json part
+
+Pass the index returned by `addSampler` as `samplerIndex` to retain explicit wrapping and
+filtering, including sampler index 0. Omission uses glTF's implicit sampler.
 
 ### `addMaterial(pbrMaterialInfo: object): number;`
 
@@ -263,7 +272,11 @@ Add a material to the json part
 
 ### `addAccessor(bufferViewIndex, accessor)`
 
-Adds an accessor to a bufferView
+Adds an accessor to a bufferView. The optional `normalized` flag is preserved, including
+explicit `false`; omission retains the glTF default.
+
+`addMesh` preserves attribute normalization and pads packed vertex elements when needed for
+four-byte glTF alignment. Logical component values and typed array subviews are preserved.
 
 > The binary data will not be added to the gltf buffer until `createBinChunk()` is called.
 

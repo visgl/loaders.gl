@@ -53,10 +53,61 @@ See [supported items and verification boundaries](/docs/developer-guide/arcgis/i
 
 ## What's new
 
+- Upgrade math.gl dependencies to 5.0.0-alpha.12 and migrate coordinate transformations to
+  `@math.gl/projection`, the successor to `@math.gl/proj4`.
+
+- Preserve unique glTF node placements during 3D Tiles CRS conversion, retain empty mesh Arrow
+  schemas, and correctly skip padding between ORC RLEv2 integer blocks.
+- glTF 1 best-effort conversion preserves conventional diffuse colors and opacity, uses non-metallic PBR defaults, and reports unsupported shader techniques even when a diffuse texture is recognized.
+- LAS supports opt-in recovery of fixed-size LAZ chunks marked by LASzip as an interrupted write with no chunk table.
+- LAS restores modern point fields from LASzip compatibility-mode LAS/LAZ files, with an option to retain the physical legacy columns.
+- LAS typed Extra Bytes now preserve signed and unsigned 64-bit integers, including vector components, in LAS, LAZ, and COPC Arrow output.
+
 - A new experimental `@loaders.gl/stac` module discovers static STAC catalogs and paginated STAC
   APIs through a lightweight `STACSource`, with a shared catalog interface also implemented by CSW.
 
 ## v5.0 (In Development)
+
+- `@loaders.gl/graphs`: Added an Arrow-first `GEXFLoader` for static GEXF 1.2/1.3
+  graphs, with typed attributes and lists, exact long integers, defaults, visualization
+  properties, and document metadata. See the [graphs module](./modules/graphs/README.md).
+
+- `@loaders.gl/graphs`: GraphML and DOT now default to named Arrow node and edge tables
+  in the standard `tables` collection. Typed attributes, exact GraphML Int64 values,
+  object-row tables, and explicit plain graph compatibility output are supported.
+
+- `@loaders.gl/graphs`: Added `DOTLoader` for Graphviz DOT graphs, scoped attributes,
+  strict edges, and subgraph metadata. See the [graphs module](./modules/graphs/README.md).
+
+- `@loaders.gl/graphs`: Added `GraphMLLoader` for GraphML nodes, edges, typed data, and defaults.
+  See the [graphs module](./modules/graphs/README.md) for supported constructs and usage.
+
+- Declare named `subloaders` and use core `preload()` to prepare nested parser dependencies
+  concurrently, with a flat override map and normal loader option namespaces. 3D Tiles declares GLTF/GLB dependencies.
+- Expand glTF 1 conversion with deterministic signed UV/color/weight conversion, global buffer/view span checks and safe URI length inference, and core attribute/topology diagnostics. Preserve source data and report assumptions through the supplied logger. Tiny skinned JSON/GLB exports run the Khronos validator. Techniques are explicitly marked as preserved data only; conversion remains unsupported.
+
+- Convert the supported `KHR_materials_common` subset to PBR/unlit materials, including emission,
+  texture references, explicit transparency/double-sided flags, accurate extension declarations,
+  and preserved fallback resources. Assumptions use the supplied logger; small JSON/GLB exports
+  are checked with the official Khronos validator in Chromium tests.
+- `GLTFWriter` restores decoded unlit materials as required `KHR_materials_unlit` extensions,
+  cleans empty extension declarations, and omits empty binary buffers for assets without binary data.
+
+- Further expand glTF 1 conversion with common-ancestor multi-root skins, translation-only animated matrix decomposition, index widening, vertex count/index range checks, and independent inverse-bind and missing-influence validation. Safe conversions preserve source data; ambiguous or invalid cases use the supplied logger and normalization report.
+
+- Expand [glTF 1 conversion](/docs/modules/gltf/formats/gltf#gltf-1-to-gltf-2-conversion) with
+  smaller skin influence padding, safe detached skeleton scene attachment, required position/time
+  bounds, and focused skin, animation, and camera checks. Best effort reports unsupported cases;
+  strict mode rejects them. Conversion notes use the supplied logger.
+
+- Query WMTS feature information through advertised REST templates or KVP GET endpoints. Validate
+  tile/pixel coordinates, reuse dimension defaults and coverage limits, decode native JSON or retain
+  response text, forward cancellation, and reject HTTP/OWS errors.
+
+- Apply WMTS layer tile limits and per-level matrix bounds before fetching; unavailable tiles return
+  `null`, and `isTileAvailable()` exposes advertised coverage. Preserve dimension metadata and apply
+  advertised defaults to REST/KVP requests with caller overrides. Reject invalid indices instead
+  of wrapping or clamping them, and keep generated tile fields authoritative.
 
 - Add opt-in bounded pagination to WFS and OGC API Features sources. `getFeaturesInPages()` exposes
   progressive GeoJSON pages; configured `getFeatures()` collects pages before Arrow/binary conversion.
@@ -76,9 +127,17 @@ See [supported items and verification boundaries](/docs/developer-guide/arcgis/i
 - Feature table scan views expose `scan()` alongside `query()` and `read()`, with WFS and OGC API
   Features examples and correct request-bounds CRS metadata.
 
+- [Binary polygon buffers](/docs/developer-guide/converters/geoarrow-converters#binary-polygon-buffers)
+  can now be adapted to math.gl GeoArrow descriptors without copying coordinates. Explicit
+  dimensions preserve XYZ/XYM semantics, and row bounds can be computed directly from binary polygons.
+
 - [Declarative authentication](/docs/developer-guide/authentication#declarative-credentials)
   resolves JSON credentials through application- or loader-supplied classes. Generic request
   callbacks support per-tile signing and URL rewriting without adding S3/AWS dependencies.
+
+- Stream already-authored SLPK/3TZ archives to application-owned storage with backpressure
+  and cooperative cancellation through `encodeTileConversionArchiveInBatches`; the complete
+  archive buffer is no longer required for this output path.
 
 - Fix tile-converter KTX2 decoding and generation under Node.js, and preserve feature IDs
   read from image textures when converting 3D Tiles to I3S.
@@ -86,12 +145,53 @@ See [supported items and verification boundaries](/docs/developer-guide/arcgis/i
 - Fix binary-to-GeoJSON conversion of multipolygons with empty parts, preserving empty
   polygons without overflowing the call stack.
 
+### Shared numeric raster regions
+
+GeoTIFF sources support explicit CRS/bounds region requests with decoded-memory budgets,
+real overview selection, affine placement and internal validity masks. Shared CPU
+sampling supports raw/physical identify and bounded statistics over planar, interleaved
+and mixed numeric bands. RasterSet and range scheduling propagate cancellation and
+reject obsolete results. WMS keeps its image contract and existing axis-order rules.
+
+See the [GeoTIFF source API](./modules/geotiff/api-reference/geotiff-source-loader.md)
+for capabilities and remaining source limitations. Region resizing now uses sample-center
+coordinates and requires every contributing bilinear neighbor to be valid. The optional
+raster layer retains percentile stretching by default; min/max range stretching is opt-in.
+Unsupported projected CRSs require caller placement rather than guessed geographic bounds.
+
+### v5 API finalization
+
+These release notes describe implemented work, not a declaration that the stable v5 API is frozen.
+See [v5 finalization](/docs/roadmap#v50-finalization) and
+[tracker #3316](https://github.com/visgl/loaders.gl/issues/3316) for the remaining contract decisions.
+
+- Source options are now flat: shared controls in `core` and parser namespaces sit beside source
+  namespaces. `core.loadOptions` and top-level source `loadOptions` are removed. Source-backed
+  deck.gl layers pass the same object through `sourceOptions`; this is a layer boundary, not another
+  loaders.gl options wrapper. See [Source options](/docs/developer-guide/using-sources#options)
+  and the [upgrade guide](/docs/upgrade-guide).
+- Tileset cache configuration uses byte budgets; the MiB aliases `maximumMemoryUsage` and
+  `memoryCacheOverflow` are removed. Vector reprojection uses `gis.targetCrs`, with distinct
+  service request/output CRS and explicit reprojection errors; see the migration guide for details.
+- Indexed Mesh Arrow columns now preserve unsigned indices as `List<Uint32>`. Indices remain
+  stored in row zero, with nulls in subsequent vertex rows; the final representation is still part
+  of the pre-release contract review.
+
 ### Complete ArcGIS feature queries
 
 The ArcGIS feature source now supports bounded paginated queries, progressive pages with completion
 evidence, cancellation, counts, IDs, extents, nonspatial tables, and queryable MapServer layers.
 `getFeatures()` rejects incomplete queries instead of silently returning a truncated page. See the
 [feature guide](/docs/developer-guide/arcgis/feature-layers) and embedded progressive example.
+
+### Clustering
+
+- Add an independent [`ClusterIndex`](/docs/developer-guide/clustering) engine and experimental
+  [`ClusterSource`](/docs/developer-guide/clustering) adapter to `@loaders.gl/geoarrow`, with typed
+  coordinate input, a zoom hierarchy, antimeridian-aware grouping, counts, numeric aggregates,
+  member pagination, and expansion queries.
+- Add explicit representative-point policies for non-point geometries and an internal
+  `ClusterLayer` integration for markers, counts, and picking.
 
 ### 3D Tiles
 
@@ -133,7 +233,7 @@ Release Date: 2026
 - **Apache Arrow Support** - All loaders and writers now return/accept Apache Arrow tables via `shape: 'arrow-table'`.
 - **Unbundled loaders** - Loader modules can expose metadata-only loaders from `/unbundled` subpaths, using imports such as `import {CSVLoader} from '@loaders.gl/csv/unbundled';`, so applications can support rarely used formats without putting every parser implementation in the main bundle.
 - **Benchmarks** - Loaders have live benchmarks, some include external parser baselines such as uDSV, d3-dsv, csv-parser, and PapaParse for the CSVLoader allowing comparison of loaders.gl parsing performance against ecosystem SOTA (State-of-the-Art).
-- **Coverage expansion and test modernization** - Broad, fast, hermetic Vitest coverage has raised line coverage above 90% and combined line-and-branch coverage by more than 16 percentage points, from about 70% to approximately 86%, while completing the migration of legacy Tape tests to native Vitest syntax and continuing toward the long-term 90% combined-coverage goal.
+- **Coverage expansion and test modernization** - Broad, fast, hermetic Vitest coverage has raised combined line-and-branch coverage from about 70% to over 90%, while completing the migration of legacy Tape tests to native Vitest syntax. Compact boundary suites cover binary point-cloud decoders, CSV and Parquet Arrow output, geometry conversion, 3D Tiles traversal, raster and splat sources, and streaming file and worker lifecycles. Large compatibility fixtures remain in the slow lane, and boundary checks use small deterministic inputs.
 - **Mesh category writers** - New experimental [`LASWriter`](/docs/modules/las/api-reference/las-writer), [`OBJWriter`](/docs/modules/obj/api-reference/obj-writer), [`PCDWriter`](/docs/modules/pcd/api-reference/pcd-writer), [`PLYWriter`](/docs/modules/ply/api-reference/ply-writer), and [`QuantizedMeshWriter`](/docs/modules/terrain/api-reference/quantized-mesh-writer) add export support for common mesh and point-cloud formats. Mesh writers accept both plain `Mesh` data and Mesh Arrow tables.
 - **Raster sources** - New experimental `RasterSource` APIs add viewport-driven typed raster loading, with [`GeoTIFFSourceLoader`](/docs/modules/geotiff/api-reference/geotiff-source-loader), [`OMETiffSourceLoader`](/docs/modules/geotiff/api-reference/ometiff-source-loader), [`OMEZarrSourceLoader`](/docs/modules/zarr/api-reference/ome-zarr-source-loader), [`RasterSet`](/docs/modules/tiles/api-reference/raster-set), and new GeoTIFF / OME-TIFF / OME-Zarr website examples.
 - **Gaussian splats** - New `@loaders.gl/splats` loaders, Gaussian PLY Arrow table support, and WebGPU `SplatLayer` support add experimental rendering for 3D Gaussian splat scenes.
@@ -203,12 +303,10 @@ Release Date: 2026
 
 **@loaders.gl/gltf**
 
-- [`GLBLoader`](/docs/modules/gltf/api-reference/glb-loader) adds draft GLB v3 parsing with 64-bit file and chunk lengths, multi-chunk traversal, and reserved chunk-encoding validation, advancing glTF 2.1 readiness.
+- **[glTF 2.1](/docs/modules/gltf/formats/gltf#loadersgl-gltf-feature-coverage)** (draft): Adds accessor component types, unified file references, external asset composition, thumbnails, and shape and bounding volume helpers. The support table distinguishes implemented features from partial and planned runtime support.
+- **[glTF 1](/docs/modules/gltf/formats/gltf#gltf-1-to-gltf-2-conversion)**: Automatically attempts best-effort conversion to glTF 2, with strict mode and diagnostics. Converts compatible integer normals/tangents, infers bounded dense accessor-view lengths, and omits legacy empty child/scene lists. The [glTF example](/examples/gltf) includes original Box and BoxAnimated files. The conversion table details supported transformations and limitations; techniques and shaders are preserved without equivalent rendering behavior.
+- **[GLB 3](/docs/modules/gltf/formats/glb#glb-3-support)** (draft): Parses and writes 64-bit container lengths and multiple binary chunks, with explicit `buffer.chunk` references. Writing is opt-in; GLB 2 remains the default. The support table lists container capabilities and limits.
 - [`postProcessGLTF()`](/docs/modules/gltf/api-reference/post-process-gltf) expands WebGL-only `LINE_LOOP` and `TRIANGLE_FAN` primitives into portable indexed `LINES` and `TRIANGLES` without mutating the loaded source data.
-- [`GLBLoader`](/docs/modules/gltf/api-reference/glb-loader) and [`GLTFLoader`](/docs/modules/gltf/api-reference/gltf-loader) add draft [GLB v3](/docs/modules/gltf/formats/glb) support for 64-bit lengths, multi-chunk traversal, reserved chunk-encoding validation, and explicit `buffer.chunk` references, advancing glTF 2.1 readiness.
-- [`GLTFLoader`](/docs/modules/gltf/api-reference/gltf-loader) adds draft [glTF 2.1 accessor component types](/docs/modules/gltf/formats/gltf#accessor-component-types), including signed 32-bit integers, 16- and 64-bit floats, and signed and unsigned 64-bit integers.
-- [`GLTFLoader`](/docs/modules/gltf/api-reference/gltf-loader) adds opt-in loading of draft glTF 2.1 [unified file references](/docs/modules/gltf/formats/gltf) from URIs or buffer views, plus virtual package lookup through `resolveGLTFFile()`.
-- [`GLTFLoader`](/docs/modules/gltf/api-reference/gltf-loader) can recursively load draft glTF 2.1 [external assets](/docs/modules/gltf/formats/gltf), including relative dependencies, embedded virtual packages, shared-reference caching, and cycle detection.
 - [`GLTFLoader`](/docs/modules/gltf/api-reference/gltf-loader) loads draft glTF 2.1 [thumbnail images](/docs/modules/gltf/formats/gltf#draft-gltf-21-thumbnails) referenced by `asset.thumbnail`, and [`postProcessGLTF()`](/docs/modules/gltf/api-reference/post-process-gltf) resolves the thumbnail index to the processed image.
 - [`GLTFLoader`](/docs/modules/gltf/api-reference/gltf-loader) supports the release-candidate [`KHR_meshopt_compression`](/docs/modules/gltf/formats/gltf#meshopt-compression) extension, including version 1 attribute streams and the `COLOR` filter, while retaining `EXT_meshopt_compression` support.
 - [`GLTFLoader`](/docs/modules/gltf/api-reference/gltf-loader) selects `EXT_texture_avif` image sources when the active image decoder supports AVIF, and applies independent `KHR_texture_transform` transforms for textures that share a UV attribute.
@@ -218,7 +316,9 @@ Release Date: 2026
 - [`LASWriter`](/docs/modules/las/api-reference/las-writer) NEW -writes uncompressed LAS point cloud data.
 - [`LASLoader`](/docs/modules/las/api-reference/las-loader) now uses the pure TypeScript implementation and ships the only prebuilt LAS worker. Compatibility loaders are available through explicit imports and can use an application-provided `las.workerUrl`.
 - `LASLoader` adds `las.columns` projection for Arrow point attributes. Layered PDRF 6-10 LAZ input skips omitted intensity, classification, RGB, GPS time, and NIR decoder layers and output allocations.
+- `LASLoader` now reads legacy LASzip Point10/GPS/RGB/Extra Bytes item version 1 and pointwise compressor 1 files, including incremental Arrow and raw point batches.
 - TypeScript LAS parses now attach typed VLR/EVLR, Extra Bytes, waveform-descriptor, WKT, and GeoTIFF metadata to `loaderData.metadata`.
+- LAZ writing preserves legacy GPS-time sequence transitions and waveform predictors across scanner channels; empty LAS output has finite zero bounds.
 
 **@loaders.gl/obj**
 
@@ -235,6 +335,7 @@ Release Date: 2026
 - [`PLYWriter`](/docs/modules/ply/api-reference/ply-writer) NEW - writes ASCII Polygon File Format (PLY).
 - [`PLYLoader`](/docs/modules/ply/api-reference/ply-loader) supports `ply.shape: 'arrow-table'` for Mesh Arrow table output and preserves Gaussian splat columns such as `f_dc_*`, `opacity`, `scale_*`, and `rot_*` with schema metadata for rendering.
 - [`PLYLoader`](/docs/modules/ply/api-reference/ply-loader) now returns loaders.gl `ArrowTableBatch` values from batched Arrow table parsing, enabling progressive point cloud and Gaussian splat rendering.
+- Streaming PLY preserves byte-valued mesh colors, isolates concurrent header state, and handles CRLF header terminators split across input chunks.
 
 **@loaders.gl/splats**
 
@@ -286,6 +387,12 @@ Release Date: 2026
 **@loaders.gl/i3s**
 
 - Handwritten I3S metadata types are paired with runtime scene-layer and node-page validators from `@loaders.gl/i3s/i3s-zod-schema`, plus published draft-07 JSON Schema assets.
+- Legacy textured I3S materials retain their texture reference, and explicit zero alpha cutoffs are preserved.
+
+**@loaders.gl/geoarrow and @loaders.gl/flatgeobuf**
+
+- GeoArrow conversion preserves separated XYM measure coordinates and infers nested collection dimensions from their physical Arrow children.
+- FlatGeobuf rejects property values that overrun their declared property buffer instead of consuming adjacent feature data.
 
 **@loaders.gl/deck-layers**
 
@@ -319,8 +426,13 @@ Release Date: 2026
 - [`ParquetJSLoader`](/docs/modules/parquet/api-reference/parquet-loader#loader-variants) and [`ParquetJSWriter`](/docs/modules/parquet/api-reference/parquet-writer#writer-variants) NEW - add the experimental parquetjs plain-row and plain-table APIs.
 - Parquet parser selection now follows the imported loader: use the primary worker-capable `ParquetLoader` for WASM or the explicit main-thread `ParquetJSLoader` fallback for parquetjs. Runtime `parquet.backend` and `parquet.implementation` selectors have been removed.
 - `parquet.shape` on [`ParquetLoader`](/docs/modules/parquet/api-reference/parquet-loader) and `ParquetJSLoader` selects object-row or Arrow output.
+- Parquet Arrow conversion preserves absent nested values as nulls; encrypted predicate-column metadata is resolved before Bloom-filter pruning, and RLE decoding supports omitted value counts.
 
 **@loaders.gl/geotiff**
+
+- The [original TIFF decoder core](/docs/modules/geotiff/tiff-decoder-core) decodes supported uncompressed numeric TIFF/BigTIFF data, with checked directory budgets, cancellation and geotiff.js fallback.
+
+- [`GeoTIFFRasterLoader`](/docs/modules/geotiff/api-reference/geotiff-raster-loader) NEW - preserves raw typed bands, nodata, geometry, and per-image / per-band GDAL metadata for geodetic grids and scientific rasters.
 
 - [`GeoTIFFSourceLoader`](/docs/modules/geotiff/api-reference/geotiff-source-loader) NEW - viewport-driven GeoTIFF / COG source that returns typed raster payloads plus CRS and bounds metadata.
 - [`OMETiffSourceLoader`](/docs/modules/geotiff/api-reference/ometiff-source-loader) NEW - non-geospatial OME-TIFF source for channel-aware 2D plane reads from image pyramids.
@@ -328,11 +440,13 @@ Release Date: 2026
 **@loaders.gl/gltf**
 
 - Zod schemas now cover glTF 1.0, glTF 2.0, draft glTF 2.1, and every official Khronos extension schema fragment. Standalone version schemas, an opt-in all-version union, and individually addressable extension JSON Schemas are published for Monaco and other editor integrations.
+- glTF extension validation enforces object property constraints in type-less schema conditionals, including immutable timed accessors.
 
 **@loaders.gl/json**
 
 - [`JSONLoader`](/docs/modules/json/api-reference/json-loader) adds experimental `json.backend: 'fast'` for opt-in faster streaming extraction while keeping atomic JSON parsing on the standard `JSON.parse` path.
 - Arrow-producing JSON loaders add `arrowConversion.viewTypes` to opt into `BinaryView` and `Utf8View` columns without raising the minimum supported Apache Arrow version.
+- JSON Arrow conversion normalizes compatible or recovered 64-bit integer values to the BigInt representation required by Arrow builders.
 
 **@loaders.gl/tiles**
 
@@ -343,6 +457,7 @@ Release Date: 2026
 
 **@loaders.gl/zarr**
 
+- OME-Zarr channel selection preserves reordered or repeated channels even when the selection has the same length as the source channel count.
 - [`GeoZarrSourceLoader`](/docs/modules/zarr/api-reference/geo-zarr-source-loader) NEW - reads
   axis-aligned GeoZarr `proj:` / `spatial:` grids and regular CF/xarray coordinate arrays through
   viewport-clipped native Zarr windows with named time and vertical selections.

@@ -21,6 +21,10 @@
     // This must be specified if "paths" is.
     "baseUrl": ".",
     "paths": {
+      "@loaders.gl/graphs/dot-loader": ["modules/graphs/src/dot-loader"],
+      "@loaders.gl/graphs": ["modules/graphs/src"],
+      "@loaders.gl/graphs/graphml-loader": ["modules/graphs/src/graphml-loader"],
+      "@loaders.gl/graphs/gexf-loader": ["modules/graphs/src/gexf-loader"],
       "@loaders.gl/arcgis": ["modules/arcgis/src"],
       "@loaders.gl/arcgis/items": ["modules/arcgis/src/arcgis-items"],
       "@loaders.gl/arcgis/authentication": ["modules/arcgis/src/authentication"],
@@ -118,6 +122,9 @@
       "@loaders.gl/arrow": [
         "modules/arrow/src"
       ],
+      "@loaders.gl/arrow-geometry": [
+        "modules/arrow-geometry/src"
+      ],
       "@loaders.gl/arrow/transport": [
         "modules/arrow/src/transport"
       ],
@@ -163,6 +170,7 @@
       "@loaders.gl/geopackage/test": [
         "modules/geopackage/test"
       ],
+      "@loaders.gl/geotiff/geotiff-raster-loader": ["modules/geotiff/src/geotiff-raster-loader"],
       "@loaders.gl/geotiff": [
         "modules/geotiff/src"
       ],
@@ -394,6 +402,12 @@
       "@loaders.gl/tile-converter/v5/browser": [
         "apps/tile-converter/src/v5/browser.ts"
       ],
+      "@loaders.gl/tile-converter/v5/core": [
+        "apps/tile-converter/src/v5/core.ts"
+      ],
+      "@loaders.gl/tile-converter/v5/adapters": [
+        "apps/tile-converter/src/v5/adapters.ts"
+      ],
       "@loaders.gl/tile-converter/test": [
         "apps/tile-converter/test"
       ],
@@ -466,6 +480,9 @@
       "@loaders.gl/zarr/test": [
         "modules/zarr/test"
       ],
+      "@loaders.gl/zip/indexed-zip-writer": ["modules/zip/src/indexed-zip-writer"],
+      "@loaders.gl/zip/zip-writer": ["modules/zip/src/zip-writer"],
+      "@loaders.gl/3d-tiles/3d-tiles-archive-writer": ["modules/3d-tiles/src/3d-tiles-archive-writer"],
       "@loaders.gl/zip": [
         "modules/zip/src"
       ],

@@ -17,7 +17,7 @@ import {
 } from '@loaders.gl/copc';
 import {LASLoader} from '@loaders.gl/las';
 import {decodeLAZChunk, decodeLAZChunkTable} from '@loaders.gl/loader-utils';
-import {deduceMeshSchema} from '@loaders.gl/schema-utils';
+import {deduceMeshSchema, makeMeshArrowTable, convertTableToMesh} from '@loaders.gl/schema-utils';
 import {getFloat16Value} from '@loaders.gl/schema';
 
 const ELLIPSOID_FILE_PATH = 'modules/copc/test/data/ellipsoid.copc.laz';
@@ -34,16 +34,313 @@ class TestCOPCTileSource extends COPCTileSource {
   readNodeRanges(
     node: {pointCount: number; pointDataOffset: number; pointDataLength: number},
     rangeChunkSize: number,
-    rangeConcurrency: number
+    rangeConcurrency: number,
+    signal?: AbortSignal
   ): AsyncIterable<Uint8Array> {
-    return this.loadCOPCNodeRangeChunks(node, rangeChunkSize, rangeConcurrency);
+    return this.loadCOPCNodeRangeChunks(node, rangeChunkSize, rangeConcurrency, signal);
   }
 
   /** Expose child-key generation for maximum-depth coverage. */
   readChildKeys(tileId: string): string[] {
     return this.getChildKeys(tileId);
   }
+
+  /** Reads through the source's metadata prefix cache. */
+  readCachedRange(begin: number, end: number, signal?: AbortSignal): Promise<Uint8Array> {
+    return this._readRange(begin, end, signal);
+  }
 }
+
+test('COPC atomic decoding preserves every selected attribute from progressive decoding', async () => {
+  const source = new COPCTileSource(createWorkerCOPCBlob(8), {core: {worker: false}});
+  const columns = [
+    'POSITION',
+    'COLOR_0',
+    'NIR',
+    'intensity',
+    'classification',
+    'synthetic',
+    'keyPoint',
+    'withheld',
+    'overlap',
+    'GPS_TIME',
+    'scanAngle',
+    'userData',
+    'pointSourceId',
+    'returnNumber',
+    'numberOfReturns',
+    'scannerChannel',
+    'scanDirectionFlag',
+    'edgeOfFlightLine'
+  ] as const;
+  try {
+    const tile = await source.getRootTile();
+    const atomic = await source.loadTileContent(tile, {columns});
+    const progressive = source
+      .loadTileContentInBatches(tile, {columns, batchSize: 40})
+      [Symbol.asyncIterator]();
+    const first = await progressive.next();
+    expect(first.done).toBe(false);
+    expect(first.value.pointCount).toBe(40);
+    for (const column of columns) {
+      if (column === 'POSITION' || column === 'COLOR_0') {
+        expect(readCOPCContentColumn(atomic, column)).toEqual(
+          readCOPCContentColumn(first.value, column)
+        );
+      } else {
+        expect(Array.from(atomic!.data.data.getChild(column)!)).toEqual(
+          Array.from(first.value.data.data.getChild(column)!)
+        );
+      }
+    }
+    expect(await progressive.next()).toMatchObject({done: true});
+    const values = await source.getPoints({nodeIndex: [0, 0, 0, 0]});
+    expect(values!.slice(0, 3)).toEqual([-20, -12, -15]);
+    expect(values).toHaveLength(22);
+    expect(values!.at(-1)).toBe(0);
+  } finally {
+    await source.close();
+  }
+});
+
+test('COPC missing nodes return null and failures release the atomic decode slot', async () => {
+  const source = new TestCOPCTileSource(createWorkerCOPCBlob(6), {
+    copc: {decodeConcurrency: 1},
+    core: {worker: false}
+  });
+  try {
+    const tile = await source.getRootTile();
+    expect(await source.loadTileContent({id: '1-1-1-1'})).toBeNull();
+    expect(await source.getPoints({nodeIndex: [1, 1, 1, 1]})).toBeNull();
+    expect((await source.getTile({x: 0, y: 0, z: 0} as any))!.slice(0, 3)).toEqual([-20, -12, -15]);
+    await expect(source.loadTileContent(tile, {columns: ['NIR']})).rejects.toThrow(
+      /NIR output requires PDRF 8/
+    );
+    await expect(source.loadTileContent(tile, {columns: ['EXTRA_BYTES']})).rejects.toThrow(
+      /requires an Extra Bytes VLR/
+    );
+    const content = await source.loadTileContent(tile, {columns: ['POSITION']});
+    expect(content!.pointCount).toBe(40);
+    expect(content!.data.data.numCols).toBe(1);
+  } finally {
+    await source.close();
+  }
+});
+
+test('COPC metadata prefix reads respect cancellation before and during initialization', async () => {
+  const source = new TestCOPCTileSource(createWorkerCOPCBlob(6), {core: {worker: false}});
+  const controller = new AbortController();
+  // The prefix read is shared with initialization; cancellation must not cancel that shared work.
+  const read = source.readCachedRange(0, 4, controller.signal);
+  controller.abort();
+  try {
+    await expect(read).rejects.toMatchObject({name: 'AbortError'});
+    await source.initialize();
+    await expect(source.readCachedRange(0, 4, controller.signal)).rejects.toMatchObject({
+      name: 'AbortError'
+    });
+    expect(new TextDecoder().decode(await source.readCachedRange(0, 4))).toBe('LASF');
+  } finally {
+    await source.close();
+  }
+});
+
+test('COPC range scheduling discards bytes cancelled while the fetch is pending', async () => {
+  const source = new TestCOPCTileSource(createWorkerCOPCBlob(6), {core: {worker: false}});
+  const controller = new AbortController();
+  try {
+    await source.initialize();
+    source.setRangeGetter(async () => {
+      controller.abort();
+      return new Uint8Array([1]);
+    });
+    await expect(
+      source
+        .readNodeRanges(
+          {pointCount: 1, pointDataOffset: 0, pointDataLength: 1},
+          1,
+          1,
+          controller.signal
+        )
+        [Symbol.asyncIterator]()
+        .next()
+    ).rejects.toThrow(/range request was aborted/);
+  } finally {
+    await source.close();
+  }
+});
+
+test('COPC transfers the atomic slot to a queued live request after an active failure', async () => {
+  const source = new TestCOPCTileSource(createWorkerCOPCBlob(6), {
+    copc: {decodeConcurrency: 1},
+    core: {worker: false}
+  });
+  try {
+    const tile = await source.getRootTile();
+    let rejectRange!: (error: Error) => void;
+    let markStarted!: () => void;
+    const started = new Promise<void>(resolve => {
+      markStarted = resolve;
+    });
+    const pending = new Promise<Uint8Array>((_resolve, reject) => {
+      rejectRange = reject;
+    });
+    source.setRangeGetter(() => {
+      markStarted();
+      return pending;
+    });
+    const active = source.loadTileContent(tile);
+    const activeRejection = expect(active).rejects.toThrow('fixture range failed');
+    await started;
+    const controller = new AbortController();
+    const queued = source.loadTileContent(tile, {signal: controller.signal});
+    const queuedRejection = expect(queued).rejects.toThrow('fixture range failed');
+    rejectRange(new Error('fixture range failed'));
+    await Promise.all([activeRejection, queuedRejection]);
+    expect(await source.loadTileContent({id: '1-1-1-1'})).toBeNull();
+  } finally {
+    await source.close();
+  }
+});
+
+test('COPC schema reports all typed Extra Bytes widths from declared descriptors', async () => {
+  const source = new COPCTileSource(createWorkerCOPCBlob(6), {core: {worker: false}});
+  try {
+    const copc = (await source.getMetadata()).formatSpecificMetadata;
+    const types = [
+      'uint8',
+      'int8',
+      'uint16',
+      'int16',
+      'uint32',
+      'int32',
+      'uint64',
+      'int64',
+      'float32',
+      'float64'
+    ];
+    const widths = [1, 1, 2, 2, 4, 4, 8, 8, 4, 8];
+    copc.header.pointDataRecordLength += widths.reduce((total, width) => total + width, 0);
+    copc.extraBytesDescriptors = types.map((name, index) => ({
+      dataType: index + 1,
+      options: 0,
+      name,
+      description: '',
+      scale: 0,
+      offset: 0,
+      scales: [0, 0, 0] as [number, number, number],
+      offsets: [0, 0, 0] as [number, number, number],
+      data: new Uint8Array(192)
+    }));
+    const schema = await source.getSchema();
+    for (const type of types)
+      expect(schema.fields).toContainEqual({name: `EXTRA_BYTES_${type}`, type, nullable: false});
+  } finally {
+    await source.close();
+  }
+});
+
+test('COPC retains Cartesian positions when a source projection cannot be resolved', async () => {
+  const source = new COPCTileSource(createWorkerCOPCBlob(6), {
+    copc: {sourceCoordinateSystem: 'EPSG:INVALID'},
+    core: {worker: false}
+  });
+  try {
+    const tile = await source.getRootTile();
+    const content = await source.loadTileContent(tile, {columns: ['POSITION']});
+    expect(content!.coordinateSystem).toBe('cartesian');
+    expect(readCOPCContentColumn(content, 'POSITION')!.slice(0, 3)).toEqual([-20, -12, -15]);
+  } finally {
+    await source.close();
+  }
+});
+
+test('COPC scans omit batches when all decoded rows fail a residual predicate', async () => {
+  const source = new COPCTileSource(createWorkerCOPCBlob(6), {core: {worker: false}});
+  try {
+    const iterator = source.scan({
+      columns: ['X'],
+      maximumLevel: 0,
+      predicate: {op: '>', args: [{property: 'Intensity'}, 65535]},
+      batchSize: 7
+    });
+    expect(await iterator.next()).toMatchObject({done: true});
+  } finally {
+    await source.close();
+  }
+});
+
+test('COPC scans every PDRF 8 field and preserves projected tile origins', async () => {
+  const source = new COPCTileSource(createWorkerCOPCBlob(8), {
+    core: {worker: false},
+    copc: {sourceCoordinateSystem: 'EPSG:3857', colorFormat: 'float32'}
+  });
+  try {
+    const metadata = await source.getQueryMetadata();
+    const columns = metadata.columns.map(column => column.name);
+    expect(columns).toContain('Infrared');
+    const batches = [];
+    for await (const batch of source.scan({columns, batchSize: 2, maximumLevel: 0}))
+      batches.push(batch);
+    expect(batches.reduce((count, batch) => count + batch.length, 0)).toBe(40);
+    expect(batches[0].data.getChild('Red')?.get(0)).toBe(0);
+    expect(batches[0].data.getChild('Infrared')?.get(1)).toBe(101);
+    const tile = await source.getRootTile();
+    const content = await source.loadTileContent(tile);
+    expect(content!.coordinateSystem).toBe('lnglat-offsets');
+    expect(content!.cartographicOrigin).toEqual([0, 0, 0]);
+    const position = content!.data.data.getChild('POSITION')!.get(0)!.toArray();
+    expect(position[0]).toBeCloseTo(-0.000179663, 8);
+    expect(position[1]).toBeCloseTo(-0.000107798, 8);
+    expect(position[2]).toBe(-15);
+    expect(content!.data.data.getChild('POSITION')!.get(0)!.toArray().every(Number.isFinite)).toBe(
+      true
+    );
+    expect(await source.scan({limit: 0}).next()).toMatchObject({done: true});
+  } finally {
+    await source.close();
+  }
+});
+
+test('COPC hierarchy streaming honors zero-page budgets and cancellation', async () => {
+  const source = new COPCTileSource(createWorkerCOPCBlob(6), {core: {worker: false}});
+  try {
+    expect(await source.loadHierarchyInBatches({maxPages: 0}).next()).toMatchObject({done: true});
+    const controller = new AbortController();
+    controller.abort();
+    await expect(source.loadHierarchyInBatches({signal: controller.signal}).next()).rejects.toThrow(
+      'hierarchy loading was aborted'
+    );
+  } finally {
+    await source.close();
+  }
+});
+
+test('COPC progressive range prefetch propagates failures and cancellation', async () => {
+  const source = new TestCOPCTileSource(createWorkerCOPCBlob(6), {core: {worker: false}});
+  try {
+    await source.initialize();
+    source.setRangeGetter(async () => {
+      throw new Error('range failed');
+    });
+    const node = {pointCount: 1, pointDataOffset: 0, pointDataLength: 10};
+    await expect(source.readNodeRanges(node, 1, 2)[Symbol.asyncIterator]().next()).rejects.toThrow(
+      'range failed'
+    );
+    const controller = new AbortController();
+    controller.abort();
+    await expect(
+      source.readNodeRanges(node, 1, 2, controller.signal)[Symbol.asyncIterator]().next()
+    ).rejects.toThrow('range request was aborted');
+  } finally {
+    await source.close();
+  }
+});
+
+test('COPC source metadata identifies only COPC LAZ URLs', () => {
+  expect(COPCSourceLoader.testURL?.('https://example.test/file.COPC.LAZ?key=1')).toBe(true);
+  expect(COPCSourceLoader.testURL?.('file.laz')).toBe(false);
+});
 
 test('COPCWriter#writer conformance', () => {
   validateWriter(COPCWriter, 'COPCWriter');
@@ -608,6 +905,74 @@ test('COPCSourceLoader#includes typed Extra Bytes dimensions in its schema', asy
     nullable: false
   });
 });
+test('COPCSourceLoader#scans exact 64-bit Extra Bytes with scalar and vector schemas', async () => {
+  const file = encodeSync(
+    makeMeshArrowTable({
+      POSITION: {value: new Float64Array([1, 2, 3, 4, 5, 6, 7, 8, 9]), size: 3}
+    }),
+    COPCWriter,
+    {copc: {pointDataRecordFormat: 6}}
+  );
+  const source = COPCSourceLoader.createDataSource(new Blob([file]), {core: {worker: false}});
+  const root = await source.getRootTile();
+  const content = await source.loadTileContent(root);
+  expect(content).toBeTruthy();
+  const unsigned = new BigUint64Array([0n, 9007199254740993n, (1n << 64n) - 1n]);
+  const signed = new BigInt64Array([-(1n << 63n), -9007199254740993n, (1n << 63n) - 1n]);
+  const vector = new BigInt64Array([...signed, ...signed, ...signed]);
+  const data = makeMeshArrowTable({
+    ...convertTableToMesh(content!.data).attributes,
+    EXTRA_BYTES_unsigned: {value: unsigned, size: 1},
+    EXTRA_BYTES_signed: {value: signed, size: 1},
+    EXTRA_BYTES_vector: {value: vector, size: 3}
+  });
+  const metadata = await source.getMetadata();
+  metadata.formatSpecificMetadata.header.pointDataRecordLength += 40;
+  metadata.formatSpecificMetadata.extraBytesDescriptors = [
+    [7, 'unsigned'],
+    [8, 'signed'],
+    [28, 'vector']
+  ].map(([dataType, name]) => ({
+    dataType: Number(dataType),
+    options: 0,
+    name: String(name),
+    description: '',
+    scale: 0,
+    offset: 0,
+    scales: [0, 0, 0] as [number, number, number],
+    offsets: [0, 0, 0] as [number, number, number],
+    data: new Uint8Array(192)
+  }));
+  /** Supply the independently tested decoder columns at the scan integration boundary. */
+  async function* readInt64Batch() {
+    yield {...content!, data};
+  }
+  const mock = vi.spyOn(source, 'loadTileContentInBatches').mockImplementation(readInt64Batch);
+  try {
+    const schema = await source.getSchema();
+    expect(schema.fields.find(field => field.name === 'EXTRA_BYTES_unsigned')?.type).toBe('uint64');
+    expect(schema.fields.find(field => field.name === 'EXTRA_BYTES_signed')?.type).toBe('int64');
+    expect(schema.fields.find(field => field.name === 'EXTRA_BYTES_vector')?.type).toEqual({
+      type: 'fixed-size-list',
+      listSize: 3,
+      children: [{name: 'value', type: 'int64'}]
+    });
+    let scannedPointCount = 0;
+    for await (const batch of source.scan({maximumLevel: 0, limit: 3})) {
+      scannedPointCount += batch.length;
+      expect(batch.data.getChild('EXTRA_BYTES_unsigned')!.toArray()).toEqual(unsigned);
+      expect(batch.data.getChild('EXTRA_BYTES_signed')!.toArray()).toEqual(signed);
+      expect(
+        Array.from(batch.data.getChild('EXTRA_BYTES_vector')!, row => [...row.toArray()]).flat()
+      ).toEqual([...vector]);
+    }
+    expect(scannedPointCount).toBe(3);
+  } finally {
+    mock.mockRestore();
+    await source.close();
+  }
+});
+
 test('COPCSourceLoader#loads tile content from a Blob', async () => {
   const blob = await createEllipsoidBlob();
   const source = COPCSourceLoader.createDataSource(blob, {});

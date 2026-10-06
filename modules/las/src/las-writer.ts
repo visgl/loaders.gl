@@ -1386,11 +1386,17 @@ function clampUInt16(value: number): number {
   return Math.max(0, Math.min(65535, Math.round(value)));
 }
 
-/** Compute a bounding box from position data. */
+/** Compute position bounds, using a finite zero box when there are no points. */
 function getBoundingBox(
   positionAttribute: MeshAttribute,
   vertexCount: number
 ): [[number, number, number], [number, number, number]] {
+  if (vertexCount === 0) {
+    return [
+      [0, 0, 0],
+      [0, 0, 0]
+    ];
+  }
   const minimum: [number, number, number] = [
     Number.POSITIVE_INFINITY,
     Number.POSITIVE_INFINITY,

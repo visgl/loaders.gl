@@ -275,8 +275,158 @@ test('RAD parsing validates magic headers', () => {
     'resolves relative chunk URLs'
   ).toBe('https://example.com/path/0.radc');
 });
+
+test('RAD sources validate indices, cache chunk metadata and expose inline URLs', async () => {
+  const source = RADSourceLoader.createDataSource(new Blob([makeRADFixture()]), {});
+  await source.initialize();
+  expect(await source.getChunkUrl(0)).toBeNull();
+  const [first, second] = await Promise.all([
+    source.getChunkMetadata(0),
+    source.getChunkMetadata(0)
+  ]);
+  expect(first).toBe(second);
+  for (const index of [-1, 1, 0.5, NaN]) {
+    await expect(source.getChunk(index)).rejects.toThrow(/chunk index .*outside/);
+  }
+  const sidecar = RADSourceLoader.createDataSource(
+    new Blob([makeRADFixture({chunkFilename: '0.radc', inlineChunk: false})]),
+    {}
+  );
+  await expect(sidecar.getChunk(0)).rejects.toThrow(/sidecar RADC chunks require a URL/);
+  await expect(sidecar.getChunkUrl(0)).rejects.toThrow(/without a RAD URL/);
+  const empty = RADSourceLoader.createDataSource(new Blob([makeRADFixture({chunkBytes: 0})]), {});
+  expect((await empty.getChunk(0)).byteLength).toBe(0);
+});
+
+test.each([
+  206, 200
+])('RAD inline requests handle HTTP %i ranges and forward request options', async status => {
+  const data = makeRADFixture();
+  const requests: RequestInit[] = [];
+  const source = RADSourceLoader.createDataSource('https://example.test/scene.rad', {
+    rad: {headerByteLengths: [8, 2048], headers: {'X-Fixture': 'tiny'}, withCredentials: true},
+    core: {
+      fetch: async (_input: RequestInfo | URL, options?: RequestInit) => {
+        requests.push(options!);
+        const range = new Headers(options?.headers).get('Range')!;
+        const [, begin, end] = /bytes=(\d+)-(\d+)/.exec(range)!;
+        return new Response(status === 206 ? data.slice(Number(begin), Number(end) + 1) : data, {
+          status
+        });
+      }
+    }
+  });
+  const metadata = await source.getMetadata();
+  const controller = new AbortController();
+  const chunk = await source.getChunk(0, {signal: controller.signal});
+  expect(new Uint8Array(chunk)).toEqual(new Uint8Array(makeRADChunkFixture()));
+  expect(await source.getChunkUrl(0)).toBe('https://example.test/scene.rad');
+  expect(new Headers(requests[0].headers).get('Range')).toBe('bytes=0-7');
+  expect(new Headers(requests.at(-1)?.headers).get('Range')).toBe(
+    `bytes=${metadata.chunksByteOffset}-${metadata.chunksByteOffset + chunk.byteLength - 1}`
+  );
+  expect(new Headers(requests.at(-1)?.headers).get('X-Fixture')).toBe('tiny');
+  expect(requests.at(-1)).toMatchObject({credentials: 'include', signal: controller.signal});
+});
+
+test('RAD reports failed metadata probes and failed chunk requests', async () => {
+  const incomplete = makeRADFixture().slice(0, 8);
+  const blobSource = RADSourceLoader.createDataSource(new Blob([incomplete]), {});
+  await expect(blobSource.metadata).rejects.toThrow(/Blob does not contain a complete/);
+  const remoteSource = RADSourceLoader.createDataSource('https://example.test/scene.rad', {
+    rad: {headerByteLengths: [8, 16]},
+    core: {fetch: async () => new Response(incomplete)}
+  });
+  await expect(remoteSource.metadata).rejects.toThrow(/failed to load a complete/);
+  const source = RADSourceLoader.createDataSource('https://example.test/scene.rad', {
+    core: {
+      fetch: async (input: RequestInfo | URL) =>
+        String(input).endsWith('.radc')
+          ? new Response(null, {status: 503, statusText: 'Unavailable'})
+          : new Response(makeRADFixture({chunkFilename: '0.radc', inlineChunk: false}))
+    }
+  });
+  await source.initialize();
+  await expect(source.getChunk(0)).rejects.toThrow(/503 Unavailable/);
+});
+
+test('RAD uses injected fetchFile when no source fetch override was supplied', async () => {
+  const data = makeRADFixture();
+  const requests: RequestInit[] = [];
+  const source = RADSourceLoader.createDataSource('https://example.test/scene.rad', {}, {
+    fetchFile: async (_url: string, options?: RequestInit) => {
+      requests.push(options!);
+      return new Response(data);
+    }
+  } as any);
+  await source.initialize();
+  expect((await source.getChunkTable(0)).data.numRows).toBe(2);
+  expect(requests).toHaveLength(2);
+  expect(requests[0].credentials).toBe('same-origin');
+});
+
+test.each([
+  0,
+  NaN,
+  1.8
+])('RAD pruning preserves retained row attributes with concurrency %s', async maxConcurrentChunkRequests => {
+  const source = RADSourceLoader.createDataSource(
+    new Blob([
+      makeRADFixture({
+        chunkOptions: {includeSphericalHarmonics: true, childStart: 0}
+      })
+    ]),
+    {}
+  );
+  const tables: MeshArrowTable[] = [];
+  for await (const table of source.getChunkTables({
+    pruneLoadedLoDParents: true,
+    maxConcurrentChunkRequests,
+    radChunk: {includeSphericalHarmonics: true}
+  }))
+    tables.push(table);
+  expect(tables).toHaveLength(1);
+  expect(tables[0].data.numRows).toBe(1);
+  expect(Array.from(tables[0].data.getChild('POSITION')!.get(0).toArray())).toEqual([1, 2, 3]);
+  expect(tables[0].data.getChild('opacity')!.get(0)).toBe(0.25);
+  expect(tables[0].data.getChild('f_rest_0')!.get(0)).toBeCloseTo(0.1);
+});
+
+test('RAD iterator budgets omit reads and retain chunks without a LoD tree', async () => {
+  const source = RADSourceLoader.createDataSource(
+    new Blob([makeRADFixture({chunkOptions: {includeLoDTree: false}})]),
+    {}
+  );
+  for (const options of [
+    {maxChunks: 0},
+    {maxSplats: 0},
+    {startChunkIndex: 1},
+    {maxChunks: 0, pruneLoadedLoDParents: true}
+  ]) {
+    expect(await source.getChunkTables(options)[Symbol.asyncIterator]().next()).toMatchObject({
+      done: true
+    });
+  }
+  const tables: MeshArrowTable[] = [];
+  for await (const table of source.getChunkTables({pruneLoadedLoDParents: true, maxSplats: 1}))
+    tables.push(table);
+  expect(tables.map(table => table.data.numRows)).toEqual([2]);
+});
+
+test('RAD sidecar resolution preserves absolute URLs and local path suffixes', () => {
+  expect(resolveRADChunkUrl('', '/chunk.radc')).toBe('/chunk.radc');
+  expect(resolveRADChunkUrl('', 'https://example.test/chunk.radc')).toBe(
+    'https://example.test/chunk.radc'
+  );
+  expect(resolveRADChunkUrl('fixtures/scene.rad?token=1', 'chunk.radc')).toBe(
+    'fixtures/chunk.radc?token=1'
+  );
+  expect(resolveRADChunkUrl('scene.rad', 'chunk.radc')).toBe('chunk.radc');
+});
 /** Options for building deterministic RAD fixtures. */
 type RADFixtureOptions = {
+  /** Override the declared inline chunk length to exercise empty entries. */
+  chunkBytes?: number;
   /** Optional sidecar chunk filename. */
   chunkFilename?: string;
   /** Optional sidecar chunk filenames. */
@@ -304,7 +454,7 @@ function makeRADFixture(options: RADFixtureOptions = {}): ArrayBuffer {
     allChunkBytes: inlineChunk ? chunk.byteLength * chunkCount : 0,
     chunks: Array.from({length: chunkCount}, (_, chunkIndex) => ({
       offset: inlineChunk ? chunk.byteLength * chunkIndex : 0,
-      bytes: chunk.byteLength,
+      bytes: options.chunkBytes ?? chunk.byteLength,
       filename: chunkFilenames?.[chunkIndex]
     })),
     splatEncoding: options.splatEncoding ?? {lodOpacity: true}
@@ -326,6 +476,8 @@ function makeRADFixture(options: RADFixtureOptions = {}): ArrayBuffer {
 }
 /** Options for building deterministic RADC chunk fixtures. */
 type RADChunkFixtureOptions = {
+  /** First child of the second splat, in global splat coordinates. */
+  childStart?: number;
   /** Encoding used for the alpha property. */
   alphaEncoding?: 'f32' | 'r8';
   /** Encoding used for the center property. */
@@ -411,7 +563,11 @@ function makeRADChunkFixture(options: RADChunkFixtureOptions = {}): ArrayBuffer 
     ...(includeLoDTree
       ? [
           makeRADChunkPayload('child_count', 'u16', new Uint8Array([0, 0, 2, 0])),
-          makeRADChunkPayload('child_start', 'u32', new Uint8Array([0, 0, 0, 0, 42, 0, 0, 0]))
+          makeRADChunkPayload(
+            'child_start',
+            'u32',
+            new Uint8Array([0, 0, 0, 0, options.childStart ?? 42, 0, 0, 0])
+          )
         ]
       : [])
   ].filter(payload => !options.omitProperties?.includes(payload.property));

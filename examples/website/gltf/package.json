@@ -10,10 +10,13 @@
   "type": "module",
   "scripts": {
     "start": "vite",
-    "build": "tsc && vite build",
+    "build": "tsc --noEmit && vite build",
     "serve": "vite preview"
   },
   "dependencies": {
+    "@deck.gl/core": "^9.4.0",
+    "@deck.gl/mesh-layers": "^9.4.0",
+    "@deck.gl/react": "^9.4.0",
     "@loaders.gl/core": "workspace:*",
     "@loaders.gl/gltf": "workspace:*",
     "@luma.gl/constants": "^9.4.0",
@@ -21,7 +24,9 @@
     "@luma.gl/engine": "^9.4.0",
     "@luma.gl/gltf": "^9.4.0",
     "@luma.gl/shadertools": "^9.4.0",
-    "@math.gl/core": "5.0.0-alpha.9"
+    "@math.gl/core": "5.0.0-alpha.12",
+    "react": "^19.2.5",
+    "react-dom": "^19.2.5"
   },
   "devDependencies": {
     "typescript": "^5.6.0",

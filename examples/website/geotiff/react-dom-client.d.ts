@@ -4,3 +4,5 @@ declare module 'react-dom/client' {
     unmount(): void;
   };
 }
+
+declare module '@deck.gl/widgets/stylesheet.css';

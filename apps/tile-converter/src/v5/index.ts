@@ -3,7 +3,7 @@ export {
   inspectTileset,
   TileConversionError,
   validateTileset
-} from './conversion-api.js';
+} from '@loaders.gl/tile-converter/v5/core';
 export type {
   ConvertTilesetOptions,
   TileConversionCodec,
@@ -14,32 +14,86 @@ export type {
   TileConversionSource,
   TileValidationReport,
   ValidateTilesetOptions
-} from './conversion-api.js';
+} from '@loaders.gl/tile-converter/v5/core';
+export {createTilesetConversionSource} from '@loaders.gl/tile-converter/v5/core';
+export type {TilesetConversionSourceOptions} from '@loaders.gl/tile-converter/v5/core';
 export {
   createI3SConversionSpatialContext,
   createTiles3DConversionSpatialContext
-} from './spatial-conversion.js';
+} from '@loaders.gl/tile-converter/v5/core';
 export type {
   I3SConversionSpatialContext,
   Tiles3DConversionSpatialContext
-} from './spatial-conversion.js';
-export {convertFeatureAttributesToArrowBatches} from './feature-arrow.js';
-export type {FeatureArrowBatchOptions, TileFeatureAttributes} from './feature-arrow.js';
-export {encodePointCloudTile} from './point-cloud.js';
-export type {EncodePointCloudTileOptions} from './point-cloud.js';
-export {traversePointCloudSource} from './point-cloud-source.js';
-export type {PointCloudSourceTile, TraversePointCloudSourceOptions} from './point-cloud-source.js';
-export {encodePointCloudSource, encodePointCloudSourceTile} from './point-cloud-source-encoder.js';
+} from '@loaders.gl/tile-converter/v5/core';
+export {convertFeatureAttributesToArrowBatches} from '@loaders.gl/tile-converter/v5/adapters';
+export type {
+  FeatureArrowBatchOptions,
+  TileFeatureAttributes
+} from '@loaders.gl/tile-converter/v5/adapters';
+export {encodePointCloudTile} from '@loaders.gl/tile-converter/v5/adapters';
+export type {EncodePointCloudTileOptions} from '@loaders.gl/tile-converter/v5/adapters';
+export {traversePointCloudSource} from '@loaders.gl/tile-converter/v5/core';
+export type {
+  PointCloudSourceTile,
+  TraversePointCloudSourceOptions
+} from '@loaders.gl/tile-converter/v5/core';
+export {
+  encodePointCloudSource,
+  encodePointCloudSourceTile
+} from '@loaders.gl/tile-converter/v5/adapters';
 export type {
   EncodedPointCloudSourceTile,
   EncodePointCloudSourceOptions
-} from './point-cloud-source-encoder.js';
-export {convertPointCloudSource} from './point-cloud-conversion.js';
-export type {ConvertPointCloudSourceOptions} from './point-cloud-conversion.js';
-export {createManifestBackedTileConversionSink} from './resource-manifest.js';
+} from '@loaders.gl/tile-converter/v5/adapters';
+export {convertPointCloudSource} from '@loaders.gl/tile-converter/v5/adapters';
+export type {ConvertPointCloudSourceOptions} from '@loaders.gl/tile-converter/v5/adapters';
+export {createManifestBackedTileConversionSink} from '@loaders.gl/tile-converter/v5/core';
 export type {
   ManifestBackedTileConversionSinkOptions,
   TileResourceManifest,
   TileResourceManifestEntry,
   TileResourceManifestStore
-} from './resource-manifest.js';
+} from '@loaders.gl/tile-converter/v5/core';
+export {encodeMeshTile} from '@loaders.gl/tile-converter/v5/adapters';
+export type {
+  MeshTileMaterial,
+  MeshTileOptions,
+  MeshTileTexture,
+  MeshTileSampler,
+  MeshTileTextureTransform
+} from '@loaders.gl/tile-converter/v5/adapters';
+export {createMeshConversionCodec} from '@loaders.gl/tile-converter/v5/adapters';
+export type {
+  MeshConversionInput,
+  EncodedMeshConversionResource,
+  MeshConversionCodecOptions
+} from '@loaders.gl/tile-converter/v5/adapters';
+export {createSingleMeshTilesetSink} from '@loaders.gl/tile-converter/v5/adapters';
+export type {
+  SingleMeshTilesetSink,
+  SingleMeshTilesetSinkOptions
+} from '@loaders.gl/tile-converter/v5/adapters';
+
+export {
+  createTileConversionArchive,
+  encodeTileConversionArchiveInBatches
+} from '@loaders.gl/tile-converter/v5/adapters';
+export type {TileConversionArchiveOptions} from '@loaders.gl/tile-converter/v5/adapters';
+export {createSingleMeshTilesetArchive} from '@loaders.gl/tile-converter/v5/adapters';
+export type {SingleMeshTilesetArchiveOptions} from '@loaders.gl/tile-converter/v5/adapters';
+
+export {createMeshTilesetConversionSource} from '@loaders.gl/tile-converter/v5/adapters';
+export type {
+  MeshSourceResource,
+  MeshTilesetSourceOptions,
+  MeshSourceFeatureOptions
+} from '@loaders.gl/tile-converter/v5/adapters';
+export {
+  createI3SMeshConversionCodec,
+  createSingleMeshI3SSink
+} from '@loaders.gl/tile-converter/v5/adapters';
+export type {
+  I3SMeshConversionResource,
+  I3SMeshConversionCodecOptions,
+  SingleMeshI3SSink
+} from '@loaders.gl/tile-converter/v5/adapters';

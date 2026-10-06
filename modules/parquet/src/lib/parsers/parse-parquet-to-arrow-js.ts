@@ -418,9 +418,13 @@ function hasStandardNestedCollection(field: ParquetField): boolean {
   return Object.values(field.fields || {}).some(hasStandardNestedCollection);
 }
 
-/** Normalizes standard Parquet LIST/MAP wrapper groups before Arrow conversion. */
+/** Normalizes standard Parquet LIST/MAP wrappers and absent values before Arrow conversion. */
 function normalizeNestedParquetValue(value: unknown, field: ParquetField): unknown {
-  if (value === undefined || value === null || !field.fields) {
+  // Materialization omits absent optional fields; Arrow builders recognize null, not undefined.
+  if (value === undefined || value === null) {
+    return null;
+  }
+  if (!field.fields) {
     return value;
   }
 

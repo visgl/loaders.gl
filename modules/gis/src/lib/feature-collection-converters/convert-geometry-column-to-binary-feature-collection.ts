@@ -14,7 +14,7 @@ import type {
 } from '@loaders.gl/schema';
 import {convertTable} from '@loaders.gl/schema-utils';
 import {earcut} from '@math.gl/polygon';
-import type {GeoArrowBuilderEncoding} from '../geoarrow/geoarrow-builder';
+import type {GeoArrowBuilderEncoding} from '@loaders.gl/arrow-geometry';
 import {convertWKBToGeometry} from '../geometry-converters/wkb/convert-wkb-to-geometry';
 import {convertWKTToGeometry} from '../geometry-converters/wkb/convert-wkt-to-geometry';
 

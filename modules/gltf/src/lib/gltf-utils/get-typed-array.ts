@@ -4,6 +4,7 @@
 
 // TODO - GLTFScenegraph should use these
 import {assert} from '../utils/assert';
+import {padToNBytes} from '@loaders.gl/loader-utils';
 import type {BigTypedArray} from '@loaders.gl/schema';
 import type {GLTF, GLTFExternalBuffer, GLTFAccessor} from '../types/gltf-types';
 import {getAccessorArrayTypeAndLength} from './gltf-utils';
@@ -62,6 +63,35 @@ export function getTypedArrayForAccessor(
   // 'length' is a whole number of components of all elements in the buffer pointed by the accessor
   // Multiplier to calculate the address of the element in the arrayBuffer
   const elementByteSize = componentByteSize * numberOfComponentsInElement;
+  const matrixColumns = gltfAccessor.type.startsWith('MAT')
+    ? Number(gltfAccessor.type.slice(3))
+    : 1;
+  const matrixColumnByteSize = padToNBytes(matrixColumns * componentByteSize, 4);
+  if (matrixColumns > 1 && matrixColumnByteSize !== matrixColumns * componentByteSize) {
+    const elementStride = bufferView.byteStride ?? matrixColumns * matrixColumnByteSize;
+    const lastElementSize =
+      (matrixColumns - 1) * matrixColumnByteSize + matrixColumns * componentByteSize;
+    assert(
+      (gltfAccessor.byteOffset || 0) + (gltfAccessor.count - 1) * elementStride + lastElementSize <=
+        bufferView.byteLength
+    );
+    const result: BigTypedArray = new ArrayType(length);
+    const outputBytes = new Uint8Array(result.buffer, result.byteOffset, result.byteLength);
+    for (let elementIndex = 0; elementIndex < gltfAccessor.count; elementIndex++) {
+      for (let columnIndex = 0; columnIndex < matrixColumns; columnIndex++) {
+        const columnBytes = new Uint8Array(
+          arrayBuffer,
+          byteOffset + elementIndex * elementStride + columnIndex * matrixColumnByteSize,
+          matrixColumns * componentByteSize
+        );
+        outputBytes.set(
+          columnBytes,
+          elementIndex * elementByteSize + columnIndex * matrixColumns * componentByteSize
+        );
+      }
+    }
+    return result;
+  }
   const elementAddressScale = bufferView.byteStride || elementByteSize;
   // Creare an array of component's type where all components (not just elements) will reside
   if (typeof bufferView.byteStride === 'undefined' || bufferView.byteStride === elementByteSize) {

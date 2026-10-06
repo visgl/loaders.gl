@@ -1,6 +1,6 @@
 // loaders.gl
 // SPDX-License-Identifier: MIT
-// Copyright (c) vis.gl contributors
+// SPDX-FileCopyrightText: Copyright (c) vis.gl contributors
 
 import {
   COORDINATE_SYSTEM,
@@ -20,11 +20,13 @@ import type {
   Loader,
   RasterBoundingBox,
   RasterData,
+  NumericRasterData,
   RasterSource,
   RasterSourceMetadata,
   RasterViewport,
   SourceLoader
 } from '@loaders.gl/loader-utils';
+import {sampleRaster, computeRasterStatistics} from '@loaders.gl/loader-utils';
 import {RasterSet, type RasterSetRequest} from '@loaders.gl/tiles';
 import {projectWGS84ToPseudoMercator} from './image-source-layer/utils';
 import {
@@ -339,15 +341,61 @@ export class RasterSourceLayer extends CompositeLayer<RasterSourceLayerProps> {
 }
 
 /** Converts a typed raster into a deck.gl-compatible RGBA bitmap image. */
-export function colorizeRasterData(raster: RasterData): RasterBitmapImage {
+export function colorizeRasterData(
+  raster: NumericRasterData,
+  options: {
+    /** Opt in to min/max stretch; default preserves the historical percentile stretch. */ stretch?:
+      | 'range'
+      | 'percentile';
+  } = {}
+): RasterBitmapImage {
   const target = new Uint8ClampedArray(raster.width * raster.height * 4);
-  if (Array.isArray(raster.data) && raster.data.length >= 3) {
-    writeSeparateRgb(target, raster);
-  } else if (!Array.isArray(raster.data) && raster.interleaved && raster.bandCount >= 3) {
-    writeInterleavedRgb(target, raster);
-  } else {
-    const values = Array.isArray(raster.data) ? raster.data[0] : raster.data;
-    writeSingleBand(target, values, raster.noData);
+  const bands = raster.bandCount >= 3 ? [0, 1, 2] : [0];
+  const ranges = options.stretch === 'range' ? computeRasterStatistics(raster, 4096) : [];
+  const statistics = bands.map(band => {
+    if (options.stretch !== 'range') {
+      const samples: number[] = [];
+      const pixelCount = raster.width * raster.height;
+      const count = Math.min(pixelCount, 4096);
+      for (let sampleIndex = 0; sampleIndex < count; sampleIndex++) {
+        const index = Math.floor((sampleIndex * pixelCount) / count);
+        const value = sampleRaster(
+          raster,
+          [index % raster.width, Math.floor(index / raster.width)],
+          {bands: [band]}
+        ).values[0];
+        if (value !== undefined) samples.push(value);
+      }
+      if (!samples.length) return null;
+      samples.sort((left, right) => left - right);
+      const lowerBound = samples[Math.floor((samples.length - 1) * 0.02)];
+      const upperBound = samples[Math.floor((samples.length - 1) * 0.98)];
+      return {lowerBound, upperBound: upperBound === lowerBound ? upperBound + 1 : upperBound};
+    }
+    const range = ranges[band];
+    return range.min === undefined || range.max === undefined
+      ? null
+      : {lowerBound: range.min, upperBound: range.max === range.min ? range.max + 1 : range.max};
+  });
+  for (let index = 0; index < raster.width * raster.height; index++) {
+    const sample = sampleRaster(raster, [index % raster.width, Math.floor(index / raster.width)], {
+      bands
+    });
+    if (!sample.valid.every(Boolean)) continue;
+    const outputIndex = index * 4;
+    if (bands.length === 3) {
+      for (let channel = 0; channel < 3; channel++)
+        target[outputIndex + channel] = scaleToByte(sample.values[channel]!, statistics[channel]);
+    } else {
+      const range = statistics[0];
+      if (!range) continue;
+      const normalized = clamp(
+        (sample.values[0]! - range.lowerBound) / (range.upperBound - range.lowerBound)
+      );
+      const color = sampleColorRamp(Math.sqrt(normalized));
+      target.set(color, outputIndex);
+    }
+    target[outputIndex + 3] = 255;
   }
   return {data: target, width: raster.width, height: raster.height};
 }
@@ -362,7 +410,13 @@ export function createDefaultRasterRenderResult(
     raster.noData === undefined && metadata.noData !== undefined
       ? {...raster, noData: metadata.noData}
       : raster;
-  if (!raster.boundingBox && !metadata.boundingBox && !metadata.crs) {
+  if (
+    !raster.boundingBox &&
+    !metadata.boundingBox &&
+    !metadata.crs &&
+    !raster.crs &&
+    !raster.transform
+  ) {
     return {
       image: colorizeRasterData(rasterWithMetadataNoData),
       bounds: [0, metadata.height, metadata.width, 0],
@@ -370,7 +424,7 @@ export function createDefaultRasterRenderResult(
     };
   }
   const rasterBounds = raster.boundingBox || parameters.viewport.bounds || metadata.boundingBox;
-  if (!rasterBounds) {
+  if (!rasterBounds && !raster.transform) {
     return {
       image: colorizeRasterData(rasterWithMetadataNoData),
       bounds: [0, raster.height, raster.width, 0],
@@ -380,14 +434,26 @@ export function createDefaultRasterRenderResult(
   const rasterCoordinateReferenceSystem = getCoordinateReferenceSystemIdentifier(
     raster.crs || metadata.crs
   );
-  const bounds =
-    rasterCoordinateReferenceSystem === 'EPSG:3857'
-      ? unprojectPseudoMercatorBounds(rasterBounds)
-      : flattenBounds(rasterBounds);
+  if (
+    rasterCoordinateReferenceSystem &&
+    rasterCoordinateReferenceSystem !== 'EPSG:3857' &&
+    !/^(EPSG:4326|CRS:84|OGC:CRS84)$/i.test(rasterCoordinateReferenceSystem)
+  ) {
+    throw new Error(
+      'RasterSourceLayer requires custom colorization bounds and coordinateSystem for an unsupported source CRS'
+    );
+  }
+  const bounds = raster.transform
+    ? getAffineBitmapBounds(raster, rasterCoordinateReferenceSystem === 'EPSG:3857')
+    : rasterCoordinateReferenceSystem === 'EPSG:3857'
+      ? unprojectPseudoMercatorBounds(rasterBounds!)
+      : flattenBounds(rasterBounds!);
   return {
     image: colorizeRasterData(rasterWithMetadataNoData),
     bounds,
-    coordinateSystem: COORDINATE_SYSTEM.LNGLAT
+    coordinateSystem: rasterCoordinateReferenceSystem
+      ? COORDINATE_SYSTEM.LNGLAT
+      : COORDINATE_SYSTEM.CARTESIAN
   };
 }
 
@@ -397,18 +463,15 @@ export function createRasterRenderResult(
   metadata: RasterSourceMetadata,
   colorizeRaster?: RasterSourceLayerProps['colorizeRaster']
 ): RasterRenderResult {
+  const customRenderResult = colorizeRaster?.(request.raster, {metadata, request});
+  if (customRenderResult?.bounds && customRenderResult.coordinateSystem !== undefined)
+    return customRenderResult;
   const defaultRenderResult = createDefaultRasterRenderResult(
     request.raster,
     request.parameters,
     metadata
   );
-  if (!colorizeRaster) {
-    return defaultRenderResult;
-  }
-  return {
-    ...defaultRenderResult,
-    ...colorizeRaster(request.raster, {metadata, request})
-  };
+  return customRenderResult ? {...defaultRenderResult, ...customRenderResult} : defaultRenderResult;
 }
 
 /** Converts a deck.gl viewport into the normalized viewport accepted by RasterSource. */
@@ -430,8 +493,8 @@ export function createRasterViewport(
   const viewportBounds = viewport.getBounds?.();
   const coordinateReferenceSystem = getCoordinateReferenceSystemIdentifier(metadata.crs);
   let bounds: RasterBoundingBox | undefined;
-  if (!metadata.boundingBox && !metadata.crs) {
-    bounds = [
+  if (!metadata.crs) {
+    bounds = metadata.boundingBox ?? [
       [0, 0],
       [metadata.width, metadata.height]
     ];
@@ -444,7 +507,8 @@ export function createRasterViewport(
       bounds = [projectWGS84ToPseudoMercator(bounds[0]), projectWGS84ToPseudoMercator(bounds[1])];
     } else if (
       metadata.crs &&
-      (!coordinateReferenceSystem || !/EPSG:4326|CRS:84/i.test(coordinateReferenceSystem)) &&
+      (!coordinateReferenceSystem ||
+        !/^(EPSG:4326|CRS:84|OGC:CRS84)$/i.test(coordinateReferenceSystem)) &&
       !allowCustomProjection
     ) {
       throw new Error(
@@ -473,101 +537,6 @@ export function createRasterViewport(
     unprojectPosition: position =>
       viewport.unprojectPosition(position as any) as [number, number, number]
   };
-}
-
-function writeSingleBand(
-  target: Uint8ClampedArray,
-  values: ArrayLike<number>,
-  noData?: number | null
-): void {
-  const statistics = computeStatistics(values, noData);
-  for (let index = 0; index < values.length; index++) {
-    const value = values[index];
-    const outputIndex = index * 4;
-    if (!Number.isFinite(value) || value === noData || !statistics) {
-      target[outputIndex + 3] = 0;
-      continue;
-    }
-    const normalized = clamp(
-      (value - statistics.lowerBound) / (statistics.upperBound - statistics.lowerBound)
-    );
-    const [red, green, blue] = sampleColorRamp(Math.sqrt(normalized));
-    target[outputIndex] = red;
-    target[outputIndex + 1] = green;
-    target[outputIndex + 2] = blue;
-    target[outputIndex + 3] = 255;
-  }
-}
-
-function writeSeparateRgb(target: Uint8ClampedArray, raster: RasterData): void {
-  const [redBand, greenBand, blueBand] = raster.data as ArrayLike<number>[];
-  const statistics = [
-    computeStatistics(redBand, raster.noData),
-    computeStatistics(greenBand, raster.noData),
-    computeStatistics(blueBand, raster.noData)
-  ];
-  for (let index = 0; index < redBand.length; index++) {
-    const outputIndex = index * 4;
-    const values = [redBand[index], greenBand[index], blueBand[index]];
-    if (values.some(value => !Number.isFinite(value) || value === raster.noData)) {
-      continue;
-    }
-    target[outputIndex] = scaleToByte(values[0], statistics[0]);
-    target[outputIndex + 1] = scaleToByte(values[1], statistics[1]);
-    target[outputIndex + 2] = scaleToByte(values[2], statistics[2]);
-    target[outputIndex + 3] = 255;
-  }
-}
-
-function writeInterleavedRgb(target: Uint8ClampedArray, raster: RasterData): void {
-  const values = raster.data as ArrayLike<number>;
-  const channelSamples = [[], [], []] as number[][];
-  const stride = Math.max(1, Math.floor((raster.width * raster.height) / 4096));
-  for (let pixelIndex = 0; pixelIndex < raster.width * raster.height; pixelIndex += stride) {
-    const inputIndex = pixelIndex * raster.bandCount;
-    for (let channelIndex = 0; channelIndex < 3; channelIndex++) {
-      const value = values[inputIndex + channelIndex];
-      if (Number.isFinite(value) && value !== raster.noData) {
-        channelSamples[channelIndex].push(value);
-      }
-    }
-  }
-  const statistics = channelSamples.map(sample => computeStatistics(sample, raster.noData));
-  for (let pixelIndex = 0; pixelIndex < raster.width * raster.height; pixelIndex++) {
-    const inputIndex = pixelIndex * raster.bandCount;
-    const outputIndex = pixelIndex * 4;
-    const red = values[inputIndex];
-    const green = values[inputIndex + 1];
-    const blue = values[inputIndex + 2];
-    if ([red, green, blue].some(value => !Number.isFinite(value) || value === raster.noData)) {
-      continue;
-    }
-    target[outputIndex] = scaleToByte(red, statistics[0]);
-    target[outputIndex + 1] = scaleToByte(green, statistics[1]);
-    target[outputIndex + 2] = scaleToByte(blue, statistics[2]);
-    target[outputIndex + 3] = 255;
-  }
-}
-
-function computeStatistics(
-  values: ArrayLike<number>,
-  noData?: number | null
-): {lowerBound: number; upperBound: number} | null {
-  const sample: number[] = [];
-  const stride = Math.max(1, Math.floor(values.length / 4096));
-  for (let index = 0; index < values.length; index += stride) {
-    const value = values[index];
-    if (Number.isFinite(value) && value !== noData) {
-      sample.push(value);
-    }
-  }
-  if (!sample.length) {
-    return null;
-  }
-  sample.sort((left, right) => left - right);
-  const lowerBound = sample[Math.floor((sample.length - 1) * 0.02)];
-  const upperBound = sample[Math.floor((sample.length - 1) * 0.98)];
-  return {lowerBound, upperBound: lowerBound === upperBound ? upperBound + 1 : upperBound};
 }
 
 function scaleToByte(
@@ -624,4 +593,31 @@ function unprojectPseudoMercator(position: [number, number]): [number, number] {
 
 function clamp(value: number): number {
   return Math.max(0, Math.min(1, value));
+}
+
+/** Places texture-grid corners using the signed affine, preserving shear and reversed rows. */
+function getAffineBitmapBounds(raster: RasterData, mercator: boolean): BitmapBoundingBox {
+  const [columnScale, rowShear, originX, columnShear, rowScale, originY] = raster.transform!;
+  if (
+    !raster.transform!.every(Number.isFinite) ||
+    columnScale * rowScale - rowShear * columnShear === 0
+  )
+    throw new Error('Invalid raster placement affine');
+  const shift = raster.pixelRegistration === 'point' ? 0.5 : 0;
+  const grid = [
+    [-shift, raster.height - shift],
+    [-shift, -shift],
+    [raster.width - shift, -shift],
+    [raster.width - shift, raster.height - shift]
+  ];
+  const corners = grid.map(([column, row]) => {
+    const point: [number, number] = [
+      columnScale * column + rowShear * row + originX,
+      columnShear * column + rowScale * row + originY
+    ];
+    return mercator ? unprojectPseudoMercator(point) : point;
+  });
+  if (rowShear === 0 && columnShear === 0 && columnScale > 0 && rowScale < 0)
+    return [corners[0][0], corners[0][1], corners[2][0], corners[2][1]];
+  return corners as [[number, number], [number, number], [number, number], [number, number]];
 }

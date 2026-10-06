@@ -53,6 +53,8 @@ import {TiledSceneGraphic} from '@site/src/components/docs/tiled-scene-graphic';
 
 A loader for loading an [Indexed 3d Scene (I3S) layer](https://github.com/Esri/i3s-spec), and its geometries and textures data.
 
+Scene-layer metadata may omit `disablePopup`; validation applies the I3S default of `false`. Explicit boolean values are preserved. A node-page `mesh` value of `null` is treated as absent content, while non-null mesh objects are validated.
+
 :::info[Choose the entry point]
 
 - Use `I3SLoader` with `load` or `parse` when the application needs a parsed layer, node, or tile
@@ -162,6 +164,7 @@ const visibleTiles = tileset.tiles.filter(tile => tile.selected);
 | ----------------------------------- | ---------------- | ------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `options.i3s.isTileset`             | `boolean \| 'auto'` | `'auto'` | Treat the resource as a layer document instead of a node or content resource. Auto-detection follows I3S URL conventions. |
 | `options.i3s.isTileHeader`          | `boolean \| 'auto'` | `'auto'` | Treat the resource as a node header. Auto-detection follows `/nodes/...` URL conventions. |
+| `options.i3s.attributeValues` | `'legacy' \| 'exact'` | `'legacy'` | Attribute strings: exact mode preserves null versus empty strings, removes the terminator, and rejects malformed UTF-8 or byte counts. Legacy mode retains raw decoded strings. |
 | `options.i3s.token`                 | `string` | — | ArcGIS access token appended to source-managed requests. |
 | `options.i3s.useDracoGeometry`      | `boolean` | `true` | Decode Draco-compressed geometry when available. |
 | `options.i3s.useCompressedTextures` | `boolean` | `true` | Use DDS or KTX2 resources when the runtime supports them. |
@@ -241,3 +244,9 @@ const statistics = await loadStatistics(sceneLayer.statisticsInfo, {
 ```
 
 Set `core.baseUrl` to the loaded layer URL when descriptors use relative `href` values.
+
+### Material color space
+
+Decoded glTF-style material RGB factors use linear values. The loader converts normalized I3S
+sRGB factors (including emissive RGB) using the standard transfer curve; legacy byte factors
+are normalized first. Alpha remains linear and unchanged by the color-space conversion.

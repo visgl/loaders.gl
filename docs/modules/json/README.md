@@ -95,15 +95,15 @@ The two loaders look for different file extensions or MIME types as specified in
 allowing correct distinctions to be made in usage.
 
 | Format                                            | Extension    | MIME Media Type            | Support                                                       |
-| ------------------------------------------------- | ------------ | -------------------------- | ------------------------------------------------------------- | --- |
-| [JSON][format_json]                               | `.json`      | `application/json`         | `JSONLoader`                                                  |
-| [NewLine Delimited JSON][format_ndjson]           | `.ndjson`    | `application/x-ndjson`     | `NDJSONLoader`                                                |
-| [JSON Lines][format_jsonlines]                    | `.jsonl`     | `application/x-ldjson`     | `NDJSONLoader`                                                |
-| [JSON Text Sequences][format_json_seq]            |              | `application/json-seq`     | `NDJSONLoader`. Partial records must not span multiple lines. |     |
-| [GeoJSON][format_geojson]                         | `.geojson`   | `application/geo+json`     | `GeoJSONLoader`                                               |
-| [Newline Delimited GeoJSON][format_ndgeojson]     | `.ndgeojson` |                            | `NDGeoJSONLoader`                                             |
-| [GeoJSON Lines][format_geojson]                   | `.geojsonl`  |                            | `NDGeoJSONLoader`                                             |
-| [GeoJSON Text Sequences][format_geojson_text_seq] |              | `application/geo+json-seq` | `NDGeoJSONLoader`                                             |
+| ------------------------------------------------- | ------------ | -------------------------- | ------------------------------------------------------------- |
+| [JSON][format_json]                               | `.json`      | `application/json`         | ✅ `JSONLoader`                                                  |
+| [NewLine Delimited JSON][format_ndjson]           | `.ndjson`    | `application/x-ndjson`     | ✅ `NDJSONLoader`                                                |
+| [JSON Lines][format_jsonlines]                    | `.jsonl`     | `application/x-ldjson`     | ✅ `NDJSONLoader`                                                |
+| [JSON Text Sequences][format_json_seq]            |              | `application/json-seq`     | ⚠️ `NDJSONLoader`. Partial records must not span multiple lines. |
+| [GeoJSON][format_geojson]                         | `.geojson`   | `application/geo+json`     | ✅ `GeoJSONLoader`                                               |
+| [Newline Delimited GeoJSON][format_ndgeojson]     | `.ndgeojson` |                            | ✅ `NDGeoJSONLoader`                                             |
+| [GeoJSON Lines][format_geojson]                   | `.geojsonl`  |                            | ✅ `NDGeoJSONLoader`                                             |
+| [GeoJSON Text Sequences][format_geojson_text_seq] |              | `application/geo+json-seq` | ⚠️ `NDGeoJSONLoader`. Each Feature must fit on one line.                                             |
 
 [format_json]: https://www.json.org/json-en.html
 [format_ndjson]: http://ndjson.org/

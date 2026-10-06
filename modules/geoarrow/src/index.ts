@@ -2,6 +2,20 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
+// CLUSTERING
+
+export {ClusterIndex} from './clustering/cluster-index';
+export type {
+  ClusterBounds,
+  ClusterAggregation,
+  ClusterIndexOptions,
+  ClusterNode
+} from './clustering/cluster-index';
+export {ClusterSource} from './clustering/cluster-source';
+export type {ClusterSourceData, ClusterSourceOptions} from './clustering/cluster-source';
+export {getRepresentativePoint} from './clustering/get-representative-point';
+export type {RepresentativePointStrategy} from './clustering/get-representative-point';
+
 // MESH CATEGORY
 
 export {getBoundingBoxFromArrowPositions} from './mesharrow/get-bounding-box';
@@ -102,6 +116,8 @@ export {inspectGeoArrowVector} from './geoarrow-inspection';
 export type {GeoArrowVectorInspection} from './geoarrow-inspection';
 export {getGeoArrowBounds, getGeoArrowRowBounds} from './geoarrow-bounds';
 export type {GeoArrowBounds} from './geoarrow-bounds';
+export {makeGeoArrowColumnFromBinaryPolygon} from './binary-polygon-to-geoarrow';
+export type {BinaryPolygonToGeoArrowOptions} from './binary-polygon-to-geoarrow';
 export {mapGeoArrowCoordinates} from './map-geoarrow-coordinates';
 export type {GeoArrowCoordinateMapper} from './map-geoarrow-coordinates';
 export {rewindGeoArrow} from './rewind-geoarrow';

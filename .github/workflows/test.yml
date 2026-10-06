@@ -10,9 +10,15 @@ on:
     - cron: '17 5 * * *'
   workflow_dispatch:
 
+# New revisions replace older PR runs; master and scheduled runs keep their own group.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event_name }}-${{ github.event.pull_request.number || github.run_id }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
 jobs:
   tile-converter-tests:
     name: Tile converter tests
+    needs: build
     runs-on: ubuntu-22.04
     timeout-minutes: 20
     steps:
@@ -42,17 +48,21 @@ jobs:
       - name: Install dependencies
         run: yarn install --immutable
 
-      - name: Build packages
-        run: yarn build
+      - name: Download package and worker build
+        uses: actions/download-artifact@v8
+        with:
+          name: package-build
+          path: ${{ runner.temp }}/package-build
 
-      - name: Build workers
-        run: yarn run build-workers
+      - name: Restore package and worker build
+        run: tar -xf "$RUNNER_TEMP/package-build/package-build.tar"
 
       - name: Run tile-converter tests
         run: yarn test-tile-converter
 
   test:
     name: Tests (Node ${{ matrix.node-version }} - ${{ matrix.scope }})
+    needs: build
     runs-on: ubuntu-22.04
     timeout-minutes: 15
     strategy:
@@ -80,7 +90,7 @@ jobs:
             playwright: true
             scope: 'headless tests 1/2'
             test-command: test-headless-cover
-            test-arguments: '--maxWorkers=1 --shard=1/2 --reporter=blob'
+            test-arguments: '--maxWorkers=1 --shard=1/2 --reporter=blob --outputFile.blob=.vitest-reports/blob-headless-1.json'
             profile-name: headless-1
           - node-version: 24
             coverage: true
@@ -88,7 +98,7 @@ jobs:
             playwright: true
             scope: 'headless tests 2/2'
             test-command: test-headless-cover
-            test-arguments: '--maxWorkers=1 --shard=2/2 --reporter=blob'
+            test-arguments: '--maxWorkers=1 --shard=2/2 --reporter=blob --outputFile.blob=.vitest-reports/blob-headless-2.json'
             profile-name: headless-2
           - node-version: 22
             coverage: false
@@ -132,15 +142,18 @@ jobs:
       - name: Install dependencies
         run: yarn install --immutable
 
-      - name: Build packages
-        run: yarn build
+      - name: Download package and worker build
+        uses: actions/download-artifact@v8
+        with:
+          name: package-build
+          path: ${{ runner.temp }}/package-build
+
+      - name: Restore package and worker build
+        run: tar -xf "$RUNNER_TEMP/package-build/package-build.tar"
 
       - name: Install Playwright browser dependencies
         if: matrix.playwright
         run: yarn playwright install --with-deps chromium
-
-      - name: Build workers
-        run: yarn run build-workers
 
       - name: Run tests
         env:
@@ -247,6 +260,7 @@ jobs:
 
   slow-tests:
     name: Affected hermetic slow tests
+    needs: build
     runs-on: ubuntu-22.04
     timeout-minutes: 30
     steps:
@@ -277,14 +291,17 @@ jobs:
       - name: Install dependencies
         run: yarn install --immutable
 
-      - name: Build packages
-        run: yarn build
+      - name: Download package and worker build
+        uses: actions/download-artifact@v8
+        with:
+          name: package-build
+          path: ${{ runner.temp }}/package-build
+
+      - name: Restore package and worker build
+        run: tar -xf "$RUNNER_TEMP/package-build/package-build.tar"
 
       - name: Install Playwright browser dependencies
         run: yarn playwright install --with-deps chromium
-
-      - name: Build workers
-        run: yarn run build-workers
 
       - name: Run full slow suite for comparable coverage
         env:
@@ -308,6 +325,7 @@ jobs:
   external-tests:
     name: External service smoke tests
     if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
+    needs: build
     runs-on: ubuntu-22.04
     timeout-minutes: 20
     steps:
@@ -336,14 +354,17 @@ jobs:
       - name: Install dependencies
         run: yarn install --immutable
 
-      - name: Build packages
-        run: yarn build
+      - name: Download package and worker build
+        uses: actions/download-artifact@v8
+        with:
+          name: package-build
+          path: ${{ runner.temp }}/package-build
+
+      - name: Restore package and worker build
+        run: tar -xf "$RUNNER_TEMP/package-build/package-build.tar"
 
       - name: Install Playwright browser dependencies
         run: yarn playwright install --with-deps chromium
-
-      - name: Build workers
-        run: yarn run build-workers
 
       - name: Run external smoke suite
         env:
@@ -405,6 +426,24 @@ jobs:
 
       - name: Build
         run: yarn run build
+
+      - name: Build workers
+        run: yarn run build-workers
+
+      # A tar preserves paths and permissions across jobs, including copied runtime libraries.
+      - name: Archive package and worker build
+        run: |
+          find modules apps -mindepth 2 -maxdepth 2 -type d -name dist -print0 |
+            tar --null -T - -cf "$RUNNER_TEMP/package-build.tar"
+
+      - name: Upload package and worker build
+        uses: actions/upload-artifact@v7
+        with:
+          name: package-build
+          path: ${{ runner.temp }}/package-build.tar
+          retention-days: 7
+          overwrite: true
+          if-no-files-found: error
 
       - name: Run lint
         run: yarn run lint

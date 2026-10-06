@@ -1,6 +1,6 @@
 {
   "name": "@loaders.gl/zip",
-  "version": "5.0.0-alpha.6",
+  "version": "5.0.0-alpha.9",
   "description": "Zip Archive Loader",
   "license": "MIT",
   "type": "module",
@@ -33,6 +33,16 @@
     "./bundled": {
       "types": "./dist/bundled.d.ts",
       "import": "./dist/bundled.js"
+    },
+    "./zip-writer": {
+      "types": "./dist/zip-writer.d.ts",
+      "import": "./dist/zip-writer.js",
+      "require": "./dist/zip-writer.cjs"
+    },
+    "./indexed-zip-writer": {
+      "types": "./dist/indexed-zip-writer.d.ts",
+      "import": "./dist/indexed-zip-writer.js",
+      "require": "./dist/indexed-zip-writer.cjs"
     }
   },
   "sideEffects": false,
@@ -47,9 +57,9 @@
     "build-bundle-dev": "ocular-bundle ./bundle.ts --env=dev --output=dist/dist.dev.js"
   },
   "dependencies": {
-    "@loaders.gl/compression": "5.0.0-alpha.6",
-    "@loaders.gl/crypto": "5.0.0-alpha.6",
-    "@loaders.gl/loader-utils": "5.0.0-alpha.6",
+    "@loaders.gl/compression": "5.0.0-alpha.9",
+    "@loaders.gl/crypto": "5.0.0-alpha.9",
+    "@loaders.gl/loader-utils": "5.0.0-alpha.9",
     "jszip": "^3.1.5"
   },
   "peerDependencies": {

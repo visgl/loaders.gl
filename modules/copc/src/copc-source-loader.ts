@@ -11,7 +11,11 @@ import type {
   ArrowTableBatch,
   MeshAttribute
 } from '@loaders.gl/schema';
-import {ArrowTableBuilder, convertMeshToTable} from '@loaders.gl/schema-utils';
+import {
+  ArrowTableBuilder,
+  makeMeshArrowTable,
+  type MeshArrowAttributes
+} from '@loaders.gl/schema-utils';
 import type {
   CoreAPI,
   SourceLoader,
@@ -43,7 +47,8 @@ import {
   type ReadableFile
 } from '@loaders.gl/loader-utils';
 import {createScanQueryMetadata, type PointCloudQueryCapabilities} from '@loaders.gl/loader-utils';
-import {Proj4Projection, type Proj4CRSDefinition} from '@math.gl/proj4';
+import {Projection} from '@math.gl/projection';
+import type {ReadonlyCRSDefinition} from '@math.gl/crs';
 import {
   createLASTypedExtraBytesAttributes,
   LASLoader,
@@ -175,7 +180,7 @@ import {
 export type COPCSourceLoaderOptions = DataSourceOptions &
   LASLoaderOptions & {
     copc?: {
-      sourceCoordinateSystem?: Proj4CRSDefinition;
+      sourceCoordinateSystem?: ReadonlyCRSDefinition;
       /** Default byte size for progressive COPC node range requests. */
       rangeChunkSize?: number;
       /** Maximum number of COPC node ranges fetched ahead of decode. */
@@ -316,7 +321,7 @@ export class COPCTileSource
   protected _readableFile: ReadableFile;
   protected _readRange: COPCRangeReader;
   protected _copc: COPCFile | null = null;
-  protected _projection: Proj4Projection | null = null;
+  protected _projection: Projection | null = null;
   protected _hierarchy: COPCHierarchy | null = null;
   protected _pageLoadPromises: Map<string, Promise<void>> = new Map();
   protected _closePromise: Promise<void> | null = null;
@@ -1243,7 +1248,6 @@ export class COPCTileSource
           : {value: colors, size: 3, normalized: true}
       : undefined;
     const data = this.createTileContentTable(
-      pointCount,
       positionsAttribute,
       colorsAttribute,
       nir ? {value: nir, size: 1} : undefined,
@@ -1261,13 +1265,12 @@ export class COPCTileSource
   }
 
   protected createTileContentTable(
-    pointCount: number,
     positions: {value: Float32Array; size: number},
     colors?: MeshAttribute,
     nir?: {value: Uint16Array; size: number},
     pointData?: COPCPointDataArrays | null
   ): MeshArrowTable {
-    const attributes: Mesh['attributes'] = {
+    const attributes: MeshArrowAttributes = {
       POSITION: positions
     };
     if (colors) {
@@ -1325,19 +1328,7 @@ export class COPCTileSource
       attributes[attribute.name] = {value: attribute.value, size: attribute.size};
     }
 
-    return convertMeshToTable(
-      {
-        topology: 'point-list',
-        mode: 0,
-        header: {vertexCount: pointCount},
-        schema: {
-          fields: [],
-          metadata: {}
-        },
-        attributes
-      },
-      'arrow-table'
-    );
+    return makeMeshArrowTable(attributes, {topology: 'point-list', mode: 0});
   }
 
   protected async ensureHierarchyLoaded(tileId: string): Promise<void> {
@@ -1811,6 +1802,8 @@ function getTypedArraySchemaType(value: LASTypedExtraBytesAttribute['value']): F
   if (value instanceof Int16Array) return 'int16';
   if (value instanceof Uint32Array) return 'uint32';
   if (value instanceof Int32Array) return 'int32';
+  if (value instanceof BigInt64Array) return 'int64';
+  if (value instanceof BigUint64Array) return 'uint64';
   if (value instanceof Float32Array) return 'float32';
   return 'float64';
 }
@@ -1827,13 +1820,13 @@ function getCOPCLAZChunkMetadata(copc: COPCFile, pointCount: number) {
   };
 }
 
-function createProjection(projectionData?: Proj4CRSDefinition): Proj4Projection | null {
+function createProjection(projectionData?: ReadonlyCRSDefinition): Projection | null {
   if (!projectionData) {
     return null;
   }
 
   try {
-    return new Proj4Projection({
+    return new Projection({
       from: normalizeProjectionDefinition(projectionData),
       to: 'WGS84'
     });
@@ -1842,7 +1835,9 @@ function createProjection(projectionData?: Proj4CRSDefinition): Proj4Projection 
   }
 }
 
-function normalizeProjectionDefinition(projectionData: Proj4CRSDefinition): Proj4CRSDefinition {
+function normalizeProjectionDefinition(
+  projectionData: ReadonlyCRSDefinition
+): ReadonlyCRSDefinition {
   if (typeof projectionData !== 'string') {
     return projectionData;
   }

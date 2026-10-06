@@ -802,6 +802,12 @@ function makePbrMaterial(
   textures: Record<string, TileContentTexture> = {},
   texture?: TileContentTexture
 ) {
+  const colorScale = [
+    materialDefinition?.emissiveFactor,
+    materialDefinition?.pbrMetallicRoughness?.baseColorFactor
+  ].some(colorFactor => colorFactor?.some(component => component > 1))
+    ? 255
+    : 1;
   let pbrMaterial;
   if (materialDefinition) {
     pbrMaterial = {
@@ -826,34 +832,43 @@ function makePbrMaterial(
               ? {...materialDefinition.pbrMetallicRoughness.metallicRoughnessTexture}
               : undefined
           }
-        : {baseColorFactor: [255, 255, 255, 255]}
+        : {baseColorFactor: [colorScale, colorScale, colorScale, colorScale]}
     };
   } else {
     pbrMaterial = {
       pbrMetallicRoughness: {}
     };
     if (texture) {
-      pbrMaterial.pbrMetallicRoughness.baseColorTexture = {texCoord: 0};
+      pbrMaterial.pbrMetallicRoughness.baseColorTexture = {
+        texCoord: 0,
+        textureSetDefinitionId: 0
+      };
     } else {
-      pbrMaterial.pbrMetallicRoughness.baseColorFactor = [255, 255, 255, 255];
+      pbrMaterial.pbrMetallicRoughness.baseColorFactor = [
+        colorScale,
+        colorScale,
+        colorScale,
+        colorScale
+      ];
     }
   }
 
   // Set default 0.25 per spec https://github.com/Esri/i3s-spec/blob/master/docs/1.7/materialDefinitions.cmn.md
-  pbrMaterial.alphaCutoff = pbrMaterial.alphaCutoff || 0.25;
+  pbrMaterial.alphaCutoff = pbrMaterial.alphaCutoff ?? 0.25;
 
   if (pbrMaterial.alphaMode) {
     // I3S contain alphaMode in lowerCase
     pbrMaterial.alphaMode = pbrMaterial.alphaMode.toUpperCase();
   }
 
-  // Convert colors from [255,255,255,255] to [1,1,1,1]
+  // Normalize legacy byte values, then convert I3S sRGB to glTF linear RGB; retain alpha.
   if (pbrMaterial.emissiveFactor) {
-    pbrMaterial.emissiveFactor = convertColorFormat(pbrMaterial.emissiveFactor);
+    pbrMaterial.emissiveFactor = convertColorFormat(pbrMaterial.emissiveFactor, colorScale);
   }
   if (pbrMaterial.pbrMetallicRoughness && pbrMaterial.pbrMetallicRoughness.baseColorFactor) {
     pbrMaterial.pbrMetallicRoughness.baseColorFactor = convertColorFormat(
-      pbrMaterial.pbrMetallicRoughness.baseColorFactor
+      pbrMaterial.pbrMetallicRoughness.baseColorFactor,
+      colorScale
     );
   }
 
@@ -867,14 +882,17 @@ function makePbrMaterial(
 }
 
 /**
- * Convert color from [255,255,255,255] to [1,1,1,1]
+ * Normalize legacy byte-valued I3S factors and convert sRGB to glTF linear RGB.
+ * @param colorScale - shared scale inferred from explicitly supplied material factors.
  * @param colorFactor - color array
  * @returns - new color array
  */
-function convertColorFormat(colorFactor: number[]): number[] {
+function convertColorFormat(colorFactor: number[], colorScale: number): number[] {
   const normalizedColor = [...colorFactor];
   for (let index = 0; index < colorFactor.length; index++) {
-    normalizedColor[index] = colorFactor[index] / 255;
+    const value = colorFactor[index] / colorScale;
+    normalizedColor[index] =
+      index < 3 ? (value <= 0.04045 ? value / 12.92 : ((value + 0.055) / 1.055) ** 2.4) : value;
   }
   return normalizedColor;
 }

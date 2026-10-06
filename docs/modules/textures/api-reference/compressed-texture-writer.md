@@ -67,8 +67,8 @@ The package is resolved as an optional peer dependency and called directly. The 
 | Data Format    | Encoded image URL                                      |
 | File Format    | S3TC / DXT1 in a KTX container                        |
 | Encoder Type   | Asynchronous                                           |
-| Worker Thread  | No; Node.js-only native tool invocation               |
-| Streaming      | No                                                     |
+| Worker Thread  | ❌ No; Node.js-only native tool invocation               |
+| Streaming      | ❌ No                                                     |
 
 ## Usage
 

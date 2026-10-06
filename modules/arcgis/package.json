@@ -1,6 +1,6 @@
 {
   "name": "@loaders.gl/arcgis",
-  "version": "5.0.0-alpha.6",
+  "version": "5.0.0-alpha.9",
   "description": "ArcGIS REST data sources for geospatial visualization",
   "license": "MIT",
   "type": "module",
@@ -81,13 +81,13 @@
     "README.md"
   ],
   "dependencies": {
-    "@loaders.gl/gis": "5.0.0-alpha.6",
-    "@loaders.gl/i3s": "5.0.0-alpha.6",
-    "@loaders.gl/images": "5.0.0-alpha.6",
-    "@loaders.gl/lerc": "5.0.0-alpha.6",
-    "@loaders.gl/loader-utils": "5.0.0-alpha.6",
-    "@loaders.gl/mvt": "5.0.0-alpha.6",
-    "@loaders.gl/schema": "5.0.0-alpha.6"
+    "@loaders.gl/gis": "5.0.0-alpha.9",
+    "@loaders.gl/i3s": "5.0.0-alpha.9",
+    "@loaders.gl/images": "5.0.0-alpha.9",
+    "@loaders.gl/lerc": "5.0.0-alpha.9",
+    "@loaders.gl/loader-utils": "5.0.0-alpha.9",
+    "@loaders.gl/mvt": "5.0.0-alpha.9",
+    "@loaders.gl/schema": "5.0.0-alpha.9"
   },
   "peerDependencies": {
     "@loaders.gl/core": "~5.0.0-alpha.0"

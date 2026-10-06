@@ -1,0 +1,33 @@
+digraph G {
+  graph [label="Cluster Example"];
+
+  subgraph cluster_0 {
+    style=filled;
+    color=lightgrey;
+    node [style=filled, color=white];
+
+    a0 -> a1 -> a2 -> a3;
+    a0 -> a2;
+    a1 -> a3;
+    label = "process #1";
+  }
+
+  subgraph cluster_1 {
+    color=blue;
+    node [style=filled];
+
+    b0 -> b1 -> b2 -> b3;
+    b1 -> b3 [weight=2];
+    label = "process #2";
+  }
+
+  start -> a0;
+  start -> b0;
+  a1 -> b3;
+  b2 -> a3;
+  a3 -> end [dir=none];
+  b3 -> end;
+
+  start [shape=Mdiamond];
+  end [shape=Msquare];
+}

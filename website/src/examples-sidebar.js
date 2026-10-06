@@ -97,6 +97,11 @@ const sidebars = {
     },
     {
       type: 'category',
+      label: 'Geospatial Processing',
+      items: ['geospatial/clustering']
+    },
+    {
+      type: 'category',
       label: 'Geospatial Table Formats',
       items: [
         'geospatial/csv',

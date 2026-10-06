@@ -76,12 +76,12 @@ the data path decodes the complete file and applies predicates, projection, and 
 
 | Scan feature | Support |
 | --- | --- |
-| Entry point | `read()` or `query()` |
-| Schema discovery | Supported |
-| Predicate, projection, and global limit | Supported, residual |
-| Arrow output | Supported |
-| Streaming and cooperative cancellation | Not advertised |
-| Stripe, row-index, Bloom-filter, or range pushdown | Not implemented |
+| Entry point | ✅ `read()` or `query()` |
+| Schema discovery | ✅ Supported |
+| Predicate, projection, and global limit | ✅ Supported, residual |
+| Arrow output | ✅ Supported |
+| Streaming and cooperative cancellation | ❌ Not advertised |
+| Stripe, row-index, Bloom-filter, or range pushdown | ❌ Not implemented |
 
 The green badge means the query executes correctly. It does not claim the physical pruning features
 that the ORC format can theoretically support.

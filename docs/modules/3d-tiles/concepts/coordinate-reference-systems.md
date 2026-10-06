@@ -173,9 +173,9 @@ the same nested descriptor is passed to glTF content decoding. A nonlinear datum
 is not approximated by one affine matrix; unresolved nested operations fail before child headers are
 installed.
 
-Dynamic CRS epochs are preserved today. The current `@math.gl/proj4` API has no coordinate-epoch
-argument, so an operation that changes epoch rejects until an epoch-aware engine is available.
-Copying an epoch number while transforming dynamic frames would overstate accuracy.
+Dynamic CRS epochs are preserved today. The loaders.gl spatial transformer does not execute
+coordinate-epoch operations, so an operation that changes epoch rejects. Copying an epoch number
+while transforming dynamic frames would overstate accuracy.
 
 ## Ellipsoids and local frames
 
@@ -191,19 +191,19 @@ precision match I3S so renderers receive one coordinate contract.
 
 | Capability | Status |
 | --- | --- |
-| Inline geocentric CRS semantic discovery | Implemented |
-| Coordinate epoch preservation | Implemented |
-| Explicit `UNKNOWN` and local-frame handling | Implemented |
-| Region-established global-frame discovery | Implemented |
-| Draft `EXT_geospatial_crs` WKID/WKT2 discovery | Experimental |
-| Draft `EXT_georeference` into `EPSG:4978` | Experimental |
-| Draft georeference into projected/geographic or separate vertical CRSs | Rejected |
-| Normalized loader/source/runtime metadata | Implemented |
-| Deterministic Proj4/geoid primitive | Implemented |
-| External schema semantic resolution | Planned source-loading integration |
-| Per-vertex nonlinear reprojection and bound rebuilding | Integration in progress |
-| Nested tileset CRS placement | Experimental |
-| Cross-epoch operations | Not yet executable |
+| Inline geocentric CRS semantic discovery | ✅ Implemented |
+| Coordinate epoch preservation | ✅ Implemented |
+| Explicit `UNKNOWN` and local-frame handling | ✅ Implemented |
+| Region-established global-frame discovery | ✅ Implemented |
+| Draft `EXT_geospatial_crs` WKID/WKT2 discovery | ⚠️ Experimental |
+| Draft `EXT_georeference` into `EPSG:4978` | ⚠️ Experimental |
+| Draft georeference into projected/geographic or separate vertical CRSs | ❌ Rejected |
+| Normalized loader/source/runtime metadata | ✅ Implemented |
+| Deterministic Proj4/geoid primitive | ✅ Implemented |
+| External schema semantic resolution | ❌ Planned source-loading integration |
+| Per-vertex nonlinear reprojection and bound rebuilding | ⚠️ Integration in progress |
+| Nested tileset CRS placement | ⚠️ Experimental |
+| Cross-epoch operations | ❌ Not yet executable |
 
 Conventional ECEF tilesets need no options. Overrides are for incomplete, mislabeled, or local
 datasets and should be accompanied by application validation.
