@@ -3,7 +3,7 @@ import type {
   TileConversionReport
 } from '@loaders.gl/tile-converter/v5/core';
 import type {MeshSourceFeatureOptions} from '@loaders.gl/tile-converter/v5/adapters';
-import type {ConversionFormat, ConversionResult} from './convert-tileset';
+import {CONVERSION_LIMITS, type ConversionFormat, type ConversionResult} from './convert-tileset';
 
 /** One selected conversion; callbacks, signals and runtime objects stay outside the worker protocol. */
 export interface ConversionWorkerRequest {
@@ -17,7 +17,7 @@ export interface ConversionWorkerRequest {
   readonly features?: MeshSourceFeatureOptions;
 }
 
-/** Worker replies contain progress, a finalized transferable archive, or a readable failure. */
+/** Worker replies transfer one acknowledged archive chunk at a time, then completion metadata. */
 export type ConversionWorkerMessage =
   | {
       /** Progress discriminator. */
@@ -26,10 +26,18 @@ export type ConversionWorkerMessage =
       readonly message: string;
     }
   | {
+      /** Archive chunk discriminator. */
+      readonly type: 'chunk';
+      /** Monotonically increasing chunk identifier, starting at zero. */
+      readonly sequence: number;
+      /** Transferable byte view; only its byte range belongs to the archive. */
+      readonly chunk: Uint8Array<ArrayBuffer>;
+    }
+  | {
       /** Success discriminator. */
       readonly type: 'result';
-      /** Final archive bytes, transferred once. */
-      readonly buffer: ArrayBuffer;
+      /** Complete archive byte count, checked against the accepted chunks. */
+      readonly totalBytes: number;
       /** Download filename. */
       readonly name: string;
       /** Archive MIME type. */
@@ -44,10 +52,18 @@ export type ConversionWorkerMessage =
       readonly message: string;
     };
 
+/** Acknowledges one copied archive chunk, allowing the worker to encode the next entry. */
+export interface ConversionWorkerAcknowledgement {
+  /** Pull the next archive chunk. */
+  readonly type: 'continue';
+  /** Exact chunk identifier being acknowledged. */
+  readonly sequence: number;
+}
+
 /**
- * Runs decoding, conversion and packaging in a disposable module worker. Cancellation terminates
- * computation immediately; only the successful archive buffer returns to the main thread.
- * Existing byte gates do not bound peak worker memory.
+ * Runs conversion in a disposable worker and copies transferred chunks into bounded Blob parts.
+ * Acknowledges each accepted chunk before pulling more output; exposes a File only on completion.
+ * Cancellation terminates computation and releases partial parts. Byte gates do not cap total heap.
  */
 export async function convertSelectedContentsInWorker(
   inspection: BrowserTilesetConversionInspection,
@@ -61,6 +77,9 @@ export async function convertSelectedContentsInWorker(
   const worker = new Worker(new URL('./conversion-worker.ts', import.meta.url), {type: 'module'});
   return new Promise((resolve, reject) => {
     let settled = false;
+    let receivedBytes = 0;
+    let nextSequence = 0;
+    const archiveParts: Blob[] = [];
     /** Releases the worker and signal subscription on every completion path. */
     function finish(error?: unknown, result?: ConversionResult): void {
       if (settled) return;
@@ -70,6 +89,7 @@ export async function convertSelectedContentsInWorker(
       worker.onerror = null;
       worker.onmessageerror = null;
       worker.terminate();
+      archiveParts.length = 0;
       if (result) resolve(result);
       else reject(error);
     }
@@ -86,15 +106,34 @@ export async function convertSelectedContentsInWorker(
           case 'progress':
             onProgress(message.message);
             break;
+          case 'chunk':
+            if (
+              message.sequence !== nextSequence ||
+              !(message.chunk instanceof Uint8Array) ||
+              receivedBytes + message.chunk.byteLength > CONVERSION_LIMITS.maxOutputBytes
+            )
+              throw new Error('Invalid or over-budget conversion archive chunk.');
+            archiveParts.push(new Blob([message.chunk]));
+            receivedBytes += message.chunk.byteLength;
+            nextSequence++;
+            worker.postMessage({
+              type: 'continue',
+              sequence: message.sequence
+            } satisfies ConversionWorkerAcknowledgement);
+            break;
           case 'result':
+            if (!nextSequence || message.totalBytes !== receivedBytes)
+              throw new Error('Incomplete conversion archive.');
             finish(undefined, {
-              file: new File([message.buffer], message.name, {type: message.mimeType}),
+              file: new File(archiveParts, message.name, {type: message.mimeType}),
               report: message.report
             });
             break;
           case 'error':
             finish(new Error(message.message));
             break;
+          default:
+            throw new Error('Unknown conversion worker message.');
         }
       } catch (error) {
         finish(error);
