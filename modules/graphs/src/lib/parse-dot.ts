@@ -183,9 +183,20 @@ class DOTParser {
   /** Edge lookup used to coalesce parallel edges in strict graphs. */
   private readonly strictEdges = new Map<string, ParsedEdge>();
 
+  /** Persistent attributes and defaults for reopened named subgraphs. */
+  private readonly subgraphScopes = new Map<string, ScopeContext>();
+
+  /** Explicit names reserved so anonymous subgraph IDs cannot collide with them. */
+  private readonly namedSubgraphIds = new Set<string>();
+
   /** Initializes the token stream. */
   constructor(tokens: Token[]) {
     this.tokens = tokens;
+    for (let index = 0; index < tokens.length - 1; index++) {
+      if (isKeyword(tokens[index], 'subgraph') && isIdentifierLike(tokens[index + 1])) {
+        this.namedSubgraphIds.add(tokens[index + 1].value);
+      }
+    }
   }
 
   /** Parses one complete DOT document. */
@@ -415,23 +426,29 @@ class DOTParser {
     if (idToken && isIdentifierLike(idToken)) {
       subgraphId = parseIdentifierValue(this.consume());
     } else {
-      subgraphId = `subgraph_${++this.subgraphCounter}`;
+      do {
+        subgraphId = `subgraph_${++this.subgraphCounter}`;
+      } while (this.namedSubgraphIds.has(subgraphId));
     }
 
     this.expect('lbrace');
     const parentId = this.findCurrentSubgraphId();
-    const context: ScopeContext = {
-      id: subgraphId,
-      nodeDefaults: Object.assign(Object.create(null), this.currentScope().nodeDefaults),
-      edgeDefaults: Object.assign(Object.create(null), this.currentScope().edgeDefaults),
-      graphAttributes: Object.create(null)
-    };
+    let context = this.subgraphScopes.get(subgraphId);
+    if (!context) {
+      context = {
+        id: subgraphId,
+        nodeDefaults: Object.assign(Object.create(null), this.currentScope().nodeDefaults),
+        edgeDefaults: Object.assign(Object.create(null), this.currentScope().edgeDefaults),
+        graphAttributes: Object.create(null)
+      };
+      this.subgraphScopes.set(subgraphId, context);
+      this.result.subgraphs.set(subgraphId, {
+        id: subgraphId,
+        attributes: context.graphAttributes,
+        parentId
+      });
+    }
     this.scopes.push(context);
-    this.result.subgraphs.set(subgraphId, {
-      id: subgraphId,
-      attributes: context.graphAttributes,
-      parentId
-    });
 
     let shouldContinue = true;
     while (shouldContinue) {

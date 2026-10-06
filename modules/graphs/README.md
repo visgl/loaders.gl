@@ -55,7 +55,8 @@ Supported syntax includes `graph` and `digraph`, strict graphs with parallel-edg
 coalescing, implicit nodes, chained edges, repeated attribute lists, scoped node/edge
 defaults, graph attribute assignments, nested named and anonymous subgraphs, comments,
 quoted identifiers, and balanced HTML-like labels. Node and edge attributes include
-subgraph membership descriptors. An edge `id`, `Id`, or `ID` attribute supplies its ID;
+subgraph membership descriptors. Reopening a named subgraph retains its attributes and
+node/edge defaults; anonymous subgraph identifiers remain distinct from explicit names. An edge `id`, `Id`, or `ID` attribute supplies its ID;
 otherwise the loader generates an ID from its endpoints and a counter. `dir=none`
 marks an edge as undirected; other `dir` strings mark it as directed.
 

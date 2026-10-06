@@ -192,3 +192,43 @@ test.each([
 ])('rejects edge operators inconsistent with the graph declaration: %s', document => {
   expect(() => parseDOT(document)).toThrow('edge operator must match');
 });
+
+test('merges reopened named subgraph attributes and retains its scoped defaults', () => {
+  const graph = parseDOT(`digraph {
+    subgraph cluster { graph [label="First", color=red]; node [shape=box]; edge [weight=2]; a -> b; }
+    subgraph cluster { graph [color=blue]; node [fillcolor=white]; b -> c; }
+    outside;
+  }`);
+  expect(graph.metadata.subgraphs).toEqual([
+    {id: 'cluster', attributes: {label: 'First', color: 'blue'}, parentId: undefined}
+  ]);
+  expect(graph.nodes.find(node => node.id === 'a')?.attributes?.subgraphs).toMatchObject([
+    {id: 'cluster', attributes: {label: 'First', color: 'blue'}}
+  ]);
+  expect(graph.nodes.find(node => node.id === 'c')?.attributes).toMatchObject({
+    shape: 'box',
+    fillcolor: 'white'
+  });
+  expect(graph.edges[1].attributes).toMatchObject({
+    weight: 2,
+    subgraphs: [{id: 'cluster', attributes: {label: 'First', color: 'blue'}}]
+  });
+  expect(graph.nodes.find(node => node.id === 'outside')?.attributes).toEqual({});
+});
+
+test.each([
+  'graph { subgraph subgraph_1 { a; } { b; } }',
+  'graph { { b; } subgraph subgraph_1 { a; } }'
+])('keeps anonymous subgraph identifiers distinct from explicit names: %s', document => {
+  const graph = parseDOT(document);
+  expect(graph.metadata.subgraphs.map(subgraph => subgraph.id).sort()).toEqual([
+    'subgraph_1',
+    'subgraph_2'
+  ]);
+  expect(graph.nodes.find(node => node.id === 'a')?.attributes?.subgraphs).toMatchObject([
+    {id: 'subgraph_1'}
+  ]);
+  expect(graph.nodes.find(node => node.id === 'b')?.attributes?.subgraphs).toMatchObject([
+    {id: 'subgraph_2'}
+  ]);
+});
