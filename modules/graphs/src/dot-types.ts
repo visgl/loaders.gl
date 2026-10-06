@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import type {GraphData} from './graph-types';
+import type {GraphData, GraphOutput} from './graph-types';
 
 /** Application attributes parsed from DOT. */
 type DOTAttributeMap = Record<string, unknown>;
@@ -34,5 +34,11 @@ export type DOTMetadata = {
 /** A DOT graph with graph attributes and subgraph descriptors. */
 export type DOTGraphData = GraphData & {
   /** DOT graph identity, direction, strictness, attributes, and subgraphs. */
+  metadata: DOTMetadata;
+};
+
+/** DOT tables or compatibility records with graph metadata. */
+export type DOTOutput = GraphOutput & {
+  /** Graph identity, defaults, and subgraph descriptors. */
   metadata: DOTMetadata;
 };
