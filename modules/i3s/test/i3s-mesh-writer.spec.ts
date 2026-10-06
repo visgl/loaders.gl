@@ -437,3 +437,39 @@ test('I3S refuses null values in declared non-nullable text fields', () => {
   );
   expect(() => encodeI3SMeshAttributes(features, 8192)).toThrow(/non-nullable/);
 });
+
+test.each([
+  {linear: [0, 0.001, 0.0031308, 0.25], encoded: [0, 0.01292, 0.040449936, 0.25]},
+  {linear: [0.5, 0.2, 1, 0.5], encoded: [0.7353569830524495, 0.48452920448170694, 1, 0.5]},
+  {
+    linear: [0.0031309, 0.6, 0.4, 1],
+    encoded: [0.04045117777859802, 0.7977377330312598, 0.6651850846308363, 1]
+  }
+])('I3S encodes linear RGB $linear as sRGB and reconstructs linear rendering factors', async ({
+  linear,
+  encoded
+}) => {
+  const material = {baseColorFactor: linear as [number, number, number, number]};
+  const generated = encodeI3SMeshLayer(createMesh(), {...OPTIONS, material});
+  const decompressor = new GZipDecompressor({useNative: false});
+  const definition = JSON.parse(
+    new TextDecoder().decode(decompressor.decompressSync(generated.files['3dSceneLayer.json.gz']))
+  );
+  const stored = definition.materialDefinitions[0].pbrMetallicRoughness.baseColorFactor;
+  stored.forEach((value: number, index: number) => expect(value).toBeCloseTo(encoded[index], 12));
+  const node = JSON.parse(
+    new TextDecoder().decode(
+      decompressor.decompressSync(generated.files['nodes/1/3dNodeIndexDocument.json.gz'])
+    )
+  );
+  const content = await parseI3STileContent(
+    decompressor.decompressSync(generated.files['nodes/1/geometries/0.bin.gz']),
+    {...node, materialDefinition: definition.materialDefinitions[0]},
+    definition
+  );
+  content.material.pbrMetallicRoughness.baseColorFactor.forEach((value: number, index: number) =>
+    expect(value).toBeCloseTo(linear[index], 12)
+  );
+  expect(content.material.pbrMetallicRoughness.baseColorFactor[3]).toBe(linear[3]);
+  expect(material.baseColorFactor).toEqual(linear);
+});

@@ -20,5 +20,6 @@ export default defineConfig(async () => ({
     extensions: ['.ts', '.tsx', '.mjs', '.js', '.jsx', '.json'],
     alias: await getAliases('@loaders.gl', `${__dirname}/../../..`)
   },
+  worker: {format: 'es'},
   server: {open: true}
 }));

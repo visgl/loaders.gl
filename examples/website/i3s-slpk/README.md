@@ -8,7 +8,7 @@ without a file extension, select the archive format explicitly.
 resources. Local files use Blob slices; remote files use HTTP byte ranges. The runtime
 loads node metadata and visible tile content as you pan and zoom, rather than extracting
 the whole archive up front. Archive index metadata is still read during initialization.
-Parsing runs on the main thread so the example does not need to download worker scripts.
+Archive viewing parses visible content on the main thread. Conversion uses a separate module worker.
 
 Remote servers must allow CORS and support HTTP byte-range responses (HTTP 206 with a valid
 Content-Range header). Cross-origin servers must expose `Content-Range` to the browser,
@@ -42,7 +42,8 @@ incremental viewer. This is a partial dataset export, not whole-tileset conversi
 Each selected content must contain exactly one static, untextured primitive in self-contained
 GLB/B3DM, with native EPSG:4978 coordinates and ellipsoidal heights established by root region bounds.
 Unknown/local frames are rejected. Untextured metallic-roughness material factors, alpha controls
-and double-sided rendering are preserved. 3TZ also preserves packed linear Float32 or normalized
+and double-sided rendering are preserved. SLPK converts linear material RGB factors to I3S sRGB
+while preserving alpha; readers convert them back for rendering. 3TZ also preserves packed linear Float32 or normalized
 Uint8/Uint16 vertex colors; SLPK rejects vertex colors. Textures, animation, compressed meshes, external dependencies, multiple primitives,
 nested external tilesets and implicit tiling fail explicitly. No feature schema is inferred.
 
@@ -91,13 +92,18 @@ Non-leaf multi-selections are rejected to avoid exporting overlapping LOD approx
 Any failed, empty, or multi-primitive content aborts the entire output.
 
 SLPK continues to accept one mesh. Multi-node I3S authoring, broader hierarchy/refinement
-mapping, feature associations, workers and streaming packaging remain follow-up work.
+mapping, broader feature associations and streaming packaging remain follow-up work.
 
 The demo caps root JSON plus selected content at 16 MiB, declarations at 1,000 contents,
 aggregate decoded geometry at 16 MiB, retained output and archive size at 32 MiB, and position error
 at 1 cm. These are byte gates, not a guarantee about peak decoder/serialization memory.
-Parsing and archive encoding run on the main thread. Cancel aborts transport and discards
-late results; it cannot interrupt synchronous decoding or archive serialization.
+Selected-content fetching, decoding, conversion and archive encoding run in a disposable module
+worker. Progress returns to the controls; the finalized archive is transferred as an `ArrayBuffer`
+and wrapped in a download `File`. Cancel and unmount terminate the worker, including synchronous
+decoding or packaging. Each retry starts a new worker; failed or canceled work publishes no archive.
+Inspection remains on the main thread. Workers do not impose a peak memory limit or stream output;
+source, decoded data and packaging allocations still coexist inside the worker. Worker scripts and
+their module chunks must be served by the application and allowed by its content security policy.
 
 The example imports orchestration from `@loaders.gl/tile-converter/v5/core` and format
 writers from `/v5/adapters`. Conversion code remains in the tile-converter application.

@@ -162,7 +162,14 @@ test('browser SLPK mapping preserves exact IDs, Unicode, material factors and tr
   );
   try {
     const layer = JSON.parse(new TextDecoder().decode(await reader.getFile('', 'http')));
-    expect(layer.materialDefinitions[0]).toEqual({...MATERIAL, alphaMode: 'mask'});
+    expect(layer.materialDefinitions[0]).toMatchObject({
+      ...MATERIAL,
+      alphaMode: 'mask',
+      pbrMetallicRoughness: {
+        ...MATERIAL.pbrMetallicRoughness,
+        baseColorFactor: [0.48452920448170694, 0.6651850846308363, 0.7977377330312598, 0.8]
+      }
+    });
     expect(layer.fields.map((field: {name: string}) => field.name)).toEqual([
       'OBJECTID',
       'source_id',
@@ -334,4 +341,29 @@ test('feature mapping controls reject malformed mappings, clear stale downloads 
     await act(async () => root.unmount());
     container.remove();
   }
+});
+
+// UI lifecycle coverage uses an inline executor; real module workers are qualified separately.
+vi.mock('../examples/website/i3s-slpk/src/conversion-worker-client', async () => {
+  const {convertSelectedContents} = await import(
+    '../examples/website/i3s-slpk/src/convert-tileset'
+  );
+  return {
+    convertSelectedContentsInWorker: (
+      ...arguments_: Parameters<
+        typeof import('../examples/website/i3s-slpk/src/conversion-worker-client').convertSelectedContentsInWorker
+      >
+    ) => {
+      const [inspection, resourceIds, format, signal, onProgress, features] = arguments_;
+      return convertSelectedContents(
+        inspection,
+        resourceIds,
+        format,
+        signal,
+        onProgress,
+        fetch,
+        features
+      );
+    }
+  };
 });

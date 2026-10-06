@@ -1,11 +1,8 @@
 import React, {useEffect, useRef, useState} from 'react';
 import type {MeshSourceFeatureOptions} from '@loaders.gl/tile-converter/v5/adapters';
 import type {BrowserTilesetConversionInspection} from '@loaders.gl/tile-converter/v5/core';
-import {
-  inspectConversionInput,
-  convertSelectedContents,
-  type ConversionFormat
-} from '../convert-tileset';
+import {inspectConversionInput, type ConversionFormat} from '../convert-tileset';
+import {convertSelectedContentsInWorker} from '../conversion-worker-client';
 
 /** Conversion controls reuse the viewer for the finalized archive. */
 export type ConversionPanelProps = {
@@ -24,9 +21,9 @@ export function ConversionPanel({onPreview}: ConversionPanelProps) {
   const [busy, setBusy] = useState(false);
   const [status, setStatus] = useState('');
   const [error, setError] = useState('');
-  const [result, setResult] = useState<Awaited<ReturnType<typeof convertSelectedContents>> | null>(
-    null
-  );
+  const [result, setResult] = useState<Awaited<
+    ReturnType<typeof convertSelectedContentsInWorker>
+  > | null>(null);
   const [downloadUrl, setDownloadUrl] = useState('');
 
   useEffect(
@@ -46,7 +43,7 @@ export function ConversionPanel({onPreview}: ConversionPanelProps) {
     return () => URL.revokeObjectURL(url);
   }, [result]);
 
-  /** Cancels transport immediately; late decoding/packaging results are discarded. */
+  /** Terminates active worker computation or aborts inspection transport. */
   function cancelConversion(): void {
     controller.current?.abort();
     controller.current = null;
@@ -69,7 +66,7 @@ export function ConversionPanel({onPreview}: ConversionPanelProps) {
     }
     try {
       if (convert && inspection) {
-        const output = await convertSelectedContents(
+        const output = await convertSelectedContentsInWorker(
           inspection,
           resourceIds,
           format,
@@ -77,7 +74,6 @@ export function ConversionPanel({onPreview}: ConversionPanelProps) {
           message => {
             if (controller.current === operation) setStatus(message);
           },
-          fetch,
           parseFeatureMapping(featureMapping)
         );
         if (controller.current === operation) {
@@ -115,7 +111,7 @@ export function ConversionPanel({onPreview}: ConversionPanelProps) {
       <small>
         3TZ accepts up to 64 selected leaf contents; SLPK accepts one. Limits: 16 MiB input, 1,000
         declared contents, 32 MiB output/archive, 1 cm position error. These are not peak memory
-        limits. Parsing runs on the main thread; cancel discards late results.
+        limits. Conversion runs in a worker; cancel terminates its parsing and packaging.
       </small>
       <form
         onSubmit={event => {
