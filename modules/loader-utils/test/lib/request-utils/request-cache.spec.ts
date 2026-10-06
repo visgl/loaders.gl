@@ -235,3 +235,27 @@ test('RangeRequestCache rejects malformed ranges and short responses', async () 
   expect(cache.size).toBe(0);
   expect(() => cache.set('source', -1, new ArrayBuffer(0))).toThrow('non-negative safe integers');
 });
+
+test('RangeRequestCache retains a shared pending range when only one reader cancels', async () => {
+  const cache = new RangeRequestCache();
+  const controller = new AbortController();
+  let resolveResponse!: (buffer: ArrayBuffer) => void;
+  let transportSignal!: AbortSignal;
+  const fetchRange = vi.fn((_offset: number, _length: number, signal: AbortSignal) => {
+    transportSignal = signal;
+    return new Promise<ArrayBuffer>(resolve => {
+      resolveResponse = resolve;
+    });
+  });
+  const request = {sourceId: 'shared', offset: 0, length: 2, fetchRange};
+  const canceled = cache.read({...request, signal: controller.signal});
+  const retained = cache.read(request);
+  const rejection = expect(canceled).rejects.toMatchObject({name: 'AbortError'});
+  await vi.waitFor(() => expect(fetchRange).toHaveBeenCalledOnce());
+  controller.abort();
+  await rejection;
+  expect(transportSignal.aborted).toBe(false);
+  resolveResponse(new Uint8Array([1, 2]).buffer);
+  expect(new Uint8Array(await retained)).toEqual(new Uint8Array([1, 2]));
+  expect(new Uint8Array((await cache.get('shared', 0, 2))!)).toEqual(new Uint8Array([1, 2]));
+});
