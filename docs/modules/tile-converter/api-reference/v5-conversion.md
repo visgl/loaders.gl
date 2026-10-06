@@ -81,8 +81,8 @@ The budget includes headers/index and is checked before Blob reads. The first SL
 supports archives below 2 GiB; 3TZ stays below the ZIP64 sentinel. Both support at most
 65,533 resources and canonical ASCII paths. Invalid formats, budgets, or duplicate IDs fail
 explicitly. The output-size budget is not a peak-memory budget. Streaming, ZIP64, cancellation
-during packaging, workers, broader source extraction, and broader viewer qualification remain
-future work. Applications own input qualification, download UI, and object-URL lifetime.
+within the encoder, broader source extraction, and broader viewer qualification remain
+future work. The browser example can interrupt packaging by terminating its disposable worker. Applications own input qualification, download UI, and object-URL lifetime.
 
 See [SLPKWriter](/docs/modules/i3s/api-reference/slpk-writer) and
 [Tiles3DArchiveWriter](/docs/modules/3d-tiles/api-reference/tiles-3d-archive-writer).
@@ -159,7 +159,8 @@ The initial source rejects animation, skins, morphs, GPU instancing, mirrored or
 placements, textures, unmapped material/feature extensions, and tileset/group/tile/content
 metadata that needs its own mapping. Decoded reader cleanup follows shared traversal; the
 application still owns the runtime, worker, decoder, and archive lifetime. Synchronous
-encoding cannot be interrupted mid-operation. Resource/retained-output/archive caps do
+encoding cannot be interrupted by an AbortSignal mid-operation; applications can terminate a
+disposable worker instead. Resource/retained-output/archive caps do
 not constitute a total peak-memory budget.
 
 Unannotated resources can also use the existing GLB codec and 3D Tiles/3TZ sink. The GLB
@@ -197,3 +198,14 @@ The [tile archive example](https://loaders.gl/examples/i3s-slpk) supports up to 
 selected leaf contents for partial 3TZ output, with aggregate input/decoded byte gates.
 SLPK output retains its single-mesh profile. Multi-node I3S authoring and preservation of
 broader source hierarchy, refinement and feature associations remain separate work.
+
+### Browser worker execution
+
+The archive viewer example runs selected-content loading, decoding, conversion and packaging in
+one disposable module worker per operation. It transfers only finalized archive bytes and the
+conversion report back to the controls. Cancel or unmount terminates the worker; failed and canceled
+operations expose no downloadable archive. Inspection remains on the main thread. This example
+boundary does not add a public worker API or move the conversion implementation between modules.
+
+Existing transport, decoded-input and retained-output byte gates still apply. Moving work off the
+main thread does not cap peak decoder/Arrow/packager allocations or make packaging streaming.

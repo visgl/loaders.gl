@@ -244,3 +244,9 @@ const statistics = await loadStatistics(sceneLayer.statisticsInfo, {
 ```
 
 Set `core.baseUrl` to the loaded layer URL when descriptors use relative `href` values.
+
+### Material color space
+
+Decoded glTF-style material RGB factors use linear values. The loader converts normalized I3S
+sRGB factors (including emissive RGB) using the standard transfer curve; legacy byte factors
+are normalized first. Alpha remains linear and unchanged by the color-space conversion.

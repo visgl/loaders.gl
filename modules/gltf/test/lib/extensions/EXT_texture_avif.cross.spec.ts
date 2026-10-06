@@ -21,6 +21,11 @@ afterEach(() => {
 });
 
 describe('EXT_texture_avif', () => {
+  test('skips image capability probes when AVIF is not declared', async () => {
+    await preprocess({json: {asset: {version: '2.0'}}}, {});
+    expect(getSupportedImageFormatsMock).not.toHaveBeenCalled();
+  });
+
   test('selects the AVIF source through the loader registry and removes the processed extension', async () => {
     getSupportedImageFormatsMock.mockResolvedValue(new Set(['image/avif']));
     const gltfData = makeGLTFData({required: true});

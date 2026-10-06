@@ -35,7 +35,9 @@ compressed geometry, and unknown layouts/attributes are outside this initial pro
 `material` supports one untextured metallic/roughness material: `baseColorFactor`,
 `metallicFactor`, `roughnessFactor`, `alphaMode`, `alphaCutoff`, and `doubleSided`.
 MASK uses an explicit cutoff of 0.5 when omitted, preserving the glTF default rather than
-substituting the I3S default. Other material semantics fail explicitly.
+substituting the I3S default. Input RGB factors are linear, as in glTF; the writer applies the
+sRGB transfer curve required by the I3S material profile. Alpha is unchanged. The I3S reader
+converts material RGB back to linear values for rendering. Other material semantics fail explicitly.
 
 ## Features
 

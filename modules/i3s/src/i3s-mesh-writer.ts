@@ -11,7 +11,7 @@ export type {I3SMeshFeatures} from './i3s-mesh-attributes';
 
 /** Untextured metallic/roughness factors supported by the I3S mesh profile. */
 export interface I3SMeshMaterial {
-  /** Linear RGBA multiplier, each component in [0, 1]. */
+  /** Linear RGBA multiplier in [0, 1]; RGB is encoded as I3S sRGB, alpha is unchanged. */
   readonly baseColorFactor?: readonly [number, number, number, number];
   /** Metallic weight; glTF and I3S default to one. */
   readonly metallicFactor?: number;
@@ -420,7 +420,11 @@ function encodeMaterial(material: I3SMeshMaterial = {}): object {
     throw new Error('Invalid I3S material factors');
   return {
     pbrMetallicRoughness: {
-      baseColorFactor: baseColorFactor ? [...baseColorFactor] : [1, 1, 1, 1],
+      baseColorFactor: baseColorFactor
+        ? baseColorFactor.map((value, index) =>
+            index < 3 ? convertLinearColorToSrgb(value) : value
+          )
+        : [1, 1, 1, 1],
       metallicFactor: metallicFactor ?? 1,
       roughnessFactor: roughnessFactor ?? 1
     },
@@ -428,4 +432,10 @@ function encodeMaterial(material: I3SMeshMaterial = {}): object {
     ...(alphaMode === 'MASK' ? {alphaCutoff: alphaCutoff ?? 0.5} : {}),
     doubleSided: doubleSided ?? false
   };
+}
+
+/** Encodes a validated linear RGB component using the standard sRGB transfer curve. */
+function convertLinearColorToSrgb(value: number): number {
+  if (value === 1) return 1;
+  return value <= 0.0031308 ? 12.92 * value : 1.055 * value ** (1 / 2.4) - 0.055;
 }
