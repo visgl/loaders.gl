@@ -57,7 +57,7 @@ export default function App() {
         <Map
           reuseMaps
           mapLib={maplibregl}
-          mapStyle={'https://tiles.openfreemap.org/styles/positron'}
+          mapStyle={'https://loaders.gl/mapstyle/deck-light.json'}
           preventStyleDiffing
           preserveDrawingBuffer
         />

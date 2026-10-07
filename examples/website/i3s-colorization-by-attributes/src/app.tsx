@@ -132,7 +132,7 @@ export default function App() {
         <Map
           reuseMaps
           mapLib={maplibregl}
-          mapStyle={'https://tiles.openfreemap.org/styles/dark'}
+          mapStyle={'https://loaders.gl/mapstyle/deck-dark.json'}
           preventStyleDiffing
           preserveDrawingBuffer
         />

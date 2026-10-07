@@ -149,7 +149,7 @@ export default function App() {
       <DeckGL initialViewState={viewState} layers={layers} controller={MAP_CONTROLLER}>
         <Map
           reuseMaps
-          mapStyle="https://tiles.openfreemap.org/styles/dark"
+          mapStyle="https://loaders.gl/mapstyle/deck-dark.json"
           preserveDrawingBuffer
         />
       </DeckGL>

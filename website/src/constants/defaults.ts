@@ -1,8 +1,8 @@
 
 export const MAPBOX_STYLES = {
-  LIGHT: 'https://tiles.openfreemap.org/styles/positron',
+  LIGHT: 'https://loaders.gl/mapstyle/deck-light.json',
   LIGHT_LABEL: 'https://tiles.openfreemap.org/styles/positron',
-  DARK: 'https://tiles.openfreemap.org/styles/dark',
+  DARK: 'https://loaders.gl/mapstyle/deck-dark.json',
   BLANK: {
     version: 8, 
     sources: {},
