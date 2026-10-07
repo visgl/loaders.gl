@@ -3,10 +3,11 @@ set -e
 
 node scripts/validate-token.js
 
-# Build the worker bundle imported by the cloud-native Parquet examples.
+# Build the local worker bundles used by the website examples.
 (
   cd ..
   npm run --silent build-source-worker --prefix modules/parquet -- --log-level=error
+  npm run --silent build-worker --prefix modules/i3s -- --log-level=error
 )
 
 # staging or prod
