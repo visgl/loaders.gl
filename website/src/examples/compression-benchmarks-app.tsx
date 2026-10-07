@@ -5,6 +5,7 @@
 import {gunzipSync, unzlibSync, gzipSync, zlibSync} from 'fflate';
 
 import React, {useEffect, useState} from 'react';
+import {createCompressionBenchmarkData} from './compression-benchmark-data';
 
 import {Bench, type LogEntry} from '@probe.gl/bench';
 import {BrotliShimDecompressor} from '@loaders.gl/compression/brotli-decompressor-shim';
@@ -212,7 +213,7 @@ function CompressionBenchmarkResults({rows}: {rows: BenchmarkResultRow[]}): JSX.
         <strong className="compression-benchmark-red">&lt; 500 MB/s</strong>.
       </p>
       <p>Sizes are approximate browser payload indicators. The loaders.gl GZIP/DEFLATE size measures the six whole-buffer engine functions, excluding streaming classes and adapters; other rows use module, package, or fallback source sizes.</p>
-      <p>Columns show uncompressed bytes processed per second. The 70 KB column uses the 70,937-byte CSV fixture. The 16 MB column and bar use a 16 MiB payload made by repeating that fixture.</p>
+      <p>Columns show uncompressed bytes processed per second. Both columns use seeded CSV generation with shuffled records, varied numbers and timestamps, random tokens, and categorical text. The payloads contain exactly 70,937 bytes and 16 MiB. Data generation and fixture compression happen before timing; rates are measured bytes processed per second.</p>
       <table>
         <thead>
           <tr>
@@ -224,7 +225,7 @@ function CompressionBenchmarkResults({rows}: {rows: BenchmarkResultRow[]}): JSX.
           </tr>
         </thead>
         <tbody>
-          {rows.filter(row => row.isGroup && !row.id.includes('repeated sample.csv')).flatMap(groupRow => {
+          {rows.filter(row => row.isGroup && !row.id.includes(' (16 MiB)')).flatMap(groupRow => {
             const groupResults = rows
               .filter(row => row.groupId === groupRow.id)
               .sort((firstRow, secondRow) => {
@@ -241,7 +242,7 @@ function CompressionBenchmarkResults({rows}: {rows: BenchmarkResultRow[]}): JSX.
               ...groupResults.map((row, index) => {
                 const formatName = groupRow.id.split(' · ')[0];
                 const largeRow = rows.find(candidate =>
-                  candidate.id === row.id && candidate.groupId === `${formatName} · repeated sample.csv (16 MiB)`
+                  candidate.id === row.id && candidate.groupId === `${formatName} · generated.csv (16 MiB)`
                 );
                 if (row.unavailable) {
                   return (
@@ -460,14 +461,9 @@ function formatByteRate(value: string): string {
 
 /** Creates representative compressed CSV fixtures before timing begins. */
 async function createCompressionBenchmarkCases(): Promise<CompressionBenchmarkCase[]> {
-  const sampleUrl = new URL('../../../modules/compression/test/data/sample.csv', import.meta.url);
-  const gzipUrl = new URL('../../../modules/compression/test/data/sample.csv.gz', import.meta.url);
-  const brotliUrl = new URL('../../../modules/compression/test/data/sample.csv.br', import.meta.url);
-  const [sampleData, gzipData, brotliData] = await Promise.all([
-    fetch(sampleUrl).then(response => response.arrayBuffer()),
-    fetch(gzipUrl).then(response => response.arrayBuffer()),
-    fetch(brotliUrl).then(response => response.arrayBuffer())
-  ]);
+  const sampleData = createCompressionBenchmarkData(70937).buffer;
+  const gzipData = await new GZipFflateCompressor().compress(sampleData);
+  const brotliData = await new BrotliCompressUtilsCompressor({compressUtils: {level: 4}}).compress(sampleData);
 
   const deflateData = await new DeflateFflateCompressor().compress(sampleData);
   const snappyData = await new SnappyJSCompression().compress(sampleData);
@@ -478,7 +474,7 @@ async function createCompressionBenchmarkCases(): Promise<CompressionBenchmarkCa
 
   const benchmarkCases: CompressionBenchmarkCase[] = [
     {
-      name: 'GZIP · sample.csv',
+      name: 'GZIP · generated.csv',
       compressedData: gzipData,
       uncompressedByteLength: sampleData.byteLength,
       expectedData: new Uint8Array(sampleData),
@@ -503,7 +499,7 @@ async function createCompressionBenchmarkCases(): Promise<CompressionBenchmarkCa
       ]
     },
     {
-      name: 'DEFLATE · sample.csv',
+      name: 'DEFLATE · generated.csv',
       compressedData: deflateData,
       uncompressedByteLength: sampleData.byteLength,
       expectedData: new Uint8Array(sampleData),
@@ -528,7 +524,7 @@ async function createCompressionBenchmarkCases(): Promise<CompressionBenchmarkCa
       ]
     },
     {
-      name: 'Brotli · sample.csv',
+      name: 'Brotli · generated.csv',
       compressedData: brotliData,
       uncompressedByteLength: sampleData.byteLength,
       expectedData: new Uint8Array(sampleData),
@@ -545,7 +541,7 @@ async function createCompressionBenchmarkCases(): Promise<CompressionBenchmarkCa
       ]
     },
     {
-      name: 'Zstandard · sample.csv',
+      name: 'Zstandard · generated.csv',
       compressedData: zstdData,
       uncompressedByteLength: sampleData.byteLength,
       expectedData: new Uint8Array(sampleData),
@@ -566,7 +562,7 @@ async function createCompressionBenchmarkCases(): Promise<CompressionBenchmarkCa
       ]
     },
     {
-      name: 'Snappy · sample.csv',
+      name: 'Snappy · generated.csv',
       compressedData: snappyData,
       uncompressedByteLength: sampleData.byteLength,
       expectedData: new Uint8Array(sampleData),
@@ -583,7 +579,7 @@ async function createCompressionBenchmarkCases(): Promise<CompressionBenchmarkCa
       ]
     },
     {
-      name: 'LZ4 · sample.csv',
+      name: 'LZ4 · generated.csv',
       compressedData: lz4Data,
       uncompressedByteLength: sampleData.byteLength,
       expectedData: new Uint8Array(sampleData),
@@ -600,7 +596,7 @@ async function createCompressionBenchmarkCases(): Promise<CompressionBenchmarkCa
       ]
     },
     {
-      name: 'bzip2 · sample.csv',
+      name: 'bzip2 · generated.csv',
       compressedData: bzip2Data,
       uncompressedByteLength: sampleData.byteLength,
       expectedData: new Uint8Array(sampleData),
@@ -611,7 +607,7 @@ async function createCompressionBenchmarkCases(): Promise<CompressionBenchmarkCa
       }]
     },
     {
-      name: 'XZ · sample.csv',
+      name: 'XZ · generated.csv',
       compressedData: xzData,
       uncompressedByteLength: sampleData.byteLength,
       expectedData: new Uint8Array(sampleData),
@@ -623,11 +619,7 @@ async function createCompressionBenchmarkCases(): Promise<CompressionBenchmarkCa
     }
   ];
 
-  const largeSampleData = new Uint8Array(16 * 1024 * 1024);
-  const sampleBytes = new Uint8Array(sampleData);
-  for (let offset = 0; offset < largeSampleData.length; offset += sampleBytes.length) {
-    largeSampleData.set(sampleBytes.subarray(0, Math.min(sampleBytes.length, largeSampleData.length - offset)), offset);
-  }
+  const largeSampleData = createCompressionBenchmarkData(16 * 1024 * 1024);
   const largeCompressedData = [
     await new GZipFflateCompressor().compress(largeSampleData.buffer),
     await new DeflateFflateCompressor().compress(largeSampleData.buffer),
@@ -641,7 +633,7 @@ async function createCompressionBenchmarkCases(): Promise<CompressionBenchmarkCa
   for (let index = 0; index < largeCompressedData.length; index++) {
     benchmarkCases.push({
       ...benchmarkCases[index],
-      name: `${benchmarkCases[index].name.split(' · ')[0]} · repeated sample.csv (16 MiB)`,
+      name: `${benchmarkCases[index].name.split(' · ')[0]} · generated.csv (16 MiB)`,
       compressedData: largeCompressedData[index],
       expectedData: largeSampleData,
       uncompressedByteLength: largeSampleData.byteLength
