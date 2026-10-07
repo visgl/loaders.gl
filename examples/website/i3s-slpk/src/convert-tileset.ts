@@ -1,4 +1,4 @@
-import {parse} from '@loaders.gl/core';
+import {getLoaderOptions, parse} from '@loaders.gl/core';
 import {Tiles3DLoader} from '@loaders.gl/3d-tiles';
 import {Tiles3DSource, Tileset3D} from '@loaders.gl/tiles';
 import {
@@ -166,6 +166,7 @@ async function convertSelectedContentToResources(
         ...common,
         sink,
         codec: createMeshConversionCodec({
+          dracoLibraryOptions: getDracoLibraryOptions(),
           spatialContext,
           maxPositionError: CONVERSION_LIMITS.maxPositionError
         }),
@@ -192,6 +193,22 @@ async function convertSelectedContentToResources(
   } finally {
     runtime.destroy();
   }
+}
+
+/** Applies the application's configured codec assets to direct Draco encoding and verification. */
+function getDracoLibraryOptions() {
+  const {core, modules} = getLoaderOptions();
+  return {
+    CDN: core?.CDN,
+    useLocalLibraries: core?.useLocalLibraries,
+    modules: {
+      'draco_encoder.js': new URL('../../../../modules/draco/src/libs/draco_encoder.js', import.meta.url).href,
+      'draco_encoder.wasm': new URL('../../../../modules/draco/src/libs/draco_encoder.wasm', import.meta.url).href,
+      'draco_wasm_wrapper.js': new URL('../../../../modules/draco/src/libs/draco_wasm_wrapper.js', import.meta.url).href,
+      'draco_decoder.wasm': new URL('../../../../modules/draco/src/libs/draco_decoder.wasm', import.meta.url).href,
+      ...modules
+    }
+  };
 }
 
 /** Retains a conservative source LOD error from the selected hierarchy, rather than guessing zero. */
@@ -421,6 +438,7 @@ export async function convertSelectedContentsToResources(
     sink,
     signal,
     codec: createMeshConversionCodec({
+      dracoLibraryOptions: getDracoLibraryOptions(),
       spatialContext,
       maxPositionError: CONVERSION_LIMITS.maxPositionError
     }),

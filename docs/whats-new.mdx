@@ -53,6 +53,8 @@ See [supported items and verification boundaries](/docs/developer-guide/arcgis/i
 
 ## What's new
 
+- The v5 tile-converter mesh codec now writes lossless Draco Edge Breaker GLB/3TZ geometry by default, with `draco: false` for uncompressed output. glTF Draco decoding preserves normalized integer color and UV accessors and supports texture transforms on decoded UVs. See the [conversion API](/docs/modules/tile-converter/api-reference/v5-conversion#draco-mesh-output).
+
 - Upgrade math.gl dependencies to 5.0.0-alpha.12 and migrate coordinate transformations to
   `@math.gl/projection`, the successor to `@math.gl/proj4`.
 

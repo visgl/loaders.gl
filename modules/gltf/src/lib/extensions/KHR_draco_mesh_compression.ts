@@ -121,11 +121,14 @@ async function decompressPrimitive(
 
   const decodedAttributes: {[key: string]: GLTFAccessor} = getGLTFAccessors(decodedData.attributes);
 
-  // Restore min/max values
+  // Restore accessor bounds and integer normalization from the glTF declaration.
   for (const [attributeName, decodedAttribute] of Object.entries(decodedAttributes)) {
     if (attributeName in primitive.attributes) {
       const accessorIndex: number = primitive.attributes[attributeName];
       const accessor = iterator.data.accessors?.[accessorIndex];
+      if (accessor?.normalized !== undefined) {
+        decodedAttribute.normalized = accessor.normalized;
+      }
       if (accessor?.min && accessor?.max) {
         decodedAttribute.min = accessor.min;
         decodedAttribute.max = accessor.max;

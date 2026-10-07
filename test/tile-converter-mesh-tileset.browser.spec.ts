@@ -70,6 +70,7 @@ let encodedPositions: number[];
 
 beforeAll(async () => {
   const codec = createMeshConversionCodec({
+    draco: false,
     spatialContext: createTiles3DConversionSpatialContext({
       sourceCrs: 'EPSG:4978',
       heightReference: 'ellipsoidal',
@@ -104,6 +105,7 @@ async function convertSource(
   return convertTileset({
     source: createSource(count),
     codec: createMeshConversionCodec({
+      draco: false,
       spatialContext: createTiles3DConversionSpatialContext({
         sourceCrs: 'EPSG:4978',
         heightReference: 'ellipsoidal',
@@ -321,7 +323,7 @@ test('single mesh sink packages a real geographic-to-ECEF conversion with retain
     },
     {targetCrs: 'EPSG:4978', targetHeightReference: 'ellipsoidal'}
   );
-  const codec = createMeshConversionCodec({spatialContext, maxPositionError: 0.001});
+  const codec = createMeshConversionCodec({draco: false, spatialContext, maxPositionError: 0.001});
   const sink = createSingleMeshTilesetSink({maxTotalBytes: 8192, geometricError: 0.001});
   for await (const output of codec.convert(input, undefined)) await sink.write(output);
   await sink.finalize(REPORT);

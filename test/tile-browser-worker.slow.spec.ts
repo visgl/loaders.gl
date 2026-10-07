@@ -1,4 +1,6 @@
 import {expect, test} from 'vitest';
+import {parse} from '@loaders.gl/core';
+import {GLBLoader} from '@loaders.gl/gltf';
 import {parseSLPKArchive} from '@loaders.gl/i3s';
 import {DataViewReadableFile} from '@loaders.gl/zip';
 import {Tiles3DArchive} from '@loaders.gl/3d-tiles';
@@ -90,7 +92,13 @@ test.each([
       const archive = format === 'slpk' ? await parseSLPKArchive(file) : new Tiles3DArchive(file);
       try {
         const root = await archive.getFile(format === 'slpk' ? '' : 'tileset.json', 'http');
-        expect(JSON.parse(new TextDecoder().decode(root))).toBeDefined();
+        const metadata = JSON.parse(new TextDecoder().decode(root));
+        expect(metadata).toBeDefined();
+        if (format === '3tz') {
+          const content = metadata.root.content || metadata.root.children[0].content;
+          const glb = await parse(await archive.getFile(content.uri), GLBLoader);
+          expect(glb.json.extensionsRequired).toContain('KHR_draco_mesh_compression');
+        }
       } finally {
         await file.close();
       }

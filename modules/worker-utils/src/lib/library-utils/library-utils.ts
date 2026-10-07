@@ -173,7 +173,7 @@ async function loadLibraryFromFile(libraryUrl: string): Promise<any> {
     }
   }
   if (isWorker) {
-    return importScripts(libraryUrl);
+    return loadLibraryInWorker(libraryUrl);
   }
   // TODO - fix - should be more secure than string parsing since observes CORS
   // if (isBrowser) {
@@ -182,6 +182,23 @@ async function loadLibraryFromFile(libraryUrl: string): Promise<any> {
 
   const scriptSource = await loadAsText(libraryUrl);
   return loadLibraryFromString(scriptSource, libraryUrl);
+}
+
+/** Loads a classic library wrapper in classic or module workers without masking script failures. */
+export async function loadLibraryInWorker(libraryUrl: string): Promise<unknown> {
+  try {
+    // A zero-argument probe rejects in module workers without loading any script.
+    importScripts();
+  } catch {
+    return evaluateWorkerLibrary(await loadAsText(libraryUrl));
+  }
+  return importScripts(libraryUrl);
+}
+
+/** Executes a fetched wrapper in the worker global scope, matching classic script declarations. */
+function evaluateWorkerLibrary(scriptSource: string): null {
+  eval.call(globalThis, scriptSource); // eslint-disable-line no-eval
+  return null;
 }
 
 // TODO - Needs security audit...
@@ -196,11 +213,7 @@ function loadLibraryFromString(scriptSource: string, id: string): null | any {
   }
 
   if (isWorker) {
-    // Use lvalue trick to make eval run in global scope
-    eval.call(globalThis, scriptSource); // eslint-disable-line no-eval
-    // https://stackoverflow.com/questions/9107240/1-evalthis-vs-evalthis-in-javascript
-    // http://perfectionkills.com/global-eval-what-are-the-options/
-    return null;
+    return evaluateWorkerLibrary(scriptSource);
   }
 
   const script = document.createElement('script');

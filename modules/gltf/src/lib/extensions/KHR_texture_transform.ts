@@ -46,6 +46,11 @@ type TextureInfo = {
 type CompoundGLTFTextureInfo = GLTFTextureInfo &
   GLTFMaterialNormalTextureInfo &
   GLTFMaterialOcclusionTextureInfo;
+/** Accessor values produced by mesh decoders before glTF postprocessing. */
+type DecodedTextureAccessor = GLTFAccessor & {
+  /** Packed float or integer UV pairs, in decoded vertex order. */
+  value?: Float32Array | Uint8Array | Uint16Array | Int8Array | Int16Array;
+};
 /** Parameters for TEXCOORD transformation */
 type TransformParameters = {
   /** Source texCoord selected by the texture info or extension. */
@@ -219,6 +224,10 @@ function canTransformPrimitive(
   sourceTexCoord: number
 ): boolean {
   const texCoordAccessor = primitive.attributes[`TEXCOORD_${sourceTexCoord}`];
+  const decodedAccessor = texCoordAccessor as unknown as DecodedTextureAccessor;
+  if (ArrayBuffer.isView(decodedAccessor?.value)) {
+    return true;
+  }
   if (!Number.isFinite(texCoordAccessor)) {
     return false;
   }
@@ -243,6 +252,21 @@ function transformPrimitive(
 ) {
   const {sourceTexCoord, texCoord, matrix} = transformParameters;
   const texCoordAccessor = primitive.attributes[`TEXCOORD_${sourceTexCoord}`];
+  const decodedAccessor = texCoordAccessor as unknown as DecodedTextureAccessor;
+  if (ArrayBuffer.isView(decodedAccessor?.value)) {
+    const result = new Float32Array(decodedAccessor.count * 2);
+    for (let index = 0; index < decodedAccessor.count; index++) {
+      transformCoordinatePair(
+        decodedAccessor.value.subarray(index * 2, index * 2 + 2),
+        decodedAccessor,
+        matrix,
+        result,
+        index * 2
+      );
+    }
+    createAttribute(texCoord, decodedAccessor, primitive, gltfData, result);
+    return;
+  }
   if (Number.isFinite(texCoordAccessor)) {
     // Get accessor of the `TEXCOORD_0` attribute
     const accessor = gltfData.json.accessors?.[texCoordAccessor];
@@ -268,22 +292,31 @@ function transformPrimitive(
         for (let i = 0; i < accessor.count; i++) {
           // Take [u, v] couple from the arrayBuffer
           const uv = new ArrayType(arrayBuffer, byteOffset + i * elementAddressScale, 2);
-          // Set and transform Vector3 per https://github.com/KhronosGroup/glTF/tree/main/extensions/2.0/Khronos/KHR_texture_transform#overview
-          const signed = accessor.componentType === 5120 || accessor.componentType === 5122;
-          const divisor = 2 ** (bytes * 8 - (signed ? 1 : 0)) - 1;
-          scratchVector.set(
-            accessor.normalized ? Math.max(uv[0] / divisor, -1) : uv[0],
-            accessor.normalized ? Math.max(uv[1] / divisor, -1) : uv[1],
-            1
-          );
-          scratchVector.transformByMatrix3(matrix);
-          // Save result in Float32Array
-          result.set([scratchVector[0], scratchVector[1]], i * components);
+          transformCoordinatePair(uv, accessor, matrix, result, i * components);
         }
         createAttribute(texCoord, accessor, primitive, gltfData, result);
       }
     }
   }
+}
+
+/** Normalizes one packed UV pair and writes its transformed Float32 coordinates. */
+function transformCoordinatePair(
+  textureCoordinates: ArrayLike<number>,
+  accessor: GLTFAccessor,
+  matrix: Matrix3,
+  result: Float32Array,
+  offset: number
+): void {
+  const signed = accessor.componentType === 5120 || accessor.componentType === 5122;
+  const divisor = 2 ** (BYTES[accessor.componentType] * 8 - (signed ? 1 : 0)) - 1;
+  scratchVector.set(
+    accessor.normalized ? Math.max(textureCoordinates[0] / divisor, -1) : textureCoordinates[0],
+    accessor.normalized ? Math.max(textureCoordinates[1] / divisor, -1) : textureCoordinates[1],
+    1
+  );
+  scratchVector.transformByMatrix3(matrix);
+  result.set([scratchVector[0], scratchVector[1]], offset);
 }
 
 /**
