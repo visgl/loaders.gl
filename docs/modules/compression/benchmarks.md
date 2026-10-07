@@ -71,3 +71,25 @@ This page is part of the [`@loaders.gl/compression` module documentation](/docs/
 - Native Zstandard support in Chrome is tracked by
   [Chromium issue 40196713](https://issues.chromium.org/issues/40196713).
 - Results vary with browser, hardware, thermal state, and tab focus.
+
+### Internal engine baseline
+
+GZIP and DEFLATE compare the internal fflate 0.7.4 fork with the original npm
+implementation on identical compressed input, alongside native, Pako and WASM
+backends. Every implementation is verified byte-for-byte before timing; timed
+iterations check output length. Keep the tab focused and repeat runs before
+judging small differences. These rows measure warm whole-buffer decoding, not
+cold import latency, peak memory, or streaming throughput.
+
+Run the hermetic encode/decode baseline with `yarn bench compression` or
+`yarn bench-headless compression`. Group labels include input and compressed
+byte counts; gzip timestamps are fixed for reproducibility.
+
+For cold imports and bundle/memory baselines, run
+`node scripts/measure-compression-engine.mjs`. It emits one JSON record per
+implementation, using equivalent minified browser ESM bundles and a fresh Node
+process for each engine. Import time excludes process startup. Peak RSS includes
+the Node runtime, module initialization, fixture allocation, and one verified
+encode/decode per format; it is a process footprint, not isolated codec heap
+usage. Bundle bytes cover the six whole-buffer functions, excluding stream
+classes and loaders.gl adapters. Repeat this command before comparing timings.

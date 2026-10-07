@@ -2,6 +2,8 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
+import {gunzipSync, unzlibSync} from 'fflate';
+
 import React, {useEffect, useState} from 'react';
 
 import {Bench, type LogEntry} from '@probe.gl/bench';
@@ -32,6 +34,8 @@ type CompressionBenchmarkCase = {
   name: string;
   /** Compressed bytes held outside the timed callback. */
   compressedData: ArrayBuffer;
+  /** Expected bytes used for verification before timing. */
+  expectedData: Uint8Array;
   /** Expected decompressed byte count. */
   uncompressedByteLength: number;
   /** Native stream format to probe. */
@@ -305,6 +309,12 @@ function getCompressionDependencyInfo(implementationName: string, groupId: strin
       dependencySize: 'N/A',
       dependencyUrl: 'https://developer.mozilla.org/en-US/docs/Web/API/DecompressionStream'
     },
+    'internal fflate': {
+      dependency: 'loaders.gl internal engine',
+      dependencyVersion: 'fflate 0.7.4 fork',
+      dependencySize: 'included in codec',
+      dependencyUrl: 'https://github.com/visgl/loaders.gl/tree/master/modules/compression/src/lib/fflate'
+    },
     fflate: {
       dependency: 'fflate',
       dependencyVersion: '0.7.4',
@@ -447,11 +457,16 @@ async function createCompressionBenchmarkCases(): Promise<CompressionBenchmarkCa
       name: 'GZIP · sample.csv',
       compressedData: gzipData,
       uncompressedByteLength: sampleData.byteLength,
+      expectedData: new Uint8Array(sampleData),
       nativeFormat: 'gzip',
       externalCompressions: [
         {
-          name: 'fflate',
+          name: 'internal fflate',
           decompress: input => new GZipFflateDecompressor().decompress(input)
+        },
+        {
+          name: 'fflate',
+          decompress: async input => gunzipSync(new Uint8Array(input)).buffer as ArrayBuffer
         },
         {
           name: 'pako',
@@ -467,11 +482,16 @@ async function createCompressionBenchmarkCases(): Promise<CompressionBenchmarkCa
       name: 'DEFLATE · sample.csv',
       compressedData: deflateData,
       uncompressedByteLength: sampleData.byteLength,
+      expectedData: new Uint8Array(sampleData),
       nativeFormat: 'deflate',
       externalCompressions: [
         {
-          name: 'fflate',
+          name: 'internal fflate',
           decompress: input => new DeflateFflateDecompressor().decompress(input)
+        },
+        {
+          name: 'fflate',
+          decompress: async input => unzlibSync(new Uint8Array(input)).buffer as ArrayBuffer
         },
         {
           name: 'pako',
@@ -487,6 +507,7 @@ async function createCompressionBenchmarkCases(): Promise<CompressionBenchmarkCa
       name: 'Brotli · sample.csv',
       compressedData: brotliData,
       uncompressedByteLength: sampleData.byteLength,
+      expectedData: new Uint8Array(sampleData),
       nativeFormat: 'brotli',
       externalCompressions: [
         {
@@ -503,6 +524,7 @@ async function createCompressionBenchmarkCases(): Promise<CompressionBenchmarkCa
       name: 'Zstandard · sample.csv',
       compressedData: zstdData,
       uncompressedByteLength: sampleData.byteLength,
+      expectedData: new Uint8Array(sampleData),
       nativeFormat: 'zstd',
       externalCompressions: [
         {
@@ -523,6 +545,7 @@ async function createCompressionBenchmarkCases(): Promise<CompressionBenchmarkCa
       name: 'Snappy · sample.csv',
       compressedData: snappyData,
       uncompressedByteLength: sampleData.byteLength,
+      expectedData: new Uint8Array(sampleData),
       nativeFormat: null,
       externalCompressions: [
         {
@@ -539,6 +562,7 @@ async function createCompressionBenchmarkCases(): Promise<CompressionBenchmarkCa
       name: 'LZ4 · sample.csv',
       compressedData: lz4Data,
       uncompressedByteLength: sampleData.byteLength,
+      expectedData: new Uint8Array(sampleData),
       nativeFormat: null,
       externalCompressions: [
         {
@@ -555,6 +579,7 @@ async function createCompressionBenchmarkCases(): Promise<CompressionBenchmarkCa
       name: 'bzip2 · small sample',
       compressedData: bzip2Data,
       uncompressedByteLength: smallSampleData.byteLength,
+      expectedData: smallSampleData,
       nativeFormat: null,
       externalCompressions: [{
         name: 'compress-utils',
@@ -565,6 +590,7 @@ async function createCompressionBenchmarkCases(): Promise<CompressionBenchmarkCa
       name: 'XZ · small sample',
       compressedData: xzData,
       uncompressedByteLength: smallSampleData.byteLength,
+      expectedData: smallSampleData,
       nativeFormat: null,
       externalCompressions: [{
         name: 'compress-utils',
@@ -607,7 +633,7 @@ async function addCompressionBenchmarks(
           benchmarkCase.nativeFormat
         );
         if (!output) throw new Error('native codec became unavailable');
-        validateOutput(benchmarkCase, output, 'native');
+        validateOutput(benchmarkCase, output, 'native', false);
       }
     );
   } else {
@@ -625,7 +651,7 @@ async function addCompressionBenchmarks(
         const output = await externalCompression.decompress(
           benchmarkCase.compressedData
         );
-        validateOutput(benchmarkCase, output, externalCompression.name);
+        validateOutput(benchmarkCase, output, externalCompression.name, false);
       }
     );
   }
@@ -635,13 +661,17 @@ async function addCompressionBenchmarks(
 function validateOutput(
   benchmarkCase: CompressionBenchmarkCase,
   output: ArrayBuffer,
-  implementation: string
+  implementation: string,
+  verifyBytes = true
 ): void {
   if (output.byteLength !== benchmarkCase.uncompressedByteLength) {
     throw new Error(
       `${benchmarkCase.name} ${implementation} output ${output.byteLength} bytes; ` +
         `expected ${benchmarkCase.uncompressedByteLength}`
     );
+  }
+  if (verifyBytes && new Uint8Array(output).some((value, index) => value !== benchmarkCase.expectedData[index])) {
+    throw new Error(`${benchmarkCase.name} ${implementation}: output bytes differ`);
   }
 }
 

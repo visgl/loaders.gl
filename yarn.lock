@@ -28385,6 +28385,7 @@ __metadata:
     docusaurus-node-polyfills: "npm:^1.0.0"
     esri-loader: "npm:^2.15.0"
     expr-eval: "npm:^2.0.2"
+    fflate: "npm:0.7.4"
     hyparquet: "npm:1.29.0"
     hyparquet-compressors: "npm:1.1.1"
     mapbox-gl: "npm:maplibre-gl@^3.6.2"
