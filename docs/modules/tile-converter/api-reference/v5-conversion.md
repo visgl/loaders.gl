@@ -82,8 +82,17 @@ inside its conversion worker with bundled encoder/decoder assets; direct codec c
 in their caller's environment. Module workers evaluate the library wrappers, which must be
 allowed by the application's content security policy.
 
+`createI3SMeshConversionCodec` also uses lossless Draco Edge Breaker by default. It retains
+the geographic Float32 rounding/precision budget and verifies oriented triangles, normals,
+and feature-to-geometry ownership after decompression. Set `draco: false` to retain raw
+I3S geometry. Pass `dracoLibraryOptions` to supply the full decoder and encoder runtimes;
+`getDracoLibraryOptions()` from `@loaders.gl/draco/bundled` provides application asset URLs.
+The browser example reuses its bundled full runtime for both archive formats.
+
 Lossy presets, quantization controls, texture compression and broader external-viewer
-qualification remain follow-up work. This GLB policy does not change v5 I3S/SLPK authoring.
+qualification remain follow-up work. Per-resource byte gates do not bound Draco or
+verification allocations. Degenerate triangles that Draco cannot preserve fail explicitly;
+use raw output where needed.
 
 ## Archive output: 3TZ and SLPK
 

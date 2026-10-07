@@ -2,17 +2,21 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import {beforeAll, expect, test} from 'vitest';
+import {beforeAll, expect, test, vi} from 'vitest';
+import {parse} from '@loaders.gl/core';
+import {DracoLoader} from '@loaders.gl/draco';
 import {Ellipsoid} from '@math.gl/geospatial';
 import {ArrowTableBuilder} from '@loaders.gl/schema-utils';
 import type {MeshGeometry, Schema} from '@loaders.gl/schema';
 import {GZipDecompressor} from '@loaders.gl/compression/gzip-decompressor';
 import {
   encodeI3SMeshLayer as encodeRoot,
+  encodeI3SMeshLayerWithDraco as encodeDracoRoot,
+  I3SContentLoader,
   type I3SMeshFeatures,
   type I3SMeshWriterOptions
 } from '@loaders.gl/i3s';
-import {encodeI3SMeshLayer} from '@loaders.gl/i3s/i3s-mesh-writer';
+import {encodeI3SMeshLayer, encodeI3SMeshLayerWithDraco} from '@loaders.gl/i3s/i3s-mesh-writer';
 import {I3SSceneLayerSchema, I3SNodePageSchema} from '@loaders.gl/i3s/i3s-zod-schema';
 import {parseI3STileContent} from '../src/lib/parsers/parse-i3s-tile-content';
 import {parseI3STileAttribute} from '../src/lib/parsers/parse-i3s-attribute';
@@ -411,7 +415,7 @@ test('I3S rejects antimeridian geometry and metadata that exceeds its own resour
   const mesh = createMesh();
   delete mesh.indices;
   delete mesh.attributes.NORMAL;
-  expect(() => encodeI3SMeshLayer(mesh, {...OPTIONS, maxResourceBytes: 100})).toThrow(/JSON/);
+  expect(() => encodeI3SMeshLayer(mesh, {...OPTIONS, maxResourceBytes: 100})).toThrow(/resource/);
   mesh.attributes.POSITION.value = new Float64Array(
     [
       [179.999, 0, 100],
@@ -473,3 +477,255 @@ test.each([
   expect(content.material.pbrMetallicRoughness.baseColorFactor[3]).toBe(linear[3]);
   expect(material.baseColorFactor).toEqual(linear);
 });
+
+/** Decodes one tiny authored layer through the public I3S parser and real full Draco decoder. */
+async function decodeDracoLayer(encoded: Awaited<ReturnType<typeof encodeI3SMeshLayerWithDraco>>) {
+  const decompressor = new GZipDecompressor({useNative: false});
+  const resources = Object.fromEntries(
+    Object.entries(encoded.files).map(([name, buffer]) => [
+      name,
+      decompressor.decompressSync(buffer)
+    ])
+  );
+  const layerMetadata = JSON.parse(new TextDecoder().decode(resources['3dSceneLayer.json.gz']));
+  const nodes = JSON.parse(new TextDecoder().decode(resources['nodepages/0.json.gz']));
+  const geometry = resources['nodes/1/geometries/0.bin.gz'];
+  const content = await parse(geometry.slice(0), I3SContentLoader, {
+    core: {worker: false, useLocalLibraries: true},
+    i3s: {
+      _tileOptions: {isDracoGeometry: true, mbs: [...nodes.nodes[1].obb.center, 10]},
+      _tilesetOptions: {
+        store: layerMetadata.store,
+        geometryDefinitions: layerMetadata.geometryDefinitions
+      }
+    }
+  });
+  return {content: content!, resources, layerMetadata, nodes, geometry};
+}
+
+const DRACO_PROFILES = [
+  {normals: false, features: false},
+  {normals: true, features: false},
+  {normals: false, features: true},
+  {normals: true, features: true}
+];
+let compressedLayers: Awaited<ReturnType<typeof decodeDracoLayer>>[];
+beforeAll(async () => {
+  compressedLayers = [];
+  for (const profile of DRACO_PROFILES) {
+    const mesh = createMesh();
+    if (!profile.normals) delete mesh.attributes.NORMAL;
+    const features = profile.features ? createFeatures() : undefined;
+    const originalPositions = mesh.attributes.POSITION.value.slice();
+    const originalIndices = mesh.indices!.value.slice();
+    const encoded = await encodeI3SMeshLayerWithDraco(
+      mesh,
+      {...OPTIONS, features},
+      {useLocalLibraries: true}
+    );
+    const rawLayer = encodeI3SMeshLayer(mesh, {...OPTIONS, features});
+    expect(encoded.maximumPositionError).toBe(rawLayer.maximumPositionError);
+    expect(encoded.decimalStringFields).toEqual(rawLayer.decimalStringFields);
+    for (const name of Object.keys(encoded.files)) {
+      if (
+        !['3dSceneLayer.json.gz', 'nodepages/0.json.gz', 'nodes/1/geometries/0.bin.gz'].includes(
+          name
+        )
+      )
+        expect(encoded.files[name]).toEqual(rawLayer.files[name]);
+    }
+    expect(mesh.attributes.POSITION.value).toEqual(originalPositions);
+    expect(mesh.indices!.value).toEqual(originalIndices);
+    compressedLayers.push(await decodeDracoLayer(encoded));
+  }
+});
+
+test.each(
+  DRACO_PROFILES
+)('I3S Edge Breaker preserves oriented triangles, normals and feature ownership: %j', profile => {
+  const decoded = compressedLayers[DRACO_PROFILES.indexOf(profile)];
+  expect(encodeDracoRoot).toBe(encodeI3SMeshLayerWithDraco);
+  expect(new TextDecoder().decode(decoded.geometry.slice(0, 5))).toBe('DRACO');
+  expect(new Uint8Array(decoded.geometry)[8]).toBe(1);
+  expect(I3SSceneLayerSchema.safeParse(decoded.layerMetadata).success).toBe(true);
+  expect(I3SNodePageSchema.safeParse(decoded.nodes).success).toBe(true);
+  expect(decoded.layerMetadata.geometryDefinitions[0].geometryBuffers).toEqual([
+    {
+      compressedAttributes: {
+        encoding: 'draco',
+        attributes: ['position', ...(profile.normals ? ['normal'] : []), 'feature-index']
+      }
+    }
+  ]);
+  const {content} = decoded;
+  const expected = createMesh().attributes.POSITION.value;
+  const indices = content.indices!;
+  const triangles = [] as string[];
+  for (let triangle = 0; triangle < indices.length; triangle += 3) {
+    const corners = [] as number[];
+    for (let corner = 0; corner < 3; corner++) {
+      const vertex = Number(indices[triangle + corner]);
+      const position = content.attributes.positions.value.subarray(vertex * 3, vertex * 3 + 3);
+      const distances = Array.from({length: 6}, (_, index) =>
+        Math.hypot(...[0, 1, 2].map(axis => position[axis] - Number(expected[index * 3 + axis])))
+      );
+      const original = distances.indexOf(Math.min(...distances));
+      expect(distances[original]).toBeLessThanOrEqual(OPTIONS.maxPositionError);
+      corners.push(original);
+      expect(content.featureIds[vertex]).toBe(profile.features ? (original < 3 ? 1 : 0) : 0);
+      if (profile.normals)
+        expect(content.attributes.normals.value.subarray(vertex * 3, vertex * 3 + 3)).toEqual(
+          new Float32Array([1, 0, 0])
+        );
+      const center = Ellipsoid.WGS84.cartographicToCartesian(decoded.nodes.nodes[1].obb.center);
+      for (let axis = 0; axis < 3; axis++)
+        expect(Math.abs(position[axis] - center[axis])).toBeLessThanOrEqual(
+          decoded.nodes.nodes[1].obb.halfSize[axis]
+        );
+    }
+    triangles.push(
+      [0, 1, 2]
+        .map(index => [...corners.slice(index), ...corners.slice(0, index)].join(','))
+        .sort()[0]
+    );
+  }
+  expect(triangles.sort()).toEqual(['0,1,2', '3,4,5']);
+  expect(decoded.nodes.nodes[1].mesh.geometry.vertexCount).toBe(content.vertexCount);
+});
+
+test('I3S Draco records decoded vertex counts for shared indexed vertices', async () => {
+  const mesh = createMesh();
+  mesh.indices = {value: new Uint16Array([0, 1, 2, 0, 2, 3]), size: 1};
+  const encoded = await encodeI3SMeshLayerWithDraco(mesh, OPTIONS, {useLocalLibraries: true});
+  const decoded = await decodeDracoLayer(encoded);
+  expect(decoded.content.indices!.length).toBe(6);
+  expect(decoded.content.vertexCount).toBe(4);
+  expect(decoded.nodes.nodes[1].mesh.geometry.vertexCount).toBe(4);
+  expect(Array.from(decoded.content.featureIds)).toEqual([0, 0, 0, 0]);
+  expect(encoded.maximumPositionError).toBeLessThanOrEqual(OPTIONS.maxPositionError);
+});
+
+test('I3S Draco rejects failed verification before exposing resources', async () => {
+  const originalLoader = await DracoLoader.preload('', {core: {useLocalLibraries: true}});
+  const decoded = await parse(compressedLayers[1].geometry, DracoLoader, {
+    core: {worker: false, useLocalLibraries: true},
+    draco: {shape: 'mesh', attributeNameEntry: 'i3s-attribute-type'}
+  });
+  const preload = vi.spyOn(DracoLoader, 'preload');
+  try {
+    preload.mockResolvedValueOnce({
+      ...originalLoader,
+      parse: async () => ({...decoded, indices: null})
+    } as any);
+    await expect(
+      encodeI3SMeshLayerWithDraco(createMesh(), OPTIONS, {useLocalLibraries: true})
+    ).rejects.toThrow('must preserve oriented triangles');
+    preload.mockRejectedValueOnce(new Error('decoder failed'));
+    await expect(
+      encodeI3SMeshLayerWithDraco(createMesh(), OPTIONS, {useLocalLibraries: true})
+    ).rejects.toThrow('decoder failed');
+  } finally {
+    preload.mockRestore();
+  }
+});
+
+test.each([
+  [
+    'winding',
+    (mesh: any) => {
+      const value = mesh.indices.value;
+      [value[0], value[1]] = [value[1], value[0]];
+    }
+  ],
+  [
+    'position',
+    (mesh: any) => {
+      mesh.attributes.POSITION.value[0] += 1;
+    }
+  ],
+  [
+    'normal',
+    (mesh: any) => {
+      mesh.attributes.NORMAL.value[0] += 1;
+    }
+  ],
+  [
+    'feature association',
+    (mesh: any) => {
+      mesh.attributes['feature-index'].value[0] ^= 1;
+    }
+  ],
+  [
+    'feature dictionary',
+    (mesh: any) => {
+      getFeatureMetadata(mesh).metadata['i3s-feature-ids'].intArray[0] = 99;
+    }
+  ],
+  [
+    'missing feature metadata',
+    (mesh: any) => {
+      delete getFeatureMetadata(mesh).metadata;
+    }
+  ],
+  [
+    'missing feature dictionary',
+    (mesh: any) => {
+      delete getFeatureMetadata(mesh).metadata['i3s-feature-ids'];
+    }
+  ],
+  [
+    'missing dictionary values',
+    (mesh: any) => {
+      delete getFeatureMetadata(mesh).metadata['i3s-feature-ids'].intArray;
+    }
+  ]
+] as const)('I3S Draco verification rejects changed %s', async (_name, change) => {
+  const loaderOptions = {
+    core: {worker: false, useLocalLibraries: true},
+    draco: {shape: 'mesh' as const, attributeNameEntry: 'i3s-attribute-type'}
+  };
+  const decoded = structuredClone(
+    await parse(compressedLayers[3].geometry, DracoLoader, loaderOptions)
+  );
+  change(decoded);
+  const loader = await DracoLoader.preload('', loaderOptions);
+  const preload = vi
+    .spyOn(DracoLoader, 'preload')
+    .mockResolvedValueOnce({...loader, parse: async () => decoded} as any);
+  try {
+    await expect(
+      encodeI3SMeshLayerWithDraco(
+        createMesh(),
+        {...OPTIONS, features: createFeatures()},
+        {useLocalLibraries: true}
+      )
+    ).rejects.toThrow('must preserve oriented triangles');
+  } finally {
+    preload.mockRestore();
+  }
+});
+
+test('I3S Draco captures the resource cap before asynchronous decoder loading', async () => {
+  const options = {...OPTIONS, maxResourceBytes: 512};
+  const originalPreload = DracoLoader.preload;
+  const preload = vi
+    .spyOn(DracoLoader, 'preload')
+    .mockImplementationOnce(async (url, loaderOptions) => {
+      options.maxResourceBytes = Infinity;
+      return originalPreload(url, loaderOptions);
+    });
+  try {
+    await expect(
+      encodeI3SMeshLayerWithDraco(createMesh(), options, {useLocalLibraries: true})
+    ).rejects.toThrow('exceeds maxResourceBytes');
+  } finally {
+    preload.mockRestore();
+  }
+});
+
+/** Locates the authoritative Draco attribute metadata by its I3S semantic. */
+function getFeatureMetadata(mesh: any): any {
+  return Object.values(mesh.loaderData.attributes).find(
+    (attribute: any) => attribute.metadata['i3s-attribute-type']?.string === 'feature-index'
+  );
+}
