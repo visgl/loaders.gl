@@ -157,3 +157,89 @@ test.each([
     Object.assign(CONVERSION_LIMITS, {maxInputBytes: originalLimit});
   }
 });
+
+test.each([
+  false,
+  true
+])('browser 3TZ preserves UV transforms without baking normalized UV=%s', async normalized => {
+  const transform = {offset: [0.25, -0.5], rotation: Math.PI / 2, scale: [0.5, -1], texCoord: 0};
+  const data = createTexturedTriangle(pngImage, 'image/png', normalized, 3, transform);
+  const before = data.slice(0);
+  const {fetcher, controller, inspection} = await inspectTexturedInput(data);
+  const result = await convertSelectedContents(
+    inspection,
+    [inspection.resources[1].resourceId],
+    '3tz',
+    controller.signal,
+    () => {},
+    fetcher
+  );
+  expect(data).toEqual(before);
+  expect(result.report.inputBytes).toBe(72 + (normalized ? 12 : 24) + pngImage.byteLength);
+  const archive = new Tiles3DArchive(
+    new DataViewReadableFile(new DataView(await result.file.arrayBuffer()))
+  );
+  try {
+    const output = await archive.getFile('mesh.glb');
+    const preserved = await parse(output, GLTFLoader, {
+      worker: false,
+      gltf: {loadImages: false, excludeExtensions: {KHR_texture_transform: false}}
+    });
+    expect(preserved.json.extensionsUsed).toContain('KHR_texture_transform');
+    expect(preserved.json.extensionsRequired).toContain('KHR_texture_transform');
+    const primitive = postProcessGLTF(preserved).meshes[0].primitives[0];
+    expect(Object.keys(primitive.attributes)).toEqual(['POSITION', 'TEXCOORD_0']);
+    expect(primitive.attributes.TEXCOORD_0.value).toEqual(
+      normalized
+        ? new Uint16Array([0, 0, 65535, 0, 0, 65535])
+        : new Float32Array([0, 0, 1, 0, 0, 1])
+    );
+    expect(primitive.attributes.TEXCOORD_0.normalized ?? false).toBe(normalized);
+    const textureInfo = primitive.material!.pbrMetallicRoughness!.baseColorTexture!;
+    expect(textureInfo.extensions).toEqual({
+      KHR_texture_transform: {
+        offset: transform.offset,
+        rotation: transform.rotation,
+        scale: transform.scale
+      }
+    });
+    expect(textureInfo.texture.source!.bufferView!.data).toEqual(pngImage);
+    expect(textureInfo.texture.sampler).toMatchObject(TEXTURE_SAMPLER);
+    // A normal consumer applies the preserved transform exactly once, including integer normalization.
+    const rendered = postProcessGLTF(
+      await parse(output, GLTFLoader, {
+        worker: false,
+        gltf: {loadImages: false}
+      })
+    ).meshes[0].primitives[0];
+    const selected = rendered.material!.pbrMetallicRoughness!.baseColorTexture!;
+    const coordinates = rendered.attributes[`TEXCOORD_${selected.texCoord}`].value;
+    const expected = [0.25, -0.5, 0.25, 0, 1.25, -0.5];
+    for (let index = 0; index < expected.length; index++)
+      expect(coordinates[index]).toBeCloseTo(expected[index], 6);
+    expect(selected.extensions?.KHR_texture_transform).toBeUndefined();
+  } finally {
+    await archive.file.close();
+  }
+});
+
+test('browser conversion rejects UV-set overrides and malformed transform controls', async () => {
+  for (const [transform, code] of [
+    [{texCoord: 1}, 'MESH_SOURCE_TEXTURE_UNSUPPORTED'],
+    [{offset: [0]}, 'MESH_TEXTURE_TRANSFORM_INVALID']
+  ] as const) {
+    const {fetcher, controller, inspection} = await inspectTexturedInput(
+      createTexturedTriangle(pngImage, 'image/png', false, 3, transform)
+    );
+    await expect(
+      convertSelectedContents(
+        inspection,
+        [inspection.resources[1].resourceId],
+        '3tz',
+        controller.signal,
+        () => {},
+        fetcher
+      )
+    ).rejects.toMatchObject({code});
+  }
+});

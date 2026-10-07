@@ -254,7 +254,12 @@ function createSelectedRuntime(
   const loadOptions = {
     worker: false,
     fetch: rejectExternalFetch,
-    gltf: {loadImages: false, decompressMeshes: false},
+    // Preserve authored UVs and the transform for the converter's qualified GLB writer.
+    gltf: {
+      loadImages: false,
+      decompressMeshes: false,
+      excludeExtensions: {KHR_texture_transform: false}
+    },
     '3d-tiles': {loadGLTF: true}
   };
   return new Tileset3D(

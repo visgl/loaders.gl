@@ -38,7 +38,9 @@ export interface MeshTilesetSourceOptions extends TilesetConversionSourceOptions
 
 /**
  * Extracts static GLB/B3DM primitives from a native ECEF 3D Tiles runtime, including
- * optional embedded PNG/JPEG base-color images, TEXCOORD_0, and plain glTF sampling.
+ * optional embedded PNG/JPEG base-color images, TEXCOORD_0, glTF sampling and
+ * KHR_texture_transform controls on TEXCOORD_0. Decode content with
+ * `gltf.excludeExtensions: {KHR_texture_transform: false}` to retain authored UVs/transforms.
  * Shared traversal retains placement identity and unloads content according to the supplied policy.
  * The adapter applies node transforms, glTF up-axis correction, RTC translation, and tile placement
  * once, retaining Float64 absolute positions and inverse-transpose unit normals. Animation, skins,

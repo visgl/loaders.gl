@@ -165,9 +165,14 @@ not constitute a total peak-memory budget.
 
 Unannotated resources can also use the existing GLB codec and 3D Tiles/3TZ sink. The source
 retains `TEXCOORD_0` (packed Float32 or normalized Uint8/Uint16) and one embedded PNG/JPEG
-base-color image from a glTF buffer view, including declared wrapping and filtering. Encoded
+base-color image from a glTF buffer view, including declared wrapping/filtering and
+`KHR_texture_transform` offset/rotation/scale on `TEXCOORD_0`. Load source content with
+`gltf.excludeExtensions: {KHR_texture_transform: false}` so the adapter receives the original
+UVs and authored transform. The GLB writer retains the transform as a required extension;
+conversion does not bake it into UVs. Encoded
 image bytes are forwarded without pixel decoding or transcoding. External/data-URI images,
-other UV sets, UV transforms, texture/image/sampler extensions and other texture maps are
+other UV sets, texture-info extensions other than `KHR_texture_transform`,
+texture/image/sampler extensions and other texture maps are
 rejected. The I3S codec continues to reject textured geometry. The GLB
 codec explicitly rejects feature-bearing resources until its target metadata writer is
 qualified. See [I3S mesh authoring](/docs/modules/i3s/api-reference/i3s-mesh-writer) for the

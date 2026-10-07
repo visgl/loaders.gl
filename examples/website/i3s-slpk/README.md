@@ -49,9 +49,12 @@ Unknown/local frames are rejected. Metallic-roughness material factors, alpha co
 and double-sided rendering are preserved. SLPK converts linear material RGB factors to I3S sRGB
 while preserving alpha; readers convert them back for rendering. 3TZ also preserves packed linear Float32 or normalized
 Uint8/Uint16 vertex colors, packed Float32 or normalized Uint8/Uint16 `TEXCOORD_0`, and one
-embedded PNG/JPEG base-color image with its declared wrapping and filtering. Encoded image
+embedded PNG/JPEG base-color image with its declared wrapping, filtering and
+`KHR_texture_transform` offset/rotation/scale on `TEXCOORD_0`. The original UVs and transform
+are preserved; UVs are not baked. Encoded image
 bytes are copied without decoding, resizing or transcoding. SLPK rejects vertex colors and textures.
-Other texture maps, UV transforms/sets, texture extensions, animation, compressed meshes, external dependencies, multiple primitives,
+Other texture maps/UV sets, texture extensions other than `KHR_texture_transform`, animation,
+compressed meshes, external dependencies, multiple primitives,
 nested external tilesets and implicit tiling fail explicitly. No feature schema is inferred.
 
 ### Explicit SLPK features

@@ -13,7 +13,8 @@ export function createTexturedTriangle(
   image: Uint8Array,
   mimeType: 'image/png' | 'image/jpeg',
   normalized = false,
-  vertexCount = 3
+  vertexCount = 3,
+  transform?: Record<string, unknown>
 ): ArrayBuffer {
   const scenegraph = new GLTFScenegraph({json: {asset: {version: '2.0'}}});
   const positions = new Float32Array(vertexCount * 3);
@@ -35,6 +36,7 @@ export function createTexturedTriangle(
     ),
     samplerIndex: scenegraph.addSampler(TEXTURE_SAMPLER)
   });
+  if (transform) scenegraph.registerRequiredExtension('KHR_texture_transform');
   const meshIndex = scenegraph.addMesh({
     attributes: {
       POSITION: {value: positions, size: 3},
@@ -43,7 +45,10 @@ export function createTexturedTriangle(
     material: scenegraph.addMaterial({
       pbrMetallicRoughness: {
         baseColorFactor: [0.5, 0.75, 1, 1],
-        baseColorTexture: {index: textureIndex}
+        baseColorTexture: {
+          index: textureIndex,
+          ...(transform ? {extensions: {KHR_texture_transform: transform}} : {})
+        }
       }
     })
   });

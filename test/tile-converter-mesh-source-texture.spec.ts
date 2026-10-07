@@ -64,7 +64,7 @@ test.each([
   [
     'texture info extension',
     (selected: any) => {
-      selected.extensions = {KHR_texture_transform: {offset: [1, 0]}};
+      selected.extensions = {UNKNOWN: {}};
     }
   ],
   [
@@ -161,6 +161,48 @@ test.each([
 
 test.each([undefined, null])('source texture mapping rejects a missing descriptor %s', selected => {
   expect(() => mapMeshSourceTexture(selected as any)).toThrowError(
+    expect.objectContaining({code: 'MESH_SOURCE_TEXTURE_UNSUPPORTED'})
+  );
+});
+
+test.each([
+  {},
+  {offset: [0.25, -0.5]},
+  {rotation: Math.PI / 2, scale: [0.5, -1]},
+  {
+    offset: [0, 1],
+    rotation: 0,
+    scale: [0, 2],
+    texCoord: 0,
+    extensions: {},
+    extras: {label: 'source'}
+  }
+])('source texture mapping preserves UV transform controls %j', transform => {
+  const selected = structuredClone(textureInfo);
+  selected.extensions = {KHR_texture_transform: transform};
+  const before = structuredClone(selected);
+  expect(mapMeshSourceTexture(selected).transform).toEqual({
+    offset: 'offset' in transform ? transform.offset : undefined,
+    rotation: 'rotation' in transform ? transform.rotation : undefined,
+    scale: 'scale' in transform ? transform.scale : undefined
+  });
+  expect(selected).toEqual(before);
+});
+
+test.each([
+  undefined,
+  null,
+  false,
+  1,
+  [],
+  {texCoord: 1},
+  {texCoord: null},
+  {unknown: true},
+  {extensions: {UNKNOWN: {}}}
+])('source texture mapping rejects unmapped UV transform %j', transform => {
+  const selected = structuredClone(textureInfo);
+  selected.extensions = {KHR_texture_transform: transform};
+  expect(() => mapMeshSourceTexture(selected)).toThrowError(
     expect.objectContaining({code: 'MESH_SOURCE_TEXTURE_UNSUPPORTED'})
   );
 });
