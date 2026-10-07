@@ -106,10 +106,11 @@ including synchronous decoding or packaging, and release partial Blob parts. Eac
 new worker; failed or canceled work publishes no archive.
 
 Inspection remains on the main thread. The worker no longer allocates or transfers a complete
-archive buffer. Finalized conversion resources, the current entry's temporary buffers, and the
-index/directory metadata still consume worker memory. The main thread retains the complete result
+archive or entry buffer. Packaging reads/copies payload blocks of at most 64 KiB, with a checksum
+pass before each populated header and a second pass that transfers blocks on demand. Finalized
+conversion resources and index/directory metadata still consume worker memory. The main thread retains the complete result
 as Blob parts for download/preview. Neither output mode caps total peak memory.
-Packaging releases each Blob read before starting the next entry.
+Packaging checks cancellation between block reads and does not prefetch the next output block.
 
 ### Direct file saving
 
@@ -127,8 +128,8 @@ are not committed until close, so an existing destination retains its previous c
 **Saving archive** marks final file commit: Cancel is disabled once close starts. Success is
 reported only after close completes. Saved archives can be opened later through the viewer
 file controls; direct saving does not create an automatic preview. The worker still retains
-finalized conversion resources, the current entry buffers and archive index metadata. Streaming
-within a resource and an enforceable total memory budget remain follow-up work.
+finalized conversion resources and archive index metadata. An enforceable total decoding and
+conversion memory budget remains follow-up work.
 Worker scripts and their module chunks must be served by the application and allowed by its content security policy.
 
 The example imports orchestration from `@loaders.gl/tile-converter/v5/core` and format
