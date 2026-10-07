@@ -51,8 +51,10 @@ while preserving alpha; readers convert them back for rendering. 3TZ also preser
 Uint8/Uint16 vertex colors, packed Float32 or normalized Uint8/Uint16 `TEXCOORD_0`, and one
 embedded PNG/JPEG base-color image with its declared wrapping, filtering and
 `KHR_texture_transform` offset/rotation/scale on `TEXCOORD_0`. The original UVs and transform
-are preserved; UVs are not baked. Encoded image
-bytes are copied without decoding, resizing or transcoding. SLPK rejects vertex colors and textures.
+are preserved; UVs are not baked. Images may use a glTF buffer view or an inline
+`data:image/png;base64,...` / `data:image/jpeg;base64,...` URI. An optional image MIME must match
+its URI; external URLs and other data-URI encodings/MIME types are rejected. Base64 is decoded
+without fetching the image, and the encoded image bytes count against the decoded input budget. Encoded image bytes are copied without pixel decoding, resizing or transcoding. SLPK rejects vertex colors and textures.
 Other texture maps/UV sets, texture extensions other than `KHR_texture_transform`, animation,
 compressed meshes, external dependencies, multiple primitives,
 nested external tilesets and implicit tiling fail explicitly. No feature schema is inferred.

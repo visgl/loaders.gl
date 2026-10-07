@@ -8,13 +8,14 @@ export const TEXTURE_SAMPLER = {
   minFilter: 9987
 } as const;
 
-/** Builds a tiny embedded-image GLB, with repeatable geometry for byte-budget boundary tests. */
+/** Builds a tiny self-contained GLB with a buffer-view or inline URI image and repeatable geometry. */
 export function createTexturedTriangle(
   image: Uint8Array,
   mimeType: 'image/png' | 'image/jpeg',
   normalized = false,
   vertexCount = 3,
-  transform?: Record<string, unknown>
+  transform?: Record<string, unknown>,
+  imageUri?: string
 ): ArrayBuffer {
   const scenegraph = new GLTFScenegraph({json: {asset: {version: '2.0'}}});
   const positions = new Float32Array(vertexCount * 3);
@@ -29,11 +30,18 @@ export function createTexturedTriangle(
       index * 2
     );
   }
-  const textureIndex = scenegraph.addTexture({
-    imageIndex: scenegraph.addImage(
+  let imageIndex: number;
+  if (imageUri === undefined) {
+    imageIndex = scenegraph.addImage(
       new DataView(image.buffer, image.byteOffset, image.byteLength),
       mimeType
-    ),
+    );
+  } else {
+    scenegraph.json.images = [{uri: imageUri}];
+    imageIndex = 0;
+  }
+  const textureIndex = scenegraph.addTexture({
+    imageIndex,
     samplerIndex: scenegraph.addSampler(TEXTURE_SAMPLER)
   });
   if (transform) scenegraph.registerRequiredExtension('KHR_texture_transform');
@@ -55,4 +63,9 @@ export function createTexturedTriangle(
   scenegraph.setDefaultScene(scenegraph.addScene({nodeIndices: [scenegraph.addNode({meshIndex})]}));
   scenegraph.createBinaryChunk();
   return GLTFWriter.encodeSync!(scenegraph.gltf);
+}
+
+/** Encodes a small immutable image fixture with the browser's portable base64 API. */
+export function createImageDataUri(image: Uint8Array, mimeType: string): string {
+  return `data:${mimeType};base64,${btoa(Array.from(image, value => String.fromCharCode(value)).join(''))}`;
 }

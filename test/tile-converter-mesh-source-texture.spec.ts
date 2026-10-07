@@ -6,7 +6,11 @@ import {beforeAll, expect, test} from 'vitest';
 import {fetchFile, parse} from '@loaders.gl/core';
 import {GLTFLoader, postProcessGLTF} from '@loaders.gl/gltf';
 import {mapMeshSourceTexture} from '../apps/tile-converter/src/v5/mesh-source-texture';
-import {createTexturedTriangle, TEXTURE_SAMPLER} from './utils/tile-converter-texture';
+import {
+  createTexturedTriangle,
+  createImageDataUri,
+  TEXTURE_SAMPLER
+} from './utils/tile-converter-texture';
 
 let textureInfo: any;
 let imageBytes: Uint8Array;
@@ -202,6 +206,35 @@ test.each([
 ])('source texture mapping rejects unmapped UV transform %j', transform => {
   const selected = structuredClone(textureInfo);
   selected.extensions = {KHR_texture_transform: transform};
+  expect(() => mapMeshSourceTexture(selected)).toThrowError(
+    expect.objectContaining({code: 'MESH_SOURCE_TEXTURE_UNSUPPORTED'})
+  );
+});
+
+test.each([
+  undefined,
+  'image/png'
+])('source texture mapping decodes inline PNG bytes with declared mimeType=%s', mimeType => {
+  const selected = structuredClone(textureInfo);
+  selected.texture.source = {uri: createImageDataUri(imageBytes, 'image/png'), mimeType};
+  const before = structuredClone(selected);
+  expect(mapMeshSourceTexture(selected)).toMatchObject({data: imageBytes, mimeType: 'image/png'});
+  expect(selected).toEqual(before);
+});
+
+test.each([
+  {uri: 1},
+  {uri: 'image.png'},
+  {uri: 'https://example.invalid/image.png'},
+  {uri: 'data:image/webp;base64,AA=='},
+  {uri: 'data:image/png,%89PNG'},
+  {uri: 'data:image/png;base64,'},
+  {uri: 'data:image/png;base64,AA$='},
+  {uri: 'data:image/png;base64,A'},
+  {uri: 'data:image/png;base64,AA==', mimeType: 'image/jpeg'}
+])('source texture mapping rejects unsupported inline image %j', image => {
+  const selected = structuredClone(textureInfo);
+  selected.texture.source = image;
   expect(() => mapMeshSourceTexture(selected)).toThrowError(
     expect.objectContaining({code: 'MESH_SOURCE_TEXTURE_UNSUPPORTED'})
   );
