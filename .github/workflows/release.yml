@@ -3,6 +3,8 @@ name: release
 on:
   workflow_dispatch:
   push:
+    branches:
+      - 'codex/alpha10-publish-recovery-release'
     tags:
       - 'v*'
 
@@ -41,6 +43,8 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+        with:
+          ref: '7cbfaef633e86356c946541dab4977b522745b6c'
 
       - name: Setup Node (with Corepack)
         uses: actions/setup-node@v4
@@ -92,6 +96,8 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+        with:
+          ref: '7cbfaef633e86356c946541dab4977b522745b6c'
 
       - name: Setup Node (with Corepack)
         uses: actions/setup-node@v4
@@ -141,6 +147,8 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+        with:
+          ref: '7cbfaef633e86356c946541dab4977b522745b6c'
 
       - name: Setup Node (with Corepack)
         uses: actions/setup-node@v4
@@ -198,6 +206,8 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+        with:
+          ref: '7cbfaef633e86356c946541dab4977b522745b6c'
 
       - name: Setup Node (with Corepack)
         uses: actions/setup-node@v4
@@ -234,8 +244,13 @@ jobs:
       - name: Build workers
         run: yarn build-workers
 
-      # ocular-publish creates the GitHub Release before publishing the tagged packages to npm.
-      - name: Post GitHub release and publish to NPM
+      # The GitHub release already exists. Resume only missing npm package versions.
+      - name: Resume trusted publication of alpha.10
         env:
           NPM_CONFIG_LOGLEVEL: verbose
-        run: npx ocular-publish from-git
+        run: |
+          test "$(git rev-parse HEAD)" = '7cbfaef633e86356c946541dab4977b522745b6c'
+          test "$(node -p "require('./modules/core/package.json').version")" = '5.0.0-alpha.10'
+          npm config delete //registry.npmjs.org/:_authToken
+          unset NODE_AUTH_TOKEN
+          npx lerna publish from-package --force-publish --yes --dist-tag beta --no-commit-hooks
