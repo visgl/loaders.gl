@@ -25,7 +25,7 @@ import {
 import {getServiceCRSAxisOrder} from './crs-utils';
 import type {OGCTileMatrixSet} from './lib/parsers/ogc-api/tile-matrix-set';
 import {convertOGCTileMatrixSetToTileGrid} from './lib/parsers/ogc-api/tile-matrix-set';
-import {validateMetersPerUnit} from './lib/tile-grid';
+import {getTileGridMatrixId, validateMetersPerUnit} from './lib/tile-grid';
 import type {FeaturePaginationOptions, FeaturePage} from './feature-pagination';
 import {
   addNextLinkHeader,
@@ -256,12 +256,26 @@ export class OGCAPITilesSource
     tileMatrixSet: OGCTileMatrixSet | string | undefined;
     metersPerUnit: number | null | undefined;
     promise: Promise<TileGrid | undefined>;
+    /** The converted grid, once available. */
+    tileGrid?: TileGrid;
   } | null = null;
 
   /** Creates an OGC API Tiles source. */
   constructor(url: string, options: OGCAPISourceOptions = {}, coreApi?: CoreAPI) {
     super(url.replace(/\/$/, ''), options, OGCAPITilesSourceLoader.defaultOptions, coreApi);
     validateMetersPerUnit(options['ogc-api']?.metersPerUnit, 'OGC API Tiles');
+  }
+
+  /** Updates options. A new `tileMatrixSet` document replaces the old one instead of merging. */
+  override setProps(options: OGCAPISourceOptions): void {
+    super.setProps(options);
+    const ogcAPIOptions = options['ogc-api'];
+    if (ogcAPIOptions && 'tileMatrixSet' in ogcAPIOptions) {
+      this.options['ogc-api'] = {
+        ...this.options['ogc-api'],
+        tileMatrixSet: ogcAPIOptions.tileMatrixSet
+      };
+    }
   }
 
   /** Returns basic tileset metadata from the service landing page and configured matrix set. */
@@ -290,11 +304,37 @@ export class OGCAPITilesSource
       return cache.promise;
     }
     const promise = this.loadTileGrid(tileMatrixSet, metersPerUnit);
-    this._tileGridCache = {tileMatrixSet, metersPerUnit, promise};
-    promise.catch(() => {
-      if (this._tileGridCache?.promise === promise) this._tileGridCache = null;
-    });
+    const newCache: NonNullable<OGCAPITilesSource['_tileGridCache']> = {
+      tileMatrixSet,
+      metersPerUnit,
+      promise
+    };
+    this._tileGridCache = newCache;
+    promise.then(
+      tileGrid => {
+        newCache.tileGrid = tileGrid;
+      },
+      () => {
+        if (this._tileGridCache === newCache) this._tileGridCache = null;
+      }
+    );
     return promise;
+  }
+
+  /**
+   * Returns the tile grid if it is available without waiting: an inline document is converted
+   * immediately, while a document given as a URL is available once `getMetadata()` has loaded it.
+   */
+  private getLoadedTileGrid(): TileGrid | undefined {
+    const tileMatrixSet = this.options['ogc-api']?.tileMatrixSet;
+    const cache = this._tileGridCache;
+    if (cache?.tileGrid && cache.tileMatrixSet === tileMatrixSet) return cache.tileGrid;
+    if (tileMatrixSet && typeof tileMatrixSet !== 'string') {
+      return convertOGCTileMatrixSetToTileGrid(tileMatrixSet, {
+        metersPerUnit: this.options['ogc-api']?.metersPerUnit
+      });
+    }
+    return undefined;
   }
 
   /** Converts a tile matrix set, fetching it first when given as a URL. */
@@ -312,6 +352,8 @@ export class OGCAPITilesSource
 
   /** Fetches raw bytes for one tile from an advertised template. */
   async getTile(parameters: GetTileParameters): Promise<ArrayBuffer | null> {
+    // The matrix identifier in the URL comes from the tile matrix set.
+    await this.getTileGrid();
     const url = this.getTileURL(parameters);
     const response = await this.fetch(url, {headers: {Accept: 'application/octet-stream'}});
     if (!response.ok) throw new Error(`OGC API Tiles request failed: ${response.status}`);
@@ -323,12 +365,18 @@ export class OGCAPITilesSource
     return this.getTile(parameters.index);
   }
 
-  /** Expands a `{tileMatrix}`, `{tileRow}`, and `{tileCol}` template. */
+  /**
+   * Expands a `{tileMatrix}`, `{tileRow}`, and `{tileCol}` template. `{tileMatrix}` is the
+   * identifier of the configured matrix whose id equals `z`, otherwise the matrix at index `z`;
+   * without a loaded tile matrix set it is `z`. `{z}` is always the number.
+   */
   getTileURL(parameters: GetTileParameters): string {
     const template = this.options['ogc-api']?.tileTemplate;
     if (!template) throw new Error('OGC API Tiles requires ogc-api.tileTemplate');
+    const tileMatrixId =
+      getTileGridMatrixId(this.getLoadedTileGrid(), parameters.z) ?? String(parameters.z);
     return template
-      .replaceAll('{tileMatrix}', String(parameters.z))
+      .replaceAll('{tileMatrix}', tileMatrixId)
       .replaceAll('{tileRow}', String(parameters.y))
       .replaceAll('{tileCol}', String(parameters.x))
       .replaceAll('{z}', String(parameters.z))

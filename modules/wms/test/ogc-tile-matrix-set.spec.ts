@@ -249,3 +249,71 @@ test('OGCAPITilesSource retries a failed tile matrix set and follows option chan
   source.fetch = stubFetch;
   expect((await source.getMetadata()).tileGrid?.matrixIds).toEqual(['coarse']);
 });
+
+test('OGCAPITilesSource replaces an inline tile matrix set on setProps', async () => {
+  const landingPageUrl = 'https://example.com/ogcapi';
+  const projected: OGCTileMatrixSet = {
+    crs: 'http://www.opengis.net/def/crs/EPSG/0/3857',
+    orderedAxes: ['X', 'Y'],
+    tileMatrices: [{id: '0', cellSize: 1, pointOfOrigin: [-180, 90]}]
+  };
+  // No orderedAxes: the EPSG:4326 rule applies, so the latitude-first origin is swapped
+  const geographic: OGCTileMatrixSet = {
+    crs: 'http://www.opengis.net/def/crs/EPSG/0/4326',
+    tileMatrices: [{id: '0', cellSize: 1, pointOfOrigin: [90, -180]}]
+  };
+  const source = OGCAPITilesSourceLoader.createDataSource(landingPageUrl, {
+    'ogc-api': {tileMatrixSet: projected}
+  });
+  const stubFetch: typeof source.fetch = async () =>
+    new Response(JSON.stringify({title: 'Demo API'}));
+  source.fetch = stubFetch;
+  expect((await source.getMetadata()).tileGrid?.origin).toEqual([-180, 90]);
+
+  source.setProps({'ogc-api': {tileMatrixSet: geographic}});
+  source.fetch = stubFetch;
+  expect(source.options['ogc-api']?.tileMatrixSet).toBe(geographic);
+  expect((await source.getMetadata()).tileGrid?.origin).toEqual([-180, 90]);
+  expect((await source.getMetadata()).tileGrid?.crs).toBe(
+    'http://www.opengis.net/def/crs/EPSG/0/4326'
+  );
+});
+
+test('OGCAPITilesSource requests tiles by configured matrix identifier', async () => {
+  const landingPageUrl = 'https://example.com/ogcapi';
+  const tileTemplate = `${landingPageUrl}/tiles/{tileMatrix}/{tileRow}/{tileCol}?z={z}`;
+  const nonNumeric = OGCAPITilesSourceLoader.createDataSource(landingPageUrl, {
+    'ogc-api': {tileTemplate, tileMatrixSet: UTM_BOTTOM_LEFT, metersPerUnit: 1}
+  });
+  // z selects the matrix by index when no id equals z; {z} stays numeric
+  expect(nonNumeric.getTileURL({z: 0, x: 1, y: 2})).toBe(`${landingPageUrl}/tiles/coarse/2/1?z=0`);
+
+  const offset = OGCAPITilesSourceLoader.createDataSource(landingPageUrl, {
+    'ogc-api': {
+      tileTemplate,
+      tileMatrixSet: {
+        tileMatrices: [
+          {id: '5', cellSize: 2},
+          {id: '6', cellSize: 1}
+        ]
+      }
+    }
+  });
+  // An id equal to z wins over the array index, as in WMTS
+  expect(offset.getTileURL({z: 6, x: 0, y: 0})).toBe(`${landingPageUrl}/tiles/6/0/0?z=6`);
+
+  // A matrix set given by URL is loaded before the tile request
+  const tileMatrixSetUrl = `${landingPageUrl}/tileMatrixSets/utm18n`;
+  const requestedUrls: string[] = [];
+  const byUrl = OGCAPITilesSourceLoader.createDataSource(landingPageUrl, {
+    'ogc-api': {tileTemplate, tileMatrixSet: tileMatrixSetUrl, metersPerUnit: 1}
+  });
+  byUrl.fetch = async url => {
+    requestedUrls.push(url);
+    return url === tileMatrixSetUrl
+      ? new Response(JSON.stringify(UTM_BOTTOM_LEFT))
+      : new Response(new ArrayBuffer(4));
+  };
+  await byUrl.getTile({z: 0, x: 1, y: 2});
+  expect(requestedUrls).toEqual([tileMatrixSetUrl, `${landingPageUrl}/tiles/coarse/2/1?z=0`]);
+});

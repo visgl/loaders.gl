@@ -152,7 +152,7 @@ const features = await source.getFeatures({
 | --- | --- | --- |
 | Landing-page metadata | ✅ Supported | Reads title and advertised tileset media type |
 | Explicit tile template | ✅ Required | Configure `ogc-api.tileTemplate` |
-| OGC placeholders | ✅ Supported | `{tileMatrix}`, `{tileRow}`, `{tileCol}` |
+| OGC placeholders | ✅ Supported | `{tileMatrix}`, `{tileRow}`, `{tileCol}`; `{tileMatrix}` is the configured matrix id for `z` |
 | XYZ placeholders | ✅ Supported | `{z}`, `{y}`, `{x}` |
 | Tile retrieval | ✅ Supported | `getTile()` returns the original `ArrayBuffer` |
 | Tile matrix set | ✅ Supported | `ogc-api.tileMatrixSet` (a TileMatrixSet 2.0 document or URL) is reported as `tileGrid` |
@@ -190,6 +190,10 @@ relative URL resolves against the landing page.
 - A `crs` URI string or `{uri}` object is reported as `tileGrid.crs`; embedded WKT and PROJJSON
   definitions are not interpreted.
 - `variableMatrixWidths` (coalesced rows) is not interpreted.
+- Tile requests use the matrix identifier for `{tileMatrix}`: the matrix whose id equals `z`,
+  otherwise the matrix at index `z`, as in WMTS. `{z}` stays numeric. `getTile()` loads a
+  matrix set given by URL first; `getTileURL()` uses it once `getMetadata()` has loaded it.
+- `setProps()` replaces an inline `tileMatrixSet` document as a whole rather than merging fields.
 
 ```ts
 import {convertOGCTileMatrixSetToTileGrid} from '@loaders.gl/wms';

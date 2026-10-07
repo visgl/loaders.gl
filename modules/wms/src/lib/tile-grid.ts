@@ -62,6 +62,18 @@ export function createTileGridMatrix(fields: TileMatrixFields): TileGridMatrix {
 }
 
 /**
+ * Returns the matrix identifier for an integer zoom: the matrix whose id is that number, otherwise
+ * the matrix at that array index, as WMTS requests do. Undefined when neither exists.
+ */
+export function getTileGridMatrixId(
+  tileGrid: TileGrid | undefined,
+  zoom: number
+): string | undefined {
+  const matrices = tileGrid?.matrices || [];
+  return (matrices.find(matrix => matrix.id === String(zoom)) || matrices[zoom])?.id;
+}
+
+/**
  * Returns the length of one CRS unit in meters. Built-in units always win; the caller's value
  * applies only to other CRSs. Without either, the result is undefined, so no resolution is guessed.
  */
