@@ -104,6 +104,8 @@ test('convertOGCTileMatrixSetToTileGrid returns origins in XY order', () => {
   // Descriptive and south-oriented axis names also put the north-south coordinate first.
   expect(geographic(['Geodetic latitude', 'Geodetic longitude'], [90, -180])).toEqual([-180, 90]);
   expect(geographic(['S', 'W'], [90, -180])).toEqual([-180, 90]);
+  expect(geographic(['Geodetic_latitude', 'Geodetic_longitude'], [90, -180])).toEqual([-180, 90]);
+  expect(geographic(['φ', 'λ'], [90, -180])).toEqual([-180, 90]);
   expect(geographic(['Easting', 'Northing'], [-180, 90])).toEqual([-180, 90]);
 });
 
@@ -141,11 +143,14 @@ test('convertOGCTileMatrixSetToTileGrid rejects malformed input', () => {
   expect(convertOGCTileMatrixSetToTileGrid({crs: {wkt: {}}, tileMatrices: []}).crs).toBeUndefined();
 });
 
-test('convertOGCTileMatrixSetToTileGrid keeps a tile size given only by height', () => {
+test('convertOGCTileMatrixSetToTileGrid reads a bottom-left corner in any letter case', () => {
   const tileGrid = convertOGCTileMatrixSetToTileGrid({
-    tileMatrices: [{id: '0', cellSize: 1, tileHeight: 512}]
+    tileMatrices: [
+      {id: '0', cellSize: 1, cornerOfOrigin: 'BottomLeft' as 'bottomLeft', pointOfOrigin: [0, 0]}
+    ]
   });
-  expect(tileGrid.tileSize).toEqual([512, 512]);
+  expect(tileGrid.matrices?.[0].cornerOfOrigin).toBe('bottomLeft');
+  expect(tileGrid.origin).toBeUndefined();
 });
 
 test('OGCAPITilesSource#getMetadata reports a configured tile matrix set', async () => {
@@ -189,4 +194,58 @@ test('OGCAPITilesSource#getMetadata reports a configured tile matrix set', async
   const unconfigured = OGCAPITilesSourceLoader.createDataSource(landingPageUrl, {});
   unconfigured.fetch = async () => new Response(JSON.stringify({title: 'Demo API'}));
   expect((await unconfigured.getMetadata()).tileGrid).toBeUndefined();
+});
+
+test('OGCAPITilesSource resolves tile matrix set links like directory paths', async () => {
+  const requestUrls = async (landingPageUrl: string, tileMatrixSet: string) => {
+    const requestedUrls: string[] = [];
+    const source = OGCAPITilesSourceLoader.createDataSource(landingPageUrl, {
+      'ogc-api': {tileMatrixSet}
+    });
+    source.fetch = async url => {
+      requestedUrls.push(url);
+      return new Response(
+        JSON.stringify(url === landingPageUrl ? {title: 'Demo API'} : WEB_MERCATOR_QUAD)
+      );
+    };
+    await source.getMetadata();
+    return requestedUrls.filter(url => url !== landingPageUrl);
+  };
+
+  // A query string on the landing page does not swallow its last path segment.
+  expect(
+    await requestUrls('https://example.com/ogc?apikey=K', 'tileMatrixSets/WebMercatorQuad')
+  ).toEqual(['https://example.com/ogc/tileMatrixSets/WebMercatorQuad']);
+  // A relative landing page, such as a same-origin proxy, keeps relative and absolute links working.
+  expect(await requestUrls('/proxy/ogc', 'tileMatrixSets/WebMercatorQuad')).toEqual([
+    '/proxy/ogc/tileMatrixSets/WebMercatorQuad'
+  ]);
+  expect(await requestUrls('/proxy/ogc', 'https://tms.example/WebMercatorQuad')).toEqual([
+    'https://tms.example/WebMercatorQuad'
+  ]);
+});
+
+test('OGCAPITilesSource retries a failed tile matrix set and follows option changes', async () => {
+  const landingPageUrl = 'https://example.com/ogcapi';
+  let failNextTileMatrixSet = true;
+  const source = OGCAPITilesSourceLoader.createDataSource(landingPageUrl, {
+    'ogc-api': {tileMatrixSet: `${landingPageUrl}/tileMatrixSets/WebMercatorQuad`}
+  });
+  const stubFetch: typeof source.fetch = async url => {
+    if (url === landingPageUrl) return new Response(JSON.stringify({title: 'Demo API'}));
+    if (failNextTileMatrixSet) {
+      failNextTileMatrixSet = false;
+      return new Response('unavailable', {status: 503});
+    }
+    return new Response(JSON.stringify(WEB_MERCATOR_QUAD));
+  };
+  source.fetch = stubFetch;
+
+  await expect(source.getMetadata()).rejects.toThrow('503');
+  expect((await source.getMetadata()).tileGrid?.matrixIds).toEqual(['0', '1']);
+
+  source.setProps({'ogc-api': {tileMatrixSet: UTM_BOTTOM_LEFT, metersPerUnit: 1}});
+  // setProps() rebuilds the fetch function from options, so stub it again.
+  source.fetch = stubFetch;
+  expect((await source.getMetadata()).tileGrid?.matrixIds).toEqual(['coarse']);
 });

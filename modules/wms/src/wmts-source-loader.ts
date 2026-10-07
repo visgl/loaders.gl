@@ -480,7 +480,7 @@ function toTileGrid(
 ): TileGrid | undefined {
   if (!tileMatrixSet) return undefined;
   // Also checked here, since `setProps()` can change the option after construction.
-  validateMetersPerUnit(metersPerUnit);
+  validateMetersPerUnit(metersPerUnit, 'WMTS');
   const crs = tileMatrixSet.supportedCRS;
   const unitMeters = getMetersPerUnit(crs, metersPerUnit);
   const swapAxes = getServiceCRSAxisOrder(crs) === 'yx';

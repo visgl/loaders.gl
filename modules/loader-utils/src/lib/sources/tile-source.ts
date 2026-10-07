@@ -98,7 +98,10 @@ export type TileGridMatrix = {
   id: string;
   /** Coordinate units per pixel, when CRS units are known. */
   resolution?: number;
-  /** Origin in XY grid coordinates, at the corner named by `cornerOfOrigin`. */
+  /**
+   * Origin in grid coordinates, at the corner named by `cornerOfOrigin`. Sources swap it to XY
+   * only where they know the axis order; see each source's documentation.
+   */
   origin?: [number, number];
   /** Matrix corner that `origin` locates; omitted means top-left. */
   cornerOfOrigin?: 'topLeft' | 'bottomLeft';

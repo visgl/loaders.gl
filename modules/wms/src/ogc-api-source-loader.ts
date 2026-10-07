@@ -251,8 +251,12 @@ export class OGCAPITilesSource
   extends DataSource<string, OGCAPISourceOptions>
   implements TileSource
 {
-  /** Converted tile matrix set, loaded once. */
-  private _tileGridPromise: Promise<TileGrid | undefined> | null = null;
+  /** Converted tile matrix set and the options it was loaded with. */
+  private _tileGridCache: {
+    tileMatrixSet: OGCTileMatrixSet | string | undefined;
+    metersPerUnit: number | null | undefined;
+    promise: Promise<TileGrid | undefined>;
+  } | null = null;
 
   /** Creates an OGC API Tiles source. */
   constructor(url: string, options: OGCAPISourceOptions = {}, coreApi?: CoreAPI) {
@@ -275,20 +279,33 @@ export class OGCAPITilesSource
     };
   }
 
-  /** Returns the configured tile matrix set as a tile grid, loading and converting it once. */
+  /**
+   * Returns the configured tile matrix set as a tile grid. The result is reused until the options
+   * change, and a failed load is retried on the next call.
+   */
   private getTileGrid(): Promise<TileGrid | undefined> {
-    this._tileGridPromise ||= this.loadTileGrid();
-    return this._tileGridPromise;
+    const {tileMatrixSet, metersPerUnit} = this.options['ogc-api'] || {};
+    const cache = this._tileGridCache;
+    if (cache && cache.tileMatrixSet === tileMatrixSet && cache.metersPerUnit === metersPerUnit) {
+      return cache.promise;
+    }
+    const promise = this.loadTileGrid(tileMatrixSet, metersPerUnit);
+    this._tileGridCache = {tileMatrixSet, metersPerUnit, promise};
+    promise.catch(() => {
+      if (this._tileGridCache?.promise === promise) this._tileGridCache = null;
+    });
+    return promise;
   }
 
-  /** Converts the configured tile matrix set, fetching it first when given as a URL. */
-  private async loadTileGrid(): Promise<TileGrid | undefined> {
-    const {tileMatrixSet, metersPerUnit} = this.options['ogc-api'] || {};
+  /** Converts a tile matrix set, fetching it first when given as a URL. */
+  private async loadTileGrid(
+    tileMatrixSet: OGCTileMatrixSet | string | undefined,
+    metersPerUnit: number | null | undefined
+  ): Promise<TileGrid | undefined> {
     if (!tileMatrixSet) return undefined;
-    // A URL may be relative to the landing page, as OGC API links often are.
     const document =
       typeof tileMatrixSet === 'string'
-        ? ((await this.fetchJSON(new URL(tileMatrixSet, `${this.url}/`).href)) as OGCTileMatrixSet)
+        ? ((await this.fetchJSON(resolveLink(tileMatrixSet, this.url))) as OGCTileMatrixSet)
         : tileMatrixSet;
     return convertOGCTileMatrixSetToTileGrid(document, {metersPerUnit});
   }
@@ -345,6 +362,21 @@ export const OGCAPITilesSourceLoader = {
   createDataSource: (url: string, options: OGCAPISourceOptions = {}, coreApi?: CoreAPI) =>
     new OGCAPITilesSource(url, options, coreApi)
 } as const satisfies SourceLoader<OGCAPITilesSource>;
+
+/**
+ * Resolves a link against a landing page treated as a directory, so `tileMatrixSets/x` under
+ * `https://host/api` becomes `https://host/api/tileMatrixSets/x`. Absolute links are returned
+ * unchanged, and a relative landing page stays relative.
+ */
+function resolveLink(link: string, landingPageUrl: string): string {
+  if (/^[a-z][a-z\d+.-]*:/i.test(link)) return link;
+  const placeholderOrigin = 'http://placeholder.invalid';
+  const isAbsolute = /^[a-z][a-z\d+.-]*:/i.test(landingPageUrl);
+  const base = new URL(landingPageUrl, `${placeholderOrigin}/`);
+  if (!base.pathname.endsWith('/')) base.pathname += '/';
+  const resolved = new URL(link, base);
+  return isAbsolute ? resolved.href : resolved.href.slice(placeholderOrigin.length);
+}
 
 /** Converts the loaders.gl nested bounding box into the OGC comma-separated form. */
 function flattenBoundingBox(

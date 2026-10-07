@@ -51,10 +51,10 @@ export function createTileGridMatrix(fields: TileMatrixFields): TileGridMatrix {
   if (point && point.length >= 2) {
     tileGridMatrix.origin = fields.swapAxes ? [point[1], point[0]] : [point[0], point[1]];
   }
-  if (fields.cornerOfOrigin === 'bottomLeft') tileGridMatrix.cornerOfOrigin = 'bottomLeft';
-  if (tileWidth || tileHeight) {
-    tileGridMatrix.tileSize = [(tileWidth || tileHeight)!, (tileHeight || tileWidth)!];
+  if (String(fields.cornerOfOrigin).toLowerCase() === 'bottomleft') {
+    tileGridMatrix.cornerOfOrigin = 'bottomLeft';
   }
+  if (tileWidth) tileGridMatrix.tileSize = [tileWidth, tileHeight || tileWidth];
   if (fields.matrixWidth !== undefined && fields.matrixHeight !== undefined) {
     tileGridMatrix.matrixSize = [fields.matrixWidth, fields.matrixHeight];
   }

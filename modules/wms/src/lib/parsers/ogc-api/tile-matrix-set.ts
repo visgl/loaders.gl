@@ -120,8 +120,12 @@ function getCRSIdentifier(crs: OGCTileMatrixSetCRS | undefined): string | undefi
   return typeof crs?.uri === 'string' ? crs.uri : undefined;
 }
 
-/** First-axis names that put the north-south coordinate first, e.g. `Lat`, `Geodetic latitude`, `N`. */
-const Y_FIRST_AXIS_NAME = /^(geodetic\s+)?(lat|latitude|n|north|northing|s|south|southing|y)\b/i;
+/**
+ * First-axis names that put the north-south coordinate first, e.g. `Lat`, `Geodetic_latitude`,
+ * `φ`, `N`. A first axis named `Y` is read as north-south, as in most registered CRSs.
+ */
+const Y_FIRST_AXIS_NAME =
+  /^(geodetic[\s_]+)?(lat|latitude|n|north|northing|s|south|southing|y|φ)(?![a-z])/i;
 
 /**
  * Returns the axis order of `pointOfOrigin`. Declared `orderedAxes` win: a first axis naming
