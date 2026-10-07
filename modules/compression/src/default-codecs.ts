@@ -202,3 +202,15 @@ export type {
   ZstdCompressorOptions,
   ZstdDecompressorOptions
 };
+
+/** Lightweight raw LZO1X decompressor for bounded blocks. */
+export class LzoDecompressor extends LazyDecompressor {
+  /** Creates a lazy decoder. */
+  constructor(options: import('./lzo-decompressor').LzoDecompressorOptions = {}) {
+    super(
+      {name: 'lzo', extensions: [], contentEncodings: []},
+      async () => (await import('./lzo-decompressor')).LzoDecompressor,
+      options
+    );
+  }
+}

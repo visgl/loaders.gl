@@ -2,7 +2,12 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import {LZ4Decompressor, SnappyDecompressor, ZstdDecompressor} from '@loaders.gl/compression';
+import {
+  LzoDecompressor,
+  LZ4Decompressor,
+  SnappyDecompressor,
+  ZstdDecompressor
+} from '@loaders.gl/compression';
 import {DeflateDecompressor} from '@loaders.gl/compression/deflate-decompressor';
 import type {Decompressor} from '@loaders.gl/compression';
 import type {ORCCompression} from './parse-orc';
@@ -11,6 +16,7 @@ const DEFLATE_DECOMPRESSOR = new DeflateDecompressor({useNative: false});
 const RAW_DEFLATE_DECOMPRESSOR = new DeflateDecompressor({raw: true, useNative: false});
 const SNAPPY_DECOMPRESSOR = new SnappyDecompressor();
 const LZ4_DECOMPRESSOR = new LZ4Decompressor();
+const LZO_DECOMPRESSOR = new LzoDecompressor();
 const ZSTD_DECOMPRESSOR = new ZstdDecompressor();
 
 /** Decompresses an ORC compression stream made of 3-byte framed chunks. */
@@ -20,7 +26,7 @@ export function decompressORCStream(
   compressionBlockSize = 256 * 1024
 ): Uint8Array {
   if (compression === 'NONE') return bytes.slice();
-  if (!['ZLIB', 'SNAPPY', 'LZ4', 'ZSTD'].includes(compression))
+  if (!['ZLIB', 'SNAPPY', 'LZ4', 'ZSTD', 'LZO'].includes(compression))
     throw new Error(`ORC compression "${compression}" is not supported yet`);
   const output: Uint8Array[] = [];
   let offset = 0;
@@ -80,6 +86,8 @@ function decompressORCChunk(
       }
     }
   }
+  if (compression === 'LZO')
+    return LZO_DECOMPRESSOR.decompressSync(chunkBuffer, compressionBlockSize);
   if (compression === 'SNAPPY') return snappyDecompressor.decompressSync(chunkBuffer);
   if (compression === 'LZ4')
     return lz4Decompressor.decompressSync(chunkBuffer, compressionBlockSize);
@@ -93,6 +101,7 @@ export async function preloadORCCompression(modules: Record<string, any> = {}): 
     RAW_DEFLATE_DECOMPRESSOR.preload(modules),
     SNAPPY_DECOMPRESSOR.preload(modules),
     LZ4_DECOMPRESSOR.preload(modules),
+    LZO_DECOMPRESSOR.preload(modules),
     ZSTD_DECOMPRESSOR.preload(modules)
   ]);
 }

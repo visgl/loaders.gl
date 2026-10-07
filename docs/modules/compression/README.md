@@ -164,6 +164,7 @@ startup or explicit prebundling is required.
 | LZ4 | `LZ4Decompressor` | `lz4-decompressor` | Hand-written block/Hadoop decoder; lazy `lz4js` for frames |
 | bzip2 | `BZip2Decompressor` | `bzip2-decompressor` | Lazy `compress-utils` |
 | XZ/LZMA | `XZDecompressor` | `xz-decompressor` | Lazy `compress-utils` |
+| LZO1X | `LzoDecompressor` | `lzo-decompressor` | Vendored `compress-utils` WASM with JavaScript fallback |
 
 ## Specific compressor implementations
 
@@ -283,3 +284,5 @@ selection and optional Pako adapters remain available.
 
 See [compression benchmarks](https://loaders.gl/docs/modules/compression/benchmarks)
 for a live internal-versus-upstream comparison.
+
+Raw LZO1X decoding requires an output capacity. See [LzoDecompressor](/docs/modules/compression/api-reference/lzo-decompressor) for bounded synchronous and asynchronous decoding. LZO compression is not supported.

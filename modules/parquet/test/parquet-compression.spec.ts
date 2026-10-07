@@ -6,7 +6,7 @@ import { expect, test } from "vitest";
 import { ZstdCodec } from 'zstd-codec';
 import { ZstdCompression } from '@loaders.gl/compression/zstd-compression';
 import { SnappyJSCompressor } from '@loaders.gl/compression/snappy-compressor-snappyjs';
-import { createParquetPageDecompressor, decompress } from '../src/parquetjs/compression';
+import { createParquetPageDecompressor, decompress, deflate } from '../src/parquetjs/compression';
 test('Parquet compression#native streams avoid codec fallbacks', async () => {
     const formats: string[] = [];
     const restoreDecompressionStream = installMockDecompressionStream(formats, [
@@ -192,3 +192,15 @@ function copyBufferSource(bufferSource: BufferSource): Uint8Array {
     }
     return new Uint8Array(bufferSource.buffer, bufferSource.byteOffset, bufferSource.byteLength).slice();
 }
+
+
+test('Parquet LZO pages use the page output size and remain decode-only', async () => {
+  const input = new Uint8Array([22, 104, 101, 108, 108, 111, 17, 0, 0]);
+  const decoder = createParquetPageDecompressor('LZO');
+  expect(new TextDecoder().decode(await decoder(input, 5))).toBe('hello');
+  await expect(decoder(input, 4)).rejects.toThrow();
+});
+
+test('Parquet LZO writing returns an explicit decoder-only error', async () => {
+  await expect(deflate('LZO', new Uint8Array([1]))).rejects.toThrow('decode-only');
+});

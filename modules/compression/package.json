@@ -279,6 +279,10 @@
     },
     "./compression-worker-node.js": {
       "import": "./dist/compression-worker-node.js"
+    },
+    "./lzo-decompressor": {
+      "types": "./dist/lzo-decompressor.d.ts",
+      "import": "./dist/lzo-decompressor.js"
     }
   },
   "sideEffects": [

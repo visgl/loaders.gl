@@ -387,6 +387,7 @@
           "modules/compression/api-reference/zstandard",
           "modules/compression/api-reference/snappy",
           "modules/compression/api-reference/lz4",
+          "modules/compression/api-reference/lzo-decompressor",
           "modules/compression/api-reference/bzip2",
           "modules/compression/api-reference/xz",
           "modules/compression/api-reference/no-compressor-decompressor"

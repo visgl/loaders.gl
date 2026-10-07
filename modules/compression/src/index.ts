@@ -61,3 +61,6 @@ export {
 
 export type {CompressionWorkerOptions} from './compress-on-worker';
 export {CompressionWorker, compressOnWorker} from './compress-on-worker';
+
+export {LzoDecompressor} from './default-codecs';
+export type {LzoDecompressorOptions} from './lzo-decompressor';

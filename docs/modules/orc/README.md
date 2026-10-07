@@ -99,3 +99,7 @@ for await (const batch of source.read({
 
 Use Parquet when physical column and row-group pruning is a hard requirement. ORC remains useful
 when format compatibility matters and materializing the selected file is acceptable.
+
+## LZO decoding
+
+The ORC reader supports LZO1X-compressed chunks, including stripe and file footers. It handles ORC’s three-byte chunk headers and bounds decoded chunks by the file’s compression block size. LZO writing is not supported.

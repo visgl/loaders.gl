@@ -90,3 +90,7 @@ metadata before Parquet encoding.
 # License
 
 `@loaders.gl/parquet` module is based on Apache 2.0 licensed code.
+
+## LZO decoding
+
+The JavaScript Parquet reader supports raw LZO1X-compressed pages, using each page’s uncompressed size as its output capacity. LZO writing is not supported.

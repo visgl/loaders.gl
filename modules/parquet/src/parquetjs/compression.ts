@@ -6,6 +6,7 @@
 // Forked from https://github.com/ironSource/parquetjs under MIT license
 
 import {
+  LzoDecompressor,
   BrotliCompressor,
   BrotliDecompressor,
   GZipCompressor,
@@ -33,6 +34,7 @@ export const PARQUET_COMPRESSION_METHODS: Partial<Record<ParquetCompression, tru
   GZIP: true,
   SNAPPY: true,
   BROTLI: true,
+  LZO: true,
   // TODO: Understand difference between LZ4 and LZ4_RAW.
   LZ4: true,
   LZ4_RAW: true,
@@ -152,6 +154,8 @@ async function getParquetDecompressor(method: ParquetCompression): Promise<Decom
 /** Creates the root-level default compressor for one Parquet method. */
 function createParquetCompressor(method: ParquetCompression): Compressor {
   switch (method) {
+    case 'LZO':
+      throw new Error('parquet: LZO compression is decode-only');
     case 'GZIP':
       return new GZipCompressor();
     case 'SNAPPY':
@@ -171,6 +175,8 @@ function createParquetCompressor(method: ParquetCompression): Compressor {
 /** Creates the root-level default decompressor for one Parquet method. */
 function createParquetDecompressor(method: ParquetCompression): Decompressor {
   switch (method) {
+    case 'LZO':
+      return new LzoDecompressor();
     case 'GZIP':
       return new GZipDecompressor();
     case 'SNAPPY':
