@@ -38,14 +38,9 @@ function createBundlerPlugin() {
     name: 'loaders-gl-bundler-plugin',
     configureWebpack(_config, _isServer, {currentBundler}) {
       const bundler = currentBundler.instance;
-      const workerReplacements = [
-        new bundler.NormalModuleReplacementPlugin(
-          /i3s-content-worker-factory$/,
-          resolve('./src/shims/i3s-content-worker-factory.js')
-        )
-      ];
+      const developmentWorkerReplacements = [];
       if (process.env.NODE_ENV === 'development' && !_isServer) {
-        workerReplacements.push(
+        developmentWorkerReplacements.push(
           new bundler.NormalModuleReplacementPlugin(
             /parquet-source-worker-url$/,
             resolve('./src/shims/parquet-source-worker-url.dev.js')
@@ -107,7 +102,7 @@ function createBundlerPlugin() {
               resource.request = resolve('./src/utils/lerc-wasm-url.js');
             }
           }),
-          ...workerReplacements
+          ...developmentWorkerReplacements
         ]
       };
     }

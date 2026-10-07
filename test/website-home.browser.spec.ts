@@ -18,6 +18,9 @@ test('home demo preserves texture decoder hints and uses the shared I3S material
   const properties = createHomeDemoLayer().props;
   expect(properties.loaders).toEqual([I3SLoader]);
   expect(properties.loadOptions.worker).not.toBe(false);
+  const workerUrl = new URL(properties.loadOptions['i3s-content'].workerUrl);
+  expect(workerUrl.origin).toBe(window.location.origin);
+  expect(workerUrl.pathname).toContain('i3s-content-worker.js');
   expect(properties.loadOptions.i3s.coordinateSystem).toBe(COORDINATE_SYSTEM.LNGLAT_OFFSETS);
   const extensions = properties._subLayerProps['tile-3d']._subLayerProps.mesh.extensions;
   expect(extensions).toHaveLength(1);

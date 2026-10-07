@@ -20,7 +20,9 @@ The WebGL example includes a small I3S mesh shader extension for deck.gl 9.4: it
 passes zero to a PBR module that now multiplies vertex color. The extension supplies one at
 that call, preserving material colors and picking until the upstream call is updated.
 The website home demo reuses the same extension for its I3S building meshes and bundles
-its I3S worker from local sources to keep worker and main-thread loader revisions aligned.
+its existing I3S worker bundle as an asset, using the standard `workerUrl` option to keep
+worker and main-thread loader revisions aligned. Website build and start scripts generate
+that bundle; no I3S-specific worker factory or bundler replacement is needed.
 
 ## Usage
 
