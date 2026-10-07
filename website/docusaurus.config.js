@@ -2,7 +2,7 @@
 // Note: type annotations allow type checking and IDEs autocompletion
 
 const {resolve} = require('path');
-const {version} = require('../package.json');
+const {version} = require('../modules/core/package.json');
 const {themes} = require('prism-react-renderer');
 const lightCodeTheme = themes.github;
 const darkCodeTheme = themes.dracula;
@@ -38,9 +38,14 @@ function createBundlerPlugin() {
     name: 'loaders-gl-bundler-plugin',
     configureWebpack(_config, _isServer, {currentBundler}) {
       const bundler = currentBundler.instance;
-      const developmentWorkerReplacements = [];
+      const workerReplacements = [
+        new bundler.NormalModuleReplacementPlugin(
+          /i3s-content-worker-factory$/,
+          resolve('./src/shims/i3s-content-worker-factory.js')
+        )
+      ];
       if (process.env.NODE_ENV === 'development' && !_isServer) {
-        developmentWorkerReplacements.push(
+        workerReplacements.push(
           new bundler.NormalModuleReplacementPlugin(
             /parquet-source-worker-url$/,
             resolve('./src/shims/parquet-source-worker-url.dev.js')
@@ -102,7 +107,7 @@ function createBundlerPlugin() {
               resource.request = resolve('./src/utils/lerc-wasm-url.js');
             }
           }),
-          ...developmentWorkerReplacements
+          ...workerReplacements
         ]
       };
     }

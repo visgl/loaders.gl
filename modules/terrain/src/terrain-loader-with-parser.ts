@@ -18,6 +18,8 @@ const {preload: _TerrainLoaderPreload, ...TerrainLoaderMetadataWithoutPreload} =
  */
 export const TerrainLoaderWithParser = {
   ...TerrainLoaderMetadataWithoutPreload,
+  /** Image decoder requested by terrain workers through the nested parse bridge. */
+  subloaders: {ImageBitmapLoader},
   parse: parseTerrain
 } as const satisfies LoaderWithParser<Mesh | MeshArrowTable, never, TerrainLoaderOptions>;
 

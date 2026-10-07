@@ -124,14 +124,17 @@ export async function parseWithWorker(
         if (!parseOnMainThread) {
           throw new Error('Worker not set up to parse on main thread');
         }
-        const mainThreadContext = context
-          ? ({...context, ...(parseContext || {})} as LoaderContext)
-          : undefined;
+        const {_loaderIds, _loaderIsArray, ...workerParseContext} = parseContext || {};
+        const mainThreadContext =
+          context || parseContext
+            ? ({...context, ...workerParseContext} as LoaderContext)
+            : undefined;
         return await callParseOnMainThread(
           parseOnMainThread,
           input,
           processOptions,
-          mainThreadContext
+          mainThreadContext,
+          resolveWorkerLoaders(loader, _loaderIds, _loaderIsArray, context, options)
         );
       }
     },
@@ -171,14 +174,17 @@ export async function* parseWithWorkerInBatches(
         if (!parseOnMainThread) {
           throw new Error('Worker not set up to parse on main thread');
         }
-        const mainThreadContext = context
-          ? ({...context, ...(parseContext || {})} as LoaderContext)
-          : undefined;
+        const {_loaderIds, _loaderIsArray, ...workerParseContext} = parseContext || {};
+        const mainThreadContext =
+          context || parseContext
+            ? ({...context, ...workerParseContext} as LoaderContext)
+            : undefined;
         return await callParseOnMainThread(
           parseOnMainThread,
           input,
           processOptions,
-          mainThreadContext
+          mainThreadContext,
+          resolveWorkerLoaders(loader, _loaderIds, _loaderIsArray, context, options)
         );
       }
     },
@@ -207,17 +213,57 @@ function getWorkerAbortSignal(options?: StrictLoaderOptions): AbortSignal | unde
  * @param input Data to parse on the main thread.
  * @param options Loader options from the worker.
  * @param context Loader context merged from the worker and caller.
+ * @param loaders Caller-local loaders selected by the worker.
  */
 function callParseOnMainThread(
   parseOnMainThread: ParseOnMainThread,
   input: ArrayBuffer,
   options?: StrictLoaderOptions,
-  context?: LoaderContext
+  context?: LoaderContext,
+  loaders?: Loader | Loader[]
 ): Promise<unknown> {
-  if (parseOnMainThread.length <= 2) {
+  if (!loaders && parseOnMainThread.length <= 2) {
     return parseOnMainThread(input, options);
   }
-  return parseOnMainThread(input, undefined, options, context);
+  return parseOnMainThread(input, loaders, options, context);
+}
+
+/** Resolves worker-supplied loader identifiers to caller-local loaders without transferring functions. */
+function resolveWorkerLoaders(
+  loader: Loader,
+  loaderIds: string[] | undefined,
+  loaderIsArray: boolean | undefined,
+  context?: LoaderContext,
+  options?: StrictLoaderOptions
+): Loader | Loader[] | undefined {
+  if (!loaderIds) return undefined;
+  const availableLoaders = new Map<string, Loader>();
+  const visitedLoaders = new Set<Loader>();
+  for (const candidate of [loader, ...(context?.loaders || [])]) {
+    visitLoader(candidate);
+  }
+  const selectedLoaders = loaderIds.map(loaderId => {
+    const selectedLoader = availableLoaders.get(loaderId);
+    if (!selectedLoader) {
+      throw new Error(
+        `Worker requested unknown loader "${loaderId}". Declare it in loader.subloaders or pass it in context.loaders.`
+      );
+    }
+    return selectedLoader;
+  });
+  return loaderIsArray ? selectedLoaders : selectedLoaders[0];
+
+  /** Collects dependency metadata while retaining caller-provided parser implementations. */
+  function visitLoader(candidate: Loader): void {
+    if (visitedLoaders.has(candidate)) return;
+    visitedLoaders.add(candidate);
+    availableLoaders.set(candidate.id, candidate);
+    for (const [name, dependency] of Object.entries(candidate.subloaders || {})) {
+      const replacement = options?.core?.subloaders?.[name] || dependency;
+      visitLoader(replacement);
+      availableLoaders.set(dependency.id, replacement);
+    }
+  }
 }
 
 /**

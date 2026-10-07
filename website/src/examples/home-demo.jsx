@@ -8,8 +8,7 @@ import DeckGL from '@deck.gl/react';
 import {FullscreenWidget} from '@deck.gl/widgets';
 import '@deck.gl/widgets/stylesheet.css';
 
-import {SourceLayer} from '@loaders.gl/deck-layers';
-import {COORDINATE_SYSTEM, I3SLoader} from '@loaders.gl/i3s';
+import {createHomeDemoLayer} from './home-demo-layer';
 
 const INITIAL_VIEW_STATE = {
   transitionDuration: 0,
@@ -22,14 +21,7 @@ const INITIAL_VIEW_STATE = {
 
 export default function App() {
   const [viewState, setViewState] = useState(INITIAL_VIEW_STATE);
-  const layers = useMemo(() => {
-    const loadOptions = {i3s: {coordinateSystem: COORDINATE_SYSTEM.LNGLAT_OFFSETS}};
-    return new SourceLayer({
-      data: 'https://tiles.arcgis.com/tiles/z2tnIkrLQ2BRzr6P/arcgis/rest/services/SanFrancisco_Bldgs/SceneServer/layers/0',
-      loaders: [I3SLoader],
-      loadOptions
-    });
-  }, []);
+  const layers = useMemo(createHomeDemoLayer, []);
   const widgets = useMemo(() => [new FullscreenWidget({id: 'home-demo-fullscreen'})], []);
 
   useEffect(() => {

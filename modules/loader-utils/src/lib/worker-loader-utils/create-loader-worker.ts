@@ -130,7 +130,15 @@ function createParseOnMainThread(
     }
 
     const parseArguments = getMainThreadParseArguments(loaders, options, context);
-    return processOnMainThread(arrayBuffer, parseArguments.options, parseArguments.context);
+    return processOnMainThread(arrayBuffer, parseArguments.options, {
+      ...parseArguments.context,
+      ...(Array.isArray(loaders) || (loaders && isLoaderObject(loaders))
+        ? {
+            _loaderIsArray: Array.isArray(loaders),
+            _loaderIds: (Array.isArray(loaders) ? loaders : [loaders]).map(loader => loader.id)
+          }
+        : {})
+    });
   };
 }
 

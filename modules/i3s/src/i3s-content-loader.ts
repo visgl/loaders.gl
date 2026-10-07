@@ -8,6 +8,7 @@ import type {I3STileContent} from './types';
 
 import {I3SContentFormat} from './i3s-format';
 import {I3S_LOADER_OPTIONS} from './i3s-loader-options';
+import {I3S_CONTENT_WORKER_LOAD_WORKER} from './i3s-content-worker-factory';
 // __VERSION__ is injected by babel-plugin-version-inline
 // @ts-ignore TS2304: Cannot find name '__VERSION__'.
 
@@ -25,6 +26,7 @@ export const I3SContentLoader = {
   id: 'i3s-content',
   module: 'i3s',
   worker: true,
+  loadWorker: I3S_CONTENT_WORKER_LOAD_WORKER,
   version: VERSION,
   mimeTypes: ['application/octet-stream'],
   /** Loads the parser-bearing I3S content loader implementation. */

@@ -19,6 +19,8 @@ tile loading errors appear in the controls. The basemap remains a separate netwo
 The WebGL example includes a small I3S mesh shader extension for deck.gl 9.4: its mesh layer
 passes zero to a PBR module that now multiplies vertex color. The extension supplies one at
 that call, preserving material colors and picking until the upstream call is updated.
+The website home demo reuses the same extension for its I3S building meshes and bundles
+its I3S worker from local sources to keep worker and main-thread loader revisions aligned.
 
 ## Usage
 
