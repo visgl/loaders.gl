@@ -4,6 +4,20 @@
 
 ### Unreleased
 
+### v5.0.0-alpha.10
+
+- chore(math.gl): upgrade to 5.0.0-alpha.13
+- feat(graphs): add Arrow-first GraphML, DOT, and GEXF loaders
+- feat(geotiff): add a bounded numeric TIFF decoder and shared numeric raster regions
+- feat(tile-converter): stream SLPK and 3TZ output, support browser workers and direct file downloads, and preserve mesh textures, colors, and UV transforms
+- feat(tile-converter): support Draco Edge Breaker encoding for I3S meshes
+- feat(arcgis): resolve service items and add an interactive explorer
+- refactor(core): preload named subloaders through core.subloaders
+- refactor(gis): isolate TWKB and Arrow geometry APIs; adapt binary polygon buffers to math.gl
+- feat(compression): own the fflate engine and establish optimization baselines
+- fix(zip): bound indexed archive payload reads
+- fix(worker-utils): preserve nested worker decoders
+
 ### v5.0.0-alpha.9
 
 - chore(math.gl): upgrade to alpha.12 and migrate coordinate transformations to @math.gl/projection
