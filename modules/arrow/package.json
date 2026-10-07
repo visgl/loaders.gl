@@ -1,6 +1,6 @@
 {
   "name": "@loaders.gl/arrow",
-  "version": "5.0.0-alpha.9",
+  "version": "5.0.0-alpha.10",
   "description": "Simple columnar table loader for the Apache Arrow format",
   "license": "MIT",
   "type": "module",
@@ -82,13 +82,13 @@
     "build-worker2": "esbuild src/workers/arrow-worker.ts --bundle --outfile=dist/arrow-worker.js --platform=browser --external:{stream}"
   },
   "dependencies": {
-    "@loaders.gl/arrow-geometry": "5.0.0-alpha.9",
-    "@loaders.gl/compression": "5.0.0-alpha.9",
-    "@loaders.gl/loader-utils": "5.0.0-alpha.9",
-    "@loaders.gl/schema": "5.0.0-alpha.9",
-    "@loaders.gl/schema-utils": "5.0.0-alpha.9",
-    "@loaders.gl/wkt": "5.0.0-alpha.9",
-    "@loaders.gl/worker-utils": "5.0.0-alpha.9",
+    "@loaders.gl/arrow-geometry": "5.0.0-alpha.10",
+    "@loaders.gl/compression": "5.0.0-alpha.10",
+    "@loaders.gl/loader-utils": "5.0.0-alpha.10",
+    "@loaders.gl/schema": "5.0.0-alpha.10",
+    "@loaders.gl/schema-utils": "5.0.0-alpha.10",
+    "@loaders.gl/wkt": "5.0.0-alpha.10",
+    "@loaders.gl/worker-utils": "5.0.0-alpha.10",
     "@math.gl/wkb": "5.0.0-alpha.13",
     "apache-arrow": ">= 17.0.0",
     "lz4js": "^0.2.0"

@@ -1,6 +1,6 @@
 {
   "name": "@loaders.gl/graphs",
-  "version": "5.0.0-alpha.9",
+  "version": "5.0.0-alpha.10",
   "description": "Graph format parsers for DOT, GraphML, and GEXF",
   "license": "MIT",
   "type": "module",
@@ -58,9 +58,9 @@
     "access": "public"
   },
   "dependencies": {
-    "@loaders.gl/loader-utils": "5.0.0-alpha.9",
-    "@loaders.gl/schema": "5.0.0-alpha.9",
-    "@loaders.gl/schema-utils": "5.0.0-alpha.9",
+    "@loaders.gl/loader-utils": "5.0.0-alpha.10",
+    "@loaders.gl/schema": "5.0.0-alpha.10",
+    "@loaders.gl/schema-utils": "5.0.0-alpha.10",
     "apache-arrow": ">= 17.0.0",
     "fast-xml-parser": "^5.5.3"
   }
