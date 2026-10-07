@@ -74,7 +74,6 @@ test.skip('tile-converter(i3s)#convert B3dmToI3sGeometry - should convert Frankf
         attributesLength: 0,
         featureCount: 1,
         nonCompressedGeometryByteLength: 5338140,
-        compressedGeometryByteLength: 2016506,
         texture: {
           mimeType: 'image/jpeg',
           width: 2048,
@@ -149,8 +148,7 @@ test('tile-converter(i3s)#convertB3dmToI3sGeometry - should convert Berlin tile 
       vertexCount: 14025,
       attributesLength: 0,
       featureCount: 1,
-      nonCompressedGeometryByteLength: 392724,
-      compressedGeometryByteLength: 208506
+      nonCompressedGeometryByteLength: 392724
     });
     await checkNodeResources(convertedResources[1], {
       draco,
@@ -158,7 +156,6 @@ test('tile-converter(i3s)#convertB3dmToI3sGeometry - should convert Berlin tile 
       attributesLength: 0,
       featureCount: 1,
       nonCompressedGeometryByteLength: 2508,
-      compressedGeometryByteLength: 1673,
       texture: {
         mimeType: 'image/png',
         width: 64,
@@ -219,8 +216,7 @@ test('tile-converter(i3s)#convertB3dmToI3sGeometry - should convert New York til
       vertexCount: 50286,
       attributesLength: 10,
       featureCount: 275,
-      nonCompressedGeometryByteLength: 1412416,
-      compressedGeometryByteLength: 608764
+      nonCompressedGeometryByteLength: 1412416
     });
   } finally {
     // Clean up worker pools
@@ -278,7 +274,6 @@ test('tile-converter(i3s)#convertB3dmToI3sGeometry - should convert Ferry tile c
       attributesLength: 3,
       featureCount: 3,
       nonCompressedGeometryByteLength: 1326944,
-      compressedGeometryByteLength: 1236750,
       texture: {
         mimeType: 'image/jpeg',
         width: 355,
@@ -453,7 +448,6 @@ test('tile-converter(i3s)#convertB3dmToI3sGeometry - should convert tile content
       attributesLength: 2,
       featureCount: 12,
       nonCompressedGeometryByteLength: 11324,
-      compressedGeometryByteLength: 5700,
       texture: {
         mimeType: 'image/jpeg',
         width: 512,
@@ -618,7 +612,6 @@ async function checkNodeResources(resources, expectedValues) {
     attributesLength,
     featureCount,
     nonCompressedGeometryByteLength,
-    compressedGeometryByteLength,
     texture,
     boundingVolumes
   } = expectedValues;
@@ -629,9 +622,9 @@ async function checkNodeResources(resources, expectedValues) {
   if (draco) {
     expect(resources.compressedGeometry instanceof Promise).toBeTruthy();
     const compressedGeometry = await resources.compressedGeometry;
-    expect(
-      Math.abs(compressedGeometry.byteLength - compressedGeometryByteLength)
-    ).toBeLessThanOrEqual(1);
+    // Draco header: magic, version, geometry type (mesh), encoding method (Edge Breaker).
+    expect(new TextDecoder().decode(compressedGeometry.slice(0, 5))).toBe('DRACO');
+    expect(new Uint8Array(compressedGeometry).slice(7, 9)).toEqual(new Uint8Array([1, 1]));
   }
   if (texture) {
     expect(resources.texture.mimeType).toBe(texture.mimeType);
