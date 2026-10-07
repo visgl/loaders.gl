@@ -17,7 +17,7 @@ export type Tiles3DArchiveWriterOptions = WriterOptions & {
   '3tz'?: {
     /** Maximum archive bytes, including ZIP headers and the index; not a peak-memory limit. */
     maxArchiveBytes?: number;
-    /** Cooperative cancellation between resource reads and entry encodes. */
+    /** Cooperative cancellation between payload block reads and header encodes. */
     signal?: AbortSignal;
   };
 };
@@ -51,6 +51,7 @@ async function encodeArchive(
 
 /**
  * Streams the same deterministic archive bytes without allocating the complete output buffer.
+ * Payload reads/copies are at most 64 KiB, with a checksum pass before each populated header.
  * Validation occurs on first pull. Callers await each chunk write, finalize only on completion,
  * and discard partial output on failure or cancellation. Chunks are Uint8Array views.
  * @param files - Immutable resources already authored for this archive format.

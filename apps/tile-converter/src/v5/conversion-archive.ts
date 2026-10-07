@@ -16,7 +16,7 @@ export interface TileConversionArchiveOptions {
   readonly format: '3tz' | 'slpk';
   /** Maximum final archive bytes, including headers/index; not peak serialization memory. */
   readonly maxArchiveBytes: number;
-  /** Cooperative packaging cancellation; active Blob reads and entry encodes finish first. */
+  /** Cooperative packaging cancellation; active block reads and header encodes finish first. */
   readonly signal?: AbortSignal;
 }
 
@@ -44,7 +44,8 @@ export async function createTileConversionArchive(
  * Checks declarations and the full budget on first pull, before output. Await each chunk write
  * for backpressure; callers finalize storage only after successful completion and discard partial
  * output on failure, cancellation, or early exit. Resource inputs remain caller-owned and immutable.
- * Retains the current entry plus index/directory metadata; this is not a total heap guarantee.
+ * Uses payload blocks of at most 64 KiB and retains index/directory metadata and caller inputs.
+ * Each resource is read once for its checksum, then again for output; this is not a total heap guarantee.
  * @param files - Files from a successfully finalized browser conversion sink.
  * @param options - Format, complete archive-size budget, and optional cancellation signal.
  * @returns Uint8Array views to write to application-owned storage, respecting their byte ranges.

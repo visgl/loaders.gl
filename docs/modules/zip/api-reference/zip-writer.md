@@ -92,7 +92,7 @@ Explicit slash-suffixed keys are written as directory entries whether or not `zi
 
 `encodeIndexedZip` is exported from `@loaders.gl/zip/indexed-zip-writer` and the package root.
 It is the portable shared encoder used by the 3TZ and SLPK format writers. Supply immutable
-`ArrayBuffer`/`Blob` resources and `{indexPath, maxArchiveBytes, lowercasePaths?}`. Paths must
+`ArrayBuffer`/`Blob` resources and `{indexPath, maxArchiveBytes, lowercasePaths?, signal?}`. Paths must
 be canonical relative ASCII; the generated index name must be nonnumeric and absent from
 resources. Lowercasing hashes also rejects case-folded duplicate resource paths.
 
@@ -100,5 +100,14 @@ The deterministic STORE ZIP32 has a final 24-byte MD5/local-header-offset index,
 timestamp, populated local headers, and no descriptors/comments/directories. The complete
 size is measured before Blob reads. Format writers supply format-specific root requirements,
 index names, and size ceilings. Prefer those writers for 3TZ/SLPK. This function does not
-validate payloads or reference closure and does not support ZIP64, streaming, cancellation,
-or a peak-memory budget.
+validate payloads or reference closure and does not support ZIP64 or a total peak-memory budget.
+
+`encodeIndexedZipInBatches` is available from the implementation subpath for application-owned
+storage. It yields the same deterministic bytes without a complete archive or entry buffer.
+Payload reads/copies use blocks of at most 64 KiB. Each resource is read once to calculate its
+CRC-32 before the populated local header, then again to emit payload blocks on demand. Await
+each destination write for backpressure; finalize only after iteration succeeds and discard
+partial output on failure, cancellation, or early return. Inputs must remain immutable.
+
+Both APIs check `signal` between block reads and header encodes. Caller-owned inputs and
+index/directory metadata remain in memory; the buffered API also allocates the complete archive.

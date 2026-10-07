@@ -41,16 +41,16 @@ single-mesh output. Existing 3TZ readers can read the resulting indexed archive.
 
 ### Cancellation and temporary buffers
 
-Pass an optional `3tz.signal` (`AbortSignal`) to cancel between resource reads and entry
+Pass an optional `3tz.signal` (`AbortSignal`) to cancel between block reads and header
 encodes. Cancellation rejects with the signal's reason and returns no partial archive. An
-active Blob read or entry encode finishes before cancellation is observed; terminate a
+active Blob read or header encode finishes before cancellation is observed; terminate a
 dedicated worker when immediate interruption is required.
 
-Entries are encoded one at a time into one final archive buffer. Temporary buffers for one
-Blob read and its encoded entry can be released before the next resource is read; all Blob
-read buffers are no longer retained together. Caller-owned inputs, the final archive, the
-current entry's temporary allocations, and later Blob/worker transfer copies still consume
-memory. This does not provide a total heap limit. For output to external storage, use the iterator below.
+Payload reads/copies use blocks of at most 64 KiB. A checksum pass precedes each populated
+local header, followed by a second pass that writes the payload into the final archive buffer.
+Caller-owned inputs, the final archive, index/directory metadata, and later Blob/worker transfer
+copies still consume memory. This does not provide a total heap limit. For output to external
+storage, use the iterator below.
 
 ### Stream to application-owned storage
 
@@ -74,12 +74,13 @@ try {
 ```
 
 The first pull validates all declarations and the complete size budget before any output. Each
-pull encodes at most the next entry; awaiting writes provides backpressure, and returning from
-iteration prevents subsequent reads/encodes. The complete archive buffer is not allocated.
-Caller-owned resource inputs, one entry's temporary buffers, and index/directory metadata still
-require memory; the current resource is read/encoded as a whole. Index/directory storage grows
-with the declared entry count.
+entry first uses bounded reads to calculate its CRC-32 before emitting a populated local header.
+A second pass yields payload blocks of at most 64 KiB on demand; awaiting writes supplies
+backpressure within the entry. Returning from iteration prevents further reads. No complete
+entry or archive buffer is allocated. Caller-owned inputs and index/directory metadata remain
+in memory, with index/directory storage growing with the declared entry count.
 
 Use each chunk's byte view rather than writing its entire backing buffer. Finalize storage only
 after iteration succeeds; failure, cancellation, or early exit may leave partial bytes that the
-application must discard. Cancellation remains cooperative during active reads/encodes.
+application must discard. Cancellation is checked between block reads and header encodes; an
+active read finishes first.
