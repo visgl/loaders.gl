@@ -170,9 +170,10 @@ export function ConversionPanel({onPreview}: ConversionPanelProps) {
     <section style={{display: 'flex', flexDirection: 'column', gap: 6}}>
       <strong>Convert selected 3D Tiles meshes</strong>
       <small>
-        Partial output: one static untextured GLB/B3DM primitive per content, native ECEF. Material
-        factors are preserved. 3TZ supports vertex colors; SLPK supports explicitly mapped features.
-        Textures, external buffers, nested/implicit tilesets and multiple primitives are rejected.
+        Partial output: one static GLB/B3DM primitive per content, native ECEF. Material factors
+        are preserved. 3TZ supports vertex colors and one embedded PNG/JPEG base-color texture;
+        SLPK supports explicitly mapped features. SLPK textures, other texture maps, UV transforms,
+        external buffers, nested/implicit tilesets and multiple primitives are rejected.
       </small>
       <small>
         3TZ accepts up to 64 selected leaf contents; SLPK accepts one. Limits: 16 MiB input, 1,000

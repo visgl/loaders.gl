@@ -18,6 +18,7 @@ import type {TilesetConversionSourceOptions} from '@loaders.gl/tile-converter/v5
 import type {MeshConversionInput} from './mesh-conversion.js';
 import type {MeshTileMaterial} from './mesh.js';
 import {validateMeshGeometry} from './mesh.js';
+import {mapMeshSourceTexture} from './mesh-source-texture.js';
 import {extractMeshFeatures} from './mesh-source-features.js';
 import type {MeshSourceFeatureOptions} from './mesh-source-features.js';
 import type {I3SMeshFeatures} from '@loaders.gl/i3s';
@@ -36,11 +37,13 @@ export interface MeshTilesetSourceOptions extends TilesetConversionSourceOptions
 }
 
 /**
- * Extracts static untextured GLB/B3DM primitives from a native ECEF 3D Tiles runtime.
+ * Extracts static GLB/B3DM primitives from a native ECEF 3D Tiles runtime, including
+ * optional embedded PNG/JPEG base-color images, TEXCOORD_0, and plain glTF sampling.
  * Shared traversal retains placement identity and unloads content according to the supplied policy.
  * The adapter applies node transforms, glTF up-axis correction, RTC translation, and tile placement
  * once, retaining Float64 absolute positions and inverse-transpose unit normals. Animation, skins,
- * morphs, instancing, textures, unknown extensions, non-affine/mirrored placements, and
+ * morphs, instancing, broader texture semantics, unknown extensions, non-affine/mirrored
+ * placements, and
  * metadata outside the declared feature profile fail explicitly. Multiple resources can be read;
  * the single-mesh I3S sink rejects a second resource and aborts the entire output.
  * @param tileset - Dedicated native EPSG:4978 runtime with decoded glTF content enabled.
@@ -252,7 +255,7 @@ function extractPrimitive(
   const attributes: Record<string, MeshAttribute> = {};
   for (const [name, accessor] of Object.entries(primitive.attributes)) {
     if (name === '_BATCHID' || /^_FEATURE_ID_\d+$/.test(name)) continue;
-    if (!['POSITION', 'NORMAL', 'COLOR_0'].includes(name))
+    if (!['POSITION', 'NORMAL', 'COLOR_0', 'TEXCOORD_0'].includes(name))
       throw new TileConversionError(
         'MESH_SOURCE_ATTRIBUTE_UNSUPPORTED',
         `Unsupported mesh attribute ${name}`
@@ -311,7 +314,7 @@ function extractPrimitive(
   };
 }
 
-/** Maps supported untextured PBR controls, rejecting all unrepresented rendering semantics. */
+/** Maps supported PBR controls and an embedded base-color image, rejecting unmapped semantics. */
 function mapMaterial(
   material: GLTFMaterialPostprocessed | undefined
 ): MeshTileMaterial | undefined {
@@ -332,16 +335,20 @@ function mapMaterial(
         ].includes(name)
     ) ||
     Object.keys(pbr || {}).some(
-      name => !['baseColorFactor', 'metallicFactor', 'roughnessFactor'].includes(name)
+      name =>
+        !['baseColorFactor', 'baseColorTexture', 'metallicFactor', 'roughnessFactor'].includes(name)
     ) ||
     material.emissiveFactor?.some(value => value !== 0)
   )
     throw new TileConversionError(
       'MESH_SOURCE_MATERIAL_UNSUPPORTED',
-      'Only untextured metallic-roughness material factors are supported'
+      'Only metallic-roughness factors and one embedded base-color image are supported'
     );
   return {
     baseColorFactor: pbr?.baseColorFactor as [number, number, number, number] | undefined,
+    ...('baseColorTexture' in (pbr || {})
+      ? {baseColorTexture: mapMeshSourceTexture(pbr!.baseColorTexture)}
+      : {}),
     metallicFactor: pbr?.metallicFactor,
     roughnessFactor: pbr?.roughnessFactor,
     alphaMode: material.alphaMode as MeshTileMaterial['alphaMode'],

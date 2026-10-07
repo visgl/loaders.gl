@@ -156,14 +156,19 @@ The sink exposes files only after successful finalization and clears partial fil
 A second mesh resource aborts this single-mesh output; hierarchy generation is separate work.
 
 The initial source rejects animation, skins, morphs, GPU instancing, mirrored or singular
-placements, textures, unmapped material/feature extensions, and tileset/group/tile/content
+placements, unmapped material/feature extensions, and tileset/group/tile/content
 metadata that needs its own mapping. Decoded reader cleanup follows shared traversal; the
 application still owns the runtime, worker, decoder, and archive lifetime. Synchronous
 encoding cannot be interrupted by an AbortSignal mid-operation; applications can terminate a
 disposable worker instead. Resource/retained-output/archive caps do
 not constitute a total peak-memory budget.
 
-Unannotated resources can also use the existing GLB codec and 3D Tiles/3TZ sink. The GLB
+Unannotated resources can also use the existing GLB codec and 3D Tiles/3TZ sink. The source
+retains `TEXCOORD_0` (packed Float32 or normalized Uint8/Uint16) and one embedded PNG/JPEG
+base-color image from a glTF buffer view, including declared wrapping and filtering. Encoded
+image bytes are forwarded without pixel decoding or transcoding. External/data-URI images,
+other UV sets, UV transforms, texture/image/sampler extensions and other texture maps are
+rejected. The I3S codec continues to reject textured geometry. The GLB
 codec explicitly rejects feature-bearing resources until its target metadata writer is
 qualified. See [I3S mesh authoring](/docs/modules/i3s/api-reference/i3s-mesh-writer) for the
 precise target property/null profile.
@@ -176,10 +181,11 @@ download the partial archive. It demonstrates the separate core and adapters ent
 required byte/precision budgets, cancellation and explicit profile rejection. See the
 [example README](https://github.com/visgl/loaders.gl/tree/master/examples/website/i3s-slpk)
 for limits and supported inputs. The controls accept an explicit JSON `MeshSourceFeatureOptions`
-mapping for single-mesh SLPK output; no schema is inferred. The decoded byte gate charges geometry,
+mapping for single-mesh SLPK output; no schema is inferred. The decoded byte gate charges geometry, encoded base-color image bytes,
 Arrow columns and triangle associations after extraction. Exact 64-bit decimal-string mappings are
 reported as diagnostics. Untextured material factors are preserved in both formats; `COLOR_0` is
-preserved for 3TZ and rejected for SLPK. Feature-bearing 3TZ remains unsupported.
+preserved for 3TZ and rejected for SLPK. Embedded PNG/JPEG base-color textures and
+`TEXCOORD_0` are preserved for 3TZ; textured SLPK and feature-bearing 3TZ remain unsupported.
 
 
 ### Partial mesh collections
