@@ -43,12 +43,15 @@ Only selected content is fetched. Use the content list's multiple selection cont
 source geometric error. SLPK authors a single final mesh and does not reproduce the source LOD hierarchy. A successful archive can be downloaded or previewed with the same
 incremental viewer. This is a partial dataset export, not whole-tileset conversion.
 
-Each selected content must contain exactly one static, untextured primitive in self-contained
+Each selected content must contain exactly one static primitive in self-contained
 GLB/B3DM, with native EPSG:4978 coordinates and ellipsoidal heights established by root region bounds.
-Unknown/local frames are rejected. Untextured metallic-roughness material factors, alpha controls
+Unknown/local frames are rejected. Metallic-roughness material factors, alpha controls
 and double-sided rendering are preserved. SLPK converts linear material RGB factors to I3S sRGB
 while preserving alpha; readers convert them back for rendering. 3TZ also preserves packed linear Float32 or normalized
-Uint8/Uint16 vertex colors; SLPK rejects vertex colors. Textures, animation, compressed meshes, external dependencies, multiple primitives,
+Uint8/Uint16 vertex colors, packed Float32 or normalized Uint8/Uint16 `TEXCOORD_0`, and one
+embedded PNG/JPEG base-color image with its declared wrapping and filtering. Encoded image
+bytes are copied without decoding, resizing or transcoding. SLPK rejects vertex colors and textures.
+Other texture maps, UV transforms/sets, texture extensions, animation, compressed meshes, external dependencies, multiple primitives,
 nested external tilesets and implicit tiling fail explicitly. No feature schema is inferred.
 
 ### Explicit SLPK features
@@ -83,7 +86,8 @@ property fails. Decimal-string representation is reported in the completed diagn
 before content I/O.
 
 The decoded input gate includes Arrow column and triangle-association buffers after extraction.
-It does not bound allocations during metadata decoding or Arrow construction.
+It also charges encoded base-color image bytes. It does not bound allocations during metadata
+decoding or Arrow construction.
 
 ### Multi-tile 3TZ profile
 
@@ -99,7 +103,7 @@ SLPK continues to accept one mesh. Multi-node I3S authoring, broader hierarchy/r
 mapping and broader feature associations remain follow-up work.
 
 The demo caps root JSON plus selected content at 16 MiB, declarations at 1,000 contents,
-aggregate decoded geometry at 16 MiB, retained output and archive size at 32 MiB, and position error
+aggregate decoded geometry plus encoded image bytes at 16 MiB, retained output and archive size at 32 MiB, and position error
 at 1 cm. These are byte gates, not a guarantee about peak decoder/serialization memory.
 Selected-content fetching, decoding, conversion and archive encoding run in a disposable module
 worker. Archive packaging transfers one byte-view chunk at a time. For download/preview, the

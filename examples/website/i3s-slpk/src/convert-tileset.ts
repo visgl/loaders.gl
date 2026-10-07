@@ -31,7 +31,7 @@ import {
 export type ConversionFormat = 'slpk' | '3tz';
 /** Required transport, decoded geometry, retained output, and archive budgets for this demo. */
 export const CONVERSION_LIMITS = {
-  /** Root JSON plus selected content transport bytes; also the decoded geometry/feature byte gate. */
+  /** Root JSON plus selected content transport bytes; also the decoded geometry/image/feature byte gate. */
   maxInputBytes: 16 * 1024 * 1024,
   /** Maximum declared content placements inspected. */
   maxInputResources: 1000,
@@ -85,7 +85,8 @@ export async function inspectConversionInput(
 
 /**
  * Converts only the explicitly selected content placement. The initial profile requires exactly
- * one static, untextured mesh primitive. SLPK features require an explicit schema;
+ * one static mesh primitive with the target-supported appearance. SLPK features require
+ * an explicit schema;
  * 3TZ preserves supported vertex colors but rejects feature-bearing meshes.
  * Transport and retained output are bounded, but these limits do not bound peak decoder memory.
  */
@@ -281,7 +282,8 @@ function createSelectedRuntime(
  * Exports explicit independent leaf placements as a flat 3TZ collection. One selected content
  * retains the existing SLPK/3TZ profile. Multi-selection rejects non-leaves and SLPK before I/O;
  * it neither reproduces source LOD relationships nor selects parent/child approximations.
- * Selected transport and decoded geometry share aggregate budgets. Each content must contain
+ * Selected transport, decoded geometry and encoded images share aggregate budgets. Each content
+ * must contain
  * exactly one supported primitive, and failure of any placement discards the entire archive.
  */
 export async function convertSelectedContents(
@@ -391,7 +393,7 @@ export async function convertSelectedContentsToResources(
               throw new Error('Each selected content must contain exactly one mesh primitive.');
             decodedBytes += measureMeshBytes(resource);
             if (decodedBytes > CONVERSION_LIMITS.maxInputBytes)
-              throw new Error('Selected decoded geometry exceeds the aggregate input byte limit.');
+              throw new Error('Selected decoded geometry and encoded images exceed the aggregate input byte limit.');
             yield {...resource, id: raw.resourceId};
           }
           if (!meshCount) throw new Error('Selected content has no mesh primitive.');
@@ -451,7 +453,7 @@ async function createArchiveFile(
   };
 }
 
-/** Charges decoded geometry, triangle associations and Arrow column buffers after extraction. */
+/** Charges geometry, encoded image bytes, triangle associations and Arrow columns after extraction. */
 function measureMeshBytes(resource: MeshSourceResource): number {
   const featureBytes = resource.features
     ? resource.features.triangleFeatureIndices.byteLength +
@@ -468,6 +470,7 @@ function measureMeshBytes(resource: MeshSourceResource): number {
     : 0;
   return Object.values(resource.mesh.attributes).reduce(
     (bytes, attribute) => bytes + attribute.value.byteLength,
-    (resource.mesh.indices?.value.byteLength ?? 0) + featureBytes
+    (resource.mesh.indices?.value.byteLength ?? 0) +
+      (resource.material?.baseColorTexture?.data.byteLength ?? 0) + featureBytes
   );
 }
