@@ -247,8 +247,20 @@ class GLTFPostProcessor {
     return this._get(this.json.materials, index);
   }
 
+  /** Resolves referenced or extension-decoded accessors with consistent component layout metadata. */
   getAccessor(index: number): GLTFAccessorPostprocessed {
-    return this._get(this.json.accessors, index);
+    const accessor = this._get(this.json.accessors, index);
+    if (typeof index === 'object') {
+      const components = getSizeFromAccessorType(accessor.type);
+      const bytesPerComponent = getBytesFromComponentType(accessor.componentType);
+      return {
+        ...accessor,
+        components,
+        bytesPerComponent,
+        bytesPerElement: components * bytesPerComponent
+      };
+    }
+    return accessor;
   }
 
   getCamera(index: number): GLTFCameraPostprocessed {

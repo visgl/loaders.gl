@@ -53,6 +53,7 @@ See [supported items and verification boundaries](/docs/developer-guide/arcgis/i
 
 ## What's new
 
+- The browser tile-conversion example accepts Draco-compressed GLB/B3DM input with bundled decoder assets and existing decoded-byte gates. Shared glTF postprocessing completes layout metadata for inline decoded accessors without copying their typed arrays.
 - The v5 tile-converter mesh codec now writes lossless Draco Edge Breaker GLB/3TZ geometry by default, with `draco: false` for uncompressed output. glTF Draco decoding preserves normalized integer color and UV accessors and supports texture transforms on decoded UVs. See the [conversion API](/docs/modules/tile-converter/api-reference/v5-conversion#draco-mesh-output).
 
 - Upgrade math.gl dependencies to 5.0.0-alpha.12 and migrate coordinate transformations to

@@ -195,7 +195,7 @@ async function convertSelectedContentToResources(
   }
 }
 
-/** Applies the application's configured codec assets to direct Draco encoding and verification. */
+/** Applies the application's bundled or configured assets to Draco decoding and encoding. */
 function getDracoLibraryOptions() {
   const {core, modules} = getLoaderOptions();
   return {
@@ -261,21 +261,32 @@ function createSelectedRuntime(
   data: Uint8Array,
   signal: AbortSignal
 ): Tileset3D {
-  /** Blocks external buffers, images, schemas, and decoder downloads outside the selected payload. */
+  /** Blocks external content dependencies; Draco runtimes use the bundled application assets. */
   const rejectExternalFetch: typeof fetch = async () => {
     throw new TileConversionError(
       'EXTERNAL_RESOURCE_UNSUPPORTED',
       'Use self-contained GLB/B3DM content.'
     );
   };
+  const {modules, CDN: contentDeliveryNetwork, useLocalLibraries} = getDracoLibraryOptions();
   const loadOptions = {
-    worker: false,
-    fetch: rejectExternalFetch,
+    modules,
+    core: {
+      worker: false,
+      fetch: rejectExternalFetch,
+      CDN: contentDeliveryNetwork,
+      useLocalLibraries
+    },
     // Preserve authored UVs and the transform for the converter's qualified GLB writer.
     gltf: {
       loadImages: false,
-      decompressMeshes: false,
-      excludeExtensions: {KHR_texture_transform: false}
+      decompressMeshes: true,
+      excludeExtensions: {
+        KHR_texture_transform: false,
+        // Only Draco input compression is qualified by this conversion profile.
+        EXT_meshopt_compression: false,
+        KHR_meshopt_compression: false
+      }
     },
     '3d-tiles': {loadGLTF: true}
   };
