@@ -1,0 +1,1 @@
+"use strict";(self.webpackChunkproject_website=self.webpackChunkproject_website||[]).push([["86408"],{36475(s,r,e){e.d(r,{default:()=>o});var t=e(20733);class o extends t.p{constructor(){super(...arguments),this.errors=null}syntaxError(s,r,e,t,o,u){this.errors||(this.errors=[]),this.errors.push({line:e,column:t,msg:o,e:u})}}}}]);
