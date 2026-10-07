@@ -3,7 +3,11 @@
 // Copyright (c) vis.gl contributors
 
 import {expect, test, vi} from 'vitest';
-import {parseWithWorker, parseWithWorkerInBatches} from '@loaders.gl/loader-utils';
+import {
+  parseFromContext,
+  parseWithWorker,
+  parseWithWorkerInBatches
+} from '@loaders.gl/loader-utils';
 import {parse} from '@loaders.gl/core';
 
 const CHILD_LOADER = {
@@ -24,7 +28,7 @@ const NESTED_WORKER_SOURCE = `
     if (type === 'process' || type === 'process-in-batches') {
       self.postMessage({source: 'loaders.gl', type: 'process', payload: {
         id: 17, input: new ArrayBuffer(1), options: {core: {worker: false}},
-        context: {_loaderIds: payload.options.loaderIds, _loaderIsArray: payload.options.loaderIsArray, url: 'nested'}
+        context: payload.options.emptyContext ? {} : {_loaderIds: payload.options.loaderIds, _loaderIsArray: payload.options.loaderIsArray, url: 'nested'}
       }});
     } else if (type === 'done' && payload.id === 17) {
       if (payload.result.batch) {
@@ -130,4 +134,73 @@ test('batched workers retain nested loader selection and worker-only context', a
     batches.push(batch);
   expect(batches).toEqual([{batch: true}]);
   expect(callback).toHaveBeenCalledOnce();
+});
+
+test.each([
+  {batched: false, emptyContext: false},
+  {batched: true, emptyContext: false},
+  {batched: false, emptyContext: true},
+  {batched: true, emptyContext: true}
+])('context-free worker requests support a second nested parse (batched: $batched, empty: $emptyContext)', async ({
+  batched,
+  emptyContext
+}) => {
+  const leaf = {...CHILD_LOADER, id: 'leaf', parse: async () => ({batch: batched, decoded: true})};
+  const child = {
+    ...CHILD_LOADER,
+    async parse(data, options, context) {
+      expect(context.coreApi.parse).toBe(parse);
+      return await parseFromContext(data, leaf, options, context);
+    }
+  };
+  const options = {
+    source: NESTED_WORKER_SOURCE,
+    worker: true,
+    reuseWorkers: false,
+    loaderIds: [child.id],
+    emptyContext,
+    core: {ignoreRegisteredLoaders: true}
+  };
+  const parent = {...PARENT_LOADER, subloaders: {ChildLoader: child}};
+  const parseCallback = emptyContext
+    ? async (data, _loaders, parseOptions, context) =>
+        await parse(data, child, parseOptions, context)
+    : parse;
+  if (batched) {
+    const batches = [];
+    for await (const batch of parseWithWorkerInBatches(
+      parent,
+      [new ArrayBuffer(1)],
+      options,
+      undefined,
+      parseCallback
+    )) {
+      batches.push(batch);
+    }
+    expect(batches).toEqual([{batch: true, decoded: true}]);
+  } else {
+    expect(
+      await parseWithWorker(parent, new ArrayBuffer(1), options, undefined, parseCallback)
+    ).toEqual({
+      batch: false,
+      decoded: true
+    });
+  }
+});
+
+test('empty worker contexts retain legacy callback options without an outer context', async () => {
+  const callback = vi.fn(async (_data, options) => ({worker: options.core.worker}));
+  const result = await parseWithWorker(
+    PARENT_LOADER,
+    new ArrayBuffer(1),
+    {
+      source: NESTED_WORKER_SOURCE,
+      worker: true,
+      reuseWorkers: false,
+      emptyContext: true
+    },
+    undefined,
+    callback
+  );
+  expect(result).toEqual({worker: false});
 });
