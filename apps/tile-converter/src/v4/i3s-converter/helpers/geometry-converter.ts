@@ -1535,14 +1535,14 @@ function generateBigUint64Array(featureIds: any[]): BigUint64Array {
 }
 
 /**
- * Generates draco compressed geometry
- * @param vertexCount
- * @param convertedAttributes - get rid of this argument here
- * @param attributes - geometry attributes to compress
- * @param libraries - dynamicaly loaded 3rd-party libraries
- * @returns - Compressed geometry.
+ * Generates Edge Breaker Draco geometry with I3S feature and texture metadata.
+ * @param vertexCount - Number of vertices in the grouped triangle list.
+ * @param convertedAttributes - Original attributes used to size the feature-index array.
+ * @param attributes - Grouped I3S geometry attributes and inclusive face ranges.
+ * @param libraries - Local Draco encoder library locations.
+ * @returns Compressed geometry; the worker transfers the input attribute buffers.
  */
-async function generateCompressedGeometry(
+export async function generateCompressedGeometry(
   vertexCount: number,
   convertedAttributes: Record<string, any>,
   attributes: Record<string, any>,
@@ -1604,7 +1604,7 @@ async function generateCompressedGeometry(
       modules: libraries,
       useLocalLibraries: true,
       draco: {
-        method: 'MESH_SEQUENTIAL_ENCODING',
+        method: 'MESH_EDGEBREAKER_ENCODING',
         attributesMetadata
       },
       ['draco-writer']: {
@@ -1646,7 +1646,7 @@ function generateFeatureIndexAttribute(
     orderedFeatureIndices.fill(fillIndex, startIndex, endIndex);
 
     fillIndex++;
-    startIndex = endIndex + 1;
+    startIndex = endIndex;
   }
 
   return orderedFeatureIndices;

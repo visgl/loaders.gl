@@ -55,7 +55,7 @@ test('tile-converter(i3s)#converts 3d-tiles tileset to i3s tileset', async () =>
     expect(tilesetJson).toBe(BROWSER_ERROR_MESSAGE);
   }
 });
-test('tile-converter(i3s)#should create Draco compressed geometry', async () => {
+test('tile-converter(i3s)#writes Edge Breaker geometry into SLPK', async () => {
   if (!isBrowser) {
     const converter = new I3SConverter();
     const tilesetJson = await converter.convert({
@@ -66,8 +66,17 @@ test('tile-converter(i3s)#should create Draco compressed geometry', async () => 
       egmFilePath: PGM_FILE_PATH
     });
     expect(tilesetJson).toBeTruthy();
+    const archiveFile = new NodeFile('data/BatchedColors.slpk');
+    try {
+      const archive = await parseSLPKArchive(archiveFile);
+      const compressedGeometry = await archive.getFile('nodes/1/geometries/1', 'http');
+      expect(new TextDecoder().decode(compressedGeometry.slice(0, 5))).toBe('DRACO');
+      expect(new Uint8Array(compressedGeometry).slice(7, 9)).toEqual(new Uint8Array([1, 1]));
+    } finally {
+      await archiveFile.close();
+      await cleanUpPath('data/BatchedColors');
+    }
   }
-  await cleanUpPath('data/BatchedColors');
 });
 test('tile-converter(i3s)#converts 3d-tiles tileset to i3s tileset with validation', async () => {
   if (!isBrowser) {
