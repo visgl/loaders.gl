@@ -17,7 +17,7 @@ import './style.css';
 import 'maplibre-gl/dist/maplibre-gl.css';
 
 /** Public basemap style; sample data itself is generated locally. */
-const MAP_STYLE = 'https://basemaps.cartocdn.com/gl/positron-gl-style/style.json';
+const MAP_STYLE = 'https://tiles.openfreemap.org/styles/positron';
 /** Starting camera fits all four synthetic site groups. */
 const INITIAL_VIEW_STATE: MapViewState = {
   longitude: -122.35,

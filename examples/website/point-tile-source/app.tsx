@@ -398,7 +398,7 @@ export default function App({
           <Map
             reuseMaps={true}
             mapLib={maplibregl}
-            mapStyle={'https://basemaps.cartocdn.com/gl/voyager-gl-style/style.json'}
+            mapStyle={'https://tiles.openfreemap.org/styles/liberty'}
             preserveDrawingBuffer={true}
           />
         ) : null}
