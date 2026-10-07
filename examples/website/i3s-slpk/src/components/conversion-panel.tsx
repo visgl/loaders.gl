@@ -171,8 +171,9 @@ export function ConversionPanel({onPreview}: ConversionPanelProps) {
       <strong>Convert selected 3D Tiles meshes</strong>
       <small>
         Partial output: one static GLB/B3DM primitive per content, native ECEF. Material factors
-        are preserved. 3TZ supports vertex colors and one embedded PNG/JPEG base-color texture;
-        SLPK supports explicitly mapped features. SLPK textures, other texture maps, UV transforms,
+        are preserved. 3TZ supports vertex colors and one embedded PNG/JPEG base-color texture
+        with a UV transform;
+        SLPK supports explicitly mapped features. SLPK textures, other texture maps/UV sets,
         external buffers, nested/implicit tilesets and multiple primitives are rejected.
       </small>
       <small>
