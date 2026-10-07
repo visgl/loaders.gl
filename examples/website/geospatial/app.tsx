@@ -51,7 +51,7 @@ import {ZstdCodec} from 'zstd-codec';
 import '@deck.gl/widgets/stylesheet.css';
 
 export const INITIAL_MAP_STYLE =
-  'https://basemaps.cartocdn.com/gl/positron-nolabels-gl-style/style.json';
+  'https://tiles.openfreemap.org/styles/positron';
 
 const LOADER_OPTIONS = {
   core: {

@@ -57,7 +57,7 @@ export default function App() {
         <Map
           reuseMaps
           mapLib={maplibregl}
-          mapStyle={'https://basemaps.cartocdn.com/gl/positron-nolabels-gl-style/style.json'}
+          mapStyle={'https://tiles.openfreemap.org/styles/positron'}
           preventStyleDiffing
           preserveDrawingBuffer
         />
