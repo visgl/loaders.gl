@@ -93,4 +93,4 @@ metadata before Parquet encoding.
 
 ## LZO decoding
 
-The JavaScript Parquet reader supports raw LZO1X-compressed pages, using each page’s uncompressed size as its output capacity. LZO writing is not supported.
+The JavaScript Parquet reader supports raw LZO1X-compressed pages and the Hadoop block framing emitted by parquet-java,  using each page’s uncompressed size as its output capacity. LZO writing is not supported.

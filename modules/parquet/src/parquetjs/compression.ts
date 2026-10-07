@@ -76,6 +76,60 @@ class ParquetSnappyDecompressor extends Decompressor {
   }
 }
 
+/** Decodes raw pages and the Hadoop framing emitted by parquet-java's LzoCodec. */
+class ParquetLzoDecompressor extends LzoDecompressor {
+  /** Prefers raw LZO1X and accepts complete, size-checked Hadoop block streams. */
+  override async decompress(input: ArrayBuffer, size?: number): Promise<ArrayBuffer> {
+    try {
+      return await super.decompress(input, size);
+    } catch (error) {
+      // The raw decoder validates capacity before allocating. Preserve those errors rather than
+      // attempting a framed allocation with an invalid or excessive page size.
+      if (error instanceof RangeError || size === undefined) throw error;
+      const output = this.decodeHadoopBlocks(new Uint8Array(input), size);
+      if (output === null) throw error;
+      return output;
+    }
+  }
+
+  /** Checks each block/chunk length and decodes chunks until their block size is satisfied. */
+  private decodeHadoopBlocks(input: Uint8Array, size: number): ArrayBuffer | null {
+    const view = new DataView(input.buffer, input.byteOffset, input.byteLength);
+    const output = new Uint8Array(size);
+    let inputOffset = 0;
+    let outputOffset = 0;
+    try {
+      while (inputOffset < input.length) {
+        if (input.length - inputOffset < 4) return null;
+        const blockSize = view.getUint32(inputOffset, false);
+        inputOffset += 4;
+        if (blockSize === 0) {
+          return inputOffset === input.length && outputOffset === size ? output.buffer : null;
+        }
+        if (blockSize > size - outputOffset) return null;
+        const blockEnd = outputOffset + blockSize;
+        while (outputOffset < blockEnd) {
+          if (input.length - inputOffset < 4) return null;
+          const chunkSize = view.getUint32(inputOffset, false);
+          inputOffset += 4;
+          if (chunkSize === 0 || chunkSize > input.length - inputOffset) return null;
+          const chunk = input.slice(inputOffset, inputOffset + chunkSize);
+          inputOffset += chunkSize;
+          const decoded = new Uint8Array(
+            this.decompressSync(chunk.buffer, blockEnd - outputOffset)
+          );
+          if (decoded.length === 0) return null;
+          output.set(decoded, outputOffset);
+          outputOffset += decoded.length;
+        }
+      }
+      return outputOffset === size ? output.buffer : null;
+    } catch {
+      return null;
+    }
+  }
+}
+
 /**
  * Registers optional codec modules without eagerly loading codec-backed implementations.
  *
@@ -176,7 +230,7 @@ function createParquetCompressor(method: ParquetCompression): Compressor {
 function createParquetDecompressor(method: ParquetCompression): Decompressor {
   switch (method) {
     case 'LZO':
-      return new LzoDecompressor();
+      return new ParquetLzoDecompressor();
     case 'GZIP':
       return new GZipDecompressor();
     case 'SNAPPY':

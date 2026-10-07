@@ -288,7 +288,7 @@ JavaScript fallback codec is separate from browser-native `DecompressionStream` 
 | `SNAPPY` | ✅ | ✅ | Common Parquet default |
 | `GZIP` | ✅ | ✅ | Native decompression is used when available |
 | `BROTLI` | ✅ | ❌ | Native or injected decoder, depending on runtime |
-| `LZO` | ✅ | ❌ | Raw LZO1X via vendored decoder-only WASM with a JavaScript fallback |
+| `LZO` | ✅ | ❌ | Raw and Hadoop-framed LZO1X via decoder-only WASM with a JavaScript fallback |
 | legacy `LZ4` | ✅ | ✅ | Accepts raw, framed, and Hadoop-framed legacy data |
 | `ZSTD` | ✅ | ✅ | Native when available; otherwise inject `zstd-codec` |
 | `LZ4_RAW` | ✅ | ✅ | Interoperable LZ4 block format introduced after legacy `LZ4` |

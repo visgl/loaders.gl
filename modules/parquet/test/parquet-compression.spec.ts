@@ -204,3 +204,16 @@ test('Parquet LZO pages use the page output size and remain decode-only', async 
 test('Parquet LZO writing returns an explicit decoder-only error', async () => {
   await expect(deflate('LZO', new Uint8Array([1]))).rejects.toThrow('decode-only');
 });
+
+
+test('Parquet Hadoop LZO rejects inconsistent sizes, truncated chunks and trailing bytes', async () => {
+  const raw = [22, 104, 101, 108, 108, 111, 17, 0, 0];
+  const frame = new Uint8Array([0, 0, 0, 5, 0, 0, 0, raw.length, ...raw]);
+  const decoder = createParquetPageDecompressor('LZO');
+  expect(new TextDecoder().decode(await decoder(frame, 5))).toBe('hello');
+  for (const malformed of [frame.slice(0, -1), new Uint8Array([...frame, 1]), new Uint8Array([0,0,0,6, ...frame.slice(4)]), new Uint8Array([0,0,0,5,0,0,0,0]), new Uint8Array([0,0,0,5,0,0,0,255, ...raw])]) {
+    await expect(decoder(malformed, 5)).rejects.toThrow();
+  }
+  expect(await decoder(new Uint8Array([0,0,0,0]), 0)).toEqual(new Uint8Array());
+  await expect(decoder(frame, -1)).rejects.toThrow(RangeError);
+});
