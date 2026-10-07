@@ -2,46 +2,41 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-/*
-import {
-  NoCompression,
-  GZipCompression,
-  DeflateCompression,
-  LZ4Compression,
-  ZstdCompression,
-  SnappyCompression,
-  BrotliCompression,
-  CompressionWorker
-} from '@loaders.gl/compression';
-import {getData} from './utils/test-utils';
+import * as internal from '../src/lib/fflate/index';
+import * as upstream from 'fflate';
 
-// import brotli from 'brotli'; - brotli has problems with decompress in browsers
-import brotliDecompress from 'brotli/decompress';
-import lz4js from 'lz4js';
-import {ZstdCodec} from 'zstd-codec';
-
-// Inject large dependencies through Compression constructor options
-const modules = {
-  // brotli has problems with decompress in browsers
-  brotli: {
-    decompress: brotliDecompress,
-    compress: () => {
-      throw new Error('brotli compress');
+/** Registers hermetic, verified internal-versus-upstream compression baselines. */
+export default function compressionBench(bench) {
+  const input = new TextEncoder().encode('loaders.gl compression benchmark row,42\n'.repeat(4096));
+  const options = {level: 6 as const, mtime: 0};
+  for (const format of ['gzip', 'zlib', 'deflate'] as const) {
+    const encode = format === 'gzip' ? 'gzipSync' : format === 'zlib' ? 'zlibSync' : 'deflateSync';
+    const decode =
+      format === 'gzip' ? 'gunzipSync' : format === 'zlib' ? 'unzlibSync' : 'inflateSync';
+    const compressed = upstream[encode](input, options);
+    bench.group(`Compression ${format} (${input.length} bytes → ${compressed.length} bytes)`);
+    for (const [name, engine] of [
+      ['internal', internal],
+      ['fflate 0.7.4', upstream]
+    ] as const) {
+      const output = engine[decode](compressed);
+      if (output.length !== input.length || output.some((value, index) => value !== input[index]))
+        throw new Error(`${name}: incorrect output`);
+      for (let iteration = 0; iteration < 3; iteration++) {
+        engine[encode](input, options);
+        engine[decode](compressed);
+      }
+      bench.add(
+        `${format} ${name} encode`,
+        {multiplier: input.length, unit: 'B', minIterations: 10, time: 250},
+        () => engine[encode](input, options)
+      );
+      bench.add(
+        `${format} ${name} decode`,
+        {multiplier: input.length, unit: 'B', minIterations: 10, time: 250},
+        () => engine[decode](compressed)
+      );
     }
-  },
-  lz4js,
-  'zstd-codec': ZstdCodec
-};
-
-export default async function compressionBench(bench) {
-  // const {binaryData} = getData();
-
-  bench = bench.group('Compression');
-
-  // bench = bench.addAsync('SHA256Hash#hash()', {multiplier: 100000, unit: 'bytes'}, () =>
-  //   new SHA256Hash({modules: {CryptoJS}}).hash(binaryData)
-  // );
-
+  }
   return bench;
 }
-*/

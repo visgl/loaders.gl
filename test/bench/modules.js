@@ -17,6 +17,13 @@ _addAliases(ALIASES);
 export async function addModuleBenchmarksToSuite(suite, filters = []) {
   const shouldRunBenchmark = createBenchmarkFilter(filters);
 
+  if (shouldRunBenchmark('compression')) {
+    const {default: compressionBench} = await import(
+      '../../modules/compression/test/compression.bench'
+    );
+    compressionBench(suite);
+  }
+
   if (shouldRunBenchmark('las')) {
     const {default: lasBench} = await import('@loaders.gl/las/test/las-loader.bench');
     await lasBench(suite);
