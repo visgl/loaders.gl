@@ -1,4 +1,5 @@
 import {getLoaderOptions, parse} from '@loaders.gl/core';
+import {getDracoLibraryOptions as getBundledDracoLibraryOptions} from '@loaders.gl/draco/bundled';
 import {Tiles3DLoader} from '@loaders.gl/3d-tiles';
 import {Tiles3DSource, Tileset3D} from '@loaders.gl/tiles';
 import {
@@ -198,17 +199,12 @@ async function convertSelectedContentToResources(
 /** Applies the application's bundled or configured assets to Draco decoding and encoding. */
 function getDracoLibraryOptions() {
   const {core, modules} = getLoaderOptions();
-  return {
+  return getBundledDracoLibraryOptions({
+    decoderProfile: 'full',
     CDN: core?.CDN,
     useLocalLibraries: core?.useLocalLibraries,
-    modules: {
-      'draco_encoder.js': new URL('../../../../modules/draco/src/libs/draco_encoder.js', import.meta.url).href,
-      'draco_encoder.wasm': new URL('../../../../modules/draco/src/libs/draco_encoder.wasm', import.meta.url).href,
-      'draco_wasm_wrapper.js': new URL('../../../../modules/draco/src/libs/draco_wasm_wrapper.js', import.meta.url).href,
-      'draco_decoder.wasm': new URL('../../../../modules/draco/src/libs/draco_decoder.wasm', import.meta.url).href,
-      ...modules
-    }
-  };
+    modules
+  });
 }
 
 /** Retains a conservative source LOD error from the selected hierarchy, rather than guessing zero. */
@@ -268,7 +264,12 @@ function createSelectedRuntime(
       'Use self-contained GLB/B3DM content.'
     );
   };
-  const {modules, CDN: contentDeliveryNetwork, useLocalLibraries} = getDracoLibraryOptions();
+  const {
+    modules,
+    decoderProfile,
+    CDN: contentDeliveryNetwork,
+    useLocalLibraries
+  } = getDracoLibraryOptions();
   const loadOptions = {
     modules,
     core: {
@@ -277,6 +278,8 @@ function createSelectedRuntime(
       CDN: contentDeliveryNetwork,
       useLocalLibraries
     },
+    // Reuse the full decoder already bundled for output verification.
+    draco: {decoderProfile},
     // Preserve authored UVs and the transform for the converter's qualified GLB writer.
     gltf: {
       loadImages: false,

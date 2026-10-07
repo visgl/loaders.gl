@@ -1,5 +1,5 @@
-import {beforeAll, expect, test} from 'vitest';
-import {fetchFile, parse} from '@loaders.gl/core';
+import {afterAll, beforeAll, expect, test} from 'vitest';
+import {fetchFile, getLoaderOptions, parse, setLoaderOptions} from '@loaders.gl/core';
 import {GLBLoader, GLTFLoader, postProcessGLTF} from '@loaders.gl/gltf';
 import {Tiles3DArchive} from '@loaders.gl/3d-tiles';
 import {parseSLPKArchive} from '@loaders.gl/i3s';
@@ -18,10 +18,14 @@ let texturedTriangle: ArrayBuffer;
 let grid: ArrayBuffer;
 let gridBytes: number;
 let image: Uint8Array;
+let originalLoaderOptions: ReturnType<typeof getLoaderOptions>;
 const textureTransform = {offset: [0.25, -0.5], rotation: Math.PI / 2, scale: [0.5, -1]} as const;
 
 /** Encodes immutable tiny triangle data and one small budget fixture once. */
 beforeAll(async () => {
+  originalLoaderOptions = getLoaderOptions();
+  // Exercise bundled production assets instead of the test setup's dist-library fallback.
+  setLoaderOptions({core: {useLocalLibraries: false}});
   image = new Uint8Array(
     await (
       await fetchFile(new URL('./data/tile-converter-texture.png', import.meta.url).href)
@@ -79,6 +83,8 @@ beforeAll(async () => {
   ).meshes[0].primitives[0];
   gridBytes = decoded.attributes.POSITION.value.length * 8 + decoded.indices!.value.byteLength;
 });
+
+afterAll(() => setLoaderOptions(originalLoaderOptions));
 
 /** Supplies only the selected compressed content while preserving the bounded source declarations. */
 async function inspectInput(data: ArrayBuffer) {
