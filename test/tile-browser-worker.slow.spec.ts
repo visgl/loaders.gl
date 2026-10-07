@@ -10,16 +10,18 @@ import {
 } from '../examples/website/i3s-slpk/src/conversion-worker-client';
 import {inspectConversionInput} from '../examples/website/i3s-slpk/src/convert-tileset';
 import {createInput, createTriangle} from './utils/tile-browser-conversion';
+import {createCompressedMesh} from './utils/tile-converter-draco';
 
 /** Supplies a real worker with a tiny local GLB URL and explicit content placements. */
-async function createWorkerInput(collection: boolean) {
+async function createWorkerInput(collection: boolean, compressed = false) {
   const {fetcher, controller} = createInput(false, false, 'Y', collection);
   const inspection = await inspectConversionInput(
     'https://example.invalid/tileset.json',
     controller.signal,
     fetcher
   );
-  const contentUrl = URL.createObjectURL(new Blob([createTriangle()]));
+  const data = compressed ? await createCompressedMesh() : createTriangle();
+  const contentUrl = URL.createObjectURL(new Blob([data]));
   const resources = inspection.resources.map((resource, index) =>
     index === 1 || (collection && index === 2) ? {...resource, uri: contentUrl} : resource
   );
@@ -38,16 +40,17 @@ async function createWorkerInput(collection: boolean) {
 
 // Real module-worker startup and native storage belong in the hermetic slow lane.
 test.each([
-  ['slpk', false],
-  ['3tz', false],
-  ['collection', false],
-  ['slpk', true],
-  ['collection', true]
+  ['slpk', false, false],
+  ['3tz', false, true],
+  ['collection', false, false],
+  ['slpk', true, false],
+  ['collection', true, false]
 ] as const)(
-  'real conversion worker produces a readable %s archive with direct save=%s',
-  async (profile, directSave) => {
+  'real conversion worker produces a readable %s archive with direct save=%s and Draco input=%s',
+  async (profile, directSave, compressed) => {
     const {inspection, resourceIds, controller, contentUrl} = await createWorkerInput(
-      profile === 'collection'
+      profile === 'collection',
+      compressed
     );
     const format = profile === 'collection' ? '3tz' : profile;
     const phases: string[] = [];

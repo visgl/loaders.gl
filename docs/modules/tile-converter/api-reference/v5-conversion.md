@@ -127,7 +127,8 @@ See [SLPKWriter](/docs/modules/i3s/api-reference/slpk-writer) and
 `createI3SMeshConversionCodec` and `createSingleMeshI3SSink`. These APIs are exported from
 both v5 entrypoints. The initial profile converts one static untextured GLB/B3DM primitive
 from a native, resolved EPSG:4978 source to an I3S 1.7 3D Object layer. Enable decoded glTF
-loading when constructing the runtime. A region bounding volume or explicit CRS metadata
+loading when constructing the runtime, including `gltf.decompressMeshes: true` for Draco
+content. A region bounding volume or explicit CRS metadata
 must establish the ECEF source frame; sphere/box bounds alone do not imply a CRS.
 
 ```ts
@@ -220,7 +221,11 @@ precise target property/null profile.
 
 The [tile archive example](/examples/i3s-slpk) can inspect an explicit 3D Tiles URL,
 convert selected self-contained static mesh contents to SLPK or 3TZ, and preview or
-download the partial archive. It demonstrates the separate core and adapters entrypoints,
+download the partial archive. Draco-compressed GLB/B3DM input is decoded with bundled
+application assets before extraction; external content dependencies remain rejected. The
+conversion error budget applies to the decoded source, rather than qualifying earlier source
+quantization. The decoded byte gates run after extraction and do not cap decoder allocations.
+It demonstrates the separate core and adapters entrypoints,
 required byte/precision budgets, cancellation and explicit profile rejection. See the
 [example README](https://github.com/visgl/loaders.gl/tree/master/examples/website/i3s-slpk)
 for limits and supported inputs. The controls accept an explicit JSON `MeshSourceFeatureOptions`

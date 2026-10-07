@@ -103,7 +103,38 @@ Metadata Support:
 
 ## Dependencies
 
-Draco libraries by default are loaded from CDN, but can be bundled and injected. See [modules/draco/docs] for details.
+`draco.decoderProfile` selects `'full'` (the default) or `'gltf'`, the smaller decoder subset
+for glTF-compatible mesh bitstreams. The glTF loader selects `'gltf'` by default when decoding
+`KHR_draco_mesh_compression`; callers can explicitly select `'full'` to share one runtime.
+
+Draco libraries load from a CDN by default. Browser applications can bundle the vendored
+runtimes with `getDracoLibraryOptions` from the existing `@loaders.gl/draco/bundled` entrypoint.
+
+## Bundled Library Options
+
+`getDracoLibraryOptions({decoderProfile})` returns the selected profile and a `modules` map
+for its matching WASM wrapper and binary, the encoder, and the JavaScript fallback. It
+preserves supplied `CDN` and `useLocalLibraries` settings; explicit `modules` overrides win.
+The helper owns the asset URLs, so applications do not need to maintain filename mappings.
+Only requested runtimes are fetched. This opt-in entrypoint keeps asset references out of
+the metadata-only root import.
+
+```typescript
+import {parse} from '@loaders.gl/core';
+import {DracoLoader} from '@loaders.gl/draco';
+import {getDracoLibraryOptions} from '@loaders.gl/draco/bundled';
+
+const libraries = getDracoLibraryOptions({decoderProfile: 'gltf'});
+const mesh = await parse(bytes, DracoLoader, {
+  core: {worker: false},
+  modules: libraries.modules,
+  draco: {shape: 'mesh', decoderProfile: libraries.decoderProfile}
+});
+```
+
+The example uses main-thread parsing; applications using loader workers must also supply a
+bundled worker URL if CDN worker loading is unwanted. Library URL overrides are strings and
+can be passed to workers without transferring functions.
 
 ## Module Overrides
 
