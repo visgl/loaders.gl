@@ -90,7 +90,7 @@ export async function encodeI3SMeshLayerWithDraco(
   libraryOptions: I3SDracoLibraryOptions = {}
 ): Promise<EncodedI3SMeshLayer> {
   const maxResourceBytes = options.maxResourceBytes;
-  const prepared = prepareMeshLayer(mesh, options);
+  const prepared = prepareMeshLayer(mesh, options, 'draco');
   const geometry = prepared.files['nodes/1/geometries/0.bin.gz'];
   const view = new DataView(geometry);
   const vertexCount = view.getUint32(0, true);
@@ -171,10 +171,16 @@ export async function encodeI3SMeshLayerWithDraco(
   return compressMeshLayer(prepared, maxResourceBytes);
 }
 
-/** Expands, groups and rounds a mesh once, retaining uncompressed resources until final encoding. */
+/**
+ * Expands, groups and rounds a mesh once, retaining resources until final encoding.
+ * @param mesh - Validated absolute ECEF mesh.
+ * @param options - Precision, metadata and emitted resource limits.
+ * @param geometryEncoding - Intended output; temporary Draco expansion is working memory.
+ */
 function prepareMeshLayer(
   mesh: MeshGeometry,
-  options: I3SMeshWriterOptions
+  options: I3SMeshWriterOptions,
+  geometryEncoding: 'raw' | 'draco' = 'raw'
 ): {
   files: Record<string, ArrayBuffer>;
   maximumPositionError: number;
@@ -279,7 +285,7 @@ function prepareMeshLayer(
   if (triangles.some(group => !group.length))
     throw new Error('I3S feature rows must each own at least one complete triangle');
   const byteLength = 8 + outputVertexCount * (normals ? 24 : 12) + featureCount * 16;
-  if (byteLength > options.maxResourceBytes)
+  if (geometryEncoding === 'raw' && byteLength > options.maxResourceBytes)
     throw new Error('I3S geometry exceeds maxResourceBytes');
   const minimum = [Infinity, Infinity, Infinity];
   const maximum = [-Infinity, -Infinity, -Infinity];

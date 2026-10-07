@@ -69,7 +69,7 @@ and [attribute layout](https://github.com/Esri/i3s-spec/blob/master/docs/1.7/att
 
 ## Limits and qualification
 
-`maxResourceBytes` caps each uncompressed resource. The archive writer has a separate
+`maxResourceBytes` caps each emitted resource before GZIP. The archive writer has a separate
 complete archive cap. These limits do not bound peak decoder, Arrow, serialization, or
 compression allocations. Cancellation is checked by the converter between synchronous
 writing steps. The browser example performs conversion in a disposable module worker and
@@ -110,7 +110,8 @@ const layer = await encodeI3SMeshLayerWithDraco(
 Both encoder and full decoder runtimes are required. Application overrides use the existing
 `modules`, `CDN` and `useLocalLibraries` controls; omitted controls retain Draco's defaults.
 The glTF subset is not selected for I3S verification. `maxResourceBytes` also applies to the
-encoded Draco buffer and finalized JSON resources. It does not cap codec/verification
+encoded Draco buffer and finalized JSON resources. The temporary expanded raw geometry
+is working memory, not an emitted resource. The limit does not cap codec/verification
 allocations or total peak memory. The existing synchronous writer remains available for
 raw geometry, including degenerate triangles that Draco cannot preserve. Very small geometry
 resources may grow. Independent ArcGIS viewer qualification remains follow-up work.

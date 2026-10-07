@@ -605,6 +605,45 @@ test('I3S Draco records decoded vertex counts for shared indexed vertices', asyn
   expect(encoded.maximumPositionError).toBeLessThanOrEqual(OPTIONS.maxPositionError);
 });
 
+test('I3S Draco caps emitted resources instead of temporary raw geometry', async () => {
+  const mesh = createMesh();
+  const width = 13;
+  const vertexCount = width * width;
+  mesh.attributes.POSITION.value = Float64Array.from(
+    {length: vertexCount * 3},
+    (_, index) =>
+      [6378137, (Math.floor(index / 3) % width) / 10, Math.floor(index / (width * 3)) / 10][
+        index % 3
+      ]
+  );
+  mesh.attributes.NORMAL.value = Float32Array.from({length: vertexCount * 3}, (_, index) =>
+    index % 3 === 0 ? 1 : 0
+  );
+  const indices: number[] = [];
+  for (let row = 0; row < width - 1; row++) {
+    for (let column = 0; column < width - 1; column++) {
+      const vertex = row * width + column;
+      indices.push(
+        vertex,
+        vertex + 1,
+        vertex + width,
+        vertex + 1,
+        vertex + width + 1,
+        vertex + width
+      );
+    }
+  }
+  mesh.indices = {value: new Uint16Array(indices), size: 1};
+  expect(() => encodeI3SMeshLayer(mesh, OPTIONS)).toThrow('geometry exceeds maxResourceBytes');
+  const encoded = await encodeI3SMeshLayerWithDraco(mesh, OPTIONS, {useLocalLibraries: true});
+  const decoded = await decodeDracoLayer(encoded);
+  for (const resource of Object.values(decoded.resources))
+    expect(resource.byteLength).toBeLessThanOrEqual(OPTIONS.maxResourceBytes);
+  expect(decoded.content.indices!.length).toBe(indices.length);
+  expect(decoded.content.vertexCount).toBe(vertexCount);
+  expect(new Uint8Array(decoded.geometry)[8]).toBe(1);
+});
+
 test('I3S Draco rejects failed verification before exposing resources', async () => {
   const originalLoader = await DracoLoader.preload('', {core: {useLocalLibraries: true}});
   const decoded = await parse(compressedLayers[1].geometry, DracoLoader, {
