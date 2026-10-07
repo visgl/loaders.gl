@@ -129,7 +129,8 @@ compatible with that grid; see the boundaries below.
 
 `tileGrid.matrices` describes every level separately, because some matrix sets change origin or
 tile size between levels. A scale denominator becomes a resolution only when the CRS unit is known.
-EPSG:4326, CRS:84, and Web Mercator are built in; for a projected CRS, supply the unit length:
+EPSG:4326, CRS:84, and Web Mercator are built in; for any other CRS, supply the unit length.
+Origins follow the same axis rule as `tileGrid.origin`: only EPSG:4326 corners are swapped to XY.
 
 ```ts
 const source = createDataSource(wmtsUrl, [WMTSSourceLoader], {
@@ -138,7 +139,8 @@ const source = createDataSource(wmtsUrl, [WMTSSourceLoader], {
 });
 
 const {tileGrid} = await source.getMetadata();
-// tileGrid.matrices[i]: {id, resolution, origin, tileSize, matrixSize}
+// Each level: {id, resolution, origin, tileSize, matrixSize}. Match a tile's matrix by `id`.
+const level = tileGrid.matrices.find(matrix => matrix.id === '3');
 ```
 
 ## deck.gl integration

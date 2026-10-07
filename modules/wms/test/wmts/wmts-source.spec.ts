@@ -271,10 +271,62 @@ test('WMTSImageTileSource#getMetadata converts projected scale denominators with
   });
   expect((await footSource.getMetadata()).tileGrid?.resolutions?.[0]).toBeCloseTo(280 / 0.3048);
 
-  const invalidSource = new WMTSImageTileSource(WMTS_URL, {
-    wmts: {capabilities, metersPerUnit: 0}
+  expect(() => new WMTSImageTileSource(WMTS_URL, {wmts: {capabilities, metersPerUnit: 0}})).toThrow(
+    'metersPerUnit'
+  );
+  // A null from JSON configuration means "not set".
+  const nullSource = new WMTSImageTileSource(WMTS_URL, {wmts: {capabilities, metersPerUnit: null}});
+  expect((await nullSource.getMetadata()).tileGrid?.resolutions).toBeUndefined();
+});
+
+test('WMTSImageTileSource#getMetadata keeps built-in units when metersPerUnit is set', async () => {
+  const parser = await WMTSCapabilitiesLoader.preload();
+  const capabilities = parser.parseTextSync(
+    UTM_CAPABILITIES_XML.replace(
+      'http://www.opengis.net/def/crs/EPSG/0/32618',
+      'urn:ogc:def:crs:EPSG::4326'
+    )
+  );
+  // The option is set for the source, but the selected matrix set is geographic.
+  const source = new WMTSImageTileSource(WMTS_URL, {wmts: {capabilities, metersPerUnit: 1}});
+  const {tileGrid} = await source.getMetadata();
+  expect(tileGrid?.resolutions?.[0]).toBeCloseTo(280 / ((2 * Math.PI * 6378137) / 360));
+});
+
+test('WMTSImageTileSource#getMetadata omits grid-wide resolutions for an empty matrix set', async () => {
+  const source = new WMTSImageTileSource(WMTS_URL, {
+    wmts: {
+      metersPerUnit: 1,
+      capabilities: {
+        contents: {
+          layers: [
+            {
+              identifier: 'empty',
+              formats: ['image/png'],
+              styles: [],
+              tileMatrixSetLinks: [{tileMatrixSet: 'none'}],
+              resourceURLs: []
+            }
+          ],
+          tileMatrixSets: [{identifier: 'none', supportedCRS: 'EPSG:32618', matrices: []}]
+        }
+      }
+    }
   });
-  await expect(invalidSource.getMetadata()).rejects.toThrow('metersPerUnit');
+  const {tileGrid} = await source.getMetadata();
+  expect(tileGrid?.resolutions).toBeUndefined();
+  expect(tileGrid?.matrices).toEqual([]);
+});
+
+test('WMTSImageTileSource#getMetadata keeps the XY origin of a corner with extra values', async () => {
+  const parser = await WMTSCapabilitiesLoader.preload();
+  const capabilities = parser.parseTextSync(
+    UTM_CAPABILITIES_XML.replace('200000 4600000', '200000 4600000 0')
+  );
+  const source = new WMTSImageTileSource(WMTS_URL, {wmts: {capabilities}});
+  const {tileGrid} = await source.getMetadata();
+  expect(tileGrid?.matrices?.[0].origin).toEqual([200000, 4600000]);
+  expect(tileGrid?.origin).toEqual([200000, 4600000]);
 });
 
 test('WMTSImageTileSource#getMetadata keeps per-level resolutions when some scales are missing', async () => {
