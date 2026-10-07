@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import {gunzipSync, unzlibSync} from 'fflate';
+import {gunzipSync, unzlibSync, gzipSync, zlibSync} from 'fflate';
 
 import React, {useEffect, useState} from 'react';
 
@@ -12,7 +12,9 @@ import {DeflateFflateCompressor} from '@loaders.gl/compression/deflate-compresso
 import {DeflateFflateDecompressor} from '@loaders.gl/compression/deflate-decompressor-fflate';
 import {GZipFflateCompressor} from '@loaders.gl/compression/gzip-compressor-fflate';
 import {GZipFflateDecompressor} from '@loaders.gl/compression/gzip-decompressor-fflate';
+import {DeflatePakoCompressor} from '@loaders.gl/compression/deflate-compressor-pako';
 import {DeflatePakoDecompressor} from '@loaders.gl/compression/deflate-decompressor-pako';
+import {GZipPakoCompressor} from '@loaders.gl/compression/gzip-compressor-pako';
 import {GZipPakoDecompressor} from '@loaders.gl/compression/gzip-decompressor-pako';
 import {LZ4JSCompression} from '@loaders.gl/compression/lz4-lz4js';
 import {SnappyJSCompression} from '@loaders.gl/compression/snappy-snappyjs';
@@ -22,7 +24,9 @@ import {BrotliCompressUtilsCompressor} from '@loaders.gl/compression/brotli-comp
 import {BrotliCompressUtilsDecompressor} from '@loaders.gl/compression/brotli-decompressor-compress-utils';
 import {BZip2CompressUtilsCompressor} from '@loaders.gl/compression/bzip2-compressor-compress-utils';
 import {BZip2CompressUtilsDecompressor} from '@loaders.gl/compression/bzip2-decompressor-compress-utils';
+import {DeflateCompressUtilsCompressor} from '@loaders.gl/compression/deflate-compressor-compress-utils';
 import {DeflateCompressUtilsDecompressor} from '@loaders.gl/compression/deflate-decompressor-compress-utils';
+import {GZipCompressUtilsCompressor} from '@loaders.gl/compression/gzip-compressor-compress-utils';
 import {GZipCompressUtilsDecompressor} from '@loaders.gl/compression/gzip-decompressor-compress-utils';
 import {LZ4CompressUtilsCompressor} from '@loaders.gl/compression/lz4-compressor-compress-utils';
 import {LZ4CompressUtilsDecompressor} from '@loaders.gl/compression/lz4-decompressor-compress-utils';
@@ -32,6 +36,7 @@ import {XZCompressUtilsCompressor} from '@loaders.gl/compression/xz-compressor-c
 import {XZCompressUtilsDecompressor} from '@loaders.gl/compression/xz-decompressor-compress-utils';
 import {ZstdCompressUtilsCompressor} from '@loaders.gl/compression/zstd-compressor-compress-utils';
 import {ZstdCompressUtilsDecompressor} from '@loaders.gl/compression/zstd-decompressor-compress-utils';
+import {compressWithNativeCompressionStream} from '@loaders.gl/compression/native-compression';
 import {decompressWithNativeDecompressionStream} from '@loaders.gl/compression/native-decompression';
 
 type BenchmarkStatus = 'loading' | 'running' | 'complete' | 'failed';
@@ -69,7 +74,7 @@ type BenchmarkResultRow = {
   formattedError?: string;
 };
 
-/** Renders live native-versus-external decompression benchmarks. */
+/** Renders live native-versus-external encoding and decoding benchmarks. */
 export default function CompressionBenchmarksApp(): JSX.Element {
   const [rows, setRows] = useState<BenchmarkResultRow[]>([]);
   const [status, setStatus] = useState<BenchmarkStatus>('loading');
@@ -128,6 +133,19 @@ export default function CompressionBenchmarksApp(): JSX.Element {
           );
         }
 
+        for (const benchmarkCase of benchmarkCases) {
+          const encodingCase = {...benchmarkCase, name: `Compression: ${benchmarkCase.name}`};
+          benchmarkByteLengths.set(encodingCase.name, encodingCase.uncompressedByteLength);
+          await addEncodingBenchmarks(bench, encodingCase, warning => {
+            if (isMounted) setWarnings(previousWarnings => [...previousWarnings, warning]);
+          }, () => {
+            if (isMounted) setRows(previousRows => [...previousRows, {
+              id: 'built-in', groupId: encodingCase.name, unavailable: true,
+              ...getCompressionDependencyInfo('native', encodingCase.name)
+            }]);
+          });
+        }
+
         if (isMounted) setStatus('running');
         await bench.calibrate().run();
         if (isMounted) setStatus('complete');
@@ -153,7 +171,7 @@ export default function CompressionBenchmarksApp(): JSX.Element {
   return (
     <div className="benchmark-page">
       <p>
-        Live decompression throughput for built-in streams versus compact or injected codecs.
+        Live compression and decompression throughput for built-in streams versus compact or injected codecs.
         Keep this tab focused while it runs.
       </p>
       <div className="benchmark-status-row" aria-live="polite">
@@ -167,7 +185,10 @@ export default function CompressionBenchmarksApp(): JSX.Element {
       </div>
       {errorMessage ? <pre className="benchmark-error">{errorMessage}</pre> : null}
       <div className="benchmark-results" aria-live="polite">
-        <CompressionBenchmarkResults rows={rows} />
+        <h3>Decompression</h3>
+        <CompressionBenchmarkResults rows={rows.filter(row => !(row.groupId || row.id).startsWith('Compression: '))} />
+        <h3>Compression</h3>
+        <CompressionBenchmarkResults rows={rows.filter(row => (row.groupId || row.id).startsWith('Compression: '))} />
       </div>
       {warnings.length > 0 ? (
         <aside>
@@ -191,7 +212,7 @@ function CompressionBenchmarkResults({rows}: {rows: BenchmarkResultRow[]}): JSX.
         <strong className="compression-benchmark-red">&lt; 500 MB/s</strong>.
       </p>
       <p>Sizes are approximate browser payload indicators. The loaders.gl GZIP/DEFLATE size measures the six whole-buffer engine functions, excluding streaming classes and adapters; other rows use module, package, or fallback source sizes.</p>
-      <p>Columns show decoding bytes per second. The 70 KB column uses the 70,937-byte CSV fixture. The 16 MB column and bar use a 16 MiB payload made by repeating that fixture.</p>
+      <p>Columns show uncompressed bytes processed per second. The 70 KB column uses the 70,937-byte CSV fixture. The 16 MB column and bar use a 16 MiB payload made by repeating that fixture.</p>
       <table>
         <thead>
           <tr>
@@ -214,7 +235,7 @@ function CompressionBenchmarkResults({rows}: {rows: BenchmarkResultRow[]}): JSX.
             return [
               <tr key={`${groupRow.id}-heading`}>
                 <th colSpan={5}>
-                  {groupRow.id} · {formatByteCount(groupRow.uncompressedByteLength || 0)} uncompressed
+                  {groupRow.id.replace('Compression: ', '')} · {formatByteCount(groupRow.uncompressedByteLength || 0)} uncompressed
                 </th>
               </tr>,
               ...groupResults.map((row, index) => {
@@ -368,6 +389,10 @@ function getCompressionDependencyInfo(implementationName: string, groupId: strin
       dependencyNpmUrl: 'https://www.npmjs.com/package/zstd-codec'
     }
   };
+  if (groupId.startsWith('Compression: ')) {
+    if (implementationName === 'native') dependencyInfo.native.dependencyUrl = 'https://developer.mozilla.org/en-US/docs/Web/API/CompressionStream';
+    if (implementationName === 'pako') dependencyInfo.pako.dependencySize = '~28 KB minified deflate module';
+  }
   return dependencyInfo[implementationName] || {
     dependency: 'unknown',
     dependencySize: 'unknown'
@@ -376,7 +401,16 @@ function getCompressionDependencyInfo(implementationName: string, groupId: strin
 
 /** Returns the raw focused decoder size for one compress-utils format. */
 function getCompressUtilsSize(groupId: string): string {
-  const format = groupId.split(' · ')[0].toLowerCase();
+  const format = groupId.replace('Compression: ', '').split(' · ')[0].toLowerCase();
+  if (groupId.startsWith('Compression: ')) {
+    const encoderSizes: Record<string, string> = {
+      gzip: '~62 KB encoder WASM', deflate: '~62 KB encoder WASM',
+      brotli: '~456 KB encoder WASM', zstandard: '~347 KB encoder WASM',
+      snappy: '~25 KB encoder WASM', lz4: '~95 KB encoder WASM',
+      bzip2: '~66 KB encoder WASM', xz: '~107 KB encoder WASM'
+    };
+    return encoderSizes[format] || 'encoder WASM chunk';
+  }
   const sizes: Record<string, string> = {
     gzip: '~51 KB focused WASM',
     deflate: '~51 KB focused WASM',
@@ -662,6 +696,80 @@ async function addCompressionBenchmarks(
         validateOutput(benchmarkCase, output, externalCompression.name, false);
       }
     );
+  }
+}
+
+/** Registers encoders, checking one round trip before timing encoding alone. */
+async function addEncodingBenchmarks(
+  bench: Bench,
+  benchmarkCase: CompressionBenchmarkCase,
+  onWarning: (warning: string) => void,
+  onNativeUnavailable: () => void
+): Promise<void> {
+  bench.group(benchmarkCase.name);
+  const input = benchmarkCase.expectedData.slice().buffer;
+  const format = benchmarkCase.name.replace('Compression: ', '').split(' · ')[0];
+  const encoders: Record<string, Record<string, (input: ArrayBuffer) => Promise<ArrayBuffer>>> = {
+    GZIP: {
+      'internal fflate': input => new GZipFflateCompressor({gzip: {mtime: 0}}).compress(input),
+      fflate: async input => gzipSync(new Uint8Array(input), {mtime: 0}).slice().buffer,
+      pako: input => new GZipPakoCompressor().compress(input),
+      'compress-utils': input => new GZipCompressUtilsCompressor().compress(input)
+    },
+    DEFLATE: {
+      'internal fflate': input => new DeflateFflateCompressor().compress(input),
+      fflate: async input => zlibSync(new Uint8Array(input)).slice().buffer,
+      pako: input => new DeflatePakoCompressor().compress(input),
+      'compress-utils': input => new DeflateCompressUtilsCompressor().compress(input)
+    },
+    Brotli: {
+      'compress-utils': input => new BrotliCompressUtilsCompressor({compressUtils: {level: 4}}).compress(input)
+    },
+    Zstandard: {
+      ...(input.byteLength < 16 * 1024 * 1024 ? {
+        'zstd-codec': (input: ArrayBuffer) => new ZstdCodecCompression().compress(input)
+      } : {}),
+      'compress-utils': input => new ZstdCompressUtilsCompressor().compress(input)
+    },
+    Snappy: {
+      snappyjs: input => new SnappyJSCompression().compress(input),
+      'compress-utils': input => new SnappyCompressUtilsCompressor().compress(input)
+    },
+    LZ4: {
+      lz4js: input => new LZ4JSCompression().compress(input),
+      'compress-utils': input => new LZ4CompressUtilsCompressor().compress(input)
+    },
+    bzip2: {'compress-utils': input => new BZip2CompressUtilsCompressor().compress(input)},
+    XZ: {'compress-utils': input => new XZCompressUtilsCompressor().compress(input)}
+  };
+  if (format === 'Zstandard' && input.byteLength >= 16 * 1024 * 1024) {
+    onWarning(`${benchmarkCase.name}: zstd-codec 0.1.5 whole-buffer encoding exceeds its WASM heap; 16 MB encoding is unavailable`);
+  }
+  const nativeOutput = benchmarkCase.nativeFormat
+    ? await compressWithNativeCompressionStream(input, benchmarkCase.nativeFormat)
+    : null;
+  if (nativeOutput) {
+    const decoded = await decompressWithNativeDecompressionStream(nativeOutput, benchmarkCase.nativeFormat!);
+    if (!decoded) throw new Error('Native round-trip decoder unavailable');
+    validateOutput(benchmarkCase, decoded, 'native encoder');
+    bench.addAsync(`${benchmarkCase.name} · native`,
+      {minIterations: 3, unit: 'B', multiplier: input.byteLength, _throughput: input.byteLength >= 16 * 1024 * 1024 ? 1 : undefined}, async () => {
+        const output = await compressWithNativeCompressionStream(input, benchmarkCase.nativeFormat!);
+        if (!output?.byteLength) throw new Error('Native encoder produced no output');
+      });
+  } else {
+    onWarning(`${benchmarkCase.name}: native compression is unavailable`);
+    onNativeUnavailable();
+  }
+  for (const [name, encode] of Object.entries(encoders[format])) {
+    const decoder = benchmarkCase.externalCompressions.find(candidate => candidate.name === name)!;
+    const encoded = await encode(input);
+    validateOutput(benchmarkCase, await decoder.decompress(encoded), `${name} encoder`);
+    bench.addAsync(`${benchmarkCase.name} · ${name}`,
+      {minIterations: 3, unit: 'B', multiplier: input.byteLength, _throughput: input.byteLength >= 16 * 1024 * 1024 ? 1 : undefined}, async () => {
+        const output = await encode(input);
+        if (!output.byteLength) throw new Error(`${name} encoder produced no output`);
+      });
   }
 }
 
