@@ -44,13 +44,13 @@
   "dependencies": {
     "@loaders.gl/loader-utils": "5.0.0-alpha.9",
     "@loaders.gl/schema": "5.0.0-alpha.9",
-    "@math.gl/core": "5.0.0-alpha.12",
-    "@math.gl/crs": "5.0.0-alpha.12",
-    "@math.gl/culling": "5.0.0-alpha.12",
-    "@math.gl/dggs": "5.0.0-alpha.12",
-    "@math.gl/geoid": "5.0.0-alpha.12",
-    "@math.gl/geospatial": "5.0.0-alpha.12",
-    "@math.gl/projection": "5.0.0-alpha.12",
+    "@math.gl/core": "5.0.0-alpha.13",
+    "@math.gl/crs": "5.0.0-alpha.13",
+    "@math.gl/culling": "5.0.0-alpha.13",
+    "@math.gl/dggs": "5.0.0-alpha.13",
+    "@math.gl/geoid": "5.0.0-alpha.13",
+    "@math.gl/geospatial": "5.0.0-alpha.13",
+    "@math.gl/projection": "5.0.0-alpha.13",
     "@probe.gl/stats": "^4.1.1"
   },
   "devDependencies": {

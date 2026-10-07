@@ -48,16 +48,16 @@
     "@loaders.gl/schema": "5.0.0-alpha.9",
     "@loaders.gl/schema-utils": "5.0.0-alpha.9",
     "@loaders.gl/wkt": "5.0.0-alpha.9",
-    "@math.gl/crs": "5.0.0-alpha.12",
-    "@math.gl/geometry-utils": "5.0.0-alpha.12",
-    "@math.gl/polygon": "5.0.0-alpha.12",
-    "@math.gl/types": "5.0.0-alpha.12",
-    "@math.gl/wkb": "5.0.0-alpha.12",
+    "@math.gl/crs": "5.0.0-alpha.13",
+    "@math.gl/geometry-utils": "5.0.0-alpha.13",
+    "@math.gl/polygon": "5.0.0-alpha.13",
+    "@math.gl/types": "5.0.0-alpha.13",
+    "@math.gl/wkb": "5.0.0-alpha.13",
     "apache-arrow": ">= 17.0.0",
     "zod": "^4.1.12"
   },
   "devDependencies": {
-    "@math.gl/projection": "5.0.0-alpha.12"
+    "@math.gl/projection": "5.0.0-alpha.13"
   },
   "peerDependencies": {
     "@loaders.gl/core": "~5.0.0-alpha.0"
