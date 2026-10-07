@@ -10,6 +10,7 @@ import {Bench, type LogEntry} from '@probe.gl/bench';
 import {BrotliShimDecompressor} from '@loaders.gl/compression/brotli-decompressor-shim';
 import {DeflateFflateCompressor} from '@loaders.gl/compression/deflate-compressor-fflate';
 import {DeflateFflateDecompressor} from '@loaders.gl/compression/deflate-decompressor-fflate';
+import {GZipFflateCompressor} from '@loaders.gl/compression/gzip-compressor-fflate';
 import {GZipFflateDecompressor} from '@loaders.gl/compression/gzip-decompressor-fflate';
 import {DeflatePakoDecompressor} from '@loaders.gl/compression/deflate-decompressor-pako';
 import {GZipPakoDecompressor} from '@loaders.gl/compression/gzip-decompressor-pako';
@@ -17,13 +18,19 @@ import {LZ4JSCompression} from '@loaders.gl/compression/lz4-lz4js';
 import {SnappyJSCompression} from '@loaders.gl/compression/snappy-snappyjs';
 import {ZstdFzstdDecompressor} from '@loaders.gl/compression/zstd-decompressor-fzstd';
 import {ZstdCodecCompression} from '@loaders.gl/compression/zstd-zstd-codec';
+import {BrotliCompressUtilsCompressor} from '@loaders.gl/compression/brotli-compressor-compress-utils';
 import {BrotliCompressUtilsDecompressor} from '@loaders.gl/compression/brotli-decompressor-compress-utils';
+import {BZip2CompressUtilsCompressor} from '@loaders.gl/compression/bzip2-compressor-compress-utils';
 import {BZip2CompressUtilsDecompressor} from '@loaders.gl/compression/bzip2-decompressor-compress-utils';
 import {DeflateCompressUtilsDecompressor} from '@loaders.gl/compression/deflate-decompressor-compress-utils';
 import {GZipCompressUtilsDecompressor} from '@loaders.gl/compression/gzip-decompressor-compress-utils';
+import {LZ4CompressUtilsCompressor} from '@loaders.gl/compression/lz4-compressor-compress-utils';
 import {LZ4CompressUtilsDecompressor} from '@loaders.gl/compression/lz4-decompressor-compress-utils';
+import {SnappyCompressUtilsCompressor} from '@loaders.gl/compression/snappy-compressor-compress-utils';
 import {SnappyCompressUtilsDecompressor} from '@loaders.gl/compression/snappy-decompressor-compress-utils';
+import {XZCompressUtilsCompressor} from '@loaders.gl/compression/xz-compressor-compress-utils';
 import {XZCompressUtilsDecompressor} from '@loaders.gl/compression/xz-decompressor-compress-utils';
+import {ZstdCompressUtilsCompressor} from '@loaders.gl/compression/zstd-compressor-compress-utils';
 import {ZstdCompressUtilsDecompressor} from '@loaders.gl/compression/zstd-decompressor-compress-utils';
 import {decompressWithNativeDecompressionStream} from '@loaders.gl/compression/native-decompression';
 
@@ -54,7 +61,6 @@ type BenchmarkResultRow = {
   unavailable?: boolean;
   uncompressedByteLength?: number;
   dependency?: string;
-  dependencyVersion?: string;
   dependencySize?: string;
   dependencyUrl?: string;
   dependencyNpmUrl?: string;
@@ -184,48 +190,48 @@ function CompressionBenchmarkResults({rows}: {rows: BenchmarkResultRow[]}): JSX.
         <strong className="compression-benchmark-yellow">500 MB/s–1 GB/s</strong>,{' '}
         <strong className="compression-benchmark-red">&lt; 500 MB/s</strong>.
       </p>
-      <p>Dependency sizes are approximate browser module, package, or fallback source sizes, not emitted bundle sizes.</p>
+      <p>Sizes are approximate browser payload indicators. The loaders.gl GZIP/DEFLATE size measures the six whole-buffer engine functions, excluding streaming classes and adapters; other rows use module, package, or fallback source sizes.</p>
+      <p>Columns show decoding bytes per second. The 70 KB column uses the 70,937-byte CSV fixture. The 16 MB column and bar use a 16 MiB payload made by repeating that fixture.</p>
       <table>
         <thead>
           <tr>
             <th>Implementation</th>
-            <th>Dependency</th>
-            <th>Version</th>
             <th>Bundle size</th>
-            <th>Bytes/s</th>
-            <th>Relative band</th>
+            <th>70 KB</th>
+            <th>16 MB</th>
+            <th>16 MB band</th>
           </tr>
         </thead>
         <tbody>
-          {rows.filter(row => row.isGroup).flatMap(groupRow => {
-            const groupResults = rows.filter(row => row.groupId === groupRow.id);
+          {rows.filter(row => row.isGroup && !row.id.includes('repeated sample.csv')).flatMap(groupRow => {
+            const groupResults = rows
+              .filter(row => row.groupId === groupRow.id)
+              .sort((firstRow, secondRow) => {
+                const firstPriority = firstRow.id === 'built-in' ? 0 : firstRow.id.startsWith('compress-utils ') ? 1 : 2;
+                const secondPriority = secondRow.id === 'built-in' ? 0 : secondRow.id.startsWith('compress-utils ') ? 1 : 2;
+                return firstPriority - secondPriority;
+              });
             return [
               <tr key={`${groupRow.id}-heading`}>
-                <th colSpan={6}>
+                <th colSpan={5}>
                   {groupRow.id} · {formatByteCount(groupRow.uncompressedByteLength || 0)} uncompressed
                 </th>
               </tr>,
               ...groupResults.map((row, index) => {
+                const formatName = groupRow.id.split(' · ')[0];
+                const largeRow = rows.find(candidate =>
+                  candidate.id === row.id && candidate.groupId === `${formatName} · repeated sample.csv (16 MiB)`
+                );
                 if (row.unavailable) {
                   return (
                     <tr key={`${groupRow.id}-${row.id}-${index}`}>
                       <td><strong>{row.id}</strong></td>
-                      <td>
-                        {row.dependencyNpmUrl ? (
-                          <a href={row.dependencyNpmUrl} target="_blank" rel="noreferrer">
-                            {row.dependency}
-                          </a>
-                        ) : row.dependency}
-                      </td>
-                      <td>{row.dependencyVersion}</td>
-                      <td>{row.dependencySize}</td>
-                      <td>N/A</td>
-                      <td>N/A</td>
+                      <td colSpan={4}>N/A</td>
                     </tr>
                   );
                 }
-                const band = getCompressionBenchmarkBand(row.throughput || 0);
-                const barWidth = Math.min(((row.throughput || 0) / 1e9) * 100, 100);
+                const band = getCompressionBenchmarkBand(largeRow?.throughput || 0);
+                const barWidth = Math.min(((largeRow?.throughput || 0) / 1e9) * 100, 100);
                 return (
                   <tr key={`${groupRow.id}-${row.id}-${index}`}>
                     <td>
@@ -237,20 +243,15 @@ function CompressionBenchmarkResults({rows}: {rows: BenchmarkResultRow[]}): JSX.
                         ) : row.id}
                       </strong>
                     </td>
-                    <td>
-                      {row.dependencyNpmUrl ? (
-                        <a href={row.dependencyNpmUrl} target="_blank" rel="noreferrer">
-                          {row.dependency}
-                        </a>
-                      ) : row.dependency}
-                    </td>
-                    <td>{row.dependencyVersion}</td>
                     <td>{row.dependencySize}</td>
                     <td className="compression-benchmark-value">{row.formattedValue}</td>
+                    <td className="compression-benchmark-value">{largeRow?.formattedValue || 'N/A'}</td>
                     <td>
-                      <div className={`compression-benchmark-bar ${band}`}>
-                        <div style={{width: `${barWidth}%`}} />
-                      </div>
+                      {largeRow?.throughput ? (
+                        <div className={`compression-benchmark-bar ${band}`}>
+                          <div style={{width: `${barWidth}%`}} />
+                        </div>
+                      ) : 'N/A'}
                     </td>
                   </tr>
                 );
@@ -281,13 +282,18 @@ function createBenchmarkResultRow(entry: LogEntry, benchmarkByteLengths: Map<str
       };
     case 'test': {
       const implementationName = entry.id.split(' · ').at(-1) || entry.id;
-      const displayName = implementationName === 'native' ? 'built-in' : implementationName;
       const groupId = entry.id.slice(0, entry.id.lastIndexOf(' · '));
+      const dependencyInfo = getCompressionDependencyInfo(implementationName, groupId);
+      const displayName = implementationName === 'native'
+        ? 'built-in'
+        : implementationName === 'internal fflate' || implementationName === 'Brotli shim'
+          ? 'loaders.gl'
+          : dependencyInfo.dependency || implementationName;
       return {
         id: displayName,
         groupId,
         uncompressedByteLength: benchmarkByteLengths.get(groupId),
-        ...getCompressionDependencyInfo(implementationName, groupId),
+        ...dependencyInfo,
         throughput: parseSIValue(entry.itersPerSecond),
         formattedValue: formatByteRate(entry.itersPerSecond),
         formattedError: `${(entry.error * 100).toFixed(2)}%`
@@ -301,72 +307,62 @@ function createBenchmarkResultRow(entry: LogEntry, benchmarkByteLengths: Map<str
 }
 
 /** Returns dependency metadata shown with one benchmark implementation. */
-function getCompressionDependencyInfo(implementationName: string, groupId: string): Pick<BenchmarkResultRow, 'dependency' | 'dependencyVersion' | 'dependencySize' | 'dependencyUrl' | 'dependencyNpmUrl'> {
-  const dependencyInfo: Record<string, Pick<BenchmarkResultRow, 'dependency' | 'dependencyVersion' | 'dependencySize' | 'dependencyUrl' | 'dependencyNpmUrl'>> = {
+function getCompressionDependencyInfo(implementationName: string, groupId: string): Pick<BenchmarkResultRow, 'dependency' | 'dependencySize' | 'dependencyUrl' | 'dependencyNpmUrl'> {
+  const dependencyInfo: Record<string, Pick<BenchmarkResultRow, 'dependency' | 'dependencySize' | 'dependencyUrl' | 'dependencyNpmUrl'>> = {
     native: {
       dependency: 'DecompressionStream',
-      dependencyVersion: 'built-in',
       dependencySize: 'N/A',
       dependencyUrl: 'https://developer.mozilla.org/en-US/docs/Web/API/DecompressionStream'
     },
     'internal fflate': {
-      dependency: 'loaders.gl internal engine',
-      dependencyVersion: 'fflate 0.7.4 fork',
-      dependencySize: 'included in codec',
+      dependency: 'loaders.gl',
+      dependencySize: '~9.2 KB minified / 4.6 KB gzip',
       dependencyUrl: 'https://github.com/visgl/loaders.gl/tree/master/modules/compression/src/lib/fflate'
     },
     fflate: {
-      dependency: 'fflate',
-      dependencyVersion: '0.7.4',
+      dependency: 'fflate 0.7.4',
       dependencySize: '~85 KB browser module',
       dependencyUrl: 'https://github.com/101arrowz/fflate',
       dependencyNpmUrl: 'https://www.npmjs.com/package/fflate'
     },
     pako: {
-      dependency: 'pako',
-      dependencyVersion: '2.2.0',
+      dependency: 'pako 2.2.0',
       dependencySize: '~23 KB minified inflate module',
       dependencyUrl: 'https://github.com/nodeca/pako',
       dependencyNpmUrl: 'https://www.npmjs.com/package/pako'
     },
     'Brotli shim': {
-      dependency: 'bundled decoder shim',
-      dependencyVersion: 'internal',
+      dependency: 'loaders.gl',
       dependencySize: '~210 KB source',
       dependencyUrl: 'https://github.com/visgl/loaders.gl/tree/master/modules/compression/src/brotli',
       dependencyNpmUrl: 'https://www.npmjs.com/package/@loaders.gl/compression'
     },
     snappyjs: {
-      dependency: 'snappyjs',
-      dependencyVersion: '0.6.1',
+      dependency: 'snappyjs 0.6.1',
       dependencySize: '~15 KB browser source',
       dependencyUrl: 'https://github.com/zishuo/snappyjs',
       dependencyNpmUrl: 'https://www.npmjs.com/package/snappyjs'
     },
     lz4js: {
-      dependency: 'lz4js',
-      dependencyVersion: '0.2.0',
+      dependency: 'lz4js 0.2.0',
       dependencySize: '~25 KB browser source',
       dependencyUrl: 'https://github.com/Benzinga/lz4js',
       dependencyNpmUrl: 'https://www.npmjs.com/package/lz4js'
     },
     'compress-utils': {
-      dependency: 'compress-utils',
-      dependencyVersion: '0.8.0',
+      dependency: 'compress-utils 0.8.0',
       dependencySize: getCompressUtilsSize(groupId),
       dependencyUrl: 'https://github.com/dupontcyborg/compress-utils',
       dependencyNpmUrl: 'https://www.npmjs.com/package/compress-utils'
     },
     fzstd: {
-      dependency: 'fzstd',
-      dependencyVersion: '0.1.1',
+      dependency: 'fzstd 0.1.1',
       dependencySize: '~80 KB package',
       dependencyUrl: 'https://github.com/101arrowz/fzstd',
       dependencyNpmUrl: 'https://www.npmjs.com/package/fzstd'
     },
     'zstd-codec': {
-      dependency: 'zstd-codec',
-      dependencyVersion: '0.1.5',
+      dependency: 'zstd-codec 0.1.5',
       dependencySize: '~2.0 MB package',
       dependencyUrl: 'https://github.com/yoshihitoh/zstd-codec',
       dependencyNpmUrl: 'https://www.npmjs.com/package/zstd-codec'
@@ -374,7 +370,6 @@ function getCompressionDependencyInfo(implementationName: string, groupId: strin
   };
   return dependencyInfo[implementationName] || {
     dependency: 'unknown',
-    dependencyVersion: 'unknown',
     dependencySize: 'unknown'
   };
 }
@@ -444,15 +439,10 @@ async function createCompressionBenchmarkCases(): Promise<CompressionBenchmarkCa
   const snappyData = await new SnappyJSCompression().compress(sampleData);
   const lz4Data = await new LZ4JSCompression().compress(sampleData);
   const zstdData = await compressWithZstdCodec(sampleData);
-  const smallSampleData = new TextEncoder().encode('loaders.gl compression benchmark row,42\n'.repeat(80));
-  const bzip2Data = decodeBase64(
-    'QlpoOTFBWSZTWSCc1c0AA5fZgAAQQAUUAD7v2IAwANgFABiNNNGhQAYjTTRoFKqAZDR6RppzCahMBMBNwm4TuEzCbBNgngJmE4BNAnoJgJuEwE1CeQnIJ9CfAmwTQE2CfQmQT8EyCYCbhPYTATIJ0CaBOITuE/i7kinChIEE5q5o'
-  );
-  const xzData = decodeBase64(
-    '/Td6WFoAAATm1rRGAgAhARYAAAB0L+Wj4Ax/AD9dADYbyEcWT0GrAEwLeI5uAoYEx0DxeYUGGKhiHAE1pMSIvfv3GnSc+dGcvFTvGEzb4re0wG905P4u4pn0Zto4AAAAxUd97PmWmK8AAVuAGQAAAG6E6zmxxGf7AgAAAAAEWVo='
-  );
+  const bzip2Data = await new BZip2CompressUtilsCompressor().compress(sampleData);
+  const xzData = await new XZCompressUtilsCompressor().compress(sampleData);
 
-  return [
+  const benchmarkCases: CompressionBenchmarkCase[] = [
     {
       name: 'GZIP · sample.csv',
       compressedData: gzipData,
@@ -576,10 +566,10 @@ async function createCompressionBenchmarkCases(): Promise<CompressionBenchmarkCa
       ]
     },
     {
-      name: 'bzip2 · small sample',
+      name: 'bzip2 · sample.csv',
       compressedData: bzip2Data,
-      uncompressedByteLength: smallSampleData.byteLength,
-      expectedData: smallSampleData,
+      uncompressedByteLength: sampleData.byteLength,
+      expectedData: new Uint8Array(sampleData),
       nativeFormat: null,
       externalCompressions: [{
         name: 'compress-utils',
@@ -587,10 +577,10 @@ async function createCompressionBenchmarkCases(): Promise<CompressionBenchmarkCa
       }]
     },
     {
-      name: 'XZ · small sample',
+      name: 'XZ · sample.csv',
       compressedData: xzData,
-      uncompressedByteLength: smallSampleData.byteLength,
-      expectedData: smallSampleData,
+      uncompressedByteLength: sampleData.byteLength,
+      expectedData: new Uint8Array(sampleData),
       nativeFormat: null,
       externalCompressions: [{
         name: 'compress-utils',
@@ -598,14 +588,32 @@ async function createCompressionBenchmarkCases(): Promise<CompressionBenchmarkCa
       }]
     }
   ];
-}
 
-/** Decodes a base64-encoded compressed benchmark fixture. */
-function decodeBase64(value: string): ArrayBuffer {
-  const binary = atob(value);
-  const output = new Uint8Array(binary.length);
-  for (let index = 0; index < binary.length; index++) output[index] = binary.charCodeAt(index);
-  return output.buffer;
+  const largeSampleData = new Uint8Array(16 * 1024 * 1024);
+  const sampleBytes = new Uint8Array(sampleData);
+  for (let offset = 0; offset < largeSampleData.length; offset += sampleBytes.length) {
+    largeSampleData.set(sampleBytes.subarray(0, Math.min(sampleBytes.length, largeSampleData.length - offset)), offset);
+  }
+  const largeCompressedData = [
+    await new GZipFflateCompressor().compress(largeSampleData.buffer),
+    await new DeflateFflateCompressor().compress(largeSampleData.buffer),
+    await new BrotliCompressUtilsCompressor({compressUtils: {level: 4}}).compress(largeSampleData.buffer),
+    await new ZstdCompressUtilsCompressor().compress(largeSampleData.buffer),
+    await new SnappyCompressUtilsCompressor().compress(largeSampleData.buffer),
+    await new LZ4CompressUtilsCompressor().compress(largeSampleData.buffer),
+    await new BZip2CompressUtilsCompressor().compress(largeSampleData.buffer),
+    await new XZCompressUtilsCompressor().compress(largeSampleData.buffer)
+  ];
+  for (let index = 0; index < largeCompressedData.length; index++) {
+    benchmarkCases.push({
+      ...benchmarkCases[index],
+      name: `${benchmarkCases[index].name.split(' · ')[0]} · repeated sample.csv (16 MiB)`,
+      compressedData: largeCompressedData[index],
+      expectedData: largeSampleData,
+      uncompressedByteLength: largeSampleData.byteLength
+    });
+  }
+  return benchmarkCases;
 }
 
 /** Adds native and external decompression tests for one format. */

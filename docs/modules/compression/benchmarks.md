@@ -58,7 +58,7 @@ This page is part of the [`@loaders.gl/compression` module documentation](/docs/
 - Covers GZIP, DEFLATE, Brotli, Snappy, LZ4, bzip2, XZ, and Zstandard.
 - `sample.csv` rows decompress the repository’s CSV fixture; each implementation
   receives the same compressed bytes for that format.
-- bzip2 and XZ use a small synthetic CSV-style payload repeated across 80 rows.
+- bzip2 and XZ use the same CSV payload as the other formats; their fixtures are compressed before timing.
 - Each timed operation decompresses the complete buffer and is checked against
   the expected uncompressed byte count.
 - Throughput is measured in bytes per second after warm-up, using the
@@ -93,3 +93,5 @@ the Node runtime, module initialization, fixture allocation, and one verified
 encode/decode per format; it is a process footprint, not isolated codec heap
 usage. Bundle bytes cover the six whole-buffer functions, excluding stream
 classes and loaders.gl adapters. Repeat this command before comparing timings.
+
+All format groups also include a 16 MiB payload made by repeating and truncating `sample.csv`. Compression runs before timing, and every decoder receives identical compressed bytes. This highly compressible fixture helps compare large-buffer decoding; it does not represent every compression ratio.
