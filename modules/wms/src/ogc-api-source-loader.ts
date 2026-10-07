@@ -9,6 +9,7 @@ import type {
   GetTileDataParameters,
   GetTileParameters,
   SourceLoader,
+  TileGrid,
   TileSource,
   TileSourceMetadata,
   VectorSource,
@@ -22,6 +23,9 @@ import {
   convertGeojsonToBinaryFeatureCollection
 } from '@loaders.gl/gis';
 import {getServiceCRSAxisOrder} from './crs-utils';
+import type {OGCTileMatrixSet} from './lib/parsers/ogc-api/tile-matrix-set';
+import {convertOGCTileMatrixSetToTileGrid} from './lib/parsers/ogc-api/tile-matrix-set';
+import {validateMetersPerUnit} from './lib/tile-grid';
 import type {FeaturePaginationOptions, FeaturePage} from './feature-pagination';
 import {
   addNextLinkHeader,
@@ -38,6 +42,13 @@ export type OGCAPISourceOptions = DataSourceOptions & {
     collectionId?: string;
     /** Explicit tile template for the tiles adapter. */
     tileTemplate?: string;
+    /**
+     * Tile matrix set for the tiles adapter, as an OGC TileMatrixSet 2.0 document or the URL of
+     * one. When set, `getMetadata()` reports it as `tileGrid`.
+     */
+    tileMatrixSet?: OGCTileMatrixSet | string;
+    /** Length of one CRS unit in meters, for a tile matrix set given by scale denominators. */
+    metersPerUnit?: number | null;
     /** Opt-in bounded pagination for getFeatures(); omitted keeps the single-page behavior. */
     pagination?: FeaturePaginationOptions;
   };
@@ -240,16 +251,46 @@ export class OGCAPITilesSource
   extends DataSource<string, OGCAPISourceOptions>
   implements TileSource
 {
+  /** Converted tile matrix set, loaded once. */
+  private _tileGridPromise: Promise<TileGrid | undefined> | null = null;
+
   /** Creates an OGC API Tiles source. */
   constructor(url: string, options: OGCAPISourceOptions = {}, coreApi?: CoreAPI) {
     super(url.replace(/\/$/, ''), options, OGCAPITilesSourceLoader.defaultOptions, coreApi);
+    validateMetersPerUnit(options['ogc-api']?.metersPerUnit, 'OGC API Tiles');
   }
 
-  /** Returns basic tileset metadata from the service landing page. */
+  /** Returns basic tileset metadata from the service landing page and configured matrix set. */
   async getMetadata(): Promise<TileSourceMetadata> {
-    const landingPage = (await this.fetchJSON(this.url)) as OGCAPILandingPage;
+    const [landingPage, tileGrid] = await Promise.all([
+      this.fetchJSON(this.url) as Promise<OGCAPILandingPage>,
+      this.getTileGrid()
+    ]);
     const tileLink = landingPage.links?.find(link => link.rel?.includes('tileset'));
-    return {name: landingPage.title || '', title: landingPage.title, format: tileLink?.type};
+    return {
+      name: landingPage.title || '',
+      title: landingPage.title,
+      format: tileLink?.type,
+      ...(tileGrid ? {tileGrid} : {})
+    };
+  }
+
+  /** Returns the configured tile matrix set as a tile grid, loading and converting it once. */
+  private getTileGrid(): Promise<TileGrid | undefined> {
+    this._tileGridPromise ||= this.loadTileGrid();
+    return this._tileGridPromise;
+  }
+
+  /** Converts the configured tile matrix set, fetching it first when given as a URL. */
+  private async loadTileGrid(): Promise<TileGrid | undefined> {
+    const {tileMatrixSet, metersPerUnit} = this.options['ogc-api'] || {};
+    if (!tileMatrixSet) return undefined;
+    // A URL may be relative to the landing page, as OGC API links often are.
+    const document =
+      typeof tileMatrixSet === 'string'
+        ? ((await this.fetchJSON(new URL(tileMatrixSet, `${this.url}/`).href)) as OGCTileMatrixSet)
+        : tileMatrixSet;
+    return convertOGCTileMatrixSetToTileGrid(document, {metersPerUnit});
   }
 
   /** Fetches raw bytes for one tile from an advertised template. */

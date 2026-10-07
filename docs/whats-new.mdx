@@ -53,6 +53,10 @@ See [supported items and verification boundaries](/docs/developer-guide/arcgis/i
 
 ## What's new
 
+- `convertOGCTileMatrixSetToTileGrid()` converts OGC TileMatrixSet 2.0 JSON to `TileGrid`,
+  honoring `orderedAxes`, `cellSize`, and bottom-left origins, and `OGCAPITilesSource` reports a
+  configured `ogc-api.tileMatrixSet` as `tileGrid`.
+
 - WMTS tile grids now describe every matrix level in `tileGrid.matrices`, including per-level
   origins and tile sizes, and the new `wmts.metersPerUnit` option converts scale denominators to
   resolutions for projected CRSs such as UTM.

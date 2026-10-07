@@ -155,7 +155,8 @@ const features = await source.getFeatures({
 | OGC placeholders | ✅ Supported | `{tileMatrix}`, `{tileRow}`, `{tileCol}` |
 | XYZ placeholders | ✅ Supported | `{z}`, `{y}`, `{x}` |
 | Tile retrieval | ✅ Supported | `getTile()` returns the original `ArrayBuffer` |
-| Matrix-set negotiation | ❌ Not implemented | Use WMTS for capability-driven grid selection |
+| Tile matrix set | ✅ Supported | `ogc-api.tileMatrixSet` (a TileMatrixSet 2.0 document or URL) is reported as `tileGrid` |
+| Matrix-set negotiation | ❌ Not implemented | The tile matrix set is configured, not discovered from tileset links |
 | Tile decoding | ❌ Not automatic | Parse bytes with the loader matching the advertised media type |
 | deck.gl | ⚠️ Foundation only | The generic tile contract is present; callers must provide the appropriate decoded tile type |
 
@@ -170,6 +171,32 @@ const source = createDataSource(landingPageUrl, [OGCAPITilesSourceLoader], {
 });
 
 const tileBytes = await source.getTile({z: 3, x: 4, y: 5});
+```
+
+### Tile matrix sets
+
+`convertOGCTileMatrixSetToTileGrid()` converts an OGC TileMatrixSet 2.0 JSON document (OGC
+17-083r4) to the shared `TileGrid` shape. Configuring `ogc-api.tileMatrixSet` on the tiles source
+does the same conversion in `getMetadata()`, fetching the document once when it is a URL; a
+relative URL resolves against the landing page.
+
+- Origins are returned in XY order. Declared `orderedAxes` decide the swap (a first axis naming
+  latitude, northing, southing, or Y); without them, only EPSG:4326 is swapped.
+- A bottom-left origin is reported per level only; the grid-wide `tileGrid.origin` is top-left by
+  definition and is omitted.
+- `cornerOfOrigin: 'bottomLeft'` is preserved on each matrix; omitted means top-left.
+- `cellSize` is used when present. A scale denominator alone becomes a resolution only for a known
+  unit: EPSG:4326, CRS:84, Web Mercator, or the `metersPerUnit` option.
+- A `crs` URI string or `{uri}` object is reported as `tileGrid.crs`; embedded WKT and PROJJSON
+  definitions are not interpreted.
+- `variableMatrixWidths` (coalesced rows) is not interpreted.
+
+```ts
+import {convertOGCTileMatrixSetToTileGrid} from '@loaders.gl/wms';
+
+const response = await fetch('https://example.com/ogcapi/tileMatrixSets/UTM18N');
+const tileGrid = convertOGCTileMatrixSetToTileGrid(await response.json(), {metersPerUnit: 1});
+// tileGrid.matrices[i]: {id, resolution, origin, cornerOfOrigin?, tileSize, matrixSize}
 ```
 
 ## OGC API Coverages
