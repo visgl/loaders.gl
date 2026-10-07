@@ -47,8 +47,8 @@
     "@loaders.gl/mvt": "5.0.0-alpha.9",
     "@loaders.gl/schema": "5.0.0-alpha.9",
     "@loaders.gl/schema-utils": "5.0.0-alpha.9",
-    "@math.gl/crs": "5.0.0-alpha.12",
-    "@math.gl/projection": "5.0.0-alpha.12"
+    "@math.gl/crs": "5.0.0-alpha.13",
+    "@math.gl/projection": "5.0.0-alpha.13"
   },
   "devDependencies": {
     "copc": "0.0.8"

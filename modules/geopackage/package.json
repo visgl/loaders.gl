@@ -56,8 +56,8 @@
     "@loaders.gl/schema": "5.0.0-alpha.9",
     "@loaders.gl/schema-utils": "5.0.0-alpha.9",
     "@loaders.gl/wkt": "5.0.0-alpha.9",
-    "@math.gl/crs": "5.0.0-alpha.12",
-    "@math.gl/projection": "5.0.0-alpha.12",
+    "@math.gl/crs": "5.0.0-alpha.13",
+    "@math.gl/projection": "5.0.0-alpha.13",
     "@types/sql.js": "^1.4.5",
     "apache-arrow": ">= 17.0.0",
     "sql.js": "1.14.1"
