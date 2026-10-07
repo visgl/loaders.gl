@@ -11,6 +11,7 @@ import type {
   GetTileParameters,
   SourceLoader,
   TileGrid,
+  TileGridMatrix,
   TileSource,
   TileSourceMetadata
 } from '@loaders.gl/loader-utils';
@@ -61,6 +62,12 @@ export type WMTSSourceLoaderOptions = DataSourceOptions &
       capabilitiesUrl?: string;
       /** Preferred coordinate reference system for matrix-set selection. */
       crs?: ServiceCRS;
+      /**
+       * Length of one CRS unit in meters, used to convert scale denominators to resolutions.
+       * Needed for projected CRSs such as UTM (`1`), since only EPSG:4326, CRS:84 and Web
+       * Mercator units are known without it.
+       */
+      metersPerUnit?: number;
     };
   };
 
@@ -111,7 +118,7 @@ export class WMTSImageTileSource
           ]
         : undefined,
       layer: {name: wmts.layer || layer?.identifier || '', layers: []},
-      tileGrid: toTileGrid(this._getTileMatrixSet(layer))
+      tileGrid: toTileGrid(this._getTileMatrixSet(layer), wmts.metersPerUnit)
     };
   }
 
@@ -464,49 +471,77 @@ export class WMTSImageTileSource
 }
 
 /** Converts a WMTS matrix set into the shared tile-grid metadata shape. */
-function toTileGrid(tileMatrixSet: WMTSTileMatrixSet | undefined): TileGrid | undefined {
+function toTileGrid(
+  tileMatrixSet: WMTSTileMatrixSet | undefined,
+  metersPerUnit?: number
+): TileGrid | undefined {
   if (!tileMatrixSet) return undefined;
   const firstMatrix = tileMatrixSet.matrices[0];
+  const unitMeters = getMetersPerUnit(tileMatrixSet.supportedCRS, metersPerUnit);
+  const matrices = tileMatrixSet.matrices.map(matrix =>
+    toTileGridMatrix(matrix, tileMatrixSet.supportedCRS, unitMeters)
+  );
   return {
     crs: tileMatrixSet.supportedCRS,
     tileSize: firstMatrix?.tileWidth
       ? [firstMatrix.tileWidth, firstMatrix.tileHeight || firstMatrix.tileWidth]
       : undefined,
-    origin:
-      firstMatrix?.topLeftCorner && getServiceCRSAxisOrder(tileMatrixSet.supportedCRS) === 'yx'
-        ? [firstMatrix.topLeftCorner[1], firstMatrix.topLeftCorner[0]]
-        : firstMatrix?.topLeftCorner,
-    ...getGridResolutions(tileMatrixSet),
+    origin: matrices[0]?.origin,
+    ...(matrices.every(matrix => matrix.resolution !== undefined)
+      ? {resolutions: matrices.map(matrix => matrix.resolution!)}
+      : {}),
     matrixIds: tileMatrixSet.matrices.map(matrix => matrix.identifier),
-    matrixSizes: tileMatrixSet.matrices.every(
-      matrix => matrix.matrixWidth !== undefined && matrix.matrixHeight !== undefined
-    )
-      ? tileMatrixSet.matrices.map(matrix => [matrix.matrixWidth!, matrix.matrixHeight!])
-      : undefined
+    matrixSizes: matrices.every(matrix => matrix.matrixSize)
+      ? matrices.map(matrix => matrix.matrixSize!)
+      : undefined,
+    matrices
   };
 }
 
-/** Converts OGC scale denominators using a 0.28 mm pixel for known CRS units. */
-function getGridResolutions(tileMatrixSet: WMTSTileMatrixSet): Pick<TileGrid, 'resolutions'> {
-  const crs = normalizeServiceCRS(tileMatrixSet.supportedCRS);
-  const metersPerUnit =
-    crs === 'EPSG:4326' || crs === 'CRS:84'
-      ? (2 * Math.PI * 6378137) / 360
-      : areServiceCRSEquivalent(crs, 'EPSG:3857')
-        ? 1
-        : undefined;
-  if (
-    !metersPerUnit ||
-    !tileMatrixSet.matrices.every(
-      matrix => Number.isFinite(matrix.scaleDenominator) && matrix.scaleDenominator! > 0
-    )
-  )
-    return {};
-  return {
-    resolutions: tileMatrixSet.matrices.map(
-      matrix => (matrix.scaleDenominator! * 0.00028) / metersPerUnit
-    )
-  };
+/** Converts one WMTS matrix, keeping only the fields the service advertises. */
+function toTileGridMatrix(
+  matrix: WMTSTileMatrix,
+  crs: string | undefined,
+  metersPerUnit: number | undefined
+): TileGridMatrix {
+  const tileGridMatrix: TileGridMatrix = {id: matrix.identifier};
+  if (metersPerUnit && Number.isFinite(matrix.scaleDenominator) && matrix.scaleDenominator! > 0) {
+    tileGridMatrix.resolution = (matrix.scaleDenominator! * OGC_PIXEL_SIZE_METERS) / metersPerUnit;
+  }
+  if (matrix.topLeftCorner?.length === 2) {
+    tileGridMatrix.origin =
+      getServiceCRSAxisOrder(crs) === 'yx'
+        ? [matrix.topLeftCorner[1], matrix.topLeftCorner[0]]
+        : matrix.topLeftCorner;
+  }
+  if (matrix.tileWidth) {
+    tileGridMatrix.tileSize = [matrix.tileWidth, matrix.tileHeight || matrix.tileWidth];
+  }
+  if (matrix.matrixWidth !== undefined && matrix.matrixHeight !== undefined) {
+    tileGridMatrix.matrixSize = [matrix.matrixWidth, matrix.matrixHeight];
+  }
+  return tileGridMatrix;
+}
+
+/** OGC standardized rendering pixel size, used to convert scale denominators: 0.28 mm. */
+const OGC_PIXEL_SIZE_METERS = 0.00028;
+
+/**
+ * Returns the CRS linear unit in meters: the caller's value when supplied, otherwise the known
+ * geographic and Web Mercator units. Other CRSs return undefined, so no resolution is guessed.
+ */
+function getMetersPerUnit(
+  supportedCRS: string | undefined,
+  metersPerUnit: number | undefined
+): number | undefined {
+  if (metersPerUnit !== undefined) {
+    if (!Number.isFinite(metersPerUnit) || metersPerUnit <= 0)
+      throw new RangeError('WMTS metersPerUnit must be a positive finite number');
+    return metersPerUnit;
+  }
+  const crs = normalizeServiceCRS(supportedCRS);
+  if (crs === 'EPSG:4326' || crs === 'CRS:84') return (2 * Math.PI * 6378137) / 360;
+  return areServiceCRSEquivalent(crs, 'EPSG:3857') ? 1 : undefined;
 }
 
 /** Selects an exact numeric identifier or matrix array index, without rounding or clamping. */

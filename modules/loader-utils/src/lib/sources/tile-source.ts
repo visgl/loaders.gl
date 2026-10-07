@@ -84,6 +84,25 @@ export type TileGrid = {
   matrixIds?: string[];
   /** Matrix width and height in tile units in zoom order. */
   matrixSizes?: Array<[number, number]>;
+  /**
+   * Per-level matrix definitions in zoom order. Unlike the grid-wide fields above, each entry
+   * carries its own origin and tile size, so grids whose levels differ can be described.
+   */
+  matrices?: TileGridMatrix[];
+};
+
+/** One level of a tile grid. Fields the service does not advertise are omitted. */
+export type TileGridMatrix = {
+  /** Matrix identifier used in tile requests. */
+  id: string;
+  /** Coordinate units per pixel, when CRS units are known. */
+  resolution?: number;
+  /** Top-left origin in canonical XY grid coordinates. */
+  origin?: [number, number];
+  /** Tile width and height in pixels. */
+  tileSize?: [number, number];
+  /** Matrix width and height in tile units. */
+  matrixSize?: [number, number];
 };
 
 /**

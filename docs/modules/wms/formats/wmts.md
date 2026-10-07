@@ -77,9 +77,9 @@ metadata constraints explicit; **Not implemented** marks features that need addi
 | Requests | Tile fetch cancellation | ✅ Supported | Tile `AbortSignal` forwarded to fetch; capabilities fetch is not independently canceled |
 | Metadata | Layer title, extent, format, CRS | ✅ Supported | Normalized tile-source metadata |
 | Metadata | Origin axis normalization | ✅ Supported | EPSG:4326 top-left corners exposed in canonical XY |
-| Metadata | Resolution from scale denominator | ⚠️ Partial | Known geographic/Web Mercator units; omitted for unknown units or incomplete scales |
+| Metadata | Resolution from scale denominator | ✅ Supported | Known geographic/Web Mercator units, or `wmts.metersPerUnit` for projected CRSs; never guessed for unknown units |
 | Metadata | Per-level matrix dimensions | ✅ Supported | Advertised sizes retained when complete and aligned with matrix IDs |
-| Metadata | Per-level origins and tile dimensions in normalized grid | ⚠️ Partial | Current normalized grid uses first-level origin and tile size |
+| Metadata | Per-level origins and tile dimensions in normalized grid | ✅ Supported | `tileGrid.matrices` carries each level's origin, tile size, matrix size, and resolution; grid-wide fields describe the first level |
 | Loading | Image decoding | ✅ Supported | `getTile()` and `getTileData()` decode through the image loader |
 | Rendering | Standard deck.gl XYZ grid | ✅ Supported | `SourceLayer` renders a compatible matrix set |
 | Rendering | Arbitrary origins, geographic grids, and per-level dimensions | ⚠️ Partial | Application must provide compatible tile selection |
@@ -126,6 +126,20 @@ WMTS matrix sets may use provider-specific identifiers, origins, resolutions, an
 exposes the advertised grid metadata. Applications can select a linked matrix set explicitly,
 request a compatible CRS, or use the first linked set. Rendering still requires tile selection
 compatible with that grid; see the boundaries below.
+
+`tileGrid.matrices` describes every level separately, because some matrix sets change origin or
+tile size between levels. A scale denominator becomes a resolution only when the CRS unit is known.
+EPSG:4326, CRS:84, and Web Mercator are built in; for a projected CRS, supply the unit length:
+
+```ts
+const source = createDataSource(wmtsUrl, [WMTSSourceLoader], {
+  // A UTM matrix set: one CRS unit is one meter.
+  wmts: {layer: 'orthophoto', tileMatrixSet: 'utm18n', metersPerUnit: 1}
+});
+
+const {tileGrid} = await source.getMetadata();
+// tileGrid.matrices[i]: {id, resolution, origin, tileSize, matrixSize}
+```
 
 ## deck.gl integration
 

@@ -200,8 +200,97 @@ test('WMTSImageTileSource exposes the selected tile grid', async () => {
     tileSize: [256, 256],
     origin: [-20037508, 20037508],
     matrixIds: ['0'],
-    matrixSizes: [[1, 1]]
+    matrixSizes: [[1, 1]],
+    matrices: [
+      {
+        id: '0',
+        origin: [-20037508, 20037508],
+        tileSize: [256, 256],
+        matrixSize: [1, 1]
+      }
+    ]
   });
+});
+
+/** A UTM matrix set whose levels differ in origin and tile size, as some national grids do. */
+const UTM_CAPABILITIES_XML = `<Capabilities><Contents>
+  <Layer><Identifier>orthophoto</Identifier><Format>image/png</Format>
+    <TileMatrixSetLink><TileMatrixSet>utm18n</TileMatrixSet></TileMatrixSetLink>
+  </Layer>
+  <TileMatrixSet><Identifier>utm18n</Identifier>
+    <SupportedCRS>http://www.opengis.net/def/crs/EPSG/0/32618</SupportedCRS>
+    <TileMatrix><Identifier>0</Identifier><ScaleDenominator>1000000</ScaleDenominator>
+      <TopLeftCorner>200000 4600000</TopLeftCorner><TileWidth>256</TileWidth><TileHeight>256</TileHeight>
+      <MatrixWidth>4</MatrixWidth><MatrixHeight>3</MatrixHeight></TileMatrix>
+    <TileMatrix><Identifier>1</Identifier><ScaleDenominator>250000</ScaleDenominator>
+      <TopLeftCorner>250000 4550000</TopLeftCorner><TileWidth>512</TileWidth><TileHeight>512</TileHeight>
+      <MatrixWidth>7</MatrixWidth><MatrixHeight>5</MatrixHeight></TileMatrix>
+  </TileMatrixSet></Contents></Capabilities>`;
+
+test('WMTSImageTileSource#getMetadata exposes per-level origins and tile sizes', async () => {
+  const parser = await WMTSCapabilitiesLoader.preload();
+  const capabilities = parser.parseTextSync(UTM_CAPABILITIES_XML);
+  const source = new WMTSImageTileSource(WMTS_URL, {wmts: {capabilities}});
+  const {tileGrid} = await source.getMetadata();
+
+  expect(tileGrid?.matrices).toEqual([
+    {
+      id: '0',
+      origin: [200000, 4600000],
+      tileSize: [256, 256],
+      matrixSize: [4, 3]
+    },
+    {
+      id: '1',
+      origin: [250000, 4550000],
+      tileSize: [512, 512],
+      matrixSize: [7, 5]
+    }
+  ]);
+  // The grid-wide fields still describe the first level only.
+  expect(tileGrid?.origin).toEqual([200000, 4600000]);
+  expect(tileGrid?.tileSize).toEqual([256, 256]);
+  // UTM units are not known without `metersPerUnit`, so no resolution is guessed.
+  expect(tileGrid?.resolutions).toBeUndefined();
+});
+
+test('WMTSImageTileSource#getMetadata converts projected scale denominators with metersPerUnit', async () => {
+  const parser = await WMTSCapabilitiesLoader.preload();
+  const capabilities = parser.parseTextSync(UTM_CAPABILITIES_XML);
+  const source = new WMTSImageTileSource(WMTS_URL, {
+    wmts: {capabilities, metersPerUnit: 1}
+  });
+  const {tileGrid} = await source.getMetadata();
+
+  expect(tileGrid?.resolutions?.[0]).toBeCloseTo(280);
+  expect(tileGrid?.resolutions?.[1]).toBeCloseTo(70);
+  expect(tileGrid?.matrices?.map(matrix => matrix.resolution)).toEqual(tileGrid?.resolutions);
+
+  const footSource = new WMTSImageTileSource(WMTS_URL, {
+    wmts: {capabilities, metersPerUnit: 0.3048}
+  });
+  expect((await footSource.getMetadata()).tileGrid?.resolutions?.[0]).toBeCloseTo(280 / 0.3048);
+
+  const invalidSource = new WMTSImageTileSource(WMTS_URL, {
+    wmts: {capabilities, metersPerUnit: 0}
+  });
+  await expect(invalidSource.getMetadata()).rejects.toThrow('metersPerUnit');
+});
+
+test('WMTSImageTileSource#getMetadata keeps per-level resolutions when some scales are missing', async () => {
+  const parser = await WMTSCapabilitiesLoader.preload();
+  const capabilities = parser.parseTextSync(
+    UTM_CAPABILITIES_XML.replace('<ScaleDenominator>250000</ScaleDenominator>', '')
+  );
+  const source = new WMTSImageTileSource(WMTS_URL, {
+    wmts: {capabilities, metersPerUnit: 1}
+  });
+  const {tileGrid} = await source.getMetadata();
+
+  expect(tileGrid?.matrices?.[0].resolution).toBeCloseTo(280);
+  expect(tileGrid?.matrices?.[1].resolution).toBeUndefined();
+  // The aligned grid-wide array is all-or-nothing.
+  expect(tileGrid?.resolutions).toBeUndefined();
 });
 
 test('WMTSImageTileSource uses advertised identifiers for KVP requests', async () => {
@@ -288,6 +377,7 @@ test('WMTS capabilities select tile resources, default styles, formats and CRS u
   const metadata = await source.getMetadata();
   expect(metadata.format).toBe('image/jpeg');
   expect(metadata.tileGrid?.origin).toEqual([-180, 90]);
+  expect(metadata.tileGrid?.matrices?.[0].origin).toEqual([-180, 90]);
   expect(metadata.tileGrid?.matrixSizes).toBeUndefined();
   expect(capabilities.contents.tileMatrixSets[0].matrices[1].scaleDenominator).toBeUndefined();
   capabilities.contents.tileMatrixSets[0].matrices.pop();

@@ -53,6 +53,10 @@ See [supported items and verification boundaries](/docs/developer-guide/arcgis/i
 
 ## What's new
 
+- WMTS tile grids now describe every matrix level in `tileGrid.matrices`, including per-level
+  origins and tile sizes, and the new `wmts.metersPerUnit` option converts scale denominators to
+  resolutions for projected CRSs such as UTM.
+
 - Upgrade math.gl dependencies to 5.0.0-alpha.12 and migrate coordinate transformations to
   `@math.gl/projection`, the successor to `@math.gl/proj4`.
 
