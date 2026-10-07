@@ -62,8 +62,9 @@ nested external tilesets and implicit tiling fail explicitly. No feature schema 
 3TZ output uses lossless Draco Edge Breaker geometry with required
 `KHR_draco_mesh_compression` support. It preserves the existing position-error budget;
 materials and encoded images retain their original representation. The conversion worker
-loads both Draco encoder and decoder runtimes, which must be allowed by CORS and the
-application's content security policy. Very small GLBs can grow despite geometry compression.
+uses bundled Draco encoder and decoder assets served by the application. Its module
+worker evaluates the codec wrappers; the application's content security policy must allow
+that execution and WebAssembly compilation. Very small GLBs can grow despite geometry compression.
 
 ### Explicit SLPK features
 

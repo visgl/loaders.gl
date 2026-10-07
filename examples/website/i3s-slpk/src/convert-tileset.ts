@@ -198,7 +198,17 @@ async function convertSelectedContentToResources(
 /** Applies the application's configured codec assets to direct Draco encoding and verification. */
 function getDracoLibraryOptions() {
   const {core, modules} = getLoaderOptions();
-  return {modules, CDN: core?.CDN, useLocalLibraries: core?.useLocalLibraries};
+  return {
+    CDN: core?.CDN,
+    useLocalLibraries: core?.useLocalLibraries,
+    modules: {
+      'draco_encoder.js': new URL('../../../../modules/draco/src/libs/draco_encoder.js', import.meta.url).href,
+      'draco_encoder.wasm': new URL('../../../../modules/draco/src/libs/draco_encoder.wasm', import.meta.url).href,
+      'draco_wasm_wrapper.js': new URL('../../../../modules/draco/src/libs/draco_wasm_wrapper.js', import.meta.url).href,
+      'draco_decoder.wasm': new URL('../../../../modules/draco/src/libs/draco_decoder.wasm', import.meta.url).href,
+      ...modules
+    }
+  };
 }
 
 /** Retains a conservative source LOD error from the selected hierarchy, rather than guessing zero. */

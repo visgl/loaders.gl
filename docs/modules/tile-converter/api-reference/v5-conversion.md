@@ -78,7 +78,9 @@ Encoding and verification need both Draco encoder and decoder runtimes. The opti
 `useLocalLibraries`) for applications that inject runtimes or serve local assets. The default
 runtime uses the Draco module's CDN configuration. Browser deployments must allow these
 assets through CORS and content security policy. The browser archive example runs this work
-inside its conversion worker; direct codec calls execute in their caller's environment.
+inside its conversion worker with bundled encoder/decoder assets; direct codec calls execute
+in their caller's environment. Module workers evaluate the library wrappers, which must be
+allowed by the application's content security policy.
 
 Lossy presets, quantization controls, texture compression and broader external-viewer
 qualification remain follow-up work. This GLB policy does not change v5 I3S/SLPK authoring.
