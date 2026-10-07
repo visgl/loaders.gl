@@ -2,11 +2,11 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import type {GLTFMaterialPostprocessed} from '@loaders.gl/gltf';
+import type {GLTFMaterialPostprocessed, GLTFImagePostprocessed} from '@loaders.gl/gltf';
 import {TileConversionError} from '@loaders.gl/tile-converter/v5/core';
 import type {MeshTileSampler, MeshTileTexture, MeshTileTextureTransform} from './mesh.js';
 
-/** Maps one embedded PNG/JPEG image, sampling and UV transform without decoding or baking UVs. */
+/** Maps a buffer-view or base64 PNG/JPEG image, sampling and UV transform without decoding pixels. */
 export function mapMeshSourceTexture(
   textureInfo: NonNullable<GLTFMaterialPostprocessed['pbrMetallicRoughness']>['baseColorTexture']
 ): MeshTileTexture {
@@ -39,11 +39,12 @@ export function mapMeshSourceTexture(
     ) ||
     Object.keys(texture.extensions || {}).length ||
     !image ||
-    image.uri !== undefined ||
+    (image.uri !== undefined && image.bufferView !== undefined) ||
     Object.keys(image.extensions || {}).length ||
-    !(image.bufferView?.data instanceof Uint8Array) ||
-    Object.keys(image.bufferView.extensions || {}).length ||
-    !['image/png', 'image/jpeg'].includes(image.mimeType || '') ||
+    (image.uri === undefined &&
+      (!(image.bufferView?.data instanceof Uint8Array) ||
+        Object.keys(image.bufferView.extensions || {}).length ||
+        !['image/png', 'image/jpeg'].includes(image.mimeType || ''))) ||
     (sampler &&
       (Object.keys(sampler.extensions || {}).length ||
         Object.keys(sampler).some(
@@ -63,7 +64,7 @@ export function mapMeshSourceTexture(
   ) {
     throw new TileConversionError(
       'MESH_SOURCE_TEXTURE_UNSUPPORTED',
-      'Base-color textures require an embedded PNG/JPEG bufferView, TEXCOORD_0, glTF sampling and an optional KHR_texture_transform on TEXCOORD_0'
+      'Base-color textures require a PNG/JPEG bufferView or base64 data URI, TEXCOORD_0, glTF sampling and an optional KHR_texture_transform on TEXCOORD_0'
     );
   }
   const selectedSampler = sampler
@@ -75,8 +76,7 @@ export function mapMeshSourceTexture(
       } as MeshTileSampler)
     : undefined;
   return {
-    data: image.bufferView!.data,
-    mimeType: image.mimeType as MeshTileTexture['mimeType'],
+    ...mapMeshSourceImage(image),
     ...(hasTransform
       ? {
           transform: {
@@ -89,5 +89,34 @@ export function mapMeshSourceTexture(
     ...(selectedSampler && Object.values(selectedSampler).some(value => value !== undefined)
       ? {sampler: selectedSampler}
       : {})
+  };
+}
+
+/** Reads self-contained encoded bytes without fetch, pixel decoding, or Node APIs. */
+function mapMeshSourceImage(
+  image: GLTFImagePostprocessed
+): Pick<MeshTileTexture, 'data' | 'mimeType'> {
+  if (image.uri === undefined) {
+    return {data: image.bufferView!.data, mimeType: image.mimeType as MeshTileTexture['mimeType']};
+  }
+  const match =
+    typeof image.uri === 'string'
+      ? /^data:(image\/(?:png|jpeg));base64,([A-Za-z0-9+/]+={0,2})$/.exec(image.uri)
+      : null;
+  if (!match || (image.mimeType !== undefined && image.mimeType !== match[1])) {
+    throw new TileConversionError(
+      'MESH_SOURCE_TEXTURE_UNSUPPORTED',
+      'Inline images require a PNG/JPEG base64 data URI and matching optional mimeType'
+    );
+  }
+  let encodedBytes: string;
+  try {
+    encodedBytes = atob(match[2]);
+  } catch {
+    throw new TileConversionError('MESH_SOURCE_TEXTURE_UNSUPPORTED', 'Invalid inline image base64');
+  }
+  return {
+    data: Uint8Array.from(encodedBytes, character => character.charCodeAt(0)),
+    mimeType: match[1] as MeshTileTexture['mimeType']
   };
 }

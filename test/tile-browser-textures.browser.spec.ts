@@ -9,7 +9,11 @@ import {
   inspectConversionInput
 } from '../examples/website/i3s-slpk/src/convert-tileset';
 import {createInput} from './utils/tile-browser-conversion';
-import {createTexturedTriangle, TEXTURE_SAMPLER} from './utils/tile-converter-texture';
+import {
+  createTexturedTriangle,
+  createImageDataUri,
+  TEXTURE_SAMPLER
+} from './utils/tile-converter-texture';
 
 let pngImage: Uint8Array;
 let jpegImage: Uint8Array;
@@ -51,11 +55,20 @@ async function inspectTexturedInput(data: ArrayBuffer) {
 }
 
 test.each([
-  ['image/png', false],
-  ['image/jpeg', true]
-] as const)('browser 3TZ conversion preserves %s image bytes, sampling and normalized UV=%s', async (mimeType, normalized) => {
+  ['image/png', false, false],
+  ['image/jpeg', true, false],
+  ['image/png', false, true],
+  ['image/jpeg', true, true]
+] as const)('browser 3TZ conversion preserves %s image bytes, normalized UV=%s and inline URI=%s', async (mimeType, normalized, inline) => {
   const image = mimeType === 'image/png' ? pngImage : jpegImage;
-  const data = createTexturedTriangle(image, mimeType, normalized);
+  const data = createTexturedTriangle(
+    image,
+    mimeType,
+    normalized,
+    3,
+    undefined,
+    inline ? createImageDataUri(image, mimeType) : undefined
+  );
   const before = data.slice(0);
   const {fetcher, controller, inspection} = await inspectTexturedInput(data);
   const result = await convertSelectedContents(
@@ -104,7 +117,7 @@ test.each([
   } finally {
     await archive.file.close();
   }
-  if (mimeType === 'image/png')
+  if (mimeType === 'image/png' && !inline)
     await expect(
       convertSelectedContents(
         inspection,
@@ -117,9 +130,19 @@ test.each([
     ).rejects.toMatchObject({code: 'I3S_MESH_PROFILE_UNSUPPORTED'});
 });
 
-test('mismatched embedded image MIME aborts browser conversion', async () => {
+test.each([
+  false,
+  true
+])('mismatched image MIME aborts browser conversion with inline URI=%s', async inline => {
   const {fetcher, controller, inspection} = await inspectTexturedInput(
-    createTexturedTriangle(pngImage, 'image/jpeg')
+    createTexturedTriangle(
+      pngImage,
+      'image/jpeg',
+      false,
+      3,
+      undefined,
+      inline ? createImageDataUri(pngImage, 'image/jpeg') : undefined
+    )
   );
   await expect(
     convertSelectedContents(
@@ -134,12 +157,22 @@ test('mismatched embedded image MIME aborts browser conversion', async () => {
 });
 
 test.each([
-  1, 2
-])('encoded image bytes count against the %s-placement decoded budget', async count => {
+  [1, false],
+  [2, false],
+  [1, true],
+  [2, true]
+] as const)('image bytes count against the %s-placement decoded budget with inline URI=%s', async (count, inline) => {
   const vertexCount = 201;
   const geometryBytes = vertexCount * (24 + 8);
   const {fetcher, controller, inspection} = await inspectTexturedInput(
-    createTexturedTriangle(pngImage, 'image/png', false, vertexCount)
+    createTexturedTriangle(
+      pngImage,
+      'image/png',
+      false,
+      vertexCount,
+      undefined,
+      inline ? createImageDataUri(pngImage, 'image/png') : undefined
+    )
   );
   const identifiers = inspection.resources.slice(1, count + 1).map(resource => resource.resourceId);
   const originalLimit = CONVERSION_LIMITS.maxInputBytes;
@@ -159,11 +192,19 @@ test.each([
 });
 
 test.each([
-  false,
-  true
-])('browser 3TZ preserves UV transforms without baking normalized UV=%s', async normalized => {
+  [false, false],
+  [true, false],
+  [true, true]
+])('browser 3TZ preserves UV transforms without baking normalized UV=%s and inline URI=%s', async (normalized, inline) => {
   const transform = {offset: [0.25, -0.5], rotation: Math.PI / 2, scale: [0.5, -1], texCoord: 0};
-  const data = createTexturedTriangle(pngImage, 'image/png', normalized, 3, transform);
+  const data = createTexturedTriangle(
+    pngImage,
+    'image/png',
+    normalized,
+    3,
+    transform,
+    inline ? createImageDataUri(pngImage, 'image/png') : undefined
+  );
   const before = data.slice(0);
   const {fetcher, controller, inspection} = await inspectTexturedInput(data);
   const result = await convertSelectedContents(
