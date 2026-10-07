@@ -274,6 +274,9 @@ test('WMTSImageTileSource#getMetadata converts projected scale denominators with
   expect(() => new WMTSImageTileSource(WMTS_URL, {wmts: {capabilities, metersPerUnit: 0}})).toThrow(
     'metersPerUnit'
   );
+  const updatedSource = new WMTSImageTileSource(WMTS_URL, {wmts: {capabilities}});
+  updatedSource.setProps({wmts: {capabilities, metersPerUnit: -1}});
+  await expect(updatedSource.getMetadata()).rejects.toThrow('metersPerUnit');
   // A null from JSON configuration means "not set".
   const nullSource = new WMTSImageTileSource(WMTS_URL, {wmts: {capabilities, metersPerUnit: null}});
   expect((await nullSource.getMetadata()).tileGrid?.resolutions).toBeUndefined();
