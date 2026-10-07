@@ -44,7 +44,11 @@ source geometric error. SLPK authors a single final mesh and does not reproduce 
 incremental viewer. This is a partial dataset export, not whole-tileset conversion.
 
 Each selected content must contain exactly one static primitive in self-contained
-GLB/B3DM, with native EPSG:4978 coordinates and ellipsoidal heights established by root region bounds.
+GLB/B3DM, including `KHR_draco_mesh_compression`, with native EPSG:4978 coordinates and
+ellipsoidal heights established by root region bounds. Draco input reuses the full decoder
+bundled for output verification inside the conversion worker. The Draco module selects the
+runtime assets; external content dependencies remain rejected. Decoded geometry
+counts against the existing byte gates after extraction, so those gates do not cap decoder allocations.
 Unknown/local frames are rejected. Metallic-roughness material factors, alpha controls
 and double-sided rendering are preserved. SLPK converts linear material RGB factors to I3S sRGB
 while preserving alpha; readers convert them back for rendering. 3TZ also preserves packed linear Float32 or normalized

@@ -11,6 +11,7 @@
 - feat(geotiff): add a bounded numeric TIFF decoder and shared numeric raster regions
 - feat(tile-converter): stream SLPK and 3TZ output, support browser workers and direct file downloads, and preserve mesh textures, colors, and UV transforms
 - feat(tile-converter): support Draco Edge Breaker encoding for I3S meshes
+- feat(tile-converter): accept Draco-compressed browser inputs
 - feat(arcgis): resolve service items and add an interactive explorer
 - refactor(core): preload named subloaders through core.subloaders
 - refactor(gis): isolate TWKB and Arrow geometry APIs; adapt binary polygon buffers to math.gl
