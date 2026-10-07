@@ -59,6 +59,12 @@ Other texture maps/UV sets, texture extensions other than `KHR_texture_transform
 compressed meshes, external dependencies, multiple primitives,
 nested external tilesets and implicit tiling fail explicitly. No feature schema is inferred.
 
+3TZ output uses lossless Draco Edge Breaker geometry with required
+`KHR_draco_mesh_compression` support. It preserves the existing position-error budget;
+materials and encoded images retain their original representation. The conversion worker
+loads both Draco encoder and decoder runtimes, which must be allowed by CORS and the
+application's content security policy. Very small GLBs can grow despite geometry compression.
+
 ### Explicit SLPK features
 
 For feature-bearing input, fill **SLPK feature mapping (optional JSON)** before converting.

@@ -1,4 +1,4 @@
-import {parse} from '@loaders.gl/core';
+import {getLoaderOptions, parse} from '@loaders.gl/core';
 import {Tiles3DLoader} from '@loaders.gl/3d-tiles';
 import {Tiles3DSource, Tileset3D} from '@loaders.gl/tiles';
 import {
@@ -166,6 +166,7 @@ async function convertSelectedContentToResources(
         ...common,
         sink,
         codec: createMeshConversionCodec({
+          dracoLibraryOptions: getDracoLibraryOptions(),
           spatialContext,
           maxPositionError: CONVERSION_LIMITS.maxPositionError
         }),
@@ -192,6 +193,12 @@ async function convertSelectedContentToResources(
   } finally {
     runtime.destroy();
   }
+}
+
+/** Applies the application's configured codec assets to direct Draco encoding and verification. */
+function getDracoLibraryOptions() {
+  const {core, modules} = getLoaderOptions();
+  return {modules, CDN: core?.CDN, useLocalLibraries: core?.useLocalLibraries};
 }
 
 /** Retains a conservative source LOD error from the selected hierarchy, rather than guessing zero. */
@@ -421,6 +428,7 @@ export async function convertSelectedContentsToResources(
     sink,
     signal,
     codec: createMeshConversionCodec({
+      dracoLibraryOptions: getDracoLibraryOptions(),
       spatialContext,
       maxPositionError: CONVERSION_LIMITS.maxPositionError
     }),

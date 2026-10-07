@@ -83,17 +83,31 @@ export interface MeshTileOptions {
  */
 export function encodeMeshTile(mesh: MeshGeometry, options: MeshTileOptions = {}): ArrayBuffer {
   const geometry = validateMeshGeometry(mesh);
+  const {scenegraph, materialIndex} = createMeshTileScenegraph(options, geometry);
+  const meshIndex = scenegraph.addMesh({
+    attributes: geometry.attributes,
+    indices: geometry.indices?.value,
+    material: materialIndex,
+    mode: 4
+  });
+  return finalizeMeshTileScenegraph(scenegraph, meshIndex);
+}
+
+/** Creates the shared material/image scene without allocating uncompressed geometry buffers. */
+export function createMeshTileScenegraph(options: MeshTileOptions, geometry: MeshGeometry) {
   const scenegraph = new GLTFScenegraph({json: {asset: {version: '2.0', generator: 'loaders.gl'}}});
   const material =
     options.material === undefined
       ? undefined
       : validateMeshMaterial(options.material, scenegraph, 'TEXCOORD_0' in geometry.attributes);
-  const meshIndex = scenegraph.addMesh({
-    attributes: geometry.attributes,
-    indices: geometry.indices?.value,
-    material: material ? scenegraph.addMaterial(material) : undefined,
-    mode: 4
-  });
+  return {scenegraph, materialIndex: material ? scenegraph.addMaterial(material) : undefined};
+}
+
+/** Adds placement-neutral nodes and serializes the single-mesh scene as GLB. */
+export function finalizeMeshTileScenegraph(
+  scenegraph: GLTFScenegraph,
+  meshIndex: number
+): ArrayBuffer {
   const nodeIndex = scenegraph.addNode({meshIndex});
   const sceneIndex = scenegraph.addScene({nodeIndices: [nodeIndex]});
   scenegraph.setDefaultScene(sceneIndex);

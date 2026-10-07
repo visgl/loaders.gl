@@ -51,6 +51,38 @@ ESM, CommonJS and TypeScript declaration exports. The app still declares its exi
 format and Node service dependencies; importing the core isolates its runtime and
 bundle imports, but does not remove those installation dependencies.
 
+## Draco mesh output
+
+`createMeshConversionCodec` now encodes GLB geometry with lossless Draco Edge Breaker
+by default, including GLBs packaged as 3TZ by the mesh sinks. Output requires
+`KHR_draco_mesh_compression` support in the reader and contains no uncompressed geometry
+fallback. Materials, encoded PNG/JPEG images, samplers and texture transforms are preserved;
+images are not recompressed. `encodeMeshTile` remains the synchronous uncompressed encoder.
+
+```ts
+const codec = createMeshConversionCodec({
+  spatialContext,
+  maxPositionError: 0.01,
+  // Set draco: false to generate uncompressed GLB geometry instead.
+  // dracoLibraryOptions: {useLocalLibraries: true}
+});
+```
+
+No attribute quantization is enabled. The codec verifies the decoded Float32 positions,
+uses decoded vertex counts and bounds in the GLB accessors and placement metadata, and
+retains the existing position-rounding budget. Draco may reorder vertices and triangles or
+remove unused vertices. Compression is not guaranteed to reduce very small mesh files.
+
+Encoding and verification need both Draco encoder and decoder runtimes. The optional
+`dracoLibraryOptions` accepts the existing `LoadLibraryOptions` (`modules`, `CDN`,
+`useLocalLibraries`) for applications that inject runtimes or serve local assets. The default
+runtime uses the Draco module's CDN configuration. Browser deployments must allow these
+assets through CORS and content security policy. The browser archive example runs this work
+inside its conversion worker; direct codec calls execute in their caller's environment.
+
+Lossy presets, quantization controls, texture compression and broader external-viewer
+qualification remain follow-up work. This GLB policy does not change v5 I3S/SLPK authoring.
+
 ## Archive output: 3TZ and SLPK
 
 Use `createTileConversionArchive` from either v5 entrypoint to package the unmodified files
