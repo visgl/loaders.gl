@@ -2,7 +2,8 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import {Projection} from '@math.gl/projection';
+import {projectionEngine} from '@math.gl/projection';
+import type {Projection} from '@math.gl/projection';
 import type {PROJStringDefinition} from '@math.gl/crs';
 
 /**
@@ -14,7 +15,7 @@ export const createProjection = (projectionData?: PROJStringDefinition): Project
   if (!projectionData) {
     return null;
   }
-  return new Projection({
+  return projectionEngine.createProjection({
     from: projectionData,
     to: 'WGS84'
   });
