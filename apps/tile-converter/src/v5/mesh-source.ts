@@ -323,12 +323,17 @@ async function extractPrimitive(
     id,
     mesh,
     origin: minimum.map((value, axis) => value / 2 + maximum[axis] / 2) as [number, number, number],
-    material: await mapMaterial(primitive.material, readExternalResource, contentUri, signal)
+    material: await mapMeshSourceMaterial(
+      primitive.material,
+      readExternalResource,
+      contentUri,
+      signal
+    )
   };
 }
 
 /** Maps supported PBR controls and an embedded base-color image, rejecting unmapped semantics. */
-async function mapMaterial(
+export async function mapMeshSourceMaterial(
   material: GLTFMaterialPostprocessed | undefined,
   readExternalResource: MeshTilesetSourceOptions['readExternalResource'],
   contentUri: string | undefined,
@@ -337,8 +342,9 @@ async function mapMaterial(
   if (!material) return undefined;
   const pbr = material.pbrMetallicRoughness;
   if (
-    Object.keys(material).some(
-      name =>
+    Object.entries(material).some(
+      ([name, value]) =>
+        value !== undefined &&
         ![
           'id',
           'name',
@@ -350,8 +356,9 @@ async function mapMaterial(
           'extras'
         ].includes(name)
     ) ||
-    Object.keys(pbr || {}).some(
-      name =>
+    Object.entries(pbr || {}).some(
+      ([name, value]) =>
+        value !== undefined &&
         !['baseColorFactor', 'baseColorTexture', 'metallicFactor', 'roughnessFactor'].includes(name)
     ) ||
     material.emissiveFactor?.some(value => value !== 0)

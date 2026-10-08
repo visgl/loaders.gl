@@ -73,7 +73,7 @@ export function createI3SMeshConversionCodec<TInspection = unknown>(
           ? await context.transformGeometryAsync(
               positions,
               mesh.attributes.NORMAL?.value,
-              options.normalReferenceFrame
+              resource.normalReferenceFrame ?? options.normalReferenceFrame
             )
           : {
               positions: context.transformPositions(positions),

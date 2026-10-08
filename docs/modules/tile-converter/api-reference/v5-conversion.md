@@ -130,6 +130,50 @@ future work. The browser example can interrupt packaging by terminating its disp
 See [SLPKWriter](/docs/modules/i3s/api-reference/slpk-writer) and
 [Tiles3DArchiveWriter](/docs/modules/3d-tiles/api-reference/tiles-3d-archive-writer).
 
+## Original I3S mesh sources
+
+`createI3SMeshTilesetConversionSource` reads untextured `3DObject` and `IntegratedMesh`
+content through the shared camera-independent traversal. Construct a dedicated `Tileset3D`
+runtime with `i3s.geometryMode: 'source'` and `i3s.decodeTextures: false`. Source decoding
+reconstructs absolute Float64 positions from node offsets without per-vertex renderer
+projection or Float32 placement. Normals retain the store's original vector basis, which the source forwards to both writer codecs. Runtime
+header/bounds preparation still follows the runtime spatial policy.
+
+```ts
+const source = createI3SMeshTilesetConversionSource(tileset, {
+  unloadContent: true,
+  // getFeatures: applicationOwnedArrowMapper
+});
+const metadata = await source.inspect();
+const spatialContext = createI3SConversionSpatialContext(metadata.spatialReference, {
+  targetCrs: 'EPSG:4978'
+});
+const codec = createMeshConversionCodec({
+  spatialContext,
+  autoOrigin: true,
+  maxPositionError: 0.01
+});
+```
+
+Use the adapters entrypoint for the source and codec and the core entrypoint for the spatial
+context. `autoOrigin` chooses the transformed bounds center before Float32 encoding;
+its default is `false`, preserving existing explicit target origins. Pair this codec with the
+bounded 3D Tiles sinks and optional 3TZ packaging. The I3S writer codec can also consume
+these source resources and performs its own geographic rebasing.
+
+This initial source profile supports triangle positions, normals, one UV set and basic
+untextured PBR factors. Textures (including declared resources that failed to load), vertex
+colors, UV regions, additional producer attributes, opaque segmentation and unsupported
+materials fail explicitly. Nodes with feature IDs or layer attribute definitions require
+`getFeatures`, which returns an `I3SMeshFeatures` Arrow table and complete triangle
+associations. Decoded numeric IDs outside the safe-integer range are rejected. Attribute
+resource loading and lossless property mapping remain application responsibilities.
+
+Source positions retain their declared units, elevation reference and CRS. Supply the desired
+output and any elevation providers to the shared conversion spatial context so geometry is
+transformed once. Rendering runtimes should keep the default `geometryMode: 'render'`.
+This is a bounded source profile, not qualification of every I3S dataset or appearance profile.
+
 ## Source mesh to I3S/SLPK
 
 `createMeshTilesetConversionSource` connects a source-backed `Tileset3D` runtime to

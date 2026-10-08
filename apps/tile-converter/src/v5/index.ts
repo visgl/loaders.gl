@@ -123,3 +123,6 @@ export type {
 
 export {transformPointCloudSourceTile} from '@loaders.gl/tile-converter/v5/adapters';
 export type {PointCloudSpatialOptions} from '@loaders.gl/tile-converter/v5/adapters';
+
+export {createI3SMeshTilesetConversionSource} from '@loaders.gl/tile-converter/v5/adapters';
+export type {I3SMeshTilesetSourceOptions} from '@loaders.gl/tile-converter/v5/adapters';
