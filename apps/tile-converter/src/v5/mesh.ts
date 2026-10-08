@@ -5,6 +5,11 @@
 import {GLTFScenegraph, GLTFWriter} from '@loaders.gl/gltf';
 import {getBinaryImageMetadata} from '@loaders.gl/images';
 import type {MeshAttribute, MeshGeometry} from '@loaders.gl/schema';
+import {
+  prepareMeshFeatureGeometry,
+  encodeMeshFeatures,
+  type MeshTileFeatures
+} from './mesh-features.js';
 import {TileConversionError} from '@loaders.gl/tile-converter/v5/core';
 
 /** Explicit glTF wrapping and filtering for the selected base-color image. */
@@ -61,6 +66,8 @@ export interface MeshTileMaterial {
 
 /** Optional appearance for the single-mesh GLB profile. */
 export interface MeshTileOptions {
+  /** One explicit Arrow feature table with a row index per triangle. */
+  readonly features?: MeshTileFeatures;
   /** Explicitly selected material; other texture maps and material extensions are unsupported. */
   readonly material?: MeshTileMaterial;
 }
@@ -82,7 +89,7 @@ export interface MeshTileOptions {
  * @returns An embedded-buffer GLB containing one mesh, node, and default scene.
  */
 export function encodeMeshTile(mesh: MeshGeometry, options: MeshTileOptions = {}): ArrayBuffer {
-  const geometry = validateMeshGeometry(mesh);
+  const geometry = prepareMeshFeatureGeometry(validateMeshGeometry(mesh), options.features);
   const {scenegraph, materialIndex} = createMeshTileScenegraph(options, geometry);
   const meshIndex = scenegraph.addMesh({
     attributes: geometry.attributes,
@@ -90,6 +97,7 @@ export function encodeMeshTile(mesh: MeshGeometry, options: MeshTileOptions = {}
     material: materialIndex,
     mode: 4
   });
+  encodeMeshFeatures(scenegraph, meshIndex, options.features);
   return finalizeMeshTileScenegraph(scenegraph, meshIndex);
 }
 

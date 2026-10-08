@@ -290,7 +290,7 @@ test('legacy B3DM batch metadata follows the same explicit Arrow mapping with nu
   expect(resources[0].features!.triangleFeatureIndices).toEqual(new Uint32Array([1, 0]));
 });
 
-test('unannotated real source conversion succeeds; GLB codec rejects feature-bearing resources', async () => {
+test('unannotated real source conversion succeeds; GLB codec preserves feature-bearing resources', async () => {
   const result = await convertRuntime();
   expect(result.sink.getFiles().length).toBeGreaterThan(5);
   const {runtime} = await createRuntime(true);
@@ -301,11 +301,19 @@ test('unannotated real source conversion succeeds; GLB codec rejects feature-bea
       [Symbol.asyncIterator]()
       .next()
   ).value!;
-  const codec = createMeshConversionCodec({spatialContext: SPATIAL, maxPositionError: 0.001});
-  await expect(async () => {
-    for await (const _output of codec.convert(resource, undefined)) {
-    }
-  }).rejects.toMatchObject({code: 'MESH_FEATURE_OUTPUT_UNSUPPORTED'});
+  const codec = createMeshConversionCodec({
+    spatialContext: SPATIAL,
+    maxPositionError: 0.001,
+    dracoLibraryOptions: {useLocalLibraries: true}
+  });
+  const output = await codec.convert(resource, undefined)[Symbol.asyncIterator]().next();
+  const gltf = await parse(output.value.glb, (await import('@loaders.gl/gltf')).GLTFLoader, {
+    core: {worker: false, useLocalLibraries: true},
+    gltf: {loadImages: false}
+  });
+  expect(
+    gltf.json.extensions.EXT_structural_metadata.propertyTables[0].properties.source_id.data
+  ).toEqual(new BigUint64Array([9007199254740993n, 18446744073709551615n]));
 });
 
 test.each([
@@ -605,7 +613,7 @@ test.each([
   const {runtime} = await createRuntime(true, payload => {
     const properties =
       payload.gltf.extensions.EXT_structural_metadata.schema.classes.building.properties;
-    if (kind === 'noData') properties.label.noData = 'missing';
+    if (kind === 'noData') properties.label.noData = 123;
     if (kind === 'array') properties.label.array = true;
     if (kind === 'enum') properties.label.type = 'ENUM';
     if (kind === 'integer64 transform') properties.source_id.scale = 2;

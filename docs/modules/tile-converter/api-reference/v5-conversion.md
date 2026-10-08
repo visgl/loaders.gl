@@ -35,7 +35,7 @@ and math dependencies without importing format encoders, Arrow construction or a
 writers. Applications initialize sources and supply codecs, sinks and validators.
 
 The adapters entrypoint exports the existing mesh and point-cloud encoders, source mesh
-extraction, Arrow feature mapping, single-mesh output sinks and archive packaging. It
+extraction, Arrow feature mapping, bounded mesh output sinks and archive packaging. It
 uses the core's shared functions, types and `TileConversionError`; there is one core
 implementation per module format.
 
@@ -134,7 +134,7 @@ See [SLPKWriter](/docs/modules/i3s/api-reference/slpk-writer) and
 
 `createMeshTilesetConversionSource` connects a source-backed `Tileset3D` runtime to
 `createI3SMeshConversionCodec` and `createSingleMeshI3SSink`. These APIs are exported from
-both v5 entrypoints. The initial profile converts one static untextured GLB/B3DM primitive
+both v5 entrypoints. The initial profile converts static GLB/B3DM primitives
 from a native, resolved EPSG:4978 source to an I3S 1.7 3D Object layer. Enable decoded glTF
 loading when constructing the runtime, including `gltf.decompressMeshes: true` for Draco
 content. Triangle lists and indexed/non-indexed triangle strips are supported; strips become
@@ -195,15 +195,15 @@ Omit `features` for unannotated geometry. Feature-bearing inputs require an expl
 schema. The source supports `_BATCHID` with decoded B3DM batch columns or one
 `EXT_mesh_features` attribute set referencing one decoded `EXT_structural_metadata` table.
 The declared class, counts, row indices, stable IDs, and geometry association are validated.
-Missing defaults can be supplied by the decoded class. noData, enum/array mappings and
-64-bit property transforms are rejected until their semantics are separately qualified. Unmapped properties fail rather than disappearing.
+Missing defaults can be supplied by the decoded class. Untransformed scalar/string noData values restore null (or the declared default), including exact 64-bit sentinels. Enum/array mappings, transformed noData values and
+64-bit property transforms require separate qualification. Unmapped properties fail rather than disappearing.
 
 The source applies node placement, the glTF up axis, RTC center, and tile placement once.
 Absolute positions remain Float64; normals use the inverse transpose of the placement.
 The codec then applies the shared source-to-ECEF spatial context once. It reports measured
 position rounding and explicitly authorized 64-bit decimal-string mappings in `report`.
 The sink exposes files only after successful finalization and clears partial files on abort.
-A second mesh resource aborts this single-mesh output; hierarchy generation is separate work.
+`createSingleMeshI3SSink` retains its one-mesh compatibility profile. Use `createI3SMeshSink` for up to 64 mesh placements sharing one feature schema and legacy geometry layout. The codec allocates disjoint generated object IDs across nodes.
 
 The initial source rejects animation, skins, morphs, GPU instancing, mirrored or singular
 placements, unmapped material/feature extensions, and tileset/group/tile/content
@@ -213,7 +213,7 @@ encoding cannot be interrupted by an AbortSignal mid-operation; applications can
 disposable worker instead. Resource/retained-output/archive caps do
 not constitute a total peak-memory budget.
 
-Unannotated resources can also use the existing GLB codec and 3D Tiles/3TZ sink. The source
+Resources can also use the GLB codec and 3D Tiles/3TZ sink. The source
 retains `TEXCOORD_0` (packed Float32 or normalized Uint8/Uint16) and one embedded PNG/JPEG
 base-color image from a glTF buffer view or base64 data URI, including declared wrapping/filtering and
 `KHR_texture_transform` offset/rotation/scale on `TEXCOORD_0`. Load source content with
@@ -223,32 +223,29 @@ conversion does not bake it into UVs. Encoded
 image bytes are forwarded without pixel decoding or transcoding. Inline images accept
 `data:image/png;base64,...` or `data:image/jpeg;base64,...`; an optional image `mimeType` must
 match the URI. Base64 is decoded directly into a typed array without fetching the image;
-the decoded encoded-image bytes count against the input gates. External image URLs,
-other data-URI encodings/MIME types,
+the decoded encoded-image bytes count against the input gates. External image URLs require an injected `readExternalResource` reader on the mesh source.
+Other data-URI encodings/MIME types,
 other UV sets, texture-info extensions other than `KHR_texture_transform`,
 texture/image/sampler extensions and other texture maps are
-rejected. The I3S codec continues to reject textured geometry. The GLB
-codec explicitly rejects feature-bearing resources until its target metadata writer is
-qualified. See [I3S mesh authoring](/docs/modules/i3s/api-reference/i3s-mesh-writer) for the
+rejected. I3S preserves PNG/JPEG bytes and UVs, bakes the selected UV transform, and maps wrapping. Explicit texture filtering and vertex colors remain unsupported for I3S. GLB feature output supports one inline structural metadata table and one attribute-backed feature set. Scalar integer and float32/float64 columns and UTF-8 strings are supported; exact int64/uint64 values remain binary integers. Nullable scalar/string columns use an unused `noData` sentinel, failing if no collision-free sentinel exists. Nested/boolean/enum columns remain unsupported. Stable IDs must be unique; shared vertices are expanded to preserve triangle ownership through Draco. See [I3S mesh authoring](/docs/modules/i3s/api-reference/i3s-mesh-writer) for the
 precise target property/null profile.
 
 ### Browser example
 
 The [tile archive example](/examples/i3s-slpk) can inspect an explicit 3D Tiles URL,
-convert selected self-contained static mesh contents to SLPK or 3TZ, and preview or
+convert selected static mesh contents to SLPK or 3TZ, and preview or
 download the partial archive. Draco-compressed GLB/B3DM input is decoded with bundled
-application assets before extraction; external content dependencies remain rejected. The
+application assets before extraction. `createTileConversionResourceFetcher` shares one aggregate transport budget across selected contents and external buffers/images, forwards cancellation, and cancels response streams on failure. Applications may inject an archive-backed fetcher; the example uses HTTP(S). The
 conversion error budget applies to the decoded source, rather than qualifying earlier source
 quantization. The decoded byte gates run after extraction and do not cap decoder allocations.
 It demonstrates the separate core and adapters entrypoints,
 required byte/precision budgets, cancellation and explicit profile rejection. See the
 [example README](https://github.com/visgl/loaders.gl/tree/master/examples/website/i3s-slpk)
 for limits and supported inputs. The controls accept an explicit JSON `MeshSourceFeatureOptions`
-mapping for single-mesh SLPK output; no schema is inferred. The decoded byte gate charges geometry, encoded base-color image bytes,
+mapping for SLPK or 3TZ output; no schema is inferred. The decoded byte gate charges geometry, encoded base-color image bytes,
 Arrow columns and triangle associations after extraction. Exact 64-bit decimal-string mappings are
 reported as diagnostics. Untextured material factors are preserved in both formats; `COLOR_0` is
-preserved for 3TZ and rejected for SLPK. Embedded PNG/JPEG base-color textures and
-`TEXCOORD_0` are preserved for 3TZ; textured SLPK and feature-bearing 3TZ remain unsupported.
+preserved for 3TZ and rejected for SLPK. PNG/JPEG base-color textures and `TEXCOORD_0` are preserved for both formats; I3S bakes UV transforms while GLB retains the extension.
 
 
 ### Partial mesh collections
@@ -264,13 +261,8 @@ aborts all output. Applications own source selection and conservative geometric 
 This flat collection does not reproduce a source LOD hierarchy.
 
 The [tile archive example](https://loaders.gl/examples/i3s-slpk) supports up to 64 explicitly
-selected leaf contents for partial 3TZ output, with aggregate input/decoded byte gates.
-Each selected content may contain multiple static primitive placements; up to 64 placements
-are emitted as independent leaves in declaration order with individual materials and transforms.
-The conversion report counts primitive placements rather than fetched content files. A single
-selected 3TZ content uses the same flat collection layout. SLPK still requires one primitive.
-SLPK output retains its single-mesh profile. Multi-node I3S authoring and preservation of
-broader source hierarchy, refinement and feature associations remain separate work.
+selected leaf contents and at most 64 total primitive placements for either archive format, with aggregate input/decoded byte gates.
+`createI3SMeshSink` requires `maxTotalBytes`, `maxMeshes` (1–64), and `maxResourceBytes`. It rebuilds legacy and paged indices, per-node material/texture references, and enclosing ECEF bounds. The 64th leaf uses a second node page. All nodes must share feature fields and the legacy geometry layout; schema mismatches abort the collection. Directly authored resources must allocate disjoint `objectIdOffset` ranges. Final metadata counts against byte budgets; unfinished/failed sinks expose no files. Source hierarchy/refinement preservation remains separate work.
 
 ### Browser worker execution
 

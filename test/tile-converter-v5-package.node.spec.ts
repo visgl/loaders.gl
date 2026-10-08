@@ -97,6 +97,23 @@ test('tile-converter v5 built core and adapters share identities in ESM and Comm
       });
       assert.equal(report.state, 'completed');
     }
+    const sink = commonJsAdapters.createI3SMeshSink({maxMeshes: 2, maxTotalBytes: 65536, maxResourceBytes: 65536});
+    await commonJsCore.convertTileset({
+      source: {
+        inspect: async () => null,
+        read: async function* () {
+          yield {id: 'mesh', origin: [0, 0, 0], mesh: {topology: 'triangle-list', mode: 4, attributes: {POSITION: {size: 3, value: new Float64Array([6378137, 0, 0, 6378137, 1, 0, 6378137, 0, 1])}}}};
+        }
+      },
+      codec: commonJsAdapters.createI3SMeshConversionCodec({
+        spatialContext: commonJsCore.createTiles3DConversionSpatialContext({sourceCrs: 'EPSG:4978', coordinateFrame: 'geocentric', heightReference: 'ellipsoidal'}),
+        maxResourceBytes: 65536, maxPositionError: 0.01, draco: false
+      }),
+      sink,
+      measureInputBytes: resource => resource.mesh.attributes.POSITION.value.byteLength,
+      measureOutputBytes: resource => Object.values(resource.files).reduce((total, bytes) => total + bytes.byteLength, 0)
+    });
+    assert.ok(sink.getFiles().some(file => file.resourceId === '3dSceneLayer.json.gz'));
     console.log('split entrypoints passed');
   `
     ],

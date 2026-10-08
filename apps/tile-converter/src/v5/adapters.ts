@@ -14,6 +14,7 @@ export type {
 } from './point-cloud-source-encoder.js';
 export {convertPointCloudSource} from './point-cloud-conversion.js';
 export type {ConvertPointCloudSourceOptions} from './point-cloud-conversion.js';
+export type {MeshTileFeatures} from './mesh-features.js';
 export {encodeMeshTile} from './mesh.js';
 export type {
   MeshTileMaterial,
@@ -54,3 +55,9 @@ export type {
   I3SMeshConversionCodecOptions,
   SingleMeshI3SSink
 } from './i3s-mesh-conversion.js';
+
+export {createI3SMeshSink} from './i3s-mesh-sink.js';
+export type {I3SMeshSink, I3SMeshSinkOptions} from './i3s-mesh-sink.js';
+
+export {createTileConversionResourceFetcher} from './resource-fetcher.js';
+export type {TileConversionResourceFetcherOptions} from './resource-fetcher.js';

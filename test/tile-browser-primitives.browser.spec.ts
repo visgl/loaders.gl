@@ -2,6 +2,7 @@ import {beforeAll, expect, test, vi} from 'vitest';
 import {parse} from '@loaders.gl/core';
 import {GLTFLoader, GLTFScenegraph, GLTFWriter, postProcessGLTF} from '@loaders.gl/gltf';
 import {Tiles3DArchive} from '@loaders.gl/3d-tiles';
+import {parseSLPKArchive} from '@loaders.gl/i3s';
 import {BlobFile} from '@loaders.gl/loader-utils';
 import {
   inspectConversionInput,
@@ -229,5 +230,39 @@ test('primitives within one content share the decoded byte budget', async () => 
     expect(result.report.outputResources).toBe(2);
   } finally {
     Object.assign(CONVERSION_LIMITS, {maxInputBytes: previousLimit});
+  }
+});
+
+test.each([
+  'primitives',
+  'nodes'
+])('one selected content retains both %s in the SLPK archive', async profile => {
+  const {inspection, fetcher, signal} = await inspectMeshes(fixtures.get(profile)!);
+  const result = await convertSelectedContents(
+    inspection,
+    [inspection.resources[1].resourceId],
+    'slpk',
+    signal,
+    () => {},
+    fetcher
+  );
+  expect(result.report.outputResources).toBe(2);
+  const reader = new BlobFile(result.file);
+  const archive = await parseSLPKArchive(reader);
+  try {
+    const page = JSON.parse(new TextDecoder().decode(await archive.getFile('nodepages/0', 'http')));
+    expect(page.nodes[0].children).toEqual([1, 2]);
+    expect(
+      page.nodes
+        .slice(1)
+        .map((node: {mesh: {geometry: {resource: number}}}) => node.mesh.geometry.resource)
+    ).toEqual([1, 2]);
+    for (const node of [1, 2]) {
+      expect(
+        (await archive.getFile(`nodes/${node}/geometries/0`, 'http')).byteLength
+      ).toBeGreaterThan(0);
+    }
+  } finally {
+    await reader.close();
   }
 });

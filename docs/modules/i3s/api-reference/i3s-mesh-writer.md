@@ -1,6 +1,6 @@
 # encodeI3SMeshLayer
 
-Authors a small I3S 1.7 **3D Object** layer from one untextured triangle mesh using portable
+Authors a small I3S 1.7 **3D Object** layer from one triangle mesh using portable
 ArrayBuffer, typed-array, TextEncoder, and GZIP APIs. Package the result with `SLPKWriter`.
 
 ```ts
@@ -22,22 +22,31 @@ packed Float32 or Float64 absolute EPSG:4978 positions, optional unit Float32 EC
 and optional packed unsigned indices. Input arrays remain unchanged. Indices are expanded;
 triangles retain their winding. The output includes an empty root and a mesh leaf, paged and
 legacy node indices, geometry, scalar attributes, layer metadata, and archive metadata.
-Every resource is individually GZIP compressed with a deterministic timestamp.
+Geometry, attributes and JSON resources are individually GZIP compressed with a deterministic timestamp. Encoded PNG/JPEG images retain their original bytes.
 
 Output positions use WGS84 longitude/latitude and ellipsoidal height relative to the leaf
 center. The writer measures reconstruction error in ECEF meters and rejects positions above
 `maxPositionError`. Bounds include the reconstructed vertices and numerical center error.
-Antimeridian wrapping, undefined geographic coordinates, textures, vertex colors/UVs,
+Antimeridian wrapping, undefined geographic coordinates, vertex colors,
 and unknown layouts/attributes are outside this initial profile.
 
 ## Appearance
 
-`material` supports one untextured metallic/roughness material: `baseColorFactor`,
+`material` supports one metallic/roughness material and optional `baseColorTexture`: `baseColorFactor`,
 `metallicFactor`, `roughnessFactor`, `alphaMode`, `alphaCutoff`, and `doubleSided`.
 MASK uses an explicit cutoff of 0.5 when omitted, preserving the glTF default rather than
 substituting the I3S default. Input RGB factors are linear, as in glTF; the writer applies the
 sRGB transfer curve required by the I3S material profile. Alpha is unchanged. The I3S reader
 converts material RGB back to linear values for rendering. Other material semantics fail explicitly.
+
+`baseColorTexture` accepts `{data: Uint8Array, mimeType: 'image/png' | 'image/jpeg'}`.
+Headers must match the MIME type and declare positive dimensions. Image bytes are copied from
+only the selected array view, without pixel decoding or transcoding. `TEXCOORD_0` accepts packed
+Float32 UV pairs or normalized Uint8/Uint16 pairs. Optional `transform` offset/rotation/scale
+is baked into new Float32 UVs. Optional sampler `wrapS`/`wrapT` map CLAMP_TO_EDGE, REPEAT and
+MIRRORED_REPEAT; explicit min/mag filtering is rejected because this profile cannot preserve it.
+Textures become separate PNG/JPEG resources referenced by layer texture definitions and node materials.
+Raw and Draco geometry preserve UVs; resource and precision limits still apply.
 
 ## Features
 
@@ -45,7 +54,7 @@ converts material RGB back to linear values for rendering. Other material semant
 `featureIdField`, and a `Uint32Array` `triangleFeatureIndices` containing one table row index
 per triangle. Batches share a schema and retain their original row order. Triangles are stably
 grouped by row to form I3S face ranges. Mixed-feature triangles and rows without geometry
-are rejected. I3S geometry and the synthetic `OBJECTID` column use local row numbers;
+are rejected. I3S geometry and the synthetic `OBJECTID` column use generated row numbers starting at `objectIdOffset` (default zero); collection codecs allocate disjoint ranges across nodes.
 stable source identifiers remain in their own property column. `OBJECTID` is reserved.
 
 The initial property mapping supports:
@@ -94,7 +103,7 @@ without quantization. Normals and triangle feature ownership are preserved, with
 I3S feature-index metadata. Decoded oriented attribute/feature tuples are verified before
 publishing resources, including duplicate triangles and winding. Node-page vertex counts
 reflect Draco's decoded vertex count. Other layer, material and feature resources retain
-their encoding; all resources remain individually GZIP compressed.
+their encoding; geometry, attributes and JSON remain individually GZIP compressed.
 
 ```ts
 import {encodeI3SMeshLayerWithDraco} from '@loaders.gl/i3s/i3s-mesh-writer';

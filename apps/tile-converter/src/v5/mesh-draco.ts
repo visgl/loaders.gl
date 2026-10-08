@@ -14,6 +14,8 @@ import {
   validateMeshGeometry
 } from './mesh.js';
 
+import {prepareMeshFeatureGeometry, encodeMeshFeatures} from './mesh-features.js';
+
 const DRACO_EXTENSION = 'KHR_draco_mesh_compression';
 
 /** Encodes the validated single-mesh profile with lossless Edge Breaker and no raw fallback. */
@@ -22,7 +24,7 @@ export async function encodeDracoMeshTile(
   options: MeshTileOptions,
   libraryOptions: LoadLibraryOptions = {}
 ): Promise<{glb: ArrayBuffer; positions: Float32Array}> {
-  geometry = validateMeshGeometry(geometry);
+  geometry = prepareMeshFeatureGeometry(validateMeshGeometry(geometry), options.features);
   // Draco requires explicit faces even when the input triangle list is non-indexed.
   if (!geometry.indices) {
     geometry.indices = {
@@ -72,6 +74,12 @@ export async function encodeDracoMeshTile(
       );
     }
   }
+  if (JSON.stringify(getMeshTriangles(geometry)) !== JSON.stringify(getMeshTriangles(decoded))) {
+    throw new TileConversionError(
+      'MESH_DRACO_ATTRIBUTE_CHANGED',
+      'Lossless Draco must preserve oriented triangles and every attribute, including feature ownership'
+    );
+  }
   const bufferView = scenegraph.addBufferView(encoded.data);
   const attributes: Record<string, number> = {};
   const attributeIdentifiers: Record<string, number> = {};
@@ -90,9 +98,18 @@ export async function encodeDracoMeshTile(
           ? 5121
           : attribute.value instanceof Uint16Array
             ? 5123
-            : 5126,
+            : attribute.value instanceof Uint32Array
+              ? 5125
+              : 5126,
       count: encoded.report.pointCount,
-      type: attribute.size === 2 ? 'VEC2' : attribute.size === 3 ? 'VEC3' : 'VEC4',
+      type:
+        attribute.size === 1
+          ? 'SCALAR'
+          : attribute.size === 2
+            ? 'VEC2'
+            : attribute.size === 3
+              ? 'VEC3'
+              : 'VEC4',
       ...(attribute.normalized ? {normalized: true} : {})
     };
     if (name === 'POSITION') {
@@ -128,6 +145,7 @@ export async function encodeDracoMeshTile(
       ]
     }
   ];
+  encodeMeshFeatures(scenegraph, 0, options.features);
   scenegraph.registerRequiredExtension(DRACO_EXTENSION);
   return {glb: finalizeMeshTileScenegraph(scenegraph, 0), positions};
 }
@@ -135,4 +153,30 @@ export async function encodeDracoMeshTile(
 /** Identifies one exact finite Float32 position independently of Draco vertex ordering. */
 function getPositionKey(positions: ArrayLike<number>, index: number): string {
   return `${positions[index]},${positions[index + 1]},${positions[index + 2]}`;
+}
+
+/** Compares oriented triangles independently of vertex/face order, retaining every attribute. */
+function getMeshTriangles(mesh: Pick<MeshGeometry, 'attributes' | 'indices'>): string[] {
+  const names = Object.keys(mesh.attributes).sort();
+  const indices = mesh.indices!.value;
+  const triangles: string[] = [];
+  for (let index = 0; index < indices.length; index += 3) {
+    const vertices = [0, 1, 2].map(corner =>
+      names
+        .map(name => {
+          const attribute = mesh.attributes[name];
+          return Array.from(
+            {length: attribute.size},
+            (_, component) => attribute.value[indices[index + corner] * attribute.size + component]
+          ).join(',');
+        })
+        .join('|')
+    );
+    triangles.push(
+      [0, 1, 2]
+        .map(corner => [...vertices.slice(corner), ...vertices.slice(0, corner)].join(';'))
+        .sort()[0]
+    );
+  }
+  return triangles.sort();
 }

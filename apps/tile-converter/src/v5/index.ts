@@ -97,3 +97,14 @@ export type {
   I3SMeshConversionCodecOptions,
   SingleMeshI3SSink
 } from '@loaders.gl/tile-converter/v5/adapters';
+
+export {
+  createI3SMeshSink,
+  createTileConversionResourceFetcher
+} from '@loaders.gl/tile-converter/v5/adapters';
+export type {
+  I3SMeshSink,
+  I3SMeshSinkOptions,
+  TileConversionResourceFetcherOptions,
+  MeshTileFeatures
+} from '@loaders.gl/tile-converter/v5/adapters';

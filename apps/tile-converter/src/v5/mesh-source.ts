@@ -18,7 +18,7 @@ import type {TilesetConversionSourceOptions} from '@loaders.gl/tile-converter/v5
 import type {MeshConversionInput} from './mesh-conversion.js';
 import type {MeshTileMaterial} from './mesh.js';
 import {validateMeshGeometry, validateMeshIndices} from './mesh.js';
-import {mapMeshSourceTexture} from './mesh-source-texture.js';
+import {resolveMeshSourceTexture} from './mesh-source-texture.js';
 import {extractMeshFeatures} from './mesh-source-features.js';
 import type {MeshSourceFeatureOptions} from './mesh-source-features.js';
 import type {I3SMeshFeatures} from '@loaders.gl/i3s';
@@ -34,6 +34,12 @@ export interface MeshSourceResource extends MeshConversionInput {
 export interface MeshTilesetSourceOptions extends TilesetConversionSourceOptions {
   /** Required when the source has batch/structural metadata; no schema is inferred. */
   readonly features?: MeshSourceFeatureOptions;
+  /** Explicit bounded reader for external encoded images, relative to the content URI. */
+  readonly readExternalResource?: (
+    uri: string,
+    contentUri: string | undefined,
+    signal?: AbortSignal
+  ) => Promise<Uint8Array>;
 }
 
 /**
@@ -48,7 +54,7 @@ export interface MeshTilesetSourceOptions extends TilesetConversionSourceOptions
  * morphs, instancing, broader texture semantics, unknown extensions, non-affine/mirrored
  * placements, and
  * metadata outside the declared feature profile fail explicitly. Multiple resources can be read;
- * the single-mesh I3S sink rejects a second resource and aborts the entire output.
+ * collection sinks accept bounded multiple placements; the compatibility single-mesh sink rejects a second resource.
  * @param tileset - Dedicated native EPSG:4978 runtime with decoded glTF content enabled.
  * @param options - Explicit feature schema/mapping and optional decoded-content cleanup.
  * @returns Portable conversion source; COLOR_0 is preserved for GLB, while I3S rejects vertex colors.
@@ -167,10 +173,13 @@ export function createMeshTilesetConversionSource(
             );
           let primitiveIndex = 0;
           for (const selected of traverseMeshNodes(roots, placement)) {
-            const resource = extractPrimitive(
+            const resource = await extractPrimitive(
               selected.primitive,
               selected.transform,
-              `${item.tile.id}/${content.index}/${primitiveIndex++}`
+              `${item.tile.id}/${content.index}/${primitiveIndex++}`,
+              options.readExternalResource,
+              content.uri,
+              signal
             );
             const features = extractMeshFeatures(
               gltf,
@@ -230,11 +239,14 @@ function* traverseMeshNodes(
 }
 
 /** Copies one packed primitive, places it once, and derives a useful ECEF local origin. */
-function extractPrimitive(
+async function extractPrimitive(
   primitive: GLTFMeshPrimitivePostprocessed,
   transform: Matrix4,
-  id: string
-): MeshSourceResource {
+  id: string,
+  readExternalResource: MeshTilesetSourceOptions['readExternalResource'],
+  contentUri: string | undefined,
+  signal?: AbortSignal
+): Promise<MeshSourceResource> {
   if (
     primitive.targets?.length ||
     Object.keys(primitive.extensions || {}).some(name => name !== 'EXT_mesh_features')
@@ -311,14 +323,17 @@ function extractPrimitive(
     id,
     mesh,
     origin: minimum.map((value, axis) => value / 2 + maximum[axis] / 2) as [number, number, number],
-    material: mapMaterial(primitive.material)
+    material: await mapMaterial(primitive.material, readExternalResource, contentUri, signal)
   };
 }
 
 /** Maps supported PBR controls and an embedded base-color image, rejecting unmapped semantics. */
-function mapMaterial(
-  material: GLTFMaterialPostprocessed | undefined
-): MeshTileMaterial | undefined {
+async function mapMaterial(
+  material: GLTFMaterialPostprocessed | undefined,
+  readExternalResource: MeshTilesetSourceOptions['readExternalResource'],
+  contentUri: string | undefined,
+  signal?: AbortSignal
+): Promise<MeshTileMaterial | undefined> {
   if (!material) return undefined;
   const pbr = material.pbrMetallicRoughness;
   if (
@@ -348,7 +363,14 @@ function mapMaterial(
   return {
     baseColorFactor: pbr?.baseColorFactor as [number, number, number, number] | undefined,
     ...('baseColorTexture' in (pbr || {})
-      ? {baseColorTexture: mapMeshSourceTexture(pbr!.baseColorTexture)}
+      ? {
+          baseColorTexture: await resolveMeshSourceTexture(
+            pbr!.baseColorTexture,
+            readExternalResource,
+            contentUri,
+            signal
+          )
+        }
       : {}),
     metallicFactor: pbr?.metallicFactor,
     roughnessFactor: pbr?.roughnessFactor,
