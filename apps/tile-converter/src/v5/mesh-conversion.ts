@@ -5,11 +5,13 @@
 import {getSpatialCoordinateFrame} from '@loaders.gl/tiles';
 import type {TilesetSpatialReference} from '@loaders.gl/tiles';
 import type {MeshGeometry} from '@loaders.gl/schema';
+import type {LoadLibraryOptions} from '@loaders.gl/worker-utils';
 import {TileConversionError} from '@loaders.gl/tile-converter/v5/core';
 import type {TileConversionCodec} from '@loaders.gl/tile-converter/v5/core';
 import type {Tiles3DConversionSpatialContext} from '@loaders.gl/tile-converter/v5/core';
 import {encodeMeshTile, validateMeshGeometry} from './mesh.js';
 import type {MeshTileMaterial} from './mesh.js';
+import {encodeDracoMeshTile} from './mesh-draco.js';
 
 /** Explicitly selected geometry, with positions already in the spatial context's source frame. */
 export interface MeshConversionInput {
@@ -47,6 +49,10 @@ export interface MeshConversionCodecOptions {
   readonly spatialContext: Tiles3DConversionSpatialContext;
   /** Maximum Euclidean reconstruction error per vertex, in target coordinate units. */
   readonly maxPositionError: number;
+  /** Lossless Draco Edge Breaker is enabled by default; false emits uncompressed GLB geometry. */
+  readonly draco?: boolean;
+  /** Optional local/CDN library locations or injected Draco runtimes for compression and verification. */
+  readonly dracoLibraryOptions?: LoadLibraryOptions;
 }
 
 /**
@@ -55,6 +61,8 @@ export interface MeshConversionCodecOptions {
  * Source adapters must select geometry and apply source placement before supplying absolute
  * positions and matching normals. This codec applies the supplied spatial context once, rebases
  * around each input's target origin, and rejects rounding above the explicit error budget.
+ * Lossless Draco Edge Breaker is enabled by default; decoded positions determine output bounds.
+ * Set draco to false for uncompressed geometry. Quantization is not enabled by this profile.
  * Geographic and unknown output frames are rejected. The returned origin/bounds/reference are
  * external placement metadata; applications own axis conventions, hierarchy, and packaging.
  * Input arrays are not mutated. Core input/output byte gates, cancellation, awaited writes, and
@@ -66,7 +74,10 @@ export interface MeshConversionCodecOptions {
 export function createMeshConversionCodec<TInspection = unknown>(
   options: MeshConversionCodecOptions
 ): TileConversionCodec<TInspection, MeshConversionInput, EncodedMeshConversionResource> {
-  const {spatialContext, maxPositionError} = options;
+  const {spatialContext, maxPositionError, draco = true, dracoLibraryOptions} = options;
+  if (typeof draco !== 'boolean') {
+    throw new TileConversionError('MESH_DRACO_OPTIONS_INVALID', 'draco must be a boolean');
+  }
   if (!Number.isFinite(maxPositionError) || maxPositionError < 0) {
     throw new TileConversionError(
       'MESH_PRECISION_LIMIT_INVALID',
@@ -128,11 +139,6 @@ export function createMeshConversionCodec<TInspection = unknown>(
       for (let index = 0; index < targetPositions.length; index += 3) {
         for (let axis = 0; axis < 3; axis++) {
           localPositions[index + axis] = targetPositions[index + axis] - origin[axis];
-          localMinimum[axis] = Math.min(localMinimum[axis], localPositions[index + axis]);
-          localMaximum[axis] = Math.max(localMaximum[axis], localPositions[index + axis]);
-          const reconstructed = localPositions[index + axis] + origin[axis];
-          minimum[axis] = Math.min(minimum[axis], reconstructed);
-          maximum[axis] = Math.max(maximum[axis], reconstructed);
         }
         const positionError = Math.hypot(
           localPositions[index] + origin[0] - targetPositions[index],
@@ -154,11 +160,22 @@ export function createMeshConversionCodec<TInspection = unknown>(
           size: 3
         };
       }
-      const glb = encodeMeshTile(geometry, {material: resource.material});
+      const appearance = {material: resource.material};
+      const encoded = draco
+        ? await encodeDracoMeshTile(geometry, appearance, dracoLibraryOptions)
+        : {glb: encodeMeshTile(geometry, appearance), positions: localPositions};
       signal?.throwIfAborted();
+      for (let index = 0; index < encoded.positions.length; index++) {
+        const axis = index % 3;
+        const position = encoded.positions[index];
+        localMinimum[axis] = Math.min(localMinimum[axis], position);
+        localMaximum[axis] = Math.max(localMaximum[axis], position);
+        minimum[axis] = Math.min(minimum[axis], position + origin[axis]);
+        maximum[axis] = Math.max(maximum[axis], position + origin[axis]);
+      }
       yield {
         id: resource.id,
-        glb,
+        glb: encoded.glb,
         origin,
         boundingBox: [minimum, maximum],
         localBoundingBox: [localMinimum, localMaximum],

@@ -58,6 +58,18 @@ v4.5 is additive. Existing loaders and defaults continue to work unchanged, exce
 
 The sections below document the v5 removals, migrations, and deprecations that remain active.
 
+### Graph loader output defaults
+
+`GraphMLLoader` and `DOTLoader` now default to a `shape: 'tables'` collection with
+named `nodes` and `edges` Arrow tables. Applications that consume `graph.nodes` and
+`graph.edges`, including plain graph-layer integrations, must explicitly select
+`{graphml: {shape: 'plain-graph-data'}}` or `{dot: {shape: 'plain-graph-data'}}`.
+
+For Arrow output, read `graph.tables[0].table.data` and `graph.tables[1].table.data`
+after checking the collection and table discriminators. Structural identifiers are
+strings; GraphML `long` attributes become exact `bigint` values. See the
+[graphs module](./modules/graphs/README.md) for schemas and object-row output.
+
 **@loaders.gl/math**
 
 - The temporary `@loaders.gl/math` package has been removed. Install `@math.gl/geometry-utils`

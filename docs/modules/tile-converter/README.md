@@ -117,3 +117,13 @@ The tile-converter module represents a major development effort and was funded a
 ![logo](./images/esri.jpeg)
 
 MIT License.
+
+
+For application-owned storage, `encodeTileConversionArchiveInBatches` streams finalized SLPK/3TZ
+resources with consumer-controlled backpressure and cancellation. Finalize storage only after
+iteration succeeds and discard partial output on failure. The browser archive example transfers
+acknowledged archive chunks from its worker. It can retain Blob parts for download/preview or,
+where the native save picker is available, await each file write before requesting the next chunk.
+Direct saving collects no archive Blob parts and commits the file only after successful completion;
+cancellation before final close aborts the file stream. Neither mode creates a complete archive
+buffer in the worker or guarantees a total memory cap. See the [v5 application guide](https://github.com/visgl/loaders.gl/tree/master/apps/tile-converter#stream-an-archive-to-storage).

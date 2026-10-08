@@ -64,3 +64,5 @@ export function getArcGISLoader(serviceType: string): ArcGISLoader | undefined {
     loader => loader.id === normalizedServiceType || loader.type === normalizedServiceType
   );
 }
+
+export {resolveArcGISItem} from './arcgis-items';

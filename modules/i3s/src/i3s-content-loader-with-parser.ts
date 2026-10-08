@@ -4,6 +4,9 @@
 
 import type {LoaderWithParser, LoaderContext} from '@loaders.gl/loader-utils';
 import type {I3SLoaderOptions} from './i3s-loader';
+import {ImageBitmapLoader} from '@loaders.gl/images';
+import {DracoLoader} from '@loaders.gl/draco';
+import {BasisLoader, CompressedTextureLoader} from '@loaders.gl/textures';
 import {parseI3STileContent} from './lib/parsers/parse-i3s-tile-content';
 import {I3STileContent, I3STileOptions, I3STilesetOptions} from './types';
 import {I3SContentLoader as I3SContentLoaderMetadata} from './i3s-content-loader';
@@ -19,6 +22,8 @@ const {preload: _I3SContentLoaderPreload, ...I3SContentLoaderMetadataWithoutPrel
  */
 export const I3SContentLoaderWithParser = {
   ...I3SContentLoaderMetadataWithoutPreload,
+  /** Metadata decoders resolved by the caller when the worker requests nested parsing. */
+  subloaders: {ImageBitmapLoader, DracoLoader, BasisLoader, CompressedTextureLoader},
   parse
 } as const satisfies LoaderWithParser<I3STileContent | null, never, I3SLoaderOptions>;
 

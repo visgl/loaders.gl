@@ -3,7 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import {expect, test} from 'vitest';
-import {WKBBuilder} from '@loaders.gl/gis';
+import {WKBBuilder} from '@loaders.gl/arrow-geometry';
 
 test('WKBBuilder generic entrypoint writes every geometry header', () => {
   const geometryCases = [

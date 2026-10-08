@@ -8,6 +8,7 @@ import React, {
 
 /** Website example applications that can be loaded on demand. */
 export type ClientExampleKind =
+  | 'arcgis-items'
   | 'arcgis-feature-query'
   | 'arcgis-raster'
   | '3d-tiles'
@@ -43,6 +44,7 @@ export type ClientExampleProps = {
 type ClientExampleComponent = LazyExoticComponent<ComponentType<any>>;
 
 const CLIENT_EXAMPLE_COMPONENTS: Record<ClientExampleKind, ClientExampleComponent> = {
+  'arcgis-items': React.lazy(() => import('../../examples/arcgis-items-app')),
   'arcgis-feature-query': React.lazy(() => import('../../examples/arcgis-feature-query-app')),
   'arcgis-raster': React.lazy(() => import('../../examples/arcgis-raster-app')),
   '3d-tiles': React.lazy(() => import('examples/website/3d-tiles/app')),

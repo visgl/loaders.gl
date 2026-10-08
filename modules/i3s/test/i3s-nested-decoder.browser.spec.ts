@@ -4,6 +4,8 @@
 
 import {describe, expect, test, vi} from 'vitest';
 import {ImageBitmapLoader} from '@loaders.gl/images';
+import {DracoLoader} from '@loaders.gl/draco';
+import {I3SContentLoaderWithParser} from '../src/i3s-content-loader-with-parser';
 import {BasisLoader, CompressedTextureLoader} from '@loaders.gl/textures';
 import {parseI3STileContent} from '../src/lib/parsers/parse-i3s-tile-content';
 
@@ -35,6 +37,14 @@ function createGeometry(): ArrayBuffer {
 }
 
 describe('I3S nested decoders and color storage', () => {
+  test('declares every worker-requested decoder for caller-side resolution', () => {
+    expect(I3SContentLoaderWithParser.subloaders).toEqual({
+      ImageBitmapLoader,
+      DracoLoader,
+      BasisLoader,
+      CompressedTextureLoader
+    });
+  });
   test.each([
     {alphaCutoff: 0, expected: 0},
     {alphaCutoff: 0.5, expected: 0.5},

@@ -178,7 +178,11 @@ export type Loader<DataT = any, BatchT = any, LoaderOptionsT = StrictLoaderOptio
   /** The batched result type of this loader  */
   batchType?: BatchT;
 
-  /** Named metadata loaders used by this loader or source. */
+  /**
+   * Named metadata loaders used by this loader or source.
+   * Worker loaders declare nested decoders here so the caller can resolve their identifiers
+   * without transferring parser or preload functions between threads.
+   */
   subloaders?: Readonly<Record<string, Loader>>;
 
   /** Default Options */

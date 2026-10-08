@@ -1,4 +1,5 @@
-import {parse} from '@loaders.gl/core';
+import {getLoaderOptions, parse} from '@loaders.gl/core';
+import {getDracoLibraryOptions as getBundledDracoLibraryOptions} from '@loaders.gl/draco/bundled';
 import {Tiles3DLoader} from '@loaders.gl/3d-tiles';
 import {Tiles3DSource, Tileset3D} from '@loaders.gl/tiles';
 import {
@@ -24,14 +25,14 @@ import {
   createSingleMeshTilesetSink,
   createMeshTilesetSink,
   createSingleMeshI3SSink,
-  createTileConversionArchive
+  encodeTileConversionArchiveInBatches
 } from '@loaders.gl/tile-converter/v5/adapters';
 
 /** Formats authored by the example, rather than inferred from an output filename. */
 export type ConversionFormat = 'slpk' | '3tz';
 /** Required transport, decoded geometry, retained output, and archive budgets for this demo. */
 export const CONVERSION_LIMITS = {
-  /** Root JSON plus selected content transport bytes; also the decoded geometry/feature byte gate. */
+  /** Root JSON plus selected content transport bytes; also the decoded geometry/image/feature byte gate. */
   maxInputBytes: 16 * 1024 * 1024,
   /** Maximum declared content placements inspected. */
   maxInputResources: 1000,
@@ -51,6 +52,24 @@ export interface ConversionResult {
   readonly report: TileConversionReport;
 }
 
+/** Finalized resources, ready for packaging after the source runtime has been released. */
+export interface ConversionResources {
+  /** Immutable output files from the successfully finalized sink. */
+  readonly files: readonly BrowserTileConversionFile[];
+  /** Archive download filename. */
+  readonly name: string;
+  /** Completed portable conversion report. */
+  readonly report: TileConversionReport;
+}
+
+/** MIME types matching the existing format-specific archive writers. */
+export const ARCHIVE_MIME_TYPES = {
+  /** I3S scene layer package MIME type. */
+  slpk: 'application/octet-stream',
+  /** Indexed 3D Tiles archive MIME type. */
+  '3tz': 'application/vnd.maxar.archive.3tz+zip'
+} as const;
+
 /** Inspects a bounded explicit tileset without fetching its content resources. */
 export async function inspectConversionInput(
   input: string,
@@ -67,7 +86,8 @@ export async function inspectConversionInput(
 
 /**
  * Converts only the explicitly selected content placement. The initial profile requires exactly
- * one static, untextured mesh primitive. SLPK features require an explicit schema;
+ * one static mesh primitive with the target-supported appearance. SLPK features require
+ * an explicit schema;
  * 3TZ preserves supported vertex colors but rejects feature-bearing meshes.
  * Transport and retained output are bounded, but these limits do not bound peak decoder memory.
  */
@@ -80,6 +100,28 @@ export async function convertSelectedContent(
   fetcher: typeof fetch = fetch,
   features?: MeshSourceFeatureOptions
 ): Promise<ConversionResult> {
+  const output = await convertSelectedContentToResources(
+    inspection,
+    resourceId,
+    format,
+    signal,
+    onProgress,
+    fetcher,
+    features
+  );
+  return createArchiveFile(output, format, signal, onProgress);
+}
+
+/** Authors one selected mesh and releases its source runtime before archive packaging. */
+async function convertSelectedContentToResources(
+  inspection: BrowserTilesetConversionInspection,
+  resourceId: string,
+  format: ConversionFormat,
+  signal: AbortSignal,
+  onProgress: (message: string) => void,
+  fetcher: typeof fetch = fetch,
+  features?: MeshSourceFeatureOptions
+): Promise<ConversionResources> {
   if (features && format !== 'slpk')
     throw new Error('Feature mappings currently require SLPK output.');
   const descriptor = inspection.resources.find(resource => resource.resourceId === resourceId);
@@ -125,6 +167,7 @@ export async function convertSelectedContent(
         ...common,
         sink,
         codec: createMeshConversionCodec({
+          dracoLibraryOptions: getDracoLibraryOptions(),
           spatialContext,
           maxPositionError: CONVERSION_LIMITS.maxPositionError
         }),
@@ -137,6 +180,7 @@ export async function convertSelectedContent(
         ...common,
         sink,
         codec: createI3SMeshConversionCodec({
+          dracoLibraryOptions: getDracoLibraryOptions(),
           spatialContext,
           maxPositionError: CONVERSION_LIMITS.maxPositionError,
           maxResourceBytes: CONVERSION_LIMITS.maxOutputBytes
@@ -147,17 +191,21 @@ export async function convertSelectedContent(
       files = sink.getFiles();
     }
     signal.throwIfAborted();
-    onProgress('Packaging archive');
-    signal.throwIfAborted();
-    const archive = await createTileConversionArchive(files, {
-      format,
-      maxArchiveBytes: CONVERSION_LIMITS.maxOutputBytes
-    });
-    signal.throwIfAborted();
-    return {file: new File([archive], `selected-mesh.${format}`, {type: archive.type}), report};
+    return {files, name: `selected-mesh.${format}`, report};
   } finally {
     runtime.destroy();
   }
+}
+
+/** Applies the application's bundled or configured assets to Draco decoding and encoding. */
+function getDracoLibraryOptions() {
+  const {core, modules} = getLoaderOptions();
+  return getBundledDracoLibraryOptions({
+    decoderProfile: 'full',
+    CDN: core?.CDN,
+    useLocalLibraries: core?.useLocalLibraries,
+    modules
+  });
 }
 
 /** Retains a conservative source LOD error from the selected hierarchy, rather than guessing zero. */
@@ -210,17 +258,40 @@ function createSelectedRuntime(
   data: Uint8Array,
   signal: AbortSignal
 ): Tileset3D {
-  /** Blocks external buffers, images, schemas, and decoder downloads outside the selected payload. */
+  /** Blocks external content dependencies; Draco runtimes use the bundled application assets. */
   const rejectExternalFetch: typeof fetch = async () => {
     throw new TileConversionError(
       'EXTERNAL_RESOURCE_UNSUPPORTED',
       'Use self-contained GLB/B3DM content.'
     );
   };
+  const {
+    modules,
+    decoderProfile,
+    CDN: contentDeliveryNetwork,
+    useLocalLibraries
+  } = getDracoLibraryOptions();
   const loadOptions = {
-    worker: false,
-    fetch: rejectExternalFetch,
-    gltf: {loadImages: false, decompressMeshes: false},
+    modules,
+    core: {
+      worker: false,
+      fetch: rejectExternalFetch,
+      CDN: contentDeliveryNetwork,
+      useLocalLibraries
+    },
+    // Reuse the full decoder already bundled for output verification.
+    draco: {decoderProfile},
+    // Preserve authored UVs and the transform for the converter's qualified GLB writer.
+    gltf: {
+      loadImages: false,
+      decompressMeshes: true,
+      excludeExtensions: {
+        KHR_texture_transform: false,
+        // Only Draco input compression is qualified by this conversion profile.
+        EXT_meshopt_compression: false,
+        KHR_meshopt_compression: false
+      }
+    },
     '3d-tiles': {loadGLTF: true}
   };
   return new Tileset3D(
@@ -248,7 +319,8 @@ function createSelectedRuntime(
  * Exports explicit independent leaf placements as a flat 3TZ collection. One selected content
  * retains the existing SLPK/3TZ profile. Multi-selection rejects non-leaves and SLPK before I/O;
  * it neither reproduces source LOD relationships nor selects parent/child approximations.
- * Selected transport and decoded geometry share aggregate budgets. Each content must contain
+ * Selected transport, decoded geometry and encoded images share aggregate budgets. Each content
+ * must contain
  * exactly one supported primitive, and failure of any placement discards the entire archive.
  */
 export async function convertSelectedContents(
@@ -260,6 +332,28 @@ export async function convertSelectedContents(
   fetcher: typeof fetch = fetch,
   features?: MeshSourceFeatureOptions
 ): Promise<ConversionResult> {
+  const output = await convertSelectedContentsToResources(
+    inspection,
+    resourceIds,
+    format,
+    signal,
+    onProgress,
+    fetcher,
+    features
+  );
+  return createArchiveFile(output, format, signal, onProgress);
+}
+
+/** Authors selected meshes without allocating an archive; used by the streaming worker. */
+export async function convertSelectedContentsToResources(
+  inspection: BrowserTilesetConversionInspection,
+  resourceIds: readonly string[],
+  format: ConversionFormat,
+  signal: AbortSignal,
+  onProgress: (message: string) => void,
+  fetcher: typeof fetch = fetch,
+  features?: MeshSourceFeatureOptions
+): Promise<ConversionResources> {
   if (
     !resourceIds.length ||
     resourceIds.length > CONVERSION_LIMITS.maxSelectedResources ||
@@ -270,7 +364,7 @@ export async function convertSelectedContents(
   )
     throw new Error('Select between 1 and 64 distinct content placements.');
   if (resourceIds.length === 1)
-    return convertSelectedContent(
+    return convertSelectedContentToResources(
       inspection,
       resourceIds[0],
       format,
@@ -336,7 +430,7 @@ export async function convertSelectedContents(
               throw new Error('Each selected content must contain exactly one mesh primitive.');
             decodedBytes += measureMeshBytes(resource);
             if (decodedBytes > CONVERSION_LIMITS.maxInputBytes)
-              throw new Error('Selected decoded geometry exceeds the aggregate input byte limit.');
+              throw new Error('Selected decoded geometry and encoded images exceed the aggregate input byte limit.');
             yield {...resource, id: raw.resourceId};
           }
           if (!meshCount) throw new Error('Selected content has no mesh primitive.');
@@ -359,6 +453,7 @@ export async function convertSelectedContents(
     sink,
     signal,
     codec: createMeshConversionCodec({
+      dracoLibraryOptions: getDracoLibraryOptions(),
       spatialContext,
       maxPositionError: CONVERSION_LIMITS.maxPositionError
     }),
@@ -369,17 +464,34 @@ export async function convertSelectedContents(
     onProgress: progress => onProgress(progress.phase)
   });
   signal.throwIfAborted();
-  onProgress('Packaging archive');
-  signal.throwIfAborted();
-  const archive = await createTileConversionArchive(sink.getFiles(), {
-    format,
-    maxArchiveBytes: CONVERSION_LIMITS.maxOutputBytes
-  });
-  signal.throwIfAborted();
-  return {file: new File([archive], 'selected-meshes.3tz', {type: archive.type}), report};
+  return {files: sink.getFiles(), name: 'selected-meshes.3tz', report};
 }
 
-/** Charges decoded geometry, triangle associations and Arrow column buffers after extraction. */
+/** Collects archive chunks as Blob parts for the main-thread integration helpers. */
+async function createArchiveFile(
+  output: ConversionResources,
+  format: ConversionFormat,
+  signal: AbortSignal,
+  onProgress: (message: string) => void
+): Promise<ConversionResult> {
+  signal.throwIfAborted();
+  onProgress('Packaging archive');
+  const parts: Blob[] = [];
+  for await (const chunk of encodeTileConversionArchiveInBatches(output.files, {
+    format,
+    maxArchiveBytes: CONVERSION_LIMITS.maxOutputBytes,
+    signal
+  })) {
+    parts.push(new Blob([chunk]));
+  }
+  signal.throwIfAborted();
+  return {
+    file: new File(parts, output.name, {type: ARCHIVE_MIME_TYPES[format]}),
+    report: output.report
+  };
+}
+
+/** Charges geometry, encoded image bytes, triangle associations and Arrow columns after extraction. */
 function measureMeshBytes(resource: MeshSourceResource): number {
   const featureBytes = resource.features
     ? resource.features.triangleFeatureIndices.byteLength +
@@ -396,6 +508,7 @@ function measureMeshBytes(resource: MeshSourceResource): number {
     : 0;
   return Object.values(resource.mesh.attributes).reduce(
     (bytes, attribute) => bytes + attribute.value.byteLength,
-    (resource.mesh.indices?.value.byteLength ?? 0) + featureBytes
+    (resource.mesh.indices?.value.byteLength ?? 0) +
+      (resource.material?.baseColorTexture?.data.byteLength ?? 0) + featureBytes
   );
 }

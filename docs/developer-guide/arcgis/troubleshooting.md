@@ -13,7 +13,7 @@ description: Diagnose incomplete data, authentication errors, coordinate problem
 | Invalid GeoJSON response | Esri JSON response or ArcGIS error envelope | Keep `f: 'geojson'`; inspect the original service response without logging credentials |
 | 401, 498 or 499 | Missing or expired token | Check the exact origin allowlist and the token callback |
 | 403 after refresh | Insufficient access, restrictions, or wrong target server | Check service sharing, credential privileges, restrictions and federation |
-| HTTP 200 contains an ArcGIS error | Error status is encoded in JSON | The built-in refresh path checks HTTP status; use an application ArcGIS transport for envelope-aware renewal |
+| HTTP 200 contains an ArcGIS error | Error status is encoded in JSON | Token callbacks renew on small JSON 498/499 envelopes; other errors remain errors. Check JSON content type and session refresh support |
 | Initial request works, child resources fail | Different host, token scope or resource permissions | Authorize only the explicitly trusted child origins and validate resource access |
 | Browser fetch fails but a server request works | CORS, TLS, cookies, proxy or network access | Fix server/proxy configuration; client code cannot override CORS |
 | Features are displaced | Bounds or output data use an unexpected CRS | Inspect metadata and request a supported output spatial reference |

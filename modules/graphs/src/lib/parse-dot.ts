@@ -2,7 +2,9 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import type {DOTGraphData} from '../dot-types';
+import type {DOTGraphData, DOTOutput} from '../dot-types';
+import type {GraphShape, GraphNode, GraphEdge} from '../graph-types';
+import {buildGraphTables} from './build-graph-tables';
 
 /** Internal DOT parsing representation. */
 type DOTAttributeMap = Record<string, unknown>;
@@ -62,15 +64,29 @@ type DOTParseResult = {
 };
 
 /** Parses DOT source into plain graph records without a visualization dependency. */
-export function parseDOT(input: string): DOTGraphData {
+export function parseDOT(input: string): DOTGraphData;
+export function parseDOT(input: string, shape: GraphShape): DOTOutput;
+export function parseDOT(input: string, shape: GraphShape = 'plain-graph-data'): DOTOutput {
   const parsed = parseDOTDocument(input);
-  const subgraphs = Array.from(parsed.subgraphs.values(), subgraph => ({
-    ...subgraph,
-    attributes: {...subgraph.attributes}
-  }));
   return {
-    shape: 'plain-graph-data',
-    nodes: Array.from(parsed.nodes.values(), node => ({
+    ...buildGraphTables(iterateNodes(parsed), iterateEdges(parsed), shape),
+    metadata: {
+      id: parsed.id,
+      directed: parsed.directed,
+      strict: parsed.strict,
+      attributes: {...parsed.graphAttributes},
+      subgraphs: Array.from(parsed.subgraphs.values(), subgraph => ({
+        ...subgraph,
+        attributes: {...subgraph.attributes}
+      }))
+    }
+  };
+}
+
+/** Emits finalized nodes without creating an intermediate record array. */
+function* iterateNodes(parsed: DOTParseResult): Iterable<GraphNode> {
+  for (const node of parsed.nodes.values()) {
+    yield {
       id: node.id,
       ...(typeof node.attributes.label === 'string' ? {label: node.attributes.label} : {}),
       attributes: {
@@ -79,8 +95,14 @@ export function parseDOT(input: string): DOTGraphData {
           ? {subgraphs: Array.from(node.subgraphs, id => describeSubgraph(id, parsed.subgraphs))}
           : {})
       }
-    })),
-    edges: parsed.edges.map(edge => ({
+    };
+  }
+}
+
+/** Emits coalesced edges in document order. */
+function* iterateEdges(parsed: DOTParseResult): Iterable<GraphEdge> {
+  for (const edge of parsed.edges) {
+    yield {
       id: edge.id,
       sourceId: edge.sourceId,
       targetId: edge.targetId,
@@ -92,15 +114,8 @@ export function parseDOT(input: string): DOTGraphData {
           ? {subgraphs: edge.subgraphs.map(id => describeSubgraph(id, parsed.subgraphs))}
           : {})
       }
-    })),
-    metadata: {
-      id: parsed.id,
-      directed: parsed.directed,
-      strict: parsed.strict,
-      attributes: {...parsed.graphAttributes},
-      subgraphs
-    }
-  };
+    };
+  }
 }
 
 /** Copies a subgraph descriptor into node or edge attributes. */

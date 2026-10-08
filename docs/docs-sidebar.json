@@ -18,6 +18,7 @@
       "developer-guide/arcgis/README",
       "modules/arcgis/services",
       "developer-guide/arcgis/authentication",
+      "developer-guide/arcgis/items",
       "developer-guide/arcgis/feature-layers",
       "developer-guide/arcgis/deck-gl",
       "developer-guide/arcgis/troubleshooting"

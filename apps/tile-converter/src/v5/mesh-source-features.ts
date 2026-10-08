@@ -213,13 +213,15 @@ export function extractMeshFeatures(
   const indices = mesh.indices?.value;
   const triangleFeatureIndices = new Uint32Array((indices?.length ?? vertexCount) / 3);
   for (let triangle = 0; triangle < triangleFeatureIndices.length; triangle++) {
-    const rows = [0, 1, 2].map(
-      corner => attribute.value[indices?.[triangle * 3 + corner] ?? triangle * 3 + corner]
+    const corners = [0, 1, 2].map(
+      corner => indices?.[triangle * 3 + corner] ?? triangle * 3 + corner
     );
-    if (rows.some(row => row !== rows[0]))
+    const rows = corners.map(corner => attribute.value[corner]);
+    // Repeated-index strip connectors have no surface; retain the first corner's feature row.
+    if (rows.some(row => row !== rows[0]) && new Set(corners).size === 3)
       throw new TileConversionError(
         'MESH_FEATURE_TRIANGLE_MIXED',
-        'All vertices of a triangle must reference the same feature row'
+        'All vertices of a nondegenerate triangle must reference the same feature row'
       );
     triangleFeatureIndices[triangle] = Number(rows[0]);
   }

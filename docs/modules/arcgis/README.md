@@ -61,7 +61,7 @@ Read the [ArcGIS developer guide](/docs/developer-guide/arcgis),
 [examples gallery](/examples/arcgis). The [complete service inventory](/docs/modules/arcgis/services)
 includes unsupported operations and service families.
 
-The root exports lightweight service loaders. Credentials and discovery have dedicated
+The root exports lightweight service loaders. Authentication and discovery have dedicated
 `/authentication` and `/discovery` entrypoints. Async `load()`
 imports the selected implementation. For synchronous `createDataSource()` or direct source
 classes, use `@loaders.gl/arcgis/bundled`; see
@@ -146,16 +146,16 @@ objects until the application chooses a record, band, color ramp, and NoData tre
 
 ## Authentication and request customization
 
-Use `createArcGISCredential` to scope a token to the exact ArcGIS Online, Enterprise, or proxy
+Use `ArcGISAuthentication` to scope a token to the exact ArcGIS Online, Enterprise, or proxy
 origin. The credential follows metadata, feature, image, tile, and deck.gl requests:
 
 ```ts
-import {createArcGISCredential} from '@loaders.gl/arcgis/authentication';
+import {ArcGISAuthentication} from '@loaders.gl/arcgis/authentication';
 
 const source = await load(serviceUrl, ARCGIS_LOADERS, {
   core: {
     credentials: [
-      createArcGISCredential({origins: [new URL(serviceUrl).origin], token})
+      new ArcGISAuthentication({origins: [new URL(serviceUrl).origin], token})
     ]
   }
 });
@@ -166,6 +166,11 @@ cookies, cancellation, proxies, and custom transports continue to use standard l
 options. Async token callbacks support one deduplicated refresh after 401, 403, 498, or 499.
 See the [authentication guide](/docs/developer-guide/authentication) for the common model and
 security boundaries.
+
+`authentication.createFetch()` supplies a shared transport for item resolution, discovery and service
+requests, with refresh tokens isolated per trusted origin. Sign-in and session lifecycle stay in the
+application; the ArcGIS package has no Esri SDK dependency. See the
+[ArcGIS authentication guide](/docs/developer-guide/arcgis/authentication) for session integration.
 
 Service-specific options can add ArcGIS request parameters without bypassing the source API. See
 the individual service pages for the supported option names.
@@ -241,3 +246,9 @@ remain the responsibility of the consuming renderer.
   analytical raster values.
 - LERC decoding preserves typed arrays, masks, NoData values, and statistics. Visualization remains
   explicit because a scientifically correct color mapping is application-specific.
+
+## Portal items
+
+Use `resolveArcGISItem` from `@loaders.gl/arcgis/items` to resolve service-backed portal items into
+explicit layer/table choices. See the [item guide and embedded example](/docs/developer-guide/arcgis/items)
+for supported item types, metadata, authentication and deployment verification.

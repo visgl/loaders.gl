@@ -35,7 +35,10 @@ export type {
   MeshTilesetSink,
   MeshTilesetSinkOptions
 } from './mesh-tileset-sink.js';
-export {createTileConversionArchive} from './conversion-archive.js';
+export {
+  createTileConversionArchive,
+  encodeTileConversionArchiveInBatches
+} from './conversion-archive.js';
 export type {TileConversionArchiveOptions} from './conversion-archive.js';
 export {createSingleMeshTilesetArchive} from './mesh-tileset-archive.js';
 export type {SingleMeshTilesetArchiveOptions} from './mesh-tileset-archive.js';

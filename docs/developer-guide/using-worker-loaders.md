@@ -308,3 +308,16 @@ Debugging worker loaders can be easier if you first set `core.worker: false` to 
 whether an issue is specific to worker execution. For worker-specific issues, use an
 explicit local worker URL and a non-minified application build so the worker request and
 message boundary can be inspected directly in the browser's developer tools.
+
+## Nested parsers in workers
+
+A worker parser can request another loader through `parseFromContext(data, loader, options, context)`.
+Declare those decoders in the parser-bearing parent loader's `subloaders` map. The worker bridge
+sends their IDs and resolves them against the parent's dependencies or the caller's
+`context.loaders`. Parser methods and `preload()` functions remain on the calling thread.
+The caller can then dispatch the selected decoder to its own worker when supported.
+
+Single-loader requests retain forced selection; arrays retain normal loader selection. Unknown
+IDs fail explicitly rather than falling back to an unrelated decoder. Named replacements in
+`core.subloaders` are resolved on the caller as well. Legacy requests without loader hints retain
+their existing callback behavior.

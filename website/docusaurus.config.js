@@ -2,7 +2,7 @@
 // Note: type annotations allow type checking and IDEs autocompletion
 
 const {resolve} = require('path');
-const {version} = require('../package.json');
+const {version} = require('../modules/core/package.json');
 const {themes} = require('prism-react-renderer');
 const lightCodeTheme = themes.github;
 const darkCodeTheme = themes.dracula;
@@ -194,6 +194,7 @@ const config = {
 
             '@loaders.gl/3d-tiles': resolve('../modules/3d-tiles/src'),
             '@loaders.gl/arrow': resolve('../modules/arrow/src'),
+            '@loaders.gl/arrow-geometry': resolve('../modules/arrow-geometry/src'),
             '@loaders.gl/avro': resolve('../modules/avro/src'),
             '@loaders.gl/bson': resolve('../modules/bson/src'),
             '@loaders.gl/compression': resolve('../modules/compression/src'),
@@ -255,6 +256,7 @@ const config = {
             '@loaders.gl/arcgis/arcgis-scene-server-source-loader': resolve('../modules/arcgis/src/arcgis/arcgis-scene-server-source-loader'),
             '@loaders.gl/arcgis/arcgis-vector-tile-server-source-loader': resolve('../modules/arcgis/src/arcgis/arcgis-vector-tile-server-source-loader'),
             '@loaders.gl/arcgis/bundled': resolve('../modules/arcgis/src/bundled'),
+            '@loaders.gl/arcgis/items': resolve('../modules/arcgis/src/arcgis-items'),
             '@loaders.gl/arcgis/authentication': resolve('../modules/arcgis/src/authentication'),
             '@loaders.gl/arcgis/discovery': resolve('../modules/arcgis/src/arcgis/arcgis-capability-graph'),
             '@loaders.gl/arcgis/scene-aggregation': resolve('../modules/arcgis/src/arcgis/arcgis-scene-aggregation'),

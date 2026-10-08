@@ -32,6 +32,8 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
 
 <ArcGISDocsTabs service="arcgis-feature-server" />
 
+Have a portal item instead of a service URL? Use the [item explorer and sign-in example](/docs/developer-guide/arcgis/items).
+
 <ServiceSourceGraphic kind="arcgis" />
 
 <p className="badges">

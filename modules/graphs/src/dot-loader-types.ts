@@ -3,7 +3,17 @@
 // Copyright (c) vis.gl contributors
 
 import type {Loader} from '@loaders.gl/loader-utils';
-import type {DOTGraphData} from './dot-types';
+import type {DOTOutput} from './dot-types';
+import type {GraphShape} from './graph-types';
+
+/** Options for selecting the DOT graph output representation. */
+export type DOTLoaderOptions = {
+  /** Format-specific graph options. */
+  dot?: {
+    /** Representation of each named table; defaults to Arrow. */
+    shape?: GraphShape;
+  };
+};
 
 // @ts-ignore __VERSION__ is injected by the build.
 const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : 'latest';
@@ -24,8 +34,8 @@ export const DOTLoader = {
   mimeTypes: ['text/vnd.graphviz', 'text/x-graphviz', 'application/vnd.graphviz'],
   text: true,
   worker: false,
-  dataType: null as unknown as DOTGraphData,
+  dataType: null as unknown as DOTOutput,
   batchType: null as never,
-  options: {},
+  options: {dot: {shape: 'arrow-table'}},
   preload
-} as const satisfies Loader<DOTGraphData, never>;
+} as const satisfies Loader<DOTOutput, never, DOTLoaderOptions>;

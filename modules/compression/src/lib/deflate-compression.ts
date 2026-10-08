@@ -18,8 +18,8 @@ import {
   inflateSync,
   unzlibSync,
   zlibSync
-} from 'fflate';
-import type {DeflateOptions, GzipOptions} from 'fflate';
+} from './fflate/index';
+import type {DeflateOptions, GzipOptions} from './fflate/index';
 import zlib from 'zlib';
 import {
   compressWithNativeCompressionStream,

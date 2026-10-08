@@ -30,11 +30,11 @@ to sensitive organizational content.
 ```ts
 import {load} from '@loaders.gl/core';
 import {ArcGISFeatureServerSourceLoader} from '@loaders.gl/arcgis';
-import {createArcGISCredential} from '@loaders.gl/arcgis/authentication';
+import {ArcGISAuthentication} from '@loaders.gl/arcgis/authentication';
 
 const source = await load(serviceUrl, ArcGISFeatureServerSourceLoader, {
   core: {
-    credentials: [createArcGISCredential({
+    credentials: [new ArcGISAuthentication({
       origins: ['https://services.example.com'],
       token: accessToken
     })]
@@ -62,7 +62,7 @@ Connect your session manager to a callback. `getAccessToken` and `renewSession` 
 functions, not loaders.gl APIs; implement them with your chosen OAuth/identity library.
 
 ```ts
-const credential = createArcGISCredential({
+const authentication = new ArcGISAuthentication({
   origins: ['https://services.example.com'],
   token: async ({reason}) => {
     if (reason === 'refresh') await renewSession();
@@ -71,7 +71,7 @@ const credential = createArcGISCredential({
 });
 
 const source = await load(serviceUrl, ArcGISFeatureServerSourceLoader, {
-  core: {credentials: [credential]}
+  core: {credentials: [authentication]}
 });
 ```
 
@@ -79,9 +79,15 @@ The shared transport deduplicates concurrent refreshes for the same credential a
 one replay for an eligible request. The ArcGIS preset recognizes HTTP 401, 403, 498 and 499. Static
 tokens cannot renew themselves. A permission failure can remain a permission failure after renewal.
 
-**Current limitation:** an ArcGIS error inside an HTTP 200 JSON response does not trigger this
-HTTP-status refresh path. Applications needing that behavior should use their existing ArcGIS
-transport/session integration. See [troubleshooting](/docs/developer-guide/arcgis/troubleshooting).
+The preset also detects HTTP 200 JSON errors with ArcGIS code 498 or 499. Detection skips cloning
+responses whose declared content length exceeds 16 KiB. For unknown lengths it retains at most
+16 KiB of inspection bytes, rejecting a chunk that exceeds the remaining budget before retaining
+it, and preserves the original body for the caller. Fetch and native stream buffering remain
+outside this inspection limit. Responses without a JSON content type, larger envelopes and other
+error codes do not trigger envelope renewal.
+Read-only form-encoded POST queries on numbered FeatureServer/MapServer layers may be replayed
+when the body is a string or `URLSearchParams`, including long queries sent by the feature client.
+POST mutation requests and streaming bodies are not replayed by the ArcGIS preset. Failed renewal is surfaced to the application.
 
 Explicit URL tokens and request headers take precedence. Remove an expired token embedded in the
 input URL if you expect a token callback to control authorization. Avoid placing tokens in shared
@@ -102,13 +108,12 @@ your application's origin. Client configuration cannot override server CORS poli
 
 ## Discovery and scene resources
 
-Discovery currently takes an explicit fetch function. Wrap it with the shared credential transport:
+Discovery and item resolution take an explicit fetch function. Create it with the auth object:
 
 ```ts
-import {createAuthenticatedFetch} from '@loaders.gl/loader-utils';
 import {discoverArcGISCapabilities} from '@loaders.gl/arcgis/discovery';
 
-const authenticatedFetch = createAuthenticatedFetch({credentials: [credential]});
+const authenticatedFetch = authentication.createFetch();
 const graph = await discoverArcGISCapabilities(directoryUrl, {fetch: authenticatedFetch});
 ```
 
@@ -117,3 +122,56 @@ construction, pass credentials in `core.credentials`; consult the
 [SceneServer reference](/docs/modules/arcgis/arcgis-scene-server). Follow-up resources still require
 matching origins. Token propagation does not prove that a given credential is authorized for every
 referenced resource.
+
+## Runnable ArcGIS REST JS sign-in
+
+The [item explorer](/examples/arcgis-items) includes `beginOAuth2` and `completeOAuth2` with PKCE,
+a registered same-page popup callback, an in-memory session and sign-out. The application keeps
+public configuration in the opener window only; it does not persist item input, configuration or tokens.
+REST JS manages its own temporary OAuth state and PKCE verifier in browser storage. Allow popups;
+if a popup is blocked or closed before completion, reload the example to start again. The SDK is an example dependency, not part of
+the lightweight ArcGIS package root.
+
+Keep sign-in, redirect handling, session storage and sign-out in the application, using the Esri SDK
+version suitable for your deployment or another identity library. `ArcGISAuthentication` is exported
+from `@loaders.gl/arcgis/authentication` and does not import an Esri SDK. Its token callback is the boundary between
+application-managed identity and loaders.gl request authentication.
+
+Bridge an existing `ArcGISIdentityManager` session with the auth object:
+
+```ts
+import {ArcGISAuthentication} from '@loaders.gl/arcgis/authentication';
+
+const authentication = new ArcGISAuthentication({
+  origins: trustedOrigins,
+  token: async ({url, reason}) => {
+    if (reason === 'refresh') await session.refreshCredentials();
+    return session.getToken(url);
+  }
+});
+const transport = authentication.createFetch();
+// resolveArcGISItem(itemId, {fetch: transport})
+// load(layerUrl, ArcGISFeatureServerSourceLoader, {core: {fetch: transport}})
+```
+
+Reuse this transport across discovery, metadata and service requests. `createFetch()` creates a
+separate credential for each trusted origin, isolating concurrent refresh tokens between hosts.
+It accepts optional `fetch` and `fetchOptions` to wrap an application transport or supply defaults.
+A single-origin auth object can also be passed directly in `core.credentials`. The lower-level
+`createArcGISCredential` factory remains available at `@loaders.gl/arcgis/authentication`.
+
+`getToken(url)` allows REST JS to obtain a token appropriate for the target server. The example's
+explicit origin list controls where loaders.gl invokes it. SDK-internal federation/token exchange
+requests are managed by REST JS, not this transport. The auth object's transport prevents a
+concurrent refresh from sharing a token across different origins. Deployments hosting multiple
+independent token authorities on one origin should supply their own request-authentication adapter.
+
+REST JS may cache a federated server token until its advertised expiry. Renewing the portal session
+is not guaranteed to invalidate an early-revoked server token: sign in again or implement your
+organization's server-token invalidation flow. Cookie/IWA authentication requires additional
+transport configuration. This example is not an Enterprise deployment certification; the
+[item guide](/docs/developer-guide/arcgis/items#private-items-and-deployment-verification) lists what
+has and has not been verified.
+
+See Esri's [ArcGISIdentityManager reference](https://developers.arcgis.com/arcgis-rest-js/api-reference/arcgis-rest-request/ArcGISIdentityManager/)
+for URL-specific token resolution and session lifecycle methods.

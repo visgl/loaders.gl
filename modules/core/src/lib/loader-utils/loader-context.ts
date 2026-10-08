@@ -31,6 +31,8 @@ export function getLoaderContext(
   if (parentContext) {
     return {
       ...parentContext,
+      coreApi: parentContext.coreApi || context.coreApi || coreApi,
+      _parse: parentContext._parse || context._parse,
       fetch: getFetchFunction(options, parentContext)
     };
   }

@@ -54,7 +54,7 @@ async function encodeInput(
   spatialContext = createSpatialContext(),
   maxPositionError = 0
 ) {
-  const codec = createMeshConversionCodec({spatialContext, maxPositionError});
+  const codec = createMeshConversionCodec({draco: false, spatialContext, maxPositionError});
   const outputs: EncodedMeshConversionResource[] = [];
   for await (const output of await codec.convert(input, undefined)) outputs.push(output);
   return outputs[0];
@@ -178,7 +178,11 @@ test.each([
   Infinity
 ])('mesh codec rejects invalid precision policy %s', maxPositionError => {
   expect(() =>
-    createMeshConversionCodec({spatialContext: createSpatialContext(), maxPositionError})
+    createMeshConversionCodec({
+      draco: false,
+      spatialContext: createSpatialContext(),
+      maxPositionError
+    })
   ).toThrow(expect.objectContaining({code: 'MESH_PRECISION_LIMIT_INVALID'}));
 });
 
@@ -203,9 +207,9 @@ test.each([
     spatialReference: {...createSpatialContext().spatialReference, status: 'transformable' as const}
   }
 ])('mesh codec rejects unresolved or non-Cartesian output frames', spatialContext => {
-  expect(() => createMeshConversionCodec({spatialContext, maxPositionError: 0})).toThrow(
-    expect.objectContaining({code: 'MESH_OUTPUT_FRAME_UNSUPPORTED'})
-  );
+  expect(() =>
+    createMeshConversionCodec({draco: false, spatialContext, maxPositionError: 0})
+  ).toThrow(expect.objectContaining({code: 'MESH_OUTPUT_FRAME_UNSUPPORTED'}));
 });
 
 test.each([
@@ -276,7 +280,11 @@ test('concrete mesh codec uses awaited writes, byte gates, progress and finaliza
   const onProgress = vi.fn();
   const conversion = convertTileset({
     source,
-    codec: createMeshConversionCodec({spatialContext: createSpatialContext(), maxPositionError: 0}),
+    codec: createMeshConversionCodec({
+      draco: false,
+      spatialContext: createSpatialContext(),
+      maxPositionError: 0
+    }),
     sink,
     measureInputBytes: resource =>
       resource.mesh.attributes.POSITION.value.byteLength + resource.mesh.indices!.value.byteLength,
@@ -344,6 +352,7 @@ test.each([
       convertTileset({
         source,
         codec: createMeshConversionCodec({
+          draco: false,
           spatialContext: createSpatialContext(),
           maxPositionError: 0
         }),
@@ -375,7 +384,11 @@ test('mesh codec observes cancellation before and after synchronous spatial work
       })
     };
     if (!cancelDuringTransform) controller.abort(new Error('cancelled'));
-    const codec = createMeshConversionCodec({spatialContext: tracked, maxPositionError: 0});
+    const codec = createMeshConversionCodec({
+      draco: false,
+      spatialContext: tracked,
+      maxPositionError: 0
+    });
     await expect(
       (async () => {
         for await (const _output of await codec.convert(
@@ -418,6 +431,7 @@ test('mesh codec records authorized rounding in the shared conversion report', a
   const report = await convertTileset({
     source,
     codec: createMeshConversionCodec({
+      draco: false,
       spatialContext: createSpatialContext(),
       maxPositionError: 1e-6
     }),
@@ -463,7 +477,11 @@ test('mesh codec preserves selected colors and material through spatial conversi
         yield selectedInput;
       }
     },
-    codec: createMeshConversionCodec({spatialContext: createSpatialContext(), maxPositionError: 0}),
+    codec: createMeshConversionCodec({
+      draco: false,
+      spatialContext: createSpatialContext(),
+      maxPositionError: 0
+    }),
     measureInputBytes: () => 114,
     measureOutputBytes: resource => resource.glb.byteLength,
     sink: {
@@ -503,6 +521,7 @@ test('mesh codec aborts the sink instead of dropping unsupported selected materi
         }
       },
       codec: createMeshConversionCodec({
+        draco: false,
         spatialContext: createSpatialContext(),
         maxPositionError: 0
       }),

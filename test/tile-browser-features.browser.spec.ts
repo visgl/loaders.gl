@@ -3,7 +3,7 @@ import React, {act} from 'react';
 import {createRoot} from 'react-dom/client';
 import {parse} from '@loaders.gl/core';
 import {GLTFScenegraph, GLTFWriter, GLTFLoader, postProcessGLTF} from '@loaders.gl/gltf';
-import {parseSLPKArchive} from '@loaders.gl/i3s';
+import {I3SContentLoader, parseSLPKArchive} from '@loaders.gl/i3s';
 import {DataViewReadableFile} from '@loaders.gl/zip';
 import {Tiles3DArchive} from '@loaders.gl/3d-tiles';
 import type {MeshSourceFeatureOptions} from '@loaders.gl/tile-converter/v5/adapters';
@@ -162,7 +162,14 @@ test('browser SLPK mapping preserves exact IDs, Unicode, material factors and tr
   );
   try {
     const layer = JSON.parse(new TextDecoder().decode(await reader.getFile('', 'http')));
-    expect(layer.materialDefinitions[0]).toEqual({...MATERIAL, alphaMode: 'mask'});
+    expect(layer.materialDefinitions[0]).toMatchObject({
+      ...MATERIAL,
+      alphaMode: 'mask',
+      pbrMetallicRoughness: {
+        ...MATERIAL.pbrMetallicRoughness,
+        baseColorFactor: [0.48452920448170694, 0.6651850846308363, 0.7977377330312598, 0.8]
+      }
+    });
     expect(layer.fields.map((field: {name: string}) => field.name)).toEqual([
       'OBJECTID',
       'source_id',
@@ -176,14 +183,35 @@ test('browser SLPK mapping preserves exact IDs, Unicode, material factors and tr
       'München 🏠',
       'second'
     ]);
-    const geometry = new DataView(await reader.getFile('nodes/1/geometries/0', 'http'));
-    expect(geometry.getUint32(4, true)).toBe(2);
-    expect([geometry.getBigUint64(80, true), geometry.getBigUint64(88, true)]).toEqual([0n, 1n]);
-    expect(Array.from({length: 4}, (_, index) => geometry.getUint32(96 + index * 4, true))).toEqual(
-      [0, 0, 1, 1]
-    );
-    // Row 0 owns the original second triangle: source z=2 becomes ECEF y=-2 with Y-up.
-    expect(geometry.getFloat32(8, true)).toBeLessThan(geometry.getFloat32(8 + 36, true));
+    const page = JSON.parse(new TextDecoder().decode(await reader.getFile('nodepages/0', 'http')));
+    const content = (await parse(
+      await reader.getFile('nodes/1/geometries/0', 'http'),
+      I3SContentLoader,
+      {
+        core: {worker: false, useLocalLibraries: true},
+        i3s: {
+          _tileOptions: {isDracoGeometry: true, mbs: [...page.nodes[1].obb.center, 10]},
+          _tilesetOptions: {store: layer.store, geometryDefinitions: layer.geometryDefinitions}
+        }
+      }
+    ))!;
+    const indices = content.indices!;
+    expect(indices.length).toBe(6);
+    const owners: number[] = [];
+    for (let triangle = 0; triangle < indices.length; triangle += 3) {
+      const owner = Number(content.featureIds[indices[triangle]]);
+      owners.push(owner);
+      for (let corner = 0; corner < 3; corner++) {
+        const vertex = Number(indices[triangle + corner]);
+        expect(content.featureIds[vertex]).toBe(owner);
+        // Row 0 owns source z=2: Y-up maps it to ECEF y=3 after the tile's y=5 translation.
+        expect(content.attributes.positions.value[vertex * 3 + 1]).toBeCloseTo(
+          owner === 0 ? 3 : 5,
+          3
+        );
+      }
+    }
+    expect(owners.sort()).toEqual([0, 1]);
     expect(result.report.diagnostics.some(d => d.code === 'I3S_INTEGER_DECIMAL_STRING')).toBe(true);
     expect(fetcher).toHaveBeenCalledTimes(2);
   } finally {
@@ -334,4 +362,34 @@ test('feature mapping controls reject malformed mappings, clear stale downloads 
     await act(async () => root.unmount());
     container.remove();
   }
+});
+
+// UI lifecycle coverage uses an inline executor; real module workers are qualified separately.
+vi.mock('../examples/website/i3s-slpk/src/conversion-worker-client', async importOriginal => {
+  const original =
+    await importOriginal<
+      typeof import('../examples/website/i3s-slpk/src/conversion-worker-client')
+    >();
+  const {convertSelectedContents} = await import(
+    '../examples/website/i3s-slpk/src/convert-tileset'
+  );
+  return {
+    ...original,
+    convertSelectedContentsInWorker: (
+      ...arguments_: Parameters<
+        typeof import('../examples/website/i3s-slpk/src/conversion-worker-client').convertSelectedContentsInWorker
+      >
+    ) => {
+      const [inspection, resourceIds, format, signal, onProgress, features] = arguments_;
+      return convertSelectedContents(
+        inspection,
+        resourceIds,
+        format,
+        signal,
+        onProgress,
+        fetch,
+        features
+      );
+    }
+  };
 });

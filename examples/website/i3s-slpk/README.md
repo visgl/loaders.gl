@@ -8,7 +8,7 @@ without a file extension, select the archive format explicitly.
 resources. Local files use Blob slices; remote files use HTTP byte ranges. The runtime
 loads node metadata and visible tile content as you pan and zoom, rather than extracting
 the whole archive up front. Archive index metadata is still read during initialization.
-Parsing runs on the main thread so the example does not need to download worker scripts.
+Archive viewing parses visible content on the main thread. Conversion uses a separate module worker.
 
 Remote servers must allow CORS and support HTTP byte-range responses (HTTP 206 with a valid
 Content-Range header). Cross-origin servers must expose `Content-Range` to the browser,
@@ -19,6 +19,10 @@ tile loading errors appear in the controls. The basemap remains a separate netwo
 The WebGL example includes a small I3S mesh shader extension for deck.gl 9.4: its mesh layer
 passes zero to a PBR module that now multiplies vertex color. The extension supplies one at
 that call, preserving material colors and picking until the upstream call is updated.
+The website home demo reuses the same extension for its I3S building meshes and bundles
+its existing I3S worker bundle as an asset, using the standard `workerUrl` option to keep
+worker and main-thread loader revisions aligned. Website build and start scripts generate
+that bundle; no I3S-specific worker factory or bundler replacement is needed.
 
 ## Usage
 
@@ -39,12 +43,38 @@ Only selected content is fetched. Use the content list's multiple selection cont
 source geometric error. SLPK authors a single final mesh and does not reproduce the source LOD hierarchy. A successful archive can be downloaded or previewed with the same
 incremental viewer. This is a partial dataset export, not whole-tileset conversion.
 
-Each selected content must contain exactly one static, untextured primitive in self-contained
-GLB/B3DM, with native EPSG:4978 coordinates and ellipsoidal heights established by root region bounds.
-Unknown/local frames are rejected. Untextured metallic-roughness material factors, alpha controls
-and double-sided rendering are preserved. 3TZ also preserves packed linear Float32 or normalized
-Uint8/Uint16 vertex colors; SLPK rejects vertex colors. Textures, animation, compressed meshes, external dependencies, multiple primitives,
+Each selected content must contain exactly one static primitive in self-contained
+GLB/B3DM, including triangle lists, strips, fans and `KHR_draco_mesh_compression`, with native EPSG:4978 coordinates and
+ellipsoidal heights established by root region bounds. Draco input reuses the full decoder
+bundled for output verification inside the conversion worker. The Draco module selects the
+runtime assets; external content dependencies remain rejected. Decoded geometry
+counts against the existing byte gates after extraction, so those gates do not cap decoder allocations.
+Unknown/local frames are rejected. Metallic-roughness material factors, alpha controls
+and double-sided rendering are preserved. SLPK converts linear material RGB factors to I3S sRGB
+while preserving alpha; readers convert them back for rendering. 3TZ also preserves packed linear Float32 or normalized
+Uint8/Uint16 vertex colors, packed Float32 or normalized Uint8/Uint16 `TEXCOORD_0`, and one
+embedded PNG/JPEG base-color image with its declared wrapping, filtering and
+`KHR_texture_transform` offset/rotation/scale on `TEXCOORD_0`. The original UVs and transform
+are preserved; UVs are not baked. Images may use a glTF buffer view or an inline
+`data:image/png;base64,...` / `data:image/jpeg;base64,...` URI. An optional image MIME must match
+its URI; external URLs and other data-URI encodings/MIME types are rejected. Base64 is decoded
+without fetching the image, and the encoded image bytes count against the decoded input budget. Encoded image bytes are copied without pixel decoding, resizing or transcoding. SLPK rejects vertex colors and textures.
+Other texture maps/UV sets, texture extensions other than `KHR_texture_transform`, animation,
+meshopt-compressed meshes, external dependencies, multiple primitives,
 nested external tilesets and implicit tiling fail explicitly. No feature schema is inferred.
+
+SLPK output also uses lossless Draco Edge Breaker for geometry, preserving triangle feature
+ownership and the existing geographic precision limit. Its material and feature resources
+retain their encoding. Both formats reuse the bundled full Draco decoder for verification;
+per-resource limits do not cap decoder/verification allocations. Independent ArcGIS viewer
+qualification remains follow-up work.
+
+3TZ output uses lossless Draco Edge Breaker geometry with required
+`KHR_draco_mesh_compression` support. It preserves the existing position-error budget;
+materials and encoded images retain their original representation. The conversion worker
+uses bundled Draco encoder and decoder assets served by the application. Its module
+worker evaluates the codec wrappers; the application's content security policy must allow
+that execution and WebAssembly compilation. Very small GLBs can grow despite geometry compression.
 
 ### Explicit SLPK features
 
@@ -52,7 +82,8 @@ For feature-bearing input, fill **SLPK feature mapping (optional JSON)** before 
 The mapping supports one attribute-backed `EXT_mesh_features` set referencing one inline,
 decoded structural metadata table, or legacy B3DM `_BATCHID` and decoded batch columns.
 Declare the exact metadata class, every property, and the stable identifier field. All vertices
-of a triangle must reference the same row; each output feature must own geometry.
+of a nondegenerate triangle must reference the same row; repeated-index strip connectors
+retain the first corner's row. Each output feature must own geometry.
 
 ```json
 {
@@ -78,7 +109,8 @@ property fails. Decimal-string representation is reported in the completed diagn
 before content I/O.
 
 The decoded input gate includes Arrow column and triangle-association buffers after extraction.
-It does not bound allocations during metadata decoding or Arrow construction.
+It also charges encoded base-color image bytes. It does not bound allocations during metadata
+decoding or Arrow construction.
 
 ### Multi-tile 3TZ profile
 
@@ -91,13 +123,45 @@ Non-leaf multi-selections are rejected to avoid exporting overlapping LOD approx
 Any failed, empty, or multi-primitive content aborts the entire output.
 
 SLPK continues to accept one mesh. Multi-node I3S authoring, broader hierarchy/refinement
-mapping, feature associations, workers and streaming packaging remain follow-up work.
+mapping and broader feature associations remain follow-up work.
 
 The demo caps root JSON plus selected content at 16 MiB, declarations at 1,000 contents,
-aggregate decoded geometry at 16 MiB, retained output and archive size at 32 MiB, and position error
+aggregate decoded geometry plus encoded image bytes at 16 MiB, retained output and archive size at 32 MiB, and position error
 at 1 cm. These are byte gates, not a guarantee about peak decoder/serialization memory.
-Parsing and archive encoding run on the main thread. Cancel aborts transport and discards
-late results; it cannot interrupt synchronous decoding or archive serialization.
+Selected-content fetching, decoding, conversion and archive encoding run in a disposable module
+worker. Archive packaging transfers one byte-view chunk at a time. For download/preview, the
+main thread snapshots its exact byte range into a Blob part, checks the aggregate archive budget, and acknowledges it
+before the worker pulls another chunk. Only completed output becomes a downloadable/previewable
+`File`; chunk order and the final byte count are checked. Cancel and unmount terminate the worker,
+including synchronous decoding or packaging, and release partial Blob parts. Each retry starts a
+new worker; failed or canceled work publishes no archive.
+
+Inspection remains on the main thread. The worker no longer allocates or transfers a complete
+archive or entry buffer. Packaging reads/copies payload blocks of at most 64 KiB, with a checksum
+pass before each populated header and a second pass that transfers blocks on demand. Finalized
+conversion resources and index/directory metadata still consume worker memory. The main thread retains the complete result
+as Blob parts for download/preview. Neither output mode caps total peak memory.
+Packaging checks cancellation between block reads and does not prefetch the next output block.
+
+### Direct file saving
+
+Where `showSaveFilePicker` is available, **Convert and save to file** opens the native save
+dialog from the button click. This browser API requires a secure context (HTTPS or localhost).
+It supports the same bounded SLPK and 3TZ profiles. The download/preview action remains available
+in other browsers.
+
+Direct saving writes each transferred byte view to a native writable file stream and awaits the
+write before acknowledging the next worker chunk. It does not collect archive Blob parts or
+create a download URL. The file closes only after successful conversion, chunk validation and
+the final byte-count check. Cancel or failure before close aborts the stream; native file writes
+are not committed until close, so an existing destination retains its previous contents.
+
+**Saving archive** marks final file commit: Cancel is disabled once close starts. Success is
+reported only after close completes. Saved archives can be opened later through the viewer
+file controls; direct saving does not create an automatic preview. The worker still retains
+finalized conversion resources and archive index metadata. An enforceable total decoding and
+conversion memory budget remains follow-up work.
+Worker scripts and their module chunks must be served by the application and allowed by its content security policy.
 
 The example imports orchestration from `@loaders.gl/tile-converter/v5/core` and format
 writers from `/v5/adapters`. Conversion code remains in the tile-converter application.

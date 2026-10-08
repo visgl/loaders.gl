@@ -51,6 +51,49 @@ ESM, CommonJS and TypeScript declaration exports. The app still declares its exi
 format and Node service dependencies; importing the core isolates its runtime and
 bundle imports, but does not remove those installation dependencies.
 
+## Draco mesh output
+
+`createMeshConversionCodec` now encodes GLB geometry with lossless Draco Edge Breaker
+by default, including GLBs packaged as 3TZ by the mesh sinks. Output requires
+`KHR_draco_mesh_compression` support in the reader and contains no uncompressed geometry
+fallback. Materials, encoded PNG/JPEG images, samplers and texture transforms are preserved;
+images are not recompressed. `encodeMeshTile` remains the synchronous uncompressed encoder.
+
+```ts
+const codec = createMeshConversionCodec({
+  spatialContext,
+  maxPositionError: 0.01,
+  // Set draco: false to generate uncompressed GLB geometry instead.
+  // dracoLibraryOptions: {useLocalLibraries: true}
+});
+```
+
+No attribute quantization is enabled. The codec verifies the decoded Float32 positions,
+uses decoded vertex counts and bounds in the GLB accessors and placement metadata, and
+retains the existing position-rounding budget. Draco may reorder vertices and triangles or
+remove unused vertices. Compression is not guaranteed to reduce very small mesh files.
+
+Encoding and verification need both Draco encoder and decoder runtimes. The optional
+`dracoLibraryOptions` accepts the existing `LoadLibraryOptions` (`modules`, `CDN`,
+`useLocalLibraries`) for applications that inject runtimes or serve local assets. The default
+runtime uses the Draco module's CDN configuration. Browser deployments must allow these
+assets through CORS and content security policy. The browser archive example runs this work
+inside its conversion worker with bundled encoder/decoder assets; direct codec calls execute
+in their caller's environment. Module workers evaluate the library wrappers, which must be
+allowed by the application's content security policy.
+
+`createI3SMeshConversionCodec` also uses lossless Draco Edge Breaker by default. It retains
+the geographic Float32 rounding/precision budget and verifies oriented triangles, normals,
+and feature-to-geometry ownership after decompression. Set `draco: false` to retain raw
+I3S geometry. Pass `dracoLibraryOptions` to supply the full decoder and encoder runtimes;
+`getDracoLibraryOptions()` from `@loaders.gl/draco/bundled` provides application asset URLs.
+The browser example reuses its bundled full runtime for both archive formats.
+
+Lossy presets, quantization controls, texture compression and broader external-viewer
+qualification remain follow-up work. Per-resource byte gates do not bound Draco or
+verification allocations. Degenerate triangles that Draco cannot preserve fail explicitly;
+use raw output where needed.
+
 ## Archive output: 3TZ and SLPK
 
 Use `createTileConversionArchive` from either v5 entrypoint to package the unmodified files
@@ -81,8 +124,8 @@ The budget includes headers/index and is checked before Blob reads. The first SL
 supports archives below 2 GiB; 3TZ stays below the ZIP64 sentinel. Both support at most
 65,533 resources and canonical ASCII paths. Invalid formats, budgets, or duplicate IDs fail
 explicitly. The output-size budget is not a peak-memory budget. Streaming, ZIP64, cancellation
-during packaging, workers, broader source extraction, and broader viewer qualification remain
-future work. Applications own input qualification, download UI, and object-URL lifetime.
+within the encoder, broader source extraction, and broader viewer qualification remain
+future work. The browser example can interrupt packaging by terminating its disposable worker. Applications own input qualification, download UI, and object-URL lifetime.
 
 See [SLPKWriter](/docs/modules/i3s/api-reference/slpk-writer) and
 [Tiles3DArchiveWriter](/docs/modules/3d-tiles/api-reference/tiles-3d-archive-writer).
@@ -93,7 +136,14 @@ See [SLPKWriter](/docs/modules/i3s/api-reference/slpk-writer) and
 `createI3SMeshConversionCodec` and `createSingleMeshI3SSink`. These APIs are exported from
 both v5 entrypoints. The initial profile converts one static untextured GLB/B3DM primitive
 from a native, resolved EPSG:4978 source to an I3S 1.7 3D Object layer. Enable decoded glTF
-loading when constructing the runtime. A region bounding volume or explicit CRS metadata
+loading when constructing the runtime, including `gltf.decompressMeshes: true` for Draco
+content. Triangle lists and indexed/non-indexed triangle strips are supported; strips become
+triangle lists with alternating winding before placement and feature mapping. Triangle fans are
+normalized by the glTF loader. Draco-compressed primitives are normalized to triangle lists
+before source extraction. Vertex attributes and source buffers remain unchanged. Degenerate
+strip connectors are retained and advance winding parity. Repeated-index connectors use the
+first corner's feature row; nondegenerate mixed-feature triangles still fail.
+Draco output may reject them, so select `draco: false` on the GLB or I3S codec when needed. Points, lines and primitive-restart indices remain unsupported. A region bounding volume or explicit CRS metadata
 must establish the ECEF source frame; sphere/box bounds alone do not imply a CRS.
 
 ```ts
@@ -156,13 +206,28 @@ The sink exposes files only after successful finalization and clears partial fil
 A second mesh resource aborts this single-mesh output; hierarchy generation is separate work.
 
 The initial source rejects animation, skins, morphs, GPU instancing, mirrored or singular
-placements, textures, unmapped material/feature extensions, and tileset/group/tile/content
+placements, unmapped material/feature extensions, and tileset/group/tile/content
 metadata that needs its own mapping. Decoded reader cleanup follows shared traversal; the
 application still owns the runtime, worker, decoder, and archive lifetime. Synchronous
-encoding cannot be interrupted mid-operation. Resource/retained-output/archive caps do
+encoding cannot be interrupted by an AbortSignal mid-operation; applications can terminate a
+disposable worker instead. Resource/retained-output/archive caps do
 not constitute a total peak-memory budget.
 
-Unannotated resources can also use the existing GLB codec and 3D Tiles/3TZ sink. The GLB
+Unannotated resources can also use the existing GLB codec and 3D Tiles/3TZ sink. The source
+retains `TEXCOORD_0` (packed Float32 or normalized Uint8/Uint16) and one embedded PNG/JPEG
+base-color image from a glTF buffer view or base64 data URI, including declared wrapping/filtering and
+`KHR_texture_transform` offset/rotation/scale on `TEXCOORD_0`. Load source content with
+`gltf.excludeExtensions: {KHR_texture_transform: false}` so the adapter receives the original
+UVs and authored transform. The GLB writer retains the transform as a required extension;
+conversion does not bake it into UVs. Encoded
+image bytes are forwarded without pixel decoding or transcoding. Inline images accept
+`data:image/png;base64,...` or `data:image/jpeg;base64,...`; an optional image `mimeType` must
+match the URI. Base64 is decoded directly into a typed array without fetching the image;
+the decoded encoded-image bytes count against the input gates. External image URLs,
+other data-URI encodings/MIME types,
+other UV sets, texture-info extensions other than `KHR_texture_transform`,
+texture/image/sampler extensions and other texture maps are
+rejected. The I3S codec continues to reject textured geometry. The GLB
 codec explicitly rejects feature-bearing resources until its target metadata writer is
 qualified. See [I3S mesh authoring](/docs/modules/i3s/api-reference/i3s-mesh-writer) for the
 precise target property/null profile.
@@ -171,14 +236,19 @@ precise target property/null profile.
 
 The [tile archive example](/examples/i3s-slpk) can inspect an explicit 3D Tiles URL,
 convert selected self-contained static mesh contents to SLPK or 3TZ, and preview or
-download the partial archive. It demonstrates the separate core and adapters entrypoints,
+download the partial archive. Draco-compressed GLB/B3DM input is decoded with bundled
+application assets before extraction; external content dependencies remain rejected. The
+conversion error budget applies to the decoded source, rather than qualifying earlier source
+quantization. The decoded byte gates run after extraction and do not cap decoder allocations.
+It demonstrates the separate core and adapters entrypoints,
 required byte/precision budgets, cancellation and explicit profile rejection. See the
 [example README](https://github.com/visgl/loaders.gl/tree/master/examples/website/i3s-slpk)
 for limits and supported inputs. The controls accept an explicit JSON `MeshSourceFeatureOptions`
-mapping for single-mesh SLPK output; no schema is inferred. The decoded byte gate charges geometry,
+mapping for single-mesh SLPK output; no schema is inferred. The decoded byte gate charges geometry, encoded base-color image bytes,
 Arrow columns and triangle associations after extraction. Exact 64-bit decimal-string mappings are
 reported as diagnostics. Untextured material factors are preserved in both formats; `COLOR_0` is
-preserved for 3TZ and rejected for SLPK. Feature-bearing 3TZ remains unsupported.
+preserved for 3TZ and rejected for SLPK. Embedded PNG/JPEG base-color textures and
+`TEXCOORD_0` are preserved for 3TZ; textured SLPK and feature-bearing 3TZ remain unsupported.
 
 
 ### Partial mesh collections
@@ -197,3 +267,14 @@ The [tile archive example](https://loaders.gl/examples/i3s-slpk) supports up to 
 selected leaf contents for partial 3TZ output, with aggregate input/decoded byte gates.
 SLPK output retains its single-mesh profile. Multi-node I3S authoring and preservation of
 broader source hierarchy, refinement and feature associations remain separate work.
+
+### Browser worker execution
+
+The archive viewer example runs selected-content loading, decoding, conversion and packaging in
+one disposable module worker per operation. It transfers only finalized archive bytes and the
+conversion report back to the controls. Cancel or unmount terminates the worker; failed and canceled
+operations expose no downloadable archive. Inspection remains on the main thread. This example
+boundary does not add a public worker API or move the conversion implementation between modules.
+
+Existing transport, decoded-input and retained-output byte gates still apply. Moving work off the
+main thread does not cap peak decoder/Arrow/packager allocations or make packaging streaming.
