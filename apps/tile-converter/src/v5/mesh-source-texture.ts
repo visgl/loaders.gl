@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
+import {getBinaryImageMetadata} from '@loaders.gl/images';
 import type {GLTFMaterialPostprocessed, GLTFImagePostprocessed} from '@loaders.gl/gltf';
 import {TileConversionError} from '@loaders.gl/tile-converter/v5/core';
 import type {MeshTileSampler, MeshTileTexture, MeshTileTextureTransform} from './mesh.js';
@@ -119,4 +120,50 @@ function mapMeshSourceImage(
     data: Uint8Array.from(encodedBytes, character => character.charCodeAt(0)),
     mimeType: match[1] as MeshTileTexture['mimeType']
   };
+}
+
+/** Resolves one external encoded image through an explicitly supplied application reader. */
+export async function resolveMeshSourceTexture(
+  textureInfo: NonNullable<GLTFMaterialPostprocessed['pbrMetallicRoughness']>['baseColorTexture'],
+  readExternalResource:
+    | ((uri: string, contentUri: string | undefined, signal?: AbortSignal) => Promise<Uint8Array>)
+    | undefined,
+  contentUri: string | undefined,
+  signal?: AbortSignal
+): Promise<MeshTileTexture> {
+  const image = textureInfo?.texture?.source;
+  if (!image || image.uri === undefined || image.uri.startsWith('data:'))
+    return mapMeshSourceTexture(textureInfo);
+  if (!readExternalResource || image.bufferView !== undefined)
+    throw new TileConversionError(
+      'MESH_SOURCE_TEXTURE_UNSUPPORTED',
+      'External images require an explicit bounded resource reader'
+    );
+  signal?.throwIfAborted();
+  const data = await readExternalResource(image.uri, contentUri, signal);
+  signal?.throwIfAborted();
+  let metadata;
+  try {
+    metadata = getBinaryImageMetadata(new DataView(data.buffer, data.byteOffset, data.byteLength));
+  } catch {
+    /* Report an unsupported encoded image consistently. */
+  }
+  if (
+    !metadata ||
+    !['image/png', 'image/jpeg'].includes(metadata.mimeType) ||
+    (image.mimeType !== undefined && image.mimeType !== metadata.mimeType)
+  )
+    throw new TileConversionError(
+      'MESH_SOURCE_TEXTURE_UNSUPPORTED',
+      'External images require matching PNG/JPEG headers'
+    );
+  // Select encoded bytes without decoding pixels or modifying the caller-owned glTF image.
+  const resolved = {
+    ...textureInfo,
+    texture: {
+      ...textureInfo!.texture,
+      source: {...image, uri: undefined, mimeType: metadata.mimeType, bufferView: {data}}
+    }
+  };
+  return mapMeshSourceTexture(resolved as typeof textureInfo);
 }

@@ -123,7 +123,12 @@ export function extractMeshFeatures(
       if (
         !['SCALAR', 'STRING'].includes(property.type) ||
         property.array ||
-        property.noData !== undefined ||
+        (property.noData !== undefined &&
+          (property.normalized ||
+            property.offset !== undefined ||
+            property.scale !== undefined ||
+            column?.offset !== undefined ||
+            column?.scale !== undefined)) ||
         (['INT64', 'UINT64'].includes(property.componentType || '') &&
           (property.normalized ||
             property.offset !== undefined ||
@@ -141,7 +146,31 @@ export function extractMeshFeatures(
           'MESH_FEATURE_PROPERTY_UNAVAILABLE',
           `Property ${name} has not been decoded`
         );
-      properties[name] = data ?? Array.from({length: count}, () => property.default);
+      const decoded = data ?? Array.from({length: count}, () => property.default);
+      if (property.noData === undefined || data === undefined) {
+        properties[name] = decoded;
+        continue;
+      }
+      const sentinel = property.noData;
+      const integer64 = ['INT64', 'UINT64'].includes(property.componentType || '');
+      if (
+        (property.type === 'STRING'
+          ? typeof sentinel !== 'string'
+          : typeof sentinel !== 'number' ||
+            !Number.isFinite(sentinel) ||
+            (integer64 && !Number.isSafeInteger(sentinel))) ||
+        !decoded ||
+        (!Array.isArray(decoded) && !ArrayBuffer.isView(decoded)) ||
+        (decoded as ArrayLike<unknown>).length !== count
+      )
+        throw new TileConversionError(
+          'MESH_FEATURE_PROPERTY_UNSUPPORTED',
+          `Property ${name} requires a valid decoded noData mapping`
+        );
+      const comparable = integer64 ? BigInt(sentinel as number) : sentinel;
+      properties[name] = Array.from(decoded as ArrayLike<unknown>, value =>
+        value === comparable ? (property.default ?? null) : value
+      );
     }
   } else {
     if (metadata)

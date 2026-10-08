@@ -260,7 +260,7 @@ test('browser 3TZ preserves normalized colors and one selected material, while I
   ).rejects.toMatchObject({code: 'I3S_MESH_PROFILE_UNSUPPORTED'});
 });
 
-test('features require a complete schema and explicit target representation; 3TZ mappings reject before content I/O', async () => {
+test('features require a complete schema and explicit target representation; 3TZ preserves native 64-bit identifiers', async () => {
   const {fetcher, controller, inspection} = await inspectMesh(createMesh(true));
   const convert = (mapping?: MeshSourceFeatureOptions, format: 'slpk' | '3tz' = 'slpk') =>
     convertSelectedContents(
@@ -272,8 +272,9 @@ test('features require a complete schema and explicit target representation; 3TZ
       fetcher,
       mapping
     );
-  await expect(convert(FEATURE_MAPPING, '3tz')).rejects.toThrow(/require SLPK/);
-  expect(fetcher).toHaveBeenCalledOnce();
+  const glbResult = await convert({...FEATURE_MAPPING, integer64Encoding: undefined}, '3tz');
+  expect(glbResult.file.name).toBe('selected-mesh.3tz');
+  expect(glbResult.report.outputResources).toBe(1);
   await expect(convert()).rejects.toMatchObject({code: 'MESH_FEATURE_SCHEMA_REQUIRED'});
   await expect(convert({...FEATURE_MAPPING, metadataClass: 'wrong'})).rejects.toMatchObject({
     code: 'MESH_FEATURE_CLASS_MISMATCH'

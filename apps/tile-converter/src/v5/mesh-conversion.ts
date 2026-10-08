@@ -10,6 +10,7 @@ import {TileConversionError} from '@loaders.gl/tile-converter/v5/core';
 import type {TileConversionCodec} from '@loaders.gl/tile-converter/v5/core';
 import type {Tiles3DConversionSpatialContext} from '@loaders.gl/tile-converter/v5/core';
 import {encodeMeshTile, validateMeshGeometry} from './mesh.js';
+import type {MeshTileFeatures} from './mesh-features.js';
 import type {MeshTileMaterial} from './mesh.js';
 import {encodeDracoMeshTile} from './mesh-draco.js';
 
@@ -21,6 +22,8 @@ export interface MeshConversionInput {
   readonly mesh: MeshGeometry;
   /** Optional single material with an embedded base-color image, mapped explicitly by the source adapter. */
   readonly material?: MeshTileMaterial;
+  /** Explicit feature table and triangle associations, written as structural metadata. */
+  readonly features?: MeshTileFeatures;
   /** Finite xyz origin in the target frame, subtracted before float32 encoding. */
   readonly origin: readonly [number, number, number];
 }
@@ -105,12 +108,6 @@ export function createMeshConversionCodec<TInspection = unknown>(
     /** Prepares and encodes one geometry while honoring cancellation. */
     async *convert(resource, _inspection, signal) {
       signal?.throwIfAborted();
-      if ('features' in resource && resource.features) {
-        throw new TileConversionError(
-          'MESH_FEATURE_OUTPUT_UNSUPPORTED',
-          'The GLB codec requires an explicit feature metadata writer; use the I3S codec for supported feature-bearing meshes'
-        );
-      }
       const geometry = validateMeshGeometry(resource.mesh, true);
       const sourcePositions = geometry.attributes.POSITION.value;
       const origin: [number, number, number] = [...resource.origin];
@@ -160,7 +157,7 @@ export function createMeshConversionCodec<TInspection = unknown>(
           size: 3
         };
       }
-      const appearance = {material: resource.material};
+      const appearance = {material: resource.material, features: resource.features};
       const encoded = draco
         ? await encodeDracoMeshTile(geometry, appearance, dracoLibraryOptions)
         : {glb: encodeMeshTile(geometry, appearance), positions: localPositions};

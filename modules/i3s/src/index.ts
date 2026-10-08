@@ -128,5 +128,6 @@ export type {
   I3SDracoLibraryOptions,
   EncodedI3SMeshLayer,
   I3SMeshFeatures,
-  I3SMeshMaterial
+  I3SMeshMaterial,
+  I3SMeshTexture
 } from './i3s-mesh-writer';

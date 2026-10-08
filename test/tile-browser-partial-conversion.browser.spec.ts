@@ -87,9 +87,6 @@ test('multi-selection rejects unsupported selection profiles before content fetc
     await expect(
       convertSelectedContents(inspection, invalid, '3tz', controller.signal, () => {}, fetcher)
     ).rejects.toThrow(/Select/);
-  await expect(
-    convertSelectedContents(inspection, identifiers, 'slpk', controller.signal, () => {}, fetcher)
-  ).rejects.toThrow(/require 3TZ/);
   inspection.tileset.root!.children![0].children = [{content: {uri: 'child.glb'}}];
   await expect(
     convertSelectedContents(inspection, identifiers, '3tz', controller.signal, () => {}, fetcher)
@@ -200,7 +197,7 @@ test('multi-selection enforces the aggregate transport budget before decoding a 
       () => {},
       limitedFetch
     )
-  ).rejects.toThrow(/remaining limit/);
+  ).rejects.toThrow(/aggregate input byte budget/);
 });
 
 // UI lifecycle coverage uses an inline executor; real module workers are qualified separately.

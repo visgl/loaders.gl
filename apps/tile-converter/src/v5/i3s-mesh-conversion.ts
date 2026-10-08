@@ -55,6 +55,7 @@ export function createI3SMeshConversionCodec<TInspection = unknown>(
       'I3S_MESH_FRAME_UNSUPPORTED',
       'I3S mesh authoring requires resolved ECEF coordinates and ellipsoidal heights'
     );
+  let objectIdOffset = 0;
   return {
     /** Places a source mesh in ECEF and authors one layer without modifying source arrays. */
     async *convert(resource, _inspection, signal) {
@@ -75,7 +76,8 @@ export function createI3SMeshConversionCodec<TInspection = unknown>(
         const writerOptions = {
           ...options,
           material: resource.material,
-          features: resource.features
+          features: resource.features,
+          objectIdOffset
         };
         layer =
           options.draco === false
@@ -88,6 +90,8 @@ export function createI3SMeshConversionCodec<TInspection = unknown>(
         );
       }
       signal?.throwIfAborted();
+      objectIdOffset +=
+        resource.features?.batches.reduce((total, batch) => total + batch.data.numRows, 0) ?? 1;
       yield {id: resource.id, ...layer};
     },
     /** Reports measured precision and explicitly authorized integer representation changes. */
