@@ -78,7 +78,7 @@ Converts a tileset to I3S SLPK format
 - `options.maxDepth: number` The max tree depth of conversion
 - `options.egmFilePath: string` location of \*.pgm file to convert heights from ellipsoidal to gravity-related format or "None" to not use it. A model file can be loaded from GeographicLib https://geographiclib.sourceforge.io/html/geoid.html
 - `options.token: string` ION token of input tileset
-- `options.draco: boolean` Default: `true`. Whether the converter creates DRACO compressed geometry in path "layers/0/nodes/xxx/geometries/1" along with non-compressed geometry in path "layers/0/nodes/xxx/geometries/0"
+- `options.draco: boolean` Default: `true`. Whether the converter creates Draco compressed geometry using `MESH_EDGEBREAKER_ENCODING` in path "layers/0/nodes/xxx/geometries/1" along with non-compressed geometry in path "layers/0/nodes/xxx/geometries/0"
 - `options.mergeMaterials: boolean` Default: `true`. Whether the converter should try to merge PBR materials. If `true`, the converter will try to merge PBR materials, joining textures in an atlas. This operation allows to create one I3S node for one 3DTiles tile. If one material has a texture but another doesn't have, materials are not merged and the 3DTiles tile will be splitted into 2 I3S nodes.
 - `options.generateTextures: boolean` Whether the converter should generate additional texture of another format. For non-compressed source texture format (JPG, PNG) the converter creates additional KTX2 texture. For compressed source texture (KTX2) the converter creates additional JPG texture. To encode and decode KTX2 [Basis Universal Supercompressed GPU Texture Codec](https://github.com/BinomialLLC/basis_universal) is used.
 - `options.generateBoundingVolumes: boolean` Whether the converter generate new bounding volumes from the mesh vertices. The default behavior is convertion bounding volumes (box, sphere or region) from 3DTiles tileset data. If this option is set `true` the converter will ignore source bounding volume and generate new bounding volume (oriented bounding box and minimal bounding sphere) from the geometry POSITION attribute.
@@ -86,6 +86,10 @@ Converts a tileset to I3S SLPK format
 - `options.metadataClass: string` One of the list of feature metadata classes, detected by converter on "analyze" stage
 - `options.analyze: boolean` Analyze the input tileset content without conversion.
 - `options.validate: boolean` Enable Validation.
+
+Draco compression preserves I3S feature-index metadata and optional UV-region attributes.
+Edge Breaker can reorder vertices and triangles; consumers must use the decoded indices.
+This option applies to the Node.js I3S converter. The v5 mesh codec currently emits uncompressed GLB geometry.
 
 ### Validation
 

@@ -163,7 +163,7 @@ const FEATURES: MeshSourceFeatureOptions = {
 };
 
 /** Converts one tiny runtime to finalized I3S resources and indexed SLPK. */
-async function convertRuntime(modern = false, features?: MeshSourceFeatureOptions) {
+async function convertRuntime(modern = false, features?: MeshSourceFeatureOptions, draco = true) {
   const {runtime, payload} = await createRuntime(modern);
   const source = createMeshTilesetConversionSource(runtime, {unloadContent: true, features});
   const sink = createSingleMeshI3SSink({maxTotalBytes: 16384});
@@ -171,6 +171,8 @@ async function convertRuntime(modern = false, features?: MeshSourceFeatureOption
     source,
     codec: createI3SMeshConversionCodec({
       spatialContext: SPATIAL,
+      draco,
+      dracoLibraryOptions: {useLocalLibraries: true},
       maxPositionError: 0.001,
       maxResourceBytes: 8192
     }),
@@ -200,6 +202,12 @@ test('browser/root APIs agree and real source mesh conversion creates a readable
   expect(converted.sink.getFiles().length).toBeGreaterThan(5);
   const layer = JSON.parse(new TextDecoder().decode(await converted.reader.getFile('', 'http')));
   expect(layer.layerType).toBe('3DObject');
+  expect(layer.geometryDefinitions[0].geometryBuffers[0].compressedAttributes.encoding).toBe(
+    'draco'
+  );
+  const geometry = await converted.reader.getFile('nodes/1/geometries/0', 'http');
+  expect(new TextDecoder().decode(geometry.slice(0, 5))).toBe('DRACO');
+  expect(new Uint8Array(geometry)[8]).toBe(1);
   expect(layer.description).toBe('Source feature metadata class: building');
   expect(layer.fields.map((field: any) => field.name)).toEqual(['OBJECTID', 'source_id', 'label']);
   const ids = new DataView(await converted.reader.getFile('nodes/1/attributes/f_1/0', 'http'));
@@ -246,6 +254,7 @@ test('tile, RTC, axis and node transforms are applied once with Float64 position
     },
     codec: createI3SMeshConversionCodec({
       spatialContext: {...SPATIAL, transformPositions: positions, transformNormals: normals},
+      dracoLibraryOptions: {useLocalLibraries: true},
       maxResourceBytes: 8192,
       maxPositionError: 0.001
     }),
@@ -281,7 +290,7 @@ test('legacy B3DM batch metadata follows the same explicit Arrow mapping with nu
   expect(resources[0].features!.triangleFeatureIndices).toEqual(new Uint32Array([1, 0]));
 });
 
-test('unannotated real source conversion succeeds; GLB codec rejects feature-bearing resources', async () => {
+test('unannotated real source conversion succeeds; GLB codec preserves feature-bearing resources', async () => {
   const result = await convertRuntime();
   expect(result.sink.getFiles().length).toBeGreaterThan(5);
   const {runtime} = await createRuntime(true);
@@ -292,11 +301,19 @@ test('unannotated real source conversion succeeds; GLB codec rejects feature-bea
       [Symbol.asyncIterator]()
       .next()
   ).value!;
-  const codec = createMeshConversionCodec({spatialContext: SPATIAL, maxPositionError: 0.001});
-  await expect(async () => {
-    for await (const _output of codec.convert(resource, undefined)) {
-    }
-  }).rejects.toMatchObject({code: 'MESH_FEATURE_OUTPUT_UNSUPPORTED'});
+  const codec = createMeshConversionCodec({
+    spatialContext: SPATIAL,
+    maxPositionError: 0.001,
+    dracoLibraryOptions: {useLocalLibraries: true}
+  });
+  const output = await codec.convert(resource, undefined)[Symbol.asyncIterator]().next();
+  const gltf = await parse(output.value.glb, (await import('@loaders.gl/gltf')).GLTFLoader, {
+    core: {worker: false, useLocalLibraries: true},
+    gltf: {loadImages: false}
+  });
+  expect(
+    gltf.json.extensions.EXT_structural_metadata.propertyTables[0].properties.source_id.data
+  ).toEqual(new BigUint64Array([9007199254740993n, 18446744073709551615n]));
 });
 
 test.each([
@@ -434,6 +451,7 @@ test('single-layer sink hides partial files and aborts on a second mesh or byte 
   const source = createMeshTilesetConversionSource(runtime);
   const codec = createI3SMeshConversionCodec({
     spatialContext: SPATIAL,
+    dracoLibraryOptions: {useLocalLibraries: true},
     maxResourceBytes: 8192,
     maxPositionError: 0.001
   });
@@ -485,6 +503,7 @@ test('cancellation propagates and invalid spatial/precision policies fail explic
   ).value!;
   const codec = createI3SMeshConversionCodec({
     spatialContext: SPATIAL,
+    dracoLibraryOptions: {useLocalLibraries: true},
     maxResourceBytes: 1,
     maxPositionError: 0
   });
@@ -594,7 +613,7 @@ test.each([
   const {runtime} = await createRuntime(true, payload => {
     const properties =
       payload.gltf.extensions.EXT_structural_metadata.schema.classes.building.properties;
-    if (kind === 'noData') properties.label.noData = 'missing';
+    if (kind === 'noData') properties.label.noData = 123;
     if (kind === 'array') properties.label.array = true;
     if (kind === 'enum') properties.label.type = 'ENUM';
     if (kind === 'integer64 transform') properties.source_id.scale = 2;
@@ -604,4 +623,17 @@ test.each([
     for await (const _resource of source.read(await source.inspect())) {
     }
   }).rejects.toMatchObject({code: 'MESH_FEATURE_PROPERTY_UNSUPPORTED'});
+});
+
+test('the I3S codec raw opt-out retains a readable raw geometry resource', async () => {
+  const result = await convertRuntime(false, undefined, false);
+  try {
+    const layer = JSON.parse(new TextDecoder().decode(await result.reader.getFile('', 'http')));
+    expect(layer.geometryDefinitions[0].geometryBuffers[0].compressedAttributes).toBeUndefined();
+    const geometry = new DataView(await result.reader.getFile('nodes/1/geometries/0', 'http'));
+    expect(geometry.getUint32(0, true)).toBe(6);
+    expect(geometry.getUint32(4, true)).toBe(1);
+  } finally {
+    result.runtime.destroy();
+  }
 });

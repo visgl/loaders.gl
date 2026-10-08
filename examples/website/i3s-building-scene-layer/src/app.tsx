@@ -184,7 +184,7 @@ export default function App() {
         <Map
           reuseMaps
           mapLib={maplibregl}
-          mapStyle={'https://basemaps.cartocdn.com/gl/dark-matter-nolabels-gl-style/style.json'}
+          mapStyle={'https://loaders.gl/mapstyle/deck-dark.json'}
           preventStyleDiffing
           preserveDrawingBuffer
         />

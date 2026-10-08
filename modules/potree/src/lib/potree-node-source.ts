@@ -40,7 +40,7 @@ import {
 import {PotreeHierarchyChunkLoaderWithParser} from '../potree-hierarchy-chunk-loader-with-parser';
 import {PotreeBinLoaderWithParser} from '../potree-bin-loader-with-parser';
 import {parseVersion} from '../utils/parse-version';
-import {Projection} from '@math.gl/projection';
+import type {Projection} from '@math.gl/projection';
 import {LASMesh} from '@loaders.gl/las/src/lib/las-types';
 import {createProjection} from '../utils/projection-utils';
 import {
@@ -1027,10 +1027,10 @@ export class PotreeNodesSource
     boundingBox: PotreeBoundingBox
   ): PotreeBoundingBox {
     const projectedCorners = [
-      projection.project([boundingBox.lx, boundingBox.ly]),
-      projection.project([boundingBox.lx, boundingBox.uy]),
-      projection.project([boundingBox.ux, boundingBox.ly]),
-      projection.project([boundingBox.ux, boundingBox.uy])
+      projection.projectSync([boundingBox.lx, boundingBox.ly]),
+      projection.projectSync([boundingBox.lx, boundingBox.uy]),
+      projection.projectSync([boundingBox.ux, boundingBox.ly]),
+      projection.projectSync([boundingBox.ux, boundingBox.uy])
     ];
     const longitudes = projectedCorners.map(coordinate => coordinate[0]);
     const latitudes = projectedCorners.map(coordinate => coordinate[1]);

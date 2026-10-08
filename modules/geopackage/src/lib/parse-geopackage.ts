@@ -23,7 +23,8 @@ import {
   transformGeoJsonCoords
 } from '@loaders.gl/gis';
 import {convertFeaturesToGeoArrowTable} from '@loaders.gl/gis';
-import {Projection} from '@math.gl/projection';
+import {projectionEngine} from '@math.gl/projection';
+import type {Projection} from '@math.gl/projection';
 import {parseWKTCRS, type ReadonlyCRSDefinition, type WKTCRSDefinition} from '@math.gl/crs';
 import initSqlJs, {Database, SqlJsStatic, Statement} from 'sql.js';
 
@@ -377,7 +378,7 @@ function constructArrowRow(
     if (columnName === geometryColumnName) {
       const wkb = parseGeometryWKB(value);
       if (wkb && projection) {
-        reprojectWKBInPlace(wkb, coordinate => projection.project(coordinate));
+        reprojectWKBInPlace(wkb, coordinate => projection.projectSync(coordinate));
       }
       arrowRow[GEOMETRY_OUTPUT_COLUMN_NAME] = wkb;
       continue;
@@ -416,7 +417,7 @@ export function getProjection(
   }
 
   try {
-    return new Projection({
+    return projectionEngine.createProjection({
       from: getProjectionDefinition(sourceProjection),
       to: options.targetCrs as ReadonlyCRSDefinition
     });
@@ -456,7 +457,8 @@ function reprojectGeometry(geometry: Geometry | null, projection: Projection): G
   }
 
   const feature = {type: 'Feature', geometry, properties: {}} as Feature;
-  return transformGeoJsonCoords([feature], projection.project)[0].geometry;
+  return transformGeoJsonCoords([feature], coordinate => projection.projectSync(coordinate))[0]
+    .geometry;
 }
 
 /**

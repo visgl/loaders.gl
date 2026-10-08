@@ -116,7 +116,7 @@ CREATE TABLE sf_places (
   visitors INTEGER
 )`
 
-const MAP_STYLE = 'https://basemaps.cartocdn.com/gl/positron-nolabels-gl-style/style.json'
+const MAP_STYLE = 'https://loaders.gl/mapstyle/deck-light.json'
 
 /** Render the portable Arrow and DuckDB table-query example. */
 export default function App() {

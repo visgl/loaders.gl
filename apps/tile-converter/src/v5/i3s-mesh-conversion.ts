@@ -2,8 +2,12 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import {encodeI3SMeshLayer} from '@loaders.gl/i3s';
-import type {EncodedI3SMeshLayer, I3SMeshWriterOptions} from '@loaders.gl/i3s';
+import {encodeI3SMeshLayer, encodeI3SMeshLayerWithDraco} from '@loaders.gl/i3s';
+import type {
+  EncodedI3SMeshLayer,
+  I3SMeshWriterOptions,
+  I3SDracoLibraryOptions
+} from '@loaders.gl/i3s';
 import {TileConversionError} from '@loaders.gl/tile-converter/v5/core';
 import type {TileConversionCodec, TileConversionSink} from '@loaders.gl/tile-converter/v5/core';
 import type {Tiles3DConversionSpatialContext} from '@loaders.gl/tile-converter/v5/core';
@@ -23,6 +27,10 @@ export interface I3SMeshConversionCodecOptions
   extends Pick<I3SMeshWriterOptions, 'name' | 'maxPositionError' | 'maxResourceBytes'> {
   /** Shared source-to-ECEF context, applied exactly once before I3S geographic encoding. */
   readonly spatialContext: Tiles3DConversionSpatialContext;
+  /** Lossless Edge Breaker geometry by default; false retains raw I3S geometry. */
+  readonly draco?: boolean;
+  /** Full Draco encoder/decoder runtime URLs or injected modules. */
+  readonly dracoLibraryOptions?: I3SDracoLibraryOptions;
 }
 
 /** Creates a portable source-mesh to I3S layer codec with explicit precision and feature diagnostics. */
@@ -47,6 +55,7 @@ export function createI3SMeshConversionCodec<TInspection = unknown>(
       'I3S_MESH_FRAME_UNSUPPORTED',
       'I3S mesh authoring requires resolved ECEF coordinates and ellipsoidal heights'
     );
+  let objectIdOffset = 0;
   return {
     /** Places a source mesh in ECEF and authors one layer without modifying source arrays. */
     async *convert(resource, _inspection, signal) {
@@ -64,11 +73,16 @@ export function createI3SMeshConversionCodec<TInspection = unknown>(
         };
       let layer: EncodedI3SMeshLayer;
       try {
-        layer = encodeI3SMeshLayer(mesh, {
+        const writerOptions = {
           ...options,
           material: resource.material,
-          features: resource.features
-        });
+          features: resource.features,
+          objectIdOffset
+        };
+        layer =
+          options.draco === false
+            ? encodeI3SMeshLayer(mesh, writerOptions)
+            : await encodeI3SMeshLayerWithDraco(mesh, writerOptions, options.dracoLibraryOptions);
       } catch (error) {
         throw new TileConversionError(
           'I3S_MESH_PROFILE_UNSUPPORTED',
@@ -76,6 +90,8 @@ export function createI3SMeshConversionCodec<TInspection = unknown>(
         );
       }
       signal?.throwIfAborted();
+      objectIdOffset +=
+        resource.features?.batches.reduce((total, batch) => total + batch.data.numRows, 0) ?? 1;
       yield {id: resource.id, ...layer};
     },
     /** Reports measured precision and explicitly authorized integer representation changes. */
@@ -104,7 +120,7 @@ export function createI3SMeshConversionCodec<TInspection = unknown>(
 
 /** Atomic bounded output for one authored I3S layer. */
 export interface SingleMeshI3SSink extends TileConversionSink<I3SMeshConversionResource> {
-  /** Compressed archive-relative files visible only after successful finalization. */
+  /** Archive-relative geometry, metadata and images visible only after successful finalization. */
   getFiles(): readonly BrowserTileConversionFile[];
 }
 
@@ -128,7 +144,18 @@ export function createSingleMeshI3SSink(options: {
         );
       state = 'writing';
       for (const [resourceId, bytes] of Object.entries(resource.files))
-        await memory.write({resourceId, parts: [bytes], contentType: 'application/gzip'}, signal);
+        await memory.write(
+          {
+            resourceId,
+            parts: [bytes],
+            contentType: resourceId.endsWith('.png')
+              ? 'image/png'
+              : resourceId.endsWith('.jpg')
+                ? 'image/jpeg'
+                : 'application/gzip'
+          },
+          signal
+        );
       state = 'written';
     },
     /** Commits a complete single-layer result. */

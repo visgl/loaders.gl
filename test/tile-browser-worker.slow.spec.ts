@@ -1,4 +1,6 @@
 import {expect, test} from 'vitest';
+import {parse} from '@loaders.gl/core';
+import {GLBLoader} from '@loaders.gl/gltf';
 import {parseSLPKArchive} from '@loaders.gl/i3s';
 import {DataViewReadableFile} from '@loaders.gl/zip';
 import {Tiles3DArchive} from '@loaders.gl/3d-tiles';
@@ -8,16 +10,18 @@ import {
 } from '../examples/website/i3s-slpk/src/conversion-worker-client';
 import {inspectConversionInput} from '../examples/website/i3s-slpk/src/convert-tileset';
 import {createInput, createTriangle} from './utils/tile-browser-conversion';
+import {createCompressedMesh} from './utils/tile-converter-draco';
 
-/** Supplies a real worker with a tiny local GLB URL and explicit content placements. */
-async function createWorkerInput(collection: boolean) {
+/** Supplies a real worker with a tiny Draco mesh or triangle strip and explicit placements. */
+async function createWorkerInput(collection: boolean, compressed = false) {
   const {fetcher, controller} = createInput(false, false, 'Y', collection);
   const inspection = await inspectConversionInput(
     'https://example.invalid/tileset.json',
     controller.signal,
     fetcher
   );
-  const contentUrl = URL.createObjectURL(new Blob([createTriangle()]));
+  const data = compressed ? await createCompressedMesh() : createTriangle(collection, 5);
+  const contentUrl = URL.createObjectURL(new Blob([data]));
   const resources = inspection.resources.map((resource, index) =>
     index === 1 || (collection && index === 2) ? {...resource, uri: contentUrl} : resource
   );
@@ -34,18 +38,24 @@ async function createWorkerInput(collection: boolean) {
   };
 }
 
+/** Raw collection input contains two placements in each selected content. */
+function countWorkerPrimitivePlacements(profile: string, compressed: boolean): number {
+  return profile === 'collection' ? (compressed ? 2 : 4) : 1;
+}
+
 // Real module-worker startup and native storage belong in the hermetic slow lane.
 test.each([
-  ['slpk', false],
-  ['3tz', false],
-  ['collection', false],
-  ['slpk', true],
-  ['collection', true]
+  ['slpk', false, false],
+  ['3tz', false, true],
+  ['collection', false, false],
+  ['slpk', true, false],
+  ['collection', true, false]
 ] as const)(
-  'real conversion worker produces a readable %s archive with direct save=%s',
-  async (profile, directSave) => {
+  'real conversion worker produces a readable %s archive with direct save=%s and Draco input=%s',
+  async (profile, directSave, compressed) => {
     const {inspection, resourceIds, controller, contentUrl} = await createWorkerInput(
-      profile === 'collection'
+      profile === 'collection',
+      compressed
     );
     const format = profile === 'collection' ? '3tz' : profile;
     const phases: string[] = [];
@@ -68,7 +78,9 @@ test.each([
         );
         outputFile = await handle.getFile();
         expect(outputFile.size).toBe(output.size);
-        expect(output.report.inputResources).toBe(resourceIds.length);
+        expect(output.report.inputResources).toBe(
+          countWorkerPrimitivePlacements(profile, compressed)
+        );
         expect(phases.at(-1)).toBe('Saving archive');
       } else {
         const output = await convertSelectedContentsInWorker(
@@ -82,7 +94,9 @@ test.each([
         expect(outputFile.name).toBe(
           profile === 'collection' ? 'selected-meshes.3tz' : `selected-mesh.${format}`
         );
-        expect(output.report.inputResources).toBe(resourceIds.length);
+        expect(output.report.inputResources).toBe(
+          countWorkerPrimitivePlacements(profile, compressed)
+        );
       }
       expect(outputFile.size).toBeGreaterThan(0);
       expect(phases).toContain('Packaging archive');
@@ -90,7 +104,23 @@ test.each([
       const archive = format === 'slpk' ? await parseSLPKArchive(file) : new Tiles3DArchive(file);
       try {
         const root = await archive.getFile(format === 'slpk' ? '' : 'tileset.json', 'http');
-        expect(JSON.parse(new TextDecoder().decode(root))).toBeDefined();
+        const metadata = JSON.parse(new TextDecoder().decode(root));
+        expect(metadata).toBeDefined();
+        if (format === 'slpk') {
+          expect(
+            metadata.geometryDefinitions[0].geometryBuffers[0].compressedAttributes.encoding
+          ).toBe('draco');
+          const geometry = await archive.getFile('nodes/1/geometries/0', 'http');
+          expect(new TextDecoder().decode(geometry.slice(0, 5))).toBe('DRACO');
+          expect(new Uint8Array(geometry)[8]).toBe(1);
+        } else {
+          expect(metadata.root.children).toHaveLength(
+            countWorkerPrimitivePlacements(profile, compressed)
+          );
+          const content = metadata.root.children[0].content;
+          const glb = await parse(await archive.getFile(content.uri), GLBLoader);
+          expect(glb.json.extensionsRequired).toContain('KHR_draco_mesh_compression');
+        }
       } finally {
         await file.close();
       }

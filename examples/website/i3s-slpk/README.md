@@ -39,33 +39,36 @@ continue to work.
 
 Enter a CORS-enabled HTTP(S) `tileset.json` URL in **Convert selected 3D Tiles meshes**,
 inspect its declared content placements, then explicitly select content and choose SLPK or 3TZ.
-Only selected content is fetched. Use the content list's multiple selection controls (Ctrl/Cmd-click) for 3TZ. The source hierarchy's ancestor transforms are retained; 3TZ also retains a conservative
-source geometric error. SLPK authors a single final mesh and does not reproduce the source LOD hierarchy. A successful archive can be downloaded or previewed with the same
-incremental viewer. This is a partial dataset export, not whole-tileset conversion.
+Only selected content and its declared dependencies are fetched. Both formats accept up to 64
+static primitive placements across selected contents; multiple selection requires leaf tiles.
+Ancestor transforms are retained; 3TZ retains conservative source geometric error. Output is
+flat and does not reproduce source LOD. A successful archive can be downloaded or previewed
+with the incremental viewer.
 
-Each selected content must contain exactly one static primitive in self-contained
-GLB/B3DM, with native EPSG:4978 coordinates and ellipsoidal heights established by root region bounds.
-Unknown/local frames are rejected. Metallic-roughness material factors, alpha controls
-and double-sided rendering are preserved. SLPK converts linear material RGB factors to I3S sRGB
-while preserving alpha; readers convert them back for rendering. 3TZ also preserves packed linear Float32 or normalized
-Uint8/Uint16 vertex colors, packed Float32 or normalized Uint8/Uint16 `TEXCOORD_0`, and one
-embedded PNG/JPEG base-color image with its declared wrapping, filtering and
-`KHR_texture_transform` offset/rotation/scale on `TEXCOORD_0`. The original UVs and transform
-are preserved; UVs are not baked. Images may use a glTF buffer view or an inline
-`data:image/png;base64,...` / `data:image/jpeg;base64,...` URI. An optional image MIME must match
-its URI; external URLs and other data-URI encodings/MIME types are rejected. Base64 is decoded
-without fetching the image, and the encoded image bytes count against the decoded input budget. Encoded image bytes are copied without pixel decoding, resizing or transcoding. SLPK rejects vertex colors and textures.
-Other texture maps/UV sets, texture extensions other than `KHR_texture_transform`, animation,
-compressed meshes, external dependencies, multiple primitives,
-nested external tilesets and implicit tiling fail explicitly. No feature schema is inferred.
+GLB/B3DM triangle lists, strips, fans and Draco compression are supported in native EPSG:4978
+with ellipsoidal heights established by root region bounds. Draco runtimes use bundled assets.
+External buffers and PNG/JPEG base-color images resolve relative to the selected content through
+one shared, cancellable transport budget. Applications can inject an archive-backed fetcher.
 
-### Explicit SLPK features
+Both formats preserve metallic-roughness factors, alpha controls, double-sided rendering, one
+PNG/JPEG base-color image and packed Float32 or normalized unsigned UVs. 3TZ preserves
+texture filtering, UV transforms and vertex colors. SLPK bakes UV transforms, maps wrapping,
+and rejects explicit texture filtering and vertex colors. Other maps, UV sets and unmapped
+scene/material extensions fail explicitly.
 
-For feature-bearing input, fill **SLPK feature mapping (optional JSON)** before converting.
-The mapping supports one attribute-backed `EXT_mesh_features` set referencing one inline,
-decoded structural metadata table, or legacy B3DM `_BATCHID` and decoded batch columns.
-Declare the exact metadata class, every property, and the stable identifier field. All vertices
-of a triangle must reference the same row; each output feature must own geometry.
+Both formats use lossless Draco Edge Breaker geometry by default and verify decoded triangle
+winding and feature ownership. 3TZ requires `KHR_draco_mesh_compression` support. Encoded
+image bytes are retained without transcoding. Independent ArcGIS viewer qualification remains
+follow-up work.
+
+### Feature mapping
+
+Both formats accept explicit `MeshSourceFeatureOptions` JSON. Declare the exact metadata class,
+every property and stable identifier field; no schema is inferred. One attribute-backed feature
+set and one decoded structural table, or legacy B3DM batch metadata, are supported. Each feature
+must own geometry, and each nondegenerate triangle must reference one table row.
+
+For a source with exact 64-bit identifiers and nullable names:
 
 ```json
 {
@@ -82,32 +85,32 @@ of a triangle must reference the same row; each output feature must own geometry
 }
 ```
 
-Supported target columns are `utf8`, `int32`, `float64`, and explicitly authorized `int64`/`uint64`
-as exact decimal strings. Nullable strings retain null versus empty values; numeric nulls are rejected.
-Omit `sourceFeatureIdProperty` to use explicit-schema content-local row IDs. Arrays, enums, noData,
-multiple classes/feature sets, texture IDs, and mixed-feature triangles are rejected. Every unmapped
-property fails. Decimal-string representation is reported in the completed diagnostics. Feature-bearing
-3TZ output remains unsupported and fails explicitly; providing a feature mapping with 3TZ rejects
-before content I/O.
+The integer64 policy applies to SLPK; 3TZ keeps binary 64-bit values. Untransformed scalar/string
+noData values restore null or the declared default when reading converted GLBs.
+
+SLPK supports `utf8`, `int32`, `float64`, and explicitly authorized `int64`/`uint64` as decimal
+strings (`integer64Encoding: "decimal-string"`). Nullable strings retain null versus empty;
+numeric nulls are rejected. Nodes share a feature schema and legacy geometry layout. Generated
+OBJECTID ranges are distinct across nodes; stable source IDs remain separate attributes.
+
+3TZ writes `EXT_structural_metadata` and `EXT_mesh_features`, retaining exact binary integer
+widths including int64/uint64, float32/float64 and UTF-8 strings. Nullable properties use
+collision-free noData values. Arrays, enums and Boolean columns are outside this first profile.
+Draco verification checks triangle ownership and every encoded geometry attribute.
+
+### Mesh collections
+
+Both archive formats retain every static primitive/node placement in declaration order. 3TZ
+uses `meshes/0.glb`, `meshes/1.glb`, etc. under an enclosing contentless ADD root. SLPK uses
+separate geometry, attribute and texture resources per node, with legacy and paged indices.
+The 64th SLPK leaf crosses a node-page boundary. Failure of any resource aborts the archive.
+Source hierarchy/refinement preservation remains follow-up work.
 
 The decoded input gate includes Arrow column and triangle-association buffers after extraction.
 It also charges encoded base-color image bytes. It does not bound allocations during metadata
 decoding or Arrow construction.
 
-### Multi-tile 3TZ profile
-
-Select up to 64 contents on **leaf tiles**. The output is a flat collection under a
-contentless ADD root, with deterministic relative mesh names and bounds enclosing all
-selected placements. Declaration order determines output order, independent of click order.
-Repeated source URLs at distinct placements remain distinct tiles. Ancestor transforms and
-source geometric error are retained, but the source LOD hierarchy is not reproduced.
-Non-leaf multi-selections are rejected to avoid exporting overlapping LOD approximations.
-Any failed, empty, or multi-primitive content aborts the entire output.
-
-SLPK continues to accept one mesh. Multi-node I3S authoring, broader hierarchy/refinement
-mapping and broader feature associations remain follow-up work.
-
-The demo caps root JSON plus selected content at 16 MiB, declarations at 1,000 contents,
+The demo caps root JSON plus selected content and external dependencies at 16 MiB, declarations at 1,000 contents,
 aggregate decoded geometry plus encoded image bytes at 16 MiB, retained output and archive size at 32 MiB, and position error
 at 1 cm. These are byte gates, not a guarantee about peak decoder/serialization memory.
 Selected-content fetching, decoding, conversion and archive encoding run in a disposable module
