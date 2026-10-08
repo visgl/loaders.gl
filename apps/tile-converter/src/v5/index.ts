@@ -120,3 +120,6 @@ export type {
   PointCloudTilesetSink,
   PointCloudTilesetSinkOptions
 } from '@loaders.gl/tile-converter/v5/adapters';
+
+export {transformPointCloudSourceTile} from '@loaders.gl/tile-converter/v5/adapters';
+export type {PointCloudSpatialOptions} from '@loaders.gl/tile-converter/v5/adapters';

@@ -247,7 +247,6 @@ Arrow columns and triangle associations after extraction. Exact 64-bit decimal-s
 reported as diagnostics. Untextured material factors are preserved in both formats; `COLOR_0` is
 preserved for 3TZ and rejected for SLPK. PNG/JPEG base-color textures and `TEXCOORD_0` are preserved for both formats; I3S bakes UV transforms while GLB retains the extension.
 
-
 ### Partial mesh collections
 
 `createMeshTilesetSink` (`/v5/adapters`) accepts independent mesh codec outputs with the
@@ -302,8 +301,28 @@ plus their RTC center, without glTF axis rotation or a second application of the
 The initial profile requires declared EPSG:4978 xyz coordinates in meters with ellipsoidal
 heights, `cartesian` source coordinates, zero source origin and no additional transform
 (an explicit identity matrix is accepted). Already transformed EPSG:4978 outputs are also
-accepted. Geographic, projected and offset inputs require a separately qualified spatial
-conversion first. This sink authors a partial collection; it does not preserve source LOD
+accepted. Pass an explicit `spatialContext` to `convertPointCloudSource` or
+`encodePointCloudSource` to prepare geographic, projected, or offset content before encoding.
+Use `createI3SConversionSpatialContext` to declare the decoded source CRS, vertical units,
+height reference, elevation placement, and target EPSG:4978/ellipsoidal output.
+`getTileEncodingOptions` receives the prepared target-frame tile, so its RTC center and
+precision budget use target units. `measureInputBytes` still receives the original decoded tile.
+The synchronous `encodePointCloudSourceTile` retains its source-coordinate behavior;
+`transformPointCloudSourceTile` exposes asynchronous spatial preparation separately.
+
+Spatial preparation supports absolute longitude/latitude, longitude/latitude offsets, and
+Cartesian positions with a finite invertible affine model matrix. Quantized positions are
+decoded to doubles before placement and reprojection. Source arrays and traversal headers
+remain unchanged; output content has absolute target positions and measured point bounds.
+A context that would reapply a source operation to already transformed content, conflicting
+source metadata, authority y/x order, renderer
+`default`/`meter-offsets` coordinates, and nonidentity geographic placement fail explicitly.
+Already transformed ECEF sources may use a native EPSG:4978 context to flatten their
+renderer-relative placement without a second CRS operation.
+Point normals require an explicit I3S `normalReferenceFrame`; their placement must be a
+translation. Register application-owned CRS/grid/geoid resources through `@loaders.gl/tiles`;
+no spatial resources are fetched implicitly. Epoch-tagged reprojection is rejected with
+`SPATIAL_EPOCH_UNSUPPORTED`; native epoch metadata is retained. Cancellation is checked after elevation sampling. This sink authors a partial collection; it does not preserve source LOD
 or automatically remove overlapping parent/descendant point samples. Applications must
 select independent samples and provide a conservative sampling error. PNTS is a 3D Tiles
 1.0 format deprecated in 1.1; modern glTF point output remains follow-up work.
@@ -312,10 +331,16 @@ select independent samples and provide a conservative sampling error. PNTS is a 
 import {
   convertPointCloudSource,
   createPointCloudTilesetSink,
+  createI3SConversionSpatialContext,
   createTileConversionArchive
 } from '@loaders.gl/tile-converter/v5/browser';
 
-// selectedSource must expose independent point samples in the required ECEF frame.
+// Select independent point samples. Declare metadata for their decoded coordinate frame.
+const spatialContext = createI3SConversionSpatialContext(sourceSpatialReference, {
+  targetCrs: 'EPSG:4978',
+  targetHeightReference: 'ellipsoidal',
+  geoidModel: registeredGeoidName // Required only when converting orthometric heights.
+});
 const sink = createPointCloudTilesetSink({
   maxTiles: 64,
   maxTotalBytes: 32 * 1024 * 1024,
@@ -323,6 +348,7 @@ const sink = createPointCloudTilesetSink({
 });
 await convertPointCloudSource(selectedSource, {
   sink,
+  spatialContext,
   measureInputBytes: measureDecodedPointBytes,
   maxInputResourceBytes: 8 * 1024 * 1024,
   maxOutputResourceBytes: 8 * 1024 * 1024,
@@ -345,3 +371,50 @@ metadata. These limits do not bound peak decoding/encoding memory. Use
 `encodeTileConversionArchiveInBatches` for the existing streaming archive adapter. Reverse
 I3S PointCloud/SLPK writing and general LAS/COPC/I3S source qualification remain separate
 work under tranche 7.
+
+### Native CRS and opt-in reprojection
+
+Retain native coordinates and CRS metadata when the selected writer and consumer support
+that CRS. `spatialContext` is optional on point-source conversion; omitting it preserves
+source coordinates and placement. Mesh codecs accept native contexts as well as explicitly
+requested transformations. A CRS-aware renderer can consume native data without first
+projecting every vertex. Rendering policy is separate from archive authoring policy.
+
+The current 3D Tiles/3TZ collection sinks require ECEF/ellipsoidal content, and the current
+I3S writer profile consumes ECEF before writing geographic I3S geometry. Those specific
+profiles may require an explicit source-to-target operation; they reject incompatible
+content instead of silently reprojecting it. Broader CRS-preserving writers can be added
+without changing the conversion core's default behavior.
+
+### Double-precision I3S geometry conversion
+
+`createMeshConversionCodec` and `createI3SMeshConversionCodec` also accept an
+`I3SConversionSpatialContext`. Supply packed **absolute source positions**, reconstructed
+from any format offsets before calling the codec. The context's `transformGeometryAsync`
+applies source height units, elevation placement, and horizontal/vertical transformation
+once, returning absolute Float64 positions and matching normals. It batches asynchronous
+elevation sampling for positions and normals and leaves float32 rebasing to the destination
+writer, whose precision gate measures the resulting rounding. `normalReferenceFrame`
+defaults to `earth-centered`; pass `vertex-reference-frame` for I3S local ENU vectors.
+I3S normals are mapped into the writer coordinate basis even when positions retain a native
+projected CRS; retaining the position CRS does not imply retaining the I3S vector representation.
+Native local or CRS-less geometry retains its vector basis and normalizes normals without
+constructing a geographic transformer or requiring projection resources.
+
+This supports explicitly selected projected I3S geometry through both mesh writers.
+`createMeshTilesetConversionSource` continues to extract native ECEF GLB/B3DM content;
+this change does not introduce a complete I3S mesh source/material/feature adapter. CRS
+accuracy depends on supplied definitions and datum grids; the registered UTM test exercises
+the static projection path and does not qualify time-dependent datum transformations.
+
+These conversion operations are opt-in authoring work and can run in a conversion worker in
+browser applications. They do not add per-vertex reprojection to ordinary Tile3D loading.
+Native rendering should retain tile-local positions and use a separately qualified tile
+placement/coordinate-origin contract; an application layer's `modelMatrix` must not be
+repurposed for converter spatial policy. Nonlinear CRS and elevation operations still require
+an explicit conversion stage; a renderer-only local affine approximation is not an archive
+accuracy guarantee. Point identity/translation placement avoids per-point matrix allocations.
+
+Earth-centered I3S normals targeting EPSG:4978 are normalized directly, without projecting
+the corresponding position for every normal. Other vector frames still use their declared
+basis transformation. This optimization also applies to the existing I3S spatial adapter.

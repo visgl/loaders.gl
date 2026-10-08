@@ -10,7 +10,10 @@ import type {
 } from '@loaders.gl/i3s';
 import {TileConversionError} from '@loaders.gl/tile-converter/v5/core';
 import type {TileConversionCodec, TileConversionSink} from '@loaders.gl/tile-converter/v5/core';
-import type {Tiles3DConversionSpatialContext} from '@loaders.gl/tile-converter/v5/core';
+import type {
+  Tiles3DConversionSpatialContext,
+  I3SConversionSpatialContext
+} from '@loaders.gl/tile-converter/v5/core';
 import type {MeshSourceResource} from './mesh-source.js';
 import {validateMeshGeometry} from './mesh.js';
 import {createBoundedMemoryTileConversionSink} from '@loaders.gl/tile-converter/v5/core';
@@ -26,7 +29,9 @@ export interface I3SMeshConversionResource extends EncodedI3SMeshLayer {
 export interface I3SMeshConversionCodecOptions
   extends Pick<I3SMeshWriterOptions, 'name' | 'maxPositionError' | 'maxResourceBytes'> {
   /** Shared source-to-ECEF context, applied exactly once before I3S geographic encoding. */
-  readonly spatialContext: Tiles3DConversionSpatialContext;
+  readonly spatialContext: Tiles3DConversionSpatialContext | I3SConversionSpatialContext;
+  /** I3S vector frame when using an I3S context; defaults to earth-centered. */
+  readonly normalReferenceFrame?: 'earth-centered' | 'vertex-reference-frame';
   /** Lossless Edge Breaker geometry by default; false retains raw I3S geometry. */
   readonly draco?: boolean;
   /** Full Draco encoder/decoder runtime URLs or injected modules. */
@@ -62,15 +67,23 @@ export function createI3SMeshConversionCodec<TInspection = unknown>(
       signal?.throwIfAborted();
       const mesh = validateMeshGeometry(resource.mesh, true);
       const positions = mesh.attributes.POSITION.value;
-      mesh.attributes.POSITION = {
-        value: options.spatialContext.transformPositions(positions),
-        size: 3
-      };
-      if (mesh.attributes.NORMAL)
-        mesh.attributes.NORMAL = {
-          value: options.spatialContext.transformNormals(mesh.attributes.NORMAL.value, positions),
-          size: 3
-        };
+      const context = options.spatialContext;
+      const transformed =
+        'transformGeometryAsync' in context
+          ? await context.transformGeometryAsync(
+              positions,
+              mesh.attributes.NORMAL?.value,
+              options.normalReferenceFrame
+            )
+          : {
+              positions: context.transformPositions(positions),
+              normals: mesh.attributes.NORMAL
+                ? context.transformNormals(mesh.attributes.NORMAL.value, positions)
+                : undefined
+            };
+      signal?.throwIfAborted();
+      mesh.attributes.POSITION = {value: transformed.positions, size: 3};
+      if (mesh.attributes.NORMAL) mesh.attributes.NORMAL = {value: transformed.normals!, size: 3};
       let layer: EncodedI3SMeshLayer;
       try {
         const writerOptions = {

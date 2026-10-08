@@ -8,7 +8,10 @@ import type {MeshGeometry} from '@loaders.gl/schema';
 import type {LoadLibraryOptions} from '@loaders.gl/worker-utils';
 import {TileConversionError} from '@loaders.gl/tile-converter/v5/core';
 import type {TileConversionCodec} from '@loaders.gl/tile-converter/v5/core';
-import type {Tiles3DConversionSpatialContext} from '@loaders.gl/tile-converter/v5/core';
+import type {
+  Tiles3DConversionSpatialContext,
+  I3SConversionSpatialContext
+} from '@loaders.gl/tile-converter/v5/core';
 import {encodeMeshTile, validateMeshGeometry} from './mesh.js';
 import type {MeshTileFeatures} from './mesh-features.js';
 import type {MeshTileMaterial} from './mesh.js';
@@ -49,7 +52,9 @@ export interface EncodedMeshConversionResource {
 /** Spatial policy used by the concrete mesh conversion codec. */
 export interface MeshConversionCodecOptions {
   /** Shared context that accepts absolute source positions and returns absolute target positions. */
-  readonly spatialContext: Tiles3DConversionSpatialContext;
+  readonly spatialContext: Tiles3DConversionSpatialContext | I3SConversionSpatialContext;
+  /** I3S vector frame when using an I3S context; defaults to earth-centered. */
+  readonly normalReferenceFrame?: 'earth-centered' | 'vertex-reference-frame';
   /** Maximum Euclidean reconstruction error per vertex, in target coordinate units. */
   readonly maxPositionError: number;
   /** Lossless Draco Edge Breaker is enabled by default; false emits uncompressed GLB geometry. */
@@ -117,7 +122,21 @@ export function createMeshConversionCodec<TInspection = unknown>(
           'Target origin must contain three finite coordinates'
         );
       }
-      const targetPositions = spatialContext.transformPositions(sourcePositions);
+      const transformed =
+        'transformGeometryAsync' in spatialContext
+          ? await spatialContext.transformGeometryAsync(
+              sourcePositions,
+              geometry.attributes.NORMAL?.value,
+              options.normalReferenceFrame
+            )
+          : {
+              positions: spatialContext.transformPositions(sourcePositions),
+              normals: geometry.attributes.NORMAL
+                ? spatialContext.transformNormals(geometry.attributes.NORMAL.value, sourcePositions)
+                : undefined
+            };
+      signal?.throwIfAborted();
+      const targetPositions = transformed.positions;
       if (
         targetPositions.length !== sourcePositions.length ||
         targetPositions.some(value => !Number.isFinite(value))
@@ -153,7 +172,7 @@ export function createMeshConversionCodec<TInspection = unknown>(
       geometry.attributes.POSITION = {value: localPositions, size: 3};
       if (geometry.attributes.NORMAL) {
         geometry.attributes.NORMAL = {
-          value: spatialContext.transformNormals(geometry.attributes.NORMAL.value, sourcePositions),
+          value: transformed.normals!,
           size: 3
         };
       }

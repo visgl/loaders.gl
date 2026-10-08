@@ -8,6 +8,8 @@ import type {
   PointCloudTilesetSource,
   TilesetSpatialReference
 } from '@loaders.gl/tiles';
+import {transformPointCloudSourceTile} from './point-cloud-spatial.js';
+import type {PointCloudSpatialOptions} from './point-cloud-spatial.js';
 import {encodePointCloudTileWithMetadata} from './point-cloud.js';
 import type {EncodePointCloudTileOptions, EncodedPointCloudTile} from './point-cloud.js';
 import {traversePointCloudSource, TileConversionError} from '@loaders.gl/tile-converter/v5/core';
@@ -17,12 +19,13 @@ import type {
 } from '@loaders.gl/tile-converter/v5/core';
 
 /** Traversal and per-tile encoding options for a point-cloud source. */
-export type EncodePointCloudSourceOptions = TraversePointCloudSourceOptions & {
-  /** Select encoder options for each source tile with content, using its header and decoded data. */
-  readonly getTileEncodingOptions?: (
-    sourceTile: PointCloudSourceTile
-  ) => EncodePointCloudTileOptions;
-};
+export type EncodePointCloudSourceOptions = TraversePointCloudSourceOptions &
+  Partial<Pick<PointCloudSpatialOptions, 'spatialContext' | 'normalReferenceFrame'>> & {
+    /** Select encoder options for each source tile with content, using its header and decoded data. */
+    readonly getTileEncodingOptions?: (
+      sourceTile: PointCloudSourceTile
+    ) => EncodePointCloudTileOptions;
+  };
 
 /** A PNTS resource paired with the source placement metadata needed to package its tile. */
 export type EncodedPointCloudSourceTile = EncodedPointCloudTile & {
@@ -53,7 +56,13 @@ export async function* encodePointCloudSource(
   source: PointCloudTilesetSource,
   options: EncodePointCloudSourceOptions = {}
 ): AsyncIterableIterator<EncodedPointCloudSourceTile> {
-  for await (const sourceTile of traversePointCloudSource(source, options)) {
+  for await (const inputTile of traversePointCloudSource(source, options)) {
+    const sourceTile = options.spatialContext
+      ? await transformPointCloudSourceTile(inputTile, {
+          ...options,
+          spatialContext: options.spatialContext
+        })
+      : inputTile;
     const encodingOptions = sourceTile.content
       ? options.getTileEncodingOptions?.(sourceTile)
       : undefined;

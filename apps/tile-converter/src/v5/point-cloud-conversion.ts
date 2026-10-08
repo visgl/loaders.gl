@@ -11,6 +11,7 @@ import type {
 } from '@loaders.gl/tile-converter/v5/core';
 import {traversePointCloudSource} from '@loaders.gl/tile-converter/v5/core';
 import type {PointCloudSourceTile} from '@loaders.gl/tile-converter/v5/core';
+import {transformPointCloudSourceTile} from './point-cloud-spatial.js';
 import {encodePointCloudSourceTile} from './point-cloud-source-encoder.js';
 import type {
   EncodedPointCloudSourceTile,
@@ -59,7 +60,14 @@ export function convertPointCloudSource(
         traversePointCloudSource(source, {maxDepth: options.maxDepth, signal})
     },
     codec: {
-      async *convert(sourceTile) {
+      async *convert(inputTile, _inspection, signal) {
+        const sourceTile = options.spatialContext
+          ? await transformPointCloudSourceTile(inputTile, {
+              ...options,
+              spatialContext: options.spatialContext,
+              signal
+            })
+          : inputTile;
         const encodingOptions = sourceTile.content
           ? options.getTileEncodingOptions?.(sourceTile)
           : undefined;
