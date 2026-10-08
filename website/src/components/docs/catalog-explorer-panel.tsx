@@ -2,6 +2,7 @@ import React, {useEffect, useId, useState} from 'react';
 import styled from 'styled-components';
 import type {CatalogSource, CatalogSourceCapabilities} from '@loaders.gl/loader-utils';
 import {ReactExamplePanel} from './example-panel-host';
+import {getCatalogAssetUrl} from './catalog-asset-url';
 
 /** A source registered with the catalog explorer. */
 export type CatalogExplorerSource = Readonly<{
@@ -275,7 +276,7 @@ function recordSummary(value: unknown): string {
   const record = asRecord(value);
   return String(record?.description || record?.collection || record?.datetime || '');
 }
-/** Renders the first few downloadable assets, resolving them through protocol-specific helpers. */
+/** Renders browser-downloadable assets, resolving them through protocol-specific helpers. */
 function recordAssets(
   value: unknown,
   source?: CatalogAssetSource,
@@ -294,23 +295,27 @@ function recordAssets(
       : []);
   return links.length ? (
     <AssetList>
-      {links.map(([name, asset]) => (
-        <a
-          key={name}
-          href={String(asRecord(asset)?.href)}
-          target="_blank"
-          rel="noreferrer"
-          onClick={event => {
-            event.stopPropagation();
-            if (onSelectAsset) {
-              event.preventDefault();
-              onSelectAsset({key: name, href: String(asRecord(asset)?.href)});
-            }
-          }}
-        >
-          {name}
-        </a>
-      ))}
+      {links.map(([name, asset]) => {
+        const assetUrl = getCatalogAssetUrl(String(asRecord(asset)?.href));
+        if (!assetUrl) return <span key={name}>{name} (unsupported URL)</span>;
+        return (
+          <a
+            key={name}
+            href={assetUrl.href}
+            target="_blank"
+            rel="noreferrer"
+            onClick={event => {
+              event.stopPropagation();
+              if (onSelectAsset) {
+                event.preventDefault();
+                onSelectAsset({key: name, href: assetUrl.href});
+              }
+            }}
+          >
+            {name}
+          </a>
+        );
+      })}
     </AssetList>
   ) : null;
 }

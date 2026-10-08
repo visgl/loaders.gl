@@ -14,6 +14,16 @@ describe('catalog editor schemas', () => {
       expect(selected?.title).toContain(version);
       const schema = selected!.jsonSchema;
       const references = JSON.stringify(schema).matchAll(/"\$ref":"([^"]+)"/g);
+      const definitions = schema.definitions as Record<
+        string,
+        {properties?: Record<string, unknown>}
+      >;
+      const metaSchema = Object.values(definitions).find(
+        definition => definition.properties?.$schema
+      );
+      expect(metaSchema?.properties?.$id).toEqual({type: 'string', format: 'uri-reference'});
+      expect(metaSchema?.properties?.$ref).toEqual({type: 'string', format: 'uri-reference'});
+
       for (const [, reference] of references) {
         expect(reference.startsWith('#/')).toBe(true);
         let target: unknown = schema;
@@ -74,6 +84,14 @@ describe('catalog editor schemas', () => {
       getCatalogEditorSchema(
         {type: 'Catalog', stac_version: '9.0.0'},
         'https://example.org/catalog.json'
+      )
+    ).toBeUndefined();
+  });
+  test('does not apply manifest schemas to ordinary Earth JSON assets', () => {
+    expect(
+      getCatalogEditorSchema(
+        {temperature: [1, 2]},
+        'https://example.org/earth/glaciations/v1/koehler2015/climate.json'
       )
     ).toBeUndefined();
   });

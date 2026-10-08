@@ -35,7 +35,7 @@ for (const version of ['1.0.0', '1.1.0']) {
     if (!value || typeof value !== 'object') return value;
     return Object.fromEntries(
       Object.entries(value)
-        .filter(([key]) => key !== '$id')
+        .filter(([key, child]) => key !== '$id' || typeof child !== 'string')
         .map(([key, child]) => {
           if (key === '$ref' && typeof child === 'string') {
             const reference = new URL(child, url);

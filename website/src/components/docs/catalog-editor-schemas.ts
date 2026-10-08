@@ -49,19 +49,32 @@ export const earthGeoidRasterManifestSchema = z.looseObject({
 
 /** Earth geoid dataset manifest with grid metadata and an array of assets. */
 export const earthGeoidDatasetManifestSchema = z.looseObject({
-  id: z.string(), title: z.string(), credit: z.string(), dataset: z.url(),
-  license: z.string(), licenseUrl: z.url(), sourceSha256: sha256Schema,
-  rows: countSchema, bbox: z.array(z.number()).length(4),
+  id: z.string(),
+  title: z.string(),
+  credit: z.string(),
+  dataset: z.url(),
+  license: z.string(),
+  licenseUrl: z.url(),
+  sourceSha256: sha256Schema,
+  rows: countSchema,
+  bbox: z.array(z.number()).length(4),
   grid: z.looseObject({
-    model: z.string(), width: dimensionSchema, height: dimensionSchema,
-    spacingArcMinutes: z.number().positive(), offset: z.number(), scale: z.number().positive(),
+    model: z.string(),
+    width: dimensionSchema,
+    height: dimensionSchema,
+    spacingArcMinutes: z.number().positive(),
+    offset: z.number(),
+    scale: z.number().positive(),
     sourcePgmSha256: sha256Schema
   }),
   files: z.array(assetFileSchema).min(1)
 });
 
 /** Supported Earth geoid manifest layouts, including EGM96 and EGM2008. */
-export const earthGeoidManifestSchema = z.union([earthGeoidRasterManifestSchema, earthGeoidDatasetManifestSchema]);
+export const earthGeoidManifestSchema = z.union([
+  earthGeoidRasterManifestSchema,
+  earthGeoidDatasetManifestSchema
+]);
 
 /** Earth glaciation dataset manifest describing age slices and encoded assets. */
 export const earthGlaciationManifestSchema = z.looseObject({
@@ -167,8 +180,9 @@ export function getCatalogEditorSchema(
   let schema: z.ZodType | undefined;
   let title = '';
   if (
-    /\/geoid\//.test(url) ||
-    ('model' in documentProperties && 'sourceSha256' in documentProperties)
+    /\/geoid\/.*\/manifest\.json(?:[?#]|$)/.test(url) ||
+    (('model' in documentProperties || 'grid' in documentProperties) &&
+      'sourceSha256' in documentProperties)
   ) {
     schema = earthGeoidManifestSchema;
     title = 'Earth geoid manifest';
@@ -179,18 +193,21 @@ export function getCatalogEditorSchema(
     schema = earthGlaciationPreviewSchema;
     title = 'Earth glaciation preview';
   } else if (
-    /\/glaciations\//.test(url) ||
+    /\/glaciations\/.*\/manifest\.json(?:[?#]|$)/.test(url) ||
     ('ageUnit' in documentProperties && 'files' in documentProperties)
   ) {
     schema = earthGlaciationManifestSchema;
     title = 'Earth glaciation manifest';
   } else if (
-    /\/(boundaries|hydrography)\//.test(url) ||
+    /\/(boundaries|hydrography)\/.*\/manifest\.json(?:[?#]|$)/.test(url) ||
     ('sourceRepositoryCommit' in documentProperties && 'geometry' in documentProperties)
   ) {
     schema = earthSpatialManifestSchema;
     title = 'Earth spatial manifest';
-  } else if (/\/tectonic-movements\//.test(url) || 'archiveSHA256' in documentProperties) {
+  } else if (
+    /\/tectonic-movements\/.*\/manifest\.json(?:[?#]|$)/.test(url) ||
+    'archiveSHA256' in documentProperties
+  ) {
     schema = earthTectonicManifestSchema;
     title = 'Earth tectonic manifest';
   }

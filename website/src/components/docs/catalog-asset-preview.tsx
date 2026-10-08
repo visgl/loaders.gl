@@ -8,6 +8,7 @@ import {
 import type {Table} from 'apache-arrow';
 import {ExamplePanelHost} from './example-panel-host';
 import {configurePanelEditorWorkers} from './panel-editor-workers';
+import {getCatalogAssetUrl} from './catalog-asset-url';
 
 /** An asset selected from a catalog record. */
 export type CatalogPreviewAsset = {
@@ -44,6 +45,7 @@ export function CatalogAssetPreview({
   /** Current asset; changing it cancels the previous read. */
   asset: CatalogPreviewAsset;
 }): React.JSX.Element {
+  const assetUrl = getCatalogAssetUrl(asset.href);
   const [preview, setPreview] = useState<AssetPreview>();
   const [error, setError] = useState<string>();
   const [loading, setLoading] = useState(true);
@@ -91,9 +93,10 @@ export function CatalogAssetPreview({
     setLoading(true);
     void (async () => {
       try {
-        const content = /\.parquet$/i.test(new URL(asset.href).pathname)
-          ? await readParquetPreview(asset.href, abortController.signal)
-          : await readTextPreview(asset.href, abortController.signal);
+        if (!assetUrl) throw new Error('Only HTTP(S) asset URLs can be previewed.');
+        const content = /\.parquet$/i.test(assetUrl.pathname)
+          ? await readParquetPreview(assetUrl.href, abortController.signal)
+          : await readTextPreview(assetUrl.href, abortController.signal);
         if (!abortController.signal.aborted) setPreview(content);
       } catch (readError) {
         if (!abortController.signal.aborted) setError(String(readError));
@@ -107,9 +110,11 @@ export function CatalogAssetPreview({
   return (
     <section ref={panel} aria-label="Asset preview">
       <h3>Asset preview: {asset.key}</h3>
-      <a href={asset.href} target="_blank" rel="noreferrer">
-        Open original asset
-      </a>
+      {assetUrl ? (
+        <a href={assetUrl.href} target="_blank" rel="noreferrer">
+          Open original asset
+        </a>
+      ) : null}
       {loading ? <p role="status">Loading asset preview…</p> : null}
       {error ? <p role="alert">{error}</p> : null}
       {preview?.schemaTitle ? <p>Validation: {preview.schemaTitle}</p> : null}
