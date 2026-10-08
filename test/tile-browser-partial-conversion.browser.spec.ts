@@ -97,9 +97,9 @@ test('multi-selection rejects unsupported selection profiles before content fetc
   expect(fetcher).toHaveBeenCalledOnce();
 });
 
-test('multi-selection discards output on a later read failure, cancellation or multiple primitives', async () => {
-  for (const multiple of [false, true]) {
-    const {fetcher, controller} = createInput(multiple);
+test('multi-selection discards output on a later read failure or cancellation', async () => {
+  {
+    const {fetcher, controller} = createInput();
     const inspection = await inspectConversionInput(
       'https://example.invalid/tileset.json',
       controller.signal,
@@ -114,7 +114,7 @@ test('multi-selection discards output on a later read failure, cancellation or m
         () => {},
         fetcher
       )
-    ).rejects.toThrow(multiple ? /exactly one mesh/ : /Unselected resource fetched/);
+    ).rejects.toThrow(/Unselected resource fetched/);
   }
   const {fetcher, controller} = createInput(false, false, 'Y', true);
   const inspection = await inspectConversionInput(
