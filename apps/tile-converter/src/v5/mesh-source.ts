@@ -17,7 +17,7 @@ import {createTilesetConversionSource} from '@loaders.gl/tile-converter/v5/core'
 import type {TilesetConversionSourceOptions} from '@loaders.gl/tile-converter/v5/core';
 import type {MeshConversionInput} from './mesh-conversion.js';
 import type {MeshTileMaterial} from './mesh.js';
-import {validateMeshGeometry} from './mesh.js';
+import {validateMeshGeometry, validateMeshIndices} from './mesh.js';
 import {mapMeshSourceTexture} from './mesh-source-texture.js';
 import {extractMeshFeatures} from './mesh-source-features.js';
 import type {MeshSourceFeatureOptions} from './mesh-source-features.js';
@@ -41,6 +41,7 @@ export interface MeshTilesetSourceOptions extends TilesetConversionSourceOptions
  * optional buffer-view or base64 data-URI PNG/JPEG images, TEXCOORD_0, glTF sampling and
  * KHR_texture_transform controls on TEXCOORD_0. Decode content with
  * `gltf.excludeExtensions: {KHR_texture_transform: false}` to retain authored UVs/transforms.
+ * Triangle strips are expanded with alternating winding; the glTF loader already expands fans.
  * Shared traversal retains placement identity and unloads content according to the supplied policy.
  * The adapter applies node transforms, glTF up-axis correction, RTC translation, and tile placement
  * once, retaining Float64 absolute positions and inverse-transpose unit normals. Animation, skins,
@@ -271,11 +272,9 @@ function extractPrimitive(
   const mesh = validateMeshGeometry(
     {
       topology: 'triangle-list',
-      mode: primitive.mode ?? 4,
+      mode: primitive.mode === 5 ? 4 : (primitive.mode ?? 4),
       attributes,
-      indices: primitive.indices
-        ? {value: primitive.indices.value as MeshAttribute['value'], size: 1}
-        : undefined
+      indices: createTriangleIndices(primitive, (attributes.POSITION?.value.length ?? 0) / 3)
     },
     true
   );
@@ -357,4 +356,38 @@ function mapMaterial(
     ...(material.alphaMode === 'MASK' ? {alphaCutoff: material.alphaCutoff ?? 0.5} : {}),
     doubleSided: material.doubleSided
   };
+}
+
+/** Expands a strip without changing vertex storage, feature IDs, source indices, or parity. */
+function createTriangleIndices(
+  primitive: GLTFMeshPrimitivePostprocessed,
+  vertexCount: number
+): MeshAttribute | undefined {
+  const attribute = primitive.indices
+    ? {
+        value: primitive.indices.value as MeshAttribute['value'],
+        size: primitive.indices.components,
+        normalized: primitive.indices.normalized
+      }
+    : undefined;
+  if (primitive.mode !== 5) return attribute;
+  const sourceIndices = validateMeshIndices(attribute, vertexCount, 5);
+  const indexCount = sourceIndices?.length ?? vertexCount;
+  if (!Number.isSafeInteger(indexCount) || indexCount < 3) {
+    throw new TileConversionError(
+      'MESH_TRIANGLE_COUNT_INVALID',
+      'Triangle strips require at least three vertices'
+    );
+  }
+  const IndexArray = vertexCount < 65536 ? Uint16Array : Uint32Array;
+  const indices = new IndexArray((indexCount - 2) * 3);
+  for (let triangle = 0; triangle < indexCount - 2; triangle++) {
+    // Match the glTF strip equation, including degenerate connectors; they advance parity too.
+    const second = triangle + 1 + (triangle % 2);
+    const third = triangle + 2 - (triangle % 2);
+    indices[triangle * 3] = sourceIndices?.[triangle] ?? triangle;
+    indices[triangle * 3 + 1] = sourceIndices?.[second] ?? second;
+    indices[triangle * 3 + 2] = sourceIndices?.[third] ?? third;
+  }
+  return {value: indices, size: 1};
 }

@@ -105,6 +105,8 @@ async function decompressPrimitive(
       ...options.draco,
       // Internal glTF decoding consumes the legacy mesh contract.
       shape: 'mesh',
+      // Normalize compressed strips to the triangle indices returned below.
+      topology: 'triangle-list',
       decoderProfile: options.draco?.decoderProfile || 'gltf',
       extraAttributes: dracoExtension.attributes
     }
@@ -141,6 +143,7 @@ async function decompressPrimitive(
   if (decodedData.indices) {
     // @ts-ignore
     primitive.indices = getGLTFAccessor(decodedData.indices);
+    primitive.mode = 4;
   }
 
   // Extension has been processed, delete it

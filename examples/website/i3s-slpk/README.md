@@ -44,7 +44,7 @@ source geometric error. SLPK authors a single final mesh and does not reproduce 
 incremental viewer. This is a partial dataset export, not whole-tileset conversion.
 
 Each selected content must contain exactly one static primitive in self-contained
-GLB/B3DM, including `KHR_draco_mesh_compression`, with native EPSG:4978 coordinates and
+GLB/B3DM, including triangle lists, strips, fans and `KHR_draco_mesh_compression`, with native EPSG:4978 coordinates and
 ellipsoidal heights established by root region bounds. Draco input reuses the full decoder
 bundled for output verification inside the conversion worker. The Draco module selects the
 runtime assets; external content dependencies remain rejected. Decoded geometry
@@ -82,7 +82,8 @@ For feature-bearing input, fill **SLPK feature mapping (optional JSON)** before 
 The mapping supports one attribute-backed `EXT_mesh_features` set referencing one inline,
 decoded structural metadata table, or legacy B3DM `_BATCHID` and decoded batch columns.
 Declare the exact metadata class, every property, and the stable identifier field. All vertices
-of a triangle must reference the same row; each output feature must own geometry.
+of a nondegenerate triangle must reference the same row; repeated-index strip connectors
+retain the first corner's row. Each output feature must own geometry.
 
 ```json
 {

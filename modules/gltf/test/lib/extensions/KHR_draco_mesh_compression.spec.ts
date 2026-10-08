@@ -156,3 +156,52 @@ test.each([
   expect(gltf.json.extensionsUsed).toEqual([]);
   expect(gltf.json.extensionsRequired).toEqual([]);
 });
+
+test.each([
+  undefined,
+  4,
+  5
+])('Draco decoded indices use triangle-list mode for declared mode %s', async mode => {
+  const sourceBytes = new Uint8Array([1, 2, 3]);
+  const indices = new Uint16Array([0, 1, 2, 1, 3, 2]);
+  const gltf: GLTFWithBuffers = {
+    json: {
+      asset: {version: '2.0'},
+      buffers: [{byteLength: 3}],
+      bufferViews: [{buffer: 0, byteLength: 3}],
+      accessors: [{componentType: 5126, count: 4, type: 'VEC3'}],
+      meshes: [
+        {
+          primitives: [
+            {
+              mode,
+              attributes: {POSITION: 0},
+              extensions: {
+                KHR_draco_mesh_compression: {bufferView: 0, attributes: {POSITION: 0}}
+              }
+            }
+          ]
+        }
+      ]
+    },
+    buffers: [{arrayBuffer: sourceBytes.buffer, byteOffset: 0, byteLength: 3}]
+  };
+  const context = {
+    /** Returns the codec's triangle list while checking that glTF controls its topology. */
+    _parse: async (_data: ArrayBuffer, _loader: unknown, options: {draco: {topology?: string}}) => {
+      expect(options.draco.topology).toBe('triangle-list');
+      return {
+        attributes: {POSITION: {value: new Float32Array(12), size: 3}},
+        indices: {value: indices, size: 1}
+      };
+    }
+  };
+  await decode(
+    gltf,
+    {gltf: {decompressMeshes: true}, draco: {topology: 'triangle-strip'}},
+    context as any
+  );
+  const primitive = gltf.json.meshes![0].primitives[0];
+  expect(primitive.mode).toBe(4);
+  expect(primitive.indices).toEqual(expect.objectContaining({value: indices, count: 6}));
+});
