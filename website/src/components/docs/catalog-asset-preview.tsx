@@ -1,3 +1,4 @@
+import {isCatalogRangeUnsupportedError} from './catalog-range-error';
 import React, {useEffect, useId, useMemo, useRef, useState} from 'react';
 import {
   ArrowSchemaPanel,
@@ -139,7 +140,7 @@ async function readParquetPreview(url: string, signal: AbortSignal): Promise<Ass
     return await readParquetTable(url, signal);
   } catch (error) {
     signal.throwIfAborted();
-    if (!/Content-Range|range requests|HTTP 200/i.test(String(error))) throw error;
+    if (!isCatalogRangeUnsupportedError(error)) throw error;
     const response = await fetch(url, {signal});
     if (!response.ok) throw new Error(`HTTP ${response.status}`);
     const reader = response.body?.getReader();
