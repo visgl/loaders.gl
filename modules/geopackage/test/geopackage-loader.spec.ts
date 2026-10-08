@@ -93,7 +93,7 @@ test.each([
     {3857: definition},
     {reproject: true, targetCrs: 'WGS84'}
   );
-  expect(projection?.project([1113194.9079327357, 0])[0]).toBeCloseTo(10, 8);
+  expect(projection?.projectSync([1113194.9079327357, 0])[0]).toBeCloseTo(10, 8);
 });
 
 test('GeoPackage does not infer Web Mercator from a local SRS identifier', () => {
