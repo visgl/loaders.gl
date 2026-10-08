@@ -1,3 +1,4 @@
+import {readCatalogTextStream} from './catalog-text-stream';
 import {isCatalogRangeUnsupportedError} from './catalog-range-error';
 import React, {useEffect, useId, useMemo, useRef, useState} from 'react';
 import {
@@ -201,28 +202,10 @@ async function readTextPreview(url: string, signal: AbortSignal): Promise<AssetP
     await response.body?.cancel();
     throw new Error('This asset does not have a text or Parquet preview. Use Open original asset.');
   }
-  const reader = response.body?.getReader();
-  if (!reader) throw new Error('No response body');
-  const decoder = new TextDecoder();
-  let text = '';
-  let byteCount = 0;
-  let truncated = false;
-  try {
-    while (true) {
-      const {done, value} = await reader.read();
-      if (done) break;
-      const remainingBytes = 256 * 1024 - byteCount;
-      text += decoder.decode(value.subarray(0, remainingBytes), {stream: true});
-      byteCount += value.byteLength;
-      if (byteCount >= 256 * 1024) {
-        truncated = true;
-        break;
-      }
-    }
-    text += decoder.decode();
-  } finally {
-    await reader.cancel();
-  }
+  if (!response.body) throw new Error('No response body');
+  const textPreview = await readCatalogTextStream(response.body);
+  let text = textPreview.text;
+  const truncated = textPreview.truncated;
   let language: AssetPreview['language'] = /\.json$/i.test(new URL(url).pathname)
     ? 'json'
     : 'plaintext';
