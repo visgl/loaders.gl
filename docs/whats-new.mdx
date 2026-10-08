@@ -201,6 +201,10 @@ evidence, cancellation, counts, IDs, extents, nonspatial tables, and queryable M
 
 ### 3D Tiles
 
+- Discover all required replacement siblings in one traversal so missing child content can load
+  concurrently, reducing refinement delays during camera movement while retaining parent coverage.
+  See [request scheduling](/docs/modules/3d-tiles/concepts/request-scheduling-and-priorities).
+
 - The website 3D Tiles example now preserves the tileset center's elevation when initializing
   its camera, while honoring explicit camera positions. See
   [camera elevation guidance](/docs/modules/3d-tiles/concepts/coordinate-reference-systems#camera-elevation-and-high-altitude-content)
