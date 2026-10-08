@@ -3,6 +3,10 @@ import {isCatalogRangeUnsupportedError} from '../website/src/components/docs/cat
 
 test.each([
   ['HTTP byte-range request expected 206, received 200', true],
+  ['ParquetSource requires HTTP byte ranges (expected 206, received 200)', true],
+  ['ParquetSource requires HTTP byte ranges (expected 206, received 403)', false],
+  ['ParquetSource requires HTTP byte ranges (expected 206, received 500)', false],
+  ['expected 206, received 2000', false],
   ['Missing Content-Range header', true],
   ['Server does not support range requests', true],
   ['HTTP byte-range request expected 206, received 403', false],
