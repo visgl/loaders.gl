@@ -53,7 +53,7 @@ See [supported items and verification boundaries](/docs/developer-guide/arcgis/i
 
 ## What's new
 
-- The v5 mesh source adapter accepts indexed and non-indexed glTF triangle strips, preserving winding and feature ownership when expanding to the existing triangle-list writers. Triangle fans use the glTF loader's normalization. See the [conversion API](/docs/modules/tile-converter/api-reference/v5-conversion#source-mesh-to-i3sslpk).
+- The v5 mesh source adapter accepts indexed and non-indexed glTF triangle strips, preserving winding and feature ownership when expanding to the existing triangle-list writers. Triangle fans use the glTF loader's normalization. Compressed Draco strips normalize to triangle lists before conversion, and repeated-index connectors retain the first corner's feature row. See the [conversion API](/docs/modules/tile-converter/api-reference/v5-conversion#source-mesh-to-i3sslpk).
 
 - The browser tile-conversion example accepts Draco-compressed GLB/B3DM input with bundled decoder assets and existing decoded-byte gates. `getDracoLibraryOptions({decoderProfile})` from `@loaders.gl/draco/bundled` centralizes runtime asset selection for the full or glTF subset. Shared glTF postprocessing completes layout metadata for inline decoded accessors without copying their typed arrays.
 - The v5 tile-converter mesh codec now writes lossless Draco Edge Breaker GLB/3TZ geometry by default, with `draco: false` for uncompressed output. glTF Draco decoding preserves normalized integer color and UV accessors and supports texture transforms on decoded UVs. See the [conversion API](/docs/modules/tile-converter/api-reference/v5-conversion#draco-mesh-output).

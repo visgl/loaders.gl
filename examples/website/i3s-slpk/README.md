@@ -60,7 +60,7 @@ are preserved; UVs are not baked. Images may use a glTF buffer view or an inline
 its URI; external URLs and other data-URI encodings/MIME types are rejected. Base64 is decoded
 without fetching the image, and the encoded image bytes count against the decoded input budget. Encoded image bytes are copied without pixel decoding, resizing or transcoding. SLPK rejects vertex colors and textures.
 Other texture maps/UV sets, texture extensions other than `KHR_texture_transform`, animation,
-compressed meshes, external dependencies, multiple primitives,
+meshopt-compressed meshes, external dependencies, multiple primitives,
 nested external tilesets and implicit tiling fail explicitly. No feature schema is inferred.
 
 3TZ output uses lossless Draco Edge Breaker geometry with required
@@ -76,7 +76,8 @@ For feature-bearing input, fill **SLPK feature mapping (optional JSON)** before 
 The mapping supports one attribute-backed `EXT_mesh_features` set referencing one inline,
 decoded structural metadata table, or legacy B3DM `_BATCHID` and decoded batch columns.
 Declare the exact metadata class, every property, and the stable identifier field. All vertices
-of a triangle must reference the same row; each output feature must own geometry.
+of a nondegenerate triangle must reference the same row; repeated-index strip connectors
+retain the first corner's row. Each output feature must own geometry.
 
 ```json
 {

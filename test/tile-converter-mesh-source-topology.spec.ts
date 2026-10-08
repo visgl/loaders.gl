@@ -10,7 +10,9 @@ import type {GLTFMeshPrimitivePostprocessed} from '@loaders.gl/gltf';
 import {Tiles3DSource, Tileset3D} from '@loaders.gl/tiles';
 import {Matrix4} from '@math.gl/core';
 import {GZipCompression} from '@loaders.gl/compression';
+import {encodeI3SMeshLayer} from '@loaders.gl/i3s';
 import {validateBytes} from 'gltf-validator';
+import {createCompressedMesh} from './utils/tile-converter-draco';
 import {
   createMeshTilesetConversionSource,
   createMeshConversionCodec,
@@ -58,6 +60,28 @@ beforeAll(async () => {
       })
     );
   }
+  // A valid compressed quad declared as a strip must decode to exactly two triangles.
+  const compressed = await createCompressedMesh({
+    topology: 'triangle-list',
+    mode: 4,
+    attributes: {POSITION: {size: 3, value: positions.slice(0, 12)}},
+    indices: {size: 1, value: new Uint16Array([0, 1, 2, 1, 3, 2])}
+  });
+  const container = await parse(compressed, GLTFLoader, {
+    core: {worker: false},
+    gltf: {decompressMeshes: false, postProcess: false}
+  });
+  const primitive = container.json.meshes[0].primitives[0];
+  primitive.mode = 5;
+  container.json.accessors[primitive.indices].count = 4;
+  fixtures.set(
+    'compressed-strip',
+    await parse(GLTFWriter.encodeSync!(container), Tiles3DLoader, {
+      core: {worker: false, useLocalLibraries: true},
+      '3d-tiles': {loadGLTF: true, assetGltfUpAxis: 'Z'},
+      gltf: {decompressMeshes: true, loadImages: false}
+    })
+  );
 });
 
 afterEach(() => {
@@ -143,6 +167,30 @@ test.each([
   expect(resource.mesh.indices!.value).toHaveLength(12);
 });
 
+test('compressed mode-5 input is not expanded a second time after Draco decoding', async () => {
+  const payload = fixtures.get('compressed-strip')!;
+  expect(payload.gltf!.meshes[0].primitives[0].mode).toBe(4);
+  const resource = await readResource(payload);
+  expect(resource.mesh.indices!.value).toHaveLength(6);
+  const values = resource.mesh.attributes.POSITION.value;
+  const triangles: string[] = [];
+  for (let triangle = 0; triangle < 2; triangle++) {
+    const corners = Array.from(
+      resource.mesh.indices!.value.slice(triangle * 3, triangle * 3 + 3),
+      Number
+    ).map(
+      index =>
+        `${Number(values[index * 3]) - 6378137},${values[index * 3 + 1]},${values[index * 3 + 2]}`
+    );
+    triangles.push(
+      [0, 1, 2]
+        .map(offset => [...corners.slice(offset), ...corners.slice(0, offset)].join(';'))
+        .sort()[0]
+    );
+  }
+  expect(triangles.sort()).toEqual(['0,0,0;1,0,0;0,1,0', '0,1,0;1,0,0;1,1,0']);
+});
+
 test('strip subviews retain degenerate connectors and their winding parity', async () => {
   const {payload, primitive} = cloneStrip();
   const storage = new Uint16Array([99, 0, 1, 2, 2, 3, 4, 99]);
@@ -209,11 +257,19 @@ test.each([0, 1, 3])('source still rejects non-surface mode %s', async mode => {
   await expect(readResource(payload)).rejects.toMatchObject({code: 'MESH_TOPOLOGY_UNSUPPORTED'});
 });
 
-test('expanded strip triangles retain exact feature-row association', async () => {
+test('multi-feature strip retains visible ownership and first-corner rows for degenerate connectors', async () => {
   const {payload, primitive} = cloneStrip();
-  primitive.attributes._BATCHID = {...primitive.indices!, value: new Uint8Array(6), count: 6};
-  payload.header = {...payload.header, batchLength: 1};
-  payload.batchTableJson = {source_id: ['9007199254740993'], label: ['strip']};
+  primitive.indices!.value = new Uint16Array([0, 1, 2, 2, 3, 3, 4, 5]);
+  primitive.attributes._BATCHID = {
+    ...primitive.indices!,
+    value: new Uint8Array([0, 0, 0, 1, 1, 1]),
+    count: 6
+  };
+  payload.header = {...payload.header, batchLength: 2};
+  payload.batchTableJson = {
+    source_id: ['9007199254740993', '18446744073709551615'],
+    label: ['first', 'second']
+  };
   const base = await createSource(payload);
   // Attach an explicit schema to a fresh adapter on the same runtime; no type inference.
   const source = createMeshTilesetConversionSource(runtimes.at(-1)!, {
@@ -229,12 +285,25 @@ test('expanded strip triangles retain exact feature-row association', async () =
       }
     }
   });
+  const resources: MeshSourceResource[] = [];
   for await (const resource of source.read(await base.inspect())) {
-    expect(resource.features!.triangleFeatureIndices).toEqual(new Uint32Array([0, 0, 0, 0]));
+    resources.push(resource);
+    expect(resource.features!.triangleFeatureIndices).toEqual(new Uint32Array([0, 0, 0, 0, 1, 1]));
     expect(resource.features!.batches[0].data.getChild('source_id')!.get(0)).toBe(
       '9007199254740993'
     );
   }
+  expect(resources).toHaveLength(1);
+  const output = encodeI3SMeshLayer(resources[0].mesh, {
+    maxPositionError: 0.001,
+    maxResourceBytes: 16384,
+    features: resources[0].features
+  });
+  const geometry = new DataView(
+    new GZipCompression().decompressSync(output.files['nodes/1/geometries/0.bin.gz'])
+  );
+  expect(geometry.getUint32(0, true)).toBe(18);
+  expect(geometry.getUint32(4, true)).toBe(2);
 });
 
 test.each([false, true])('expanded strip has valid GLB output with draco=%s', async draco => {
