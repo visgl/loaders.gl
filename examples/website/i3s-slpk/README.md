@@ -43,7 +43,9 @@ Only selected content is fetched. Use the content list's multiple selection cont
 source geometric error. SLPK authors a single final mesh and does not reproduce the source LOD hierarchy. A successful archive can be downloaded or previewed with the same
 incremental viewer. This is a partial dataset export, not whole-tileset conversion.
 
-Each selected content must contain exactly one static primitive in self-contained
+3TZ exports each static primitive placement as a separate leaf, in declaration order,
+with a maximum of 64 placements across all selected contents. Materials and node transforms
+are retained per placement. SLPK still requires exactly one primitive. Inputs must be self-contained
 GLB/B3DM, including triangle lists, strips, fans and `KHR_draco_mesh_compression`, with native EPSG:4978 coordinates and
 ellipsoidal heights established by root region bounds. Draco input reuses the full decoder
 bundled for output verification inside the conversion worker. The Draco module selects the
@@ -60,7 +62,7 @@ are preserved; UVs are not baked. Images may use a glTF buffer view or an inline
 its URI; external URLs and other data-URI encodings/MIME types are rejected. Base64 is decoded
 without fetching the image, and the encoded image bytes count against the decoded input budget. Encoded image bytes are copied without pixel decoding, resizing or transcoding. SLPK rejects vertex colors and textures.
 Other texture maps/UV sets, texture extensions other than `KHR_texture_transform`, animation,
-meshopt-compressed meshes, external dependencies, multiple primitives,
+meshopt-compressed meshes, external dependencies,
 nested external tilesets and implicit tiling fail explicitly. No feature schema is inferred.
 
 SLPK output also uses lossless Draco Edge Breaker for geometry, preserving triangle feature

@@ -265,6 +265,10 @@ This flat collection does not reproduce a source LOD hierarchy.
 
 The [tile archive example](https://loaders.gl/examples/i3s-slpk) supports up to 64 explicitly
 selected leaf contents for partial 3TZ output, with aggregate input/decoded byte gates.
+Each selected content may contain multiple static primitive placements; up to 64 placements
+are emitted as independent leaves in declaration order with individual materials and transforms.
+The conversion report counts primitive placements rather than fetched content files. A single
+selected 3TZ content uses the same flat collection layout. SLPK still requires one primitive.
 SLPK output retains its single-mesh profile. Multi-node I3S authoring and preservation of
 broader source hierarchy, refinement and feature associations remain separate work.
 
