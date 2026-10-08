@@ -168,6 +168,22 @@ export function createI3SConversionSpatialContext(
     positions: ArrayLike<number>,
     normalReferenceFrame?: string
   ): Float32Array => {
+    if (
+      !spatialReference.sourceCrs ||
+      ['local', 'cartesian'].includes(spatialReference.coordinateFrame)
+    ) {
+      // Unreferenced/native local vectors already use the retained position basis.
+      const targetNormals = Float32Array.from(normals);
+      for (let index = 0; index < normals.length; index += 3) {
+        const length = Math.hypot(normals[index], normals[index + 1], normals[index + 2]);
+        if (length) {
+          for (let axis = 0; axis < 3; axis++) {
+            targetNormals[index + axis] = normals[index + axis] / length;
+          }
+        }
+      }
+      return targetNormals;
+    }
     nativeNormalTransformer ||= createSpatialTransformer(
       spatialReference,
       () =>

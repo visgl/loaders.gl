@@ -584,3 +584,64 @@ test('unsupported Arrow transform metadata fails instead of treating quantized p
     transformPointCloudSourceTile(tile, {spatialContext: SPATIAL})
   ).rejects.toMatchObject({code: 'POINT_CLOUD_POSITION_TRANSFORM_INVALID'});
 });
+
+test.each([
+  'local',
+  'cartesian',
+  'unknown'
+] as const)('native %s normals retain their basis without requiring a CRS', async coordinateFrame => {
+  const spatialContext = createI3SConversionSpatialContext({coordinateFrame});
+  const positions = new Float64Array([1, 2, 3]);
+  const normals = new Float32Array([0, 0, 2]);
+  const output = await spatialContext.transformGeometryAsync(positions, normals);
+  expect(Array.from(output.positions)).toEqual([1, 2, 3]);
+  expect(Array.from(output.normals!)).toEqual([0, 0, 1]);
+  expect(Array.from(normals)).toEqual([0, 0, 2]);
+  expect(spatialContext.spatialReference.sourceCrs).toBeUndefined();
+  expect(spatialContext.spatialReference.status).toBe('native');
+});
+
+test('native local normals work through mesh and point preparation without projection resources', async () => {
+  const spatialContext = createI3SConversionSpatialContext({coordinateFrame: 'local'});
+  const positions = new Float64Array([1, 2, 3, 2, 2, 3, 1, 3, 3]);
+  const normals = new Float32Array([0, 0, 1, 0, 0, 1, 0, 0, 1]);
+  const codec = createMeshConversionCodec({spatialContext, maxPositionError: 0, draco: false});
+  const resource = {
+    id: 'local-normals',
+    origin: [0, 0, 0] as const,
+    mesh: {
+      mode: 4,
+      topology: 'triangle-list' as const,
+      attributes: {
+        POSITION: {value: positions, size: 3},
+        NORMAL: {value: normals, size: 3}
+      }
+    }
+  };
+  const output = (await (await codec.convert(resource, undefined))[Symbol.asyncIterator]().next())
+    .value!;
+  const parsed = await parse(output.glb, GLTFLoader, {worker: false});
+  const scenegraph = new GLTFScenegraph(parsed);
+  const normalAccessor = scenegraph.json.meshes![0].primitives[0].attributes.NORMAL;
+  expect(Array.from(scenegraph.getTypedArrayForAccessor(normalAccessor))).toEqual(
+    Array.from(normals)
+  );
+  expect(output.spatialReference).toBe(spatialContext.spatialReference);
+  const tile = createTile();
+  tile.content = {
+    ...tile.content,
+    data: makeMeshArrowTable(resource.mesh.attributes),
+    pointCount: 3,
+    coordinateSystem: 'cartesian',
+    cartographicOrigin: [0, 0, 0],
+    spatialReference: spatialContext.spatialReference
+  };
+  const pointOutput = await transformPointCloudSourceTile(tile, {
+    spatialContext,
+    normalReferenceFrame: 'vertex-reference-frame'
+  });
+  expect(getPositions(pointOutput)).toEqual(Array.from(positions));
+  expect(Array.from(convertTableToMesh(pointOutput.content!.data).attributes.NORMAL.value)).toEqual(
+    Array.from(normals)
+  );
+});

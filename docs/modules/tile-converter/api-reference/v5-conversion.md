@@ -398,6 +398,8 @@ writer, whose precision gate measures the resulting rounding. `normalReferenceFr
 defaults to `earth-centered`; pass `vertex-reference-frame` for I3S local ENU vectors.
 I3S normals are mapped into the writer coordinate basis even when positions retain a native
 projected CRS; retaining the position CRS does not imply retaining the I3S vector representation.
+Native local or CRS-less geometry retains its vector basis and normalizes normals without
+constructing a geographic transformer or requiring projection resources.
 
 This supports explicitly selected projected I3S geometry through both mesh writers.
 `createMeshTilesetConversionSource` continues to extract native ECEF GLB/B3DM content;
