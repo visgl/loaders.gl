@@ -53,6 +53,12 @@ See [supported items and verification boundaries](/docs/developer-guide/arcgis/i
 
 ## What's new
 
+- `OGCAPITilesSource` discovers the tile matrix set of the tileset its `{tileMatrix}` template
+  belongs to, following the tileset's tiling-scheme link, `tileMatrixSetId` or `tileMatrixSetURI`,
+  when `ogc-api.tileMatrixSet` is not set. New `getTileMatrixSets()` and `getTileMatrixSet(id)`
+  read the `/tileMatrixSets` endpoints. A failed discovery is reported and retried on the next
+  `getMetadata()` without failing the source.
+
 - `convertOGCTileMatrixSetToTileGrid()` converts OGC TileMatrixSet 2.0 JSON to `TileGrid`,
   honoring `orderedAxes`, `cellSize`, and bottom-left origins, and `OGCAPITilesSource` reports a
   configured `ogc-api.tileMatrixSet` as `tileGrid`.

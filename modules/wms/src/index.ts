@@ -109,7 +109,9 @@ export type {
   OGCAPICollection,
   OGCAPILandingPage,
   OGCAPILink,
-  OGCAPISourceOptions
+  OGCAPISourceOptions,
+  OGCAPITileMatrixSetSummary,
+  OGCAPITileset
 } from './ogc-api-source-loader';
 export {
   OGCAPIFeaturesSource,

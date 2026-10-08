@@ -1,0 +1,32 @@
+{
+  "id": "WebMercatorQuad",
+  "title": "Google Maps Compatible for the World",
+  "uri": "http://www.opengis.net/def/tilematrixset/OGC/1.0/WebMercatorQuad",
+  "crs": "http://www.opengis.net/def/crs/EPSG/0/3857",
+  "orderedAxes": ["X", "Y"],
+  "wellKnownScaleSet": "http://www.opengis.net/def/wkss/OGC/1.0/GoogleMapsCompatible",
+  "tileMatrices": [
+    {
+      "id": "0",
+      "tileWidth": 256,
+      "tileHeight": 256,
+      "matrixWidth": 1,
+      "matrixHeight": 1,
+      "scaleDenominator": 559082264.028717,
+      "cellSize": 156543.033928041,
+      "pointOfOrigin": [-20037508.3427892, 20037508.3427892],
+      "cornerOfOrigin": "topLeft"
+    },
+    {
+      "id": "1",
+      "tileWidth": 256,
+      "tileHeight": 256,
+      "matrixWidth": 2,
+      "matrixHeight": 2,
+      "scaleDenominator": 279541132.014358,
+      "cellSize": 78271.5169640204,
+      "pointOfOrigin": [-20037508.3427892, 20037508.3427892],
+      "cornerOfOrigin": "topLeft"
+    }
+  ]
+}

@@ -50,7 +50,7 @@ every optional OGC API building block.
 | API | Source loader | Discovery | Data path | Output | Scope |
 | --- | --- | --- | --- | --- | --- |
 | OGC API Features | `OGCAPIFeaturesSourceLoader` | Landing page and collections | Collection items with bbox and CRS | GeoJSON, binary, Arrow | Minimal read client |
-| OGC API Tiles | `OGCAPITilesSourceLoader` | Landing-page tile link | Explicit tile template | Raw tile bytes | Minimal template client |
+| OGC API Tiles | `OGCAPITilesSourceLoader` | Landing-page tile link and tileset tile matrix set | Explicit tile template | Raw tile bytes | Minimal template client |
 | OGC API Coverages | `OGCAPICoveragesSourceLoader` | Landing page and collections | Collection coverage with subsets | JSON object or binary bytes | Minimal read client |
 | OGC API EDR | `OGCAPIEDRSourceLoader` | Landing page and collections | Six spatiotemporal query shapes | JSON object or binary bytes | Focused query client |
 
@@ -152,11 +152,14 @@ const features = await source.getFeatures({
 | --- | --- | --- |
 | Landing-page metadata | ✅ Supported | Reads title and advertised tileset media type |
 | Explicit tile template | ✅ Required | Configure `ogc-api.tileTemplate` |
-| OGC placeholders | ✅ Supported | `{tileMatrix}`, `{tileRow}`, `{tileCol}`; `{tileMatrix}` is the configured matrix id for `z` |
+| OGC placeholders | ✅ Supported | `{tileMatrix}`, `{tileRow}`, `{tileCol}`; `{tileMatrix}` is the configured or discovered matrix id for `z` |
 | XYZ placeholders | ✅ Supported | `{z}`, `{y}`, `{x}` |
 | Tile retrieval | ✅ Supported | `getTile()` returns the original `ArrayBuffer` |
 | Tile matrix set | ✅ Supported | `ogc-api.tileMatrixSet` (a TileMatrixSet 2.0 document or URL) is reported as `tileGrid` |
-| Matrix-set negotiation | ❌ Not implemented | The tile matrix set is configured, not discovered from tileset links |
+| Tile matrix set discovery | ✅ Supported | Without `ogc-api.tileMatrixSet`, found from the tileset that `tileTemplate` belongs to |
+| Tile matrix set endpoints | ✅ Supported | `getTileMatrixSets()` lists `/tileMatrixSets`; `getTileMatrixSet(id)` fetches `/tileMatrixSets/{id}` |
+| Tile matrix set limits | ❌ Not interpreted | `tileMatrixSetLimits` is not applied; `TileGrid` has no field for it |
+| Tile matrix set negotiation | ❌ Not implemented | The tileset is the one the configured template names; other tilesets are not compared |
 | Tile decoding | ❌ Not automatic | Parse bytes with the loader matching the advertised media type |
 | deck.gl | ⚠️ Foundation only | The generic tile contract is present; callers must provide the appropriate decoded tile type |
 
@@ -194,6 +197,41 @@ relative URL resolves against the landing page.
   otherwise the matrix at index `z`, as in WMTS. `{z}` stays numeric. `getTile()` loads a
   matrix set given by URL first; `getTileURL()` uses it once `getMetadata()` has loaded it.
 - `setProps()` replaces an inline `tileMatrixSet` document as a whole rather than merging fields.
+
+### Tile matrix set discovery
+
+When `ogc-api.tileMatrixSet` is not set and `tileTemplate` contains `/{tileMatrix}`, the source
+discovers the tile matrix set as OGC API - Tiles Part 1 describes it:
+
+1. The tileset metadata is the template path before `/{tileMatrix}`, such as `/tiles/{tileMatrixSetId}`
+   or `/collections/{collectionId}/tiles/{tileMatrixSetId}`. Query parameters other than the `f`
+   format selector are kept.
+2. Its `http://www.opengis.net/def/rel/ogc/1.0/tiling-scheme` link (or the older `tiling-scheme`)
+   is followed, preferring a JSON link and resolving it against the tileset URL.
+3. Without such a link, `tileMatrixSetId` is fetched from `/tileMatrixSets/{tileMatrixSetId}`, and a
+   `tileMatrixSetURI` is looked up by `uri` in the `/tileMatrixSets` list. Registry URIs are not
+   fetched, and no built-in tile matrix sets are used.
+
+`/tileMatrixSets` paths resolve against the landing page, and every request uses the source's
+fetch options. The discovered grid is used for `tileGrid` and for `{tileMatrix}`, like a configured
+one, and is reused until `tileTemplate`, `tileMatrixSet` or `metersPerUnit` changes. `getTile()`
+waits for discovery before its first request.
+
+Discovery failure does not fail the source. `getMetadata()` resolves without `tileGrid`, tiles use
+`z` for `{tileMatrix}`, and the error goes to `core.onError` (or a logged warning). Tile requests do
+not repeat a failed discovery; the next `getMetadata()` call does. A configured `tileMatrixSet`
+that fails to load still makes `getMetadata()` reject.
+
+```ts
+const source = createDataSource('https://example.com/ogcapi', [OGCAPITilesSourceLoader], {
+  'ogc-api': {
+    tileTemplate:
+      'https://example.com/ogcapi/tiles/WebMercatorQuad/{tileMatrix}/{tileRow}/{tileCol}?f=mvt'
+  }
+});
+// Reads /tiles/WebMercatorQuad, then the tile matrix set its tiling-scheme link names
+const {tileGrid} = await source.getMetadata();
+```
 
 ```ts
 import {convertOGCTileMatrixSetToTileGrid} from '@loaders.gl/wms';
