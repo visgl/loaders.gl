@@ -23,6 +23,8 @@ export interface MeshConversionInput {
   readonly id: string;
   /** Triangle geometry with absolute packed Float32 or Float64 source positions. */
   readonly mesh: MeshGeometry;
+  /** Original I3S vector basis; overrides the codec default when supplied by a source. */
+  readonly normalReferenceFrame?: 'earth-centered' | 'vertex-reference-frame';
   /** Optional single material with an embedded base-color image, mapped explicitly by the source adapter. */
   readonly material?: MeshTileMaterial;
   /** Explicit feature table and triangle associations, written as structural metadata. */
@@ -55,6 +57,8 @@ export interface MeshConversionCodecOptions {
   readonly spatialContext: Tiles3DConversionSpatialContext | I3SConversionSpatialContext;
   /** I3S vector frame when using an I3S context; defaults to earth-centered. */
   readonly normalReferenceFrame?: 'earth-centered' | 'vertex-reference-frame';
+  /** Rebase around the transformed bounds center instead of the resource's explicit origin. */
+  readonly autoOrigin?: boolean;
   /** Maximum Euclidean reconstruction error per vertex, in target coordinate units. */
   readonly maxPositionError: number;
   /** Lossless Draco Edge Breaker is enabled by default; false emits uncompressed GLB geometry. */
@@ -127,7 +131,7 @@ export function createMeshConversionCodec<TInspection = unknown>(
           ? await spatialContext.transformGeometryAsync(
               sourcePositions,
               geometry.attributes.NORMAL?.value,
-              options.normalReferenceFrame
+              resource.normalReferenceFrame ?? options.normalReferenceFrame
             )
           : {
               positions: spatialContext.transformPositions(sourcePositions),
@@ -145,6 +149,16 @@ export function createMeshConversionCodec<TInspection = unknown>(
           'MESH_TRANSFORM_INVALID',
           'Spatial transformation must return one finite xyz position per vertex'
         );
+      }
+      if (options.autoOrigin) {
+        const minimum = [Infinity, Infinity, Infinity];
+        const maximum = [-Infinity, -Infinity, -Infinity];
+        for (let index = 0; index < targetPositions.length; index++) {
+          const axis = index % 3;
+          minimum[axis] = Math.min(minimum[axis], targetPositions[index]);
+          maximum[axis] = Math.max(maximum[axis], targetPositions[index]);
+        }
+        for (let axis = 0; axis < 3; axis++) origin[axis] = minimum[axis] / 2 + maximum[axis] / 2;
       }
       const localPositions = new Float32Array(targetPositions.length);
       const minimum = [Infinity, Infinity, Infinity];

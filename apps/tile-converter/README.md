@@ -492,3 +492,12 @@ Source metadata must agree with the context. For already transformed ECEF conten
 EPSG:4978 context can flatten renderer placement without repeating the source operation.
 Ambiguous renderer coordinates fail explicitly. See the [v5 API guide](../../docs/modules/tile-converter/api-reference/v5-conversion.md)
 for supported layouts, normal frames, and application-owned spatial resources.
+
+### Original I3S mesh input
+
+The v5 adapters export `createI3SMeshTilesetConversionSource` for an initial untextured
+I3S mesh profile. Use a dedicated source-backed runtime with `i3s.geometryMode: 'source'`
+to retain absolute Float64 source coordinates and original normals. Pair the GLB codec
+with `autoOrigin: true` to choose the placement origin after spatial transformation.
+Features require an explicit Arrow mapper; unsupported appearance and attributes fail.
+See the [v5 conversion reference](../../docs/modules/tile-converter/api-reference/v5-conversion.md).
