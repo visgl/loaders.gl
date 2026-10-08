@@ -78,6 +78,9 @@ See [supported items and verification boundaries](/docs/developer-guide/arcgis/i
 
 ## v5.0 (In Development)
 
+- `Tileset3D` retires drawn fallback tiles independently as each replacement region finishes.
+  Skip-LOD zoom-out reuses nearby drawn descendants while the desired coarse tile loads.
+  See [tile hierarchy and refinement](./modules/3d-tiles/concepts/tile-hierarchy-and-refinement.md).
 - `@loaders.gl/graphs`: Added an Arrow-first `GEXFLoader` for static GEXF 1.2/1.3
   graphs, with typed attributes and lists, exact long integers, defaults, visualization
   properties, and document metadata. See the [graphs module](./modules/graphs/README.md).
@@ -204,6 +207,13 @@ evidence, cancellation, counts, IDs, extents, nonspatial tables, and queryable M
   `ClusterLayer` integration for markers, counts, and picking.
 
 ### 3D Tiles
+
+- Enable skip-LOD replacement traversal by default for 3D Tiles, reducing intermediate content
+  requests while retaining ready ancestors as coverage. Set `skipLevelOfDetail: false` to keep
+  requesting every replacement level; I3S retains its existing default. See
+  [skip-LOD options](/docs/modules/tiles/api-reference/tileset-3d#skiplevelofdetail--boolean).
+  Known empty terminal branches release ancestor coverage, and sibling requests respect viewer
+  request volumes in skip traversal.
 
 - Discover all required replacement siblings in one traversal so missing child content can load
   concurrently, reducing refinement delays during camera movement while retaining parent coverage.

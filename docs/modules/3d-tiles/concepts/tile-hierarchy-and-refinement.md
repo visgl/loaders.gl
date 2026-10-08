@@ -67,14 +67,23 @@ While a child subtree is loading, its existing tile stays the traversal boundary
 
 `ADD` means descendants augment their ancestors. The parent remains part of the result, so descendant requests can safely wait briefly while the camera moves.
 
-Set `skipLevelOfDetail: true` to enable skip-LOD replacement traversal. A ready replacement ancestor
+3D Tiles enables `skipLevelOfDetail` by default. A ready replacement ancestor
 remains selected while traversal jumps over intermediate levels without requesting their content,
 so a deep tree can begin showing detail without downloading every level. `baseScreenSpaceError`,
 `skipScreenSpaceErrorFactor`, and `skipLevels` control periodic intermediate coverage requests;
 `immediatelyLoadDesiredLevelOfDetail` disables those requests and loads only final SSE targets. The
 ancestor is fallback coverage, not a second LOD target: once descendants are available they refine
 independently, and progressive-resolution descendants remain urgent. The tradeoff is temporary
-overdraw. The default is `false`, preserving traditional all-required-children replacement behavior.
+overdraw. Set `skipLevelOfDetail: false` to use traditional all-required-children replacement
+behavior. I3S retains its existing non-skipping default.
+
+When zooming out to a level whose content is unavailable, skip-LOD traversal also keeps
+already-drawn descendants within two levels alongside the available ancestor. This reuses
+existing detail without requesting additional descendant content. The renderer's transition
+hold retains only previously drawn tiles and releases each region once its own selected
+replacement has drawn, so an unfinished region does not keep unrelated coarse tiles on screen.
+Each viewport retains its own fallback tile instances, even when viewport trees share content URLs.
+Removing a viewport also releases its fallback instances.
 
 ## Visibility, Selection, and Requests
 
