@@ -1,6 +1,6 @@
 {
   "name": "@loaders.gl/arrow-geometry",
-  "version": "5.0.0-alpha.9",
+  "version": "5.0.0-alpha.10",
   "description": "Shared geometry builders and WKB operations for Arrow-based loaders",
   "license": "MIT",
   "type": "module",
@@ -24,7 +24,7 @@
   ],
   "sideEffects": false,
   "dependencies": {
-    "@math.gl/wkb": "5.0.0-alpha.12",
+    "@math.gl/wkb": "5.0.0-alpha.14",
     "apache-arrow": ">= 17.0.0"
   }
 }

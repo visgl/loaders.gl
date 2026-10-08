@@ -57,7 +57,7 @@ export default function App() {
         <Map
           reuseMaps
           mapLib={maplibregl}
-          mapStyle={'https://basemaps.cartocdn.com/gl/positron-nolabels-gl-style/style.json'}
+          mapStyle={'https://loaders.gl/mapstyle/deck-light.json'}
           preventStyleDiffing
           preserveDrawingBuffer
         />

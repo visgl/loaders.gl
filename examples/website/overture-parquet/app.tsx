@@ -27,7 +27,7 @@ import {OverturePlacesCatalog, type OvertureRelease} from './overture-catalog';
 import './style.css';
 import 'maplibre-gl/dist/maplibre-gl.css';
 
-const MAP_STYLE = 'https://basemaps.cartocdn.com/gl/dark-matter-gl-style/style.json';
+const MAP_STYLE = 'https://tiles.openfreemap.org/styles/dark';
 const PARQUET_SOURCE_WORKER_URL = new URL(
   '../../../modules/parquet/dist/parquet-source-worker.js',
   import.meta.url

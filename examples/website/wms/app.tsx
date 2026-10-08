@@ -24,7 +24,7 @@ import {ExamplePanel, Example, MetadataViewer} from './components/example-panel'
 import {INITIAL_CATEGORY_NAME, INITIAL_EXAMPLE_NAME, EXAMPLES} from './examples';
 import {createDeckFullscreenWidget, createDeckStatsWidget} from '../shared/create-deck-stats-widget';
 
-export const MAP_STYLE = 'https://basemaps.cartocdn.com/gl/positron-nolabels-gl-style/style.json';
+export const MAP_STYLE = 'https://loaders.gl/mapstyle/deck-light.json';
 
 const VIEW_STATE = {
   longitude: -122.4,

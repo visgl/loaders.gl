@@ -75,7 +75,11 @@ test.each([
   }
 });
 
-test('KHR_draco_mesh_compression forwards unique attribute ids and exact compressed bytes', async () => {
+test.each([
+  true,
+  false,
+  undefined
+])('KHR_draco_mesh_compression forwards attribute ids, bytes and normalized=%s', async normalized => {
   const sourceBytes = new Uint8Array([90, 91, 92, 1, 2, 3, 93, 94]);
   const gltf: GLTFWithBuffers = {
     json: {
@@ -84,7 +88,14 @@ test('KHR_draco_mesh_compression forwards unique attribute ids and exact compres
       extensionsRequired: ['KHR_draco_mesh_compression'],
       buffers: [{byteLength: sourceBytes.byteLength}],
       bufferViews: [{buffer: 0, byteOffset: 2, byteLength: 3}],
-      accessors: [{componentType: 5126, count: 1, type: 'VEC2'}],
+      accessors: [
+        {
+          componentType: 5123,
+          count: 1,
+          type: 'VEC2',
+          ...(normalized === undefined ? {} : {normalized})
+        }
+      ],
       meshes: [
         {
           primitives: [
@@ -121,7 +132,7 @@ test('KHR_draco_mesh_compression forwards unique attribute ids and exact compres
         topology: 'triangle-list',
         mode: 4,
         attributes: {
-          TEXCOORD_1: {value: new Float32Array([0, 1]), size: 2},
+          TEXCOORD_1: {value: new Uint16Array([0, 65535]), size: 2},
           _FEATURE_ID_0: {value: new Uint16Array([4]), size: 1}
         },
         schema: {fields: []}
@@ -134,9 +145,63 @@ test('KHR_draco_mesh_compression forwards unique attribute ids and exact compres
   expect(parsedBytes).toEqual([1, 2, 3]);
   expect(parsedExtraAttributes).toEqual({TEXCOORD_1: 7, _FEATURE_ID_0: 9});
   expect(gltf.json.meshes?.[0].primitives[0].attributes).toEqual({
-    TEXCOORD_1: expect.objectContaining({componentType: 5126, count: 1, type: 'VEC2'}),
+    TEXCOORD_1: expect.objectContaining({
+      componentType: 5123,
+      count: 1,
+      type: 'VEC2',
+      ...(normalized === undefined ? {} : {normalized})
+    }),
     _FEATURE_ID_0: expect.objectContaining({componentType: 5123, count: 1, type: 'SCALAR'})
   });
   expect(gltf.json.extensionsUsed).toEqual([]);
   expect(gltf.json.extensionsRequired).toEqual([]);
+});
+
+test.each([
+  undefined,
+  4,
+  5
+])('Draco decoded indices use triangle-list mode for declared mode %s', async mode => {
+  const sourceBytes = new Uint8Array([1, 2, 3]);
+  const indices = new Uint16Array([0, 1, 2, 1, 3, 2]);
+  const gltf: GLTFWithBuffers = {
+    json: {
+      asset: {version: '2.0'},
+      buffers: [{byteLength: 3}],
+      bufferViews: [{buffer: 0, byteLength: 3}],
+      accessors: [{componentType: 5126, count: 4, type: 'VEC3'}],
+      meshes: [
+        {
+          primitives: [
+            {
+              mode,
+              attributes: {POSITION: 0},
+              extensions: {
+                KHR_draco_mesh_compression: {bufferView: 0, attributes: {POSITION: 0}}
+              }
+            }
+          ]
+        }
+      ]
+    },
+    buffers: [{arrayBuffer: sourceBytes.buffer, byteOffset: 0, byteLength: 3}]
+  };
+  const context = {
+    /** Returns the codec's triangle list while checking that glTF controls its topology. */
+    _parse: async (_data: ArrayBuffer, _loader: unknown, options: {draco: {topology?: string}}) => {
+      expect(options.draco.topology).toBe('triangle-list');
+      return {
+        attributes: {POSITION: {value: new Float32Array(12), size: 3}},
+        indices: {value: indices, size: 1}
+      };
+    }
+  };
+  await decode(
+    gltf,
+    {gltf: {decompressMeshes: true}, draco: {topology: 'triangle-strip'}},
+    context as any
+  );
+  const primitive = gltf.json.meshes![0].primitives[0];
+  expect(primitive.mode).toBe(4);
+  expect(primitive.indices).toEqual(expect.objectContaining({value: indices, count: 6}));
 });

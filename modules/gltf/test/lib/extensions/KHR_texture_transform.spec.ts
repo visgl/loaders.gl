@@ -287,11 +287,12 @@ test('GLTFLoader#KHR_texture_transform ignores texture-shaped application extras
 });
 
 test.each([
-  [Uint8Array, 5121, 255, 0],
-  [Uint16Array, 5123, 65535, 0],
-  [Int8Array, 5120, 127, -128],
-  [Int16Array, 5122, 32767, -32768]
-] as const)('KHR_texture_transform normalizes %s UVs before applying transforms', async (ArrayType, componentType, maximum, minimum) => {
+  [Uint8Array, 5121, 255, 0, false],
+  [Uint16Array, 5123, 65535, 0, false],
+  [Int8Array, 5120, 127, -128, false],
+  [Int16Array, 5122, 32767, -32768, false],
+  [Uint16Array, 5123, 65535, 0, true]
+] as const)('KHR_texture_transform normalizes UVs before transforming (%s, %s, %s, %s, decoded=%s)', async (ArrayType, componentType, maximum, minimum, decoded) => {
   const values = new ArrayType([minimum, 0, maximum, maximum]);
   const before = values.slice();
   const gltf: GLTFWithBuffers = {
@@ -314,6 +315,14 @@ test.each([
     },
     buffers: [{arrayBuffer: values.buffer, byteOffset: 0, byteLength: values.byteLength}]
   };
+  if (decoded) {
+    // Draco replaces the primitive's accessor reference with packed decoded values.
+    gltf.json.meshes![0].primitives[0].attributes.TEXCOORD_0 = {
+      ...gltf.json.accessors![0],
+      bufferView: undefined,
+      value: values
+    } as unknown as number;
+  }
   await decodeTextureTransform(gltf, {gltf: {loadBuffers: true}} as GLTFLoaderOptions);
   const accessorIndex = gltf.json.meshes![0].primitives[0].attributes.TEXCOORD_1;
   const accessor = gltf.json.accessors![accessorIndex];

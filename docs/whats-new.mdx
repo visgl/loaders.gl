@@ -56,6 +56,14 @@ See [supported items and verification boundaries](/docs/developer-guide/arcgis/i
 - WMTS tile grids now describe every matrix level in `tileGrid.matrices`, including per-level
   origins and tile sizes, and the new `wmts.metersPerUnit` option converts scale denominators to
   resolutions for projected CRSs such as UTM.
+- The browser tile-conversion example can export multiple static primitive placements from selected GLB/B3DM contents to partial 3TZ archives, retaining per-primitive materials and transforms within the existing byte limits and a 64-placement cap.
+- The v5 tile converter preserves explicit Arrow features in GLB/3TZ output, authors PNG/JPEG base-color textures in I3S, and collects up to 64 meshes into one SLPK. The browser example resolves external glTF buffers/images within its aggregate input budget and supports both archive formats. See the [conversion API](/docs/modules/tile-converter/api-reference/v5-conversion).
+
+- The v5 mesh source adapter accepts indexed and non-indexed glTF triangle strips, preserving winding and feature ownership when expanding to the existing triangle-list writers. Triangle fans use the glTF loader's normalization. Compressed Draco strips normalize to triangle lists before conversion, and repeated-index connectors retain the first corner's feature row. See the [conversion API](/docs/modules/tile-converter/api-reference/v5-conversion#source-mesh-to-i3sslpk).
+
+- The v5 I3S/SLPK mesh codec now writes lossless Draco Edge Breaker geometry by default. `encodeI3SMeshLayerWithDraco` reuses the existing I3S precision/resource limits, verifies triangle winding and feature ownership, and retains raw output through `draco: false`.
+- The browser tile-conversion example accepts Draco-compressed GLB/B3DM input with bundled decoder assets and existing decoded-byte gates. `getDracoLibraryOptions({decoderProfile})` from `@loaders.gl/draco/bundled` centralizes runtime asset selection for the full or glTF subset. Shared glTF postprocessing completes layout metadata for inline decoded accessors without copying their typed arrays.
+- The v5 tile-converter mesh codec now writes lossless Draco Edge Breaker GLB/3TZ geometry by default, with `draco: false` for uncompressed output. glTF Draco decoding preserves normalized integer color and UV accessors and supports texture transforms on decoded UVs. See the [conversion API](/docs/modules/tile-converter/api-reference/v5-conversion#draco-mesh-output).
 
 - Upgrade math.gl dependencies to 5.0.0-alpha.12 and migrate coordinate transformations to
   `@math.gl/projection`, the successor to `@math.gl/proj4`.
@@ -198,6 +206,10 @@ evidence, cancellation, counts, IDs, extents, nonspatial tables, and queryable M
   `ClusterLayer` integration for markers, counts, and picking.
 
 ### 3D Tiles
+
+- Discover all required replacement siblings in one traversal so missing child content can load
+  concurrently, reducing refinement delays during camera movement while retaining parent coverage.
+  See [request scheduling](/docs/modules/3d-tiles/concepts/request-scheduling-and-priorities).
 
 - The website 3D Tiles example now preserves the tileset center's elevation when initializing
   its camera, while honoring explicit camera positions. See

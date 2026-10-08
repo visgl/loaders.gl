@@ -5,3 +5,6 @@
 export type {DracoLoaderOptions} from './draco-loader-options';
 export {DracoWASMLoaderWithParser as DracoWorkerLoader} from './draco-wasm-loader-with-parser';
 export {DracoWASMLoaderWithParser as DracoLoader} from './draco-wasm-loader-with-parser';
+
+export {getDracoLibraryOptions} from './draco-library-options';
+export type {DracoLibraryOptions} from './draco-library-options';

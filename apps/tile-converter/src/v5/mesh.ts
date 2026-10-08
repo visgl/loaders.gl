@@ -5,6 +5,11 @@
 import {GLTFScenegraph, GLTFWriter} from '@loaders.gl/gltf';
 import {getBinaryImageMetadata} from '@loaders.gl/images';
 import type {MeshAttribute, MeshGeometry} from '@loaders.gl/schema';
+import {
+  prepareMeshFeatureGeometry,
+  encodeMeshFeatures,
+  type MeshTileFeatures
+} from './mesh-features.js';
 import {TileConversionError} from '@loaders.gl/tile-converter/v5/core';
 
 /** Explicit glTF wrapping and filtering for the selected base-color image. */
@@ -61,6 +66,8 @@ export interface MeshTileMaterial {
 
 /** Optional appearance for the single-mesh GLB profile. */
 export interface MeshTileOptions {
+  /** One explicit Arrow feature table with a row index per triangle. */
+  readonly features?: MeshTileFeatures;
   /** Explicitly selected material; other texture maps and material extensions are unsupported. */
   readonly material?: MeshTileMaterial;
 }
@@ -82,18 +89,33 @@ export interface MeshTileOptions {
  * @returns An embedded-buffer GLB containing one mesh, node, and default scene.
  */
 export function encodeMeshTile(mesh: MeshGeometry, options: MeshTileOptions = {}): ArrayBuffer {
-  const geometry = validateMeshGeometry(mesh);
+  const geometry = prepareMeshFeatureGeometry(validateMeshGeometry(mesh), options.features);
+  const {scenegraph, materialIndex} = createMeshTileScenegraph(options, geometry);
+  const meshIndex = scenegraph.addMesh({
+    attributes: geometry.attributes,
+    indices: geometry.indices?.value,
+    material: materialIndex,
+    mode: 4
+  });
+  encodeMeshFeatures(scenegraph, meshIndex, options.features);
+  return finalizeMeshTileScenegraph(scenegraph, meshIndex);
+}
+
+/** Creates the shared material/image scene without allocating uncompressed geometry buffers. */
+export function createMeshTileScenegraph(options: MeshTileOptions, geometry: MeshGeometry) {
   const scenegraph = new GLTFScenegraph({json: {asset: {version: '2.0', generator: 'loaders.gl'}}});
   const material =
     options.material === undefined
       ? undefined
       : validateMeshMaterial(options.material, scenegraph, 'TEXCOORD_0' in geometry.attributes);
-  const meshIndex = scenegraph.addMesh({
-    attributes: geometry.attributes,
-    indices: geometry.indices?.value,
-    material: material ? scenegraph.addMaterial(material) : undefined,
-    mode: 4
-  });
+  return {scenegraph, materialIndex: material ? scenegraph.addMaterial(material) : undefined};
+}
+
+/** Adds placement-neutral nodes and serializes the single-mesh scene as GLB. */
+export function finalizeMeshTileScenegraph(
+  scenegraph: GLTFScenegraph,
+  meshIndex: number
+): ArrayBuffer {
   const nodeIndex = scenegraph.addNode({meshIndex});
   const sceneIndex = scenegraph.addScene({nodeIndices: [nodeIndex]});
   scenegraph.setDefaultScene(sceneIndex);
@@ -189,7 +211,7 @@ export function validateMeshGeometry(
       ...(normalized ? {normalized: true} : {})
     };
   }
-  const indices = getMeshIndices(mesh.indices, positions.length / 3);
+  const indices = validateMeshIndices(mesh.indices, positions.length / 3);
   if (!indices && positions.length % 9 !== 0) {
     throw new TileConversionError(
       'MESH_TRIANGLE_COUNT_INVALID',
@@ -232,10 +254,11 @@ function getFloatAttribute(
   return attribute.value;
 }
 
-/** Reads optional packed triangle indices and checks glTF range and primitive-restart rules. */
-function getMeshIndices(
+/** Validates packed indices for triangle lists or strips, including glTF primitive-restart rules. */
+export function validateMeshIndices(
   attribute: MeshAttribute | undefined,
-  vertexCount: number
+  vertexCount: number,
+  primitiveMode: 4 | 5 = 4
 ): Uint8Array | Uint16Array | Uint32Array | undefined {
   if (!attribute) return undefined;
   validateAttributeLayout(attribute, 'indices');
@@ -253,10 +276,10 @@ function getMeshIndices(
       'Indices must contain packed unsigned integer scalars'
     );
   }
-  if (values.length === 0 || values.length % 3 !== 0) {
+  if (primitiveMode === 5 ? values.length < 3 : values.length === 0 || values.length % 3 !== 0) {
     throw new TileConversionError(
       'MESH_TRIANGLE_COUNT_INVALID',
-      'Indices must contain complete triangles'
+      'Indices must contain complete triangles or at least three strip vertices'
     );
   }
   const restartIndex = 2 ** (values.BYTES_PER_ELEMENT * 8) - 1;

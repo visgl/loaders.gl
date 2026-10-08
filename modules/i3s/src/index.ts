@@ -122,10 +122,12 @@ export type {
   I3SFeatureSupportReport
 } from './i3s-service';
 
-export {encodeI3SMeshLayer} from './i3s-mesh-writer';
+export {encodeI3SMeshLayer, encodeI3SMeshLayerWithDraco} from './i3s-mesh-writer';
 export type {
   I3SMeshWriterOptions,
+  I3SDracoLibraryOptions,
   EncodedI3SMeshLayer,
   I3SMeshFeatures,
-  I3SMeshMaterial
+  I3SMeshMaterial,
+  I3SMeshTexture
 } from './i3s-mesh-writer';

@@ -3,10 +3,19 @@
 // Copyright (c) vis.gl contributors
 
 import {Geoid, parsePGM} from '@math.gl/geoid';
-import {Projection} from '@math.gl/projection';
+import {FullProjectionEngine, parseNTv2Grid} from '@math.gl/projection';
+import type {DatumGrid, ProjectionEngine} from '@math.gl/projection';
 import type {ReadonlyCRSDefinition} from '@math.gl/crs';
 
 const geoidModels = new Map<string, Geoid>();
+const projectionAliases: Record<string, ReadonlyCRSDefinition> = {};
+const datumGrids: Record<string, DatumGrid> = {};
+let spatialProjectionEngine: ProjectionEngine = new FullProjectionEngine();
+
+/** Returns the projection engine containing application-registered spatial resources. */
+export function getSpatialProjectionEngine(): ProjectionEngine {
+  return spatialProjectionEngine;
+}
 
 /**
  * Registers an application-supplied CRS alias for deterministic coordinate transformations.
@@ -18,7 +27,8 @@ const geoidModels = new Map<string, Geoid>();
  */
 export function registerSpatialCrs(name: string, definition: ReadonlyCRSDefinition): void {
   validateResourceName(name, 'CRS');
-  Projection.defineProjectionAliases({[name]: definition});
+  projectionAliases[name] = definition;
+  spatialProjectionEngine = new FullProjectionEngine({aliases: projectionAliases, datumGrids});
 }
 
 /**
@@ -29,7 +39,8 @@ export function registerSpatialCrs(name: string, definition: ReadonlyCRSDefiniti
  */
 export function registerSpatialDatumGrid(name: string, data: ArrayBuffer): void {
   validateResourceName(name, 'datum grid');
-  Projection.registerDatumGrid(name, data);
+  datumGrids[name] = parseNTv2Grid(data);
+  spatialProjectionEngine = new FullProjectionEngine({aliases: projectionAliases, datumGrids});
 }
 
 /**

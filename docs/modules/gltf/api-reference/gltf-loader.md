@@ -197,6 +197,10 @@ const gltf = await load(url, GLTFLoader, {
 });
 ```
 
+Draco mesh indices are decoded as triangle lists (`mode: 4`), including compressed triangle-strip
+primitives. This keeps the decoded index buffer and primitive mode consistent; the standalone
+Draco loader's `topology` option does not change this glTF representation.
+
 Draco and meshopt decoders are maintained by the glTF module. For linked buffers, images, or
 draft glTF 2.1 files, enable the matching `gltf.load*` options described below.
 

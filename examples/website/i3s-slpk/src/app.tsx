@@ -149,7 +149,7 @@ export default function App() {
       <DeckGL initialViewState={viewState} layers={layers} controller={MAP_CONTROLLER}>
         <Map
           reuseMaps
-          mapStyle="https://basemaps.cartocdn.com/gl/dark-matter-nolabels-gl-style/style.json"
+          mapStyle="https://loaders.gl/mapstyle/deck-dark.json"
           preserveDrawingBuffer
         />
       </DeckGL>

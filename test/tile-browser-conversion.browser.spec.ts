@@ -76,11 +76,8 @@ test.each([
   }
 });
 
-test('conversion rejects multiple primitives and unmapped ancestor metadata without returning an archive', async () => {
-  for (const [multiple, metadata] of [
-    [true, false],
-    [false, true]
-  ]) {
+test('conversion rejects unmapped ancestor metadata without returning an archive', async () => {
+  for (const [multiple, metadata] of [[false, true]]) {
     const {fetcher, controller} = createInput(multiple, metadata);
     const inspection = await inspectConversionInput(
       'https://example.invalid/tileset.json',
@@ -136,7 +133,7 @@ test('conversion rejects invalid selection, URL protocol, canceled input and ove
       () => {},
       exceededFetch
     )
-  ).rejects.toThrow(/byte remaining limit/);
+  ).rejects.toThrow(/aggregate input byte budget/);
 });
 
 test('cancellation during packaging discards a completed conversion result', async () => {

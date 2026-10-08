@@ -6,8 +6,8 @@ import type {Geoid} from '@math.gl/geoid';
 import {Vector3} from '@math.gl/core';
 import {Ellipsoid} from '@math.gl/geospatial';
 import type {ReadonlyCRSDefinition} from '@math.gl/crs';
-import {Projection} from '@math.gl/projection';
-import {getGeoidModel} from './spatial-resource-registry';
+import type {Projection} from '@math.gl/projection';
+import {getGeoidModel, getSpatialProjectionEngine} from './spatial-resource-registry';
 import {
   normalizeCrsIdentifier,
   WGS84_GEOCENTRIC_CRS,
@@ -64,6 +64,7 @@ export class SpatialCoordinateTransformer {
    */
   constructor(spatialReference: TilesetSpatialReference, options: TilesetSpatialOptions = {}) {
     this.spatialReference = spatialReference;
+    const projectionEngine = getSpatialProjectionEngine();
     validateTransformRequest(spatialReference);
     const outputCrs = spatialReference.targetCrs || spatialReference.sourceCrs;
     this.sourceIsGeocentric = isWgs84Geocentric(spatialReference.sourceCrs);
@@ -77,7 +78,7 @@ export class SpatialCoordinateTransformer {
       !this.sourceIsGeocentric &&
       !this.outputIsGeocentric
     ) {
-      this.horizontalProjection = new Projection({
+      this.horizontalProjection = projectionEngine.createProjection({
         from: getHorizontalProjectionDefinition(spatialReference.sourceCrs),
         to: getHorizontalProjectionDefinition(spatialReference.targetCrs),
         enforceAxis: false
@@ -90,14 +91,14 @@ export class SpatialCoordinateTransformer {
       this.outputIsGeocentric
     ) {
       if (!this.sourceIsGeographic && !this.sourceIsGeocentric) {
-        this.geographicProjection = new Projection({
+        this.geographicProjection = projectionEngine.createProjection({
           from: getHorizontalProjectionDefinition(spatialReference.sourceCrs),
           to: WGS84_GEOGRAPHIC_CRS,
           enforceAxis: false
         });
       }
       if (!this.outputIsGeographic && !this.outputIsGeocentric) {
-        this.heightOutputProjection = new Projection({
+        this.heightOutputProjection = projectionEngine.createProjection({
           from: WGS84_GEOGRAPHIC_CRS,
           to: getHorizontalProjectionDefinition(outputCrs),
           enforceAxis: false
@@ -153,7 +154,7 @@ export class SpatialCoordinateTransformer {
     }
 
     if (this.horizontalProjection) {
-      const projected = this.horizontalProjection.project(result.slice(0, 3));
+      const projected = this.horizontalProjection.projectSync(result.slice(0, 3));
       result.splice(0, projected.length, ...projected);
     }
     return result;
@@ -220,7 +221,7 @@ export class SpatialCoordinateTransformer {
     if (this.sourceIsGeographic) {
       return coordinate.slice(0, 3);
     }
-    return this.geographicProjection!.project(coordinate.slice(0, 3));
+    return this.geographicProjection!.projectSync(coordinate.slice(0, 3));
   }
 
   /** Convert one conventional WGS84 geographic coordinate to the selected output CRS. */
@@ -231,7 +232,7 @@ export class SpatialCoordinateTransformer {
     if (this.outputIsGeographic) {
       return coordinate.slice(0, 3);
     }
-    return this.heightOutputProjection!.project(coordinate.slice(0, 3));
+    return this.heightOutputProjection!.projectSync(coordinate.slice(0, 3));
   }
 }
 

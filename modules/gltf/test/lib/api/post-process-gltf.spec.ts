@@ -322,3 +322,32 @@ test('gltf#postProcessGLTF validates sparse index types, ranges, and byte length
   expect(() => postProcessGLTF(makeSparseSource(5121, 4))).toThrow(/out of bounds/);
   expect(() => postProcessGLTF(makeSparseSource(5121, 0, 2))).toThrow(/exceeds its buffer view/);
 });
+
+test.each([
+  ['SCALAR', 5123, new Uint16Array([9, 1, 2, 8]).subarray(1, 3), 1, 2],
+  ['VEC2', 5123, new Uint16Array([0, 65535, 0, 65535]), 2, 2],
+  ['VEC3', 5126, new Float32Array([0, 1, 2, 3, 4, 5]), 3, 4],
+  ['VEC4', 5121, new Uint8Array([255, 0, 0, 255, 0, 255, 0, 255]), 4, 1]
+] as const)('postprocessing completes inline decoded %s accessor metadata without copying storage', (type, componentType, value, components, bytesPerComponent) => {
+  const decoded = {type, componentType, count: 2, value, normalized: true};
+  const original = {...decoded};
+  const output = postProcessGLTF({
+    json: {
+      asset: {version: '2.0'},
+      meshes: [{primitives: [{attributes: {CUSTOM: decoded}, indices: decoded}]}]
+    },
+    buffers: []
+  } as unknown as GLTFWithBuffers).meshes[0].primitives[0];
+  for (const accessor of [output.attributes.CUSTOM, output.indices!]) {
+    expect(accessor).toMatchObject({
+      components,
+      bytesPerComponent,
+      bytesPerElement: components * bytesPerComponent,
+      count: 2,
+      normalized: true
+    });
+    expect(accessor.value).toBe(value);
+    expect(accessor.value.byteOffset).toBe(value.byteOffset);
+  }
+  expect(decoded).toEqual(original);
+});
