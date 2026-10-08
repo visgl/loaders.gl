@@ -3,14 +3,8 @@
 // Copyright (c) vis.gl contributors
 
 export type {CompressionOptions} from './lib/compression';
-export type {CompressionMetadata} from './compression-types';
 
-export {Compression, Compressor, Decompressor} from './lib/compression';
-
-// Deprecated compatibility exports retained for archive and ZIP consumers.
-export {DeflateCompression} from './lib/deflate-compression';
-export {GZipCompression} from './lib/gzip-compression';
-export {NoCompression} from './lib/no-compression';
+export {Compressor, Decompressor} from './lib/compression';
 
 export {
   NoCompressor,
@@ -43,17 +37,6 @@ export type {
   ZstdDecompressorOptions
 } from './default-codecs';
 
-export {
-  noCompression,
-  deflateCompression,
-  gzipCompression,
-  brotliCompression,
-  snappyCompression,
-  lz4Compression,
-  zstdCompression,
-  bzip2Compression,
-  xzCompression
-} from './compression-metadata';
 export {
   compressBatchesWithNativeCompressionStream,
   compressWithNativeCompressionStream
