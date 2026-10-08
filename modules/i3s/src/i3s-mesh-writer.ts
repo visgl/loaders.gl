@@ -5,6 +5,7 @@
 import {Ellipsoid} from '@math.gl/geospatial';
 import {GZipCompressor} from '@loaders.gl/compression/gzip-compressor';
 import type {MeshGeometry} from '@loaders.gl/schema';
+import type {DracoLoaderOptions, DracoMesh} from '@loaders.gl/draco';
 import {encodeI3SMeshAttributes} from './i3s-mesh-attributes';
 import type {I3SMeshFeatures} from './i3s-mesh-attributes';
 export type {I3SMeshFeatures} from './i3s-mesh-attributes';
@@ -29,7 +30,7 @@ export interface I3SMeshMaterial {
 export interface I3SMeshWriterOptions {
   /** Finite nonnegative reconstruction error in meters after geographic float32 encoding. */
   readonly maxPositionError: number;
-  /** Maximum bytes for each uncompressed geometry, attribute, or JSON resource. */
+  /** Maximum bytes for each geometry, attribute, or JSON resource before GZIP. */
   readonly maxResourceBytes: number;
   /** Optional layer name. */
   readonly name?: string;
@@ -38,6 +39,10 @@ export interface I3SMeshWriterOptions {
   /** Explicit Arrow feature table and triangle association. */
   readonly features?: I3SMeshFeatures;
 }
+
+/** Full Draco runtime URL or injected-module controls accepted by I3S geometry encoding. */
+export type I3SDracoLibraryOptions = Pick<DracoLoaderOptions, 'modules'> &
+  Pick<NonNullable<DracoLoaderOptions['core']>, 'CDN' | 'useLocalLibraries'>;
 
 /** Generated I3S resources ready for portable SLPK packaging. */
 export interface EncodedI3SMeshLayer {
@@ -66,6 +71,121 @@ export function encodeI3SMeshLayer(
   mesh: MeshGeometry,
   options: I3SMeshWriterOptions
 ): EncodedI3SMeshLayer {
+  return compressMeshLayer(prepareMeshLayer(mesh, options), options.maxResourceBytes);
+}
+
+/**
+ * Authors the same bounded I3S profile using lossless Draco Edge Breaker geometry.
+ * Reuses the geographic rounding budget and verifies complete oriented attribute/feature
+ * tuples after decoding. No quantization or uncompressed fallback is emitted.
+ * Decoder and encoder allocations are not bounded by the per-resource limit.
+ * @param mesh - Absolute ECEF geometry, never modified.
+ * @param options - The same appearance, feature, resource and precision controls as the raw writer.
+ * @param libraryOptions - Full Draco runtime libraries, including application URL overrides.
+ * @returns Individually GZIP-compressed resources ready for SLPK packaging.
+ */
+export async function encodeI3SMeshLayerWithDraco(
+  mesh: MeshGeometry,
+  options: I3SMeshWriterOptions,
+  libraryOptions: I3SDracoLibraryOptions = {}
+): Promise<EncodedI3SMeshLayer> {
+  const maxResourceBytes = options.maxResourceBytes;
+  const prepared = prepareMeshLayer(mesh, options, 'draco');
+  const geometry = prepared.files['nodes/1/geometries/0.bin.gz'];
+  const view = new DataView(geometry);
+  const vertexCount = view.getUint32(0, true);
+  const featureCount = view.getUint32(4, true);
+  const positions = new Float32Array(geometry, 8, vertexCount * 3);
+  const normals = mesh.attributes.NORMAL
+    ? new Float32Array(geometry, 8 + vertexCount * 12, vertexCount * 3)
+    : undefined;
+  const featureOffset = 8 + vertexCount * (normals ? 24 : 12);
+  const featureIndices = new Uint32Array(vertexCount);
+  const featureIdentifiers = new Int32Array(featureCount);
+  for (let index = 0; index < featureCount; index++) {
+    featureIdentifiers[index] = Number(view.getBigUint64(featureOffset + index * 8, true));
+    const rangeOffset = featureOffset + featureCount * 8 + index * 8;
+    featureIndices.fill(
+      index,
+      view.getUint32(rangeOffset, true) * 3,
+      (view.getUint32(rangeOffset + 4, true) + 1) * 3
+    );
+  }
+  const indices = Uint32Array.from({length: vertexCount}, (_, index) => index);
+  const attributes = {
+    POSITION: {value: positions, size: 3},
+    ...(normals ? {NORMAL: {value: normals, size: 3}} : {}),
+    'feature-index': {value: featureIndices, size: 1}
+  };
+  const {modules, useLocalLibraries, CDN: contentDeliveryNetwork} = libraryOptions;
+  const runtimeOptions = {modules, core: {useLocalLibraries, CDN: contentDeliveryNetwork}};
+  const {DracoLoader, encodeDraco} = await import('@loaders.gl/draco');
+  const encoded = await encodeDraco(
+    {attributes, indices},
+    {
+      ...runtimeOptions,
+      draco: {
+        method: 'MESH_EDGEBREAKER_ENCODING',
+        attributeNameEntry: 'i3s-attribute-type',
+        attributesMetadata: {'feature-index': {'i3s-feature-ids': featureIdentifiers}}
+      }
+    }
+  );
+  const decodeOptions = {
+    ...runtimeOptions,
+    draco: {
+      shape: 'mesh' as const,
+      decoderProfile: 'full' as const,
+      attributeNameEntry: 'i3s-attribute-type'
+    }
+  };
+  const loader = await DracoLoader.preload('', decodeOptions);
+  const decoded = (await loader.parse!(encoded.data, decodeOptions)) as DracoMesh;
+  const featureMetadata = Object.values(decoded.loaderData.attributes).find(
+    attribute => attribute.metadata?.['i3s-attribute-type']?.string === 'feature-index'
+  );
+  if (
+    !decoded.indices ||
+    JSON.stringify(getMeshTriangles(attributes, indices)) !==
+      JSON.stringify(getMeshTriangles(decoded.attributes, decoded.indices.value)) ||
+    featureMetadata?.metadata?.['i3s-feature-ids']?.intArray?.toString() !==
+      featureIdentifiers.toString()
+  )
+    throw new Error(
+      'Lossless I3S Draco must preserve oriented triangles, attributes and feature IDs'
+    );
+  const layer = JSON.parse(new TextDecoder().decode(prepared.files['3dSceneLayer.json.gz']));
+  layer.geometryDefinitions[0].geometryBuffers = [
+    {
+      compressedAttributes: {
+        encoding: 'draco',
+        attributes: ['position', ...(normals ? ['normal'] : []), 'feature-index']
+      }
+    }
+  ];
+  const page = JSON.parse(new TextDecoder().decode(prepared.files['nodepages/0.json.gz']));
+  page.nodes[1].mesh.geometry.vertexCount = decoded.attributes.POSITION.value.length / 3;
+  prepared.files['nodes/1/geometries/0.bin.gz'] = encoded.data;
+  prepared.files['3dSceneLayer.json.gz'] = new TextEncoder().encode(JSON.stringify(layer)).buffer;
+  prepared.files['nodepages/0.json.gz'] = new TextEncoder().encode(JSON.stringify(page)).buffer;
+  return compressMeshLayer(prepared, maxResourceBytes);
+}
+
+/**
+ * Expands, groups and rounds a mesh once, retaining resources until final encoding.
+ * @param mesh - Validated absolute ECEF mesh.
+ * @param options - Precision, metadata and emitted resource limits.
+ * @param geometryEncoding - Intended output; temporary Draco expansion is working memory.
+ */
+function prepareMeshLayer(
+  mesh: MeshGeometry,
+  options: I3SMeshWriterOptions,
+  geometryEncoding: 'raw' | 'draco' = 'raw'
+): {
+  files: Record<string, ArrayBuffer>;
+  maximumPositionError: number;
+  decimalStringFields: readonly string[];
+} {
   if (
     !Number.isFinite(options.maxPositionError) ||
     options.maxPositionError < 0 ||
@@ -165,7 +285,7 @@ export function encodeI3SMeshLayer(
   if (triangles.some(group => !group.length))
     throw new Error('I3S feature rows must each own at least one complete triangle');
   const byteLength = 8 + outputVertexCount * (normals ? 24 : 12) + featureCount * 16;
-  if (byteLength > options.maxResourceBytes)
+  if (geometryEncoding === 'raw' && byteLength > options.maxResourceBytes)
     throw new Error('I3S geometry exceeds maxResourceBytes');
   const minimum = [Infinity, Infinity, Infinity];
   const maximum = [-Infinity, -Infinity, -Infinity];
@@ -370,14 +490,54 @@ export function encodeI3SMeshLayer(
   rawFiles['nodes/1/attributes/f_0/0.bin.gz'] = objectIds;
   for (let index = 1; index < attributes.buffers.length; index++)
     rawFiles[`nodes/1/attributes/f_${index}/0.bin.gz`] = attributes.buffers[index];
+  return {
+    files: rawFiles,
+    maximumPositionError,
+    decimalStringFields: attributes.decimalStringFields
+  };
+}
+
+/** Applies deterministic per-resource GZIP only after geometry and metadata are finalized. */
+function compressMeshLayer(
+  prepared: EncodedI3SMeshLayer,
+  maxResourceBytes: number
+): EncodedI3SMeshLayer {
   const compressor = new GZipCompressor({useNative: false, gzip: {mtime: 0}});
   const files: Record<string, ArrayBuffer> = {};
-  for (const [name, bytes] of Object.entries(rawFiles)) {
-    if (bytes.byteLength > options.maxResourceBytes)
-      throw new Error('I3S JSON/attribute exceeds maxResourceBytes');
+  for (const [name, bytes] of Object.entries(prepared.files)) {
+    if (bytes.byteLength > maxResourceBytes)
+      throw new Error('I3S resource exceeds maxResourceBytes');
     files[name] = compressor.compressSync(bytes);
   }
-  return {files, maximumPositionError, decimalStringFields: attributes.decimalStringFields};
+  return {...prepared, files};
+}
+
+/** Compares a multiset of oriented triangles with complete position, normal and feature tuples. */
+function getMeshTriangles(
+  attributes: DracoMesh['attributes'],
+  indices: ArrayLike<number>
+): string[] {
+  const names = ['POSITION', ...(attributes.NORMAL ? ['NORMAL'] : []), 'feature-index'];
+  const triangles: string[] = [];
+  for (let index = 0; index < indices.length; index += 3) {
+    const vertices = [0, 1, 2].map(corner =>
+      names
+        .map(name => {
+          const attribute = attributes[name];
+          return Array.from(
+            {length: attribute.size},
+            (_, component) => attribute.value[indices[index + corner] * attribute.size + component]
+          ).join(',');
+        })
+        .join('|')
+    );
+    triangles.push(
+      [0, 1, 2]
+        .map(corner => [...vertices.slice(corner), ...vertices.slice(0, corner)].join(';'))
+        .sort()[0]
+    );
+  }
+  return triangles.sort();
 }
 
 /** Encodes the synthetic feature ID for an unannotated mesh. */

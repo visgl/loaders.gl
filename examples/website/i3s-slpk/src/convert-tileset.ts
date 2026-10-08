@@ -180,6 +180,7 @@ async function convertSelectedContentToResources(
         ...common,
         sink,
         codec: createI3SMeshConversionCodec({
+          dracoLibraryOptions: getDracoLibraryOptions(),
           spatialContext,
           maxPositionError: CONVERSION_LIMITS.maxPositionError,
           maxResourceBytes: CONVERSION_LIMITS.maxOutputBytes

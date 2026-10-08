@@ -2,8 +2,12 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import {encodeI3SMeshLayer} from '@loaders.gl/i3s';
-import type {EncodedI3SMeshLayer, I3SMeshWriterOptions} from '@loaders.gl/i3s';
+import {encodeI3SMeshLayer, encodeI3SMeshLayerWithDraco} from '@loaders.gl/i3s';
+import type {
+  EncodedI3SMeshLayer,
+  I3SMeshWriterOptions,
+  I3SDracoLibraryOptions
+} from '@loaders.gl/i3s';
 import {TileConversionError} from '@loaders.gl/tile-converter/v5/core';
 import type {TileConversionCodec, TileConversionSink} from '@loaders.gl/tile-converter/v5/core';
 import type {Tiles3DConversionSpatialContext} from '@loaders.gl/tile-converter/v5/core';
@@ -23,6 +27,10 @@ export interface I3SMeshConversionCodecOptions
   extends Pick<I3SMeshWriterOptions, 'name' | 'maxPositionError' | 'maxResourceBytes'> {
   /** Shared source-to-ECEF context, applied exactly once before I3S geographic encoding. */
   readonly spatialContext: Tiles3DConversionSpatialContext;
+  /** Lossless Edge Breaker geometry by default; false retains raw I3S geometry. */
+  readonly draco?: boolean;
+  /** Full Draco encoder/decoder runtime URLs or injected modules. */
+  readonly dracoLibraryOptions?: I3SDracoLibraryOptions;
 }
 
 /** Creates a portable source-mesh to I3S layer codec with explicit precision and feature diagnostics. */
@@ -64,11 +72,15 @@ export function createI3SMeshConversionCodec<TInspection = unknown>(
         };
       let layer: EncodedI3SMeshLayer;
       try {
-        layer = encodeI3SMeshLayer(mesh, {
+        const writerOptions = {
           ...options,
           material: resource.material,
           features: resource.features
-        });
+        };
+        layer =
+          options.draco === false
+            ? encodeI3SMeshLayer(mesh, writerOptions)
+            : await encodeI3SMeshLayerWithDraco(mesh, writerOptions, options.dracoLibraryOptions);
       } catch (error) {
         throw new TileConversionError(
           'I3S_MESH_PROFILE_UNSUPPORTED',

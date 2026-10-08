@@ -63,6 +63,12 @@ Other texture maps/UV sets, texture extensions other than `KHR_texture_transform
 meshopt-compressed meshes, external dependencies, multiple primitives,
 nested external tilesets and implicit tiling fail explicitly. No feature schema is inferred.
 
+SLPK output also uses lossless Draco Edge Breaker for geometry, preserving triangle feature
+ownership and the existing geographic precision limit. Its material and feature resources
+retain their encoding. Both formats reuse the bundled full Draco decoder for verification;
+per-resource limits do not cap decoder/verification allocations. Independent ArcGIS viewer
+qualification remains follow-up work.
+
 3TZ output uses lossless Draco Edge Breaker geometry with required
 `KHR_draco_mesh_compression` support. It preserves the existing position-error budget;
 materials and encoded images retain their original representation. The conversion worker

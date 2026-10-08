@@ -28,7 +28,7 @@ Output positions use WGS84 longitude/latitude and ellipsoidal height relative to
 center. The writer measures reconstruction error in ECEF meters and rejects positions above
 `maxPositionError`. Bounds include the reconstructed vertices and numerical center error.
 Antimeridian wrapping, undefined geographic coordinates, textures, vertex colors/UVs,
-compressed geometry, and unknown layouts/attributes are outside this initial profile.
+and unknown layouts/attributes are outside this initial profile.
 
 ## Appearance
 
@@ -69,17 +69,51 @@ and [attribute layout](https://github.com/Esri/i3s-spec/blob/master/docs/1.7/att
 
 ## Limits and qualification
 
-`maxResourceBytes` caps each uncompressed resource. The archive writer has a separate
+`maxResourceBytes` caps each emitted resource before GZIP. The archive writer has a separate
 complete archive cap. These limits do not bound peak decoder, Arrow, serialization, or
 compression allocations. Cancellation is checked by the converter between synchronous
-writing steps; worker execution and interruption within encoding remain follow-up work.
+writing steps. The browser example performs conversion in a disposable module worker and
+can interrupt it by terminating that worker.
 
 The profile is experimental. Schema validation, independently decoded binary layout,
 reader interoperability, and declared precision are required. A representative independent
 viewer check does not establish compatibility with every ArcGIS version or production dataset.
 
-Cesium 1.146.0 independently decodes and renders the representative two-feature mesh with
+For raw geometry, Cesium 1.146.0 independently decodes and renders the representative two-feature mesh with
 its material and exact decimal identifiers. That viewer's attribute reader currently treats
 null strings as empty and misdecodes non-ASCII UTF-8. The archive follows the published
 UTF-8/null layout; loaders.gl exact attribute mode verifies those values independently.
 ArcGIS viewer qualification and broader dataset profiles remain follow-up work.
+
+## Lossless Draco geometry
+
+`encodeI3SMeshLayerWithDraco(mesh, options, libraryOptions?)` is the asynchronous alternative
+exported by the same root and `i3s-mesh-writer` entrypoints. It reuses the raw writer's
+geographic preparation and precision limits, then encodes geometry with Draco Edge Breaker
+without quantization. Normals and triangle feature ownership are preserved, with the required
+I3S feature-index metadata. Decoded oriented attribute/feature tuples are verified before
+publishing resources, including duplicate triangles and winding. Node-page vertex counts
+reflect Draco's decoded vertex count. Other layer, material and feature resources retain
+their encoding; all resources remain individually GZIP compressed.
+
+```ts
+import {encodeI3SMeshLayerWithDraco} from '@loaders.gl/i3s/i3s-mesh-writer';
+import {getDracoLibraryOptions} from '@loaders.gl/draco/bundled';
+
+const layer = await encodeI3SMeshLayerWithDraco(
+  mesh,
+  {maxPositionError: 0.001, maxResourceBytes: 8 * 1024 * 1024},
+  getDracoLibraryOptions()
+);
+```
+
+Both encoder and full decoder runtimes are required. Application overrides use the existing
+`modules`, `CDN` and `useLocalLibraries` controls; omitted controls retain Draco's defaults.
+The glTF subset is not selected for I3S verification. `maxResourceBytes` also applies to the
+encoded Draco buffer and finalized JSON resources. The temporary expanded raw geometry
+is working memory, not an emitted resource. The limit does not cap codec/verification
+allocations or total peak memory. The existing synchronous writer remains available for
+raw geometry, including degenerate triangles that Draco cannot preserve. Very small geometry
+resources may grow. Independent ArcGIS viewer qualification remains follow-up work.
+
+Compression metadata follows the [I3S 1.7 compressed-attribute contract](https://github.com/Esri/i3s-spec/blob/master/docs/1.7/compressedAttributes.cmn.md).

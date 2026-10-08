@@ -97,7 +97,14 @@ test.each([
         const root = await archive.getFile(format === 'slpk' ? '' : 'tileset.json', 'http');
         const metadata = JSON.parse(new TextDecoder().decode(root));
         expect(metadata).toBeDefined();
-        if (format === '3tz') {
+        if (format === 'slpk') {
+          expect(
+            metadata.geometryDefinitions[0].geometryBuffers[0].compressedAttributes.encoding
+          ).toBe('draco');
+          const geometry = await archive.getFile('nodes/1/geometries/0', 'http');
+          expect(new TextDecoder().decode(geometry.slice(0, 5))).toBe('DRACO');
+          expect(new Uint8Array(geometry)[8]).toBe(1);
+        } else {
           const content = metadata.root.content || metadata.root.children[0].content;
           const glb = await parse(await archive.getFile(content.uri), GLBLoader);
           expect(glb.json.extensionsRequired).toContain('KHR_draco_mesh_compression');

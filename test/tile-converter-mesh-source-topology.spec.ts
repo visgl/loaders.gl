@@ -347,7 +347,7 @@ test.each([false, true])('expanded strip has valid GLB output with draco=%s', as
   }
 });
 
-test('expanded strip enters the existing I3S writer as four triangles', async () => {
+test('expanded strip enters the raw I3S writer as four triangles', async () => {
   const resource = await readResource(fixtures.get('strip-nonindexed')!);
   const codec = createI3SMeshConversionCodec({
     spatialContext: createSpatialContext({
@@ -356,7 +356,8 @@ test('expanded strip enters the existing I3S writer as four triangles', async ()
       heightReference: 'ellipsoidal'
     }),
     maxPositionError: 0.001,
-    maxResourceBytes: 16384
+    maxResourceBytes: 16384,
+    draco: false
   });
   for await (const output of codec.convert(resource, undefined)) {
     const nodePage = JSON.parse(
