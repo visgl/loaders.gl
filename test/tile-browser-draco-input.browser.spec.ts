@@ -194,7 +194,11 @@ test('an untextured Draco mesh converts to a readable SLPK', async () => {
     const layer = JSON.parse(new TextDecoder().decode(await archive.getFile('', 'http')));
     expect(layer.layerType).toBe('3DObject');
     const geometry = await archive.getFile('nodes/1/geometries/0', 'http');
-    expect(new DataView(geometry).getUint32(0, true)).toBe(3);
+    expect(layer.geometryDefinitions[0].geometryBuffers[0].compressedAttributes.encoding).toBe(
+      'draco'
+    );
+    expect(new TextDecoder().decode(geometry.slice(0, 5))).toBe('DRACO');
+    expect(new Uint8Array(geometry)[8]).toBe(1);
   } finally {
     await file.close();
   }
