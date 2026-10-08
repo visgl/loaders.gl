@@ -13,6 +13,7 @@ import type {
   CreateTilesetSpatialReferenceOptions,
   I3SSpatialBounds,
   I3STransformedPositions,
+  I3STransformedGeometry,
   Tiles3DSpatialBoundingVolume,
   TilesetSpatialOptions,
   TilesetSpatialReference
@@ -44,6 +45,12 @@ export interface I3SConversionSpatialContext {
     positions: ArrayLike<number>,
     sourceOrigin: ArrayLike<number>
   ): I3STransformedPositions;
+  /** Transform absolute conversion geometry without intermediate float32 rounding. */
+  transformGeometryAsync(
+    positions: ArrayLike<number>,
+    normals?: ArrayLike<number>,
+    normalReferenceFrame?: string
+  ): Promise<I3STransformedGeometry>;
   /** Transform absolute I3S positions when terrain or scene sampling is asynchronous. */
   transformPositionsAsync(
     positions: ArrayLike<number>,
@@ -85,6 +92,13 @@ export function createTiles3DConversionSpatialContext(
   const spatialReference = createConversionSpatialReference(discovered, options);
   if (spatialReference.status === 'unresolved') {
     throw createSpatialConversionError(spatialReference);
+  }
+
+  if (spatialReference.status !== 'native' && spatialReference.coordinateEpoch !== undefined) {
+    throw new TileConversionError(
+      'SPATIAL_EPOCH_UNSUPPORTED',
+      'Epoch-tagged coordinates require an epoch-aware datum operation before conversion'
+    );
   }
 
   const transformer =
@@ -131,6 +145,13 @@ export function createI3SConversionSpatialContext(
     throw createSpatialConversionError(spatialReference);
   }
 
+  if (spatialReference.status !== 'native' && spatialReference.coordinateEpoch !== undefined) {
+    throw new TileConversionError(
+      'SPATIAL_EPOCH_UNSUPPORTED',
+      'Epoch-tagged coordinates require an epoch-aware datum operation before conversion'
+    );
+  }
+
   const transformer =
     spatialReference.status === 'native'
       ? undefined
@@ -139,6 +160,28 @@ export function createI3SConversionSpatialContext(
           () => new I3SSpatialTransformer(spatialReference, options)
         );
   const outputSpatialReference = transformer ? transformer.spatialReference : spatialReference;
+  // I3S vector bases can differ from the coordinate basis even when positions retain their CRS.
+  let nativeNormalTransformer: I3SSpatialTransformer | undefined;
+  /** Maps native I3S vectors into the writer basis without reprojecting its positions. */
+  const transformNativeNormals = (
+    normals: ArrayLike<number>,
+    positions: ArrayLike<number>,
+    normalReferenceFrame?: string
+  ): Float32Array => {
+    nativeNormalTransformer ||= createSpatialTransformer(
+      spatialReference,
+      () =>
+        new I3SSpatialTransformer(
+          {
+            ...spatialReference,
+            status: 'transformable',
+            targetCrs: spatialReference.sourceCrs
+          },
+          options
+        )
+    );
+    return nativeNormalTransformer.transformNormals(normals, positions, normalReferenceFrame);
+  };
 
   return {
     spatialReference: outputSpatialReference,
@@ -146,6 +189,31 @@ export function createI3SConversionSpatialContext(
       transformer
         ? transformer.transformPositions(positions, sourceOrigin)
         : createNativeI3SPositions(positions, sourceOrigin, spatialReference),
+    transformGeometryAsync: async (positions, normals, normalReferenceFrame) => {
+      if (transformer)
+        return transformer.transformGeometryAsync(positions, normals, normalReferenceFrame);
+      const targetPositions = Float64Array.from(positions);
+      if (
+        targetPositions.length % 3 ||
+        targetPositions.some(value => !Number.isFinite(value)) ||
+        (normals &&
+          (normals.length !== positions.length ||
+            Array.from(normals).some(value => !Number.isFinite(value)))) ||
+        (normalReferenceFrame !== undefined &&
+          !['earth-centered', 'vertex-reference-frame'].includes(normalReferenceFrame))
+      ) {
+        throw new TileConversionError(
+          'SPATIAL_INPUT_INVALID',
+          'Conversion geometry requires finite matching xyz arrays and a supported I3S vector frame'
+        );
+      }
+      return {
+        positions: targetPositions,
+        normals: normals
+          ? transformNativeNormals(normals, positions, normalReferenceFrame)
+          : undefined
+      };
+    },
     transformPositionsAsync: (positions, sourceOrigin) =>
       transformer
         ? transformer.transformPositionsAsync(positions, sourceOrigin)

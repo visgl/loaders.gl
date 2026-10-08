@@ -67,3 +67,6 @@ export type {
   PointCloudTilesetSink,
   PointCloudTilesetSinkOptions
 } from './point-cloud-tileset-sink.js';
+
+export {transformPointCloudSourceTile} from './point-cloud-spatial.js';
+export type {PointCloudSpatialOptions} from './point-cloud-spatial.js';

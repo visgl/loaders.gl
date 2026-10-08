@@ -2,9 +2,13 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import {describe, expect, test} from 'vitest';
+import {describe, expect, test, vi} from 'vitest';
 import type {Geoid} from '@math.gl/geoid';
-import {createTilesetSpatialReference, I3SSpatialTransformer} from '@loaders.gl/tiles';
+import {
+  createTilesetSpatialReference,
+  I3SSpatialTransformer,
+  SpatialCoordinateTransformer
+} from '@loaders.gl/tiles';
 
 describe('I3SSpatialTransformer', () => {
   test('returns stable geographic offsets for projected source positions', () => {
@@ -582,4 +586,93 @@ describe('I3SSpatialTransformer', () => {
       /requires asynchronous surface placement/
     );
   });
+});
+
+test('conversion geometry keeps absolute doubles and shares one elevation batch with normals', async () => {
+  let sampleCount = 0;
+  const transformer = new I3SSpatialTransformer(
+    createTilesetSpatialReference(
+      {
+        sourceCrs: 'EPSG:4326',
+        heightReference: 'ellipsoidal',
+        elevationMode: 'relativeToGround',
+        verticalUnitScale: 0.3048
+      },
+      {
+        targetCrs: 'EPSG:4978',
+        terrainElevationProvider: {
+          sampleElevations: async positions => {
+            sampleCount++;
+            return positions.map(() => 100);
+          },
+          getElevationRange: async () => ({minimum: 100, maximum: 100})
+        }
+      }
+    ),
+    {
+      terrainElevationProvider: {
+        sampleElevations: async positions => {
+          sampleCount++;
+          return positions.map(() => 100);
+        },
+        getElevationRange: async () => ({minimum: 100, maximum: 100})
+      }
+    }
+  );
+  const positions = new Float64Array([0, 0, 100.000001, 0, 0, 101.000001]);
+  const original = positions.slice();
+  const output = await transformer.transformGeometryAsync(positions, [1, 0, 0, 1, 0, 0]);
+  expect(output.positions).toBeInstanceOf(Float64Array);
+  expect(output.positions[0]).toBeCloseTo(6378137 + 100 + positions[2] * 0.3048, 8);
+  expect(output.normals).toEqual(new Float32Array([1, 0, 0, 1, 0, 0]));
+  expect(sampleCount).toBe(1);
+  expect(positions).toEqual(original);
+});
+
+test('conversion geometry without normals retains fractional projected coordinates', async () => {
+  const transformer = new I3SSpatialTransformer(
+    createTilesetSpatialReference(
+      {sourceCrs: 'EPSG:4326', heightReference: 'ellipsoidal'},
+      {targetCrs: 'EPSG:3857'}
+    )
+  );
+  const output = await transformer.transformGeometryAsync([10.000000001, 0, 10.000000001]);
+  expect(output.positions[0]).toBeCloseTo(1113194.9080440553, 8);
+  expect(output.positions[2]).toBe(10.000000001);
+  expect(output.normals).toBeUndefined();
+});
+
+test.each([
+  [[0, 0], undefined, undefined],
+  [[NaN, 0, 0], undefined, undefined],
+  [[0, 0, 0], [1, 0], undefined],
+  [[0, 0, 0], [Infinity, 0, 0], undefined],
+  [[0, 0, 0], [1, 0, 0], 'unknown']
+])('conversion geometry rejects invalid packed inputs and vector frames', async (positions, normals, frame) => {
+  const transformer = new I3SSpatialTransformer(
+    createTilesetSpatialReference(
+      {sourceCrs: 'EPSG:4326', heightReference: 'ellipsoidal'},
+      {targetCrs: 'EPSG:4978'}
+    )
+  );
+  await expect(transformer.transformGeometryAsync(positions!, normals, frame)).rejects.toThrow();
+});
+
+test('earth-centered normals targeting ECEF skip per-vertex position projection', () => {
+  const transformer = new I3SSpatialTransformer(
+    createTilesetSpatialReference(
+      {sourceCrs: 'EPSG:3857', coordinateFrame: 'projected', heightReference: 'ellipsoidal'},
+      {targetCrs: 'EPSG:4978'}
+    )
+  );
+  const projectPosition = vi.spyOn(SpatialCoordinateTransformer.prototype, 'transformPosition');
+  try {
+    expect(
+      transformer.transformNormals([2, 0, 0, 0, 0, 0], [100000, 200000, 10, 100001, 200001, 10])
+    ).toEqual(new Float32Array([1, 0, 0, 0, 0, 0]));
+    expect(projectPosition).not.toHaveBeenCalled();
+    expect(() => transformer.transformNormals([1, 0], [0, 0, 0])).toThrow(/matching xyz/);
+  } finally {
+    projectPosition.mockRestore();
+  }
 });

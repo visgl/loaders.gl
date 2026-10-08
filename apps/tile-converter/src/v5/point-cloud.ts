@@ -3,7 +3,12 @@
 // Copyright (c) vis.gl contributors
 
 import {Tile3DWriter, TILE3D_TYPE} from '@loaders.gl/3d-tiles';
-import type {Mesh, MeshArrowTable, MeshAttribute} from '@loaders.gl/schema';
+import type {
+  Mesh,
+  MeshArrowTable,
+  MeshAttribute,
+  MeshAttributeQuantizationTransform
+} from '@loaders.gl/schema';
 import {convertTableToMesh} from '@loaders.gl/schema-utils';
 import {TileConversionError} from '@loaders.gl/tile-converter/v5/core';
 
@@ -67,26 +72,7 @@ export function encodePointCloudTileWithMetadata(
   const mesh = 'attributes' in pointBatch ? pointBatch : convertTableToMesh(pointBatch);
   validatePointAttributes(mesh.attributes);
   const positionAttribute = mesh.attributes.POSITION;
-  if (
-    !positionAttribute ||
-    positionAttribute.size !== 3 ||
-    positionAttribute.byteOffset ||
-    positionAttribute.byteStride ||
-    positionAttribute.normalized ||
-    positionAttribute.componentType
-  ) {
-    throw new TileConversionError(
-      'POINT_CLOUD_POSITION_REQUIRED',
-      'Point cloud batches must contain packed, non-normalized three-component POSITION values'
-    );
-  }
-
-  if (!positionAttribute.value.length || positionAttribute.value.length % 3) {
-    throw new TileConversionError(
-      'POINT_CLOUD_POSITION_COUNT_INVALID',
-      'Point cloud POSITION must contain one or more xyz triples'
-    );
-  }
+  validatePointCloudPosition(positionAttribute);
   const placement = encodePointPositions(positionAttribute, options);
   const {positions} = placement;
   const pointCount = positions.length / 3;
@@ -158,8 +144,65 @@ function getConstantRgba(
   return [constantRGBA[0], constantRGBA[1], constantRGBA[2], constantRGBA[3]];
 }
 
+/** Validates packed point positions and their optional quantization descriptor. */
+function validatePointCloudPosition(
+  attribute: MeshAttribute | undefined
+): asserts attribute is MeshAttribute & {transform?: MeshAttributeQuantizationTransform} {
+  if (
+    !attribute ||
+    attribute.size !== 3 ||
+    attribute.byteOffset ||
+    attribute.byteStride ||
+    attribute.normalized ||
+    attribute.componentType
+  ) {
+    throw new TileConversionError(
+      'POINT_CLOUD_POSITION_REQUIRED',
+      'Point cloud batches must contain packed, non-normalized three-component POSITION values'
+    );
+  }
+
+  if (!attribute.value.length || attribute.value.length % 3) {
+    throw new TileConversionError(
+      'POINT_CLOUD_POSITION_COUNT_INVALID',
+      'Point cloud POSITION must contain one or more xyz triples'
+    );
+  }
+  const transform = attribute.transform;
+  if (
+    transform &&
+    (transform.type !== 'quantization' ||
+      !Number.isInteger(transform.bits) ||
+      transform.bits < 1 ||
+      transform.bits > 32 ||
+      transform.origin.length !== 3 ||
+      transform.origin.some(value => !Number.isFinite(value)) ||
+      !Number.isFinite(transform.range) ||
+      transform.range < 0)
+  ) {
+    throw new TileConversionError(
+      'POINT_CLOUD_POSITION_TRANSFORM_INVALID',
+      'Position quantization requires finite xyz origin, nonnegative range and 1–32 bits'
+    );
+  }
+}
+
+/** Decodes packed point positions to doubles before applying a spatial operation. */
+export function decodePointCloudPositions(attribute: MeshAttribute | undefined): Float64Array {
+  validatePointCloudPosition(attribute);
+  const transform = attribute.transform;
+  return Float64Array.from(attribute.value, (value, index) =>
+    transform
+      ? transform.origin[index % 3] + (value / (2 ** transform.bits - 1)) * transform.range
+      : value
+  );
+}
+
 /** Decodes source positions, rebases them and measures the actual float32 output. */
-function encodePointPositions(attribute: MeshAttribute, options: EncodePointCloudTileOptions) {
+function encodePointPositions(
+  attribute: MeshAttribute & {transform?: MeshAttributeQuantizationTransform},
+  options: EncodePointCloudTileOptions
+) {
   const {rtcCenter = [0, 0, 0], maxPositionError = Infinity} = options;
   if (rtcCenter.length !== 3 || rtcCenter.some(value => !Number.isFinite(value))) {
     throw new TileConversionError(
@@ -182,22 +225,6 @@ function encodePointPositions(attribute: MeshAttribute, options: EncodePointClou
   const maximum = [-Infinity, -Infinity, -Infinity];
   let maximumPositionError = 0;
   const transform = attribute.transform;
-  if (
-    transform &&
-    (transform.type !== 'quantization' ||
-      !Number.isInteger(transform.bits) ||
-      transform.bits < 1 ||
-      transform.bits > 32 ||
-      transform.origin.length !== 3 ||
-      transform.origin.some(value => !Number.isFinite(value)) ||
-      !Number.isFinite(transform.range) ||
-      transform.range < 0)
-  ) {
-    throw new TileConversionError(
-      'POINT_CLOUD_POSITION_TRANSFORM_INVALID',
-      'Position quantization requires finite xyz origin, nonnegative range and 1–32 bits'
-    );
-  }
   const errors = [0, 0, 0];
   for (let point = 0; point < values.length; point += 3) {
     for (let axis = 0; axis < 3; axis++) {
