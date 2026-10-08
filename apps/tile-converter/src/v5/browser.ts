@@ -35,8 +35,14 @@ export type {
   BrowserTileConversionSourceOptions
 } from '@loaders.gl/tile-converter/v5/core';
 export {createBrowserTilesetConversionSource} from '@loaders.gl/tile-converter/v5/core';
-export {encodePointCloudTile} from '@loaders.gl/tile-converter/v5/adapters';
-export type {EncodePointCloudTileOptions} from '@loaders.gl/tile-converter/v5/adapters';
+export {
+  encodePointCloudTile,
+  encodePointCloudTileWithMetadata
+} from '@loaders.gl/tile-converter/v5/adapters';
+export type {
+  EncodePointCloudTileOptions,
+  EncodedPointCloudTile
+} from '@loaders.gl/tile-converter/v5/adapters';
 export {traversePointCloudSource} from '@loaders.gl/tile-converter/v5/core';
 export type {
   PointCloudSourceTile,
@@ -113,4 +119,10 @@ export type {
   I3SMeshSinkOptions,
   TileConversionResourceFetcherOptions,
   MeshTileFeatures
+} from '@loaders.gl/tile-converter/v5/adapters';
+
+export {createPointCloudTilesetSink} from '@loaders.gl/tile-converter/v5/adapters';
+export type {
+  PointCloudTilesetSink,
+  PointCloudTilesetSinkOptions
 } from '@loaders.gl/tile-converter/v5/adapters';

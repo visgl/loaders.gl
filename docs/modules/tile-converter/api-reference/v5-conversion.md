@@ -274,3 +274,74 @@ boundary does not add a public worker API or move the conversion implementation 
 
 Existing transport, decoded-input and retained-output byte gates still apply. Moving work off the
 main thread does not cap peak decoder/Arrow/packager allocations or make packaging streaming.
+
+### Point-cloud precision and partial 3TZ packages
+
+`encodePointCloudTileWithMetadata` accepts the same Mesh or Mesh Arrow input as
+`encodePointCloudTile` and returns `pnts`, the actual `pointCount`, `rtcCenter`,
+`localBoundingBox`, and `maximumPositionError`. Bounds describe the encoded float32
+positions before adding the RTC center. The error is the maximum Euclidean difference
+between source positions (after decoding quantization) and reconstructed positions.
+Set `maxPositionError` to a finite nonnegative limit in source units to reject excessive
+rounding before serialization. Select a nearby `rtcCenter` to preserve precision at large
+coordinate magnitudes. Source arrays are unchanged; invalid positions, unsupported packed
+layouts and invalid quantization fail explicitly. The existing byte-only encoder retains
+its return type and also accepts the optional precision gate.
+
+`encodePointCloudSourceTile`, `encodePointCloudSource` and `convertPointCloudSource`
+retain this metadata and validate the decoded source's declared point count against the
+actual encoded rows. No coordinate transformation is implied by encoding a source tile.
+
+`createPointCloudTilesetSink` packages independent PNTS resources as a flat 3D Tiles 1.0
+collection. It requires `maxTiles`, `maxTotalBytes`, and an explicit `geometricError` in
+meters that includes source sampling error and the measured position rounding. Files use
+`points/0.pnts`, `points/1.pnts`, etc.; source IDs identify placements and never become paths.
+A contentless ADD root encloses every leaf. Leaf bounds come from the encoded positions
+plus their RTC center, without glTF axis rotation or a second application of the origin.
+
+The initial profile requires declared EPSG:4978 xyz coordinates in meters with ellipsoidal
+heights, `cartesian` source coordinates, zero source origin and no additional transform
+(an explicit identity matrix is accepted). Already transformed EPSG:4978 outputs are also
+accepted. Geographic, projected and offset inputs require a separately qualified spatial
+conversion first. This sink authors a partial collection; it does not preserve source LOD
+or automatically remove overlapping parent/descendant point samples. Applications must
+select independent samples and provide a conservative sampling error. PNTS is a 3D Tiles
+1.0 format deprecated in 1.1; modern glTF point output remains follow-up work.
+
+```typescript
+import {
+  convertPointCloudSource,
+  createPointCloudTilesetSink,
+  createTileConversionArchive
+} from '@loaders.gl/tile-converter/v5/browser';
+
+// selectedSource must expose independent point samples in the required ECEF frame.
+const sink = createPointCloudTilesetSink({
+  maxTiles: 64,
+  maxTotalBytes: 32 * 1024 * 1024,
+  geometricError: 1
+});
+await convertPointCloudSource(selectedSource, {
+  sink,
+  measureInputBytes: measureDecodedPointBytes,
+  maxInputResourceBytes: 8 * 1024 * 1024,
+  maxOutputResourceBytes: 8 * 1024 * 1024,
+  getTileEncodingOptions: tile => ({
+    rtcCenter: selectEcefRtcCenter(tile),
+    maxPositionError: 0.001
+  }),
+  signal
+});
+const archive = await createTileConversionArchive(sink.getFiles(), {
+  format: '3tz',
+  maxArchiveBytes: 40 * 1024 * 1024,
+  signal
+});
+```
+
+Files become visible only after successful finalization and are cleared on abort. The
+retained byte budget includes the final UTF-8 tileset JSON; `maxTiles` bounds hierarchy
+metadata. These limits do not bound peak decoding/encoding memory. Use
+`encodeTileConversionArchiveInBatches` for the existing streaming archive adapter. Reverse
+I3S PointCloud/SLPK writing and general LAS/COPC/I3S source qualification remain separate
+work under tranche 7.
