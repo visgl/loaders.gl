@@ -83,6 +83,7 @@ existing detail without requesting additional descendant content. The renderer's
 hold retains only previously drawn tiles and releases each region once its own selected
 replacement has drawn, so an unfinished region does not keep unrelated coarse tiles on screen.
 Each viewport retains its own fallback tile instances, even when viewport trees share content URLs.
+Removing a viewport also releases its fallback instances.
 
 ## Visibility, Selection, and Requests
 

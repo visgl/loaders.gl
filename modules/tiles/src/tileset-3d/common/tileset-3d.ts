@@ -789,6 +789,9 @@ export class Tileset3D {
 
     let heldBackCount = 0;
     if (hasUndrawnTiles) {
+      const activeRoots = new Set(
+        Object.keys(this.frameStateData).map(viewportId => this.roots[viewportId])
+      );
       const descendantReadiness = new Map<Tile3D, boolean>();
       for (const tile of this.selectedTiles) {
         for (let ancestor = tile.parent; ancestor; ancestor = ancestor.parent) {
@@ -804,6 +807,13 @@ export class Tileset3D {
         if (tile.tileDrawn) this._heldTiles.add(tile);
       }
       for (const tile of this._heldTiles) {
+        let root = tile;
+        while (root.parent) root = root.parent;
+        // Removed viewport trees cannot contribute fallback to the remaining views.
+        if (!activeRoots.has(root)) {
+          this._heldTiles.delete(tile);
+          continue;
+        }
         if (selectedTiles.has(tile)) continue;
         if (
           tile.contentAvailable &&

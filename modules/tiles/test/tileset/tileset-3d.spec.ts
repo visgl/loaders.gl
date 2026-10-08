@@ -545,6 +545,7 @@ test.each([
       _heldTiles: new Set(previous),
       _tiles: Object.fromEntries(previous.map(tile => [tile.id, tile])),
       _frameNumber: 2,
+      roots: {view: root},
       frameStateData: {view: {selectedTiles: selected, _requestedTiles: [], _emptyTiles: []}},
       options: {onTraversalComplete: (tiles: Tile3D[]) => tiles, onUpdate: vi.fn()},
       _loadTiles: vi.fn(),
@@ -595,6 +596,7 @@ test.each([
       // This ID cache can contain only one instance of each shared ID.
       _tiles: Object.fromEntries(previous.map(tile => [tile.id, tile])),
       _frameNumber: 2,
+      roots: {pending: pendingParent, ready: readyParent},
       frameStateData: {
         pending: {selectedTiles: [selected[1]], _requestedTiles: [], _emptyTiles: []},
         ready: {selectedTiles: [selected[0]], _requestedTiles: [], _emptyTiles: []}
@@ -615,6 +617,14 @@ test.each([
     selected[1].tileDrawn = true;
     tileset._updateTiles();
     expect(tileset.selectedTiles).toEqual([selected[1], selected[0]]);
+    // Removing a viewport must discard its held instances even while another view is pending.
+    selected[0].tileDrawn = false;
+    // @ts-ignore - simulate doUpdate removing the completed viewport state.
+    delete tileset.frameStateData.pending;
+    tileset._updateTiles();
+    expect(tileset.selectedTiles).toEqual([selected[0]]);
+    tileset._updateTiles();
+    expect(tileset.selectedTiles).toEqual([selected[0]]);
   } finally {
     vi.clearAllTimers();
     vi.useRealTimers();
@@ -643,6 +653,7 @@ test('Tileset3D#transition hold does not retain superseded tiles that never drew
       _heldTiles: new Set(),
       _tiles: {},
       _frameNumber: 2,
+      roots: {view: root},
       frameStateData: {view: frame},
       options: {onTraversalComplete: (tiles: Tile3D[]) => tiles, onUpdate: vi.fn()},
       _loadTiles: vi.fn(),
@@ -680,6 +691,7 @@ test('Tileset3D#transition hold keeps tiles visible until replacements draw', as
   });
   await tileset.tilesetInitializationPromise;
   const root = tileset.root as Tile3D;
+  tileset.roots.viewport0 = root;
   expect(root, 'root tile exists').toBeTruthy();
   expect(root.children.length > 0, 'root has children').toBeTruthy();
   // Load root content so contentAvailable becomes true
@@ -737,6 +749,7 @@ test('Tileset3D#transition hold is a no-op when tileDrawn defaults to true', asy
   const tileset = new Tileset3D(new Tiles3DSource({...tilesetJson, coreApi}));
   await tileset.tilesetInitializationPromise;
   const root = tileset.root as Tile3D;
+  tileset.roots.viewport0 = root;
   // @ts-ignore
   root._visible = true;
   await root.loadContent();
