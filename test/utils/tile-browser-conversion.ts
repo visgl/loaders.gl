@@ -3,10 +3,11 @@ import {act} from 'react';
 import {Matrix4} from '@math.gl/core';
 import {GLTFScenegraph, GLTFWriter} from '@loaders.gl/gltf';
 
-/** Generates a sub-kilobyte self-contained triangle, optionally with a second scene placement. */
-export function createTriangle(twoPrimitives = false): ArrayBuffer {
+/** Generates a tiny self-contained triangle or strip, optionally with a second scene placement. */
+export function createTriangle(twoPrimitives = false, mode: 4 | 5 = 4): ArrayBuffer {
   const scene = new GLTFScenegraph({json: {asset: {version: '2.0'}}});
   const mesh = scene.addMesh({
+    mode,
     attributes: {POSITION: {value: new Float32Array([0, 0, 0, 1, 0, 0, 0, 1, 0]), size: 3}},
     indices: new Uint16Array([0, 1, 2])
   });
@@ -43,8 +44,17 @@ export function createInput(
       ]
     }
   };
-  const fetcher = vi.fn<typeof fetch>(async input => {
+  const assetFetcher = globalThis.fetch.bind(globalThis);
+  const fetcher = vi.fn<typeof fetch>(async (input, options) => {
     const url = String(input);
+    const assetUrl = new URL(url, window.location.href);
+    // Control tests replace global fetch; keep local codec assets available without public network.
+    if (
+      assetUrl.origin === window.location.origin &&
+      /\/modules\/draco\/src\/libs\/draco_[^/]+\.(js|wasm)$/.test(assetUrl.pathname)
+    ) {
+      return assetFetcher(input, options);
+    }
     if (url.includes('tileset.json')) return new Response(JSON.stringify(document));
     if (selectedSibling && url.includes('sibling.glb')) return new Response(createTriangle());
     if (url.includes('selected.glb')) return new Response(createTriangle(twoPrimitives));

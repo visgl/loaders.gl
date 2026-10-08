@@ -47,7 +47,8 @@ import {
   type ReadableFile
 } from '@loaders.gl/loader-utils';
 import {createScanQueryMetadata, type PointCloudQueryCapabilities} from '@loaders.gl/loader-utils';
-import {Projection} from '@math.gl/projection';
+import {projectionEngine} from '@math.gl/projection';
+import type {Projection} from '@math.gl/projection';
 import type {ReadonlyCRSDefinition} from '@math.gl/crs';
 import {
   createLASTypedExtraBytesAttributes,
@@ -491,7 +492,7 @@ export class COPCTileSource
         Number(offsetPosition[2]) + content.cartographicOrigin[2]
       ];
       const sourcePosition = this._projection
-        ? this._projection.unproject(projectedPosition)
+        ? this._projection.unprojectSync(projectedPosition)
         : projectedPosition;
       if (bounds && !isPointInsideBounds(sourcePosition, bounds)) continue;
 
@@ -1175,7 +1176,7 @@ export class COPCTileSource
     for (let index = 0; index < nativePositions.length; index += 3) {
       const nativeZ = nativePositions[index + 2];
       // projectPoint clones its input because proj4 mutates arrays. This temporary is already owned.
-      const cartographicPosition = this._projection.project([
+      const cartographicPosition = this._projection.projectSync([
         nativePositions[index],
         nativePositions[index + 1],
         nativeZ
@@ -1487,7 +1488,7 @@ export class COPCTileSource
       return [...point];
     }
 
-    const projectedPoint = this._projection.project([...point]);
+    const projectedPoint = this._projection.projectSync([...point]);
     return [projectedPoint[0], projectedPoint[1], projectedPoint[2] ?? point[2] ?? 0];
   }
 
@@ -1826,7 +1827,7 @@ function createProjection(projectionData?: ReadonlyCRSDefinition): Projection | 
   }
 
   try {
-    return new Projection({
+    return projectionEngine.createProjection({
       from: normalizeProjectionDefinition(projectionData),
       to: 'WGS84'
     });

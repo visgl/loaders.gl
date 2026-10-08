@@ -33,3 +33,14 @@ const builtInOutput = await decompressWithNativeDecompressionStream(compressedDa
 
 See the [compression module documentation](https://loaders.gl/docs/modules/compression) for the
 implementation guide, API reference, migration notes, and live browser benchmarks.
+
+### Internal Deflate engine
+
+The GZIP, zlib, and raw DEFLATE JavaScript paths use an internal TypeScript
+fork of fflate 0.7.4. Existing `*Fflate*` classes and subpaths keep their names
+and options. The original fflate package is a development reference for parity
+tests and benchmarks; these production paths do not import it. Native stream
+selection and optional Pako adapters remain available.
+
+See [compression benchmarks](https://loaders.gl/docs/modules/compression/benchmarks)
+for a live internal-versus-upstream comparison.

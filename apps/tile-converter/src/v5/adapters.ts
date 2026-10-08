@@ -5,8 +5,8 @@
 // Format-specific codecs, feature mapping and archive packaging remain in the application.
 export {convertFeatureAttributesToArrowBatches} from './feature-arrow.js';
 export type {FeatureArrowBatchOptions, TileFeatureAttributes} from './feature-arrow.js';
-export {encodePointCloudTile} from './point-cloud.js';
-export type {EncodePointCloudTileOptions} from './point-cloud.js';
+export {encodePointCloudTile, encodePointCloudTileWithMetadata} from './point-cloud.js';
+export type {EncodePointCloudTileOptions, EncodedPointCloudTile} from './point-cloud.js';
 export {encodePointCloudSource, encodePointCloudSourceTile} from './point-cloud-source-encoder.js';
 export type {
   EncodedPointCloudSourceTile,
@@ -14,6 +14,7 @@ export type {
 } from './point-cloud-source-encoder.js';
 export {convertPointCloudSource} from './point-cloud-conversion.js';
 export type {ConvertPointCloudSourceOptions} from './point-cloud-conversion.js';
+export type {MeshTileFeatures} from './mesh-features.js';
 export {encodeMeshTile} from './mesh.js';
 export type {
   MeshTileMaterial,
@@ -35,7 +36,10 @@ export type {
   MeshTilesetSink,
   MeshTilesetSinkOptions
 } from './mesh-tileset-sink.js';
-export {createTileConversionArchive} from './conversion-archive.js';
+export {
+  createTileConversionArchive,
+  encodeTileConversionArchiveInBatches
+} from './conversion-archive.js';
 export type {TileConversionArchiveOptions} from './conversion-archive.js';
 export {createSingleMeshTilesetArchive} from './mesh-tileset-archive.js';
 export type {SingleMeshTilesetArchiveOptions} from './mesh-tileset-archive.js';
@@ -51,3 +55,15 @@ export type {
   I3SMeshConversionCodecOptions,
   SingleMeshI3SSink
 } from './i3s-mesh-conversion.js';
+
+export {createI3SMeshSink} from './i3s-mesh-sink.js';
+export type {I3SMeshSink, I3SMeshSinkOptions} from './i3s-mesh-sink.js';
+
+export {createTileConversionResourceFetcher} from './resource-fetcher.js';
+export type {TileConversionResourceFetcherOptions} from './resource-fetcher.js';
+
+export {createPointCloudTilesetSink} from './point-cloud-tileset-sink.js';
+export type {
+  PointCloudTilesetSink,
+  PointCloudTilesetSinkOptions
+} from './point-cloud-tileset-sink.js';

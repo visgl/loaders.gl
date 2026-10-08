@@ -1,6 +1,6 @@
 {
   "name": "@loaders.gl/arcgis",
-  "version": "5.0.0-alpha.9",
+  "version": "5.0.0-alpha.10",
   "description": "ArcGIS REST data sources for geospatial visualization",
   "license": "MIT",
   "type": "module",
@@ -68,6 +68,10 @@
     "./scene-aggregation": {
       "types": "./dist/arcgis/arcgis-scene-aggregation.d.ts",
       "import": "./dist/arcgis/arcgis-scene-aggregation.js"
+    },
+    "./items": {
+      "types": "./dist/arcgis-items.d.ts",
+      "import": "./dist/arcgis-items.js"
     }
   },
   "sideEffects": false,
@@ -77,13 +81,13 @@
     "README.md"
   ],
   "dependencies": {
-    "@loaders.gl/gis": "5.0.0-alpha.9",
-    "@loaders.gl/i3s": "5.0.0-alpha.9",
-    "@loaders.gl/images": "5.0.0-alpha.9",
-    "@loaders.gl/lerc": "5.0.0-alpha.9",
-    "@loaders.gl/loader-utils": "5.0.0-alpha.9",
-    "@loaders.gl/mvt": "5.0.0-alpha.9",
-    "@loaders.gl/schema": "5.0.0-alpha.9"
+    "@loaders.gl/gis": "5.0.0-alpha.10",
+    "@loaders.gl/i3s": "5.0.0-alpha.10",
+    "@loaders.gl/images": "5.0.0-alpha.10",
+    "@loaders.gl/lerc": "5.0.0-alpha.10",
+    "@loaders.gl/loader-utils": "5.0.0-alpha.10",
+    "@loaders.gl/mvt": "5.0.0-alpha.10",
+    "@loaders.gl/schema": "5.0.0-alpha.10"
   },
   "peerDependencies": {
     "@loaders.gl/core": "~5.0.0-alpha.0"

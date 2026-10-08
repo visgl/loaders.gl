@@ -393,7 +393,8 @@ export class Tileset3D {
   _cache = new TilesetCache();
   _requestScheduler: RequestScheduler;
 
-  private _heldTiles: Set<string> = new Set();
+  /** Drawn fallback instances retained independently for each viewport tree. */
+  private _heldTiles: Set<Tile3D> = new Set();
   private updatePromise: Promise<number> | null = null;
   tilesetInitializationPromise: Promise<void>;
 
@@ -783,12 +784,11 @@ export class Tileset3D {
 
     this.selectedTiles = this.options.onTraversalComplete(this.selectedTiles);
 
-    const selectedIds = new Set(this.selectedTiles.map(tile => tile.id));
+    const selectedTiles = new Set(this.selectedTiles);
     const hasUndrawnTiles = this.selectedTiles.some(tile => !tile.tileDrawn);
 
     let heldBackCount = 0;
     if (hasUndrawnTiles) {
-      const selectedTilesById = new Map(this.selectedTiles.map(tile => [tile.id, tile]));
       const descendantReadiness = new Map<Tile3D, boolean>();
       for (const tile of this.selectedTiles) {
         for (let ancestor = tile.parent; ancestor; ancestor = ancestor.parent) {
@@ -801,26 +801,23 @@ export class Tileset3D {
       // Drawing can finish between traversals. Promote only previously selected
       // geometry that actually drew; pending tiles cannot provide visible fallback.
       for (const tile of previousSelectedTiles) {
-        if (tile.tileDrawn) this._heldTiles.add(tile.id);
+        if (tile.tileDrawn) this._heldTiles.add(tile);
       }
-      for (const tileId of this._heldTiles) {
-        if (selectedIds.has(tileId)) continue;
-
-        const tile = this._tiles[tileId];
+      for (const tile of this._heldTiles) {
+        if (selectedTiles.has(tile)) continue;
         if (
-          tile &&
           tile.contentAvailable &&
-          !this._hasDrawnReplacement(tile, selectedTilesById, descendantReadiness)
+          !this._hasDrawnReplacement(tile, selectedTiles, descendantReadiness)
         ) {
           tile._selectedFrame = this._frameNumber;
           this.selectedTiles.push(tile);
           heldBackCount++;
         } else {
-          this._heldTiles.delete(tileId);
+          this._heldTiles.delete(tile);
         }
       }
     } else {
-      this._heldTiles = selectedIds;
+      this._heldTiles = selectedTiles;
     }
 
     if (heldBackCount > 0) {
@@ -849,13 +846,12 @@ export class Tileset3D {
    */
   private _hasDrawnReplacement(
     tile: Tile3D,
-    selectedTilesById: Map<string, Tile3D>,
+    selectedTiles: Set<Tile3D>,
     descendantReadiness: Map<Tile3D, boolean>
   ): boolean {
     for (let ancestor = tile.parent; ancestor; ancestor = ancestor.parent) {
-      const selectedAncestor = selectedTilesById.get(ancestor.id);
-      if (selectedAncestor) {
-        return selectedAncestor.tileDrawn;
+      if (selectedTiles.has(ancestor)) {
+        return ancestor.tileDrawn;
       }
     }
     return descendantReadiness.get(tile) === true;

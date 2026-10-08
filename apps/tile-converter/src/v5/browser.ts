@@ -35,8 +35,14 @@ export type {
   BrowserTileConversionSourceOptions
 } from '@loaders.gl/tile-converter/v5/core';
 export {createBrowserTilesetConversionSource} from '@loaders.gl/tile-converter/v5/core';
-export {encodePointCloudTile} from '@loaders.gl/tile-converter/v5/adapters';
-export type {EncodePointCloudTileOptions} from '@loaders.gl/tile-converter/v5/adapters';
+export {
+  encodePointCloudTile,
+  encodePointCloudTileWithMetadata
+} from '@loaders.gl/tile-converter/v5/adapters';
+export type {
+  EncodePointCloudTileOptions,
+  EncodedPointCloudTile
+} from '@loaders.gl/tile-converter/v5/adapters';
 export {traversePointCloudSource} from '@loaders.gl/tile-converter/v5/core';
 export type {
   PointCloudSourceTile,
@@ -80,7 +86,10 @@ export type {
   SingleMeshTilesetSinkOptions
 } from '@loaders.gl/tile-converter/v5/adapters';
 
-export {createTileConversionArchive} from '@loaders.gl/tile-converter/v5/adapters';
+export {
+  createTileConversionArchive,
+  encodeTileConversionArchiveInBatches
+} from '@loaders.gl/tile-converter/v5/adapters';
 export type {TileConversionArchiveOptions} from '@loaders.gl/tile-converter/v5/adapters';
 export {createSingleMeshTilesetArchive} from '@loaders.gl/tile-converter/v5/adapters';
 export type {SingleMeshTilesetArchiveOptions} from '@loaders.gl/tile-converter/v5/adapters';
@@ -99,4 +108,21 @@ export type {
   I3SMeshConversionResource,
   I3SMeshConversionCodecOptions,
   SingleMeshI3SSink
+} from '@loaders.gl/tile-converter/v5/adapters';
+
+export {
+  createI3SMeshSink,
+  createTileConversionResourceFetcher
+} from '@loaders.gl/tile-converter/v5/adapters';
+export type {
+  I3SMeshSink,
+  I3SMeshSinkOptions,
+  TileConversionResourceFetcherOptions,
+  MeshTileFeatures
+} from '@loaders.gl/tile-converter/v5/adapters';
+
+export {createPointCloudTilesetSink} from '@loaders.gl/tile-converter/v5/adapters';
+export type {
+  PointCloudTilesetSink,
+  PointCloudTilesetSinkOptions
 } from '@loaders.gl/tile-converter/v5/adapters';

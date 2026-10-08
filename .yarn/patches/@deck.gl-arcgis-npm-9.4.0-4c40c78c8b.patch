@@ -1,0 +1,26 @@
+diff --git a/dist/deck-renderer.js b/dist/deck-renderer.js
+index 200fd3c9224f8fc02e3586c2337f8d84cab3a4f8..61f1c9bd151b32b359dfbe202a8b111f5e22116f 100644
+--- a/dist/deck-renderer.js
++++ b/dist/deck-renderer.js
+@@ -3,7 +3,7 @@
+ // Copyright (c) vis.gl contributors
+ /* eslint-disable no-invalid-this */
+ import { initializeResources, render, finalizeResources } from "./commons.js";
+-import MapView from "../../core/src/views/map-view.js";
++import { MapView } from "@deck.gl/core";
+ // Web Mercator scale at zoom 0 for 256 px tiles; deck.gl uses 512 px tiles,
+ // so the final zoom is shifted by -1.
+ const ARCGIS_WEB_MERCATOR_SCALE_AT_ZOOM_0 = 591657550.5;
+diff --git a/src/deck-renderer.ts b/src/deck-renderer.ts
+index 403619590c792f0643802835b5201ed1a44b31bb..73e2e7368cf30e2e22c770465c14c2147ef8cf35 100644
+--- a/src/deck-renderer.ts
++++ b/src/deck-renderer.ts
+@@ -7,7 +7,7 @@ import {initializeResources, render, finalizeResources, RenderResources} from '.
+ 
+ import SceneView from '@arcgis/core/views/SceneView';
+ import type {DeckProps} from '@deck.gl/core';
+-import MapView from '../../core/src/views/map-view';
++import {MapView} from '@deck.gl/core';
+ 
+ // Web Mercator scale at zoom 0 for 256 px tiles; deck.gl uses 512 px tiles,
+ // so the final zoom is shifted by -1.

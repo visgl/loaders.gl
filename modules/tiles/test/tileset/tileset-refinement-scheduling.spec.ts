@@ -76,7 +76,7 @@ function createTraversalGroup() {
   });
   parent.children = children;
   const frameState = {frameNumber: 1, viewport: {id: 'test'}} as FrameState;
-  return {children, parent, traverser, tileset, frameState};
+  return {children, parent, traverser, tileset, frameState, createTile};
 }
 
 describe('replacement refinement scheduling', () => {
@@ -167,6 +167,56 @@ describe('replacement refinement scheduling', () => {
     expect(Object.keys(traverser.requestedTiles)).toEqual([]);
     expect(Object.keys(traverser.selectedTiles).sort()).toEqual(children.map(child => child.id));
     expect(parent._shouldRefine).toBe(true);
+  });
+
+  test('discovers nested replacements while retaining coverage at both levels', () => {
+    const {children, parent, traverser, tileset, frameState, createTile} = createTraversalGroup();
+    const nestedParent = children[3];
+    nestedParent.contentState = TILE_CONTENT_STATE.READY;
+    nestedParent._screenSpaceError = 100;
+    const descendants = [0, 1].map(index => {
+      const descendant = createTile(`descendant-${index}`, TILE_CONTENT_STATE.UNLOADED);
+      descendant.parent = nestedParent;
+      return descendant;
+    });
+    nestedParent.children = descendants;
+
+    traverser.traverse(parent, frameState, {});
+    expect(Object.keys(traverser.requestedTiles).sort()).toEqual([
+      'child-0',
+      'child-1',
+      'child-2',
+      'descendant-0',
+      'descendant-1'
+    ]);
+    expect(Object.keys(traverser.selectedTiles).sort()).toEqual(['child-3', 'parent']);
+    expect(parent._shouldRefine).toBe(false);
+    expect(nestedParent._shouldRefine).toBe(false);
+
+    for (const child of children) {
+      child.contentState = TILE_CONTENT_STATE.READY;
+    }
+    tileset._frameNumber = frameState.frameNumber = 2;
+    traverser.traverse(parent, frameState, {});
+    expect(Object.keys(traverser.requestedTiles).sort()).toEqual(descendants.map(tile => tile.id));
+    expect(Object.keys(traverser.selectedTiles).sort()).toEqual(children.map(tile => tile.id));
+    expect(parent._shouldRefine).toBe(true);
+    expect(nestedParent._shouldRefine).toBe(false);
+
+    for (const descendant of descendants) {
+      descendant.contentState = TILE_CONTENT_STATE.READY;
+    }
+    tileset._frameNumber = frameState.frameNumber = 3;
+    traverser.traverse(parent, frameState, {});
+    expect(Object.keys(traverser.requestedTiles)).toEqual([]);
+    expect(Object.keys(traverser.selectedTiles).sort()).toEqual([
+      'child-0',
+      'child-1',
+      'child-2',
+      'descendant-0',
+      'descendant-1'
+    ]);
+    expect(nestedParent._shouldRefine).toBe(true);
   });
 
   test('continues discovery without requesting a later out-of-volume sibling', () => {

@@ -8,9 +8,9 @@ import type {
   PointCloudTilesetSource,
   TilesetSpatialReference
 } from '@loaders.gl/tiles';
-import {encodePointCloudTile} from './point-cloud.js';
-import type {EncodePointCloudTileOptions} from './point-cloud.js';
-import {traversePointCloudSource} from '@loaders.gl/tile-converter/v5/core';
+import {encodePointCloudTileWithMetadata} from './point-cloud.js';
+import type {EncodePointCloudTileOptions, EncodedPointCloudTile} from './point-cloud.js';
+import {traversePointCloudSource, TileConversionError} from '@loaders.gl/tile-converter/v5/core';
 import type {
   PointCloudSourceTile,
   TraversePointCloudSourceOptions
@@ -25,15 +25,11 @@ export type EncodePointCloudSourceOptions = TraversePointCloudSourceOptions & {
 };
 
 /** A PNTS resource paired with the source placement metadata needed to package its tile. */
-export type EncodedPointCloudSourceTile = {
+export type EncodedPointCloudSourceTile = EncodedPointCloudTile & {
   /** Stable source tile identifier. */
   readonly id: string;
   /** Original source hierarchy and bounds. */
   readonly header: PointCloudSourceTile['header'];
-  /** Encoded point-cloud tile content. */
-  readonly pnts: ArrayBuffer;
-  /** Number of point records encoded. */
-  readonly pointCount: number;
   /** Coordinate system used by the returned point positions. */
   readonly coordinateSystem: PointCloudCoordinateSystem;
   /** Origin to add to source-relative point positions. */
@@ -88,14 +84,20 @@ export function encodePointCloudSourceTile(
     return null;
   }
 
+  const encoded = encodePointCloudTileWithMetadata(content.data, {
+    ...options,
+    constantRGBA: options.constantRGBA ?? content.constantRGBA
+  });
+  if (content.pointCount !== encoded.pointCount) {
+    throw new TileConversionError(
+      'POINT_CLOUD_SOURCE_COUNT_INVALID',
+      'Source pointCount must match the encoded Arrow point rows'
+    );
+  }
   return {
     id: header.id,
     header,
-    pnts: encodePointCloudTile(content.data, {
-      ...options,
-      constantRGBA: options.constantRGBA ?? content.constantRGBA
-    }),
-    pointCount: content.pointCount,
+    ...encoded,
     coordinateSystem: content.coordinateSystem,
     cartographicOrigin: [...content.cartographicOrigin],
     modelMatrix: content.modelMatrix ? Array.from(content.modelMatrix) : undefined,

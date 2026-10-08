@@ -10,6 +10,8 @@ import type {BrowserTileConversionFile} from '@loaders.gl/tile-converter/v5/core
 export interface SingleMeshTilesetArchiveOptions {
   /** Maximum final archive bytes, including ZIP headers and index; not peak serialization memory. */
   readonly maxArchiveBytes: number;
+  /** Cooperative packaging cancellation; active Blob reads and entry encodes finish first. */
+  readonly signal?: AbortSignal;
 }
 
 /**
@@ -25,7 +27,7 @@ export async function createSingleMeshTilesetArchive(
   files: readonly BrowserTileConversionFile[],
   options: SingleMeshTilesetArchiveOptions
 ): Promise<Blob> {
-  const {maxArchiveBytes} = options;
+  const {maxArchiveBytes, signal} = options;
   if (!Number.isSafeInteger(maxArchiveBytes) || maxArchiveBytes < 0) {
     throw new TileConversionError(
       'INVALID_ARCHIVE_BYTE_LIMIT',
@@ -43,6 +45,6 @@ export async function createSingleMeshTilesetArchive(
     );
   }
   const resources = Object.fromEntries(files.map(file => [file.resourceId, file.blob]));
-  const archive = await Tiles3DArchiveWriter.encode(resources, {'3tz': {maxArchiveBytes}});
+  const archive = await Tiles3DArchiveWriter.encode(resources, {'3tz': {maxArchiveBytes, signal}});
   return new Blob([archive], {type: Tiles3DArchiveWriter.mimeTypes[0]});
 }

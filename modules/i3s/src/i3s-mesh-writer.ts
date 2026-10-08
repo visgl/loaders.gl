@@ -2,17 +2,22 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
+import {prepareI3SMeshTexture, type I3SMeshTexture} from './i3s-mesh-texture';
+export type {I3SMeshTexture} from './i3s-mesh-texture';
 import {Ellipsoid} from '@math.gl/geospatial';
 import {GZipCompressor} from '@loaders.gl/compression/gzip-compressor';
 import type {MeshGeometry} from '@loaders.gl/schema';
+import type {DracoLoaderOptions, DracoMesh} from '@loaders.gl/draco';
 import {encodeI3SMeshAttributes} from './i3s-mesh-attributes';
 import type {I3SMeshFeatures} from './i3s-mesh-attributes';
 export type {I3SMeshFeatures} from './i3s-mesh-attributes';
 
-/** Untextured metallic/roughness factors supported by the I3S mesh profile. */
+/** Metallic/roughness factors and one encoded base-color texture supported by the I3S mesh profile. */
 export interface I3SMeshMaterial {
-  /** Linear RGBA multiplier, each component in [0, 1]. */
+  /** Linear RGBA multiplier in [0, 1]; RGB is encoded as I3S sRGB, alpha is unchanged. */
   readonly baseColorFactor?: readonly [number, number, number, number];
+  /** One PNG/JPEG base-color texture, using TEXCOORD_0. */
+  readonly baseColorTexture?: I3SMeshTexture;
   /** Metallic weight; glTF and I3S default to one. */
   readonly metallicFactor?: number;
   /** Roughness weight; glTF and I3S default to one. */
@@ -29,15 +34,21 @@ export interface I3SMeshMaterial {
 export interface I3SMeshWriterOptions {
   /** Finite nonnegative reconstruction error in meters after geographic float32 encoding. */
   readonly maxPositionError: number;
-  /** Maximum bytes for each uncompressed geometry, attribute, or JSON resource. */
+  /** Maximum bytes for each geometry, attribute, or JSON resource before GZIP. */
   readonly maxResourceBytes: number;
   /** Optional layer name. */
   readonly name?: string;
-  /** Optional untextured material. */
+  /** Optional material and encoded PNG/JPEG base-color texture. */
   readonly material?: I3SMeshMaterial;
   /** Explicit Arrow feature table and triangle association. */
   readonly features?: I3SMeshFeatures;
+  /** First generated object ID; collection codecs allocate disjoint ranges across nodes. */
+  readonly objectIdOffset?: number;
 }
+
+/** Full Draco runtime URL or injected-module controls accepted by I3S geometry encoding. */
+export type I3SDracoLibraryOptions = Pick<DracoLoaderOptions, 'modules'> &
+  Pick<NonNullable<DracoLoaderOptions['core']>, 'CDN' | 'useLocalLibraries'>;
 
 /** Generated I3S resources ready for portable SLPK packaging. */
 export interface EncodedI3SMeshLayer {
@@ -50,12 +61,12 @@ export interface EncodedI3SMeshLayer {
 }
 
 /**
- * Authors an I3S 1.7 3D Object layer from one untextured triangle mesh in absolute EPSG:4978.
+ * Authors an I3S 1.7 3D Object layer from one triangle mesh in absolute EPSG:4978.
  * Positions accept packed Float32/Float64 xyz and normals packed unit Float32 ECEF vectors.
  * Indices are expanded and triangles are stably grouped by feature row without changing winding.
  * WGS84 longitude/latitude/ellipsoidal height offsets are measured against an explicit meter
  * error budget. An empty root and one leaf are emitted in both legacy and paged indices.
- * The profile rejects textures, colors, unknown attributes, unused feature rows, invalid
+ * The profile rejects vertex colors, unknown attributes, unused feature rows, invalid
  * associations, and unsupported property types instead of discarding them. Resource caps bound
  * individual buffers, not peak memory. Independent viewer qualification remains application-owned.
  * @param mesh - Absolute ECEF triangle geometry; input arrays are never modified.
@@ -66,6 +77,130 @@ export function encodeI3SMeshLayer(
   mesh: MeshGeometry,
   options: I3SMeshWriterOptions
 ): EncodedI3SMeshLayer {
+  return compressMeshLayer(prepareMeshLayer(mesh, options), options.maxResourceBytes);
+}
+
+/**
+ * Authors the same bounded I3S profile using lossless Draco Edge Breaker geometry.
+ * Reuses the geographic rounding budget and verifies complete oriented attribute/feature
+ * tuples after decoding. No quantization or uncompressed fallback is emitted.
+ * Decoder and encoder allocations are not bounded by the per-resource limit.
+ * @param mesh - Absolute ECEF geometry, never modified.
+ * @param options - The same appearance, feature, resource and precision controls as the raw writer.
+ * @param libraryOptions - Full Draco runtime libraries, including application URL overrides.
+ * @returns Individually GZIP-compressed resources ready for SLPK packaging.
+ */
+export async function encodeI3SMeshLayerWithDraco(
+  mesh: MeshGeometry,
+  options: I3SMeshWriterOptions,
+  libraryOptions: I3SDracoLibraryOptions = {}
+): Promise<EncodedI3SMeshLayer> {
+  const maxResourceBytes = options.maxResourceBytes;
+  const prepared = prepareMeshLayer(mesh, options, 'draco');
+  const geometry = prepared.files['nodes/1/geometries/0.bin.gz'];
+  const view = new DataView(geometry);
+  const vertexCount = view.getUint32(0, true);
+  const featureCount = view.getUint32(4, true);
+  const positions = new Float32Array(geometry, 8, vertexCount * 3);
+  const normals = mesh.attributes.NORMAL
+    ? new Float32Array(geometry, 8 + vertexCount * 12, vertexCount * 3)
+    : undefined;
+  const textureCoordinates = mesh.attributes.TEXCOORD_0
+    ? new Float32Array(geometry, 8 + vertexCount * (normals ? 24 : 12), vertexCount * 2)
+    : undefined;
+  const featureOffset = 8 + vertexCount * (12 + (normals ? 12 : 0) + (textureCoordinates ? 8 : 0));
+  const featureIndices = new Uint32Array(vertexCount);
+  const featureIdentifiers = new Int32Array(featureCount);
+  for (let index = 0; index < featureCount; index++) {
+    featureIdentifiers[index] = Number(view.getBigUint64(featureOffset + index * 8, true));
+    const rangeOffset = featureOffset + featureCount * 8 + index * 8;
+    featureIndices.fill(
+      index,
+      view.getUint32(rangeOffset, true) * 3,
+      (view.getUint32(rangeOffset + 4, true) + 1) * 3
+    );
+  }
+  const indices = Uint32Array.from({length: vertexCount}, (_, index) => index);
+  const attributes = {
+    POSITION: {value: positions, size: 3},
+    ...(normals ? {NORMAL: {value: normals, size: 3}} : {}),
+    ...(textureCoordinates ? {TEXCOORD_0: {value: textureCoordinates, size: 2}} : {}),
+    'feature-index': {value: featureIndices, size: 1}
+  };
+  const {modules, useLocalLibraries, CDN: contentDeliveryNetwork} = libraryOptions;
+  const runtimeOptions = {modules, core: {useLocalLibraries, CDN: contentDeliveryNetwork}};
+  const {DracoLoader, encodeDraco} = await import('@loaders.gl/draco');
+  const encoded = await encodeDraco(
+    {attributes, indices},
+    {
+      ...runtimeOptions,
+      draco: {
+        method: 'MESH_EDGEBREAKER_ENCODING',
+        attributeNameEntry: 'i3s-attribute-type',
+        attributesMetadata: {'feature-index': {'i3s-feature-ids': featureIdentifiers}}
+      }
+    }
+  );
+  const decodeOptions = {
+    ...runtimeOptions,
+    draco: {
+      shape: 'mesh' as const,
+      decoderProfile: 'full' as const,
+      attributeNameEntry: 'i3s-attribute-type'
+    }
+  };
+  const loader = await DracoLoader.preload('', decodeOptions);
+  const decoded = (await loader.parse!(encoded.data, decodeOptions)) as DracoMesh;
+  const featureMetadata = Object.values(decoded.loaderData.attributes).find(
+    attribute => attribute.metadata?.['i3s-attribute-type']?.string === 'feature-index'
+  );
+  if (
+    !decoded.indices ||
+    JSON.stringify(getMeshTriangles(attributes, indices)) !==
+      JSON.stringify(getMeshTriangles(decoded.attributes, decoded.indices.value)) ||
+    featureMetadata?.metadata?.['i3s-feature-ids']?.intArray?.toString() !==
+      featureIdentifiers.toString()
+  )
+    throw new Error(
+      'Lossless I3S Draco must preserve oriented triangles, attributes and feature IDs'
+    );
+  const layer = JSON.parse(new TextDecoder().decode(prepared.files['3dSceneLayer.json.gz']));
+  layer.geometryDefinitions[0].geometryBuffers = [
+    {
+      compressedAttributes: {
+        encoding: 'draco',
+        attributes: [
+          'position',
+          ...(normals ? ['normal'] : []),
+          ...(textureCoordinates ? ['uv0'] : []),
+          'feature-index'
+        ]
+      }
+    }
+  ];
+  const page = JSON.parse(new TextDecoder().decode(prepared.files['nodepages/0.json.gz']));
+  page.nodes[1].mesh.geometry.vertexCount = decoded.attributes.POSITION.value.length / 3;
+  prepared.files['nodes/1/geometries/0.bin.gz'] = encoded.data;
+  prepared.files['3dSceneLayer.json.gz'] = new TextEncoder().encode(JSON.stringify(layer)).buffer;
+  prepared.files['nodepages/0.json.gz'] = new TextEncoder().encode(JSON.stringify(page)).buffer;
+  return compressMeshLayer(prepared, maxResourceBytes);
+}
+
+/**
+ * Expands, groups and rounds a mesh once, retaining resources until final encoding.
+ * @param mesh - Validated absolute ECEF mesh.
+ * @param options - Precision, metadata and emitted resource limits.
+ * @param geometryEncoding - Intended output; temporary Draco expansion is working memory.
+ */
+function prepareMeshLayer(
+  mesh: MeshGeometry,
+  options: I3SMeshWriterOptions,
+  geometryEncoding: 'raw' | 'draco' = 'raw'
+): {
+  files: Record<string, ArrayBuffer>;
+  maximumPositionError: number;
+  decimalStringFields: readonly string[];
+} {
   if (
     !Number.isFinite(options.maxPositionError) ||
     options.maxPositionError < 0 ||
@@ -90,10 +225,10 @@ export function encodeI3SMeshLayer(
   }
   for (const [name, attribute] of Object.entries(mesh.attributes)) {
     if (
-      !['POSITION', 'NORMAL'].includes(name) ||
+      !['POSITION', 'NORMAL', 'TEXCOORD_0'].includes(name) ||
       attribute.byteOffset ||
       attribute.byteStride ||
-      attribute.normalized ||
+      (attribute.normalized && name !== 'TEXCOORD_0') ||
       attribute.transform ||
       attribute.componentType
     ) {
@@ -122,6 +257,11 @@ export function encodeI3SMeshLayer(
     }
   }
   const vertexCount = positions.value.length / 3;
+  const textureCoordinates = prepareI3SMeshTexture(
+    mesh.attributes.TEXCOORD_0,
+    vertexCount,
+    options.material?.baseColorTexture
+  );
   const indices = mesh.indices?.value;
   if (
     mesh.indices &&
@@ -149,6 +289,13 @@ export function encodeI3SMeshLayer(
   }
   const attributes = encodeI3SMeshAttributes(options.features, options.maxResourceBytes);
   const featureCount = options.features ? attributes.count : 1;
+  const objectIdOffset = options.objectIdOffset ?? 0;
+  if (
+    !Number.isSafeInteger(objectIdOffset) ||
+    objectIdOffset < 0 ||
+    objectIdOffset + featureCount > 2147483648
+  )
+    throw new Error('I3S object IDs must fit the signed 32-bit Draco metadata range');
   const triangleCount = outputVertexCount / 3;
   const associations = options.features?.triangleFeatureIndices;
   if (
@@ -164,8 +311,11 @@ export function encodeI3SMeshLayer(
     triangles[associations?.[triangle] ?? 0].push(triangle);
   if (triangles.some(group => !group.length))
     throw new Error('I3S feature rows must each own at least one complete triangle');
-  const byteLength = 8 + outputVertexCount * (normals ? 24 : 12) + featureCount * 16;
-  if (byteLength > options.maxResourceBytes)
+  const byteLength =
+    8 +
+    outputVertexCount * (12 + (normals ? 12 : 0) + (textureCoordinates ? 8 : 0)) +
+    featureCount * 16;
+  if (geometryEncoding === 'raw' && byteLength > options.maxResourceBytes)
     throw new Error('I3S geometry exceeds maxResourceBytes');
   const minimum = [Infinity, Infinity, Infinity];
   const maximum = [-Infinity, -Infinity, -Infinity];
@@ -229,6 +379,11 @@ export function encodeI3SMeshLayer(
               true
             );
         }
+        if (textureCoordinates) {
+          const textureOffset = 8 + outputVertexCount * (normals ? 24 : 12) + outputIndex * 8;
+          view.setFloat32(textureOffset, textureCoordinates[sourceIndex * 2], true);
+          view.setFloat32(textureOffset + 4, textureCoordinates[sourceIndex * 2 + 1], true);
+        }
         extent[0] = Math.min(extent[0], reconstructedGeographic[0]);
         extent[1] = Math.min(extent[1], reconstructedGeographic[1]);
         extent[2] = Math.max(extent[2], reconstructedGeographic[0]);
@@ -237,9 +392,10 @@ export function encodeI3SMeshLayer(
       }
     }
   }
-  const featureOffset = 8 + outputVertexCount * (normals ? 24 : 12);
+  const featureOffset =
+    8 + outputVertexCount * (12 + (normals ? 12 : 0) + (textureCoordinates ? 8 : 0));
   for (let index = 0; index < featureCount; index++) {
-    view.setBigUint64(featureOffset + index * 8, BigInt(index), true);
+    view.setBigUint64(featureOffset + index * 8, BigInt(objectIdOffset + index), true);
     view.setUint32(featureOffset + featureCount * 8 + index * 8, faceRanges[index * 2], true);
     view.setUint32(
       featureOffset + featureCount * 8 + index * 8 + 4,
@@ -261,6 +417,7 @@ export function encodeI3SMeshLayer(
     offset: 8,
     position: {type: 'Float32', component: 3},
     ...(normals ? {normal: {type: 'Float32', component: 3}} : {}),
+    ...(textureCoordinates ? {uv0: {type: 'Float32', component: 2}} : {}),
     featureId: {type: 'UInt64', component: 1, binding: 'per-feature'},
     faceRange: {type: 'UInt32', component: 2, binding: 'per-feature'}
   };
@@ -271,10 +428,11 @@ export function encodeI3SMeshLayer(
       {property: 'vertexCount', type: 'UInt32'},
       {property: 'featureCount', type: 'UInt32'}
     ],
-    ordering: normals ? ['position', 'normal'] : ['position'],
+    ordering: ['position', ...(normals ? ['normal'] : []), ...(textureCoordinates ? ['uv0'] : [])],
     vertexAttributes: {
       position: {valueType: 'Float32', valuesPerElement: 3},
-      ...(normals ? {normal: {valueType: 'Float32', valuesPerElement: 3}} : {})
+      ...(normals ? {normal: {valueType: 'Float32', valuesPerElement: 3}} : {}),
+      ...(textureCoordinates ? {uv0: {valueType: 'Float32', valuesPerElement: 2}} : {})
     },
     featureAttributeOrder: ['id', 'faceRange'],
     featureAttributes: {
@@ -301,7 +459,12 @@ export function encodeI3SMeshLayer(
       profile: 'meshpyramids',
       version: '1.7',
       rootNode: './nodes/root',
-      resourcePattern: ['3dNodeIndexDocument', 'Geometry', 'Attributes'],
+      resourcePattern: [
+        '3dNodeIndexDocument',
+        'Geometry',
+        'Attributes',
+        ...(options.material?.baseColorTexture ? ['Texture'] : [])
+      ],
       extent,
       indexCRS: 'http://www.opengis.net/def/crs/EPSG/0/4326',
       vertexCRS: 'http://www.opengis.net/def/crs/EPSG/0/4326',
@@ -310,7 +473,21 @@ export function encodeI3SMeshLayer(
     },
     nodePages: {rootIndex: 0, nodesPerPage: 64, lodSelectionMetricType: 'maxScreenThresholdSQ'},
     geometryDefinitions: [{topology: 'triangle', geometryBuffers: [geometryBuffer]}],
-    materialDefinitions: [material]
+    materialDefinitions: [material],
+    ...(options.material?.baseColorTexture
+      ? {
+          textureSetDefinitions: [
+            {
+              formats: [
+                {
+                  name: '0',
+                  format: options.material.baseColorTexture.mimeType === 'image/png' ? 'png' : 'jpg'
+                }
+              ]
+            }
+          ]
+        }
+      : {})
   };
   const leaf = {
     id: '1',
@@ -322,6 +499,7 @@ export function encodeI3SMeshLayer(
     children: [],
     parentNode: {id: 'root', href: '../root', mbs, obb},
     geometryData: [{href: './geometries/0'}],
+    ...(options.material?.baseColorTexture ? {textureData: [{href: './textures/0'}]} : {}),
     attributeData: attributes.buffers.map((_, index) => ({href: `./attributes/f_${index}/0`}))
   };
   const root = {
@@ -343,7 +521,7 @@ export function encodeI3SMeshLayer(
         lodThreshold: 0,
         children: [],
         mesh: {
-          material: {definition: 0},
+          material: {definition: 0, ...(options.material?.baseColorTexture ? {resource: 1} : {})},
           geometry: {definition: 0, resource: 1, vertexCount: outputVertexCount, featureCount},
           attribute: {resource: 1}
         }
@@ -366,18 +544,71 @@ export function encodeI3SMeshLayer(
   })) {
     rawFiles[name] = new TextEncoder().encode(JSON.stringify(json)).buffer;
   }
-  const objectIds = options.features ? attributes.buffers[0] : encodeDefaultObjectId();
+  const objectIds = options.features ? attributes.buffers[0].slice(0) : encodeDefaultObjectId();
+  const objectIdView = new DataView(objectIds);
+  for (let index = 0; index < featureCount; index++)
+    objectIdView.setUint32(4 + index * 4, objectIdOffset + index, true);
+  if (options.material?.baseColorTexture) {
+    const texture = options.material.baseColorTexture;
+    rawFiles[`nodes/1/textures/0.${texture.mimeType === 'image/png' ? 'png' : 'jpg'}`] =
+      new Uint8Array(texture.data).buffer;
+  }
   rawFiles['nodes/1/attributes/f_0/0.bin.gz'] = objectIds;
   for (let index = 1; index < attributes.buffers.length; index++)
     rawFiles[`nodes/1/attributes/f_${index}/0.bin.gz`] = attributes.buffers[index];
+  return {
+    files: rawFiles,
+    maximumPositionError,
+    decimalStringFields: attributes.decimalStringFields
+  };
+}
+
+/** Applies deterministic per-resource GZIP only after geometry and metadata are finalized. */
+function compressMeshLayer(
+  prepared: EncodedI3SMeshLayer,
+  maxResourceBytes: number
+): EncodedI3SMeshLayer {
   const compressor = new GZipCompressor({useNative: false, gzip: {mtime: 0}});
   const files: Record<string, ArrayBuffer> = {};
-  for (const [name, bytes] of Object.entries(rawFiles)) {
-    if (bytes.byteLength > options.maxResourceBytes)
-      throw new Error('I3S JSON/attribute exceeds maxResourceBytes');
-    files[name] = compressor.compressSync(bytes);
+  for (const [name, bytes] of Object.entries(prepared.files)) {
+    if (bytes.byteLength > maxResourceBytes)
+      throw new Error('I3S resource exceeds maxResourceBytes');
+    files[name] = name.endsWith('.gz') ? compressor.compressSync(bytes) : bytes;
   }
-  return {files, maximumPositionError, decimalStringFields: attributes.decimalStringFields};
+  return {...prepared, files};
+}
+
+/** Compares a multiset of oriented triangles with complete position, normal and feature tuples. */
+function getMeshTriangles(
+  attributes: DracoMesh['attributes'],
+  indices: ArrayLike<number>
+): string[] {
+  const names = [
+    'POSITION',
+    ...(attributes.NORMAL ? ['NORMAL'] : []),
+    ...(attributes.TEXCOORD_0 ? ['TEXCOORD_0'] : []),
+    'feature-index'
+  ];
+  const triangles: string[] = [];
+  for (let index = 0; index < indices.length; index += 3) {
+    const vertices = [0, 1, 2].map(corner =>
+      names
+        .map(name => {
+          const attribute = attributes[name];
+          return Array.from(
+            {length: attribute.size},
+            (_, component) => attribute.value[indices[index + corner] * attribute.size + component]
+          ).join(',');
+        })
+        .join('|')
+    );
+    triangles.push(
+      [0, 1, 2]
+        .map(corner => [...vertices.slice(corner), ...vertices.slice(0, corner)].join(';'))
+        .sort()[0]
+    );
+  }
+  return triangles.sort();
 }
 
 /** Encodes the synthetic feature ID for an unannotated mesh. */
@@ -387,13 +618,14 @@ function encodeDefaultObjectId(): ArrayBuffer {
   return buffer;
 }
 
-/** Maps the untextured glTF appearance without dropping unknown material semantics. */
+/** Maps the selected glTF appearance without dropping unknown material semantics. */
 function encodeMaterial(material: I3SMeshMaterial = {}): object {
   if (
     Object.keys(material).some(
       name =>
         ![
           'baseColorFactor',
+          'baseColorTexture',
           'metallicFactor',
           'roughnessFactor',
           'alphaMode',
@@ -420,12 +652,36 @@ function encodeMaterial(material: I3SMeshMaterial = {}): object {
     throw new Error('Invalid I3S material factors');
   return {
     pbrMetallicRoughness: {
-      baseColorFactor: baseColorFactor ? [...baseColorFactor] : [1, 1, 1, 1],
+      baseColorFactor: baseColorFactor
+        ? baseColorFactor.map((value, index) =>
+            index < 3 ? convertLinearColorToSrgb(value) : value
+          )
+        : [1, 1, 1, 1],
       metallicFactor: metallicFactor ?? 1,
-      roughnessFactor: roughnessFactor ?? 1
+      roughnessFactor: roughnessFactor ?? 1,
+      ...(material.baseColorTexture
+        ? {
+            baseColorTexture: {
+              textureSetDefinitionId: 0,
+              wrapS: convertTextureWrap(material.baseColorTexture.sampler?.wrapS),
+              wrapT: convertTextureWrap(material.baseColorTexture.sampler?.wrapT)
+            }
+          }
+        : {})
     },
     alphaMode: (alphaMode || 'OPAQUE').toLowerCase(),
     ...(alphaMode === 'MASK' ? {alphaCutoff: alphaCutoff ?? 0.5} : {}),
     doubleSided: doubleSided ?? false
   };
+}
+
+/** Encodes a validated linear RGB component using the standard sRGB transfer curve. */
+function convertLinearColorToSrgb(value: number): number {
+  if (value === 1) return 1;
+  return value <= 0.0031308 ? 12.92 * value : 1.055 * value ** (1 / 2.4) - 0.055;
+}
+
+/** Maps glTF wrapping to the equivalent I3S sampler spelling. */
+function convertTextureWrap(value?: number): string {
+  return value === 33071 ? 'none' : value === 33648 ? 'mirror' : 'repeat';
 }

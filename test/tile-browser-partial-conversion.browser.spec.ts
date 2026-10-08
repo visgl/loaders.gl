@@ -87,9 +87,6 @@ test('multi-selection rejects unsupported selection profiles before content fetc
     await expect(
       convertSelectedContents(inspection, invalid, '3tz', controller.signal, () => {}, fetcher)
     ).rejects.toThrow(/Select/);
-  await expect(
-    convertSelectedContents(inspection, identifiers, 'slpk', controller.signal, () => {}, fetcher)
-  ).rejects.toThrow(/require 3TZ/);
   inspection.tileset.root!.children![0].children = [{content: {uri: 'child.glb'}}];
   await expect(
     convertSelectedContents(inspection, identifiers, '3tz', controller.signal, () => {}, fetcher)
@@ -97,9 +94,9 @@ test('multi-selection rejects unsupported selection profiles before content fetc
   expect(fetcher).toHaveBeenCalledOnce();
 });
 
-test('multi-selection discards output on a later read failure, cancellation or multiple primitives', async () => {
-  for (const multiple of [false, true]) {
-    const {fetcher, controller} = createInput(multiple);
+test('multi-selection discards output on a later read failure or cancellation', async () => {
+  {
+    const {fetcher, controller} = createInput();
     const inspection = await inspectConversionInput(
       'https://example.invalid/tileset.json',
       controller.signal,
@@ -114,7 +111,7 @@ test('multi-selection discards output on a later read failure, cancellation or m
         () => {},
         fetcher
       )
-    ).rejects.toThrow(multiple ? /exactly one mesh/ : /Unselected resource fetched/);
+    ).rejects.toThrow(/Unselected resource fetched/);
   }
   const {fetcher, controller} = createInput(false, false, 'Y', true);
   const inspection = await inspectConversionInput(
@@ -136,8 +133,12 @@ test('multi-selection discards output on a later read failure, cancellation or m
   ).rejects.toThrow('cancel archive');
 });
 
-test('conversion controls allow explicit multi-selection only with 3TZ', async () => {
+test.each([
+  'slpk',
+  '3tz'
+])('conversion controls allow explicit multi-selection with %s', async format => {
   const {fetcher} = createInput(false, false, 'Y', true);
+  vi.stubGlobal('showSaveFilePicker', vi.fn());
   vi.stubGlobal('fetch', fetcher);
   vi.stubGlobal('IS_REACT_ACT_ENVIRONMENT', true);
   const container = document.createElement('div');
@@ -163,16 +164,20 @@ test('conversion controls allow explicit multi-selection only with 3TZ', async (
     const convert = Array.from(container.querySelectorAll('button')).find(
       button => button.textContent === 'Convert selected content'
     )!;
-    expect(convert.disabled).toBe(true);
-    const format = container.querySelector<HTMLSelectElement>('#conversion-format')!;
-    expect(format.options[0].disabled).toBe(true);
-    format.value = '3tz';
-    await act(async () => format.dispatchEvent(new Event('change', {bubbles: true})));
+    expect(convert.disabled).toBe(false);
+    const save = Array.from(container.querySelectorAll('button')).find(
+      button => button.textContent === 'Convert and save to file'
+    )!;
+    expect(save.disabled).toBe(false);
+    const outputFormat = container.querySelector<HTMLSelectElement>('#conversion-format')!;
+    expect(outputFormat.options[0].disabled).toBe(false);
+    outputFormat.value = format;
+    await act(async () => outputFormat.dispatchEvent(new Event('change', {bubbles: true})));
     expect(convert.disabled).toBe(false);
     await act(async () => convert.click());
     await expect
       .poll(() => readSettledControl(() => container.querySelector('a')?.download))
-      .toBe('selected-meshes.3tz');
+      .toBe(`selected-meshes.${format}`);
   } finally {
     await act(async () => root.unmount());
     container.remove();
@@ -200,5 +205,35 @@ test('multi-selection enforces the aggregate transport budget before decoding a 
       () => {},
       limitedFetch
     )
-  ).rejects.toThrow(/remaining limit/);
+  ).rejects.toThrow(/aggregate input byte budget/);
+});
+
+// UI lifecycle coverage uses an inline executor; real module workers are qualified separately.
+vi.mock('../examples/website/i3s-slpk/src/conversion-worker-client', async importOriginal => {
+  const original =
+    await importOriginal<
+      typeof import('../examples/website/i3s-slpk/src/conversion-worker-client')
+    >();
+  const {convertSelectedContents} = await import(
+    '../examples/website/i3s-slpk/src/convert-tileset'
+  );
+  return {
+    ...original,
+    convertSelectedContentsInWorker: (
+      ...arguments_: Parameters<
+        typeof import('../examples/website/i3s-slpk/src/conversion-worker-client').convertSelectedContentsInWorker
+      >
+    ) => {
+      const [inspection, resourceIds, format, signal, onProgress, features] = arguments_;
+      return convertSelectedContents(
+        inspection,
+        resourceIds,
+        format,
+        signal,
+        onProgress,
+        fetch,
+        features
+      );
+    }
+  };
 });

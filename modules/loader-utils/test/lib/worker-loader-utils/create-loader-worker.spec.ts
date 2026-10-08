@@ -153,7 +153,7 @@ describe('processLoaderWorkerData', () => {
           optionsOnly: await context._parse(new ArrayBuffer(0), {mvt: {shape: 'geojson-table'}}),
           explicit: await context._parse(
             new ArrayBuffer(0),
-            [{...BASE_LOADER}],
+            [{...BASE_LOADER, preload: nonSerializable, tests: [nonSerializable]}],
             {gis: {format: 'binary'}},
             nestedContext
           ),
@@ -169,9 +169,15 @@ describe('processLoaderWorkerData', () => {
 
     const result = await processLoaderWorkerData(loader as any, new ArrayBuffer(0), {}, {process});
     expect(result.optionsOnly.options).toEqual({mvt: {shape: 'geojson-table'}});
-    expect(result.explicit).toEqual({options: {gis: {format: 'binary'}}, context: {url: 'nested'}});
-    expect(result.loaderOnly).toEqual({context: {url: 'nested'}});
+    expect(result.explicit).toEqual({
+      options: {gis: {format: 'binary'}},
+      context: {url: 'nested', _loaderIds: ['test'], _loaderIsArray: true}
+    });
+    expect(result.loaderOnly).toEqual({
+      context: {url: 'nested', _loaderIds: ['test'], _loaderIsArray: false}
+    });
     expect(process).toHaveBeenCalledTimes(3);
+    expect(() => structuredClone(result)).not.toThrow();
   });
 
   test('reports missing parsers and missing main-thread routing', async () => {

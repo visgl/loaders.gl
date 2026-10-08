@@ -58,6 +58,10 @@ export type RequestCredential = Readonly<{
   token: TokenValue;
   /** Status codes that permit one refresh and replay. */
   refreshStatusCodes: readonly number[];
+  /** Provider-specific failure detection; inspect a clone to preserve the response body. */
+  shouldRefresh?: (response: Response) => boolean | Promise<boolean>;
+  /** Allows replay of provider-specific read-only requests such as POST queries. */
+  canReplayRequest?: (url: string, options: RequestInit) => boolean;
 }>;
 
 /** Options for a query-parameter credential. */
@@ -166,6 +170,11 @@ export class TokenAuthentication implements RequestCredential {
   /** Statuses that permit one refresh and replay. */
   readonly refreshStatusCodes: readonly number[];
 
+  /** Provider-specific response failure detection. */
+  readonly shouldRefresh?: RequestCredential['shouldRefresh'];
+  /** Provider-specific read-only request replay predicate. */
+  readonly canReplayRequest?: RequestCredential['canReplayRequest'];
+
   /** Initializes the instance from an existing transport credential. */
   constructor(credential: RequestCredential) {
     this.id = credential.id;
@@ -175,6 +184,8 @@ export class TokenAuthentication implements RequestCredential {
     this.prefix = credential.prefix;
     this.token = credential.token;
     this.refreshStatusCodes = credential.refreshStatusCodes;
+    this.shouldRefresh = credential.shouldRefresh;
+    this.canReplayRequest = credential.canReplayRequest;
   }
 }
 
@@ -251,20 +262,27 @@ export function createAuthenticatedFetch(options: AuthenticatedFetchOptions): Fe
       : {url, options: requestOptions, credentials: []};
     const signedRequest = await authenticateRequest(authorization, requestCredentials, 'request');
     const response = await baseFetch(signedRequest.url, signedRequest.options);
-    const refreshableCredentials = authorization.credentials.filter(
-      ({credential}) =>
+    const refreshableCredentials: ResolvedCredential[] = [];
+    for (const resolvedCredential of authorization.credentials) {
+      const {credential} = resolvedCredential;
+      if (
         typeof credential.token === 'function' &&
-        credential.refreshStatusCodes.includes(response.status)
-    );
-    const shouldRetrySignature = signedRequest.credentials.some(credential =>
-      credential.refreshStatusCodes?.includes(response.status)
-    );
-    if (
-      (!refreshableCredentials.length && !shouldRetrySignature) ||
-      !isReplayableRequest(requestOptions) ||
-      !isReplayableRequest(signedRequest.options)
-    )
-      return response;
+        (isReplayableRequest(requestOptions) ||
+          credential.canReplayRequest?.(url, requestOptions)) &&
+        (isReplayableRequest(signedRequest.options) ||
+          credential.canReplayRequest?.(signedRequest.url, signedRequest.options)) &&
+        (credential.refreshStatusCodes.includes(response.status) ||
+          (await credential.shouldRefresh?.(response)))
+      )
+        refreshableCredentials.push(resolvedCredential);
+    }
+    const shouldRetrySignature =
+      isReplayableRequest(requestOptions) &&
+      isReplayableRequest(signedRequest.options) &&
+      signedRequest.credentials.some(credential =>
+        credential.refreshStatusCodes?.includes(response.status)
+      );
+    if (!refreshableCredentials.length && !shouldRetrySignature) return response;
     if (requestOptions.signal?.aborted) throw createAbortError();
 
     const refreshedTokens = new Map<RequestCredential, string>();

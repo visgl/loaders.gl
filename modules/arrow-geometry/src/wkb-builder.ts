@@ -4,7 +4,7 @@
 
 import {WKBBuilder as MathWKBBuilder} from '@math.gl/wkb';
 import type {WellKnownDimension, WKBGeometryType as MathWKBGeometryType} from '@math.gl/wkb';
-import {WKBGeometryType} from './helpers/wkb-types';
+import {WKBGeometryType} from './wkb-types';
 
 /** Function that writes one WKB geometry into a builder. */
 export type WKBGeometryWriter = (builder: WKBBuilder) => void;

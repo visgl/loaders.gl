@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import {Projection} from '@math.gl/projection';
+import type {Projection} from '@math.gl/projection';
 
 /**
  * Calculate cartographic origin from Potree bounding box
@@ -22,7 +22,7 @@ export const getCartographicOriginFromBoundingBox = (
   let projectedX = nativeX;
   let projectedY = nativeY;
   if (projection) {
-    [projectedX, projectedY] = projection.project([nativeX, nativeY]);
+    [projectedX, projectedY] = projection.projectSync([nativeX, nativeY]);
   }
   return [projectedX, projectedY, nativeZ];
 };

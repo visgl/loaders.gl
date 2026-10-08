@@ -86,6 +86,13 @@ test('tile-converter v5 built core and adapters share identities in ESM and Comm
         assert.equal(combined[name], portable[name]);
       }
       assert.equal(combined.encodeMeshTile, formats.encodeMeshTile);
+      assert.equal(combined.encodePointCloudTileWithMetadata, formats.encodePointCloudTileWithMetadata);
+      assert.equal(combined.createPointCloudTilesetSink, formats.createPointCloudTilesetSink);
+      const point = formats.encodePointCloudTileWithMetadata({attributes: {POSITION: {value: new Float64Array([6378137.1, 0, 0]), size: 3}}}, {rtcCenter: [6378137, 0, 0], maxPositionError: 0.001});
+      const pointSink = formats.createPointCloudTilesetSink({maxTotalBytes: 4096, maxTiles: 1, geometricError: 0.001});
+      await pointSink.write({...point, id: 'point', header: {}, coordinateSystem: 'cartesian', cartographicOrigin: [0, 0, 0], spatialReference: portable.createTiles3DConversionSpatialContext({sourceCrs: 'EPSG:4978', coordinateFrame: 'geocentric', axisOrder: 'xyz', heightReference: 'ellipsoidal'}).spatialReference});
+      await pointSink.finalize({state: 'completed', inputResources: 1, outputResources: 1, inputBytes: 24, outputBytes: point.pnts.byteLength, largestOutputResourceBytes: point.pnts.byteLength, diagnostics: []});
+      assert.equal(JSON.parse(await pointSink.getFiles()[1].blob.text()).asset.version, '1.0');
       assert.equal(portable.encodeMeshTile, undefined);
       assert.equal(formats.convertTileset, undefined);
       assert.throws(() => formats.createSingleMeshI3SSink({maxTotalBytes: -1}), portable.TileConversionError);
@@ -97,6 +104,23 @@ test('tile-converter v5 built core and adapters share identities in ESM and Comm
       });
       assert.equal(report.state, 'completed');
     }
+    const sink = commonJsAdapters.createI3SMeshSink({maxMeshes: 2, maxTotalBytes: 65536, maxResourceBytes: 65536});
+    await commonJsCore.convertTileset({
+      source: {
+        inspect: async () => null,
+        read: async function* () {
+          yield {id: 'mesh', origin: [0, 0, 0], mesh: {topology: 'triangle-list', mode: 4, attributes: {POSITION: {size: 3, value: new Float64Array([6378137, 0, 0, 6378137, 1, 0, 6378137, 0, 1])}}}};
+        }
+      },
+      codec: commonJsAdapters.createI3SMeshConversionCodec({
+        spatialContext: commonJsCore.createTiles3DConversionSpatialContext({sourceCrs: 'EPSG:4978', coordinateFrame: 'geocentric', heightReference: 'ellipsoidal'}),
+        maxResourceBytes: 65536, maxPositionError: 0.01, draco: false
+      }),
+      sink,
+      measureInputBytes: resource => resource.mesh.attributes.POSITION.value.byteLength,
+      measureOutputBytes: resource => Object.values(resource.files).reduce((total, bytes) => total + bytes.byteLength, 0)
+    });
+    assert.ok(sink.getFiles().some(file => file.resourceId === '3dSceneLayer.json.gz'));
     console.log('split entrypoints passed');
   `
     ],

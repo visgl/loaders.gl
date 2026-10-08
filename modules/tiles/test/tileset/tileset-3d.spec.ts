@@ -542,7 +542,7 @@ test.each([
         : [readyParent, pendingParent];
     const tileset = Object.assign(Object.create(Tileset3D.prototype), {
       selectedTiles: previous,
-      _heldTiles: new Set(previous.map(tile => tile.id)),
+      _heldTiles: new Set(previous),
       _tiles: Object.fromEntries(previous.map(tile => [tile.id, tile])),
       _frameNumber: 2,
       frameStateData: {view: {selectedTiles: selected, _requestedTiles: [], _emptyTiles: []}},
@@ -561,6 +561,60 @@ test.each([
     pendingChildren[1].tileDrawn = true;
     tileset._updateTiles();
     expect(tileset.selectedTiles).toEqual(selected);
+  } finally {
+    vi.clearAllTimers();
+    vi.useRealTimers();
+  }
+});
+
+test.each([
+  'refine',
+  'coarsen',
+  'mixed'
+])('Tileset3D#transition hold isolates viewport trees with shared IDs when they %s', direction => {
+  vi.useFakeTimers();
+  try {
+    /** Creates a viewport-local tile with an ID shared by the other viewport. */
+    const createTile = (id: string, parent: Tile3D | null, tileDrawn: boolean) =>
+      ({id, parent, tileDrawn, contentAvailable: true}) as Tile3D;
+    const readyParent = createTile('parent', null, true);
+    const pendingParent = createTile('parent', null, direction === 'refine');
+    const readyChild = createTile('child', readyParent, true);
+    const pendingChild = createTile('child', pendingParent, direction !== 'refine');
+    const previous =
+      direction === 'refine'
+        ? [readyParent, pendingParent]
+        : direction === 'coarsen'
+          ? [readyChild, pendingChild]
+          : [readyParent, pendingChild];
+    const selected =
+      direction === 'refine' ? [readyChild, pendingChild] : [readyParent, pendingParent];
+    const tileset = Object.assign(Object.create(Tileset3D.prototype), {
+      selectedTiles: previous,
+      _heldTiles: new Set(),
+      // This ID cache can contain only one instance of each shared ID.
+      _tiles: Object.fromEntries(previous.map(tile => [tile.id, tile])),
+      _frameNumber: 2,
+      frameStateData: {
+        pending: {selectedTiles: [selected[1]], _requestedTiles: [], _emptyTiles: []},
+        ready: {selectedTiles: [selected[0]], _requestedTiles: [], _emptyTiles: []}
+      },
+      options: {onTraversalComplete: (tiles: Tile3D[]) => tiles, onUpdate: vi.fn()},
+      _loadTiles: vi.fn(),
+      _unloadTiles: vi.fn(),
+      _updateStats: vi.fn(),
+      selectTiles: vi.fn().mockResolvedValue(2)
+    }) as Tileset3D;
+
+    tileset._updateTiles();
+    const fallback = direction === 'refine' ? pendingParent : pendingChild;
+    expect(tileset.selectedTiles).toEqual([selected[1], selected[0], fallback]);
+    // The fallback must survive more than one update despite the shared-ID cache.
+    tileset._updateTiles();
+    expect(tileset.selectedTiles).toEqual([selected[1], selected[0], fallback]);
+    selected[1].tileDrawn = true;
+    tileset._updateTiles();
+    expect(tileset.selectedTiles).toEqual([selected[1], selected[0]]);
   } finally {
     vi.clearAllTimers();
     vi.useRealTimers();

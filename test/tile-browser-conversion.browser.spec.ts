@@ -76,11 +76,8 @@ test.each([
   }
 });
 
-test('conversion rejects multiple primitives and unmapped ancestor metadata without returning an archive', async () => {
-  for (const [multiple, metadata] of [
-    [true, false],
-    [false, true]
-  ]) {
+test('conversion rejects unmapped ancestor metadata without returning an archive', async () => {
+  for (const [multiple, metadata] of [[false, true]]) {
     const {fetcher, controller} = createInput(multiple, metadata);
     const inspection = await inspectConversionInput(
       'https://example.invalid/tileset.json',
@@ -136,7 +133,7 @@ test('conversion rejects invalid selection, URL protocol, canceled input and ove
       () => {},
       exceededFetch
     )
-  ).rejects.toThrow(/byte remaining limit/);
+  ).rejects.toThrow(/aggregate input byte budget/);
 });
 
 test('cancellation during packaging discards a completed conversion result', async () => {
@@ -309,4 +306,34 @@ test('conversion observes malformed root initialization before output setup can 
       fetcher
     )
   ).rejects.toThrow('boundingVolume must be defined');
+});
+
+// UI lifecycle coverage uses an inline executor; real module workers are qualified separately.
+vi.mock('../examples/website/i3s-slpk/src/conversion-worker-client', async importOriginal => {
+  const original =
+    await importOriginal<
+      typeof import('../examples/website/i3s-slpk/src/conversion-worker-client')
+    >();
+  const {convertSelectedContents} = await import(
+    '../examples/website/i3s-slpk/src/convert-tileset'
+  );
+  return {
+    ...original,
+    convertSelectedContentsInWorker: (
+      ...arguments_: Parameters<
+        typeof import('../examples/website/i3s-slpk/src/conversion-worker-client').convertSelectedContentsInWorker
+      >
+    ) => {
+      const [inspection, resourceIds, format, signal, onProgress, features] = arguments_;
+      return convertSelectedContents(
+        inspection,
+        resourceIds,
+        format,
+        signal,
+        onProgress,
+        fetch,
+        features
+      );
+    }
+  };
 });

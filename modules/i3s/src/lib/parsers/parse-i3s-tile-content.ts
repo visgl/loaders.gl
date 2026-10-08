@@ -861,7 +861,7 @@ function makePbrMaterial(
     pbrMaterial.alphaMode = pbrMaterial.alphaMode.toUpperCase();
   }
 
-  // Convert colors from [255,255,255,255] to [1,1,1,1]
+  // Normalize legacy byte values, then convert I3S sRGB to glTF linear RGB; retain alpha.
   if (pbrMaterial.emissiveFactor) {
     pbrMaterial.emissiveFactor = convertColorFormat(pbrMaterial.emissiveFactor, colorScale);
   }
@@ -882,7 +882,7 @@ function makePbrMaterial(
 }
 
 /**
- * Preserve normalized I3S material factors and normalize legacy byte-valued factors.
+ * Normalize legacy byte-valued I3S factors and convert sRGB to glTF linear RGB.
  * @param colorScale - shared scale inferred from explicitly supplied material factors.
  * @param colorFactor - color array
  * @returns - new color array
@@ -890,7 +890,9 @@ function makePbrMaterial(
 function convertColorFormat(colorFactor: number[], colorScale: number): number[] {
   const normalizedColor = [...colorFactor];
   for (let index = 0; index < colorFactor.length; index++) {
-    normalizedColor[index] = colorFactor[index] / colorScale;
+    const value = colorFactor[index] / colorScale;
+    normalizedColor[index] =
+      index < 3 ? (value <= 0.04045 ? value / 12.92 : ((value + 0.055) / 1.055) ** 2.4) : value;
   }
   return normalizedColor;
 }

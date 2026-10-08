@@ -8,7 +8,7 @@ test('projection-utils#createProjection', async () => {
   );
   expect(
     areNumberArraysEqual(
-      projection?.project([291750, 5744750]),
+      projection?.projectSync([291750, 5744750]),
       [5.978647065934338, 51.814730970044465]
     )
   ).toBeTruthy();

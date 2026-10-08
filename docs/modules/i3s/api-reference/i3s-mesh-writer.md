@@ -1,6 +1,6 @@
 # encodeI3SMeshLayer
 
-Authors a small I3S 1.7 **3D Object** layer from one untextured triangle mesh using portable
+Authors a small I3S 1.7 **3D Object** layer from one triangle mesh using portable
 ArrayBuffer, typed-array, TextEncoder, and GZIP APIs. Package the result with `SLPKWriter`.
 
 ```ts
@@ -22,20 +22,31 @@ packed Float32 or Float64 absolute EPSG:4978 positions, optional unit Float32 EC
 and optional packed unsigned indices. Input arrays remain unchanged. Indices are expanded;
 triangles retain their winding. The output includes an empty root and a mesh leaf, paged and
 legacy node indices, geometry, scalar attributes, layer metadata, and archive metadata.
-Every resource is individually GZIP compressed with a deterministic timestamp.
+Geometry, attributes and JSON resources are individually GZIP compressed with a deterministic timestamp. Encoded PNG/JPEG images retain their original bytes.
 
 Output positions use WGS84 longitude/latitude and ellipsoidal height relative to the leaf
 center. The writer measures reconstruction error in ECEF meters and rejects positions above
 `maxPositionError`. Bounds include the reconstructed vertices and numerical center error.
-Antimeridian wrapping, undefined geographic coordinates, textures, vertex colors/UVs,
-compressed geometry, and unknown layouts/attributes are outside this initial profile.
+Antimeridian wrapping, undefined geographic coordinates, vertex colors,
+and unknown layouts/attributes are outside this initial profile.
 
 ## Appearance
 
-`material` supports one untextured metallic/roughness material: `baseColorFactor`,
+`material` supports one metallic/roughness material and optional `baseColorTexture`: `baseColorFactor`,
 `metallicFactor`, `roughnessFactor`, `alphaMode`, `alphaCutoff`, and `doubleSided`.
 MASK uses an explicit cutoff of 0.5 when omitted, preserving the glTF default rather than
-substituting the I3S default. Other material semantics fail explicitly.
+substituting the I3S default. Input RGB factors are linear, as in glTF; the writer applies the
+sRGB transfer curve required by the I3S material profile. Alpha is unchanged. The I3S reader
+converts material RGB back to linear values for rendering. Other material semantics fail explicitly.
+
+`baseColorTexture` accepts `{data: Uint8Array, mimeType: 'image/png' | 'image/jpeg'}`.
+Headers must match the MIME type and declare positive dimensions. Image bytes are copied from
+only the selected array view, without pixel decoding or transcoding. `TEXCOORD_0` accepts packed
+Float32 UV pairs or normalized Uint8/Uint16 pairs. Optional `transform` offset/rotation/scale
+is baked into new Float32 UVs. Optional sampler `wrapS`/`wrapT` map CLAMP_TO_EDGE, REPEAT and
+MIRRORED_REPEAT; explicit min/mag filtering is rejected because this profile cannot preserve it.
+Textures become separate PNG/JPEG resources referenced by layer texture definitions and node materials.
+Raw and Draco geometry preserve UVs; resource and precision limits still apply.
 
 ## Features
 
@@ -43,7 +54,7 @@ substituting the I3S default. Other material semantics fail explicitly.
 `featureIdField`, and a `Uint32Array` `triangleFeatureIndices` containing one table row index
 per triangle. Batches share a schema and retain their original row order. Triangles are stably
 grouped by row to form I3S face ranges. Mixed-feature triangles and rows without geometry
-are rejected. I3S geometry and the synthetic `OBJECTID` column use local row numbers;
+are rejected. I3S geometry and the synthetic `OBJECTID` column use generated row numbers starting at `objectIdOffset` (default zero); collection codecs allocate disjoint ranges across nodes.
 stable source identifiers remain in their own property column. `OBJECTID` is reserved.
 
 The initial property mapping supports:
@@ -67,17 +78,51 @@ and [attribute layout](https://github.com/Esri/i3s-spec/blob/master/docs/1.7/att
 
 ## Limits and qualification
 
-`maxResourceBytes` caps each uncompressed resource. The archive writer has a separate
+`maxResourceBytes` caps each emitted resource before GZIP. The archive writer has a separate
 complete archive cap. These limits do not bound peak decoder, Arrow, serialization, or
 compression allocations. Cancellation is checked by the converter between synchronous
-writing steps; worker execution and interruption within encoding remain follow-up work.
+writing steps. The browser example performs conversion in a disposable module worker and
+can interrupt it by terminating that worker.
 
 The profile is experimental. Schema validation, independently decoded binary layout,
 reader interoperability, and declared precision are required. A representative independent
 viewer check does not establish compatibility with every ArcGIS version or production dataset.
 
-Cesium 1.146.0 independently decodes and renders the representative two-feature mesh with
+For raw geometry, Cesium 1.146.0 independently decodes and renders the representative two-feature mesh with
 its material and exact decimal identifiers. That viewer's attribute reader currently treats
 null strings as empty and misdecodes non-ASCII UTF-8. The archive follows the published
 UTF-8/null layout; loaders.gl exact attribute mode verifies those values independently.
 ArcGIS viewer qualification and broader dataset profiles remain follow-up work.
+
+## Lossless Draco geometry
+
+`encodeI3SMeshLayerWithDraco(mesh, options, libraryOptions?)` is the asynchronous alternative
+exported by the same root and `i3s-mesh-writer` entrypoints. It reuses the raw writer's
+geographic preparation and precision limits, then encodes geometry with Draco Edge Breaker
+without quantization. Normals and triangle feature ownership are preserved, with the required
+I3S feature-index metadata. Decoded oriented attribute/feature tuples are verified before
+publishing resources, including duplicate triangles and winding. Node-page vertex counts
+reflect Draco's decoded vertex count. Other layer, material and feature resources retain
+their encoding; geometry, attributes and JSON remain individually GZIP compressed.
+
+```ts
+import {encodeI3SMeshLayerWithDraco} from '@loaders.gl/i3s/i3s-mesh-writer';
+import {getDracoLibraryOptions} from '@loaders.gl/draco/bundled';
+
+const layer = await encodeI3SMeshLayerWithDraco(
+  mesh,
+  {maxPositionError: 0.001, maxResourceBytes: 8 * 1024 * 1024},
+  getDracoLibraryOptions()
+);
+```
+
+Both encoder and full decoder runtimes are required. Application overrides use the existing
+`modules`, `CDN` and `useLocalLibraries` controls; omitted controls retain Draco's defaults.
+The glTF subset is not selected for I3S verification. `maxResourceBytes` also applies to the
+encoded Draco buffer and finalized JSON resources. The temporary expanded raw geometry
+is working memory, not an emitted resource. The limit does not cap codec/verification
+allocations or total peak memory. The existing synchronous writer remains available for
+raw geometry, including degenerate triangles that Draco cannot preserve. Very small geometry
+resources may grow. Independent ArcGIS viewer qualification remains follow-up work.
+
+Compression metadata follows the [I3S 1.7 compressed-attribute contract](https://github.com/Esri/i3s-spec/blob/master/docs/1.7/compressedAttributes.cmn.md).

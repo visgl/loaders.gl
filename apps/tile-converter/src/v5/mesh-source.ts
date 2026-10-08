@@ -17,7 +17,8 @@ import {createTilesetConversionSource} from '@loaders.gl/tile-converter/v5/core'
 import type {TilesetConversionSourceOptions} from '@loaders.gl/tile-converter/v5/core';
 import type {MeshConversionInput} from './mesh-conversion.js';
 import type {MeshTileMaterial} from './mesh.js';
-import {validateMeshGeometry} from './mesh.js';
+import {validateMeshGeometry, validateMeshIndices} from './mesh.js';
+import {resolveMeshSourceTexture} from './mesh-source-texture.js';
 import {extractMeshFeatures} from './mesh-source-features.js';
 import type {MeshSourceFeatureOptions} from './mesh-source-features.js';
 import type {I3SMeshFeatures} from '@loaders.gl/i3s';
@@ -33,16 +34,27 @@ export interface MeshSourceResource extends MeshConversionInput {
 export interface MeshTilesetSourceOptions extends TilesetConversionSourceOptions {
   /** Required when the source has batch/structural metadata; no schema is inferred. */
   readonly features?: MeshSourceFeatureOptions;
+  /** Explicit bounded reader for external encoded images, relative to the content URI. */
+  readonly readExternalResource?: (
+    uri: string,
+    contentUri: string | undefined,
+    signal?: AbortSignal
+  ) => Promise<Uint8Array>;
 }
 
 /**
- * Extracts static untextured GLB/B3DM primitives from a native ECEF 3D Tiles runtime.
+ * Extracts static GLB/B3DM primitives from a native ECEF 3D Tiles runtime, including
+ * optional buffer-view or base64 data-URI PNG/JPEG images, TEXCOORD_0, glTF sampling and
+ * KHR_texture_transform controls on TEXCOORD_0. Decode content with
+ * `gltf.excludeExtensions: {KHR_texture_transform: false}` to retain authored UVs/transforms.
+ * Triangle strips are expanded with alternating winding; the glTF loader already expands fans.
  * Shared traversal retains placement identity and unloads content according to the supplied policy.
  * The adapter applies node transforms, glTF up-axis correction, RTC translation, and tile placement
  * once, retaining Float64 absolute positions and inverse-transpose unit normals. Animation, skins,
- * morphs, instancing, textures, unknown extensions, non-affine/mirrored placements, and
+ * morphs, instancing, broader texture semantics, unknown extensions, non-affine/mirrored
+ * placements, and
  * metadata outside the declared feature profile fail explicitly. Multiple resources can be read;
- * the single-mesh I3S sink rejects a second resource and aborts the entire output.
+ * collection sinks accept bounded multiple placements; the compatibility single-mesh sink rejects a second resource.
  * @param tileset - Dedicated native EPSG:4978 runtime with decoded glTF content enabled.
  * @param options - Explicit feature schema/mapping and optional decoded-content cleanup.
  * @returns Portable conversion source; COLOR_0 is preserved for GLB, while I3S rejects vertex colors.
@@ -161,10 +173,13 @@ export function createMeshTilesetConversionSource(
             );
           let primitiveIndex = 0;
           for (const selected of traverseMeshNodes(roots, placement)) {
-            const resource = extractPrimitive(
+            const resource = await extractPrimitive(
               selected.primitive,
               selected.transform,
-              `${item.tile.id}/${content.index}/${primitiveIndex++}`
+              `${item.tile.id}/${content.index}/${primitiveIndex++}`,
+              options.readExternalResource,
+              content.uri,
+              signal
             );
             const features = extractMeshFeatures(
               gltf,
@@ -224,11 +239,14 @@ function* traverseMeshNodes(
 }
 
 /** Copies one packed primitive, places it once, and derives a useful ECEF local origin. */
-function extractPrimitive(
+async function extractPrimitive(
   primitive: GLTFMeshPrimitivePostprocessed,
   transform: Matrix4,
-  id: string
-): MeshSourceResource {
+  id: string,
+  readExternalResource: MeshTilesetSourceOptions['readExternalResource'],
+  contentUri: string | undefined,
+  signal?: AbortSignal
+): Promise<MeshSourceResource> {
   if (
     primitive.targets?.length ||
     Object.keys(primitive.extensions || {}).some(name => name !== 'EXT_mesh_features')
@@ -252,7 +270,7 @@ function extractPrimitive(
   const attributes: Record<string, MeshAttribute> = {};
   for (const [name, accessor] of Object.entries(primitive.attributes)) {
     if (name === '_BATCHID' || /^_FEATURE_ID_\d+$/.test(name)) continue;
-    if (!['POSITION', 'NORMAL', 'COLOR_0'].includes(name))
+    if (!['POSITION', 'NORMAL', 'COLOR_0', 'TEXCOORD_0'].includes(name))
       throw new TileConversionError(
         'MESH_SOURCE_ATTRIBUTE_UNSUPPORTED',
         `Unsupported mesh attribute ${name}`
@@ -266,11 +284,9 @@ function extractPrimitive(
   const mesh = validateMeshGeometry(
     {
       topology: 'triangle-list',
-      mode: primitive.mode ?? 4,
+      mode: primitive.mode === 5 ? 4 : (primitive.mode ?? 4),
       attributes,
-      indices: primitive.indices
-        ? {value: primitive.indices.value as MeshAttribute['value'], size: 1}
-        : undefined
+      indices: createTriangleIndices(primitive, (attributes.POSITION?.value.length ?? 0) / 3)
     },
     true
   );
@@ -307,14 +323,17 @@ function extractPrimitive(
     id,
     mesh,
     origin: minimum.map((value, axis) => value / 2 + maximum[axis] / 2) as [number, number, number],
-    material: mapMaterial(primitive.material)
+    material: await mapMaterial(primitive.material, readExternalResource, contentUri, signal)
   };
 }
 
-/** Maps supported untextured PBR controls, rejecting all unrepresented rendering semantics. */
-function mapMaterial(
-  material: GLTFMaterialPostprocessed | undefined
-): MeshTileMaterial | undefined {
+/** Maps supported PBR controls and an embedded base-color image, rejecting unmapped semantics. */
+async function mapMaterial(
+  material: GLTFMaterialPostprocessed | undefined,
+  readExternalResource: MeshTilesetSourceOptions['readExternalResource'],
+  contentUri: string | undefined,
+  signal?: AbortSignal
+): Promise<MeshTileMaterial | undefined> {
   if (!material) return undefined;
   const pbr = material.pbrMetallicRoughness;
   if (
@@ -332,20 +351,65 @@ function mapMaterial(
         ].includes(name)
     ) ||
     Object.keys(pbr || {}).some(
-      name => !['baseColorFactor', 'metallicFactor', 'roughnessFactor'].includes(name)
+      name =>
+        !['baseColorFactor', 'baseColorTexture', 'metallicFactor', 'roughnessFactor'].includes(name)
     ) ||
     material.emissiveFactor?.some(value => value !== 0)
   )
     throw new TileConversionError(
       'MESH_SOURCE_MATERIAL_UNSUPPORTED',
-      'Only untextured metallic-roughness material factors are supported'
+      'Only metallic-roughness factors and one embedded base-color image are supported'
     );
   return {
     baseColorFactor: pbr?.baseColorFactor as [number, number, number, number] | undefined,
+    ...('baseColorTexture' in (pbr || {})
+      ? {
+          baseColorTexture: await resolveMeshSourceTexture(
+            pbr!.baseColorTexture,
+            readExternalResource,
+            contentUri,
+            signal
+          )
+        }
+      : {}),
     metallicFactor: pbr?.metallicFactor,
     roughnessFactor: pbr?.roughnessFactor,
     alphaMode: material.alphaMode as MeshTileMaterial['alphaMode'],
     ...(material.alphaMode === 'MASK' ? {alphaCutoff: material.alphaCutoff ?? 0.5} : {}),
     doubleSided: material.doubleSided
   };
+}
+
+/** Expands a strip without changing vertex storage, feature IDs, source indices, or parity. */
+function createTriangleIndices(
+  primitive: GLTFMeshPrimitivePostprocessed,
+  vertexCount: number
+): MeshAttribute | undefined {
+  const attribute = primitive.indices
+    ? {
+        value: primitive.indices.value as MeshAttribute['value'],
+        size: primitive.indices.components,
+        normalized: primitive.indices.normalized
+      }
+    : undefined;
+  if (primitive.mode !== 5) return attribute;
+  const sourceIndices = validateMeshIndices(attribute, vertexCount, 5);
+  const indexCount = sourceIndices?.length ?? vertexCount;
+  if (!Number.isSafeInteger(indexCount) || indexCount < 3) {
+    throw new TileConversionError(
+      'MESH_TRIANGLE_COUNT_INVALID',
+      'Triangle strips require at least three vertices'
+    );
+  }
+  const IndexArray = vertexCount < 65536 ? Uint16Array : Uint32Array;
+  const indices = new IndexArray((indexCount - 2) * 3);
+  for (let triangle = 0; triangle < indexCount - 2; triangle++) {
+    // Match the glTF strip equation, including degenerate connectors; they advance parity too.
+    const second = triangle + 1 + (triangle % 2);
+    const third = triangle + 2 - (triangle % 2);
+    indices[triangle * 3] = sourceIndices?.[triangle] ?? triangle;
+    indices[triangle * 3 + 1] = sourceIndices?.[second] ?? second;
+    indices[triangle * 3 + 2] = sourceIndices?.[third] ?? third;
+  }
+  return {value: indices, size: 1};
 }

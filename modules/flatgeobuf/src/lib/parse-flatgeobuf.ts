@@ -3,7 +3,8 @@
 // Copyright (c) vis.gl contributors
 
 import * as arrow from 'apache-arrow';
-import {Projection} from '@math.gl/projection';
+import {projectionEngine} from '@math.gl/projection';
+import type {Projection} from '@math.gl/projection';
 import type {ReadonlyCRSDefinition} from '@math.gl/crs';
 import type {ArrowTable, ArrowTableBatch, Feature, Field, Schema, Table} from '@loaders.gl/schema';
 import {
@@ -25,7 +26,7 @@ import {
   convertFeaturesToGeoArrowTable,
   type GeoParquetGeometryType
 } from '@loaders.gl/gis';
-import {WKBBuilder} from '@loaders.gl/gis';
+import {WKBBuilder} from '@loaders.gl/arrow/geometry';
 import {convertSchemaToArrow, queryArrowTable} from '@loaders.gl/schema-utils';
 import {
   decodeFlatGeobufGeometry,
@@ -117,7 +118,7 @@ export function parseFlatGeobufToArrowTable(
   );
   const geometryArray = WKBBuilder.buildGeometryArray(geometryWriters, {
     hasZ: header.hasZ,
-    transform: projection?.project
+    transform: projection ? coordinate => projection.projectSync(coordinate) : undefined
   });
   const arrowSchema = convertSchemaToArrow(schema);
   const propertyBuilders = arrowSchema.fields
@@ -260,7 +261,7 @@ function makeGeoJsonTable(arrayBuffer: ArrayBuffer, options: ParseFlatGeobufOpti
   }
   const projection = getProjection(header, options.reproject, options.targetCrs || 'WGS84');
   if (projection)
-    features = transformGeoJsonCoords(features, coordinates => projection.project(coordinates));
+    features = transformGeoJsonCoords(features, coordinates => projection.projectSync(coordinates));
   return {
     shape: 'geojson-table' as const,
     schema: makePropertySchema(header),
@@ -340,7 +341,10 @@ export function getProjection(
     );
   }
   try {
-    return new Projection({from: sourceCrs, to: targetCrs as ReadonlyCRSDefinition});
+    return projectionEngine.createProjection({
+      from: sourceCrs,
+      to: targetCrs as ReadonlyCRSDefinition
+    });
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error);
     throw new CRSReprojectionError(

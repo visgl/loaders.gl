@@ -19,7 +19,7 @@ import maplibregl from 'maplibre-gl';
 const DATA_URL =
   'https://nasa-power.s3.us-west-2.amazonaws.com/syn1deg/spatial/power_syn1deg_climatology_spatial_utc.zarr';
 const DATA_ARRAY = 'ALLSKY_SFC_SW_DWN';
-const MAP_STYLE = 'https://basemaps.cartocdn.com/gl/dark-matter-gl-style/style.json';
+const MAP_STYLE = 'https://tiles.openfreemap.org/styles/dark';
 const INITIAL_TIME_INDEX = 6;
 const INITIAL_OPACITY = 0.65;
 const GEOZARR_LOADERS = [GeoZarrSourceLoader];
