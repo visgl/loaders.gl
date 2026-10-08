@@ -20,7 +20,7 @@ async function createWorkerInput(collection: boolean, compressed = false) {
     controller.signal,
     fetcher
   );
-  const data = compressed ? await createCompressedMesh() : createTriangle(false, 5);
+  const data = compressed ? await createCompressedMesh() : createTriangle(collection, 5);
   const contentUrl = URL.createObjectURL(new Blob([data]));
   const resources = inspection.resources.map((resource, index) =>
     index === 1 || (collection && index === 2) ? {...resource, uri: contentUrl} : resource
@@ -36,6 +36,11 @@ async function createWorkerInput(collection: boolean, compressed = false) {
     controller,
     contentUrl
   };
+}
+
+/** Raw collection input contains two placements in each selected content. */
+function countWorkerPrimitivePlacements(profile: string, compressed: boolean): number {
+  return profile === 'collection' ? (compressed ? 2 : 4) : 1;
 }
 
 // Real module-worker startup and native storage belong in the hermetic slow lane.
@@ -73,7 +78,9 @@ test.each([
         );
         outputFile = await handle.getFile();
         expect(outputFile.size).toBe(output.size);
-        expect(output.report.inputResources).toBe(resourceIds.length);
+        expect(output.report.inputResources).toBe(
+          countWorkerPrimitivePlacements(profile, compressed)
+        );
         expect(phases.at(-1)).toBe('Saving archive');
       } else {
         const output = await convertSelectedContentsInWorker(
@@ -87,7 +94,9 @@ test.each([
         expect(outputFile.name).toBe(
           profile === 'collection' ? 'selected-meshes.3tz' : `selected-mesh.${format}`
         );
-        expect(output.report.inputResources).toBe(resourceIds.length);
+        expect(output.report.inputResources).toBe(
+          countWorkerPrimitivePlacements(profile, compressed)
+        );
       }
       expect(outputFile.size).toBeGreaterThan(0);
       expect(phases).toContain('Packaging archive');
@@ -105,7 +114,10 @@ test.each([
           expect(new TextDecoder().decode(geometry.slice(0, 5))).toBe('DRACO');
           expect(new Uint8Array(geometry)[8]).toBe(1);
         } else {
-          const content = metadata.root.content || metadata.root.children[0].content;
+          expect(metadata.root.children).toHaveLength(
+            countWorkerPrimitivePlacements(profile, compressed)
+          );
+          const content = metadata.root.children[0].content;
           const glb = await parse(await archive.getFile(content.uri), GLBLoader);
           expect(glb.json.extensionsRequired).toContain('KHR_draco_mesh_compression');
         }

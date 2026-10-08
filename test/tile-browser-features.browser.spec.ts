@@ -234,7 +234,7 @@ test('browser 3TZ preserves normalized colors and one selected material, while I
   );
   try {
     const gltf = postProcessGLTF(
-      await parse(await reader.getFile('mesh.glb'), GLTFLoader, {
+      await parse(await reader.getFile('meshes/0.glb'), GLTFLoader, {
         worker: false,
         gltf: {loadImages: false}
       })

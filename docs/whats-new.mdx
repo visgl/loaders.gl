@@ -53,6 +53,8 @@ See [supported items and verification boundaries](/docs/developer-guide/arcgis/i
 
 ## What's new
 
+- The browser tile-conversion example can export multiple static primitive placements from selected GLB/B3DM contents to partial 3TZ archives, retaining per-primitive materials and transforms within the existing byte limits and a 64-placement cap.
+
 - The v5 mesh source adapter accepts indexed and non-indexed glTF triangle strips, preserving winding and feature ownership when expanding to the existing triangle-list writers. Triangle fans use the glTF loader's normalization. Compressed Draco strips normalize to triangle lists before conversion, and repeated-index connectors retain the first corner's feature row. See the [conversion API](/docs/modules/tile-converter/api-reference/v5-conversion#source-mesh-to-i3sslpk).
 
 - The v5 I3S/SLPK mesh codec now writes lossless Draco Edge Breaker geometry by default. `encodeI3SMeshLayerWithDraco` reuses the existing I3S precision/resource limits, verifies triangle winding and feature ownership, and retains raw output through `draco: false`.

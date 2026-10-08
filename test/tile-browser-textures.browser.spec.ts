@@ -90,7 +90,7 @@ test.each([
   );
   try {
     const gltf = postProcessGLTF(
-      await parse(await archive.getFile('mesh.glb'), GLTFLoader, {
+      await parse(await archive.getFile('meshes/0.glb'), GLTFLoader, {
         worker: false,
         gltf: {loadImages: false}
       })
@@ -221,7 +221,7 @@ test.each([
     new DataViewReadableFile(new DataView(await result.file.arrayBuffer()))
   );
   try {
-    const output = await archive.getFile('mesh.glb');
+    const output = await archive.getFile('meshes/0.glb');
     const preserved = await parse(output, GLTFLoader, {
       worker: false,
       gltf: {loadImages: false, excludeExtensions: {KHR_texture_transform: false}}

@@ -22,7 +22,6 @@ import {
   createMeshTilesetConversionSource,
   createMeshConversionCodec,
   createI3SMeshConversionCodec,
-  createSingleMeshTilesetSink,
   createMeshTilesetSink,
   createSingleMeshI3SSink,
   encodeTileConversionArchiveInBatches
@@ -36,8 +35,10 @@ export const CONVERSION_LIMITS = {
   maxInputBytes: 16 * 1024 * 1024,
   /** Maximum declared content placements inspected. */
   maxInputResources: 1000,
-  /** Maximum explicitly selected mesh placements in one partial archive. */
+  /** Maximum explicitly selected content placements in one partial archive. */
   maxSelectedResources: 64,
+  /** Maximum primitive placements authored across all selected 3TZ contents. */
+  maxMeshResources: 64,
   /** Maximum retained file bytes and final archive bytes. */
   maxOutputBytes: 32 * 1024 * 1024,
   /** Maximum measured reconstruction error in meters. */
@@ -85,9 +86,9 @@ export async function inspectConversionInput(
 }
 
 /**
- * Converts only the explicitly selected content placement. The initial profile requires exactly
- * one static mesh primitive with the target-supported appearance. SLPK features require
- * an explicit schema;
+ * Converts only the explicitly selected content placement. 3TZ supports bounded static primitive
+ * placements with the target-supported appearance; SLPK requires one primitive and an explicit
+ * schema for features.
  * 3TZ preserves supported vertex colors but rejects feature-bearing meshes.
  * Transport and retained output are bounded, but these limits do not bound peak decoder memory.
  */
@@ -100,9 +101,9 @@ export async function convertSelectedContent(
   fetcher: typeof fetch = fetch,
   features?: MeshSourceFeatureOptions
 ): Promise<ConversionResult> {
-  const output = await convertSelectedContentToResources(
+  const output = await convertSelectedContentsToResources(
     inspection,
-    resourceId,
+    [resourceId],
     format,
     signal,
     onProgress,
@@ -112,7 +113,7 @@ export async function convertSelectedContent(
   return createArchiveFile(output, format, signal, onProgress);
 }
 
-/** Authors one selected mesh and releases its source runtime before archive packaging. */
+/** Authors one selected SLPK mesh and releases its source runtime before archive packaging. */
 async function convertSelectedContentToResources(
   inspection: BrowserTilesetConversionInspection,
   resourceId: string,
@@ -156,40 +157,20 @@ async function convertSelectedContentToResources(
       onProgress: (progress: {phase: string}) => onProgress(progress.phase)
     };
     const sinkOptions = {maxTotalBytes: CONVERSION_LIMITS.maxOutputBytes};
-    let report: TileConversionReport;
-    let files: readonly BrowserTileConversionFile[];
-    if (format === '3tz') {
-      const sink = createSingleMeshTilesetSink({
-        ...sinkOptions,
-        geometricError: getGeometricError(document) + CONVERSION_LIMITS.maxPositionError
-      });
-      report = await convertTileset({
-        ...common,
-        sink,
-        codec: createMeshConversionCodec({
-          dracoLibraryOptions: getDracoLibraryOptions(),
-          spatialContext,
-          maxPositionError: CONVERSION_LIMITS.maxPositionError
-        }),
-        measureOutputBytes: resource => resource.glb.byteLength
-      });
-      files = sink.getFiles();
-    } else {
-      const sink = createSingleMeshI3SSink(sinkOptions);
-      report = await convertTileset({
-        ...common,
-        sink,
-        codec: createI3SMeshConversionCodec({
-          dracoLibraryOptions: getDracoLibraryOptions(),
-          spatialContext,
-          maxPositionError: CONVERSION_LIMITS.maxPositionError,
-          maxResourceBytes: CONVERSION_LIMITS.maxOutputBytes
-        }),
-        measureOutputBytes: resource =>
-          Object.values(resource.files).reduce((bytes, buffer) => bytes + buffer.byteLength, 0)
-      });
-      files = sink.getFiles();
-    }
+    const sink = createSingleMeshI3SSink(sinkOptions);
+    const report = await convertTileset({
+      ...common,
+      sink,
+      codec: createI3SMeshConversionCodec({
+        dracoLibraryOptions: getDracoLibraryOptions(),
+        spatialContext,
+        maxPositionError: CONVERSION_LIMITS.maxPositionError,
+        maxResourceBytes: CONVERSION_LIMITS.maxOutputBytes
+      }),
+      measureOutputBytes: resource =>
+        Object.values(resource.files).reduce((bytes, buffer) => bytes + buffer.byteLength, 0)
+    });
+    const files = sink.getFiles();
     signal.throwIfAborted();
     return {files, name: `selected-mesh.${format}`, report};
   } finally {
@@ -316,12 +297,11 @@ function createSelectedRuntime(
 }
 
 /**
- * Exports explicit independent leaf placements as a flat 3TZ collection. One selected content
- * retains the existing SLPK/3TZ profile. Multi-selection rejects non-leaves and SLPK before I/O;
+ * Exports static primitive placements as a flat 3TZ collection. SLPK requires one selected
+ * content with one primitive. Multi-selection rejects non-leaves and SLPK before I/O;
  * it neither reproduces source LOD relationships nor selects parent/child approximations.
- * Selected transport, decoded geometry and encoded images share aggregate budgets. Each content
- * must contain
- * exactly one supported primitive, and failure of any placement discards the entire archive.
+ * Selected transport, decoded geometry and encoded images share aggregate budgets. Primitive
+ * placements retain declaration order and individual appearance; failure discards the archive.
  */
 export async function convertSelectedContents(
   inspection: BrowserTilesetConversionInspection,
@@ -363,7 +343,9 @@ export async function convertSelectedContentsToResources(
     )
   )
     throw new Error('Select between 1 and 64 distinct content placements.');
-  if (resourceIds.length === 1)
+  if (features && format !== 'slpk')
+    throw new Error('Feature mappings currently require SLPK output.');
+  if (resourceIds.length === 1 && format === 'slpk')
     return convertSelectedContentToResources(
       inspection,
       resourceIds[0],
@@ -378,7 +360,7 @@ export async function convertSelectedContentsToResources(
   const descriptors = inspection.resources.filter(resource =>
     resourceIds.includes(resource.resourceId)
   );
-  for (const descriptor of descriptors) {
+  for (const descriptor of resourceIds.length > 1 ? descriptors : []) {
     let tile = inspection.tileset.root!;
     for (const childIndex of descriptor.tilePath) tile = tile.children![childIndex];
     if (tile.children?.length)
@@ -413,6 +395,7 @@ export async function convertSelectedContentsToResources(
     /** Decodes and releases each selected placement in declaration order. */
     async *read() {
       let decodedBytes = 0;
+      let primitiveCount = 0;
       for await (const raw of rawSource.read(selectedInspection, signal)) {
         const runtime = createSelectedRuntime(
           inspection,
@@ -426,12 +409,16 @@ export async function convertSelectedContentsToResources(
           const metadata = await meshSource.inspect(signal);
           let meshCount = 0;
           for await (const resource of meshSource.read(metadata, signal)) {
-            if (++meshCount > 1)
-              throw new Error('Each selected content must contain exactly one mesh primitive.');
+            meshCount++;
+            if (++primitiveCount > CONVERSION_LIMITS.maxMeshResources)
+              throw new Error('Selected contents exceed the mesh primitive placement limit.');
             decodedBytes += measureMeshBytes(resource);
             if (decodedBytes > CONVERSION_LIMITS.maxInputBytes)
-              throw new Error('Selected decoded geometry and encoded images exceed the aggregate input byte limit.');
-            yield {...resource, id: raw.resourceId};
+              throw new TileConversionError(
+                'INPUT_RESOURCE_TOO_LARGE',
+                'Selected decoded geometry and encoded images exceed the aggregate input byte limit.'
+              );
+            yield {...resource, id: `${raw.resourceId}/${resource.id}`};
           }
           if (!meshCount) throw new Error('Selected content has no mesh primitive.');
         } finally {
@@ -442,7 +429,7 @@ export async function convertSelectedContentsToResources(
   };
   const sink = createMeshTilesetSink({
     maxTotalBytes: CONVERSION_LIMITS.maxOutputBytes,
-    maxMeshes: CONVERSION_LIMITS.maxSelectedResources,
+    maxMeshes: CONVERSION_LIMITS.maxMeshResources,
     geometricError:
       Math.max(
         ...descriptors.map(descriptor => getGeometricError(inspection.tileset, descriptor.tilePath))
@@ -464,7 +451,11 @@ export async function convertSelectedContentsToResources(
     onProgress: progress => onProgress(progress.phase)
   });
   signal.throwIfAborted();
-  return {files: sink.getFiles(), name: 'selected-meshes.3tz', report};
+  return {
+    files: sink.getFiles(),
+    name: resourceIds.length === 1 ? 'selected-mesh.3tz' : 'selected-meshes.3tz',
+    report
+  };
 }
 
 /** Collects archive chunks as Blob parts for the main-thread integration helpers. */

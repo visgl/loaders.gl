@@ -147,7 +147,7 @@ test.each([
   const archive = new Tiles3DArchive(new BlobFile(output.file));
   try {
     const gltf = postProcessGLTF(
-      await parse(await archive.getFile('mesh.glb'), GLTFLoader, {
+      await parse(await archive.getFile('meshes/0.glb'), GLTFLoader, {
         worker: false,
         core: {useLocalLibraries: true},
         gltf: {loadImages: false, excludeExtensions: {KHR_texture_transform: false}}
