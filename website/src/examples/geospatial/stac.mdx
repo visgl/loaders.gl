@@ -12,3 +12,22 @@ import {STACCatalogLiveExample} from '../../components/docs/stac-catalog-live-ex
 The explorer uses the shared `CatalogSource` interface. It supports both static STAC catalogs and
 STAC APIs, and displays assets declared by returned Items.
 
+Choose the **deck.gl-data Earth** preset to browse the
+[Earth dataset catalog](https://github.com/visgl/deck.gl-data/tree/2de3d08585770105e1b84a6c0308c934fcce4878/earth/stac), or switch to
+**Overture Maps**. You can also enter any STAC catalog or API URL directly.
+
+Select an asset link to preview its contents below the catalog. Manifests and other text assets
+appear in the panels module's read-only text editor with JSON highlighting; Parquet assets display
+its Arrow table and schema panels with the first 50 rows and 12 columns.
+Use **Open original asset** to view or download the full file.
+Text previews are limited to 256 KiB. Parquet previews use range reads when available; otherwise,
+they download files up to 16 MiB, including the smaller GitHub-hosted Earth assets.
+The entries list scrolls independently of the asset preview.
+
+Recognized JSON assets use schema validation in the text panel. STAC Catalog,
+Collection, and Item documents use locally bundled official STAC 1.0.0 or 1.1.0
+schemas. Earth geoid, glaciation, spatial, and tectonic manifests use Zod-derived
+JSON schemas. The panel displays the selected schema name and provides field
+help and validation diagnostics. Unknown JSON still receives syntax highlighting;
+truncated previews are not validated. Earth schemas allow additional fields and
+validate the supported core fields; they are editor aids, not published format contracts.

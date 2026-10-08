@@ -19,6 +19,8 @@
     "@algolia/autocomplete-js": "^1.17.0",
     "@algolia/client-search": "^4.26.0",
     "@arcgis/core": "^4.34.8",
+    "@deck.gl-community/panels": "^9.4.0-alpha.3",
+    "@deck.gl-community/react": "^9.4.2",
     "@deck.gl/arcgis": "patch:@deck.gl/arcgis@npm%3A9.4.0#~/.yarn/patches/@deck.gl-arcgis-npm-9.4.0-4c40c78c8b.patch",
     "@deck.gl/core": "^9.4.0",
     "@deck.gl/extensions": "^9.4.0",
@@ -99,7 +101,7 @@
     "mapbox-gl": "npm:maplibre-gl@^3.6.2",
     "maplibre-gl": "^3.6.2",
     "marked": "^0.7.0",
-    "monaco-editor": "^0.52.2",
+    "monaco-editor": "^0.53.0",
     "pako": "^2.1.0",
     "papaparse": "^5.5.3",
     "prism-react-renderer": "^2.3.1",
@@ -111,6 +113,7 @@
     "sql.js": "1.14.1",
     "styled-components": "^5.3.3",
     "udsv": "^0.7.3",
+    "zod": "^4.1.12",
     "zstd-codec": "^0.1.4"
   },
   "devDependencies": {
