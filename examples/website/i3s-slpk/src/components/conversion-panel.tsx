@@ -177,11 +177,12 @@ export function ConversionPanel({onPreview}: ConversionPanelProps) {
         tilesets are rejected.
       </small>
       <small>
-        Both formats accept up to 64 mesh placements from selected leaf contents. Limits: 16 MiB input, 1,000
-        declared contents, 32 MiB output/archive, 1 cm position error. These are not peak memory
-        limits. Conversion runs in a worker; cancel terminates its parsing and packaging. Archive
-        chunks are transferred on demand. Download/preview retains the complete archive; direct file
-        saving writes chunks without collecting it. Cancel is disabled during final file commit.
+        Both formats accept up to 64 mesh placements from selected leaf contents. Limits: 16 MiB
+        input, 1,000 declared contents, 32 MiB output/archive, 1 cm position error. These are not
+        peak memory limits. Conversion runs in a worker; cancel terminates its parsing and
+        packaging. Archive chunks are transferred on demand. Download/preview retains the complete
+        archive; direct file saving writes chunks without collecting it. Cancel is disabled during
+        final file commit.
       </small>
       <form
         onSubmit={event => {
@@ -241,9 +242,7 @@ export function ConversionPanel({onPreview}: ConversionPanelProps) {
               setResult(null);
             }}
           >
-            <option value="slpk" disabled={resourceIds.length > 1}>
-              I3S / SLPK
-            </option>
+            <option value="slpk">I3S / SLPK</option>
             <option value="3tz">3D Tiles / 3TZ</option>
           </select>
           <label htmlFor="conversion-features">Feature mapping (optional JSON)</label>
@@ -261,20 +260,16 @@ export function ConversionPanel({onPreview}: ConversionPanelProps) {
             }}
           />
           <small>
-            Declare every property and its Arrow type. No schema is inferred. Exact 64-bit values
-            require explicit decimal-string encoding; unsupported feature mappings fail.
+            Declare every property and its Arrow type. No schema is inferred. SLPK requires explicit
+            decimal-string encoding for 64-bit values; 3TZ retains binary integers; unsupported
+            feature mappings fail.
           </small>
-          <button
-            disabled={busy || !resourceIds.length || (format === 'slpk' && resourceIds.length > 1)}
-            onClick={() => void runOperation(true)}
-          >
+          <button disabled={busy || !resourceIds.length} onClick={() => void runOperation(true)}>
             Convert selected content
           </button>
           {browserGlobal.showSaveFilePicker && (
             <button
-              disabled={
-                busy || !resourceIds.length || (format === 'slpk' && resourceIds.length > 1)
-              }
+              disabled={busy || !resourceIds.length}
               onClick={() => void runOperation(true, true)}
             >
               Convert and save to file

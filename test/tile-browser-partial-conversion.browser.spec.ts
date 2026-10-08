@@ -133,8 +133,12 @@ test('multi-selection discards output on a later read failure or cancellation', 
   ).rejects.toThrow('cancel archive');
 });
 
-test('conversion controls allow explicit multi-selection only with 3TZ', async () => {
+test.each([
+  'slpk',
+  '3tz'
+])('conversion controls allow explicit multi-selection with %s', async format => {
   const {fetcher} = createInput(false, false, 'Y', true);
+  vi.stubGlobal('showSaveFilePicker', vi.fn());
   vi.stubGlobal('fetch', fetcher);
   vi.stubGlobal('IS_REACT_ACT_ENVIRONMENT', true);
   const container = document.createElement('div');
@@ -160,16 +164,20 @@ test('conversion controls allow explicit multi-selection only with 3TZ', async (
     const convert = Array.from(container.querySelectorAll('button')).find(
       button => button.textContent === 'Convert selected content'
     )!;
-    expect(convert.disabled).toBe(true);
-    const format = container.querySelector<HTMLSelectElement>('#conversion-format')!;
-    expect(format.options[0].disabled).toBe(true);
-    format.value = '3tz';
-    await act(async () => format.dispatchEvent(new Event('change', {bubbles: true})));
+    expect(convert.disabled).toBe(false);
+    const save = Array.from(container.querySelectorAll('button')).find(
+      button => button.textContent === 'Convert and save to file'
+    )!;
+    expect(save.disabled).toBe(false);
+    const outputFormat = container.querySelector<HTMLSelectElement>('#conversion-format')!;
+    expect(outputFormat.options[0].disabled).toBe(false);
+    outputFormat.value = format;
+    await act(async () => outputFormat.dispatchEvent(new Event('change', {bubbles: true})));
     expect(convert.disabled).toBe(false);
     await act(async () => convert.click());
     await expect
       .poll(() => readSettledControl(() => container.querySelector('a')?.download))
-      .toBe('selected-meshes.3tz');
+      .toBe(`selected-meshes.${format}`);
   } finally {
     await act(async () => root.unmount());
     container.remove();

@@ -9,6 +9,7 @@ import {I3SNodePageSchema, I3SSceneLayerSchema} from '@loaders.gl/i3s/i3s-zod-sc
 import {GZipDecompressor} from '@loaders.gl/compression/gzip-decompressor';
 import {
   createI3SMeshSink,
+  createSingleMeshI3SSink,
   convertTileset,
   createI3SMeshConversionCodec,
   createTiles3DConversionSpatialContext,
@@ -148,4 +149,37 @@ test('SLPK collection is atomic on limits, schema mismatch, repeated OIDs and ab
     })
   ).rejects.toMatchObject({code: 'I3S_COLLECTION_SCHEMA_MISMATCH'});
   await secondSink.abort(new Error('failed'));
+});
+
+test.each([
+  ['nodes/1/textures/0.png', 'image/png'],
+  ['nodes/1/textures/0.jpg', 'image/jpeg'],
+  ['nodes/1/geometries/0.bin.gz', 'application/gzip']
+])('single-mesh sink retains the MIME type of %s', async (resourceId, contentType) => {
+  const bytes = new Uint8Array([1, 2, 3]);
+  const resource = {
+    id: 'mesh',
+    files: {[resourceId]: bytes.buffer},
+    maximumPositionError: 0,
+    decimalStringFields: []
+  };
+  const sink = createSingleMeshI3SSink({maxTotalBytes: 16});
+  await convertTileset({
+    source: {
+      inspect: async () => ({}),
+      async *read() {
+        yield resource;
+      }
+    },
+    codec: {
+      async *convert(input) {
+        yield input;
+      }
+    },
+    sink,
+    measureInputBytes: () => bytes.length,
+    measureOutputBytes: () => bytes.length
+  });
+  expect(sink.getFiles()[0].blob.type).toBe(contentType);
+  expect(new Uint8Array(await sink.getFiles()[0].blob.arrayBuffer())).toEqual(bytes);
 });
