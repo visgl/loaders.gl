@@ -128,7 +128,11 @@ See [SLPKWriter](/docs/modules/i3s/api-reference/slpk-writer) and
 both v5 entrypoints. The initial profile converts one static untextured GLB/B3DM primitive
 from a native, resolved EPSG:4978 source to an I3S 1.7 3D Object layer. Enable decoded glTF
 loading when constructing the runtime, including `gltf.decompressMeshes: true` for Draco
-content. A region bounding volume or explicit CRS metadata
+content. Triangle lists and indexed/non-indexed triangle strips are supported; strips become
+triangle lists with alternating winding before placement and feature mapping. Triangle fans are
+normalized by the glTF loader. Vertex attributes and source buffers remain unchanged. Degenerate
+strip connectors are retained and advance winding parity; GLB/3TZ Draco output may reject them,
+so select `draco: false` on the GLB codec when needed. Points, lines and primitive-restart indices remain unsupported. A region bounding volume or explicit CRS metadata
 must establish the ECEF source frame; sphere/box bounds alone do not imply a CRS.
 
 ```ts

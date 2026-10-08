@@ -12,7 +12,7 @@ import {inspectConversionInput} from '../examples/website/i3s-slpk/src/convert-t
 import {createInput, createTriangle} from './utils/tile-browser-conversion';
 import {createCompressedMesh} from './utils/tile-converter-draco';
 
-/** Supplies a real worker with a tiny local GLB URL and explicit content placements. */
+/** Supplies a real worker with a tiny Draco mesh or triangle strip and explicit placements. */
 async function createWorkerInput(collection: boolean, compressed = false) {
   const {fetcher, controller} = createInput(false, false, 'Y', collection);
   const inspection = await inspectConversionInput(
@@ -20,7 +20,7 @@ async function createWorkerInput(collection: boolean, compressed = false) {
     controller.signal,
     fetcher
   );
-  const data = compressed ? await createCompressedMesh() : createTriangle();
+  const data = compressed ? await createCompressedMesh() : createTriangle(false, 5);
   const contentUrl = URL.createObjectURL(new Blob([data]));
   const resources = inspection.resources.map((resource, index) =>
     index === 1 || (collection && index === 2) ? {...resource, uri: contentUrl} : resource

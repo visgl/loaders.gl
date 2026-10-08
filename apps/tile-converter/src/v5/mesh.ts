@@ -203,7 +203,7 @@ export function validateMeshGeometry(
       ...(normalized ? {normalized: true} : {})
     };
   }
-  const indices = getMeshIndices(mesh.indices, positions.length / 3);
+  const indices = validateMeshIndices(mesh.indices, positions.length / 3);
   if (!indices && positions.length % 9 !== 0) {
     throw new TileConversionError(
       'MESH_TRIANGLE_COUNT_INVALID',
@@ -246,10 +246,11 @@ function getFloatAttribute(
   return attribute.value;
 }
 
-/** Reads optional packed triangle indices and checks glTF range and primitive-restart rules. */
-function getMeshIndices(
+/** Validates packed indices for triangle lists or strips, including glTF primitive-restart rules. */
+export function validateMeshIndices(
   attribute: MeshAttribute | undefined,
-  vertexCount: number
+  vertexCount: number,
+  primitiveMode: 4 | 5 = 4
 ): Uint8Array | Uint16Array | Uint32Array | undefined {
   if (!attribute) return undefined;
   validateAttributeLayout(attribute, 'indices');
@@ -267,10 +268,10 @@ function getMeshIndices(
       'Indices must contain packed unsigned integer scalars'
     );
   }
-  if (values.length === 0 || values.length % 3 !== 0) {
+  if (primitiveMode === 5 ? values.length < 3 : values.length === 0 || values.length % 3 !== 0) {
     throw new TileConversionError(
       'MESH_TRIANGLE_COUNT_INVALID',
-      'Indices must contain complete triangles'
+      'Indices must contain complete triangles or at least three strip vertices'
     );
   }
   const restartIndex = 2 ** (values.BYTES_PER_ELEMENT * 8) - 1;
