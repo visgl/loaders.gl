@@ -109,10 +109,10 @@ export async function extractI3SMeshFeatures(
         'I3S node attributes exceed maxAttributeBytes'
       );
     }
-    // Copy only this view: archive-backed readers may return a subview of a larger buffer.
+    // Copy only this view, including Uint8Array subclasses whose slice returns a pooled view.
     let parsed;
     try {
-      parsed = await attributeLoader.parse(bytes.slice().buffer, {
+      parsed = await attributeLoader.parse(Uint8Array.from(bytes).buffer, {
         attributeName: attribute.name,
         attributeType: type,
         i3s: {attributeValues: 'exact'}

@@ -1077,3 +1077,20 @@ test('I3S object-ID storage accepts the standard ObjectIds ordering label', asyn
   );
   expect(resource.features!.triangleFeatureIndices).toEqual(new Uint32Array([1, 0]));
 });
+
+test('attribute resources isolate pooled views even when slice does not copy', async () => {
+  const setup = createAttributeRuntime();
+  const resource = await readResource(
+    createI3SMeshTilesetConversionSource(setup.runtime, {
+      features: setup.features,
+      readExternalResource: async uri => {
+        const bytes = await setup.reader(uri);
+        // Node Buffer.slice has this same view-preserving behavior.
+        bytes.slice = () => bytes;
+        return bytes;
+      }
+    })
+  );
+  expect(resource.features!.triangleFeatureIndices).toEqual(new Uint32Array([1, 0]));
+  expect(resource.features!.batches[0].data.getChild('feature_id')!.get(0)).toBe(9007199254740993n);
+});
