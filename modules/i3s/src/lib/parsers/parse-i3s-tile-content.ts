@@ -10,7 +10,7 @@ import {StrictLoaderOptions, LoaderContext, parseFromContext} from '@loaders.gl/
 import {ImageBitmapLoader, getImageData} from '@loaders.gl/images';
 import {DracoLoader, DracoMesh} from '@loaders.gl/draco';
 import {BasisLoader, CompressedTextureLoader} from '@loaders.gl/textures';
-import {I3SSpatialTransformer} from '@loaders.gl/tiles';
+import {I3SSpatialTransformer, getSpatialCoordinateFrame} from '@loaders.gl/tiles';
 
 import {
   FeatureAttribute,
@@ -70,7 +70,7 @@ const I3S_ATTRIBUTE_TYPE = 'i3s-attribute-type';
  * @param tilesetOptions - Shared schema information from the parent tileset.
  * @param options - Loader options propagated from the top-level load call.
  * @param context - Loader context used for fetch and parser resolution.
- * @returns Parsed tile content ready for deck.gl rendering.
+ * @returns Parsed tile content in the requested renderer or source-coordinate mode.
  */
 export async function parseI3STileContent(
   arrayBuffer: ArrayBuffer,
@@ -79,7 +79,12 @@ export async function parseI3STileContent(
   options?: StrictLoaderOptions,
   context?: LoaderContext
 ): Promise<I3STileContent> {
+  const geometryMode = options?.i3s?.geometryMode ?? 'render';
+  if (geometryMode !== 'render' && geometryMode !== 'source') {
+    throw new Error('Unsupported I3S geometry mode');
+  }
   const content: I3STileContent = {
+    geometryMode,
     attributes: {},
     indices: null,
     featureIds: [],
@@ -270,6 +275,16 @@ async function parseI3SNodeGeometry(
     };
     copyDracoTextureCoordinates(attributes, decompressedGeometry.attributes);
 
+    if (content.geometryMode === 'source') {
+      for (const [name, attribute] of Object.entries(decompressedGeometry.attributes)) {
+        if (
+          !['POSITION', 'NORMAL', 'COLOR_0', 'feature-index', 'uv-region'].includes(name) &&
+          !/^TEXCOORD_\d+$/.test(name)
+        ) {
+          attributes[name] = attribute;
+        }
+      }
+    }
     updateAttributesMetadata(attributes, decompressedGeometry);
 
     const featureIds = getFeatureIdsFromFeatureIndexMetadata(featureIndex);
@@ -328,7 +343,50 @@ async function parseI3SNodeGeometry(
   }
 
   const spatialReference = tilesetOptions.spatialReference;
-  if (spatialReference?.status === 'transformable' || spatialReference?.status === 'transformed') {
+  if (content.geometryMode === 'source') {
+    if (
+      attributes.position.size !== 3 ||
+      attributes.position.transform ||
+      attributes.position.normalized ||
+      (attributes.position.byteStride ?? 0) !== 0 ||
+      (attributes.position.byteOffset ?? 0) !== 0 ||
+      attributes.position.value.length !== vertexCount * 3 ||
+      tileOptions.mbs.length < 3 ||
+      tileOptions.mbs.slice(0, 3).some(value => !Number.isFinite(value))
+    ) {
+      throw new Error('Source I3S geometry requires packed xyz values and a finite source origin');
+    }
+    const positions = offsetsToSourcePositions(
+      attributes.position.value,
+      attributes.position.metadata,
+      tileOptions.mbs
+    );
+    if (positions.some(value => !Number.isFinite(value))) {
+      throw new Error('Source I3S positions must be finite');
+    }
+    attributes.position = {value: positions, size: 3};
+    content.origin = [0, 0, 0];
+    content.cartographicOrigin = [0, 0, 0];
+    content.coordinateSystem =
+      spatialReference?.sourceCrs &&
+      getSpatialCoordinateFrame(spatialReference.sourceCrs) === 'geographic'
+        ? 'lnglat'
+        : 'cartesian';
+    content.spatialReference = spatialReference
+      ? Object.freeze({
+          ...spatialReference,
+          status: 'native',
+          targetCrs: undefined,
+          targetHeightReference: 'native',
+          outputCoordinates: 'auto'
+        })
+      : undefined;
+    content.normalReferenceFrame = tilesetOptions.store.normalReferenceFrame || 'earth-centered';
+    content.sourceAttributes = attributes;
+  } else if (
+    spatialReference?.status === 'transformable' ||
+    spatialReference?.status === 'transformed'
+  ) {
     const spatialTransformer = new I3SSpatialTransformer(
       spatialReference,
       tilesetOptions.spatialOptions || options?.i3s?.spatial
@@ -739,8 +797,8 @@ function offsetsToSourcePositions(
   sourceOrigin: ArrayLike<number>
 ): Float64Array {
   const positions = new Float64Array(vertices.length);
-  const scaleX = (metadata['i3s-scale_x'] && metadata['i3s-scale_x'].double) || 1;
-  const scaleY = (metadata['i3s-scale_y'] && metadata['i3s-scale_y'].double) || 1;
+  const scaleX = metadata['i3s-scale_x']?.double ?? 1;
+  const scaleY = metadata['i3s-scale_y']?.double ?? 1;
   for (let index = 0; index < positions.length; index += 3) {
     positions[index] = vertices[index] * scaleX + sourceOrigin[0];
     positions[index + 1] = vertices[index + 1] * scaleY + sourceOrigin[1];

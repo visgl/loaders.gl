@@ -11,8 +11,9 @@ compact JavaScript, and optional codec implementations.
 - Compact `fflate`, `fzstd`, Snappy, LZ4 block, and Brotli fallbacks cover common read paths.
 - Larger or specialized implementations are selected through explicit, independently importable
   subpaths.
-- Combined classes ending in `Compression` remain available as deprecated v5 compatibility
-  facades and implement both the `Compressor` and `Decompressor` interfaces.
+- The package root exports only direction-specific APIs and loads JavaScript fallbacks dynamically.
+  Use ESM code splitting to keep fallback chunks out of the initial bundle.
+- Legacy combined classes remain available only through explicit implementation subpaths.
 
 ## Example
 

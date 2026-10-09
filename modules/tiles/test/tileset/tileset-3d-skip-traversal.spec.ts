@@ -3,9 +3,16 @@
 // Copyright vis.gl contributors
 
 import {expect, test, vi} from 'vitest';
-import {TILE_REFINEMENT} from '../../src/constants';
+import {coreApi, load} from '@loaders.gl/core';
+import {WebMercatorViewport} from '@deck.gl/core';
+import {Tiles3DLoader} from '@loaders.gl/3d-tiles';
+import {getI3sTileHeader} from '@loaders.gl/i3s/test/test-utils/load-utils';
+import {I3SSource, Tiles3DSource, Tileset3D} from '@loaders.gl/tiles';
+import {TILE_CONTENT_STATE, TILE_REFINEMENT} from '../../src/constants';
 import type {Tile3D} from '../../src/tileset-3d/common/tile-3d';
 import {Tileset3DTraverser} from '../../src/tileset-3d/format-3d-tiles/tileset-3d-traverser';
+
+const TILESET_URL = '@loaders.gl/3d-tiles/test/data/CesiumJS/Tilesets/Tileset/tileset.json';
 
 type TestTileset = {
   memoryAdjustedScreenSpaceError: number;
@@ -38,6 +45,7 @@ function createTraversalTile(
     contentFailed: false,
     isVisible: true,
     isVisibleAndInRequestVolume: true,
+    _inRequestVolume: true,
     priorityDeferred: false,
     _distanceToCamera: depth,
     _screenSpaceError: screenSpaceError,
@@ -111,6 +119,184 @@ test('Tileset3DTraverser#skip LOD omits intermediate content requests', () => {
   expect(leaf._requestedFrame).toBe(1);
 });
 
+test.each([
+  undefined,
+  true,
+  false
+])('Tileset3D#3D Tiles defaults skip intermediate requests with override %s', async skipLevelOfDetail => {
+  const tileset = new Tileset3D(
+    new Tiles3DSource({url: TILESET_URL, loader: Tiles3DLoader, coreApi}),
+    {skipLevelOfDetail}
+  );
+  await tileset.tilesetInitializationPromise;
+  try {
+    const {root, intermediate, leaf} = createReplacementTree(true);
+    const traverser = traverseReplacementTree(root, tileset.options);
+    const shouldSkip = skipLevelOfDetail !== false;
+
+    expect(tileset.options.skipLevelOfDetail).toBe(shouldSkip);
+    expect(Boolean(traverser.requestedTiles[intermediate.id])).toBe(!shouldSkip);
+    expect(Boolean(traverser.requestedTiles[leaf.id])).toBe(true);
+    expect(Object.keys(traverser.selectedTiles)).toContain('root');
+  } finally {
+    tileset.destroy();
+  }
+});
+
+test('Tileset3D#I3S keeps skip LOD disabled by default', async () => {
+  const header = await getI3sTileHeader();
+  const tileset = new Tileset3D(new I3SSource({...header, coreApi}));
+  await tileset.tilesetInitializationPromise;
+  try {
+    expect(tileset.options.skipLevelOfDetail).toBe(false);
+  } finally {
+    tileset.destroy();
+  }
+});
+
+test('Tileset3D#default skip traversal supports independent views and a live opt-out', async () => {
+  const header = await load(TILESET_URL, Tiles3DLoader);
+  // Reuse the fixture bounds; only topology and geometric errors need controlled values.
+  const createHeader = (id: string, geometricError: number, children: any[] = []) => ({
+    ...header.root,
+    id,
+    refine: TILE_REFINEMENT.REPLACE,
+    geometricError,
+    lodMetricValue: geometricError,
+    children
+  });
+  header.root = createHeader('root', 70, [
+    createHeader('intermediate', 35, [createHeader('leaf', 0)])
+  ]);
+  const tileset = new Tileset3D(new Tiles3DSource({...header, coreApi}), {
+    dynamicScreenSpaceError: false,
+    foveatedScreenSpaceError: false,
+    progressiveResolutionHeightFraction: 0
+  });
+  // Keep real selection/culling and runtime aggregation, but control content availability.
+  vi.spyOn(tileset, '_loadTiles').mockImplementation(() => {});
+  const camera = {longitude: -75.6121, latitude: 40.0425, width: 800, height: 600, pitch: 45};
+  const far = new WebMercatorViewport({...camera, id: 'far', zoom: 10});
+  const near = new WebMercatorViewport({...camera, id: 'near', zoom: 16});
+  await tileset.tilesetInitializationPromise;
+  try {
+    await tileset.selectTiles([far, near]);
+    const farRoot = tileset.roots.far;
+    const nearRoot = tileset.roots.near;
+    const nearIntermediate = nearRoot.children[0];
+    const nearLeaf = nearIntermediate.children[0];
+    farRoot.contentState = nearRoot.contentState = TILE_CONTENT_STATE.READY;
+
+    await tileset.selectTiles([far, near]);
+    expect(tileset.selectedTiles).toEqual(expect.arrayContaining([farRoot, nearRoot]));
+    expect(tileset.requestedTiles).toContain(nearLeaf);
+    expect(tileset.requestedTiles).not.toContain(nearIntermediate);
+
+    tileset.setProps({skipLevelOfDetail: false});
+    await tileset.selectTiles([far, near]);
+    expect(tileset.requestedTiles).toContain(nearIntermediate);
+    expect(tileset.selectedTiles).toContain(nearRoot);
+
+    tileset.setProps({skipLevelOfDetail: true});
+    nearLeaf.contentState = TILE_CONTENT_STATE.READY;
+    await tileset.selectTiles([far, near]);
+    expect(tileset.selectedTiles).toEqual(expect.arrayContaining([farRoot, nearLeaf]));
+    expect(tileset.selectedTiles).not.toContain(nearRoot);
+
+    await tileset.selectTiles(near);
+    expect(tileset.selectedTiles).toEqual([nearLeaf]);
+  } finally {
+    tileset.destroy();
+  }
+});
+
+test('Tileset3DTraverser#cold skip traversal requests coarse coverage before final detail', () => {
+  const {root, intermediate, threshold, leaf} = createReplacementTree();
+  const traverser = traverseReplacementTree(root, {});
+
+  expect(Object.keys(traverser.requestedTiles)).toEqual(['root', 'threshold', 'leaf']);
+  expect(Object.keys(traverser.selectedTiles)).toEqual([]);
+  root.contentAvailable = true;
+  root.hasUnloadedContent = false;
+  root.contentUnloaded = false;
+  traverser.traverse(root, {frameNumber: 2, viewport: {id: 'test'}} as any, {});
+
+  expect(Object.keys(traverser.selectedTiles)).toEqual(['root']);
+  expect(traverser.requestedTiles[intermediate.id]).toBeUndefined();
+  expect(traverser.requestedTiles[threshold.id]).toBeDefined();
+  expect(traverser.requestedTiles[leaf.id]).toBeDefined();
+});
+
+test('Tileset3DTraverser#skip LOD preserves fallback for a failed visible sibling', () => {
+  const {root, threshold, leaf} = createReplacementTree(true);
+  const sibling = createTraversalTile(root.tileset as unknown as TestTileset, 'sibling', 3, 0);
+  appendChild(threshold, sibling);
+  sibling.contentFailed = true;
+  sibling.hasUnloadedContent = false;
+  sibling.contentUnloaded = false;
+  leaf.contentAvailable = true;
+  leaf.hasUnloadedContent = false;
+  leaf.contentUnloaded = false;
+
+  const traverser = traverseReplacementTree(root, {});
+  expect(Object.keys(traverser.selectedTiles).sort()).toEqual(['leaf', 'root']);
+  expect(traverser.requestedTiles[sibling.id]).toBeUndefined();
+
+  sibling.isVisibleAndInRequestVolume = false;
+  traverser.traverse(root, {frameNumber: 2, viewport: {id: 'test'}} as any, {});
+  expect(Object.keys(traverser.selectedTiles)).toEqual(['leaf']);
+});
+
+test('Tileset3DTraverser#known empty leaves do not hold replacement ancestors', () => {
+  const {root, threshold, leaf} = createReplacementTree(true);
+  const empty = createTraversalTile(root.tileset as unknown as TestTileset, 'empty', 3, 0);
+  Object.assign(empty, {hasRenderContent: false, hasEmptyContent: true, hasUnloadedContent: false});
+  appendChild(threshold, empty);
+  Object.assign(leaf, {contentAvailable: true, hasUnloadedContent: false, contentUnloaded: false});
+
+  const traverser = traverseReplacementTree(root, {});
+  expect(Object.keys(traverser.selectedTiles)).toEqual(['leaf']);
+  expect(traverser.requestedTiles[empty.id]).toBeUndefined();
+});
+
+test('Tileset3DTraverser#unresolved empty branches retain coverage until materialized', () => {
+  const {root, intermediate} = createReplacementTree(true);
+  intermediate.children = [];
+  Object.assign(intermediate, {
+    hasRenderContent: false,
+    hasEmptyContent: true,
+    hasUnloadedContent: false,
+    hasUnloadedChildren: true
+  });
+  Object.defineProperty(intermediate, 'hasChildren', {
+    get: () => intermediate.hasUnloadedChildren || intermediate.children.length > 0
+  });
+  const traverser = new Tileset3DTraverser({skipLevelOfDetail: true, onTraversalEnd: vi.fn()});
+  traverser.updateTile = () => {};
+  // Isolate the pending-header boundary; actual subtree loading is covered by implicit-tiling tests.
+  traverser.updateChildTiles = () => {};
+  traverser.traverse(root, {frameNumber: 1, viewport: {id: 'test'}} as any, {});
+  expect(Object.keys(traverser.selectedTiles)).toEqual(['root']);
+
+  Object.assign(intermediate, {hasUnloadedChildren: false});
+  traverser.traverse(root, {frameNumber: 2, viewport: {id: 'test'}} as any, {});
+  expect(Object.keys(traverser.selectedTiles)).toEqual([]);
+});
+
+test.each([
+  false,
+  true
+])('Tileset3DTraverser#skip sibling loading honors viewer request volume %s', inRequestVolume => {
+  const {root, intermediate} = createReplacementTree(true);
+  Object.assign(intermediate, {
+    isVisibleAndInRequestVolume: false,
+    _inRequestVolume: inRequestVolume
+  });
+  const traverser = traverseReplacementTree(root, {loadSiblings: true});
+  expect(Boolean(traverser.requestedTiles[intermediate.id])).toBe(inRequestVolume);
+  expect(Object.keys(traverser.selectedTiles)).toEqual(['root']);
+});
+
 test('Tileset3DTraverser#immediatelyLoadDesiredLevelOfDetail requests only the final tile', () => {
   const {root, intermediate, threshold, leaf} = createReplacementTree();
   const traverser = traverseReplacementTree(root, {
@@ -161,4 +347,36 @@ test('Tileset3DTraverser#skip LOD ignores disabled progressive-resolution thresh
 
   expect(Object.keys(traverser.requestedTiles)).toEqual(['root', 'leaf']);
   expect(traverser.requestedTiles[threshold.id]).toBeUndefined();
+});
+
+test('Tileset3DTraverser#zoom-out keeps drawn descendants alongside a coarse fallback', () => {
+  const {root, intermediate, threshold, leaf} = createReplacementTree(true);
+  intermediate._screenSpaceError = 4;
+  Object.assign(threshold, {contentAvailable: true, hasUnloadedContent: false, tileDrawn: true});
+  const traverser = traverseReplacementTree(root, {});
+  expect(Object.keys(traverser.selectedTiles).sort()).toEqual(['root', 'threshold']);
+  expect(traverser.requestedTiles[intermediate.id]).toBeDefined();
+  expect(traverser.requestedTiles[leaf.id]).toBeUndefined();
+
+  // Once the desired level arrives, the over-refined fallback can retire.
+  intermediate.contentAvailable = true;
+  intermediate.hasUnloadedContent = false;
+  traverser.traverse(root, {frameNumber: 2, viewport: {id: 'test'}} as any, {});
+  expect(Object.keys(traverser.selectedTiles)).toEqual(['intermediate']);
+});
+
+test.each([
+  'undrawn',
+  'culled',
+  'unloaded'
+])('Tileset3DTraverser#zoom-out does not restore %s descendant work', state => {
+  const {root, intermediate, threshold} = createReplacementTree(true);
+  intermediate._screenSpaceError = 4;
+  Object.assign(threshold, {
+    contentAvailable: state !== 'unloaded',
+    tileDrawn: state !== 'undrawn',
+    isVisibleAndInRequestVolume: state !== 'culled'
+  });
+  const traverser = traverseReplacementTree(root, {});
+  expect(Object.keys(traverser.selectedTiles)).toEqual(['root']);
 });

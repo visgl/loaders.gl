@@ -58,6 +58,14 @@ export type I3STransformedPositions = {
   modelMatrix: Matrix4;
 };
 
+/** Double-precision conversion geometry after I3S units, elevation and CRS placement. */
+export type I3STransformedGeometry = {
+  /** Absolute target xyz positions, before any writer-owned float32 rebasing. */
+  positions: Float64Array;
+  /** Optional unit normals in the target basis. */
+  normals?: Float32Array;
+};
+
 /**
  * Applies one normalized I3S horizontal CRS operation consistently to geometry, normals, origins,
  * and node bounds.
@@ -308,6 +316,44 @@ export class I3SSpatialTransformer {
     );
   }
 
+  /**
+   * Transforms conversion geometry without passing through renderer float32 offsets.
+   * Positions and normals share one batch of elevation samples. Source arrays remain unchanged.
+   * @param sourcePositions - Packed absolute xyz positions in source units.
+   * @param normals - Optional packed normals paired with the positions.
+   * @param normalReferenceFrame - I3S earth-centered or vertex-reference-frame declaration.
+   * @returns Absolute target positions and optional transformed normals.
+   */
+  async transformGeometryAsync(
+    sourcePositions: ArrayLike<number>,
+    normals?: ArrayLike<number>,
+    normalReferenceFrame = 'earth-centered'
+  ): Promise<I3STransformedGeometry> {
+    if (sourcePositions.length % 3 || (normals && normals.length !== sourcePositions.length)) {
+      throw new Error('Conversion positions and normals must contain matching finite xyz triples');
+    }
+    for (let index = 0; index < sourcePositions.length; index++) {
+      if (
+        !Number.isFinite(sourcePositions[index]) ||
+        (normals && !Number.isFinite(normals[index]))
+      ) {
+        throw new Error(
+          'Conversion positions and normals must contain matching finite xyz triples'
+        );
+      }
+    }
+    if (!['earth-centered', 'vertex-reference-frame'].includes(normalReferenceFrame)) {
+      throw new Error('Unsupported I3S normal reference frame');
+    }
+    const placedPositions = await this.placeSourcePositions(sourcePositions);
+    return {
+      positions: this.positionTransformer.transformPositions(placedPositions),
+      normals: normals
+        ? this.transformNormals(normals, placedPositions, normalReferenceFrame)
+        : undefined
+    };
+  }
+
   /** Transform already placed positions into renderer-relative target coordinates. */
   private transformPlacedPositions(
     sourcePositions: ArrayLike<number>,
@@ -355,7 +401,25 @@ export class I3SSpatialTransformer {
     sourcePositions: ArrayLike<number>,
     normalReferenceFrame = 'earth-centered'
   ): Float32Array {
+    if (normals.length !== sourcePositions.length || normals.length % 3) {
+      throw new Error('I3S normals and positions must have matching xyz component counts');
+    }
     const transformedNormals = new Float32Array(normals.length);
+    // Earth-centered I3S normals already use the output ECEF basis; no position projection is needed.
+    if (
+      normalReferenceFrame === 'earth-centered' &&
+      (this.spatialReference.targetCrs || this.spatialReference.sourceCrs) === 'EPSG:4978'
+    ) {
+      for (let index = 0; index < normals.length; index += 3) {
+        const length = Math.hypot(normals[index], normals[index + 1], normals[index + 2]);
+        for (let axis = 0; axis < 3; axis++) {
+          transformedNormals[index + axis] = length
+            ? normals[index + axis] / length
+            : normals[index + axis];
+        }
+      }
+      return transformedNormals;
+    }
     for (let index = 0; index < normals.length; index += 3) {
       const geographic = this.sourceToGeographicTransformer.transformPosition([
         sourcePositions[index],
