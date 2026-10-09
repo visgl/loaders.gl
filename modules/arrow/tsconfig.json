@@ -11,7 +11,7 @@
     {"path": "../arrow-geometry"},
     {"path": "../compression"},
     {"path": "../core"},
-    {"path": "../geoarrow"},
+    {"path": "../gis"},
     {"path": "../loader-utils"},
     {"path": "../schema"},
     {"path": "../schema-utils"},

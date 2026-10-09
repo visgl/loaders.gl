@@ -130,6 +130,18 @@ export {
   convertGeometryColumnToBinaryFeatureCollection,
   convertGeometryValuesToBinaryFeatureCollection
 } from './lib/feature-collection-converters/convert-geometry-column-to-binary-feature-collection';
+export type {
+  BinaryDataFromGeoArrow,
+  BinaryGeometriesFromArrowOptions
+} from './lib/feature-collection-converters/convert-geoarrow-to-binary-features';
+export {
+  getBinaryGeometryTemplate,
+  getMeanCentersFromBinaryGeometries,
+  getTriangleIndices,
+  convertGeoArrowToBinaryFeatureCollection
+} from './lib/feature-collection-converters/convert-geoarrow-to-binary-features';
+export {updateBoundsFromGeoArrowSamples} from './lib/feature-collection-converters/update-geoarrow-bounds';
+export {convertGeoArrowTableToGeoJSON} from './lib/table-converters/convert-geoarrow-table-to-geojson';
 export {
   convertArrowBinaryFeatureCollectionToBinaryFeatureCollection,
   convertBinaryFeatureCollectionToArrowBinaryFeatureCollection
