@@ -375,7 +375,10 @@ export class OGCAPITilesSource
   getTileURL(parameters: GetTileParameters): string {
     const template = this.options['ogc-api']?.tileTemplate;
     if (!template) throw new Error('OGC API Tiles requires ogc-api.tileTemplate');
-    const tileMatrixId = getTileGridMatrixId(this.getLoadedTileGrid(), parameters);
+    // XYZ-only templates do not address a matrix, so no matrix is looked up for them.
+    const tileMatrixId = template.includes('{tileMatrix}')
+      ? getTileGridMatrixId(this.getLoadedTileGrid(), parameters)
+      : '';
     return template
       .replaceAll('{tileMatrix}', tileMatrixId)
       .replaceAll('{tileRow}', String(parameters.y))
