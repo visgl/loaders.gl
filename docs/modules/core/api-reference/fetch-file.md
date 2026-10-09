@@ -103,8 +103,7 @@ Use the `fetchFile` function as follows:
 ```typescript
 import {fetchFile} from '@loaders.gl/core';
 
-const response = await fetchFile(url);
-// or supply any standard `RequestInit` options expected by `fetch`
+// The optional second argument accepts standard fetch RequestInit options.
 const response = await fetchFile(url, {headers: {}});
 
 // Now use standard browser Response APIs

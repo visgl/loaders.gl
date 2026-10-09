@@ -72,10 +72,10 @@ if (topLevelExtension) {
 const imageIndex = 0;
 const image = gltf.getImage(imageIndex);
 
-// Get default glTF scenegraph
-const scenegraph = gltf.getScene();
-// Get specific glTF scenegraph
-const scenegraph = gltf.getScene(2);
+// Get the default scene, or the first scene if no default is specified
+const defaultScene = gltf.getScene(gltfJson.scene ?? 0);
+// Get a specific scene
+const specificScene = gltf.getScene(2);
 ```
 
 ### Modifying
