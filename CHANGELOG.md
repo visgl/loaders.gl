@@ -4,6 +4,17 @@
 
 ### Unreleased
 
+### v5.0.0-alpha.11
+
+- chore(math.gl): upgrade to 5.0.0-alpha.15
+- feat(tile-converter): preserve original I3S mesh textures and attributes, support multiple mesh placements and triangle-strip inputs, and encode v5 I3S meshes with Draco
+- feat(tile-converter): connect CRS and elevation options to v5 writers and package precise ECEF point tiles
+- perf(tiles): enable skip-LOD refinement for 3D Tiles and discover replacement siblings without serializing refinement
+- feat(wms): support per-level WMTS tile matrices and projected-CRS resolutions
+- refactor(compression): remove deprecated root exports and defer JavaScript fallbacks
+- feat(website): inspect Earth STAC assets with panels and schemas
+- chore(examples): replace CARTO basemaps with OpenFreeMap
+
 ### v5.0.0-alpha.10
 
 - chore(math.gl): upgrade to 5.0.0-alpha.13

@@ -1,6 +1,6 @@
 {
   "name": "@loaders.gl/services",
-  "version": "5.0.0-alpha.10",
+  "version": "5.0.0-alpha.11",
   "description": "Authentication presets for geospatial service providers",
   "license": "MIT",
   "type": "module",
@@ -45,7 +45,7 @@
     "README.md"
   ],
   "dependencies": {
-    "@loaders.gl/loader-utils": "5.0.0-alpha.10"
+    "@loaders.gl/loader-utils": "5.0.0-alpha.11"
   },
   "peerDependencies": {
     "@loaders.gl/core": "~5.0.0-alpha.0"

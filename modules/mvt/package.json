@@ -1,7 +1,7 @@
 {
   "name": "@loaders.gl/mvt",
   "description": "Loader for Mapbox Vector Tiles",
-  "version": "5.0.0-alpha.10",
+  "version": "5.0.0-alpha.11",
   "license": "MIT",
   "type": "module",
   "publishConfig": {
@@ -69,12 +69,12 @@
     "build-worker": "esbuild src/workers/mvt-worker.ts --bundle --outfile=dist/mvt-worker.js --define:__VERSION__=\\\"$npm_package_version\\\""
   },
   "dependencies": {
-    "@loaders.gl/arrow": "5.0.0-alpha.10",
-    "@loaders.gl/gis": "5.0.0-alpha.10",
-    "@loaders.gl/images": "5.0.0-alpha.10",
-    "@loaders.gl/loader-utils": "5.0.0-alpha.10",
-    "@loaders.gl/schema": "5.0.0-alpha.10",
-    "@loaders.gl/schema-utils": "5.0.0-alpha.10",
+    "@loaders.gl/arrow": "5.0.0-alpha.11",
+    "@loaders.gl/gis": "5.0.0-alpha.11",
+    "@loaders.gl/images": "5.0.0-alpha.11",
+    "@loaders.gl/loader-utils": "5.0.0-alpha.11",
+    "@loaders.gl/schema": "5.0.0-alpha.11",
+    "@loaders.gl/schema-utils": "5.0.0-alpha.11",
     "@math.gl/polygon": "5.0.0-alpha.15",
     "@probe.gl/stats": "^4.1.1",
     "apache-arrow": "^21.2.0",
