@@ -36,27 +36,15 @@ import {BundleBoundaryGraphic} from '@site/src/components/docs/bundle-boundary-g
   ]}
 />
 
-One of the strengths of loaders.gl is the ability for an application to support a wide range of similar input formats by using a list of loaders. However, bundling many rarely used loaders into the main application bundle has a real cost. In this case, unbundled loaders can be a good option.
-
-Unbundled loaders keep the loader metadata in the main application bundle while deferring the parser implementation until the loader is actually used. This lets applications keep broad format support without paying the full parser bundle cost up front.
-
-## When to use unbundled loaders
-
-Use unbundled loaders when an application needs to recognize or support a format, but most sessions will not actually parse that format. For example, an import tool may support CSV, JSON, Parquet, Shapefile, FlatGeobuf, and several point cloud formats, while any individual user usually uploads only one of them.
-
-The bundled loader import is still the best default when a loader is central to the application path, used frequently, or needed by synchronous APIs without a preload step.
-
-Some modules expose an explicit `/bundled` subpath with the parser-bearing loaders exported under the same names. This is equivalent to importing the parser implementation directly and gives applications a stable import path even if a module's root export is metadata-only.
+Unbundled loaders defer parser code until a format is used. They suit import tools
+that recognize many formats but parse only a few in each session. Import a
+parser-bearing loader directly when you need synchronous parsing at startup.
 
 ## Importing unbundled loaders
 
-Unbundled loaders are exposed through a module's `/unbundled` subpath. The import pattern is:
-
-```typescript
-import {SomeLoader} from '@loaders.gl/some-module/unbundled';
-```
-
-For example, CSV provides metadata-only loaders from `@loaders.gl/csv/unbundled`:
+Check each module's exports: metadata-only loaders may be available at the root
+or through an explicit `/unbundled` subpath. CSV supports both; this example uses
+the explicit subpath:
 
 ```typescript
 import {load} from '@loaders.gl/core';
@@ -119,20 +107,22 @@ const table = await parse(csvText, parserLoader);
 
 ## `preload()` and `parseSync`
 
-Synchronous APIs cannot start a dynamic import. To use an unbundled loader with `parseSync`, preload first and then call `parseSync` with the same loader:
+Synchronous APIs cannot start a dynamic import. Preload first, then pass the
+returned parser-bearing loader to `parseSync`:
 
 ```typescript
 import {parseSync, preload} from '@loaders.gl/core';
 import {CSVLoader} from '@loaders.gl/csv/unbundled';
 
-await preload(CSVLoader);
-
-const table = parseSync(arrayBuffer, CSVLoader);
+const parserLoader = await preload(CSVLoader);
+const table = parseSync(arrayBuffer, parserLoader);
 ```
 
 If the loader has not been preloaded, `parseSync` will throw. If the loaded implementation does not support synchronous parsing, `parseSync` will still throw and the application should use the async `parse` API instead.
 
-Calling `loader.preload()` directly does not populate core's preload cache. Use `preload(loader)` from `@loaders.gl/core` when later `parseSync(data, loader)` should find the cached implementation.
+Core can also resolve the original metadata loader from its preload cache.
+Calling `loader.preload()` directly does not populate that cache; use the returned
+implementation or call core's `preload(loader)`.
 
 ## `preloadSync()`
 
@@ -149,8 +139,5 @@ const parserLoader = preloadSync(CSVLoader);
 
 ## Availability
 
-Unbundled subpaths are introduced module by module. Check the loader module documentation for the exact public subpath. For CSV, use:
-
-```typescript
-import {CSVLoader} from '@loaders.gl/csv/unbundled';
-```
+Check each module's documentation and package exports before using `/unbundled`
+or `/bundled`; these subpaths are not available in every module.
