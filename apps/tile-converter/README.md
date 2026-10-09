@@ -495,9 +495,16 @@ for supported layouts, normal frames, and application-owned spatial resources.
 
 ### Original I3S mesh input
 
-The v5 adapters export `createI3SMeshTilesetConversionSource` for an initial untextured
+The v5 adapters export `createI3SMeshTilesetConversionSource` for a selected
 I3S mesh profile. Use a dedicated source-backed runtime with `i3s.geometryMode: 'source'`
 to retain absolute Float64 source coordinates and original normals. Pair the GLB codec
 with `autoOrigin: true` to choose the placement origin after spatial transformation.
-Features require an explicit Arrow mapper; unsupported appearance and attributes fail.
+One encoded PNG/JPEG base-color texture and explicit wrapping are preserved without decoding
+pixels. `features` reads standard scalar/string attribute resources into a caller-declared Arrow
+schema using an `objectIdProperty`, optional `sourceFeatureIdProperty` and `maxAttributeBytes`.
+Signed/unsigned 64-bit properties retain exact bigint values; triangle ownership must be complete.
+Supply `readExternalResource` for external textures/attributes, including byte limits, archive
+resolution, authentication and decompression. `getFeatures` remains the custom alternative.
+Unsupported atlas regions, colors, richer maps, domains/dates and layouts fail explicitly.
+See the v5 conversion API reference for the exact source profile and an example mapping.
 See the [v5 conversion reference](../../docs/modules/tile-converter/api-reference/v5-conversion.md).

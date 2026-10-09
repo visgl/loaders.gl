@@ -132,9 +132,10 @@ See [SLPKWriter](/docs/modules/i3s/api-reference/slpk-writer) and
 
 ## Original I3S mesh sources
 
-`createI3SMeshTilesetConversionSource` reads untextured `3DObject` and `IntegratedMesh`
+`createI3SMeshTilesetConversionSource` reads selected `3DObject` and `IntegratedMesh`
 content through the shared camera-independent traversal. Construct a dedicated `Tileset3D`
-runtime with `i3s.geometryMode: 'source'` and `i3s.decodeTextures: false`. Source decoding
+runtime with `i3s.geometryMode: 'source'`, `i3s.decodeTextures: false` and
+`i3s.useCompressedTextures: false` to select supported PNG/JPEG resources. Source decoding
 reconstructs absolute Float64 positions from node offsets without per-vertex renderer
 projection or Float32 placement. Normals retain the store's original vector basis, which the source forwards to both writer codecs. Runtime
 header/bounds preparation still follows the runtime spatial policy.
@@ -142,7 +143,11 @@ header/bounds preparation still follows the runtime spatial policy.
 ```ts
 const source = createI3SMeshTilesetConversionSource(tileset, {
   unloadContent: true,
-  // getFeatures: applicationOwnedArrowMapper
+  // Required for external textures/attributes; own byte limits, archive resolution,
+  // authentication and decompression in this reader.
+  readExternalResource: readEncodedResource
+  // features: {schema, metadataClass, objectIdProperty, maxAttributeBytes}
+  // Or getFeatures: applicationOwnedArrowMapper
 });
 const metadata = await source.inspect();
 const spatialContext = createI3SConversionSpatialContext(metadata.spatialReference, {
@@ -161,13 +166,55 @@ its default is `false`, preserving existing explicit target origins. Pair this c
 bounded 3D Tiles sinks and optional 3TZ packaging. The I3S writer codec can also consume
 these source resources and performs its own geographic rebasing.
 
-This initial source profile supports triangle positions, normals, one UV set and basic
-untextured PBR factors. Textures (including declared resources that failed to load), vertex
-colors, UV regions, additional producer attributes, opaque segmentation and unsupported
-materials fail explicitly. Nodes with feature IDs or layer attribute definitions require
-`getFeatures`, which returns an `I3SMeshFeatures` Arrow table and complete triangle
-associations. Decoded numeric IDs outside the safe-integer range are rejected. Attribute
-resource loading and lossless property mapping remain application responsibilities.
+The source preserves triangle positions, normals, one UV set, normalized basic PBR factors
+and one encoded PNG/JPEG base-color texture. It reuses encoded texture bytes loaded with
+`decodeTextures: false`, or reads a declared texture resource through `readExternalResource`.
+Legacy singleton texture URLs without a material declaration are treated as base-color maps.
+Header formats must match the image bytes; explicitly declared wrapping is retained. Image
+subviews are preserved, source objects are not mutated, and pixels are never decoded or
+transcoded. Decoded pixel images, extra maps/texture sets, UV regions, vertex colors,
+additional producer attributes and opaque segmentation fail explicitly.
+
+Nodes with feature IDs or layer attribute declarations require either `features` or
+`getFeatures` (never both). The `features` option reads standard scalar/string resources in
+layer declaration order through the same application reader, checks a per-node aggregate
+encoded byte budget before parsing, and validates complete triangle ownership:
+
+```ts
+const source = createI3SMeshTilesetConversionSource(tileset, {
+  unloadContent: true,
+  readExternalResource: readEncodedResource,
+  features: {
+    metadataClass: 'buildings',
+    objectIdProperty: 'OBJECTID', // Resource column matching geometry IDs.
+    sourceFeatureIdProperty: 'stable_id', // Optional; defaults to objectIdProperty.
+    maxAttributeBytes: 1024 * 1024,
+    schema: {
+      fields: [
+        {name: 'feature_id', type: 'uint64', nullable: false},
+        {name: 'name', type: 'utf8', nullable: true}
+      ]
+    }
+  }
+});
+```
+
+`objectIdProperty` maps geometry identifiers to attribute rows even when row order differs.
+The selected stable-ID property populates `featureIdField` (default `feature_id`); the two
+selected identifier columns are consumed by the mapping. Every other property must be mapped
+by name in the explicit Arrow schema. All rows must own geometry and stable IDs must be unique.
+Signed/unsigned 64-bit properties are decoded as `bigint`; strings preserve Unicode, whitespace,
+empty strings and nulls. Numeric geometry IDs outside JavaScript's safe-integer range remain
+rejected, since precision already lost during geometry decoding cannot be recovered from a
+property resource. I3S output still requires explicit `integer64Encoding: 'decimal-string'`
+for 64-bit target fields; GLB retains their integer representation.
+
+Custom `getFeatures` remains available for domains/enums, dates, numeric noData/defaults,
+raw metadata or nonstandard resource layouts. Those semantics are rejected by the initial
+resource mapper. It does not infer a schema or stringify values. The reader must return
+uncompressed attribute payloads; archive/authentication/token policy remains application-owned.
+Cancellation and failed attribute/texture reads close shared traversal without emitting a partial
+mesh. These resource gates run after reading and do not bound reader/decoder peak allocations.
 
 Source positions retain their declared units, elevation reference and CRS. Supply the desired
 output and any elevation providers to the shared conversion spatial context so geometry is
@@ -447,7 +494,8 @@ constructing a geographic transformer or requiring projection resources.
 
 This supports explicitly selected projected I3S geometry through both mesh writers.
 `createMeshTilesetConversionSource` continues to extract native ECEF GLB/B3DM content;
-this change does not introduce a complete I3S mesh source/material/feature adapter. CRS
+original I3S source extraction and its selected material/attribute profile are described above.
+Broader source appearance/metadata and product wiring remain separate increments. CRS
 accuracy depends on supplied definitions and datum grids; the registered UTM test exercises
 the static projection path and does not qualify time-dependent datum transformations.
 

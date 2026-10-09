@@ -265,3 +265,12 @@ Set `core.baseUrl` to the loaded layer URL when descriptors use relative `href` 
 Decoded glTF-style material RGB factors use linear values. The loader converts normalized I3S
 sRGB factors (including emissive RGB) using the standard transfer curve; legacy byte factors
 are normalized first. Alpha remains linear and unchanged by the color-space conversion.
+
+### Exact attribute values
+
+`I3SAttributeLoader` accepts `i3s.attributeValues: 'exact'` for conversion workflows.
+Exact mode returns `BigInt64Array`/`BigUint64Array` for signed/unsigned 64-bit integer columns,
+validates numeric resource counts and lengths, and preserves string nulls/empty values while
+removing only the UTF-8 terminator. The default `legacy` mode retains numeric Float64
+64-bit decoding and legacy string behavior. Exact mode rejects unsupported scalar layouts.
+Geometry feature-ID decoding is a separate API and does not gain bigint IDs from this option.
