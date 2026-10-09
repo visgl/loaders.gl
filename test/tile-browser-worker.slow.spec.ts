@@ -172,3 +172,41 @@ test('canceling after a native file write preserves the previous file', async ()
     await directory.removeEntry(filename);
   }
 }, 30000);
+
+test.each([
+  'slpk',
+  '3tz'
+] as const)('real worker reads cloneable local I3S declarations/File and emits %s', async format => {
+  const {createI3SConversionFixture} = await import('./utils/tile-browser-i3s-conversion');
+  const {inspectI3SConversionInput} = await import(
+    '../examples/website/i3s-slpk/src/i3s-conversion-input'
+  );
+  const fixture = await createI3SConversionFixture();
+  const controller = new AbortController();
+  const inspection = await inspectI3SConversionInput(fixture.file, controller.signal);
+  const output = await convertSelectedContentsInWorker(
+    inspection,
+    ['1'],
+    format,
+    controller.signal,
+    () => {},
+    fixture.features,
+    2
+  );
+  expect(output.file.name).toBe(`selected-mesh.${format}`);
+  expect(output.report.inputResources).toBe(1);
+  const file = new DataViewReadableFile(new DataView(await output.file.arrayBuffer()));
+  try {
+    const archive = format === 'slpk' ? await parseSLPKArchive(file) : new Tiles3DArchive(file);
+    const document = JSON.parse(
+      new TextDecoder().decode(
+        await archive.getFile(format === 'slpk' ? '' : 'tileset.json', 'http')
+      )
+    );
+    expect(format === 'slpk' ? document.layerType : document.root.children.length).toBe(
+      format === 'slpk' ? '3DObject' : 1
+    );
+  } finally {
+    await file.close();
+  }
+}, 30000);

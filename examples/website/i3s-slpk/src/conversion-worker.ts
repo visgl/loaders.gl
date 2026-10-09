@@ -1,3 +1,5 @@
+import {convertSelectedI3SContentsToResources} from './i3s-conversion-input';
+import type {I3SMeshSourceFeatureOptions} from '@loaders.gl/tile-converter/v5/adapters';
 import {encodeTileConversionArchiveInBatches} from '@loaders.gl/tile-converter/v5/adapters';
 import {
   convertSelectedContentsToResources,
@@ -13,17 +15,36 @@ const workerScope = globalThis as unknown as ConversionWorkerScope;
 workerScope.onmessage = async (event: MessageEvent<ConversionWorkerRequest>) => {
   workerScope.onmessage = null;
   try {
-    const {inspection, resourceIds, format, features} = event.data;
-    const result = await convertSelectedContentsToResources(
-      inspection,
-      resourceIds,
-      format,
-      new AbortController().signal,
-      message =>
-        workerScope.postMessage({type: 'progress', message} satisfies ConversionWorkerMessage),
-      fetch,
-      features
-    );
+    const {inspection, resourceIds, format, features, geometricError} = event.data;
+    const result =
+      'kind' in inspection
+        ? await convertSelectedI3SContentsToResources(
+            inspection,
+            resourceIds,
+            format,
+            new AbortController().signal,
+            message =>
+              workerScope.postMessage({
+                type: 'progress',
+                message
+              } satisfies ConversionWorkerMessage),
+            fetch,
+            features as I3SMeshSourceFeatureOptions | undefined,
+            geometricError
+          )
+        : await convertSelectedContentsToResources(
+            inspection,
+            resourceIds,
+            format,
+            new AbortController().signal,
+            message =>
+              workerScope.postMessage({
+                type: 'progress',
+                message
+              } satisfies ConversionWorkerMessage),
+            fetch,
+            features
+          );
     workerScope.postMessage({
       type: 'progress',
       message: 'Packaging archive'
