@@ -12,7 +12,10 @@ import type {
   BrowserTilesetConversionInspection,
   BrowserTilesetResourceDescriptor,
   BrowserTileConversionFile,
-  TileConversionReport
+  TileConversionReport,
+  TileConversionSource,
+  I3SConversionSpatialContext,
+  Tiles3DConversionSpatialContext
 } from '@loaders.gl/tile-converter/v5/core';
 import type {
   MeshSourceResource,
@@ -113,7 +116,7 @@ export async function convertSelectedContent(
 }
 
 /** Applies the application's bundled or configured assets to Draco decoding and encoding. */
-function getDracoLibraryOptions() {
+export function getDracoLibraryOptions() {
   const {core, modules} = getLoaderOptions();
   return getBundledDracoLibraryOptions({
     decoderProfile: 'full',
@@ -367,6 +370,29 @@ export async function convertSelectedContentsToResources(
       }
     }
   };
+  const output = await writeMeshConversionResources(
+    source,
+    spatialContext,
+    format,
+    signal,
+    onProgress,
+    Math.max(
+      ...descriptors.map(descriptor => getGeometricError(inspection.tileset, descriptor.tilePath))
+    ) + CONVERSION_LIMITS.maxPositionError
+  );
+  return {...output, name: `selected-${resourceIds.length === 1 ? 'mesh' : 'meshes'}.${format}`};
+}
+
+/** Authors a bounded flat mesh collection through the shared qualified format codecs. */
+export async function writeMeshConversionResources(
+  source: TileConversionSource<unknown, MeshSourceResource>,
+  spatialContext: Tiles3DConversionSpatialContext | I3SConversionSpatialContext,
+  format: ConversionFormat,
+  signal: AbortSignal,
+  onProgress: (message: string) => void,
+  geometricError: number,
+  autoOrigin = false
+): Promise<Omit<ConversionResources, 'name'>> {
   const common = {
     source,
     signal,
@@ -378,6 +404,7 @@ export async function convertSelectedContentsToResources(
   const codecOptions = {
     dracoLibraryOptions: getDracoLibraryOptions(),
     spatialContext,
+    autoOrigin,
     maxPositionError: CONVERSION_LIMITS.maxPositionError
   };
   let files: readonly BrowserTileConversionFile[];
@@ -386,12 +413,7 @@ export async function convertSelectedContentsToResources(
     const sink = createMeshTilesetSink({
       maxTotalBytes: CONVERSION_LIMITS.maxOutputBytes,
       maxMeshes: CONVERSION_LIMITS.maxMeshResources,
-      geometricError:
-        Math.max(
-          ...descriptors.map(descriptor =>
-            getGeometricError(inspection.tileset, descriptor.tilePath)
-          )
-        ) + CONVERSION_LIMITS.maxPositionError
+      geometricError
     });
     report = await convertTileset({
       ...common,
@@ -419,15 +441,11 @@ export async function convertSelectedContentsToResources(
     files = sink.getFiles();
   }
   signal.throwIfAborted();
-  return {
-    files,
-    name: `selected-${resourceIds.length === 1 ? 'mesh' : 'meshes'}.${format}`,
-    report
-  };
+  return {files, report};
 }
 
 /** Collects archive chunks as Blob parts for the main-thread integration helpers. */
-async function createArchiveFile(
+export async function createArchiveFile(
   output: ConversionResources,
   format: ConversionFormat,
   signal: AbortSignal,
@@ -451,7 +469,7 @@ async function createArchiveFile(
 }
 
 /** Charges geometry, encoded image bytes, triangle associations and Arrow columns after extraction. */
-function measureMeshBytes(resource: MeshSourceResource): number {
+export function measureMeshBytes(resource: MeshSourceResource): number {
   const featureBytes = resource.features
     ? resource.features.triangleFeatureIndices.byteLength +
       resource.features.batches.reduce(

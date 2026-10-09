@@ -18,6 +18,7 @@
     "@loaders.gl/deck-layers": "workspace:*",
     "@loaders.gl/draco": "workspace:*",
     "@loaders.gl/i3s": "workspace:*",
+    "@loaders.gl/loader-utils": "workspace:*",
     "@loaders.gl/tile-converter": "workspace:*",
     "@loaders.gl/tiles": "workspace:*",
     "@math.gl/geospatial": "5.0.0-alpha.15",

@@ -2,19 +2,31 @@ import type {
   BrowserTilesetConversionInspection,
   TileConversionReport
 } from '@loaders.gl/tile-converter/v5/core';
-import type {MeshSourceFeatureOptions} from '@loaders.gl/tile-converter/v5/adapters';
+import type {
+  MeshSourceFeatureOptions,
+  I3SMeshSourceFeatureOptions
+} from '@loaders.gl/tile-converter/v5/adapters';
+import type {I3SConversionInspection} from './i3s-conversion-input';
+
+/** Cloneable inspection accepted by the example's conversion worker. */
+export type ConversionInspection = BrowserTilesetConversionInspection | I3SConversionInspection;
+/** Explicit feature mapping for the selected source format. */
+export type ConversionFeatureOptions = MeshSourceFeatureOptions | I3SMeshSourceFeatureOptions;
+
 import {CONVERSION_LIMITS, type ConversionFormat, type ConversionResult} from './convert-tileset';
 
 /** One selected conversion; callbacks, signals and runtime objects stay outside the worker protocol. */
 export interface ConversionWorkerRequest {
   /** Bounded explicit source document and content descriptors. */
-  readonly inspection: BrowserTilesetConversionInspection;
+  readonly inspection: ConversionInspection;
   /** Explicitly selected content placements. */
   readonly resourceIds: readonly string[];
   /** Requested archive format. */
   readonly format: ConversionFormat;
   /** Optional explicit SLPK feature mapping. */
-  readonly features?: MeshSourceFeatureOptions;
+  readonly features?: ConversionFeatureOptions;
+  /** Application-declared metric LOD error, required for I3S to 3TZ. */
+  readonly geometricError?: number;
 }
 
 /** Worker replies transfer one acknowledged archive chunk at a time, then completion metadata. */
@@ -70,17 +82,18 @@ export interface SavedConversionResult {
 
 /** Runs conversion in a disposable worker and collects bounded Blob parts for download/preview. */
 export async function convertSelectedContentsInWorker(
-  inspection: BrowserTilesetConversionInspection,
+  inspection: ConversionInspection,
   resourceIds: readonly string[],
   format: ConversionFormat,
   signal: AbortSignal,
   onProgress: (message: string) => void,
-  features?: MeshSourceFeatureOptions
+  features?: ConversionFeatureOptions,
+  geometricError?: number
 ): Promise<ConversionResult> {
   const archiveParts: Blob[] = [];
   try {
     const result = await runConversionWorker(
-      {inspection, resourceIds, format, features},
+      {inspection, resourceIds, format, features, geometricError},
       signal,
       onProgress,
       chunk => {
@@ -106,18 +119,19 @@ export async function convertSelectedContentsInWorker(
  * @returns Completed byte count and diagnostics after successful finalization.
  */
 export async function saveSelectedContentsInWorker(
-  inspection: BrowserTilesetConversionInspection,
+  inspection: ConversionInspection,
   resourceIds: readonly string[],
   format: ConversionFormat,
   signal: AbortSignal,
   onProgress: (message: string) => void,
   destination: WritableStream<Uint8Array<ArrayBuffer>>,
-  features?: MeshSourceFeatureOptions
+  features?: ConversionFeatureOptions,
+  geometricError?: number
 ): Promise<SavedConversionResult> {
   const writer = destination.getWriter();
   try {
     const result = await runConversionWorker(
-      {inspection, resourceIds, format, features},
+      {inspection, resourceIds, format, features, geometricError},
       signal,
       onProgress,
       chunk => writer.write(chunk)

@@ -37,7 +37,7 @@ continue to work.
 
 ## Bounded browser conversion
 
-Enter a CORS-enabled HTTP(S) `tileset.json` URL in **Convert selected 3D Tiles meshes**,
+Enter a CORS-enabled HTTP(S) `tileset.json` URL in **Convert selected tile meshes**,
 inspect its declared content placements, then explicitly select content and choose SLPK or 3TZ.
 Only selected content and its declared dependencies are fetched. Both formats accept up to 64
 static primitive placements across selected contents; multiple selection requires leaf tiles.
@@ -150,3 +150,48 @@ Worker scripts and their module chunks must be served by the application and all
 
 The example imports orchestration from `@loaders.gl/tile-converter/v5/core` and format
 writers from `/v5/adapters`. Conversion code remains in the tile-converter application.
+
+### I3S conversion input
+
+The conversion controls accept an I3S `3DObject` or `IntegratedMesh` layer URL (with CORS),
+or a local SLPK file up to 16 MiB. Inspection traverses legacy nodes or node pages without
+loading geometry, textures or attributes. It offers only leaf mesh nodes for explicit selection;
+source hierarchy and LOD refinement are not reproduced in the flat partial output.
+
+Both SLPK and 3TZ output reuse the v5 source-coordinate adapter and writers. Supported source
+appearance is basic PBR factors and one encoded PNG/JPEG base-color map. Attribute resources
+require an explicit mapping, for example:
+
+```json
+{
+  "metadataClass": "buildings",
+  "objectIdProperty": "OBJECTID",
+  "sourceFeatureIdProperty": "feature_id",
+  "maxAttributeBytes": 1048576,
+  "schema": {
+    "fields": [
+      {"name": "feature_id", "type": "int32", "nullable": false},
+      {"name": "name", "type": "utf8", "nullable": true}
+    ]
+  }
+}
+```
+
+Choose source column names/types that actually exist. Every remaining property must be mapped;
+64-bit SLPK output requires `integer64Encoding: "decimal-string"`. No schema or CRS is inferred.
+The browser profile uses available built-in CRS operations and declared ellipsoidal heights;
+missing geoid/grid/epoch operations fail instead of downloading resources. For 3TZ, supply a
+conservative geometric error in meters: an I3S screen-size threshold does not provide a metric
+error bound. The encoder's measured error allowance is added to that declared bound.
+
+Layer/header/dependency responses share the 16 MiB input budget; decoded geometry, encoded
+images and Arrow columns have a separate aggregate 16 MiB gate. Inspection visits at most
+1,000 nodes and conversion selects at most 64 leaf meshes. Local SLPK uses indexed reads and
+keeps the File in the worker request rather than reading the complete archive into an ArrayBuffer.
+Its file-size and indexed-read limits are checked before reads, and response limits after GZIP
+expansion. These gates do not bound decoder/decompressor peak allocations. Remote SLPK
+conversion, 3TZ conversion input and broader hierarchy/appearance profiles remain separate work;
+the archive viewer continues to support remote and local SLPK/3TZ viewing.
+
+Conversion, packaging and direct file saving use the existing disposable worker and acknowledged
+streaming protocol. Cancel terminates the worker; failed conversion produces no completed archive.

@@ -510,3 +510,20 @@ accuracy guarantee. Point identity/translation placement avoids per-point matrix
 Earth-centered I3S normals targeting EPSG:4978 are normalized directly, without projecting
 the corresponding position for every normal. Other vector frames still use their declared
 basis transformation. This optimization also applies to the existing I3S spatial adapter.
+
+## Browser I3S conversion example
+
+The [archive example](https://github.com/visgl/loaders.gl/tree/master/examples/website/i3s-slpk)
+now accepts I3S `3DObject`/`IntegratedMesh` layer URLs and local SLPK files up to 16 MiB for
+conversion into either partial SLPK or 3TZ. Metadata inspection visits at most 1,000 nodes,
+without loading geometry/texture/attribute payloads. Select up to 64 leaf mesh nodes explicitly.
+Conversion reuses the source-coordinate adapter, exact attribute mapping and encoded base-color
+profile described above, in a disposable worker with streaming download/direct-save output.
+
+For I3S input, the feature JSON also requires `objectIdProperty` and `maxAttributeBytes`.
+For 3TZ output, declare a conservative geometric error in meters; I3S screen-size LOD metrics
+cannot be inferred as a metric bound. The output is a flat selected collection, with no source
+hierarchy/refinement preservation. CRS/height operations must be available explicitly; missing
+resources are rejected. The example's transport, decoded-resource and output limits remain
+separate gates and do not claim bounded peak decoder/decompressor memory. Remote archives and
+3TZ input conversion are not yet wired into these controls.
