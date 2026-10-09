@@ -63,8 +63,8 @@
     "@loaders.gl/las": "5.0.0-alpha.10",
     "@loaders.gl/schema": "5.0.0-alpha.10",
     "@loaders.gl/schema-utils": "5.0.0-alpha.10",
-    "@math.gl/crs": "5.0.0-alpha.14",
-    "@math.gl/projection": "5.0.0-alpha.14",
+    "@math.gl/crs": "5.0.0-alpha.15",
+    "@math.gl/projection": "5.0.0-alpha.15",
     "zod": "^4.1.12"
   },
   "peerDependencies": {
