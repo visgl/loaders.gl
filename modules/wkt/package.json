@@ -66,8 +66,8 @@
   "dependencies": {
     "@loaders.gl/loader-utils": "5.0.0-alpha.10",
     "@loaders.gl/schema": "5.0.0-alpha.10",
-    "@math.gl/crs": "5.0.0-alpha.14",
-    "@math.gl/wkb": "5.0.0-alpha.14"
+    "@math.gl/crs": "5.0.0-alpha.15",
+    "@math.gl/wkb": "5.0.0-alpha.15"
   },
   "peerDependencies": {
     "@loaders.gl/core": "~5.0.0-alpha.0"

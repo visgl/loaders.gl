@@ -8,32 +8,31 @@ import type {
   PointCloudTilesetSource,
   TilesetSpatialReference
 } from '@loaders.gl/tiles';
-import {encodePointCloudTile} from './point-cloud.js';
-import type {EncodePointCloudTileOptions} from './point-cloud.js';
-import {traversePointCloudSource} from '@loaders.gl/tile-converter/v5/core';
+import {transformPointCloudSourceTile} from './point-cloud-spatial.js';
+import type {PointCloudSpatialOptions} from './point-cloud-spatial.js';
+import {encodePointCloudTileWithMetadata} from './point-cloud.js';
+import type {EncodePointCloudTileOptions, EncodedPointCloudTile} from './point-cloud.js';
+import {traversePointCloudSource, TileConversionError} from '@loaders.gl/tile-converter/v5/core';
 import type {
   PointCloudSourceTile,
   TraversePointCloudSourceOptions
 } from '@loaders.gl/tile-converter/v5/core';
 
 /** Traversal and per-tile encoding options for a point-cloud source. */
-export type EncodePointCloudSourceOptions = TraversePointCloudSourceOptions & {
-  /** Select encoder options for each source tile with content, using its header and decoded data. */
-  readonly getTileEncodingOptions?: (
-    sourceTile: PointCloudSourceTile
-  ) => EncodePointCloudTileOptions;
-};
+export type EncodePointCloudSourceOptions = TraversePointCloudSourceOptions &
+  Partial<Pick<PointCloudSpatialOptions, 'spatialContext' | 'normalReferenceFrame'>> & {
+    /** Select encoder options for each source tile with content, using its header and decoded data. */
+    readonly getTileEncodingOptions?: (
+      sourceTile: PointCloudSourceTile
+    ) => EncodePointCloudTileOptions;
+  };
 
 /** A PNTS resource paired with the source placement metadata needed to package its tile. */
-export type EncodedPointCloudSourceTile = {
+export type EncodedPointCloudSourceTile = EncodedPointCloudTile & {
   /** Stable source tile identifier. */
   readonly id: string;
   /** Original source hierarchy and bounds. */
   readonly header: PointCloudSourceTile['header'];
-  /** Encoded point-cloud tile content. */
-  readonly pnts: ArrayBuffer;
-  /** Number of point records encoded. */
-  readonly pointCount: number;
   /** Coordinate system used by the returned point positions. */
   readonly coordinateSystem: PointCloudCoordinateSystem;
   /** Origin to add to source-relative point positions. */
@@ -57,7 +56,13 @@ export async function* encodePointCloudSource(
   source: PointCloudTilesetSource,
   options: EncodePointCloudSourceOptions = {}
 ): AsyncIterableIterator<EncodedPointCloudSourceTile> {
-  for await (const sourceTile of traversePointCloudSource(source, options)) {
+  for await (const inputTile of traversePointCloudSource(source, options)) {
+    const sourceTile = options.spatialContext
+      ? await transformPointCloudSourceTile(inputTile, {
+          ...options,
+          spatialContext: options.spatialContext
+        })
+      : inputTile;
     const encodingOptions = sourceTile.content
       ? options.getTileEncodingOptions?.(sourceTile)
       : undefined;
@@ -88,14 +93,20 @@ export function encodePointCloudSourceTile(
     return null;
   }
 
+  const encoded = encodePointCloudTileWithMetadata(content.data, {
+    ...options,
+    constantRGBA: options.constantRGBA ?? content.constantRGBA
+  });
+  if (content.pointCount !== encoded.pointCount) {
+    throw new TileConversionError(
+      'POINT_CLOUD_SOURCE_COUNT_INVALID',
+      'Source pointCount must match the encoded Arrow point rows'
+    );
+  }
   return {
     id: header.id,
     header,
-    pnts: encodePointCloudTile(content.data, {
-      ...options,
-      constantRGBA: options.constantRGBA ?? content.constantRGBA
-    }),
-    pointCount: content.pointCount,
+    ...encoded,
     coordinateSystem: content.coordinateSystem,
     cartographicOrigin: [...content.cartographicOrigin],
     modelMatrix: content.modelMatrix ? Array.from(content.modelMatrix) : undefined,

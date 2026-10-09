@@ -262,9 +262,16 @@ Enables skip-LOD replacement traversal. When enabled, traversal may descend past
 hierarchy levels without requesting every intermediate tile, while keeping ready replacement
 ancestors selected as temporary coverage. Request thresholds periodically load intermediate
 coverage on deep branches. This can improve first-detail latency at the cost of temporary
-ancestor/descendant overdraw. `ADD` refinement is unaffected.
+ancestor/descendant overdraw. When zooming out to an unavailable level, already-drawn descendants
+within two levels remain selected alongside an available ancestor, preserving existing detail
+while the desired tile loads. This does not request additional descendant content. `ADD` refinement
+is unaffected.
 
-^default false
+Enabled by default for 3D Tiles. Set `skipLevelOfDetail: false` to request intermediate replacement
+levels as well. I3S retains its existing non-skipping default. Cold traversal still requests coarse
+coverage; `immediatelyLoadDesiredLevelOfDetail` remains disabled by default.
+
+^default true for 3D Tiles; false for I3S
 
 ### baseScreenSpaceError : Number
 

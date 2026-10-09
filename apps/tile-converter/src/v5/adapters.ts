@@ -5,8 +5,8 @@
 // Format-specific codecs, feature mapping and archive packaging remain in the application.
 export {convertFeatureAttributesToArrowBatches} from './feature-arrow.js';
 export type {FeatureArrowBatchOptions, TileFeatureAttributes} from './feature-arrow.js';
-export {encodePointCloudTile} from './point-cloud.js';
-export type {EncodePointCloudTileOptions} from './point-cloud.js';
+export {encodePointCloudTile, encodePointCloudTileWithMetadata} from './point-cloud.js';
+export type {EncodePointCloudTileOptions, EncodedPointCloudTile} from './point-cloud.js';
 export {encodePointCloudSource, encodePointCloudSourceTile} from './point-cloud-source-encoder.js';
 export type {
   EncodedPointCloudSourceTile,
@@ -61,3 +61,15 @@ export type {I3SMeshSink, I3SMeshSinkOptions} from './i3s-mesh-sink.js';
 
 export {createTileConversionResourceFetcher} from './resource-fetcher.js';
 export type {TileConversionResourceFetcherOptions} from './resource-fetcher.js';
+
+export {createPointCloudTilesetSink} from './point-cloud-tileset-sink.js';
+export type {
+  PointCloudTilesetSink,
+  PointCloudTilesetSinkOptions
+} from './point-cloud-tileset-sink.js';
+
+export {transformPointCloudSourceTile} from './point-cloud-spatial.js';
+export type {PointCloudSpatialOptions} from './point-cloud-spatial.js';
+
+export {createI3SMeshTilesetConversionSource} from './i3s-mesh-source.js';
+export type {I3SMeshTilesetSourceOptions} from './i3s-mesh-source.js';

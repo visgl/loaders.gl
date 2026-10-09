@@ -18,5 +18,6 @@ export const I3S_LOADER_OPTIONS = {
   decodeTextures: true,
   attributeValues: 'legacy',
   colorFormat: 'uint8norm',
+  geometryMode: 'render',
   coordinateSystem: COORDINATE_SYSTEM.METER_OFFSETS
 } as const;

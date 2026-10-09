@@ -24,7 +24,7 @@
   ],
   "sideEffects": false,
   "dependencies": {
-    "@math.gl/wkb": "5.0.0-alpha.14",
+    "@math.gl/wkb": "5.0.0-alpha.15",
     "apache-arrow": ">= 17.0.0"
   }
 }

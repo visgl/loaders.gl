@@ -3,9 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import {SpatialCoordinateTransformer} from './spatial-coordinate-transformer';
-import {getSpatialCoordinateFrame} from './get-spatial-coordinate-frame';
 import {Matrix4} from '@math.gl/core';
-import {Ellipsoid} from '@math.gl/geospatial';
 import type {TilesetSpatialOptions, TilesetSpatialReference} from './spatial-types';
 
 /** Structural 3D Tiles volume shape used by the source adapter. */
@@ -80,16 +78,6 @@ export class Tiles3DSpatialTransformer {
 
   /** Transforms one WGS84 region sample into the selected output frame. */
   private transformRegionSample(sample: number[]): number[] {
-    const [longitudeDegrees, latitudeDegrees, height] = sample;
-    const targetCrs = this.spatialReference.targetCrs || this.spatialReference.sourceCrs;
-    if (targetCrs && getSpatialCoordinateFrame(targetCrs) === 'geocentric') {
-      const cartesian = Ellipsoid.WGS84.cartographicToCartesian([
-        longitudeDegrees,
-        latitudeDegrees,
-        height
-      ]);
-      return Array.from(cartesian);
-    }
     return this.geographicCoordinateTransformer.transformPosition(sample);
   }
 }

@@ -148,7 +148,8 @@ export type {Tiles3DSpatialBoundingVolume} from './spatial/tiles-3d-spatial-tran
 export type {
   I3SSpatialBounds,
   I3SSpatialObb,
-  I3STransformedPositions
+  I3STransformedPositions,
+  I3STransformedGeometry
 } from './spatial/i3s-spatial-transformer';
 export {I3SSpatialTransformer} from './spatial/i3s-spatial-transformer';
 export {

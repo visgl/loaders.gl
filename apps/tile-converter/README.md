@@ -475,3 +475,29 @@ error in the supplied budget. This sink does not infer source LOD relationships 
 The [browser example](../../examples/website/i3s-slpk/README.md) demonstrates up to 64
 selected leaf contents, aggregate transport/decoded byte gates, download and incremental
 preview. SLPK still uses the single-mesh sink; multi-node I3S authoring is a separate increment.
+
+
+### Source CRS preparation
+
+Both mesh codecs accept `createI3SConversionSpatialContext` for selected absolute I3S
+geometry. Its `transformGeometryAsync` keeps positions in Float64 through unit, elevation,
+and CRS operations before destination writers rebase to float32 and check precision.
+Use the explicit I3S `normalReferenceFrame` when its vectors use a local ENU basis.
+
+Point-source conversion accepts the same context as `spatialContext`. Cartesian affine
+placement or longitude/latitude offsets are resolved before the CRS operation;
+`getTileEncodingOptions` then receives the prepared target-frame tile for RTC selection.
+The direct async `transformPointCloudSourceTile` helper supports separate preparation.
+Source metadata must agree with the context. For already transformed ECEF content, a native
+EPSG:4978 context can flatten renderer placement without repeating the source operation.
+Ambiguous renderer coordinates fail explicitly. See the [v5 API guide](../../docs/modules/tile-converter/api-reference/v5-conversion.md)
+for supported layouts, normal frames, and application-owned spatial resources.
+
+### Original I3S mesh input
+
+The v5 adapters export `createI3SMeshTilesetConversionSource` for an initial untextured
+I3S mesh profile. Use a dedicated source-backed runtime with `i3s.geometryMode: 'source'`
+to retain absolute Float64 source coordinates and original normals. Pair the GLB codec
+with `autoOrigin: true` to choose the placement origin after spatial transformation.
+Features require an explicit Arrow mapper; unsupported appearance and attributes fail.
+See the [v5 conversion reference](../../docs/modules/tile-converter/api-reference/v5-conversion.md).
