@@ -85,6 +85,7 @@
     "@probe.gl/react-bench": "^4.0.2",
     "@probe.gl/stats": "^4.1.1",
     "@probe.gl/stats-widget": "^4.0.2",
+    "@signalwire/docusaurus-plugin-llms-txt": "^1.2.2",
     "@turf/turf": "^6.5.0",
     "algoliasearch": "^4.26.0",
     "d3-color": "^3.1.0",

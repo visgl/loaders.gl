@@ -1,0 +1,168 @@
+{
+  "version": 1,
+  "description": "Offline prompts for manually comparing agent behavior with and without the loadersgl skill. Static validation does not measure model performance.",
+  "cases": [
+    {
+      "id": "version-aware-setup",
+      "category": "architecture",
+      "prompt": "Add CSV loading to an existing TypeScript application using its installed loaders.gl release.",
+      "expectedBehaviors": [
+        "Inspect installed package versions and exported subpaths.",
+        "Choose loader options and output shape from installed declarations.",
+        "Typecheck and inspect a parsed deterministic input."
+      ],
+      "forbiddenMistakes": [
+        "Guess a current import from memory.",
+        "Upgrade unrelated packages to fit an old sample."
+      ],
+      "canonicalSources": [
+        "AGENTS.md",
+        "skills/loadersgl/references/architecture.md"
+      ]
+    },
+    {
+      "id": "synchronous-parser",
+      "category": "architecture",
+      "prompt": "Fix synchronous CSV parsing after replacing a bundled loader with a metadata loader.",
+      "expectedBehaviors": [
+        "Inspect whether the loader has parseSync.",
+        "Choose a parser-bearing exported implementation subpath.",
+        "Verify synchronous output with a small input."
+      ],
+      "forbiddenMistakes": [
+        "Pass metadata-only loaders to sync parsing.",
+        "Add a parser implementation to the metadata root."
+      ],
+      "canonicalSources": [
+        "AGENTS.md",
+        "skills/loadersgl/references/architecture.md"
+      ]
+    },
+    {
+      "id": "worker-html-fallback",
+      "category": "debugging",
+      "prompt": "A worker URL returns status 200 but parsing fails with Unexpected token <. Diagnose the deployment.",
+      "expectedBehaviors": [
+        "Inspect the worker response content type and body.",
+        "Verify worker URL and matching package version.",
+        "Exercise parsing through the corrected worker URL."
+      ],
+      "forbiddenMistakes": [
+        "Treat HTTP 200 as proof of a valid worker.",
+        "Disable workers and call deployment fixed."
+      ],
+      "canonicalSources": [
+        "AGENTS.md",
+        "skills/loadersgl/references/debugging.md"
+      ]
+    },
+    {
+      "id": "streaming-contract",
+      "category": "debugging",
+      "prompt": "Load a large table incrementally and confirm the loader provides real batch parsing.",
+      "expectedBehaviors": [
+        "Check the selected loader supports parseInBatches.",
+        "Consume the async iterator through completion.",
+        "Verify batch shape and error propagation with a small fixture."
+      ],
+      "forbiddenMistakes": [
+        "Split an already materialized table and call it streaming.",
+        "Assume every loader supports batches."
+      ],
+      "canonicalSources": [
+        "AGENTS.md",
+        "skills/loadersgl/references/debugging.md"
+      ]
+    },
+    {
+      "id": "wasm-deployment",
+      "category": "debugging",
+      "prompt": "A compressed point cloud parses locally but its WASM dependency fails in the deployed browser.",
+      "expectedBehaviors": [
+        "Inspect failed WASM requests and response content.",
+        "Check loader library options and deployed asset paths.",
+        "Verify decoded output in Chromium."
+      ],
+      "forbiddenMistakes": [
+        "Claim typechecking proves WASM startup.",
+        "Import Node filesystem code into the browser entry point."
+      ],
+      "canonicalSources": [
+        "AGENTS.md",
+        "skills/loadersgl/references/debugging.md"
+      ]
+    },
+    {
+      "id": "module-dependency",
+      "category": "architecture",
+      "prompt": "A format parser needs a helper currently implemented in core. Choose its module boundary.",
+      "expectedBehaviors": [
+        "Read repository package dependency policy.",
+        "Move shared support downward or inject the dependency.",
+        "Verify public imports and parser behavior."
+      ],
+      "forbiddenMistakes": [
+        "Import core from a published format module source.",
+        "Create an import cycle through metadata and parser files."
+      ],
+      "canonicalSources": [
+        "AGENTS.md",
+        "skills/loadersgl/references/architecture.md"
+      ]
+    },
+    {
+      "id": "geospatial-output",
+      "category": "portability",
+      "prompt": "Add a GeoArrow WKB geometry column to a loader without expanding its processing dependencies.",
+      "expectedBehaviors": [
+        "Inspect the returned geometry representation.",
+        "Use the minimal gis geometry helper surface.",
+        "Verify output coordinates and geometry encoding."
+      ],
+      "forbiddenMistakes": [
+        "Import the richer geoarrow module into the loader.",
+        "Assume projected coordinates are longitude and latitude."
+      ],
+      "canonicalSources": [
+        "AGENTS.md",
+        "skills/loadersgl/references/portability.md"
+      ]
+    },
+    {
+      "id": "browser-node-boundary",
+      "category": "portability",
+      "prompt": "Fix browser bundling after a shared loader starts importing a Node-only helper.",
+      "expectedBehaviors": [
+        "Inspect the browser export and emitted shim paths.",
+        "Keep Node-only behavior behind an intentional runtime boundary.",
+        "Exercise browser behavior in Chromium and Node behavior in Node."
+      ],
+      "forbiddenMistakes": [
+        "Add a top-level filesystem import to shared source.",
+        "Map browser exports to nonexistent dist files."
+      ],
+      "canonicalSources": [
+        "AGENTS.md",
+        "skills/loadersgl/references/portability.md"
+      ]
+    },
+    {
+      "id": "contributor-verification",
+      "category": "contributing",
+      "prompt": "Change a loader API and prepare its tests and docs for a pull request.",
+      "expectedBehaviors": [
+        "Read AGENTS.md and add native Vitest behavior coverage.",
+        "Run formatting, module build, worker build and required runtime tests.",
+        "Update public TSDoc and module documentation."
+      ],
+      "forbiddenMistakes": [
+        "Lower coverage thresholds to pass.",
+        "Run headless workers after a build without rebuilding worker bundles."
+      ],
+      "canonicalSources": [
+        "AGENTS.md",
+        "skills/loadersgl/references/contributing.md"
+      ]
+    }
+  ]
+}

@@ -770,6 +770,7 @@
     "type": "category",
     "label": "Developer Guide",
     "items": [
+      "developer-guide/working-with-ai",
       {
         "type": "category",
         "label": "Basics",

@@ -91,6 +91,7 @@
     "pre-push": "^0.1.1",
     "vite": "^8.0.0",
     "vitest": "5.0.2",
+    "yaml": "^2.8.1",
     "zod": "^4.1.12"
   },
   "pre-commit": "pre-commit",
