@@ -11,6 +11,7 @@ import type {
   GetTileParameters,
   SourceLoader,
   TileGrid,
+  TileGridMatrix,
   TileSource,
   TileSourceMetadata
 } from '@loaders.gl/loader-utils';
@@ -26,12 +27,15 @@ import {
   parseWMTSCapabilities,
   validateTileMatrixLimits
 } from './lib/parsers/wmts/parse-wmts-capabilities';
+import {areServiceCRSEquivalent, getServiceCRSAxisOrder, type ServiceCRS} from './crs-utils';
 import {
-  areServiceCRSEquivalent,
-  getServiceCRSAxisOrder,
-  normalizeServiceCRS,
-  type ServiceCRS
-} from './crs-utils';
+  createTileGrid,
+  createTileGridMatrix,
+  getMetersPerUnit,
+  getRequestedTileMatrix,
+  getScaleDenominatorResolution,
+  validateMetersPerUnit
+} from './lib/tile-grid';
 
 /** Options for a WMTS tile source. */
 export type WMTSSourceLoaderOptions = DataSourceOptions &
@@ -61,6 +65,12 @@ export type WMTSSourceLoaderOptions = DataSourceOptions &
       capabilitiesUrl?: string;
       /** Preferred coordinate reference system for matrix-set selection. */
       crs?: ServiceCRS;
+      /**
+       * Length of one CRS unit in meters, used to convert scale denominators to resolutions for
+       * CRSs whose unit is not built in, such as UTM (`1`). EPSG:4326, CRS:84 and Web Mercator
+       * always use their own units, whichever matrix set is selected.
+       */
+      metersPerUnit?: number | null;
     };
   };
 
@@ -90,6 +100,7 @@ export class WMTSImageTileSource
   /** Creates a WMTS source. */
   constructor(url: string, options: WMTSSourceLoaderOptions = {}, coreApi?: CoreAPI) {
     super(url, options, WMTSSourceLoader.defaultOptions, coreApi);
+    validateMetersPerUnit(options.wmts?.metersPerUnit, 'WMTS');
     this._capabilities = options.wmts?.capabilities || null;
     this.getTileData = this.getTileData.bind(this);
   }
@@ -111,7 +122,7 @@ export class WMTSImageTileSource
           ]
         : undefined,
       layer: {name: wmts.layer || layer?.identifier || '', layers: []},
-      tileGrid: toTileGrid(this._getTileMatrixSet(layer))
+      tileGrid: toTileGrid(this._getTileMatrixSet(layer), wmts.metersPerUnit)
     };
   }
 
@@ -151,7 +162,7 @@ export class WMTSImageTileSource
     const layer = this._getLayer(this._capabilities, layerName);
     const tileMatrixSet = this._getTileMatrixSet(layer);
     if (!tileMatrixSet) return true;
-    const matrix = getTileMatrix(tileMatrixSet, parameters.z);
+    const matrix = getTileMatrix(tileMatrixSet, parameters);
     if (!matrix) return false;
     for (const size of [matrix.matrixWidth, matrix.matrixHeight]) {
       if (size !== undefined && (!Number.isSafeInteger(size) || size < 1))
@@ -202,7 +213,8 @@ export class WMTSImageTileSource
       this._capabilities,
       parameters.layers ? String(parameters.layers) : undefined
     );
-    const matrix = getTileMatrix(this._getTileMatrixSet(layer), parameters.z);
+    const tileMatrixSet = this._getTileMatrixSet(layer);
+    const matrix = tileMatrixSet ? getTileMatrix(tileMatrixSet, parameters) : undefined;
     for (const [value, size] of [
       [parameters.pixelColumn, matrix?.tileWidth],
       [parameters.pixelRow, matrix?.tileHeight]
@@ -312,8 +324,11 @@ export class WMTSImageTileSource
     const urlTemplate =
       (featureInfo ? wmts.featureInfoUrlTemplate : wmts.urlTemplate) || resourceURL?.template;
     const tileMatrixSet = this._getTileMatrixSet(layer);
+    // Without a known matrix set, an explicit identifier is used verbatim, otherwise `z`.
     const tileMatrixIdentifier =
-      getTileMatrix(tileMatrixSet, parameters.z)?.identifier || String(parameters.z);
+      (tileMatrixSet && getTileMatrix(tileMatrixSet, parameters)?.identifier) ||
+      parameters.tileMatrix ||
+      String(parameters.z);
     const dimensionParameters = this._getDimensionParameters(layer);
     if (urlTemplate) {
       const replacements = mergeRequestParameters(dimensionParameters, {
@@ -464,58 +479,46 @@ export class WMTSImageTileSource
 }
 
 /** Converts a WMTS matrix set into the shared tile-grid metadata shape. */
-function toTileGrid(tileMatrixSet: WMTSTileMatrixSet | undefined): TileGrid | undefined {
-  if (!tileMatrixSet) return undefined;
-  const firstMatrix = tileMatrixSet.matrices[0];
-  return {
-    crs: tileMatrixSet.supportedCRS,
-    tileSize: firstMatrix?.tileWidth
-      ? [firstMatrix.tileWidth, firstMatrix.tileHeight || firstMatrix.tileWidth]
-      : undefined,
-    origin:
-      firstMatrix?.topLeftCorner && getServiceCRSAxisOrder(tileMatrixSet.supportedCRS) === 'yx'
-        ? [firstMatrix.topLeftCorner[1], firstMatrix.topLeftCorner[0]]
-        : firstMatrix?.topLeftCorner,
-    ...getGridResolutions(tileMatrixSet),
-    matrixIds: tileMatrixSet.matrices.map(matrix => matrix.identifier),
-    matrixSizes: tileMatrixSet.matrices.every(
-      matrix => matrix.matrixWidth !== undefined && matrix.matrixHeight !== undefined
-    )
-      ? tileMatrixSet.matrices.map(matrix => [matrix.matrixWidth!, matrix.matrixHeight!])
-      : undefined
-  };
-}
-
-/** Converts OGC scale denominators using a 0.28 mm pixel for known CRS units. */
-function getGridResolutions(tileMatrixSet: WMTSTileMatrixSet): Pick<TileGrid, 'resolutions'> {
-  const crs = normalizeServiceCRS(tileMatrixSet.supportedCRS);
-  const metersPerUnit =
-    crs === 'EPSG:4326' || crs === 'CRS:84'
-      ? (2 * Math.PI * 6378137) / 360
-      : areServiceCRSEquivalent(crs, 'EPSG:3857')
-        ? 1
-        : undefined;
-  if (
-    !metersPerUnit ||
-    !tileMatrixSet.matrices.every(
-      matrix => Number.isFinite(matrix.scaleDenominator) && matrix.scaleDenominator! > 0
-    )
-  )
-    return {};
-  return {
-    resolutions: tileMatrixSet.matrices.map(
-      matrix => (matrix.scaleDenominator! * 0.00028) / metersPerUnit
-    )
-  };
-}
-
-/** Selects an exact numeric identifier or matrix array index, without rounding or clamping. */
-function getTileMatrix(
+function toTileGrid(
   tileMatrixSet: WMTSTileMatrixSet | undefined,
-  zoom: number
+  metersPerUnit?: number | null
+): TileGrid | undefined {
+  if (!tileMatrixSet) return undefined;
+  // Also checked here, since `setProps()` can change the option after construction.
+  validateMetersPerUnit(metersPerUnit, 'WMTS');
+  const crs = tileMatrixSet.supportedCRS;
+  const unitMeters = getMetersPerUnit(crs, metersPerUnit);
+  const swapAxes = getServiceCRSAxisOrder(crs) === 'yx';
+  return createTileGrid(
+    crs,
+    tileMatrixSet.matrices.map(matrix => toTileGridMatrix(matrix, swapAxes, unitMeters))
+  );
+}
+
+/** Converts one WMTS matrix, keeping only the fields the service advertises. */
+function toTileGridMatrix(
+  matrix: WMTSTileMatrix,
+  swapAxes: boolean,
+  metersPerUnit: number | undefined
+): TileGridMatrix {
+  return createTileGridMatrix({
+    id: matrix.identifier,
+    resolution: getScaleDenominatorResolution(matrix.scaleDenominator, metersPerUnit),
+    point: matrix.topLeftCorner,
+    swapAxes,
+    tileWidth: matrix.tileWidth,
+    tileHeight: matrix.tileHeight,
+    matrixWidth: matrix.matrixWidth,
+    matrixHeight: matrix.matrixHeight
+  });
+}
+
+/** Selects the requested matrix; see `getRequestedTileMatrix()`. */
+function getTileMatrix(
+  tileMatrixSet: WMTSTileMatrixSet,
+  parameters: Pick<GetTileParameters, 'z' | 'tileMatrix'>
 ): WMTSTileMatrix | undefined {
-  const matrices = tileMatrixSet?.matrices || [];
-  return matrices.find(matrix => matrix.identifier === String(zoom)) || matrices[zoom];
+  return getRequestedTileMatrix(tileMatrixSet.matrices, matrix => matrix.identifier, parameters);
 }
 
 /** Rejects invalid indices before URL generation or network access; tiles never wrap implicitly. */

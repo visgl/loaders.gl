@@ -53,6 +53,16 @@ See [supported items and verification boundaries](/docs/developer-guide/arcgis/i
 
 ## What's new
 
+- `convertOGCTileMatrixSetToTileGrid()` converts OGC TileMatrixSet 2.0 JSON to `TileGrid`,
+  honoring `orderedAxes`, `cellSize`, and bottom-left origins, and `OGCAPITilesSource` reports a
+  configured `ogc-api.tileMatrixSet` as `tileGrid`, including `tileGrid.tileMatrixSet`. Tile
+  requests accept an explicit `tileMatrix` identifier.
+
+- WMTS tile grids now describe every matrix level, including per-level origins and tile sizes.
+  `tileGrid.tileMatrixSet` holds complete levels as math.gl `TileMatrix` geometry, and
+  `tileGrid.matrices` keeps the advertised levels. The new `wmts.metersPerUnit` option converts
+  scale denominators to resolutions for projected CRSs such as UTM, and the `tileMatrix` tile
+  parameter requests a matrix by identifier.
 - The browser tile-conversion example can export multiple static primitive placements from selected GLB/B3DM contents to partial 3TZ archives, retaining per-primitive materials and transforms within the existing byte limits and a 64-placement cap.
 - The v5 tile converter preserves explicit Arrow features in GLB/3TZ output, authors PNG/JPEG base-color textures in I3S, and collects up to 64 meshes into one SLPK. The browser example resolves external glTF buffers/images within its aggregate input budget and supports both archive formats. See the [conversion API](/docs/modules/tile-converter/api-reference/v5-conversion).
 

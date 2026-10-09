@@ -9,6 +9,7 @@ import type {
   GetTileDataParameters,
   GetTileParameters,
   SourceLoader,
+  TileGrid,
   TileSource,
   TileSourceMetadata,
   VectorSource,
@@ -22,6 +23,9 @@ import {
   convertGeojsonToBinaryFeatureCollection
 } from '@loaders.gl/gis';
 import {getServiceCRSAxisOrder} from './crs-utils';
+import type {OGCTileMatrixSet} from './lib/parsers/ogc-api/tile-matrix-set';
+import {convertOGCTileMatrixSetToTileGrid} from './lib/parsers/ogc-api/tile-matrix-set';
+import {getTileGridMatrixId, validateMetersPerUnit} from './lib/tile-grid';
 import type {FeaturePaginationOptions, FeaturePage} from './feature-pagination';
 import {
   addNextLinkHeader,
@@ -38,6 +42,13 @@ export type OGCAPISourceOptions = DataSourceOptions & {
     collectionId?: string;
     /** Explicit tile template for the tiles adapter. */
     tileTemplate?: string;
+    /**
+     * Tile matrix set for the tiles adapter, as an OGC TileMatrixSet 2.0 document or the URL of
+     * one. When set, `getMetadata()` reports it as `tileGrid`.
+     */
+    tileMatrixSet?: OGCTileMatrixSet | string;
+    /** Length of one CRS unit in meters, for a tile matrix set given by scale denominators. */
+    metersPerUnit?: number | null;
     /** Opt-in bounded pagination for getFeatures(); omitted keeps the single-page behavior. */
     pagination?: FeaturePaginationOptions;
   };
@@ -240,20 +251,109 @@ export class OGCAPITilesSource
   extends DataSource<string, OGCAPISourceOptions>
   implements TileSource
 {
+  /** Converted tile matrix set and the options it was loaded with. */
+  private _tileGridCache: {
+    tileMatrixSet: OGCTileMatrixSet | string | undefined;
+    metersPerUnit: number | null | undefined;
+    promise: Promise<TileGrid | undefined>;
+    /** The converted grid, once available. */
+    tileGrid?: TileGrid;
+  } | null = null;
+
   /** Creates an OGC API Tiles source. */
   constructor(url: string, options: OGCAPISourceOptions = {}, coreApi?: CoreAPI) {
     super(url.replace(/\/$/, ''), options, OGCAPITilesSourceLoader.defaultOptions, coreApi);
+    validateMetersPerUnit(options['ogc-api']?.metersPerUnit, 'OGC API Tiles');
   }
 
-  /** Returns basic tileset metadata from the service landing page. */
+  /** Updates options. A new `tileMatrixSet` document replaces the old one instead of merging. */
+  override setProps(options: OGCAPISourceOptions): void {
+    super.setProps(options);
+    const ogcAPIOptions = options['ogc-api'];
+    if (ogcAPIOptions && 'tileMatrixSet' in ogcAPIOptions) {
+      this.options['ogc-api'] = {
+        ...this.options['ogc-api'],
+        tileMatrixSet: ogcAPIOptions.tileMatrixSet
+      };
+    }
+  }
+
+  /** Returns basic tileset metadata from the service landing page and configured matrix set. */
   async getMetadata(): Promise<TileSourceMetadata> {
-    const landingPage = (await this.fetchJSON(this.url)) as OGCAPILandingPage;
+    const [landingPage, tileGrid] = await Promise.all([
+      this.fetchJSON(this.url) as Promise<OGCAPILandingPage>,
+      this.getTileGrid()
+    ]);
     const tileLink = landingPage.links?.find(link => link.rel?.includes('tileset'));
-    return {name: landingPage.title || '', title: landingPage.title, format: tileLink?.type};
+    return {
+      name: landingPage.title || '',
+      title: landingPage.title,
+      format: tileLink?.type,
+      ...(tileGrid ? {tileGrid} : {})
+    };
+  }
+
+  /**
+   * Returns the configured tile matrix set as a tile grid. The result is reused until the options
+   * change, and a failed load is retried on the next call.
+   */
+  private getTileGrid(): Promise<TileGrid | undefined> {
+    const {tileMatrixSet, metersPerUnit} = this.options['ogc-api'] || {};
+    const cache = this._tileGridCache;
+    if (cache && cache.tileMatrixSet === tileMatrixSet && cache.metersPerUnit === metersPerUnit) {
+      return cache.promise;
+    }
+    const promise = this.loadTileGrid(tileMatrixSet, metersPerUnit);
+    const newCache: NonNullable<OGCAPITilesSource['_tileGridCache']> = {
+      tileMatrixSet,
+      metersPerUnit,
+      promise
+    };
+    this._tileGridCache = newCache;
+    promise.then(
+      tileGrid => {
+        newCache.tileGrid = tileGrid;
+      },
+      () => {
+        if (this._tileGridCache === newCache) this._tileGridCache = null;
+      }
+    );
+    return promise;
+  }
+
+  /**
+   * Returns the tile grid if it is available without waiting: an inline document is converted
+   * immediately, while a document given as a URL is available once `getMetadata()` has loaded it.
+   */
+  private getLoadedTileGrid(): TileGrid | undefined {
+    const tileMatrixSet = this.options['ogc-api']?.tileMatrixSet;
+    const cache = this._tileGridCache;
+    if (cache?.tileGrid && cache.tileMatrixSet === tileMatrixSet) return cache.tileGrid;
+    if (tileMatrixSet && typeof tileMatrixSet !== 'string') {
+      return convertOGCTileMatrixSetToTileGrid(tileMatrixSet, {
+        metersPerUnit: this.options['ogc-api']?.metersPerUnit
+      });
+    }
+    return undefined;
+  }
+
+  /** Converts a tile matrix set, fetching it first when given as a URL. */
+  private async loadTileGrid(
+    tileMatrixSet: OGCTileMatrixSet | string | undefined,
+    metersPerUnit: number | null | undefined
+  ): Promise<TileGrid | undefined> {
+    if (!tileMatrixSet) return undefined;
+    const document =
+      typeof tileMatrixSet === 'string'
+        ? ((await this.fetchJSON(resolveLink(tileMatrixSet, this.url))) as OGCTileMatrixSet)
+        : tileMatrixSet;
+    return convertOGCTileMatrixSetToTileGrid(document, {metersPerUnit});
   }
 
   /** Fetches raw bytes for one tile from an advertised template. */
   async getTile(parameters: GetTileParameters): Promise<ArrayBuffer | null> {
+    // The matrix identifier in the URL comes from the tile matrix set.
+    await this.getTileGrid();
     const url = this.getTileURL(parameters);
     const response = await this.fetch(url, {headers: {Accept: 'application/octet-stream'}});
     if (!response.ok) throw new Error(`OGC API Tiles request failed: ${response.status}`);
@@ -265,12 +365,22 @@ export class OGCAPITilesSource
     return this.getTile(parameters.index);
   }
 
-  /** Expands a `{tileMatrix}`, `{tileRow}`, and `{tileCol}` template. */
+  /**
+   * Expands a `{tileMatrix}`, `{tileRow}`, and `{tileCol}` template. `{tileMatrix}` is
+   * `parameters.tileMatrix` when given, otherwise the identifier of the configured matrix whose id
+   * equals `z`, otherwise the matrix at index `z`. With a loaded tile matrix set, a matrix it does
+   * not contain throws a `RangeError`; without one, `{tileMatrix}` is the explicit identifier or
+   * `z`. `{z}` is always the number.
+   */
   getTileURL(parameters: GetTileParameters): string {
     const template = this.options['ogc-api']?.tileTemplate;
     if (!template) throw new Error('OGC API Tiles requires ogc-api.tileTemplate');
+    // XYZ-only templates do not address a matrix, so no matrix is looked up for them.
+    const tileMatrixId = template.includes('{tileMatrix}')
+      ? getTileGridMatrixId(this.getLoadedTileGrid(), parameters)
+      : '';
     return template
-      .replaceAll('{tileMatrix}', String(parameters.z))
+      .replaceAll('{tileMatrix}', tileMatrixId)
       .replaceAll('{tileRow}', String(parameters.y))
       .replaceAll('{tileCol}', String(parameters.x))
       .replaceAll('{z}', String(parameters.z))
@@ -304,6 +414,21 @@ export const OGCAPITilesSourceLoader = {
   createDataSource: (url: string, options: OGCAPISourceOptions = {}, coreApi?: CoreAPI) =>
     new OGCAPITilesSource(url, options, coreApi)
 } as const satisfies SourceLoader<OGCAPITilesSource>;
+
+/**
+ * Resolves a link against a landing page treated as a directory, so `tileMatrixSets/x` under
+ * `https://host/api` becomes `https://host/api/tileMatrixSets/x`. Absolute links are returned
+ * unchanged, and a relative landing page stays relative.
+ */
+function resolveLink(link: string, landingPageUrl: string): string {
+  if (/^[a-z][a-z\d+.-]*:/i.test(link)) return link;
+  const placeholderOrigin = 'http://placeholder.invalid';
+  const isAbsolute = /^[a-z][a-z\d+.-]*:/i.test(landingPageUrl);
+  const base = new URL(landingPageUrl, `${placeholderOrigin}/`);
+  if (!base.pathname.endsWith('/')) base.pathname += '/';
+  const resolved = new URL(link, base);
+  return isAbsolute ? resolved.href : resolved.href.slice(placeholderOrigin.length);
+}
 
 /** Converts the loaders.gl nested bounding box into the OGC comma-separated form. */
 function flattenBoundingBox(
