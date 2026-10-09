@@ -118,9 +118,7 @@ const layer = new SourceLayer({
   data: vectorTileServiceUrl,
   loaders: ARCGIS_LOADERS,
   extent: [-180, -85.051129, 180, 85.051129],
-  pickable: true,
-  getFillColor: [60, 140, 210],
-  getLineColor: [20, 50, 80]
+  pickable: true
 });
 ```
 

@@ -41,17 +41,24 @@ To be compatible with `@loaders.gl/core` functions such as `encode`, writer obje
   tone="orange"
 />
 
-### Common Fields
+### Common fields
 
-| Field       | Type     | Default  | Description                                                     |
-| ----------- | -------- | -------- | --------------------------------------------------------------- |
-| `name`      | `String` | Required | Short name of the loader ('OBJ', 'PLY' etc)                     |
-| `extension` | `String` | Required | Three letter (typically) extension used by files of this format |
-| `category`  | `String` | Optional | Indicates the type/shape of data                                |
-| `encoding`  | `String` | Optional | Physical serialization, such as `json`, `xml`, `protobuf`, `arrow`, `parquet`, `zip`, `image` or `binary` |
-| `format`    | `String` | Optional | Logical file format or subtype, such as `geojson`, `mvt`, `gltf`, `ply` or `flatgeobuf` |
+| Field | Type | Purpose |
+| --- | --- | --- |
+| `id` | `string` | Writer identifier and option namespace. |
+| `name` | `string` | Human-readable writer name. |
+| `module` | `string` | Owning loaders.gl module. |
+| `version` | `string` | Version used for runtime assets. |
+| `extensions` | `string[]` | Output extensions without leading dots. |
+| `options` | `object` | Default writer options. |
+| `mimeTypes` | `string[]` | Optional output MIME types. |
+| `category` | `string` | Optional accepted data category. |
+| `encoding` | `string` | Optional physical serialization. |
+| `format` | `string` | Optional logical format. |
+| `worker` | `boolean \| string` | Optional worker descriptor. |
 
-`encoding` and `format` are additive metadata. Existing `text` and `binary` fields remain compatibility hints used by core loading and encoding paths.
+`text` and `binary` remain compatibility hints used by encoding helpers. Check the
+writer reference for accepted input shapes and supported output methods.
 
 ### Encoder Function
 
@@ -61,4 +68,4 @@ To be compatible with `@loaders.gl/core` functions such as `encode`, writer obje
 | `encode`                         | `Function` | `null`  | Encodes asynchronously                                 |
 | `encodeInBatches` (Experimental) | `Function` | `null`  | Encodes and releases batches through an async iterator |
 
-Note: The format of the input data to the encoders depends on the loader. Several loader categories are defined to provided standardized data formats for similar loaders.
+Note: The format of the input data to the encoders depends on the writer. Category contracts provide shared data shapes, but each writer defines which representations it accepts.

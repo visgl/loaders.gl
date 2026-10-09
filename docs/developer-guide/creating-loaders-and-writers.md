@@ -33,7 +33,7 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
   ]}
 />
 
-> See the a detailed specification of the [loader object format API reference](/docs/specifications/loader-object-format).
+> See the detailed specification of the [loader object format API reference](/docs/specifications/loader-object-format).
 
 ## Overview
 
@@ -51,23 +51,24 @@ You would give a name to the loader object, define what file extension(s) it use
 
 ```typescript
 export default {
+  id: 'custom-json',
   name: 'JSON',
+  module: 'custom-json',
+  version: '1.0.0',
+  mimeTypes: ['application/json'],
+  options: {},
   extensions: ['json'],
-  testText: null,
-  parse: async (arrayBuffer) => await JSON.parse(new TextDecoder().decode(arrayBuffer),
+  parse: async (arrayBuffer) => JSON.parse(new TextDecoder().decode(arrayBuffer)),
   parseTextSync: JSON.parse
 };
 ```
 
-| Field       | Type       | Default  | Description                                                                       |
-| ----------- | ---------- | -------- | --------------------------------------------------------------------------------- |
-| `name`      | `String`   | Required | Short name of the loader ('OBJ', 'PLY' etc)                                       |
-| `extension` | `String`   | Required | Three letter (typically) extension used by files of this format                   |
-| `testText`  | `Function` | `null`   | Guesses if a file is of this format by examining the first characters in the file |
+See the [loader object specification](/docs/specifications/loader-object-format)
+for required metadata, detection tests, and supported parser methods.
 
 A loader must define a parser function for the format, a function that takes the loaded data and converts it into a parsed object.
 
-Depending on how the underlying loader works (whether it is synchronous or asynchronous and whether it expects text or binary data), the loader object can expose the parser in a couple of different ways, specified by provided one of the parser function fields.
+Depending on how the underlying loader works (whether it is synchronous or asynchronous and whether it expects text or binary data), the loader object can expose the parser in a couple of different ways, by providing the appropriate parser methods.
 
 ## Dependency Management
 
@@ -87,8 +88,7 @@ An example of accessing a HTTP header.
 
 ```typescript
 export async function parseWithHeader(arrayBuffer, options, context) {
-  const {parse, response} = context;
-  const contentLength = response.headers.get('content-length');
-  const data = await parse(arrayBuffer, JSONLoader);
+  const contentLength = context.response?.headers.get('content-length');
+  return {contentLength, data: JSON.parse(new TextDecoder().decode(arrayBuffer))};
 }
 ```

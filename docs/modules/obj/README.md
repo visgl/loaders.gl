@@ -33,7 +33,7 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
   ]}
 />
 
-The `@loaders.gl/obj` module handles the the [Wavefront OBJ format](/docs/modules/obj/formats/obj), a simple ASCII format that defines 3D geometries as vertices, normals and faces.
+The `@loaders.gl/obj` module handles the [Wavefront OBJ format](/docs/modules/obj/formats/obj), a simple ASCII format that defines 3D geometries as vertices, normals and faces.
 
 <ReferenceBoundary
   title="OBJ module reference"

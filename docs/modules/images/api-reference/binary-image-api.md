@@ -58,7 +58,7 @@ const response = await fetchFile(imageUrl);
 const arrayBuffer = await response.arrayBuffer();
 
 const metadata = getBinaryImageMetadata(arrayBuffer);
-if (medata) {
+if (metadata) {
   const {width, height, mimeType} = metadata;
 }
 ```
@@ -85,4 +85,6 @@ compressed image payloads, or verify chunk CRCs.
 }
 ```
 
-If `mimeType` is supplied, assumes the image is of that type. If not supplied, first attempts to auto deduce the image format (see `getImageMIMEType`).
+This helper has no MIME-type override; it identifies the format from the bytes.
+Some recognized ISOBMFF image brands return zero dimensions because their dimension
+metadata is not decoded by this helper.

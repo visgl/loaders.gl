@@ -44,14 +44,14 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
 
 ```typescript
 import '@loaders.gl/polyfills'; // only needed if using under Node
-import {loadImageTexture} from `@loaders.gl/textures`;
+import {loadImageTexture} from '@loaders.gl/textures';
 
 const image = await loadImageTexture(url);
 ```
 
 ```typescript
 import '@loaders.gl/polyfills'; // only needed if using under Node
-import {loadImageTexture} from `@loaders.gl/textures`;
+import {loadImageTexture} from '@loaders.gl/textures';
 
 const URL = ...;
 
@@ -83,9 +83,9 @@ Returns
 
 Accepts the same options as [`ImageBitmapLoader`](/docs/modules/images/api-reference/image-bitmap-loader), and
 
-| Option            | Type    | Default | Description |
-| ----------------- | ------- | ------- | ----------- | ------------------------------------------------------ |
-| `image.mipLevels` | `Number | String` | `0`         | If `'auto'` or non-zero, loads an array of mip images. |
+| Option | Type | Default | Description |
+| --- | --- | --- | --- |
+| `image.mipLevels` | `number \| 'auto'` | `0` | Number of mip images; `'auto'` derives the count from the base image dimensions. |
 
 Number of mip level images to load: Use `0` to indicate a single image with no mips. Supplying the string `'auto'` will infer the mipLevel from the size of the `lod`=`0` image.
 

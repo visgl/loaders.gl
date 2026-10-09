@@ -63,7 +63,7 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
 ## Usage
 
 ```typescript
-import '@loaders.gl/polyfill'; // only if using under Node
+import '@loaders.gl/polyfills'; // only if using under Node
 import {load, encode} from '@loaders.gl/core';
 import {ImageBitmapLoader, getImageData} from '@loaders.gl/images';
 import {KTX2BasisWriter} from '@loaders.gl/textures';

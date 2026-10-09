@@ -1,5 +1,5 @@
 ---
-title: parseWithContext
+title: parseFromContext
 description: Invoke a sub-loader with the parent loader context when parsing embedded or associated resources.
 hide_title: true
 page_style: designed
@@ -11,7 +11,7 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
 <DocPageHeader
   eyebrow="Loader utilities / composition"
   title="Let a composite loader delegate without losing context."
-  description="parseWithContext() and its synchronous and batched variants provide a shared way for one loader to invoke another for embedded data or associated resources. Parent options, paths, and runtime context remain available to the sub-loader."
+  description="parseFromContext() and its synchronous and batched variants provide a shared way for one loader to invoke another for embedded data or associated resources. Parent options, paths, and runtime context remain available to the sub-loader."
   tone="violet"
   meta={['Composite loaders', 'Embedded resources', 'Shared loader context']}
   links={[
@@ -35,30 +35,34 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
 />
 
 <ReferenceBoundary
-  title="parseWithContext reference"
+  title="parseFromContext reference"
   description="The detailed reference covers async, sync, and batched delegation, loader context, options, and composite-loader usage."
   tone="violet"
 />
 
-Use when invoking a sub-loader from a loader, to parse embedded data or perhaps an associated resource.
+Use these helpers inside a composite loader to delegate parsing while retaining
+its loader context. They are exported from `@loaders.gl/loader-utils`.
 
 ## Usage
 
 ```typescript
-import {parseWithContext} from '@loaders.gl/loader-utils';
+import {parseFromContext} from '@loaders.gl/loader-utils';
 import {OBJLoader} from '@loaders.gl/obj';
 
-parse(data: ArrayBuffer, options: LoaderOptions, context?: LoaderContext) {
-  const subData = data.slice(100, 200);
-  data = await parseWithContext(subData, OBJLoader, options, context);
+async function parseEmbeddedMesh(arrayBuffer, options, context) {
+  const meshBytes = arrayBuffer.slice(100, 200);
+  return await parseFromContext(meshBytes, OBJLoader, options, context);
 }
-...
 ```
 
 ## Functions
 
-### parse
+| Helper | Result | Requirement |
+| --- | --- | --- |
+| `parseFromContext(data, loader, options, context)` | Promise of decoded data | Parent parsing context. |
+| `parseSyncFromContext(data, loader, options, context)` | Decoded data | Context with synchronous parsing and a synchronous child parser. |
+| `parseInBatchesFromContext(data, loader, options, context)` | Promise of an async batch iterable | Context with batched parsing. |
 
-### parseSyncWithContext
-
-### parseInBatchesWithContext
+Pass the context supplied to the parent parser. Published loader modules must not
+import core to make nested parsing calls. New implementations can also use the
+`context.coreApi` methods, passing the parent context explicitly.

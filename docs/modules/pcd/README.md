@@ -33,7 +33,7 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
   ]}
 />
 
-The `@loaders.gl/pcd` module handles the the [Point Cloud Data](/docs/modules/pcd/formats/pcd), which stores 3D point cloud data).
+The `@loaders.gl/pcd` module handles the [Point Cloud Data](/docs/modules/pcd/formats/pcd), which stores 3D point cloud data.
 
 <ReferenceBoundary
   title="PCD module reference"

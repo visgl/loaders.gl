@@ -77,7 +77,7 @@ import {dehydrateArrowTable, hydrateArrowTable} from '@loaders.gl/arrow/transpor
 const payload = dehydrateArrowTable(table);
 worker.postMessage(payload, transferList);
 
-const table = hydrateArrowTable(payload);
+const hydratedTable = hydrateArrowTable(payload);
 ```
 
 ### `dehydrateArrowTable`
@@ -151,7 +151,7 @@ import {
 const payload = serializeArrowTableToIPC(table);
 worker.postMessage(payload, [payload.data.buffer]);
 
-const table = deserializeArrowTableFromIPC(payload);
+const restoredTable = deserializeArrowTableFromIPC(payload);
 ```
 
 `serializeArrowTableToIPC(table)` returns Arrow IPC bytes.

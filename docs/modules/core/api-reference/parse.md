@@ -42,7 +42,7 @@ In contrast to `load()`, `parse()` does not interpret strings as URLs. It does r
 
 :::caution
 When calling a sub-loader from inside a loader, do not use this public function. Use the
-`parseWithContext` counterparts in `@loaders.gl/loader-utils`.
+`parseFromContext` counterparts in `@loaders.gl/loader-utils`.
 :::
 
 ## Usage

@@ -199,8 +199,11 @@ const layer = new SourceLayer({
   requestCrs: 'EPSG:4326',
   layers: ['0'],
   pickable: true,
-  getLineColor: [0, 80, 255],
-  lineWidthMinPixels: 3
+  format: 'geojson',
+  geoJsonLayerProps: {
+    getLineColor: [0, 80, 255],
+    lineWidthMinPixels: 3
+  }
 });
 ```
 

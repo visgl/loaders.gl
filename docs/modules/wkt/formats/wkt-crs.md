@@ -58,9 +58,7 @@ loaders.gl type model, format support matrix, and reprojection roadmap.
 
 | Name                  | Year   | Description                                                  | ISO              |
 | --------------------- | ------ | ------------------------------------------------------------ | ---------------- |
-| WKT                   | (1999  | As initially defined by the Open Geospatial Consortium (OGC) |
+| WKT | 1999 | As initially defined by the Open Geospatial Consortium (OGC) | — |
 | "WKT 1"               | (2001  | WKT was extended in 2001. Sometimes known as "WKT 1".        | ISO 19125-1:2004 |
 | "WKT 2" / "WKT-CRS 1" | (2015) | Addresses new requirements and inconsistencies in WKT 1.     | ISO 19162:2015   |
 | "WKT-CRS 2"           | (2018) | A newer revision.                                            | ISO 19162:2019   |
-
-## Ecosystem Support

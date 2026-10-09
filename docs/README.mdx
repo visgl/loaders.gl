@@ -119,16 +119,18 @@ loaders.gl provides a wide selection of loaders organized into categories:
 loaders.gl provides a small core API module with common functions to load and save data, 
 and a range of optional modules that provide loaders and writers for specific file formats.
 
-A minimal example using the `load` function and the `CSVLoader` to load a CSV formatted table into a JavaScript array:
+A minimal example using the `load` function and the `CSVLoader` to load a CSV file into an object-row table:
 
 ```typescript
 import {load} from '@loaders.gl/core';
 import {CSVLoader} from '@loaders.gl/csv';
 
-const data = await load('data.csv', CSVLoader);
+const table = await load('data.csv', CSVLoader, {csv: {shape: 'object-row-table'}});
 
-for (const row of data) {
-  console.log(JSON.stringify(row)); // => '{header1: value1, header2: value2}'
+if (table.shape === 'object-row-table') {
+  for (const row of table.data) {
+    console.log(row);
+  }
 }
 ```
 
@@ -138,8 +140,8 @@ Streaming parsing is available using ES2018 async iterators, e.g. allowing "larg
 import {loadInBatches} from '@loaders.gl/core';
 import {CSVLoader} from '@loaders.gl/csv';
 
-for await (const batch of await loadInBatches('data.csv', CSVLoader)) {
-  if (batch.batchType === 'data') {
+for await (const batch of await loadInBatches('data.csv', CSVLoader, {csv: {shape: 'object-row-table'}})) {
+  if (batch.batchType === 'data' && Array.isArray(batch.data)) {
     for (const row of batch.data) {
       console.log(JSON.stringify(row)); // => '{header1: value1, header2: value2}'
     }

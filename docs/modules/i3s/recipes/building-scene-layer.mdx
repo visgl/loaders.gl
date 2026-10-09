@@ -133,7 +133,7 @@ Take a look at sublayer properties:
 With such a panel it is possible to change a sublayer visibility property:
 
 ```javascript
-  function onChangeHandler(treeItem) => {
+  function onChangeHandler(treeItem) {
     const sublayer = sublayers.find((sublayer) => sublayer.id === treeItem.id);
     if (sublayer) {
       sublayer.visibility = !sublayer.visibility;

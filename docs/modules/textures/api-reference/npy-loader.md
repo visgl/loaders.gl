@@ -64,10 +64,10 @@ The `NPYLoader` parses an array from the [NPY format][npy-spec], a lightweight e
 ## Usage
 
 ```typescript
-import {_NPYLoader} from '@loaders.gl/textures';
+import {NPYLoader} from '@loaders.gl/textures';
 import {load} from '@loaders.gl/core';
 
-const {data, header} = await load(url, _NPYLoader);
+const {data, header} = await load(url, NPYLoader);
 ```
 
 `data` is a TypedArray containing the array's data.

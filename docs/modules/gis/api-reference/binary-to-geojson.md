@@ -48,13 +48,16 @@ a valid GeoJSON Geometry, Feature or array of Features.
 ## Usage
 
 ```typescript
-import {load} from '@loaders.gl/core';
-import {JSONLoader} from '@loaders.gl/json';
+import type {Feature} from '@loaders.gl/schema';
 import {geojsonToBinary, binaryToGeojson} from '@loaders.gl/gis';
 
-const geoJSONfeatures = await load('data.geojson', JSONLoader);
-const binaryFeatures = geojsonToBinary(geoJSONfeatures);
-const geoJSONfeatures2 = binaryToGeojson(binaryFeatures);
+const features: Feature[] = [{
+  type: 'Feature',
+  geometry: {type: 'Point', coordinates: [1, 2]},
+  properties: {name: 'Example'}
+}];
+const binaryFeatures = geojsonToBinary(features);
+const restoredFeatures = binaryToGeojson(binaryFeatures);
 ```
 
 ## Options

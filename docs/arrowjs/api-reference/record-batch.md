@@ -51,9 +51,9 @@ A `RecordBatch` is a fixed-width row set of equal-length child vectors.
 Use `table.batches[i]` from a `Table`, or deserialize IPC input to get `RecordBatch` instances.
 
 ```ts
-import {Table, Field, Int32, Utf8, makeTable} from 'apache-arrow';
+import {Table, Field, Int32, Utf8, tableFromArrays} from 'apache-arrow';
 
-const table = makeTable({
+const table = tableFromArrays({
   id: [1, 2, 3],
   label: ['a', 'b', 'c']
 });
@@ -64,20 +64,20 @@ const batch = table.batches[0];
 ## Usage
 
 ```ts
-import {makeTable, Field, Int32, Utf8} from 'apache-arrow';
+import {tableFromArrays, Field, Int32, Utf8} from 'apache-arrow';
 
-const table = makeTable({
+const table = tableFromArrays({
   id: [1, 2, 3],
   label: ['a', 'b', 'c']
 });
 const batch = table.batches[0];
-console.log(batch?.numRows, batch?.schema?.length);
+console.log(batch?.numRows, batch?.schema?.fields.length);
 ```
 
 ```ts
-import {makeVector, Struct, Field, Int32, Utf8} from 'apache-arrow';
+import {tableFromArrays} from 'apache-arrow';
 
-const batch = makeTable({
+const batch = tableFromArrays({
   id: [1, 2],
   label: ['x', 'y']
 }).batches[0];

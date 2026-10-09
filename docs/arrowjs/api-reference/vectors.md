@@ -49,7 +49,7 @@ Vector construction is centered on the `Vector` class; Arrow no longer publishes
 ## Usage
 
 ```ts
-import {makeVector, Int32Array} from 'apache-arrow';
+import {makeVector} from 'apache-arrow';
 
 const ids = makeVector(new Int32Array([1, 2, 3]));
 console.log(ids.length, ids.get(0));

@@ -70,12 +70,12 @@ npm install @loaders.gl/core
 ## Usage
 
 ```typescript
-import {HexWKBLoader} from '@loaders.gl/wkt';
+import {HexWKBLoader} from '@loaders.gl/wkt/bundled';
 import {parseSync} from '@loaders.gl/core';
 
-// biome-ignore format: preserve intentional fixture layout
-const data = parseSync(data, HexWKBLoader);
-// => { positions: { value: Float64Array(2) [ 1, 2 ], size: 2 } }
+const hexWkb = '0101000000000000000000f03f0000000000000040';
+const data = parseSync(hexWkb, HexWKBLoader);
+// => {type: 'Point', coordinates: [1, 2]}
 ```
 
 ```typescript
@@ -91,15 +91,13 @@ N/A
 
 ## Format Summary
 
-Well-known binary (WKB) is a binary geometry encoding to store geometries (it
-doesn't store attributes). It's used in databases such as PostGIS and as the
-internal storage format of Shapefiles. It's also being discussed as the internal
-storage format for a ["GeoArrow"](https://github.com/geopandas/geo-arrow-spec)
-specification. WKB is defined starting on page 62 of the [OGC Simple Features
-specification](http://portal.opengeospatial.org/files/?artifact_id=25355).
+WKB encodes geometry without a feature's attributes. It is used in spatial
+databases and in the `geoarrow.wkb` geometry extension. Shapefile geometry records
+use their own binary layout; they are not WKB records. See the
+[WKB format page](../formats/wkb) for compatibility details.
 
 It's essentially a binary representation of WKT. For common geospatial types
-including (Multi) `Point`, `Line`, and `Polygon`, there's a 1:1 correspondence
+including (Multi) `Point`, `LineString`, and `Polygon`, there's a 1:1 correspondence
 between WKT/WKB and GeoJSON. WKT and WKB also support extended geometry types,
 such as `Curve`, `Surface`, and `TIN`, which don't have a correspondence to
 GeoJSON.

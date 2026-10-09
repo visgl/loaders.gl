@@ -38,7 +38,7 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
 
 The `@loaders.gl/mvt` module handles the [Mapbox Vector Tile](/docs/modules/mvt/formats/mvt) format, a protobuf-encoded format that defines geospatial geometries.
 
-The modules also provides a `TableTileSourceLoader` class that can serve up dynamic tiles from an in-memory `GeoJSON` file.
+The module also provides `TableTileSourceLoader` for generating dynamic tiles from an in-memory GeoJSON table.
 
 For Arrow input, `ArrowTableTileSourceLoader` generates GeoArrow WKB tiles while preserving typed
 attribute columns without a GeoJSON property round-trip.

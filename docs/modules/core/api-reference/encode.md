@@ -65,11 +65,10 @@ const arrayBuffer = await encode(meshData, DracoWriter);
 encodeText(data, writer, options?): Promise<string>
 encodeTextSync(data, writer, options?): string
 encodeInBatches(data, writer, options?): AsyncIterable<ArrayBuffer>
-encodeTextInBatches(data, writer, options?): AsyncIterable<ArrayBuffer>
 ```
 
 Text helpers are convenience APIs and may convert through bytes when the writer does not expose a
-native text encoder. Batch helpers require the writer to implement the corresponding batch method;
+native text encoder. `encodeInBatches` requires the writer to implement its batch method;
 they do not silently fall back to one large atomic encode.
 
 ## Options

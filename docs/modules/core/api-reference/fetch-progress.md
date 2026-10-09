@@ -54,13 +54,19 @@ function onProgress(percent, {loadedBytes, totalBytes}) {
 }
 
 async function main() {
-  const response = await _fetchProgress(fetch(PROGRESS_IMAGE_URL, onProgress),
+  const response = await _fetchProgress(fetch(PROGRESS_IMAGE_URL), onProgress);
   const data = await response.arrayBuffer();
   // At this point, onProgress will have been called one or more times.
-  ...
+  return data;
 }
 ```
 
-## \_fetchProgress(response : Response | Promise, onProgress : function, onDone : function, onError : function) : Response
+## `_fetchProgress(response, onProgress, onDone?, onError?): Promise<Response>`
 
 `onProgress: (percent: number, {loadedBytes : number, totalBytes : number}) => void`
+
+Progress callbacks require a successful response with a readable body and a
+positive `Content-Length`. Without those, the original response is returned and
+progress is not reported. The wrapped response contains the body stream but does
+not preserve the original response headers, status, or URL; inspect those before
+wrapping if your application needs them.

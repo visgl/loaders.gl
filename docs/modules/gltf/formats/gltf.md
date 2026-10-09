@@ -309,7 +309,7 @@ Specification: [KHR_draco_mesh_compression](https://github.com/KhronosGroup/glTF
 
 Parsing Support:
 
-- By adding the `decompress: true` options to the `GLTFParser` any decompressed by the `GLTFParser`.
+- Enable `gltf.decompressMeshes` on `GLTFLoader` to decode supported compressed mesh extensions.
 - The expanded attributes are placed in the mesh object (effectively making it look as if it had never been compressed).
 - The extension objects are removed from the glTF file.
 

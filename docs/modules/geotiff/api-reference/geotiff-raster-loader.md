@@ -105,21 +105,10 @@ The plain dataset is designed for the vertical GeoTIFF adapter in
 [math.gl PR #165](https://github.com/visgl/math.gl/pull/165). With a math.gl version
 that includes its plain-data input support:
 
-```typescript
-import {load} from '@loaders.gl/core';
-import {GeoTIFFRasterLoader} from '@loaders.gl/geotiff';
-import {Projection} from '@math.gl/projection';
-import {loadVerticalGeoTIFFGrid} from '@math.gl/projection/grids/vertical-geotiff';
-
-const dataset = await load('geoid.tif', GeoTIFFRasterLoader);
-const geoid = await loadVerticalGeoTIFFGrid(dataset);
-const projection = new Projection({
-  from: '+proj=longlat +datum=WGS84 +geoidgrids=local',
-  verticalGrids: {local: geoid}
-});
-
-const [longitude, latitude, ellipsoidalHeight] = projection.project([10, 40, 100]);
-```
+Load the dataset with `GeoTIFFRasterLoader`, then pass it to the adapter's
+`loadVerticalGeoTIFFGrid()` function. Configure the prepared grid through the projection
+API provided by that math.gl version; see the adapter documentation for the projection
+setup and grid naming conventions.
 
 Loading and preparing the grid are asynchronous; projection calls are synchronous
 afterward. The math.gl adapter validates supported geoid metadata, handles nodata,

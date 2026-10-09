@@ -68,9 +68,6 @@ const data = await encode(mesh, DracoWriter, options);
 
 ## Options
 
-| Option       | Type             | Default                     | Description                                                        |
-| ------------ | ---------------- | --------------------------- | ------------------------------------------------------------------ |
-| `pointcloud` | Boolean          | `false`                     | set to `true` to compress pointclouds (mode=`0` and no `indices`). |
-| `method`     | String           | `MESH_EDGEBREAKER_ENCODING` | set Draco encoding method (applies to meshes only).                |
-| `speed`      | [Number, Number] | set Draco speed options.    |
-| `log`        | Function         | callback for debug info.    |
+See the maintained [DracoWriter reference](/docs/modules/draco/api-reference/draco-writer)
+for current namespaced options and encoding limits. This page's former flat-option
+table is obsolete.

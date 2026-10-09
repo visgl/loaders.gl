@@ -583,7 +583,7 @@ A minor release that includes:
 - **TypeScript** - TypeScript v5.6.
 - **Node.js** - Node.js v20 is now the primary supported Node.js version.
 - **Loader/Writer APIs** - Improved type inference for loader / writer options and return types.
-- **[`DataSource`](/docs/developer-guide/using-sources) API** Multi-step data loadingi mprovements.
+- **[`DataSource`](/docs/developer-guide/using-sources) API** Multi-step data loading improvements.
 - **Website** - Live examples are now available for more loaders / formats.
 - **Examples** - Migrated to React functional components. Minimized boilerplate code.
 
@@ -1380,7 +1380,7 @@ The 2.0 release brings potentially dramatic bundle size savings through dynamic 
   - Ease-of-use: Worker loading is provided by the main loader objects. It is not necessary to import the `...WorkerLoader` objects to enable worker loading (but see below about bundle size)
   - Performance: Loading on worker threads is now the default: All worker enabled loaders now run on worker threads by default (set `options.core.worker: false` to disable worker-thread loading and run the loader on the main thread).
   - Debugging: Development builds of workers are now available on `unpkg.com` CDN, eabling debugging of worker loaders.
-  - Bundle size: Workers are no longer bundled, but loaded from from the `unpkg.com` CDN.
+  - Bundle size: Workers are no longer bundled, but loaded from the `unpkg.com` CDN.
   - Bundle size: Note that the old `...WorkerLoader` classes are still available. Using these can save even more bundle space since during tree-shaking since they do not depend on the non-worker parser.
 
 - **Composite Loaders**

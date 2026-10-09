@@ -44,7 +44,7 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
   <img src="https://img.shields.io/badge/From-v2.2-blue.svg?style=flat-square" alt="From-v2.2" /> 
 </p>
 
-The `@loaders.gl/video` module contains loader and writers for images that follow loaders.gl conventions.
+The `@loaders.gl/video` module provides browser video loading and GIF encoding through `VideoLoader` and `GIFBuilder`.
 
 > Video support is still experimental, and does not work in Node.js.
 

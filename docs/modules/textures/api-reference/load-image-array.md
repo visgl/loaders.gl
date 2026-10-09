@@ -1,5 +1,5 @@
 ---
-title: loadImageArray
+title: loadImageTextureArray
 description: Load a counted image array or mip-level image set through one URL callback.
 hide_title: true
 page_style: designed
@@ -11,7 +11,7 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
 <DocPageHeader
   eyebrow="Images API · array helper"
   title="Load an image array without repeating the request loop."
-  description="loadImageArray generates and decodes a predictable sequence of images for texture arrays, volume slices, or mip-level sets. The callback receives the image index and level of detail."
+  description="loadImageTextureArray generates and decodes a predictable sequence of images for texture arrays, volume slices, or mip-level sets. The callback receives the image index and level of detail."
   tone="blue"
   meta={['Texture arrays', 'Volume slices', 'Optional mip levels']}
   links={[
@@ -35,7 +35,7 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
 />
 
 <ReferenceBoundary
-  title="loadImageArray reference"
+  title="loadImageTextureArray reference"
   description="The reference below documents callback parameters, mip-level behavior, return values, and image decoding options."
   tone="blue"
 />
@@ -51,9 +51,9 @@ Loading an array of images
 
 ```typescript
 import '@loaders.gl/polyfills'; // only needed for Node.js support
-import {loadImageArray} from `@loaders.gl/images`;
+import {loadImageTextureArray} from '@loaders.gl/textures';
 
-const images = await loadImageArray(count, ({index}) => `filename-${index}`);
+const images = await loadImageTextureArray(count, ({index}) => `filename-${index}`);
 
 for (const image of images) {
   ...
@@ -62,10 +62,10 @@ for (const image of images) {
 
 ```typescript
 import '@loaders.gl/polyfills'; // only needed for Node.js support
-import {loadImageArray} from `@loaders.gl/images`;
+import {loadImageTextureArray} from '@loaders.gl/textures';
 
-const images = await loadImageArray(count,  ({index}) => `filename-${index}`, {
-  mipLevels: 'auto'
+const images = await loadImageTextureArray(count,  ({index}) => `filename-${index}`, {
+  image: {mipLevels: 'auto'}
 });
 
 for (const imageArray of images) {
@@ -81,12 +81,12 @@ the `getUrl` callback will be called for each image with the following parameter
 
 | Parameter | Description                                                    |
 | --------- | -------------------------------------------------------------- |
-| `index`   | The index of the image being loaded, from `0` to `count - 1`.  |
-| `lod`     | The mip level image being loaded, from `0` to `mipLevels - 1`. |
+| `index`   | The index of the image being loaded, from '0' to `count - 1`.  |
+| `lod`     | The mip level image being loaded, from '0' to `mipLevels - 1`. |
 
-Note: In addition to these values, all `options` passed in to `loadImageArray` are also available in the `getUrl` method.
+Note: In addition to these values, all `options` passed in to `loadImageTextureArray` are also available in the `getUrl` method.
 
-### loadImageArray(count : Number | String, getUrl : `({index}) => String`, options? : Object) : `image[] | image[][]`
+### loadImageTextureArray(count : Number | String, getUrl : `({index}) => String`, options? : Object) : `image[] | image[][]`
 
 Parameters:
 
@@ -102,9 +102,9 @@ Returns
 
 Accepts the same options as [`ImageBitmapLoader`](/docs/modules/images/api-reference/image-bitmap-loader), and
 
-| Option            | Type    | Default | Description |
-| ----------------- | ------- | ------- | ----------- | ------------------------------------------------------ |
-| `image.mipLevels` | `Number | String` | `0`         | If `'auto'` or non-zero, loads an array of mip images. |
+| Option | Type | Default | Description |
+| --- | --- | --- | --- |
+| `image.mipLevels` | `number \| 'auto'` | `0` | Number of mip images; `'auto'` derives the count from the base image dimensions. |
 
 Number of mip level images to load: Use `0` to indicate a single image with no mips. Supplying the string `'auto'` will infer the mipLevel from the size of the `lod`=`0` image.
 

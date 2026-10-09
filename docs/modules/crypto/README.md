@@ -66,41 +66,37 @@ you will want to generate the encoding that matches or is required by that API.
 
 All hash functions in the `@loaders.gl/crypto` module take an `encoding` parameter that lets you specify the encoding.
 
-## Cryptographic Hash API
+## Hash and checksum API
 
-The API offers "transforms" that can calculate a cryptographic hash incrementally on data as it comes in on a stream.
+The API offers "transforms" that can calculate a hash or checksum incrementally on data as it comes in on a stream.
 
 | Transforms                                                     | Sync | Description                       |
 | -------------------------------------------------------------- | ---- | --------------------------------- |
-| [`CRC32Hash`](/docs/modules/crypto/api-reference/crc32-hash)   | ✅ Y    | Base64-encoded Cryptographic Hash |
-| [`CRC32CHash`](/docs/modules/crypto/api-reference/crc32c-hash) | ✅ Y    | Base64-encoded Cryptographic Hash |
+| [`CRC32Hash`](/docs/modules/crypto/api-reference/crc32-hash)   | ✅ Y    | Checksum (hex or base64) |
+| [`CRC32CHash`](/docs/modules/crypto/api-reference/crc32c-hash) | ✅ Y    | Checksum (hex or base64) |
 | [`MD5Hash`](/docs/modules/crypto/api-reference/md5-hash)       | ✅ Y    | Base64-encoded Cryptographic Hash |
 | [`SHA256Hash`](/docs/modules/crypto/api-reference/sha256-hash) | ✅ Y    | Base64-encoded Cryptographic Hash |
 
 ## Using transforms
 
-The `@loaders.gl/crypto` libraries exports transform that can be used to incrementally calculate a cryptographic hash as data is being loaded and parsed:
+The `@loaders.gl/crypto` module exports transforms that can be used to incrementally calculate a hash or checksum as data is being loaded and parsed:
 
 ```typescript
 import {loadInBatches} from '@loaders.gl/core';
 import {CRC32Hash} from '@loaders.gl/crypto';
 import {CSVLoader} from '@loaders.gl/csv';
 
-let hash;
-
-const csvIterator = await loadInBatches(CSV_URL, CSVLoader, {
-  transforms: [CRC32Hash],
-  crypto: {
-    onEnd: (result) => {
-      hash = result.hash;
-    }
-  }
+const checksum = new CRC32Hash({
+  encoding: 'hex',
+  onEnd: ({hash}) => console.log(hash)
 });
-
+const csvIterator = await loadInBatches(CSV_URL, CSVLoader, {
+  core: {transforms: [checksum.hashBatches]}
+});
 for await (const batch of csvIterator) {
+  // Process each parsed CSV batch.
 }
 
-console.log(hash);
 ```
 
 Note that by using a transform, the hash is calculated incrementally as batches are loaded and parsed, and does not require having the entire data source loaded into memory. It also distributes the potentially heavy hash calculation over the batches, keeping the main thread responsive.

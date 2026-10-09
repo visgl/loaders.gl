@@ -51,13 +51,12 @@ This page gives some background on `AsyncIterator`.
 
 There are multiple similar-sounding types supporting the type safe use of iterators which can be a source of confusion to users, so some information is provided here:
 
-| Type | Async Type | Type Parameters |
-Description |
-| ------------------ | ----------------------- | ---------------------------------------------------------------------------------------------------------------------------------------- |
-| `Iterator` | `AsyncIterator` | `<...>` | An iterator has `next()`, ... methods |
-| `Iterable` | `AsyncIterable` | `<...>` | An iterable is a class that has a `[Symbol.iterator]` or `[Symbol.asyncIterator]` property that returns an `Iterator` or `AsyncIterator` |
-| `Generator` | `AsyncGenerator` | `<...>` | A generator is a function that takes some parameters and when called returns an `Iterator` or `AsyncIterator` |
-| `IterableIterator` | `AsyncIterableIterator` | `<...>` | It is convenient to define `Iterator`s that are also `Iterable`. Most built in container classes return this type. |
+| Synchronous type | Asynchronous type | Meaning |
+| --- | --- | --- |
+| `Iterator<T>` | `AsyncIterator<T>` | Supplies `next()` results, directly or through promises. |
+| `Iterable<T>` | `AsyncIterable<T>` | Supplies an iterator through `Symbol.iterator` or `Symbol.asyncIterator`. |
+| `Generator<T>` | `AsyncGenerator<T>` | An iterator produced by a generator function; also iterable. |
+| `IterableIterator<T>` | `AsyncIterableIterator<T>` | An iterator that also implements the corresponding iterable protocol. |
 
 An `IterableIterator` can
 
@@ -82,7 +81,7 @@ interface IteratorResult {
 
 https://exploringjs.com/es6/ch_iteration.html#sec_implementing-iterables
 
-## Batched Parsing and Endcoding using AsyncIterators
+## Batched Parsing and Encoding using AsyncIterators
 
 The input and output from streaming loaders and writers can both be expressed in terms of async iterators.
 

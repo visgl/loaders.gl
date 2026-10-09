@@ -117,9 +117,9 @@ The following are high-level observations from migrating applications:
 | Removed Feature                 | Alternative             | Comment                                                 |
 | ------------------------------- | ----------------------- | ------------------------------------------------------- |
 | `Data` static factory methods   | `makeData()` function   | Static constructors were replaced with factory helpers. |
-| `Column` static factory methods | `makeVector()` function |
-| `Table` static factory methods  | `makeTable()` function  |
-| `Schema` static factory methods | `makeSchema()` function |
+| `Column` static factory methods | `makeVector()` function | — |
+| `Table` static factory methods  | `makeTable()` function  | — |
+| `Schema` static factory methods | `makeSchema()` function | — |
 
 **DataFrame removal** — the API removed a number of higher-level conveniences built outside Arrow core. These are now expected to be composed by user code.
 
