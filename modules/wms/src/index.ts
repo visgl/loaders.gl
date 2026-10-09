@@ -87,6 +87,13 @@ export {CSWCatalogSource, CSWSourceLoader} from './csw-source-loader';
 export {WMSSourceLoader, WMSImageSource} from './wms-source-loader';
 export type {WMTSSourceLoaderOptions, WMTSGetFeatureInfoParameters} from './wmts-source-loader';
 export {WMTSSourceLoader, WMTSImageTileSource} from './wmts-source-loader';
+export type {
+  OGCTileMatrixSet,
+  OGCTileMatrix,
+  OGCTileMatrixSetCRS,
+  OGCTileMatrixSetOptions
+} from './lib/parsers/ogc-api/tile-matrix-set';
+export {convertOGCTileMatrixSetToTileGrid} from './lib/parsers/ogc-api/tile-matrix-set';
 export type {ServiceCRS} from './crs-utils';
 export {
   normalizeServiceCRS,
@@ -102,7 +109,9 @@ export type {
   OGCAPICollection,
   OGCAPILandingPage,
   OGCAPILink,
-  OGCAPISourceOptions
+  OGCAPISourceOptions,
+  OGCAPITileMatrixSetSummary,
+  OGCAPITileset
 } from './ogc-api-source-loader';
 export {
   OGCAPIFeaturesSource,

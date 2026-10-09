@@ -9,6 +9,7 @@ import type {
   GetTileDataParameters,
   GetTileParameters,
   SourceLoader,
+  TileGrid,
   TileSource,
   TileSourceMetadata,
   VectorSource,
@@ -22,6 +23,9 @@ import {
   convertGeojsonToBinaryFeatureCollection
 } from '@loaders.gl/gis';
 import {getServiceCRSAxisOrder} from './crs-utils';
+import type {OGCTileMatrixSet} from './lib/parsers/ogc-api/tile-matrix-set';
+import {convertOGCTileMatrixSetToTileGrid} from './lib/parsers/ogc-api/tile-matrix-set';
+import {getTileGridMatrixId, validateMetersPerUnit} from './lib/tile-grid';
 import type {FeaturePaginationOptions, FeaturePage} from './feature-pagination';
 import {
   addNextLinkHeader,
@@ -38,6 +42,19 @@ export type OGCAPISourceOptions = DataSourceOptions & {
     collectionId?: string;
     /** Explicit tile template for the tiles adapter. */
     tileTemplate?: string;
+    /**
+     * Tile matrix set for the tiles adapter, as an OGC TileMatrixSet 2.0 document or the URL of
+     * one. When set, `getMetadata()` reports it as `tileGrid`. When omitted, the tile matrix set
+     * is discovered from the tileset that `tileTemplate` belongs to.
+     */
+    tileMatrixSet?: OGCTileMatrixSet | string;
+    /**
+     * Set to `false` to skip discovery. `{tileMatrix}` is then the `tileMatrix` tile parameter,
+     * otherwise `z`, which suits services whose matrix identifiers are zoom numbers. Default `true`.
+     */
+    discoverTileMatrixSet?: boolean;
+    /** Length of one CRS unit in meters, for a tile matrix set given by scale denominators. */
+    metersPerUnit?: number | null;
     /** Opt-in bounded pagination for getFeatures(); omitted keeps the single-page behavior. */
     pagination?: FeaturePaginationOptions;
   };
@@ -53,6 +70,30 @@ export type OGCAPICollection = {
   description?: string;
   extent?: {spatial?: {bbox?: number[][]}; temporal?: unknown};
   crs?: string[];
+  links?: OGCAPILink[];
+};
+
+/**
+ * The fields of OGC API Tiles tileset metadata used to find its tile matrix set. Other fields,
+ * including `tileMatrixSetLimits`, are kept but not interpreted.
+ */
+export type OGCAPITileset = {
+  title?: string;
+  /** Identifier of the tile matrix set in this API's `/tileMatrixSets`. */
+  tileMatrixSetId?: string;
+  /** Registry URI of the tile matrix set. */
+  tileMatrixSetURI?: string;
+  /** Includes the `http://www.opengis.net/def/rel/ogc/1.0/tiling-scheme` link. */
+  links?: OGCAPILink[];
+  [key: string]: unknown;
+};
+
+/** One entry of an OGC API Tiles `/tileMatrixSets` list. */
+export type OGCAPITileMatrixSetSummary = {
+  id: string;
+  title?: string;
+  /** Registry URI of the tile matrix set. */
+  uri?: string;
   links?: OGCAPILink[];
 };
 
@@ -240,20 +281,193 @@ export class OGCAPITilesSource
   extends DataSource<string, OGCAPISourceOptions>
   implements TileSource
 {
+  /** Converted tile matrix set and the options it was loaded or discovered with. */
+  private _tileGridCache: {
+    tileMatrixSet: OGCTileMatrixSet | string | undefined;
+    metersPerUnit: number | null | undefined;
+    /** Template the matrix set is discovered from; undefined when it is configured or not discovered. */
+    tileTemplate: string | undefined;
+    promise: Promise<TileGrid | undefined>;
+    /** The converted grid, once available. */
+    tileGrid?: TileGrid;
+  } | null = null;
+
   /** Creates an OGC API Tiles source. */
   constructor(url: string, options: OGCAPISourceOptions = {}, coreApi?: CoreAPI) {
     super(url.replace(/\/$/, ''), options, OGCAPITilesSourceLoader.defaultOptions, coreApi);
+    validateMetersPerUnit(options['ogc-api']?.metersPerUnit, 'OGC API Tiles');
   }
 
-  /** Returns basic tileset metadata from the service landing page. */
+  /** Updates options. A new `tileMatrixSet` document replaces the old one instead of merging. */
+  override setProps(options: OGCAPISourceOptions): void {
+    super.setProps(options);
+    const ogcAPIOptions = options['ogc-api'];
+    if (ogcAPIOptions && 'tileMatrixSet' in ogcAPIOptions) {
+      this.options['ogc-api'] = {
+        ...this.options['ogc-api'],
+        tileMatrixSet: ogcAPIOptions.tileMatrixSet
+      };
+    }
+  }
+
+  /** Returns basic tileset metadata from the service landing page and configured matrix set. */
   async getMetadata(): Promise<TileSourceMetadata> {
-    const landingPage = (await this.fetchJSON(this.url)) as OGCAPILandingPage;
+    const [landingPage, tileGrid] = await Promise.all([
+      this.fetchJSON(this.url) as Promise<OGCAPILandingPage>,
+      this.getTileGrid()
+    ]);
     const tileLink = landingPage.links?.find(link => link.rel?.includes('tileset'));
-    return {name: landingPage.title || '', title: landingPage.title, format: tileLink?.type};
+    return {
+      name: landingPage.title || '',
+      title: landingPage.title,
+      format: tileLink?.type,
+      ...(tileGrid ? {tileGrid} : {})
+    };
+  }
+
+  /** Lists the tile matrix sets the API advertises at `/tileMatrixSets`. */
+  async getTileMatrixSets(): Promise<OGCAPITileMatrixSetSummary[]> {
+    const response = (await this.fetchJSON(resolveLink('tileMatrixSets', this.url))) as {
+      tileMatrixSets?: OGCAPITileMatrixSetSummary[];
+    };
+    return Array.isArray(response?.tileMatrixSets) ? response.tileMatrixSets : [];
+  }
+
+  /** Fetches one tile matrix set from `/tileMatrixSets/{tileMatrixSetId}`. */
+  async getTileMatrixSet(tileMatrixSetId: string): Promise<OGCTileMatrixSet> {
+    return (await this.fetchJSON(this.getTileMatrixSetIdURL(tileMatrixSetId))) as OGCTileMatrixSet;
+  }
+
+  /** Returns the URL of `/tileMatrixSets/{tileMatrixSetId}`. */
+  private getTileMatrixSetIdURL(tileMatrixSetId: string): string {
+    return resolveLink(`tileMatrixSets/${encodeURIComponent(tileMatrixSetId)}`, this.url);
+  }
+
+  /**
+   * Returns the configured or discovered tile matrix set as a tile grid. The result is reused until
+   * the options change, and concurrent callers share one request. A failed load or discovery
+   * rejects, and is retried on the next call.
+   */
+  private getTileGrid(): Promise<TileGrid | undefined> {
+    const key = this.getTileGridKey();
+    const cache = this._tileGridCache;
+    if (cache && isSameTileGridKey(cache, key)) {
+      return cache.promise;
+    }
+    const {tileMatrixSet, metersPerUnit, tileTemplate} = key;
+    const promise = tileMatrixSet
+      ? this.loadTileGrid(tileMatrixSet, metersPerUnit)
+      : this.discoverTileGrid(tileTemplate, metersPerUnit).catch(error => {
+          throw new Error(
+            `OGC API Tiles could not discover the tile matrix set: ${(error as Error)?.message}`,
+            {cause: error}
+          );
+        });
+    const newCache: NonNullable<OGCAPITilesSource['_tileGridCache']> = {...key, promise};
+    this._tileGridCache = newCache;
+    newCache.promise.then(
+      tileGrid => {
+        newCache.tileGrid = tileGrid;
+      },
+      () => {
+        if (this._tileGridCache === newCache) this._tileGridCache = null;
+      }
+    );
+    return newCache.promise;
+  }
+
+  /**
+   * The options a tile grid depends on. `tileTemplate` is set only when the matrix set is
+   * discovered from it: a configured matrix set or `discoverTileMatrixSet: false` disables discovery.
+   */
+  private getTileGridKey() {
+    const {tileMatrixSet, metersPerUnit, tileTemplate, discoverTileMatrixSet} =
+      this.options['ogc-api'] || {};
+    const discover = !tileMatrixSet && discoverTileMatrixSet !== false;
+    return {tileMatrixSet, metersPerUnit, tileTemplate: discover ? tileTemplate : undefined};
+  }
+
+  /** Whether the tile matrix set is configured or discovered, rather than absent. */
+  private requiresTileGrid(): boolean {
+    const {tileMatrixSet, tileTemplate} = this.getTileGridKey();
+    return Boolean(tileMatrixSet || (tileTemplate && getTilesetURL(tileTemplate)));
+  }
+
+  /**
+   * Discovers the tile matrix set of the tileset that a `{tileMatrix}` template belongs to. The
+   * tileset metadata is the template path before `/{tileMatrix}`, as OGC API Tiles lays out tile
+   * resources. Its tiling-scheme link is followed; otherwise `tileMatrixSetId` is looked up in
+   * `/tileMatrixSets`, and a `tileMatrixSetURI` is matched against the `/tileMatrixSets` list.
+   * Resolves to undefined when the template has no `{tileMatrix}`, and rejects when the tileset
+   * or its tile matrix set cannot be loaded.
+   */
+  private async discoverTileGrid(
+    tileTemplate: string | undefined,
+    metersPerUnit: number | null | undefined
+  ): Promise<TileGrid | undefined> {
+    // Find the tileset path before resolving, since URL parsing may percent-encode the braces.
+    const tilesetPath = tileTemplate && getTilesetURL(tileTemplate);
+    if (!tilesetPath) return undefined;
+    const tilesetUrl = resolveLink(tilesetPath, this.url);
+    const tileset = (await this.fetchJSON(tilesetUrl)) as OGCAPITileset;
+    const tileMatrixSetUrl = await this.getTileMatrixSetURL(tileset, tilesetUrl);
+    const document = (await this.fetchJSON(tileMatrixSetUrl)) as OGCTileMatrixSet;
+    return convertOGCTileMatrixSetToTileGrid(document, {metersPerUnit});
+  }
+
+  /** Returns the URL of the tile matrix set a tileset uses. */
+  private async getTileMatrixSetURL(tileset: OGCAPITileset, tilesetUrl: string): Promise<string> {
+    const link = findJSONLink(tileset?.links, isTilingSchemeRel);
+    if (link) return resolveDocumentLink(link.href, tilesetUrl);
+    if (typeof tileset?.tileMatrixSetId === 'string' && tileset.tileMatrixSetId) {
+      return this.getTileMatrixSetIdURL(tileset.tileMatrixSetId);
+    }
+    if (typeof tileset?.tileMatrixSetURI === 'string' && tileset.tileMatrixSetURI) {
+      const listUrl = resolveLink('tileMatrixSets', this.url);
+      const summary = (await this.getTileMatrixSets()).find(
+        candidate => candidate.uri === tileset.tileMatrixSetURI
+      );
+      const selfLink = findJSONLink(summary?.links, rel => rel === 'self');
+      if (selfLink) return resolveDocumentLink(selfLink.href, listUrl);
+      if (summary?.id) return this.getTileMatrixSetIdURL(summary.id);
+      throw new Error(`${tileset.tileMatrixSetURI} is not listed in ${listUrl}`);
+    }
+    throw new Error(`${tilesetUrl} names no tile matrix set`);
+  }
+
+  /**
+   * Returns the tile grid if it is available without waiting: an inline document is converted
+   * immediately, while a document given as a URL or discovered is available once loaded.
+   */
+  private getLoadedTileGrid(): TileGrid | undefined {
+    const tileMatrixSet = this.options['ogc-api']?.tileMatrixSet;
+    const cache = this._tileGridCache;
+    if (cache?.tileGrid && isSameTileGridKey(cache, this.getTileGridKey())) return cache.tileGrid;
+    if (tileMatrixSet && typeof tileMatrixSet !== 'string') {
+      return convertOGCTileMatrixSetToTileGrid(tileMatrixSet, {
+        metersPerUnit: this.options['ogc-api']?.metersPerUnit
+      });
+    }
+    return undefined;
+  }
+
+  /** Converts a tile matrix set, fetching it first when given as a URL. */
+  private async loadTileGrid(
+    tileMatrixSet: OGCTileMatrixSet | string | undefined,
+    metersPerUnit: number | null | undefined
+  ): Promise<TileGrid | undefined> {
+    if (!tileMatrixSet) return undefined;
+    const document =
+      typeof tileMatrixSet === 'string'
+        ? ((await this.fetchJSON(resolveLink(tileMatrixSet, this.url))) as OGCTileMatrixSet)
+        : tileMatrixSet;
+    return convertOGCTileMatrixSetToTileGrid(document, {metersPerUnit});
   }
 
   /** Fetches raw bytes for one tile from an advertised template. */
   async getTile(parameters: GetTileParameters): Promise<ArrayBuffer | null> {
+    // The matrix identifier in the URL comes from the configured or discovered tile matrix set.
+    await this.getTileGrid();
     const url = this.getTileURL(parameters);
     const response = await this.fetch(url, {headers: {Accept: 'application/octet-stream'}});
     if (!response.ok) throw new Error(`OGC API Tiles request failed: ${response.status}`);
@@ -265,12 +479,31 @@ export class OGCAPITilesSource
     return this.getTile(parameters.index);
   }
 
-  /** Expands a `{tileMatrix}`, `{tileRow}`, and `{tileCol}` template. */
+  /**
+   * Expands a `{tileMatrix}`, `{tileRow}`, and `{tileCol}` template. `{tileMatrix}` is
+   * `parameters.tileMatrix` when given, otherwise the identifier of the matrix whose id equals
+   * `z`, otherwise the matrix at index `z`. With a tile matrix set, a matrix it does not contain
+   * throws a `RangeError`. A matrix set given by URL or discovered must be loaded first, by
+   * `getMetadata()` or `getTile()`; until then this throws rather than using `z`. Only without a
+   * matrix set (no `{tileMatrix}` to discover, or `discoverTileMatrixSet: false`) is
+   * `{tileMatrix}` the explicit identifier or `z`. `{z}` is always the number.
+   */
   getTileURL(parameters: GetTileParameters): string {
     const template = this.options['ogc-api']?.tileTemplate;
     if (!template) throw new Error('OGC API Tiles requires ogc-api.tileTemplate');
+    // XYZ-only templates do not address a matrix, so no matrix is looked up for them.
+    let tileMatrixId = '';
+    if (template.includes('{tileMatrix}')) {
+      const tileGrid = this.getLoadedTileGrid();
+      if (!tileGrid && parameters.tileMatrix === undefined && this.requiresTileGrid()) {
+        throw new Error(
+          'OGC API Tiles has not loaded its tile matrix set; await getMetadata() before getTileURL()'
+        );
+      }
+      tileMatrixId = getTileGridMatrixId(tileGrid, parameters);
+    }
     return template
-      .replaceAll('{tileMatrix}', String(parameters.z))
+      .replaceAll('{tileMatrix}', tileMatrixId)
       .replaceAll('{tileRow}', String(parameters.y))
       .replaceAll('{tileCol}', String(parameters.x))
       .replaceAll('{z}', String(parameters.z))
@@ -304,6 +537,74 @@ export const OGCAPITilesSourceLoader = {
   createDataSource: (url: string, options: OGCAPISourceOptions = {}, coreApi?: CoreAPI) =>
     new OGCAPITilesSource(url, options, coreApi)
 } as const satisfies SourceLoader<OGCAPITilesSource>;
+
+/**
+ * Resolves a link against a landing page treated as a directory, so `tileMatrixSets/x` under
+ * `https://host/api` becomes `https://host/api/tileMatrixSets/x`. Absolute links are returned
+ * unchanged, and a relative landing page stays relative.
+ */
+function resolveLink(link: string, landingPageUrl: string): string {
+  return resolveDocumentLink(link, landingPageUrl, true);
+}
+
+/**
+ * Resolves a link found in a document against the document URL, as browsers do. With
+ * `asDirectory`, the URL is treated as a directory. A relative document URL stays relative.
+ */
+function resolveDocumentLink(link: string, documentUrl: string, asDirectory = false): string {
+  if (/^[a-z][a-z\d+.-]*:/i.test(link)) return link;
+  const placeholderOrigin = 'http://placeholder.invalid';
+  const isAbsolute = /^[a-z][a-z\d+.-]*:/i.test(documentUrl);
+  const base = new URL(documentUrl, `${placeholderOrigin}/`);
+  if (asDirectory && !base.pathname.endsWith('/')) base.pathname += '/';
+  const resolved = new URL(link, base);
+  return isAbsolute ? resolved.href : resolved.href.slice(placeholderOrigin.length);
+}
+
+/**
+ * Returns the tileset metadata URL for an OGC tile template: the path before `/{tileMatrix}`,
+ * keeping query parameters other than the `f` format selector. Undefined for other templates.
+ */
+function getTilesetURL(tileTemplate: string): string | undefined {
+  const index = tileTemplate.indexOf('/{tileMatrix}');
+  if (index < 0) return undefined;
+  const queryIndex = tileTemplate.indexOf('?', index);
+  const query = new URLSearchParams(queryIndex < 0 ? '' : tileTemplate.slice(queryIndex + 1));
+  query.delete('f');
+  const queryString = query.toString();
+  return tileTemplate.slice(0, index) + (queryString ? `?${queryString}` : '');
+}
+
+/** The current and legacy link relations from a tileset to its tile matrix set. */
+function isTilingSchemeRel(rel: string): boolean {
+  return rel === 'http://www.opengis.net/def/rel/ogc/1.0/tiling-scheme' || rel === 'tiling-scheme';
+}
+
+/** Returns the matching link with a JSON media type, otherwise the first one without a type. */
+function findJSONLink(
+  links: OGCAPILink[] | undefined,
+  matchesRel: (rel: string) => boolean
+): OGCAPILink | undefined {
+  const candidates = (Array.isArray(links) ? links : []).filter(
+    link => typeof link?.href === 'string' && typeof link.rel === 'string' && matchesRel(link.rel)
+  );
+  return (
+    candidates.find(link => /^application\/([\w.-]+\+)?json\b/i.test(link.type || '')) ||
+    candidates.find(link => !link.type)
+  );
+}
+
+/** Tests whether a cached tile grid was loaded with these options. */
+function isSameTileGridKey(
+  a: {tileMatrixSet: unknown; metersPerUnit: unknown; tileTemplate: unknown},
+  b: {tileMatrixSet: unknown; metersPerUnit: unknown; tileTemplate: unknown}
+): boolean {
+  return (
+    a.tileMatrixSet === b.tileMatrixSet &&
+    a.metersPerUnit === b.metersPerUnit &&
+    a.tileTemplate === b.tileTemplate
+  );
+}
 
 /** Converts the loaders.gl nested bounding box into the OGC comma-separated form. */
 function flattenBoundingBox(

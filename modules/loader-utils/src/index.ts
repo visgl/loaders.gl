@@ -460,7 +460,7 @@ export type {
   CRSReprojectionErrorCode
 } from './lib/crs/crs-reprojection';
 
-export type {TileSource, TileGrid} from './lib/sources/tile-source';
+export type {TileSource, TileGrid, TileGridMatrix} from './lib/sources/tile-source';
 export type {TileSourceMetadata, GetTileParameters} from './lib/sources/tile-source';
 export type {GetTileDataBatchResult, GetTileDataParameters} from './lib/sources/tile-source';
 export {getTileDataBatch} from './lib/sources/tile-source-utils';

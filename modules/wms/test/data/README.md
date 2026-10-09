@@ -7,6 +7,12 @@
 
 OGC license: https://www.ogc.org/license
 
+## OGC API Tiles
+
+- `ogc-api-tiles/*.json` are hand-written tileset metadata, tile matrix set list, and TileMatrixSet
+  2.0 documents, shaped after public OGC API - Tiles responses. The tile matrix values follow the
+  OGC WebMercatorQuad and WorldCRS84Quad registry definitions.
+
 ## WMS
 
 - get-capabilities `analyses.xml`, `dmsp.xml`, `forecasts.xml`, `obs.xml`, `wwa.xml` were copied from from https://github.com/w8r/wms-capabilities under OpenLayers license:
