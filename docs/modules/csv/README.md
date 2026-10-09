@@ -68,7 +68,7 @@ npm install @loaders.gl/core @loaders.gl/csv
 
 ## Additional APIs
 
-See table category.
+See the [table category](/docs/specifications/category-table) for output shapes and shared table APIs.
 
 ## Attributions
 

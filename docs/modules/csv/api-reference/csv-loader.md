@@ -57,7 +57,6 @@ import {ClientExample} from '@site/src/components';
 import {load} from '@loaders.gl/core';
 import {CSVLoader} from '@loaders.gl/csv';
 
-const data = await load(url, CSVLoader);
 const table = await load(url, CSVLoader);
 ```
 
@@ -98,19 +97,21 @@ When `csv.shape: 'arrow-table'` is selected, `CSVLoader` returns a loaders.gl `A
 
 ### Type Inference
 
-By default, `CSVLoader` emits Arrow `Utf8` columns in `csv.shape: 'arrow-table'` mode and does not infer numeric, boolean, or date types. Set `csv.dynamicTyping: true` to opt into typed Arrow columns.
+`csv.dynamicTyping` controls inference of numeric, boolean, and date values. Set it explicitly to `false` to preserve text as Arrow `Utf8` columns, or to `true` to infer typed columns. The loader's public default is `true`.
 
 ```typescript
 import {load} from '@loaders.gl/core';
 import {CSVLoader} from '@loaders.gl/csv';
 
-const table = await load(url, CSVLoader, {csv: {shape: 'arrow-table'}});
+const table = await load(url, CSVLoader, {
+  csv: {shape: 'arrow-table', dynamicTyping: false}
+});
 const typedTable = await load(url, CSVLoader, {
   csv: {shape: 'arrow-table', dynamicTyping: true}
 });
 ```
 
-For the default `csv.dynamicTyping: false` Arrow path, `CSVLoader.parse(ArrayBuffer)` uses a byte-oriented parser for supported CSV options and creates Arrow `Utf8` columns without materializing per-cell JavaScript strings. `CSVLoader.parseText` encodes text to UTF-8 and uses the same byte-oriented path when possible. `CSVLoader.parseInBatches` uses the byte-oriented path when the input can be emitted as one batch, and keeps the streaming string parser for explicit batch sizes.
+For the `csv.dynamicTyping: false` Arrow path, `CSVLoader.parse(ArrayBuffer)` uses a byte-oriented parser for supported CSV options and creates Arrow `Utf8` columns without materializing per-cell JavaScript strings. `CSVLoader.parseText` encodes text to UTF-8 and uses the same byte-oriented path when possible. `CSVLoader.parseInBatches` uses the byte-oriented path when the input can be emitted as one batch, and keeps the streaming string parser for explicit batch sizes.
 
 Set `csv.viewTypes: 'prefer'` to emit `Utf8View` columns when the installed `apache-arrow` runtime supports them, while falling back to `Utf8` with older runtimes. Use `'require'` to throw instead of falling back. The default `'never'` preserves compatibility with Arrow 17 and consumers that do not support view types.
 

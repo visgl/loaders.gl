@@ -4,9 +4,11 @@
 
 PRs and bug reports are welcome, and we are actively looking for new maintainers.
 
-If you consider opening a PR, here is some documentation to get you started:
+Before opening a PR, review:
 
-- vis.gl [developer process](https://www.github.com/visgl/tsc/tree/master/developer-process)
+- The [development environment guide](docs/developer-guide/dev-env.md) for setup and validation commands.
+- The [test workflow](dev-docs/ci-testing.md) for test lanes and coverage requirements.
+- The vis.gl [developer process](https://github.com/visgl/tsc/tree/master/developer-process).
 
 ## Development Environment
 

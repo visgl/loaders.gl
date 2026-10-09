@@ -8,7 +8,7 @@
   <br />
 </p>
 
-[loaders.gl](https://loaders.gl) is a framework in the [vis.gl](https://vis.gl) framework suite that provides a collection of framework-independent loaders focused on geospatial, 3D and big data visualization use cases.
+[loaders.gl](https://loaders.gl) is a collection of framework-independent loaders for geospatial, 3D, and large-data visualization, part of [vis.gl](https://vis.gl).
 
 ## Documentation
 
@@ -20,16 +20,22 @@ See [CONTRIBUTING.md](CONTRIBUTING.md).
 
 ## Build and test workflows
 
-- Run `yarn build-modules` to execute the existing ocular and lerna build flow for modules. The default `yarn build` command delegates to this script for backward compatibility.
-- Run `yarn test` to list available test modes, or `yarn test full` for the standard module test suite.
+- Run `yarn install` to install workspace dependencies.
+- Run `yarn build` to build the modules, then `yarn build-workers` to generate worker bundles. Rebuild workers after each module build.
+- Run `yarn test-node` for Node.js tests and `yarn test-headless` for Chromium tests, or `yarn test` for both.
+- Run `yarn lint fix` to apply lint and formatting fixes.
+- Run `yarn test-website` to install website dependencies and build the documentation site.
+
 - Run `yarn build-apps` to run the tile-converter app build (currently the only app in this repository).
 - Run `yarn test-apps` to exercise the tile-converter app test/build script when available.
 
+See the [development environment guide](docs/developer-guide/dev-env.md) for runtime requirements and browser setup.
+
 ## License
 
-loaders.gl is licensed under a permissive open source license, using an MIT umbrella license.
+loaders.gl uses the MIT license.
 
-Some individual loaders are forked from other open source code bases that are licensed be under different but compatible permissive licenses such as Apache 2 or BSD.
+Some individual loaders are forked from other open source code bases that are licensed under different but compatible permissive licenses such as Apache 2 or BSD.
 
 No code that uses proprietary, copy-left or non-permissive licenses is included in loaders.gl.
 

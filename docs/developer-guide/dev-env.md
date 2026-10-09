@@ -33,30 +33,60 @@ import {DocOrientation} from '@site/src/components/docs/designed-doc';
   ]}
 />
 
-The **master** branch is the active development branch.
+## Setup
 
-Building loaders.gl locally from the source requires node.js `>=10`.
-We use [yarn classic](https://yarnpkg.com/en/docs/install) to manage the dependencies.
+`master` is the active development branch. Use a Node.js version supported by the root
+`package.json`: `^22.13.0`, `^24.0.0`, or `^26.0.0`. The repository pins Yarn 4.17.1
+in its `packageManager` field; use that version rather than Yarn Classic.
 
 ```bash
 git checkout master
-yarn
-yarn bootstrap
+yarn install
+yarn build
+yarn build-workers
+yarn playwright:install
 ```
 
-## Running Tests
+`yarn build` cleans package `dist` directories. Run `yarn build-workers` after the
+final module build so browser tests can load worker scripts.
 
-- `yarn bootstrap`: Install and build workers etc. Run every time you pull a new branch.
-- `yarn lint`: Check coding standards and Biome formatting
-- `yarn lint fix`: Fix Biome lint and formatting errors
-- `yarn test node`: Quick test run under Node.js
-- `yarn test browser`: Test run under browser, good for interactive debugging
-- `yarn test`: List available test modes
-- `yarn test full`: Run node tests and browser tests in headless mode
+## Build and test
 
-## Environment Setup
+Run these commands from the repository root:
 
-Note that our primary development environment is MacOS, but it is also possible to build loaders.gl on Linux and Windows.
+| Command | Purpose |
+| --- | --- |
+| `yarn build` | Build modules and check TypeScript types. |
+| `yarn build-workers` | Generate browser and Node.js worker bundles. |
+| `yarn lint` | Check lint and formatting. |
+| `yarn lint fix` | Apply lint and formatting fixes. |
+| `yarn test-node` | Run the Node.js compatibility tests. |
+| `yarn test-headless` | Run browser tests in headless Chromium. |
+| `yarn test-browser` | Run browser tests with a visible browser. |
+| `yarn test` | Run the Node.js and headless Chromium suites. |
+| `yarn test-slow` | Run expensive hermetic tests. |
+| `yarn test-external` | Run tests that access external services. |
+| `yarn test-audit` | Audit test structure and fixtures. |
+| `yarn test-website` | Install website dependencies and build the documentation site. |
+
+Run `yarn install` after dependency changes. Before submitting a PR, run the build,
+worker build, Node.js tests, headless tests, and `yarn lint fix`. For documentation
+changes, also build the website. See the [test workflow](https://github.com/visgl/loaders.gl/blob/master/dev-docs/ci-testing.md)
+for test lanes, coverage, and profiling.
+
+## Platform setup
+
+Development is supported on macOS and Linux. On Windows, use a Linux environment
+such as WSL and follow the Linux setup below.
+
+On Linux, install Chromium and its system dependencies before running browser tests:
+
+```bash
+yarn exec playwright install --with-deps chromium
+```
+
+Installing system dependencies may require administrator privileges. Headless
+Chromium does not require the old Xvfb-based test setup.
 
 ### Website development workers
 
@@ -72,76 +102,3 @@ package feature. Production and staging still use the generated
 `dist/parquet-source-worker.js` asset, and an explicit `parquet.workerUrl` always
 overrides the built-in target. The source-worker replacement is not enabled for
 server-side rendering, Node.js, or package builds.
-
-### Develop on Windows
-
-It is possible to build loaders.gl on Windows 10, but not directly in the Windows command prompt. You will need to install a Linux command line environment.
-
-First, install [WSL (Windows Subsystem for Linux)](https://docs.microsoft.com/en-us/windows/wsl/install-win10) on Windows 10, and follow the [Linux](#develop-on-linux) directions.
-
-Note that you may also need to make some decisions on where to place your code and whether to link the linux subsystem to your windows drives.
-
-Once this is done, follow the instructions for developing on Linux.
-
-### Develop on Linux
-
-On Linux systems, the following packages are necessary for running webgl-based headless render tests.
-
-- mesa-utils
-- xvfb
-- libgl1-mesa-dri
-- libglapi-mesa
-- libosmesa6
-- libxi-dev
-
-To get the headless tests working: `export DISPLAY=:99.0; sh -e /etc/init.d/xvfb start`
-
-## Appendix: Installing JavaScript Development Tools
-
-You will of course need to install the basic JavaScript development tools. Unless you are new to JavaScript development you most likely already have these in place. The following should work on a linux system.
-
-### Install Node and NPM using NVM (recommended)
-
-- `https://www.liquidweb.com/kb/how-to-install-nvm-node-version-manager-for-node-js-on-ubuntu-12-04-lts/`
-- `https://github.com/nvm-sh/nvm#install--update-script`
-- `https://github.com/nvm-sh/nvm/releases`
-
-```bash
-nvm install 16
-nvm use 16
-```
-
-(Node 16 is currently recommeded for building and development of loaders 3.3. NPM comes with the NodeJS in this case)
-
-#### Optional: Install Node and NPM manually
-
-```bash
-sudo apt update
-sudo apt install nodejs
-sudo apt install npm
-```
-
-### Install yarn
-
-https://www.hostinger.com/tutorials/how-to-install-yarn-on-ubuntu/
-(yarn version needed is 1.22.19 or the latest stable 1.xx.xx)
-
-```bash
-sudo apt update
-sudo apt install yarn nodejs
-yarn –version
-```
-
-### Install jq
-
-```bash
-sudo apt-get install jq
-```
-
-### Install build-essential package
-
-This step might be required for some systems that do not have required packages pre-installed.
-
-```bash
-sudo apt-get install build-essential
-```
