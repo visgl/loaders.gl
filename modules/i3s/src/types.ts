@@ -225,6 +225,8 @@ export type I3SParseOptions = {
   useCompressedTextures?: boolean;
   /** Set false if don't need to parse textures */
   decodeTextures?: boolean;
+  /** Decode original source coordinates for conversion, or renderer placement (default). */
+  geometryMode?: 'render' | 'source';
   /** Color storage format. Defaults to uint8norm for backwards compatibility. */
   colorFormat?: 'uint8norm' | 'float16' | 'float32';
   /** deck.gl compatible coordinate system.
@@ -294,6 +296,12 @@ export type I3STilesetOptions = {
 
 // TODO Replace "[key: string]: any" with actual defenition
 export type I3STileContent = {
+  /** Position/normal representation; source mode bypasses renderer spatial operations. */
+  geometryMode?: 'render' | 'source';
+  /** All decoded source attributes, including unmapped producer fields, in source mode. */
+  sourceAttributes?: I3SMeshAttributes;
+  /** Original I3S vector basis in source mode. Defaults to earth-centered in the format. */
+  normalReferenceFrame?: string;
   attributes: I3SMeshAttributes;
   indices: TypedArray | null;
   featureIds: number[] | TypedArray;

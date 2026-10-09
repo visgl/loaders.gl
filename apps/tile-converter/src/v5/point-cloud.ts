@@ -3,7 +3,12 @@
 // Copyright (c) vis.gl contributors
 
 import {Tile3DWriter, TILE3D_TYPE} from '@loaders.gl/3d-tiles';
-import type {Mesh, MeshArrowTable, MeshAttribute} from '@loaders.gl/schema';
+import type {
+  Mesh,
+  MeshArrowTable,
+  MeshAttribute,
+  MeshAttributeQuantizationTransform
+} from '@loaders.gl/schema';
 import {convertTableToMesh} from '@loaders.gl/schema-utils';
 import {TileConversionError} from '@loaders.gl/tile-converter/v5/core';
 
@@ -11,10 +16,26 @@ import {TileConversionError} from '@loaders.gl/tile-converter/v5/core';
 export interface EncodePointCloudTileOptions {
   /** Optional origin subtracted from absolute positions and stored as the PNTS RTC_CENTER. */
   readonly rtcCenter?: readonly [number, number, number];
+  /** Maximum Euclidean position reconstruction error in source units; omission permits float32 rounding. */
+  readonly maxPositionError?: number;
   /** Optional source-wide RGBA color stored as the PNTS CONSTANT_RGBA property. */
   readonly constantRGBA?: readonly number[];
   /** Optional per-point values indexed by the tile's `BATCH_ID` attribute. */
   readonly batchTableJson?: Readonly<Record<string, readonly (string | number)[]>>;
+}
+
+/** Encoded PNTS and measured placement information from its float32 POSITION stream. */
+export interface EncodedPointCloudTile {
+  /** Self-contained PNTS payload. */
+  readonly pnts: ArrayBuffer;
+  /** Actual number of encoded points. */
+  readonly pointCount: number;
+  /** RTC center added to encoded positions; zero when no RTC center was selected. */
+  readonly rtcCenter: readonly [number, number, number];
+  /** Axis-aligned bounds of encoded positions before adding the RTC center. */
+  readonly localBoundingBox: readonly [readonly number[], readonly number[]];
+  /** Maximum Euclidean error after reconstructing absolute positions, in source units. */
+  readonly maximumPositionError: number;
 }
 
 /**
@@ -34,32 +55,34 @@ export function encodePointCloudTile(
   pointBatch: Mesh | MeshArrowTable,
   options: EncodePointCloudTileOptions = {}
 ): ArrayBuffer {
+  return encodePointCloudTileWithMetadata(pointBatch, options).pnts;
+}
+
+/**
+ * Encodes a point batch and measures its decoded float32 bounds and position rounding.
+ * The optional error gate runs before PNTS serialization. Source arrays remain unchanged.
+ * @param pointBatch - One mesh or Arrow point batch.
+ * @param options - RTC center, precision gate, appearance and batch metadata.
+ * @returns PNTS bytes paired with bounds, RTC placement and maximum position error.
+ */
+export function encodePointCloudTileWithMetadata(
+  pointBatch: Mesh | MeshArrowTable,
+  options: EncodePointCloudTileOptions = {}
+): EncodedPointCloudTile {
   const mesh = 'attributes' in pointBatch ? pointBatch : convertTableToMesh(pointBatch);
   validatePointAttributes(mesh.attributes);
   const positionAttribute = mesh.attributes.POSITION;
-  if (!positionAttribute || positionAttribute.size !== 3) {
-    throw new TileConversionError(
-      'POINT_CLOUD_POSITION_REQUIRED',
-      'Point cloud batches must contain a three-component POSITION attribute'
-    );
-  }
-
-  const positions = getPositionValues(positionAttribute, options.rtcCenter);
+  validatePointCloudPosition(positionAttribute);
+  const placement = encodePointPositions(positionAttribute, options);
+  const {positions} = placement;
   const pointCount = positions.length / 3;
-  if (pointCount === 0 || !Number.isInteger(pointCount)) {
-    throw new TileConversionError(
-      'POINT_CLOUD_POSITION_COUNT_INVALID',
-      'Point cloud POSITION must contain one or more xyz triples'
-    );
-  }
-
   const colors = getColorAttribute(mesh.attributes.COLOR_0 || mesh.attributes.COLOR, pointCount);
   const constantRGBA = colors ? null : getConstantRgba(options.constantRGBA);
   const normals = getNormalAttribute(mesh.attributes.NORMAL, pointCount);
   const batchIds = getBatchIds(mesh.attributes.BATCH_ID, pointCount);
   const batchTableJson = validateBatchTable(options.batchTableJson, batchIds);
 
-  return Tile3DWriter.encodeSync(
+  const pnts = Tile3DWriter.encodeSync(
     {
       type: TILE3D_TYPE.POINT_CLOUD,
       featureTableJson:
@@ -74,6 +97,13 @@ export function encodePointCloudTile(
     },
     {}
   );
+  return {
+    pnts,
+    pointCount,
+    rtcCenter: placement.rtcCenter,
+    localBoundingBox: placement.localBoundingBox,
+    maximumPositionError: placement.maximumPositionError
+  };
 }
 
 /** Rejects attributes that this PNTS encoder would otherwise silently discard. */
@@ -114,30 +144,127 @@ function getConstantRgba(
   return [constantRGBA[0], constantRGBA[1], constantRGBA[2], constantRGBA[3]];
 }
 
-/** Decodes positions and offsets them relative to the optional RTC center. */
-function getPositionValues(
-  attribute: MeshAttribute,
-  rtcCenter?: readonly [number, number, number]
-): Float32Array {
-  if (rtcCenter && (rtcCenter.length !== 3 || rtcCenter.some(value => !Number.isFinite(value)))) {
+/** Validates packed point positions and their optional quantization descriptor. */
+function validatePointCloudPosition(
+  attribute: MeshAttribute | undefined
+): asserts attribute is MeshAttribute & {transform?: MeshAttributeQuantizationTransform} {
+  if (
+    !attribute ||
+    attribute.size !== 3 ||
+    attribute.byteOffset ||
+    attribute.byteStride ||
+    attribute.normalized ||
+    attribute.componentType
+  ) {
+    throw new TileConversionError(
+      'POINT_CLOUD_POSITION_REQUIRED',
+      'Point cloud batches must contain packed, non-normalized three-component POSITION values'
+    );
+  }
+
+  if (!attribute.value.length || attribute.value.length % 3) {
+    throw new TileConversionError(
+      'POINT_CLOUD_POSITION_COUNT_INVALID',
+      'Point cloud POSITION must contain one or more xyz triples'
+    );
+  }
+  const transform = attribute.transform;
+  if (
+    transform &&
+    (transform.type !== 'quantization' ||
+      !Number.isInteger(transform.bits) ||
+      transform.bits < 1 ||
+      transform.bits > 32 ||
+      transform.origin.length !== 3 ||
+      transform.origin.some(value => !Number.isFinite(value)) ||
+      !Number.isFinite(transform.range) ||
+      transform.range < 0)
+  ) {
+    throw new TileConversionError(
+      'POINT_CLOUD_POSITION_TRANSFORM_INVALID',
+      'Position quantization requires finite xyz origin, nonnegative range and 1–32 bits'
+    );
+  }
+}
+
+/** Decodes packed point positions to doubles before applying a spatial operation. */
+export function decodePointCloudPositions(attribute: MeshAttribute | undefined): Float64Array {
+  validatePointCloudPosition(attribute);
+  const transform = attribute.transform;
+  return Float64Array.from(attribute.value, (value, index) =>
+    transform
+      ? transform.origin[index % 3] + (value / (2 ** transform.bits - 1)) * transform.range
+      : value
+  );
+}
+
+/** Decodes source positions, rebases them and measures the actual float32 output. */
+function encodePointPositions(
+  attribute: MeshAttribute & {transform?: MeshAttributeQuantizationTransform},
+  options: EncodePointCloudTileOptions
+) {
+  const {rtcCenter = [0, 0, 0], maxPositionError = Infinity} = options;
+  if (rtcCenter.length !== 3 || rtcCenter.some(value => !Number.isFinite(value))) {
     throw new TileConversionError(
       'POINT_CLOUD_RTC_CENTER_INVALID',
       'Point cloud RTC_CENTER must contain three finite values'
     );
   }
-  const values = attribute.value;
-  const result = new Float32Array(values.length);
-  const transform = attribute.transform;
-  for (let index = 0; index < values.length; index++) {
-    const component = index % 3;
-    const value = values[index];
-    const absoluteValue =
-      transform?.type === 'quantization'
-        ? transform.origin[component] + (value / (2 ** transform.bits - 1)) * transform.range
-        : value;
-    result[index] = absoluteValue - (rtcCenter?.[component] ?? 0);
+  if (
+    options.maxPositionError !== undefined &&
+    (!Number.isFinite(maxPositionError) || maxPositionError < 0)
+  ) {
+    throw new TileConversionError(
+      'POINT_CLOUD_PRECISION_INVALID',
+      'maxPositionError must be finite and nonnegative'
+    );
   }
-  return result;
+  const values = attribute.value;
+  const positions = new Float32Array(values.length);
+  const minimum = [Infinity, Infinity, Infinity];
+  const maximum = [-Infinity, -Infinity, -Infinity];
+  let maximumPositionError = 0;
+  const transform = attribute.transform;
+  const errors = [0, 0, 0];
+  for (let point = 0; point < values.length; point += 3) {
+    for (let axis = 0; axis < 3; axis++) {
+      const value = values[point + axis];
+      const absoluteValue = transform
+        ? transform.origin[axis] + (value / (2 ** transform.bits - 1)) * transform.range
+        : value;
+      const relativeValue = absoluteValue - rtcCenter[axis];
+      positions[point + axis] = relativeValue;
+      const encodedValue = positions[point + axis];
+      const reconstructed = encodedValue + rtcCenter[axis];
+      if (
+        !Number.isFinite(absoluteValue) ||
+        !Number.isFinite(relativeValue) ||
+        !Number.isFinite(encodedValue) ||
+        !Number.isFinite(reconstructed)
+      ) {
+        throw new TileConversionError(
+          'POINT_CLOUD_POSITION_INVALID',
+          'Point positions and their float32 reconstruction must be finite'
+        );
+      }
+      errors[axis] = reconstructed - absoluteValue;
+      minimum[axis] = Math.min(minimum[axis], encodedValue);
+      maximum[axis] = Math.max(maximum[axis], encodedValue);
+    }
+    maximumPositionError = Math.max(maximumPositionError, Math.hypot(...errors));
+  }
+  if (!Number.isFinite(maximumPositionError) || maximumPositionError > maxPositionError) {
+    throw new TileConversionError(
+      'POINT_CLOUD_PRECISION_EXCEEDED',
+      'Float32 position reconstruction exceeds maxPositionError; select a closer RTC center'
+    );
+  }
+  return {
+    positions,
+    rtcCenter: [...rtcCenter] as [number, number, number],
+    localBoundingBox: [minimum, maximum] as const,
+    maximumPositionError
+  };
 }
 
 /** Converts an optional mesh color attribute into the byte colors accepted by PNTS. */

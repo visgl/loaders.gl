@@ -69,6 +69,7 @@ See [supported items and verification boundaries](/docs/developer-guide/arcgis/i
 - The browser tile-conversion example can export multiple static primitive placements from selected GLB/B3DM contents to partial 3TZ archives, retaining per-primitive materials and transforms within the existing byte limits and a 64-placement cap.
 - The v5 tile converter preserves explicit Arrow features in GLB/3TZ output, authors PNG/JPEG base-color textures in I3S, and collects up to 64 meshes into one SLPK. The browser example resolves external glTF buffers/images within its aggregate input budget and supports both archive formats. See the [conversion API](/docs/modules/tile-converter/api-reference/v5-conversion).
 
+- The v5 tile-converter adds measured PNTS precision/bounds and a bounded partial 3D Tiles 1.0/3TZ point package for explicitly declared ECEF samples. See [point-cloud packaging](/docs/modules/tile-converter/api-reference/v5-conversion#point-cloud-precision-and-partial-3tz-packages).
 - The v5 mesh source adapter accepts indexed and non-indexed glTF triangle strips, preserving winding and feature ownership when expanding to the existing triangle-list writers. Triangle fans use the glTF loader's normalization. Compressed Draco strips normalize to triangle lists before conversion, and repeated-index connectors retain the first corner's feature row. See the [conversion API](/docs/modules/tile-converter/api-reference/v5-conversion#source-mesh-to-i3sslpk).
 
 - The v5 I3S/SLPK mesh codec now writes lossless Draco Edge Breaker geometry by default. `encodeI3SMeshLayerWithDraco` reuses the existing I3S precision/resource limits, verifies triangle winding and feature ownership, and retains raw output through `draco: false`.
@@ -90,6 +91,9 @@ See [supported items and verification boundaries](/docs/developer-guide/arcgis/i
 
 ## v5.0 (In Development)
 
+- `Tileset3D` retires drawn fallback tiles independently as each replacement region finishes.
+  Skip-LOD zoom-out reuses nearby drawn descendants while the desired coarse tile loads.
+  See [tile hierarchy and refinement](./modules/3d-tiles/concepts/tile-hierarchy-and-refinement.md).
 - `@loaders.gl/graphs`: Added an Arrow-first `GEXFLoader` for static GEXF 1.2/1.3
   graphs, with typed attributes and lists, exact long integers, defaults, visualization
   properties, and document metadata. See the [graphs module](./modules/graphs/README.md).
@@ -216,6 +220,13 @@ evidence, cancellation, counts, IDs, extents, nonspatial tables, and queryable M
   `ClusterLayer` integration for markers, counts, and picking.
 
 ### 3D Tiles
+
+- Enable skip-LOD replacement traversal by default for 3D Tiles, reducing intermediate content
+  requests while retaining ready ancestors as coverage. Set `skipLevelOfDetail: false` to keep
+  requesting every replacement level; I3S retains its existing default. See
+  [skip-LOD options](/docs/modules/tiles/api-reference/tileset-3d#skiplevelofdetail--boolean).
+  Known empty terminal branches release ancestor coverage, and sibling requests respect viewer
+  request volumes in skip traversal.
 
 - Discover all required replacement siblings in one traversal so missing child content can load
   concurrently, reducing refinement delays during camera movement while retaining parent coverage.

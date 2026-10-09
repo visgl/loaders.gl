@@ -30,8 +30,14 @@ export type {
   FeatureArrowBatchOptions,
   TileFeatureAttributes
 } from '@loaders.gl/tile-converter/v5/adapters';
-export {encodePointCloudTile} from '@loaders.gl/tile-converter/v5/adapters';
-export type {EncodePointCloudTileOptions} from '@loaders.gl/tile-converter/v5/adapters';
+export {
+  encodePointCloudTile,
+  encodePointCloudTileWithMetadata
+} from '@loaders.gl/tile-converter/v5/adapters';
+export type {
+  EncodePointCloudTileOptions,
+  EncodedPointCloudTile
+} from '@loaders.gl/tile-converter/v5/adapters';
 export {traversePointCloudSource} from '@loaders.gl/tile-converter/v5/core';
 export type {
   PointCloudSourceTile,
@@ -108,3 +114,15 @@ export type {
   TileConversionResourceFetcherOptions,
   MeshTileFeatures
 } from '@loaders.gl/tile-converter/v5/adapters';
+
+export {createPointCloudTilesetSink} from '@loaders.gl/tile-converter/v5/adapters';
+export type {
+  PointCloudTilesetSink,
+  PointCloudTilesetSinkOptions
+} from '@loaders.gl/tile-converter/v5/adapters';
+
+export {transformPointCloudSourceTile} from '@loaders.gl/tile-converter/v5/adapters';
+export type {PointCloudSpatialOptions} from '@loaders.gl/tile-converter/v5/adapters';
+
+export {createI3SMeshTilesetConversionSource} from '@loaders.gl/tile-converter/v5/adapters';
+export type {I3SMeshTilesetSourceOptions} from '@loaders.gl/tile-converter/v5/adapters';

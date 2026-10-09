@@ -22,7 +22,6 @@ import {
   XZDecompressor,
   ZstdCompressor,
   ZstdDecompressor,
-  type Compression,
   type Compressor,
   type Decompressor
 } from '@loaders.gl/compression';
@@ -196,7 +195,7 @@ describe('compression library bindings', () => {
 });
 
 /** Verifies one implementation's asynchronous compression round trip. */
-async function expectRoundTrip(compression: Compression): Promise<void> {
+async function expectRoundTrip(compression: Compressor & Decompressor): Promise<void> {
   const compressed = await compression.compress(copyArrayBuffer(TEST_BYTES));
   const output = await compression.decompress(compressed, TEST_BYTES.byteLength);
   expect(new Uint8Array(output)).toEqual(TEST_BYTES);

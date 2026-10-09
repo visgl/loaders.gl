@@ -9,7 +9,7 @@ import {GLTFLoader, GLTFScenegraph, GLTFWriter, postProcessGLTF} from '@loaders.
 import type {GLTFMeshPrimitivePostprocessed} from '@loaders.gl/gltf';
 import {Tiles3DSource, Tileset3D} from '@loaders.gl/tiles';
 import {Matrix4} from '@math.gl/core';
-import {GZipCompression} from '@loaders.gl/compression';
+import {GZipFflateDecompressor} from '@loaders.gl/compression/gzip-decompressor-fflate';
 import {encodeI3SMeshLayer} from '@loaders.gl/i3s';
 import {validateBytes} from 'gltf-validator';
 import {createCompressedMesh} from './utils/tile-converter-draco';
@@ -300,7 +300,7 @@ test('multi-feature strip retains visible ownership and first-corner rows for de
     features: resources[0].features
   });
   const geometry = new DataView(
-    new GZipCompression().decompressSync(output.files['nodes/1/geometries/0.bin.gz'])
+    new GZipFflateDecompressor().decompressSync(output.files['nodes/1/geometries/0.bin.gz'])
   );
   expect(geometry.getUint32(0, true)).toBe(18);
   expect(geometry.getUint32(4, true)).toBe(2);
@@ -362,7 +362,7 @@ test('expanded strip enters the raw I3S writer as four triangles', async () => {
   for await (const output of codec.convert(resource, undefined)) {
     const nodePage = JSON.parse(
       new TextDecoder().decode(
-        new GZipCompression().decompressSync(output.files['nodepages/0.json.gz'])
+        new GZipFflateDecompressor().decompressSync(output.files['nodepages/0.json.gz'])
       )
     );
     expect(nodePage.nodes[1].mesh.geometry).toMatchObject({vertexCount: 12});

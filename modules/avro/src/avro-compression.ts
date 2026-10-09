@@ -2,13 +2,19 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import type {Compression} from '@loaders.gl/compression';
 import {
-  bzip2Compression,
-  deflateCompression,
-  snappyCompression,
-  xzCompression,
-  zstdCompression
+  BZip2Compressor,
+  BZip2Decompressor,
+  DeflateCompressor,
+  DeflateDecompressor,
+  SnappyCompressor,
+  SnappyDecompressor,
+  XZCompressor,
+  XZDecompressor,
+  ZstdCompressor,
+  ZstdDecompressor,
+  type Compressor,
+  type Decompressor
 } from '@loaders.gl/compression';
 function toUint8Array(binary: ArrayBuffer | ArrayBufferView): Uint8Array {
   if (binary instanceof Uint8Array) return binary;
@@ -25,14 +31,15 @@ type AvroCodec = 'null' | 'deflate' | 'snappy' | 'zstandard' | 'bzip2' | 'xz';
 
 export type {AvroCodec};
 
-const compressionPromises: Partial<Record<Exclude<AvroCodec, 'null'>, Promise<Compression>>> = {};
+const compressors: Partial<Record<Exclude<AvroCodec, 'null'>, Compressor>> = {};
+const decompressors: Partial<Record<Exclude<AvroCodec, 'null'>, Decompressor>> = {};
 
 /** Decompresses one Avro data block using a codec from the compression module. */
 export async function decompressAvro(codec: string, value: Uint8Array): Promise<Uint8Array> {
   if (codec === 'null') return value;
   if (!isAvroCodec(codec)) throw new Error(`avro: unsupported compression codec "${codec}"`);
 
-  const compression = await getAvroCompression(codec);
+  const compression = getAvroDecompressor(codec);
   const compressedValue = codec === 'snappy' ? value.subarray(0, -4) : value;
   const output = toUint8Array(await compression.decompress(toArrayBuffer(compressedValue)));
 
@@ -48,7 +55,7 @@ export async function decompressAvro(codec: string, value: Uint8Array): Promise<
 export async function compressAvro(codec: string, value: Uint8Array): Promise<Uint8Array> {
   if (codec === 'null') return value;
   if (!isAvroCodec(codec)) throw new Error(`avro: unsupported compression codec "${codec}"`);
-  const compression = await getAvroCompression(codec);
+  const compression = getAvroCompressor(codec);
   const compressed = toUint8Array(await compression.compress(toArrayBuffer(value)));
   if (codec !== 'snappy') return compressed;
   const result = new Uint8Array(compressed.length + 4);
@@ -72,25 +79,30 @@ function isAvroCodec(codec: string): codec is Exclude<AvroCodec, 'null'> {
   );
 }
 
-/** Lazily constructs an Avro codec implementation. */
-async function getAvroCompression(codec: Exclude<AvroCodec, 'null'>): Promise<Compression> {
-  compressionPromises[codec] ||= createAvroCompression(codec);
-  return await compressionPromises[codec];
+/** Returns a lazy decoder without loading an encoder or a combined compatibility facade. */
+function getAvroDecompressor(codec: Exclude<AvroCodec, 'null'>): Decompressor {
+  const constructors = {
+    deflate: DeflateDecompressor,
+    snappy: SnappyDecompressor,
+    zstandard: ZstdDecompressor,
+    bzip2: BZip2Decompressor,
+    xz: XZDecompressor
+  };
+  decompressors[codec] ||= new constructors[codec](codec === 'deflate' ? {raw: true} : {});
+  return decompressors[codec];
 }
 
-/** Creates one codec implementation from the shared compression module. */
-async function createAvroCompression(codec: Exclude<AvroCodec, 'null'>): Promise<Compression> {
-  const metadata = {
-    deflate: deflateCompression,
-    snappy: snappyCompression,
-    zstandard: zstdCompression,
-    bzip2: bzip2Compression,
-    xz: xzCompression
-  }[codec];
-  if (metadata) {
-    return await metadata.preload(codec === 'deflate' ? {raw: true} : {});
-  }
-  throw new Error(`avro: unsupported compression codec "${codec}"`);
+/** Returns a lazy encoder independently of the decoder path. */
+function getAvroCompressor(codec: Exclude<AvroCodec, 'null'>): Compressor {
+  const constructors = {
+    deflate: DeflateCompressor,
+    snappy: SnappyCompressor,
+    zstandard: ZstdCompressor,
+    bzip2: BZip2Compressor,
+    xz: XZCompressor
+  };
+  compressors[codec] ||= new constructors[codec](codec === 'deflate' ? {raw: true} : {});
+  return compressors[codec];
 }
 
 /** Reads a big-endian unsigned 32-bit integer. */

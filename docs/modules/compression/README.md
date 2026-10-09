@@ -62,7 +62,7 @@ Choose an implementation based on what your application values most:
 | Normal application use | Import the library-neutral class from the package root |
 | Smallest possible initial bundle | Use the root class; it imports no fallback until built-in support is unavailable |
 | A specific backend or reproducible benchmark | Import an implementation-named class |
-| Existing v4 code | Keep the combined `*Compression` class while migrating; these classes are deprecated, not removed |
+| Existing v4 code | Migrate root combined classes to direction-specific compressor/decompressor classes |
 
 The [live benchmarks](/docs/modules/compression/benchmarks) compare the implementations in your
 browser, including throughput and focused bundle size.
@@ -249,11 +249,10 @@ inspect the selection explicitly.
 Import a direct default or backend-specific subpath only when bundle composition must be pinned,
 or when synchronous work must begin without an asynchronous preload step.
 
-The combined classes ending in `Compression` remain available as deprecated v5 compatibility
-facades. They implement both
-[`Compressor` and `Decompressor`](/docs/modules/compression/api-reference/compressor-decompressor),
-so existing instances remain assignable to APIs expecting either direction. Their former API
-pages have been retired in favor of the direction-specific format pages above.
+The root exports only direction-specific codec classes. JavaScript fallbacks load dynamically
+when native support is unavailable; use an ESM bundler with code splitting to keep these modules
+out of the initial bundle. Explicit implementation subpaths intentionally include their codec.
+Legacy combined classes are available only through explicit subpaths during migration.
 
 See the [v5 upgrade guide](/docs/upgrade-guide) for import migrations and behavior changes.
 

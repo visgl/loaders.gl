@@ -87,6 +87,21 @@ Point scene layers use the same `I3SLoader` and `I3SSource` path as mesh layers.
 metadata, while `featureIds` align vertices with the standard node-local attribute resources.
 Point Cloud layers remain available through the separate `I3SPointCloudSource` API.
 
+## Source-coordinate geometry
+
+`i3s.geometryMode` defaults to `'render'`. Select `'source'` for conversion or processing
+that needs original coordinates: decoded node offsets are reconstructed as absolute
+Float64 XYZ values, and normals remain in their original store reference frame. The content
+reports `geometryMode`, `sourceAttributes` and `normalReferenceFrame`; its spatial reference
+retains source CRS, units and elevation metadata with native status. No per-vertex renderer
+projection or local Float32 placement is applied. Source mode uses an identity model matrix
+and zero placement origin; geographic XYZ remains longitude/latitude/height, while other
+frames use Cartesian coordinates. Use a dedicated runtime for this mode, and provide your
+own subsequent spatial transformation. Tileset header/bounds preparation remains separate.
+
+See the [v5 I3S conversion source](/docs/modules/tile-converter/api-reference/v5-conversion)
+for the initial untextured mesh profile and its explicit feature-mapping requirements.
+
 ## Terms
 
 The terms and concepts used in `i3s` module have the corresponding parts [I3S Spec](https://github.com/Esri/i3s-spec/blob/master/format/Indexed%203d%20Scene%20Layer%20Format%20Specification.md).

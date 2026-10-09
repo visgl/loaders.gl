@@ -109,10 +109,10 @@
     "@loaders.gl/loader-utils": "5.0.0-alpha.10",
     "@loaders.gl/schema": "5.0.0-alpha.10",
     "@loaders.gl/schema-utils": "5.0.0-alpha.10",
-    "@math.gl/geoarrow": "5.0.0-alpha.14",
-    "@math.gl/polygon": "5.0.0-alpha.14",
-    "@math.gl/types": "5.0.0-alpha.14",
-    "@math.gl/wkb": "5.0.0-alpha.14",
+    "@math.gl/geoarrow": "5.0.0-alpha.15",
+    "@math.gl/polygon": "5.0.0-alpha.15",
+    "@math.gl/types": "5.0.0-alpha.15",
+    "@math.gl/wkb": "5.0.0-alpha.15",
     "apache-arrow": ">= 17.0.0"
   },
   "peerDependencies": {

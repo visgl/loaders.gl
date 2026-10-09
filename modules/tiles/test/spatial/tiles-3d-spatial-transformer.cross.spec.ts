@@ -1,6 +1,7 @@
 // loaders.gl
 // SPDX-License-Identifier: MIT
 
+import type {Geoid} from '@math.gl/geoid';
 import {describe, expect, test} from 'vitest';
 import {createTilesetSpatialReference, Tiles3DSpatialTransformer} from '@loaders.gl/tiles';
 
@@ -122,4 +123,17 @@ describe('Tiles3DSpatialTransformer', () => {
     expect(identityVolume.box?.[7]).toBeGreaterThan(6_300_000);
     expect(identityVolume.box?.[11]).toBeGreaterThan(6_300_000);
   });
+});
+
+test('ECEF region bounds include the requested geoid height correction', () => {
+  const transformer = new Tiles3DSpatialTransformer(
+    createTilesetSpatialReference(
+      {sourceCrs: 'EPSG:4326', heightReference: 'orthometric'},
+      {targetCrs: 'EPSG:4978', targetHeightReference: 'ellipsoidal'}
+    ),
+    {geoidModel: {getHeight: () => 30} as Geoid}
+  );
+  const output = transformer.transformBoundingVolume({region: [0, 0, 0, 0, 10, 10]});
+  expect(output.box![0]).toBeCloseTo(6378137 + 40, 8);
+  expect(output.box![3]).toBeLessThan(1e-8);
 });
