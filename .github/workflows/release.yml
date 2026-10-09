@@ -3,6 +3,8 @@ name: release
 on:
   workflow_dispatch:
   push:
+    branches:
+      - 'codex/alpha11-publish-recovery-release'
     tags:
       - 'v*'
 
@@ -41,6 +43,8 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+        with:
+          ref: 'e9694544adb0bc7dac68a35adbc8bdae35f64dae'
 
       - name: Setup Node (with Corepack)
         uses: actions/setup-node@v4
@@ -92,6 +96,8 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+        with:
+          ref: 'e9694544adb0bc7dac68a35adbc8bdae35f64dae'
 
       - name: Setup Node (with Corepack)
         uses: actions/setup-node@v4
@@ -141,6 +147,8 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+        with:
+          ref: 'e9694544adb0bc7dac68a35adbc8bdae35f64dae'
 
       - name: Setup Node (with Corepack)
         uses: actions/setup-node@v4
@@ -198,6 +206,8 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+        with:
+          ref: 'e9694544adb0bc7dac68a35adbc8bdae35f64dae'
 
       - name: Setup Node (with Corepack)
         uses: actions/setup-node@v4
@@ -234,8 +244,13 @@ jobs:
       - name: Build workers
         run: yarn build-workers
 
-      # ocular-publish creates the GitHub Release before publishing the tagged packages to npm.
-      - name: Post GitHub release and publish to NPM
+      # The GitHub Release already exists; resume package publication without moving its tag.
+      - name: Resume trusted npm publication
         env:
           NPM_CONFIG_LOGLEVEL: verbose
-        run: npx ocular-publish from-git
+        run: |
+          test "$(git rev-parse HEAD)" = 'e9694544adb0bc7dac68a35adbc8bdae35f64dae'
+          test "$(node -p "require('./modules/core/package.json').version")" = '5.0.0-alpha.11'
+          npm config delete //registry.npmjs.org/:_authToken
+          unset NODE_AUTH_TOKEN
+          npx lerna publish from-package --force-publish --yes --dist-tag beta --no-commit-hooks
