@@ -11,6 +11,7 @@ import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
 import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
 
 <DocPageHeader
+  format="las"
   eyebrow="LAS module · live benchmark"
   title="Measure LAZ decoding with the columns your app needs."
   description="These browser benchmarks compare loaders.gl’s TypeScript decoder with alternate implementations while verifying identical point-cloud columns, Arrow types, and row counts."

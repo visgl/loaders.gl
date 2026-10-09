@@ -9,6 +9,7 @@ import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
 import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
 
 <DocPageHeader
+  format="geojson"
   eyebrow="GeoJSON geometry"
   title="GeoJSON Geometry"
   description="GeoJSON geometry objects describe coordinates and their type without carrying feature properties. They are useful on their own when a pipeline needs geometry before it assembles complete features."

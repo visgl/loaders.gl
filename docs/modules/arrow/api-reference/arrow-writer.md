@@ -12,6 +12,7 @@ import {WriterPipelineGraphic} from '@site/src/components/docs/writer-pipeline-g
 import apacheLogo from '../../../images/logos/apache-logo.png';
 
 <DocPageHeader
+  format="arrow"
   eyebrow="Arrow writer"
   title="ArrowWriter"
   description="ArrowWriter turns typed arrays and table-oriented data into Apache Arrow IPC bytes. Use it when a result should remain columnar across files, streams, workers, or another language."

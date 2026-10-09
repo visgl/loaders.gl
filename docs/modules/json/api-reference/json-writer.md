@@ -10,6 +10,7 @@ import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
 import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
 
 <DocPageHeader
+  format="json"
   eyebrow="JSON module · writer API"
   title="JSONWriter"
   description="Encode loaders.gl tables as JSON text, including readable GeoJSON conversion for GeoArrow WKB columns when the output needs to cross into a JSON-oriented system."

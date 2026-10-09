@@ -5,6 +5,7 @@ hide_title: true
 page_style: designed
 ---
 
+import {SupporterLogos} from '@site/src/components/docs/supporter-logos';
 import {FormatLogoGallery} from '@site/src/components/docs/format-logo-gallery';
 import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
 import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
@@ -39,7 +40,7 @@ import Link from '@docusaurus/Link';
 
 <DocOrientation
   eyebrow="The loaders.gl model"
-  title="Choose the format. Keep the application path."
+  title="Add formats. Your app just works."
   description="Independent modules turn files, streams, services, and datasets into predictable data for JavaScript applications. Start with one format and add capabilities as the application grows."
   tone="cyan"
   items={[
@@ -72,10 +73,12 @@ need.
   </a>
 </p>
 
-<div style={{textAlign: 'center', margin: '40px 0 56px'}}>
-  <a href="https://openvisualization.org">
+<div style={{display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 24, margin: '40px 0 56px'}}>
+
+  <a href="https://openvisualization.org" style={{flexShrink: 0}}>
     <img
-      style={{height: 56}}
+      style={{height: 'auto', width: 150}}
+      alt="OpenJS Foundation"
       src="https://raw.github.com/visgl/deck.gl-data/master/images/logos/openjsf-color-textg.png"
     />
   </a>
@@ -162,16 +165,17 @@ To quickly get up to speed on how the loaders.gl API works, see [Get Started](/d
 
 | Goal | What it means in practice |
 | --- | --- |
-| Framework agnostic | Return documented objects, typed arrays, tables, and batches that any JavaScript framework can consume. |
-| Browser and Node.js | Keep the same core APIs usable in browsers, services, scripts, and tests. |
+| Arrow support | Expose Arrow tables and record batches in supported tabular loaders for columnar processing. |
+| Binary-first data | Preserve compact typed arrays and binary buffers without adding WebGL dependencies. |
+| Streaming | Process async input and parsed batches incrementally, including inputs larger than memory. |
 | Worker-ready parsing | Move expensive decoders to prebuilt workers when a module provides them. |
 | Loader categories | Normalize related formats into shared application-facing data shapes. |
-| Format autodetection | Select loaders from extensions, MIME types, and initial bytes when the input allows it. |
-| Streaming | Process async input and parsed batches incrementally, including inputs larger than memory. |
-| Composable bundles | Publish independent modules and lazy runtimes so applications can install what they use. |
-| Binary-first data | Preserve compact typed-array and Arrow representations without adding WebGL dependencies. |
 | Multi-asset loading | Resolve linked buffers, images, tiles, and texture levels through one loading path. |
+| Format autodetection | Select loaders from extensions, MIME types, and initial bytes when the input allows it. |
+| Composable bundles | Publish independent modules and lazy runtimes so applications can install what they use. |
 | Modern JavaScript | Use TypeScript, ECMAScript modules, `ArrayBuffer`, and async iterators as portable primitives. |
+| Framework agnostic | Return documented objects, typed arrays, tables, and batches that any JavaScript framework can consume. |
+| Browser and Node.js | Keep the same core APIs usable in browsers, services, scripts, and tests. |
 
 ## Licenses
 
@@ -191,27 +195,7 @@ Even so, we can make mistakes, and we may not have the full history of the code 
 
 Organizations that have contributed significantly to the development and maintenance of loaders.gl:
 
-<div style={{marginLeft: 30, marginRight: 'auto'}}>
-  <a href="https://studio.foursquare.com">
-    <img height="80" src="https://raw.githubusercontent.com/visgl/deck.gl-data/master/images/logos/Foursquare.svg" />
-  </a>
-  <br />
-  <a href="https://carto.com">
-    <img height="80" src="https://raw.githubusercontent.com/visgl/deck.gl-data/master/images/logos/carto.svg" />
-  </a>
-  <br />
-  <a href="https://actionengine.com">
-    Action Engine
-  </a>
-  <br />
-  <a href="https://esri.com">
-    Esri
-  </a>
-  <br />
-  <a href="https://uber.com">
-    Uber
-  </a>
-</div>
+<SupporterLogos />
 
 ## Open Governance
 

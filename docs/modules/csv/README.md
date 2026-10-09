@@ -12,11 +12,11 @@ import {StructuredDataPathGraphic} from '@site/src/components/docs/structured-da
 import {ClientExample} from '@site/src/components';
 
 <DocPageHeader
+  format="csv"
   eyebrow="Table module"
   title="@loaders.gl/csv"
   description="The CSV module handles CSV and TSV input through the same loaders.gl APIs used by binary table formats. It can materialize a table, emit batches as records arrive, or write compatible data back to text."
   tone="cyan"
-  logos={[{alt: 'CSV', src: '/images/format-logos/csv-logo.svg'}]}
   meta={['CSV / TSV', 'Streaming', 'Table output']}
   links={[
     {label: 'Table category', to: '/docs/specifications/category-table'},

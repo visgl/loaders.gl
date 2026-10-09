@@ -9,6 +9,7 @@ import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
 import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
 
 <DocPageHeader
+  format="ply"
   eyebrow="Polygon and vertex format"
   title="Describe a mesh as elements and properties."
   description="The PLY module reads flexible vertex and face elements in ASCII or binary form, preserving common properties such as colors, normals, texture coordinates, and confidence values."

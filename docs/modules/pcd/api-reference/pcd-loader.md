@@ -10,6 +10,7 @@ import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
 import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
 
 <DocPageHeader
+  format="pcd"
   eyebrow="PCD module · loader API"
   title="PCDLoader"
   description="Decode ASCII, binary, and compressed Point Cloud Data into a point-cloud object or a Mesh Arrow table with named attributes."

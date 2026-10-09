@@ -10,6 +10,7 @@ import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
 import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
 
 <DocPageHeader
+  format="flatgeobuf"
   eyebrow="FlatGeobuf loader"
   title="Decode indexed features into the shape your app needs."
   description="FlatGeobufLoader reads binary feature records and lets applications choose a familiar GeoJSON table, Arrow table, columnar table, or binary geometry result."
@@ -21,7 +22,7 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
   ]}
 />
 
-![flatgeobuf-logo](../images/flatgeobuf-logo.png)
+
 
 <p className="badges">
   <img src="https://img.shields.io/badge/From-v3.1-blue.svg?style=flat-square" alt="From-v3.1" />

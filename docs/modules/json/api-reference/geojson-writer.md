@@ -10,6 +10,7 @@ import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
 import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
 
 <DocPageHeader
+  format="geojson"
   eyebrow="JSON module · geospatial writer"
   title="GeoJSONWriter"
   description="Encode loaders.gl geospatial tables as GeoJSON, keeping feature geometry and properties in a format that mapping tools and web APIs understand."

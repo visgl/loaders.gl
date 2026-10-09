@@ -10,6 +10,7 @@ import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
 import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
 
 <DocPageHeader
+  format="json"
   eyebrow="JSON module · table loader"
   title="JSONTableLoader"
   description="Load JSON row arrays into a table-shaped result every time, with optional Apache Arrow output and controlled conversion of nested values and types."

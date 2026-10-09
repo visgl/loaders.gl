@@ -10,6 +10,7 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
 import {PlyDocsTabs} from '@site/src/components/docs/ply-docs-tabs';
 
 <DocPageHeader
+  format="ply"
   eyebrow="PLY writer"
   title="Write common mesh data into a portable text format."
   description="`PLYWriter` accepts legacy Mesh objects and Mesh Arrow tables, normalizes their common attributes, and writes ASCII Polygon File Format output for tools and pipelines that speak PLY."

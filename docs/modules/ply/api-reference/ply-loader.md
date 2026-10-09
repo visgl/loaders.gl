@@ -10,6 +10,7 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
 import {PlyDocsTabs} from '@site/src/components/docs/ply-docs-tabs';
 
 <DocPageHeader
+  format="ply"
   eyebrow="PLY loader"
   title="Read a classic mesh file into the shape your renderer needs."
   description="`PLYLoader` parses Polygon File Format files and can return either the legacy Mesh object or a Mesh Arrow table. Choose the output shape at the boundary so downstream geometry code can stay consistent."

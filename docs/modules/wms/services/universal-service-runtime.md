@@ -9,6 +9,7 @@ import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
 import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
 
 <DocPageHeader
+  format="wms"
   eyebrow="Service operations"
   title="Share operational policy without hiding the protocol."
   description="ServiceRuntime selects a source, reuses it, and applies common headers, retries, cancellation, telemetry, and error context. The resulting source still exposes its protocol-specific methods."

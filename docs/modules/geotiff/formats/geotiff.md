@@ -13,11 +13,11 @@ import {RasterWindowGraphic} from '@site/src/components/docs/raster-window-graph
 import {ClientExample} from '@site/src/components';
 
 <DocPageHeader
+  format="geotiff"
   eyebrow="Georeferenced raster format"
   title="GeoTIFF"
   description="GeoTIFF combines TIFF image storage with tags that describe the raster’s coordinate system, bounds, scale, and placement. Cloud Optimized GeoTIFF adds a layout that makes bounded reads practical."
   tone="mint"
-  logos={[{alt: 'Open Geospatial Consortium', src: '/images/format-logos/ogc-logo-transparent.png'}]}
   meta={['TIFF 6.0', 'GeoTIFF tags', 'COG range reads']}
   links={[
     {label: 'GeoTIFF module', to: '/docs/modules/geotiff'},

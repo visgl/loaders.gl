@@ -10,6 +10,7 @@ import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
 import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
 
 <DocPageHeader
+  format="hdr"
   eyebrow="High-dynamic-range image"
   title="Keep lighting values above display range."
   description="Radiance HDR stores RGBE pixels with a shared exponent, making it useful for environment maps and lighting workflows. loaders.gl decodes the image into texture data while leaving tone mapping and display policy to the renderer."

@@ -10,11 +10,11 @@ import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
 import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
 
 <DocPageHeader
+  format="geotiff"
   eyebrow="GeoTIFF loader"
   title="GeoTIFFLoader"
   description="GeoTIFFLoader is the entry point for TIFF imagery whose tags describe scale, bounds, and coordinate reference. Use the source APIs when a cloud query needs selective ranges or windows."
   tone="mint"
-  logos={[{alt: 'Open Geospatial Consortium', src: '/images/format-logos/ogc-logo-transparent.png'}]}
   meta={['TIFF input', 'GeoTIFF metadata', 'Typed raster output']}
   links={[
     {label: 'GeoTIFF format', to: '/docs/modules/geotiff/formats/geotiff'},

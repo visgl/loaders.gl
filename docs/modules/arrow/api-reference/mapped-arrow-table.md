@@ -9,6 +9,7 @@ import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
 import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
 
 <DocPageHeader
+  format="arrow"
   eyebrow="Mapped Arrow table"
   title="MappedArrowTable"
   description="`MappedArrowTable` presents an `IndexedArrowTable` through a stable string-keyed view. Filtering, sorting, slicing, and concatenation remain table operations while keyed lookups stay predictable."

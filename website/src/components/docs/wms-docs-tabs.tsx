@@ -1,3 +1,4 @@
+import {FormatLogo} from './format-logo';
 import React, {type ReactNode} from 'react';
 import Link from '@docusaurus/Link';
 
@@ -135,6 +136,7 @@ export function WmsDocsTabs({
 
   return (
     <nav className="docs-page-tabs" aria-label="WMS service documentation sections">
+      <FormatLogo slug={active.replace(/-example$/, '')} />
       {tabs.map(tab => (
         <Link
           key={tab.id}

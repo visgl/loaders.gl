@@ -13,11 +13,11 @@ import {DocLiveExample} from '@site/src/components/docs/doc-live-example';
 import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
 
 <DocPageHeader
+  format="arcgis-map-server"
   eyebrow="ArcGIS module · ArcGIS tile source"
   title="ArcGIS MapServer"
   description="Load cached or dynamically rendered ArcGIS maps through one TileSource, with automatic mode selection, normalized LOD metadata, and shared credentials."
   tone="violet"
-  logos={[{alt: 'ArcGIS', src: '/images/format-logos/arcgis-logo.svg'}]}
   meta={['MapServer', 'Cached or dynamic', 'TileSource']}
   links={[
     {label: 'ArcGIS module', to: '/docs/modules/arcgis'},

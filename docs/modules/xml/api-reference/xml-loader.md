@@ -10,6 +10,7 @@ import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
 import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
 
 <DocPageHeader
+  format="xml"
   eyebrow="XML module · loader API"
   title="XMLLoader"
   description="Parse XML into an untyped JavaScript tree, with practical options for adapting namespaces and tag names to application code."

@@ -9,6 +9,7 @@ import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
 import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
 
 <DocPageHeader
+  format="compressed-textures"
   eyebrow="Textures module · API reference"
   title="Bring a NumPy array into a typed JavaScript pipeline."
   description="NPYLoader handles the compact NumPy array format and returns the typed data together with the header metadata needed to interpret its dimensions and storage order."

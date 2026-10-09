@@ -11,16 +11,13 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
 import {TiledSceneGraphic} from '@site/src/components/docs/tiled-scene-graphic';
 
 <DocPageHeader
+  format="i3s"
   eyebrow="I3S loader"
   title="I3SLoader"
   description="Read ArcGIS scene layers, geometry, textures, and the metadata needed by the shared tiles runtime. Use it for mesh, point, and scene-layer content delivered as JSON, binary nodes, or an SLPK archive."
   hideTitle
   tone="orange"
   meta={['I3S 1.x and 2.x', 'Scene and point layers', 'JSON and binary resources']}
-  logos={[
-    {alt: 'ArcGIS', src: '/images/format-logos/arcgis-logo.svg'},
-    {alt: 'Open Geospatial Consortium', src: '/images/format-logos/ogc-logo-transparent.png'}
-  ]}
   links={[
     {label: 'I3S module', to: '/docs/modules/i3s'},
     {label: 'I3S format', to: '/docs/modules/i3s/formats/i3s'},

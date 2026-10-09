@@ -9,6 +9,7 @@ import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
 import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
 
 <DocPageHeader
+  format="wkb"
   eyebrow="WKT module · geometry loader"
   title="TWKBLoader"
   description="Parse Tiny Well-Known Binary geometry and expose it through the same application-facing geometry shape used by the WKT module."

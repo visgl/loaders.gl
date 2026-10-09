@@ -9,6 +9,7 @@ import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
 import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
 
 <DocPageHeader
+  format="i3s"
   eyebrow="I3S point-cloud source"
   title="Use I3S point clouds with one traversal API."
   description="`I3SPointCloudSource` adapts I3S 2.x point-cloud layers to `PointCloudTileset`. It handles layer metadata, node resources, precision, elevation placement, and optional CRS conversion while the tiles runtime manages visibility and budgets."

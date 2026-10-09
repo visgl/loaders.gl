@@ -9,6 +9,7 @@ import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
 import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
 
 <DocPageHeader
+  format="wkt"
   eyebrow="WKT module · geometry loader"
   title="WKTLoader"
   description="Parse readable Well-Known Text geometry into the loaders.gl geometry representation used by mapping, analysis, and conversion pipelines."
@@ -40,7 +41,6 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
   tone="orange"
 />
 
-![ogc-logo](../../../images/logos/ogc-logo-60.png)
 
 Loader and writer for the [Well-known text][wkt] format for representation of geometry.
 

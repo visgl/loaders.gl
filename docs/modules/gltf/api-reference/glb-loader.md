@@ -9,6 +9,7 @@ import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
 import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
 
 <DocPageHeader
+  format="glb"
   eyebrow="GLB loader"
   title="Open the binary envelope around a glTF asset."
   description="`GLBLoader` parses the GLB container and returns its JSON and binary chunks. Use `GLTFLoader` when the goal is a complete glTF scenegraph; use this lower-level loader when the envelope itself is the data you need."

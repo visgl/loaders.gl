@@ -10,6 +10,7 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
 import {TexturesDocsTabs} from '@site/src/components/docs/textures-docs-tabs';
 
 <DocPageHeader
+  format="compressed-textures"
   eyebrow="Compressed texture writer"
   title="Keep the compression step at the build or Node.js boundary."
   description="`CompressedTextureWriter` is an experimental Node.js-only bridge to an externally installed native compressor. It is useful when an application needs to produce a GPU texture container, but it is not a browser-side encoder."

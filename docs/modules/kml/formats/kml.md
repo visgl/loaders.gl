@@ -10,6 +10,7 @@ import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
 import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
 
 <DocPageHeader
+  format="kml"
   eyebrow="Geographic annotation format"
   title="Put places, paths, and views in an Earth-ready document."
   description="KML uses XML elements to describe geographic annotations and visualization instructions for maps and 3D Earth browsers; KMZ packages those documents and their resources. loaders.gl keeps both formats in the broader GIS and scene-data pipeline."
@@ -36,7 +37,6 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
   ]}
 />
 
-![ogc-logo](../../../images/logos/ogc-logo-60.png)
 
 KML (Keyhole Markup Language) is an XML format for geographic annotation and
 visualization in two-dimensional maps and three-dimensional Earth browsers.

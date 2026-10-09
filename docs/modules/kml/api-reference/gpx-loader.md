@@ -10,6 +10,7 @@ import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
 import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
 
 <DocPageHeader
+  format="gpx"
   eyebrow="KML module · loader API"
   title="GPXLoader"
   description="Parse GPX routes, tracks, and waypoints into loaders.gl geometry tables, with optional Arrow and binary representations for downstream processing."

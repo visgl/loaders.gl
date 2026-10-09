@@ -11,6 +11,7 @@ import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
 import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
 
 <DocPageHeader
+  format="pvr"
   eyebrow="Texture format"
   title="Keep mobile texture payloads and mip levels together."
   description="PVR is a PowerVR-oriented texture container that packages compressed payloads, mipmaps, and texture metadata. loaders.gl exposes those levels in a common texture representation for a GPU runtime to consume."

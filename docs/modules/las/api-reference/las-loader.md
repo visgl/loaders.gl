@@ -10,12 +10,12 @@ import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
 import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
 
 <DocPageHeader
+  format="las"
   eyebrow="LAS loader"
   title="LASLoader"
   description="Read LAS and LAZ records into Arrow columns for analysis, scans, and writers, or request a render-ready mesh compatibility shape when needed."
   tone="blue"
   meta={['LAS / LAZ', 'TypeScript', 'Arrow output']}
-  logos={[{alt: 'LAS', src: '/images/format-logos/las-logo.svg'}]}
   links={[
     {label: 'LAS / LAZ format', to: '/docs/modules/las/formats/las'},
     {label: 'LASWriter', to: '/docs/modules/las/api-reference/las-writer'}

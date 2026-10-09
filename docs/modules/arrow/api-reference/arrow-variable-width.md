@@ -9,6 +9,7 @@ import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
 import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
 
 <DocPageHeader
+  format="arrow"
   eyebrow="Arrow variable-width utilities"
   title="Arrow variable-width conversion"
   description="These utilities convert Arrow `Utf8`, `Utf8View`, `Binary`, and `BinaryView` vectors and tables while preserving logical values, nulls, and unrelated columns."

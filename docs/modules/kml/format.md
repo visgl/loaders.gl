@@ -10,6 +10,7 @@ import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
 import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
 
 <DocPageHeader
+  format="kml"
   eyebrow="XML geospatial formats"
   title="Bring annotated tracks into one geometry path."
   description="KML, KMZ, GPX, and TCX use related XML foundations but describe different kinds of geographic data. loaders.gl preserves their useful metadata while returning common geometry and table shapes for applications."

@@ -11,6 +11,7 @@ import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
 import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
 
 <DocPageHeader
+  format="ply"
   eyebrow="Polygon and vertex format"
   title="Let the header describe the mesh you have."
   description="PLY defines elements and properties in its header, then stores those records as readable text or compact binary data. It is flexible enough for meshes and many point-cloud workflows."

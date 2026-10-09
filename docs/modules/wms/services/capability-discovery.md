@@ -9,6 +9,7 @@ import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
 import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
 
 <DocPageHeader
+  format="wms"
   eyebrow="Service discovery"
   title="Find the right endpoint before creating a source."
   description="Service directories and OGC landing pages describe relationships, formats, coordinate systems, and quality at different levels of detail. discoverServiceGraph records that information so an application can make an explicit choice."

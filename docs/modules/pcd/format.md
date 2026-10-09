@@ -10,6 +10,7 @@ import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
 import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
 
 <DocPageHeader
+  format="pcd"
   eyebrow="Point-cloud format"
   title="A simple point-cloud interchange."
   description="PCD describes point records with a compact header and ASCII or binary payload. loaders.gl maps those records to the shared point-cloud and Mesh Arrow shapes used by applications and writers."

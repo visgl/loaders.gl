@@ -10,15 +10,12 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
 import {TiledSceneGraphic} from '@site/src/components/docs/tiled-scene-graphic';
 
 <DocPageHeader
+  format="i3s"
   eyebrow="Hierarchical scene-layer format"
   title="I3S"
   description="Stream only the scene content the view can use. I3S organizes geometry, textures, attributes, and level-of-detail metadata into a node tree delivered through REST resources or Scene Layer Packages."
   tone="orange"
   meta={['I3S 1.7', 'OGC I3S 1.3', 'REST and SLPK']}
-  logos={[
-    {alt: 'ArcGIS', src: '/images/format-logos/arcgis-logo.svg'},
-    {alt: 'Open Geospatial Consortium', src: '/images/format-logos/ogc-logo-transparent.png'}
-  ]}
   links={[
     {label: 'I3S module', to: '/docs/modules/i3s'},
     {label: '3D data formats', to: '/docs/developer-guide/3d-data-formats'}

@@ -10,6 +10,7 @@ import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
 import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
 
 <DocPageHeader
+  format="bson"
   eyebrow="BSON API · document loader"
   title="Decode typed documents at the application boundary."
   description="BSONLoader parses BSON bytes into JSON-like JavaScript values while preserving the extended scalar types supported by the underlying js-bson implementation."

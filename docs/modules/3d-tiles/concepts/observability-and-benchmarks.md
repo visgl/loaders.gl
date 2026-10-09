@@ -10,6 +10,7 @@ import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
 import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
 
 <DocPageHeader
+  format="3d-tiles"
   eyebrow="3D Tiles runtime"
   title="Measure traversal before tuning it."
   description="Deterministic snapshots and source diagnostics make screen-space error, request pressure, and cache behavior comparable across cameras, devices, and releases."

@@ -10,6 +10,7 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
 import {RasterWindowGraphic} from '@site/src/components/docs/raster-window-graphic';
 
 <DocPageHeader
+  format="zarr"
   eyebrow="Chunked multidimensional data"
   title="Read the array chunks that answer the question."
   description="Zarr stores typed multidimensional arrays in independently addressable chunks. OME-Zarr and GeoZarr add conventions for images, coordinates, dimensions, transforms, and spatial metadata."

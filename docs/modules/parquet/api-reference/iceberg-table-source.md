@@ -10,6 +10,7 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
 import apacheLogo from '../../../images/logos/apache-logo.png';
 
 <DocPageHeader
+  format="parquet"
   eyebrow="Versioned table source"
   title="IcebergTableSource"
   description="IcebergTableSource reads table metadata and manifests, selects the relevant Parquet data files, and delegates physical decoding to the shared Parquet source path."

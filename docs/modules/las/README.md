@@ -11,12 +11,12 @@ import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
 import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
 
 <DocPageHeader
+  format="las"
   eyebrow="Point-cloud module"
   title="@loaders.gl/las"
   description="Keep the point record, or keep the columns. Read and write LAS/LAZ exchange data as raw records, a render-ready point cloud, or a typed Mesh Arrow table."
   tone="blue"
   meta={['LAS 1.0–1.5', 'LAZ point formats 0–10', 'TypeScript reader']}
-  logos={[{alt: 'LAS', src: '/images/format-logos/las-logo.svg'}]}
   links={[
     {label: 'LAS / LAZ format', to: '/docs/modules/las/formats/las'},
     {label: 'Mesh category', to: '/docs/specifications/category-mesh'}

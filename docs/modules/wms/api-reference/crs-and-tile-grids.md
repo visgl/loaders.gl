@@ -9,6 +9,7 @@ import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
 import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
 
 <DocPageHeader
+  format="wms"
   eyebrow="WMS module · coordinate systems"
   title="CRS and tile-grid intelligence"
   description="Service metadata uses many equivalent CRS spellings and tile-matrix identifiers. These helpers normalize the common cases and select a compatible grid without making assumptions about the service’s native naming."

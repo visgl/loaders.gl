@@ -10,6 +10,7 @@ import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
 import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
 
 <DocPageHeader
+  format="wmc"
   eyebrow="OGC context format"
   title="Know where WMC ends and service loading begins."
   description="Web Map Context packages a configured set of map layers. loaders.gl preserves this page as a format reference while the active implementation boundary remains XML parsing plus the WMS source APIs."
@@ -37,7 +38,6 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
 
 <WmsDocsTabs active="wmc" />
 
-![ogc-logo](../../../images/logos/ogc-logo-60.png)
 
 Web Map Context is a legacy OGC document format for saving and exchanging a configured set of map
 layers.

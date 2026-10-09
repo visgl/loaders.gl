@@ -10,6 +10,7 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
 import {StructuredDataPathGraphic} from '@site/src/components/docs/structured-data-path-graphic';
 
 <DocPageHeader
+  format="xml"
   eyebrow="XML module"
   title="Keep document parsing separate from document meaning."
   description="`@loaders.gl/xml` provides the XML parsing boundary used by format-specific loaders. It exposes XML document processing without forcing applications to depend on one particular geographic, media, or metadata vocabulary."

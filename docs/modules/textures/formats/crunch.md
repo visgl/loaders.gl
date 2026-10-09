@@ -11,6 +11,7 @@ import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
 import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
 
 <DocPageHeader
+  format="crunch"
   eyebrow="Legacy compressed texture"
   title="Keep an older compressed texture path understandable."
   description="Crunch reduces distribution size for BC/DXT-style texture assets. It remains useful for existing pipelines, while newer web workflows generally prefer Basis Universal in KTX2 for broader GPU portability."

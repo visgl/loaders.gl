@@ -9,6 +9,7 @@ import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
 import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
 
 <DocPageHeader
+  format="wkb"
   eyebrow="Geometry binary format"
   title="Smaller geometry records for constrained links."
   description="Tiny Well-Known Binary (TWKB) is a compact WKB variant that uses quantized coordinates, deltas, and variable-length integers to reduce the bytes needed for neighboring geometry points."

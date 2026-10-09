@@ -17,10 +17,10 @@ import apacheLogo from '../images/logos/apache-logo.png';
   title="loaders.gl ♥ standards"
   description="Big-data applications should be able to choose open formats without rebuilding their loading path. loaders.gl implements standards deeply, exposes the boundaries honestly, and keeps the application-facing shapes portable."
   logos={[
-    {alt: 'Open Geospatial Consortium', src: '/images/format-logos/ogc-logo-transparent.png'},
-    {alt: 'glTF', src: '/images/format-logos/gltf-logo.png'},
+    {alt: 'Open Geospatial Consortium', format: 'ogc-api'},
+    {alt: 'glTF', format: 'gltf'},
     {alt: 'Apache Software Foundation', src: apacheLogo},
-    {alt: 'ArcGIS', src: '/images/format-logos/arcgis-logo.svg'}
+    {alt: 'ArcGIS', format: 'arcgis'}
   ]}
   links={[
     {label: 'All formats', to: '/docs/formats'},

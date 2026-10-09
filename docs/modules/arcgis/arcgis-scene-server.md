@@ -12,11 +12,11 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
 import {ClientExample} from '@site/src/components';
 
 <DocPageHeader
+  format="arcgis-scene-server"
   eyebrow="ArcGIS module · ArcGIS 3D source"
   title="ArcGIS SceneServer"
   description="Connect an ArcGIS SceneServer layer to the loaders.gl 3D source runtime, delegating I3S mesh, point, and point-cloud decoding to the existing format implementations."
   tone="violet"
-  logos={[{alt: 'ArcGIS', src: '/images/format-logos/arcgis-logo.svg'}]}
   meta={['SceneServer', 'I3S', '3D source integration']}
   links={[
     {label: 'ArcGIS module', to: '/docs/modules/arcgis'},

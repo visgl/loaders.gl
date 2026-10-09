@@ -10,6 +10,7 @@ import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
 import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
 
 <DocPageHeader
+  format="3d-tiles"
   eyebrow="3D Tiles runtime / experimental"
   title="Draft 3D Tiles 2.0, decoded and traversed."
   description="loaders.gl can recognize the draft glTF-based 3D Tiles 2.0 representation, preserve its metadata, and expose a traversal-ready Tileset3D hierarchy. The profile is intentionally renderer-neutral and may change as the draft evolves."

@@ -9,6 +9,7 @@ import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
 import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
 
 <DocPageHeader
+  format="3d-tiles"
   eyebrow="3D Tiles API / writer"
   title="Writing is a separate format boundary."
   description="Tiles3DWriter is reserved for a future writer path. This page makes the current status explicit and points to the supported readers, converters, and lower-level writers available today."

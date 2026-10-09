@@ -10,6 +10,7 @@ import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
 import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
 
 <DocPageHeader
+  format="chrome-trace"
   eyebrow="Traces module · loader API"
   title="ChromeTraceLoader"
   description="Read Chrome Trace Event JSON as a validated file container or as a typed Arrow event table for analysis and transformation."

@@ -13,11 +13,11 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
 import {ClientExample} from '@site/src/components';
 
 <DocPageHeader
+  format="geopackage"
   eyebrow="Portable geospatial package"
   title="GeoPackage"
   description="GeoPackage uses SQLite to package geospatial tables and metadata in one portable file. loaders.gl can discover a feature table and expose it through the common table shape."
   tone="orange"
-  logos={[{alt: 'Open Geospatial Consortium', src: '/images/format-logos/ogc-logo-transparent.png'}]}
   meta={['SQLite container', 'OGC standard', 'Feature tables']}
   links={[
     {label: 'GeoPackage module', to: '/docs/modules/geopackage'},

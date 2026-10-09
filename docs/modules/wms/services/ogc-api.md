@@ -9,6 +9,7 @@ import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
 import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
 
 <DocPageHeader
+  format="ogc-api"
   eyebrow="OGC API services"
   title="Use the service path that matches the data."
   description="The OGC API family exposes linked JSON resources and focused HTTP operations. loaders.gl provides small source adapters for the common read paths, with the protocol boundaries kept visible."

@@ -13,11 +13,11 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
 import {ClientExample} from '@site/src/components';
 
 <DocPageHeader
+  format="geoparquet"
   eyebrow="Geospatial columnar format"
   title="GeoParquet"
   description="GeoParquet adds geospatial metadata and encoding conventions to Parquet. The result is still a Parquet table, but readers can discover geometry columns, encodings, bounds, and coordinate meaning without a sidecar format."
   tone="cyan"
-  logos={[{alt: 'Apache Parquet', src: '/images/format-logos/parquet-logo.png'}]}
   meta={['Parquet', 'Geo metadata', 'WKB and GeoArrow encodings']}
   links={[
     {label: 'Parquet format', to: '/docs/modules/parquet/formats/parquet'},

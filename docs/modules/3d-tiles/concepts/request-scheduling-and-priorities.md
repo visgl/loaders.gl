@@ -10,6 +10,7 @@ import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
 import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
 
 <DocPageHeader
+  format="3d-tiles"
   eyebrow="3D Tiles runtime / requests"
   title="Bring the most useful detail first."
   description="Traversal decides which content is needed. Scheduling decides which of those requests should use the next available slot, especially while the camera is moving."

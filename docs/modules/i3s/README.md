@@ -11,15 +11,12 @@ import {TiledSceneGraphic} from '@site/src/components/docs/tiled-scene-graphic';
 import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
 
 <DocPageHeader
+  format="i3s"
   eyebrow="Tiled scene module"
   title="@loaders.gl/i3s"
   description="Read ArcGIS Indexed 3D Scene Layers through the same source and traversal building blocks used for large browser-rendered scenes."
   tone="orange"
   meta={['I3S profiles', 'Scene and point cloud', 'ArcGIS services']}
-  logos={[
-    {alt: 'ArcGIS', src: '/images/format-logos/arcgis-logo.svg'},
-    {alt: 'Open Geospatial Consortium', src: '/images/format-logos/ogc-logo-transparent.png'}
-  ]}
   links={[
     {label: 'I3S format', to: '/docs/modules/i3s/formats/i3s'},
     {label: 'I3SLoader', to: '/docs/modules/i3s/api-reference/i3s-loader'},

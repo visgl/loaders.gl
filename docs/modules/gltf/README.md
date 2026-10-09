@@ -11,12 +11,12 @@ import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
 import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
 
 <DocPageHeader
+  format="gltf"
   eyebrow="Scenegraph module"
   title="@loaders.gl/gltf"
   description="Bring glTF and GLB scenes into an application with linked assets, compressed meshes, typed traversal, and a standards-shaped result."
   tone="pink"
   meta={['glTF and GLB', 'Scenegraph data', 'Draco and meshopt']}
-  logos={[{alt: 'glTF', src: '/images/format-logos/gltf-logo.png'}]}
   links={[
     {label: 'glTF format', to: '/docs/modules/gltf/formats/gltf'},
     {label: 'GLTFLoader', to: '/docs/modules/gltf/api-reference/gltf-loader'},

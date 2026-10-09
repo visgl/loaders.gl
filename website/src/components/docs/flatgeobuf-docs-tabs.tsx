@@ -1,3 +1,4 @@
+import {FormatLogo} from './format-logo';
 import React, {type ReactNode} from 'react';
 import Link from '@docusaurus/Link';
 
@@ -36,6 +37,7 @@ export function FlatGeobufDocsTabs({
 }): ReactNode {
   return (
     <nav className="docs-page-tabs" aria-label="FlatGeobuf documentation sections">
+      <FormatLogo slug="flatgeobuf" />
       {FLATGEOBUF_DOCS_TABS.map(tab => (
         <Link
           key={tab.id}

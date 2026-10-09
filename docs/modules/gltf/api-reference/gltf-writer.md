@@ -9,6 +9,7 @@ import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
 import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
 
 <DocPageHeader
+  format="gltf"
   eyebrow="glTF writer"
   title="Write a glTF scenegraph as a binary GLB."
   description="`GLTFWriter` encodes glTF JSON and loaded buffers as a binary GLB, with optional asynchronous Draco compression."

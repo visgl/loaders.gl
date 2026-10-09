@@ -1,3 +1,4 @@
+import {FormatLogo} from './format-logo';
 import React, {type ReactNode} from 'react';
 import Link from '@docusaurus/Link';
 
@@ -46,6 +47,7 @@ export function KmlDocsTabs({
 }): ReactNode {
   return (
     <nav className="docs-page-tabs" aria-label="KML module documentation sections">
+      <FormatLogo slug={active.startsWith('gpx') ? 'gpx' : active.startsWith('tcx') ? 'tcx' : 'kml'} />
       {KML_DOCS_TABS.map(tab => (
         <Link
           key={tab.id}

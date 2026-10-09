@@ -13,11 +13,11 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
 import {ClientExample} from '@site/src/components';
 
 <DocPageHeader
+  format="wms"
   eyebrow="OGC map-image service"
   title="WMS"
   description="WMS exposes georeferenced map images through capabilities, layer, style, dimension, and CRS parameters. loaders.gl keeps service discovery and image retrieval in a source API suitable for browser maps."
   tone="mint"
-  logos={[{alt: 'Open Geospatial Consortium', src: '/images/format-logos/ogc-logo-transparent.png'}]}
   meta={['WMS 1.3.0', 'GetCapabilities', 'GetMap and feature info']}
   links={[
     {label: 'WMS module', to: '/docs/modules/wms'},

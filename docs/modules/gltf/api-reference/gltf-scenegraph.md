@@ -10,6 +10,7 @@ import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
 import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
 
 <DocPageHeader
+  format="gltf"
   eyebrow="glTF API / scenegraph"
   title="Work with a glTF asset as a scenegraph."
   description="GLTFScenegraph provides focused accessors and builders for glTF JSON and binary resources. Use it when an application needs to inspect, modify, or assemble a scene while retaining the format's structure."

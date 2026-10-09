@@ -13,11 +13,11 @@ import {RasterWindowGraphic} from '@site/src/components/docs/raster-window-graph
 import {ClientExample} from '@site/src/components';
 
 <DocPageHeader
+  format="geotiff"
   eyebrow="Raster module"
   title="@loaders.gl/geotiff"
   description="The GeoTIFF module handles georeferencing, tiled imagery, multiband data, and multiscale OME-TIFF. Its source APIs can select native windows and overviews before decoding the pixels."
   tone="orange"
-  logos={[{alt: 'Open Geospatial Consortium', src: '/images/format-logos/ogc-logo-transparent.png'}]}
   meta={['GeoTIFF / COG', 'OME-TIFF', 'Windowed raster reads']}
   links={[
     {label: 'GeoTIFF format', to: '/docs/modules/geotiff/formats/geotiff'},

@@ -11,15 +11,12 @@ import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
 import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
 
 <DocPageHeader
+  format="3d-tiles"
   eyebrow="Tiled scene format"
   title="3D Tiles"
   description="Describe a large scene as a hierarchy of bounded, streamable pieces so a renderer can request the detail that matters for the current view."
   tone="violet"
   hideTitle={true}
-  logos={[
-    {alt: 'OGC logo', src: '/images/format-logos/ogc-logo-transparent.png', href: 'https://www.ogc.org/standard/3dtiles/'},
-    {alt: '3D Tiles logo', src: '/images/format-logos/3d-tiles-logo-transparent.png', href: 'https://github.com/CesiumGS/3d-tiles'}
-  ]}
   meta={['Hierarchical', 'Streamable', 'Level-of-detail aware']}
 />
 

@@ -11,6 +11,7 @@ import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
 import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
 
 <DocPageHeader
+  format="ply"
   eyebrow="PLY module · live benchmark"
   title="See how PLY parsing behaves in this browser."
   description="PLY is flexible enough that a benchmark should make its fixture and output shape visible. Use the live app to compare representative geometry parsing rather than relying on a synthetic headline number."

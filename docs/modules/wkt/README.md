@@ -9,6 +9,7 @@ import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
 import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
 
 <DocPageHeader
+  format="wkt"
   eyebrow="WKT and WKB module"
   title="Keep geometry and coordinate systems interoperable."
   description="`@loaders.gl/wkt` handles OGC Well-Known Text, Well-Known Binary, and WKT coordinate reference systems. It provides loaders and writers for the syntax boundaries that appear across GIS formats."
@@ -43,7 +44,6 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
 See [Coordinate Reference Systems](/docs/developer-guide/coordinate-reference-systems) for WKT
 syntax handling, shared CRS types, and cross-format CRS support.
 
-![ogc-logo](../../images/logos/ogc-logo-60.png)
 
 ## Formats
 
