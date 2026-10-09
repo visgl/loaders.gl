@@ -194,42 +194,34 @@ test('OGCAPITilesSource does not discover for templates without {tileMatrix}', a
   expect(errors).toEqual([]);
 });
 
-test('OGCAPITilesSource falls back to z when discovery fails, and retries on getMetadata', async () => {
+test('OGCAPITilesSource rejects when discovery fails, and retries on the next call', async () => {
   const tilesetUrl = `${LANDING_PAGE_URL}/tiles/NamedLevels`;
   const routes: Record<string, Route> = {
     [LANDING_PAGE_URL]: LANDING_PAGE,
     [tilesetUrl]: {status: 503},
     [`${LANDING_PAGE_URL}/tileMatrixSets/NamedLevels`]: NAMED_LEVELS,
-    [`${tilesetUrl}/1/0/0`]: new ArrayBuffer(4),
     [`${tilesetUrl}/L1/0/0`]: new ArrayBuffer(4)
   };
-  const {source, requestedUrls, errors} = createSource(routes, {
+  const {source, requestedUrls} = createSource(routes, {
     tileTemplate: `${tilesetUrl}/{tileMatrix}/{tileRow}/{tileCol}`
   });
 
-  // The failure is reported, not thrown, and tiles keep using z
-  const metadata = await source.getMetadata();
-  expect(metadata.tileGrid).toBeUndefined();
-  expect(metadata.title).toBe('Demo API');
-  expect(errors).toHaveLength(1);
-  expect(errors[0].message).toMatch(/tile matrix set.*503/);
-  expect(source.getTileURL({z: 1, x: 0, y: 0})).toBe(`${tilesetUrl}/1/0/0`);
-
-  // Tile requests do not retry discovery, so a failing service is not asked once per tile
+  // The failure is an error, and tiles are not requested with z as the matrix identifier
+  await expect(source.getMetadata()).rejects.toThrow(/discover the tile matrix set.*503/);
+  expect(() => source.getTileURL({z: 1, x: 0, y: 0})).toThrow('await getMetadata()');
   requestedUrls.length = 0;
-  await source.getTile({z: 1, x: 0, y: 0});
-  expect(requestedUrls).toEqual([`${tilesetUrl}/1/0/0`]);
-  expect(errors).toHaveLength(1);
+  await expect(source.getTile({z: 1, x: 0, y: 0})).rejects.toThrow(/tile matrix set.*503/);
+  // getTile() retried discovery instead of reusing the failure, and fetched no tile
+  expect(requestedUrls).toEqual([tilesetUrl]);
 
-  // The next getMetadata() retries
+  // Once the service recovers, the next call discovers the matrix set
   routes[tilesetUrl] = {tileMatrixSetId: 'NamedLevels'};
   expect((await source.getMetadata()).tileGrid?.matrixIds).toEqual(['L0', 'L1']);
   expect(source.getTileURL({z: 1, x: 0, y: 0})).toBe(`${tilesetUrl}/L1/0/0`);
-  expect(errors).toHaveLength(1);
 });
 
-test('OGCAPITilesSource reports a tileset that names no tile matrix set', async () => {
-  const {source, errors} = createSource(
+test('OGCAPITilesSource rejects a tileset that names no tile matrix set', async () => {
+  const {source} = createSource(
     {
       [LANDING_PAGE_URL]: LANDING_PAGE,
       [`${LANDING_PAGE_URL}/tiles/WebMercatorQuad`]: {
@@ -239,9 +231,38 @@ test('OGCAPITilesSource reports a tileset that names no tile matrix set', async 
     },
     {tileTemplate: DATASET_TEMPLATE}
   );
+  await expect(source.getMetadata()).rejects.toThrow(/names no tile matrix set/);
+});
+
+test('OGCAPITilesSource uses z for {tileMatrix} only when discovery is disabled', async () => {
+  const tilesetUrl = `${LANDING_PAGE_URL}/tiles/WebMercatorQuad`;
+  const {source, requestedUrls} = createSource(
+    {[LANDING_PAGE_URL]: LANDING_PAGE, [`${tilesetUrl}/3/2/1`]: new ArrayBuffer(4)},
+    {tileTemplate: `${tilesetUrl}/{tileMatrix}/{tileRow}/{tileCol}`, discoverTileMatrixSet: false}
+  );
   expect((await source.getMetadata()).tileGrid).toBeUndefined();
-  expect(errors).toHaveLength(1);
-  expect(errors[0].message).toMatch(/tile matrix set/);
+  await source.getTile({z: 3, x: 1, y: 2});
+  expect(requestedUrls).toEqual([LANDING_PAGE_URL, `${tilesetUrl}/3/2/1`]);
+  expect(source.getTileURL({z: 3, x: 1, y: 2, tileMatrix: 'L3'})).toBe(`${tilesetUrl}/L3/2/1`);
+});
+
+test('OGCAPITilesSource uses an explicit tileMatrix before discovery', () => {
+  const tilesetUrl = `${LANDING_PAGE_URL}/tiles/NamedLevels`;
+  const {source} = createSource(
+    {},
+    {tileTemplate: `${tilesetUrl}/{tileMatrix}/{tileRow}/{tileCol}`}
+  );
+  expect(source.getTileURL({z: 1, x: 0, y: 0, tileMatrix: 'L1'})).toBe(`${tilesetUrl}/L1/0/0`);
+
+  // A matrix set configured by URL is not replaced by z before it loads either
+  const {source: configured} = createSource(
+    {},
+    {
+      tileTemplate: `${tilesetUrl}/{tileMatrix}/{tileRow}/{tileCol}`,
+      tileMatrixSet: `${LANDING_PAGE_URL}/tileMatrixSets/NamedLevels`
+    }
+  );
+  expect(() => configured.getTileURL({z: 1, x: 0, y: 0})).toThrow('await getMetadata()');
 });
 
 test('OGCAPITilesSource discovers before the first tile request', async () => {
@@ -285,8 +306,8 @@ test('OGCAPITilesSource discovers again when the tile template changes', async (
   });
   // setProps() rebuilds the fetch function from options, so stub it again.
   source.fetch = stubFetch;
-  // The previous tileset's grid no longer names matrices
-  expect(source.getTileURL({z: 1, x: 0, y: 0})).toBe(`${LANDING_PAGE_URL}/tiles/NamedLevels/1/0/0`);
+  // The previous tileset's grid no longer names matrices, and z is not used in its place
+  expect(() => source.getTileURL({z: 1, x: 0, y: 0})).toThrow('await getMetadata()');
   expect((await source.getMetadata()).tileGrid?.matrixIds).toEqual(['L0', 'L1']);
   expect(source.getTileURL({z: 1, x: 0, y: 0})).toBe(
     `${LANDING_PAGE_URL}/tiles/NamedLevels/L1/0/0`

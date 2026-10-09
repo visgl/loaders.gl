@@ -48,6 +48,11 @@ export type OGCAPISourceOptions = DataSourceOptions & {
      * is discovered from the tileset that `tileTemplate` belongs to.
      */
     tileMatrixSet?: OGCTileMatrixSet | string;
+    /**
+     * Set to `false` to skip discovery. `{tileMatrix}` is then the `tileMatrix` tile parameter,
+     * otherwise `z`, which suits services whose matrix identifiers are zoom numbers. Default `true`.
+     */
+    discoverTileMatrixSet?: boolean;
     /** Length of one CRS unit in meters, for a tile matrix set given by scale denominators. */
     metersPerUnit?: number | null;
     /** Opt-in bounded pagination for getFeatures(); omitted keeps the single-page behavior. */
@@ -280,13 +285,11 @@ export class OGCAPITilesSource
   private _tileGridCache: {
     tileMatrixSet: OGCTileMatrixSet | string | undefined;
     metersPerUnit: number | null | undefined;
-    /** Template the matrix set was discovered from; undefined when it is configured. */
+    /** Template the matrix set is discovered from; undefined when it is configured or not discovered. */
     tileTemplate: string | undefined;
     promise: Promise<TileGrid | undefined>;
     /** The converted grid, once available. */
     tileGrid?: TileGrid;
-    /** Set when discovery failed; `getMetadata()` then tries again. */
-    discoveryFailed?: boolean;
   } | null = null;
 
   /** Creates an OGC API Tiles source. */
@@ -311,7 +314,7 @@ export class OGCAPITilesSource
   async getMetadata(): Promise<TileSourceMetadata> {
     const [landingPage, tileGrid] = await Promise.all([
       this.fetchJSON(this.url) as Promise<OGCAPILandingPage>,
-      this.getTileGrid({retryDiscovery: true})
+      this.getTileGrid()
     ]);
     const tileLink = landingPage.links?.find(link => link.rel?.includes('tileset'));
     return {
@@ -342,32 +345,25 @@ export class OGCAPITilesSource
 
   /**
    * Returns the configured or discovered tile matrix set as a tile grid. The result is reused until
-   * the options change. A failed configured load is retried on the next call; a failed discovery
-   * is reported and retried only when `retryDiscovery` is set, so tile requests do not repeat it.
+   * the options change, and concurrent callers share one request. A failed load or discovery
+   * rejects, and is retried on the next call.
    */
-  private getTileGrid({retryDiscovery = false} = {}): Promise<TileGrid | undefined> {
+  private getTileGrid(): Promise<TileGrid | undefined> {
     const key = this.getTileGridKey();
     const cache = this._tileGridCache;
-    if (cache && isSameTileGridKey(cache, key) && !(retryDiscovery && cache.discoveryFailed)) {
+    if (cache && isSameTileGridKey(cache, key)) {
       return cache.promise;
     }
-    const newCache: NonNullable<OGCAPITilesSource['_tileGridCache']> = {
-      ...key,
-      promise: Promise.resolve(undefined)
-    };
     const {tileMatrixSet, metersPerUnit, tileTemplate} = key;
-    newCache.promise = tileMatrixSet
+    const promise = tileMatrixSet
       ? this.loadTileGrid(tileMatrixSet, metersPerUnit)
       : this.discoverTileGrid(tileTemplate, metersPerUnit).catch(error => {
-          newCache.discoveryFailed = true;
-          this.reportError(
-            new Error(
-              `OGC API Tiles could not discover the tile matrix set: ${(error as Error)?.message}`
-            ),
-            'OGC API Tiles could not discover the tile matrix set'
+          throw new Error(
+            `OGC API Tiles could not discover the tile matrix set: ${(error as Error)?.message}`,
+            {cause: error}
           );
-          return undefined;
         });
+    const newCache: NonNullable<OGCAPITilesSource['_tileGridCache']> = {...key, promise};
     this._tileGridCache = newCache;
     newCache.promise.then(
       tileGrid => {
@@ -380,10 +376,21 @@ export class OGCAPITilesSource
     return newCache.promise;
   }
 
-  /** The options a tile grid depends on. A configured matrix set disables discovery. */
+  /**
+   * The options a tile grid depends on. `tileTemplate` is set only when the matrix set is
+   * discovered from it: a configured matrix set or `discoverTileMatrixSet: false` disables discovery.
+   */
   private getTileGridKey() {
-    const {tileMatrixSet, metersPerUnit, tileTemplate} = this.options['ogc-api'] || {};
-    return {tileMatrixSet, metersPerUnit, tileTemplate: tileMatrixSet ? undefined : tileTemplate};
+    const {tileMatrixSet, metersPerUnit, tileTemplate, discoverTileMatrixSet} =
+      this.options['ogc-api'] || {};
+    const discover = !tileMatrixSet && discoverTileMatrixSet !== false;
+    return {tileMatrixSet, metersPerUnit, tileTemplate: discover ? tileTemplate : undefined};
+  }
+
+  /** Whether the tile matrix set is configured or discovered, rather than absent. */
+  private requiresTileGrid(): boolean {
+    const {tileMatrixSet, tileTemplate} = this.getTileGridKey();
+    return Boolean(tileMatrixSet || (tileTemplate && getTilesetURL(tileTemplate)));
   }
 
   /**
@@ -474,18 +481,27 @@ export class OGCAPITilesSource
 
   /**
    * Expands a `{tileMatrix}`, `{tileRow}`, and `{tileCol}` template. `{tileMatrix}` is
-   * `parameters.tileMatrix` when given, otherwise the identifier of the configured matrix whose id
-   * equals `z`, otherwise the matrix at index `z`. With a loaded tile matrix set, a matrix it does
-   * not contain throws a `RangeError`; without one, `{tileMatrix}` is the explicit identifier or
-   * `z`. `{z}` is always the number.
+   * `parameters.tileMatrix` when given, otherwise the identifier of the matrix whose id equals
+   * `z`, otherwise the matrix at index `z`. With a tile matrix set, a matrix it does not contain
+   * throws a `RangeError`. A matrix set given by URL or discovered must be loaded first, by
+   * `getMetadata()` or `getTile()`; until then this throws rather than using `z`. Only without a
+   * matrix set (no `{tileMatrix}` to discover, or `discoverTileMatrixSet: false`) is
+   * `{tileMatrix}` the explicit identifier or `z`. `{z}` is always the number.
    */
   getTileURL(parameters: GetTileParameters): string {
     const template = this.options['ogc-api']?.tileTemplate;
     if (!template) throw new Error('OGC API Tiles requires ogc-api.tileTemplate');
     // XYZ-only templates do not address a matrix, so no matrix is looked up for them.
-    const tileMatrixId = template.includes('{tileMatrix}')
-      ? getTileGridMatrixId(this.getLoadedTileGrid(), parameters)
-      : '';
+    let tileMatrixId = '';
+    if (template.includes('{tileMatrix}')) {
+      const tileGrid = this.getLoadedTileGrid();
+      if (!tileGrid && parameters.tileMatrix === undefined && this.requiresTileGrid()) {
+        throw new Error(
+          'OGC API Tiles has not loaded its tile matrix set; await getMetadata() before getTileURL()'
+        );
+      }
+      tileMatrixId = getTileGridMatrixId(tileGrid, parameters);
+    }
     return template
       .replaceAll('{tileMatrix}', tileMatrixId)
       .replaceAll('{tileRow}', String(parameters.y))

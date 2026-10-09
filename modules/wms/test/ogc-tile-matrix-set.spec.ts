@@ -350,7 +350,7 @@ test('OGCAPITilesSource requests tiles by configured matrix identifier', async (
 
   // Without a tile matrix set, an explicit identifier is used verbatim
   const unconfigured = OGCAPITilesSourceLoader.createDataSource(landingPageUrl, {
-    'ogc-api': {tileTemplate}
+    'ogc-api': {tileTemplate, discoverTileMatrixSet: false}
   });
   expect(unconfigured.getTileURL({z: 3, x: 0, y: 0, tileMatrix: 'L03'})).toBe(
     `${landingPageUrl}/tiles/L03/0/0?z=3`

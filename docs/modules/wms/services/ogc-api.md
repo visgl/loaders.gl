@@ -156,7 +156,7 @@ const features = await source.getFeatures({
 | XYZ placeholders | ✅ Supported | `{z}`, `{y}`, `{x}` |
 | Tile retrieval | ✅ Supported | `getTile()` returns the original `ArrayBuffer` |
 | Tile matrix set | ✅ Supported | `ogc-api.tileMatrixSet` (a TileMatrixSet 2.0 document or URL) is reported as `tileGrid` |
-| Tile matrix set discovery | ✅ Supported | Without `ogc-api.tileMatrixSet`, found from the tileset that `tileTemplate` belongs to |
+| Tile matrix set discovery | ✅ Supported | Without `ogc-api.tileMatrixSet`, found from the tileset that `tileTemplate` belongs to; a failure rejects, and `discoverTileMatrixSet: false` opts out |
 | Tile matrix set endpoints | ✅ Supported | `getTileMatrixSets()` lists `/tileMatrixSets`; `getTileMatrixSet(id)` fetches `/tileMatrixSets/{id}` |
 | Tile matrix set limits | ❌ Not interpreted | `tileMatrixSetLimits` is not applied; `TileGrid` has no field for it |
 | Tile matrix set negotiation | ❌ Not implemented | The tileset is the one the configured template names; other tilesets are not compared |
@@ -223,10 +223,15 @@ fetch options. The discovered grid is used for `tileGrid` and for `{tileMatrix}`
 one, and is reused until `tileTemplate`, `tileMatrixSet` or `metersPerUnit` changes. `getTile()`
 waits for discovery before its first request.
 
-Discovery failure does not fail the source. `getMetadata()` resolves without `tileGrid`, tiles use
-`z` for `{tileMatrix}`, and the error goes to `core.onError` (or a logged warning). Tile requests do
-not repeat a failed discovery; the next `getMetadata()` call does. A configured `tileMatrixSet`
-that fails to load still makes `getMetadata()` reject.
+Discovery failure is an error, not an approximation. `getMetadata()` and `getTile()` reject with
+the cause, and `getTileURL()` throws until the matrix set has loaded, so `z` is never requested in
+place of a matrix identifier. A failure is not cached: the next `getMetadata()` or `getTile()`
+call tries again, and concurrent calls share one attempt. A configured `tileMatrixSet` that fails
+to load behaves the same way. A `tileMatrix` tile parameter is used verbatim before discovery.
+
+For a service whose matrix identifiers are zoom numbers and that publishes no tileset metadata,
+set `discoverTileMatrixSet: false`: `{tileMatrix}` is then the `tileMatrix` parameter, otherwise
+`z`, as before discovery existed. Templates that use only `{z}`, `{x}` and `{y}` never discover.
 
 ```ts
 const source = createDataSource('https://example.com/ogcapi', [OGCAPITilesSourceLoader], {

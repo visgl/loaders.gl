@@ -63,6 +63,9 @@ See [supported items and verification boundaries](/docs/developer-guide/arcgis/i
   honoring `orderedAxes`, `cellSize`, and bottom-left origins, and `OGCAPITilesSource` reports a
   configured `ogc-api.tileMatrixSet` as `tileGrid`, including `tileGrid.tileMatrixSet`. Tile
   requests accept an explicit `tileMatrix` identifier.
+- `OGCAPITilesSource` discovers the tile matrix set of a `{tileMatrix}` template from its tileset
+  when none is configured. A failed discovery rejects instead of requesting `z` as the matrix
+  identifier; set `ogc-api.discoverTileMatrixSet: false` to keep using `z`.
 
 - WMTS tile grids now describe every matrix level, including per-level origins and tile sizes.
   `tileGrid.tileMatrixSet` holds complete levels as math.gl `TileMatrix` geometry, and
