@@ -133,4 +133,7 @@ export {createI3SConversionSpatialContext} from '@loaders.gl/tile-converter/v5/c
 export type {I3SConversionSpatialContext} from '@loaders.gl/tile-converter/v5/core';
 
 export {createI3SMeshTilesetConversionSource} from '@loaders.gl/tile-converter/v5/adapters';
-export type {I3SMeshTilesetSourceOptions} from '@loaders.gl/tile-converter/v5/adapters';
+export type {
+  I3SMeshTilesetSourceOptions,
+  I3SMeshSourceFeatureOptions
+} from '@loaders.gl/tile-converter/v5/adapters';

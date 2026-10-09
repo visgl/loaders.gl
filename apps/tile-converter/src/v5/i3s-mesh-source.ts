@@ -3,7 +3,6 @@
 // Copyright (c) vis.gl contributors
 
 import type {I3STileContent, I3SMeshFeatures} from '@loaders.gl/i3s';
-import type {GLTFMaterialPostprocessed} from '@loaders.gl/gltf';
 import type {
   Tileset3D,
   TilesetSourceMetadata,
@@ -18,12 +17,20 @@ import type {
   TilesetConversionSourceOptions
 } from '@loaders.gl/tile-converter/v5/core';
 import type {MeshSourceResource} from './mesh-source.js';
-import {mapMeshSourceMaterial} from './mesh-source.js';
+import type {MeshTilesetSourceOptions} from './mesh-source.js';
+import {mapI3SMeshSourceMaterial} from './i3s-mesh-source-material.js';
+import {extractI3SMeshFeatures} from './i3s-mesh-source-features.js';
+import type {I3SMeshSourceFeatureOptions} from './i3s-mesh-source-features.js';
 import {validateMeshGeometry} from './mesh.js';
+export type {I3SMeshSourceFeatureOptions} from './i3s-mesh-source-features.js';
 
-/** Initial untextured I3S triangle profile, with application-owned metadata mapping. */
+/** Selected I3S triangle, encoded base-color appearance and explicit-schema feature profile. */
 export interface I3SMeshTilesetSourceOptions extends TilesetConversionSourceOptions {
-  /** Map all feature data explicitly; required when IDs or layer attribute definitions exist. */
+  /** Read scalar/string attribute resources with an explicit schema and geometry OID mapping. */
+  readonly features?: I3SMeshSourceFeatureOptions;
+  /** Application-owned bounded reader, including archive resolution, authentication and decompression. */
+  readonly readExternalResource?: MeshTilesetSourceOptions['readExternalResource'];
+  /** Custom alternative to features, for source semantics outside the scalar resource profile. */
   readonly getFeatures?: (
     content: I3STileContent,
     item: TilesetContentTraversalItem,
@@ -37,9 +44,10 @@ export interface I3SMeshTilesetSourceOptions extends TilesetConversionSourceOpti
  * Use a dedicated runtime with i3s.geometryMode='source'. The shared I3S spatial codec owns
  * units, elevation and reprojection; this source never consumes renderer placement matrices.
  * Pair the GLB codec with autoOrigin=true, or select an explicit target origin on the resources.
- * Untextured positions/normals/TEXCOORD_0 and basic PBR factors are supported. Vertex colors,
- * UV regions, additional producer attributes, textures and opaque segmentation fail explicitly.
- * Feature IDs require an explicit Arrow mapper; unsafe numeric identifiers are rejected.
+ * Positions/normals/TEXCOORD_0, basic PBR factors and one encoded PNG/JPEG base-color texture
+ * are supported. Vertex colors, UV regions, additional attributes and segmentation fail explicitly.
+ * Features require an explicit schema/resource reader or a custom Arrow mapper.
+ * Unsafe decoded numeric geometry identifiers are rejected; exact property IDs use bigint.
  * @param tileset - Dedicated I3S runtime using source-coordinate content decoding.
  * @param options - Feature mapping and lifetime policy for content loaded during traversal.
  * @returns A portable source of one absolute mesh per I3S node content.
@@ -52,6 +60,12 @@ export function createI3SMeshTilesetConversionSource(
   return {
     /** Validates the layer profile and explicit source decode policy before reading. */
     async inspect(signal) {
+      if (options.features && options.getFeatures) {
+        throw new TileConversionError(
+          'I3S_MESH_SOURCE_FEATURE_MAPPING_REQUIRED',
+          'Choose explicit resource features or a custom getFeatures mapper, not both'
+        );
+      }
       const metadata = await source.inspect(signal);
       if (
         metadata.type !== 'I3S' ||
@@ -132,17 +146,6 @@ export function createI3SMeshTilesetConversionSource(
               'Only positions, normals, TEXCOORD_0 and explicitly mapped feature associations are supported'
             );
           }
-          if (
-            item.tile.header.textureUrl ||
-            item.tile.header.textureUrls?.length ||
-            content.texture ||
-            Object.keys(content.textures || {}).length
-          ) {
-            throw new TileConversionError(
-              'I3S_MESH_SOURCE_TEXTURE_UNSUPPORTED',
-              'I3S textures require a separate encoded-resource mapping'
-            );
-          }
           const hasFeatures =
             content.featureIds.length > 0 ||
             metadata.tileset.fields?.length ||
@@ -153,20 +156,10 @@ export function createI3SMeshTilesetConversionSource(
               'Decoded numeric feature IDs must be exact safe integers'
             );
           }
-          if (hasFeatures && !options.getFeatures) {
+          if (hasFeatures && !options.getFeatures && !options.features) {
             throw new TileConversionError(
               'I3S_MESH_SOURCE_FEATURE_MAPPING_REQUIRED',
-              'I3S feature data requires an explicit Arrow mapping'
-            );
-          }
-          const features = options.getFeatures
-            ? await options.getFeatures(content, item, metadata, signal)
-            : undefined;
-          signal?.throwIfAborted();
-          if (hasFeatures && !features) {
-            throw new TileConversionError(
-              'I3S_MESH_SOURCE_FEATURE_MAPPING_REQUIRED',
-              'The feature mapper must return all declared feature data'
+              'I3S feature data requires explicit resource features or a custom Arrow mapper'
             );
           }
           const mesh = validateMeshGeometry(
@@ -188,25 +181,30 @@ export function createI3SMeshTilesetConversionSource(
               'I3S vertexCount must match the decoded geometry'
             );
           }
-          const material = Object.fromEntries(
-            Object.entries(content.material || {}).filter(([, value]) => value !== undefined)
-          );
-          if (material.pbrMetallicRoughness)
-            material.pbrMetallicRoughness = Object.fromEntries(
-              Object.entries(material.pbrMetallicRoughness).filter(
-                ([, value]) => value !== undefined
-              )
-            );
-          if (material.cullFace !== undefined && material.cullFace !== 'back') {
+          const features = options.getFeatures
+            ? await options.getFeatures(content, item, metadata, signal)
+            : options.features
+              ? await extractI3SMeshFeatures(
+                  content,
+                  item,
+                  metadata,
+                  options.features,
+                  options.readExternalResource,
+                  entry.uri,
+                  signal
+                )
+              : undefined;
+          signal?.throwIfAborted();
+          if (hasFeatures && !features) {
             throw new TileConversionError(
-              'I3S_MESH_SOURCE_MATERIAL_UNSUPPORTED',
-              'Only back-face culling is supported in this I3S profile'
+              'I3S_MESH_SOURCE_FEATURE_MAPPING_REQUIRED',
+              'The feature mapper must return all declared feature data'
             );
           }
-          delete material.cullFace;
-          const mappedMaterial = await mapMeshSourceMaterial(
-            material as GLTFMaterialPostprocessed,
-            undefined,
+          const mappedMaterial = await mapI3SMeshSourceMaterial(
+            content,
+            item.tile.header,
+            options.readExternalResource,
             entry.uri,
             signal
           );
