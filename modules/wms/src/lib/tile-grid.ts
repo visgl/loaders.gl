@@ -137,15 +137,18 @@ export function getRequestedTileMatrix<MatrixT>(
 }
 
 /**
- * Returns the matrix identifier for an integer zoom: the matrix whose id is that number, otherwise
- * the matrix at that array index, as WMTS requests do. Undefined when neither exists.
+ * Returns the `{tileMatrix}` identifier for a request. With a known grid, the requested matrix
+ * must exist in it (see `getRequestedTileMatrix()`); a missing one throws instead of falling back
+ * to `z`. Without a grid, the explicit identifier is used verbatim, otherwise `z`.
  */
 export function getTileGridMatrixId(
   tileGrid: TileGrid | undefined,
-  zoom: number
-): string | undefined {
-  const matrices = tileGrid?.matrices || [];
-  return (matrices.find(matrix => matrix.id === String(zoom)) || matrices[zoom])?.id;
+  parameters: Pick<GetTileParameters, 'z' | 'tileMatrix'>
+): string {
+  if (!tileGrid?.matrices) return parameters.tileMatrix ?? String(parameters.z);
+  const matrix = getRequestedTileMatrix(tileGrid.matrices, level => level.id, parameters);
+  if (!matrix) throw new RangeError(`No tile matrix for z ${parameters.z}`);
+  return matrix.id;
 }
 
 /**

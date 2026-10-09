@@ -152,7 +152,7 @@ const features = await source.getFeatures({
 | --- | --- | --- |
 | Landing-page metadata | ✅ Supported | Reads title and advertised tileset media type |
 | Explicit tile template | ✅ Required | Configure `ogc-api.tileTemplate` |
-| OGC placeholders | ✅ Supported | `{tileMatrix}`, `{tileRow}`, `{tileCol}`; `{tileMatrix}` is the configured matrix id for `z` |
+| OGC placeholders | ✅ Supported | `{tileMatrix}`, `{tileRow}`, `{tileCol}`; `{tileMatrix}` is the `tileMatrix` parameter, or the configured matrix id for `z` |
 | XYZ placeholders | ✅ Supported | `{z}`, `{y}`, `{x}` |
 | Tile retrieval | ✅ Supported | `getTile()` returns the original `ArrayBuffer` |
 | Tile matrix set | ✅ Supported | `ogc-api.tileMatrixSet` (a TileMatrixSet 2.0 document or URL) is reported as `tileGrid` |
@@ -185,14 +185,20 @@ relative URL resolves against the landing page.
 - A bottom-left origin is reported per level only; the grid-wide `tileGrid.origin` is top-left by
   definition and is omitted.
 - `cornerOfOrigin: 'bottomLeft'` is preserved on each matrix; omitted means top-left.
+- `tileGrid.tileMatrixSet` holds every level as a math.gl `TileMatrix`, for use with the
+  `@math.gl/geospatial` tile-matrix utilities, when every level has a resolution, origin, tile size
+  and matrix size that pass `validateTileMatrix()`. `tileGrid.matrices` keeps the levels as
+  advertised, which may be incomplete.
 - `cellSize` is used when present. A scale denominator alone becomes a resolution only for a known
   unit: EPSG:4326, CRS:84, Web Mercator, or the `metersPerUnit` option.
 - A `crs` URI string or `{uri}` object is reported as `tileGrid.crs`; embedded WKT and PROJJSON
   definitions are not interpreted.
 - `variableMatrixWidths` (coalesced rows) is not interpreted.
-- Tile requests use the matrix identifier for `{tileMatrix}`: the matrix whose id equals `z`,
-  otherwise the matrix at index `z`, as in WMTS. `{z}` stays numeric. `getTile()` loads a
-  matrix set given by URL first; `getTileURL()` uses it once `getMetadata()` has loaded it.
+- Tile requests fill `{tileMatrix}` with the `tileMatrix` parameter when given. Otherwise they use
+  the matrix whose id equals `z`, then the matrix at index `z`, as in WMTS; this legacy rule is
+  kept for compatibility. With a tile matrix set, a matrix it does not contain throws a
+  `RangeError` instead of being requested as `z`. `{z}` stays numeric. `getTile()` loads a matrix
+  set given by URL first; `getTileURL()` uses it once `getMetadata()` has loaded it.
 - `setProps()` replaces an inline `tileMatrixSet` document as a whole rather than merging fields.
 
 ```ts
@@ -200,7 +206,9 @@ import {convertOGCTileMatrixSetToTileGrid} from '@loaders.gl/wms';
 
 const response = await fetch('https://example.com/ogcapi/tileMatrixSets/UTM18N');
 const tileGrid = convertOGCTileMatrixSetToTileGrid(await response.json(), {metersPerUnit: 1});
-// tileGrid.matrices[i]: {id, resolution, origin, cornerOfOrigin?, tileSize, matrixSize}
+// tileGrid.tileMatrixSet?.matrices[i]: {id, resolution, origin, cornerOfOrigin, tileSize, matrixSize}
+
+const tileBytes = await source.getTile({z: 3, x: 4, y: 5, tileMatrix: 'UTM18N:3'});
 ```
 
 ## OGC API Coverages

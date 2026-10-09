@@ -366,15 +366,16 @@ export class OGCAPITilesSource
   }
 
   /**
-   * Expands a `{tileMatrix}`, `{tileRow}`, and `{tileCol}` template. `{tileMatrix}` is the
-   * identifier of the configured matrix whose id equals `z`, otherwise the matrix at index `z`;
-   * without a loaded tile matrix set it is `z`. `{z}` is always the number.
+   * Expands a `{tileMatrix}`, `{tileRow}`, and `{tileCol}` template. `{tileMatrix}` is
+   * `parameters.tileMatrix` when given, otherwise the identifier of the configured matrix whose id
+   * equals `z`, otherwise the matrix at index `z`. With a loaded tile matrix set, a matrix it does
+   * not contain throws a `RangeError`; without one, `{tileMatrix}` is the explicit identifier or
+   * `z`. `{z}` is always the number.
    */
   getTileURL(parameters: GetTileParameters): string {
     const template = this.options['ogc-api']?.tileTemplate;
     if (!template) throw new Error('OGC API Tiles requires ogc-api.tileTemplate');
-    const tileMatrixId =
-      getTileGridMatrixId(this.getLoadedTileGrid(), parameters.z) ?? String(parameters.z);
+    const tileMatrixId = getTileGridMatrixId(this.getLoadedTileGrid(), parameters);
     return template
       .replaceAll('{tileMatrix}', tileMatrixId)
       .replaceAll('{tileRow}', String(parameters.y))
