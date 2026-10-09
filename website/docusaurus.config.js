@@ -162,6 +162,35 @@ const config = {
   ],
 
   plugins: [
+    [
+      '@signalwire/docusaurus-plugin-llms-txt',
+      {
+        siteTitle: 'loaders.gl',
+        siteDescription:
+          'Framework-independent loaders for visualization, 3D graphics and geospatial formats.',
+        depth: Math.min(5, 3 + baseUrl.split('/').filter(Boolean).length),
+        enableDescriptions: true,
+        includeOrder: [
+          '/docs/developer-guide/get-started',
+          '/docs/developer-guide/**',
+          '/docs/modules/**'
+        ].map(route => `${baseUrl.replace(/\/$/, '')}${route}`),
+        onRouteError: 'throw',
+        content: {
+          enableMarkdownFiles: true,
+          enableLlmsFullTxt: false,
+          relativePaths: false,
+          includeBlog: false,
+          includePages: false,
+          includeDocs: true,
+          includeVersionedDocs: false,
+          includeGeneratedIndex: true,
+          excludeRoutes: ['/docs/legacy/**', '/examples/**'].map(
+            route => `${baseUrl.replace(/\/$/, '')}${route}`
+          )
+        }
+      }
+    ],
     createBundlerPlugin,
     [
       require.resolve('./node-polyfills-docusaurus-plugin'),
