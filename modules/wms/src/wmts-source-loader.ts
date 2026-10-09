@@ -32,6 +32,7 @@ import {
   createTileGrid,
   createTileGridMatrix,
   getMetersPerUnit,
+  getRequestedTileMatrix,
   getScaleDenominatorResolution,
   validateMetersPerUnit
 } from './lib/tile-grid';
@@ -161,7 +162,7 @@ export class WMTSImageTileSource
     const layer = this._getLayer(this._capabilities, layerName);
     const tileMatrixSet = this._getTileMatrixSet(layer);
     if (!tileMatrixSet) return true;
-    const matrix = getTileMatrix(tileMatrixSet, parameters.z);
+    const matrix = getTileMatrix(tileMatrixSet, parameters);
     if (!matrix) return false;
     for (const size of [matrix.matrixWidth, matrix.matrixHeight]) {
       if (size !== undefined && (!Number.isSafeInteger(size) || size < 1))
@@ -212,7 +213,8 @@ export class WMTSImageTileSource
       this._capabilities,
       parameters.layers ? String(parameters.layers) : undefined
     );
-    const matrix = getTileMatrix(this._getTileMatrixSet(layer), parameters.z);
+    const tileMatrixSet = this._getTileMatrixSet(layer);
+    const matrix = tileMatrixSet ? getTileMatrix(tileMatrixSet, parameters) : undefined;
     for (const [value, size] of [
       [parameters.pixelColumn, matrix?.tileWidth],
       [parameters.pixelRow, matrix?.tileHeight]
@@ -322,8 +324,11 @@ export class WMTSImageTileSource
     const urlTemplate =
       (featureInfo ? wmts.featureInfoUrlTemplate : wmts.urlTemplate) || resourceURL?.template;
     const tileMatrixSet = this._getTileMatrixSet(layer);
+    // Without a known matrix set, an explicit identifier is used verbatim, otherwise `z`.
     const tileMatrixIdentifier =
-      getTileMatrix(tileMatrixSet, parameters.z)?.identifier || String(parameters.z);
+      (tileMatrixSet && getTileMatrix(tileMatrixSet, parameters)?.identifier) ||
+      parameters.tileMatrix ||
+      String(parameters.z);
     const dimensionParameters = this._getDimensionParameters(layer);
     if (urlTemplate) {
       const replacements = mergeRequestParameters(dimensionParameters, {
@@ -508,13 +513,12 @@ function toTileGridMatrix(
   });
 }
 
-/** Selects an exact numeric identifier or matrix array index, without rounding or clamping. */
+/** Selects the requested matrix; see `getRequestedTileMatrix()`. */
 function getTileMatrix(
-  tileMatrixSet: WMTSTileMatrixSet | undefined,
-  zoom: number
+  tileMatrixSet: WMTSTileMatrixSet,
+  parameters: Pick<GetTileParameters, 'z' | 'tileMatrix'>
 ): WMTSTileMatrix | undefined {
-  const matrices = tileMatrixSet?.matrices || [];
-  return matrices.find(matrix => matrix.identifier === String(zoom)) || matrices[zoom];
+  return getRequestedTileMatrix(tileMatrixSet.matrices, matrix => matrix.identifier, parameters);
 }
 
 /** Rejects invalid indices before URL generation or network access; tiles never wrap implicitly. */

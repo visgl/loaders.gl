@@ -5,6 +5,7 @@
 import {expect, test} from 'vitest';
 import type {OGCTileMatrixSet} from '@loaders.gl/wms';
 import {convertOGCTileMatrixSetToTileGrid, OGCAPITilesSourceLoader} from '@loaders.gl/wms';
+import {getTileBounds} from '@math.gl/geospatial';
 
 /** The first two levels of the OGC WebMercatorQuad registry entry. */
 const WEB_MERCATOR_QUAD: OGCTileMatrixSet = {
@@ -123,8 +124,36 @@ test('convertOGCTileMatrixSetToTileGrid keeps a bottom-left corner and needs pro
   // The grid-wide origin is documented as top-left, so a bottom-left origin stays per-level.
   expect(withoutUnits.origin).toBeUndefined();
 
+  // Without a resolution the level is incomplete, so there is no usable geometry.
+  expect(withoutUnits.tileMatrixSet).toBeUndefined();
+
   const withUnits = convertOGCTileMatrixSetToTileGrid(UTM_BOTTOM_LEFT, {metersPerUnit: 1});
   expect(withUnits.matrices?.[0].resolution).toBeCloseTo(280);
+  expect(withUnits.origin).toBeUndefined();
+});
+
+test('convertOGCTileMatrixSetToTileGrid exposes complete levels as a math.gl tile matrix set', () => {
+  const {tileMatrixSet} = convertOGCTileMatrixSetToTileGrid(UTM_BOTTOM_LEFT, {metersPerUnit: 1});
+  expect(tileMatrixSet?.crs).toBe('http://www.opengis.net/def/crs/EPSG/0/32618');
+  const matrix = tileMatrixSet!.matrices[0];
+  expect(matrix).toMatchObject({
+    id: 'coarse',
+    origin: [200000, 4000000],
+    cornerOfOrigin: 'bottomLeft',
+    tileSize: [512, 512],
+    matrixSize: [4, 3]
+  });
+  // Rows count up from a bottom-left origin: row 1 starts one tile height (512 px x 280 m) north.
+  const bounds = getTileBounds(matrix, 0, 1);
+  expect(bounds[1]).toBeCloseTo(4000000 + 143360);
+  expect(bounds[3]).toBeCloseTo(4000000 + 2 * 143360);
+
+  const webMercator = convertOGCTileMatrixSetToTileGrid(WEB_MERCATOR_QUAD);
+  expect(webMercator.tileMatrixSet?.matrices.map(level => level.cornerOfOrigin)).toEqual([
+    'topLeft',
+    'topLeft'
+  ]);
+  expect(webMercator.origin).toEqual([-20037508.3427892, 20037508.3427892]);
 });
 
 test('convertOGCTileMatrixSetToTileGrid rejects malformed input', () => {
@@ -301,6 +330,24 @@ test('OGCAPITilesSource requests tiles by configured matrix identifier', async (
   });
   // An id equal to z wins over the array index, as in WMTS
   expect(offset.getTileURL({z: 6, x: 0, y: 0})).toBe(`${landingPageUrl}/tiles/6/0/0?z=6`);
+  // An explicit identifier wins over z
+  expect(offset.getTileURL({z: 6, x: 0, y: 0, tileMatrix: '5'})).toBe(
+    `${landingPageUrl}/tiles/5/0/0?z=6`
+  );
+  // A matrix the configured set lacks is rejected rather than requested as z
+  expect(() => offset.getTileURL({z: 0, x: 0, y: 0, tileMatrix: '7'})).toThrow(
+    'Unknown tile matrix "7"'
+  );
+  expect(() => offset.getTileURL({z: 2, x: 0, y: 0})).toThrow(RangeError);
+
+  // Without a tile matrix set, an explicit identifier is used verbatim
+  const unconfigured = OGCAPITilesSourceLoader.createDataSource(landingPageUrl, {
+    'ogc-api': {tileTemplate}
+  });
+  expect(unconfigured.getTileURL({z: 3, x: 0, y: 0, tileMatrix: 'L03'})).toBe(
+    `${landingPageUrl}/tiles/L03/0/0?z=3`
+  );
+  expect(unconfigured.getTileURL({z: 3, x: 0, y: 0})).toBe(`${landingPageUrl}/tiles/3/0/0?z=3`);
 
   // A matrix set given by URL is loaded before the tile request
   const tileMatrixSetUrl = `${landingPageUrl}/tileMatrixSets/utm18n`;

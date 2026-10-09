@@ -5,6 +5,7 @@
 import {expect, test} from 'vitest';
 import {WMTSSourceLoader, WMTSImageTileSource} from '@loaders.gl/wms';
 import {WMTSCapabilitiesLoader} from '@loaders.gl/wms';
+import {getTileBounds} from '@math.gl/geospatial';
 
 const WMTS_URL = 'https://example.com/wmts?token=abc';
 
@@ -29,6 +30,10 @@ test('WMTSImageTileSource#getTileURL expands REST templates', () => {
     }
   );
   expect(source.getTileURL({x: 1, y: 2, z: 3})).toBe('https://tiles.example/3/2/1.png');
+  // Without capabilities the matrix set is unknown, so an explicit identifier is used verbatim.
+  expect(source.getTileURL({x: 1, y: 2, z: 3, tileMatrix: 'L03'})).toBe(
+    'https://tiles.example/L03/2/1.png'
+  );
 });
 
 test('WMTSCapabilitiesLoader normalizes layers and tile matrices', async () => {
@@ -157,6 +162,49 @@ test('WMTSImageTileSource uses advertised nonnumeric matrix identifiers', async 
   expect(source.getTileURL({x: 1, y: 2, z: 1})).toBe('https://tiles.example/1g/2/1.png');
 });
 
+test('WMTSImageTileSource requests an explicit tile matrix identifier', async () => {
+  const source = new WMTSImageTileSource('https://example.com/wmts', {
+    wmts: {
+      layer: 'imagery',
+      tileMatrixSet: 'Custom',
+      capabilities: {
+        contents: {
+          layers: [
+            {
+              identifier: 'imagery',
+              formats: ['image/png'],
+              styles: [],
+              tileMatrixSetLinks: [{tileMatrixSet: 'Custom'}],
+              resourceURLs: [
+                {template: 'https://tiles.example/{TileMatrix}/{TileRow}/{TileCol}.png'}
+              ]
+            }
+          ],
+          tileMatrixSets: [
+            {
+              identifier: 'Custom',
+              supportedCRS: 'EPSG:3857',
+              matrices: [{identifier: '1'}, {identifier: '0'}]
+            }
+          ]
+        }
+      }
+    }
+  });
+
+  await source.getMetadata();
+  // `z: 0` alone selects the matrix whose identifier is '0'; the explicit identifier wins.
+  expect(source.getTileURL({x: 1, y: 2, z: 0})).toBe('https://tiles.example/0/2/1.png');
+  expect(source.getTileURL({x: 1, y: 2, z: 0, tileMatrix: '1'})).toBe(
+    'https://tiles.example/1/2/1.png'
+  );
+  expect(() => source.getTileURL({x: 1, y: 2, z: 0, tileMatrix: '2'})).toThrow(
+    'Unknown tile matrix "2"'
+  );
+  expect(() => source.isTileAvailable({x: 0, y: 0, z: 0, tileMatrix: '2'})).toThrow(RangeError);
+  await expect(source.getTile({x: 0, y: 0, z: 0, tileMatrix: '2'})).rejects.toThrow(RangeError);
+});
+
 test('WMTSImageTileSource exposes the selected tile grid', async () => {
   const source = new WMTSImageTileSource('https://example.com/wmts', {
     wmts: {
@@ -250,8 +298,52 @@ test('WMTSImageTileSource#getMetadata exposes per-level origins and tile sizes',
   // The grid-wide fields still describe the first level only.
   expect(tileGrid?.origin).toEqual([200000, 4600000]);
   expect(tileGrid?.tileSize).toEqual([256, 256]);
-  // UTM units are not known without `metersPerUnit`, so no resolution is guessed.
+  // UTM units are not known without `metersPerUnit`, so no resolution is guessed, and the
+  // incomplete levels do not form usable geometry.
   expect(tileGrid?.resolutions).toBeUndefined();
+  expect(tileGrid?.tileMatrixSet).toBeUndefined();
+});
+
+test('WMTSImageTileSource#getMetadata exposes complete levels as a math.gl tile matrix set', async () => {
+  const parser = await WMTSCapabilitiesLoader.preload();
+  const capabilities = parser.parseTextSync(UTM_CAPABILITIES_XML);
+  const source = new WMTSImageTileSource(WMTS_URL, {wmts: {capabilities, metersPerUnit: 1}});
+  const {tileGrid} = await source.getMetadata();
+  const tileMatrixSet = tileGrid!.tileMatrixSet!;
+
+  expect(tileMatrixSet.crs).toBe('http://www.opengis.net/def/crs/EPSG/0/32618');
+  expect(tileMatrixSet.matrices.map(matrix => matrix.id)).toEqual(['0', '1']);
+  expect(tileMatrixSet.matrices[1]).toMatchObject({
+    origin: [250000, 4550000],
+    cornerOfOrigin: 'topLeft',
+    tileSize: [512, 512],
+    matrixSize: [7, 5]
+  });
+  expect(tileMatrixSet.matrices[1].resolution).toBeCloseTo(70);
+  // Level 1 tiles span 512 px x 70 m from their own origin, not the first level's.
+  const bounds = getTileBounds(tileMatrixSet.matrices[1], 1, 0);
+  expect(bounds[0]).toBeCloseTo(285840);
+  expect(bounds[3]).toBeCloseTo(4550000);
+  // The legacy grid-wide fields are derived from the first level.
+  expect(tileGrid?.origin).toEqual([200000, 4600000]);
+  expect(tileGrid?.tileSize).toEqual([256, 256]);
+  expect(tileGrid?.matrixSizes).toEqual([
+    [4, 3],
+    [7, 5]
+  ]);
+  expect(tileGrid?.resolutions).toEqual(tileMatrixSet.matrices.map(matrix => matrix.resolution));
+});
+
+test('WMTSImageTileSource#getMetadata omits the tile matrix set when a level is invalid', async () => {
+  const parser = await WMTSCapabilitiesLoader.preload();
+  const capabilities = parser.parseTextSync(
+    UTM_CAPABILITIES_XML.replace('<MatrixWidth>7</MatrixWidth>', '<MatrixWidth>0</MatrixWidth>')
+  );
+  const source = new WMTSImageTileSource(WMTS_URL, {wmts: {capabilities, metersPerUnit: 1}});
+  const {tileGrid} = await source.getMetadata();
+  expect(tileGrid?.tileMatrixSet).toBeUndefined();
+  // The advertised metadata is still reported as-is.
+  expect(tileGrid?.matrices?.[1].matrixSize).toEqual([0, 5]);
 });
 
 test('WMTSImageTileSource#getMetadata converts projected scale denominators with metersPerUnit', async () => {
