@@ -48,13 +48,13 @@ Applications can then make all those imported loaders available (via format auto
 
 ```typescript
 // centralize loader registration in your application instead of relying on the global registry
-import {parse} from '@loaders.gl/core';
+import {load} from '@loaders.gl/core';
 import {CSVLoader} from '@loaders.gl/csv';
 
 export const applicationLoaders = [CSVLoader];
 
 // pass the loaders to each call site
-const result = await parse('data.csv', applicationLoaders);
+const result = await load('data.csv', applicationLoaders);
 ```
 
 ## Usage

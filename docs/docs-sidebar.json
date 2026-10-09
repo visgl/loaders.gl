@@ -357,6 +357,34 @@
       },
       {
         "type": "category",
+        "label": "@loaders.gl/avro",
+        "items": [
+          "modules/avro/README"
+        ]
+      },
+      {
+        "type": "category",
+        "label": "@loaders.gl/geoarrow",
+        "items": [
+          "modules/geoarrow/README"
+        ]
+      },
+      {
+        "type": "category",
+        "label": "@loaders.gl/arrow-geometry",
+        "items": [
+          "modules/arrow-geometry/README"
+        ]
+      },
+      {
+        "type": "category",
+        "label": "@loaders.gl/schema-utils",
+        "items": [
+          "modules/schema-utils/README"
+        ]
+      },
+      {
+        "type": "category",
         "label": "@loaders.gl/bson",
         "items": [
           "modules/bson/README"

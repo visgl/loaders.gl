@@ -1,77 +1,39 @@
 ---
 title: writeFile
-description: Write encoded data through a browser- and Node.js-compatible file helper.
+description: Save encoded writer output with a platform filesystem or download API.
 hide_title: true
 page_style: designed
 ---
 
 import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
-import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
 
 <DocPageHeader
-  eyebrow="Core output API"
-  title="Carry encoded bytes to the application’s file boundary."
-  description="`writeFile` and `writeFileSync` provide a small compatibility layer for saving writer output across browser and Node.js environments. The encoding step remains the responsibility of the selected writer."
+  eyebrow="Core API / file output"
+  title="Encode data, then save it with your platform."
+  description="The current core package provides encoding APIs. Applications deliver the encoded bytes through Node.js files, browser downloads, or uploads."
   tone="mint"
-  meta={['Browser and Node.js', 'Writer output', 'Async and sync helpers']}
+  meta={['Encoding', 'Platform storage']}
   links={[
-    {label: 'Core module', to: '/docs/modules/core'},
     {label: 'Encode API', to: '/docs/modules/core/api-reference/encode'},
     {label: 'Using writers', to: '/docs/developer-guide/using-writers'}
   ]}
 />
 
-<DocOrientation
-  eyebrow="The output boundary"
-  title="Encode with a writer. Save with the environment-aware helper."
-  description="The core helper keeps file delivery separate from format encoding, allowing the same writer pipeline to target browser downloads, Node.js files, or data URLs where supported."
-  tone="mint"
-  items={[
-    {label: 'Input', value: 'A destination URL or path plus writer output'},
-    {label: 'Encode', value: 'Format-specific writer produces bytes'},
-    {label: 'Write', value: 'Environment-specific file delivery'},
-    {label: 'Options', value: 'Path prefix and standard loader options'}
-  ]}
-/>
+`writeFile` and `writeFileSync` are not exported by the current
+`@loaders.gl/core` package. Encoding and file delivery are separate operations:
+use [`encode`](./encode) to produce bytes and a platform storage API to save them.
 
-A file save utilities that (attempts to) work consistently across browser and node.
-
-<ReferenceBoundary
-  title="Writing and environment details"
-  description="The reference below covers asynchronous and synchronous helpers, supported environments, path prefixes, and the separation between encoding and file delivery."
-  tone="mint"
-/>
-
-## Usage
+## Node.js example
 
 ```typescript
-import {writeFile} from '@loaders.gl/core';
-import {DracoWriter} from '@loaders.gl/draco';
+import {writeFile} from 'node:fs/promises';
+import {encode} from '@loaders.gl/core';
+import {ZipWriter} from '@loaders.gl/zip';
 
-await writeFile(url, DracoWriter);
+const bytes = await encode({'message.txt': 'Hello'}, ZipWriter);
+await writeFile('example.zip', new Uint8Array(bytes));
 ```
 
-## Functions
-
-### writeFile(url : String [, options : Object]) : Promise.ArrayBuffer
-
-Reads the raw data from a file asynchronously.
-
-Notes:
-
-- Any path prefix set by `setPathPrefix` will be appended to relative urls.
-
-### writeFileSync(url : String [, options : Object]) : ArrayBuffer
-
-> Only works on Node.js or using data URLs.
-
-Reads the raw data from a "file" synchronously.
-
-Notes:
-
-- Any path prefix set by `setPathPrefix` will be appended to relative urls.
-
-## Remarks
-
-- The use of the loaders.gl `writeFile` and `writeFileAsync` functions is optional, loaders.gl loaders can be used with any data loaded via any mechanism the application prefers, e.g. `fetch`, `XMLHttpRequest` etc.
-- The "path prefix" support is intentended to be a simple mechanism to support certain work-arounds. It is intended to help e.g. in situations like getting test cases to load data from the right place, but was never intended to support general application use cases.
+For synchronous Node.js output, use `writeFileSync` from `node:fs` with bytes
+produced by `encodeSync`, provided the writer supports synchronous encoding.
+Browser applications can use a `Blob` with their download or upload flow.

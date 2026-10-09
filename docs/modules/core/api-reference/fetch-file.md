@@ -58,10 +58,10 @@ Returns:
 
 - A promise that resolves into a fetch [`Response`](https://developer.mozilla.org/en-US/docs/Web/API/Response) object
   - `headers`: `Headers` - A [`Headers`](https://developer.mozilla.org/en-US/docs/Web/API/Headers) object.
-  - `arrayBuffer()`: Promise.ArrayBuffer`- Loads the file as an`ArrayBuffer`.
-  - `text()`: Promise.String` - Loads the file and decodes it into text.
-  - `json()`: Promise.String` - Loads the file and decodes it into JSON.
-  - `body` : ReadableStream` - A stream that can be used to incrementally read the contents of the file.
+  - `arrayBuffer()`: `Promise<ArrayBuffer>` - Loads the file as an `ArrayBuffer`.
+  - `text()`: `Promise<string>` - Loads the file and decodes it into text.
+  - `json()`: `Promise<unknown>` - Loads the file and parses its JSON contents.
+  - `body` : `ReadableStream` - A stream that can be used to incrementally read the contents of the file.
 
 :::info
 Use of `fetchFile` is optional. loaders.gl `parse()` function can be used with data loaded via any mechanism the application prefers, e.g. directly using `fetch`, `XMLHttpRequest` etc.
@@ -73,9 +73,10 @@ Use of `fetchFile` is optional. loaders.gl `parse()` function can be used with d
   <img src="https://img.shields.io/badge/From-v4.0-blue.svg?style=flat-square" alt="From-v4.0" />
 </p>
 
-The `fetchFile()` function supports fetching data from the local file system under Node.js.
+Local file paths require the filesystem adapter installed by importing
+`@loaders.gl/polyfills`. HTTP(S) and data URLs use the runtime fetch API.
 
-`fetchFile` will delegate any url that starts with `http://` `https://` or `data://`
+`fetchFile` will delegate any url that starts with `http://` `https://` or `data:`
 to the built-in `fetch` function. Other URLs will be interpreted as local files.
 
 :::caution
@@ -132,8 +133,6 @@ import {OBJLoader} from '@loaders.gl/obj';
 
 const data = await parse(fetch(url), OBJLoader);
 ```
-
-## Functions
 
 ## Remarks
 

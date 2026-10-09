@@ -48,15 +48,18 @@ main process.
 ## Usage
 
 ```typescript
-import {load} from '@loaders.gl/core';
-import {JSONLoader} from '@loaders.gl/json';
+import type {Feature} from '@loaders.gl/schema';
 import {geojsonToBinary} from '@loaders.gl/gis';
 
-const geoJSONfeatures = await load('data.geojson', JSONLoader);
+const features: Feature[] = [{
+  type: 'Feature',
+  geometry: {type: 'Point', coordinates: [1, 2]},
+  properties: {name: 'Example'}
+}];
 
 // See table below for full list of options
 const options = {PositionDataType: Float32Array};
-const binaryFeatures = geojsonToBinary(geoJSONfeatures, options);
+const binaryFeatures = geojsonToBinary(features, options);
 ```
 
 ## Outputs

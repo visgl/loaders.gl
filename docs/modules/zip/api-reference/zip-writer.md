@@ -55,7 +55,8 @@ Encodes a filemap into a Zip Archive. Returns an `ArrayBuffer` that is a valid Z
 ## Usage
 
 ```typescript
-import {encode, writeFile} from '@loaders.gl/core';
+import {encode} from '@loaders.gl/core';
+import {writeFile} from 'node:fs/promises';
 import {ZipWriter} from '@loaders.gl/zip';
 
 const FILE_MAP = {
@@ -65,7 +66,7 @@ const FILE_MAP = {
 };
 
 const arrayBuffer = await encode(FILE_MAP, ZipWriter);
-writeFile(zipFileName, arrayBuffer);
+await writeFile(zipFileName, new Uint8Array(arrayBuffer));
 ```
 
 ## File Format

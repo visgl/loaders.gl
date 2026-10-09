@@ -118,9 +118,7 @@ WMS responses are typically XML encoded have a fairly detailed structure and som
 
 A WMS server usually serves the map in a bitmap format, e.g. PNG, GIF, JPEG. In addition, vector graphics can be included, such as points, lines, curves and text, expressed in SVG or WebCGM format. The MIME types of the `GetMap` request can be inspected in the response to the `GetCapabilities` request.
 
-Rendering parameters can be supported by the WMS service. Perhaps the most significant one is the `transparent` parameter that renders transparent pixels where there is no data, allowing the generated map images to be overlaid with other
-
-## Capabilities
+Rendering parameters can be supported by the WMS service. Perhaps the most significant one is the `transparent` parameter that renders transparent pixels where there is no data, allowing the generated map images to be overlaid with other map layers.
 
 ## WMS Capabilities
 
@@ -148,7 +146,7 @@ Layers in the `layers` field inherit many properties from their parent layers, s
 | XML Tag                      | JSON Field               | JavaScript Type    | Description                                                               | Inherited |
 | ---------------------------- | ------------------------ | ------------------ | ------------------------------------------------------------------------- | --------- |
 | `<Title>`                    | `title`                  | `string`           | The title is a human readable name. It is mandatory on each layer.        | No        |
-| `<Name>`                     | `name?`                  | `string`           | ayer is renderable iff it has a name. Parent layers render all sublayers. | No        |
+| `<Name>`                     | `name?`                  | `string`           | A layer is renderable if it has a name. Parent layers render all sublayers. | No        |
 | `<Abstract>`                 | `abstract?`              | `string`           | A narrative description of the map layer.                                 | No        |
 | `<Keywords>`                 | `keywords`               | `string[]`         | A set of keywords e.g. for searching layers                               | No        |
 | `<EX_GeographicBoundingBox>` | `geographicBoundingBox?` | `[[w, s], [e, n]]` | 1.3.0. Rough extents of layer data in lng/lat, avoids CRS calculations.   | Yes       |
@@ -214,17 +212,16 @@ Also note that WMS layers are organized in a hierarchy.
 - Only named layers (with `name` property) are renderable.
 - A named parent layer will render all renderable sublayers.
 - Sublayers inherit properties from the parent layers (refer to table above to see exactly which properties are inherited).
-- Layer intheritance is often used to reduce the size of the `GetCapabilities` XML response payload, as verbose information about bounding boxes, supported CRS etc can be specified once on a parent layer.
+- Layer inheritance is often used to reduce the size of the `GetCapabilities` XML response payload, as verbose information about bounding boxes, supported CRS etc can be specified once on a parent layer.
 
-Without any apriori knowledge about a WMS server, the GetCapabilities request is the only way to discover valid layer names. Not that on the `GetCapabilities` request is sometimes slow (order of tens of seconds), meaning that it can take some time to auto-discover a valid layer name and then request a map with that layer. The `GetMap` request is often significantly faster than `GetCapabilities`.
+Without prior knowledge about a WMS server, the GetCapabilities request is the only way to discover valid layer names. Note that the `GetCapabilities` request is sometimes slow (order of tens of seconds), meaning that it can take some time to auto-discover a valid layer name and then request a map with that layer. The `GetMap` request is often significantly faster than `GetCapabilities`.
 
 ## Dimensions
 
 WMS capability data may indicate that some layers support additional dimensions, typically time.
 
 - An optional dimension that can be queried using the `dim_<name>=...`, `time=...`, `elevation=...` parameters.
-- Note that layers that have at least one dimension without `default` value.
-- become unrenderable unless the dimension value is supplied to GetMap requests.
+- Layers with a dimension that has no default require a value for that dimension in `GetMap` requests.
 
 ```typescript
 export type WMSDimension = {
@@ -258,7 +255,7 @@ The WMS standard specifies protocol defined as a number of "request types" that 
 | ------------------ | ---------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `GetCapabilities`  | ✅ [`WMSCapabilitiesLoader`][capabilities_loader] | Returns WMS metadata (such as map image format and WMS version compatibility) and the available layers (map bounding box, coordinate reference systems, URI of the data and whether the layer is mostly opaque or not) |
 | `GetMap`           | ✅ [`ImageBitmapLoader`][image_bitmap_loader]     | returns a map image. Parameters include: width and height of the map, coordinate reference system, rendering style, image format                                                                                       |
-| `GetFeatureInfo`   | ✅ `WMSFeatureInfoLoader`][feature_info_loader]   | if a layer is marked as 'queryable' then you can request data about a coordinate of the map image.                                                                                                                     |
+| `GetFeatureInfo`   | ✅ [`_WMSFeatureInfoLoader`][feature_info_loader]   | if a layer is marked as 'queryable' then you can request data about a coordinate of the map image.                                                                                                                     |
 | `DescribeLayer`    |                                                | gets feature types of the specified layer or layers, which can be further described using WFS or WCS requests. (Styled Layer Descriptor (SLD) Profile of WMS).                                                         |
 | `GetLegendGraphic` | ✅ [`ImageBitmapLoader`][image_bitmap_loader]     | An image of the map's legend, giving a visual guide to map elements.                                                                                                                                                   |
 | Exceptions         | ✅ `WMSErrorLoader`                               | Parses an XML encoded WMS error response from any malformed request.                                                                                                                                                   |
@@ -266,13 +263,18 @@ The WMS standard specifies protocol defined as a number of "request types" that 
 Remarks:
 
 - Information about which request types are supported is available in the response to `GetCapabilities` request.
-- Note that only the `GetCapabilities` and `GetMap` request types are are required to be supported by a WMS server.
+- Note that only the `GetCapabilities` and `GetMap` request types are required to be supported by a WMS server.
 
 [capabilities_loader]: /docs/modules/wms/api-reference/wms-capabilities-loader
 [feature_info_loader]: /docs/modules/wms/api-reference/wms-feature-info-loader
 [image_bitmap_loader]: /docs/modules/images/api-reference/image-bitmap-loader
 
 ## Coordinate Reference Systems
+
+Choose a CRS advertised by the requested layers in their capabilities. The request
+uses `CRS` in WMS 1.3.0 and `SRS` in WMS 1.1.1. The bounding box must use that
+CRS's units and the axis order required by the protocol version; see the version
+differences below.
 
 ## WMS Protocol Versions
 

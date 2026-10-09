@@ -49,17 +49,17 @@ Writes `RecordBatch` / `Table` payloads to IPC message streams (`stream`, `file`
 ## Usage
 
 ```ts
-import {makeTable, RecordBatchStreamWriter, Int32} from 'apache-arrow';
+import {tableFromArrays, RecordBatchStreamWriter, Int32} from 'apache-arrow';
 
-const table = makeTable({id: [1, 2, 3]});
+const table = tableFromArrays({id: [1, 2, 3]});
 const bytes = await RecordBatchStreamWriter.writeAll(table).toUint8Array();
 console.log(bytes.byteLength);
 ```
 
 ```ts
-import {makeTable, RecordBatchJSONWriter} from 'apache-arrow';
+import {tableFromArrays, RecordBatchJSONWriter} from 'apache-arrow';
 
-const table = makeTable({label: ['a', 'b']});
+const table = tableFromArrays({label: ['a', 'b']});
 const writer = await RecordBatchJSONWriter.writeAll(table);
 for await (const chunk of writer) {
   console.log(chunk.length);

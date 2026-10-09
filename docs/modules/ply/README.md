@@ -33,7 +33,7 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
   ]}
 />
 
-The `@loaders.gl/ply` module handles the the [Polygon file format](/docs/modules/ply/formats/ply), a file format for 3D graphical objects described as a collection of polygons that is sometimes used to store point clouds.
+The `@loaders.gl/ply` module handles the [Polygon file format](/docs/modules/ply/formats/ply), a file format for 3D graphical objects described as a collection of polygons that is sometimes used to store point clouds.
 
 <ReferenceBoundary
   title="PLY module reference"

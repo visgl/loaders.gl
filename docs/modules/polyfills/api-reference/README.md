@@ -40,7 +40,7 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
   tone="blue"
 />
 
-The `@loaders.gl/polyfills` module installs support for Node.js. This module should be imported before you call any loaders.gl functionality under Node.js
+The `@loaders.gl/polyfills` module installs support for Node.js. Import it before using loaders.gl functionality that needs filesystem, image, or other Node adapters. Modern Node.js already provides standard network fetch and web streams.
 
 loaders.gl is based on the HTML5 API provided by modern, evergreen browsers.
 
@@ -93,7 +93,7 @@ The Node image decoder support remains limited to the formats supported by the e
 
 ## Deprecated polyfills
 
-Before Node v18, `fetch` needed to be polyfilled. The `@loaders.gl/polyfills` module still conditionally installs a fetch polyfill on Node 16, but this is expected to be removed in next major release.
+The package installs legacy `fetch`, `Response`, and `Headers` fallbacks only when those globals are missing. Supported Node.js versions already provide them; importing polyfills does not replace native network fetch.
 
 ### fetch Polyfill
 

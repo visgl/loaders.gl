@@ -42,8 +42,17 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
 
 ## Functions
 
-### getStreamIterator(stream : Stream) : AsyncIterator
+The public core helpers are `makeIterator` and `makeStream`:
 
-Returns an async iterator that can be used to read chunks of data from the stream (or write chunks of data to the stream, in case of writable streams).
+```typescript
+import {makeIterator, makeStream} from '@loaders.gl/core';
 
-Works on both Node.js 8+ and browser streams.
+const iterator = makeIterator(response);
+for await (const chunk of iterator) {
+  processChunk(chunk);
+}
+```
+
+`makeIterator` adapts loaded data, responses, blobs, and supported readable streams
+to a chunk iterator. `makeStream` wraps an iterator in a readable stream. These
+helpers read data; they do not turn a writable stream into a readable iterator.

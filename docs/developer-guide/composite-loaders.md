@@ -53,21 +53,23 @@ the `Tiles3DLoader` which uses the `GLTFLoader` to parse embedded glTF data in c
 
 ## Calling loaders inside loaders
 
-To call another loader from the parse function of your loader, use the appropriate `parse*WithContext()` function provided by `@loaders.gl/loader-utils`.
-Make sure to supply in the `context` parameter .
+To call another loader from the parse function of your loader, use the appropriate `parse*FromContext()` function provided by `@loaders.gl/loader-utils`.
+Pass the context supplied to your parser as the final argument.
 
 A conceptual example of a 3D Tiles loader calling the `GLTFLoader` with some additional options.
 
 ```typescript
-import {parseWithContext} from '@loaders.gl/loader-utils';
+import {parseFromContext} from '@loaders.gl/loader-utils';
+import {GLTFLoader} from '@loaders.gl/gltf';
 
 export async function parse3DTile(arrayBuffer, options, context) {
   const tile = {};
   // Extract embedded GLB (if present) into `tile.gltfArrayBuffer`
-  ...
+  // Format-specific extraction goes here.
   if (tile.gltfArrayBuffer) {
-    tile.gltf = await parseWithContext(tile.gltfArrayBuffer, GLTFLoader, {gltf: {...}}, context);
+    tile.gltf = await parseFromContext(tile.gltfArrayBuffer, GLTFLoader, options, context);
   }
+  return tile;
 }
 ```
 
@@ -76,10 +78,8 @@ While loaders could import `@loaders.gl/core` and use the core `parse*()` functi
 it is strongly discouraged for multiple reasons.
 Most importantly it prevents loaders.gl from properly handling certain use cases
 such as allowing worker-loaders to call other loaders.
-The `parse*WithContext()` functions exported by `@loaders.gl/loader-utils` are the right tool for the job.
+The `parse*FromContext()` functions exported by `@loaders.gl/loader-utils` are the right tool for the job.
 :::
-
--
 
 ## LoaderContext
 

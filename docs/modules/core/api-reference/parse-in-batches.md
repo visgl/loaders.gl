@@ -66,7 +66,7 @@ details.
 
 :::caution
 When calling a sub-loader from inside a loader, do not use this public function. Use the
-`parseInBatchesWithContext` counterparts in `@loaders.gl/loader-utils`.
+`parseInBatchesFromContext` counterparts in `@loaders.gl/loader-utils`.
 :::
 
 ## Usage

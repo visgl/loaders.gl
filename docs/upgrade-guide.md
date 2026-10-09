@@ -40,8 +40,6 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
   tone="orange"
 />
 
-## Upgrade Guide
-
 ## Upgrading to v4.5
 
 v4.5 is additive. Existing loaders and defaults continue to work unchanged, except for the explicit installation requirement for the experimental texture writer noted below.
@@ -350,7 +348,8 @@ Before, in 4.4:
 ```ts
 import type {Source} from '@loaders.gl/loader-utils';
 import {createDataSource, load} from '@loaders.gl/core';
-import {WMSSource, PMTilesSource} from '@loaders.gl/wms';
+import {WMSSource} from '@loaders.gl/wms';
+import {PMTilesSource} from '@loaders.gl/pmtiles';
 
 const sources: Source[] = [WMSSource, PMTilesSource];
 const wmsSource = createDataSource(url, [WMSSource], options);
@@ -644,7 +643,7 @@ Default number of worker threads for each loader has been reduced from `5` to `3
 | `getBinaryImageSize(arrayBuffer)`      | `getBinaryImageMetadata(arrayBuffer)?.{width, height}`                      |
 | `HTMLImageLoader`                      | No direct replacement. `ImageLoader` now returns `ImageBitmap` in browsers. |
 | `getDefaultImageType()`                | N/A                                                                         |
-| `getSupportedImageType(imageType?)` NA |
+| `getSupportedImageType(imageType?)` | N/A |
 
 **@loaders.gl/kml**
 

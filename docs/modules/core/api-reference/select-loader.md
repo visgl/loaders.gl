@@ -53,7 +53,7 @@ Loader selection heuristics are based on:
 **loader registry** - `selectLoader()` and `selectLoaderSync()` are also aware of the
 [loader registry](/docs/modules/core/api-reference/register-loaders).
 The list of pre-registered loaders will be included in the search for a compatible loader,
-unless `options.ignoreRegisteredLoaders` is `true`.
+unless `options.core.ignoreRegisteredLoaders` is `true`.
 
 ## Usage
 
@@ -74,7 +74,7 @@ import {registerLoaders, selectLoader} from '@loaders.gl/core';
 import {ArrowLoader} from '@loaders.gl/arrow';
 import {CSVLoader} from '@loaders.gl/csv';
 
-registerLoaders(ArrowLoader, CSVLoader);
+registerLoaders([ArrowLoader, CSVLoader]);
 
 await selectLoader('filename.csv'); // => CSVLoader
 ```
@@ -82,16 +82,18 @@ await selectLoader('filename.csv'); // => CSVLoader
 Select a loader by specifying MIME type (using unregistered MIME types, see below)
 
 ```typescript
-const data = new Blob([string], {type: 'application/x.csv'});
-await selectLoader(blob); // => CSVLoader
+const blob = new Blob([csvText], {type: 'application/x.csv'});
+await selectLoader(blob, [CSVLoader]); // => CSVLoader
 ```
 
 The async `selectLoader` function can identify loaders without extension and mimeType
 by content sniffing `Blob` and `File` objects (useful when user drags and drops files into your application).
 
 ```typescript
-const data = new Blob(['DRACO...'] /* Binary Draco files start with these characters */]);
-await selectLoader(blob, DracoLoader); // => DracoLoader
+import {DracoLoader} from '@loaders.gl/draco';
+
+const blob = new Blob(['DRACO...']); // Illustrative magic-byte prefix
+await selectLoader(blob, [DracoLoader]); // => DracoLoader
 ```
 
 ## Functions
@@ -105,15 +107,15 @@ Parameters:
 - `data` - data to perform autodetection against
 - `loaders` - can be a single loader or an array of loaders, or null.
 - `options` - See [`LoaderOptions`](./loader-options).
-- `options.nothrow`=`false` - Return null instead of throwing exception if no loader can be found
+- `options.core.nothrow`=`false` - Return null instead of throwing exception if no loader can be found
 
 Returns:
 
-- A single loader (or `null` if `options.nothrow` was set and no matching loader was found).
+- A single loader (or `null` if `options.core.nothrow` was set and no matching loader was found).
 
 Throws:
 
-- If no matching loader was found, and `options.nothrow` was not set.
+- If no matching loader was found, and `options.core.nothrow` was not set.
 
 Regarding the `loaders` parameter:
 

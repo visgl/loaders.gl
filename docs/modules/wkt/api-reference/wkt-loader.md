@@ -66,7 +66,7 @@ npm install @loaders.gl/core
 ## Usage
 
 ```typescript
-import {WKTLoader} from '@loaders.gl/wkt';
+import {WKTLoader} from '@loaders.gl/wkt/bundled';
 import {parseSync} from '@loaders.gl/core';
 
 const data = parseSync('LINESTRING (30 10, 10 30, 40 40)', WKTLoader);

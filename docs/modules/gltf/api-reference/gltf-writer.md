@@ -10,10 +10,10 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
 
 <DocPageHeader
   eyebrow="glTF writer"
-  title="Write a scenegraph back to glTF or GLB."
-  description="`GLTFWriter` turns loaders.gl scenegraph data into glTF or GLB output. Optional Draco integrations let applications control mesh compression without putting that dependency into every glTF pipeline."
+  title="Write a glTF scenegraph as a binary GLB."
+  description="`GLTFWriter` encodes glTF JSON and loaded buffers as a binary GLB, with optional asynchronous Draco compression."
   tone="mint"
-  meta={['glTF and GLB', 'Scenegraph output', 'Optional Draco']}
+  meta={['GLB output', 'Scenegraph input', 'Optional Draco']}
   links={[
     {label: 'glTF module', to: '/docs/modules/gltf'},
     {label: 'glTF format', to: '/docs/modules/gltf/formats/gltf'},
@@ -29,8 +29,8 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
   items={[
     {label: 'Input', value: 'Loaders.gl scenegraph data'},
     {label: 'Assembly', value: 'Nodes, meshes, materials, buffers, and images'},
-    {label: 'Compression', value: 'Optional Draco loader/writer integrations'},
-    {label: 'Output', value: '`.gltf` JSON or `.glb` binary'}
+    {label: 'Compression', value: 'Optional asynchronous Draco compression'},
+    {label: 'Output', value: '`.glb` binary'}
   ]}
 />
 
@@ -44,8 +44,8 @@ The `GLTFWriter` is a writer for glTF scenegraphs.
 
 | Loader          | Characteristic                                                             |
 | --------------- | -------------------------------------------------------------------------- |
-| File Extensions | `.glb`,`.gltf`                                                             |
-| File Types      | Binary, JSON, Linked Assets                                                |
+| File Extensions | `.glb`                                                             |
+| File Types      | Binary                                                |
 | Data Format     | [Scenegraph](/docs/specifications/category-scenegraph)                     |
 | File Format     | [glTF](https://github.com/KhronosGroup/glTF/tree/master/specification/2.0) |
 | Supported APIs  | `encode`, `encodeSync`                                                     |
@@ -66,7 +66,14 @@ for assets without binary data. These repairs do not establish full glTF conform
 
 ## Options
 
-| Option        | Type                                                          | Default | Description                                                                                   |
-| ------------- | ------------------------------------------------------------- | ------- | --------------------------------------------------------------------------------------------- |
-| `DracoWriter` | [DracoWriter](/docs/modules/draco/api-reference/draco-writer) | `null`  | To enable DRACO encoding, the application needs to import and supply the `DracoWriter` class. |
-| `DracoLoader` | [DracoLoader](/docs/modules/draco/api-reference/draco-loader) | `null`  | To enable DRACO encoding, the application needs to import and supply the `DracoLoader` class. |
+| Option | Type | Default | Description |
+| --- | --- | --- | --- |
+| `gltf.draco.enabled` | `boolean` | `false` | Generate `KHR_draco_mesh_compression` payloads with async `encode`. |
+| `gltf.draco.skipUnsupportedPrimitives` | `boolean` | `true` | Leave non-triangle primitives unchanged; set to `false` to reject them. |
+| `byteOffset` | `number` | `0` | Byte offset passed to binary container encoding. |
+
+Additional Draco build settings are accepted under `gltf.draco`. Input data is not
+modified. Compression currently requires at most one loaded buffer; original
+accessors remain available for consumers that do not decode the extension.
+`encodeSync` throws when Draco compression is enabled. JSON `.gltf` files and
+separate-asset output are not supported by this writer.

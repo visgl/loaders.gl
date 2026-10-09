@@ -50,11 +50,15 @@ import {StructuredDataPathGraphic} from '@site/src/components/docs/structured-da
 
 The `@loaders.gl/xml` module handles the [eXtensible Markup Language](https://www.w3.org/TR/xml/) format.
 
-## XML Format Overview
+## APIs
 
-### Requests
+- [`XMLLoader`](/docs/modules/xml/api-reference/xml-loader) parses XML into JavaScript values.
+- [`HTMLLoader`](/docs/modules/xml/api-reference/html-loader) handles HTML input.
+- `parseXMLSync` provides direct synchronous XML parsing.
+- `SAXParser` exposes the underlying event-based parser.
 
-## Remarks
+The module parses document structure. Protocol-specific interpretation belongs to
+loaders such as KML and WMS. See the [XML format page](/docs/modules/xml/formats/xml).
 
 ## Installation
 

@@ -80,7 +80,7 @@ const geometry = {
     ]
   ]
 };
-const arrayBuffer = encodeSync(geometry, WKBWriter, {wkt: {hasZ: false, hasM: false}});
+const arrayBuffer = encodeSync(geometry, WKBWriter, {wkb: {hasZ: false, hasM: false}});
 ```
 
 ## Options

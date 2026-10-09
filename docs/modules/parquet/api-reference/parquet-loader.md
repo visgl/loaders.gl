@@ -172,7 +172,7 @@ const data = await load(url, ParquetLoader, {modules: {
   'zstd-codec': ZstdCodec,
   'lz4js': lz4js,
   // brotli - only needed for compression
-});
+}});
 ```
 
 ## Data Format

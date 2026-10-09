@@ -44,69 +44,33 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
   <img src="https://img.shields.io/badge/From-v4.2-blue.svg?style=flat-square" alt="From v4.2" />
 </p>
 
-The `selectSource()` function will make a "best effort" to select an appropriate source for a specific url or Blob. `selectSource()` is called internally by the
-`createDataSource()` and `createDataSourceSync()` functions, but can also be called directly from applications.
-
-Source selection heuristics are based on:
-
-- Filename (or url) extensions
-- MIME types (from `Response` `content-type` headers or `Blob.type`/`File.type` fields)
-- Initial bytes - for certain inputs, the initial bytes in the supplied data can be compared against known "magic bytes" for various file formats.
+`_selectSource` is an experimental synchronous source-loader selector exported
+from `@loaders.gl/core`. Most applications should use
+[`createDataSource`](./create-data-source), which selects and constructs the runtime
+source. There is no public `selectSourceSync` or `createDataSourceSync` export.
 
 ## Usage
 
-Select a source from a list of provided sources (best effort):
+```typescript
+import {_selectSource} from '@loaders.gl/core';
+import {PMTilesSourceLoader} from '@loaders.gl/pmtiles';
+import {MVTSourceLoader} from '@loaders.gl/mvt';
+
+const sourceLoader = _selectSource('filename.pmtiles', [PMTilesSourceLoader, MVTSourceLoader]);
+```
+
+## Signature
 
 ```typescript
-import {selectSourceSync} from '@loaders.gl/core';
-import {PMTilesSourceLoader} from '@loaders.gl/pmtiles';
-import {MVTSourceLoader} from '@loaders.gl/csv';
-
-selectSourceSync('filename.pmtiles', [PMTilesSourceLoader, MVTSourceLoader]); // => PMTilesSourceLoader
+_selectSource(data: string | Blob, sources: SourceLoader[], options?): SourceLoader | null
 ```
 
-## Functions
+- `data`: a URL or blob used for best-effort format matching.
+- `sources`: the candidate source loaders. This API does not maintain a source registry.
+- `options.type`: selects a supplied source by its `type`; the default `'auto'`
+  uses loader selection heuristics.
+- `options.nothrow`: returns `null` when selection fails if set to `true`;
+  otherwise selection failure throws.
 
-### selectSource()
-
-```ts
-selectSource(data: String | Blob, ..., sources?: Source[], options?): Promise<Source | null>`
-```
-
-Selects an appropriate source for a file from a list of candidate sources by examining the `data` parameter, looking at URL extension, mimeType ('Content-Type') and/or an initial data chunk.
-
-Parameters:
-
-- `data` - data to perform autodetection against
-- `sources` - can be a single source or an array of sources, or null.
-- `options.type` - Force selection to a specific type of source (must still be provided in the source list).
-- `options.nothrow`=`false` - Return null instead of throwing exception if no source can be found
-
-Returns:
-
-- A single source (or `null` if `options.nothrow` was set and no matching source was found).
-
-Throws:
-
-- If no matching source was found, and `options.nothrow` was not set.
-
-Regarding the `sources` parameter:
-
-- A single source object will be returned without matching.
-- a `null` source list will use the pre-registered list of sources.
-- A supplied list of sources will be searched for a matching source.
-
-## Supported Data Formats
-
-The acceptable types for `data` are inferred from the supplied loaders and may include:
-
-- strings / data urls
-- `File` and `Blob` objects:
-
-## MIME types
-
-If the standard MIME types for each format are not precise enough, sources.gl also supports [unregistered](https://en.wikipedia.org/wiki/Media_type#Unregistered_tree) MIME types. Each source will match the `application/x.<id>` where the `<id>` is the documented `id` of the source, e.g. `application/x.ply`/`application/x.draco`/etc ...
-
-## Remarks
-
-- File extensions - An attempt will be made to extract a file extension by stripping away query parameters and base path before matching against known source extensions.
+Selection returns a loader, not a runtime source, and does not fetch remote data.
+`createDataSource` accepts the corresponding selection override in `core.type`.

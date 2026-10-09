@@ -70,19 +70,19 @@ The [`GLTFIterator`](/docs/modules/gltf/api-reference/gltf-iterator) class provi
 
 To simplify traversing and building glTF data objects, the [`GLTFScenegraph`](/docs/modules/gltf/api-reference/gltf-scenegraph) class can be used.
 
-A glTF data object can also be built programmatically using the GLTFScenegraph's "fluent API":
+Use the core writer API to encode loaded glTF data:
 
 ```typescript
-import {encode} from '@loaders.gl/gltf';
-import {GLTFScenegraph, GLTFWriter} from '@loaders.gl/gltf';
-const gltfScenegraph = new GLTFScenegraph()
-  .addApplicationData(...)
-  .addExtras(...)
-  .addExtension(...)
-  .addRequiredExtension(...);
+import {encode} from '@loaders.gl/core';
+import {GLTFLoader, GLTFWriter} from '@loaders.gl/gltf';
+import {load} from '@loaders.gl/core';
 
-const arrayBuffer = encode(gltfScenegraph, GLTFWriter);
+const gltf = await load(url, GLTFLoader);
+const arrayBuffer = await encode(gltf, GLTFWriter);
 ```
+
+`GLTFWriter` emits a binary GLB container. The input needs the glTF JSON and loaded
+buffers; a post-processed renderer object is not a substitute for that structure.
 
 ## GLTF Post Processing
 
@@ -94,7 +94,7 @@ Context: the glTF data object returned by the GLTF loader contains the "raw" glT
 
 The GLB binary container format used by glTF addresses a general need to store a mix of JSON and binary data, and can potentially be used as a foundation for building custom loaders and writers.
 
-To allow for this (and also to generally improve the glTF code structure), the `GLTFLoader` and `GLTFBuilder` classes are built on top of GLB focused classes (`GLBLoader` and `GLBBuilder`) that can be used independently of the bigger glTF classes.
+Use `GLBLoader` and `GLBWriter` for the binary container without glTF scene processing. `GLTFBuilder`, `GLTFParser`, and `GLBBuilder` are removed APIs.
 
 ## glTF Extension Support
 
@@ -102,11 +102,12 @@ Certain glTF extensions are fully or partially supported by the glTF classes. Fo
 
 ## Draco Mesh and Point Cloud Compression
 
-Draco encoding and decoding is supported by the `GLTFBuilder` and `GLTFParser` classes but requires the DracoWriter and DracoLoader dependencies to be "injected" by the application.
+`GLTFLoader` decodes supported Draco extensions when `gltf.decompressMeshes` is
+enabled. `GLTFWriter` can add Draco-compressed triangle primitives with
+`gltf.draco.enabled: true`; this requires asynchronous `encode`.
 
 ```typescript
-import {GLTFBuilder} from '@loaders.gl/gltf';
-import {DracoWriter, DracoLoader} from '@loaders.gl/draco';
-
-const gltfBuilder = new GLTFBuilder({DracoWriter, DracoLoader});
+const bytes = await encode(gltf, GLTFWriter, {gltf: {draco: {enabled: true}}});
 ```
+
+See the [writer reference](/docs/modules/gltf/api-reference/gltf-writer) for limits and options.

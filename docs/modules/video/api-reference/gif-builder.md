@@ -115,7 +115,7 @@ Creates a new `GIFBuilder` instance.
 
 - **images** -- `ImageBitmap` and `Image` objects can be added.
 
-Experimentally, tha following types can currently be added (may be removed in upcoming release)
+Experimentally, the following types can currently be added (may be removed in upcoming release)
 
 - **string URLs for images** If this option is used, then a GIF will be created using these images e.g. ,.'http://i.imgur.com/2OO33vX.jpg', 'http://i.imgur.com/qOwVaSN.png', 'http://i.imgur.com/Vo5mFZJ.gif'
 
@@ -127,51 +127,50 @@ Experimentally, tha following types can currently be added (may be removed in up
 
 The build method will actually build the GIF. It returns a base 64 encoded GIF.
 
-Note: After calling `build()` this builder instance is not intended to be used further. Create new `GLTBuilder` instances to build additional GIFs.
+Note: After calling `build()` this builder instance is not intended to be used further. Create new `GIFBuilder` instances to build additional GIFs.
 
 ## Options
 
-| Option           | Type     | Default                                                        | Description                                                                          |
-| ---------------- | -------- | -------------------------------------------------------------- | ------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `source`         | `string` | `'images'`                                                     | Either `'images'`, `'video'` or `'webcam'`                                           |
-| `width`          | `number` | `200`                                                          | Desired width of the generated GIF image                                             |
-| `height`         | `number` | `200`                                                          | Desired height of the generated GIF image                                            |
-| `crossOrigin`    | `string` | CORS attribute for requesting image or video URLs. 'Anonymous' | 'Anonymous', 'use-credentials', or '' (to not set).                                  |
-| QUALITY SETTINGS |          |                                                                |
-| `sampleInterval` |          | `10`                                                           | pixels to skip when creating the palette. Default is 10. Less is better, but slower. |
-| `numWorkers`     |          | `2`                                                            |                                                                                      | how many web workers to use to process the animated GIF frames. Default is 2.                                                                     |
-| `interval`       |          | `0.1`                                                          | The amount of time (in seconds) to wait between each frame capture                   |
-| `offset`         |          | `null`                                                         |                                                                                      | The amount of time (in seconds) to start capturing the GIF (only for HTML5 videos)                                                                |
-| `numFrames`      |          | `10`                                                           |                                                                                      | The number of frames to use to create the animated GIF. Each frame is captured every 100 milliseconds of a video and every ms for existing images |
-| `frameDuration`  |          | `1`                                                            |                                                                                      | The amount of time (10 = 1s) to stay on each frame                                                                                                |
+| Option | Default | Description |
+| --- | --- | --- |
+| `source` | `'images'` | Input kind: 'images', 'video', or 'webcam'. |
+| `width` | `200` | Output width in pixels. |
+| `height` | `200` | Output height in pixels. |
+| `crossOrigin` | `'Anonymous'` | CORS mode for requested images and video. |
+| `sampleInterval` | `10` | Palette sampling interval; smaller values increase work. |
+| `numWorkers` | `2` | Frame-processing workers. |
+| `interval` | `0.1` | Seconds between captured frames. |
+| `offset` | `null` | Video capture start offset in seconds. |
+| `numFrames` | `10` | Number of frames to capture. |
+| `frameDuration` | `1` | Frame duration in tenths of a second. |
 
-Notes:
+Smaller `sampleInterval` values improve palette sampling at the cost of more work.
 
-- By adjusting the sample interval, you can either produce extremely high-quality images slowly, or produce good images in reasonable times. With a sampleInterval of 1, the entire image is used in the learning phase, while with an interval of 10, a pseudo-random subset of 1/10 of the pixels are used in the learning phase. A sampling factor of 10 gives a substantial speed-up, with a small quality penalty.
+### Experimental options
 
-### Experimental Options
+These settings are forwarded to the bundled gifshot implementation. They are
+experimental and may depend on browser image, canvas, and video support.
 
-These options are forwarded directly to the underlying [`gifshot`](https://github.com/yahoo/gifshot) module. They are not officially supported by loaders.gl, but can still be useful. In case things are unclear it is recommended to search the documentation and issues in that module.
-
-| Option                              | Type                                                                 | Default                     | Description                                                            |
-| ----------------------------------- | -------------------------------------------------------------------- | --------------------------- | ---------------------------------------------------------------------- |
-| when the current image is completed |
-| CSS FILTER OPTIONS                  |                                                                      |                             |
-| `filter`                            | `'', // CSS filter that will be applied to the image (eg. blur(5px)) |
-| WATERMARK OPTIONS                   |                                                                      |                             |
-| `waterMark`                         | `null`                                                               |                             | If an image is given here, it will be stamped on top of the GIF frames |
-| `waterMarkHeight`                   | `null`                                                               | ,// Height of the waterMark |
-| `waterMarkWidth`                    | `null`                                                               |                             | Height of the waterMark                                                |
-| `waterMarkXCoordinate`              | `1`                                                                  |                             | The X (horizontal) Coordinate of the watermark image                   |
-| `waterMarkYCoordinate`              | `1`                                                                  |                             | The Y (vertical) Coordinate of the watermark image                     |
-
-| TEXT OPTIONS
-| `text` | `'', // The text that covers the animated GIF | |`showFrameText`|`true | If frame-specific text is supplied with the image array, you can force the |frame-specific text to not be displayed by making this option 'false'.
-| `fontWeight` | `'normal' | The font weight of the text that covers the animated GIF | |`fontSize`|`'16px' | The font size of the text that covers the animated GIF |
-| `minFontSize` | `'10px' | The minimum font size of the text that covers the animated GIF (Note` | `This |option is only applied if the text being applied is cut off) |`resizeFont`|`false | Whether or not the animated GIF text will be resized to fit within the GIF |container
-| `fontFamily` | `'sans-serif' | The font family of the text that covers the animated GIF | |`fontColor`|`'#ffffff' | The font color of the text that covers the animated GIF |
-| `textAlign` | `'center' | The horizontal text alignment of the text that covers the animated GIF | |`textBaseline`|`'bottom' | The vertical text alignment of the text that covers the animated GIF |
-| `textXCoordinate` | `null | The X (horizontal) Coordinate of the text that covers the animated GIF (only |use this if the default textAlign and textBaseline options don't work for you) |`textYCoordinate`|`null | The Y (vertical) Coordinate of the text that covers the animated GIF (only |use this if the default textAlign and textBaseline options don't work for you)
+| Option | Default | Description |
+| --- | --- | --- |
+| `filter` | `''` | CSS filter applied to frames. |
+| `waterMark` | `null` | Watermark image. |
+| `waterMarkHeight` | `null` | Watermark height. |
+| `waterMarkWidth` | `null` | Watermark width. |
+| `waterMarkXCoordinate` | `1` | Horizontal watermark position. |
+| `waterMarkYCoordinate` | `1` | Vertical watermark position. |
+| `text` | `''` | Text displayed over the GIF. |
+| `showFrameText` | `true` | Show per-frame text when supplied. |
+| `fontWeight` | `'normal'` | Text weight. |
+| `fontSize` | `'16px'` | Text size. |
+| `minFontSize` | `'10px'` | Minimum fitted text size. |
+| `resizeFont` | `false` | Resize text to fit the GIF. |
+| `fontFamily` | `'sans-serif'` | Text font family. |
+| `fontColor` | `'#ffffff'` | Text color. |
+| `textAlign` | `'center'` | Horizontal text alignment. |
+| `textBaseline` | `'bottom'` | Vertical text baseline. |
+| `textXCoordinate` | `null` | Override horizontal text position. |
+| `textYCoordinate` | `null` | Override vertical text position. |
 
 ## Remarks
 

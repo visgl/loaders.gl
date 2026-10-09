@@ -45,17 +45,17 @@ loaders.gl provides a set of functions to simplify working with binary data. The
 ## Usage
 
 ```typescript
-import {toArrayBuffer} from '@loaders.gl/core';
+import {toArrayBuffer} from '@loaders.gl/loader-utils';
 ```
 
 ## Functions
 
 ### toArrayBuffer(binaryData : \*) : ArrayBuffer
 
-"Repackages" a binary data in non-array-buffer form as an `ArrayBuffer`.
+Converts an `ArrayBuffer`, shared array buffer, typed-array view, Node.js buffer,
+or string to an `ArrayBuffer`. Strings are encoded as UTF-8. Full-buffer views can
+reuse their backing buffer; partial views are sliced to their byte range, and
+shared buffers are copied.
 
-- binaryData - ArrayBuffer, Buffer (Node.js), typed array, blob, ...
-
-## Remarks
-
-- Most functions in loaders.gl that accept binary data call `toArrayBuffer(...)` on input parameters before starting processing, thus ensuring that functions work on all types of input data.
+Native `Blob` values require asynchronous reading with `await blob.arrayBuffer()`;
+this synchronous helper does not read them.

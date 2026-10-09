@@ -1,5 +1,5 @@
 ---
-title: loadImageCube
+title: loadImageTextureCube
 description: Load the six images that make up a cubemap, with optional mip levels per face.
 hide_title: true
 page_style: designed
@@ -11,7 +11,7 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
 <DocPageHeader
   eyebrow="Images API · cubemap helper"
   title="Load six images with one callback."
-  description="loadImageCube turns a face naming function into a cubemap image set. Use it when the images are already described by application logic rather than a JSON manifest."
+  description="loadImageTextureCube turns a face naming function into a cubemap image set. Use it when the images are already described by application logic rather than a JSON manifest."
   tone="blue"
   meta={['Six directional faces', 'Optional mip levels', 'Browser and Node polyfills']}
   links={[
@@ -35,12 +35,12 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
 />
 
 <ReferenceBoundary
-  title="loadImageCube reference"
+  title="loadImageTextureCube reference"
   description="The sections below document URL callbacks, directional names, mip-level loading, return values, and image options."
   tone="blue"
 />
 
-A function that loads 6 images representing the faces of a cube. Primarily intended for loading images for WebGL `GL.TEXTURE_CUBE` textures.
+A function that loads 6 images representing the faces of a cube. This helper is deprecated; use `TextureCubeLoader` for manifest-driven loading. Primarily intended for loading images for WebGL `GL.TEXTURE_CUBE` textures.
 
 ## Usage
 
@@ -48,9 +48,9 @@ Load images for a cubemap with one image per face
 
 ```typescript
 import '@loaders.gl/polyfills'; // only needed for Node.js support
-import {loadImageCube} from `@loaders.gl/images`;
+import {loadImageTextureCube} from '@loaders.gl/textures';
 
-const imageCube = await loadImageCube(({direction}) => `diffuse-${direction}.png`);
+const imageCube = await loadImageTextureCube(({direction}) => `diffuse-${direction}.png`);
 
 for (const face in imageCube) {
   const image = imageCube[face];
@@ -61,9 +61,9 @@ Load images for a cubemap with an array of mip images per face
 
 ```typescript
 import '@loaders.gl/polyfills'; // only needed for Node.js support
-import {loadImageCube} from `@loaders.gl/images`;
+import {loadImageTextureCube} from '@loaders.gl/textures';
 
-const imageCube = await loadImageCube('mips', ({direction}) => `diffuse-${direction}.png`);
+const imageCube = await loadImageTextureCube(({direction, lod}) => `diffuse-${direction}-${lod}.png`, {image: {mipLevels: 'auto'}});
 
 for (const face in imageCube) {
   const imageArray = imageCube[face];
@@ -86,9 +86,9 @@ The following fields will be supplied as named parameters to the `getUrl` functi
 | 4           | `GL.TEXTURE_CUBE_MAP_POSITIVE_Z` (0x8519) | `'front'`   | `'z'`  | `'positive'` |
 | 5           | `GL.TEXTURE_CUBE_MAP_NEGATIVE_Z` (0x851a) | `'back'`    | `'z'`  | `'negative'` |
 
-Note: In addition to these values, all `options` passed in to `loadImageCube` are also available in the `getUrl` method.
+Note: In addition to these values, all `options` passed in to `loadImageTextureCube` are also available in the `getUrl` method.
 
-### loadImageCube(getUrl : `({face, direction, index}) => String`, options? : Object) : Object
+### loadImageTextureCube(getUrl : `({face, direction, index}) => String`, options? : Object) : Object
 
 Loads and image cube, i.e. 6 images keyed by WebGL face constants (see table).
 
@@ -105,9 +105,9 @@ Returns
 
 Accepts the same options as [`ImageBitmapLoader`](/docs/modules/images/api-reference/image-bitmap-loader), and
 
-| Option            | Type    | Default | Description |
-| ----------------- | ------- | ------- | ----------- | ------------------------------------------------------ |
-| `image.mipLevels` | `Number | String` | `0`         | If `'auto'` or non-zero, loads an array of mip images. |
+| Option | Type | Default | Description |
+| --- | --- | --- | --- |
+| `image.mipLevels` | `number \| 'auto'` | `0` | Number of mip images; `'auto'` derives the count from the base image dimensions. |
 
 Number of mip level images to load: Use `0` to indicate a single image with no mips. Supplying the string `'auto'` will infer the mipLevel from the size of the `lod`=`0` image.
 
