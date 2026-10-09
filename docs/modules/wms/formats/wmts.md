@@ -72,14 +72,14 @@ metadata constraints explicit; **Not implemented** marks features that need addi
 | Requests | REST `ResourceURL` | ✅ Supported | Selects tile templates matching the image format; excludes feature-info resources |
 | Requests | URL placeholder expansion | ✅ Supported | Layer, style, matrix set, matrix ID, row, column, and caller parameters are URL encoded |
 | Requests | Missing template parameters | ✅ Supported | Unresolved placeholders produce an error |
-| Requests | Non-numeric tile matrix identifiers | ✅ Supported | Integer zoom selects the exact numeric identifier or matrix array index; unavailable zooms are not clamped |
+| Requests | Non-numeric tile matrix identifiers | ✅ Supported | `tileMatrix` requests an identifier explicitly and rejects one the matrix set lacks; without it, integer zoom selects the exact numeric identifier or matrix array index; unavailable zooms are not clamped |
 | Requests | Reserved request fields | ✅ Supported | Generated layer, style, format, matrix, row, and column fields take precedence over extra parameters |
 | Requests | Tile fetch cancellation | ✅ Supported | Tile `AbortSignal` forwarded to fetch; capabilities fetch is not independently canceled |
 | Metadata | Layer title, extent, format, CRS | ✅ Supported | Normalized tile-source metadata |
 | Metadata | Origin axis normalization | ✅ Supported | EPSG:4326 top-left corners exposed in canonical XY |
 | Metadata | Resolution from scale denominator | ✅ Supported | Known geographic/Web Mercator units, or `wmts.metersPerUnit` for projected CRSs; never guessed for unknown units |
 | Metadata | Per-level matrix dimensions | ✅ Supported | Advertised sizes retained when complete and aligned with matrix IDs |
-| Metadata | Per-level origins and tile dimensions in normalized grid | ✅ Supported | `tileGrid.matrices` carries each level's origin, tile size, matrix size, and resolution; grid-wide fields describe the first level |
+| Metadata | Per-level origins and tile dimensions in normalized grid | ✅ Supported | `tileGrid.tileMatrixSet` holds complete per-level geometry as math.gl `TileMatrix` objects; `tileGrid.matrices` keeps the advertised, possibly incomplete, levels; grid-wide fields describe the first level |
 | Loading | Image decoding | ✅ Supported | `getTile()` and `getTileData()` decode through the image loader |
 | Rendering | Standard deck.gl XYZ grid | ✅ Supported | `SourceLayer` renders a compatible matrix set |
 | Rendering | Arbitrary origins, geographic grids, and per-level dimensions | ⚠️ Partial | Application must provide compatible tile selection |
@@ -127,21 +127,35 @@ exposes the advertised grid metadata. Applications can select a linked matrix se
 request a compatible CRS, or use the first linked set. Rendering still requires tile selection
 compatible with that grid; see the boundaries below.
 
-`tileGrid.matrices` describes every level separately, because some matrix sets change origin or
-tile size between levels. A scale denominator becomes a resolution only when the CRS unit is known.
-EPSG:4326, CRS:84, and Web Mercator are built in; for any other CRS, supply the unit length.
-Origins follow the same axis rule as `tileGrid.origin`: only EPSG:4326 corners are swapped to XY.
+Some matrix sets change origin or tile size between levels, so each level is described
+separately. `tileGrid.tileMatrixSet` is the authoritative geometry: a math.gl `TileMatrixSet`
+whose levels can be passed to the `@math.gl/geospatial` tile-matrix utilities such as
+`getTileBounds()` and `getTileIndex()`. It is set only when every level has a resolution, origin,
+tile size and matrix size that pass `validateTileMatrix()`; the grid-wide fields are then derived
+from its first level. `tileGrid.matrices` keeps each level as advertised, which may be incomplete.
+
+A scale denominator becomes a resolution only when the CRS unit is known. EPSG:4326, CRS:84, and
+Web Mercator are built in; for any other CRS, supply the unit length. Origins follow the same axis
+rule as `tileGrid.origin`: only EPSG:4326 corners are swapped to XY.
 
 ```ts
+import {getTileBounds} from '@math.gl/geospatial';
+
 const source = createDataSource(wmtsUrl, [WMTSSourceLoader], {
   // A UTM matrix set: one CRS unit is one meter.
   wmts: {layer: 'orthophoto', tileMatrixSet: 'utm18n', metersPerUnit: 1}
 });
 
 const {tileGrid} = await source.getMetadata();
-// Each level: {id, resolution, origin, tileSize, matrixSize}. Match a tile's matrix by `id`.
-const level = tileGrid.matrices.find(matrix => matrix.id === '3');
+const matrix = tileGrid.tileMatrixSet?.matrices.find(level => level.id === '3');
+const bounds = matrix && getTileBounds(matrix, 10, 4); // [minX, minY, maxX, maxY] in meters
+const image = await source.getTile({x: 10, y: 4, z: 3, tileMatrix: '3'});
 ```
+
+Pass `tileMatrix` to request a matrix by identifier. It is used verbatim, and a source with loaded
+capabilities rejects an identifier its matrix set does not contain. Without `tileMatrix`, `z`
+selects the matrix whose identifier is that number, otherwise the matrix at index `z`; this
+legacy rule is kept for compatibility.
 
 ## deck.gl integration
 

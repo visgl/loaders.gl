@@ -3,6 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import type {CRSIdentifier} from '@math.gl/crs';
+import type {TileMatrixSet} from '@math.gl/geospatial';
 
 /**
  * Props for a TileSource
@@ -70,7 +71,12 @@ export type TileSourceMetadata = {
   };
 };
 
-/** Normalized tile matrix information shared by WMTS and vendor tile services. */
+/**
+ * Normalized tile matrix information shared by WMTS and vendor tile services.
+ *
+ * `tileMatrixSet` is the authoritative geometry when present. The grid-wide fields are kept for
+ * compatibility; when `tileMatrixSet` is set they are derived from it and describe its first level.
+ */
 export type TileGrid = {
   /** Coordinate reference system used by the grid. */
   crs?: CRSIdentifier;
@@ -85,14 +91,20 @@ export type TileGrid = {
   /** Matrix width and height in tile units in zoom order. */
   matrixSizes?: Array<[number, number]>;
   /**
-   * Per-level matrix definitions in advertised order, aligned with `matrixIds`. Unlike the
-   * grid-wide fields above, each entry carries its own origin and tile size, so grids whose levels
-   * differ can be described. Find the matrix for a tile by `id`, as tile requests do.
+   * Complete per-level geometry in advertised order, set only when every advertised level has a
+   * resolution, origin, tile size and matrix size that pass math.gl `validateTileMatrix()`. Use it
+   * with the `@math.gl/geospatial` tile-matrix utilities. Origins are in XY order.
+   */
+  tileMatrixSet?: TileMatrixSet;
+  /**
+   * Per-level metadata as the service advertises it, aligned with `matrixIds`. Entries may be
+   * incomplete, for example without a resolution when the CRS unit is unknown, so this is not
+   * usable geometry on its own; prefer `tileMatrixSet`.
    */
   matrices?: TileGridMatrix[];
 };
 
-/** One level of a tile grid. Fields the service does not advertise are omitted. */
+/** One advertised level of a tile grid. Fields the service does not advertise are omitted. */
 export type TileGridMatrix = {
   /** Matrix identifier used in tile requests. */
   id: string;
@@ -127,6 +139,12 @@ export type GetTileParameters = {
   x: number;
   /** tile y coordinate */
   y: number;
+  /**
+   * Identifier of the tile matrix to request, used verbatim. Sources that know their matrix set
+   * reject an unknown identifier. When omitted, `z` selects the matrix whose identifier is that
+   * number, otherwise the matrix at that index.
+   */
+  tileMatrix?: string;
   /** Coordinate reference system for the tile */
   crs?: CRSIdentifier;
   /** Layers to render */

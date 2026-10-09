@@ -5591,6 +5591,7 @@ __metadata:
     "@loaders.gl/schema": "npm:5.0.0-alpha.10"
     "@loaders.gl/worker-utils": "npm:5.0.0-alpha.10"
     "@math.gl/crs": "npm:5.0.0-alpha.15"
+    "@math.gl/geospatial": "npm:5.0.0-alpha.15"
     "@probe.gl/log": "npm:^4.1.1"
     "@probe.gl/stats": "npm:^4.1.1"
   languageName: unknown
@@ -6044,6 +6045,7 @@ __metadata:
     "@loaders.gl/schema": "npm:5.0.0-alpha.10"
     "@loaders.gl/xml": "npm:5.0.0-alpha.10"
     "@math.gl/crs": "npm:5.0.0-alpha.15"
+    "@math.gl/geospatial": "npm:5.0.0-alpha.15"
     "@turf/rewind": "npm:^5.1.5"
   peerDependencies:
     "@loaders.gl/core": ~5.0.0-alpha.0

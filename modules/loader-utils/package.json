@@ -46,6 +46,7 @@
     "@loaders.gl/schema": "5.0.0-alpha.10",
     "@loaders.gl/worker-utils": "5.0.0-alpha.10",
     "@math.gl/crs": "5.0.0-alpha.15",
+    "@math.gl/geospatial": "5.0.0-alpha.15",
     "@probe.gl/log": "^4.1.1",
     "@probe.gl/stats": "^4.1.1"
   },
