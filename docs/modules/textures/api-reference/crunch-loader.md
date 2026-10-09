@@ -10,7 +10,7 @@ import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
 import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
 
 <DocPageHeader
-  format="compressed-textures"
+  format="crunch"
   eyebrow="Texture API / Crunch loader"
   title="Keep an existing compressed texture pipeline moving."
   description="CrunchWorkerLoader reads CRN assets and returns mip levels with compressed texture metadata. It is a compatibility path for older BC/DXT-oriented content; new cross-device pipelines generally prefer Basis Universal in KTX2."

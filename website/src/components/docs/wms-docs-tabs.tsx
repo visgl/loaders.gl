@@ -136,7 +136,7 @@ export function WmsDocsTabs({
 
   return (
     <nav className="docs-page-tabs" aria-label="WMS service documentation sections">
-      <FormatLogo slug="wms" />
+      <FormatLogo slug={active.replace(/-example$/, '')} />
       {tabs.map(tab => (
         <Link
           key={tab.id}

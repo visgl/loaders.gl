@@ -10,7 +10,7 @@ import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
 import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
 
 <DocPageHeader
-  format="compressed-textures"
+  format="ktx"
   eyebrow="Texture API / writer"
   title="Write one compressed texture for many GPU families."
   description="KTX2BasisWriter encodes supported RGBA pixel data with Basis Universal and packages the result as KTX2. The output can be transcoded by a consuming runtime to a device-compatible compressed format."
