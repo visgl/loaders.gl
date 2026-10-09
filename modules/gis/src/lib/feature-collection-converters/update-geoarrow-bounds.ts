@@ -4,10 +4,11 @@
 
 /**
  * Updates bounds using a sample of the coordinates in a GeoArrow chunk.
+ * NaN ordinates leave their respective bounds unchanged, preserving empty-point behavior.
  * @param flatCoordinates Interleaved coordinate values.
  * @param numberOfDimensions Number of values per coordinate.
  * @param bounds Bounds to update.
- * @param sampleSize Maximum number of coordinate samples.
+ * @param sampleSize Target number of coordinate samples.
  * @returns Updated bounds.
  */
 export function updateBoundsFromGeoArrowSamples(
@@ -27,10 +28,18 @@ export function updateBoundsFromGeoArrowSamples(
   ) {
     const longitude = flatCoordinates[coordinateIndex * numberOfDimensions];
     const latitude = flatCoordinates[coordinateIndex * numberOfDimensions + 1];
-    updatedBounds[0] = Math.min(updatedBounds[0], longitude);
-    updatedBounds[1] = Math.min(updatedBounds[1], latitude);
-    updatedBounds[2] = Math.max(updatedBounds[2], longitude);
-    updatedBounds[3] = Math.max(updatedBounds[3], latitude);
+    if (longitude < updatedBounds[0]) {
+      updatedBounds[0] = longitude;
+    }
+    if (latitude < updatedBounds[1]) {
+      updatedBounds[1] = latitude;
+    }
+    if (longitude > updatedBounds[2]) {
+      updatedBounds[2] = longitude;
+    }
+    if (latitude > updatedBounds[3]) {
+      updatedBounds[3] = latitude;
+    }
   }
 
   return updatedBounds;

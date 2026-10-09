@@ -89,3 +89,8 @@ precision and allow JSON serialization.
 The Apache Arrow buffer adapters are exported from `@loaders.gl/arrow-geometry` as
 `makeGeoArrowColumnFromArrowVector` and `makeArrowVectorFromGeoArrowColumn`.
 `@loaders.gl/geoarrow` retains its existing adapter exports for compatibility.
+
+`updateBoundsFromGeoArrowSamples(flatCoordinates, numberOfDimensions, bounds, sampleSize = 100)`
+extends a copy of the supplied extent using sampled X/Y coordinates. NaN ordinates, including
+empty-point coordinates, leave their respective bounds unchanged. Z/M ordinates do not affect
+the extent, and `sampleSize` controls the approximate number of samples.
