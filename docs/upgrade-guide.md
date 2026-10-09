@@ -208,10 +208,11 @@ itself and the separate `Tileset3D.loadOptions` API are not removed by this chan
   codecs and dynamically import a fallback only when necessary. `preload()` returns the selected
   concrete implementation. Import direct `FORMAT-DIRECTION` or implementation-specific
   `FORMAT-DIRECTION-IMPLEMENTATION` subpaths only to prebundle or pin a backend.
-- The `Compressor` and `Decompressor` base classes replace `Compression` for new APIs. Combined
-  classes ending in `Compression` are deprecated, but remain available in v5 as compatibility
-  facades and are assignable to both contracts. This means an existing combined codec can still be
-  supplied to `Compressor[]` or `Decompressor[]`; migrate imports when minimizing bundle size.
+- Removed deprecated root exports: `Compression`, `DeflateCompression`, `GZipCompression`,
+  `NoCompression`, `CompressionMetadata`, and the `*Compression` metadata aliases such as
+  `gzipCompression`. Use `Compressor`/`Decompressor` and the direction-specific root classes.
+  Combined implementation subpaths remain available for migration. Root imports no longer
+  statically include the DEFLATE/GZIP JavaScript fallback.
 
   | Deprecated combined import | Preferred root classes |
   | --- | --- |
