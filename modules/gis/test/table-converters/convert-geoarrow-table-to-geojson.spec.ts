@@ -195,3 +195,30 @@ test('chunked and sliced native MultiPoints retain empty members', () => {
     null
   ]);
 });
+
+test.each([
+  'interleaved',
+  'separated'
+])('sliced %s Point tables preserve physical views and validity offsets', layout => {
+  const coordinateType =
+    layout === 'interleaved'
+      ? new arrow.FixedSizeList(2, new arrow.Field('xy', new arrow.Float64(), true))
+      : new arrow.Struct([
+          new arrow.Field('x', new arrow.Float64(), true),
+          new arrow.Field('y', new arrow.Float64(), true)
+        ]);
+  const coordinates = [[9, 9], [1, 2], null, [3, 4], [NaN, NaN]];
+  const values =
+    layout === 'interleaved'
+      ? coordinates
+      : coordinates.map(coordinate => (coordinate ? {x: coordinate[0], y: coordinate[1]} : null));
+  const geometry = arrow.vectorFromArray(values, coordinateType);
+  const table = makeTable({geometry}, {geometry: 'geoarrow.point'}).slice(1, 5);
+  expect(table.getChild('geometry')?.data[0].offset).toBeGreaterThan(0);
+  expect(convertTable(table).features.map(feature => feature.geometry)).toEqual([
+    {type: 'Point', coordinates: [1, 2]},
+    null,
+    {type: 'Point', coordinates: [3, 4]},
+    {type: 'Point', coordinates: []}
+  ]);
+});
