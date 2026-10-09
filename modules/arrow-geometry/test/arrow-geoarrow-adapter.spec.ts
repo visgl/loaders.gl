@@ -4,13 +4,14 @@
 
 import * as arrow from 'apache-arrow';
 import {expect, test} from 'vitest';
+import {makeGeoArrowColumnFromGeometryRows, materializeGeoArrowRows} from '@math.gl/geoarrow';
 import {
   inferGeoArrowCoordinateLayoutFromArrowType,
   inferGeoArrowDimensionFromArrowType,
   inferGeoArrowEncodingFromArrowType,
   makeArrowVectorFromGeoArrowColumn,
   makeGeoArrowColumnFromArrowVector
-} from '../src/lib/arrow-geoarrow-adapter';
+} from '../src/arrow-geoarrow-adapter';
 
 /** Creates a coordinate field with an optional semantic dimension child name. */
 function makeCoordinateType(size: number, childName = 'item'): arrow.FixedSizeList {
@@ -363,4 +364,67 @@ test('Arrow adapter validates dense-union null carriers and dimension suffixes',
       } as any)
     ).toThrow('dense-union null');
   }
+});
+
+test.each([
+  'binary',
+  'utf8'
+] as const)('Arrow adapter round-trips nullable %s views without copying buffers', encoding => {
+  const text = 'a value longer than the inline view storage';
+  const vector =
+    encoding === 'binary'
+      ? arrow.vectorFromArray(
+          [Uint8Array.of(1, 2), new TextEncoder().encode(text), null],
+          new arrow.BinaryView()
+        )
+      : arrow.vectorFromArray(['short', text, null], new arrow.Utf8View());
+  const column = makeGeoArrowColumnFromArrowVector(vector, {metadata: {source: 'views'}});
+  expect(column.metadata).toEqual({source: 'views'});
+  const chunk = column.chunks[0];
+  expect(chunk.kind).toBe('serialized');
+  if (chunk.kind === 'serialized') {
+    expect(chunk.views?.buffer).toBe(vector.data[0].values.buffer);
+    expect(chunk.dataBuffers).toBe(vector.data[0].variadicBuffers);
+  }
+  const roundTrip = makeArrowVectorFromGeoArrowColumn(column);
+  expect(Array.from(roundTrip, normalizeArrowValue)).toEqual(
+    Array.from(vector, normalizeArrowValue)
+  );
+});
+
+test('Arrow adapter round-trips math.gl mixed geometry columns with nullable union carriers', () => {
+  const rows = [
+    {type: 'Point', coordinates: [1, 2, 3]},
+    {
+      type: 'LineString',
+      coordinates: [
+        [4, 5, 6],
+        [7, 8, 9]
+      ]
+    },
+    {type: 'MultiPoint', coordinates: [[], [10, 11, 12]]},
+    null
+  ] as const;
+  const column = makeGeoArrowColumnFromGeometryRows(rows, {
+    encoding: 'geoarrow.geometry',
+    dimension: 'xym'
+  });
+  const vector = makeArrowVectorFromGeoArrowColumn(column);
+  const adapted = makeGeoArrowColumnFromArrowVector(vector);
+  expect(adapted.dimension).toBe('xym');
+  expect(materializeGeoArrowRows(adapted)).toEqual(rows);
+  expect(materializeGeoArrowRows(makeGeoArrowColumnFromArrowVector(vector.slice(1, 4)))).toEqual(
+    rows.slice(1)
+  );
+});
+
+test('Arrow adapter rejects unsupported physical values even when geometry metadata is supplied', () => {
+  const vector = arrow.vectorFromArray([true], new arrow.Bool());
+  expect(() =>
+    makeGeoArrowColumnFromArrowVector(vector, {
+      encoding: 'geoarrow.point',
+      dimension: 'xy',
+      coordinateLayout: null
+    })
+  ).toThrow('Unsupported GeoArrow physical Arrow type');
 });

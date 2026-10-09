@@ -28,6 +28,7 @@
   ],
   "sideEffects": false,
   "dependencies": {
+    "@math.gl/geoarrow": "5.0.0-alpha.15",
     "@math.gl/wkb": "5.0.0-alpha.15",
     "apache-arrow": ">= 17.0.0"
   }

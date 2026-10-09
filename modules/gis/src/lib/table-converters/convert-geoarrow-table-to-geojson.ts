@@ -6,11 +6,13 @@ import * as arrow from 'apache-arrow';
 import type {Feature, GeoArrowEncoding, GeoJSONTable, Geometry, Schema} from '@loaders.gl/schema';
 import {convertWKBToGeometry} from '../geometry-converters/wkb/convert-wkb-to-geometry';
 import {convertWKTToGeometry} from '../geometry-converters/wkb/convert-wkt-to-geometry';
-import {getGeoArrowNativeGeometry} from '../geoarrow/get-geoarrow-native-geometry';
+import {makeGeoArrowColumnFromArrowVector} from '@loaders.gl/arrow-geometry';
+import {materializeGeoArrowRows} from '@math.gl/geoarrow';
 import {getGeoMetadata} from '../geoarrow/geoparquet-metadata';
 
 /**
  * Converts an Arrow table with GeoArrow geometry metadata to a GeoJSON table.
+ * Integer properties are serialized as decimal strings to preserve their precision.
  * @param arrowTable Apache Arrow table containing geometry and property columns.
  * @param schema loaders.gl schema associated with the Arrow table.
  * @returns A GeoJSON feature collection table.
@@ -20,53 +22,49 @@ export function convertGeoArrowTableToGeoJSON(
   schema: Schema
 ): GeoJSONTable {
   const geoMetadata = getGeoMetadata(schema.metadata);
-  const primaryColumnName = geoMetadata?.primary_column;
-  const primaryColumnExists = arrowTable.schema.fields.some(
-    field => field.name === primaryColumnName
-  );
-  const geometryColumnName =
-    (primaryColumnExists ? primaryColumnName : null) ||
-    arrowTable.schema.fields.find(
-      field =>
-        geoMetadata?.columns?.[field.name]?.encoding ||
-        getGeoArrowEncoding(field.metadata?.get('ARROW:extension:name'))
-    )?.name;
-  if (!geometryColumnName) {
+  const geometryFields = arrowTable.schema.fields
+    .map(field => ({
+      field,
+      encoding: resolveGeoArrowEncoding(
+        geoMetadata?.columns?.[field.name]?.encoding,
+        field.metadata?.get('ARROW:extension:name')
+      )
+    }))
+    .filter(
+      (entry): entry is {field: arrow.Field; encoding: GeoArrowEncoding} => entry.encoding !== null
+    );
+  const primaryGeometry =
+    geometryFields.find(entry => entry.field.name === geoMetadata?.primary_column) ||
+    geometryFields[0];
+  if (!primaryGeometry) {
     throw new Error('No GeoArrow geometry column found in schema');
   }
-
-  const geometryField = arrowTable.schema.fields.find(field => field.name === geometryColumnName);
-  const geometryColumn = arrowTable.getChild(geometryColumnName);
-  if (!geometryField || !geometryColumn) {
-    throw new Error(`Could not find GeoArrow geometry column "${geometryColumnName}"`);
+  const {field: geometryField, encoding} = primaryGeometry;
+  const geometryColumn = arrowTable.getChild(geometryField.name);
+  if (!geometryColumn) {
+    throw new Error(`Could not find GeoArrow geometry column "${geometryField.name}"`);
   }
-
-  const encoding = resolveGeoArrowEncoding(
-    geoMetadata?.columns?.[geometryColumnName]?.encoding,
-    geometryField.metadata?.get('ARROW:extension:name')
-  );
-  if (!encoding) {
-    throw new Error(`No GeoArrow encoding found for column "${geometryColumnName}"`);
-  }
-
+  const geometryColumnNames = new Set(geometryFields.map(entry => entry.field.name));
   const propertyColumnNames = arrowTable.schema.fields
-    .map(field => field.name)
-    .filter(name => name !== geometryColumnName);
+    .filter(field => !geometryColumnNames.has(field.name))
+    .map(field => field.name);
   const propertyColumns = propertyColumnNames.map(name => arrowTable.getChild(name));
+  const geometries =
+    encoding === 'geoarrow.wkb' || encoding === 'geoarrow.wkt'
+      ? Array.from({length: arrowTable.numRows}, (_, rowIndex) =>
+          convertGeoArrowCellToGeometry(geometryColumn, rowIndex, encoding)
+        )
+      : materializeGeoArrowRows(makeGeoArrowColumnFromArrowVector(geometryColumn, {encoding}));
   const features: Feature[] = [];
 
   for (let rowIndex = 0; rowIndex < arrowTable.numRows; rowIndex++) {
     const properties: Record<string, unknown> = {};
     propertyColumnNames.forEach((name, columnIndex) => {
-      properties[name] = propertyColumns[columnIndex]?.get(rowIndex);
+      properties[name] = normalizeGeoJSONProperty(propertyColumns[columnIndex]?.get(rowIndex));
     });
     features.push({
       type: 'Feature',
-      geometry: convertGeoArrowCellToGeometry(
-        geometryColumn,
-        rowIndex,
-        encoding
-      ) as Feature['geometry'],
+      geometry: geometries[rowIndex] as Feature['geometry'],
       properties
     });
   }
@@ -78,7 +76,7 @@ export function convertGeoArrowTableToGeoJSON(
 function convertGeoArrowCellToGeometry(
   geometryColumn: arrow.Vector,
   rowIndex: number,
-  encoding: GeoArrowEncoding
+  encoding: 'geoarrow.wkb' | 'geoarrow.wkt'
 ): Geometry | null {
   const value = geometryColumn.get(rowIndex);
   if (value == null) {
@@ -87,10 +85,7 @@ function convertGeoArrowCellToGeometry(
   if (encoding === 'geoarrow.wkb') {
     return convertWKBToGeometry(normalizeArrayBuffer(value as ArrayBufferLike | ArrayBufferView));
   }
-  if (encoding === 'geoarrow.wkt') {
-    return convertWKTToGeometry(value as string) || null;
-  }
-  return getGeoArrowNativeGeometry(geometryColumn, rowIndex, encoding) as Geometry | null;
+  return convertWKTToGeometry(value as string) || null;
 }
 
 /** Normalizes an ArrayBuffer view to the exact byte range it represents. */
@@ -114,23 +109,50 @@ function resolveGeoArrowEncoding(...values: unknown[]): GeoArrowEncoding | null 
 
 /** Resolves recognized GeoArrow extension or GeoParquet encoding names. */
 function getGeoArrowEncoding(value: unknown): GeoArrowEncoding | null {
-  switch (value) {
+  const encoding =
+    typeof value === 'string'
+      ? value
+          .trim()
+          .toLowerCase()
+          .replace(/^geoarrow\./, '')
+      : null;
+  switch (encoding) {
     case 'wkb':
       return 'geoarrow.wkb';
     case 'wkt':
       return 'geoarrow.wkt';
-    case 'geoarrow.point':
-    case 'geoarrow.linestring':
-    case 'geoarrow.polygon':
-    case 'geoarrow.multipoint':
-    case 'geoarrow.multilinestring':
-    case 'geoarrow.multipolygon':
-    case 'geoarrow.wkb':
-    case 'geoarrow.wkt':
-    case 'geoarrow.geometry':
-    case 'geoarrow.geometrycollection':
-      return value;
+    case 'point':
+    case 'linestring':
+    case 'polygon':
+    case 'multipoint':
+    case 'multilinestring':
+    case 'multipolygon':
+    case 'geometry':
+    case 'geometrycollection':
+      return `geoarrow.${encoding}`;
     default:
       return null;
   }
+}
+
+/** Converts nested Arrow property values into JSON-compatible values without losing integer precision. */
+function normalizeGeoJSONProperty(value: unknown): unknown {
+  if (typeof value === 'bigint') {
+    return value.toString();
+  }
+  if (value == null) {
+    return null;
+  }
+  if (Array.isArray(value) || (ArrayBuffer.isView(value) && !(value instanceof DataView))) {
+    return Array.from(value as ArrayLike<unknown>, normalizeGeoJSONProperty);
+  }
+  if (typeof value === 'object') {
+    if ('toJSON' in value && typeof value.toJSON === 'function') {
+      return normalizeGeoJSONProperty(value.toJSON());
+    }
+    return Object.fromEntries(
+      Object.entries(value).map(([name, child]) => [name, normalizeGeoJSONProperty(child)])
+    );
+  }
+  return typeof value === 'number' && !Number.isFinite(value) ? null : value;
 }

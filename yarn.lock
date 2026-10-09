@@ -5151,6 +5151,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@loaders.gl/arrow-geometry@workspace:modules/arrow-geometry"
   dependencies:
+    "@math.gl/geoarrow": "npm:5.0.0-alpha.15"
     "@math.gl/wkb": "npm:5.0.0-alpha.15"
     apache-arrow: "npm:>= 17.0.0"
   languageName: unknown
@@ -5381,6 +5382,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@loaders.gl/geoarrow@workspace:modules/geoarrow"
   dependencies:
+    "@loaders.gl/arrow-geometry": "npm:5.0.0-alpha.11"
     "@loaders.gl/gis": "npm:5.0.0-alpha.11"
     "@loaders.gl/loader-utils": "npm:5.0.0-alpha.11"
     "@loaders.gl/schema": "npm:5.0.0-alpha.11"
@@ -5437,6 +5439,7 @@ __metadata:
     "@loaders.gl/schema-utils": "npm:5.0.0-alpha.11"
     "@loaders.gl/wkt": "npm:5.0.0-alpha.11"
     "@math.gl/crs": "npm:5.0.0-alpha.15"
+    "@math.gl/geoarrow": "npm:5.0.0-alpha.15"
     "@math.gl/geometry-utils": "npm:5.0.0-alpha.15"
     "@math.gl/polygon": "npm:5.0.0-alpha.15"
     "@math.gl/projection": "npm:5.0.0-alpha.15"

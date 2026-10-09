@@ -72,3 +72,20 @@ npm install @loaders.gl/gis
 rows. WKB and WKT are handled by `GeometryConverter`, not this native-column reader. The native
 reader remains re-exported by `@loaders.gl/geoarrow` for compatibility; loaders can use the GIS
 export without depending on the richer GeoArrow processing module.
+
+### GeoArrow tables
+
+`convertGeoArrowTableToGeoJSON(arrowTable, schema)` converts an Apache Arrow table to a
+`geojson-table` feature collection. It selects the GeoParquet primary geometry column when
+available, otherwise the first recognized geometry column. It accepts native GeoParquet
+encoding names and case-insensitive GeoArrow, WKB, and WKT extension names.
+
+Native geometries use the published `@math.gl/geoarrow` materializer. Empty points retain
+`coordinates: []`, while null geometry rows remain `null`. All recognized geometry columns
+are excluded from feature properties. Nested Arrow structs, lists, and binary property values
+become plain objects and arrays; 64-bit integer properties become decimal strings to preserve
+precision and allow JSON serialization.
+
+The Apache Arrow buffer adapters are exported from `@loaders.gl/arrow-geometry` as
+`makeGeoArrowColumnFromArrowVector` and `makeArrowVectorFromGeoArrowColumn`.
+`@loaders.gl/geoarrow` retains its existing adapter exports for compatibility.
