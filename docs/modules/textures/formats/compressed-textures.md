@@ -11,6 +11,7 @@ import {TexturesDocsTabs} from '@site/src/components/docs/textures-docs-tabs';
 import {TextureTranscodeGraphic} from '@site/src/components/docs/texture-transcode-graphic';
 
 <DocPageHeader
+  format="compressed-textures"
   eyebrow="Texture formats"
   title="Keep compressed texture data compressed until the GPU needs it."
   description="Compressed texture containers package GPU-readable mip levels, arrays, and cube faces. Supercompressed formats add a portable transport layer that can be transcoded to the device’s supported GPU format."

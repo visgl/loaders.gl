@@ -13,11 +13,11 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
 import {ClientExample} from '@site/src/components';
 
 <DocPageHeader
+  format="geojson"
   eyebrow="GeoJSON loader"
   title="GeoJSONLoader"
   description="GeoJSONLoader preserves the familiar feature and geometry model while supporting binary geometry, Arrow tables, and incremental parsing for larger documents."
   tone="cyan"
-  logos={[{alt: 'GeoJSON', src: '/images/format-logos/geojson-logo.svg'}]}
   meta={['RFC 7946', 'Streaming parser', 'Arrow and binary output']}
   links={[
     {label: 'GeoJSON format', to: '/docs/modules/json/formats/geojson'},

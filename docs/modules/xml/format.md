@@ -10,6 +10,7 @@ import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
 import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
 
 <DocPageHeader
+  format="xml"
   eyebrow="Markup format"
   title="Keep verbose service documents navigable."
   description="The XML module turns XML and supported HTML input into object trees that protocol-specific loaders can validate and normalize. It stays intentionally general so WMS, KML, GPX, and other consumers can define their own schemas."

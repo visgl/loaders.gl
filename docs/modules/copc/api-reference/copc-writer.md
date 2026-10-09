@@ -10,6 +10,7 @@ import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
 import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
 
 <DocPageHeader
+  format="copc"
   eyebrow="COPC module · writer API"
   title="COPCWriter"
   description="Write mesh and Arrow point clouds as COPC 1.0-compatible LAZ, organized for spatially selective, range-readable access from cloud storage."

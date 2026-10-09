@@ -9,6 +9,7 @@ import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
 import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
 
 <DocPageHeader
+  format="arrow"
   eyebrow="GeoArrow geometry utility"
   title="triangulateWKBGeometryColumn"
   description="`triangulateWKBGeometryColumn` converts Polygon and MultiPolygon WKB values into Arrow columns for triangle indexes and source XY vertices, keeping one output row aligned with each input geometry."

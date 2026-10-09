@@ -9,6 +9,7 @@ import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
 import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
 
 <DocPageHeader
+  format="zarr"
   eyebrow="Zarr API / bioimaging"
   title="Read an image pyramid at the level and channels you need."
   description="OMEZarrSourceLoader discovers OME image metadata, resolves multiscale arrays, and reads selected raster windows from local or remote stores without flattening the entire pyramid first."

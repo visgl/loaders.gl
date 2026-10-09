@@ -10,6 +10,7 @@ import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
 import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
 
 <DocPageHeader
+  format="las"
   eyebrow="LAS module · writer API"
   title="LASWriter"
   description="Write loaders.gl mesh or Arrow point-cloud data as LAS or LAZ, with control over point record formats, quantization, compression chunks, and rich point attributes."

@@ -10,6 +10,7 @@ import {CrsFlowGraphic} from '@site/src/components/docs/capability-flow-graphics
 import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
 
 <DocPageHeader
+  format="wkt-crs"
   eyebrow="Coordinate reference syntax"
   title="Describe where the coordinates live."
   description="WKT-CRS is the standards-based text grammar for coordinate reference systems and their transformations. It gives geospatial data a precise spatial frame before reprojection or rendering begins."
@@ -37,7 +38,6 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
   ]}
 />
 
-![ogc-logo](../../../images/logos/ogc-logo-60.png)
 
 - _[`@loaders.gl/wkt`](/docs/modules/wkt)_
 - _[OGC Standard](https://www.ogc.org/standards/wkt-crs)_

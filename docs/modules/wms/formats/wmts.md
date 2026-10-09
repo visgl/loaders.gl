@@ -12,11 +12,11 @@ import {DocLiveExample} from '@site/src/components/docs/doc-live-example';
 import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
 
 <DocPageHeader
+  format="wmts"
   eyebrow="OGC tiled image service"
   title="WMTS"
   description="WMTS describes discrete tile matrix sets, layers, styles, image formats, and resource templates. The source negotiates those capabilities before requesting visible imagery."
   tone="mint"
-  logos={[{alt: 'Open Geospatial Consortium', src: '/images/format-logos/ogc-logo-transparent.png'}]}
   meta={['WMTS 1.0.0', 'Tile matrix sets', 'KVP and REST templates']}
   links={[
     {label: 'WMS module', to: '/docs/modules/wms'},

@@ -1,3 +1,4 @@
+import {FormatLogo} from './format-logo';
 import React, {type ReactNode} from 'react';
 import Link from '@docusaurus/Link';
 
@@ -53,6 +54,7 @@ export function ParquetDocsTabs({
 }): ReactNode {
   return (
     <nav className="docs-page-tabs" aria-label="Parquet documentation sections">
+      <FormatLogo slug={active.includes('geoparquet') ? 'geoparquet' : 'parquet'} />
       {PARQUET_DOCS_TABS.map(tab => (
         <Link
           key={tab.id}

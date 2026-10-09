@@ -9,6 +9,7 @@ import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
 import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
 
 <DocPageHeader
+  format="gltf"
   eyebrow="GLB writer"
   title="Pack application data into one binary envelope."
   description="`GLBWriter` writes the GLB container around JSON and binary chunks. Use `GLTFWriter` when the input is a scenegraph and the writer should perform glTF-specific assembly; use this writer for direct envelope control."

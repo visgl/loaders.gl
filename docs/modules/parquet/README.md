@@ -16,7 +16,7 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
   title="@loaders.gl/parquet"
   description="Use Parquet when column selection, metadata pruning, and Arrow-compatible results matter more than reading the whole file."
   logos={[
-    {alt: 'Apache Parquet', src: '/images/format-logos/parquet-logo.png'}
+    {alt: 'Apache Parquet', format: 'parquet'}
   ]}
   links={[
     {label: 'Parquet format', to: '/docs/modules/parquet/formats/parquet'},

@@ -10,6 +10,7 @@ import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
 import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
 
 <DocPageHeader
+  format="geotiff"
   eyebrow="GeoTIFF API / bioimaging"
   title="Read an OME-TIFF pyramid as selected raster data."
   description="OMETiffSourceLoader discovers OME image metadata and reads chosen channels, dimensions, and pyramid levels from a multi-image TIFF without forcing the application to decode every plane."

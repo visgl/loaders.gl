@@ -10,6 +10,7 @@ import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
 import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
 
 <DocPageHeader
+  format="bson"
   eyebrow="Binary document format"
   title="Keep document semantics in a binary envelope."
   description="BSON stores JSON-like documents with binary encodings for values such as dates, integers, and byte arrays. The module exposes a focused load/write path while keeping the result familiar to JavaScript applications."

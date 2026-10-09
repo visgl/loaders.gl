@@ -10,6 +10,7 @@ import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
 import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
 
 <DocPageHeader
+  format="gltf"
   eyebrow="glTF API / post-processing"
   title="Opt into convenient scenegraph links."
   description="The glTF loader preserves standards-shaped JSON. postProcessGLTF is the explicit second step for applications that prefer object references between scenes, nodes, meshes, materials, and buffers."

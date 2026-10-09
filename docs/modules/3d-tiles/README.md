@@ -11,6 +11,7 @@ import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
 import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
 
 <DocPageHeader
+  format="3d-tiles"
   eyebrow="Tiled scene module"
   title="@loaders.gl/3d-tiles"
   description="Resolve tileset structure, linked content, and level-of-detail decisions without making the application understand every 3D Tiles detail."
@@ -20,9 +21,8 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
 
 <Tiles3DDocsTabs active="module" />
 
-![ogc-logo](../../images/logos/ogc-logo-60.png)
 &nbsp;
-![3dtiles-logo](./images/3d-tiles-logo-60.png)
+
 
 <TiledSceneGraphic />
 

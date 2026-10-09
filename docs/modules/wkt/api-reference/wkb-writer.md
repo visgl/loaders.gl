@@ -9,6 +9,7 @@ import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
 import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
 
 <DocPageHeader
+  format="wkb"
   eyebrow="WKT module · geometry writer"
   title="WKBWriter"
   description="Encode structured geometry as compact Well-Known Binary for database, GIS, Shapefile, and Arrow-oriented data paths."
@@ -40,7 +41,6 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
   tone="orange"
 />
 
-![ogc-logo](../../../images/logos/ogc-logo-60.png)
 
 Writer for the [Well-known binary][wkb] format for representation of geometry.
 

@@ -12,11 +12,11 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
 import {ClientExample} from '@site/src/components';
 
 <DocPageHeader
+  format="geoparquet"
   eyebrow="Parquet module · geospatial loader"
   title="GeoParquetLoader"
   description="Read GeoParquet files into Arrow tables by default while preserving the metadata that describes geometry columns, coordinate systems, and encodings."
   tone="mint"
-  logos={[{alt: 'Apache Parquet', src: '/images/format-logos/parquet-logo.png'}]}
   meta={['From v5.0', 'GeoParquet', 'Arrow output']}
   links={[
     {label: 'GeoParquet format', to: '/docs/modules/parquet/formats/geoparquet'},

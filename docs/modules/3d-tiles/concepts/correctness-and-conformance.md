@@ -10,6 +10,7 @@ import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
 import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
 
 <DocPageHeader
+  format="3d-tiles"
   eyebrow="3D Tiles runtime / conformance"
   title="Make correctness observable."
   description="Conformance is more useful when each guarantee has a fixture, a runtime measurement, and a clear boundary between loader behavior and renderer policy."

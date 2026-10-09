@@ -13,11 +13,11 @@ import {DocLiveExample} from '@site/src/components/docs/doc-live-example';
 import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
 
 <DocPageHeader
+  format="arcgis-image-server"
   eyebrow="ArcGIS module · ArcGIS raster source"
   title="ArcGIS ImageServer"
   description="Access rendered imagery and analytical raster data through ImageSource and TileSource contracts, including viewport exports and LERC responses."
   tone="violet"
-  logos={[{alt: 'ArcGIS', src: '/images/format-logos/arcgis-logo.svg'}]}
   meta={['ImageServer', 'Images and tiles', 'LERC raster output']}
   links={[
     {label: 'ArcGIS module', to: '/docs/modules/arcgis'},

@@ -10,6 +10,7 @@ import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
 import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
 
 <DocPageHeader
+  format="3d-tiles"
   eyebrow="3D Tiles metadata / R2"
   title="Prepare style inputs without coupling the loader to a renderer."
   description="The loader exposes stable property and feature contracts. A renderer can evaluate styles and upload resources later, without reaching into private payload layouts."

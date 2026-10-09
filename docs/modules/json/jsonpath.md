@@ -9,6 +9,7 @@ import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
 import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
 
 <DocPageHeader
+  format="json"
   eyebrow="JSON module · streaming selection"
   title="JSONPath"
   description="loaders.gl implements the JSONPath features needed to identify a streamable array while keeping parsing small and predictable. The selector describes a path, not a general-purpose query language."

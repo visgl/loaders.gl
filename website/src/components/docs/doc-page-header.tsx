@@ -1,3 +1,4 @@
+import {FormatLogo} from './format-logo';
 import React, {useEffect, useRef, type ReactNode} from 'react';
 import Link from '@docusaurus/Link';
 
@@ -28,7 +29,9 @@ export type DocPageHeaderLogo = {
   /** Optional destination associated with the logo. */
   href?: string;
   /** Absolute or site-relative image URL. */
-  src: string;
+  src?: string;
+  /** Canonical format badge used instead of an ecosystem image. */
+  format?: string;
 };
 
 /** Properties for the compact page header used on non-tentpole documentation pages. */
@@ -47,6 +50,8 @@ export type DocPageHeaderProps = {
   links?: readonly DocPageHeaderLink[];
   /** Optional standards or ecosystem logos shown in the top-right of the header. */
   logos?: readonly DocPageHeaderLogo[];
+  /** Canonical format or service badge displayed in the header. */
+  format?: string;
   /** Optional release or compatibility note shown in the orientation card. */
   notice?: ReactNode;
   /** Optional status and version badges moved out of the long-form reference content. */
@@ -75,6 +80,7 @@ export function DocPageHeader({
   tone = 'cyan',
   links = [],
   logos = [],
+  format,
   notice,
   badges = []
 }: DocPageHeaderProps): ReactNode {
@@ -111,16 +117,17 @@ export function DocPageHeader({
         <div className={styles.topline}>
           <p className={styles.eyebrow}>{eyebrow}</p>
           <div className={styles.toplineActions}>
+            {format && <FormatLogo slug={format} />}
             {logos.length > 0 && (
               <div className={styles.logos} aria-label="Standards and ecosystem logos">
                 {logos.map(logo => {
-                  const image = <img src={logo.src} alt={logo.alt} />;
+                  const image = logo.format ? <FormatLogo slug={logo.format} /> : <img className={styles.ecosystemLogo} src={logo.src} alt={logo.alt} />;
                   return logo.href ? (
-                    <a className={styles.logoLink} href={logo.href} key={logo.src}>
+                    <a className={styles.logoLink} href={logo.href} key={logo.format ?? logo.src}>
                       {image}
                     </a>
                   ) : (
-                    <span className={styles.logoLink} key={logo.src}>
+                    <span className={styles.logoLink} key={logo.format ?? logo.src}>
                       {image}
                     </span>
                   );

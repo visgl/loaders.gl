@@ -11,6 +11,7 @@ import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
 import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
 
 <DocPageHeader
+  format="copc"
   eyebrow="Cloud point-cloud format"
   title="A point cloud that can answer bounded requests."
   description="COPC combines LAS 1.4 point records, LAZ compression, and an octree hierarchy in one file. A reader can inspect the metadata, choose relevant nodes, and fetch their byte ranges without downloading the complete cloud."

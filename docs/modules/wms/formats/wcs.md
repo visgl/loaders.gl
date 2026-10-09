@@ -10,6 +10,7 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
 import {WmsDocsTabs} from '@site/src/components/docs/wms-docs-tabs';
 
 <DocPageHeader
+  format="wcs"
   eyebrow="OGC coverage service"
   title="Request the coverage data behind the map."
   description="WCS provides analytical raster coverages rather than server-rendered map images. The source discovers the service, builds version-aware subset requests, and preserves binary responses for the appropriate decoder."
@@ -37,7 +38,6 @@ import {WmsDocsTabs} from '@site/src/components/docs/wms-docs-tabs';
 
 <WmsDocsTabs active="wcs" />
 
-![ogc-logo](../../../images/logos/ogc-logo-60.png)
 
 WCS provides analytical geospatial coverages rather than server-rendered map images.
 `WCSCoverageSourceLoader` supports focused discovery and read-only coverage retrieval.

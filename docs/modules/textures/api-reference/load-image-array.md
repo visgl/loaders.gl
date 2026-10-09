@@ -9,6 +9,7 @@ import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
 import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
 
 <DocPageHeader
+  format="compressed-textures"
   eyebrow="Images API · array helper"
   title="Load an image array without repeating the request loop."
   description="loadImageTextureArray generates and decodes a predictable sequence of images for texture arrays, volume slices, or mip-level sets. The callback receives the image index and level of detail."

@@ -92,7 +92,7 @@
   justify-content: flex-end;
 }
 
-.logos img {
+.ecosystemLogo {
   display: block;
   filter: brightness(0) invert(1);
   height: auto;

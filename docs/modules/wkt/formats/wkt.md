@@ -9,6 +9,7 @@ import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
 import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
 
 <DocPageHeader
+  format="wkt"
   eyebrow="Geometry text format"
   title="Make a geometry readable at a glance."
   description="Well-Known Text (WKT) represents points, lines, polygons, collections, and coordinate dimensions as text. It is useful for inspection, interchange, and database-facing workflows."
@@ -33,7 +34,6 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
   ]}
 />
 
-![ogc-logo](../../../images/logos/ogc-logo-60.png)
 
 - [OGC Standard](https://www.ogc.org/standard/sfa/) - See Section 7.
 - [Wikipedia](https://en.wikipedia.org/wiki/Well-known_text_representation_of_geometry)

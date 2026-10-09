@@ -10,6 +10,7 @@ import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
 import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
 
 <DocPageHeader
+  format="bson"
   eyebrow="BSON API · document writer"
   title="Put typed document values back on the wire."
   description="BSONWriter serializes JSON-like JavaScript objects into BSON bytes, including the extended scalar values supported by the underlying js-bson implementation."

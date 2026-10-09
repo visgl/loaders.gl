@@ -10,6 +10,7 @@ import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
 import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
 
 <DocPageHeader
+  format="kml"
   eyebrow="KML module · loader API"
   title="KMLLoader"
   description="Parse KML geographic documents into loaders.gl geometry tables, preserving the feature-oriented structure needed for maps and Earth-browser content."
@@ -36,7 +37,6 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
   ]}
 />
 
-![ogc-logo](../../../images/logos/ogc-logo-60.png)
 
 <ReferenceBoundary
   title="KMLLoader reference"

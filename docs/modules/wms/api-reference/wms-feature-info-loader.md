@@ -9,6 +9,7 @@ import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
 import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
 
 <DocPageHeader
+  format="wms"
   eyebrow="WMS API · feature information"
   title="Ask a map service what is under the cursor."
   description="WMSFeatureInfoLoader parses the XML response from a GetFeatureInfo request into a typed JavaScript result. It keeps verbose protocol details behind a smaller boundary for identify, tooltip, and inspection tools."
@@ -40,7 +41,6 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
   tone="blue"
 />
 
-![ogc-logo](../../../images/logos/ogc-logo-60.png)
 
 <p className="badges">
   <img src="https://img.shields.io/badge/From-v3.3-blue.svg?style=flat-square" alt="From-v3.3" />

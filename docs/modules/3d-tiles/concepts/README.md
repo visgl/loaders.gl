@@ -10,6 +10,7 @@ import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
 import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
 
 <DocPageHeader
+  format="3d-tiles"
   eyebrow="3D Tiles runtime"
   title="From tileset metadata to visible content."
   description="These guides explain the decisions made between a tileset response and the content an application can render: resource detection, hierarchy traversal, level of detail, request priority, and memory."

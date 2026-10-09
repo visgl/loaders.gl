@@ -10,6 +10,7 @@ import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
 import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
 
 <DocPageHeader
+  format="xml"
   eyebrow="XML module · loader API"
   title="HTMLLoader"
   description="Parse a limited XML-style view of HTML when a service returns a small error page or useful metadata instead of structured JSON or XML."

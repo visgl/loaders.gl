@@ -9,6 +9,7 @@ import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
 import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
 
 <DocPageHeader
+  format="netcdf"
   eyebrow="Scientific array format"
   title="Keep the dimensions that give data meaning."
   description="NetCDF stores typed multidimensional arrays together with named dimensions and attributes, making time, level, latitude, longitude, and other scientific axes part of the data model."

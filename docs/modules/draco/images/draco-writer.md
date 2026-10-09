@@ -9,6 +9,7 @@ import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
 import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
 
 <DocPageHeader
+  format="draco"
   eyebrow="Draco module · writer reference"
   title="Compress geometry at the writer boundary."
   description="DracoWriter accepts the mesh shapes produced by loaders.gl and encodes them with Draco. The same writer can serve mesh and point-cloud workflows while the format-specific options stay explicit."

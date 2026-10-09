@@ -1,3 +1,4 @@
+import {FormatLogo} from './format-logo';
 import React, {type ReactNode} from 'react';
 import Link from '@docusaurus/Link';
 
@@ -34,6 +35,7 @@ const CSV_DOCS_TABS: CsvDocsTab[] = [
 export function CsvDocsTabs({active}: {/** Active tab identifier. */ active: CsvDocsTabId}): ReactNode {
   return (
     <nav className="docs-page-tabs" aria-label="CSV documentation sections">
+      <FormatLogo slug="csv" />
       {CSV_DOCS_TABS.map(tab => (
         <Link
           key={tab.id}

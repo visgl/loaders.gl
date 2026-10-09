@@ -9,6 +9,7 @@ import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
 import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
 
 <DocPageHeader
+  format="compressed-textures"
   eyebrow="Images API · cubemap helper"
   title="Load six images with one callback."
   description="loadImageTextureCube turns a face naming function into a cubemap image set. Use it when the images are already described by application logic rather than a JSON manifest."

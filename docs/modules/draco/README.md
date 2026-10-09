@@ -10,6 +10,7 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
 import {ThreeDDataFormatsGraphic} from '@site/src/components/docs/three-d-data-formats-graphic';
 
 <DocPageHeader
+  format="draco"
   eyebrow="Geometry compression module"
   title="Move geometry efficiently without changing its meaning."
   description="The Draco module decodes and encodes compressed meshes and point clouds. It supports render-ready mesh objects, Mesh Arrow tables, worker execution, and the glTF compression extension path."
@@ -36,7 +37,7 @@ import {ThreeDDataFormatsGraphic} from '@site/src/components/docs/three-d-data-f
   ]}
 />
 
-![logo](./images/draco-small.png)
+
 
 <ReferenceBoundary
   title="Draco module details"

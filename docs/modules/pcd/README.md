@@ -9,6 +9,7 @@ import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
 import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
 
 <DocPageHeader
+  format="pcd"
   eyebrow="Point-cloud format"
   title="Keep point attributes alongside positions."
   description="The PCD module reads Point Cloud Data headers and point records, preserving named fields such as normals, color, intensity, and sensor-oriented metadata for downstream applications."

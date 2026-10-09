@@ -13,11 +13,11 @@ import {DocLiveExample} from '@site/src/components/docs/doc-live-example';
 import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
 
 <DocPageHeader
+  format="arcgis-vector-tile-server"
   eyebrow="ArcGIS module · ArcGIS vector-tile source"
   title="ArcGIS VectorTileServer"
   description="Load ArcGIS vector tiles together with their tile grid, style, and sprite metadata, then expose raw or decoded MVT data to the application."
   tone="violet"
-  logos={[{alt: 'ArcGIS', src: '/images/format-logos/arcgis-logo.svg'}]}
   meta={['VectorTileServer', 'MVT and styles', 'VectorTileSource']}
   links={[
     {label: 'ArcGIS module', to: '/docs/modules/arcgis'},

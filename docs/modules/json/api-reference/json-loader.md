@@ -10,6 +10,7 @@ import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
 import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
 
 <DocPageHeader
+  format="json"
   eyebrow="JSON module · loader API"
   title="JSONLoader"
   description="Parse arbitrary JSON documents, or stream rows from an array inside a larger document when the payload is too large to process as one blocking operation."

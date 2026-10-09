@@ -17,7 +17,7 @@ import {DocOrientation} from '@site/src/components/docs/designed-doc';
   title="Apache Parquet"
   description="Organize data into independently useful row groups, column chunks, and pages so readers can fetch less and decode only what they need."
   logos={[
-    {alt: 'Apache Parquet', src: '/images/format-logos/parquet-logo.png'}
+    {alt: 'Apache Parquet', format: 'parquet'}
   ]}
   links={[
     {label: 'Parquet module', to: '/docs/modules/parquet'},

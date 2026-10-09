@@ -1,3 +1,4 @@
+import {FormatLogo} from './format-logo';
 import React, {type ReactNode} from 'react';
 import Link from '@docusaurus/Link';
 
@@ -41,6 +42,7 @@ export function GltfDocsTabs({
 }): ReactNode {
   return (
     <nav className="docs-page-tabs" aria-label="glTF documentation sections">
+      <FormatLogo slug="gltf" />
       {GLTF_DOCS_TABS.map(tab => (
         <Link
           key={tab.id}

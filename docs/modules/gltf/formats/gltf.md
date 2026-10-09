@@ -11,12 +11,12 @@ import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
 import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
 
 <DocPageHeader
+  format="gltf"
   eyebrow="Scenegraph format"
   title="glTF"
   description="A delivery-focused scene format for geometry, materials, hierarchy, animation, and the linked binary or image assets that make a model complete."
   tone="pink"
   meta={['.gltf and .glb', 'Scenegraph data', 'Khronos standard']}
-  logos={[{alt: 'glTF', src: '/images/format-logos/gltf-logo.png'}]}
   links={[
     {label: 'glTF module', to: '/docs/modules/gltf'},
     {label: 'GLTFLoader', to: '/docs/modules/gltf/api-reference/gltf-loader'},

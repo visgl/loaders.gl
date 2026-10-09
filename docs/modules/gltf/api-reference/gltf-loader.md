@@ -11,13 +11,13 @@ import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
 import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
 
 <DocPageHeader
+  format="gltf"
   eyebrow="glTF module / loader"
   title="GLTFLoader"
   description="Load a standards-shaped scene while the loader resolves buffers, images, compressed meshes, and other linked resources around it."
   hideTitle
   tone="pink"
   meta={['.gltf and .glb', 'Linked assets', 'Draco and meshopt']}
-  logos={[{alt: 'glTF', src: '/images/format-logos/gltf-logo.png'}]}
   links={[
     {label: 'glTF format', to: '/docs/modules/gltf/formats/gltf'},
     {label: 'glTF module', to: '/docs/modules/gltf'},

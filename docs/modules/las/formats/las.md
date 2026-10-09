@@ -11,6 +11,7 @@ import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
 import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
 
 <DocPageHeader
+  format="las"
   eyebrow="Point-cloud exchange formats"
   title="Keep the point record useful at every layer."
   description="LAS defines a widely used point-cloud record and metadata model. LAZ applies lossless compression without changing the logical records, so tools can exchange lidar data without giving up its attributes."

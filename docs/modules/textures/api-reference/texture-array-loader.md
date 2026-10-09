@@ -9,6 +9,7 @@ import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
 import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
 
 <DocPageHeader
+  format="compressed-textures"
   eyebrow="Texture API / manifest loader"
   title="Describe an array of images, then load it as one texture."
   description="TextureArrayLoader reads a JSON manifest that names the member images and their layout. It delegates image decoding to ImageBitmapLoader and returns a texture-array shape with the array structure still visible."

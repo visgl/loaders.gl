@@ -10,6 +10,7 @@ import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
 import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
 
 <DocPageHeader
+  format="html"
   eyebrow="HyperText Markup Language"
   title="Read just enough markup to handle a response."
   description="HTMLLoader provides a lightweight XML-style view of HTML when a service returns an error page or a small piece of useful metadata. It is deliberately not a browser, sanitizer, or full-fidelity HTML parser."

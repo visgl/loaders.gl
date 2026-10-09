@@ -9,6 +9,7 @@ import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
 import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
 
 <DocPageHeader
+  format="arcgis"
   eyebrow="ArcGIS module · ArcGIS"
   title="ArcGIS service sources"
   description="ArcGIS publishes several service families. loaders.gl maps the useful endpoint contracts onto sources for vectors, images, tiles, and scenes, with deterministic discovery and shared authentication."

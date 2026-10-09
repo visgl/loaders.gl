@@ -9,6 +9,7 @@ import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
 import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
 
 <DocPageHeader
+  format="wkb"
   eyebrow="WKT module · geometry loader"
   title="HexWKBLoader"
   description="Decode WKB represented as hexadecimal text when a database, API, or JSON envelope cannot carry raw binary bytes directly."
@@ -44,7 +45,6 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
   <img src="https://img.shields.io/badge/From-v2.2-blue.svg?style=flat-square" alt="From-v2.2" />
 </p>
 
-![ogc-logo](../../../images/logos/ogc-logo-60.png)
 
 Loader for hex encoded [Well-known binary][wkb] format for representation of geometry.
 

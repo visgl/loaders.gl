@@ -10,6 +10,7 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
 import {ThreeDDataFormatsGraphic} from '@site/src/components/docs/three-d-data-formats-graphic';
 
 <DocPageHeader
+  format="glb"
   eyebrow="Binary scene container"
   title="Put a complete glTF scene in one file."
   description="GLB packages the glTF JSON document, binary buffers, and embedded resources into a single binary container. It is the compact delivery form for portable 3D scenes."

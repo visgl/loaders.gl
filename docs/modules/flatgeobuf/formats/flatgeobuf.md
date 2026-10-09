@@ -11,6 +11,7 @@ import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
 import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
 
 <DocPageHeader
+  format="flatgeobuf"
   eyebrow="Indexed feature format"
   title="Find the features before decoding the file."
   description="FlatGeobuf stores OGC geometries in a compact FlatBuffers layout and can include a spatial index. That makes it useful for streaming and bounded reads without the weight of a database."
@@ -45,7 +46,7 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
   </a>
 </p>
 
-![flatgeobuf-logo](../images/flatgeobuf-logo.png)
+
 
 - _[`@loaders.gl/flatgeobuf`](/docs/modules/flatgeobuf)_
 - _[FlatGeobuf](http://flatgeobuf.org/)_

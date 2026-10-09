@@ -10,6 +10,7 @@ import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
 import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
 
 <DocPageHeader
+  format="3d-tiles"
   eyebrow="3D Tiles runtime / resources"
   title="Resolve the resource before interpreting it."
   description="Tiles can point to signed URLs, extensionless responses, nested tilesets, binary content, or archive entries. loaders.gl resolves the reference and classifies the bytes without relying on a filename."

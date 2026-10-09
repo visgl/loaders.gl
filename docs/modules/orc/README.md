@@ -12,6 +12,7 @@ import {OrcCloudLiveExample} from '@site/src/components/docs/orc-cloud-live-exam
 import apacheLogo from '../../images/logos/apache-logo.png';
 
 <DocPageHeader
+  format="orc"
   eyebrow="ORC module"
   title="@loaders.gl/orc"
   description="`@loaders.gl/orc` reads and writes Apache ORC files. Its source API exposes metadata and a portable scan contract while keeping the current materialized execution model explicit."

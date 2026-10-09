@@ -10,6 +10,7 @@ import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
 import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
 
 <DocPageHeader
+  format="geopackage"
   eyebrow="Geospatial container"
   title="A portable SQLite file for geospatial tables."
   description="GeoPackage combines OGC-defined metadata tables with SQLite storage for vector features, tiles, and related geospatial content. loaders.gl exposes the tables through common geometry and Arrow paths."

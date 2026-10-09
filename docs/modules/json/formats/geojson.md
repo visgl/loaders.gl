@@ -12,11 +12,11 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
 import {ClientExample} from '@site/src/components';
 
 <DocPageHeader
+  format="geojson"
   eyebrow="Readable feature format"
   title="GeoJSON"
   description="GeoJSON represents geographic features as JSON objects with explicit geometry and application properties. It is easy to inspect, exchange, and connect to web mapping code."
   tone="cyan"
-  logos={[{alt: 'GeoJSON', src: '/images/format-logos/geojson-logo.svg'}]}
   meta={['RFC 7946', 'Feature collections', 'Human-readable']}
   links={[
     {label: 'JSON module', to: '/docs/modules/json'},

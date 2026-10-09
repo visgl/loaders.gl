@@ -9,6 +9,7 @@ import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
 import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
 
 <DocPageHeader
+  format="arrow"
   eyebrow="Arrow schema utilities"
   title="Arrow schema utilities"
   description="These helpers validate Apache Arrow JS table schemas and rename selected fields while preserving vectors and untouched columns. They are useful when a loader or source needs a clear contract before handing data to the next stage."

@@ -9,6 +9,7 @@ import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
 import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
 
 <DocPageHeader
+  format="ows-context"
   eyebrow="OGC context format"
   title="Treat OWS Context as a resource map, not a data service."
   description="OWS Context packages configured geospatial resources and service links. loaders.gl does not expose a dedicated context loader, but its service sources can load the referenced WMS, WMTS, WFS, and catalog endpoints."
@@ -40,7 +41,6 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
   tone="violet"
 />
 
-![ogc-logo](../../../images/logos/ogc-logo-60.png)
 
 OWS Context is an OGC exchange format for packaging a collection of configured geospatial
 resources and services.

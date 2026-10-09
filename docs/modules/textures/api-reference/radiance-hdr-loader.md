@@ -10,6 +10,7 @@ import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
 import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
 
 <DocPageHeader
+  format="compressed-textures"
   eyebrow="Texture API / HDR loader"
   title="Load lighting data without flattening its range."
   description="RadianceHDRLoader reads RGBE `.hdr` files and returns texture levels with floating-point samples and format metadata. Exposure, tone mapping, and environment use remain decisions for the application or renderer."

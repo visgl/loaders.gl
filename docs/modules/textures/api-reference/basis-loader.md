@@ -11,6 +11,7 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
 import {TextureTranscodeGraphic} from '@site/src/components/docs/texture-transcode-graphic';
 
 <DocPageHeader
+  format="compressed-textures"
   eyebrow="Texture loader"
   title="Let the device choose the final texture format."
   description="BasisLoader decodes raw Basis or KTX2-wrapped Basis payloads and transcodes them into a supported compressed or fallback texture format. Applications can keep one portable source asset across GPU families."

@@ -10,6 +10,7 @@ import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
 import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
 
 <DocPageHeader
+  format="shapefile"
   eyebrow="Shapefile module · geometry loader"
   title="SHPLoader"
   description="Decode the `.shp` geometry component of a Shapefile dataset into WKB or Arrow geometry columns. Use ShapefileLoader when attributes and sidecars are needed too."

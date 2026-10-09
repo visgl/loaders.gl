@@ -10,6 +10,7 @@ import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
 import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
 
 <DocPageHeader
+  format="3d-tiles"
   eyebrow="3D Tiles runtime / hierarchy"
   title="Traverse the tree without losing coverage."
   description="A tileset is a view-dependent hierarchy. This guide explains how visibility, geometric error, refinement mode, and loading state work together as the camera moves."
