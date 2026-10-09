@@ -339,6 +339,14 @@ test('OGCAPITilesSource requests tiles by configured matrix identifier', async (
     'Unknown tile matrix "7"'
   );
   expect(() => offset.getTileURL({z: 2, x: 0, y: 0})).toThrow(RangeError);
+  // An XYZ template does not address a matrix, so z is not looked up in the set
+  const xyz = OGCAPITilesSourceLoader.createDataSource(landingPageUrl, {
+    'ogc-api': {
+      tileTemplate: `${landingPageUrl}/xyz/{z}/{x}/{y}`,
+      tileMatrixSet: {tileMatrices: [{id: '5', cellSize: 2}]}
+    }
+  });
+  expect(xyz.getTileURL({z: 2, x: 0, y: 0})).toBe(`${landingPageUrl}/xyz/2/0/0`);
 
   // Without a tile matrix set, an explicit identifier is used verbatim
   const unconfigured = OGCAPITilesSourceLoader.createDataSource(landingPageUrl, {
