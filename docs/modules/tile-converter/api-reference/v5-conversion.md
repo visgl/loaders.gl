@@ -26,6 +26,9 @@ const report = await convertTileset({
 
 This API is experimental. The core provides source adapters and bounded browser sinks; the format adapters provide mesh and point-cloud codecs and archive packaging. Applications still supply input/output integration for other profiles; the legacy `I3SConverter` and `Tiles3DConverter` remain separate.
 
+See the [conversion support matrix](/docs/modules/tile-converter/cli-reference/supported-features#experimental-v5-conversion-support)
+for current input/output profiles, browser limits and remaining qualification work.
+
 ## Core and format adapters
 
 The core entrypoint exports conversion contracts, inspection, validation, progress,
@@ -123,9 +126,13 @@ Both outputs use deterministic STORE ZIP32 with populated local headers and fina
 The budget includes headers/index and is checked before Blob reads. The first SLPK profile
 supports archives below 2 GiB; 3TZ stays below the ZIP64 sentinel. Both support at most
 65,533 resources and canonical ASCII paths. Invalid formats, budgets, or duplicate IDs fail
-explicitly. The output-size budget is not a peak-memory budget. Streaming, ZIP64, cancellation
-within the encoder, broader source extraction, and broader viewer qualification remain
-future work. The browser example can interrupt packaging by terminating its disposable worker. Applications own input qualification, download UI, and object-URL lifetime.
+explicitly. The output-size budget is not a peak-memory budget.
+`encodeTileConversionArchiveInBatches` streams these resources in payload blocks of at most
+64 KiB with consumer-controlled backpressure and cooperative cancellation between reads.
+Applications must await writes, finalize storage only after iteration succeeds and discard
+partial output on failure. ZIP64 and broader independent-viewer qualification remain future
+work. The browser example can also interrupt synchronous work by terminating its disposable
+worker. Applications own input qualification, download UI and object-URL lifetime.
 
 See [SLPKWriter](/docs/modules/i3s/api-reference/slpk-writer) and
 [Tiles3DArchiveWriter](/docs/modules/3d-tiles/api-reference/tiles-3d-archive-writer).
@@ -332,7 +339,7 @@ quantization. The decoded byte gates run after extraction and do not cap decoder
 It demonstrates the separate core and adapters entrypoints,
 required byte/precision budgets, cancellation and explicit profile rejection. See the
 [example README](https://github.com/visgl/loaders.gl/tree/master/examples/website/i3s-slpk)
-for limits and supported inputs. The controls accept an explicit JSON `MeshSourceFeatureOptions`
+for limits and supported inputs. The controls accept an explicit JSON `MeshSourceFeatureOptions` or `I3SMeshSourceFeatureOptions`
 mapping for SLPK or 3TZ output; no schema is inferred. The decoded byte gate charges geometry, encoded base-color image bytes,
 Arrow columns and triangle associations after extraction. Exact 64-bit decimal-string mappings are
 reported as diagnostics. Untextured material factors are preserved in both formats; `COLOR_0` is
@@ -357,13 +364,16 @@ selected leaf contents and at most 64 total primitive placements for either arch
 ### Browser worker execution
 
 The archive viewer example runs selected-content loading, decoding, conversion and packaging in
-one disposable module worker per operation. It transfers only finalized archive bytes and the
-conversion report back to the controls. Cancel or unmount terminates the worker; failed and canceled
-operations expose no downloadable archive. Inspection remains on the main thread. This example
+one disposable module worker per operation. It transfers acknowledged archive chunks one at a
+time and publishes a completed File/report only after successful finalization. Direct file saving
+awaits each write before acknowledging the next chunk and commits only after successful
+completion. Cancel or unmount terminates the worker; failed and canceled operations expose no
+downloadable archive. Inspection remains on the main thread. This example
 boundary does not add a public worker API or move the conversion implementation between modules.
 
 Existing transport, decoded-input and retained-output byte gates still apply. Moving work off the
-main thread does not cap peak decoder/Arrow/packager allocations or make packaging streaming.
+main thread does not cap peak decoder/Arrow/packager allocations. Streaming packaging avoids
+a complete archive buffer in the worker; finalized resources and index metadata remain retained.
 
 ### Point-cloud precision and partial 3TZ packages
 

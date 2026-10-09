@@ -13,11 +13,12 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
   title="Move tiled datasets between compatible standards."
   description="`@loaders.gl/tile-converter` provides command-line and JavaScript tools for converting I3S and 3D Tiles data. Use the APIs when conversion is part of an application, or the CLI when it belongs in a build or data-preparation workflow."
   tone="orange"
-  meta={['I3S ↔ 3D Tiles', 'CLI and API', 'Esri contributed']}
+  meta={['I3S ↔ 3D Tiles', 'CLI, API and browser', 'Esri contributed']}
   links={[
     {label: 'I3S converter', to: '/docs/modules/tile-converter/api-reference/i3s-converter'},
     {label: '3D Tiles converter', to: '/docs/modules/tile-converter/api-reference/3d-tiles-converter'},
     {label: 'Experimental v5 core', to: '/docs/modules/tile-converter/api-reference/v5-conversion'},
+    {label: 'Conversion support', to: '/docs/modules/tile-converter/cli-reference/supported-features'},
     {label: 'Build instructions', to: '/docs/modules/tile-converter/api-reference/build-instructions'}
   ]}
 />
@@ -72,26 +73,52 @@ A JavaScript API is also available:
 
 - `I3SConverter` class that converts 3DTiles to I3S
 - `Tiles3DConverter` class that converts I3S to 3DTiles
-- The experimental [`@loaders.gl/tile-converter/v5` core](/docs/modules/tile-converter/api-reference/v5-conversion) for injected, platform-specific conversion adapters.
+- The experimental [`/v5/core` and `/v5/adapters` APIs](/docs/modules/tile-converter/api-reference/v5-conversion) for portable mesh/point conversion, explicit feature mapping and archive output.
 
-Note: the command line tools are implemented using this API and offer the same functions.
+The command-line tools use the legacy converter classes. V5 CLI integration remains planned.
 
 ### Runtime portability
 
-The converter currently requires Node.js. Binary conversion code uses `ArrayBuffer` and typed
-arrays, and I3S string attributes are encoded with the standard `TextEncoder` API. The string
-encoder is tested in both Chromium and Node.js as an initial step toward browser conversion.
+The legacy converters, command-line tools and HTTP server require Node.js. Their filesystem,
+service and texture-atlas operations remain separate from the experimental v5 conversion APIs.
+V5 core and adapters use portable binary data and run in Chromium and Node.js with
+application-provided input readers, output sinks and decoder assets.
 
-Browser execution still requires alternatives for filesystem output, Node.js worker resolution,
-and texture atlas generation through `join-images`/Sharp. The command-line tools and HTTP server
-also remain Node.js applications. The HTTP server retains a `Buffer` conversion at the Express
-response boundary so binary responses keep their existing behavior.
+## Conversion support
 
-## Experimental v5 archive output
+The [supported-feature matrix](/docs/modules/tile-converter/cli-reference/supported-features)
+distinguishes the legacy CLI from experimental v5 profiles. V5 converts selected static
+GLB/B3DM meshes or original-coordinate I3S `3DObject`/`IntegratedMesh` meshes into authored
+I3S/SLPK or 3D Tiles/3TZ resources. It preserves supported materials, one PNG/JPEG base-color
+map and explicitly mapped Arrow features, with Draco Edge Breaker enabled by default.
+Selected decoded points can also be written as PNTS and partial 3TZ collections through the API.
 
-The experimental v5 `createTileConversionArchive` helper packages already-authored resources
-as bounded browser Blobs in either indexed 3TZ or SLPK format. See the
-[v5 conversion API](/docs/modules/tile-converter/api-reference/v5-conversion#archive-output-3tz-and-slpk).
+The [browser archive example](/examples/i3s-slpk) accepts a 3D Tiles URL, an I3S layer URL,
+or a local SLPK file and converts selected meshes to either SLPK or 3TZ. It provides metadata
+inspection, explicit selection, progress, cancellation, download/preview and native file saving
+where supported. Its limits are 1,000 inspected declarations/nodes, 64 mesh placements,
+16 MiB input and decoded-resource budgets, 32 MiB output/archive budgets and 1 cm position
+rounding. Local SLPK files must be at most 16 MiB. These limits do not bound total peak memory.
+
+Outputs are flat partial collections; source LOD/refinement is not preserved. Feature schemas
+and CRS/height operations must be declared explicitly. I3S-to-3TZ conversion requires a
+conservative geometric error in meters. Remote SLPK and 3TZ conversion input are not wired
+into the controls, although the viewer loads both archive formats locally or remotely.
+See the [v5 API guide](/docs/modules/tile-converter/api-reference/v5-conversion) for exact profiles.
+
+### Archive output and storage
+
+`createTileConversionArchive` packages successfully finalized format resources as indexed
+SLPK or 3TZ Blobs. Selecting a container does not convert its geometry or metadata.
+
+For application-owned storage, `encodeTileConversionArchiveInBatches` streams finalized SLPK/3TZ
+resources with consumer-controlled backpressure and cancellation. Finalize storage only after
+iteration succeeds and discard partial output on failure. The browser archive example transfers
+acknowledged archive chunks from its worker. It can retain Blob parts for download/preview or,
+where the native save picker is available, await each file write before requesting the next chunk.
+Direct saving collects no archive Blob parts and commits the file only after successful completion;
+cancellation before final close aborts the file stream. Neither mode creates a complete archive
+buffer in the worker or guarantees a total memory cap. See the [v5 application guide](https://github.com/visgl/loaders.gl/tree/master/apps/tile-converter#stream-an-archive-to-storage).
 
 ## References
 
@@ -117,13 +144,3 @@ The tile-converter module represents a major development effort and was funded a
 ![logo](./images/esri.jpeg)
 
 MIT License.
-
-
-For application-owned storage, `encodeTileConversionArchiveInBatches` streams finalized SLPK/3TZ
-resources with consumer-controlled backpressure and cancellation. Finalize storage only after
-iteration succeeds and discard partial output on failure. The browser archive example transfers
-acknowledged archive chunks from its worker. It can retain Blob parts for download/preview or,
-where the native save picker is available, await each file write before requesting the next chunk.
-Direct saving collects no archive Blob parts and commits the file only after successful completion;
-cancellation before final close aborts the file stream. Neither mode creates a complete archive
-buffer in the worker or guarantees a total memory cap. See the [v5 application guide](https://github.com/visgl/loaders.gl/tree/master/apps/tile-converter#stream-an-archive-to-storage).
