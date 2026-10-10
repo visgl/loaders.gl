@@ -25,6 +25,7 @@
   },
   "references": [
     {"path": "../core"},
-    {"path": "../loader-utils"}
+    {"path": "../loader-utils"},
+    {"path": "../schema-utils"}
   ]
 }

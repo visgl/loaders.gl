@@ -81,3 +81,11 @@ Examples:
 
     # convert data.las with smaller point spacing by setting diagonal fraction to 1000 (Default is 200)
     ./Model3DTiler ~/Documents/data.las -o ~/test --output-format PNTS --draco --position-bits 8 --latitude 37.789874 --longitude -122.400326 --altitude -8.0 -d 1000
+
+## TypeScript authoring
+
+The portable `PointCloudTiler` in `@loaders.gl/schema-utils` and `PointCloudTileSource`
+in `@loaders.gl/tiles/point-cloud-tile-source-loader` provide a new in-memory additive
+octree implementation for decoded point data. See the
+[dynamic point source reference](../../docs/modules/tiles/api-reference/point-cloud-tile-source.md).
+The C++ command-line converter remains a separate legacy implementation.

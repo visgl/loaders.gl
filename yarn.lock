@@ -5987,6 +5987,7 @@ __metadata:
     "@deck.gl/core": "npm:^9.4.0"
     "@loaders.gl/loader-utils": "npm:5.0.0-alpha.11"
     "@loaders.gl/schema": "npm:5.0.0-alpha.11"
+    "@loaders.gl/schema-utils": "npm:5.0.0-alpha.11"
     "@math.gl/core": "npm:5.0.0-alpha.15"
     "@math.gl/crs": "npm:5.0.0-alpha.15"
     "@math.gl/culling": "npm:5.0.0-alpha.15"

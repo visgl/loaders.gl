@@ -18,6 +18,7 @@ npm install @loaders.gl/schema-utils
 | Table access | `getTableLength`, `getTableCell`, `getTableRowAsObject`, `makeRowIterator` |
 | Batch construction | `TableBatchBuilder`, `makeTableBatchIterator`, `makeBatchFromTable` |
 | Arrow queries | `queryArrowTable`, `selectArrowTableRows` |
+| Point authoring | `PointCloudTiler` (bounded additive octree from decoded Mesh/Arrow points) |
 | Mesh tables | `convertMeshToTable`, `convertTableToMesh`, `getMeshBoundingBox` |
 
 ## Converting table representations
@@ -36,3 +37,6 @@ exists. Geometry conversion requires the separate
 
 See [converter usage](/docs/developer-guide/converters/dispatcher) and
 [table representations](/docs/specifications/category-table).
+
+See the [dynamic point source reference](/docs/modules/tiles/api-reference/point-cloud-tile-source)
+for `PointCloudTiler` ownership, coordinate and memory-limit contracts.

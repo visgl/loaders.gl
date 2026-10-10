@@ -390,6 +390,9 @@
       "@loaders.gl/shapefile/test": [
         "modules/shapefile/test"
       ],
+      "@loaders.gl/tiles/point-cloud-tile-source-loader": [
+        "modules/tiles/src/point-cloud-tile-source-loader.ts"
+      ],
       "@loaders.gl/tiles": [
         "modules/tiles/src"
       ],
