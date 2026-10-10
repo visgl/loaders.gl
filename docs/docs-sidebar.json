@@ -73,6 +73,7 @@
       "modules/pcd/formats/pcd",
       "modules/ply/formats/ply",
       "modules/pmtiles/formats/pmtiles",
+      "modules/potree/formats/potree",
       "modules/textures/formats/pvr",
       "modules/shapefile/formats/shapefile",
       "modules/stac/formats/stac",
