@@ -109,6 +109,8 @@ export class PotreeNodesSource
   invalidBoundsWarningIds: Set<string> = new Set();
 
   private initPromise: Promise<void> | null = null;
+  /** Shared hierarchy page reads for boundary nodes. */
+  private readonly hierarchyPages = new Map<string, Promise<void>>();
 
   /**
    * @constructor
@@ -434,6 +436,14 @@ export class PotreeNodesSource
       return [];
     }
 
+    if (node.hasChildren && !node.children.length && !this.metadata?.hierarchy?.length) {
+      let page = this.hierarchyPages.get(node.name);
+      if (!page) {
+        page = this.loadHierarchyPage(node);
+        this.hierarchyPages.set(node.name, page);
+      }
+      await page;
+    }
     return node.children.map(child => this.getTileHeader(child));
   }
 
@@ -504,9 +514,30 @@ export class PotreeNodesSource
     }
 
     this.root = await this.loadWithCoreApi(
-      `${this.baseUrl}/${this.metadata?.octreeDir}/r/r.hrc`,
-      PotreeHierarchyChunkLoaderWithParser
+      this.resolveOctreeResource('r/r.hrc'),
+      PotreeHierarchyChunkLoaderWithParser,
+      {potree: {maximumDepth: this.metadata?.hierarchyStepSize, spacing: this.metadata?.spacing}}
     );
+    this.indexNodes();
+  }
+
+  /** Hydrates a boundary page without changing existing parent/root object identity. */
+  private async loadHierarchyPage(node: POTreeNode): Promise<void> {
+    const root = await this.loadWithCoreApi(
+      this.getNodeContentUrl(node.name, 'hrc'),
+      PotreeHierarchyChunkLoaderWithParser,
+      {
+        potree: {
+          rootName: node.name,
+          maximumDepth: this.metadata!.hierarchyStepSize,
+          spacing: this.metadata!.spacing
+        }
+      }
+    );
+    if (root.pointCount !== node.pointCount || root.header.childMask !== node.header.childMask)
+      throw new Error('Potree hierarchy page root disagrees with its parent page');
+    node.children = root.children;
+    node.childrenByIndex = root.childrenByIndex;
     this.indexNodes();
   }
 
@@ -518,7 +549,15 @@ export class PotreeNodesSource
   ): Promise<T> {
     throwIfPotreeScanAborted(signal);
     if (this.hasCoreApi) {
-      const loaderOptions = options || this.loadOptions;
+      const loaderOptions = {
+        ...this.loadOptions,
+        ...options,
+        core: {...this.loadOptions.core, ...options?.core},
+        potree: {
+          ...this.loadOptions.potree,
+          ...(options?.potree as Record<string, unknown> | undefined)
+        }
+      };
       const cancellableOptions = signal
         ? {
             ...loaderOptions,
@@ -543,7 +582,14 @@ export class PotreeNodesSource
     }
 
     throwIfPotreeScanAborted(signal);
-    return await loader.parse(arrayBuffer, options || this.loadOptions);
+    return await loader.parse(arrayBuffer, {
+      ...this.loadOptions,
+      ...options,
+      potree: {
+        ...this.loadOptions.potree,
+        ...(options?.potree as Record<string, unknown> | undefined)
+      }
+    });
   }
 
   /**
@@ -838,10 +884,31 @@ export class PotreeNodesSource
     const nodeId = nodeName ? `r${nodeName}` : 'r';
 
     if (this.metadata?.hierarchy?.length) {
-      return `${this.baseUrl}/${this.metadata.octreeDir}/${nodeId}.${contentExtension}`;
+      const {minor} = parseVersion(this.metadata.version);
+      return this.resolveOctreeResource(
+        `${nodeId}${contentExtension === 'bin' && minor <= 3 ? '' : `.${contentExtension}`}`
+      );
     }
 
-    return `${this.baseUrl}/${this.metadata?.octreeDir}/r/${nodeId}.${contentExtension}`;
+    const step = this.metadata?.hierarchyStepSize ?? 5;
+    let directory = 'r';
+    for (let offset = 0; offset + step <= nodeName.length; offset += step)
+      directory += `/${nodeName.slice(offset, offset + step)}`;
+    return this.resolveOctreeResource(`${directory}/${nodeId}.${contentExtension}`);
+  }
+
+  /** Resolves local/remote octree directories and retains same-origin URL credentials. */
+  private resolveOctreeResource(path: string): string {
+    try {
+      const root = new URL(this.metadataUrl);
+      const directory = new URL(this.metadata!.octreeDir, root);
+      if (!directory.pathname.endsWith('/')) directory.pathname += '/';
+      const url = new URL(path, directory);
+      url.search = directory.search || (url.origin === root.origin ? root.search : '');
+      return url.href;
+    } catch {
+      return `${this.baseUrl}/${this.metadata!.octreeDir}/${path}`;
+    }
   }
 
   /**
@@ -897,6 +964,7 @@ export class PotreeNodesSource
     return {
       potree: {
         pointAttributes: this.metadata.pointAttributes,
+        version: this.metadata.version,
         scale: this.metadata.scale,
         positionOrigin,
         nodeBoundingBox: tileBoundingBox,

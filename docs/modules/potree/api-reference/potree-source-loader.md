@@ -14,7 +14,7 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
   title="Traverse an octree as the view moves."
   description="PotreeSourceLoader turns supported Potree metadata and node payloads into a source that can be traversed progressively. It shares the point-cloud runtime model with COPC while respecting Potree's own layouts."
   tone="violet"
-  meta={['Potree 1.4–1.8', 'Octree nodes', 'Progressive loading']}
+  meta={['Potree 1.0–1.8', 'Octree nodes', 'Progressive loading']}
   links={[
     {label: 'Potree module', to: '/docs/modules/potree'},
     {label: 'COPC source', to: '/docs/modules/copc/api-reference/copc-source-loader'}
@@ -78,3 +78,8 @@ The created data source exposes the point-cloud tile methods used by `PointCloud
 - See the [Potree module overview](/docs/modules/potree) for the Potree format version support matrix.
 - `LAS` and `LAZ` node payloads are loaded through `LASLoader`.
 - Binary Potree point attribute payloads are loaded through `PotreeBinLoader`.
+
+## Current PotreeConverter datasets
+
+Use [Potree2SourceLoader](./potree2-source-loader) for `metadata.json` / `hierarchy.bin` /
+`octree.bin` datasets. Use [Potree writers](./potree-writer) to generate complete file collections.

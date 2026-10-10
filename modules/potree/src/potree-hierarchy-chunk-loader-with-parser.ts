@@ -13,9 +13,17 @@ const {
   ...PotreeHierarchyChunkLoaderMetadataWithoutPreload
 } = PotreeHierarchyChunkLoaderMetadata;
 
+/** Hierarchy page context supplied by a dataset source. */
+type PotreeHierarchyOptions = {
+  /** Global address, page depth and root spacing. */
+  potree?: {rootName?: string; maximumDepth?: number; spacing?: number};
+};
+
 /** Potree hierarchy chunk loader */
 export const PotreeHierarchyChunkLoaderWithParser = {
   ...PotreeHierarchyChunkLoaderMetadataWithoutPreload,
-  parse: async (arrayBuffer, options) => parsePotreeHierarchyChunk(arrayBuffer),
-  parseSync: (arrayBuffer, options) => parsePotreeHierarchyChunk(arrayBuffer)
+  parse: async (arrayBuffer, options) =>
+    parsePotreeHierarchyChunk(arrayBuffer, (options as PotreeHierarchyOptions)?.potree),
+  parseSync: (arrayBuffer, options) =>
+    parsePotreeHierarchyChunk(arrayBuffer, (options as PotreeHierarchyOptions)?.potree)
 } as const satisfies LoaderWithParser<POTreeNode, never, POTreeLoaderOptions>;

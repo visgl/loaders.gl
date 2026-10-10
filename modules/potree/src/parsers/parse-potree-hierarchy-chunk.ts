@@ -103,9 +103,19 @@ export type POTreeNode = {
  * @param arrayBuffer - binary index data
  * @returns root node
  **/
-export function parsePotreeHierarchyChunk(arrayBuffer: ArrayBuffer): POTreeNode {
-  const tileHeaders = parseBinaryChunk(arrayBuffer);
-  return buildHierarchy(tileHeaders);
+export function parsePotreeHierarchyChunk(
+  arrayBuffer: ArrayBuffer,
+  options: {
+    /** Global internal node name for a paged hierarchy root. */
+    rootName?: string;
+    /** Number of levels represented in this page. */
+    maximumDepth?: number;
+    /** Dataset root spacing, retained in global node levels. */
+    spacing?: number;
+  } = {}
+): POTreeNode {
+  const tileHeaders = parseBinaryChunk(arrayBuffer, options);
+  return buildHierarchy(tileHeaders, options);
 }
 
 /**
@@ -176,43 +186,47 @@ export function buildPotreeHierarchyFromMetadata(
  * @param byteOffset - byte offset to start from
  * @returns flat nodes array
  * */
-function parseBinaryChunk(arrayBuffer: ArrayBuffer, byteOffset = 0): POTreeNode[] {
-  const dataView = new DataView(arrayBuffer);
-
-  const stack: POTreeNode[] = [];
-
-  // Get root mask
-  // @ts-expect-error
-  const topTileHeader: POTreeNode = {};
-  byteOffset = decodeRow(dataView, byteOffset, topTileHeader);
-
-  stack.push(topTileHeader);
-  const tileHeaders: POTreeNode[] = [topTileHeader];
-
-  while (stack.length > 0) {
-    const snode = stack.shift();
-    let mask = 1;
-
-    for (let i = 0; i < 8; i++) {
-      if (snode && (snode.header.childMask & mask) !== 0) {
-        // @ts-expect-error
-        const tileHeader: POTreeNode = {};
-        byteOffset = decodeRow(dataView, byteOffset, tileHeader);
-        tileHeader.name = snode.name + i;
-
-        stack.push(tileHeader);
-        tileHeaders.push(tileHeader);
-        snode.header.childCount++;
+function parseBinaryChunk(
+  arrayBuffer: ArrayBuffer,
+  options: {rootName?: string; maximumDepth?: number}
+): POTreeNode[] {
+  const rootName = options.rootName ?? '';
+  const maximumDepth = options.maximumDepth ?? 5;
+  if (
+    !/^[0-7]*$/.test(rootName) ||
+    !Number.isSafeInteger(maximumDepth) ||
+    maximumDepth < 1 ||
+    maximumDepth > 24 ||
+    !arrayBuffer.byteLength ||
+    arrayBuffer.byteLength % 5 ||
+    arrayBuffer.byteLength / 5 > 100000
+  )
+    throw new Error('Invalid Potree hierarchy page');
+  const view = new DataView(arrayBuffer);
+  const names = [rootName];
+  const nodes: POTreeNode[] = [];
+  for (let offset = 0; offset < arrayBuffer.byteLength; offset += 5) {
+    const name = names[nodes.length];
+    if (name === undefined) throw new Error('Unexpected Potree hierarchy records');
+    const mask = view.getUint8(offset);
+    const node = {
+      name,
+      pointCount: view.getUint32(offset + 1, true),
+      header: {
+        name: `r${name}`,
+        childMask: mask,
+        childCount: Array.from({length: 8}, (_, octant) =>
+          mask & (1 << octant) ? Number(1) : Number(0)
+        ).reduce((left, right) => left + right, 0)
       }
-      mask = mask * 2;
-    }
-
-    if (byteOffset === dataView.byteLength) {
-      break;
-    }
+    } as POTreeNode;
+    nodes.push(node);
+    if (name.length - rootName.length < maximumDepth)
+      for (let octant = 0; octant < 8; octant++)
+        if (mask & (1 << octant)) names.push(`${name}${octant}`);
   }
-
-  return tileHeaders;
+  if (nodes.length !== names.length) throw new Error('Truncated Potree hierarchy page');
+  return nodes;
 }
 
 /**
@@ -222,16 +236,6 @@ function parseBinaryChunk(arrayBuffer: ArrayBuffer, byteOffset = 0): POTreeNode[
  * @param tileHeader - container to read to
  * @returns new offset
  */
-function decodeRow(dataView: DataView, byteOffset: number, tileHeader: POTreeNode): number {
-  tileHeader.header = tileHeader.header || {};
-  tileHeader.header.childMask = dataView.getUint8(byteOffset);
-  tileHeader.header.childCount = 0;
-  tileHeader.pointCount = dataView.getUint32(byteOffset + 1, true);
-  tileHeader.name = '';
-  byteOffset += 5;
-  return byteOffset;
-}
-
 /**
  * Converts Potree public node ids (`r`, `r123`) to internal node names (``, `123`).
  */
@@ -257,7 +261,7 @@ function buildHierarchy(flatNodes: POTreeNode[], options: {spacing?: number} = {
     // assert(parentNode && level >= 0);
 
     node.level = level;
-    node.hasChildren = Boolean(node.header.childCount);
+    node.hasChildren = Boolean(node.header.childMask);
     node.children = [];
     node.childrenByIndex = new Array(8).fill(null);
     node.spacing = (options?.spacing || 0) / Math.pow(2, level);

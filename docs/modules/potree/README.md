@@ -14,7 +14,7 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
   title="Traverse Potree clouds without loading the whole octree."
   description="Potree datasets expose a hierarchy and node payloads that can be requested progressively. loaders.gl turns supported Potree layouts into a source and scan shape that applications can use alongside COPC."
   tone="violet"
-  meta={['Potree 1.4–1.8', 'Octree traversal', 'Progressive point batches']}
+  meta={['Potree 1.0–1.8 and 2.0', 'Octree traversal', 'Progressive point batches']}
   links={[
     {label: '3D data formats', to: '/docs/developer-guide/3d-data-formats'},
     {label: 'Potree source', to: '/docs/modules/potree/api-reference/potree-source-loader'}
@@ -40,7 +40,7 @@ point-cloud CRS support matrix and reprojection roadmap.
   description="Metadata identifies the coordinate system, point attributes, and node layout. Traversal then selects the nodes that match the view or scan request and fetches only their payloads."
   tone="violet"
   items={[
-    {label: 'Supported layouts', value: 'Potree 1.4 through 1.8 node and hierarchy variants'},
+    {label: 'Supported layouts', value: 'Potree 1.0–1.8 and current 2.0 dataset layouts'},
     {label: 'Traversal', value: 'Bounds, levels, spacing, and cancellation'},
     {label: 'Payloads', value: 'Potree binary nodes plus LAS and LAZ records'},
     {label: 'Output', value: 'Point tiles and ordered Arrow point batches'}
@@ -57,18 +57,20 @@ Support for loading and traversing [potree](http://potree.org/) format point clo
 
 ## Format Support
 
-| Potree format version | Supported | Notes |
-| --- | --- | --- |
-| 1.0 - 1.3 | ❌ | Older metadata and node layouts are not supported by `PotreeSourceLoader`. |
-| 1.4 | ✅ | Supports inline `cloud.js` hierarchy metadata and flat `octreeDir/r*.bin` node payloads. |
-| 1.5 - 1.6 | ✅ | Supports Potree 1.x binary node payloads with `POSITION_CARTESIAN` attributes. |
-| 1.7 | ✅ | Supports hierarchy chunk files and nested `octreeDir/r/r*.bin` node payloads. |
-| 1.8 | ✅ | Supports hierarchy chunk files and `LAS`, `LAZ`, or Potree binary point payloads. |
-| 2.x | ❌ | Potree 2.x metadata and octree layouts are not supported. |
+| Dataset version | Read | Write | Layout |
+| --- | --- | --- | --- |
+| 1.0–1.3 | ✅ | ✅ | Absolute float32 XYZ/RGBA; flat extensionless nodes and inline hierarchy |
+| 1.4 | ✅ | ✅ | Quantized node-relative XYZ; flat binary nodes and inline hierarchy |
+| 1.5–1.8 | ✅ | ✅ binary | Paged HRC hierarchy; binary, LAS or LAZ node payloads |
+| 2.0 | ✅ DEFAULT/BROTLI | ✅ DEFAULT | Three-file range-readable octree from PotreeConverter 2.x |
+
+Use `PotreeSourceLoader` for 1.x and [Potree2SourceLoader](/docs/modules/potree/api-reference/potree2-source-loader)
+for 2.0. Converter/viewer release numbers are distinct from dataset versions. See
+[Potree writers](/docs/modules/potree/api-reference/potree-writer) for complete typed file collections.
 
 ## Scan support
 
-For supported Potree versions and layouts, `PotreeNodeSource` exposes the same point-cloud query
+For supported **1.x** Potree versions and layouts, `PotreeNodeSource` exposes the same point-cloud query
 shape as COPC. Unsupported versions publish metadata with a reason and do not claim an executor.
 
 | Capability | Support | Execution |
@@ -119,15 +121,16 @@ This modules provides the following exports:
 - `PotreeHierarchyChunkLoader` for the hierarchy indices
 - `PotreeSourceLoader` for point-cloud tile sources <img src="https://img.shields.io/badge/From-v5.0-blue.svg?style=flat-square" alt="From-v5.0" />
 
-## Roadmap
+## Modern sources and authoring
 
-The plan is to provide the following loaders/writers:
+- `Potree2Loader`: metadata-only declaration loader with a parser subpath.
+- `Potree2SourceLoader`: lazy native-coordinate range source compatible with `PointCloudTileset`
+  and v5 tile-converter traversal. It does not yet implement the query `scan()` API.
+- `PotreeWriter`: standard metadata writer.
+- `encodePotreeDataset`: complete legacy or modern file collections from decoded Mesh/Arrow rows.
 
-- `PotreeLoader` for individual tiles
-
-`PotreeLoader` is intended to work with the 3d tileset classes in the `@loaders.gl/3d-tiles` module.
-
-- `Tileset3D` class will be generalized to accept loaded potree tilesets.
+Follow-ups include 2.0 query scans, BROTLI output, out-of-core authoring and application download
+examples. Native modern coordinates retain their CRS declaration without automatic projection.
 
 ## Attribution
 
