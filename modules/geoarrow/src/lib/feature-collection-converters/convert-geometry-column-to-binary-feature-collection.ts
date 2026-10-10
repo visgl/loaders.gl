@@ -15,8 +15,8 @@ import type {
 import {convertTable} from '@loaders.gl/schema-utils';
 import {earcut} from '@math.gl/polygon';
 import type {GeoArrowBuilderEncoding} from '@loaders.gl/arrow-geometry';
-import {convertWKBToGeometry} from '../geometry-converters/wkb/convert-wkb-to-geometry';
-import {convertWKTToGeometry} from '../geometry-converters/wkb/convert-wkt-to-geometry';
+import {convertWKBToGeometry} from '@loaders.gl/arrow-geometry/geometry-codecs';
+import {convertWKTToGeometry} from '@loaders.gl/arrow-geometry/geometry-codecs';
 
 /** Supported geometry encodings for direct binary rendering. */
 export type GeometryColumnBinaryEncoding = 'wkb' | 'wkt' | GeoArrowBuilderEncoding;

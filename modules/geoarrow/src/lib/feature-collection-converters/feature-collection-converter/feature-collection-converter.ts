@@ -9,9 +9,9 @@ import type {
   FlatFeature
 } from '@loaders.gl/schema';
 import type {Converter} from '@loaders.gl/schema-utils';
-import type {FlatGeojsonToBinaryOptions} from '../convert-flat-geojson-to-binary-features';
-import type {GeojsonToBinaryOptions} from '../convert-geojson-to-binary-features';
-import type {GeojsonToFlatGeojsonOptions} from '../convert-geojson-to-flat-geojson';
+import type {FlatGeojsonToBinaryOptions} from '@loaders.gl/arrow-geometry/legacy-binary';
+import type {GeojsonToBinaryOptions} from '@loaders.gl/arrow-geometry/legacy-binary';
+import type {GeojsonToFlatGeojsonOptions} from '@loaders.gl/arrow-geometry/legacy-binary';
 import {
   convertFeatureCollection,
   isBinaryFeatureCollection,

@@ -12,7 +12,7 @@ import type {
 } from '@loaders.gl/schema';
 import {getGeometryMetadataForField} from './metadata/geoarrow-metadata';
 import {getGeoArrowGeometryInfoFromLayout} from './get-geoarrow-geometry-info';
-import {getWKBGeometryStatistics} from '@loaders.gl/gis';
+import {scanWKB} from '@math.gl/wkb';
 import {convertWKTToGeometry} from '@loaders.gl/arrow-geometry/geometry-codecs';
 import {inspectGeoArrowLayout} from './geoarrow-layout';
 
@@ -416,7 +416,7 @@ function validateSerializedVector(
         if (!(value instanceof Uint8Array)) {
           throw new Error('value is not a Uint8Array');
         }
-        getWKBGeometryStatistics(value);
+        scanWKB(value);
       } else if (typeof value !== 'string' || !convertWKTToGeometry(value)) {
         throw new Error('value is not valid WKT');
       }

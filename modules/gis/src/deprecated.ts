@@ -2,20 +2,20 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import {convertBinaryFeatureCollectionToGeojson as convertBinaryFeatureCollectionToGeojsonImplementation} from './lib/feature-collection-converters/convert-binary-features-to-geojson';
+import {convertBinaryFeatureCollectionToGeojson as convertBinaryFeatureCollectionToGeojsonImplementation} from '@loaders.gl/geoarrow';
 import {convertFlatGeojsonToBinaryFeatureCollection as convertFlatGeojsonToBinaryFeatureCollectionImplementation} from './lib/feature-collection-converters/convert-flat-geojson-to-binary-features';
 import {convertGeojsonToBinaryFeatureCollection as convertGeojsonToBinaryFeatureCollectionImplementation} from './lib/feature-collection-converters/convert-geojson-to-binary-features';
 import {convertGeojsonToFlatGeojson as convertGeojsonToFlatGeojsonImplementation} from './lib/feature-collection-converters/convert-geojson-to-flat-geojson';
-import {convertBinaryGeometryToGeometry as convertBinaryGeometryToGeometryImplementation} from './lib/geometry-converters/convert-binary-geometry-to-geojson';
+import {convertBinaryGeometryToGeometry as convertBinaryGeometryToGeometryImplementation} from '@loaders.gl/geoarrow';
 import {convertGeometryToWKB as convertGeometryToWKBImplementation} from './lib/geometry-converters/wkb/convert-geometry-to-wkb';
 import {convertGeometryToWKT as convertGeometryToWKTImplementation} from './lib/geometry-converters/wkb/convert-geometry-to-wkt';
 import {
   convertGeometryToTWKB as convertGeometryToTWKBImplementation,
   convertTWKBToGeometry as convertTWKBToGeometryImplementation
 } from '@loaders.gl/wkt/twkb';
-import {convertWKBToBinaryGeometry as convertWKBToBinaryGeometryImplementation} from './lib/geometry-converters/wkb/convert-wkb-to-binary-geometry';
+import {convertWKBToBinaryGeometry as convertWKBToBinaryGeometryImplementation} from '@loaders.gl/geoarrow';
 import {convertWKBToGeometry as convertWKBToGeometryImplementation} from './lib/geometry-converters/wkb/convert-wkb-to-geometry';
-import {convertWKBTableToGeoJSON as convertWKBTableToGeoJSONImplementation} from './lib/table-converters/convert-wkb-table-to-geojson';
+import {convertWKBTableToGeoJSON as convertWKBTableToGeoJSONImplementation} from '@loaders.gl/arrow-geometry/wkb-table';
 import {convertWKTToGeometry as convertWKTToGeometryImplementation} from './lib/geometry-converters/wkb/convert-wkt-to-geometry';
 
 /**

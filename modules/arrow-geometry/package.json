@@ -69,6 +69,21 @@
       "types": "./dist/binary-geometry-to-wkb.d.ts",
       "import": "./dist/binary-geometry-to-wkb.js",
       "require": "./dist/binary-geometry-to-wkb.cjs"
+    },
+    "./wkb-table": {
+      "types": "./dist/wkb-table.d.ts",
+      "import": "./dist/wkb-table.js",
+      "require": "./dist/wkb-table.cjs"
+    },
+    "./wkb-statistics": {
+      "types": "./dist/wkb-statistics.d.ts",
+      "import": "./dist/wkb-statistics.js",
+      "require": "./dist/wkb-statistics.cjs"
+    },
+    "./native-geometry": {
+      "types": "./dist/native-geometry.d.ts",
+      "import": "./dist/native-geometry.js",
+      "require": "./dist/native-geometry.cjs"
     }
   },
   "files": [

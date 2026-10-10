@@ -2,8 +2,8 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import {FeatureCollectionConverter} from './lib/feature-collection-converters/feature-collection-converter/feature-collection-converter';
-import {GeometryConverter} from './lib/geometry-converters/geometry-converter/geometry-converter';
+import {FeatureCollectionConverter} from '@loaders.gl/geoarrow';
+import {GeometryConverter} from '@loaders.gl/geoarrow';
 
 /**
  * Opt-in GIS converter bundle.

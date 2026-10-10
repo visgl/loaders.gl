@@ -6,10 +6,10 @@ import type {Geometry, BinaryGeometry} from '@loaders.gl/schema';
 
 import {convertGeometryToWKB} from './wkb/convert-geometry-to-wkb';
 import {convertGeometryToWKT} from './wkb/convert-geometry-to-wkt';
-import {convertWKBToBinaryGeometry} from './wkb/convert-wkb-to-binary-geometry';
+import {convertWKBToBinaryGeometry} from '@loaders.gl/geoarrow';
 import {convertWKTToGeometry} from './wkb/convert-wkt-to-geometry';
 
-import {convertBinaryGeometryToGeometry} from './convert-binary-geometry-to-geojson';
+import {convertBinaryGeometryToGeometry} from '@loaders.gl/geoarrow';
 
 export function convertToGeoJSON(geometry: ArrayBuffer | string): Geometry {
   if (geometry instanceof ArrayBuffer) {

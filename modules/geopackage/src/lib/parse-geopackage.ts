@@ -21,7 +21,7 @@ import {
 } from '@loaders.gl/arrow-geometry/geometry-field';
 import {convertWKBToGeometry} from '@loaders.gl/arrow-geometry/geometry-codecs';
 import {reprojectWKBInPlace} from '@loaders.gl/arrow-geometry/binary-geometry-to-wkb';
-import {transformGeoJsonCoords} from '@loaders.gl/gis';
+import {transformGeoJsonCoords} from '@loaders.gl/arrow-geometry/legacy-binary';
 import {convertFeaturesToGeoArrowTable} from '@loaders.gl/arrow-geometry/feature-table';
 import {projectionEngine} from '@math.gl/projection';
 import type {Projection} from '@math.gl/projection';

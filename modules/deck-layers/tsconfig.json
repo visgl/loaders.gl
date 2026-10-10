@@ -13,6 +13,7 @@
     {"path": "../core"},
     {"path": "../crypto"},
     {"path": "../geoarrow"},
+    {"path": "../gis"},
     {"path": "../loader-utils"},
     {"path": "../schema"},
     {"path": "../schema-utils"},

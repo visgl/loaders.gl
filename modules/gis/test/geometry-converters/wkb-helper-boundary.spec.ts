@@ -4,18 +4,8 @@
 
 import {describe, expect, test} from 'vitest';
 import {HexEncoder} from '../../src/lib/utils/hex-encoder';
-import {
-  getWKTGeometryType,
-  isWKB,
-  isWKT,
-  parseWKBHeader
-} from '../../src/lib/geometry-converters/wkb/helpers/parse-wkb-header';
-import {
-  EWKB_FLAG_M,
-  EWKB_FLAG_SRID,
-  EWKB_FLAG_Z,
-  WKBGeometryType
-} from '../../src/lib/geometry-converters/wkb/helpers/wkb-types';
+import {getWKTGeometryType, isWKB, isWKT, parseWKBHeader} from '@loaders.gl/geoarrow';
+import {EWKB_FLAG_M, EWKB_FLAG_SRID, EWKB_FLAG_Z, WKBGeometryType} from '@loaders.gl/geoarrow';
 
 /** Encodes a compact WKB header for little- or big-endian boundary tests. */
 function makeHeader(geometryCode: number, littleEndian = true, srid?: number): ArrayBuffer {

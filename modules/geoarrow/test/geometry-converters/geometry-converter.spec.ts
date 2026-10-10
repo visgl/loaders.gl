@@ -2,13 +2,9 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
+import {convertGeometryToTWKB} from '@loaders.gl/wkt/twkb';
 import type {BinaryGeometry, Geometry} from '@loaders.gl/schema';
-import {
-  GeometryConverter,
-  convertGeometryToTWKB,
-  convertGeometryToWKB,
-  convertGeometryToWKT
-} from '@loaders.gl/gis';
+import {GeometryConverter, convertGeometryToWKB, convertGeometryToWKT} from '@loaders.gl/geoarrow';
 import {describe, expect, test} from 'vitest';
 
 const POINT: Geometry = {type: 'Point', coordinates: [1, 2]};

@@ -3,19 +3,19 @@
 // Copyright (c) vis.gl contributors
 
 import type {BinaryFeatureCollection, Feature, FlatFeature} from '@loaders.gl/schema';
-import type {GeojsonGeometryInfo} from '../../geometry-api/geometry-info';
+import type {GeojsonGeometryInfo} from '@loaders.gl/arrow-geometry/legacy-binary';
 import {
   convertFlatGeojsonToBinaryFeatureCollection,
   type FlatGeojsonToBinaryOptions
-} from '../convert-flat-geojson-to-binary-features';
+} from '@loaders.gl/arrow-geometry/legacy-binary';
 import {
   convertGeojsonToBinaryFeatureCollection,
   type GeojsonToBinaryOptions
-} from '../convert-geojson-to-binary-features';
+} from '@loaders.gl/arrow-geometry/legacy-binary';
 import {
   convertGeojsonToFlatGeojson,
   type GeojsonToFlatGeojsonOptions
-} from '../convert-geojson-to-flat-geojson';
+} from '@loaders.gl/arrow-geometry/legacy-binary';
 import {convertBinaryFeatureCollectionToGeojson} from '../convert-binary-features-to-geojson';
 import type {
   BinaryToGeojsonFeatureOptions,
@@ -139,6 +139,7 @@ export function isGeojsonFeatureCollection(data: Feature[] | FlatFeature[]): dat
   return !isFlatFeatureCollection(data);
 }
 
+/** Measures the deprecated flat representation for the existing binary materializer. */
 function getGeometryInfoFromFlatFeatures(flatFeatures: FlatFeature[]): GeojsonGeometryInfo {
   const geometryInfo: GeojsonGeometryInfo = {
     coordLength: getCoordLength(flatFeatures),
@@ -182,6 +183,7 @@ function getGeometryInfoFromFlatFeatures(flatFeatures: FlatFeature[]): GeojsonGe
   return geometryInfo;
 }
 
+/** Infers coordinate width for legacy flat feature conversion. */
 function getCoordLength(flatFeatures: FlatFeature[]): number {
   for (const feature of flatFeatures) {
     if (feature.geometry.data.length > 0) {

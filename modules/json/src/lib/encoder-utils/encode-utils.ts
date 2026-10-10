@@ -3,14 +3,9 @@
 // Copyright (c) vis.gl contributors
 // Copyright 2022 Foursquare Labs, Inc.
 
-import {GeometryConverter} from '@loaders.gl/gis';
+import {convertWKTToGeometry} from '@loaders.gl/arrow-geometry/geometry-codecs';
 import type {Feature, Geometry, Table} from '@loaders.gl/schema';
-import {
-  convert,
-  getTableLength,
-  getTableNumCols,
-  getTableRowAsArray
-} from '@loaders.gl/schema-utils';
+import {getTableLength, getTableNumCols, getTableRowAsArray} from '@loaders.gl/schema-utils';
 
 type Row = {[key: string]: unknown};
 
@@ -59,7 +54,7 @@ export function parseGeometryString(value: string): Feature | Geometry | null {
     parsedValue = JSON.parse(value);
   } catch {
     try {
-      parsedValue = convert(value, 'geojson-geometry', GeometryConverter);
+      parsedValue = convertWKTToGeometry(value);
     } catch {
       return null;
     }

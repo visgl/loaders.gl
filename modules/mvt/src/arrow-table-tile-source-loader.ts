@@ -12,8 +12,12 @@ import {
   type GetTileDataParameters,
   type TileSourceMetadata
 } from '@loaders.gl/loader-utils';
-import type {ArrowTable, Schema, Geometry, GeoArrowEncoding} from '@loaders.gl/schema';
-import {GeometryConverter, getGeoArrowNativeGeometry} from '@loaders.gl/gis';
+import type {ArrowTable, Schema, GeoArrowEncoding} from '@loaders.gl/schema';
+import {
+  convertWKBToGeometry,
+  convertWKTToGeometry
+} from '@loaders.gl/arrow-geometry/geometry-codecs';
+import {getGeoArrowNativeGeometry} from '@loaders.gl/arrow-geometry/native-geometry';
 import {getGeoMetadata, setGeoMetadata} from '@loaders.gl/schema';
 import {convertArrowToSchema} from '@loaders.gl/schema-utils';
 import {TableVectorTileSource, TableTileSourceLoader} from './table-tile-source-loader';
@@ -173,7 +177,9 @@ export class ArrowTableVectorTileSource
       if (!column.isValid(rowIndex)) continue;
       const geometry =
         encoding === 'geoarrow.wkb' || encoding === 'geoarrow.wkt'
-          ? (GeometryConverter.convert(column.get(rowIndex), 'geojson-geometry') as Geometry)
+          ? encoding === 'geoarrow.wkb'
+            ? convertWKBToGeometry(column.get(rowIndex))
+            : convertWKTToGeometry(column.get(rowIndex))
           : getGeoArrowNativeGeometry(column, rowIndex, encoding);
       if (geometry)
         features.push(

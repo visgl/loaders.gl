@@ -9,8 +9,8 @@ import type {
   Feature
 } from '@loaders.gl/schema';
 import {describe, expect, test} from 'vitest';
-import {getBinaryGeometryInfo} from '../../src/lib/binary-geometry-api/binary-geometry-info';
-import {convertBinaryGeometryToGeometry} from '../../src/lib/geometry-converters/convert-binary-geometry-to-geojson';
+import {getBinaryGeometryInfo} from '@loaders.gl/geoarrow';
+import {convertBinaryGeometryToGeometry} from '@loaders.gl/geoarrow';
 import {
   concatenateBinaryLineGeometries,
   concatenateBinaryPointGeometries,
@@ -19,7 +19,7 @@ import {
 import {
   transformBinaryCoords,
   transformGeoJsonCoords
-} from '../../src/lib/binary-geometry-api/transform-coordinates';
+} from '@loaders.gl/arrow-geometry/legacy-binary';
 
 describe('binary geometry utilities', () => {
   test('identifies single and multi binary geometries', () => {

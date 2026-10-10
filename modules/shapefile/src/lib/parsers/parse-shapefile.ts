@@ -2,7 +2,6 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-// import type {Feature} from '@loaders.gl/gis';
 import {
   CRSReprojectionError,
   LoaderContext,
@@ -11,7 +10,7 @@ import {
   toArrayBufferIterator
 } from '@loaders.gl/loader-utils';
 import {convertWKBToGeometry} from '@loaders.gl/arrow-geometry/geometry-codecs';
-import {transformGeoJsonCoords} from '@loaders.gl/gis';
+import {transformGeoJsonCoords} from '@loaders.gl/arrow-geometry/legacy-binary';
 import type {
   Feature,
   GeoJsonProperties,

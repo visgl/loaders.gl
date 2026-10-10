@@ -9,7 +9,7 @@
   },
   "references": [
     {"path": "../arrow-geometry"},
-    {"path": "../gis"},
-    {"path": "../schema-utils"}
+    {"path": "../schema-utils"},
+    {"path": "../wkt"}
   ]
 }

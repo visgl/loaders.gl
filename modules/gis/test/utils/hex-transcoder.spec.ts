@@ -1,6 +1,6 @@
 import {expect, test} from 'vitest';
 import {HexWKBLoader} from '@loaders.gl/wkt';
-import {decodeHex, encodeHex} from '../../src/lib/utils/hex-transcoder';
+import {decodeHex, encodeHex} from '@loaders.gl/loader-utils';
 const isHexWKB = HexWKBLoader.testText;
 test('datasetUtils.isHexWKB', () => {
   expect(isHexWKB(''), 'empty string is not a valid hex wkb').toBeFalsy();
