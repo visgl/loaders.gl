@@ -48,8 +48,9 @@ import {createMeshConversionCodec, createSingleMeshTilesetSink} from '@loaders.g
 ```
 
 Existing `/v5` and `/v5/browser` imports remain compatible and combine their previous
-core and adapter exports. The split adds no package dependencies. CLI, v4 and Node
-filesystem/service integration remain separate and unchanged. Core and adapters have
+core and adapter exports. The split adds no package dependencies. The original CLI and v4 remain compatible. The experimental Node source and metadata-only
+CLI below provide the first filesystem integration increment; conversion commands, output
+sinks and service integration remain separate work. Core and adapters have
 ESM, CommonJS and TypeScript declaration exports. The app still declares its existing
 format and Node service dependencies; importing the core isolates its runtime and
 bundle imports, but does not remove those installation dependencies.
@@ -544,3 +545,49 @@ responses and CORS-exposed `Content-Range` plus an ETag or Last-Modified validat
 inspected identity is retained across worker reopening; replaced archives fail instead of
 using stale content declarations. Readers close on success, failure and cancellation.
 Nested/external tilesets and implicit tiling remain unsupported by this bounded example.
+
+## Node inspection and raw content reads
+
+The dedicated `@loaders.gl/tile-converter/v5/node` entrypoint provides
+`createNodeTilesetConversionSource` for explicit 3D Tiles JSON paths/file URLs, HTTP(S) JSON
+URLs and local 3TZ archives. It supplies Node I/O to the existing portable traversal:
+
+```ts
+import {inspectTileset} from '@loaders.gl/tile-converter/v5/core';
+import {createNodeTilesetConversionSource} from '@loaders.gl/tile-converter/v5/node';
+
+const source = await createNodeTilesetConversionSource({
+  input: './dataset.3tz',
+  format: '3tz',
+  signal: abortController.signal
+});
+try {
+  const inspection = await inspectTileset(source, abortController.signal);
+  // source.read(inspection, signal) yields raw Uint8Array contents for your codec.
+} finally {
+  await source.close();
+}
+```
+
+`input` is required; `format` defaults to `3d-tiles`. Optional `maxInputBytes` and
+`maxInputResources` lower the initial 16 MiB / 1,000 content-placement ceilings. `fetcher`
+injects HTTP(S) transport and is never used as a fallback for local inputs. Response bytes
+share a lifetime-wide budget. Local physical reads have a separate aggregate budget checked
+before allocating typed arrays; archive files themselves must also fit that byte ceiling.
+These budgets do not qualify decoder/decompressor peak memory.
+
+Local dependencies must resolve within the root JSON's real directory, including symlinks.
+Archive dependencies must stay in the selected archive. The archive index is loaded once;
+`close()` cancels future I/O and releases its file handle, and is safe to repeat. Use one
+source sequentially, keep input files unchanged during its lifetime and always close in
+`finally`, including after cancellation or errors. No directory snapshot/version pin is claimed.
+
+Inspection reads metadata without loading content, validates the existing explicit 1.0/1.1
+document profile and preserves ordered placements/transforms. Raw reads do not decode meshes,
+infer CRS, qualify content formats or expand nested/implicit datasets. I3S/SLPK sources and
+remote archives remain separate Node profiles. Browser and core entrypoints remain free of
+Node imports.
+
+The [v5 CLI](/docs/modules/tile-converter/cli-reference/tile-converter-v5) exposes this
+metadata inspection as `tile-converter-v5 inspect`; the original `tile-converter` command
+continues to use v4.

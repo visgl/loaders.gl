@@ -44,12 +44,18 @@
       "types": "./dist/v5/adapters.d.ts",
       "import": "./dist/v5/adapters.js",
       "require": "./dist/v5/adapters.cjs"
+    },
+    "./v5/node": {
+      "types": "./dist/v5/node.d.ts",
+      "import": "./dist/v5/node.js",
+      "require": "./dist/v5/node.cjs"
     }
   },
   "sideEffects": false,
   "bin": {
     "i3s-server": "./bin/i3s-server.js",
-    "tile-converter": "./bin/converter.js"
+    "tile-converter": "./bin/converter.js",
+    "tile-converter-v5": "./bin/converter-v5.js"
   },
   "files": [
     "src",
@@ -71,7 +77,7 @@
     "build-converter-bundle": "esbuild src/v4/converter-cli.ts --outfile=dist/converter.min.cjs --platform=node --target=esnext,node14 --external:join-images --minify --bundle --define:__VERSION__=\\\"$npm_package_version\\\"",
     "build-i3s-server-bundle": "esbuild src/v4/i3s-server/bin/www.ts --outfile=dist/i3s-server/bin/i3s-server.min.cjs --platform=node --target=esnext,node14 --minify --bundle --define:__VERSION__=\\\"$npm_package_version\\\"",
     "copy-certificates": "cp -R src/v4/i3s-server/certs dist/i3s-server",
-    "build-v5-entrypoints": "esbuild src/v5/core.ts src/v5/adapters.ts src/v5/index.ts src/v5/browser.ts --bundle --packages=external --external:@loaders.gl/* --platform=browser --outdir=dist/v5 --format=esm && esbuild src/v5/core.ts src/v5/adapters.ts src/v5/index.ts src/v5/browser.ts --bundle --packages=external --external:@loaders.gl/* --platform=browser --outdir=dist/v5 --format=cjs --out-extension:.js=.cjs"
+    "build-v5-entrypoints": "esbuild src/v5/core.ts src/v5/adapters.ts src/v5/index.ts src/v5/browser.ts --bundle --packages=external --external:@loaders.gl/* --platform=browser --outdir=dist/v5 --format=esm && esbuild src/v5/core.ts src/v5/adapters.ts src/v5/index.ts src/v5/browser.ts --bundle --packages=external --external:@loaders.gl/* --platform=browser --outdir=dist/v5 --format=cjs --out-extension:.js=.cjs && esbuild src/v5/node.ts src/v5/converter-cli.ts --bundle --packages=external --external:@loaders.gl/* --platform=node --outdir=dist/v5 --format=esm && esbuild src/v5/node.ts --bundle --packages=external --external:@loaders.gl/* --platform=node --outdir=dist/v5 --format=cjs --out-extension:.js=.cjs"
   },
   "dependencies": {
     "@loaders.gl/3d-tiles": "5.0.0-alpha.11",

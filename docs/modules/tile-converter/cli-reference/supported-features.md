@@ -43,6 +43,16 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
 
 The tile-converter converts data between [3D Tiles](https://github.com/CesiumGS/3d-tiles/tree/main/specification) and [I3S](https://github.com/Esri/i3s-spec). Both specifications include many internal formats and data types; the converter does not cover every feature. This sheet summarizes the current compatibility boundary.
 
+## Experimental v5 Node inspection
+
+The [v5 CLI](/docs/modules/tile-converter/cli-reference/tile-converter-v5) provides metadata-only
+`inspect` for explicit 3D Tiles 1.0/1.1 JSON paths/file URLs or HTTP(S) JSON URLs, and local 3TZ.
+The dedicated `/v5/node` source also yields bounded raw typed-array content reads for supplied
+codecs. It does not decode or convert content or provide full-content validation. Default
+ceilings are 16 MiB and 1,000 content placements; local dependencies stay inside the selected
+directory/archive. I3S/SLPK, remote archives, storage sinks and full dataset extraction remain
+Node follow-ups. The existing `tile-converter` CLI remains v4.
+
 ## Experimental v5 conversion support
 
 These profiles describe the current repository implementation. V5 is experimental and has
