@@ -375,6 +375,10 @@ export class PointCloudTiler {
     Object.freeze(bounds[1]);
     Object.freeze(bounds);
     Object.freeze(state.node);
+    this.signal.throwIfAborted();
+    // Concurrent splits may have inserted children since the preflight check.
+    if (this.nodes.size >= this.options.maxNodes)
+      throw new Error('PointCloudTiler: node budget exceeded');
     this.nodes.set(id, state);
     return state;
   }

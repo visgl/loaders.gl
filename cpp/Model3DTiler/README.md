@@ -85,7 +85,7 @@ Examples:
 ## TypeScript authoring
 
 The portable `PointCloudTiler` in `@loaders.gl/schema-utils` and `PointCloudTileSource`
-in `@loaders.gl/tiles/point-cloud-tile-source-loader` provide a new in-memory additive
+in `@loaders.gl/tiles/point-cloud-tile-source` provide a new in-memory additive
 octree implementation for decoded point data. See the
 [dynamic point source reference](../../docs/modules/tiles/api-reference/point-cloud-tile-source.md).
 The C++ command-line converter remains a separate legacy implementation.

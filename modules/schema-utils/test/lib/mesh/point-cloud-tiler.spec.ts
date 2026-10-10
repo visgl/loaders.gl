@@ -330,3 +330,24 @@ test('retained buffer budgets count large backing buffers, and count shared buff
     tiler.close();
   }
 });
+
+test('concurrent splits cannot exceed the discovered node budget', async () => {
+  const mesh = createPoints(8);
+  mesh.attributes.POSITION.value = Float64Array.from(
+    [0, 1, 2, 3, 7, 8, 9, 10].flatMap(value => [value, value, value])
+  );
+  const tiler = new PointCloudTiler(mesh, {nodePointLimit: 1, maxNodes: 5});
+  try {
+    const children = await tiler.getChildNodes('r');
+    expect(children.map(child => child.id)).toEqual(['r0', 'r7']);
+    const results = await Promise.allSettled(children.map(child => tiler.getChildNodes(child.id)));
+    expect(
+      results.some(
+        result => result.status === 'rejected' && result.reason.message.includes('node budget')
+      )
+    ).toBe(true);
+    await expect(tiler.getRootNode()).rejects.toThrow('closed');
+  } finally {
+    tiler.close();
+  }
+});

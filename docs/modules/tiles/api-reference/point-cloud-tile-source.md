@@ -21,7 +21,7 @@ await tileset.selectTiles(viewport);
 The runtime is also available directly:
 
 ```typescript
-import {PointCloudTileSource} from '@loaders.gl/tiles/point-cloud-tile-source-loader';
+import {PointCloudTileSource} from '@loaders.gl/tiles/point-cloud-tile-source';
 const source = new PointCloudTileSource(pointMesh);
 ```
 

@@ -9,10 +9,8 @@ import {
   PointCloudTileset,
   createTilesetSpatialReference
 } from '@loaders.gl/tiles';
-import {
-  PointCloudTileSource,
-  PointCloudTileSourceLoaderWithParser
-} from '../src/point-cloud-tile-source-loader';
+import {PointCloudTileSourceLoaderWithParser} from '../src/point-cloud-tile-source-loader';
+import {PointCloudTileSource} from '../src/point-cloud-tile-source';
 
 /** Minimal native-coordinate point data with a scalar attribute. */
 function createInput(count = 4): Mesh {
@@ -142,4 +140,13 @@ test('close during initial indexing cannot later report readiness', async () => 
   source.close();
   await expect(source.ready).rejects.toThrow('closed');
   expect(source.isReady).toBe(false);
+});
+
+test('initialize alone handles the shared readiness rejection', async () => {
+  const input = createInput();
+  input.topology = 'triangle-list';
+  const source = new PointCloudTileSource(input);
+  await expect(source.initialize()).rejects.toThrow('point-list');
+  await new Promise<void>(resolve => setTimeout(resolve, 0));
+  source.close();
 });
