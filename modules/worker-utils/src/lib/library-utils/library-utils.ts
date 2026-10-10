@@ -49,7 +49,7 @@ export function extractLoadLibraryOptions<
  *
  * Method depends on environment
  * - browser - script element is created and installed on document
- * - worker - eval is called on global context
+ * - worker - importScripts loads the library in the worker global scope
  * - node - file is required
  *
  * @param libraryUrl
@@ -166,25 +166,8 @@ async function loadLibraryFromFile(libraryUrl: string): Promise<any> {
   return loadLibraryFromString(scriptSource, libraryUrl);
 }
 
-// TODO - Needs security audit...
-//  - Raw eval call
-//  - Potentially bypasses CORS
-// Upside is that this separates fetching and parsing
-// we could create a`LibraryLoader` or`ModuleLoader`
+/** Installs fetched library source on the browser main thread. Workers use importScripts instead. */
 function loadLibraryFromString(scriptSource: string, id: string): null | any {
-  if (!isBrowser) {
-    const {requireFromString} = globalThis.loaders || {};
-    return requireFromString?.(scriptSource, id);
-  }
-
-  if (isWorker) {
-    // Use lvalue trick to make eval run in global scope
-    eval.call(globalThis, scriptSource); // eslint-disable-line no-eval
-    // https://stackoverflow.com/questions/9107240/1-evalthis-vs-evalthis-in-javascript
-    // http://perfectionkills.com/global-eval-what-are-the-options/
-    return null;
-  }
-
   const script = document.createElement('script');
   script.id = id;
   // most browsers like a separate text node but some throw an error. The second method covers those.
