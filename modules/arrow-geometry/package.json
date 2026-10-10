@@ -19,6 +19,56 @@
       "types": "./dist/index.d.ts",
       "import": "./dist/index.js",
       "require": "./dist/index.cjs"
+    },
+    "./legacy-binary": {
+      "types": "./dist/legacy-binary.d.ts",
+      "import": "./dist/legacy-binary.js",
+      "require": "./dist/legacy-binary.cjs"
+    },
+    "./geometry-codecs": {
+      "types": "./dist/geometry-codecs.d.ts",
+      "import": "./dist/geometry-codecs.js",
+      "require": "./dist/geometry-codecs.cjs"
+    },
+    "./geometry-field": {
+      "types": "./dist/geometry-field.d.ts",
+      "import": "./dist/geometry-field.js",
+      "require": "./dist/geometry-field.cjs"
+    },
+    "./wkb-arrow-utils": {
+      "types": "./dist/wkb-arrow-utils.d.ts",
+      "import": "./dist/wkb-arrow-utils.js",
+      "require": "./dist/wkb-arrow-utils.cjs"
+    },
+    "./feature-collection-to-arrow": {
+      "types": "./dist/feature-collection-to-arrow.d.ts",
+      "import": "./dist/feature-collection-to-arrow.js",
+      "require": "./dist/feature-collection-to-arrow.cjs"
+    },
+    "./feature-table": {
+      "types": "./dist/feature-table.d.ts",
+      "import": "./dist/feature-table.js",
+      "require": "./dist/feature-table.cjs"
+    },
+    "./geojson-table": {
+      "types": "./dist/geojson-table.d.ts",
+      "import": "./dist/geojson-table.js",
+      "require": "./dist/geojson-table.cjs"
+    },
+    "./binary-features": {
+      "types": "./dist/binary-features.d.ts",
+      "import": "./dist/binary-features.js",
+      "require": "./dist/binary-features.cjs"
+    },
+    "./sampled-bounds": {
+      "types": "./dist/sampled-bounds.d.ts",
+      "import": "./dist/sampled-bounds.js",
+      "require": "./dist/sampled-bounds.cjs"
+    },
+    "./binary-geometry-to-wkb": {
+      "types": "./dist/binary-geometry-to-wkb.d.ts",
+      "import": "./dist/binary-geometry-to-wkb.js",
+      "require": "./dist/binary-geometry-to-wkb.cjs"
     }
   },
   "files": [
@@ -28,7 +78,11 @@
   ],
   "sideEffects": false,
   "dependencies": {
+    "@loaders.gl/schema": "5.0.0-alpha.11",
+    "@loaders.gl/schema-utils": "5.0.0-alpha.11",
+    "@math.gl/crs": "5.0.0-alpha.15",
     "@math.gl/geoarrow": "5.0.0-alpha.15",
+    "@math.gl/polygon": "5.0.0-alpha.15",
     "@math.gl/wkb": "5.0.0-alpha.15",
     "apache-arrow": ">= 17.0.0"
   }

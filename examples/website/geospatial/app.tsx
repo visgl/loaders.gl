@@ -43,7 +43,8 @@ import {ShapefileLoader} from '@loaders.gl/shapefile';
 import {KMLLoader, GPXLoader, TCXLoader} from '@loaders.gl/kml';
 import {CSVLoader} from '@loaders.gl/csv';
 import {GeoJSONLoader} from '@loaders.gl/json';
-import {convertWKBTableToGeoJSON, getGeoMetadata} from '@loaders.gl/gis';
+import {convertWKBTableToGeoJSON} from '@loaders.gl/gis';
+import {getGeoMetadata} from '@loaders.gl/schema';
 import {convertArrowToSchema, convertTable, getTableLength} from '@loaders.gl/schema-utils';
 
 // Needed for ParquetLoader zstd support

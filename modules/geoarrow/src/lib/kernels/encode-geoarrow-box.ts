@@ -3,7 +3,8 @@
 // Copyright (c) vis.gl contributors
 
 import * as arrow from 'apache-arrow';
-import {convertWKTToGeometry, getWKBGeometryStatistics} from '@loaders.gl/gis';
+import {convertWKTToGeometry} from '@loaders.gl/arrow-geometry/geometry-codecs';
+import {getWKBGeometryStatistics} from '@loaders.gl/gis';
 import type {GeoArrowDimension, GeoArrowEncoding} from '@loaders.gl/schema';
 
 type BoxDimension = 2 | 3 | 4;

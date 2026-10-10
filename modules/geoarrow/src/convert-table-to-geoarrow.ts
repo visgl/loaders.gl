@@ -5,7 +5,7 @@
 import {
   convertFeatureCollectionToGeoArrowTable as convertGISFeatureCollectionToGeoArrowTable,
   convertFeaturesToGeoArrowTable as convertGISFeaturesToGeoArrowTable
-} from '@loaders.gl/gis';
+} from '@loaders.gl/arrow-geometry/feature-table';
 import type {
   ArrowTable,
   Feature,

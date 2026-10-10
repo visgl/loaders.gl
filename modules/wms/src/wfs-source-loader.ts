@@ -3,10 +3,8 @@
 // Copyright (c) vis.gl contributors
 
 import type {Schema, GeoJSONTable, Geometry} from '@loaders.gl/schema';
-import {
-  convertFeaturesToWKBArrowTable,
-  convertGeojsonToBinaryFeatureCollection
-} from '@loaders.gl/gis';
+import {convertFeaturesToWKBArrowTable} from '@loaders.gl/arrow-geometry/feature-collection-to-arrow';
+import {convertGeojsonToBinaryFeatureCollection} from '@loaders.gl/arrow-geometry/legacy-binary';
 import type {
   CoreAPI,
   DataSourceOptions,

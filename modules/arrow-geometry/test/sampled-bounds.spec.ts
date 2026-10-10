@@ -3,7 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import {expect, test} from 'vitest';
-import {updateBoundsFromGeoArrowSamples} from '@loaders.gl/gis';
+import {updateBoundsFromGeoArrowSamples} from '../src/sampled-bounds';
 
 test.each([2, 3, 4])('sampled bounds ignore empty points with %i ordinates', numberOfDimensions => {
   const coordinates = [

@@ -5135,7 +5135,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@loaders.gl/arcgis@workspace:modules/arcgis"
   dependencies:
-    "@loaders.gl/gis": "npm:5.0.0-alpha.11"
+    "@loaders.gl/arrow-geometry": "npm:5.0.0-alpha.11"
     "@loaders.gl/i3s": "npm:5.0.0-alpha.11"
     "@loaders.gl/images": "npm:5.0.0-alpha.11"
     "@loaders.gl/lerc": "npm:5.0.0-alpha.11"
@@ -5151,7 +5151,11 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@loaders.gl/arrow-geometry@workspace:modules/arrow-geometry"
   dependencies:
+    "@loaders.gl/schema": "npm:5.0.0-alpha.11"
+    "@loaders.gl/schema-utils": "npm:5.0.0-alpha.11"
+    "@math.gl/crs": "npm:5.0.0-alpha.15"
     "@math.gl/geoarrow": "npm:5.0.0-alpha.15"
+    "@math.gl/polygon": "npm:5.0.0-alpha.15"
     "@math.gl/wkb": "npm:5.0.0-alpha.15"
     apache-arrow: "npm:>= 17.0.0"
   languageName: unknown
@@ -5163,7 +5167,6 @@ __metadata:
   dependencies:
     "@loaders.gl/arrow-geometry": "npm:5.0.0-alpha.11"
     "@loaders.gl/compression": "npm:5.0.0-alpha.11"
-    "@loaders.gl/gis": "npm:5.0.0-alpha.11"
     "@loaders.gl/loader-utils": "npm:5.0.0-alpha.11"
     "@loaders.gl/schema": "npm:5.0.0-alpha.11"
     "@loaders.gl/schema-utils": "npm:5.0.0-alpha.11"
@@ -5192,7 +5195,6 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@loaders.gl/bson@workspace:modules/bson"
   dependencies:
-    "@loaders.gl/gis": "npm:5.0.0-alpha.11"
     "@loaders.gl/loader-utils": "npm:5.0.0-alpha.11"
     "@loaders.gl/schema": "npm:5.0.0-alpha.11"
     bson: "npm:4.2.0"
@@ -5290,6 +5292,7 @@ __metadata:
   resolution: "@loaders.gl/csv@workspace:modules/csv"
   dependencies:
     "@loaders.gl/arrow": "npm:5.0.0-alpha.11"
+    "@loaders.gl/arrow-geometry": "npm:5.0.0-alpha.11"
     "@loaders.gl/gis": "npm:5.0.0-alpha.11"
     "@loaders.gl/loader-utils": "npm:5.0.0-alpha.11"
     "@loaders.gl/schema": "npm:5.0.0-alpha.11"
@@ -5367,6 +5370,7 @@ __metadata:
   resolution: "@loaders.gl/flatgeobuf@workspace:modules/flatgeobuf"
   dependencies:
     "@loaders.gl/arrow": "npm:5.0.0-alpha.11"
+    "@loaders.gl/arrow-geometry": "npm:5.0.0-alpha.11"
     "@loaders.gl/gis": "npm:5.0.0-alpha.11"
     "@loaders.gl/loader-utils": "npm:5.0.0-alpha.11"
     "@loaders.gl/schema": "npm:5.0.0-alpha.11"
@@ -5402,6 +5406,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@loaders.gl/geopackage@workspace:modules/geopackage"
   dependencies:
+    "@loaders.gl/arrow-geometry": "npm:5.0.0-alpha.11"
     "@loaders.gl/gis": "npm:5.0.0-alpha.11"
     "@loaders.gl/loader-utils": "npm:5.0.0-alpha.11"
     "@loaders.gl/schema": "npm:5.0.0-alpha.11"
@@ -5435,19 +5440,14 @@ __metadata:
   resolution: "@loaders.gl/gis@workspace:modules/gis"
   dependencies:
     "@loaders.gl/arrow-geometry": "npm:5.0.0-alpha.11"
-    "@loaders.gl/loader-utils": "npm:5.0.0-alpha.11"
     "@loaders.gl/schema": "npm:5.0.0-alpha.11"
     "@loaders.gl/schema-utils": "npm:5.0.0-alpha.11"
     "@loaders.gl/wkt": "npm:5.0.0-alpha.11"
-    "@math.gl/crs": "npm:5.0.0-alpha.15"
-    "@math.gl/geoarrow": "npm:5.0.0-alpha.15"
     "@math.gl/geometry-utils": "npm:5.0.0-alpha.15"
     "@math.gl/polygon": "npm:5.0.0-alpha.15"
     "@math.gl/projection": "npm:5.0.0-alpha.15"
-    "@math.gl/types": "npm:5.0.0-alpha.15"
     "@math.gl/wkb": "npm:5.0.0-alpha.15"
     apache-arrow: "npm:>= 17.0.0"
-    zod: "npm:^4.1.12"
   peerDependencies:
     "@loaders.gl/core": ~5.0.0-alpha.0
   languageName: unknown
@@ -5526,6 +5526,7 @@ __metadata:
   resolution: "@loaders.gl/json@workspace:modules/json"
   dependencies:
     "@loaders.gl/arrow": "npm:5.0.0-alpha.11"
+    "@loaders.gl/arrow-geometry": "npm:5.0.0-alpha.11"
     "@loaders.gl/gis": "npm:5.0.0-alpha.11"
     "@loaders.gl/loader-utils": "npm:5.0.0-alpha.11"
     "@loaders.gl/schema": "npm:5.0.0-alpha.11"
@@ -5540,7 +5541,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@loaders.gl/kml@workspace:modules/kml"
   dependencies:
-    "@loaders.gl/gis": "npm:5.0.0-alpha.11"
+    "@loaders.gl/arrow-geometry": "npm:5.0.0-alpha.11"
     "@loaders.gl/loader-utils": "npm:5.0.0-alpha.11"
     "@loaders.gl/schema": "npm:5.0.0-alpha.11"
     "@loaders.gl/schema-utils": "npm:5.0.0-alpha.11"
@@ -5605,7 +5606,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@loaders.gl/mlt@workspace:modules/mlt"
   dependencies:
-    "@loaders.gl/gis": "npm:5.0.0-alpha.11"
+    "@loaders.gl/arrow-geometry": "npm:5.0.0-alpha.11"
     "@loaders.gl/loader-utils": "npm:5.0.0-alpha.11"
     "@loaders.gl/schema": "npm:5.0.0-alpha.11"
     "@loaders.gl/schema-utils": "npm:5.0.0-alpha.11"
@@ -5621,6 +5622,7 @@ __metadata:
   resolution: "@loaders.gl/mvt@workspace:modules/mvt"
   dependencies:
     "@loaders.gl/arrow": "npm:5.0.0-alpha.11"
+    "@loaders.gl/arrow-geometry": "npm:5.0.0-alpha.11"
     "@loaders.gl/gis": "npm:5.0.0-alpha.11"
     "@loaders.gl/images": "npm:5.0.0-alpha.11"
     "@loaders.gl/loader-utils": "npm:5.0.0-alpha.11"
@@ -5763,7 +5765,6 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@loaders.gl/potree@workspace:modules/potree"
   dependencies:
-    "@loaders.gl/gis": "npm:5.0.0-alpha.11"
     "@loaders.gl/las": "npm:5.0.0-alpha.11"
     "@loaders.gl/schema": "npm:5.0.0-alpha.11"
     "@loaders.gl/schema-utils": "npm:5.0.0-alpha.11"
@@ -5819,6 +5820,7 @@ __metadata:
     "@math.gl/types": "npm:5.0.0-alpha.15"
     "@types/geojson": "npm:^7946.0.7"
     apache-arrow: "npm:>= 17.0.0"
+    zod: "npm:^4.1.12"
   languageName: unknown
   linkType: soft
 
@@ -5837,6 +5839,7 @@ __metadata:
   resolution: "@loaders.gl/shapefile@workspace:modules/shapefile"
   dependencies:
     "@loaders.gl/arrow": "npm:5.0.0-alpha.11"
+    "@loaders.gl/arrow-geometry": "npm:5.0.0-alpha.11"
     "@loaders.gl/gis": "npm:5.0.0-alpha.11"
     "@loaders.gl/loader-utils": "npm:5.0.0-alpha.11"
     "@loaders.gl/schema": "npm:5.0.0-alpha.11"
@@ -6029,6 +6032,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@loaders.gl/wkt@workspace:modules/wkt"
   dependencies:
+    "@loaders.gl/arrow-geometry": "npm:5.0.0-alpha.11"
     "@loaders.gl/loader-utils": "npm:5.0.0-alpha.11"
     "@loaders.gl/schema": "npm:5.0.0-alpha.11"
     "@math.gl/crs": "npm:5.0.0-alpha.15"
@@ -6043,7 +6047,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@loaders.gl/wms@workspace:modules/wms"
   dependencies:
-    "@loaders.gl/gis": "npm:5.0.0-alpha.11"
+    "@loaders.gl/arrow-geometry": "npm:5.0.0-alpha.11"
     "@loaders.gl/images": "npm:5.0.0-alpha.11"
     "@loaders.gl/lerc": "npm:5.0.0-alpha.11"
     "@loaders.gl/loader-utils": "npm:5.0.0-alpha.11"

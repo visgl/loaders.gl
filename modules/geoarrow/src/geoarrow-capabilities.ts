@@ -12,7 +12,8 @@ import type {
 } from '@loaders.gl/schema';
 import {getGeometryMetadataForField} from './metadata/geoarrow-metadata';
 import {getGeoArrowGeometryInfoFromLayout} from './get-geoarrow-geometry-info';
-import {getWKBGeometryStatistics, convertWKTToGeometry} from '@loaders.gl/gis';
+import {getWKBGeometryStatistics} from '@loaders.gl/gis';
+import {convertWKTToGeometry} from '@loaders.gl/arrow-geometry/geometry-codecs';
 import {inspectGeoArrowLayout} from './geoarrow-layout';
 
 /** Physical and logical capabilities of one GeoArrow field. */

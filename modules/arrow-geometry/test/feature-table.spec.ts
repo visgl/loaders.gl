@@ -8,12 +8,74 @@ import {GEOARROW_TEST_CASES} from '@loaders.gl/arrow/test/data/geoarrow/test-cas
 import {fetchFile, parse} from '@loaders.gl/core';
 import {Feature, FeatureCollection} from '@loaders.gl/schema';
 import {GeoArrowLoader} from '@loaders.gl/arrow';
-import {
-  convertFeaturesToWKBArrowTable,
-  convertFeaturesToGeoArrowTable,
-  getGeoMetadata,
-  type LegacyGeoJSONCRS
-} from '@loaders.gl/gis';
+import {convertFeaturesToWKBArrowTable} from '../src/feature-collection-to-arrow';
+import {getGeoMetadata} from '@loaders.gl/schema';
+import {convertFeaturesToGeoArrowTable, type LegacyGeoJSONCRS} from '../src/feature-table';
+import {convertWKTToGeometry} from '../src/geometry-codecs';
+import {makeGeoArrowColumnFromArrowVector} from '../src/arrow-geoarrow-adapter';
+import {materializeGeoArrowRows} from '@math.gl/geoarrow';
+
+test.each([
+  ['POINT M (1 2 3)', 'xym', 'Point M'],
+  ['LINESTRING M (1 2 3, 4 5 6)', 'xym', 'LineString M'],
+  ['POLYGON M ((0 0 1, 1 0 2, 0 1 3, 0 0 1))', 'xym', 'Polygon M'],
+  ['GEOMETRYCOLLECTION M (POINT (1 2 3))', 'xym', 'GeometryCollection M'],
+  ['POINT ZM (1 2 3 4)', 'xyzm', 'Point ZM'],
+  ['POINT M EMPTY', 'xym', 'Point M']
+])('native conversion preserves measured dimensions: %s', (text, dimension, geometryType) => {
+  const geometry = convertWKTToGeometry(text)!;
+  for (const encodingPreference of ['optimized', 'geoarrow.geometry'] as const) {
+    const table = convertFeaturesToGeoArrowTable([{type: 'Feature', properties: {}, geometry}], {
+      encodingPreference
+    });
+    const metadata = getGeoMetadata(table.schema.metadata)!.columns.geometry;
+    const column = makeGeoArrowColumnFromArrowVector(table.data.getChild('geometry')!, {
+      encoding: metadata.encoding
+    });
+    expect(column.dimension).toBe(dimension);
+    expect(metadata.geometry_types).toEqual([geometryType]);
+    const physicalType = table.data.getChild('geometry')!.type;
+    if (arrow.DataType.isDenseUnion(physicalType)) {
+      expect(physicalType.children.map(field => field.name)).toContain(geometryType);
+    }
+    if (!text.includes('EMPTY')) {
+      expect(materializeGeoArrowRows(column)).toEqual([geometry]);
+    }
+  }
+});
+
+test('native mixed Z and M coordinates promote into distinct ZM axes', () => {
+  const features: Feature[] = ['POINT M (1 2 7)', 'POINT Z (3 4 9)'].map(text => ({
+    type: 'Feature',
+    properties: {},
+    geometry: convertWKTToGeometry(text)!
+  }));
+  const table = convertFeaturesToGeoArrowTable(features, {encodingPreference: 'optimized'});
+  const column = makeGeoArrowColumnFromArrowVector(table.data.getChild('geometry')!);
+  expect(column.dimension).toBe('xyzm');
+  expect(materializeGeoArrowRows(column)).toEqual([
+    {type: 'Point', coordinates: [1, 2, Number.NaN, 7]},
+    {type: 'Point', coordinates: [3, 4, 9, Number.NaN]}
+  ]);
+  expect(getGeoMetadata(table.schema.metadata)!.columns.geometry.geometry_types).toEqual([
+    'Point ZM'
+  ]);
+});
+
+test('native collections retain child measures despite a different declared root dimension', () => {
+  const geometry = convertWKTToGeometry('GEOMETRYCOLLECTION Z (POINT M (1 2 3))')!;
+  const table = convertFeaturesToGeoArrowTable([{type: 'Feature', properties: {}, geometry}], {
+    encodingPreference: 'optimized'
+  });
+  const column = makeGeoArrowColumnFromArrowVector(table.data.getChild('geometry')!);
+  expect(column.dimension).toBe('xyzm');
+  expect(materializeGeoArrowRows(column)).toEqual([
+    {type: 'GeometryCollection', geometries: [{type: 'Point', coordinates: [1, 2, Number.NaN, 3]}]}
+  ]);
+  expect(getGeoMetadata(table.schema.metadata)!.columns.geometry.geometry_types).toEqual([
+    'GeometryCollection ZM'
+  ]);
+});
 
 test('convertFeaturesToWKBArrowTable#preserves feature IDs and sparse properties', () => {
   const table = convertFeaturesToWKBArrowTable([

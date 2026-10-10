@@ -13,12 +13,8 @@ import {
   type TileSourceMetadata
 } from '@loaders.gl/loader-utils';
 import type {ArrowTable, Schema, Geometry, GeoArrowEncoding} from '@loaders.gl/schema';
-import {
-  GeometryConverter,
-  getGeoArrowNativeGeometry,
-  getGeoMetadata,
-  setGeoMetadata
-} from '@loaders.gl/gis';
+import {GeometryConverter, getGeoArrowNativeGeometry} from '@loaders.gl/gis';
+import {getGeoMetadata, setGeoMetadata} from '@loaders.gl/schema';
 import {convertArrowToSchema} from '@loaders.gl/schema-utils';
 import {TableVectorTileSource, TableTileSourceLoader} from './table-tile-source-loader';
 import {convertFeaturesToProtoFeature} from './lib/vector-tiler/features/convert-feature';

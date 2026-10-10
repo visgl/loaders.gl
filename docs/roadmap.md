@@ -173,7 +173,8 @@ implementation status is distinct from availability in a published release.
 “SOTA” describes the engineering target, not a measured claim of superiority or a promise of full
 OpenLayers parity. Protocol parsing belongs in loaders.gl; renderer tile selection and visual
 reprojection belong in deck.gl. Rich table processing belongs in `@loaders.gl/geoarrow`, while
-`@loaders.gl/gis` remains the minimal geometry helper layer for loaders.
+`@loaders.gl/arrow-geometry` supplies focused loader-output helpers. GIS compatibility APIs
+remain during the staged migration.
 
 The order below prioritizes the remaining source/rendering gap, then scalable query execution.
 Each tranche needs its own bounded API, hermetic boundary tests, and documented unsupported cases.

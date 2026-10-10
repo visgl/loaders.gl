@@ -3,7 +3,7 @@
 // Copyright (c) vis.gl contributors
 // Copyright 2022 Foursquare Labs, Inc.
 
-import {convertWKBToGeometry} from '@loaders.gl/gis';
+import {convertWKBToGeometry} from '@loaders.gl/arrow-geometry/geometry-codecs';
 import type {Field, Schema, Table} from '@loaders.gl/schema';
 import {convertArrowToSchema, makeRowIterator} from '@loaders.gl/schema-utils';
 import type {JSONWriterOptions} from '../../json-writer';

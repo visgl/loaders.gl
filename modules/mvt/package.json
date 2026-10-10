@@ -70,6 +70,7 @@
   },
   "dependencies": {
     "@loaders.gl/arrow": "5.0.0-alpha.11",
+    "@loaders.gl/arrow-geometry": "5.0.0-alpha.11",
     "@loaders.gl/gis": "5.0.0-alpha.11",
     "@loaders.gl/images": "5.0.0-alpha.11",
     "@loaders.gl/loader-utils": "5.0.0-alpha.11",

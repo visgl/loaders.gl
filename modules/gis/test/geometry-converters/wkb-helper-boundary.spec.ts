@@ -5,12 +5,6 @@
 import {describe, expect, test} from 'vitest';
 import {HexEncoder} from '../../src/lib/utils/hex-encoder';
 import {
-  getCoordinateByteSize,
-  getGeometryTypeFromWKBType,
-  getWKBTypeFromGeometryType,
-  matchWKBOptionsToPointSize
-} from '../../src/lib/geometry-converters/wkb/helpers/wkb-utils';
-import {
   getWKTGeometryType,
   isWKB,
   isWKT,
@@ -46,31 +40,6 @@ describe('WKB helper boundary behavior', () => {
       )
     ).toEqual(input);
     expect(encoder.getDecodedLength(new Uint8Array(3))).toBe(2);
-  });
-
-  test('maps geometry types and normalizes dimension options', () => {
-    for (const geometryType of Object.values(WKBGeometryType).filter(
-      (value): value is WKBGeometryType => typeof value === 'number'
-    )) {
-      const name = getGeometryTypeFromWKBType(geometryType);
-      expect(getWKBTypeFromGeometryType(name)).toBe(geometryType);
-    }
-    expect(() => getGeometryTypeFromWKBType(99 as WKBGeometryType)).toThrow('99');
-    expect(matchWKBOptionsToPointSize(4)).toMatchObject({hasZ: true, hasM: true});
-    expect(matchWKBOptionsToPointSize(3, {hasZ: true, hasM: true})).toMatchObject({
-      hasZ: true,
-      hasM: false
-    });
-    expect(matchWKBOptionsToPointSize(3, {hasM: true})).toMatchObject({hasZ: false, hasM: true});
-    expect(matchWKBOptionsToPointSize(3)).toMatchObject({hasZ: true, hasM: false});
-    expect(matchWKBOptionsToPointSize(2, {hasZ: true, hasM: true})).toMatchObject({
-      hasZ: false,
-      hasM: false
-    });
-    expect(matchWKBOptionsToPointSize(1, {srid: 4326})).toMatchObject({srid: 4326});
-    expect(getCoordinateByteSize()).toBe(16);
-    expect(getCoordinateByteSize({hasZ: true})).toBe(24);
-    expect(getCoordinateByteSize({hasZ: true, hasM: true})).toBe(32);
   });
 
   test('recognizes WKT and valid WKB dialect headers', () => {

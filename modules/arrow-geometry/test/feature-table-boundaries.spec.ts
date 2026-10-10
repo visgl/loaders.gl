@@ -13,7 +13,7 @@ import {
   makeGeoArrowFeatureRows,
   makeGeoArrowFeatureSchema,
   resolveGeoArrowEncodingPreference
-} from '../../src/lib/table-converters/convert-geojson-to-geoarrow';
+} from '../src/feature-table';
 
 /** Wraps tiny geometry values in GeoJSON features. */
 function makeFeatures(geometries: (Geometry | null)[]): Feature[] {

@@ -4,19 +4,20 @@
 
 import {expect, test} from 'vitest';
 import type {Geometry, Schema} from '@loaders.gl/schema';
+import {convertWKBToGeometry} from '../src/geometry-codecs';
+import {makeWKBGeometryData, makeWKBGeometryDataFromWriters} from '../src/wkb-arrow-utils';
 import {
-  convertWKBToGeometry,
   encodeWKBGeometryValue,
-  getGeoMetadata,
   inferGeoParquetGeometryTypes,
-  makeWKBGeometryData,
-  makeWKBGeometryDataFromWriters,
   makeWKBGeometryField,
+  setWKBGeometrySchemaMetadata
+} from '../src/geometry-field';
+import {
+  getGeoMetadata,
   setGeoMetadata,
-  setWKBGeometrySchemaMetadata,
   unpackGeoMetadata,
   unpackJSONStringMetadata
-} from '@loaders.gl/gis';
+} from '@loaders.gl/schema';
 test('geoarrow WKB helpers round-trip metadata for object and Map containers', () => {
   const geoMetadata = {
     version: '1.1.0',

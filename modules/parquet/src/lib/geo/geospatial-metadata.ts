@@ -20,7 +20,7 @@ import {
 import {
   GeoArrowMetadataSchema,
   GeoParquetMetadataSchema
-} from '@loaders.gl/gis/geospatial-metadata-zod-schema';
+} from '@loaders.gl/schema/geospatial-metadata-zod-schema';
 import {convertArrowToSchema} from '@loaders.gl/schema-utils';
 
 const GEOARROW_EXTENSION_NAME_KEY = 'ARROW:extension:name';

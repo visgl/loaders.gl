@@ -8,6 +8,7 @@
     "outDir": "dist"
   },
   "references": [
+    {"path": "../arrow-geometry"},
     {"path": "../arrow"},
     {"path": "../gis"},
     {"path": "../loader-utils"},

@@ -6,11 +6,11 @@ import * as arrow from 'apache-arrow';
 import type {ArrowTable, Schema as TableSchema} from '@loaders.gl/schema';
 import {convertSchemaToArrow} from '@loaders.gl/schema-utils';
 import {GeoArrowBuilder, type GeoArrowBuilderEncoding} from '@loaders.gl/arrow/geometry';
+import {type GeoParquetGeometryType} from '@loaders.gl/schema';
 import {
-  type GeoParquetGeometryType,
   makeGeoArrowGeometryField,
   setGeoArrowGeometryColumnMetadata
-} from '@loaders.gl/gis';
+} from '@loaders.gl/arrow-geometry/geometry-field';
 import {parseSHPHeader, type SHPHeader} from './parse-shp-header';
 import type {SHPLoaderOptions} from './types';
 import {writeRecordToGeoArrow} from './parse-shp-geometry';

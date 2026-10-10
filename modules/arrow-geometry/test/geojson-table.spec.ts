@@ -5,7 +5,8 @@
 import * as arrow from 'apache-arrow';
 import {expect, test} from 'vitest';
 import {convertArrowToSchema} from '@loaders.gl/schema-utils';
-import {convertGeoArrowTableToGeoJSON, convertGeometryToWKB} from '@loaders.gl/gis';
+import {convertGeoArrowTableToGeoJSON} from '../src/geojson-table';
+import {convertGeometryToWKB} from '../src/geometry-codecs';
 
 /** Creates a tiny table with explicit extension and optional GeoParquet metadata. */
 function makeTable(
