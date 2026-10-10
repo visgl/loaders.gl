@@ -57,12 +57,9 @@ Support for loading and traversing [potree](http://potree.org/) format point clo
 
 ## Format Support
 
-| Dataset version | Read | Write | Layout |
-| --- | --- | --- | --- |
-| 1.0–1.3 | ✅ | ✅ | Absolute float32 XYZ/RGBA; flat extensionless nodes and inline hierarchy |
-| 1.4 | ✅ | ✅ | Quantized node-relative XYZ; flat binary nodes and inline hierarchy |
-| 1.5–1.8 | ✅ | ✅ binary | Paged HRC hierarchy; binary, LAS or LAZ node payloads |
-| 2.0 | ✅ DEFAULT/BROTLI | ✅ DEFAULT | Three-file range-readable octree from PotreeConverter 2.x |
+Potree reads dataset versions **1.0–1.8 and 2.0**. Writers produce legacy binary node files
+and modern DEFAULT output. See the [Potree format reference](/docs/modules/potree/formats/potree)
+for the version matrix, read/write feature table, and qualification limits.
 
 Use [PotreeSourceLoader](/docs/modules/potree/api-reference/potree-source-loader) for both layouts: pass
 `cloud.js` for 1.x or `metadata.json` for 2.0. Directory inputs retain the legacy `cloud.js` default. Converter/viewer release numbers are distinct from dataset versions. See
