@@ -45,6 +45,11 @@
       "types": "./dist/arrow-source.d.ts",
       "import": "./dist/arrow-source.js"
     },
+    "./types": {
+      "types": "./dist/types.d.ts",
+      "import": "./dist/types.js",
+      "require": "./dist/types.cjs"
+    },
     "./transport": {
       "types": "./dist/transport.d.ts",
       "import": "./dist/transport.js"
@@ -100,6 +105,9 @@
   "gitHead": "8a9e77743ea90a7be4ebec572416bb50ca9d73c3",
   "typesVersions": {
     "*": {
+      "types": [
+        "dist/types.d.ts"
+      ],
       "geometry": [
         "dist/geometry/index.d.ts"
       ]

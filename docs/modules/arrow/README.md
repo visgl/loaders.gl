@@ -57,6 +57,19 @@ npm install @loaders.gl/core @loaders.gl/arrow
 
 See [Using with Apache Arrow](/docs/developer-guide/apache-arrow) for practical guidance on how to integrate with the Apache Arrow JS library.
 
+## Type-only imports
+
+Use `@loaders.gl/arrow/types` for all types exported by the module and Apache Arrow,
+including classes exported as types:
+
+```typescript
+import type {Table, Vector, ArrowLoaderOptions, IndexedArrowTable} from '@loaders.gl/arrow/types';
+```
+
+Type-only imports are erased by TypeScript and add no runtime code or memory cost.
+The subpath itself emits an empty module with no runtime dependencies. To construct
+class instances, import their runtime values from `apache-arrow` or `@loaders.gl/arrow`.
+
 ## Loaders and Writers
 
 | Loader / Writer | Description |
