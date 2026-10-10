@@ -94,6 +94,55 @@ flow: [first, second]
   ])('rejects %s', (_name, text, options, message) => {
     expect(() => parseYAMLSync(text, options)).toThrow(message);
   });
+
+  test.each([
+    true,
+    false
+  ])('flow and block merges preserve explicit precedence with uniqueKeys=%s', uniqueKeys => {
+    expect(
+      parseYAMLSync(
+        `
+first: &first {color: cyan, width: 2}
+second: &second {color: yellow, opacity: 0.5}
+flow-before: {color: purple, <<: [*first, *second]}
+flow-after: {<<: [*first, *second], color: purple}
+block-after:
+  <<: [*first, *second]
+  color: purple
+nested: [{value: {<<: *first, width: 3}}]
+quoted: {"<<": literal}
+`,
+        {uniqueKeys}
+      )
+    ).toEqual({
+      first: {color: 'cyan', width: 2},
+      second: {color: 'yellow', opacity: 0.5},
+      'flow-before': {color: 'purple', width: 2, opacity: 0.5},
+      'flow-after': {color: 'purple', width: 2, opacity: 0.5},
+      'block-after': {color: 'purple', width: 2, opacity: 0.5},
+      nested: [{value: {color: 'cyan', width: 3}}],
+      quoted: {'<<': 'literal'}
+    });
+  });
+
+  test.each([
+    '{<<: 2}',
+    '{<<: [2]}',
+    '{<<: [[1]]}',
+    '{<<: null}'
+  ])('rejects invalid flow merge values: %s', value => {
+    expect(() => parseYAMLSync(`value: ${value}`)).toThrow('Merge keys require mapping aliases');
+  });
+
+  test.each([
+    '{<<: *defaults, color: red, color: blue}',
+    '{color: red, color: blue}',
+    '\n  <<: *defaults\n  color: red\n  color: blue'
+  ])('still rejects duplicate explicit keys after merge: %s', value => {
+    expect(() =>
+      parseYAMLSync(`defaults: &defaults {color: cyan}\nvalue: ${value}`, {uniqueKeys: true})
+    ).toThrow('Duplicate mapping key: color');
+  });
 });
 
 describe('TOML parser boundary behavior', () => {
