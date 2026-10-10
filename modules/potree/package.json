@@ -44,7 +44,12 @@
       "types": "./dist/bundled.d.ts",
       "import": "./dist/bundled.js"
     },
-    "./potree-metadata.schema.json": "./dist/potree-metadata.schema.json"
+    "./potree-metadata.schema.json": "./dist/potree-metadata.schema.json",
+    "./potree-loader": {
+      "types": "./dist/potree-loader.d.ts",
+      "import": "./dist/potree-loader.js",
+      "require": "./dist/potree-loader.cjs"
+    }
   },
   "sideEffects": false,
   "files": [
@@ -53,13 +58,16 @@
     "README.md"
   ],
   "scripts": {
-    "pre-build": "npm run generate-json-schema && npm run build-bundle && npm run build-bundle-dev",
+    "pre-build": "npm run build-cjs-entrypoints && npm run generate-json-schema && npm run build-bundle && npm run build-bundle-dev",
     "generate-json-schema": "node ../../scripts/generate-json-schema.mjs --schema ./dist/potree-metadata-schema.js --export PotreeMetadataSchema --output ./dist/potree-metadata.schema.json --id https://unpkg.com/@loaders.gl/potree/potree-metadata.schema.json --title 'Potree 1.x cloud.js metadata'",
     "build-bundle": "ocular-bundle ./bundle.ts --output=dist/dist.min.js",
-    "build-bundle-dev": "ocular-bundle ./bundle.ts --env=dev --output=dist/dist.dev.js"
+    "build-bundle-dev": "ocular-bundle ./bundle.ts --env=dev --output=dist/dist.dev.js",
+    "build-cjs-entrypoints": "esbuild dist/index.js dist/potree-loader.js --outdir=dist --out-extension:.js=.cjs --bundle --format=cjs --platform=node --target=node22 --sourcemap --external:@loaders.gl/* --external:@math.gl/*"
   },
   "dependencies": {
+    "@loaders.gl/compression": "5.0.0-alpha.11",
     "@loaders.gl/las": "5.0.0-alpha.11",
+    "@loaders.gl/loader-utils": "5.0.0-alpha.11",
     "@loaders.gl/schema": "5.0.0-alpha.11",
     "@loaders.gl/schema-utils": "5.0.0-alpha.11",
     "@math.gl/crs": "5.0.0-alpha.15",

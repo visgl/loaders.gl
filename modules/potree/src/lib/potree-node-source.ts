@@ -3,6 +3,8 @@
 // Copyright (c) vis.gl contributors
 
 import type {PotreeSourceLoaderOptions} from '../potree-source-loader';
+import type {PotreeDatasetMetadata} from '../potree-loader-types';
+import type {Potree2Source} from '../potree2-source';
 import type {
   CoreAPI,
   Loader,
@@ -67,6 +69,7 @@ export interface PotreeNodeMesh extends LASMesh {
 /**
  * A Potree data source
  * @version 1.0 - @see https://github.com/potree/potree/blob/1.0RC/docs/file_format.md
+ * @version 2.0 - metadata.json with range-backed hierarchy and point resources
  * @version 1.7 - @see https://github.com/potree/potree/blob/1.7/docs/potree-file-format.md
  * @note Point cloud nodes tile source
  */
@@ -109,6 +112,12 @@ export class PotreeNodesSource
   invalidBoundsWarningIds: Set<string> = new Set();
 
   private initPromise: Promise<void> | null = null;
+  /** Optional reader for metadata.json datasets; legacy paths retain their implementation. */
+  private modernSource: Potree2Source | null = null;
+  /** Remembers closure while a modern reader import is pending. */
+  private modernClosed = false;
+  /** Shared hierarchy page reads for boundary nodes. */
+  private readonly hierarchyPages = new Map<string, Promise<void>>();
 
   /**
    * @constructor
@@ -128,15 +137,40 @@ export class PotreeNodesSource
   async initialize() {
     if (this.initPromise) {
       await this.initPromise;
+      if (this.modernSource) await this.modernSource.initialize();
+      return;
+    }
+    if (/(?:^|\/)metadata\.json(?:[?#]|$)/.test(this.url)) {
+      const {Potree2Source} = await import('../potree2-source');
+      if (this.modernClosed) throw new Error('Potree source closed');
+      this.modernSource = new Potree2Source(
+        this.url,
+        this.loadOptions,
+        this.hasCoreApi ? this.coreApi : undefined
+      );
+      await this.modernSource.initialize();
+      this.isReady = true;
       return;
     }
     const {PotreeLoaderWithParser} = await import('../potree-loader-with-parser');
-    this.metadata = await this.loadWithCoreApi(this.metadataUrl, PotreeLoaderWithParser);
+    const metadata = await this.loadWithCoreApi(this.metadataUrl, PotreeLoaderWithParser);
+    if (metadata.version === '2.0')
+      throw new Error('Use the metadata.json URL for Potree 2.0 sources');
+    this.metadata = metadata as PotreeMetadata;
     this.projection = createProjection(this.metadata?.projection);
     this.parseBoundingVolume();
 
     await this.loadHierarchy();
     this.isReady = true;
+  }
+
+  /** Cancels modern range reads. The legacy source lifecycle is unchanged. */
+  close(): void {
+    this.modernClosed = true;
+    if (this.modernSource) {
+      this.modernSource.close();
+      this.isReady = false;
+    }
   }
 
   /**
@@ -150,13 +184,15 @@ export class PotreeNodesSource
    * Return format-specific metadata for viewer/debug tooling.
    */
   async getMetadata(): Promise<{
-    formatSpecificMetadata: PotreeMetadata | null;
+    formatSpecificMetadata: PotreeDatasetMetadata | null;
     viewState: ReturnType<PotreeNodesSource['getViewState']>;
   }> {
     await this.initPromise;
 
     return {
-      formatSpecificMetadata: this.metadata,
+      formatSpecificMetadata: this.modernSource
+        ? await this.modernSource.getMetadata()
+        : this.metadata,
       viewState: this.getViewState()
     };
   }
@@ -164,7 +200,7 @@ export class PotreeNodesSource
   /** Discovers point attributes and hierarchy bounds without loading node content. */
   async getQueryMetadata() {
     await this.initPromise;
-    const isSupported = this.isSupported();
+    const isSupported = !this.modernSource && this.isSupported();
     const fields = getPotreeSchemaFields(this.metadata?.pointAttributes || []);
     const schema = {fields, metadata: {}};
     const bounds = this.nativeHierarchyBoundingBox || this.boundingBox;
@@ -175,7 +211,9 @@ export class PotreeNodesSource
         ? {status: 'supported', method: 'scan'}
         : {
             status: 'metadata-only',
-            reason: 'This Potree version or point-attribute layout is not supported by the scanner.'
+            reason: this.modernSource
+              ? 'Potree 2.0 query scans are not implemented; use tile traversal.'
+              : 'This Potree version or point-attribute layout is not supported by the scanner.'
           },
       schema,
       capabilities: {
@@ -209,7 +247,7 @@ export class PotreeNodesSource
    */
   async *scan(options: PointCloudScanReadOptions = {}): AsyncIterableIterator<ArrowTableBatch> {
     await this.initPromise;
-    if (!this.isSupported()) {
+    if (this.modernSource || !this.isSupported()) {
       throw new Error('This Potree version or point-attribute layout is not supported.');
     }
     const schema: Schema = {
@@ -301,6 +339,7 @@ export class PotreeNodesSource
 
   /** Is data set supported */
   isSupported(): boolean {
+    if (this.modernSource) return this.isReady;
     const {minor, major} = parseVersion(this.metadata?.version ?? '');
     const pointAttributes = this.metadata?.pointAttributes;
 
@@ -315,6 +354,7 @@ export class PotreeNodesSource
 
   /** Get content files extension */
   getContentExtension(): string | null {
+    if (this.modernSource) return null;
     if (!this.isReady) {
       return null;
     }
@@ -339,7 +379,7 @@ export class PotreeNodesSource
   ): Promise<PotreeNodeMesh | null> {
     await this.initPromise;
 
-    if (!this.isSupported()) {
+    if (this.modernSource || !this.isSupported()) {
       return null;
     }
 
@@ -380,6 +420,8 @@ export class PotreeNodesSource
     cartographicOrigin: number[];
     coordinateSystem: PotreeCoordinateSystem;
   } | null> {
+    await this.initPromise;
+    if (this.modernSource) return this.modernSource.loadTileContent(tile);
     const nodeName = this.getNodeName(tile.id);
     const mesh = await this.loadNodeContent(nodeName);
     if (!mesh) {
@@ -416,6 +458,7 @@ export class PotreeNodesSource
   }> {
     await this.initPromise;
 
+    if (this.modernSource) return this.modernSource.getRootTile();
     if (!this.root) {
       throw new Error('Potree root hierarchy is not initialized');
     }
@@ -429,11 +472,20 @@ export class PotreeNodesSource
   async getChildren(tile: {id: string}) {
     await this.initPromise;
 
+    if (this.modernSource) return this.modernSource.getChildren(tile);
     const node = this.nodeById.get(tile.id);
     if (!node) {
       return [];
     }
 
+    if (node.hasChildren && !node.children.length && !this.metadata?.hierarchy?.length) {
+      let page = this.hierarchyPages.get(node.name);
+      if (!page) {
+        page = this.loadHierarchyPage(node);
+        this.hierarchyPages.set(node.name, page);
+      }
+      await page;
+    }
     return node.children.map(child => this.getTileHeader(child));
   }
 
@@ -504,9 +556,30 @@ export class PotreeNodesSource
     }
 
     this.root = await this.loadWithCoreApi(
-      `${this.baseUrl}/${this.metadata?.octreeDir}/r/r.hrc`,
-      PotreeHierarchyChunkLoaderWithParser
+      this.resolveOctreeResource('r/r.hrc'),
+      PotreeHierarchyChunkLoaderWithParser,
+      {potree: {maximumDepth: this.metadata?.hierarchyStepSize, spacing: this.metadata?.spacing}}
     );
+    this.indexNodes();
+  }
+
+  /** Hydrates a boundary page without changing existing parent/root object identity. */
+  private async loadHierarchyPage(node: POTreeNode): Promise<void> {
+    const root = await this.loadWithCoreApi(
+      this.getNodeContentUrl(node.name, 'hrc'),
+      PotreeHierarchyChunkLoaderWithParser,
+      {
+        potree: {
+          rootName: node.name,
+          maximumDepth: this.metadata!.hierarchyStepSize,
+          spacing: this.metadata!.spacing
+        }
+      }
+    );
+    if (root.pointCount !== node.pointCount || root.header.childMask !== node.header.childMask)
+      throw new Error('Potree hierarchy page root disagrees with its parent page');
+    node.children = root.children;
+    node.childrenByIndex = root.childrenByIndex;
     this.indexNodes();
   }
 
@@ -518,7 +591,15 @@ export class PotreeNodesSource
   ): Promise<T> {
     throwIfPotreeScanAborted(signal);
     if (this.hasCoreApi) {
-      const loaderOptions = options || this.loadOptions;
+      const loaderOptions = {
+        ...this.loadOptions,
+        ...options,
+        core: {...this.loadOptions.core, ...options?.core},
+        potree: {
+          ...this.loadOptions.potree,
+          ...(options?.potree as Record<string, unknown> | undefined)
+        }
+      };
       const cancellableOptions = signal
         ? {
             ...loaderOptions,
@@ -543,7 +624,14 @@ export class PotreeNodesSource
     }
 
     throwIfPotreeScanAborted(signal);
-    return await loader.parse(arrayBuffer, options || this.loadOptions);
+    return await loader.parse(arrayBuffer, {
+      ...this.loadOptions,
+      ...options,
+      potree: {
+        ...this.loadOptions.potree,
+        ...(options?.potree as Record<string, unknown> | undefined)
+      }
+    });
   }
 
   /**
@@ -589,9 +677,10 @@ export class PotreeNodesSource
    */
   private isMetadataUrl(url: string): boolean {
     try {
-      return new URL(url).pathname.endsWith('/cloud.js');
+      const path = new URL(url).pathname;
+      return path.endsWith('/cloud.js') || path.endsWith('/metadata.json');
     } catch {
-      return url.endsWith('cloud.js');
+      return /(?:^|\/)(?:cloud\.js|metadata\.json)(?:[?#]|$)/.test(url);
     }
   }
 
@@ -606,7 +695,9 @@ export class PotreeNodesSource
       parsedUrl.pathname = parsedUrl.pathname.slice(0, parsedUrl.pathname.lastIndexOf('/'));
       return parsedUrl.toString();
     } catch {
-      return url.slice(0, -8);
+      const path = url.split(/[?#]/, 1)[0];
+      const separator = path.lastIndexOf('/');
+      return separator < 0 ? '' : path.slice(0, separator);
     }
   }
 
@@ -838,10 +929,31 @@ export class PotreeNodesSource
     const nodeId = nodeName ? `r${nodeName}` : 'r';
 
     if (this.metadata?.hierarchy?.length) {
-      return `${this.baseUrl}/${this.metadata.octreeDir}/${nodeId}.${contentExtension}`;
+      const {minor} = parseVersion(this.metadata.version);
+      return this.resolveOctreeResource(
+        `${nodeId}${contentExtension === 'bin' && minor <= 3 ? '' : `.${contentExtension}`}`
+      );
     }
 
-    return `${this.baseUrl}/${this.metadata?.octreeDir}/r/${nodeId}.${contentExtension}`;
+    const step = this.metadata?.hierarchyStepSize ?? 5;
+    let directory = 'r';
+    for (let offset = 0; offset + step <= nodeName.length; offset += step)
+      directory += `/${nodeName.slice(offset, offset + step)}`;
+    return this.resolveOctreeResource(`${directory}/${nodeId}.${contentExtension}`);
+  }
+
+  /** Resolves local/remote octree directories and retains same-origin URL credentials. */
+  private resolveOctreeResource(path: string): string {
+    try {
+      const root = new URL(this.metadataUrl);
+      const directory = new URL(this.metadata!.octreeDir, root);
+      if (!directory.pathname.endsWith('/')) directory.pathname += '/';
+      const url = new URL(path, directory);
+      url.search = directory.search || (url.origin === root.origin ? root.search : '');
+      return url.href;
+    } catch {
+      return `${this.baseUrl}/${this.metadata!.octreeDir}/${path}`;
+    }
   }
 
   /**
@@ -897,6 +1009,7 @@ export class PotreeNodesSource
     return {
       potree: {
         pointAttributes: this.metadata.pointAttributes,
+        version: this.metadata.version,
         scale: this.metadata.scale,
         positionOrigin,
         nodeBoundingBox: tileBoundingBox,

@@ -11,7 +11,7 @@ type PotreeDocsTab = {
 };
 
 /** Potree documentation tab identifiers. */
-export type PotreeDocsTabId = 'overview' | 'loader' | 'source' | 'example';
+export type PotreeDocsTabId = 'overview' | 'format' | 'loader' | 'source' | 'example';
 
 const POTREE_DOCS_TABS: PotreeDocsTab[] = [
   {
@@ -20,6 +20,7 @@ const POTREE_DOCS_TABS: PotreeDocsTab[] = [
     href: '/examples/pointclouds/potree-source'
   },
   {id: 'overview', label: 'Overview', href: '/docs/modules/potree'},
+  {id: 'format', label: 'Format', href: '/docs/modules/potree/formats/potree'},
   {id: 'loader', label: 'PotreeLoader', href: '/docs/modules/potree/api-reference/potree-loader'},
   {
     id: 'source',

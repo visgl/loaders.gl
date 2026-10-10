@@ -77,9 +77,9 @@ describe('Potree parser branches', () => {
     const pointByteSize = 55;
     const buffer = new ArrayBuffer(pointByteSize);
     const view = new DataView(buffer);
-    view.setInt32(0, 100, true);
-    view.setInt32(4, -200, true);
-    view.setInt32(8, 300, true);
+    view.setUint32(0, 100, true);
+    view.setUint32(4, 200, true);
+    view.setUint32(8, 300, true);
     for (let offset = 12; offset < pointByteSize; offset++) {
       view.setUint8(offset, offset);
     }
@@ -88,7 +88,7 @@ describe('Potree parser branches', () => {
       potree: {
         pointAttributes,
         scale: 0.5,
-        positionOrigin: [1, 2, 3],
+        positionOrigin: [1, -198, 3],
         nodeBoundingBox: [
           [0, 0, 0],
           [10, 10, 10]
