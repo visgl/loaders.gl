@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import type {WeatherObservation, WeatherSourceOptions} from './location-weather-source';
+import type {WeatherSourceOptions} from './location-weather-source';
 
 /** West, south, east, north in longitude/latitude degrees. Does not cross antimeridian. */
 export type WeatherBounds = [number, number, number, number];
@@ -76,6 +76,7 @@ export class WeatherGridSource {
     }
     if (time && !Number.isFinite(time.getTime())) throw new Error('Invalid weather timestamp');
     const variables = query.variables ?? ALL_VARIABLES;
+    if (!variables.length) throw new Error('At least one weather variable is required');
     for (const variable of variables) {
       if (!(variable in FIELD_NAMES)) throw new Error(`Unknown weather variable: ${variable}`);
     }
