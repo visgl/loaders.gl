@@ -9,7 +9,6 @@
   },
   "references": [
     {"path": "../arrow-geometry"},
-    {"path": "../gis"},
     {"path": "../xml"},
     {"path": "../images"},
     {"path": "../loader-utils"},

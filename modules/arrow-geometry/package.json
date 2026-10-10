@@ -20,6 +20,11 @@
       "import": "./dist/index.js",
       "require": "./dist/index.cjs"
     },
+    "./legacy-binary": {
+      "types": "./dist/legacy-binary.d.ts",
+      "import": "./dist/legacy-binary.js",
+      "require": "./dist/legacy-binary.cjs"
+    },
     "./geometry-codecs": {
       "types": "./dist/geometry-codecs.d.ts",
       "import": "./dist/geometry-codecs.js",

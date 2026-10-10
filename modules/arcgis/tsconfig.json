@@ -9,7 +9,6 @@
   },
   "references": [
     {"path": "../arrow-geometry"},
-    {"path": "../gis"},
     {"path": "../images"},
     {"path": "../i3s"},
     {"path": "../lerc"},

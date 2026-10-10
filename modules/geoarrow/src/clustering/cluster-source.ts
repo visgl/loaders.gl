@@ -22,7 +22,7 @@ import {
   makeWKBGeometryField,
   setWKBGeometrySchemaMetadata
 } from '@loaders.gl/arrow-geometry/geometry-field';
-import {convertGeojsonToBinaryFeatureCollection} from '@loaders.gl/gis';
+import {convertGeojsonToBinaryFeatureCollection} from '@loaders.gl/arrow-geometry/legacy-binary';
 import {ArrowTableBuilder} from '@loaders.gl/schema-utils';
 import {getGeometryColumnsFromSchema} from '../metadata/geoarrow-metadata';
 import {

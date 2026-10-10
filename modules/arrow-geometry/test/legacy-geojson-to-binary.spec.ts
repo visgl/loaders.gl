@@ -4,7 +4,11 @@
 
 import {expect, test} from 'vitest';
 import {fetchFile} from '@loaders.gl/core';
-import {geojsonToBinary, getGeometryInfo, _extractNumericPropTypes} from '@loaders.gl/gis';
+import {
+  convertGeojsonToBinaryFeatureCollection as geojsonToBinary,
+  getGeometryInfo,
+  extractNumericPropTypes as _extractNumericPropTypes
+} from '../src/legacy-binary';
 // Sample GeoJSON data derived from examples in GeoJSON specification
 // https://tools.ietf.org/html/rfc7946#appendix-A
 // All features have 2D coordinates
@@ -16,7 +20,7 @@ const FEATURES_MIXED = '@loaders.gl/gis/test/data/binary-features/mixed_features
 // Example GeoJSON with no properties
 const GEOJSON_NO_PROPERTIES =
   '@loaders.gl/gis/test/data/binary-features/geojson_no_properties.json';
-test('gis#geojson-to-binary geometry info 2D features, no properties', async () => {
+test('arrow-geometry#legacy-geojson-to-binary geometry info 2D features, no properties', async () => {
   const response = await fetchFile(FEATURES_2D);
   const {features} = await response.json();
   const geometryInfo = getGeometryInfo(features);
@@ -43,7 +47,7 @@ test('gis#geojson-to-binary geometry info 2D features, no properties', async () 
   expect(polygonFeaturesCount).toBe(3);
   expect(coordLength).toBe(2);
 });
-test('gis#geojson-to-binary geometry info 3D features, no properties', async () => {
+test('arrow-geometry#legacy-geojson-to-binary geometry info 3D features, no properties', async () => {
   const response = await fetchFile(FEATURES_3D);
   const {features} = await response.json();
   const geometryInfo = getGeometryInfo(features);
@@ -70,7 +74,7 @@ test('gis#geojson-to-binary geometry info 3D features, no properties', async () 
   expect(polygonFeaturesCount).toBe(3);
   expect(coordLength).toBe(3);
 });
-test('gis#geojson-to-binary geometry info mixed-dimension features, no properties', async () => {
+test('arrow-geometry#legacy-geojson-to-binary geometry info mixed-dimension features, no properties', async () => {
   const response = await fetchFile(FEATURES_MIXED);
   const {features} = await response.json();
   const geometryInfo = getGeometryInfo(features);
@@ -107,13 +111,13 @@ test('gis#geojson-to-binary geometry info mixed-dimension features, no propertie
     100, 0, 0, 101, 1, 0, 100, 0, 2, 101, 1, 0, 102, 2, 0, 103, 3, 0
   ]);
 });
-test('gis#geojson-to-binary numericPropTypes 2D features, no properties', async () => {
+test('arrow-geometry#legacy-geojson-to-binary numericPropTypes 2D features, no properties', async () => {
   const response = await fetchFile(FEATURES_2D);
   const {features} = await response.json();
   const numericPropTypes = _extractNumericPropTypes(features);
   expect(numericPropTypes).toEqual({});
 });
-test('gis#geojson-to-binary properties', async () => {
+test('arrow-geometry#legacy-geojson-to-binary properties', async () => {
   const response = await fetchFile(FEATURES_2D);
   const {features} = await response.json();
   // Add properties to features
@@ -222,7 +226,7 @@ test('gis#geojson-to-binary properties', async () => {
     }
   ]);
 });
-test('gis#geojson-to-binary 2D features, no properties', async () => {
+test('arrow-geometry#legacy-geojson-to-binary 2D features, no properties', async () => {
   const response = await fetchFile(FEATURES_2D);
   const {features} = await response.json();
   const {points, lines, polygons} = geojsonToBinary(features);
@@ -261,7 +265,7 @@ test('gis#geojson-to-binary 2D features, no properties', async () => {
     4, 4, 4, 4, 4, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6
   ]);
 });
-test('gis#geojson-to-binary 3D features', async () => {
+test('arrow-geometry#legacy-geojson-to-binary 3D features', async () => {
   const response = await fetchFile(FEATURES_3D);
   const {features} = await response.json();
   const {points, lines, polygons} = geojsonToBinary(features);
@@ -300,7 +304,7 @@ test('gis#geojson-to-binary 3D features', async () => {
   expect(polygons.positions.value).toEqual(Float32Array.from(expectedPolygonPositions));
 });
 // eslint-disable-next-line complexity
-test('gis#geojson-to-binary position, featureId data types', async () => {
+test('arrow-geometry#legacy-geojson-to-binary position, featureId data types', async () => {
   const response = await fetchFile(FEATURES_2D);
   const {features} = await response.json();
   // Duplicate features so that there are >65535 total features but <65535 of
@@ -325,7 +329,7 @@ test('gis#geojson-to-binary position, featureId data types', async () => {
   expect(polygons && polygons.polygonIndices.value instanceof Uint32Array).toBeTruthy();
   expect(polygons && polygons.primitivePolygonIndices.value instanceof Uint32Array).toBeTruthy();
 });
-test('gis#geojson-to-binary with empty properties', async () => {
+test('arrow-geometry#legacy-geojson-to-binary with empty properties', async () => {
   const response = await fetchFile(GEOJSON_NO_PROPERTIES);
   const {features} = await response.json();
   const {points, lines, polygons} = geojsonToBinary(features);
@@ -339,7 +343,7 @@ test('gis#geojson-to-binary with empty properties', async () => {
     polygons.properties[0] instanceof Object && polygons.properties[0].length === undefined
   ).toBeTruthy();
 });
-test('gis#geojson-to-binary triangulation', async () => {
+test('arrow-geometry#legacy-geojson-to-binary triangulation', async () => {
   const response = await fetchFile(GEOJSON_NO_PROPERTIES);
   const {features} = await response.json();
   const binary = geojsonToBinary(features);

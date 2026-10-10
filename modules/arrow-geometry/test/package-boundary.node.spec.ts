@@ -25,7 +25,11 @@ function readSources(directory: string): string {
 
 test.each([
   'arrow',
-  'arrow-geometry'
+  'arrow-geometry',
+  'arcgis',
+  'kml',
+  'mlt',
+  'wms'
 ])('%s does not depend on GIS or the GeoArrow processing package', moduleName => {
   const directory = join(modulesDirectory, moduleName);
   const manifest = JSON.parse(readFileSync(join(directory, 'package.json'), 'utf8'));

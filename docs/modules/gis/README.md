@@ -43,8 +43,9 @@ GIS is being retired incrementally. Import metadata helpers/types from
 from [`@loaders.gl/arrow-geometry`](/docs/modules/arrow-geometry). Existing GIS
 exports remain compatibility entry points. Applications should use
 [`@loaders.gl/geoarrow`](/docs/modules/geoarrow) for geospatial processing.
-Legacy binary rendering conversion and the remaining GIS converter APIs are
-unchanged in this tranche.
+Legacy GeoJSON/FlatGeoJSON-to-binary implementations now live in
+`@loaders.gl/arrow-geometry/legacy-binary`; GIS retains its existing aliases.
+Their allocating rendering output and the remaining GIS converter APIs are unchanged.
 
 See [Coordinate Reference Systems](/docs/developer-guide/coordinate-reference-systems) for shared
 CRS types, the cross-format support matrix, and the reprojection roadmap.

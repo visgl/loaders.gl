@@ -10,7 +10,7 @@ import type {
   VectorSourceMetadata
 } from '@loaders.gl/loader-utils';
 import {convertFeaturesToWKBArrowTable} from '@loaders.gl/arrow-geometry/feature-collection-to-arrow';
-import {convertGeojsonToBinaryFeatureCollection} from '@loaders.gl/gis';
+import {convertGeojsonToBinaryFeatureCollection} from '@loaders.gl/arrow-geometry/legacy-binary';
 import {areServiceCRSEquivalent, normalizeServiceCRS} from './crs-utils';
 
 /** Closed extent in canonical XY order. */

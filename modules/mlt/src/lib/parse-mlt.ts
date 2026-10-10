@@ -12,7 +12,7 @@ import type {
   Schema,
   GeoParquetGeometryType
 } from '@loaders.gl/schema';
-import {geojsonToBinary} from '@loaders.gl/gis';
+import {convertGeojsonToBinaryFeatureCollection as geojsonToBinary} from '@loaders.gl/arrow-geometry/legacy-binary';
 import {
   makeWKBGeometryField,
   setWKBGeometrySchemaMetadata

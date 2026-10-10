@@ -4,7 +4,7 @@
 
 import {expect, test} from 'vitest';
 import {fetchFile} from '@loaders.gl/core';
-import {geojsonToFlatGeojson} from '@loaders.gl/gis';
+import {convertGeojsonToFlatGeojson as geojsonToFlatGeojson} from '../src/legacy-binary';
 // Sample GeoJSON data derived from examples in GeoJSON specification
 // https://tools.ietf.org/html/rfc7946#appendix-A
 // All features have 2D coordinates
@@ -13,7 +13,7 @@ const FEATURES_2D = '@loaders.gl/gis/test/data/binary-features/2d_features.json'
 const FEATURES_3D = '@loaders.gl/gis/test/data/binary-features/3d_features.json';
 // Some features have 3D coordinates
 const FEATURES_MIXED = '@loaders.gl/gis/test/data/binary-features/mixed_features.json';
-test('gis#geojson-to-flat-geojson 2D', async () => {
+test('arrow-geometry#legacy-geojson-to-flat-geojson 2D', async () => {
   const response = await fetchFile(FEATURES_2D);
   const {features} = await response.json();
   const flatFeatures = geojsonToFlatGeojson(features);
@@ -74,7 +74,7 @@ test('gis#geojson-to-flat-geojson 2D', async () => {
     [-1, 0.3599999999999966]
   ]);
 });
-test('gis#geojson-to-flat-geojson 3D', async () => {
+test('arrow-geometry#legacy-geojson-to-flat-geojson 3D', async () => {
   const response = await fetchFile(FEATURES_3D);
   const {features} = await response.json();
   const flatFeatures = geojsonToFlatGeojson(features);
@@ -136,7 +136,7 @@ test('gis#geojson-to-flat-geojson 3D', async () => {
     [-1, 0.3599999999999966]
   ]);
 });
-test('gis#geojson-to-flat-geojson Mixed', async () => {
+test('arrow-geometry#legacy-geojson-to-flat-geojson Mixed', async () => {
   const response = await fetchFile(FEATURES_MIXED);
   const {features} = await response.json();
   const flatFeatures = geojsonToFlatGeojson(features, {coordLength: 3});
@@ -198,7 +198,7 @@ test('gis#geojson-to-flat-geojson Mixed', async () => {
   ]);
 });
 // eslint-disable-next-line max-statements
-test('gis#geojson-to-flat-geojson winding', async () => {
+test('arrow-geometry#legacy-geojson-to-flat-geojson winding', async () => {
   const response = await fetchFile(FEATURES_2D);
   const {features} = await response.json();
   const polygons = features.slice(4);
@@ -282,7 +282,7 @@ test('gis#geojson-to-flat-geojson winding', async () => {
     [1, -0.3599999999999966]
   ]);
 });
-test('gis#geojson-to-flat-geojson invalid type', async () => {
+test('arrow-geometry#legacy-geojson-to-flat-geojson invalid type', async () => {
   const features = [
     {
       id: 0,

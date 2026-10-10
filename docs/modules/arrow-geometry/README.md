@@ -34,6 +34,7 @@ GeoArrow processing, or core.
 | `feature-table` | Feature-to-native/WKB/WKT table construction and legacy CRS metadata. |
 | `geojson-table` | Materialize a primary geometry column as a GeoJSON table. |
 | `binary-features` | Allocating legacy Arrow-to-renderer conversion and triangulation helpers. |
+| `legacy-binary` | Shared GeoJSON/FlatGeoJSON-to-renderer conversion, geometry counts and numeric attributes. |
 | `sampled-bounds` | Sampled coordinate bounds; not an exact full scan. |
 | `binary-geometry-to-wkb` | Legacy binary geometry writing and in-place WKB reprojection. |
 | `geometry-codecs` | Shared loaders.gl output compatibility over math.gl WKB/WKT codecs. |
@@ -50,6 +51,15 @@ retains the legacy dimensional options; use math.gl's WKBBuilder when writing
 EWKB SRIDs. Native, serialized and renderer outputs keep their existing shapes.
 Materializing GeoJSON, renderer arrays or serialized bytes may allocate; these
 APIs do not promise borrowed, zero-allocation batch views.
+
+The `legacy-binary` subpath exports `convertGeojsonToBinaryFeatureCollection`,
+`convertGeojsonToFlatGeojson`, `convertFlatGeojsonToBinaryFeatureCollection`,
+`getGeometryInfo`, `extractNumericPropTypes`, and their option/info types. It retains the existing position
+precision, vertex-based offsets, feature IDs, numeric attributes, ring-winding
+and triangulation behavior. Ring-winding correction may mutate input rings, as
+before; clone GeoJSON first when its coordinates must remain unchanged.
+This is one shared compatibility implementation for loader outputs, not a new
+canonical geometry representation or a converter registry.
 
 GIS compatibility exports remain available during the staged migration. Rich
 conversion registries, spatial processing and application APIs belong in

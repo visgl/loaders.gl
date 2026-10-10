@@ -5136,7 +5136,6 @@ __metadata:
   resolution: "@loaders.gl/arcgis@workspace:modules/arcgis"
   dependencies:
     "@loaders.gl/arrow-geometry": "npm:5.0.0-alpha.11"
-    "@loaders.gl/gis": "npm:5.0.0-alpha.11"
     "@loaders.gl/i3s": "npm:5.0.0-alpha.11"
     "@loaders.gl/images": "npm:5.0.0-alpha.11"
     "@loaders.gl/lerc": "npm:5.0.0-alpha.11"
@@ -5543,7 +5542,6 @@ __metadata:
   resolution: "@loaders.gl/kml@workspace:modules/kml"
   dependencies:
     "@loaders.gl/arrow-geometry": "npm:5.0.0-alpha.11"
-    "@loaders.gl/gis": "npm:5.0.0-alpha.11"
     "@loaders.gl/loader-utils": "npm:5.0.0-alpha.11"
     "@loaders.gl/schema": "npm:5.0.0-alpha.11"
     "@loaders.gl/schema-utils": "npm:5.0.0-alpha.11"
@@ -5609,7 +5607,6 @@ __metadata:
   resolution: "@loaders.gl/mlt@workspace:modules/mlt"
   dependencies:
     "@loaders.gl/arrow-geometry": "npm:5.0.0-alpha.11"
-    "@loaders.gl/gis": "npm:5.0.0-alpha.11"
     "@loaders.gl/loader-utils": "npm:5.0.0-alpha.11"
     "@loaders.gl/schema": "npm:5.0.0-alpha.11"
     "@loaders.gl/schema-utils": "npm:5.0.0-alpha.11"
@@ -6050,7 +6047,6 @@ __metadata:
   resolution: "@loaders.gl/wms@workspace:modules/wms"
   dependencies:
     "@loaders.gl/arrow-geometry": "npm:5.0.0-alpha.11"
-    "@loaders.gl/gis": "npm:5.0.0-alpha.11"
     "@loaders.gl/images": "npm:5.0.0-alpha.11"
     "@loaders.gl/lerc": "npm:5.0.0-alpha.11"
     "@loaders.gl/loader-utils": "npm:5.0.0-alpha.11"

@@ -4,7 +4,10 @@
 
 import type {ArrowTable, FlatFeature, BinaryFeatureCollection} from '@loaders.gl/schema';
 import {convertFeaturesToWKBArrowTable} from '@loaders.gl/arrow-geometry/feature-collection-to-arrow';
-import {flatGeojsonToBinary, GeojsonGeometryInfo} from '@loaders.gl/gis';
+import {
+  convertFlatGeojsonToBinaryFeatureCollection as flatGeojsonToBinary,
+  type GeojsonGeometryInfo
+} from '@loaders.gl/arrow-geometry/legacy-binary';
 import {log} from '@loaders.gl/loader-utils';
 import Protobuf from 'pbf';
 
