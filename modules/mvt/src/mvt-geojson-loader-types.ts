@@ -4,7 +4,7 @@
 
 import type {Loader, LoaderOptions} from '@loaders.gl/loader-utils';
 import {MVTFormat} from './mvt-format';
-import type {MVTGeoJSONOptions, MVTGeoJSONTable} from './lib/parse-mvt-geojson';
+import type {MVTGeoJSONOptions, MVTGeoJSONTable} from './lib/types';
 
 // __VERSION__ is injected by babel-plugin-version-inline.
 // @ts-ignore TS2304: Cannot find name '__VERSION__'.

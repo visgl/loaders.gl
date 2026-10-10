@@ -2,6 +2,37 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
+import type {Feature, GeoJSONTable} from '@loaders.gl/schema';
+
+/** GeoJSON feature with optional vector-tile provenance outside authored properties. */
+export type MVTGeoJSONFeature = Feature & {
+  /** Name of the vector-tile layer that contained this feature. */
+  sourceLayer?: string;
+};
+
+/** GeoJSON output with optional per-feature vector-tile provenance. */
+export type MVTGeoJSONTable = Omit<GeoJSONTable, 'features'> & {
+  /** Decoded features, optionally carrying their original vector-tile layer names. */
+  features: MVTGeoJSONFeature[];
+};
+
+/** Options shared by the full MVT parser and the GeoJSON-only entry. */
+export type MVTGeoJSONOptions = {
+  /** Vector-tile decoding options. */
+  mvt?: {
+    /** Return tile-local or geographic coordinates. */
+    coordinates?: 'wgs84' | 'local';
+    /** Tile index required when requesting geographic coordinates. */
+    tileIndex?: {x: number; y: number; z: number};
+    /** Legacy property receiving the source-layer name, or null to disable injection. */
+    layerProperty?: string | number | null;
+    /** Include source-layer provenance outside authored feature properties. */
+    sourceLayer?: boolean;
+    /** Restrict decoding to these vector-tile layers. */
+    layers?: string[];
+  };
+};
+
 /** For local coordinates, the tileIndex is not required */
 type MVTLocalCoordinatesOptions = {
   /**

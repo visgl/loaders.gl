@@ -2,33 +2,9 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import type {GeoJSONTable, Feature} from '@loaders.gl/schema';
+import type {MVTGeoJSONFeature, MVTGeoJSONOptions, MVTGeoJSONTable} from './types';
 import Protobuf from 'pbf';
 import {VectorTile} from './vector-tile/vector-tile';
-
-/** GeoJSON feature with optional vector-tile provenance outside authored properties. */
-export type MVTGeoJSONFeature = Feature & {
-  /** Name of the vector-tile layer that contained this feature. */
-  sourceLayer?: string;
-};
-
-/** GeoJSON output with optional per-feature vector-tile provenance. */
-export type MVTGeoJSONTable = Omit<GeoJSONTable, 'features'> & {
-  /** Decoded features, optionally carrying their original vector-tile layer names. */
-  features: MVTGeoJSONFeature[];
-};
-
-/** Options shared by the full MVT parser and the GeoJSON-only entry. */
-export type MVTGeoJSONOptions = {
-  mvt?: {
-    coordinates?: 'wgs84' | 'local';
-    tileIndex?: {x: number; y: number; z: number};
-    layerProperty?: string | number | null;
-    /** Include source-layer provenance as a GeoJSON foreign member, not an authored property. */
-    sourceLayer?: boolean;
-    layers?: string[];
-  };
-};
 
 /** Parse an MVT buffer into a GeoJSON feature collection without loading binary or Arrow converters. */
 export function parseMVTGeoJSON(
