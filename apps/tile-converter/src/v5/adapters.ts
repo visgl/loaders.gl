@@ -79,3 +79,11 @@ export type {
   ConvertPointCloudToTilesetOptions,
   ConvertedPointCloudTileset
 } from './point-cloud-tileset.js';
+
+export {encodePotreeArchive, openPointCloudFile, extractMeshVertices} from './point-cloud-file.js';
+export type {
+  EncodePotreeArchiveOptions,
+  OpenPointCloudFileOptions,
+  OpenedPointCloudFile,
+  ExtractMeshVerticesOptions
+} from './point-cloud-file.js';

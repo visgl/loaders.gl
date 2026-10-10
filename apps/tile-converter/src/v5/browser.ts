@@ -143,3 +143,15 @@ export type {
   ConvertPointCloudToTilesetOptions,
   ConvertedPointCloudTileset
 } from '@loaders.gl/tile-converter/v5/adapters';
+
+export {
+  encodePotreeArchive,
+  openPointCloudFile,
+  extractMeshVertices
+} from '@loaders.gl/tile-converter/v5/adapters';
+export type {
+  EncodePotreeArchiveOptions,
+  OpenPointCloudFileOptions,
+  OpenedPointCloudFile,
+  ExtractMeshVerticesOptions
+} from '@loaders.gl/tile-converter/v5/adapters';
