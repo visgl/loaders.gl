@@ -34,6 +34,15 @@ Arrow attributes must have no null values; map nullable attributes explicitly be
 Strided meshes require an explicit `header.vertexCount`. Keep input and metadata immutable
 until `close()`.
 
+The tiler is format-independent: decoded LAS/LAZ, PCD, point-only PLY, Draco point clouds,
+and loaded Potree/COPC tile content can use this contract. A generic Arrow table with separate
+X/Y/Z columns needs normalization to `POSITION`; a source object, batch iterator, indexed mesh,
+or encoded/quantized position attribute is not a direct input. Load and normalize a bounded
+dataset or batch before creating the tiler.
+
+Arrow input is converted to Mesh typed attributes for indexing and can copy or concatenate
+buffers. Direct Mesh input retains its attribute arrays. This is not a zero-copy Arrow index.
+
 Positions remain in native coordinates. The source performs no CRS inference or projection.
 Pass `pointCloudTiler.spatialReference` when the CRS is known. Returned content has Cartesian
 coordinates, origin `[0, 0, 0]` and native bounds; geometric error is in source units.

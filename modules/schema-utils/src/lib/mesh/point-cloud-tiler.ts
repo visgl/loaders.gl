@@ -58,7 +58,8 @@ type NodeState = {
 };
 
 /**
- * Creates an additive octree from decoded point Mesh/Arrow data without copying attributes.
+ * Creates an additive octree from decoded point Mesh/Arrow data.
+ * Mesh input retains its attributes; Arrow conversion can copy attribute buffers.
  * Sparse-grid samples retain the first point per cell; descendants contain only unsampled rows.
  * Children are partitioned on demand. All input rows occur exactly once across the complete tree.
  * Input must remain immutable. This is bounded in-memory authoring, not an out-of-core reader.
