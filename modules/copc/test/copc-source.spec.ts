@@ -1372,3 +1372,59 @@ function readCOPCContentColumn(
 function readUint64(dataView: DataView, byteOffset: number): number {
   return dataView.getUint32(byteOffset, true) + dataView.getUint32(byteOffset + 4, true) * 2 ** 32;
 }
+
+test('COPCWriter retains Extra Bytes descriptors and exact identifiers through paged LAZ nodes', async () => {
+  const attributes = {
+    POSITION: {value: new Float64Array([0, 0, 0, 8, 8, 8, 2, 2, 2]), size: 3},
+    stableId: {
+      value: new BigUint64Array([9007199254740993n, 18446744073709551615n, 9007199254740995n]),
+      size: 1
+    },
+    vector: {value: new Int16Array([1, 2, 3, -4, -5, -6, 7, 8, 9]), size: 3}
+  };
+  const bytes = COPCWriter.encodeSync(
+    {topology: 'point-list', mode: 0, schema: {fields: [], metadata: {}}, attributes} as never,
+    {
+      copc: {
+        nodePointLimit: 1,
+        hierarchyPageDepth: 1,
+        extraBytes: [{attribute: 'stableId', name: 'point_id'}, {attribute: 'vector'}]
+      }
+    }
+  );
+  const getter = async (begin: number, end: number) => new Uint8Array(bytes.slice(begin, end));
+  const file = await openCOPC(getter);
+  expect(file.extraBytesDescriptors.map(field => field.name)).toEqual(['point_id', 'vector']);
+  expect(file.header.pointDataRecordLength).toBe(44);
+  const pages = [file.info.rootHierarchyPage],
+    identifiers: bigint[] = [],
+    vectors: number[][] = [];
+  while (pages.length) {
+    const hierarchy = await loadCOPCHierarchyPage(getter, pages.pop()!);
+    pages.push(...Object.values(hierarchy.pages));
+    for (const node of Object.values(hierarchy.nodes)) {
+      const compressed = await loadCOPCNodeData(getter, node);
+      const raw = decodeLAZChunk(compressed, {
+        pointCount: node.pointCount,
+        pointDataRecordFormat: file.header.pointDataRecordFormat,
+        pointDataRecordLength: file.header.pointDataRecordLength
+      });
+      const view = new DataView(raw.buffer, raw.byteOffset, raw.byteLength);
+      for (let row = 0; row < node.pointCount; row++) {
+        const offset = row * 44;
+        identifiers.push(view.getBigUint64(offset + 30, true));
+        vectors.push([0, 1, 2].map(axis => view.getInt16(offset + 38 + axis * 2, true)));
+      }
+    }
+  }
+  identifiers.forEach((identifier, index) => {
+    const sourceRow = attributes.stableId.value.indexOf(identifier);
+    expect(vectors[index]).toEqual(
+      Array.from(attributes.vector.value.slice(sourceRow * 3, sourceRow * 3 + 3))
+    );
+  });
+  expect(identifiers.sort()).toEqual(Array.from(attributes.stableId.value).sort());
+  expect(vectors.map(vector => vector.join(',')).sort()).toEqual(
+    ['1,2,3', '-4,-5,-6', '7,8,9'].sort()
+  );
+});

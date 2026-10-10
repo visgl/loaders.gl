@@ -16,6 +16,7 @@ test('COPCWriter output is readable by the independent copc implementation', asy
       maximumDepth: 8,
       hierarchyPageDepth: 1,
       pointDataRecordFormat: 7,
+      extraBytes: [{attribute: 'stableId', name: 'point_id'}],
       scale: [0.01, 0.01, 0.01],
       wkt: 'LOCAL_CS["loaders.gl COPCWriter conformance"]'
     }
@@ -40,6 +41,10 @@ test('COPCWriter output is readable by the independent copc implementation', asy
   }
 
   expect(copc.header.pointDataRecordFormat).toBe(7);
+  expect(copc.header.pointDataRecordLength).toBe(44);
+  expect(copc.eb).toEqual([
+    expect.objectContaining({name: 'point_id', type: 'unsigned', length: 8})
+  ]);
   expect(copc.header.pointCount).toBe(mesh.attributes.POSITION.value.length / 3);
   expect(copc.wkt).toBe('LOCAL_CS["loaders.gl COPCWriter conformance"]');
   expect(pageCount).toBeGreaterThan(1);
@@ -65,7 +70,11 @@ function createConformanceMesh() {
   const attributes = {
     POSITION: {value: new Float64Array(positions), size: 3},
     COLOR_0: {value: new Uint16Array(colors), size: 3},
-    gpsTime: {value: new Float64Array(gpsTimes), size: 1}
+    gpsTime: {value: new Float64Array(gpsTimes), size: 1},
+    stableId: {
+      value: BigUint64Array.from({length: 64}, (_, index) => 9007199254740993n + BigInt(index)),
+      size: 1
+    }
   };
   return {
     attributes,

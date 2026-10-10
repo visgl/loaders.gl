@@ -5245,7 +5245,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@loaders.gl/copc@workspace:*, @loaders.gl/copc@workspace:modules/copc":
+"@loaders.gl/copc@npm:5.0.0-alpha.11, @loaders.gl/copc@workspace:*, @loaders.gl/copc@workspace:modules/copc":
   version: 0.0.0-use.local
   resolution: "@loaders.gl/copc@workspace:modules/copc"
   dependencies:
@@ -5939,6 +5939,7 @@ __metadata:
   dependencies:
     "@loaders.gl/3d-tiles": "npm:5.0.0-alpha.11"
     "@loaders.gl/compression": "npm:5.0.0-alpha.11"
+    "@loaders.gl/copc": "npm:5.0.0-alpha.11"
     "@loaders.gl/crypto": "npm:5.0.0-alpha.11"
     "@loaders.gl/draco": "npm:5.0.0-alpha.11"
     "@loaders.gl/gltf": "npm:5.0.0-alpha.11"

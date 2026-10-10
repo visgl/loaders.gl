@@ -544,3 +544,9 @@ responses and CORS-exposed `Content-Range` plus an ETag or Last-Modified validat
 inspected identity is retained across worker reopening; replaced archives fail instead of
 using stale content declarations. Readers close on success, failure and cancellation.
 Nested/external tilesets and implicit tiling remain unsupported by this bounded example.
+
+## COPC batch output
+
+[Explicit point mapping and COPC output](./point-cloud-copc) adds decoded Mesh/Arrow batch authoring
+with caller-declared CRS, quantization precision, input/output budgets and semantic loss reports.
+The codec emits one independent COPC file per input batch; whole-dataset assembly remains a separate gate.
