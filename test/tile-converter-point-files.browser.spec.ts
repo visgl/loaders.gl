@@ -117,6 +117,7 @@ test('native COPC is a single-file source and destination through existing write
   } finally {
     await opened.close();
   }
+  await expect(opened.source.loadTileContent({id: '0-0-0-0'})).rejects.toThrow('closed');
 });
 
 test('archive authoring is deterministic and fails budgets and cancellation', async () => {
