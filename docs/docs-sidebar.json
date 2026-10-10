@@ -181,6 +181,7 @@
           "modules/shapefile/api-reference/shapefile-loader",
           "modules/kml/api-reference/tcx-loader",
           "modules/terrain/api-reference/terrain-loader",
+          "modules/terrain/api-reference/heightmap",
           "modules/mvt/api-reference/tilejson-loader",
           "modules/3d-tiles/api-reference/tiles-3d-loader",
           "modules/wkt/api-reference/twkb-loader",
