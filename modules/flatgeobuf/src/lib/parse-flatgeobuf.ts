@@ -16,16 +16,15 @@ import {
   type ColumnarPredicate,
   type TableQueryOptions
 } from '@loaders.gl/loader-utils';
+import {convertGeojsonToBinaryFeatureCollection, transformGeoJsonCoords} from '@loaders.gl/gis';
 import {
-  convertGeojsonToBinaryFeatureCollection,
   encodeWKBGeometryValue,
   makeWKBGeometryField,
-  makeWKBGeometryDataFromArray,
-  setWKBGeometryColumnMetadata,
-  transformGeoJsonCoords,
-  convertFeaturesToGeoArrowTable,
-  type GeoParquetGeometryType
-} from '@loaders.gl/gis';
+  setWKBGeometryColumnMetadata
+} from '@loaders.gl/arrow-geometry/geometry-field';
+import {makeWKBGeometryDataFromArray} from '@loaders.gl/arrow-geometry/wkb-arrow-utils';
+import {convertFeaturesToGeoArrowTable} from '@loaders.gl/arrow-geometry/feature-table';
+import {type GeoParquetGeometryType} from '@loaders.gl/schema';
 import {WKBBuilder} from '@loaders.gl/arrow/geometry';
 import {convertSchemaToArrow, queryArrowTable} from '@loaders.gl/schema-utils';
 import {

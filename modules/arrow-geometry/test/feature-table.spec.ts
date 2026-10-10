@@ -8,12 +8,9 @@ import {GEOARROW_TEST_CASES} from '@loaders.gl/arrow/test/data/geoarrow/test-cas
 import {fetchFile, parse} from '@loaders.gl/core';
 import {Feature, FeatureCollection} from '@loaders.gl/schema';
 import {GeoArrowLoader} from '@loaders.gl/arrow';
-import {
-  convertFeaturesToWKBArrowTable,
-  convertFeaturesToGeoArrowTable,
-  getGeoMetadata,
-  type LegacyGeoJSONCRS
-} from '@loaders.gl/gis';
+import {convertFeaturesToWKBArrowTable} from '../src/feature-collection-to-arrow';
+import {getGeoMetadata} from '@loaders.gl/schema';
+import {convertFeaturesToGeoArrowTable, type LegacyGeoJSONCRS} from '../src/feature-table';
 
 test('convertFeaturesToWKBArrowTable#preserves feature IDs and sparse properties', () => {
   const table = convertFeaturesToWKBArrowTable([

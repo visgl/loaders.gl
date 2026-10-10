@@ -6,13 +6,11 @@ import type {DataType, Field, Geometry, Schema} from '@loaders.gl/schema';
 import {
   convertGeometryToWKB,
   convertWKBToGeometry,
-  convertWKTToGeometry,
-  decodeHex,
-  getGeoMetadata,
-  inferGeoParquetGeometryTypes,
-  setGeoMetadata,
-  type GeoParquetGeometryType
-} from '@loaders.gl/gis';
+  convertWKTToGeometry
+} from '@loaders.gl/arrow-geometry/geometry-codecs';
+import {decodeHex} from '@loaders.gl/gis';
+import {getGeoMetadata, setGeoMetadata, type GeoParquetGeometryType} from '@loaders.gl/schema';
+import {inferGeoParquetGeometryTypes} from '@loaders.gl/arrow-geometry/geometry-field';
 
 const GEOMETRY_COLUMN_NAMES = new Set(['geom', 'geometry', 'the_geom', 'wkt', 'wkb']);
 const MAX_GEOMETRY_SAMPLE_VALUES = 10;

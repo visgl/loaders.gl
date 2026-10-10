@@ -37,5 +37,5 @@ const wkbTable = convertGeoArrowGeometry(geoarrowTable, 'geoarrow.wkb');
 See [GeoArrow converters](/docs/developer-guide/converters/geoarrow-converters)
 for column selection and encoding support, and
 [spatial queries](/docs/developer-guide/spatial-queries) for index usage and CRS requirements.
-Loader implementations should use the minimal helpers in `@loaders.gl/gis`
+Loader implementations should use the focused helpers in `@loaders.gl/arrow-geometry`
 instead of depending on the larger processing module.

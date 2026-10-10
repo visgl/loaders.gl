@@ -4,7 +4,7 @@
 
 import {Metadata, SchemaWithMetadata, getMetadataValue} from './metadata-utils';
 import type {GeoArrowEncoding, GeoArrowMetadata} from '@loaders.gl/schema';
-import {GeoArrowMetadataSchema} from '@loaders.gl/gis/geospatial-metadata-zod-schema';
+import {GeoArrowMetadataSchema} from '@loaders.gl/schema/geospatial-metadata-zod-schema';
 import {GEOARROW_ENCODINGS} from '../geoarrow-conformance';
 
 export type {GeoArrowEncoding, GeoArrowMetadata} from '@loaders.gl/schema';

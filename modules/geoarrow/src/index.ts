@@ -168,17 +168,17 @@ export type {
   GeoArrowUnionChildLayout
 } from './geoarrow-layout';
 
-export {updateBoundsFromGeoArrowSamples} from '@loaders.gl/gis';
+export {updateBoundsFromGeoArrowSamples} from '@loaders.gl/arrow-geometry/sampled-bounds';
 
 export type {
   BinaryDataFromGeoArrow,
   BinaryGeometriesFromArrowOptions
-} from '@loaders.gl/gis';
+} from '@loaders.gl/arrow-geometry/binary-features';
 export {
   getBinaryGeometryTemplate,
   getTriangleIndices,
   getMeanCentersFromBinaryGeometries
-} from '@loaders.gl/gis';
+} from '@loaders.gl/arrow-geometry/binary-features';
 export {
   convertGeoArrowGeometryToGeoJSON,
   convertGeoArrowToBinaryFeatureCollection,

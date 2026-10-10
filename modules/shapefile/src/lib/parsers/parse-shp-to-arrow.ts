@@ -9,13 +9,13 @@ import type {
   GeoArrowEncodingPreference
 } from '@loaders.gl/schema';
 import {makeTableScanBatch} from '@loaders.gl/loader-utils';
+import {type GeoParquetGeometryType} from '@loaders.gl/schema';
+import {convertFeaturesToGeoArrowTable} from '@loaders.gl/arrow-geometry/feature-table';
+import {convertWKBToGeometry} from '@loaders.gl/arrow-geometry/geometry-codecs';
 import {
-  type GeoParquetGeometryType,
-  convertFeaturesToGeoArrowTable,
-  convertWKBToGeometry,
   makeWKBGeometryField,
   setWKBGeometryColumnMetadata
-} from '@loaders.gl/gis';
+} from '@loaders.gl/arrow-geometry/geometry-field';
 import {ArrowTableBuilder} from '@loaders.gl/schema-utils';
 import {parseSHP, parseSHPInBatches} from './parse-shp';
 import {parseSHPHeader, type SHPHeader} from './parse-shp-header';

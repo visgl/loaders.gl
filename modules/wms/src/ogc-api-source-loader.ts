@@ -17,10 +17,8 @@ import type {
 } from '@loaders.gl/loader-utils';
 import {DataSource} from '@loaders.gl/loader-utils';
 import type {GeoJSONTable, Schema} from '@loaders.gl/schema';
-import {
-  convertFeaturesToWKBArrowTable,
-  convertGeojsonToBinaryFeatureCollection
-} from '@loaders.gl/gis';
+import {convertFeaturesToWKBArrowTable} from '@loaders.gl/arrow-geometry/feature-collection-to-arrow';
+import {convertGeojsonToBinaryFeatureCollection} from '@loaders.gl/gis';
 import {getServiceCRSAxisOrder} from './crs-utils';
 import type {FeaturePaginationOptions, FeaturePage} from './feature-pagination';
 import {

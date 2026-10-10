@@ -3,23 +3,20 @@
 // Copyright (c) vis.gl contributors
 
 import {expect, test} from 'vitest';
-import type {BinaryGeometry} from '@loaders.gl/schema';
-import {convert} from '@loaders.gl/schema-utils';
+import type {BinaryGeometry, Geometry} from '@loaders.gl/schema';
+import {WKBBuilder} from '../src/wkb-builder';
+import {convertWKBToGeometry} from '../src/geometry-codecs';
 import {
-  GeometryConverter,
-  WKBBuilder,
   convertBinaryGeometryToWKB,
-  convertWKBToGeometry,
   getBinaryGeometryWKBSize,
   inferBinaryGeometryTypes,
   reprojectWKBInPlace,
   writeBinaryGeometryToWKB
-} from '@loaders.gl/gis';
+} from '../src/binary-geometry-to-wkb';
 test('convertBinaryGeometryToWKB#Point', () => {
   const geometry = makePoint([1, 2]);
   const wkb = convertBinaryGeometryToWKB(geometry);
   expect(convertWKBToGeometry(toArrayBuffer(wkb!))).toEqual({type: 'Point', coordinates: [1, 2]});
-  expect(convert(geometry, 'wkb', [GeometryConverter])).toEqual(wkb);
   expect(getBinaryGeometryWKBSize(geometry), 'measured byte length matches WKB').toBe(
     wkb!.byteLength
   );
@@ -208,3 +205,73 @@ function makePolygon(coordinates: number[][]): BinaryGeometry {
     primitivePolygonIndices: {value: new Uint32Array([0, coordinates.length]), size: 1}
   } as BinaryGeometry;
 }
+
+test.each([
+  [
+    {type: 'Point', positions: {value: new Float64Array([1, 2, 3, 4]), size: 2}},
+    {
+      type: 'MultiPoint',
+      coordinates: [
+        [1, 2],
+        [3, 4]
+      ]
+    }
+  ],
+  [
+    {
+      type: 'LineString',
+      positions: {value: new Float64Array([1, 2, 3, 4]), size: 2},
+      pathIndices: {value: new Uint32Array([0, 1, 2]), size: 1}
+    },
+    {type: 'MultiLineString', coordinates: [[[1, 2]], [[3, 4]]]}
+  ],
+  [
+    {
+      type: 'Polygon',
+      positions: {value: new Float64Array([0, 0, 1, 0, 0, 0, 2, 2, 3, 2, 2, 2]), size: 2},
+      polygonIndices: {value: new Uint32Array([0, 3, 6]), size: 1},
+      primitivePolygonIndices: {value: new Uint32Array([0, 3, 6]), size: 1}
+    },
+    {
+      type: 'MultiPolygon',
+      coordinates: [
+        [
+          [
+            [0, 0],
+            [1, 0],
+            [0, 0]
+          ]
+        ],
+        [
+          [
+            [2, 2],
+            [3, 2],
+            [2, 2]
+          ]
+        ]
+      ]
+    }
+  ]
+] as [
+  BinaryGeometry,
+  Geometry
+][])('preserves multiple legacy parts when writing %j', (geometry, expected) => {
+  const bytes = convertBinaryGeometryToWKB(geometry)!;
+  expect(convertWKBToGeometry(bytes)).toEqual(expected);
+  expect(getBinaryGeometryWKBSize(geometry)).toBe(bytes.byteLength);
+  expect(inferBinaryGeometryTypes([geometry])).toEqual([expected.type]);
+});
+
+test('legacy binary writing preserves null, explicit measures and inferred ZM', () => {
+  expect(convertBinaryGeometryToWKB(null)).toBeNull();
+  const measuredPoint = convertBinaryGeometryToWKB(makePoint([1, 2, 3]), {
+    hasZ: false,
+    hasM: true
+  })!;
+  expect(new DataView(measuredPoint.buffer).getUint32(1, true)).toBe(2001);
+  expect(convertWKBToGeometry(measuredPoint)).toEqual({type: 'Point', coordinates: [1, 2, 3]});
+  expect(convertWKBToGeometry(convertBinaryGeometryToWKB(makePoint([1, 2, 3, 4]))!)).toEqual({
+    type: 'Point',
+    coordinates: [1, 2, 3, 4]
+  });
+});

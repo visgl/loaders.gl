@@ -41,6 +41,9 @@
       "@loaders.gl/schema": [
         "modules/schema/src"
       ],
+      "@loaders.gl/schema/*": [
+        "modules/schema/src/*"
+      ],
       "@loaders.gl/schema/test": [
         "modules/schema/test"
       ],
@@ -124,6 +127,9 @@
       ],
       "@loaders.gl/arrow-geometry": [
         "modules/arrow-geometry/src"
+      ],
+      "@loaders.gl/arrow-geometry/*": [
+        "modules/arrow-geometry/src/*"
       ],
       "@loaders.gl/arrow/transport": [
         "modules/arrow/src/transport"

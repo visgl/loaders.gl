@@ -17,7 +17,7 @@ import {
   convertFeaturesToGeoArrowTable,
   makeGeoArrowFeatureRows,
   makeGeoArrowFeatureSchema
-} from '@loaders.gl/gis';
+} from '@loaders.gl/arrow-geometry/feature-table';
 import {makeTableScanBatch} from '@loaders.gl/loader-utils';
 import {
   ArrowTableBuilder,

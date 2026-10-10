@@ -12,7 +12,10 @@ import type {
   LineString,
   Geometry
 } from '@loaders.gl/schema';
-import {convertWKBToGeometry, convertWKTToGeometry} from '@loaders.gl/gis';
+import {
+  convertWKBToGeometry,
+  convertWKTToGeometry
+} from '@loaders.gl/arrow-geometry/geometry-codecs';
 import type {GeoArrowEncoding} from '../../metadata/geoarrow-metadata';
 
 /**

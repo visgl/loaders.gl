@@ -83,6 +83,10 @@ See [supported items and verification boundaries](/docs/developer-guide/arcgis/i
 
 ## v5.0 (In Development)
 
+- GIS retirement: Arrow parsing and triangulation now use focused
+  [Arrow geometry helpers](/docs/modules/arrow-geometry). Geometry metadata
+  validators move to a dedicated schema subpath, and GIS/WKT share math.gl-backed
+  codecs. Existing GIS compatibility exports and loader output defaults remain.
 - `Tileset3D` retires drawn fallback tiles independently as each replacement region finishes.
   Skip-LOD zoom-out reuses nearby drawn descendants while the desired coarse tile loads.
   See [tile hierarchy and refinement](./modules/3d-tiles/concepts/tile-hierarchy-and-refinement.md).

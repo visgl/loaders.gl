@@ -3,7 +3,8 @@
 // Copyright (c) vis.gl contributors
 
 import * as arrow from 'apache-arrow';
-import {getWKTDimension, getWKTGeometryType} from '@loaders.gl/gis';
+import {getWKTDimension} from '@loaders.gl/arrow-geometry/geometry-codecs';
+import {getWKTGeometryType} from '@loaders.gl/gis';
 import {inspectWKBHeader} from '@math.gl/wkb';
 import type {WKBGeometryType} from '@math.gl/wkb';
 import type {GeoArrowEncoding, GeoParquetGeometryType} from '@loaders.gl/schema';

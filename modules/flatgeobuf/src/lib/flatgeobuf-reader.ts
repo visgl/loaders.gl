@@ -3,7 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import type {CRSIdentifier, WKTCRSDefinition} from '@math.gl/crs';
-import type {WKBBuilder} from '@loaders.gl/gis';
+import type {WKBBuilder} from '@loaders.gl/arrow-geometry';
 
 /** The FlatGeobuf file signature has a stable prefix and a version byte. */
 const MAGIC_PREFIX = [0x66, 0x67, 0x62];
@@ -283,7 +283,7 @@ export function* readFlatGeobufFeatures(
 
 /** Writes one FlatGeobuf geometry into a GeoArrow builder without an intermediate GeoJSON object. */
 export function writeFlatGeobufGeometry(
-  builder: import('@loaders.gl/gis').GeoArrowBuilder,
+  builder: import('@loaders.gl/arrow-geometry').GeoArrowBuilder,
   arrayBuffer: ArrayBuffer,
   geometryOffset: number | undefined,
   header: FlatGeobufHeader

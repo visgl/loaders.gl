@@ -38,6 +38,14 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
 
 This module contains helper classes for the GIS category of loaders.
 
+GIS is being retired incrementally. Import metadata helpers/types from
+[`@loaders.gl/schema`](/docs/modules/schema), and builders/output construction
+from [`@loaders.gl/arrow-geometry`](/docs/modules/arrow-geometry). Existing GIS
+exports remain compatibility entry points. Applications should use
+[`@loaders.gl/geoarrow`](/docs/modules/geoarrow) for geospatial processing.
+Legacy binary rendering conversion and the remaining GIS converter APIs are
+unchanged in this tranche.
+
 See [Coordinate Reference Systems](/docs/developer-guide/coordinate-reference-systems) for shared
 CRS types, the cross-format support matrix, and the reprojection roadmap.
 

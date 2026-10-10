@@ -5,7 +5,7 @@
 import {
   GeoArrowMetadataSchema,
   GeoParquetMetadataSchema
-} from '@loaders.gl/gis/geospatial-metadata-zod-schema';
+} from '@loaders.gl/schema/geospatial-metadata-zod-schema';
 import {describe, expect, it} from 'vitest';
 import {z} from 'zod';
 

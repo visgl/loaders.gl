@@ -26,7 +26,7 @@ import type {
   ArrowTable
 } from '@loaders.gl/schema';
 import type {GeoArrowEncodingPreference} from '@loaders.gl/schema';
-import {convertFeaturesToWKBArrowTable} from '@loaders.gl/gis';
+import {convertFeaturesToWKBArrowTable} from '@loaders.gl/arrow-geometry/feature-collection-to-arrow';
 import {deduceTableSchema} from '@loaders.gl/schema-utils';
 import {Stats, Stat} from '@probe.gl/stats';
 

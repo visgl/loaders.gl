@@ -17,12 +17,12 @@ import type {
   Geometry,
   Schema
 } from '@loaders.gl/schema';
+import {convertGeometryToWKB} from '@loaders.gl/arrow-geometry/geometry-codecs';
 import {
-  convertGeometryToWKB,
   makeWKBGeometryField,
-  setWKBGeometrySchemaMetadata,
-  convertGeojsonToBinaryFeatureCollection
-} from '@loaders.gl/gis';
+  setWKBGeometrySchemaMetadata
+} from '@loaders.gl/arrow-geometry/geometry-field';
+import {convertGeojsonToBinaryFeatureCollection} from '@loaders.gl/gis';
 import {ArrowTableBuilder} from '@loaders.gl/schema-utils';
 import {getGeometryColumnsFromSchema} from '../metadata/geoarrow-metadata';
 import {

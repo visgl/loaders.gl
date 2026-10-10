@@ -8,6 +8,7 @@
     "outDir": "dist"
   },
   "references": [
+    {"path": "../arrow-geometry"},
     {"path": "../gis"},
     {"path": "../schema"},
     {"path": "../schema-utils"},

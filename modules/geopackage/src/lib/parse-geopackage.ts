@@ -14,15 +14,15 @@ import type {
   Schema
 } from '@loaders.gl/schema';
 import {ArrowTableBuilder} from '@loaders.gl/schema-utils';
+import {type GeoParquetGeometryType} from '@loaders.gl/schema';
 import {
-  type GeoParquetGeometryType,
   makeWKBGeometryField,
-  setWKBGeometrySchemaMetadata,
-  convertWKBToGeometry,
-  reprojectWKBInPlace,
-  transformGeoJsonCoords
-} from '@loaders.gl/gis';
-import {convertFeaturesToGeoArrowTable} from '@loaders.gl/gis';
+  setWKBGeometrySchemaMetadata
+} from '@loaders.gl/arrow-geometry/geometry-field';
+import {convertWKBToGeometry} from '@loaders.gl/arrow-geometry/geometry-codecs';
+import {reprojectWKBInPlace} from '@loaders.gl/arrow-geometry/binary-geometry-to-wkb';
+import {transformGeoJsonCoords} from '@loaders.gl/gis';
+import {convertFeaturesToGeoArrowTable} from '@loaders.gl/arrow-geometry/feature-table';
 import {projectionEngine} from '@math.gl/projection';
 import type {Projection} from '@math.gl/projection';
 import {parseWKTCRS, type ReadonlyCRSDefinition, type WKTCRSDefinition} from '@math.gl/crs';

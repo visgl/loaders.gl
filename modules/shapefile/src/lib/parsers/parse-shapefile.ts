@@ -10,7 +10,8 @@ import {
   parseFromContext,
   toArrayBufferIterator
 } from '@loaders.gl/loader-utils';
-import {convertWKBToGeometry, transformGeoJsonCoords} from '@loaders.gl/gis';
+import {convertWKBToGeometry} from '@loaders.gl/arrow-geometry/geometry-codecs';
+import {transformGeoJsonCoords} from '@loaders.gl/gis';
 import type {
   Feature,
   GeoJsonProperties,
