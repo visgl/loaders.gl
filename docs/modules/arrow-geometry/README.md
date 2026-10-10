@@ -52,6 +52,12 @@ EWKB SRIDs. Native, serialized and renderer outputs keep their existing shapes.
 Materializing GeoJSON, renderer arrays or serialized bytes may allocate; these
 APIs do not promise borrowed, zero-allocation batch views.
 
+Native feature tables preserve declared M/ZM axes, including empty measured
+geometries. Mixed Z and M inputs promote to ZM with missing axes filled with NaN;
+geometry type metadata describes the stored dimension. For legacy binary inputs,
+pass the same `hasZ`/`hasM` options to `inferBinaryGeometryTypes` and the WKB writer.
+Three ordinates otherwise mean XYZ, and four mean XYZM.
+
 The `legacy-binary` subpath exports `convertGeojsonToBinaryFeatureCollection`,
 `convertGeojsonToFlatGeojson`, `convertFlatGeojsonToBinaryFeatureCollection`,
 `getGeometryInfo`, `extractNumericPropTypes`, and their option/info types. It retains the existing position

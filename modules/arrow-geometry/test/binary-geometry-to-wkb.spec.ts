@@ -262,6 +262,26 @@ test.each([
   expect(inferBinaryGeometryTypes([geometry])).toEqual([expected.type]);
 });
 
+test.each([
+  {coordinates: [1, 2], options: {}, label: 'Point', typeCode: 1},
+  {coordinates: [1, 2, 3], options: {}, label: 'Point Z', typeCode: 1001},
+  {coordinates: [1, 2, 3], options: {hasZ: false, hasM: true}, label: 'Point M', typeCode: 2001},
+  {coordinates: [1, 2, 3, 4], options: {}, label: 'Point ZM', typeCode: 3001},
+  {coordinates: [1, 2, 3, 4], options: {hasZ: false, hasM: false}, label: 'Point', typeCode: 1}
+])('binary geometry labels match written dimensions: $label', ({
+  coordinates,
+  options,
+  label,
+  typeCode
+}) => {
+  const geometry = makePoint(coordinates);
+  const bytes = convertBinaryGeometryToWKB(geometry, options)!;
+  expect(new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength).getUint32(1, true)).toBe(
+    typeCode
+  );
+  expect(inferBinaryGeometryTypes([geometry], options)).toEqual([label]);
+});
+
 test('legacy binary writing preserves null, explicit measures and inferred ZM', () => {
   expect(convertBinaryGeometryToWKB(null)).toBeNull();
   const measuredPoint = convertBinaryGeometryToWKB(makePoint([1, 2, 3]), {

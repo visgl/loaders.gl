@@ -23,6 +23,7 @@ import {
 import {convertGeometryToWKT} from './geometry-codecs';
 import {
   encodeWKBGeometryValue,
+  getGeometryWKBOptions,
   inferGeoParquetGeometryTypes,
   makeWKBGeometryField,
   setWKBGeometrySchemaMetadata
@@ -210,9 +211,16 @@ function convertFeaturesToNativeGeoArrowTable(
   });
   const propertySchema = options?.propertySchema || getPropertySchema(propertyRows);
   const schema = convertSchemaToArrow(propertySchema);
+  const dimensionSuffix = dimension === 'xy' ? '' : ` ${dimension.slice(2).toUpperCase()}`;
   const inferredGeometryColumnMetadata: Record<string, unknown> = {
     encoding,
-    geometry_types: inferGeoParquetGeometryTypes(geometries)
+    geometry_types: [
+      ...new Set(
+        inferGeoParquetGeometryTypes(geometries).map(
+          type => `${type.split(' ')[0]}${dimensionSuffix}`
+        )
+      )
+    ]
   };
   const existingGeoMetadata = getGeoMetadata(schema.metadata);
   const existingGeometryColumnMetadata = existingGeoMetadata?.columns[geometryColumnName];
@@ -323,26 +331,22 @@ function selectOptimizedEncoding(
   return 'geoarrow.geometry';
 }
 
-/** Returns the maximum coordinate dimensionality present in a feature collection. */
+/** Combines declared or inferred elevation and measure axes across the features. */
 function getFeatureDimension(geometries: (Geometry | null)[]): GeoArrowBuilderDimension {
-  let coordinateSize = 2;
+  let hasZ = false;
+  let hasM = false;
   for (const geometry of geometries) {
-    coordinateSize = Math.max(coordinateSize, getGeometryCoordinateSize(geometry));
+    if (!geometry) continue;
+    const dimensions = getGeometryWKBOptions(geometry);
+    hasZ ||= Boolean(dimensions.hasZ);
+    hasM ||= Boolean(dimensions.hasM);
+    if (geometry.type === 'GeometryCollection') {
+      const childDimension = getFeatureDimension(geometry.geometries);
+      hasZ ||= childDimension === 'xyz' || childDimension === 'xyzm';
+      hasM ||= childDimension === 'xym' || childDimension === 'xyzm';
+    }
   }
-  return coordinateSize >= 4 ? 'xyzm' : coordinateSize === 3 ? 'xyz' : 'xy';
-}
-
-/** Finds the dimensionality of the first coordinate tuple in a geometry. */
-function getGeometryCoordinateSize(geometry: Geometry | null): number {
-  if (!geometry) return 2;
-  if (geometry.type === 'GeometryCollection') {
-    return Math.max(2, ...geometry.geometries.map(getGeometryCoordinateSize));
-  }
-  let value: unknown = geometry.coordinates;
-  while (Array.isArray(value) && value.length > 0 && Array.isArray(value[0])) {
-    value = value[0];
-  }
-  return Array.isArray(value) && value.every(item => typeof item === 'number') ? value.length : 2;
+  return hasZ ? (hasM ? 'xyzm' : 'xyz') : hasM ? 'xym' : 'xy';
 }
 
 /** Builds one concrete native GeoArrow vector from GeoJSON geometries. */
@@ -475,68 +479,76 @@ function writeGeometryToBuilder(
   geometry: Geometry,
   encoding: GeoArrowNativeEncoding
 ): void {
+  const dimensions = getGeometryWKBOptions(geometry);
   switch (geometry.type) {
     case 'Point':
       if (encoding === 'geoarrow.multipoint') builder.beginMultiPoint(1);
       builder.beginPoint();
-      writeCoordinateToBuilder(builder, geometry.coordinates);
+      writeCoordinateToBuilder(builder, geometry.coordinates, dimensions);
       return;
     case 'MultiPoint':
       builder.beginMultiPoint(geometry.coordinates.length);
       for (const coordinate of geometry.coordinates) {
         builder.beginPoint();
-        writeCoordinateToBuilder(builder, coordinate);
+        writeCoordinateToBuilder(builder, coordinate, dimensions);
       }
       return;
     case 'LineString':
       if (encoding === 'geoarrow.multilinestring') builder.beginMultiLineString(1);
-      writeLineStringToBuilder(builder, geometry.coordinates);
+      writeLineStringToBuilder(builder, geometry.coordinates, dimensions);
       return;
     case 'MultiLineString':
       builder.beginMultiLineString(geometry.coordinates.length);
-      for (const line of geometry.coordinates) writeLineStringToBuilder(builder, line);
+      for (const line of geometry.coordinates) writeLineStringToBuilder(builder, line, dimensions);
       return;
     case 'Polygon':
       if (encoding === 'geoarrow.multipolygon') builder.beginMultiPolygon(1);
-      writePolygonToBuilder(builder, geometry.coordinates);
+      writePolygonToBuilder(builder, geometry.coordinates, dimensions);
       return;
     case 'MultiPolygon':
       builder.beginMultiPolygon(geometry.coordinates.length);
-      for (const polygon of geometry.coordinates) writePolygonToBuilder(builder, polygon);
+      for (const polygon of geometry.coordinates)
+        writePolygonToBuilder(builder, polygon, dimensions);
       return;
     case 'GeometryCollection':
       throw new Error('GeometryCollection must be written through the dense union builder.');
   }
 }
 
+/** Writes a line using the source geometry's elevation and measure axes. */
 function writeLineStringToBuilder(
   builder: InstanceType<typeof GeoArrowBuilder>,
-  coordinates: number[][]
+  coordinates: number[][],
+  dimensions: ReturnType<typeof getGeometryWKBOptions>
 ): void {
   builder.beginLineString(coordinates.length);
-  for (const coordinate of coordinates) writeCoordinateToBuilder(builder, coordinate);
+  for (const coordinate of coordinates) writeCoordinateToBuilder(builder, coordinate, dimensions);
 }
 
+/** Writes polygon rings using the source geometry's elevation and measure axes. */
 function writePolygonToBuilder(
   builder: InstanceType<typeof GeoArrowBuilder>,
-  coordinates: number[][][]
+  coordinates: number[][][],
+  dimensions: ReturnType<typeof getGeometryWKBOptions>
 ): void {
   builder.beginPolygon(coordinates.length);
   for (const ring of coordinates) {
     builder.beginLinearRing(ring.length);
-    for (const coordinate of ring) writeCoordinateToBuilder(builder, coordinate);
+    for (const coordinate of ring) writeCoordinateToBuilder(builder, coordinate, dimensions);
   }
 }
 
+/** Maps source ordinates to the builder's separate elevation and measure arguments. */
 function writeCoordinateToBuilder(
   builder: InstanceType<typeof GeoArrowBuilder>,
-  coordinate: number[]
+  coordinate: number[],
+  dimensions: ReturnType<typeof getGeometryWKBOptions>
 ): void {
   builder.writeCoordinate(
     coordinate[0] ?? Number.NaN,
     coordinate[1] ?? Number.NaN,
-    coordinate[2],
-    coordinate[3]
+    dimensions.hasZ ? coordinate[2] : undefined,
+    dimensions.hasM ? coordinate[dimensions.hasZ ? 3 : 2] : undefined
   );
 }
 
@@ -578,7 +590,7 @@ function getUnionFieldName(
   kind: GeoArrowGeometryKind,
   dimension: GeoArrowBuilderDimension
 ): string {
-  return dimension === 'xy' ? kind : `${kind} ${dimension.slice(1).toUpperCase()}`;
+  return dimension === 'xy' ? kind : `${kind} ${dimension.slice(2).toUpperCase()}`;
 }
 
 /** Builds object rows from GeoJSON features with properties flattened and geometry encoded. */

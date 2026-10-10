@@ -86,16 +86,21 @@ export function reprojectWKBInPlace(wkb: Uint8Array, transform: CoordinateTransf
   return wkb;
 }
 
-/** Infers the legacy feature geometry type labels from vertex and part counts. */
+/**
+ * Infers legacy geometry type labels using the same dimension options as the WKB writer.
+ * Three ordinates default to XYZ; pass hasZ: false and hasM: true for XYM.
+ */
 export function inferBinaryGeometryTypes(
-  geometries: (BinaryGeometry | null)[]
+  geometries: (BinaryGeometry | null)[],
+  options: Pick<BinaryGeometryWKBOptions, 'hasZ' | 'hasM'> = {}
 ): GeoParquetGeometryType[] {
   const geometryTypes = new Set<GeoParquetGeometryType>();
   for (const geometry of geometries) {
     if (!geometry) {
       continue;
     }
-    const suffix = geometry.positions.size > 2 ? ' Z' : '';
+    const {hasZ, hasM} = getWKBOptions(geometry.positions.size, options);
+    const suffix = hasZ ? (hasM ? ' ZM' : ' Z') : hasM ? ' M' : '';
     switch (geometry.type) {
       case 'Point':
         geometryTypes.add(`${getPointCount(geometry) > 1 ? 'MultiPoint' : 'Point'}${suffix}`);
