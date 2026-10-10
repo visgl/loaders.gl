@@ -1,6 +1,6 @@
 import {afterEach, beforeAll, expect, test, vi} from 'vitest';
 import {BlobFile, HttpFile} from '@loaders.gl/loader-utils';
-import {Tiles3DArchive} from '@loaders.gl/3d-tiles';
+import {Tiles3DArchive, Tiles3DArchiveWriter} from '@loaders.gl/3d-tiles';
 import {parseSLPKArchive} from '@loaders.gl/i3s';
 import {
   inspectConversionInput,
@@ -328,7 +328,7 @@ test('canceling a pending remote identity probe cancels its body and closes the 
 test('repeated indexed reads obey the aggregate archive read budget', async () => {
   const archive = await openConversionArchive(
     {input: tilesFile, format: '3tz'},
-    tilesFile.size,
+    tilesFile.size * 4,
     new AbortController().signal
   );
   try {
@@ -342,6 +342,37 @@ test('repeated indexed reads obey the aggregate archive read budget', async () =
       }
     }
     expect(failure).toMatchObject({code: 'INPUT_RESOURCE_TOO_LARGE'});
+  } finally {
+    await archive.close();
+  }
+});
+
+test('3TZ loads its index once and avoids directory rescans for selected entries', async () => {
+  const resources = Object.fromEntries(
+    Array.from({length: 128}, (_, index) => [
+      `meshes/entry-${index}.bin`,
+      new Uint8Array([index]).buffer
+    ])
+  );
+  const bytes = await Tiles3DArchiveWriter.encode!({
+    'tileset.json': new TextEncoder().encode('{}').buffer,
+    ...resources
+  });
+  const file = new File([bytes], 'many-entries.3tz');
+  const read = vi.spyOn(BlobFile.prototype, 'read');
+  const archive = await openConversionArchive(
+    {input: file, format: '3tz'},
+    file.size * 4,
+    new AbortController().signal
+  );
+  try {
+    read.mockClear();
+    for (let index = 0; index < 32; index++) {
+      const response = await archive.fetcher(new URL(`meshes/entry-${index}.bin`, archive.rootUrl));
+      expect(new Uint8Array(await response.arrayBuffer())).toEqual(new Uint8Array([index]));
+    }
+    expect(read.mock.calls.length).toBeGreaterThan(0);
+    expect(read.mock.calls.every(([, length]) => length! < 100)).toBe(true);
   } finally {
     await archive.close();
   }

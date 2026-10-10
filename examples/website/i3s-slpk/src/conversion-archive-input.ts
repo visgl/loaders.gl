@@ -1,7 +1,7 @@
 import {BlobFile, HttpFile} from '@loaders.gl/loader-utils';
 import type {HttpFileIdentity, ReadableFile} from '@loaders.gl/loader-utils';
 import {parseSLPKArchive} from '@loaders.gl/i3s';
-import {Tiles3DArchive} from '@loaders.gl/3d-tiles';
+import {parse3DTilesArchive} from '@loaders.gl/3d-tiles';
 import {TileConversionError} from '@loaders.gl/tile-converter/v5/core';
 import {createTileConversionResourceFetcher} from '@loaders.gl/tile-converter/v5/adapters';
 
@@ -76,7 +76,7 @@ export async function openConversionArchive(
     const archive =
       descriptor.format === 'slpk'
         ? await parseSLPKArchive(boundedFile)
-        : new Tiles3DArchive(boundedFile);
+        : await parse3DTilesArchive(boundedFile);
     const root = new URL(rootUrl);
     return {
       rootUrl: descriptor.format === '3tz' ? `${rootUrl}/tileset.json` : rootUrl,
