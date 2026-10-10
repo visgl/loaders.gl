@@ -50,6 +50,7 @@ export const MVTGeoJSONLoader = {
       shape: 'geojson-table',
       coordinates: 'local',
       layerProperty: 'layerName',
+      sourceLayer: false,
       layers: undefined!,
       tileIndex: undefined!
     }

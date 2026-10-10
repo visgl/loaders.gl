@@ -53,6 +53,7 @@ export const MVTLoader = {
       shape: 'arrow-table',
       coordinates: 'local',
       layerProperty: 'layerName',
+      sourceLayer: false,
       layers: undefined!,
       tileIndex: undefined!
     }

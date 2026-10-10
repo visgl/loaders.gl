@@ -3,11 +3,13 @@
 // Copyright (c) vis.gl contributors
 
 import {describe, expect, test} from 'vitest';
+import {parse} from '@loaders.gl/core';
 import {MVTWriter} from '../src/mvt-writer';
 import {parseMVT} from '../src/lib/parse-mvt';
 import {parseMVTGeoJSON} from '../src/lib/parse-mvt-geojson';
 import {MVTGeoJSONLoaderWithParser} from '../src/mvt-geojson-loader';
 import {MVTGeoJSONLoader} from '../src/mvt-geojson-loader-types';
+import {MVTLoader} from '../src/mvt-loader';
 
 const geojson = {
   type: 'FeatureCollection',
@@ -38,6 +40,24 @@ const mvtTile = MVTWriter.encodeSync(geojson, {
 });
 
 describe('MVT GeoJSON-only parser', () => {
+  test.each([
+    MVTGeoJSONLoader,
+    MVTLoader
+  ])('registers provenance for public parsing with $name', async loader => {
+    expect(loader.options.mvt.sourceLayer).toBe(false);
+    const result = await parse(mvtTile, loader, {
+      core: {worker: false},
+      mvt: {shape: 'geojson-table', sourceLayer: true, layerProperty: null}
+    });
+    expect(result).toMatchObject({
+      features: [
+        {sourceLayer: 'places', properties: {name: 'Town'}},
+        {sourceLayer: 'places', properties: {name: 'Road'}}
+      ]
+    });
+    expect(result.features[0].properties).not.toHaveProperty('layerName');
+  });
+
   test('preserves authored properties while exposing source-layer provenance', () => {
     const authoredProperties = {
       layerName: 'authored layer',
