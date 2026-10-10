@@ -221,11 +221,16 @@ function parseBinaryChunk(
       }
     } as POTreeNode;
     nodes.push(node);
-    if (name.length - rootName.length < maximumDepth)
-      for (let octant = 0; octant < 8; octant++)
-        if (mask & (1 << octant)) names.push(`${name}${octant}`);
+    for (let octant = 0; octant < 8; octant++)
+      if (mask & (1 << octant)) names.push(`${name}${octant}`);
   }
-  if (nodes.length !== names.length) throw new Error('Truncated Potree hierarchy page');
+  // A paged hierarchy may end at its declared boundary; complete trees can continue past it.
+  const unreadNames = names.slice(nodes.length);
+  if (
+    unreadNames.some(name => name.length - rootName.length <= maximumDepth) ||
+    (nodes.some(node => node.name.length - rootName.length > maximumDepth) && unreadNames.length)
+  )
+    throw new Error('Truncated Potree hierarchy page');
   return nodes;
 }
 

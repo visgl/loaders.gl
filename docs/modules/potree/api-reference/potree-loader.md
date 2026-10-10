@@ -49,3 +49,14 @@ import {PotreeDocsTabs} from '@site/src/components/docs/potree-docs-tabs';
 />
 
 Work in progress
+
+
+## Metadata versions
+
+`PotreeLoader` parses both legacy `cloud.js` declarations (1.0–1.8) and modern `metadata.json`
+declarations (2.0), selecting the validator from the declared dataset version. It returns
+`PotreeDatasetMetadata`; inspect `version` before accessing layout-specific fields. The package
+root is metadata-only. Async core parsing preloads the implementation; synchronous parsing uses
+`PotreeLoaderWithParser` from `@loaders.gl/potree/potree-loader`.
+
+Use [PotreeSourceLoader](./potree-source-loader) for hierarchy traversal and decoded point tiles.

@@ -3,7 +3,7 @@
 // Copyright vis.gl contributors
 
 import type {Loader} from '@loaders.gl/loader-utils';
-import type {POTreeLoaderOptions} from './potree-loader';
+import type {POTreeLoaderOptions} from './potree-loader-types';
 import type {POTreeNode} from './parsers/parse-potree-hierarchy-chunk';
 
 import {PotreeHierarchyChunkFormat} from './potree-format';

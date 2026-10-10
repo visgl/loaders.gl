@@ -4,7 +4,7 @@
 
 import {DataSource, type CoreAPI} from '@loaders.gl/loader-utils';
 import {convertMeshToTable} from '@loaders.gl/schema-utils';
-import type {Potree2SourceOptions} from './potree2-source-loader-types';
+import type {PotreeSourceLoaderOptions} from './potree-source-options';
 import type {Potree2HierarchyNode, Potree2Metadata} from './potree2-types';
 import {
   parsePotree2Metadata,
@@ -36,7 +36,7 @@ export type Potree2TileHeader = {
 };
 
 /** Range-backed, lazy Potree 2.0 octree with native-coordinate Arrow point content. */
-export class Potree2Source extends DataSource<string, Potree2SourceOptions> {
+export class Potree2Source extends DataSource<string, PotreeSourceLoaderOptions> {
   /** Shared metadata and initial hierarchy loading. */
   readonly ready: Promise<void>;
   /** Whether the initial hierarchy is ready. */
@@ -46,7 +46,9 @@ export class Potree2Source extends DataSource<string, Potree2SourceOptions> {
   /** Combined external and lifetime signal. */
   private readonly signal: AbortSignal;
   /** Checked resource ceilings. */
-  private readonly limits: Required<Omit<NonNullable<Potree2SourceOptions['potree2']>, 'signal'>>;
+  private readonly limits: Required<
+    Omit<NonNullable<PotreeSourceLoaderOptions['potree']>, 'signal' | 'colorFormat'>
+  >;
   /** Final metadata response URL, including redirect credentials. */
   private rootUrl: string;
   /** Validated dataset declaration. */
@@ -59,23 +61,28 @@ export class Potree2Source extends DataSource<string, Potree2SourceOptions> {
   private hierarchyBytes = 0;
 
   /** Starts opening one range-readable dataset; call close() when done. */
-  constructor(input: string, options: Potree2SourceOptions = {}, coreApi?: CoreAPI) {
-    super(input, options, {potree2: {}}, coreApi);
-    const url = new URL(this.url, typeof document !== 'undefined' ? document.baseURI : undefined);
+  constructor(input: string, options: PotreeSourceLoaderOptions = {}, coreApi?: CoreAPI) {
+    super(input, options, {potree: {}}, coreApi);
+    const browserBase = typeof document !== 'undefined' ? document.baseURI : undefined;
+    const url = new URL(this.url, browserBase || 'https://loaders.gl.invalid/');
     if (!url.pathname.endsWith('.json'))
       url.pathname = `${url.pathname.replace(/\/$/, '')}/metadata.json`;
-    this.rootUrl = url.href;
+    const localPath = !browserBase && !/^[a-z][a-z0-9+.-]*:\/\//i.test(this.url);
+    const path = this.url.split(/[?#]/, 1)[0];
+    this.rootUrl = localPath
+      ? `${path.endsWith('.json') ? path : `${path.replace(/\/$/, '')}/metadata.json`}${url.search}${url.hash}`
+      : url.href;
     this.limits = {
-      maxMetadataBytes: options.potree2?.maxMetadataBytes ?? 1024 * 1024,
-      maxHierarchyBytes: options.potree2?.maxHierarchyBytes ?? 16 * 1024 * 1024,
-      maxPointBytes: options.potree2?.maxPointBytes ?? 64 * 1024 * 1024,
-      maxNodes: options.potree2?.maxNodes ?? 100000
+      maxMetadataBytes: options.potree?.maxMetadataBytes ?? 1024 * 1024,
+      maxHierarchyBytes: options.potree?.maxHierarchyBytes ?? 16 * 1024 * 1024,
+      maxPointBytes: options.potree?.maxPointBytes ?? 64 * 1024 * 1024,
+      maxNodes: options.potree?.maxNodes ?? 100000
     };
     for (const value of Object.values(this.limits))
       if (!Number.isSafeInteger(value) || value < 1)
         throw new Error('Invalid Potree 2.0 source limit');
-    this.signal = options.potree2?.signal
-      ? AbortSignal.any([this.controller.signal, options.potree2.signal])
+    this.signal = options.potree?.signal
+      ? AbortSignal.any([this.controller.signal, options.potree.signal])
       : this.controller.signal;
     this.ready = this.openDataset().catch(error => {
       this.close();
@@ -104,7 +111,7 @@ export class Potree2Source extends DataSource<string, Potree2SourceOptions> {
   }
 
   /** Loads only the requested hierarchy proxy and returns its immediate children. */
-  async getChildren(tile: Potree2TileHeader): Promise<Potree2TileHeader[]> {
+  async getChildren(tile: {id: string}): Promise<Potree2TileHeader[]> {
     await this.initialize();
     await this.hydrateNode(tile.id);
     const node = this.getNode(tile.id);
@@ -119,7 +126,7 @@ export class Potree2Source extends DataSource<string, Potree2SourceOptions> {
   }
 
   /** Reads one point range and decodes native coordinates without projection. */
-  async loadTileContent(tile: Potree2TileHeader) {
+  async loadTileContent(tile: {id: string}) {
     await this.initialize();
     await this.hydrateNode(tile.id);
     const node = this.getNode(tile.id);
@@ -227,6 +234,11 @@ export class Potree2Source extends DataSource<string, Potree2SourceOptions> {
 
   /** Resolves same-dataset filenames, retaining root query credentials. */
   private resolveResource(name: string): string {
+    if (!/^[a-z][a-z0-9+.-]*:\/\//i.test(this.rootUrl)) {
+      const [path] = this.rootUrl.split(/[?#]/, 1);
+      const query = new URL(this.rootUrl, 'https://loaders.gl.invalid/').search;
+      return `${path.slice(0, path.lastIndexOf('/') + 1)}${name}${query}`;
+    }
     const root = new URL(this.rootUrl);
     const url = new URL(name, root);
     url.search = root.search;

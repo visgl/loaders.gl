@@ -384,9 +384,7 @@
       "@loaders.gl/scene/test": [
         "modules/scene/test"
       ],
-      "@loaders.gl/potree/potree2-source": ["modules/potree/src/potree2-source.ts"],
-      "@loaders.gl/potree/potree2-loader": ["modules/potree/src/potree2-loader.ts"],
-      "@loaders.gl/potree/potree2-source-loader": ["modules/potree/src/potree2-source-loader.ts"],
+      "@loaders.gl/potree/potree-loader": ["modules/potree/src/potree-loader.ts"],
       "@loaders.gl/potree": [
         "modules/potree/src"
       ],

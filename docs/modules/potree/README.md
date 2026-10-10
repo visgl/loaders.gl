@@ -64,8 +64,8 @@ Support for loading and traversing [potree](http://potree.org/) format point clo
 | 1.5–1.8 | ✅ | ✅ binary | Paged HRC hierarchy; binary, LAS or LAZ node payloads |
 | 2.0 | ✅ DEFAULT/BROTLI | ✅ DEFAULT | Three-file range-readable octree from PotreeConverter 2.x |
 
-Use `PotreeSourceLoader` for 1.x and [Potree2SourceLoader](/docs/modules/potree/api-reference/potree2-source-loader)
-for 2.0. Converter/viewer release numbers are distinct from dataset versions. See
+Use [PotreeSourceLoader](/docs/modules/potree/api-reference/potree-source-loader) for both layouts: pass
+`cloud.js` for 1.x or `metadata.json` for 2.0. Directory inputs retain the legacy `cloud.js` default. Converter/viewer release numbers are distinct from dataset versions. See
 [Potree writers](/docs/modules/potree/api-reference/potree-writer) for complete typed file collections.
 
 ## Scan support
@@ -123,9 +123,11 @@ This modules provides the following exports:
 
 ## Modern sources and authoring
 
-- `Potree2Loader`: metadata-only declaration loader with a parser subpath.
-- `Potree2SourceLoader`: lazy native-coordinate range source compatible with `PointCloudTileset`
-  and v5 tile-converter traversal. It does not yet implement the query `scan()` API.
+- `PotreeLoader`: one metadata-only declaration loader for both wire layouts, with the
+  `@loaders.gl/potree/potree-loader` parser subpath.
+- `PotreeSourceLoader`: version-specific readers behind one source factory, compatible with
+  `PointCloudTileset` and v5 tile-converter traversal. Modern 2.0 datasets use native-coordinate
+  range reads; query `scan()` remains available only for compatible legacy datasets.
 - `PotreeWriter`: standard metadata writer.
 - `encodePotreeDataset`: complete legacy or modern file collections from decoded Mesh/Arrow rows.
 
