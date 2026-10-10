@@ -61,6 +61,25 @@ Synchronous APIs such as `parseSync` throw directly and use the same `try`/`catc
 pattern. `core.nothrow` only suppresses loader-selection failure; it is not a
 blanket parser-error handler.
 
+## WASM initialization errors
+
+Prefer `async` functions that await and return the initialization result. A thrown
+error or rejected factory promise then rejects the caller's promise without
+another wrapper.
+
+Emscripten modules can be thenable. When a module must be consumed through a
+callback, resolve with a plain object containing its parser exports. Forward
+factory rejections and catch errors inside the success callback: a throw there
+does not reject a separate outer promise. Keep resource and lock cleanup in
+`finally`.
+
+Basis, Draco, and Zstd use `initializeWasmModule` from `@loaders.gl/loader-utils`
+for this callback bridge. It extracts exports once, even if a factory reports
+readiness through both a callback and a promise. MD5 uses a native async function. The
+optional `zstd-codec` dependency exposes only a success callback, so asynchronous
+initialization failures hidden by that dependency cannot currently be forwarded
+by loaders.gl.
+
 ## Checking fetch responses
 
 The runtime's `fetch` rejects on transport failure, but an HTTP error status still

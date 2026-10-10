@@ -4,6 +4,7 @@
 // https://github.com/mrdoob/three.js/blob/dev/examples/jsm/loaders/DRACOLoader.js
 // by Don McCurdy / https://www.donmccurdy.com / MIT license
 
+import {initializeWasmModule} from '@loaders.gl/loader-utils';
 import {isBrowser, loadLibrary, type LoadLibraryOptions} from './draco-library-loader';
 import type {Draco3D} from '../draco3d/draco3d-types';
 
@@ -59,7 +60,9 @@ type DracoDecoderModule = Required<Pick<Draco3DModule, 'createDecoderModule'>>;
 type DracoEncoderModule = Required<Pick<Draco3DModule, 'createEncoderModule'>>;
 
 type DracoModuleInitializerOptions = {
+  /** Optional preloaded WASM bytes. */
   wasmBinary?: ArrayBuffer;
+  /** Reports an initialized Emscripten module. */
   onModuleLoaded?: (draco: Draco3D) => void;
 };
 
@@ -117,7 +120,10 @@ export async function loadDracoDecoderModuleFromDraco3D(
   const typedDraco3DModule = validateDracoDecoderModule(draco3DModule);
   let decoderPromise = injectedDecoderPromises.get(typedDraco3DModule);
   if (!decoderPromise) {
-    decoderPromise = typedDraco3DModule.createDecoderModule({}).then(draco => ({draco}));
+    decoderPromise = initializeWasmModule(
+      () => typedDraco3DModule.createDecoderModule({}),
+      draco => ({draco})
+    );
     injectedDecoderPromises.set(typedDraco3DModule, decoderPromise);
   }
   return await decoderPromise;
@@ -132,7 +138,10 @@ export async function loadDracoEncoderModule(
     const typedDraco3DModule = validateDracoEncoderModule(draco3DModule);
     let encoderPromise = injectedEncoderPromises.get(typedDraco3DModule);
     if (!encoderPromise) {
-      encoderPromise = typedDraco3DModule.createEncoderModule({}).then(draco => ({draco}));
+      encoderPromise = initializeWasmModule(
+        () => typedDraco3DModule.createEncoderModule({}),
+        draco => ({draco})
+      );
       injectedEncoderPromises.set(typedDraco3DModule, encoderPromise);
     }
     return await encoderPromise;
@@ -309,17 +318,14 @@ function initializeDracoModule(
     throw new Error('Draco module initializer could not be loaded');
   }
 
-  return new Promise((resolve, reject) => {
-    try {
-      const modulePromise = initializer({
+  return initializeWasmModule(
+    onInitialized =>
+      initializer({
         ...(wasmBinary ? {wasmBinary} : {}),
-        onModuleLoaded: draco => resolve({draco})
-      });
-      modulePromise?.then(draco => resolve({draco}), reject);
-    } catch (error) {
-      reject(error);
-    }
-  });
+        onModuleLoaded: onInitialized
+      }),
+    (draco: Draco3D) => ({draco})
+  );
 }
 
 /** Resolves a Draco initializer from a direct, named, or default library export. */
