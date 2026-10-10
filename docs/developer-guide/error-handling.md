@@ -87,3 +87,15 @@ if (!response.ok) {
   console.log(`fetch failed with status ${errorMessage}`);
 }
 ```
+
+## WASM initialization
+
+Use `initializeWasmModule` from `@loaders.gl/loader-utils` for callback or promise based
+module factories. Extract a plain export object to avoid recursively resolving raw
+Emscripten thenables. Factory failures and exceptions during export setup reject the
+returned promise with the original error. Basis, Draco, and Zstd use this helper.
+MD5 uses a native async function and awaits WebAssembly instantiation.
+
+The current `zstd-codec` dependency hides asynchronous initialization failures behind
+a callback-only API. The helper can propagate a returned rejection or error callback,
+but cannot observe a failure that the dependency does not expose.

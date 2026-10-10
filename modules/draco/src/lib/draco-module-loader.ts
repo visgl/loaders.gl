@@ -2,6 +2,8 @@
 // https://github.com/mrdoob/three.js/blob/398c4f39ebdb8b23eefd4a7a5ec49ec0c96c7462/examples/jsm/loaders/DRACOLoader.js
 // by Don McCurdy / https://www.donmccurdy.com / MIT license
 
+import {initializeWasmModule} from '@loaders.gl/loader-utils';
+
 import {isBrowser, loadLibrary, type LoadLibraryOptions} from '@loaders.gl/worker-utils';
 
 const DRACO_DECODER_VERSION = '1.5.6';
@@ -38,9 +40,10 @@ export async function loadDracoDecoderModule(
 
   // Check if a bundled draco3d library has been supplied by application
   if (modules.draco3d) {
-    loadDecoderPromise ||= modules.draco3d.createDecoderModule({}).then((draco) => {
-      return {draco};
-    });
+    loadDecoderPromise ||= initializeWasmModule<any, any>(
+      () => modules.draco3d.createDecoderModule({}),
+      (draco) => ({draco})
+    );
   } else {
     // If not, dynamically load the WASM script from our CDN
     loadDecoderPromise ||= loadDracoDecoder(options, type);
@@ -53,9 +56,10 @@ export async function loadDracoEncoderModule(options: LoadLibraryOptions) {
 
   // Check if a bundled draco3d library has been supplied by application
   if (modules.draco3d) {
-    loadEncoderPromise ||= modules.draco3d.createEncoderModule({}).then((draco) => {
-      return {draco};
-    });
+    loadEncoderPromise ||= initializeWasmModule<any, any>(
+      () => modules.draco3d.createEncoderModule({}),
+      (draco) => ({draco})
+    );
   } else {
     // If not, dynamically load the WASM script from our CDN
     loadEncoderPromise ||= loadDracoEncoder(options);
@@ -150,12 +154,10 @@ function initializeDracoDecoder(DracoDecoderModule, wasmBinary) {
     options.wasmBinary = wasmBinary;
   }
 
-  return new Promise((resolve) => {
-    DracoDecoderModule({
-      ...options,
-      onModuleLoaded: (draco) => resolve({draco}) // Module is Promise-like. Wrap in object to avoid loop.
-    });
-  });
+  return initializeWasmModule<any, any>(
+    (onInitialized) => DracoDecoderModule({...options, onModuleLoaded: onInitialized}),
+    (draco) => ({draco})
+  );
 }
 
 // ENCODER
@@ -188,9 +190,8 @@ async function loadDracoEncoder(options: LoadLibraryOptions) {
     throw new Error('DracoEncoderModule could not be loaded');
   }
 
-  return new Promise((resolve) => {
-    DracoEncoderModule({
-      onModuleLoaded: (draco) => resolve({draco}) // Module is Promise-like. Wrap in object to avoid loop.
-    });
-  });
+  return initializeWasmModule<any, any>(
+    (onInitialized) => DracoEncoderModule({onModuleLoaded: onInitialized}),
+    (draco) => ({draco})
+  );
 }

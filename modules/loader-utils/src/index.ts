@@ -206,3 +206,5 @@ export type {ImageTileSource} from './lib/sources/image-tile-source';
 
 export type {VectorTileSource} from './lib/sources/vector-tile-source';
 export type {VectorTile} from './lib/sources/vector-tile-source';
+
+export {initializeWasmModule} from './lib/module-utils/initialize-wasm-module';

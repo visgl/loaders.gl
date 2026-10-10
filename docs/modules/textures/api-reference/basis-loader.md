@@ -97,3 +97,13 @@ Use `options.modules` to override the Basis runtime used by `BasisLoader`.
 - `'basis_transcoder.wasm'`: override the URL used for the Basis transcoder WebAssembly binary.
 - `'basis_encoder.js'`: override the URL used for the Basis encoder JavaScript wrapper.
 - `'basis_encoder.wasm'`: override the URL used for the Basis encoder WebAssembly binary.
+
+## Basis runtime version
+
+The 4.5 release branch bundles Basis Universal v2.50, including upstream KTX2 bounds
+checks. Loader options and KTX2 module routing retain their 4.5 behavior. The legacy
+`bc7-m5` and `bc7-m6-opaque-only` targets both select the unified BC7 transcoder output.
+
+Basis factory rejections and initialization errors reject the loader promise and release
+the transcoding lock. See the [runtime provenance](https://github.com/visgl/loaders.gl/blob/4.5-release/modules/textures/src/libs/README.md)
+for the source commit, licenses, and artifact hashes.

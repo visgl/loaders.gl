@@ -29,93 +29,41 @@ const BASE64_LOOKUP = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz01234
   tooBigErrStr = 'Parameter exceeds max size of 255.9 Mbytes';
 
 if (!wasm) {
-  console.log(
-    'WebAssembly not available or WASM module could not be decoded; md5WASM will fall back to JavaScript'
-  );
 }
 
 //  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -
-// This returns a Promise-like object (I was farting around, so sue me)
-// which supports '.catch' and '.then'
-export default function md5WASM(data) {
-  var mem, memView, importObj, imports, len, buff, thenFun, catchFun, result, endTime;
-  const md5JS = makeMD5JS(),
-    md5WA = makeMD5WA(),
-    returnObj = {},
-    startTime = new Date().getTime();
-
-  returnObj['then'] = function (fun) {
-    thenFun = fun;
-    getThen();
-    return returnObj;
-  };
-  returnObj['catch'] = function (fun) {
-    catchFun = fun;
-    return returnObj;
-  };
-
-  // Sift the incoming parameter and the environment
-  // If we are good, set buff
-  buff = normalizeInput(data);
-
-  if (!buff) {
-    getCatch(new TypeError(parmTypeErrStr));
+/** Calculates an MD5 digest and propagates WASM initialization or hashing failures. */
+export default async function md5WASM(data) {
+  const input = normalizeInput(data);
+  if (!input) {
+    throw new TypeError(parmTypeErrStr);
   }
-
-  //  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -
-  // Make some choices based on the size of the incoming data
-  //   ~ Use WebAssembly or just JavaScript
-  //   ~ If Webassemly, allocate appropriate memory
-  //
-  if (buff) {
-    len = buff.length;
-    if (wasm && len > bounder) {
-      if (len > upperLimit) {
-        getCatch(new Error(tooBigErrStr));
-      } else {
-        mem = new WebAssembly.Memory({
-          initial: len > 32000000 ? (len > 64000000 ? (len > 128000000 ? 4096 : 2048) : 1024) : 512
-        });
-        memView = new Uint32Array(mem.buffer);
-        imports = {mem: mem, log: console.log};
-        importObj = {imports};
-        WebAssembly.instantiate(wasm, importObj).then(giterdone);
-      }
-    } else {
-      getThen(md5JS(buff));
-    }
+  if (!wasm || input.length <= bounder) {
+    return makeMD5JS()(input);
   }
-  return returnObj;
-
-  function giterdone(obj) {
-    getThen(md5WA(buff, obj.instance.exports, memView));
+  if (input.length > upperLimit) {
+    throw new Error(tooBigErrStr);
   }
-  function getThen(r) {
-    var res = Boolean(r) ? r : result;
-    if (Boolean(r)) {
-      endTime = new Date().getTime();
-    }
-    if (typeof thenFun === 'function') {
-      if (Boolean(res)) {
-        thenFun(res, endTime - startTime);
-        thenFun = catchFun = null;
-      }
-    } else {
-      if (Boolean(r)) {
-        result = r;
-      }
-    }
-  }
-  function getCatch(err) {
-    if (typeof catchFun === 'function') {
-      catchFun(err);
-    }
-  }
+  const memory = new WebAssembly.Memory({
+    initial:
+      input.length > 32000000
+        ? input.length > 64000000
+          ? input.length > 128000000
+            ? 4096
+            : 2048
+          : 1024
+        : 512
+  });
+  const memoryView = new Uint32Array(memory.buffer);
+  const {instance} = await WebAssembly.instantiate(wasm, {
+    imports: {mem: memory, log: console.log}
+  });
+  return makeMD5WA()(input, instance.exports, memoryView);
 }
 
 function makeMD5WA() {
-  var loop, loops;
-  var getA, setA, getB, setB, getC, setC, getD, setD, getX, setX, memView;
+  var _loop, loops;
+  var getA, setA, getB, setB, getC, setC, getD, setD, _getX, _setX, memView;
 
   var md5WA = function (message) {
     var m00,
@@ -139,9 +87,9 @@ function makeMD5WA() {
       cc,
       dd,
       m,
-      k;
-    var qwerty = new Date().getTime();
-    var md5Used = 0;
+      _k;
+    var _qwerty = new Date().getTime();
+    var _md5Used = 0;
 
     var a = 1732584193,
       b = -271733879,
@@ -171,7 +119,7 @@ function makeMD5WA() {
         b = getB();
         c = getC();
         d = getD();
-        md5Used++;
+        _md5Used++;
       } else {
         aa = a;
         bb = b;
@@ -307,17 +255,17 @@ function makeMD5WA() {
   return function (message, exports, mView, options) {
     var digestbytes;
     loops = exports.loops;
-    loop = exports.loop;
+    _loop = exports.loop;
     getA = exports.getA;
     getB = exports.getB;
     getC = exports.getC;
     getD = exports.getD;
-    getX = exports.getX;
+    _getX = exports.getX;
     setA = exports.setA;
     setB = exports.setB;
     setC = exports.setC;
     setD = exports.setD;
-    setX = exports.setX;
+    _setX = exports.setX;
     memView = mView;
     digestbytes = crypt.wordsToBytes(md5WA(message));
     return options && options.asBytes ? digestbytes : crypt.bytesconvertNumberToHex(digestbytes);
@@ -347,7 +295,7 @@ function makeMD5JS() {
       cc,
       dd,
       m;
-    var qwerty = new Date().getTime();
+    var _qwerty = new Date().getTime();
 
     // console.log("md5 start");
 
@@ -484,7 +432,7 @@ function makeMD5JS() {
 function decodeBase64Safely(str) {
   try {
     return decodeBase64ToUint8Array(str);
-  } catch (error) {
+  } catch (_error) {
     return null;
   }
 }
@@ -566,7 +514,7 @@ function normalizeInput(data) {
 }
 
 function makeCrypt() {
-  var base64map = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/';
+  var _base64map = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/';
 
   return {
     rotl: function (n, b) {
@@ -574,7 +522,7 @@ function makeCrypt() {
     },
 
     endian: function (n) {
-      if (n.constructor == Number) {
+      if (n.constructor === Number) {
         return (crypt.rotl(n, 8) & 0x00ff00ff) | (crypt.rotl(n, 24) & 0xff00ff00);
       }
       for (var i = 0; i < n.length; i++) n[i] = crypt.endian(n[i]);
