@@ -36,7 +36,10 @@ export function ConversionPanel({onPreview}: ConversionPanelProps) {
     }) => Promise<FileSystemFileHandle>;
   };
   const [input, setInput] = useState('');
-  const [inputFormat, setInputFormat] = useState<'3d-tiles' | 'i3s' | 'slpk'>('3d-tiles');
+  const [inputFormat, setInputFormat] = useState<
+    '3d-tiles' | 'i3s' | 'slpk' | 'slpk-url' | '3tz' | '3tz-url'
+  >('3d-tiles');
+  const localArchive = inputFormat === 'slpk' || inputFormat === '3tz';
   const [file, setFile] = useState<File | null>(null);
   const [geometricError, setGeometricError] = useState('');
   const [inspection, setInspection] = useState<ConversionInspection | null>(null);
@@ -157,13 +160,20 @@ export function ConversionPanel({onPreview}: ConversionPanelProps) {
           );
         }
       } else {
-        if (inputFormat === 'slpk' && !file) throw new Error('Choose a local SLPK file.');
+        if (localArchive && !file) throw new Error('Choose a local archive file.');
         const inspected =
-          inputFormat === '3d-tiles'
-            ? await inspectConversionInput(input.trim(), operation.signal)
+          inputFormat === '3d-tiles' || inputFormat === '3tz' || inputFormat === '3tz-url'
+            ? await inspectConversionInput(
+                localArchive ? file! : input.trim(),
+                operation.signal,
+                fetch,
+                inputFormat !== '3d-tiles'
+              )
             : await inspectI3SConversionInput(
-                inputFormat === 'slpk' ? file! : input.trim(),
-                operation.signal
+                localArchive ? file! : input.trim(),
+                operation.signal,
+                fetch,
+                inputFormat === 'slpk-url'
               );
         if (controller.current === operation) {
           setInspection(inspected);
@@ -192,12 +202,14 @@ export function ConversionPanel({onPreview}: ConversionPanelProps) {
       <strong>Convert selected tile meshes</strong>
       <small>
         Partial output: static GLB/B3DM meshes in native ECEF, or I3S leaf meshes from a layer URL
-        or local SLPK. Both formats preserve material factors, one PNG/JPEG base-color texture and
-        explicitly mapped features. External buffers and images share the input budget. SLPK
-        supports UV transforms and wrapping, but rejects explicit texture filtering and vertex
-        colors. Other texture maps/UV sets and nested/implicit 3D Tiles are rejected. I3S atlas
-        regions, colors and richer materials are unsupported; CRS/height resources are not inferred
-        or downloaded.
+        or local/remote SLPK. Explicit local/remote 3TZ meshes are also accepted. Both formats
+        preserve material factors, one PNG/JPEG base-color texture and explicitly mapped features.
+        External buffers and images share the input budget. SLPK supports UV transforms and
+        wrapping, but rejects explicit texture filtering and vertex colors. Other texture maps/UV
+        sets and nested/implicit 3D Tiles are rejected. I3S atlas regions, colors and richer
+        materials are unsupported; archive dependencies must remain inside the selected archive.
+        Remote archives require CORS, byte-range responses and exposed validators; CRS/height
+        resources are not inferred or downloaded.
       </small>
       <small>
         Both formats accept up to 64 mesh placements from selected leaf contents. Limits: 16 MiB
@@ -220,6 +232,7 @@ export function ConversionPanel({onPreview}: ConversionPanelProps) {
           value={inputFormat}
           onChange={event => {
             setInputFormat(event.target.value as typeof inputFormat);
+            setFile(null);
             setInspection(null);
             setResourceIds([]);
             setResult(null);
@@ -230,15 +243,18 @@ export function ConversionPanel({onPreview}: ConversionPanelProps) {
           <option value="3d-tiles">3D Tiles URL</option>
           <option value="i3s">I3S layer URL</option>
           <option value="slpk">Local SLPK file (up to 16 MiB)</option>
+          <option value="slpk-url">SLPK URL (up to 16 MiB)</option>
+          <option value="3tz">Local 3TZ file (up to 16 MiB)</option>
+          <option value="3tz-url">3TZ URL (up to 16 MiB)</option>
         </select>
-        {inputFormat === 'slpk' ? (
+        {localArchive ? (
           <>
-            <label htmlFor="conversion-file">SLPK file</label>
+            <label htmlFor="conversion-file">{inputFormat.toUpperCase()} file</label>
             <input
-              key="conversion-file-input"
+              key={`conversion-file-${inputFormat}`}
               id="conversion-file"
               type="file"
-              accept=".slpk"
+              accept={`.${inputFormat}`}
               required
               disabled={busy}
               onChange={event => {
@@ -254,7 +270,14 @@ export function ConversionPanel({onPreview}: ConversionPanelProps) {
         ) : (
           <>
             <label htmlFor="conversion-url">
-              {inputFormat === 'i3s' ? 'I3S layer' : '3D Tiles tileset'} URL (CORS required)
+              {inputFormat === 'i3s'
+                ? 'I3S layer'
+                : inputFormat === 'slpk-url'
+                  ? 'SLPK archive'
+                  : inputFormat === '3tz-url'
+                    ? '3TZ archive'
+                    : '3D Tiles tileset'}{' '}
+              URL (CORS required)
             </label>
             <input
               key="conversion-url-input"
@@ -276,7 +299,7 @@ export function ConversionPanel({onPreview}: ConversionPanelProps) {
             />
           </>
         )}
-        <button type="submit" disabled={busy || (inputFormat === 'slpk' ? !file : !input.trim())}>
+        <button type="submit" disabled={busy || (localArchive ? !file : !input.trim())}>
           Inspect
         </button>
       </form>
