@@ -58,7 +58,9 @@ import {
   type LASTypedExtraBytesAttribute
 } from '@loaders.gl/las';
 
-const VERSION = '1.0.0';
+// __VERSION__ is injected by the package build.
+// @ts-ignore TS2304: Cannot find name '__VERSION__'.
+const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : 'latest';
 const COPC_PREFIX_CACHE_LENGTH = 65536;
 const COORDINATE_SYSTEM = {
   CARTESIAN: 'cartesian',

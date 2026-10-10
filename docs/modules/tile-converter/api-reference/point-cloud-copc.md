@@ -43,7 +43,7 @@ spatial preparation API. This adapter performs no projection or CRS inference.
 
 Scale, offset and maximum Euclidean error are required. Signed int32 quantization range and actual
 rounding error are checked before compression. Output selects LAS PDRF 6 (no RGB), 7 (RGB), or 8
-(NIR); supplied uint16 colors retain their component values.
+(NIR); supplied uint16 colors retain their component values, including values below 256. Uint8 RGB is scaled uniformly by 257 to LAS UInt16 storage.
 
 ## Budgets and lifecycle
 

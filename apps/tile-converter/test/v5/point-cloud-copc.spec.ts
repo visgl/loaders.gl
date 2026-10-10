@@ -316,3 +316,32 @@ test('COPC adapter rejects overflowing cube coordinates and duplicate descriptor
     })
   ).rejects.toThrow('Extra Bytes');
 });
+
+test.each([
+  {colors: new Uint8Array([0, 1, 255, 2, 3, 4]), expected: [0, 257, 65535, 514, 771, 1028]},
+  {colors: new Uint16Array([0, 1, 255, 2, 3, 4]), expected: [0, 1, 255, 2, 3, 4]}
+])('COPC adapter preserves declared RGB depth for $colors', async ({colors, expected}) => {
+  const input = createInput();
+  input.attributes.rgb = {value: colors, size: 3};
+  const encoded = await encodePointCloudCOPC(input, {
+    ...createOptions(),
+    organization: {nodePointLimit: 2}
+  });
+  const getBytes = async (begin: number, end: number) =>
+    new Uint8Array(encoded.copc.slice(begin, end));
+  const file = await openCOPC(getBytes);
+  const hierarchy = await loadCOPCHierarchyPage(getBytes, file.info.rootHierarchyPage);
+  const node = Object.values(hierarchy.nodes)[0];
+  const compressed = await loadCOPCNodeData(getBytes, node);
+  const raw = decodeLAZChunk(compressed, {
+    pointCount: node.pointCount,
+    pointDataRecordFormat: 7,
+    pointDataRecordLength: 36
+  });
+  const view = new DataView(raw.buffer, raw.byteOffset, raw.byteLength);
+  expect(
+    Array.from({length: 6}, (_, index) =>
+      view.getUint16(Math.floor(index / 3) * 36 + 30 + (index % 3) * 2, true)
+    )
+  ).toEqual(expected);
+});
