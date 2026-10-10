@@ -70,7 +70,8 @@ The [archive example](/examples/i3s-slpk) supports the following conversion inpu
 | HTTP(S) 3D Tiles tileset URL | Supported | Supported | Explicit static GLB/B3DM contents; declared ECEF frame; CORS |
 | HTTP(S) I3S layer URL | Supported | Supported | `3DObject`/`IntegratedMesh` leaf selection; CORS; metric geometric error for 3TZ |
 | Local SLPK file | Supported | Supported | At most 16 MiB; supported I3S mesh profile; metric geometric error for 3TZ |
-| Remote SLPK or local/remote 3TZ archive | Not wired into controls | Not wired into controls | Archive viewing supports these inputs independently of conversion |
+| Remote SLPK archive | Supported | Supported | At most 16 MiB; HTTP byte ranges and exposed validators; supported I3S mesh profile; metric geometric error for 3TZ |
+| Local/remote 3TZ archive | Supported | Supported | At most 16 MiB; explicit root `tileset.json`, resolved native ECEF and supported static meshes; remote byte ranges and exposed validators |
 
 The example inspects metadata on the main thread and performs selected-content loading,
 conversion and packaging in a disposable worker. It supports download/preview and direct
@@ -80,7 +81,13 @@ failed operations expose no completed archive.
 Limits are **1,000** inspected declarations/nodes, **64** selected contents and total mesh
 placements, **16 MiB** aggregate response bytes, a separate **16 MiB** gate for decoded geometry, encoded images and
 Arrow columns, **32 MiB** retained output/archive bytes and **1 cm** position-rounding error.
-Local SLPK also bounds indexed reads before reading and responses after decompression.
+SLPK and 3TZ inputs also bound indexed reads before reading and responses after decompression.
+All conversion archives are capped at 16 MiB. Remote inputs use strict validator-aware HTTP
+range reads and retain the inspected object identity when the conversion worker reopens the
+archive. CORS must expose `Content-Range` and `ETag` or `Last-Modified`; servers that ignore
+Range requests are rejected. URL query credentials stay on the archive request. Dependency
+URLs are resolved only inside that archive, including relative content/image/buffer paths;
+external dependencies and traversal outside its root are rejected.
 These gates do not cap decoder, decompressor, Arrow or packaging peak memory.
 
 ### Appearance, features and spatial handling

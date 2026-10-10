@@ -210,3 +210,30 @@ test.each([
     await file.close();
   }
 }, 30000);
+
+test.each([
+  'slpk',
+  '3tz'
+] as const)('real worker reopens a cloneable local 3TZ and writes %s', async format => {
+  const {createTiles3DConversionArchive} = await import('./utils/tile-browser-archive-conversion');
+  const input = await createTiles3DConversionArchive();
+  const inspection = await inspectConversionInput(input, new AbortController().signal);
+  const output = await convertSelectedContentsInWorker(
+    inspection,
+    [inspection.resources[0].resourceId],
+    format,
+    new AbortController().signal,
+    () => {}
+  );
+  expect(output.report.inputResources).toBe(1);
+  const file = new DataViewReadableFile(new DataView(await output.file.arrayBuffer()));
+  try {
+    const bytes =
+      format === 'slpk'
+        ? await (await parseSLPKArchive(file)).getFile('', 'http')
+        : await new Tiles3DArchive(file).getFile('tileset.json');
+    expect(JSON.parse(new TextDecoder().decode(bytes))).toBeDefined();
+  } finally {
+    await file.close();
+  }
+}, 30000);

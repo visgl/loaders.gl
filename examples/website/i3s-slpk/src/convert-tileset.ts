@@ -31,6 +31,14 @@ import {
   encodeTileConversionArchiveInBatches
 } from '@loaders.gl/tile-converter/v5/adapters';
 
+import {openConversionArchive, type ConversionArchiveInput} from './conversion-archive-input';
+
+/** Explicit 3D Tiles inspection with an optional indexed archive retained for worker reopening. */
+export interface Tiles3DConversionInspection extends BrowserTilesetConversionInspection {
+  /** Local or remote 3TZ input; resources remain relative to its virtual root. */
+  readonly archive?: ConversionArchiveInput;
+}
+
 /** Formats authored by the example, rather than inferred from an output filename. */
 export type ConversionFormat = 'slpk' | '3tz';
 /** Required transport, decoded geometry, retained output, and archive budgets for this demo. */
@@ -77,16 +85,36 @@ export const ARCHIVE_MIME_TYPES = {
 
 /** Inspects a bounded explicit tileset without fetching its content resources. */
 export async function inspectConversionInput(
-  input: string,
+  input: string | File,
   signal: AbortSignal,
-  fetcher: typeof fetch = fetch
-): Promise<BrowserTilesetConversionInspection> {
-  if (!['http:', 'https:'].includes(new URL(input).protocol)) {
+  fetcher: typeof fetch = fetch,
+  archiveInput = false
+): Promise<Tiles3DConversionInspection> {
+  if (
+    !archiveInput &&
+    typeof input === 'string' &&
+    !['http:', 'https:'].includes(new URL(input).protocol)
+  )
     throw new Error('Use an HTTP(S) tileset URL.');
+  const archive =
+    archiveInput || typeof input !== 'string'
+      ? await openConversionArchive(
+          {input, format: '3tz'},
+          CONVERSION_LIMITS.maxInputBytes,
+          signal,
+          fetcher
+        )
+      : undefined;
+  try {
+    const inspection = await createBrowserTilesetConversionSource({
+      input: archive?.rootUrl ?? (input as string),
+      ...CONVERSION_LIMITS,
+      fetcher: archive?.fetcher ?? fetcher
+    }).inspect(signal);
+    return {...inspection, ...(archive ? {archive: archive.descriptor} : {})};
+  } finally {
+    await archive?.close();
   }
-  return createBrowserTilesetConversionSource({input, ...CONVERSION_LIMITS, fetcher}).inspect(
-    signal
-  );
 }
 
 /**
@@ -95,7 +123,7 @@ export async function inspectConversionInput(
  * bounded, but these limits do not bound peak decoder memory.
  */
 export async function convertSelectedContent(
-  inspection: BrowserTilesetConversionInspection,
+  inspection: Tiles3DConversionInspection,
   resourceId: string,
   format: ConversionFormat,
   signal: AbortSignal,
@@ -146,7 +174,7 @@ function getGeometricError(
 
 /** Clones one content path, retaining ancestor transforms and removing all unselected content. */
 function selectContentDocument(
-  inspection: BrowserTilesetConversionInspection,
+  inspection: Tiles3DConversionInspection,
   descriptor: BrowserTilesetResourceDescriptor
 ): BrowserTilesetConversionInspection['tileset'] {
   const document = structuredClone(inspection.tileset);
@@ -171,7 +199,7 @@ function selectContentDocument(
 
 /** Creates a dedicated runtime whose only content response is the bounded selected payload. */
 function createSelectedRuntime(
-  inspection: BrowserTilesetConversionInspection,
+  inspection: Tiles3DConversionInspection,
   document: BrowserTilesetConversionInspection['tileset'],
   data: Uint8Array,
   signal: AbortSignal,
@@ -241,7 +269,7 @@ function createSelectedRuntime(
  * encoded images and features share a separate decoded byte gate. Failure discards all output.
  */
 export async function convertSelectedContents(
-  inspection: BrowserTilesetConversionInspection,
+  inspection: Tiles3DConversionInspection,
   resourceIds: readonly string[],
   format: ConversionFormat,
   signal: AbortSignal,
@@ -263,7 +291,7 @@ export async function convertSelectedContents(
 
 /** Authors selected meshes without allocating an archive; used by the streaming worker. */
 export async function convertSelectedContentsToResources(
-  inspection: BrowserTilesetConversionInspection,
+  inspection: Tiles3DConversionInspection,
   resourceIds: readonly string[],
   format: ConversionFormat,
   signal: AbortSignal,
@@ -292,95 +320,107 @@ export async function convertSelectedContentsToResources(
       );
   }
   signal.throwIfAborted();
-  const boundedFetcher = createTileConversionResourceFetcher({
-    maxInputBytes: CONVERSION_LIMITS.maxInputBytes,
-    initialInputBytes: inspection.tilesetBytes,
-    fetcher,
-    signal
-  });
-  const qualification = createSelectedRuntime(
-    inspection,
-    selectContentDocument(inspection, descriptors[0]),
-    new Uint8Array(),
-    signal,
-    boundedFetcher,
-    new URL(descriptors[0].uri, inspection.rootUrl).href
-  );
-  let spatialContext: ReturnType<typeof createTiles3DConversionSpatialContext>;
+  const archive = inspection.archive
+    ? await openConversionArchive(
+        inspection.archive,
+        CONVERSION_LIMITS.maxInputBytes,
+        signal,
+        fetcher
+      )
+    : undefined;
   try {
-    await qualification.tilesetInitializationPromise;
-    const metadata = await createMeshTilesetConversionSource(qualification).inspect(signal);
-    spatialContext = createTiles3DConversionSpatialContext(metadata.spatialReference!);
-  } finally {
-    qualification.destroy();
-  }
-  const rawSource = createBrowserTilesetConversionSource({
-    input: inspection.rootUrl,
-    ...CONVERSION_LIMITS,
-    fetcher: boundedFetcher
-  });
-  const selectedInspection = {...inspection, resources: descriptors};
-  const source = {
-    /** Reuses inspected declarations without fetching the root again. */
-    inspect: async () => selectedInspection,
-    /** Decodes and releases each selected placement in declaration order. */
-    async *read() {
-      let decodedBytes = 0;
-      let primitiveCount = 0;
-      for await (const raw of rawSource.read(selectedInspection, signal)) {
-        const runtime = createSelectedRuntime(
-          inspection,
-          selectContentDocument(inspection, raw),
-          raw.data,
-          signal,
-          boundedFetcher,
-          new URL(raw.uri, inspection.rootUrl).href
-        );
-        try {
-          await runtime.tilesetInitializationPromise;
-          const meshSource = createMeshTilesetConversionSource(runtime, {
-            unloadContent: true,
-            features,
-            readExternalResource: async (uri, _contentUri, resourceSignal) => {
-              const response = await boundedFetcher(
-                new URL(uri, new URL(raw.uri, inspection.rootUrl).href),
-                {signal: resourceSignal}
-              );
-              return new Uint8Array(await response.arrayBuffer());
+    const boundedFetcher = createTileConversionResourceFetcher({
+      maxInputBytes: CONVERSION_LIMITS.maxInputBytes,
+      initialInputBytes: inspection.tilesetBytes,
+      fetcher: archive?.fetcher ?? fetcher,
+      signal
+    });
+    const qualification = createSelectedRuntime(
+      inspection,
+      selectContentDocument(inspection, descriptors[0]),
+      new Uint8Array(),
+      signal,
+      boundedFetcher,
+      new URL(descriptors[0].uri, inspection.rootUrl).href
+    );
+    let spatialContext: ReturnType<typeof createTiles3DConversionSpatialContext>;
+    try {
+      await qualification.tilesetInitializationPromise;
+      const metadata = await createMeshTilesetConversionSource(qualification).inspect(signal);
+      spatialContext = createTiles3DConversionSpatialContext(metadata.spatialReference!);
+    } finally {
+      qualification.destroy();
+    }
+    const rawSource = createBrowserTilesetConversionSource({
+      input: inspection.rootUrl,
+      ...CONVERSION_LIMITS,
+      fetcher: boundedFetcher
+    });
+    const selectedInspection = {...inspection, resources: descriptors};
+    const source = {
+      /** Reuses inspected declarations without fetching the root again. */
+      inspect: async () => selectedInspection,
+      /** Decodes and releases each selected placement in declaration order. */
+      async *read() {
+        let decodedBytes = 0;
+        let primitiveCount = 0;
+        for await (const raw of rawSource.read(selectedInspection, signal)) {
+          const runtime = createSelectedRuntime(
+            inspection,
+            selectContentDocument(inspection, raw),
+            raw.data,
+            signal,
+            boundedFetcher,
+            new URL(raw.uri, inspection.rootUrl).href
+          );
+          try {
+            await runtime.tilesetInitializationPromise;
+            const meshSource = createMeshTilesetConversionSource(runtime, {
+              unloadContent: true,
+              features,
+              readExternalResource: async (uri, _contentUri, resourceSignal) => {
+                const response = await boundedFetcher(
+                  new URL(uri, new URL(raw.uri, inspection.rootUrl).href),
+                  {signal: resourceSignal}
+                );
+                return new Uint8Array(await response.arrayBuffer());
+              }
+            });
+            const metadata = await meshSource.inspect(signal);
+            let meshCount = 0;
+            for await (const resource of meshSource.read(metadata, signal)) {
+              meshCount++;
+              if (++primitiveCount > CONVERSION_LIMITS.maxMeshResources)
+                throw new Error('Selected contents exceed the mesh primitive placement limit.');
+              decodedBytes += measureMeshBytes(resource);
+              if (decodedBytes > CONVERSION_LIMITS.maxInputBytes)
+                throw new TileConversionError(
+                  'INPUT_RESOURCE_TOO_LARGE',
+                  'Selected decoded geometry and encoded images exceed the aggregate input byte limit.'
+                );
+              yield {...resource, id: `${raw.resourceId}/${resource.id}`};
             }
-          });
-          const metadata = await meshSource.inspect(signal);
-          let meshCount = 0;
-          for await (const resource of meshSource.read(metadata, signal)) {
-            meshCount++;
-            if (++primitiveCount > CONVERSION_LIMITS.maxMeshResources)
-              throw new Error('Selected contents exceed the mesh primitive placement limit.');
-            decodedBytes += measureMeshBytes(resource);
-            if (decodedBytes > CONVERSION_LIMITS.maxInputBytes)
-              throw new TileConversionError(
-                'INPUT_RESOURCE_TOO_LARGE',
-                'Selected decoded geometry and encoded images exceed the aggregate input byte limit.'
-              );
-            yield {...resource, id: `${raw.resourceId}/${resource.id}`};
+            if (!meshCount) throw new Error('Selected content has no mesh primitive.');
+          } finally {
+            runtime.destroy();
           }
-          if (!meshCount) throw new Error('Selected content has no mesh primitive.');
-        } finally {
-          runtime.destroy();
         }
       }
-    }
-  };
-  const output = await writeMeshConversionResources(
-    source,
-    spatialContext,
-    format,
-    signal,
-    onProgress,
-    Math.max(
-      ...descriptors.map(descriptor => getGeometricError(inspection.tileset, descriptor.tilePath))
-    ) + CONVERSION_LIMITS.maxPositionError
-  );
-  return {...output, name: `selected-${resourceIds.length === 1 ? 'mesh' : 'meshes'}.${format}`};
+    };
+    const output = await writeMeshConversionResources(
+      source,
+      spatialContext,
+      format,
+      signal,
+      onProgress,
+      Math.max(
+        ...descriptors.map(descriptor => getGeometricError(inspection.tileset, descriptor.tilePath))
+      ) + CONVERSION_LIMITS.maxPositionError
+    );
+    return {...output, name: `selected-${resourceIds.length === 1 ? 'mesh' : 'meshes'}.${format}`};
+  } finally {
+    await archive?.close();
+  }
 }
 
 /** Authors a bounded flat mesh collection through the shared qualified format codecs. */
