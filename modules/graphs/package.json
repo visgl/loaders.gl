@@ -1,6 +1,6 @@
 {
   "name": "@loaders.gl/graphs",
-  "version": "4.5.3",
+  "version": "4.5.4",
   "description": "Graph format parsers for DOT, GraphML, and related formats",
   "license": "MIT",
   "type": "module",
@@ -51,7 +51,7 @@
     "access": "public"
   },
   "dependencies": {
-    "@loaders.gl/loader-utils": "4.5.3",
+    "@loaders.gl/loader-utils": "4.5.4",
     "fast-xml-parser": "^5.5.3"
   }
 }

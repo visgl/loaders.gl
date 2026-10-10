@@ -2,6 +2,14 @@
 
 ## v4.5
 
+### v4.5.4
+
+- fix(textures): upgrade bundled Basis encoder and transcoder to v2.50 and handle initialization failures (#4194)
+- fix(loader-utils): share retryable WASM initialization and normalize rejection errors (#4194)
+- fix(draco): recover from decoder initialization failures (#4194)
+- fix(compression): make Zstd initialization failures observable and retryable (#4194)
+- fix(crypto): propagate MD5 WASM initialization failures without unhandled rejections (#4194)
+
 ### v4.5.3
 
 - feat(graphs): add GraphML and DOT loaders with Node.js and browser support (#4142)
