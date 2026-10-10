@@ -64,11 +64,14 @@ export class Potree2Source extends DataSource<string, PotreeSourceLoaderOptions>
   constructor(input: string, options: PotreeSourceLoaderOptions = {}, coreApi?: CoreAPI) {
     super(input, options, {potree: {}}, coreApi);
     const browserBase = typeof document !== 'undefined' ? document.baseURI : undefined;
-    const url = new URL(this.url, browserBase || 'https://loaders.gl.invalid/');
+    const inputUrl = /^[a-z][a-z0-9+.-]*:\/\//i.test(this.url)
+      ? this.url
+      : this.url.replace(/\\/g, '/');
+    const url = new URL(inputUrl, browserBase || 'https://loaders.gl.invalid/');
     if (!url.pathname.endsWith('.json'))
       url.pathname = `${url.pathname.replace(/\/$/, '')}/metadata.json`;
-    const localPath = !browserBase && !/^[a-z][a-z0-9+.-]*:\/\//i.test(this.url);
-    const path = this.url.split(/[?#]/, 1)[0];
+    const localPath = !browserBase && !/^[a-z][a-z0-9+.-]*:\/\//i.test(inputUrl);
+    const path = inputUrl.split(/[?#]/, 1)[0];
     this.rootUrl = localPath
       ? `${path.endsWith('.json') ? path : `${path.replace(/\/$/, '')}/metadata.json`}${url.search}${url.hash}`
       : url.href;

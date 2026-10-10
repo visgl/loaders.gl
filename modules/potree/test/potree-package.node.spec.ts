@@ -47,7 +47,12 @@ test.each([
   'dataset/metadata.json',
   '/dataset/metadata.json',
   './dataset/metadata.json',
-  'dataset/metadata.json?token=1'
+  'dataset/metadata.json?token=1',
+  'dataset\\metadata.json',
+  '.\\dataset\\metadata.json',
+  'C:\\dataset\\metadata.json',
+  'C:\\dataset\\metadata.json?token=1',
+  '\\\\server\\dataset\\metadata.json'
 ])('opens Node dataset path %s through the unified source', async input => {
   const transport = createDatasetFetch(await encodePotreeDataset(createPoints()));
   const prefix = getPathPrefix();
@@ -64,10 +69,11 @@ test.each([
   try {
     const root = await source.getRootTile();
     expect((await source.loadTileContent(root))?.pointCount).toBe(2);
+    const normalizedInput = input.replace(/\\/g, '/');
     expect(paths).toEqual([
-      input,
-      input.replace('metadata.json', 'hierarchy.bin'),
-      input.replace('metadata.json', 'octree.bin')
+      normalizedInput,
+      normalizedInput.replace('metadata.json', 'hierarchy.bin'),
+      normalizedInput.replace('metadata.json', 'octree.bin')
     ]);
   } finally {
     source.close();

@@ -140,11 +140,11 @@ export class PotreeNodesSource
       if (this.modernSource) await this.modernSource.initialize();
       return;
     }
-    if (/(?:^|\/)metadata\.json(?:[?#]|$)/.test(this.url)) {
+    if (/(?:^|\/)metadata\.json(?:[?#]|$)/.test(this.metadataUrl)) {
       const {Potree2Source} = await import('../potree2-source');
       if (this.modernClosed) throw new Error('Potree source closed');
       this.modernSource = new Potree2Source(
-        this.url,
+        this.data,
         this.loadOptions,
         this.hasCoreApi ? this.coreApi : undefined
       );
@@ -669,7 +669,10 @@ export class PotreeNodesSource
     if (/^https?:\/\//i.test(trimmedUrl)) {
       return trimmedUrl;
     }
-    return resolvePath(trimmedUrl);
+    const resolvedUrl = resolvePath(trimmedUrl);
+    return /^[a-z][a-z0-9+.-]*:\/\//i.test(resolvedUrl)
+      ? resolvedUrl
+      : resolvedUrl.replace(/\\/g, '/');
   }
 
   /**
