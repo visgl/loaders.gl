@@ -156,3 +156,10 @@ export {getTypeInfo} from './lib/table/arrow-api/get-type-info';
 export {default as AsyncQueue} from './lib/utils/async-queue';
 
 export type {MeshArrowAttributes} from './lib/mesh/convert-mesh-to-table';
+
+export {PointCloudTiler} from './lib/mesh/point-cloud-tiler';
+export type {
+  PointCloudTilerOptions,
+  PointCloudTilerNode,
+  PointCloudTileBounds
+} from './lib/mesh/point-cloud-tiler';

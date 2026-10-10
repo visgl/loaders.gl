@@ -28,6 +28,16 @@
       "types": "./dist/index.d.ts",
       "import": "./dist/index.js",
       "require": "./dist/index.cjs"
+    },
+    "./point-cloud-tile-source-loader": {
+      "types": "./dist/point-cloud-tile-source-loader.d.ts",
+      "import": "./dist/point-cloud-tile-source-loader.js",
+      "require": "./dist/point-cloud-tile-source-loader.cjs"
+    },
+    "./point-cloud-tile-source": {
+      "types": "./dist/point-cloud-tile-source.d.ts",
+      "import": "./dist/point-cloud-tile-source.js",
+      "require": "./dist/point-cloud-tile-source.cjs"
     }
   },
   "sideEffects": false,
@@ -37,13 +47,15 @@
     "README.md"
   ],
   "scripts": {
-    "pre-build": "npm run build-bundle && npm run build-bundle-dev",
+    "pre-build": "npm run build-cjs-entrypoints && npm run build-bundle && npm run build-bundle-dev",
     "build-bundle": "ocular-bundle ./bundle.ts --output=dist/dist.min.js",
-    "build-bundle-dev": "ocular-bundle ./bundle.ts --env=dev --output=dist/dist.dev.js"
+    "build-bundle-dev": "ocular-bundle ./bundle.ts --env=dev --output=dist/dist.dev.js",
+    "build-cjs-entrypoints": "esbuild dist/index.js dist/point-cloud-tile-source.js dist/point-cloud-tile-source-loader.js --outdir=dist --out-extension:.js=.cjs --bundle --format=cjs --platform=node --target=node22 --sourcemap --external:@loaders.gl/* --external:@math.gl/*"
   },
   "dependencies": {
     "@loaders.gl/loader-utils": "5.0.0-alpha.11",
     "@loaders.gl/schema": "5.0.0-alpha.11",
+    "@loaders.gl/schema-utils": "5.0.0-alpha.11",
     "@math.gl/core": "5.0.0-alpha.15",
     "@math.gl/crs": "5.0.0-alpha.15",
     "@math.gl/culling": "5.0.0-alpha.15",

@@ -171,3 +171,9 @@ export {
   TILESET_TYPE,
   LOD_METRIC_TYPE
 } from './constants';
+
+export {PointCloudTileSourceLoader} from './point-cloud-tile-source-loader-types';
+export type {
+  PointCloudTileSourceInput,
+  PointCloudTileSourceOptions
+} from './point-cloud-tile-source-types';
