@@ -45,3 +45,22 @@ test('uses the resolved source path prefix before opening a dataset', async () =
     setPathPrefix(prefix);
   }
 });
+
+test('legacy URL query text does not select the modern dataset reader', async () => {
+  const transport = createDatasetFetch(
+    await encodePotreeDataset(createPoints(), {potree: {version: '1.8'}})
+  );
+  const source = PotreeSourceLoader.createDataSource(
+    'https://example.com/dataset/cloud.js?token=/metadata.json',
+    {core: {fetch: transport.fetch}}
+  );
+  try {
+    const root = await source.getRootTile();
+    expect((await source.loadTileContent(root))?.pointCount).toBe(2);
+    expect(
+      transport.requests.every(request => new URL(request.url).search === '?token=/metadata.json')
+    ).toBe(true);
+  } finally {
+    source.close();
+  }
+});

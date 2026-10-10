@@ -140,7 +140,7 @@ export class PotreeNodesSource
       if (this.modernSource) await this.modernSource.initialize();
       return;
     }
-    if (/(?:^|\/)metadata\.json(?:[?#]|$)/.test(this.metadataUrl)) {
+    if (/(?:^|\/)metadata\.json$/.test(this.metadataUrl.split(/[?#]/, 1)[0])) {
       const {Potree2Source} = await import('../potree2-source');
       if (this.modernClosed) throw new Error('Potree source closed');
       this.modernSource = new Potree2Source(
@@ -672,7 +672,7 @@ export class PotreeNodesSource
     const resolvedUrl = resolvePath(trimmedUrl);
     return /^[a-z][a-z0-9+.-]*:\/\//i.test(resolvedUrl)
       ? resolvedUrl
-      : resolvedUrl.replace(/\\/g, '/');
+      : resolvedUrl.replace(/^[^?#]*/, path => path.replace(/\\/g, '/'));
   }
 
   /**

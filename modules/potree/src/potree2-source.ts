@@ -66,7 +66,7 @@ export class Potree2Source extends DataSource<string, PotreeSourceLoaderOptions>
     const browserBase = typeof document !== 'undefined' ? document.baseURI : undefined;
     const inputUrl = /^[a-z][a-z0-9+.-]*:\/\//i.test(this.url)
       ? this.url
-      : this.url.replace(/\\/g, '/');
+      : this.url.replace(/^[^?#]*/, path => path.replace(/\\/g, '/'));
     const url = new URL(inputUrl, browserBase || 'https://loaders.gl.invalid/');
     if (!url.pathname.endsWith('.json'))
       url.pathname = `${url.pathname.replace(/\/$/, '')}/metadata.json`;
