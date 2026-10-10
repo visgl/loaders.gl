@@ -126,6 +126,27 @@ quoted: {"<<": literal}
   });
 
   test.each([
+    '{"<<": literal, <<: *defaults}',
+    '{<<: *defaults, "<<": literal}',
+    "{'<<': literal, <<: *defaults}",
+    '\n  "<<": literal\n  <<: *defaults',
+    '\n  <<: *defaults\n  "<<": literal'
+  ])('distinguishes literal merge-spelled keys from directives: %s', value => {
+    expect(
+      parseYAMLSync(`defaults: &defaults {color: cyan}\nvalue: ${value}`, {uniqueKeys: true})
+    ).toEqual({defaults: {color: 'cyan'}, value: {'<<': 'literal', color: 'cyan'}});
+  });
+
+  test.each([
+    '{<<: *defaults, <<: *defaults}',
+    '\n  <<: *defaults\n  <<: *defaults'
+  ])('rejects repeated merge directives with uniqueKeys: %s', value => {
+    expect(() =>
+      parseYAMLSync(`defaults: &defaults {color: cyan}\nvalue: ${value}`, {uniqueKeys: true})
+    ).toThrow('Duplicate mapping key: <<');
+  });
+
+  test.each([
     '{<<: 2}',
     '{<<: [2]}',
     '{<<: [[1]]}',

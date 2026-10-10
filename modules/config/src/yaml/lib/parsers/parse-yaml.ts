@@ -11,6 +11,9 @@ export function parseYAMLSync(text: string, options?: YAMLParseOptions): unknown
 
 type YAMLMapping = Record<string, unknown>;
 
+/** A merge directive is distinct from a quoted property with the same spelling. */
+const YAML_MERGE_KEY = Symbol('YAML merge directive');
+
 /** Apply YAML merge precedence without replacing explicit or earlier merged entries. */
 function mergeMapping(
   result: YAMLMapping,
@@ -47,7 +50,7 @@ class YAMLParser {
   private readonly options: YAMLParseOptions;
   private readonly anchors = new Map<string, unknown>();
   /** Authored keys, excluding values introduced by a merge. */
-  private readonly explicitKeys = new WeakMap<YAMLMapping, Set<string>>();
+  private readonly explicitKeys = new WeakMap<YAMLMapping, Set<string | symbol>>();
   private lineIndex = 0;
 
   /** Creates a parser for one YAML document. */
@@ -186,15 +189,16 @@ class YAMLParser {
       throw this.error('Mapping keys must be strings', this.lineIndex - 1);
     }
     const keyString = key === null ? 'null' : String(key);
+    const authoredKey = keyText === '<<' ? YAML_MERGE_KEY : keyString;
     let explicitKeys = this.explicitKeys.get(result);
     if (!explicitKeys) {
       explicitKeys = new Set();
       this.explicitKeys.set(result, explicitKeys);
     }
-    if (this.options.uniqueKeys && explicitKeys.has(keyString)) {
+    if (this.options.uniqueKeys && explicitKeys.has(authoredKey)) {
       throw this.error(`Duplicate mapping key: ${keyString}`, this.lineIndex - 1);
     }
-    explicitKeys.add(keyString);
+    explicitKeys.add(authoredKey);
     const valueText = entry.slice(separatorIndex + 1).trimStart();
     const parsedValue = valueText
       ? this.parseValue(valueText, indent)
@@ -446,7 +450,7 @@ class YAMLFlowParser {
   private parseObject(): YAMLMapping {
     this.index++;
     const result: YAMLMapping = {};
-    const explicitKeys = new Set<string>();
+    const explicitKeys = new Set<string | symbol>();
     while (true) {
       this.skipWhitespace();
       if (this.text[this.index] === '}') {
@@ -466,10 +470,11 @@ class YAMLFlowParser {
         throw this.errorFactory('Mapping keys must be strings');
       }
       const keyString = key === null ? 'null' : String(key);
-      if (this.options.uniqueKeys && explicitKeys.has(keyString)) {
+      const authoredKey = mergeKey ? YAML_MERGE_KEY : keyString;
+      if (this.options.uniqueKeys && explicitKeys.has(authoredKey)) {
         throw this.errorFactory(`Duplicate mapping key: ${keyString}`);
       }
-      explicitKeys.add(keyString);
+      explicitKeys.add(authoredKey);
       if (mergeKey) mergeMapping(result, value, this.errorFactory);
       else result[keyString] = value;
       this.skipWhitespace();
