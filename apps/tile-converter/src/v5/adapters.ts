@@ -73,3 +73,9 @@ export type {PointCloudSpatialOptions} from './point-cloud-spatial.js';
 
 export {createI3SMeshTilesetConversionSource} from './i3s-mesh-source.js';
 export type {I3SMeshTilesetSourceOptions, I3SMeshSourceFeatureOptions} from './i3s-mesh-source.js';
+
+export {convertPointCloudToTileset} from './point-cloud-tileset.js';
+export type {
+  ConvertPointCloudToTilesetOptions,
+  ConvertedPointCloudTileset
+} from './point-cloud-tileset.js';

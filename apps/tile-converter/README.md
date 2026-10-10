@@ -508,3 +508,52 @@ resolution, authentication and decompression. `getFeatures` remains the custom a
 Unsupported atlas regions, colors, richer maps, domains/dates and layouts fail explicitly.
 See the v5 conversion API reference for the exact source profile and an example mapping.
 See the [v5 conversion reference](../../docs/modules/tile-converter/api-reference/v5-conversion.md).
+
+## Decoded point-cloud authoring
+
+`convertPointCloudToTileset` connects the dynamic point tiler to the v5 PNTS sink. It accepts one
+loader-produced point `Mesh` or `MeshArrowTable` and emits every input row once across a flat,
+additive 3D Tiles 1.0 collection. Supply explicit native ECEF (EPSG:4978 XYZ meters with ellipsoidal
+heights); the helper does not infer or transform a CRS. Per-tile RTC centers retain small offsets at
+ECEF magnitudes, and `geometricError` must cover measured position reconstruction error.
+
+```ts
+import {createTilesetSpatialReference} from '@loaders.gl/tiles';
+import {convertPointCloudToTileset} from '@loaders.gl/tile-converter/v5/browser';
+
+const result = await convertPointCloudToTileset(decodedPoints, {
+  spatialReference: createTilesetSpatialReference({
+    sourceCrs: 'EPSG:4978',
+    heightReference: 'ellipsoidal',
+    coordinateFrame: 'geocentric',
+    axisOrder: 'xyz'
+  }),
+  geometricError: 0.001,
+  maxTiles: 1000,
+  maxTotalBytes: 64 * 1024 * 1024,
+  tiling: {
+    maxInputBytes: 64 * 1024 * 1024,
+    maxIndexBytes: 16 * 1024 * 1024,
+    maxTileBytes: 4 * 1024 * 1024,
+    maxNodes: 1000
+  },
+  archive: {maxArchiveBytes: 80 * 1024 * 1024},
+  signal: abortController.signal
+});
+// result.files contains named PNTS Blobs and tileset.json.
+// result.archive is an indexed 3TZ Blob; saving and object URLs belong to the application.
+```
+
+Omit `archive` for files only. Indexing, traversal and packaging use the same cancellation signal;
+the helper closes its private source on success and failure and returns no partial package.
+The report counts PNTS outputs and gathered Arrow input column buffers. Tileset JSON is included in
+`maxTotalBytes`; ZIP headers and index are included in `maxArchiveBytes`. These are separate bounds,
+not a total heap cap. Arrow normalization, source buffers, row indexes, gathered tiles and ZIP
+serialization can occupy additional memory. Input must remain immutable until the promise settles.
+
+The first authoring profile is in memory and preserves all rows, including terminal-node overflow.
+It flattens the octree into independent tile placements; it does not preserve octree LOD, provide
+sampling-error guarantees, ingest batches, or author I3S point layers. PNTS supports `POSITION`,
+`NORMAL`, `BATCH_ID` and one color attribute. Other attributes fail instead of being silently dropped;
+explicitly map or remove them before authoring. LAS, COPC, Potree and other loaders may produce
+compatible decoded points, but their native CRS and additional attributes still require preparation.
