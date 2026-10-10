@@ -23,7 +23,7 @@ The v5 implementation is split into two entrypoints inside this application:
 
 The existing `/v5` and `/v5/browser` imports remain compatible. The adapters consume the
 same core functions, types and error class. No implementation or dependencies move into
-other packages; CLI and v4 code are unchanged. Applications supply platform I/O adapters.
+other packages. The original CLI and v4 code remain compatible. Node inspection now has a separate entrypoint and command, described below.
 
 ## V5 source-backed mesh traversal
 
@@ -508,3 +508,26 @@ resolution, authentication and decompression. `getFeatures` remains the custom a
 Unsupported atlas regions, colors, richer maps, domains/dates and layouts fail explicitly.
 See the v5 conversion API reference for the exact source profile and an example mapping.
 See the [v5 conversion reference](../../docs/modules/tile-converter/api-reference/v5-conversion.md).
+
+## Experimental Node inspection
+
+`tile-converter-v5 inspect` inventories metadata and ordered content declarations from an
+explicit 3D Tiles 1.0/1.1 JSON path or HTTP(S) URL, or a local 3TZ archive:
+
+```sh
+tile-converter-v5 inspect ./dataset/tileset.json
+tile-converter-v5 inspect ./dataset.3tz --input-format 3tz
+```
+
+The command prints JSON to stdout, emits JSON errors to stderr and exits nonzero on failure.
+It reads metadata without opening tile payloads. The default budgets are 16 MiB and 1,000
+content placements; `--max-input-bytes` and `--max-resources` can lower them. This command
+does not perform conversion or full-content validation.
+
+`createNodeTilesetConversionSource` from `@loaders.gl/tile-converter/v5/node` also supplies
+bounded typed-array raw reads for application codecs. It reuses portable explicit traversal.
+Local files are confined to the root document's real directory, including symlink resolution;
+3TZ reads load the index once and stay inside the archive. Close the dedicated source in
+`finally`. Portable entrypoints do not import this Node adapter. I3S/SLPK, remote archives,
+output sinks, nested/implicit dataset extraction and installed Windows qualification remain
+follow-ups. Inputs must remain unchanged during a source's lifetime.

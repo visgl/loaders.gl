@@ -154,3 +154,27 @@ test('tile-converter core browser bundle excludes format adapters and Node APIs'
   );
   expect(Object.keys(bundle.metafile!.inputs).some(path => path.includes('adapters'))).toBe(false);
 });
+
+test('built Node adapter shares the core error class without changing portable imports', () => {
+  const output = execFileSync(
+    process.execPath,
+    [
+      '--input-type=module',
+      '-e',
+      `
+    import assert from 'node:assert/strict';
+    import {createRequire} from 'node:module';
+    import * as core from '@loaders.gl/tile-converter/v5/core';
+    import * as node from '@loaders.gl/tile-converter/v5/node';
+    const require = createRequire(import.meta.url);
+    for (const [platform, portable] of [[node, core], [require('@loaders.gl/tile-converter/v5/node'), require('@loaders.gl/tile-converter/v5/core')]]) {
+      await assert.rejects(platform.createNodeTilesetConversionSource({input: 'unused', maxInputBytes: 0}), portable.TileConversionError);
+      assert.equal(portable.createNodeTilesetConversionSource, undefined);
+    }
+    console.log('Node entrypoint passed');
+  `
+    ],
+    {encoding: 'utf8'}
+  );
+  expect(output).toContain('Node entrypoint passed');
+});
