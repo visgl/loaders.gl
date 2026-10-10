@@ -38,6 +38,7 @@ export {MVTLoader} from './mvt-loader';
 export type {MVTLoaderOptions} from './mvt-loader';
 export {MVTGeoJSONLoader} from './mvt-geojson-loader-types';
 export type {MVTGeoJSONLoaderOptions} from './mvt-geojson-loader-types';
+export type {MVTGeoJSONFeature, MVTGeoJSONTable} from './lib/types';
 
 // MVTWriter
 

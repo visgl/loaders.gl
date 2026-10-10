@@ -3,7 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import type {LoaderWithParser} from '@loaders.gl/loader-utils';
-import type {GeoJSONTable} from '@loaders.gl/schema';
+import type {MVTGeoJSONTable} from './lib/types';
 import {parseMVTGeoJSON} from './lib/parse-mvt-geojson';
 import {MVTGeoJSONLoader as MVTGeoJSONLoaderMetadata} from './mvt-geojson-loader-types';
 import type {MVTGeoJSONLoaderOptions} from './mvt-geojson-loader-types';
@@ -17,4 +17,4 @@ export const MVTGeoJSONLoaderWithParser = {
   parse: async (arrayBuffer, options?: MVTGeoJSONLoaderOptions) =>
     parseMVTGeoJSON(arrayBuffer, options),
   parseSync: parseMVTGeoJSON
-} as const satisfies LoaderWithParser<GeoJSONTable, never, MVTGeoJSONLoaderOptions>;
+} as const satisfies LoaderWithParser<MVTGeoJSONTable, never, MVTGeoJSONLoaderOptions>;
