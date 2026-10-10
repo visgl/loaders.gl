@@ -65,31 +65,43 @@ function getCDNOption(cdn: unknown, coreCDN: unknown): string | null | undefined
  *
  * Method depends on environment
  * - browser - script element is created and installed on document
- * - worker - eval is called on global context
+ * - classic worker - importScripts loads a classic wrapper
+ * - module worker - native import loads an ESM wrapper and returns its exports
  * - node - file is required
  *
  * @param libraryUrl
  * @param moduleName
  * @param options
+ * @param libraryName Classic asset name used for URL resolution and overrides.
+ * @param moduleLibraryName ESM asset name used by module workers unless the classic URL is overridden.
  */
 export async function loadLibrary(
   libraryUrl: string,
   moduleName: string | null = null,
   options: LoadLibraryOptions = {},
-  libraryName: string | null = null
+  libraryName: string | null = null,
+  moduleLibraryName: string | null = null
 ): Promise<any> {
+  let moduleLibraryUrl = libraryUrl;
   if (moduleName) {
-    const injectedLibrary = options.modules?.[libraryName || libraryUrl];
+    const requestedLibraryName = libraryName || libraryUrl;
+    const injectedLibrary = options.modules?.[requestedLibraryName];
     if (injectedLibrary !== undefined && typeof injectedLibrary !== 'string') {
       return injectedLibrary;
     }
     libraryUrl = getLibraryUrl(libraryUrl, moduleName, options, libraryName);
+    const hasLibraryOverride = typeof injectedLibrary === 'string';
+    moduleLibraryUrl =
+      moduleLibraryName &&
+      (!hasLibraryOverride || typeof options.modules?.[moduleLibraryName] === 'string')
+        ? getLibraryUrl(moduleLibraryName, moduleName, options, moduleLibraryName)
+        : libraryUrl;
   }
   // Ensure libraries are only loaded once
 
   loadLibraryPromises[libraryUrl] =
     // eslint-disable-next-line @typescript-eslint/no-misused-promises
-    loadLibraryPromises[libraryUrl] || loadLibraryFromFile(libraryUrl);
+    loadLibraryPromises[libraryUrl] || loadLibraryFromFile(libraryUrl, moduleLibraryUrl);
   return await loadLibraryPromises[libraryUrl];
 }
 
@@ -135,13 +147,13 @@ export function getLibraryUrl(
 
   // TODO - loading inside workers requires paths relative to worker script location...
   if (isWorker) {
-    return `../src/libs/${libraryName}`;
+    return libraryName.endsWith('.mjs') ? `./libs/${libraryName}` : `../src/libs/${libraryName}`;
   }
 
   return `modules/${moduleName}/src/libs/${libraryName}`;
 }
 
-async function loadLibraryFromFile(libraryUrl: string): Promise<any> {
+async function loadLibraryFromFile(libraryUrl: string, moduleLibraryUrl: string): Promise<any> {
   if (libraryUrl.endsWith('wasm')) {
     return await loadAsArrayBuffer(libraryUrl);
   }
@@ -173,7 +185,7 @@ async function loadLibraryFromFile(libraryUrl: string): Promise<any> {
     }
   }
   if (isWorker) {
-    return loadLibraryInWorker(libraryUrl);
+    return loadLibraryInWorker(libraryUrl, moduleLibraryUrl);
   }
   // TODO - fix - should be more secure than string parsing since observes CORS
   // if (isBrowser) {
@@ -184,38 +196,25 @@ async function loadLibraryFromFile(libraryUrl: string): Promise<any> {
   return loadLibraryFromString(scriptSource, libraryUrl);
 }
 
-/** Loads a classic library wrapper in classic or module workers without masking script failures. */
-export async function loadLibraryInWorker(libraryUrl: string): Promise<unknown> {
+/** Loads classic scripts or native ESM exports without evaluating fetched source or masking failures. */
+export async function loadLibraryInWorker(
+  libraryUrl: string,
+  moduleLibraryUrl: string = libraryUrl
+): Promise<unknown> {
   try {
     // A zero-argument probe rejects in module workers without loading any script.
     importScripts();
   } catch {
-    return evaluateWorkerLibrary(await loadAsText(libraryUrl));
+    // Resolve local asset paths against the same worker location used by importScripts.
+    const moduleUrl = new URL(moduleLibraryUrl, globalThis.location.href).href;
+    const library = await import(/* @vite-ignore */ moduleUrl);
+    return library.default ?? library;
   }
   return importScripts(libraryUrl);
 }
 
-/** Executes a fetched wrapper in the worker global scope, matching classic script declarations. */
-function evaluateWorkerLibrary(scriptSource: string): null {
-  eval.call(globalThis, scriptSource); // eslint-disable-line no-eval
-  return null;
-}
-
-// TODO - Needs security audit...
-//  - Raw eval call
-//  - Potentially bypasses CORS
-// Upside is that this separates fetching and parsing
-// we could create a`LibraryLoader` or`ModuleLoader`
+/** Installs fetched library source on the browser main thread. Workers use script or module loading. */
 function loadLibraryFromString(scriptSource: string, id: string): null | any {
-  if (!isBrowser) {
-    const {requireFromString} = globalThis.loaders || {};
-    return requireFromString?.(scriptSource, id);
-  }
-
-  if (isWorker) {
-    return evaluateWorkerLibrary(scriptSource);
-  }
-
   const script = document.createElement('script');
   script.id = id;
   // most browsers like a separate text node but some throw an error. The second method covers those.

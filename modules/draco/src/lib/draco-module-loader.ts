@@ -210,7 +210,8 @@ async function loadDracoDecoderInternal(
         DRACO_EXTERNAL_LIBRARY_URLS[DRACO_EXTERNAL_LIBRARIES.FALLBACK_DECODER],
         'draco',
         options,
-        DRACO_EXTERNAL_LIBRARIES.FALLBACK_DECODER
+        DRACO_EXTERNAL_LIBRARIES.FALLBACK_DECODER,
+        'draco_decoder.mjs'
       );
     } catch (error) {
       if (isBrowser || options.useLocalLibraries) {
@@ -220,7 +221,8 @@ async function loadDracoDecoderInternal(
         DRACO_EXTERNAL_LIBRARY_URLS[DRACO_EXTERNAL_LIBRARIES.FALLBACK_DECODER],
         'draco',
         {...options, useLocalLibraries: true},
-        DRACO_EXTERNAL_LIBRARIES.FALLBACK_DECODER
+        DRACO_EXTERNAL_LIBRARIES.FALLBACK_DECODER,
+        'draco_decoder.mjs'
       );
     }
     const decoderInitializer =
@@ -260,7 +262,13 @@ async function loadDecoderWasmAssets(
       ? DRACO_EXTERNAL_LIBRARIES.GLTF_DECODER_WASM
       : DRACO_EXTERNAL_LIBRARIES.DECODER_WASM;
   return await Promise.all([
-    loadLibrary(DRACO_EXTERNAL_LIBRARY_URLS[decoderLibrary], 'draco', options, decoderLibrary),
+    loadLibrary(
+      DRACO_EXTERNAL_LIBRARY_URLS[decoderLibrary],
+      'draco',
+      options,
+      decoderLibrary,
+      profile === 'gltf' ? 'draco_wasm_wrapper_gltf.mjs' : 'draco_wasm_wrapper.mjs'
+    ),
     loadLibrary(
       DRACO_EXTERNAL_LIBRARY_URLS[decoderWasm],
       'draco',
@@ -298,7 +306,8 @@ async function loadEncoderWasmAssets(options: LoadLibraryOptions): Promise<[unkn
       DRACO_EXTERNAL_LIBRARY_URLS[DRACO_EXTERNAL_LIBRARIES.ENCODER],
       'draco',
       options,
-      DRACO_EXTERNAL_LIBRARIES.ENCODER
+      DRACO_EXTERNAL_LIBRARIES.ENCODER,
+      'draco_encoder.mjs'
     ),
     loadLibrary(
       DRACO_EXTERNAL_LIBRARY_URLS[DRACO_EXTERNAL_LIBRARIES.ENCODER_WASM],

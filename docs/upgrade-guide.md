@@ -56,6 +56,16 @@ v4.5 is additive. Existing loaders and defaults continue to work unchanged, exce
 
 The sections below document the v5 removals, migrations, and deprecations that remain active.
 
+### Module-worker decoder wrappers
+
+Module workers no longer evaluate fetched classic JavaScript to install decoder globals.
+Custom decoder URL overrides must provide ESM default factory exports (Draco also accepts named
+factory exports). Built-in
+Draco, Basis, and Crunch wrappers have generated `.mjs` adapters; custom CDNs must serve
+these additional assets. Classic-worker `importScripts()` behavior is unchanged. See
+[decoder library loading](/docs/modules/worker-utils#loading-decoder-libraries) for overrides
+and content-security-policy limitations.
+
 ### Graph loader output defaults
 
 `GraphMLLoader` and `DOTLoader` now default to a `shape: 'tables'` collection with
