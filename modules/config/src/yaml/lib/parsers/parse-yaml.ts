@@ -11,6 +11,33 @@ export function parseYAMLSync(text: string, options?: YAMLParseOptions): unknown
 
 type YAMLMapping = Record<string, unknown>;
 
+/** A merge directive is distinct from a quoted property with the same spelling. */
+const YAML_MERGE_KEY = Symbol('YAML merge directive');
+
+/** Apply YAML merge precedence without replacing explicit or earlier merged entries. */
+function mergeMapping(
+  result: YAMLMapping,
+  value: unknown,
+  errorFactory: (message: string) => Error
+): void {
+  const mappings = Array.isArray(value) ? value : [value];
+  for (const mapping of mappings) {
+    if (!mapping || typeof mapping !== 'object' || Array.isArray(mapping)) {
+      throw errorFactory('Merge keys require mapping aliases');
+    }
+    for (const [key, entryValue] of Object.entries(mapping)) {
+      if (!Object.prototype.hasOwnProperty.call(result, key)) {
+        Object.defineProperty(result, key, {
+          value: entryValue,
+          enumerable: true,
+          configurable: true,
+          writable: true
+        });
+      }
+    }
+  }
+}
+
 type YAMLLine = {
   indent: number;
   content: string;
@@ -22,6 +49,8 @@ class YAMLParser {
   private readonly lines: YAMLLine[];
   private readonly options: YAMLParseOptions;
   private readonly anchors = new Map<string, unknown>();
+  /** Authored keys, excluding values introduced by a merge. */
+  private readonly explicitKeys = new WeakMap<YAMLMapping, Set<string | symbol>>();
   private lineIndex = 0;
 
   /** Creates a parser for one YAML document. */
@@ -160,15 +189,22 @@ class YAMLParser {
       throw this.error('Mapping keys must be strings', this.lineIndex - 1);
     }
     const keyString = key === null ? 'null' : String(key);
-    if (this.options.uniqueKeys && Object.prototype.hasOwnProperty.call(result, keyString)) {
+    const authoredKey = keyText === '<<' ? YAML_MERGE_KEY : keyString;
+    let explicitKeys = this.explicitKeys.get(result);
+    if (!explicitKeys) {
+      explicitKeys = new Set();
+      this.explicitKeys.set(result, explicitKeys);
+    }
+    if (this.options.uniqueKeys && explicitKeys.has(authoredKey)) {
       throw this.error(`Duplicate mapping key: ${keyString}`, this.lineIndex - 1);
     }
+    explicitKeys.add(authoredKey);
     const valueText = entry.slice(separatorIndex + 1).trimStart();
     const parsedValue = valueText
       ? this.parseValue(valueText, indent)
       : this.parseNestedValue(indent);
     if (keyText === '<<') {
-      this.mergeMapping(result, parsedValue);
+      mergeMapping(result, parsedValue, message => this.error(message, this.lineIndex - 1));
     } else {
       result[keyString] = parsedValue;
     }
@@ -266,21 +302,6 @@ class YAMLParser {
       throw this.error(`Unknown YAML alias: ${name}`, this.lineIndex - 1);
     }
     return this.anchors.get(name);
-  }
-
-  /** Merges aliased mappings into a mapping without replacing explicit keys. */
-  private mergeMapping(result: YAMLMapping, value: unknown): void {
-    const mappings = Array.isArray(value) ? value : [value];
-    for (const mapping of mappings) {
-      if (!mapping || typeof mapping !== 'object' || Array.isArray(mapping)) {
-        throw this.error('Merge keys require mapping aliases', this.lineIndex - 1);
-      }
-      for (const [key, entryValue] of Object.entries(mapping)) {
-        if (!Object.prototype.hasOwnProperty.call(result, key)) {
-          result[key] = entryValue;
-        }
-      }
-    }
   }
 
   /** Finds a colon that separates a mapping key from its value. */
@@ -429,13 +450,16 @@ class YAMLFlowParser {
   private parseObject(): YAMLMapping {
     this.index++;
     const result: YAMLMapping = {};
+    const explicitKeys = new Set<string | symbol>();
     while (true) {
       this.skipWhitespace();
       if (this.text[this.index] === '}') {
         this.index++;
         return result;
       }
+      const keyStart = this.index;
       const key = this.parseValue({stopAtColon: true});
+      const mergeKey = this.text.slice(keyStart, this.index).trim() === '<<';
       this.skipWhitespace();
       if (this.text[this.index++] !== ':') {
         throw this.errorFactory('Expected colon in flow mapping');
@@ -446,10 +470,13 @@ class YAMLFlowParser {
         throw this.errorFactory('Mapping keys must be strings');
       }
       const keyString = key === null ? 'null' : String(key);
-      if (this.options.uniqueKeys && Object.prototype.hasOwnProperty.call(result, keyString)) {
+      const authoredKey = mergeKey ? YAML_MERGE_KEY : keyString;
+      if (this.options.uniqueKeys && explicitKeys.has(authoredKey)) {
         throw this.errorFactory(`Duplicate mapping key: ${keyString}`);
       }
-      result[keyString] = value;
+      explicitKeys.add(authoredKey);
+      if (mergeKey) mergeMapping(result, value, this.errorFactory);
+      else result[keyString] = value;
       this.skipWhitespace();
       if (this.text[this.index] === ',') {
         this.index++;
