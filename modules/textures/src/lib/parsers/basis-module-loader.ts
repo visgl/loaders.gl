@@ -67,26 +67,32 @@ function initializeBasisTranscoderModule(BasisModule, wasmBinary) {
     options.wasmBinary = wasmBinary;
   }
 
-  return new Promise(resolve => {
+  return new Promise((resolve, reject) => {
     // if you try to return BasisModule the browser crashes!
+    // Forward failures so a rejected or throwing initializer cannot leave callers,
+    // and the Basis transcoding lock they hold, waiting forever.
     BasisModule(options).then(module => {
-      const {
-        BasisFile,
-        KTX2File,
-        getBasisTexFormatBlockHeight,
-        getBasisTexFormatBlockWidth,
-        initializeBasis,
-        isFormatSupported
-      } = module;
-      initializeBasis();
-      resolve({
-        BasisFile,
-        KTX2File,
-        getBasisTexFormatBlockHeight,
-        getBasisTexFormatBlockWidth,
-        isFormatSupported
-      });
-    });
+      try {
+        const {
+          BasisFile,
+          KTX2File,
+          getBasisTexFormatBlockHeight,
+          getBasisTexFormatBlockWidth,
+          initializeBasis,
+          isFormatSupported
+        } = module;
+        initializeBasis();
+        resolve({
+          BasisFile,
+          KTX2File,
+          getBasisTexFormatBlockHeight,
+          getBasisTexFormatBlockWidth,
+          isFormatSupported
+        });
+      } catch (error) {
+        reject(error);
+      }
+    }, reject);
   });
 }
 
@@ -140,12 +146,17 @@ function initializeBasisEncoderModule(BasisEncoderModule, wasmBinary) {
     options.wasmBinary = wasmBinary;
   }
 
-  return new Promise(resolve => {
+  return new Promise((resolve, reject) => {
     // if you try to return BasisModule the browser crashes!
+    // Forward failures so a rejected or throwing initializer cannot leave callers waiting forever.
     BasisEncoderModule(options).then(module => {
-      const {BasisFile, KTX2File, initializeBasis, BasisEncoder} = module;
-      initializeBasis();
-      resolve({BasisFile, KTX2File, BasisEncoder});
-    });
+      try {
+        const {BasisFile, KTX2File, initializeBasis, BasisEncoder} = module;
+        initializeBasis();
+        resolve({BasisFile, KTX2File, BasisEncoder});
+      } catch (error) {
+        reject(error);
+      }
+    }, reject);
   });
 }
