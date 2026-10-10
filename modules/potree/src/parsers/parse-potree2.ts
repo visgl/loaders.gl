@@ -163,6 +163,8 @@ export function parsePotree2Hierarchy(
     };
     if (type === 2 && (!node.byteSize || node.byteSize % 22n))
       throw new Error('Invalid Potree 2.0 hierarchy proxy');
+    // PotreeConverter can report stale counts for empty inner nodes (upstream issue #1125).
+    if (type !== 2 && node.byteSize === 0n) node.pointCount = 0;
     nodes.push(node);
     if (type !== 2)
       for (let octant = 0; octant < 8; octant++)

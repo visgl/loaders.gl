@@ -61,7 +61,7 @@ export class Potree2Source extends DataSource<string, Potree2SourceOptions> {
   /** Starts opening one range-readable dataset; call close() when done. */
   constructor(input: string, options: Potree2SourceOptions = {}, coreApi?: CoreAPI) {
     super(input, options, {potree2: {}}, coreApi);
-    const url = new URL(input);
+    const url = new URL(this.url, typeof document !== 'undefined' ? document.baseURI : undefined);
     if (!url.pathname.endsWith('.json'))
       url.pathname = `${url.pathname.replace(/\/$/, '')}/metadata.json`;
     this.rootUrl = url.href;

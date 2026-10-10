@@ -348,3 +348,26 @@ test('Brotli positions use separate high/low 16-bit Morton words, including sign
     65537, 131074, 196611, -1, 65536, -2147483648
   ]);
 });
+
+test('zero-byte converter nodes normalize stale counts and retain child traversal', async () => {
+  const dataset = await encodePotreeDataset([
+    {id: 'r', mesh: createPoints([])},
+    {id: 'r0', mesh: createPoints([0, 0, 0])},
+    {id: 'r7', mesh: createPoints([8, 8, 8])}
+  ]);
+  const hierarchy = dataset.files.get('hierarchy.bin')!;
+  new DataView(hierarchy.buffer, hierarchy.byteOffset, hierarchy.byteLength).setUint32(2, 2, true);
+  const transport = createDatasetFetch(dataset);
+  const source = new Potree2Source('https://example.com/dataset', {core: {fetch: transport.fetch}});
+  try {
+    const root = await source.getRootTile();
+    expect(root.pointCount).toBe(0);
+    expect(await source.loadTileContent(root)).toBeNull();
+    expect(transport.requests.some(request => request.url.endsWith('octree.bin'))).toBe(false);
+    const [child] = await source.getChildren(root);
+    expect(child.pointCount).toBe(1);
+    expect((await source.loadTileContent(child))?.pointCount).toBe(1);
+  } finally {
+    source.close();
+  }
+});
