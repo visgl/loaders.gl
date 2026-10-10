@@ -4,8 +4,8 @@
 
 import * as arrow from 'apache-arrow';
 import {expect, test} from 'vitest';
-import {convert} from '@loaders.gl/schema-utils';
-import type {Feature} from '@loaders.gl/schema';
+import {convert, convertTable, convertArrowToSchema} from '@loaders.gl/schema-utils';
+import type {Feature, GeoJSONTable} from '@loaders.gl/schema';
 import {
   GEOARROW_CONVERTERS,
   GeometryColumnConverter,
@@ -28,6 +28,29 @@ test('the public converter bundle includes single geometry and rendering collect
   expect(GeometryColumnConverter).toBe(GeoArrowGeometryConverter);
   const table = convertFeaturesToGeoArrowTable(features).data;
   expect(convert(table, 'geoarrow.point', GEOARROW_CONVERTERS)).toBeInstanceOf(arrow.Table);
+});
+
+test.each([
+  'object-row-table',
+  'array-row-table',
+  'columnar-table',
+  'geojson-table',
+  'arrow-table'
+] as const)('the combined bundle distinguishes a %s wrapper from binary features', shape => {
+  const features: Feature[] = [
+    {type: 'Feature', geometry: {type: 'Point', coordinates: [1, 2]}, properties: {name: 'point'}}
+  ];
+  const arrowTable = convertFeaturesToGeoArrowTable(features);
+  const sourceTable = {...arrowTable, schema: convertArrowToSchema(arrowTable.data.schema)};
+  const table =
+    shape === 'geojson-table'
+      ? {shape, type: 'FeatureCollection' as const, features, schema: {fields: [], metadata: {}}}
+      : convertTable(sourceTable, shape);
+  const converted = convert(table, 'geoarrow', GEOARROW_CONVERTERS) as arrow.Table;
+  expect(converted).toBeInstanceOf(arrow.Table);
+  expect(converted.numRows).toBe(1);
+  const restored = convert(converted, 'geojson-table', GEOARROW_CONVERTERS) as GeoJSONTable;
+  expect(restored.features).toEqual(features);
 });
 
 test.each([

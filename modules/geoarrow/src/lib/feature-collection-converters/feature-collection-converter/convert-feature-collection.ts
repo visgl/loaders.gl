@@ -115,7 +115,12 @@ export function convertFeatureCollection(
 export function isBinaryFeatureCollection(
   data: Feature[] | FlatFeature[] | BinaryFeatureCollection
 ): data is BinaryFeatureCollection {
-  return typeof data === 'object' && data !== null && !Array.isArray(data) && 'shape' in data;
+  return (
+    typeof data === 'object' &&
+    data !== null &&
+    !Array.isArray(data) &&
+    data.shape === 'binary-feature-collection'
+  );
 }
 
 /**
