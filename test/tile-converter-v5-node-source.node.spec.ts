@@ -97,6 +97,29 @@ test('HTTP source retains root query credentials and bounds content responses', 
   }
 });
 
+test('HTTP redirects preserve the final root directory and query credentials', async () => {
+  const finalUrl = 'https://example.invalid/releases/42/tileset.json?token=redirect';
+  const fetcher = vi.fn<typeof fetch>(async input => {
+    const response = new Response(String(input).includes('tileset.json') ? rootBytes : payload);
+    Object.defineProperty(response, 'url', {value: finalUrl});
+    return response;
+  });
+  const source = await createNodeTilesetConversionSource({
+    input: 'https://example.invalid/latest/tileset.json',
+    fetcher
+  });
+  try {
+    const inspection = await source.inspect();
+    expect(inspection.rootUrl).toBe(finalUrl);
+    for await (const resource of source.read(inspection)) expect(resource.data).toEqual(payload);
+    expect(String(fetcher.mock.calls[1][0])).toBe(
+      'https://example.invalid/releases/42/meshes/triangle.glb?token=redirect'
+    );
+  } finally {
+    await source.close();
+  }
+});
+
 test.each([
   '../outside.glb',
   'https://example.invalid/content.glb',
