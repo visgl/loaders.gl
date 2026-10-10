@@ -129,3 +129,17 @@ export type {
   I3SMeshTilesetSourceOptions,
   I3SMeshSourceFeatureOptions
 } from '@loaders.gl/tile-converter/v5/adapters';
+
+export {mapPointCloudAttributes} from '@loaders.gl/tile-converter/v5/adapters';
+export type {
+  PointCloudAttributeMapping,
+  MappedPointCloud
+} from '@loaders.gl/tile-converter/v5/adapters';
+export {
+  encodePointCloudCOPC,
+  createCOPCConversionCodec
+} from '@loaders.gl/tile-converter/v5/adapters';
+export type {
+  EncodePointCloudCOPCOptions,
+  EncodedPointCloudCOPC
+} from '@loaders.gl/tile-converter/v5/adapters';

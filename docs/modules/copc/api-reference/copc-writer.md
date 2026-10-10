@@ -84,3 +84,10 @@ Generated files are exercised through both the native TypeScript reader and the 
 | `copc.colorDepth` | `number \| string` | - | Declares the source color component depth. |
 
 The COPC info VLR records the finite minimum and maximum GPS times written to the point records. Inputs without finite GPS times use `[0, 0]`.
+
+## Custom attributes
+
+`copc.extraBytes` forwards explicit `{attribute, name?, description?}` mappings to `LASWriter`.
+COPC preserves the generated LAS Extra Bytes VLR and extended records through octree sampling and
+LAZ compression. One- or three-component typed attributes retain their scalar widths, including
+exact signed and unsigned 64-bit identifiers. See the LAS writer for supported types and descriptors.

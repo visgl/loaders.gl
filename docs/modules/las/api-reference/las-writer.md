@@ -80,7 +80,7 @@ LAZ output supports PDRF 0-10. Legacy formats use LASzip compressor 2 and item v
 | `las.pointDataRecordFormat` | `0` through `10` | Derived | Point record layout. The default depends on version and whether `COLOR_0` is present. |
 | `las.scale` | `[number, number, number]` | `[0.001, 0.001, 0.001]` | Coordinate scale factors used to quantize positions into LAS integer coordinates. |
 | `las.offset` | `[number, number, number]` | Mesh minimum position | Coordinate offsets used to quantize positions into LAS integer coordinates. |
-| `las.colorDepth` | `number \| string` | - | Declares the source color component depth. |
+| `las.colorDepth` | `number \| string` | - | `8` scales source RGB by 257, `16` preserves UInt16 component values. `auto` or omitted retains legacy inference; normalized attributes use their declared normalization. |
 | `las.chunkSize` | `number` | `50000` | Number of points per LAZ chunk. |
 | `las.variableChunkTable` | `boolean` | `false` | Use a variable-size LAZ chunk table and store each chunk's point count. |
 

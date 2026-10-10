@@ -73,3 +73,8 @@ export type {PointCloudSpatialOptions} from './point-cloud-spatial.js';
 
 export {createI3SMeshTilesetConversionSource} from './i3s-mesh-source.js';
 export type {I3SMeshTilesetSourceOptions, I3SMeshSourceFeatureOptions} from './i3s-mesh-source.js';
+
+export {mapPointCloudAttributes} from './point-cloud-attributes.js';
+export type {PointCloudAttributeMapping, MappedPointCloud} from './point-cloud-attributes.js';
+export {encodePointCloudCOPC, createCOPCConversionCodec} from './point-cloud-copc.js';
+export type {EncodePointCloudCOPCOptions, EncodedPointCloudCOPC} from './point-cloud-copc.js';

@@ -70,7 +70,7 @@ export type LASWriterOptions = WriterOptions & {
     scale?: [number, number, number];
     /** Coordinate offsets used to quantize positions into LAS integer coordinates. */
     offset?: [number, number, number];
-    /** Color component depth used by source color attributes. */
+    /** Source RGB depth: 8 scales to UInt16, 16 preserves values; auto retains legacy inference. Normalized attributes retain their declared normalization. */
     colorDepth?: number | string;
     /** Number of points per fixed-size LAZ chunk. */
     chunkSize?: number;
@@ -107,6 +107,9 @@ export const LASWriter = {
 /** Encode mesh category data as LAS or LAZ bytes. */
 function encodeLASSync(data: Mesh | MeshArrowTable, options: LASWriterOptions = {}): ArrayBuffer {
   const format = options.las?.format || 'las';
+  const colorDepth = options.las?.colorDepth;
+  if (colorDepth !== undefined && colorDepth !== 'auto' && colorDepth !== 8 && colorDepth !== 16)
+    throw new Error('LASWriter: invalid source color depth');
   const mesh = normalizeMesh(data);
   const positionAttribute = getRequiredAttribute(mesh, 'POSITION');
   validatePositionAttribute(positionAttribute);
@@ -204,6 +207,7 @@ function encodeLASSync(data: Mesh | MeshArrowTable, options: LASWriterOptions = 
         classificationAttribute,
         nirAttribute,
         colorAttribute,
+        colorDepth,
         gpsTimeAttribute,
         scanAngleAttribute,
         userDataAttribute,
@@ -961,6 +965,8 @@ function writePointRecord(
     classificationAttribute?: MeshAttribute;
     nirAttribute?: MeshAttribute;
     colorAttribute?: MeshAttribute;
+    /** Declared source RGB component depth. */
+    colorDepth?: number | string;
     gpsTimeAttribute?: MeshAttribute;
     scanAngleAttribute?: MeshAttribute;
     userDataAttribute?: MeshAttribute;
@@ -1071,7 +1077,8 @@ function writePointRecord(
     pointOffset,
     vertexIndex,
     pointDataRecordFormat,
-    attributes.colorAttribute
+    attributes.colorAttribute,
+    attributes.colorDepth
   );
   if (pointDataRecordFormat === 8 || pointDataRecordFormat === 10) {
     dataView.setUint16(
@@ -1204,21 +1211,26 @@ function writePointColor(
   pointOffset: number,
   vertexIndex: number,
   pointDataRecordFormat: number,
-  colorAttribute?: MeshAttribute
+  colorAttribute?: MeshAttribute,
+  colorDepth?: number | string
 ): void {
   const colorOffset = getColorOffset(pointDataRecordFormat);
   if (colorOffset < 0 || !colorAttribute) {
     return;
   }
-  dataView.setUint16(pointOffset + colorOffset, getLASColor(colorAttribute, vertexIndex, 0), true);
+  dataView.setUint16(
+    pointOffset + colorOffset,
+    getLASColor(colorAttribute, vertexIndex, 0, colorDepth),
+    true
+  );
   dataView.setUint16(
     pointOffset + colorOffset + 2,
-    getLASColor(colorAttribute, vertexIndex, 1),
+    getLASColor(colorAttribute, vertexIndex, 1, colorDepth),
     true
   );
   dataView.setUint16(
     pointOffset + colorOffset + 4,
-    getLASColor(colorAttribute, vertexIndex, 2),
+    getLASColor(colorAttribute, vertexIndex, 2, colorDepth),
     true
   );
 }
@@ -1346,12 +1358,16 @@ function getReturnCounts(
 function getLASColor(
   attribute: MeshAttribute,
   vertexIndex: number,
-  componentIndex: number
+  componentIndex: number,
+  colorDepth?: number | string
 ): number {
   const value = getComponent(attribute, vertexIndex, componentIndex);
   if (attribute.normalized) {
     return scaleNormalizedColor(attribute, value);
   }
+
+  if (colorDepth === 8) return clampUInt16(value * 257);
+  if (colorDepth === 16) return clampUInt16(value);
 
   if (value <= 1) {
     return clampUInt16(value * 65535);
