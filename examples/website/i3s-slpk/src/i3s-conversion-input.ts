@@ -1,6 +1,5 @@
 import {coreApi, parse} from '@loaders.gl/core';
-import {BlobFile} from '@loaders.gl/loader-utils';
-import {I3SLoader, parseSLPKArchive} from '@loaders.gl/i3s';
+import {I3SLoader} from '@loaders.gl/i3s';
 import type {I3STileHeader, SceneLayer3D} from '@loaders.gl/i3s';
 import {I3SSource, Tileset3D} from '@loaders.gl/tiles';
 import type {TilesetSourceResolver} from '@loaders.gl/tiles';
@@ -21,6 +20,8 @@ import {
   createArchiveFile
 } from './convert-tileset';
 import type {ConversionFormat, ConversionResources, ConversionResult} from './convert-tileset';
+
+import {openConversionArchive, type ConversionArchiveInput} from './conversion-archive-input';
 
 /** A leaf mesh node selected explicitly after bounded metadata inspection. */
 export interface I3SConversionResource {
@@ -44,65 +45,32 @@ export interface I3SConversionInspection {
   readonly resources: readonly I3SConversionResource[];
   /** Layer, node-page and header response bytes consumed during inspection. */
   readonly metadataBytes: number;
-  /** Local SLPK input; this initial archive profile is limited to 16 MiB. */
-  readonly file?: File;
+  /** Indexed local or remote SLPK and its immutable remote identity, if applicable. */
+  readonly archive?: ConversionArchiveInput;
 }
 
-/** Opens bounded HTTP layer resources or local indexed SLPK resources with one response budget. */
+/** Opens bounded HTTP layer resources or indexed SLPK resources with one response budget. */
 async function openTransport(
   input: string | File,
   signal: AbortSignal,
   fetcher: typeof fetch,
-  initialInputBytes = 0
+  initialInputBytes = 0,
+  archiveInput?: ConversionArchiveInput
 ) {
-  const rootUrl =
-    typeof input === 'string' ? new URL(input).href : 'https://conversion.invalid/input.slpk';
+  const archive =
+    archiveInput || typeof input !== 'string'
+      ? await openConversionArchive(
+          archiveInput ?? {input, format: 'slpk'},
+          CONVERSION_LIMITS.maxInputBytes,
+          signal,
+          fetcher
+        )
+      : undefined;
+  const rootUrl = archive?.rootUrl ?? new URL(input as string).href;
   if (!['http:', 'https:'].includes(new URL(rootUrl).protocol))
     throw new Error('Use an HTTP(S) I3S layer URL.');
-  const file = typeof input === 'string' ? undefined : new BlobFile(input);
-  let archive: Awaited<ReturnType<typeof parseSLPKArchive>> | undefined;
   try {
-    if (file) {
-      if (file.size > CONVERSION_LIMITS.maxInputBytes)
-        throw new Error('Local conversion SLPK input must be at most 16 MiB.');
-      let readBytes = 0;
-      archive = await parseSLPKArchive({
-        ...file,
-        stat: () => file.stat(),
-        close: () => file.close(),
-        /** Checks every indexed read; archive/decompressor allocations are not a peak-memory gate. */
-        read: async (start, length) => {
-          signal.throwIfAborted();
-          if (
-            !Number.isSafeInteger(length) ||
-            length! < 0 ||
-            readBytes + length! > CONVERSION_LIMITS.maxInputBytes
-          )
-            throw new TileConversionError(
-              'INPUT_RESOURCE_TOO_LARGE',
-              'SLPK indexed reads exceed the input budget'
-            );
-          readBytes += length!;
-          return file.read(start, length, signal);
-        }
-      });
-    }
-    const transport: typeof fetch = archive
-      ? async inputUrl => {
-          signal.throwIfAborted();
-          const url = new URL(inputUrl instanceof Request ? inputUrl.url : String(inputUrl));
-          const root = new URL(rootUrl);
-          if (
-            url.origin !== root.origin ||
-            (url.pathname !== root.pathname && !url.pathname.startsWith(`${root.pathname}/`))
-          )
-            throw new Error('SLPK dependencies must resolve inside the selected archive.');
-          const path = url.pathname.slice(root.pathname.length).replace(/^\//, '');
-          const bytes = await archive!.getFile(path, 'http');
-          signal.throwIfAborted();
-          return new Response(bytes);
-        }
-      : fetcher;
+    const transport = archive?.fetcher ?? fetcher;
     const bounded = createTileConversionResourceFetcher({
       maxInputBytes: CONVERSION_LIMITS.maxInputBytes,
       initialInputBytes,
@@ -134,10 +102,11 @@ async function openTransport(
       /** Returns all response bytes charged to this operation, including nested metadata reads. */
       getConsumedBytes: () => consumedBytes,
       /** Releases the local readable-file handle on success, failure or cancellation. */
-      close: () => file?.close()
+      close: async () => archive?.close(),
+      archive: archive?.descriptor
     };
   } catch (error) {
-    await file?.close();
+    await archive?.close();
     throw error;
   }
 }
@@ -205,10 +174,17 @@ function createRuntime(
 export async function inspectI3SConversionInput(
   input: string | File,
   signal: AbortSignal,
-  fetcher: typeof fetch = fetch
+  fetcher: typeof fetch = fetch,
+  archiveInput = false
 ): Promise<I3SConversionInspection> {
   signal.throwIfAborted();
-  const transport = await openTransport(input, signal, fetcher);
+  const transport = await openTransport(
+    input,
+    signal,
+    fetcher,
+    0,
+    archiveInput ? {input, format: 'slpk'} : undefined
+  );
   let runtime: Tileset3D | undefined;
   try {
     const response = await transport.fetcher(transport.rootUrl);
@@ -264,7 +240,7 @@ export async function inspectI3SConversionInput(
       layer,
       resources,
       metadataBytes: transport.getConsumedBytes(),
-      ...(typeof input === 'string' ? {} : {file: input})
+      ...(transport.archive ? {archive: transport.archive} : {})
     };
   } finally {
     runtime?.destroy();
@@ -310,10 +286,11 @@ export async function convertSelectedI3SContentsToResources(
   )
     throw new Error('Only inspected leaf mesh headers can be converted.');
   const transport = await openTransport(
-    inspection.file ?? inspection.rootUrl,
+    inspection.archive?.input ?? inspection.rootUrl,
     signal,
     fetcher,
-    inspection.metadataBytes
+    inspection.metadataBytes,
+    inspection.archive
   );
   let decodedBytes = 0;
   let meshCount = 0;

@@ -94,16 +94,18 @@ map and explicitly mapped Arrow features, with Draco Edge Breaker enabled by def
 Selected decoded points can also be written as PNTS and partial 3TZ collections through the API.
 
 The [browser archive example](/examples/i3s-slpk) accepts a 3D Tiles URL, an I3S layer URL,
-or a local SLPK file and converts selected meshes to either SLPK or 3TZ. It provides metadata
+or a local/remote SLPK or 3TZ archive and converts selected meshes to either SLPK or 3TZ. It provides metadata
 inspection, explicit selection, progress, cancellation, download/preview and native file saving
 where supported. Its limits are 1,000 inspected declarations/nodes, 64 mesh placements,
 16 MiB input and decoded-resource budgets, 32 MiB output/archive budgets and 1 cm position
-rounding. Local SLPK files must be at most 16 MiB. These limits do not bound total peak memory.
+rounding. Conversion archives must be at most 16 MiB. Remote archives require HTTP byte ranges and exposed
+ETag or Last-Modified validators; the inspected identity is checked again during conversion. These limits do not bound total peak memory.
 
 Outputs are flat partial collections; source LOD/refinement is not preserved. Feature schemas
 and CRS/height operations must be declared explicitly. I3S-to-3TZ conversion requires a
-conservative geometric error in meters. Remote SLPK and 3TZ conversion input are not wired
-into the controls, although the viewer loads both archive formats locally or remotely.
+conservative geometric error in meters. Archive dependencies must stay inside the selected
+archive; external dependencies are rejected. Indexed reads and decompressed responses have
+separate input byte gates.
 See the [v5 API guide](/docs/modules/tile-converter/api-reference/v5-conversion) for exact profiles.
 
 ### Archive output and storage

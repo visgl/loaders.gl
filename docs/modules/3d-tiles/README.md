@@ -162,3 +162,11 @@ under the Apache 2.0 license and is maintained in collaboration with the Cesium 
 
 Use [Tiles3DArchiveWriter](./api-reference/tiles-3d-archive-writer.md) to package already-authored
 3D Tiles resources as a portable indexed `.3tz` archive.
+
+### Indexed archive reads
+
+`parse3DTilesArchive(readableFile)` returns a `Tiles3DArchive` with the archive index
+loaded once. Use it for repeated entry reads from a `BlobFile`, `HttpFile` or other
+`ReadableFile`; constructing `Tiles3DArchive` without an index falls back to ZIP
+directory lookup for each entry. The caller owns the readable file and must close
+it after use. Archives without `@3dtilesIndex1@` build an index from their ZIP headers.
