@@ -69,6 +69,7 @@ export const FORMAT_METADATA: ReadonlyArray<FormatMetadata> = [
   {slug: 'perfetto-trace', label: 'Perfetto Trace', logo: 'perfetto-logo.png', logoText: 'Perfetto', tags: []},
   {slug: 'ply', label: 'PLY', mark: 'PLY', tags: ['pointclouds', 'meshes']},
   {slug: 'pmtiles', label: 'PMTiles', mark: 'PMTiles', tags: ['geospatial']},
+  {slug: 'potree', label: 'Potree', mark: 'Potree', tags: ['geospatial', 'pointclouds']},
   {slug: 'pvr', label: 'PVR', mark: 'PVR', tags: ['textures']},
   {slug: 'shapefile', label: 'Shapefile', mark: 'SHP', tags: ['geospatial']},
   {slug: 'stac', label: 'STAC', logo: 'stac-logo.png', logoScale: 1.15, tags: ['geospatial', 'services']},

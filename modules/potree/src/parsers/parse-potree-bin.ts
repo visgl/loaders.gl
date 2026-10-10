@@ -6,6 +6,7 @@ import type {LoaderOptions} from '@loaders.gl/loader-utils';
 import type {Mesh, MeshAttributes, MeshArrowTable} from '@loaders.gl/schema';
 import {convertColorArrayToFloat16, convertColorArrayToFloat32} from '@loaders.gl/schema';
 import {convertMeshToTable, convertTableToMesh} from '@loaders.gl/schema-utils';
+import {parseVersion} from '../utils/parse-version';
 import type {PotreeAttribute} from '../types/potree-metadata';
 
 /** Loader options for Potree binary point tiles. */
@@ -13,6 +14,8 @@ export type PotreeBinLoaderOptions = LoaderOptions & {
   potree?: {
     /** Selects mesh output or Apache Arrow output. */
     shape?: 'mesh' | 'arrow-table';
+    /** Dataset version; <=1.3 uses absolute float32, >=1.4 uses node-relative uint32. */
+    version?: string;
     pointAttributes?: PotreeAttribute[];
     scale?: number;
     positionOrigin?: [number, number, number];
@@ -24,6 +27,8 @@ export type PotreeBinLoaderOptions = LoaderOptions & {
 
 type ResolvedPotreeBinOptions = {
   pointAttributes: PotreeAttribute[];
+  /** Legacy absolute float32 coordinate encoding. */
+  absoluteFloatPositions: boolean;
   scale: number;
   positionOrigin: [number, number, number];
   nodeBoundingBox?: [number[], number[]];
@@ -88,15 +93,13 @@ export function parsePotreeBin(
       switch (pointAttribute) {
         case 'POSITION_CARTESIAN': {
           const positionIndex = pointIndex * 3;
-          positions[positionIndex] =
-            dataView.getInt32(attributeByteOffset, true) * resolvedOptions.scale +
-            resolvedOptions.positionOrigin[0];
-          positions[positionIndex + 1] =
-            dataView.getInt32(attributeByteOffset + 4, true) * resolvedOptions.scale +
-            resolvedOptions.positionOrigin[1];
-          positions[positionIndex + 2] =
-            dataView.getInt32(attributeByteOffset + 8, true) * resolvedOptions.scale +
-            resolvedOptions.positionOrigin[2];
+          for (let axis = 0; axis < 3; axis++) {
+            const offset = attributeByteOffset + axis * 4;
+            positions[positionIndex + axis] = resolvedOptions.absoluteFloatPositions
+              ? dataView.getFloat32(offset, true)
+              : dataView.getUint32(offset, true) * resolvedOptions.scale +
+                resolvedOptions.positionOrigin[axis];
+          }
           attributeByteOffset += 12;
           break;
         }
@@ -276,8 +279,12 @@ function getResolvedPotreeBinOptions(options?: PotreeBinLoaderOptions): Resolved
     throw new Error('Potree binary parsing requires pointAttributes metadata');
   }
 
+  const {major, minor} = parseVersion(options?.potree?.version ?? '1.7');
+  if (major !== 1 || minor > 8)
+    throw new Error('Potree binary loader supports dataset versions 1.0–1.8');
   return {
     pointAttributes,
+    absoluteFloatPositions: minor <= 3,
     scale: options?.potree?.scale ?? 1,
     positionOrigin: options?.potree?.positionOrigin ?? [0, 0, 0],
     nodeBoundingBox: options?.potree?.nodeBoundingBox,
