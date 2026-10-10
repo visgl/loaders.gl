@@ -99,6 +99,7 @@ export type {RequiredOptions} from './lib/option-utils/merge-options';
 export {mergeOptions, getRequiredOptions} from './lib/option-utils/merge-options';
 
 // Modules (external libraries)
+export {initializeWasmModule} from './lib/module-utils/initialize-wasm-module';
 export {registerJSModules} from './lib/module-utils/js-module-utils';
 export {checkJSModule, getJSModule, getJSModuleOrNull} from './lib/module-utils/js-module-utils';
 

@@ -24,11 +24,7 @@ export class MD5Hash extends Hash {
    * @returns base64 encoded hash
    */
   async hash(input: ArrayBuffer, encoding: 'hex' | 'base64'): Promise<string> {
-    const md5Promise = new Promise<string>((resolve, reject) =>
-      // @ts-expect-error
-      md5WASM(input).then(resolve).catch(reject)
-    );
-    const hex = await md5Promise;
+    const hex = await md5WASM(input);
     return encodeHex(hex, encoding);
   }
 }
