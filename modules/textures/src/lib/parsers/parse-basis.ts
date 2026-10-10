@@ -102,8 +102,9 @@ export const BASIS_FORMAT_TO_OUTPUT_OPTIONS: Record<BasisFormat, BasisOutputOpti
     format: GL_COMPRESSED_RGBA_BPTC_UNORM_EXT,
     textureFormat: 'bc7-rgba-unorm'
   },
+  // Basis v2.50 unifies BC7 output; keep the legacy option as an alias.
   'bc7-m5': {
-    basisFormat: 7,
+    basisFormat: 6,
     compressed: true,
     format: GL_COMPRESSED_RGBA_BPTC_UNORM_EXT,
     textureFormat: 'bc7-rgba-unorm'

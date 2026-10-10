@@ -54,7 +54,9 @@
     "pre-commit": "yarn lint",
     "pre-push": "yarn lint",
     "metrics": "./scripts/metrics.sh && ocular-metrics",
-    "test-graphs": "vitest run --config modules/graphs/vitest.config.ts"
+    "test-graphs": "vitest run --config modules/graphs/vitest.config.ts",
+    "test-headless": "ocular-test browser-headless && yarn test-wasm",
+    "test-wasm": "vitest run --config vitest.wasm.config.ts"
   },
   "devDependencies": {
     "@probe.gl/bench": "^4.1.1",

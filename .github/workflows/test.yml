@@ -79,6 +79,10 @@ jobs:
           yarn playwright install --with-deps chromium
           yarn test-graphs
 
+      - name: Run WASM initialization and Basis runtime tests
+        if: matrix.full
+        run: yarn test-wasm
+
       - name: Run node tests
         run: |
           yarn run test-node

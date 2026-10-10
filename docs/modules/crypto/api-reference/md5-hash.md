@@ -13,3 +13,6 @@ Implements the [`Hash](./hash) API.
 ## Methods
 
 ### `constructor(options?: object)`
+
+MD5 hashing returns a native promise. Invalid input, WebAssembly instantiation failures,
+and hashing errors reject this promise with the original error.

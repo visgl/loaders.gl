@@ -29,10 +29,16 @@ export async function encodeKTX2BasisTexture(
   const basisEncoder = new BasisEncoder();
 
   try {
-    const basisFileData = new Uint8Array(image.width * image.height * 4);
+    // Include container overhead even for the smallest source images.
+    const basisFileData = new Uint8Array(image.width * image.height * 4 + 65536);
     basisEncoder.setCreateKTX2File(true);
     basisEncoder.setKTX2UASTCSupercompression(true);
-    basisEncoder.setKTX2SRGBTransferFunc(true);
+    if (basisEncoder.setKTX2AndBasisSRGBTransferFunc) {
+      basisEncoder.setKTX2AndBasisSRGBTransferFunc(true);
+    } else {
+      // Preserve compatibility with injected pre-v2.50 encoder modules.
+      basisEncoder.setKTX2SRGBTransferFunc(true);
+    }
 
     basisEncoder.setSliceSourceImage(0, image.data, image.width, image.height, false);
     basisEncoder.setPerceptual(useSRGB);
@@ -43,7 +49,10 @@ export async function encodeKTX2BasisTexture(
 
     const numOutputBytes = basisEncoder.encode(basisFileData);
 
-    const actualKTX2FileData = basisFileData.subarray(0, numOutputBytes).buffer;
+    if (!numOutputBytes || numOutputBytes > basisFileData.length) {
+      throw new Error('Basis encoder failed to encode the source image');
+    }
+    const actualKTX2FileData = basisFileData.slice(0, numOutputBytes).buffer;
     return actualKTX2FileData;
   } catch (error) {
     // eslint-disable-next-line no-console
