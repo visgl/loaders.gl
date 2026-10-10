@@ -32,7 +32,7 @@ export type MVTOptions = (MVTLocalCoordinatesOptions | MVTWgs84CoordinatesOption
    * `feature.properties[layerProperty]`. (A `feature.properties` object is created if the feature
    * has no existing properties). If set to `null`, a layer name property will not be added.
    */
-  layerProperty?: string | number;
+  layerProperty?: string | number | null;
 
   /**
    * Optional list of layer names. If not `null`, only features belonging to the named layers will

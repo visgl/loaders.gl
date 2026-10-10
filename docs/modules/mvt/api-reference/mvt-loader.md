@@ -142,6 +142,12 @@ const geoJSONfeatures = await load(url, MVTLoader, {mvt: {shape: 'geojson-table'
 
 If you want to know more about how geometries are encoded into MVT tiles, please read [this documentation section](https://docs.mapbox.com/vector-tiles/specification/#encoding-geometry).
 
+For GeoJSON output, `mvt.sourceLayer: true` adds the original vector-tile layer name
+to `feature.sourceLayer`, a GeoJSON foreign member outside `feature.properties`.
+It defaults to `false`. Combine it with `mvt.layerProperty: null` to preserve all
+authored properties, including properties named `layerName` or `sourceLayer`.
+This option does not add provenance to Arrow, columnar or binary output.
+
 ## Attribution
 
 The `MVTLoader` is a fork of [`@mapbox/vector-tile`](https://github.com/mapbox/vector-tile-js) module under the BSD-3-Clause.
