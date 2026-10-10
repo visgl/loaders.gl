@@ -52,6 +52,7 @@ export type {
 } from './types';
 export type {Tiles3DLoaderOptions} from './tiles-3d-loader';
 export {Tiles3DArchive} from './3d-tiles-archive/3d-tiles-archive-archive';
+export {parse3DTilesArchive} from './3d-tiles-archive/3d-tiles-archive-parser';
 
 export {
   getStructuralMetadataProperty,

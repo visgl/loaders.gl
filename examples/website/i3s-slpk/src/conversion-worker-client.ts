@@ -1,7 +1,4 @@
-import type {
-  BrowserTilesetConversionInspection,
-  TileConversionReport
-} from '@loaders.gl/tile-converter/v5/core';
+import type {TileConversionReport} from '@loaders.gl/tile-converter/v5/core';
 import type {
   MeshSourceFeatureOptions,
   I3SMeshSourceFeatureOptions
@@ -9,11 +6,16 @@ import type {
 import type {I3SConversionInspection} from './i3s-conversion-input';
 
 /** Cloneable inspection accepted by the example's conversion worker. */
-export type ConversionInspection = BrowserTilesetConversionInspection | I3SConversionInspection;
+export type ConversionInspection = Tiles3DConversionInspection | I3SConversionInspection;
 /** Explicit feature mapping for the selected source format. */
 export type ConversionFeatureOptions = MeshSourceFeatureOptions | I3SMeshSourceFeatureOptions;
 
-import {CONVERSION_LIMITS, type ConversionFormat, type ConversionResult} from './convert-tileset';
+import {
+  CONVERSION_LIMITS,
+  type ConversionFormat,
+  type ConversionResult,
+  type Tiles3DConversionInspection
+} from './convert-tileset';
 
 /** One selected conversion; callbacks, signals and runtime objects stay outside the worker protocol. */
 export interface ConversionWorkerRequest {
