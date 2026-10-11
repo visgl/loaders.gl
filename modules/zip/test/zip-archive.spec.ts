@@ -769,3 +769,145 @@ test.each([
   const archive = await open(createZipFixture([{descriptor: 'signed', localExtra: extra}]));
   expect(new TextDecoder().decode(await archive.read('abc.txt'))).toBe('abc');
 });
+
+test('ZIP final-entry discovery handles empty, ZIP64 and descriptor archives', async () => {
+  expect(await (await open(createZipFixture([]))).getLastEntry()).toBeUndefined();
+  const archive = await open(
+    createZipFixture([{zip64: true, descriptor: 'unsigned'}], {zip64: true})
+  );
+  const last = (await archive.getLastEntry())!;
+  expect(last.path).toBe('abc.txt');
+  expect(new TextDecoder().decode(await archive.read(last))).toBe('abc');
+});
+
+test('ZIP final-entry discovery bounds directory reads and resolves ambiguous comment headers', async () => {
+  const fixture = createZipFixture(
+    Array.from({length: 5}, (_, index) => ({
+      name: new TextEncoder().encode(`${index}.txt`),
+      comment: new Uint8Array(60000)
+    }))
+  );
+  const file = new BlobFile(fixture.buffer);
+  const read = vi.spyOn(file, 'read');
+  const archive = await openZipArchive(file);
+  archives.push(archive);
+  expect((await archive.getLastEntry())!.path).toBe('4.txt');
+  expect(read.mock.calls.every(([, length]) => (length ?? 0) <= 46 + 3 * 65535)).toBe(true);
+  const single = createZipFixture();
+  const fakeHeader = single.slice(40, -22);
+  const ambiguous = await open(createZipFixture([{comment: fakeHeader}]));
+  expect((await ambiguous.getLastEntry())!.comment.length).toBe(fakeHeader.length);
+});
+
+/** Tiny writable transport for testing portable append logic without a Node dependency. */
+function createWritableZipFile(initial: ArrayBuffer) {
+  let bytes = new Uint8Array(initial);
+  return {
+    handle: undefined,
+    url: '',
+    /** Current transport length. */
+    get size() {
+      return bytes.length;
+    },
+    /** Exact current transport length. */
+    get bigsize() {
+      return BigInt(bytes.length);
+    },
+    /** Reads an independent byte slice. */
+    async read(start: number | bigint = 0, length = bytes.length) {
+      return bytes.slice(Number(start), Number(start) + length).buffer;
+    },
+    /** Records release calls for ownership assertions. */
+    close: vi.fn(async () => {}),
+    /** Removes the existing directory. */
+    truncate: vi.fn(async (size: number) => {
+      bytes = bytes.slice(0, size);
+    }),
+    /** Appends one serialized block. */
+    async append(chunk: Uint8Array) {
+      bytes = concatenateZipBytes(bytes, chunk);
+    },
+    /** Returns immutable output for independent reopen. */
+    snapshot() {
+      return bytes.slice().buffer;
+    }
+  };
+}
+
+test('ZIP portable append preserves existing encoded entries and archive comments', async () => {
+  const {encodeZip, ZipArchive} = await import('@loaders.gl/zip');
+  const file = createWritableZipFile(
+    await encodeZip(
+      {a: new TextEncoder().encode('abc')},
+      {compression: 'deflate', zip64: 'always', comment: 'café'}
+    )
+  );
+  await ZipArchive.appendEntry(file, 'b', new Uint8Array([0, 4, 5, 0]).subarray(1, 3));
+  expect(file.close).toHaveBeenCalledOnce();
+  const archive = await open(file.snapshot());
+  expect(archive.comment).toBe('café');
+  expect(new TextDecoder().decode(await archive.read('a'))).toBe('abc');
+  expect(new Uint8Array(await archive.read('b'))).toEqual(new Uint8Array([4, 5]));
+});
+
+test('ZIP append validates before mutation and releases failed writes', async () => {
+  const {encodeZip, ZipArchive} = await import('@loaders.gl/zip');
+  const bytes = await encodeZip({a: new Uint8Array([1])});
+  for (const path of ['a', '../escape', 'folder/', '\ud800']) {
+    const file = createWritableZipFile(bytes);
+    await expect(ZipArchive.appendEntry(file, path, new Uint8Array([2]))).rejects.toThrow();
+    expect(file.truncate).not.toHaveBeenCalled();
+    expect(file.close).toHaveBeenCalledOnce();
+  }
+  const file = createWritableZipFile(bytes);
+  vi.spyOn(file, 'append').mockRejectedValue(new Error('write failed'));
+  await expect(ZipArchive.appendEntry(file, 'b', new ArrayBuffer(0))).rejects.toThrow(
+    'write failed'
+  );
+  expect(file.close).toHaveBeenCalledOnce();
+});
+
+test('ZIP append applies independent metadata and output limits before mutation', async () => {
+  const {encodeZip, ZipArchive} = await import('@loaders.gl/zip');
+  const bytes = await encodeZip({a: new Uint8Array([1])});
+  for (const options of [
+    {maxEntries: 1},
+    {maxDirectoryBytes: 47},
+    {maxArchiveBytes: BigInt(bytes.byteLength + 1)}
+  ]) {
+    const file = createWritableZipFile(bytes);
+    await expect(ZipArchive.appendEntry(file, 'b', new ArrayBuffer(0), options)).rejects.toThrow(
+      'limit'
+    );
+    expect(file.truncate).not.toHaveBeenCalled();
+    expect(file.close).toHaveBeenCalledOnce();
+  }
+});
+
+/** Append transports truncate at a numeric offset, unlike bigint-capable reader transports. */
+test('ZIP append rejects unsafe transport offsets before mutation', async () => {
+  const {ZipArchive} = await import('@loaders.gl/zip');
+  const {file} = sparseZip64File();
+  const writable = Object.assign(file, {
+    truncate: vi.fn().mockResolvedValue(undefined),
+    append: vi.fn().mockResolvedValue(undefined)
+  });
+  await expect(
+    ZipArchive.appendEntry(writable, 'b', new ArrayBuffer(0), {maxArchiveBytes: 2n ** 54n})
+  ).rejects.toThrow('safe integer');
+  expect(writable.truncate).not.toHaveBeenCalled();
+  expect(writable.close).toHaveBeenCalledOnce();
+});
+
+test('ZIP append cancellation during mutation stops subsequent writes and closes the file', async () => {
+  const {encodeZip, ZipArchive} = await import('@loaders.gl/zip');
+  const file = createWritableZipFile(await encodeZip({a: new ArrayBuffer(0)}));
+  const controller = new AbortController();
+  file.truncate.mockImplementation(async () => controller.abort(new Error('cancelled')));
+  const append = vi.spyOn(file, 'append');
+  await expect(
+    ZipArchive.appendEntry(file, 'b', new ArrayBuffer(0), {signal: controller.signal})
+  ).rejects.toThrow('cancelled');
+  expect(append).not.toHaveBeenCalled();
+  expect(file.close).toHaveBeenCalledOnce();
+});

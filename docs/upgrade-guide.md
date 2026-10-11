@@ -71,6 +71,10 @@ v4.5 is additive. Existing loaders and defaults continue to work unchanged, exce
 - `ZipFileSystem.stat()` now returns validated `ZipEntry` metadata with numeric `size` and
   exact `uncompressedSize`. Replace raw-header fields such as `fileName` with `path`; header
   lengths and central-directory offsets are no longer exposed by this method.
+- Raw ZIP header parsers/serializers, signature/search helpers, central-header iteration and ZIP
+  file utilities are no longer root exports. Use `openZipArchive`, `ZipArchive.entries()`,
+  `getEntryAt()` and the native encoders. Use `ArrayBufferFile`/`BlobFile` from
+  `@loaders.gl/loader-utils` instead of the ZIP-exported `DataViewReadableFile`.
 - Removed `ZIP_COMPRESSION_HANDLERS` and `CompressionHandler`. Use shared archive read methods
   instead of dispatching container compression in consumers. Complete generic filesystem
   responses now stream; consume the response body to observe integrity errors.
@@ -491,7 +495,7 @@ This unifies top-level loading behavior:
 
 - `loaders.gl/core` - Improved loader type inference: `load()`, `parse()`, etc now infer correct option and return types even when an array of loaders is passed. This can lead to previously undetected type errors now being reported and breaking your build, requiring you to fix the errors.
 - `loaders.gl/core` - internal tile index in `Source` classes has changed from `tileIndex.zoom` to `tileIndex.z`. Should not impact most applications.
-- `@loaders.gl/loader-utils` - Deprecated `FileProvider` classes have been removed from the main entrypoint; use `HttpFile`, `BlobFile`, `NodeFile`, or `DataViewReadableFile` to provide `ReadableFile` access instead.
+- `@loaders.gl/loader-utils` - Deprecated `FileProvider` classes have been removed from the main entrypoint; use `HttpFile`, `BlobFile`, `NodeFile`, or `ArrayBufferFile` to provide `ReadableFile` access instead.
 - `@loaders.gl/zip`/`@loaders.gl/i3s` - Archive parsing helpers expect `ReadableFile` inputs rather than custom provider classes.
 
 **Deprecations**

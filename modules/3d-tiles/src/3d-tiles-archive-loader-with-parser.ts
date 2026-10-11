@@ -3,7 +3,7 @@
 // Copyright vis.gl contributors
 
 import type {LoaderOptions, LoaderWithParser, ReadableFile} from '@loaders.gl/loader-utils';
-import {DataViewReadableFile} from '@loaders.gl/zip';
+import {BlobFile} from '@loaders.gl/loader-utils';
 import {parse3DTilesArchive as parse3DTilesArchiveFromProvider} from './3d-tiles-archive/3d-tiles-archive-parser';
 import {Tiles3DArchiveFileLoader as Tiles3DArchiveFileLoaderMetadata} from './3d-tiles-archive-loader';
 
@@ -39,7 +39,7 @@ async function parse3DTilesArchive(
   data: ArrayBuffer,
   options: Tiles3DArchiveFileLoaderOptions = {}
 ): Promise<ArrayBuffer> {
-  return parse3DTilesArchiveFile(new DataViewReadableFile(new DataView(data)), options);
+  return parse3DTilesArchiveFile(new BlobFile(data), options);
 }
 
 /**

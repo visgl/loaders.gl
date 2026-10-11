@@ -3,8 +3,8 @@
 // Copyright (c) vis.gl contributors
 
 import {CRC32Hash} from '@loaders.gl/crypto';
-import {parseZip64ExtraField} from '../parse-zip/zip64-extra-field';
-import type {Zip64ExtraFieldDescription} from '../parse-zip/zip64-extra-field';
+import {parseZip64ExtraField} from './zip64-extra-field';
+import type {Zip64ExtraFieldDescription} from './zip64-extra-field';
 
 /** DOS CP437 characters for bytes 128–255; ASCII/control bytes retain their code points. */
 const CP437_HIGH =
@@ -146,4 +146,12 @@ export function validateZipPath(path: string): void {
 /** Uses the shared CRC implementation for small filename/metadata checks. */
 export function calculateZipChecksum(bytes: Uint8Array): number {
   return Number.parseInt(new CRC32Hash().hashSync(bytes.slice().buffer, 'hex'), 16);
+}
+
+/** Rejects unpaired UTF-16 surrogates instead of silently replacing names/comments during encoding. */
+export function encodeUtf8Text(value: string): Uint8Array<ArrayBuffer> {
+  const bytes = new TextEncoder().encode(value);
+  if (new TextDecoder('utf-8', {ignoreBOM: true}).decode(bytes) !== value)
+    throw new TypeError('ZIP names and entry comments must be well-formed Unicode');
+  return bytes;
 }

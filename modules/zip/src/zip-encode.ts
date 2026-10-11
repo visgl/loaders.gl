@@ -4,7 +4,7 @@
 
 import {DeflateCompressor} from '@loaders.gl/compression/deflate-compressor';
 import {CRC32Hash} from '@loaders.gl/crypto';
-import {decodeZipText, validateZipPath} from './lib/zip-entry-metadata';
+import {decodeZipText, encodeUtf8Text, validateZipPath} from './lib/zip-entry-metadata';
 import {
   encodeZipLocalHeader,
   encodeZipCentralHeader,
@@ -349,14 +349,6 @@ function awaitWithSignal<T>(promise: Promise<T>, signal?: AbortSignal): Promise<
     );
     if (signal.aborted) abort();
   });
-}
-
-/** Rejects unpaired UTF-16 surrogates instead of silently replacing names/comments during encoding. */
-function encodeUtf8Text(value: string): Uint8Array<ArrayBuffer> {
-  const bytes = new TextEncoder().encode(value);
-  if (new TextDecoder('utf-8', {ignoreBOM: true}).decode(bytes) !== value)
-    throw new TypeError('ZIP names and entry comments must be well-formed Unicode');
-  return bytes;
 }
 
 /** Encodes archive comments in CP437, which has no archive-level UTF-8 flag. */

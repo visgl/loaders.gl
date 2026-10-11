@@ -5,7 +5,19 @@
 import {BlobFile, type ReadableFile} from '@loaders.gl/loader-utils';
 import {DeflateDecompressor} from '@loaders.gl/compression/deflate-decompressor';
 import {CRC32Hash} from '@loaders.gl/crypto';
-import {decodeZipHeader, decodeZipText, type ZipHeaderMetadata} from './lib/zip-entry-metadata';
+import {
+  decodeZipHeader,
+  decodeZipText,
+  encodeUtf8Text,
+  validateZipPath,
+  calculateZipChecksum,
+  type ZipHeaderMetadata
+} from './lib/zip-entry-metadata';
+import {
+  encodeZipLocalHeader,
+  encodeZipCentralHeader,
+  encodeZipEndRecords
+} from './lib/zip-serialization';
 import type {
   ZipArchiveInput,
   ZipArchiveOptions,
@@ -127,9 +139,125 @@ export class ZipArchive {
     }
   }
 
+  /**
+   * Appends one STORE entry through validated container metadata and the native serializer.
+   * Internal composition operation: callers own the writable file and discard it on write failure.
+   * Existing payload offsets, central metadata and archive comments are retained.
+   */
+  static async appendEntry(
+    file: ReadableFile & {
+      /** Truncates the existing directory before replacement. */
+      truncate(size: number): Promise<void>;
+      /** Appends serialized bytes to the transport. */
+      append(bytes: Uint8Array): Promise<void>;
+    },
+    path: string,
+    data: ArrayBuffer | ArrayBufferView,
+    options: ZipArchiveOptions = {}
+  ): Promise<void> {
+    const archive = await ZipArchive.open(file, options);
+    try {
+      validateZipPath(path);
+      if (archive.directory.offset > BigInt(Number.MAX_SAFE_INTEGER))
+        throw new RangeError('ZIP append transport offset exceeds safe integer range');
+      if (await archive.getEntry(path)) throw new Error('ZIP entry already exists');
+      // Validate the entire directory and local records before any mutation.
+      for await (const _entry of archive.entries()) {
+      }
+      const bytes =
+        data instanceof ArrayBuffer
+          ? new Uint8Array(data)
+          : new Uint8Array(data.buffer, data.byteOffset, data.byteLength);
+      if (path.endsWith('/') && bytes.length)
+        throw new Error('ZIP directory payload must be empty');
+      const entry = {
+        nameBytes: encodeUtf8Text(path),
+        date: new Date('1980-01-01T00:00:00Z'),
+        flags: 0x800,
+        method: 0 as const,
+        crc32: 0,
+        size: BigInt(bytes.length),
+        compressedSize: BigInt(bytes.length),
+        localHeaderOffset: archive.directory.offset,
+        zip64: archive.directory.offset >= 0xffffffffn || bytes.length >= 0xffffffff
+      };
+      let local = encodeZipLocalHeader(entry);
+      let central = encodeZipCentralHeader(entry);
+      const directoryBytes = archive.directory.size + BigInt(central.length);
+      const directoryOffset = archive.directory.offset + BigInt(local.length + bytes.length);
+      const count = archive.directory.count + 1n;
+      const comment = new Uint8Array(
+        await archive.readExact(
+          archive.size - BigInt(archive.comment.length),
+          archive.comment.length
+        )
+      );
+      const footer = encodeZipEndRecords(
+        count,
+        directoryBytes,
+        directoryOffset,
+        directoryOffset + directoryBytes > 0x7fffffffn || count >= 0xffffn,
+        comment
+      );
+      if (
+        count > BigInt(archive.limits.maxEntries) ||
+        directoryBytes > BigInt(archive.limits.maxDirectoryBytes) ||
+        directoryOffset + directoryBytes + BigInt(footer.length) > archive.limits.maxArchiveBytes
+      )
+        throw new RangeError('ZIP append metadata/archive limit exceeded');
+      entry.crc32 = calculateZipChecksum(bytes);
+      local = encodeZipLocalHeader(entry);
+      central = encodeZipCentralHeader(entry);
+      const directory = new Uint8Array(
+        await archive.readExact(archive.directory.offset, Number(archive.directory.size))
+      );
+      archive.signal.throwIfAborted();
+      await file.truncate(Number(archive.directory.offset));
+      for (const chunk of [local, bytes, directory, central, footer]) {
+        archive.signal.throwIfAborted();
+        await file.append(chunk);
+      }
+      archive.signal.throwIfAborted();
+    } finally {
+      await archive.close();
+    }
+  }
+
   /** Enumerates validated entries in central-directory order; metadata is indexed once. */
   async *entries(): AsyncIterable<ZipEntry> {
     for (const path of (await this.getDirectory()).keys()) yield (await this.getEntry(path))!;
+  }
+
+  /**
+   * Reads the final central entry using at most one maximum-sized header from the directory tail.
+   * Ambiguous header signatures in comments fall back to the cached directory. This supports
+   * final-index discovery without scanning a large directory in the normal indexed profile.
+   */
+  async getLastEntry(): Promise<ZipEntry | undefined> {
+    this.signal.throwIfAborted();
+    if (!this.directory.count) return undefined;
+    const length = Number(minimumBigInt(this.directory.size, 46n + 3n * 65535n));
+    const bytes = new Uint8Array(
+      await this.readExact(this.directory.offset + this.directory.size - BigInt(length), length)
+    );
+    const view = new DataView(bytes.buffer);
+    const positions: number[] = [];
+    for (let position = 0; position + 46 <= length; position++) {
+      if (view.getUint32(position, true) !== 0x02014b50) continue;
+      const end =
+        position +
+        46 +
+        view.getUint16(position + 28, true) +
+        view.getUint16(position + 30, true) +
+        view.getUint16(position + 32, true);
+      if (end === length) positions.push(position);
+    }
+    if (positions.length !== 1) {
+      const headers = [...(await this.getDirectory()).values()];
+      return await this.getEntry(headers[headers.length - 1].path);
+    }
+    const metadata = decodeZipHeader(bytes.subarray(positions[0]), true);
+    return await this.getValidatedEntry(metadata.localHeaderOffset, metadata);
   }
 
   /** Looks up a canonical path; returns undefined when the entry is absent. */
@@ -518,7 +646,9 @@ export class ZipArchive {
     )
       throw new Error('Invalid ZIP archive: descriptor local/central metadata mismatch');
     const payloadEnd = dataOffset + metadata.compressedSize;
-    const entryEnd = central ? this.nextOffsets.get(offset)! : this.directory.offset;
+    const entryEnd = central
+      ? (this.nextOffsets.get(offset) ?? this.directory.offset)
+      : this.directory.offset;
     if (payloadEnd > entryEnd) throw new Error('Invalid ZIP archive: payload overlaps directory');
     if (descriptor)
       await this.validateDescriptor(

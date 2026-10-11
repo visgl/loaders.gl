@@ -100,15 +100,15 @@ Explicit slash-suffixed keys are written as directory entries whether or not `zi
 
 `encodeIndexedZip` is exported from `@loaders.gl/zip/indexed-zip-writer` and the package root.
 It is the portable shared encoder used by the 3TZ and SLPK format writers. Supply immutable
-`ArrayBuffer`/`Blob` resources and `{indexPath, maxArchiveBytes, lowercasePaths?, signal?}`. Paths must
+`ArrayBuffer`/`Blob` resources and `{indexPath, maxArchiveBytes, lowercasePaths?, zip64?, signal?}`. Paths must
 be canonical relative ASCII; the generated index name must be nonnumeric and absent from
 resources. Lowercasing hashes also rejects case-folded duplicate resource paths.
 
-The deterministic STORE ZIP32 has a final 24-byte MD5/local-header-offset index, a fixed UTC
+The deterministic STORE ZIP32/ZIP64 has a final 24-byte MD5/local-header-offset index, a fixed UTC
 timestamp, populated local headers, and no descriptors/comments/directories. The complete
 size is measured before Blob reads. Format writers supply format-specific root requirements,
-index names, and size ceilings. Prefer those writers for 3TZ/SLPK. This function does not
-validate payloads or reference closure and does not support ZIP64 or a total peak-memory budget.
+index names, and output budgets. Prefer those writers for 3TZ/SLPK. This function does not
+validate payloads or reference closure or impose a total peak-memory budget.
 
 `encodeIndexedZipInBatches` is available from the implementation subpath for application-owned
 storage. It yields the same deterministic bytes without a complete archive or entry buffer.
@@ -117,5 +117,24 @@ CRC-32 before the populated local header, then again to emit payload blocks on d
 each destination write for backpressure; finalize only after iteration succeeds and discard
 partial output on failure, cancellation, or early return. Inputs must remain immutable.
 
+`zip64` accepts `'auto'` (default), `'always'` or `'never'`. Automatic selection accounts for sizes,
+offsets, entry counts and an optional format-specific `zip64Threshold`. The shared metadata limits
+are 100,000 entries and 32 MiB of central records, configurable through `maxEntries` and
+`maxDirectoryBytes`. The buffered API rejects output beyond 4 GiB; use streaming for larger archives.
+
 Both APIs check `signal` between block reads and header encodes. Caller-owned inputs and
 index/directory metadata remain in memory; the buffered API also allocates the complete archive.
+
+## Legacy Node composition
+
+`createZip` and `addOneFile` remain available for the converter CLI. They share native ZIP serializers;
+`addOneFile` validates existing records before mutation, preserves payload offsets and comments,
+and rejects duplicate paths. Files are closed on success and failure. A write failure can leave
+partial output, so callers must discard it. New portable code should use the encoders above.
+
+`createZip(inputPath, outputPath, createAdditionalData?, options?)` accepts `maxArchiveBytes`
+(bigint, default 1 TiB), `maxEntries` (100,000), `maxDirectoryBytes` (32 MiB) and `signal`. It
+retains the legacy per-file buffering behavior. `addOneFile(path, bytes, name, options?)` accepts
+the shared reader limits and cancellation signal before modifying an archive.
+
+Append transports require a directory offset within the safe integer range for truncation.

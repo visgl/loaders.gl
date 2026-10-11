@@ -3,12 +3,15 @@
 // Copyright (c) vis.gl contributors
 import '@loaders.gl/polyfills';
 import {expect, test} from 'vitest';
-import {composeHashFile} from '../../src/hash-file-utility';
+import {composeHashFile, openZipArchive} from '@loaders.gl/zip';
 import {NodeFile} from '@loaders.gl/loader-utils';
-import {makeZipCDHeaderIterator} from '../../src/parse-zip/cd-file-header';
-const SLPKUrl = 'modules/i3s/test/data/DA12_subset.slpk';
-test('zip#composeHashFile', async () => {
-  expect((await composeHashFile(makeZipCDHeaderIterator(new NodeFile(SLPKUrl)))).byteLength).toBe(
-    6888
-  );
+
+/** Retains qualification against the existing independent SLPK path/index profile. */
+test('ZIP composes the legacy SLPK index from shared reader entries', async () => {
+  const archive = await openZipArchive(new NodeFile('modules/i3s/test/data/DA12_subset.slpk'));
+  try {
+    expect((await composeHashFile(archive.entries())).byteLength).toBe(6888);
+  } finally {
+    await archive.close();
+  }
 });

@@ -12,7 +12,7 @@ import {
 /** Already encoded resources. Inputs must remain unchanged while packaging. */
 export type IndexedZipFiles = Readonly<Record<string, ArrayBuffer | Blob>>;
 
-/** Configuration for a deterministic STORE ZIP32 with a final MD5 path/offset index. */
+/** Configuration for a deterministic STORE ZIP32/ZIP64 with a final MD5 path/offset index. */
 export interface IndexedZipOptions {
   /** Canonical ASCII, nonnumeric name for the generated final index entry. */
   readonly indexPath: string;
@@ -20,6 +20,14 @@ export interface IndexedZipOptions {
   readonly maxArchiveBytes: number;
   /** Hash lowercase paths for SLPK; retain case-sensitive paths for 3TZ by default. */
   readonly lowercasePaths?: boolean;
+  /** ZIP64 field/end-record policy; defaults to automatic selection. */
+  readonly zip64?: 'auto' | 'always' | 'never';
+  /** Force ZIP64 when complete output exceeds this byte size, for format-specific profiles. */
+  readonly zip64Threshold?: number;
+  /** Maximum named entries, including the index; defaults to 100000. */
+  readonly maxEntries?: number;
+  /** Maximum retained central-directory bytes; defaults to 32 MiB. */
+  readonly maxDirectoryBytes?: number;
   /** Cooperative cancellation between block reads and header encodes; not an interrupt for either. */
   readonly signal?: AbortSignal;
 }
@@ -27,11 +35,8 @@ export interface IndexedZipOptions {
 /** Maximum temporary payload read/copy per block; caller inputs and index metadata are retained. */
 const RESOURCE_CHUNK_BYTES = 64 * 1024;
 
-/** Largest supported archive, below the ZIP64 sentinel. */
-const MAX_ARCHIVE_BYTES = 0xfffffffe;
-
 /**
- * Encodes a bounded, deterministic indexed ZIP32 from immutable ArrayBuffers or Blobs.
+ * Encodes a bounded, deterministic indexed ZIP32/ZIP64 from immutable ArrayBuffers or Blobs.
  * Validates/measures all entries before reading Blobs; hashes canonical ASCII resource paths.
  * Reads resource payloads in bounded blocks into the final buffer, with a checksum pass before each entry.
  * Uses populated local headers, no compression/descriptors/comments, and a fixed timestamp.
@@ -45,6 +50,8 @@ export async function encodeIndexedZip(
   options: IndexedZipOptions
 ): Promise<ArrayBuffer> {
   const layout = prepareArchiveLayout(files, options);
+  if (layout.archiveBytes > 0xffffffff)
+    throw new RangeError('Indexed ZIP buffer capacity exceeded; use encodeIndexedZipInBatches');
   const archive = new Uint8Array(layout.archiveBytes);
   let offset = 0;
   for await (const chunk of encodeArchiveChunks(layout)) {
@@ -55,7 +62,7 @@ export async function encodeIndexedZip(
 }
 
 /**
- * Yields deterministic indexed ZIP32 chunks with consumer-controlled backpressure.
+ * Yields deterministic indexed ZIP32/ZIP64 chunks with consumer-controlled backpressure.
  * All paths and the complete archive budget are checked on the first pull, before Blob reads
  * or output. Reads/copies payloads in blocks of at most 64 KiB, retaining inputs and index/central
  * metadata without allocating a complete entry or archive buffer. A checksum pass reads each
@@ -75,7 +82,26 @@ export async function* encodeIndexedZipInBatches(
 
 /** Captures immutable resource descriptors and validates the complete ZIP32 layout before I/O. */
 function prepareArchiveLayout(files: IndexedZipFiles, options: IndexedZipOptions) {
-  const {maxArchiveBytes, indexPath, lowercasePaths = false, signal} = options;
+  const {
+    maxArchiveBytes,
+    indexPath,
+    lowercasePaths = false,
+    signal,
+    zip64: policy = 'auto',
+    zip64Threshold = 0xfffffffe,
+    maxEntries = 100000,
+    maxDirectoryBytes = 32 * 1024 * 1024
+  } = options;
+  if (
+    !['auto', 'always', 'never'].includes(policy) ||
+    !Number.isSafeInteger(zip64Threshold) ||
+    zip64Threshold < 0 ||
+    !Number.isSafeInteger(maxEntries) ||
+    maxEntries < 1 ||
+    !Number.isSafeInteger(maxDirectoryBytes) ||
+    maxDirectoryBytes < 1
+  )
+    throw new RangeError('Invalid indexed ZIP policy or metadata limit');
   signal?.throwIfAborted();
   validatePath(indexPath);
   if (/^\d+$/.test(indexPath)) {
@@ -92,9 +118,7 @@ function prepareArchiveLayout(files: IndexedZipFiles, options: IndexedZipOptions
         .map(path => [path, true])
     )
   );
-  if (paths.length >= 0xfffe) {
-    throw new RangeError('Indexed ZIP requires fewer than 65534 resource files');
-  }
+  if (paths.length + 1 > maxEntries) throw new RangeError('Indexed ZIP entry limit exceeded');
   const canonicalPaths = paths.map(path => (lowercasePaths ? path.toLowerCase() : path));
   if (new Set(canonicalPaths).size !== paths.length) {
     throw new TypeError('Indexed ZIP contains duplicate canonical paths');
@@ -117,25 +141,36 @@ function prepareArchiveLayout(files: IndexedZipFiles, options: IndexedZipOptions
     return {path, data, byteLength};
   });
   // ZIP32: EOCD + local/central headers + both copies of each ASCII path + index payload.
-  const archiveBytes = resources.reduce(
+  const zip32Bytes = resources.reduce(
     (total, resource) => total + 76 + 2 * resource.path.length + resource.byteLength,
     22 + 76 + 2 * indexPath.length + 24 * resources.length
   );
-  if (archiveBytes > Math.min(maxArchiveBytes, MAX_ARCHIVE_BYTES)) {
-    throw new RangeError('Indexed ZIP archive exceeds the configured byte limit or ZIP32 capacity');
-  }
-
-  return {resources, archiveBytes, indexPath, lowercasePaths, signal};
+  const requiresZip64 =
+    zip32Bytes > Math.min(zip64Threshold, 0xfffffffe) || resources.length + 1 >= 0xffff;
+  if (policy === 'never' && requiresZip64) throw new RangeError('Indexed ZIP requires ZIP64');
+  const zip64 = policy === 'always' || requiresZip64;
+  const archiveBytes = zip32Bytes + (zip64 ? 48 * (resources.length + 1) + 76 : 0);
+  const directoryBytes =
+    resources.reduce(
+      (total, resource) => total + 46 + resource.path.length,
+      46 + indexPath.length
+    ) + (zip64 ? 28 * (resources.length + 1) : 0);
+  if (directoryBytes > maxDirectoryBytes)
+    throw new RangeError('Indexed ZIP directory byte limit exceeded');
+  if (!Number.isSafeInteger(archiveBytes) || archiveBytes > maxArchiveBytes)
+    throw new RangeError('Indexed ZIP archive exceeds the configured byte limit');
+  return {resources, archiveBytes, indexPath, lowercasePaths, signal, zip64};
 }
 
 /** Serializes measured entries lazily, retaining only the index and central-directory records. */
 async function* encodeArchiveChunks(
   layout: ReturnType<typeof prepareArchiveLayout>
 ): AsyncIterable<Uint8Array<ArrayBuffer>> {
-  const {resources, archiveBytes, indexPath, lowercasePaths, signal} = layout;
+  const {resources, archiveBytes, indexPath, lowercasePaths, signal, zip64} = layout;
   const entries: DataView[] = [];
   const centralHeaders: Uint8Array<ArrayBuffer>[] = [];
   const hash = new MD5Hash();
+  const digests = new Set<string>();
   let localHeaderOffset = 0;
   for (const resource of resources) {
     signal?.throwIfAborted();
@@ -145,6 +180,8 @@ async function* encodeArchiveChunks(
       new TextEncoder().encode(lowercasePaths ? resource.path.toLowerCase() : resource.path).buffer,
       'hex'
     );
+    if (digests.has(digest)) throw new Error('Indexed ZIP contains duplicate MD5 hashes');
+    digests.add(digest);
     const entry = new DataView(new ArrayBuffer(24));
     for (let index = 0; index < 16; index++) {
       entry.setUint8(index, Number.parseInt(digest.slice(index * 2, index * 2 + 2), 16));
@@ -157,7 +194,8 @@ async function* encodeArchiveChunks(
       resource.path,
       resource.byteLength,
       checksum,
-      localHeaderOffset
+      localHeaderOffset,
+      zip64
     );
     signal?.throwIfAborted();
     assertResourceSize(resource);
@@ -176,7 +214,8 @@ async function* encodeArchiveChunks(
     indexPath,
     indexData.byteLength,
     indexChecksum,
-    localHeaderOffset
+    localHeaderOffset,
+    zip64
   );
   signal?.throwIfAborted();
   centralHeaders.push(indexHeaders.centralHeader);
@@ -191,9 +230,9 @@ async function* encodeArchiveChunks(
   signal?.throwIfAborted();
   yield encodeZipEndRecords(
     BigInt(resources.length + 1),
-    BigInt(archiveBytes - 22 - centralDirectoryOffset),
+    BigInt(archiveBytes - (zip64 ? 98 : 22) - centralDirectoryOffset),
     BigInt(centralDirectoryOffset),
-    false
+    zip64
   );
   signal?.throwIfAborted();
 }
@@ -261,7 +300,8 @@ async function encodeEntryHeaders(
   path: string,
   byteLength: number,
   checksum: number,
-  localHeaderOffset: number
+  localHeaderOffset: number,
+  zip64: boolean
 ): Promise<{
   /** Populated local header and ASCII resource name. */
   readonly localHeader: Uint8Array<ArrayBuffer>;
@@ -277,7 +317,7 @@ async function encodeEntryHeaders(
     size: BigInt(byteLength),
     compressedSize: BigInt(byteLength),
     localHeaderOffset: BigInt(localHeaderOffset),
-    zip64: false
+    zip64
   };
   return {localHeader: encodeZipLocalHeader(entry), centralHeader: encodeZipCentralHeader(entry)};
 }

@@ -1,6 +1,6 @@
 import {fetchFile, isBrowser} from '@loaders.gl/core';
 import {BlobFile, NodeFile, ReadableFile} from '@loaders.gl/loader-utils';
-import {DataViewReadableFile} from '@loaders.gl/zip';
+import {ArrayBufferFile} from '@loaders.gl/loader-utils';
 
 export async function loadArrayBufferFromFile(path: string): Promise<ArrayBuffer> {
   const response = await fetchFile(path);
@@ -18,7 +18,7 @@ export async function createReadableFileFromPath(path: string): Promise<Readable
 export async function createReadableFileFromBuffer(
   arrayBuffer: ArrayBuffer
 ): Promise<ReadableFile> {
-  return new DataViewReadableFile(new DataView(arrayBuffer));
+  return new ArrayBufferFile(arrayBuffer);
 }
 
 export function createBrowserReadableFile(arrayBuffer: ArrayBuffer): ReadableFile {

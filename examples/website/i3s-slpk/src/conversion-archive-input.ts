@@ -37,6 +37,11 @@ export async function openConversionArchive(
     }
   });
   let file: ReadableFile | undefined;
+  let closePromise: Promise<void> | undefined;
+  /** Shares transport release between initialization failure and the owned archive. */
+  async function closeFile(): Promise<void> {
+    if (file) await (closePromise ||= file.close());
+  }
   try {
     if (typeof descriptor.input === 'string') {
       if (!['http:', 'https:'].includes(new URL(descriptor.input).protocol))
@@ -58,7 +63,7 @@ export async function openConversionArchive(
       bigsize: file.bigsize,
       url: file.url,
       stat: () => file!.stat!(),
-      close: () => file!.close(),
+      close: closeFile,
       /** Checks indexed reads before allocation and forwards operation cancellation. */
       read: async (start, length) => {
         signal.throwIfAborted();
@@ -111,10 +116,10 @@ export async function openConversionArchive(
         return new Response(bytes);
       }) satisfies typeof fetch,
       /** Releases the readable file on success, failure or cancellation. */
-      close: () => file!.close()
+      close: () => archive.close()
     };
   } catch (error) {
-    await file?.close();
+    await closeFile();
     throw error;
   }
 }

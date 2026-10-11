@@ -65,12 +65,14 @@ export class ZipFileSystem implements FileSystem {
   /** Cancels pending reads and closes the owned file once; later operations reject. */
   destroy(): Promise<void> {
     this.controller.abort(new Error('ZIP filesystem is closed'));
-    this.destroyPromise ||= this.readerPromise
-      ? this.readerPromise.then(
-          reader => reader.close(),
-          () => {}
-        )
-      : this.file.close();
+    this.destroyPromise ||= this.archive
+      ? this.archive.close()
+      : this.readerPromise
+        ? this.readerPromise.then(
+            reader => reader.close(),
+            () => {}
+          )
+        : this.file.close();
     return this.destroyPromise;
   }
 
@@ -207,6 +209,7 @@ export class ZipFileSystem implements FileSystem {
   /** Shares the directory cache and lifetime with every filesystem lookup. */
   private async getReader(): Promise<ZipArchive> {
     this.signal.throwIfAborted();
+    if (this.archive) return await this.archive.getZipArchive();
     this.readerPromise ||= openZipArchive(this.file, {
       ...this.options,
       signal: this.signal

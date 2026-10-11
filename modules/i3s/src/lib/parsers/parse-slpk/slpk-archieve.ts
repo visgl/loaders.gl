@@ -2,9 +2,8 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import {MD5Hash} from '@loaders.gl/crypto';
 import type {ReadableFile} from '@loaders.gl/loader-utils';
-import {IndexedArchive, parseZipLocalFileHeader, readRange} from '@loaders.gl/zip';
+import {IndexedArchive, type ZipArchiveOptions} from '@loaders.gl/zip';
 import {GZipDecompressor} from '@loaders.gl/compression';
 
 /** Description of real paths for different file types */
@@ -51,22 +50,19 @@ const PATH_DESCRIPTIONS: {test: RegExp; extensions: string[]}[] = [
  * Class for handling information about slpk file
  */
 export class SLPKArchive extends IndexedArchive {
-  // Maps hex-encoded md5 filename hashes to bigint offsets into the archive
-  private hashTable?: Record<string, bigint>;
-
-  protected _textEncoder = new TextEncoder();
-  protected _textDecoder = new TextDecoder();
-  protected _md5Hash = new MD5Hash();
-
   /**
    * Constructor
    * @param fileProvider - readable file handle for random access
    * @param hashTable - pre-loaded hashTable. If presented, getFile will skip reading the hash file
    * @param fileName - name of the archive. It is used to add to an URL of a loader context
    */
-  constructor(fileProvider: ReadableFile, hashTable?: Record<string, bigint>, fileName?: string) {
-    super(fileProvider, hashTable, fileName);
-    this.hashTable = hashTable;
+  constructor(
+    fileProvider: ReadableFile,
+    hashTable?: Record<string, bigint>,
+    fileName?: string,
+    options?: ZipArchiveOptions
+  ) {
+    super(fileProvider, hashTable, fileName, options);
   }
 
   /**
@@ -142,34 +138,6 @@ export class SLPKArchive extends IndexedArchive {
    * @returns buffer with the raw file data
    */
   private async getFileBytes(path: string): Promise<ArrayBuffer | undefined> {
-    let compressedFile: ArrayBuffer | undefined;
-    if (this.hashTable) {
-      const binaryPath = this._textEncoder.encode(path);
-      const nameHash = await this._md5Hash.hash(binaryPath.buffer, 'hex');
-
-      const offset = this.hashTable[nameHash];
-      if (offset === undefined) {
-        return undefined;
-      }
-
-      const localFileHeader = await parseZipLocalFileHeader(offset, this.file);
-      if (!localFileHeader) {
-        return undefined;
-      }
-
-      compressedFile = await readRange(
-        this.file,
-        localFileHeader.fileDataOffset,
-        localFileHeader.fileDataOffset + localFileHeader.compressedSize
-      );
-    } else {
-      try {
-        compressedFile = await this.getFileWithoutHash(path);
-      } catch {
-        compressedFile = undefined;
-      }
-    }
-
-    return compressedFile;
+    return await this.readZipEntry(path);
   }
 }

@@ -65,4 +65,11 @@ complete DEFLATE responses stream decoded bytes and advertise `Accept-Ranges: no
 An existing `IndexedArchive` adapter can still supply format-specific aliases and content decoding
 through `getFile(path, 'http')`. This preserves its indexed lookup path. Such responses retain the
 adapter's buffered behavior; ranges reject because aliases and gzip decoding can change the
-returned resource bytes. Migrating SLPK/3TZ indexed transports to shared entry reads is separate work.
+returned resource bytes. SLPK/3TZ adapters share the same reader for indexed entry reads, CRC verification and ownership.
+
+Configure reader limits and archive cancellation on the adapter: `IndexedArchive` subclass constructors,
+`parseSLPKArchive(file, callback?, fileName?, options?)` and
+`parse3DTilesArchive(file, callback?, fileName?, options?)` accept `ZipArchiveOptions` as their fourth
+argument. The adapter owns the shared reader; `ZipFileSystem.destroy()` closes it exactly once.
+Deck-layer `createSLPKArchiveResolver` and `createTiles3DArchiveResolver` accept the same options
+as their third argument after the parser loader.
