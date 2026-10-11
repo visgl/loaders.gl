@@ -744,7 +744,8 @@
         "type": "category",
         "label": "@loaders.gl/zip",
         "items": [
-          "modules/zip/README"
+          "modules/zip/README",
+          "modules/zip/api-reference/zip-archive"
         ]
       },
       {

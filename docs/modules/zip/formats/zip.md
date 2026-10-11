@@ -10,14 +10,14 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
 
 <DocPageHeader
   eyebrow="Archive format"
-  title="Open a bundle without unpacking the whole bundle first."
+  title="ZIP"
   description="ZIP packages related files behind one container. loaders.gl’s random-access support validates local headers and central-directory metadata so applications can fetch or read individual entries when appropriate."
   tone="blue"
   meta={['ZIP archives', 'ZIP64', 'Random-access entries']}
   links={[
     {label: 'ZIP module', to: '/docs/modules/zip'},
     {label: 'ZipLoader', to: '/docs/modules/zip/api-reference/zip-loader'},
-    {label: 'Using loaders', to: '/docs/developer-guide/using-loaders'}
+    {label: 'ZipArchive', to: '/docs/modules/zip/api-reference/zip-archive'}
   ]}
 />
 
@@ -42,21 +42,75 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
   tone="blue"
 />
 
-[ZIP Archive](<https://en.wikipedia.org/wiki/Zip_(file_format)>)
+## Format overview
 
-## Supported local header layouts
+ZIP stores a collection of named entries and a central directory. Entries can use different
+compression methods. ZIP64 extends sizes, offsets, and entry counts beyond ZIP32 limits; it is
+part of ZIP, not a separate file extension. ZIP archives produced by 7-Zip are distinct from
+native `.7z` archives.
 
-`ZipFileSystem.fetch()` supports entries whose local headers contain ordinary 32-bit sizes, ZIP64
-sizes, or zero sizes followed by a data descriptor. When general-purpose bit 3 indicates a data
-descriptor, the central-directory sizes are authoritative; both signed and unsigned descriptors are
-supported.
+The shared [`openZipArchive`](/docs/modules/zip/api-reference/zip-archive) reader provides
+validated entry metadata, complete reads, streaming reads, and STORE byte ranges.
+[`ZipLoader`](/docs/modules/zip/api-reference/zip-loader) loads a complete collection;
+[`ZipWriter`](/docs/modules/zip/api-reference/zip-writer) writes an in-memory collection.
+These loader/writer entry points retain their existing implementation during the ZIP migration.
 
-ZIP64 local headers store the uncompressed and compressed sizes as a required pair in the ZIP64
-extended information record when either 32-bit local size is the ZIP64 sentinel. A non-sentinel
-compressed size remains authoritative for legacy layouts.
+## Feature support
 
-## ZIP64 validation
+**Supported** means implemented for the stated profile. **Partial** means the restriction in
+Notes applies. **Unsupported** profiles fail in the shared reader. This table describes container
+capabilities, not decoding of the files stored inside an archive.
 
-The random-access ZIP header parsers validate required ZIP64 extended information records before
-using 64-bit sizes and offsets. Missing, truncated, or incorrectly sized ZIP64 records are rejected
-with an `Invalid ZIP archive` error instead of exposing low-level `DataView` range errors.
+| Feature | Read (`openZipArchive`) | Write (`ZipWriter`) | Notes |
+| --- | --- | --- | --- |
+| ZIP32 | Supported | Supported | Single-disk archives. |
+| ZIP64 sizes and offsets | Supported | Unsupported | Reader metadata uses `bigint`; the current writer does not generate ZIP64. |
+| ZIP64 entry counts | Supported | Unsupported | Subject to the configurable directory/entry limits. |
+| STORE (method 0) | Supported | Supported | Default writer compression. |
+| Raw DEFLATE (method 8) | Supported | Supported | Current writer selects it through `jszip.compression: 'DEFLATE'`. |
+| Signed and unsigned data descriptors | Supported | Partial | Shared reader validates descriptor CRC and sizes against the directory; writer streaming uses its existing JSZip options. |
+| Directory entries | Supported | Supported | Names end in `/`; writer can create parent directories with `zip.createFolders`. |
+| Entry and archive comments | Supported | Supported | Archive comments use CP437 in the shared reader; entry comments follow UTF-8 flags/Unicode extras. |
+| UTF-8 names | Supported | Supported | Invalid UTF-8 is rejected by the shared reader. |
+| Legacy CP437 names | Supported | Partial | Writer emits UTF-8 by default; custom name encoding is a legacy JSZip option. |
+| Unicode path/comment extra fields | Supported | Partial | Reader uses version 1 fields only when their original-byte CRC matches; writer controls remain implementation specific. |
+| Complete-entry CRC-32 validation | Supported | Supported | Reader verifies at completion; writer generates CRC metadata. |
+| STORE byte-range reads | Supported | Unsupported | Partial reads cannot verify a complete-entry CRC. |
+| DEFLATE byte-range reads | Unsupported | Unsupported | Consume a complete or streaming decoded entry instead. |
+| Streaming entry reads | Supported | — | CRC is verified only if the iterator is consumed through completion. |
+| Streaming archive output | — | Partial | Indexed SLPK/3TZ writers stream STORE ZIP32; the general writer returns an in-memory buffer. |
+| Indexed local-header access | Partial | Partial | Populated headers avoid directory scans; descriptor entries use the cached directory. SLPK/3TZ define their own hash indexes. |
+| Cancellation and close | Supported | Partial | Shared reader supports `AbortSignal`, releases the supplied file, and rejects reads after close. General writer cancellation is not yet exposed. |
+| Configurable byte/entry limits | Supported | Partial | Reader has independent archive, directory, read, compressed, and decoded limits. Indexed writers retain their output limits. These are not total heap limits. |
+| Encryption, split archives, self-extracting prefixes | Unsupported | Unsupported | Outside the qualified shared-container profile. |
+| Native `.7z` and additional compression methods | Unsupported | Unsupported | Separate formats/profiles; a ZIP produced by 7-Zip can use the supported ZIP methods. |
+
+## Validation and random access
+
+The reader locates the end record, validates directory bounds, and caches the directory on the
+first named lookup or enumeration. It rejects duplicate paths/offsets, noncanonical relative paths,
+inconsistent local/central metadata, overlapping payloads, truncated reads, unsupported flags,
+and decoded sizes that differ from the declared size. Directory entries are validated as they are
+requested; opening a file does not decode every payload.
+
+ZIP64 local size sentinels require both size fields in the ZIP64 extra record. The central directory
+supplies authoritative sizes for descriptor entries, with signed or unsigned ZIP32/ZIP64 descriptors
+validated against those values. Completed reads additionally verify CRC-32. A partial read or an
+iterator stopped before completion does not provide whole-entry integrity verification.
+
+`getEntryAt()` supports format-provided local-header offsets. Populated headers are read directly;
+this path validates local metadata and payload bounds. Use named lookup when local/central
+consistency is required. Descriptor entries fall back to the shared directory.
+
+## Archive profiles
+
+SLPK and 3TZ add required resources and hash indexes to ZIP. Those policies remain in their format
+adapters. SLPK stores resources in STORE entries and can gzip the resource content itself; this
+inner gzip is separate from ZIP compression. Esri specifies ZIP64 for SLPK archives above 2 GB.
+The current SLPK writer retains its 2 GB output ceiling pending the writer migration.
+[Esri I3S specification](https://github.com/Esri/i3s-spec/blob/master/format/Indexed%203d%20Scene%20Layer%20Format%20Specification.md).
+
+## Specifications
+
+- [PKWARE ZIP APPNOTE](https://pkware.cachefly.net/webdocs/casestudies/APPNOTE.TXT)
+- [7-Zip native 7z format](https://www.7-zip.org/7z.html)

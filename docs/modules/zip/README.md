@@ -48,6 +48,13 @@ The `@loaders.gl/zip` module handles compressing and decompressing of the [ZIP](
 npm install @loaders.gl/core @loaders.gl/zip
 ```
 
+## Random-access archives
+
+Use [`openZipArchive`](/docs/modules/zip/api-reference/zip-archive) to inspect a ZIP32/ZIP64 archive,
+read complete members with CRC validation, stream decoded entries, or read STORE byte ranges.
+See the [ZIP feature table](/docs/modules/zip/formats/zip) for the supported container profiles
+and the limits of the current writer.
+
 ## Attributions
 
 ZipLoader is a wrapper around the [JSZip module](https://stuk.github.io/jszip/). JSZip has extensive documentation on options (and more functionality than this loader object can expose).
