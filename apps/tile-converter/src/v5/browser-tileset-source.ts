@@ -30,7 +30,7 @@ export interface BrowserTilesetConversionSourceOptions {
 
 /** Inspection result for an explicit 3D Tiles source. */
 export interface BrowserTilesetConversionInspection {
-  /** Absolute URL of the root tileset document. */
+  /** Final response URL of the root document, falling back to the requested URL for virtual transports. */
   readonly rootUrl: string;
   /** Parsed root document used for deterministic content traversal. */
   readonly tileset: TilesetDocument;
@@ -88,8 +88,9 @@ export function createBrowserTilesetConversionSource(
   return {
     async inspect(signal) {
       throwIfAborted(signal);
-      const rootUrl = new URL(options.input).href;
-      const response = await fetcher(rootUrl, {signal});
+      const requestedUrl = new URL(options.input).href;
+      const response = await fetcher(requestedUrl, {signal});
+      const rootUrl = response.url || requestedUrl;
       if (!response.ok) {
         throw new TileConversionError(
           'BROWSER_SOURCE_FETCH_FAILED',
