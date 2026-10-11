@@ -173,3 +173,14 @@ test.each([
     ).rejects.toThrow('total decoded-byte limit');
   }
 });
+
+test('file-map and per-entry ZIP budgets remain independent', async () => {
+  const encoded = await encodeZip({a: new Uint8Array([1, 2, 3])});
+  const zip = {maxTotalDecodedBytes: 8n, maxDecodedBytes: 2n, maxCompressedBytes: 3n};
+  await expect(parse(encoded, ZipLoader, {zip})).rejects.toThrow('compressed/decoded byte limit');
+  await expect(
+    parse(encoded, ZipLoader, {zip: {...zip, maxDecodedBytes: 3n, maxCompressedBytes: 2n}})
+  ).rejects.toThrow('compressed/decoded byte limit');
+  const files = await parse(encoded, ZipLoader, {zip: {...zip, maxDecodedBytes: 3n}});
+  expect(new Uint8Array(files.a)).toEqual(new Uint8Array([1, 2, 3]));
+});

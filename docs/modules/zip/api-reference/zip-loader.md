@@ -83,8 +83,12 @@ Complete reads always verify decoded sizes and CRC-32. Unsupported ZIP profiles 
 | --- | --- | --- | --- |
 | `zip.maxTotalDecodedBytes` | `bigint` | `64n * 1024n * 1024n` | Sum of file sizes retained in the result; checked before decoding payloads. |
 | `zip.maxDecodedBytes` | `bigint` | `64n * 1024n * 1024n` | Maximum decoded bytes per complete entry. |
+| `zip.maxCompressedBytes` | `bigint` | `64n * 1024n * 1024n` | Maximum compressed bytes per complete entry. |
 | `zip.signal` | `AbortSignal` | — | Cancels archive initialization and reads. |
 
+The total-map, decoded-entry and compressed-entry limits are independent. Raising
+`maxTotalDecodedBytes` does not raise either entry limit. For an entry larger than 64 MiB,
+set `maxDecodedBytes` and, when its compressed payload is also larger, `maxCompressedBytes`.
 These limits bound encoded/decoded byte counts, not decoder intermediates or total heap.
 Use the shared archive API for incremental or range reads instead of retaining a complete map.
 
@@ -93,6 +97,10 @@ The package root exports metadata. For direct parser access:
 ```ts
 import {ZipLoaderWithParser} from '@loaders.gl/zip/zip-loader';
 const files = await ZipLoaderWithParser.parse(arrayBuffer, {
-  zip: {maxTotalDecodedBytes: 8n * 1024n * 1024n}
+  zip: {
+    maxTotalDecodedBytes: 256n * 1024n * 1024n,
+    maxDecodedBytes: 128n * 1024n * 1024n,
+    maxCompressedBytes: 128n * 1024n * 1024n
+  }
 });
 ```

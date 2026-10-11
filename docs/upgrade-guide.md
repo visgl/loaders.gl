@@ -64,7 +64,9 @@ v4.5 is additive. Existing loaders and defaults continue to work unchanged, exce
   direct parser access is `ZipLoaderWithParser` from `@loaders.gl/zip/zip-loader`.
 - `ZipLoader` returns ArrayBuffer values only and rejects invalid entries instead of placing
   errors in the map. Complete reads verify CRCs. The total decoded file-map default is 64 MiB;
-  set `zip.maxTotalDecodedBytes` explicitly for larger maps, or use incremental archive reads.
+  set `zip.maxTotalDecodedBytes` explicitly for larger maps. The independent per-entry limits
+  `zip.maxDecodedBytes` and `zip.maxCompressedBytes` also default to 64 MiB; raise them explicitly
+  when individual entries exceed those bounds, or use incremental archive reads.
 
 The sections below document the v5 removals, migrations, and deprecations that remain active.
 
