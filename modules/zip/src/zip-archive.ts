@@ -325,10 +325,13 @@ export class ZipArchive {
         candidate + 22 + tail.getUint16(candidate + 20, true) !== tailLength
       )
         continue;
-      position = candidate;
+      if (position < 0) position = candidate;
       // An empty record inside a real archive comment must not hide its earlier end record.
       // Empty directories with unreferenced local records remain valid candidates.
-      if (tail.getUint16(candidate + 10, true) !== 0 || magic === 0x06064b50) break;
+      if (tail.getUint16(candidate + 10, true) !== 0 || magic === 0x06064b50) {
+        position = candidate;
+        break;
+      }
     }
     if (position < 0) throw new Error('Invalid ZIP archive: end record not found');
     const disk = tail.getUint16(position + 4, true);

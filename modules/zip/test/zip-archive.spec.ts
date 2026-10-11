@@ -645,6 +645,25 @@ test('accepts an empty central directory after unreferenced local records', asyn
   expect(await collect(archive.entries())).toEqual([]);
 });
 
+test('keeps the nearest empty end record when an earlier empty signature also ends at EOF', async () => {
+  const local = createZipFixture().slice(0, 40);
+  const end = createZipFixture([], {comment: new TextEncoder().encode('actual comment')});
+  new DataView(end.buffer).setUint32(16, local.length, true);
+  const bytes = concatenateZipBytes(local, end);
+  const fake = new DataView(bytes.buffer, 4, 22);
+  fake.setUint32(0, 0x06054b50, true);
+  fake.setUint16(4, 0, true);
+  fake.setUint16(6, 0, true);
+  fake.setUint16(8, 0, true);
+  fake.setUint16(10, 0, true);
+  fake.setUint32(12, 0, true);
+  fake.setUint32(16, 0, true);
+  fake.setUint16(20, bytes.length - 26, true);
+  const archive = await open(bytes);
+  expect(await collect(archive.entries())).toEqual([]);
+  expect(archive.comment).toBe('actual comment');
+});
+
 test('ignores ZIP64 locator signatures inside central-directory comments', async () => {
   const comment = new Uint8Array(20);
   new DataView(comment.buffer).setUint32(0, 0x07064b50, true);
