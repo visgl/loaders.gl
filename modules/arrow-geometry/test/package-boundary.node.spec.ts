@@ -2,10 +2,11 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import {readFileSync, readdirSync} from 'node:fs';
+import {existsSync, readFileSync, readdirSync} from 'node:fs';
 import {fileURLToPath} from 'node:url';
 import {join} from 'node:path';
 import {expect, test} from 'vitest';
+import {preProcessFile} from 'typescript';
 
 const modulesDirectory = fileURLToPath(new URL('../../', import.meta.url));
 
@@ -102,4 +103,46 @@ test('the schema root keeps runtime geospatial validation on its explicit subpat
   expect(readFileSync(join(directory, 'src/index.ts'), 'utf8')).not.toMatch(
     /from ['"](?:zod|.*geospatial-metadata-zod-schema)['"]/
   );
+});
+
+test('published consumers and their tests no longer require the GIS compatibility package', () => {
+  const moduleNames = readdirSync(modulesDirectory).filter(
+    moduleName =>
+      moduleName !== 'gis' && existsSync(join(modulesDirectory, moduleName, 'package.json'))
+  );
+  for (const moduleName of moduleNames) {
+    const directory = join(modulesDirectory, moduleName);
+    const manifest = JSON.parse(readFileSync(join(directory, 'package.json'), 'utf8'));
+    for (const section of [
+      'dependencies',
+      'devDependencies',
+      'peerDependencies',
+      'optionalDependencies'
+    ]) {
+      expect(manifest[section] ?? {}, moduleName).not.toHaveProperty('@loaders.gl/gis');
+    }
+    expect(collectDependencies(moduleName), moduleName).not.toContain('gis');
+    const project = join(directory, 'tsconfig.json');
+    if (existsSync(project)) {
+      expect(readFileSync(project, 'utf8'), moduleName).not.toContain('../gis');
+    }
+    for (const folder of ['src', 'test']) {
+      if (!existsSync(join(directory, folder))) continue;
+      const source = readSources(join(directory, folder));
+      const imports = preProcessFile(source, true, true).importedFiles.map(file => file.fileName);
+      expect(
+        imports.filter(name => /^@loaders\.gl\/gis(?:\/|$)/.test(name)),
+        moduleName
+      ).toEqual([]);
+      expect(source, moduleName).not.toContain('@loaders.gl/' + 'gis/test/data/');
+    }
+  }
+});
+
+test('the geospatial example uses GeoArrow rather than GIS', () => {
+  const directory = join(modulesDirectory, '../examples/website/geospatial');
+  const manifest = JSON.parse(readFileSync(join(directory, 'package.json'), 'utf8'));
+  expect(manifest.dependencies).toHaveProperty('@loaders.gl/geoarrow');
+  expect(manifest.dependencies).not.toHaveProperty('@loaders.gl/gis');
+  expect(readFileSync(join(directory, 'app.tsx'), 'utf8')).not.toContain('@loaders.gl/gis');
 });

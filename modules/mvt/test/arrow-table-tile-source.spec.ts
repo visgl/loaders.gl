@@ -12,7 +12,9 @@ import {
   ArrowTableTileSourceLoaderWithParser as ArrowTableTileSourceLoader,
   ArrowTableVectorTileSource
 } from '@loaders.gl/mvt/arrow-table-tile-source-loader';
-import {convertFeaturesToGeoArrowTable, GeometryConverter, getGeoMetadata} from '@loaders.gl/gis';
+import {convertFeaturesToGeoArrowTable} from '@loaders.gl/arrow-geometry/feature-table';
+import {GeometryConverter} from '@loaders.gl/geoarrow';
+import {getGeoMetadata} from '@loaders.gl/schema';
 import type {ArrowTable, Geometry, GeoArrowEncodingPreference} from '@loaders.gl/schema';
 
 const ROOT_TILE = {x: 0, y: 0, z: 0};

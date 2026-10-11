@@ -11,16 +11,17 @@ import {
   convertGeometryToWKB,
   convertFeaturesToGeoArrowTable,
   convertWKBToGeometry,
-  geojsonToBinary,
-  makeWKBGeometryData,
-  triangulateWKB
-} from '@loaders.gl/gis';
+  convertGeojsonToBinaryFeatureCollection as geojsonToBinary
+} from '@loaders.gl/geoarrow';
+import {makeWKBGeometryData} from '@loaders.gl/arrow-geometry/wkb-arrow-utils';
+import {triangulateWKB} from '@loaders.gl/arrow-geometry';
 import type {Geometry, MultiPolygon, Polygon, Position} from '@loaders.gl/schema';
 
 // const GEOJSON_URL = '@loaders.gl/json/test/data/geojson-big.json';
 const GEOJSON_POLYGONS_URL = '@loaders.gl/mvt/test/data/geojson-vt/us-states.json';
 
-export default async function gisBench(suite) {
+/** Registers geometry conversion and triangulation benchmarks. */
+export default async function geoarrowBench(suite) {
   // @ts-expect-error
   const {features} = await load(GEOJSON_POLYGONS_URL, JSONLoader);
 

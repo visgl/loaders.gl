@@ -21,6 +21,8 @@ function makeAliases() {
     test: resolveTestPath('./test'),
     '@loaders.gl/3d-tiles/test': resolveTestPath('./modules/3d-tiles/test'),
     '@loaders.gl/arrow/transport': resolveTestPath('./modules/arrow/src/transport'),
+    '@loaders.gl/arrow-geometry/test': resolveTestPath('./modules/arrow-geometry/test'),
+    '@loaders.gl/geoarrow/test': resolveTestPath('./modules/geoarrow/test'),
     '@loaders.gl/arrow/test': resolveTestPath('./modules/arrow/test'),
     '@loaders.gl/bson/test': resolveTestPath('./modules/bson/test'),
     '@loaders.gl/compression/test': resolveTestPath('./modules/compression/test'),

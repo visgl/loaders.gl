@@ -5,7 +5,6 @@
 import {expect, test} from 'vitest';
 import {parseMVT} from '../../src/lib/mvt-pbf/parse-mvt-from-pbf';
 import {fetchFile} from '@loaders.gl/core';
-// import {geojsonToBinary, binaryToGeojson} from '@loaders.gl/gis';
 const MVT_POINTS_DATA_URL = '@loaders.gl/mvt/test/data/mvt/points_4-2-6.mvt';
 // const MVT_LINES_DATA_URL = '@loaders.gl/mvt/test/data/mvt/lines_2-2-1.mvt';
 // const MVT_POLYGONS_DATA_URL = '@loaders.gl/mvt/test/data/mvt/polygons_10-133-325.mvt';
