@@ -168,5 +168,8 @@ Use [Tiles3DArchiveWriter](./api-reference/tiles-3d-archive-writer.md) to packag
 `parse3DTilesArchive(readableFile)` returns a `Tiles3DArchive` with the archive index
 loaded once. Use it for repeated entry reads from a `BlobFile`, `HttpFile` or other
 `ReadableFile`; constructing `Tiles3DArchive` without an index falls back to ZIP
-directory lookup for each entry. The caller owns the readable file and must close
-it after use. Archives without `@3dtilesIndex1@` build an index from their ZIP headers.
+cached ZIP directory lookup. The archive owns the readable file; call
+`archive.close()` in a `finally` block after use. Archives without `@3dtilesIndex1@` build an index from their ZIP headers.
+
+The one-shot `Tiles3DArchiveFileLoader.parseFile()` extraction closes its supplied file
+after success or failure. Use `parse3DTilesArchive` when several resources share one file.

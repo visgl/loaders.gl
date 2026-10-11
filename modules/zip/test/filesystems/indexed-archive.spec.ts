@@ -4,7 +4,13 @@
 
 import {expect, test, vi} from 'vitest';
 import {BlobFile} from '@loaders.gl/loader-utils';
-import {IndexedArchive, ZipFileSystem, encodeZip, parseHashTable} from '@loaders.gl/zip';
+import {
+  IndexedArchive,
+  ZipFileSystem,
+  encodeZip,
+  parseHashTable,
+  composeHashFile
+} from '@loaders.gl/zip';
 import {encodeIndexedZip} from '@loaders.gl/zip/indexed-zip-writer';
 
 /** Exposes only the common transport for owning-module conformance. */
@@ -130,4 +136,28 @@ test('indexed close cancels pending metadata and closes the transport once', asy
   await rejected;
   await closing;
   expect(close).toHaveBeenCalledOnce();
+});
+
+test('legacy index composition and fallback use locale-independent folding', async () => {
+  const bytes = await encodeZip({'I.bin': new Uint8Array([1]).buffer});
+  const fallback = new TestArchive(new BlobFile(bytes));
+  const localeLowerCase = String.prototype.toLocaleLowerCase;
+  const locale = vi.spyOn(String.prototype, 'toLocaleLowerCase').mockImplementation(function (
+    this: string
+  ) {
+    return localeLowerCase.call(this, 'tr');
+  });
+  let indexed: TestArchive | undefined;
+  try {
+    expect(await fallback.initializeIndex('@index@', true)).toBe(false);
+    const table = parseHashTable(
+      await composeHashFile([{fileName: 'I.bin', localHeaderOffset: 0n}])
+    );
+    indexed = new TestArchive(new BlobFile(bytes), table);
+    expect(await indexed.getFile('i.bin')).toEqual(await fallback.getFile('i.bin'));
+  } finally {
+    locale.mockRestore();
+    await indexed?.close();
+    await fallback.close();
+  }
 });

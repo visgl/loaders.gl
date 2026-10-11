@@ -50,5 +50,9 @@ async function parseSLPKFile(
   options: SLPKLoaderOptions = {}
 ): Promise<ArrayBuffer> {
   const archive = await parseSLPKArchive(file);
-  return archive.getFile(options.slpk?.path ?? '', options.slpk?.pathMode);
+  try {
+    return await archive.getFile(options.slpk?.path ?? '', options.slpk?.pathMode);
+  } finally {
+    await archive.close();
+  }
 }

@@ -73,3 +73,5 @@ Configure reader limits and archive cancellation on the adapter: `IndexedArchive
 argument. The adapter owns the shared reader; `ZipFileSystem.destroy()` closes it exactly once.
 Deck-layer `createSLPKArchiveResolver` and `createTiles3DArchiveResolver` accept the same options
 as their third argument after the parser loader.
+
+SLPK path hashing uses locale-independent case folding, including fallback indexes.

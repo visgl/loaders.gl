@@ -71,6 +71,9 @@ v4.5 is additive. Existing loaders and defaults continue to work unchanged, exce
 - `ZipFileSystem.stat()` now returns validated `ZipEntry` metadata with numeric `size` and
   exact `uncompressedSize`. Replace raw-header fields such as `fileName` with `path`; header
   lengths and central-directory offsets are no longer exposed by this method.
+- One-shot SLPK and 3TZ `parseFile()` extraction now closes the supplied file on success or
+  failure. For repeated reads, use `parseSLPKArchive` or `parse3DTilesArchive` and close the
+  returned archive after the final resource read.
 - Raw ZIP header parsers/serializers, signature/search helpers, central-header iteration and ZIP
   file utilities are no longer root exports. Use `openZipArchive`, `ZipArchive.entries()`,
   `getEntryAt()` and the native encoders. Use `ArrayBufferFile`/`BlobFile` from

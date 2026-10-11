@@ -59,7 +59,7 @@ export async function composeHashFile(
     // and official i3s_converter https://github.com/Esri/i3s-spec/blob/master/i3s_converter/i3s_converter_ReadMe.md
     // expect `3dSceneLayer.json.gz` in camel case
     if (filename !== '3dSceneLayer.json.gz') {
-      filename = filename.toLocaleLowerCase();
+      filename = filename.toLowerCase();
     }
     const arrayBuffer = textEncoder.encode(filename).buffer;
     const md5 = await md5Hash.hash(arrayBuffer, 'hex');

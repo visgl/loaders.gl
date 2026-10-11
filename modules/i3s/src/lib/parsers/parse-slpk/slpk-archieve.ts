@@ -116,7 +116,7 @@ export class SLPKArchive extends IndexedArchive {
   private async getDataByPath(path: string): Promise<ArrayBuffer | undefined> {
     // sometimes paths are not in lower case when hash file is created,
     // so first we're looking for lower case file name and then for original one
-    let data = await this.getFileBytes(path.toLocaleLowerCase());
+    let data = await this.getFileBytes(path.toLowerCase());
     if (!data) {
       data = await this.getFileBytes(path);
     }

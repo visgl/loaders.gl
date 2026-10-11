@@ -53,5 +53,9 @@ async function parse3DTilesArchiveFile(
   options: Tiles3DArchiveFileLoaderOptions = {}
 ): Promise<ArrayBuffer> {
   const archive = await parse3DTilesArchiveFromProvider(file);
-  return archive.getFile(options['3d-tiles-archive']?.path ?? '');
+  try {
+    return await archive.getFile(options['3d-tiles-archive']?.path ?? '');
+  } finally {
+    await archive.close();
+  }
 }
