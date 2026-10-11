@@ -3,6 +3,11 @@
 // Copyright (c) vis.gl contributors
 
 export type {TerrainLoaderOptions} from './terrain-loader';
+export type {
+  ElevationDecoder,
+  TerrainHeightmap,
+  TerrainHeightmapImage
+} from './lib/terrain-heightmap-types';
 export type {QuantizedMeshLoaderOptions} from './quantized-mesh-loader';
 
 export {TerrainFormat, QuantizedMeshFormat} from './terrain-format';

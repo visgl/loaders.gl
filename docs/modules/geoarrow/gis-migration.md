@@ -5,8 +5,9 @@ title: Migrating GIS APIs to GeoArrow
 # Migrating GIS APIs to GeoArrow
 
 GeoArrow is the application-facing owner of geospatial conversion and processing.
-It no longer depends on GIS. GIS temporarily forwards retained application APIs
-to GeoArrow, while loaders use focused, lower-level entry points.
+The `@loaders.gl/gis` package has been removed from the 5.0 release line. Replace
+its dependency and imports using the map below. Loaders use focused, lower-level
+entry points; previously published GIS versions remain available.
 
 ## Application conversions
 
@@ -59,7 +60,7 @@ the same owner as their associated API unless a schema owner is listed.
 | `makeWKBGeometryArrowTable*`, `makeWKBGeometryData*` and WKB Arrow options | `@loaders.gl/arrow-geometry/wkb-arrow-utils` |
 | `buildFeatureArrowSchema`, `convertFeaturesToWKBArrowTable` | `@loaders.gl/arrow-geometry/feature-collection-to-arrow` |
 | `GeoJSONGeometry`, geometry/metadata types, `getGeoMetadata`, `setGeoMetadata`, `unpackGeoMetadata`, JSON metadata and key/value helpers | `@loaders.gl/schema` (use `Geometry` instead of `GeoJSONGeometry`) |
-| Metadata validators and generated JSON Schemas | `@loaders.gl/schema/geospatial-metadata-zod-schema` and the schema package's JSON Schema subpaths |
+| Metadata validators and generated JSON Schemas | `@loaders.gl/schema/geospatial-metadata-zod-schema` and `@loaders.gl/schema/geoparquet.schema.json` and `@loaders.gl/schema/geoarrow-metadata.schema.json` |
 | `encodeHex`, `decodeHex` | `@loaders.gl/loader-utils` |
 | `_extractNumericPropTypes` | Internal legacy helper in `@loaders.gl/arrow-geometry/legacy-binary`; do not build new application code around it |
 
@@ -81,6 +82,15 @@ from GeoArrow. Shared codec fixtures live with WKT, loader binary fixtures with
 arrow-geometry, and rendering fixtures and benchmarks with GeoArrow. Run the
 geometry benchmarks with the `geoarrow` module filter instead of `gis`.
 
-GIS remains only as a temporary compatibility package, with its own tests and
-build registration awaiting removal. Loaders do not depend on GIS or the larger
-GeoArrow processing package, directly or transitively.
+GIS compatibility exports, package builds and tests are removed. Loaders do not
+depend on the larger GeoArrow processing package, directly or transitively.
+
+The old private binary concatenation, table-to-Arrow batch iterator and unused
+conversion/encoding helpers were not supported package entry points and have
+been deleted rather than relocated.
+
+The repository no longer builds or publishes GIS. Its development/website dependency
+graph can still contain a published GIS 4.x release required by deck.gl 9.4; this is
+not the removed workspace package or a dependency added to loaders. Older standalone
+test applications also retain historical release lockfiles. Removing those external
+dependencies requires upgrading their consumers, not aliasing GIS to GeoArrow.

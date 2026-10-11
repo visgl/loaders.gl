@@ -61,6 +61,13 @@ npm install @loaders.gl/core
 | `QuantizedMeshLoader`                                                           | Loads quantized mesh terrain as a Mesh or [Mesh Arrow table](/docs/specifications/category-mesh#mesh-arrow-tables). |
 | [`QuantizedMeshWriter`](/docs/modules/terrain/api-reference/quantized-mesh-writer) | Writes triangle-list Mesh or Mesh Arrow table terrain data as quantized mesh. |
 
+## Height grids without mesh reconstruction
+
+The optional [`@loaders.gl/terrain/heightmap`](./api-reference/heightmap.md) entry
+decodes already unpacked RGBA pixels into an unpadded `Float32Array`, with a named
+Terrarium preset and support for custom RGB coefficients. It does not load images
+or import tessellation or Arrow code.
+
 ## Attribution
 
 The `QuantizedMeshLoader` is a fork of

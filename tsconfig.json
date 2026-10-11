@@ -186,15 +186,6 @@
       "@loaders.gl/geotiff/test": [
         "modules/geotiff/test"
       ],
-      "@loaders.gl/gis": [
-        "modules/gis/src"
-      ],
-      "@loaders.gl/gis/*": [
-        "modules/gis/src/*"
-      ],
-      "@loaders.gl/gis/test": [
-        "modules/gis/test"
-      ],
       "@loaders.gl/gltf": [
         "modules/gltf/src"
       ],

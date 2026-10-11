@@ -105,7 +105,7 @@ must not be deferred as ordinary minor-release features.
 - **`@loaders.gl/schema-utils`**
   - Shared schema, table, mesh, and converter infrastructure.
 
-- **`@loaders.gl/gis`**
+- **`@loaders.gl/arrow-geometry`**
   - Minimal geometry helpers needed by loaders, including GeoArrow WKB output.
 
 - **`@loaders.gl/geoarrow`**
@@ -173,8 +173,8 @@ implementation status is distinct from availability in a published release.
 “SOTA” describes the engineering target, not a measured claim of superiority or a promise of full
 OpenLayers parity. Protocol parsing belongs in loaders.gl; renderer tile selection and visual
 reprojection belong in deck.gl. Rich table processing belongs in `@loaders.gl/geoarrow`, while
-`@loaders.gl/arrow-geometry` supplies focused loader-output helpers. GIS compatibility APIs
-remain during the staged migration.
+`@loaders.gl/arrow-geometry` supplies focused loader-output helpers. The GIS compatibility package has been removed;
+[replacement imports](./modules/geoarrow/gis-migration.md) document the migration.
 
 The order below prioritizes the remaining source/rendering gap, then scalable query execution.
 Each tranche needs its own bounded API, hermetic boundary tests, and documented unsupported cases.

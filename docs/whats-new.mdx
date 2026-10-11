@@ -85,10 +85,10 @@ See [supported items and verification boundaries](/docs/developer-guide/arcgis/i
 
 - GIS retirement: Arrow parsing and triangulation now use focused
   [Arrow geometry helpers](/docs/modules/arrow-geometry). Geometry metadata
-  validators move to a dedicated schema subpath, and GIS/WKT share math.gl-backed
+  validators move to a dedicated schema subpath, and geometry codecs use math.gl-backed
   codecs. Legacy GeoJSON/FlatGeoJSON binary materialization is shared through
   `arrow-geometry/legacy-binary`, removing direct GIS dependencies from ArcGIS,
-  KML, MLT and WMS. Existing GIS compatibility exports and loader output defaults remain.
+  KML, MLT and WMS. The GIS compatibility package is removed; loader output defaults remain.
   Native feature tables preserve M/ZM axes, and binary geometry type metadata can
   use the same dimension options as the WKB writer.
 - `Tileset3D` retires drawn fallback tiles independently as each replacement region finishes.
@@ -277,7 +277,7 @@ Release Date: 2026
 - **Module workers by default** - Worker descriptors can create bundler-resolved ES module workers as their default browser path while retaining explicit worker URLs and pre-built classic-worker fallbacks. Arrow triangulation is the first API to use this path; existing classic workers are not deprecated.
 - **Automatic atomic worker selection** - `core.worker: 'auto'` lets loaders provide synchronous normalized work estimates so small parses stay on the main thread while expensive parses use workers. The default `core.worker: true` behavior remains unchanged.
 - **OpenUSD scenes** - The new `@loaders.gl/scene` module provides an experimental [`USDLoader`](/docs/modules/scene/api-reference/usd-loader) for the [OpenUSD format](/docs/modules/scene/formats/usd), supporting ASCII USDA layers and uncompressed USDZ archives, including reference and variant composition.
-- **JSON format validation** - [Zod](https://zod.dev/) schemas add runtime validation while retaining handwritten TypeScript types, with exported JSON Schemas for `@loaders.gl/textures`, `@loaders.gl/potree`, `@loaders.gl/mvt`, `@loaders.gl/3d-tiles`, `@loaders.gl/gis`, `@loaders.gl/i3s`, and `@loaders.gl/splats`.
+- **JSON format validation** - [Zod](https://zod.dev/) schemas add runtime validation while retaining handwritten TypeScript types, with exported JSON Schemas for `@loaders.gl/textures`, `@loaders.gl/potree`, `@loaders.gl/mvt`, `@loaders.gl/3d-tiles`, `@loaders.gl/schema`, `@loaders.gl/i3s`, and `@loaders.gl/splats`.
 
 **Features**
 
@@ -416,9 +416,10 @@ Release Date: 2026
 
 - The new lightweight `@loaders.gl/compression/native-decompression` entrypoint probes runtime support for gzip, deflate, raw deflate, Brotli, and future Zstandard decompression without importing codec fallbacks. Parquet and SPZ use it before lazily loading codec-backed implementations; until native Zstandard support becomes widely available, most runtimes still need `zstd-codec` for Zstandard-backed parsing.
 
-**@loaders.gl/gis**
+**@loaders.gl/schema and @loaders.gl/geoarrow**
 
-- Handwritten, documented GeoParquet and GeoArrow metadata types are exported from `@loaders.gl/gis`, while matching runtime validators are available from `@loaders.gl/gis/geospatial-metadata-zod-schema` without adding Zod to the lightweight root import.
+- The GIS compatibility package is removed in 5.0. GeoArrow owns application-facing conversion and processing; see the [GIS migration map](/docs/modules/geoarrow/gis-migration). Legacy binary layouts remain supported as explicit, allocating rendering representations.
+- Handwritten, documented GeoParquet and GeoArrow metadata types are exported from `@loaders.gl/schema`, while matching runtime validators are available from `@loaders.gl/schema/geospatial-metadata-zod-schema` without adding Zod to the lightweight root import.
 - Draft-07 `geoparquet.schema.json` and `geoarrow-metadata.schema.json` assets are published for validation and editor integrations.
 
 **@loaders.gl/i3s**

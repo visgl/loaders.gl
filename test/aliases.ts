@@ -34,7 +34,6 @@ function makeAliases() {
     '@loaders.gl/flatgeobuf/test': resolveTestPath('./modules/flatgeobuf/test'),
     '@loaders.gl/geopackage/test': resolveTestPath('./modules/geopackage/test'),
     '@loaders.gl/geotiff/test': resolveTestPath('./modules/geotiff/test'),
-    '@loaders.gl/gis/test': resolveTestPath('./modules/gis/test'),
     '@loaders.gl/gltf/test': resolveTestPath('./modules/gltf/test'),
     '@loaders.gl/i3s/test': resolveTestPath('./modules/i3s/test'),
     '@loaders.gl/images/test': resolveTestPath('./modules/images/test'),
