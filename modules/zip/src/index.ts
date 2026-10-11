@@ -35,3 +35,12 @@ export {parseHashTable, makeHashTableFromZipHeaders, composeHashFile} from './ha
 
 export {ZipFileSystem, ZIP_COMPRESSION_HANDLERS} from './filesystems/zip-filesystem';
 export type {CompressionHandler} from './filesystems/zip-filesystem';
+
+export {ZipArchive, openZipArchive} from './zip-archive';
+export type {
+  ZipArchiveInput,
+  ZipArchiveOptions,
+  ZipEntry,
+  ZipReadOptions,
+  ZipRangeOptions
+} from './zip-archive-types';
