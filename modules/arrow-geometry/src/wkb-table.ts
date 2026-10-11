@@ -11,10 +11,10 @@ import type {
   Schema
 } from '@loaders.gl/schema';
 import {getTableLength, getTableRowAsObject} from '@loaders.gl/schema-utils';
-import type {GeoColumnMetadata} from '../geoarrow/geoparquet-metadata';
-import {getGeoMetadata} from '../geoarrow/geoparquet-metadata';
-import {convertWKBToGeometry} from '../geometry-converters/wkb/convert-wkb-to-geometry';
-import {convertWKTToGeometry} from '../geometry-converters/wkb/convert-wkt-to-geometry';
+import type {GeoColumnMetadata} from '@loaders.gl/schema';
+import {getGeoMetadata} from '@loaders.gl/schema';
+import {convertWKBToGeometry} from '@loaders.gl/arrow-geometry/geometry-codecs';
+import {convertWKTToGeometry} from '@loaders.gl/arrow-geometry/geometry-codecs';
 
 /**
  * Converts a WKB- or WKT-encoded table with GeoParquet-style metadata to a GeoJSON table.

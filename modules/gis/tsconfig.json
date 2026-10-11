@@ -11,6 +11,8 @@
     {"path": "../arrow-geometry"},
     {"path": "../schema"},
     {"path": "../schema-utils"},
-    {"path": "../wkt"}
+    {"path": "../wkt"},
+    {"path": "../geoarrow"},
+    {"path": "../loader-utils"}
   ]
 }

@@ -5,12 +5,12 @@
 import type {BinaryGeometry, Geometry as GeoJSONGeometry} from '@loaders.gl/schema';
 import type {Converter} from '@loaders.gl/schema-utils';
 import {convertBinaryGeometryToGeometry} from '../convert-binary-geometry-to-geojson';
-import {convertBinaryGeometryToWKB} from '../wkb/convert-binary-geometry-to-wkb';
-import {convertGeometryToWKB} from '../wkb/convert-geometry-to-wkb';
-import {convertGeometryToWKT} from '../wkb/convert-geometry-to-wkt';
+import {convertBinaryGeometryToWKB} from '@loaders.gl/arrow-geometry/binary-geometry-to-wkb';
+import {convertGeometryToWKB} from '@loaders.gl/arrow-geometry/geometry-codecs';
+import {convertGeometryToWKT} from '@loaders.gl/arrow-geometry/geometry-codecs';
 import {convertGeometryToTWKB, convertTWKBToGeometry, isTWKB} from '@loaders.gl/wkt/twkb';
-import {convertWKBToGeometry} from '../wkb/convert-wkb-to-geometry';
-import {convertWKTToGeometry} from '../wkb/convert-wkt-to-geometry';
+import {convertWKBToGeometry} from '@loaders.gl/arrow-geometry/geometry-codecs';
+import {convertWKTToGeometry} from '@loaders.gl/arrow-geometry/geometry-codecs';
 import {isWKB} from '../wkb/helpers/parse-wkb-header';
 
 /**
@@ -131,6 +131,7 @@ function isBinaryGeometry(input: unknown): input is BinaryGeometry {
   );
 }
 
+/** Extracts the visible byte range expected by legacy TWKB conversion. */
 function toArrayBuffer(input: ArrayBufferLike): ArrayBuffer {
   if (input instanceof ArrayBuffer) {
     return input;

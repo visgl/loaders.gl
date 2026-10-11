@@ -57,7 +57,16 @@ export function convertGeoArrow(
  * Checks whether a value is an Arrow table with GeoArrow metadata.
  */
 export function isGeoArrowApacheTable(input: arrow.Table | Table): input is arrow.Table {
-  if (typeof input !== 'object' || input === null || 'shape' in input) {
+  if (
+    typeof input !== 'object' ||
+    input === null ||
+    'shape' in input ||
+    !('schema' in input) ||
+    !input.schema ||
+    !Array.isArray(input.schema.fields) ||
+    !('getChild' in input) ||
+    typeof input.getChild !== 'function'
+  ) {
     return false;
   }
   const schema = convertArrowToSchema((input as arrow.Table).schema);

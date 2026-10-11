@@ -9,7 +9,7 @@ import type {
   ArrowTableBatch,
   ObjectRowTable
 } from '@loaders.gl/schema';
-import {convertWKBTableToGeoJSON} from '@loaders.gl/gis';
+import {convertWKBTableToGeoJSON} from '@loaders.gl/arrow-geometry/wkb-table';
 import {convertArrowToTable} from '@loaders.gl/schema-utils';
 
 import type {ParquetLoaderOptions} from '../../parquet-loader-options';

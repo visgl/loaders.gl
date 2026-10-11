@@ -6,7 +6,8 @@ import {expect, test} from 'vitest';
 
 import type {Geometry} from '@loaders.gl/schema';
 
-import {encodeWKBGeometryValue, getWKBGeometryStatistics} from '../../src/index';
+import {encodeWKBGeometryValue} from '../src/geometry-field';
+import {getWKBGeometryStatistics} from '../src/wkb-statistics';
 
 const GEOMETRY_FAMILY_CASES: Array<{geometry: Geometry; geometryType: number}> = [
   {geometry: {type: 'Point', coordinates: [1, 2]}, geometryType: 1},

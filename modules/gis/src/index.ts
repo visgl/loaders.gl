@@ -8,18 +8,18 @@ export {GIS_CONVERTERS} from './converters';
 export type {
   WKBGeometryBoundingBox,
   WKBGeometryStatistics
-} from './lib/geometry-converters/wkb/get-wkb-geometry-statistics';
-export {getWKBGeometryStatistics} from './lib/geometry-converters/wkb/get-wkb-geometry-statistics';
+} from '@loaders.gl/arrow-geometry/wkb-statistics';
+export {getWKBGeometryStatistics} from '@loaders.gl/arrow-geometry/wkb-statistics';
 
 // Geo Metadata
 export {
   getGeoArrowNativeGeometry,
   type GeoArrowNativeGeometry
-} from './lib/geoarrow/get-geoarrow-native-geometry';
+} from '@loaders.gl/arrow-geometry/native-geometry';
 export {
   getGeoArrowUnionGeometryKind,
   type GeoArrowUnionGeometryKind
-} from './lib/geoarrow/geoarrow-union-kind';
+} from '@loaders.gl/geoarrow';
 // import {default as GEOPARQUET_METADATA_SCHEMA} from './lib/geo/geoparquet-metadata-schema.json';
 // export {GEOPARQUET_METADATA_SCHEMA};
 // export {GEOPARQUET_METADATA_JSON_SCHEMA} from './lib/geoarrow/geoparquet-metadata-schema';
@@ -105,18 +105,18 @@ export type {GeojsonGeometryInfo} from './lib/geometry-api/geometry-info';
 export {getGeometryInfo} from './lib/geometry-api/geometry-info';
 
 // Binary Geometry Utilities
-export type {BinaryGeometryInfo} from './lib/binary-geometry-api/binary-geometry-info';
-export {getBinaryGeometryInfo} from './lib/binary-geometry-api/binary-geometry-info';
+export type {BinaryGeometryInfo} from '@loaders.gl/geoarrow';
+export {getBinaryGeometryInfo} from '@loaders.gl/geoarrow';
 export {
   transformBinaryCoords,
   transformGeoJsonCoords
-} from './lib/binary-geometry-api/transform-coordinates';
+} from '@loaders.gl/arrow-geometry/legacy-binary';
 
 // FEATURE COLLECTION CONVERSION
 export {
   FEATURE_COLLECTION_CONVERTERS,
   FeatureCollectionConverter
-} from './lib/feature-collection-converters/feature-collection-converter/feature-collection-converter';
+} from '@loaders.gl/geoarrow';
 export type {
   GeometryColumnBinaryEncoding,
   BinaryPointFeatureScratch,
@@ -125,11 +125,11 @@ export type {
   GeometryColumnBinaryFeatureCollectionScratch,
   GeometryColumnToBinaryFeatureCollectionOptions,
   TableGeometryColumnToBinaryFeatureCollectionOptions
-} from './lib/feature-collection-converters/convert-geometry-column-to-binary-feature-collection';
+} from '@loaders.gl/geoarrow';
 export {
   convertGeometryColumnToBinaryFeatureCollection,
   convertGeometryValuesToBinaryFeatureCollection
-} from './lib/feature-collection-converters/convert-geometry-column-to-binary-feature-collection';
+} from '@loaders.gl/geoarrow';
 export type {
   BinaryDataFromGeoArrow,
   BinaryGeometriesFromArrowOptions
@@ -145,7 +145,7 @@ export {convertGeoArrowTableToGeoJSON} from './lib/table-converters/convert-geoa
 export {
   convertArrowBinaryFeatureCollectionToBinaryFeatureCollection,
   convertBinaryFeatureCollectionToArrowBinaryFeatureCollection
-} from './lib/feature-collection-converters/convert-arrow-binary-feature-collection';
+} from '@loaders.gl/geoarrow';
 export type {
   LegacyGeoJSONCRS,
   GeoJSONToGeoArrowEncoding,
@@ -179,14 +179,14 @@ export {
   isWKT,
   getWKTGeometryType,
   parseWKBHeader
-} from './lib/geometry-converters/wkb/helpers/parse-wkb-header';
+} from '@loaders.gl/geoarrow';
 
-export type {WKBHeader} from './lib/geometry-converters/wkb/helpers/wkb-types';
-export {WKT_MAGIC_STRINGS} from './lib/geometry-converters/wkb/helpers/wkb-types';
+export type {WKBHeader} from '@loaders.gl/geoarrow';
+export {WKT_MAGIC_STRINGS} from '@loaders.gl/geoarrow';
 
 // GEOMETRY CONVERSION
-export type {GeometryShape} from './lib/geometry-converters/geometry-converter/geometry-converter';
-export {GeometryConverter} from './lib/geometry-converters/geometry-converter/geometry-converter';
+export type {GeometryShape} from '@loaders.gl/geoarrow';
+export {GeometryConverter} from '@loaders.gl/geoarrow';
 export {GeometryColumnConverter} from './lib/geometry-converters/geometry-column-converter';
 export type {
   BinaryGeometryWKBOptions,
@@ -228,5 +228,5 @@ export {getWKTDimension} from './lib/geometry-converters/wkb/convert-wkt-to-geom
 
 // EXPERIMENTAL APIs
 
-export {encodeHex, decodeHex} from './lib/utils/hex-transcoder';
+export {encodeHex, decodeHex} from '@loaders.gl/loader-utils';
 export {extractNumericPropTypes as _extractNumericPropTypes} from './lib/feature-collection-converters/convert-flat-geojson-to-binary-features';

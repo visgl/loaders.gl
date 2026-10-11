@@ -9,7 +9,10 @@ import type {
   FeatureCollection
 } from '@loaders.gl/schema';
 import {fetchFile} from '@loaders.gl/core';
-import {binaryToGeojson, convertBinaryGeometryToGeometry} from '@loaders.gl/gis';
+import {
+  convertBinaryFeatureCollectionToGeojson,
+  convertBinaryGeometryToGeometry
+} from '@loaders.gl/geoarrow';
 import {GEOMETRY_TEST_CASES} from '@loaders.gl/gis/test/data/binary-features/geometry-test-cases';
 import {EMPTY_BINARY_DATA} from '@loaders.gl/gis/test/data/binary-features/empty_binary';
 const FEATURE_COLLECTION_TEST_CASES =
@@ -26,7 +29,9 @@ test('binary-to-geojson feature collections', async () => {
   const {mixed, ...TEST_CASES} = parseTestCases(json);
   for (const testCase of Object.values(TEST_CASES)) {
     if (testCase.geoJSON && testCase.binary) {
-      expect(binaryToGeojson(testCase.binary)).toEqual(testCase.geoJSON.features);
+      expect(convertBinaryFeatureCollectionToGeojson(testCase.binary)).toEqual(
+        testCase.geoJSON.features
+      );
     }
   }
 });
@@ -84,13 +89,13 @@ test('binary-to-geojson !isHeterogeneousType', async () => {
   const {mixed, ...TEST_CASES} = parseTestCases(json);
   for (const testCase of Object.values(TEST_CASES)) {
     const binaryData = testCase.binary;
-    expect(binaryToGeojson(binaryData)).toEqual(testCase.geoJSON.features);
+    expect(convertBinaryFeatureCollectionToGeojson(binaryData)).toEqual(testCase.geoJSON.features);
   }
 });
 test('binary-to-geojson from empty binary object returns empty features array', () => {
-  const geojson = binaryToGeojson(EMPTY_BINARY_DATA);
+  const geojson = convertBinaryFeatureCollectionToGeojson(EMPTY_BINARY_DATA);
   expect(Array.isArray(geojson)).toBeTruthy();
-  // @ts-ignore binaryToGeojson typings are too loose
+  // @ts-ignore convertBinaryFeatureCollectionToGeojson typings are too loose
   expect(geojson?.length).toBe(0);
 });
 test('binary-to-geojson getSingleFeature', async () => {
@@ -100,9 +105,9 @@ test('binary-to-geojson getSingleFeature', async () => {
   for (const testCase of Object.values(TEST_CASES)) {
     if (testCase.geoJSON && testCase.binary) {
       for (let i = 0; i < testCase.geoJSON.features.length; ++i) {
-        expect(binaryToGeojson(testCase.binary, {globalFeatureId: i})).toEqual(
-          testCase.geoJSON.features[i]
-        );
+        expect(
+          convertBinaryFeatureCollectionToGeojson(testCase.binary, {globalFeatureId: i})
+        ).toEqual(testCase.geoJSON.features[i]);
       }
     }
   }
@@ -112,7 +117,7 @@ test('binary-to-geojson getSingleFeature fail', async () => {
   const json = await response.json();
   const testCase = parseTestCases(json).point;
   expect(
-    () => binaryToGeojson(testCase.binary, {globalFeatureId: -1}),
+    () => convertBinaryFeatureCollectionToGeojson(testCase.binary, {globalFeatureId: -1}),
     'throws when globalFeatureId is not found'
   ).toThrow();
 });

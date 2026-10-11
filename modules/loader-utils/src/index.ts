@@ -507,3 +507,4 @@ export type {RasterMixedData, NumericRasterData} from './lib/sources/raster-sour
 export {waitForPromiseWithSignal, waitForPromiseWithSignals} from './lib/request-utils/abort-utils';
 
 export {validateRasterRegion} from './lib/sources/raster-region';
+export {encodeHex, decodeHex} from './lib/binary-utils/hex-transcoder';

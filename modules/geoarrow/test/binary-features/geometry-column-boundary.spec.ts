@@ -8,7 +8,7 @@ import {
   convertGeometryColumnToBinaryFeatureCollection,
   convertGeometryToWKB,
   convertGeometryValuesToBinaryFeatureCollection
-} from '@loaders.gl/gis';
+} from '@loaders.gl/geoarrow';
 
 describe('geometry-column binary boundary coverage', () => {
   test('infers text, binary views, ArrayBuffers, null-only columns, and getter-backed values', () => {

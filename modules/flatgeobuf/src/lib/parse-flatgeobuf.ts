@@ -17,7 +17,7 @@ import {
   type TableQueryOptions
 } from '@loaders.gl/loader-utils';
 import {convertGeojsonToBinaryFeatureCollection} from '@loaders.gl/arrow-geometry/legacy-binary';
-import {transformGeoJsonCoords} from '@loaders.gl/gis';
+import {transformGeoJsonCoords} from '@loaders.gl/arrow-geometry/legacy-binary';
 import {
   encodeWKBGeometryValue,
   makeWKBGeometryField,

@@ -7,8 +7,8 @@ import {
   convertArrowBinaryFeatureCollectionToBinaryFeatureCollection,
   convertBinaryFeatureCollectionToArrowBinaryFeatureCollection,
   convertGeometryValuesToBinaryFeatureCollection
-} from '@loaders.gl/gis';
-test('gis#arrow-binary-feature-collection wraps renderable binary features in Arrow tables', () => {
+} from '@loaders.gl/geoarrow';
+test('geoarrow#arrow-binary-feature-collection wraps renderable binary features in Arrow tables', () => {
   const binaryFeatures = convertGeometryValuesToBinaryFeatureCollection(
     ['POINT (1 2)', 'LINESTRING (0 0, 1 1, 2 2)', 'POLYGON ((0 0, 3 0, 3 3, 0 0))'],
     {geometryEncoding: 'wkt'}
@@ -41,7 +41,7 @@ test('gis#arrow-binary-feature-collection wraps renderable binary features in Ar
     'reuses line coordinate values without copying'
   ).toBe(binaryFeatures.lines?.positions.value.buffer);
 });
-test('gis#arrow-binary-feature-collection round-trips binary feature collections', () => {
+test('geoarrow#arrow-binary-feature-collection round-trips binary feature collections', () => {
   const binaryFeatures = convertGeometryValuesToBinaryFeatureCollection(
     ['MULTIPOINT ((1 2), (3 4))', 'LINESTRING (0 0, 1 1)', 'POLYGON ((0 0, 2 0, 2 2, 0 0))'],
     {geometryEncoding: 'wkt'}

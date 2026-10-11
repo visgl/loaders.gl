@@ -23,6 +23,11 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
 
 <GeoArrowFlowGraphic />
 
+GIS is a temporary compatibility package. Applications should use
+[`@loaders.gl/geoarrow`](../geoarrow/README.md); loaders use the lower-level
+owners listed in the [GIS migration map](../geoarrow/gis-migration.md).
+Retained converter and rendering APIs now forward to GeoArrow.
+
 <DocOrientation
   eyebrow="What belongs here"
   title="Small conversions with large downstream value."

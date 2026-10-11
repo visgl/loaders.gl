@@ -6,6 +6,8 @@ import * as arrow from 'apache-arrow';
 import type {GeoArrowEncoding} from '@loaders.gl/schema';
 import {getGeoArrowUnionGeometryKind, type GeoArrowUnionGeometryKind} from './geoarrow-union-kind';
 
+export {getGeoArrowUnionGeometryKind, type GeoArrowUnionGeometryKind} from './geoarrow-union-kind';
+
 /** Native geometry value containing coordinate arrays without GeoJSON properties. */
 export type GeoArrowNativeGeometry =
   | {type: 'Point'; coordinates: number[]}
