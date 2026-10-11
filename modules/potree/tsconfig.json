@@ -11,6 +11,8 @@
     {"path": "../core"},
     {"path": "../las"},
     {"path": "../schema"},
-    {"path": "../schema-utils"}
+    {"path": "../schema-utils"},
+    {"path": "../compression"},
+    {"path": "../loader-utils"}
   ]
 }

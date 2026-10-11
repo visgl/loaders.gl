@@ -14,6 +14,10 @@ test('tile-converter(v5)#package export resolves to its built CommonJS entrypoin
     createTileConversionArchive,
     encodeMeshTile,
     convertPointCloudSource,
+    convertPointCloudToTileset,
+    encodePotreeArchive,
+    openPointCloudFile,
+    extractMeshVertices,
     convertTileset,
     inspectTileset,
     validateTileset
@@ -23,6 +27,10 @@ test('tile-converter(v5)#package export resolves to its built CommonJS entrypoin
   expect(convertTileset).toBeTypeOf('function');
   expect(createTilesetConversionSource).toBeTypeOf('function');
   expect(convertPointCloudSource).toBeTypeOf('function');
+  expect(convertPointCloudToTileset).toBeTypeOf('function');
+  expect(encodePotreeArchive).toBeTypeOf('function');
+  expect(openPointCloudFile).toBeTypeOf('function');
+  expect(extractMeshVertices).toBeTypeOf('function');
   expect(encodeMeshTile).toBeTypeOf('function');
   expect(createMeshConversionCodec).toBeTypeOf('function');
   expect(createSingleMeshTilesetSink).toBeTypeOf('function');
@@ -42,6 +50,10 @@ test('tile-converter(v5)#browser package export resolves to its browser entrypoi
     createTileConversionArchive,
     encodeMeshTile,
     convertPointCloudSource,
+    convertPointCloudToTileset,
+    encodePotreeArchive,
+    openPointCloudFile,
+    extractMeshVertices,
     createBoundedMemoryTileConversionSink,
     createBrowserTileConversionSource,
     createBrowserTilesetConversionSource,
@@ -51,6 +63,10 @@ test('tile-converter(v5)#browser package export resolves to its browser entrypoi
   expect(packagePath).toMatch(/apps[\\/]tile-converter[\\/]dist[\\/]v5[\\/]browser\.cjs$/);
   expect(createBoundedMemoryTileConversionSink).toBeTypeOf('function');
   expect(convertPointCloudSource).toBeTypeOf('function');
+  expect(convertPointCloudToTileset).toBeTypeOf('function');
+  expect(encodePotreeArchive).toBeTypeOf('function');
+  expect(openPointCloudFile).toBeTypeOf('function');
+  expect(extractMeshVertices).toBeTypeOf('function');
   expect(encodeMeshTile).toBeTypeOf('function');
   expect(createMeshConversionCodec).toBeTypeOf('function');
   expect(createSingleMeshTilesetSink).toBeTypeOf('function');
@@ -88,6 +104,23 @@ test('tile-converter v5 built core and adapters share identities in ESM and Comm
       assert.equal(combined.encodeMeshTile, formats.encodeMeshTile);
       assert.equal(combined.encodePointCloudTileWithMetadata, formats.encodePointCloudTileWithMetadata);
       assert.equal(combined.createPointCloudTilesetSink, formats.createPointCloudTilesetSink);
+      assert.equal(combined.convertPointCloudToTileset, formats.convertPointCloudToTileset);
+      for (const name of ['encodePotreeArchive', 'openPointCloudFile', 'extractMeshVertices']) assert.equal(combined[name], formats[name]);
+      const pointArchive = await formats.encodePotreeArchive({
+        topology: 'point-list', mode: 0, schema: {fields: [], metadata: {}},
+        attributes: {POSITION: {value: new Float64Array([1, 2, 3]), size: 3}}
+      }, {maxArchiveBytes: 4096});
+      const openedPoints = await formats.openPointCloudFile(pointArchive, {format: 'potree-zip', maxFileBytes: 4096});
+      try { assert.equal((await openedPoints.source.getRootTile()).pointCount, 1); } finally { await openedPoints.close(); }
+      const authoredPoints = await formats.convertPointCloudToTileset({
+        topology: 'point-list', mode: 0, schema: {fields: [], metadata: {}},
+        attributes: {POSITION: {value: new Float64Array([6378137.125, 0.25, 0.5]), size: 3}}
+      }, {
+        spatialReference: portable.createTiles3DConversionSpatialContext({sourceCrs: 'EPSG:4978', coordinateFrame: 'geocentric', axisOrder: 'xyz', heightReference: 'ellipsoidal'}).spatialReference,
+        maxTotalBytes: 4096, maxTiles: 1, geometricError: 0
+      });
+      assert.equal(authoredPoints.pointCount, 1);
+      assert.equal(authoredPoints.files.length, 2);
       const point = formats.encodePointCloudTileWithMetadata({attributes: {POSITION: {value: new Float64Array([6378137.1, 0, 0]), size: 3}}}, {rtcCenter: [6378137, 0, 0], maxPositionError: 0.001});
       const pointSink = formats.createPointCloudTilesetSink({maxTotalBytes: 4096, maxTiles: 1, geometricError: 0.001});
       await pointSink.write({...point, id: 'point', header: {}, coordinateSystem: 'cartesian', cartographicOrigin: [0, 0, 0], spatialReference: portable.createTiles3DConversionSpatialContext({sourceCrs: 'EPSG:4978', coordinateFrame: 'geocentric', axisOrder: 'xyz', heightReference: 'ellipsoidal'}).spatialReference});

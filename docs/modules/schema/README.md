@@ -48,6 +48,20 @@ import {CategoryDataConcept} from '@site/src/components/home/concepts';
 
 ## What the module provides
 
+### Geospatial metadata validation
+
+Geometry/GeoParquet metadata types and dependency-light metadata helpers are
+available from the root. Runtime validators are isolated in
+`@loaders.gl/schema/geospatial-metadata-zod-schema`, so importing the root does
+not load Zod. The subpath exports `GeoArrowMetadataSchema`,
+`GeoParquetMetadataSchema`, `GeoParquetColumnMetadataSchema` and
+`GeoParquetGeometryTypeSchema`.
+
+Generated schemas are available at
+`@loaders.gl/schema/geoparquet.schema.json` and
+`@loaders.gl/schema/geoarrow-metadata.schema.json`. The old GIS subpaths remain
+compatibility entry points.
+
 The schema module is the small contract shared by loaders, sources, converters, and writers. It
 describes the data shape without taking ownership of the format-specific decoder.
 

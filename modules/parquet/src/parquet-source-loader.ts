@@ -23,7 +23,7 @@ import type {
 } from '@loaders.gl/loader-utils';
 import type {ArrayType, ArrowTable, Schema} from '@loaders.gl/schema';
 import {convertTable} from '@loaders.gl/schema-utils';
-import {getGeoMetadata} from '@loaders.gl/gis';
+import {getGeoMetadata} from '@loaders.gl/schema';
 
 import {getSchemaFromParquetReader} from './lib/parsers/get-parquet-schema';
 import {

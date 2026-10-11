@@ -3,7 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import type {LoaderOptions, LoaderWithParser} from '@loaders.gl/loader-utils';
-import {geojsonToBinary} from '@loaders.gl/gis';
+import {convertGeojsonToBinaryFeatureCollection as geojsonToBinary} from '@loaders.gl/arrow-geometry/legacy-binary';
 import type {
   GeoJSONTable,
   FeatureCollection,

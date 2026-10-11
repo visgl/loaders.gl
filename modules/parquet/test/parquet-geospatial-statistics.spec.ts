@@ -5,7 +5,7 @@
 import {expect, test} from 'vitest';
 
 import {encode, load} from '@loaders.gl/core';
-import {encodeWKBGeometryValue} from '@loaders.gl/gis';
+import {encodeWKBGeometryValue} from '@loaders.gl/arrow-geometry/geometry-field';
 import type {ObjectRowTable} from '@loaders.gl/schema';
 import {
   ParquetJSWriter,

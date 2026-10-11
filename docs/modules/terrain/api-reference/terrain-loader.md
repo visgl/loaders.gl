@@ -73,6 +73,20 @@ const table = await load(url, TerrainLoader, {
 
 `TerrainLoader` internally decodes heightmap images with [`ImageBitmapLoader`](/docs/modules/images/api-reference/image-bitmap-loader) and then converts them with `getImageData(image)`.
 
+For [Terrarium](https://github.com/tilezen/joerd/blob/master/docs/formats.md) imagery,
+including Mapterhorn terrain WebP tiles, use the named preset:
+
+```typescript
+import {TERRARIUM_ELEVATION_DECODER} from '@loaders.gl/terrain/heightmap';
+
+const terrain = await load(url, TerrainLoader, {
+  terrain: {elevationDecoder: TERRARIUM_ELEVATION_DECODER}
+});
+```
+
+If you only need elevation samples, use the lightweight
+[heightmap utilities](./heightmap.md) instead of reconstructing a mesh.
+
 ## Options
 
 | Option                     | Type            | Default   | Description                                                                                                                                   |
@@ -89,9 +103,9 @@ const table = await load(url, TerrainLoader, {
 Parameters used to convert a pixel to elevation in meters.
 An object containing the following fields:
 
-- `rScale`: Multiplier of the red channel.
-- `gScale`: Multiplier of the green channel.
-- `bScale`: Multiplier of the blue channel.
+- `rScaler`: Multiplier of the red channel.
+- `gScaler`: Multiplier of the green channel.
+- `bScaler`: Multiplier of the blue channel.
 - `offset`: Translation of the sum.
 
 Each color channel (r, g, and b) is a number between `[0, 255]`.
@@ -106,9 +120,9 @@ The corresponding `elevationDecoder` is:
 
 ```
 {
-  "rScale": 6553.6,
-  "gScale": 25.6,
-  "bScale": 0.1,
+  "rScaler": 6553.6,
+  "gScaler": 25.6,
+  "bScaler": 0.1,
   "offset": -10000
 }
 ```
@@ -117,9 +131,9 @@ The default value of `elevationDecoder` decodes a grayscale image:
 
 ```
 {
-  "rScale": 1,
-  "gScale": 0,
-  "gScale": 0,
+  "rScaler": 1,
+  "gScaler": 0,
+  "bScaler": 0,
   "offset": 0
 }
 ```

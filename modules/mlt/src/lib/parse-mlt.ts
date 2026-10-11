@@ -12,16 +12,18 @@ import type {
   Schema,
   GeoParquetGeometryType
 } from '@loaders.gl/schema';
+import {convertGeojsonToBinaryFeatureCollection as geojsonToBinary} from '@loaders.gl/arrow-geometry/legacy-binary';
 import {
-  geojsonToBinary,
   makeWKBGeometryField,
-  makeWKBGeometryDataFromWriters,
-  setWKBGeometrySchemaMetadata,
+  setWKBGeometrySchemaMetadata
+} from '@loaders.gl/arrow-geometry/geometry-field';
+import {makeWKBGeometryDataFromWriters} from '@loaders.gl/arrow-geometry/wkb-arrow-utils';
+import {
   GeoArrowBuilder,
   type GeoArrowBuilderDimension,
   type GeoArrowBuilderEncoding,
   type WKBGeometryWriter
-} from '@loaders.gl/gis';
+} from '@loaders.gl/arrow-geometry';
 import {
   ArrowTableBuilder,
   convertArrowToSchema,

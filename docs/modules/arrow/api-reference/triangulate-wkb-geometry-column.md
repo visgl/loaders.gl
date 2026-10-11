@@ -17,7 +17,7 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
   meta={['GeoArrow WKB', 'Polygon triangulation', 'Arrow columns']}
   links={[
     {label: 'Arrow module', to: '/docs/modules/arrow'},
-    {label: 'GIS module', to: '/docs/modules/gis'},
+    {label: 'GeoArrow module', to: '/docs/modules/geoarrow'},
     {label: 'GeoArrow format', to: '/docs/modules/arrow/formats/geoarrow'}
   ]}
 />

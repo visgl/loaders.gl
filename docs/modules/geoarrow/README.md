@@ -8,6 +8,10 @@ title: GeoArrow module
 processing for geospatial Arrow tables. Applications can install it when they
 need more than the geometry construction helpers used by loaders.
 
+GeoArrow is independent of the deprecated GIS package. See the
+[GIS migration map](./gis-migration.md) for replacement imports, the combined
+`GEOARROW_CONVERTERS` bundle, and legacy rendering allocation semantics.
+
 ```bash
 npm install @loaders.gl/geoarrow
 ```
@@ -37,5 +41,5 @@ const wkbTable = convertGeoArrowGeometry(geoarrowTable, 'geoarrow.wkb');
 See [GeoArrow converters](/docs/developer-guide/converters/geoarrow-converters)
 for column selection and encoding support, and
 [spatial queries](/docs/developer-guide/spatial-queries) for index usage and CRS requirements.
-Loader implementations should use the minimal helpers in `@loaders.gl/gis`
+Loader implementations should use the focused helpers in `@loaders.gl/arrow-geometry`
 instead of depending on the larger processing module.

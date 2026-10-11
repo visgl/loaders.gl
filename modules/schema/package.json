@@ -27,7 +27,14 @@
       "types": "./dist/index.d.ts",
       "import": "./dist/index.js",
       "require": "./dist/index.cjs"
-    }
+    },
+    "./geospatial-metadata-zod-schema": {
+      "types": "./dist/geospatial-metadata-zod-schema.d.ts",
+      "import": "./dist/geospatial-metadata-zod-schema.js",
+      "require": "./dist/geospatial-metadata-zod-schema.cjs"
+    },
+    "./geoparquet.schema.json": "./dist/geoparquet.schema.json",
+    "./geoarrow-metadata.schema.json": "./dist/geoarrow-metadata.schema.json"
   },
   "sideEffects": false,
   "files": [
@@ -36,14 +43,16 @@
     "README.md"
   ],
   "scripts": {
-    "pre-build": "npm run build-bundle && npm run build-bundle-dev",
+    "pre-build": "npm run build-bundle && npm run build-bundle-dev && npm run generate-json-schema",
     "build-bundle": "ocular-bundle ./bundle.ts --output=dist/dist.min.js",
-    "build-bundle-dev": "ocular-bundle ./bundle.ts --env=dev --output=dist/dist.dev.js"
+    "build-bundle-dev": "ocular-bundle ./bundle.ts --env=dev --output=dist/dist.dev.js",
+    "generate-json-schema": "node ../../scripts/generate-json-schema.mjs --schema ./dist/geospatial-metadata-zod-schema.js --export GeoParquetMetadataSchema --output ./dist/geoparquet.schema.json --id https://unpkg.com/@loaders.gl/schema/geoparquet.schema.json --title 'loaders.gl GeoParquet metadata' && node ../../scripts/generate-json-schema.mjs --schema ./dist/geospatial-metadata-zod-schema.js --export GeoArrowMetadataSchema --output ./dist/geoarrow-metadata.schema.json --id https://unpkg.com/@loaders.gl/schema/geoarrow-metadata.schema.json --title 'loaders.gl GeoArrow field metadata'"
   },
   "dependencies": {
     "@math.gl/types": "5.0.0-alpha.15",
     "@types/geojson": "^7946.0.7",
-    "apache-arrow": ">= 17.0.0"
+    "apache-arrow": ">= 17.0.0",
+    "zod": "^4.1.12"
   },
   "gitHead": "8a9e77743ea90a7be4ebec572416bb50ca9d73c3"
 }

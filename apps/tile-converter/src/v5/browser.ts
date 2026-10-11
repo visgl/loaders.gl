@@ -137,3 +137,21 @@ export type {
   I3SMeshTilesetSourceOptions,
   I3SMeshSourceFeatureOptions
 } from '@loaders.gl/tile-converter/v5/adapters';
+
+export {convertPointCloudToTileset} from '@loaders.gl/tile-converter/v5/adapters';
+export type {
+  ConvertPointCloudToTilesetOptions,
+  ConvertedPointCloudTileset
+} from '@loaders.gl/tile-converter/v5/adapters';
+
+export {
+  encodePotreeArchive,
+  openPointCloudFile,
+  extractMeshVertices
+} from '@loaders.gl/tile-converter/v5/adapters';
+export type {
+  EncodePotreeArchiveOptions,
+  OpenPointCloudFileOptions,
+  OpenedPointCloudFile,
+  ExtractMeshVerticesOptions
+} from '@loaders.gl/tile-converter/v5/adapters';

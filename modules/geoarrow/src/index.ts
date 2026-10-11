@@ -168,17 +168,17 @@ export type {
   GeoArrowUnionChildLayout
 } from './geoarrow-layout';
 
-export {updateBoundsFromGeoArrowSamples} from '@loaders.gl/gis';
+export {updateBoundsFromGeoArrowSamples} from '@loaders.gl/arrow-geometry/sampled-bounds';
 
 export type {
   BinaryDataFromGeoArrow,
   BinaryGeometriesFromArrowOptions
-} from '@loaders.gl/gis';
+} from '@loaders.gl/arrow-geometry/binary-features';
 export {
   getBinaryGeometryTemplate,
   getTriangleIndices,
   getMeanCentersFromBinaryGeometries
-} from '@loaders.gl/gis';
+} from '@loaders.gl/arrow-geometry/binary-features';
 export {
   convertGeoArrowGeometryToGeoJSON,
   convertGeoArrowToBinaryFeatureCollection,
@@ -192,3 +192,24 @@ export type {GeoArrowConvertFromEncoding} from './convert-table-to-geoarrow';
 
 export {GeoArrowSpatialIndex} from './geoarrow-spatial-index';
 export type {GeoArrowFeatureId, GeoArrowNearestFeature} from './geoarrow-spatial-index';
+export * from './compatibility';
+export {GeoArrowGeometryConverter as GeometryColumnConverter} from './geoarrow-converter/geoarrow-geometry-converter';
+export {
+  transformBinaryCoords,
+  transformGeoJsonCoords,
+  convertGeojsonToBinaryFeatureCollection,
+  getGeometryInfo
+} from '@loaders.gl/arrow-geometry/legacy-binary';
+export {
+  convertBinaryGeometryToWKB,
+  getBinaryGeometryWKBSize,
+  inferBinaryGeometryTypes,
+  reprojectWKBInPlace,
+  writeBinaryGeometryToWKB
+} from '@loaders.gl/arrow-geometry/binary-geometry-to-wkb';
+export {
+  convertWKBToGeometry,
+  convertWKTToGeometry,
+  convertGeometryToWKB,
+  convertGeometryToWKT
+} from '@loaders.gl/arrow-geometry/geometry-codecs';

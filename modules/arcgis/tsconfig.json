@@ -8,7 +8,7 @@
     "outDir": "dist"
   },
   "references": [
-    {"path": "../gis"},
+    {"path": "../arrow-geometry"},
     {"path": "../images"},
     {"path": "../i3s"},
     {"path": "../lerc"},

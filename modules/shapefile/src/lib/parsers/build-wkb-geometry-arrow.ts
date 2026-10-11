@@ -5,12 +5,12 @@
 import * as arrow from 'apache-arrow';
 import type {ArrowTable, Schema as TableSchema} from '@loaders.gl/schema';
 import {WKBBuilder} from '@loaders.gl/arrow/geometry';
+import {type CoordinateTransform} from '@loaders.gl/arrow-geometry/binary-geometry-to-wkb';
 import {
-  type CoordinateTransform,
   makeWKBGeometryArrowTable as makeSharedWKBGeometryArrowTable,
   makeWKBGeometryArrowTableFromData,
   makeWKBGeometryDataFromArray
-} from '@loaders.gl/gis';
+} from '@loaders.gl/arrow-geometry/wkb-arrow-utils';
 import type {SHPLoaderOptions} from './types';
 import {getRecordWKBOptions, writeRecordToWKB} from './parse-shp-geometry';
 

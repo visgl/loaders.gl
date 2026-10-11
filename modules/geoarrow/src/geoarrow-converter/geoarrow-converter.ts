@@ -5,6 +5,9 @@
 import type {Converter} from '@loaders.gl/schema-utils';
 import type {GeoArrowConvertFromOptions as GeoArrowTableConvertFromOptions} from '../convert-table-to-geoarrow';
 import {convertGeoArrow, isGeoArrowApacheTable} from './convert-geoarrow';
+import {GeometryConverter} from '../lib/geometry-converters/geometry-converter/geometry-converter';
+import {FeatureCollectionConverter} from '../lib/feature-collection-converters/feature-collection-converter/feature-collection-converter';
+import {GeoArrowGeometryConverter} from './geoarrow-geometry-converter';
 
 const convertGeoArrowUnchecked = convertGeoArrow as (
   input: unknown,
@@ -90,8 +93,13 @@ export const GeoArrowTableConverter: Converter<
 export const GeoArrowConverter = GeoArrowTableConverter;
 
 /**
- * Opt-in converter bundle for GeoArrow table conversions.
+ * Opt-in converter bundle for geospatial tables, geometry columns, geometries and rendering collections.
  */
-export const GEOARROW_CONVERTERS = [GeoArrowTableConverter] as const;
+export const GEOARROW_CONVERTERS = [
+  GeoArrowTableConverter,
+  GeoArrowGeometryConverter,
+  GeometryConverter,
+  FeatureCollectionConverter
+] as const;
 
 export {convertGeoArrow};

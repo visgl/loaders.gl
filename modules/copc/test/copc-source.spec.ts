@@ -1372,3 +1372,17 @@ function readCOPCContentColumn(
 function readUint64(dataView: DataView, byteOffset: number): number {
   return dataView.getUint32(byteOffset, true) + dataView.getUint32(byteOffset + 4, true) * 2 ** 32;
 }
+
+test('COPC close invalidates cached ranges, node content and progressive reads', async () => {
+  const source = new TestCOPCTileSource(createWorkerCOPCBlob(6), {core: {worker: false}});
+  const tile = await source.getRootTile();
+  expect(new TextDecoder().decode(await source.readCachedRange(0, 4))).toBe('LASF');
+  await source.close();
+  await source.close();
+  await expect(source.readCachedRange(0, 4)).rejects.toThrow('closed');
+  await expect(source.loadTileContent(tile)).rejects.toThrow('closed');
+  await expect(
+    source.loadTileContentInBatches(tile)[Symbol.asyncIterator]().next()
+  ).rejects.toThrow('closed');
+  await expect(source.getPoints({nodeIndex: [0, 0, 0, 0]})).rejects.toThrow('closed');
+});

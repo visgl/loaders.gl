@@ -177,6 +177,22 @@ itself and the separate `Tileset3D.loadOptions` API are not removed by this chan
    would strip Arrow table methods.
  - `draco.decoderType` has been removed. Use `draco.backend: 'wasm' | 'javascript' | 'draco3d'`.
 
+**Removed GIS package**
+
+- `@loaders.gl/gis` is removed in 5.0. Applications should replace it with
+  `@loaders.gl/geoarrow` for conversion and processing. Use `GEOARROW_CONVERTERS`
+  instead of `GIS_CONVERTERS`.
+- Import geometry and metadata types from `@loaders.gl/schema`. Runtime validators
+  use `@loaders.gl/schema/geospatial-metadata-zod-schema`; generated schemas use
+  `@loaders.gl/schema/geoparquet.schema.json` and
+  `@loaders.gl/schema/geoarrow-metadata.schema.json`.
+- Use `convertGeojsonToBinaryFeatureCollection` and
+  `convertBinaryFeatureCollectionToGeojson` from GeoArrow instead of the old
+  `geojsonToBinary` and `binaryToGeojson` aliases. Existing binary layouts are unchanged;
+  these conversions allocate and do not promise borrowed batch views.
+- See the [complete replacement import map](./modules/geoarrow/gis-migration.md),
+  including the lower-level loader helpers, direct math.gl codecs/CRS, and WKT's TWKB subpath.
+
 **Removed compatibility aliases**
 
  - The nonfunctional `@loaders.gl/images` `loadImage()` placeholder has been removed. Use

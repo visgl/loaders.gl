@@ -41,6 +41,9 @@
       "@loaders.gl/schema": [
         "modules/schema/src"
       ],
+      "@loaders.gl/schema/*": [
+        "modules/schema/src/*"
+      ],
       "@loaders.gl/schema/test": [
         "modules/schema/test"
       ],
@@ -125,6 +128,9 @@
       "@loaders.gl/arrow-geometry": [
         "modules/arrow-geometry/src"
       ],
+      "@loaders.gl/arrow-geometry/*": [
+        "modules/arrow-geometry/src/*"
+      ],
       "@loaders.gl/arrow/types": [
         "modules/arrow/src/types"
       ],
@@ -179,15 +185,6 @@
       ],
       "@loaders.gl/geotiff/test": [
         "modules/geotiff/test"
-      ],
-      "@loaders.gl/gis": [
-        "modules/gis/src"
-      ],
-      "@loaders.gl/gis/*": [
-        "modules/gis/src/*"
-      ],
-      "@loaders.gl/gis/test": [
-        "modules/gis/test"
       ],
       "@loaders.gl/gltf": [
         "modules/gltf/src"
@@ -378,6 +375,7 @@
       "@loaders.gl/scene/test": [
         "modules/scene/test"
       ],
+      "@loaders.gl/potree/potree-loader": ["modules/potree/src/potree-loader.ts"],
       "@loaders.gl/potree": [
         "modules/potree/src"
       ],
@@ -389,6 +387,10 @@
       ],
       "@loaders.gl/shapefile/test": [
         "modules/shapefile/test"
+      ],
+      "@loaders.gl/tiles/point-cloud-tile-source": ["modules/tiles/src/point-cloud-tile-source.ts"],
+      "@loaders.gl/tiles/point-cloud-tile-source-loader": [
+        "modules/tiles/src/point-cloud-tile-source-loader.ts"
       ],
       "@loaders.gl/tiles": [
         "modules/tiles/src"

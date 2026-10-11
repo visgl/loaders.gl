@@ -7,6 +7,8 @@ import {deduceMeshSchema, getMeshBoundingBox} from '@loaders.gl/schema-utils';
 import Martini from '@mapbox/martini';
 import Delatin from './delatin/index';
 import {addSkirt} from './helpers/skirt';
+import {decodeTerrainHeightmapInto} from './decode-terrain-heightmap';
+import type {ElevationDecoder} from './terrain-heightmap-types';
 
 export type TerrainOptions = {
   /** Maximum terrain mesh error in meters. */
@@ -28,17 +30,6 @@ type TerrainImage = {
   width: number;
   /** Terrain image height in pixels. */
   height: number;
-};
-
-type ElevationDecoder = {
-  /** Red channel elevation scale. */
-  rScaler: any;
-  /** Blue channel elevation scale. */
-  bScaler: any;
-  /** Green channel elevation scale. */
-  gScaler: any;
-  /** Elevation offset added after channel scaling. */
-  offset: number;
 };
 
 /**
@@ -163,21 +154,15 @@ function getTerrain(
   elevationDecoder: ElevationDecoder,
   tesselator: 'martini' | 'delatin'
 ) {
-  const {rScaler, bScaler, gScaler, offset} = elevationDecoder;
-
   // From Martini demo
   // https://observablehq.com/@mourner/martin-real-time-rtin-terrain-mesh
   const terrain = new Float32Array((width + 1) * (height + 1));
-  // decode terrain values
-  for (let i = 0, y = 0; y < height; y++) {
-    for (let x = 0; x < width; x++, i++) {
-      const k = i * 4;
-      const r = imageData[k + 0];
-      const g = imageData[k + 1];
-      const b = imageData[k + 2];
-      terrain[i + y] = r * rScaler + g * gScaler + b * bScaler + offset;
-    }
-  }
+  decodeTerrainHeightmapInto(
+    {data: imageData, width, height},
+    elevationDecoder,
+    terrain,
+    width + 1
+  );
 
   if (tesselator === 'martini') {
     // backfill bottom border
