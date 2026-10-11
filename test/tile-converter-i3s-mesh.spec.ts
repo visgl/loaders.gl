@@ -635,3 +635,20 @@ test('the I3S codec raw opt-out retains a readable raw geometry resource', async
     result.runtime.destroy();
   }
 });
+
+test('mesh source derives each inline class mapping from declarations when schema is omitted', async () => {
+  const {runtime} = await createRuntime(true);
+  const source = createMeshTilesetConversionSource(runtime, {
+    features: {metadataClass: 'building', sourceFeatureIdProperty: 'source_id'}
+  });
+  const iterator = source.read(await source.inspect())[Symbol.asyncIterator]();
+  const resource = (await iterator.next()).value!;
+  expect(
+    resource.features!.batches[0].schema.fields.find(field => field.name === 'feature_id')
+  ).toMatchObject({type: 'uint64', nullable: false});
+  expect(Array.from(resource.features!.batches[0].data.getChild('feature_id')!)).toEqual([
+    9007199254740993n,
+    18446744073709551615n
+  ]);
+  await iterator.return?.();
+});

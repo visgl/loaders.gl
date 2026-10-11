@@ -9,6 +9,7 @@ test('tile-converter(v5)#package export resolves to its built CommonJS entrypoin
   const {
     createTilesetConversionSource,
     createMeshConversionCodec,
+    createMeshSourceFeatureOptions,
     createSingleMeshTilesetSink,
     createSingleMeshTilesetArchive,
     createTileConversionArchive,
@@ -33,6 +34,7 @@ test('tile-converter(v5)#package export resolves to its built CommonJS entrypoin
   expect(extractMeshVertices).toBeTypeOf('function');
   expect(encodeMeshTile).toBeTypeOf('function');
   expect(createMeshConversionCodec).toBeTypeOf('function');
+  expect(createMeshSourceFeatureOptions).toBeTypeOf('function');
   expect(createSingleMeshTilesetSink).toBeTypeOf('function');
   expect(createSingleMeshTilesetArchive).toBeTypeOf('function');
   expect(createTileConversionArchive).toBeTypeOf('function');
@@ -45,6 +47,7 @@ test('tile-converter(v5)#browser package export resolves to its browser entrypoi
   const packagePath = require.resolve('@loaders.gl/tile-converter/v5/browser');
   const {
     createMeshConversionCodec,
+    createMeshSourceFeatureOptions,
     createSingleMeshTilesetSink,
     createSingleMeshTilesetArchive,
     createTileConversionArchive,
@@ -69,6 +72,7 @@ test('tile-converter(v5)#browser package export resolves to its browser entrypoi
   expect(extractMeshVertices).toBeTypeOf('function');
   expect(encodeMeshTile).toBeTypeOf('function');
   expect(createMeshConversionCodec).toBeTypeOf('function');
+  expect(createMeshSourceFeatureOptions).toBeTypeOf('function');
   expect(createSingleMeshTilesetSink).toBeTypeOf('function');
   expect(createSingleMeshTilesetArchive).toBeTypeOf('function');
   expect(createTileConversionArchive).toBeTypeOf('function');

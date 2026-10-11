@@ -147,3 +147,6 @@ export type {
   OpenedPointCloudFile,
   ExtractMeshVerticesOptions
 } from '@loaders.gl/tile-converter/v5/adapters';
+
+export {createMeshSourceFeatureOptions} from '@loaders.gl/tile-converter/v5/adapters';
+export type {MeshSourceSchemaOptions} from '@loaders.gl/tile-converter/v5/adapters';

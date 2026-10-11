@@ -87,3 +87,6 @@ export type {
   OpenedPointCloudFile,
   ExtractMeshVerticesOptions
 } from './point-cloud-file.js';
+
+export {createMeshSourceFeatureOptions} from './mesh-source-schema.js';
+export type {MeshSourceSchemaOptions} from './mesh-source-schema.js';

@@ -23,6 +23,8 @@ import type {BrowserTileConversionFile} from '@loaders.gl/tile-converter/v5/core
 export interface I3SMeshConversionResource extends EncodedI3SMeshLayer {
   /** Source placement identifier used for diagnostics. */
   readonly id: string;
+  /** Original I3S layer type when authoring from an I3S source. */
+  readonly sourceLayerType?: '3DObject' | 'IntegratedMesh';
 }
 
 /** Spatial preparation and required authoring limits for the I3S codec. */
@@ -34,6 +36,8 @@ export interface I3SMeshConversionCodecOptions
   readonly normalReferenceFrame?: 'earth-centered' | 'vertex-reference-frame';
   /** Lossless Edge Breaker geometry by default; false retains raw I3S geometry. */
   readonly draco?: boolean;
+  /** Explicitly authorize IntegratedMesh input to become 3DObject output; omission rejects it. */
+  readonly integratedMeshPolicy?: 'as-3d-object';
   /** Full Draco encoder/decoder runtime URLs or injected modules. */
   readonly dracoLibraryOptions?: I3SDracoLibraryOptions;
 }
@@ -42,6 +46,15 @@ export interface I3SMeshConversionCodecOptions
 export function createI3SMeshConversionCodec<TInspection = unknown>(
   options: I3SMeshConversionCodecOptions
 ): TileConversionCodec<TInspection, MeshSourceResource, I3SMeshConversionResource> {
+  if (
+    options.integratedMeshPolicy !== undefined &&
+    options.integratedMeshPolicy !== 'as-3d-object'
+  ) {
+    throw new TileConversionError(
+      'I3S_LAYER_TYPE_POLICY_INVALID',
+      'Unknown IntegratedMesh conversion policy'
+    );
+  }
   const reference = options.spatialContext.spatialReference;
   const height =
     reference.targetHeightReference === 'native'
@@ -65,6 +78,15 @@ export function createI3SMeshConversionCodec<TInspection = unknown>(
     /** Places a source mesh in ECEF and authors one layer without modifying source arrays. */
     async *convert(resource, _inspection, signal) {
       signal?.throwIfAborted();
+      if (
+        resource.sourceLayerType === 'IntegratedMesh' &&
+        options.integratedMeshPolicy !== 'as-3d-object'
+      ) {
+        throw new TileConversionError(
+          'I3S_LAYER_TYPE_CHANGE_REQUIRED',
+          'IntegratedMesh to 3DObject conversion requires integratedMeshPolicy=as-3d-object'
+        );
+      }
       const mesh = validateMeshGeometry(resource.mesh, true);
       const positions = mesh.attributes.POSITION.value;
       const context = options.spatialContext;
@@ -105,11 +127,22 @@ export function createI3SMeshConversionCodec<TInspection = unknown>(
       signal?.throwIfAborted();
       objectIdOffset +=
         resource.features?.batches.reduce((total, batch) => total + batch.data.numRows, 0) ?? 1;
-      yield {id: resource.id, ...layer};
+      yield {id: resource.id, ...layer, sourceLayerType: resource.sourceLayerType};
     },
     /** Reports measured precision and explicitly authorized integer representation changes. */
     async validateOutput(resource) {
       return [
+        ...(resource.sourceLayerType === 'IntegratedMesh'
+          ? [
+              {
+                code: 'I3S_LAYER_TYPE_CHANGED',
+                message:
+                  'Explicitly authored IntegratedMesh geometry as I3S 1.7 3DObject; integrated surface layer semantics and source LOD are not preserved',
+                severity: 'warning' as const,
+                resourceId: resource.id
+              }
+            ]
+          : []),
         ...(resource.maximumPositionError > 0
           ? [
               {

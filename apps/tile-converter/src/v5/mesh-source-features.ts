@@ -7,6 +7,8 @@ import type {GLTFPostprocessed, GLTFMeshPrimitivePostprocessed} from '@loaders.g
 import type {I3SMeshFeatures} from '@loaders.gl/i3s';
 import {convertFeatureAttributesToArrowBatches} from './feature-arrow.js';
 import type {FeatureArrowBatchOptions} from './feature-arrow.js';
+import {createMeshSourceFeatureOptions} from './mesh-source-schema.js';
+import type {MeshSourceSchemaOptions} from './mesh-source-schema.js';
 import {TileConversionError} from '@loaders.gl/tile-converter/v5/core';
 
 /** Explicit source feature mapping; target type changes must be authorized separately. */
@@ -29,7 +31,7 @@ export function extractMeshFeatures(
     featureTableJson?: Record<string, unknown>;
   },
   mesh: MeshGeometry,
-  options?: MeshSourceFeatureOptions
+  options?: MeshSourceFeatureOptions | MeshSourceSchemaOptions
 ): I3SMeshFeatures | undefined {
   const declarations = primitive.extensions?.EXT_mesh_features?.featureIds;
   const metadata = gltf.extensions?.EXT_structural_metadata;
@@ -51,13 +53,14 @@ export function extractMeshFeatures(
   if (!options)
     throw new TileConversionError(
       'MESH_FEATURE_SCHEMA_REQUIRED',
-      'Feature extraction requires an explicit Arrow schema and class mapping'
+      'Feature extraction requires a class selection and a declared Arrow or inline source schema'
     );
   if (!options.metadataClass)
     throw new TileConversionError(
       'MESH_FEATURE_CLASS_REQUIRED',
       'Feature metadata class must be explicit'
     );
+  const mapping = 'schema' in options ? options : createMeshSourceFeatureOptions(gltf, options);
   let count: number;
   let attribute = legacy;
   let properties: Record<string, ArrayLike<unknown>>;
@@ -94,6 +97,17 @@ export function extractMeshFeatures(
         'Feature class and declared table counts must agree'
       );
     count = table.count;
+    // Qualified mesh writers require every feature row to own geometry. Check before defaults allocate.
+    if (
+      !Number.isSafeInteger(count) ||
+      count <= 0 ||
+      count > mesh.attributes.POSITION.value.length / 3
+    ) {
+      throw new TileConversionError(
+        'MESH_FEATURE_IDS_INVALID',
+        'Feature row count exceeds the available mesh vertices'
+      );
+    }
     properties = {};
     const classProperties = metadata.schema?.classes?.[table.class]?.properties;
     if (!classProperties)
@@ -110,6 +124,7 @@ export function extractMeshFeatures(
       string,
       {
         type: string;
+        required?: boolean;
         componentType?: string;
         array?: boolean;
         noData?: unknown;
@@ -141,18 +156,35 @@ export function extractMeshFeatures(
           `Property ${name} requires a separately qualified semantic mapping`
         );
       const data = column?.data;
-      if (data === undefined && property.default === undefined)
+      if (
+        (column !== undefined && (data === undefined || data === null)) ||
+        (data === undefined && property.required === true)
+      )
         throw new TileConversionError(
           'MESH_FEATURE_PROPERTY_UNAVAILABLE',
           `Property ${name} has not been decoded`
         );
-      const decoded = data ?? Array.from({length: count}, () => property.default);
+      const integer64 = ['INT64', 'UINT64'].includes(property.componentType || '');
+      if (
+        integer64 &&
+        property.default !== undefined &&
+        (typeof property.default !== 'number' || !Number.isSafeInteger(property.default))
+      ) {
+        throw new TileConversionError(
+          'MESH_FEATURE_PROPERTY_UNSUPPORTED',
+          `Property ${name} requires an exact 64-bit default`
+        );
+      }
+      const defaultValue =
+        integer64 && property.default !== undefined
+          ? BigInt(property.default as number)
+          : (property.default ?? null);
+      const decoded = data ?? Array.from({length: count}, () => defaultValue);
       if (property.noData === undefined || data === undefined) {
         properties[name] = decoded;
         continue;
       }
       const sentinel = property.noData;
-      const integer64 = ['INT64', 'UINT64'].includes(property.componentType || '');
       if (
         (property.type === 'STRING'
           ? typeof sentinel !== 'string'
@@ -169,7 +201,7 @@ export function extractMeshFeatures(
         );
       const comparable = integer64 ? BigInt(sentinel as number) : sentinel;
       properties[name] = Array.from(decoded as ArrayLike<unknown>, value =>
-        value === comparable ? (property.default ?? null) : value
+        value === comparable ? defaultValue : value
       );
     }
   } else {
@@ -237,7 +269,7 @@ export function extractMeshFeatures(
           .map(([name, values]) => [name, values[index]])
       )
     })),
-    options
+    mapping
   );
   const indices = mesh.indices?.value;
   const triangleFeatureIndices = new Uint32Array((indices?.length ?? vertexCount) / 3);
