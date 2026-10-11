@@ -3,7 +3,6 @@
 // Copyright (c) vis.gl contributors
 
 import {describe, expect, test} from 'vitest';
-import {HexEncoder} from '../../src/lib/utils/hex-encoder';
 import {getWKTGeometryType, isWKB, isWKT, parseWKBHeader} from '@loaders.gl/geoarrow';
 import {EWKB_FLAG_M, EWKB_FLAG_SRID, EWKB_FLAG_Z, WKBGeometryType} from '@loaders.gl/geoarrow';
 
@@ -18,20 +17,6 @@ function makeHeader(geometryCode: number, littleEndian = true, srid?: number): A
 }
 
 describe('WKB helper boundary behavior', () => {
-  test('encodes and decodes upper- and lower-case hexadecimal bytes', () => {
-    const encoder = new HexEncoder();
-    const input = new Uint8Array([0, 15, 16, 171, 255]);
-    const encoded = encoder.encode(input, new Uint8Array(encoder.getEncodedLength(input)));
-    expect(new TextDecoder().decode(encoded)).toBe('000F10ABFF');
-    expect(
-      encoder.decode(
-        new TextEncoder().encode('000f10abff'),
-        new Uint8Array(encoder.getDecodedLength(encoded))
-      )
-    ).toEqual(input);
-    expect(encoder.getDecodedLength(new Uint8Array(3))).toBe(2);
-  });
-
   test('recognizes WKT and valid WKB dialect headers', () => {
     expect(isWKT('POINT(1 2)')).toBe(true);
     expect(getWKTGeometryType(new TextEncoder().encode('MULTIPOLYGON(').buffer)).toBe(

@@ -113,7 +113,6 @@
     "@loaders.gl/crypto": "^5.0.0-alpha.0",
     "@loaders.gl/draco": "^5.0.0-alpha.0",
     "@loaders.gl/geopackage": "^5.0.0-alpha.0",
-    "@loaders.gl/gis": "^5.0.0-alpha.0",
     "@loaders.gl/gltf": "^5.0.0-alpha.0",
     "@loaders.gl/images": "^5.0.0-alpha.0",
     "@loaders.gl/i3s": "^5.0.0-alpha.0",

@@ -304,6 +304,7 @@ test('ArrowUtils#convertGeoArrowToBinaryFeatureCollection', async () => {
     await testGetBinaryGeometriesFromArrow(testCase[0], testCase[1]);
   }
 });
+/** Checks rendering buffers and properties from one native Arrow fixture. */
 async function testGetBinaryGeometriesFromArrow(
   arrowFile,
   expectedBinaryGeometries

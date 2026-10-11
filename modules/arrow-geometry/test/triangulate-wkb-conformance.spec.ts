@@ -1,139 +1,15 @@
-// loaders.gl
-// SPDX-License-Identifier: MIT
-// Copyright (c) vis.gl contributors
-
 import {expect, test} from 'vitest';
 import {fetchFile} from '@loaders.gl/core';
 import {earcut} from '@math.gl/polygon';
+import {triangulateWKB} from '@loaders.gl/arrow-geometry';
 import {
   convertGeometryToWKB,
-  convertWKBToBinaryGeometry,
-  convertWKBToGeometry,
-  isWKB,
-  triangulateWKB
-} from '@loaders.gl/gis';
+  convertWKBToGeometry
+} from '@loaders.gl/arrow-geometry/geometry-codecs';
 import type {Geometry, Position} from '@loaders.gl/schema';
 import {parseTestCases} from '@loaders.gl/wkt/test/data/wkt/parse-test-cases';
-
 const WKB_2D_TEST_CASES = '@loaders.gl/wkt/test/data/wkt/wkb-testdata2d.json';
 const WKB_Z_TEST_CASES = '@loaders.gl/wkt/test/data/wkt/wkb-testdataZ.json';
-
-function normalizeTypedArrays(value: unknown): unknown {
-  if (ArrayBuffer.isView(value) && !(value instanceof DataView)) {
-    return Array.from(value as ArrayLike<number>);
-  }
-
-  if (Array.isArray(value)) {
-    return value.map(entry => normalizeTypedArrays(entry));
-  }
-
-  if (value && typeof value === 'object') {
-    const normalizedEntries = Object.entries(value).map(([key, entry]) => [
-      key,
-      normalizeTypedArrays(entry)
-    ]);
-    return Object.fromEntries(normalizedEntries);
-  }
-
-  return value;
-}
-
-test('convertWKBToBinaryGeometry#2D', async () => {
-  const response = await fetchFile(WKB_2D_TEST_CASES);
-  const TEST_CASES = parseTestCases(await response.json());
-
-  const TEST_CASES2 = {multiPolygonWithTwoPolygons: TEST_CASES.multiPolygonWithTwoPolygons};
-  for (const [title, testCase] of Object.entries(TEST_CASES2)) {
-    // Little endian
-    if (testCase.wkb && testCase.binary) {
-      expect(isWKB(testCase.wkb)).toBe(true);
-      const result = convertWKBToBinaryGeometry(testCase.wkb);
-      expect(normalizeTypedArrays(result), title).toEqual(normalizeTypedArrays(testCase.binary));
-    }
-
-    // Big endian
-    if (testCase.wkbXdr && testCase.binary) {
-      expect(isWKB(testCase.wkbXdr)).toBe(true);
-      const result = convertWKBToBinaryGeometry(testCase.wkbXdr);
-      expect(normalizeTypedArrays(result), title).toEqual(normalizeTypedArrays(testCase.binary));
-    }
-  }
-});
-
-test('convertWKBToBinaryGeometry#Z', async () => {
-  const response = await fetchFile(WKB_Z_TEST_CASES);
-  const TEST_CASES = parseTestCases(await response.json());
-
-  for (const [title, testCase] of Object.entries(TEST_CASES)) {
-    // Little endian
-    if (testCase.wkb && testCase.binary) {
-      expect(isWKB(testCase.wkb)).toBe(true);
-      const result = convertWKBToBinaryGeometry(testCase.wkb);
-      expect(normalizeTypedArrays(result), title).toEqual(normalizeTypedArrays(testCase.binary));
-    }
-
-    // Big endian
-    if (testCase.wkbXdr && testCase.binary) {
-      expect(isWKB(testCase.wkbXdr)).toBe(true);
-      const result = convertWKBToBinaryGeometry(testCase.wkbXdr);
-      expect(normalizeTypedArrays(result), title).toEqual(normalizeTypedArrays(testCase.binary));
-    }
-
-    // if (testCase.wkbXdr && testCase.binary && testCase.geoJSON) {
-    //   t.deepEqual(parseSync(testCase.wkbXdr, WKBLoader, {wkb: {shape: 'geometry'}}), testCase.geoJSON);
-    // }
-  }
-});
-
-test('convertWKBToGeometry#GeometryCollection 2D', async () => {
-  const response = await fetchFile(WKB_2D_TEST_CASES);
-  const testCases = parseTestCases(await response.json());
-
-  for (const [title, testCase] of Object.entries(testCases)) {
-    if (testCase.geoJSON?.type !== 'GeometryCollection') {
-      continue;
-    }
-
-    if (testCase.wkb) {
-      expect(isWKB(testCase.wkb)).toBe(true);
-      expect(convertWKBToGeometry(testCase.wkb), `${title} little endian`).toEqual(
-        testCase.geoJSON
-      );
-    }
-
-    if (testCase.wkbXdr) {
-      expect(isWKB(testCase.wkbXdr)).toBe(true);
-      expect(convertWKBToGeometry(testCase.wkbXdr), `${title} big endian`).toEqual(
-        testCase.geoJSON
-      );
-    }
-  }
-});
-
-test('convertWKBToGeometry#GeometryCollection Z', async () => {
-  const response = await fetchFile(WKB_Z_TEST_CASES);
-  const testCases = parseTestCases(await response.json());
-
-  for (const [title, testCase] of Object.entries(testCases)) {
-    if (testCase.geoJSON?.type !== 'GeometryCollection') {
-      continue;
-    }
-
-    if (testCase.wkb) {
-      expect(isWKB(testCase.wkb)).toBe(true);
-      expect(convertWKBToGeometry(testCase.wkb), `${title} little endian`).toEqual(
-        testCase.geoJSON
-      );
-    }
-
-    if (testCase.wkbXdr) {
-      expect(isWKB(testCase.wkbXdr)).toBe(true);
-      expect(convertWKBToGeometry(testCase.wkbXdr), `${title} big endian`).toEqual(
-        testCase.geoJSON
-      );
-    }
-  }
-});
 
 test('triangulateWKB#2D matches GeoJSON earcut path', async () => {
   const response = await fetchFile(WKB_2D_TEST_CASES);

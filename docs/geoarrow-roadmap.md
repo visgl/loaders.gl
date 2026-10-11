@@ -49,7 +49,7 @@ them because the GeoArrow collection member union cannot recursively contain Geo
 
 - `@loaders.gl/schema` owns dependency-free wire types and metadata contracts.
 - `@loaders.gl/arrow-geometry` owns shared builders and focused loader-output helpers.
-- `@loaders.gl/gis` retains compatibility APIs during its staged removal.
+- The GIS compatibility package is removed; see the [replacement import map](./modules/geoarrow/gis-migration.md).
 - `@loaders.gl/geoarrow` owns conversion, layout inspection, validation, bounds, coordinate
   iteration, canonicalization, and metadata operations.
 - `@loaders.gl/parquet` owns GeoParquet I/O and remains independent of GeoArrow processing code.
