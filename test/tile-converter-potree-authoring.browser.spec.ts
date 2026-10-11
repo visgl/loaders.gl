@@ -4,6 +4,8 @@
 
 import {afterEach, expect, test, vi} from 'vitest';
 import type {Mesh} from '@loaders.gl/schema';
+import {parse} from '@loaders.gl/core';
+import {PotreeBinLoader} from '@loaders.gl/potree';
 import {PointCloudTiler, convertTableToMesh, makeMeshArrowTable} from '@loaders.gl/schema-utils';
 import {convertPointCloudToPotree, openPointCloudFile} from '@loaders.gl/tile-converter/v5/browser';
 import {convertPointCloudToPotree as convertRoot} from '@loaders.gl/tile-converter/v5';
@@ -238,4 +240,55 @@ test('Potree cancellation before indexing and during gathering returns no partia
     convertPointCloudToPotree(createPoints(), {...OPTIONS, signal: controller.signal})
   ).rejects.toThrow('cancel Potree authoring');
   expect(close).not.toHaveBeenCalled();
+});
+
+test.each([
+  'mesh',
+  'arrow'
+] as const)('Potree %s aliases remain canonical without extra gathered bytes', async shape => {
+  const bytes = new Uint8Array(4 * 16);
+  const view = new DataView(bytes.buffer);
+  for (let row = 0; row < 4; row++) {
+    for (let axis = 0; axis < 3; axis++) view.setInt32(row * 16 + axis * 4, row + axis + 1, true);
+    bytes.set([row * 3 + 1, row * 3 + 2, row * 3 + 3, row + 1], row * 16 + 12);
+  }
+  const input = await parse(bytes.buffer, PotreeBinLoader, {
+    worker: false,
+    potree: {
+      shape: shape === 'mesh' ? 'mesh' : 'arrow-table',
+      pointAttributes: ['POSITION_CARTESIAN', 'RGB_PACKED', 'CLASSIFICATION'],
+      scale: 1,
+      positionOrigin: [0, 0, 0]
+    }
+  });
+  const points = 'shape' in input ? convertTableToMesh(input) : input;
+  const maxGatheredBytes =
+    points.attributes.POSITION.value.byteLength +
+    points.attributes.COLOR_0.value.byteLength +
+    points.attributes.CLASSIFICATION.value.byteLength;
+  const result = await convertPointCloudToPotree(input, {
+    ...OPTIONS,
+    maxGatheredBytes,
+    archive: undefined
+  });
+  expect(result.dataset.metadata).toMatchObject({points: 4});
+  expect(result.dataset.metadata).toHaveProperty('attributes');
+  if ('attributes' in result.dataset.metadata)
+    expect(result.dataset.metadata.attributes.map(attribute => attribute.name)).toEqual([
+      'position',
+      'rgb',
+      'CLASSIFICATION'
+    ]);
+  const legacy = await convertPointCloudToPotree(points, {
+    ...OPTIONS,
+    maxGatheredBytes,
+    archive: undefined,
+    projection: 'EPSG:3857',
+    potree: {...OPTIONS.potree, version: '1.8'}
+  });
+  expect(legacy.dataset.metadata).toMatchObject({
+    pointAttributes: ['POSITION_CARTESIAN', 'RGB_PACKED', 'CLASSIFICATION'],
+    points: 4
+  });
+  expect(points.attributes.POSITION_CARTESIAN.value).toBe(points.attributes.POSITION.value);
 });

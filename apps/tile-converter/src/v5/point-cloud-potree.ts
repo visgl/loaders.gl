@@ -99,10 +99,9 @@ export async function convertPointCloudToPotree(
         throw new RangeError('Potree gathered node byte budget exceeded');
       }
       const mesh = await tiler.getTileMesh(node.id);
-      const nodeBytes = Object.values(mesh.attributes).reduce(
-        (bytes, attribute) => bytes + attribute.value.byteLength,
-        0
-      );
+      const nodeBytes = Array.from(
+        new Set(Object.values(mesh.attributes).map(attribute => attribute.value.buffer))
+      ).reduce((bytes, buffer) => bytes + buffer.byteLength, 0);
       if (nodeBytes > options.maxGatheredBytes - gatheredBytes) {
         throw new RangeError('Potree gathered node byte budget exceeded');
       }

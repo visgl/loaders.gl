@@ -351,3 +351,47 @@ test('concurrent splits cannot exceed the discovered node budget', async () => {
     tiler.close();
   }
 });
+
+test('point tiler preserves shared accessor storage and budgets unique gathered buffers', async () => {
+  const positions = new Float64Array([1, 2, 3, 4, 5, 6]);
+  const mesh = createPoints(2);
+  mesh.header = {vertexCount: 2};
+  mesh.attributes = {
+    POSITION: {value: positions, size: 3},
+    positionAlias: {value: new Float64Array(positions.buffer), size: 3},
+    // The same backing buffer with a different accessor must gather independent values.
+    component: {value: positions, size: 1, byteOffset: 8, byteStride: 24},
+    view: {value: positions.subarray(1), size: 1, byteStride: 24}
+  };
+  const tiler = new PointCloudTiler(mesh, {maximumDepth: 0, maxTileBytes: 80});
+  try {
+    const tile = await tiler.getTileMesh('r');
+    expect(tile.attributes.positionAlias.value).toBe(tile.attributes.POSITION.value);
+    expect(tile.attributes.component.value).toEqual(new Float64Array([2, 5]));
+    expect(tile.attributes.view.value).toEqual(new Float64Array([2, 5]));
+    expect(tile.attributes.component.value).not.toBe(tile.attributes.view.value);
+    expect(tile.attributes.POSITION.value).not.toBe(positions);
+    expect(tile.attributes.positionAlias.byteStride).toBe(0);
+    expect(tile.attributes.positionAlias.byteOffset).toBe(0);
+  } finally {
+    tiler.close();
+  }
+});
+
+test('point tiler restores exact Arrow storage aliases and keeps independent columns distinct', async () => {
+  const positions = new Float64Array([1, 2, 3, 4, 5, 6]);
+  const table = makeMeshArrowTable({
+    POSITION: {value: positions, size: 3},
+    alias: {value: new Float64Array(positions.buffer), size: 3},
+    independent: {value: positions.slice(), size: 3}
+  });
+  const tiler = new PointCloudTiler(table, {maximumDepth: 0, maxTileBytes: 96});
+  try {
+    const tile = await tiler.getTileMesh('r');
+    expect(tile.attributes.alias.value).toBe(tile.attributes.POSITION.value);
+    expect(tile.attributes.independent.value).toEqual(tile.attributes.POSITION.value);
+    expect(tile.attributes.independent.value).not.toBe(tile.attributes.POSITION.value);
+  } finally {
+    tiler.close();
+  }
+});
