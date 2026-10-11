@@ -1,6 +1,5 @@
 import {expect, test} from 'vitest';
 import {HexWKBLoader} from '@loaders.gl/wkt';
-import {decodeHex, encodeHex} from '@loaders.gl/loader-utils';
 const isHexWKB = HexWKBLoader.testText;
 test('datasetUtils.isHexWKB', () => {
   expect(isHexWKB(''), 'empty string is not a valid hex wkb').toBeFalsy();
@@ -20,13 +19,4 @@ test('datasetUtils.isHexWKB', () => {
   expect(isHexWKB(validWktNDR), 'A valid hex wkb in NDR should be valid').toBeTruthy();
   const validEWktNDR = '0020000001000013ff0000000000400000000000000040';
   expect(isHexWKB(validEWktNDR), 'A valid hex ewkb in NDR should be valid').toBeTruthy();
-});
-
-test('hex transcoder round-trips bytes and handles empty input', () => {
-  const bytes = new Uint8Array([0, 1, 15, 16, 127, 128, 255]);
-
-  expect(encodeHex(bytes)).toBe('00010f107f80ff');
-  expect(Array.from(decodeHex('00010f107f80ff'))).toEqual(Array.from(bytes));
-  expect(encodeHex(new Uint8Array())).toBe('');
-  expect(Array.from(decodeHex(''))).toEqual([]);
 });

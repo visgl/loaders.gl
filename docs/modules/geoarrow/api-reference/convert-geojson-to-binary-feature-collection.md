@@ -1,5 +1,5 @@
 ---
-title: geojsonToBinary
+title: convertGeojsonToBinaryFeatureCollection
 description: Convert GeoJSON features into typed render-oriented arrays for efficient geospatial visualization.
 hide_title: true
 page_style: designed
@@ -9,13 +9,13 @@ import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
 import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
 
 <DocPageHeader
-  eyebrow="GIS API · render conversion"
+  eyebrow="GeoArrow API · render conversion"
   title="Turn feature objects into typed geometry arrays."
-  description="geojsonToBinary removes repeated object traversal and serialization from a visualization path. It groups points, lines, and polygons into typed arrays while preserving the ids and properties an application needs."
+  description="convertGeojsonToBinaryFeatureCollection removes repeated object traversal and serialization from a visualization path. It groups points, lines, and polygons into typed arrays while preserving the ids and properties an application needs."
   tone="cyan"
   meta={['From GeoJSON', 'Typed arrays', 'Points / lines / polygons']}
   links={[
-    {label: 'GIS module', to: '/docs/modules/gis'},
+    {label: 'GeoArrow module', to: '/docs/modules/geoarrow'},
     {label: 'Render converters', to: '/docs/developer-guide/converters/render-converters'},
     {label: 'GIS category', to: '/docs/specifications/category-gis'}
   ]}
@@ -27,7 +27,7 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
   description="The output is organized by geometry family. Positions and indexes become typed arrays, while properties and feature ids remain available for picking, styling, and application logic."
   tone="cyan"
   items={[
-    {label: 'Input', value: 'A GeoJSON FeatureCollection or feature array'},
+    {label: 'Input', value: 'A GeoJSON feature array'},
     {label: 'Geometry bins', value: 'Separate points, lines, and polygons outputs'},
     {label: 'Typed data', value: 'Positions, offsets, ids, and numeric properties'},
     {label: 'Use it when', value: 'A renderer or worker benefits from binary transfer'}
@@ -35,7 +35,7 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
 />
 
 <ReferenceBoundary
-  title="geojsonToBinary output contract"
+  title="convertGeojsonToBinaryFeatureCollection output contract"
   description="The reference below documents output fields, options, geometry-family mappings, triangulation, and property handling."
   tone="cyan"
  />
@@ -49,7 +49,7 @@ main process.
 
 ```typescript
 import type {Feature} from '@loaders.gl/schema';
-import {geojsonToBinary} from '@loaders.gl/gis';
+import {convertGeojsonToBinaryFeatureCollection} from '@loaders.gl/geoarrow';
 
 const features: Feature[] = [{
   type: 'Feature',
@@ -59,12 +59,12 @@ const features: Feature[] = [{
 
 // See table below for full list of options
 const options = {PositionDataType: Float32Array};
-const binaryFeatures = geojsonToBinary(features, options);
+const binaryFeatures = convertGeojsonToBinaryFeatureCollection(features, options);
 ```
 
 ## Outputs
 
-`geojsonToBinary` returns an object containing typed arrays sorted by geometry
+`convertGeojsonToBinaryFeatureCollection` returns an object containing typed arrays sorted by geometry
 type. `positions` is a flat array of coordinates; `globalFeatureIds` references
 indices in the original `features` array; `featureIds` references feature
 indices of the same geometry type; `numericProps` contains `TypedArray`s

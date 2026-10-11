@@ -106,9 +106,9 @@ test('the schema root keeps runtime geospatial validation on its explicit subpat
 });
 
 test('published consumers and their tests no longer require the GIS compatibility package', () => {
-  const moduleNames = readdirSync(modulesDirectory).filter(
-    moduleName =>
-      moduleName !== 'gis' && existsSync(join(modulesDirectory, moduleName, 'package.json'))
+  expect(existsSync(join(modulesDirectory, 'gis'))).toBe(false);
+  const moduleNames = readdirSync(modulesDirectory).filter(moduleName =>
+    existsSync(join(modulesDirectory, moduleName, 'package.json'))
   );
   for (const moduleName of moduleNames) {
     const directory = join(modulesDirectory, moduleName);
@@ -137,6 +137,24 @@ test('published consumers and their tests no longer require the GIS compatibilit
       expect(source, moduleName).not.toContain('@loaders.gl/' + 'gis/test/data/');
     }
   }
+});
+
+test('repository build and test wiring does not require the removed GIS package', () => {
+  for (const filename of [
+    'package.json',
+    'tsconfig.json',
+    'test/aliases.ts',
+    'test/modules.ts',
+    'test/coverage-thresholds.json'
+  ]) {
+    expect(readFileSync(join(modulesDirectory, '..', filename), 'utf8'), filename).not.toContain(
+      '@loaders.gl/' + 'gis'
+    );
+  }
+  // Published deck.gl still requires GIS 4.x; only the retired workspace resolution is forbidden.
+  expect(readFileSync(join(modulesDirectory, '../yarn.lock'), 'utf8')).not.toContain(
+    'workspace:modules/' + 'gis'
+  );
 });
 
 test('the geospatial example uses GeoArrow rather than GIS', () => {

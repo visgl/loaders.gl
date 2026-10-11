@@ -17,6 +17,7 @@ test('ArrowUtils#convertGeoArrowGeometryToGeoJSON', async () => {
     await testParseFromArrow(testCase[0], testCase[1]);
   }
 });
+/** Checks the geometry materialized from one native Arrow fixture. */
 async function testParseFromArrow(
   arrowFile: string,
   expectedGeojson: FeatureCollection

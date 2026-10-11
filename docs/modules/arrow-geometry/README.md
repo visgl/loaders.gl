@@ -67,6 +67,6 @@ before; clone GeoJSON first when its coordinates must remain unchanged.
 This is one shared compatibility implementation for loader outputs, not a new
 canonical geometry representation or a converter registry.
 
-GIS compatibility exports remain available during the staged migration. Rich
-conversion registries, spatial processing and application APIs belong in
-GeoArrow, not in this construction package.
+The GIS compatibility package has been removed; see the
+[replacement import map](../geoarrow/gis-migration.md). Rich conversion registries,
+spatial processing and application APIs belong in GeoArrow, not in this construction package.

@@ -95,7 +95,6 @@ Some packages export convenience arrays:
 - `ARROW_CONVERTERS`
 - `GEOARROW_CONVERTERS`
 - `GEOARROW_GEOMETRY_CONVERTERS`
-- `GIS_CONVERTERS`
 
 These are plain arrays. They are useful when you want a package’s whole converter surface, but direct imports are still the smaller option.
 

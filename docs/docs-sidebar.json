@@ -368,7 +368,10 @@
         "type": "category",
         "label": "@loaders.gl/geoarrow",
         "items": [
-          "modules/geoarrow/README"
+          "modules/geoarrow/README",
+          "modules/geoarrow/gis-migration",
+          "modules/geoarrow/api-reference/convert-geojson-to-binary-feature-collection",
+          "modules/geoarrow/api-reference/convert-binary-feature-collection-to-geojson"
         ]
       },
       {
@@ -469,14 +472,6 @@
         "label": "@loaders.gl/geotiff",
         "items": [
           "modules/geotiff/README"
-        ]
-      },
-      {
-        "type": "category",
-        "label": "@loaders.gl/gis",
-        "items": [
-          "modules/gis/README",
-          "modules/gis/api-reference/geojson-to-binary"
         ]
       },
       {
