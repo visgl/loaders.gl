@@ -74,6 +74,12 @@ conversion remains available. Source layer semantics and LOD are not preserved.
 Point output uses **3D Tiles 1.0 PNTS**, deprecated in 1.1. Collection sinks create flat partial
 hierarchies; they do not preserve source LOD, ADD/REPLACE refinement or parent/child sampling.
 
+The raw `createBrowserTilesetConversionSource` API also supports opt-in nested explicit
+3D Tiles 1.0/1.1 traversal with shared byte/declaration/document limits and composed placement
+transforms. It yields binary resources for application codecs; this does not enable nested
+selection in the browser example or preserve source hierarchy in the collection writers.
+See [nested explicit input](/docs/modules/tile-converter/api-reference/v5-conversion#nested-explicit-3d-tiles-input).
+
 ### Browser input and output
 
 The [archive example](/examples/i3s-slpk) supports the following conversion inputs:

@@ -101,7 +101,9 @@ test('HTTP redirects preserve the final root directory and query credentials', a
   const finalUrl = 'https://example.invalid/releases/42/tileset.json?token=redirect';
   const fetcher = vi.fn<typeof fetch>(async input => {
     const response = new Response(String(input).includes('tileset.json') ? rootBytes : payload);
-    Object.defineProperty(response, 'url', {value: finalUrl});
+    Object.defineProperty(response, 'url', {
+      value: String(input).includes('tileset.json') ? finalUrl : String(input)
+    });
     return response;
   });
   const source = await createNodeTilesetConversionSource({
