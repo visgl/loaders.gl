@@ -28,6 +28,10 @@
       "import": "./dist/index.js",
       "require": "./dist/index.cjs"
     },
+    "./heightmap": {
+      "types": "./dist/heightmap.d.ts",
+      "import": "./dist/heightmap.js"
+    },
     "./bundled": {
       "types": "./dist/bundled.d.ts",
       "import": "./dist/bundled.js"
