@@ -5247,7 +5247,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@loaders.gl/copc@workspace:*, @loaders.gl/copc@workspace:modules/copc":
+"@loaders.gl/copc@npm:5.0.0-alpha.11, @loaders.gl/copc@workspace:*, @loaders.gl/copc@workspace:modules/copc":
   version: 0.0.0-use.local
   resolution: "@loaders.gl/copc@workspace:modules/copc"
   dependencies:
@@ -5761,7 +5761,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@loaders.gl/potree@workspace:*, @loaders.gl/potree@workspace:modules/potree":
+"@loaders.gl/potree@npm:5.0.0-alpha.11, @loaders.gl/potree@workspace:*, @loaders.gl/potree@workspace:modules/potree":
   version: 0.0.0-use.local
   resolution: "@loaders.gl/potree@workspace:modules/potree"
   dependencies:
@@ -5944,6 +5944,7 @@ __metadata:
   dependencies:
     "@loaders.gl/3d-tiles": "npm:5.0.0-alpha.11"
     "@loaders.gl/compression": "npm:5.0.0-alpha.11"
+    "@loaders.gl/copc": "npm:5.0.0-alpha.11"
     "@loaders.gl/crypto": "npm:5.0.0-alpha.11"
     "@loaders.gl/draco": "npm:5.0.0-alpha.11"
     "@loaders.gl/gltf": "npm:5.0.0-alpha.11"
@@ -5951,6 +5952,7 @@ __metadata:
     "@loaders.gl/images": "npm:5.0.0-alpha.11"
     "@loaders.gl/loader-utils": "npm:5.0.0-alpha.11"
     "@loaders.gl/polyfills": "npm:5.0.0-alpha.11"
+    "@loaders.gl/potree": "npm:5.0.0-alpha.11"
     "@loaders.gl/schema": "npm:5.0.0-alpha.11"
     "@loaders.gl/schema-utils": "npm:5.0.0-alpha.11"
     "@loaders.gl/textures": "npm:5.0.0-alpha.11"

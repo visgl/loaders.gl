@@ -15,6 +15,9 @@ test('tile-converter(v5)#package export resolves to its built CommonJS entrypoin
     encodeMeshTile,
     convertPointCloudSource,
     convertPointCloudToTileset,
+    encodePotreeArchive,
+    openPointCloudFile,
+    extractMeshVertices,
     convertTileset,
     inspectTileset,
     validateTileset
@@ -25,6 +28,9 @@ test('tile-converter(v5)#package export resolves to its built CommonJS entrypoin
   expect(createTilesetConversionSource).toBeTypeOf('function');
   expect(convertPointCloudSource).toBeTypeOf('function');
   expect(convertPointCloudToTileset).toBeTypeOf('function');
+  expect(encodePotreeArchive).toBeTypeOf('function');
+  expect(openPointCloudFile).toBeTypeOf('function');
+  expect(extractMeshVertices).toBeTypeOf('function');
   expect(encodeMeshTile).toBeTypeOf('function');
   expect(createMeshConversionCodec).toBeTypeOf('function');
   expect(createSingleMeshTilesetSink).toBeTypeOf('function');
@@ -45,6 +51,9 @@ test('tile-converter(v5)#browser package export resolves to its browser entrypoi
     encodeMeshTile,
     convertPointCloudSource,
     convertPointCloudToTileset,
+    encodePotreeArchive,
+    openPointCloudFile,
+    extractMeshVertices,
     createBoundedMemoryTileConversionSink,
     createBrowserTileConversionSource,
     createBrowserTilesetConversionSource,
@@ -55,6 +64,9 @@ test('tile-converter(v5)#browser package export resolves to its browser entrypoi
   expect(createBoundedMemoryTileConversionSink).toBeTypeOf('function');
   expect(convertPointCloudSource).toBeTypeOf('function');
   expect(convertPointCloudToTileset).toBeTypeOf('function');
+  expect(encodePotreeArchive).toBeTypeOf('function');
+  expect(openPointCloudFile).toBeTypeOf('function');
+  expect(extractMeshVertices).toBeTypeOf('function');
   expect(encodeMeshTile).toBeTypeOf('function');
   expect(createMeshConversionCodec).toBeTypeOf('function');
   expect(createSingleMeshTilesetSink).toBeTypeOf('function');
@@ -93,6 +105,13 @@ test('tile-converter v5 built core and adapters share identities in ESM and Comm
       assert.equal(combined.encodePointCloudTileWithMetadata, formats.encodePointCloudTileWithMetadata);
       assert.equal(combined.createPointCloudTilesetSink, formats.createPointCloudTilesetSink);
       assert.equal(combined.convertPointCloudToTileset, formats.convertPointCloudToTileset);
+      for (const name of ['encodePotreeArchive', 'openPointCloudFile', 'extractMeshVertices']) assert.equal(combined[name], formats[name]);
+      const pointArchive = await formats.encodePotreeArchive({
+        topology: 'point-list', mode: 0, schema: {fields: [], metadata: {}},
+        attributes: {POSITION: {value: new Float64Array([1, 2, 3]), size: 3}}
+      }, {maxArchiveBytes: 4096});
+      const openedPoints = await formats.openPointCloudFile(pointArchive, {format: 'potree-zip', maxFileBytes: 4096});
+      try { assert.equal((await openedPoints.source.getRootTile()).pointCount, 1); } finally { await openedPoints.close(); }
       const authoredPoints = await formats.convertPointCloudToTileset({
         topology: 'point-list', mode: 0, schema: {fields: [], metadata: {}},
         attributes: {POSITION: {value: new Float64Array([6378137.125, 0.25, 0.5]), size: 3}}
