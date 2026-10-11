@@ -57,7 +57,9 @@ qualify every dataset, standard version or extension combination.
 | Finalized I3S or 3D Tiles resources | Indexed SLPK or 3TZ | Blob or streaming packaging; packaging alone performs no format conversion |
 
 Mesh output uses the current I3S **1.7 3DObject** or 3D Tiles **1.1 GLB** writer profile.
-An IntegratedMesh input is authored as 3DObject output; its layer semantics are not preserved.
+IntegratedMesh → I3S requires explicit `integratedMeshPolicy: 'as-3d-object'` and reports a
+layer-type change warning. The browser example rejects that change; GLB/3TZ geometry
+conversion remains available. Source layer semantics and LOD are not preserved.
 Point output uses **3D Tiles 1.0 PNTS**, deprecated in 1.1. Collection sinks create flat partial
 hierarchies; they do not preserve source LOD, ADD/REPLACE refinement or parent/child sampling.
 

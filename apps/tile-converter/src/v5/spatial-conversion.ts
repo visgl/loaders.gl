@@ -115,9 +115,11 @@ export function createTiles3DConversionSpatialContext(
   return {
     spatialReference: outputSpatialReference,
     transformPositions: positions =>
-      transformer ? transformer.transformPositions(positions) : Float64Array.from(positions),
+      transformer ? transformer.transformPositions(positions) : copyNativePositions(positions),
     transformNormals: (normals, positions) =>
-      transformer ? transformer.transformNormals(normals, positions) : Float32Array.from(normals),
+      transformer
+        ? transformer.transformNormals(normals, positions)
+        : copyNativeNormals(normals, positions),
     transformBoundingVolume: (volume, sourceTransform) =>
       transformer
         ? transformer.transformBoundingVolume(volume, sourceTransform)
@@ -168,20 +170,12 @@ export function createI3SConversionSpatialContext(
     positions: ArrayLike<number>,
     normalReferenceFrame?: string
   ): Float32Array => {
+    validateNormalReferenceFrame(normalReferenceFrame);
+    const targetNormals = copyNativeNormals(normals, positions);
     if (
       !spatialReference.sourceCrs ||
       ['local', 'cartesian'].includes(spatialReference.coordinateFrame)
     ) {
-      // Unreferenced/native local vectors already use the retained position basis.
-      const targetNormals = Float32Array.from(normals);
-      for (let index = 0; index < normals.length; index += 3) {
-        const length = Math.hypot(normals[index], normals[index + 1], normals[index + 2]);
-        if (length) {
-          for (let axis = 0; axis < 3; axis++) {
-            targetNormals[index + axis] = normals[index + axis] / length;
-          }
-        }
-      }
       return targetNormals;
     }
     nativeNormalTransformer ||= createSpatialTransformer(
@@ -196,7 +190,7 @@ export function createI3SConversionSpatialContext(
           options
         )
     );
-    return nativeNormalTransformer.transformNormals(normals, positions, normalReferenceFrame);
+    return nativeNormalTransformer.transformNormals(targetNormals, positions, normalReferenceFrame);
   };
 
   return {
@@ -237,7 +231,7 @@ export function createI3SConversionSpatialContext(
     transformNormals: (normals, positions, normalReferenceFrame) =>
       transformer
         ? transformer.transformNormals(normals, positions, normalReferenceFrame)
-        : Float32Array.from(normals),
+        : transformNativeNormals(normals, positions, normalReferenceFrame),
     transformBoundingVolume: bounds =>
       transformer ? transformer.transformBoundingVolume(bounds) : cloneI3SBounds(bounds),
     transformBoundingVolumeAsync: bounds =>
@@ -361,20 +355,32 @@ function createNativeI3SPositions(
   sourceOrigin: ArrayLike<number>,
   spatialReference: TilesetSpatialReference
 ): I3STransformedPositions {
-  if (sourcePositions.length % 3 !== 0 || sourceOrigin.length < 3) {
-    throw new Error('I3S positions and origin must contain complete xyz coordinates');
+  const sourcePositions64 = copyNativePositions(sourcePositions);
+  if (
+    sourceOrigin.length !== 3 ||
+    Array.from(sourceOrigin).some(value => !Number.isFinite(value))
+  ) {
+    throw new TileConversionError(
+      'SPATIAL_INPUT_INVALID',
+      'I3S origins require three finite coordinates'
+    );
   }
   const origin: [number, number, number] = [
     Number(sourceOrigin[0]),
     Number(sourceOrigin[1]),
     Number(sourceOrigin[2])
   ];
-  const sourcePositions64 = Float64Array.from(sourcePositions);
   const positions = new Float32Array(sourcePositions.length);
   for (let index = 0; index < sourcePositions.length; index += 3) {
     positions[index] = Number(sourcePositions[index]) - origin[0];
     positions[index + 1] = Number(sourcePositions[index + 1]) - origin[1];
     positions[index + 2] = Number(sourcePositions[index + 2]) - origin[2];
+  }
+  if (positions.some(value => !Number.isFinite(value))) {
+    throw new TileConversionError(
+      'SPATIAL_INPUT_INVALID',
+      'Native I3S offsets exceed float32 range'
+    );
   }
   const isGeographic = spatialReference.coordinateFrame === 'geographic';
   const modelMatrix = isGeographic ? new Matrix4() : new Matrix4().translate(origin);
@@ -386,4 +392,69 @@ function createNativeI3SPositions(
     coordinateSystem: isGeographic ? 'lnglat-offsets' : 'cartesian',
     modelMatrix
   };
+}
+
+/** Validates and copies native xyz coordinates without invoking a CRS transformer. */
+function copyNativePositions(positions: ArrayLike<number>): Float64Array {
+  validateNativePositions(positions);
+  return Float64Array.from(positions);
+}
+
+/** Checks native coordinates without allocating an additional position buffer. */
+function validateNativePositions(positions: ArrayLike<number>): void {
+  if (positions.length % 3) {
+    throw new TileConversionError(
+      'SPATIAL_INPUT_INVALID',
+      'Positions require complete finite xyz coordinates'
+    );
+  }
+  for (let index = 0; index < positions.length; index++) {
+    if (!Number.isFinite(positions[index])) {
+      throw new TileConversionError(
+        'SPATIAL_INPUT_INVALID',
+        'Positions require complete finite xyz coordinates'
+      );
+    }
+  }
+}
+
+/** Validates matching native normals and normalizes them without changing their basis. */
+function copyNativeNormals(normals: ArrayLike<number>, positions: ArrayLike<number>): Float32Array {
+  validateNativePositions(positions);
+  if (normals.length !== positions.length) {
+    throw new TileConversionError(
+      'SPATIAL_INPUT_INVALID',
+      'Normals require finite xyz values matching positions'
+    );
+  }
+  const output = new Float32Array(normals.length);
+  for (let index = 0; index < normals.length; index += 3) {
+    const scale = Math.max(
+      Math.abs(normals[index]),
+      Math.abs(normals[index + 1]),
+      Math.abs(normals[index + 2])
+    );
+    if (!Number.isFinite(scale)) {
+      throw new TileConversionError(
+        'SPATIAL_INPUT_INVALID',
+        'Normals require finite xyz values matching positions'
+      );
+    }
+    const length = scale
+      ? Math.hypot(normals[index] / scale, normals[index + 1] / scale, normals[index + 2] / scale)
+      : 0;
+    for (let axis = 0; axis < 3; axis++)
+      output[index + axis] = length ? normals[index + axis] / scale / length : 0;
+  }
+  return output;
+}
+
+/** Rejects unknown I3S vector frames even when no position reprojection is requested. */
+function validateNormalReferenceFrame(frame?: string): void {
+  if (frame !== undefined && !['earth-centered', 'vertex-reference-frame'].includes(frame)) {
+    throw new TileConversionError(
+      'SPATIAL_INPUT_INVALID',
+      'Unsupported I3S normal reference frame'
+    );
+  }
 }

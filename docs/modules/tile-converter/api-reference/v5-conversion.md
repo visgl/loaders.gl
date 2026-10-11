@@ -228,6 +228,41 @@ output and any elevation providers to the shared conversion spatial context so g
 transformed once. Rendering runtimes should keep the default `geometryMode: 'render'`.
 This is a bounded source profile, not qualification of every I3S dataset or appearance profile.
 
+## Declared glTF feature schemas
+
+For one inline glTF structural-metadata class and property table, derive the mapping from
+its declarations instead of repeating field types. Set `features` to the class/identifier selection
+without `schema` to derive the mapping separately for each decoded content:
+
+```typescript
+const source = createMeshTilesetConversionSource(runtime, {
+  features: {metadataClass: 'building', sourceFeatureIdProperty: 'object_id'}
+});
+```
+
+For already decoded glTF, the same mapping is available directly:
+
+```typescript
+import {createMeshSourceFeatureOptions} from '@loaders.gl/tile-converter/v5/adapters';
+
+const features = createMeshSourceFeatureOptions(decodedGltf, {
+  metadataClass: 'building',
+  sourceFeatureIdProperty: 'object_id'
+});
+const source = createMeshTilesetConversionSource(runtime, {features});
+```
+
+The caller selects the class and identifier. Scalar widths (including exact int64/uint64),
+strings and optional/default/noData behavior follow the declared source schema. Omit
+`sourceFeatureIdProperty` to use uint32 table-row identifiers; choose `featureIdField` if
+`feature_id` is already a property. Missing optional columns become their declared default
+or null; missing required columns fail. The qualified mesh profile requires feature rows
+to own geometry; excessive declared counts fail before default columns allocate. Raw schema/property declarations are retained in
+Arrow metadata. This is an explicit mapping helper, not value-based inference or a promise
+that target formats preserve every schema annotation. Destination gates still apply, including
+I3S decimal-string authorization for 64-bit values. Arrays, enums, vectors, transformed
+numeric properties, external schemas and multiple property tables require separate mappings.
+
 ## Source mesh to I3S/SLPK
 
 `createMeshTilesetConversionSource` connects a source-backed `Tileset3D` runtime to
@@ -473,6 +508,27 @@ metadata. These limits do not bound peak decoding/encoding memory. Use
 I3S PointCloud/SLPK writing and general LAS/COPC/I3S source qualification remain separate
 work under tranche 7.
 
+### I3S layer-type policy
+
+I3S sources retain `sourceLayerType` on each mesh resource. The current writer authors
+**1.7 3DObject** layers. IntegratedMesh input therefore requires an explicit codec option:
+
+```typescript
+createI3SMeshConversionCodec({
+  spatialContext,
+  maxPositionError: 0.01,
+  maxResourceBytes: 32 * 1024 * 1024,
+  integratedMeshPolicy: 'as-3d-object'
+});
+```
+
+Without this option the codec throws `I3S_LAYER_TYPE_CHANGE_REQUIRED` before encoding.
+Authorized changes retain source layer provenance on the output resource and add an
+`I3S_LAYER_TYPE_CHANGED` warning to the conversion report. Geometry extraction alone does
+not preserve IntegratedMesh surface-layer semantics or source LOD. The browser example
+rejects this layer change until the application supplies an explicit policy. I3S 1.8/1.10
+writer and independent ArcGIS/Cesium qualification remain open.
+
 ### Native CRS and opt-in reprojection
 
 Retain native coordinates and CRS metadata when the selected writer and consumer support
@@ -480,6 +536,14 @@ that CRS. `spatialContext` is optional on point-source conversion; omitting it p
 source coordinates and placement. Mesh codecs accept native contexts as well as explicitly
 requested transformations. A CRS-aware renderer can consume native data without first
 projecting every vertex. Rendering policy is separate from archive authoring policy.
+
+When no format height operation or target transform is requested, native contexts retain
+coordinates, height reference and epoch metadata. Declared non-meter height units and
+elevation placement still use the shared spatial transformer. Packed positions and matching
+normals must be finite xyz arrays. I3S origins require three finite values and local offsets
+must fit float32. Direct and geometry I3S normal APIs use the same declared vector basis.
+Geographic antimeridian-to-ECEF conformance is covered; reprojection of epoch-tagged
+coordinates still requires a separately qualified epoch-aware operation.
 
 The current 3D Tiles/3TZ collection sinks require ECEF/ellipsoidal content, and the current
 I3S writer profile consumes ECEF before writing geographic I3S geometry. Those specific
