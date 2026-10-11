@@ -111,6 +111,14 @@ export interface ConvertTilesetOptions<TInspection, TInput, TOutput> {
   readonly maxInputResourceBytes?: number;
   /** Reject any output resource larger than this configured byte limit. */
   readonly maxOutputResourceBytes?: number;
+  /** Maximum measured input bytes across this run; does not bound source allocations. */
+  readonly maxInputBytes?: number;
+  /** Maximum measured output bytes across this run, including checkpointed resources. */
+  readonly maxOutputBytes?: number;
+  /** Maximum input resources consumed by this run, including zero-byte resources. */
+  readonly maxInputResources?: number;
+  /** Maximum outputs processed by this run, including zero-byte and checkpointed resources. */
+  readonly maxOutputResources?: number;
   /** Cancel inspection, conversion, validation, or writes. */
   readonly signal?: AbortSignal;
   /** Receive progress updates after each resource transition. */
@@ -155,6 +163,7 @@ export async function inspectTileset<TInspection, TInput>(
  * This does not limit source decoding allocations or content retained by a source.
  * Writes are awaited one resource at a time, keeping queued output bytes bounded by the
  * largest emitted resource and the configured `maxOutputResourceBytes` limit.
+ * Cumulative byte/count limits bound measured work in this run, not total allocation memory.
  */
 export async function convertTileset<TInspection, TInput, TOutput>(
   options: ConvertTilesetOptions<TInspection, TInput, TOutput>
@@ -167,6 +176,10 @@ export async function convertTileset<TInspection, TInput, TOutput>(
     measureOutputBytes,
     maxInputResourceBytes = Number.POSITIVE_INFINITY,
     maxOutputResourceBytes = Number.POSITIVE_INFINITY,
+    maxInputBytes = Number.POSITIVE_INFINITY,
+    maxOutputBytes = Number.POSITIVE_INFINITY,
+    maxInputResources = Number.POSITIVE_INFINITY,
+    maxOutputResources = Number.POSITIVE_INFINITY,
     signal,
     onProgress
   } = options;
@@ -181,19 +194,26 @@ export async function convertTileset<TInspection, TInput, TOutput>(
   };
 
   try {
-    if (
-      maxInputResourceBytes !== Number.POSITIVE_INFINITY &&
-      (!Number.isSafeInteger(maxInputResourceBytes) || maxInputResourceBytes < 0)
-    ) {
-      throw new TileConversionError(
-        'INVALID_INPUT_RESOURCE_LIMIT',
-        'maxInputResourceBytes must be a nonnegative safe integer or Infinity'
-      );
+    for (const [name, limit, code] of [
+      ['maxInputResourceBytes', maxInputResourceBytes, 'INVALID_INPUT_RESOURCE_LIMIT'],
+      ['maxOutputResourceBytes', maxOutputResourceBytes, 'INVALID_OUTPUT_RESOURCE_LIMIT'],
+      ['maxInputBytes', maxInputBytes, 'INVALID_INPUT_BYTES_LIMIT'],
+      ['maxOutputBytes', maxOutputBytes, 'INVALID_OUTPUT_BYTES_LIMIT'],
+      ['maxInputResources', maxInputResources, 'INVALID_INPUT_COUNT_LIMIT'],
+      ['maxOutputResources', maxOutputResources, 'INVALID_OUTPUT_COUNT_LIMIT']
+    ] as const) {
+      if (limit !== Infinity && (!Number.isSafeInteger(limit) || limit < 0)) {
+        throw new TileConversionError(
+          code,
+          name + ' must be a nonnegative safe integer or Infinity'
+        );
+      }
     }
     reportProgress('inspect');
     const inspection = await inspectTileset(source, signal);
     for await (const inputResource of source.read(inspection, signal)) {
       throwIfAborted(signal);
+      checkConversionTotal(inputResources, 1, maxInputResources, 'INPUT_COUNT_LIMIT_EXCEEDED');
       const inputResourceBytes = measureInputBytes(inputResource);
       if (!Number.isSafeInteger(inputResourceBytes) || inputResourceBytes < 0) {
         throw new TileConversionError(
@@ -207,23 +227,41 @@ export async function convertTileset<TInspection, TInput, TOutput>(
           `Input resource is ${inputResourceBytes} bytes, exceeding the configured limit of ${maxInputResourceBytes} bytes`
         );
       }
+      checkConversionTotal(
+        inputBytes,
+        inputResourceBytes,
+        maxInputBytes,
+        'INPUT_BYTES_LIMIT_EXCEEDED'
+      );
       inputResources++;
       inputBytes += inputResourceBytes;
       reportProgress('convert');
       const convertedResources = await codec.convert(inputResource, inspection, signal);
       for await (const outputResource of convertedResources) {
         throwIfAborted(signal);
+        checkConversionTotal(outputResources, 1, maxOutputResources, 'OUTPUT_COUNT_LIMIT_EXCEEDED');
         reportProgress('validate');
         const resourceDiagnostics = (await codec.validateOutput?.(outputResource, signal)) || [];
         diagnostics.push(...resourceDiagnostics);
         const outputResourceBytes = measureOutputBytes(outputResource);
-        largestOutputResourceBytes = Math.max(largestOutputResourceBytes, outputResourceBytes);
+        if (!Number.isSafeInteger(outputResourceBytes) || outputResourceBytes < 0) {
+          throw new TileConversionError(
+            'INVALID_OUTPUT_RESOURCE_SIZE',
+            'measureOutputBytes must return a nonnegative safe integer'
+          );
+        }
         if (outputResourceBytes > maxOutputResourceBytes) {
           throw new TileConversionError(
             'OUTPUT_RESOURCE_TOO_LARGE',
             `Output resource is ${outputResourceBytes} bytes, exceeding the configured limit of ${maxOutputResourceBytes} bytes`
           );
         }
+        checkConversionTotal(
+          outputBytes,
+          outputResourceBytes,
+          maxOutputBytes,
+          'OUTPUT_BYTES_LIMIT_EXCEEDED'
+        );
         if (resourceDiagnostics.some(diagnostic => diagnostic.severity === 'error')) {
           throw new TileConversionError(
             'OUTPUT_VALIDATION_FAILED',
@@ -234,6 +272,7 @@ export async function convertTileset<TInspection, TInput, TOutput>(
         throwIfAborted(signal);
         await sink.write(outputResource, signal);
         throwIfAborted(signal);
+        largestOutputResourceBytes = Math.max(largestOutputResourceBytes, outputResourceBytes);
         outputResources++;
         outputBytes += outputResourceBytes;
         reportProgress('convert');
@@ -283,5 +322,26 @@ export async function validateTileset<TTileset>(
 function throwIfAborted(signal?: AbortSignal): void {
   if (signal?.aborted) {
     throw signal.reason ?? new DOMException('The operation was aborted', 'AbortError');
+  }
+}
+
+/** Checks a cumulative budget without overflowing safe integer accounting. */
+function checkConversionTotal(
+  current: number,
+  increment: number,
+  limit: number,
+  code: string
+): void {
+  if (increment > limit - current) {
+    throw new TileConversionError(
+      code,
+      `Conversion exceeds cumulative limit ${limit}: ${current} processed, next resource adds ${increment}`
+    );
+  }
+  if (increment > Number.MAX_SAFE_INTEGER - current) {
+    throw new TileConversionError(
+      'RESOURCE_TOTAL_OVERFLOW',
+      'Conversion totals must remain safe integers'
+    );
   }
 }
