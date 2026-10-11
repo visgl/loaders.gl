@@ -25,6 +25,11 @@ test('module workers import shipped decoder factories without leaking wrapper gl
         for (const [url, globalName] of data) {
           const library = await import(url);
           results.push({factory: typeof library.default, leaked: globalName in globalThis});
+          if (url.endsWith('/crunch.mjs')) {
+            const decoder = library.default();
+            if (typeof decoder._crn_get_width !== 'function') throw new Error('Missing initialized Crunch decoder');
+            if ('Module' in globalThis) throw new Error('Crunch leaked its legacy receiver');
+          }
           if (url.endsWith('/draco_wasm_wrapper.mjs')) {
             const wasmBinary = await (await fetch(url.replace('draco_wasm_wrapper.mjs', 'draco_decoder.wasm'))).arrayBuffer();
             const decoder = await library.default({wasmBinary});

@@ -97,12 +97,22 @@ export async function loadLibrary(
         ? getLibraryUrl(moduleLibraryName, moduleName, options, moduleLibraryName)
         : libraryUrl;
   }
-  // Ensure libraries are only loaded once
+  // Workers may select different ESM adapters for the same classic asset.
+  const cacheKey = getLibraryCacheKey(libraryUrl, moduleLibraryUrl, isWorker);
 
-  loadLibraryPromises[libraryUrl] =
+  loadLibraryPromises[cacheKey] =
     // eslint-disable-next-line @typescript-eslint/no-misused-promises
-    loadLibraryPromises[libraryUrl] || loadLibraryFromFile(libraryUrl, moduleLibraryUrl);
-  return await loadLibraryPromises[libraryUrl];
+    loadLibraryPromises[cacheKey] || loadLibraryFromFile(libraryUrl, moduleLibraryUrl);
+  return await loadLibraryPromises[cacheKey];
+}
+
+/** Identifies a library load, including the alternate adapter available in workers. */
+export function getLibraryCacheKey(
+  libraryUrl: string,
+  moduleLibraryUrl: string,
+  worker: boolean
+): string {
+  return worker ? JSON.stringify([libraryUrl, moduleLibraryUrl]) : libraryUrl;
 }
 
 // TODO - sort out how to resolve paths for main/worker and dev/prod

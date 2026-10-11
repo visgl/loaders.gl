@@ -31,6 +31,7 @@ async function buildLibraryModules(moduleName, exportsByLibrary) {
   const outputDirectory = resolve('dist/libs');
   await mkdir(outputDirectory, {recursive: true});
   for (const [libraryName, exportName] of Object.entries(exportsByLibrary)) {
+    let factoryExport = exportName;
     let source = await readFile(resolve(`src/libs/${libraryName}.js`), 'utf8');
     if (moduleName === 'textures' && libraryName === 'crunch') {
       // The old worker shim assigns to an undeclared window and relies on classic-script `this`.
@@ -38,11 +39,15 @@ async function buildLibraryModules(moduleName, exportsByLibrary) {
       if (!source.includes('window = this;')) {
         throw new Error('Crunch worker shim changed; review its ESM adapter');
       }
-      source = source.replace('window = this;', 'var window = globalThis;');
+      // Other generated functions read Module directly; retain a module-local binding too.
+      source = source.replace('window = this;', 'var window = globalThis; var Module;');
+      source = source.replaceAll('this.Module=s', 'this.Module=Module=s');
+      // The factory assigns this.Module; isolate that legacy receiver from worker globals.
+      factoryExport = `${exportName}.bind({})`;
     }
     await writeFile(
       resolve(outputDirectory, `${libraryName}.mjs`),
-      `${source}\n// loaders.gl ESM adapter: explicit factory export, no global installation.\nexport default ${exportName};\n`
+      `${source}\n// loaders.gl ESM adapter: explicit factory export, no global installation.\nexport default ${factoryExport};\n`
     );
   }
 }

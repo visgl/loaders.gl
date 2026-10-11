@@ -3,10 +3,24 @@
 // Copyright (c) vis.gl contributors
 
 import {afterEach, expect, test, vi} from 'vitest';
-import {loadLibraryInWorker} from '../../../src/lib/library-utils/library-utils';
+import {
+  getLibraryCacheKey,
+  loadLibraryInWorker
+} from '../../../src/lib/library-utils/library-utils';
 afterEach(() => {
   vi.unstubAllGlobals();
   vi.restoreAllMocks();
+});
+
+test('worker cache distinguishes ESM overrides sharing a classic asset', () => {
+  const firstKey = getLibraryCacheKey('/same-library.js', '/first-library.mjs', true);
+  const secondKey = getLibraryCacheKey('/same-library.js', '/second-library.mjs', true);
+  expect(firstKey).not.toBe(secondKey);
+  expect(getLibraryCacheKey('/same-library.js', '/first-library.mjs', true)).toBe(firstKey);
+  expect(getLibraryCacheKey('/other-library.js', '/first-library.mjs', true)).not.toBe(firstKey);
+  expect(getLibraryCacheKey('/same-library.js', '/first-library.mjs', false)).toBe(
+    '/same-library.js'
+  );
 });
 
 test('classic workers import codec scripts after the support probe', async () => {
