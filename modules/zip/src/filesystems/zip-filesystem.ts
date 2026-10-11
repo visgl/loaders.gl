@@ -36,6 +36,7 @@ export class ZipFileSystem implements FileSystem {
   /** Opens portable bytes, a random-access file, a format adapter, or a Node file path lazily. */
   constructor(
     file: ZipArchiveInput | IndexedArchive | string,
+    /** Shared reader bounds captured for lazy initialization. */
     private readonly options: ZipArchiveOptions = {}
   ) {
     this.signal = options.signal
@@ -83,7 +84,7 @@ export class ZipFileSystem implements FileSystem {
 
   /** Returns validated metadata; rejects sizes that cannot be represented safely as a number. */
   async stat(filename: string): Promise<ZipFileStat> {
-    const entry = await this.getEntry(this.resolveResourcePath(filename));
+    const entry = await this.getEntry(filename);
     if (entry.size > BigInt(Number.MAX_SAFE_INTEGER))
       throw new RangeError('ZIP FileSystem size is not safely representable');
     return {...entry, size: Number(entry.size), uncompressedSize: entry.size};
@@ -98,22 +99,27 @@ export class ZipFileSystem implements FileSystem {
     options.signal?.throwIfAborted();
     if (options.method && options.method.toUpperCase() !== 'GET')
       throw new Error('ZIP filesystem only supports GET');
-    const path = this.resolveResourcePath(filename);
+    let path: string;
     const range = new Headers(options.headers).get('range');
     let response: Response;
     if (this.archive) {
-      if (range) throw new Error('ZIP ranges are unavailable through format resource adapters');
+      path = this.resolveResourcePath(filename);
+      if (range !== null)
+        throw new Error('ZIP ranges are unavailable through format resource adapters');
       response = new Response(await this.archive.getFile(path, 'http'));
       this.signal.throwIfAborted();
       options.signal?.throwIfAborted();
     } else {
       const reader = await this.getReader();
-      const entry = await this.getEntry(path);
+      options.signal?.throwIfAborted();
+      const entry = await this.getEntry(filename);
+      options.signal?.throwIfAborted();
+      path = entry.path;
       const headers = new Headers({
         'Accept-Ranges': entry.compression === 'store' ? 'bytes' : 'none',
         'Content-Length': String(entry.size)
       });
-      if (range) {
+      if (range !== null) {
         if (entry.compression !== 'store') throw new Error('ZIP ranges require STORE entries');
         const bounds = parseByteRange(range, entry.size);
         if (!bounds) {
@@ -154,18 +160,23 @@ export class ZipFileSystem implements FileSystem {
       }
     }
     Object.defineProperty(response, 'url', {
-      value: `${this.fileName || ''}/${path.split('/').map(encodeURIComponent).join('/')}`
+      value: this.getResourceUrl(path)
     });
     return response;
   }
 
   /** Resolves resources once, allowing parents inside the archive but rejecting root escapes. */
-  private resolveResourcePath(filename: string): string {
-    if (this.fileName && (filename === this.fileName || filename.startsWith(`${this.fileName}/`)))
-      filename = filename.slice(this.fileName.length).replace(/^\//, '');
+  private resolveResourcePath(filename: string, decodeUri = false): string {
+    const archivePath = filename.startsWith('./') ? filename.slice(2) : filename;
+    const archiveName = this.fileName?.replace(/^\.\//, '');
+    if (archiveName && (archivePath === archiveName || archivePath.startsWith(`${archiveName}/`))) {
+      filename = archivePath.slice(archiveName.length).replace(/^\//, '');
+      decodeUri = true;
+    }
+    decodeUri ||= filename.startsWith('/') || filename.startsWith('./');
     if (/^[a-z][a-z\d+.-]*:/i.test(filename) || filename.startsWith('//'))
       throw new Error('ZIP resource must stay inside the archive');
-    const decoded = decodeURIComponent(filename.split(/[?#]/, 1)[0]);
+    const decoded = decodeUri ? decodeURIComponent(filename.split(/[?#]/, 1)[0]) : filename;
     if (
       decoded.includes('\\') ||
       decoded.includes('\0') ||
@@ -184,6 +195,15 @@ export class ZipFileSystem implements FileSystem {
     return segments.join('/') + (decoded.endsWith('/') && segments.length ? '/' : '');
   }
 
+  /** Creates a qualified URL that cannot be confused with a canonical literal archive path. */
+  private getResourceUrl(path: string): string {
+    const prefix =
+      this.fileName && !/^(?:\/|[a-z][a-z\d+.-]*:)/i.test(this.fileName)
+        ? `./${this.fileName.replace(/^\.\//, '')}`
+        : this.fileName || '';
+    return `${prefix}/${path.split('/').map(encodeURIComponent).join('/')}`;
+  }
+
   /** Shares the directory cache and lifetime with every filesystem lookup. */
   private async getReader(): Promise<ZipArchive> {
     this.signal.throwIfAborted();
@@ -196,7 +216,10 @@ export class ZipFileSystem implements FileSystem {
 
   /** Resolves one validated entry and reports absent resources explicitly. */
   private async getEntry(path: string): Promise<ZipEntry> {
-    const entry = await (await this.getReader()).getEntry(path);
+    const reader = await this.getReader();
+    const entry =
+      (await reader.getEntry(path)) ||
+      (await reader.getEntry(this.resolveResourcePath(path, true)));
     if (!entry) throw new Error(`File has not been found in the zip archive: ${path}`);
     return entry;
   }

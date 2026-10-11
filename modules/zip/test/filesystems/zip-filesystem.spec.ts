@@ -221,6 +221,7 @@ test.each([
 });
 
 test.each([
+  '',
   'bytes=10-',
   'bytes=4-2',
   'bytes=-0',
@@ -338,21 +339,27 @@ test('ZIP filesystem stream cancellation leaves the archive usable', async () =>
   await filesystem.destroy();
 });
 
-test('ZIP filesystem retains indexed format aliases without scanning the directory', async () => {
+test.each([
+  'https://example.test/archive.slpk',
+  './folder/archive.slpk'
+])('ZIP filesystem retains indexed format aliases for %s without scanning the directory', async fileName => {
   const file = await createReadableFileFromBuffer(await encodeZip(RESOURCE_FILES));
   const read = vi.spyOn(file, 'read');
   const getFile = vi.fn(async () => new TextEncoder().encode('format decoded').buffer);
   const adapter = new (class extends IndexedArchive {
     /** Supplies a format-decoded resource for the adapter contract test. */
     getFile = getFile;
-  })(file, undefined, 'https://example.test/archive.slpk');
+  })(file, undefined, fileName);
   const filesystem = new ZipFileSystem(adapter);
   // A virtual archive URL is routed only through the local adapter mock, never through network fetch.
   const response = await filesystem.fetch(`${adapter.fileName}/nodes/0/shared`);
   expect(await response.text()).toBe('format decoded');
   expect(getFile).toHaveBeenCalledWith('nodes/0/shared', 'http');
+  await filesystem.fetch(fileName.replace(/^\.\//, ''));
+  expect(getFile).toHaveBeenLastCalledWith('', 'http');
   expect(read).not.toHaveBeenCalled();
-  await expect(filesystem.fetch(`${adapter.fileName}-other/nodes/0`)).rejects.toThrow('inside');
+  if (fileName.startsWith('https:'))
+    await expect(filesystem.fetch(`${adapter.fileName}-other/nodes/0`)).rejects.toThrow('inside');
   await expect(filesystem.fetch('nodes/0/shared', {headers: {range: 'bytes=0-1'}})).rejects.toThrow(
     'format resource'
   );
@@ -418,4 +425,72 @@ test('ZIP filesystem rejects unsafe numeric stats and constructor cancellation',
   await expect(cancelled.readdir()).rejects.toThrow('archive cancelled');
   await expect(cancelled.fetch('folder/data.txt')).rejects.toThrow('archive cancelled');
   await cancelled.destroy();
+});
+
+test('ZIP filesystem preserves literal entry names and unambiguous response URLs', async () => {
+  const names = ['100%.txt', 'a%2Fb', 'a/b', 'query?name.txt', 'hash#name.txt', 'archive.zip/a/b'];
+  const filesystem = new ZipFileSystem(
+    await encodeZip(Object.fromEntries(names.map(path => [path, new TextEncoder().encode(path)])))
+  );
+  // Models a relative archive name without adding filesystem I/O to the browser fixture.
+  Object.defineProperty(filesystem, 'fileName', {value: 'archive.zip'});
+  try {
+    expect((await filesystem.readdir()).sort()).toEqual([...names].sort());
+    for (const name of names) {
+      expect((await filesystem.stat(name)).path).toBe(name);
+      const response = await filesystem.fetch(name);
+      expect(await response.text()).toBe(name);
+      expect((await filesystem.stat(response.url)).path).toBe(name);
+      expect(await (await filesystem.fetch(response.url)).text()).toBe(name);
+    }
+  } finally {
+    await filesystem.destroy();
+  }
+});
+
+test.each([
+  'opening',
+  'lookup'
+])('ZIP filesystem observes request cancellation during metadata %s', async phase => {
+  const file = await createReadableFileFromBuffer(await encodeZip(RESOURCE_FILES));
+  const filesystem = new ZipFileSystem(file);
+  let begin!: () => void;
+  let release!: () => void;
+  const started = new Promise<void>(resolve => {
+    begin = resolve;
+  });
+  const blocked = new Promise<void>(resolve => {
+    release = resolve;
+  });
+  const readFile = file.read.bind(file);
+  const getEntry = ZipArchive.prototype.getEntry;
+  if (phase === 'lookup') await filesystem.readdir();
+  const intercepted =
+    phase === 'opening'
+      ? vi.spyOn(file, 'read').mockImplementationOnce(async (start, length) => {
+          begin();
+          await blocked;
+          return await readFile(start, length);
+        })
+      : vi.spyOn(ZipArchive.prototype, 'getEntry').mockImplementationOnce(async function (
+          this: ZipArchive,
+          path
+        ) {
+          begin();
+          await blocked;
+          return await getEntry.call(this, path);
+        });
+  const controller = new AbortController();
+  const response = filesystem.fetch('folder/data.txt', {signal: controller.signal});
+  await started;
+  controller.abort(new Error('metadata cancelled'));
+  release();
+  try {
+    await expect(response).rejects.toThrow('metadata cancelled');
+    intercepted.mockRestore();
+    expect(await (await filesystem.fetch('folder/data.txt')).text()).toBe('0123456789');
+  } finally {
+    intercepted.mockRestore();
+    await filesystem.destroy();
+  }
 });

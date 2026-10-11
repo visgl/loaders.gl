@@ -33,13 +33,21 @@ consumed. Cancelling a body releases its iterator and leaves the filesystem avai
 reads, but does not verify that entry's complete CRC. Body integrity, cancellation and read-limit
 errors reject body consumption; browsers can report these as a generic fetch error.
 
+Request cancellation is checked after shared metadata initialization and lookup, before a response
+is returned, and throughout body reads. A request abort does not cancel metadata initialization
+shared with other requests; use the constructor signal or `destroy()` to cancel the archive lifetime.
+
 ## Resource resolution
 
-Resources stay inside the archive. Query strings and fragments are removed and percent escapes
-are decoded once. `.` and `..` are normalized, with traversal above the archive root rejected.
+Resources stay inside the archive. Generic ZIP lookups first try the literal entry name, so names
+returned by `readdir()` retain `%`, `?` and `#`. If no exact name exists, a resource URL is resolved:
+query strings and fragments are removed and percent escapes are decoded once. `.` and `..` are
+normalized, with traversal above the archive root rejected.
 Archive-root paths beginning with `/` are accepted. External schemes, network paths, backslashes,
-NUL bytes and malformed percent escapes reject. Response URLs can be passed back to the same
-filesystem, including archive-qualified Node paths or indexed-adapter archive names.
+NUL bytes and malformed percent escapes in resource URLs reject. Response URLs can be passed back to the same
+filesystem, including archive-qualified Node paths or indexed-adapter archive names. Relative
+archive names use a `./` URL prefix to distinguish qualified responses from literal entry paths.
+Indexed adapters keep raw resource names and interpret only qualified URLs.
 
 ## STORE ranges
 
