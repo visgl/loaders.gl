@@ -2,7 +2,6 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import {BlobFile} from '@loaders.gl/loader-utils';
 import {COPCSourceLoader} from '@loaders.gl/copc';
 import type {COPCTileSource, COPCSourceLoaderOptions} from '@loaders.gl/copc';
 import {PotreeSourceLoader, encodePotreeDataset} from '@loaders.gl/potree';
@@ -13,12 +12,8 @@ import type {
 } from '@loaders.gl/potree';
 import type {Mesh, MeshArrowTable, MeshGeometry} from '@loaders.gl/schema';
 import {deduceMeshSchema} from '@loaders.gl/schema-utils';
-import {
-  makeZipCDHeaderIterator,
-  parseEoCDRecord,
-  parseZipLocalFileHeader,
-  ZipWriter
-} from '@loaders.gl/zip';
+import {encodeZip, openZipArchive} from '@loaders.gl/zip';
+import type {ZipArchive, ZipEntry} from '@loaders.gl/zip';
 
 /** Explicit local-file input; no format is inferred from an extension. */
 export type OpenPointCloudFileOptions = {
@@ -79,32 +74,29 @@ export async function encodePotreeArchive(
   validateLimit(options.maxArchiveBytes);
   const dataset = await encodePotreeDataset(input, {potree: options.potree});
   const files: Record<string, ArrayBuffer> = Object.create(null);
-  let archiveBytes = 22;
   for (const [path, bytes] of dataset.files) {
     validatePath(path);
-    archiveBytes += 76 + 2 * path.length + bytes.byteLength;
-    if (archiveBytes > options.maxArchiveBytes || archiveBytes >= 0xffffffff)
-      throw new RangeError('Potree archive exceeds the ZIP32 output budget');
     files[path] = bytes.buffer.slice(
       bytes.byteOffset,
       bytes.byteOffset + bytes.byteLength
     ) as ArrayBuffer;
   }
-  if (dataset.files.size >= 65535) throw new RangeError('Potree ZIP32 entry limit exceeded');
   options.potree?.signal?.throwIfAborted();
-  const archive = await ZipWriter.encode(files, {
-    jszip: {compression: 'STORE', date: new Date('1980-01-01T00:00:00Z')}
+  const archive = await encodeZip(files, {
+    compression: 'store',
+    zip64: 'never',
+    maxEntries: 65535,
+    maxArchiveBytes: BigInt(options.maxArchiveBytes),
+    signal: options.potree?.signal
   });
   options.potree?.signal?.throwIfAborted();
-  if (archive.byteLength > options.maxArchiveBytes)
-    throw new RangeError('Potree archive output budget exceeded');
   return new Blob([archive], {type: 'application/zip'});
 }
 
 /**
  * Opens a COPC Blob or a Potree STORE ZIP without extracting the complete dataset.
  * ZIP directory/local headers are checked before constructing the Potree source; modern node
- * requests slice only their archived byte ranges. DEFLATE, encrypted/described entries, ambiguous
+ * requests slice only their archived byte ranges. DEFLATE, encrypted entries, ambiguous
  * metadata and noncanonical paths fail explicitly. Partial reads do not verify whole-entry CRCs.
  * Legacy Potree retains its existing coordinate behavior; modern Potree retains native coordinates.
  * COPC uses its existing source coordinate policy. Applications own CRS preparation and conversion.
@@ -140,54 +132,25 @@ export async function openPointCloudFile(
     (value): value is AbortSignal => Boolean(value)
   );
   const signal = AbortSignal.any(signals);
-  const file = new BlobFile(input);
-  const entries = new Map<string, ArchivedPointResource>();
+  let archive: ZipArchive | undefined;
+  const entries = new Map<string, ZipEntry>();
   let source: ReturnType<typeof PotreeSourceLoader.createDataSource> | undefined;
   try {
-    const directory = await parseEoCDRecord(file);
-    if (directory.cdRecordsNumber > BigInt(maxEntries))
-      throw new RangeError('Potree ZIP entry budget exceeded');
-    for await (const entry of makeZipCDHeaderIterator(file)) {
-      signal.throwIfAborted();
-      validatePath(entry.fileName);
-      if (entries.size >= maxEntries || entries.has(entry.fileName))
-        throw new RangeError('Potree ZIP entry budget or duplicate path');
-      const header = await parseZipLocalFileHeader(entry.localHeaderOffset, file);
-      const localBytes = new DataView(await file.read(Number(entry.localHeaderOffset), 30));
-      const flags = localBytes.getUint16(6, true);
-      const centralOffset =
-        Number(directory.cdStartOffset + entry.extraOffset) - entry.fileNameLength - 46;
-      const centralBytes = new DataView(await file.read(centralOffset, 46));
-      if (
-        entry.startDisk !== 0n ||
-        !header ||
-        header.fileName !== entry.fileName ||
-        header.compressionMethod !== 0 ||
-        centralBytes.getUint16(10, true) !== 0 ||
-        centralBytes.getUint16(32, true) !== 0 ||
-        centralBytes.getUint16(8, true) !== flags ||
-        localBytes.getUint32(22, true) !== Number(entry.uncompressedSize) ||
-        flags & 9 ||
-        header.compressedSize !== entry.compressedSize ||
-        entry.compressedSize !== entry.uncompressedSize
-      )
-        throw new Error(
-          'Potree bundles require matching unencrypted STORE entries without descriptors'
-        );
-      const offset = Number(header.fileDataOffset);
-      const size = Number(entry.uncompressedSize);
-      if (
-        !Number.isSafeInteger(offset) ||
-        !Number.isSafeInteger(size) ||
-        offset < 0 ||
-        size < 0 ||
-        offset + size > Number(directory.cdStartOffset)
-      )
-        throw new RangeError('Potree ZIP entry extends outside the file');
-      entries.set(entry.fileName, {offset, size});
+    archive = await openZipArchive(input, {
+      maxArchiveBytes: BigInt(options.maxFileBytes),
+      maxEntries,
+      maxReadBytes: Math.max(65557, maxResourceBytes),
+      maxCompressedBytes: BigInt(maxResourceBytes),
+      maxDecodedBytes: BigInt(maxResourceBytes),
+      signal
+    });
+    for await (const entry of archive.entries()) {
+      if (entry.directory) continue;
+      validatePath(entry.path);
+      if (entry.compression !== 'store')
+        throw new Error('Potree bundles require unencrypted STORE entries');
+      entries.set(entry.path, entry);
     }
-    if (BigInt(entries.size) !== directory.cdRecordsNumber)
-      throw new Error('Incomplete Potree ZIP directory');
     const candidates = ['metadata.json', 'cloud.js'].filter(path => entries.has(path));
     const metadataPath = options.metadataPath || (candidates.length === 1 ? candidates[0] : '');
     validatePath(metadataPath);
@@ -212,13 +175,13 @@ export async function openPointCloudFile(
       const match = range?.match(/^bytes=(\d+)-(\d+)$/);
       if (range && !match) throw new RangeError('Unsupported Potree bundle byte range');
       const begin = match ? Number(match[1]) : 0;
-      const end = match ? Number(match[2]) + 1 : entry.size;
+      const end = match ? Number(match[2]) + 1 : Number(entry.size);
       if (
         !Number.isSafeInteger(begin) ||
         !Number.isSafeInteger(end) ||
         begin < 0 ||
         end < begin ||
-        end > entry.size ||
+        BigInt(end) > entry.size ||
         end - begin > maxResourceBytes
       )
         throw new RangeError('Potree bundle resource/range budget exceeded');
@@ -227,7 +190,14 @@ export async function openPointCloudFile(
         'accept-ranges': 'bytes'
       });
       if (match) headers.set('content-range', `bytes ${begin}-${end - 1}/${entry.size}`);
-      const response = new Response(input.slice(entry.offset + begin, entry.offset + end), {
+      const bytes = match
+        ? await archive!.readRange(entry, {
+            start: BigInt(begin),
+            end: BigInt(end),
+            signal: request.signal ?? undefined
+          })
+        : await archive!.read(entry, {signal: request.signal ?? undefined});
+      const response = new Response(bytes, {
         status: match ? 206 : 200,
         headers
       });
@@ -247,13 +217,13 @@ export async function openPointCloudFile(
       async close() {
         controller.abort();
         source?.close();
-        await file.close();
+        await archive?.close();
       }
     };
   } catch (error) {
     controller.abort();
     source?.close();
-    await file.close();
+    await archive?.close();
     throw error;
   }
 }
@@ -313,14 +283,6 @@ export function extractMeshVertices(mesh: MeshGeometry, options: ExtractMeshVert
     attributes[name] = attribute;
   }
   return {topology: 'point-list', mode: 0, attributes, schema: deduceMeshSchema(attributes)};
-}
-
-/** One checked, uncompressed resource range within the retained ZIP Blob. */
-interface ArchivedPointResource {
-  /** Start of payload bytes in the input file. */
-  readonly offset: number;
-  /** Complete uncompressed payload size. */
-  readonly size: number;
 }
 
 /** Rejects unsafe or unsupported archive paths before URL resolution. */

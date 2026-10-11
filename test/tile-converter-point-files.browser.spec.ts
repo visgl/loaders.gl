@@ -13,7 +13,7 @@ import {
   openPointCloudFile,
   extractMeshVertices
 } from '@loaders.gl/tile-converter/v5/browser';
-import JSZip from 'jszip';
+import {readZip} from 'test/common/read-zip';
 
 /** Immutable small native-coordinate points. */
 function createPoints(): Mesh {
@@ -28,9 +28,9 @@ function createPoints(): Mesh {
 /** STORE bundle fixture for reader boundary cases. */
 async function createZip(
   files: Record<string, ArrayBuffer>,
-  compression: 'STORE' | 'DEFLATE' = 'STORE'
+  compression: 'store' | 'deflate' = 'store'
 ): Promise<Blob> {
-  return new Blob([await ZipWriter.encode(files, {jszip: {compression}})]);
+  return new Blob([await ZipWriter.encode(files, {zip: {compression, zip64: 'never'}})]);
 }
 
 /** Encoded dataset resources using their original relative names. */
@@ -62,7 +62,7 @@ test.each([
         1, 2, 3, 4, 5, 6
       ]);
     expect(
-      (await JSZip.loadAsync(await archive.arrayBuffer())).files[
+      (await readZip(await archive.arrayBuffer())).files[
         version === '2.0' ? 'metadata.json' : 'cloud.js'
       ]
     ).toBeDefined();
@@ -127,7 +127,9 @@ test('archive authoring is deterministic and fails budgets and cancellation', as
   expect(new Uint8Array(await first.arrayBuffer())).toEqual(
     new Uint8Array(await second.arrayBuffer())
   );
-  await expect(encodePotreeArchive(createPoints(), {maxArchiveBytes: 1})).rejects.toThrow(/budget/);
+  await expect(encodePotreeArchive(createPoints(), {maxArchiveBytes: 1})).rejects.toThrow(
+    /byte limit|budget/
+  );
   await expect(encodePotreeArchive(createPoints(), {maxArchiveBytes: NaN})).rejects.toThrow(
     /limits/
   );
@@ -146,10 +148,10 @@ test('bundle opening rejects input, entry and resource limits before node decodi
   ).rejects.toThrow(/input budget/);
   await expect(
     openPointCloudFile(archive, {format: 'potree-zip', maxFileBytes: 16384, maxEntries: 1})
-  ).rejects.toThrow(/entry budget/);
+  ).rejects.toThrow(/entry.*limit|entry budget/);
   await expect(
     openPointCloudFile(archive, {format: 'potree-zip', maxFileBytes: 16384, maxResourceBytes: 1})
-  ).rejects.toThrow(/resource/);
+  ).rejects.toThrow(/read limit|decoded|compressed|resource/);
   await expect(
     openPointCloudFile(archive, {
       format: 'potree-zip',
@@ -182,7 +184,7 @@ test('explicit nested metadata keeps siblings inside the bundle', async () => {
 test('unsupported compressed, encrypted and noncanonical bundles fail explicitly', async () => {
   const files = await createFiles();
   await expect(
-    openPointCloudFile(await createZip(files, 'DEFLATE'), {
+    openPointCloudFile(await createZip(files, 'deflate'), {
       format: 'potree-zip',
       maxFileBytes: 16384
     })
@@ -191,9 +193,12 @@ test('unsupported compressed, encrypted and noncanonical bundles fail explicitly
   bytes[6] |= 1;
   await expect(
     openPointCloudFile(new Blob([bytes]), {format: 'potree-zip', maxFileBytes: 16384})
-  ).rejects.toThrow(/unencrypted/);
+  ).rejects.toThrow(/encryption|flags|unencrypted/);
+  await expect(createZip({'../metadata.json': files['metadata.json']})).rejects.toThrow(
+    /canonical/
+  );
   await expect(
-    openPointCloudFile(await createZip({'../metadata.json': files['metadata.json']}), {
+    openPointCloudFile(await createZip({'é/metadata.json': files['metadata.json']}), {
       format: 'potree-zip',
       maxFileBytes: 16384
     })

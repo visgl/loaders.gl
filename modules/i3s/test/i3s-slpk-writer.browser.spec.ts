@@ -9,7 +9,7 @@ import {SLPKWriter as RootWriter, parseSLPKArchive} from '@loaders.gl/i3s';
 import {SLPKWriter, encodeSLPKArchiveInBatches} from '@loaders.gl/i3s/i3s-slpk-writer';
 import {GZipCompressor} from '@loaders.gl/compression';
 import {DataViewReadableFile} from '@loaders.gl/zip';
-import JSZip from 'jszip';
+import {readZip} from 'test/common/read-zip';
 
 /** Small caller-authored root used only to qualify packaging and archive reader interoperability. */
 const ROOT = new TextEncoder().encode('{"version":"1.7","layerType":"3DObject"}').buffer;
@@ -17,7 +17,7 @@ const ROOT = new TextEncoder().encode('{"version":"1.7","layerType":"3DObject"}'
 let files: Record<string, ArrayBuffer>;
 /** Shared immutable archive and CRC-checked entries. */
 let archive: ArrayBuffer;
-let zip: JSZip;
+let zip: Awaited<ReturnType<typeof readZip>>;
 
 beforeAll(async () => {
   files = {
@@ -25,7 +25,7 @@ beforeAll(async () => {
     'nodes/0/textures/A.png': new Uint8Array([1, 2, 3]).buffer
   };
   archive = await SLPKWriter.encode(files);
-  zip = await JSZip.loadAsync(archive, {checkCRC32: true});
+  zip = await readZip(archive);
 });
 afterEach(() => vi.restoreAllMocks());
 
@@ -42,9 +42,9 @@ test('SLPK stores supplied GZIP/image bytes unchanged with the index last', asyn
     '@specialIndexFileHASH128@'
   ]);
   for (const [path, bytes] of Object.entries(files)) {
-    expect(await zip.file(path)!.async('arraybuffer')).toEqual(bytes);
+    expect(zip.files[path]).toEqual(bytes);
   }
-  const index = new DataView(await zip.file('@specialIndexFileHASH128@')!.async('arraybuffer'));
+  const index = new DataView(zip.files['@specialIndexFileHASH128@']);
   expect(index.byteLength).toBe(48);
   const names: string[] = [];
   let previous = -1n;

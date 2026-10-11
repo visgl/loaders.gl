@@ -3,7 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import {afterEach, expect, test, vi} from 'vitest';
-import JSZip from 'jszip';
+import {readZip} from 'test/common/read-zip';
 import {
   encodeZip,
   encodeZipInBatches,
@@ -80,11 +80,11 @@ test.each([
   'iterable',
   'async-iterable',
   'stream'
-])('writes %s input with STORE and DEFLATE, qualified by JSZip', async kind => {
+])('writes %s input with STORE and DEFLATE, native archive round trip', async kind => {
   for (const compression of ['store', 'deflate'] as const) {
     const encoded = await encodeZip({'abc.txt': createSource(kind)}, {compression, chunkBytes: 2});
-    const zip = await JSZip.loadAsync(encoded, {checkCRC32: true});
-    expect(await zip.file('abc.txt')!.async('string')).toBe('abc');
+    const zip = await readZip(encoded);
+    expect(new TextDecoder().decode(zip.files['abc.txt'])).toBe('abc');
     const archive = await openZipArchive(encoded);
     try {
       const entry = (await archive.getEntry('abc.txt'))!;
@@ -104,7 +104,7 @@ test.each([
   'never'
 ] as const)('writes empty ZIP with %s ZIP64 policy', async zip64 => {
   const encoded = await encodeZip({}, {zip64, comment: 'café'});
-  expect(Object.keys((await JSZip.loadAsync(encoded)).files)).toEqual([]);
+  expect(Object.keys((await readZip(encoded)).files)).toEqual([]);
   const archive = await openZipArchive(encoded);
   try {
     expect(archive.comment).toBe('café');
@@ -122,9 +122,7 @@ test.each([
   for (const zip64 of ['always', 'never'] as const) {
     const encoded = await encodeZip({abc: BYTES}, {compression, zip64});
     expect(new DataView(encoded).getUint16(4, true)).toBe(zip64 === 'always' ? 45 : 20);
-    expect(
-      await (await JSZip.loadAsync(encoded, {checkCRC32: true})).file('abc')!.async('string')
-    ).toBe('abc');
+    expect(new TextDecoder().decode((await readZip(encoded)).files.abc)).toBe('abc');
   }
 });
 
@@ -138,9 +136,9 @@ test('metadata is deterministic, sorted, UTF-8, and independent of host timezone
   expect(
     await encodeZip(Object.fromEntries(Object.entries(files).reverse()), {comment: 'café'})
   ).toEqual(first);
-  const zip = await JSZip.loadAsync(first, {checkCRC32: true});
+  const zip = await readZip(first);
   expect(Object.keys(zip.files)).toEqual(['folder/', 'folder/a', 'é.txt']);
-  expect(zip.file('é.txt')!.comment).toBe('点');
+  expect(zip.entries.find(entry => entry.path === 'é.txt')!.comment).toBe('点');
   const archive = await openZipArchive(first);
   try {
     expect((await archive.getEntry('folder/'))!.directory).toBe(true);
@@ -153,9 +151,9 @@ test('metadata is deterministic, sorted, UTF-8, and independent of host timezone
 
 test('valid leading U+FEFF filename and comment characters remain intact', async () => {
   const bytes = await encodeZip({'\uFEFFa': {data: BYTES, comment: '\uFEFFcomment'}});
-  const zip = await JSZip.loadAsync(bytes, {checkCRC32: true});
-  expect(await zip.file('\uFEFFa')!.async('string')).toBe('abc');
-  expect(zip.file('\uFEFFa')!.comment).toBe('\uFEFFcomment');
+  const zip = await readZip(bytes);
+  expect(new TextDecoder().decode(zip.files['\uFEFFa'])).toBe('abc');
+  expect(zip.entries.find(entry => entry.path === '\uFEFFa')!.comment).toBe('\uFEFFcomment');
 });
 
 test('per-entry compression and timestamps override defaults', async () => {
@@ -327,8 +325,8 @@ test('reused source views and transferred output buffers preserve payload and me
     expect(chunk.length).toBeLessThanOrEqual(8);
     parts.push(structuredClone(chunk.buffer, {transfer: [chunk.buffer]}));
   }
-  const zip = await JSZip.loadAsync(await new Blob(parts).arrayBuffer(), {checkCRC32: true});
-  expect(await zip.file('a')!.async('string')).toBe('abcd');
+  const zip = await readZip(await new Blob(parts).arrayBuffer());
+  expect(new TextDecoder().decode(zip.files['a'])).toBe('abcd');
 });
 
 test('stream errors, invalid chunks and truncated Blob reads propagate', async () => {
@@ -442,8 +440,8 @@ test.each([
   'deflate'
 ] as const)('writes empty %s payloads with valid descriptors and CRC', async compression => {
   const bytes = await encodeZip({empty: new ArrayBuffer(0)}, {compression});
-  const zip = await JSZip.loadAsync(bytes, {checkCRC32: true});
-  expect(await zip.file('empty')!.async('string')).toBe('');
+  const zip = await readZip(bytes);
+  expect(new TextDecoder().decode(zip.files['empty'])).toBe('');
   const archive = await openZipArchive(bytes);
   try {
     expect((await archive.getEntry('empty'))!.crc32).toBe(0);

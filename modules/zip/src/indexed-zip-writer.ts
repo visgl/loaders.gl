@@ -84,7 +84,7 @@ function prepareArchiveLayout(files: IndexedZipFiles, options: IndexedZipOptions
   if (!Number.isSafeInteger(maxArchiveBytes) || maxArchiveBytes < 0) {
     throw new RangeError('Indexed ZIP archive byte limit must be a non-negative safe integer');
   }
-  // Integer-like object keys follow ECMAScript enumeration order in JSZip as well.
+  // Integer-like object keys follow ECMAScript enumeration order.
   const paths = Object.keys(
     Object.fromEntries(
       Object.keys(files)

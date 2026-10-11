@@ -62,7 +62,7 @@ budgets for it. It rejects output beyond its 4 GiB buffer capacity. The streamin
 larger ZIP64 archives without allocating a complete payload or archive.
 
 Consumers must discard partial streamed output on errors/cancellation and finalize storage only
-when iteration completes. The legacy `ZipWriter` continues using JSZip until the v5 cleanup tranche.
+when iteration completes. `ZipWriter` delegates to the buffered native encoder.
 Indexed SLPK/3TZ writers already share the native serializers but retain their ZIP32 size limits and
 populated local headers.
 

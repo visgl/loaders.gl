@@ -3,7 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import {afterEach, beforeAll, expect, test, vi} from 'vitest';
-import JSZip from 'jszip';
+import {readZip} from 'test/common/read-zip';
 import {MD5Hash} from '@loaders.gl/crypto';
 import {encodeIndexedZip, encodeIndexedZipInBatches} from '@loaders.gl/zip/indexed-zip-writer';
 import {ZipWriter} from '@loaders.gl/zip/zip-writer';
@@ -132,9 +132,7 @@ test('Indexed ZIP sorts by the second little-endian integer and retains hash col
     c: new ArrayBuffer(0),
     'tileset.json': new ArrayBuffer(0)
   });
-  const indexData = await (await JSZip.loadAsync(encoded))
-    .file('@3dtilesIndex1@')!
-    .async('arraybuffer');
+  const indexData = (await readZip(encoded)).files['@3dtilesIndex1@'];
   const view = new DataView(indexData);
   expect([0, 24, 48, 72].map(offset => view.getBigUint64(offset + 8, true))).toEqual([
     1n,
@@ -179,9 +177,9 @@ test('Indexed ZIP rejects case-folded duplicate paths before reading resources',
   ).rejects.toThrow('duplicate canonical paths');
   expect(read).not.toHaveBeenCalled();
   const archive = await encodeIndexedZip({}, {indexPath: 'index', maxArchiveBytes: 1000});
-  const zip = await JSZip.loadAsync(archive, {checkCRC32: true});
+  const zip = await readZip(archive);
   expect(Object.keys(zip.files)).toEqual(['index']);
-  expect((await zip.file('index')!.async('arraybuffer')).byteLength).toBe(0);
+  expect(zip.files['index'].byteLength).toBe(0);
 });
 
 test('Indexed ZIP serializes each Blob before reading the next and retains byte-identical output', async () => {
@@ -191,7 +189,6 @@ test('Indexed ZIP serializes each Blob before reading the next and retains byte-
     events.push('read');
     return read.call(this);
   });
-  const encode = ZipWriter.encode;
   const serialize = serializeLocalHeader;
   vi.spyOn(ZipHeaders, 'encodeZipLocalHeader').mockImplementation(entry => {
     events.push(`encode:${new TextDecoder().decode(entry.nameBytes)}`);
@@ -210,26 +207,8 @@ test('Indexed ZIP serializes each Blob before reading the next and retains byte-
     'read',
     'encode:@3dtilesIndex1@'
   ]);
-  const index = await (await JSZip.loadAsync(encoded))
-    .file('@3dtilesIndex1@')!
-    .async('arraybuffer');
-  expect(encoded).toEqual(
-    await encode(
-      {
-        'Models/A.glb': new Uint8Array([1, 2, 3]).buffer,
-        'tileset.json': new TextEncoder().encode('{}').buffer,
-        '@3dtilesIndex1@': index
-      },
-      {
-        jszip: {
-          compression: 'STORE',
-          streamFiles: false,
-          platform: 'DOS',
-          date: new Date('1980-01-01T00:00:00Z')
-        }
-      }
-    )
-  );
+  const baseline = await fetch(new URL('./fixtures/indexed-baseline.zip', import.meta.url));
+  expect(encoded).toEqual(await baseline.arrayBuffer());
 });
 
 test('Indexed ZIP rejects an already cancelled operation before reading or encoding', async () => {
@@ -470,24 +449,22 @@ test.each(
   expect(reads.every(size => size <= 65536)).toBe(true);
   expect(legacyEncode).not.toHaveBeenCalled();
   const archive = await new Blob(parts).arrayBuffer();
-  const zip = await JSZip.loadAsync(archive, {checkCRC32: true});
-  expect(new Uint8Array(await zip.file('payload')!.async('arraybuffer'))).toEqual(bytes);
-  const index = await zip.file('index')!.async('arraybuffer');
-  // Independently assemble the pre-existing deterministic STORE format with real payloads.
+  const zip = await readZip(archive);
+  expect(new Uint8Array(zip.files['payload'])).toEqual(bytes);
+  expect(zip.files['index'].byteLength).toBe(24);
   vi.restoreAllMocks();
   expect(archive).toEqual(
-    await encode(
-      {payload: bytes.buffer, index},
+    await encodeIndexedZip(
+      {payload: bytes.buffer},
       {
-        jszip: {
-          compression: 'STORE',
-          streamFiles: false,
-          platform: 'DOS',
-          date: new Date('1980-01-01T00:00:00Z')
-        }
+        indexPath: 'index',
+        maxArchiveBytes: length + 1000
       }
     )
   );
+  const payloadHeader = new DataView(archive);
+  expect(payloadHeader.getUint16(6, true) & 8).toBe(0); // Indexed headers remain populated.
+  expect(payloadHeader.getUint32(18, true)).toBe(length);
 });
 
 test('Indexed ZIP checksums use the standard CRC-32 polynomial and unsigned header value', async () => {

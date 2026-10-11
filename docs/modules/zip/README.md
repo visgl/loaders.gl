@@ -60,10 +60,10 @@ and the limits of the current writer.
 [`encodeZip` and `encodeZipInBatches`](/docs/modules/zip/api-reference/encode-zip) write
 ZIP32/ZIP64 from named buffers, Blobs or byte streams, with STORE/DEFLATE, deterministic metadata,
 cancellation and output budgets. Indexed archives use the same native serializers while retaining
-populated local headers. The legacy `ZipWriter` retains JSZip until the v5 cleanup tranche.
+populated local headers. `ZipWriter` delegates to the same native encoder and additionally accepts UTF-8 string values and optional parent directory entries.
 
 ## Attributions
 
-ZipLoader is a wrapper around the [JSZip module](https://stuk.github.io/jszip/). JSZip has extensive documentation on options (and more functionality than this loader object can expose).
+`ZipLoader` delegates to the shared native reader, verifies complete-entry CRCs and returns ArrayBuffer values. Its root export is metadata only; direct parser access uses `@loaders.gl/zip/zip-loader`. The ZIP package runtime dependencies are loaders.gl modules only.
 
 TarBuilder uses a modified version of [tar-js](https://github.com/beatgammit/tar-js), which is under MIT license, for tar archive construction.

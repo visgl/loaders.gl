@@ -12,7 +12,7 @@ import {
   encodeTileConversionArchiveInBatches as encodeRootArchiveInBatches
 } from '@loaders.gl/tile-converter/v5';
 import {GZipCompressor} from '@loaders.gl/compression';
-import JSZip from 'jszip';
+import {readZip} from 'test/common/read-zip';
 
 // Format owners test archive structure exhaustively; this only checks converter handoff/diagnostics.
 test.each(['3tz', 'slpk'] as const)('converter hands off a bounded %s Blob', async format => {
@@ -33,8 +33,8 @@ test.each(['3tz', 'slpk'] as const)('converter hands off a bounded %s Blob', asy
   }))
     chunks.push(new Uint8Array(chunk).buffer);
   expect(await new Blob(chunks).arrayBuffer()).toEqual(await archive.arrayBuffer());
-  const zip = await JSZip.loadAsync(await archive.arrayBuffer(), {checkCRC32: true});
-  expect(await zip.file(path)!.async('arraybuffer')).toEqual(bytes);
+  const zip = await readZip(await archive.arrayBuffer());
+  expect(zip.files[path]).toEqual(bytes);
   expect(Object.keys(zip.files)).toEqual([
     path,
     format === '3tz' ? '@3dtilesIndex1@' : '@specialIndexFileHASH128@'
