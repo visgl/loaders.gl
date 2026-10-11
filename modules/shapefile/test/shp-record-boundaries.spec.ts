@@ -4,7 +4,7 @@
 
 import {describe, expect, test} from 'vitest';
 import {GeoArrowBuilder} from '@loaders.gl/arrow/geometry';
-import {convertWKBToGeometry} from '@loaders.gl/gis';
+import {convertWKBToGeometry} from '@loaders.gl/arrow-geometry/geometry-codecs';
 import {
   getRecordWKBOptions,
   parseRecord,

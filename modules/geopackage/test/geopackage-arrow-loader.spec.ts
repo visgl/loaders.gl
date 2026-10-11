@@ -2,7 +2,7 @@ import {expect, test} from 'vitest';
 import {validateLoader} from 'test/common/conformance';
 import {setLoaderOptions, fetchFile, load} from '@loaders.gl/core';
 import {getTableRowAsObject} from '@loaders.gl/schema-utils';
-import {convertWKBTableToGeoJSON} from '@loaders.gl/gis';
+import {convertWKBTableToGeoJSON} from '@loaders.gl/arrow-geometry/wkb-table';
 import {getGeoMetadata} from '@loaders.gl/geoarrow';
 import {GeoPackageLoader} from '@loaders.gl/geopackage';
 import * as geopackage from '@loaders.gl/geopackage';

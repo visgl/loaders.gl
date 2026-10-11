@@ -13,10 +13,10 @@ import {
   triangulateWKB
 } from '@loaders.gl/gis';
 import type {Geometry, Position} from '@loaders.gl/schema';
-import {parseTestCases} from '@loaders.gl/gis/test/data/wkt/parse-test-cases';
+import {parseTestCases} from '@loaders.gl/wkt/test/data/wkt/parse-test-cases';
 
-const WKB_2D_TEST_CASES = '@loaders.gl/gis/test/data/wkt/wkb-testdata2d.json';
-const WKB_Z_TEST_CASES = '@loaders.gl/gis/test/data/wkt/wkb-testdataZ.json';
+const WKB_2D_TEST_CASES = '@loaders.gl/wkt/test/data/wkt/wkb-testdata2d.json';
+const WKB_Z_TEST_CASES = '@loaders.gl/wkt/test/data/wkt/wkb-testdataZ.json';
 
 function normalizeTypedArrays(value: unknown): unknown {
   if (ArrayBuffer.isView(value) && !(value instanceof DataView)) {

@@ -13,10 +13,10 @@ import {
   convertBinaryFeatureCollectionToGeojson,
   convertBinaryGeometryToGeometry
 } from '@loaders.gl/geoarrow';
-import {GEOMETRY_TEST_CASES} from '@loaders.gl/gis/test/data/binary-features/geometry-test-cases';
-import {EMPTY_BINARY_DATA} from '@loaders.gl/gis/test/data/binary-features/empty_binary';
+import {GEOMETRY_TEST_CASES} from '@loaders.gl/geoarrow/test/data/binary-features/geometry-test-cases';
+import {EMPTY_BINARY_DATA} from '@loaders.gl/geoarrow/test/data/binary-features/empty_binary';
 const FEATURE_COLLECTION_TEST_CASES =
-  '@loaders.gl/gis/test/data/binary-features/featurecollection.json';
+  '@loaders.gl/geoarrow/test/data/binary-features/featurecollection.json';
 type FeatureCollectionTestCase = {
   geoJSON: FeatureCollection;
   binary: BinaryFeatureCollection;
