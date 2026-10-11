@@ -54,6 +54,18 @@ v4.5 is additive. Existing loaders and defaults continue to work unchanged, exce
 
 ## Upgrading to v5.0
 
+**@loaders.gl/zip**
+
+- Removed JSZip passthrough options. Replace `jszip.compression: 'STORE' | 'DEFLATE'` with
+  `zip.compression: 'store' | 'deflate'` and use the typed native ZIP options. Writing now uses
+  deterministic sorted paths, a fixed UTC timestamp and automatic ZIP64; exact legacy bytes are
+  not preserved. `zip.onUpdate` reports start/completion only.
+- Removed `/bundled` and `/unbundled`. Import metadata `ZipLoader` from the package root;
+  direct parser access is `ZipLoaderWithParser` from `@loaders.gl/zip/zip-loader`.
+- `ZipLoader` returns ArrayBuffer values only and rejects invalid entries instead of placing
+  errors in the map. Complete reads verify CRCs. The total decoded file-map default is 64 MiB;
+  set `zip.maxTotalDecodedBytes` explicitly for larger maps, or use incremental archive reads.
+
 The sections below document the v5 removals, migrations, and deprecations that remain active.
 
 ### Graph loader output defaults

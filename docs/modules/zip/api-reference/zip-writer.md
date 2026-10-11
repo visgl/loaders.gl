@@ -11,7 +11,7 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
 <DocPageHeader
   eyebrow="ZIP API · archive writer"
   title="Package named resources into one archive."
-  description="ZipWriter accepts a file map and emits a valid ZIP archive. Paths can represent nested files or explicit directories, while progress and JSZip options remain available when needed."
+  description="ZipWriter accepts a file map and emits a valid ZIP archive. Paths can represent nested files or explicit directories, with typed compression, ZIP64, cancellation, and output limits."
   tone="violet"
   meta={['File map input', 'ArrayBuffer output', 'Progress callbacks']}
   links={[
@@ -24,13 +24,13 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
 <DocOrientation
   eyebrow="The archive writing path"
   title="Build the archive from the paths your application already owns."
-  description="Use a file map to describe archive contents without manually managing ZIP records. The writer preserves nested paths and can report progress while JSZip creates the final bytes."
+  description="Use a file map to describe archive contents without manually managing ZIP records. The writer preserves nested paths and delegates serialization to the native ZIP encoder."
   tone="violet"
   items={[
     {label: 'Input', value: 'Object of archive paths and string or binary contents'},
     {label: 'Directories', value: 'Trailing slash keys become directory entries'},
     {label: 'Output', value: 'ArrayBuffer containing a ZIP archive'},
-    {label: 'Control', value: 'Progress callback, folder creation, and JSZip options'}
+    {label: 'Control', value: 'Native ZIP options and parent directory creation'}
   ]}
 />
 
@@ -79,13 +79,20 @@ The file map is an object with keys representing file names or relative paths in
 
 ## Options
 
-Archive output always uses `type: 'arraybuffer'`.
+Output is always an ArrayBuffer. The typed `zip` namespace accepts
+[`ZipEncodeOptions`](/docs/modules/zip/api-reference/encode-zip), including lower-case
+`compression: 'store' | 'deflate'`, `zip64`, fixed UTC `date`, `signal`, and byte/count limits.
+Defaults are STORE, automatic ZIP64, sorted paths and the timestamp 1980-01-01 UTC.
 
-| Option              | From                                                                                                          | Type                                    | Default    | Description                                                                                           |
-| ------------------- | ------------------------------------------------------------------------------------------------------------- | --------------------------------------- | ---------- | ----------------------------------------------------------------------------------------------------- |
-| `zip.onUpdate`      |                                                                                                               | `(metadata: {percent: number}) => void` | `() => {}` | Receives progress updates while the archive is generated.                                             |
-| `zip.createFolders` | [![Website shields.io](https://img.shields.io/badge/From-v4.4-blue.svg?style=flat-square)](http://shields.io) | `boolean`                               | `false`    | Creates parent directory entries for nested file keys such as `folder/sub/file.txt`.                  |
-| `jszip`             |                                                                                                               | `object`                                | `{}`       | Passes JSZip file and archive generation options through to the underlying writer as an escape hatch. |
+| Option | Type | Default | Description |
+| --- | --- | --- | --- |
+| `zip.createFolders` | `boolean` | `false` | Emits empty parent directory entries for nested file keys. Generated entries count toward `maxEntries`. |
+| `zip.onUpdate` | `(metadata: {percent: number}) => void` | — | Receives 0 before encoding and 100 after successful completion; no intermediate progress is promised. |
+
+String values are encoded as UTF-8. Binary inputs, Blobs, byte streams and per-entry metadata
+are accepted as described by the native encoder. Directory keys require empty data.
+JSZip passthrough options have been removed; use `zip.compression` and the other native options.
+The writer buffers the complete output; use `encodeZipInBatches` for storage backpressure.
 
 Explicit slash-suffixed keys are written as directory entries whether or not `zip.createFolders` is enabled.
 

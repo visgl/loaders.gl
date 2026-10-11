@@ -29,6 +29,10 @@ type ParseOnMainThread = (
  * @param options
  */
 export function canParseWithWorker(loader: Loader, options?: StrictLoaderOptions) {
+  // Caller-only loaders do not need worker transport or JSON-serializable limits.
+  const workerUrl = (options?.[loader.id] as {workerUrl?: string} | undefined)?.workerUrl;
+  if (options?.core?.worker === false || !(loader.worker || loader.loadWorker || workerUrl))
+    return false;
   // Request signers and token providers cannot be cloned into worker runtimes.
   // Keep parsing on the caller so nested fetches retain these application callbacks.
   if (

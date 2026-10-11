@@ -3,7 +3,9 @@
 // Copyright (c) vis.gl contributors
 
 export {ZipFormat} from './zip-format';
-export {ZipLoader} from './zip-loader';
+export {ZipLoader} from './zip-loader-types';
+export type {ZipFileMap, ZipLoaderOptions} from './zip-loader-types';
+export type {ZipWriterFiles, ZipWriterOptions} from './zip-writer';
 export {ZipWriter} from './zip-writer';
 export {encodeIndexedZip} from './indexed-zip-writer';
 export type {IndexedZipFiles, IndexedZipOptions} from './indexed-zip-writer';

@@ -12,7 +12,7 @@ import {makeMeshArrowTable} from '@loaders.gl/schema-utils';
 import type {Mesh} from '@loaders.gl/schema';
 import {convertPointCloudToTileset} from '@loaders.gl/tile-converter/v5/browser';
 import {convertPointCloudToTileset as convertRoot} from '@loaders.gl/tile-converter/v5';
-import JSZip from 'jszip';
+import {readZip} from 'test/common/read-zip';
 
 /** Explicit native ECEF frame for decoded source points. */
 const REFERENCE = createTilesetSpatialReference({
@@ -115,12 +115,10 @@ test('point authoring optionally packages complete files as indexed 3TZ', async 
     ...OPTIONS,
     archive: {maxArchiveBytes: 32768}
   });
-  const archive = await JSZip.loadAsync(await result.archive!.arrayBuffer(), {checkCRC32: true});
-  expect(archive.file('@3dtilesIndex1@')).not.toBeNull();
+  const archive = await readZip(await result.archive!.arrayBuffer());
+  expect(archive.files['@3dtilesIndex1@']).toBeDefined();
   for (const file of result.files) {
-    expect(await archive.file(file.resourceId)!.async('arraybuffer')).toEqual(
-      await file.blob.arrayBuffer()
-    );
+    expect(archive.files[file.resourceId]).toEqual(await file.blob.arrayBuffer());
   }
 });
 

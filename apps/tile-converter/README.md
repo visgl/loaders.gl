@@ -613,9 +613,9 @@ try {
 ```
 
 Modern Potree ZIP node reads slice archived ranges without reading all of
-`octree.bin`. Readers accept unencrypted STORE entries with matching local and
-central sizes, no entry comments or data descriptors, and canonical relative ASCII paths. DEFLATE
-bundles are rejected. Root `metadata.json` or `cloud.js` is selected only when
+`octree.bin`. Readers use the shared ZIP32/ZIP64 validator and accept unencrypted STORE entries,
+including data descriptors and comments, with canonical relative ASCII resource paths. DEFLATE
+bundles are rejected. Complete reads validate ZIP CRCs; partial ranges cannot. Root `metadata.json` or `cloud.js` is selected only when
 unambiguous; supply `metadataPath` for a nested dataset. Partial range reads do
 not validate whole-entry ZIP CRCs. The isolated archive transport never falls
 back to a network request.

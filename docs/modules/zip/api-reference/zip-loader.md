@@ -29,14 +29,14 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
   items={[
     {label: 'Input', value: 'ZIP bytes as an ArrayBuffer or loader input'},
     {label: 'Output', value: 'File map keyed by names or relative paths'},
-    {label: 'Contents', value: 'ArrayBuffer or string values for each entry'},
+    {label: 'Contents', value: 'ArrayBuffer values for each file'},
     {label: 'Next step', value: 'Dispatch extracted resources to their format loaders'}
   ]}
 />
 
 <ReferenceBoundary
   title="ZipLoader reference"
-  description="The sections below document archive metadata, usage, file-map output, and options forwarded to JSZip."
+  description="The sections below document archive metadata, usage, file-map output, and native validation and decoded-output limits."
   tone="violet"
 />
 
@@ -63,16 +63,36 @@ import {parse} from '@loaders.gl/core';
 import {ZipLoader} from '@loaders.gl/zip';
 
 const fileMap = await parse(arrayBuffer, ZipLoader);
-for (const fileName in FILE_MAP) {
-  const fileData = fileMap[key];
+for (const fileName in fileMap) {
+  const fileData = fileMap[fileName];
   // Do something with the subfile
 }
 ```
 
 ## Data Format
 
-The file map is an object with keys representing file names or relative paths in the zip file, and values being the contents of each sub file (either `ArrayBuffer` or `String`).
+The file map is an object with keys representing file names or relative paths in the zip file, and values being the contents of each sub file as an `ArrayBuffer`. Directory entries are omitted. The map has a null prototype, so names such as `__proto__` remain ordinary file keys. Errors reject the parse instead of appearing as map values.
 
 ## Options
 
-Options are forwarded to [JSZip.loadAsync](https://stuk.github.io/jszip/documentation/api_jszip/load_async.html).
+The typed `zip` namespace accepts the limits and `signal` documented for
+[`openZipArchive`](/docs/modules/zip/api-reference/zip-archive).
+Complete reads always verify decoded sizes and CRC-32. Unsupported ZIP profiles reject.
+
+| Option | Type | Default | Description |
+| --- | --- | --- | --- |
+| `zip.maxTotalDecodedBytes` | `bigint` | `64n * 1024n * 1024n` | Sum of file sizes retained in the result; checked before decoding payloads. |
+| `zip.maxDecodedBytes` | `bigint` | `64n * 1024n * 1024n` | Maximum decoded bytes per complete entry. |
+| `zip.signal` | `AbortSignal` | — | Cancels archive initialization and reads. |
+
+These limits bound encoded/decoded byte counts, not decoder intermediates or total heap.
+Use the shared archive API for incremental or range reads instead of retaining a complete map.
+
+The package root exports metadata. For direct parser access:
+
+```ts
+import {ZipLoaderWithParser} from '@loaders.gl/zip/zip-loader';
+const files = await ZipLoaderWithParser.parse(arrayBuffer, {
+  zip: {maxTotalDecodedBytes: 8n * 1024n * 1024n}
+});
+```

@@ -6108,7 +6108,6 @@ __metadata:
     "@loaders.gl/compression": "npm:5.0.0-alpha.11"
     "@loaders.gl/crypto": "npm:5.0.0-alpha.11"
     "@loaders.gl/loader-utils": "npm:5.0.0-alpha.11"
-    jszip: "npm:^3.1.5"
   peerDependencies:
     "@loaders.gl/core": ~5.0.0-alpha.0
   languageName: unknown
@@ -21394,13 +21393,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"immediate@npm:~3.0.5":
-  version: 3.0.6
-  resolution: "immediate@npm:3.0.6"
-  checksum: 10c0/f8ba7ede69bee9260241ad078d2d535848745ff5f6995c7c7cb41cfdc9ccc213f66e10fa5afb881f90298b24a3f7344b637b592beb4f54e582770cdce3f1f039
-  languageName: node
-  linkType: hard
-
 "immutable@npm:^5.1.5":
   version: 5.1.9
   resolution: "immutable@npm:5.1.9"
@@ -22937,18 +22929,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"jszip@npm:^3.1.5":
-  version: 3.10.2
-  resolution: "jszip@npm:3.10.2"
-  dependencies:
-    lie: "npm:~3.3.0"
-    pako: "npm:~1.0.2"
-    readable-stream: "npm:~2.3.6"
-    setimmediate: "npm:^1.0.5"
-  checksum: 10c0/c51b1473062bb7ac81c0c76047d99a2b56a062f2427ac989e28b46b31ecab636a440f137d15ff6320a961b7e1048c802f0bed83a2e10ed0ba9c2cfd84e818bc6
-  languageName: node
-  linkType: hard
-
 "just-diff-apply@npm:^5.2.0":
   version: 5.5.0
   resolution: "just-diff-apply@npm:5.5.0"
@@ -23205,15 +23185,6 @@ __metadata:
     sigstore: "npm:^4.0.0"
     ssri: "npm:^12.0.0"
   checksum: 10c0/213cd2aeb65822892c3723a81d191a385e97f126ec63800f7051609e24c38c3fa36ea529b26739dc56dfba21f7f456347889f3aa1e6024c8c6a40bfa4cd9d184
-  languageName: node
-  linkType: hard
-
-"lie@npm:~3.3.0":
-  version: 3.3.0
-  resolution: "lie@npm:3.3.0"
-  dependencies:
-    immediate: "npm:~3.0.5"
-  checksum: 10c0/56dd113091978f82f9dc5081769c6f3b947852ecf9feccaf83e14a123bc630c2301439ce6182521e5fbafbde88e88ac38314327a4e0493a1bea7e0699a7af808
   languageName: node
   linkType: hard
 
@@ -26935,7 +26906,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"pako@npm:~1.0.2, pako@npm:~1.0.5":
+"pako@npm:~1.0.5":
   version: 1.0.11
   resolution: "pako@npm:1.0.11"
   checksum: 10c0/86dd99d8b34c3930345b8bbeb5e1cd8a05f608eeb40967b293f72fe469d0e9c88b783a8777e4cc7dc7c91ce54c5e93d88ff4b4f060e6ff18408fd21030d9ffbe
@@ -30982,7 +30953,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"setimmediate@npm:^1.0.4, setimmediate@npm:^1.0.5":
+"setimmediate@npm:^1.0.4":
   version: 1.0.5
   resolution: "setimmediate@npm:1.0.5"
   checksum: 10c0/5bae81bfdbfbd0ce992893286d49c9693c82b1bcc00dcaaf3a09c8f428fdeacf4190c013598b81875dfac2b08a572422db7df779a99332d0fce186d15a3e4d49

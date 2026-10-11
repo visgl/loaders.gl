@@ -4,6 +4,7 @@
 
 import {expect, test, vi} from 'vitest';
 import {
+  canParseWithWorker,
   parseFromContext,
   parseWithWorker,
   parseWithWorkerInBatches
@@ -203,4 +204,19 @@ test('empty worker contexts retain legacy callback options without an outer cont
     callback
   );
   expect(result).toEqual({worker: false});
+});
+
+test('caller-only loaders do not serialize bigint options when checking worker eligibility', () => {
+  expect(canParseWithWorker(CHILD_LOADER, {core: {worker: true}, limits: {bytes: 1024n}})).toBe(
+    false
+  );
+  expect(canParseWithWorker(PARENT_LOADER, {core: {worker: false}, limits: {bytes: 1024n}})).toBe(
+    false
+  );
+  expect(
+    canParseWithWorker(CHILD_LOADER, {
+      core: {worker: true},
+      [CHILD_LOADER.id]: {workerUrl: 'worker.js'}
+    })
+  ).toBe(true);
 });

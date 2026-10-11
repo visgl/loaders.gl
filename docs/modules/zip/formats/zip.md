@@ -53,8 +53,8 @@ The shared [`openZipArchive`](/docs/modules/zip/api-reference/zip-archive) reade
 validated entry metadata, complete reads, streaming reads, and STORE byte ranges.
 [`ZipLoader`](/docs/modules/zip/api-reference/zip-loader) loads a complete collection;
 [`encodeZip` and `encodeZipInBatches`](/docs/modules/zip/api-reference/encode-zip) write native
-ZIP32/ZIP64 collections. The legacy `ZipLoader`/`ZipWriter` retain their existing implementation
-until the v5 cleanup tranche.
+ZIP32/ZIP64 collections. `ZipLoader` and `ZipWriter` delegate to these native APIs with typed
+`zip.*` options; the ZIP package has no external runtime dependencies.
 
 ## Feature support
 
@@ -89,7 +89,7 @@ capabilities, not decoding of the files stored inside an archive.
 Native writing defaults to STORE, automatic ZIP64, sorted paths and a fixed UTC timestamp.
 Auto ZIP64 reserves 64-bit sizes for stream/DEFLATE inputs whose encoded lengths are unknown.
 The buffered encoder retains the complete result; use the streaming encoder and explicit output
-budgets for large archives. Independent JSZip, Info-ZIP and 7-Zip qualification uses small archives;
+budgets for large archives. Independent Info-ZIP and 7-Zip qualification uses small archives;
 exhaustive large-file interoperability remains separate work.
 
 ## Validation and random access

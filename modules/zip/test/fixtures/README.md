@@ -10,3 +10,5 @@ All payloads are `abc` (three bytes); all archives are below 1 KiB.
 - `infozip.zip`: macOS Info-ZIP `zip -X -0 infozip.zip abc.txt`, with the input timestamp set by `touch -t 198001010000 abc.txt`.
 
 Fixtures are committed binary assets; build and tests do not require Python or external archive tools. Malformed and sparse boundary cases are synthesized in the tests; they are not claimed as independent interoperability fixtures.
+
+`indexed-baseline.zip` is a 381-byte deterministic indexed STORE archive captured from #4214 before removing JSZip. It preserves the populated-header layout previously qualified against JSZip; it is a byte-regression fixture, not an independent reader fixture.

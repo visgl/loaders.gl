@@ -34,4 +34,20 @@ test('installed ESM/CJS ZIP entrypoints expose portable reading and writing', as
     }
   }
   expect(typeof require('@loaders.gl/zip/zip-encode').encodeZipInBatches).toBe('function');
+  const parser = require('@loaders.gl/zip/zip-loader').ZipLoaderWithParser;
+  expect(modules[0].ZipLoader.parse).toBeUndefined();
+  expect(modules[1].ZipLoader.parse).toBeUndefined();
+  expect(typeof (await modules[0].ZipLoader.preload()).parse).toBe('function');
+  const files = await parser.parse(bytes);
+  expect(new TextDecoder().decode(files['folder/abc.txt'])).toBe('abc');
+  for (const subpath of ['bundled', 'unbundled'])
+    expect(() => require.resolve('@loaders.gl/zip/' + subpath)).toThrow();
+});
+
+/** Dependency ownership is part of the ZIP package contract. */
+test('ZIP declares only loaders.gl runtime dependencies', () => {
+  const manifest = JSON.parse(readFileSync(new URL('../package.json', import.meta.url), 'utf8'));
+  expect(Object.keys(manifest.dependencies).every(name => name.startsWith('@loaders.gl/'))).toBe(
+    true
+  );
 });
