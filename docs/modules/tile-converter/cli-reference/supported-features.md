@@ -53,6 +53,7 @@ qualify every dataset, standard version or extension combination.
 | --- | --- | --- |
 | Static GLB/B3DM mesh contents from 3D Tiles | I3S/SLPK or GLB-based 3D Tiles/3TZ | API and browser example; resolved native EPSG:4978 input, static placements and explicit feature mapping |
 | I3S `3DObject` or `IntegratedMesh` node meshes | I3S/SLPK or GLB-based 3D Tiles/3TZ | API and browser example; source-coordinate decoding, declared CRS/height operations and explicit attribute mapping |
+| Decoded native point Mesh/Arrow data | Potree 1.0–1.8/2.0 files or STORE ZIP bundle | API only; explicit CRS, precision and allocation budgets; additive octree ownership; independent viewer/LOD qualification remains open |
 | Decoded point Mesh/Arrow data or selected point-source tiles | PNTS, partial 3D Tiles or 3TZ | API only; explicit coordinate/precision/sampling-error contract; broader LAS/COPC/I3S input qualification remains open |
 | Finalized I3S or 3D Tiles resources | Indexed SLPK or 3TZ | Blob or streaming packaging; packaging alone performs no format conversion |
 

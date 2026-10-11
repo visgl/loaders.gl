@@ -109,7 +109,14 @@ test('tile-converter v5 built core and adapters share identities in ESM and Comm
       assert.equal(combined.encodePointCloudTileWithMetadata, formats.encodePointCloudTileWithMetadata);
       assert.equal(combined.createPointCloudTilesetSink, formats.createPointCloudTilesetSink);
       assert.equal(combined.convertPointCloudToTileset, formats.convertPointCloudToTileset);
-      for (const name of ['encodePotreeArchive', 'openPointCloudFile', 'extractMeshVertices']) assert.equal(combined[name], formats[name]);
+      for (const name of ['encodePotreeArchive', 'openPointCloudFile', 'extractMeshVertices', 'convertPointCloudToPotree']) assert.equal(combined[name], formats[name]);
+      const potree = await formats.convertPointCloudToPotree({
+        topology: 'point-list', mode: 0, schema: {fields: [], metadata: {}},
+        attributes: {POSITION: {value: new Float64Array([1, 2, 3]), size: 3}}
+      }, {projection: 'EPSG:4978', maxGatheredBytes: 1024, maxOutputBytes: 4096});
+      assert.equal(potree.pointCount, 1);
+      assert.equal(potree.nodeCount, 1);
+      assert.equal(potree.dataset.metadata.points, 1);
       const pointArchive = await formats.encodePotreeArchive({
         topology: 'point-list', mode: 0, schema: {fields: [], metadata: {}},
         attributes: {POSITION: {value: new Float64Array([1, 2, 3]), size: 3}}

@@ -150,3 +150,8 @@ export type {
 
 export {createMeshSourceFeatureOptions} from '@loaders.gl/tile-converter/v5/adapters';
 export type {MeshSourceSchemaOptions} from '@loaders.gl/tile-converter/v5/adapters';
+export {convertPointCloudToPotree} from '@loaders.gl/tile-converter/v5/adapters';
+export type {
+  ConvertPointCloudToPotreeOptions,
+  ConvertedPointCloudPotree
+} from '@loaders.gl/tile-converter/v5/adapters';
