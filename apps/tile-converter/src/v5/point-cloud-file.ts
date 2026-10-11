@@ -6,6 +6,7 @@ import {COPCSourceLoader} from '@loaders.gl/copc';
 import type {COPCTileSource, COPCSourceLoaderOptions} from '@loaders.gl/copc';
 import {PotreeSourceLoader, encodePotreeDataset} from '@loaders.gl/potree';
 import type {
+  PotreeDataset,
   PotreeWriterNode,
   PotreeWriterOptions,
   PotreeSourceLoaderOptions
@@ -73,23 +74,26 @@ export async function encodePotreeArchive(
 ): Promise<Blob> {
   validateLimit(options.maxArchiveBytes);
   const dataset = await encodePotreeDataset(input, {potree: options.potree});
-  const files: Record<string, ArrayBuffer> = Object.create(null);
-  for (const [path, bytes] of dataset.files) {
-    validatePath(path);
-    files[path] = bytes.buffer.slice(
-      bytes.byteOffset,
-      bytes.byteOffset + bytes.byteLength
-    ) as ArrayBuffer;
-  }
-  options.potree?.signal?.throwIfAborted();
-  const archive = await encodeZip(files, {
+  return encodePotreeDatasetArchive(dataset, options.maxArchiveBytes, options.potree?.signal);
+}
+
+/** Packages already encoded Potree files without encoding or sampling points a second time. */
+export async function encodePotreeDatasetArchive(
+  dataset: PotreeDataset,
+  maxArchiveBytes: number,
+  signal?: AbortSignal
+): Promise<Blob> {
+  validateLimit(maxArchiveBytes);
+  for (const path of dataset.files.keys()) validatePath(path);
+  signal?.throwIfAborted();
+  const archive = await encodeZip(Object.fromEntries(dataset.files), {
     compression: 'store',
     zip64: 'never',
     maxEntries: 65535,
-    maxArchiveBytes: BigInt(options.maxArchiveBytes),
-    signal: options.potree?.signal
+    maxArchiveBytes: BigInt(maxArchiveBytes),
+    signal
   });
-  options.potree?.signal?.throwIfAborted();
+  signal?.throwIfAborted();
   return new Blob([archive], {type: 'application/zip'});
 }
 

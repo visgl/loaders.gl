@@ -658,6 +658,47 @@ sampling-error guarantees, ingest batches, or author I3S point layers. PNTS supp
 explicitly map or remove them before authoring. LAS, COPC, Potree and other loaders may produce
 compatible decoded points, but their native CRS and additional attributes still require preparation.
 
+### Potree octree authoring
+
+`convertPointCloudToPotree` connects the same portable tiler to the existing Potree
+writer. It preserves the connected additive octree addresses and emits each input row
+exactly once. Supply decoded Mesh/Arrow points already placed in a declared native CRS;
+origins, model transforms and reprojection must be applied before this call.
+
+```ts
+import {convertPointCloudToPotree} from '@loaders.gl/tile-converter/v5/adapters';
+
+const result = await convertPointCloudToPotree(decodedPoints, {
+  projection: 'EPSG:4978',
+  maxGatheredBytes: 32 * 1024 * 1024,
+  maxOutputBytes: 64 * 1024 * 1024,
+  tiling: {nodePointLimit: 10000, maximumDepth: 12, maxNodes: 1000},
+  potree: {version: '2.0', scale: [0.001, 0.001, 0.001], maxPositionError: 0.001},
+  archive: {maxArchiveBytes: 80 * 1024 * 1024},
+  signal: abortController.signal
+});
+// result.dataset.files contains named bytes, including metadata and hierarchy.
+// result.archive is an optional loaders.gl STORE ZIP32 bundle.
+```
+
+The projection is written verbatim; it does not validate or transform the coordinates.
+Version and attribute support follow the [Potree writer](/docs/modules/potree/api-reference/potree-writer):
+1.0–1.8 binary output or 2.0 DEFAULT output. Unsupported attributes and positional
+rounding outside the chosen version's precision gate fail; no attributes are silently
+removed. Modern output retains numeric attributes, including exact 64-bit IDs.
+
+Input/index/per-node limits belong to the tiler. `maxGatheredBytes` bounds all retained
+node attribute buffers; `maxOutputBytes` includes metadata, hierarchy and payloads.
+The optional ZIP has its own limit and reuses the completed bytes without re-encoding
+points. The private tiler closes before encoding; failure or cancellation returns no
+partial dataset. Input must remain immutable until completion.
+
+This is bounded in-memory authoring. Source buffers, gathered nodes, writer temporaries,
+encoded files and ZIP output are separate allocations, not a peak-heap guarantee.
+Terminal nodes retain unsampled rows even when they exceed `nodePointLimit`. This initial
+integration does not qualify scalable sampling/LOD, independent viewers, BROTLI writing,
+streaming ingestion, or a complete tiled-source assembly workflow.
+
 ### Point-cloud files and harvested mesh vertices
 
 COPC is already a self-contained, range-readable `.copc.laz` file. Potree datasets

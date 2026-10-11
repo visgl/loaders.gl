@@ -72,7 +72,7 @@ has no content cache. `PointCloudTileset` owns rendering selection and caching.
 | `maximumDepth` | 16 | Maximum depth, between 0 and 24 |
 | `maxInputBytes` | 512 MiB | Unique retained source attribute buffers; Arrow buffers checked before conversion |
 | `maxIndexBytes` | 128 MiB | Live typed row-index allocations, including split temporaries |
-| `maxTileBytes` | 64 MiB | Packed attributes in one gathered tile |
+| `maxTileBytes` | 64 MiB | Unique packed attribute storage in one gathered tile |
 | `maxNodes` | 100,000 | Discovered node count |
 | `signal` | — | Cooperative cancellation during indexing, splitting and gathering |
 | `spatialReference` | — | Explicit CRS metadata to attach to content |
@@ -91,3 +91,8 @@ sorting, worker execution, file-format writers and a drag-and-drop example are f
 the tile runtime or Arrow output wrapper. Await `ready`, then call `getRootNode()`,
 `getChildNodes(id)`, `getNodeMetadata(id)` and `getTileMesh(id)`. Each output is a fresh
 packed mesh, suitable for point-format writers. Call `close()` when finished.
+
+Identical typed storage/accessors retain shared values when gathered. Arrow conversion preserves
+exact physical column aliases as well. Alias names and their individual metadata remain available;
+distinct accessors or separately stored equal-valued columns remain independent. Gathered-tile byte
+limits count shared storage once.

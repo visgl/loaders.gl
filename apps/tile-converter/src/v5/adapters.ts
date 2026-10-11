@@ -90,3 +90,8 @@ export type {
 
 export {createMeshSourceFeatureOptions} from './mesh-source-schema.js';
 export type {MeshSourceSchemaOptions} from './mesh-source-schema.js';
+export {convertPointCloudToPotree} from './point-cloud-potree.js';
+export type {
+  ConvertPointCloudToPotreeOptions,
+  ConvertedPointCloudPotree
+} from './point-cloud-potree.js';

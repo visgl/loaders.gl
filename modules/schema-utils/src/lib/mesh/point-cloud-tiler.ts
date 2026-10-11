@@ -189,7 +189,14 @@ export class PointCloudTiler {
     if (byteLength > this.options.maxTileBytes)
       throw new Error('PointCloudTiler: tile byte budget exceeded');
     const attributes: Mesh['attributes'] = {};
+    const gatheredValues = new Map<ArrayBufferLike, Map<string, TypedArray>>();
     for (const [name, attribute] of Object.entries(this.mesh!.attributes)) {
+      const storageKey = getAttributeStorageKey(attribute);
+      const sharedValue = gatheredValues.get(attribute.value.buffer)?.get(storageKey);
+      if (sharedValue) {
+        attributes[name] = {...attribute, value: sharedValue, byteOffset: 0, byteStride: 0};
+        continue;
+      }
       const Constructor = attribute.value.constructor as new (length: number) => TypedArray;
       const value = new Constructor(state.rows.length * attribute.size);
       const sourceBytes = new Uint8Array(
@@ -206,6 +213,9 @@ export class PointCloudTiler {
         const offset = (attribute.byteOffset || 0) + state.rows[index] * stride;
         targetBytes.set(sourceBytes.subarray(offset, offset + rowBytes), index * rowBytes);
       }
+      const storage = gatheredValues.get(attribute.value.buffer) ?? new Map<string, TypedArray>();
+      storage.set(storageKey, value);
+      gatheredValues.set(attribute.value.buffer, storage);
       attributes[name] = {...attribute, value, byteOffset: 0, byteStride: 0};
     }
     return {
@@ -277,6 +287,7 @@ export class PointCloudTiler {
     if (!Number.isSafeInteger(count) || count < 0 || count > 0xffffffff)
       throw new Error('PointCloudTiler: invalid point count');
     let inputBytes = 0;
+    const storageKeys = new Map<ArrayBufferLike, Set<string>>();
     const buffers = new Set<ArrayBufferLike>();
     for (const attribute of Object.values(mesh.attributes)) {
       this.validateAttribute(attribute, count);
@@ -284,7 +295,13 @@ export class PointCloudTiler {
         buffers.add(attribute.value.buffer);
         inputBytes += attribute.value.buffer.byteLength;
       }
-      this.pointByteLength += attribute.size * attribute.value.BYTES_PER_ELEMENT;
+      const storage = storageKeys.get(attribute.value.buffer) ?? new Set<string>();
+      const storageKey = getAttributeStorageKey(attribute);
+      if (!storage.has(storageKey)) {
+        this.pointByteLength += attribute.size * attribute.value.BYTES_PER_ELEMENT;
+        storage.add(storageKey);
+        storageKeys.set(attribute.value.buffer, storage);
+      }
     }
     if (inputBytes > this.options.maxInputBytes)
       throw new Error('PointCloudTiler: input byte budget exceeded');
@@ -453,4 +470,16 @@ export class PointCloudTiler {
     await new Promise<void>(resolve => setTimeout(resolve, 0));
     this.signal.throwIfAborted();
   }
+}
+
+/** Identifies equal typed storage/accessors within one source buffer, without format alias rules. */
+function getAttributeStorageKey(attribute: MeshAttribute): string {
+  return [
+    attribute.value.constructor.name,
+    attribute.value.byteOffset,
+    attribute.value.byteLength,
+    attribute.size,
+    attribute.byteOffset ?? 0,
+    attribute.byteStride || attribute.size * attribute.value.BYTES_PER_ELEMENT
+  ].join(':');
 }
