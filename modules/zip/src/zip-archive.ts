@@ -108,9 +108,11 @@ export class ZipArchive {
       const advertisedSize = file.bigsize;
       const status =
         advertisedSize === undefined || advertisedSize === 0n ? await file.stat?.() : undefined;
+      const reportedBigsize = status?.bigsize ?? file.bigsize;
       const size =
-        status?.bigsize ??
-        (status?.size === undefined ? (file.bigsize ?? BigInt(file.size)) : BigInt(status.size));
+        reportedBigsize !== undefined && reportedBigsize !== 0n
+          ? reportedBigsize
+          : BigInt(status?.size || file.size);
       archive = new ZipArchive(file, size, options);
       archive.signal.throwIfAborted();
       if (size < 22n || size > archive.limits.maxArchiveBytes)
@@ -137,7 +139,10 @@ export class ZipArchive {
     if (!metadata) return undefined;
     let promise = this.entriesByPath.get(path);
     if (!promise) {
-      promise = this.getValidatedEntry(metadata.localHeaderOffset, metadata);
+      promise = this.getValidatedEntry(metadata.localHeaderOffset, metadata).catch(error => {
+        this.entriesByPath.delete(path);
+        throw error;
+      });
       this.entriesByPath.set(path, promise);
     }
     return await promise;
@@ -313,16 +318,18 @@ export class ZipArchive {
     const tailLength = Number(minimumBigInt(this.size, 65557n));
     const tailStart = this.size - BigInt(tailLength);
     const tail = new DataView(await this.readExact(tailStart, tailLength));
-    let position = tailLength - 22;
-    while (
-      position >= 0 &&
-      (tail.getUint32(position, true) !== 0x06054b50 ||
-        position + 22 + tail.getUint16(position + 20, true) !== tailLength ||
-        (tail.getUint16(position + 10, true) === 0 &&
-          magic !== 0x06064b50 &&
-          tailStart + BigInt(position) !== 0n))
-    )
-      position--;
+    let position = -1;
+    for (let candidate = tailLength - 22; candidate >= 0; candidate--) {
+      if (
+        tail.getUint32(candidate, true) !== 0x06054b50 ||
+        candidate + 22 + tail.getUint16(candidate + 20, true) !== tailLength
+      )
+        continue;
+      position = candidate;
+      // An empty record inside a real archive comment must not hide its earlier end record.
+      // Empty directories with unreferenced local records remain valid candidates.
+      if (tail.getUint16(candidate + 10, true) !== 0 || magic === 0x06064b50) break;
+    }
     if (position < 0) throw new Error('Invalid ZIP archive: end record not found');
     const disk = tail.getUint16(position + 4, true);
     const directoryDisk = tail.getUint16(position + 6, true);
@@ -336,7 +343,9 @@ export class ZipArchive {
     let zip64 = false;
     if (footerOffset >= 20n) {
       const locator = new DataView(await this.readExact(footerOffset - 20n, 20));
-      if (locator.getUint32(0, true) === 0x07064b50) {
+      const locatorInsideDirectory =
+        size !== 0xffffffffn && offset !== 0xffffffffn && offset + size > footerOffset - 20n;
+      if (locator.getUint32(0, true) === 0x07064b50 && !locatorInsideDirectory) {
         zip64 = true;
         if (locator.getUint32(4, true) || locator.getUint32(16, true) !== 1)
           throw new Error('Unsupported split ZIP64 archive');
@@ -387,7 +396,11 @@ export class ZipArchive {
   /** Indexes central metadata once, without eagerly reading every local header. */
   private getDirectory(): Promise<Map<string, ZipHeaderMetadata>> {
     this.signal.throwIfAborted();
-    this.directoryPromise ||= this.readDirectory();
+    this.directoryPromise ||= this.readDirectory().catch(error => {
+      this.directoryPromise = undefined;
+      this.nextOffsets.clear();
+      throw error;
+    });
     return this.directoryPromise;
   }
 
@@ -452,7 +465,10 @@ export class ZipArchive {
     if (central) return await this.validateEntry(offset, central);
     let entry = this.entriesByOffset.get(offset);
     if (!entry) {
-      entry = this.validateEntry(offset, undefined, localMetadata);
+      entry = this.validateEntry(offset, undefined, localMetadata).catch(error => {
+        this.entriesByOffset.delete(offset);
+        throw error;
+      });
       this.entriesByOffset.set(offset, entry);
     }
     return await entry;
@@ -523,23 +539,28 @@ export class ZipArchive {
   ): Promise<void> {
     const length = Number(minimumBigInt(24n, entryEnd - offset));
     const bytes = new DataView(await this.readExact(offset, length));
-    const sizeBytes = zip64 ? 8 : 4;
-    const descriptorLength = 4 + 2 * sizeBytes;
-    for (const prefix of [4, 0]) {
-      if (length < prefix + descriptorLength || (prefix && bytes.getUint32(0, true) !== 0x08074b50))
-        continue;
-      const compressed = zip64
-        ? bytes.getBigUint64(prefix + 4, true)
-        : BigInt(bytes.getUint32(prefix + 4, true));
-      const decoded = zip64
-        ? bytes.getBigUint64(prefix + 12, true)
-        : BigInt(bytes.getUint32(prefix + 8, true));
-      if (
-        bytes.getUint32(prefix, true) === metadata.crc32 &&
-        compressed === metadata.compressedSize &&
-        decoded === metadata.size
-      )
-        return;
+    for (const wide of zip64 ? [true, false] : [false, true]) {
+      if (!wide && (metadata.size > 0xffffffffn || metadata.compressedSize > 0xffffffffn)) continue;
+      const descriptorLength = wide ? 20 : 12;
+      for (const prefix of [4, 0]) {
+        if (
+          length < prefix + descriptorLength ||
+          (prefix && bytes.getUint32(0, true) !== 0x08074b50)
+        )
+          continue;
+        const compressed = wide
+          ? bytes.getBigUint64(prefix + 4, true)
+          : BigInt(bytes.getUint32(prefix + 4, true));
+        const decoded = wide
+          ? bytes.getBigUint64(prefix + 12, true)
+          : BigInt(bytes.getUint32(prefix + 8, true));
+        if (
+          bytes.getUint32(prefix, true) === metadata.crc32 &&
+          compressed === metadata.compressedSize &&
+          decoded === metadata.size
+        )
+          return;
+      }
     }
     throw new Error('Invalid ZIP archive: data descriptor mismatch');
   }

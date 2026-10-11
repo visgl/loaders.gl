@@ -27,7 +27,7 @@ try {
 | --- | --- |
 | `size`, `comment` | Archive byte length (`bigint`) and decoded archive comment. |
 | `entries()` | Async iterable of validated entries in central-directory order. |
-| `getEntry(path)` | Cached named lookup; returns `undefined` for an absent entry. |
+| `getEntry(path)` | Caches successful named lookup; failed transport reads can retry; returns `undefined` for an absent entry. |
 | `getEntryAt(localHeaderOffset)` | Direct populated-header lookup by `bigint` offset; descriptor entries fall back to the directory. |
 | `read(entryOrPath, {signal}?)` | Complete decoded `ArrayBuffer`; checks size and CRC-32. |
 | `readInBatches(entryOrPath, {signal}?)` | Async iterable of decoded `Uint8Array` chunks; checks size and CRC-32 at completion. |

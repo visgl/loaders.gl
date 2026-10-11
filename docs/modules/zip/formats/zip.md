@@ -95,7 +95,7 @@ requested; opening a file does not decode every payload.
 
 ZIP64 local size sentinels require both size fields in the ZIP64 extra record. The central directory
 supplies authoritative sizes for descriptor entries, with signed or unsigned ZIP32/ZIP64 descriptors
-validated against those values. Completed reads additionally verify CRC-32. A partial read or an
+validated against those values; redundant ZIP64 extras do not override a matching descriptor layout. Completed reads additionally verify CRC-32. A partial read or an
 iterator stopped before completion does not provide whole-entry integrity verification.
 
 `getEntryAt()` supports format-provided local-header offsets. Populated headers are read directly;

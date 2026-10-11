@@ -636,3 +636,73 @@ test.each([
     66000
   );
 });
+
+test('accepts an empty central directory after unreferenced local records', async () => {
+  const local = createZipFixture().slice(0, 40);
+  const end = createZipFixture([]);
+  new DataView(end.buffer).setUint32(16, 40, true);
+  const archive = await open(concatenateZipBytes(local, end));
+  expect(await collect(archive.entries())).toEqual([]);
+});
+
+test('ignores ZIP64 locator signatures inside central-directory comments', async () => {
+  const comment = new Uint8Array(20);
+  new DataView(comment.buffer).setUint32(0, 0x07064b50, true);
+  const archive = await open(createZipFixture([{comment}]));
+  expect(new TextDecoder().decode(await archive.read('abc.txt'))).toBe('abc');
+});
+
+test.each([
+  undefined,
+  {bigsize: 0n},
+  {bigsize: 0n, size: 0}
+])('zero bigsize falls back to a known numeric file size (%s)', async status => {
+  const file = new BlobFile(createZipFixture().buffer);
+  Object.defineProperty(file, 'bigsize', {value: 0n});
+  vi.spyOn(file, 'stat').mockResolvedValue(status as Awaited<ReturnType<typeof file.stat>>);
+  const archive = await openZipArchive(file);
+  archives.push(archive);
+  expect(new TextDecoder().decode(await archive.read('abc.txt'))).toBe('abc');
+});
+
+test('failed directory and entry reads can retry while successful lookups stay cached', async () => {
+  const file = new BlobFile(createZipFixture().buffer);
+  const read = vi.spyOn(file, 'read');
+  const archive = await openZipArchive(file);
+  archives.push(archive);
+  read.mockRejectedValueOnce(new Error('temporary directory failure'));
+  await expect(archive.getEntry('abc.txt')).rejects.toThrow('temporary directory failure');
+  read.mockRejectedValueOnce(new Error('temporary directory retry failure'));
+  await expect(archive.getEntry('abc.txt')).rejects.toThrow('temporary directory retry failure');
+  const bytes = createZipFixture();
+  // The next directory read succeeds, then local-header validation fails once.
+  read
+    .mockResolvedValueOnce(bytes.slice(40, 93).buffer)
+    .mockRejectedValueOnce(new Error('temporary local failure'));
+  await expect(archive.getEntry('abc.txt')).rejects.toThrow('temporary local failure');
+  expect(new TextDecoder().decode(await archive.read('abc.txt'))).toBe('abc');
+  read.mockClear();
+  await archive.getEntry('abc.txt');
+  expect(read).not.toHaveBeenCalled();
+  const directFile = new BlobFile(bytes.buffer);
+  const directRead = vi.spyOn(directFile, 'read');
+  const direct = await openZipArchive(directFile);
+  archives.push(direct);
+  // Prefetched local metadata succeeds; validation then fails on malformed STORE sizes.
+  const bad = bytes.slice(0, 30);
+  new DataView(bad.buffer).setUint32(22, 4, true);
+  directRead.mockResolvedValueOnce(bad.buffer);
+  await expect(direct.getEntryAt(0n)).rejects.toThrow('STORE sizes mismatch');
+  expect((await direct.getEntryAt(0n)).size).toBe(3n);
+});
+
+test.each([
+  8, 16, 24
+])('redundant ZIP64 extra length %s does not force descriptor width', async length => {
+  const extra = new Uint8Array(length + 4);
+  const view = new DataView(extra.buffer);
+  view.setUint16(0, 1, true);
+  view.setUint16(2, length, true);
+  const archive = await open(createZipFixture([{descriptor: 'signed', localExtra: extra}]));
+  expect(new TextDecoder().decode(await archive.read('abc.txt'))).toBe('abc');
+});

@@ -91,8 +91,7 @@ export function decodeZipHeader(bytes: Uint8Array, central: boolean): ZipHeaderM
     // Nonseekable Python ZIP64 output can retain zero legacy sizes and indicate the
     // descriptor width only through its local ZIP64 extra record.
     if (!central && flags & 8 && identifier === 1) {
-      if (length !== 16) throw new Error('Invalid ZIP archive: ZIP64 local size pair missing');
-      zip64 = true;
+      if (length >= 16) zip64 = true;
     }
     if (identifier === 0x7075 || identifier === 0x6375) {
       const original = identifier === 0x7075 ? nameBytes : commentBytes;
