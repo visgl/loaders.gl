@@ -51,6 +51,8 @@ native `.7z` archives.
 
 The shared [`openZipArchive`](/docs/modules/zip/api-reference/zip-archive) reader provides
 validated entry metadata, complete reads, streaming reads, and STORE byte ranges.
+[`ZipFileSystem`](/docs/modules/zip/api-reference/zip-filesystem) adapts these to confined resource
+URLs and streaming `Response` objects, with single STORE ranges returning 206 or 416.
 [`ZipLoader`](/docs/modules/zip/api-reference/zip-loader) loads a complete collection;
 [`encodeZip` and `encodeZipInBatches`](/docs/modules/zip/api-reference/encode-zip) write native
 ZIP32/ZIP64 collections. `ZipLoader` and `ZipWriter` delegate to these native APIs with typed

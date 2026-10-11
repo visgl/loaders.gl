@@ -1,4 +1,4 @@
-import {expect, test} from 'vitest';
+import {expect, test, vi} from 'vitest';
 import {isBrowser} from '@loaders.gl/core';
 import {concatenateArrayBuffers} from '@loaders.gl/loader-utils';
 import {
@@ -7,9 +7,13 @@ import {
   loadArrayBufferFromFile
 } from 'test/utils/readable-files';
 import {ZipFileSystem} from '../../src/filesystems/zip-filesystem';
+import {IndexedArchive} from '../../src/filesystems/IndexedArchive';
+import {ZipArchive} from '../../src/zip-archive';
 import {generateCDHeader} from '../../src/parse-zip/cd-file-header';
 import {generateEoCD} from '../../src/parse-zip/end-of-central-directory';
 import {generateLocalHeader} from '../../src/parse-zip/local-file-header';
+import {encodeZip} from '../../src/zip-encode';
+import {calculateZipChecksum} from '../../src/lib/zip-entry-metadata';
 const ZIP_FILE_PATH = '@loaders.gl/zip/test/data/test-store.zip';
 test('zip#ZipFileSystem - initialize from existing fileHandler', async () => {
   const fileProvider = await getFileProvider(ZIP_FILE_PATH);
@@ -39,10 +43,9 @@ test('zip#ZipFileSystem - get stat for the first file', async () => {
   expect(stats).toBeTruthy();
   expect(stats.compressedSize).toBe(15n);
   expect(stats.uncompressedSize).toBe(15n);
-  expect(stats.fileName).toBe('test-file.txt');
-  expect(stats.fileNameLength).toBe(13);
-  expect(stats.extraFieldLength).toBe(24);
-  expect(stats.extraOffset).toBe(59n);
+  expect(stats.path).toBe('test-file.txt');
+  expect(stats.compression).toBe('store');
+  expect(stats.dataOffset).toBe(71n);
   expect(stats.localHeaderOffset).toBe(0n);
   expect(stats.size).toBe(15);
 });
@@ -96,7 +99,7 @@ test('zip#ZipFileSystem - buffer-backed readable file', async () => {
 test('zip#ZipFileSystem - malformed ZIP64 metadata produces controlled errors', async () => {
   const centralDirectoryArchive = createMalformedZip64Archive('central-directory');
   const centralDirectoryFileSystem = new ZipFileSystem(centralDirectoryArchive);
-  await await expect(
+  await expect(
     centralDirectoryFileSystem.readdir(),
     'readdir rejects malformed central-directory ZIP64 data'
   ).rejects.toThrow(/Invalid ZIP archive:.*ZIP64/);
@@ -156,6 +159,7 @@ function createMalformedZip64Archive(
 function createDataDescriptorArchive(includeSignature: boolean): ArrayBuffer {
   const fileName = 'test.txt';
   const contents = new TextEncoder().encode('data descriptor contents');
+  const crc32 = calculateZipChecksum(contents);
   const localHeader = generateLocalHeader({crc32: 0, fileName, length: 0});
   new DataView(localHeader).setUint16(6, 0x0008, true);
   const descriptor = new DataView(new ArrayBuffer(includeSignature ? 16 : 12));
@@ -164,14 +168,14 @@ function createDataDescriptorArchive(includeSignature: boolean): ArrayBuffer {
     descriptor.setUint32(descriptorOffset, 0x08074b50, true);
     descriptorOffset += 4;
   }
-  descriptor.setUint32(descriptorOffset, 0, true);
+  descriptor.setUint32(descriptorOffset, crc32, true);
   descriptor.setUint32(descriptorOffset + 4, contents.byteLength, true);
   descriptor.setUint32(descriptorOffset + 8, contents.byteLength, true);
   const centralDirectoryOffset = BigInt(
     localHeader.byteLength + contents.byteLength + descriptor.byteLength
   );
   const centralDirectoryHeader = generateCDHeader({
-    crc32: 0,
+    crc32,
     fileName,
     length: contents.byteLength,
     offset: 0n
@@ -193,3 +197,225 @@ function createDataDescriptorArchive(includeSignature: boolean): ArrayBuffer {
     endOfCentralDirectory
   );
 }
+
+const RESOURCE_FILES = {'folder/data.txt': new TextEncoder().encode('0123456789')};
+
+test.each([
+  ['bytes=2-4', '234', 'bytes 2-4/10'],
+  ['bytes=7-', '789', 'bytes 7-9/10'],
+  ['bytes=-3', '789', 'bytes 7-9/10'],
+  ['bytes=8-99', '89', 'bytes 8-9/10'],
+  ['bytes=-99', '0123456789', 'bytes 0-9/10']
+])('ZIP filesystem STORE range %s', async (range, expected, contentRange) => {
+  const filesystem = new ZipFileSystem(await encodeZip(RESOURCE_FILES));
+  try {
+    const response = await filesystem.fetch('folder/data.txt', {headers: {Range: range}});
+    expect(response.status).toBe(206);
+    expect(response.headers.get('Content-Range')).toBe(contentRange);
+    expect(response.headers.get('Content-Length')).toBe(String(expected.length));
+    expect(response.headers.get('Accept-Ranges')).toBe('bytes');
+    expect(await response.text()).toBe(expected);
+  } finally {
+    await filesystem.destroy();
+  }
+});
+
+test.each([
+  'bytes=10-',
+  'bytes=4-2',
+  'bytes=-0',
+  'bytes=-',
+  'bytes=0-1,3-4',
+  'items=0-1'
+])('ZIP filesystem unsatisfiable or unsupported range %s', async range => {
+  const filesystem = new ZipFileSystem(await encodeZip(RESOURCE_FILES));
+  try {
+    const response = await filesystem.fetch('folder/data.txt', {headers: {range}});
+    expect(response.status).toBe(416);
+    expect(response.headers.get('Content-Range')).toBe('bytes */10');
+    expect(await response.text()).toBe('');
+  } finally {
+    await filesystem.destroy();
+  }
+});
+
+test('ZIP filesystem empty and compressed range handling, streaming reads and budgets', async () => {
+  const empty = new ZipFileSystem(await encodeZip({'empty.txt': new Uint8Array()}));
+  const response = await empty.fetch('empty.txt', {headers: {range: 'bytes=0-'}});
+  expect(response.status).toBe(416);
+  expect(response.headers.get('Content-Range')).toBe('bytes */0');
+  await empty.destroy();
+  const compressed = new ZipFileSystem(await encodeZip(RESOURCE_FILES, {compression: 'deflate'}));
+  await expect(
+    compressed.fetch('folder/data.txt', {headers: {range: 'bytes=0-1'}})
+  ).rejects.toThrow('STORE');
+  const complete = await compressed.fetch('folder/data.txt');
+  expect(complete.headers.get('Accept-Ranges')).toBe('none');
+  expect(await complete.text()).toBe('0123456789');
+  await compressed.destroy();
+  const limited = new ZipFileSystem(await encodeZip(RESOURCE_FILES), {maxDecodedBytes: 2n});
+  await expect((await limited.fetch('folder/data.txt')).arrayBuffer()).rejects.toThrow();
+  await limited.destroy();
+});
+
+test('ZIP filesystem confines decoded paths and resolves its own response URLs', async () => {
+  const filesystem = new ZipFileSystem(await encodeZip(RESOURCE_FILES));
+  try {
+    for (const path of [
+      'folder/./data.txt?token=local#fragment',
+      'other/../folder/data%2Etxt',
+      '/folder/data.txt'
+    ]) {
+      const response = await filesystem.fetch(path);
+      expect(await response.text()).toBe('0123456789');
+      expect(await (await filesystem.fetch(response.url)).text()).toBe('0123456789');
+    }
+    for (const path of [
+      '../folder/data.txt',
+      '%2e%2e/folder/data.txt',
+      '//external/data.txt',
+      'https://external/data.txt',
+      'file:data.txt',
+      'folder%5Cdata.txt',
+      '%00',
+      '%2F%2Fexternal',
+      '%68ttps:external',
+      '%'
+    ]) {
+      await expect(filesystem.fetch(path)).rejects.toThrow();
+    }
+    await expect(filesystem.fetch('folder/data.txt', {method: 'POST'})).rejects.toThrow('GET');
+  } finally {
+    await filesystem.destroy();
+  }
+});
+
+test('ZIP filesystem caches the directory and closes once, including active streams', async () => {
+  const file = await createReadableFileFromBuffer(await encodeZip(RESOURCE_FILES));
+  const read = vi.spyOn(file, 'read');
+  const close = vi.spyOn(file, 'close');
+  const filesystem = new ZipFileSystem(file);
+  await filesystem.stat('folder/data.txt');
+  const metadataReads = read.mock.calls.length;
+  await filesystem.stat('folder/data.txt');
+  expect(read).toHaveBeenCalledTimes(metadataReads);
+  const response = await filesystem.fetch('folder/data.txt');
+  await filesystem.destroy();
+  await filesystem.destroy();
+  expect(close).toHaveBeenCalledTimes(1);
+  await expect(response.arrayBuffer()).rejects.toThrow();
+  await expect(filesystem.readdir()).rejects.toThrow('closed');
+  await expect(filesystem.stat('folder/data.txt')).rejects.toThrow('closed');
+  await expect(filesystem.fetch('folder/data.txt')).rejects.toThrow('closed');
+});
+
+test('ZIP filesystem verifies complete-read CRC, cancellation and typed-array slice bounds', async () => {
+  const bytes = await encodeZip(RESOURCE_FILES);
+  const padded = new Uint8Array(bytes.byteLength + 2);
+  padded.set(new Uint8Array(bytes), 1);
+  const filesystem = new ZipFileSystem(padded.subarray(1, -1));
+  const controller = new AbortController();
+  const response = await filesystem.fetch('folder/data.txt', {signal: controller.signal});
+  controller.abort(new Error('caller cancelled'));
+  await expect(response.arrayBuffer()).rejects.toThrow();
+  await expect(filesystem.fetch('folder/data.txt', {signal: controller.signal})).rejects.toThrow(
+    'caller cancelled'
+  );
+  const metadata = await filesystem.stat('folder/data.txt');
+  await filesystem.destroy();
+  new Uint8Array(bytes)[Number(metadata.dataOffset)] ^= 1;
+  const corrupt = new ZipFileSystem(bytes);
+  await expect((await corrupt.fetch('folder/data.txt')).arrayBuffer()).rejects.toThrow();
+  await corrupt.destroy();
+});
+
+test('ZIP filesystem stream cancellation leaves the archive usable', async () => {
+  const filesystem = new ZipFileSystem(await encodeZip(RESOURCE_FILES), {chunkBytes: 2});
+  const reader = (await filesystem.fetch('folder/data.txt')).body!.getReader();
+  expect((await reader.read()).value).toEqual(new Uint8Array([48, 49]));
+  await reader.cancel();
+  expect(await (await filesystem.fetch('folder/data.txt')).text()).toBe('0123456789');
+  await filesystem.destroy();
+});
+
+test('ZIP filesystem retains indexed format aliases without scanning the directory', async () => {
+  const file = await createReadableFileFromBuffer(await encodeZip(RESOURCE_FILES));
+  const read = vi.spyOn(file, 'read');
+  const getFile = vi.fn(async () => new TextEncoder().encode('format decoded').buffer);
+  const adapter = new (class extends IndexedArchive {
+    /** Supplies a format-decoded resource for the adapter contract test. */
+    getFile = getFile;
+  })(file, undefined, 'https://example.test/archive.slpk');
+  const filesystem = new ZipFileSystem(adapter);
+  // A virtual archive URL is routed only through the local adapter mock, never through network fetch.
+  const response = await filesystem.fetch(`${adapter.fileName}/nodes/0/shared`);
+  expect(await response.text()).toBe('format decoded');
+  expect(getFile).toHaveBeenCalledWith('nodes/0/shared', 'http');
+  expect(read).not.toHaveBeenCalled();
+  await expect(filesystem.fetch(`${adapter.fileName}-other/nodes/0`)).rejects.toThrow('inside');
+  await expect(filesystem.fetch('nodes/0/shared', {headers: {range: 'bytes=0-1'}})).rejects.toThrow(
+    'format resource'
+  );
+  await filesystem.destroy();
+});
+
+test('ZIP filesystem closes failed initialization and unopened files once', async () => {
+  const invalidFile = await createReadableFileFromBuffer(new ArrayBuffer(22));
+  const closeInvalid = vi.spyOn(invalidFile, 'close');
+  const invalid = new ZipFileSystem(invalidFile);
+  await expect(invalid.readdir()).rejects.toThrow();
+  await invalid.destroy();
+  await invalid.destroy();
+  expect(closeInvalid).toHaveBeenCalledTimes(1);
+  const file = await createReadableFileFromBuffer(await encodeZip(RESOURCE_FILES));
+  const close = vi.spyOn(file, 'close');
+  const unopened = new ZipFileSystem(file);
+  await unopened.destroy();
+  await unopened.destroy();
+  expect(close).toHaveBeenCalledTimes(1);
+});
+
+test('ZIP filesystem Blob inputs preserve ZIP64 metadata and directory names', async () => {
+  const filesystem = new ZipFileSystem(
+    new Blob([
+      await encodeZip(
+        {
+          'folder/': new Uint8Array(),
+          'folder/café.txt': new TextEncoder().encode('text')
+        },
+        {zip64: 'always'}
+      )
+    ])
+  );
+  expect(await filesystem.readdir()).toEqual(['folder/', 'folder/café.txt']);
+  expect(await filesystem.stat('folder/')).toMatchObject({
+    directory: true,
+    size: 0,
+    uncompressedSize: 0n
+  });
+  const response = await filesystem.fetch('folder/caf%C3%A9.txt');
+  expect(await response.text()).toBe('text');
+  expect(await (await filesystem.fetch(response.url)).text()).toBe('text');
+  await filesystem.destroy();
+});
+
+test('ZIP filesystem rejects unsafe numeric stats and constructor cancellation', async () => {
+  const filesystem = new ZipFileSystem(await encodeZip(RESOURCE_FILES));
+  const entry = await filesystem.stat('folder/data.txt');
+  const getEntry = vi.spyOn(ZipArchive.prototype, 'getEntry').mockResolvedValue({
+    ...entry,
+    size: BigInt(Number.MAX_SAFE_INTEGER) + 1n
+  });
+  try {
+    await expect(filesystem.stat('folder/data.txt')).rejects.toThrow('safely representable');
+  } finally {
+    getEntry.mockRestore();
+    await filesystem.destroy();
+  }
+  const controller = new AbortController();
+  const cancelled = new ZipFileSystem(await encodeZip(RESOURCE_FILES), {signal: controller.signal});
+  controller.abort(new Error('archive cancelled'));
+  await expect(cancelled.readdir()).rejects.toThrow('archive cancelled');
+  await expect(cancelled.fetch('folder/data.txt')).rejects.toThrow('archive cancelled');
+  await cancelled.destroy();
+});
