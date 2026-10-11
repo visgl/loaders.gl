@@ -11,12 +11,14 @@ import {VERSION} from './lib/utils/version';
 /** Portable resources with canonical relative ASCII paths; JSON and content must already be valid. */
 export type Tiles3DArchiveFiles = Readonly<Record<string, ArrayBuffer | Blob>>;
 
-/** Options for the bounded, uncompressed ZIP32 3TZ writer. */
+/** Options for the bounded, uncompressed ZIP32/ZIP64 3TZ writer. */
 export type Tiles3DArchiveWriterOptions = WriterOptions & {
   /** 3TZ packaging options. */
   '3tz'?: {
     /** Maximum archive bytes, including ZIP headers and the index; not a peak-memory limit. */
     maxArchiveBytes?: number;
+    /** ZIP64 policy, automatically selected for overflowing fields by default. */
+    zip64?: 'auto' | 'always' | 'never';
     /** Cooperative cancellation between payload block reads and header encodes. */
     signal?: AbortSignal;
   };
@@ -82,6 +84,7 @@ function getArchiveOptions(
   return {
     indexPath: INDEX_PATH,
     maxArchiveBytes: options['3tz']?.maxArchiveBytes ?? MAX_ARCHIVE_BYTES,
+    zip64: options['3tz']?.zip64,
     signal: options['3tz']?.signal
   };
 }

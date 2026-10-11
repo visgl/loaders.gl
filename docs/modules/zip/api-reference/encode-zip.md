@@ -63,7 +63,7 @@ larger ZIP64 archives without allocating a complete payload or archive.
 
 Consumers must discard partial streamed output on errors/cancellation and finalize storage only
 when iteration completes. `ZipWriter` delegates to the buffered native encoder.
-Indexed SLPK/3TZ writers already share the native serializers but retain their ZIP32 size limits and
-populated local headers.
+Indexed SLPK/3TZ writers share the native serializers and support populated ZIP32/ZIP64 local
+headers. Their format adapters supply required root/index names, hashing rules and output budgets.
 
 See the [ZIP feature table](/docs/modules/zip/formats/zip).

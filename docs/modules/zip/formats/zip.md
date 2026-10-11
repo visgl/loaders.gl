@@ -81,10 +81,10 @@ capabilities, not decoding of the files stored inside an archive.
 | STORE byte-range reads | Supported | Unsupported | Partial reads cannot verify a complete-entry CRC. |
 | DEFLATE byte-range reads | Unsupported | Unsupported | Consume a complete or streaming decoded entry instead. |
 | Streaming entry reads | Supported | — | CRC is verified only if the iterator is consumed through completion. |
-| Streaming archive output | — | Supported | Native writer streams ZIP32/ZIP64; indexed SLPK/3TZ writers retain STORE ZIP32. |
-| Indexed local-header access | Partial | Partial | Populated headers avoid directory scans; descriptor entries use the cached directory. SLPK/3TZ define their own hash indexes. |
+| Streaming archive output | — | Supported | Native writer streams ZIP32/ZIP64; indexed SLPK/3TZ writers stream populated STORE ZIP32/ZIP64. |
+| Indexed local-header access | Partial | Partial | Populated headers avoid directory scans; descriptor entries use the cached directory. SLPK/3TZ define their own hash indexes and use the shared reader. |
 | Cancellation and close | Supported | Supported | Reader releases owned files; native writer supports `AbortSignal` and releases acquired stream locks. |
-| Configurable byte/entry limits | Supported | Supported | Reader and native writer expose independent byte/count limits. Indexed writers retain their output limits. These are not total heap limits. |
+| Configurable byte/entry limits | Supported | Supported | Reader and native writer expose independent byte/count limits. Indexed writers also bound output, entries, and directory metadata. These are not total heap limits. |
 | Encryption, split archives, self-extracting prefixes | Unsupported | Unsupported | Outside the qualified shared-container profile. |
 | Native `.7z` and additional compression methods | Unsupported | Unsupported | Separate formats/profiles; a ZIP produced by 7-Zip can use the supported ZIP methods. |
 
@@ -116,7 +116,8 @@ consistency is required. Descriptor entries fall back to the shared directory.
 SLPK and 3TZ add required resources and hash indexes to ZIP. Those policies remain in their format
 adapters. SLPK stores resources in STORE entries and can gzip the resource content itself; this
 inner gzip is separate from ZIP compression. Esri specifies ZIP64 for SLPK archives above 2 GB.
-The current SLPK writer retains its 2 GB output ceiling pending the writer migration.
+The SLPK writer defaults to a 2 GiB output budget; raise it explicitly for larger streaming
+output, which automatically uses ZIP64.
 [Esri I3S specification](https://github.com/Esri/i3s-spec/blob/master/format/Indexed%203d%20Scene%20Layer%20Format%20Specification.md).
 
 ## Specifications

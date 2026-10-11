@@ -3,7 +3,7 @@
 // Copyright vis.gl contributors
 
 import type {LoaderOptions, LoaderWithParser, ReadableFile} from '@loaders.gl/loader-utils';
-import {DataViewReadableFile} from '@loaders.gl/zip';
+import {BlobFile} from '@loaders.gl/loader-utils';
 import {parseSLPKArchive} from './lib/parsers/parse-slpk/parse-slpk';
 import {SLPKLoader as SLPKLoaderMetadata} from './i3s-slpk-loader';
 
@@ -36,7 +36,7 @@ export const SLPKLoaderWithParser = {
  * @returns Requested file contents
  */
 async function parseSLPK(data: ArrayBuffer, options: SLPKLoaderOptions = {}): Promise<ArrayBuffer> {
-  return parseSLPKFile(new DataViewReadableFile(new DataView(data)), options);
+  return parseSLPKFile(new BlobFile(data), options);
 }
 
 /**
@@ -50,5 +50,9 @@ async function parseSLPKFile(
   options: SLPKLoaderOptions = {}
 ): Promise<ArrayBuffer> {
   const archive = await parseSLPKArchive(file);
-  return archive.getFile(options.slpk?.path ?? '', options.slpk?.pathMode);
+  try {
+    return await archive.getFile(options.slpk?.path ?? '', options.slpk?.pathMode);
+  } finally {
+    await archive.close();
+  }
 }

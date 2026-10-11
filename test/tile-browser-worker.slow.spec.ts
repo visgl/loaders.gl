@@ -2,7 +2,7 @@ import {expect, test} from 'vitest';
 import {parse} from '@loaders.gl/core';
 import {GLBLoader} from '@loaders.gl/gltf';
 import {parseSLPKArchive} from '@loaders.gl/i3s';
-import {DataViewReadableFile} from '@loaders.gl/zip';
+import {ArrayBufferFile} from '@loaders.gl/loader-utils';
 import {Tiles3DArchive} from '@loaders.gl/3d-tiles';
 import {
   convertSelectedContentsInWorker,
@@ -100,7 +100,7 @@ test.each([
       }
       expect(outputFile.size).toBeGreaterThan(0);
       expect(phases).toContain('Packaging archive');
-      const file = new DataViewReadableFile(new DataView(await outputFile.arrayBuffer()));
+      const file = new ArrayBufferFile(await outputFile.arrayBuffer());
       const archive = format === 'slpk' ? await parseSLPKArchive(file) : new Tiles3DArchive(file);
       try {
         const root = await archive.getFile(format === 'slpk' ? '' : 'tileset.json', 'http');
@@ -195,7 +195,7 @@ test.each([
   );
   expect(output.file.name).toBe(`selected-mesh.${format}`);
   expect(output.report.inputResources).toBe(1);
-  const file = new DataViewReadableFile(new DataView(await output.file.arrayBuffer()));
+  const file = new ArrayBufferFile(await output.file.arrayBuffer());
   try {
     const archive = format === 'slpk' ? await parseSLPKArchive(file) : new Tiles3DArchive(file);
     const document = JSON.parse(
@@ -226,7 +226,7 @@ test.each([
     () => {}
   );
   expect(output.report.inputResources).toBe(1);
-  const file = new DataViewReadableFile(new DataView(await output.file.arrayBuffer()));
+  const file = new ArrayBufferFile(await output.file.arrayBuffer());
   try {
     const bytes =
       format === 'slpk'

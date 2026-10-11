@@ -7,7 +7,7 @@ import {parse} from '@loaders.gl/core';
 import {Tiles3DLoader} from '@loaders.gl/3d-tiles';
 import {GLTFScenegraph, GLTFWriter, type GLTFPostprocessed} from '@loaders.gl/gltf';
 import {Tiles3DSource, Tileset3D} from '@loaders.gl/tiles';
-import {DataViewReadableFile} from '@loaders.gl/zip';
+import {ArrayBufferFile} from '@loaders.gl/loader-utils';
 import {parseSLPKArchive} from '@loaders.gl/i3s';
 import {Matrix4} from '@math.gl/core';
 import {
@@ -185,9 +185,7 @@ async function convertRuntime(modern = false, features?: MeshSourceFeatureOption
     format: 'slpk',
     maxArchiveBytes: 32768
   });
-  const reader = await parseSLPKArchive(
-    new DataViewReadableFile(new DataView(await archive.arrayBuffer()))
-  );
+  const reader = await parseSLPKArchive(new ArrayBufferFile(await archive.arrayBuffer()));
   return {runtime, payload, sink, report, reader};
 }
 let converted: Awaited<ReturnType<typeof convertRuntime>>;

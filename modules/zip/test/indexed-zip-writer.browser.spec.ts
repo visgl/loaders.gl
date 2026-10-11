@@ -5,6 +5,7 @@
 import {afterEach, beforeAll, expect, test, vi} from 'vitest';
 import {readZip} from 'test/common/read-zip';
 import {MD5Hash} from '@loaders.gl/crypto';
+import {openZipArchive} from '@loaders.gl/zip';
 import {encodeIndexedZip, encodeIndexedZipInBatches} from '@loaders.gl/zip/indexed-zip-writer';
 import {ZipWriter} from '@loaders.gl/zip/zip-writer';
 import * as ZipHeaders from '../src/lib/zip-serialization';
@@ -81,12 +82,11 @@ test.each([
   );
 });
 
-test('Indexed ZIP rejects ZIP32 file-count overflow before encoding', async () => {
-  const files = Object.fromEntries(
-    Array.from({length: 65533}, (_, index) => [`${index}`, new ArrayBuffer(0)])
-  );
-  await expect(encodeArchive({...files, 'tileset.json': new ArrayBuffer(0)})).rejects.toThrow(
-    'fewer than 65534'
+test('Indexed ZIP enforces entry and directory budgets before reading payloads', async () => {
+  const options = {indexPath: '@3dtilesIndex1@', maxArchiveBytes: 4096};
+  await expect(encodeIndexedZip(FILES, {...options, maxEntries: 2})).rejects.toThrow('entry limit');
+  await expect(encodeIndexedZip(FILES, {...options, maxDirectoryBytes: 1})).rejects.toThrow(
+    'directory byte limit'
   );
 });
 
@@ -102,7 +102,7 @@ test('Indexed ZIP rejects ZIP32 size overflow without allocating a large payload
   const measure = vi.spyOn(Blob.prototype, 'size', 'get').mockReturnValue(0xffffffff);
   await expect(
     encodeArchive({'tileset.json': new Blob()}, {'3tz': {maxArchiveBytes: Number.MAX_SAFE_INTEGER}})
-  ).rejects.toThrow('ZIP32 capacity');
+  ).rejects.toThrow('buffer capacity');
   measure.mockRestore();
 });
 
@@ -118,12 +118,12 @@ test('Indexed ZIP rejects an ArrayBuffer detached during asynchronous packaging'
   hash.mockRestore();
 });
 
-test('Indexed ZIP sorts by the second little-endian integer and retains hash collisions', async () => {
+test('Indexed ZIP sorts by the second little-endian integer', async () => {
   const digests = [
     '00000000000000000300000000000000',
     '00000000000000000100000000000000',
     '00000000000000000200000000000000',
-    '00000000000000000200000000000000'
+    '00000000000000000400000000000000'
   ];
   vi.spyOn(MD5Hash.prototype, 'hash').mockImplementation(async () => digests.shift()!);
   const encoded = await encodeArchive({
@@ -137,8 +137,8 @@ test('Indexed ZIP sorts by the second little-endian integer and retains hash col
   expect([0, 24, 48, 72].map(offset => view.getBigUint64(offset + 8, true))).toEqual([
     1n,
     2n,
-    2n,
-    3n
+    3n,
+    4n
   ]);
 });
 
@@ -547,4 +547,47 @@ test('Indexed ZIP rejects a resource detached while its header is being encoded'
     {indexPath: 'index', maxArchiveBytes: 1000}
   )[Symbol.asyncIterator]();
   await expect(iterator.next()).rejects.toThrow('size changed');
+});
+
+test.each([
+  'always',
+  'auto'
+] as const)('Indexed ZIP %s emits populated ZIP64 headers and exact indexes', async zip64 => {
+  const bytes = await encodeIndexedZip(FILES, {
+    indexPath: '@3dtilesIndex1@',
+    maxArchiveBytes: 4096,
+    zip64,
+    zip64Threshold: 1
+  });
+  expect(new DataView(bytes).getUint16(4, true)).toBe(45);
+  const reader = await openZipArchive(bytes);
+  try {
+    const last = (await reader.getLastEntry())!;
+    expect(last.path).toBe('@3dtilesIndex1@');
+    const index = new DataView(await reader.read(last));
+    for (let offset = 0; offset < index.byteLength; offset += 24) {
+      const entry = await reader.getEntryAt(index.getBigUint64(offset + 16, true));
+      expect(await reader.read(entry)).toEqual(FILES[entry.path as keyof typeof FILES]);
+    }
+  } finally {
+    await reader.close();
+  }
+});
+
+test('Indexed ZIP validates policy and rejects forbidden ZIP64 before output', async () => {
+  const options = {indexPath: '@3dtilesIndex1@', maxArchiveBytes: 4096};
+  await expect(
+    encodeIndexedZip(FILES, {...options, zip64: 'never', zip64Threshold: 1})
+  ).rejects.toThrow('requires ZIP64');
+  await expect(encodeIndexedZip(FILES, {...options, zip64: 'invalid' as never})).rejects.toThrow(
+    'policy'
+  );
+  await expect(encodeIndexedZip(FILES, {...options, maxEntries: 0})).rejects.toThrow(
+    'metadata limit'
+  );
+});
+
+test('Indexed ZIP rejects duplicate MD5 digests', async () => {
+  vi.spyOn(MD5Hash.prototype, 'hash').mockResolvedValue('00000000000000000000000000000000');
+  await expect(encodeArchive(FILES)).rejects.toThrow('duplicate MD5');
 });

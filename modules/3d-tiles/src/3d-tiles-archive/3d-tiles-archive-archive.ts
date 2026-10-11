@@ -3,37 +3,24 @@
 // Copyright vis.gl contributors
 
 import type {ReadableFile} from '@loaders.gl/loader-utils';
-import {MD5Hash} from '@loaders.gl/crypto';
-import {DeflateDecompressor, NoDecompressor} from '@loaders.gl/compression';
-import {IndexedArchive, parseZipLocalFileHeader, readRange} from '@loaders.gl/zip';
-
-type CompressionHandler = (compressedFile: ArrayBuffer) => Promise<ArrayBuffer>;
-
-/**
- * Handling different compression types in zip
- */
-const COMPRESSION_METHODS: {[key: number]: CompressionHandler} = {
-  /** No compression */
-  0: data => new NoDecompressor().decompress(data),
-  /** Deflation */
-  8: data => new DeflateDecompressor({raw: true}).decompress(data)
-};
+import {IndexedArchive, type ZipArchiveOptions} from '@loaders.gl/zip';
 
 /**
  * Class for handling information about 3tz file
  */
 export class Tiles3DArchive extends IndexedArchive {
-  /** hash info */
-  private hashTable?: Record<string, bigint>;
-
   /**
    * creates Tiles3DArchive handler
    * @param fileProvider - readable file handle with the whole archive
    * @param hashTable - hash info
    */
-  constructor(fileProvider: ReadableFile, hashTable?: Record<string, bigint>, fileName?: string) {
-    super(fileProvider, hashTable, fileName);
-    this.hashTable = hashTable;
+  constructor(
+    fileProvider: ReadableFile,
+    hashTable?: Record<string, bigint>,
+    fileName?: string,
+    options?: ZipArchiveOptions
+  ) {
+    super(fileProvider, hashTable, fileName, options);
   }
 
   /**
@@ -61,36 +48,6 @@ export class Tiles3DArchive extends IndexedArchive {
    * @returns buffer with the raw file data
    */
   private async getFileBytes(path: string): Promise<ArrayBuffer | null> {
-    let uncompressedFile: ArrayBuffer;
-    if (this.hashTable) {
-      const arrayBuffer = new TextEncoder().encode(path).buffer;
-      const nameHash = await new MD5Hash().hash(arrayBuffer, 'hex');
-      const byteOffset = this.hashTable[nameHash];
-      if (byteOffset === undefined) {
-        return null;
-      }
-
-      const localFileHeader = await parseZipLocalFileHeader(byteOffset, this.file);
-      if (!localFileHeader) {
-        return null;
-      }
-
-      const compressedFile = await readRange(
-        this.file,
-        localFileHeader.fileDataOffset,
-        localFileHeader.fileDataOffset + localFileHeader.compressedSize
-      );
-
-      const compressionMethod = COMPRESSION_METHODS[localFileHeader.compressionMethod];
-      if (!compressionMethod) {
-        throw Error('Only Deflation compression is supported');
-      }
-
-      uncompressedFile = await compressionMethod(compressedFile);
-    } else {
-      uncompressedFile = await this.getFileWithoutHash(path);
-    }
-
-    return uncompressedFile;
+    return (await this.readZipEntry(path)) ?? null;
   }
 }

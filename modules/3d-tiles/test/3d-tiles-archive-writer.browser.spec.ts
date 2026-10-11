@@ -11,7 +11,7 @@ import {
   Tiles3DArchiveWriter,
   encodeTiles3DArchiveInBatches
 } from '@loaders.gl/3d-tiles/3d-tiles-archive-writer';
-import {DataViewReadableFile} from '@loaders.gl/zip';
+import {BlobFile} from '@loaders.gl/loader-utils';
 import {parse3DTilesArchive} from '../src/3d-tiles-archive/3d-tiles-archive-parser';
 
 /** Small payloads exercising nested and case-sensitive paths, and numeric object-key ordering. */
@@ -98,7 +98,7 @@ test('3TZ index is sorted, excludes itself, and points to case-preserved local h
     if (path === 'Models/A.glb') expect(digest).toBe('e75c1e84bcbcd225960a340ce96ce03b');
   }
   expect(names.sort()).toEqual(Object.keys(FILES).sort());
-  const reader = await parse3DTilesArchive(new DataViewReadableFile(new DataView(archive)));
+  const reader = await parse3DTilesArchive(new BlobFile(archive));
   expect(await reader.getFile('Models/A.glb')).toEqual(FILES['Models/A.glb']);
   expect(await reader.getFile('tileset.json')).toEqual(FILES['tileset.json']);
 });

@@ -33,8 +33,10 @@ when lowercased, including the reserved index name, are rejected.
 
 `slpk.maxArchiveBytes` is a nonnegative safe integer, defaulting to `0x7fffffff`. The complete
 archive budget includes ZIP headers and the index and is checked before any Blob reads.
-The initial ZIP32 profile rejects output above 2 GiB and more than 65,533 resources. Larger
-SLPK output requires a future ZIP64 writer. Resource compression and peak-memory
+Raise `slpk.maxArchiveBytes` explicitly for larger output. `slpk.zip64` defaults to `'auto'`,
+which selects ZIP64 above 2 GiB or ZIP32 field/count limits; `'always'` forces it and `'never'`
+rejects required upgrades. The buffered API rejects output beyond 4 GiB; use streaming for larger
+archives. The shared indexed writer bounds entries and directory metadata independently. Resource compression and peak-memory
 qualification are separate work; this budget bounds output size only.
 
 Returns an `ArrayBuffer`. Wrap it in an `application/octet-stream` Blob and save as `.slpk`.
@@ -86,3 +88,6 @@ Use each chunk's byte view rather than writing its entire backing buffer. Finali
 after iteration succeeds; failure, cancellation, or early exit may leave partial bytes that the
 application must discard. Cancellation is checked between block reads and header encodes; an
 active read finishes first.
+
+ZIP64 container output is qualified with shared reader tests and independent ZIP tools;
+large SLPK interoperability with ArcGIS and other scene viewers remains separate qualification.

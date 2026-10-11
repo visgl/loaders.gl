@@ -4,8 +4,7 @@
 
 import {MD5Hash} from '@loaders.gl/crypto';
 import {concatenateArrayBuffers, concatenateArrayBuffersFromArray} from '@loaders.gl/loader-utils';
-import type {ReadableFile} from '@loaders.gl/loader-utils';
-import {ZipCDFileHeader, makeZipCDHeaderIterator} from './parse-zip/cd-file-header';
+import type {ZipEntry} from './zip-archive-types';
 
 /**
  * Reads hash file from buffer and returns it in ready-to-use form
@@ -13,6 +12,7 @@ import {ZipCDFileHeader, makeZipCDHeaderIterator} from './parse-zip/cd-file-head
  * @returns Map containing hash and offset
  */
 export function parseHashTable(arrayBuffer: ArrayBuffer): Record<string, bigint> {
+  if (arrayBuffer.byteLength % 24) throw new Error('Invalid ZIP index length');
   const dataView = new DataView(arrayBuffer);
 
   const hashMap: Record<string, bigint> = {};
@@ -20,6 +20,7 @@ export function parseHashTable(arrayBuffer: ArrayBuffer): Record<string, bigint>
   for (let i = 0; i < arrayBuffer.byteLength; i = i + 24) {
     const offset = dataView.getBigUint64(i + 16, true);
     const hash = bufferToHex(arrayBuffer, i, 16);
+    if (hash in hashMap) throw new Error('Duplicate ZIP index hash');
     hashMap[hash] = offset;
   }
 
@@ -31,41 +32,6 @@ function bufferToHex(buffer: ArrayBuffer, start: number, length: number): string
   return [...new Uint8Array(buffer, start, length)]
     .map(x => x.toString(16).padStart(2, '0'))
     .join('');
-}
-
-/**
- * generates hash info from zip files "central directory"
- * @param fileProvider - readable archive source
- * @returns ready to use hash info
- */
-export async function makeHashTableFromZipHeaders(
-  fileProvider: ReadableFile
-): Promise<Record<string, bigint>> {
-  const zipCDIterator = makeZipCDHeaderIterator(fileProvider);
-  return getHashTable(zipCDIterator);
-}
-
-/**
- * creates hash table from file offset iterator
- * @param zipCDIterator iterator to use
- * @returns hash table
- */
-export async function getHashTable(
-  zipCDIterator: AsyncIterable<ZipCDFileHeader>
-): Promise<Record<string, bigint>> {
-  const md5Hash = new MD5Hash();
-  const textEncoder = new TextEncoder();
-
-  const hashTable: Record<string, bigint> = {};
-
-  for await (const cdHeader of zipCDIterator) {
-    const filename = cdHeader.fileName.split('\\').join('/').toLocaleLowerCase();
-    const arrayBuffer = textEncoder.encode(filename).buffer;
-    const md5 = await md5Hash.hash(arrayBuffer, 'hex');
-    hashTable[md5] = cdHeader.localHeaderOffset;
-  }
-
-  return hashTable;
 }
 
 /** item of the file offset list */
@@ -80,7 +46,7 @@ type FileListItem = {
  * @returns ArrayBuffer containing hash file
  */
 export async function composeHashFile(
-  zipCDIterator: AsyncIterable<FileListItem> | Iterable<FileListItem>
+  zipCDIterator: AsyncIterable<FileListItem | ZipEntry> | Iterable<FileListItem | ZipEntry>
 ): Promise<ArrayBuffer> {
   const md5Hash = new MD5Hash();
   const textEncoder = new TextEncoder();
@@ -88,12 +54,12 @@ export async function composeHashFile(
   const hashArray: ArrayBuffer[] = [];
 
   for await (const cdHeader of zipCDIterator) {
-    let filename = cdHeader.fileName.split('\\').join('/');
+    let filename = ('path' in cdHeader ? cdHeader.path : cdHeader.fileName).split('\\').join('/');
     // I3S edge case. All files should be lower case by spec. However, ArcGIS
     // and official i3s_converter https://github.com/Esri/i3s-spec/blob/master/i3s_converter/i3s_converter_ReadMe.md
     // expect `3dSceneLayer.json.gz` in camel case
     if (filename !== '3dSceneLayer.json.gz') {
-      filename = filename.toLocaleLowerCase();
+      filename = filename.toLowerCase();
     }
     const arrayBuffer = textEncoder.encode(filename).buffer;
     const md5 = await md5Hash.hash(arrayBuffer, 'hex');
