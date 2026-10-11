@@ -54,6 +54,65 @@ ESM, CommonJS and TypeScript declaration exports. The app still declares its exi
 format and Node service dependencies; importing the core isolates its runtime and
 bundle imports, but does not remove those installation dependencies.
 
+## Conversion budgets and destination recovery
+
+`convertTileset` accepts per-resource limits and cumulative limits for one run:
+
+| Option | Budget checked |
+| --- | --- |
+| `maxInputResourceBytes` | Measured decoded bytes of each input, before encoding |
+| `maxOutputResourceBytes` | Measured bytes of each output after validation, before writing |
+| `maxInputBytes` / `maxOutputBytes` | Sum of measured input/output bytes processed by this run |
+| `maxInputResources` / `maxOutputResources` | Input/output counts, including zero-byte resources |
+
+All limits default to `Infinity` and accept nonnegative safe integers, including zero.
+Invalid limits fail before inspection. Invalid byte measurements and unsafe cumulative
+integer totals fail explicitly. Output counts include every codec output, so they also
+bound fan-out from a single input. Limits reject the offending resource, close the
+source/codec iterators, and invoke the sink's existing abort operation. A resumed run's
+report and budgets include matching resources skipped by a manifest-backed sink.
+
+These gates bound accounted work. Input buffers already exist when input limits are
+checked; output buffers already exist when output limits are checked. They do not bound
+source decoding, codec allocations, diagnostic retention, or total peak memory. Applications
+must also configure source, codec and destination limits.
+
+`createManifestBackedTileConversionSink` accepts an optional `maxResources` cap on
+unique checkpoint entries, including entries loaded from the store. It rejects new IDs
+before writing when the cap is reached; matching IDs and repairs do not add entries.
+The cap bounds the retained checkpoint count, not the store's loading allocations or
+identifier/fingerprint string lengths.
+
+Applications can opt into checking destination bytes before skipping a checkpoint:
+
+```ts
+const sink = await createManifestBackedTileConversionSink({
+  sink: destination,
+  manifestStore,
+  getResourceId,
+  measureResourceBytes,
+  fingerprintResource,
+  maxResources: 1000,
+  verifyResource: async (entry, signal) => {
+    // The storage adapter must check both byte length and the content fingerprint.
+    return storage.matches(entry.resourceId, entry.byteLength, entry.fingerprint, signal);
+  }
+});
+```
+
+Return `true` only when the stored resource matches the checkpoint. Return `false`
+when it is missing or differs: the wrapper rewrites it through the application's
+idempotent destination and persists the checkpoint again. Verification failures propagate
+and prevent subsequent queued writes and finalization. Cancellation is checked before and
+after verification. Changed conversion input still fails with `RESOURCE_RESUME_MISMATCH`
+before checking destination bytes.
+
+Without `verifyResource`, applications retain the existing contract that checkpointed
+bytes remain intact. Storage owns fingerprint calculation, atomic manifest replacement,
+idempotent writes and format-specific finalization/recovery. This hook does not provide a
+filesystem adapter, resume an unfinished ZIP stream, or qualify crash durability.
+
+
 ## Draco mesh output
 
 `createMeshConversionCodec` now encodes GLB geometry with lossless Draco Edge Breaker
