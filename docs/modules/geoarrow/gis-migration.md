@@ -76,6 +76,11 @@ allocate coordinates, offsets, feature IDs, attributes and triangles; it is not 
 borrowed batch view. The existing native reader also materializes coordinate arrays.
 Zero-allocation native batch views are a separate, additive tranche.
 
-The remaining GIS package, application/deck-layer imports and shared test fixtures
-are temporary compatibility work for later removal. Loaders do not depend on GIS
-or the larger GeoArrow processing package, directly or transitively.
+Deck-layers and the geospatial example now import their application-facing APIs
+from GeoArrow. Shared codec fixtures live with WKT, loader binary fixtures with
+arrow-geometry, and rendering fixtures and benchmarks with GeoArrow. Run the
+geometry benchmarks with the `geoarrow` module filter instead of `gis`.
+
+GIS remains only as a temporary compatibility package, with its own tests and
+build registration awaiting removal. Loaders do not depend on GIS or the larger
+GeoArrow processing package, directly or transitively.

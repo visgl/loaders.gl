@@ -5,7 +5,7 @@
 import {expect, test} from 'vitest';
 import {createDataSource, fetchFile, resolvePath} from '@loaders.gl/core';
 import {FlatGeobufSourceLoader, FlatGeobufVectorSource} from '@loaders.gl/flatgeobuf';
-import {convertBinaryFeatureCollectionToGeojson} from '@loaders.gl/gis';
+import {convertBinaryFeatureCollectionToGeojson} from '@loaders.gl/geoarrow';
 import {convertGeoArrowToTable} from '@loaders.gl/geoarrow';
 const FLATGEOBUF_COUNTRIES_DATA_URL = resolvePath('@loaders.gl/flatgeobuf/test/data/countries.fgb');
 const REMOTE_FGB_URL = 'https://example.com/countries.fgb';
