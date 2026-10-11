@@ -27,7 +27,7 @@ source bytes must remain immutable during encoding. An entry can instead use
 `{data, compression?, date?, comment?}` to override metadata. Directory names end in `/` and
 require empty data; parent directories are not generated automatically.
 
-Paths are sorted. Names and entry comments use UTF-8. Dates use UTC DOS timestamps, with two-second
+Paths are sorted. Names and entry comments use UTF-8; unpaired UTF-16 surrogates reject before any source reads. Dates use UTC DOS timestamps, with two-second
 precision. Archive comments use CP437 because ZIP has no archive-level UTF-8 flag; unrepresentable
 characters reject. Native writers emit signed data descriptors and validate final CRC/size metadata.
 

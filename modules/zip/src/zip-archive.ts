@@ -328,7 +328,14 @@ export class ZipArchive {
       if (position < 0) position = candidate;
       // An empty record inside a real archive comment must not hide its earlier end record.
       // Empty directories with unreferenced local records remain valid candidates.
-      if (tail.getUint16(candidate + 10, true) !== 0 || magic === 0x06064b50) {
+      const emptyDirectoryAtEnd =
+        tail.getUint32(candidate + 12, true) === 0 &&
+        BigInt(tail.getUint32(candidate + 16, true)) === tailStart + BigInt(candidate);
+      if (
+        tail.getUint16(candidate + 10, true) !== 0 ||
+        emptyDirectoryAtEnd ||
+        magic === 0x06064b50
+      ) {
         position = candidate;
         break;
       }
@@ -425,6 +432,8 @@ export class ZipArchive {
         view.getUint16(position + 30, true) +
         view.getUint16(position + 32, true);
       const header = decodeZipHeader(bytes.subarray(position, position + length), true);
+      if (header.localHeaderOffset + 30n > this.directory.offset)
+        throw new Error('Invalid ZIP archive: local header outside data region');
       if (entries.has(header.path) || offsets.has(header.localHeaderOffset))
         throw new Error('Invalid ZIP archive: duplicate path or local-header offset');
       entries.set(header.path, header);

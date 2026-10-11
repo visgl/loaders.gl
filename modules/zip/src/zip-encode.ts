@@ -116,8 +116,8 @@ export async function* encodeZipInBatches(
       throw new RangeError('ZIP name/comment exceeds header capacity');
     if (entry.comment !== undefined && typeof entry.comment !== 'string')
       throw new TypeError('ZIP entry comment must be a string');
-    const nameBytes = new TextEncoder().encode(path);
-    const commentBytes = new TextEncoder().encode(entry.comment ?? '');
+    const nameBytes = encodeUtf8Text(path);
+    const commentBytes = encodeUtf8Text(entry.comment ?? '');
     encodeZipTimestamp(entry.date ?? date);
     const timestamp = new Date((entry.date ?? date).getTime());
     const zip64 =
@@ -349,6 +349,14 @@ function awaitWithSignal<T>(promise: Promise<T>, signal?: AbortSignal): Promise<
     );
     if (signal.aborted) abort();
   });
+}
+
+/** Rejects unpaired UTF-16 surrogates instead of silently replacing names/comments during encoding. */
+function encodeUtf8Text(value: string): Uint8Array<ArrayBuffer> {
+  const bytes = new TextEncoder().encode(value);
+  if (new TextDecoder('utf-8', {ignoreBOM: true}).decode(bytes) !== value)
+    throw new TypeError('ZIP names and entry comments must be well-formed Unicode');
+  return bytes;
 }
 
 /** Encodes archive comments in CP437, which has no archive-level UTF-8 flag. */

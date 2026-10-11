@@ -72,7 +72,7 @@ capabilities, not decoding of the files stored inside an archive.
 | Signed and unsigned data descriptors | Supported | Supported | Reader accepts signed/unsigned ZIP32/ZIP64 descriptors; native writer emits signed descriptors. |
 | Directory entries | Supported | Supported | Explicit empty entries ending in `/`; native writer does not create parent directories automatically. |
 | Entry and archive comments | Supported | Supported | Archive comments use CP437 in the shared reader; entry comments follow UTF-8 flags/Unicode extras. |
-| UTF-8 names | Supported | Supported | Invalid UTF-8 is rejected by the shared reader. |
+| UTF-8 names | Supported | Supported | Invalid UTF-8 is rejected by the shared reader; native writers reject unpaired UTF-16 surrogates. |
 | Legacy CP437 names | Supported | Partial | Native writer emits UTF-8 names and CP437 archive comments. |
 | Unicode path/comment extra fields | Supported | Unsupported | Reader validates original-byte CRC/version; native writer uses UTF-8 flags instead of Unicode extra fields. |
 | Complete-entry CRC-32 validation | Supported | Supported | Reader verifies at completion; writer generates CRC metadata. |

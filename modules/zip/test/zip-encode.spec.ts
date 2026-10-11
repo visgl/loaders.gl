@@ -151,6 +151,13 @@ test('metadata is deterministic, sorted, UTF-8, and independent of host timezone
   expect(encodeZipTimestamp(new Date('2020-02-03T04:05:07Z'))).toBe(0x504320a3);
 });
 
+test('valid leading U+FEFF filename and comment characters remain intact', async () => {
+  const bytes = await encodeZip({'\uFEFFa': {data: BYTES, comment: '\uFEFFcomment'}});
+  const zip = await JSZip.loadAsync(bytes, {checkCRC32: true});
+  expect(await zip.file('\uFEFFa')!.async('string')).toBe('abc');
+  expect(zip.file('\uFEFFa')!.comment).toBe('\uFEFFcomment');
+});
+
 test('per-entry compression and timestamps override defaults', async () => {
   const bytes = await encodeZip(
     {stored: {data: BYTES, compression: 'store'}, deflated: {data: BYTES, compression: 'deflate'}},
@@ -211,6 +218,20 @@ test.each([
   {a: 7}
 ])('rejects invalid entry metadata %#', async files => {
   await expect(encodeZip(files as unknown as Parameters<typeof encodeZip>[0])).rejects.toThrow();
+});
+
+test.each([
+  '\uD800',
+  '\uDC00',
+  'a\uD800b'
+])('rejects unpaired surrogates in names and entry comments %#', async value => {
+  const next = vi.fn();
+  const source = {[Symbol.asyncIterator]: () => ({next})};
+  await expect(encodeZip({[value]: source})).rejects.toThrow('well-formed Unicode');
+  await expect(encodeZip({a: {data: source, comment: value}})).rejects.toThrow(
+    'well-formed Unicode'
+  );
+  expect(next).not.toHaveBeenCalled();
 });
 
 test('enforces entry budgets for buffers, Blobs and streams', async () => {
