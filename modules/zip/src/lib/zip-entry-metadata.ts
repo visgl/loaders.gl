@@ -124,7 +124,7 @@ export function decodeZipHeader(bytes: Uint8Array, central: boolean): ZipHeaderM
 
 /** Decodes UTF-8 strictly or the ZIP legacy CP437 character set. */
 export function decodeZipText(bytes: Uint8Array, utf8: boolean): string {
-  if (utf8) return new TextDecoder('utf-8', {fatal: true}).decode(bytes);
+  if (utf8) return new TextDecoder('utf-8', {fatal: true, ignoreBOM: true}).decode(bytes);
   return Array.from(bytes, value =>
     value < 128 ? String.fromCharCode(value) : CP437_HIGH[value - 128]
   ).join('');

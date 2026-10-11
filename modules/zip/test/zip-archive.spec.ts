@@ -88,6 +88,13 @@ test('accepts empty archives and ignores an empty EOCD signature in a nonempty a
   expect((await collect(archive.entries())).length).toBe(1);
 });
 
+test('an empty end record inside an empty archive comment does not replace its real footer', async () => {
+  const comment = createZipFixture([]);
+  const archive = await open(createZipFixture([], {comment}));
+  expect(await collect(archive.entries())).toEqual([]);
+  expect(archive.comment).toBe(decodeZipText(comment, false));
+});
+
 test('respects ArrayBuffer, Blob, typed-array and DataView subview bounds', async () => {
   const bytes = createZipFixture();
   const backing = concatenateZipBytes(new Uint8Array([7, 7]), bytes, new Uint8Array([8]));
@@ -386,6 +393,27 @@ test.each([
   await expect(collect(archive.entries())).rejects.toThrow('relative path');
 });
 
+test('an out-of-region later offset cannot extend an earlier payload into the directory', async () => {
+  const bytes = createZipFixture([
+    {
+      patchLocal: view => {
+        view.setUint32(18, 100, true);
+        view.setUint32(22, 100, true);
+      },
+      patchCentral: view => {
+        view.setUint32(20, 100, true);
+        view.setUint32(24, 100, true);
+      }
+    },
+    {
+      name: new TextEncoder().encode('other'),
+      patchCentral: view => view.setUint32(42, 1000, true)
+    }
+  ]);
+  const archive = await open(bytes);
+  await expect(archive.getEntry('abc.txt')).rejects.toThrow('local header outside data region');
+});
+
 test('rejects duplicate names, duplicate offsets, central truncation and trailing metadata', async () => {
   for (const bytes of [
     createZipFixture([{}, {}]),
@@ -452,6 +480,22 @@ test('decodes CP437 and valid Unicode path/comment extras; ignores invalid CRC/v
     expect(entry.comment).toBe('注');
     expect(new TextDecoder().decode(await archive.read(entry))).toBe('abc');
   }
+});
+
+test('UTF-8 names and comments preserve a leading U+FEFF character', async () => {
+  const archive = await open(
+    createZipFixture([
+      {
+        name: new TextEncoder().encode('\uFEFFname'),
+        comment: new TextEncoder().encode('\uFEFFcomment'),
+        flags: 0x800
+      }
+    ])
+  );
+  const entry = (await archive.getEntry('\uFEFFname'))!;
+  expect(entry.path).toBe('\uFEFFname');
+  expect(entry.comment).toBe('\uFEFFcomment');
+  expect(new TextDecoder().decode(await archive.read(entry))).toBe('abc');
 });
 
 test('rejects malformed header lengths, UTF-8 and Unicode extra fields without leaking DataView errors', async () => {

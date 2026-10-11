@@ -52,8 +52,9 @@ native `.7z` archives.
 The shared [`openZipArchive`](/docs/modules/zip/api-reference/zip-archive) reader provides
 validated entry metadata, complete reads, streaming reads, and STORE byte ranges.
 [`ZipLoader`](/docs/modules/zip/api-reference/zip-loader) loads a complete collection;
-[`ZipWriter`](/docs/modules/zip/api-reference/zip-writer) writes an in-memory collection.
-These loader/writer entry points retain their existing implementation during the ZIP migration.
+[`encodeZip` and `encodeZipInBatches`](/docs/modules/zip/api-reference/encode-zip) write native
+ZIP32/ZIP64 collections. The legacy `ZipLoader`/`ZipWriter` retain their existing implementation
+until the v5 cleanup tranche.
 
 ## Feature support
 
@@ -61,29 +62,35 @@ These loader/writer entry points retain their existing implementation during the
 Notes applies. **Unsupported** profiles fail in the shared reader. This table describes container
 capabilities, not decoding of the files stored inside an archive.
 
-| Feature | Read (`openZipArchive`) | Write (`ZipWriter`) | Notes |
+| Feature | Read (`openZipArchive`) | Write (`encodeZip`) | Notes |
 | --- | --- | --- | --- |
 | ZIP32 | Supported | Supported | Single-disk archives. |
-| ZIP64 sizes and offsets | Supported | Unsupported | Reader metadata uses `bigint`; the current writer does not generate ZIP64. |
-| ZIP64 entry counts | Supported | Unsupported | Subject to the configurable directory/entry limits. |
+| ZIP64 sizes and offsets | Supported | Supported | Reader metadata and native writer fields use `bigint`. |
+| ZIP64 entry counts | Supported | Supported | Subject to configurable directory/entry limits. |
 | STORE (method 0) | Supported | Supported | Default writer compression. |
-| Raw DEFLATE (method 8) | Supported | Supported | Current writer selects it through `jszip.compression: 'DEFLATE'`. |
-| Signed and unsigned data descriptors | Supported | Partial | Shared reader validates descriptor CRC and sizes against the directory; writer streaming uses its existing JSZip options. |
-| Directory entries | Supported | Supported | Names end in `/`; writer can create parent directories with `zip.createFolders`. |
+| Raw DEFLATE (method 8) | Supported | Supported | Select native `compression: 'deflate'` globally or per entry. |
+| Signed and unsigned data descriptors | Supported | Supported | Reader accepts signed/unsigned ZIP32/ZIP64 descriptors; native writer emits signed descriptors. |
+| Directory entries | Supported | Supported | Explicit empty entries ending in `/`; native writer does not create parent directories automatically. |
 | Entry and archive comments | Supported | Supported | Archive comments use CP437 in the shared reader; entry comments follow UTF-8 flags/Unicode extras. |
-| UTF-8 names | Supported | Supported | Invalid UTF-8 is rejected by the shared reader. |
-| Legacy CP437 names | Supported | Partial | Writer emits UTF-8 by default; custom name encoding is a legacy JSZip option. |
-| Unicode path/comment extra fields | Supported | Partial | Reader uses version 1 fields only when their original-byte CRC matches; writer controls remain implementation specific. |
+| UTF-8 names | Supported | Supported | Invalid UTF-8 is rejected by the shared reader; native writers reject unpaired UTF-16 surrogates. |
+| Legacy CP437 names | Supported | Partial | Native writer emits UTF-8 names and CP437 archive comments. |
+| Unicode path/comment extra fields | Supported | Unsupported | Reader validates original-byte CRC/version; native writer uses UTF-8 flags instead of Unicode extra fields. |
 | Complete-entry CRC-32 validation | Supported | Supported | Reader verifies at completion; writer generates CRC metadata. |
 | STORE byte-range reads | Supported | Unsupported | Partial reads cannot verify a complete-entry CRC. |
 | DEFLATE byte-range reads | Unsupported | Unsupported | Consume a complete or streaming decoded entry instead. |
 | Streaming entry reads | Supported | — | CRC is verified only if the iterator is consumed through completion. |
-| Streaming archive output | — | Partial | Indexed SLPK/3TZ writers stream STORE ZIP32; the general writer returns an in-memory buffer. |
+| Streaming archive output | — | Supported | Native writer streams ZIP32/ZIP64; indexed SLPK/3TZ writers retain STORE ZIP32. |
 | Indexed local-header access | Partial | Partial | Populated headers avoid directory scans; descriptor entries use the cached directory. SLPK/3TZ define their own hash indexes. |
-| Cancellation and close | Supported | Partial | Shared reader supports `AbortSignal`, releases the supplied file, and rejects reads after close. General writer cancellation is not yet exposed. |
-| Configurable byte/entry limits | Supported | Partial | Reader has independent archive, directory, read, compressed, and decoded limits. Indexed writers retain their output limits. These are not total heap limits. |
+| Cancellation and close | Supported | Supported | Reader releases owned files; native writer supports `AbortSignal` and releases acquired stream locks. |
+| Configurable byte/entry limits | Supported | Supported | Reader and native writer expose independent byte/count limits. Indexed writers retain their output limits. These are not total heap limits. |
 | Encryption, split archives, self-extracting prefixes | Unsupported | Unsupported | Outside the qualified shared-container profile. |
 | Native `.7z` and additional compression methods | Unsupported | Unsupported | Separate formats/profiles; a ZIP produced by 7-Zip can use the supported ZIP methods. |
+
+Native writing defaults to STORE, automatic ZIP64, sorted paths and a fixed UTC timestamp.
+Auto ZIP64 reserves 64-bit sizes for stream/DEFLATE inputs whose encoded lengths are unknown.
+The buffered encoder retains the complete result; use the streaming encoder and explicit output
+budgets for large archives. Independent JSZip, Info-ZIP and 7-Zip qualification uses small archives;
+exhaustive large-file interoperability remains separate work.
 
 ## Validation and random access
 

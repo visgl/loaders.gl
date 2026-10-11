@@ -3,7 +3,11 @@
 // Copyright (c) vis.gl contributors
 
 import {CRC32Hash, MD5Hash} from '@loaders.gl/crypto';
-import {ZipWriter} from './zip-writer';
+import {
+  encodeZipLocalHeader,
+  encodeZipCentralHeader,
+  encodeZipEndRecords
+} from './lib/zip-serialization';
 
 /** Already encoded resources. Inputs must remain unchanged while packaging. */
 export type IndexedZipFiles = Readonly<Record<string, ArrayBuffer | Blob>>;
@@ -185,14 +189,12 @@ async function* encodeArchiveChunks(
     yield centralHeader;
   }
   signal?.throwIfAborted();
-  // ZIP32 end-of-central-directory record; disk numbers and comment length remain zero.
-  const endOfCentralDirectory = new DataView(new ArrayBuffer(22));
-  endOfCentralDirectory.setUint32(0, 0x06054b50, true);
-  endOfCentralDirectory.setUint16(8, resources.length + 1, true);
-  endOfCentralDirectory.setUint16(10, resources.length + 1, true);
-  endOfCentralDirectory.setUint32(12, archiveBytes - 22 - centralDirectoryOffset, true);
-  endOfCentralDirectory.setUint32(16, centralDirectoryOffset, true);
-  yield new Uint8Array(endOfCentralDirectory.buffer);
+  yield encodeZipEndRecords(
+    BigInt(resources.length + 1),
+    BigInt(archiveBytes - 22 - centralDirectoryOffset),
+    BigInt(centralDirectoryOffset),
+    false
+  );
   signal?.throwIfAborted();
 }
 
@@ -254,7 +256,7 @@ async function checksumResource(resource: ZipResource, signal?: AbortSignal): Pr
   return checksum;
 }
 
-/** Reuses the deterministic STORE header layout without passing payload bytes to JSZip. */
+/** Serializes populated STORE headers using the shared native record encoder. */
 async function encodeEntryHeaders(
   path: string,
   byteLength: number,
@@ -263,37 +265,21 @@ async function encodeEntryHeaders(
 ): Promise<{
   /** Populated local header and ASCII resource name. */
   readonly localHeader: Uint8Array<ArrayBuffer>;
-  /** Independent central header, safe when the local header's buffer is transferred. */
+  /** Independent central header, safe when the local buffer is transferred. */
   readonly centralHeader: Uint8Array<ArrayBuffer>;
 }> {
-  const localBytes = 30 + path.length;
-  const centralBytes = 46 + path.length;
-  const encoded = await ZipWriter.encode(
-    {[path]: new ArrayBuffer(0)},
-    {
-      jszip: {
-        compression: 'STORE',
-        streamFiles: false,
-        platform: 'DOS',
-        date: new Date('1980-01-01T00:00:00Z')
-      }
-    }
-  );
-  if (encoded.byteLength !== localBytes + centralBytes + 22) {
-    throw new Error('Unexpected indexed ZIP layout');
-  }
-  const header = new DataView(encoded);
-  header.setUint32(14, checksum, true);
-  header.setUint32(18, byteLength, true);
-  header.setUint32(22, byteLength, true);
-  header.setUint32(localBytes + 16, checksum, true);
-  header.setUint32(localBytes + 20, byteLength, true);
-  header.setUint32(localBytes + 24, byteLength, true);
-  header.setUint32(localBytes + 42, localHeaderOffset, true);
-  return {
-    localHeader: new Uint8Array(encoded, 0, localBytes),
-    centralHeader: new Uint8Array(encoded.slice(localBytes, -22))
+  const entry = {
+    nameBytes: new TextEncoder().encode(path),
+    date: new Date('1980-01-01T00:00:00Z'),
+    method: 0 as const,
+    flags: 0,
+    crc32: checksum,
+    size: BigInt(byteLength),
+    compressedSize: BigInt(byteLength),
+    localHeaderOffset: BigInt(localHeaderOffset),
+    zip64: false
   };
+  return {localHeader: encodeZipLocalHeader(entry), centralHeader: encodeZipCentralHeader(entry)};
 }
 
 /** Compares MD5 values as two little-endian unsigned 64-bit integers, per the indexed archive specifications. */

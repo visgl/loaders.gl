@@ -55,6 +55,13 @@ read complete members with CRC validation, stream decoded entries, or read STORE
 See the [ZIP feature table](/docs/modules/zip/formats/zip) for the supported container profiles
 and the limits of the current writer.
 
+## Native writing
+
+[`encodeZip` and `encodeZipInBatches`](/docs/modules/zip/api-reference/encode-zip) write
+ZIP32/ZIP64 from named buffers, Blobs or byte streams, with STORE/DEFLATE, deterministic metadata,
+cancellation and output budgets. Indexed archives use the same native serializers while retaining
+populated local headers. The legacy `ZipWriter` retains JSZip until the v5 cleanup tranche.
+
 ## Attributions
 
 ZipLoader is a wrapper around the [JSZip module](https://stuk.github.io/jszip/). JSZip has extensive documentation on options (and more functionality than this loader object can expose).
