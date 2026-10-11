@@ -258,6 +258,24 @@ test('cancellation before open, per-read and during transport is observed', asyn
   );
 });
 
+test('probes lazy files with a zero advertised size before reading', async () => {
+  const bytes = createZipFixture();
+  const file = {
+    size: 0,
+    bigsize: 0n,
+    stat: vi.fn().mockResolvedValue({bigsize: BigInt(bytes.length)}),
+    read: vi.fn(
+      async (offset: number | bigint, length: number) =>
+        bytes.slice(Number(offset), Number(offset) + length).buffer
+    ),
+    close: vi.fn().mockResolvedValue(undefined)
+  } as unknown as ReadableFile;
+  const archive = await openZipArchive(file);
+  archives.push(archive);
+  expect(file.stat).toHaveBeenCalledTimes(1);
+  expect(new TextDecoder().decode(await archive.read('abc.txt'))).toBe('abc');
+});
+
 test('failed initialization closes truncated transports and failed stat inputs', async () => {
   const file = new BlobFile(createZipFixture().buffer);
   const close = vi.spyOn(file, 'close');
@@ -513,6 +531,18 @@ test.each([
   await expect(open(bytes)).rejects.toThrow();
 });
 
+test('accepts ZIP64 legacy disk/count sentinels and rejects sentinels without a locator', async () => {
+  const patchEnd = (view: DataView) => {
+    view.setUint16(4, 0xffff, true);
+    view.setUint16(6, 0xffff, true);
+    view.setUint16(8, 0xffff, true);
+    view.setUint16(10, 1, true);
+  };
+  const archive = await open(createZipFixture([{}], {zip64: true, patchEnd}));
+  expect(new TextDecoder().decode(await archive.read('abc.txt'))).toBe('abc');
+  await expect(open(createZipFixture([{}], {patchEnd}))).rejects.toThrow('ZIP64 locator missing');
+});
+
 test('large ZIP64 STORE entries support ranges while complete allocation rejects unsafe sizes', async () => {
   const {file} = sparseZip64File(true);
   const archive = await openZipArchive(file, {
@@ -544,18 +574,28 @@ test('runtime option types are validated for JavaScript callers', async () => {
   }
 });
 
-test('ZIP64 count limits are checked before allocating or scanning a sparse directory', async () => {
+test.each([
+  false,
+  true
+])('ZIP64=%s count boundaries use a sparse directory without scanning', async zip64 => {
   const bytes = createZipFixture([{zip64: true}], {zip64: true});
-  const footer = bytes.slice(-98);
+  const footer = bytes.slice(zip64 ? -98 : -22);
   const view = new DataView(footer.buffer);
-  const count = 65536n;
+  const count = zip64 ? 65536n : 65535n;
   const directoryOffset = 60n;
   const footerOffset = directoryOffset + count * 46n;
-  view.setBigUint64(24, count, true);
-  view.setBigUint64(32, count, true);
-  view.setBigUint64(40, count * 46n, true);
-  view.setBigUint64(48, directoryOffset, true);
-  view.setBigUint64(64, footerOffset, true);
+  if (zip64) {
+    view.setBigUint64(24, count, true);
+    view.setBigUint64(32, count, true);
+    view.setBigUint64(40, count * 46n, true);
+    view.setBigUint64(48, directoryOffset, true);
+    view.setBigUint64(64, footerOffset, true);
+  } else {
+    view.setUint16(8, Number(count), true);
+    view.setUint16(10, Number(count), true);
+    view.setUint32(12, Number(count * 46n), true);
+    view.setUint32(16, Number(directoryOffset), true);
+  }
   const read = vi.fn(async (start: number | bigint = 0, length = 0) => {
     const offset = BigInt(start);
     const output = new Uint8Array(length);
@@ -577,12 +617,20 @@ test('ZIP64 count limits are checked before allocating or scanning a sparse dire
     return output.buffer;
   });
   const file = {
-    size: Number(footerOffset + 98n),
-    bigsize: footerOffset + 98n,
+    size: Number(footerOffset + BigInt(footer.length)),
+    bigsize: footerOffset + BigInt(footer.length),
     read,
     close: vi.fn().mockResolvedValue(undefined)
   } as unknown as ReadableFile;
-  await expect(openZipArchive(file, {maxEntries: 65535})).rejects.toThrow('entry/byte limit');
+  if (!zip64) {
+    const archive = await openZipArchive(file);
+    archives.push(archive);
+    expect(archive.size).toBe(file.bigsize);
+    read.mockClear();
+  }
+  await expect(openZipArchive(file, {maxEntries: Number(count - 1n)})).rejects.toThrow(
+    'entry/byte limit'
+  );
   expect(read.mock.calls.every(([offset]) => offset !== directoryOffset)).toBe(true);
   expect(read.mock.calls.reduce((total, [, length]) => total + (length ?? 0), 0)).toBeLessThan(
     66000

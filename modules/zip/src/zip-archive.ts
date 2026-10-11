@@ -105,8 +105,12 @@ export class ZipArchive {
     const file = normalizeZipInput(input);
     let archive: ZipArchive | undefined;
     try {
-      const status = file.bigsize === undefined ? await file.stat?.() : undefined;
-      const size = file.bigsize ?? status?.bigsize ?? BigInt(status?.size ?? file.size);
+      const advertisedSize = file.bigsize;
+      const status =
+        advertisedSize === undefined || advertisedSize === 0n ? await file.stat?.() : undefined;
+      const size =
+        status?.bigsize ??
+        (status?.size === undefined ? (file.bigsize ?? BigInt(file.size)) : BigInt(status.size));
       archive = new ZipArchive(file, size, options);
       archive.signal.throwIfAborted();
       if (size < 22n || size > archive.limits.maxArchiveBytes)
@@ -320,17 +324,20 @@ export class ZipArchive {
     )
       position--;
     if (position < 0) throw new Error('Invalid ZIP archive: end record not found');
-    if (tail.getUint16(position + 4, true) || tail.getUint16(position + 6, true))
+    const disk = tail.getUint16(position + 4, true);
+    const directoryDisk = tail.getUint16(position + 6, true);
+    if ((disk !== 0 && disk !== 0xffff) || (directoryDisk !== 0 && directoryDisk !== 0xffff))
       throw new Error('Unsupported split ZIP archive');
     const onDisk = BigInt(tail.getUint16(position + 8, true));
     let count = BigInt(tail.getUint16(position + 10, true));
     let size = BigInt(tail.getUint32(position + 12, true));
     let offset = BigInt(tail.getUint32(position + 16, true));
     let footerOffset = tailStart + BigInt(position);
-    if (onDisk !== count) throw new Error('Invalid ZIP archive: inconsistent entry counts');
+    let zip64 = false;
     if (footerOffset >= 20n) {
       const locator = new DataView(await this.readExact(footerOffset - 20n, 20));
       if (locator.getUint32(0, true) === 0x07064b50) {
+        zip64 = true;
         if (locator.getUint32(4, true) || locator.getUint32(16, true) !== 1)
           throw new Error('Unsupported split ZIP64 archive');
         const zip64Offset = locator.getBigUint64(8, true);
@@ -348,6 +355,7 @@ export class ZipArchive {
         const zip64Size = record.getBigUint64(40, true);
         const zip64DirectoryOffset = record.getBigUint64(48, true);
         if (
+          (onDisk !== 0xffffn && onDisk !== zip64Count) ||
           (count !== 0xffffn && count !== zip64Count) ||
           (size !== 0xffffffffn && size !== zip64Size) ||
           (offset !== 0xffffffffn && offset !== zip64DirectoryOffset)
@@ -357,10 +365,15 @@ export class ZipArchive {
         size = zip64Size;
         offset = zip64DirectoryOffset;
         footerOffset = zip64Offset;
-      } else if (count === 0xffffn || size === 0xffffffffn || offset === 0xffffffffn)
+      } else if (size === 0xffffffffn || offset === 0xffffffffn)
         throw new Error('Invalid ZIP archive: ZIP64 locator missing');
-    } else if (count === 0xffffn || size === 0xffffffffn || offset === 0xffffffffn)
+    } else if (size === 0xffffffffn || offset === 0xffffffffn)
       throw new Error('Invalid ZIP archive: ZIP64 locator missing');
+    if (!zip64) {
+      if (disk === 0xffff || directoryDisk === 0xffff)
+        throw new Error('Invalid ZIP archive: ZIP64 locator missing');
+      if (onDisk !== count) throw new Error('Invalid ZIP archive: inconsistent entry counts');
+    }
     if (count > BigInt(this.limits.maxEntries) || size > BigInt(this.limits.maxDirectoryBytes))
       throw new RangeError('ZIP directory entry/byte limit exceeded');
     if (offset + size > footerOffset || size < count * 46n || (count === 0n) !== (size === 0n))

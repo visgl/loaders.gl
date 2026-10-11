@@ -12,11 +12,13 @@ test('installed ESM/CJS ZIP entrypoints expose the portable archive reader', asy
   const require = createRequire(import.meta.url);
   const entrypointUrl = new URL('./index.js', pathToFileURL(require.resolve('@loaders.gl/zip')));
   const modules = [await import(entrypointUrl.href), require('@loaders.gl/zip')];
-  const bytes = new Uint8Array(readFileSync(new URL('./fixtures/infozip.zip', import.meta.url)));
+  const bytes = new Uint8Array(readFileSync(new URL('./fixtures/python.zip', import.meta.url)));
   for (const module of modules) {
     const archive = await module.openZipArchive(bytes);
     try {
-      expect(new TextDecoder().decode(await archive.read('abc.txt'))).toBe('abc');
+      for (const path of ['folder/abc.txt', 'café.txt']) {
+        expect(new TextDecoder().decode(await archive.read(path))).toBe('abc');
+      }
     } finally {
       await archive.close();
     }
