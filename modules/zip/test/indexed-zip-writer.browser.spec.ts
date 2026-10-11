@@ -7,6 +7,14 @@ import JSZip from 'jszip';
 import {MD5Hash} from '@loaders.gl/crypto';
 import {encodeIndexedZip, encodeIndexedZipInBatches} from '@loaders.gl/zip/indexed-zip-writer';
 import {ZipWriter} from '@loaders.gl/zip/zip-writer';
+import * as ZipHeaders from '../src/lib/zip-serialization';
+
+vi.mock('../src/lib/zip-serialization', async importOriginal => {
+  const actual = await importOriginal<typeof ZipHeaders>();
+  return {...actual, encodeZipLocalHeader: vi.fn(actual.encodeZipLocalHeader)};
+});
+/** Real serializer captured before per-case fault/cancellation injection. */
+const serializeLocalHeader = vi.mocked(ZipHeaders.encodeZipLocalHeader).getMockImplementation()!;
 
 /** Small resources used for encoder boundary coverage. */
 const FILES = {
@@ -28,7 +36,10 @@ function encodeArchive(
 beforeAll(async () => {
   archive = await encodeArchive(FILES);
 });
-afterEach(() => vi.restoreAllMocks());
+afterEach(() => {
+  vi.restoreAllMocks();
+  vi.mocked(ZipHeaders.encodeZipLocalHeader).mockReset().mockImplementation(serializeLocalHeader);
+});
 
 test('Indexed ZIP archive budget is inclusive and checked before Blob reads', async () => {
   const read = vi.spyOn(Blob.prototype, 'arrayBuffer');
@@ -133,10 +144,10 @@ test('Indexed ZIP sorts by the second little-endian integer and retains hash col
   ]);
 });
 
-test('Indexed ZIP rejects an unexpected ZIP layout and propagates encoder failures', async () => {
-  const encode = vi.spyOn(ZipWriter, 'encode').mockResolvedValueOnce(new ArrayBuffer(0));
-  await expect(encodeArchive(FILES)).rejects.toThrow('Unexpected indexed ZIP layout');
-  encode.mockRejectedValueOnce(new Error('encoder failure'));
+test('Indexed ZIP propagates native serializer failures', async () => {
+  vi.spyOn(ZipHeaders, 'encodeZipLocalHeader').mockImplementationOnce(() => {
+    throw new Error('encoder failure');
+  });
   await expect(encodeArchive(FILES)).rejects.toThrow('encoder failure');
 });
 
@@ -181,9 +192,10 @@ test('Indexed ZIP serializes each Blob before reading the next and retains byte-
     return read.call(this);
   });
   const encode = ZipWriter.encode;
-  vi.spyOn(ZipWriter, 'encode').mockImplementation(async (files, options) => {
-    events.push(`encode:${Object.keys(files).join(',')}`);
-    return encode(files, options);
+  const serialize = serializeLocalHeader;
+  vi.spyOn(ZipHeaders, 'encodeZipLocalHeader').mockImplementation(entry => {
+    events.push(`encode:${new TextDecoder().decode(entry.nameBytes)}`);
+    return serialize(entry);
   });
   const encoded = await encodeArchive({
     'tileset.json': new Blob(['{}']),
@@ -223,7 +235,7 @@ test('Indexed ZIP serializes each Blob before reading the next and retains byte-
 test('Indexed ZIP rejects an already cancelled operation before reading or encoding', async () => {
   const reason = new Error('cancelled before packaging');
   const read = vi.spyOn(Blob.prototype, 'arrayBuffer');
-  const encode = vi.spyOn(ZipWriter, 'encode');
+  const encode = vi.spyOn(ZipHeaders, 'encodeZipLocalHeader');
   await expect(
     encodeIndexedZip(
       {root: new Blob(['data'])},
@@ -248,7 +260,7 @@ test('Indexed ZIP observes cancellation after a pending read and starts no encod
         finishRead = resolve;
       })
   );
-  const encode = vi.spyOn(ZipWriter, 'encode');
+  const encode = vi.spyOn(ZipHeaders, 'encodeZipLocalHeader');
   const pending = encodeIndexedZip(
     {a: new Blob(['a']), b: new Blob(['b'])},
     {
@@ -277,10 +289,14 @@ test.each([
     if (phase === 'hash') controller.abort(reason);
     return digest;
   });
-  const encode = ZipWriter.encode;
-  const serialize = vi.spyOn(ZipWriter, 'encode').mockImplementation(async (files, options) => {
-    const bytes = await encode(files, options);
-    if (phase === 'entry' || (phase === 'index' && 'index' in files)) controller.abort(reason);
+  const encode = serializeLocalHeader;
+  const serialize = vi.spyOn(ZipHeaders, 'encodeZipLocalHeader').mockImplementation(entry => {
+    const bytes = encode(entry);
+    if (
+      phase === 'entry' ||
+      (phase === 'index' && new TextDecoder().decode(entry.nameBytes) === 'index')
+    )
+      controller.abort(reason);
     return bytes;
   });
   await expect(
@@ -332,7 +348,7 @@ test('Indexed ZIP streaming preserves the complete deterministic archive bytes',
 
 test('Indexed ZIP streams lazily with backpressure and stops after consumer return', async () => {
   const read = vi.spyOn(Blob.prototype, 'arrayBuffer');
-  const encode = vi.spyOn(ZipWriter, 'encode');
+  const encode = vi.spyOn(ZipHeaders, 'encodeZipLocalHeader');
   const iterator = encodeIndexedZipInBatches(
     {a: new Blob(['a']), b: new Blob(['b']), c: new Blob(['c'])},
     {
@@ -378,7 +394,7 @@ test.each([
 ])('Indexed ZIP observes cancellation after streamed chunk %s', async chunkCount => {
   const controller = new AbortController();
   const reason = new Error('cancel suspended stream');
-  const encode = vi.spyOn(ZipWriter, 'encode');
+  const encode = vi.spyOn(ZipHeaders, 'encodeZipLocalHeader');
   const iterator = encodeIndexedZipInBatches(
     {a: new Blob(['a'])},
     {
@@ -434,10 +450,12 @@ test.each(
     return read.call(this);
   });
   const encode = ZipWriter.encode;
-  vi.spyOn(ZipWriter, 'encode').mockImplementation(async (files, options) => {
-    expect(Object.values(files).every(data => data.byteLength === 0)).toBe(true);
-    return encode(files, options);
+  const serialize = serializeLocalHeader;
+  vi.spyOn(ZipHeaders, 'encodeZipLocalHeader').mockImplementation(entry => {
+    expect(entry.nameBytes.byteLength).toBeLessThan(20);
+    return serialize(entry);
   });
+  const legacyEncode = vi.spyOn(ZipWriter, 'encode');
   const parts: ArrayBuffer[] = [];
   for await (const chunk of encodeIndexedZipInBatches(
     {payload: input},
@@ -450,6 +468,7 @@ test.each(
   expect(bytes.byteLength).toBe(length); // Transfers never detach caller-owned inputs.
   expect(reads).toHaveLength(kind === 'blob' ? Math.ceil(length / 65536) * 2 : 0);
   expect(reads.every(size => size <= 65536)).toBe(true);
+  expect(legacyEncode).not.toHaveBeenCalled();
   const archive = await new Blob(parts).arrayBuffer();
   const zip = await JSZip.loadAsync(archive, {checkCRC32: true});
   expect(new Uint8Array(await zip.file('payload')!.async('arraybuffer'))).toEqual(bytes);
@@ -540,9 +559,9 @@ test.each([
 
 test('Indexed ZIP rejects a resource detached while its header is being encoded', async () => {
   const bytes = new ArrayBuffer(1);
-  const encode = ZipWriter.encode;
-  vi.spyOn(ZipWriter, 'encode').mockImplementationOnce(async (files, options) => {
-    const header = await encode(files, options);
+  const encode = serializeLocalHeader;
+  vi.spyOn(ZipHeaders, 'encodeZipLocalHeader').mockImplementationOnce(entry => {
+    const header = encode(entry);
     structuredClone(bytes, {transfer: [bytes]});
     return header;
   });

@@ -44,3 +44,12 @@ export type {
   ZipReadOptions,
   ZipRangeOptions
 } from './zip-archive-types';
+
+export {encodeZip, encodeZipInBatches} from './zip-encode';
+export type {
+  ZipByteChunk,
+  ZipByteSource,
+  ZipEncodeEntry,
+  ZipEncodeFiles,
+  ZipEncodeOptions
+} from './zip-encode-types';

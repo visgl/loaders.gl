@@ -741,7 +741,8 @@
         "label": "@loaders.gl/zip",
         "items": [
           "modules/zip/README",
-          "modules/zip/api-reference/zip-archive"
+          "modules/zip/api-reference/zip-archive",
+          "modules/zip/api-reference/encode-zip"
         ]
       },
       {

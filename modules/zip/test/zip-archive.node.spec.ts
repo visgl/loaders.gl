@@ -8,7 +8,7 @@ import {pathToFileURL} from 'node:url';
 import {expect, test} from 'vitest';
 
 /** Node package consumers can load the installed ESM and CommonJS roots. */
-test('installed ESM/CJS ZIP entrypoints expose the portable archive reader', async () => {
+test('installed ESM/CJS ZIP entrypoints expose portable reading and writing', async () => {
   const require = createRequire(import.meta.url);
   const entrypointUrl = new URL('./index.js', pathToFileURL(require.resolve('@loaders.gl/zip')));
   const modules = [await import(entrypointUrl.href), require('@loaders.gl/zip')];
@@ -22,5 +22,16 @@ test('installed ESM/CJS ZIP entrypoints expose the portable archive reader', asy
     } finally {
       await archive.close();
     }
+    const encoded = await module.encodeZip(
+      {a: new Uint8Array([97, 98, 99])},
+      {compression: 'deflate', zip64: 'always'}
+    );
+    const written = await module.openZipArchive(encoded);
+    try {
+      expect(new TextDecoder().decode(await written.read('a'))).toBe('abc');
+    } finally {
+      await written.close();
+    }
   }
+  expect(typeof require('@loaders.gl/zip/zip-encode').encodeZipInBatches).toBe('function');
 });
