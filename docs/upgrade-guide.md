@@ -68,6 +68,13 @@ v4.5 is additive. Existing loaders and defaults continue to work unchanged, exce
   `zip.maxDecodedBytes` and `zip.maxCompressedBytes` also default to 64 MiB; raise them explicitly
   when individual entries exceed those bounds, or use incremental archive reads.
 
+- `ZipFileSystem.stat()` now returns validated `ZipEntry` metadata with numeric `size` and
+  exact `uncompressedSize`. Replace raw-header fields such as `fileName` with `path`; header
+  lengths and central-directory offsets are no longer exposed by this method.
+- Removed `ZIP_COMPRESSION_HANDLERS` and `CompressionHandler`. Use shared archive read methods
+  instead of dispatching container compression in consumers. Complete generic filesystem
+  responses now stream; consume the response body to observe integrity errors.
+
 The sections below document the v5 removals, migrations, and deprecations that remain active.
 
 ### Graph loader output defaults

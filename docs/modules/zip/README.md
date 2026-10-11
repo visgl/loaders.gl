@@ -55,6 +55,9 @@ read complete members with CRC validation, stream decoded entries, or read STORE
 See the [ZIP feature table](/docs/modules/zip/formats/zip) for the supported container profiles
 and the limits of the current writer.
 
+Use [`ZipFileSystem`](/docs/modules/zip/api-reference/zip-filesystem) when consumers need
+`fetch` responses, a cached directory, confined resource URLs, or incremental STORE ranges.
+
 ## Native writing
 
 [`encodeZip` and `encodeZipInBatches`](/docs/modules/zip/api-reference/encode-zip) write
