@@ -220,3 +220,18 @@ test('caller-only loaders do not serialize bigint options when checking worker e
     })
   ).toBe(true);
 });
+
+test('shared bigint ZIP options survive unrelated worker selection and transport exactly', async () => {
+  const zip = {maxTotalDecodedBytes: 2n ** 63n + 1n, nested: [1n, null, '1n'], callback: () => {}};
+  expect(canParseWithWorker(PARENT_LOADER, {core: {worker: true}, zip})).toBe(true);
+  const result = await parseWithWorker(PARENT_LOADER, new ArrayBuffer(0), {
+    worker: true,
+    reuseWorkers: false,
+    zip,
+    source: `self.onmessage = ({data: {payload}}) => {
+      self.postMessage({source: 'loaders.gl', type: 'done', payload: {result: payload.options.zip}});
+    };`
+  });
+  expect(result).toEqual({maxTotalDecodedBytes: 2n ** 63n + 1n, nested: [1n, null, '1n']});
+  expect(zip.callback).toBeTypeOf('function');
+});

@@ -276,12 +276,14 @@ function resolveWorkerLoaders(
  * @param loader Loader whose parser will handle the worker request.
  */
 function getWorkerOptions(options: StrictLoaderOptions = {}, loader?: Loader) {
+  const optionsToSerialize = {
+    ...options,
+    ...(options.core ? {core: {...options.core, authentications: undefined}} : {})
+  };
   const serializedOptions = JSON.parse(
-    JSON.stringify({
-      ...options,
-      ...(options.core ? {core: {...options.core, authentications: undefined}} : {})
-    })
+    JSON.stringify(optionsToSerialize, (_key, value) => (typeof value === 'bigint' ? null : value))
   );
+  restoreBigIntOptions(optionsToSerialize, serializedOptions);
   const workerOptions: Record<string, any> = {
     ...serializedOptions.core,
     ...serializedOptions
@@ -295,6 +297,16 @@ function getWorkerOptions(options: StrictLoaderOptions = {}, loader?: Loader) {
     workerOptions._workerLoaderId = loader.id;
   }
   return workerOptions;
+}
+
+/** Restores exact bigint leaves after JSON removes callbacks; ordinary JSON values keep their shape. */
+function restoreBigIntOptions(original: any, serialized: any): void {
+  if (!serialized || typeof serialized !== 'object') return;
+  for (const key of Object.keys(serialized)) {
+    const value = original?.[key];
+    if (typeof value === 'bigint') serialized[key] = value;
+    else restoreBigIntOptions(value, serialized[key]);
+  }
 }
 
 /**
