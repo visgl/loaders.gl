@@ -15,6 +15,7 @@ export default defineConfig({
   test: {
     setupFiles: ['test/setup/wasm-browser.ts'],
     include: [
+      'modules/worker-utils/test/lib/library-utils/library-loading.browser.spec.ts',
       'modules/textures/test/lib/parsers/basis-module-loader.spec.ts',
       'modules/textures/test/basis-runtime.spec.ts',
       'modules/loader-utils/test/lib/module-utils/initialize-wasm-module.spec.ts',
