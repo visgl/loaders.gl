@@ -207,7 +207,7 @@ test('ORCLoader#parse decodes dictionary-encoded string columns', async () => {
 });
 
 test('ORC compression decodes framed ZLIB chunks', async () => {
-  await preloadORCCompression();
+  await preloadORCCompression('ZLIB');
   const input = new TextEncoder().encode('orc-zlib');
   const compressed = zlibSync(input);
   const header = compressed.length << 1;
@@ -220,7 +220,7 @@ test('ORC compression decodes framed ZLIB chunks', async () => {
 });
 
 test('ORC compression decodes framed raw DEFLATE chunks', async () => {
-  await preloadORCCompression();
+  await preloadORCCompression('ZLIB');
   const input = new TextEncoder().encode('orc-raw-deflate');
   const compressed = deflateSync(input);
   const header = compressed.length << 1;
@@ -233,7 +233,7 @@ test('ORC compression decodes framed raw DEFLATE chunks', async () => {
 });
 
 test('ORC compression decodes framed Snappy chunks', async () => {
-  await preloadORCCompression();
+  await preloadORCCompression('SNAPPY');
   const input = new TextEncoder().encode('orc-snappy');
   const encoder = new SnappyCompression();
   await encoder.preload();

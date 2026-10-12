@@ -88,18 +88,34 @@ jobs:
             coverage: true
             coverage-flag: headless-1
             playwright: true
-            scope: 'headless tests 1/2'
+            scope: 'headless tests 1/4'
             test-command: test-headless-cover
-            test-arguments: '--maxWorkers=1 --shard=1/2 --reporter=blob --outputFile.blob=.vitest-reports/blob-headless-1.json'
+            test-arguments: '--maxWorkers=1 --shard=1/4 --reporter=blob --outputFile.blob=.vitest-reports/blob-headless-1.json'
             profile-name: headless-1
           - node-version: 24
             coverage: true
             coverage-flag: headless-2
             playwright: true
-            scope: 'headless tests 2/2'
+            scope: 'headless tests 2/4'
             test-command: test-headless-cover
-            test-arguments: '--maxWorkers=1 --shard=2/2 --reporter=blob --outputFile.blob=.vitest-reports/blob-headless-2.json'
+            test-arguments: '--maxWorkers=1 --shard=2/4 --reporter=blob --outputFile.blob=.vitest-reports/blob-headless-2.json'
             profile-name: headless-2
+          - node-version: 24
+            coverage: true
+            coverage-flag: headless-3
+            playwright: true
+            scope: 'headless tests 3/4'
+            test-command: test-headless-cover
+            test-arguments: '--maxWorkers=1 --shard=3/4 --reporter=blob --outputFile.blob=.vitest-reports/blob-headless-3.json'
+            profile-name: headless-3
+          - node-version: 24
+            coverage: true
+            coverage-flag: headless-4
+            playwright: true
+            scope: 'headless tests 4/4'
+            test-command: test-headless-cover
+            test-arguments: '--maxWorkers=1 --shard=4/4 --reporter=blob --outputFile.blob=.vitest-reports/blob-headless-4.json'
+            profile-name: headless-4
           - node-version: 22
             coverage: false
             coverage-flag: ''
