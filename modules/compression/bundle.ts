@@ -99,6 +99,7 @@ export {
   SnappyDecompressor,
   LZ4Compressor,
   LZ4Decompressor,
+  LzoDecompressor,
   ZstdCompressor,
   ZstdDecompressor,
   BZip2Compressor,
@@ -112,6 +113,7 @@ export {
 } from '@loaders.gl/compression';
 export type {
   CompressionOptions,
+  LzoDecompressorOptions,
   BrotliCompressorOptions,
   BrotliDecompressorOptions,
   DeflateCompressorOptions,

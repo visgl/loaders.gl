@@ -125,6 +125,7 @@ export {
   getI3SFeatureSupportReport,
   parseI3SSceneLayerMetadata,
   encodeI3SMeshLayer,
+  preloadI3SMeshCompression,
   encodeI3SMeshLayerWithDraco
 } from '@loaders.gl/i3s';
 export type {
