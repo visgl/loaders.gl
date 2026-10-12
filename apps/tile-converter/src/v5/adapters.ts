@@ -105,3 +105,16 @@ export type {
   SelectedMeshSourceOptions,
   SelectedMeshConversionSource
 } from './selected-mesh-source.js';
+
+export {openTileConversionArchive, createTileConversionArchiveTransport} from './archive-source.js';
+export type {TileConversionArchiveInput} from './archive-source.js';
+
+export {
+  inspectI3SMeshConversionSource,
+  createSelectedI3SMeshConversionSource
+} from './i3s-selection-source.js';
+export type {
+  I3SMeshSelectionOptions,
+  I3SMeshConversionInspection,
+  I3SMeshConversionResourceDescriptor
+} from './i3s-selection-source.js';

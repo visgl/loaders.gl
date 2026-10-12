@@ -3,7 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import {parseArgs} from 'node:util';
-import {inspectTileset, TileConversionError} from '@loaders.gl/tile-converter/v5/core';
+import {TileConversionError} from '@loaders.gl/tile-converter/v5/core';
 import {createNodeTilesetConversionSource, NODE_TILESET_LIMITS} from './node-source.js';
 import type {NodeTileConversionOutputFormat} from './node-conversion.js';
 
@@ -16,9 +16,11 @@ export interface TileConverterCLIOutput {
 }
 
 /** Usage for bounded metadata inspection and selected static mesh conversion. */
-const HELP = `Usage: tile-converter-v5 inspect|convert|validate <tileset.json path or URL | local 3TZ> [options]
+const HELP = `Usage: tile-converter-v5 inspect|convert|validate <input path or URL> [options]
 
-  --input-format 3d-tiles|3tz  Explicit input format (default: 3d-tiles)
+  --input-format 3d-tiles|3tz|i3s|slpk  Explicit input format (default: 3d-tiles)
+  --geometric-error N        Required source error in meters for I3S to 3D Tiles
+  --integrated-mesh-policy as-3d-object  Authorize I3S layer-type change
   --resource ID               Selected content placement; repeat for multiple selections
   --output-format 3d-tiles|3tz|slpk  Target profile (default: 3tz)
   --output PATH               New destination (required for convert, forbidden for validate)
@@ -29,10 +31,12 @@ const HELP = `Usage: tile-converter-v5 inspect|convert|validate <tileset.json pa
   --help                      Show this help
 
 Inspect reads metadata only, following declared .json external tilesets.
-Convert/validate require explicit selections and qualify static native-ECEF GLB/B3DM meshes.
+Convert/validate require explicit selections; I3S uses declared CRS and shared spatial preparation.
 Validate decodes, converts and packages the selected target profile without writing files.
 Output is a partial flat mesh collection; source LOD is not exported.
-I3S/SLPK inputs, remote archives and complete dataset validation remain separate profiles.
+Remote archives require HTTP 206 ranges and a stable ETag or Last-Modified validator.
+I3S inspect lists leaf nodes; conversion is geometry-only unless a service supplies feature mappings.
+Whole-dataset validation and hierarchy/LOD preservation remain separate profiles.
 `;
 
 /** Runs a bounded v5 operation, returning an exit code after source/output cleanup. */
@@ -54,7 +58,9 @@ export async function runTileConverterCLI(
         'max-output-bytes': {type: 'string', default: String(32 * 1024 * 1024)},
         'output-format': {type: 'string', default: '3tz'},
         output: {type: 'string'},
-        resource: {type: 'string', multiple: true}
+        resource: {type: 'string', multiple: true},
+        'geometric-error': {type: 'string'},
+        'integrated-mesh-policy': {type: 'string'}
       }
     });
     if (values.help || !argumentsList.length) {
@@ -64,13 +70,13 @@ export async function runTileConverterCLI(
     if (
       positionals.length !== 2 ||
       !['inspect', 'convert', 'validate'].includes(positionals[0]) ||
-      !['3d-tiles', '3tz'].includes(values['input-format'])
+      !['3d-tiles', '3tz', 'i3s', 'slpk'].includes(values['input-format'])
     )
       throw new TileConversionError(
         'CLI_USAGE_ERROR',
-        'Use inspect, convert or validate with one input and --input-format 3d-tiles or 3tz'
+        'Use inspect, convert or validate with one input and --input-format 3d-tiles, 3tz, i3s or slpk'
       );
-    const format = values['input-format'] as '3d-tiles' | '3tz';
+    const format = values['input-format'] as '3d-tiles' | '3tz' | 'i3s' | 'slpk';
     const operation = positionals[0];
     const sourceOptions = {
       input: positionals[1],
@@ -91,13 +97,26 @@ export async function runTileConverterCLI(
           'CLI_USAGE_ERROR',
           'Convert/validate require --resource selections and a supported --output-format; only convert requires --output'
         );
+      if (
+        values['integrated-mesh-policy'] !== undefined &&
+        values['integrated-mesh-policy'] !== 'as-3d-object'
+      )
+        throw new TileConversionError(
+          'CLI_USAGE_ERROR',
+          'Use --integrated-mesh-policy as-3d-object'
+        );
       const {convertNodeTileset} = await import('./node-conversion.js');
       const report = await convertNodeTileset({
         ...sourceOptions,
         resourceIds: values.resource,
         outputFormat: values['output-format'] as NodeTileConversionOutputFormat,
         output: values.output,
-        maxOutputBytes: parseLimit(values['max-output-bytes'])
+        maxOutputBytes: parseLimit(values['max-output-bytes']),
+        geometricError:
+          values['geometric-error'] === undefined
+            ? undefined
+            : parseGeometricError(values['geometric-error']),
+        integratedMeshPolicy: values['integrated-mesh-policy'] as 'as-3d-object' | undefined
       });
       output.stdout(
         `${JSON.stringify({operation, input: positionals[1], inputFormat: format, outputFormat: values['output-format'], ...(values.output ? {output: values.output} : {}), report}, null, 2)}\n`
@@ -105,6 +124,8 @@ export async function runTileConverterCLI(
       return 0;
     }
     if (
+      values['geometric-error'] !== undefined ||
+      values['integrated-mesh-policy'] !== undefined ||
       values.resource ||
       values.output ||
       values['output-format'] !== '3tz' ||
@@ -114,10 +135,14 @@ export async function runTileConverterCLI(
         'CLI_USAGE_ERROR',
         'Inspect does not accept conversion/output options'
       );
-    const source = await createNodeTilesetConversionSource({
-      ...sourceOptions
-    });
-    const inspection = await inspectTileset(source, signal).finally(() => source.close());
+    const source =
+      format === 'i3s' || format === 'slpk'
+        ? await (await import('./node-i3s-source.js')).createNodeI3SConversionSource({
+            ...sourceOptions,
+            format
+          })
+        : await createNodeTilesetConversionSource({...sourceOptions, format});
+    const inspection = await source.inspect(signal).finally(() => source.close());
     output.stdout(
       `${JSON.stringify({operation: 'inspect', input: positionals[1], inputFormat: format, ...inspection}, null, 2)}\n`
     );
@@ -140,6 +165,16 @@ function parseLimit(value: string): number {
     throw new TileConversionError(
       'CLI_USAGE_ERROR',
       'Limits must be positive safe decimal integers'
+    );
+  return Number(value);
+}
+
+/** Parses an explicit metric source error without inferring I3S screen-size semantics. */
+function parseGeometricError(value: string): number {
+  if (!/^(?:\d+(?:\.\d+)?|\.\d+)(?:[eE][+-]?\d+)?$/.test(value) || !Number.isFinite(Number(value)))
+    throw new TileConversionError(
+      'CLI_USAGE_ERROR',
+      'Geometric error must be a finite nonnegative number in meters'
     );
   return Number(value);
 }

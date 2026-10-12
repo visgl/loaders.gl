@@ -6,13 +6,14 @@ description: Bounded metadata inspection, selected mesh conversion and target-pr
 # Tile-converter v5 CLI
 
 The experimental `tile-converter-v5` command inspects explicit 3D Tiles and converts selected
-static native-ECEF GLB/B3DM meshes. Install `@loaders.gl/tile-converter` to use its binary.
+static native-ECEF GLB/B3DM meshes or supported I3S leaf meshes. Install `@loaders.gl/tile-converter` to use its binary.
 The original `tile-converter` command remains the v4 conversion CLI.
 
 ## Inspect and select
 
 `inspect` reads metadata only. It accepts a JSON path/file URL, HTTP(S) JSON URL, or local
-3TZ archive. Declared external tilesets with **.json URIs** are expanded without loading
+3TZ archive (local or remote). It also accepts HTTP(S) I3S layer URLs and local/remote
+SLPK archives through an explicit input format. Declared external tilesets with **.json URIs** are expanded without loading
 geometry, textures or attributes. The JSON result includes distinct placement IDs, declaring
 document snapshots/URLs, local tile paths, composed transforms and aggregate metadata bytes.
 Local inputs use a synthetic URL for confined resolution; `input` retains the supplied path.
@@ -23,6 +24,8 @@ probed by this profile; implicit tiling is rejected.
 tile-converter-v5 inspect ./dataset/tileset.json
 tile-converter-v5 inspect https://example.com/tileset.json
 tile-converter-v5 inspect ./dataset.3tz --input-format 3tz
+tile-converter-v5 inspect https://example.com/layers/0 --input-format i3s
+tile-converter-v5 inspect ./dataset.slpk --input-format slpk
 ```
 
 ## Convert and validate
@@ -33,7 +36,7 @@ Multiple selections must be source leaves. A selected content may contain multip
 primitives, up to 64 meshes in total. Declaring-document glTF axes, composed placement and
 relative URLs are retained during extraction. This initial CLI profile is geometry-only:
 feature-bearing contents require explicit schema/class mappings and are rejected. Node service
-callers can supply `features` to `convertNodeTileset`.
+callers can supply `features` (3D Tiles) or `i3sFeatures` (I3S) to `convertNodeTileset`.
 
 ```sh
 tile-converter-v5 convert ./dataset/tileset.json \
@@ -61,7 +64,7 @@ It is **not a whole-dataset validator** and does not establish independent viewe
 
 Output uses the shared browser mesh profiles: 3D Tiles 1.1 GLB with lossless Draco Edge Breaker,
 or I3S 1.7 3DObject/SLPK. It is a **partial flat mesh collection**, preserving placement but
-not source hierarchy/LOD or ADD/REPLACE refinement. Every selected ancestor must declare a
+not source hierarchy/LOD or ADD/REPLACE refinement. For 3D Tiles input, every selected ancestor must declare a
 finite nonnegative metric geometric error; the conservative error includes ancestor transform
 scaling and the 1 cm reconstruction allowance. Unknown/incompatible CRS, implicit tiling,
 instancing/composites and appearance/features outside the existing mesh profiles fail explicitly.
@@ -69,16 +72,45 @@ Selected documents must have the same coordinate epoch as the root. Documents wi
 declared CRS inherit the qualified root reference; explicit epoch mismatches are rejected
 because epoch transformations are unsupported.
 
+## I3S and archive inputs
+
+I3S inspection lists only leaf mesh nodes, using their declared node IDs as selections.
+It reads layer/node metadata without fetching geometry, textures or attributes. Conversion
+uses original-coordinate decoding and the existing shared CRS/elevation preparation; it does
+not apply renderer projection. Only the existing 3DObject/IntegratedMesh mesh, appearance and
+explicit feature profiles are supported.
+
+```sh
+tile-converter-v5 convert ./dataset.slpk --input-format slpk \
+  --resource 1 --geometric-error 2 \
+  --output-format 3tz --output ./selected.3tz
+```
+
+For I3S to either 3D Tiles target, supply `--geometric-error` in meters. Screen-size LOD is
+not inferred as metric error. The output adds the 1 cm reconstruction allowance. IntegratedMesh
+to SLPK requires `--integrated-mesh-policy as-3d-object`; the report records the authorized
+layer-type change. Native coordinates/CRS must be supported by the existing spatial context;
+unsupported definitions, vertical or epoch operations fail explicitly.
+
+Remote SLPK and 3TZ use indexed HTTP ranges. Servers must return HTTP 206, valid
+Content-Range and a stable strong ETag or Last-Modified validator. Changed identities fail;
+there is no fallback to a full download. Browser CORS requirements do not apply to Node.
+Archives and dependencies remain confined to their virtual root, without network fallback.
+I3S layer query parameters are inherited only within the same origin and layer path. Use final
+resource URLs: Node I3S resource redirects are rejected until their relative bases are qualified.
+
 ## Options and limits
 
 | Option | Default | Purpose |
 | --- | --- | --- |
-| `--input-format` | `3d-tiles` | JSON, or `3tz` for a local archive |
+| `--input-format` | `3d-tiles` | `3d-tiles`, `3tz`, `i3s` or `slpk` |
+| `--geometric-error` | | Required metric source error for I3S to 3D Tiles |
+| `--integrated-mesh-policy` | | `as-3d-object` authorizes IntegratedMesh to SLPK |
 | `--resource` | | Required selected placement ID for convert/validate; repeatable |
 | `--output-format` | `3tz` | `3d-tiles`, `3tz` or `slpk` |
 | `--output` | | New destination; required only for convert |
 | `--max-input-bytes` | `16777216` | Lower transport/physical-read and decoded mesh budgets |
-| `--max-resources` | `1000` | Lower the content-declaration limit, including external references |
+| `--max-resources` | `1000` | Lower content declarations (3D Tiles) or inspected nodes (I3S) |
 | `--max-documents` | `32` | Lower the root/external document-placement limit |
 | `--max-output-bytes` | `33554432` | Lower retained file bytes and, separately, archive bytes |
 | `--help` | | Show usage |
@@ -95,6 +127,6 @@ Successful operations write JSON to stdout and exit zero. Invalid arguments, unr
 unsupported profiles and exceeded budgets write JSON errors to stderr and exit nonzero. SIGINT
 cancels cooperatively and releases source/output handles. Help prints text.
 
-I3S/SLPK inputs, remote archive inputs, services, full hierarchy/LOD preservation, durable recovery
-and installed Windows qualification remain follow-ups. See the
+Full hierarchy/LOD preservation, service configuration, durable recovery and installed Windows
+qualification remain follow-ups. See the
 [v5 source API](/docs/modules/tile-converter/api-reference/v5-conversion#node-inspection-and-raw-content-reads).

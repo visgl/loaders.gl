@@ -19,15 +19,28 @@ import {
   createI3SMeshSink,
   encodeTileConversionArchiveInBatches
 } from '@loaders.gl/tile-converter/v5/adapters';
-import type {MeshSourceFeatureOptions} from '@loaders.gl/tile-converter/v5/adapters';
+import type {
+  I3SMeshSourceFeatureOptions,
+  MeshSourceFeatureOptions
+} from '@loaders.gl/tile-converter/v5/adapters';
 import {createNodeTilesetConversionSource} from './node-source.js';
+import {createNodeI3SConversionSource} from './node-i3s-source.js';
 import type {NodeTilesetConversionSourceOptions} from './node-source.js';
 
 /** Explicit targets for the initial bounded Node mesh profile. */
 export type NodeTileConversionOutputFormat = '3d-tiles' | '3tz' | 'slpk';
 
 /** Selected static mesh conversion with application-owned Node output. */
-export interface NodeTileConversionOptions extends NodeTilesetConversionSourceOptions {
+export interface NodeTileConversionOptions
+  extends Omit<NodeTilesetConversionSourceOptions, 'format'> {
+  /** Explicit 3D Tiles, I3S layer or indexed archive source. */
+  readonly format?: '3d-tiles' | '3tz' | 'i3s' | 'slpk';
+  /** Explicit I3S attribute mapping for service callers; the CLI requires geometry-only content. */
+  readonly i3sFeatures?: I3SMeshSourceFeatureOptions;
+  /** Required metric source error for I3S to 3D Tiles; no screen-size inference. */
+  readonly geometricError?: number;
+  /** Authorizes IntegratedMesh to 3DObject output with a reported semantic warning. */
+  readonly integratedMeshPolicy?: 'as-3d-object';
   /** One to 64 inspected content placement identifiers; no automatic all-content conversion. */
   readonly resourceIds: readonly string[];
   /** Explicit feature class/schema mapping for service callers; the CLI is geometry-only. */
@@ -56,12 +69,45 @@ export async function convertNodeTileset(
       'INVALID_NODE_CONVERSION_OPTIONS',
       'Select a supported output profile and a positive output budget at most 32 MiB'
     );
-  const rawSource = await createNodeTilesetConversionSource({
+  const i3s = options.format === 'i3s' || options.format === 'slpk';
+  if (
+    i3s &&
+    ((options.outputFormat !== 'slpk' && options.geometricError === undefined) ||
+      (options.geometricError !== undefined &&
+        (typeof options.geometricError !== 'number' ||
+          !Number.isFinite(options.geometricError) ||
+          options.geometricError < 0)))
+  )
+    throw new TileConversionError(
+      'MESH_GEOMETRIC_ERROR_INVALID',
+      'I3S to 3D Tiles requires an explicit nonnegative geometric error in meters'
+    );
+  if (
+    i3s
+      ? options.features !== undefined
+      : options.i3sFeatures !== undefined ||
+        options.integratedMeshPolicy !== undefined ||
+        options.geometricError !== undefined
+  )
+    throw new TileConversionError(
+      'INVALID_NODE_CONVERSION_OPTIONS',
+      'Feature and layer policies must match the selected input format'
+    );
+  const sourceOptions = {
     ...options,
     signal,
     inspectNestedTilesets: true,
     maxTilesetDocuments: options.maxTilesetDocuments ?? SELECTED_MESH_LIMITS.maxTilesetDocuments
-  });
+  };
+  const rawSource = i3s
+    ? await createNodeI3SConversionSource({
+        ...sourceOptions,
+        format: options.format as 'i3s' | 'slpk'
+      })
+    : await createNodeTilesetConversionSource({
+        ...sourceOptions,
+        format: options.format as '3d-tiles' | '3tz' | undefined
+      });
   let files: readonly BrowserTileConversionFile[];
   let report: TileConversionReport;
   try {
@@ -72,18 +118,30 @@ export async function convertNodeTileset(
       decoderProfile: 'full',
       useLocalLibraries: true
     });
-    const {source, spatialContext, geometricError} = await createSelectedMeshConversionSource(
-      inspection,
-      {
-        resourceIds: options.resourceIds,
-        features: options.features,
-        signal,
-        source: rawSource,
-        fetcher: rawSource.fetcher,
-        dracoLibraryOptions,
-        maxInputBytes: options.maxInputBytes
-      }
-    );
+    const selection =
+      'select' in rawSource
+        ? {
+            ...(await rawSource.select(
+              inspection as Awaited<ReturnType<typeof rawSource.inspect>>,
+              options.resourceIds,
+              dracoLibraryOptions,
+              options.i3sFeatures
+            )),
+            geometricError: (options.geometricError ?? 0) + SELECTED_MESH_LIMITS.maxPositionError
+          }
+        : await createSelectedMeshConversionSource(
+            inspection as Awaited<ReturnType<typeof rawSource.inspect>>,
+            {
+              resourceIds: options.resourceIds,
+              features: options.features,
+              signal,
+              source: rawSource,
+              fetcher: rawSource.fetcher,
+              dracoLibraryOptions,
+              maxInputBytes: options.maxInputBytes
+            }
+          );
+    const {source, spatialContext, geometricError} = selection;
     const common = {
       source,
       signal,
@@ -95,6 +153,8 @@ export async function convertNodeTileset(
     };
     const codecOptions = {
       spatialContext,
+      autoOrigin: i3s,
+      integratedMeshPolicy: options.integratedMeshPolicy,
       dracoLibraryOptions,
       maxPositionError: SELECTED_MESH_LIMITS.maxPositionError
     };
