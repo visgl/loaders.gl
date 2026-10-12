@@ -104,7 +104,7 @@ resource URLs: Node I3S resource redirects are rejected until their relative bas
 
 | Option | Default | Purpose |
 | --- | --- | --- |
-| `--preserve-hierarchy` | `false` | Require a complete explicit single-document hierarchy for 3D Tiles/3TZ output |
+| `--preserve-hierarchy` | `false` | Require a complete explicit hierarchy across inspected documents for 3D Tiles/3TZ output |
 | `--input-format` | `3d-tiles` | `3d-tiles`, `3tz`, `i3s` or `slpk` |
 | `--geometric-error` | | Required metric source error for I3S to 3D Tiles |
 | `--integrated-mesh-policy` | | `as-3d-object` authorizes IntegratedMesh to SLPK |
@@ -136,7 +136,7 @@ qualification remain follow-ups. See the
 
 ## Preserve a complete explicit hierarchy
 
-After inspecting a single-document 3D Tiles dataset, select every content placement and
+After inspecting an explicit 3D Tiles dataset, including declared `.json` external tilesets, select every content placement and
 add `--preserve-hierarchy` to `convert` or `validate`:
 
 ```sh
@@ -145,12 +145,15 @@ tile-converter-v5 convert ./tileset.json --preserve-hierarchy \
   --output-format 3tz --output ./converted.3tz
 ```
 
-This retains source topology, parent content, inherited ADD/REPLACE and conservatively
+This retains source topology, parent content, inherited ADD/REPLACE and conservative
 metric errors plus the position allowance (transform scaling for 1.1; native meter values for 1.0). Effective placement is retained through
 relative output transforms; bounds are recomputed around converted subtree geometry.
-The root must declare refinement. Every content must decode to one mesh primitive.
-The profile supports at most 256 tiles and 64 contents in one explicit document, with
-existing byte limits. It rejects external documents, `contents` arrays, contentless leaves,
+Every declaring-document root must declare its own refinement. Every content must decode to one mesh primitive.
+The profile supports at most 32 document placements (including repeated URLs), 256 tiles
+in total and 64 selected binary contents, with existing byte limits. External references
+become contentless wrappers around the referenced root; they must have no source children.
+It rejects `contents` arrays, contentless leaves,
 unmapped metadata/extensions/request volumes, I3S/SLPK input and SLPK output.
 See the [complete hierarchy profile](../api-reference/v5-conversion.md#complete-explicit-hierarchy-profile)
-for the shared browser/service API and remaining qualification.
+for the shared browser/service API and remaining qualification. Nested content IDs include
+the complete external-reference chain, such as `tile-root-content-0/tile-root-content-0`.

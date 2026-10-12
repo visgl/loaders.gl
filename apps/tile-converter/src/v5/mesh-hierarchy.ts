@@ -25,6 +25,26 @@ type SourceTile = NonNullable<BrowserTilesetConversionInspection['tileset']['roo
   viewerRequestVolume?: unknown;
 };
 
+/** Explicit document fields requiring hierarchy and spatial qualification. */
+type HierarchyDocument = BrowserTilesetConversionInspection['tileset'] & {
+  /** Root with hierarchy qualification fields. */
+  root: SourceTile;
+  /** Optional dataset-level metric error. */
+  geometricError?: number;
+  /** Only the already-qualified native CRS extension can be retained. */
+  extensions?: Record<string, unknown>;
+  /** Required source extensions. */
+  extensionsRequired?: string[];
+  /** Dataset metadata requires separate authoring policy. */
+  metadata?: unknown;
+  /** Content groups require separate authoring policy. */
+  groups?: unknown;
+  /** Feature schemas require separate authoring policy. */
+  schema?: unknown;
+  /** External feature schemas require separate authoring policy. */
+  schemaUri?: unknown;
+};
+
 /** Output node with a box in its own frame and relative child placements. */
 interface OutputTile {
   /** Placement relative to the parent, absolute at the root. */
@@ -65,7 +85,7 @@ interface MeshHierarchy {
 
 /** Input and retained-byte policy for complete explicit hierarchy conversion. */
 export interface MeshHierarchyTilesetSinkOptions {
-  /** Expanded inspection (inspectNestedTilesets: true) used by the selected source; one document only. */
+  /** Expanded inspection (inspectNestedTilesets: true) used by the selected source; at most 32 document placements. */
   readonly inspection: BrowserTilesetConversionInspection;
   /** Every inspected content placement, with no duplicates or omissions; at most 64. */
   readonly resourceIds: readonly string[];
@@ -75,7 +95,7 @@ export interface MeshHierarchyTilesetSinkOptions {
   readonly maxPositionError: number;
 }
 
-/** Qualifies a complete, single-document explicit tree before any geometry is read. */
+/** Qualifies a complete explicit tree of inspected document placements before any geometry is read. */
 export function prepareMeshHierarchy(
   inspection: BrowserTilesetConversionInspection,
   resourceIds: readonly string[]
@@ -84,9 +104,9 @@ export function prepareMeshHierarchy(
   const rejectHierarchy: (message: string) => never = message => {
     throw new TileConversionError('MESH_HIERARCHY_UNSUPPORTED', message);
   };
-  if (!inspection.documents || inspection.documents.length !== 1)
+  if (!inspection.documents?.length || inspection.documents.length > 32)
     rejectHierarchy(
-      'Hierarchy preservation requires expanded metadata inspection of one explicit document'
+      'Hierarchy preservation requires expanded metadata inspection of at most 32 explicit document placements'
     );
   if (
     !resourceIds.length ||
@@ -98,39 +118,52 @@ export function prepareMeshHierarchy(
     rejectHierarchy(
       'Hierarchy preservation requires every content placement, without duplicates (at most 64)'
     );
-  const document = inspection.tileset as BrowserTilesetConversionInspection['tileset'] & {
-    /** Root with hierarchy qualification fields. */
-    root: SourceTile;
-    /** Optional dataset-level metric error. */
-    geometricError?: number;
-    /** Only the already-qualified native CRS extension can be retained. */
-    extensions?: Record<string, unknown>;
-    /** Required source extensions. */
-    extensionsRequired?: string[];
-    /** Dataset metadata requires separate authoring policy. */
-    metadata?: unknown;
-    /** Content groups require separate authoring policy. */
-    groups?: unknown;
-    /** Feature schemas require separate authoring policy. */
-    schema?: unknown;
-    /** External feature schemas require separate authoring policy. */
-    schemaUri?: unknown;
-  };
+  const entryTransform = new Matrix4();
   if (
-    document.metadata ||
-    document.groups ||
-    document.schema ||
-    document.schemaUri ||
-    Object.keys(document.extensions ?? {}).some(name => name !== 'EXT_geospatial_crs') ||
-    (document.extensionsRequired ?? []).some((name: string) => name !== 'EXT_geospatial_crs')
+    inspection.documents[0].parentResourceId !== undefined ||
+    !Array.isArray(inspection.documents[0].parentTransform) ||
+    inspection.documents[0].parentTransform.length !== 16 ||
+    inspection.documents[0].parentTransform.some((value, index) => value !== entryTransform[index])
   )
-    rejectHierarchy(
-      'Dataset metadata and unmapped extensions require a separate hierarchy profile'
-    );
-  if (!['1.0', '1.1'].includes(document.asset?.version ?? ''))
-    rejectHierarchy('Hierarchy preservation requires a 3D Tiles 1.0 or 1.1 document');
-  const spatialReference = createTiles3DConversionSpatialContext(
+    rejectHierarchy('The entry document must have identity parent placement');
+  const documents = inspection.documents.map(placement => placement.tileset as HierarchyDocument);
+  const document = documents[0];
+  const externalDocuments = new Map<string, number>();
+  for (let index = 1; index < inspection.documents.length; index++) {
+    const identifier = inspection.documents[index].parentResourceId;
+    if (!identifier || externalDocuments.has(identifier))
+      rejectHierarchy(
+        'Every external document requires a distinct inspected parent content placement'
+      );
+    externalDocuments.set(identifier, index);
+  }
+  for (const document of documents) {
+    if (
+      document.metadata ||
+      document.groups ||
+      document.schema ||
+      document.schemaUri ||
+      Object.keys(document.extensions ?? {}).some(name => name !== 'EXT_geospatial_crs') ||
+      (document.extensionsRequired ?? []).some((name: string) => name !== 'EXT_geospatial_crs')
+    )
+      rejectHierarchy(
+        'Dataset metadata and unmapped extensions require a separate hierarchy profile'
+      );
+    if (!['1.0', '1.1'].includes(document.asset?.version ?? ''))
+      rejectHierarchy('Hierarchy preservation requires a 3D Tiles 1.0 or 1.1 document');
+    if (
+      document.geometricError !== undefined &&
+      (typeof document.geometricError !== 'number' ||
+        !Number.isFinite(document.geometricError) ||
+        document.geometricError < 0)
+    )
+      rejectHierarchy('Dataset geometricError must be finite nonnegative meters');
+  }
+  const spatialReferences = documents.map(document =>
     get3DTilesSpatialReference(document as Parameters<typeof get3DTilesSpatialReference>[0])
+  );
+  const spatialReference = createTiles3DConversionSpatialContext(
+    spatialReferences[0]
   ).spatialReference;
   if (
     spatialReference.status !== 'native' ||
@@ -143,10 +176,32 @@ export function prepareMeshHierarchy(
     rejectHierarchy(
       'Hierarchy preservation requires native EPSG:4978 xyz meters and ellipsoidal heights'
     );
+  for (const reference of spatialReferences.slice(1)) {
+    // Match selected-mesh decoding: only an absent, unambiguous declaration inherits the entry frame.
+    const inherited =
+      reference.crs.state === 'absent' &&
+      reference.coordinateEpoch === undefined &&
+      !reference.verticalCrs &&
+      !reference.warnings.length;
+    const context = createTiles3DConversionSpatialContext(inherited ? spatialReference : reference);
+    if (
+      context.spatialReference.status !== 'native' ||
+      context.spatialReference.sourceCrs !== spatialReference.sourceCrs ||
+      context.spatialReference.heightReference !== spatialReference.heightReference ||
+      context.spatialReference.axisOrder !== spatialReference.axisOrder ||
+      context.spatialReference.verticalUnitScale !== 1 ||
+      context.spatialReference.units?.some(unit => unit !== 'meter') ||
+      context.spatialReference.coordinateEpoch !== spatialReference.coordinateEpoch
+    )
+      rejectHierarchy('External document CRS and coordinate epoch must match the entry frame');
+  }
   const nodes: HierarchyNode[] = [];
+  const visitedDocuments = new Set([0]);
   const stack = [
     {
       tile: document.root,
+      documentIndex: 0,
+      prefix: '',
       path: [] as number[],
       parent: -1,
       transform: new Matrix4(),
@@ -154,7 +209,16 @@ export function prepareMeshHierarchy(
     }
   ];
   while (stack.length) {
-    const {tile, path, parent, transform: parentTransform, refine: inheritedRefine} = stack.pop()!;
+    const {
+      tile,
+      path,
+      parent,
+      documentIndex,
+      prefix,
+      transform: parentTransform,
+      refine: inheritedRefine
+    } = stack.pop()!;
+    const document = documents[documentIndex];
     if (nodes.length >= 256) rejectHierarchy('Hierarchy preservation supports at most 256 tiles');
     if (
       !tile ||
@@ -206,13 +270,47 @@ export function prepareMeshHierarchy(
     )
       rejectHierarchy('Every hierarchy tile must declare a finite nonnegative metric error');
     const resourceId = tile.content
-      ? `tile-${path.length ? path.join('-') : 'root'}-content-0`
+      ? `${prefix}tile-${path.length ? path.join('-') : 'root'}-content-0`
       : undefined;
+    const externalIndex = resourceId ? externalDocuments.get(resourceId) : undefined;
+    if (externalIndex !== undefined) {
+      const content = tile.content as {metadata?: unknown; group?: unknown; extensions?: unknown};
+      if (
+        content.metadata !== undefined ||
+        content.group !== undefined ||
+        content.extensions !== undefined
+      )
+        rejectHierarchy(
+          'External reference content metadata, groups and extensions require a separate mapping'
+        );
+      if (tile.children?.length || visitedDocuments.has(externalIndex))
+        rejectHierarchy(
+          'External references require no source children and a unique document placement'
+        );
+      visitedDocuments.add(externalIndex);
+      const placement = inspection.documents[externalIndex];
+      if (
+        !Array.isArray(placement.parentTransform) ||
+        placement.parentTransform.length !== 16 ||
+        placement.parentTransform.some((value, index) => value !== transform[index])
+      )
+        rejectHierarchy('External document placement must match its referencing tile transform');
+      const contentUri = tile.content?.uri ?? tile.content?.url;
+      if (
+        !contentUri ||
+        !new URL(contentUri, inspection.documents[documentIndex].url).pathname
+          .toLowerCase()
+          .endsWith('.json')
+      )
+        rejectHierarchy('External documents require an inspected .json content reference');
+    }
     if (
       resourceId &&
+      externalIndex === undefined &&
       !inspection.resources.some(
         resource =>
           resource.resourceId === resourceId &&
+          resource.documentIndex === documentIndex &&
           resource.uri === (tile.content?.uri ?? tile.content?.url) &&
           resource.tilePath.length === path.length &&
           resource.tilePath.every((value, index) => value === path[index])
@@ -220,13 +318,34 @@ export function prepareMeshHierarchy(
     )
       rejectHierarchy('Hierarchy content must match the inspected placement');
     const index = nodes.length;
-    nodes.push({children: [], resourceId, geometricError, refine});
+    nodes.push({
+      children: [],
+      resourceId: externalIndex === undefined ? resourceId : undefined,
+      geometricError: Math.max(
+        geometricError,
+        externalIndex === undefined ? 0 : (documents[externalIndex].geometricError ?? 0)
+      ),
+      refine
+    });
     if (parent !== -1) nodes[parent].children.push(index);
+    if (externalIndex !== undefined) {
+      stack.push({
+        tile: documents[externalIndex].root,
+        path: [],
+        parent: index,
+        documentIndex: externalIndex,
+        prefix: resourceId + '/',
+        transform,
+        refine: undefined
+      });
+    }
     if (nodes.length + stack.length + (tile.children?.length ?? 0) > 256)
       rejectHierarchy('Hierarchy preservation supports at most 256 tiles');
     for (let child = (tile.children?.length ?? 0) - 1; child >= 0; child--)
       stack.push({
         tile: tile.children![child],
+        documentIndex,
+        prefix,
         path: [...path, child],
         parent: index,
         transform,
@@ -234,6 +353,7 @@ export function prepareMeshHierarchy(
       });
   }
   if (
+    visitedDocuments.size !== documents.length ||
     nodes.filter(node => node.resourceId).length !== resourceIds.length ||
     nodes.some(node => !node.resourceId && !node.children.length)
   )

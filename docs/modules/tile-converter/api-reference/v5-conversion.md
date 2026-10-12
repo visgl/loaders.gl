@@ -1019,7 +1019,10 @@ from `@loaders.gl/tile-converter/v5/adapters` (also exposed by `v5/browser`).
 `convertNodeTileset({preserveHierarchy: true, ...})` wires these together for 3D Tiles
 or 3TZ input and output. Select **every** inspected content placement explicitly.
 Browser/service callers must inspect with `inspectNestedTilesets: true`; root-only
-inspection is rejected before decoding. The Node wrapper already expands inspection.
+inspection is rejected before decoding. Set `maxTilesetDocuments` above one to inspect declared `.json` external references; the
+Node wrapper already expands inspection with a default 32-document budget. Each nested
+`documents` placement records `parentResourceId`, the introducing content placement.
+Reinspect older nested snapshots that lack this link before requesting hierarchy preservation.
 
 This bounded profile retains original child order, contentless ancestors, parent content,
 and effective ADD/REPLACE refinement, including inherited child policy. The root must
@@ -1032,12 +1035,23 @@ matrices and bounding-volume representations are replaced by equivalent placemen
 boxes enclosing all converted geometry in each subtree. Explicit native CRS metadata,
 including its epoch, is retained when supplied.
 
-Limits: one explicit document, 256 tiles, 64 selected contents, **one mesh primitive per
-content tile**, existing 16 MiB input and 32 MiB output/archive budgets. External documents,
+Limits: 32 explicit document placements (including repeats), 256 tiles across the entire tree,
+64 selected binary contents, **one mesh primitive per
+content tile**, existing 16 MiB input and 32 MiB output/archive budgets.
 `contents` arrays, contentless leaves, implicit tiling, tile extensions/metadata,
 viewer-request volumes and dataset feature metadata require separate profiles and fail
 explicitly. I3S/SLPK hierarchy is not qualified: screen-size LOD cannot be inferred as meters.
 Partial selection continues to use the default flat profile. Browser example controls
 remain on that profile; services may use the shared hierarchy adapters directly.
 These limits account for retained/output bytes and node counts, not total peak memory.
-Independent viewer qualification and larger or external-document hierarchies remain open.
+External trees are inlined into one output manifest: each reference becomes a contentless
+wrapper containing the external document root. Repeated URLs retain distinct placements
+and IDs. Every document root must explicitly declare its own refinement; it does not inherit
+the referencing tile's policy. Wrapper errors cover the source reference error and any
+declared external dataset activation error. Each document's tile errors follow its own
+1.0/1.1 rule, using the complete placement chain for 1.1 scaling. Absent CRS declarations
+inherit the entry frame only when unambiguous; explicit frame/epoch contradictions fail
+before payload decoding. Declaring-document glTF axes and effective dependency URLs remain
+scoped to each decoded placement. Unlinked, repeated-parent or unreachable document records,
+references with source children and inconsistent transforms fail explicitly.
+Independent viewer qualification, extensionless metadata discovery and larger hierarchies remain open.

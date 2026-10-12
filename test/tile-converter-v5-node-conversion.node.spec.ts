@@ -20,6 +20,7 @@ import {runTileConverterCLI} from '../apps/tile-converter/src/v5/node-cli';
 let directory: string;
 let rootPath: string;
 let archivePath: string;
+let externalArchivePath: string;
 const identifier = 'tile-root-content-0/tile-root-content-0';
 const root = {
   asset: {version: '1.1'},
@@ -80,6 +81,27 @@ beforeAll(async () => {
   for (const [path, bytes] of Object.entries(files))
     await writeFile(join(directory, 'input', path), new Uint8Array(bytes));
   await writeFile(archivePath, new Uint8Array(await Tiles3DArchiveWriter.encode!(files)));
+  const external = {
+    ...root,
+    root: {...root.root, refine: 'REPLACE', content: {uri: 'nested/hierarchy.json'}}
+  };
+  const nestedHierarchy = {...nested, root: {...nested.root, refine: 'ADD'}};
+  await writeFile(join(directory, 'input', 'external-hierarchy.json'), JSON.stringify(external));
+  await writeFile(
+    join(directory, 'input', 'nested', 'hierarchy.json'),
+    JSON.stringify(nestedHierarchy)
+  );
+  externalArchivePath = join(directory, 'external-input.3tz');
+  await writeFile(
+    externalArchivePath,
+    new Uint8Array(
+      await Tiles3DArchiveWriter.encode!({
+        'tileset.json': new TextEncoder().encode(JSON.stringify(external)).buffer,
+        'nested/hierarchy.json': new TextEncoder().encode(JSON.stringify(nestedHierarchy)).buffer,
+        'nested/triangle.glb': triangle
+      })
+    )
+  );
 });
 afterAll(async () => rm(directory, {recursive: true, force: true}));
 
@@ -373,4 +395,43 @@ test('CLI exposes opt-in hierarchy validation and rejects unsupported output and
   expect(JSON.parse(stderr.pop()!).code).toBe('MESH_HIERARCHY_UNSUPPORTED');
   expect(await runTileConverterCLI(argumentsList.slice(0, -2), options)).toBe(1);
   expect(JSON.parse(stderr.pop()!).code).toBe('MESH_HIERARCHY_UNSUPPORTED');
+});
+
+test.each([
+  '3d-tiles',
+  '3tz'
+] as const)('Node external hierarchy conversion retains the reference wrapper in %s output', async outputFormat => {
+  const output = join(directory, 'external-output-' + outputFormat);
+  const report = await convertNodeTileset({
+    input:
+      outputFormat === '3tz'
+        ? externalArchivePath
+        : join(directory, 'input', 'external-hierarchy.json'),
+    format: outputFormat === '3tz' ? '3tz' : '3d-tiles',
+    resourceIds: [identifier],
+    preserveHierarchy: true,
+    outputFormat,
+    output
+  });
+  expect(report.outputResources).toBe(1);
+  let bytes: Uint8Array;
+  if (outputFormat === '3d-tiles')
+    bytes = new Uint8Array(await readFile(join(output, 'tileset.json')));
+  else {
+    const archive = await parse3DTilesArchive(
+      new BlobFile(new Blob([new Uint8Array(await readFile(output))]))
+    );
+    try {
+      bytes = new Uint8Array(await archive.getFile('tileset.json'));
+    } finally {
+      await archive.close();
+    }
+  }
+  const tileset = JSON.parse(new TextDecoder().decode(bytes));
+  expect(tileset.root.content).toBeUndefined();
+  expect(tileset.root.refine).toBe('REPLACE');
+  expect(tileset.root.children[0].refine).toBe('ADD');
+  expect(tileset.root.children[0].content.uri).toBe('meshes/1.glb');
+  expect(tileset.root.geometricError).toBeCloseTo(4.01);
+  expect(tileset.root.children[0].geometricError).toBeCloseTo(0.01);
 });
