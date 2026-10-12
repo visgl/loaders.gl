@@ -59,3 +59,9 @@ export type {
   BrowserTilesetResourceDescriptor,
   BrowserTilesetConversionInputResource
 } from './browser-tileset-source.js';
+
+export {selectBrowserTilesetContent} from './browser-tileset-source.js';
+export type {
+  BrowserTilesetDocumentPlacement,
+  BrowserTilesetContentSelection
+} from './browser-tileset-source.js';

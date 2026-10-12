@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright vis.gl contributors
 
-import {atob} from '../buffer/btoa.node';
+import {atob} from '../buffer/btoa.node.js';
 
 export class FileReaderPolyfill implements FileReader {
   // onload: ({result: any}) => void;

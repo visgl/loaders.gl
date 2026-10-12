@@ -206,14 +206,14 @@ export function ConversionPanel({onPreview}: ConversionPanelProps) {
         preserve material factors, one PNG/JPEG base-color texture and explicitly mapped features.
         External buffers and images share the input budget. SLPK supports UV transforms and
         wrapping, but rejects explicit texture filtering and vertex colors. Other texture maps/UV
-        sets and nested/implicit 3D Tiles are rejected. I3S atlas regions, colors and richer
+        sets and implicit 3D Tiles are rejected. Nested explicit tilesets declared with .json URIs are supported. I3S atlas regions, colors and richer
         materials are unsupported; archive dependencies must remain inside the selected archive.
         Remote archives require CORS, byte-range responses and exposed validators; CRS/height
         resources are not inferred or downloaded.
       </small>
       <small>
         Both formats accept up to 64 mesh placements from selected leaf contents. Limits: 16 MiB
-        input, 1,000 declared contents, 32 MiB output/archive, 1 cm position error. These are not
+        input, 1,000 declared contents, 32 tileset documents, 32 MiB output/archive, 1 cm position error. These are not
         peak memory limits. Conversion runs in a worker; cancel terminates its parsing and
         packaging. Archive chunks are transferred on demand. Download/preview retains the complete
         archive; direct file saving writes chunks without collecting it. Cancel is disabled during

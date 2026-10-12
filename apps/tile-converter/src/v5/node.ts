@@ -8,3 +8,6 @@ export type {
   NodeTilesetConversionSource,
   NodeTilesetConversionSourceOptions
 } from './node-source.js';
+
+export {convertNodeTileset, writeNodeTileConversionOutput} from './node-conversion.js';
+export type {NodeTileConversionOptions, NodeTileConversionOutputFormat} from './node-conversion.js';

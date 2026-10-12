@@ -7,9 +7,10 @@ import {runTileConverterCLI} from './node-cli.js';
 /** Runs the Node process adapter and maps SIGINT into cooperative I/O cancellation. */
 async function main(): Promise<void> {
   const controller = new AbortController();
-  /** Cancels active inspection; normal promise cleanup closes its readable file. */
-  const cancelInspection = (): void => controller.abort(new Error('Inspection interrupted'));
-  process.on('SIGINT', cancelInspection);
+  /** Cancels the active operation; promise cleanup closes source and output handles. */
+  const cancelOperation = (): void =>
+    controller.abort(new Error('Tile conversion operation interrupted'));
+  process.on('SIGINT', cancelOperation);
   try {
     process.exitCode = await runTileConverterCLI(
       process.argv.slice(2),
@@ -20,7 +21,7 @@ async function main(): Promise<void> {
       controller.signal
     );
   } finally {
-    process.removeListener('SIGINT', cancelInspection);
+    process.removeListener('SIGINT', cancelOperation);
   }
 }
 

@@ -1,0 +1,265 @@
+// loaders.gl
+// SPDX-License-Identifier: MIT
+// Copyright (c) vis.gl contributors
+
+import {mkdir, open, rm, link, mkdtemp} from 'node:fs/promises';
+import {dirname, join, resolve} from 'node:path';
+import {convertTileset, TileConversionError} from '@loaders.gl/tile-converter/v5/core';
+import type {
+  BrowserTileConversionFile,
+  TileConversionReport
+} from '@loaders.gl/tile-converter/v5/core';
+import {
+  createSelectedMeshConversionSource,
+  measureMeshBytes,
+  SELECTED_MESH_LIMITS,
+  createMeshConversionCodec,
+  createI3SMeshConversionCodec,
+  createMeshTilesetSink,
+  createI3SMeshSink,
+  encodeTileConversionArchiveInBatches
+} from '@loaders.gl/tile-converter/v5/adapters';
+import type {MeshSourceFeatureOptions} from '@loaders.gl/tile-converter/v5/adapters';
+import {createNodeTilesetConversionSource} from './node-source.js';
+import type {NodeTilesetConversionSourceOptions} from './node-source.js';
+
+/** Explicit targets for the initial bounded Node mesh profile. */
+export type NodeTileConversionOutputFormat = '3d-tiles' | '3tz' | 'slpk';
+
+/** Selected static mesh conversion with application-owned Node output. */
+export interface NodeTileConversionOptions extends NodeTilesetConversionSourceOptions {
+  /** One to 64 inspected content placement identifiers; no automatic all-content conversion. */
+  readonly resourceIds: readonly string[];
+  /** Explicit feature class/schema mapping for service callers; the CLI is geometry-only. */
+  readonly features?: MeshSourceFeatureOptions;
+  /** Target mesh profile, independent of output filename. */
+  readonly outputFormat: NodeTileConversionOutputFormat;
+  /** New destination path; omitted for profile validation without writing. */
+  readonly output?: string;
+  /** Maximum retained files and, separately, archive bytes; at most 32 MiB. */
+  readonly maxOutputBytes?: number;
+}
+
+/** Runs the qualified browser mesh codecs with confined Node input and optional output. */
+export async function convertNodeTileset(
+  options: NodeTileConversionOptions
+): Promise<TileConversionReport> {
+  const signal = options.signal ?? new AbortController().signal;
+  const maxOutputBytes = options.maxOutputBytes ?? SELECTED_MESH_LIMITS.maxOutputBytes;
+  if (
+    !['3d-tiles', '3tz', 'slpk'].includes(options.outputFormat) ||
+    !Number.isSafeInteger(maxOutputBytes) ||
+    maxOutputBytes < 1 ||
+    maxOutputBytes > SELECTED_MESH_LIMITS.maxOutputBytes
+  )
+    throw new TileConversionError(
+      'INVALID_NODE_CONVERSION_OPTIONS',
+      'Select a supported output profile and a positive output budget at most 32 MiB'
+    );
+  const rawSource = await createNodeTilesetConversionSource({
+    ...options,
+    signal,
+    inspectNestedTilesets: true,
+    maxTilesetDocuments: options.maxTilesetDocuments ?? SELECTED_MESH_LIMITS.maxTilesetDocuments
+  });
+  let files: readonly BrowserTileConversionFile[];
+  let report: TileConversionReport;
+  try {
+    const inspection = await rawSource.inspect(signal);
+    await import('@loaders.gl/polyfills');
+    const {getDracoLibraryOptions} = await import('@loaders.gl/draco/bundled');
+    const dracoLibraryOptions = getDracoLibraryOptions({
+      decoderProfile: 'full',
+      useLocalLibraries: true
+    });
+    const {source, spatialContext, geometricError} = await createSelectedMeshConversionSource(
+      inspection,
+      {
+        resourceIds: options.resourceIds,
+        features: options.features,
+        signal,
+        source: rawSource,
+        fetcher: rawSource.fetcher,
+        dracoLibraryOptions,
+        maxInputBytes: options.maxInputBytes
+      }
+    );
+    const common = {
+      source,
+      signal,
+      measureInputBytes: measureMeshBytes,
+      maxInputBytes: options.maxInputBytes ?? SELECTED_MESH_LIMITS.maxInputBytes,
+      maxOutputBytes,
+      maxInputResources: SELECTED_MESH_LIMITS.maxMeshResources,
+      maxOutputResources: SELECTED_MESH_LIMITS.maxMeshResources
+    };
+    const codecOptions = {
+      spatialContext,
+      dracoLibraryOptions,
+      maxPositionError: SELECTED_MESH_LIMITS.maxPositionError
+    };
+    if (options.outputFormat === 'slpk') {
+      const sink = createI3SMeshSink({
+        maxTotalBytes: maxOutputBytes,
+        maxMeshes: SELECTED_MESH_LIMITS.maxMeshResources,
+        maxResourceBytes: maxOutputBytes
+      });
+      report = await convertTileset({
+        ...common,
+        sink,
+        codec: createI3SMeshConversionCodec({...codecOptions, maxResourceBytes: maxOutputBytes}),
+        measureOutputBytes: resource =>
+          Object.values(resource.files).reduce((total, bytes) => total + bytes.byteLength, 0)
+      });
+      files = sink.getFiles();
+    } else {
+      const sink = createMeshTilesetSink({
+        maxTotalBytes: maxOutputBytes,
+        maxMeshes: SELECTED_MESH_LIMITS.maxMeshResources,
+        geometricError
+      });
+      report = await convertTileset({
+        ...common,
+        sink,
+        codec: createMeshConversionCodec(codecOptions),
+        measureOutputBytes: resource => resource.glb.byteLength
+      });
+      files = sink.getFiles();
+    }
+  } finally {
+    await rawSource.close();
+  }
+  signal.throwIfAborted();
+  // Validate packaging as well as content, including on the write-free validation path.
+  if (options.outputFormat !== '3d-tiles' && !options.output) {
+    for await (const chunk of encodeTileConversionArchiveInBatches(files, {
+      format: options.outputFormat,
+      maxArchiveBytes: maxOutputBytes,
+      signal
+    }))
+      void chunk;
+  }
+  if (options.output)
+    await writeNodeTileConversionOutput(
+      files,
+      options.output,
+      options.outputFormat,
+      maxOutputBytes,
+      signal
+    );
+  return report;
+}
+
+/** Saves fixed relative resource names or an archive; existing destinations are never overwritten. */
+export async function writeNodeTileConversionOutput(
+  files: readonly BrowserTileConversionFile[],
+  output: string,
+  format: NodeTileConversionOutputFormat,
+  maxOutputBytes: number,
+  signal: AbortSignal
+): Promise<void> {
+  signal.throwIfAborted();
+  if (
+    !['3d-tiles', '3tz', 'slpk'].includes(format) ||
+    !Number.isSafeInteger(maxOutputBytes) ||
+    maxOutputBytes < 1
+  )
+    throw new TileConversionError(
+      'INVALID_NODE_OUTPUT',
+      'Output requires a supported format and positive safe byte limit'
+    );
+  let bytes = 0;
+  const names = new Set<string>();
+  for (const file of files) {
+    const name = file.resourceId;
+    if (
+      !name ||
+      name.includes('\\') ||
+      name.includes('\0') ||
+      name.includes(':') ||
+      name.split('/').some(segment => !segment || segment === '.' || segment === '..') ||
+      names.has(name)
+    )
+      throw new TileConversionError(
+        'INVALID_NODE_OUTPUT',
+        'Output names must be unique confined relative resource paths'
+      );
+    names.add(name);
+    if (file.blob.size > maxOutputBytes - bytes)
+      throw new TileConversionError(
+        'OUTPUT_BYTES_LIMIT_EXCEEDED',
+        'Output files exceed the byte budget'
+      );
+    bytes += file.blob.size;
+  }
+  const destination = resolve(output);
+  if (format === '3d-tiles') {
+    // Exclusive directory creation makes every subsequently created child application-owned.
+    await mkdir(destination);
+    try {
+      for (const file of files) {
+        signal.throwIfAborted();
+        const path = join(destination, file.resourceId);
+        await mkdir(dirname(path), {recursive: true});
+        const handle = await open(path, 'wx');
+        try {
+          const reader = file.blob.stream().getReader();
+          try {
+            while (true) {
+              signal.throwIfAborted();
+              const {value, done} = await reader.read();
+              if (done) break;
+              await writeFileBytes(handle, value, signal);
+            }
+          } finally {
+            await reader.cancel();
+            reader.releaseLock();
+          }
+        } finally {
+          await handle.close();
+        }
+      }
+      signal.throwIfAborted();
+    } catch (error) {
+      await rm(destination, {recursive: true, force: true});
+      throw error;
+    }
+  } else {
+    const temporaryDirectory = await mkdtemp(join(dirname(destination), '.tile-converter-'));
+    try {
+      const path = join(temporaryDirectory, 'archive');
+      const handle = await open(path, 'wx');
+      try {
+        for await (const chunk of encodeTileConversionArchiveInBatches(files, {
+          format,
+          maxArchiveBytes: maxOutputBytes,
+          signal
+        }))
+          await writeFileBytes(handle, chunk, signal);
+      } finally {
+        await handle.close();
+      }
+      signal.throwIfAborted();
+      // Same-filesystem hard link publishes a complete archive and fails if the destination exists.
+      await link(path, destination);
+    } finally {
+      await rm(temporaryDirectory, {recursive: true, force: true});
+    }
+  }
+}
+
+/** Completes native typed-array writes, including partial writes and cooperative cancellation. */
+async function writeFileBytes(
+  handle: Awaited<ReturnType<typeof open>>,
+  bytes: Uint8Array,
+  signal: AbortSignal
+): Promise<void> {
+  let offset = 0;
+  while (offset < bytes.byteLength) {
+    signal.throwIfAborted();
+    const result = await handle.write(bytes, offset, bytes.byteLength - offset);
+    if (!result.bytesWritten)
+      throw new TileConversionError('NODE_OUTPUT_WRITE_FAILED', 'Output write made no progress');
+    offset += result.bytesWritten;
+  }
+}

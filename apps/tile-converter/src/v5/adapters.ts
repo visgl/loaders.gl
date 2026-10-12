@@ -95,3 +95,13 @@ export type {
   ConvertPointCloudToPotreeOptions,
   ConvertedPointCloudPotree
 } from './point-cloud-potree.js';
+
+export {
+  createSelectedMeshConversionSource,
+  measureMeshBytes,
+  SELECTED_MESH_LIMITS
+} from './selected-mesh-source.js';
+export type {
+  SelectedMeshSourceOptions,
+  SelectedMeshConversionSource
+} from './selected-mesh-source.js';

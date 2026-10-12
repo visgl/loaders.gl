@@ -163,3 +163,19 @@ export type {
   ConvertPointCloudToPotreeOptions,
   ConvertedPointCloudPotree
 } from '@loaders.gl/tile-converter/v5/adapters';
+
+export {selectBrowserTilesetContent} from '@loaders.gl/tile-converter/v5/core';
+export type {
+  BrowserTilesetDocumentPlacement,
+  BrowserTilesetContentSelection
+} from '@loaders.gl/tile-converter/v5/core';
+
+export {
+  createSelectedMeshConversionSource,
+  measureMeshBytes,
+  SELECTED_MESH_LIMITS
+} from '@loaders.gl/tile-converter/v5/adapters';
+export type {
+  SelectedMeshSourceOptions,
+  SelectedMeshConversionSource
+} from '@loaders.gl/tile-converter/v5/adapters';
