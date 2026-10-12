@@ -96,7 +96,7 @@ export function createSingleMeshTilesetSink(
 }
 
 /** Builds placement and local bounds for a trusted single-mesh codec output. */
-function createMeshTileset(
+export function createMeshTileset(
   resource: EncodedMeshConversionResource,
   geometricError: number
 ): Omit<Tiles3DTilesetJSON, 'root'> & {root: Omit<Tiles3DTileJSON, 'children'>} {

@@ -250,3 +250,15 @@ Some 3DTiles vNext extensions are supported as input data.
 | `3DTiles`     | `TRIANGLES`      | ✅ Supported               |
 | `3DTiles`     | `TRIANGLE_STRIP` | ✅ Supported as input      |
 | `3DTiles`     | `TRIANGLE_FAN`   | ❌ Not supported           |
+
+
+### Explicit hierarchy preservation (v5 opt-in)
+
+`--preserve-hierarchy` / `preserveHierarchy: true` qualify a complete single-document
+3D Tiles/3TZ tree for 3D Tiles or 3TZ output: original topology, parent content,
+contentless ancestors, inherited ADD/REPLACE, conservative version-aware metric errors,
+and equivalent ECEF placement. Select every content; maximum 256 tiles, 64 contents,
+one mesh primitive per content, and existing byte budgets. Bounds are recomputed from
+converted subtree geometry. External/implicit trees, `contents` arrays, unmapped
+metadata/request volumes, empty leaves and I3S hierarchy mapping remain unsupported.
+See the [profile details](../api-reference/v5-conversion.md#complete-explicit-hierarchy-profile).

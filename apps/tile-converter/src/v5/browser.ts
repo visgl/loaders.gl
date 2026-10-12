@@ -179,3 +179,6 @@ export type {
   SelectedMeshSourceOptions,
   SelectedMeshConversionSource
 } from '@loaders.gl/tile-converter/v5/adapters';
+
+export {createMeshHierarchyTilesetSink} from '@loaders.gl/tile-converter/v5/adapters';
+export type {MeshHierarchyTilesetSinkOptions} from '@loaders.gl/tile-converter/v5/adapters';

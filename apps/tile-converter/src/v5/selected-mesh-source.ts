@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
+import {prepareMeshHierarchy} from './mesh-hierarchy.js';
 import {coreApi, parse} from '@loaders.gl/core';
 import type {Loader, LoaderOptions} from '@loaders.gl/loader-utils';
 import {Tiles3DLoader} from '@loaders.gl/3d-tiles';
@@ -52,6 +53,8 @@ export const SELECTED_MESH_LIMITS = {
 
 /** Injected transport and decoder assets for the bounded selected mesh profile. */
 export interface SelectedMeshSourceOptions {
+  /** Require a complete qualified explicit tree; pair with createMeshHierarchyTilesetSink. */
+  readonly preserveHierarchy?: boolean;
   /** Inspected content placement identifiers; one to 64 distinct selections. */
   readonly resourceIds: readonly string[];
   /** Cancellation across qualification, raw reads and decoding. */
@@ -86,7 +89,14 @@ export async function createSelectedMeshConversionSource(
   inspection: BrowserTilesetConversionInspection,
   options: SelectedMeshSourceOptions
 ): Promise<SelectedMeshConversionSource> {
-  const {resourceIds, signal, dracoLibraryOptions, features, fetcher = fetch} = options;
+  const {
+    resourceIds,
+    signal,
+    dracoLibraryOptions,
+    features,
+    preserveHierarchy,
+    fetcher = fetch
+  } = options;
   const maxInputBytes = options.maxInputBytes ?? SELECTED_MESH_LIMITS.maxInputBytes;
   if (
     !Number.isSafeInteger(maxInputBytes) ||
@@ -106,6 +116,12 @@ export async function createSelectedMeshConversionSource(
     )
   )
     throw new Error('Select between 1 and 64 distinct content placements.');
+  if (preserveHierarchy !== undefined && typeof preserveHierarchy !== 'boolean')
+    throw new TileConversionError(
+      'MESH_HIERARCHY_UNSUPPORTED',
+      'preserveHierarchy must be a boolean'
+    );
+  if (preserveHierarchy) prepareMeshHierarchy(inspection, resourceIds);
   const descriptors = inspection.resources.filter(resource =>
     resourceIds.includes(resource.resourceId)
   );
@@ -115,7 +131,11 @@ export async function createSelectedMeshConversionSource(
   const selectedContents = new Map(
     descriptors.map((descriptor, index) => [descriptor.resourceId, selections[index]])
   );
-  if (resourceIds.length > 1 && selections.some(selection => !selection.isLeaf))
+  if (
+    !preserveHierarchy &&
+    resourceIds.length > 1 &&
+    selections.some(selection => !selection.isLeaf)
+  )
     throw new Error(
       'Multi-selection requires leaf contents; source LOD hierarchy is not exported.'
     );
@@ -165,7 +185,12 @@ export async function createSelectedMeshConversionSource(
       let decodedBytes = 0;
       let primitiveCount = 0;
       for await (const raw of rawSource.read(selectedInspection, signal)) {
-        const selection = selectedContents.get(raw.resourceId)!;
+        const selection = selectedContents.get(raw.resourceId);
+        if (!selection)
+          throw new TileConversionError(
+            'INVALID_BROWSER_SELECTION',
+            'Source yielded an uninspected content placement'
+          );
         const contentUrl = raw.contentUrl ?? selection.contentUrl;
         const runtime = createSelectedRuntime(
           selection.tileset,
@@ -201,6 +226,11 @@ export async function createSelectedMeshConversionSource(
           let meshCount = 0;
           for await (const resource of meshSource.read(metadata, signal)) {
             meshCount++;
+            if (preserveHierarchy && meshCount > 1)
+              throw new TileConversionError(
+                'MESH_HIERARCHY_UNSUPPORTED',
+                'Hierarchy conversion requires one mesh primitive per content'
+              );
             if (++primitiveCount > SELECTED_MESH_LIMITS.maxMeshResources)
               throw new Error('Selected contents exceed the mesh primitive placement limit.');
             decodedBytes += measureMeshBytes(resource);
@@ -209,7 +239,11 @@ export async function createSelectedMeshConversionSource(
                 'INPUT_RESOURCE_TOO_LARGE',
                 'Selected decoded geometry and encoded images exceed the aggregate input byte limit.'
               );
-            yield {...resource, id: `${raw.resourceId}/${resource.id}`};
+            yield {
+              ...resource,
+              id: `${raw.resourceId}/${resource.id}`,
+              contentResourceId: raw.resourceId
+            };
           }
           if (!meshCount) throw new Error('Selected content has no mesh primitive.');
         } finally {

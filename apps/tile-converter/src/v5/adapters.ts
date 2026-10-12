@@ -118,3 +118,6 @@ export type {
   I3SMeshConversionInspection,
   I3SMeshConversionResourceDescriptor
 } from './i3s-selection-source.js';
+
+export {createMeshHierarchyTilesetSink} from './mesh-hierarchy.js';
+export type {MeshHierarchyTilesetSinkOptions} from './mesh-hierarchy.js';

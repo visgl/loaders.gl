@@ -7,6 +7,7 @@ import {dirname, join, resolve} from 'node:path';
 import {convertTileset, TileConversionError} from '@loaders.gl/tile-converter/v5/core';
 import type {
   BrowserTileConversionFile,
+  BrowserTilesetConversionInspection,
   TileConversionReport
 } from '@loaders.gl/tile-converter/v5/core';
 import {
@@ -16,6 +17,7 @@ import {
   createMeshConversionCodec,
   createI3SMeshConversionCodec,
   createMeshTilesetSink,
+  createMeshHierarchyTilesetSink,
   createI3SMeshSink,
   encodeTileConversionArchiveInBatches
 } from '@loaders.gl/tile-converter/v5/adapters';
@@ -39,6 +41,8 @@ export interface NodeTileConversionOptions
   readonly i3sFeatures?: I3SMeshSourceFeatureOptions;
   /** Required metric source error for I3S to 3D Tiles; no screen-size inference. */
   readonly geometricError?: number;
+  /** Retain a complete single-document 3D Tiles tree in 3D Tiles/3TZ output. */
+  readonly preserveHierarchy?: boolean;
   /** Authorizes IntegratedMesh to 3DObject output with a reported semantic warning. */
   readonly integratedMeshPolicy?: 'as-3d-object';
   /** One to 64 inspected content placement identifiers; no automatic all-content conversion. */
@@ -70,6 +74,14 @@ export async function convertNodeTileset(
       'Select a supported output profile and a positive output budget at most 32 MiB'
     );
   const i3s = options.format === 'i3s' || options.format === 'slpk';
+  if (
+    (options.preserveHierarchy !== undefined && typeof options.preserveHierarchy !== 'boolean') ||
+    (options.preserveHierarchy && (i3s || options.outputFormat === 'slpk'))
+  )
+    throw new TileConversionError(
+      'MESH_HIERARCHY_UNSUPPORTED',
+      'Hierarchy preservation requires 3D Tiles/3TZ input and output'
+    );
   if (
     i3s &&
     ((options.outputFormat !== 'slpk' && options.geometricError === undefined) ||
@@ -133,6 +145,7 @@ export async function convertNodeTileset(
             inspection as Awaited<ReturnType<typeof rawSource.inspect>>,
             {
               resourceIds: options.resourceIds,
+              preserveHierarchy: options.preserveHierarchy,
               features: options.features,
               signal,
               source: rawSource,
@@ -173,11 +186,18 @@ export async function convertNodeTileset(
       });
       files = sink.getFiles();
     } else {
-      const sink = createMeshTilesetSink({
-        maxTotalBytes: maxOutputBytes,
-        maxMeshes: SELECTED_MESH_LIMITS.maxMeshResources,
-        geometricError
-      });
+      const sink = options.preserveHierarchy
+        ? createMeshHierarchyTilesetSink({
+            inspection: inspection as BrowserTilesetConversionInspection,
+            resourceIds: options.resourceIds,
+            maxTotalBytes: maxOutputBytes,
+            maxPositionError: SELECTED_MESH_LIMITS.maxPositionError
+          })
+        : createMeshTilesetSink({
+            maxTotalBytes: maxOutputBytes,
+            maxMeshes: SELECTED_MESH_LIMITS.maxMeshResources,
+            geometricError
+          });
       report = await convertTileset({
         ...common,
         sink,
