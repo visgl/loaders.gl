@@ -65,6 +65,7 @@ async function inspect(document = createDocument()) {
     input: 'https://example.invalid/tileset.json',
     maxInputBytes: 4096,
     maxInputResources: 64,
+    inspectNestedTilesets: true,
     fetcher: async () => new Response(JSON.stringify(document))
   });
   return source.inspect();
@@ -259,6 +260,7 @@ test.each([
     input: 'https://example.invalid/tileset.json',
     maxInputBytes: 8192,
     maxInputResources: 64,
+    inspectNestedTilesets: true,
     fetcher
   });
   const inspection = await rawSource.inspect();
@@ -393,4 +395,60 @@ test('sub-ULP local mesh bounds stay enclosed after ECEF subtree aggregation', a
   const result = await readDocument(sink);
   expect(result.root.boundingVolume.box[3]).toBeGreaterThan(positions[3] / 2);
   expect(result.root.children[0].boundingVolume.box[3]).toBeGreaterThan(positions[3] / 2);
+});
+
+test('root-only inspection rejects an external declaration before fetching or decoding it', async () => {
+  const document = createDocument();
+  document.root.content.uri = 'external.json';
+  document.root.children = [];
+  const requested: string[] = [];
+  const fetcher: typeof fetch = async input => {
+    requested.push(String(input));
+    return new Response(JSON.stringify(document));
+  };
+  const source = createBrowserTilesetConversionSource({
+    input: 'https://example.invalid/tileset.json',
+    maxInputBytes: 4096,
+    maxInputResources: 64,
+    maxTilesetDocuments: 2,
+    fetcher
+  });
+  const inspection = await source.inspect();
+  const options = createOptions(inspection);
+  expect(() => createMeshHierarchyTilesetSink(options)).toThrow('expanded metadata');
+  await expect(
+    createSelectedMeshConversionSource(inspection, {
+      resourceIds: options.resourceIds,
+      preserveHierarchy: true,
+      source,
+      fetcher,
+      signal: new AbortController().signal,
+      dracoLibraryOptions: {}
+    })
+  ).rejects.toMatchObject({code: 'MESH_HIERARCHY_UNSUPPORTED'});
+  expect(requested).toEqual(['https://example.invalid/tileset.json']);
+});
+
+test('injected sources yielding uninspected placements fail explicitly before decoding', async () => {
+  const inspection = await inspect();
+  const options = createOptions(inspection);
+  const selection = await createSelectedMeshConversionSource(inspection, {
+    resourceIds: options.resourceIds,
+    preserveHierarchy: true,
+    signal: new AbortController().signal,
+    dracoLibraryOptions: {},
+    source: {
+      inspect: async () => inspection,
+      async *read() {
+        yield {
+          ...inspection.resources[0],
+          resourceId: 'external/uninspected',
+          data: new Uint8Array()
+        };
+      }
+    }
+  });
+  await expect(
+    selection.source.read(inspection)[Symbol.asyncIterator]().next()
+  ).rejects.toMatchObject({code: 'INVALID_BROWSER_SELECTION'});
 });

@@ -1018,6 +1018,8 @@ The default mesh collection remains flat. Opt in with `preserveHierarchy: true` 
 from `@loaders.gl/tile-converter/v5/adapters` (also exposed by `v5/browser`).
 `convertNodeTileset({preserveHierarchy: true, ...})` wires these together for 3D Tiles
 or 3TZ input and output. Select **every** inspected content placement explicitly.
+Browser/service callers must inspect with `inspectNestedTilesets: true`; root-only
+inspection is rejected before decoding. The Node wrapper already expands inspection.
 
 This bounded profile retains original child order, contentless ancestors, parent content,
 and effective ADD/REPLACE refinement, including inherited child policy. The root must

@@ -185,7 +185,12 @@ export async function createSelectedMeshConversionSource(
       let decodedBytes = 0;
       let primitiveCount = 0;
       for await (const raw of rawSource.read(selectedInspection, signal)) {
-        const selection = selectedContents.get(raw.resourceId)!;
+        const selection = selectedContents.get(raw.resourceId);
+        if (!selection)
+          throw new TileConversionError(
+            'INVALID_BROWSER_SELECTION',
+            'Source yielded an uninspected content placement'
+          );
         const contentUrl = raw.contentUrl ?? selection.contentUrl;
         const runtime = createSelectedRuntime(
           selection.tileset,

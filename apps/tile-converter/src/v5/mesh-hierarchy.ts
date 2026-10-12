@@ -65,7 +65,7 @@ interface MeshHierarchy {
 
 /** Input and retained-byte policy for complete explicit hierarchy conversion. */
 export interface MeshHierarchyTilesetSinkOptions {
-  /** Immutable inspection used by the selected mesh source. External documents are unsupported. */
+  /** Expanded inspection (inspectNestedTilesets: true) used by the selected source; one document only. */
   readonly inspection: BrowserTilesetConversionInspection;
   /** Every inspected content placement, with no duplicates or omissions; at most 64. */
   readonly resourceIds: readonly string[];
@@ -84,8 +84,10 @@ export function prepareMeshHierarchy(
   const rejectHierarchy: (message: string) => never = message => {
     throw new TileConversionError('MESH_HIERARCHY_UNSUPPORTED', message);
   };
-  if (inspection.documents && inspection.documents.length !== 1)
-    rejectHierarchy('Hierarchy preservation currently requires one explicit document');
+  if (!inspection.documents || inspection.documents.length !== 1)
+    rejectHierarchy(
+      'Hierarchy preservation requires expanded metadata inspection of one explicit document'
+    );
   if (
     !resourceIds.length ||
     resourceIds.length > 64 ||
