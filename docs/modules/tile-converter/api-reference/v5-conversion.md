@@ -645,6 +645,49 @@ Earth-centered I3S normals targeting EPSG:4978 are normalized directly, without 
 the corresponding position for every normal. Other vector frames still use their declared
 basis transformation. This optimization also applies to the existing I3S spatial adapter.
 
+## Nested explicit 3D Tiles input
+
+`createBrowserTilesetConversionSource` can follow explicit external 3D Tiles 1.0/1.1
+documents when an application supplies `maxTilesetDocuments` greater than 1:
+
+```ts
+const source = createBrowserTilesetConversionSource({
+  input: 'https://example.com/tileset.json',
+  maxInputBytes: 16 * 1024 * 1024,
+  maxInputResources: 1000,
+  maxTilesetDocuments: 16
+});
+```
+
+The default is one document, so existing root-only callers continue to reject external
+JSON. Inspection reads the root document only; `inspection.resources` describes its
+content declarations. Reading expands nested documents lazily in depth-first order,
+yielding binary content to the injected codec. JSON is identified from its response type
+or payload rather than a filename; JSON glTF and implicit tiling remain unsupported.
+
+Limits apply across the entire read: `maxInputBytes` charges all root/nested response
+bytes and binary payloads; `maxInputResources` counts content declarations, including
+external JSON references; `maxTilesetDocuments` counts the root and each external
+placement. Referencing a shared document twice consumes two document reads and retains
+two placements. The source does not cache or merge them. These limits do not qualify
+total peak decoder/JSON memory or a maximum count of contentless tile nodes.
+
+Nested output descriptors include `tilesetUrl`, the declaring document's effective URL.
+`tilePath` indexes tiles within that document; `resourceId` includes the referring
+placement chain. `transform` composes entry-root placement, referring tile and external
+root transforms. This follows the [external tileset transform contract](https://docs.ogc.org/cs/22-025r4/22-025r4.html).
+Dependency URLs resolve relative to each document, including redirects; document query
+parameters propagate only to resources on the same origin. Active ancestor URLs (ignoring
+fragments) are rejected as cycles; aliases/redirects are checked against their effective
+URLs. References with child tiles, conflicting content declarations and non-finite
+composed transforms fail explicitly. Cancellation/errors cancel active response readers;
+closing iteration prevents further requests.
+
+Applications supply CORS/authentication and object-identity policies through their fetcher.
+This is a raw source API; codecs still own content decoding, required metadata mappings and
+output authoring. It does not preserve source LOD/refinement in a destination, flatten scene
+metadata, decode instancing/composites, or enable nested selection in the archive example.
+
 ## Browser I3S conversion example
 
 The [archive example](https://github.com/visgl/loaders.gl/tree/master/examples/website/i3s-slpk)
