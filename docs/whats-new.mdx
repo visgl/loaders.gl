@@ -40,6 +40,16 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
   tone="violet"
 />
 
+## Compression backends and LZO
+
+Default fallback compressors and decompressors use lazy, direction-specific compress-utils 0.9.0
+WASM modules. Native streams remain the first async choice where supported. Preload enables sync
+calls. Raw DEFLATE and LZ4 bindings share their framed codec assets.
+
+The decoder-only [LzoDecompressor API](./modules/compression/api-reference/lzo) supports raw LZO1X.
+Parquet adds Hadoop-framed LZO page support and ORC adds LZO chunk support. Container framing is
+implemented in TypeScript. Compression workers package the WASM assets required by their codecs.
+
 ## ArcGIS service items and sign-in
 
 Resolve five service-backed ArcGIS item types into explicit layer/table choices, retaining publisher

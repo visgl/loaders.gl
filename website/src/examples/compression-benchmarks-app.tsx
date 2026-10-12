@@ -8,6 +8,7 @@ import React, {useEffect, useState} from 'react';
 import {createCompressionBenchmarkData} from './compression-benchmark-data';
 
 import {Bench, type LogEntry} from '@probe.gl/bench';
+import * as defaultCodecs from '@loaders.gl/compression';
 import {BrotliShimDecompressor} from '@loaders.gl/compression/brotli-decompressor-shim';
 import {DeflateFflateCompressor} from '@loaders.gl/compression/deflate-compressor-fflate';
 import {DeflateFflateDecompressor} from '@loaders.gl/compression/deflate-decompressor-fflate';
@@ -309,7 +310,7 @@ function createBenchmarkResultRow(entry: LogEntry, benchmarkByteLengths: Map<str
       const displayName = implementationName === 'native'
         ? 'built-in'
         : implementationName === 'internal fflate' || implementationName === 'Brotli shim'
-          ? 'loaders.gl'
+          ? dependencyInfo.dependency || implementationName
           : dependencyInfo.dependency || implementationName;
       return {
         id: displayName,
@@ -331,13 +332,19 @@ function createBenchmarkResultRow(entry: LogEntry, benchmarkByteLengths: Map<str
 /** Returns dependency metadata shown with one benchmark implementation. */
 function getCompressionDependencyInfo(implementationName: string, groupId: string): Pick<BenchmarkResultRow, 'dependency' | 'dependencySize' | 'dependencyUrl' | 'dependencyNpmUrl'> {
   const dependencyInfo: Record<string, Pick<BenchmarkResultRow, 'dependency' | 'dependencySize' | 'dependencyUrl' | 'dependencyNpmUrl'>> = {
+    'loaders.gl': {
+      dependency: 'loaders.gl',
+      dependencySize: `${getCompressUtilsSize(groupId)} + wrapper`,
+      dependencyUrl: 'https://github.com/visgl/loaders.gl/tree/master/modules/compression',
+      dependencyNpmUrl: 'https://www.npmjs.com/package/@loaders.gl/compression'
+    },
     native: {
       dependency: 'DecompressionStream',
       dependencySize: 'N/A',
       dependencyUrl: 'https://developer.mozilla.org/en-US/docs/Web/API/DecompressionStream'
     },
     'internal fflate': {
-      dependency: 'loaders.gl',
+      dependency: 'loaders.gl fflate 0.7.4',
       dependencySize: '~9.2 KB minified / 4.6 KB gzip',
       dependencyUrl: 'https://github.com/visgl/loaders.gl/tree/master/modules/compression/src/lib/fflate'
     },
@@ -354,7 +361,7 @@ function getCompressionDependencyInfo(implementationName: string, groupId: strin
       dependencyNpmUrl: 'https://www.npmjs.com/package/pako'
     },
     'Brotli shim': {
-      dependency: 'loaders.gl',
+      dependency: 'loaders.gl Brotli shim',
       dependencySize: '~210 KB source',
       dependencyUrl: 'https://github.com/visgl/loaders.gl/tree/master/modules/compression/src/brotli',
       dependencyNpmUrl: 'https://www.npmjs.com/package/@loaders.gl/compression'
@@ -372,7 +379,7 @@ function getCompressionDependencyInfo(implementationName: string, groupId: strin
       dependencyNpmUrl: 'https://www.npmjs.com/package/lz4js'
     },
     'compress-utils': {
-      dependency: 'compress-utils 0.8.0',
+      dependency: 'compress-utils 0.9.0',
       dependencySize: getCompressUtilsSize(groupId),
       dependencyUrl: 'https://github.com/dupontcyborg/compress-utils',
       dependencyNpmUrl: 'https://www.npmjs.com/package/compress-utils'
@@ -407,7 +414,7 @@ function getCompressUtilsSize(groupId: string): string {
     const encoderSizes: Record<string, string> = {
       gzip: '~62 KB encoder WASM', deflate: '~62 KB encoder WASM',
       brotli: '~456 KB encoder WASM', zstandard: '~347 KB encoder WASM',
-      snappy: '~25 KB encoder WASM', lz4: '~95 KB encoder WASM',
+      snappy: '~25 KB encoder WASM', lz4: '~98 KB encoder WASM',
       bzip2: '~66 KB encoder WASM', xz: '~107 KB encoder WASM'
     };
     return encoderSizes[format] || 'encoder WASM chunk';
@@ -418,7 +425,7 @@ function getCompressUtilsSize(groupId: string): string {
     brotli: '~189 KB focused WASM',
     zstandard: '~93 KB focused WASM',
     snappy: '~27 KB focused WASM',
-    lz4: '~37 KB focused WASM',
+    lz4: '~39 KB focused WASM',
     bzip2: '~53 KB focused WASM',
     xz: '~86 KB focused WASM'
   };
@@ -619,6 +626,18 @@ async function createCompressionBenchmarkCases(): Promise<CompressionBenchmarkCa
     }
   ];
 
+  const decoders: Record<string, new (options?: defaultCodecs.CompressionOptions) => defaultCodecs.Decompressor> = {
+    GZIP: defaultCodecs.GZipDecompressor, DEFLATE: defaultCodecs.DeflateDecompressor,
+    Brotli: defaultCodecs.BrotliDecompressor, Zstandard: defaultCodecs.ZstdDecompressor,
+    Snappy: defaultCodecs.SnappyDecompressor, LZ4: defaultCodecs.LZ4Decompressor,
+    bzip2: defaultCodecs.BZip2Decompressor, XZ: defaultCodecs.XZDecompressor
+  };
+  for (const benchmarkCase of benchmarkCases) {
+    const Decoder = decoders[benchmarkCase.name.split(' · ')[0]];
+    const decoder = new Decoder({useNative: false});
+    benchmarkCase.externalCompressions.push({name: 'loaders.gl', decompress: input => decoder.decompress(input)});
+  }
+
   const largeSampleData = createCompressionBenchmarkData(16 * 1024 * 1024);
   const largeCompressedData = [
     await new GZipFflateCompressor().compress(largeSampleData.buffer),
@@ -734,6 +753,16 @@ async function addEncodingBenchmarks(
     bzip2: {'compress-utils': input => new BZip2CompressUtilsCompressor().compress(input)},
     XZ: {'compress-utils': input => new XZCompressUtilsCompressor().compress(input)}
   };
+  const compressors: Record<string, new (options?: defaultCodecs.CompressionOptions) => defaultCodecs.Compressor> = {
+    GZIP: defaultCodecs.GZipCompressor, DEFLATE: defaultCodecs.DeflateCompressor,
+    Brotli: defaultCodecs.BrotliCompressor, Zstandard: defaultCodecs.ZstdCompressor,
+    Snappy: defaultCodecs.SnappyCompressor, LZ4: defaultCodecs.LZ4Compressor,
+    bzip2: defaultCodecs.BZip2Compressor, XZ: defaultCodecs.XZCompressor
+  };
+  const DefaultCompressor = compressors[format];
+  const compressor = new DefaultCompressor({useNative: false, ...(format === 'Brotli' ? {compressUtils: {level: 4}} : {})});
+  encoders[format]['loaders.gl'] = input => compressor.compress(input);
+
   if (format === 'Zstandard' && input.byteLength >= 16 * 1024 * 1024) {
     onWarning(`${benchmarkCase.name}: zstd-codec 0.1.5 whole-buffer encoding exceeds its WASM heap; 16 MB encoding is unavailable`);
   }

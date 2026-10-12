@@ -2,7 +2,12 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import {LZ4Decompressor, SnappyDecompressor, ZstdDecompressor} from '@loaders.gl/compression';
+import {
+  LZ4Decompressor,
+  LzoDecompressor,
+  SnappyDecompressor,
+  ZstdDecompressor
+} from '@loaders.gl/compression';
 import {DeflateDecompressor} from '@loaders.gl/compression/deflate-decompressor';
 import type {Decompressor} from '@loaders.gl/compression';
 import type {ORCCompression} from './parse-orc';
@@ -11,7 +16,8 @@ const DEFLATE_DECOMPRESSOR = new DeflateDecompressor({useNative: false});
 const RAW_DEFLATE_DECOMPRESSOR = new DeflateDecompressor({raw: true, useNative: false});
 const SNAPPY_DECOMPRESSOR = new SnappyDecompressor();
 const LZ4_DECOMPRESSOR = new LZ4Decompressor();
-const ZSTD_DECOMPRESSOR = new ZstdDecompressor();
+const LZO_DECOMPRESSOR = new LzoDecompressor();
+const ZSTD_DECOMPRESSOR = new ZstdDecompressor({useNative: false});
 
 /** Decompresses an ORC compression stream made of 3-byte framed chunks. */
 export function decompressORCStream(
@@ -20,7 +26,7 @@ export function decompressORCStream(
   compressionBlockSize = 256 * 1024
 ): Uint8Array {
   if (compression === 'NONE') return bytes.slice();
-  if (!['ZLIB', 'SNAPPY', 'LZ4', 'ZSTD'].includes(compression))
+  if (!['ZLIB', 'SNAPPY', 'LZ4', 'LZO', 'ZSTD'].includes(compression))
     throw new Error(`ORC compression "${compression}" is not supported yet`);
   const output: Uint8Array[] = [];
   let offset = 0;
@@ -43,6 +49,7 @@ export function decompressORCStream(
         RAW_DEFLATE_DECOMPRESSOR,
         SNAPPY_DECOMPRESSOR,
         LZ4_DECOMPRESSOR,
+        LZO_DECOMPRESSOR,
         ZSTD_DECOMPRESSOR,
         compressionBlockSize
       );
@@ -66,6 +73,7 @@ function decompressORCChunk(
   rawDeflateDecompressor: Decompressor,
   snappyDecompressor: Decompressor,
   lz4Decompressor: Decompressor,
+  lzoDecompressor: Decompressor,
   zstdDecompressor: Decompressor,
   compressionBlockSize: number
 ): ArrayBuffer {
@@ -81,6 +89,8 @@ function decompressORCChunk(
     }
   }
   if (compression === 'SNAPPY') return snappyDecompressor.decompressSync(chunkBuffer);
+  if (compression === 'LZO')
+    return lzoDecompressor.decompressSync(chunkBuffer, compressionBlockSize);
   if (compression === 'LZ4')
     return lz4Decompressor.decompressSync(chunkBuffer, compressionBlockSize);
   return zstdDecompressor.decompressSync(chunkBuffer);
@@ -93,6 +103,7 @@ export async function preloadORCCompression(modules: Record<string, any> = {}): 
     RAW_DEFLATE_DECOMPRESSOR.preload(modules),
     SNAPPY_DECOMPRESSOR.preload(modules),
     LZ4_DECOMPRESSOR.preload(modules),
+    LZO_DECOMPRESSOR.preload(modules),
     ZSTD_DECOMPRESSOR.preload(modules)
   ]);
 }

@@ -40,7 +40,7 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
 
 `@loaders.gl/compression` provides lossless compression codecs with one consistent API in browsers
 and Node.js. It is designed to keep the common path small: use a built-in codec when the runtime
-has one, choose a compact JavaScript implementation when it does not, and load a larger or
+has one, load compress-utils WASM when it does not, and load a larger or
 specialized implementation only when an application asks for it.
 
 <p className="badges">
@@ -125,11 +125,11 @@ support is still runtime-dependent. See
 
 | Format | Built-in path | Compact or optional fallback |
 | --- | --- | --- |
-| GZIP | `CompressionStream` / `DecompressionStream` | `fflate` or Pako |
-| DEFLATE | `CompressionStream` / `DecompressionStream` | `fflate` or Pako |
-| Raw DEFLATE | `DecompressionStream` when supported | `fflate` or Pako |
-| Brotli | Runtime-dependent | bundled JavaScript decoder shim or `compress-utils` |
-| Zstandard | Runtime-dependent | `fzstd`, `zstd-codec`, or `compress-utils` |
+| GZIP | `CompressionStream` / `DecompressionStream` | `compress-utils` |
+| DEFLATE | `CompressionStream` / `DecompressionStream` | `compress-utils` |
+| Raw DEFLATE | `DecompressionStream` when supported | `compress-utils` |
+| Brotli | Runtime-dependent | `compress-utils` |
+| Zstandard | Runtime-dependent | `compress-utils` |
 | Snappy, LZ4, bzip2, XZ | Not exposed by the stream APIs | Default format implementation |
 
 ## Default compressors
@@ -142,12 +142,12 @@ startup or explicit prebundling is required.
 | Format | Class | Import subpath | Default policy |
 | --- | --- | --- | --- |
 | Uncompressed | `NoCompressor` | `no-compressor` | Pass-through |
-| GZIP | `GZipCompressor` | `gzip-compressor` | Built-in stream, then `fflate` |
-| DEFLATE | `DeflateCompressor` | `deflate-compressor` | Built-in stream, then `fflate` |
+| GZIP | `GZipCompressor` | `gzip-compressor` | Built-in stream, then `compress-utils` |
+| DEFLATE | `DeflateCompressor` | `deflate-compressor` | Built-in stream, then `compress-utils` |
 | Brotli | `BrotliCompressor` | `brotli-compressor` | Built-in stream, then lazy `compress-utils` |
 | Zstandard | `ZstdCompressor` | `zstd-compressor` | Built-in stream, then lazy `compress-utils` |
-| Snappy | `SnappyCompressor` | `snappy-compressor` | Compact `snappyjs` |
-| LZ4 frame | `LZ4Compressor` | `lz4-compressor` | Lazy `lz4js` |
+| Snappy | `SnappyCompressor` | `snappy-compressor` | `compress-utils` |
+| LZ4 frame | `LZ4Compressor` | `lz4-compressor` | Lazy `compress-utils` |
 | bzip2 | `BZip2Compressor` | `bzip2-compressor` | Lazy `compress-utils` |
 | XZ/LZMA | `XZCompressor` | `xz-compressor` | Lazy `compress-utils` |
 
@@ -156,14 +156,15 @@ startup or explicit prebundling is required.
 | Format | Class | Import subpath | Default policy |
 | --- | --- | --- | --- |
 | Uncompressed | `NoDecompressor` | `no-decompressor` | Pass-through |
-| GZIP | `GZipDecompressor` | `gzip-decompressor` | Built-in stream, then `fflate` |
-| DEFLATE | `DeflateDecompressor` | `deflate-decompressor` | Built-in stream, then `fflate` |
-| Brotli | `BrotliDecompressor` | `brotli-decompressor` | Built-in stream, then bundled JavaScript shim |
-| Zstandard | `ZstdDecompressor` | `zstd-decompressor` | Built-in stream, then compact `fzstd` |
-| Snappy | `SnappyDecompressor` | `snappy-decompressor` | Compact `snappyjs` |
-| LZ4 | `LZ4Decompressor` | `lz4-decompressor` | Hand-written block/Hadoop decoder; lazy `lz4js` for frames |
+| GZIP | `GZipDecompressor` | `gzip-decompressor` | Built-in stream, then `compress-utils` |
+| DEFLATE | `DeflateDecompressor` | `deflate-decompressor` | Built-in stream, then `compress-utils` |
+| Brotli | `BrotliDecompressor` | `brotli-decompressor` | Built-in stream, then `compress-utils` |
+| Zstandard | `ZstdDecompressor` | `zstd-decompressor` | Built-in stream, then `compress-utils` |
+| Snappy | `SnappyDecompressor` | `snappy-decompressor` | `compress-utils` |
+| LZ4 | `LZ4Decompressor` | `lz4-decompressor` | `compress-utils` with TypeScript Hadoop framing |
 | bzip2 | `BZip2Decompressor` | `bzip2-decompressor` | Lazy `compress-utils` |
 | XZ/LZMA | `XZDecompressor` | `xz-decompressor` | Lazy `compress-utils` |
+| LZO1X | `LzoDecompressor` | `lzo-decompressor` | Decoder-only `compress-utils`; output capacity required |
 
 ## Specific compressor implementations
 
@@ -234,7 +235,7 @@ formats such as Parquet that process many small, independently compressed blocks
 formats, benchmark a cached synchronous JavaScript codec as well as the built-in stream path;
 `useNative: false` selects that path on the balanced GZIP, DEFLATE, Brotli, and Zstandard classes.
 
-`compress-utils`, Pako, `lz4js`, and `zstd-codec` are optional peer dependencies. Only install an
+`compress-utils` is a runtime dependency. Pako, `lz4js`, and `zstd-codec` are optional reference backends. Only install an
 optional package when importing its adapter. `compress-utils` uses direction-specific algorithm
 subpaths so unrelated formats can be tree-shaken.
 
@@ -247,9 +248,9 @@ fallback. It also returns that concrete implementation for applications that wan
 inspect the selection explicitly.
 
 Import a direct default or backend-specific subpath only when bundle composition must be pinned,
-or when synchronous work must begin without an asynchronous preload step.
+or when a specific backend must be selected. WASM sync methods require preload.
 
-The root exports only direction-specific codec classes. JavaScript fallbacks load dynamically
+The root exports only direction-specific codec classes. WASM fallbacks load dynamically
 when native support is unavailable; use an ESM bundler with code splitting to keep these modules
 out of the initial bundle. Explicit implementation subpaths intentionally include their codec.
 Legacy combined classes are available only through explicit subpaths during migration.
@@ -282,3 +283,34 @@ selection and optional Pako adapters remain available.
 
 See [compression benchmarks](https://loaders.gl/docs/modules/compression/benchmarks)
 for a live internal-versus-upstream comparison.
+
+## compress-utils 0.9 and LZO
+
+All default fallback codecs use compress-utils 0.9.0, a runtime dependency loaded through
+format- and direction-specific dynamic imports. Root async methods still prefer built-in streams.
+Use ESM code splitting to keep WASM codec modules out of the initial bundle. Alternative JavaScript
+implementations remain available through explicit backend subpaths for reference and comparison.
+
+Call `await preload()` before synchronous work. Direct default subpaths now require preload too;
+async methods initialize automatically. Pass `{useNative: false}` to a root codec when preloading
+for sync methods, since native browser streams only support async work.
+
+`LzoDecompressor` decodes raw LZO1X blocks only. There is no LZO compressor. Pass the output capacity
+as the second argument, or as `compressUtils.expectedSize`. The result contains the actual decoded
+bytes, which may be fewer than the capacity.
+
+```typescript
+import {LzoDecompressor} from '@loaders.gl/compression';
+
+const decoder = new LzoDecompressor();
+await decoder.preload();
+const output = decoder.decompressSync(compressedBlock, outputCapacity);
+```
+
+Parquet supports LZO pages, including Hadoop block/chunk framing from parquet-java, through a
+TypeScript adapter. ORC supports LZO inside its existing three-byte chunk framing. Neither loader
+encodes LZO. Standalone lzop containers and other LZO variants are not supported.
+
+For raw DEFLATE or LZ4, use `{raw: true}` with the matching compress-utils compressor or decoder.
+Raw LZ4 decoding requires an output capacity. Raw formats share their codec WASM assets with the
+wrapped formats.

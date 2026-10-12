@@ -1,6 +1,6 @@
 ---
 title: Zstandard Compressor and Decompressor
-description: Use Zstandard compression with lazy WASM and compact JavaScript fallbacks.
+description: Use Zstandard compression with lazy compress-utils WASM fallbacks.
 hide_title: true
 page_style: designed
 ---
@@ -46,7 +46,7 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
 
 `ZstdCompressor` and `ZstdDecompressor` keep the large WASM codec out of the normal decode path.
 They try built-in streams first. Compression falls back to lazy `compress-utils`; decompression
-falls back to compact synchronous `fzstd`.
+falls back to its decoder-only WASM codec.
 
 ```typescript
 import {ZstdCompressor, ZstdDecompressor} from '@loaders.gl/compression';
@@ -57,8 +57,8 @@ Both implement the shared [Compressor and Decompressor](./compressor-decompresso
 ## Options
 
 - `useNative: false` disables built-in probing.
-- `modules['zstd-codec']` injects the optional high-throughput/WASM implementation. Call
-  `preload()` before its synchronous methods.
+- `compressUtils.level` configures the WASM encoder. Call `preload()` before sync methods.
+- Use the explicit zstd-codec subpath for legacy module injection.
 
 ## Backend choices
 
@@ -70,3 +70,5 @@ Both implement the shared [Compressor and Decompressor](./compressor-decompresso
 | compress-utils | Decompression | `zstd-decompressor-compress-utils` |
 
 See the [live benchmarks](/docs/modules/compression/benchmarks) for bundle-size and throughput comparisons, plus the status of built-in browser support.
+
+For sync methods, preload first; root callers should use `{useNative: false}` when selecting a WASM implementation for synchronous work.

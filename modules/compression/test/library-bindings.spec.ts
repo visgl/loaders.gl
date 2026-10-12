@@ -82,6 +82,11 @@ describe('compression library bindings', () => {
     ['xz', new XZCompressor(), new XZDecompressor()]
   ])('%s defaults round trip data', async (_name, compressor, decompressor) => {
     await expectDirectionalRoundTrip(compressor, decompressor);
+    await Promise.all([compressor.preload(), decompressor.preload()]);
+    const syncCompressed = compressor.compressSync(copyArrayBuffer(TEST_BYTES));
+    expect(
+      new Uint8Array(decompressor.decompressSync(syncCompressed, TEST_BYTES.byteLength))
+    ).toEqual(TEST_BYTES);
   });
 
   test('default GZIP codecs stream incrementally', async () => {

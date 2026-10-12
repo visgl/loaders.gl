@@ -60,8 +60,8 @@
   "scripts": {
     "pre-build": "npm run build-cjs-entrypoints && npm run generate-json-schema && npm run build-bundle && npm run build-bundle-dev",
     "generate-json-schema": "node ../../scripts/generate-json-schema.mjs --schema ./dist/potree-metadata-schema.js --export PotreeMetadataSchema --output ./dist/potree-metadata.schema.json --id https://unpkg.com/@loaders.gl/potree/potree-metadata.schema.json --title 'Potree 1.x cloud.js metadata'",
-    "build-bundle": "ocular-bundle ./bundle.ts --output=dist/dist.min.js",
-    "build-bundle-dev": "ocular-bundle ./bundle.ts --env=dev --output=dist/dist.dev.js",
+    "build-bundle": "node ../../scripts/build-codec-bundle.mjs ./bundle.ts --output=dist/dist.min.js",
+    "build-bundle-dev": "node ../../scripts/build-codec-bundle.mjs ./bundle.ts --env=dev --output=dist/dist.dev.js",
     "build-cjs-entrypoints": "esbuild dist/index.js dist/potree-loader.js --outdir=dist --out-extension:.js=.cjs --bundle --format=cjs --platform=node --target=node22 --sourcemap --external:@loaders.gl/* --external:@math.gl/*"
   },
   "dependencies": {

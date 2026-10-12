@@ -90,3 +90,5 @@ metadata before Parquet encoding.
 # License
 
 `@loaders.gl/parquet` module is based on Apache 2.0 licensed code.
+
+LZO decompression is supported through compress-utils 0.9.0. Parquet Hadoop block framing is handled in TypeScript. LZO compression is not supported.

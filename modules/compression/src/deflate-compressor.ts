@@ -3,42 +3,31 @@
 // Copyright (c) vis.gl contributors
 
 import {
-  DeflateFflateCompressor,
-  type DeflateFflateCompressorOptions
-} from './deflate-compressor-fflate';
+  DeflateCompressUtilsCompressor,
+  type CompressUtilsCompressionOptions
+} from './deflate-compressor-compress-utils';
+
 import {
-  compressBatchesWithNativeCompressionStream,
-  compressWithNativeCompressionStream
+  compressWithNativeCompressionStream,
+  compressBatchesWithNativeCompressionStream
 } from './lib/compression-stream';
 
-/** Options for the balanced default DEFLATE compressor. */
-export type DeflateCompressorOptions = DeflateFflateCompressorOptions & {
-  /** Whether asynchronous methods may use the built-in stream implementation. */
-  useNative?: boolean;
-};
-
-/** Native-first DEFLATE compressor with a compact fflate fallback. */
-export class DeflateCompressor extends DeflateFflateCompressor {
-  declare readonly options: DeflateCompressorOptions;
-
-  constructor(options: DeflateCompressorOptions = {}) {
-    super(options);
-  }
-
-  /** Compresses with the built-in stream when available, then falls back to fflate. */
+/** Default DEFLATE compressor backed by the lazily loaded compress-utils codec. */
+export class DeflateCompressor extends DeflateCompressUtilsCompressor {
+  /** Compresses with native streams when available, otherwise lazily initializes WASM. */
   async compress(input: ArrayBuffer): Promise<ArrayBuffer> {
-    if (!this.options.raw && this.options.useNative !== false) {
+    if (this.options.useNative !== false && !this.options.raw) {
       const output = await compressWithNativeCompressionStream(input, 'deflate');
       if (output) return output;
     }
-    return this.compressSync(input);
+    return super.compress(input);
   }
 
-  /** Compresses batches with a built-in or fflate stream. */
+  /** Streams native batches when available, otherwise uses the WASM stream. */
   async *compressBatches(
     inputBatches: AsyncIterable<ArrayBuffer> | Iterable<ArrayBuffer>
   ): AsyncIterable<ArrayBuffer> {
-    if (!this.options.raw && this.options.useNative !== false) {
+    if (this.options.useNative !== false && !this.options.raw) {
       const output = compressBatchesWithNativeCompressionStream(inputBatches, 'deflate');
       if (output) {
         yield* output;
@@ -48,3 +37,5 @@ export class DeflateCompressor extends DeflateFflateCompressor {
     yield* super.compressBatches(inputBatches);
   }
 }
+
+export type {CompressUtilsCompressionOptions as DeflateCompressorOptions};

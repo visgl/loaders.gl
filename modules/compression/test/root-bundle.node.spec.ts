@@ -37,10 +37,14 @@ test('compression root keeps JavaScript codecs out of the initial bundle', async
     }
   }
   const initialInputs = [...initialPaths].flatMap(path => Object.keys(outputs[path].inputs));
-  expect(initialInputs.some(path => /fflate|fzstd|snappyjs|lz4js|brotli\/dec/.test(path))).toBe(
-    false
-  );
+  expect(
+    initialInputs.some(path =>
+      /fflate|fzstd|snappyjs|lz4js|brotli\/dec|node_modules\/compress-utils/.test(path)
+    )
+  ).toBe(false);
   // Check that codecs were split into deferred chunks rather than omitted from the build.
-  expect(Object.keys(result.metafile!.inputs).some(path => path.includes('/fflate/'))).toBe(true);
+  expect(
+    Object.keys(result.metafile!.inputs).some(path => path.includes('node_modules/compress-utils/'))
+  ).toBe(true);
   expect(Object.keys(outputs).length).toBeGreaterThan(initialPaths.size);
 });

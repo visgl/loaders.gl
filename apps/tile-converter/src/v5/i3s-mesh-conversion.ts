@@ -2,7 +2,11 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import {encodeI3SMeshLayer, encodeI3SMeshLayerWithDraco} from '@loaders.gl/i3s';
+import {
+  encodeI3SMeshLayer,
+  encodeI3SMeshLayerWithDraco,
+  preloadI3SMeshCompression
+} from '@loaders.gl/i3s';
 import type {
   EncodedI3SMeshLayer,
   I3SMeshWriterOptions,
@@ -108,6 +112,7 @@ export function createI3SMeshConversionCodec<TInspection = unknown>(
       if (mesh.attributes.NORMAL) mesh.attributes.NORMAL = {value: transformed.normals!, size: 3};
       let layer: EncodedI3SMeshLayer;
       try {
+        await preloadI3SMeshCompression();
         const writerOptions = {
           ...options,
           material: resource.material,

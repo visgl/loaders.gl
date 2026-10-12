@@ -243,7 +243,21 @@ itself and the separate `Tileset3D.loadOptions` API are not removed by this chan
  - The `pmtiles.shape: 'columnar-table'` option remains supported for MVT archives only. Passing it
    for an MLT archive now throws; use `geojson-table`, `binary-geometry`, or `arrow-table` instead.
 
+- Synchronous `encodeI3SMeshLayer()` now requires `await preloadI3SMeshCompression()` once before
+  encoding resources. The async Draco encoder and tile-converter pipeline initialize automatically.
+- Direct synchronous RAD chunk helpers require `await preloadRADCompression()` from the
+  `@loaders.gl/splats/rad-loader` subpath. RADSource read/query methods initialize automatically.
+
 **@loaders.gl/compression**
+
+- Default codec implementations now use compress-utils 0.9.0 instead of JavaScript fallbacks.
+  Direct default subpaths require `await codec.preload()` before sync calls; async calls preload
+  automatically. Native-only implementations remain async. Explicit JavaScript backend subpaths
+  remain available for callers that require them.
+  Configure default encoder levels with `compressUtils.level`, replacing `gzip.level` and
+  `deflate.level`. Injected legacy Brotli/zstd-codec modules no longer override the default
+  backend; select their explicit implementation subpaths instead.
+
 
 - The compression package root now exports lightweight, library-neutral classes such as
   `GZipCompressor`, `GZipDecompressor`, and `ZstdDecompressor`. Their async methods prefer built-in
