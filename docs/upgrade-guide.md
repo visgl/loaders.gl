@@ -102,6 +102,11 @@ These replace the root exports `LASCOPCLoader`, `LAZPerfLoader`, `LAZRsLoader`,
 eagerly and support direct parsing. Primary metadata loaders continue to preload
 their implementations for asynchronous core APIs.
 
+The explicit `@loaders.gl/arrow/types` facade exposes Apache Arrow names available
+in the supported minimum release, Arrow 17. Import version-specific names such
+as `Utf8View`, `BinaryView`, `LargeList`, compression helpers, and newer type
+guards directly from your installed `apache-arrow` package.
+
 
 ### Graph loader output defaults
 

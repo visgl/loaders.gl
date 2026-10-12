@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-/** Type-only entry point for loaders.gl Arrow APIs and Apache Arrow classes. */
+/** Type-only entry point for loaders.gl Arrow APIs and Apache Arrow 17 types. */
 export type {
   VECTOR_TYPES,
   ArrowFormat,
@@ -66,6 +66,7 @@ export type {
   ArrowWorkerLoader,
   GeoArrowWorkerLoader
 } from './index';
+// Keep the upstream surface compatible with the minimum supported Apache Arrow release.
 export type {
   TypeMap,
   StructRowProxy,
@@ -77,9 +78,6 @@ export type {
   Writable,
   ReadableWritable,
   ReadableDOMStreamOptions,
-  IntervalDayTimeObject,
-  IntervalMonthDayNanoObject,
-  Codec,
   DateUnit,
   IntervalUnit,
   MessageHeader,
@@ -109,10 +107,8 @@ export type {
   Float64,
   Utf8,
   LargeUtf8,
-  Utf8View,
   Binary,
   LargeBinary,
-  BinaryView,
   FixedSizeBinary,
   Date_,
   DateDay,
@@ -129,7 +125,6 @@ export type {
   TimeNanosecond,
   Decimal,
   List,
-  LargeList,
   Struct,
   StructRow,
   Union,
@@ -139,7 +134,6 @@ export type {
   Interval,
   IntervalDayTime,
   IntervalYearMonth,
-  IntervalMonthDayNano,
   Duration,
   DurationSecond,
   DurationMillisecond,
@@ -182,17 +176,7 @@ export type {
   makeBuilder,
   builderThroughIterable,
   builderThroughAsyncIterable,
-  compressionRegistry,
-  CompressionType,
-  isArrowSchema,
-  isArrowField,
-  isArrowDataType,
-  isArrowData,
-  isArrowVector,
-  isArrowRecordBatch,
-  isArrowTable,
   BinaryBuilder,
-  BinaryViewBuilder,
   LargeBinaryBuilder,
   BoolBuilder,
   DateBuilder,
@@ -209,7 +193,6 @@ export type {
   IntervalBuilder,
   IntervalDayTimeBuilder,
   IntervalYearMonthBuilder,
-  IntervalMonthDayNanoBuilder,
   DurationBuilder,
   DurationSecondBuilder,
   DurationMillisecondBuilder,
@@ -225,7 +208,6 @@ export type {
   Uint32Builder,
   Uint64Builder,
   ListBuilder,
-  LargeListBuilder,
   MapBuilder,
   NullBuilder,
   StructBuilder,
@@ -243,6 +225,5 @@ export type {
   DenseUnionBuilder,
   SparseUnionBuilder,
   Utf8Builder,
-  Utf8ViewBuilder,
   LargeUtf8Builder
 } from 'apache-arrow';

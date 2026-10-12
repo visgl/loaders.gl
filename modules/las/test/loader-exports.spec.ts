@@ -3,16 +3,16 @@
 // Copyright (c) vis.gl contributors
 
 import {expect, test} from 'vitest';
-import * as las from '@loaders.gl/las';
+import * as lasModule from '@loaders.gl/las';
 import {LASCOPCLoaderWithParser} from '@loaders.gl/las/las-copc-loader';
 import {LAZPerfLoaderWithParser} from '@loaders.gl/las/lazperf-loader';
 import {LAZRsLoaderWithParser} from '@loaders.gl/las/laz-rs-loader';
 
 test('LAS root exposes the primary metadata loader and compatibility alias', () => {
-  expect(las.LASLoader.id).toBe('las');
-  expect(las.LASWorkerLoader).toBe(las.LASLoader);
-  expect(las.LASLoader).not.toHaveProperty('parse');
-  expect(las.LASLoader.preload).toBeTypeOf('function');
+  expect(lasModule.LASLoader.id).toBe('las');
+  expect(lasModule.LASWorkerLoader).toBe(lasModule.LASLoader);
+  expect(lasModule.LASLoader).not.toHaveProperty('parse');
+  expect(lasModule.LASLoader.preload).toBeTypeOf('function');
 });
 
 test.each([
@@ -20,8 +20,8 @@ test.each([
   ['LAZPerfLoader', LAZPerfLoaderWithParser],
   ['LAZRsLoader', LAZRsLoaderWithParser]
 ] as const)('%s is available through its parser subpath only', (loaderName, loader) => {
-  expect(las).not.toHaveProperty(loaderName);
-  expect(las).not.toHaveProperty(loaderName + 'WithParser');
+  expect(lasModule).not.toHaveProperty(loaderName);
+  expect(lasModule).not.toHaveProperty(loaderName + 'WithParser');
   expect(loader.parse).toBeTypeOf('function');
-  expect(loader.id).toBe(las.LASLoader.id);
+  expect(loader.id).toBe(lasModule.LASLoader.id);
 });
