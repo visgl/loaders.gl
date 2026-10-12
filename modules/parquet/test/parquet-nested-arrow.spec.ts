@@ -2,12 +2,13 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
+import {ParquetJSLoaderWithParser as ParquetJSLoader} from '@loaders.gl/parquet/parquet-js-loader';
 import {expect, test} from 'vitest';
 
 import {fetchFile, load} from '@loaders.gl/core';
 import {parseBSONSync} from '@loaders.gl/bson';
 import {ArrayBufferFile} from '@loaders.gl/loader-utils';
-import {ParquetJSLoader, ParquetReader} from '@loaders.gl/parquet';
+import {ParquetReader} from '@loaders.gl/parquet';
 
 test('ParquetJSLoader projects nested and repeated columns directly to Arrow', async () => {
   const table = await load(

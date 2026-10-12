@@ -84,6 +84,25 @@ v4.5 is additive. Existing loaders and defaults continue to work unchanged, exce
 
 The sections below document the v5 removals, migrations, and deprecations that remain active.
 
+### Alternate loader imports
+
+Package roots expose the primary loader for each format. Alternate backend loaders
+are available through implementation subpaths instead of root exports:
+
+```typescript
+import {LASCOPCLoaderWithParser} from '@loaders.gl/las/las-copc-loader';
+import {LAZPerfLoaderWithParser} from '@loaders.gl/las/lazperf-loader';
+import {LAZRsLoaderWithParser} from '@loaders.gl/las/laz-rs-loader';
+import {ParquetJSLoaderWithParser} from '@loaders.gl/parquet/parquet-js-loader';
+import {FastJSONLoader} from '@loaders.gl/json/fast-json-loader';
+```
+
+These replace the root exports `LASCOPCLoader`, `LAZPerfLoader`, `LAZRsLoader`,
+`ParquetJSLoader`, and `_FastJSONLoader`. Implementation subpaths load the parser
+eagerly and support direct parsing. Primary metadata loaders continue to preload
+their implementations for asynchronous core APIs.
+
+
 ### Graph loader output defaults
 
 `GraphMLLoader` and `DOTLoader` now default to a `shape: 'tables'` collection with

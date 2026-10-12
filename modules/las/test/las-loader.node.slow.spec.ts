@@ -2,6 +2,10 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 /* eslint-disable max-len */
+
+import {LASCOPCLoader} from '../src/las-copc-loader-types';
+import {LAZPerfLoader} from '../src/lazperf-loader-types';
+import {LAZRsLoader} from '../src/laz-rs-loader-types';
 import '@loaders.gl/polyfills';
 import {Buffer} from 'node:buffer';
 import {expect, test} from 'vitest';
@@ -10,13 +14,7 @@ import {
   validateMeshCategoryData,
   validateTableCategoryData
 } from 'test/common/conformance';
-import {
-  LASCOPCLoader,
-  LASLoader,
-  LASWorkerLoader,
-  LAZPerfLoader,
-  LAZRsLoader
-} from '@loaders.gl/las';
+import {LASLoader, LASWorkerLoader} from '@loaders.gl/las';
 import * as las from '@loaders.gl/las';
 import * as bundledLas from '@loaders.gl/las/bundled';
 import * as unbundledLas from '@loaders.gl/las/unbundled';
