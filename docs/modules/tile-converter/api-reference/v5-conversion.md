@@ -829,7 +829,7 @@ an already opened `ReadableFile` for Node or injected storage. Both return a con
 `rootUrl`, entry `fetcher` and idempotent `close`; the opener also returns a cloneable descriptor
 with the remote identity for worker reopening. Completed reads and cached lookups reject after
 close. Remote inputs require exact HTTP 206 ranges and stable validator/length identity, without
-full-download fallback. Budgets do not establish total peak-memory bounds or independent viewer
+full-download fallback. Weak or malformed ETags are rejected, even when a Last-Modified header is also present; the Last-Modified fallback requires an absent ETag and a valid Date at least 60 seconds later. Browser servers must expose Date for this fallback. See [HTTP validator semantics](https://www.rfc-editor.org/rfc/rfc9110.html#section-8.8.2.2). Budgets do not establish total peak-memory bounds or independent viewer
 interoperability. Local archive files and remote resources must remain unchanged while used.
 Node I3S redirects are explicitly rejected; use final URLs.
 

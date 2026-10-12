@@ -94,7 +94,7 @@ unsupported definitions, vertical or epoch operations fail explicitly.
 
 Remote SLPK and 3TZ use indexed HTTP ranges. Servers must return HTTP 206, valid
 Content-Range and a stable strong ETag or Last-Modified validator. Changed identities fail;
-there is no fallback to a full download. Browser CORS requirements do not apply to Node.
+there is no fallback to a full download. Weak or malformed ETags are rejected, even when a Last-Modified header is also present; the Last-Modified fallback requires an absent ETag and a valid Date at least 60 seconds later. Browser servers must expose Date for this fallback. See [HTTP validator semantics](https://www.rfc-editor.org/rfc/rfc9110.html#section-8.8.2.2). Browser CORS requirements do not apply to Node.
 Archives and dependencies remain confined to their virtual root, without network fallback.
 I3S layer query parameters are inherited only within the same origin and layer path. Use final
 resource URLs: Node I3S resource redirects are rejected until their relative bases are qualified.

@@ -29,6 +29,7 @@ export async function openTileConversionArchive(
   signal.throwIfAborted();
   if (!['slpk', '3tz'].includes(descriptor.format))
     throw new TileConversionError('INVALID_ARCHIVE_SOURCE', 'Select SLPK or 3TZ archive input');
+  validateArchiveEntityTag(descriptor.identity?.etag);
   const transport = createTileConversionResourceFetcher({
     maxInputBytes,
     signal,
@@ -37,6 +38,12 @@ export async function openTileConversionArchive(
       if (response.status !== 206) {
         await response.body?.cancel();
         throw new Error('Remote conversion archives require HTTP 206 byte-range responses.');
+      }
+      try {
+        validateArchiveResponseValidator(response.headers);
+      } catch (error) {
+        await response.body?.cancel(error);
+        throw error;
       }
       return response;
     }
@@ -184,4 +191,45 @@ export async function createTileConversionArchiveTransport(
     await closeFile();
     throw error;
   }
+}
+
+/** Rejects weak/malformed entity tags rather than downgrading the archive identity contract. */
+function validateArchiveEntityTag(entityTag: string | null | undefined): void {
+  if (
+    entityTag !== undefined &&
+    entityTag !== null &&
+    !/^"[\x21\x23-\x7e\x80-\xff]*"$/.test(entityTag)
+  )
+    throw new TileConversionError(
+      'ARCHIVE_VALIDATOR_UNSUPPORTED',
+      'Remote archives require a strong quoted ETag, or Last-Modified without an ETag; weak/malformed ETags are unsupported'
+    );
+}
+
+/** Qualifies Last-Modified fallback conservatively using server dates at least 60 seconds apart. */
+function validateArchiveResponseValidator(headers: Headers): void {
+  const entityTag = headers.get('etag');
+  validateArchiveEntityTag(entityTag);
+  if (entityTag !== null) return;
+  const lastModified = headers.get('last-modified');
+  const responseDate = headers.get('date');
+  const modifiedTime = parseArchiveHttpDate(lastModified);
+  const responseTime = parseArchiveHttpDate(responseDate);
+  if (
+    !Number.isFinite(modifiedTime) ||
+    !Number.isFinite(responseTime) ||
+    responseTime - modifiedTime < 60_000
+  )
+    throw new TileConversionError(
+      'ARCHIVE_VALIDATOR_UNSUPPORTED',
+      'Last-Modified archive identity requires a valid Date at least 60 seconds later; otherwise supply a strong ETag'
+    );
+}
+
+/** Accepts canonical HTTP server dates without Date.parse's permissive non-HTTP extensions. */
+function parseArchiveHttpDate(value: string | null): number {
+  const milliseconds = value === null ? NaN : Date.parse(value);
+  return Number.isFinite(milliseconds) && new Date(milliseconds).toUTCString() === value
+    ? milliseconds
+    : NaN;
 }

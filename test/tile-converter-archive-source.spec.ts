@@ -58,3 +58,86 @@ test('failed archive initialization releases injected storage and validates its 
   ).rejects.toThrow(/16 MiB/);
   expect(close).toHaveBeenCalledOnce();
 });
+
+test.each([
+  ['W/"fixture"', false],
+  ['W/"fixture"', true],
+  ['unquoted', false]
+] as const)('remote archive rejects ETag %s with Last-Modified=%s and cancels its response', async (entityTag, lastModified) => {
+  const canceled = vi.fn();
+  const response = new Response(new ReadableStream({cancel: canceled}), {
+    status: 206,
+    headers: {
+      'Content-Range': `bytes 0-0/${input.size}`,
+      ETag: entityTag,
+      ...(lastModified ? {'Last-Modified': 'Mon, 12 Oct 2026 12:00:00 GMT'} : {})
+    }
+  });
+  await expect(
+    openTileConversionArchive(
+      {input: 'https://example.invalid/archive', format: '3tz'},
+      16384,
+      new AbortController().signal,
+      async () => response
+    )
+  ).rejects.toMatchObject({code: 'ARCHIVE_VALIDATOR_UNSUPPORTED'});
+  expect(canceled).toHaveBeenCalledOnce();
+});
+
+test('Last-Modified-only archives retain their qualified fallback identity', async () => {
+  const bytes = new Uint8Array(await input.arrayBuffer());
+  const fetcher: typeof fetch = async (_input, options) => {
+    const match = /^bytes=(\d+)-(\d+)$/.exec(new Headers(options?.headers).get('range')!);
+    const start = Number(match![1]);
+    const end = Number(match![2]);
+    return new Response(bytes.slice(start, end + 1), {
+      status: 206,
+      headers: {
+        'Content-Range': `bytes ${start}-${end}/${bytes.length}`,
+        'Last-Modified': 'Mon, 12 Oct 2026 12:00:00 GMT',
+        Date: 'Mon, 12 Oct 2026 13:00:00 GMT'
+      }
+    });
+  };
+  const archive = await openTileConversionArchive(
+    {input: 'https://example.invalid/archive', format: '3tz'},
+    16384,
+    new AbortController().signal,
+    fetcher
+  );
+  try {
+    expect(archive.descriptor!.identity!.etag).toBeUndefined();
+    expect(archive.descriptor!.identity!.lastModified).toBe('Mon, 12 Oct 2026 12:00:00 GMT');
+    expect((await (await archive.fetcher(archive.rootUrl)).json()).root.content.uri).toBe(
+      'meshes/triangle.glb'
+    );
+  } finally {
+    await archive.close();
+  }
+});
+
+test.each([
+  undefined,
+  'invalid',
+  '2026-10-12T13:00:00Z',
+  'Mon, 12 Oct 2026 12:00:59 GMT'
+])('Last-Modified fallback rejects unqualified Date %s before reading ranges', async responseDate => {
+  const canceled = vi.fn();
+  await expect(
+    openTileConversionArchive(
+      {input: 'https://example.invalid/archive', format: '3tz'},
+      16384,
+      new AbortController().signal,
+      async () =>
+        new Response(new ReadableStream({cancel: canceled}), {
+          status: 206,
+          headers: {
+            'Content-Range': `bytes 0-0/${input.size}`,
+            'Last-Modified': 'Mon, 12 Oct 2026 12:00:00 GMT',
+            ...(responseDate ? {Date: responseDate} : {})
+          }
+        })
+    )
+  ).rejects.toMatchObject({code: 'ARCHIVE_VALIDATOR_UNSUPPORTED'});
+  expect(canceled).toHaveBeenCalledOnce();
+});
