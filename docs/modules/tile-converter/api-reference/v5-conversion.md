@@ -686,7 +686,7 @@ closing iteration prevents further requests.
 Applications supply CORS/authentication and object-identity policies through their fetcher.
 This is a raw source API; codecs still own content decoding, required metadata mappings and
 output authoring. It does not preserve source LOD/refinement in a destination, flatten scene
-metadata, decode instancing/composites, or enable nested selection in the archive example.
+metadata or decode instancing/composites.
 
 ## Browser I3S conversion example
 
@@ -710,7 +710,12 @@ reads, with dependency URLs confined to the archive. Remote inputs require HTTP 
 responses and CORS-exposed `Content-Range` plus an ETag or Last-Modified validator. The
 inspected identity is retained across worker reopening; replaced archives fail instead of
 using stale content declarations. Readers close on success, failure and cancellation.
-Nested/external tilesets and implicit tiling remain unsupported by this bounded example.
+The example also inspects declared **.json external tilesets** up to 32 document placements,
+including nested documents inside local/remote 3TZ. It loads metadata only during inspection,
+then converts selected binary contents using their declaring document's metadata, glTF axes,
+relative URLs and combined placement. Content references without a .json suffix are not
+probed for external metadata. Implicit tiling remains unsupported. Source topology/refinement
+is not exported; source geometric error is conservatively scaled by ancestor placement.
 
 ## Node inspection and raw content reads
 
@@ -750,13 +755,43 @@ source sequentially, keep input files unchanged during its lifetime and always c
 
 Inspection reads metadata without loading content, validates the existing explicit 1.0/1.1
 document profile and preserves ordered placements/transforms. Raw reads do not decode meshes,
-infer CRS, qualify content formats or expand nested/implicit datasets. I3S/SLPK sources and
+infer CRS or qualify content formats. Set `maxTilesetDocuments` (up to 32) to enable raw external-document traversal; add `inspectNestedTilesets: true` to inspect declared .json references without fetching binary contents. Implicit tiling remains unsupported. I3S/SLPK sources and
 remote archives remain separate Node profiles. Browser and core entrypoints remain free of
 Node imports.
 
 The [v5 CLI](/docs/modules/tile-converter/cli-reference/tile-converter-v5) exposes this
-metadata inspection as `tile-converter-v5 inspect`; the original `tile-converter` command
-continues to use v4.
+metadata inspection as `tile-converter-v5 inspect` and adds bounded selected-mesh `convert`
+and write-free target-profile `validate` commands. The original `tile-converter` command uses v4.
+
+The Node entrypoint also exports `convertNodeTileset`:
+
+```ts
+import {convertNodeTileset} from '@loaders.gl/tile-converter/v5/node';
+
+const report = await convertNodeTileset({
+  input: './dataset/tileset.json',
+  resourceIds: ['tile-root-content-0'],
+  outputFormat: '3tz',
+  output: './selected.3tz',
+  signal: abortController.signal
+});
+```
+
+Omit `output` for target-profile validation without writing. `outputFormat` accepts
+`3d-tiles` (directory), `3tz` and `slpk`; `maxOutputBytes` may lower the 32 MiB ceiling.
+Service callers may also supply the existing explicit `features` mapping; the initial CLI
+rejects feature-bearing content because it provides no mapping option. Conversion owns and
+closes the raw Node source before publishing output. It reuses the
+portable `createSelectedMeshConversionSource`, `SELECTED_MESH_LIMITS`, mesh codecs and sinks.
+That source accepts an inspected document, explicit `resourceIds`, `signal`, application
+`dracoLibraryOptions`, optional `fetcher`, confined raw `source`, `features` and a lower
+`maxInputBytes`. Its owner retains the platform source lifetime. `measureMeshBytes` accounts
+for decoded geometry, encoded images, feature columns and triangle associations.
+
+`selectBrowserTilesetContent` clones a selected document path and returns `tileset`,
+`contentUrl`, `geometricError` and `isLeaf`. Expanded inspections contain `documents`;
+resource `documentIndex` selects a placement snapshot. Error calculation stops at the selected
+tile and includes a conservative linear-transform scale bound. No output LOD tree is claimed.
 
 ## Decoded point-cloud authoring
 

@@ -16,14 +16,16 @@ import type {
   BrowserTilesetConversionInputResource,
   TileConversionSource
 } from '@loaders.gl/tile-converter/v5/core';
-import {createTileConversionResourceFetcher} from '@loaders.gl/tile-converter/v5/adapters';
+import {createTileConversionResourceFetcher} from './resource-fetcher.js';
 
 /** Maximum budgets for the initial Node source profile; callers may lower them. */
 export const NODE_TILESET_LIMITS = {
   /** Aggregate response bytes and, separately, indexed archive read bytes. */
   maxInputBytes: 16 * 1024 * 1024,
   /** Declared content placements in the explicit root document. */
-  maxInputResources: 1000
+  maxInputResources: 1000,
+  /** Maximum root/external document placements inspected or traversed. */
+  maxTilesetDocuments: 32
 } as const;
 
 /** Platform I/O options for bounded explicit 3D Tiles inspection and raw content reads. */
@@ -36,6 +38,10 @@ export interface NodeTilesetConversionSourceOptions {
   readonly maxInputBytes?: number;
   /** Positive content-placement budget, at most 1,000. */
   readonly maxInputResources?: number;
+  /** Positive document budget, at most 32; defaults to root-only traversal. */
+  readonly maxTilesetDocuments?: number;
+  /** Follow declared .json external documents during metadata-only inspection. */
+  readonly inspectNestedTilesets?: boolean;
   /** Cancellation for opening, inspection and subsequent reads. */
   readonly signal?: AbortSignal;
   /** HTTP(S) transport; local dependencies never fall back to it. */
@@ -50,6 +56,8 @@ export interface NodeTilesetConversionSource
   > {
   /** Aborts further I/O and releases the indexed archive handle; safe to call repeatedly. */
   close(): Promise<void>;
+  /** Confined, lifetime-budgeted transport for content-level buffers and images. */
+  readonly fetcher: typeof fetch;
 }
 
 /**
@@ -64,6 +72,7 @@ export async function createNodeTilesetConversionSource(
 ): Promise<NodeTilesetConversionSource> {
   const maxInputBytes = options.maxInputBytes ?? NODE_TILESET_LIMITS.maxInputBytes;
   const maxInputResources = options.maxInputResources ?? NODE_TILESET_LIMITS.maxInputResources;
+  const maxTilesetDocuments = options.maxTilesetDocuments ?? 1;
   if (
     !Number.isSafeInteger(maxInputBytes) ||
     maxInputBytes < 1 ||
@@ -71,6 +80,9 @@ export async function createNodeTilesetConversionSource(
     !Number.isSafeInteger(maxInputResources) ||
     maxInputResources < 1 ||
     maxInputResources > NODE_TILESET_LIMITS.maxInputResources ||
+    !Number.isSafeInteger(maxTilesetDocuments) ||
+    maxTilesetDocuments < 1 ||
+    maxTilesetDocuments > NODE_TILESET_LIMITS.maxTilesetDocuments ||
     !['3d-tiles', '3tz'].includes(options.format ?? '3d-tiles')
   )
     throw new TileConversionError(
@@ -163,17 +175,21 @@ export async function createNodeTilesetConversionSource(
         };
       }
     }
+    const resourceFetcher = createTileConversionResourceFetcher({
+      maxInputBytes,
+      signal: lifetimeSignal,
+      fetcher: transport
+    });
     const source = createBrowserTilesetConversionSource({
       input: rootUrl,
       maxInputBytes,
       maxInputResources,
-      fetcher: createTileConversionResourceFetcher({
-        maxInputBytes,
-        signal: lifetimeSignal,
-        fetcher: transport
-      })
+      maxTilesetDocuments,
+      inspectNestedTilesets: options.inspectNestedTilesets,
+      fetcher: resourceFetcher
     });
     return {
+      fetcher: resourceFetcher,
       /** Inspects declarations without opening tile payloads or decoding coordinates. */
       async inspect(signal) {
         const inspection = await source.inspect(
@@ -181,7 +197,10 @@ export async function createNodeTilesetConversionSource(
         );
         if (virtualRoot)
           for (const resource of inspection.resources)
-            getLocalResourcePath(new URL(resource.uri, inspection.rootUrl), virtualRoot);
+            getLocalResourcePath(
+              new URL(resource.uri, resource.tilesetUrl ?? inspection.rootUrl),
+              virtualRoot
+            );
         return inspection;
       },
       /** Reads each declared placement with the same lifetime-wide input budget. */

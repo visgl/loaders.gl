@@ -5,6 +5,7 @@
 import {parseArgs} from 'node:util';
 import {inspectTileset, TileConversionError} from '@loaders.gl/tile-converter/v5/core';
 import {createNodeTilesetConversionSource, NODE_TILESET_LIMITS} from './node-source.js';
+import type {NodeTileConversionOutputFormat} from './node-conversion.js';
 
 /** Text destinations supplied by the process wrapper or a hermetic caller. */
 export interface TileConverterCLIOutput {
@@ -14,19 +15,27 @@ export interface TileConverterCLIOutput {
   readonly stderr: (text: string) => void;
 }
 
-/** Usage for the first metadata-only v5 CLI profile. */
-const HELP = `Usage: tile-converter-v5 inspect <tileset.json path or URL | local 3TZ> [options]
+/** Usage for bounded metadata inspection and selected static mesh conversion. */
+const HELP = `Usage: tile-converter-v5 inspect|convert|validate <tileset.json path or URL | local 3TZ> [options]
 
-  --input-format 3d-tiles|3tz  Explicit format (default: 3d-tiles)
+  --input-format 3d-tiles|3tz  Explicit input format (default: 3d-tiles)
+  --resource ID               Selected content placement; repeat for multiple selections
+  --output-format 3d-tiles|3tz|slpk  Target profile (default: 3tz)
+  --output PATH               New destination (required for convert, forbidden for validate)
   --max-input-bytes N          Lower the 16 MiB input/read budget
-  --max-resources N            Lower the 1,000 content-placement limit
+  --max-resources N            Lower the 1,000 content-declaration limit
+  --max-documents N            Lower the 32 metadata-document limit
+  --max-output-bytes N         Lower the 32 MiB output/archive budget
   --help                      Show this help
 
-Outputs JSON metadata and ordered resource declarations; does not load tile content.
-I3S, remote archives, conversion and full-content validation are separate profiles.
+Inspect reads metadata only, following declared .json external tilesets.
+Convert/validate require explicit selections and qualify static native-ECEF GLB/B3DM meshes.
+Validate decodes, converts and packages the selected target profile without writing files.
+Output is a partial flat mesh collection; source LOD is not exported.
+I3S/SLPK inputs, remote archives and complete dataset validation remain separate profiles.
 `;
 
-/** Runs one v5 inspection, returning an exit code and closing the source on every path. */
+/** Runs a bounded v5 operation, returning an exit code after source/output cleanup. */
 export async function runTileConverterCLI(
   argumentsList: string[],
   output: TileConverterCLIOutput,
@@ -40,7 +49,12 @@ export async function runTileConverterCLI(
         help: {type: 'boolean'},
         'input-format': {type: 'string', default: '3d-tiles'},
         'max-input-bytes': {type: 'string', default: String(NODE_TILESET_LIMITS.maxInputBytes)},
-        'max-resources': {type: 'string', default: String(NODE_TILESET_LIMITS.maxInputResources)}
+        'max-resources': {type: 'string', default: String(NODE_TILESET_LIMITS.maxInputResources)},
+        'max-documents': {type: 'string', default: String(NODE_TILESET_LIMITS.maxTilesetDocuments)},
+        'max-output-bytes': {type: 'string', default: String(32 * 1024 * 1024)},
+        'output-format': {type: 'string', default: '3tz'},
+        output: {type: 'string'},
+        resource: {type: 'string', multiple: true}
       }
     });
     if (values.help || !argumentsList.length) {
@@ -49,20 +63,59 @@ export async function runTileConverterCLI(
     }
     if (
       positionals.length !== 2 ||
-      positionals[0] !== 'inspect' ||
+      !['inspect', 'convert', 'validate'].includes(positionals[0]) ||
       !['3d-tiles', '3tz'].includes(values['input-format'])
     )
       throw new TileConversionError(
         'CLI_USAGE_ERROR',
-        'Use inspect with one input and --input-format 3d-tiles or 3tz'
+        'Use inspect, convert or validate with one input and --input-format 3d-tiles or 3tz'
       );
     const format = values['input-format'] as '3d-tiles' | '3tz';
-    const source = await createNodeTilesetConversionSource({
+    const operation = positionals[0];
+    const sourceOptions = {
       input: positionals[1],
       format,
       signal,
       maxInputBytes: parseLimit(values['max-input-bytes']),
-      maxInputResources: parseLimit(values['max-resources'])
+      maxInputResources: parseLimit(values['max-resources']),
+      maxTilesetDocuments: parseLimit(values['max-documents']),
+      inspectNestedTilesets: true
+    };
+    if (operation !== 'inspect') {
+      if (
+        !values.resource?.length ||
+        !['3d-tiles', '3tz', 'slpk'].includes(values['output-format']) ||
+        (operation === 'convert' ? !values.output : values.output !== undefined)
+      )
+        throw new TileConversionError(
+          'CLI_USAGE_ERROR',
+          'Convert/validate require --resource selections and a supported --output-format; only convert requires --output'
+        );
+      const {convertNodeTileset} = await import('./node-conversion.js');
+      const report = await convertNodeTileset({
+        ...sourceOptions,
+        resourceIds: values.resource,
+        outputFormat: values['output-format'] as NodeTileConversionOutputFormat,
+        output: values.output,
+        maxOutputBytes: parseLimit(values['max-output-bytes'])
+      });
+      output.stdout(
+        `${JSON.stringify({operation, input: positionals[1], inputFormat: format, outputFormat: values['output-format'], ...(values.output ? {output: values.output} : {}), report}, null, 2)}\n`
+      );
+      return 0;
+    }
+    if (
+      values.resource ||
+      values.output ||
+      values['output-format'] !== '3tz' ||
+      values['max-output-bytes'] !== String(32 * 1024 * 1024)
+    )
+      throw new TileConversionError(
+        'CLI_USAGE_ERROR',
+        'Inspect does not accept conversion/output options'
+      );
+    const source = await createNodeTilesetConversionSource({
+      ...sourceOptions
     });
     const inspection = await inspectTileset(source, signal).finally(() => source.close());
     output.stdout(
@@ -72,7 +125,7 @@ export async function runTileConverterCLI(
   } catch (error) {
     output.stderr(
       `${JSON.stringify({
-        code: error instanceof Error && 'code' in error ? error.code : 'INSPECTION_FAILED',
+        code: error instanceof Error && 'code' in error ? error.code : 'CONVERSION_FAILED',
         message: error instanceof Error ? error.message : String(error),
         diagnostics: error instanceof TileConversionError ? error.diagnostics : []
       })}\n`

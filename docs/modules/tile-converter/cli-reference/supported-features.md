@@ -43,15 +43,17 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
 
 The tile-converter converts data between [3D Tiles](https://github.com/CesiumGS/3d-tiles/tree/main/specification) and [I3S](https://github.com/Esri/i3s-spec). Both specifications include many internal formats and data types; the converter does not cover every feature. This sheet summarizes the current compatibility boundary.
 
-## Experimental v5 Node inspection
+## Experimental v5 Node workflow
 
-The [v5 CLI](/docs/modules/tile-converter/cli-reference/tile-converter-v5) provides metadata-only
-`inspect` for explicit 3D Tiles 1.0/1.1 JSON paths/file URLs or HTTP(S) JSON URLs, and local 3TZ.
-The dedicated `/v5/node` source also yields bounded raw typed-array content reads for supplied
-codecs. It does not decode or convert content or provide full-content validation. Default
-ceilings are 16 MiB and 1,000 content placements; local dependencies stay inside the selected
-directory/archive. I3S/SLPK, remote archives, storage sinks and full dataset extraction remain
-Node follow-ups. The existing `tile-converter` CLI remains v4.
+The [v5 CLI](/docs/modules/tile-converter/cli-reference/tile-converter-v5) supports metadata-only
+`inspect`, explicitly selected native-ECEF mesh `convert` and write-free target-profile
+`validate`. Inputs are explicit 3D Tiles 1.0/1.1 JSON paths/file URLs or HTTP(S) JSON URLs,
+and local 3TZ. Declared .json external metadata is inspected up to 32 placements. Targets are
+3D Tiles directories, 3TZ and SLPK, using the same portable codecs as the browser example.
+Selections/output are partial flat collections, with no source hierarchy/LOD preservation.
+Existing destinations are protected. Limits are 16 MiB input, 1,000 declarations, 64 meshes and
+32 MiB output/archive; these are not peak-memory bounds. I3S/SLPK inputs, remote archives,
+services and whole-dataset validation remain follow-ups. The original CLI remains v4.
 
 ## Experimental v5 conversion support
 
@@ -61,7 +63,7 @@ qualify every dataset, standard version or extension combination.
 
 | Input profile | Authored output | Execution and boundaries |
 | --- | --- | --- |
-| Static GLB/B3DM mesh contents from 3D Tiles | I3S/SLPK or GLB-based 3D Tiles/3TZ | API and browser example; resolved native EPSG:4978 input, static placements and explicit feature mapping |
+| Static GLB/B3DM mesh contents from 3D Tiles | I3S/SLPK or GLB-based 3D Tiles/3TZ | API, browser example and bounded v5 Node CLI; resolved native EPSG:4978 input, static placements and explicit feature mapping |
 | I3S `3DObject` or `IntegratedMesh` node meshes | I3S/SLPK or GLB-based 3D Tiles/3TZ | API and browser example; source-coordinate decoding, declared CRS/height operations and explicit attribute mapping |
 | Decoded native point Mesh/Arrow data | Potree 1.0–1.8/2.0 files or STORE ZIP bundle | API only; explicit CRS, precision and allocation budgets; additive octree ownership; independent viewer/LOD qualification remains open |
 | Decoded point Mesh/Arrow data or selected point-source tiles | PNTS, partial 3D Tiles or 3TZ | API only; explicit coordinate/precision/sampling-error contract; broader LAS/COPC/I3S input qualification remains open |
@@ -76,8 +78,9 @@ hierarchies; they do not preserve source LOD, ADD/REPLACE refinement or parent/c
 
 The raw `createBrowserTilesetConversionSource` API also supports opt-in nested explicit
 3D Tiles 1.0/1.1 traversal with shared byte/declaration/document limits and composed placement
-transforms. It yields binary resources for application codecs; this does not enable nested
-selection in the browser example or preserve source hierarchy in the collection writers.
+transforms. With `inspectNestedTilesets: true`, declared .json external references are expanded
+without fetching mesh payloads. The example and Node CLI use this for nested selection;
+collection writers still do not preserve source hierarchy.
 See [nested explicit input](/docs/modules/tile-converter/api-reference/v5-conversion#nested-explicit-3d-tiles-input).
 
 ### Browser input and output
@@ -135,7 +138,7 @@ Cesium/ArcGIS interoperability or total peak-memory qualification.
 
 ### Remaining work
 
-V5 CLI/file-service integration, full archive input/traversal qualification, source hierarchy/LOD,
+Broader v5 CLI/file-service integration, full archive input/traversal qualification, source hierarchy/LOD,
 broader appearance/metadata/CRS profiles, durable restart and independent viewer/memory
 qualification remain open. Point-cloud/building workflows need further source qualification;
 untiled Arrow/GeoParquet authoring and experimental format conversion remain separate work.

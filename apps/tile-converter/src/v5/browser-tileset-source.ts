@@ -7,6 +7,8 @@ import type {TileConversionSource} from './conversion-api.js';
 
 type TilesetContent = {uri?: string; url?: string};
 type TilesetTile = {
+  /** Source metric error, scaled conservatively during selected mesh extraction. */
+  geometricError?: number;
   content?: TilesetContent;
   contents?: TilesetContent[];
   children?: TilesetTile[];
@@ -26,6 +28,8 @@ export interface BrowserTilesetConversionSourceOptions {
   readonly maxInputResources: number;
   /** Maximum documents read, including the root and repeated placements; defaults to 1 (no nesting). */
   readonly maxTilesetDocuments?: number;
+  /** Inspect declared .json external tilesets without fetching mesh content; defaults to false. */
+  readonly inspectNestedTilesets?: boolean;
   /** Fetch implementation, defaulting to the browser global. */
   readonly fetcher?: typeof fetch;
 }
@@ -36,10 +40,24 @@ export interface BrowserTilesetConversionInspection {
   readonly rootUrl: string;
   /** Parsed root document used for deterministic content traversal. */
   readonly tileset: TilesetDocument;
-  /** Ordered root-document descriptors; nested references expand lazily during reading. */
+  /** Ordered root declarations, or binary candidates from an expanded metadata inspection. */
   readonly resources: readonly BrowserTilesetResourceDescriptor[];
-  /** Root document bytes charged against the input limit. */
+  /** Inspected root/nested metadata bytes charged against the aggregate input limit. */
   readonly tilesetBytes: number;
+  /** Inspected document placements, including repeated references; absent for root-only inspection. */
+  readonly documents?: readonly BrowserTilesetDocumentPlacement[];
+}
+
+/** One inspected document at a distinct external placement. */
+export interface BrowserTilesetDocumentPlacement {
+  /** Effective document URL, including inherited query credentials. */
+  readonly url: string;
+  /** Original parsed document; its metadata and glTF conventions stay scoped to this document. */
+  readonly tileset: TilesetDocument;
+  /** Combined placement above this document's root. */
+  readonly parentTransform: readonly number[];
+  /** Conservative inherited metric error, when declared by all external ancestors. */
+  readonly parentGeometricError?: number;
 }
 
 /** Placement metadata for one ordered content resource. */
@@ -52,6 +70,8 @@ export interface BrowserTilesetResourceDescriptor {
   readonly tilePath: readonly number[];
   /** Declaring nested document URL; absent for root-document content. */
   readonly tilesetUrl?: string;
+  /** Placement index in an expanded inspection's documents. */
+  readonly documentIndex?: number;
   /** Combined entry-root-to-tile transform in column-major order, including external roots. */
   readonly transform: readonly number[];
 }
@@ -62,6 +82,8 @@ export interface BrowserTilesetConversionInputResource extends BrowserTilesetRes
   readonly data: Uint8Array;
   /** Optional content type reported by the response. */
   readonly contentType?: string;
+  /** Effective content response URL used to resolve decoder dependencies after redirects. */
+  readonly contentUrl?: string;
 }
 
 /**
@@ -69,7 +91,8 @@ export interface BrowserTilesetConversionInputResource extends BrowserTilesetRes
  *
  * Traversal visits declared placements in depth-first order. Set maxTilesetDocuments above 1
  * to follow explicit external tilesets, with shared byte/declaration limits and active-path cycle
- * detection. Inspection only reads the root; nested metadata is discovered during reading.
+ * detection. Inspection reads the root by default; inspectNestedTilesets follows declared .json
+ * references without fetching binary content. Other nested metadata is discovered during reading.
  * Implicit tiling remains unsupported; content decoding and conversion remain codec work.
  * Bounds, metadata and LOD authoring policy remain application responsibilities.
  *
@@ -81,6 +104,8 @@ export function createBrowserTilesetConversionSource(
 ): TileConversionSource<BrowserTilesetConversionInspection, BrowserTilesetConversionInputResource> {
   const maxTilesetDocuments = options.maxTilesetDocuments ?? 1;
   if (
+    (options.inspectNestedTilesets !== undefined &&
+      typeof options.inspectNestedTilesets !== 'boolean') ||
     !Number.isSafeInteger(maxTilesetDocuments) ||
     maxTilesetDocuments < 1 ||
     !Number.isSafeInteger(options.maxInputBytes) ||
@@ -111,7 +136,10 @@ export function createBrowserTilesetConversionSource(
       const data = await readResponseBytes(response, options.maxInputBytes, signal);
       const tileset = parseTilesetDocument(data);
       const resources = collectResources(tileset.root, options.maxInputResources);
-      return {rootUrl, tileset, resources, tilesetBytes: data.byteLength};
+      const inspection = {rootUrl, tileset, resources, tilesetBytes: data.byteLength};
+      return options.inspectNestedTilesets
+        ? expandInspection(inspection, options, maxTilesetDocuments, fetcher, signal)
+        : inspection;
     },
     async *read(inspection, signal) {
       let inputBytes = inspection.tilesetBytes;
@@ -134,7 +162,7 @@ export function createBrowserTilesetConversionSource(
           continue;
         }
         const descriptor = frame.resources[frame.index++];
-        const resourceUrl = resolveResourceUrl(descriptor.uri, frame.url);
+        const resourceUrl = resolveResourceUrl(descriptor.uri, descriptor.tilesetUrl ?? frame.url);
         if (frame.ancestors.has(getDocumentKey(resourceUrl))) {
           throw new TileConversionError(
             'BROWSER_TILESET_CYCLE',
@@ -173,6 +201,11 @@ export function createBrowserTilesetConversionSource(
         inputBytes += data.byteLength;
         const contentType = response.headers.get('content-type') ?? undefined;
         if (isJsonContent(data, contentType)) {
+          if (inspection.documents)
+            throw new TileConversionError(
+              'UNSUPPORTED_BROWSER_TILESET_CONTENT',
+              'Expanded inspection selections must be binary content; declare external metadata with a .json URI'
+            );
           if (maxTilesetDocuments === 1) {
             throw new TileConversionError(
               'UNSUPPORTED_BROWSER_TILESET_CONTENT',
@@ -218,10 +251,201 @@ export function createBrowserTilesetConversionSource(
           });
           continue;
         }
-        yield {...descriptor, data, ...(contentType ? {contentType} : {})};
+        yield {...descriptor, data, contentUrl: documentUrl, ...(contentType ? {contentType} : {})};
       }
     }
   };
+}
+
+/** A selected document and conservative source error for one content placement. */
+export interface BrowserTilesetContentSelection {
+  /** Cloned document retaining its metadata, ancestor transforms and only the selected content. */
+  readonly tileset: TilesetDocument;
+  /** Resolved resource URL, carrying same-origin document query parameters. */
+  readonly contentUrl: string;
+  /** Conservative source geometric error in meters, including transform scaling. */
+  readonly geometricError: number;
+  /** Whether the original selected tile has no children. */
+  readonly isLeaf: boolean;
+}
+
+/** Selects one inspected content while keeping declaring-document conventions and placement. */
+export function selectBrowserTilesetContent(
+  inspection: BrowserTilesetConversionInspection,
+  descriptor: BrowserTilesetResourceDescriptor
+): BrowserTilesetContentSelection {
+  const placement = inspection.documents?.[descriptor.documentIndex ?? 0];
+  if (inspection.documents && (!Number.isSafeInteger(descriptor.documentIndex) || !placement))
+    throw new TileConversionError(
+      'INVALID_BROWSER_SELECTION',
+      'Content descriptor has no inspected document placement'
+    );
+  const document = structuredClone(placement?.tileset ?? inspection.tileset);
+  const originalRoot = document.root!;
+  let transform = [...(placement?.parentTransform ?? identityMatrix())];
+  let maximum = placement?.parentGeometricError ?? 0;
+  let tile = originalRoot;
+  for (let depth = 0; ; depth++) {
+    transform = multiplyMatrices(transform, normalizeMatrix(tile.transform));
+    if (
+      typeof tile.geometricError !== 'number' ||
+      !Number.isFinite(tile.geometricError) ||
+      tile.geometricError < 0
+    )
+      throw new TileConversionError(
+        'MESH_GEOMETRIC_ERROR_INVALID',
+        'Every selected ancestor must declare a finite nonnegative geometricError'
+      );
+    maximum = Math.max(maximum, tile.geometricError * getTransformScale(transform));
+    if (depth === descriptor.tilePath.length) break;
+    const child = tile.children![descriptor.tilePath[depth]];
+    delete tile.content;
+    delete tile.contents;
+    tile.children = [child];
+    tile = child;
+  }
+  if (placement && placement.parentGeometricError === undefined && descriptor.documentIndex !== 0)
+    throw new TileConversionError(
+      'MESH_GEOMETRIC_ERROR_INVALID',
+      'External ancestors must declare geometricError'
+    );
+  const isLeaf = !tile.children?.length;
+  const contentIndex = Number(descriptor.resourceId.match(/content-(\d+)$/)?.[1]);
+  const content = tile.contents?.[contentIndex] ?? tile.content;
+  if (!content || (content.uri ?? content.url) !== descriptor.uri)
+    throw new TileConversionError(
+      'INVALID_BROWSER_SELECTION',
+      'Content descriptor does not match its inspected document'
+    );
+  tile.content = content;
+  delete tile.contents;
+  delete tile.children;
+  if (placement)
+    originalRoot.transform = multiplyMatrices(
+      [...placement.parentTransform],
+      normalizeMatrix(originalRoot.transform)
+    );
+  if (!Number.isFinite(maximum))
+    throw new TileConversionError(
+      'MESH_GEOMETRIC_ERROR_INVALID',
+      'Scaled geometricError must remain finite'
+    );
+  return {
+    tileset: document,
+    contentUrl: resolveResourceUrl(descriptor.uri, placement?.url ?? inspection.rootUrl),
+    geometricError: maximum,
+    isLeaf
+  };
+}
+
+/** Expands only declared JSON references; binary content is never requested during inspection. */
+async function expandInspection(
+  inspection: BrowserTilesetConversionInspection,
+  options: BrowserTilesetConversionSourceOptions,
+  maxTilesetDocuments: number,
+  fetcher: typeof fetch,
+  signal?: AbortSignal
+): Promise<BrowserTilesetConversionInspection> {
+  const documents: BrowserTilesetDocumentPlacement[] = [
+    {
+      url: inspection.rootUrl,
+      tileset: inspection.tileset,
+      parentTransform: identityMatrix(),
+      parentGeometricError: 0
+    }
+  ];
+  const resources: BrowserTilesetResourceDescriptor[] = [];
+  let bytes = inspection.tilesetBytes;
+  let declarations = inspection.resources.length;
+  const stack = [
+    {
+      resources: inspection.resources,
+      index: 0,
+      documentIndex: 0,
+      ancestors: new Set([getDocumentKey(inspection.rootUrl), getDocumentKey(options.input)])
+    }
+  ];
+  while (stack.length) {
+    throwIfAborted(signal);
+    const frame = stack[stack.length - 1];
+    if (frame.index === frame.resources.length) {
+      stack.pop();
+      continue;
+    }
+    const descriptor = frame.resources[frame.index++];
+    const placement = documents[frame.documentIndex];
+    const resourceUrl = resolveResourceUrl(descriptor.uri, placement.url);
+    if (!new URL(resourceUrl).pathname.toLowerCase().endsWith('.json')) {
+      resources.push({...descriptor, documentIndex: frame.documentIndex});
+      continue;
+    }
+    if (frame.ancestors.has(getDocumentKey(resourceUrl)))
+      throw new TileConversionError(
+        'BROWSER_TILESET_CYCLE',
+        'External tileset references an active ancestor document'
+      );
+    if (documents.length >= maxTilesetDocuments)
+      throw new TileConversionError(
+        'INPUT_TILESET_COUNT_EXCEEDED',
+        'Browser tileset exceeds its document limit'
+      );
+    let tile = placement.tileset.root!;
+    for (const childIndex of descriptor.tilePath) tile = tile.children![childIndex];
+    if (tile.children?.length || tile.contents?.length)
+      throw new TileConversionError(
+        'INVALID_BROWSER_TILESET',
+        'Inspected external tilesets require one content and no child tiles'
+      );
+    const response = await fetcher(resourceUrl, {signal});
+    const url = response.url || resourceUrl;
+    if (!response.ok || frame.ancestors.has(getDocumentKey(url))) {
+      await response.body?.cancel();
+      throw new TileConversionError(
+        response.ok ? 'BROWSER_TILESET_CYCLE' : 'BROWSER_SOURCE_FETCH_FAILED',
+        'Could not inspect external tileset'
+      );
+    }
+    const data = await readResponseBytes(response, options.maxInputBytes - bytes, signal);
+    bytes += data.byteLength;
+    const tileset = parseTilesetDocument(data);
+    const prefix = descriptor.resourceId + '/';
+    const nestedResources = collectResources(
+      tileset.root,
+      options.maxInputResources - declarations,
+      descriptor.transform
+    ).map(resource => ({...resource, resourceId: prefix + resource.resourceId, tilesetUrl: url}));
+    declarations += nestedResources.length;
+    let parentGeometricError: number | undefined;
+    try {
+      parentGeometricError = selectBrowserTilesetContent(
+        {...inspection, documents},
+        {...descriptor, documentIndex: frame.documentIndex}
+      ).geometricError;
+    } catch (error) {
+      if (!(error instanceof TileConversionError) || error.code !== 'MESH_GEOMETRIC_ERROR_INVALID')
+        throw error;
+    }
+    const documentIndex = documents.length;
+    documents.push({url, tileset, parentTransform: descriptor.transform, parentGeometricError});
+    stack.push({
+      resources: nestedResources,
+      index: 0,
+      documentIndex,
+      ancestors: new Set([...frame.ancestors, getDocumentKey(resourceUrl), getDocumentKey(url)])
+    });
+  }
+  return {...inspection, resources, documents, tilesetBytes: bytes};
+}
+
+/** Conservative spectral norm bound for a finite affine placement's linear part. */
+function getTransformScale(transform: readonly number[]): number {
+  const columns = [0, 1, 2].map(column =>
+    [0, 1, 2].reduce((total, row) => total + Math.abs(transform[column * 4 + row]), 0)
+  );
+  const rows = [0, 1, 2].map(row =>
+    [0, 1, 2].reduce((total, column) => total + Math.abs(transform[column * 4 + row]), 0)
+  );
+  return Math.sqrt(Math.max(...columns)) * Math.sqrt(Math.max(...rows));
 }
 
 /** Parses one root or external document without inferring a profile from its filename. */
