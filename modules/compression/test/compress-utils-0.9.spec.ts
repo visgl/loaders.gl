@@ -33,7 +33,10 @@ test.each([
 ])('%s raw bindings preserve sync/async interoperability and capacity', async (_name, Compressor, Decompressor) => {
   const bytes = new TextEncoder().encode('bounded raw payload '.repeat(8));
   const compressor = new Compressor({raw: true});
-  const decompressor = new Decompressor({raw: true});
+  const decompressor = new Decompressor({
+    raw: true,
+    compressUtils: {expectedSize: bytes.byteLength}
+  });
   expect(() => compressor.compressSync(bytes.buffer)).toThrow(/preload/);
   await Promise.all([compressor.preload(), decompressor.preload()]);
   const encoded = compressor.compressSync(bytes.buffer);
@@ -43,6 +46,17 @@ test.each([
       await decompressor.decompress(await compressor.compress(bytes.buffer), bytes.byteLength)
     )
   ).toEqual(bytes);
+  const encodedBatches: ArrayBuffer[] = [];
+  for await (const batch of compressor.compressBatches([
+    bytes.slice(0, 13).buffer,
+    bytes.slice(13).buffer
+  ]))
+    encodedBatches.push(batch);
+  const decodedBatches: Uint8Array[] = [];
+  for await (const batch of decompressor.decompressBatches(encodedBatches)) {
+    decodedBatches.push(new Uint8Array(batch));
+  }
+  expect(Uint8Array.from(decodedBatches.flatMap(batch => Array.from(batch)))).toEqual(bytes);
 });
 
 test('LZO worker loads its decoder asset and forwards output capacity', async () => {
