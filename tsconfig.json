@@ -207,6 +207,7 @@
       "@loaders.gl/i3s/test": [
         "modules/i3s/test"
       ],
+      "@loaders.gl/json/fast-json-loader": ["modules/json/src/fast-json-loader"],
       "@loaders.gl/json": [
         "modules/json/src"
       ],

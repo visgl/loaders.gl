@@ -41,7 +41,7 @@ export interface NodeTileConversionOptions
   readonly i3sFeatures?: I3SMeshSourceFeatureOptions;
   /** Required metric source error for I3S to 3D Tiles; no screen-size inference. */
   readonly geometricError?: number;
-  /** Retain a complete single-document 3D Tiles tree in 3D Tiles/3TZ output. */
+  /** Retain a complete explicit 3D Tiles tree, including inspected external documents in 3D Tiles/3TZ output. */
   readonly preserveHierarchy?: boolean;
   /** Authorizes IntegratedMesh to 3DObject output with a reported semantic warning. */
   readonly integratedMeshPolicy?: 'as-3d-object';

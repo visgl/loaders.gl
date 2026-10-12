@@ -63,7 +63,8 @@ which [Parquet format features](/docs/modules/parquet/formats/parquet) are suppo
 Load a Parquet file as object rows when a row-oriented result is required.
 
 ```typescript
-import {ParquetJSLoader, ParquetLoader} from '@loaders.gl/parquet';
+import {ParquetLoader} from '@loaders.gl/parquet';
+import {ParquetJSLoaderWithParser as ParquetJSLoader} from '@loaders.gl/parquet/parquet-js-loader';
 import {load} from '@loaders.gl/core';
 
 const loaderOptions = {parquet: {batchSize: 10_000, shape: 'object-row-table'}};
@@ -236,7 +237,7 @@ can matter more than the language used for a decoder's inner loop.
 
 ```typescript
 import {load} from '@loaders.gl/core';
-import {ParquetJSLoader} from '@loaders.gl/parquet';
+import {ParquetJSLoaderWithParser as ParquetJSLoader} from '@loaders.gl/parquet/parquet-js-loader';
 
 const table = await load(url, ParquetJSLoader, {
   parquet: {

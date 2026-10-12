@@ -192,7 +192,52 @@ export type {GeoArrowConvertFromEncoding} from './convert-table-to-geoarrow';
 
 export {GeoArrowSpatialIndex} from './geoarrow-spatial-index';
 export type {GeoArrowFeatureId, GeoArrowNearestFeature} from './geoarrow-spatial-index';
-export * from './compatibility';
+export {
+  GeometryConverter,
+  convertBinaryGeometryToGeometry,
+  convertWKBToBinaryGeometry,
+  isWKT,
+  getWKTGeometryType,
+  isWKB,
+  parseWKBHeader,
+  WKBGeometryType,
+  EWKB_FLAG_Z,
+  EWKB_FLAG_M,
+  EWKB_FLAG_SRID,
+  MAX_SRID,
+  WKT_MAGIC_STRINGS,
+  WKT_MAGIC_BYTES,
+  FeatureCollectionConverter,
+  FEATURE_COLLECTION_CONVERTERS,
+  convertFeatureCollection,
+  isBinaryFeatureCollection,
+  isFlatFeatureCollection,
+  isGeojsonFeatureCollection,
+  convertBinaryFeatureCollectionToGeojson,
+  convertBinaryFeatureCollectionToArrowBinaryFeatureCollection,
+  convertArrowBinaryFeatureCollectionToBinaryFeatureCollection,
+  convertGeometryValuesToBinaryFeatureCollection,
+  convertGeometryColumnToBinaryFeatureCollection,
+  getBinaryGeometryInfo,
+  getGeoArrowUnionGeometryKind
+} from './compatibility';
+export type {
+  GeometryShape,
+  WKBHeader,
+  WKBOptions,
+  FeatureCollectionShape,
+  BinaryToGeojsonOptions,
+  BinaryToGeojsonFeatureOptions,
+  GeometryColumnBinaryEncoding,
+  BinaryPointFeatureScratch,
+  BinaryLineFeatureScratch,
+  BinaryPolygonFeatureScratch,
+  GeometryColumnBinaryFeatureCollectionScratch,
+  GeometryColumnToBinaryFeatureCollectionOptions,
+  TableGeometryColumnToBinaryFeatureCollectionOptions,
+  BinaryGeometryInfo,
+  GeoArrowUnionGeometryKind
+} from './compatibility';
 export {GeoArrowGeometryConverter as GeometryColumnConverter} from './geoarrow-converter/geoarrow-geometry-converter';
 export {
   transformBinaryCoords,

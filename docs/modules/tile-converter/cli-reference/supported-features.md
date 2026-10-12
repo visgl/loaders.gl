@@ -254,11 +254,11 @@ Some 3DTiles vNext extensions are supported as input data.
 
 ### Explicit hierarchy preservation (v5 opt-in)
 
-`--preserve-hierarchy` / `preserveHierarchy: true` qualify a complete single-document
-3D Tiles/3TZ tree for 3D Tiles or 3TZ output: original topology, parent content,
+`--preserve-hierarchy` / `preserveHierarchy: true` qualify a complete explicit
+3D Tiles/3TZ tree, including inspected `.json` external documents, for 3D Tiles or 3TZ output: original topology, parent content,
 contentless ancestors, inherited ADD/REPLACE, conservative version-aware metric errors,
-and equivalent ECEF placement. Select every content; maximum 256 tiles, 64 contents,
+and equivalent ECEF placement. Select every content; maximum 32 document placements, 256 total tiles, 64 binary contents,
 one mesh primitive per content, and existing byte budgets. Bounds are recomputed from
-converted subtree geometry. External/implicit trees, `contents` arrays, unmapped
+converted subtree geometry. Extensionless external metadata and implicit trees, `contents` arrays, unmapped
 metadata/request volumes, empty leaves and I3S hierarchy mapping remain unsupported.
 See the [profile details](../api-reference/v5-conversion.md#complete-explicit-hierarchy-profile).

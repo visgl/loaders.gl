@@ -50,6 +50,8 @@ export interface BrowserTilesetConversionInspection {
 
 /** One inspected document at a distinct external placement. */
 export interface BrowserTilesetDocumentPlacement {
+  /** Full external content placement introducing this document; absent for the entry root. */
+  readonly parentResourceId?: string;
   /** Effective document URL, including inherited query credentials. */
   readonly url: string;
   /** Original parsed document; its metadata and glTF conventions stay scoped to this document. */
@@ -448,7 +450,13 @@ async function expandInspection(
         throw error;
     }
     const documentIndex = documents.length;
-    documents.push({url, tileset, parentTransform: descriptor.transform, parentGeometricError});
+    documents.push({
+      url,
+      tileset,
+      parentResourceId: descriptor.resourceId,
+      parentTransform: descriptor.transform,
+      parentGeometricError
+    });
     stack.push({
       resources: nestedResources,
       index: 0,

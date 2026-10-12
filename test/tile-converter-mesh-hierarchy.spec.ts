@@ -172,7 +172,7 @@ test.each([
   'omitted',
   'duplicate',
   'unknown',
-  'external',
+  'unlinkedDocument',
   'metadata',
   'requestVolume',
   'implicit',
@@ -189,7 +189,10 @@ test.each([
   if (mode === 'omitted') options.resourceIds.pop();
   if (mode === 'duplicate') options.resourceIds[1] = options.resourceIds[0];
   if (mode === 'unknown') options.resourceIds[1] = 'unknown';
-  if (mode === 'external') Object.assign(inspection, {documents: [{}, {}]});
+  if (mode === 'unlinkedDocument')
+    Object.assign(inspection, {
+      documents: [...inspection.documents!, {...inspection.documents![0]}]
+    });
   if (mode === 'metadata') Object.assign(root, {metadata: {}});
   if (mode === 'requestVolume') Object.assign(root, {viewerRequestVolume: {}});
   if (mode === 'implicit') root.implicitTiling = {};

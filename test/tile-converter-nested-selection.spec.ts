@@ -74,6 +74,11 @@ test('metadata inspection expands repeated document placements without loading m
     'https://example.invalid/nested/tileset.json?token=root'
   ]);
   expect(inspection.documents).toHaveLength(3);
+  expect(inspection.documents!.map(document => document.parentResourceId)).toEqual([
+    undefined,
+    'tile-0-content-0',
+    'tile-1-content-0'
+  ]);
   expect(inspection.resources.map(resource => resource.documentIndex)).toEqual([1, 1, 2, 2]);
   expect(new Set(inspection.resources.map(resource => resource.resourceId)).size).toBe(4);
   expect(inspection.tilesetBytes).toBe(

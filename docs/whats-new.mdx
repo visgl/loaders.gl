@@ -93,6 +93,10 @@ See [supported items and verification boundaries](/docs/developer-guide/arcgis/i
 
 ## v5.0 (In Development)
 
+Alternate LAS, Parquet, and fast JSON backend loaders are now imported through
+explicit implementation subpaths; see the [upgrade guide](/docs/upgrade-guide#alternate-loader-imports).
+Package barrels now list their exports explicitly.
+
 - GIS retirement: Arrow parsing and triangulation now use focused
   [Arrow geometry helpers](/docs/modules/arrow-geometry). Geometry metadata
   validators move to a dedicated schema subpath, and geometry codecs use math.gl-backed
