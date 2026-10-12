@@ -52,6 +52,10 @@
     },
     "./geojson-worker.js": {
       "import": "./dist/geojson-worker.js"
+    },
+    "./fast-json-loader": {
+      "types": "./dist/fast-json-loader.d.ts",
+      "import": "./dist/fast-json-loader.js"
     }
   },
   "sideEffects": false,

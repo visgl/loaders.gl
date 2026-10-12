@@ -35,7 +35,39 @@ export {
   ArcGISVectorTileServerSource
 } from './arcgis/arcgis-vector-tile-server-source-loader';
 
-export type * from './index';
+export type {
+  ArcGISService,
+  ArcGISCapabilityGraph,
+  ArcGISCapabilityGraphOptions,
+  ArcGISServiceCapabilities,
+  ArcGISServiceSelection,
+  ArcGISFeatureServiceQueryOptions,
+  ArcGISFeatureServerSourceLoaderOptions,
+  ArcGISExportImageParameters,
+  ArcGISImageSourceLoaderProps,
+  ArcGISImageTileSourceLoaderOptions,
+  ArcGISMapTileSourceLoaderOptions,
+  ArcGISVectorTileServiceMetadata,
+  ArcGISVectorTileServerSourceLoaderOptions,
+  ArcGISSceneServerSourceOptions,
+  ArcGISSceneQueryOptions,
+  ArcGISSceneQueryResult,
+  ArcGISSceneAggregationOperation,
+  ArcGISSceneAggregationSpec,
+  ArcGISSceneAggregationOptions,
+  ArcGISSceneAggregationGroup,
+  ArcGISCredentialOptions,
+  ArcGISFeatureQueryParameters,
+  ArcGISFeatureQueryOptions,
+  ArcGISFeatureQueryProgress,
+  ArcGISFeatureQueryResult,
+  ArcGISFeatureObjectIds,
+  ArcGISFeatureExtent,
+  ArcGISItem,
+  ArcGISItemLayer,
+  ArcGISItemResolution,
+  ArcGISItemOptions
+} from './index';
 export {
   getArcGISServices,
   discoverArcGISCapabilities,

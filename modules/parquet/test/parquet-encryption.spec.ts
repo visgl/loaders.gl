@@ -2,10 +2,10 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
+import {ParquetJSLoaderWithParser as ParquetJSLoader} from '@loaders.gl/parquet/parquet-js-loader';
 import {fetchFile, load} from '@loaders.gl/core';
 import {ArrayBufferFile} from '@loaders.gl/loader-utils';
 import {
-  ParquetJSLoader,
   ParquetReader,
   ParquetSourceLoader,
   createParquetModuleAad,

@@ -12,7 +12,17 @@ import * as DICTIONARY from './dictionary';
 import * as DELTA from './delta';
 import * as BYTE_STREAM_SPLIT from './byte-stream-split';
 
-export * from './declare';
+export {
+  reserveParquetByteArrayOutput,
+  getParquetValueOutput
+} from './declare';
+export type {
+  ParquetValueBuffer,
+  ParquetByteArrayOutput,
+  CursorBuffer,
+  ParquetCodecOptions,
+  ParquetCodecKit
+} from './declare';
 
 export const PARQUET_CODECS: Record<ParquetCodec, ParquetCodecKit> = {
   PLAIN: {
