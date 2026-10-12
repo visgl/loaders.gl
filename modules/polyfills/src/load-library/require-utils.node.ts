@@ -9,33 +9,32 @@
 import Module from 'module';
 import path from 'path';
 import fs from 'fs';
+import {fileURLToPath} from 'node:url';
 import {ensureArrayBuffer} from '@loaders.gl/loader-utils';
 
 /**
- * Load a file from local file system
- * @param filename
- * @returns
+ * Loads exact file bytes from a local path, file URL or HTTP(S) resource.
+ * Typed-array byte ranges are preserved rather than exposing a pooled Node backing buffer.
+ * @param filename - Resource location; relative file paths resolve against the working directory.
  */
 export async function readFileAsArrayBuffer(filename: string): Promise<ArrayBuffer> {
   if (filename.startsWith('http')) {
     const response = await fetch(filename);
     return await response.arrayBuffer();
   }
-  const buffer = fs.readFileSync(filename);
-  return ensureArrayBuffer(buffer.buffer);
+  return ensureArrayBuffer(fs.readFileSync(resolveFilePath(filename)));
 }
 
 /**
- * Load a file from local file system
- * @param filename
- * @returns
+ * Loads UTF-8 text from a local path, file URL or HTTP(S) resource.
+ * @param filename - Resource location; relative file paths resolve against the working directory.
  */
 export async function readFileAsText(filename: string): Promise<string> {
   if (filename.startsWith('http')) {
     const response = await fetch(filename);
     return await response.text();
   }
-  const text = fs.readFileSync(filename, 'utf8');
+  const text = fs.readFileSync(resolveFilePath(filename), 'utf8');
   return text;
 }
 
@@ -43,6 +42,7 @@ export async function readFileAsText(filename: string): Promise<string> {
 // Relative names are resolved relative to cwd
 // This indirect function is provided because webpack will try to bundle `module.require`.
 // this file is not visible to webpack (it is excluded in the package.json "browser" field).
+/** Loads a CommonJS library, resolving local relative imports against the library file. */
 export async function requireFromFile(filename: string): Promise<any> {
   if (filename.startsWith('http')) {
     const response = await fetch(filename);
@@ -50,11 +50,9 @@ export async function requireFromFile(filename: string): Promise<any> {
     return requireFromString(code);
   }
 
-  if (!filename.startsWith('/')) {
-    filename = `${process.cwd()}/${filename}`;
-  }
-  const code = fs.readFileSync(filename, 'utf8');
-  return requireFromString(code);
+  const filePath = resolveFilePath(filename);
+  const code = fs.readFileSync(filePath, 'utf8');
+  return requireFromString(code, filePath);
 }
 
 // Dynamically require from string
@@ -63,6 +61,7 @@ export async function requireFromFile(filename: string): Promise<any> {
 // - `options.appendPaths` Type: Array List of paths, that will be appended to module paths.
 // Useful, when you want to be able require modules from these paths.
 // - `options.prependPaths` Type: Array Same as appendPaths, but paths will be prepended.
+/** Evaluates a CommonJS library with an optional filename/file URL and module search paths. */
 export function requireFromString(
   code: string,
   filename = '',
@@ -75,7 +74,7 @@ export function requireFromString(
     options = filename;
     filename = '';
   }
-  filename = filename.replace('file://', '');
+  if (filename.startsWith('file:')) filename = fileURLToPath(filename);
 
   if (typeof code !== 'string') {
     throw new Error(`code must be a string, not ${typeof code}`);
@@ -101,4 +100,9 @@ export function requireFromString(
   }
 
   return newModule.exports;
+}
+
+/** Resolves local paths and file URLs without treating URL escapes or drive paths as relative names. */
+function resolveFilePath(filename: string): string {
+  return filename.startsWith('file:') ? fileURLToPath(filename) : path.resolve(filename);
 }

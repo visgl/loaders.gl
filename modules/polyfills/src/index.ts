@@ -8,7 +8,7 @@ import {isBrowser} from './utils/is-browser';
 import {TextDecoder, TextEncoder} from './text-encoder/text-encoder';
 
 // Node specific
-import {atob, btoa} from './buffer/btoa.node';
+import {atob, btoa} from './buffer/btoa.node.js';
 
 import {encodeImageNode} from './images/encode-image-node';
 import {parseImageNode, NODE_FORMAT_SUPPORT} from './images/parse-image-node';
@@ -117,7 +117,7 @@ import {
   readFileAsText,
   requireFromFile,
   requireFromString
-} from './load-library/require-utils.node';
+} from './load-library/require-utils.node.js';
 
 globalThis.loaders.readFileAsArrayBuffer = readFileAsArrayBuffer;
 globalThis.loaders.readFileAsText = readFileAsText;
