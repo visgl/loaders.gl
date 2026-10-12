@@ -105,7 +105,7 @@ test.each([
     expect(layer.store.normalReferenceFrame).toBe('earth-centered');
     const root = JSON.parse(new TextDecoder().decode(await archive.getFile('nodes/root', 'http')));
     const node = JSON.parse(new TextDecoder().decode(await archive.getFile('nodes/1', 'http')));
-    expect(root.children.map(child => child.id)).toEqual(['1']);
+    expect(root.children.map((child: {id: string}) => child.id)).toEqual(['1']);
     expect(node.id).toBe('1');
     expect(node.parentNode.id).toBe('root');
     const page = JSON.parse(new TextDecoder().decode(await archive.getFile('nodepages/0', 'http')));
