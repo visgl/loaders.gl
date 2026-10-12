@@ -21,6 +21,7 @@ const HELP = `Usage: tile-converter-v5 inspect|convert|validate <input path or U
   --input-format 3d-tiles|3tz|i3s|slpk  Explicit input format (default: 3d-tiles)
   --geometric-error N        Required source error in meters for I3S to 3D Tiles
   --integrated-mesh-policy as-3d-object  Authorize I3S layer-type change
+  --preserve-hierarchy        Retain a complete explicit 3D Tiles tree (3D Tiles/3TZ only)
   --resource ID               Selected content placement; repeat for multiple selections
   --output-format 3d-tiles|3tz|slpk  Target profile (default: 3tz)
   --output PATH               New destination (required for convert, forbidden for validate)
@@ -33,10 +34,10 @@ const HELP = `Usage: tile-converter-v5 inspect|convert|validate <input path or U
 Inspect reads metadata only, following declared .json external tilesets.
 Convert/validate require explicit selections; I3S uses declared CRS and shared spatial preparation.
 Validate decodes, converts and packages the selected target profile without writing files.
-Output is a partial flat mesh collection; source LOD is not exported.
+Output defaults to a partial flat mesh collection. --preserve-hierarchy requires every declared content.
 Remote archives require HTTP 206 ranges and a stable ETag or Last-Modified validator.
 I3S inspect lists leaf nodes; conversion is geometry-only unless a service supplies feature mappings.
-Whole-dataset validation and hierarchy/LOD preservation remain separate profiles.
+Hierarchy mode supports one explicit document, at most 256 tiles and one mesh per tile.
 `;
 
 /** Runs a bounded v5 operation, returning an exit code after source/output cleanup. */
@@ -51,6 +52,7 @@ export async function runTileConverterCLI(
       allowPositionals: true,
       options: {
         help: {type: 'boolean'},
+        'preserve-hierarchy': {type: 'boolean'},
         'input-format': {type: 'string', default: '3d-tiles'},
         'max-input-bytes': {type: 'string', default: String(NODE_TILESET_LIMITS.maxInputBytes)},
         'max-resources': {type: 'string', default: String(NODE_TILESET_LIMITS.maxInputResources)},
@@ -109,6 +111,7 @@ export async function runTileConverterCLI(
       const report = await convertNodeTileset({
         ...sourceOptions,
         resourceIds: values.resource,
+        preserveHierarchy: values['preserve-hierarchy'],
         outputFormat: values['output-format'] as NodeTileConversionOutputFormat,
         output: values.output,
         maxOutputBytes: parseLimit(values['max-output-bytes']),
@@ -124,6 +127,7 @@ export async function runTileConverterCLI(
       return 0;
     }
     if (
+      values['preserve-hierarchy'] !== undefined ||
       values['geometric-error'] !== undefined ||
       values['integrated-mesh-policy'] !== undefined ||
       values.resource ||

@@ -1009,3 +1009,33 @@ limits are separate bounds. They do not bound total heap, COPC decompression or
 COPC writer temporaries. Potree authoring and COPC writing operate on decoded
 in-memory inputs; these APIs do not assemble a large source into one output
 out of core. Applications own downloading Blobs and revoking object URLs.
+
+
+### Complete explicit hierarchy profile
+
+The default mesh collection remains flat. Opt in with `preserveHierarchy: true` on
+`createSelectedMeshConversionSource` and pair it with `createMeshHierarchyTilesetSink`
+from `@loaders.gl/tile-converter/v5/adapters` (also exposed by `v5/browser`).
+`convertNodeTileset({preserveHierarchy: true, ...})` wires these together for 3D Tiles
+or 3TZ input and output. Select **every** inspected content placement explicitly.
+
+This bounded profile retains original child order, contentless ancestors, parent content,
+and effective ADD/REPLACE refinement, including inherited child policy. The root must
+explicitly declare refinement. Each tile retains its own metric geometric error plus the configured position reconstruction
+allowance. For 3D Tiles 1.1 inputs, error is conservatively scaled by the composed source
+transform; 1.0 inputs already define error in meters independently of the transform. The dataset error is at least the scaled root error plus that allowance.
+Extraction bakes original tile/node/RTC/axis placement once; relative output transforms
+place rebased GLBs in ECEF without applying source transforms a second time. Original
+matrices and bounding-volume representations are replaced by equivalent placements and
+boxes enclosing all converted geometry in each subtree. Explicit native CRS metadata,
+including its epoch, is retained when supplied.
+
+Limits: one explicit document, 256 tiles, 64 selected contents, **one mesh primitive per
+content tile**, existing 16 MiB input and 32 MiB output/archive budgets. External documents,
+`contents` arrays, contentless leaves, implicit tiling, tile extensions/metadata,
+viewer-request volumes and dataset feature metadata require separate profiles and fail
+explicitly. I3S/SLPK hierarchy is not qualified: screen-size LOD cannot be inferred as meters.
+Partial selection continues to use the default flat profile. Browser example controls
+remain on that profile; services may use the shared hierarchy adapters directly.
+These limits account for retained/output bytes and node counts, not total peak memory.
+Independent viewer qualification and larger or external-document hierarchies remain open.

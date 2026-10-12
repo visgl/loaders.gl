@@ -32,7 +32,7 @@ tile-converter-v5 inspect ./dataset.slpk --input-format slpk
 
 Copy placement IDs from inspection and repeat `--resource` for multiple selections.
 Selections are processed in declaration order; select between 1 and 64 distinct contents.
-Multiple selections must be source leaves. A selected content may contain multiple static
+In the default flat profile, multiple selections must be source leaves. A selected content may contain multiple static
 primitives, up to 64 meshes in total. Declaring-document glTF axes, composed placement and
 relative URLs are retained during extraction. This initial CLI profile is geometry-only:
 feature-bearing contents require explicit schema/class mappings and are rejected. Node service
@@ -63,8 +63,9 @@ packaging, without writing a destination. It requires selections and forbids `--
 It is **not a whole-dataset validator** and does not establish independent viewer interoperability.
 
 Output uses the shared browser mesh profiles: 3D Tiles 1.1 GLB with lossless Draco Edge Breaker,
-or I3S 1.7 3DObject/SLPK. It is a **partial flat mesh collection**, preserving placement but
-not source hierarchy/LOD or ADD/REPLACE refinement. For 3D Tiles input, every selected ancestor must declare a
+or I3S 1.7 3DObject/SLPK. By default it is a **partial flat mesh collection**, preserving placement but
+not source hierarchy/LOD or ADD/REPLACE refinement. Use the qualified
+[complete hierarchy profile](#preserve-a-complete-explicit-hierarchy) to retain these for 3D Tiles targets. For 3D Tiles input, every selected ancestor must declare a
 finite nonnegative metric geometric error; the conservative error includes ancestor transform
 scaling and the 1 cm reconstruction allowance. Unknown/incompatible CRS, implicit tiling,
 instancing/composites and appearance/features outside the existing mesh profiles fail explicitly.
@@ -103,6 +104,7 @@ resource URLs: Node I3S resource redirects are rejected until their relative bas
 
 | Option | Default | Purpose |
 | --- | --- | --- |
+| `--preserve-hierarchy` | `false` | Require a complete explicit single-document hierarchy for 3D Tiles/3TZ output |
 | `--input-format` | `3d-tiles` | `3d-tiles`, `3tz`, `i3s` or `slpk` |
 | `--geometric-error` | | Required metric source error for I3S to 3D Tiles |
 | `--integrated-mesh-policy` | | `as-3d-object` authorizes IntegratedMesh to SLPK |
@@ -130,3 +132,25 @@ cancels cooperatively and releases source/output handles. Help prints text.
 Full hierarchy/LOD preservation, service configuration, durable recovery and installed Windows
 qualification remain follow-ups. See the
 [v5 source API](/docs/modules/tile-converter/api-reference/v5-conversion#node-inspection-and-raw-content-reads).
+
+
+## Preserve a complete explicit hierarchy
+
+After inspecting a single-document 3D Tiles dataset, select every content placement and
+add `--preserve-hierarchy` to `convert` or `validate`:
+
+```sh
+tile-converter-v5 convert ./tileset.json --preserve-hierarchy \
+  --resource tile-root-content-0 --resource tile-0-content-0 \
+  --output-format 3tz --output ./converted.3tz
+```
+
+This retains source topology, parent content, inherited ADD/REPLACE and conservatively
+metric errors plus the position allowance (transform scaling for 1.1; native meter values for 1.0). Effective placement is retained through
+relative output transforms; bounds are recomputed around converted subtree geometry.
+The root must declare refinement. Every content must decode to one mesh primitive.
+The profile supports at most 256 tiles and 64 contents in one explicit document, with
+existing byte limits. It rejects external documents, `contents` arrays, contentless leaves,
+unmapped metadata/extensions/request volumes, I3S/SLPK input and SLPK output.
+See the [complete hierarchy profile](../api-reference/v5-conversion.md#complete-explicit-hierarchy-profile)
+for the shared browser/service API and remaining qualification.

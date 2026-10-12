@@ -52,6 +52,31 @@ beforeAll(async () => {
     'nested/tileset.json': new TextEncoder().encode(JSON.stringify(nested)).buffer,
     'nested/triangle.glb': triangle
   };
+  const hierarchy = {
+    asset: {version: '1.1', gltfUpAxis: 'Z'},
+    extensions: {
+      EXT_geospatial_crs: {
+        format: 'wkid',
+        extensions: {EXT_geospatial_crs_wkid: {authority: 'EPSG', wkid: 4978}}
+      }
+    },
+    geometricError: 4,
+    root: {
+      geometricError: 4,
+      refine: 'REPLACE',
+      boundingVolume: {sphere: [0, 0, 0, 10]},
+      transform: root.root.transform,
+      content: {uri: 'nested/triangle.glb'},
+      children: [
+        {
+          geometricError: 0,
+          boundingVolume: {sphere: [0, 0, 0, 1]},
+          content: {uri: 'nested/triangle.glb'}
+        }
+      ]
+    }
+  };
+  await writeFile(join(directory, 'input', 'hierarchy.json'), JSON.stringify(hierarchy));
   for (const [path, bytes] of Object.entries(files))
     await writeFile(join(directory, 'input', path), new Uint8Array(bytes));
   await writeFile(archivePath, new Uint8Array(await Tiles3DArchiveWriter.encode!(files)));
@@ -291,4 +316,61 @@ test('conversion rejects missing selections, invalid budgets and failed inputs w
       })
     ).rejects.toThrow();
   expect(await readdir(directory)).toEqual(before);
+});
+
+test.each([
+  '3d-tiles',
+  '3tz'
+] as const)('Node hierarchy profile preserves parent and child LOD in %s output', async outputFormat => {
+  const output = join(directory, 'hierarchy-' + outputFormat);
+  const report = await convertNodeTileset({
+    input: join(directory, 'input', 'hierarchy.json'),
+    resourceIds: ['tile-root-content-0', 'tile-0-content-0'],
+    preserveHierarchy: true,
+    outputFormat,
+    output
+  });
+  expect(report.outputResources).toBe(2);
+  let bytes: Uint8Array;
+  if (outputFormat === '3d-tiles')
+    bytes = new Uint8Array(await readFile(join(output, 'tileset.json')));
+  else {
+    const archive = await parse3DTilesArchive(
+      new BlobFile(new Blob([new Uint8Array(await readFile(output))]))
+    );
+    try {
+      bytes = new Uint8Array(await archive.getFile('tileset.json'));
+    } finally {
+      await archive.close();
+    }
+  }
+  const tileset = JSON.parse(new TextDecoder().decode(bytes));
+  expect(tileset.root.content.uri).toBe('meshes/0.glb');
+  expect(tileset.root.refine).toBe('REPLACE');
+  expect(tileset.root.children[0].refine).toBe('REPLACE');
+  expect(tileset.root.children[0].geometricError).toBeCloseTo(0.01);
+});
+
+test('CLI exposes opt-in hierarchy validation and rejects unsupported output and partial selections', async () => {
+  const stdout: string[] = [];
+  const stderr: string[] = [];
+  const options = {
+    stdout: (text: string) => stdout.push(text),
+    stderr: (text: string) => stderr.push(text)
+  };
+  const argumentsList = [
+    'validate',
+    join(directory, 'input', 'hierarchy.json'),
+    '--preserve-hierarchy',
+    '--resource',
+    'tile-root-content-0',
+    '--resource',
+    'tile-0-content-0'
+  ];
+  expect(await runTileConverterCLI(argumentsList, options)).toBe(0);
+  expect(JSON.parse(stdout.pop()!).report.outputResources).toBe(2);
+  expect(await runTileConverterCLI([...argumentsList, '--output-format', 'slpk'], options)).toBe(1);
+  expect(JSON.parse(stderr.pop()!).code).toBe('MESH_HIERARCHY_UNSUPPORTED');
+  expect(await runTileConverterCLI(argumentsList.slice(0, -2), options)).toBe(1);
+  expect(JSON.parse(stderr.pop()!).code).toBe('MESH_HIERARCHY_UNSUPPORTED');
 });
