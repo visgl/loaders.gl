@@ -297,7 +297,9 @@ test('nested metadata selections convert with declaring-document axes, relative 
   expect(inspection).toEqual(original);
   expect(
     fetcher.mock.calls
-      .filter(call => String(call[0]).startsWith('https://example.invalid'))
+      .filter(
+        call => new URL(String(call[0]), window.location.href).origin === 'https://example.invalid'
+      )
       .map(call => String(call[0]))
   ).toEqual([
     'https://example.invalid/tileset.json',

@@ -244,3 +244,19 @@ test('extensionless JSON is not probed during metadata inspection and cannot be 
     })()
   ).rejects.toMatchObject({code: 'UNSUPPORTED_BROWSER_TILESET_CONTENT'});
 });
+
+test.each([
+  '__proto__',
+  'constructor',
+  -1,
+  0.5,
+  NaN,
+  Infinity,
+  99
+])('selection rejects unsafe child index %s before traversing the document', async childIndex => {
+  const inspection = await createSource().source.inspect();
+  const original = structuredClone(inspection);
+  const descriptor = {...inspection.resources[0], tilePath: [childIndex] as number[]};
+  expect(() => selectBrowserTilesetContent(inspection, descriptor)).toThrow(/child indexes/);
+  expect(inspection).toEqual(original);
+});

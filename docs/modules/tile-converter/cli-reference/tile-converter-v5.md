@@ -65,6 +65,9 @@ not source hierarchy/LOD or ADD/REPLACE refinement. Every selected ancestor must
 finite nonnegative metric geometric error; the conservative error includes ancestor transform
 scaling and the 1 cm reconstruction allowance. Unknown/incompatible CRS, implicit tiling,
 instancing/composites and appearance/features outside the existing mesh profiles fail explicitly.
+Selected documents must have the same coordinate epoch as the root. Documents without a
+declared CRS inherit the qualified root reference; explicit epoch mismatches are rejected
+because epoch transformations are unsupported.
 
 ## Options and limits
 

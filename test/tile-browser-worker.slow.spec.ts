@@ -29,7 +29,14 @@ async function createWorkerInput(collection: boolean, compressed = false) {
   document.root!.children![0].contents![1].uri = contentUrl;
   if (collection) document.root!.children![1].content!.uri = contentUrl;
   return {
-    inspection: {...inspection, tileset: document, resources},
+    inspection: {
+      ...inspection,
+      tileset: document,
+      documents: inspection.documents?.map((placement, index) =>
+        index === 0 ? {...placement, tileset: document} : placement
+      ),
+      resources
+    },
     resourceIds: collection
       ? [resources[1].resourceId, resources[2].resourceId]
       : [resources[1].resourceId],

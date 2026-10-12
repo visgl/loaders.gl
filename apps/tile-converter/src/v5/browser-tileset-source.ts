@@ -219,7 +219,7 @@ export function createBrowserTilesetConversionSource(
             );
           }
           let tile = frame.tileset.root!;
-          for (const childIndex of descriptor.tilePath) tile = tile.children![childIndex];
+          for (const childIndex of descriptor.tilePath) tile = getTileChild(tile, childIndex);
           if (tile.children?.length) {
             throw new TileConversionError(
               'INVALID_BROWSER_TILESET',
@@ -298,7 +298,7 @@ export function selectBrowserTilesetContent(
       );
     maximum = Math.max(maximum, tile.geometricError * getTransformScale(transform));
     if (depth === descriptor.tilePath.length) break;
-    const child = tile.children![descriptor.tilePath[depth]];
+    const child = getTileChild(tile, descriptor.tilePath[depth]);
     delete tile.content;
     delete tile.contents;
     tile.children = [child];
@@ -336,6 +336,28 @@ export function selectBrowserTilesetContent(
     geometricError: maximum,
     isLeaf
   };
+}
+
+/** Resolves a numeric in-bounds child without allowing property names to traverse prototypes. */
+function getTileChild(tile: TilesetTile, childIndex: number): TilesetTile {
+  if (
+    typeof childIndex !== 'number' ||
+    !Number.isSafeInteger(childIndex) ||
+    childIndex < 0 ||
+    !Array.isArray(tile.children) ||
+    childIndex >= tile.children.length
+  )
+    throw new TileConversionError(
+      'INVALID_BROWSER_SELECTION',
+      'Tile paths require in-bounds nonnegative integer child indexes'
+    );
+  const child = tile.children.at(childIndex);
+  if (!isRecord(child))
+    throw new TileConversionError(
+      'INVALID_BROWSER_SELECTION',
+      'Selected child tile must be an object'
+    );
+  return child as TilesetTile;
 }
 
 /** Expands only declared JSON references; binary content is never requested during inspection. */

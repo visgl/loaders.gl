@@ -716,6 +716,9 @@ then converts selected binary contents using their declaring document's metadata
 relative URLs and combined placement. Content references without a .json suffix are not
 probed for external metadata. Implicit tiling remains unsupported. Source topology/refinement
 is not exported; source geometric error is conservatively scaled by ancestor placement.
+Selected documents must match the root coordinate epoch; explicit mismatches fail with
+`MESH_SOURCE_EPOCH_MISMATCH`. A document without a declared CRS inherits the qualified root
+reference. Epoch-aware transformations remain unsupported.
 
 ## Node inspection and raw content reads
 

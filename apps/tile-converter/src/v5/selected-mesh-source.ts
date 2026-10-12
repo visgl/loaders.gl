@@ -189,7 +189,15 @@ export async function createSelectedMeshConversionSource(
             }
           });
           const metadata = await meshSource.inspect(signal);
-          createTiles3DConversionSpatialContext(metadata.spatialReference!);
+          const selectedContext = createTiles3DConversionSpatialContext(metadata.spatialReference!);
+          if (
+            selectedContext.spatialReference.coordinateEpoch !==
+            spatialContext.spatialReference.coordinateEpoch
+          )
+            throw new TileConversionError(
+              'MESH_SOURCE_EPOCH_MISMATCH',
+              'Selected content coordinate epoch must match the root; epoch transformations are unsupported'
+            );
           let meshCount = 0;
           for await (const resource of meshSource.read(metadata, signal)) {
             meshCount++;
