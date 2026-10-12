@@ -1,5 +1,6 @@
 import {expect, test} from 'vitest';
-import {load} from '@loaders.gl/core';
+import {load, parse} from '@loaders.gl/core';
+import {createLegacyB3dm} from '../../utils/create-legacy-b3dm';
 import {Tiles3DLoader} from '@loaders.gl/3d-tiles';
 import {
   GLTF_PRIMITIVE_MODES,
@@ -38,4 +39,15 @@ test('tile-converter(i3s)#mergePreprocessData', async () => {
   });
   expect(Array.from(target.meshTopologyTypes)).toEqual(['POINTS', 'TRIANGLES']);
   expect(Array.from(target.metadataClasses)).toEqual(['metadata_class', 'metadata_class_2']);
+});
+
+test.each([
+  false,
+  true
+])('tile-converter(i3s)#analyzes original and normalized legacy mesh topology (modern: %s)', async modern => {
+  const {b3dm} = await createLegacyB3dm(modern);
+  const tileContent = await parse(b3dm, Tiles3DLoader, {'3d-tiles': {loadGLTF: false}});
+  const result = await analyzeTileContent(tileContent);
+  expect(Array.from(result.meshTopologyTypes)).toEqual(['TRIANGLES']);
+  expect(result.metadataClasses.size).toBe(0);
 });

@@ -98,6 +98,23 @@ docker pull visgl/tile-converter
 
 See more details [here](#docker-image)
 
+## Legacy glTF and SLPK completeness
+
+For B3DM input embedding glTF 1, preprocessing uses the same experimental glTF
+normalization as payload loading. Standard static mesh data can proceed without a
+separate upgrade step; custom techniques, shaders and invalid attributes may still
+produce normalization warnings and require correction. Custom-shader rendering is
+not guaranteed to remain equivalent.
+
+The converter writes a node index document for every converted mesh, including a
+content-bearing root with no children. Both the node-page and node-document paths
+can therefore resolve the authored geometry. Stored normals are declared as
+`earth-centered`, matching the converter's ECEF normal values and the
+[I3S normal-frame definition](https://github.com/Esri/i3s-spec/blob/master/docs/1.8/store.cmn.md).
+This corrects missing root-mesh documents and a normal-frame metadata mismatch
+associated with [#3224](https://github.com/visgl/loaders.gl/issues/3224); independent
+ArcGIS Pro rendering qualification remains necessary.
+
 ## Supported Platforms
 
 For tile-converter v4.0 and up:

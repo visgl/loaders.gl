@@ -32,7 +32,8 @@ export const STORE = {
   },
   normalReferenceFrame: {
     path: 'normalReferenceFrame',
-    default: 'east-north-up'
+    // Geometry conversion rotates normals into the ECEF frame.
+    default: 'earth-centered'
   },
   attributeEncoding: {
     path: 'attributeEncoding',
