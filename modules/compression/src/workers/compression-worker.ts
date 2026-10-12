@@ -17,6 +17,7 @@ export async function processCompressionWorkerRequest(data: ArrayBuffer, options
   const compression = await getCompression(String(options?.compression), operation, {
     modules: options?.modules,
     compressUtils: options?.compressUtils,
+    maxOutputByteLength: options?.maxOutputByteLength,
     raw: options?.raw,
     useNative: options?.useNative
   });

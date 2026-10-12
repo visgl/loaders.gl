@@ -53,4 +53,13 @@ test('LZO worker loads its decoder asset and forwards output capacity', async ()
     _workerType: 'test'
   });
   expect(new TextDecoder().decode(output)).toBe('hello');
+  await expect(
+    processOnWorker(CompressionWorker, LZO_HELLO.slice(0), {
+      compression: 'lzo',
+      operation: 'decompress',
+      expectedSize: 10,
+      maxOutputByteLength: 4,
+      _workerType: 'test'
+    })
+  ).rejects.toThrow(/capacity limit/);
 });

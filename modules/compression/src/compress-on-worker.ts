@@ -14,6 +14,8 @@ export type CompressionWorkerOptions = {
   operation: 'compress' | 'decompress';
   /** Output capacity for raw LZ4 or LZO decoding. */
   expectedSize?: number;
+  /** Maximum caller-supplied output capacity in bytes. Defaults to 512 MiB. */
+  maxOutputByteLength?: number;
   /** Selects raw DEFLATE or LZ4 data. */
   raw?: boolean;
   /** Encoder/decoder settings forwarded to compress-utils. */
