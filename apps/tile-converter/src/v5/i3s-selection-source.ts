@@ -75,7 +75,7 @@ function createRuntime(
       useLocalLibraries: libraries.useLocalLibraries
     },
     draco: {decoderProfile: libraries.decoderProfile},
-    searchParams: Object.fromEntries(new URL(transport.rootUrl).searchParams),
+    // The injected transport owns credential scope; runtime query parameters apply to every URL.
     i3s: {geometryMode: 'source' as const, decodeTextures: false, useCompressedTextures: false}
   };
   /** Parses a source-managed resource with the same transport available to nested dependencies. */

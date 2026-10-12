@@ -321,3 +321,65 @@ test('IntegratedMesh to SLPK requires an explicit layer-type policy and reports 
     true
   );
 });
+
+test('per-call inspection cancellation reaches pending I3S metadata transport', async () => {
+  let notifyStarted!: () => void;
+  const started = new Promise<void>(resolve => {
+    notifyStarted = resolve;
+  });
+  const fetcher: typeof fetch = async (_input, options) =>
+    new Promise((_resolve, reject) => {
+      options!.signal!.addEventListener('abort', () => reject(options!.signal!.reason), {
+        once: true
+      });
+      notifyStarted();
+    });
+  const source = await createNodeI3SConversionSource({
+    input: 'https://example.invalid/layers/0',
+    format: 'i3s',
+    fetcher
+  });
+  const controller = new AbortController();
+  const inspection = source.inspect(controller.signal);
+  const rejected = expect(inspection).rejects.toThrow('Canceled metadata inspection');
+  try {
+    await started;
+    controller.abort(new Error('Canceled metadata inspection'));
+    await rejected;
+  } finally {
+    await source.close();
+  }
+});
+
+test('I3S runtime does not propagate layer query credentials outside its layer path', async () => {
+  const layerFetcher = createLayerFetcher();
+  const fetcher: typeof fetch = async (input, options) => {
+    const url = new URL(input instanceof Request ? input.url : String(input));
+    if (url.pathname === '/external/object-id') {
+      expect(url.searchParams.has('token')).toBe(false);
+      return new Response(resources['nodes/1/attributes/f_0/0.bin']);
+    }
+    const response = await layerFetcher(input, options);
+    if (url.pathname === '/layers/0') {
+      const layer = await response.json();
+      delete layer.nodePages;
+      return new Response(JSON.stringify(layer));
+    }
+    if (url.pathname === '/layers/0/nodes/1') {
+      const header = await response.json();
+      delete header.textureData;
+      header.attributeData[0].href = './../../../../external/object-id';
+      return new Response(JSON.stringify(header));
+    }
+    return response;
+  };
+  const report = await convertNodeTileset({
+    input: 'https://example.invalid/layers/0?token=fixture-token',
+    format: 'i3s',
+    resourceIds: ['1'],
+    outputFormat: 'slpk',
+    i3sFeatures,
+    fetcher
+  });
+  expect(report.state).toBe('completed');
+});

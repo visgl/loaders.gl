@@ -142,9 +142,19 @@ export async function createNodeI3SConversionSource(options: NodeI3SConversionSo
       async inspect(operationSignal?: AbortSignal) {
         signal.throwIfAborted();
         operationSignal?.throwIfAborted();
+        const activeSignal = operationSignal ? AbortSignal.any([signal, operationSignal]) : signal;
+        /** Forwards borrowed operation cancellation without closing the owning source. */
+        const operationFetcher: typeof fetch = (input, requestOptions) =>
+          fetcher(input, {
+            ...requestOptions,
+            signal: requestOptions?.signal
+              ? AbortSignal.any([activeSignal, requestOptions.signal])
+              : activeSignal
+          });
         const inspection = await inspectI3SMeshConversionSource({
           ...selectionOptions,
-          signal: operationSignal ? AbortSignal.any([signal, operationSignal]) : signal
+          fetcher: operationFetcher,
+          signal: activeSignal
         });
         return {...inspection, metadataBytes};
       },
