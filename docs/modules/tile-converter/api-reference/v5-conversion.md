@@ -724,7 +724,7 @@ reference. Epoch-aware transformations remain unsupported.
 
 The dedicated `@loaders.gl/tile-converter/v5/node` entrypoint provides
 `createNodeTilesetConversionSource` for explicit 3D Tiles JSON paths/file URLs, HTTP(S) JSON
-URLs and local 3TZ archives. It supplies Node I/O to the existing portable traversal:
+URLs and local/remote 3TZ archives. It supplies Node I/O to the existing portable traversal:
 
 ```ts
 import {inspectTileset} from '@loaders.gl/tile-converter/v5/core';
@@ -758,8 +758,7 @@ source sequentially, keep input files unchanged during its lifetime and always c
 
 Inspection reads metadata without loading content, validates the existing explicit 1.0/1.1
 document profile and preserves ordered placements/transforms. Raw reads do not decode meshes,
-infer CRS or qualify content formats. Set `maxTilesetDocuments` (up to 32) to enable raw external-document traversal; add `inspectNestedTilesets: true` to inspect declared .json references without fetching binary contents. Implicit tiling remains unsupported. I3S/SLPK sources and
-remote archives remain separate Node profiles. Browser and core entrypoints remain free of
+infer CRS or qualify content formats. Set `maxTilesetDocuments` (up to 32) to enable raw external-document traversal; add `inspectNestedTilesets: true` to inspect declared .json references without fetching binary contents. Implicit tiling remains unsupported. I3S/SLPK use the separate Node source below. Browser and core entrypoints remain free of
 Node imports.
 
 The [v5 CLI](/docs/modules/tile-converter/cli-reference/tile-converter-v5) exposes this
@@ -782,7 +781,7 @@ const report = await convertNodeTileset({
 
 Omit `output` for target-profile validation without writing. `outputFormat` accepts
 `3d-tiles` (directory), `3tz` and `slpk`; `maxOutputBytes` may lower the 32 MiB ceiling.
-Service callers may also supply the existing explicit `features` mapping; the initial CLI
+Service callers may also supply the existing explicit `features` (3D Tiles) or `i3sFeatures` mapping; the initial CLI
 rejects feature-bearing content because it provides no mapping option. Conversion owns and
 closes the raw Node source before publishing output. It reuses the
 portable `createSelectedMeshConversionSource`, `SELECTED_MESH_LIMITS`, mesh codecs and sinks.
@@ -790,6 +789,49 @@ That source accepts an inspected document, explicit `resourceIds`, `signal`, app
 `dracoLibraryOptions`, optional `fetcher`, confined raw `source`, `features` and a lower
 `maxInputBytes`. Its owner retains the platform source lifetime. `measureMeshBytes` accounts
 for decoded geometry, encoded images, feature columns and triangle associations.
+
+### Node I3S and SLPK selection
+
+`createNodeI3SConversionSource` accepts `format: 'i3s'` for an HTTP(S) layer URL, or
+`format: 'slpk'` for a local path/file URL or remote archive. It exposes `inspect(signal?)`,
+`select(inspection, resourceIds, dracoLibraryOptions, features?)` and idempotent `close()`.
+Use one source sequentially and close it in `finally`. Its transport budget covers metadata,
+content, textures and attributes; archive size/indexed reads and decoded meshes have separate
+bounds. Node source options may lower the existing 16 MiB and 1,000-node ceilings.
+
+`convertNodeTileset` owns that lifetime and accepts these same input formats:
+
+```ts
+const report = await convertNodeTileset({
+  input: './dataset.slpk',
+  format: 'slpk',
+  resourceIds: ['1'],
+  geometricError: 2, // Explicit meters; required for I3S to 3D Tiles targets.
+  outputFormat: '3tz',
+  output: './selected.3tz'
+});
+```
+
+I3S native decoding uses the existing shared CRS/elevation context with EPSG:4978 as target.
+It never applies renderer projection. No new CRS definitions or epoch operations are supplied.
+`integratedMeshPolicy: 'as-3d-object'` explicitly authorizes IntegratedMesh to SLPK and reports
+that layer-type change. Output remains I3S 1.7 3DObject or a partial flat 3D Tiles 1.1 collection.
+The CLI provides these policies but no feature-schema mapping controls.
+
+The portable `inspectI3SMeshConversionSource` and `createSelectedI3SMeshConversionSource`
+accept an injected lifetime-budgeted `fetcher`, `rootUrl`, `signal`, `dracoLibraryOptions`
+and optional lower byte/node limits. Their owner manages transport lifetime. The browser example
+uses these same adapters and retains its cloneable inspection/worker contract.
+
+`openTileConversionArchive` accepts an explicit SLPK/3TZ Blob or HTTP(S) descriptor, byte
+budget, signal and optional fetcher. `createTileConversionArchiveTransport` takes ownership of
+an already opened `ReadableFile` for Node or injected storage. Both return a confined virtual
+`rootUrl`, entry `fetcher` and idempotent `close`; the opener also returns a cloneable descriptor
+with the remote identity for worker reopening. Completed reads and cached lookups reject after
+close. Remote inputs require exact HTTP 206 ranges and stable validator/length identity, without
+full-download fallback. Weak or malformed ETags are rejected, even when a Last-Modified header is also present; the Last-Modified fallback requires an absent ETag and a valid Date at least 60 seconds later. Browser servers must expose Date for this fallback. See [HTTP validator semantics](https://www.rfc-editor.org/rfc/rfc9110.html#section-8.8.2.2). Budgets do not establish total peak-memory bounds or independent viewer
+interoperability. Local archive files and remote resources must remain unchanged while used.
+Node I3S redirects are explicitly rejected; use final URLs.
 
 `selectBrowserTilesetContent` clones a selected document path and returns `tileset`,
 `contentUrl`, `geometricError` and `isLeaf`. Expanded inspections contain `documents`;

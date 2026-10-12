@@ -183,9 +183,6 @@ test('opening rejects oversize files, unsupported protocols and unbounded option
     createNodeTilesetConversionSource({input: archivePath, format: '3tz', maxInputBytes: 1})
   ).rejects.toMatchObject({code: 'INPUT_RESOURCE_TOO_LARGE'});
   await expect(
-    createNodeTilesetConversionSource({input: 'https://example.invalid/a.3tz', format: '3tz'})
-  ).rejects.toMatchObject({code: 'UNSUPPORTED_NODE_SOURCE'});
-  await expect(
     createNodeTilesetConversionSource({input: 'ftp://example.invalid/input'})
   ).rejects.toMatchObject({code: 'UNSUPPORTED_NODE_SOURCE'});
   for (const maxInputBytes of [0, Infinity, NODE_TILESET_LIMITS.maxInputBytes + 1])
@@ -236,7 +233,7 @@ test.each([
   ['convert', 'input'],
   ['inspect'],
   ['inspect', 'input', '--unknown'],
-  ['inspect', 'input', '--input-format', 'i3s'],
+  ['inspect', 'input', '--input-format', 'potree'],
   ['inspect', 'input', '--max-input-bytes', '1.5'],
   ['inspect', 'input', '--max-resources', '0']
 ])('CLI rejects invalid arguments %j with JSON stderr', async argumentsList => {

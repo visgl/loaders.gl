@@ -11,3 +11,6 @@ export type {
 
 export {convertNodeTileset, writeNodeTileConversionOutput} from './node-conversion.js';
 export type {NodeTileConversionOptions, NodeTileConversionOutputFormat} from './node-conversion.js';
+
+export {createNodeI3SConversionSource} from './node-i3s-source.js';
+export type {NodeI3SConversionSourceOptions} from './node-i3s-source.js';

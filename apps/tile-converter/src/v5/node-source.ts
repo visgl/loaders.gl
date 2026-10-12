@@ -17,6 +17,7 @@ import type {
   TileConversionSource
 } from '@loaders.gl/tile-converter/v5/core';
 import {createTileConversionResourceFetcher} from './resource-fetcher.js';
+import {openTileConversionArchive} from './archive-source.js';
 
 /** Maximum budgets for the initial Node source profile; callers may lower them. */
 export const NODE_TILESET_LIMITS = {
@@ -32,7 +33,7 @@ export const NODE_TILESET_LIMITS = {
 export interface NodeTilesetConversionSourceOptions {
   /** Local tileset JSON/3TZ path, file URL, or HTTP(S) tileset JSON URL. */
   readonly input: string;
-  /** Explicit input format; remote 3TZ is not part of this initial Node profile. */
+  /** Explicit JSON or indexed archive input format. */
   readonly format?: '3d-tiles' | '3tz';
   /** Positive response/indexed-read budget, at most 16 MiB. */
   readonly maxInputBytes?: number;
@@ -95,6 +96,7 @@ export async function createNodeTilesetConversionSource(
     ? AbortSignal.any([controller.signal, options.signal])
     : controller.signal;
   let archiveFile: ReadableFile | undefined;
+  let closeArchive: (() => Promise<void>) | undefined;
   let consumedReadBytes = 0;
   /** Reserves physical file bytes before allocation, including repeated indexed reads. */
   const reserveRead = (length: number): void => {
@@ -117,15 +119,20 @@ export async function createNodeTilesetConversionSource(
         'Use a local path, file URL or HTTP(S) tileset URL'
       );
     const remote = inputUrl && inputUrl.protocol !== 'file:';
-    if (remote && options.format === '3tz')
-      throw new TileConversionError(
-        'UNSUPPORTED_NODE_SOURCE',
-        'Remote 3TZ is not supported by the initial Node source'
-      );
     let rootUrl: string;
     let transport: typeof fetch;
     let virtualRoot: URL | undefined;
-    if (remote) {
+    if (remote && options.format === '3tz') {
+      const archive = await openTileConversionArchive(
+        {input: inputUrl.href, format: '3tz'},
+        maxInputBytes,
+        lifetimeSignal,
+        options.fetcher
+      );
+      rootUrl = archive.rootUrl;
+      transport = archive.fetcher;
+      closeArchive = archive.close;
+    } else if (remote) {
       rootUrl = inputUrl.href;
       transport = options.fetcher ?? fetch;
     } else {
@@ -214,10 +221,12 @@ export async function createNodeTilesetConversionSource(
         controller.abort(new TileConversionError('NODE_SOURCE_CLOSED', 'Node source is closed'));
         const file = archiveFile;
         archiveFile = undefined;
+        await closeArchive?.();
         await file?.close();
       }
     };
   } catch (error) {
+    await closeArchive?.();
     await archiveFile?.close();
     throw error;
   }
@@ -246,7 +255,7 @@ function getLocalResourcePath(input: RequestInfo | URL, root: URL): string {
 }
 
 /** Opens a real Node file and provides checked typed-array reads without Node Buffer. */
-async function openLocalFile(
+export async function openLocalFile(
   path: string,
   maxInputBytes: number,
   signal: AbortSignal,

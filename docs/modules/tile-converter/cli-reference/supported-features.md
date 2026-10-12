@@ -48,12 +48,14 @@ The tile-converter converts data between [3D Tiles](https://github.com/CesiumGS/
 The [v5 CLI](/docs/modules/tile-converter/cli-reference/tile-converter-v5) supports metadata-only
 `inspect`, explicitly selected native-ECEF mesh `convert` and write-free target-profile
 `validate`. Inputs are explicit 3D Tiles 1.0/1.1 JSON paths/file URLs or HTTP(S) JSON URLs,
-and local 3TZ. Declared .json external metadata is inspected up to 32 placements. Targets are
+local/remote 3TZ, HTTP(S) I3S mesh layers and local/remote SLPK. Declared .json external metadata is inspected up to 32 placements. Targets are
 3D Tiles directories, 3TZ and SLPK, using the same portable codecs as the browser example.
 Selections/output are partial flat collections, with no source hierarchy/LOD preservation.
 Existing destinations are protected. Limits are 16 MiB input, 1,000 declarations, 64 meshes and
-32 MiB output/archive; these are not peak-memory bounds. I3S/SLPK inputs, remote archives,
-services and whole-dataset validation remain follow-ups. The original CLI remains v4.
+32 MiB output/archive; these are not peak-memory bounds. I3S uses explicit feature mappings
+(service API), declared spatial preparation and a supplied metric geometric error for 3D Tiles
+output. IntegratedMesh to SLPK requires an explicit layer-type policy. Services, complete
+traversal and whole-dataset validation remain follow-ups. The original CLI remains v4.
 
 ## Experimental v5 conversion support
 
@@ -64,7 +66,7 @@ qualify every dataset, standard version or extension combination.
 | Input profile | Authored output | Execution and boundaries |
 | --- | --- | --- |
 | Static GLB/B3DM mesh contents from 3D Tiles | I3S/SLPK or GLB-based 3D Tiles/3TZ | API, browser example and bounded v5 Node CLI; resolved native EPSG:4978 input, static placements and explicit feature mapping |
-| I3S `3DObject` or `IntegratedMesh` node meshes | I3S/SLPK or GLB-based 3D Tiles/3TZ | API and browser example; source-coordinate decoding, declared CRS/height operations and explicit attribute mapping |
+| I3S `3DObject` or `IntegratedMesh` node meshes | I3S/SLPK or GLB-based 3D Tiles/3TZ | API, browser example and bounded v5 Node workflow; source-coordinate decoding, declared CRS/height operations and explicit attribute mapping |
 | Decoded native point Mesh/Arrow data | Potree 1.0–1.8/2.0 files or STORE ZIP bundle | API only; explicit CRS, precision and allocation budgets; additive octree ownership; independent viewer/LOD qualification remains open |
 | Decoded point Mesh/Arrow data or selected point-source tiles | PNTS, partial 3D Tiles or 3TZ | API only; explicit coordinate/precision/sampling-error contract; broader LAS/COPC/I3S input qualification remains open |
 | Finalized I3S or 3D Tiles resources | Indexed SLPK or 3TZ | Blob or streaming packaging; packaging alone performs no format conversion |
