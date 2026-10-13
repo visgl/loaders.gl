@@ -252,6 +252,10 @@ All prebuilt codec workers and standalone bundles use separate WASM binaries in 
 Serve browser workers together with their sibling `codec-assets` directory,
 with the WASM files using `application/wasm` and appropriate CORS headers for cross-origin use.
 
+For this example, copy `dist/compression-worker.mjs` and `dist/codec-assets` from the installed
+package to your application's public `/workers/` directory. The URL is a hosted application path,
+not a bare package specifier; `new URL()` does not perform package resolution.
+
 ```typescript
 import {CompressionWorker} from '@loaders.gl/compression';
 import {processOnWorker} from '@loaders.gl/worker-utils';
@@ -259,7 +263,7 @@ import {processOnWorker} from '@loaders.gl/worker-utils';
 const worker = {
   ...CompressionWorker,
   loadWorker: () => new Worker(
-    new URL('@loaders.gl/compression/compression-worker.mjs', import.meta.url),
+    new URL('/workers/compression-worker.mjs', globalThis.location.href),
     {type: 'module'}
   )
 };
