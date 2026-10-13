@@ -155,3 +155,13 @@ test('CSVWriter#arrow-table ', async () => {
     expect(output, name).toBe(expected);
   }
 });
+
+test('CSVWriter escapes header names and every line-break form', async () => {
+  const input = makeTestTable([
+    [{name: 'comma,quote"', type: 'utf8'}, ['a\rb', 'a\r\nb', 'a\nb', 'é', '']],
+    [{name: 'plain', type: 'utf8'}, [null, '', '""', 'x,y', 'last']]
+  ]);
+  expect(await encodeTableAsText(input, CSVWriter)).toBe(
+    '"comma,quote""",plain\n"a\rb",\n"a\r\nb",\n"a\nb",""""""\né,"x,y"\n,last'
+  );
+});

@@ -5,7 +5,6 @@
 
 import type {Table} from '@loaders.gl/schema';
 import {makeArrayRowIterator, getTableNumCols} from '@loaders.gl/schema-utils';
-import {csvFormatRows} from 'd3-dsv';
 import type {CSVWriterOptions} from '../../csv-writer';
 
 type EncodableData = string | null;
@@ -40,7 +39,7 @@ export function encodeTableAsCSV(
   // We represent missing values as '', leaving the option for the app to explicity represent 'null'.
   const stringsOnly = formattedData.map(row => row.map(value => (value === null ? '' : value)));
 
-  return csvFormatRows(stringsOnly);
+  return stringsOnly.map(row => row.map(formatCSVField).join(',')).join('\n');
 }
 
 /**
@@ -63,3 +62,8 @@ const preformatFieldValue = (value: unknown): EncodableData => {
   }
   return String(value);
 };
+
+/** Quotes a preformatted CSV field when it contains a delimiter, quote, or line break. */
+function formatCSVField(value: string): string {
+  return /[",\r\n]/.test(value) ? '"' + value.replace(/"/g, '""') + '"' : value;
+}
