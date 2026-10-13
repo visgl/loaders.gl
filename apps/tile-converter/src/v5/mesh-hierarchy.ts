@@ -13,8 +13,29 @@ import type {BrowserTilesetConversionInspection} from '@loaders.gl/tile-converte
 import {createMeshTileset} from './mesh-tileset-sink.js';
 import type {MeshTilesetSink} from './mesh-tileset-sink.js';
 
+/** A source content declaration whose non-geometric semantics require explicit mapping. */
+type SourceContent = {
+  /** Relative or absolute content resource URI. */
+  uri?: string;
+  /** Legacy alias for the content URI. */
+  url?: string;
+  /** Unmapped per-content metadata. */
+  metadata?: unknown;
+  /** Unmapped dataset content-group association. */
+  group?: unknown;
+  /** Unmapped content extensions. */
+  extensions?: unknown;
+};
+
 /** JSON fields requiring explicit qualification before hierarchy preservation. */
-type SourceTile = NonNullable<BrowserTilesetConversionInspection['tileset']['root']> & {
+type SourceTile = Omit<
+  NonNullable<BrowserTilesetConversionInspection['tileset']['root']>,
+  'content' | 'contents' | 'children'
+> & {
+  /** Single content declaration, exclusive with contents. */
+  content?: SourceContent;
+  /** Ordered 1.1 contents with the same qualification as single content. */
+  contents?: SourceContent[];
   /** Effective refinement; the root must declare this policy. */
   refine?: 'ADD' | 'REPLACE';
   /** Children with the same explicit JSON shape. */
@@ -26,7 +47,7 @@ type SourceTile = NonNullable<BrowserTilesetConversionInspection['tileset']['roo
 };
 
 /** Explicit document fields requiring hierarchy and spatial qualification. */
-type HierarchyDocument = BrowserTilesetConversionInspection['tileset'] & {
+type HierarchyDocument = Omit<BrowserTilesetConversionInspection['tileset'], 'root'> & {
   /** Root with hierarchy qualification fields. */
   root: SourceTile;
   /** Optional dataset-level metric error. */
@@ -57,6 +78,8 @@ interface OutputTile {
   refine: 'ADD' | 'REPLACE';
   /** Converted GLB, absent on contentless source ancestors. */
   content?: {uri: string};
+  /** Ordered converted GLBs sharing this tile's coordinate frame. */
+  contents?: {uri: string}[];
   /** Original immediate children in declaration order. */
   children?: OutputTile[];
 }
@@ -65,8 +88,8 @@ interface OutputTile {
 interface HierarchyNode {
   /** Indexes of this tile's immediate children. */
   readonly children: number[];
-  /** Source content placement, absent on contentless ancestors. */
-  readonly resourceId?: string;
+  /** Ordered source content placements, empty on contentless ancestors. */
+  readonly resourceIds: string[];
   /** Source metric error in the baked ECEF frame. */
   readonly geometricError: number;
   /** Effective source refinement, including inheritance. */
@@ -228,11 +251,15 @@ export function prepareMeshHierarchy(
       tile.extensions !== undefined ||
       tile.metadata !== undefined ||
       tile.viewerRequestVolume !== undefined ||
-      tile.contents !== undefined ||
+      (tile.content !== undefined && tile.contents !== undefined) ||
+      (tile.contents !== undefined &&
+        (!Array.isArray(tile.contents) ||
+          !tile.contents.length ||
+          document.asset?.version !== '1.1')) ||
       (tile.children !== undefined && !Array.isArray(tile.children))
     )
       rejectHierarchy(
-        'Hierarchy tiles require explicit children, one content and no unmapped metadata, extensions or request volumes'
+        'Hierarchy tiles require explicit children, exclusive content/contents declarations and no unmapped metadata, extensions or request volumes'
       );
     const refine = tile.refine ?? inheritedRefine;
     if (refine !== 'ADD' && refine !== 'REPLACE')
@@ -269,23 +296,46 @@ export function prepareMeshHierarchy(
       Array.from(transform).some(value => !Number.isFinite(value))
     )
       rejectHierarchy('Every hierarchy tile must declare a finite nonnegative metric error');
-    const resourceId = tile.content
-      ? `${prefix}tile-${path.length ? path.join('-') : 'root'}-content-0`
-      : undefined;
-    const externalIndex = resourceId ? externalDocuments.get(resourceId) : undefined;
-    if (externalIndex !== undefined) {
-      const content = tile.content as {metadata?: unknown; group?: unknown; extensions?: unknown};
+    const contents = tile.contents ?? (tile.content ? [tile.content] : []);
+    const identifiers = contents.map(
+      (_, contentIndex) =>
+        `${prefix}tile-${path.length ? path.join('-') : 'root'}-content-${contentIndex}`
+    );
+    const externalIndexes = identifiers.map(identifier => externalDocuments.get(identifier));
+    const externalIndex = externalIndexes.find(index => index !== undefined);
+    for (const [contentIndex, content] of contents.entries()) {
       if (
+        !content ||
+        typeof content !== 'object' ||
+        Array.isArray(content) ||
         content.metadata !== undefined ||
         content.group !== undefined ||
         content.extensions !== undefined
       )
+        rejectHierarchy('Content metadata, groups and extensions require a separate mapping');
+      if (
+        externalIndexes[contentIndex] === undefined &&
+        !inspection.resources.some(
+          resource =>
+            resource.resourceId === identifiers[contentIndex] &&
+            resource.documentIndex === documentIndex &&
+            resource.uri === (content.uri ?? content.url) &&
+            resource.tilePath.length === path.length &&
+            resource.tilePath.every((value, index) => value === path[index])
+        )
+      )
+        rejectHierarchy('Hierarchy content must match the inspected placement');
+    }
+    const resourceId = identifiers[0];
+    if (externalIndex !== undefined) {
+      if (
+        contents.length !== 1 ||
+        tile.contents !== undefined ||
+        tile.children?.length ||
+        visitedDocuments.has(externalIndex)
+      )
         rejectHierarchy(
-          'External reference content metadata, groups and extensions require a separate mapping'
-        );
-      if (tile.children?.length || visitedDocuments.has(externalIndex))
-        rejectHierarchy(
-          'External references require no source children and a unique document placement'
+          'External references require a single content, no source children and a unique document placement'
         );
       visitedDocuments.add(externalIndex);
       const placement = inspection.documents[externalIndex];
@@ -304,23 +354,10 @@ export function prepareMeshHierarchy(
       )
         rejectHierarchy('External documents require an inspected .json content reference');
     }
-    if (
-      resourceId &&
-      externalIndex === undefined &&
-      !inspection.resources.some(
-        resource =>
-          resource.resourceId === resourceId &&
-          resource.documentIndex === documentIndex &&
-          resource.uri === (tile.content?.uri ?? tile.content?.url) &&
-          resource.tilePath.length === path.length &&
-          resource.tilePath.every((value, index) => value === path[index])
-      )
-    )
-      rejectHierarchy('Hierarchy content must match the inspected placement');
     const index = nodes.length;
     nodes.push({
       children: [],
-      resourceId: externalIndex === undefined ? resourceId : undefined,
+      resourceIds: externalIndex === undefined ? identifiers : [],
       geometricError: Math.max(
         geometricError,
         externalIndex === undefined ? 0 : (documents[externalIndex].geometricError ?? 0)
@@ -354,8 +391,8 @@ export function prepareMeshHierarchy(
   }
   if (
     visitedDocuments.size !== documents.length ||
-    nodes.filter(node => node.resourceId).length !== resourceIds.length ||
-    nodes.some(node => !node.resourceId && !node.children.length)
+    nodes.reduce((count, node) => count + node.resourceIds.length, 0) !== resourceIds.length ||
+    nodes.some(node => !node.resourceIds.length && !node.children.length)
   )
     rejectHierarchy('Contentless leaves or unmatched content placements cannot be preserved');
   const geometricError = document.geometricError ?? nodes[0].geometricError;
@@ -425,7 +462,7 @@ export function createMeshHierarchyTilesetSink(
         state !== 'open' ||
         !identifier ||
         placements.has(identifier) ||
-        !hierarchy.nodes.some(node => node.resourceId === identifier)
+        !hierarchy.nodes.some(node => node.resourceIds.includes(identifier))
       )
         throw new TileConversionError(
           'MESH_HIERARCHY_PLACEMENT_INVALID',
@@ -438,7 +475,16 @@ export function createMeshHierarchyTilesetSink(
         );
       // Reuse the owning sink's frame, precision and bounds qualification.
       const tile = createMeshTileset(resource, maxPositionError).root;
-      const uri = `meshes/${hierarchy.nodes.findIndex(node => node.resourceId === identifier)}.glb`;
+      const nodeIndex = hierarchy.nodes.findIndex(node => node.resourceIds.includes(identifier));
+      const node = hierarchy.nodes[nodeIndex];
+      const sibling = node.resourceIds.map(identifier => placements.get(identifier)).find(Boolean);
+      if (sibling && sibling.origin.some((value, axis) => value !== resource.origin[axis]))
+        throw new TileConversionError(
+          'MESH_HIERARCHY_PLACEMENT_INVALID',
+          'Contents on one tile must share an encoded origin'
+        );
+      const suffix = node.resourceIds.length > 1 ? '-' + node.resourceIds.indexOf(identifier) : '';
+      const uri = `meshes/${nodeIndex}${suffix}.glb`;
       state = 'writing';
       await memory.write(
         {resourceId: uri, parts: [resource.glb], contentType: 'model/gltf-binary'},
@@ -456,7 +502,8 @@ export function createMeshHierarchyTilesetSink(
     async finalize(report) {
       if (
         state !== 'open' ||
-        placements.size !== hierarchy.nodes.filter(node => node.resourceId).length
+        placements.size !==
+          hierarchy.nodes.reduce((count, node) => count + node.resourceIds.length, 0)
       )
         throw new TileConversionError(
           'MESH_HIERARCHY_INCOMPLETE',
@@ -466,16 +513,17 @@ export function createMeshHierarchyTilesetSink(
       const tiles: OutputTile[] = new Array(hierarchy.nodes.length);
       const bounds: number[][][] = new Array(hierarchy.nodes.length);
       const transforms = hierarchy.nodes.map(node => {
-        const placement = node.resourceId ? placements.get(node.resourceId)! : undefined;
+        const placement = placements.get(node.resourceIds[0]);
         return placement ? new Matrix4(placement.transform) : new Matrix4();
       });
       for (let index = hierarchy.nodes.length - 1; index >= 0; index--) {
         const node = hierarchy.nodes[index];
-        const placement = node.resourceId ? placements.get(node.resourceId)! : undefined;
+        const placement = placements.get(node.resourceIds[0]);
         const minimum = [Infinity, Infinity, Infinity];
         const maximum = [-Infinity, -Infinity, -Infinity];
         const contributors = node.children.map(child => bounds[child]);
-        if (placement)
+        for (const identifier of node.resourceIds) {
+          const placement = placements.get(identifier)!;
           contributors.push(
             placement.localBoundingBox.map((bound, boundIndex) =>
               bound.map((value, axis) => {
@@ -493,6 +541,7 @@ export function createMeshHierarchyTilesetSink(
               })
             )
           );
+        }
         for (const [lower, upper] of contributors)
           for (let axis = 0; axis < 3; axis++) {
             minimum[axis] = Math.min(minimum[axis], lower[axis]);
@@ -526,7 +575,15 @@ export function createMeshHierarchyTilesetSink(
           boundingVolume: {box: [...center, ...halfAxes]},
           geometricError: node.geometricError + maxPositionError,
           refine: node.refine,
-          ...(placement ? {content: {uri: placement.uri}} : {}),
+          ...(node.resourceIds.length > 1
+            ? {
+                contents: node.resourceIds.map(identifier => ({
+                  uri: placements.get(identifier)!.uri
+                }))
+              }
+            : placement
+              ? {content: {uri: placement.uri}}
+              : {}),
           ...(node.children.length
             ? {
                 children: node.children.map(child => {
