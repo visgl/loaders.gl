@@ -21,7 +21,7 @@ export type PMTilesTileInput = Iterable<PMTilesTile> | AsyncIterable<PMTilesTile
 export type PMTilesTileType = 'mvt' | 'mlt' | 'png' | 'jpeg' | 'webp' | 'avif';
 
 /** Encoding controls for a bounded, in-memory PMTiles v3 archive. */
-export interface PMTilesEncodeOptions {
+export type PMTilesEncodeOptions = {
   /** Declares the existing payload format; required, never inferred from opaque bytes. */
   readonly tileType: PMTilesTileType;
   /** Existing compression of all payloads; default none. Payloads are not recompressed. */
@@ -42,4 +42,4 @@ export interface PMTilesEncodeOptions {
   readonly maxMetadataBytes?: number;
   /** Cancellation checked during enumeration and between encoding stages. */
   readonly signal?: AbortSignal;
-}
+};
