@@ -383,3 +383,34 @@ test('I3S runtime does not propagate layer query credentials outside its layer p
   });
   expect(report.state).toBe('completed');
 });
+
+test('CLI validates feature-bearing SLPK with format-specific schema controls', async () => {
+  const mapping = join(directory, 'i3s-feature-schema.json');
+  await writeFile(mapping, JSON.stringify(i3sFeatures));
+  const stdout: string[] = [];
+  const stderr: string[] = [];
+  const argumentsList = [
+    'validate',
+    inputPath,
+    '--input-format',
+    'slpk',
+    '--resource',
+    '1',
+    '--geometric-error',
+    '2',
+    '--feature-schema',
+    mapping
+  ];
+  expect(
+    await runTileConverterCLI(argumentsList, {
+      stdout: text => stdout.push(text),
+      stderr: text => stderr.push(text)
+    })
+  ).toBe(0);
+  expect(stderr).toEqual([]);
+  expect(JSON.parse(stdout[0]).report).toMatchObject({
+    state: 'completed',
+    inputResources: 1,
+    outputResources: 1
+  });
+});

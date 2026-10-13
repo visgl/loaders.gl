@@ -455,3 +455,176 @@ test('injected sources yielding uninspected placements fail explicitly before de
     selection.source.read(inspection)[Symbol.asyncIterator]().next()
   ).rejects.toMatchObject({code: 'INVALID_BROWSER_SELECTION'});
 });
+
+test('hierarchy keeps ordered contents on one tile and encloses every content', async () => {
+  const document = createDocument();
+  const content = document.root.content;
+  delete (document.root as {content?: unknown}).content;
+  Object.assign(document.root, {contents: [content, {uri: 'second.glb'}]});
+  const options = createOptions(await inspect(document));
+  const sink = createMeshHierarchyTilesetSink(options);
+  const origin: [number, number, number] = [6378137, 0, 0];
+  const first = createResource('tile-root-content-0', origin);
+  const second = {
+    ...createResource('tile-root-content-1', origin),
+    localBoundingBox: [
+      [100, 0, 0],
+      [101, 1, 0]
+    ]
+  };
+  await sink.write(second);
+  await expect(sink.write({...first, origin: [6378138, 0, 0]})).rejects.toThrow(
+    'share an encoded origin'
+  );
+  for (const identifier of options.resourceIds.slice(2))
+    await sink.write(createResource(identifier, origin));
+  await expect(sink.finalize!(REPORT)).rejects.toThrow('every declared');
+  expect(sink.getFiles()).toEqual([]);
+  await sink.write(first);
+  await sink.finalize!(REPORT);
+  const output = await readDocument(sink);
+  expect(output.root.content).toBeUndefined();
+  expect(output.root.contents).toEqual([{uri: 'meshes/0-0.glb'}, {uri: 'meshes/0-1.glb'}]);
+  expect(output.root.refine).toBe('REPLACE');
+  expect(output.root.children).toHaveLength(2);
+  const center = new Matrix4(output.root.transform).transformAsPoint(
+    output.root.boundingVolume.box.slice(0, 3)
+  );
+  expect(center[0]).toBeCloseTo(6378187.5);
+  expect(output.root.boundingVolume.box[3]).toBeGreaterThanOrEqual(50.5);
+});
+
+test.each([
+  false,
+  true
+])('shared extraction rebases multiple contents and enforces precision; distant=%s', async distant => {
+  const document = createDocument();
+  delete (document.root as {content?: unknown}).content;
+  Object.assign(document.root, {contents: [{uri: 'first.glb'}, {uri: 'second.glb'}]});
+  const first = encodeMeshTile({
+    mode: 4,
+    topology: 'triangle-list',
+    attributes: {POSITION: {size: 3, value: new Float32Array([0, 0, 0, 1, 0, 0, 0, 1, 0])}}
+  });
+  const second = encodeMeshTile({
+    mode: 4,
+    topology: 'triangle-list',
+    attributes: {
+      POSITION: {
+        size: 3,
+        value: new Float32Array([
+          distant ? 10000000 : 100,
+          0,
+          0,
+          distant ? 10000001 : 101,
+          0,
+          0,
+          distant ? 10000000 : 100,
+          1,
+          0
+        ])
+      }
+    }
+  });
+  const fetcher: typeof fetch = async input =>
+    new Response(
+      String(input).endsWith('tileset.json')
+        ? JSON.stringify(document)
+        : String(input).endsWith('second.glb')
+          ? second
+          : first
+    );
+  const rawSource = createBrowserTilesetConversionSource({
+    input: 'https://example.invalid/tileset.json',
+    maxInputBytes: 8192,
+    maxInputResources: 64,
+    inspectNestedTilesets: true,
+    fetcher
+  });
+  const inspection = await rawSource.inspect();
+  const options = createOptions(inspection);
+  const selection = await createSelectedMeshConversionSource(inspection, {
+    resourceIds: [...options.resourceIds].reverse(),
+    preserveHierarchy: true,
+    source: rawSource,
+    fetcher,
+    signal: new AbortController().signal,
+    dracoLibraryOptions: {}
+  });
+  const sink = createMeshHierarchyTilesetSink(options);
+  const origins: number[][] = [];
+  const positions: number[][] = [];
+  const codec = createMeshConversionCodec({
+    spatialContext: selection.spatialContext,
+    maxPositionError: 0.01,
+    draco: false
+  });
+  if (distant) {
+    await expect(
+      convertTileset({
+        source: selection.source,
+        codec,
+        sink,
+        measureInputBytes: resource => resource.mesh.attributes.POSITION.value.byteLength,
+        measureOutputBytes: resource => resource.glb.byteLength
+      })
+    ).rejects.toMatchObject({code: 'MESH_POSITION_PRECISION_EXCEEDED'});
+    expect(sink.getFiles()).toEqual([]);
+    return;
+  }
+  for await (const resource of selection.source.read(inspection)) {
+    origins.push([...resource.origin]);
+    positions.push(Array.from(resource.mesh.attributes.POSITION.value));
+    for await (const output of codec.convert(resource, inspection)) await sink.write(output);
+  }
+  expect(origins[1]).toEqual(origins[0]);
+  expect(positions[1][0] - positions[0][0]).toBe(200);
+  await sink.finalize!(REPORT);
+  const output = await readDocument(sink);
+  expect(output.root.contents).toHaveLength(2);
+  expect(output.root.boundingVolume.box[3]).toBeGreaterThanOrEqual(101);
+});
+
+test('multiple-content hierarchy rejects 1.0 arrays, partial selections and content metadata', async () => {
+  const document = createDocument();
+  delete (document.root as {content?: unknown}).content;
+  Object.assign(document.root, {contents: [{uri: 'first.glb'}, {uri: 'second.glb'}]});
+  const inspection = await inspect(document);
+  const options = createOptions(inspection);
+  expect(() =>
+    createMeshHierarchyTilesetSink({...options, resourceIds: options.resourceIds.slice(1)})
+  ).toThrow('every content');
+  inspection.tileset.asset!.version = '1.0';
+  expect(() => createMeshHierarchyTilesetSink(options)).toThrow();
+  inspection.tileset.asset!.version = '1.1';
+  Object.assign(inspection.tileset.root!.contents![1], {metadata: {class: 'unmapped'}});
+  expect(() => createMeshHierarchyTilesetSink(options)).toThrow('separate mapping');
+});
+
+test('a one-entry contents array normalizes to single content, including an external document root', async () => {
+  const nested = createDocument();
+  const content = nested.root.content;
+  delete (nested.root as {content?: unknown}).content;
+  Object.assign(nested.root, {contents: [content], children: []});
+  const entry = createDocument();
+  entry.root.content.uri = 'nested.json';
+  entry.root.children = [];
+  const source = createBrowserTilesetConversionSource({
+    input: 'https://example.invalid/tileset.json',
+    maxInputBytes: 8192,
+    maxInputResources: 64,
+    maxTilesetDocuments: 2,
+    inspectNestedTilesets: true,
+    fetcher: async input =>
+      new Response(JSON.stringify(String(input).endsWith('nested.json') ? nested : entry))
+  });
+  const inspection = await source.inspect();
+  const options = createOptions(inspection);
+  const sink = createMeshHierarchyTilesetSink(options);
+  await sink.write(createResource(options.resourceIds[0], [6378137, 0, 0]));
+  await sink.finalize!(REPORT);
+  const output = await readDocument(sink);
+  expect(output.root.content).toBeUndefined();
+  expect(output.root.children[0].content).toEqual({uri: 'meshes/1.glb'});
+  expect(output.root.children[0].contents).toBeUndefined();
+});

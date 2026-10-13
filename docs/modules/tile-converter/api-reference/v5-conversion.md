@@ -781,8 +781,8 @@ const report = await convertNodeTileset({
 
 Omit `output` for target-profile validation without writing. `outputFormat` accepts
 `3d-tiles` (directory), `3tz` and `slpk`; `maxOutputBytes` may lower the 32 MiB ceiling.
-Service callers may also supply the existing explicit `features` (3D Tiles) or `i3sFeatures` mapping; the initial CLI
-rejects feature-bearing content because it provides no mapping option. Conversion owns and
+Service callers supply the existing explicit `features` (3D Tiles) or `i3sFeatures` mapping; the CLI
+accepts the same scalar/string mapping through a bounded local `--feature-schema` JSON file. Conversion owns and
 closes the raw Node source before publishing output. It reuses the
 portable `createSelectedMeshConversionSource`, `SELECTED_MESH_LIMITS`, mesh codecs and sinks.
 That source accepts an inspected document, explicit `resourceIds`, `signal`, application
@@ -816,7 +816,7 @@ I3S native decoding uses the existing shared CRS/elevation context with EPSG:497
 It never applies renderer projection. No new CRS definitions or epoch operations are supplied.
 `integratedMeshPolicy: 'as-3d-object'` explicitly authorizes IntegratedMesh to SLPK and reports
 that layer-type change. Output remains I3S 1.7 3DObject or a partial flat 3D Tiles 1.1 collection.
-The CLI provides these policies but no feature-schema mapping controls.
+The CLI provides these policies and [feature-schema mapping controls](../cli-reference/tile-converter-v5.md#feature-schema-controls).
 
 The portable `inspectI3SMeshConversionSource` and `createSelectedI3SMeshConversionSource`
 accept an injected lifetime-budgeted `fetcher`, `rootUrl`, `signal`, `dracoLibraryOptions`
@@ -1037,8 +1037,13 @@ including its epoch, is retained when supplied.
 
 Limits: 32 explicit document placements (including repeats), 256 tiles across the entire tree,
 64 selected binary contents, **one mesh primitive per
-content tile**, existing 16 MiB input and 32 MiB output/archive budgets.
-`contents` arrays, contentless leaves, implicit tiling, tile extensions/metadata,
+content**, existing 16 MiB input and 32 MiB output/archive budgets.
+Ordered 1.1 mesh `contents` arrays retain their tile and declaration order, with a shared
+origin selected from the first content. The sink rejects different encoded origins within a
+tile. Bounds enclose every content and child; the existing precision gate rejects distant
+contents that cannot share a float32 frame within the configured allowance. A one-entry
+array becomes `content`. External JSON references still require a single `content` with no
+siblings or source children. 1.0 `contents` arrays, contentless leaves, implicit tiling, tile extensions/metadata,
 viewer-request volumes and dataset feature metadata require separate profiles and fail
 explicitly. I3S/SLPK hierarchy is not qualified: screen-size LOD cannot be inferred as meters.
 Partial selection continues to use the default flat profile. Browser example controls
