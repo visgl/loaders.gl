@@ -4,6 +4,8 @@
 
 ### Unreleased
 
+- refactor(compression): externalize codec WASM into sidecars for prebuilt workers and standalone bundles; add Arrow and compression ESM worker entry points
+
 ### v5.0.0-alpha.12
 
 - perf(tiles): upgrade math.gl to alpha.16 and batch horizontal XYZ reprojection with reusable projection buffers
@@ -13,7 +15,6 @@
 - refactor(gis): remove the retired GIS compatibility package and move geometry helpers to focused modules
 - feat(terrain): expose lightweight Terrarium height grids
 - feat(potree): support legacy and modern dataset formats
-- refactor(worker-utils): import explicit ESM decoder factories in module workers instead of evaluating fetched scripts
 - chore: make loader exports explicit and add the Arrow type-only subpath
 
 ### v5.0.0-alpha.11

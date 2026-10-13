@@ -280,6 +280,9 @@
     "./compression-worker-node.js": {
       "import": "./dist/compression-worker-node.js"
     },
+    "./compression-worker.mjs": {
+      "import": "./dist/compression-worker.mjs"
+    },
     "./lzo-decompressor": {
       "types": "./dist/lzo-decompressor.d.ts",
       "import": "./dist/lzo-decompressor.js"
@@ -304,7 +307,8 @@
     "zlib": false
   },
   "scripts": {
-    "pre-build": "npm run build-bundle && npm run build-bundle-dev && npm run build-worker && npm run build-worker-node",
+    "pre-build": "npm run build-bundle && npm run build-bundle-dev && npm run build-worker && npm run build-module-worker && npm run build-worker-node",
+    "build-module-worker": "node scripts/build-worker.mjs module",
     "build-bundle": "node scripts/build-worker.mjs bundle",
     "build-bundle-dev": "node scripts/build-worker.mjs bundle-dev",
     "build-worker": "node scripts/build-worker.mjs browser",

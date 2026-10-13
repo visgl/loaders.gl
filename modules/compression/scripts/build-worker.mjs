@@ -6,13 +6,15 @@ import {build} from 'esbuild';
 import {createCompressUtilsAssetPlugin} from '../../../scripts/lib/compress-utils-assets.mjs';
 
 const platform = process.argv[2] === 'node' ? 'node' : 'browser';
+const moduleWorker = process.argv[2] === 'module';
 const entry = platform === 'node' ? 'src/workers/compression-worker-node.ts' : 'src/workers/compression-worker.ts';
 
 const workerConfig = {
   entryPoints: [entry],
-  outfile: platform === 'node' ? 'dist/compression-worker-node.js' : 'dist/compression-worker.js',
+  outfile: moduleWorker ? 'dist/compression-worker.mjs' : platform === 'node' ? 'dist/compression-worker-node.js' : 'dist/compression-worker.js',
   platform,
-  format: platform === 'node' ? 'esm' : 'iife',
+  format: moduleWorker || platform === 'node' ? 'esm' : 'iife',
+  assetNames: 'codec-assets/[name]-[hash]',
   target: platform === 'node' ? 'node16' : 'esnext',
   bundle: true,
   minify: true,

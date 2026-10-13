@@ -244,6 +244,39 @@ shim are vendored and do not require an external package.
 
 `compress-utils` uses direction-specific algorithm subpaths so unrelated formats can be tree-shaken.
 
+## Workers with external WASM assets
+
+All prebuilt codec workers and standalone bundles use separate WASM binaries in a sibling
+`codec-assets` directory instead of embedded base64 payloads. The
+`@loaders.gl/compression/compression-worker.mjs` entry point is a native browser module worker.
+Serve browser workers together with their sibling `codec-assets` directory,
+with the WASM files using `application/wasm` and appropriate CORS headers for cross-origin use.
+
+```typescript
+import {CompressionWorker} from '@loaders.gl/compression';
+import {processOnWorker} from '@loaders.gl/worker-utils';
+
+const worker = {
+  ...CompressionWorker,
+  loadWorker: () => new Worker(
+    new URL('@loaders.gl/compression/compression-worker.mjs', import.meta.url),
+    {type: 'module'}
+  )
+};
+const compressed = await processOnWorker(worker, input, {
+  compression: 'zstd', operation: 'compress', useNative: false
+});
+```
+
+The bundler must preserve or copy the worker's sibling WASM assets. When hosting a prebuilt
+worker yourself, pass its absolute URL to `new Worker` instead. URL-based classic worker loading
+preserves the original script URL through the blob bootstrap so asset requests resolve against
+the worker's location, not the blob or application page. Inline worker source is no longer
+self-contained: use a URL-based worker, or preserve its original absolute URL in
+`globalThis.__loadersWorkerUrl` before evaluating the source. Browser standalone bundles resolve
+assets relative to their script URL; Node workers read sibling WASM files from disk.
+External assets do not remove the browser's WASM CSP requirements.
+
 ## Lazy root classes and compatibility
 
 The package root exports lightweight `FormatCompressor` and `FormatDecompressor` classes. Their
