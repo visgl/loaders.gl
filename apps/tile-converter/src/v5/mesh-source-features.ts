@@ -11,6 +11,14 @@ import {createMeshSourceFeatureOptions} from './mesh-source-schema.js';
 import type {MeshSourceSchemaOptions} from './mesh-source-schema.js';
 import {TileConversionError} from '@loaders.gl/tile-converter/v5/core';
 
+/** Data-only rule for absent columns and decoded noData values. */
+interface MeshSourcePropertyMapping {
+  /** Value used for an absent column or a decoded noData cell. */
+  readonly defaultValue: unknown;
+  /** Decoded sentinel; omitted for absent-column defaults. */
+  readonly noData?: unknown;
+}
+
 /** Explicit source feature mapping; target type changes must be authorized separately. */
 export interface MeshSourceFeatureOptions extends FeatureArrowBatchOptions {
   /** Batch-table class label, or the exact structural-metadata class to select. */
@@ -61,7 +69,7 @@ export function extractMeshFeatures(
       'Feature metadata class must be explicit'
     );
   const mapping = 'schema' in options ? options : createMeshSourceFeatureOptions(gltf, options);
-  const propertyReaders = new Map<string, (row: number) => unknown>();
+  const propertyMappings = new Map<string, MeshSourcePropertyMapping>();
   let count: number;
   let attribute = legacy;
   let properties: Record<string, ArrayLike<unknown>>;
@@ -184,7 +192,7 @@ export function extractMeshFeatures(
       const decoded = data;
       if (property.noData === undefined || data === undefined) {
         if (decoded !== undefined) properties[name] = decoded;
-        else propertyReaders.set(name, () => defaultValue);
+        else propertyMappings.set(name, {defaultValue});
         continue;
       }
       const sentinel = property.noData;
@@ -205,7 +213,7 @@ export function extractMeshFeatures(
       const comparable = integer64 ? BigInt(sentinel as number) : sentinel;
       const values = decoded as ArrayLike<unknown>;
       properties[name] = values;
-      propertyReaders.set(name, row => (values[row] === comparable ? defaultValue : values[row]));
+      propertyMappings.set(name, {noData: comparable, defaultValue});
     }
   } else {
     if (metadata)
@@ -265,7 +273,7 @@ export function extractMeshFeatures(
       );
   }
   const sourceIdentifier = options.sourceFeatureIdProperty;
-  if (sourceIdentifier && !properties[sourceIdentifier] && !propertyReaders.has(sourceIdentifier))
+  if (sourceIdentifier && !properties[sourceIdentifier] && !propertyMappings.has(sourceIdentifier))
     throw new TileConversionError(
       'MESH_FEATURE_ID_PROPERTY_REQUIRED',
       'Stable source identifier property is missing'
@@ -317,11 +325,16 @@ export function extractMeshFeatures(
   }
   /** Reads one referenced source value without expanding defaults or noData columns. */
   const readProperty = (name: string, row: number): unknown => {
-    const reader = propertyReaders.get(name);
-    return reader ? reader(row) : properties[name][row];
+    const values = properties[name];
+    const propertyMapping = propertyMappings.get(name);
+    if (!values) return propertyMapping?.defaultValue;
+    const value = values[row];
+    return propertyMapping && value === propertyMapping.noData
+      ? propertyMapping.defaultValue
+      : value;
   };
   const propertyNames = [
-    ...new Set([...Object.keys(properties), ...propertyReaders.keys()])
+    ...new Set([...Object.keys(properties), ...propertyMappings.keys()])
   ].filter(name => name !== sourceIdentifier);
   const batches = convertFeatureAttributesToArrowBatches(
     selectedRows.map(row => ({

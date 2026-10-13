@@ -991,3 +991,14 @@ test('LASWriter#preserves normalized byte colors', async () => {
 function readUint64(dataView: DataView, byteOffset: number): number {
   return dataView.getUint32(byteOffset, true) + dataView.getUint32(byteOffset + 4, true) * 2 ** 32;
 }
+
+test.each([
+  {name: '高度'},
+  {description: 'élevation'}
+])('LASWriter rejects non-ASCII Extra Bytes metadata: %j', descriptor => {
+  const extraAttributes = {...attributes, extra: {value: new Uint16Array([1, 2, 3]), size: 1}};
+  const extraMesh = {...mesh, attributes: extraAttributes};
+  expect(() =>
+    LASWriter.encodeSync!(extraMesh, {las: {extraBytes: [{attribute: 'extra', ...descriptor}]}})
+  ).toThrow('fixed-width text must be ASCII');
+});

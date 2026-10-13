@@ -75,6 +75,7 @@ qualify every dataset, standard version or extension combination.
 | I3S `3DObject` or `IntegratedMesh` node meshes | I3S/SLPK or GLB-based 3D Tiles/3TZ | API, browser example and bounded v5 Node workflow; source-coordinate decoding, declared CRS/height operations and explicit attribute mapping | <img src="https://img.shields.io/badge/From-v5.0-blue.svg?style=flat-square" alt="From v5.0" /> |
 | Decoded native point Mesh/Arrow data | Potree 1.0–1.8/2.0 files or STORE ZIP bundle | API only; explicit CRS, precision and allocation budgets; additive octree ownership; independent viewer/LOD qualification remains open | <img src="https://img.shields.io/badge/From-v5.0-blue.svg?style=flat-square" alt="From v5.0" /> |
 | Decoded point Mesh/Arrow data or selected point-source tiles | PNTS, partial 3D Tiles or 3TZ | API only; explicit coordinate/precision/sampling-error contract; broader LAS/COPC/I3S input qualification remains open | <img src="https://img.shields.io/badge/From-v5.0-blue.svg?style=flat-square" alt="From v5.0" /> |
+| Decoded point Mesh/Arrow batch | COPC 1.0 / LAZ 1.4 | API only; one independent file per batch, explicit attribute/loss mapping, WKT, scale/offset and precision budgets; synchronous compression and temporary memory remain additional | <img src="https://img.shields.io/badge/From-v5.0-blue.svg?style=flat-square" alt="From v5.0" /> |
 | Finalized I3S or 3D Tiles resources | Indexed SLPK or 3TZ | Blob or streaming packaging; packaging alone performs no format conversion | <img src="https://img.shields.io/badge/From-v5.0-blue.svg?style=flat-square" alt="From v5.0" /> |
 | Complete explicit 3D Tiles hierarchy | GLB-based 3D Tiles/3TZ | Opt-in API/Node CLI; external documents, ordered contents and multiple static primitives; 32 documents, 256 tiles, 64 primitive placements; native ECEF only | <img src="https://img.shields.io/badge/From-v5.0-blue.svg?style=flat-square" alt="From v5.0" /> |
 
@@ -92,6 +93,9 @@ without fetching mesh payloads. The example and Node CLI use this for nested sel
 collection writers produce flat output by default. Opt in to the complete hierarchy profile
 for qualified 3D Tiles/3TZ output.
 See [nested explicit input](/docs/modules/tile-converter/api-reference/v5-conversion#nested-explicit-3d-tiles-input).
+
+See [point attribute mapping and COPC output](/docs/modules/tile-converter/api-reference/point-cloud-copc)
+for supported standard/Extra Bytes attributes, exact IDs, cancellation and budget boundaries.
 
 ### Browser input and output
 

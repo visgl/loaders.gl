@@ -1077,7 +1077,15 @@ scoped to each decoded placement. Unlinked, repeated-parent or unreachable docum
 references with source children and inconsistent transforms fail explicitly.
 Independent viewer qualification, extensionless metadata discovery and larger hierarchies remain open.
 
-### Conversion profiling
+## COPC batch output
+
+[Explicit point mapping and COPC output](./point-cloud-copc) adds decoded Mesh/Arrow batch authoring
+with caller-declared CRS, quantization precision, input/output budgets and semantic loss reports.
+The codec emits one independent COPC file per input batch; whole-dataset assembly remains a separate gate.
+
+COPC Extra Bytes names and descriptions use at most 32 printable ASCII bytes; non-ASCII/control text is rejected before encoding rather than silently changing metadata.
+
+## Conversion profiling
 
 <img src="https://img.shields.io/badge/From-v5.0-blue.svg?style=flat-square" alt="From v5.0" />
 
