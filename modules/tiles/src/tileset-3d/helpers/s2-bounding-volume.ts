@@ -2,9 +2,6 @@
 // SPDX-License-Identifier: MIT
 // Copyright vis.gl contributors
 
-// TypeScript's legacy `node` resolution does not inspect package `exports`, but this public
-// subpath is resolved by the package at runtime and avoids loading unrelated DGGS decoders.
-// @ts-expect-error Conditional package subpath exports require a modern module resolver.
 import {getS2Bounds} from '@math.gl/dggs/s2';
 import {Ellipsoid, makeOBBFromRegion} from '@math.gl/geospatial';
 

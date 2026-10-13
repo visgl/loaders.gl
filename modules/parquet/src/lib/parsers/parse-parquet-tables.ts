@@ -11,7 +11,10 @@ import type {
 } from '@loaders.gl/schema';
 
 import type {ParquetLoaderOptions} from '../../parquet-loader-options';
-import {parseParquetFileToArrow, parseParquetFileToArrowInBatches} from './parse-parquet-to-arrow';
+import {
+  parseParquetFileToArrowWithJs,
+  parseParquetFileToArrowInBatchesWithJs
+} from './parse-parquet-to-arrow-js';
 import {
   convertArrowBatchToObjectRows,
   convertArrowTableToObjectRows
@@ -33,7 +36,7 @@ export function parseParquetArrowTable(
   file: ReadableFile,
   options: ParquetLoaderOptions
 ): Promise<ArrowTable> {
-  return parseParquetFileToArrow(file, options.parquet);
+  return parseParquetFileToArrowWithJs(file, options);
 }
 
 /**
@@ -47,7 +50,7 @@ export function parseParquetArrowTableInBatches(
   file: ReadableFile,
   options: ParquetLoaderOptions
 ): AsyncIterable<ArrowTableBatch> {
-  return parseParquetFileToArrowInBatches(file, options.parquet);
+  return parseParquetFileToArrowInBatchesWithJs(file, options);
 }
 
 /**

@@ -4,7 +4,8 @@
 
 import {makeTableScanBatch, type LoaderWithParser} from '@loaders.gl/loader-utils';
 import type {ArrowTable, ArrowTableBatch, Feature} from '@loaders.gl/schema';
-import {convertFeaturesToWKBArrowTable, getGeoMetadata, setGeoMetadata} from '@loaders.gl/gis';
+import {convertFeaturesToWKBArrowTable} from '@loaders.gl/arrow-geometry/feature-collection-to-arrow';
+import {getGeoMetadata, setGeoMetadata} from '@loaders.gl/schema';
 import type {GMLFeatureCollection, Geometry} from './lib/parsers/gml/parse-gml';
 import {parseGML} from './lib/parsers/gml/parse-gml';
 import {GMLLoader as GMLLoaderMetadata, type GMLLoaderOptions} from './gml-loader-types';

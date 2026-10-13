@@ -53,6 +53,10 @@ The `@loaders.gl/draco` module handles compressing and decompressing of 3D meshe
 npm install @loaders.gl/core @loaders.gl/draco
 ```
 
+The injectable `draco3d` npm backend is an `optionalDependency`. The default loader and writer use
+vendored runtimes and work with `npm install --omit=optional`. If you omit optional dependencies and
+want to inject `options.modules.draco3d`, install `draco3d` explicitly.
+
 ## Loaders and Writers
 
 | Loader                                                                | Description                                      |

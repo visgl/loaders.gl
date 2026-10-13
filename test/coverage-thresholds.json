@@ -272,21 +272,6 @@
         "branches": 41
       }
     },
-    "@loaders.gl/gis": {
-      "path": "modules/gis",
-      "browser": {
-        "statements": 81,
-        "lines": 81,
-        "functions": 84,
-        "branches": 65
-      },
-      "merged": {
-        "statements": 80,
-        "lines": 81,
-        "functions": 84,
-        "branches": 65
-      }
-    },
     "@loaders.gl/gltf": {
       "path": "modules/gltf",
       "browser": {

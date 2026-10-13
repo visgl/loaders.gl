@@ -63,8 +63,8 @@
     "pre-build": "npm run generate-json-schema && npm run build-bundle && npm run build-bundle-dev",
     "generate-json-schema": "node scripts/generate-json-schema.mjs",
     "update-official-schemas": "node scripts/update-official-schemas.mjs",
-    "build-bundle": "ocular-bundle ./bundle.ts --output=dist/dist.min.js",
-    "build-bundle-dev": "ocular-bundle ./bundle.ts --env=dev --output=dist/dist.dev.js"
+    "build-bundle": "node ../../scripts/build-codec-bundle.mjs ./bundle.ts --output=dist/dist.min.js",
+    "build-bundle-dev": "node ../../scripts/build-codec-bundle.mjs ./bundle.ts --env=dev --output=dist/dist.dev.js"
   },
   "dependencies": {
     "@loaders.gl/draco": "5.0.0-alpha.11",
@@ -73,8 +73,8 @@
     "@loaders.gl/schema": "5.0.0-alpha.11",
     "@loaders.gl/schema-utils": "5.0.0-alpha.11",
     "@loaders.gl/textures": "5.0.0-alpha.11",
-    "@math.gl/core": "5.0.0-alpha.15",
-    "@math.gl/culling": "5.0.0-alpha.15",
+    "@math.gl/core": "5.0.0-alpha.16",
+    "@math.gl/culling": "5.0.0-alpha.16",
     "meshoptimizer": "^1.2.0",
     "zod": "^4.1.12"
   },

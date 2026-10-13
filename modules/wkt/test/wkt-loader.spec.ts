@@ -4,8 +4,8 @@ import {WKTLoader, WKTWorkerLoader} from '@loaders.gl/wkt/bundled';
 import {setLoaderOptions, fetchFile, parseSync, encodeTextSync} from '@loaders.gl/core';
 import {WKTWriter} from '@loaders.gl/wkt';
 import fuzzer from 'fuzzer';
-const GEOMETRYCOLLECTION_WKT_URL = '@loaders.gl/gis/test/data/wkt/geometrycollection.wkt';
-const GEOMETRYCOLLECTION_GEOJSON_URL = '@loaders.gl/gis/test/data/wkt/geometrycollection.geojson';
+const GEOMETRYCOLLECTION_WKT_URL = '@loaders.gl/wkt/test/data/wkt/geometrycollection.wkt';
+const GEOMETRYCOLLECTION_GEOJSON_URL = '@loaders.gl/wkt/test/data/wkt/geometrycollection.geojson';
 setLoaderOptions({
   _workerType: 'test'
 });

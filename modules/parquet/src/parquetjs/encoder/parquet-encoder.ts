@@ -6,7 +6,10 @@
 
 /* eslint-disable camelcase */
 import {stream} from '@loaders.gl/loader-utils';
-import {getWKBGeometryStatistics, type WKBGeometryBoundingBox} from '@loaders.gl/gis';
+import {
+  getWKBGeometryStatistics,
+  type WKBGeometryBoundingBox
+} from '@loaders.gl/arrow-geometry/wkb-statistics';
 import {ParquetCodecOptions, PARQUET_CODECS} from '../codecs/index';
 import * as Compression from '../compression';
 import type {

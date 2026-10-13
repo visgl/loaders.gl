@@ -53,18 +53,18 @@
   ],
   "scripts": {
     "pre-build": "npm run build-worker-shp && npm run build-worker-dbf && npm run build-bundle && npm run build-bundle-dev",
-    "build-bundle": "ocular-bundle ./bundle.ts --output=dist/dist.min.js",
-    "build-bundle-dev": "ocular-bundle ./bundle.ts --env=dev --output=dist/dist.dev.js",
-    "build-worker-shp": "esbuild src/workers/shp-worker.ts --bundle --outfile=dist/shp-worker.js --define:__VERSION__=\\\"$npm_package_version\\\"",
-    "build-worker-dbf": "esbuild src/workers/dbf-worker.ts --bundle --outfile=dist/dbf-worker.js --define:__VERSION__=\\\"$npm_package_version\\\""
+    "build-bundle": "node ../../scripts/build-codec-bundle.mjs ./bundle.ts --output=dist/dist.min.js",
+    "build-bundle-dev": "node ../../scripts/build-codec-bundle.mjs ./bundle.ts --env=dev --output=dist/dist.dev.js",
+    "build-worker-shp": "node ../../scripts/build-codec-worker.mjs src/workers/shp-worker.ts --bundle --outfile=dist/shp-worker.js --define:__VERSION__=\\\"$npm_package_version\\\"",
+    "build-worker-dbf": "node ../../scripts/build-codec-worker.mjs src/workers/dbf-worker.ts --bundle --outfile=dist/dbf-worker.js --define:__VERSION__=\\\"$npm_package_version\\\""
   },
   "dependencies": {
     "@loaders.gl/arrow": "5.0.0-alpha.11",
-    "@loaders.gl/gis": "5.0.0-alpha.11",
+    "@loaders.gl/arrow-geometry": "5.0.0-alpha.11",
     "@loaders.gl/loader-utils": "5.0.0-alpha.11",
     "@loaders.gl/schema": "5.0.0-alpha.11",
-    "@math.gl/crs": "5.0.0-alpha.15",
-    "@math.gl/projection": "5.0.0-alpha.15",
+    "@math.gl/crs": "5.0.0-alpha.16",
+    "@math.gl/projection": "5.0.0-alpha.16",
     "apache-arrow": ">= 17.0.0"
   },
   "peerDependencies": {

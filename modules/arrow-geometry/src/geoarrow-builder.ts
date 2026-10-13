@@ -702,7 +702,7 @@ function makeCoordinateData(
   return arrow.makeData({
     type: new arrow.FixedSizeList(
       getCoordinateSize(dimension),
-      new arrow.Field('xy', new arrow.Float64(), false)
+      new arrow.Field(dimension, new arrow.Float64(), false)
     ),
     child: makePrimitiveData(values as Float64Array)
   } as any);

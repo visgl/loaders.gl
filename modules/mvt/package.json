@@ -64,18 +64,18 @@
   "scripts": {
     "pre-build": "npm run generate-json-schema && npm run build-worker && npm run build-worker --env.dev && npm run build-bundle && npm run build-bundle-dev",
     "generate-json-schema": "node ../../scripts/generate-json-schema.mjs --schema ./dist/tilejson-zod-schema.js --export TileJSONMetadataSchema --output ./dist/tilejson.schema.json --id https://unpkg.com/@loaders.gl/mvt/tilejson.schema.json --title 'loaders.gl TileJSON and Tilestats metadata'",
-    "build-bundle": "ocular-bundle ./bundle.ts --output=dist/dist.min.js",
-    "build-bundle-dev": "ocular-bundle ./bundle.ts --env=dev --output=dist/dist.dev.js",
-    "build-worker": "esbuild src/workers/mvt-worker.ts --bundle --outfile=dist/mvt-worker.js --define:__VERSION__=\\\"$npm_package_version\\\""
+    "build-bundle": "node ../../scripts/build-codec-bundle.mjs ./bundle.ts --output=dist/dist.min.js",
+    "build-bundle-dev": "node ../../scripts/build-codec-bundle.mjs ./bundle.ts --env=dev --output=dist/dist.dev.js",
+    "build-worker": "node ../../scripts/build-codec-worker.mjs src/workers/mvt-worker.ts --bundle --outfile=dist/mvt-worker.js --define:__VERSION__=\\\"$npm_package_version\\\""
   },
   "dependencies": {
     "@loaders.gl/arrow": "5.0.0-alpha.11",
-    "@loaders.gl/gis": "5.0.0-alpha.11",
+    "@loaders.gl/arrow-geometry": "5.0.0-alpha.11",
     "@loaders.gl/images": "5.0.0-alpha.11",
     "@loaders.gl/loader-utils": "5.0.0-alpha.11",
     "@loaders.gl/schema": "5.0.0-alpha.11",
     "@loaders.gl/schema-utils": "5.0.0-alpha.11",
-    "@math.gl/polygon": "5.0.0-alpha.15",
+    "@math.gl/polygon": "5.0.0-alpha.16",
     "@probe.gl/stats": "^4.1.1",
     "apache-arrow": "^21.2.0",
     "pbf": "^3.2.1",

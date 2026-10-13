@@ -5,13 +5,13 @@
 import {expect, test} from 'vitest';
 import {validateLoader} from 'test/common/conformance';
 import {fetchFile, load} from '@loaders.gl/core';
-import {getGeoMetadata} from '@loaders.gl/geoarrow';
-import {convertWKBTableToGeoJSON} from '@loaders.gl/gis';
+import {getGeoMetadata} from '@loaders.gl/schema';
+import {convertGeoArrowTableToGeoJSON} from '@loaders.gl/arrow-geometry/geojson-table';
 import {KMLLoader} from '@loaders.gl/kml';
 import * as kml from '@loaders.gl/kml';
 import * as bundledKml from '@loaders.gl/kml/bundled';
 import * as unbundledKml from '@loaders.gl/kml/unbundled';
-import type {ArrowTable, Feature, Geometry} from '@loaders.gl/schema';
+import type {Feature, Geometry} from '@loaders.gl/schema';
 const KML_URL = '@loaders.gl/kml/test/data/kml/KML_Samples.kml';
 const KML_LINESTRING_URL = '@loaders.gl/kml/test/data/kml/linestring';
 test('KMLLoader#loader conformance', () => {
@@ -41,10 +41,7 @@ test('KMLLoader#load fixture matches expected GeoJSON with shape: arrow-table', 
   const arrowTable = await load(`${KML_LINESTRING_URL}.kml`, KMLLoader, {
     kml: {shape: 'arrow-table'}
   });
-  const roundTripped = convertWKBTableToGeoJSON(
-    {shape: 'object-row-table', schema: arrowTable.schema, data: getRowsFromArrowTable(arrowTable)},
-    arrowTable.schema!
-  );
+  const roundTripped = convertGeoArrowTableToGeoJSON(arrowTable.data, arrowTable.schema!);
   const response = await fetchFile(`${KML_LINESTRING_URL}.geojson`);
   const expected = await response.json();
   expect(roundTripped.features, 'Arrow linestring matches expected GeoJSON').toEqual(
@@ -60,20 +57,6 @@ test('KMLLoader#load fixture matches expected GeoJSON with shape: arrow-table', 
 async function loadKMLFeatures(url: string): Promise<Feature[]> {
   const table = await load(url, KMLLoader, {kml: {shape: 'geojson-table'}});
   return table.shape === 'geojson-table' ? table.features : [];
-}
-/**
- * Reads Arrow rows as plain objects so they can be passed to WKB conversion helpers.
- *
- * @param table - Arrow table emitted by a loader.
- * @returns Object rows preserving the binary geometry column.
- */
-function getRowsFromArrowTable(table: ArrowTable): Record<string, unknown>[] {
-  const rows: Record<string, unknown>[] = [];
-  for (let rowIndex = 0; rowIndex < table.data.numRows; rowIndex++) {
-    const row = table.data.get(rowIndex)?.toJSON() || {};
-    rows.push(normalizeBinaryGeometryRow(row));
-  }
-  return rows;
 }
 /**
  * Infers expected GeoParquet geometry type strings from classic GeoJSON features.
@@ -124,31 +107,4 @@ function getGeometrySampleCoordinates(geometry: Geometry): unknown {
     return getGeometrySampleCoordinates(geometry.geometries[0]);
   }
   return undefined;
-}
-/**
- * Ensures the geometry column is represented as a typed byte array for WKB conversion helpers.
- *
- * @param row - Serialized Arrow row.
- * @returns Row with a normalized `geometry` value.
- */
-function normalizeBinaryGeometryRow(row: Record<string, unknown>): Record<string, unknown> {
-  const geometry = row.geometry;
-  if (Array.isArray(geometry) || isNumericKeyObject(geometry)) {
-    return {...row, geometry: new Uint8Array(Object.values(geometry as Record<string, number>))};
-  }
-  return row;
-}
-/**
- * Returns true when a value is a plain object containing numeric keys for byte values.
- *
- * @param value - Candidate geometry value.
- * @returns Whether the value should be converted to `Uint8Array`.
- */
-function isNumericKeyObject(value: unknown): value is Record<string, number> {
-  return (
-    Boolean(value) &&
-    typeof value === 'object' &&
-    !ArrayBuffer.isView(value) &&
-    Object.keys(value).every(key => /^\d+$/.test(key))
-  );
 }

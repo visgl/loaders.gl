@@ -11,7 +11,7 @@ import type {
   Schema
 } from '@loaders.gl/schema';
 import type {GeoArrowEncodingPreference} from '@loaders.gl/schema';
-import {convertFeaturesToGeoArrowTable} from '@loaders.gl/gis';
+import {convertFeaturesToGeoArrowTable} from '@loaders.gl/arrow-geometry/feature-table';
 import {
   encodeWKBGeometryValue,
   getCoordinateDimensions as getCoordinateDimensionsFromGeometry,
@@ -20,7 +20,7 @@ import {
   inferGeoParquetGeometryTypes,
   makeWKBGeometryField,
   setWKBGeometrySchemaMetadata
-} from '@loaders.gl/gis';
+} from '@loaders.gl/arrow-geometry/geometry-field';
 import {ArrowTableBuilder, getDataTypeFromArray} from '@loaders.gl/schema-utils';
 
 const GEOMETRY_COLUMN_NAME = 'geometry';

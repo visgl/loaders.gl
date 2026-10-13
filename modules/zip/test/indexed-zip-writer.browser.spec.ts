@@ -3,10 +3,19 @@
 // Copyright (c) vis.gl contributors
 
 import {afterEach, beforeAll, expect, test, vi} from 'vitest';
-import JSZip from 'jszip';
+import {readZip} from 'test/common/read-zip';
 import {MD5Hash} from '@loaders.gl/crypto';
+import {openZipArchive} from '@loaders.gl/zip';
 import {encodeIndexedZip, encodeIndexedZipInBatches} from '@loaders.gl/zip/indexed-zip-writer';
 import {ZipWriter} from '@loaders.gl/zip/zip-writer';
+import * as ZipHeaders from '../src/lib/zip-serialization';
+
+vi.mock('../src/lib/zip-serialization', async importOriginal => {
+  const actual = await importOriginal<typeof ZipHeaders>();
+  return {...actual, encodeZipLocalHeader: vi.fn(actual.encodeZipLocalHeader)};
+});
+/** Real serializer captured before per-case fault/cancellation injection. */
+const serializeLocalHeader = vi.mocked(ZipHeaders.encodeZipLocalHeader).getMockImplementation()!;
 
 /** Small resources used for encoder boundary coverage. */
 const FILES = {
@@ -28,7 +37,10 @@ function encodeArchive(
 beforeAll(async () => {
   archive = await encodeArchive(FILES);
 });
-afterEach(() => vi.restoreAllMocks());
+afterEach(() => {
+  vi.restoreAllMocks();
+  vi.mocked(ZipHeaders.encodeZipLocalHeader).mockReset().mockImplementation(serializeLocalHeader);
+});
 
 test('Indexed ZIP archive budget is inclusive and checked before Blob reads', async () => {
   const read = vi.spyOn(Blob.prototype, 'arrayBuffer');
@@ -70,12 +82,11 @@ test.each([
   );
 });
 
-test('Indexed ZIP rejects ZIP32 file-count overflow before encoding', async () => {
-  const files = Object.fromEntries(
-    Array.from({length: 65533}, (_, index) => [`${index}`, new ArrayBuffer(0)])
-  );
-  await expect(encodeArchive({...files, 'tileset.json': new ArrayBuffer(0)})).rejects.toThrow(
-    'fewer than 65534'
+test('Indexed ZIP enforces entry and directory budgets before reading payloads', async () => {
+  const options = {indexPath: '@3dtilesIndex1@', maxArchiveBytes: 4096};
+  await expect(encodeIndexedZip(FILES, {...options, maxEntries: 2})).rejects.toThrow('entry limit');
+  await expect(encodeIndexedZip(FILES, {...options, maxDirectoryBytes: 1})).rejects.toThrow(
+    'directory byte limit'
   );
 });
 
@@ -91,7 +102,7 @@ test('Indexed ZIP rejects ZIP32 size overflow without allocating a large payload
   const measure = vi.spyOn(Blob.prototype, 'size', 'get').mockReturnValue(0xffffffff);
   await expect(
     encodeArchive({'tileset.json': new Blob()}, {'3tz': {maxArchiveBytes: Number.MAX_SAFE_INTEGER}})
-  ).rejects.toThrow('ZIP32 capacity');
+  ).rejects.toThrow('buffer capacity');
   measure.mockRestore();
 });
 
@@ -107,12 +118,12 @@ test('Indexed ZIP rejects an ArrayBuffer detached during asynchronous packaging'
   hash.mockRestore();
 });
 
-test('Indexed ZIP sorts by the second little-endian integer and retains hash collisions', async () => {
+test('Indexed ZIP sorts by the second little-endian integer', async () => {
   const digests = [
     '00000000000000000300000000000000',
     '00000000000000000100000000000000',
     '00000000000000000200000000000000',
-    '00000000000000000200000000000000'
+    '00000000000000000400000000000000'
   ];
   vi.spyOn(MD5Hash.prototype, 'hash').mockImplementation(async () => digests.shift()!);
   const encoded = await encodeArchive({
@@ -121,22 +132,20 @@ test('Indexed ZIP sorts by the second little-endian integer and retains hash col
     c: new ArrayBuffer(0),
     'tileset.json': new ArrayBuffer(0)
   });
-  const indexData = await (await JSZip.loadAsync(encoded))
-    .file('@3dtilesIndex1@')!
-    .async('arraybuffer');
+  const indexData = (await readZip(encoded)).files['@3dtilesIndex1@'];
   const view = new DataView(indexData);
   expect([0, 24, 48, 72].map(offset => view.getBigUint64(offset + 8, true))).toEqual([
     1n,
     2n,
-    2n,
-    3n
+    3n,
+    4n
   ]);
 });
 
-test('Indexed ZIP rejects an unexpected ZIP layout and propagates encoder failures', async () => {
-  const encode = vi.spyOn(ZipWriter, 'encode').mockResolvedValueOnce(new ArrayBuffer(0));
-  await expect(encodeArchive(FILES)).rejects.toThrow('Unexpected indexed ZIP layout');
-  encode.mockRejectedValueOnce(new Error('encoder failure'));
+test('Indexed ZIP propagates native serializer failures', async () => {
+  vi.spyOn(ZipHeaders, 'encodeZipLocalHeader').mockImplementationOnce(() => {
+    throw new Error('encoder failure');
+  });
   await expect(encodeArchive(FILES)).rejects.toThrow('encoder failure');
 });
 
@@ -168,9 +177,9 @@ test('Indexed ZIP rejects case-folded duplicate paths before reading resources',
   ).rejects.toThrow('duplicate canonical paths');
   expect(read).not.toHaveBeenCalled();
   const archive = await encodeIndexedZip({}, {indexPath: 'index', maxArchiveBytes: 1000});
-  const zip = await JSZip.loadAsync(archive, {checkCRC32: true});
+  const zip = await readZip(archive);
   expect(Object.keys(zip.files)).toEqual(['index']);
-  expect((await zip.file('index')!.async('arraybuffer')).byteLength).toBe(0);
+  expect(zip.files['index'].byteLength).toBe(0);
 });
 
 test('Indexed ZIP serializes each Blob before reading the next and retains byte-identical output', async () => {
@@ -180,10 +189,10 @@ test('Indexed ZIP serializes each Blob before reading the next and retains byte-
     events.push('read');
     return read.call(this);
   });
-  const encode = ZipWriter.encode;
-  vi.spyOn(ZipWriter, 'encode').mockImplementation(async (files, options) => {
-    events.push(`encode:${Object.keys(files).join(',')}`);
-    return encode(files, options);
+  const serialize = serializeLocalHeader;
+  vi.spyOn(ZipHeaders, 'encodeZipLocalHeader').mockImplementation(entry => {
+    events.push(`encode:${new TextDecoder().decode(entry.nameBytes)}`);
+    return serialize(entry);
   });
   const encoded = await encodeArchive({
     'tileset.json': new Blob(['{}']),
@@ -198,32 +207,14 @@ test('Indexed ZIP serializes each Blob before reading the next and retains byte-
     'read',
     'encode:@3dtilesIndex1@'
   ]);
-  const index = await (await JSZip.loadAsync(encoded))
-    .file('@3dtilesIndex1@')!
-    .async('arraybuffer');
-  expect(encoded).toEqual(
-    await encode(
-      {
-        'Models/A.glb': new Uint8Array([1, 2, 3]).buffer,
-        'tileset.json': new TextEncoder().encode('{}').buffer,
-        '@3dtilesIndex1@': index
-      },
-      {
-        jszip: {
-          compression: 'STORE',
-          streamFiles: false,
-          platform: 'DOS',
-          date: new Date('1980-01-01T00:00:00Z')
-        }
-      }
-    )
-  );
+  const baseline = await fetch(new URL('./fixtures/indexed-baseline.zip', import.meta.url));
+  expect(encoded).toEqual(await baseline.arrayBuffer());
 });
 
 test('Indexed ZIP rejects an already cancelled operation before reading or encoding', async () => {
   const reason = new Error('cancelled before packaging');
   const read = vi.spyOn(Blob.prototype, 'arrayBuffer');
-  const encode = vi.spyOn(ZipWriter, 'encode');
+  const encode = vi.spyOn(ZipHeaders, 'encodeZipLocalHeader');
   await expect(
     encodeIndexedZip(
       {root: new Blob(['data'])},
@@ -248,7 +239,7 @@ test('Indexed ZIP observes cancellation after a pending read and starts no encod
         finishRead = resolve;
       })
   );
-  const encode = vi.spyOn(ZipWriter, 'encode');
+  const encode = vi.spyOn(ZipHeaders, 'encodeZipLocalHeader');
   const pending = encodeIndexedZip(
     {a: new Blob(['a']), b: new Blob(['b'])},
     {
@@ -277,10 +268,14 @@ test.each([
     if (phase === 'hash') controller.abort(reason);
     return digest;
   });
-  const encode = ZipWriter.encode;
-  const serialize = vi.spyOn(ZipWriter, 'encode').mockImplementation(async (files, options) => {
-    const bytes = await encode(files, options);
-    if (phase === 'entry' || (phase === 'index' && 'index' in files)) controller.abort(reason);
+  const encode = serializeLocalHeader;
+  const serialize = vi.spyOn(ZipHeaders, 'encodeZipLocalHeader').mockImplementation(entry => {
+    const bytes = encode(entry);
+    if (
+      phase === 'entry' ||
+      (phase === 'index' && new TextDecoder().decode(entry.nameBytes) === 'index')
+    )
+      controller.abort(reason);
     return bytes;
   });
   await expect(
@@ -332,7 +327,7 @@ test('Indexed ZIP streaming preserves the complete deterministic archive bytes',
 
 test('Indexed ZIP streams lazily with backpressure and stops after consumer return', async () => {
   const read = vi.spyOn(Blob.prototype, 'arrayBuffer');
-  const encode = vi.spyOn(ZipWriter, 'encode');
+  const encode = vi.spyOn(ZipHeaders, 'encodeZipLocalHeader');
   const iterator = encodeIndexedZipInBatches(
     {a: new Blob(['a']), b: new Blob(['b']), c: new Blob(['c'])},
     {
@@ -378,7 +373,7 @@ test.each([
 ])('Indexed ZIP observes cancellation after streamed chunk %s', async chunkCount => {
   const controller = new AbortController();
   const reason = new Error('cancel suspended stream');
-  const encode = vi.spyOn(ZipWriter, 'encode');
+  const encode = vi.spyOn(ZipHeaders, 'encodeZipLocalHeader');
   const iterator = encodeIndexedZipInBatches(
     {a: new Blob(['a'])},
     {
@@ -434,10 +429,12 @@ test.each(
     return read.call(this);
   });
   const encode = ZipWriter.encode;
-  vi.spyOn(ZipWriter, 'encode').mockImplementation(async (files, options) => {
-    expect(Object.values(files).every(data => data.byteLength === 0)).toBe(true);
-    return encode(files, options);
+  const serialize = serializeLocalHeader;
+  vi.spyOn(ZipHeaders, 'encodeZipLocalHeader').mockImplementation(entry => {
+    expect(entry.nameBytes.byteLength).toBeLessThan(20);
+    return serialize(entry);
   });
+  const legacyEncode = vi.spyOn(ZipWriter, 'encode');
   const parts: ArrayBuffer[] = [];
   for await (const chunk of encodeIndexedZipInBatches(
     {payload: input},
@@ -450,25 +447,24 @@ test.each(
   expect(bytes.byteLength).toBe(length); // Transfers never detach caller-owned inputs.
   expect(reads).toHaveLength(kind === 'blob' ? Math.ceil(length / 65536) * 2 : 0);
   expect(reads.every(size => size <= 65536)).toBe(true);
+  expect(legacyEncode).not.toHaveBeenCalled();
   const archive = await new Blob(parts).arrayBuffer();
-  const zip = await JSZip.loadAsync(archive, {checkCRC32: true});
-  expect(new Uint8Array(await zip.file('payload')!.async('arraybuffer'))).toEqual(bytes);
-  const index = await zip.file('index')!.async('arraybuffer');
-  // Independently assemble the pre-existing deterministic STORE format with real payloads.
+  const zip = await readZip(archive);
+  expect(new Uint8Array(zip.files['payload'])).toEqual(bytes);
+  expect(zip.files['index'].byteLength).toBe(24);
   vi.restoreAllMocks();
   expect(archive).toEqual(
-    await encode(
-      {payload: bytes.buffer, index},
+    await encodeIndexedZip(
+      {payload: bytes.buffer},
       {
-        jszip: {
-          compression: 'STORE',
-          streamFiles: false,
-          platform: 'DOS',
-          date: new Date('1980-01-01T00:00:00Z')
-        }
+        indexPath: 'index',
+        maxArchiveBytes: length + 1000
       }
     )
   );
+  const payloadHeader = new DataView(archive);
+  expect(payloadHeader.getUint16(6, true) & 8).toBe(0); // Indexed headers remain populated.
+  expect(payloadHeader.getUint32(18, true)).toBe(length);
 });
 
 test('Indexed ZIP checksums use the standard CRC-32 polynomial and unsigned header value', async () => {
@@ -540,9 +536,9 @@ test.each([
 
 test('Indexed ZIP rejects a resource detached while its header is being encoded', async () => {
   const bytes = new ArrayBuffer(1);
-  const encode = ZipWriter.encode;
-  vi.spyOn(ZipWriter, 'encode').mockImplementationOnce(async (files, options) => {
-    const header = await encode(files, options);
+  const encode = serializeLocalHeader;
+  vi.spyOn(ZipHeaders, 'encodeZipLocalHeader').mockImplementationOnce(entry => {
+    const header = encode(entry);
     structuredClone(bytes, {transfer: [bytes]});
     return header;
   });
@@ -551,4 +547,47 @@ test('Indexed ZIP rejects a resource detached while its header is being encoded'
     {indexPath: 'index', maxArchiveBytes: 1000}
   )[Symbol.asyncIterator]();
   await expect(iterator.next()).rejects.toThrow('size changed');
+});
+
+test.each([
+  'always',
+  'auto'
+] as const)('Indexed ZIP %s emits populated ZIP64 headers and exact indexes', async zip64 => {
+  const bytes = await encodeIndexedZip(FILES, {
+    indexPath: '@3dtilesIndex1@',
+    maxArchiveBytes: 4096,
+    zip64,
+    zip64Threshold: 1
+  });
+  expect(new DataView(bytes).getUint16(4, true)).toBe(45);
+  const reader = await openZipArchive(bytes);
+  try {
+    const last = (await reader.getLastEntry())!;
+    expect(last.path).toBe('@3dtilesIndex1@');
+    const index = new DataView(await reader.read(last));
+    for (let offset = 0; offset < index.byteLength; offset += 24) {
+      const entry = await reader.getEntryAt(index.getBigUint64(offset + 16, true));
+      expect(await reader.read(entry)).toEqual(FILES[entry.path as keyof typeof FILES]);
+    }
+  } finally {
+    await reader.close();
+  }
+});
+
+test('Indexed ZIP validates policy and rejects forbidden ZIP64 before output', async () => {
+  const options = {indexPath: '@3dtilesIndex1@', maxArchiveBytes: 4096};
+  await expect(
+    encodeIndexedZip(FILES, {...options, zip64: 'never', zip64Threshold: 1})
+  ).rejects.toThrow('requires ZIP64');
+  await expect(encodeIndexedZip(FILES, {...options, zip64: 'invalid' as never})).rejects.toThrow(
+    'policy'
+  );
+  await expect(encodeIndexedZip(FILES, {...options, maxEntries: 0})).rejects.toThrow(
+    'metadata limit'
+  );
+});
+
+test('Indexed ZIP rejects duplicate MD5 digests', async () => {
+  vi.spyOn(MD5Hash.prototype, 'hash').mockResolvedValue('00000000000000000000000000000000');
+  await expect(encodeArchive(FILES)).rejects.toThrow('duplicate MD5');
 });

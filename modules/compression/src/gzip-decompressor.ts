@@ -3,39 +3,27 @@
 // Copyright (c) vis.gl contributors
 
 import {
-  GZipFflateDecompressor,
-  type GZipFflateDecompressorOptions
-} from './gzip-decompressor-fflate';
+  GZipCompressUtilsDecompressor,
+  type CompressUtilsCompressionOptions
+} from './gzip-decompressor-compress-utils';
+
 import {
-  decompressBatchesWithNativeDecompressionStream,
-  decompressWithNativeDecompressionStream
+  decompressWithNativeDecompressionStream,
+  decompressBatchesWithNativeDecompressionStream
 } from './lib/decompression-stream';
 
-/** Options for the balanced default GZIP decompressor. */
-export type GZipDecompressorOptions = GZipFflateDecompressorOptions & {
-  /** Whether asynchronous methods may use the built-in stream implementation. */
-  useNative?: boolean;
-};
-
-/** Native-first GZIP decompressor with a compact fflate fallback. */
-export class GZipDecompressor extends GZipFflateDecompressor {
-  readonly options: GZipDecompressorOptions;
-
-  constructor(options: GZipDecompressorOptions = {}) {
-    super(options);
-    this.options = options;
-  }
-
-  /** Decompresses with the built-in stream when available, then falls back to fflate. */
-  async decompress(input: ArrayBuffer): Promise<ArrayBuffer> {
+/** Default GZIP decompressor backed by the lazily loaded compress-utils codec. */
+export class GZipDecompressor extends GZipCompressUtilsDecompressor {
+  /** Decompresses with native streams when available, otherwise lazily initializes WASM. */
+  async decompress(input: ArrayBuffer, size?: number): Promise<ArrayBuffer> {
     if (this.options.useNative !== false) {
       const output = await decompressWithNativeDecompressionStream(input, 'gzip');
       if (output) return output;
     }
-    return this.decompressSync(input);
+    return super.decompress(input, size);
   }
 
-  /** Decompresses batches with a built-in or fflate stream. */
+  /** Streams native batches when available, otherwise uses the WASM stream. */
   async *decompressBatches(
     inputBatches: AsyncIterable<ArrayBuffer> | Iterable<ArrayBuffer>
   ): AsyncIterable<ArrayBuffer> {
@@ -49,3 +37,5 @@ export class GZipDecompressor extends GZipFflateDecompressor {
     yield* super.decompressBatches(inputBatches);
   }
 }
+
+export type {CompressUtilsCompressionOptions as GZipDecompressorOptions};

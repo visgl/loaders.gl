@@ -4,6 +4,8 @@
 
 ### Unreleased
 
+- perf(tiles): upgrade math.gl to alpha.16 and batch horizontal XYZ reprojection with reusable projection buffers
+
 ### v5.0.0-alpha.11
 
 - chore(math.gl): upgrade to 5.0.0-alpha.15

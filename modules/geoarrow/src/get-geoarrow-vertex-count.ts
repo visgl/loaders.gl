@@ -5,7 +5,7 @@
 import * as arrow from 'apache-arrow';
 import {scanWKB} from '@math.gl/wkb';
 import type {Geometry} from '@loaders.gl/schema';
-import {convertWKTToGeometry} from '@loaders.gl/gis';
+import {convertWKTToGeometry} from '@loaders.gl/arrow-geometry/geometry-codecs';
 
 import {
   isGeoArrowBox,

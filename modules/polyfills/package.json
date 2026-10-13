@@ -24,6 +24,7 @@
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
+      "browser": "./dist/index.browser.js",
       "import": "./dist/index.js",
       "require": "./dist/index.cjs"
     }
@@ -34,6 +35,7 @@
     "README.md"
   ],
   "browser": {
+    "./dist/index.cjs": "./dist/index.browser.js",
     "./dist/index.js": "./dist/index.browser.js",
     "./dist/load-library/require-utils.node.js": false,
     "./src/index.ts": "./src/index.browser.ts",
@@ -42,9 +44,10 @@
     "path": false
   },
   "scripts": {
-    "pre-build": "npm run build-bundle && npm run build-bundle-dev",
+    "pre-build": "npm run build-node-entrypoint && npm run build-bundle && npm run build-bundle-dev",
     "build-bundle": "# ocular-bundle ./bundle.ts --output=dist/dist.min.js",
-    "build-bundle-dev": "# ocular-bundle ./bundle.ts --env=dev --output=dist/dist.dev.js"
+    "build-bundle-dev": "# ocular-bundle ./bundle.ts --env=dev --output=dist/dist.dev.js",
+    "build-node-entrypoint": "esbuild src/index.ts --bundle --packages=external --platform=node --format=cjs --outfile=dist/index.cjs"
   },
   "dependencies": {
     "@loaders.gl/crypto": "5.0.0-alpha.11",

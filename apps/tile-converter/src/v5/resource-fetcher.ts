@@ -101,10 +101,13 @@ export function createTileConversionResourceFetcher(
       bytes.set(part, offset);
       offset += part.byteLength;
     }
-    return new Response(bytes, {
+    const boundedResponse = new Response(bytes, {
       status: response.status,
       statusText: response.statusText,
       headers: response.headers
     });
+    // Relative dependencies must resolve against the final URL after redirects.
+    Object.defineProperty(boundedResponse, 'url', {value: response.url});
+    return boundedResponse;
   };
 }

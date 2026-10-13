@@ -2,36 +2,28 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import {GZipFflateCompressor, type GZipFflateCompressorOptions} from './gzip-compressor-fflate';
 import {
-  compressBatchesWithNativeCompressionStream,
-  compressWithNativeCompressionStream
+  GZipCompressUtilsCompressor,
+  type CompressUtilsCompressionOptions
+} from './gzip-compressor-compress-utils';
+
+import {
+  compressWithNativeCompressionStream,
+  compressBatchesWithNativeCompressionStream
 } from './lib/compression-stream';
 
-/** Options for the balanced default GZIP compressor. */
-export type GZipCompressorOptions = GZipFflateCompressorOptions & {
-  /** Whether asynchronous methods may use the built-in stream implementation. */
-  useNative?: boolean;
-};
-
-/** Native-first GZIP compressor with a compact fflate fallback. */
-export class GZipCompressor extends GZipFflateCompressor {
-  declare readonly options: GZipCompressorOptions;
-
-  constructor(options: GZipCompressorOptions = {}) {
-    super(options);
-  }
-
-  /** Compresses with the built-in stream when available, then falls back to fflate. */
+/** Default GZIP compressor backed by the lazily loaded compress-utils codec. */
+export class GZipCompressor extends GZipCompressUtilsCompressor {
+  /** Compresses with native streams when available, otherwise lazily initializes WASM. */
   async compress(input: ArrayBuffer): Promise<ArrayBuffer> {
     if (this.options.useNative !== false) {
       const output = await compressWithNativeCompressionStream(input, 'gzip');
       if (output) return output;
     }
-    return this.compressSync(input);
+    return super.compress(input);
   }
 
-  /** Compresses batches with a built-in or fflate stream. */
+  /** Streams native batches when available, otherwise uses the WASM stream. */
   async *compressBatches(
     inputBatches: AsyncIterable<ArrayBuffer> | Iterable<ArrayBuffer>
   ): AsyncIterable<ArrayBuffer> {
@@ -45,3 +37,5 @@ export class GZipCompressor extends GZipFflateCompressor {
     yield* super.compressBatches(inputBatches);
   }
 }
+
+export type {CompressUtilsCompressionOptions as GZipCompressorOptions};

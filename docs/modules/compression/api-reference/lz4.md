@@ -46,9 +46,9 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
   <img src="https://img.shields.io/badge/From-v5.0-blue.svg?style=flat-square" alt="From v5.0" />
 </p>
 
-`LZ4Compressor` writes LZ4 frames with lazy `lz4js`. `LZ4Decompressor` preserves loaders.gl's
-compact hand-written block and Hadoop decoder and loads `lz4js` only when frame decoding requires
-it.
+`LZ4Compressor` and `LZ4Decompressor` use lazy compress-utils WASM for frames and raw blocks.
+Legacy Hadoop block framing is parsed in TypeScript. Sync methods require preload.
+`raw: true` selects raw block encoding; raw decoding requires an output capacity.
 
 ```typescript
 import {LZ4Compressor, LZ4Decompressor} from '@loaders.gl/compression';
@@ -71,3 +71,5 @@ decompression may require the expected uncompressed size as the second argument.
 | compress-utils | `lz4-compressor-compress-utils` | `lz4-decompressor-compress-utils` |
 
 See the [live benchmarks](/docs/modules/compression/benchmarks) for measured frame performance.
+
+For sync methods, preload first; root callers should use `{useNative: false}` when selecting a WASM implementation for synchronous work.

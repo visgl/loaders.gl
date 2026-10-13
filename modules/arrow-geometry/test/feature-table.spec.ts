@@ -1,0 +1,293 @@
+// loaders.gl
+// SPDX-License-Identifier: MIT
+// Copyright (c) vis.gl contributors
+
+import {expect, test} from 'vitest';
+import * as arrow from 'apache-arrow';
+import {GEOARROW_TEST_CASES} from '@loaders.gl/arrow/test/data/geoarrow/test-cases';
+import {fetchFile, parse} from '@loaders.gl/core';
+import {Feature, FeatureCollection} from '@loaders.gl/schema';
+import {GeoArrowLoader} from '@loaders.gl/arrow';
+import {convertFeaturesToWKBArrowTable} from '../src/feature-collection-to-arrow';
+import {getGeoMetadata} from '@loaders.gl/schema';
+import {convertFeaturesToGeoArrowTable, type LegacyGeoJSONCRS} from '../src/feature-table';
+import {convertWKTToGeometry} from '../src/geometry-codecs';
+import {makeGeoArrowColumnFromArrowVector} from '../src/arrow-geoarrow-adapter';
+import {materializeGeoArrowRows} from '@math.gl/geoarrow';
+
+test.each([
+  ['POINT M (1 2 3)', 'xym', 'Point M'],
+  ['LINESTRING M (1 2 3, 4 5 6)', 'xym', 'LineString M'],
+  ['POLYGON M ((0 0 1, 1 0 2, 0 1 3, 0 0 1))', 'xym', 'Polygon M'],
+  ['GEOMETRYCOLLECTION M (POINT (1 2 3))', 'xym', 'GeometryCollection M'],
+  ['POINT ZM (1 2 3 4)', 'xyzm', 'Point ZM'],
+  ['POINT M EMPTY', 'xym', 'Point M']
+])('native conversion preserves measured dimensions: %s', (text, dimension, geometryType) => {
+  const geometry = convertWKTToGeometry(text)!;
+  for (const encodingPreference of ['optimized', 'geoarrow.geometry'] as const) {
+    const table = convertFeaturesToGeoArrowTable([{type: 'Feature', properties: {}, geometry}], {
+      encodingPreference
+    });
+    const metadata = getGeoMetadata(table.schema.metadata)!.columns.geometry;
+    const column = makeGeoArrowColumnFromArrowVector(table.data.getChild('geometry')!, {
+      encoding: metadata.encoding
+    });
+    expect(column.dimension).toBe(dimension);
+    expect(metadata.geometry_types).toEqual([geometryType]);
+    const physicalType = table.data.getChild('geometry')!.type;
+    if (arrow.DataType.isDenseUnion(physicalType)) {
+      expect(physicalType.children.map(field => field.name)).toContain(geometryType);
+    }
+    if (!text.includes('EMPTY')) {
+      expect(materializeGeoArrowRows(column)).toEqual([geometry]);
+    }
+  }
+});
+
+test('native mixed Z and M coordinates promote into distinct ZM axes', () => {
+  const features: Feature[] = ['POINT M (1 2 7)', 'POINT Z (3 4 9)'].map(text => ({
+    type: 'Feature',
+    properties: {},
+    geometry: convertWKTToGeometry(text)!
+  }));
+  const table = convertFeaturesToGeoArrowTable(features, {encodingPreference: 'optimized'});
+  const column = makeGeoArrowColumnFromArrowVector(table.data.getChild('geometry')!);
+  expect(column.dimension).toBe('xyzm');
+  expect(materializeGeoArrowRows(column)).toEqual([
+    {type: 'Point', coordinates: [1, 2, Number.NaN, 7]},
+    {type: 'Point', coordinates: [3, 4, 9, Number.NaN]}
+  ]);
+  expect(getGeoMetadata(table.schema.metadata)!.columns.geometry.geometry_types).toEqual([
+    'Point ZM'
+  ]);
+});
+
+test('native collections retain child measures despite a different declared root dimension', () => {
+  const geometry = convertWKTToGeometry('GEOMETRYCOLLECTION Z (POINT M (1 2 3))')!;
+  const table = convertFeaturesToGeoArrowTable([{type: 'Feature', properties: {}, geometry}], {
+    encodingPreference: 'optimized'
+  });
+  const column = makeGeoArrowColumnFromArrowVector(table.data.getChild('geometry')!);
+  expect(column.dimension).toBe('xyzm');
+  expect(materializeGeoArrowRows(column)).toEqual([
+    {type: 'GeometryCollection', geometries: [{type: 'Point', coordinates: [1, 2, Number.NaN, 3]}]}
+  ]);
+  expect(getGeoMetadata(table.schema.metadata)!.columns.geometry.geometry_types).toEqual([
+    'GeometryCollection ZM'
+  ]);
+});
+
+test('convertFeaturesToWKBArrowTable#preserves feature IDs and sparse properties', () => {
+  const table = convertFeaturesToWKBArrowTable([
+    {
+      type: 'Feature',
+      id: 'first',
+      properties: {},
+      geometry: {type: 'Point', coordinates: [1, 2]}
+    },
+    {
+      type: 'Feature',
+      id: 'second',
+      properties: {population: 42},
+      geometry: {type: 'Point', coordinates: [3, 4]}
+    }
+  ]);
+
+  expect(table.data.getChild('id')?.toArray()).toEqual(['first', 'second']);
+  const populationColumn = table.data.getChild('population');
+  expect(populationColumn?.get(0)).toBeNaN();
+  expect(populationColumn?.get(1)).toBe(42);
+});
+test('ArrowLoader#shape:geojson-table', async () => {
+  for (const testCase of GEOARROW_TEST_CASES) {
+    await testConversion(testCase[0], testCase[1]);
+  }
+});
+async function testConversion(
+  arrowFile: string,
+  expectedGeojson: FeatureCollection
+): Promise<void> {
+  const table = await parse(fetchFile(arrowFile), GeoArrowLoader, {
+    core: {worker: false},
+    arrow: {shape: 'geojson-table'}
+  });
+  expect(table.shape).toBe('geojson-table');
+  if (table.shape === 'geojson-table') {
+    // check if the arrow table is loaded correctly
+    expect(table.features.length, `arrow table has ${expectedGeojson.features.length} row`).toBe(
+      expectedGeojson.features.length
+    );
+    // const colNames = [...Object.keys(expectedGeojson.features[0].properties || {}), 'geometry'];
+    // t.equal(table.numCols, colNames.length, `arrow table has ${colNames.length} columns`);
+    // // check fields exist in arrow table schema
+    // table.schema.fields.map((field) =>
+    //   t.equal(colNames.includes(field.name), true, `arrow table has ${field.name} column`)
+    // );
+    // get first geometry from arrow geometry column
+    const firstFeature = table.features[0];
+    // check if geometry in firstFeature is equal to the original geometry in expectedPointGeojson
+    expect(
+      firstFeature?.geometry,
+      'firstFeature.geometry is equal to expectedGeojson.features[0].geometry'
+    ).toEqual(expectedGeojson.features[0].geometry);
+  }
+}
+test('convertFeaturesToGeoArrowTable#preserves arbitrary legacy GeoJSON CRS metadata', () => {
+  const crs: LegacyGeoJSONCRS = {
+    type: 'link',
+    properties: {
+      href: 'https://example.com/custom-crs',
+      type: 'proj4'
+    }
+  };
+  const table = convertFeaturesToGeoArrowTable(makePointFeatures(), {crs});
+  const geoMetadata = getGeoMetadata(table.schema.metadata);
+  const geometryColumnMetadata = geoMetadata?.columns.geometry;
+  const geometryField = table.schema.fields.find(field => field.name === 'geometry');
+  const extensionMetadata = JSON.parse(
+    geometryField?.metadata?.['ARROW:extension:metadata'] || '{}'
+  );
+  expect(
+    geometryColumnMetadata?.geojson_crs,
+    'preserves raw legacy CRS on GeoParquet column metadata'
+  ).toEqual(crs);
+  expect(
+    extensionMetadata.geojson_crs,
+    'preserves raw legacy CRS on GeoArrow field metadata'
+  ).toEqual(crs);
+  expect(geometryColumnMetadata?.crs, 'does not map unknown CRS to GeoArrow CRS').toBe(undefined);
+});
+test('convertFeaturesToGeoArrowTable#maps known legacy GeoJSON CRS metadata', () => {
+  const crs: LegacyGeoJSONCRS = {
+    type: 'name',
+    properties: {
+      name: 'EPSG:4326'
+    }
+  };
+  const table = convertFeaturesToGeoArrowTable(makePointFeatures(), {crs});
+  const geoMetadata = getGeoMetadata(table.schema.metadata);
+  const geometryColumnMetadata = geoMetadata?.columns.geometry;
+  const geometryField = table.schema.fields.find(field => field.name === 'geometry');
+  const extensionMetadata = JSON.parse(
+    geometryField?.metadata?.['ARROW:extension:metadata'] || '{}'
+  );
+  expect(geometryColumnMetadata?.geojson_crs, 'preserves raw legacy CRS').toEqual(crs);
+  expect(
+    (geometryColumnMetadata?.crs as any)?.id?.authority,
+    'maps EPSG:4326 to GeoParquet CRS metadata'
+  ).toBe('EPSG');
+  expect(
+    (extensionMetadata.crs as any)?.id?.code,
+    'maps EPSG:4326 to GeoArrow field CRS metadata'
+  ).toBe(4326);
+  expect(extensionMetadata.crs_type, 'sets GeoArrow CRS metadata type').toBe('projjson');
+});
+test('convertFeaturesToGeoArrowTable#applies legacy GeoJSON CRS to custom geometry column', () => {
+  const crs: LegacyGeoJSONCRS = {
+    type: 'name',
+    properties: {
+      name: 'urn:ogc:def:crs:OGC:1.3:CRS84'
+    }
+  };
+  const table = convertFeaturesToGeoArrowTable(makePointFeatures(), {
+    geometryColumnName: 'geom',
+    crs
+  });
+  const geoMetadata = getGeoMetadata(table.schema.metadata);
+  const geometryField = table.schema.fields.find(field => field.name === 'geom');
+  const extensionMetadata = JSON.parse(
+    geometryField?.metadata?.['ARROW:extension:metadata'] || '{}'
+  );
+  expect(geoMetadata?.columns.geom.geojson_crs, 'stores CRS under custom column').toEqual(crs);
+  expect(geoMetadata?.columns.geometry, 'does not create default geometry metadata').toBe(
+    undefined
+  );
+  expect(
+    (extensionMetadata.crs as any)?.id?.code,
+    'maps CRS84 to GeoArrow field CRS metadata'
+  ).toBe('CRS84');
+});
+function makePointFeatures(): Feature[] {
+  return [
+    {
+      type: 'Feature',
+      properties: {name: 'A'},
+      geometry: {type: 'Point', coordinates: [1, 2]}
+    }
+  ];
+}
+
+test('convertFeaturesToGeoArrowTable#supports encoding preferences', () => {
+  const features: Feature[] = [
+    {
+      type: 'Feature',
+      properties: {name: 'A'},
+      geometry: {type: 'Point', coordinates: [1, 2]}
+    },
+    {
+      type: 'Feature',
+      properties: {name: 'B'},
+      geometry: {type: 'Point', coordinates: [3, 4]}
+    }
+  ];
+
+  const wkbTable = convertFeaturesToGeoArrowTable(features, {
+    encodingPreference: 'geoarrow.wkb'
+  });
+  expect(wkbTable.data.schema.fields.at(-1)?.metadata?.get('ARROW:extension:name')).toBe(
+    'geoarrow.wkb'
+  );
+
+  const optimizedTable = convertFeaturesToGeoArrowTable(features, {
+    encodingPreference: 'optimized'
+  });
+  expect(optimizedTable.data.schema.fields.at(-1)?.metadata?.get('ARROW:extension:name')).toBe(
+    'geoarrow.point'
+  );
+
+  const unionTable = convertFeaturesToGeoArrowTable(features, {
+    encodingPreference: 'geoarrow.geometry'
+  });
+  expect(unionTable.data.schema.fields.at(-1)?.type).toBeInstanceOf(arrow.DenseUnion);
+});
+
+test('convertFeaturesToGeoArrowTable#uses a stable union for mixed and null geometries', () => {
+  const table = convertFeaturesToGeoArrowTable(
+    [
+      {type: 'Feature', properties: {}, geometry: {type: 'Point', coordinates: [1, 2]}},
+      {
+        type: 'Feature',
+        properties: {},
+        geometry: {
+          type: 'LineString',
+          coordinates: [
+            [0, 0],
+            [1, 1]
+          ]
+        }
+      },
+      {type: 'Feature', properties: {}, geometry: null}
+    ],
+    {encodingPreference: 'optimized'}
+  );
+
+  const geometryField = table.data.schema.fields.at(-1);
+  const geometryColumn = table.data.getChild('geometry');
+  expect(geometryField?.type).toBeInstanceOf(arrow.DenseUnion);
+  expect(geometryColumn?.length).toBe(3);
+  expect(geometryColumn?.get(2)).toBeNull();
+});
+
+test('convertFeaturesToGeoArrowTable#promotes single geometries into multi encodings', () => {
+  const table = convertFeaturesToGeoArrowTable(
+    [
+      {type: 'Feature', properties: {}, geometry: {type: 'Point', coordinates: [1, 2]}},
+      {type: 'Feature', properties: {}, geometry: {type: 'MultiPoint', coordinates: [[3, 4]]}}
+    ],
+    {encodingPreference: 'optimized'}
+  );
+
+  expect(table.data.schema.fields.at(-1)?.metadata?.get('ARROW:extension:name')).toBe(
+    'geoarrow.multipoint'
+  );
+});

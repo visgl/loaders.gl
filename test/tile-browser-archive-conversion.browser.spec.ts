@@ -377,3 +377,31 @@ test('3TZ loads its index once and avoids directory rescans for selected entries
     await archive.close();
   }
 });
+
+test('local 3TZ metadata inspection selects document-relative nested meshes without payload reads', async () => {
+  const {selectBrowserTilesetContent} = await import('@loaders.gl/tile-converter/v5/core');
+  const root = {
+    asset: {version: '1.1'},
+    root: {
+      geometricError: 2,
+      boundingVolume: {region: [-0.001, -0.001, 0.001, 0.001, 0, 200]},
+      content: {uri: 'nested/tileset.json'}
+    }
+  };
+  const nested = {
+    asset: {version: '1.1'},
+    root: {geometricError: 0, boundingVolume: {sphere: [0, 0, 0, 1]}, content: {uri: 'missing.glb'}}
+  };
+  const bytes = await Tiles3DArchiveWriter.encode!({
+    'tileset.json': new TextEncoder().encode(JSON.stringify(root)).buffer,
+    'nested/tileset.json': new TextEncoder().encode(JSON.stringify(nested)).buffer
+  });
+  const file = new File([bytes], 'nested.3tz');
+  const inspection = await inspectConversionInput(file, new AbortController().signal);
+  expect(inspection.documents).toHaveLength(2);
+  expect(inspection.resources).toHaveLength(1);
+  expect(selectBrowserTilesetContent(inspection, inspection.resources[0])).toMatchObject({
+    contentUrl: 'https://conversion.invalid/input.3tz/nested/missing.glb',
+    geometricError: 2
+  });
+});

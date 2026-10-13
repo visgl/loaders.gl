@@ -27,7 +27,7 @@ import {
   rewindGeoArrow
 } from '@loaders.gl/geoarrow';
 import {convertArrowToSchema, convert} from '@loaders.gl/schema-utils';
-import {convertGeometryToWKB} from '@loaders.gl/gis';
+import {convertGeometryToWKB} from '@loaders.gl/arrow-geometry/geometry-codecs';
 import type {GeoArrowGeometryTarget} from '../src/geoarrow-converter/convert-geoarrow-geometry';
 
 const GEOARROW_WKB_CONFORMANCE_CASES = [

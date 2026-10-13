@@ -143,3 +143,29 @@ export type {
   EncodePointCloudCOPCOptions,
   EncodedPointCloudCOPC
 } from '@loaders.gl/tile-converter/v5/adapters';
+
+export {convertPointCloudToTileset} from '@loaders.gl/tile-converter/v5/adapters';
+export type {
+  ConvertPointCloudToTilesetOptions,
+  ConvertedPointCloudTileset
+} from '@loaders.gl/tile-converter/v5/adapters';
+
+export {
+  encodePotreeArchive,
+  openPointCloudFile,
+  extractMeshVertices
+} from '@loaders.gl/tile-converter/v5/adapters';
+export type {
+  EncodePotreeArchiveOptions,
+  OpenPointCloudFileOptions,
+  OpenedPointCloudFile,
+  ExtractMeshVerticesOptions
+} from '@loaders.gl/tile-converter/v5/adapters';
+
+export {createMeshSourceFeatureOptions} from '@loaders.gl/tile-converter/v5/adapters';
+export type {MeshSourceSchemaOptions} from '@loaders.gl/tile-converter/v5/adapters';
+export {convertPointCloudToPotree} from '@loaders.gl/tile-converter/v5/adapters';
+export type {
+  ConvertPointCloudToPotreeOptions,
+  ConvertedPointCloudPotree
+} from '@loaders.gl/tile-converter/v5/adapters';

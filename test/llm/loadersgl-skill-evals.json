@@ -116,7 +116,7 @@
       "prompt": "Add a GeoArrow WKB geometry column to a loader without expanding its processing dependencies.",
       "expectedBehaviors": [
         "Inspect the returned geometry representation.",
-        "Use the minimal gis geometry helper surface.",
+        "Use focused arrow-geometry helpers and schema metadata types.",
         "Verify output coordinates and geometry encoding."
       ],
       "forbiddenMistakes": [

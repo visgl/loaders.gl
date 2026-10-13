@@ -2,7 +2,7 @@ import {beforeAll, expect, test} from 'vitest';
 import {fetchFile, parse} from '@loaders.gl/core';
 import {GLTFLoader, postProcessGLTF} from '@loaders.gl/gltf';
 import {Tiles3DArchive} from '@loaders.gl/3d-tiles';
-import {DataViewReadableFile} from '@loaders.gl/zip';
+import {ArrayBufferFile} from '@loaders.gl/loader-utils';
 import {
   CONVERSION_LIMITS,
   convertSelectedContents,
@@ -85,9 +85,7 @@ test.each([
     'https://example.invalid/tileset.json',
     'https://example.invalid/selected.glb'
   ]);
-  const archive = new Tiles3DArchive(
-    new DataViewReadableFile(new DataView(await result.file.arrayBuffer()))
-  );
+  const archive = new Tiles3DArchive(new ArrayBufferFile(await result.file.arrayBuffer()));
   try {
     const gltf = postProcessGLTF(
       await parse(await archive.getFile('meshes/0.glb'), GLTFLoader, {
@@ -217,9 +215,7 @@ test.each([
   );
   expect(data).toEqual(before);
   expect(result.report.inputBytes).toBe(72 + (normalized ? 12 : 24) + pngImage.byteLength);
-  const archive = new Tiles3DArchive(
-    new DataViewReadableFile(new DataView(await result.file.arrayBuffer()))
-  );
+  const archive = new Tiles3DArchive(new ArrayBufferFile(await result.file.arrayBuffer()));
   try {
     const output = await archive.getFile('meshes/0.glb');
     const preserved = await parse(output, GLTFLoader, {

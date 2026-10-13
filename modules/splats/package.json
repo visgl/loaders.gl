@@ -74,8 +74,8 @@
   "scripts": {
     "pre-build": "npm run generate-json-schema && npm run build-bundle && npm run build-bundle-dev",
     "generate-json-schema": "node ../../scripts/generate-json-schema.mjs --schema ./dist/rad-zod-schema.js --export RADMetadataJSONSchema --output ./dist/rad-metadata.schema.json --id https://unpkg.com/@loaders.gl/splats/rad-metadata.schema.json --title 'loaders.gl Spark RAD metadata' && node ../../scripts/generate-json-schema.mjs --schema ./dist/rad-zod-schema.js --export RADChunkMetadataJSONSchema --output ./dist/radc-metadata.schema.json --id https://unpkg.com/@loaders.gl/splats/radc-metadata.schema.json --title 'loaders.gl Spark RADC chunk metadata'",
-    "build-bundle": "ocular-bundle ./bundle.ts --output=dist/dist.min.js",
-    "build-bundle-dev": "ocular-bundle ./bundle.ts --env=dev --output=dist/dist.dev.js"
+    "build-bundle": "node ../../scripts/build-codec-bundle.mjs ./bundle.ts --output=dist/dist.min.js",
+    "build-bundle-dev": "node ../../scripts/build-codec-bundle.mjs ./bundle.ts --env=dev --output=dist/dist.dev.js"
   },
   "dependencies": {
     "@loaders.gl/compression": "5.0.0-alpha.11",

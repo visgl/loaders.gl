@@ -4,7 +4,7 @@
 
 import {expect, test, vi} from 'vitest';
 import {validateBytes} from 'gltf-validator';
-import {GZipDecompressor} from '@loaders.gl/compression/gzip-decompressor';
+import {GZipFflateDecompressor as GZipDecompressor} from '@loaders.gl/compression/gzip-decompressor-fflate';
 import {parse} from '@loaders.gl/core';
 import {
   I3SLoader,
@@ -1093,4 +1093,41 @@ test('attribute resources isolate pooled views even when slice does not copy', a
   );
   expect(resource.features!.triangleFeatureIndices).toEqual(new Uint32Array([1, 0]));
   expect(resource.features!.batches[0].data.getChild('feature_id')!.get(0)).toBe(9007199254740993n);
+});
+
+test('IntegratedMesh provenance requires an explicit I3S layer-type policy and reports the change', async () => {
+  const setup = createRuntime();
+  setup.metadata.tileset.layerType = 'IntegratedMesh';
+  const source = createI3SMeshTilesetConversionSource(setup.runtime);
+  const metadata = await source.inspect();
+  const resource = await readResource(source);
+  expect(resource.sourceLayerType).toBe('IntegratedMesh');
+  const options = {
+    spatialContext: createI3SConversionSpatialContext(metadata.spatialReference!, {
+      targetCrs: 'EPSG:4978'
+    }),
+    draco: false,
+    maxPositionError: 0.01,
+    maxResourceBytes: 32768
+  };
+  const rejected = createI3SMeshConversionCodec(options)
+    .convert(resource, metadata)
+    [Symbol.asyncIterator]();
+  await expect(rejected.next()).rejects.toMatchObject({code: 'I3S_LAYER_TYPE_CHANGE_REQUIRED'});
+  const codec = createI3SMeshConversionCodec({...options, integratedMeshPolicy: 'as-3d-object'});
+  const iterator = codec.convert(resource, metadata)[Symbol.asyncIterator]();
+  const output = (await iterator.next()).value!;
+  expect(output.sourceLayerType).toBe('IntegratedMesh');
+  expect(await codec.validateOutput!(output)).toEqual(
+    expect.arrayContaining([
+      expect.objectContaining({
+        code: 'I3S_LAYER_TYPE_CHANGED',
+        severity: 'warning',
+        resourceId: resource.id
+      })
+    ])
+  );
+  expect(() =>
+    createI3SMeshConversionCodec({...options, integratedMeshPolicy: 'invalid' as 'as-3d-object'})
+  ).toThrow(/Unknown IntegratedMesh/);
 });

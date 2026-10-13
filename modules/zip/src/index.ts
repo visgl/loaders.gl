@@ -3,35 +3,37 @@
 // Copyright (c) vis.gl contributors
 
 export {ZipFormat} from './zip-format';
-export {ZipLoader} from './zip-loader';
+export {ZipLoader} from './zip-loader-types';
+export type {ZipFileMap, ZipLoaderOptions} from './zip-loader-types';
+export type {ZipWriterFiles, ZipWriterOptions} from './zip-writer';
 export {ZipWriter} from './zip-writer';
 export {encodeIndexedZip} from './indexed-zip-writer';
 export type {IndexedZipFiles, IndexedZipOptions} from './indexed-zip-writer';
 export {TarBuilder} from './tar-builder';
 
-export {
-  parseZipCDFileHeader,
-  makeZipCDHeaderIterator,
-  signature as CD_HEADER_SIGNATURE,
-  generateCDHeader
-} from './parse-zip/cd-file-header';
-export {
-  parseZipLocalFileHeader,
-  signature as localHeaderSignature,
-  generateLocalHeader
-} from './parse-zip/local-file-header';
-export {parseEoCDRecord} from './parse-zip/end-of-central-directory';
-export {searchFromTheEnd} from './parse-zip/search-from-the-end';
-export {
-  readRange,
-  getReadableFileSize,
-  DataViewReadableFile
-} from './parse-zip/readable-file-utils';
-export {addOneFile, createZip} from './parse-zip/zip-composition';
+export {addOneFile, createZip} from './lib/zip-composition';
+export type {ZipCompositionOptions} from './lib/zip-composition';
 
-// export type {HashElement} from './hash-file-utility';
 export {IndexedArchive} from './filesystems/IndexedArchive';
-export {parseHashTable, makeHashTableFromZipHeaders, composeHashFile} from './hash-file-utility';
+export {parseHashTable, composeHashFile} from './hash-file-utility';
 
-export {ZipFileSystem, ZIP_COMPRESSION_HANDLERS} from './filesystems/zip-filesystem';
-export type {CompressionHandler} from './filesystems/zip-filesystem';
+export {ZipFileSystem} from './filesystems/zip-filesystem';
+export type {ZipFileStat} from './filesystems/zip-filesystem';
+
+export {ZipArchive, openZipArchive} from './zip-archive';
+export type {
+  ZipArchiveInput,
+  ZipArchiveOptions,
+  ZipEntry,
+  ZipReadOptions,
+  ZipRangeOptions
+} from './zip-archive-types';
+
+export {encodeZip, encodeZipInBatches} from './zip-encode';
+export type {
+  ZipByteChunk,
+  ZipByteSource,
+  ZipEncodeEntry,
+  ZipEncodeFiles,
+  ZipEncodeOptions
+} from './zip-encode-types';

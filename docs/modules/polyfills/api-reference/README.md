@@ -59,6 +59,17 @@ import '@loaders.gl/polyfills';
 import '@loaders.gl/core';
 ```
 
+CommonJS applications can install the same Node adapters with:
+
+```javascript
+require('@loaders.gl/polyfills');
+```
+
+The Node library transport accepts local paths and file URLs, including URL-escaped filenames.
+Binary reads return exactly the file's bytes. Relative imports in a local CommonJS library
+resolve from that library's directory. Browser bundlers resolve both package entrypoints to
+the browser shim.
+
 ## Features
 
 The polyfills module installs the following capabilities.

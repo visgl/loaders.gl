@@ -1428,3 +1428,17 @@ test('COPCWriter retains Extra Bytes descriptors and exact identifiers through p
     ['1,2,3', '-4,-5,-6', '7,8,9'].sort()
   );
 });
+
+test('COPC close invalidates cached ranges, node content and progressive reads', async () => {
+  const source = new TestCOPCTileSource(createWorkerCOPCBlob(6), {core: {worker: false}});
+  const tile = await source.getRootTile();
+  expect(new TextDecoder().decode(await source.readCachedRange(0, 4))).toBe('LASF');
+  await source.close();
+  await source.close();
+  await expect(source.readCachedRange(0, 4)).rejects.toThrow('closed');
+  await expect(source.loadTileContent(tile)).rejects.toThrow('closed');
+  await expect(
+    source.loadTileContentInBatches(tile)[Symbol.asyncIterator]().next()
+  ).rejects.toThrow('closed');
+  await expect(source.getPoints({nodeIndex: [0, 0, 0, 0]})).rejects.toThrow('closed');
+});

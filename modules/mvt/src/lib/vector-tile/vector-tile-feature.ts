@@ -5,7 +5,7 @@
 // This code is forked from https://github.com/mapbox/vector-tile-js under BSD 3-clause license.
 
 import type {Feature, FlatFeature, FlatIndexedGeometry} from '@loaders.gl/schema';
-import type {GeojsonGeometryInfo} from '@loaders.gl/gis';
+import type {GeojsonGeometryInfo} from '@loaders.gl/arrow-geometry/legacy-binary';
 import Protobuf from 'pbf';
 import {
   classifyRings,

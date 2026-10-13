@@ -2,6 +2,8 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
+import {preloadI3SMeshCompression} from '@loaders.gl/i3s';
+import {beforeAll as preloadBeforeAll} from 'vitest';
 import {afterEach, beforeAll, expect, test, vi} from 'vitest';
 import {parse} from '@loaders.gl/core';
 import {Tiles3DLoader, type Tiles3DTileContent} from '@loaders.gl/3d-tiles';
@@ -20,6 +22,8 @@ import {
 } from '@loaders.gl/tile-converter/v5/adapters';
 import type {MeshSourceResource} from '@loaders.gl/tile-converter/v5/adapters';
 import {createTiles3DConversionSpatialContext as createSpatialContext} from '@loaders.gl/tile-converter/v5/core';
+
+preloadBeforeAll(preloadI3SMeshCompression);
 
 const positions = new Float32Array([0, 0, 0, 1, 0, 0, 0, 1, 0, 1, 1, 0, 0, 2, 0, 1, 2, 0]);
 const expectedStrip = [0, 1, 2, 1, 3, 2, 2, 3, 4, 3, 5, 4];

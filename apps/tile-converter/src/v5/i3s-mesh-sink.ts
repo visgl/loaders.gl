@@ -113,7 +113,7 @@ export function createI3SMeshSink(options: I3SMeshSinkOptions): I3SMeshSink {
       'I3S collections require 1–64 meshes and a positive resource byte limit'
     );
   const memory = createBoundedMemoryTileConversionSink(options);
-  const compressor = new GZipCompressor({useNative: false, gzip: {mtime: 0}});
+  const compressor = new GZipCompressor({useNative: false});
   const decompressor = new GZipDecompressor({useNative: false});
   const leaves: {node: MeshNode; legacy: Record<string, unknown>}[] = [];
   const identifiers = new Set<string>();

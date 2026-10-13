@@ -50,7 +50,7 @@ with the class that matches the delivery problem:
 | Need | Runtime | What it provides |
 | --- | --- | --- |
 | Hierarchical 3D Tiles or I3S | [`Tileset3D`](/docs/modules/tiles/api-reference/tileset-3d) | View-dependent traversal, culling, request scheduling, cache management, and selected content |
-| Point-cloud octrees | [`PointCloudTileset`](/docs/modules/tiles/api-reference/point-cloud-tileset) | Visible-node selection and point budgets for COPC and Potree sources |
+| Point-cloud octrees | [`PointCloudTileset`](/docs/modules/tiles/api-reference/point-cloud-tileset) | Visible-node selection and point budgets for COPC, Potree and dynamic decoded point sources |
 | 2D tile grids | [`Tileset2D`](/docs/modules/tiles/api-reference/tileset-2d) | Shared fetched content with per-consumer selection and visibility state |
 | Viewport-driven rasters | [`RasterSet`](/docs/modules/tiles/api-reference/raster-set) | Metadata loading, debounced raster requests, and lifecycle events |
 
@@ -97,6 +97,10 @@ For point clouds, use [`PointCloudTileset`](/docs/modules/tiles/api-reference/po
 with a COPC or Potree source and read its `selectedTiles`. For 2D data, use
 [`Tileset2D`](/docs/modules/tiles/api-reference/tileset-2d); for raster services, use
 [`RasterSet`](/docs/modules/tiles/api-reference/raster-set).
+
+Decoded point datasets can also use
+[`PointCloudTileSource`](/docs/modules/tiles/api-reference/point-cloud-tile-source) to build
+an additive octree in the browser, with lazy child partitions and explicit memory limits.
 
 ## Shared tile model
 

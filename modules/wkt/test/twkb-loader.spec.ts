@@ -2,9 +2,9 @@ import {expect, test} from 'vitest';
 import {fetchFile, parseSync} from '@loaders.gl/core';
 import {isTWKB} from '../src/twkb/convert-twkb-to-geometry';
 import {TWKBLoader} from '@loaders.gl/wkt/bundled';
-import {parseTestCases} from '@loaders.gl/gis/test/data/wkt/parse-test-cases';
-const WKB_2D_TEST_CASES = '@loaders.gl/gis/test/data/wkt/wkb-testdata2d.json';
-const WKB_Z_TEST_CASES = '@loaders.gl/gis/test/data/wkt/wkb-testdataZ.json';
+import {parseTestCases} from '@loaders.gl/wkt/test/data/wkt/parse-test-cases';
+const WKB_2D_TEST_CASES = '@loaders.gl/wkt/test/data/wkt/wkb-testdata2d.json';
+const WKB_Z_TEST_CASES = '@loaders.gl/wkt/test/data/wkt/wkb-testdataZ.json';
 function normalizeTypedArrays(value: unknown): unknown {
   if (ArrayBuffer.isView(value) && !(value instanceof DataView)) {
     return Array.from(value as ArrayLike<number>);

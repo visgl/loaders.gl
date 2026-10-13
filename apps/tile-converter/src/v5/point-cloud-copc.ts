@@ -201,8 +201,8 @@ export async function encodePointCloudCOPC(
   let maximumPositionError = 0;
   const minimum = [Infinity, Infinity, Infinity];
   const maximum = [-Infinity, -Infinity, -Infinity];
+  const errors = [0, 0, 0];
   for (let row = 0; row < pointCount; row++) {
-    const errors = [0, 0, 0];
     for (let axis = 0; axis < 3; axis++) {
       const value = position.value[row * 3 + axis];
       const encoded = Math.round((value - options.offset[axis]) / options.scale[axis]);

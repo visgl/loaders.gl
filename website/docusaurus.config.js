@@ -9,6 +9,9 @@ const darkCodeTheme = themes.dracula;
 const legacyMathCoreEntry = require.resolve('@math.gl/core', {
   paths: [resolve('../node_modules/@deck.gl/core')]
 });
+const legacyMathPolygonEntry = require.resolve('@math.gl/polygon', {
+  paths: [resolve('../node_modules/@deck.gl/layers')]
+});
 
 /** Creates the existing SWC loader with deterministic styled-components IDs. */
 function createJavaScriptLoader(isServer) {
@@ -88,6 +91,13 @@ function createBundlerPlugin() {
             ) {
               // deck.gl/luma.gl 9.3 publish code compiled against math.gl 4.x.
               resource.request = legacyMathCoreEntry;
+            }
+          }),
+          new bundler.NormalModuleReplacementPlugin(/^@math\.gl\/polygon$/, resource => {
+            const normalizedContext = resource.context?.replace(/\\/g, '/');
+            if (normalizedContext?.includes('/node_modules/@deck.gl/')) {
+              // Published deck.gl layers still require the math.gl 4.x WINDING export.
+              resource.request = legacyMathPolygonEntry;
             }
           }),
           new bundler.NormalModuleReplacementPlugin(/^\.\/lerc\.js$/, resource => {
@@ -239,7 +249,6 @@ const config = {
             '@loaders.gl/geopackage': resolve('../modules/geopackage/src'),
             '@loaders.gl/geotiff': resolve('../modules/geotiff/src'),
             '@loaders.gl/geoarrow': resolve('../modules/geoarrow/src'),
-            '@loaders.gl/gis': resolve('../modules/gis/src'),
             '@loaders.gl/gltf': resolve('../modules/gltf/src'),
             '@loaders.gl/i3s': resolve('../modules/i3s/src'),
             '@loaders.gl/images': resolve('../modules/images/src'),
@@ -350,6 +359,9 @@ const config = {
       {
         createRedirects(existingPath) {
           const pageRedirects = {
+            '/docs/modules/gis': '/docs/modules/geoarrow/gis-migration',
+            '/docs/modules/gis/api-reference/geojson-to-binary': '/docs/modules/geoarrow/api-reference/convert-geojson-to-binary-feature-collection',
+            '/docs/modules/gis/api-reference/binary-to-geojson': '/docs/modules/geoarrow/api-reference/convert-binary-feature-collection-to-geojson',
             '/examples/flatgeobuf': '/examples/geospatial/flatgeobuf',
             '/examples/geoarrow': '/examples/geospatial/geoarrow',
             '/examples/geoparquet': '/examples/geospatial/geoparquet',

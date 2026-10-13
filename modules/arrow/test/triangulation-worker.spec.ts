@@ -11,8 +11,9 @@ const workerMocks = vi.hoisted(() => ({
   triangulateWKBColumn: vi.fn()
 }));
 
-vi.mock('@loaders.gl/gis', async importOriginal => {
-  const original = await importOriginal<typeof import('@loaders.gl/gis')>();
+vi.mock('@loaders.gl/arrow-geometry/binary-features', async importOriginal => {
+  const original =
+    await importOriginal<typeof import('@loaders.gl/arrow-geometry/binary-features')>();
   return {
     ...original,
     getTriangleIndices: workerMocks.getTriangleIndices,

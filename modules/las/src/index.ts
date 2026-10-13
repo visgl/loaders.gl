@@ -46,9 +46,6 @@ export type {
 } from './lib/las-extra-bytes';
 
 export {LASLoader} from './las-loader-types';
-export {LASCOPCLoader} from './las-copc-loader-types';
-export {LAZPerfLoader} from './lazperf-loader-types';
-export {LAZRsLoader} from './laz-rs-loader-types';
 export {decodeLAZFileInBatches} from './lib/typescript/parse-las';
 export {
   NeedsMoreData,
