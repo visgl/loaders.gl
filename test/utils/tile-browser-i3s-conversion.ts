@@ -1,10 +1,11 @@
 import {vi} from 'vitest';
-import {encodeI3SMeshLayer, SLPKWriter} from '@loaders.gl/i3s';
+import {encodeI3SMeshLayer, preloadI3SMeshCompression, SLPKWriter} from '@loaders.gl/i3s';
 import {GZipDecompressor} from '@loaders.gl/compression';
 import {convertFeatureAttributesToArrowBatches} from '@loaders.gl/tile-converter/v5/adapters';
 
 /** Builds a tiny real I3S mesh with one explicit feature, reused as HTTP and local SLPK input. */
 export async function createI3SConversionFixture() {
+  await preloadI3SMeshCompression();
   const png = Uint8Array.from(
     atob(
       'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+aX1cAAAAASUVORK5CYII='

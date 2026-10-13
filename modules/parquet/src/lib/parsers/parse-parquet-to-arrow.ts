@@ -80,6 +80,7 @@ export async function* parseParquetFileToArrowInBatches(
   }
 }
 
+/** Opens URL or in-memory file abstractions with the optional WASM reader. */
 async function createParquetFile(
   file: ReadableFile,
   wasm: typeof parquetWasm
@@ -89,7 +90,11 @@ async function createParquetFile(
     return await wasm.ParquetFile.fromFile(file.handle as File);
   }
 
-  return await wasm.ParquetFile.fromUrl(file.url);
+  if (file.url) {
+    return await wasm.ParquetFile.fromUrl(file.url);
+  }
+  const bytes = file.handle instanceof ArrayBuffer ? file.handle : await file.read(0);
+  return await wasm.ParquetFile.fromFile(new Blob([bytes]) as File);
 }
 
 function getReaderOptions(options?: ParquetWasmReaderOptions): parquetWasm.ReaderOptions {

@@ -45,7 +45,7 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
   <img src="https://img.shields.io/badge/Status-Experimental-orange.svg?style=flat-square" alt="Status: Experimental" />
 </p>
 
-Streaming loader for Apache Parquet encoded files. `ParquetLoader` is the primary wasm-backed loader
+Streaming loader for Apache Parquet encoded files. `ParquetLoader` is the primary TypeScript-backed loader
 and `ParquetJSLoader` is the experimental TypeScript loader variant. Both return Arrow tables by
 default and support explicit shape selection through `parquet.shape`.
 
@@ -157,24 +157,7 @@ field-level GeoArrow metadata.
 
 ## Compressions
 
-Async Parquet parsing first probes the runtime's native `DecompressionStream` for gzip, Brotli,
-and Zstandard pages. Those probes come from a lightweight entrypoint with no codec imports, and
-codec-backed implementations are loaded only when native support is unavailable. Native Zstandard
-support is not yet widely available, so inject `zstd-codec` for broad compatibility; when
-provided, it takes precedence over the native path. LZ4 still requires `lz4js`.
-```typescript
-import {ParquetLoader} from '@loaders.gl/parquet';
-import {load} from '@loaders.gl/core';
-
-import {ZstdCodec} from 'zstd-codec';
-import lz4js from 'lz4js';
-
-const data = await load(url, ParquetLoader, {modules: {
-  'zstd-codec': ZstdCodec,
-  'lz4js': lz4js,
-  // brotli - only needed for compression
-}});
-```
+Parquet codecs use compress-utils, including raw LZ4 and LZO decoding. Hadoop LZO block framing is handled by a TypeScript adapter. No `lz4js`, `zstd-codec`, or Brotli module injection is required. LZO compression is unsupported.
 
 ## Data Format
 
@@ -187,7 +170,7 @@ returned as parsed JavaScript values.
 
 Unshredded Parquet `VARIANT` groups are decoded into JavaScript primitives, arrays, and
 objects for object-row results from the TypeScript `ParquetJSLoader` variant. Arrow results
-and the default WASM `ParquetLoader` retain the canonical `metadata` and `value` binary child
+and the explicit WASM reader retain the canonical `metadata` and `value` binary child
 fields so applications can choose when to decode or project them. Shredded Variant values
 are currently exposed as their typed child columns and are not yet reconstructed into one
 JavaScript value.
@@ -210,11 +193,11 @@ Supports table category options such as `batchType` and `batchSize`.
 | `parquet.offset` | `number` | `0` | Number of rows to skip before returning data. |
 | `parquet.batchSize` | `number` | `undefined` | Target number of rows per batch when streaming. |
 | `parquet.columns` | `string[]` | `undefined` | Restrict parsing to the listed columns. |
-| `parquet.rowGroups` | `number[]` | `undefined` | Restrict reading to the listed row groups for the wasm loader implementations. |
-| `parquet.concurrency` | `number` | `undefined` | Controls parallel reads for the wasm loader implementations. |
+| `parquet.rowGroups` | `number[]` | `undefined` | Read the listed zero-based row groups in the requested order. |
+| `parquet.concurrency` | `number` | `undefined` | Controls parallel reads for the explicit WASM reader; accepted but unused by the sequential TypeScript loader. |
 | `parquet.signal` | `AbortSignal` | `undefined` | Cancels worker-backed parsing by terminating its active worker. |
 | `parquet.workerUrl` | `string` | package-local asset | Overrides the packaged worker URL. |
-| `parquet.wasmUrl` | `string` | package-local asset | Overrides the `parquet-wasm` binary URL for `ParquetLoader`. |
+| `parquet.wasmUrl` | `string` | package-local asset | Overrides the `parquet-wasm` binary URL for the explicit WASM reader. |
 | `parquet.keyRetriever` | `ParquetKeyRetriever` | `undefined` | Resolves keys for modular-encrypted files when using `ParquetJSLoader`. |
 | `parquet.aadPrefix` | `Uint8Array` | `undefined` | Supplies the AAD prefix for encrypted files that omit it from their crypto metadata. |
 | `parquet.int96AsTimestamp` | `boolean` | `false` for object rows, `true` for TypeScript Arrow output | Decodes legacy INT96 physical values as signed epoch-nanosecond timestamps. |
@@ -222,7 +205,7 @@ Supports table category options such as `batchType` and `batchSize`.
 
 ## Loader Variants
 
-- Use `ParquetLoader` for the primary wasm-backed loader. It supports object-row and Arrow output
+- Use `ParquetLoader` for the primary TypeScript-backed loader. It supports object-row and Arrow output
   and can use the package's prebuilt worker.
 - Use `ParquetJSLoader` for the experimental TypeScript implementation. It supports object-row and
   Arrow output plus the common row options listed above, including `columns`, `limit`, `offset`,
@@ -230,7 +213,7 @@ Supports table category options such as `batchType` and `batchSize`.
   metadata, page indexes, Bloom filters, and page modules when `keyRetriever` is supplied. Plaintext
   footer signatures are verified by default.
 
-The implementation is selected by the loader import. There is no runtime backend option.
+For the optional WASM reader, import `ParquetWasmLoaderWithParser` from `@loaders.gl/parquet/parquet-wasm-loader` and install `parquet-wasm`. The implementation is selected by the loader import. There is no runtime backend option.
 The [JavaScript and WebAssembly performance](/docs/developer-guide/concepts/javascript-and-wasm-performance)
 concept guide explains why selective I/O, direct Arrow construction, memory copies, and startup cost
 can matter more than the language used for a decoder's inner loop.

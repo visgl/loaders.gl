@@ -1,3 +1,5 @@
+import {preloadI3SMeshCompression} from '@loaders.gl/i3s';
+import {GZipDecompressor} from '@loaders.gl/compression';
 import {afterEach, expect, test, vi} from 'vitest';
 import React, {act} from 'react';
 import {createRoot} from 'react-dom/client';
@@ -137,6 +139,10 @@ test.each([
   'slpk',
   '3tz'
 ])('conversion controls allow explicit multi-selection with %s', async format => {
+  await Promise.all([
+    preloadI3SMeshCompression(),
+    new GZipDecompressor({useNative: false}).preload()
+  ]);
   const {fetcher} = createInput(false, false, 'Y', true);
   vi.stubGlobal('showSaveFilePicker', vi.fn());
   vi.stubGlobal('fetch', fetcher);

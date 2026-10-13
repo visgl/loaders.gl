@@ -3,11 +3,11 @@
 // Copyright (c) vis.gl contributors
 
 import {
-  SnappyJSDecompressor,
-  type SnappyJSDecompressorOptions
-} from './snappy-decompressor-snappyjs';
+  SnappyCompressUtilsDecompressor,
+  type CompressUtilsCompressionOptions
+} from './snappy-decompressor-compress-utils';
 
-/** Balanced default Snappy decompressor using the compact snappyjs implementation. */
-export class SnappyDecompressor extends SnappyJSDecompressor {}
+/** Default SNAPPY decompressor backed by the lazily loaded compress-utils codec. */
+export class SnappyDecompressor extends SnappyCompressUtilsDecompressor {}
 
-export type {SnappyJSDecompressorOptions as SnappyDecompressorOptions};
+export type {CompressUtilsCompressionOptions as SnappyDecompressorOptions};

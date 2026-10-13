@@ -2,13 +2,15 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
+import {preloadI3SMeshCompression} from '@loaders.gl/i3s';
+import {beforeAll as preloadBeforeAll} from 'vitest';
 import {beforeAll, expect, test, vi} from 'vitest';
 import {parse} from '@loaders.gl/core';
 import {DracoLoader} from '@loaders.gl/draco';
 import {Ellipsoid} from '@math.gl/geospatial';
 import {ArrowTableBuilder} from '@loaders.gl/schema-utils';
 import type {MeshGeometry, Schema} from '@loaders.gl/schema';
-import {GZipDecompressor} from '@loaders.gl/compression/gzip-decompressor';
+import {GZipFflateDecompressor as GZipDecompressor} from '@loaders.gl/compression/gzip-decompressor-fflate';
 import {
   encodeI3SMeshLayer as encodeRoot,
   encodeI3SMeshLayerWithDraco as encodeDracoRoot,
@@ -68,6 +70,8 @@ function createFeatures(schema?: Schema, rows?: Record<string, unknown>[]): I3SM
     integer64Encoding: 'decimal-string'
   };
 }
+preloadBeforeAll(preloadI3SMeshCompression);
+
 const OPTIONS: I3SMeshWriterOptions = {maxResourceBytes: 8192, maxPositionError: 0.001};
 let layer: ReturnType<typeof encodeI3SMeshLayer>;
 let raw: Record<string, ArrayBuffer>;

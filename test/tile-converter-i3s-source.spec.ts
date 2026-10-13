@@ -4,7 +4,7 @@
 
 import {expect, test, vi} from 'vitest';
 import {validateBytes} from 'gltf-validator';
-import {GZipDecompressor} from '@loaders.gl/compression/gzip-decompressor';
+import {GZipFflateDecompressor as GZipDecompressor} from '@loaders.gl/compression/gzip-decompressor-fflate';
 import {parse} from '@loaders.gl/core';
 import {
   I3SLoader,

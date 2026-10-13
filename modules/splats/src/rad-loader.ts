@@ -9,6 +9,7 @@ import {RADLoader as RADLoaderMetadata} from './rad-loader-types';
 
 export {parseRADChunkHeader, parseRADHeader, tryParseRADHeader} from './lib/parse-rad';
 export {
+  preloadRADCompression,
   parseRADChunk,
   parseRADChunkToGaussianSplats,
   type RADChunkDecodeOptions

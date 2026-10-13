@@ -1,3 +1,9 @@
+// loaders.gl
+// SPDX-License-Identifier: MIT
+// Copyright (c) vis.gl contributors
+
+import {preloadRADCompression} from '../src/lib/parse-rad-chunk';
+import {beforeAll as preloadBeforeAll} from 'vitest';
 import {expect, test} from 'vitest';
 import {DeflateCompression} from '@loaders.gl/compression/deflate-compression';
 import {load, parse, parseSync} from '@loaders.gl/core';
@@ -9,6 +15,8 @@ import {
   parseRADChunkToGaussianSplats,
   RADLoaderWithParser
 } from '@loaders.gl/splats/rad-loader';
+preloadBeforeAll(preloadRADCompression);
+
 test('RADLoader parses Spark RAD metadata', async () => {
   const data = makeRADFixture();
   const metadata = await parse(data, RADLoader);

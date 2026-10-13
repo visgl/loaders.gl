@@ -59,6 +59,12 @@ The `@loaders.gl/las` module supports the [LAS file format](/docs/modules/las/fo
 npm install @loaders.gl/core @loaders.gl/las
 ```
 
+The default TypeScript LAS/LAZ loader does not require the optional `copc` or `laz-perf` npm
+packages. They are declared as `optionalDependencies`, so consumers can omit them with
+`npm install --omit=optional`. Install `copc` explicitly when using the alternative
+`@loaders.gl/las/las-copc-loader` implementation. The LAZPerf and LAZRs loader paths include their
+vendored runtimes.
+
 ## Loaders and Writers
 
 | Loader or Writer                                              | Description                                  |

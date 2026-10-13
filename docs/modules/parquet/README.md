@@ -52,10 +52,10 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
 
 Experimental loader and writer for the Apache Parquet format.
 
-- `ParquetLoader` and `ParquetWriter` are the default wasm-backed Arrow-table APIs. Use `parquet.shape: 'object-row-table'` when row objects are required.
+- `ParquetLoader` uses the TypeScript reader and compress-utils codecs. `ParquetWriter` retains its WASM encoder. Use `parquet.shape: 'object-row-table'` when row objects are required.
 - [`ParquetSourceLoader`](/docs/modules/parquet/api-reference/parquet-source-loader) provides reusable, selective Arrow reads with cached schema and footer metadata. <img src="https://img.shields.io/badge/From-v5.0-blue.svg?style=flat-square" alt="From-v5.0" />
 - [`ParquetDatasetSource`](/docs/modules/parquet/api-reference/parquet-source-loader#multi-file-datasets) coordinates catalog-backed, multi-file Parquet reads with file pruning and bounded concurrency. <img src="https://img.shields.io/badge/From-v5.0-blue.svg?style=flat-square" alt="From-v5.0" />
-- `ParquetJSLoaderWithParser` from `@loaders.gl/parquet/parquet-js-loader` and the root-exported `ParquetJSWriter` provide experimental TypeScript parquetjs variants documented with [`ParquetLoader`](/docs/modules/parquet/api-reference/parquet-loader#loader-variants) and [`ParquetWriter`](/docs/modules/parquet/api-reference/parquet-writer#writer-variants). The experimental loader keeps object rows as its default while nested Arrow coverage is completed. <img src="https://img.shields.io/badge/From-v5.0-blue.svg?style=flat-square" alt="From-v5.0" />
+- The optional WASM reader is available as `ParquetWasmLoaderWithParser` from `@loaders.gl/parquet/parquet-wasm-loader`. Install `parquet-wasm` when using this reader or `ParquetWriter`; it is an optional dependency. `ParquetJSLoaderWithParser` shares the TypeScript reader used by the canonical loader. `ParquetJSWriter` provides the TypeScript writer.
 - `ParquetLoader` returns an Arrow table by default and `ParquetWriter` accepts loaders.gl Arrow tables.
 - Iceberg and Delta table-format adapters incubate under the optional
   [`@loaders.gl/scan`](/docs/modules/scan) package. Import them from
@@ -90,3 +90,7 @@ metadata before Parquet encoding.
 # License
 
 `@loaders.gl/parquet` module is based on Apache 2.0 licensed code.
+
+LZO decompression is supported through compress-utils 0.9.0. Parquet Hadoop block framing is handled in TypeScript. LZO compression is not supported.
+
+The TypeScript reader supports `parquet.rowGroups`, projection, offset, limit, batching, and cancellation. `parquet.wasmUrl` applies only to the explicit WASM reader. `parquet.concurrency` remains accepted for compatibility; the TypeScript loader reads row groups sequentially.

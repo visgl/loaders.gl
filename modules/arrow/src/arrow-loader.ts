@@ -2,20 +2,24 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import type {Loader} from '@loaders.gl/loader-utils';
+import {preloadArrowCompressionDecoders} from './lib/parsers/arrow-compression';
+import type {LoaderWithParser} from '@loaders.gl/loader-utils';
 import type {Table, ArrowTableBatch} from '@loaders.gl/schema';
+import {parseArrowSync, parseArrowInBatches} from './lib/parsers/parse-arrow';
 
 import type {ArrowLoaderOptions} from './exports/arrow-loader';
-import {ArrowWorkerLoader} from './exports/arrow-loader';
+import {ArrowLoader as ArrowLoaderMetadata} from './arrow-loader-types';
 
-/** Preloads the parser-bearing Arrow loader implementation. */
-async function preload() {
-  const {ArrowLoaderWithParser} = await import('./arrow-loader-with-parser');
-  return ArrowLoaderWithParser;
-}
+const {preload: _ArrowLoaderPreload, ...ArrowLoaderMetadataWithoutPreload} = ArrowLoaderMetadata;
 
-/** Metadata-only ArrowJS table loader. */
-export const ArrowLoader = {
-  ...ArrowWorkerLoader,
-  preload
-} as const satisfies Loader<Table, ArrowTableBatch, ArrowLoaderOptions>;
+/** ArrowJS table loader */
+export const ArrowLoaderWithParser = {
+  ...ArrowLoaderMetadataWithoutPreload,
+  parse: async (arraybuffer: ArrayBuffer, options?: ArrowLoaderOptions) => {
+    await preloadArrowCompressionDecoders();
+    return parseArrowSync(arraybuffer, options?.arrow);
+  },
+  parseSync: (arraybuffer: ArrayBuffer, options?: ArrowLoaderOptions) =>
+    parseArrowSync(arraybuffer, options?.arrow),
+  parseInBatches: parseArrowInBatches
+} as const satisfies LoaderWithParser<Table, ArrowTableBatch, ArrowLoaderOptions>;

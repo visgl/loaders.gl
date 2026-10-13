@@ -2,6 +2,8 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
+import {preloadI3SMeshCompression} from '@loaders.gl/i3s';
+import {beforeAll as preloadBeforeAll} from 'vitest';
 import {afterAll, beforeAll, expect, test, vi} from 'vitest';
 import {mkdtemp, writeFile, rm, readFile} from 'node:fs/promises';
 import {tmpdir} from 'node:os';
@@ -19,6 +21,8 @@ import {createTiles3DConversionArchive} from './utils/tile-browser-archive-conve
 let directory: string;
 let inputPath: string;
 let archiveBytes: Uint8Array;
+preloadBeforeAll(preloadI3SMeshCompression);
+
 const resources: Record<string, ArrayBuffer> = {};
 const i3sFeatures = {
   schema: {fields: [{name: 'feature_id', type: 'int32' as const, nullable: false}]},

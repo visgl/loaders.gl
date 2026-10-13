@@ -19,6 +19,7 @@ export {
   SnappyDecompressor,
   LZ4Compressor,
   LZ4Decompressor,
+  LzoDecompressor,
   ZstdCompressor,
   ZstdDecompressor,
   BZip2Compressor,
@@ -44,3 +45,5 @@ export {
 
 export type {CompressionWorkerOptions} from './compress-on-worker';
 export {CompressionWorker, compressOnWorker} from './compress-on-worker';
+
+export type {LzoDecompressorOptions} from './lzo-decompressor';

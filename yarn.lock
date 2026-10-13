@@ -5174,7 +5174,6 @@ __metadata:
     "@loaders.gl/worker-utils": "npm:5.0.0-alpha.11"
     "@math.gl/wkb": "npm:5.0.0-alpha.16"
     apache-arrow: "npm:>= 17.0.0"
-    lz4js: "npm:^0.2.0"
   peerDependencies:
     "@loaders.gl/core": ~5.0.0-alpha.0
   languageName: unknown
@@ -5211,7 +5210,7 @@ __metadata:
     "@loaders.gl/worker-utils": "npm:5.0.0-alpha.11"
     "@types/brotli": "npm:^1.3.0"
     brotli: "npm:^1.3.2"
-    compress-utils: "npm:^0.8.0"
+    compress-utils: "npm:^0.9.0"
     fflate: "npm:0.7.4"
     fzstd: "npm:0.1.1"
     hysnappy: "npm:^1.1.1"
@@ -5221,16 +5220,18 @@ __metadata:
     zstd-codec: "npm:^0.1"
   peerDependencies:
     "@loaders.gl/core": ~5.0.0-alpha.0
-    compress-utils: ^0.8.0
-    lz4js: ^0.2.0
-    pako: ^2.1.0
-    zstd-codec: ^0.1
-  peerDependenciesMeta:
-    compress-utils:
+  dependenciesMeta:
+    brotli:
+      optional: true
+    fzstd:
+      optional: true
+    hysnappy:
       optional: true
     lz4js:
       optional: true
     pako:
+      optional: true
+    snappyjs:
       optional: true
     zstd-codec:
       optional: true
@@ -5345,6 +5346,9 @@ __metadata:
     draco3d: "npm:1.5.7"
   peerDependencies:
     "@loaders.gl/core": ~5.0.0-alpha.0
+  dependenciesMeta:
+    draco3d:
+      optional: true
   languageName: unknown
   linkType: soft
 
@@ -5582,6 +5586,11 @@ __metadata:
     laz-perf: "npm:^0.0.7"
   peerDependencies:
     "@loaders.gl/core": ~5.0.0-alpha.0
+  dependenciesMeta:
+    copc:
+      optional: true
+    laz-perf:
+      optional: true
   languageName: unknown
   linkType: soft
 
@@ -5704,6 +5713,9 @@ __metadata:
   peerDependencies:
     "@loaders.gl/core": ~5.0.0-alpha.0
     apache-arrow: ">= 17.0.0"
+  dependenciesMeta:
+    parquet-wasm:
+      optional: true
   languageName: unknown
   linkType: soft
 
@@ -15218,10 +15230,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"compress-utils@npm:^0.8.0":
-  version: 0.8.0
-  resolution: "compress-utils@npm:0.8.0"
-  checksum: 10c0/18697c5b9dafc2f46235f6ce01fd55077938e6e40644af174284961ae589259474a8af10ab0fd34e7673b1576baefee61f1574a031906afe7ac8479d03424a9c
+"compress-utils@npm:^0.9.0":
+  version: 0.9.0
+  resolution: "compress-utils@npm:0.9.0"
+  checksum: 10c0/a9afe1cc2c517e00d2467eff4c07c1d9b206fcf7ae9cef963df7c2861a2947c9d38795027dcab8dc5d8c57e62bf5a3aaa4cae6ed0e64f0778a47d51c0caa9afb
   languageName: node
   linkType: hard
 
