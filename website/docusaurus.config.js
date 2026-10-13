@@ -9,6 +9,9 @@ const darkCodeTheme = themes.dracula;
 const legacyMathCoreEntry = require.resolve('@math.gl/core', {
   paths: [resolve('../node_modules/@deck.gl/core')]
 });
+const legacyMathPolygonEntry = require.resolve('@math.gl/polygon', {
+  paths: [resolve('../node_modules/@deck.gl/layers')]
+});
 
 /** Creates the existing SWC loader with deterministic styled-components IDs. */
 function createJavaScriptLoader(isServer) {
@@ -88,6 +91,13 @@ function createBundlerPlugin() {
             ) {
               // deck.gl/luma.gl 9.3 publish code compiled against math.gl 4.x.
               resource.request = legacyMathCoreEntry;
+            }
+          }),
+          new bundler.NormalModuleReplacementPlugin(/^@math\.gl\/polygon$/, resource => {
+            const normalizedContext = resource.context?.replace(/\\/g, '/');
+            if (normalizedContext?.includes('/node_modules/@deck.gl/')) {
+              // Published deck.gl layers still require the math.gl 4.x WINDING export.
+              resource.request = legacyMathPolygonEntry;
             }
           }),
           new bundler.NormalModuleReplacementPlugin(/^\.\/lerc\.js$/, resource => {
