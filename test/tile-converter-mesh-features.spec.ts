@@ -545,3 +545,23 @@ test('legacy batch tables compact unused rows while preserving original batch id
   expect(Array.from(extracted.batches[0].data.getChild('row_id')!)).toEqual([3]);
   expect(Array.from(extracted.batches[0].data.getChild('label')!)).toEqual(['d']);
 });
+
+test('shared property readers treat prototype-like column names as data', async () => {
+  const {gltf, primitive, mesh} = await createDeclaredFeatureFixture();
+  const metadata = gltf.extensions!.EXT_structural_metadata;
+  metadata.schema.classes.building.properties.constructor = {
+    type: 'STRING',
+    noData: 'missing',
+    default: 'fallback'
+  };
+  metadata.propertyTables[0].properties.constructor = {data: ['missing', 'value']};
+  const options = createMeshSourceFeatureOptions(gltf, {
+    metadataClass: 'building',
+    featureIdField: 'row_id'
+  });
+  const result = extractMeshFeatures(gltf, primitive, {}, mesh, options)!;
+  expect(Array.from(result.batches[0].data.getChild('constructor')!)).toEqual([
+    'fallback',
+    'value'
+  ]);
+});

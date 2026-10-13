@@ -61,7 +61,7 @@ export function extractMeshFeatures(
       'Feature metadata class must be explicit'
     );
   const mapping = 'schema' in options ? options : createMeshSourceFeatureOptions(gltf, options);
-  const propertyReaders: Record<string, (row: number) => unknown> = Object.create(null);
+  const propertyReaders = new Map<string, (row: number) => unknown>();
   let count: number;
   let attribute = legacy;
   let properties: Record<string, ArrayLike<unknown>>;
@@ -184,7 +184,7 @@ export function extractMeshFeatures(
       const decoded = data;
       if (property.noData === undefined || data === undefined) {
         if (decoded !== undefined) properties[name] = decoded;
-        else propertyReaders[name] = () => defaultValue;
+        else propertyReaders.set(name, () => defaultValue);
         continue;
       }
       const sentinel = property.noData;
@@ -205,7 +205,7 @@ export function extractMeshFeatures(
       const comparable = integer64 ? BigInt(sentinel as number) : sentinel;
       const values = decoded as ArrayLike<unknown>;
       properties[name] = values;
-      propertyReaders[name] = row => (values[row] === comparable ? defaultValue : values[row]);
+      propertyReaders.set(name, row => (values[row] === comparable ? defaultValue : values[row]));
     }
   } else {
     if (metadata)
@@ -265,7 +265,7 @@ export function extractMeshFeatures(
       );
   }
   const sourceIdentifier = options.sourceFeatureIdProperty;
-  if (sourceIdentifier && !properties[sourceIdentifier] && !propertyReaders[sourceIdentifier])
+  if (sourceIdentifier && !properties[sourceIdentifier] && !propertyReaders.has(sourceIdentifier))
     throw new TileConversionError(
       'MESH_FEATURE_ID_PROPERTY_REQUIRED',
       'Stable source identifier property is missing'
@@ -316,10 +316,12 @@ export function extractMeshFeatures(
     triangleFeatureIndices[triangle] = denseRows.get(triangleFeatureIndices[triangle])!;
   }
   /** Reads one referenced source value without expanding defaults or noData columns. */
-  const readProperty = (name: string, row: number): unknown =>
-    propertyReaders[name] ? propertyReaders[name](row) : properties[name][row];
+  const readProperty = (name: string, row: number): unknown => {
+    const reader = propertyReaders.get(name);
+    return reader ? reader(row) : properties[name][row];
+  };
   const propertyNames = [
-    ...new Set([...Object.keys(properties), ...Object.keys(propertyReaders)])
+    ...new Set([...Object.keys(properties), ...propertyReaders.keys()])
   ].filter(name => name !== sourceIdentifier);
   const batches = convertFeatureAttributesToArrowBatches(
     selectedRows.map(row => ({
