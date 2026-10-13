@@ -226,7 +226,8 @@
           "modules/wkt/api-reference/wkb-writer",
           "modules/wkt/api-reference/twkb-writer",
           "modules/wkt/api-reference/wkt-crs-writer",
-          "modules/zip/api-reference/zip-writer"
+          "modules/zip/api-reference/zip-writer",
+          "modules/pmtiles/api-reference/pmtiles-writer"
         ]
       },
       {

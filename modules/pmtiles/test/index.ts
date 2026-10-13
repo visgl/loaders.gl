@@ -6,3 +6,5 @@ import './pmtiles-source.spec';
 import './range-request-source.spec';
 
 import './pmtiles-loader.spec';
+
+import './pmtiles-writer.spec';
