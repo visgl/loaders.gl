@@ -31,6 +31,7 @@ const HELP = `Usage: tile-converter-v5 inspect|convert|validate <input path or U
   --max-resources N            Lower the 1,000 content-declaration limit
   --max-documents N            Lower the 32 metadata-document limit
   --max-output-bytes N         Lower the 32 MiB output/archive budget
+  --profile                   Include elapsed conversion stage timings in JSON
   --help                      Show this help
 
 Inspect reads metadata only, following declared .json external tilesets.
@@ -54,6 +55,7 @@ export async function runTileConverterCLI(
       allowPositionals: true,
       options: {
         help: {type: 'boolean'},
+        profile: {type: 'boolean'},
         'preserve-hierarchy': {type: 'boolean'},
         'input-format': {type: 'string', default: '3d-tiles'},
         'max-input-bytes': {type: 'string', default: String(NODE_TILESET_LIMITS.maxInputBytes)},
@@ -123,6 +125,7 @@ export async function runTileConverterCLI(
         ...sourceOptions,
         ...features,
         resourceIds: values.resource,
+        profile: values.profile,
         preserveHierarchy: values['preserve-hierarchy'],
         outputFormat: values['output-format'] as NodeTileConversionOutputFormat,
         output: values.output,
@@ -139,6 +142,7 @@ export async function runTileConverterCLI(
       return 0;
     }
     if (
+      values.profile !== undefined ||
       values['feature-schema'] !== undefined ||
       values['preserve-hierarchy'] !== undefined ||
       values['geometric-error'] !== undefined ||

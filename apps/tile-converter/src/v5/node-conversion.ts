@@ -35,6 +35,8 @@ export type NodeTileConversionOutputFormat = '3d-tiles' | '3tz' | 'slpk';
 /** Selected static mesh conversion with application-owned Node output. */
 export interface NodeTileConversionOptions
   extends Omit<NodeTilesetConversionSourceOptions, 'format'> {
+  /** Include portable stages and Node setup/output elapsed milliseconds in the report. */
+  readonly profile?: boolean;
   /** Explicit 3D Tiles, I3S layer or indexed archive source. */
   readonly format?: '3d-tiles' | '3tz' | 'i3s' | 'slpk';
   /** Explicit I3S attribute mapping, also supplied by the CLI feature-schema file. */
@@ -61,6 +63,8 @@ export interface NodeTileConversionOptions
 export async function convertNodeTileset(
   options: NodeTileConversionOptions
 ): Promise<TileConversionReport> {
+  const started = options.profile ? performance.now() : 0;
+  let setupMilliseconds = 0;
   const signal = options.signal ?? new AbortController().signal;
   const maxOutputBytes = options.maxOutputBytes ?? SELECTED_MESH_LIMITS.maxOutputBytes;
   if (
@@ -155,7 +159,9 @@ export async function convertNodeTileset(
             }
           );
     const {source, spatialContext, geometricError} = selection;
+    setupMilliseconds = options.profile ? performance.now() - started : 0;
     const common = {
+      profile: options.profile,
       source,
       signal,
       measureInputBytes: measureMeshBytes,
@@ -209,6 +215,7 @@ export async function convertNodeTileset(
   } finally {
     await rawSource.close();
   }
+  const outputStarted = options.profile ? performance.now() : 0;
   signal.throwIfAborted();
   // Validate packaging as well as content, including on the write-free validation path.
   if (options.outputFormat !== '3d-tiles' && !options.output) {
@@ -227,7 +234,17 @@ export async function convertNodeTileset(
       maxOutputBytes,
       signal
     );
-  return report;
+  return report.timings
+    ? {
+        ...report,
+        timings: {
+          ...report.timings,
+          setupMilliseconds,
+          outputMilliseconds: performance.now() - outputStarted,
+          totalMilliseconds: performance.now() - started
+        }
+      }
+    : report;
 }
 
 /** Saves fixed relative resource names or an archive; existing destinations are never overwritten. */

@@ -16,6 +16,7 @@ export type {
   TileConversionDiagnostic,
   TileConversionProgress,
   TileConversionReport,
+  TileConversionTimings,
   TileConversionSink,
   TileConversionSource,
   TileValidationReport,

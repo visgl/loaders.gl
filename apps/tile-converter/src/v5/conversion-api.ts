@@ -44,8 +44,32 @@ export interface TileConversionProgress {
   readonly outputBytes: number;
 }
 
+/** Elapsed milliseconds for awaited adapter work; stages exclude downstream backpressure. */
+export interface TileConversionTimings {
+  /** Elapsed inspect adapter time in milliseconds. */
+  readonly inspectMilliseconds: number;
+  /** Elapsed read adapter time in milliseconds. */
+  readonly readMilliseconds: number;
+  /** Elapsed convert adapter time in milliseconds. */
+  readonly convertMilliseconds: number;
+  /** Elapsed validate adapter time in milliseconds. */
+  readonly validateMilliseconds: number;
+  /** Elapsed write adapter time in milliseconds. */
+  readonly writeMilliseconds: number;
+  /** Elapsed finalize adapter time in milliseconds. */
+  readonly finalizeMilliseconds: number;
+  /** Elapsed end-to-end conversion time in milliseconds. */
+  readonly totalMilliseconds: number;
+  /** Node transport preparation, including inspection and selection, when available. */
+  readonly setupMilliseconds?: number;
+  /** Node archive serialization and destination publication, when available. */
+  readonly outputMilliseconds?: number;
+}
+
 /** Summary returned after a tileset conversion completes. */
 export interface TileConversionReport {
+  /** Optional stage timings, attached after successful destination finalization. */
+  readonly timings?: TileConversionTimings;
   /** Completed conversion state. Failed conversions reject with their cause. */
   readonly state: 'completed';
   /** Number of input resources consumed. */
@@ -97,6 +121,8 @@ export interface TileConversionCodec<TInspection, TInput, TOutput> {
 
 /** Options for the portable `convertTileset` operation. */
 export interface ConvertTilesetOptions<TInspection, TInput, TOutput> {
+  /** Measure awaited adapter work and total elapsed time; disabled by default. */
+  readonly profile?: boolean;
   /** Injected input resolver and resource reader. */
   readonly source: TileConversionSource<TInspection, TInput>;
   /** Injected output codec. */
@@ -183,6 +209,18 @@ export async function convertTileset<TInspection, TInput, TOutput>(
     signal,
     onProgress
   } = options;
+  const started = options.profile ? performance.now() : 0;
+  const timings = options.profile
+    ? {
+        inspectMilliseconds: 0,
+        readMilliseconds: 0,
+        convertMilliseconds: 0,
+        validateMilliseconds: 0,
+        writeMilliseconds: 0,
+        finalizeMilliseconds: 0,
+        totalMilliseconds: 0
+      }
+    : undefined;
   let inputResources = 0;
   let outputResources = 0;
   let inputBytes = 0;
@@ -210,8 +248,14 @@ export async function convertTileset<TInspection, TInput, TOutput>(
       }
     }
     reportProgress('inspect');
-    const inspection = await inspectTileset(source, signal);
-    for await (const inputResource of source.read(inspection, signal)) {
+    const inspection = await measureConversionOperation(timings, 'inspectMilliseconds', () =>
+      inspectTileset(source, signal)
+    );
+    for await (const inputResource of measureConversionIterable(
+      source.read(inspection, signal),
+      timings,
+      'readMilliseconds'
+    )) {
       throwIfAborted(signal);
       checkConversionTotal(inputResources, 1, maxInputResources, 'INPUT_COUNT_LIMIT_EXCEEDED');
       const inputResourceBytes = measureInputBytes(inputResource);
@@ -236,12 +280,23 @@ export async function convertTileset<TInspection, TInput, TOutput>(
       inputResources++;
       inputBytes += inputResourceBytes;
       reportProgress('convert');
-      const convertedResources = await codec.convert(inputResource, inspection, signal);
-      for await (const outputResource of convertedResources) {
+      const convertedResources = await measureConversionOperation(
+        timings,
+        'convertMilliseconds',
+        () => codec.convert(inputResource, inspection, signal)
+      );
+      for await (const outputResource of measureConversionIterable(
+        convertedResources,
+        timings,
+        'convertMilliseconds'
+      )) {
         throwIfAborted(signal);
         checkConversionTotal(outputResources, 1, maxOutputResources, 'OUTPUT_COUNT_LIMIT_EXCEEDED');
         reportProgress('validate');
-        const resourceDiagnostics = (await codec.validateOutput?.(outputResource, signal)) || [];
+        const resourceDiagnostics =
+          (await measureConversionOperation(timings, 'validateMilliseconds', () =>
+            codec.validateOutput?.(outputResource, signal)
+          )) || [];
         diagnostics.push(...resourceDiagnostics);
         const outputResourceBytes = measureOutputBytes(outputResource);
         if (!Number.isSafeInteger(outputResourceBytes) || outputResourceBytes < 0) {
@@ -270,7 +325,9 @@ export async function convertTileset<TInspection, TInput, TOutput>(
           );
         }
         throwIfAborted(signal);
-        await sink.write(outputResource, signal);
+        await measureConversionOperation(timings, 'writeMilliseconds', () =>
+          sink.write(outputResource, signal)
+        );
         throwIfAborted(signal);
         largestOutputResourceBytes = Math.max(largestOutputResourceBytes, outputResourceBytes);
         outputResources++;
@@ -290,8 +347,9 @@ export async function convertTileset<TInspection, TInput, TOutput>(
     };
     throwIfAborted(signal);
     reportProgress('finalize');
-    await sink.finalize(report);
-    return report;
+    await measureConversionOperation(timings, 'finalizeMilliseconds', () => sink.finalize(report));
+    if (timings) timings.totalMilliseconds = Math.max(0, performance.now() - started);
+    return timings ? {...report, timings} : report;
   } catch (error) {
     try {
       await sink.abort(error);
@@ -344,4 +402,53 @@ function checkConversionTotal(
       'Conversion totals must remain safe integers'
     );
   }
+}
+
+/** Mutable internal accumulator, excluding Node transport timings. */
+type ConversionTimingAccumulator = {
+  -readonly [Key in keyof TileConversionTimings]: TileConversionTimings[Key];
+};
+/** Adapter stages that can be measured independently. */
+type ConversionTimingStage =
+  | 'inspectMilliseconds'
+  | 'readMilliseconds'
+  | 'convertMilliseconds'
+  | 'validateMilliseconds'
+  | 'writeMilliseconds'
+  | 'finalizeMilliseconds';
+
+/** Times only the awaited adapter operation, retaining the original rejection. */
+function measureConversionOperation<T>(
+  timings: ConversionTimingAccumulator | undefined,
+  stage: ConversionTimingStage,
+  operation: () => T | Promise<T>
+): T | Promise<T> {
+  if (!timings) return operation();
+  const started = performance.now();
+  return (async () => {
+    try {
+      return await operation();
+    } finally {
+      timings[stage] += Math.max(0, performance.now() - started);
+    }
+  })();
+}
+
+/** Times generator advancement without counting time spent awaiting the consumer. */
+function measureConversionIterable<T>(
+  iterable: AsyncIterable<T>,
+  timings: ConversionTimingAccumulator | undefined,
+  stage: ConversionTimingStage
+): AsyncIterable<T> {
+  if (!timings) return iterable;
+  return {
+    [Symbol.asyncIterator]() {
+      const iterator = iterable[Symbol.asyncIterator]();
+      return {
+        next: async () => measureConversionOperation(timings, stage, () => iterator.next()),
+        ...(iterator.return ? {return: iterator.return.bind(iterator)} : {}),
+        ...(iterator.throw ? {throw: iterator.throw.bind(iterator)} : {})
+      };
+    }
+  };
 }

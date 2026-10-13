@@ -412,15 +412,136 @@ test('optional encoded columns cannot become defaults when the decoder did not s
   }
 });
 
-test('feature counts are bounded by geometry before expanding absent/default columns', async () => {
+test('shared table counts must match decoded columns without expanding defaults', async () => {
   const {gltf, primitive, mesh} = await createDeclaredFeatureFixture();
   const metadata = gltf.extensions!.EXT_structural_metadata;
   metadata.propertyTables[0].count = 0xffffffff;
-  primitive.extensions!.EXT_mesh_features.featureIds[0].featureCount = 0xffffffff;
+  primitive.extensions!.EXT_mesh_features.featureIds[0].featureCount = 2;
   delete metadata.propertyTables[0].properties.label;
   const options = createMeshSourceFeatureOptions(gltf, {
     metadataClass: 'building',
     sourceFeatureIdProperty: 'feature_id'
   });
   expect(() => extractMeshFeatures(gltf, primitive, {}, mesh, options)).toThrow(/row count/);
+});
+
+test.each([
+  false,
+  true
+])('shared tables compact indexed primitive rows, retaining stable IDs; explicit=%s', async explicit => {
+  const {gltf, primitive, mesh} = await createDeclaredFeatureFixture();
+  const metadata = gltf.extensions!.EXT_structural_metadata;
+  metadata.propertyTables[0].count = 4;
+  primitive.extensions!.EXT_mesh_features.featureIds[0].featureCount = 2;
+  primitive.attributes._FEATURE_ID_0.value = new Uint8Array([3, 3, 3, 0, 0, 0]);
+  mesh.indices = {size: 1, value: new Uint16Array([0, 1, 2])};
+  metadata.propertyTables[0].properties.feature_id.data = new BigUint64Array([
+    1n,
+    2n,
+    3n,
+    18446744073709551615n
+  ]);
+  metadata.propertyTables[0].properties.label.data = ['', 'unused', 'unused', 'München 🏠'];
+  metadata.schema.classes.building.properties.optional = {type: 'STRING', default: '默认'};
+  const options = createMeshSourceFeatureOptions(gltf, {
+    metadataClass: 'building',
+    ...(explicit ? {sourceFeatureIdProperty: 'feature_id'} : {featureIdField: 'row_id'})
+  });
+  const extracted = extractMeshFeatures(gltf, primitive, {}, mesh, options)!;
+  expect(extracted.triangleFeatureIndices).toEqual(new Uint32Array([0]));
+  expect(extracted.batches.reduce((total, batch) => total + batch.data.numRows, 0)).toBe(1);
+  expect(
+    Array.from(extracted.batches[0].data.getChild(explicit ? 'feature_id' : 'row_id')!)
+  ).toEqual([explicit ? 18446744073709551615n : 3]);
+  expect(Array.from(extracted.batches[0].data.getChild('label')!)).toEqual(['München 🏠']);
+  expect(Array.from(extracted.batches[0].data.getChild('optional')!)).toEqual(['默认']);
+  const output = await readMesh(encodeMeshTile(mesh, {features: extracted}));
+  expect(output.data.json.extensions!.EXT_structural_metadata.propertyTables[0].count).toBe(1);
+});
+
+test('default-only shared metadata materializes referenced rows without allocating the declared table', async () => {
+  const {gltf, primitive, mesh} = await createDeclaredFeatureFixture();
+  const metadata = gltf.extensions!.EXT_structural_metadata;
+  metadata.propertyTables[0].count = 0xffffffff;
+  primitive.extensions!.EXT_mesh_features.featureIds[0].featureCount = 2;
+  metadata.propertyTables[0].properties = {};
+  metadata.schema.classes.building.properties = {label: {type: 'STRING', default: 'shared'}};
+  const options = createMeshSourceFeatureOptions(gltf, {metadataClass: 'building'});
+  const extracted = extractMeshFeatures(gltf, primitive, {}, mesh, options)!;
+  expect(extracted.batches[0].data.numRows).toBe(2);
+  expect(Array.from(extracted.batches[0].data.getChild('label')!)).toEqual(['shared', 'shared']);
+});
+
+test.each([
+  0, 1, 1.5, 3, 5
+])('shared tables reject inconsistent per-primitive feature count %s', async count => {
+  const {gltf, primitive, mesh} = await createDeclaredFeatureFixture();
+  primitive.extensions!.EXT_mesh_features.featureIds[0].featureCount = count;
+  const options = createMeshSourceFeatureOptions(gltf, {
+    metadataClass: 'building',
+    featureIdField: 'row_id'
+  });
+  expect(() => extractMeshFeatures(gltf, primitive, {}, mesh, options)).toThrow(/feature count/i);
+});
+
+test.each([
+  {indices: [0, 1]},
+  {indices: [0, 1, 65535]}
+])('compaction rejects incomplete or invalid triangle indices $indices', async ({indices}) => {
+  const {gltf, primitive, mesh} = await createDeclaredFeatureFixture();
+  mesh.indices = {size: 1, value: new Uint16Array(indices)};
+  const options = createMeshSourceFeatureOptions(gltf, {
+    metadataClass: 'building',
+    featureIdField: 'row_id'
+  });
+  expect(() => extractMeshFeatures(gltf, primitive, {}, mesh, options)).toThrow(/Triangle/);
+});
+
+test.each([
+  false,
+  true
+])('compaction rejects mixed triangle ownership but accepts repeated-index connectors; degenerate=%s', async degenerate => {
+  const {gltf, primitive, mesh} = await createDeclaredFeatureFixture();
+  mesh.indices = {size: 1, value: new Uint16Array(degenerate ? [0, 0, 3] : [0, 1, 3])};
+  const options = createMeshSourceFeatureOptions(gltf, {
+    metadataClass: 'building',
+    featureIdField: 'row_id'
+  });
+  if (degenerate) {
+    const result = extractMeshFeatures(gltf, primitive, {}, mesh, options)!;
+    expect(result.triangleFeatureIndices).toEqual(new Uint32Array([0]));
+    expect(result.batches[0].data.getChild('row_id')!.get(0)).toBe(1);
+  } else
+    expect(() => extractMeshFeatures(gltf, primitive, {}, mesh, options)).toThrow(
+      /same feature row/
+    );
+});
+
+test('legacy batch tables compact unused rows while preserving original batch identifiers', async () => {
+  const {gltf, primitive, mesh} = await createDeclaredFeatureFixture();
+  const options = createMeshSourceFeatureOptions(gltf, {
+    metadataClass: 'building',
+    featureIdField: 'row_id'
+  });
+  delete gltf.extensions;
+  delete primitive.extensions;
+  primitive.attributes._BATCHID = {
+    ...primitive.attributes._FEATURE_ID_0,
+    value: new Uint8Array([3, 3, 3, 0, 0, 0])
+  };
+  delete primitive.attributes._FEATURE_ID_0;
+  mesh.indices = {size: 1, value: new Uint16Array([0, 1, 2])};
+  const extracted = extractMeshFeatures(
+    gltf,
+    primitive,
+    {
+      header: {batchLength: 4},
+      batchTableJson: {feature_id: [1n, 2n, 3n, 4n], label: ['a', 'b', 'c', 'd']}
+    },
+    mesh,
+    options
+  )!;
+  expect(extracted.triangleFeatureIndices).toEqual(new Uint32Array([0]));
+  expect(Array.from(extracted.batches[0].data.getChild('row_id')!)).toEqual([3]);
+  expect(Array.from(extracted.batches[0].data.getChild('label')!)).toEqual(['d']);
 });

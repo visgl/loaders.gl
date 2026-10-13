@@ -116,6 +116,7 @@ resource URLs: Node I3S resource redirects are rejected until their relative bas
 | `--max-resources` | `1000` | Lower content declarations (3D Tiles) or inspected nodes (I3S) |
 | `--max-documents` | `32` | Lower the root/external document-placement limit |
 | `--max-output-bytes` | `33554432` | Lower retained file bytes and, separately, archive bytes |
+| `--profile` | `false` | Include elapsed stage timings in the JSON conversion report; convert/validate only |
 | `--help` | | Show usage |
 
 Limits must be positive decimal integers within those ceilings. Archive file size and aggregate
@@ -125,6 +126,10 @@ separate byte gate. These limits do not bound total peak decoder/decompressor me
 Local dependencies, including symlinks, stay within the root document's real directory or archive.
 HTTP(S) datasets must remain unchanged across inspection and content reads; no remote dataset
 snapshot is claimed. Bundled Draco assets are loaded separately from dataset resources.
+
+With `--profile`, `report.timings` separates source/codec work from awaited writes and
+includes Node setup, archive/output publication and total elapsed milliseconds. See
+[profiling semantics](../api-reference/v5-conversion.md#conversion-profiling).
 
 Successful operations write JSON to stdout and exit zero. Invalid arguments, unreadable inputs,
 unsupported profiles and exceeded budgets write JSON errors to stderr and exit nonzero. SIGINT
