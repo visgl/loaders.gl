@@ -123,13 +123,19 @@ export async function encodePointCloudCOPC(
   if (
     extraNames.size !== (options.extraBytes?.length || 0) ||
     descriptorNames.size !== extraNames.size ||
-    options.extraBytes?.some(
-      field =>
+    options.extraBytes?.some(field => {
+      const name = field.name || field.attribute;
+      const description = field.description || '';
+      return (
         !mesh.attributes[field.attribute] ||
         !field.attribute ||
-        !/^[\x20-\x7e]{1,32}$/.test(field.name || field.attribute) ||
-        !/^[\x20-\x7e]{0,32}$/.test(field.description || '')
-    )
+        !name.length ||
+        name.length > 32 ||
+        description.length > 32 ||
+        /[^\x20-\x7e]/.test(name) ||
+        /[^\x20-\x7e]/.test(description)
+      );
+    })
   )
     throw new TileConversionError(
       'POINT_CLOUD_EXTRA_BYTES_INVALID',

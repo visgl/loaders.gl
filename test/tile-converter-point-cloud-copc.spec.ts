@@ -366,7 +366,11 @@ test.each([
   {name: 'élevation'},
   {description: '高度'},
   {name: 'with\0null'},
-  {description: 'with\nnewline'}
+  {description: 'with\nnewline'},
+  {name: 'n'.repeat(32) + '\n'},
+  {name: 'name\r'},
+  {description: 'd'.repeat(32) + '\r\n'},
+  {description: 'description\n'}
 ])('COPC rejects descriptor text that cannot be preserved: %j', async descriptor => {
   const options = createOptions();
   await expect(
