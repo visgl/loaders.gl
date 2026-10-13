@@ -1075,3 +1075,5 @@ Independent viewer qualification, extensionless metadata discovery and larger hi
 [Explicit point mapping and COPC output](./point-cloud-copc) adds decoded Mesh/Arrow batch authoring
 with caller-declared CRS, quantization precision, input/output budgets and semantic loss reports.
 The codec emits one independent COPC file per input batch; whole-dataset assembly remains a separate gate.
+
+COPC Extra Bytes names and descriptions use at most 32 printable ASCII bytes; non-ASCII/control text is rejected before encoding rather than silently changing metadata.

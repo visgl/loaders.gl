@@ -22,7 +22,7 @@ const result = await encodePointCloudCOPC(decodedPointMeshOrArrowTable, {
 
 ## Explicit mapping
 
-`mapPointCloudAttributes(input, mapping)` returns a decoded Mesh and sorted loss declarations.
+`mapPointCloudAttributes(input, mapping)` returns a decoded Mesh and loss declarations in deterministic, locale-independent key order.
 Every source attribute must be mapped or explicitly omitted with a nonempty reason. No aliases,
 casts, normalizations or CRS changes are inferred. Renamed Mesh attributes share immutable source
 values; Arrow input is decoded to Mesh. Null point values require preprocessing.
@@ -31,7 +31,8 @@ COPC supports packed floating XYZ; uint8/uint16 RGB; intensity, classification, 
 scan angle, user data, point source ID, returns, scanner channel and classification flags.
 Integer fields are checked against their actual bit ranges before writing, so masks cannot hide
 out-of-range values. Custom typed attributes, including exact signed/unsigned 64-bit IDs, can be retained with explicit
-`extraBytes` descriptors (one or three components). Normalized custom values require a caller
+`extraBytes` descriptors (one or three components). Names and descriptions use at most
+32 printable ASCII bytes; unsupported text is rejected before encoding. Normalized custom values require a caller
 conversion. Other unsupported attributes require an explicit supported mapping or drop reason. RGBA requires a caller
 conversion to RGB with an explicit alpha-loss policy.
 

@@ -127,14 +127,13 @@ export async function encodePointCloudCOPC(
       field =>
         !mesh.attributes[field.attribute] ||
         !field.attribute ||
-        !new TextEncoder().encode(field.name || field.attribute).length ||
-        new TextEncoder().encode(field.name || field.attribute).length > 32 ||
-        new TextEncoder().encode(field.description || '').length > 32
+        !/^[\x20-\x7e]{1,32}$/.test(field.name || field.attribute) ||
+        !/^[\x20-\x7e]{0,32}$/.test(field.description || '')
     )
   )
     throw new TileConversionError(
       'POINT_CLOUD_EXTRA_BYTES_INVALID',
-      'Extra Bytes descriptors require unique mapped attributes and names/descriptions within 32 UTF-8 bytes'
+      'Extra Bytes descriptors require unique mapped attributes and names/descriptions within 32 printable ASCII bytes'
     );
   for (const name of extraNames)
     if (name === 'POSITION' || name === 'COLOR_0' || Object.hasOwn(SCALAR_RANGES, name))

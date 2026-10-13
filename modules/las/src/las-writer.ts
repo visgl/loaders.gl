@@ -1274,6 +1274,9 @@ function writeString(
   text: string,
   byteLength: number
 ): void {
+  if (/[^\x00-\x7f]/.test(text)) {
+    throw new Error('LASWriter fixed-width text must be ASCII');
+  }
   for (let characterIndex = 0; characterIndex < byteLength; characterIndex++) {
     dataView.setUint8(byteOffset + characterIndex, text.charCodeAt(characterIndex) || 0);
   }

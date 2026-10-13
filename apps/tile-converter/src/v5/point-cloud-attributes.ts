@@ -50,7 +50,7 @@ export function mapPointCloudAttributes(
   }
   const droppedAttributes: Record<string, string> = Object.create(null);
   for (const [source, reason] of Object.entries(mapping.drop || {}).sort(([left], [right]) =>
-    left.localeCompare(right)
+    left < right ? -1 : left > right ? 1 : 0
   )) {
     if (!Object.hasOwn(mesh.attributes, source) || typeof reason !== 'string' || !reason.trim())
       throw new TileConversionError(

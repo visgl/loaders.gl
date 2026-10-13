@@ -268,13 +268,17 @@ test('COPC adapter preserves exact stable IDs with explicit Extra Bytes metadata
   const encoded = await encodePointCloudCOPC(createInput(), {
     ...options,
     mapping: {attributes: {...options.mapping.attributes, stableId: 'featureId'}},
-    extraBytes: [{attribute: 'stableId', name: 'point_id'}]
+    extraBytes: [{attribute: 'stableId', name: 'n'.repeat(32), description: 'd'.repeat(32)}]
   });
   expect(encoded.droppedAttributes).toEqual({});
   const getBytes = async (begin: number, end: number) =>
     new Uint8Array(encoded.copc.slice(begin, end));
   const file = await openCOPC(getBytes);
   expect(file.header.pointDataRecordLength).toBe(44);
+  expect(file.extraBytesDescriptors[0]).toMatchObject({
+    name: 'n'.repeat(32),
+    description: 'd'.repeat(32)
+  });
   await expect(
     encodePointCloudCOPC(createInput(), {...options, extraBytes: [{attribute: 'missing'}]})
   ).rejects.toThrow('Extra Bytes');
@@ -344,4 +348,32 @@ test.each([
       view.getUint16(Math.floor(index / 3) * 36 + 30 + (index % 3) * 2, true)
     )
   ).toEqual(expected);
+});
+
+test('point mapping orders loss declarations independently of locale', () => {
+  const input = createInput();
+  for (const name of ['é', 'z', 'a', 'A'])
+    input.attributes[name] = {value: new Uint8Array([1, 2]), size: 1};
+  const options = createOptions();
+  const mapped = mapPointCloudAttributes(input, {
+    attributes: options.mapping.attributes,
+    drop: {...options.mapping.drop, é: 'omitted', z: 'omitted', a: 'omitted', A: 'omitted'}
+  });
+  expect(Object.keys(mapped.droppedAttributes)).toEqual(['A', 'a', 'featureId', 'z', 'é']);
+});
+
+test.each([
+  {name: 'élevation'},
+  {description: '高度'},
+  {name: 'with\0null'},
+  {description: 'with\nnewline'}
+])('COPC rejects descriptor text that cannot be preserved: %j', async descriptor => {
+  const options = createOptions();
+  await expect(
+    encodePointCloudCOPC(createInput(), {
+      ...options,
+      mapping: {attributes: {...options.mapping.attributes, stableId: 'featureId'}},
+      extraBytes: [{attribute: 'stableId', ...descriptor}]
+    })
+  ).rejects.toMatchObject({code: 'POINT_CLOUD_EXTRA_BYTES_INVALID'});
 });
