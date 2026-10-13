@@ -1045,8 +1045,15 @@ tiles, so ADD/REPLACE and LOD stay on the original tile. Extraction streams a
 `contentPrimitive: {index, last}` descriptor through the codec. The hierarchy sink requires
 contiguous indices and a final marker for every original content before publishing. Direct
 codec outputs without a descriptor retain the singleton-content contract. Feature-bearing
-primitives retain the existing ownership profile: every mapped table row must own a triangle
-in that primitive. Shared tables containing unused rows remain unsupported.
+primitives may share one decoded property table. Extraction retains only rows referenced by
+that primitive’s triangles, in source row order, and remaps triangle associations to dense
+output indices. Stable identifiers remain the selected source property (including exact
+int64/uint64) or the original source row index. Unused vertices do not add output rows.
+Absent defaults and noData replacements are evaluated only for referenced rows; supplied
+columns must still match the full declared source count. This avoids duplicating the full
+Arrow table for every primitive. The per-primitive distinct feature count is validated independently of the table row count,
+following [EXT_mesh_features](https://github.com/CesiumGS/glTF/tree/3d-tiles-next/extensions/2.0/Vendor/EXT_mesh_features).
+Multiple tables/classes remain unsupported.
 Ordered 1.1 mesh `contents` arrays retain their tile and declaration order, with a shared
 origin selected from the first primitive of the first content. The sink rejects different encoded origins within a
 tile. Bounds enclose every content and child; the existing precision gate rejects distant
@@ -1077,3 +1084,30 @@ with caller-declared CRS, quantization precision, input/output budgets and seman
 The codec emits one independent COPC file per input batch; whole-dataset assembly remains a separate gate.
 
 COPC Extra Bytes names and descriptions use at most 32 printable ASCII bytes; non-ASCII/control text is rejected before encoding rather than silently changing metadata.
+
+## Conversion profiling
+
+<img src="https://img.shields.io/badge/From-v5.0-blue.svg?style=flat-square" alt="From v5.0" />
+
+Set `profile: true` on `convertTileset` or `convertNodeTileset` to add serializable
+`report.timings` in milliseconds. Profiling is disabled by default. The portable core measures
+inspection, source iterator advancement, codec setup/advancement, output validation,
+awaited writes, finalization and total elapsed time. Generator suspension while downstream
+output is validated or written is excluded from read/convert timing, so sink backpressure
+is not counted twice. Timings include awaited work, rather than measuring CPU utilization.
+
+Node reports also include `setupMilliseconds` (transport creation, inspection, selection
+and decoder setup) and `outputMilliseconds` (archive encoding/validation and destination
+publication). Node total time covers the `convertNodeTileset` call, including source close.
+It excludes process/module startup and CLI argument/feature-schema preparation. Portable
+finalization covers the injected sink; the Node output stage runs afterward. Total may exceed
+the sum of named stages because orchestration, byte measurement, progress callbacks and
+cleanup are not separate stages. Completed timings are attached to the returned report only
+after finalization; failed/cancelled operations reject as before.
+
+Use `tile-converter-v5 convert ... --profile` or `validate ... --profile` to include these
+values in the existing JSON output. The boolean option does not add callback or worker
+transport requirements. Repeat measurements with identical input, limits, hardware and
+cache conditions. These timings do not measure peak memory or independently qualify
+large-dataset throughput; detailed decoder/coordinate/Arrow/compression breakdowns and
+large-fixture benchmarks remain follow-up work.

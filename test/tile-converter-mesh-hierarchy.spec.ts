@@ -762,11 +762,25 @@ test('hierarchy retains materials, scene placements and exact feature IDs for ev
     }
   );
   const primitive = gltf.json.meshes![0].primitives[0];
+  const scene = new GLTFScenegraph(gltf);
+  const identifierView =
+    gltf.json.extensions!.EXT_structural_metadata.propertyTables[0].properties.feature_id;
+  if (scene.byteLength % 8) scene.addBufferView(new Uint8Array(4));
+  identifierView.values = scene.addBufferView(
+    new BigUint64Array([9007199254740993n, 18446744073709551615n])
+  );
+  gltf.json.extensions!.EXT_structural_metadata.propertyTables[0].count = 2;
+  const secondFeatureAccessor = scene.addBinaryBuffer(new Float32Array([1, 1, 1]), {size: 1});
   gltf.json.materials!.push({pbrMetallicRoughness: {baseColorFactor: [0, 0, 1, 1]}});
-  gltf.json.meshes![0].primitives.push({...primitive, material: 1});
+  gltf.json.meshes![0].primitives.push({
+    ...primitive,
+    attributes: {...primitive.attributes, _FEATURE_ID_0: secondFeatureAccessor},
+    material: 1
+  });
   gltf.json.nodes!.push({mesh: 0, translation: [10, 0, 0]});
   gltf.json.scenes![0].nodes!.push(1);
-  const bytes = GLTFWriter.encodeSync!(gltf);
+  scene.createBinaryChunk();
+  const bytes = GLTFWriter.encodeSync!(scene.gltf);
   const document = createDocument();
   document.root.children = [];
   const fetcher: typeof fetch = async input =>
@@ -822,7 +836,7 @@ test('hierarchy retains materials, scene placements and exact feature IDs for ev
       Array.from(
         output.json.extensions!.EXT_structural_metadata.propertyTables[0].properties.feature_id.data
       )
-    ).toEqual([9007199254740993n]);
+    ).toEqual([index % 2 ? 18446744073709551615n : 9007199254740993n]);
     const positions = new GLTFScenegraph(output).getTypedArrayForAccessor(
       output.json.meshes![0].primitives[0].attributes.POSITION
     );

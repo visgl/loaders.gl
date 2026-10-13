@@ -137,6 +137,8 @@ These gates do not cap decoder, decompressor, Arrow or packaging peak memory.
   selects raw geometry. The synchronous `encodeMeshTile` helper remains uncompressed.
 - Feature-bearing inputs require an explicit Arrow schema and geometry-to-row ownership.
   Supported scalar/string fields retain exact IDs, Unicode and qualified null semantics.
+  Multiple primitives can share one table; output contains only each primitive’s referenced
+  rows, retaining stable source identifiers.
   GLB retains binary int64/uint64; I3S requires explicit decimal-string encoding for those fields.
   Automatic schema inference, multiple classes, nested/enum and texture-feature profiles are
   not supported by the initial mappings.
@@ -144,6 +146,11 @@ These gates do not cap decoder, decompressor, Arrow or packaging peak memory.
   profile; source units, CRS and height operations are applied explicitly where required.
   CRS/geoid/grid resources are application-owned. I3S screen-size LOD thresholds are not metric
   error bounds, so I3S-to-3TZ requires a declared geometric error in meters.
+
+Opt in to `profile: true` or CLI `--profile` for serializable elapsed stage timings
+(<img src="https://img.shields.io/badge/From-v5.0-blue.svg?style=flat-square" alt="From v5.0" />).
+This measures awaited conversion work, not peak memory or large-dataset throughput.
+See [profiling](../api-reference/v5-conversion.md#conversion-profiling).
 
 Hermetic Chromium tests exercise both conversion directions, exact feature values, selected
 appearance and spatial profiles, both archive writers and the real browser worker. Per-package

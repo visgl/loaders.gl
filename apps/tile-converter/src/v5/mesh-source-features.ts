@@ -11,6 +11,14 @@ import {createMeshSourceFeatureOptions} from './mesh-source-schema.js';
 import type {MeshSourceSchemaOptions} from './mesh-source-schema.js';
 import {TileConversionError} from '@loaders.gl/tile-converter/v5/core';
 
+/** Data-only rule for absent columns and decoded noData values. */
+interface MeshSourcePropertyMapping {
+  /** Value used for an absent column or a decoded noData cell. */
+  readonly defaultValue: unknown;
+  /** Decoded sentinel; omitted for absent-column defaults. */
+  readonly noData?: unknown;
+}
+
 /** Explicit source feature mapping; target type changes must be authorized separately. */
 export interface MeshSourceFeatureOptions extends FeatureArrowBatchOptions {
   /** Batch-table class label, or the exact structural-metadata class to select. */
@@ -61,6 +69,7 @@ export function extractMeshFeatures(
       'Feature metadata class must be explicit'
     );
   const mapping = 'schema' in options ? options : createMeshSourceFeatureOptions(gltf, options);
+  const propertyMappings = new Map<string, MeshSourcePropertyMapping>();
   let count: number;
   let attribute = legacy;
   let properties: Record<string, ArrayLike<unknown>>;
@@ -91,24 +100,25 @@ export function extractMeshFeatures(
       );
     attribute = primitive.attributes[`_FEATURE_ID_${declaration.attribute}`];
     const table = metadata.propertyTables[0];
-    if (table.class !== options.metadataClass || table.count !== declaration.featureCount)
+    if (
+      table.class !== options.metadataClass ||
+      !Number.isSafeInteger(declaration.featureCount) ||
+      declaration.featureCount <= 0 ||
+      declaration.featureCount > table.count
+    )
       throw new TileConversionError(
         'MESH_FEATURE_CLASS_MISMATCH',
-        'Feature class and declared table counts must agree'
+        'Feature class must agree and declared feature count must fit the property table'
       );
     count = table.count;
-    // Qualified mesh writers require every feature row to own geometry. Check before defaults allocate.
-    if (
-      !Number.isSafeInteger(count) ||
-      count <= 0 ||
-      count > mesh.attributes.POSITION.value.length / 3
-    ) {
+    // Source tables may be shared by primitives; dense output indices are uint32.
+    if (!Number.isSafeInteger(count) || count <= 0 || count > 0xffffffff) {
       throw new TileConversionError(
         'MESH_FEATURE_IDS_INVALID',
-        'Feature row count exceeds the available mesh vertices'
+        'Feature row count must fit uint32 indices'
       );
     }
-    properties = {};
+    properties = Object.create(null);
     const classProperties = metadata.schema?.classes?.[table.class]?.properties;
     if (!classProperties)
       throw new TileConversionError(
@@ -179,9 +189,10 @@ export function extractMeshFeatures(
         integer64 && property.default !== undefined
           ? BigInt(property.default as number)
           : (property.default ?? null);
-      const decoded = data ?? Array.from({length: count}, () => defaultValue);
+      const decoded = data;
       if (property.noData === undefined || data === undefined) {
-        properties[name] = decoded;
+        if (decoded !== undefined) properties[name] = decoded;
+        else propertyMappings.set(name, {defaultValue});
         continue;
       }
       const sentinel = property.noData;
@@ -200,9 +211,9 @@ export function extractMeshFeatures(
           `Property ${name} requires a valid decoded noData mapping`
         );
       const comparable = integer64 ? BigInt(sentinel as number) : sentinel;
-      properties[name] = Array.from(decoded as ArrayLike<unknown>, value =>
-        value === comparable ? defaultValue : value
-      );
+      const values = decoded as ArrayLike<unknown>;
+      properties[name] = values;
+      propertyMappings.set(name, {noData: comparable, defaultValue});
     }
   } else {
     if (metadata)
@@ -220,14 +231,25 @@ export function extractMeshFeatures(
     !attribute ||
     attribute.components !== 1 ||
     attribute.normalized ||
-    attribute.value.length !== vertexCount ||
-    Array.from(attribute.value as ArrayLike<number>).some(
-      value => !Number.isSafeInteger(value) || value < 0 || value >= count
-    )
+    attribute.value.length !== vertexCount
   )
     throw new TileConversionError(
       'MESH_FEATURE_IDS_INVALID',
       'Feature IDs must be one valid property-table row index per vertex'
+    );
+  const vertexRows = declarations ? new Set<number>() : undefined;
+  for (const value of attribute.value) {
+    if (!Number.isSafeInteger(value) || value < 0 || value >= count)
+      throw new TileConversionError(
+        'MESH_FEATURE_IDS_INVALID',
+        'Feature IDs must reference valid property-table rows'
+      );
+    vertexRows?.add(Number(value));
+  }
+  if (declarations && vertexRows!.size !== declarations[0].featureCount)
+    throw new TileConversionError(
+      'MESH_FEATURE_IDS_INVALID',
+      'Declared feature count must match distinct vertex feature IDs'
     );
   const selectedAttribute = declarations ? `_FEATURE_ID_${declarations[0].attribute}` : '_BATCHID';
   if (
@@ -247,45 +269,84 @@ export function extractMeshFeatures(
     )
       throw new TileConversionError(
         'MESH_FEATURE_PROPERTY_UNAVAILABLE',
-        `Property ${name} must be a decoded column matching the table count`
+        `Property ${name} must be a decoded column matching the feature row count`
       );
   }
   const sourceIdentifier = options.sourceFeatureIdProperty;
-  if (sourceIdentifier && !properties[sourceIdentifier])
+  if (sourceIdentifier && !properties[sourceIdentifier] && !propertyMappings.has(sourceIdentifier))
     throw new TileConversionError(
       'MESH_FEATURE_ID_PROPERTY_REQUIRED',
       'Stable source identifier property is missing'
     );
-  const batches = convertFeatureAttributesToArrowBatches(
-    Array.from({length: count}, (_, index) => ({
-      featureId: (sourceIdentifier ? properties[sourceIdentifier][index] : index) as
-        | string
-        | number
-        | bigint,
-      metadataClass: options.metadataClass,
-      properties: Object.fromEntries(
-        Object.entries(properties)
-          .filter(([name]) => name !== sourceIdentifier)
-          .map(([name, values]) => [name, values[index]])
-      )
-    })),
-    mapping
-  );
   const indices = mesh.indices?.value;
-  const triangleFeatureIndices = new Uint32Array((indices?.length ?? vertexCount) / 3);
-  for (let triangle = 0; triangle < triangleFeatureIndices.length; triangle++) {
-    const corners = [0, 1, 2].map(
-      corner => indices?.[triangle * 3 + corner] ?? triangle * 3 + corner
+  const cornerCount = indices?.length ?? vertexCount;
+  if (cornerCount % 3)
+    throw new TileConversionError(
+      'MESH_FEATURE_IDS_INVALID',
+      'Triangle geometry requires complete triples'
     );
-    const rows = corners.map(corner => attribute.value[corner]);
+  const triangleFeatureIndices = new Uint32Array(cornerCount / 3);
+  const referencedRows = new Set<number>();
+  /** Reads a validated triangle corner without allocating per-triangle arrays. */
+  const readFeatureRow = (corner: number): number => {
+    if (!Number.isSafeInteger(corner) || corner < 0 || corner >= vertexCount)
+      throw new TileConversionError(
+        'MESH_FEATURE_IDS_INVALID',
+        'Triangle indices must reference valid mesh vertices'
+      );
+    return Number(attribute.value[corner]);
+  };
+  for (let triangle = 0; triangle < triangleFeatureIndices.length; triangle++) {
+    const firstCorner = indices?.[triangle * 3] ?? triangle * 3;
+    const secondCorner = indices?.[triangle * 3 + 1] ?? triangle * 3 + 1;
+    const thirdCorner = indices?.[triangle * 3 + 2] ?? triangle * 3 + 2;
+    const firstRow = readFeatureRow(firstCorner);
+    const secondRow = readFeatureRow(secondCorner);
+    const thirdRow = readFeatureRow(thirdCorner);
     // Repeated-index strip connectors have no surface; retain the first corner's feature row.
-    if (rows.some(row => row !== rows[0]) && new Set(corners).size === 3)
+    if (
+      (firstRow !== secondRow || firstRow !== thirdRow) &&
+      firstCorner !== secondCorner &&
+      firstCorner !== thirdCorner &&
+      secondCorner !== thirdCorner
+    )
       throw new TileConversionError(
         'MESH_FEATURE_TRIANGLE_MIXED',
         'All vertices of a nondegenerate triangle must reference the same feature row'
       );
-    triangleFeatureIndices[triangle] = Number(rows[0]);
+    triangleFeatureIndices[triangle] = firstRow;
+    referencedRows.add(firstRow);
   }
+  // Sort once to retain source table order, then materialize only geometry-owned rows.
+  const selectedRows = [...referencedRows].sort((left, right) => left - right);
+  const denseRows = new Map(selectedRows.map((row, index) => [row, index]));
+  for (let triangle = 0; triangle < triangleFeatureIndices.length; triangle++) {
+    triangleFeatureIndices[triangle] = denseRows.get(triangleFeatureIndices[triangle])!;
+  }
+  /** Reads one referenced source value without expanding defaults or noData columns. */
+  const readProperty = (name: string, row: number): unknown => {
+    const values = properties[name];
+    const propertyMapping = propertyMappings.get(name);
+    if (!values) return propertyMapping?.defaultValue;
+    const value = values[row];
+    return propertyMapping && value === propertyMapping.noData
+      ? propertyMapping.defaultValue
+      : value;
+  };
+  const propertyNames = [
+    ...new Set([...Object.keys(properties), ...propertyMappings.keys()])
+  ].filter(name => name !== sourceIdentifier);
+  const batches = convertFeatureAttributesToArrowBatches(
+    selectedRows.map(row => ({
+      featureId: (sourceIdentifier ? readProperty(sourceIdentifier, row) : row) as
+        | string
+        | number
+        | bigint,
+      metadataClass: options.metadataClass,
+      properties: Object.fromEntries(propertyNames.map(name => [name, readProperty(name, row)]))
+    })),
+    mapping
+  );
   return {
     batches,
     triangleFeatureIndices,

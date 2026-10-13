@@ -121,10 +121,18 @@ test.each([
     format: outputFormat === '3tz' ? '3tz' : '3d-tiles',
     resourceIds: [identifier],
     outputFormat,
+    profile: outputFormat === '3tz',
     output
   });
   expect(report.state).toBe('completed');
   expect(report.outputResources).toBe(1);
+  if (outputFormat === '3tz') {
+    expect(report.timings!.setupMilliseconds).toBeGreaterThanOrEqual(0);
+    expect(report.timings!.outputMilliseconds).toBeGreaterThanOrEqual(0);
+    expect(report.timings!.totalMilliseconds).toBeGreaterThanOrEqual(
+      report.timings!.setupMilliseconds! + report.timings!.outputMilliseconds!
+    );
+  } else expect(report.timings).toBeUndefined();
   if (outputFormat === '3d-tiles') {
     const tileset = JSON.parse(await readFile(join(output, 'tileset.json'), 'utf8'));
     expect(tileset.root.children[0].content.uri).toBe('meshes/0.glb');
@@ -167,7 +175,8 @@ test('CLI inspect exposes nested selections and validate qualifies an archive wi
         '--resource',
         identifier,
         '--output-format',
-        'slpk'
+        'slpk',
+        '--profile'
       ],
       {stdout: text => stdout.push(text), stderr: text => stderr.push(text)}
     )
@@ -175,7 +184,11 @@ test('CLI inspect exposes nested selections and validate qualifies an archive wi
   expect(stderr).toEqual([]);
   expect(JSON.parse(stdout.pop()!)).toMatchObject({
     operation: 'validate',
-    report: {state: 'completed', outputResources: 1}
+    report: {
+      state: 'completed',
+      outputResources: 1,
+      timings: {totalMilliseconds: expect.any(Number), outputMilliseconds: expect.any(Number)}
+    }
   });
   expect(await readdir(directory)).toEqual(before);
 });

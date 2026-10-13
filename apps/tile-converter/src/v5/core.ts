@@ -13,6 +13,7 @@ export type {
   TileConversionDiagnostic,
   TileConversionProgress,
   TileConversionReport,
+  TileConversionTimings,
   TileConversionSource,
   TileConversionSink,
   TileConversionCodec,
