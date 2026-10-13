@@ -130,7 +130,7 @@ Successful operations write JSON to stdout and exit zero. Invalid arguments, unr
 unsupported profiles and exceeded budgets write JSON errors to stderr and exit nonzero. SIGINT
 cancels cooperatively and releases source/output handles. Help prints text.
 
-Full hierarchy/LOD preservation, service configuration, durable recovery and installed Windows
+Broader hierarchy profiles and I3S LOD translation, service configuration, durable recovery and installed Windows
 qualification remain follow-ups. See the
 [v5 source API](/docs/modules/tile-converter/api-reference/v5-conversion#node-inspection-and-raw-content-reads).
 
@@ -149,13 +149,16 @@ tile-converter-v5 convert ./tileset.json --preserve-hierarchy \
 This retains source topology, parent content, inherited ADD/REPLACE and conservative
 metric errors plus the position allowance (transform scaling for 1.1; native meter values for 1.0). Effective placement is retained through
 relative output transforms; bounds are recomputed around converted subtree geometry.
-Every declaring-document root must declare its own refinement. Every content must decode to one mesh primitive.
+Every declaring-document root must declare its own refinement. Each binary content may contain multiple static mesh primitives and scene-node placements,
+with at most 64 primitive placements across the whole conversion. Each primitive becomes a GLB
+in the original tile’s ordered `contents` list; child order, refinement and LOD remain on that tile.
+Output order follows source content slots, then scene traversal and mesh primitive order.
 The profile supports at most 32 document placements (including repeated URLs), 256 tiles
 in total and 64 selected binary contents, with existing byte limits. External references
 become contentless wrappers around the referenced root; they must have no source children.
 Ordered 3D Tiles 1.1 mesh `contents` arrays remain on their original tile. Each content has a
 distinct placement ID; select them all. The source processes declaration order regardless of
-flag order, and rebases all GLBs on a tile around the first content's origin. Bounds include
+flag order, and rebases all GLBs on a tile around the first primitive's origin. Bounds include
 every content and child; distant contents that cannot meet the 1 cm float32 precision gate
 fail explicitly. Arrays with one entry are normalized to `content`. External JSON references
 continue to require a single `content`, with no siblings or source children.

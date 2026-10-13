@@ -1036,10 +1036,19 @@ boxes enclosing all converted geometry in each subtree. Explicit native CRS meta
 including its epoch, is retained when supplied.
 
 Limits: 32 explicit document placements (including repeats), 256 tiles across the entire tree,
-64 selected binary contents, **one mesh primitive per
-content**, existing 16 MiB input and 32 MiB output/archive budgets.
+64 selected binary contents and **64 total mesh primitive placements**, existing 16 MiB input
+and 32 MiB output/archive budgets. Static multi-primitive meshes and repeated scene-node
+placements are supported. Each primitive becomes a self-contained GLB with its own supported
+material and feature mapping, in the original tile’s ordered `contents` list. Ordering follows
+source content slots, then scene traversal and primitive order. Primitives do not become child
+tiles, so ADD/REPLACE and LOD stay on the original tile. Extraction streams a
+`contentPrimitive: {index, last}` descriptor through the codec. The hierarchy sink requires
+contiguous indices and a final marker for every original content before publishing. Direct
+codec outputs without a descriptor retain the singleton-content contract. Feature-bearing
+primitives retain the existing ownership profile: every mapped table row must own a triangle
+in that primitive. Shared tables containing unused rows remain unsupported.
 Ordered 1.1 mesh `contents` arrays retain their tile and declaration order, with a shared
-origin selected from the first content. The sink rejects different encoded origins within a
+origin selected from the first primitive of the first content. The sink rejects different encoded origins within a
 tile. Bounds enclose every content and child; the existing precision gate rejects distant
 contents that cannot share a float32 frame within the configured allowance. A one-entry
 array becomes `content`. External JSON references still require a single `content` with no
