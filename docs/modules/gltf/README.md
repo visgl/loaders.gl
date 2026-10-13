@@ -111,3 +111,11 @@ const bytes = await encode(gltf, GLTFWriter, {gltf: {draco: {enabled: true}}});
 ```
 
 See the [writer reference](/docs/modules/gltf/api-reference/gltf-writer) for limits and options.
+
+
+### Meshopt decoder
+
+The maintained meshoptimizer decoder is bundled in @loaders.gl/gltf and loaded
+only on the first meshopt-compressed buffer decode. Applications do not need to
+install meshoptimizer, including when bundling the loader for a browser. Ordinary
+glTF parsing does not initialize the decoder.
