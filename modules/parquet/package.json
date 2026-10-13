@@ -134,7 +134,6 @@
     "@loaders.gl/loader-utils": "5.0.0-alpha.12",
     "@loaders.gl/schema": "5.0.0-alpha.12",
     "@loaders.gl/schema-utils": "5.0.0-alpha.12",
-    "@loaders.gl/wkt": "5.0.0-alpha.12",
     "@probe.gl/log": "^4.1.1"
   },
   "devDependencies": {
