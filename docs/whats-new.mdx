@@ -63,6 +63,8 @@ See [supported items and verification boundaries](/docs/developer-guide/arcgis/i
 
 ## What's new
 
+- The v5 tile-converter complete hierarchy profile supports multiple static mesh primitives and scene placements per content. Each becomes an ordered GLB on the original tile, preserving refinement, per-primitive materials and explicitly mapped features within the existing 64-placement and byte limits. See the [hierarchy profile](/docs/modules/tile-converter/api-reference/v5-conversion#complete-explicit-hierarchy-profile).
+
 - The v5 tile-converter CLI accepts explicit scalar/string feature mappings through `--feature-schema`. Its complete hierarchy profile preserves ordered 3D Tiles 1.1 mesh `contents` arrays on their original tiles, with shared GLB origins and existing precision/byte gates. See the [CLI guide](/docs/modules/tile-converter/cli-reference/tile-converter-v5).
 
 - WMTS tile grids now describe every matrix level, including per-level origins and tile sizes.

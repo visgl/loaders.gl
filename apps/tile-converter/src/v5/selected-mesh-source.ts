@@ -228,11 +228,6 @@ export async function createSelectedMeshConversionSource(
           let meshCount = 0;
           for await (const resource of meshSource.read(metadata, signal)) {
             meshCount++;
-            if (preserveHierarchy && meshCount > 1)
-              throw new TileConversionError(
-                'MESH_HIERARCHY_UNSUPPORTED',
-                'Hierarchy conversion requires one mesh primitive per content'
-              );
             if (++primitiveCount > SELECTED_MESH_LIMITS.maxMeshResources)
               throw new Error('Selected contents exceed the mesh primitive placement limit.');
             decodedBytes += measureMeshBytes(resource);

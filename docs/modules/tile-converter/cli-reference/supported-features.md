@@ -60,17 +60,23 @@ traversal and whole-dataset validation remain follow-ups. The original CLI remai
 
 ## Experimental v5 conversion support
 
+<img src="https://img.shields.io/badge/From-v5.0-blue.svg?style=flat-square" alt="From v5.0" />
+
+Version badges identify the first converter release line implementing the profile, not the
+input format version. V5 capabilities are experimental while v5.0 is in development.
+
 These profiles describe the current repository implementation. V5 is experimental and has
 separate APIs from the legacy CLI. Successful conversion of a selected profile does not
 qualify every dataset, standard version or extension combination.
 
-| Input profile | Authored output | Execution and boundaries |
-| --- | --- | --- |
-| Static GLB/B3DM mesh contents from 3D Tiles | I3S/SLPK or GLB-based 3D Tiles/3TZ | API, browser example and bounded v5 Node CLI; resolved native EPSG:4978 input, static placements and explicit feature mapping |
-| I3S `3DObject` or `IntegratedMesh` node meshes | I3S/SLPK or GLB-based 3D Tiles/3TZ | API, browser example and bounded v5 Node workflow; source-coordinate decoding, declared CRS/height operations and explicit attribute mapping |
-| Decoded native point Mesh/Arrow data | Potree 1.0–1.8/2.0 files or STORE ZIP bundle | API only; explicit CRS, precision and allocation budgets; additive octree ownership; independent viewer/LOD qualification remains open |
-| Decoded point Mesh/Arrow data or selected point-source tiles | PNTS, partial 3D Tiles or 3TZ | API only; explicit coordinate/precision/sampling-error contract; broader LAS/COPC/I3S input qualification remains open |
-| Finalized I3S or 3D Tiles resources | Indexed SLPK or 3TZ | Blob or streaming packaging; packaging alone performs no format conversion |
+| Input profile | Authored output | Execution and boundaries | Available from |
+| --- | --- | --- | --- |
+| Static GLB/B3DM mesh contents from 3D Tiles | I3S/SLPK or GLB-based 3D Tiles/3TZ | API, browser example and bounded v5 Node CLI; resolved native EPSG:4978 input, static placements and explicit feature mapping | <img src="https://img.shields.io/badge/From-v5.0-blue.svg?style=flat-square" alt="From v5.0" /> |
+| I3S `3DObject` or `IntegratedMesh` node meshes | I3S/SLPK or GLB-based 3D Tiles/3TZ | API, browser example and bounded v5 Node workflow; source-coordinate decoding, declared CRS/height operations and explicit attribute mapping | <img src="https://img.shields.io/badge/From-v5.0-blue.svg?style=flat-square" alt="From v5.0" /> |
+| Decoded native point Mesh/Arrow data | Potree 1.0–1.8/2.0 files or STORE ZIP bundle | API only; explicit CRS, precision and allocation budgets; additive octree ownership; independent viewer/LOD qualification remains open | <img src="https://img.shields.io/badge/From-v5.0-blue.svg?style=flat-square" alt="From v5.0" /> |
+| Decoded point Mesh/Arrow data or selected point-source tiles | PNTS, partial 3D Tiles or 3TZ | API only; explicit coordinate/precision/sampling-error contract; broader LAS/COPC/I3S input qualification remains open | <img src="https://img.shields.io/badge/From-v5.0-blue.svg?style=flat-square" alt="From v5.0" /> |
+| Finalized I3S or 3D Tiles resources | Indexed SLPK or 3TZ | Blob or streaming packaging; packaging alone performs no format conversion | <img src="https://img.shields.io/badge/From-v5.0-blue.svg?style=flat-square" alt="From v5.0" /> |
+| Complete explicit 3D Tiles hierarchy | GLB-based 3D Tiles/3TZ | Opt-in API/Node CLI; external documents, ordered contents and multiple static primitives; 32 documents, 256 tiles, 64 primitive placements; native ECEF only | <img src="https://img.shields.io/badge/From-v5.0-blue.svg?style=flat-square" alt="From v5.0" /> |
 
 Mesh output uses the current I3S **1.7 3DObject** or 3D Tiles **1.1 GLB** writer profile.
 IntegratedMesh → I3S requires explicit `integratedMeshPolicy: 'as-3d-object'` and reports a
@@ -83,7 +89,8 @@ The raw `createBrowserTilesetConversionSource` API also supports opt-in nested e
 3D Tiles 1.0/1.1 traversal with shared byte/declaration/document limits and composed placement
 transforms. With `inspectNestedTilesets: true`, declared .json external references are expanded
 without fetching mesh payloads. The example and Node CLI use this for nested selection;
-collection writers still do not preserve source hierarchy.
+collection writers produce flat output by default. Opt in to the complete hierarchy profile
+for qualified 3D Tiles/3TZ output.
 See [nested explicit input](/docs/modules/tile-converter/api-reference/v5-conversion#nested-explicit-3d-tiles-input).
 
 ### Browser input and output
@@ -139,9 +146,26 @@ appearance and spatial profiles, both archive writers and the real browser worke
 coverage is checked in Chromium-only and merged reports. This does not establish independent
 Cesium/ArcGIS interoperability or total peak-memory qualification.
 
+### Explicit hierarchy preservation (v5 opt-in)
+
+<img src="https://img.shields.io/badge/From-v5.0-blue.svg?style=flat-square" alt="From v5.0" />
+
+`--preserve-hierarchy` / `preserveHierarchy: true` qualify a complete explicit
+3D Tiles/3TZ tree, including inspected `.json` external documents, for 3D Tiles or 3TZ output: original topology, parent content,
+contentless ancestors, inherited ADD/REPLACE, conservative version-aware metric errors,
+and equivalent ECEF placement. Select every content; maximum 32 document placements, 256 total tiles, 64 binary contents,
+64 total static mesh primitive placements, and existing byte budgets. Multiple primitives
+and repeated scene placements become ordered GLB contents on the original tile, retaining
+supported per-primitive materials and feature mappings. Bounds are recomputed from
+converted subtree geometry. Ordered 1.1 mesh `contents` arrays retain one tile with a shared
+encoded frame and distinct content IDs. Extensionless external metadata and implicit trees,
+1.0 `contents` arrays, mixed external-document arrays, unmapped
+metadata/request volumes, empty leaves and I3S hierarchy mapping remain unsupported.
+See the [profile details](../api-reference/v5-conversion.md#complete-explicit-hierarchy-profile).
+
 ### Remaining work
 
-Broader v5 CLI/file-service integration, full archive input/traversal qualification, source hierarchy/LOD,
+Broader service integration, larger archive/traversal profiles, I3S hierarchy/LOD translation,
 broader appearance/metadata/CRS profiles, durable restart and independent viewer/memory
 qualification remain open. Point-cloud/building workflows need further source qualification;
 untiled Arrow/GeoParquet authoring and experimental format conversion remain separate work.
@@ -150,6 +174,10 @@ and acceptance gates, and the [v5 API guide](/docs/modules/tile-converter/api-re
 for application integration.
 
 ## Legacy v4 CLI support
+
+<img src="https://img.shields.io/badge/From-v3.0-blue.svg?style=flat-square" alt="Legacy converter from v3.0" />
+
+The original converter was introduced in v3.0 and remains available through the legacy v4 workflow.
 
 The following evidence and compatibility tables apply to the legacy converter classes and CLI.
 They do not describe the experimental v5 APIs or browser example above.
@@ -251,17 +279,3 @@ Some 3DTiles vNext extensions are supported as input data.
 | `3DTiles`     | `TRIANGLES`      | ✅ Supported               |
 | `3DTiles`     | `TRIANGLE_STRIP` | ✅ Supported as input      |
 | `3DTiles`     | `TRIANGLE_FAN`   | ❌ Not supported           |
-
-
-### Explicit hierarchy preservation (v5 opt-in)
-
-`--preserve-hierarchy` / `preserveHierarchy: true` qualify a complete explicit
-3D Tiles/3TZ tree, including inspected `.json` external documents, for 3D Tiles or 3TZ output: original topology, parent content,
-contentless ancestors, inherited ADD/REPLACE, conservative version-aware metric errors,
-and equivalent ECEF placement. Select every content; maximum 32 document placements, 256 total tiles, 64 binary contents,
-one mesh primitive per content, and existing byte budgets. Bounds are recomputed from
-converted subtree geometry. Ordered 1.1 mesh `contents` arrays retain one tile with a shared
-encoded frame and distinct content IDs. Extensionless external metadata and implicit trees,
-1.0 `contents` arrays, mixed external-document arrays, unmapped
-metadata/request volumes, empty leaves and I3S hierarchy mapping remain unsupported.
-See the [profile details](../api-reference/v5-conversion.md#complete-explicit-hierarchy-profile).

@@ -2,7 +2,7 @@
 
 [loaders.gl](https://loaders.gl/docs) is a collection of framework independent 3D and geospatial parsers and encoders.
 
-This module contains command line scripts and JavaScript APIs for converting between formats, for instance betwen 3D Tiles and I3S tilesets.
+This module contains command line scripts and JavaScript APIs for converting between formats, for instance between 3D Tiles and I3S tilesets.
 
 For documentation please visit the [website](https://loaders.gl).
 
@@ -508,6 +508,28 @@ resolution, authentication and decompression. `getFeatures` remains the custom a
 Unsupported atlas regions, colors, richer maps, domains/dates and layouts fail explicitly.
 See the v5 conversion API reference for the exact source profile and an example mapping.
 See the [v5 conversion reference](../../docs/modules/tile-converter/api-reference/v5-conversion.md).
+
+## Complete explicit mesh hierarchy
+
+Opt in with `preserveHierarchy: true` on `convertNodeTileset`, or pair
+`createSelectedMeshConversionSource` with `createMeshHierarchyTilesetSink` through the portable
+adapters. The v5 CLI exposes `--preserve-hierarchy`. Select every inspected binary content.
+
+The profile retains explicit topology, external document placements, parent content,
+ADD/REPLACE refinement and version-aware metric errors for native ECEF 3D Tiles/3TZ output.
+Static multi-primitive meshes and repeated scene placements become ordered GLBs on their
+original tile; each retains its supported material, feature table and effective placement.
+Output order follows source content slots, then scene traversal and primitive order.
+Primitives share the first primitive’s origin on each tile and must meet the precision gate.
+The sink requires ordered `contentPrimitive: {index, last}` descriptors through the mesh codec
+before finalization. Outputs without a descriptor remain singleton contents.
+
+Limits are 32 document placements, 256 tiles, 64 selected binary contents and 64 total primitive
+placements, plus 16 MiB input and 32 MiB output/archive gates. These are not peak-memory bounds.
+Implicit tiling, composites, GPU instancing, mixed external-document contents and I3S LOD
+translation remain outside this profile. The browser example still exports flat partial
+collections. See the [CLI guide](https://loaders.gl/docs/modules/tile-converter/cli-reference/tile-converter-v5)
+and [conversion support](https://loaders.gl/docs/modules/tile-converter/cli-reference/supported-features).
 
 ## Experimental Node inspection
 

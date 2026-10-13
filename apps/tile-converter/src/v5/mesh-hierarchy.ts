@@ -408,7 +408,8 @@ export function prepareMeshHierarchy(
 /**
  * Writes a complete explicit 3D Tiles 1.1 hierarchy, preserving child order and ADD/REPLACE.
  * Pair with createSelectedMeshConversionSource({preserveHierarchy: true}) and the mesh codec.
- * One primitive per content is required. Source placements are baked by extraction; relative
+ * Primitive placements become ordered contents on their original tile. Extraction bakes source
+ * placements; relative
  * output transforms place rebased GLBs exactly once. Bounds enclose all converted subtree
  * vertices. Source volumes, request volumes and unmapped metadata are not silently carried over.
  * Errors follow source-version transform semantics plus the position allowance.
@@ -447,26 +448,37 @@ export function createMeshHierarchyTilesetSink(
       readonly localBoundingBox: readonly (readonly number[])[];
       /** Stable relative output name. */
       readonly uri: string;
-    }
+    }[]
   >();
+  const completedContents = new Set<string>();
+  const primitiveIdentifiers = new Set<string>();
   let state: 'open' | 'writing' | 'closed' = 'open';
   let completed = false;
   return {
     /** Exposes files only after complete finalization. */
     getFiles: () => (completed ? memory.getFiles() : []),
-    /** Retains one trusted codec output for each original content placement. */
+    /** Retains ordered codec outputs and requires a terminal primitive for each content. */
     async write(resource, signal) {
       signal?.throwIfAborted();
       const identifier = resource.contentResourceId;
+      const {index: primitiveIndex, last: lastPrimitive} = resource.contentPrimitive ?? {
+        index: 0,
+        last: true
+      };
       if (
         state !== 'open' ||
         !identifier ||
-        placements.has(identifier) ||
+        completedContents.has(identifier) ||
+        primitiveIdentifiers.has(resource.id) ||
+        primitiveIdentifiers.size >= 64 ||
+        !Number.isSafeInteger(primitiveIndex) ||
+        primitiveIndex !== (placements.get(identifier)?.length ?? 0) ||
+        typeof lastPrimitive !== 'boolean' ||
         !hierarchy.nodes.some(node => node.resourceIds.includes(identifier))
       )
         throw new TileConversionError(
           'MESH_HIERARCHY_PLACEMENT_INVALID',
-          'Hierarchy writes require one output per declared content before close'
+          'Hierarchy writes require ordered, distinct primitives for declared contents before close (at most 64)'
         );
       if (resource.spatialReference.coordinateEpoch !== hierarchy.coordinateEpoch)
         throw new TileConversionError(
@@ -477,32 +489,40 @@ export function createMeshHierarchyTilesetSink(
       const tile = createMeshTileset(resource, maxPositionError).root;
       const nodeIndex = hierarchy.nodes.findIndex(node => node.resourceIds.includes(identifier));
       const node = hierarchy.nodes[nodeIndex];
-      const sibling = node.resourceIds.map(identifier => placements.get(identifier)).find(Boolean);
+      const sibling = node.resourceIds
+        .map(identifier => placements.get(identifier)?.[0])
+        .find(Boolean);
       if (sibling && sibling.origin.some((value, axis) => value !== resource.origin[axis]))
         throw new TileConversionError(
           'MESH_HIERARCHY_PLACEMENT_INVALID',
           'Contents on one tile must share an encoded origin'
         );
       const suffix = node.resourceIds.length > 1 ? '-' + node.resourceIds.indexOf(identifier) : '';
-      const uri = `meshes/${nodeIndex}${suffix}.glb`;
+      const primitiveSuffix =
+        primitiveIndex > 0 || !lastPrimitive ? '-primitive-' + primitiveIndex : '';
+      const uri = `meshes/${nodeIndex}${suffix}${primitiveSuffix}.glb`;
       state = 'writing';
       await memory.write(
         {resourceId: uri, parts: [resource.glb], contentType: 'model/gltf-binary'},
         signal
       );
-      placements.set(identifier, {
+      const contentPlacements = placements.get(identifier) ?? [];
+      contentPlacements.push({
         transform: [...tile.transform!],
         origin: [...resource.origin],
         localBoundingBox: resource.localBoundingBox.map(bound => [...bound]),
         uri
       });
+      placements.set(identifier, contentPlacements);
+      primitiveIdentifiers.add(resource.id);
+      if (lastPrimitive) completedContents.add(identifier);
       state = 'open';
     },
     /** Publishes original topology only after every source content has completed. */
     async finalize(report) {
       if (
         state !== 'open' ||
-        placements.size !==
+        completedContents.size !==
           hierarchy.nodes.reduce((count, node) => count + node.resourceIds.length, 0)
       )
         throw new TileConversionError(
@@ -513,17 +533,17 @@ export function createMeshHierarchyTilesetSink(
       const tiles: OutputTile[] = new Array(hierarchy.nodes.length);
       const bounds: number[][][] = new Array(hierarchy.nodes.length);
       const transforms = hierarchy.nodes.map(node => {
-        const placement = placements.get(node.resourceIds[0]);
+        const placement = placements.get(node.resourceIds[0])?.[0];
         return placement ? new Matrix4(placement.transform) : new Matrix4();
       });
       for (let index = hierarchy.nodes.length - 1; index >= 0; index--) {
         const node = hierarchy.nodes[index];
-        const placement = placements.get(node.resourceIds[0]);
+        const placement = placements.get(node.resourceIds[0])?.[0];
         const minimum = [Infinity, Infinity, Infinity];
         const maximum = [-Infinity, -Infinity, -Infinity];
         const contributors = node.children.map(child => bounds[child]);
-        for (const identifier of node.resourceIds) {
-          const placement = placements.get(identifier)!;
+        const nodePlacements = node.resourceIds.flatMap(identifier => placements.get(identifier)!);
+        for (const placement of nodePlacements) {
           contributors.push(
             placement.localBoundingBox.map((bound, boundIndex) =>
               bound.map((value, axis) => {
@@ -575,12 +595,8 @@ export function createMeshHierarchyTilesetSink(
           boundingVolume: {box: [...center, ...halfAxes]},
           geometricError: node.geometricError + maxPositionError,
           refine: node.refine,
-          ...(node.resourceIds.length > 1
-            ? {
-                contents: node.resourceIds.map(identifier => ({
-                  uri: placements.get(identifier)!.uri
-                }))
-              }
+          ...(nodePlacements.length > 1
+            ? {contents: nodePlacements.map(placement => ({uri: placement.uri}))}
             : placement
               ? {content: {uri: placement.uri}}
               : {}),
@@ -624,6 +640,8 @@ export function createMeshHierarchyTilesetSink(
       state = 'closed';
       completed = false;
       placements.clear();
+      completedContents.clear();
+      primitiveIdentifiers.clear();
       await memory.abort(error);
     }
   };

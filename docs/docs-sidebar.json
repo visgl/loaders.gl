@@ -673,6 +673,7 @@
         "label": "@loaders.gl/tile-converter",
         "items": [
           "modules/tile-converter/README",
+          "modules/tile-converter/api-reference/v5-conversion",
           "modules/tile-converter/api-reference/3d-tiles-converter",
           "modules/tile-converter/api-reference/i3s-converter",
           "modules/tile-converter/api-reference/build-instructions",
@@ -762,6 +763,7 @@
     "type": "category",
     "label": "Command-Line Reference",
     "items": [
+      "modules/tile-converter/cli-reference/tile-converter-v5",
       "modules/tile-converter/cli-reference/tile-converter",
       "modules/tile-converter/cli-reference/i3s-server",
       "modules/tile-converter/cli-reference/supported-features"
