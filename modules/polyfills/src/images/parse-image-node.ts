@@ -4,8 +4,7 @@
 
 import getPixels from 'get-pixels';
 
-/** Declares which image format mime types this loader polyfill supports */
-export const NODE_FORMAT_SUPPORT = ['image/png', 'image/jpeg', 'image/gif'];
+export {NODE_FORMAT_SUPPORT} from './node-image-formats';
 
 // Note: These types are also defined in @loaders.gl/images and need to be kept in sync
 type NDArray = {

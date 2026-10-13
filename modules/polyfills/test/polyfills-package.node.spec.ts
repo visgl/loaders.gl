@@ -58,3 +58,38 @@ test('browser bundles resolve both polyfills entrypoints to the browser shim', a
     ).toBe(false);
   }
 });
+
+test.each([
+  'esm',
+  'commonjs'
+])('installed %s polyfills work when image codecs cannot resolve', format => {
+  const result = execFileSync(
+    process.execPath,
+    [
+      '--input-type=module',
+      '-e',
+      `
+    import assert from 'node:assert/strict';
+    import Module, {createRequire, register} from 'node:module';
+    import {pathToFileURL} from 'node:url';
+    const optionalModules = ['get-pixels', 'save-pixels', 'ndarray'];
+    const loadOriginal = Module._load;
+    Module._load = function(request, ...parameters) {
+      if (optionalModules.includes(request)) throw new Error('Optional image codec omitted');
+      return loadOriginal.call(this, request, ...parameters);
+    };
+    const loaderSource = 'export async function resolve(specifier, context, nextResolve) { if (["get-pixels", "save-pixels", "ndarray"].includes(specifier)) throw new Error("Optional image codec omitted"); return nextResolve(specifier, context); }';
+    register('data:text/javascript,' + encodeURIComponent(loaderSource), pathToFileURL(process.cwd() + '/'));
+    const require = createRequire(import.meta.url);
+    ${format === 'esm' ? "await import('@loaders.gl/polyfills')" : "require('@loaders.gl/polyfills')"};
+    assert.equal(typeof globalThis.loaders.NodeFileSystem, 'function');
+    assert.equal(typeof globalThis.loaders.readFileAsArrayBuffer, 'function');
+    await assert.rejects(globalThis.loaders.parseImageNode(new ArrayBuffer(0), 'image/png'), /Install get-pixels/);
+    await assert.rejects(globalThis.loaders.encodeImageNode({data: new Uint8Array(4), width: 1, height: 1}, {type: 'png'}), /Install save-pixels and ndarray/);
+    console.log('Node transports work without image codecs');
+  `
+    ],
+    {encoding: 'utf8'}
+  );
+  expect(result.trim()).toBe('Node transports work without image codecs');
+});

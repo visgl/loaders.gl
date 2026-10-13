@@ -51,15 +51,15 @@
   },
   "dependencies": {
     "@loaders.gl/crypto": "5.0.0-alpha.12",
-    "@loaders.gl/loader-utils": "5.0.0-alpha.12",
-    "buffer": "^6.0.3",
-    "get-pixels": "^3.3.3",
-    "ndarray": "^1.0.19",
-    "save-pixels": "^2.3.6",
-    "web-streams-polyfill": "^4.0.0"
+    "@loaders.gl/loader-utils": "5.0.0-alpha.12"
   },
   "peerDependencies": {
     "@loaders.gl/core": "~5.0.0-alpha.0"
   },
-  "gitHead": "8a9e77743ea90a7be4ebec572416bb50ca9d73c3"
+  "gitHead": "8a9e77743ea90a7be4ebec572416bb50ca9d73c3",
+  "optionalDependencies": {
+    "get-pixels": "^3.3.3",
+    "ndarray": "^1.0.19",
+    "save-pixels": "^2.3.6"
+  }
 }
