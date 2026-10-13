@@ -4,7 +4,31 @@
 
 /// <reference path="./meshoptimizer-decoder.d.ts" />
 
-import {MeshoptDecoder} from 'meshoptimizer/decoder';
+import type {MeshoptDecoder as MeshoptDecoderImplementation} from 'meshoptimizer/decoder';
+import {loadMeshoptModule} from './meshopt-module-loader';
+
+/** Cached optional decoder module, initialized on the first compressed-buffer request. */
+let decoderPromise: Promise<typeof MeshoptDecoderImplementation> | undefined;
+
+/** Loads and initializes the optional meshopt decoder with actionable missing-package errors. */
+async function loadMeshoptDecoder(): Promise<typeof MeshoptDecoderImplementation> {
+  if (!decoderPromise) {
+    decoderPromise = loadMeshoptModule().then(
+      async ({MeshoptDecoder}) => {
+        await MeshoptDecoder.ready;
+        return MeshoptDecoder;
+      },
+      error => {
+        decoderPromise = undefined;
+        throw new Error(
+          'Meshopt decoding requires meshoptimizer. Install meshoptimizer to decode compressed glTF buffers.',
+          {cause: error}
+        );
+      }
+    );
+  }
+  return decoderPromise;
+}
 
 /**
  * Bitstream modes defined by `EXT_meshopt_compression` and `KHR_meshopt_compression`.
@@ -52,12 +76,12 @@ function getMeshoptCompressionFilter(
  * Reports whether the current runtime can initialize the WebAssembly meshopt decoder.
  *
  * This check does not initialize the decoder; each asynchronous decode helper waits for
- * initialization through `MeshoptDecoder.ready`.
+ * initialization through the lazily loaded decoder. Package installation is checked on first decode.
  *
  * @returns `true` when meshopt WebAssembly decoding is available.
  */
 export function isMeshoptSupported(): boolean {
-  return MeshoptDecoder.supported;
+  return typeof WebAssembly === 'object';
 }
 
 /**
@@ -79,8 +103,8 @@ export async function meshoptDecodeVertexBuffer(
   source: Uint8Array,
   filter: MeshoptCompressionFilter | number = 'NONE'
 ): Promise<void> {
-  await MeshoptDecoder.ready;
-  MeshoptDecoder.decodeVertexBuffer(
+  const meshoptDecoder = await loadMeshoptDecoder();
+  meshoptDecoder.decodeVertexBuffer(
     target,
     count,
     byteStride,
@@ -105,8 +129,8 @@ export async function meshoptDecodeIndexBuffer(
   byteStride: number,
   source: Uint8Array
 ): Promise<void> {
-  await MeshoptDecoder.ready;
-  MeshoptDecoder.decodeIndexBuffer(target, count, byteStride, source);
+  const meshoptDecoder = await loadMeshoptDecoder();
+  meshoptDecoder.decodeIndexBuffer(target, count, byteStride, source);
 }
 
 /**
@@ -125,8 +149,8 @@ export async function meshoptDecodeIndexSequence(
   byteStride: number,
   source: Uint8Array
 ): Promise<void> {
-  await MeshoptDecoder.ready;
-  MeshoptDecoder.decodeIndexSequence(target, count, byteStride, source);
+  const meshoptDecoder = await loadMeshoptDecoder();
+  meshoptDecoder.decodeIndexSequence(target, count, byteStride, source);
 }
 
 /**
@@ -154,8 +178,8 @@ export async function meshoptDecodeGltfBuffer(
   mode: MeshoptCompressionMode,
   filter: MeshoptCompressionFilter | number = 'NONE'
 ): Promise<void> {
-  await MeshoptDecoder.ready;
-  MeshoptDecoder.decodeGltfBuffer(
+  const meshoptDecoder = await loadMeshoptDecoder();
+  meshoptDecoder.decodeGltfBuffer(
     target,
     count,
     byteStride,

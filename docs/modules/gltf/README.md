@@ -111,3 +111,12 @@ const bytes = await encode(gltf, GLTFWriter, {gltf: {draco: {enabled: true}}});
 ```
 
 See the [writer reference](/docs/modules/gltf/api-reference/gltf-writer) for limits and options.
+
+
+### Optional meshopt decoder
+
+`meshoptimizer` is an optional dependency. It is loaded on the first buffer decode
+using `EXT_meshopt_compression` or `KHR_meshopt_compression`; ordinary glTF/GLB
+imports and parsing do not initialize it. If optional dependencies were omitted,
+install `meshoptimizer` before decoding meshopt-compressed assets. A missing decoder
+reports installation instructions when compressed-buffer decoding is requested.

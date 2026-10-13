@@ -75,11 +75,13 @@
     "@loaders.gl/textures": "5.0.0-alpha.12",
     "@math.gl/core": "5.0.0-alpha.16",
     "@math.gl/culling": "5.0.0-alpha.16",
-    "meshoptimizer": "^1.2.0",
     "zod": "^4.1.12"
   },
   "peerDependencies": {
     "@loaders.gl/core": "~5.0.0-alpha.0"
   },
-  "gitHead": "8a9e77743ea90a7be4ebec572416bb50ca9d73c3"
+  "gitHead": "8a9e77743ea90a7be4ebec572416bb50ca9d73c3",
+  "optionalDependencies": {
+    "meshoptimizer": "^1.2.0"
+  }
 }
