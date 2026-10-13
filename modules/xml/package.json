@@ -50,7 +50,6 @@
   },
   "dependencies": {
     "@loaders.gl/loader-utils": "5.0.0-alpha.12",
-    "@loaders.gl/schema": "5.0.0-alpha.12",
     "fast-xml-parser": "^5.3.6"
   },
   "peerDependencies": {
