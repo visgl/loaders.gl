@@ -4,6 +4,7 @@
 
 import {expect, test} from 'vitest';
 import * as parquetModule from '@loaders.gl/parquet';
+import {ParquetWasmLoaderWithParser} from '@loaders.gl/parquet/parquet-wasm-loader';
 import {ParquetJSLoaderWithParser} from '@loaders.gl/parquet/parquet-js-loader';
 
 test('Parquet root exposes the primary metadata loader', () => {
@@ -19,4 +20,10 @@ test('TypeScript Parquet backend is available through its parser subpath only', 
   expect(parquetModule).not.toHaveProperty('ParquetJSLoaderWithParser');
   expect(ParquetJSLoaderWithParser.parse).toBeTypeOf('function');
   expect(ParquetJSLoaderWithParser.id).toBe('parquet-js');
+});
+
+test('Parquet WASM reader is explicit and never exported from the root', () => {
+  expect(parquetModule).not.toHaveProperty('ParquetWasmLoaderWithParser');
+  expect(ParquetWasmLoaderWithParser.parse).toBeTypeOf('function');
+  expect(ParquetWasmLoaderWithParser.worker).toBe(false);
 });

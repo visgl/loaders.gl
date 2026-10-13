@@ -5174,7 +5174,6 @@ __metadata:
     "@loaders.gl/worker-utils": "npm:5.0.0-alpha.11"
     "@math.gl/wkb": "npm:5.0.0-alpha.15"
     apache-arrow: "npm:>= 17.0.0"
-    lz4js: "npm:^0.2.0"
   peerDependencies:
     "@loaders.gl/core": ~5.0.0-alpha.0
   languageName: unknown
@@ -5221,13 +5220,18 @@ __metadata:
     zstd-codec: "npm:^0.1"
   peerDependencies:
     "@loaders.gl/core": ~5.0.0-alpha.0
-    lz4js: ^0.2.0
-    pako: ^2.1.0
-    zstd-codec: ^0.1
-  peerDependenciesMeta:
+  dependenciesMeta:
+    brotli:
+      optional: true
+    fzstd:
+      optional: true
+    hysnappy:
+      optional: true
     lz4js:
       optional: true
     pako:
+      optional: true
+    snappyjs:
       optional: true
     zstd-codec:
       optional: true
@@ -5342,6 +5346,9 @@ __metadata:
     draco3d: "npm:1.5.7"
   peerDependencies:
     "@loaders.gl/core": ~5.0.0-alpha.0
+  dependenciesMeta:
+    draco3d:
+      optional: true
   languageName: unknown
   linkType: soft
 
@@ -5579,6 +5586,11 @@ __metadata:
     laz-perf: "npm:^0.0.7"
   peerDependencies:
     "@loaders.gl/core": ~5.0.0-alpha.0
+  dependenciesMeta:
+    copc:
+      optional: true
+    laz-perf:
+      optional: true
   languageName: unknown
   linkType: soft
 
@@ -5701,6 +5713,9 @@ __metadata:
   peerDependencies:
     "@loaders.gl/core": ~5.0.0-alpha.0
     apache-arrow: ">= 17.0.0"
+  dependenciesMeta:
+    parquet-wasm:
+      optional: true
   languageName: unknown
   linkType: soft
 

@@ -232,12 +232,17 @@ Built-in streams are not automatically the fastest choice for every workload. Cr
 `CompressionStream` or `DecompressionStream` and scheduling its asynchronous reads has a fixed
 cost. That cost is usually amortized for large payloads and genuine streams, but it can dominate
 formats such as Parquet that process many small, independently compressed blocks. For block-based
-formats, benchmark a cached synchronous JavaScript codec as well as the built-in stream path;
-`useNative: false` selects that path on the balanced GZIP, DEFLATE, Brotli, and Zstandard classes.
+formats, benchmark a cached synchronous codec as well as the built-in stream path;
+`useNative: false` selects compress-utils on the balanced GZIP, DEFLATE, Brotli, and Zstandard classes.
 
-`compress-utils` is a runtime dependency. Pako, `lz4js`, and `zstd-codec` are optional reference backends. Only install an
-optional package when importing its adapter. `compress-utils` uses direction-specific algorithm
-subpaths so unrelated formats can be tree-shaken.
+`compress-utils` is a required runtime dependency. The external reference backends (`fzstd`,
+`hysnappy`, `snappyjs`, Pako, `lz4js`, `zstd-codec`, and the injectable `brotli` package) are
+`optionalDependencies`. Package managers normally install them; `npm install --omit=optional`
+omits them. Default codecs still work without these packages. Install the corresponding package
+explicitly before using an omitted reference backend. The fflate implementation and Brotli decoder
+shim are vendored and do not require an external package.
+
+`compress-utils` uses direction-specific algorithm subpaths so unrelated formats can be tree-shaken.
 
 ## Lazy root classes and compatibility
 

@@ -65,6 +65,14 @@
       "types": "./dist/geometry/index.d.ts",
       "import": "./dist/geometry/index.js",
       "require": "./dist/geometry/index.cjs"
+    },
+    "./arrow-loader": {
+      "types": "./dist/arrow-loader.d.ts",
+      "import": "./dist/arrow-loader.js"
+    },
+    "./geoarrow-loader": {
+      "types": "./dist/geoarrow-loader.d.ts",
+      "import": "./dist/geoarrow-loader.js"
     }
   },
   "sideEffects": false,
@@ -95,8 +103,7 @@
     "@loaders.gl/wkt": "5.0.0-alpha.11",
     "@loaders.gl/worker-utils": "5.0.0-alpha.11",
     "@math.gl/wkb": "5.0.0-alpha.15",
-    "apache-arrow": ">= 17.0.0",
-    "lz4js": "^0.2.0"
+    "apache-arrow": ">= 17.0.0"
   },
   "peerDependencies": {
     "@loaders.gl/core": "~5.0.0-alpha.0"

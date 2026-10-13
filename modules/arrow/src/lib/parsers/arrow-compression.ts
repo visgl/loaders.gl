@@ -3,11 +3,10 @@
 // Copyright (c) vis.gl contributors
 
 import * as arrow from 'apache-arrow';
-import lz4js from 'lz4js';
-import {LZ4JSCompressor} from '@loaders.gl/compression/lz4-compressor-lz4js';
-import {LZ4JSDecompressor} from '@loaders.gl/compression/lz4-decompressor-lz4js';
-import {ZstdFzstdDecompressor} from '@loaders.gl/compression/zstd-decompressor-fzstd';
-import {ZstdCompression} from '@loaders.gl/compression/zstd-compression';
+import {LZ4Compressor} from '@loaders.gl/compression/lz4-compressor';
+import {LZ4CompressUtilsDecompressor} from '@loaders.gl/compression/lz4-decompressor-compress-utils';
+import {ZstdCompressor} from '@loaders.gl/compression/zstd-compressor';
+import {ZstdDecompressor} from '@loaders.gl/compression/zstd-decompressor';
 
 /** Arrow IPC embedded buffer compression codecs. */
 export type ArrowIPCCompression = 'lz4' | 'zstd';
@@ -35,11 +34,19 @@ type SynchronousCompression = {
   decompressSync: (data: ArrayBuffer) => ArrayBuffer;
 };
 
-const lz4Compressor = new LZ4JSCompressor({modules: {lz4js}});
-const lz4Decompressor = new LZ4JSDecompressor({modules: {lz4js}});
-const zstdDecompressor = new ZstdFzstdDecompressor();
-const zstdCompressor = new ZstdCompression();
-let zstdCompressorReady = false;
+const lz4Compressor = new LZ4Compressor();
+const lz4Decompressor = new LZ4CompressUtilsDecompressor();
+const zstdDecompressor = new ZstdDecompressor({useNative: false});
+const zstdCompressor = new ZstdCompressor({useNative: false});
+const readyEncoders = new Set<ArrowIPCCompression>();
+
+/** Preloads IPC decoders before Arrow invokes its synchronous compression registry. */
+export async function preloadArrowCompressionDecoders(): Promise<void> {
+  if (!registerArrowCompressionCodecs()) {
+    return;
+  }
+  await Promise.all([lz4Decompressor.preload(), zstdDecompressor.preload()]);
+}
 
 const lz4Encoder = (data: Uint8Array): Uint8Array =>
   new Uint8Array(lz4Compressor.compressSync(data.slice().buffer as ArrayBuffer));
@@ -79,53 +86,32 @@ export async function preloadArrowCompressionEncoder(
   modules: Record<string, any> = {}
 ): Promise<void> {
   const registration = getArrowCompressionRegistration(compression);
-  const registeredEncoder = registration.registry.get(registration.compressionType)?.encode;
   const encoder = compression === 'lz4' ? lz4Encoder : zstdEncoder;
-  if (
-    registeredEncoder &&
-    (compression !== 'zstd' || registeredEncoder !== encoder || zstdCompressorReady)
-  ) {
+  const registeredEncoder = registration.registry.get(registration.compressionType)?.encode;
+  if (registeredEncoder && registeredEncoder !== encoder) {
     return;
   }
-
-  if (compression === 'zstd' && !modules['zstd-codec']) {
-    throw new Error(
-      "Arrow Zstandard encoding requires a 'zstd-codec' module in writer options.modules"
-    );
-  }
-  try {
-    if (compression === 'zstd') {
-      await zstdCompressor.preload(modules);
-      zstdCompressorReady = true;
-    }
-    registerArrowCompressionEncoderSync(compression);
-  } catch (error) {
-    zstdCompressorReady = false;
-    throw error;
-  }
+  await (compression === 'lz4' ? lz4Compressor : zstdCompressor).preload(modules);
+  await (compression === 'lz4' ? lz4Decompressor : zstdDecompressor).preload();
+  readyEncoders.add(compression);
+  registerArrowCompressionCodecs();
+  registerArrowCompressionEncoderSync(compression);
 }
 
-/** Registers a synchronous Arrow IPC compression encoder and returns its Arrow enum value. */
+/** Registers a synchronous encoder after preload, preserving application-provided codecs. */
 export function registerArrowCompressionEncoderSync(compression: ArrowIPCCompression): number {
   const registration = getArrowCompressionRegistration(compression);
   const codec = registration.registry.get(registration.compressionType);
   const encoder = compression === 'lz4' ? lz4Encoder : zstdEncoder;
-  if (
-    codec?.encode &&
-    (compression !== 'zstd' || codec.encode !== encoder || zstdCompressorReady)
-  ) {
+  if (codec?.encode && codec.encode !== encoder) {
     return registration.compressionType;
   }
-  if (compression === 'zstd' && !zstdCompressorReady) {
+  if (!readyEncoders.has(compression)) {
     throw new Error(
-      'Synchronous Arrow Zstandard compression is not initialized; use encode() instead of encodeSync()'
+      'Synchronous Arrow compression is not initialized; use encode() instead of encodeSync()'
     );
   }
-
-  registration.registry.set(registration.compressionType, {
-    ...(codec || {}),
-    encode: encoder
-  });
+  registration.registry.set(registration.compressionType, {...(codec || {}), encode: encoder});
   return registration.compressionType;
 }
 

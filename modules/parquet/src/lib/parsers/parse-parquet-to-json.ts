@@ -8,7 +8,7 @@ import type {ObjectRowTable, ObjectRowTableBatch, Schema} from '@loaders.gl/sche
 
 import type {ParquetJSLoaderOptions} from '../../parquet-loader-options';
 import type {ParquetRow} from '../../parquetjs/schema/declare';
-import {ParquetReader} from '../../parquetjs/parser/parquet-reader';
+import {ParquetReader, type ParquetIterationProps} from '../../parquetjs/parser/parquet-reader';
 import {getSchemaFromParquetReader} from './get-parquet-schema';
 import {preloadCompressions} from '../../parquetjs/compression';
 
@@ -25,6 +25,7 @@ export async function parseParquetFile(
   await preloadCompressions(options);
 
   const reader = new ParquetReader(file, {
+    signal: options?.parquet?.signal,
     preserveBinary: options?.parquet?.preserveBinary,
     int96AsTimestamp: options?.parquet?.int96AsTimestamp,
     retainByteArrayViews: true,
@@ -86,6 +87,7 @@ export async function* parseParquetFileInBatches(
   await preloadCompressions(options);
 
   const reader = new ParquetReader(file, {
+    signal: options?.parquet?.signal,
     preserveBinary: options?.parquet?.preserveBinary,
     int96AsTimestamp: options?.parquet?.int96AsTimestamp,
     retainByteArrayViews: true,
@@ -148,9 +150,20 @@ export async function* parseParquetFileInBatches(
 
 function getParquetIterationProps(
   options?: ParquetJSLoaderOptions
-): {columnList?: string[] | string[][]} | undefined {
+): ParquetIterationProps | undefined {
   const columnList = options?.parquet?.columns;
-  return columnList?.length ? {columnList} : undefined;
+  if (
+    !columnList?.length &&
+    options?.parquet?.rowGroups === undefined &&
+    !options?.parquet?.signal
+  ) {
+    return undefined;
+  }
+  return {
+    columnList: columnList?.length ? columnList : undefined,
+    rowGroups: options?.parquet?.rowGroups,
+    signal: options?.parquet?.signal
+  };
 }
 
 function makeObjectRowBatch(schema: Schema, rows: ParquetRow[]): ObjectRowTableBatch {

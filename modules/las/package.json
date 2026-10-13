@@ -80,7 +80,9 @@
     "@loaders.gl/loader-utils": "5.0.0-alpha.11",
     "@loaders.gl/schema": "5.0.0-alpha.11",
     "@loaders.gl/schema-utils": "5.0.0-alpha.11",
-    "@math.gl/crs": "5.0.0-alpha.15",
+    "@math.gl/crs": "5.0.0-alpha.15"
+  },
+  "optionalDependencies": {
     "copc": "0.0.8",
     "laz-perf": "^0.0.7"
   },

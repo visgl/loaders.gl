@@ -6,7 +6,7 @@ import {ParquetJSLoaderWithParser as ParquetJSLoader} from '@loaders.gl/parquet/
 import {expect, test} from 'vitest';
 
 import {fetchFile, load} from '@loaders.gl/core';
-import {ParquetLoader} from '@loaders.gl/parquet';
+import {ParquetWasmLoaderWithParser as ParquetLoader} from '@loaders.gl/parquet/parquet-wasm-loader';
 import type {ObjectRowTable} from '@loaders.gl/schema';
 import {parquetReadObjects} from 'hyparquet';
 import {compressors} from 'hyparquet-compressors';

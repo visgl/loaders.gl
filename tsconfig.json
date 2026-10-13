@@ -131,6 +131,8 @@
       "@loaders.gl/arrow-geometry/*": [
         "modules/arrow-geometry/src/*"
       ],
+      "@loaders.gl/arrow/arrow-loader": ["modules/arrow/src/arrow-loader"],
+      "@loaders.gl/arrow/geoarrow-loader": ["modules/arrow/src/geoarrow-loader"],
       "@loaders.gl/arrow/types": [
         "modules/arrow/src/types"
       ],
