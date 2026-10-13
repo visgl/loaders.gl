@@ -1,7 +1,7 @@
 {
   "name": "@loaders.gl/wkt",
   "description": "Loader and Writer for the WKT (Well Known Text) Format",
-  "version": "5.0.0-alpha.11",
+  "version": "5.0.0-alpha.12",
   "license": "MIT",
   "type": "module",
   "publishConfig": {
@@ -64,9 +64,9 @@
     "fuzzer": "^0.2.1"
   },
   "dependencies": {
-    "@loaders.gl/arrow-geometry": "5.0.0-alpha.11",
-    "@loaders.gl/loader-utils": "5.0.0-alpha.11",
-    "@loaders.gl/schema": "5.0.0-alpha.11",
+    "@loaders.gl/arrow-geometry": "5.0.0-alpha.12",
+    "@loaders.gl/loader-utils": "5.0.0-alpha.12",
+    "@loaders.gl/schema": "5.0.0-alpha.12",
     "@math.gl/crs": "5.0.0-alpha.16",
     "@math.gl/wkb": "5.0.0-alpha.16"
   },
