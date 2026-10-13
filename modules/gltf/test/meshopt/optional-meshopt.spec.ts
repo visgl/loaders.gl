@@ -2,10 +2,10 @@
 import {expect, test, vi} from 'vitest';
 
 vi.mock('../../src/meshopt/meshopt-module-loader', () => ({
-  loadMeshoptModule: () => Promise.reject(new Error('meshoptimizer is not installed'))
+  loadMeshoptModule: () => Promise.reject(new Error('decoder asset is unavailable'))
 }));
 
-test('glTF root and parser imports work without the optional meshopt decoder', async () => {
+test('glTF root and parser imports work before the meshopt decoder loads', async () => {
   const {GLTFLoader} = await import('../../src/index');
   expect(GLTFLoader.id).toBe('gltf');
   const {GLTFLoaderWithParser} = await import('../../src/gltf-loader-with-parser');
@@ -18,11 +18,11 @@ test('glTF root and parser imports work without the optional meshopt decoder', a
   expect(result.json.asset.version).toBe('2.0');
 });
 
-test('missing meshoptimizer fails only when decoding is requested and can be retried', async () => {
+test('missing decoder assets fail only when decoding is requested and can be retried', async () => {
   const {meshoptDecodeGltfBuffer} = await import('../../src/meshopt/meshopt-decoder');
   for (let attemptIndex = 0; attemptIndex < 2; attemptIndex++) {
     await expect(
       meshoptDecodeGltfBuffer(new Uint8Array(4), 1, 4, new Uint8Array(0), 'ATTRIBUTES')
-    ).rejects.toThrow('Install meshoptimizer');
+    ).rejects.toThrow('Failed to load the packaged meshopt decoder');
   }
 });

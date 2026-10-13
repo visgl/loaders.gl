@@ -2,15 +2,13 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-/// <reference path="./meshoptimizer-decoder.d.ts" />
-
-import type {MeshoptDecoder as MeshoptDecoderImplementation} from 'meshoptimizer/decoder';
+import type {MeshoptDecoder as MeshoptDecoderImplementation} from '../libs/meshopt-decoder.mjs';
 import {loadMeshoptModule} from './meshopt-module-loader';
 
-/** Cached optional decoder module, initialized on the first compressed-buffer request. */
+/** Cached package-local decoder module, initialized on the first compressed-buffer request. */
 let decoderPromise: Promise<typeof MeshoptDecoderImplementation> | undefined;
 
-/** Loads and initializes the optional meshopt decoder with actionable missing-package errors. */
+/** Loads and initializes the package-local decoder, allowing failed imports to be retried. */
 async function loadMeshoptDecoder(): Promise<typeof MeshoptDecoderImplementation> {
   if (!decoderPromise) {
     decoderPromise = loadMeshoptModule().then(
@@ -20,10 +18,7 @@ async function loadMeshoptDecoder(): Promise<typeof MeshoptDecoderImplementation
       },
       error => {
         decoderPromise = undefined;
-        throw new Error(
-          'Meshopt decoding requires meshoptimizer. Install meshoptimizer to decode compressed glTF buffers.',
-          {cause: error}
-        );
+        throw new Error('Failed to load the packaged meshopt decoder.', {cause: error});
       }
     );
   }
@@ -76,7 +71,7 @@ function getMeshoptCompressionFilter(
  * Reports whether the current runtime can initialize the WebAssembly meshopt decoder.
  *
  * This check does not initialize the decoder; each asynchronous decode helper waits for
- * initialization through the lazily loaded decoder. Package installation is checked on first decode.
+ * initialization through the lazily loaded decoder. Decoder assets are loaded on first decode.
  *
  * @returns `true` when meshopt WebAssembly decoding is available.
  */
