@@ -3,6 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import {parseArgs} from 'node:util';
+import {readFeatureSchema} from './node-feature-schema.js';
 import {TileConversionError} from '@loaders.gl/tile-converter/v5/core';
 import {createNodeTilesetConversionSource, NODE_TILESET_LIMITS} from './node-source.js';
 import type {NodeTileConversionOutputFormat} from './node-conversion.js';
@@ -22,6 +23,7 @@ const HELP = `Usage: tile-converter-v5 inspect|convert|validate <input path or U
   --geometric-error N        Required source error in meters for I3S to 3D Tiles
   --integrated-mesh-policy as-3d-object  Authorize I3S layer-type change
   --preserve-hierarchy        Retain a complete explicit 3D Tiles tree (3D Tiles/3TZ only)
+  --feature-schema PATH       Local JSON feature class/schema mapping (at most 64 KiB)
   --resource ID               Selected content placement; repeat for multiple selections
   --output-format 3d-tiles|3tz|slpk  Target profile (default: 3tz)
   --output PATH               New destination (required for convert, forbidden for validate)
@@ -36,8 +38,8 @@ Convert/validate require explicit selections; I3S uses declared CRS and shared s
 Validate decodes, converts and packages the selected target profile without writing files.
 Output defaults to a partial flat mesh collection. --preserve-hierarchy requires every declared content.
 Remote archives require HTTP 206 ranges and a stable ETag or Last-Modified validator.
-I3S inspect lists leaf nodes; conversion is geometry-only unless a service supplies feature mappings.
-Hierarchy mode supports at most 32 document placements, 256 tiles and one mesh per content tile.
+I3S inspect lists leaf nodes; feature-bearing conversion requires --feature-schema.
+Hierarchy mode supports at most 32 document placements, 256 tiles and one mesh per content, including ordered 1.1 contents arrays.
 `;
 
 /** Runs a bounded v5 operation, returning an exit code after source/output cleanup. */
@@ -61,6 +63,7 @@ export async function runTileConverterCLI(
         'output-format': {type: 'string', default: '3tz'},
         output: {type: 'string'},
         resource: {type: 'string', multiple: true},
+        'feature-schema': {type: 'string'},
         'geometric-error': {type: 'string'},
         'integrated-mesh-policy': {type: 'string'}
       }
@@ -107,9 +110,18 @@ export async function runTileConverterCLI(
           'CLI_USAGE_ERROR',
           'Use --integrated-mesh-policy as-3d-object'
         );
+      const features =
+        values['feature-schema'] === undefined
+          ? undefined
+          : await readFeatureSchema(
+              values['feature-schema'],
+              format === 'i3s' || format === 'slpk',
+              signal
+            );
       const {convertNodeTileset} = await import('./node-conversion.js');
       const report = await convertNodeTileset({
         ...sourceOptions,
+        ...features,
         resourceIds: values.resource,
         preserveHierarchy: values['preserve-hierarchy'],
         outputFormat: values['output-format'] as NodeTileConversionOutputFormat,
@@ -127,6 +139,7 @@ export async function runTileConverterCLI(
       return 0;
     }
     if (
+      values['feature-schema'] !== undefined ||
       values['preserve-hierarchy'] !== undefined ||
       values['geometric-error'] !== undefined ||
       values['integrated-mesh-policy'] !== undefined ||

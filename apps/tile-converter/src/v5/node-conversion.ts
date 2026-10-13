@@ -37,7 +37,7 @@ export interface NodeTileConversionOptions
   extends Omit<NodeTilesetConversionSourceOptions, 'format'> {
   /** Explicit 3D Tiles, I3S layer or indexed archive source. */
   readonly format?: '3d-tiles' | '3tz' | 'i3s' | 'slpk';
-  /** Explicit I3S attribute mapping for service callers; the CLI requires geometry-only content. */
+  /** Explicit I3S attribute mapping, also supplied by the CLI feature-schema file. */
   readonly i3sFeatures?: I3SMeshSourceFeatureOptions;
   /** Required metric source error for I3S to 3D Tiles; no screen-size inference. */
   readonly geometricError?: number;
@@ -47,7 +47,7 @@ export interface NodeTileConversionOptions
   readonly integratedMeshPolicy?: 'as-3d-object';
   /** One to 64 inspected content placement identifiers; no automatic all-content conversion. */
   readonly resourceIds: readonly string[];
-  /** Explicit feature class/schema mapping for service callers; the CLI is geometry-only. */
+  /** Explicit feature class/schema mapping, also supplied by the CLI feature-schema file. */
   readonly features?: MeshSourceFeatureOptions;
   /** Target mesh profile, independent of output filename. */
   readonly outputFormat: NodeTileConversionOutputFormat;
