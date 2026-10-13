@@ -131,7 +131,7 @@ function parsePostScript(bytes: Uint8Array): ORCPostScript {
   const result: ORCPostScript = {
     footerLength: 0,
     compression: 'UNKNOWN',
-    compressionBlockSize: 0,
+    compressionBlockSize: 262_144,
     version: [],
     metadataLength: 0
   };
