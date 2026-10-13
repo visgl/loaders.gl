@@ -1,6 +1,6 @@
 {
   "name": "@loaders.gl/zip",
-  "version": "5.0.0-alpha.11",
+  "version": "5.0.0-alpha.12",
   "description": "Zip Archive Loader",
   "license": "MIT",
   "type": "module",
@@ -59,9 +59,9 @@
     "build-bundle-dev": "node ../../scripts/build-codec-bundle.mjs ./bundle.ts --env=dev --output=dist/dist.dev.js"
   },
   "dependencies": {
-    "@loaders.gl/compression": "5.0.0-alpha.11",
-    "@loaders.gl/crypto": "5.0.0-alpha.11",
-    "@loaders.gl/loader-utils": "5.0.0-alpha.11"
+    "@loaders.gl/compression": "5.0.0-alpha.12",
+    "@loaders.gl/crypto": "5.0.0-alpha.12",
+    "@loaders.gl/loader-utils": "5.0.0-alpha.12"
   },
   "peerDependencies": {
     "@loaders.gl/core": "~5.0.0-alpha.0"

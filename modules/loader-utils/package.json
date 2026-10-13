@@ -1,6 +1,6 @@
 {
   "name": "@loaders.gl/loader-utils",
-  "version": "5.0.0-alpha.11",
+  "version": "5.0.0-alpha.12",
   "description": "Framework-independent loaders for 3D graphics formats",
   "license": "MIT",
   "type": "module",
@@ -43,8 +43,8 @@
     "stream": false
   },
   "dependencies": {
-    "@loaders.gl/schema": "5.0.0-alpha.11",
-    "@loaders.gl/worker-utils": "5.0.0-alpha.11",
+    "@loaders.gl/schema": "5.0.0-alpha.12",
+    "@loaders.gl/worker-utils": "5.0.0-alpha.12",
     "@math.gl/crs": "5.0.0-alpha.16",
     "@math.gl/geospatial": "5.0.0-alpha.16",
     "@probe.gl/log": "^4.1.1",

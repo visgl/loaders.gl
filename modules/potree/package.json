@@ -1,6 +1,6 @@
 {
   "name": "@loaders.gl/potree",
-  "version": "5.0.0-alpha.11",
+  "version": "5.0.0-alpha.12",
   "description": "potree loaders for large point clouds.",
   "license": "MIT",
   "type": "module",
@@ -65,11 +65,11 @@
     "build-cjs-entrypoints": "esbuild dist/index.js dist/potree-loader.js --outdir=dist --out-extension:.js=.cjs --bundle --format=cjs --platform=node --target=node22 --sourcemap --external:@loaders.gl/* --external:@math.gl/*"
   },
   "dependencies": {
-    "@loaders.gl/compression": "5.0.0-alpha.11",
-    "@loaders.gl/las": "5.0.0-alpha.11",
-    "@loaders.gl/loader-utils": "5.0.0-alpha.11",
-    "@loaders.gl/schema": "5.0.0-alpha.11",
-    "@loaders.gl/schema-utils": "5.0.0-alpha.11",
+    "@loaders.gl/compression": "5.0.0-alpha.12",
+    "@loaders.gl/las": "5.0.0-alpha.12",
+    "@loaders.gl/loader-utils": "5.0.0-alpha.12",
+    "@loaders.gl/schema": "5.0.0-alpha.12",
+    "@loaders.gl/schema-utils": "5.0.0-alpha.12",
     "@math.gl/crs": "5.0.0-alpha.16",
     "@math.gl/projection": "5.0.0-alpha.16",
     "zod": "^4.1.12"
