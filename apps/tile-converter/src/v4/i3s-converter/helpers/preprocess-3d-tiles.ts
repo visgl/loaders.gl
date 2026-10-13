@@ -43,7 +43,7 @@ export const analyzeTileContent = async (
   }
 
   const gltfData = await parse(tileContent.gltfArrayBuffer, GLTFLoader, {
-    gltf: {normalize: false, loadBuffers: false, loadImages: false, decompressMeshes: false}
+    gltf: {normalize: true, loadBuffers: false, loadImages: false, decompressMeshes: false}
   });
   const gltf = gltfData.json;
 
