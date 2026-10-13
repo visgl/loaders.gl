@@ -72,8 +72,7 @@
     "@loaders.gl/arrow-geometry": "5.0.0-alpha.12",
     "@loaders.gl/loader-utils": "5.0.0-alpha.12",
     "@loaders.gl/schema": "5.0.0-alpha.12",
-    "apache-arrow": ">= 17.0.0",
-    "d3-dsv": "^1.2.0"
+    "apache-arrow": ">= 17.0.0"
   },
   "peerDependencies": {
     "@loaders.gl/core": "~5.0.0-alpha.0"
@@ -82,6 +81,7 @@
   "devDependencies": {
     "@types/papaparse": "^5",
     "csv-parser": "^3.2.0",
+    "d3-dsv": "^1.2.0",
     "papaparse": "^5.5.3",
     "udsv": "^0.7.3"
   }
