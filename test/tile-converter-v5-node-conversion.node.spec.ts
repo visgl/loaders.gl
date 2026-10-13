@@ -7,7 +7,12 @@ import {mkdtemp, mkdir, writeFile, readFile, readdir, rm} from 'node:fs/promises
 import {tmpdir} from 'node:os';
 import {join} from 'node:path';
 import {execFileSync} from 'node:child_process';
-import {GLTFScenegraph, GLTFWriter} from '@loaders.gl/gltf';
+import {parse} from '@loaders.gl/core';
+import {
+  encodeMeshTile,
+  convertFeatureAttributesToArrowBatches
+} from '@loaders.gl/tile-converter/v5/adapters';
+import {GLTFLoader, GLTFScenegraph, GLTFWriter} from '@loaders.gl/gltf';
 import {BlobFile} from '@loaders.gl/loader-utils';
 import {parse3DTilesArchive, Tiles3DArchiveWriter} from '@loaders.gl/3d-tiles';
 import {parseSLPKArchive} from '@loaders.gl/i3s';
@@ -434,4 +439,186 @@ test.each([
   expect(tileset.root.children[0].content.uri).toBe('meshes/1.glb');
   expect(tileset.root.geometricError).toBeCloseTo(4.01);
   expect(tileset.root.children[0].geometricError).toBeCloseTo(0.01);
+});
+
+test('CLI feature schema preserves exact identifiers and nullable strings through GLB output', async () => {
+  const schema = {
+    fields: [
+      {name: 'feature_id', type: 'uint64' as const, nullable: false},
+      {name: 'label', type: 'utf8' as const, nullable: true}
+    ]
+  };
+  const features = {
+    featureIdField: 'feature_id',
+    triangleFeatureIndices: new Uint32Array([0]),
+    batches: convertFeatureAttributesToArrowBatches(
+      [{featureId: 9007199254740993n, metadataClass: 'building', properties: {label: null}}],
+      {schema}
+    )
+  };
+  const mesh = encodeMeshTile(
+    {
+      mode: 4,
+      topology: 'triangle-list',
+      attributes: {POSITION: {size: 3, value: new Float32Array([0, 0, 0, 1, 0, 0, 0, 1, 0])}}
+    },
+    {features}
+  );
+  const input = join(directory, 'input', 'features.json');
+  await writeFile(join(directory, 'input', 'feature.glb'), new Uint8Array(mesh));
+  await writeFile(
+    input,
+    JSON.stringify({
+      asset: {version: '1.1', gltfUpAxis: 'Z'},
+      root: {
+        ...nested.root,
+        boundingVolume: root.root.boundingVolume,
+        transform: root.root.transform,
+        content: {uri: 'feature.glb'}
+      }
+    })
+  );
+  const mapping = join(directory, 'mapping.json');
+  await writeFile(
+    mapping,
+    JSON.stringify({schema, metadataClass: 'building', sourceFeatureIdProperty: 'feature_id'})
+  );
+  const output = join(directory, 'feature-output');
+  const stdout: string[] = [];
+  const stderr: string[] = [];
+  const destinations = {
+    stdout: (text: string) => stdout.push(text),
+    stderr: (text: string) => stderr.push(text)
+  };
+  const argumentsList = [
+    'convert',
+    input,
+    '--resource',
+    'tile-root-content-0',
+    '--output-format',
+    '3d-tiles',
+    '--output',
+    output
+  ];
+  expect(
+    await runTileConverterCLI([...argumentsList, '--feature-schema', mapping], destinations),
+    stderr.join('\n')
+  ).toBe(0);
+  expect(stderr).toEqual([]);
+  expect(JSON.parse(stdout.pop()!).report.outputResources).toBe(1);
+  const data = await parse(
+    new Uint8Array(await readFile(join(output, 'meshes/0.glb'))),
+    GLTFLoader,
+    {core: {worker: false, useLocalLibraries: true}}
+  );
+  const table = data.json.extensions!.EXT_structural_metadata.propertyTables[0];
+  expect(Array.from(table.properties.feature_id.data)).toEqual([9007199254740993n]);
+  expect(
+    data.json.extensions!.EXT_structural_metadata.schema.classes.building.properties.label.noData
+  ).toBe(table.properties.label.data[0]);
+  expect(
+    await runTileConverterCLI(
+      ['validate', input, '--resource', 'tile-root-content-0'],
+      destinations
+    )
+  ).toBe(1);
+  expect(JSON.parse(stderr.pop()!).code).toBe('MESH_FEATURE_SCHEMA_REQUIRED');
+  const slpkArguments = [
+    'validate',
+    input,
+    '--resource',
+    'tile-root-content-0',
+    '--output-format',
+    'slpk',
+    '--feature-schema',
+    mapping
+  ];
+  expect(await runTileConverterCLI(slpkArguments, destinations)).toBe(1);
+  expect(JSON.parse(stderr.pop()!).message).toContain('decimal-string');
+  await writeFile(
+    mapping,
+    JSON.stringify({
+      schema,
+      metadataClass: 'building',
+      sourceFeatureIdProperty: 'feature_id',
+      integer64Encoding: 'decimal-string'
+    })
+  );
+  expect(await runTileConverterCLI(slpkArguments, destinations), stderr.join('\n')).toBe(0);
+  expect(JSON.parse(stdout.pop()!).report.diagnostics).toEqual(
+    expect.arrayContaining([expect.objectContaining({code: 'I3S_INTEGER_DECIMAL_STRING'})])
+  );
+
+  expect(
+    await runTileConverterCLI(['inspect', input, '--feature-schema', mapping], destinations)
+  ).toBe(1);
+  expect(JSON.parse(stderr.pop()!).code).toBe('CLI_USAGE_ERROR');
+});
+
+test('CLI converts an ordered multi-content tile into indexed 3TZ without flattening', async () => {
+  const input = join(directory, 'input', 'multiple.json');
+  await writeFile(
+    input,
+    JSON.stringify({
+      asset: {version: '1.1', gltfUpAxis: 'Z'},
+      root: {
+        ...nested.root,
+        boundingVolume: root.root.boundingVolume,
+        refine: 'REPLACE',
+        transform: root.root.transform,
+        content: undefined,
+        contents: [{uri: 'nested/triangle.glb'}, {uri: 'nested/triangle.glb'}]
+      }
+    })
+  );
+  const archiveInput = join(directory, 'multiple-input.3tz');
+  await writeFile(
+    archiveInput,
+    new Uint8Array(
+      await Tiles3DArchiveWriter.encode!({
+        'tileset.json': Uint8Array.from(await readFile(input)).buffer,
+        'nested/triangle.glb': Uint8Array.from(
+          await readFile(join(directory, 'input', 'nested', 'triangle.glb'))
+        ).buffer
+      })
+    )
+  );
+  const output = join(directory, 'multiple.3tz');
+  const stderr: string[] = [];
+  expect(
+    await runTileConverterCLI(
+      [
+        'convert',
+        archiveInput,
+        '--input-format',
+        '3tz',
+        '--preserve-hierarchy',
+        '--resource',
+        'tile-root-content-1',
+        '--resource',
+        'tile-root-content-0',
+        '--output',
+        output
+      ],
+      {stdout: () => {}, stderr: text => stderr.push(text)}
+    ),
+    stderr.join('\n')
+  ).toBe(0);
+  expect(stderr).toEqual([]);
+  const archive = await parse3DTilesArchive(
+    new BlobFile(new Blob([new Uint8Array(await readFile(output))]))
+  );
+  try {
+    const tileset = JSON.parse(new TextDecoder().decode(await archive.getFile('tileset.json')));
+    expect(tileset.root.contents).toEqual([{uri: 'meshes/0-0.glb'}, {uri: 'meshes/0-1.glb'}]);
+    expect(tileset.root.content).toBeUndefined();
+    expect(tileset.root.children).toBeUndefined();
+    expect(tileset.root.refine).toBe('REPLACE');
+    for (const content of tileset.root.contents)
+      expect(
+        new TextDecoder().decode(new Uint8Array(await archive.getFile(content.uri)).subarray(0, 4))
+      ).toBe('glTF');
+  } finally {
+    await archive.close();
+  }
 });

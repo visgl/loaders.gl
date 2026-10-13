@@ -34,9 +34,9 @@ Copy placement IDs from inspection and repeat `--resource` for multiple selectio
 Selections are processed in declaration order; select between 1 and 64 distinct contents.
 In the default flat profile, multiple selections must be source leaves. A selected content may contain multiple static
 primitives, up to 64 meshes in total. Declaring-document glTF axes, composed placement and
-relative URLs are retained during extraction. This initial CLI profile is geometry-only:
-feature-bearing contents require explicit schema/class mappings and are rejected. Node service
-callers can supply `features` (3D Tiles) or `i3sFeatures` (I3S) to `convertNodeTileset`.
+relative URLs are retained during extraction. Feature-bearing contents require an explicit
+[feature-schema mapping](#feature-schema-controls). Node service callers supply the same
+`features` (3D Tiles) or `i3sFeatures` (I3S) mapping to `convertNodeTileset`.
 
 ```sh
 tile-converter-v5 convert ./dataset/tileset.json \
@@ -108,6 +108,7 @@ resource URLs: Node I3S resource redirects are rejected until their relative bas
 | `--input-format` | `3d-tiles` | `3d-tiles`, `3tz`, `i3s` or `slpk` |
 | `--geometric-error` | | Required metric source error for I3S to 3D Tiles |
 | `--integrated-mesh-policy` | | `as-3d-object` authorizes IntegratedMesh to SLPK |
+| `--feature-schema` | | Local UTF-8 JSON feature class/schema mapping, at most 64 KiB; convert/validate only |
 | `--resource` | | Required selected placement ID for convert/validate; repeatable |
 | `--output-format` | `3tz` | `3d-tiles`, `3tz` or `slpk` |
 | `--output` | | New destination; required only for convert |
@@ -152,8 +153,61 @@ Every declaring-document root must declare its own refinement. Every content mus
 The profile supports at most 32 document placements (including repeated URLs), 256 tiles
 in total and 64 selected binary contents, with existing byte limits. External references
 become contentless wrappers around the referenced root; they must have no source children.
-It rejects `contents` arrays, contentless leaves,
+Ordered 3D Tiles 1.1 mesh `contents` arrays remain on their original tile. Each content has a
+distinct placement ID; select them all. The source processes declaration order regardless of
+flag order, and rebases all GLBs on a tile around the first content's origin. Bounds include
+every content and child; distant contents that cannot meet the 1 cm float32 precision gate
+fail explicitly. Arrays with one entry are normalized to `content`. External JSON references
+continue to require a single `content`, with no siblings or source children.
+It rejects 1.0 `contents` arrays, contentless leaves,
 unmapped metadata/extensions/request volumes, I3S/SLPK input and SLPK output.
 See the [complete hierarchy profile](../api-reference/v5-conversion.md#complete-explicit-hierarchy-profile)
 for the shared browser/service API and remaining qualification. Nested content IDs include
 the complete external-reference chain, such as `tile-root-content-0/tile-root-content-0`.
+
+
+## Feature-schema controls
+
+Use `--feature-schema ./features.json` with either `convert` or `validate`. The local file
+contains the existing source mapping directly (no `features` or `i3sFeatures` wrapper):
+
+```json
+{
+  "metadataClass": "building",
+  "sourceFeatureIdProperty": "object_id",
+  "featureIdField": "feature_id",
+  "schema": {
+    "fields": [
+      {"name": "feature_id", "type": "uint64", "nullable": false},
+      {"name": "label", "type": "utf8", "nullable": true}
+    ]
+  }
+}
+```
+
+`metadataClass` and `schema.fields` are required. For 3D Tiles, select the exact inline
+structural-metadata class, or label a legacy batch table. `sourceFeatureIdProperty` selects
+stable source identifiers; omit it to use integer table-row IDs. `featureIdField` defaults
+to `feature_id`. Include every remaining source property in the schema; unmapped properties
+fail instead of being dropped. Fields accept explicit `int8/16/32/64`, `uint8/16/32/64`,
+`float32`, `float64` or `utf8` types, optional boolean `nullable`, and string-valued
+`metadata`. The identifier must be nonnullable and use an integer or string type.
+Optional `batchSize` is 1–65,536. The schema may also contain string-valued `metadata`.
+Unknown keys, nested/boolean/enum fields and raw metadata controls are rejected by this CLI.
+
+For I3S/SLPK input, also provide `objectIdProperty` (the exact geometry-ID column) and
+`maxAttributeBytes` (positive, at most 16 MiB per node). This is a separate attribute gate;
+the shared transport and decoded-data budgets still apply. For example, select `OBJECTID`
+as both `objectIdProperty` and `sourceFeatureIdProperty` and map it to `feature_id`.
+Dates, domains and custom mappers remain outside this scalar/string profile.
+
+Target support is narrower than the accepted source schema: I3S attributes support `int32`,
+`float64`, `utf8`, and explicitly authorized 64-bit decimal strings. Other numeric widths
+are not automatically widened.
+
+GLB output preserves exact 64-bit integers. SLPK output requires explicit
+`"integer64Encoding": "decimal-string"` to authorize their string representation; no
+numeric coercion is inferred. This mapping does not add support for multiple property
+classes or texture/implicit feature IDs. The JSON configuration has its own 64 KiB read
+limit and does not count as dataset bytes. See the [feature profiles](../api-reference/v5-conversion.md#declared-gltf-feature-schemas)
+for the source/destination semantic checks.

@@ -50,10 +50,11 @@ The [v5 CLI](/docs/modules/tile-converter/cli-reference/tile-converter-v5) suppo
 `validate`. Inputs are explicit 3D Tiles 1.0/1.1 JSON paths/file URLs or HTTP(S) JSON URLs,
 local/remote 3TZ, HTTP(S) I3S mesh layers and local/remote SLPK. Declared .json external metadata is inspected up to 32 placements. Targets are
 3D Tiles directories, 3TZ and SLPK, using the same portable codecs as the browser example.
-Selections/output are partial flat collections, with no source hierarchy/LOD preservation.
+Selections/output default to partial flat collections; the qualified complete explicit hierarchy
+profile is opt-in for 3D Tiles/3TZ output.
 Existing destinations are protected. Limits are 16 MiB input, 1,000 declarations, 64 meshes and
 32 MiB output/archive; these are not peak-memory bounds. I3S uses explicit feature mappings
-(service API), declared spatial preparation and a supplied metric geometric error for 3D Tiles
+(service API or CLI `--feature-schema`), declared spatial preparation and a supplied metric geometric error for 3D Tiles
 output. IntegratedMesh to SLPK requires an explicit layer-type policy. Services, complete
 traversal and whole-dataset validation remain follow-ups. The original CLI remains v4.
 
@@ -259,6 +260,8 @@ Some 3DTiles vNext extensions are supported as input data.
 contentless ancestors, inherited ADD/REPLACE, conservative version-aware metric errors,
 and equivalent ECEF placement. Select every content; maximum 32 document placements, 256 total tiles, 64 binary contents,
 one mesh primitive per content, and existing byte budgets. Bounds are recomputed from
-converted subtree geometry. Extensionless external metadata and implicit trees, `contents` arrays, unmapped
+converted subtree geometry. Ordered 1.1 mesh `contents` arrays retain one tile with a shared
+encoded frame and distinct content IDs. Extensionless external metadata and implicit trees,
+1.0 `contents` arrays, mixed external-document arrays, unmapped
 metadata/request volumes, empty leaves and I3S hierarchy mapping remain unsupported.
 See the [profile details](../api-reference/v5-conversion.md#complete-explicit-hierarchy-profile).

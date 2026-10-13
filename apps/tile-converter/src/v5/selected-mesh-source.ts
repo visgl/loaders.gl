@@ -184,6 +184,8 @@ export async function createSelectedMeshConversionSource(
       signal.throwIfAborted();
       let decodedBytes = 0;
       let primitiveCount = 0;
+      // A 3D Tiles contents array has one tile transform, so its GLBs need a shared origin.
+      const tileOrigins = new Map<string, readonly [number, number, number]>();
       for await (const raw of rawSource.read(selectedInspection, signal)) {
         const selection = selectedContents.get(raw.resourceId);
         if (!selection)
@@ -239,8 +241,12 @@ export async function createSelectedMeshConversionSource(
                 'INPUT_RESOURCE_TOO_LARGE',
                 'Selected decoded geometry and encoded images exceed the aggregate input byte limit.'
               );
+            const tileIdentifier = raw.resourceId.replace(/content-\d+$/, '');
+            if (preserveHierarchy && !tileOrigins.has(tileIdentifier))
+              tileOrigins.set(tileIdentifier, [...resource.origin]);
             yield {
               ...resource,
+              origin: preserveHierarchy ? tileOrigins.get(tileIdentifier)! : resource.origin,
               id: `${raw.resourceId}/${resource.id}`,
               contentResourceId: raw.resourceId
             };
