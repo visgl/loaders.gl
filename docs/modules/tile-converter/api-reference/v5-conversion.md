@@ -1069,3 +1069,11 @@ before payload decoding. Declaring-document glTF axes and effective dependency U
 scoped to each decoded placement. Unlinked, repeated-parent or unreachable document records,
 references with source children and inconsistent transforms fail explicitly.
 Independent viewer qualification, extensionless metadata discovery and larger hierarchies remain open.
+
+## COPC batch output
+
+[Explicit point mapping and COPC output](./point-cloud-copc) adds decoded Mesh/Arrow batch authoring
+with caller-declared CRS, quantization precision, input/output budgets and semantic loss reports.
+The codec emits one independent COPC file per input batch; whole-dataset assembly remains a separate gate.
+
+COPC Extra Bytes names and descriptions use at most 32 printable ASCII bytes; non-ASCII/control text is rejected before encoding rather than silently changing metadata.
