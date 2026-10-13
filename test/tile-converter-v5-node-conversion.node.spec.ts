@@ -555,7 +555,14 @@ test('CLI feature schema preserves exact identifiers and nullable strings throug
   expect(JSON.parse(stderr.pop()!).code).toBe('CLI_USAGE_ERROR');
 });
 
-test('CLI converts an ordered multi-content tile into indexed 3TZ without flattening', async () => {
+test('CLI converts ordered multi-content and multi-primitive tiles into indexed 3TZ without flattening', async () => {
+  const triangle = await parse(
+    Uint8Array.from(await readFile(join(directory, 'input', 'nested', 'triangle.glb'))).buffer,
+    GLTFLoader,
+    {core: {worker: false}, gltf: {loadImages: false}}
+  );
+  triangle.json.meshes![0].primitives.push({...triangle.json.meshes![0].primitives[0]});
+  const multiplePrimitives = GLTFWriter.encodeSync!(triangle);
   const input = join(directory, 'input', 'multiple.json');
   await writeFile(
     input,
@@ -567,7 +574,7 @@ test('CLI converts an ordered multi-content tile into indexed 3TZ without flatte
         refine: 'REPLACE',
         transform: root.root.transform,
         content: undefined,
-        contents: [{uri: 'nested/triangle.glb'}, {uri: 'nested/triangle.glb'}]
+        contents: [{uri: 'nested/multiple.glb'}, {uri: 'nested/triangle.glb'}]
       }
     })
   );
@@ -577,6 +584,7 @@ test('CLI converts an ordered multi-content tile into indexed 3TZ without flatte
     new Uint8Array(
       await Tiles3DArchiveWriter.encode!({
         'tileset.json': Uint8Array.from(await readFile(input)).buffer,
+        'nested/multiple.glb': multiplePrimitives,
         'nested/triangle.glb': Uint8Array.from(
           await readFile(join(directory, 'input', 'nested', 'triangle.glb'))
         ).buffer
@@ -610,7 +618,11 @@ test('CLI converts an ordered multi-content tile into indexed 3TZ without flatte
   );
   try {
     const tileset = JSON.parse(new TextDecoder().decode(await archive.getFile('tileset.json')));
-    expect(tileset.root.contents).toEqual([{uri: 'meshes/0-0.glb'}, {uri: 'meshes/0-1.glb'}]);
+    expect(tileset.root.contents).toEqual([
+      {uri: 'meshes/0-0-primitive-0.glb'},
+      {uri: 'meshes/0-0-primitive-1.glb'},
+      {uri: 'meshes/0-1.glb'}
+    ]);
     expect(tileset.root.content).toBeUndefined();
     expect(tileset.root.children).toBeUndefined();
     expect(tileset.root.refine).toBe('REPLACE');

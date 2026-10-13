@@ -39,7 +39,7 @@ Validate decodes, converts and packages the selected target profile without writ
 Output defaults to a partial flat mesh collection. --preserve-hierarchy requires every declared content.
 Remote archives require HTTP 206 ranges and a stable ETag or Last-Modified validator.
 I3S inspect lists leaf nodes; feature-bearing conversion requires --feature-schema.
-Hierarchy mode supports at most 32 document placements, 256 tiles and one mesh per content, including ordered 1.1 contents arrays.
+Hierarchy mode supports at most 32 document placements, 256 tiles and 64 total mesh primitive placements, including ordered 1.1 contents arrays.
 `;
 
 /** Runs a bounded v5 operation, returning an exit code after source/output cleanup. */

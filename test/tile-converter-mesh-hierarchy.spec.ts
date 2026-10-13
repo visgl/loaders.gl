@@ -4,6 +4,8 @@
 
 import {expect, test} from 'vitest';
 import {Matrix4} from '@math.gl/core';
+import {parse} from '@loaders.gl/core';
+import {GLTFLoader, GLTFWriter, GLTFScenegraph} from '@loaders.gl/gltf';
 import {
   createBrowserTilesetConversionSource,
   createTiles3DConversionSpatialContext
@@ -16,7 +18,8 @@ import {
   createMeshHierarchyTilesetSink,
   createSelectedMeshConversionSource,
   createMeshConversionCodec,
-  encodeMeshTile
+  encodeMeshTile,
+  convertFeatureAttributesToArrowBatches
 } from '@loaders.gl/tile-converter/v5/adapters';
 import type {EncodedMeshConversionResource} from '@loaders.gl/tile-converter/v5/adapters';
 import {convertTileset} from '@loaders.gl/tile-converter/v5/core';
@@ -212,13 +215,13 @@ test('hierarchy requires all completed placements and rejects duplicates, unknow
   const resource = createResource(options.resourceIds[0], [6378137, 0, 0]);
   await expect(sink.finalize!(REPORT)).rejects.toThrow('every declared');
   await sink.write(resource);
-  await expect(sink.write(resource)).rejects.toThrow('one output');
+  await expect(sink.write(resource)).rejects.toThrow('ordered, distinct primitives');
   await expect(sink.write({...resource, contentResourceId: 'unknown'})).rejects.toThrow(
-    'one output'
+    'ordered, distinct primitives'
   );
   await sink.abort!(new Error('cancel'));
   expect(sink.getFiles()).toEqual([]);
-  await expect(sink.write(resource)).rejects.toThrow('one output');
+  await expect(sink.write(resource)).rejects.toThrow('ordered, distinct primitives');
 });
 
 test.each([
@@ -288,13 +291,18 @@ test.each([
     measureInputBytes: resource => resource.mesh.attributes.POSITION.value.byteLength,
     measureOutputBytes: resource => resource.glb.byteLength
   });
+  expect((await conversion).outputResources).toBe(twoPrimitives ? 6 : 3);
+  const result = await readDocument(sink);
+  expect(result.root.children).toHaveLength(2);
+  expect(result.root.refine).toBe('REPLACE');
   if (twoPrimitives) {
-    await expect(conversion).rejects.toThrow('one mesh primitive');
-    expect(sink.getFiles()).toEqual([]);
-  } else {
-    expect((await conversion).outputResources).toBe(3);
-    expect((await readDocument(sink)).root.children).toHaveLength(2);
-  }
+    expect(result.root.contents).toEqual([
+      {uri: 'meshes/0-primitive-0.glb'},
+      {uri: 'meshes/0-primitive-1.glb'}
+    ]);
+    expect(result.root.children[0].contents).toHaveLength(2);
+    expect(result.root.children[1].children[0].contents).toHaveLength(2);
+  } else expect(result.root.content).toEqual({uri: 'meshes/0.glb'});
 });
 
 test('3D Tiles 1.0 retains metric errors without the 1.1 transform scaling rule', async () => {
@@ -627,4 +635,197 @@ test('a one-entry contents array normalizes to single content, including an exte
   expect(output.root.content).toBeUndefined();
   expect(output.root.children[0].content).toEqual({uri: 'meshes/1.glb'});
   expect(output.root.children[0].contents).toBeUndefined();
+});
+
+test('hierarchy primitive completion preserves source slot order and rejects premature finalization', async () => {
+  const document = createDocument();
+  delete (document.root as {content?: unknown}).content;
+  Object.assign(document.root, {contents: [{uri: 'first.glb'}, {uri: 'second.glb'}]});
+  const options = createOptions(await inspect(document));
+  const sink = createMeshHierarchyTilesetSink(options);
+  const origin: [number, number, number] = [6378137, 0, 0];
+  await sink.write(createResource(options.resourceIds[1], origin));
+  await sink.write({
+    ...createResource(options.resourceIds[0], origin),
+    contentPrimitive: {index: 0, last: false}
+  });
+  for (const identifier of options.resourceIds.slice(2))
+    await sink.write(createResource(identifier, origin));
+  await expect(sink.finalize!(REPORT)).rejects.toThrow('every declared');
+  expect(sink.getFiles()).toEqual([]);
+  await sink.write({
+    ...createResource(options.resourceIds[0], origin),
+    id: 'second-primitive',
+    contentPrimitive: {index: 1, last: true}
+  });
+  await sink.finalize!(REPORT);
+  expect((await readDocument(sink)).root.contents).toEqual([
+    {uri: 'meshes/0-0-primitive-0.glb'},
+    {uri: 'meshes/0-0-primitive-1.glb'},
+    {uri: 'meshes/0-1.glb'}
+  ]);
+});
+
+test.each([
+  {index: -1, last: true},
+  {index: 0.5, last: true},
+  {index: 1, last: true},
+  {index: NaN, last: true},
+  {index: 0, last: 'yes'}
+])('hierarchy rejects invalid primitive descriptors: %j', async primitive => {
+  const options = createOptions(await inspect());
+  const sink = createMeshHierarchyTilesetSink(options);
+  await expect(
+    sink.write({
+      ...createResource(options.resourceIds[0], [6378137, 0, 0]),
+      contentPrimitive: primitive as {index: number; last: boolean}
+    })
+  ).rejects.toThrow('ordered, distinct primitives');
+  expect(sink.getFiles()).toEqual([]);
+});
+
+test('hierarchy rejects duplicate or skipped primitives, mismatched origins and writes after terminal markers', async () => {
+  const options = createOptions(await inspect());
+  const sink = createMeshHierarchyTilesetSink(options);
+  const resource = createResource(options.resourceIds[0], [6378137, 0, 0]);
+  await sink.write({...resource, contentPrimitive: {index: 0, last: false}});
+  const next = {...resource, id: 'next', contentPrimitive: {index: 1, last: true}};
+  await expect(sink.write({...next, id: resource.id})).rejects.toThrow('ordered, distinct');
+  await expect(sink.write({...next, contentPrimitive: {index: 2, last: true}})).rejects.toThrow(
+    'ordered, distinct'
+  );
+  await expect(sink.write({...next, origin: [6378138, 0, 0]})).rejects.toThrow(
+    'share an encoded origin'
+  );
+  await sink.write(next);
+  await expect(
+    sink.write({...next, id: 'after-end', contentPrimitive: {index: 2, last: true}})
+  ).rejects.toThrow('ordered, distinct');
+  await sink.abort!(new Error('cancel'));
+  expect(sink.getFiles()).toEqual([]);
+});
+
+test.each([
+  false,
+  true
+])('hierarchy enforces the total 64 primitive cap; complete=%s', async complete => {
+  const document = createDocument();
+  document.root.children = [];
+  const options = createOptions(await inspect(document));
+  const sink = createMeshHierarchyTilesetSink({...options, maxTotalBytes: 1024 * 1024});
+  const resource = createResource(options.resourceIds[0], [6378137, 0, 0]);
+  for (let index = 0; index < 64; index++)
+    await sink.write({
+      ...resource,
+      id: String(index),
+      contentPrimitive: {index, last: complete && index === 63}
+    });
+  await expect(
+    sink.write({...resource, id: '65', contentPrimitive: {index: 64, last: true}})
+  ).rejects.toThrow('at most 64');
+  if (complete) {
+    await sink.finalize!(REPORT);
+    expect((await readDocument(sink)).root.contents).toHaveLength(64);
+  } else await expect(sink.finalize!(REPORT)).rejects.toThrow('every declared');
+  await sink.abort!(new Error('limit'));
+  expect(sink.getFiles()).toEqual([]);
+});
+
+test('hierarchy retains materials, scene placements and exact feature IDs for every mesh primitive', async () => {
+  const mesh = {
+    topology: 'triangle-list' as const,
+    mode: 4,
+    attributes: {POSITION: {size: 3, value: new Float32Array([0, 0, 0, 1, 0, 0, 0, 1, 0])}}
+  };
+  const features = {
+    featureIdField: 'feature_id',
+    triangleFeatureIndices: new Uint32Array([0]),
+    batches: convertFeatureAttributesToArrowBatches(
+      [{featureId: 9007199254740993n, metadataClass: 'building', properties: {}}],
+      {
+        schema: {
+          fields: [{name: 'feature_id', type: 'uint64', nullable: false}],
+          metadata: {'loaders.gl:feature-class': 'building'}
+        }
+      }
+    )
+  };
+  const gltf = await parse(
+    encodeMeshTile(mesh, {features, material: {baseColorFactor: [1, 0, 0, 1]}}),
+    GLTFLoader,
+    {
+      core: {worker: false},
+      gltf: {
+        loadImages: false,
+        excludeExtensions: {EXT_mesh_features: false, EXT_structural_metadata: false}
+      }
+    }
+  );
+  const primitive = gltf.json.meshes![0].primitives[0];
+  gltf.json.materials!.push({pbrMetallicRoughness: {baseColorFactor: [0, 0, 1, 1]}});
+  gltf.json.meshes![0].primitives.push({...primitive, material: 1});
+  gltf.json.nodes!.push({mesh: 0, translation: [10, 0, 0]});
+  gltf.json.scenes![0].nodes!.push(1);
+  const bytes = GLTFWriter.encodeSync!(gltf);
+  const document = createDocument();
+  document.root.children = [];
+  const fetcher: typeof fetch = async input =>
+    new Response(String(input).endsWith('tileset.json') ? JSON.stringify(document) : bytes);
+  const rawSource = createBrowserTilesetConversionSource({
+    input: 'https://example.invalid/tileset.json',
+    maxInputBytes: 16384,
+    maxInputResources: 64,
+    inspectNestedTilesets: true,
+    fetcher
+  });
+  const inspection = await rawSource.inspect();
+  const options = createOptions(inspection);
+  const selection = await createSelectedMeshConversionSource(inspection, {
+    resourceIds: options.resourceIds,
+    preserveHierarchy: true,
+    features: {
+      metadataClass: 'building',
+      sourceFeatureIdProperty: 'feature_id',
+      schema: features.batches[0].schema
+    },
+    source: rawSource,
+    fetcher,
+    signal: new AbortController().signal,
+    dracoLibraryOptions: {}
+  });
+  const sink = createMeshHierarchyTilesetSink(options);
+  await convertTileset({
+    source: selection.source,
+    sink,
+    codec: createMeshConversionCodec({
+      spatialContext: selection.spatialContext,
+      maxPositionError: 0.01,
+      draco: false
+    }),
+    measureInputBytes: resource => resource.mesh.attributes.POSITION.value.byteLength,
+    measureOutputBytes: resource => resource.glb.byteLength
+  });
+  const result = await readDocument(sink);
+  expect(result.root.contents).toHaveLength(4);
+  expect(result.root.children).toBeUndefined();
+  expect(result.root.boundingVolume.box[3]).toBeGreaterThanOrEqual(11);
+  for (let index = 0; index < 4; index++) {
+    const file = sink.getFiles().find(file => file.resourceId === result.root.contents[index].uri)!;
+    const output = await parse(await file.blob.arrayBuffer(), GLTFLoader, {
+      core: {worker: false},
+      gltf: {loadImages: false}
+    });
+    expect(output.json.materials![0].pbrMetallicRoughness!.baseColorFactor).toEqual(
+      index % 2 ? [0, 0, 1, 1] : [1, 0, 0, 1]
+    );
+    expect(
+      Array.from(
+        output.json.extensions!.EXT_structural_metadata.propertyTables[0].properties.feature_id.data
+      )
+    ).toEqual([9007199254740993n]);
+    const positions = new GLTFScenegraph(output).getTypedArrayForAccessor(
+      output.json.meshes![0].primitives[0].attributes.POSITION
+    );
+    expect(positions[0]).toBeCloseTo(index < 2 ? -1 : 19);
+  }
 });

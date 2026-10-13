@@ -175,7 +175,11 @@ export function createMeshTilesetConversionSource(
               'A default scene or exactly one scene is required'
             );
           let primitiveIndex = 0;
-          for (const selected of traverseMeshNodes(roots, placement)) {
+          const primitives = traverseMeshNodes(roots, placement);
+          let current = primitives.next();
+          while (!current.done) {
+            const selected = current.value;
+            const next = primitives.next();
             const resource = await extractPrimitive(
               selected.primitive,
               selected.transform,
@@ -191,7 +195,12 @@ export function createMeshTilesetConversionSource(
               resource.mesh,
               options.features
             );
-            yield {...resource, features};
+            yield {
+              ...resource,
+              features,
+              contentPrimitive: {index: primitiveIndex - 1, last: Boolean(next.done)}
+            };
+            current = next;
           }
           if (!primitiveIndex)
             throw new TileConversionError(
