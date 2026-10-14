@@ -1,13 +1,10 @@
 // loaders.gl
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
-import { pathToFileURL } from 'node:url';
-import '@loaders.gl/polyfills';
 import { expect, test } from "vitest";
-import { createDataSource, resolvePath } from '@loaders.gl/core';
+import { createDataSource } from '@loaders.gl/core';
 import { ZarrArraySource, ZarrArraySourceLoader, type ZarrArraySourceLoaderOptions } from '@loaders.gl/zarr';
-const FIXTURE_PATH = resolvePath('@loaders.gl/zarr/test/data/spatialdata-v3.zarr');
-const FIXTURE_URL = pathToFileURL(FIXTURE_PATH).href;
+const FIXTURE_URL = '/modules/zarr/test/data/spatialdata-v3.zarr';
 test('ZarrArraySource reads array metadata and integer selections', async () => {
     const options: ZarrArraySourceLoaderOptions = {
         zarr: { path: 'images/example-image' },
@@ -48,4 +45,21 @@ test('ZarrArraySource rejects unknown named dimensions', async () => {
     });
     await expect(source.getArray({ selectionByDimension: { unknown: 0 } })).rejects.toThrow(/Unknown Zarr array dimension/);
     await expect(source.getArray({ selection: [null, null, null, null, null], selectionByDimension: { t: 0 } })).rejects.toThrow(/cannot combine positional and named selections/);
+});
+
+test('ZarrArraySource defaults selectors and isolates cached data', async () => {
+  const source = new ZarrArraySource(FIXTURE_URL, {
+    zarr: {path: 'images/example-image'}, zarrArray: {path: '1'}
+  });
+  const first = await source.getArray();
+  const original = first.data[0];
+  first.data[0] = 99;
+  expect((await source.getArray()).data[0]).toBe(original);
+  expect((await source.getMetadata()).dimensions).toEqual(['dim_0', 'dim_1', 'dim_2', 'dim_3', 'dim_4']);
+  await expect(source.getArray({selection: [null]})).rejects.toThrow(/must have 5 dimensions/);
+  const sliced = await source.getArray({selection: [0, 0, 0, {}, {stop: 2}]});
+  expect(sliced.shape[1]).toBe(2);
+  await expect(source.getArray({selection: [0, 0, 0, 0, 0]})).rejects.toThrow(/Failed to read/);
+  expect(ZarrArraySourceLoader.testURL('file.zarr?x=1')).toBe(true);
+  expect(ZarrArraySourceLoader.testURL('file.json')).toBe(false);
 });

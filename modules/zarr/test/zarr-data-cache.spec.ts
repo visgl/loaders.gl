@@ -47,3 +47,20 @@ test('Zarr selection cache isolates waiter cancellation and returned buffers', a
   copy.data[0] = 9;
   expect(Array.from(cached.data)).toEqual([7]);
 });
+
+test('Zarr selection cache evicts least-recently-used entries and propagates failures with signals', async () => {
+  const array = {};
+  let reads = 0;
+  const read = async () => ({data: new Uint8Array([++reads]), shape: [1]});
+  await getCachedZarrSelection(array, 'keep', read);
+  await getCachedZarrSelection(array, 'evict', read);
+  for (let index = 0; index < 30; index++) await getCachedZarrSelection(array, String(index), read);
+  await getCachedZarrSelection(array, 'keep', read);
+  await getCachedZarrSelection(array, 'new', read);
+  expect((await getCachedZarrSelection(array, 'keep', read)).data[0]).toBe(1);
+  expect((await getCachedZarrSelection(array, 'evict', read)).data[0]).toBe(34);
+  const controller = new AbortController();
+  await expect(getCachedZarrSelection(array, 'failure', async () => {throw new Error('failed');}, controller.signal)).rejects.toThrow('failed');
+  controller.abort(new Error('cancelled'));
+  await expect(getCachedZarrSelection(array, 'keep', read, controller.signal)).rejects.toThrow('cancelled');
+});

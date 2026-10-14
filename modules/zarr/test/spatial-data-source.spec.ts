@@ -21,3 +21,26 @@ describe('SpatialDataSource browser integration', () => {
     expect(metadata.tables.map(element => element.name)).toEqual(['annotations']);
   });
 });
+
+test('SpatialDataSource retries failed metadata and preserves direct transforms', async () => {
+  let failed = true;
+  const source = new SpatialDataSource('https://example.com/data.zarr', {
+    zarr: {metadataPath: 'zarr.json'},
+    core: {fetch: async () => {
+      if (failed) throw new Error('temporary failure');
+      return Response.json({consolidated_metadata: {metadata: {
+        images: {node_type: 'group'},
+        'images/sample': {node_type: 'group', attributes: {
+          axes: [], coordinateTransformations: [{type: 'scale', scale: [1, 1]}]
+        }}
+      }}});
+    }}
+  });
+  await expect(source.getMetadata()).rejects.toThrow('temporary failure');
+  failed = false;
+  const metadata = await source.getMetadata();
+  expect(metadata.images[0].coordinateTransformations).toEqual([{type: 'scale', scale: [1, 1]}]);
+  expect(metadata.images[0].axes).toBeUndefined();
+  expect(SpatialDataSourceLoader.testURL('data.zarr/')).toBe(true);
+  expect(SpatialDataSourceLoader.testURL('data.json')).toBe(false);
+});
