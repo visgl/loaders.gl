@@ -108,7 +108,8 @@ it does not generate vector or raster tile pyramids.
 | Cancellation and output budgets | ✅ | Bounded in-memory output; no peak-memory guarantee |
 | Tile deduplication and streaming output | ❌ | Follow-up work |
 | GeoArrow to MVT authoring | ✅ | [Bounded in-memory export](/docs/modules/pmtiles/api-reference/geoarrow-pmtiles) reuses the existing tiler; selected addresses and scalar attributes |
-| MLT or untiled raster authoring | ❌ | Separate encoding/tiling pipelines |
+| GeoArrow to MLT authoring | ✅ | Same selected-tile pipeline; MLT v1 with nullable scalar attributes and safe numeric IDs |
+| Untiled raster authoring | ❌ | Separate encoding/tiling pipeline |
 
 ## Metadata
 

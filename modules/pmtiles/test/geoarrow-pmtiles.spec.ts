@@ -4,6 +4,7 @@
 
 import {expect, test} from 'vitest';
 import * as arrow from 'apache-arrow';
+import {decodeTile} from '@maplibre/mlt';
 import {PMTiles, type Source} from 'pmtiles';
 import {parse} from '@loaders.gl/core';
 import {MVTLoader} from '@loaders.gl/mvt';
@@ -187,7 +188,7 @@ test('GeoArrow export rejects rich attributes unless explicitly projected and re
     })
   );
   await expect(encodeGeoArrowPMTiles(nested, {tiles: SELECTED})).rejects.toThrow(
-    'Unsupported MVT attribute'
+    'Unsupported vector tile attribute'
   );
   await expect(
     encodeGeoArrowPMTiles(nested, {tiles: SELECTED, mvt: {propertyColumns: ['name']}})
@@ -246,4 +247,70 @@ test.each([
   {tiles: SELECTED, table: {maxZoom: 2, indexMaxZoom: 3}}
 ])('GeoArrow export rejects invalid selection or limits %j', async overrides => {
   await expect(encodeGeoArrowPMTiles(createTable(), overrides as any)).rejects.toThrow();
+});
+
+test.each([
+  'geoarrow.wkb',
+  'optimized',
+  'geoarrow.geometry'
+] as const)('GeoArrow %s authors MLT through the existing tiler and independent PMTiles/MLT readers', async encoding => {
+  const archive = openArchive(
+    await encodeGeoArrowPMTiles(createTable(encoding), {
+      tileType: 'mlt',
+      tiles: SELECTED,
+      table: TABLE_OPTIONS,
+      mlt: {layerName: 'places', idColumn: 'id', propertyColumns: ['name', 'enabled']},
+      pmtiles: {bounds: [-180, -80, 180, 80], metadata: {minzoom: 99}}
+    })
+  );
+  expect(await archive.getHeader()).toMatchObject({
+    tileType: 6,
+    tileCompression: 1,
+    numAddressedTiles: 2,
+    minLon: -180,
+    maxLat: 80
+  });
+  expect(await archive.getMetadata()).toEqual({
+    vector_layers: [{id: 'places', fields: {name: 'String', enabled: 'Boolean'}}]
+  });
+  expect(await archive.getZxy(1, 0, 1)).toBeUndefined();
+  const tile = await archive.getZxy(1, 0, 0);
+  const layer = decodeTile(new Uint8Array(tile!.data))[0];
+  expect(layer.name).toBe('places');
+  expect(layer.getFeatures()[0]).toMatchObject({id: 1, properties: {name: 'west', enabled: true}});
+  expect(layer.getFeatures()[0].geometry.coordinates[0][0].x).toBe(2048);
+});
+
+test('MLT export shares selection budgets, cancellation and per-tile feature limits', async () => {
+  const input = createTable();
+  const options = {tileType: 'mlt' as const, tiles: SELECTED, table: TABLE_OPTIONS};
+  await expect(encodeGeoArrowPMTiles(input, {...options, pmtiles: {maxTiles: 1}})).rejects.toThrow(
+    /requested tile limit/
+  );
+  await expect(encodeGeoArrowPMTiles(input, {...options, mlt: {maxFeatures: 0}})).rejects.toThrow(
+    /feature limit/
+  );
+  await expect(
+    encodeGeoArrowPMTiles(input, {...options, pmtiles: {maxOutputBytes: 1}})
+  ).rejects.toThrow();
+  const controller = new AbortController();
+  let closed = false;
+  /** Cancels between selected addresses and records iterator cleanup. */
+  async function* selectedTiles() {
+    try {
+      yield SELECTED[0];
+      controller.abort();
+      yield SELECTED[2];
+    } finally {
+      closed = true;
+    }
+  }
+  await expect(
+    encodeGeoArrowPMTiles(input, {
+      ...options,
+      tiles: selectedTiles(),
+      pmtiles: {signal: controller.signal}
+    })
+  ).rejects.toThrow();
+  expect(closed).toBe(true);
 });

@@ -9,7 +9,10 @@ import {convertFeaturesToGeoArrowTable} from '@loaders.gl/arrow-geometry/feature
 
 const require = createRequire(import.meta.url);
 
-test('built GeoArrow PMTiles ESM and CommonJS subpaths encode a hermetic table', async () => {
+test.each([
+  'mvt',
+  'mlt'
+] as const)('built GeoArrow PMTiles ESM and CommonJS subpaths encode %s', async tileType => {
   const esm = await import('../dist/geoarrow.js');
   const commonjs = require('../dist/geoarrow.cjs');
   const cjsGeometry = require('@loaders.gl/arrow-geometry/feature-table');
@@ -20,7 +23,7 @@ test('built GeoArrow PMTiles ESM and CommonJS subpaths encode a hermetic table',
       properties: {name: 'sample'}
     }
   ];
-  const options = {tiles: [{z: 0, x: 0, y: 0}]};
+  const options = {tileType, tiles: [{z: 0, x: 0, y: 0}]};
   const expected = await esm.encodeGeoArrowPMTiles(
     convertFeaturesToGeoArrowTable(features),
     options
