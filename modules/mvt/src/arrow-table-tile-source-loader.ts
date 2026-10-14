@@ -3,6 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import * as arrow from 'apache-arrow';
+import {isLongitudeLatitudeCRS} from './lib/is-longitude-latitude-crs';
 import {
   DataSource,
   type CoreAPI,
@@ -234,18 +235,6 @@ function getGeometryField(table: arrow.Table, geometryColumn?: string): arrow.Fi
     throw new Error(`Unsupported geometry encoding: ${encoding}`);
   }
   return field;
-}
-
-/** Recognizes the common authority and PROJJSON descriptions of longitude/latitude WGS84. */
-function isLongitudeLatitudeCRS(coordinateSystem: unknown): boolean {
-  if (typeof coordinateSystem === 'string') {
-    return ['EPSG:4326', 'OGC:CRS84'].includes(coordinateSystem.toUpperCase());
-  }
-  const identifier = (coordinateSystem as {id?: {authority?: string; code?: string | number}})?.id;
-  return (
-    (identifier?.authority === 'EPSG' && Number(identifier.code) === 4326) ||
-    (identifier?.authority === 'OGC' && identifier.code === 'CRS84')
-  );
 }
 
 /** Rejects invalid index parameters before constructing the shared tiler. */

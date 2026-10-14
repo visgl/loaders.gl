@@ -25,6 +25,12 @@ test('exported PMTiles option types work with direct and standard writer APIs', 
   const source = `import {encode} from '@loaders.gl/core';
     import {encodePMTiles, PMTilesWriter} from '@loaders.gl/pmtiles';
     import type {PMTilesEncodeOptions, PMTilesWriterOptions, PMTilesTile} from '@loaders.gl/pmtiles';
+    import {encodeGeoArrowPMTiles} from '@loaders.gl/pmtiles/geoarrow';
+    import type {GeoArrowPMTilesOptions} from '@loaders.gl/pmtiles';
+    import type {ArrowTable} from '@loaders.gl/schema';
+    declare const table: ArrowTable;
+    const authoring: GeoArrowPMTilesOptions = {tiles: [{z: 0, x: 0, y: 0}], mvt: {propertyColumns: ['name']}};
+    void encodeGeoArrowPMTiles(table, authoring);
     const tiles: PMTilesTile[] = [{z: 0, x: 0, y: 0, data: new Uint8Array([1])}];
     const options: PMTilesEncodeOptions = {tileType: 'png'};
     const writerOptions: PMTilesWriterOptions = {pmtiles: options};

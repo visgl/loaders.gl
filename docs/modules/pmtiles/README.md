@@ -50,6 +50,7 @@ Support for reading and packaging tiled data in [PMTiles](/docs/modules/pmtiles/
 | ------ | ----------- |
 | [`PMTilesSourceLoader`](/docs/modules/pmtiles/api-reference/pmtiles-source-loader) | Loads tiled data from PMTiles archives. |
 | [`PMTilesWriter`](/docs/modules/pmtiles/api-reference/pmtiles-writer) / `encodePMTiles` | Packages existing MVT, MLT and raster tile payloads into bounded PMTiles v3 archives. From v5.0. |
+| [`encodeGeoArrowPMTiles`](/docs/modules/pmtiles/api-reference/geoarrow-pmtiles) | Reuses the GeoArrow tiler and MVT writer for bounded selected-tile authoring. From v5.0. |
 
 ## Attribution
 

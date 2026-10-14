@@ -21,3 +21,5 @@ export type {
   PMTilesTileType,
   PMTilesEncodeOptions
 } from './pmtiles-writer-types';
+
+export type {GeoArrowPMTilesOptions, GeoArrowPMTilesTileIndex} from './geoarrow';
