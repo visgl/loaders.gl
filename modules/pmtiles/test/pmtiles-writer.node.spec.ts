@@ -26,6 +26,11 @@ test('exported PMTiles option types work with direct and standard writer APIs', 
     import {encodePMTiles, PMTilesWriter} from '@loaders.gl/pmtiles';
     import type {PMTilesEncodeOptions, PMTilesWriterOptions, PMTilesTile} from '@loaders.gl/pmtiles';
     import {encodeGeoArrowPMTiles} from '@loaders.gl/pmtiles/geoarrow';
+    import {encodeRasterPMTiles} from '@loaders.gl/pmtiles/raster';
+    import type {RasterPMTilesOptions, RasterPMTilesSource} from '@loaders.gl/pmtiles';
+    declare const raster: RasterPMTilesSource;
+    const rasterOptions: RasterPMTilesOptions = {tiles: [{z: 0, x: 0, y: 0}], bands: [0]};
+    void encodeRasterPMTiles(raster, rasterOptions);
     import type {GeoArrowPMTilesOptions} from '@loaders.gl/pmtiles';
     import type {ArrowTable} from '@loaders.gl/schema';
     declare const table: ArrowTable;

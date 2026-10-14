@@ -564,6 +564,8 @@ Release Date: March 31, 2026
 
 **Highlights**
 
+- **Raster PMTiles authoring** - [`encodeRasterPMTiles`](/docs/modules/pmtiles/api-reference/raster-pmtiles) exports selected gray/RGB/alpha byte-imagery regions as PNG tiles in PMTiles v3, reusing raster sources, affine sampling, validity masks and the existing image writer.
+
 - **MLT authoring** - `MLTWriter` encodes tile-local GeoArrow WKB and nullable scalar columns as MLT v1. `encodeGeoArrowPMTiles` now accepts `tileType: 'mlt'`, reusing the existing Arrow tiler and bounded selected-tile export pipeline.
 
 - **@loaders.gl/mlt** - New [`MLTLoader`](/docs/modules/mlt/api-reference/mlt-loader) and [`MLTSourceLoader`](/docs/modules/mlt/api-reference/mlt-source-loader) add support for the [`MapLibre Tile`](/docs/modules/mlt/formats/mlt) format, with a new [MLT website example](/examples/tiles/mlt).

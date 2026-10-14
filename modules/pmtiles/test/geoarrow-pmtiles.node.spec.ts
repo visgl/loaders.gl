@@ -54,6 +54,7 @@ test('PMTiles root packaging import leaves GeoArrow export orchestration in its 
     Object.keys(output.inputs)
   );
   expect(files).not.toContain('modules/pmtiles/src/geoarrow.ts');
+  expect(files).not.toContain('modules/pmtiles/src/raster.ts');
   expect(result.outputFiles[0].text).not.toContain(
     '@loaders.gl/mvt/arrow-table-tile-source-loader'
   );

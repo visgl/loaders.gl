@@ -10,3 +10,5 @@ import './pmtiles-loader.spec';
 import './pmtiles-writer.spec';
 
 import './geoarrow-pmtiles.spec';
+
+import './raster-pmtiles.browser.spec';
