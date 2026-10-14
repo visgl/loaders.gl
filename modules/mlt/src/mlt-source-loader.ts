@@ -17,7 +17,6 @@ import type {
   GeoArrowEncodingPreference
 } from '@loaders.gl/schema';
 import {TileSourceMetadata, DataSource, DataSourceOptions} from '@loaders.gl/loader-utils';
-import {MLTLoaderWithParser} from './mlt-loader-with-parser';
 import type {MLTLoaderOptions} from './mlt-loader';
 import {MLTFormat} from './mlt-format';
 
@@ -202,6 +201,8 @@ export class MLTTileSource
       geoarrow: options.geoarrow ?? (this.loadOptions as MLTLoaderOptions).geoarrow
     };
 
+    // Keep the package root and writer usable without eagerly evaluating the decoder.
+    const {MLTLoaderWithParser} = await import('./mlt-loader-with-parser');
     const parsed = await MLTLoaderWithParser.parse(arrayBuffer, loadOptions);
     if (shape === 'geojson-table') {
       return (parsed as {features: Feature[]}).features || null;

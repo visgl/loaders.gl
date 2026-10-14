@@ -268,3 +268,24 @@ test.each([
     0x05
   ]);
 });
+
+test('MLT Id preserves the unsigned 32-bit boundary in both upstream decoder modes', () => {
+  for (const identifiers of [
+    [2147483648],
+    [4294967295],
+    [2147483647, null, 2147483648, 4294967295, 0]
+  ]) {
+    const table = makeTable(
+      identifiers.map(() => POINT),
+      {id: arrow.vectorFromArray(identifiers, new arrow.Float64())}
+    );
+    const bytes = new Uint8Array(MLTWriter.encodeSync(table, {mlt: {idColumn: 'id'}}));
+    for (const safeIntegerMode of [true, false]) {
+      expect(
+        decodeTile(bytes, undefined, safeIntegerMode)[0]
+          .getFeatures()
+          .map(feature => feature.id)
+      ).toEqual(identifiers);
+    }
+  }
+});
