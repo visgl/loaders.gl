@@ -1,59 +1,40 @@
-export const STORE = {
-  id: {
-    path: 'id',
-    transform: val => val.toUpperCase()
-  },
-  profile: {
-    path: 'profile',
-    default: 'meshpyramids'
-  },
-  version: {
-    path: 'version',
-    default: '1.8'
-  },
-  resourcePattern: {
-    path: 'resourcePattern',
-    default: ['3dNodeIndexDocument', 'Attributes', 'SharedResource', 'Geometry']
-  },
-  rootNode: {
-    path: 'rootNode',
-    default: './nodes/root'
-  },
-  extent: {
-    path: 'extent'
-  },
-  indexCRS: {
-    path: 'indexCRS',
-    default: 'http://www.opengis.net/def/crs/EPSG/0/4326'
-  },
-  vertexCRS: {
-    path: 'vertexCRS',
-    default: 'http://www.opengis.net/def/crs/EPSG/0/4326'
-  },
-  normalReferenceFrame: {
-    path: 'normalReferenceFrame',
-    // Geometry conversion rotates normals into the ECEF frame.
-    default: 'earth-centered'
-  },
-  attributeEncoding: {
-    path: 'attributeEncoding',
-    default: 'application/octet-stream; version=1.6'
-  },
-  textureEncoding: {
-    path: 'textureEncoding',
-    default: ['image/jpeg', 'image/ktx2']
-  },
-  lodType: {
-    path: 'lodType',
-    default: 'MeshPyramid'
-  },
-  lodModel: {
-    path: 'lodModel',
-    default: 'node-switching'
-  },
-  defaultGeometrySchema: {
-    path: 'defaultGeometrySchema',
-    default: {
+// loaders.gl
+// SPDX-License-Identifier: MIT
+// Copyright (c) vis.gl contributors
+
+import type {BuilderInput} from '../../lib/utils/builder-input';
+
+import type {Store} from '@loaders.gl/i3s';
+
+/** Converter stores use the legacy uppercase string identifier. */
+export type StoreBuilderRecord = Omit<Store, 'id'> & {
+  /** Store identifier before uppercase normalization. */
+  id: string;
+};
+
+/** Builds store with the legacy field selection and defaults. */
+export function createStore(input: BuilderInput<StoreBuilderRecord> | null | undefined): Store {
+  const source = input ?? {};
+  return {
+    id: source.id!.toUpperCase(),
+    profile: source.profile ?? 'meshpyramids',
+    version: source.version ?? '1.8',
+    resourcePattern: source.resourcePattern ?? [
+      '3dNodeIndexDocument',
+      'Attributes',
+      'SharedResource',
+      'Geometry'
+    ],
+    rootNode: source.rootNode ?? './nodes/root',
+    extent: source.extent ?? undefined,
+    indexCRS: source.indexCRS ?? 'http://www.opengis.net/def/crs/EPSG/0/4326',
+    vertexCRS: source.vertexCRS ?? 'http://www.opengis.net/def/crs/EPSG/0/4326',
+    normalReferenceFrame: source.normalReferenceFrame ?? 'earth-centered',
+    attributeEncoding: source.attributeEncoding ?? 'application/octet-stream; version=1.6',
+    textureEncoding: source.textureEncoding ?? ['image/jpeg', 'image/ktx2'],
+    lodType: source.lodType ?? 'MeshPyramid',
+    lodModel: source.lodModel ?? 'node-switching',
+    defaultGeometrySchema: source.defaultGeometrySchema ?? {
       geometryType: 'triangles',
       header: [
         {
@@ -97,5 +78,5 @@ export const STORE = {
         }
       }
     }
-  }
-};
+  } as Store;
+}

@@ -4,7 +4,7 @@
 
 import type {Mesh} from '@loaders.gl/schema';
 import {deduceMeshSchema, getMeshBoundingBox} from '@loaders.gl/schema-utils';
-import Martini from '@mapbox/martini';
+import Martini from '../libs/martini.mjs';
 import Delatin from './delatin/index';
 import {addSkirt} from './helpers/skirt';
 import {decodeTerrainHeightmapInto} from './decode-terrain-heightmap';
