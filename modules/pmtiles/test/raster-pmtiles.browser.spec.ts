@@ -460,3 +460,25 @@ test('rotated source affine is sampled in map coordinates rather than row storag
     40, 40, 40, 255, 20, 20, 20, 255, 30, 30, 30, 255, 10, 10, 10, 255
   ]);
 });
+
+test.each([false, true])('clamped byte rasters are accepted with planar=%s', async planar => {
+  const source = createSource(planar ? 1 : 4);
+  const read = source.getRasterForRegion.getMockImplementation()!;
+  source.getRasterForRegion.mockImplementation(async parameters => {
+    const raster = await read(parameters);
+    const bytes = new Uint8ClampedArray(
+      planar
+        ? [10, 20, 30, 40]
+        : [10, 60, 110, 255, 20, 70, 120, 255, 30, 80, 130, 255, 40, 90, 140, 255]
+    );
+    return {...raster, data: planar ? [bytes] : bytes, interleaved: !planar};
+  });
+  const tile = await openArchive(
+    await encodeRasterPMTiles(source, {tiles: SELECTED, tileSize: 2})
+  ).getZxy(0, 0, 0);
+  expect(await decodePNG(tile!.data)).toEqual(
+    planar
+      ? [10, 10, 10, 255, 20, 20, 20, 255, 30, 30, 30, 255, 40, 40, 40, 255]
+      : [10, 60, 110, 255, 20, 70, 120, 255, 30, 80, 130, 255, 40, 90, 140, 255]
+  );
+});

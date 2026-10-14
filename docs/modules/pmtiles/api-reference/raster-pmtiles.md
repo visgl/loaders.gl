@@ -83,7 +83,7 @@ Longitude/latitude regions are sampled at Web Mercator pixel-center latitudes; t
 stretched into a Mercator tile. Other CRSs require prior reprojection.
 
 This first profile uses nearest sampling and raw `uint8` imagery, including planar or interleaved
-buffers. It preserves nodata and per-band/common validity masks. A pixel is transparent if any
+`Uint8Array` or `Uint8ClampedArray` buffers. It preserves nodata and per-band/common validity masks. A pixel is transparent if any
 selected channel is invalid; valid alpha is retained, and RGB/gray defaults to opaque. Fully
 transparent tiles are omitted. Nonidentity band scale/offset and wider/scientific sample types fail
 explicitly: convert or style them into display-ready bytes first. Color palettes, color management,

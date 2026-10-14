@@ -255,7 +255,11 @@ function validateRaster(
   const expectedLength = Array.isArray(raster.data) ? pixels : pixels * bandCount;
   if (
     (Array.isArray(raster.data) && buffers.length !== bandCount) ||
-    buffers.some(buffer => !(buffer instanceof Uint8Array) || buffer.length !== expectedLength)
+    buffers.some(
+      buffer =>
+        (!(buffer instanceof Uint8Array) && !(buffer instanceof Uint8ClampedArray)) ||
+        buffer.length !== expectedLength
+    )
   )
     throw new Error('Invalid raster PMTiles sample buffers');
   for (const mask of raster.validityMasks ?? []) {
