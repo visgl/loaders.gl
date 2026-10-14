@@ -34,7 +34,7 @@
     "pre-build": "npm run build-cjs-entrypoints && npm run build-bundle && npm run build-bundle-dev",
     "build-bundle": "ocular-bundle ./bundle.ts --output=dist/dist.min.js",
     "build-bundle-dev": "ocular-bundle ./bundle.ts --env=dev --output=dist/dist.dev.js",
-    "build-cjs-entrypoints": "esbuild dist/index.js --outfile=dist/index.cjs --bundle --format=cjs --platform=node --target=node22 --sourcemap '--external:@loaders.gl/*' '--external:@math.gl/*'"
+    "build-cjs-entrypoints": "esbuild dist/index.js --outfile=dist/index.cjs --bundle --format=cjs --platform=node --target=node22 --sourcemap \"--external:@loaders.gl/*\" \"--external:@math.gl/*\""
   },
   "dependencies": {
     "@loaders.gl/loader-utils": "5.0.0-alpha.12",
