@@ -237,10 +237,17 @@ formats, benchmark a cached synchronous codec as well as the built-in stream pat
 
 `compress-utils` is a required runtime dependency. The external reference backends (`fzstd`,
 `hysnappy`, `snappyjs`, Pako, `lz4js`, `zstd-codec`, and the injectable `brotli` package) are
-`optionalDependencies`. Package managers normally install them; `npm install --omit=optional`
-omits them. Default codecs still work without these packages. Install the corresponding package
-explicitly before using an omitted reference backend. The fflate implementation and Brotli decoder
+optional peer dependencies: package managers do not automatically install them for this package.
+Default codecs still work without these packages. Install the corresponding package explicitly
+before importing its backend-specific entry point, for example `npm install pako` for
+`@loaders.gl/compression/gzip-pako`. Injectable `brotli` and `zstd-codec` implementations also
+require explicit installation and registration through `modules`; installing them alone does not
+select them. The fflate implementation and Brotli decoder
 shim are vendored and do not require an external package.
+
+The deprecated `zstd-compression` entry point still uses `fzstd` for asynchronous fallback
+when `zstd-codec` has not been injected. Install `fzstd` explicitly for that path, or migrate
+to the default `ZstdDecompressor`, whose fallback uses the required `compress-utils` package.
 
 `compress-utils` uses direction-specific algorithm subpaths so unrelated formats can be tree-shaken.
 

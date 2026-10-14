@@ -84,6 +84,17 @@ v4.5 is additive. Existing loaders and defaults continue to work unchanged, exce
 
 The sections below document the v5 removals, migrations, and deprecations that remain active.
 
+### Explicit reference compression backends
+
+`@loaders.gl/compression` no longer automatically installs `brotli`, `fzstd`, `hysnappy`,
+`lz4js`, `pako`, `snappyjs`, or `zstd-codec`. They are optional peer dependencies.
+Default codecs continue to use native streams or the required `compress-utils` dependency.
+Applications importing a backend-specific entry point must install its corresponding package
+explicitly, for example `npm install pako` before importing `@loaders.gl/compression/gzip-pako`.
+Injectable Brotli and Zstandard implementations still require `modules` registration.
+The deprecated `zstd-compression` asynchronous fallback needs an explicit `fzstd` installation;
+prefer the default `ZstdDecompressor` if no reference backend is required.
+
 ### Alternate loader imports
 
 Package roots expose the primary loader for each format. Alternate backend loaders
