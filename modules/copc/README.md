@@ -8,3 +8,11 @@ level-of-detail pruning, residual predicates, projection, global limits, cancell
 Arrow batches.
 
 For documentation please visit the [website](https://loaders.gl).
+
+## Installation
+
+Install the 5.0 prerelease from the `beta` channel:
+
+```sh
+npm install @loaders.gl/copc@beta @loaders.gl/core@beta
+```

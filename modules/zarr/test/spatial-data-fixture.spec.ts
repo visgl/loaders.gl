@@ -2,30 +2,18 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import {pathToFileURL} from 'node:url';
-import {readFile} from 'node:fs/promises';
 import {describe, expect, test} from 'vitest';
-import {resolvePath} from '@loaders.gl/core';
 import {
   OMEZarrImageSource,
   SpatialDataSource,
   ZarrArraySource
 } from '@loaders.gl/zarr';
 
-const FIXTURE_PATH = resolvePath('@loaders.gl/zarr/test/data/spatialdata-v3.zarr');
-const FIXTURE_URL = pathToFileURL(FIXTURE_PATH).href;
+const FIXTURE_URL = '/modules/zarr/test/data/spatialdata-v3.zarr';
 
+/** Opens the local browser fixture as a SpatialData source. */
 function createSpatialDataSource(): SpatialDataSource {
-  return new SpatialDataSource(FIXTURE_URL, {core: {fetch: fetchFixtureFile}});
-}
-
-async function fetchFixtureFile(url: string): Promise<Response> {
-  const path = url.startsWith('file:') ? new URL(url).pathname : url;
-  try {
-    return new Response(await readFile(path));
-  } catch {
-    return new Response(null, {status: 404});
-  }
+  return new SpatialDataSource(FIXTURE_URL, {});
 }
 
 describe('SpatialDataSource', () => {

@@ -8,6 +8,14 @@
 
 This module contains loaders for the Zarr format.
 
+## Installation
+
+Install the 5.0 prerelease from the `beta` channel:
+
+```sh
+npm install @loaders.gl/zarr@beta @loaders.gl/core@beta
+```
+
 ## Exports
 
 - `loadZarr()` and `ZarrPixelSource` for the existing pixel-pyramid API
