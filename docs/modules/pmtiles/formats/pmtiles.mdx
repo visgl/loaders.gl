@@ -92,6 +92,23 @@ PMTiles is a container format and can in principle contain any type of quadtree-
 | ...    | `'application/octet-stream'`           | ...     | Can be used for custom tile types                   |
 
 
+## Packaging support (from v5.0)
+
+The [PMTiles writer](/docs/modules/pmtiles/api-reference/pmtiles-writer) packages existing payloads;
+it does not generate vector or raster tile pyramids.
+
+| Feature | Write | Notes |
+| --- | --- | --- |
+| PMTiles v3 header, root and leaf directories | ✅ | Hilbert-sorted XYZ addresses; root fits in the first 16 KiB |
+| MVT and MLT payloads | ✅ | Opaque byte preservation; one declared format per archive |
+| PNG, JPEG, WebP and AVIF payloads | ✅ | Existing image tile pyramids; no image encoding |
+| Internal compression | ✅ | None or gzip |
+| Tile compression | Declaration only | None, gzip, Brotli or Zstd; payloads must already match |
+| Bounds, zooms and JSON metadata | ✅ | Derived tile footprints or explicit bounds; MVT layer declarations required |
+| Cancellation and output budgets | ✅ | Bounded in-memory output; no peak-memory guarantee |
+| Tile deduplication and streaming output | ❌ | Follow-up work |
+| GeoArrow or untiled raster authoring | ❌ | Requires a separate tiling/encoding pipeline |
+
 ## Metadata
 
 The pmtiles header has a metadata field that can store arbitrary JSON metadata about the tileset. This means that for MVT pmtiles, [TileJSON](/docs/modules/mvt/formats/tilejson) is typically available in the PMTiles header.

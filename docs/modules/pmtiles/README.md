@@ -1,6 +1,6 @@
 ---
 title: PMTiles module
-description: Read tiled datasets from a single cloud-friendly PMTiles archive.
+description: Read or package tiled datasets in a single cloud-friendly PMTiles archive.
 hide_title: true
 page_style: designed
 ---
@@ -36,21 +36,22 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
   ]}
 />
 
-Support for loading tiled data from [PMTiles](/docs/modules/pmtiles/formats/pmtiles) archives.
+Support for reading and packaging tiled data in [PMTiles](/docs/modules/pmtiles/formats/pmtiles) archives.
 
 <ReferenceBoundary
-  title="PMTiles sources and attribution"
-  description="The sections below list the available source entry point and the underlying PMTiles library attribution."
+  title="PMTiles sources, writing and attribution"
+  description="The sections below list the source and writer APIs and the underlying PMTiles library attribution."
   tone="violet"
 />
 
 ## Loaders and Writers
 
-| Source | Description |
+| API | Description |
 | ------ | ----------- |
 | [`PMTilesSourceLoader`](/docs/modules/pmtiles/api-reference/pmtiles-source-loader) | Loads tiled data from PMTiles archives. |
+| [`PMTilesWriter`](/docs/modules/pmtiles/api-reference/pmtiles-writer) / `encodePMTiles` | Packages existing MVT, MLT and raster tile payloads into bounded PMTiles v3 archives. From v5.0. |
 
 ## Attribution
 
-This module wraps the [protomaps PMTiles library](https://github.com/protomaps/PMTiles/blob/main/LICENSE)
+Archive reading and Hilbert tile addressing use the [protomaps PMTiles library](https://github.com/protomaps/PMTiles/blob/main/LICENSE)
 under BSD 3-Clause license.

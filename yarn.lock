@@ -5739,6 +5739,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@loaders.gl/pmtiles@workspace:modules/pmtiles"
   dependencies:
+    "@loaders.gl/compression": "npm:5.0.0-alpha.12"
     "@loaders.gl/images": "npm:5.0.0-alpha.12"
     "@loaders.gl/loader-utils": "npm:5.0.0-alpha.12"
     "@loaders.gl/mlt": "npm:5.0.0-alpha.12"
