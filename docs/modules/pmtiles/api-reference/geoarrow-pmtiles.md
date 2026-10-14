@@ -1,6 +1,6 @@
 ---
 title: GeoArrow to PMTiles
-description: Tile an in-memory GeoArrow table and export selected MVT tiles in PMTiles v3.
+description: Tile an in-memory GeoArrow table and export selected MVT or MLT tiles in PMTiles v3.
 hide_title: true
 page_style: designed
 ---
@@ -9,8 +9,8 @@ import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
 
 <DocPageHeader
   eyebrow="PMTiles module · authoring API"
-  title="GeoArrow to MVT to PMTiles"
-  description="Reuse the Arrow table tiler, encode selected tiles as MVT v2, and download a bounded PMTiles archive."
+  title="GeoArrow to vector tiles to PMTiles"
+  description="Reuse the Arrow table tiler, encode selected tiles as MVT v2 or MLT v1, and download a bounded PMTiles archive."
   tone="violet"
   meta={['From v5.0', 'Columnar attributes', 'Browser and Node.js']}
   links={[
@@ -23,8 +23,8 @@ import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
 `encodeGeoArrowPMTiles` accepts a loaders.gl `ArrowTable` or Apache Arrow `Table` and an explicit
 finite selection of XYZ tile addresses. It uses the existing `ArrowTableVectorTileSource` for
 indexing, clipping, simplification and geometry collection expansion. The tiler returns GeoArrow WKB
-with normalized tile-local coordinates; `MVTWriter` reads those geometries and scalar attributes
-without converting attribute rows to GeoJSON feature objects. `encodePMTiles` packages the MVT bytes.
+with normalized tile-local coordinates; `MVTWriter` or `MLTWriter` reads those geometries and scalar attributes
+without converting attribute rows to GeoJSON feature objects. `encodePMTiles` packages the encoded bytes.
 
 The implementation lives at `@loaders.gl/pmtiles/geoarrow`, keeping export orchestration outside the
 package root's runtime imports.
@@ -51,10 +51,22 @@ link.click();
 setTimeout(() => URL.revokeObjectURL(url), 1000);
 ```
 
+For MLT v1 output, set `tileType: 'mlt'` and use `mlt` instead of `mvt`:
+
+```typescript
+const archive = await encodeGeoArrowPMTiles(geoArrowTable, {
+  tileType: 'mlt',
+  tiles: [{z: 0, x: 0, y: 0}],
+  mlt: {layerName: 'places', idColumn: 'id', propertyColumns: ['name']}
+});
+```
+
 ## Options
 
 | Option | Default | Meaning |
 | --- | --- | --- |
+| `tileType` | `'mvt'` | `'mvt'` or `'mlt'`; one format per archive. |
+| `mlt` | Same layer/column defaults as `mvt` | MLT layer name, property columns, ID column and maxFeatures; used only for MLT output. |
 | `tiles` | Required | Finite iterable or async iterable of `{z, x, y}`. Canonical north-origin XYZ addresses only. |
 | `table` | Existing tiler defaults | Geometry column, maximum/index zoom, extent, buffer, tolerance and index point budget. Coordinates are forced to normalized tile-local output. |
 | `mvt.layerName` | `'features'` | Single output layer name |
@@ -68,10 +80,9 @@ See [tiler options](/docs/modules/mvt/api-reference/arrow-table-tile-source-load
 [archive options](/docs/modules/pmtiles/api-reference/pmtiles-writer#options) for details.
 When lowering `table.maxZoom` below 5, also lower `table.indexMaxZoom`.
 
-The helper writes MVT v2 with the tiler's extent (4096 by default), uncompressed tile payloads, and
+The helper writes MVT v2 or MLT v1 with the tiler's extent (4096 by default), uncompressed tile payloads, and
 PMTiles v3. Internal directory/metadata compression may be none or gzip. These format choices are
-fixed for this authoring profile; the separate packaging API supports already encoded MLT and raster
-tiles.
+fixed for this authoring profile; the separate packaging API also supports already encoded raster tiles.
 
 ## Features and metadata
 
@@ -79,9 +90,9 @@ Input geometry uses the existing tiler's WKB, WKT and native GeoArrow/GeoParquet
 mixed geometry and collections. Input must follow its longitude/latitude CRS contract. The tiler
 uses Web Mercator, retains polygon holes, and discards Z/M ordinates as documented by that API.
 
-The MVT writer supports the six 2D point, line and polygon families. Attributes support nullable
+Both writers support the six 2D point, line and polygon families. Attributes support nullable
 booleans, UTF-8 strings, finite numeric values, and dictionaries of supported scalars. Null tags are
-omitted, since MVT has no null property representation. Signed/unsigned Arrow integers must fit the
+omitted in MVT, which has no null property representation. MLT preserves nullable columns, with numeric attributes encoded as Float64 (including safe Arrow integers). Signed/unsigned Arrow integers must fit the
 JavaScript safe integer range; values outside it fail explicitly. IDs must additionally be
 nonnegative. Nested values, dates, binary attributes and other richer Arrow types require explicit
 projection or preprocessing; they are never silently stringified by this path.
@@ -109,4 +120,4 @@ blocked in an async iterator must also observe the signal; the helper cannot int
 `next()`. On failure or detected abort, iterators are closed and no partial archive is returned.
 
 Broader CRS reprojection, general exact 64-bit MVT reader/writer qualification, scalable ingestion,
-MLT authoring and raster authoring remain separate tranches.
+and raster authoring remain separate tranches.

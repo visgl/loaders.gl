@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
+import {execFileSync} from 'node:child_process';
 import {createRequire} from 'node:module';
 import {build} from 'esbuild';
 import {expect, test} from 'vitest';
@@ -9,7 +10,10 @@ import {convertFeaturesToGeoArrowTable} from '@loaders.gl/arrow-geometry/feature
 
 const require = createRequire(import.meta.url);
 
-test('built GeoArrow PMTiles ESM and CommonJS subpaths encode a hermetic table', async () => {
+test.each([
+  'mvt',
+  'mlt'
+] as const)('built GeoArrow PMTiles ESM and CommonJS subpaths encode %s', async tileType => {
   const esm = await import('../dist/geoarrow.js');
   const commonjs = require('../dist/geoarrow.cjs');
   const cjsGeometry = require('@loaders.gl/arrow-geometry/feature-table');
@@ -20,7 +24,7 @@ test('built GeoArrow PMTiles ESM and CommonJS subpaths encode a hermetic table',
       properties: {name: 'sample'}
     }
   ];
-  const options = {tiles: [{z: 0, x: 0, y: 0}]};
+  const options = {tileType, tiles: [{z: 0, x: 0, y: 0}]};
   const expected = await esm.encodeGeoArrowPMTiles(
     convertFeaturesToGeoArrowTable(features),
     options
@@ -53,4 +57,25 @@ test('PMTiles root packaging import leaves GeoArrow export orchestration in its 
   expect(result.outputFiles[0].text).not.toContain(
     '@loaders.gl/mvt/arrow-table-tile-source-loader'
   );
+});
+
+test('installed native Node ESM authoring imports do not eagerly load the MLT decoder', () => {
+  const output = execFileSync(
+    process.execPath,
+    [
+      '--input-type=module',
+      '--eval',
+      `
+    import {MLTWriter} from '@loaders.gl/mlt';
+    import {encodeGeoArrowPMTiles} from '@loaders.gl/pmtiles/geoarrow';
+    import {convertFeaturesToGeoArrowTable} from '@loaders.gl/arrow-geometry/feature-table';
+    const table = convertFeaturesToGeoArrowTable([{type: 'Feature', geometry: {type: 'Point', coordinates: [0, 0]}, properties: {name: 'sample'}}]);
+    const bytes = await encodeGeoArrowPMTiles(table, {tileType: 'mlt', tiles: [{z: 0, x: 0, y: 0}]});
+    if (typeof MLTWriter.encodeSync !== 'function' || bytes.byteLength <= 127) throw new Error('Invalid native ESM authoring result');
+    process.stdout.write('ok');
+  `
+    ],
+    {cwd: process.cwd(), encoding: 'utf8'}
+  );
+  expect(output).toBe('ok');
 });

@@ -564,6 +564,8 @@ Release Date: March 31, 2026
 
 **Highlights**
 
+- **MLT authoring** - `MLTWriter` encodes tile-local GeoArrow WKB and nullable scalar columns as MLT v1. `encodeGeoArrowPMTiles` now accepts `tileType: 'mlt'`, reusing the existing Arrow tiler and bounded selected-tile export pipeline.
+
 - **@loaders.gl/mlt** - New [`MLTLoader`](/docs/modules/mlt/api-reference/mlt-loader) and [`MLTSourceLoader`](/docs/modules/mlt/api-reference/mlt-source-loader) add support for the [`MapLibre Tile`](/docs/modules/mlt/formats/mlt) format, with a new [MLT website example](/examples/tiles/mlt).
 - **@loaders.gl/textures** - Texture loaders now return `TextureLevel` objects with explicit `shape`, `format`, and `textureFormat` fields, add manifest-driven [`TextureLoader`](/docs/modules/textures/api-reference/texture-loader), [`TextureArrayLoader`](/docs/modules/textures/api-reference/texture-array-loader), and [`TextureCubeLoader`](/docs/modules/textures/api-reference/texture-cube-loader), and support Radiance HDR textures through [`RadianceHDRLoader`](/docs/modules/textures/api-reference/radiance-hdr-loader).
 - **@loaders.gl/arrow** - Added support for `apache-arrow@21` and a new guide for [Using with Apache Arrow](/docs/developer-guide/apache-arrow).

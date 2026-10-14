@@ -2,6 +2,8 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
+import {MLTWriter} from '@loaders.gl/mlt';
+import type {MLTWriterOptions} from '@loaders.gl/mlt';
 import {MVTWriter} from '@loaders.gl/mvt';
 import type {
   ArrowTableTileSourceInput,
@@ -17,8 +19,15 @@ import type {PMTilesEncodeOptions, PMTilesTile} from './pmtiles-writer-types';
 /** Explicit canonical XYZ address selected for a bounded export. */
 export type GeoArrowPMTilesTileIndex = Pick<PMTilesTile, 'x' | 'y' | 'z'>;
 
-/** Controls a single-layer GeoArrow-to-MVT-to-PMTiles export. */
+/** Controls a single-layer GeoArrow-to-vector-tile-to-PMTiles export. */
 export type GeoArrowPMTilesOptions = {
+  /** Tile format; defaults to mvt for compatibility. */
+  readonly tileType?: 'mvt' | 'mlt';
+  /** MLT layer, scalar attributes, IDs and per-tile row limit. */
+  readonly mlt?: Pick<
+    NonNullable<MLTWriterOptions['mlt']>,
+    'layerName' | 'propertyColumns' | 'idColumn' | 'maxFeatures'
+  >;
   /** Finite selected tile addresses, including empty tiles; no implicit global enumeration. */
   readonly tiles: Iterable<GeoArrowPMTilesTileIndex> | AsyncIterable<GeoArrowPMTilesTileIndex>;
   /** Existing tiler options. Output coordinates are always normalized tile-local XY. */
@@ -35,7 +44,7 @@ export type GeoArrowPMTilesOptions = {
 };
 
 /**
- * Reuses the existing GeoArrow tiler, encodes selected nonempty tiles as MVT v2, and packages PMTiles v3.
+ * Reuses the existing GeoArrow tiler, encodes selected nonempty tiles as MVT v2 or MLT v1, and packages PMTiles v3.
  * The input table/index and archive are in memory. Archive maxTiles also bounds all requested addresses.
  * Cancellation is forwarded to packaging and checked around tile acquisition; synchronous indexing
  * and per-tile encoding cannot be interrupted mid-call. No partial archive is returned.
@@ -47,9 +56,13 @@ export async function encodeGeoArrowPMTiles(
   options = {
     ...options,
     table: {...options.table},
+    mlt: {...options.mlt, propertyColumns: options.mlt?.propertyColumns?.slice()},
     mvt: {...options.mvt, propertyColumns: options.mvt?.propertyColumns?.slice()},
     pmtiles: {...options.pmtiles}
   };
+  const tileType = options.tileType ?? 'mvt';
+  if (!['mvt', 'mlt'].includes(tileType)) throw new Error('Unsupported GeoArrow PMTiles tileType');
+  const writerOptions = tileType === 'mlt' ? options.mlt : options.mvt;
   const signal = options.pmtiles?.signal;
   signal?.throwIfAborted();
   const table = 'data' in input && 'shape' in input ? input.data : input;
@@ -75,7 +88,7 @@ export async function encodeGeoArrowPMTiles(
     geoMetadata?.primary_column ??
     schema.fields.find(field => field.metadata?.['ARROW:extension:name'] === 'geoarrow.wkb')!.name;
   const propertyNames =
-    options.mvt?.propertyColumns ??
+    writerOptions?.propertyColumns ??
     schema.fields
       .filter(
         field =>
@@ -85,17 +98,17 @@ export async function encodeGeoArrowPMTiles(
       )
       .map(field => field.name);
   if (new Set(propertyNames).size !== propertyNames.length)
-    throw new Error('Duplicate MVT property column');
+    throw new Error('Duplicate vector tile property column');
   const fields = Object.fromEntries(
     propertyNames.flatMap(name => {
       const field = schema.fields.find(field => field.name === name);
       if (!field || name === geometryColumn)
-        throw new Error(`Unknown MVT property column: ${name}`);
+        throw new Error(`Unknown vector tile property column: ${name}`);
       const type = getFieldType(field.type);
       return type ? [[name, type]] : [];
     })
   );
-  const layerName = options.mvt?.layerName ?? 'features';
+  const layerName = writerOptions?.layerName ?? 'features';
   const metadata = {...options.pmtiles?.metadata, vector_layers: [{id: layerName, fields}]};
   // TileJSON summary fields describe the selected export; the archive derives its bounds/zooms.
   for (const name of ['bounds', 'minzoom', 'maxzoom', 'center', 'tiles', 'tilestats'])
@@ -104,7 +117,7 @@ export async function encodeGeoArrowPMTiles(
   return encodePMTiles(encodeTiles(), {
     ...options.pmtiles,
     metadata,
-    tileType: 'mvt',
+    tileType,
     tileCompression: 'none'
   });
 
@@ -133,17 +146,29 @@ export async function encodeGeoArrowPMTiles(
       const arrowTile = await tiler.getTile(tile);
       signal?.throwIfAborted();
       if (!arrowTile) continue;
-      const data = MVTWriter.encodeSync(arrowTile, {
-        mvt: {
-          ...options.mvt,
-          layerName,
-          geometryColumn,
-          propertyColumns: propertyNames,
-          extent: options.table?.extent ?? 4096,
-          version: 2,
-          coordinates: 'local'
-        }
-      });
+      const data =
+        tileType === 'mlt'
+          ? MLTWriter.encodeSync(arrowTile, {
+              mlt: {
+                ...writerOptions,
+                layerName,
+                geometryColumn,
+                propertyColumns: propertyNames,
+                extent: options.table?.extent ?? 4096,
+                coordinates: 'local'
+              }
+            })
+          : MVTWriter.encodeSync(arrowTile, {
+              mvt: {
+                ...options.mvt,
+                layerName,
+                geometryColumn,
+                propertyColumns: propertyNames,
+                extent: options.table?.extent ?? 4096,
+                version: 2,
+                coordinates: 'local'
+              }
+            });
       signal?.throwIfAborted();
       if (data.byteLength) yield {...tile, data};
     }
@@ -158,6 +183,6 @@ function getFieldType(type: DataType): 'Number' | 'String' | 'Boolean' | null {
   if (type === 'utf8') return 'String';
   if (typeof type === 'string' && /^(?:u?int|float)(?:8|16|32|64)?$/.test(type)) return 'Number';
   throw new Error(
-    'Unsupported MVT attribute type; explicitly select supported mvt.propertyColumns'
+    'Unsupported vector tile attribute type; explicitly select supported propertyColumns'
   );
 }
