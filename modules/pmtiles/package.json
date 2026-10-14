@@ -40,6 +40,11 @@
     "./bundled": {
       "types": "./dist/bundled.d.ts",
       "import": "./dist/bundled.js"
+    },
+    "./geoarrow": {
+      "types": "./dist/geoarrow.d.ts",
+      "import": "./dist/geoarrow.js",
+      "require": "./dist/geoarrow.cjs"
     }
   },
   "sideEffects": false,

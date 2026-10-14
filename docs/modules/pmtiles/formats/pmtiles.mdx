@@ -107,7 +107,8 @@ it does not generate vector or raster tile pyramids.
 | Bounds, zooms and JSON metadata | ✅ | Derived tile footprints or explicit bounds; MVT layer declarations required |
 | Cancellation and output budgets | ✅ | Bounded in-memory output; no peak-memory guarantee |
 | Tile deduplication and streaming output | ❌ | Follow-up work |
-| GeoArrow or untiled raster authoring | ❌ | Requires a separate tiling/encoding pipeline |
+| GeoArrow to MVT authoring | ✅ | [Bounded in-memory export](/docs/modules/pmtiles/api-reference/geoarrow-pmtiles) reuses the existing tiler; selected addresses and scalar attributes |
+| MLT or untiled raster authoring | ❌ | Separate encoding/tiling pipelines |
 
 ## Metadata
 

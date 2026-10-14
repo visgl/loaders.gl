@@ -105,7 +105,7 @@ iterator's pending `next()` call. No partial archive is returned on failure.
 
 ## Scope
 
-This API packages existing tile payloads. GeoArrow tiling and MVT/MLT encoding, raster reprojection,
+This API packages existing tile payloads. [GeoArrow-to-MVT authoring](./geoarrow-pmtiles) composes the existing tiler with this writer. MLT encoding, raster reprojection,
 resampling and overview generation, source adapters, CLI export, browser download UI, deduplication,
 and streaming file sinks are separate follow-up work. The existing
 [Arrow table tiler](/docs/modules/mvt/api-reference/arrow-table-tile-source-loader) can supply
