@@ -127,3 +127,14 @@ The Node.js `fetch` is able to follow 30X redirect: if `Response` has status 300
 
 - The `Header` polyfill (for Node.js `fetch`) is a fork of the implementation in https://github.com/github/fetch (MIT license).
 - The `Blob` and `File` polyfills are forks of @gozala's [`web-blob`](https://github.com/Gozala/web-blob) and [`web-file`](https://github.com/Gozala/web-file) modules respectively, under MIT license.
+
+
+## Optional Node image codecs
+
+Node file, library, and stream support works without the image codec dependencies.
+Streams use Node's native Web Streams implementation. Node image codecs are installed
+as optional dependencies and loaded on the first encode or decode request.
+
+If optional dependencies were omitted during installation, install `get-pixels`
+for PNG/JPEG/GIF decoding, and `save-pixels` plus `ndarray` for image encoding.
+A missing codec reports installation instructions when its image operation is requested.
