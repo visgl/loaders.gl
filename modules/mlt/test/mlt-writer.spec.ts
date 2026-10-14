@@ -253,3 +253,18 @@ test('boolean packing spans ORC literal runs without stack-sized spreads', () =>
   ).toEqual(Array.from({length: count}, (_, index) => index % 3 === 0));
   expect(encodeBooleanStream(0, []).length).toBe(4);
 });
+
+test.each([
+  0x00, 0x10
+])('MLT v1 Boolean RLE wire format declares its encoding for stream %i', streamType => {
+  // Specification bitmap [true, false, true] is 0x05, preceded by the one-byte literal control 0xff.
+  // Unlike the upstream JS reader, strict readers require the RLE encoding header (0x60).
+  expect(Array.from(encodeBooleanStream(streamType, [true, false, true]))).toEqual([
+    streamType,
+    0x60,
+    3,
+    2,
+    0xff,
+    0x05
+  ]);
+});

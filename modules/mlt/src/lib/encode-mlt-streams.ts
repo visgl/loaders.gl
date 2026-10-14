@@ -61,5 +61,6 @@ export function encodeBooleanStream(type: number, values: boolean[]): Uint8Array
     const chunk = packed.subarray(offset, offset + 128);
     chunks.push(Uint8Array.of(256 - chunk.length), chunk);
   }
-  return encodeStream(type, 0, values.length, concatenateBytes(chunks));
+  // MLT v1 Boolean RLE: logical RLE (3 << 5), physical NONE; no integer RLE metadata.
+  return encodeStream(type, 0x60, values.length, concatenateBytes(chunks));
 }
