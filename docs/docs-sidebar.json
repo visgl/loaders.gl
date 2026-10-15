@@ -228,7 +228,8 @@
           "modules/wkt/api-reference/wkt-crs-writer",
           "modules/zip/api-reference/zip-writer",
           "modules/pmtiles/api-reference/pmtiles-writer",
-          "modules/pmtiles/api-reference/geoarrow-pmtiles"
+          "modules/pmtiles/api-reference/geoarrow-pmtiles",
+          "modules/pmtiles/api-reference/raster-pmtiles"
         ]
       },
       {
