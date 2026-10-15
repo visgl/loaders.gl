@@ -54,6 +54,14 @@ v4.5 is additive. Existing loaders and defaults continue to work unchanged, exce
 
 ## Upgrading to v5.0
 
+**OGC API Tiles relative URLs**
+
+Relative tile templates now resolve against the API landing page, consistently with matrix discovery. Path-relative APIs retain their parent-directory segments instead of being resolved from the host root. Use absolute templates when tile content is hosted elsewhere.
+
+**OGC API Tiles availability**
+
+`OGCAPITilesSource` now validates nonnegative integer tile indices and honors known matrix dimensions and advertised or configured limits. `getTile()` returns `null` outside coverage, and `getTileURL()` throws instead of constructing an unavailable request. Await `getMetadata()` before using the synchronous `isTileAvailable()` method with remote metadata.
+
 **OGC API Tiles matrix discovery**
 
 `OGCAPITilesSource` now discovers matrix metadata for canonical `/{tileMatrix}` templates by default. Failed discovery rejects the request instead of silently substituting numeric zoom levels. Await `getMetadata()` before calling synchronous `getTileURL()`, or set `ogc-api.discoverTileMatrixSet: false` to retain the previous numeric-template behavior. Configured `tileMatrixSet` documents take precedence over discovery. See the [OGC API Tiles documentation](./modules/wms/services/ogc-api.md).

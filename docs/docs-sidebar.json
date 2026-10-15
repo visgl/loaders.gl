@@ -814,6 +814,7 @@
           "developer-guide/dependencies",
           "developer-guide/apache-arrow",
           "developer-guide/coordinate-reference-systems",
+          "developer-guide/tile-matrices",
           "developer-guide/common-scan-architecture",
           "developer-guide/creating-loaders-and-writers",
           "developer-guide/composite-loaders",

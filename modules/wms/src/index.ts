@@ -93,6 +93,7 @@ export type {
   OGCTileMatrixSetCRS,
   OGCTileMatrixSetOptions
 } from './lib/parsers/ogc-api/tile-matrix-set';
+export type {OGCTileMatrixLimits} from './lib/parsers/ogc-api/tile-matrix-limits';
 export {convertOGCTileMatrixSetToTileGrid} from './lib/parsers/ogc-api/tile-matrix-set';
 export type {ServiceCRS} from './crs-utils';
 export {

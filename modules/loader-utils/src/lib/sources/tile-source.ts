@@ -3,7 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import type {CRSIdentifier} from '@math.gl/crs';
-import type {TileMatrixSet} from '@math.gl/geospatial';
+import type {TileMatrixLimits, TileMatrixSet} from '@math.gl/geospatial';
 
 /**
  * Props for a TileSource
@@ -102,6 +102,14 @@ export type TileGrid = {
    * usable geometry on its own; prefer `tileMatrixSet`.
    */
   matrices?: TileGridMatrix[];
+  /** Inclusive source coverage. Omitted means unrestricted; an empty list allows no tiles. */
+  limits?: TileGridLimits[];
+};
+
+/** Inclusive source coverage for one matrix, independent of its geometric definition. */
+export type TileGridLimits = TileMatrixLimits & {
+  /** Identifier of the covered matrix. Matrices absent from a present limits list are unavailable. */
+  tileMatrix: string;
 };
 
 /** One advertised level of a tile grid. Fields the service does not advertise are omitted. */

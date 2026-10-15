@@ -159,7 +159,7 @@ const features = await source.getFeatures({
 | Tile matrix set | ✅ Supported | `ogc-api.tileMatrixSet` (a TileMatrixSet 2.0 document or URL) is reported as `tileGrid` |
 | Tile matrix set discovery | ✅ Supported | Without `ogc-api.tileMatrixSet`, found from the tileset that `tileTemplate` belongs to; a failure rejects, and `discoverTileMatrixSet: false` opts out |
 | Tile matrix set endpoints | ✅ Supported | `getTileMatrixSets()` lists `/tileMatrixSets`; `getTileMatrixSet(id)` fetches `/tileMatrixSets/{id}` |
-| Tile matrix set limits | ❌ Not interpreted | `tileMatrixSetLimits` is not applied; `TileGrid` has no field for it |
+| Tile matrix set limits | ✅ Supported | Discovered or configured inclusive limits are exposed as `tileGrid.limits`; unavailable tiles return `null` without fetching |
 | Tile matrix set negotiation | ❌ Not implemented | The tileset is the one the configured template names; other tilesets are not compared |
 | Tile decoding | ❌ Not automatic | Parse bytes with the loader matching the advertised media type |
 | deck.gl | ⚠️ Foundation only | The generic tile contract is present; callers must provide the appropriate decoded tile type |
@@ -176,6 +176,10 @@ const source = createDataSource(landingPageUrl, [OGCAPITilesSourceLoader], {
 
 const tileBytes = await source.getTile({z: 3, x: 4, y: 5});
 ```
+
+### Tile URL resolution
+
+Relative tile templates and matrix-set URLs resolve against the API landing page treated as a directory. Root-relative paths use its origin. Path-relative APIs such as `../api` remain path-relative, including parent-directory segments, so metadata and tile content use the same base.
 
 ### Tile matrix sets
 
@@ -206,6 +210,33 @@ relative URL resolves against the landing page.
   set given by URL first; `getTileURL()` uses it once `getMetadata()` has loaded it.
 - `setProps()` replaces an inline `tileMatrixSet` document as a whole rather than merging fields.
 
+### Tile availability limits
+
+Discovered tileset `tileMatrixSetLimits` values are normalized into `tileGrid.limits`.
+Each entry names a `tileMatrix` and has inclusive `minTileRow`, `maxTileRow`,
+`minTileColumn`, and `maxTileColumn` bounds. Coverage is independent of geometry:
+limits remain useful when a matrix lacks the resolution or origin needed for a
+complete `tileGrid.tileMatrixSet`.
+
+An omitted limits list allows all positions inside known matrix dimensions. A
+present list allows only its listed matrices and ranges; `[]` allows no tiles.
+Unknown explicit matrix identifiers, invalid indices, and malformed coverage
+metadata throw. An absent numeric level or a position outside coverage is unavailable.
+
+After `await source.getMetadata()`, use `source.isTileAvailable(parameters)` for
+synchronous selection. `getTile()` returns `null` outside coverage without a tile
+request; `getTileURL()` throws for those positions. Matrix dimensions, when known,
+also bound requests. Availability does not guarantee nonempty tile content.
+
+Set `ogc-api.tileMatrixSetLimits` to override discovered coverage, including with an
+empty list. Native option fields use the OGC names `minTileCol` and `maxTileCol`.
+Pass a new array through `setProps()` to replace coverage and invalidate the cache;
+setting it to `undefined` restores discovered limits. Configured matrix sets do
+not discover tileset coverage, so supply limits alongside them when needed.
+
+See [Tile matrices and tile matrix sets](/docs/developer-guide/tile-matrices) for
+geometry, CRS, origin, identifier, and rendering concepts.
+
 ### Tile matrix set discovery
 
 When `ogc-api.tileMatrixSet` is not set and `tileTemplate` contains `/{tileMatrix}`, the source
@@ -222,7 +253,7 @@ discovers the tile matrix set as OGC API - Tiles Part 1 describes it:
 
 `/tileMatrixSets` paths resolve against the landing page, and every request uses the source's
 fetch options. The discovered grid is used for `tileGrid` and for `{tileMatrix}`, like a configured
-one, and is reused until `tileTemplate`, `tileMatrixSet` or `metersPerUnit` changes. `getTile()`
+one, and is reused until `tileTemplate`, `tileMatrixSet`, `tileMatrixSetLimits` or `metersPerUnit` changes. `getTile()`
 waits for discovery before its first request.
 
 Discovery failure is an error, not an approximation. `getMetadata()` and `getTile()` reject with

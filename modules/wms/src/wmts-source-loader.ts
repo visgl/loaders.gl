@@ -110,6 +110,21 @@ export class WMTSImageTileSource
     const capabilities = await this._loadCapabilities();
     const layer = this._getLayer(capabilities);
     const wmts = this.options.wmts || {};
+    const matrixSet = this._getTileMatrixSet(layer);
+    const grid = toTileGrid(matrixSet, wmts.metersPerUnit);
+    const limits = layer?.tileMatrixSetLinks.find(
+      link => link.tileMatrixSet === matrixSet?.identifier
+    )?.limits;
+    if (grid && limits !== undefined) {
+      validateTileMatrixLimits(limits);
+      grid.limits = limits.map(limit => ({
+        tileMatrix: limit.tileMatrix,
+        minTileColumn: limit.minimumTileColumn,
+        maxTileColumn: limit.maximumTileColumn,
+        minTileRow: limit.minimumTileRow,
+        maxTileRow: limit.maximumTileRow
+      }));
+    }
     return {
       format: wmts.format || layer?.formats[0] || 'image/png',
       name: wmts.layer || layer?.identifier || '',
@@ -122,7 +137,7 @@ export class WMTSImageTileSource
           ]
         : undefined,
       layer: {name: wmts.layer || layer?.identifier || '', layers: []},
-      tileGrid: toTileGrid(this._getTileMatrixSet(layer), wmts.metersPerUnit)
+      tileGrid: grid
     };
   }
 

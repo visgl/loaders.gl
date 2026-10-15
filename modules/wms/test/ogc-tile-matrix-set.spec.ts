@@ -241,6 +241,16 @@ test('OGCAPITilesSource resolves tile matrix set links like directory paths', as
     return requestedUrls.filter(url => url !== landingPageUrl);
   };
 
+  // Path-relative APIs stay relative to the caller's directory, including parent segments.
+  for (const [landingPage, matrixLink, expected] of [
+    ['api/ogc', 'tileMatrixSets/x', './api/ogc/tileMatrixSets/x'],
+    ['../api/ogc', 'tileMatrixSets/x', '../api/ogc/tileMatrixSets/x'],
+    ['api/ogc', '../../../matrix.json?key=1#grid', '../matrix.json?key=1#grid'],
+    ['api/ogc', '/matrix.json', '/matrix.json'],
+    ['__loaders_relative_base__/api', '../matrix.json', './__loaders_relative_base__/matrix.json']
+  ]) {
+    expect(await requestUrls(landingPage, matrixLink)).toEqual([expected]);
+  }
   // A query string on the landing page does not swallow its last path segment.
   expect(
     await requestUrls('https://example.com/ogc?apikey=K', 'tileMatrixSets/WebMercatorQuad')
@@ -342,14 +352,15 @@ test('OGCAPITilesSource requests tiles by configured matrix identifier', async (
     'Unknown tile matrix "7"'
   );
   expect(() => offset.getTileURL({z: 2, x: 0, y: 0})).toThrow(RangeError);
-  // An XYZ template does not address a matrix, so z is not looked up in the set
+  // XYZ placeholders retain numeric z, while configured matrix coverage still applies
   const xyz = OGCAPITilesSourceLoader.createDataSource(landingPageUrl, {
     'ogc-api': {
       tileTemplate: `${landingPageUrl}/xyz/{z}/{x}/{y}`,
       tileMatrixSet: {tileMatrices: [{id: '5', cellSize: 2}]}
     }
   });
-  expect(xyz.getTileURL({z: 2, x: 0, y: 0})).toBe(`${landingPageUrl}/xyz/2/0/0`);
+  expect(xyz.getTileURL({z: 0, x: 0, y: 0})).toBe(`${landingPageUrl}/xyz/0/0/0`);
+  expect(() => xyz.getTileURL({z: 2, x: 0, y: 0})).toThrow('outside advertised coverage');
 
   // Without a tile matrix set, an explicit identifier is used verbatim
   const unconfigured = OGCAPITilesSourceLoader.createDataSource(landingPageUrl, {
