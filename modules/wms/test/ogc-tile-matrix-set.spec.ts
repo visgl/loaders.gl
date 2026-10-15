@@ -241,6 +241,16 @@ test('OGCAPITilesSource resolves tile matrix set links like directory paths', as
     return requestedUrls.filter(url => url !== landingPageUrl);
   };
 
+  // Path-relative APIs stay relative to the caller's directory, including parent segments.
+  for (const [landingPage, matrixLink, expected] of [
+    ['api/ogc', 'tileMatrixSets/x', './api/ogc/tileMatrixSets/x'],
+    ['../api/ogc', 'tileMatrixSets/x', '../api/ogc/tileMatrixSets/x'],
+    ['api/ogc', '../../../matrix.json?key=1#grid', '../matrix.json?key=1#grid'],
+    ['api/ogc', '/matrix.json', '/matrix.json'],
+    ['__loaders_relative_base__/api', '../matrix.json', './__loaders_relative_base__/matrix.json']
+  ]) {
+    expect(await requestUrls(landingPage, matrixLink)).toEqual([expected]);
+  }
   // A query string on the landing page does not swallow its last path segment.
   expect(
     await requestUrls('https://example.com/ogc?apikey=K', 'tileMatrixSets/WebMercatorQuad')
@@ -251,6 +261,9 @@ test('OGCAPITilesSource resolves tile matrix set links like directory paths', as
   ]);
   expect(await requestUrls('/proxy/ogc', 'https://tms.example/WebMercatorQuad')).toEqual([
     'https://tms.example/WebMercatorQuad'
+  ]);
+  expect(await requestUrls('/proxy/ogc', '//tms.example/WebMercatorQuad')).toEqual([
+    '//tms.example/WebMercatorQuad'
   ]);
 });
 
@@ -339,14 +352,15 @@ test('OGCAPITilesSource requests tiles by configured matrix identifier', async (
     'Unknown tile matrix "7"'
   );
   expect(() => offset.getTileURL({z: 2, x: 0, y: 0})).toThrow(RangeError);
-  // An XYZ template does not address a matrix, so z is not looked up in the set
+  // XYZ placeholders retain numeric z, while configured matrix coverage still applies
   const xyz = OGCAPITilesSourceLoader.createDataSource(landingPageUrl, {
     'ogc-api': {
       tileTemplate: `${landingPageUrl}/xyz/{z}/{x}/{y}`,
       tileMatrixSet: {tileMatrices: [{id: '5', cellSize: 2}]}
     }
   });
-  expect(xyz.getTileURL({z: 2, x: 0, y: 0})).toBe(`${landingPageUrl}/xyz/2/0/0`);
+  expect(xyz.getTileURL({z: 0, x: 0, y: 0})).toBe(`${landingPageUrl}/xyz/0/0/0`);
+  expect(() => xyz.getTileURL({z: 2, x: 0, y: 0})).toThrow('outside advertised coverage');
 
   // Without a tile matrix set, an explicit identifier is used verbatim
   const unconfigured = OGCAPITilesSourceLoader.createDataSource(landingPageUrl, {
@@ -371,4 +385,70 @@ test('OGCAPITilesSource requests tiles by configured matrix identifier', async (
   };
   await byUrl.getTile({z: 0, x: 1, y: 2});
   expect(requestedUrls).toEqual([tileMatrixSetUrl, `${landingPageUrl}/tiles/coarse/2/1?z=0`]);
+});
+
+test.each([
+  undefined,
+  0
+])('keeps incomplete or invalid tile heights out of geometry: %s', tileHeight => {
+  const document = structuredClone(WEB_MERCATOR_QUAD);
+  document.tileMatrices[0].tileHeight = tileHeight;
+  const grid = convertOGCTileMatrixSetToTileGrid(document);
+  expect(grid.tileMatrixSet).toBeUndefined();
+  expect(grid.matrices?.[0].tileSize).toEqual(tileHeight === undefined ? undefined : [256, 0]);
+});
+
+test('rejects coalesced rows instead of publishing incorrect rectangular geometry', () => {
+  const document = structuredClone(WEB_MERCATOR_QUAD);
+  document.tileMatrices[1].variableMatrixWidths = [{coalesce: 2, minTileRow: 0, maxTileRow: 0}];
+  expect(() => convertOGCTileMatrixSetToTileGrid(document)).toThrow('variableMatrixWidths');
+  document.tileMatrices[1].variableMatrixWidths = [];
+  expect(convertOGCTileMatrixSetToTileGrid(document).tileMatrixSet).toBeDefined();
+});
+
+test.each([
+  0,
+  -1,
+  Number.NaN,
+  Number.POSITIVE_INFINITY
+])('rejects invalid cellSize %s instead of falling back to scale', cellSize => {
+  const document = structuredClone(WEB_MERCATOR_QUAD);
+  document.tileMatrices[0].cellSize = cellSize;
+  expect(() => convertOGCTileMatrixSetToTileGrid(document)).toThrow('cellSize');
+});
+
+test('rejects duplicate matrix identifiers and unknown origin corners', () => {
+  const document = structuredClone(WEB_MERCATOR_QUAD);
+  document.tileMatrices[1].id = '0';
+  expect(() => convertOGCTileMatrixSetToTileGrid(document)).toThrow('unique');
+  document.tileMatrices[1].id = '1';
+  document.tileMatrices[1].cornerOfOrigin = 'sideways' as 'topLeft';
+  expect(() => convertOGCTileMatrixSetToTileGrid(document)).toThrow('cornerOfOrigin');
+});
+
+test('encodes matrix identifiers as URL components', () => {
+  const identifier = 'level/a?b#c%$&';
+  const source = OGCAPITilesSourceLoader.createDataSource('https://example.com', {
+    'ogc-api': {
+      tileTemplate:
+        'https://example.com/tiles/{tileMatrix}/{tileRow}/{tileCol}?matrix={tileMatrix}',
+      tileMatrixSet: {tileMatrices: [{id: identifier}]}
+    }
+  });
+  expect(source.getTileURL({z: 0, x: 1, y: 2, tileMatrix: identifier})).toBe(
+    `https://example.com/tiles/${encodeURIComponent(identifier)}/2/1?matrix=${encodeURIComponent(identifier)}`
+  );
+});
+
+test('requires URL-configured matrix metadata before resolving a numeric zoom', () => {
+  const source = OGCAPITilesSourceLoader.createDataSource('https://example.com', {
+    'ogc-api': {
+      tileTemplate: 'https://example.com/tiles/{tileMatrix}/{tileRow}/{tileCol}',
+      tileMatrixSet: 'https://example.com/matrix-set'
+    }
+  });
+  expect(() => source.getTileURL({z: 0, x: 1, y: 2})).toThrow('has not loaded');
+  expect(source.getTileURL({z: 0, x: 1, y: 2, tileMatrix: 'coarse'})).toBe(
+    'https://example.com/tiles/coarse/2/1'
+  );
 });

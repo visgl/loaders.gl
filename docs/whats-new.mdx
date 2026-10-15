@@ -40,6 +40,10 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
   tone="violet"
 />
 
+## Tile matrix coverage
+
+OGC API Tiles exposes matrix coverage limits and avoids requests outside advertised coverage. WMTS exposes its selected-layer limits through the same `tileGrid.limits` metadata. See the new [tile matrix guide](/docs/developer-guide/tile-matrices).
+
 ## Compression backends and LZO
 
 Default fallback compressors and decompressors use lazy, direction-specific compress-utils 0.9.0

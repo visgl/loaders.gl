@@ -119,7 +119,9 @@ export function createTileGridMatrix(fields: TileMatrixFields): TileGridMatrix {
   if (String(fields.cornerOfOrigin).toLowerCase() === 'bottomleft') {
     tileGridMatrix.cornerOfOrigin = 'bottomLeft';
   }
-  if (tileWidth) tileGridMatrix.tileSize = [tileWidth, tileHeight || tileWidth];
+  if (tileWidth !== undefined && tileHeight !== undefined) {
+    tileGridMatrix.tileSize = [tileWidth, tileHeight];
+  }
   if (fields.matrixWidth !== undefined && fields.matrixHeight !== undefined) {
     tileGridMatrix.matrixSize = [fields.matrixWidth, fields.matrixHeight];
   }
