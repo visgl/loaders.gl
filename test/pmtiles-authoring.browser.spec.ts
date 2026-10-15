@@ -265,7 +265,7 @@ test('the form generates real MLT downloads and revokes them when settings chang
   }
 });
 
-test('file drop selects the local format and an oversized selection produces a visible error', async () => {
+test('file drop and picker preserve selection status and reject an oversized tile selection', async () => {
   const mounted = await mountApp();
   try {
     const transfer = new DataTransfer();
@@ -283,6 +283,20 @@ test('file drop selects the local format and an oversized selection produces a v
       Array.from(select.options).some(option => option.value === 'arrow')
     )!;
     expect(inputFormat.value).toBe('arrow');
+    expect(mounted.container.querySelector('[role="status"]')?.textContent).toBe(
+      'Selected input.arrow.'
+    );
+    const pickerTransfer = new DataTransfer();
+    pickerTransfer.items.add(new File(['{}'], 'picked.geojson'));
+    const picker = mounted.container.querySelector<HTMLInputElement>('input[type="file"]')!;
+    act(() => {
+      picker.files = pickerTransfer.files;
+      picker.dispatchEvent(new Event('change', {bubbles: true}));
+    });
+    expect(mounted.container.querySelector('[role="status"]')?.textContent).toBe(
+      'Selected picked.geojson.'
+    );
+    expect(inputFormat.value).toBe('geojson');
     selectValue(mounted.container, 'Zoom', '8');
     act(() => mounted.container.querySelector('form')!.requestSubmit());
     await expect

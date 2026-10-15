@@ -193,7 +193,10 @@ export default function PMTilesAuthoringApp() {
                   <input
                     type="file"
                     accept=".json,.geojson,.arrow,.feather,.tif,.tiff"
-                    onChange={event => selectFile(event.target.files?.[0])}
+                    onChange={event => {
+                      event.stopPropagation();
+                      selectFile(event.target.files?.[0]);
+                    }}
                   />
                   {file && <span>{file.name}</span>}
                 </label>
