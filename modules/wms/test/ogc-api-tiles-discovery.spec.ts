@@ -313,3 +313,21 @@ test('OGCAPITilesSource discovers again when the tile template changes', async (
     `${LANDING_PAGE_URL}/tiles/NamedLevels/L1/0/0`
   );
 });
+
+test('OGCAPITilesSource resolves path-relative metadata and content against the same API', async () => {
+  const source = OGCAPITilesSourceLoader.createDataSource('../api', {
+    'ogc-api': {tileTemplate: 'tiles/named/{tileMatrix}/{tileRow}/{tileCol}'}
+  });
+  const requests: string[] = [];
+  source.fetch = async url => {
+    requests.push(url);
+    if (url === '../api/tiles/named') {
+      return Response.json({links: [{rel: 'tiling-scheme', href: '../../matrix.json'}]});
+    }
+    if (url === '../matrix.json') return Response.json(NAMED_LEVELS);
+    if (url === '../api/tiles/named/L0/0/0') return new Response(new Uint8Array([1]));
+    throw new Error(`Unexpected request: ${url}`);
+  };
+  expect(await source.getTile({z: 0, x: 0, y: 0})).toBeInstanceOf(ArrayBuffer);
+  expect(requests).toEqual(['../api/tiles/named', '../matrix.json', '../api/tiles/named/L0/0/0']);
+});

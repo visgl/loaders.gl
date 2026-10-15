@@ -335,3 +335,5 @@ predicates. Use feature sources and [spatial query integration](../../../develop
 for selection, snapping, and analysis across feature data.
 
 Request fields and pixel bounds follow the [WMTS 1.0.0 GetFeatureInfo definitions](https://docs.ogc.org/is/07-057r7/07-057r7.pdf).
+
+Selected-layer coverage is also exposed through `tileGrid.limits`, using inclusive `minTileColumn`, `maxTileColumn`, `minTileRow`, and `maxTileRow` fields keyed by `tileMatrix`. An absent list leaves coverage unrestricted by limits; an empty list allows no tiles. See [Tile matrices and tile matrix sets](/docs/developer-guide/tile-matrices).

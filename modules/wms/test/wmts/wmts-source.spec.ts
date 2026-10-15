@@ -664,3 +664,55 @@ test('WMTS templates handle repeated unmatched opening braces', () => {
     `https://example.com/${malformedPrefix}3/requested%2Flayer`
   );
 });
+
+test.each(
+  [
+    undefined,
+    [],
+    [
+      {
+        tileMatrix: 'coarse',
+        minimumTileColumn: 1,
+        maximumTileColumn: 2,
+        minimumTileRow: 0,
+        maximumTileRow: 1
+      }
+    ]
+  ].map(limits => ({limits}))
+)('WMTS exposes normalized coverage independently of geometry: $limits', async ({limits}) => {
+  const source = new WMTSImageTileSource(WMTS_URL, {
+    wmts: {
+      capabilities: {
+        contents: {
+          layers: [
+            {
+              identifier: 'regional',
+              formats: [],
+              styles: [],
+              resourceURLs: [],
+              tileMatrixSetLinks: [{tileMatrixSet: 'grid', limits}]
+            }
+          ],
+          tileMatrixSets: [
+            {
+              identifier: 'grid',
+              supportedCRS: 'EPSG:3857',
+              matrices: [{identifier: 'coarse', matrixWidth: 3, matrixHeight: 2}]
+            }
+          ]
+        }
+      }
+    }
+  });
+  const grid = (await source.getMetadata()).tileGrid;
+  expect(grid?.tileMatrixSet).toBeUndefined();
+  expect(grid?.limits).toEqual(
+    limits?.map(limit => ({
+      tileMatrix: limit.tileMatrix,
+      minTileColumn: limit.minimumTileColumn,
+      maxTileColumn: limit.maximumTileColumn,
+      minTileRow: limit.minimumTileRow,
+      maxTileRow: limit.maximumTileRow
+    }))
+  );
+});

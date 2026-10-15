@@ -23,6 +23,11 @@ import {convertGeojsonToBinaryFeatureCollection} from '@loaders.gl/arrow-geometr
 import {getServiceCRSAxisOrder} from './crs-utils';
 import type {OGCTileMatrixSet} from './lib/parsers/ogc-api/tile-matrix-set';
 import {convertOGCTileMatrixSetToTileGrid} from './lib/parsers/ogc-api/tile-matrix-set';
+import type {OGCTileMatrixLimits} from './lib/parsers/ogc-api/tile-matrix-limits';
+import {
+  convertOGCTileMatrixLimits,
+  isOGCTileAvailable
+} from './lib/parsers/ogc-api/tile-matrix-limits';
 import {getTileGridMatrixId, validateMetersPerUnit} from './lib/tile-grid';
 import type {FeaturePaginationOptions, FeaturePage} from './feature-pagination';
 import {
@@ -46,6 +51,8 @@ export type OGCAPISourceOptions = DataSourceOptions & {
      * is discovered from the tileset that `tileTemplate` belongs to.
      */
     tileMatrixSet?: OGCTileMatrixSet | string;
+    /** Inclusive availability limits; overrides discovered limits, including an empty list. */
+    tileMatrixSetLimits?: OGCTileMatrixLimits[];
     /**
      * Set to `false` to skip discovery. `{tileMatrix}` is then the `tileMatrix` tile parameter,
      * otherwise `z`, which suits services whose matrix identifiers are zoom numbers. Default `true`.
@@ -72,11 +79,13 @@ export type OGCAPICollection = {
 };
 
 /**
- * The fields of OGC API Tiles tileset metadata used to find its tile matrix set. Other fields,
- * including `tileMatrixSetLimits`, are kept but not interpreted.
+ * OGC API Tiles tileset metadata used to discover matrix geometry and availability.
  */
 export type OGCAPITileset = {
+  /** Human-readable tileset title. */
   title?: string;
+  /** Inclusive coverage; omitted means unrestricted, empty means no available tiles. */
+  tileMatrixSetLimits?: OGCTileMatrixLimits[];
   /** Identifier of the tile matrix set in this API's `/tileMatrixSets`. */
   tileMatrixSetId?: string;
   /** Registry URI of the tile matrix set. */
@@ -281,10 +290,15 @@ export class OGCAPITilesSource
 {
   /** Converted tile matrix set and the options it was loaded or discovered with. */
   private _tileGridCache: {
+    /** Configured matrix document or URL used by this request. */
     tileMatrixSet: OGCTileMatrixSet | string | undefined;
+    /** Configured coverage override used by this request. */
+    tileMatrixSetLimits: OGCTileMatrixLimits[] | undefined;
+    /** Unit conversion used by this request. */
     metersPerUnit: number | null | undefined;
     /** Template the matrix set is discovered from; undefined when it is configured or not discovered. */
     tileTemplate: string | undefined;
+    /** Shared in-flight or fulfilled matrix request. */
     promise: Promise<TileGrid | undefined>;
     /** The converted grid, once available. */
     tileGrid?: TileGrid;
@@ -352,10 +366,10 @@ export class OGCAPITilesSource
     if (cache && isSameTileGridKey(cache, key)) {
       return cache.promise;
     }
-    const {tileMatrixSet, metersPerUnit, tileTemplate} = key;
+    const {tileMatrixSet, tileMatrixSetLimits, metersPerUnit, tileTemplate} = key;
     const promise = tileMatrixSet
-      ? this.loadTileGrid(tileMatrixSet, metersPerUnit)
-      : this.discoverTileGrid(tileTemplate, metersPerUnit).catch(error => {
+      ? this.loadTileGrid(tileMatrixSet, metersPerUnit, tileMatrixSetLimits)
+      : this.discoverTileGrid(tileTemplate, metersPerUnit, tileMatrixSetLimits).catch(error => {
           throw new Error(
             `OGC API Tiles could not discover the tile matrix set: ${(error as Error)?.message}`,
             {cause: error}
@@ -379,10 +393,15 @@ export class OGCAPITilesSource
    * discovered from it: a configured matrix set or `discoverTileMatrixSet: false` disables discovery.
    */
   private getTileGridKey() {
-    const {tileMatrixSet, metersPerUnit, tileTemplate, discoverTileMatrixSet} =
+    const {tileMatrixSet, tileMatrixSetLimits, metersPerUnit, tileTemplate, discoverTileMatrixSet} =
       this.options['ogc-api'] || {};
     const discover = !tileMatrixSet && discoverTileMatrixSet !== false;
-    return {tileMatrixSet, metersPerUnit, tileTemplate: discover ? tileTemplate : undefined};
+    return {
+      tileMatrixSet,
+      tileMatrixSetLimits,
+      metersPerUnit,
+      tileTemplate: discover ? tileTemplate : undefined
+    };
   }
 
   /** Whether the tile matrix set is configured or discovered, rather than absent. */
@@ -401,16 +420,20 @@ export class OGCAPITilesSource
    */
   private async discoverTileGrid(
     tileTemplate: string | undefined,
-    metersPerUnit: number | null | undefined
+    metersPerUnit: number | null | undefined,
+    configuredLimits: OGCTileMatrixLimits[] | undefined
   ): Promise<TileGrid | undefined> {
     // Find the tileset path before resolving, since URL parsing may percent-encode the braces.
     const tilesetPath = tileTemplate && getTilesetURL(tileTemplate);
-    if (!tilesetPath) return undefined;
+    if (!tilesetPath) return applyTileMatrixLimits(undefined, configuredLimits);
     const tilesetUrl = resolveLink(tilesetPath, this.url);
     const tileset = (await this.fetchJSON(tilesetUrl)) as OGCAPITileset;
     const tileMatrixSetUrl = await this.getTileMatrixSetURL(tileset, tilesetUrl);
     const document = (await this.fetchJSON(tileMatrixSetUrl)) as OGCTileMatrixSet;
-    return convertOGCTileMatrixSetToTileGrid(document, {metersPerUnit});
+    return applyTileMatrixLimits(
+      convertOGCTileMatrixSetToTileGrid(document, {metersPerUnit}),
+      configuredLimits === undefined ? tileset.tileMatrixSetLimits : configuredLimits
+    );
   }
 
   /** Returns the URL of the tile matrix set a tileset uses. */
@@ -442,30 +465,40 @@ export class OGCAPITilesSource
     const cache = this._tileGridCache;
     if (cache?.tileGrid && isSameTileGridKey(cache, this.getTileGridKey())) return cache.tileGrid;
     if (tileMatrixSet && typeof tileMatrixSet !== 'string') {
-      return convertOGCTileMatrixSetToTileGrid(tileMatrixSet, {
-        metersPerUnit: this.options['ogc-api']?.metersPerUnit
-      });
+      return applyTileMatrixLimits(
+        convertOGCTileMatrixSetToTileGrid(tileMatrixSet, {
+          metersPerUnit: this.options['ogc-api']?.metersPerUnit
+        }),
+        this.options['ogc-api']?.tileMatrixSetLimits
+      );
     }
-    return undefined;
+    return this.requiresTileGrid()
+      ? undefined
+      : applyTileMatrixLimits(undefined, this.options['ogc-api']?.tileMatrixSetLimits);
   }
 
   /** Converts a tile matrix set, fetching it first when given as a URL. */
   private async loadTileGrid(
     tileMatrixSet: OGCTileMatrixSet | string | undefined,
-    metersPerUnit: number | null | undefined
+    metersPerUnit: number | null | undefined,
+    limits: OGCTileMatrixLimits[] | undefined
   ): Promise<TileGrid | undefined> {
     if (!tileMatrixSet) return undefined;
     const document =
       typeof tileMatrixSet === 'string'
         ? ((await this.fetchJSON(resolveLink(tileMatrixSet, this.url))) as OGCTileMatrixSet)
         : tileMatrixSet;
-    return convertOGCTileMatrixSetToTileGrid(document, {metersPerUnit});
+    return applyTileMatrixLimits(
+      convertOGCTileMatrixSetToTileGrid(document, {metersPerUnit}),
+      limits
+    );
   }
 
   /** Fetches raw bytes for one tile from an advertised template. */
   async getTile(parameters: GetTileParameters): Promise<ArrayBuffer | null> {
     // The matrix identifier in the URL comes from the configured or discovered tile matrix set.
-    await this.getTileGrid();
+    const tileGrid = await this.getTileGrid();
+    if (!isOGCTileAvailable(parameters, tileGrid)) return null;
     const url = this.getTileURL(parameters);
     const response = await this.fetch(url, {headers: {Accept: 'application/octet-stream'}});
     if (!response.ok) throw new Error(`OGC API Tiles request failed: ${response.status}`);
@@ -475,6 +508,17 @@ export class OGCAPITilesSource
   /** Fetches a tile using the deck.gl-compatible request shape. */
   async getTileData(parameters: GetTileDataParameters): Promise<ArrayBuffer | null> {
     return this.getTile(parameters.index);
+  }
+
+  /** Checks advertised coverage; load remote metadata with getMetadata() first. */
+  isTileAvailable(parameters: GetTileParameters): boolean {
+    const tileGrid = this.getLoadedTileGrid();
+    if (!tileGrid && this.requiresTileGrid()) {
+      throw new Error(
+        'OGC API Tiles has not loaded its tile matrix set; await getMetadata() before isTileAvailable()'
+      );
+    }
+    return isOGCTileAvailable(parameters, tileGrid);
   }
 
   /**
@@ -489,7 +533,11 @@ export class OGCAPITilesSource
   getTileURL(parameters: GetTileParameters): string {
     const template = this.options['ogc-api']?.tileTemplate;
     if (!template) throw new Error('OGC API Tiles requires ogc-api.tileTemplate');
-    // XYZ-only templates do not address a matrix, so no matrix is looked up for them.
+    const loadedGrid = this.getLoadedTileGrid();
+    if (!isOGCTileAvailable(parameters, loadedGrid)) {
+      throw new RangeError('OGC tile is outside advertised coverage');
+    }
+    // XYZ placeholders keep numeric z; only OGC placeholders substitute a matrix identifier.
     let tileMatrixId = '';
     if (template.includes('{tileMatrix}')) {
       const tileGrid = this.getLoadedTileGrid();
@@ -500,13 +548,14 @@ export class OGCAPITilesSource
       }
       tileMatrixId = getTileGridMatrixId(tileGrid, parameters);
     }
-    return template
-      .replaceAll('{tileMatrix}', tileMatrixId)
+    const tileUrl = template
+      .replaceAll('{tileMatrix}', encodeURIComponent(tileMatrixId))
       .replaceAll('{tileRow}', String(parameters.y))
       .replaceAll('{tileCol}', String(parameters.x))
       .replaceAll('{z}', String(parameters.z))
       .replaceAll('{y}', String(parameters.y))
       .replaceAll('{x}', String(parameters.x));
+    return resolveLink(tileUrl, this.url);
   }
 
   private async fetchJSON(url: string): Promise<unknown> {
@@ -553,10 +602,35 @@ function resolveDocumentLink(link: string, documentUrl: string, asDirectory = fa
   if (/^[a-z][a-z\d+.-]*:/i.test(link)) return link;
   const placeholderOrigin = 'http://placeholder.invalid';
   const isAbsolute = /^[a-z][a-z\d+.-]*:/i.test(documentUrl);
-  const base = new URL(documentUrl, `${placeholderOrigin}/`);
+  const isPathRelative = !isAbsolute && !documentUrl.startsWith('/');
+  // Anchor relative paths deeply enough that URL normalization preserves every leading ../.
+  // The marker cannot occur in either input, so it cannot be mistaken for a real path segment.
+  let anchorSegment = '__loaders_relative_base__';
+  while (documentUrl.includes(anchorSegment) || link.includes(anchorSegment)) anchorSegment += '_';
+  const anchorDepth = documentUrl.split('/').length + link.split('/').length + 1;
+  const anchorPath = isPathRelative ? `/${`${anchorSegment}/`.repeat(anchorDepth)}` : '/';
+  const base = new URL(documentUrl, `${placeholderOrigin}${anchorPath}`);
   if (asDirectory && !base.pathname.endsWith('/')) base.pathname += '/';
   const resolved = new URL(link, base);
-  return isAbsolute ? resolved.href : resolved.href.slice(placeholderOrigin.length);
+  if (isAbsolute) return resolved.href;
+  if (
+    resolved.origin !== placeholderOrigin ||
+    documentUrl.startsWith('//') ||
+    link.startsWith('//')
+  ) {
+    return `//${resolved.host}${resolved.pathname}${resolved.search}${resolved.hash}`;
+  }
+  if (isPathRelative && !link.startsWith('/')) {
+    const segments = resolved.pathname.slice(1).split('/');
+    let preservedDepth = 0;
+    while (segments[preservedDepth] === anchorSegment) preservedDepth++;
+    const relativePath =
+      '../'.repeat(anchorDepth - preservedDepth) + segments.slice(preservedDepth).join('/');
+    // ./ also protects a leading colon or slash from being interpreted as a scheme or root.
+    const pathname = relativePath.startsWith('../') ? relativePath : `./${relativePath}`;
+    return `${pathname}${resolved.search}${resolved.hash}`;
+  }
+  return `${resolved.pathname}${resolved.search}${resolved.hash}`;
 }
 
 /**
@@ -594,13 +668,24 @@ function findJSONLink(
 
 /** Tests whether a cached tile grid was loaded with these options. */
 function isSameTileGridKey(
-  a: {tileMatrixSet: unknown; metersPerUnit: unknown; tileTemplate: unknown},
-  b: {tileMatrixSet: unknown; metersPerUnit: unknown; tileTemplate: unknown}
+  cachedKey: {
+    tileMatrixSet: unknown;
+    tileMatrixSetLimits: unknown;
+    metersPerUnit: unknown;
+    tileTemplate: unknown;
+  },
+  requestedKey: {
+    tileMatrixSet: unknown;
+    tileMatrixSetLimits: unknown;
+    metersPerUnit: unknown;
+    tileTemplate: unknown;
+  }
 ): boolean {
   return (
-    a.tileMatrixSet === b.tileMatrixSet &&
-    a.metersPerUnit === b.metersPerUnit &&
-    a.tileTemplate === b.tileTemplate
+    cachedKey.tileMatrixSet === requestedKey.tileMatrixSet &&
+    cachedKey.tileMatrixSetLimits === requestedKey.tileMatrixSetLimits &&
+    cachedKey.metersPerUnit === requestedKey.metersPerUnit &&
+    cachedKey.tileTemplate === requestedKey.tileTemplate
   );
 }
 
@@ -636,4 +721,13 @@ function toVectorLayer(collection: OGCAPICollection) {
       : undefined,
     layers: []
   };
+}
+
+/** Attaches normalized coverage without requiring complete matrix geometry. */
+function applyTileMatrixLimits(
+  grid: TileGrid | undefined,
+  limits: OGCTileMatrixLimits[] | undefined
+): TileGrid | undefined {
+  if (limits === undefined) return grid;
+  return {...grid, limits: convertOGCTileMatrixLimits(limits, grid || {})};
 }
