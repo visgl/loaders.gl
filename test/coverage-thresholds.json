@@ -75,7 +75,11 @@
         "lines": 80,
         "functions": 80,
         "branches": 70
-      }
+      },
+      "sourcePaths": [
+        "modules/avro/src/",
+        "modules/tables/src/avro/"
+      ]
     },
     "@loaders.gl/bson": {
       "path": "modules/bson",
@@ -180,7 +184,11 @@
         "lines": 71,
         "functions": 76,
         "branches": 64
-      }
+      },
+      "sourcePaths": [
+        "modules/csv/src/",
+        "modules/tables/src/csv/"
+      ]
     },
     "@loaders.gl/draco": {
       "path": "modules/draco",
@@ -255,6 +263,21 @@
         "lines": 86,
         "functions": 95,
         "branches": 65
+      }
+    },
+    "@loaders.gl/geospatial": {
+      "path": "modules/geospatial",
+      "browser": {
+        "statements": 67,
+        "lines": 67,
+        "functions": 71,
+        "branches": 55
+      },
+      "merged": {
+        "statements": 66,
+        "lines": 67,
+        "functions": 69,
+        "branches": 55
       }
     },
     "@loaders.gl/geotiff": {
@@ -360,7 +383,11 @@
         "lines": 82,
         "functions": 73,
         "branches": 63
-      }
+      },
+      "sourcePaths": [
+        "modules/kml/src/",
+        "modules/geospatial/src/kml/"
+      ]
     },
     "@loaders.gl/lance": {
       "path": "modules/lance",
@@ -675,7 +702,11 @@
         "lines": 67,
         "functions": 69,
         "branches": 55
-      }
+      },
+      "sourcePaths": [
+        "modules/shapefile/src/",
+        "modules/geospatial/src/shapefile/"
+      ]
     },
     "@loaders.gl/splats": {
       "path": "modules/splats",
@@ -720,6 +751,21 @@
         "lines": 90,
         "functions": 90,
         "branches": 90
+      }
+    },
+    "@loaders.gl/tables": {
+      "path": "modules/tables",
+      "browser": {
+        "statements": 70,
+        "lines": 71,
+        "functions": 78,
+        "branches": 64
+      },
+      "merged": {
+        "statements": 70,
+        "lines": 71,
+        "functions": 76,
+        "branches": 64
       }
     },
     "@loaders.gl/terrain": {

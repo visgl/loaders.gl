@@ -14,6 +14,16 @@ const FORMAT_EXPORTS = {
   bson: ['BSONFormat'],
   copc: ['COPCFormat'],
   csv: ['CSVFormat'],
+  tables: ['CSVFormat', 'AvroFormat'],
+  geospatial: [
+    'KMLFormat',
+    'KMZFormat',
+    'GPXFormat',
+    'TCXFormat',
+    'ShapefileFormat',
+    'SHPFormat',
+    'DBFFormat'
+  ],
   draco: ['DracoFormat'],
   excel: ['ExcelFormat'],
   flatgeobuf: ['FlatGeobufFormat'],

@@ -1,0 +1,205 @@
+{
+  "name": "@loaders.gl/geospatial",
+  "version": "5.0.0-alpha.12",
+  "description": "Grouped geospatial loaders (package consolidation proof of concept)",
+  "license": "MIT",
+  "type": "module",
+  "publishConfig": {
+    "access": "public"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/visgl/loaders.gl"
+  },
+  "types": "dist/index.d.ts",
+  "main": "dist/index.cjs",
+  "module": "dist/index.js",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
+    },
+    "./kml/bundled": {
+      "types": "./dist/kml/bundled.d.ts",
+      "import": "./dist/kml/bundled.js"
+    },
+    "./kml/gpx-loader": {
+      "types": "./dist/kml/gpx-loader.d.ts",
+      "import": "./dist/kml/gpx-loader.js"
+    },
+    "./kml/gpx-loader-types": {
+      "types": "./dist/kml/gpx-loader-types.d.ts",
+      "import": "./dist/kml/gpx-loader-types.js"
+    },
+    "./kml/index": {
+      "types": "./dist/kml/index.d.ts",
+      "import": "./dist/kml/index.js",
+      "require": "./dist/kml/index.cjs"
+    },
+    "./kml/kml-format": {
+      "types": "./dist/kml/kml-format.d.ts",
+      "import": "./dist/kml/kml-format.js"
+    },
+    "./kml/kml-loader": {
+      "types": "./dist/kml/kml-loader.d.ts",
+      "import": "./dist/kml/kml-loader.js"
+    },
+    "./kml/kml-loader-types": {
+      "types": "./dist/kml/kml-loader-types.d.ts",
+      "import": "./dist/kml/kml-loader-types.js"
+    },
+    "./kml/kml-parser": {
+      "types": "./dist/kml/kml-parser.d.ts",
+      "import": "./dist/kml/kml-parser.js"
+    },
+    "./kml/kml-writer": {
+      "types": "./dist/kml/kml-writer.d.ts",
+      "import": "./dist/kml/kml-writer.js"
+    },
+    "./kml/kmz-archive": {
+      "types": "./dist/kml/kmz-archive.d.ts",
+      "import": "./dist/kml/kmz-archive.js"
+    },
+    "./kml/kmz-loader-types": {
+      "types": "./dist/kml/kmz-loader-types.d.ts",
+      "import": "./dist/kml/kmz-loader-types.js"
+    },
+    "./kml/kmz-loader": {
+      "types": "./dist/kml/kmz-loader.d.ts",
+      "import": "./dist/kml/kmz-loader.js"
+    },
+    "./kml/kmz-source": {
+      "types": "./dist/kml/kmz-source.d.ts",
+      "import": "./dist/kml/kmz-source.js"
+    },
+    "./kml/sports-track-parser": {
+      "types": "./dist/kml/sports-track-parser.d.ts",
+      "import": "./dist/kml/sports-track-parser.js"
+    },
+    "./kml/tcx-loader": {
+      "types": "./dist/kml/tcx-loader.d.ts",
+      "import": "./dist/kml/tcx-loader.js"
+    },
+    "./kml/tcx-loader-types": {
+      "types": "./dist/kml/tcx-loader-types.d.ts",
+      "import": "./dist/kml/tcx-loader-types.js"
+    },
+    "./kml/unbundled": {
+      "types": "./dist/kml/unbundled.d.ts",
+      "import": "./dist/kml/unbundled.js"
+    },
+    "./shapefile/bundled": {
+      "types": "./dist/shapefile/bundled.d.ts",
+      "import": "./dist/shapefile/bundled.js"
+    },
+    "./shapefile/dbf-format": {
+      "types": "./dist/shapefile/dbf-format.d.ts",
+      "import": "./dist/shapefile/dbf-format.js"
+    },
+    "./shapefile/dbf-loader": {
+      "types": "./dist/shapefile/dbf-loader.d.ts",
+      "import": "./dist/shapefile/dbf-loader.js"
+    },
+    "./shapefile/dbf-loader-types": {
+      "types": "./dist/shapefile/dbf-loader-types.d.ts",
+      "import": "./dist/shapefile/dbf-loader-types.js"
+    },
+    "./shapefile/index": {
+      "types": "./dist/shapefile/index.d.ts",
+      "import": "./dist/shapefile/index.js",
+      "require": "./dist/shapefile/index.cjs"
+    },
+    "./shapefile/shapefile-arrow-loader": {
+      "types": "./dist/shapefile/shapefile-arrow-loader.d.ts",
+      "import": "./dist/shapefile/shapefile-arrow-loader.js"
+    },
+    "./shapefile/shapefile-loader": {
+      "types": "./dist/shapefile/shapefile-loader.d.ts",
+      "import": "./dist/shapefile/shapefile-loader.js"
+    },
+    "./shapefile/shapefile-loader-types": {
+      "types": "./dist/shapefile/shapefile-loader-types.d.ts",
+      "import": "./dist/shapefile/shapefile-loader-types.js"
+    },
+    "./shapefile/shp-format": {
+      "types": "./dist/shapefile/shp-format.d.ts",
+      "import": "./dist/shapefile/shp-format.js"
+    },
+    "./shapefile/shp-loader": {
+      "types": "./dist/shapefile/shp-loader.d.ts",
+      "import": "./dist/shapefile/shp-loader.js"
+    },
+    "./shapefile/shp-loader-types": {
+      "types": "./dist/shapefile/shp-loader-types.d.ts",
+      "import": "./dist/shapefile/shp-loader-types.js"
+    },
+    "./shapefile/unbundled": {
+      "types": "./dist/shapefile/unbundled.d.ts",
+      "import": "./dist/shapefile/unbundled.js"
+    },
+    "./shp-worker.js": {
+      "import": "./dist/shp-worker.js"
+    },
+    "./dbf-worker.js": {
+      "import": "./dist/dbf-worker.js"
+    },
+    "./kml": {
+      "types": "./dist/kml.d.ts",
+      "import": "./dist/kml.js"
+    },
+    "./gpx": {
+      "types": "./dist/gpx.d.ts",
+      "import": "./dist/gpx.js"
+    },
+    "./tcx": {
+      "types": "./dist/tcx.d.ts",
+      "import": "./dist/tcx.js"
+    },
+    "./kmz": {
+      "types": "./dist/kmz.d.ts",
+      "import": "./dist/kmz.js"
+    },
+    "./shapefile": {
+      "types": "./dist/shapefile.d.ts",
+      "import": "./dist/shapefile.js"
+    },
+    "./shp": {
+      "types": "./dist/shp.d.ts",
+      "import": "./dist/shp.js"
+    },
+    "./dbf": {
+      "types": "./dist/dbf.d.ts",
+      "import": "./dist/dbf.js"
+    }
+  },
+  "sideEffects": false,
+  "files": [
+    "src",
+    "dist",
+    "README.md"
+  ],
+  "scripts": {
+    "pre-build": "npm run build-worker-shp-shapefile && npm run build-worker-dbf-shapefile",
+    "build-worker-shp-shapefile": "node ../../scripts/build-codec-worker.mjs src/workers/shp-worker.ts --bundle --outfile=dist/shp-worker.js --define:__VERSION__=\\\"$npm_package_version\\\"",
+    "build-worker-dbf-shapefile": "node ../../scripts/build-codec-worker.mjs src/workers/dbf-worker.ts --bundle --outfile=dist/dbf-worker.js --define:__VERSION__=\\\"$npm_package_version\\\""
+  },
+  "dependencies": {
+    "@loaders.gl/arrow": "5.0.0-alpha.12",
+    "@loaders.gl/arrow-geometry": "5.0.0-alpha.12",
+    "@loaders.gl/loader-utils": "5.0.0-alpha.12",
+    "@loaders.gl/schema": "5.0.0-alpha.12",
+    "@loaders.gl/schema-utils": "5.0.0-alpha.12",
+    "@loaders.gl/xml": "5.0.0-alpha.12",
+    "@loaders.gl/zip": "5.0.0-alpha.12",
+    "@math.gl/crs": "5.0.0-alpha.16",
+    "@math.gl/projection": "5.0.0-alpha.16",
+    "apache-arrow": ">= 17.0.0"
+  },
+  "peerDependencies": {
+    "@loaders.gl/core": "~5.0.0-alpha.0"
+  },
+  "browser": {
+    "fs": false
+  }
+}

@@ -28,8 +28,8 @@ import type {SHPHeader} from './parse-shp-header';
 import type {ShapefileLoaderOptions} from './types';
 import {parseShx} from './parse-shx';
 import {zipBatchIterators} from '../streaming/zip-batch-iterators';
-import {SHPLoaderWithParser} from '../../shp-loader-with-parser';
-import {DBFLoaderWithParser} from '../../dbf-loader-with-parser';
+import {SHPLoaderWithParser} from '../../shp-loader';
+import {DBFLoaderWithParser} from '../../dbf-loader';
 
 export interface ShapefileOutput {
   encoding?: string;

@@ -7,8 +7,8 @@ import type {ArrowTable} from '@loaders.gl/schema';
 import {
   parseRawArrowCSVASCIIText,
   parseRawArrowCSVBytes
-} from '../src/lib/parsers/parse-raw-arrow-csv-bytes';
-import type {CSVRawArrowOptions} from '../src/lib/parsers/parse-csv-to-arrow';
+} from '../../tables/src/csv/lib/parsers/parse-raw-arrow-csv-bytes';
+import type {CSVRawArrowOptions} from '../../tables/src/csv/lib/parsers/parse-csv-to-arrow';
 
 /** Parses a tiny byte fixture and verifies that the raw scanner accepted it. */
 function parseBytes(csvText: string, options: CSVRawArrowOptions = {}): ArrowTable {

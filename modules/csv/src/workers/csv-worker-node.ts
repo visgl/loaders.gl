@@ -2,4 +2,4 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import './csv-worker';
+import '../../../tables/src/csv/workers/csv-worker-node';

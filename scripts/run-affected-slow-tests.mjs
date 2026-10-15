@@ -83,6 +83,11 @@ function findAffectedModuleFilters(baseReference_) {
     const match = changedFile.match(/^modules\/([^/]+)\//);
     if (match) {
       affectedModules.add(`modules/${match[1]}`);
+      // Format tests and fixture URLs stay in their compatibility packages during the POC.
+      const groupedFormats = {tables: ['csv', 'avro'], geospatial: ['kml', 'shapefile']};
+      for (const format of groupedFormats[match[1]] || []) {
+        affectedModules.add(`modules/${format}`);
+      }
     }
   }
   return [...affectedModules].sort();

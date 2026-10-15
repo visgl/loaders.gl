@@ -10,7 +10,7 @@ import {
   parseRecord,
   parseRecordToWKB,
   writeRecordToGeoArrow
-} from '../src/lib/parsers/parse-shp-geometry';
+} from '../../geospatial/src/shapefile/lib/parsers/parse-shp-geometry';
 
 type Point = [number, number];
 

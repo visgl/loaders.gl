@@ -39,6 +39,18 @@
     "./kmz-loader": {
       "types": "./dist/kmz-loader.d.ts",
       "import": "./dist/kmz-loader.js"
+    },
+    "./kml-loader": {
+      "types": "./dist/kml-loader-entry.d.ts",
+      "import": "./dist/kml-loader-entry.js"
+    },
+    "./gpx-loader": {
+      "types": "./dist/gpx-loader-entry.d.ts",
+      "import": "./dist/gpx-loader-entry.js"
+    },
+    "./tcx-loader": {
+      "types": "./dist/tcx-loader-entry.d.ts",
+      "import": "./dist/tcx-loader-entry.js"
     }
   },
   "sideEffects": false,
@@ -53,12 +65,7 @@
     "build-bundle-dev": "node ../../scripts/build-codec-bundle.mjs ./bundle.ts --env=dev --output=dist/dist.dev.js"
   },
   "dependencies": {
-    "@loaders.gl/arrow-geometry": "5.0.0-alpha.12",
-    "@loaders.gl/loader-utils": "5.0.0-alpha.12",
-    "@loaders.gl/schema": "5.0.0-alpha.12",
-    "@loaders.gl/schema-utils": "5.0.0-alpha.12",
-    "@loaders.gl/xml": "5.0.0-alpha.12",
-    "@loaders.gl/zip": "5.0.0-alpha.12"
+    "@loaders.gl/geospatial": "5.0.0-alpha.12"
   },
   "peerDependencies": {
     "@loaders.gl/core": "~5.0.0-alpha.0"

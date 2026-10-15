@@ -9,12 +9,15 @@ import {
   parseCSVArrayBufferAsArrow,
   parseCSVInArrowBatches,
   parseCSVTextAsArrow
-} from '../src/csv-arrow-table-parser';
-import {parseRawArrowCSVTable, parseRawArrowCSVText} from '../src/lib/parsers/parse-csv-to-arrow';
+} from '../../tables/src/csv/csv-arrow-table-parser';
+import {
+  parseRawArrowCSVTable,
+  parseRawArrowCSVText
+} from '../../tables/src/csv/lib/parsers/parse-csv-to-arrow';
 import {
   parseRawArrowCSVASCIIText,
   parseRawArrowCSVBytes
-} from '../src/lib/parsers/parse-raw-arrow-csv-bytes';
+} from '../../tables/src/csv/lib/parsers/parse-raw-arrow-csv-bytes';
 
 /** Encodes a CSV fixture for the byte parser. */
 function encode(text: string): ArrayBuffer {

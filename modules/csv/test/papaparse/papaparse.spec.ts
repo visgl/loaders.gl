@@ -1,5 +1,5 @@
 import {expect, test} from 'vitest';
-import Papa from '../../src/papaparse/papaparse';
+import Papa from '../../../tables/src/csv/papaparse/papaparse';
 import {CORE_PARSER_TESTS, PARSE_TESTS, PARSE_ASYNC_TESTS} from './csv-test-cases';
 const __dirname = import.meta.dirname;
 const BASE_PATH = `${__dirname}/../../data/csv/`;

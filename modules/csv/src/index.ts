@@ -2,15 +2,15 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-export type {CSVLoaderOptions} from './csv-loader';
-export {CSVFormat} from './csv-format';
-export {CSVLoader} from './csv-loader';
+export type {CSVLoaderOptions} from '@loaders.gl/tables/csv/index';
+export {CSVFormat} from '@loaders.gl/tables/csv/index';
+export {CSVLoader} from '@loaders.gl/tables/csv/index';
 
-export type {CSVWriterOptions} from './csv-writer';
-export {CSVWriter} from './csv-writer';
-export {CSVSourceLoader, CSVTableSource} from './csv-source';
-export type {CSVSourceOptions} from './csv-source';
+export type {CSVWriterOptions} from '@loaders.gl/tables/csv/index';
+export {CSVWriter} from '@loaders.gl/tables/csv/index';
+export {CSVSourceLoader, CSVTableSource} from '@loaders.gl/tables/csv/index';
+export type {CSVSourceOptions} from '@loaders.gl/tables/csv/index';
 
 // DEPRECATED EXPORTS
 /** @deprecated Use CSVLoader. */
-export {CSVLoader as CSVWorkerLoader} from './csv-loader';
+export {CSVLoader as CSVWorkerLoader} from '@loaders.gl/tables/csv/index';

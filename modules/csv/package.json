@@ -52,6 +52,10 @@
     "./csv-writer": {
       "types": "./dist/csv-writer.d.ts",
       "import": "./dist/csv-writer.js"
+    },
+    "./csv-loader": {
+      "types": "./dist/csv-loader-entry.d.ts",
+      "import": "./dist/csv-loader-entry.js"
     }
   },
   "sideEffects": false,
@@ -68,11 +72,7 @@
     "build-bundle-dev": "node ../../scripts/build-codec-bundle.mjs ./bundle.ts --env=dev --output=dist/dist.dev.js"
   },
   "dependencies": {
-    "@loaders.gl/arrow": "5.0.0-alpha.12",
-    "@loaders.gl/arrow-geometry": "5.0.0-alpha.12",
-    "@loaders.gl/loader-utils": "5.0.0-alpha.12",
-    "@loaders.gl/schema": "5.0.0-alpha.12",
-    "apache-arrow": ">= 17.0.0"
+    "@loaders.gl/tables": "5.0.0-alpha.12"
   },
   "peerDependencies": {
     "@loaders.gl/core": "~5.0.0-alpha.0"

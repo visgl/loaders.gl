@@ -9,7 +9,7 @@ import type {ArrowTable, Table} from '@loaders.gl/schema';
 import {preloadWorker} from '@loaders.gl/worker-utils';
 import PapaParseNPM from 'papaparse';
 import {inferSchema, initParser} from 'udsv';
-import Papa from '../src/papaparse/papaparse';
+import Papa from '../../tables/src/csv/papaparse/papaparse';
 
 const SAMPLE_CSV_URL = '@loaders.gl/csv/test/data/sample-very-long.csv';
 const LARGE_SAMPLE_CSV_URL = '@loaders.gl/csv/test/data/numbers-10000.csv';

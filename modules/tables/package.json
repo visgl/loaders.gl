@@ -1,0 +1,150 @@
+{
+  "name": "@loaders.gl/tables",
+  "version": "5.0.0-alpha.12",
+  "description": "Grouped tables loaders (package consolidation proof of concept)",
+  "license": "MIT",
+  "type": "module",
+  "publishConfig": {
+    "access": "public"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/visgl/loaders.gl"
+  },
+  "types": "dist/index.d.ts",
+  "main": "dist/index.cjs",
+  "module": "dist/index.js",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
+    },
+    "./csv/bundled": {
+      "types": "./dist/csv/bundled.d.ts",
+      "import": "./dist/csv/bundled.js"
+    },
+    "./csv/csv-arrow-table-parser": {
+      "types": "./dist/csv/csv-arrow-table-parser.d.ts",
+      "import": "./dist/csv/csv-arrow-table-parser.js"
+    },
+    "./csv/csv-format": {
+      "types": "./dist/csv/csv-format.d.ts",
+      "import": "./dist/csv/csv-format.js"
+    },
+    "./csv/csv-loader-options": {
+      "types": "./dist/csv/csv-loader-options.d.ts",
+      "import": "./dist/csv/csv-loader-options.js"
+    },
+    "./csv/csv-loader": {
+      "types": "./dist/csv/csv-loader.d.ts",
+      "import": "./dist/csv/csv-loader.js"
+    },
+    "./csv/csv-loader-types": {
+      "types": "./dist/csv/csv-loader-types.d.ts",
+      "import": "./dist/csv/csv-loader-types.js"
+    },
+    "./csv/csv-source": {
+      "types": "./dist/csv/csv-source.d.ts",
+      "import": "./dist/csv/csv-source.js"
+    },
+    "./csv/csv-writer": {
+      "types": "./dist/csv/csv-writer.d.ts",
+      "import": "./dist/csv/csv-writer.js"
+    },
+    "./csv/index": {
+      "types": "./dist/csv/index.d.ts",
+      "import": "./dist/csv/index.js",
+      "require": "./dist/csv/index.cjs"
+    },
+    "./csv/unbundled": {
+      "types": "./dist/csv/unbundled.d.ts",
+      "import": "./dist/csv/unbundled.js"
+    },
+    "./csv-worker.js": {
+      "import": "./dist/csv-worker.js"
+    },
+    "./csv-worker-node.js": {
+      "import": "./dist/csv-worker-node.js"
+    },
+    "./avro/avro-compression": {
+      "types": "./dist/avro/avro-compression.d.ts",
+      "import": "./dist/avro/avro-compression.js"
+    },
+    "./avro/avro-format": {
+      "types": "./dist/avro/avro-format.d.ts",
+      "import": "./dist/avro/avro-format.js"
+    },
+    "./avro/avro-loader-types": {
+      "types": "./dist/avro/avro-loader-types.d.ts",
+      "import": "./dist/avro/avro-loader-types.js"
+    },
+    "./avro/avro-loader": {
+      "types": "./dist/avro/avro-loader.d.ts",
+      "import": "./dist/avro/avro-loader.js"
+    },
+    "./avro/avro-ocf": {
+      "types": "./dist/avro/avro-ocf.d.ts",
+      "import": "./dist/avro/avro-ocf.js"
+    },
+    "./avro/avro-parser": {
+      "types": "./dist/avro/avro-parser.d.ts",
+      "import": "./dist/avro/avro-parser.js"
+    },
+    "./avro/avro-schema-loader-types": {
+      "types": "./dist/avro/avro-schema-loader-types.d.ts",
+      "import": "./dist/avro/avro-schema-loader-types.js"
+    },
+    "./avro/avro-schema-loader": {
+      "types": "./dist/avro/avro-schema-loader.d.ts",
+      "import": "./dist/avro/avro-schema-loader.js"
+    },
+    "./avro/avro-stream": {
+      "types": "./dist/avro/avro-stream.d.ts",
+      "import": "./dist/avro/avro-stream.js"
+    },
+    "./avro/avro-writer": {
+      "types": "./dist/avro/avro-writer.d.ts",
+      "import": "./dist/avro/avro-writer.js"
+    },
+    "./avro/index": {
+      "types": "./dist/avro/index.d.ts",
+      "import": "./dist/avro/index.js",
+      "require": "./dist/avro/index.cjs"
+    },
+    "./csv": {
+      "types": "./dist/csv.d.ts",
+      "import": "./dist/csv.js"
+    },
+    "./avro": {
+      "types": "./dist/avro.d.ts",
+      "import": "./dist/avro.js"
+    },
+    "./avro-schema": {
+      "types": "./dist/avro-schema.d.ts",
+      "import": "./dist/avro-schema.js"
+    }
+  },
+  "sideEffects": false,
+  "files": [
+    "src",
+    "dist",
+    "README.md"
+  ],
+  "scripts": {
+    "pre-build": "npm run build-worker-csv && npm run build-worker-node-csv",
+    "build-worker-csv": "node ../../scripts/build-codec-worker.mjs src/workers/csv-worker.ts --bundle --outfile=dist/csv-worker.js --define:__VERSION__=\\\"$npm_package_version\\\"",
+    "build-worker-node-csv": "node ../../scripts/build-codec-worker.mjs src/workers/csv-worker-node.ts --outfile=dist/csv-worker-node.js --platform=node --target=node16 --bundle --sourcemap --define:__VERSION__=\\\"$npm_package_version\\\""
+  },
+  "dependencies": {
+    "@loaders.gl/arrow": "5.0.0-alpha.12",
+    "@loaders.gl/arrow-geometry": "5.0.0-alpha.12",
+    "@loaders.gl/compression": "5.0.0-alpha.12",
+    "@loaders.gl/loader-utils": "5.0.0-alpha.12",
+    "@loaders.gl/schema": "5.0.0-alpha.12",
+    "apache-arrow": ">= 17.0.0"
+  },
+  "peerDependencies": {
+    "@loaders.gl/core": "~5.0.0-alpha.0"
+  }
+}

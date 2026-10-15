@@ -6,7 +6,7 @@ import {describe, expect, test} from 'vitest';
 import {
   parseRawArrowCSVASCIIText,
   parseRawArrowCSVBytes
-} from '../src/lib/parsers/parse-raw-arrow-csv-bytes';
+} from '../../tables/src/csv/lib/parsers/parse-raw-arrow-csv-bytes';
 
 const textEncoder = new TextEncoder();
 
