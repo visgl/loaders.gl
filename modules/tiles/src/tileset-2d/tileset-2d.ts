@@ -47,9 +47,9 @@ export type Tileset2DBaseProps<DataT = any, ViewStateT = unknown> = {
   maxZoom?: number | null;
   /** Minimum zoom level to request. */
   minZoom?: number | null;
-  /** Maximum number of tiles kept in cache. */
+  /** Tile-count high-water mark, default 100; selected and visible tiles remain retained. */
   maxCacheSize?: number | null;
-  /** Maximum bytes kept in cache. */
+  /** Byte high-water mark; selected and visible tiles can exceed this limit. */
   maxCacheByteSize?: number | null;
   /** Placeholder refinement strategy. */
   refinementStrategy?: RefinementStrategy;
@@ -92,7 +92,7 @@ export type Tile2DListener<DataT = any> = {
   onUpdate?: () => void;
   /** Fired when asynchronous metadata initialization fails. */
   onError?: (error: Error) => void;
-  /** Fired after live tileset counters are recomputed. */
+  /** Fired after counters change; synchronous tile requests are coalesced into one microtask. */
   onStatsChange?: (stats: Stats) => void;
 };
 
@@ -143,6 +143,10 @@ export class Tileset2D<DataT = any, ViewStateT = unknown> {
   private _maxZoom?: number;
   private _minZoom?: number;
   private _lastTileContext: Tileset2DTileContext<ViewStateT> | null = null;
+  /** Whether a tile-request statistics notification is pending. */
+  private _statsUpdateScheduled = false;
+  /** Invalidates pending metadata initialization when the tileset is finalized. */
+  private _lifecycleVersion = 0;
 
   /** Creates a tileset from either `getTileData` or a loaders.gl `TileSource`. */
   constructor(opts: Tileset2DProps<DataT, ViewStateT>) {
@@ -290,8 +294,9 @@ export class Tileset2D<DataT = any, ViewStateT = unknown> {
     }
   }
 
-  /** Aborts in-flight requests and clears the shared cache. */
+  /** Clears consumers and cache, aborting requests and suppressing late tile and metadata results. */
   finalize(): void {
+    this._lifecycleVersion++;
     for (const tile of this._cache.values()) {
       if (tile.isLoading) {
         tile.abort();
@@ -305,12 +310,13 @@ export class Tileset2D<DataT = any, ViewStateT = unknown> {
     this._updateStats();
   }
 
-  /** Marks all retained tiles stale and drops unused cached tiles. */
+  /** Marks selected and visible fallback tiles stale and drops unused cached tiles. */
   reloadAll(): void {
     const selectedTiles = this._getSelectedTilesUnion();
+    const visibleTiles = this._getVisibleTilesUnion();
     for (const id of this._cache.keys()) {
       const tile = this._cache.get(id);
-      if (tile && !selectedTiles.has(tile)) {
+      if (tile && !selectedTiles.has(tile) && !visibleTiles.has(tile)) {
         this._cache.delete(id);
         this._handleTileUnload(tile);
         this._dirty = true;
@@ -407,7 +413,10 @@ export class Tileset2D<DataT = any, ViewStateT = unknown> {
     return {x: Math.floor(index.x / 2), y: Math.floor(index.y / 2), z: index.z - 1};
   }
 
-  /** Returns a cached tile and optionally creates and loads it on demand. */
+  /**
+   * Returns a cached tile, updating its LRU recency, and optionally creates and loads it.
+   * Cache/loading counters update immediately; request statistics notifications are coalesced.
+   */
   getTile(index: TileIndex, create: true): SharedTile2DHeader<DataT>;
   getTile(index: TileIndex, create?: false): SharedTile2DHeader<DataT> | undefined;
   getTile(index: TileIndex, create?: boolean): SharedTile2DHeader<DataT> | undefined {
@@ -422,7 +431,8 @@ export class Tileset2D<DataT = any, ViewStateT = unknown> {
       needsReload = true;
       this._cache.set(id, tile);
       this._dirty = true;
-      this._updateStats();
+      this._setStatCount('Tiles In Cache', this._cache.size);
+      this._scheduleStatsUpdate();
     } else if (tile && tile.needsReload) {
       needsReload = true;
     }
@@ -432,6 +442,7 @@ export class Tileset2D<DataT = any, ViewStateT = unknown> {
     }
 
     if (tile && needsReload && create) {
+      const wasLoading = tile.isLoading;
       tile
         .loadData({
           getData: this.opts.getTileData,
@@ -440,7 +451,10 @@ export class Tileset2D<DataT = any, ViewStateT = unknown> {
           onError: this._handleTileError.bind(this)
         })
         .catch(() => {});
-      this._updateStats();
+      if (!wasLoading) {
+        this.stats.get('Loading Tiles').incrementCount();
+      }
+      this._scheduleStatsUpdate();
     }
 
     return tile;
@@ -448,12 +462,20 @@ export class Tileset2D<DataT = any, ViewStateT = unknown> {
 
   /** Loads metadata from a TileSource and reapplies derived option overrides. */
   private async _initializeTileSource(tileSource: TileSource): Promise<void> {
+    const lifecycleVersion = this._lifecycleVersion;
     try {
-      this.sourceMetadata = await tileSource.getMetadata();
+      const metadata = await tileSource.getMetadata();
+      if (lifecycleVersion !== this._lifecycleVersion) {
+        return;
+      }
+      this.sourceMetadata = metadata;
       this._sourceMetadataOverrides = this._getMetadataOverrides(this.sourceMetadata);
       this._applyResolvedOptions();
       this._notifyUpdate();
     } catch (error: any) {
+      if (lifecycleVersion !== this._lifecycleVersion) {
+        return;
+      }
       const normalizedError =
         error instanceof Error ? error : new Error(`TileSource metadata error: ${String(error)}`);
       this._notifyError(normalizedError);
@@ -519,32 +541,54 @@ export class Tileset2D<DataT = any, ViewStateT = unknown> {
 
   /** Handles successful tile loads. */
   private _handleTileLoad(tile: SharedTile2DHeader<DataT>): void {
+    const lifecycleVersion = this._lifecycleVersion;
+    if (this._cache.get(tile.id) !== tile) {
+      return;
+    }
     this.opts.onTileLoad?.(tile);
+    if (this._cache.get(tile.id) !== tile) {
+      return;
+    }
     this._cacheByteSize = this._getCacheByteSize();
     this._resizeCache();
+    this._updateStats();
     for (const listener of this._listeners) {
+      if (lifecycleVersion !== this._lifecycleVersion) {
+        return;
+      }
       listener.onTileLoad?.(tile);
     }
-    this._updateStats();
   }
 
   /** Handles tile load failures. */
   private _handleTileError(error: any, tile: SharedTile2DHeader<DataT>): void {
+    const lifecycleVersion = this._lifecycleVersion;
+    if (this._cache.get(tile.id) !== tile) {
+      return;
+    }
     this.opts.onTileError?.(error, tile);
+    if (this._cache.get(tile.id) !== tile) {
+      return;
+    }
+    this._cacheByteSize = this._getCacheByteSize();
+    this._resizeCache();
+    this._updateStats();
     for (const listener of this._listeners) {
+      if (lifecycleVersion !== this._lifecycleVersion) {
+        return;
+      }
       listener.onTileError?.(error, tile);
     }
-    this._updateStats();
   }
 
   /** Handles tile eviction from cache. */
   private _handleTileUnload(tile: SharedTile2DHeader<DataT>): void {
+    tile.abort();
     this._unloadedTileCount++;
     this.opts.onTileUnload?.(tile);
     for (const listener of this._listeners) {
       listener.onTileUnload?.(tile);
     }
-    this._updateStats();
   }
 
   /** Notifies listeners that metadata or effective options changed. */
@@ -561,8 +605,22 @@ export class Tileset2D<DataT = any, ViewStateT = unknown> {
     }
   }
 
-  /** Recomputes absolute counter stats and notifies listeners. */
+  /** Coalesces tile-request notifications without scanning the cache per requested tile. */
+  private _scheduleStatsUpdate(): void {
+    if (this._statsUpdateScheduled) {
+      return;
+    }
+    this._statsUpdateScheduled = true;
+    queueMicrotask(() => {
+      if (this._statsUpdateScheduled) {
+        this._updateStats();
+      }
+    });
+  }
+
+  /** Recomputes absolute counters and publishes a consistent batch snapshot. */
   private _updateStats(): void {
+    this._statsUpdateScheduled = false;
     this._setStatCount('Tiles In Cache', this._cache.size);
     this._setStatCount('Cache Size', this.cacheByteSize);
     this._setStatCount('Visible Tiles', this.visibleTiles.length);
@@ -678,7 +736,7 @@ export class Tileset2D<DataT = any, ViewStateT = unknown> {
       for (const [id, tile] of this._cache) {
         if (!visibleTiles.has(tile) && !selectedTiles.has(tile)) {
           this._cache.delete(id);
-          this._cacheByteSize = this._getCacheByteSize();
+          this._cacheByteSize -= tile.byteLength;
           this._handleTileUnload(tile);
         }
         if (this._cache.size <= maxCacheSize && this._cacheByteSize <= maxCacheByteSize) {
@@ -701,7 +759,7 @@ export class Tileset2D<DataT = any, ViewStateT = unknown> {
     let index = tile.index;
     while (this.getTileZoom(index) > _minZoom) {
       index = this.getParentIndex(index);
-      const parent = this.getTile(index);
+      const parent = this._cache.get(this.getTileId(index));
       if (parent) {
         return parent;
       }
