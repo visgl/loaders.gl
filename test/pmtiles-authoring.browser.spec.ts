@@ -353,3 +353,19 @@ test('HTTP(S) GeoJSON source bytes feed the same archive pipeline', async () => 
   expect(fetcher).toHaveBeenCalledTimes(1);
   expect((await archive.getHeader()).numAddressedTiles).toBe(2);
 });
+
+test('the authoring form fits a laptop panel and stacks without overflow on mobile', async () => {
+  const mounted = await mountApp();
+  try {
+    mounted.container.style.width = '900px';
+    const app = mounted.container.querySelector('section')!;
+    const form = mounted.container.querySelector('form')!;
+    expect(getComputedStyle(form).gridTemplateColumns.split(' ')).toHaveLength(3);
+    expect(app.getBoundingClientRect().height).toBeLessThanOrEqual(600);
+    mounted.container.style.width = '360px';
+    expect(getComputedStyle(form).gridTemplateColumns.split(' ')).toHaveLength(1);
+    expect(app.scrollWidth).toBeLessThanOrEqual(360);
+  } finally {
+    mounted.dispose();
+  }
+});

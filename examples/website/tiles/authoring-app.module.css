@@ -1,85 +1,98 @@
 .app {
   --border: var(--ifm-color-emphasis-300, #cbd5e1);
-  max-width: 920px;
+  box-sizing: border-box;
+  container-type: inline-size;
+  max-width: 1200px;
   margin: 0 auto;
-  padding: 24px;
+  padding: 16px;
   color: var(--ifm-font-color-base, #172033);
   background: var(--ifm-background-color, #fff);
   font:
-    15px / 1.5 system-ui,
+    14px / 1.4 system-ui,
     sans-serif;
 }
 .app header {
-  margin-bottom: 24px;
+  margin-bottom: 16px;
 }
 .app h2 {
-  font-size: 28px;
-  margin: 4px 0 8px;
+  font-size: 24px;
+  margin: 2px 0 4px;
+}
+.app p {
+  margin: 8px 0;
 }
 .eyebrow {
   color: #7c3aed;
-  font-size: 12px;
+  font-size: 11px;
   font-weight: 700;
-  letter-spacing: 0.12em;
+  letter-spacing: 0.1em;
+}
+.app form {
+  display: grid;
+  gap: 12px;
+  align-items: start;
 }
 .app fieldset {
   min-width: 0;
-  margin: 0 0 18px;
-  padding: 18px;
+  margin: 0;
+  padding: 12px;
   border: 1px solid var(--border);
-  border-radius: 12px;
+  border-radius: 8px;
 }
 .app legend {
-  padding: 0 8px;
+  padding: 0 6px;
   font-weight: 650;
 }
 .app label {
   display: flex;
   flex-direction: column;
-  gap: 6px;
-  margin-bottom: 12px;
+  gap: 4px;
+  margin-bottom: 8px;
   font-weight: 550;
+  overflow-wrap: anywhere;
 }
 .app input,
 .app select {
   box-sizing: border-box;
   width: 100%;
-  min-height: 38px;
-  padding: 8px;
+  min-width: 0;
+  min-height: 32px;
+  padding: 6px;
   border: 1px solid var(--border);
-  border-radius: 6px;
+  border-radius: 5px;
   color: inherit;
   background: var(--ifm-background-color, #fff);
   font: inherit;
 }
 .bounds {
   display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 12px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
 }
 .app .checkbox {
   flex-direction: row;
   align-items: center;
 }
 .checkbox input {
-  width: 18px;
-  min-height: 18px;
+  width: 16px;
+  min-height: 16px;
 }
 .hint {
   color: var(--ifm-color-emphasis-700, #475569);
-  font-size: 13px;
+  font-size: 12px;
 }
 .actions {
+  grid-column: 1 / -1;
   display: flex;
   align-items: center;
   flex-wrap: wrap;
-  gap: 12px;
+  gap: 8px;
 }
 .app button,
 .download {
   border: 1px solid #7c3aed;
-  border-radius: 8px;
-  padding: 10px 16px;
+  border-radius: 6px;
+  padding: 8px 12px;
   font: inherit;
   font-weight: 600;
   cursor: pointer;
@@ -101,16 +114,13 @@
   outline-offset: 2px;
 }
 .error {
-  padding: 12px;
+  padding: 8px;
   border: 1px solid #f87171;
-  border-radius: 8px;
+  border-radius: 6px;
   overflow-wrap: anywhere;
 }
-@media (max-width: 600px) {
-  .app {
-    padding: 12px;
-  }
-  .bounds {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+@container (min-width: 620px) {
+  .app form {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
   }
 }
