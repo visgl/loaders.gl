@@ -52,6 +52,8 @@ export type GeoTIFFSourceLoaderOptions = DataSourceOptions & {
   geotiff?: {
     /** Optional request headers forwarded to remote GeoTIFF fetches. */
     headers?: Record<string, string>;
+    /** Reject HTTP 206 responses without an exposed Content-Range header; default false. */
+    requireContentRange?: boolean;
     /** Settled byte-cache limits; defaults to 128 entries and 8 MiB. Zero disables retention. */
     rangeCacheProps?: {
       /** Maximum retained byte ranges. */
@@ -778,6 +780,7 @@ export class GeoTIFFRasterSource
       const client = new GeoTIFFRangeSchedulerClient({
         url: this.url,
         fetch: this.fetch,
+        requireContentRange: this.options.geotiff?.requireContentRange,
         sourceId: 'geotiff',
         headers,
         rangeCache,
@@ -1156,6 +1159,8 @@ type GeoTIFFRangeSchedulerClientProps = {
   url: string;
   fetch: (url: string, options?: RequestInit) => Promise<Response>;
   sourceId: string;
+  /** Requires readable range placement and authoritative EOF metadata. */
+  requireContentRange?: boolean;
   headers?: HeadersInit;
   rangeScheduler: RangeRequestScheduler;
   /** Source-owned encoded byte cache. */
@@ -1173,6 +1178,8 @@ class GeoTIFFRangeSchedulerClient {
   readonly url: string;
 
   private readonly fetch: GeoTIFFRangeSchedulerClientProps['fetch'];
+  /** Strict browser profiles require the server to expose range placement metadata. */
+  private readonly requireContentRange: boolean;
   private readonly sourceId: string;
   private readonly defaultHeaders?: HeadersInit;
   private readonly rangeScheduler: RangeRequestScheduler;
@@ -1197,6 +1204,7 @@ class GeoTIFFRangeSchedulerClient {
   constructor(props: GeoTIFFRangeSchedulerClientProps) {
     this.url = props.url;
     this.fetch = props.fetch;
+    this.requireContentRange = props.requireContentRange ?? false;
     this.sourceId = props.sourceId;
     this.defaultHeaders = new Headers(props.headers);
     this.rangeCache = props.rangeCache;
@@ -1312,7 +1320,12 @@ class GeoTIFFRangeSchedulerClient {
 
     let total: number | null;
     try {
-      total = validateGeoTIFFContentRange(response.headers.get('Content-Range'), offset, length);
+      const contentRange = response.headers.get('Content-Range');
+      if (this.requireContentRange && !contentRange)
+        throw new Error(
+          'GeoTIFF range responses require an exposed Content-Range header; configure Access-Control-Expose-Headers: Content-Range.'
+        );
+      total = validateGeoTIFFContentRange(contentRange, offset, length);
       const entityTag = response.headers.get('ETag');
       const lastModified = response.headers.get('Last-Modified');
       if (

@@ -89,8 +89,9 @@ test('GeoTIFF URLs delegate selected regions to the scan-aware source and read o
         end < excludedBlock.offset || start >= excludedBlock.offset + excludedBlock.length
     )
   ).toBe(true);
+  expect(readRegion.mock.contexts[0].options.geotiff.requireContentRange).toBe(true);
   expect(readRegion.mock.contexts[0].options.geotiff.rangeSchedulerProps.maxTotalBytes).toBe(
-    32 * 1024 * 1024
+    2 ** 32 - 1
   );
   expect(returnedBytes).toBeLessThan(4096);
   expect(readRegion).toHaveBeenCalledWith(expect.objectContaining({crs: 'EPSG:4326', bands: [0]}));
@@ -125,21 +126,16 @@ test('GeoTIFF URLs reject unsafe schemes and embedded credentials before network
   expect(fetcher).not.toHaveBeenCalled();
 });
 
-test('local GeoTIFF inputs preserve the file size gate without first copying the complete Blob', async () => {
-  const input = new Blob([createRasterFixture().data]);
+test('local GeoTIFF inputs larger than a typed array read selected regions without a complete Blob copy', async () => {
+  const input = Object.defineProperty(new Blob([createRasterFixture().data]), 'size', {
+    value: 8 * 1024 ** 3
+  });
   const readWholeInput = vi.spyOn(input, 'arrayBuffer');
-  await expect(
-    (
-      await readArchive(
-        await createPMTilesExampleArchive(input, OPTIONS, new AbortController().signal)
-      )
-    ).getHeader()
-  ).resolves.toMatchObject({tileType: 2});
+  const archive = await readArchive(
+    await createPMTilesExampleArchive(input, OPTIONS, new AbortController().signal)
+  );
+  expect(await archive.getHeader()).toMatchObject({tileType: 2});
   expect(readWholeInput).not.toHaveBeenCalled();
-  Object.defineProperty(input, 'size', {value: 32 * 1024 * 1024 + 1});
-  await expect(
-    createPMTilesExampleArchive(input, OPTIONS, new AbortController().signal)
-  ).rejects.toThrow('Input exceeds');
 });
 
 test('a real conversion worker opens a GeoTIFF URL through the shared HTTP range transport', async () => {

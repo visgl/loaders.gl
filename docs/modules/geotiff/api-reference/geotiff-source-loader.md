@@ -266,3 +266,13 @@ cancellation support; obsolete results are discarded even when those reads canno
 be interrupted.
 
 Native reads decode selected planar bands before packing a requested interleaved layout, preserving each selected representation instead of inheriting a wider unselected band type. Invalid raw values are preserved when only the layout changes. TIFF palette indices are categorical and use nearest sampling. Overviews with different band representations or registration are not selected.
+
+### Strict browser range headers
+
+Set `geotiff.requireContentRange: true` to reject HTTP 206 responses without a readable
+`Content-Range` header before consuming their bodies. Cross-origin servers must include
+`Access-Control-Expose-Headers: Content-Range`. This qualifies EOF-clamped ranges using
+authoritative offsets and file length, including TIFFs smaller than the initial metadata read.
+The PMTiles browser converter enables this option. The default remains `false`; full-length
+responses without exposed headers retain their existing behavior, while EOF-shortened responses
+still require authoritative file length.

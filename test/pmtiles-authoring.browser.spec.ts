@@ -13,6 +13,8 @@ import {createTiffFixture} from '../modules/geotiff/test/lib/tiff/tiff-fixture';
 import PMTilesAuthoringApp from '../examples/website/tiles/authoring-app';
 import {createPMTilesArchiveInWorker} from '../examples/website/tiles/pmtiles-worker-client';
 import {
+  PMTILES_EXAMPLE_LIMITS,
+  type PMTilesExampleProgress,
   createPMTilesExampleArchive,
   createPMTilesSample,
   readPMTilesExampleInput,
@@ -91,13 +93,15 @@ test('tile selection respects exact boundaries and rejects expensive or invalid 
   expect(selectPMTilesExampleTiles([-180, 0, 0, 85], 1)).toEqual([{z: 1, x: 0, y: 0}]);
   expect(selectPMTilesExampleTiles([-180, -85, 180, 85], 0)).toEqual([{z: 0, x: 0, y: 0}]);
   expect(selectPMTilesExampleTiles([-180, -85, 180, 85], 3)).toHaveLength(64);
+  expect(selectPMTilesExampleTiles([-180, -85, 180, 85], 4)).toHaveLength(256);
+  expect(selectPMTilesExampleTiles([0, 0, 0.000001, 0.000001], 24)).toHaveLength(1);
   for (const [bounds, zoom] of [
-    [[-180, -85, 180, 85], 4],
+    [[-180, -85, 180, 85], 9],
     [[10, -1, -10, 1], 1],
     [[0, -90, 1, 1], 1],
     [[0, 0, 1, 90], 1],
     [[NaN, 0, 1, 1], 1],
-    [[0, 0, 1, 1], 9],
+    [[0, 0, 1, 1], 25],
     [[0, 0, 1, 1], 0.5]
   ] as const)
     expect(() => selectPMTilesExampleTiles(bounds, zoom)).toThrow();
@@ -305,7 +309,7 @@ test('file drop and picker preserve selection status and reject an oversized til
       'Selected picked.geojson.'
     );
     expect(inputFormat.value).toBe('geojson');
-    selectValue(mounted.container, 'Zoom', '8');
+    selectValue(mounted.container, 'Zoom', '9');
     act(() => mounted.container.querySelector('form')!.requestSubmit());
     await expect
       .poll(() => mounted.container.querySelector('[role="alert"]')?.textContent)
@@ -452,7 +456,7 @@ test.each([
           archive:
             failure === 'oversized'
               ? Object.defineProperty(new Blob(['x'], {type: 'application/vnd.pmtiles'}), 'size', {
-                  value: 32 * 1024 * 1024 + 1
+                  value: 2 ** 32
                 })
               : null
         }
@@ -538,4 +542,168 @@ test('real worker fetches a same-origin HTTP dataset without page transport', as
   );
   expect(fetcher).not.toHaveBeenCalled();
   expect(await archive.getHeader()).toMatchObject({tileType: 1, numAddressedTiles: 1});
+});
+
+test('export byte ceilings allow up to four GiB without allocating large fixtures', async () => {
+  expect(PMTILES_EXAMPLE_LIMITS.inputBytes).toBe(2 ** 32 - 1);
+  expect(PMTILES_EXAMPLE_LIMITS.outputBytes).toBe(2 ** 32 - 1);
+  const sparse = Object.defineProperty(new Blob(['small']), 'size', {value: 1024 ** 3});
+  expect((await readPMTilesExampleInput(sparse, new AbortController().signal)).byteLength).toBe(5);
+  const input = Object.defineProperty(new Blob(['x']), 'size', {value: 2 ** 32});
+  await expect(readPMTilesExampleInput(input, new AbortController().signal)).rejects.toThrow(
+    'Input exceeds'
+  );
+});
+
+test('Finish packages completed addresses with accurate progress and bounds', async () => {
+  const updates: PMTilesExampleProgress[] = [];
+  let finishRequested = false;
+  const archive = await openArchive(
+    await createPMTilesExampleArchive(
+      createPMTilesSample(),
+      OPTIONS,
+      new AbortController().signal,
+      {
+        onProgress(progress) {
+          updates.push(progress);
+          if (progress.completedTiles === 1) finishRequested = true;
+        },
+        shouldFinish: () => finishRequested
+      }
+    )
+  );
+  expect(updates.map(progress => progress.phase)).toEqual(
+    expect.arrayContaining(['reading', 'parsing', 'tiles', 'packaging', 'complete'])
+  );
+  expect(updates.at(-1)).toMatchObject({phase: 'complete', completedTiles: 1, totalTiles: 4});
+  expect(updates.at(-1)!.bytesRead).toBe(createPMTilesSample().size);
+  expect(updates.at(-1)!.outputBytes).toBeGreaterThan(0);
+  expect(await archive.getHeader()).toMatchObject({numAddressedTiles: 1, minLon: -180, maxLon: 0});
+  expect(await archive.getZxy(1, 1, 1)).toBeUndefined();
+});
+
+test('progress updates keep the worker alive and Finish emits a cloneable control message', async () => {
+  const worker = createWorkerHarness();
+  const finishController = new AbortController();
+  const onProgress = vi.fn();
+  const pending = createPMTilesArchiveInWorker(
+    createPMTilesSample(),
+    OPTIONS,
+    new AbortController().signal,
+    {finishSignal: finishController.signal, onProgress}
+  );
+  const progress = {
+    phase: 'tiles',
+    completedTiles: 1,
+    totalTiles: 4,
+    bytesRead: 123,
+    outputBytes: 0,
+    currentTile: '1/0/0'
+  };
+  worker.onmessage!(new MessageEvent('message', {data: {type: 'progress', progress}}));
+  expect(onProgress).toHaveBeenCalledWith(progress);
+  expect(worker.terminate).not.toHaveBeenCalled();
+  finishController.abort();
+  expect(worker.postMessage).toHaveBeenLastCalledWith({type: 'finish'});
+  const archive = new Blob(['archive'], {type: 'application/vnd.pmtiles'});
+  worker.onmessage!(new MessageEvent('message', {data: {type: 'result', archive}}));
+  expect(await pending).toBe(archive);
+  expect(worker.terminate).toHaveBeenCalledOnce();
+});
+
+test('the form displays measured progress and Finish preserves work while Cancel stays available', async () => {
+  const worker = createWorkerHarness();
+  const mounted = await mountApp();
+  try {
+    act(() => mounted.container.querySelector('form')!.requestSubmit());
+    const progress = {
+      phase: 'tiles',
+      completedTiles: 1,
+      totalTiles: 4,
+      bytesRead: 2048,
+      outputBytes: 0,
+      currentTile: '1/0/0'
+    };
+    act(() => worker.onmessage!(new MessageEvent('message', {data: {type: 'progress', progress}})));
+    expect(
+      mounted.container.querySelector('[role="progressbar"]')?.getAttribute('aria-valuenow')
+    ).toBe('1');
+    expect(mounted.container.textContent).toContain('2.0 KiB');
+    expect(mounted.container.textContent).toContain('1/0/0');
+    const finishButton = Array.from(mounted.container.querySelectorAll('button')).find(
+      button => button.textContent === 'Finish & download'
+    )!;
+    act(() => finishButton.click());
+    expect(worker.postMessage).toHaveBeenLastCalledWith({type: 'finish'});
+    expect(worker.terminate).not.toHaveBeenCalled();
+    expect(mounted.container.textContent).toContain('Completing the in-flight tile');
+    expect(
+      Array.from(mounted.container.querySelectorAll('button')).some(
+        button => button.textContent === 'Cancel' && !button.disabled
+      )
+    ).toBe(true);
+    const archive = new Blob(['partial'], {type: 'application/vnd.pmtiles'});
+    act(() => worker.onmessage!(new MessageEvent('message', {data: {type: 'result', archive}})));
+    await expect
+      .poll(() => mounted.container.querySelector('[role="status"]')?.textContent)
+      .toContain('Partial archive ready');
+    expect(mounted.container.querySelector('a[download]')).not.toBeNull();
+  } finally {
+    mounted.dispose();
+  }
+});
+
+test('a real worker receives Finish between tile boundaries and emits a readable partial archive', async () => {
+  const finishController = new AbortController();
+  const updates: PMTilesExampleProgress[] = [];
+  const input = new Blob([
+    JSON.stringify({
+      type: 'FeatureCollection',
+      features: [
+        {type: 'Feature', properties: {}, geometry: {type: 'Point', coordinates: [-179.5, 85]}}
+      ]
+    })
+  ]);
+  const archive = await openArchive(
+    await createPMTilesArchiveInWorker(input, {...OPTIONS, zoom: 8}, new AbortController().signal, {
+      finishSignal: finishController.signal,
+      onProgress(progress) {
+        updates.push(progress);
+        if (progress.completedTiles > 0) finishController.abort();
+      }
+    })
+  );
+  expect(updates.at(-1)).toMatchObject({phase: 'complete', totalTiles: 65536});
+  expect(updates.at(-1)!.completedTiles).toBeGreaterThan(0);
+  expect(updates.at(-1)!.completedTiles).toBeLessThan(65536);
+  expect(await archive.getHeader()).toMatchObject({numAddressedTiles: 1});
+  expect((await archive.getZxy(8, 0, 0))?.data.byteLength).toBeGreaterThan(0);
+});
+
+test('malformed progress and Finish transport failures reject and terminate the worker', async () => {
+  for (const failure of ['progress', 'finish']) {
+    const worker = createWorkerHarness();
+    const finishController = new AbortController();
+    const pending = createPMTilesArchiveInWorker(
+      createPMTilesSample(),
+      OPTIONS,
+      new AbortController().signal,
+      {finishSignal: finishController.signal}
+    );
+    const rejected = expect(pending).rejects.toThrow();
+    if (failure === 'progress')
+      worker.onmessage!(
+        new MessageEvent('message', {
+          data: {type: 'progress', progress: {phase: 'tiles', totalTiles: 4, completedTiles: 5}}
+        })
+      );
+    else {
+      worker.postMessage.mockImplementation(() => {
+        throw new Error('Finish failed');
+      });
+      finishController.abort();
+    }
+    await rejected;
+    expect(worker.terminate).toHaveBeenCalledOnce();
+  }
 });

@@ -4,13 +4,15 @@
 
 import {useEffect, useRef, useState} from 'react';
 import {createRoot} from 'react-dom/client';
-import {
-  createPMTilesSample,
-  selectPMTilesExampleTiles
+import {createPMTilesSample, selectPMTilesExampleTiles} from './create-pmtiles';
+import type {
+  PMTilesExampleFormat,
+  PMTilesExampleOptions,
+  PMTilesExampleProgress
 } from './create-pmtiles';
-import type {PMTilesExampleFormat, PMTilesExampleOptions} from './create-pmtiles';
 import {createPMTilesArchiveInWorker} from './pmtiles-worker-client';
 import styles from '../common/conversion.module.css';
+import ConversionProgress from './conversion-progress';
 
 /** A retained browser URL with a fixed safe download name. */
 type ArchiveDownload = {
@@ -33,10 +35,14 @@ export default function PMTilesAuthoringApp() {
   const [includeAttributes, setIncludeAttributes] = useState(true);
   const [idColumn, setIdColumn] = useState('');
   const [busy, setBusy] = useState(false);
+  const [progress, setProgress] = useState<PMTilesExampleProgress | null>(null);
+  const [startedAt, setStartedAt] = useState(0);
+  const [finishing, setFinishing] = useState(false);
   const [message, setMessage] = useState('Ready to convert the offline sample.');
   const [error, setError] = useState('');
   const [download, setDownload] = useState<ArchiveDownload | null>(null);
   const controllerRef = useRef<AbortController | null>(null);
+  const finishRef = useRef<AbortController | null>(null);
   const downloadRef = useRef<string | null>(null);
   const effectiveFormat = mode === 'sample' ? 'geojson' : format;
   let selection: string;
@@ -66,6 +72,7 @@ export default function PMTilesAuthoringApp() {
     if (downloadRef.current) URL.revokeObjectURL(downloadRef.current);
     downloadRef.current = null;
     setDownload(null);
+    setProgress(null);
     setError('');
     setMessage('Ready to generate.');
   }
@@ -90,6 +97,10 @@ export default function PMTilesAuthoringApp() {
     clearDownload();
     const controller = new AbortController();
     controllerRef.current = controller;
+    const finishController = new AbortController();
+    finishRef.current = finishController;
+    setFinishing(false);
+    setStartedAt(performance.now());
     setBusy(true);
     setMessage('Generating archive…');
     try {
@@ -108,12 +119,21 @@ export default function PMTilesAuthoringApp() {
         idColumn: idColumn.trim() || undefined,
         bands: selectedColumns.length ? selectedColumns.map(Number) : undefined
       };
-      const blob = await createPMTilesArchiveInWorker(input, options, controller.signal);
+      let latestProgress = {completedTiles: 0, totalTiles: 0};
+      const blob = await createPMTilesArchiveInWorker(input, options, controller.signal, {
+        finishSignal: finishController.signal,
+        onProgress: next => {
+          latestProgress = next;
+          if (controllerRef.current === controller && !controller.signal.aborted) setProgress(next);
+        }
+      });
       if (controller.signal.aborted || controllerRef.current !== controller) return;
       const archiveUrl = URL.createObjectURL(blob);
       downloadRef.current = archiveUrl;
       setDownload({url: archiveUrl, name: `export-${options.tileType}.pmtiles`});
-      setMessage(`Archive ready · ${(blob.size / 1024).toFixed(1)} KiB`);
+      setMessage(
+        `${finishController.signal.aborted && latestProgress.completedTiles < latestProgress.totalTiles ? 'Partial archive ready' : 'Archive ready'} · ${(blob.size / 1024).toFixed(1)} KiB`
+      );
     } catch (error) {
       if (controllerRef.current === controller) {
         if (controller.signal.aborted) setMessage('Conversion cancelled.');
@@ -125,6 +145,7 @@ export default function PMTilesAuthoringApp() {
     } finally {
       if (controllerRef.current === controller) {
         controllerRef.current = null;
+        finishRef.current = null;
         setBusy(false);
       }
     }
@@ -150,7 +171,7 @@ export default function PMTilesAuthoringApp() {
           void generateArchive();
         }}
       >
-        <fieldset disabled={busy} onChange={clearDownload}>
+        <fieldset disabled={busy} hidden={busy || Boolean(progress)} onChange={clearDownload}>
           <legend>1. Choose data</legend>
           <label>
             Source
@@ -214,11 +235,13 @@ export default function PMTilesAuthoringApp() {
           )}
           <p className={styles.hint}>
             {mode === 'url' && effectiveFormat === 'geotiff'
-              ? 'GeoTIFF URLs require HTTP ranges and CORS. Range-read budget: 32 MiB.'
-              : 'Drop a file anywhere in this panel. Input limit: 32 MiB. URLs need CORS access.'}
+              ? 'GeoTIFF URLs need HTTP 206, CORS and exposed Content-Range. Read budget: up to 4 GiB.'
+              : effectiveFormat === 'geotiff'
+                ? 'Local TIFFs read selected regions. Drop a file anywhere in this panel.'
+                : 'Drop a file anywhere in this panel. Input ceiling: 4 GiB. URLs need CORS access.'}
           </p>
         </fieldset>
-        <fieldset disabled={busy} onChange={clearDownload}>
+        <fieldset disabled={busy} hidden={busy || Boolean(progress)} onChange={clearDownload}>
           <legend>2. Choose tiles</legend>
           <div className={styles.bounds}>
             {['West', 'South', 'East', 'North'].map((label, index) => (
@@ -242,7 +265,7 @@ export default function PMTilesAuthoringApp() {
           <label>
             Zoom
             <select value={zoom} onChange={event => setZoom(Number(event.target.value))}>
-              {Array.from({length: 9}, (_, value) => (
+              {Array.from({length: 25}, (_, value) => (
                 <option key={value} value={value}>
                   {value}
                 </option>
@@ -250,10 +273,10 @@ export default function PMTilesAuthoringApp() {
             </select>
           </label>
           <p className={styles.hint}>
-            {selection}. Exports whole intersecting tiles, up to 64 addresses.
+            {selection}. Exports whole intersecting tiles, up to 100,000 addresses.
           </p>
         </fieldset>
-        <fieldset disabled={busy} onChange={clearDownload}>
+        <fieldset disabled={busy} hidden={busy || Boolean(progress)} onChange={clearDownload}>
           <legend>3. Choose output</legend>
           {effectiveFormat === 'geotiff' ? (
             <>
@@ -320,8 +343,30 @@ export default function PMTilesAuthoringApp() {
             Generate PMTiles
           </button>
           {busy && (
+            <button
+              type="button"
+              disabled={
+                finishing ||
+                !progress?.completedTiles ||
+                progress.phase === 'packaging' ||
+                progress.phase === 'complete'
+              }
+              onClick={() => {
+                setFinishing(true);
+                finishRef.current?.abort();
+              }}
+            >
+              {finishing ? 'Finishing…' : 'Finish & download'}
+            </button>
+          )}
+          {busy && (
             <button type="button" onClick={() => controllerRef.current?.abort()}>
               Cancel
+            </button>
+          )}
+          {!busy && progress && (
+            <button type="button" onClick={() => setProgress(null)}>
+              Edit settings
             </button>
           )}
           {download && (
@@ -334,13 +379,22 @@ export default function PMTilesAuthoringApp() {
       <p role="status" aria-live="polite">
         {message}
       </p>
+      {progress && (
+        <ConversionProgress
+          progress={progress}
+          busy={busy}
+          startedAt={startedAt}
+          finishing={finishing}
+        />
+      )}
       {error && (
         <p role="alert" className={styles.error}>
           {error}
         </p>
       )}
       <p className={styles.hint}>
-        32 MiB maximum archive. Conversion runs locally in a worker. No data is uploaded.
+        Up to 4 GiB per archive, subject to browser memory. Conversion runs locally in a worker. No
+        data is uploaded.
       </p>
     </section>
   );
