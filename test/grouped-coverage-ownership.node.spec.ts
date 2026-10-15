@@ -7,6 +7,7 @@ import operatingSystem from 'node:os';
 import path from 'node:path';
 import {spawnSync} from 'node:child_process';
 import {expect, test} from 'vitest';
+import {globSync} from 'tinyglobby';
 
 const CHECKER_PATH = path.resolve('scripts/check-coverage-thresholds.mjs');
 
@@ -57,4 +58,23 @@ test.each([95, 75])('moved format coverage keeps its original gate at %s percent
   } finally {
     fileSystem.rmSync(directory, {recursive: true, force: true});
   }
+});
+
+const coverageConfig = JSON.parse(fileSystem.readFileSync('.nycrc', 'utf8'));
+const productionSources = new Set(
+  globSync(coverageConfig.include, {ignore: coverageConfig.exclude})
+);
+
+test.each([
+  'modules/tables/src/csv/csv-loader.ts',
+  'modules/tables/src/avro/avro-loader.ts',
+  'modules/tables/src/bson/bson-loader.ts',
+  'modules/tables/src/excel/excel-loader.ts',
+  'modules/geospatial/src/kml/kml-loader.ts',
+  'modules/geospatial/src/shapefile/shapefile-loader.ts',
+  'modules/geospatial/src/flatgeobuf/flatgeobuf-loader.ts',
+  'modules/geospatial/src/flatgeobuf/lib/flatgeobuf-reader.ts',
+  'modules/geospatial/src/geopackage/geopackage-loader.ts'
+])('%s remains in the production coverage denominator', source => {
+  expect(productionSources.has(source)).toBe(true);
 });
