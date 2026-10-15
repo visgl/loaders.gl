@@ -129,19 +129,15 @@ export class SharedTile2DHeader<DataT = any> {
     onLoad,
     onError
   }: Tile2DLoadDataProps<DataT>): Promise<void> {
+    /** Publishes only the current, uncanceled request's content or error. */
     const completeLoad = (tileData: DataT | null, error: unknown, loaderId: number): void => {
-      if (loaderId !== this._loaderId) {
+      if (loaderId !== this._loaderId || this._isCancelled) {
         return;
       }
 
       this._loader = undefined;
       this.content = tileData;
       this.error = error ? normalizeTileError(error) : null;
-
-      if (this._isCancelled && !tileData) {
-        this._isLoaded = false;
-        return;
-      }
 
       this._isLoaded = true;
       this._isCancelled = false;
@@ -158,14 +154,17 @@ export class SharedTile2DHeader<DataT = any> {
 
     this._abortController = new AbortController();
     const {signal} = this._abortController;
-    const requestToken = await requestScheduler.scheduleRequest(this, () => 1);
+    // Reloads must not reuse the scheduler token of an aborted request for this tile.
+    const requestToken = await requestScheduler.scheduleRequest({tile: this, loaderId}, () =>
+      loaderId === this._loaderId && !this._isCancelled ? 1 : -1
+    );
 
-    if (!requestToken) {
-      this._isCancelled = true;
+    if (this._isCancelled || loaderId !== this._loaderId) {
+      requestToken?.done();
       return;
     }
-    if (this._isCancelled) {
-      requestToken.done();
+    if (!requestToken) {
+      this._isCancelled = true;
       return;
     }
 
@@ -202,12 +201,14 @@ export class SharedTile2DHeader<DataT = any> {
     this._needsReload = true;
   }
 
-  /** Cancels an in-flight tile request. */
+  /** Cancels a request and invalidates its result even if the loader ignores the abort signal. */
   abort(): void {
     if (this.isLoaded) {
       return;
     }
     this._isCancelled = true;
+    this._loaderId++;
+    this._loader = undefined;
     this._abortController?.abort();
   }
 }

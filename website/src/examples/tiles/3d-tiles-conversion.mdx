@@ -1,0 +1,20 @@
+---
+title: Convert 3D tiles
+hide_title: true
+---
+
+import {ClientExample} from '../../components';
+import {TileConversionTabs} from '@site/src/components/docs/tile-conversion-tabs';
+
+<TileConversionTabs active="3d-tiles" />
+
+<ClientExample kind="tile-conversion" />
+
+Inspect a 3D Tiles tileset or I3S layer URL, or a local/remote SLPK or 3TZ archive.
+Select supported mesh content explicitly, choose SLPK or 3TZ, then convert and download a
+partial archive. Remote inputs need CORS; remote archives also require byte-range responses
+and exposed validators. Open downloaded results in the [archive viewer](/examples/i3s-slpk).
+
+This app uses the existing [portable v5 conversion APIs](/docs/modules/tile-converter/api-reference/v5-conversion)
+and a disposable conversion worker. Input, mesh, precision and archive budgets are unchanged.
+See **Supported profiles and limits** in the app for the qualified subset and exclusions.

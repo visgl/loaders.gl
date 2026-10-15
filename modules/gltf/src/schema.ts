@@ -17,3 +17,8 @@ export {
   GLTF_EXTENSION_JSON_SCHEMAS,
   GLTF_SCHEMA_SOURCE_COMMITS
 } from './lib/types/gltf-version-zod-schemas';
+
+// Permissive extension schemas retain unknown properties and do not insert defaults.
+export * from './lib/types/gltf-additional-extension-schemas';
+export * from './lib/types/gltf-audio-extension-schemas';
+export * from './lib/types/gltf-extension-schemas';

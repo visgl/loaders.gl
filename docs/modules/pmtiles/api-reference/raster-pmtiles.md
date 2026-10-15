@@ -25,6 +25,8 @@ XYZ tile addresses. It requests one region at a time, samples it through the sha
 encodes PNG through `ImageWriter`, and packages a PMTiles v3 archive. It retains the caller's source;
 the caller remains responsible for source disposal.
 
+Try the [browser PMTiles export example](/examples/tiles/pmtiles-authoring) with a local file or dataset URL.
+
 ## Usage
 
 ```typescript

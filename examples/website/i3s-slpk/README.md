@@ -1,4 +1,14 @@
-# Tile archive viewer
+# Tile archive viewer and browser conversion
+
+Build workspace packages from the repository root with `yarn build` and `yarn build-workers`,
+then run `yarn workspace i3s-slpk-loaders-example start`. The standalone example resolves built
+workspace exports and their browser replacements; rebuild packages after library edits.
+
+Open `/conversion.html` for the compact conversion form or `/index.html` for the archive viewer.
+The same conversion app is embedded at `/examples/tiles/3d-tiles-conversion`, beside the
+[PMTiles conversion app](https://loaders.gl/examples/tiles/pmtiles-authoring). They share form styles and navigation.
+
+## Tile archive viewer
 
 Open an I3S Scene Layer Package (`.slpk`) or a 3D Tiles archive (`.3tz`) by dropping a file
 anywhere in the viewer, choosing a local file, or entering an HTTP(S) URL. For remote URLs
