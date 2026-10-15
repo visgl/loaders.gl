@@ -29,6 +29,8 @@ without converting attribute rows to GeoJSON feature objects. `encodePMTiles` pa
 The implementation lives at `@loaders.gl/pmtiles/geoarrow`, keeping export orchestration outside the
 package root's runtime imports.
 
+Try the [browser PMTiles export example](/examples/tiles/pmtiles-authoring) with a local file or dataset URL.
+
 ## Usage
 
 ```typescript
