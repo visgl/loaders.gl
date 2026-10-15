@@ -11,3 +11,5 @@ export type {
   GeoPackageSourceMetadata,
   GeoPackageSourceTableMetadata
 } from './geopackage-source-loader';
+
+export type {GeoPackageTileTableMetadata} from './lib/geopackage-tile-metadata';

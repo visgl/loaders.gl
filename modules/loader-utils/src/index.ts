@@ -508,3 +508,12 @@ export {waitForPromiseWithSignal, waitForPromiseWithSignals} from './lib/request
 
 export {validateRasterRegion} from './lib/sources/raster-region';
 export {encodeHex, decodeHex} from './lib/binary-utils/hex-transcoder';
+
+// Shared tile-grid normalization and addressing.
+export {
+  createTileGrid,
+  createTileGridMatrix,
+  getRequestedTileMatrix,
+  getTileGridMatrixId
+} from './lib/sources/tile-grid';
+export type {TileMatrixFields} from './lib/sources/tile-grid';

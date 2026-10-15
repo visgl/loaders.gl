@@ -89,11 +89,11 @@ test('ArcGISVectorTileServerSource applies core credentials to metadata and tile
   });
 
   await source.getMetadata();
-  await source.getTile({z: 2, x: 4, y: 5});
+  await source.getTile({z: 1, x: 1, y: 1});
 
   expect(requestedURLs).toEqual([
     `${VECTOR_TILE_SERVER_URL}?f=pjson&token=secret`,
-    `${VECTOR_TILE_SERVER_URL}/tile/2/5/4.pbf?token=secret`
+    `${VECTOR_TILE_SERVER_URL}/tile/1/1/1.pbf?token=secret`
   ]);
 });
 

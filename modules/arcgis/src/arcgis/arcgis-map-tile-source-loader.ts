@@ -20,7 +20,8 @@ import type {
   TileSource,
   TileSourceMetadata
 } from '@loaders.gl/loader-utils';
-import {DataSource} from '@loaders.gl/loader-utils';
+import {DataSource, getTileGridMatrixId} from '@loaders.gl/loader-utils';
+import {createArcGISTileGrid} from './arcgis-tile-grid';
 
 /** ArcGIS MapServer source for cached `/tile/{z}/{y}/{x}` image tiles. */
 export class ArcGISMapTileSource
@@ -59,7 +60,9 @@ export class ArcGISMapTileSource
       title: metadata.name || '',
       abstract: metadata.description || metadata.serviceDescription || '',
       attributions: metadata.copyrightText ? [metadata.copyrightText] : undefined,
-      minZoom: 0,
+      minZoom: metadata.tileInfo?.lods?.length
+        ? Math.min(...metadata.tileInfo.lods.map(level => level.level))
+        : 0,
       maxZoom: metadata.tileInfo?.lods?.length
         ? Math.max(...metadata.tileInfo.lods.map(lod => lod.level))
         : undefined,
@@ -74,21 +77,7 @@ export class ArcGISMapTileSource
         srs: spatialReferenceWkid ? [`EPSG:${spatialReferenceWkid}`] : [],
         layers: []
       },
-      tileGrid: metadata.tileInfo
-        ? {
-            crs: (metadata.tileInfo.spatialReference as {wkid?: number} | undefined)?.wkid
-              ? `EPSG:${(metadata.tileInfo.spatialReference as {wkid: number}).wkid}`
-              : undefined,
-            tileSize:
-              metadata.tileInfo.rows && metadata.tileInfo.cols
-                ? [metadata.tileInfo.cols, metadata.tileInfo.rows]
-                : undefined,
-            origin: metadata.tileInfo.origin
-              ? [metadata.tileInfo.origin.x, metadata.tileInfo.origin.y]
-              : undefined,
-            matrixIds: metadata.tileInfo.lods?.map(lod => String(lod.level))
-          }
-        : undefined
+      tileGrid: createArcGISTileGrid(metadata.tileInfo, spatialReference)
     };
   }
 
@@ -121,18 +110,24 @@ export class ArcGISMapTileSource
 
   /** Builds the standard ArcGIS cached tile URL. */
   getTileURL(parameters: GetTileParameters): string {
+    const metadata = this.options['arcgis-map-server']?.metadata || this._metadata;
+    const matrixId = getTileGridMatrixId(
+      createArcGISTileGrid(metadata?.tileInfo, metadata?.spatialReference),
+      parameters
+    );
     const template = this.options['arcgis-map-server']?.urlTemplate;
     if (template) {
       const templateURL = new URL(
         template
-          .replaceAll('{z}', String(parameters.z))
+          .replaceAll('{z}', encodeURIComponent(matrixId))
+          .replaceAll('{tileMatrix}', encodeURIComponent(matrixId))
           .replaceAll('{y}', String(parameters.y))
           .replaceAll('{x}', String(parameters.x))
       );
       return templateURL.toString();
     }
     const url = new URL(this.getServiceURL(parameters));
-    url.pathname = `${url.pathname.replace(/\/$/, '')}/tile/${parameters.z}/${parameters.y}/${parameters.x}`;
+    url.pathname = `${url.pathname.replace(/\/$/, '')}/tile/${encodeURIComponent(matrixId)}/${parameters.y}/${parameters.x}`;
     return url.toString();
   }
 
@@ -143,6 +138,11 @@ export class ArcGISMapTileSource
 
   /** Builds a dynamic MapServer `export` request for one web-mercator tile. */
   getExportTileURL(parameters: GetTileParameters, tileSize?: number): string {
+    if (parameters.tileMatrix !== undefined && parameters.tileMatrix !== String(parameters.z)) {
+      throw new Error(
+        'ArcGIS dynamic export requires a matching XYZ zoom; use cached mode for native matrices'
+      );
+    }
     const options = this.options['arcgis-map-server'] || {};
     const resolvedTileSize = tileSize || options.tileSize || 256;
     const [west, south, east, north] = getWebMercatorTileBounds(parameters);
