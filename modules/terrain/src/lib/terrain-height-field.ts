@@ -162,9 +162,11 @@ export class TerrainHeightField {
         right = Math.min(bounds[2], entry.bounds[2]);
       const bottom = Math.max(bounds[1], entry.bounds[1]),
         top = Math.min(bounds[3], entry.bounds[3]);
-      if (left > right || bottom > top || (width && left === right) || (height && bottom === top))
-        continue;
+      if (left > right || bottom > top) continue;
       if (this.hasMissingSamples(entry, [left, bottom, right, top])) return false;
+      // Closed neighboring footprints still contribute holes on a probe's edge,
+      // even though their zero-area contact cannot add union coverage.
+      if ((width && left === right) || (height && bottom === top)) continue;
       clipped.push([left, bottom, right, top]);
     }
     // Exact slab/interval coverage: an arbitrarily narrow representable gap stays a gap.

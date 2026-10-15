@@ -185,6 +185,20 @@ test('even narrow representable gaps are not admitted by an area or length toler
   expect(new TerrainHeightField([grid()]).coversBounds([0, 0, 10 + 1e-12, 10])).toBe(false);
 });
 
+test.each([
+  0, 1024
+])('closed probe boundaries include touching neighbor holes with mask budget %i', maxMaskBytes => {
+  const sources = [grid(), grid([10, 0, 20, 10], 'grid-node', 4)];
+  const field = new TerrainHeightField(sources, {maxMaskBytes});
+  expect(field.sampleHeight([10, 5])).toBeNull();
+  expect(field.coversBounds([0, 0, 10, 10])).toBe(false);
+  expect(field.coversBounds([0, 0, 9, 10])).toBe(true);
+  const north = new TerrainHeightField([grid(), grid([0, 10, 10, 20], 'grid-node', 8)], {
+    maxMaskBytes
+  });
+  expect(north.coversBounds([0, 0, 10, 10])).toBe(false);
+});
+
 test('bounds-admitted masks are reused and budget pressure retains exact fallback', () => {
   const first = grid([0, 0, 10, 10], 'grid-node', 5),
     second = grid([10, 0, 20, 10], 'grid-node', 5);
