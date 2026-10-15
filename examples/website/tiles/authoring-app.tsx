@@ -5,11 +5,11 @@
 import {useEffect, useRef, useState} from 'react';
 import {createRoot} from 'react-dom/client';
 import {
-  createPMTilesExampleArchive,
   createPMTilesSample,
   selectPMTilesExampleTiles
 } from './create-pmtiles';
 import type {PMTilesExampleFormat, PMTilesExampleOptions} from './create-pmtiles';
+import {createPMTilesArchiveInWorker} from './pmtiles-worker-client';
 import styles from '../common/conversion.module.css';
 
 /** A retained browser URL with a fixed safe download name. */
@@ -108,7 +108,7 @@ export default function PMTilesAuthoringApp() {
         idColumn: idColumn.trim() || undefined,
         bands: selectedColumns.length ? selectedColumns.map(Number) : undefined
       };
-      const blob = await createPMTilesExampleArchive(input, options, controller.signal);
+      const blob = await createPMTilesArchiveInWorker(input, options, controller.signal);
       if (controller.signal.aborted || controllerRef.current !== controller) return;
       const archiveUrl = URL.createObjectURL(blob);
       downloadRef.current = archiveUrl;
@@ -338,8 +338,7 @@ export default function PMTilesAuthoringApp() {
         </p>
       )}
       <p className={styles.hint}>
-        32 MiB maximum archive. Conversion runs locally and may briefly pause the page. No data is
-        uploaded.
+        32 MiB maximum archive. Conversion runs locally in a worker. No data is uploaded.
       </p>
     </section>
   );
