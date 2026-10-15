@@ -21,7 +21,7 @@
 .app p {
   margin: 8px 0;
 }
-.app form {
+.steps {
   display: grid;
   gap: 12px;
   align-items: start;
@@ -119,7 +119,7 @@
   overflow-wrap: anywhere;
 }
 @container (min-width: 620px) {
-  .app form {
+  .steps {
     grid-template-columns: repeat(3, minmax(0, 1fr));
   }
 }
@@ -131,4 +131,9 @@
   cursor: pointer;
   font-weight: 600;
   margin-bottom: 8px;
+}
+
+.app form {
+  margin: 0;
+  min-width: 0;
 }

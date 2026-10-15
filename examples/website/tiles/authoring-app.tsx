@@ -144,6 +144,7 @@ export default function PMTilesAuthoringApp() {
         <h2>Create a PMTiles archive</h2>
       </header>
       <form
+        className={styles.steps}
         onSubmit={event => {
           event.preventDefault();
           void generateArchive();

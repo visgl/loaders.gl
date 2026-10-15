@@ -193,6 +193,8 @@ test('conversion controls require explicit selection, preview both outputs and r
         selection.dispatchEvent(new Event('change', {bubbles: true}));
       });
       const output = container.querySelector<HTMLSelectElement>('#conversion-format')!;
+      expect(output.form).toBeNull();
+      expect(container.querySelector<HTMLTextAreaElement>('#conversion-features')!.form).toBeNull();
       output.value = format;
       await act(async () => {
         output.dispatchEvent(new Event('change', {bubbles: true}));
@@ -356,13 +358,13 @@ test('standalone 3D conversion controls fit the shared laptop and mobile layout'
   try {
     await act(async () => root.render(React.createElement(TileConversionApp)));
     const app = container.querySelector('section')!;
-    const form = container.querySelector('form')!;
+    const steps = container.querySelector('[aria-label="Conversion steps"]')!;
     expect(app.getAttribute('aria-label')).toBe('Convert 3D tiles');
-    expect(getComputedStyle(form).gridTemplateColumns.split(' ')).toHaveLength(3);
+    expect(getComputedStyle(steps).gridTemplateColumns.split(' ')).toHaveLength(3);
     expect(app.getBoundingClientRect().height).toBeLessThanOrEqual(550);
     expect(container.querySelector('details')!.open).toBe(false);
     container.style.width = '360px';
-    expect(getComputedStyle(form).gridTemplateColumns.split(' ')).toHaveLength(1);
+    expect(getComputedStyle(steps).gridTemplateColumns.split(' ')).toHaveLength(1);
     expect(app.scrollWidth).toBeLessThanOrEqual(360);
   } finally {
     await act(async () => root.unmount());

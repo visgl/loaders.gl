@@ -203,92 +203,98 @@ export function ConversionPanel({onPreview}: ConversionPanelProps) {
       <header>
         <h2>Convert selected tile meshes</h2>
       </header>
-      <form
-        onSubmit={event => {
-          event.preventDefault();
-          void runOperation(false);
-        }}
-      >
-        <fieldset disabled={busy}>
-          <legend>1. Choose data</legend>
-          <label htmlFor="conversion-input-format">
-            Input format
-            <select
-              id="conversion-input-format"
-              disabled={busy}
-              value={inputFormat}
-              onChange={event => {
-                setInputFormat(event.target.value as typeof inputFormat);
-                setFile(null);
-                setInspection(null);
-                setResourceIds([]);
-                setResult(null);
-                setError('');
-                setStatus('');
-              }}
-            >
-              <option value="3d-tiles">3D Tiles URL</option>
-              <option value="i3s">I3S layer URL</option>
-              <option value="slpk">Local SLPK file (up to 16 MiB)</option>
-              <option value="slpk-url">SLPK URL (up to 16 MiB)</option>
-              <option value="3tz">Local 3TZ file (up to 16 MiB)</option>
-              <option value="3tz-url">3TZ URL (up to 16 MiB)</option>
-            </select>
-          </label>
-          {localArchive ? (
-            <label htmlFor="conversion-file">
-              {inputFormat.toUpperCase()} file
-              <input
-                key={inputFormat}
-                id="conversion-file"
-                type="file"
-                accept={'.' + inputFormat}
-                required
+      <div className={styles.steps} role="group" aria-label="Conversion steps">
+        <form
+          aria-label="Inspect dataset"
+          onSubmit={event => {
+            event.preventDefault();
+            void runOperation(false);
+          }}
+        >
+          <fieldset disabled={busy}>
+            <legend>1. Choose data</legend>
+            <label htmlFor="conversion-input-format">
+              Input format
+              <select
+                id="conversion-input-format"
                 disabled={busy}
+                value={inputFormat}
                 onChange={event => {
-                  setFile(event.target.files?.[0] ?? null);
+                  setInputFormat(event.target.value as typeof inputFormat);
+                  setFile(null);
                   setInspection(null);
                   setResourceIds([]);
                   setResult(null);
                   setError('');
                   setStatus('');
                 }}
-              />
+              >
+                <option value="3d-tiles">3D Tiles URL</option>
+                <option value="i3s">I3S layer URL</option>
+                <option value="slpk">Local SLPK file (up to 16 MiB)</option>
+                <option value="slpk-url">SLPK URL (up to 16 MiB)</option>
+                <option value="3tz">Local 3TZ file (up to 16 MiB)</option>
+                <option value="3tz-url">3TZ URL (up to 16 MiB)</option>
+              </select>
             </label>
-          ) : (
-            <label htmlFor="conversion-url">
-              {inputFormat === 'i3s'
-                ? 'I3S layer'
-                : inputFormat === 'slpk-url'
-                  ? 'SLPK archive'
-                  : inputFormat === '3tz-url'
-                    ? '3TZ archive'
-                    : '3D Tiles tileset'}{' '}
-              URL
-              <input
-                key="conversion-url-input"
-                id="conversion-url"
-                type="url"
-                required
-                disabled={busy}
-                value={input}
-                placeholder="https://example.com/tileset.json"
-                onChange={event => {
-                  setInput(event.target.value);
-                  setInspection(null);
-                  setResourceIds([]);
-                  setResult(null);
-                  setError('');
-                  setStatus('');
-                }}
-              />
-            </label>
-          )}
-          <p className={styles.hint}>
-            URLs need CORS access. Remote archives also need byte-range responses and exposed
-            validators.
-          </p>
-        </fieldset>
+            {localArchive ? (
+              <label htmlFor="conversion-file">
+                {inputFormat.toUpperCase()} file
+                <input
+                  key={inputFormat}
+                  id="conversion-file"
+                  type="file"
+                  accept={'.' + inputFormat}
+                  required
+                  disabled={busy}
+                  onChange={event => {
+                    setFile(event.target.files?.[0] ?? null);
+                    setInspection(null);
+                    setResourceIds([]);
+                    setResult(null);
+                    setError('');
+                    setStatus('');
+                  }}
+                />
+              </label>
+            ) : (
+              <label htmlFor="conversion-url">
+                {inputFormat === 'i3s'
+                  ? 'I3S layer'
+                  : inputFormat === 'slpk-url'
+                    ? 'SLPK archive'
+                    : inputFormat === '3tz-url'
+                      ? '3TZ archive'
+                      : '3D Tiles tileset'}{' '}
+                URL
+                <input
+                  key="conversion-url-input"
+                  id="conversion-url"
+                  type="url"
+                  required
+                  disabled={busy}
+                  value={input}
+                  placeholder="https://example.com/tileset.json"
+                  onChange={event => {
+                    setInput(event.target.value);
+                    setInspection(null);
+                    setResourceIds([]);
+                    setResult(null);
+                    setError('');
+                    setStatus('');
+                  }}
+                />
+              </label>
+            )}
+            <p className={styles.hint}>
+              URLs need CORS access. Remote archives also need byte-range responses and exposed
+              validators.
+            </p>
+            <button type="submit" disabled={busy || (localArchive ? !file : !input.trim())}>
+              Inspect
+            </button>
+          </fieldset>
+        </form>
         <fieldset disabled={busy}>
           <legend>2. Choose content</legend>
           {inspection ? (
@@ -383,9 +389,6 @@ export function ConversionPanel({onPreview}: ConversionPanelProps) {
           </details>
         </fieldset>
         <div className={styles.actions}>
-          <button type="submit" disabled={busy || (localArchive ? !file : !input.trim())}>
-            Inspect
-          </button>
           {inspection && (
             <button
               type="button"
@@ -423,7 +426,7 @@ export function ConversionPanel({onPreview}: ConversionPanelProps) {
             </>
           )}
         </div>
-      </form>
+      </div>
       {status && (
         <p role="status" aria-live="polite">
           {status}
