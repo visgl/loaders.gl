@@ -100,6 +100,20 @@ Use `GLBLoader` and `GLBWriter` for the binary container without glTF scene proc
 
 Certain glTF extensions are fully or partially supported by the glTF classes. For details on which extensions are supported, see [glTF Extensions](/docs/modules/gltf/formats/gltf#gltf-extensions).
 
+[Spatial audio support](/docs/modules/gltf/formats/gltf#spatial-audio) covers registered
+`MPEG_audio_spatial` metadata and draft `KHR_audio_emitter` resources and attachments. The loader
+returns encoded clips and audio declarations for the application's audio runtime.
+
+[Typed extension metadata and permissive validation](/docs/modules/gltf/formats/gltf#typed-extension-metadata-and-permissive-validation)
+covers material variants, GPU instancing, animation pointers, node visibility and interaction
+flags, and XMP metadata. Public schemas preserve unknown properties and omitted defaults.
+Use `getMaterialVariantMappings`, `getMeshInstances`, and `getXMPMetadata` to resolve metadata
+references while retaining the original glTF document.
+
+
+[Interactivity graphs](/docs/modules/gltf/formats/gltf#khr_interactivity) are preserved as typed
+metadata and exposed by `getGLTFInteractivity`; the application runtime executes them.
+
 ## Draco Mesh and Point Cloud Compression
 
 `GLTFLoader` decodes supported Draco extensions when `gltf.decompressMeshes` is

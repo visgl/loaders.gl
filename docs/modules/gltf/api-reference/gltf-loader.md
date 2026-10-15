@@ -220,6 +220,24 @@ The loader also supports draft glTF 2.1 [thumbnails](/docs/modules/gltf/formats/
 
 The GLTF Loader returns an object with a `json` field containing the glTF Scenegraph. In its basic mode, the `GLTFLoader` does not modify the loaded JSON in any way. Instead, the results of additional processing are placed in parallel top-level fields such as `buffers` and `images`. This ensures that applications that want to work with the standard glTF data structure can do so.
 
+[Audio extensions](/docs/modules/gltf/formats/gltf#spatial-audio) add the following optional
+fields to the loader result. Original audio extension declarations and extension lists are retained.
+
+| Result field | Extension | Contents |
+| --- | --- | --- |
+| `audioClips` | Draft `KHR_audio_emitter` | Encoded `Uint8Array` data and original resource declarations, parallel to the extension's `audio` array. |
+| `audioEmitters` | Draft `KHR_audio_emitter` | Node and scene emitter instances with resolved source and clip references. |
+| `spatialAudio` | `MPEG_audio_spatial` | Root and node audio declarations, including accessor indices, listeners and reverbs. |
+
+`gltf.loadAudio: false` retains KHR emitter and clip metadata without loading encoded audio.
+The application handles media decoding, playback, spatialization, and MPEG timed-media behavior.
+`autoplay` remains a declaration for that application to interpret.
+
+The [extension schemas and helpers](/docs/modules/gltf/formats/gltf#typed-extension-metadata-and-permissive-validation)
+also expose material variants, GPU instance attributes, animation pointers, node interaction
+flags and XMP packets. These schemas validate known fields while preserving unknown data;
+the loader retains runtime-dependent declarations in the source JSON.
+
 For applications that need static geometry in the Mesh Arrow layout, use `convertGLTFToMeshArrow()` after loading. It converts each source primitive once and returns node placements separately, preserving mesh reuse. Dense, packed accessors retain views of source buffers; interleaved, sparse, and implicit-zero accessors are materialized without changing their logical component values. Conversion does not modify the glTF or bake node transforms, skinning, morph targets, or GPU instancing.
 
 ```ts
@@ -259,6 +277,7 @@ not provide `parseSync`. Async parsing supports the following resource processin
 | `gltf.loadFiles`          | Boolean | `false` | Resolve draft glTF 2.1 `files` entries from URIs or buffer views.             |
 | `gltf.loadExternalAssets` | Boolean | `false` | Recursively parse draft glTF 2.1 external assets instantiated by scene nodes. |
 | `gltf.loadImages`         | Boolean | `true`  | Load images referenced by textures or the draft glTF 2.1 thumbnail.          |
+| `gltf.loadAudio`          | Boolean | `true`  | Load encoded draft `KHR_audio_emitter` clips. Does not decode or play audio. |
 | `gltf.decompressMeshes`   | Boolean | `true`  | Decompress Draco and [KHR/EXT meshopt](/docs/modules/gltf/formats/gltf#meshopt-compression) data. |
 | `gltf.normalize`          | Boolean or string | `true`  | Automatically attempt glTF 1 to 2 conversion. `true` / `'best-effort'` continue through reported gaps; `'strict'` rejects reported unsupported features; `false` rejects glTF 1 input. |
 
@@ -391,26 +410,6 @@ legacy fallback rules.
 
 ## Interactivity graphs
 
-`GLTFLoader` preserves the root `KHR_interactivity` extension. Use
-`getGLTFInteractivity(gltf)` from `@loaders.gl/gltf` with either a loader result or
-raw glTF JSON to read it; the helper returns `null` when the extension is absent.
-
-```typescript
-import {getGLTFInteractivity} from '@loaders.gl/gltf';
-
-const interactivity = getGLTFInteractivity(gltf);
-const graph = interactivity?.graphs[interactivity.graph ?? 0];
-```
-
-The helper returns the original extension object, without validating, cloning,
-resolving graph indices, or inserting defaults. Treat the returned value as shared
-data. `postProcessGLTF` retains the extension and `GLTFWriter` preserves it in GLB
-output. Graph execution and property-pointer evaluation are the rendering runtime's
-responsibility.
-
-The exported `GLTF_KHR_interactivity`, `GLTFInteractivityGraph`, node, declaration,
-socket, event, variable, and value types describe the
-[Khronos JSON schemas](https://github.com/KhronosGroup/glTF/tree/main/extensions/2.0/Khronos/KHR_interactivity/schema).
-Indices refer to arrays within the same graph. Event IDs and initial values are
-optional. TypeScript types do not validate index bounds, nonempty arrays, reserved
-socket names, or operation-specific configuration and component values at runtime.
+The loader preserves `KHR_interactivity` graph declarations. See the
+[glTF format guide](../formats/gltf#khr_interactivity) for the graph types,
+`getGLTFInteractivity` accessor, validation, and runtime responsibilities.
