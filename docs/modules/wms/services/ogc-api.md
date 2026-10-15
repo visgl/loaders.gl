@@ -210,6 +210,8 @@ relative URL resolves against the landing page.
   set given by URL first; `getTileURL()` uses it once `getMetadata()` has loaded it.
 - `setProps()` replaces an inline `tileMatrixSet` document as a whole rather than merging fields.
 
+Matrix dimensions must either include both `matrixWidth` and `matrixHeight` or omit both. A one-axis dimension declaration is rejected rather than silently losing its request bounds.
+
 ### Tile availability limits
 
 Discovered tileset `tileMatrixSetLimits` values are normalized into `tileGrid.limits`.

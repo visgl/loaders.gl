@@ -159,3 +159,27 @@ test('availability rejects invalid advertised dimensions without requiring geome
   });
   expect(() => source.isTileAvailable({z: 0, x: 0, y: 0})).toThrow('positive safe integers');
 });
+
+test.each([
+  {matrixWidth: 4},
+  {matrixHeight: 3}
+])('rejects incomplete matrix dimensions before requesting tile content: %j', async dimensions => {
+  const source = OGCAPITilesSourceLoader.createDataSource(API_URL, {
+    'ogc-api': {
+      tileTemplate: `${TILESET_URL}/{tileMatrix}/{tileRow}/{tileCol}`,
+      tileMatrixSet: {tileMatrices: [{id: 'coarse', ...dimensions}]}
+    }
+  });
+  const requestedUrls: string[] = [];
+  source.fetch = async url => {
+    requestedUrls.push(url);
+    throw new Error('Unexpected tile request');
+  };
+  expect(() => source.isTileAvailable({z: 0, x: 99, y: 99})).toThrow(
+    'require both matrixWidth and matrixHeight'
+  );
+  await expect(source.getTile({z: 0, x: 99, y: 99})).rejects.toThrow(
+    'require both matrixWidth and matrixHeight'
+  );
+  expect(requestedUrls).toEqual([]);
+});

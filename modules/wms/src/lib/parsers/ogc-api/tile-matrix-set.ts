@@ -119,6 +119,11 @@ function toTileGridMatrix(
   ) {
     throw new Error('OGC TileMatrixSet cornerOfOrigin must be topLeft or bottomLeft');
   }
+  if ((matrix.matrixWidth === undefined) !== (matrix.matrixHeight === undefined)) {
+    throw new Error(
+      'OGC TileMatrixSet matrix dimensions require both matrixWidth and matrixHeight'
+    );
+  }
   return createTileGridMatrix({
     id: matrix.id,
     resolution:
