@@ -54,3 +54,14 @@ export function selectServiceCRS(
 export function getServiceCRSAxisOrder(crs: ServiceCRS | undefined): 'xy' | 'yx' {
   return normalizeServiceCRS(crs) === 'EPSG:4326' ? 'yx' : 'xy';
 }
+
+/**
+ * Returns the built-in length of one CRS unit in meters: EPSG:4326 and CRS:84 degrees use the OGC
+ * equatorial convention, Web Mercator uses meters. Other CRSs return undefined.
+ */
+export function getServiceCRSMetersPerUnit(crs: ServiceCRS | undefined): number | undefined {
+  const normalizedCRS = normalizeServiceCRS(crs);
+  if (normalizedCRS === 'EPSG:4326' || normalizedCRS === 'CRS:84')
+    return (2 * Math.PI * 6378137) / 360;
+  return areServiceCRSEquivalent(normalizedCRS, 'EPSG:3857') ? 1 : undefined;
+}
