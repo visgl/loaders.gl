@@ -448,10 +448,14 @@ for (const instance of gltf.audioEmitters || []) {
 }
 ```
 
-Set `gltf.loadAudio: false` to resolve emitter metadata without fetching or exposing clip
-bytes. With `gltf.loadBuffers: false`, clips backed by unavailable buffers retain metadata
-only; URI audio still loads unless `loadAudio` is also false. To bypass audio handling and
-its reference validation entirely, set
+Set `gltf.loadAudio: false` to resolve emitter metadata without fetching audio URIs or
+populating `audioClips[].data`. Buffer loading runs independently: the default
+`gltf.loadBuffers: true` still downloads external buffers, including buffers containing
+audio. Set both `loadAudio: false` and `loadBuffers: false` to avoid those downloads; this
+also disables loading external buffers used by meshes and other resources. With
+`loadBuffers: false` alone, clips backed by unavailable buffers retain metadata only,
+while URI audio still loads. Embedded GLB bytes are already part of the asset download.
+To bypass audio handling and its reference validation entirely, set
 `gltf.excludeExtensions: ['MPEG_audio_spatial', 'KHR_audio_emitter']`.
 
 ## Typed extension metadata and permissive validation

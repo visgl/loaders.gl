@@ -229,7 +229,9 @@ fields to the loader result. Original audio extension declarations and extension
 | `audioEmitters` | Draft `KHR_audio_emitter` | Node and scene emitter instances with resolved source and clip references. |
 | `spatialAudio` | `MPEG_audio_spatial` | Root and node audio declarations, including accessor indices, listeners and reverbs. |
 
-`gltf.loadAudio: false` retains KHR emitter and clip metadata without loading encoded audio.
+`gltf.loadAudio: false` retains KHR emitter and clip metadata without fetching audio URIs
+or populating `audioClips[].data`. External buffers containing audio still load when
+`gltf.loadBuffers` is `true`; disable both options to avoid those downloads.
 The application handles media decoding, playback, spatialization, and MPEG timed-media behavior.
 `autoplay` remains a declaration for that application to interpret.
 
@@ -277,7 +279,7 @@ not provide `parseSync`. Async parsing supports the following resource processin
 | `gltf.loadFiles`          | Boolean | `false` | Resolve draft glTF 2.1 `files` entries from URIs or buffer views.             |
 | `gltf.loadExternalAssets` | Boolean | `false` | Recursively parse draft glTF 2.1 external assets instantiated by scene nodes. |
 | `gltf.loadImages`         | Boolean | `true`  | Load images referenced by textures or the draft glTF 2.1 thumbnail.          |
-| `gltf.loadAudio`          | Boolean | `true`  | Load encoded draft `KHR_audio_emitter` clips. Does not decode or play audio. |
+| `gltf.loadAudio`          | Boolean | `true`  | Load encoded draft `KHR_audio_emitter` clips. Independent of `loadBuffers`; does not decode or play audio. |
 | `gltf.decompressMeshes`   | Boolean | `true`  | Decompress Draco and [KHR/EXT meshopt](/docs/modules/gltf/formats/gltf#meshopt-compression) data. |
 | `gltf.normalize`          | Boolean or string | `true`  | Automatically attempt glTF 1 to 2 conversion. `true` / `'best-effort'` continue through reported gaps; `'strict'` rejects reported unsupported features; `false` rejects glTF 1 input. |
 

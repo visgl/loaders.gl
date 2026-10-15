@@ -113,7 +113,7 @@ export function getXMPMetadata(
 
 /** Gets source JSON from either a raw document or a loader result. */
 function getDocument(gltf: GLTF | GLTFWithBuffers): GLTF {
-  return 'json' in gltf ? (gltf as GLTFWithBuffers).json : (gltf as GLTF);
+  return ('asset' in gltf ? gltf : gltf.json) as GLTF;
 }
 
 /** Resolves an extension index and reports broken references without mutating the document. */

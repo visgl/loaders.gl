@@ -192,6 +192,13 @@ test.each([
   await expect(decodeEmitters(asset, {})).rejects.toThrow(message);
 });
 
+test('MPEG audio distinguishes raw documents with a custom json property from loader results', () => {
+  const document = {...createSpatialAsset().json, json: {applicationData: true}};
+  const descriptors = getSpatialAudio(document);
+  expect(descriptors).toHaveLength(3);
+  expect(descriptors).toEqual(getSpatialAudio({json: document, buffers: []}));
+});
+
 test('MPEG audio discovers root and node declarations without mutating JSON or fetching media', async () => {
   const asset = createSpatialAsset();
   const original = structuredClone(asset.json);

@@ -14,7 +14,7 @@ export const name = 'MPEG_audio_spatial';
 
 /** Collects root and node audio declarations without loading media or changing source JSON. */
 export function getSpatialAudio(gltf: GLTF | GLTFWithBuffers): GLTFSpatialAudio[] {
-  const json: GLTF = 'json' in gltf ? (gltf as GLTFWithBuffers).json : (gltf as GLTF);
+  const json: GLTF = ('asset' in gltf ? gltf : gltf.json) as GLTF;
   const descriptors: GLTFSpatialAudio[] = [];
   const extension = json.extensions?.[name] as GLTF_MPEG_audio_spatial | undefined;
   if (extension) descriptors.push({nodeIndex: null, extension});

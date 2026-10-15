@@ -178,6 +178,19 @@ describe('permissive glTF extension schemas', () => {
 });
 
 describe('glTF extension data helpers', () => {
+  test('distinguishes raw documents with a custom json property from loader results', () => {
+    const document = {...createDocument(), json: {applicationData: true}};
+    const wrapped = {json: document, buffers: []};
+    expect(getMaterialVariantMappings(document)).toEqual(getMaterialVariantMappings(wrapped));
+    expect(getMaterialVariantMappings(document)).toHaveLength(1);
+    expect(getMeshInstances(document)).toEqual(getMeshInstances(wrapped));
+    expect(getMeshInstances(document)).toHaveLength(1);
+    expect(getXMPMetadata(document, document.asset)).toBe(
+      document.extensions!.KHR_xmp_json_ld!.packets[0]
+    );
+    expect(getXMPMetadata(wrapped, document.asset)).toBe(getXMPMetadata(document, document.asset));
+  });
+
   test('resolves material variants without applying a choice or changing source JSON', () => {
     const document = createDocument();
     const original = structuredClone(document);
