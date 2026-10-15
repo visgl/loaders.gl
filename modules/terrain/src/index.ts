@@ -4,6 +4,14 @@
 
 export type {TerrainLoaderOptions} from './terrain-loader';
 export type {
+  TerrainGridMetadata,
+  TerrainHeightGrid,
+  TerrainRay,
+  TerrainSurfaceHit,
+  TerrainSurfaceBounds,
+  TerrainSurface
+} from './lib/terrain-contracts';
+export type {
   ElevationDecoder,
   TerrainHeightmap,
   TerrainHeightmapImage
