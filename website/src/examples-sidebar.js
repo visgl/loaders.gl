@@ -71,7 +71,7 @@ const sidebars = {
       label: 'Image Formats',
       collapsed: false,
       items: [
-        'textures',
+        'textures'
         // 'gltf',
       ]
     },
@@ -93,7 +93,14 @@ const sidebars = {
     {
       type: 'category',
       label: 'Tiled Geospatial Formats',
-      items: ['tiles/mvt', 'tiles/pmtiles', 'tiles/table-tiler', 'tiles/mlt']
+      items: [
+        'tiles/mvt',
+        'tiles/pmtiles',
+        'tiles/pmtiles-authoring',
+        'tiles/3d-tiles-conversion',
+        'tiles/table-tiler',
+        'tiles/mlt'
+      ]
     },
     {
       type: 'category',
@@ -142,9 +149,7 @@ const sidebars = {
     {
       type: 'category',
       label: 'Benchmarks',
-      items: [
-        'benchmarks',
-      ]
+      items: ['benchmarks']
     }
   ]
 };

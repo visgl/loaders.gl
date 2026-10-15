@@ -92,8 +92,8 @@ Key options:
 - `minZoom` / `maxZoom`: requested zoom range
 - `extent`: optional bounding box limit
 - `tileSize`: tile size in pixels
-- `maxCacheSize`: maximum retained tile count
-- `maxCacheByteSize`: maximum retained tile bytes
+- `maxCacheSize`: tile-count high-water mark, default `100`
+- `maxCacheByteSize`: retained-byte high-water mark, unlimited by default
 - `maxRequests`: concurrent request limit
 - `debounceTime`: request scheduling debounce in milliseconds
 - `zoomOffset`: integer zoom adjustment
@@ -107,18 +107,61 @@ Key options:
 - `selectedTiles`: selected tiles across attached views
 - `visibleTiles`: visible tiles across attached views
 - `loadingTiles`: cache entries with in-flight requests
-- `unloadedTiles`: cache entries without content
+- `unloadedTiles`: cache entries whose `isLoaded` flag is false (pending, canceled, or stale)
 - `stats`: live counters for cache and consumer state
 
 ## Methods
 
-- `attach({id, viewport, modelMatrix})`: attach or update a consumer view
-- `detach(id)`: remove a consumer view
+- `attachConsumer(id)`: register a consumer identified by a symbol
+- `updateConsumer(id, selectedTiles, visibleTiles)`: update a consumer's retained tiles
+- `detachConsumer(id)`: remove a consumer and prune unused requests and cache entries
+- `getTileIndices(context)`: select indices through the configured traversal adapter
+- `getTile(index, create?)`: access a tile, optionally creating and loading it
+- `prepareTiles()`: rebuild cached parent/child links and the sorted `tiles` list
 - `setOptions(options)`: update runtime options
-- `update(id)`: refresh tile selection for a consumer view
-- `reloadAll()`: mark retained tiles stale for reload
+- `reloadAll()`: mark selected and visible fallback tiles stale and evict unused entries
 - `subscribe(listener)`: observe tile and metadata events
 - `finalize()`: abort requests and clear the cache
+
+## Retention and ownership
+
+Each consumer reports its selected tiles and visible fallback tiles. Tiles retained by any consumer
+are protected from eviction, so the cache can exceed either high-water mark while all entries are
+needed. Unretained tiles are evicted in least-recently-used order. Accessing a tile through `getTile`
+updates its recency; rebuilding parent/child relationships does not.
+
+`reloadAll()` preserves selected tiles and visible ancestors or descendants used as fallbacks,
+including their existing content, and marks them for loading on the next `getTile(index, true)` call.
+Eviction aborts pending requests. Results from canceled requests are ignored even when the source
+does not honor its abort signal.
+
+Consumers should call `detachConsumer()` when removed. Only the owner of the shared tileset should
+call `finalize()`. Finalization clears all consumers and suppresses late tile and metadata results;
+it does not finalize the externally supplied `TileSource`.
+
+## Statistics and notifications
+
+The `stats` property is a probe.gl `Stats` object with these counters:
+
+| Counter | Meaning |
+| --- | --- |
+| `Tiles In Cache` | Number of cached entries, including pending and failed tiles |
+| `Cache Size` | Estimated bytes of retained content |
+| `Selected Tiles` | Unique selected tiles across consumers, including unloaded tiles |
+| `Visible Tiles` | Unique selected and visible fallback tiles across consumers, including unloaded tiles |
+| `Loading Tiles` | Entries with queued or active requests |
+| `Unloaded Tiles` | Cumulative evictions since construction or finalization |
+| `Consumers` | Number of registered consumers |
+
+`Unloaded Tiles` counts evictions; it is different from the `unloadedTiles` property. Failed requests
+are settled entries and are excluded from `unloadedTiles` until marked stale by a reload.
+
+Subscribe with `subscribe({onStatsChange})` and call the returned function to unsubscribe. Direct
+tile requests update cache and loading counts immediately; synchronous request notifications are
+coalesced into one microtask. Consumer updates, reload, detach, load/error completion, and finalization
+publish refreshed counters. Eviction emits `onTileUnload` for each removed tile, then publishes one
+consistent statistics snapshot for the batch. Read batch totals in `onStatsChange` rather than in
+individual unload callbacks.
 
 ## Failed tile caching
 

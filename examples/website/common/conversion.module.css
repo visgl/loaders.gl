@@ -1,0 +1,139 @@
+.app {
+  --border: var(--ifm-color-emphasis-300, #cbd5e1);
+  box-sizing: border-box;
+  container-type: inline-size;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 16px;
+  color: var(--ifm-font-color-base, #172033);
+  background: var(--ifm-background-color, #fff);
+  font:
+    14px / 1.4 system-ui,
+    sans-serif;
+}
+.app header {
+  margin-bottom: 12px;
+}
+.app h2 {
+  font-size: 24px;
+  margin: 2px 0 4px;
+}
+.app p {
+  margin: 8px 0;
+}
+.steps {
+  display: grid;
+  gap: 12px;
+  align-items: start;
+}
+.app fieldset {
+  min-width: 0;
+  margin: 0;
+  padding: 12px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+}
+.app legend {
+  padding: 0 6px;
+  font-weight: 650;
+}
+.app label {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-bottom: 8px;
+  font-weight: 550;
+  overflow-wrap: anywhere;
+}
+.app input,
+.app select,
+.app textarea {
+  box-sizing: border-box;
+  width: 100%;
+  min-width: 0;
+  min-height: 32px;
+  padding: 6px;
+  border: 1px solid var(--border);
+  border-radius: 5px;
+  color: inherit;
+  background: var(--ifm-background-color, #fff);
+  font: inherit;
+}
+.bounds {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+.app .checkbox {
+  flex-direction: row;
+  align-items: center;
+}
+.checkbox input {
+  width: 16px;
+  min-height: 16px;
+}
+.hint {
+  color: var(--ifm-color-emphasis-700, #475569);
+  font-size: 12px;
+}
+.actions {
+  grid-column: 1 / -1;
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.app button,
+.download {
+  border: 1px solid #7c3aed;
+  border-radius: 6px;
+  padding: 8px 12px;
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+  color: inherit;
+  background: transparent;
+}
+.app button[type="submit"],
+.app .primary,
+.download {
+  color: white;
+  background: #6d28d9;
+}
+.app button:disabled {
+  opacity: 0.6;
+  cursor: wait;
+}
+.app input:focus-visible,
+.app select:focus-visible,
+.app textarea:focus-visible,
+.app button:focus-visible,
+.download:focus-visible {
+  outline: 3px solid #a78bfa;
+  outline-offset: 2px;
+}
+.error {
+  padding: 8px;
+  border: 1px solid #f87171;
+  border-radius: 6px;
+  overflow-wrap: anywhere;
+}
+@container (min-width: 620px) {
+  .steps {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+.app textarea {
+  resize: vertical;
+}
+.app summary {
+  cursor: pointer;
+  font-weight: 600;
+  margin-bottom: 8px;
+}
+
+.app form {
+  margin: 0;
+  min-width: 0;
+}

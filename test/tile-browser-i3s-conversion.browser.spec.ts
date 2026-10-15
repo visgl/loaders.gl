@@ -1,4 +1,5 @@
 import {beforeAll, expect, test, vi} from 'vitest';
+import {userEvent} from 'vitest/browser';
 import {parse} from '@loaders.gl/core';
 import {GLBLoader} from '@loaders.gl/gltf';
 import {BlobFile} from '@loaders.gl/loader-utils';
@@ -341,6 +342,16 @@ test('I3S/SLPK controls require selection, mapping and metric error and download
         container.querySelector<HTMLInputElement>('#conversion-geometric-error')!,
         '2'
       );
+      const metricInput = container.querySelector<HTMLInputElement>('#conversion-geometric-error')!;
+      expect(metricInput.form).toBeNull();
+      const requestCount = fetcher.mock.calls.length;
+      await React.act(async () => {
+        await userEvent.click(metricInput);
+        await userEvent.keyboard('{Enter}');
+      });
+      expect(container.querySelector('#conversion-content')).toBe(content);
+      expect(content.value).toBe('1');
+      expect(fetcher).toHaveBeenCalledTimes(requestCount);
       await React.act(async () => button.click());
       await expect
         .poll(() => readSettledControl(() => container.querySelector('a')?.download))

@@ -3,6 +3,14 @@
 // Copyright (c) vis.gl contributors
 
 import {z} from 'zod';
+import {
+  GLTFPropertyExtensionsSchema,
+  GLTFRootExtensionsSchema,
+  GLTFNodeExtensionsSchema,
+  GLTFSceneExtensionsSchema,
+  GLTFMeshPrimitiveExtensionsSchema,
+  GLTFAnimationTargetExtensionsSchema
+} from './gltf-extension-schemas';
 
 /** Zod schema for an index into a top-level glTF array. */
 export const GLTFIdSchema = z.number().int().nonnegative();
@@ -114,7 +122,8 @@ export const GLTFAnimationChannelTargetSchema = z
   .object({
     node: GLTFIdSchema.optional(),
     path: z.union([z.enum(['translation', 'rotation', 'scale', 'weights']), z.string()]),
-    ...GLTF_PROPERTY_SHAPE
+    ...GLTF_PROPERTY_SHAPE,
+    extensions: GLTFAnimationTargetExtensionsSchema.optional()
   })
   .catchall(z.unknown());
 
@@ -142,7 +151,8 @@ export const GLTFAnimationSchema = z
   .object({
     channels: z.array(GLTFAnimationChannelSchema).min(1),
     samplers: z.array(GLTFAnimationSamplerSchema).min(1),
-    ...GLTF_NAMED_PROPERTY_SHAPE
+    ...GLTF_NAMED_PROPERTY_SHAPE,
+    extensions: GLTFPropertyExtensionsSchema.optional()
   })
   .catchall(z.unknown());
 
@@ -154,7 +164,8 @@ export const GLTFAssetSchema = z
     version: z.string(),
     minVersion: z.string().optional(),
     thumbnail: GLTFIdSchema.optional(),
-    ...GLTF_PROPERTY_SHAPE
+    ...GLTF_PROPERTY_SHAPE,
+    extensions: GLTFPropertyExtensionsSchema.optional()
   })
   .catchall(z.unknown());
 
@@ -228,7 +239,8 @@ export const GLTFImageSchema = z.union([
       uri: z.string(),
       mimeType: z.string().optional(),
       bufferView: z.never().optional(),
-      ...GLTF_NAMED_PROPERTY_SHAPE
+      ...GLTF_NAMED_PROPERTY_SHAPE,
+      extensions: GLTFPropertyExtensionsSchema.optional()
     })
     .catchall(z.unknown()),
   z
@@ -236,7 +248,8 @@ export const GLTFImageSchema = z.union([
       bufferView: GLTFIdSchema,
       mimeType: z.string(),
       uri: z.never().optional(),
-      ...GLTF_NAMED_PROPERTY_SHAPE
+      ...GLTF_NAMED_PROPERTY_SHAPE,
+      extensions: GLTFPropertyExtensionsSchema.optional()
     })
     .catchall(z.unknown())
 ]);
@@ -299,7 +312,8 @@ export const GLTFMaterialSchema = z
     alphaMode: z.enum(['OPAQUE', 'MASK', 'BLEND']).optional(),
     alphaCutoff: z.number().optional(),
     doubleSided: z.boolean().optional(),
-    ...GLTF_NAMED_PROPERTY_SHAPE
+    ...GLTF_NAMED_PROPERTY_SHAPE,
+    extensions: GLTFPropertyExtensionsSchema.optional()
   })
   .catchall(z.unknown());
 
@@ -321,7 +335,8 @@ export const GLTFMeshPrimitiveSchema = z
       ])
       .optional(),
     targets: z.array(z.record(z.string(), GLTFIdSchema)).min(1).optional(),
-    ...GLTF_PROPERTY_SHAPE
+    ...GLTF_PROPERTY_SHAPE,
+    extensions: GLTFMeshPrimitiveExtensionsSchema.optional()
   })
   .catchall(z.unknown());
 
@@ -331,7 +346,8 @@ export const GLTFMeshSchema = z
     id: z.string().optional(),
     primitives: z.array(GLTFMeshPrimitiveSchema).min(1),
     weights: z.array(z.number()).min(1).optional(),
-    ...GLTF_NAMED_PROPERTY_SHAPE
+    ...GLTF_NAMED_PROPERTY_SHAPE,
+    extensions: GLTFPropertyExtensionsSchema.optional()
   })
   .catchall(z.unknown());
 
@@ -349,7 +365,8 @@ export const GLTFNodeSchema = z
     weights: z.array(z.number()).min(1).optional(),
     externalAsset: GLTFIdSchema.optional(),
     boundingVolume: GLTFBoundingVolumeSchema.optional(),
-    ...GLTF_NAMED_PROPERTY_SHAPE
+    ...GLTF_NAMED_PROPERTY_SHAPE,
+    extensions: GLTFNodeExtensionsSchema.optional()
   })
   .catchall(z.unknown());
 
@@ -385,7 +402,8 @@ export const GLTFSamplerSchema = z
 export const GLTFSceneSchema = z
   .object({
     nodes: z.array(GLTFIdSchema).min(1).optional(),
-    ...GLTF_NAMED_PROPERTY_SHAPE
+    ...GLTF_NAMED_PROPERTY_SHAPE,
+    extensions: GLTFSceneExtensionsSchema.optional()
   })
   .catchall(z.unknown());
 
@@ -431,7 +449,8 @@ export const GLTFSchema = z
     scenes: z.array(GLTFSceneSchema).min(1).optional(),
     skins: z.array(GLTFSkinSchema).min(1).optional(),
     textures: z.array(GLTFTextureSchema).min(1).optional(),
-    ...GLTF_PROPERTY_SHAPE
+    ...GLTF_PROPERTY_SHAPE,
+    extensions: GLTFRootExtensionsSchema.optional()
   })
   .catchall(z.unknown())
   .describe('The root object for a glTF 2.0 asset.');

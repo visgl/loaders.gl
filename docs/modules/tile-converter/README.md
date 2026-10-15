@@ -70,7 +70,7 @@ npm install @loaders.gl/tile-converter
 | --- | --- | --- |
 | Experimental v5 Node CLI | [`tile-converter-v5`](/docs/modules/tile-converter/cli-reference/tile-converter-v5) | Inspect, validate and convert explicitly selected meshes; opt-in complete explicit hierarchy for 3D Tiles/3TZ |
 | Portable v5 API | [`/v5/core` and `/v5/adapters`](/docs/modules/tile-converter/api-reference/v5-conversion) | Mesh/point processing, declared features and CRS operations, bounded archive output |
-| Browser application | [Archive conversion example](/examples/i3s-slpk) | Inspect, select, convert and download partial SLPK/3TZ collections |
+| Browser application | [Inline conversion app](/examples/tiles/3d-tiles-conversion) | Inspect, select, convert and download partial SLPK/3TZ collections |
 | Legacy v4 Node CLI | [`tile-converter`](/docs/modules/tile-converter/cli-reference/tile-converter) | Original I3S ↔ 3D Tiles workflow, filesystem/services and texture atlases |
 
 The documentation describes the current repository implementation. Check the installed

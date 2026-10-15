@@ -1,19 +1,15 @@
-import { defineConfig } from 'vite';
-import fs from 'fs';
+import {defineConfig} from 'vite';
+import {fileURLToPath} from 'node:url';
 
-/** Run against local source */
-const getAliases = async (frameworkName, frameworkRootDir) => {
-  const modules = await fs.promises.readdir(`${frameworkRootDir}/modules`)
-  const aliases = {}
-  modules.forEach(module => {
-    aliases[`${frameworkName}/${module}`] = `${frameworkRootDir}/modules/${module}/src`;
-  })
-  return aliases
-}
-
-// https://vitejs.dev/config/
-export default defineConfig(async () => ({
-  resolve: {extensions: ['.ts', '.tsx', '.mjs', '.js', '.jsx', '.json'], alias: await getAliases('@loaders.gl', `${__dirname}/../../..`)},
+// Resolve built workspace package exports so Vite honors each package's browser replacements.
+export default defineConfig({
+  build: {
+    rollupOptions: {
+      input: {
+        viewer: fileURLToPath(new URL('./index.html', import.meta.url)),
+        authoring: fileURLToPath(new URL('./authoring.html', import.meta.url))
+      }
+    }
+  },
   server: {open: true}
-}))
-
+});

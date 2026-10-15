@@ -28,6 +28,8 @@ export type ParseGLTFOptions = ParseGLBOptions & {
   /** Best-effort glTF 1 conversion; strict rejects reported unsupported features. @default true */
   normalize?: boolean | 'best-effort' | 'strict';
   loadImages?: boolean;
+  /** Load encoded KHR_audio_emitter clips independently of loadBuffers, without playback. @default true */
+  loadAudio?: boolean;
   /** Load linked and embedded buffers; required for meshopt decompression. @default true */
   loadBuffers?: boolean;
   /** @internal Restrict linked-buffer loading after the glTF JSON is available. */

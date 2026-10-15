@@ -23,6 +23,8 @@ export type ClientExampleKind =
   | 'i3s-colorization-by-attributes'
   | 'i3s-profile-gallery'
   | 'i3s-picking'
+  | 'pmtiles-authoring'
+  | 'tile-conversion'
   | 'ometiff'
   | 'overture-parquet'
   | 'textures'
@@ -65,6 +67,8 @@ const CLIENT_EXAMPLE_COMPONENTS: Record<ClientExampleKind, ClientExampleComponen
     () => import('examples/website/i3s-profile-gallery/src/app')
   ),
   'i3s-picking': React.lazy(() => import('examples/website/i3s-picking/src/app')),
+  'pmtiles-authoring': React.lazy(() => import('examples/website/tiles/authoring-app')),
+  'tile-conversion': React.lazy(() => import('examples/website/i3s-slpk/src/conversion-app')),
   ometiff: React.lazy(() => import('examples/website/ometiff/app')),
   'overture-parquet': React.lazy(() => import('examples/website/overture-parquet/app')),
   textures: React.lazy(() => import('examples/website/textures/app')),
