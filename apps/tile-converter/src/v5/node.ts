@@ -1,0 +1,16 @@
+// loaders.gl
+// SPDX-License-Identifier: MIT
+// Copyright (c) vis.gl contributors
+
+// Intentionally Node-only. Portable entrypoints do not import this adapter.
+export {createNodeTilesetConversionSource, NODE_TILESET_LIMITS} from './node-source.js';
+export type {
+  NodeTilesetConversionSource,
+  NodeTilesetConversionSourceOptions
+} from './node-source.js';
+
+export {convertNodeTileset, writeNodeTileConversionOutput} from './node-conversion.js';
+export type {NodeTileConversionOptions, NodeTileConversionOutputFormat} from './node-conversion.js';
+
+export {createNodeI3SConversionSource} from './node-i3s-source.js';
+export type {NodeI3SConversionSourceOptions} from './node-i3s-source.js';

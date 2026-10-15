@@ -10,6 +10,7 @@ import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
 import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
 
 <DocPageHeader
+  format="3d-tiles"
   eyebrow="3D Tiles runtime / coordinates"
   title="Know which frame the tiles actually use."
   description="3D Tiles can describe a local or geocentric world frame, geographic regions, and affine placement transforms. loaders.gl preserves authoritative metadata and does not infer ECEF merely from large coordinate values."

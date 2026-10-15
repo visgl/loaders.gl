@@ -10,6 +10,7 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
 import {TracesDocsTabs} from '@site/src/components/docs/traces-docs-tabs';
 
 <DocPageHeader
+  format="chrome-trace"
   eyebrow="Live trace pipeline"
   title="Publish trace snapshots while the capture is still arriving."
   description="The Chrome trace streaming helpers accept event, JSON, or Arrow chunk streams and adapt them into deterministic `TraceStreamChunk` snapshots. The consumer can render progress without taking ownership of the parser."

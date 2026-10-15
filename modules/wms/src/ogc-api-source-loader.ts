@@ -18,10 +18,8 @@ import type {
 } from '@loaders.gl/loader-utils';
 import {DataSource} from '@loaders.gl/loader-utils';
 import type {GeoJSONTable, Schema} from '@loaders.gl/schema';
-import {
-  convertFeaturesToWKBArrowTable,
-  convertGeojsonToBinaryFeatureCollection
-} from '@loaders.gl/gis';
+import {convertFeaturesToWKBArrowTable} from '@loaders.gl/arrow-geometry/feature-collection-to-arrow';
+import {convertGeojsonToBinaryFeatureCollection} from '@loaders.gl/arrow-geometry/legacy-binary';
 import {getServiceCRSAxisOrder} from './crs-utils';
 import type {OGCTileMatrixSet} from './lib/parsers/ogc-api/tile-matrix-set';
 import {convertOGCTileMatrixSetToTileGrid} from './lib/parsers/ogc-api/tile-matrix-set';
@@ -283,10 +281,13 @@ export class OGCAPITilesSource
 {
   /** Converted tile matrix set and the options it was loaded or discovered with. */
   private _tileGridCache: {
+    /** Configured matrix document or URL used by this request. */
     tileMatrixSet: OGCTileMatrixSet | string | undefined;
+    /** Unit conversion used by this request. */
     metersPerUnit: number | null | undefined;
     /** Template the matrix set is discovered from; undefined when it is configured or not discovered. */
     tileTemplate: string | undefined;
+    /** Shared in-flight or fulfilled matrix request. */
     promise: Promise<TileGrid | undefined>;
     /** The converted grid, once available. */
     tileGrid?: TileGrid;
@@ -503,7 +504,7 @@ export class OGCAPITilesSource
       tileMatrixId = getTileGridMatrixId(tileGrid, parameters);
     }
     return template
-      .replaceAll('{tileMatrix}', tileMatrixId)
+      .replaceAll('{tileMatrix}', encodeURIComponent(tileMatrixId))
       .replaceAll('{tileRow}', String(parameters.y))
       .replaceAll('{tileCol}', String(parameters.x))
       .replaceAll('{z}', String(parameters.z))
@@ -558,7 +559,11 @@ function resolveDocumentLink(link: string, documentUrl: string, asDirectory = fa
   const base = new URL(documentUrl, `${placeholderOrigin}/`);
   if (asDirectory && !base.pathname.endsWith('/')) base.pathname += '/';
   const resolved = new URL(link, base);
-  return isAbsolute ? resolved.href : resolved.href.slice(placeholderOrigin.length);
+  if (isAbsolute) return resolved.href;
+  if (resolved.origin !== placeholderOrigin) {
+    return `//${resolved.host}${resolved.pathname}${resolved.search}${resolved.hash}`;
+  }
+  return `${resolved.pathname}${resolved.search}${resolved.hash}`;
 }
 
 /**

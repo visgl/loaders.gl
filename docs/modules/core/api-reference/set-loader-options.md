@@ -47,7 +47,7 @@ Set or get the supplied options onto the current global options object
 Bundling the entire `draco3d` library (instead of loading it on-demand from CDN):
 
 ```typescript
-import draco from 'draco3d';
+import draco3d from 'draco3d';
 import {setLoaderOptions} from '@loaders.gl/core';
 setLoaderOptions({
   modules: {
@@ -70,7 +70,7 @@ Returns current global options
 
 ## Options
 
-A loader object, that can contain a mix of options:
+The options object can contain:
 
 - options defined by the `parse` function can be specified.
 - options specific to any loaders can also be specified (in loader specific sub-objects).

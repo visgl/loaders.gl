@@ -10,6 +10,7 @@ import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
 import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
 
 <DocPageHeader
+  format="draco"
   eyebrow="Geometry compression"
   title="Smaller geometry, the same application shape."
   description="Draco compresses triangle meshes and point clouds for delivery. loaders.gl decodes its attributes into common mesh data and can encode compatible data back into Draco payloads."

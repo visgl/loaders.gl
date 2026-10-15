@@ -32,82 +32,33 @@ if (!wasm) {
 }
 
 //  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -
-// This returns a Promise-like object (I was farting around, so sue me)
-// which supports '.catch' and '.then'
-export default function md5WASM(data) {
-  var mem, memView, importObj, imports, len, buff, thenFun, catchFun, result, endTime;
-  const md5JS = makeMD5JS(),
-    md5WA = makeMD5WA(),
-    returnObj = {},
-    startTime = new Date().getTime();
-
-  returnObj['then'] = function (fun) {
-    thenFun = fun;
-    getThen();
-    return returnObj;
-  };
-  returnObj['catch'] = function (fun) {
-    catchFun = fun;
-    return returnObj;
-  };
-
-  // Sift the incoming parameter and the environment
-  // If we are good, set buff
-  buff = normalizeInput(data);
-
-  if (!buff) {
-    getCatch(new TypeError(parmTypeErrStr));
+/** Calculates an MD5 digest and propagates WASM initialization or hashing failures. */
+export default async function md5WASM(data) {
+  const input = normalizeInput(data);
+  if (!input) {
+    throw new TypeError(parmTypeErrStr);
   }
-
-  //  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -
-  // Make some choices based on the size of the incoming data
-  //   ~ Use WebAssembly or just JavaScript
-  //   ~ If Webassemly, allocate appropriate memory
-  //
-  if (buff) {
-    len = buff.length;
-    if (wasm && len > bounder) {
-      if (len > upperLimit) {
-        getCatch(new Error(tooBigErrStr));
-      } else {
-        mem = new WebAssembly.Memory({
-          initial: len > 32000000 ? (len > 64000000 ? (len > 128000000 ? 4096 : 2048) : 1024) : 512
-        });
-        memView = new Uint32Array(mem.buffer);
-        imports = {mem: mem, log: console.log};
-        importObj = {imports};
-        WebAssembly.instantiate(wasm, importObj).then(giterdone);
-      }
-    } else {
-      getThen(md5JS(buff));
-    }
+  if (!wasm || input.length <= bounder) {
+    return makeMD5JS()(input);
   }
-  return returnObj;
-
-  function giterdone(obj) {
-    getThen(md5WA(buff, obj.instance.exports, memView));
+  if (input.length > upperLimit) {
+    throw new Error(tooBigErrStr);
   }
-  function getThen(r) {
-    var res = Boolean(r) ? r : result;
-    if (Boolean(r)) {
-      endTime = new Date().getTime();
-    }
-    if (typeof thenFun === 'function') {
-      if (Boolean(res)) {
-        thenFun(res, endTime - startTime);
-        thenFun = catchFun = null;
-      }
-    } else {
-      if (Boolean(r)) {
-        result = r;
-      }
-    }
-  }
-  function getCatch(err) {
-    if (typeof catchFun === 'function') {
-      catchFun(err);
-    }
-  }
+  const memory = new WebAssembly.Memory({
+    initial:
+      input.length > 32000000
+        ? input.length > 64000000
+          ? input.length > 128000000
+            ? 4096
+            : 2048
+          : 1024
+        : 512
+  });
+  const memoryView = new Uint32Array(memory.buffer);
+  const {instance} = await WebAssembly.instantiate(wasm, {
+    imports: {mem: memory, log: console.log}
+  });
+  return makeMD5WA()(input, instance.exports, memoryView);
 }
 
 function makeMD5WA() {

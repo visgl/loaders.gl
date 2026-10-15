@@ -1,4 +1,8 @@
-import {expect, test} from 'vitest';
+import {GZipCompressor} from '@loaders.gl/compression/gzip-compressor';
+import {encodeZip} from '@loaders.gl/zip';
+import {BlobFile} from '@loaders.gl/loader-utils';
+import {encodeIndexedZip} from '@loaders.gl/zip/indexed-zip-writer';
+import {expect, test, vi} from 'vitest';
 import {coreApi, load, parseFile} from '@loaders.gl/core';
 import {I3SLoader, SLPKLoader, SLPKSource} from '../src';
 import {createReadableFileFromBuffer, loadArrayBufferFromFile} from 'test/utils/readable-files';
@@ -88,4 +92,44 @@ test('SLPKLoader#slpk load http shared', async () => {
     }
   });
   expect(uncompressedFile.byteLength).toEqual(333);
+});
+
+test.each([
+  'success',
+  'missing'
+])('SLPKLoader closes its owned file after %s extraction', async result => {
+  const bytes = await encodeIndexedZip(
+    {'tileset.json': new TextEncoder().encode('{}').buffer},
+    {
+      indexPath: '@specialIndexFileHASH128@',
+      maxArchiveBytes: 4096
+    }
+  );
+  const file = new BlobFile(bytes);
+  const close = vi.spyOn(file, 'close');
+  const read = parseFile(file, SLPKLoader, {
+    slpk: {path: result === 'success' ? 'tileset.json' : 'missing'}
+  });
+  if (result === 'success') expect(new TextDecoder().decode(await read)).toBe('{}');
+  else await expect(read).rejects.toThrow('No such file');
+  expect(close).toHaveBeenCalledOnce();
+});
+
+test('SLPK unindexed node aliases use locale-independent path hashing', async () => {
+  const resource = await new GZipCompressor().compress(new TextEncoder().encode('{}').buffer);
+  const bytes = await encodeZip({'nodes/0/3dNodeIndexDocument.json.gz': resource});
+  const localeLowerCase = String.prototype.toLocaleLowerCase;
+  const locale = vi.spyOn(String.prototype, 'toLocaleLowerCase').mockImplementation(function (
+    this: string
+  ) {
+    return localeLowerCase.call(this, 'tr');
+  });
+  try {
+    const result = await parseFile(new BlobFile(bytes), SLPKLoader, {
+      slpk: {path: 'nodes/0', pathMode: 'http'}
+    });
+    expect(new TextDecoder().decode(result)).toBe('{}');
+  } finally {
+    locale.mockRestore();
+  }
 });

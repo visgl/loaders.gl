@@ -11,6 +11,7 @@ import {ObjDocsTabs} from '@site/src/components/docs/obj-docs-tabs';
 import {LoaderLiveExample} from '@site/src/components/docs/loader-live-example';
 
 <DocPageHeader
+  format="obj"
   eyebrow="OBJ loader"
   title="Bring Wavefront geometry into a shared mesh pipeline."
   description="`OBJLoader` parses the classic OBJ/MTL text format and can return a legacy Mesh object or Mesh Arrow table. For large vertex-only files, it also exposes a batched point-cloud path."

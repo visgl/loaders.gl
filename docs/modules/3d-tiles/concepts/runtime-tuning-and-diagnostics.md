@@ -10,6 +10,7 @@ import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
 import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
 
 <DocPageHeader
+  format="3d-tiles"
   eyebrow="3D Tiles runtime / diagnostics"
   title="Tune the runtime in layers."
   description="When a tileset looks slow, blurry, or memory-hungry, inspect the measurements before changing options. This guide gives a sequence that keeps cause and effect visible."

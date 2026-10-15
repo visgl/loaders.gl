@@ -57,6 +57,22 @@ npm install @loaders.gl/core @loaders.gl/arrow
 
 See [Using with Apache Arrow](/docs/developer-guide/apache-arrow) for practical guidance on how to integrate with the Apache Arrow JS library.
 
+## Type-only imports
+
+Use `@loaders.gl/arrow/types` for types exported by the module and types available in Apache Arrow 17,
+including classes exported as types:
+
+```typescript
+import type {Table, Vector, ArrowLoaderOptions, IndexedArrowTable} from '@loaders.gl/arrow/types';
+```
+
+Types added in newer Apache Arrow releases, such as `Utf8View` and `BinaryView`,
+should be imported directly from the installed `apache-arrow` package.
+
+Type-only imports are erased by TypeScript and add no runtime code or memory cost.
+The subpath itself emits an empty module with no runtime dependencies. To construct
+class instances, import their runtime values from `apache-arrow` or `@loaders.gl/arrow`.
+
 ## Loaders and Writers
 
 | Loader / Writer | Description |
@@ -89,3 +105,5 @@ For the underlying Apache Arrow JS classes, start with the
 ## Attributions
 
 `@loaders.gl/arrow` was developed with the benefit of extensive technical advice from Paul Taylor @ Graphistry.
+
+Arrow IPC LZ4-frame and Zstandard compression use compress-utils. Async parsing and writing initialize the required codecs automatically. For synchronous compressed parsing, call `await ArrowLoader.preload()` and use the returned parser-bearing loader. For synchronous encoding, initialize the requested codec with an async `encode()` first. Application-provided Arrow registry codecs remain supported. No `lz4js`, `fzstd`, or `zstd-codec` injection is required.

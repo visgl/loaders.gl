@@ -4,7 +4,7 @@
 
 import {MVTLoader} from '@loaders.gl/mvt';
 import {fetchFile, parse} from '@loaders.gl/core';
-import {geojsonToBinary} from '@loaders.gl/gis';
+import {convertGeojsonToBinaryFeatureCollection as geojsonToBinary} from '@loaders.gl/geoarrow';
 
 // Define MVT files to run bench tests over
 const testfiles = {

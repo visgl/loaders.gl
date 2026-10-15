@@ -10,6 +10,7 @@ import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
 import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
 
 <DocPageHeader
+  format="tcx"
   eyebrow="Training Center XML"
   title="Keep activity data with its useful measurements."
   description="TCX describes GPS-backed activities as structured workouts, with laps and measurements such as heart rate, cadence, calories, and elevation. loaders.gl makes the track geometry available alongside that activity context."

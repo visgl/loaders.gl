@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import {TypedArray} from '@loaders.gl/schema';
+import type {BigTypedArray} from '@loaders.gl/schema';
 
 import {
   STRING_ATTRIBUTE_TYPE,
@@ -11,7 +11,7 @@ import {
   INT_16_ATTRIBUTE_TYPE
 } from './constants';
 
-type Attribute = (string | null)[] | TypedArray | null;
+type Attribute = (string | null)[] | BigTypedArray | null;
 export type I3STileAttributes = Record<string, Attribute>;
 
 /**
@@ -39,10 +39,11 @@ export function parseI3STileAttribute(arrayBuffer: ArrayBuffer, options): I3STil
  * @param  arrayBuffer
  * @returns
  */
-function parseAttribute(attributeType, arrayBuffer: ArrayBuffer, exactStrings = false): Attribute {
+function parseAttribute(attributeType, arrayBuffer: ArrayBuffer, exactValues = false): Attribute {
+  if (exactValues) validateExactNumericLayout(attributeType, arrayBuffer);
   switch (attributeType) {
     case STRING_ATTRIBUTE_TYPE:
-      return parseStringsAttribute(arrayBuffer, exactStrings);
+      return parseStringsAttribute(arrayBuffer, exactValues);
     case OBJECT_ID_ATTRIBUTE_TYPE:
       return parseShortNumberAttribute(arrayBuffer);
     case FLOAT_64_TYPE:
@@ -54,9 +55,37 @@ function parseAttribute(attributeType, arrayBuffer: ArrayBuffer, exactStrings = 
     case INT_16_ATTRIBUTE_TYPE:
     case 'Int32':
     case 'Int64':
-      return parseNumericAttribute(attributeType, arrayBuffer);
+      return parseNumericAttribute(attributeType, arrayBuffer, exactValues);
     default:
       return parseShortNumberAttribute(arrayBuffer);
+  }
+}
+
+/** Checks exact scalar counts and supported layouts before creating numeric views. */
+function validateExactNumericLayout(attributeType: string, arrayBuffer: ArrayBuffer): void {
+  if (attributeType === 'String') return;
+  const widths: Record<string, number> = {
+    Oid32: 4,
+    UInt8: 1,
+    UInt16: 2,
+    UInt32: 4,
+    UInt64: 8,
+    Int16: 2,
+    Int32: 4,
+    Int64: 8,
+    Float32: 4,
+    Float64: 8
+  };
+  const width = Object.hasOwn(widths, attributeType) ? widths[attributeType] : undefined;
+  const valueOffset = Math.max(4, width || 0);
+  if (
+    !width ||
+    arrayBuffer.byteLength < valueOffset ||
+    new DataView(arrayBuffer).getUint32(0, true) * width !== arrayBuffer.byteLength - valueOffset
+  ) {
+    throw new Error(
+      'Exact I3S attributes require a supported scalar type and matching count/length'
+    );
   }
 }
 
@@ -66,11 +95,29 @@ function parseAttribute(attributeType, arrayBuffer: ArrayBuffer, exactStrings = 
  * @param arrayBuffer - encoded attribute payload
  * @returns decoded numeric values
  */
-function parseNumericAttribute(attributeType: string, arrayBuffer: ArrayBuffer): TypedArray {
+function parseNumericAttribute(
+  attributeType: string,
+  arrayBuffer: ArrayBuffer,
+  exactValues: boolean
+): BigTypedArray {
   const valueOffset =
     attributeType === 'Float64' || attributeType === 'Int64' || attributeType === 'UInt64' ? 8 : 4;
 
   if (attributeType === 'UInt64' || attributeType === 'Int64') {
+    if (exactValues) {
+      const values =
+        attributeType === 'UInt64'
+          ? new BigUint64Array((arrayBuffer.byteLength - valueOffset) / 8)
+          : new BigInt64Array((arrayBuffer.byteLength - valueOffset) / 8);
+      const view = new DataView(arrayBuffer);
+      for (let index = 0; index < values.length; index++) {
+        values[index] =
+          attributeType === 'UInt64'
+            ? view.getBigUint64(valueOffset + index * 8, true)
+            : view.getBigInt64(valueOffset + index * 8, true);
+      }
+      return values;
+    }
     return parseInt64Attribute(attributeType, arrayBuffer, valueOffset);
   }
 

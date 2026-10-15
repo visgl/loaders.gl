@@ -10,6 +10,7 @@ import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
 import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
 
 <DocPageHeader
+  format="ply"
   eyebrow="Mesh format"
   title="A flexible interchange for polygon geometry."
   description="PLY describes vertices, faces, and additional element properties in a simple header-driven file. loaders.gl turns supported data into common mesh or Mesh Arrow output and can write compatible ASCII files."

@@ -5,7 +5,6 @@
 import {expect, test} from 'vitest';
 import {validateWriter} from 'test/common/conformance';
 import * as arrow from 'apache-arrow';
-import {ZstdCodec} from 'zstd-codec';
 import {parseSync, encode, encodeSync} from '@loaders.gl/core';
 import {ArrowWriter} from '@loaders.gl/arrow';
 import {ArrowLoader} from '@loaders.gl/arrow/bundled';
@@ -107,13 +106,7 @@ test('ArrowWriter writes LZ4 and Zstandard compressed Feather V2 files', async (
         arrow: {container: 'file', compression: 'zstd'}
       })
     ).toThrow(/use encode\(\) instead of encodeSync\(\)/);
-    await expect(
-      encode(arraysData, ArrowWriter, {
-        arrow: {container: 'file', compression: 'zstd'}
-      })
-    ).rejects.toThrow(/requires a 'zstd-codec' module/);
     zstd = await encode(arraysData, ArrowWriter, {
-      modules: {'zstd-codec': ZstdCodec},
       arrow: {container: 'file', compression: 'zstd'}
     });
     const zstdWithRegisteredEncoder = await encode(arraysData, ArrowWriter, {

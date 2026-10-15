@@ -10,6 +10,7 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
 import {StructuredDataPathGraphic} from '@site/src/components/docs/structured-data-path-graphic';
 
 <DocPageHeader
+  format="bson"
   eyebrow="BSON module"
   title="Keep JSON-like documents in a binary form."
   description="`@loaders.gl/bson` loads and writes BSON documents as JavaScript objects. It is useful when a binary document format is required but the application wants the familiar JSON data model."
@@ -43,7 +44,6 @@ import {StructuredDataPathGraphic} from '@site/src/components/docs/structured-da
   tone="yellow"
 />
 
-![bson-logo](../../images/logos/bson-logo.png)
 
 <p className="badges">
   <img src="https://img.shields.io/badge/From-v3.4-blue.svg?style=flat-square" alt="From-v3.4" />

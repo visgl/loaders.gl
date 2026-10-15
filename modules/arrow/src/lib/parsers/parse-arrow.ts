@@ -7,7 +7,7 @@ import type {Table, ArrowTableBatch} from '@loaders.gl/schema';
 import {ArrowLoaderOptions} from '../../exports/arrow-loader';
 import {convertArrowToTable} from '@loaders.gl/schema-utils';
 import {makeTableScanBatch, toArrayBufferIterator} from '@loaders.gl/loader-utils';
-import {registerArrowCompressionCodecs} from './arrow-compression';
+import {registerArrowCompressionCodecs, preloadArrowCompressionDecoders} from './arrow-compression';
 
 const UNSAFE_BIGINT_ERROR_REGEXP = /^(-?\d+) is not safe to convert to a number\.$/;
 const UNSUPPORTED_COMPRESSION_ERROR_REGEXP = /Record batch compression not implemented/i;
@@ -130,6 +130,7 @@ export function parseArrowInBatches(
   */
 
   async function* makeArrowAsyncIterator(): AsyncIterator<ArrowTableBatch> {
+    await preloadArrowCompressionDecoders();
     // @ts-ignore
     const readers = arrow.RecordBatchReader.readAll(toArrayBufferIterator(asyncIterator));
     for await (const reader of readers) {

@@ -10,6 +10,7 @@ import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
 import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
 
 <DocPageHeader
+  format="gltf"
   eyebrow="glTF API / iterator"
   title="Traverse glTF without rewriting the source."
   description="GLTFIterator adds lazy, typed navigation to the original glTF JSON. Numeric indices stay in their standards-defined fields, while resolved references are available when an extension or application needs them."

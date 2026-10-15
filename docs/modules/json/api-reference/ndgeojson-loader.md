@@ -10,6 +10,7 @@ import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
 import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
 
 <DocPageHeader
+  format="geojson"
   eyebrow="JSON module · geospatial streaming"
   title="NDGeoJSONLoader"
   description="Stream GeoJSON features as newline-delimited records, keeping a large feature collection usable in incremental rendering and analysis workflows."

@@ -11,6 +11,7 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
 import {WmsDocsTabs} from '@site/src/components/docs/wms-docs-tabs';
 
 <DocPageHeader
+  format="wfs"
   eyebrow="OGC vector service"
   title="Query features without taking ownership of the whole service response."
   description="WFS exposes vector features over HTTP. The loaders.gl source handles capabilities, bounds, CRS, paging, GeoJSON, and streaming GML while keeping the result usable as features, binary data, or Arrow tables."
@@ -44,7 +45,6 @@ import {WmsDocsTabs} from '@site/src/components/docs/wms-docs-tabs';
   </a>
 </p>
 
-![ogc-logo](../../../images/logos/ogc-logo-60.png)
 
 WFS serves vector features and properties over HTTP. `WFSSourceLoader` provides a read-only
 `VectorSource` with GeoJSON and streaming GML ingestion.

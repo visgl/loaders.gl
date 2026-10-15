@@ -12,11 +12,11 @@ import {ServiceSourceGraphic} from '@site/src/components/docs/service-source-gra
 import {ClientExample} from '@site/src/components';
 
 <DocPageHeader
+  format="wms"
   eyebrow="OGC service module"
   title="@loaders.gl/wms"
   description="The WMS module covers classic OGC Web Services, modern OGC APIs, and GML response parsing. It keeps capability discovery, request construction, and decoded results in explicit source contracts."
   tone="orange"
-  logos={[{alt: 'Open Geospatial Consortium', src: '/images/format-logos/ogc-logo-transparent.png'}]}
   meta={['WMS / WMTS', 'WFS / WCS', 'OGC APIs and GML']}
   links={[
     {label: 'ArcGIS module', to: '/docs/modules/arcgis'},

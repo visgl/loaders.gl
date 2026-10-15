@@ -1,6 +1,6 @@
 {
   "name": "@loaders.gl/zip",
-  "version": "5.0.0-alpha.10",
+  "version": "5.0.0-alpha.12",
   "description": "Zip Archive Loader",
   "license": "MIT",
   "type": "module",
@@ -26,14 +26,6 @@
       "import": "./dist/index.js",
       "require": "./dist/index.cjs"
     },
-    "./unbundled": {
-      "types": "./dist/unbundled.d.ts",
-      "import": "./dist/unbundled.js"
-    },
-    "./bundled": {
-      "types": "./dist/bundled.d.ts",
-      "import": "./dist/bundled.js"
-    },
     "./zip-writer": {
       "types": "./dist/zip-writer.d.ts",
       "import": "./dist/zip-writer.js",
@@ -43,6 +35,16 @@
       "types": "./dist/indexed-zip-writer.d.ts",
       "import": "./dist/indexed-zip-writer.js",
       "require": "./dist/indexed-zip-writer.cjs"
+    },
+    "./zip-encode": {
+      "types": "./dist/zip-encode.d.ts",
+      "import": "./dist/zip-encode.js",
+      "require": "./dist/zip-encode.cjs"
+    },
+    "./zip-loader": {
+      "types": "./dist/zip-loader.d.ts",
+      "import": "./dist/zip-loader.js",
+      "require": "./dist/zip-loader.cjs"
     }
   },
   "sideEffects": false,
@@ -53,14 +55,13 @@
   ],
   "scripts": {
     "pre-build": "npm run build-bundle && npm run build-bundle-dev",
-    "build-bundle": "ocular-bundle ./bundle.ts --output=dist/dist.min.js",
-    "build-bundle-dev": "ocular-bundle ./bundle.ts --env=dev --output=dist/dist.dev.js"
+    "build-bundle": "node ../../scripts/build-codec-bundle.mjs ./bundle.ts --output=dist/dist.min.js",
+    "build-bundle-dev": "node ../../scripts/build-codec-bundle.mjs ./bundle.ts --env=dev --output=dist/dist.dev.js"
   },
   "dependencies": {
-    "@loaders.gl/compression": "5.0.0-alpha.10",
-    "@loaders.gl/crypto": "5.0.0-alpha.10",
-    "@loaders.gl/loader-utils": "5.0.0-alpha.10",
-    "jszip": "^3.1.5"
+    "@loaders.gl/compression": "5.0.0-alpha.12",
+    "@loaders.gl/crypto": "5.0.0-alpha.12",
+    "@loaders.gl/loader-utils": "5.0.0-alpha.12"
   },
   "peerDependencies": {
     "@loaders.gl/core": "~5.0.0-alpha.0"

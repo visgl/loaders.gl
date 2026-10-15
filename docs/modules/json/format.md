@@ -10,6 +10,7 @@ import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
 import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
 
 <DocPageHeader
+  format="json"
   eyebrow="Document and table format"
   title="JSON"
   description="The JSON module handles arbitrary documents, row arrays, newline-delimited records, GeoJSON, and JSON output. Choose the result shape that matches the application instead of writing a new parser path for each variant."

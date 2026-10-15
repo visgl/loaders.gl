@@ -2,8 +2,10 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
+import {LAZPerfLoaderWithParser as LAZPerfLoader} from '@loaders.gl/las/lazperf-loader';
+import {LAZRsLoaderWithParser as LAZRsLoader} from '@loaders.gl/las/laz-rs-loader';
 import {encodeSync, fetchFile, parse, parseInBatches} from '@loaders.gl/core';
-import {LASLoader, LASWriter, LAZPerfLoader, LAZRsLoader} from '@loaders.gl/las';
+import {LASLoader, LASWriter} from '@loaders.gl/las';
 import type {LASLoaderOptions} from '@loaders.gl/las';
 import {
   createLAZChunkDecoderCursor,

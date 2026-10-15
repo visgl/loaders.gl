@@ -9,6 +9,7 @@ import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
 import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
 
 <DocPageHeader
+  format="wkt"
   eyebrow="WKT module · CRS loader"
   title="WKTCRSLoader"
   description="Parse WKT coordinate reference system syntax into a value-preserving AST, keeping the source structure available for inspection and faithful re-encoding."

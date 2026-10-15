@@ -10,6 +10,7 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
 import {ThreeDDataFormatsGraphic} from '@site/src/components/docs/three-d-data-formats-graphic';
 
 <DocPageHeader
+  format="draco"
   eyebrow="Geometry compression module"
   title="Move geometry efficiently without changing its meaning."
   description="The Draco module decodes and encodes compressed meshes and point clouds. It supports render-ready mesh objects, Mesh Arrow tables, worker execution, and the glTF compression extension path."
@@ -36,7 +37,7 @@ import {ThreeDDataFormatsGraphic} from '@site/src/components/docs/three-d-data-f
   ]}
 />
 
-![logo](./images/draco-small.png)
+
 
 <ReferenceBoundary
   title="Draco module details"
@@ -51,6 +52,10 @@ The `@loaders.gl/draco` module handles compressing and decompressing of 3D meshe
 ```bash
 npm install @loaders.gl/core @loaders.gl/draco
 ```
+
+The injectable `draco3d` npm backend is an `optionalDependency`. The default loader and writer use
+vendored runtimes and work with `npm install --omit=optional`. If you omit optional dependencies and
+want to inject `options.modules.draco3d`, install `draco3d` explicitly.
 
 ## Loaders and Writers
 

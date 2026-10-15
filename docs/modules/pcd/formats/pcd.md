@@ -11,6 +11,7 @@ import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
 import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
 
 <DocPageHeader
+  format="pcd"
   eyebrow="Point-cloud format"
   title="Name the point fields before storing the points."
   description="PCD starts with a compact ASCII header that defines the fields and their physical layout, then stores records in a representation suited to inspection or fast transfer."

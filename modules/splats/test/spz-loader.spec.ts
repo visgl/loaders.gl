@@ -71,7 +71,7 @@ test('SPZ reverses the explicit LUF-to-RUB conversion', async () => {
 test('SPZLoader parses Niantic Spatial v4 Gaussian splats', async () => {
   const data = await makeSPZFixture();
   const formats: string[] = [];
-  const restoreDecompressionStream = installMockDecompressionStream(formats);
+  const restoreDecompressionStream = installMockDecompressionStream(formats, false);
   try {
     const table = await parse(data, SPZLoader, {modules});
     expect(table.shape, 'returns MeshArrowTable').toBe('arrow-table');
@@ -103,7 +103,10 @@ test('SPZLoader parses Niantic Spatial v4 Gaussian splats', async () => {
     ).toBeTruthy();
     const directTable = await SPZLoaderWithParser.parse(data, {modules});
     expect(directTable.data.numRows, 'parser subpath supports async parse').toBe(2);
-    expect(formats, 'provided zstd-codec bypasses native stream probing').toEqual([]);
+    expect(
+      formats.length,
+      'default decoder probes native support before WASM fallback'
+    ).toBeGreaterThan(0);
   } finally {
     restoreDecompressionStream();
   }
@@ -252,9 +255,10 @@ function makeLegacySPZFixture(version: 2 | 3): ArrayBuffer {
  * Installs a pass-through native zstd stream and returns a restorer.
  *
  * @param formats Mutable list receiving requested formats.
+ * @param supported Whether the mock accepts Zstandard streams.
  * @returns Callback that restores the original global constructor.
  */
-function installMockDecompressionStream(formats: string[]): () => void {
+function installMockDecompressionStream(formats: string[], supported = true): () => void {
   const originalDescriptor = Object.getOwnPropertyDescriptor(globalThis, 'DecompressionStream');
   class MockDecompressionStream {
     readonly readable: ReadableStream<Uint8Array>;
@@ -262,7 +266,7 @@ function installMockDecompressionStream(formats: string[]): () => void {
     /** Creates a pass-through stream for the native zstd format. */
     constructor(format: string) {
       formats.push(format);
-      if (format !== 'zstd') {
+      if (!supported || format !== 'zstd') {
         throw new TypeError('mock compression format is unsupported');
       }
       const transformStream = new TransformStream<BufferSource, Uint8Array>({

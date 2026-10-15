@@ -3,6 +3,8 @@
 // Copyright (c) vis.gl contributors
 
 import {expect, test} from 'vitest';
+import {brotliDecompressSync} from 'node:zlib';
+import {concatenateArrayBuffers} from '@loaders.gl/loader-utils';
 import {BrotliCompressor} from '../src/brotli-compressor';
 import {DeflateCompression} from '../src/lib/deflate-compression';
 
@@ -45,15 +47,16 @@ test('DeflateCompression reports rejected and failed compatibility processors', 
   );
 });
 
-test('BrotliCompressor preloads and batches through Node zlib', async () => {
-  const compressor = new BrotliCompressor({useNative: false, brotli: {useZlib: true}});
+test('Brotli WASM stream output interoperates with Node zlib', async () => {
+  const compressor = new BrotliCompressor({useNative: false});
   expect(() => compressor.compressSync(INPUT)).toThrow('call preload');
   await compressor.preload();
   expect(compressor.compressSync(INPUT).byteLength).toBeGreaterThan(0);
   expect((await compressor.compress(INPUT)).byteLength).toBeGreaterThan(0);
   const batches = await collect(compressor.compressBatches([INPUT.slice(0, 4), INPUT.slice(4)]));
-  expect(batches).toHaveLength(1);
-  expect(batches[0].byteLength).toBeGreaterThan(0);
+  expect(
+    new Uint8Array(brotliDecompressSync(new Uint8Array(concatenateArrayBuffers(...batches))))
+  ).toEqual(new Uint8Array(INPUT));
 });
 
 /** Collects an asynchronous byte stream for compact error and batching assertions. */

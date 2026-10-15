@@ -5,7 +5,7 @@
 import {expect, test} from 'vitest';
 import {ArrayBufferFile} from '@loaders.gl/loader-utils';
 import {DATA_ARRAY} from '@loaders.gl/i3s/test/data/test.zip';
-import {localHeaderSignature, getReadableFileSize, readRange} from '@loaders.gl/zip';
+const localHeaderSignature = new Uint8Array([0x50, 0x4b, 0x03, 0x04]);
 import {
   createReadableFileFromBuffer,
   createReadableFileFromPath,
@@ -38,9 +38,9 @@ test('ReadableFile#ArrayBufferFile range reads and stat', async () => {
 
 test('ReadableFile#BlobFile range reads and stat', async () => {
   const readableFile = createBrowserReadableFile(DATA_ARRAY.buffer);
-  const size = await getReadableFileSize(readableFile);
+  const size = readableFile.bigsize;
   expect(size, 'returns expected bigsize').toBe(BigInt(DATA_ARRAY.byteLength));
-  const prefix = await readRange(readableFile, 0n, 4n);
+  const prefix = await readableFile.read(0n, 4);
   expect(new Uint8Array(prefix), 'reads the zip signature').toEqual(localHeaderSignature);
   const stat = await readableFile.stat();
   expect(stat.size, 'stat.size matches buffer length').toBe(DATA_ARRAY.byteLength);
@@ -57,17 +57,13 @@ if (!globalThis.window) {
     await readableFile.close?.();
   });
 }
-test('ReadableFile#DataViewReadableFile supports slices', async () => {
+test('ReadableFile#buffer adapter supports slices', async () => {
   const readableFile = await createReadableFileFromBuffer(DATA_ARRAY.buffer);
-  const midSection = await readRange(readableFile, 2n, 6n);
+  const midSection = await readableFile.read(2n, 4);
   expect(new Uint8Array(midSection), 'reads arbitrary slice').toEqual(
     new Uint8Array(DATA_ARRAY.slice(2, 6))
   );
-  const trailing = await readRange(
-    readableFile,
-    BigInt(DATA_ARRAY.byteLength - 4),
-    BigInt(DATA_ARRAY.byteLength)
-  );
+  const trailing = await readableFile.read(BigInt(DATA_ARRAY.byteLength - 4), 4);
   expect(new Uint8Array(trailing), 'reads trailing bytes').toEqual(
     new Uint8Array(DATA_ARRAY.slice(-4))
   );

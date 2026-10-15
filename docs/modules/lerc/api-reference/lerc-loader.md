@@ -64,11 +64,10 @@ There are two major versions, known as "Lerc1" and "Lerc2".
 ## Usage
 
 ```typescript
-import {LERCLoader} from '@loaders.gl/wms';
+import {LERCLoader} from '@loaders.gl/lerc';
 import {load} from '@loaders.gl/core';
 
-// Form a LERC request
-const url = `${WFS_SERVICE_URL}?REQUEST=GetFeature&...`;
+const url = 'raster.lerc';
 
 const data = await load(url, LERCLoader, options);
 ```

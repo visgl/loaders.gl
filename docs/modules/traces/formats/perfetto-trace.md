@@ -10,6 +10,7 @@ import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
 import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
 
 <DocPageHeader
+  format="perfetto-trace"
   eyebrow="Performance trace format"
   title="Turn a trace stream into tables you can inspect."
   description="The Perfetto loader reads protobuf Trace packets, tracks sequence state and descriptors, and projects supported TrackEvent data into typed Apache Arrow tables for browser-side analysis."

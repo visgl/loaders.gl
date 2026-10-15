@@ -9,6 +9,7 @@ import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
 import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
 
 <DocPageHeader
+  format="csw"
   eyebrow="WMS module · catalog service"
   title="Give catalog search a typed application boundary."
   description="CSWService wraps the OGC Catalogue Service for the Web protocol and parses its responses into usable metadata, catalog records, domains, and referenced services."
@@ -45,7 +46,6 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
   <img src="https://img.shields.io/badge/Status-Experimental-orange.svg?style=flat-square" alt="Status: Experimental" />
 </p>
 
-![ogc-logo](../../../images/logos/ogc-logo-60.png)
 
 The `CSWService` class provides OGC CSW (catalog service for the web) access
 

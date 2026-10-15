@@ -267,6 +267,11 @@ only after subtracting a nearby origin. Bounds are sampled or rebuilt in the tar
 arbitrary projection must not be approximated by transforming two corners or attaching one affine
 matrix to a large tile.
 
+`SpatialCoordinateTransformer.transformPositions()` batches finite horizontal-only XYZ transforms
+through a reusable math.gl projection buffer. It returns an owned `Float64Array` and leaves source
+arrays and typed-array views unchanged. Height conversion and geocentric transforms retain the
+per-position path.
+
 ### Failure model
 
 Requested transformations reject when the source CRS is unknown, a preserved definition is not

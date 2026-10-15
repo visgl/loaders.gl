@@ -4,6 +4,7 @@
 
 import {expect, test, vi} from 'vitest';
 import {
+  canParseWithWorker,
   parseFromContext,
   parseWithWorker,
   parseWithWorkerInBatches
@@ -203,4 +204,34 @@ test('empty worker contexts retain legacy callback options without an outer cont
     callback
   );
   expect(result).toEqual({worker: false});
+});
+
+test('caller-only loaders do not serialize bigint options when checking worker eligibility', () => {
+  expect(canParseWithWorker(CHILD_LOADER, {core: {worker: true}, limits: {bytes: 1024n}})).toBe(
+    false
+  );
+  expect(canParseWithWorker(PARENT_LOADER, {core: {worker: false}, limits: {bytes: 1024n}})).toBe(
+    false
+  );
+  expect(
+    canParseWithWorker(CHILD_LOADER, {
+      core: {worker: true},
+      [CHILD_LOADER.id]: {workerUrl: 'worker.js'}
+    })
+  ).toBe(true);
+});
+
+test('shared bigint ZIP options survive unrelated worker selection and transport exactly', async () => {
+  const zip = {maxTotalDecodedBytes: 2n ** 63n + 1n, nested: [1n, null, '1n'], callback: () => {}};
+  expect(canParseWithWorker(PARENT_LOADER, {core: {worker: true}, zip})).toBe(true);
+  const result = await parseWithWorker(PARENT_LOADER, new ArrayBuffer(0), {
+    worker: true,
+    reuseWorkers: false,
+    zip,
+    source: `self.onmessage = ({data: {payload}}) => {
+      self.postMessage({source: 'loaders.gl', type: 'done', payload: {result: payload.options.zip}});
+    };`
+  });
+  expect(result).toEqual({maxTotalDecodedBytes: 2n ** 63n + 1n, nested: [1n, null, '1n']});
+  expect(zip.callback).toBeTypeOf('function');
 });

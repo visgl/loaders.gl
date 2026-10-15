@@ -5,7 +5,10 @@
 import * as arrow from 'apache-arrow';
 import {convertGeoArrowColumn, decodeGeoArrowWKB, encodeGeoArrowWKB} from '@math.gl/geoarrow';
 import type {DecodeGeoArrowWKBOptions} from '@math.gl/geoarrow';
-import {convertGeometryToWKB, convertGeometryToWKT} from '@loaders.gl/gis';
+import {
+  convertGeometryToWKB,
+  convertGeometryToWKT
+} from '@loaders.gl/arrow-geometry/geometry-codecs';
 import type {Geometry, Position} from '@loaders.gl/schema';
 import {convertGeoArrowGeometryToGeoJSON} from '../lib/geometry-converters/convert-geoarrow-to-geojson';
 import type {GeoArrowEncoding, GeoArrowMetadata} from '../metadata/geoarrow-metadata';

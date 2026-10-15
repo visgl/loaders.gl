@@ -18,7 +18,12 @@ import {
   validateTableQueryOptions
 } from '@loaders.gl/loader-utils';
 import {queryArrowTable} from '@loaders.gl/schema-utils';
-import {parseORC, ORCTypeKind, type ORCTypeDescription} from './lib/parsers/parse-orc';
+import {
+  parseORC,
+  readORCPostScript,
+  ORCTypeKind,
+  type ORCTypeDescription
+} from './lib/parsers/parse-orc';
 import {parseORCToArrow} from './lib/parsers/parse-orc-to-arrow';
 import {preloadORCCompression} from './lib/parsers/orc-compression';
 import {ORCFormat} from './orc-format';
@@ -51,7 +56,7 @@ export class ORCSource extends DataSource<string | Blob, ORCSourceOptions> {
   /** Discovers ORC footer schema and stripe statistics without decoding data streams. */
   async getQueryMetadata(options: ScanQueryMetadataOptions = {}): Promise<ScanQueryMetadata> {
     const arrayBuffer = await this.getArrayBuffer(options.signal);
-    await preloadORCCompression();
+    await preloadORCCompression(readORCPostScript(arrayBuffer).compression);
     const file = parseORC(arrayBuffer);
     const schema = createORCSchema(file.footer.types[0], file.footer.types);
     return createScanQueryMetadata({
@@ -79,7 +84,7 @@ export class ORCSource extends DataSource<string | Blob, ORCSourceOptions> {
   async query(options: ORCQueryOptions = {}): Promise<ArrowTable> {
     throwIfAborted(options.signal);
     const arrayBuffer = await this.getArrayBuffer(options.signal);
-    await preloadORCCompression();
+    await preloadORCCompression(readORCPostScript(arrayBuffer).compression);
     const file = parseORC(arrayBuffer);
     validateTableQueryOptions(
       file.footer.fieldNames.length

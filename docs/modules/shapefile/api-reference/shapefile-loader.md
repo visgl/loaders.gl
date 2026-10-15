@@ -10,6 +10,7 @@ import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
 import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
 
 <DocPageHeader
+  format="shapefile"
   eyebrow="Shapefile module · loader API"
   title="ShapefileLoader"
   description="Load a Shapefile dataset as one geospatial table, coordinating its geometry, attributes, index, projection, and optional text-encoding sidecars."

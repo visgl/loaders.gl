@@ -44,8 +44,32 @@ export interface TileConversionProgress {
   readonly outputBytes: number;
 }
 
+/** Elapsed milliseconds for awaited adapter work; stages exclude downstream backpressure. */
+export interface TileConversionTimings {
+  /** Elapsed inspect adapter time in milliseconds. */
+  readonly inspectMilliseconds: number;
+  /** Elapsed read adapter time in milliseconds. */
+  readonly readMilliseconds: number;
+  /** Elapsed convert adapter time in milliseconds. */
+  readonly convertMilliseconds: number;
+  /** Elapsed validate adapter time in milliseconds. */
+  readonly validateMilliseconds: number;
+  /** Elapsed write adapter time in milliseconds. */
+  readonly writeMilliseconds: number;
+  /** Elapsed finalize adapter time in milliseconds. */
+  readonly finalizeMilliseconds: number;
+  /** Elapsed end-to-end conversion time in milliseconds. */
+  readonly totalMilliseconds: number;
+  /** Node transport preparation, including inspection and selection, when available. */
+  readonly setupMilliseconds?: number;
+  /** Node archive serialization and destination publication, when available. */
+  readonly outputMilliseconds?: number;
+}
+
 /** Summary returned after a tileset conversion completes. */
 export interface TileConversionReport {
+  /** Optional stage timings, attached after successful destination finalization. */
+  readonly timings?: TileConversionTimings;
   /** Completed conversion state. Failed conversions reject with their cause. */
   readonly state: 'completed';
   /** Number of input resources consumed. */
@@ -97,6 +121,8 @@ export interface TileConversionCodec<TInspection, TInput, TOutput> {
 
 /** Options for the portable `convertTileset` operation. */
 export interface ConvertTilesetOptions<TInspection, TInput, TOutput> {
+  /** Measure awaited adapter work and total elapsed time; disabled by default. */
+  readonly profile?: boolean;
   /** Injected input resolver and resource reader. */
   readonly source: TileConversionSource<TInspection, TInput>;
   /** Injected output codec. */
@@ -111,6 +137,14 @@ export interface ConvertTilesetOptions<TInspection, TInput, TOutput> {
   readonly maxInputResourceBytes?: number;
   /** Reject any output resource larger than this configured byte limit. */
   readonly maxOutputResourceBytes?: number;
+  /** Maximum measured input bytes across this run; does not bound source allocations. */
+  readonly maxInputBytes?: number;
+  /** Maximum measured output bytes across this run, including checkpointed resources. */
+  readonly maxOutputBytes?: number;
+  /** Maximum input resources consumed by this run, including zero-byte resources. */
+  readonly maxInputResources?: number;
+  /** Maximum outputs processed by this run, including zero-byte and checkpointed resources. */
+  readonly maxOutputResources?: number;
   /** Cancel inspection, conversion, validation, or writes. */
   readonly signal?: AbortSignal;
   /** Receive progress updates after each resource transition. */
@@ -155,6 +189,7 @@ export async function inspectTileset<TInspection, TInput>(
  * This does not limit source decoding allocations or content retained by a source.
  * Writes are awaited one resource at a time, keeping queued output bytes bounded by the
  * largest emitted resource and the configured `maxOutputResourceBytes` limit.
+ * Cumulative byte/count limits bound measured work in this run, not total allocation memory.
  */
 export async function convertTileset<TInspection, TInput, TOutput>(
   options: ConvertTilesetOptions<TInspection, TInput, TOutput>
@@ -167,9 +202,25 @@ export async function convertTileset<TInspection, TInput, TOutput>(
     measureOutputBytes,
     maxInputResourceBytes = Number.POSITIVE_INFINITY,
     maxOutputResourceBytes = Number.POSITIVE_INFINITY,
+    maxInputBytes = Number.POSITIVE_INFINITY,
+    maxOutputBytes = Number.POSITIVE_INFINITY,
+    maxInputResources = Number.POSITIVE_INFINITY,
+    maxOutputResources = Number.POSITIVE_INFINITY,
     signal,
     onProgress
   } = options;
+  const started = options.profile ? performance.now() : 0;
+  const timings = options.profile
+    ? {
+        inspectMilliseconds: 0,
+        readMilliseconds: 0,
+        convertMilliseconds: 0,
+        validateMilliseconds: 0,
+        writeMilliseconds: 0,
+        finalizeMilliseconds: 0,
+        totalMilliseconds: 0
+      }
+    : undefined;
   let inputResources = 0;
   let outputResources = 0;
   let inputBytes = 0;
@@ -181,19 +232,32 @@ export async function convertTileset<TInspection, TInput, TOutput>(
   };
 
   try {
-    if (
-      maxInputResourceBytes !== Number.POSITIVE_INFINITY &&
-      (!Number.isSafeInteger(maxInputResourceBytes) || maxInputResourceBytes < 0)
-    ) {
-      throw new TileConversionError(
-        'INVALID_INPUT_RESOURCE_LIMIT',
-        'maxInputResourceBytes must be a nonnegative safe integer or Infinity'
-      );
+    for (const [name, limit, code] of [
+      ['maxInputResourceBytes', maxInputResourceBytes, 'INVALID_INPUT_RESOURCE_LIMIT'],
+      ['maxOutputResourceBytes', maxOutputResourceBytes, 'INVALID_OUTPUT_RESOURCE_LIMIT'],
+      ['maxInputBytes', maxInputBytes, 'INVALID_INPUT_BYTES_LIMIT'],
+      ['maxOutputBytes', maxOutputBytes, 'INVALID_OUTPUT_BYTES_LIMIT'],
+      ['maxInputResources', maxInputResources, 'INVALID_INPUT_COUNT_LIMIT'],
+      ['maxOutputResources', maxOutputResources, 'INVALID_OUTPUT_COUNT_LIMIT']
+    ] as const) {
+      if (limit !== Infinity && (!Number.isSafeInteger(limit) || limit < 0)) {
+        throw new TileConversionError(
+          code,
+          name + ' must be a nonnegative safe integer or Infinity'
+        );
+      }
     }
     reportProgress('inspect');
-    const inspection = await inspectTileset(source, signal);
-    for await (const inputResource of source.read(inspection, signal)) {
+    const inspection = await measureConversionOperation(timings, 'inspectMilliseconds', () =>
+      inspectTileset(source, signal)
+    );
+    for await (const inputResource of measureConversionIterable(
+      source.read(inspection, signal),
+      timings,
+      'readMilliseconds'
+    )) {
       throwIfAborted(signal);
+      checkConversionTotal(inputResources, 1, maxInputResources, 'INPUT_COUNT_LIMIT_EXCEEDED');
       const inputResourceBytes = measureInputBytes(inputResource);
       if (!Number.isSafeInteger(inputResourceBytes) || inputResourceBytes < 0) {
         throw new TileConversionError(
@@ -207,23 +271,52 @@ export async function convertTileset<TInspection, TInput, TOutput>(
           `Input resource is ${inputResourceBytes} bytes, exceeding the configured limit of ${maxInputResourceBytes} bytes`
         );
       }
+      checkConversionTotal(
+        inputBytes,
+        inputResourceBytes,
+        maxInputBytes,
+        'INPUT_BYTES_LIMIT_EXCEEDED'
+      );
       inputResources++;
       inputBytes += inputResourceBytes;
       reportProgress('convert');
-      const convertedResources = await codec.convert(inputResource, inspection, signal);
-      for await (const outputResource of convertedResources) {
+      const convertedResources = await measureConversionOperation(
+        timings,
+        'convertMilliseconds',
+        () => codec.convert(inputResource, inspection, signal)
+      );
+      for await (const outputResource of measureConversionIterable(
+        convertedResources,
+        timings,
+        'convertMilliseconds'
+      )) {
         throwIfAborted(signal);
+        checkConversionTotal(outputResources, 1, maxOutputResources, 'OUTPUT_COUNT_LIMIT_EXCEEDED');
         reportProgress('validate');
-        const resourceDiagnostics = (await codec.validateOutput?.(outputResource, signal)) || [];
+        const resourceDiagnostics =
+          (await measureConversionOperation(timings, 'validateMilliseconds', () =>
+            codec.validateOutput?.(outputResource, signal)
+          )) || [];
         diagnostics.push(...resourceDiagnostics);
         const outputResourceBytes = measureOutputBytes(outputResource);
-        largestOutputResourceBytes = Math.max(largestOutputResourceBytes, outputResourceBytes);
+        if (!Number.isSafeInteger(outputResourceBytes) || outputResourceBytes < 0) {
+          throw new TileConversionError(
+            'INVALID_OUTPUT_RESOURCE_SIZE',
+            'measureOutputBytes must return a nonnegative safe integer'
+          );
+        }
         if (outputResourceBytes > maxOutputResourceBytes) {
           throw new TileConversionError(
             'OUTPUT_RESOURCE_TOO_LARGE',
             `Output resource is ${outputResourceBytes} bytes, exceeding the configured limit of ${maxOutputResourceBytes} bytes`
           );
         }
+        checkConversionTotal(
+          outputBytes,
+          outputResourceBytes,
+          maxOutputBytes,
+          'OUTPUT_BYTES_LIMIT_EXCEEDED'
+        );
         if (resourceDiagnostics.some(diagnostic => diagnostic.severity === 'error')) {
           throw new TileConversionError(
             'OUTPUT_VALIDATION_FAILED',
@@ -232,8 +325,11 @@ export async function convertTileset<TInspection, TInput, TOutput>(
           );
         }
         throwIfAborted(signal);
-        await sink.write(outputResource, signal);
+        await measureConversionOperation(timings, 'writeMilliseconds', () =>
+          sink.write(outputResource, signal)
+        );
         throwIfAborted(signal);
+        largestOutputResourceBytes = Math.max(largestOutputResourceBytes, outputResourceBytes);
         outputResources++;
         outputBytes += outputResourceBytes;
         reportProgress('convert');
@@ -251,8 +347,9 @@ export async function convertTileset<TInspection, TInput, TOutput>(
     };
     throwIfAborted(signal);
     reportProgress('finalize');
-    await sink.finalize(report);
-    return report;
+    await measureConversionOperation(timings, 'finalizeMilliseconds', () => sink.finalize(report));
+    if (timings) timings.totalMilliseconds = Math.max(0, performance.now() - started);
+    return timings ? {...report, timings} : report;
   } catch (error) {
     try {
       await sink.abort(error);
@@ -284,4 +381,74 @@ function throwIfAborted(signal?: AbortSignal): void {
   if (signal?.aborted) {
     throw signal.reason ?? new DOMException('The operation was aborted', 'AbortError');
   }
+}
+
+/** Checks a cumulative budget without overflowing safe integer accounting. */
+function checkConversionTotal(
+  current: number,
+  increment: number,
+  limit: number,
+  code: string
+): void {
+  if (increment > limit - current) {
+    throw new TileConversionError(
+      code,
+      `Conversion exceeds cumulative limit ${limit}: ${current} processed, next resource adds ${increment}`
+    );
+  }
+  if (increment > Number.MAX_SAFE_INTEGER - current) {
+    throw new TileConversionError(
+      'RESOURCE_TOTAL_OVERFLOW',
+      'Conversion totals must remain safe integers'
+    );
+  }
+}
+
+/** Mutable internal accumulator, excluding Node transport timings. */
+type ConversionTimingAccumulator = {
+  -readonly [Key in keyof TileConversionTimings]: TileConversionTimings[Key];
+};
+/** Adapter stages that can be measured independently. */
+type ConversionTimingStage =
+  | 'inspectMilliseconds'
+  | 'readMilliseconds'
+  | 'convertMilliseconds'
+  | 'validateMilliseconds'
+  | 'writeMilliseconds'
+  | 'finalizeMilliseconds';
+
+/** Times only the awaited adapter operation, retaining the original rejection. */
+function measureConversionOperation<T>(
+  timings: ConversionTimingAccumulator | undefined,
+  stage: ConversionTimingStage,
+  operation: () => T | Promise<T>
+): T | Promise<T> {
+  if (!timings) return operation();
+  const started = performance.now();
+  return (async () => {
+    try {
+      return await operation();
+    } finally {
+      timings[stage] += Math.max(0, performance.now() - started);
+    }
+  })();
+}
+
+/** Times generator advancement without counting time spent awaiting the consumer. */
+function measureConversionIterable<T>(
+  iterable: AsyncIterable<T>,
+  timings: ConversionTimingAccumulator | undefined,
+  stage: ConversionTimingStage
+): AsyncIterable<T> {
+  if (!timings) return iterable;
+  return {
+    [Symbol.asyncIterator]() {
+      const iterator = iterable[Symbol.asyncIterator]();
+      return {
+        next: async () => measureConversionOperation(timings, stage, () => iterator.next()),
+        ...(iterator.return ? {return: iterator.return.bind(iterator)} : {}),
+        ...(iterator.throw ? {throw: iterator.throw.bind(iterator)} : {})
+      };
+    }
+  };
 }

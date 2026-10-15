@@ -10,6 +10,7 @@ import {CrsFlowGraphic} from '@site/src/components/docs/capability-flow-graphics
 import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
 
 <DocPageHeader
+  format="wkt-crs"
   eyebrow="Coordinate reference syntax"
   title="Describe where the coordinates live."
   description="WKT-CRS is the standards-based text grammar for coordinate reference systems and their transformations. It gives geospatial data a precise spatial frame before reprojection or rendering begins."
@@ -37,7 +38,6 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
   ]}
 />
 
-![ogc-logo](../../../images/logos/ogc-logo-60.png)
 
 - _[`@loaders.gl/wkt`](/docs/modules/wkt)_
 - _[OGC Standard](https://www.ogc.org/standards/wkt-crs)_
@@ -58,9 +58,7 @@ loaders.gl type model, format support matrix, and reprojection roadmap.
 
 | Name                  | Year   | Description                                                  | ISO              |
 | --------------------- | ------ | ------------------------------------------------------------ | ---------------- |
-| WKT                   | (1999  | As initially defined by the Open Geospatial Consortium (OGC) |
+| WKT | 1999 | As initially defined by the Open Geospatial Consortium (OGC) | — |
 | "WKT 1"               | (2001  | WKT was extended in 2001. Sometimes known as "WKT 1".        | ISO 19125-1:2004 |
 | "WKT 2" / "WKT-CRS 1" | (2015) | Addresses new requirements and inconsistencies in WKT 1.     | ISO 19162:2015   |
 | "WKT-CRS 2"           | (2018) | A newer revision.                                            | ISO 19162:2019   |
-
-## Ecosystem Support

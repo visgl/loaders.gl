@@ -10,6 +10,7 @@ import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
 import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
 
 <DocPageHeader
+  format="gltf"
   eyebrow="glTF API / scenegraph"
   title="Work with a glTF asset as a scenegraph."
   description="GLTFScenegraph provides focused accessors and builders for glTF JSON and binary resources. Use it when an application needs to inspect, modify, or assemble a scene while retaining the format's structure."
@@ -72,10 +73,10 @@ if (topLevelExtension) {
 const imageIndex = 0;
 const image = gltf.getImage(imageIndex);
 
-// Get default glTF scenegraph
-const scenegraph = gltf.getScene();
-// Get specific glTF scenegraph
-const scenegraph = gltf.getScene(2);
+// Get the default scene, or the first scene if no default is specified
+const defaultScene = gltf.getScene(gltfJson.scene ?? 0);
+// Get a specific scene
+const specificScene = gltf.getScene(2);
 ```
 
 ### Modifying

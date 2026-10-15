@@ -9,6 +9,7 @@ import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
 import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
 
 <DocPageHeader
+  format="wkt"
   eyebrow="WKT module · geometry writer"
   title="WKTWriter"
   description="Encode structured geometry as readable Well-Known Text for inspection, interchange, logs, and systems that accept the OGC text representation."
@@ -40,7 +41,6 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
   tone="orange"
 />
 
-![ogc-logo](../../../images/logos/ogc-logo-60.png)
 
 Writer for the [Well-known text] format for representation of geometry.
 

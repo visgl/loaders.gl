@@ -5,7 +5,7 @@
 // This code is forked from https://github.com/mapbox/vector-tile-js under BSD 3-clause license.
 
 import type {Feature, FlatFeature, FlatIndexedGeometry} from '@loaders.gl/schema';
-import type {GeojsonGeometryInfo} from '@loaders.gl/gis';
+import type {GeojsonGeometryInfo} from '@loaders.gl/arrow-geometry/legacy-binary';
 import Protobuf from 'pbf';
 import {
   classifyRings,
@@ -416,6 +416,15 @@ function readTag(pbf: Protobuf, feature: VectorTileFeature): void {
   while (pbf.pos < end) {
     const key = feature._keys[pbf.readVarint()];
     const value = feature._values[pbf.readVarint()];
-    feature.properties[key] = value;
+    if (key === '__proto__') {
+      Object.defineProperty(feature.properties, key, {
+        value,
+        enumerable: true,
+        configurable: true,
+        writable: true
+      });
+    } else {
+      feature.properties[key] = value;
+    }
   }
 }

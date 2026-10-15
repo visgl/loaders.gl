@@ -11,6 +11,7 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
 import {StructuredDataPathGraphic} from '@site/src/components/docs/structured-data-path-graphic';
 
 <DocPageHeader
+  format="json"
   eyebrow="Structured text format"
   title="JSON"
   description="JSON represents nested values in a form that works naturally across browsers, services, and configuration files. loaders.gl also provides line-oriented loaders when records should arrive incrementally."

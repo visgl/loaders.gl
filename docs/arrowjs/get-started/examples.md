@@ -125,7 +125,7 @@ console.log(tableFromArrayBuffer.toString());
 import {readFileSync} from 'fs';
 import {tableFromIPC} from 'apache-arrow';
 
-const table = tableFromIPC(['latlong/schema.arrow', 'latlong/records.arrow'].map(readFileSync));
+const table = tableFromIPC(['latlong/schema.arrow', 'latlong/records.arrow'].map(path => readFileSync(path)));
 
 const column = table.getChild('origin_lat');
 

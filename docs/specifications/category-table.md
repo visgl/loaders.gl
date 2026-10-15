@@ -160,16 +160,15 @@ const arrowTable = makeArrowTable(table).data;
 
 ## Serialized table representation
 
-loaders.gl defines what is effectively a serialized representation of Apache Arrow schemas. These can be converted to Arrow tables with a simple transformation that is provided.
+Use Arrow IPC to serialize an Arrow table. The schema and record batches travel with the encoded column buffers.
 
 ```typescript
-import {makeTable} from 'apache-arrow';
+import {tableFromArrays, tableToIPC, tableFromIPC} from 'apache-arrow';
 
-const arrowTable = makeTable(...); // An arrow table
-const table = serializeArrowTable(arrowTable); // A loaders.gl columnar table
-const arrowTableCopy = deserializeArrowTable(table); // An arrow table
-
-console.log(arrowTable.compareTo(arrowTableCopy));
+const arrowTable = tableFromArrays({id: [1, 2, 3]});
+const bytes = tableToIPC(arrowTable);
+const arrowTableCopy = tableFromIPC(bytes);
+console.log(arrowTableCopy.numRows); // 3
 ```
 
-Note: Currently the batch structure of a table is lost during serialization.
+For loaders.gl table-shape conversion, see [schema utilities](/docs/modules/schema-utils).

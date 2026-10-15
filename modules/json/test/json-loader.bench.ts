@@ -2,7 +2,8 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import {JSONLoader, _FastJSONLoader as FastJSONLoader} from '@loaders.gl/json';
+import {FastJSONLoader} from '@loaders.gl/json/fast-json-loader';
+import {JSONLoader} from '@loaders.gl/json';
 import {load, loadInBatches, parse} from '@loaders.gl/core';
 
 import clarinetBench from './lib/clarinet/clarinet.bench';

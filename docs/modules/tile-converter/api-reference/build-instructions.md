@@ -11,7 +11,7 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
 <DocPageHeader
   eyebrow="Tile converter / development"
   title="Run the converter from the source tree."
-  description="Use these instructions when a repository branch contains a fix or capability that is not in the published package yet. The workflow builds the dependencies, installs the elevation model, and runs the converter against a chosen tileset."
+  description="Use these instructions when a repository branch contains a fix or capability that is not in the published package yet. Build the modules and workers, then choose the v5 CLI or legacy v4 workflow. The legacy workflow includes its elevation-model installer."
   tone="blue"
   meta={['Repository build', 'Latest branch changes', 'Development workflow']}
   links={[
@@ -66,6 +66,23 @@ yarn build-workers
 The Node.js Basis decoder and KTX2 encoder workers are CommonJS `.cjs` bundles. Run
 `yarn build-workers` again after rebuilding modules, which clears their output directories.
 Run `yarn test-tile-converter` to check the converter with local fixtures.
+
+## Run the v5 CLI
+
+The repository build exposes the Node CLI directly:
+
+```bash
+node apps/tile-converter/bin/converter-v5.js inspect ./tileset.json
+node apps/tile-converter/bin/converter-v5.js validate ./tileset.json --resource tile-root-content-0
+node apps/tile-converter/bin/converter-v5.js convert ./tileset.json --resource tile-root-content-0 --output ./converted.3tz
+```
+
+Use content IDs reported by inspection. Add `--preserve-hierarchy` only when explicitly
+selecting every binary content within the qualified hierarchy limits. V5 does not use the
+legacy dependency installer; CRS and height preparation are explicit. See the
+[v5 CLI guide](/docs/modules/tile-converter/cli-reference/tile-converter-v5).
+
+## Run the legacy v4 converter
 
 4. Install default Earth Gravity Model dependency:
 

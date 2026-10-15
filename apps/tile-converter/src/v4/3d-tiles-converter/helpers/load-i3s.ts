@@ -8,7 +8,7 @@ import {
   parseSLPKArchive
 } from '@loaders.gl/i3s';
 import {NodeFile} from '@loaders.gl/loader-utils';
-import {ZipFileSystem, makeZipCDHeaderIterator} from '@loaders.gl/zip';
+import {ZipFileSystem} from '@loaders.gl/zip';
 
 export type SLPKUrlParts = {slpkFileName: string; internalFileName: string};
 
@@ -116,9 +116,7 @@ export async function getNodeCount(fileSystem: ZipFileSystem | null): Promise<nu
     return 0;
   }
   const nodeSet = new Set();
-  const filesIterator = makeZipCDHeaderIterator(fileSystem.file);
-  for await (const file of filesIterator) {
-    const filename = file.fileName;
+  for (const filename of await fileSystem.readdir()) {
     const nodeNumberSearchResult = /^nodes\/(\d+)\//.exec(filename);
     if (nodeNumberSearchResult) {
       nodeSet.add(nodeNumberSearchResult[1]);

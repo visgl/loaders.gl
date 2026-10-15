@@ -16,6 +16,7 @@ import {
 import {
   parseRADChunk,
   parseRADChunkToGaussianSplats,
+  preloadRADCompression,
   type RADChunkDecodeOptions
 } from './lib/parse-rad-chunk';
 import {makeGaussianSplatsArrowTable} from './lib/splats-arrow-table';
@@ -190,6 +191,7 @@ export class RADSource extends DataSource<string | Blob, RADSourceLoaderOptions>
     options: RADChunkRequestOptions = {}
   ): Promise<GaussianSplats> {
     const metadata = await this.getMetadata();
+    await preloadRADCompression();
     return parseRADChunkToGaussianSplats(
       await this.getChunk(chunkIndex, options),
       this._getChunkDecodeOptions(metadata, options)
@@ -202,6 +204,7 @@ export class RADSource extends DataSource<string | Blob, RADSourceLoaderOptions>
     options: RADChunkRequestOptions = {}
   ): Promise<MeshArrowTable> {
     const metadata = await this.getMetadata();
+    await preloadRADCompression();
     return parseRADChunk(
       await this.getChunk(chunkIndex, options),
       this._getChunkDecodeOptions(metadata, options)

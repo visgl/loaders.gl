@@ -33,6 +33,9 @@ case $MODE in
     ;;
 esac
 
+node scripts/normalize-llm-output.mjs
+node scripts/check-llm-output.mjs
+
 # Development-only source-worker replacements must never enter production output.
 if rg -q 'new URL[^\n]*parquet-source-worker\.ts|parquet-source-worker-factory\.dev' "$OUTPUT_DIR" \
   -g '*.js' -g '*.map' -g '*.json'; then

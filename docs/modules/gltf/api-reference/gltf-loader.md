@@ -11,13 +11,13 @@ import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
 import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
 
 <DocPageHeader
+  format="gltf"
   eyebrow="glTF module / loader"
   title="GLTFLoader"
   description="Load a standards-shaped scene while the loader resolves buffers, images, compressed meshes, and other linked resources around it."
   hideTitle
   tone="pink"
   meta={['.gltf and .glb', 'Linked assets', 'Draco and meshopt']}
-  logos={[{alt: 'glTF', src: '/images/format-logos/gltf-logo.png'}]}
   links={[
     {label: 'glTF format', to: '/docs/modules/gltf/formats/gltf'},
     {label: 'glTF module', to: '/docs/modules/gltf'},
@@ -242,7 +242,8 @@ Optionally, the loaded gltf can be "post processed", which lightly annotates and
 
 In addition, certain glTF extensions, including Draco and [meshopt compression](/docs/modules/gltf/formats/gltf#meshopt-compression), can be fully or partially processed during loading. When possible (and extension processing is enabled), such extensions will be resolved/decompressed and replaced with standards conformant representations.
 
-Note: while supported, synchronous parsing of glTF (e.g. using `parseSync()`) has significant limitations. When parsed asynchronously (using `await parse()` or `await load()`), the following additional capabilities are enabled:
+`GLTFLoader` provides asynchronous parsing through `parse` and `load`; it does
+not provide `parseSync`. Async parsing supports the following resource processing:
 
 - linked binary resource URI:s will be loaded and resolved (assuming a valid base url is available).
 - base64 encoded binary URI:s inside the JSON payload will be decoded.

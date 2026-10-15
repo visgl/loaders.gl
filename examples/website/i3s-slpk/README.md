@@ -37,8 +37,9 @@ continue to work.
 
 ## Bounded browser conversion
 
-Enter a CORS-enabled HTTP(S) `tileset.json` URL in **Convert selected 3D Tiles meshes**,
-inspect its declared content placements, then explicitly select content and choose SLPK or 3TZ.
+Choose a CORS-enabled HTTP(S) `tileset.json` URL or a local/remote 3TZ archive in
+**Convert selected tile meshes**, inspect its declared content placements, then explicitly
+select content and choose SLPK or 3TZ. Archive inputs must be at most 16 MiB.
 Only selected content and its declared dependencies are fetched. Both formats accept up to 64
 static primitive placements across selected contents; multiple selection requires leaf tiles.
 Ancestor transforms are retained; 3TZ retains conservative source geometric error. Output is
@@ -48,7 +49,8 @@ with the incremental viewer.
 GLB/B3DM triangle lists, strips, fans and Draco compression are supported in native EPSG:4978
 with ellipsoidal heights established by root region bounds. Draco runtimes use bundled assets.
 External buffers and PNG/JPEG base-color images resolve relative to the selected content through
-one shared, cancellable transport budget. Applications can inject an archive-backed fetcher.
+one shared, cancellable transport budget. Archive-relative dependencies resolve within the
+selected archive; external dependencies and paths outside its virtual root are rejected.
 
 Both formats preserve metallic-roughness factors, alpha controls, double-sided rendering, one
 PNG/JPEG base-color image and packed Float32 or normalized unsigned UVs. 3TZ preserves
@@ -150,3 +152,50 @@ Worker scripts and their module chunks must be served by the application and all
 
 The example imports orchestration from `@loaders.gl/tile-converter/v5/core` and format
 writers from `/v5/adapters`. Conversion code remains in the tile-converter application.
+
+### I3S conversion input
+
+The conversion controls accept an I3S `3DObject` or `IntegratedMesh` layer URL (with CORS),
+or a local SLPK file up to 16 MiB. Inspection traverses legacy nodes or node pages without
+loading geometry, textures or attributes. It offers only leaf mesh nodes for explicit selection;
+source hierarchy and LOD refinement are not reproduced in the flat partial output.
+
+Both SLPK and 3TZ output reuse the v5 source-coordinate adapter and writers. Supported source
+appearance is basic PBR factors and one encoded PNG/JPEG base-color map. Attribute resources
+require an explicit mapping, for example:
+
+```json
+{
+  "metadataClass": "buildings",
+  "objectIdProperty": "OBJECTID",
+  "sourceFeatureIdProperty": "feature_id",
+  "maxAttributeBytes": 1048576,
+  "schema": {
+    "fields": [
+      {"name": "feature_id", "type": "int32", "nullable": false},
+      {"name": "name", "type": "utf8", "nullable": true}
+    ]
+  }
+}
+```
+
+Choose source column names/types that actually exist. Every remaining property must be mapped;
+64-bit SLPK output requires `integer64Encoding: "decimal-string"`. No schema or CRS is inferred.
+The browser profile uses available built-in CRS operations and declared ellipsoidal heights;
+missing geoid/grid/epoch operations fail instead of downloading resources. For 3TZ, supply a
+conservative geometric error in meters: an I3S screen-size threshold does not provide a metric
+error bound. The encoder's measured error allowance is added to that declared bound.
+
+Layer/header/dependency responses share the 16 MiB input budget; decoded geometry, encoded
+images and Arrow columns have a separate aggregate 16 MiB gate. Inspection visits at most
+1,000 nodes and conversion selects at most 64 leaf meshes. SLPK and 3TZ use indexed reads and
+keep local Files in the worker request rather than reading complete archives into ArrayBuffers.
+Archive file-size and indexed-read limits are checked before reads, and response limits after GZIP
+expansion. These gates do not bound decoder/decompressor peak allocations. Remote SLPK and 3TZ conversion inputs require HTTP 206 ranges and CORS-exposed
+`Content-Range` plus ETag or Last-Modified. Query credentials stay on archive requests. The
+inspected remote identity is retained when the worker reopens the archive; changed archives
+fail instead of converting stale declarations. Broader hierarchy/appearance profiles remain
+separate work.
+
+Conversion, packaging and direct file saving use the existing disposable worker and acknowledged
+streaming protocol. Cancel terminates the worker; failed conversion produces no completed archive.

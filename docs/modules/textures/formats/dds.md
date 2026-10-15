@@ -11,6 +11,7 @@ import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
 import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
 
 <DocPageHeader
+  format="dds"
   eyebrow="Texture container"
   title="Keep compressed desktop texture assets upload-ready."
   description="DDS packages compressed texture blocks, dimensions, and mipmaps in a container common to Direct3D-oriented pipelines. loaders.gl extracts the levels and canonical format metadata for the consuming GPU runtime."

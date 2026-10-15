@@ -10,6 +10,7 @@ import {RangeRequestGraphic} from '@site/src/components/docs/range-request-graph
 import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
 
 <DocPageHeader
+  format="flatgeobuf"
   eyebrow="Cloud-native vector module"
   title="Ask a vector file for the features in a box."
   description="FlatGeobuf combines a binary feature layout with a spatial index that can be read over HTTP ranges. The module turns that into a loader and source for bounded vector access and Arrow feature tables."
@@ -36,7 +37,7 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
   ]}
 />
 
-![flatgeobuf-logo](./images/flatgeobuf-logo.png)
+
 
 <p className="badges">
   <img src="https://img.shields.io/badge/From-v3.1-blue.svg?style=flat-square" alt="From-v3.1" />

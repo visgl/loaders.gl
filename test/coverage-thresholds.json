@@ -122,6 +122,21 @@
         "branches": 70
       }
     },
+    "@loaders.gl/copc": {
+      "path": "modules/copc",
+      "browser": {
+        "statements": 90,
+        "lines": 90,
+        "functions": 90,
+        "branches": 90
+      },
+      "merged": {
+        "statements": 90,
+        "lines": 90,
+        "functions": 90,
+        "branches": 90
+      }
+    },
     "@loaders.gl/core": {
       "path": "modules/core",
       "browser": {
@@ -255,21 +270,6 @@
         "lines": 60,
         "functions": 73,
         "branches": 41
-      }
-    },
-    "@loaders.gl/gis": {
-      "path": "modules/gis",
-      "browser": {
-        "statements": 81,
-        "lines": 81,
-        "functions": 84,
-        "branches": 65
-      },
-      "merged": {
-        "statements": 80,
-        "lines": 81,
-        "functions": 84,
-        "branches": 65
       }
     },
     "@loaders.gl/gltf": {
@@ -855,6 +855,21 @@
         "lines": 80,
         "functions": 70,
         "branches": 80
+      }
+    },
+    "@loaders.gl/zarr": {
+      "path": "modules/zarr",
+      "browser": {
+        "statements": 90,
+        "lines": 90,
+        "functions": 90,
+        "branches": 90
+      },
+      "merged": {
+        "statements": 90,
+        "lines": 90,
+        "functions": 90,
+        "branches": 90
       }
     },
     "@loaders.gl/zip": {

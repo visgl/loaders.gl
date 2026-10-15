@@ -88,15 +88,23 @@ function toTileMatrix(matrix: TileGridMatrix): TileMatrix | null {
 
 /** Advertised fields of one tile matrix, in the service's own axis order. */
 export type TileMatrixFields = {
+  /** Advertised matrix identifier. */
   id: string;
+  /** Coordinate units per pixel, when known. */
   resolution?: number;
   /** Origin as advertised; swapped to XY when `swapAxes` is set. */
   point?: number[];
+  /** Whether the advertised coordinates are Y first. */
   swapAxes: boolean;
+  /** Corner located by the origin; defaults to top-left. */
   cornerOfOrigin?: 'topLeft' | 'bottomLeft';
+  /** Advertised tile width in pixels. */
   tileWidth?: number;
+  /** Advertised tile height in pixels. */
   tileHeight?: number;
+  /** Advertised matrix width in tiles. */
   matrixWidth?: number;
+  /** Advertised matrix height in tiles. */
   matrixHeight?: number;
 };
 
@@ -111,7 +119,9 @@ export function createTileGridMatrix(fields: TileMatrixFields): TileGridMatrix {
   if (String(fields.cornerOfOrigin).toLowerCase() === 'bottomleft') {
     tileGridMatrix.cornerOfOrigin = 'bottomLeft';
   }
-  if (tileWidth) tileGridMatrix.tileSize = [tileWidth, tileHeight || tileWidth];
+  if (tileWidth !== undefined && tileHeight !== undefined) {
+    tileGridMatrix.tileSize = [tileWidth, tileHeight];
+  }
   if (fields.matrixWidth !== undefined && fields.matrixHeight !== undefined) {
     tileGridMatrix.matrixSize = [fields.matrixWidth, fields.matrixHeight];
   }

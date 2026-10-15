@@ -4,7 +4,7 @@
 
 import {expect, test} from 'vitest';
 import type {ArrowTable, ArrowTableBatch, ArrayRowTable, ObjectRowTable} from '@loaders.gl/schema';
-import {convertGeometryToWKB} from '@loaders.gl/gis';
+import {convertGeometryToWKB} from '@loaders.gl/arrow-geometry/geometry-codecs';
 import {
   convertCSVRowTableToArrowTable,
   parseCSVArrayBufferAsArrow,

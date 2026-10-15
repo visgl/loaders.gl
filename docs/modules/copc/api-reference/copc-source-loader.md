@@ -9,15 +9,14 @@ import {CopcDocsTabs} from '@site/src/components/docs/copc-docs-tabs';
 import {CopcRangeGraphic} from '@site/src/components/docs/copc-range-graphic';
 import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
 import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
-import copcLogo from '../../../images/logos/copc-logo-80.png';
 
 <DocPageHeader
+  format="copc"
   eyebrow="COPC source"
   title="COPCSourceLoader"
   description="Turn one cloud object into a selectable point source. Discover metadata, select nodes, range-read LAZ chunks, and emit normalized point tiles or Arrow batches."
   tone="violet"
   meta={['COPC 1.0', 'Range requests', 'PointCloudTileset']}
-  logos={[{alt: 'COPC', src: copcLogo}]}
   links={[
     {label: 'COPC format', to: '/docs/modules/copc/formats/copc'},
     {label: 'Potree source', to: '/docs/modules/potree/api-reference/potree-source-loader'}
@@ -78,6 +77,7 @@ The created data source exposes the point-cloud tile methods used by `PointCloud
 - `loadTileContent(tile, options)` returns normalized point positions, optional colors, point count, and cartographic origin. `options.signal` cancels queued work, the active range request, or worker decode.
 - `loadTileContentInBatches(tile, options)` yields normalized Arrow point tables progressively as the selected node range is fetched. `options.batchSize` controls the maximum points per table, `options.columns` selects the attributes listed below, and `options.signal` cancels the request/decode.
 - `loadHierarchyInBatches(options)` yields hierarchy pages and their discovered nodes as they are fetched.
+- `close()` invalidates cached and physical reads, cancels pending range and atomic node work, and closes the underlying file once. Subsequent node loads reject, including Blob-backed sources.
 
 The source uses the native TypeScript COPC and LAZ readers for PDRF 6-8. Atomic `loadTileContent` calls created through `@loaders.gl/core` use the package's single prebuilt TypeScript LAS worker pool when workers are enabled; direct source construction and unavailable workers fall back to main-thread decoding. `copc.decodeConcurrency` bounds each source's combined node fetch and decode work to control peak compressed and decoded memory.
 

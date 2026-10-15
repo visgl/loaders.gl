@@ -8,7 +8,8 @@
     "outDir": "dist"
   },
   "references": [
-    {"path": "../gis"},
-    {"path": "../schema-utils"}
+    {"path": "../arrow-geometry"},
+    {"path": "../schema-utils"},
+    {"path": "../wkt"}
   ]
 }

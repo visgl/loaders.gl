@@ -49,19 +49,19 @@ important.
 
 ## Geospatial Category Loaders
 
-| Loader                                                    | Type   | `geojson`                               | `binary`          | `raw`      | `batch`         | comments |
-| --------------------------------------------------------- | ------ | --------------------------------------- | ----------------- | ---------- | --------------- | -------- |
-| [`GPXLoader`](/docs/modules/kml/api-reference/gpx-loader) | Layers | `FeatureCollection`                     | attributes object | parsed XML |
-| [`KMLLoader`](/docs/modules/kml/api-reference/kml-loader) | Layers | `FeatureCollection`                     | attributes object | parsed XML |
-| [`TCXLoader`](/docs/modules/kml/api-reference/tcx-loader) | Layers | `FeatureCollection`                     | attributes object | parsed XML |
-| [`GeoJSONLoader`](/docs/modules/json/api-reference/geojson-loader) |        | `FeatureCollection`                     |
-| [`ShapefileLoader`](/docs/modules/shapefile/api-reference/shapefile-loader) |        | `ArrowTable` (GeoArrow)                 | `FeatureCollection` via explicit shape | -          |
-| `SHPLoader`                                               |        | `ArrowTable` (GeoArrow geometry)        | WKB geometries via explicit shape | -          | only geometries |
-| [`FlatGeobufLoader`](/docs/modules/flatgeobuf/api-reference/flatgeobuf-loader) |        | `FeatureCollection`                     | -                 | -          |
-| [`MVTLoader`](/docs/modules/mvt/api-reference/mvt-loader) | Layers | `FeatureCollections`                    |
-| [`GeoPackageLoader`](/docs/modules/geopackage/api-reference/geopackage-loader) | Layers | `GeoJSONTable` / `ArrowTable`            | -                 | -          | selected table |
-| [`WKBLoader`](/docs/modules/wkt/api-reference/wkb-loader) | Single | a single geojson geometry (not feature) | -                 | -          | only geometry   |
-| [`WKTLoader`](/docs/modules/wkt/api-reference/wkt-loader) | Single | a single geojson geometry (not feature) | -                 | -          | only geometry   |
+The default geospatial table representation is Arrow for the loaders below.
+Each loader reference documents its alternate shapes and format-specific fields.
+
+| Loader | Default result | Scope |
+| --- | --- | --- |
+| [`GPXLoader`](/docs/modules/kml/api-reference/gpx-loader), [`KMLLoader`](/docs/modules/kml/api-reference/kml-loader), [`TCXLoader`](/docs/modules/kml/api-reference/tcx-loader) | `ArrowTable` | Features from XML documents. |
+| [`GeoJSONLoader`](/docs/modules/json/api-reference/geojson-loader) | `ArrowTable` | GeoJSON features. |
+| [`ShapefileLoader`](/docs/modules/shapefile/api-reference/shapefile-loader) | `ArrowTable` | Features joined from geometry and property files. |
+| `SHPLoader` | `ArrowTable` | Geometry-only shapefile records. |
+| [`FlatGeobufLoader`](/docs/modules/flatgeobuf/api-reference/flatgeobuf-loader) | `ArrowTable` | Features from a FlatGeobuf file. |
+| [`MVTLoader`](/docs/modules/mvt/api-reference/mvt-loader) | `ArrowTable` | Features from selected vector-tile layers. |
+| [`GeoPackageLoader`](/docs/modules/geopackage/api-reference/geopackage-loader) | `ArrowTable` | Features from a selected table. |
+| [`WKBLoader`](/docs/modules/wkt/api-reference/wkb-loader), [`WKTLoader`](/docs/modules/wkt/api-reference/wkt-loader) | GeoJSON geometry | One geometry, without a feature/property wrapper. |
 
 ## Supported shapes
 
@@ -125,21 +125,26 @@ See the converter docs for details:
 - [Render converters](/docs/developer-guide/converters/render-converters)
 - [Format categories](/docs/developer-guide/converters/format-categories)
 
-## Data Structure
+## Data structures
 
 ### GeoJSON
 
+A GeoJSON table wraps a `FeatureCollection` with its shape and schema metadata.
+Features contain a `geometry` and a `properties` object. Geometry-only loaders
+return a geometry without the feature wrapper.
+
 ### Binary
 
-A JavaScript object with a number of top-level array-valued fields:
-
-| Field      | Description                                          |
-| ---------- | ---------------------------------------------------- |
-| `points`   | A [GeoJson](https://geojson.org/) FeatureCollection. |
-| `lines`    | A [GeoJson](https://geojson.org/) FeatureCollection. |
-| `polygons` | A [GeoJson](https://geojson.org/) FeatureCollection. |
+Render-oriented binary feature collections group geometry into `points`, `lines`,
+and `polygons`. These fields contain typed coordinate, index, feature-ID, and
+property buffers; they are not GeoJSON `FeatureCollection` objects. Other binary
+shapes differ by loader, so check the requested shape's reference.
 
 ### Raw
+
+Raw output preserves format-specific structures and is not a shared geospatial
+contract. Use it only when your application needs fields that a normalized table
+cannot represent.
 
 ### GeoJSON Conversion
 

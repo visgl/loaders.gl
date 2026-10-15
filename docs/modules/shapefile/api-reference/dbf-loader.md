@@ -10,6 +10,7 @@ import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
 import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
 
 <DocPageHeader
+  format="shapefile"
   eyebrow="Shapefile module · attribute loader"
   title="DBFLoader"
   description="Decode the legacy dBase attribute table that accompanies Shapefile geometry, with control over the text encoding used for field values."

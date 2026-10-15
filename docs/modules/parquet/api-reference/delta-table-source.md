@@ -9,6 +9,7 @@ import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
 import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
 
 <DocPageHeader
+  format="parquet"
   eyebrow="Versioned table source"
   title="DeltaTableSource"
   description="DeltaTableSource replays the transaction log to determine the active Parquet files, then uses the common source and scan contracts for metadata, filtering, projection, limits, and streaming Arrow results."

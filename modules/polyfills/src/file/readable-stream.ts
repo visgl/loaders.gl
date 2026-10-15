@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright vis.gl contributors
 
-import {ReadableStream as WSPReadableStream} from 'web-streams-polyfill';
+import {ReadableStream as NodeReadableStream} from 'node:stream/web';
 
-// @ts-ignore
-export class ReadableStreamPolyfill<T> extends WSPReadableStream<T> implements ReadableStream {}
+/** Compatibility stream class backed by Node's native Web Streams implementation. */
+export class ReadableStreamPolyfill<T> extends NodeReadableStream<T> {}

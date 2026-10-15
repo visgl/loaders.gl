@@ -15,25 +15,27 @@ const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : 'latest';
 /** Encoded I3S layer resources, with archive paths and individual GZIP compression already applied. */
 export type SLPKWriterFiles = IndexedZipFiles;
 
-/** Options for the bounded SLPK ZIP32 profile. */
+/** Options for the bounded SLPK ZIP32/ZIP64 profile. */
 export type SLPKWriterOptions = WriterOptions & {
   /** SLPK packaging options. */
   slpk?: {
     /** Maximum final archive bytes, including headers/index; not peak serialization memory. */
     maxArchiveBytes?: number;
+    /** ZIP64 policy; auto upgrades output above 2 GiB or ZIP32 field limits. */
+    zip64?: 'auto' | 'always' | 'never';
     /** Cooperative cancellation between payload block reads and header encodes. */
     signal?: AbortSignal;
   };
 };
 
-/** SLPK requires ZIP64 above 2 GiB; this initial writer only supports smaller ZIP32 archives. */
+/** SLPK requires ZIP64 above 2 GiB; the default output budget retains the original 2 GiB bound. */
 const MAX_ARCHIVE_BYTES = 0x7fffffff;
 
 /**
  * Packages already-authored I3S resources in a portable, deterministic SLPK archive.
  * Requires root 3dSceneLayer.json.gz, canonical ASCII paths, and no case-folded duplicates.
  * Resources are stored unchanged; callers supply valid I3S metadata/geometry and GZIP resources.
- * Uses STORE and the required final lowercase MD5 index. ZIP64 and scene authoring are separate.
+ * Uses STORE and the required final lowercase MD5 index. ZIP64 is automatic above 2 GiB; scene authoring remains separate.
  */
 export const SLPKWriter = {
   ...SLPKFormat,
@@ -77,7 +79,9 @@ function getArchiveOptions(files: SLPKWriterFiles, options: SLPKWriterOptions): 
   }
   return {
     indexPath: '@specialIndexFileHASH128@',
-    maxArchiveBytes: Math.min(maxArchiveBytes, MAX_ARCHIVE_BYTES),
+    maxArchiveBytes,
+    zip64: options.slpk?.zip64,
+    zip64Threshold: MAX_ARCHIVE_BYTES,
     lowercasePaths: true,
     signal: options.slpk?.signal
   };

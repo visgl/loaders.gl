@@ -11,12 +11,12 @@ import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
 import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
 
 <DocPageHeader
+  format="gltf"
   eyebrow="Scenegraph format"
   title="glTF"
   description="A delivery-focused scene format for geometry, materials, hierarchy, animation, and the linked binary or image assets that make a model complete."
   tone="pink"
   meta={['.gltf and .glb', 'Scenegraph data', 'Khronos standard']}
-  logos={[{alt: 'glTF', src: '/images/format-logos/gltf-logo.png'}]}
   links={[
     {label: 'glTF module', to: '/docs/modules/gltf'},
     {label: 'GLTFLoader', to: '/docs/modules/gltf/api-reference/gltf-loader'},
@@ -309,7 +309,7 @@ Specification: [KHR_draco_mesh_compression](https://github.com/KhronosGroup/glTF
 
 Parsing Support:
 
-- By adding the `decompress: true` options to the `GLTFParser` any decompressed by the `GLTFParser`.
+- Enable `gltf.decompressMeshes` on `GLTFLoader` to decode supported compressed mesh extensions.
 - The expanded attributes are placed in the mesh object (effectively making it look as if it had never been compressed).
 - The extension objects are removed from the glTF file.
 

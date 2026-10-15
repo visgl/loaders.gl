@@ -10,6 +10,7 @@ import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
 import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
 
 <DocPageHeader
+  format="chrome-trace"
   eyebrow="Performance trace format"
   title="Keep the event stream, then make it queryable."
   description="Chrome Trace Event files describe process, thread, duration, instant, counter, and flow events as JSON. loaders.gl normalizes common identifiers and exposes them as Arrow columns without discarding extra fields."

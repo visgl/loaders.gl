@@ -10,6 +10,7 @@ import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
 import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
 
 <DocPageHeader
+  format="obj"
   eyebrow="Mesh interchange format"
   title="Readable mesh geometry with a long tail of tooling."
   description="Wavefront OBJ is a simple text format for vertices, normals, texture coordinates, and faces. loaders.gl maps it into the shared mesh pipeline and can write compatible OBJ text back out."

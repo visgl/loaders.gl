@@ -22,6 +22,8 @@
     "src/v5/core.ts",
     "src/v5/adapters.ts",
     "src/v5/index.ts",
-    "src/v5/browser.ts"
+    "src/v5/browser.ts",
+    "src/v5/node.ts",
+    "src/v5/converter-cli.ts"
   ]
 }

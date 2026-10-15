@@ -4,7 +4,7 @@
 
 export type {ArrowLoaderOptions} from './exports/arrow-loader';
 export {ArrowWorkerLoader} from './exports/arrow-loader';
-export {ArrowLoaderWithParser as ArrowLoader} from './arrow-loader-with-parser';
+export {ArrowLoaderWithParser as ArrowLoader} from './arrow-loader';
 
 export {GeoArrowWorkerLoader} from './exports/geoarrow-loader';
-export {GeoArrowLoaderWithParser as GeoArrowLoader} from './geoarrow-loader-with-parser';
+export {GeoArrowLoaderWithParser as GeoArrowLoader} from './geoarrow-loader';

@@ -9,6 +9,7 @@ import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
 import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
 
 <DocPageHeader
+  format="obj"
   eyebrow="Text mesh format"
   title="Move simple geometry into a shared mesh path."
   description="The OBJ module reads Wavefront geometry and writes it back as text, exposing positions, normals, texture coordinates, and faces in the mesh shapes used by loaders.gl applications."
@@ -33,7 +34,7 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
   ]}
 />
 
-The `@loaders.gl/obj` module handles the the [Wavefront OBJ format](/docs/modules/obj/formats/obj), a simple ASCII format that defines 3D geometries as vertices, normals and faces.
+The `@loaders.gl/obj` module handles the [Wavefront OBJ format](/docs/modules/obj/formats/obj), a simple ASCII format that defines 3D geometries as vertices, normals and faces.
 
 <ReferenceBoundary
   title="OBJ module reference"

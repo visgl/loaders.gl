@@ -9,6 +9,7 @@ import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
 import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
 
 <DocPageHeader
+  format="arrow"
   eyebrow="Arrow buffer utility"
   title="splitArrowBuffers"
   description="splitArrowBuffers rebuilds Arrow JS objects so typed-array views that point into larger buffers become standalone when necessary. Full-buffer views can still be reused."

@@ -70,7 +70,7 @@ export interface PotreeMetadata {
   /** World bounding box used to limit the initial point of view. */
   boundingBox: PotreeBoundingBox;
   /** Tight bounding box around the actual points. */
-  tightBoundingBox: PotreeBoundingBox;
+  tightBoundingBox?: PotreeBoundingBox;
   /** Description of the attributes stored in point-data files. */
   pointAttributes: 'LAS' | 'LAZ' | PotreeAttribute[];
   /** Root-node point spacing, halved at each octree level. */
@@ -131,15 +131,15 @@ export const PotreeMetadataSchema = z
     points: z.number().int().nonnegative().optional(),
     projection: z.string().optional(),
     boundingBox: PotreeBoundingBoxSchema,
-    tightBoundingBox: PotreeBoundingBoxSchema,
+    tightBoundingBox: PotreeBoundingBoxSchema.optional(),
     pointAttributes: z.union([
       z.literal('LAS'),
       z.literal('LAZ'),
       z.array(PotreeAttributeSchema).min(1)
     ]),
     spacing: z.number().positive(),
-    scale: z.number().positive(),
-    hierarchyStepSize: z.number().int().positive(),
+    scale: z.number().positive().default(1),
+    hierarchyStepSize: z.number().int().positive().default(5),
     hierarchy: z.array(PotreeHierarchyItemSchema).optional()
   })
   .passthrough() satisfies z.ZodType<PotreeMetadata>;

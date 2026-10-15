@@ -1,3 +1,4 @@
+import {FormatLogo} from './format-logo';
 import React, {useEffect, useRef} from 'react';
 import Link from '@docusaurus/Link';
 
@@ -72,13 +73,13 @@ export function CapabilityHero({
             {logos.length > 0 && (
               <div className={styles.logos} aria-label="Standards and ecosystem logos">
                 {logos.map((logo) => {
-                  const image = <img src={logo.src} alt={logo.alt} />;
+                  const image = logo.format ? <FormatLogo slug={logo.format} /> : <img className={styles.ecosystemLogo} src={logo.src} alt={logo.alt} />;
                   return logo.href ? (
-                    <a className={styles.logoLink} href={logo.href} key={logo.src}>
+                    <a className={styles.logoLink} href={logo.href} key={logo.format ?? logo.src}>
                       {image}
                     </a>
                   ) : (
-                    <span className={styles.logoLink} key={logo.src}>
+                    <span className={styles.logoLink} key={logo.format ?? logo.src}>
                       {image}
                     </span>
                   );

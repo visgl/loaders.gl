@@ -10,15 +10,14 @@ import type {
   ArrowTableBatch,
   DataType,
   Field,
-  ObjectRowTable,
   Schema,
   SchemaMetadata
 } from '@loaders.gl/schema';
-import {convertTable, deserializeArrowType} from '@loaders.gl/schema-utils';
+import {deserializeArrowType} from '@loaders.gl/schema-utils';
 
 import type {ParquetJSLoaderOptions} from '../../parquet-loader-options';
 import {preloadCompressions} from '../../parquetjs/compression';
-import {ParquetReader} from '../../parquetjs/parser/parquet-reader';
+import {ParquetReader, type ParquetIterationProps} from '../../parquetjs/parser/parquet-reader';
 import type {
   ParquetColumnChunk,
   ParquetField,
@@ -135,6 +134,7 @@ async function parseCompleteParquetFileToArrowWithJs(
 ): Promise<ArrowTable> {
   await preloadCompressions(options);
   const reader = new ParquetReader(file, {
+    signal: options?.parquet?.signal,
     preserveBinary: options?.parquet?.preserveBinary,
     int96AsTimestamp: options?.parquet?.int96AsTimestamp ?? true,
     retainByteArrayViews: true,
@@ -181,6 +181,7 @@ async function readProjectedSchema(
   options?: ParquetJSLoaderOptions
 ): Promise<Schema> {
   const reader = new ParquetReader(file, {
+    signal: options?.parquet?.signal,
     preserveBinary: options?.parquet?.preserveBinary,
     int96AsTimestamp: options?.parquet?.int96AsTimestamp ?? true,
     verifyFooterSignature: options?.parquet?.verifyFooterSignature,
@@ -204,6 +205,7 @@ export async function* parseParquetFileToArrowInBatchesWithJs(
   await preloadCompressions(options);
 
   const reader = new ParquetReader(file, {
+    signal: options?.parquet?.signal,
     preserveBinary: options?.parquet?.preserveBinary,
     int96AsTimestamp: options?.parquet?.int96AsTimestamp ?? true,
     retainByteArrayViews: true,
@@ -365,26 +367,19 @@ function convertRowGroupSliceToArrow(
       materializedRows ||= materializeRows(parquetSchema, rowGroup);
       const normalizedValues = materializedRows
         .slice(start, end)
-        .map(row => normalizeNestedParquetValue(row[field.name], parquetField));
-      vectors[field.name] = arrow.vectorFromArray(normalizedValues, field.type);
+        .map(row => normalizeNestedParquetValue(row[field.name], parquetField, field.type));
+      vectors[field.name] = arrow.vectorFromArray(
+        normalizedValues.map(value => normalizeLegacyArrowValue(value, field)),
+        field.type
+      );
       continue;
     }
     if (!fullColumn && parquetField.fields) {
       materializedRows ||= materializeRows(parquetSchema, rowGroup);
-      const fallbackTable: ObjectRowTable = {
-        shape: 'object-row-table',
-        schema: {
-          ...schema,
-          fields: schema.fields.filter(schemaField => schemaField.name === field.name)
-        },
-        data: materializedRows.slice(start, end)
-      };
-      const fallbackArrowTable = convertTable(fallbackTable, 'arrow-table');
-      const fallbackVector = fallbackArrowTable.data.getChild(field.name);
-      if (!fallbackVector) {
-        throw new Error(`Failed to materialize nested Parquet column ${field.name}`);
-      }
-      vectors[field.name] = fallbackVector;
+      const values = materializedRows
+        .slice(start, end)
+        .map(row => normalizeLegacyArrowValue(row[field.name], field));
+      vectors[field.name] = arrow.vectorFromArray(values, field.type);
       continue;
     }
     fullColumn ||= new Array(rowGroup.rowCount).fill(null);
@@ -400,6 +395,25 @@ function convertRowGroupSliceToArrow(
     schema,
     data: createArrowTable(arrowSchema, vectors, end - start)
   };
+}
+
+/** Converts absent legacy repeated values to empty lists before invoking Arrow builders. */
+function normalizeLegacyArrowValue(value: unknown, field: arrow.Field): unknown {
+  if (value === undefined || value === null) {
+    return field.type instanceof arrow.List && !field.nullable ? [] : null;
+  }
+  if (field.type instanceof arrow.List && Array.isArray(value)) {
+    return value.map(element => normalizeLegacyArrowValue(element, field.type.children[0]));
+  }
+  if (field.type instanceof arrow.Struct && typeof value === 'object') {
+    return Object.fromEntries(
+      field.type.children.map(child => [
+        child.name,
+        normalizeLegacyArrowValue(Reflect.get(value, child.name), child)
+      ])
+    );
+  }
+  return value;
 }
 
 /** Detects standard collection wrappers that need normalization before Arrow conversion. */
@@ -419,7 +433,11 @@ function hasStandardNestedCollection(field: ParquetField): boolean {
 }
 
 /** Normalizes standard Parquet LIST/MAP wrappers and absent values before Arrow conversion. */
-function normalizeNestedParquetValue(value: unknown, field: ParquetField): unknown {
+function normalizeNestedParquetValue(
+  value: unknown,
+  field: ParquetField,
+  arrowType: arrow.DataType
+): unknown {
   // Materialization omits absent optional fields; Arrow builders recognize null, not undefined.
   if (value === undefined || value === null) {
     return null;
@@ -428,7 +446,17 @@ function normalizeNestedParquetValue(value: unknown, field: ParquetField): unkno
     return value;
   }
 
-  if (field.logicalType?.type === 'LIST') {
+  if (
+    field.repetitionType === 'REPEATED' &&
+    arrowType instanceof arrow.List &&
+    Array.isArray(value)
+  ) {
+    return value.map(element =>
+      normalizeNestedParquetValue(element, field, arrowType.children[0].type)
+    );
+  }
+
+  if (field.logicalType?.type === 'LIST' && arrowType instanceof arrow.List) {
     const listField = field.fields.list;
     const elementField = listField?.fields?.element;
     if (!listField || !elementField) {
@@ -441,17 +469,30 @@ function normalizeNestedParquetValue(value: unknown, field: ParquetField): unkno
     return listValue.map(element =>
       normalizeNestedParquetValue(
         element && typeof element === 'object' ? Reflect.get(element, 'element') : element,
-        elementField
+        elementField,
+        arrowType.children[0].type
       )
     );
   }
 
-  if (field.logicalType?.type === 'MAP') {
+  if (field.logicalType?.type === 'MAP' && arrowType instanceof arrow.Map_) {
     const entryField = field.fields.key_value;
     const keyField = entryField?.fields?.key;
     const valueField = entryField?.fields?.value;
     if (!entryField || !keyField || !valueField) {
-      return value;
+      const legacyValueField = field.fields.value;
+      return legacyValueField && typeof value === 'object'
+        ? new Map([
+            [
+              Reflect.get(value, 'key'),
+              normalizeNestedParquetValue(
+                Reflect.get(value, 'value'),
+                legacyValueField,
+                arrowType.children[0].type.children[1].type
+              )
+            ]
+          ])
+        : value;
     }
     const entries =
       value && typeof value === 'object' ? Reflect.get(value, 'key_value') : undefined;
@@ -461,7 +502,11 @@ function normalizeNestedParquetValue(value: unknown, field: ParquetField): unkno
     return new Map(
       entries.map(entry => [
         Reflect.get(entry, 'key'),
-        normalizeNestedParquetValue(Reflect.get(entry, 'value'), valueField)
+        normalizeNestedParquetValue(
+          Reflect.get(entry, 'value'),
+          valueField,
+          arrowType.children[0].type.children[1].type
+        )
       ])
     );
   }
@@ -471,7 +516,10 @@ function normalizeNestedParquetValue(value: unknown, field: ParquetField): unkno
   }
   const normalized: Record<string, unknown> = {};
   for (const [name, childField] of Object.entries(field.fields)) {
-    normalized[name] = normalizeNestedParquetValue(Reflect.get(value, name), childField);
+    const childType = arrowType.children?.find(child => child.name === name)?.type;
+    normalized[name] = childType
+      ? normalizeNestedParquetValue(Reflect.get(value, name), childField, childType)
+      : Reflect.get(value, name);
   }
   return normalized;
 }
@@ -1195,9 +1243,20 @@ function sliceColumn(column: ArrayLike<unknown>, start: number, end: number): Ar
 /** Creates row-group projection properties from public loader options. */
 function getParquetIterationProps(
   options?: ParquetJSLoaderOptions
-): {columnList?: string[] | string[][]} | undefined {
+): ParquetIterationProps | undefined {
   const columnList = options?.parquet?.columns;
-  return columnList?.length ? {columnList} : undefined;
+  if (
+    !columnList?.length &&
+    options?.parquet?.rowGroups === undefined &&
+    !options?.parquet?.signal
+  ) {
+    return undefined;
+  }
+  return {
+    columnList: columnList?.length ? columnList : undefined,
+    rowGroups: options?.parquet?.rowGroups,
+    signal: options?.parquet?.signal
+  };
 }
 
 /** Restricts the loaders.gl schema to explicitly selected top-level columns. */

@@ -40,7 +40,7 @@
 .grid {
   display: grid;
   gap: 0.9rem;
-  grid-template-columns: repeat(auto-fit, minmax(132px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
 }
 
 .card {
@@ -51,8 +51,8 @@
   color: inherit;
   display: grid;
   gap: 0.65rem;
-  grid-template-rows: 88px auto;
-  min-height: 144px;
+  grid-template-rows: 48px auto;
+  min-height: 104px;
   padding: 0.85rem;
   text-decoration: none;
   transition:
@@ -66,60 +66,130 @@
   transform: translateY(-2px);
 }
 
-.logo {
-  height: 56px;
+.visual {
+  align-items: center;
+  background: #fff;
+  border: 1px solid #e4e9ef;
+  border-radius: 8px;
+  display: flex;
+  height: 48px;
+  justify-content: center;
   justify-self: center;
-  max-width: 100%;
+  max-width: 220px;
+  overflow: hidden;
+  width: 100%;
+}
+
+.darkVisual {
+  background: #141414;
+  border-color: #141414;
+}
+
+.logo {
+  height: 36px;
+  object-fit: contain;
+  width: calc(100% - 24px);
+}
+
+.ogcBadge {
+  gap: 6px;
+  padding: 0 6px;
+}
+
+.ogcBadge .badgeName {
+  font-size: 15px;
+}
+
+.ogcIdentity {
+  display: flex;
+  align-items: center;
+  background: #263747;
+  border-radius: 4px;
+  color: white;
+  flex-shrink: 0;
+  font-size: 14px;
+  font-weight: 700;
+  gap: 4px;
+  padding: 4px 6px;
+}
+.ogcLogo {
+  height: 22px;
+  width: 19px;
   object-fit: contain;
 }
-
-.neutralLogo {
-  align-items: center;
-  background:
-    linear-gradient(135deg, color-mix(in srgb, var(--ifm-color-primary) 13%, transparent), transparent),
-    var(--ifm-background-surface-color);
-  border: 1px solid color-mix(in srgb, var(--ifm-color-primary) 42%, var(--ifm-color-emphasis-300));
-  border-radius: 12px;
-  color: var(--ifm-color-primary-dark);
-  display: flex;
-  height: 56px;
-  justify-self: center;
-  justify-content: center;
+.compositeLogo {
+  gap: 8px;
+  padding: 0 8px;
+}
+.darkVisual .badgeName {
+  color: white;
+  font-size: 15px;
+}
+.smallLogo {
+  flex: 0 0 44px;
+  height: 30px;
+}
+.smallLogo img {
+  height: 100%;
+  width: 100%;
+  object-fit: contain;
+}
+.arcgisLogo {
+  flex: 0 0 88px;
+  height: 36px;
   overflow: hidden;
   position: relative;
-  width: 86px;
 }
-
-.neutralLogo::before,
-.neutralLogo::after {
-  background: var(--ifm-color-primary);
-  content: '';
-  opacity: 0.2;
+.arcgisLogo img {
+  height: 84px;
+  width: 148px;
+  max-width: none;
   position: absolute;
-  transform: rotate(-28deg);
+  left: -30px;
+  top: -24px;
 }
 
-.neutralLogo::before {
-  height: 90px;
-  left: 12px;
-  top: -18px;
-  width: 7px;
+.badgeName {
+  color: #263747;
+  font-family: var(--ifm-font-family-base);
+  font-size: 17px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  line-height: 1.15;
+  text-align: center;
 }
 
-.neutralLogo::after {
-  bottom: -18px;
-  height: 90px;
-  right: 13px;
-  width: 7px;
+.formatBadge {
+  --badge-accent: #64748b;
+  gap: 9px;
+  padding: 0 12px;
 }
 
-.neutralLogoMark {
-  font-family: var(--ifm-font-family-monospace);
-  font-size: 0.72rem;
-  font-weight: 800;
-  letter-spacing: 0.08em;
-  position: relative;
-  z-index: 1;
+.badgeSymbol {
+  color: var(--badge-accent);
+  flex: 0 0 24px;
+  height: 24px;
+  width: 24px;
+}
+
+.formatBadge[data-category='tables'] {
+  --badge-accent: #2563eb;
+}
+
+.formatBadge[data-category='geospatial'] {
+  --badge-accent: #0f766e;
+}
+
+.formatBadge[data-category='textures'] {
+  --badge-accent: #9333ea;
+}
+
+.formatBadge[data-category='pointclouds'] {
+  --badge-accent: #0284c7;
+}
+
+.formatBadge[data-category='meshes'] {
+  --badge-accent: #c2410c;
 }
 
 .label {
@@ -127,4 +197,12 @@
   font-weight: 700;
   line-height: 1.25;
   text-align: center;
+}
+
+.logoContainer {
+  display: inline-flex;
+  flex: 0 0 auto;
+  max-width: 100%;
+  vertical-align: middle;
+  width: 220px;
 }

@@ -43,6 +43,17 @@ export interface ManifestBackedTileConversionSinkOptions<TResource> {
   readonly sink: TileConversionSink<TResource>;
   /** Persistence adapter for snapshots written after each resource. */
   readonly manifestStore: TileResourceManifestStore;
+  /** Optional cap on unique checkpoint entries loaded or written; defaults to no cap. */
+  readonly maxResources?: number;
+  /**
+   * Checks destination bytes before skipping a matching checkpoint. Return true only when
+   * stored bytes match the entry's size and fingerprint; false rewrites the resource.
+   * Without this callback the caller guarantees checkpointed destination bytes remain intact.
+   */
+  readonly verifyResource?: (
+    entry: TileResourceManifestEntry,
+    signal?: AbortSignal
+  ) => Promise<boolean>;
   /** Stable profile-specific path or resource key. */
   readonly getResourceId: (resource: TResource) => string;
   /** Byte length used to detect changed content under an existing resource ID. */
@@ -62,7 +73,8 @@ export interface ManifestBackedTileConversionSinkOptions<TResource> {
  * including writes skipped because the matching resource was already present. A graceful abort
  * clears the manifest checkpoint before asking the destination to clean partial output, so the
  * next run starts cleanly. A process interruption that does not call `abort` can resume from its
- * last saved checkpoint.
+ * last saved checkpoint. Optional destination verification repairs missing or changed stored
+ * resources before treating them as complete. maxResources caps unique checkpoint entries.
  *
  * @param options - Destination, manifest store, stable IDs, byte measurement, and fingerprinting.
  * @returns A `TileConversionSink` with resumable per-resource progress.
@@ -70,10 +82,17 @@ export interface ManifestBackedTileConversionSinkOptions<TResource> {
 export async function createManifestBackedTileConversionSink<TResource>(
   options: ManifestBackedTileConversionSinkOptions<TResource>
 ): Promise<TileConversionSink<TResource>> {
+  const maxResources = options.maxResources ?? Infinity;
+  if (maxResources !== Infinity && (!Number.isSafeInteger(maxResources) || maxResources < 0)) {
+    throw new TileConversionError(
+      'INVALID_MANIFEST_RESOURCE_LIMIT',
+      'maxResources must be a nonnegative safe integer or Infinity'
+    );
+  }
   const priorManifest = await options.manifestStore.load();
   const resources = new Map<string, TileResourceManifestEntry>();
   if (priorManifest) {
-    validateManifest(priorManifest);
+    validateManifest(priorManifest, maxResources);
     for (const entry of priorManifest.resources) {
       resources.set(entry.resourceId, entry);
     }
@@ -102,6 +121,7 @@ export async function createManifestBackedTileConversionSink<TResource>(
     if (writeFailed) {
       throw writeFailure;
     }
+    signal?.throwIfAborted();
     const entry = createManifestEntry(options, resource);
     const priorEntry = resources.get(entry.resourceId);
     if (priorEntry) {
@@ -114,7 +134,16 @@ export async function createManifestBackedTileConversionSink<TResource>(
           `Resource "${entry.resourceId}" changed since the saved manifest`
         );
       }
-      return;
+      const verified = options.verifyResource
+        ? await options.verifyResource({...priorEntry}, signal)
+        : true;
+      signal?.throwIfAborted();
+      if (verified === true) return;
+    } else if (resources.size >= maxResources) {
+      throw new TileConversionError(
+        'MANIFEST_RESOURCE_LIMIT_EXCEEDED',
+        'Resource checkpoint exceeds maxResources'
+      );
     }
 
     await options.sink.write(resource, signal);
@@ -179,7 +208,7 @@ function createManifestEntry<TResource>(
 }
 
 /** Checks a loaded manifest before trusting it for restart decisions. */
-function validateManifest(manifest: TileResourceManifest): void {
+function validateManifest(manifest: TileResourceManifest, maxResources: number): void {
   if (
     typeof manifest !== 'object' ||
     manifest === null ||
@@ -189,7 +218,13 @@ function validateManifest(manifest: TileResourceManifest): void {
   ) {
     throw new TileConversionError(
       'UNSUPPORTED_RESOURCE_MANIFEST',
-      `Unsupported or malformed resource manifest version: ${String(manifest.version)}`
+      `Unsupported or malformed resource manifest version: ${String(manifest?.version)}`
+    );
+  }
+  if (manifest.resources.length > maxResources) {
+    throw new TileConversionError(
+      'MANIFEST_RESOURCE_LIMIT_EXCEEDED',
+      'Loaded manifest exceeds maxResources'
     );
   }
   const resourceIds = new Set<string>();

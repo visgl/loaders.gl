@@ -9,6 +9,7 @@ import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
 import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
 
 <DocPageHeader
+  format="wms"
   eyebrow="Service metadata"
   title="Inspect different services through one small capability shape."
   description="The WMS module preserves each service’s native response while exposing common identity, layers, coordinate systems, formats, and operations for applications that should not branch immediately on protocol."

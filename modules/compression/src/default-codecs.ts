@@ -4,7 +4,6 @@
 
 import {LazyCompressor, LazyDecompressor} from './lib/lazy-compression';
 import type {CompressionOptions} from './lib/compression';
-import {getJSModuleOrNull} from '@loaders.gl/loader-utils';
 import type {DeflateCompressorOptions} from './deflate-compressor';
 import type {DeflateDecompressorOptions} from './deflate-decompressor';
 import type {GZipCompressorOptions} from './gzip-compressor';
@@ -88,11 +87,7 @@ export class BrotliCompressor extends LazyCompressor {
       BROTLI,
       async () => (await import('./brotli-compressor')).BrotliCompressor,
       options,
-      'brotli',
-      preloadOptions =>
-        !preloadOptions.modules?.brotli &&
-        !getJSModuleOrNull('brotli') &&
-        !preloadOptions.brotli?.useZlib
+      'brotli'
     );
   }
 }
@@ -104,8 +99,7 @@ export class BrotliDecompressor extends LazyDecompressor {
       BROTLI,
       async () => (await import('./brotli-decompressor')).BrotliDecompressor,
       options,
-      'brotli',
-      preloadOptions => !preloadOptions.modules?.brotli && !getJSModuleOrNull('brotli')
+      'brotli'
     );
   }
 }
@@ -141,13 +135,7 @@ export class LZ4Decompressor extends LazyDecompressor {
 /** Lightweight root-level Zstandard compressor with built-in-first selection. */
 export class ZstdCompressor extends LazyCompressor {
   constructor(options: ZstdCompressorOptions = {}) {
-    super(
-      ZSTD,
-      async () => (await import('./zstd-compressor')).ZstdCompressor,
-      options,
-      'zstd',
-      preloadOptions => !preloadOptions.modules?.['zstd-codec'] && !getJSModuleOrNull('zstd-codec')
-    );
+    super(ZSTD, async () => (await import('./zstd-compressor')).ZstdCompressor, options, 'zstd');
   }
 }
 
@@ -158,8 +146,7 @@ export class ZstdDecompressor extends LazyDecompressor {
       ZSTD,
       async () => (await import('./zstd-decompressor')).ZstdDecompressor,
       options,
-      'zstd',
-      preloadOptions => !preloadOptions.modules?.['zstd-codec'] && !getJSModuleOrNull('zstd-codec')
+      'zstd'
     );
   }
 }
@@ -189,6 +176,18 @@ export class XZCompressor extends LazyCompressor {
 export class XZDecompressor extends LazyDecompressor {
   constructor(options: CompressionOptions = {}) {
     super(XZ, async () => (await import('./xz-decompressor')).XZDecompressor, options);
+  }
+}
+
+/** Lazy decoder-only raw LZO1X implementation, requiring an output capacity. */
+export class LzoDecompressor extends LazyDecompressor {
+  /** Retains options until the decoder is needed. */
+  constructor(options: CompressionOptions = {}) {
+    super(
+      {name: 'lzo', extensions: [], contentEncodings: []},
+      async () => (await import('./lzo-decompressor')).LzoDecompressor,
+      options
+    );
   }
 }
 

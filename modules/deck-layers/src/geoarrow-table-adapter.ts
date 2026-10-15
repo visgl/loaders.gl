@@ -12,7 +12,7 @@ import {
 import {
   convertGeometryValuesToBinaryFeatureCollection,
   type GeometryColumnBinaryFeatureCollectionScratch
-} from '@loaders.gl/gis';
+} from '@loaders.gl/geoarrow';
 import type {
   ArrowTable,
   BinaryAttribute,

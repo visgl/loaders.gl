@@ -1,6 +1,6 @@
 {
   "name": "@loaders.gl/gltf",
-  "version": "5.0.0-alpha.10",
+  "version": "5.0.0-alpha.12",
   "description": "Framework-independent loader for the glTF format",
   "license": "MIT",
   "type": "module",
@@ -60,26 +60,30 @@
     "README.md"
   ],
   "scripts": {
-    "pre-build": "npm run generate-json-schema && npm run build-bundle && npm run build-bundle-dev",
+    "pre-build": "npm run copy-libs && npm run build-cjs && npm run generate-json-schema && npm run build-bundle && npm run build-bundle-dev",
     "generate-json-schema": "node scripts/generate-json-schema.mjs",
     "update-official-schemas": "node scripts/update-official-schemas.mjs",
-    "build-bundle": "ocular-bundle ./bundle.ts --output=dist/dist.min.js",
-    "build-bundle-dev": "ocular-bundle ./bundle.ts --env=dev --output=dist/dist.dev.js"
+    "build-bundle": "node ../../scripts/build-codec-bundle.mjs ./bundle.ts --output=dist/dist.min.js",
+    "build-bundle-dev": "node ../../scripts/build-codec-bundle.mjs ./bundle.ts --env=dev --output=dist/dist.dev.js",
+    "copy-libs": "mkdir -p dist/libs && cp -rf src/libs/* dist/libs",
+    "build-cjs": "node ../../node_modules/@vis.gl/dev-tools/dist/build-cjs.js"
   },
   "dependencies": {
-    "@loaders.gl/draco": "5.0.0-alpha.10",
-    "@loaders.gl/images": "5.0.0-alpha.10",
-    "@loaders.gl/loader-utils": "5.0.0-alpha.10",
-    "@loaders.gl/schema": "5.0.0-alpha.10",
-    "@loaders.gl/schema-utils": "5.0.0-alpha.10",
-    "@loaders.gl/textures": "5.0.0-alpha.10",
-    "@math.gl/core": "5.0.0-alpha.15",
-    "@math.gl/culling": "5.0.0-alpha.15",
-    "meshoptimizer": "^1.2.0",
+    "@loaders.gl/draco": "5.0.0-alpha.12",
+    "@loaders.gl/images": "5.0.0-alpha.12",
+    "@loaders.gl/loader-utils": "5.0.0-alpha.12",
+    "@loaders.gl/schema": "5.0.0-alpha.12",
+    "@loaders.gl/schema-utils": "5.0.0-alpha.12",
+    "@loaders.gl/textures": "5.0.0-alpha.12",
+    "@math.gl/core": "5.0.0-alpha.16",
+    "@math.gl/culling": "5.0.0-alpha.16",
     "zod": "^4.1.12"
   },
   "peerDependencies": {
     "@loaders.gl/core": "~5.0.0-alpha.0"
   },
-  "gitHead": "8a9e77743ea90a7be4ebec572416bb50ca9d73c3"
+  "gitHead": "8a9e77743ea90a7be4ebec572416bb50ca9d73c3",
+  "devDependencies": {
+    "meshoptimizer": "1.3.0"
+  }
 }

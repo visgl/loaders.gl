@@ -35,60 +35,40 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
 />
 
 :::caution
-Synchronous parsing is not supported by all loaders. Refer to the documentation for each loader.
+Synchronous parsing requires a parser-bearing loader with `parseSync` or
+`parseTextSync`. Metadata loaders must be preloaded first. Use `parse` for loaders
+that only provide asynchronous parsing.
 :::
 
-:::caution
-When calling parse from a loader to invoke a sub-loader, do not use this function. Use `parseSyncWithContext` counterparts in `@loaders.gl/loader-utils``
-:::
-
-The `parseSync()` function parses data synchronously using the provided loader, if possible.
+## Signature
 
 ```typescript
-parseSync(data: ArrayBuffer | string, loaders: Loader, options?: LoaderOptions, url?: string]]) : unknown
-parseSync(data: ArrayBuffer | string, loaders: Loader[], options?: LoaderOptions, url?: string]]) : unknown
+parseSync(data, loader, options?, context?): unknown
 ```
 
-- `data`: already loaded data, either in binary or text format. This parameter can be any of the following types:
-  - `Response`: `fetch` response object returned by `fetchFile` or `fetch`.
-  - `ArrayBuffer`: Parse from binary data in an array buffer
-  - `string`: Parse from text data in a string. (Only works for loaders that support textual input).
-  - `Iterator`: Iterator that yeilds binary (`ArrayBuffer`) chunks or string chunks (string chunks only work for loaders that support textual input).
-    can also be supplied.
-- `loaders`: can be a single loader or an array of loaders. If omitted, the list of registered loaders is used (see `registerLoaders`).
-- `options`: See [`LoaderOptions`](./loader-options).
-- `url`: optional, assists in the autoselection of a loader if multiple loaders are supplied to `loader`.
+- `data`: a `string`, `ArrayBuffer`, shared array buffer, or typed-array view.
+  Fetch responses, files, blobs, streams, iterators, and promises must be read
+  before this call; use the async `parse` API for those inputs.
+- `loader`: one parser-bearing loader or an array of candidates.
+- `options`: see [LoaderOptions](./loader-options).
+- `context`: optional loader context, including a `url` hint for selection.
 
-Returns:
-
-- Return value depends on the _loader object_ category, or `null`, in which case asynchronous parsing is required.
-
-<ReferenceBoundary
-  title="Synchronous parsing details"
-  description="The reference below covers supported inputs, loader selection, options, return values, limitations, and error handling."
-  tone="blue"
-/>
+Returns the loader's decoded value. It throws if no loader matches or synchronous
+parsing is unavailable. `core.nothrow: true` returns `null` when selection fails;
+it does not turn an asynchronous parser into a synchronous one.
 
 ## Usage
 
 ```typescript
-import {fetchFile, parseSync} from '@loaders.gl/core';
+import {fetchFile, parseSync, preload} from '@loaders.gl/core';
 import {OBJLoader} from '@loaders.gl/obj';
 
 const response = await fetchFile(url);
-const arraybuffer = await response.arrayBuffer();
-
-data = parseSync(arraybuffer, OBJLoader);
-// Application code here
-...
+const arrayBuffer = await response.arrayBuffer();
+const parserLoader = await preload(OBJLoader);
+const mesh = parseSync(arrayBuffer, parserLoader);
 ```
 
-Handling errors
-
-```typescript
-try {
-  const data = await parseSync(data);
-} catch (error) {
-  console.log(error);
-}
-```
+Handle errors with an ordinary `try`/`catch`; `parseSync` does not return a promise.
+Inside a composite loader, use `parseSyncFromContext` from
+`@loaders.gl/loader-utils` to preserve the parent context.

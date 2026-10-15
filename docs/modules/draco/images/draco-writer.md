@@ -9,6 +9,7 @@ import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
 import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
 
 <DocPageHeader
+  format="draco"
   eyebrow="Draco module · writer reference"
   title="Compress geometry at the writer boundary."
   description="DracoWriter accepts the mesh shapes produced by loaders.gl and encodes them with Draco. The same writer can serve mesh and point-cloud workflows while the format-specific options stay explicit."
@@ -68,9 +69,6 @@ const data = await encode(mesh, DracoWriter, options);
 
 ## Options
 
-| Option       | Type             | Default                     | Description                                                        |
-| ------------ | ---------------- | --------------------------- | ------------------------------------------------------------------ |
-| `pointcloud` | Boolean          | `false`                     | set to `true` to compress pointclouds (mode=`0` and no `indices`). |
-| `method`     | String           | `MESH_EDGEBREAKER_ENCODING` | set Draco encoding method (applies to meshes only).                |
-| `speed`      | [Number, Number] | set Draco speed options.    |
-| `log`        | Function         | callback for debug info.    |
+See the maintained [DracoWriter reference](/docs/modules/draco/api-reference/draco-writer)
+for current namespaced options and encoding limits. This page's former flat-option
+table is obsolete.

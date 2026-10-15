@@ -12,6 +12,7 @@ import {WriterPipelineGraphic} from '@site/src/components/docs/writer-pipeline-g
 import apacheLogo from '../../../images/logos/apache-logo.png';
 
 <DocPageHeader
+  format="arrow"
   eyebrow="Arrow writer"
   title="ArrowWriter"
   description="ArrowWriter turns typed arrays and table-oriented data into Apache Arrow IPC bytes. Use it when a result should remain columnar across files, streams, workers, or another language."
@@ -83,10 +84,8 @@ To write a compressed Feather V2 file:
 
 ```typescript
 import {encode} from '@loaders.gl/core';
-import {ZstdCodec} from 'zstd-codec';
 
 const featherBuffer = await encode(arraysData, ArrowWriter, {
-  modules: {'zstd-codec': ZstdCodec},
   arrow: {
     container: 'file',
     compression: 'zstd'
@@ -94,9 +93,7 @@ const featherBuffer = await encode(arraysData, ArrowWriter, {
 });
 ```
 
-LZ4 compression supports `encodeSync` without an injected module. Zstandard compression uses
-asynchronous `encode` and an injected `zstd-codec` module so its codec can be initialized without
-adding the large optional encoder to every Arrow browser bundle.
+LZ4 and Zstandard encoding use compress-utils. Async `encode()` preloads the requested codec. Call it once before using `encodeSync()` with that codec; no external module injection is needed.
 
 ## Options
 
@@ -112,5 +109,4 @@ constants when constructing the input.
 
 [Apache Arrow JS](https://arrow.apache.org/docs/js/) library is included into the bundle.
 
-Install [`zstd-codec`](https://www.npmjs.com/package/zstd-codec) when writing Zstandard-compressed
-IPC data. Decoding Zstandard data and reading or writing LZ4 data require no additional package.
+Compression uses the default compress-utils codecs from `@loaders.gl/compression`.

@@ -10,6 +10,7 @@ import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
 import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
 
 <DocPageHeader
+  format="compressed-textures"
   eyebrow="Texture container loader"
   title="Preserve the mip chain and the GPU format."
   description="CompressedTextureLoader reads KTX, KTX2, DDS, and PVR containers without reducing them to ordinary pixels. The result keeps each level's dimensions, compression state, and runtime format metadata."

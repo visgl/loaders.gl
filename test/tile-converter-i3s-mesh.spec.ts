@@ -7,7 +7,7 @@ import {parse} from '@loaders.gl/core';
 import {Tiles3DLoader} from '@loaders.gl/3d-tiles';
 import {GLTFScenegraph, GLTFWriter, type GLTFPostprocessed} from '@loaders.gl/gltf';
 import {Tiles3DSource, Tileset3D} from '@loaders.gl/tiles';
-import {DataViewReadableFile} from '@loaders.gl/zip';
+import {ArrayBufferFile} from '@loaders.gl/loader-utils';
 import {parseSLPKArchive} from '@loaders.gl/i3s';
 import {Matrix4} from '@math.gl/core';
 import {
@@ -185,9 +185,7 @@ async function convertRuntime(modern = false, features?: MeshSourceFeatureOption
     format: 'slpk',
     maxArchiveBytes: 32768
   });
-  const reader = await parseSLPKArchive(
-    new DataViewReadableFile(new DataView(await archive.arrayBuffer()))
-  );
+  const reader = await parseSLPKArchive(new ArrayBufferFile(await archive.arrayBuffer()));
   return {runtime, payload, sink, report, reader};
 }
 let converted: Awaited<ReturnType<typeof convertRuntime>>;
@@ -636,4 +634,21 @@ test('the I3S codec raw opt-out retains a readable raw geometry resource', async
   } finally {
     result.runtime.destroy();
   }
+});
+
+test('mesh source derives each inline class mapping from declarations when schema is omitted', async () => {
+  const {runtime} = await createRuntime(true);
+  const source = createMeshTilesetConversionSource(runtime, {
+    features: {metadataClass: 'building', sourceFeatureIdProperty: 'source_id'}
+  });
+  const iterator = source.read(await source.inspect())[Symbol.asyncIterator]();
+  const resource = (await iterator.next()).value!;
+  expect(
+    resource.features!.batches[0].schema.fields.find(field => field.name === 'feature_id')
+  ).toMatchObject({type: 'uint64', nullable: false});
+  expect(Array.from(resource.features!.batches[0].data.getChild('feature_id')!)).toEqual([
+    9007199254740993n,
+    18446744073709551615n
+  ]);
+  await iterator.return?.();
 });

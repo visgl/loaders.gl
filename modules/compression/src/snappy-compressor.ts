@@ -2,9 +2,12 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import {SnappyJSCompressor, type SnappyJSCompressorOptions} from './snappy-compressor-snappyjs';
+import {
+  SnappyCompressUtilsCompressor,
+  type CompressUtilsCompressionOptions
+} from './snappy-compressor-compress-utils';
 
-/** Balanced default Snappy compressor using the compact snappyjs implementation. */
-export class SnappyCompressor extends SnappyJSCompressor {}
+/** Default SNAPPY compressor backed by the lazily loaded compress-utils codec. */
+export class SnappyCompressor extends SnappyCompressUtilsCompressor {}
 
-export type {SnappyJSCompressorOptions as SnappyCompressorOptions};
+export type {CompressUtilsCompressionOptions as SnappyCompressorOptions};

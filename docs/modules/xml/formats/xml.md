@@ -11,6 +11,7 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
 import {StructuredDataPathGraphic} from '@site/src/components/docs/structured-data-path-graphic';
 
 <DocPageHeader
+  format="xml"
   eyebrow="Extensible Markup Language"
   title="Parse the structure without hiding the details."
   description="XML supplies a portable tree of elements, attributes, namespaces, and text. loaders.gl exposes that structure as JavaScript data so applications can work with XML-based formats without committing to a single schema."

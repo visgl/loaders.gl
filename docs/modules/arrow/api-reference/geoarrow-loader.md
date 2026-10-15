@@ -12,11 +12,11 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
 import {ClientExample} from '@site/src/components';
 
 <DocPageHeader
+  format="arrow"
   eyebrow="GeoArrow loader"
   title="GeoArrowLoader"
   description="GeoArrowLoader parses Arrow IPC data and recognizes GeoArrow extension metadata so geometry columns remain typed and discoverable alongside their attributes."
   tone="cyan"
-  logos={[{alt: 'Apache Arrow', src: '/images/format-logos/apache-arrow-logo.png'}]}
   meta={['Arrow IPC', 'GeoArrow extensions', 'Feature tables']}
   links={[
     {label: 'GeoArrow format', to: '/docs/modules/arrow/formats/geoarrow'},

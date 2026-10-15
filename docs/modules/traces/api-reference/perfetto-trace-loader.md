@@ -10,6 +10,7 @@ import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
 import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
 
 <DocPageHeader
+  format="perfetto-trace"
   eyebrow="Traces module · loader API"
   title="PerfettoTraceLoader"
   description="Read stable Perfetto TrackEvent protobuf data into four typed Arrow tables for tracks, slices, processes, and threads."
