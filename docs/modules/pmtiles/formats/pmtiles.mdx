@@ -109,7 +109,7 @@ it does not generate vector or raster tile pyramids.
 | Tile deduplication and streaming output | ❌ | Follow-up work |
 | GeoArrow to MVT authoring | ✅ | [Bounded in-memory export](/docs/modules/pmtiles/api-reference/geoarrow-pmtiles) reuses the existing tiler; selected addresses and scalar attributes |
 | GeoArrow to MLT authoring | ✅ | Same selected-tile pipeline; MLT v1 with nullable scalar attributes and safe numeric IDs |
-| Untiled raster authoring | ❌ | Separate encoding/tiling pipeline |
+| Raster region to PNG authoring | ✅ | [Selected-region export](/docs/modules/pmtiles/api-reference/raster-pmtiles), raw uint8 imagery in Web Mercator or longitude/latitude. From v5.0. |
 
 ## Metadata
 

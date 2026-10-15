@@ -45,6 +45,11 @@
       "types": "./dist/geoarrow.d.ts",
       "import": "./dist/geoarrow.js",
       "require": "./dist/geoarrow.cjs"
+    },
+    "./raster": {
+      "types": "./dist/raster.d.ts",
+      "import": "./dist/raster.js",
+      "require": "./dist/raster.cjs"
     }
   },
   "sideEffects": false,

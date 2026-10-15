@@ -23,3 +23,5 @@ export type {
 } from './pmtiles-writer-types';
 
 export type {GeoArrowPMTilesOptions, GeoArrowPMTilesTileIndex} from './geoarrow';
+
+export type {RasterPMTilesOptions, RasterPMTilesSource} from './raster';
