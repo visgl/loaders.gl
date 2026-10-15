@@ -199,6 +199,23 @@ test.each([
   expect(north.coversBounds([0, 0, 10, 10])).toBe(false);
 });
 
+test.each([
+  0, 1024
+])('coverage includes missing support inside the sampling halo with budget %i', maxMaskBytes => {
+  const field = new TerrainHeightField(
+    [grid(), grid([10 + 1e-12, 0, 20 + 1e-12, 10], 'grid-node', 4)],
+    {maxMaskBytes}
+  );
+  expect(field.sampleHeight([10, 5])).toBeNull();
+  expect(field.coversBounds([0, 0, 10, 10])).toBe(false);
+  expect(field.coversBounds([0, 0, 9, 10])).toBe(true);
+  const north = new TerrainHeightField(
+    [grid(), grid([0, 10 + 1e-12, 10, 20 + 1e-12], 'grid-node', 8)],
+    {maxMaskBytes}
+  );
+  expect(north.coversBounds([0, 0, 10, 10])).toBe(false);
+});
+
 test('bounds-admitted masks are reused and budget pressure retains exact fallback', () => {
   const first = grid([0, 0, 10, 10], 'grid-node', 5),
     second = grid([10, 0, 20, 10], 'grid-node', 5);

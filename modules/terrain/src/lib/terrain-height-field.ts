@@ -158,12 +158,32 @@ export class TerrainHeightField {
     if (!width && !height) return this.sampleHeight([bounds[0], bounds[1]]) !== null;
     const clipped: TerrainFieldBounds[] = [];
     for (const entry of this.findEntries(bounds)) {
+      // Sampling admits a small roundoff halo. Check its clamped source support
+      // even when the exact footprint lies just outside the probe.
+      const support: TerrainFieldBounds = [
+        Math.max(
+          entry.bounds[0],
+          Math.min(entry.bounds[2], Math.max(bounds[0], entry.sampleBounds[0]))
+        ),
+        Math.max(
+          entry.bounds[1],
+          Math.min(entry.bounds[3], Math.max(bounds[1], entry.sampleBounds[1]))
+        ),
+        Math.max(
+          entry.bounds[0],
+          Math.min(entry.bounds[2], Math.min(bounds[2], entry.sampleBounds[2]))
+        ),
+        Math.max(
+          entry.bounds[1],
+          Math.min(entry.bounds[3], Math.min(bounds[3], entry.sampleBounds[3]))
+        )
+      ];
+      if (this.hasMissingSamples(entry, support)) return false;
       const left = Math.max(bounds[0], entry.bounds[0]),
         right = Math.min(bounds[2], entry.bounds[2]);
       const bottom = Math.max(bounds[1], entry.bounds[1]),
         top = Math.min(bounds[3], entry.bounds[3]);
       if (left > right || bottom > top) continue;
-      if (this.hasMissingSamples(entry, [left, bottom, right, top])) return false;
       // Closed neighboring footprints still contribute holes on a probe's edge,
       // even though their zero-area contact cannot add union coverage.
       if ((width && left === right) || (height && bottom === top)) continue;
