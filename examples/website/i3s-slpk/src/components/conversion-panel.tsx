@@ -1,4 +1,5 @@
 import React, {useEffect, useRef, useState} from 'react';
+import styles from '../../../common/conversion.module.css';
 import {inspectI3SConversionInput} from '../i3s-conversion-input';
 import {
   ARCHIVE_MIME_TYPES,
@@ -15,8 +16,8 @@ import {
 
 /** Conversion controls reuse the viewer for the finalized archive. */
 export type ConversionPanelProps = {
-  /** Opens a successfully generated local archive in the incremental viewer. */
-  readonly onPreview: (file: File) => void;
+  /** Optional callback to open generated archives in the incremental viewer. */
+  readonly onPreview?: (file: File) => void;
 };
 
 /** Inspects a URL, explicitly selects content placements, and downloads or saves a bounded partial archive. */
@@ -198,77 +199,63 @@ export function ConversionPanel({onPreview}: ConversionPanelProps) {
   }
 
   return (
-    <section style={{display: 'flex', flexDirection: 'column', gap: 6}}>
-      <strong>Convert selected tile meshes</strong>
-      <small>
-        Partial output: static GLB/B3DM meshes in native ECEF, or I3S leaf meshes from a layer URL
-        or local/remote SLPK. Explicit local/remote 3TZ meshes are also accepted. Both formats
-        preserve material factors, one PNG/JPEG base-color texture and explicitly mapped features.
-        External buffers and images share the input budget. SLPK supports UV transforms and
-        wrapping, but rejects explicit texture filtering and vertex colors. Other texture maps/UV
-        sets and implicit 3D Tiles are rejected. Nested explicit tilesets declared with .json URIs are supported. I3S atlas regions, colors and richer
-        materials are unsupported; archive dependencies must remain inside the selected archive.
-        Remote archives require CORS, byte-range responses and exposed validators; CRS/height
-        resources are not inferred or downloaded.
-      </small>
-      <small>
-        Both formats accept up to 64 mesh placements from selected leaf contents. Limits: 16 MiB
-        input, 1,000 declared contents, 32 tileset documents, 32 MiB output/archive, 1 cm position error. These are not
-        peak memory limits. Conversion runs in a worker; cancel terminates its parsing and
-        packaging. Archive chunks are transferred on demand. Download/preview retains the complete
-        archive; direct file saving writes chunks without collecting it. Cancel is disabled during
-        final file commit.
-      </small>
+    <section className={styles.app} aria-label="Convert 3D tiles">
+      <header>
+        <h2>Convert selected tile meshes</h2>
+      </header>
       <form
         onSubmit={event => {
           event.preventDefault();
           void runOperation(false);
         }}
       >
-        <label htmlFor="conversion-input-format">Input format</label>
-        <select
-          id="conversion-input-format"
-          disabled={busy}
-          value={inputFormat}
-          onChange={event => {
-            setInputFormat(event.target.value as typeof inputFormat);
-            setFile(null);
-            setInspection(null);
-            setResourceIds([]);
-            setResult(null);
-            setError('');
-            setStatus('');
-          }}
-        >
-          <option value="3d-tiles">3D Tiles URL</option>
-          <option value="i3s">I3S layer URL</option>
-          <option value="slpk">Local SLPK file (up to 16 MiB)</option>
-          <option value="slpk-url">SLPK URL (up to 16 MiB)</option>
-          <option value="3tz">Local 3TZ file (up to 16 MiB)</option>
-          <option value="3tz-url">3TZ URL (up to 16 MiB)</option>
-        </select>
-        {localArchive ? (
-          <>
-            <label htmlFor="conversion-file">{inputFormat.toUpperCase()} file</label>
-            <input
-              key={`conversion-file-${inputFormat}`}
-              id="conversion-file"
-              type="file"
-              accept={`.${inputFormat}`}
-              required
+        <fieldset disabled={busy}>
+          <legend>1. Choose data</legend>
+          <label htmlFor="conversion-input-format">
+            Input format
+            <select
+              id="conversion-input-format"
               disabled={busy}
+              value={inputFormat}
               onChange={event => {
-                setFile(event.target.files?.[0] ?? null);
+                setInputFormat(event.target.value as typeof inputFormat);
+                setFile(null);
                 setInspection(null);
                 setResourceIds([]);
                 setResult(null);
                 setError('');
                 setStatus('');
               }}
-            />
-          </>
-        ) : (
-          <>
+            >
+              <option value="3d-tiles">3D Tiles URL</option>
+              <option value="i3s">I3S layer URL</option>
+              <option value="slpk">Local SLPK file (up to 16 MiB)</option>
+              <option value="slpk-url">SLPK URL (up to 16 MiB)</option>
+              <option value="3tz">Local 3TZ file (up to 16 MiB)</option>
+              <option value="3tz-url">3TZ URL (up to 16 MiB)</option>
+            </select>
+          </label>
+          {localArchive ? (
+            <label htmlFor="conversion-file">
+              {inputFormat.toUpperCase()} file
+              <input
+                key={inputFormat}
+                id="conversion-file"
+                type="file"
+                accept={'.' + inputFormat}
+                required
+                disabled={busy}
+                onChange={event => {
+                  setFile(event.target.files?.[0] ?? null);
+                  setInspection(null);
+                  setResourceIds([]);
+                  setResult(null);
+                  setError('');
+                  setStatus('');
+                }}
+              />
+            </label>
+          ) : (
             <label htmlFor="conversion-url">
               {inputFormat === 'i3s'
                 ? 'I3S layer'
@@ -277,68 +264,81 @@ export function ConversionPanel({onPreview}: ConversionPanelProps) {
                   : inputFormat === '3tz-url'
                     ? '3TZ archive'
                     : '3D Tiles tileset'}{' '}
-              URL (CORS required)
+              URL
+              <input
+                key="conversion-url-input"
+                id="conversion-url"
+                type="url"
+                required
+                disabled={busy}
+                value={input}
+                placeholder="https://example.com/tileset.json"
+                onChange={event => {
+                  setInput(event.target.value);
+                  setInspection(null);
+                  setResourceIds([]);
+                  setResult(null);
+                  setError('');
+                  setStatus('');
+                }}
+              />
             </label>
-            <input
-              key="conversion-url-input"
-              id="conversion-url"
-              type="url"
-              required
-              disabled={busy}
-              value={input}
-              placeholder="https://example.com/tileset.json"
-              style={{width: '100%', boxSizing: 'border-box'}}
+          )}
+          <p className={styles.hint}>
+            URLs need CORS access. Remote archives also need byte-range responses and exposed
+            validators.
+          </p>
+        </fieldset>
+        <fieldset disabled={busy}>
+          <legend>2. Choose content</legend>
+          {inspection ? (
+            <label htmlFor="conversion-content">
+              Content placements
+              <select
+                id="conversion-content"
+                disabled={busy}
+                multiple
+                size={Math.min(6, inspection.resources.length + 1)}
+                value={resourceIds}
+                onChange={event => {
+                  setResourceIds(Array.from(event.target.selectedOptions, option => option.value));
+                  setResult(null);
+                }}
+              >
+                {inspection.resources.map(resource => (
+                  <option key={resource.resourceId} value={resource.resourceId}>
+                    {resource.resourceId}: {resource.uri}
+                  </option>
+                ))}
+              </select>
+            </label>
+          ) : (
+            <p className={styles.hint}>
+              Inspect the dataset, then select content placements explicitly.
+            </p>
+          )}
+          <p className={styles.hint}>{resourceIds.length} selected · maximum 64 mesh placements.</p>
+        </fieldset>
+        <fieldset disabled={busy || !inspection}>
+          <legend>3. Choose output</legend>
+          <label htmlFor="conversion-format">
+            Output archive
+            <select
+              id="conversion-format"
+              disabled={busy || !inspection}
+              value={format}
               onChange={event => {
-                setInput(event.target.value);
-                setInspection(null);
-                setResourceIds([]);
+                setFormat(event.target.value as ConversionFormat);
                 setResult(null);
-                setError('');
-                setStatus('');
               }}
-            />
-          </>
-        )}
-        <button type="submit" disabled={busy || (localArchive ? !file : !input.trim())}>
-          Inspect
-        </button>
-      </form>
-      {inspection && (
-        <>
-          <label htmlFor="conversion-content">Content placements</label>
-          <select
-            id="conversion-content"
-            disabled={busy}
-            multiple
-            size={Math.min(6, inspection.resources.length + 1)}
-            value={resourceIds}
-            onChange={event => {
-              setResourceIds(Array.from(event.target.selectedOptions, option => option.value));
-              setResult(null);
-            }}
-          >
-            {inspection.resources.map(resource => (
-              <option key={resource.resourceId} value={resource.resourceId}>
-                {resource.resourceId}: {resource.uri}
-              </option>
-            ))}
-          </select>
-          <label htmlFor="conversion-format">Output archive</label>
-          <select
-            id="conversion-format"
-            disabled={busy}
-            value={format}
-            onChange={event => {
-              setFormat(event.target.value as ConversionFormat);
-              setResult(null);
-            }}
-          >
-            <option value="slpk">I3S / SLPK</option>
-            <option value="3tz">3D Tiles / 3TZ</option>
-          </select>
-          {'kind' in inspection && format === '3tz' && (
-            <>
-              <label htmlFor="conversion-geometric-error">Maximum geometric error (meters)</label>
+            >
+              <option value="slpk">I3S / SLPK</option>
+              <option value="3tz">3D Tiles / 3TZ</option>
+            </select>
+          </label>
+          {inspection && 'kind' in inspection && format === '3tz' && (
+            <label htmlFor="conversion-geometric-error">
+              Maximum geometric error (meters)
               <input
                 id="conversion-geometric-error"
                 type="number"
@@ -351,68 +351,121 @@ export function ConversionPanel({onPreview}: ConversionPanelProps) {
                   setResult(null);
                 }}
               />
-              <small>
-                Declare a conservative error for the selected I3S leaf meshes. Screen-size LOD
-                metrics cannot be converted to meters automatically. Source hierarchy/LOD is not
-                exported.
-              </small>
-            </>
+              <span className={styles.hint}>
+                Declare a conservative metric error. Source screen-size LOD cannot be converted
+                automatically.
+              </span>
+            </label>
           )}
-          <label htmlFor="conversion-features">Feature mapping (optional JSON)</label>
-          <textarea
-            id="conversion-features"
-            disabled={busy}
-            value={featureMapping}
-            rows={4}
-            placeholder={
-              '{"metadataClass":"building","schema":{"fields":[{"name":"feature_id","type":"int32","nullable":false}]}}'
-            }
-            onChange={event => {
-              setFeatureMapping(event.target.value);
-              setResult(null);
-            }}
-          />
-          <small>
-            Declare every property and its Arrow type. No schema is inferred. SLPK requires explicit
-            decimal-string encoding for 64-bit values; 3TZ retains binary integers; unsupported
-            feature mappings fail. I3S mapping also requires objectIdProperty and maxAttributeBytes;
-            the object-ID column must match geometry identifiers.
-          </small>
-          <button disabled={busy || !resourceIds.length} onClick={() => void runOperation(true)}>
-            Convert selected content
+          <details>
+            <summary>Feature mapping (optional)</summary>
+            <label htmlFor="conversion-features">
+              Feature mapping JSON
+              <textarea
+                id="conversion-features"
+                disabled={busy || !inspection}
+                value={featureMapping}
+                rows={3}
+                placeholder={
+                  '{"metadataClass":"building","schema":{"fields":[{"name":"feature_id","type":"int32","nullable":false}]}}'
+                }
+                onChange={event => {
+                  setFeatureMapping(event.target.value);
+                  setResult(null);
+                }}
+              />
+            </label>
+            <p className={styles.hint}>
+              Declare every property and its Arrow type; no schema is inferred. SLPK requires
+              decimal-string encoding for 64-bit values; 3TZ retains binary integers. I3S also
+              requires objectIdProperty and maxAttributeBytes, with IDs matching geometry.
+            </p>
+          </details>
+        </fieldset>
+        <div className={styles.actions}>
+          <button type="submit" disabled={busy || (localArchive ? !file : !input.trim())}>
+            Inspect
           </button>
-          {browserGlobal.showSaveFilePicker && (
+          {inspection && (
             <button
+              type="button"
+              className={styles.primary}
+              disabled={busy || !resourceIds.length}
+              onClick={() => void runOperation(true)}
+            >
+              Convert selected content
+            </button>
+          )}
+          {inspection && browserGlobal.showSaveFilePicker && (
+            <button
+              type="button"
               disabled={busy || !resourceIds.length}
               onClick={() => void runOperation(true, true)}
             >
               Convert and save to file
             </button>
           )}
-        </>
-      )}
-      {busy && (
-        <button disabled={status === 'Saving archive'} onClick={cancelConversion}>
-          Cancel
-        </button>
-      )}
-      {status && <small role="status">{status}</small>}
-      {error && (
-        <div role="alert" style={{color: '#ffb4ab'}}>
-          {error}
+          {busy && (
+            <button type="button" disabled={status === 'Saving archive'} onClick={cancelConversion}>
+              Cancel
+            </button>
+          )}
+          {result && 'file' in result && downloadUrl && (
+            <>
+              <a className={styles.download} href={downloadUrl} download={result.file.name}>
+                Download {result.file.name}
+              </a>
+              {onPreview && (
+                <button type="button" onClick={() => onPreview(result.file)}>
+                  Preview generated archive
+                </button>
+              )}
+            </>
+          )}
         </div>
+      </form>
+      {status && (
+        <p role="status" aria-live="polite">
+          {status}
+        </p>
       )}
-      {result && 'file' in result && downloadUrl && (
-        <>
-          <a href={downloadUrl} download={result.file.name} style={{color: '#8ecbff'}}>
-            Download {result.file.name}
-          </a>
-          <button onClick={() => onPreview(result.file)}>Preview generated archive</button>
-        </>
+      {error && (
+        <p role="alert" className={styles.error}>
+          {error}
+        </p>
       )}
       {result?.report.diagnostics.map((diagnostic, index) => (
-        <small key={index}>{diagnostic.message}</small>
+        <p className={styles.hint} key={index}>
+          {diagnostic.message}
+        </p>
       ))}
+      <p className={styles.hint}>
+        16 MiB input · 32 MiB output/archive · 1 cm position error. Conversion runs locally in a
+        worker. No data is uploaded.
+      </p>
+      <details>
+        <summary>Supported profiles and limits</summary>
+        <p className={styles.hint}>
+          Partial output: static GLB/B3DM meshes in native ECEF, or I3S leaf meshes from a layer URL
+          or local/remote SLPK. Explicit local/remote 3TZ meshes are also accepted. Both formats
+          preserve material factors, one PNG/JPEG base-color texture and explicitly mapped features.
+          External buffers and images share the input budget. SLPK supports UV transforms and
+          wrapping, but rejects explicit texture filtering and vertex colors. Other texture maps/UV
+          sets and implicit 3D Tiles are rejected. Nested explicit tilesets declared with .json URIs
+          are supported. I3S atlas regions, colors and richer materials are unsupported; archive
+          dependencies must remain inside the selected archive. Remote archives require CORS,
+          byte-range responses and exposed validators; CRS/height resources are not inferred or
+          downloaded.
+        </p>
+        <p className={styles.hint}>
+          Both formats accept up to 64 mesh placements from selected leaf contents. Limits: 16 MiB
+          input, 1,000 declared contents, 32 tileset documents, 32 MiB output/archive, 1 cm position
+          error. These are not peak memory limits. Conversion runs in a worker; cancel terminates
+          its parsing and packaging. Archive chunks are transferred on demand. Download/preview
+          retains the complete archive; direct file saving writes chunks without collecting it.
+          Cancel is disabled during final file commit.
+        </p>
+      </details>
     </section>
   );
 }

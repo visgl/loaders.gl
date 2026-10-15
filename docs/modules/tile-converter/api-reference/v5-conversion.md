@@ -690,6 +690,8 @@ metadata or decode instancing/composites.
 
 ## Browser I3S conversion example
 
+Use the [inline 3D tile conversion app](/examples/tiles/3d-tiles-conversion) to inspect, select, convert and download meshes. It shares its compact controls and navigation with the [PMTiles conversion app](/examples/tiles/pmtiles-authoring). The [archive viewer](/examples/i3s-slpk) retains the same conversion controls alongside rendering.
+
 The [archive example](https://github.com/visgl/loaders.gl/tree/master/examples/website/i3s-slpk)
 accepts I3S `3DObject`/`IntegratedMesh` layer URLs and local/remote SLPK files up to 16 MiB for
 conversion into either partial SLPK or 3TZ. Metadata inspection visits at most 1,000 nodes,

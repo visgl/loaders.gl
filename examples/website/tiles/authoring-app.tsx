@@ -10,7 +10,7 @@ import {
   selectPMTilesExampleTiles
 } from './create-pmtiles';
 import type {PMTilesExampleFormat, PMTilesExampleOptions} from './create-pmtiles';
-import styles from './authoring-app.module.css';
+import styles from '../common/conversion.module.css';
 
 /** A retained browser URL with a fixed safe download name. */
 type ArchiveDownload = {
@@ -141,9 +141,7 @@ export default function PMTilesAuthoringApp() {
       }}
     >
       <header>
-        <p className={styles.eyebrow}>BROWSER CONVERSION</p>
         <h2>Create a PMTiles archive</h2>
-        <p>Turn a vector table or byte imagery into a small, downloadable tile archive.</p>
       </header>
       <form
         onSubmit={event => {

@@ -12,7 +12,7 @@
     sans-serif;
 }
 .app header {
-  margin-bottom: 16px;
+  margin-bottom: 12px;
 }
 .app h2 {
   font-size: 24px;
@@ -20,12 +20,6 @@
 }
 .app p {
   margin: 8px 0;
-}
-.eyebrow {
-  color: #7c3aed;
-  font-size: 11px;
-  font-weight: 700;
-  letter-spacing: 0.1em;
 }
 .app form {
   display: grid;
@@ -52,7 +46,8 @@
   overflow-wrap: anywhere;
 }
 .app input,
-.app select {
+.app select,
+.app textarea {
   box-sizing: border-box;
   width: 100%;
   min-width: 0;
@@ -96,8 +91,11 @@
   font: inherit;
   font-weight: 600;
   cursor: pointer;
+  color: inherit;
+  background: transparent;
 }
 .app button[type="submit"],
+.app .primary,
 .download {
   color: white;
   background: #6d28d9;
@@ -108,6 +106,7 @@
 }
 .app input:focus-visible,
 .app select:focus-visible,
+.app textarea:focus-visible,
 .app button:focus-visible,
 .download:focus-visible {
   outline: 3px solid #a78bfa;
@@ -123,4 +122,13 @@
   .app form {
     grid-template-columns: repeat(3, minmax(0, 1fr));
   }
+}
+
+.app textarea {
+  resize: vertical;
+}
+.app summary {
+  cursor: pointer;
+  font-weight: 600;
+  margin-bottom: 8px;
 }

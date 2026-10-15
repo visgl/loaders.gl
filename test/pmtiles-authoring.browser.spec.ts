@@ -361,7 +361,7 @@ test('the authoring form fits a laptop panel and stacks without overflow on mobi
     const app = mounted.container.querySelector('section')!;
     const form = mounted.container.querySelector('form')!;
     expect(getComputedStyle(form).gridTemplateColumns.split(' ')).toHaveLength(3);
-    expect(app.getBoundingClientRect().height).toBeLessThanOrEqual(600);
+    expect(app.getBoundingClientRect().height).toBeLessThanOrEqual(550);
     mounted.container.style.width = '360px';
     expect(getComputedStyle(form).gridTemplateColumns.split(' ')).toHaveLength(1);
     expect(app.scrollWidth).toBeLessThanOrEqual(360);

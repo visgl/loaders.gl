@@ -34,3 +34,6 @@ Generated object URLs are revoked when replaced, settings change, or the compone
 The source raster is finalized by the example after every export, including errors/cancellation.
 No data is uploaded. After generating the archive, use its download link and open it in the
 existing PMTiles viewer.
+
+The inline [3D tile converter](https://loaders.gl/examples/tiles/3d-tiles-conversion) uses the same compact form
+styles from `examples/website/common/conversion.module.css`. Both apps are linked by conversion tabs.
