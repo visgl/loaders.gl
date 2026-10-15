@@ -1,0 +1,27 @@
+{
+  "asset": {"version": "2.0"},
+  "extensionsUsed": ["KHR_interactivity"],
+  "extensions": {
+    "KHR_interactivity": {
+      "graphs": [{
+        "name": "Set translation on start",
+        "types": [{"signature": "float3"}],
+        "declarations": [{"op": "event/onStart"}, {"op": "pointer/set"}],
+        "nodes": [
+          {"declaration": 0, "flows": {"out": {"node": 1}}},
+          {
+            "declaration": 1,
+            "configuration": {"pointer": {"value": ["/nodes/0/translation"]}, "type": {"value": [0]}},
+            "values": {"value": {"type": 0, "value": [1, 2, 3]}}
+          }
+        ],
+        "variables": [{"type": 0, "name": "position"}],
+        "events": [{"values": {"position": {"type": 0, "value": [0, 0, 0]}}}],
+        "extras": {"fixture": true}
+      }]
+    }
+  },
+  "nodes": [{"translation": [0, 0, 0]}],
+  "scenes": [{"nodes": [0]}],
+  "scene": 0
+}

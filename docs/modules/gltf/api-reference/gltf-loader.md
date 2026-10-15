@@ -388,3 +388,29 @@ legacy fallback rules.
 | `buffers[\*].byteOffset`  | `Number`      | `null`  | offset of buffer (embedded in larger binary block)               |
 | `buffers[\*].byteLength`  | `ArrayBuffer` | `null`  | length of buffer (embedded in larger binary block)               |
 | `_glb`?                   | `Object`      | N/A     | The output of the GLBLoader if the parsed file was GLB formatted |
+
+## Interactivity graphs
+
+`GLTFLoader` preserves the root `KHR_interactivity` extension. Use
+`getGLTFInteractivity(gltf)` from `@loaders.gl/gltf` with either a loader result or
+raw glTF JSON to read it; the helper returns `null` when the extension is absent.
+
+```typescript
+import {getGLTFInteractivity} from '@loaders.gl/gltf';
+
+const interactivity = getGLTFInteractivity(gltf);
+const graph = interactivity?.graphs[interactivity.graph ?? 0];
+```
+
+The helper returns the original extension object, without validating, cloning,
+resolving graph indices, or inserting defaults. Treat the returned value as shared
+data. `postProcessGLTF` retains the extension and `GLTFWriter` preserves it in GLB
+output. Graph execution and property-pointer evaluation are the rendering runtime's
+responsibility.
+
+The exported `GLTF_KHR_interactivity`, `GLTFInteractivityGraph`, node, declaration,
+socket, event, variable, and value types describe the
+[Khronos JSON schemas](https://github.com/KhronosGroup/glTF/tree/main/extensions/2.0/Khronos/KHR_interactivity/schema).
+Indices refer to arrays within the same graph. Event IDs and initial values are
+optional. TypeScript types do not validate index bounds, nonempty arrays, reserved
+socket names, or operation-specific configuration and component values at runtime.
