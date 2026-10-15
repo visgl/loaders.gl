@@ -58,17 +58,23 @@ test('ImageWriter supports OffscreenCanvas and the DOM canvas fallback', async (
     image: {mimeType: 'image/jpeg', jpegQuality: 0.5}
   });
   let fallback: ArrayBuffer;
+  let fallbackJpegBytes: ArrayBuffer;
   vi.stubGlobal('OffscreenCanvas', undefined);
   try {
     fallback = await encode(IMAGE, ImageWriter, {image: {mimeType: 'image/png'}});
+    fallbackJpegBytes = await encode(IMAGE, ImageWriter, {
+      image: {mimeType: 'image/jpeg', jpegQuality: 0.5}
+    });
   } finally {
     vi.unstubAllGlobals();
   }
-  expect(getBinaryImageMetadata(jpegBytes)).toMatchObject({
-    width: IMAGE.width,
-    height: IMAGE.height,
-    mimeType: 'image/jpeg'
-  });
+  for (const encoded of [jpegBytes, fallbackJpegBytes]) {
+    expect(getBinaryImageMetadata(encoded)).toMatchObject({
+      width: IMAGE.width,
+      height: IMAGE.height,
+      mimeType: 'image/jpeg'
+    });
+  }
   for (const encoded of [bytes, fallback]) {
     expect(getBinaryImageMetadata(encoded)).toMatchObject({
       width: IMAGE.width,
