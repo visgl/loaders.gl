@@ -4,7 +4,7 @@
 
 import * as arrow from 'apache-arrow';
 import type {ArrowTable, Schema as TableSchema} from '@loaders.gl/schema';
-import {WKBBuilder} from '@loaders.gl/arrow/geometry';
+import {WKBBuilder} from '@loaders.gl/arrow-geometry';
 import {type CoordinateTransform} from '@loaders.gl/arrow-geometry/binary-geometry-to-wkb';
 import {
   makeWKBGeometryArrowTable as makeSharedWKBGeometryArrowTable,

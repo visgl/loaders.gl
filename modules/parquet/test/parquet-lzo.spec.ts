@@ -3,7 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import {expect, test} from 'vitest';
-import {createParquetPageDecompressor, deflate} from '../src/parquetjs/compression';
+import {createParquetPageDecompressor, deflate} from '../../tables/src/parquet/parquetjs/compression';
 
 const HELLO = new Uint8Array([22, 104, 101, 108, 108, 111, 17, 0, 0]);
 
@@ -24,9 +24,9 @@ test('Parquet LZO accepts raw pages and Hadoop blocks with multiple chunks', asy
   await expect(deflate('LZO', new Uint8Array(0))).rejects.toThrow(/decode-only/);
 });
 
-import {ParquetJSLoaderWithParser} from '../src/parquet-js-loader';
-import {PageHeader, DataPageHeader, FileMetaData, SchemaElement, ColumnMetaData, ColumnChunk, RowGroup, PageType, Encoding, Type, FieldRepetitionType, CompressionCodec} from '../src/parquetjs/parquet-thrift';
-import {serializeThrift} from '../src/parquetjs/utils/read-utils';
+import {ParquetJSLoaderWithParser} from '../../tables/src/parquet/parquet-js-loader';
+import {PageHeader, DataPageHeader, FileMetaData, SchemaElement, ColumnMetaData, ColumnChunk, RowGroup, PageType, Encoding, Type, FieldRepetitionType, CompressionCodec} from '../../tables/src/parquet/parquetjs/parquet-thrift';
+import {serializeThrift} from '../../tables/src/parquet/parquetjs/utils/read-utils';
 
 /** Builds a tiny required INT32 column with a literal-only raw LZO1X data page. */
 function createLzoParquetFile(framing: 'raw' | 'chunks' | 'blocks'): ArrayBuffer {

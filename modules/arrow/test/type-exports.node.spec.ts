@@ -9,7 +9,7 @@ import {expect, test} from 'vitest';
 import minimumArrowExports from './data/apache-arrow-17-exports.json';
 
 test('type facade supports Apache Arrow 17 without leaking runtime exports', () => {
-  const filename = path.resolve('modules/arrow/src/types.ts');
+  const filename = path.resolve('modules/tables/src/arrow/types.ts');
   const sourceFile = typescript.createSourceFile(
     filename,
     readFileSync(filename, 'utf8'),

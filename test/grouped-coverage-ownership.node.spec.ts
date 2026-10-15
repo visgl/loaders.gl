@@ -66,6 +66,13 @@ const productionSources = new Set(
 );
 
 test.each([
+  'modules/schema-utils/src/lib/arrow/arrow-table-transport.ts',
+  'modules/schema-utils/src/lib/arrow/split-arrow-buffers.ts',
+  'modules/tables/src/arrow/arrow-loader.ts',
+  'modules/tables/src/json/json-loader.ts',
+  'modules/tables/src/lance/lance-loader.ts',
+  'modules/tables/src/orc/orc-loader.ts',
+  'modules/tables/src/parquet/parquet-loader.ts',
   'modules/tables/src/csv/csv-loader.ts',
   'modules/tables/src/avro/avro-loader.ts',
   'modules/tables/src/bson/bson-loader.ts',

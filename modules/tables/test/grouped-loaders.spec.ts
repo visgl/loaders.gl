@@ -3,7 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import {expect, test} from 'vitest';
-import {parse, parseSync} from '@loaders.gl/core';
+import {load, parse, parseSync} from '@loaders.gl/core';
 import {CSVLoader, AvroLoader, AvroSchemaLoader, BSONLoader, ExcelLoader} from '@loaders.gl/tables';
 import {CSVLoaderWithParser} from '@loaders.gl/tables/csv';
 import {AvroLoaderWithParser} from '@loaders.gl/tables/avro';
@@ -15,13 +15,68 @@ import {BSONLoader as LegacyBSONLoader} from '@loaders.gl/bson';
 import {ExcelLoaderWithParser} from '@loaders.gl/tables/excel';
 import {ExcelLoader as LegacyExcelLoader} from '@loaders.gl/excel';
 
-test.each([
-  [ExcelLoader, ExcelLoaderWithParser],
-  [BSONLoader, BSONLoaderWithParser],
-  [CSVLoader, CSVLoaderWithParser],
-  [AvroLoader, AvroLoaderWithParser],
-  [AvroSchemaLoader, AvroSchemaLoaderWithParser]
-])('table metadata preloads the implementation for $0.id', async (metadata, implementation) => {
+import {ArrowLoader} from '@loaders.gl/tables';
+import {ArrowLoaderWithParser} from '@loaders.gl/tables/arrow';
+import {ArrowLoader as LegacyArrowLoader} from '@loaders.gl/arrow';
+
+import {JSONLoader} from '@loaders.gl/tables';
+import {JSONLoaderWithParser} from '@loaders.gl/tables/json';
+import {JSONLoader as LegacyJSONLoader} from '@loaders.gl/json';
+
+import {LanceLoader} from '@loaders.gl/tables';
+import {LanceLoaderWithParser} from '@loaders.gl/tables/lance';
+import {LanceLoader as LegacyLanceLoader} from '@loaders.gl/lance';
+
+import {ORCLoader} from '@loaders.gl/tables';
+import {ORCLoaderWithParser} from '@loaders.gl/tables/orc';
+import {ORCLoader as LegacyORCLoader} from '@loaders.gl/orc';
+
+import {ParquetLoader} from '@loaders.gl/tables';
+import {ParquetLoaderWithParser} from '@loaders.gl/tables/parquet';
+import {ParquetLoader as LegacyParquetLoader} from '@loaders.gl/parquet';
+
+import {GeoArrowLoader} from '@loaders.gl/tables';
+import {GeoArrowLoaderWithParser} from '@loaders.gl/tables/arrow';
+
+import {JSONTableLoader} from '@loaders.gl/tables';
+import {JSONTableLoaderWithParser} from '@loaders.gl/tables/json';
+
+import {NDJSONLoader} from '@loaders.gl/tables';
+import {NDJSONLoaderWithParser} from '@loaders.gl/tables/json';
+
+import {GeoJSONLoader} from '@loaders.gl/tables';
+import {GeoJSONLoaderWithParser} from '@loaders.gl/tables/json';
+
+import {NDGeoJSONLoader} from '@loaders.gl/tables';
+import {NDGeoJSONLoaderWithParser} from '@loaders.gl/tables/json';
+
+import {ParquetJSLoader} from '@loaders.gl/tables';
+import {ParquetJSLoaderWithParser} from '@loaders.gl/tables/parquet';
+
+import {GeoParquetLoader} from '@loaders.gl/tables';
+import {GeoParquetLoaderWithParser} from '@loaders.gl/tables/parquet';
+
+test.each(
+  [
+    [GeoParquetLoader, GeoParquetLoaderWithParser],
+    [ParquetJSLoader, ParquetJSLoaderWithParser],
+    [NDGeoJSONLoader, NDGeoJSONLoaderWithParser],
+    [GeoJSONLoader, GeoJSONLoaderWithParser],
+    [NDJSONLoader, NDJSONLoaderWithParser],
+    [JSONTableLoader, JSONTableLoaderWithParser],
+    [GeoArrowLoader, GeoArrowLoaderWithParser],
+    [ParquetLoader, ParquetLoaderWithParser],
+    [ORCLoader, ORCLoaderWithParser],
+    [LanceLoader, LanceLoaderWithParser],
+    [JSONLoader, JSONLoaderWithParser],
+    [ArrowLoader, ArrowLoaderWithParser],
+    [ExcelLoader, ExcelLoaderWithParser],
+    [BSONLoader, BSONLoaderWithParser],
+    [CSVLoader, CSVLoaderWithParser],
+    [AvroLoader, AvroLoaderWithParser],
+    [AvroSchemaLoader, AvroSchemaLoaderWithParser]
+  ].map(([metadata, implementation]) => ({name: metadata.name, metadata, implementation}))
+)('table metadata preloads $name', async ({metadata, implementation}) => {
   expect(metadata).not.toHaveProperty('parse');
   expect(metadata).not.toHaveProperty('parseSync');
   expect(await metadata.preload()).toBe(implementation);
@@ -63,4 +118,59 @@ test('grouped BSON supports asynchronous metadata and synchronous parser access'
   const data = BSONWriter.encodeSync(input);
   expect(await parse(data, BSONLoader)).toEqual(input);
   expect(parseSync(data, BSONLoaderWithParser)).toEqual(input);
+});
+
+test('legacy arrow metadata shares its grouped owner', () => {
+  expect(LegacyArrowLoader).toBe(ArrowLoader);
+});
+
+test('legacy json metadata shares its grouped owner', () => {
+  expect(LegacyJSONLoader).toBe(JSONLoader);
+});
+
+test('legacy lance metadata shares its grouped owner', () => {
+  expect(LegacyLanceLoader).toBe(LanceLoader);
+});
+
+test('legacy orc metadata shares its grouped owner', () => {
+  expect(LegacyORCLoader).toBe(ORCLoader);
+});
+
+test('legacy parquet metadata shares its grouped owner', () => {
+  expect(LegacyParquetLoader).toBe(ParquetLoader);
+});
+
+test('grouped JSON metadata supports synchronous and asynchronous entrypoints', async () => {
+  const input = new TextEncoder().encode('{"value":7}').buffer;
+  expect(await parse(input, JSONLoader, {worker: false})).toEqual({value: 7});
+  expect(parseSync(input, JSONLoaderWithParser)).toEqual({value: 7});
+});
+
+test('grouped Lance source metadata defers synchronous source construction', async () => {
+  const {LanceSourceLoader} = await import('@loaders.gl/tables');
+  const {LanceSourceLoader: implementation} = await import(
+    '@loaders.gl/tables/lance/lance-source-loader'
+  );
+  expect(() => LanceSourceLoader.createDataSource(new Blob(), {})).toThrow('requires async load()');
+  expect(await LanceSourceLoader.preload()).toBe(implementation);
+  expect(LanceSourceLoader.options).toEqual(implementation.options);
+  expect(LanceSourceLoader.testURL('dataset.lance/')).toBe(true);
+  expect(LanceSourceLoader.testURL('dataset.csv')).toBe(false);
+});
+
+test('legacy GeoJSON metadata keeps transport hooks outside grouped metadata', async () => {
+  const {GeoJSONLoader: legacy} = await import('@loaders.gl/json');
+  expect(legacy).toMatchObject(GeoJSONLoader);
+  expect(legacy.serializeWorkerResult).toBe(GeoJSONLoaderWithParser.serializeWorkerResult);
+  expect(legacy.deserializeWorkerResult).toBe(GeoJSONLoaderWithParser.deserializeWorkerResult);
+  expect(GeoJSONLoader).not.toHaveProperty('serializeWorkerResult');
+});
+
+test('core asynchronously constructs grouped Lance and ORC sources from metadata', async () => {
+  const {LanceSourceLoader, ORCSourceLoader} = await import('@loaders.gl/tables');
+  const {LanceSource} = await import('@loaders.gl/tables/lance/lance-source-loader');
+  const {ORCSource} = await import('@loaders.gl/tables/orc/orc-source-loader');
+  expect(await load(new Blob(), LanceSourceLoader)).toBeInstanceOf(LanceSource);
+  expect(await load(new Blob(), ORCSourceLoader)).toBeInstanceOf(ORCSource);
+  expect(() => ORCSourceLoader.createDataSource(new Blob(), {})).toThrow('requires async load()');
 });

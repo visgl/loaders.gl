@@ -10,10 +10,10 @@ import {
   encodeParquetSplitBlockBloomFilter,
   hashParquetBloomFilterValue,
   insertParquetSplitBlockBloomFilter
-} from '../src/lib/parquet-bloom-filter';
-import {getParquetBloomFilterProbes} from '../src/lib/parquet-bloom-filter-planner';
-import {Uint8ArrayCompactProtocolWriter} from '../src/parquetjs/utils/uint8-array-compact-protocol-writer';
-import {Thrift} from '../src/parquetjs/utils/thrift-runtime';
+} from '../../tables/src/parquet/lib/parquet-bloom-filter';
+import {getParquetBloomFilterProbes} from '../../tables/src/parquet/lib/parquet-bloom-filter-planner';
+import {Uint8ArrayCompactProtocolWriter} from '../../tables/src/parquet/parquetjs/utils/uint8-array-compact-protocol-writer';
+import {Thrift} from '../../tables/src/parquet/parquetjs/utils/thrift-runtime';
 
 describe('Parquet split-block Bloom filters', () => {
   test('matches the Parquet XXH64 empty-input vector', () => {

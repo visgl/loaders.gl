@@ -4,13 +4,13 @@
 
 // import {ArrowTable, ArrowTableBatch} from '@loaders.gl/arrow';
 
-export {ParquetFormat} from './parquet-format';
+export {ParquetFormat} from '@loaders.gl/tables/parquet/index';
 
-export type {ParquetLoaderOptions, ParquetJSLoaderOptions} from './parquet-loader-options';
-export {ParquetLoader} from './parquet-loader-types';
-export {GeoParquetLoader} from './geoparquet-loader';
+export type {ParquetLoaderOptions, ParquetJSLoaderOptions} from '@loaders.gl/tables/parquet/index';
+export {ParquetLoader} from '@loaders.gl/tables/parquet/index';
+export {GeoParquetLoader} from '@loaders.gl/tables/parquet/index';
 
-export {ParquetSourceLoader} from './parquet-source-loader-types';
+export {ParquetSourceLoader} from '@loaders.gl/tables/parquet/index';
 export type {
   ParquetDeferredPageFilter,
   ParquetEncodedColumnChunk,
@@ -19,7 +19,7 @@ export type {
   ParquetEncodedPageReadOptions,
   ParquetEncodedPageSection,
   ParquetPageCompressionState
-} from './parquet-encoded-page-types';
+} from '@loaders.gl/tables/parquet/index';
 export type {
   ParquetBatch,
   ParquetBatchMetadata,
@@ -66,29 +66,29 @@ export type {
   ParquetSourceExplain,
   ParquetTelemetry,
   ParquetTelemetryEvent
-} from './parquet-source-types';
+} from '@loaders.gl/tables/parquet/index';
 export {
   PARQUET_TABLE_QUERY_CAPABILITIES,
   PARQUET_SOURCE_CAPABILITIES,
   type ParquetSourceCapabilities
-} from './parquet-source-capabilities';
+} from '@loaders.gl/tables/parquet/index';
 
-export {ParquetWriter} from './parquet-writer';
+export {ParquetWriter} from '@loaders.gl/tables/parquet/index';
 export type {
   ParquetJSWriterEncoding,
   ParquetJSWriterOptions,
   ParquetSortingColumnOption,
   ParquetWriterEncryptionOptions,
   ParquetWriterFooterSignatureOptions
-} from './parquet-js-writer';
-export {ParquetJSWriter} from './parquet-js-writer';
+} from '@loaders.gl/tables/parquet/index';
+export {ParquetJSWriter} from '@loaders.gl/tables/parquet/index';
 
 export {
   decodeParquetColumnIndex,
   decodeParquetPageStatisticsValue,
   canUseParquetPageIndexForColumn,
   type ParquetPageStatistics
-} from './lib/parquet-page-index';
+} from '@loaders.gl/tables/parquet/index';
 export {
   createParquetModuleAad,
   decryptParquetModule,
@@ -99,20 +99,20 @@ export {
   type ParquetDecryptModuleOptions,
   type ParquetEncryptionAlgorithm,
   type ParquetKeyRetriever
-} from './lib/parquet-encryption';
+} from '@loaders.gl/tables/parquet/index';
 
 // EXPERIMENTAL - expose the internal parquetjs API
 
-export {preloadCompressions} from './parquetjs/compression';
+export {preloadCompressions} from '@loaders.gl/tables/parquet/index';
 
-export {ParquetSchema} from './parquetjs/schema/schema';
-export {ParquetReader} from './parquetjs/parser/parquet-reader';
-export {ParquetEncoder} from './parquetjs/encoder/parquet-encoder';
+export {ParquetSchema} from '@loaders.gl/tables/parquet/index';
+export {ParquetReader} from '@loaders.gl/tables/parquet/index';
+export {ParquetEncoder} from '@loaders.gl/tables/parquet/index';
 
 export {
   convertParquetSchema,
   convertParquetSchema as convertParquetToArrowSchema
-} from './lib/arrow/convert-schema-from-parquet';
+} from '@loaders.gl/tables/parquet/index';
 
 export {
   checkParquetSplitBlockBloomFilter,
@@ -123,8 +123,8 @@ export {
   insertParquetSplitBlockBloomFilter,
   type ParquetBloomFilterPhysicalType,
   type ParquetSplitBlockBloomFilter
-} from './lib/parquet-bloom-filter';
+} from '@loaders.gl/tables/parquet/index';
 export {
   getParquetBloomFilterProbes,
   type ParquetBloomFilterProbe
-} from './lib/parquet-bloom-filter-planner';
+} from '@loaders.gl/tables/parquet/index';

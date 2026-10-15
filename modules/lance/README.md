@@ -33,3 +33,5 @@ See [`examples/lance`](../../examples/lance) for a local Arrow example and a
 real Hugging Face Lance dataset example.
 
 There is deliberately no writer API in this package.
+
+Implementation ownership is now `@loaders.gl/tables/lance`. Existing package entry points remain compatible. See the [grouped package guide](../../docs/developer-guide/grouped-packages.md).

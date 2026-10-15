@@ -1,7 +1,7 @@
 {
   "name": "@loaders.gl/tables",
   "version": "5.0.0-alpha.12",
-  "description": "Grouped tables loaders (package consolidation proof of concept)",
+  "description": "Table format loaders with metadata and explicit parser subpaths",
   "license": "MIT",
   "type": "module",
   "publishConfig": {
@@ -188,6 +188,427 @@
     },
     "./excel-worker.js": {
       "import": "./dist/excel-worker.js"
+    },
+    "./arrow/geoarrow-loader": {
+      "types": "./dist/arrow/geoarrow-loader.d.ts",
+      "import": "./dist/arrow/geoarrow-loader.js"
+    },
+    "./arrow/geoarrow-writer": {
+      "types": "./dist/arrow/geoarrow-writer.d.ts",
+      "import": "./dist/arrow/geoarrow-writer.js"
+    },
+    "./arrow/triangulate-on-worker": {
+      "types": "./dist/arrow/triangulate-on-worker.d.ts",
+      "import": "./dist/arrow/triangulate-on-worker.js"
+    },
+    "./arrow/arrow-writer": {
+      "types": "./dist/arrow/arrow-writer.d.ts",
+      "import": "./dist/arrow/arrow-writer.js"
+    },
+    "./arrow/triangulate-wkb-geometry-column": {
+      "types": "./dist/arrow/triangulate-wkb-geometry-column.d.ts",
+      "import": "./dist/arrow/triangulate-wkb-geometry-column.js"
+    },
+    "./arrow/types": {
+      "types": "./dist/arrow/types.d.ts",
+      "import": "./dist/arrow/types.js",
+      "require": "./dist/arrow/types.cjs"
+    },
+    "./arrow/arrow-loader": {
+      "types": "./dist/arrow/arrow-loader.d.ts",
+      "import": "./dist/arrow/arrow-loader.js"
+    },
+    "./arrow/bundled": {
+      "types": "./dist/arrow/bundled.d.ts",
+      "import": "./dist/arrow/bundled.js"
+    },
+    "./arrow/geoarrow-loader-types": {
+      "types": "./dist/arrow/geoarrow-loader-types.d.ts",
+      "import": "./dist/arrow/geoarrow-loader-types.js"
+    },
+    "./arrow/unbundled": {
+      "types": "./dist/arrow/unbundled.d.ts",
+      "import": "./dist/arrow/unbundled.js"
+    },
+    "./arrow/transport": {
+      "types": "./dist/arrow/transport.d.ts",
+      "import": "./dist/arrow/transport.js"
+    },
+    "./arrow/index": {
+      "types": "./dist/arrow/index.d.ts",
+      "import": "./dist/arrow/index.js",
+      "require": "./dist/arrow/index.cjs"
+    },
+    "./arrow/arrow-loader-types": {
+      "types": "./dist/arrow/arrow-loader-types.d.ts",
+      "import": "./dist/arrow/arrow-loader-types.js"
+    },
+    "./arrow/arrow-source": {
+      "types": "./dist/arrow/arrow-source.d.ts",
+      "import": "./dist/arrow/arrow-source.js"
+    },
+    "./arrow/exports/*": {
+      "types": "./dist/arrow/exports/*.d.ts",
+      "import": "./dist/arrow/exports/*.js"
+    },
+    "./arrow/arrow-worker.js": {
+      "import": "./dist/arrow-worker.js"
+    },
+    "./arrow/geometry": {
+      "types": "./dist/arrow/geometry/index.d.ts",
+      "import": "./dist/arrow/geometry/index.js",
+      "require": "./dist/arrow/geometry/index.cjs"
+    },
+    "./arrow-worker.js": {
+      "import": "./dist/arrow-worker.js"
+    },
+    "./json/fast-json-loader": {
+      "types": "./dist/json/fast-json-loader.d.ts",
+      "import": "./dist/json/fast-json-loader.js"
+    },
+    "./json/json-loader": {
+      "types": "./dist/json/json-loader.d.ts",
+      "import": "./dist/json/json-loader.js"
+    },
+    "./json/json-writer": {
+      "types": "./dist/json/json-writer.d.ts",
+      "import": "./dist/json/json-writer.js"
+    },
+    "./json/geojson-loader-types": {
+      "types": "./dist/json/geojson-loader-types.d.ts",
+      "import": "./dist/json/geojson-loader-types.js"
+    },
+    "./json/geojson-writer": {
+      "types": "./dist/json/geojson-writer.d.ts",
+      "import": "./dist/json/geojson-writer.js"
+    },
+    "./json/json-loader-types": {
+      "types": "./dist/json/json-loader-types.d.ts",
+      "import": "./dist/json/json-loader-types.js"
+    },
+    "./json/json-table-loader-types": {
+      "types": "./dist/json/json-table-loader-types.d.ts",
+      "import": "./dist/json/json-table-loader-types.js"
+    },
+    "./json/geojson-loader": {
+      "types": "./dist/json/geojson-loader.d.ts",
+      "import": "./dist/json/geojson-loader.js"
+    },
+    "./json/ndjson-loader-types": {
+      "types": "./dist/json/ndjson-loader-types.d.ts",
+      "import": "./dist/json/ndjson-loader-types.js"
+    },
+    "./json/bundled": {
+      "types": "./dist/json/bundled.d.ts",
+      "import": "./dist/json/bundled.js"
+    },
+    "./json/ndjson-source": {
+      "types": "./dist/json/ndjson-source.d.ts",
+      "import": "./dist/json/ndjson-source.js"
+    },
+    "./json/ndgeojson-loader": {
+      "types": "./dist/json/ndgeojson-loader.d.ts",
+      "import": "./dist/json/ndgeojson-loader.js"
+    },
+    "./json/unbundled": {
+      "types": "./dist/json/unbundled.d.ts",
+      "import": "./dist/json/unbundled.js"
+    },
+    "./json/json-format": {
+      "types": "./dist/json/json-format.d.ts",
+      "import": "./dist/json/json-format.js"
+    },
+    "./json/index": {
+      "types": "./dist/json/index.d.ts",
+      "import": "./dist/json/index.js",
+      "require": "./dist/json/index.cjs"
+    },
+    "./json/json-table-loader": {
+      "types": "./dist/json/json-table-loader.d.ts",
+      "import": "./dist/json/json-table-loader.js"
+    },
+    "./json/ndgeojson-loader-types": {
+      "types": "./dist/json/ndgeojson-loader-types.d.ts",
+      "import": "./dist/json/ndgeojson-loader-types.js"
+    },
+    "./json/ndjson-loader": {
+      "types": "./dist/json/ndjson-loader.d.ts",
+      "import": "./dist/json/ndjson-loader.js"
+    },
+    "./json/geojson-worker.js": {
+      "import": "./dist/geojson-worker.js"
+    },
+    "./geojson-worker.js": {
+      "import": "./dist/geojson-worker.js"
+    },
+    "./lance/lance-file": {
+      "types": "./dist/lance/lance-file.d.ts",
+      "import": "./dist/lance/lance-file.js"
+    },
+    "./lance/lance-loader": {
+      "types": "./dist/lance/lance-loader.d.ts",
+      "import": "./dist/lance/lance-loader.js"
+    },
+    "./lance/lance-errors": {
+      "types": "./dist/lance/lance-errors.d.ts",
+      "import": "./dist/lance/lance-errors.js"
+    },
+    "./lance/lance-loader-types": {
+      "types": "./dist/lance/lance-loader-types.d.ts",
+      "import": "./dist/lance/lance-loader-types.js"
+    },
+    "./lance/lance-manifest": {
+      "types": "./dist/lance/lance-manifest.d.ts",
+      "import": "./dist/lance/lance-manifest.js"
+    },
+    "./lance/lance-source-capabilities": {
+      "types": "./dist/lance/lance-source-capabilities.d.ts",
+      "import": "./dist/lance/lance-source-capabilities.js"
+    },
+    "./lance/lance-decoder": {
+      "types": "./dist/lance/lance-decoder.d.ts",
+      "import": "./dist/lance/lance-decoder.js"
+    },
+    "./lance/lance-arrow": {
+      "types": "./dist/lance/lance-arrow.d.ts",
+      "import": "./dist/lance/lance-arrow.js"
+    },
+    "./lance/unbundled": {
+      "types": "./dist/lance/unbundled.d.ts",
+      "import": "./dist/lance/unbundled.js"
+    },
+    "./lance/index": {
+      "types": "./dist/lance/index.d.ts",
+      "import": "./dist/lance/index.js",
+      "require": "./dist/lance/index.cjs"
+    },
+    "./lance/lance-format": {
+      "types": "./dist/lance/lance-format.d.ts",
+      "import": "./dist/lance/lance-format.js"
+    },
+    "./lance/lance-source-loader": {
+      "types": "./dist/lance/lance-source-loader.d.ts",
+      "import": "./dist/lance/lance-source-loader.js"
+    },
+    "./orc/orc-loader": {
+      "types": "./dist/orc/orc-loader.d.ts",
+      "import": "./dist/orc/orc-loader.js"
+    },
+    "./orc/orc-writer": {
+      "types": "./dist/orc/orc-writer.d.ts",
+      "import": "./dist/orc/orc-writer.js"
+    },
+    "./orc/orc-source-loader": {
+      "types": "./dist/orc/orc-source-loader.d.ts",
+      "import": "./dist/orc/orc-source-loader.js"
+    },
+    "./orc/orc-loader-types": {
+      "types": "./dist/orc/orc-loader-types.d.ts",
+      "import": "./dist/orc/orc-loader-types.js"
+    },
+    "./orc/bundled": {
+      "types": "./dist/orc/bundled.d.ts",
+      "import": "./dist/orc/bundled.js"
+    },
+    "./orc/orc-source-loader-types": {
+      "types": "./dist/orc/orc-source-loader-types.d.ts",
+      "import": "./dist/orc/orc-source-loader-types.js"
+    },
+    "./orc/unbundled": {
+      "types": "./dist/orc/unbundled.d.ts",
+      "import": "./dist/orc/unbundled.js"
+    },
+    "./orc/index": {
+      "types": "./dist/orc/index.d.ts",
+      "import": "./dist/orc/index.js",
+      "require": "./dist/orc/index.cjs"
+    },
+    "./orc/orc-format": {
+      "types": "./dist/orc/orc-format.d.ts",
+      "import": "./dist/orc/orc-format.js"
+    },
+    "./parquet/parquet-js-loader": {
+      "types": "./dist/parquet/parquet-js-loader.d.ts",
+      "import": "./dist/parquet/parquet-js-loader.js"
+    },
+    "./parquet/parquet-loader-options": {
+      "types": "./dist/parquet/parquet-loader-options.d.ts",
+      "import": "./dist/parquet/parquet-loader-options.js"
+    },
+    "./parquet/parquet-js-writer": {
+      "types": "./dist/parquet/parquet-js-writer.d.ts",
+      "import": "./dist/parquet/parquet-js-writer.js"
+    },
+    "./parquet/parquet-writer": {
+      "types": "./dist/parquet/parquet-writer.d.ts",
+      "import": "./dist/parquet/parquet-writer.js"
+    },
+    "./parquet/parquet-loader": {
+      "types": "./dist/parquet/parquet-loader.d.ts",
+      "import": "./dist/parquet/parquet-loader.js"
+    },
+    "./parquet/geoparquet-loader": {
+      "types": "./dist/parquet/geoparquet-loader.d.ts",
+      "import": "./dist/parquet/geoparquet-loader.js"
+    },
+    "./parquet/iceberg-rest-catalog": {
+      "types": "./dist/parquet/iceberg-rest-catalog.d.ts",
+      "import": "./dist/parquet/iceberg-rest-catalog.js"
+    },
+    "./parquet/parquet-encoded-page-types": {
+      "types": "./dist/parquet/parquet-encoded-page-types.d.ts",
+      "import": "./dist/parquet/parquet-encoded-page-types.js"
+    },
+    "./parquet/parquet-source-loader-types": {
+      "types": "./dist/parquet/parquet-source-loader-types.d.ts",
+      "import": "./dist/parquet/parquet-source-loader-types.js"
+    },
+    "./parquet/iceberg-table-source": {
+      "types": "./dist/parquet/iceberg-table-source.d.ts",
+      "import": "./dist/parquet/iceberg-table-source.js"
+    },
+    "./parquet/iceberg-types": {
+      "types": "./dist/parquet/iceberg-types.d.ts",
+      "import": "./dist/parquet/iceberg-types.js"
+    },
+    "./parquet/wasm": {
+      "types": "./dist/parquet/wasm.d.ts",
+      "import": "./dist/parquet/wasm.js"
+    },
+    "./parquet/geoparquet-loader-types": {
+      "types": "./dist/parquet/geoparquet-loader-types.d.ts",
+      "import": "./dist/parquet/geoparquet-loader-types.js"
+    },
+    "./parquet/delta-format": {
+      "types": "./dist/parquet/delta-format.d.ts",
+      "import": "./dist/parquet/delta-format.js"
+    },
+    "./parquet/parquet-source-worker-factory": {
+      "types": "./dist/parquet/parquet-source-worker-factory.d.ts",
+      "import": "./dist/parquet/parquet-source-worker-factory.js"
+    },
+    "./parquet/delta-source-loader-types": {
+      "types": "./dist/parquet/delta-source-loader-types.d.ts",
+      "import": "./dist/parquet/delta-source-loader-types.js"
+    },
+    "./parquet/parquet-js-loader-types": {
+      "types": "./dist/parquet/parquet-js-loader-types.d.ts",
+      "import": "./dist/parquet/parquet-js-loader-types.js"
+    },
+    "./parquet/parquet-source-types": {
+      "types": "./dist/parquet/parquet-source-types.d.ts",
+      "import": "./dist/parquet/parquet-source-types.js"
+    },
+    "./parquet/parquet-wasm-loader": {
+      "types": "./dist/parquet/parquet-wasm-loader.d.ts",
+      "import": "./dist/parquet/parquet-wasm-loader.js"
+    },
+    "./parquet/delta-types": {
+      "types": "./dist/parquet/delta-types.d.ts",
+      "import": "./dist/parquet/delta-types.js"
+    },
+    "./parquet/bundled": {
+      "types": "./dist/parquet/bundled.d.ts",
+      "import": "./dist/parquet/bundled.js"
+    },
+    "./parquet/parquet-loader-types": {
+      "types": "./dist/parquet/parquet-loader-types.d.ts",
+      "import": "./dist/parquet/parquet-loader-types.js"
+    },
+    "./parquet/parquet-loader-base": {
+      "types": "./dist/parquet/parquet-loader-base.d.ts",
+      "import": "./dist/parquet/parquet-loader-base.js"
+    },
+    "./parquet/parquet-source-capabilities": {
+      "types": "./dist/parquet/parquet-source-capabilities.d.ts",
+      "import": "./dist/parquet/parquet-source-capabilities.js"
+    },
+    "./parquet/parquet-dataset-source": {
+      "types": "./dist/parquet/parquet-dataset-source.d.ts",
+      "import": "./dist/parquet/parquet-dataset-source.js",
+      "require": "./dist/parquet/parquet-dataset-source.cjs"
+    },
+    "./parquet/unbundled": {
+      "types": "./dist/parquet/unbundled.d.ts",
+      "import": "./dist/parquet/unbundled.js"
+    },
+    "./parquet/index": {
+      "types": "./dist/parquet/index.d.ts",
+      "import": "./dist/parquet/index.js",
+      "require": "./dist/parquet/index.cjs"
+    },
+    "./parquet/parquet-source-loader": {
+      "types": "./dist/parquet/parquet-source-loader.d.ts",
+      "import": "./dist/parquet/parquet-source-loader.js",
+      "require": "./dist/parquet/parquet-source-loader.cjs"
+    },
+    "./parquet/parquet-source-worker-url": {
+      "types": "./dist/parquet/parquet-source-worker-url.d.ts",
+      "import": "./dist/parquet/parquet-source-worker-url.js"
+    },
+    "./parquet/parquet-format": {
+      "types": "./dist/parquet/parquet-format.d.ts",
+      "import": "./dist/parquet/parquet-format.js"
+    },
+    "./parquet/parquet-worker-url": {
+      "types": "./dist/parquet/parquet-worker-url.d.ts",
+      "import": "./dist/parquet/parquet-worker-url.js"
+    },
+    "./parquet/delta-source": {
+      "types": "./dist/parquet/delta-source.d.ts",
+      "import": "./dist/parquet/delta-source.js"
+    },
+    "./parquet/parquet-worker.js": {
+      "import": "./dist/parquet-worker.js"
+    },
+    "./parquet/parquet-worker-node.cjs": {
+      "import": "./dist/parquet-worker-node.cjs",
+      "require": "./dist/parquet-worker-node.cjs"
+    },
+    "./parquet/parquet-source-worker.js": {
+      "import": "./dist/parquet-source-worker.js"
+    },
+    "./parquet/parquet_wasm_bg.wasm": "./dist/parquet/parquet_wasm_bg.wasm",
+    "./parquet-worker.js": {
+      "import": "./dist/parquet-worker.js"
+    },
+    "./parquet-worker-node.cjs": {
+      "import": "./dist/parquet-worker-node.cjs",
+      "require": "./dist/parquet-worker-node.cjs"
+    },
+    "./parquet-source-worker.js": {
+      "import": "./dist/parquet-source-worker.js"
+    },
+    "./parquet_wasm_bg.wasm": "./dist/parquet/parquet_wasm_bg.wasm",
+    "./arrow": {
+      "types": "./dist/arrow.d.ts",
+      "import": "./dist/arrow.js"
+    },
+    "./json": {
+      "types": "./dist/json.d.ts",
+      "import": "./dist/json.js"
+    },
+    "./lance": {
+      "types": "./dist/lance.d.ts",
+      "import": "./dist/lance.js"
+    },
+    "./orc": {
+      "types": "./dist/orc.d.ts",
+      "import": "./dist/orc.js"
+    },
+    "./parquet": {
+      "types": "./dist/parquet.d.ts",
+      "import": "./dist/parquet.js"
+    },
+    "./lance/lance-source-loader-types": {
+      "types": "./dist/lance/lance-source-loader-types.d.ts",
+      "import": "./dist/lance/lance-source-loader-types.js"
+    },
+    "./triangulation-worker.js": {
+      "import": "./dist/triangulation-worker.js"
+    },
+    "./triangulation-worker-node.js": {
+      "import": "./dist/triangulation-worker-node.js"
     }
   },
   "sideEffects": false,
@@ -197,23 +618,45 @@
     "README.md"
   ],
   "scripts": {
-    "pre-build": "npm run build-worker-csv && npm run build-worker-node-csv && npm run build-worker-excel",
+    "pre-build": "npm run copy-wasm && npm run build-worker-csv && npm run build-worker-node-csv && npm run build-worker-excel && npm run build-triangulation-worker-arrow && npm run build-triangulation-worker-node-arrow && npm run build-worker-arrow && npm run build-worker-json && npm run build-worker-parquet && npm run build-worker-node-parquet && npm run build-source-worker-parquet",
     "build-worker-csv": "node ../../scripts/build-codec-worker.mjs src/workers/csv-worker.ts --bundle --outfile=dist/csv-worker.js --define:__VERSION__=\\\"$npm_package_version\\\"",
     "build-worker-node-csv": "node ../../scripts/build-codec-worker.mjs src/workers/csv-worker-node.ts --outfile=dist/csv-worker-node.js --platform=node --target=node16 --bundle --sourcemap --define:__VERSION__=\\\"$npm_package_version\\\"",
-    "build-worker-excel": "node ../../scripts/build-codec-worker.mjs src/workers/excel-worker.ts --bundle --outfile=dist/excel-worker.js --define:__VERSION__=\\\"$npm_package_version\\\""
+    "build-worker-excel": "node ../../scripts/build-codec-worker.mjs src/workers/excel-worker.ts --bundle --outfile=dist/excel-worker.js --define:__VERSION__=\\\"$npm_package_version\\\"",
+    "build-triangulation-worker-arrow": "node ../../scripts/build-codec-worker.mjs src/arrow/workers/triangulation-worker.ts --bundle --outfile=dist/triangulation-worker.js  --platform=browser --external:{stream} --define:__VERSION__=\\\"$npm_package_version\\\"",
+    "build-triangulation-worker-node-arrow": "node ../../scripts/build-codec-worker.mjs src/arrow/workers/triangulation-worker-node.ts --bundle --outfile=dist/triangulation-worker-node.js --platform=node --target=node16 --format=esm --tree-shaking=false --external:{stream} --define:__VERSION__=\\\"$npm_package_version\\\"",
+    "build-worker-arrow": "node ../../scripts/build-codec-worker.mjs src/arrow/workers/arrow-worker.ts --bundle --outfile=dist/arrow-worker.js  --platform=browser --external:{stream} --define:__VERSION__=\\\"$npm_package_version\\\"",
+    "build-worker-json": "node ../../scripts/build-codec-worker.mjs src/json/workers/geojson-worker.ts --bundle --outfile=dist/geojson-worker.js --define:__VERSION__=\\\"$npm_package_version\\\"",
+    "copy-wasm": "mkdir -p dist/parquet && cp ../../node_modules/parquet-wasm/esm/parquet_wasm_bg.wasm dist/parquet/parquet_wasm_bg.wasm",
+    "build-worker-parquet": "node ../../scripts/build-codec-worker.mjs src/parquet/workers/parquet-worker.ts --outfile=dist/parquet-worker.js --target=esnext --platform=browser --bundle --sourcemap --inject:src/parquet/polyfills/process.ts --banner:js=var\\ global=globalThis\\; --define:__VERSION__=\\\"$npm_package_version\\\"",
+    "build-worker-node-parquet": "node ../../scripts/build-codec-worker.mjs src/parquet/workers/parquet-worker.ts --outfile=dist/parquet-worker-node.cjs --platform=node --target=node16 --bundle --sourcemap --tree-shaking=false --define:__VERSION__=\\\"$npm_package_version\\\"",
+    "build-source-worker-parquet": "node ../../scripts/build-codec-worker.mjs src/parquet/workers/parquet-source-worker.ts --outfile=dist/parquet-source-worker.js --target=esnext --platform=browser --bundle --sourcemap --inject:src/parquet/polyfills/process.ts --banner:js=var\\ global=globalThis\\; --define:__VERSION__=\\\"$npm_package_version\\\""
   },
   "dependencies": {
-    "@loaders.gl/arrow": "5.0.0-alpha.12",
     "@loaders.gl/arrow-geometry": "5.0.0-alpha.12",
     "@loaders.gl/compression": "5.0.0-alpha.12",
     "@loaders.gl/loader-utils": "5.0.0-alpha.12",
     "@loaders.gl/schema": "5.0.0-alpha.12",
     "@loaders.gl/schema-utils": "5.0.0-alpha.12",
+    "@loaders.gl/worker-utils": "5.0.0-alpha.12",
+    "@math.gl/wkb": "5.0.0-alpha.16",
+    "@probe.gl/log": "^4.1.1",
     "apache-arrow": ">= 17.0.0",
     "bson": "4.2.0",
     "xlsx": "^0.18.5"
   },
   "peerDependencies": {
     "@loaders.gl/core": "~5.0.0-alpha.0"
+  },
+  "optionalDependencies": {
+    "parquet-wasm": "0.7.2"
+  },
+  "browser": {
+    "child_process": false,
+    "events": false,
+    "fs": false,
+    "net": false,
+    "stream": false,
+    "tls": false,
+    "util": false
   }
 }

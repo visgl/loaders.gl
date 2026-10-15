@@ -9,7 +9,7 @@ import * as arrow from 'apache-arrow';
 import lz4js from 'lz4js';
 import {ZstdCodec} from 'zstd-codec';
 import {ArrowLoader} from '@loaders.gl/arrow';
-import {registerArrowCompressionCodecs} from '../src/lib/parsers/arrow-compression';
+import {registerArrowCompressionCodecs} from '../../tables/src/arrow/lib/parsers/arrow-compression';
 import {
   isBrowser,
   makeIterator,

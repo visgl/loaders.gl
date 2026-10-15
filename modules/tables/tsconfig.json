@@ -13,9 +13,6 @@
   },
   "references": [
     {
-      "path": "../arrow"
-    },
-    {
       "path": "../arrow-geometry"
     },
     {
@@ -29,6 +26,9 @@
     },
     {
       "path": "../schema-utils"
+    },
+    {
+      "path": "../worker-utils"
     }
   ]
 }

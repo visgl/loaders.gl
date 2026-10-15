@@ -45,7 +45,13 @@
         "lines": 85,
         "functions": 84,
         "branches": 82
-      }
+      },
+      "sourcePaths": [
+        "modules/arrow/src/",
+        "modules/tables/src/arrow/",
+        "modules/schema-utils/src/lib/arrow/arrow-table-transport.ts",
+        "modules/schema-utils/src/lib/arrow/split-arrow-buffers.ts"
+      ]
     },
     "@loaders.gl/arrow-geometry": {
       "path": "modules/arrow-geometry",
@@ -384,7 +390,11 @@
         "lines": 86,
         "functions": 88,
         "branches": 79
-      }
+      },
+      "sourcePaths": [
+        "modules/json/src/",
+        "modules/tables/src/json/"
+      ]
     },
     "@loaders.gl/kml": {
       "path": "modules/kml",
@@ -418,7 +428,11 @@
         "lines": 45,
         "functions": 66,
         "branches": 40
-      }
+      },
+      "sourcePaths": [
+        "modules/lance/src/",
+        "modules/tables/src/lance/"
+      ]
     },
     "@loaders.gl/las": {
       "path": "modules/las",
@@ -538,7 +552,11 @@
         "lines": 70,
         "functions": 78,
         "branches": 48
-      }
+      },
+      "sourcePaths": [
+        "modules/orc/src/",
+        "modules/tables/src/orc/"
+      ]
     },
     "@loaders.gl/parquet": {
       "path": "modules/parquet",
@@ -553,7 +571,11 @@
         "lines": 79,
         "functions": 82,
         "branches": 68
-      }
+      },
+      "sourcePaths": [
+        "modules/parquet/src/",
+        "modules/tables/src/parquet/"
+      ]
     },
     "@loaders.gl/pcd": {
       "path": "modules/pcd",

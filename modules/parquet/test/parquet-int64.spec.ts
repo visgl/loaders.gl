@@ -9,7 +9,7 @@ import {ParquetJSWriter} from '@loaders.gl/parquet';
 import type {ObjectRowTable} from '@loaders.gl/schema';
 import {expect, test} from 'vitest';
 
-import {readInt64LE, readUInt64LE} from '../src/parquetjs/utils/binary-utils';
+import {readInt64LE, readUInt64LE} from '../../tables/src/parquet/parquetjs/utils/binary-utils';
 
 const EXACT_INT64_VALUES = [9007199254740993n, -9007199254740993n, 9223372036854775807n];
 

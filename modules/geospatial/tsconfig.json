@@ -13,9 +13,6 @@
   },
   "references": [
     {
-      "path": "../arrow"
-    },
-    {
       "path": "../arrow-geometry"
     },
     {

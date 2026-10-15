@@ -6,6 +6,28 @@ import {build} from 'esbuild';
 
 const repositoryRoot = process.cwd();
 const importCases = [
+  ['Compatibility Avro metadata', '@loaders.gl/avro', 'AvroLoader'],
+  ['Grouped Avro metadata', '@loaders.gl/tables', 'AvroLoader'],
+  ['Avro parser subpath', '@loaders.gl/tables/avro', 'AvroLoaderWithParser'],
+  ['Compatibility Shapefile metadata', '@loaders.gl/shapefile', 'ShapefileLoader'],
+  ['Grouped Shapefile metadata', '@loaders.gl/geospatial', 'ShapefileLoader'],
+  ['Shapefile parser subpath', '@loaders.gl/geospatial/shapefile', 'ShapefileLoaderWithParser'],
+  ['Compatibility Arrow metadata', '@loaders.gl/arrow', 'ArrowLoader'],
+  ['Grouped Arrow metadata', '@loaders.gl/tables', 'ArrowLoader'],
+  ['Arrow parser subpath', '@loaders.gl/tables/arrow', 'ArrowLoaderWithParser'],
+  ['Compatibility JSON metadata', '@loaders.gl/json', 'JSONLoader'],
+  ['Grouped JSON metadata', '@loaders.gl/tables', 'JSONLoader'],
+  ['JSON parser subpath', '@loaders.gl/tables/json', 'JSONLoaderWithParser'],
+  ['Compatibility Lance metadata', '@loaders.gl/lance', 'LanceLoader'],
+  ['Grouped Lance metadata', '@loaders.gl/tables', 'LanceLoader'],
+  ['Lance parser subpath', '@loaders.gl/tables/lance', 'LanceLoaderWithParser'],
+  ['Compatibility ORC metadata', '@loaders.gl/orc', 'ORCLoader'],
+  ['Grouped ORC metadata', '@loaders.gl/tables', 'ORCLoader'],
+  ['ORC parser subpath', '@loaders.gl/tables/orc', 'ORCLoaderWithParser'],
+  ['Compatibility Parquet metadata', '@loaders.gl/parquet', 'ParquetLoader'],
+  ['Grouped Parquet metadata', '@loaders.gl/tables', 'ParquetLoader'],
+  ['Parquet parser subpath', '@loaders.gl/tables/parquet', 'ParquetLoaderWithParser'],
+
   ['Compatibility BSON metadata', '@loaders.gl/bson', 'BSONLoader'],
   ['Grouped BSON metadata', '@loaders.gl/tables', 'BSONLoader'],
   ['BSON parser subpath', '@loaders.gl/tables/bson', 'BSONLoaderWithParser'],

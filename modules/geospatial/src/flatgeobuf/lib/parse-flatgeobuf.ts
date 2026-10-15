@@ -26,7 +26,7 @@ import {
 import {makeWKBGeometryDataFromArray} from '@loaders.gl/arrow-geometry/wkb-arrow-utils';
 import {convertFeaturesToGeoArrowTable} from '@loaders.gl/arrow-geometry/feature-table';
 import {type GeoParquetGeometryType} from '@loaders.gl/schema';
-import {WKBBuilder} from '@loaders.gl/arrow/geometry';
+import {WKBBuilder} from '@loaders.gl/arrow-geometry';
 import {convertSchemaToArrow, queryArrowTable} from '@loaders.gl/schema-utils';
 import {
   decodeFlatGeobufGeometry,

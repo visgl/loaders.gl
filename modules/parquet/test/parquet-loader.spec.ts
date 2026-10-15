@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import {ParquetJSLoader} from '../src/parquet-js-loader-types';
+import {ParquetJSLoader} from '../../tables/src/parquet/parquet-js-loader-types';
 import { expect, test } from "vitest";
 import { validateLoader } from 'test/common/conformance';
 import * as arrow from 'apache-arrow';

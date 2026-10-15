@@ -4,7 +4,7 @@
 
 import { expect, test } from "vitest";
 import { isBrowser } from '@loaders.gl/loader-utils';
-import { makeStreamIterator } from '../src/lib/utils/make-stream-iterator';
+import { makeStreamIterator } from '../../tables/src/parquet/lib/utils/make-stream-iterator';
 test('Parquet makeStreamIterator#rethrows read errors and releases the lock', async () => {
     if (!isBrowser) {
         console.log('Browser-only stream lock behavior');

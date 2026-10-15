@@ -1,15 +1,15 @@
 import {describe, expect, test} from 'vitest';
 
-import {crc32} from '../src/parquetjs/utils/crc32';
-import {decodePage} from '../src/parquetjs/parser/decoders';
+import {crc32} from '../../tables/src/parquet/parquetjs/utils/crc32';
+import {decodePage} from '../../tables/src/parquet/parquetjs/parser/decoders';
 import {
   DictionaryPageHeader,
   Encoding,
   PageHeader,
   PageType
-} from '../src/parquetjs/parquet-thrift';
-import {serializeThrift} from '../src/parquetjs/utils/read-utils';
-import type {ParquetReaderContext} from '../src/parquetjs/schema/declare';
+} from '../../tables/src/parquet/parquetjs/parquet-thrift';
+import {serializeThrift} from '../../tables/src/parquet/parquetjs/utils/read-utils';
+import type {ParquetReaderContext} from '../../tables/src/parquet/parquetjs/schema/declare';
 
 const CONTEXT: ParquetReaderContext = {
   type: 'INT32',

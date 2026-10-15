@@ -14,7 +14,20 @@ const FORMAT_EXPORTS = {
   bson: ['BSONFormat'],
   copc: ['COPCFormat'],
   csv: ['CSVFormat'],
-  tables: ['CSVFormat', 'AvroFormat', 'BSONFormat', 'ExcelFormat'],
+  tables: [
+    'CSVFormat',
+    'AvroFormat',
+    'BSONFormat',
+    'ExcelFormat',
+    'ArrowFormat',
+    'JSONFormat',
+    'GeoJSONFormat',
+    'NDJSONFormat',
+    'NDGeoJSONFormat',
+    'LanceFormat',
+    'ORCFormat',
+    'ParquetFormat'
+  ],
   geospatial: [
     'KMLFormat',
     'KMZFormat',

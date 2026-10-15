@@ -5,7 +5,7 @@
 import * as arrow from 'apache-arrow';
 import {expect, test} from 'vitest';
 
-import {createNestedArrowVector} from '../src/lib/arrow/create-nested-arrow-vector';
+import {createNestedArrowVector} from '../../tables/src/parquet/lib/arrow/create-nested-arrow-vector';
 
 const PRIMITIVE_CASES: Array<{
   arrowType: arrow.DataType;

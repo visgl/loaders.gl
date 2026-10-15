@@ -7,7 +7,7 @@ import type {ArrowTable, ObjectRowTable} from '@loaders.gl/schema';
 import {
   deserializeArrowWorkerResult,
   serializeArrowWorkerResult
-} from '@loaders.gl/arrow/transport';
+} from '@loaders.gl/schema-utils/arrow-transport';
 import {parseExcel} from './lib/parse-excel';
 import {convertExcelRowsToArrowTable} from './lib/convert-excel-rows-to-arrow';
 import {ExcelWorkerLoader as ExcelWorkerLoaderMetadata} from './excel-loader-types';

@@ -23,11 +23,11 @@ import {
   ParquetSourceLoader as ParquetSourceLoaderWithParser
 } from '@loaders.gl/parquet/parquet-source-loader';
 
-import {getSchemaFromParquetReader} from '../src/lib/parsers/get-parquet-schema';
-import {decodeParquetSourceWorkerInput} from '../src/lib/parquet-source-worker-decoder';
-import type {ParquetSourceWorkerInput} from '../src/lib/parquet-source-worker-types';
-import {ParquetRangeFile} from '../src/lib/sources/parquet-range-file';
-import {ParquetReader} from '../src/parquetjs/parser/parquet-reader';
+import {getSchemaFromParquetReader} from '../../tables/src/parquet/lib/parsers/get-parquet-schema';
+import {decodeParquetSourceWorkerInput} from '../../tables/src/parquet/lib/parquet-source-worker-decoder';
+import type {ParquetSourceWorkerInput} from '../../tables/src/parquet/lib/parquet-source-worker-types';
+import {ParquetRangeFile} from '../../tables/src/parquet/lib/sources/parquet-range-file';
+import {ParquetReader} from '../../tables/src/parquet/parquetjs/parser/parquet-reader';
 
 const FIXTURE_URL = '@loaders.gl/parquet/test/data/apache/good/alltypes_plain.parquet';
 const STATISTICS_FIXTURE_URL =

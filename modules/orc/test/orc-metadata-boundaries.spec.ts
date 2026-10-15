@@ -3,7 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import {expect, test} from 'vitest';
-import {parseORC, parseORCStripeFooter} from '../src/lib/parsers/parse-orc';
+import {parseORC, parseORCStripeFooter} from '../../tables/src/orc/lib/parsers/parse-orc';
 
 /** Encodes an unsigned protobuf integer independently of the ORC writer. */
 function encodeVarint(value: number): number[] {

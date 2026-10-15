@@ -7,7 +7,7 @@ import {expect, test} from 'vitest';
 import {
   deserializeParquetWorkerResult,
   serializeParquetWorkerResult
-} from '../src/lib/parquet-worker-transport';
+} from '../../tables/src/parquet/lib/parquet-worker-transport';
 
 test('Parquet worker transport round-trips Arrow IPC and preserves row tables', () => {
   const table = {shape: 'arrow-table', data: arrow.tableFromArrays({value: [1, 2]})} as const;

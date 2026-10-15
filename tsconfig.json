@@ -34,6 +34,11 @@
       "@loaders.gl/tables/avro-schema": ["modules/tables/src/avro-schema"],
       "@loaders.gl/tables/bson": ["modules/tables/src/bson"],
       "@loaders.gl/tables/excel": ["modules/tables/src/excel"],
+      "@loaders.gl/tables/arrow": ["modules/tables/src/arrow"],
+      "@loaders.gl/tables/json": ["modules/tables/src/json"],
+      "@loaders.gl/tables/lance": ["modules/tables/src/lance"],
+      "@loaders.gl/tables/orc": ["modules/tables/src/orc"],
+      "@loaders.gl/tables/parquet": ["modules/tables/src/parquet"],
       "@loaders.gl/tables/*": ["modules/tables/src/*"],
       "@loaders.gl/geospatial": ["modules/geospatial/src"],
       "@loaders.gl/geospatial/kml": ["modules/geospatial/src/kml"],
@@ -72,6 +77,7 @@
       "@loaders.gl/schema/test": [
         "modules/schema/test"
       ],
+      "@loaders.gl/schema-utils/arrow-transport": ["modules/schema-utils/src/arrow-transport"],
       "@loaders.gl/schema-utils": [
         "modules/schema-utils/src"
       ],

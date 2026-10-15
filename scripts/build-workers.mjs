@@ -133,7 +133,7 @@ function deduplicateWorkerScriptsByOutput(scriptNames, scripts) {
 function hasScriptInputs(packageDirectory, scriptCommand) {
   const workerInputPaths = scriptCommand
     .split(/\s+/)
-    .filter(argument => /(?:^|\/)src\/workers\/[^\s]+\.(?:ts|js|cjs)$/.test(argument));
+    .filter(argument => /(?:^|\/)src\/(?:[^/\s]+\/)*workers\/[^\s]+\.(?:ts|js|cjs)$/.test(argument));
   return workerInputPaths.every(workerInputPath => existsSync(join(packageDirectory, workerInputPath)));
 }
 

@@ -7,7 +7,7 @@ import {describe, expect, test} from 'vitest';
 import {fetchFile} from '@loaders.gl/core';
 import {ArrayBufferFile} from '@loaders.gl/loader-utils';
 
-import {ParquetReader} from '../src/parquetjs/parser/parquet-reader';
+import {ParquetReader} from '../../tables/src/parquet/parquetjs/parser/parquet-reader';
 
 const TEST_CASES = [
   {

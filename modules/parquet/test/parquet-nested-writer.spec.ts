@@ -9,7 +9,7 @@ import {ParquetJSWriter} from '@loaders.gl/parquet';
 import {ParquetSource} from '@loaders.gl/parquet/parquet-source-loader';
 import type {ObjectRowTable} from '@loaders.gl/schema';
 import * as arrow from 'apache-arrow';
-import {ParquetReader} from '../src/parquetjs/parser/parquet-reader';
+import {ParquetReader} from '../../tables/src/parquet/parquetjs/parser/parquet-reader';
 import {expect, test} from 'vitest';
 
 test('ParquetJSWriter writes standard nested LIST and MAP fields', async () => {

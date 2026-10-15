@@ -6,8 +6,8 @@ import * as arrow from 'apache-arrow';
 import {describe, expect, test} from 'vitest';
 import {convertParquetSchema, ParquetSchema} from '@loaders.gl/parquet';
 import {convertSchemaToArrow} from '@loaders.gl/schema-utils';
-import {decodeSchema} from '../../src/parquetjs/parser/decoders';
-import {toPrimitive} from '../../src/parquetjs/schema/types';
+import {decodeSchema} from '../../../tables/src/parquet/parquetjs/parser/decoders';
+import {toPrimitive} from '../../../tables/src/parquet/parquetjs/schema/types';
 import {
   ConvertedType,
   BsonType,
@@ -35,7 +35,7 @@ import {
   Type,
   UUIDType,
   VariantType
-} from '../../src/parquetjs/parquet-thrift';
+} from '../../../tables/src/parquet/parquetjs/parquet-thrift';
 
 const REQUIRED = FieldRepetitionType.REQUIRED;
 

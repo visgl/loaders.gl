@@ -2,8 +2,8 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 import { expect, test } from "vitest";
-import * as parquetThrift from '@loaders.gl/parquet/parquetjs/parquet-thrift';
-import { getThriftEnum, serializeThrift } from '@loaders.gl/parquet/parquetjs/utils/read-utils';
+import * as parquetThrift from '../../../tables/src/parquet/parquetjs/parquet-thrift';
+import { getThriftEnum, serializeThrift } from '../../../tables/src/parquet/parquetjs/utils/read-utils';
 test('thrift#getThriftEnum resolves generated numeric enums', () => {
     expect(getThriftEnum(parquetThrift.Type, parquetThrift.Type.BYTE_ARRAY)).toBe('BYTE_ARRAY');
     expect(() => getThriftEnum(parquetThrift.Type, 100)).toThrow(/Invalid ENUM value/);

@@ -9,6 +9,11 @@ import {expect, test} from 'vitest';
 const REPOSITORY_ROOT = process.cwd();
 
 test.each([
+  ['tables', 'ParquetLoader', 'parquet', 'ParquetLoaderWithParser'],
+  ['tables', 'ORCLoader', 'orc', 'ORCLoaderWithParser'],
+  ['tables', 'LanceLoader', 'lance', 'LanceLoaderWithParser'],
+  ['tables', 'JSONLoader', 'json', 'JSONLoaderWithParser'],
+  ['tables', 'ArrowLoader', 'arrow', 'ArrowLoaderWithParser'],
   ['tables', 'BSONLoader', 'bson', 'BSONLoaderWithParser'],
   ['tables', 'ExcelLoader', 'excel', 'ExcelLoaderWithParser'],
   ['geospatial', 'FlatGeobufLoader', 'flatgeobuf', 'FlatGeobufLoaderWithParser'],
@@ -34,6 +39,12 @@ test.each([
 );
 
 test.each([
+  ['tables', 'ArrowLoader'],
+  ['tables', 'JSONLoader'],
+  ['tables', 'LanceLoader'],
+  ['tables', 'ORCLoader'],
+  ['tables', 'ParquetLoader'],
+  ['tables', 'GeoJSONLoader'],
   ['tables', 'ExcelLoader'],
   ['geospatial', 'GeoPackageLoader'],
   ['tables', 'CSVLoader'],
@@ -71,18 +82,67 @@ test.each([
   visitOutput(entry![0]);
   const eagerInputs = [...visited].flatMap(filename => Object.keys(outputs[filename].inputs));
   expect(
-    eagerInputs.filter(filename =>
-      /\/(?:csv|avro|kml|kmz|gpx|tcx|shapefile|shp|dbf|bson|excel|flatgeobuf|geopackage)-loader\.js$/.test(
-        filename
-      )
+    eagerInputs.filter(
+      filename =>
+        // Arrow's legacy exports/* files contain metadata WorkerLoader aliases.
+        !filename.includes('/arrow/exports/') &&
+        /\/(?:csv|avro|kml|kmz|gpx|tcx|shapefile|shp|dbf|bson|excel|flatgeobuf|geopackage|arrow|geoarrow|json|json-table|ndjson|ndgeojson|geojson|lance|orc|parquet|parquet-js|geoparquet)-loader\.js$/.test(
+          filename
+        )
     )
   ).toEqual([]);
   expect(
-    eagerInputs.filter(filename => /node_modules\/(?:sql\.js|xlsx|apache-arrow)\//.test(filename))
+    eagerInputs.filter(filename =>
+      /node_modules\/(?:sql\.js|xlsx|apache-arrow|bson)\//.test(filename)
+    )
   ).toEqual([]);
+  if (group === 'tables') {
+    expect(
+      eagerInputs.filter(filename => filename.endsWith('/lib/sources/data-source.js'))
+    ).toEqual([]);
+  }
   expect(
     Object.values(outputs).some(output =>
       output.imports.some(imported => imported.kind === 'dynamic-import')
     )
   ).toBe(true);
 });
+
+test.each([
+  ['arrow', 'arrow-source', 'ArrowTableSource'],
+  ['arrow', 'geometry', 'WKBBuilder'],
+  ['json', 'ndjson-source', 'NDJSONTableSource'],
+  ['lance', 'lance-source-loader', 'LanceSource'],
+  ['orc', 'orc-source-loader', 'ORCSourceLoaderWithParser'],
+  ['parquet', 'parquet-source-loader', 'ParquetSourceLoaderWithParser'],
+  ['parquet', 'parquet-dataset-source', 'ParquetDatasetSource'],
+  ['parquet', 'iceberg-table-source', 'IcebergTableSource'],
+  ['parquet', 'iceberg-rest-catalog', 'IcebergRestCatalog'],
+  ['parquet', 'delta-source', 'DeltaSourceLoaderWithParser']
+])(
+  'published %s/%s preserves its %s compatibility export',
+  (format, subpath, exportName) => {
+    const source = `import {${exportName} as legacy} from '@loaders.gl/${format}/${subpath}';
+  import {${exportName} as grouped} from '@loaders.gl/tables/${format}/${subpath}';
+  if (legacy !== grouped) process.exit(1);`;
+    expect(() =>
+      execFileSync(process.execPath, ['--input-type=module', '-e', source], {
+        cwd: REPOSITORY_ROOT,
+        timeout: 30000
+      })
+    ).not.toThrow();
+  },
+  35_000
+);
+
+test('published Arrow transport compatibility uses the shared lower-level owner', () => {
+  const source = `import {dehydrateArrowTable as legacy, splitArrowBuffers as legacySplit} from '@loaders.gl/arrow/transport';
+  import {dehydrateArrowTable, splitArrowBuffers} from '@loaders.gl/schema-utils/arrow-transport';
+  if (legacy !== dehydrateArrowTable || legacySplit !== splitArrowBuffers) process.exit(1);`;
+  expect(() =>
+    execFileSync(process.execPath, ['--input-type=module', '-e', source], {
+      cwd: REPOSITORY_ROOT,
+      timeout: 30000
+    })
+  ).not.toThrow();
+}, 35_000);

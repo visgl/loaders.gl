@@ -11,9 +11,11 @@ import {expect, test} from 'vitest';
 const WORKER_BUILD_SCRIPT = path.resolve('scripts/build-workers.mjs');
 
 test.each([
-  true,
-  false
-])('worker asset builds follow grouped source ownership when source exists: %s', sourceExists => {
+  [true, ''],
+  [false, ''],
+  [true, 'parquet/'],
+  [false, 'parquet/']
+])('worker asset builds follow grouped source ownership when source exists: %s in %s', (sourceExists, formatDirectory) => {
   const directory = fileSystem.realpathSync(
     fileSystem.mkdtempSync(path.join(operatingSystem.tmpdir(), 'grouped-workers-'))
   );
@@ -31,8 +33,8 @@ test.each([
     );
 
     for (const [format, input] of [
-      ['csv', '../tables/src/workers/csv-worker.ts'],
-      ['tables', 'src/workers/csv-worker.ts']
+      ['csv', `../tables/src/${formatDirectory}workers/csv-worker.ts`],
+      ['tables', `src/${formatDirectory}workers/csv-worker.ts`]
     ]) {
       const moduleDirectory = path.join(directory, 'modules', format);
       fileSystem.mkdirSync(moduleDirectory, {recursive: true});
@@ -45,7 +47,12 @@ test.each([
       );
     }
     if (sourceExists) {
-      const workerDirectory = path.join(directory, 'modules/tables/src/workers');
+      const workerDirectory = path.join(
+        directory,
+        'modules/tables/src',
+        formatDirectory,
+        'workers'
+      );
       fileSystem.mkdirSync(workerDirectory, {recursive: true});
       fileSystem.writeFileSync(
         path.join(workerDirectory, 'csv-worker.ts'),

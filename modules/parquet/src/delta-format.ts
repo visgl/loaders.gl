@@ -2,11 +2,5 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-/** Metadata describing the Delta Lake transaction-log format. */
-export const DeltaFormat = {
-  name: 'Delta Lake',
-  id: 'delta',
-  module: 'parquet',
-  extensions: ['json', 'checkpoint.parquet'],
-  mimeTypes: ['application/json']
-};
+/** Compatibility entry point owned by @loaders.gl/tables. */
+export * from '@loaders.gl/tables/parquet/delta-format';

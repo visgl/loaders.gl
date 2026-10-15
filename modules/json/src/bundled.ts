@@ -2,17 +2,5 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-export type {JSONLoaderOptions} from './json-loader-with-parser';
-export {JSONLoaderWithParser as JSONLoader} from './json-loader-with-parser';
-export type {JSONTableLoaderOptions} from './json-table-loader-with-parser';
-export {JSONTableLoaderWithParser as JSONTableLoader} from './json-table-loader-with-parser';
-export type {NDJSONLoaderOptions} from './ndjson-loader-with-parser';
-export {NDJSONLoaderWithParser as NDJSONLoader} from './ndjson-loader-with-parser';
-export type {NDGeoJSONLoaderOptions} from './ndgeojson-loader-types';
-export {NDGeoJSONLoaderWithParser as NDGeoJSONLoader} from './ndgeojson-loader';
-
-export type {GeoJSONLoaderOptions} from './geojson-loader-with-parser';
-export {
-  GeoJSONLoaderWithParser as GeoJSONLoader,
-  GeoJSONWorkerLoaderWithParser as GeoJSONWorkerLoader
-} from './geojson-loader-with-parser';
+/** Compatibility entry point owned by @loaders.gl/tables. */
+export * from '@loaders.gl/tables/json/bundled';

@@ -4,9 +4,9 @@ import {ParquetJSWriter, ParquetReader} from '@loaders.gl/parquet';
 import type {ObjectRowTable} from '@loaders.gl/schema';
 import {expect, test} from 'vitest';
 
-import {convertParquetSchema} from '../src/lib/arrow/convert-schema-from-parquet';
-import {PARQUET_CODECS} from '../src/parquetjs/codecs';
-import {ParquetSchema} from '../src/parquetjs/schema/schema';
+import {convertParquetSchema} from '../../tables/src/parquet/lib/arrow/convert-schema-from-parquet';
+import {PARQUET_CODECS} from '../../tables/src/parquet/parquetjs/codecs';
+import {ParquetSchema} from '../../tables/src/parquet/parquetjs/schema/schema';
 
 const JULIAN_DAY_UNIX_EPOCH = 2440588;
 
