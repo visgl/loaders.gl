@@ -22,4 +22,5 @@ for MVT/MLT and [raster authoring API](/docs/modules/pmtiles/api-reference/raste
 and 32 MiB archive output. It exports whole intersecting tiles rather than cropping to the exact
 requested bounds. All input bytes are read before conversion, including GeoTIFF/COG URLs.
 These budgets do not cap peak heap; decompression and parsing allocate before row checks.
-Conversion runs on the page thread and synchronous stages may briefly pause the page.
+Input reading, parsing, tiling and encoding run in a disposable module worker, keeping the page
+responsive. Cancel terminates computation immediately; retry starts a fresh worker. No data is uploaded.

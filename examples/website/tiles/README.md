@@ -16,9 +16,11 @@ exact requested rectangle. Antimeridian-crossing bounds are not supported in thi
 
 The example delegates indexing/clipping to the existing GeoArrow tiler and encoding/packaging to
 `@loaders.gl/pmtiles/geoarrow` and `@loaders.gl/pmtiles/raster`. It adds no conversion algorithms.
-Only the selected parser is loaded. Conversion uses the page thread; worker delivery remains
-separate work. Cancellation can interrupt transport and library checkpoints, but synchronous table
-parsing/indexing or encoding may briefly pause the page before observing cancellation.
+Only the selected parser is loaded. A disposable module worker reads the input, parses it,
+builds the tile index, and encodes the archive, keeping the page responsive. Cancel and unmount
+terminate the worker, including synchronous parsing or encoding. Each retry starts a fresh worker.
+The complete archive returns as an immutable Blob; the page creates its download URL.
+A worker-capable browser is required; there is no page-thread conversion fallback.
 
 Limits: 32 MiB encoded input, 50,000 input/per-tile vector rows, 64 requested addresses (including
 empty tiles), and a 32 MiB archive. The entire remote input is downloaded with a streamed byte cap;
@@ -31,7 +33,8 @@ imagery in EPSG:3857, EPSG:4326 or OGC:CRS84; choose gray, gray/alpha, RGB or RG
 scientific values, palettes and other CRS reprojection require preprocessing.
 
 Generated object URLs are revoked when replaced, settings change, or the component unmounts.
-The source raster is finalized by the example after every export, including errors/cancellation.
+The source raster is finalized after completion or errors. Cancellation terminates the worker
+and releases its source and in-memory state with the worker.
 No data is uploaded. After generating the archive, use its download link and open it in the
 existing PMTiles viewer.
 

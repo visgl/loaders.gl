@@ -2,7 +2,8 @@
   "include": [
     "./app.tsx",
     "./examples.ts",
-    "./authoring-app.tsx"
+    "./authoring-app.tsx",
+    "./pmtiles-worker.ts"
   ],
   "compilerOptions": {
     "target": "ESNext",

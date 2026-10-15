@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import {expect, test} from 'vitest';
+import {expect, test, vi} from 'vitest';
 import {encode, parse} from '@loaders.gl/core';
 import {
   ImageWriter,
@@ -50,4 +50,38 @@ test('ImageWriter#write-and-read-image', async () => {
   expect(Array.from(image.data), 'encoded and parsed image data are same').toEqual(
     Array.from(IMAGE.data)
   );
+});
+
+test('ImageWriter supports OffscreenCanvas and the DOM canvas fallback', async () => {
+  const bytes = await encode(IMAGE, ImageWriter, {image: {mimeType: 'image/png'}});
+  const jpegBytes = await encode(IMAGE, ImageWriter, {
+    image: {mimeType: 'image/jpeg', jpegQuality: 0.5}
+  });
+  let fallback: ArrayBuffer;
+  let fallbackJpegBytes: ArrayBuffer;
+  vi.stubGlobal('OffscreenCanvas', undefined);
+  try {
+    fallback = await encode(IMAGE, ImageWriter, {image: {mimeType: 'image/png'}});
+    fallbackJpegBytes = await encode(IMAGE, ImageWriter, {
+      image: {mimeType: 'image/jpeg', jpegQuality: 0.5}
+    });
+  } finally {
+    vi.unstubAllGlobals();
+  }
+  for (const encoded of [jpegBytes, fallbackJpegBytes]) {
+    expect(getBinaryImageMetadata(encoded)).toMatchObject({
+      width: IMAGE.width,
+      height: IMAGE.height,
+      mimeType: 'image/jpeg'
+    });
+  }
+  for (const encoded of [bytes, fallback]) {
+    expect(getBinaryImageMetadata(encoded)).toMatchObject({
+      width: IMAGE.width,
+      height: IMAGE.height,
+      mimeType: 'image/png'
+    });
+    const image = getImageData(await parse(encoded, ImageBitmapLoader));
+    expect(Array.from(image.data)).toEqual(Array.from(IMAGE.data));
+  }
 });

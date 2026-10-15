@@ -11,5 +11,6 @@ export default defineConfig({
       }
     }
   },
+  worker: {format: 'es'},
   server: {open: true}
 });
