@@ -92,7 +92,7 @@ export type Tile2DListener<DataT = any> = {
   onUpdate?: () => void;
   /** Fired when asynchronous metadata initialization fails. */
   onError?: (error: Error) => void;
-  /** Fired after counters change; synchronous tile requests are coalesced into one microtask. */
+  /** Fired after counters refresh; synchronous tile requests are coalesced into one microtask. */
   onStatsChange?: (stats: Stats) => void;
 };
 
@@ -230,7 +230,7 @@ export class Tileset2D<DataT = any, ViewStateT = unknown> {
     return Array.from(this._cache.values()).filter(tile => tile.isLoading);
   }
 
-  /** Tiles retained in cache that do not currently have loaded content. */
+  /** Pending, canceled, or stale cached tiles; settled failures are excluded until reloaded. */
   get unloadedTiles(): SharedTile2DHeader<DataT>[] {
     return Array.from(this._cache.values()).filter(tile => !tile.isLoaded);
   }

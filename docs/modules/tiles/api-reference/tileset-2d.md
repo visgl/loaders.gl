@@ -107,7 +107,7 @@ Key options:
 - `selectedTiles`: selected tiles across attached views
 - `visibleTiles`: visible tiles across attached views
 - `loadingTiles`: cache entries with in-flight requests
-- `unloadedTiles`: cache entries without content
+- `unloadedTiles`: cache entries whose `isLoaded` flag is false (pending, canceled, or stale)
 - `stats`: live counters for cache and consumer state
 
 ## Methods
@@ -153,8 +153,8 @@ The `stats` property is a probe.gl `Stats` object with these counters:
 | `Unloaded Tiles` | Cumulative evictions since construction or finalization |
 | `Consumers` | Number of registered consumers |
 
-`Unloaded Tiles` counts evictions; it is different from the `unloadedTiles` property, which returns
-cached entries without up-to-date content.
+`Unloaded Tiles` counts evictions; it is different from the `unloadedTiles` property. Failed requests
+are settled entries and are excluded from `unloadedTiles` until marked stale by a reload.
 
 Subscribe with `subscribe({onStatsChange})` and call the returned function to unsubscribe. Direct
 tile requests update cache and loading counts immediately; synchronous request notifications are
