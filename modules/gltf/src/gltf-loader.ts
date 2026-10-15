@@ -45,6 +45,7 @@ export const GLTFLoader = {
       loadFiles: false, // Resolve generic glTF 2.1 file references on demand
       loadExternalAssets: false, // Recursively parse glTF 2.1 external assets
       loadImages: true, // Create image objects
+      loadAudio: true, // Load encoded KHR_audio_emitter clips
       decompressMeshes: true // Decompress Draco and KHR/EXT meshopt encoded data
     }
   }

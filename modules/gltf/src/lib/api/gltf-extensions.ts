@@ -17,6 +17,8 @@ import * as EXT_structural_metadata from '../extensions/EXT_structural_metadata'
 import * as KHR_gaussian_splatting from '../extensions/KHR_gaussian_splatting';
 import * as EXT_primitive_voxels from '../extensions/EXT_primitive_voxels';
 import * as EXT_mesh_polygon from '../extensions/EXT_mesh_polygon';
+import * as MPEG_audio_spatial from '../extensions/MPEG_audio_spatial';
+import * as KHR_audio_emitter from '../extensions/KHR_audio_emitter';
 
 // GLTF 2.0 Khronos extensions (decode/encode)
 import * as EXT_meshopt_compression from '../extensions/EXT_meshopt_compression';
@@ -72,6 +74,8 @@ export const EXTENSIONS: GLTFExtensionPlugin[] = [
   EXT_primitive_voxels,
   KHR_mesh_primitive_restart,
   EXT_mesh_polygon,
+  MPEG_audio_spatial,
+  KHR_audio_emitter,
   EXT_texture_avif,
   EXT_texture_webp,
   // Basisu should come after webp, we want basisu to be preferred if both are provided
@@ -121,6 +125,7 @@ export function encodeExtensions(gltf, options: GLTFWriterOptions = {}) {
 
 function useExtension(extensionName: string, options: GLTFLoaderOptions) {
   const excludes = options?.gltf?.excludeExtensions || {};
+  if (Array.isArray(excludes)) return !excludes.includes(extensionName);
   const exclude = extensionName in excludes && !excludes[extensionName];
   return !exclude;
 }

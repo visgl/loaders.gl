@@ -4,6 +4,14 @@
 // Generated from official JSON schema using `npm run generate-interface` on 2018-02-24
 
 import type {GLTFBoundingVolume, GLTFShape} from './gltf-shape-schema';
+import type {
+  GLTFPropertyExtensions,
+  GLTFRootExtensions,
+  GLTFNodeExtensions,
+  GLTFSceneExtensions,
+  GLTFMeshPrimitiveExtensions,
+  GLTFAnimationTargetExtensions
+} from './gltf-extension-schemas';
 
 export type GLTFId = number;
 
@@ -136,7 +144,8 @@ export type GLTFAnimationChannelTarget = {
    * The name of the node's TRS property to modify, or the "weights" of the Morph Targets it instantiates. For the "translation" property, the values that are provided by the sampler are the translation along the x, y, and z axes. For the "rotation" property, the values are a quaternion in the order (x, y, z, w), where w is the scalar. For the "scale" property, the values are the scaling factors along the x, y, and z axes.
    */
   path: 'translation' | 'rotation' | 'scale' | 'weights' | string;
-  extensions?: Record<string, any>;
+  /** Known extensions with additional extension names preserved. */
+  extensions?: GLTFAnimationTargetExtensions & Record<string, any>;
   extras?: any;
   // [k: string]: any;
 };
@@ -192,7 +201,8 @@ export type GLTFAnimation = {
    */
   samplers: GLTFAnimationSampler[];
   name?: any;
-  extensions?: Record<string, any>;
+  /** Known metadata extensions with additional extension names preserved. */
+  extensions?: GLTFPropertyExtensions & Record<string, any>;
   extras?: any;
   // [k: string]: any;
 };
@@ -222,7 +232,8 @@ export type GLTFAsset = {
    * Draft glTF 2.1.
    */
   thumbnail?: GLTFId;
-  extensions?: Record<string, any>;
+  /** Known metadata extensions with additional extension names preserved. */
+  extensions?: GLTFPropertyExtensions & Record<string, any>;
   extras?: any;
   // [k: string]: any;
 };
@@ -369,7 +380,8 @@ export type GLTFImage = {
    */
   bufferView?: GLTFId;
   name?: any;
-  extensions?: Record<string, any>;
+  /** Known metadata extensions with additional extension names preserved. */
+  extensions?: GLTFPropertyExtensions & Record<string, any>;
   extras?: any;
   // [k: string]: any;
 };
@@ -493,7 +505,8 @@ export type GLTFMaterialOcclusionTextureInfo = {
  */
 export type GLTFMaterial = {
   name?: any;
-  extensions?: Record<string, any>;
+  /** Known metadata extensions with additional extension names preserved. */
+  extensions?: GLTFPropertyExtensions & Record<string, any>;
   extras?: any;
   /**
    * A set of parameter values that are used to define the metallic-roughness material model from Physically-Based Rendering (PBR) methodology. When not specified, all the default values of `pbrMetallicRoughness` apply.
@@ -558,7 +571,8 @@ export type GLTFMeshPrimitive = {
   targets?: {
     [k: string]: GLTFId;
   }[];
-  extensions?: Record<string, unknown>;
+  /** Known extensions with additional extension names preserved. */
+  extensions?: GLTFMeshPrimitiveExtensions;
   extras?: any;
   /** Loader-derived primitive-restart topology. This property is not serialized by glTF. */
   primitiveRestart?: import('./gltf-vector-topology').GLTFPrimitiveRestartData;
@@ -580,7 +594,8 @@ export type GLTFMesh = {
    */
   weights?: number[];
   name?: any;
-  extensions?: Record<string, any>;
+  /** Known metadata extensions with additional extension names preserved. */
+  extensions?: GLTFPropertyExtensions & Record<string, any>;
   extras?: any;
   // [k: string]: any;
 };
@@ -630,7 +645,8 @@ export type GLTFNode = {
    */
   weights?: number[];
   name?: any;
-  extensions?: Record<string, any>;
+  /** Known extensions with additional extension names preserved. */
+  extensions?: GLTFNodeExtensions & Record<string, any>;
   extras?: any;
   // [k: string]: any;
 };
@@ -670,7 +686,8 @@ export type GLTFScene = {
    */
   nodes?: GLTFId[];
   name?: any;
-  extensions?: Record<string, any>;
+  /** Known extensions with additional extension names preserved. */
+  extensions?: GLTFSceneExtensions & Record<string, any>;
   extras?: any;
   // [k: string]: any;
 };
@@ -792,7 +809,8 @@ export type GLTF = {
    * An array of textures.
    */
   textures?: GLTFTexture[];
-  extensions?: Record<string, unknown>;
+  /** Known extensions with additional extension names preserved. */
+  extensions?: GLTFRootExtensions;
   extras?: unknown;
   [k: string]: unknown;
 };
