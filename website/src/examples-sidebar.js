@@ -93,7 +93,7 @@ const sidebars = {
     {
       type: 'category',
       label: 'Tiled Geospatial Formats',
-      items: ['tiles/mvt', 'tiles/pmtiles', 'tiles/table-tiler', 'tiles/mlt']
+      items: ['tiles/mvt', 'tiles/pmtiles', 'tiles/pmtiles-authoring', 'tiles/table-tiler', 'tiles/mlt']
     },
     {
       type: 'category',

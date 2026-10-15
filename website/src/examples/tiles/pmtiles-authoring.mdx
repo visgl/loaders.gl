@@ -1,0 +1,25 @@
+---
+title: Create PMTiles
+hide_title: true
+---
+
+import {ClientExample} from '../../components';
+import {TileDocsTabs} from '@site/src/components/docs/tile-docs-tabs';
+
+<TileDocsTabs active="pmtiles-authoring-example" />
+
+<ClientExample kind="pmtiles-authoring" />
+
+Generate selected tiles from a small GeoJSON, GeoArrow IPC/Feather or byte GeoTIFF dataset.
+Use the offline sample, drop a local file, or enter a CORS-enabled HTTP(S) URL. Choose an area,
+one zoom and a payload format, then generate and download the PMTiles archive. Open the result in
+[the PMTiles viewer](/examples/tiles/pmtiles).
+
+The example uses the existing [GeoArrow authoring API](/docs/modules/pmtiles/api-reference/geoarrow-pmtiles)
+for MVT/MLT and [raster authoring API](/docs/modules/pmtiles/api-reference/raster-pmtiles) for PNG.
+
+**Bounded first version:** 32 MiB encoded input, 50,000 vector rows, 64 requested tile addresses,
+and 32 MiB archive output. It exports whole intersecting tiles rather than cropping to the exact
+requested bounds. All input bytes are read before conversion, including GeoTIFF/COG URLs.
+These budgets do not cap peak heap; decompression and parsing allocate before row checks.
+Conversion runs on the page thread and synchronous stages may briefly pause the page.

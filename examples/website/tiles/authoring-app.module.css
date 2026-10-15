@@ -1,0 +1,116 @@
+.app {
+  --border: var(--ifm-color-emphasis-300, #cbd5e1);
+  max-width: 920px;
+  margin: 0 auto;
+  padding: 24px;
+  color: var(--ifm-font-color-base, #172033);
+  background: var(--ifm-background-color, #fff);
+  font:
+    15px / 1.5 system-ui,
+    sans-serif;
+}
+.app header {
+  margin-bottom: 24px;
+}
+.app h2 {
+  font-size: 28px;
+  margin: 4px 0 8px;
+}
+.eyebrow {
+  color: #7c3aed;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+}
+.app fieldset {
+  min-width: 0;
+  margin: 0 0 18px;
+  padding: 18px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+}
+.app legend {
+  padding: 0 8px;
+  font-weight: 650;
+}
+.app label {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: 12px;
+  font-weight: 550;
+}
+.app input,
+.app select {
+  box-sizing: border-box;
+  width: 100%;
+  min-height: 38px;
+  padding: 8px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  color: inherit;
+  background: var(--ifm-background-color, #fff);
+  font: inherit;
+}
+.bounds {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
+}
+.app .checkbox {
+  flex-direction: row;
+  align-items: center;
+}
+.checkbox input {
+  width: 18px;
+  min-height: 18px;
+}
+.hint {
+  color: var(--ifm-color-emphasis-700, #475569);
+  font-size: 13px;
+}
+.actions {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+.app button,
+.download {
+  border: 1px solid #7c3aed;
+  border-radius: 8px;
+  padding: 10px 16px;
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+}
+.app button[type="submit"],
+.download {
+  color: white;
+  background: #6d28d9;
+}
+.app button:disabled {
+  opacity: 0.6;
+  cursor: wait;
+}
+.app input:focus-visible,
+.app select:focus-visible,
+.app button:focus-visible,
+.download:focus-visible {
+  outline: 3px solid #a78bfa;
+  outline-offset: 2px;
+}
+.error {
+  padding: 12px;
+  border: 1px solid #f87171;
+  border-radius: 8px;
+  overflow-wrap: anywhere;
+}
+@media (max-width: 600px) {
+  .app {
+    padding: 12px;
+  }
+  .bounds {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
