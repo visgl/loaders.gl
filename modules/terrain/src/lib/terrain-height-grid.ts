@@ -83,21 +83,33 @@ export function sampleTerrainHeightGrid(
   )
     return null;
   const centered = grid.registration === 'pixel-center';
-  const column = Math.max(
-    0,
-    Math.min(
-      grid.width - 1,
-      ((position[0] - west) / (east - west)) * (centered ? grid.width : grid.width - 1) -
-        (centered ? 0.5 : 0)
-    )
+  const column = snapTerrainSample(
+    Math.max(
+      0,
+      Math.min(
+        grid.width - 1,
+        ((position[0] - west) / (east - west)) * (centered ? grid.width : grid.width - 1) -
+          (centered ? 0.5 : 0)
+      )
+    ),
+    position[0],
+    west,
+    east,
+    grid.width
   );
-  const row = Math.max(
-    0,
-    Math.min(
-      grid.height - 1,
-      ((north - position[1]) / (north - south)) * (centered ? grid.height : grid.height - 1) -
-        (centered ? 0.5 : 0)
-    )
+  const row = snapTerrainSample(
+    Math.max(
+      0,
+      Math.min(
+        grid.height - 1,
+        ((north - position[1]) / (north - south)) * (centered ? grid.height : grid.height - 1) -
+          (centered ? 0.5 : 0)
+      )
+    ),
+    position[1],
+    south,
+    north,
+    grid.height
   );
   const left = Math.floor(column),
     top = Math.floor(row);
@@ -122,4 +134,24 @@ export function sampleTerrainHeightGrid(
     height += grid.heights[samples[index]] * weights[index];
   }
   return height;
+}
+
+/** Remove coordinate roundoff at exact samples, without broadening support by more than 1e-6 pixels. */
+function snapTerrainSample(
+  value: number,
+  coordinate: number,
+  minimum: number,
+  maximum: number,
+  size: number
+): number {
+  const nearest = Math.round(value);
+  const tolerance = Math.min(
+    1e-6,
+    ((8 *
+      Number.EPSILON *
+      Math.max(1, Math.abs(coordinate), Math.abs(minimum), Math.abs(maximum))) /
+      (maximum - minimum)) *
+      size
+  );
+  return Math.abs(value - nearest) <= tolerance ? nearest : value;
 }

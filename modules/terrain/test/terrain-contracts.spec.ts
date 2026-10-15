@@ -19,6 +19,31 @@ const metadata: TerrainGridMetadata = {
 const heightmap = {width: 2, height: 2, heights: new Float32Array([0, 10, 20, 30])};
 
 describe('shared terrain contracts', () => {
+  test.each([
+    'pixel-center',
+    'grid-node'
+  ] as const)('snaps exact %s samples at world-scale bounds without filling nearby holes', registration => {
+    const halfWorld = Math.PI * 6378137;
+    const heights = new Float32Array(256 * 2);
+    heights[0] = 42;
+    const validity = new Uint8Array(heights.length);
+    validity[0] = 1;
+    const grid = createTerrainHeightGrid(
+      {width: 256, height: 2, heights},
+      {
+        bounds: [-halfWorld, -halfWorld, halfWorld, halfWorld],
+        registration,
+        verticalDatum: 'unknown'
+      },
+      validity
+    );
+    const horizontal = -halfWorld + (registration === 'pixel-center' ? halfWorld / 256 : 0);
+    const vertical = halfWorld - (registration === 'pixel-center' ? halfWorld / 2 : 0);
+    expect(sampleTerrainHeightGrid(grid, [horizontal, vertical])).toBe(42);
+    expect(
+      sampleTerrainHeightGrid(grid, [horizontal + (halfWorld / 256) * 1e-5, vertical])
+    ).toBeNull();
+  });
   test('preserves physical meters and detaches sample, mask and footprint storage', () => {
     const source = {...heightmap, heights: heightmap.heights.slice()};
     const bounds: [number, number, number, number] = [0, 0, 2, 2];
