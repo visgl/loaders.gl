@@ -1,3 +1,4 @@
+import {FormatLogo} from './format-logo';
 import React, {type ReactNode} from 'react';
 import Link from '@docusaurus/Link';
 
@@ -134,6 +135,7 @@ export function TexturesDocsTabs({
 
   return (
     <nav className="docs-page-tabs" aria-label="Texture documentation sections">
+      <FormatLogo slug={active.startsWith('basis') ? 'basis' : active.startsWith('crunch') ? 'crunch' : active.startsWith('ktx') ? 'ktx' : active === 'dds' ? 'dds' : active === 'pvr' ? 'pvr' : active === 'hdr' || active === 'radiancehdrloader' ? 'hdr' : 'compressed-textures'} />
       {tabs.map(tab => (
         <Link
           key={tab.id}

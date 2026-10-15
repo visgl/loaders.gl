@@ -286,16 +286,14 @@ test('conversion controls ignore late inspection results after cancel and abort 
   }
 });
 
-test('conversion observes malformed root initialization before output setup can fail', async () => {
+test('conversion observes malformed root initialization before loading selected content', async () => {
   const {fetcher, controller} = createInput();
   const inspection = await inspectConversionInput(
     'https://example.invalid/tileset.json',
     controller.signal,
     fetcher
   );
-  // Both errors are deliberate: root normalization must be observed before validating output LOD.
   (inspection.tileset.root as any).boundingVolume = null;
-  (inspection.tileset.root as any).geometricError = -1;
   await expect(
     convertSelectedContent(
       inspection,

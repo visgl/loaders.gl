@@ -12,6 +12,7 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
 import apacheLogo from '../../images/logos/apache-logo.png';
 
 <DocPageHeader
+  format="arrow"
   eyebrow="Binary columnar data"
   title="Apache Arrow"
   description="Apache Arrow keeps columns typed and contiguous as they move between decoders, scanners, workers, analytical code, and writers. loaders.gl provides the format adapters and common table contracts around that physical model."

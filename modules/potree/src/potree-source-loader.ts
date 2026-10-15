@@ -2,18 +2,15 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import {SourceLoader, CoreAPI, DataSourceOptions} from '@loaders.gl/loader-utils';
+import {SourceLoader, CoreAPI} from '@loaders.gl/loader-utils';
+import type {PotreeSourceLoaderOptions} from './potree-source-options';
+export type {PotreeSourceLoaderOptions} from './potree-source-options';
 import {PotreeNodesSource} from './lib/potree-node-source';
 
-const VERSION = '1.7';
+// @ts-ignore __VERSION__ is injected by the package build.
+const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : 'latest';
 
 import {PotreeBinFormat} from './potree-format';
-export type PotreeSourceLoaderOptions = DataSourceOptions & {
-  potree?: {
-    /** Color storage format. Defaults to uint8norm for backwards compatibility. */
-    colorFormat?: 'uint8norm' | 'float16' | 'float32';
-  };
-};
 
 /**
  * Creates point cloud data sources for Potree urls
@@ -26,7 +23,7 @@ export const PotreeSourceLoader = {
   id: 'potree',
   module: 'potree',
   version: VERSION,
-  extensions: ['bin', 'las', 'laz'],
+  extensions: ['bin', 'las', 'laz', 'js', 'json'],
   mimeTypes: ['application/octet-stream'],
   type: 'potree',
   fromUrl: true,
@@ -40,7 +37,7 @@ export const PotreeSourceLoader = {
     potree: {colorFormat: 'uint8norm'}
   },
 
-  testURL: (url: string) => url.endsWith('.js'),
+  testURL: (url: string) => /(?:\.js|(?:^|\/)metadata\.json)(?:[?#]|$)/.test(url),
   createDataSource: (url: string, options: PotreeSourceLoaderOptions, coreApi?: CoreAPI) =>
     new PotreeNodesSource(url, options, coreApi) // , PotreeNodesSource.defaultOptions)
 } as const satisfies SourceLoader<PotreeNodesSource>;

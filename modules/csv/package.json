@@ -1,6 +1,6 @@
 {
   "name": "@loaders.gl/csv",
-  "version": "5.0.0-alpha.10",
+  "version": "5.0.0-alpha.12",
   "description": "Framework-independent loader for CSV and DSV table formats",
   "license": "MIT",
   "type": "module",
@@ -62,18 +62,17 @@
   ],
   "scripts": {
     "pre-build": "npm run build-worker && npm run build-worker-node && npm run build-bundle && npm run build-bundle-dev",
-    "build-worker": "esbuild src/workers/csv-worker.ts --bundle --outfile=dist/csv-worker.js --define:__VERSION__=\\\"$npm_package_version\\\"",
-    "build-worker-node": "esbuild src/workers/csv-worker-node.ts --outfile=dist/csv-worker-node.js --platform=node --target=node16 --bundle --sourcemap --define:__VERSION__=\\\"$npm_package_version\\\"",
-    "build-bundle": "ocular-bundle ./bundle.ts --output=dist/dist.min.js",
-    "build-bundle-dev": "ocular-bundle ./bundle.ts --env=dev --output=dist/dist.dev.js"
+    "build-worker": "node ../../scripts/build-codec-worker.mjs src/workers/csv-worker.ts --bundle --outfile=dist/csv-worker.js --define:__VERSION__=\\\"$npm_package_version\\\"",
+    "build-worker-node": "node ../../scripts/build-codec-worker.mjs src/workers/csv-worker-node.ts --outfile=dist/csv-worker-node.js --platform=node --target=node16 --bundle --sourcemap --define:__VERSION__=\\\"$npm_package_version\\\"",
+    "build-bundle": "node ../../scripts/build-codec-bundle.mjs ./bundle.ts --output=dist/dist.min.js",
+    "build-bundle-dev": "node ../../scripts/build-codec-bundle.mjs ./bundle.ts --env=dev --output=dist/dist.dev.js"
   },
   "dependencies": {
-    "@loaders.gl/arrow": "5.0.0-alpha.10",
-    "@loaders.gl/gis": "5.0.0-alpha.10",
-    "@loaders.gl/loader-utils": "5.0.0-alpha.10",
-    "@loaders.gl/schema": "5.0.0-alpha.10",
-    "apache-arrow": ">= 17.0.0",
-    "d3-dsv": "^1.2.0"
+    "@loaders.gl/arrow": "5.0.0-alpha.12",
+    "@loaders.gl/arrow-geometry": "5.0.0-alpha.12",
+    "@loaders.gl/loader-utils": "5.0.0-alpha.12",
+    "@loaders.gl/schema": "5.0.0-alpha.12",
+    "apache-arrow": ">= 17.0.0"
   },
   "peerDependencies": {
     "@loaders.gl/core": "~5.0.0-alpha.0"
@@ -82,6 +81,7 @@
   "devDependencies": {
     "@types/papaparse": "^5",
     "csv-parser": "^3.2.0",
+    "d3-dsv": "^1.2.0",
     "papaparse": "^5.5.3",
     "udsv": "^0.7.3"
   }

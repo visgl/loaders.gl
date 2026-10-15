@@ -43,3 +43,22 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
 <p className="badges">
   <img src="https://img.shields.io/badge/From-v4.0-blue.svg?style=flat-square" alt="From-v4.0" />
 </p>
+
+## Installation
+
+```bash
+npm install @loaders.gl/core @loaders.gl/lerc
+```
+
+## Usage
+
+```typescript
+import {load} from '@loaders.gl/core';
+import {LERCLoader} from '@loaders.gl/lerc';
+
+const raster = await load('raster.lerc', LERCLoader);
+```
+
+See the [loader reference](/docs/modules/lerc/api-reference/lerc-loader) for decoded bands, masks,
+statistics, and options. LERC output contains numeric raster values; the application
+chooses how to visualize them.

@@ -9,6 +9,14 @@ import {concatenateArrayBuffersAsync, registerJSModules} from '@loaders.gl/loade
 export type CompressionOptions = {
   // operation: 'compress' | 'decompress';
   modules?: {[moduleName: string]: any};
+  /** Encoder or decoder settings forwarded to the default WASM backend. */
+  compressUtils?: Record<string, unknown>;
+  /** Maximum caller-supplied output capacity; defaults to 512 MiB for WASM decoders. */
+  maxOutputByteLength?: number;
+  /** Selects raw DEFLATE or LZ4 blocks where supported. */
+  raw?: boolean;
+  /** Allows built-in streams in root asynchronous codec methods. */
+  useNative?: boolean;
 };
 
 /** Shared metadata and module-loading behavior for compression transforms. */

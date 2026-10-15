@@ -10,6 +10,7 @@ import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
 import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
 
 <DocPageHeader
+  format="perfetto-trace"
   eyebrow="Traces module · writer API"
   title="PerfettoTraceWriter"
   description="Serialize the typed Perfetto Arrow projection back into a canonical protobuf Trace envelope."

@@ -9,6 +9,7 @@ import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
 import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
 
 <DocPageHeader
+  format="gml"
   eyebrow="WMS module · geospatial loader"
   title="GMLLoader"
   description="Parse the practical feature and geometry subset of OGC Geography Markup Language into Arrow tables with GeoArrow geometry, including incremental feature batches for large responses."
@@ -40,7 +41,6 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
   tone="cyan"
 />
 
-![ogc-logo](../../../images/logos/ogc-logo-60.png)
 
 <p className="badges">
   <img src="https://img.shields.io/badge/From-v3.3-blue.svg?style=flat-square" alt="From-3.3" />

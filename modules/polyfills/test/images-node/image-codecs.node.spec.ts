@@ -4,8 +4,12 @@
 
 import {expect, test} from 'vitest';
 import {readFile} from 'node:fs/promises';
-import {encodeImageNode, encodeImageToStreamNode} from '../../src/images/encode-image-node';
-import {NODE_FORMAT_SUPPORT, parseImageNode} from '../../src/images/parse-image-node';
+import {encodeImageToStreamNode} from '../../src/images/encode-image-node';
+import {
+  encodeImageNode,
+  NODE_FORMAT_SUPPORT,
+  parseImageNode
+} from '../../src/images/image-codecs-node';
 
 const IMAGE_FIXTURES = [
   ['@loaders.gl/images/test/data/img1-preview.png', 'image/png'],

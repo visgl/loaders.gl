@@ -12,7 +12,8 @@ import type {
   ObjectRowTable,
   TableBatch
 } from '@loaders.gl/schema';
-import {geojsonToBinary, type LegacyGeoJSONCRS} from '@loaders.gl/gis';
+import {convertGeojsonToBinaryFeatureCollection as geojsonToBinary} from '@loaders.gl/arrow-geometry/legacy-binary';
+import {type LegacyGeoJSONCRS} from '@loaders.gl/arrow-geometry/feature-table';
 import {
   deserializeArrowWorkerResult,
   serializeArrowWorkerResult

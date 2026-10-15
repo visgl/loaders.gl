@@ -56,9 +56,7 @@ npm install @loaders.gl/core
 | ----------------------------------------------------------------------------- | ----------------------------------- |
 | [`ImageBitmapLoader`](/docs/modules/images/api-reference/image-bitmap-loader) | Preferred pure `ImageBitmap` loader |
 | [`ImageLoader`](/docs/modules/images/api-reference/image-loader)              | Deprecated compatibility loader     |
-| [`ImageWriter`](/docs/modules/images/api-reference/image-writer)              |                                     |
-
-### Parsed Image API
+| [`ImageWriter`](/docs/modules/images/api-reference/image-writer)              | Encodes decoded images into supported image formats. |
 
 ### Binary Image API
 
@@ -66,11 +64,12 @@ A set of functions that can extract information from "unparsed" binary memory re
 
 These functions are used internally to autodetect if image loader can be used to parse a certain `ArrayBuffer`, but are also available to applications.
 
-| Function                                                                     | Description |
-| ---------------------------------------------------------------------------- | ----------- | --- |
-| `isBinaryImage(imageData : ArrayBuffer [, mimeType : String]) : Boolean`     |             |
-| `getBinaryImageMIMEType(imageData : ArrayBuffer) : String                    | null`       |     |
-| `getBinaryImageSize(imageData : ArrayBuffer [, mimeType : String]) : Object` |             |
+| Function | Description |
+| --- | --- |
+| `getBinaryImageMetadata(imageData)` | Detects the MIME type and dimensions of supported encoded image bytes; returns `null` when detection fails. |
+
+Use this metadata helper instead of the removed `isBinaryImage`,
+`getBinaryImageMIMEType`, and `getBinaryImageSize` exports.
 
 ### Parsed Image API
 

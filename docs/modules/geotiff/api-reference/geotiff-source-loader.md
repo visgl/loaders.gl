@@ -13,11 +13,11 @@ import {RasterWindowGraphic} from '@site/src/components/docs/raster-window-graph
 import {ClientExample} from '@site/src/components';
 
 <DocPageHeader
+  format="geotiff"
   eyebrow="Cloud raster source"
   title="GeoTIFFSourceLoader"
   description="GeoTIFFSourceLoader discovers raster metadata, selects an overview and band set, and reads only the ranges needed for a viewport or bounded request."
   tone="mint"
-  logos={[{alt: 'Open Geospatial Consortium', src: '/images/format-logos/ogc-logo-transparent.png'}]}
   meta={['GeoTIFF and COG', 'Viewport-driven', 'HTTP ranges']}
   links={[
     {label: 'GeoTIFF format', to: '/docs/modules/geotiff/formats/geotiff'},

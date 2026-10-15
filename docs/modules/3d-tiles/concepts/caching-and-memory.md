@@ -10,6 +10,7 @@ import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
 import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
 
 <DocPageHeader
+  format="3d-tiles"
   eyebrow="3D Tiles runtime / cache"
   title="Reuse detail without letting memory run away."
   description="The 3D Tiles cache is a working-set policy, not a hard process limit. This guide explains which content is protected, what gets evicted, and when pressure changes refinement demand."

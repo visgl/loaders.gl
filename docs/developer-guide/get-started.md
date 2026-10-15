@@ -49,12 +49,12 @@ Install loaders.gl core and the format modules you would like to use.
 Each format is published as a separate npm module.
 
 ```shell
-yarn add @loaders.gl/core @loaders.gl/gltf
+yarn add @loaders.gl/core @loaders.gl/csv
 ```
 
 ## Usage
 
-You can import a loader and use it directly with `parse`. Note that `parse` can accept a `fetch` response object as the source of data to be parsed:
+Use `load` to fetch and parse a URL. Use `parse` when you already have the data, such as text, an `ArrayBuffer`, or a `Response`:
 
 ```typescript
 import {load} from '@loaders.gl/core';
@@ -63,7 +63,10 @@ import {CSVLoader} from '@loaders.gl/csv';
 const data = await load('data.csv', CSVLoader);
 ```
 
-You can register loaders after importing them
+### Legacy loader registration
+
+`registerLoaders` is deprecated. Prefer passing a loader or loader array directly
+to `load` or `parse`. Existing applications can still register loaders once:
 
 ```typescript
 import {registerLoaders} from '@loaders.gl/core';
@@ -71,7 +74,7 @@ import {CSVLoader} from '@loaders.gl/csv';
 registerLoaders([CSVLoader]);
 ```
 
-Then, in the same file (or some other file in the same app) that needs to load CSV, you no longer need to supply the loader to `parse`. It will autodetect the pre-registered loader:
+Then, in the same file (or some other file in the same app) that needs to load CSV, you can omit the loader argument to `load`. Core selects a registered loader using the URL, MIME type, and available data:
 
 ```typescript
 import {load} from '@loaders.gl/core';
@@ -84,22 +87,16 @@ const data = await load('data.csv');
 
 You can use your bundler of choice such as webpack or rollup. See the [`get-started`](https://github.com/visgl/loaders.gl/tree/master/examples) examples for minimal working examples of how to bundle loaders.gl.
 
-## Supporting Older Browsers
+## Browser support
 
-loaders.gl is designed to leverage modern JavaScript (ES2018) and to optimize functionality and performance on evergreen browsers.
+Use a modern browser and a bundler that supports ES modules and dynamic imports.
+The TypeScript build targets ES2022; the distribution does not promise ES5 or IE11
+compatibility. Applications targeting older runtimes must configure their own
+transpilation and provide any missing Web APIs.
 
-However, the default distribution is completely transpiled to ES5 so using loaders.gl with older or "slower moving" browsers such as IE11 and Edge is possible, assuming that the appropriate polyfills are installed.
+## Node.js support
 
-To build on Edge and IE11, `TextEncoder` and `TextDecoder` must be polyfilled. There are several polyfills available on `npm`, but you can also use the polyfills provided by loaders.gl:
-
-```bash
-yarn add @loaders.gl/polyfills
-```
-
-```typescript
-import '@loaders.gl/polyfills';
-```
-
-## Supporting Node.js
-
-A number of polyfills for `fetch`, `TextEncoder` etc are available to make loaders.gl work under Node.js, just install the `@loaders.gl/polyfills module` as described above.
+Modern Node.js provides `fetch`, `Response`, `TextEncoder`, and `TextDecoder`.
+Import `@loaders.gl/polyfills` when you need loaders.gl's Node.js adapters for
+local files or image decoding. This package is intended for Node.js, not browser
+polyfills. See [Node.js support](/docs/developer-guide/node) for setup.

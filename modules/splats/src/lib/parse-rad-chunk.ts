@@ -18,6 +18,11 @@ import {decodeFloat16, normalizeQuaternion, SH_C0} from './splat-utils';
 const RAD_PROPERTY_DEFLATE = new DeflateDecompressor({useNative: false});
 const RAD_PROPERTY_RAW_DEFLATE = new DeflateDecompressor({raw: true, useNative: false});
 
+/** Initializes raw and zlib DEFLATE before synchronous RADC property decoding. */
+export async function preloadRADCompression(): Promise<void> {
+  await Promise.all([RAD_PROPERTY_DEFLATE.preload(), RAD_PROPERTY_RAW_DEFLATE.preload()]);
+}
+
 /** Options for decoding one Spark RADC chunk payload. */
 export type RADChunkDecodeOptions = SplatsLoaderOptions & {
   radChunk?: {

@@ -41,45 +41,60 @@ To be compatible with the parsing/loading functions in `@loaders.gl/core` such a
   tone="cyan"
 />
 
-## Loader Object Format v1.0
+## Metadata and parser implementations
 
-### Common Fields
+A metadata loader identifies a format and exposes `preload()` to return its parser
+implementation. Async core APIs perform this step automatically. A parser-bearing
+loader adds the methods supported by its format. Sync APIs require those methods
+to be available before the call.
 
-| Field               | Type       | Default  | Description                                                     |
-| ------------------- | ---------- | -------- | --------------------------------------------------------------- |
-| `name`              | `String`   | Required | Short name of the loader ('OBJ', 'PLY' etc)                     |
-| `extension`         | `String`   | Required | Three letter (typically) extension used by files of this format |
-| `extensions`        | `String[]` | Required | Array of file extension strings supported by this loader        |
-| `category`          | `String`   | Optional | Indicates the type/shape of data                                |
-| `encoding`          | `String`   | Optional | Physical serialization, such as `json`, `xml`, `protobuf`, `arrow`, `parquet`, `zip`, `image` or `binary` |
-| `format`            | `String`   | Optional | Logical file format or subtype, such as `geojson`, `tilejson`, `mvt`, `gltf` or `flatgeobuf` |
-| `parse` \| `worker` | `Function` | `null`   | Every non-worker loader should expose a `parse` function.       |
+### Common fields
 
-Note: Only one of `extension` or `extensions` is required. If both are supplied, `extensions` will be used.
+| Field | Type | Purpose |
+| --- | --- | --- |
+| `id` | `string` | Stable loader identifier and option namespace. |
+| `name` | `string` | Human-readable format name. |
+| `module` | `string` | Owning loaders.gl module. |
+| `version` | `string` | Version used for runtime assets and diagnostics. |
+| `extensions` | `string[]` | Supported file extensions without leading dots. |
+| `mimeTypes` | `string[]` | MIME types used for format selection. |
+| `options` | `object` | Default options, normally nested under the loader ID. |
+| `category` | `string` | Optional application-facing data category. |
+| `encoding` | `string` | Optional physical serialization, such as `json`, `arrow`, or `binary`. |
+| `format` | `string` | Optional logical format, such as `geojson` or `gltf`. |
+| `worker` | `boolean \| string` | Optional worker support descriptor. |
+| `preload` | `function` | Optional asynchronous parser implementation hook. |
 
-`encoding` and `format` are additive metadata. Existing `text` and `binary` fields remain compatibility hints used by core loading and encoding paths.
+`text` and `binary` remain compatibility hints for input handling. Format
+recognition and parser availability are separate: metadata can identify a file
+without carrying the parser code in the initial bundle.
 
-### Test Function
+### Recognition functions
 
-| Field      | Type       | Default  | Description                                                                                   |
-| ---------- | ---------- | -------- | --------------------------------------------------------------------------------------------- | ------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `test`     | `Function` | `String` | `String[]`                                                                                    | `null` | Guesses if a binary format file is of this format by examining the first bytes in the file. If the test is specified as a string or array of strings, the initial bytes are expected to be "magic bytes" matching one of the provided strings. |
-| `testText` | `Function` | `null`   | Guesses if a text format file is of this format by examining the first characters in the file |
+| Field | Type | Purpose |
+| --- | --- | --- |
+| `tests` | Array of strings, byte sequences, or functions | Binary signature checks. |
+| `testText` | `function` | Recognizes text from an initial sample. |
 
-### Parser Functions
+Use the fields declared in the current `Loader` type and keep probes small and
+deterministic. The current core selection path reads `tests`, not a singular
+`test` field.
 
-Each (non-worker) loader should define a `parse` function. Additional parsing functions can be exposed depending on the loaders capabilities, to optimize for text parsing, synchronous parsing, streaming parsing, etc:
+### Parser functions
 
-| Parser function field | Type       | Default | Description                                                                            |
-| --------------------- | ---------- | ------- | -------------------------------------------------------------------------------------- |
-| `parse`               | `Function` | `null`  | Asynchronously parses binary data (e.g. file contents) asynchronously (`ArrayBuffer`). |
-| `parseInBatches`      | `Function` | `null`  | Parses binary data chunks (`ArrayBuffer`) to output data "batches"                     |
-| `parseSync`           | `Function` | `null`  | Atomically and synchronously parses binary data (e.g. file contents) (`ArrayBuffer`)   |
-| `parseTextSync`       | `Function` | `null`  | Atomically and synchronously parses a text file (`String`)                             |
+Implement the methods the underlying parser supports; not every loader needs all
+variants. Metadata-only exports do not contain these methods.
 
-Synchronous parsers are more flexible as they can support synchronous parsing which can simplify application logic and debugging, and iterator-based parsers are more flexible as they can support batched loading of large data sets in addition to atomic loading.
+| Method | Input | Result |
+| --- | --- | --- |
+| `parse` | `ArrayBuffer` | Promise of decoded data. |
+| `parseSync` | `ArrayBuffer` | Decoded data synchronously. |
+| `parseText` | `string` | Promise of decoded data. |
+| `parseTextSync` | `string` | Decoded data synchronously. |
+| `parseInBatches` | Chunk iterable | Async iterable of decoded batches. |
 
-You are encouraged to provide the most capable parser function you can (e.g. `parseSync` or `parseToIterator` if possible). Unless you are writing a completely new loader from scratch, the appropriate choice often depends on the capabilities of an existing external "loader" that you are working with.
+Use `parseInBatches` for incremental output. Core can adapt input representations,
+but it cannot make an asynchronous codec synchronous.
 
 ### Parser Function Signatures
 
@@ -89,7 +104,7 @@ You are encouraged to provide the most capable parser function you can (e.g. `pa
 
 The `context` parameter will contain the following fields
 
-- `parse` or `parseSync`
+- `coreApi` and context-bound parsing hooks for nested loading
 - `url` if available
 
 ### Worker support

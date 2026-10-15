@@ -72,4 +72,57 @@ export {transformPointCloudSourceTile} from './point-cloud-spatial.js';
 export type {PointCloudSpatialOptions} from './point-cloud-spatial.js';
 
 export {createI3SMeshTilesetConversionSource} from './i3s-mesh-source.js';
-export type {I3SMeshTilesetSourceOptions} from './i3s-mesh-source.js';
+export type {I3SMeshTilesetSourceOptions, I3SMeshSourceFeatureOptions} from './i3s-mesh-source.js';
+
+export {mapPointCloudAttributes} from './point-cloud-attributes.js';
+export type {PointCloudAttributeMapping, MappedPointCloud} from './point-cloud-attributes.js';
+export {encodePointCloudCOPC, createCOPCConversionCodec} from './point-cloud-copc.js';
+export type {EncodePointCloudCOPCOptions, EncodedPointCloudCOPC} from './point-cloud-copc.js';
+
+export {convertPointCloudToTileset} from './point-cloud-tileset.js';
+export type {
+  ConvertPointCloudToTilesetOptions,
+  ConvertedPointCloudTileset
+} from './point-cloud-tileset.js';
+
+export {encodePotreeArchive, openPointCloudFile, extractMeshVertices} from './point-cloud-file.js';
+export type {
+  EncodePotreeArchiveOptions,
+  OpenPointCloudFileOptions,
+  OpenedPointCloudFile,
+  ExtractMeshVerticesOptions
+} from './point-cloud-file.js';
+
+export {createMeshSourceFeatureOptions} from './mesh-source-schema.js';
+export type {MeshSourceSchemaOptions} from './mesh-source-schema.js';
+export {convertPointCloudToPotree} from './point-cloud-potree.js';
+export type {
+  ConvertPointCloudToPotreeOptions,
+  ConvertedPointCloudPotree
+} from './point-cloud-potree.js';
+
+export {
+  createSelectedMeshConversionSource,
+  measureMeshBytes,
+  SELECTED_MESH_LIMITS
+} from './selected-mesh-source.js';
+export type {
+  SelectedMeshSourceOptions,
+  SelectedMeshConversionSource
+} from './selected-mesh-source.js';
+
+export {openTileConversionArchive, createTileConversionArchiveTransport} from './archive-source.js';
+export type {TileConversionArchiveInput} from './archive-source.js';
+
+export {
+  inspectI3SMeshConversionSource,
+  createSelectedI3SMeshConversionSource
+} from './i3s-selection-source.js';
+export type {
+  I3SMeshSelectionOptions,
+  I3SMeshConversionInspection,
+  I3SMeshConversionResourceDescriptor
+} from './i3s-selection-source.js';
+
+export {createMeshHierarchyTilesetSink} from './mesh-hierarchy.js';
+export type {MeshHierarchyTilesetSinkOptions} from './mesh-hierarchy.js';

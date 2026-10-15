@@ -9,6 +9,7 @@ import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
 import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
 
 <DocPageHeader
+  format="gml"
   eyebrow="OGC feature encoding"
   title="Read structured features from XML without guessing their geometry."
   description="GML is an extensible XML grammar rather than one fixed schema. loaders.gl focuses on the feature and geometry subset used in production WFS responses and can emit features incrementally as the document arrives."
@@ -34,7 +35,6 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
   ]}
 />
 
-![ogc-logo](../../../images/logos/ogc-logo-60.png)
 
 GML is the OGC XML grammar for geographical features. loaders.gl focuses on the feature and
 geometry subset encountered in production WFS responses, with incremental parsing for large

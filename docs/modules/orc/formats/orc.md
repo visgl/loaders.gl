@@ -12,6 +12,7 @@ import {OrcCloudLiveExample} from '@site/src/components/docs/orc-cloud-live-exam
 import apacheLogo from '../../../images/logos/apache-logo.png';
 
 <DocPageHeader
+  format="orc"
   eyebrow="Columnar file format"
   title="Apache ORC"
   description="Apache ORC stores a schema, encoded column streams, and statistics in a compact file layout. Its footer makes the structure discoverable before the data is materialized."

@@ -9,6 +9,7 @@ import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
 import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
 
 <DocPageHeader
+  format="compressed-textures"
   eyebrow="Composite texture loader"
   title="Describe a texture once. Resolve its image levels as a unit."
   description="`TextureLoader` reads a JSON manifest for a single image or mip chain, resolves member URLs, and returns a normalized `Texture` object. It keeps file organization out of the rendering code."

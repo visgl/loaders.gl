@@ -9,6 +9,7 @@ import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
 import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
 
 <DocPageHeader
+  format="wms"
   eyebrow="WMS module · capabilities loader"
   title="WMSCapabilitiesLoader"
   description="Read an OGC Web Map Service capabilities response into typed metadata describing layers, requests, limits, exceptions, and supported service behavior."
@@ -40,7 +41,6 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
   tone="cyan"
 />
 
-![ogc-logo](../../../images/logos/ogc-logo-60.png)
 
 <p className="badges">
   <img src="https://img.shields.io/badge/From-v3.3-blue.svg?style=flat-square" alt="From-3.3" />

@@ -11,6 +11,7 @@ import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
 import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
 
 <DocPageHeader
+  format="csv"
   eyebrow="CSV module · live benchmark"
   title="CSV benchmarks"
   description="CSV performance depends on row width, quoting, conversion, and whether the application consumes one table or batches. This browser benchmark keeps the fixture and run visible so the result has useful context."

@@ -11,11 +11,11 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
 import {WriterPipelineGraphic} from '@site/src/components/docs/writer-pipeline-graphic';
 
 <DocPageHeader
+  format="parquet"
   eyebrow="Parquet writer"
   title="ParquetWriter"
   description="ParquetWriter encodes loaders.gl table data, including Arrow-backed tables, into typed columnar Parquet. GeoArrow metadata can be carried into GeoParquet schema metadata when the input describes geometry columns."
   tone="cyan"
-  logos={[{alt: 'Apache Parquet', src: '/images/format-logos/parquet-logo.png'}]}
   meta={['Parquet', 'Arrow input', 'GeoParquet metadata']}
   links={[
     {label: 'GeoParquet format', to: '/docs/modules/parquet/formats/geoparquet'},

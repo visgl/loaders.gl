@@ -9,6 +9,7 @@ import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
 import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
 
 <DocPageHeader
+  format="compressed-textures"
   eyebrow="Textures API · cubemaps"
   title="Describe six texture faces once."
   description="TextureCubeLoader reads a JSON manifest for the six faces of a cubemap and can expand face templates into mip levels. The result is ready for the texture upload path used by WebGL and WebGPU applications."

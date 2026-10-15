@@ -9,6 +9,7 @@ import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
 import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
 
 <DocPageHeader
+  format="wkb"
   eyebrow="WKT module · geometry writer"
   title="TWKBWriter"
   description="Encode structured geometry as Tiny Well-Known Binary when a compact binary representation is more useful than readable WKT or general-purpose WKB."
@@ -82,7 +83,7 @@ const geometry = {
     ]
   ]
 };
-const arrayBuffer = encodeSync(geometry, TWKBWriter, {wkt: {hasZ: false, hasM: false}});
+const arrayBuffer = encodeSync(geometry, TWKBWriter, {twkb: {hasZ: false, hasM: false}});
 ```
 
 ## Options

@@ -55,18 +55,21 @@ The `ImageWriter` class can encode an image into `ArrayBuffer` both under browse
 ## Usage
 
 ```typescript
-import '@loaders.gl/polyfill'; // only if using under Node
 import {ImageWriter} from '@loaders.gl/images';
 import {encode} from '@loaders.gl/core';
 
-const image = new Image(...);
-const arrayBuffer = await encode(image, ImageWriter, {image: {mimeType: 'image/jpeg'}});
-fs.writeFileSync('shiny-new-image.jpg', arrayBuffer);
+const arrayBuffer = await encode(imageData, ImageWriter, {
+  image: {mimeType: 'image/png'}
+});
 ```
+
+`imageData` is an already decoded image. In Node.js, import
+`@loaders.gl/polyfills` before using the image adapter and save the resulting bytes
+with your filesystem API.
 
 ## Data Format
 
-The `ImageWriter` can encode three different in-memory Image representations into binary image representation (such as JPEG or PNG images) that can then be be saved or uploaded,
+The `ImageWriter` can encode three different in-memory Image representations into binary image representation (such as JPEG or PNG images) that can then be saved or uploaded.
 
 The supported image types are:
 
@@ -76,11 +79,10 @@ The supported image types are:
 
 ## Options
 
-| Option                                                                       | Type     | Default       | Description                            |
-| ---------------------------------------------------------------------------- | -------- | ------------- | -------------------------------------- |
-| `image.mimeType`                                                             | `string` | `'image/png'` | image output format                    |
-| `image.jpegQuality`                                                          | `number  | null`         | `image/jpeg: 0.92`, `image/webp: 0.80` |
-| Image quality, between `0-1`. Only applies to `image/jpeg` and `image/webp`. |
+| Option | Type | Default | Description |
+| --- | --- | --- | --- |
+| `image.mimeType` | `string` | `'image/png'` | Encoded output MIME type supported by the runtime. |
+| `image.jpegQuality` | `number \| null` | `null` | Quality between `0` and `1` for JPEG/WebP; `null` uses the runtime default. |
 
 ## Remarks
 

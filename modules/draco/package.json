@@ -1,6 +1,6 @@
 {
   "name": "@loaders.gl/draco",
-  "version": "5.0.0-alpha.10",
+  "version": "5.0.0-alpha.12",
   "description": "Framework-independent loader and writer for Draco compressed meshes and point clouds",
   "license": "MIT",
   "type": "module",
@@ -73,20 +73,22 @@
   "scripts": {
     "pre-build": "npm run copy-libs && npm run build-bundle && npm run build-bundle-dev && npm run build-workers",
     "copy-libs": "cp -rf ./src/libs ./dist/libs",
-    "build-bundle": "ocular-bundle ./bundle.ts --output=dist/dist.min.js",
-    "build-bundle-dev": "ocular-bundle ./bundle.ts --env=dev --output=dist/dist.dev.js",
+    "build-bundle": "node ../../scripts/build-codec-bundle.mjs ./bundle.ts --output=dist/dist.min.js",
+    "build-bundle-dev": "node ../../scripts/build-codec-bundle.mjs ./bundle.ts --env=dev --output=dist/dist.dev.js",
     "build-workers": "yarn build-loader-worker && yarn build-loader-worker-node && yarn build-writer-worker && yarn build-writer-worker-node",
-    "build-loader-worker": "esbuild src/workers/draco-worker.ts --outfile=dist/draco-worker.js --target=esnext --bundle --sourcemap --define:__VERSION__=\\\"$npm_package_version\\\"",
-    "build-loader-worker-node": "esbuild src/workers/draco-worker-node.ts --outfile=dist/draco-worker-node.js --target=node16 --platform=node --bundle --sourcemap --define:__VERSION__=\\\"$npm_package_version\\\"",
-    "build-writer-worker": "esbuild src/workers/draco-writer-worker.ts --outfile=dist/draco-writer-worker.js --target=esnext --bundle --sourcemap --define:__VERSION__=\\\"$npm_package_version\\\"",
-    "build-writer-worker-node": "esbuild src/workers/draco-writer-worker-node.ts --outfile=dist/draco-writer-worker-node.cjs --target=node16 --platform=node --bundle --sourcemap --define:__VERSION__=\\\"$npm_package_version\\\""
+    "build-loader-worker": "node ../../scripts/build-codec-worker.mjs src/workers/draco-worker.ts --outfile=dist/draco-worker.js --target=esnext --bundle --sourcemap --define:__VERSION__=\\\"$npm_package_version\\\"",
+    "build-loader-worker-node": "node ../../scripts/build-codec-worker.mjs src/workers/draco-worker-node.ts --outfile=dist/draco-worker-node.js --target=node16 --platform=node --bundle --sourcemap --define:__VERSION__=\\\"$npm_package_version\\\"",
+    "build-writer-worker": "node ../../scripts/build-codec-worker.mjs src/workers/draco-writer-worker.ts --outfile=dist/draco-writer-worker.js --target=esnext --bundle --sourcemap --define:__VERSION__=\\\"$npm_package_version\\\"",
+    "build-writer-worker-node": "node ../../scripts/build-codec-worker.mjs src/workers/draco-writer-worker-node.ts --outfile=dist/draco-writer-worker-node.cjs --target=node16 --platform=node --bundle --sourcemap --define:__VERSION__=\\\"$npm_package_version\\\""
   },
   "dependencies": {
-    "@loaders.gl/arrow": "5.0.0-alpha.10",
-    "@loaders.gl/loader-utils": "5.0.0-alpha.10",
-    "@loaders.gl/schema": "5.0.0-alpha.10",
-    "@loaders.gl/schema-utils": "5.0.0-alpha.10",
-    "@loaders.gl/worker-utils": "5.0.0-alpha.10",
+    "@loaders.gl/arrow": "5.0.0-alpha.12",
+    "@loaders.gl/loader-utils": "5.0.0-alpha.12",
+    "@loaders.gl/schema": "5.0.0-alpha.12",
+    "@loaders.gl/schema-utils": "5.0.0-alpha.12",
+    "@loaders.gl/worker-utils": "5.0.0-alpha.12"
+  },
+  "optionalDependencies": {
     "draco3d": "1.5.7"
   },
   "peerDependencies": {

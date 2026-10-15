@@ -37,6 +37,7 @@ export function convertArrowTableToMesh(table: ArrowTable): Mesh {
   const fields = schema.fields;
 
   const attributes: Mesh['attributes'] = {};
+  const columns: {name: string; data: readonly arrow.Data[]}[] = [];
   for (const field of fields) {
     const {name} = field;
     if (name === 'indices') {
@@ -46,11 +47,21 @@ export function convertArrowTableToMesh(table: ArrowTable): Mesh {
     const size = getFixedSizeListSize(attributeData);
     const typedArray = getAttributeTypedArray(attributeData, size);
     const metadata = getMeshAttributeMetadata(field.metadata);
+    const value =
+      metadata.componentType === 'float16' ? restoreFloat16Array(typedArray) : typedArray;
+    // Preserve exact physical-storage aliases across column copies without merging equal values.
+    const shared = columns.find(
+      column =>
+        column.data.length === attributeData.data.length &&
+        attributes[column.name].value.constructor === value.constructor &&
+        column.data.every((chunk, index) => shareArrowStorage(chunk, attributeData.data[index]))
+    );
     attributes[name] = {
-      value: metadata.componentType === 'float16' ? restoreFloat16Array(typedArray) : typedArray,
+      value: shared ? attributes[shared.name].value : value,
       size,
       ...metadata
     };
+    if (!shared) columns.push({name, data: attributeData.data});
   }
 
   fixMetadata(schema);
@@ -216,4 +227,31 @@ function getIndices(arrowTable: arrow.Table): Mesh['indices'] | undefined {
   const values = indicesData.children[0].values.subarray(start, end);
 
   return {value: values, size: 1};
+}
+
+/** Checks complete Arrow chunk regions, including child buffers and validity/offset metadata. */
+function shareArrowStorage(left: arrow.Data, right: arrow.Data): boolean {
+  const rightBuffers = Object.values(right.buffers);
+  return (
+    left.type.toString() === right.type.toString() &&
+    left.offset === right.offset &&
+    left.length === right.length &&
+    left.nullCount === right.nullCount &&
+    left.dictionary === right.dictionary &&
+    Object.values(left.buffers).every((buffer, index) => {
+      const other = rightBuffers[index];
+      return (
+        buffer === other ||
+        Boolean(
+          buffer &&
+            other &&
+            buffer.buffer === other.buffer &&
+            buffer.byteOffset === other.byteOffset &&
+            buffer.byteLength === other.byteLength
+        )
+      );
+    }) &&
+    left.children.length === right.children.length &&
+    left.children.every((child, index) => shareArrowStorage(child, right.children[index]))
+  );
 }

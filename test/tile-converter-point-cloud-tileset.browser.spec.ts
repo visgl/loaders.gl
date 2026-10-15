@@ -19,7 +19,7 @@ import {
   type TileConversionReport
 } from '@loaders.gl/tile-converter/v5/browser';
 import {createPointCloudTilesetSink as createRootSink} from '@loaders.gl/tile-converter/v5';
-import JSZip from 'jszip';
+import {readZip} from 'test/common/read-zip';
 
 /** Completed report for direct lifecycle checks. */
 const REPORT: TileConversionReport = {
@@ -148,10 +148,10 @@ test('point package retains decoded bounds, applies RTC once and authors indexed
   expect(tileset.root.boundingVolume.box[3]).toBeGreaterThan(box[3]);
   expect(tileset.root.geometricError).toBeGreaterThan(10);
   const archive = await createTileConversionArchive(files, {format: '3tz', maxArchiveBytes: 20000});
-  const zip = await JSZip.loadAsync(await archive.arrayBuffer(), {checkCRC32: true});
-  expect(await zip.file('tileset.json')!.async('string')).toBe(await files[2].blob.text());
-  expect(await zip.file('points/0.pnts')!.async('arraybuffer')).toEqual(resource.pnts);
-  expect(zip.file('@3dtilesIndex1@')).not.toBeNull();
+  const zip = await readZip(await archive.arrayBuffer());
+  expect(new TextDecoder().decode(zip.files['tileset.json'])).toBe(await files[2].blob.text());
+  expect(zip.files['points/0.pnts']).toEqual(resource.pnts);
+  expect(zip.files['@3dtilesIndex1@']).toBeDefined();
 });
 
 test('point metadata measures Euclidean rounding, preserves source arrays and gates precision', () => {

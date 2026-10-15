@@ -12,7 +12,10 @@ export class LZ4CompressUtilsDecompressor extends CompressUtilsDecompressor {
   constructor(options: CompressUtilsCompressionOptions = {}) {
     super(
       {name: 'lz4', extensions: ['lz4'], contentEncodings: ['x-lz4']},
-      () => import('compress-utils/lz4/decompress'),
+      () =>
+        options.raw
+          ? import('compress-utils/lz4_raw/decompress')
+          : import('compress-utils/lz4/decompress'),
       options
     );
   }

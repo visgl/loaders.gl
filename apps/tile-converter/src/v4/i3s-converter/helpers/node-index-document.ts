@@ -97,7 +97,7 @@ export class NodeIndexDocument {
   }
 
   /**
-   * Add neighbors to child nodes of this node
+   * Add neighbors, save leaf documents and children, then release finalized child data.
    */
   public async addNeighbors(): Promise<void> {
     if (this.finalized) {
@@ -130,7 +130,10 @@ export class NodeIndexDocument {
       }
       await childNode.save();
     }
-    // The save after adding neighbors is the last one. Finalize the the node
+    // Internal documents were saved during child traversal. A root mesh leaf has no such traversal.
+    if (!this.children.length) {
+      await this.save();
+    }
     this.finalize();
   }
 

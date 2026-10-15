@@ -44,14 +44,14 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
 This page is aligned to Apache Arrow JS v21.x (`apache-arrow`).
 :::
 
-A `Row` is the row-level object returned by nested `Struct` vectors and by `Table`/`RecordBatch` row access. Rows behave like read-only tuples keyed by index and field name.
+A `Row` is the row-level object returned by nested `Struct` vectors and by `Table`/`RecordBatch` row access. Rows are proxies over the underlying struct data, keyed by field name. Updates through a row proxy affect that data; convert with `toJSON()` when a separate plain object is needed.
 
 ## Usage
 
 ```ts
-import {makeVector, Struct, Field, Int32, Utf8} from 'apache-arrow';
+import {vectorFromArray, Struct, Field, Int32, Utf8} from 'apache-arrow';
 
-const rows = makeVector(
+const rows = vectorFromArray(
   [
     {id: 1, value: 'foo'},
     {id: 2, value: 'bar'}
@@ -64,9 +64,9 @@ console.log(row?.[0], row?.id, row?.value);
 ```
 
 ```ts
-import {makeVector, Struct, Field, Utf8, Int32} from 'apache-arrow';
+import {vectorFromArray, Struct, Field, Utf8, Int32} from 'apache-arrow';
 
-const names = makeVector(
+const names = vectorFromArray(
   [
     {id: 1, name: 'Alice'},
     {id: 2, name: 'Bob'}
@@ -79,9 +79,7 @@ for (const row of names) {
 }
 ```
 
-## StructRow API
-
-## Methods
+## StructRow methods
 
 - `toArray(): T[string]["TValue"][]` — Materializes row fields to a plain array.
 - `toJSON(): { [P in string & keyof T]: T[P]["TValue"]; }` — Returns row values as a JSON object.

@@ -12,11 +12,11 @@ import {ServiceSourceGraphic} from '@site/src/components/docs/service-source-gra
 import {ClientExample} from '@site/src/components';
 
 <DocPageHeader
+  format="arcgis"
   eyebrow="Service sources"
   title="@loaders.gl/arcgis"
   description="Treat remote service endpoints like other loaders.gl sources: discover capabilities, request only what is needed, and hand results to the application or renderer."
   tone="orange"
-  logos={[{alt: 'ArcGIS', src: '/images/format-logos/arcgis-logo.svg'}]}
   meta={['ArcGIS REST', 'Vector, raster, and tiles', 'Source contracts']}
   links={[
     {label: 'Using sources', to: '/docs/developer-guide/using-sources'},

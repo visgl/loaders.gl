@@ -21,6 +21,7 @@ import {validateMeshGeometry, validateMeshIndices} from './mesh.js';
 import {resolveMeshSourceTexture} from './mesh-source-texture.js';
 import {extractMeshFeatures} from './mesh-source-features.js';
 import type {MeshSourceFeatureOptions} from './mesh-source-features.js';
+import type {MeshSourceSchemaOptions} from './mesh-source-schema.js';
 import type {I3SMeshFeatures} from '@loaders.gl/i3s';
 export type {MeshSourceFeatureOptions} from './mesh-source-features.js';
 
@@ -28,12 +29,14 @@ export type {MeshSourceFeatureOptions} from './mesh-source-features.js';
 export interface MeshSourceResource extends MeshConversionInput {
   /** Arrow features associated with the selected primitive; IDs are distinct from table row indices. */
   readonly features?: I3SMeshFeatures;
+  /** Original I3S layer semantics, retained for destination policy and diagnostics. */
+  readonly sourceLayerType?: '3DObject' | 'IntegratedMesh';
 }
 
 /** Narrow source profile and content lifetime controls. */
 export interface MeshTilesetSourceOptions extends TilesetConversionSourceOptions {
-  /** Required when the source has batch/structural metadata; no schema is inferred. */
-  readonly features?: MeshSourceFeatureOptions;
+  /** Required for feature-bearing content; omit schema only to map an inline structural metadata class. */
+  readonly features?: MeshSourceFeatureOptions | MeshSourceSchemaOptions;
   /** Explicit bounded reader for external encoded images, relative to the content URI. */
   readonly readExternalResource?: (
     uri: string,
@@ -172,7 +175,11 @@ export function createMeshTilesetConversionSource(
               'A default scene or exactly one scene is required'
             );
           let primitiveIndex = 0;
-          for (const selected of traverseMeshNodes(roots, placement)) {
+          const primitives = traverseMeshNodes(roots, placement);
+          let current = primitives.next();
+          while (!current.done) {
+            const selected = current.value;
+            const next = primitives.next();
             const resource = await extractPrimitive(
               selected.primitive,
               selected.transform,
@@ -188,7 +195,12 @@ export function createMeshTilesetConversionSource(
               resource.mesh,
               options.features
             );
-            yield {...resource, features};
+            yield {
+              ...resource,
+              features,
+              contentPrimitive: {index: primitiveIndex - 1, last: Boolean(next.done)}
+            };
+            current = next;
           }
           if (!primitiveIndex)
             throw new TileConversionError(

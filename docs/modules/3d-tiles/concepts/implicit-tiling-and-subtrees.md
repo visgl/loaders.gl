@@ -10,6 +10,7 @@ import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
 import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
 
 <DocPageHeader
+  format="3d-tiles"
   eyebrow="3D Tiles runtime / implicit tiling"
   title="Expand a hierarchy only where the view needs it."
   description="Implicit tiling describes regular spatial trees with templates and availability data. loaders.gl keeps subtree metadata lazy, so traversal can grow a large hierarchy one visible boundary at a time."

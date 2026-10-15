@@ -44,7 +44,7 @@ import {ArrowConverter} from '@loaders.gl/arrow';
 import {
   FeatureCollectionConverter,
   GeometryConverter
-} from '@loaders.gl/gis';
+} from '@loaders.gl/geoarrow';
 
 const arrowTable = convert(table, 'arrow', [TableConverter, ArrowConverter]);
 const wkb = convert(geometry, 'wkb', [GeometryConverter]);
@@ -85,8 +85,8 @@ const binary = convert(features, 'binary-feature-collection', [FeatureCollection
 | `ArrowConverter` | `@loaders.gl/arrow` | Apache Arrow tables and table wrappers |
 | `GeoArrowTableConverter` | `@loaders.gl/geoarrow` | GeoArrow tables and wrapper/table shapes |
 | `GeoArrowGeometryConverter` | `@loaders.gl/geoarrow` | GeoArrow geometry encoding rewrites |
-| `FeatureCollectionConverter` | `@loaders.gl/gis` | GeoJSON, Flat GeoJSON, binary feature collections |
-| `GeometryConverter` | `@loaders.gl/gis` | single geometry values like WKB, WKT, TWKB, GeoJSON geometry |
+| `FeatureCollectionConverter` | `@loaders.gl/geoarrow` | GeoJSON, Flat GeoJSON, binary feature collections |
+| `GeometryConverter` | `@loaders.gl/geoarrow` | single geometry values like WKB, WKT, TWKB, GeoJSON geometry |
 
 ## Render-Focused Conversions
 

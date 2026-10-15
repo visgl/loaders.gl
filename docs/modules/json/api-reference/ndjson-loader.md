@@ -11,6 +11,7 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
 import {LoaderLiveExample} from '@site/src/components/docs/loader-live-example';
 
 <DocPageHeader
+  format="json"
   eyebrow="JSON module · streaming loader"
   title="NDJSONLoader"
   description="Read one JSON value per line and process the stream incrementally, with Arrow batches by default and an explicit row-table compatibility path."

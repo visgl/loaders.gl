@@ -11,6 +11,7 @@ import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
 import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
 
 <DocPageHeader
+  format="compressed-textures"
   eyebrow="Texture module"
   title="@loaders.gl/textures"
   description="Ship one texture asset and choose the GPU format at runtime. Handle containers, mip chains, arrays, cube maps, and Basis Universal transcoding on the client."

@@ -74,9 +74,9 @@ The preferred way to provide random-access data to loaders.gl is through `Readab
 - `ArrayBufferFile` provides direct random access to an in-memory `ArrayBuffer` without a `Blob` conversion.
 - `BlobFile` wraps browser `Blob` and `File` instances and exposes efficient slicing.
 - `NodeFile` provides safe, tree-shakeable access to local files under Node.js without importing `fs` in application code.
-- `DataViewReadableFile` adapts in-memory buffers (such as data returned by `fetch`) to the same interface.
+- `ArrayBufferFile` adapts in-memory buffers (such as data returned by `fetch`) to the same interface.
 
-`ReadableFile` classes replace the deprecated `FileProvider` utilities; new code should use the `ReadableFile` wrappers exported from `@loaders.gl/loader-utils` (and `DataViewReadableFile` from `@loaders.gl/zip`) to keep loader interactions consistent across platforms.
+`ReadableFile` classes replace the deprecated `FileProvider` utilities; new code should use the `ReadableFile` wrappers exported from `@loaders.gl/loader-utils`  to keep loader interactions consistent across platforms.
 
 ### Validated HTTP ranges
 

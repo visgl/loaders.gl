@@ -3,4 +3,17 @@
 // Copyright (c) vis.gl contributors
 
 // ArcGIS sources have no parser-only implementation to defer.
-export * from './index';
+export {
+  MapboxAuthentication,
+  GoogleMapsAuthentication,
+  CesiumIonAuthentication,
+  createCesiumIonCredential,
+  createGoogleMapsCredential,
+  createMapboxCredential
+} from './index';
+export type {
+  CesiumIonCredentialOptions,
+  GoogleMapsCredentialOptions,
+  MapboxCredentialOptions,
+  ServiceCredentialOptions
+} from './index';

@@ -10,6 +10,7 @@ import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
 import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
 
 <DocPageHeader
+  format="pcd"
   eyebrow="PCD module · writer API"
   title="PCDWriter"
   description="Encode loaders.gl mesh or Mesh Arrow table point clouds as readable Point Cloud Data text, preserving common position, normal, and color attributes."

@@ -9,6 +9,7 @@ import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
 import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
 
 <DocPageHeader
+  format="wms"
   eyebrow="WMS API · feature information"
   title="Ask a map service what is under the cursor."
   description="WMSFeatureInfoLoader parses the XML response from a GetFeatureInfo request into a typed JavaScript result. It keeps verbose protocol details behind a smaller boundary for identify, tooltip, and inspection tools."
@@ -40,7 +41,6 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
   tone="blue"
 />
 
-![ogc-logo](../../../images/logos/ogc-logo-60.png)
 
 <p className="badges">
   <img src="https://img.shields.io/badge/From-v3.3-blue.svg?style=flat-square" alt="From-v3.3" />
@@ -48,7 +48,7 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
 </p>
 
 The `WMSFeatureInfoLoader` parses the XML-formatted response from the
-the [OGC](https://www.opengeospatial.org/) [WMS](https://www.ogc.org/standards/wms) (Web Map Service) standard `GetFeatureInfo` request into a typed JavaScript data structure.
+[OGC](https://www.opengeospatial.org/) [WMS](https://www.ogc.org/standards/wms) (Web Map Service) standard `GetFeatureInfo` request into a typed JavaScript data structure.
 
 > Note that the WMS standard is rather verbose and the XML responses can contain many rarely used metadata fields, not all of which are extracted by this loader. If this is a problem, it is possible to use the `XMLLoader` directly though the result will be untyped and not normalized.
 
@@ -65,13 +65,13 @@ the [OGC](https://www.opengeospatial.org/) [WMS](https://www.ogc.org/standards/w
 ## Usage
 
 ```typescript
-import {WMSFeatureInfoLoader} from '@loaders.gl/wms';
+import {_WMSFeatureInfoLoader, type _WMSFeatureInfo} from '@loaders.gl/wms';
 import {load} from '@loaders.gl/core';
 
 // Form a WMS request
 const url = `${WMS_SERVICE_URL}?REQUEST=GetFeatureInfo&LAYER=...`;
 
-const data = (await load(url, WMSFeatureInfoLoader, options)) as WMSFeatureInfo;
+const data = (await load(url, _WMSFeatureInfoLoader, options)) as _WMSFeatureInfo;
 ```
 
 ## Parsed Data Format
@@ -79,9 +79,18 @@ const data = (await load(url, WMSFeatureInfoLoader, options)) as WMSFeatureInfo;
 ```typescript
 /** All capabilities of a WMS service. Typed data structure extracted from XML */
 export type WMSFeatureInfo = {
-  // TO BE DOCUMENTED
+  features: {
+    attributes: Record<string, number | string>;
+    type: string;
+    bounds: {top: number; bottom: number; left: number; right: number};
+  }[];
 };
 ```
+
+The current experimental parser extracts `FIELDS` attributes from
+`FeatureInfoResponse`. Its `type` and `bounds` fields are placeholders (empty
+string and zero bounds), not inferred feature geometry. Other response encodings
+need a matching parser. The public export is `_WMSFeatureInfoLoader`.
 
 ## Options
 

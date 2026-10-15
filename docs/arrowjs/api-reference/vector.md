@@ -51,7 +51,7 @@ An array-like Arrow data container. Use [`makeVector`](/docs/arrowjs/api-referen
 ```ts
 import {makeVector} from 'apache-arrow';
 
-const values = makeVector([1, 2, 3]);
+const values = makeVector(new Int32Array([1, 2, 3]));
 console.log(values.length, values.get(1));
 ```
 

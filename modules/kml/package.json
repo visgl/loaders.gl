@@ -1,6 +1,6 @@
 {
   "name": "@loaders.gl/kml",
-  "version": "5.0.0-alpha.10",
+  "version": "5.0.0-alpha.12",
   "description": "Framework-independent loader for the KML format",
   "license": "MIT",
   "type": "module",
@@ -49,16 +49,16 @@
   ],
   "scripts": {
     "pre-build": "npm run build-bundle && npm run build-bundle-dev",
-    "build-bundle": "ocular-bundle ./bundle.ts --output=dist/dist.min.js",
-    "build-bundle-dev": "ocular-bundle ./bundle.ts --env=dev --output=dist/dist.dev.js"
+    "build-bundle": "node ../../scripts/build-codec-bundle.mjs ./bundle.ts --output=dist/dist.min.js",
+    "build-bundle-dev": "node ../../scripts/build-codec-bundle.mjs ./bundle.ts --env=dev --output=dist/dist.dev.js"
   },
   "dependencies": {
-    "@loaders.gl/gis": "5.0.0-alpha.10",
-    "@loaders.gl/loader-utils": "5.0.0-alpha.10",
-    "@loaders.gl/schema": "5.0.0-alpha.10",
-    "@loaders.gl/schema-utils": "5.0.0-alpha.10",
-    "@loaders.gl/xml": "5.0.0-alpha.10",
-    "@loaders.gl/zip": "5.0.0-alpha.10"
+    "@loaders.gl/arrow-geometry": "5.0.0-alpha.12",
+    "@loaders.gl/loader-utils": "5.0.0-alpha.12",
+    "@loaders.gl/schema": "5.0.0-alpha.12",
+    "@loaders.gl/schema-utils": "5.0.0-alpha.12",
+    "@loaders.gl/xml": "5.0.0-alpha.12",
+    "@loaders.gl/zip": "5.0.0-alpha.12"
   },
   "peerDependencies": {
     "@loaders.gl/core": "~5.0.0-alpha.0"

@@ -4,6 +4,29 @@
 
 ### Unreleased
 
+### v5.0.0-alpha.12
+
+- perf(tiles): upgrade math.gl to alpha.16 and batch horizontal XYZ reprojection with reusable projection buffers
+- feat(tile-converter): add bounded hierarchy and LOD conversion, remote and archive inputs, feature schemas, multiple contents, and a v5 CLI
+- feat(zip): add native ZIP32/ZIP64 readers and writers, consolidate indexed archives, and remove the JSZip runtime dependency
+- refactor(compression): adopt compress-utils defaults, TypeScript Parquet decoding, and LZO support
+- refactor(gis): remove the retired GIS compatibility package and move geometry helpers to focused modules
+- feat(terrain): expose lightweight Terrarium height grids
+- feat(potree): support legacy and modern dataset formats
+- refactor(worker-utils): import explicit ESM decoder factories in module workers instead of evaluating fetched scripts
+- chore: make loader exports explicit and add the Arrow type-only subpath
+
+### v5.0.0-alpha.11
+
+- chore(math.gl): upgrade to 5.0.0-alpha.15
+- feat(tile-converter): preserve original I3S mesh textures and attributes, support multiple mesh placements and triangle-strip inputs, and encode v5 I3S meshes with Draco
+- feat(tile-converter): connect CRS and elevation options to v5 writers and package precise ECEF point tiles
+- perf(tiles): enable skip-LOD refinement for 3D Tiles and discover replacement siblings without serializing refinement
+- feat(wms): support per-level WMTS tile matrices and projected-CRS resolutions
+- refactor(compression): remove deprecated root exports and defer JavaScript fallbacks
+- feat(website): inspect Earth STAC assets with panels and schemas
+- chore(examples): replace CARTO basemaps with OpenFreeMap
+
 ### v5.0.0-alpha.10
 
 - chore(math.gl): upgrade to 5.0.0-alpha.13

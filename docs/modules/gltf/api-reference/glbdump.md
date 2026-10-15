@@ -9,6 +9,7 @@ import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
 import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
 
 <DocPageHeader
+  format="glb"
   eyebrow="glTF module · command line"
   title="Look inside a GLB before you render it."
   description="glbdump is a small diagnostic utility for checking the container structure, JSON chunk, and parsed glTF scenes in a terminal or CI job."

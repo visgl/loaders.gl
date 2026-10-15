@@ -18,10 +18,8 @@ import type {
 } from '@loaders.gl/loader-utils';
 import {DataSource} from '@loaders.gl/loader-utils';
 import type {GeoJSONTable, Schema} from '@loaders.gl/schema';
-import {
-  convertFeaturesToWKBArrowTable,
-  convertGeojsonToBinaryFeatureCollection
-} from '@loaders.gl/gis';
+import {convertFeaturesToWKBArrowTable} from '@loaders.gl/arrow-geometry/feature-collection-to-arrow';
+import {convertGeojsonToBinaryFeatureCollection} from '@loaders.gl/arrow-geometry/legacy-binary';
 import {getServiceCRSAxisOrder} from './crs-utils';
 import type {OGCTileMatrixSet} from './lib/parsers/ogc-api/tile-matrix-set';
 import {convertOGCTileMatrixSetToTileGrid} from './lib/parsers/ogc-api/tile-matrix-set';
@@ -253,8 +251,11 @@ export class OGCAPITilesSource
 {
   /** Converted tile matrix set and the options it was loaded with. */
   private _tileGridCache: {
+    /** Configured matrix document or URL used by this request. */
     tileMatrixSet: OGCTileMatrixSet | string | undefined;
+    /** Unit conversion used by this request. */
     metersPerUnit: number | null | undefined;
+    /** Shared in-flight or fulfilled matrix request. */
     promise: Promise<TileGrid | undefined>;
     /** The converted grid, once available. */
     tileGrid?: TileGrid;
@@ -376,11 +377,22 @@ export class OGCAPITilesSource
     const template = this.options['ogc-api']?.tileTemplate;
     if (!template) throw new Error('OGC API Tiles requires ogc-api.tileTemplate');
     // XYZ-only templates do not address a matrix, so no matrix is looked up for them.
+    const tileGrid = this.getLoadedTileGrid();
+    if (
+      template.includes('{tileMatrix}') &&
+      !tileGrid &&
+      typeof this.options['ogc-api']?.tileMatrixSet === 'string' &&
+      parameters.tileMatrix === undefined
+    ) {
+      throw new Error(
+        'OGC API Tiles has not loaded its tile matrix set; await getMetadata() before getTileURL()'
+      );
+    }
     const tileMatrixId = template.includes('{tileMatrix}')
-      ? getTileGridMatrixId(this.getLoadedTileGrid(), parameters)
+      ? getTileGridMatrixId(tileGrid, parameters)
       : '';
     return template
-      .replaceAll('{tileMatrix}', tileMatrixId)
+      .replaceAll('{tileMatrix}', encodeURIComponent(tileMatrixId))
       .replaceAll('{tileRow}', String(parameters.y))
       .replaceAll('{tileCol}', String(parameters.x))
       .replaceAll('{z}', String(parameters.z))
@@ -427,7 +439,11 @@ function resolveLink(link: string, landingPageUrl: string): string {
   const base = new URL(landingPageUrl, `${placeholderOrigin}/`);
   if (!base.pathname.endsWith('/')) base.pathname += '/';
   const resolved = new URL(link, base);
-  return isAbsolute ? resolved.href : resolved.href.slice(placeholderOrigin.length);
+  if (isAbsolute) return resolved.href;
+  if (resolved.origin !== placeholderOrigin) {
+    return `//${resolved.host}${resolved.pathname}${resolved.search}${resolved.hash}`;
+  }
+  return `${resolved.pathname}${resolved.search}${resolved.hash}`;
 }
 
 /** Converts the loaders.gl nested bounding box into the OGC comma-separated form. */

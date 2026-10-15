@@ -12,6 +12,7 @@ import {TiledSceneGraphic} from '@site/src/components/docs/tiled-scene-graphic';
 import {Tiles3DDocsTabs} from '@site/src/components/docs/tiles-3d-docs-tabs';
 
 <DocPageHeader
+  format="3d-tiles"
   eyebrow="3D Tiles"
   title="Read tiled 3D worlds one payload at a time."
   description="Read tiled 3D worlds one payload at a time. `Tiles3DLoader` parses 3D Tiles tilesets and their renderable content, then delegates linked glTF, Draco, image, and texture payloads to the appropriate loaders. Use it directly for parsing or with `Tiles3DSource` for view-driven traversal."

@@ -17,9 +17,9 @@ import {
   convertArrowTableToObjectRows
 } from './lib/parsers/convert-parquet-tables';
 import {
-  parseParquetFileToArrow,
-  parseParquetFileToArrowInBatches
-} from './lib/parsers/parse-parquet-to-arrow';
+  parseParquetFileToArrowWithJs,
+  parseParquetFileToArrowInBatchesWithJs
+} from './lib/parsers/parse-parquet-to-arrow-js';
 import {normalizeParquetOptions} from './lib/utils/normalize-parquet-options';
 import {
   deserializeParquetWorkerResult,
@@ -33,7 +33,7 @@ export type {ParquetLoaderOptions} from './parquet-loader-options';
 const {preload: _ParquetLoaderPreload, ...ParquetLoaderMetadataWithoutPreload} =
   ParquetLoaderMetadata;
 
-/** WASM-backed Parquet table loader supporting object-row and Arrow table output. */
+/** TypeScript-backed Parquet table loader supporting object-row and Arrow table output. */
 export const ParquetLoaderWithParser = {
   ...ParquetLoaderMetadataWithoutPreload,
   parse(arrayBuffer: ArrayBuffer, options?: ParquetLoaderOptions) {
@@ -64,7 +64,7 @@ export const ParquetLoaderWithParser = {
 >;
 
 /**
- * Parses a Parquet file using the canonical WASM-backed table loader.
+ * Parses a Parquet file using the canonical TypeScript-backed table loader.
  * @param file readable file abstraction
  * @param options optional loader options
  * @returns object-row or Arrow table output depending on `parquet.shape`
@@ -76,15 +76,15 @@ async function parseParquetTable(
   const parquetOptions = getParquetOptions(options);
 
   if (parquetOptions.parquet?.shape === 'arrow-table') {
-    return await parseParquetFileToArrow(file, parquetOptions.parquet);
+    return await parseParquetFileToArrowWithJs(file, parquetOptions);
   }
 
-  const arrowTable = await parseParquetFileToArrow(file, parquetOptions.parquet);
+  const arrowTable = await parseParquetFileToArrowWithJs(file, parquetOptions);
   return convertArrowTableToObjectRows(arrowTable);
 }
 
 /**
- * Parses a Parquet file into streamed table batches using the canonical WASM-backed loader.
+ * Parses a Parquet file into streamed table batches using the canonical TypeScript-backed loader.
  * @param file readable file abstraction
  * @param options optional loader options
  * @returns async iterable of object-row or Arrow batches
@@ -96,17 +96,17 @@ async function* parseParquetTableInBatches(
   const parquetOptions = getParquetOptions(options);
 
   if (parquetOptions.parquet?.shape === 'arrow-table') {
-    yield* parseParquetFileToArrowInBatches(file, parquetOptions.parquet);
+    yield* parseParquetFileToArrowInBatchesWithJs(file, parquetOptions);
     return;
   }
 
-  for await (const batch of parseParquetFileToArrowInBatches(file, parquetOptions.parquet)) {
+  for await (const batch of parseParquetFileToArrowInBatchesWithJs(file, parquetOptions)) {
     yield convertArrowBatchToObjectRows(batch);
   }
 }
 
 /**
- * Normalizes caller options for the canonical WASM-backed Parquet loaders.
+ * Normalizes caller options for the canonical TypeScript-backed Parquet loaders.
  * @param options caller-supplied loader options
  * @returns normalized loader options
  */

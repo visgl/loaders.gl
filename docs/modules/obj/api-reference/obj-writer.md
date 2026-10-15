@@ -10,6 +10,7 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
 import {ObjDocsTabs} from '@site/src/components/docs/obj-docs-tabs';
 
 <DocPageHeader
+  format="obj"
   eyebrow="OBJ writer"
   title="Write common mesh data into a format every 3D tool knows."
   description="`OBJWriter` accepts legacy Mesh objects and Mesh Arrow tables, then emits Wavefront OBJ text with the standard vertex attributes and faces that downstream tools expect."

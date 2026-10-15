@@ -37,34 +37,24 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
   ]}
 />
 
-The `@loaders.gl/core` module contains the core API of loaders.gl
+`@loaders.gl/core` coordinates format loaders and writers. Pass explicit loaders
+to keep format selection and return types local to your application.
 
-The core API offers functions to parse loaded data in various ways using loaders
+| Task | APIs and guidance |
+| --- | --- |
+| Fetch and parse | [`load`](/docs/modules/core/api-reference/load), [`loadInBatches`](/docs/modules/core/api-reference/load-in-batches) |
+| Parse loaded data | [`parse`](/docs/modules/core/api-reference/parse), [`parseSync`](/docs/modules/core/api-reference/parse-sync), [`parseInBatches`](/docs/modules/core/api-reference/parse-in-batches) |
+| Prepare metadata loaders | [`preload` and `preloadSync`](/docs/developer-guide/using-unbundled-loaders) |
+| Select a loader | [`selectLoader` and `selectLoaderSync`](/docs/modules/core/api-reference/select-loader) |
+| Open a runtime source | [`createDataSource`](/docs/modules/core/api-reference/create-data-source), or async `load` for lazy source loaders |
+| Fetch bytes | [`fetchFile`](/docs/modules/core/api-reference/fetch-file), or the runtime's `fetch` |
+| Encode data | [`encode`, `encodeText`, and synchronous/batched variants](/docs/modules/core/api-reference/encode) |
+| Adapt streams | [`makeIterator` and `makeStream`](/docs/modules/core/api-reference/iterator-utilities) |
+| Configure shared defaults | [`setLoaderOptions` and `getLoaderOptions`](/docs/modules/core/api-reference/set-loader-options) |
 
-- [`parse`](/docs/modules/core/api-reference/parse)
-- [`parseSync`](/docs/modules/core/api-reference/parse-sync)
-- [`parseInBatches`](/docs/modules/core/api-reference/parse-in-batches)
-
-To fetch data, use the built-in `fetch` or the API compatible but more capable `fetchFile`
-
-- [`fetchFile`](/docs/modules/core/api-reference/fetch-file)
-
-To load (fetch and parse) data
-
-- [`load`](/docs/modules/core/api-reference/load)
-
-To register loaders, or select a loader that matches a file from a list of candidate loaders:
-
-- [`registerLoaders`](/docs/modules/core/api-reference/register-loaders)
-- [`selectLoader`](/docs/modules/core/api-reference/select-loader)
-
-To encode and save data
-
-- [`encode`](/docs/modules/core/api-reference/encode)
-- [`write-file`](/docs/modules/core/api-reference/write-file)
-- [`save`](/docs/modules/core/api-reference/save)
-
-As well as some utility functions.
+`registerLoaders` remains a [deprecated compatibility API](/docs/modules/core/api-reference/register-loaders).
+Core does not export `save` or `writeFile`; save encoded bytes with your platform's
+filesystem, download, or upload API.
 
 <ReferenceBoundary
   title="Core APIs and lightweight entry points"

@@ -9,6 +9,7 @@ import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
 import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
 
 <DocPageHeader
+  format="csw"
   eyebrow="OGC catalog format"
   title="Find the dataset before requesting its pixels or features."
   description="Catalogue Service for the Web (CSW) is an OGC protocol for searching geospatial catalogs. loaders.gl adapts the read-only catalog operations into typed records and a normalized service directory."
@@ -40,7 +41,6 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
   tone="orange"
 />
 
-![ogc-logo](../../../images/logos/ogc-logo-60.png)
 
 CSW is an OGC protocol for searching catalogs of geospatial datasets, services, and related
 resources. `CSWSourceLoader` adapts read-only CSW endpoints to the loaders.gl `CatalogSource`

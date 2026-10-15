@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import {expect, test} from 'vitest';
+import {expect, test, vi} from 'vitest';
 import {encode, parse} from '@loaders.gl/core';
 import {
   GPXLoader,
@@ -17,7 +17,7 @@ import {
   parseKMLDocument,
   resolveKMZResourcePath
 } from '@loaders.gl/kml';
-import {ZipWriter} from '@loaders.gl/zip';
+import {ZipWriter, ZipFileSystem} from '@loaders.gl/zip';
 import {validateLoader, validateWriter} from 'test/common/conformance';
 import {KMZLoaderWithParser} from '@loaders.gl/kml/kmz-loader';
 
@@ -206,4 +206,26 @@ test('KML parser uses the normal StyleMap pair', () => {
   `);
 
   expect(document.features[0].properties).toMatchObject({stroke: '#ff0000'});
+});
+
+test('KMZ opens compressed nested documents and closes failed initialization', async () => {
+  const bytes = await encode({'maps/doc.kml': SAMPLE_KML, 'images/map.png': 'image'}, ZipWriter, {
+    zip: {compression: 'deflate'}
+  });
+  const archive = await openKMZArchive(bytes);
+  expect(archive.kmlFileName).toBe('maps/doc.kml');
+  expect(new TextDecoder().decode(await archive.getResource('../images/map.png?token=local'))).toBe(
+    'image'
+  );
+  await archive.close();
+  await archive.close();
+  const destroy = vi.spyOn(ZipFileSystem.prototype, 'destroy');
+  try {
+    await expect(openKMZArchive(await encode({'image.txt': 'no KML'}, ZipWriter))).rejects.toThrow(
+      'KML document'
+    );
+    expect(destroy).toHaveBeenCalledTimes(1);
+  } finally {
+    destroy.mockRestore();
+  }
 });

@@ -1,0 +1,43 @@
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1rem;
+  margin: 1.5rem 0;
+}
+
+.card {
+  align-items: center;
+  background: white;
+  border: 1px solid var(--ifm-color-emphasis-300);
+  border-radius: 8px;
+  display: flex;
+  height: 80px;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.card img {
+  height: 40px;
+  object-fit: contain;
+  width: 170px;
+}
+
+.card:focus-visible {
+  outline: 3px solid var(--ifm-color-primary);
+  outline-offset: 3px;
+}
+
+.actionEngine {
+  background: #141414;
+}
+
+.esri {
+  background: #0079bd;
+}
+
+.esri img {
+  flex-shrink: 0;
+  height: auto;
+  max-width: none;
+  width: 420px;
+}

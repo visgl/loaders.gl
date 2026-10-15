@@ -41,6 +41,8 @@ import {
 export type {TilesetJSON} from './tileset-source';
 
 export type Tileset3DProps = {
+  /** Format options forwarded to I3S content requests, including source-coordinate decoding. */
+  i3s?: Record<string, unknown>;
   throttleRequests?: boolean;
   maxRequests?: number;
   loadOptions?: LoaderOptions;

@@ -10,6 +10,7 @@ import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
 import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
 
 <DocPageHeader
+  format="obj"
   eyebrow="Text mesh format"
   title="A simple text description of 3D geometry."
   description="Wavefront OBJ keeps mesh interchange readable: vertices, normals, texture coordinates, and face indices are written as line-oriented records that tools can inspect and share."

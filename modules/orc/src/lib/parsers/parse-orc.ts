@@ -93,14 +93,20 @@ export type ORCTypeDescription = {
 const ORC_MAGIC = new Uint8Array([0x4f, 0x52, 0x43]);
 const COMPRESSION_NAMES: ORCCompression[] = ['NONE', 'ZLIB', 'SNAPPY', 'LZO', 'LZ4', 'ZSTD'];
 
+/** Reads the uncompressed PostScript before loading the file's codec. */
+export function readORCPostScript(arrayBuffer: ArrayBuffer): ORCPostScript {
+  const bytes = new Uint8Array(arrayBuffer);
+  if (bytes.length < 4 || !hasBytes(bytes, ORC_MAGIC, 0)) throw new Error('Invalid ORC file magic');
+  const postscriptStart = bytes.length - 1 - bytes[bytes.length - 1];
+  if (postscriptStart < 3) throw new Error('Invalid ORC PostScript length');
+  return parsePostScript(bytes.subarray(postscriptStart, bytes.length - 1));
+}
+
 /** Parses an ORC file envelope, PostScript, and basic footer metadata. */
 export function parseORC(arrayBuffer: ArrayBuffer): ORCFile {
   const bytes = new Uint8Array(arrayBuffer);
-  if (bytes.length < 4 || !hasBytes(bytes, ORC_MAGIC, 0)) throw new Error('Invalid ORC file magic');
-  const postscriptLength = bytes[bytes.length - 1];
-  const postscriptStart = bytes.length - 1 - postscriptLength;
-  if (postscriptStart < 3) throw new Error('Invalid ORC PostScript length');
-  const postscript = parsePostScript(bytes.subarray(postscriptStart, bytes.length - 1));
+  const postscript = readORCPostScript(arrayBuffer);
+  const postscriptStart = bytes.length - 1 - bytes[bytes.length - 1];
   const footerStart = postscriptStart - postscript.footerLength;
   if (footerStart < 3) throw new Error('Invalid ORC footer length');
   const footerBytes = decompressORCStream(
@@ -125,7 +131,7 @@ function parsePostScript(bytes: Uint8Array): ORCPostScript {
   const result: ORCPostScript = {
     footerLength: 0,
     compression: 'UNKNOWN',
-    compressionBlockSize: 0,
+    compressionBlockSize: 262_144,
     version: [],
     metadataLength: 0
   };

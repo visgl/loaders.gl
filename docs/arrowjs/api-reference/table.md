@@ -48,14 +48,14 @@ A logical table as a sequence of record-batch chunks.
 
 ## Overview
 
-`Table` is the row-oriented container in Arrow JS and the recommended way to handle multi-column, multi-row Arrow data in memory.
+`Table` is the columnar container in Arrow JS and the recommended way to handle multi-column, multi-row Arrow data in memory.
 
 ## Usage
 
 ```ts
 import {makeTable, tableFromArrays, Table} from 'apache-arrow';
 
-const table = makeTable({
+const table = tableFromArrays({
   a: new Int32Array([1, 2, 3]),
   b: ['x', 'y', 'z']
 });
@@ -174,7 +174,7 @@ Returns a table including only selected column indices.
 
 ### `assign<R extends TypeMap = any>(other: Table<R>): Table<T & R>`
 
-Returns a merged schema/data table with `other` appended row-wise.
+Returns a merged schema/data table with `other` columns merged by field name.
 
 ## Notes
 

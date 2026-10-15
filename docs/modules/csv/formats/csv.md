@@ -13,11 +13,11 @@ import {StructuredDataPathGraphic} from '@site/src/components/docs/structured-da
 import {ClientExample} from '@site/src/components';
 
 <DocPageHeader
+  format="csv"
   eyebrow="Delimited text formats"
   title="CSV, TSV, and DSV"
   description="CSV, TSV, and DSV use plain text to represent rows and fields. Their simplicity makes them useful for exchange, command-line tools, spreadsheets, and streaming pipelines."
   tone="cyan"
-  logos={[{alt: 'CSV', src: '/images/format-logos/csv-logo.svg'}]}
   meta={['Plain text', 'Streaming-friendly', 'Tabular data']}
   links={[
     {label: 'CSV module', to: '/docs/modules/csv'},

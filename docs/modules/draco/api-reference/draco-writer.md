@@ -10,6 +10,7 @@ import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
 import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
 
 <DocPageHeader
+  format="draco"
   eyebrow="Draco module · writer API"
   title="DracoWriter"
   description="Encode meshes and point clouds with Draco compression, retaining application attribute names, metadata, and configurable quantization at the compression boundary."
@@ -50,7 +51,7 @@ An optional `AbortSignal` cancels between geometries, and `onProgress` receives 
 count after each successful encode. Worker pooling is intentionally tracked separately for the
 shared loaders.gl worker framework.
 
-![logo](../images/draco-small.png)
+
 
 The `DracoWriter` encodes [Mesh](/docs/specifications/category-mesh) or [Mesh Arrow table](/docs/specifications/category-mesh#mesh-arrow-tables) data using [Draco](/docs/modules/draco/formats/draco) compression.
 

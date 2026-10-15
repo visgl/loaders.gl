@@ -8,7 +8,8 @@ compact JavaScript, and optional codec implementations.
 - Async codecs prefer the runtime's `CompressionStream` and `DecompressionStream` support.
 - Library-neutral root classes provide the recommended lazy, balanced default.
 - Advanced implementation-specific subpaths use `FORMAT-DIRECTION-IMPLEMENTATION` order.
-- Compact `fflate`, `fzstd`, Snappy, LZ4 block, and Brotli fallbacks cover common read paths.
+- All default fallback codecs use lazily imported compress-utils 0.9 WASM subpaths.
+- Sync methods require preload; raw LZO1X decoding requires an output capacity.
 - Larger or specialized implementations are selected through explicit, independently importable
   subpaths.
 - The package root exports only direction-specific APIs and loads JavaScript fallbacks dynamically.

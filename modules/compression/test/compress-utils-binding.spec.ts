@@ -115,3 +115,27 @@ function createPassthroughStream() {
     destroy: () => {}
   };
 }
+
+test('compress-utils preload shares initialization, retries failures, and forwards sync capacity', async () => {
+  let initializationCount = 0;
+  let forwardedOptions: Record<string, unknown> | undefined;
+  const module = {
+    preload: async () => {
+      initializationCount++;
+      if (initializationCount === 1) throw new Error('retry initialization');
+    },
+    decompress: async (input: Uint8Array) => input,
+    decompressSync: (input: Uint8Array, options?: Record<string, unknown>) => {
+      forwardedOptions = options;
+      return input;
+    }
+  };
+  const decoder = new CompressUtilsDecompressor(METADATA, async () => module, {
+    compressUtils: {expectedSize: 99}
+  });
+  await expect(decoder.preload()).rejects.toThrow('retry initialization');
+  await Promise.all([decoder.preload(), decoder.preload()]);
+  expect(initializationCount).toBe(2);
+  expect(new Uint8Array(decoder.decompressSync(INPUT.buffer, 3))).toEqual(INPUT);
+  expect(forwardedOptions).toEqual({expectedSize: 3});
+});

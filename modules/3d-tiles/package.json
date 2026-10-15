@@ -1,6 +1,6 @@
 {
   "name": "@loaders.gl/3d-tiles",
-  "version": "5.0.0-alpha.10",
+  "version": "5.0.0-alpha.12",
   "description": "3D Tiles, an open standard for streaming massive heterogeneous 3D geospatial datasets.",
   "license": "MIT",
   "type": "module",
@@ -74,27 +74,27 @@
     "pre-build": "npm run generate-json-schema",
     "prepublishOnly": "npm run build-bundle && npm run build-bundle-dev",
     "generate-json-schema": "node ../../scripts/generate-json-schema.mjs --schema ./dist/tileset-zod-schema.js --export Tiles3DTilesetSchema --output ./dist/tileset.schema.json --id https://unpkg.com/@loaders.gl/3d-tiles/tileset.schema.json --title 'loaders.gl 3D Tiles tileset JSON' && node ../../scripts/generate-json-schema.mjs --schema ./dist/subtree-zod-schema.js --export SubtreeSchema --output ./dist/subtree.schema.json --id https://unpkg.com/@loaders.gl/3d-tiles/subtree.schema.json --title 'loaders.gl 3D Tiles subtree metadata'",
-    "build-bundle": "ocular-bundle ./bundle.ts --output=dist/dist.min.js",
-    "build-bundle-dev": "ocular-bundle ./bundle.ts --env=dev --output=dist/dist.dev.js"
+    "build-bundle": "node ../../scripts/build-codec-bundle.mjs ./bundle.ts --output=dist/dist.min.js",
+    "build-bundle-dev": "node ../../scripts/build-codec-bundle.mjs ./bundle.ts --env=dev --output=dist/dist.dev.js"
   },
   "dependencies": {
-    "@loaders.gl/compression": "5.0.0-alpha.10",
-    "@loaders.gl/crypto": "5.0.0-alpha.10",
-    "@loaders.gl/draco": "5.0.0-alpha.10",
-    "@loaders.gl/gltf": "5.0.0-alpha.10",
-    "@loaders.gl/images": "5.0.0-alpha.10",
-    "@loaders.gl/loader-utils": "5.0.0-alpha.10",
-    "@loaders.gl/schema": "5.0.0-alpha.10",
-    "@loaders.gl/tiles": "5.0.0-alpha.10",
-    "@loaders.gl/zip": "5.0.0-alpha.10",
-    "@math.gl/core": "5.0.0-alpha.15",
-    "@math.gl/dggs": "5.0.0-alpha.15",
-    "@math.gl/geometry-utils": "5.0.0-alpha.15",
-    "@math.gl/geospatial": "5.0.0-alpha.15",
+    "@loaders.gl/draco": "5.0.0-alpha.12",
+    "@loaders.gl/gltf": "5.0.0-alpha.12",
+    "@loaders.gl/images": "5.0.0-alpha.12",
+    "@loaders.gl/loader-utils": "5.0.0-alpha.12",
+    "@loaders.gl/schema": "5.0.0-alpha.12",
+    "@loaders.gl/tiles": "5.0.0-alpha.12",
+    "@loaders.gl/zip": "5.0.0-alpha.12",
+    "@math.gl/core": "5.0.0-alpha.16",
+    "@math.gl/geometry-utils": "5.0.0-alpha.16",
+    "@math.gl/geospatial": "5.0.0-alpha.16",
     "zod": "^4.1.12"
   },
   "peerDependencies": {
     "@loaders.gl/core": "~5.0.0-alpha.0"
   },
-  "gitHead": "8a9e77743ea90a7be4ebec572416bb50ca9d73c3"
+  "gitHead": "8a9e77743ea90a7be4ebec572416bb50ca9d73c3",
+  "devDependencies": {
+    "@math.gl/dggs": "5.0.0-alpha.16"
+  }
 }

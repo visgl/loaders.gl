@@ -1,6 +1,8 @@
+import {FormatLogo} from '@site/src/components/docs/format-logo';
+
 # Overview
 
-![YAML logo](../../images/logos/yaml-logo.svg) ![TOML logo](../../images/logos/toml-logo.svg)
+<FormatLogo slug="yaml" /> <FormatLogo slug="toml" />
 
 The `@loaders.gl/config` module provides dependency-free parsers for YAML and TOML configuration
 documents. Both loaders return ordinary JavaScript objects, arrays, and scalar values through the

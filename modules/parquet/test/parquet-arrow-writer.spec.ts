@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
+import {ParquetJSLoaderWithParser as ParquetJSLoader} from '@loaders.gl/parquet/parquet-js-loader';
 import { expect, test } from "vitest";
 import { encode, load } from '@loaders.gl/core';
 import type { ArrowTable, ObjectRowTable } from '@loaders.gl/schema';
@@ -9,7 +10,7 @@ import * as parquet from '@loaders.gl/parquet';
 import * as bundledParquet from '@loaders.gl/parquet/bundled';
 import * as parquetSource from '@loaders.gl/parquet/parquet-source-loader';
 import * as unbundledParquet from '@loaders.gl/parquet/unbundled';
-import { ParquetJSLoader, ParquetJSWriter, ParquetLoader, ParquetWriter } from '@loaders.gl/parquet';
+import {ParquetJSWriter, ParquetLoader, ParquetWriter} from '@loaders.gl/parquet';
 import * as arrow from 'apache-arrow';
 test('ParquetWriter#writer objects', () => {
     expect(ParquetWriter, 'ParquetWriter').toBeTruthy();

@@ -9,6 +9,7 @@ import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
 import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
 
 <DocPageHeader
+  format="i3s"
   eyebrow="I3S runtime / coordinates"
   title="Keep horizontal, vertical, and placement semantics separate."
   description="I3S describes a horizontal CRS, an optional vertical CRS, a height model, and layer placement through related but distinct fields. loaders.gl discovers them without collapsing their meanings into one guessed coordinate system."

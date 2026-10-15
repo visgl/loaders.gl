@@ -10,12 +10,12 @@ import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
 import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
 
 <DocPageHeader
+  format="las"
   eyebrow="LAS loader"
   title="LASLoader"
   description="Read LAS and LAZ records into Arrow columns for analysis, scans, and writers, or request a render-ready mesh compatibility shape when needed."
   tone="blue"
   meta={['LAS / LAZ', 'TypeScript', 'Arrow output']}
-  logos={[{alt: 'LAS', src: '/images/format-logos/las-logo.svg'}]}
   links={[
     {label: 'LAS / LAZ format', to: '/docs/modules/las/formats/las'},
     {label: 'LASWriter', to: '/docs/modules/las/api-reference/las-writer'}
@@ -68,7 +68,9 @@ const mesh = await load(url, LASLoader, {las: {shape: 'mesh'}});
 Select another implementation by importing its loader variant instead of setting an option:
 
 ```typescript
-import {LASCOPCLoader, LAZPerfLoader, LAZRsLoader} from '@loaders.gl/las';
+import {LASCOPCLoaderWithParser as LASCOPCLoader} from '@loaders.gl/las/las-copc-loader';
+import {LAZPerfLoaderWithParser as LAZPerfLoader} from '@loaders.gl/las/lazperf-loader';
+import {LAZRsLoaderWithParser as LAZRsLoader} from '@loaders.gl/las/laz-rs-loader';
 
 const copcDecodedData = await load(url, LASCOPCLoader, options);
 ```

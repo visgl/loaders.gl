@@ -1,6 +1,6 @@
 {
   "name": "@loaders.gl/arrow",
-  "version": "5.0.0-alpha.10",
+  "version": "5.0.0-alpha.12",
   "description": "Simple columnar table loader for the Apache Arrow format",
   "license": "MIT",
   "type": "module",
@@ -45,6 +45,11 @@
       "types": "./dist/arrow-source.d.ts",
       "import": "./dist/arrow-source.js"
     },
+    "./types": {
+      "types": "./dist/types.d.ts",
+      "import": "./dist/types.js",
+      "require": "./dist/types.cjs"
+    },
     "./transport": {
       "types": "./dist/transport.d.ts",
       "import": "./dist/transport.js"
@@ -60,6 +65,14 @@
       "types": "./dist/geometry/index.d.ts",
       "import": "./dist/geometry/index.js",
       "require": "./dist/geometry/index.cjs"
+    },
+    "./arrow-loader": {
+      "types": "./dist/arrow-loader.d.ts",
+      "import": "./dist/arrow-loader.js"
+    },
+    "./geoarrow-loader": {
+      "types": "./dist/geoarrow-loader.d.ts",
+      "import": "./dist/geoarrow-loader.js"
     }
   },
   "sideEffects": false,
@@ -73,25 +86,23 @@
   },
   "scripts": {
     "pre-build": "npm run build-worker && npm run build-bundle && npm run build-bundle-dev && npm run build-triangulation-worker && npm run build-triangulation-worker-node",
-    "build-bundle": "ocular-bundle ./bundle.ts --output=dist/dist.min.js",
-    "build-bundle-dev": "ocular-bundle ./bundle.ts --env=dev --output=dist/dist.dev.js",
-    "build-triangulation-worker": "esbuild src/workers/triangulation-worker.ts --bundle --outfile=dist/triangulation-worker.js  --platform=browser --external:{stream} --define:__VERSION__=\\\"$npm_package_version\\\"",
-    "build-triangulation-worker-node": "esbuild src/workers/triangulation-worker-node.ts --bundle --outfile=dist/triangulation-worker-node.js --platform=node --target=node16 --format=esm --tree-shaking=false --external:{stream} --define:__VERSION__=\\\"$npm_package_version\\\"",
+    "build-bundle": "node ../../scripts/build-codec-bundle.mjs ./bundle.ts --output=dist/dist.min.js",
+    "build-bundle-dev": "node ../../scripts/build-codec-bundle.mjs ./bundle.ts --env=dev --output=dist/dist.dev.js",
+    "build-triangulation-worker": "node ../../scripts/build-codec-worker.mjs src/workers/triangulation-worker.ts --bundle --outfile=dist/triangulation-worker.js  --platform=browser --external:{stream} --define:__VERSION__=\\\"$npm_package_version\\\"",
+    "build-triangulation-worker-node": "node ../../scripts/build-codec-worker.mjs src/workers/triangulation-worker-node.ts --bundle --outfile=dist/triangulation-worker-node.js --platform=node --target=node16 --format=esm --tree-shaking=false --external:{stream} --define:__VERSION__=\\\"$npm_package_version\\\"",
     "pre-build2": "cp fixed-package.json ../../node_modules/apache-arrow/package.json && npm run build-bundle && npm run build-worker",
-    "build-worker": "esbuild src/workers/arrow-worker.ts --bundle --outfile=dist/arrow-worker.js  --platform=browser --external:{stream} --define:__VERSION__=\\\"$npm_package_version\\\"",
-    "build-worker2": "esbuild src/workers/arrow-worker.ts --bundle --outfile=dist/arrow-worker.js --platform=browser --external:{stream}"
+    "build-worker": "node ../../scripts/build-codec-worker.mjs src/workers/arrow-worker.ts --bundle --outfile=dist/arrow-worker.js  --platform=browser --external:{stream} --define:__VERSION__=\\\"$npm_package_version\\\"",
+    "build-worker2": "node ../../scripts/build-codec-worker.mjs src/workers/arrow-worker.ts --bundle --outfile=dist/arrow-worker.js --platform=browser --external:{stream}"
   },
   "dependencies": {
-    "@loaders.gl/arrow-geometry": "5.0.0-alpha.10",
-    "@loaders.gl/compression": "5.0.0-alpha.10",
-    "@loaders.gl/loader-utils": "5.0.0-alpha.10",
-    "@loaders.gl/schema": "5.0.0-alpha.10",
-    "@loaders.gl/schema-utils": "5.0.0-alpha.10",
-    "@loaders.gl/wkt": "5.0.0-alpha.10",
-    "@loaders.gl/worker-utils": "5.0.0-alpha.10",
-    "@math.gl/wkb": "5.0.0-alpha.15",
-    "apache-arrow": ">= 17.0.0",
-    "lz4js": "^0.2.0"
+    "@loaders.gl/arrow-geometry": "5.0.0-alpha.12",
+    "@loaders.gl/compression": "5.0.0-alpha.12",
+    "@loaders.gl/loader-utils": "5.0.0-alpha.12",
+    "@loaders.gl/schema": "5.0.0-alpha.12",
+    "@loaders.gl/schema-utils": "5.0.0-alpha.12",
+    "@loaders.gl/worker-utils": "5.0.0-alpha.12",
+    "@math.gl/wkb": "5.0.0-alpha.16",
+    "apache-arrow": ">= 17.0.0"
   },
   "peerDependencies": {
     "@loaders.gl/core": "~5.0.0-alpha.0"
@@ -99,6 +110,9 @@
   "gitHead": "8a9e77743ea90a7be4ebec572416bb50ca9d73c3",
   "typesVersions": {
     "*": {
+      "types": [
+        "dist/types.d.ts"
+      ],
       "geometry": [
         "dist/geometry/index.d.ts"
       ]

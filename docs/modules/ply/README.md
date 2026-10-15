@@ -9,6 +9,7 @@ import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
 import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
 
 <DocPageHeader
+  format="ply"
   eyebrow="Polygon and vertex format"
   title="Describe a mesh as elements and properties."
   description="The PLY module reads flexible vertex and face elements in ASCII or binary form, preserving common properties such as colors, normals, texture coordinates, and confidence values."
@@ -33,7 +34,7 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
   ]}
 />
 
-The `@loaders.gl/ply` module handles the the [Polygon file format](/docs/modules/ply/formats/ply), a file format for 3D graphical objects described as a collection of polygons that is sometimes used to store point clouds.
+The `@loaders.gl/ply` module handles the [Polygon file format](/docs/modules/ply/formats/ply), a file format for 3D graphical objects described as a collection of polygons that is sometimes used to store point clouds.
 
 <ReferenceBoundary
   title="PLY module reference"

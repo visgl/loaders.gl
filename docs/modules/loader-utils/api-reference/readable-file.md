@@ -28,7 +28,7 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
   tone="blue"
   items={[
     {label: 'Remote', value: 'HttpFile with validators and HTTP Range'},
-    {label: 'Memory', value: 'ArrayBufferFile or DataViewReadableFile'},
+    {label: 'Memory', value: 'ArrayBufferFile'},
     {label: 'Browser', value: 'BlobFile and File-backed reads'},
     {label: 'Node.js', value: 'NodeFile backed by the local filesystem'}
   ]}
@@ -48,7 +48,7 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
 - `ArrayBufferFile` (browser & Node.js) – provides direct random-access reads over an in-memory `ArrayBuffer` without wrapping it in a `Blob`.
 - `BlobFile` (browser & Node.js) – provides random access reads on `Blob` or `File` instances via the standard slicing APIs.
 - `NodeFile` (Node.js) – exposes random access reads backed by the local file system without importing `fs` directly in application code.
-- `DataViewReadableFile` (browser & Node.js) – adapts an in-memory `ArrayBuffer`/`DataView` into the `ReadableFile` interface for archive parsing or other buffer-first workflows.
+- `ArrayBufferFile` (browser & Node.js) – adapts an in-memory `ArrayBuffer` into the `ReadableFile` interface for archive parsing or other buffer-first workflows.
 
 All implementations satisfy the `ReadableFile` interface exported from `@loaders.gl/loader-utils` and support exact `read` operations for incremental processing of large files.
 

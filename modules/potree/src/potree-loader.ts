@@ -2,40 +2,30 @@
 // SPDX-License-Identifier: MIT
 // Copyright vis.gl contributors
 
-import type {Loader, LoaderOptions} from '@loaders.gl/loader-utils';
-import type {PotreeMetadata} from './types/potree-metadata';
+import type {LoaderWithParser} from '@loaders.gl/loader-utils';
+import {
+  PotreeLoader as PotreeLoaderMetadata,
+  type PotreeDatasetMetadata,
+  type POTreeLoaderOptions
+} from './potree-loader-types';
+import {PotreeMetadataSchema} from './types/potree-metadata';
 
-import {PotreeFormat} from './potree-format';
-// __VERSION__ is injected by babel-plugin-version-inline
-// @ts-ignore TS2304: Cannot find name '__VERSION__'.
-const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : 'latest';
+import {parsePotree2Metadata} from './parsers/parse-potree2';
 
-export type POTreeLoaderOptions = LoaderOptions & {
-  potree?: {};
-};
+const {preload: _PotreeLoaderPreload, ...PotreeLoaderMetadataWithoutPreload} = PotreeLoaderMetadata;
 
-/** Preloads the parser-bearing Potree loader implementation. */
-async function preload() {
-  const {PotreeLoaderWithParser} = await import('./potree-loader-with-parser');
-  return PotreeLoaderWithParser;
+/** Potree loader */
+export const PotreeLoaderWithParser = {
+  ...PotreeLoaderMetadataWithoutPreload,
+  parse: async (data: ArrayBuffer) => parsePotreeMetadata(new TextDecoder().decode(data)),
+  parseTextSync: parsePotreeMetadata
+} as const satisfies LoaderWithParser<PotreeDatasetMetadata, never, POTreeLoaderOptions>;
+
+/** Parses and validates a Potree cloud.js or metadata.json document. */
+function parsePotreeMetadata(text: string): PotreeDatasetMetadata {
+  const jsonText = text.replace(/^\uFEFF/, '').replace(/^(?:\s*\/\/[^\r\n]*(?:\r?\n|$))*/, '');
+  const metadata = JSON.parse(jsonText);
+  return metadata.version === '2.0'
+    ? parsePotree2Metadata(jsonText)
+    : PotreeMetadataSchema.parse(metadata);
 }
-
-/** Metadata-only Potree loader. */
-export const PotreeLoader = {
-  ...PotreeFormat,
-  dataType: null as unknown as PotreeMetadata,
-  batchType: null as never,
-
-  name: 'potree metadata',
-  id: 'potree',
-  module: 'potree',
-  version: VERSION,
-  text: true,
-  extensions: ['js'],
-  mimeTypes: ['application/json'],
-  testText: text => text.indexOf('octreeDir') >= 0,
-  options: {
-    potree: {}
-  },
-  preload
-} as const satisfies Loader<PotreeMetadata, never, POTreeLoaderOptions>;

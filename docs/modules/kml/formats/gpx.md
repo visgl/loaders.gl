@@ -10,6 +10,7 @@ import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
 import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
 
 <DocPageHeader
+  format="gpx"
   eyebrow="GPS exchange format"
   title="Carry tracks and waypoints between GPS tools."
   description="GPX is a focused XML format for exchanging routes, tracks, and waypoints. loaders.gl turns those records into geometry tables that can move into mapping, analysis, or Arrow-based pipelines."

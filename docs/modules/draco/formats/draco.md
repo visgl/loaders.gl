@@ -11,6 +11,7 @@ import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
 import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
 
 <DocPageHeader
+  format="draco"
   eyebrow="Compressed geometry format"
   title="Ship geometry without throwing away its attributes."
   description="Draco compresses meshes and point clouds for transport. loaders.gl exposes the decoder and writer behind the same typed geometry boundary used by glTF, 3D Tiles, I3S, and standalone workflows."
@@ -39,7 +40,7 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
   ]}
 />
 
-![logo](../images/draco-small.png)
+
 
 - _[`@loaders.gl/draco`](/docs/modules/draco)_ - loaders.gl implementation
 - _[Draco3D](https://google.github.io/draco/)_ - Open-source library for compressing and decompressing 3D geometric meshes and point clouds.

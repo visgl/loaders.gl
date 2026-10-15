@@ -10,6 +10,7 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
 import {LoaderLiveExample} from '@site/src/components/docs/loader-live-example';
 
 <DocPageHeader
+  format="3d-tiles"
   eyebrow="Cesium ion loader"
   title="Resolve an ion asset without leaking its credentials."
   description="`CesiumIonLoader` extends `Tiles3DLoader` with Cesium ion asset discovery and origin-scoped endpoint credentials. It bootstraps an asset, then keeps the returned token attached only to the resolved tileset origin."

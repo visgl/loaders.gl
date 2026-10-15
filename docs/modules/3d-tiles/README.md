@@ -11,6 +11,7 @@ import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
 import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
 
 <DocPageHeader
+  format="3d-tiles"
   eyebrow="Tiled scene module"
   title="@loaders.gl/3d-tiles"
   description="Resolve tileset structure, linked content, and level-of-detail decisions without making the application understand every 3D Tiles detail."
@@ -20,9 +21,8 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
 
 <Tiles3DDocsTabs active="module" />
 
-![ogc-logo](../../images/logos/ogc-logo-60.png)
 &nbsp;
-![3dtiles-logo](./images/3d-tiles-logo-60.png)
+
 
 <TiledSceneGraphic />
 
@@ -162,3 +162,14 @@ under the Apache 2.0 license and is maintained in collaboration with the Cesium 
 
 Use [Tiles3DArchiveWriter](./api-reference/tiles-3d-archive-writer.md) to package already-authored
 3D Tiles resources as a portable indexed `.3tz` archive.
+
+### Indexed archive reads
+
+`parse3DTilesArchive(readableFile)` returns a `Tiles3DArchive` with the archive index
+loaded once. Use it for repeated entry reads from a `BlobFile`, `HttpFile` or other
+`ReadableFile`; constructing `Tiles3DArchive` without an index falls back to ZIP
+cached ZIP directory lookup. The archive owns the readable file; call
+`archive.close()` in a `finally` block after use. Archives without `@3dtilesIndex1@` build an index from their ZIP headers.
+
+The one-shot `Tiles3DArchiveFileLoader.parseFile()` extraction closes its supplied file
+after success or failure. Use `parse3DTilesArchive` when several resources share one file.

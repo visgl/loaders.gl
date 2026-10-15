@@ -10,6 +10,7 @@ import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
 import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
 
 <DocPageHeader
+  format="shapefile"
   eyebrow="GIS dataset format"
   title="A geospatial dataset, not just a .shp file."
   description="A Shapefile is a coordinated set of geometry, attribute, index, projection, and text-encoding files. loaders.gl assembles those pieces into common GIS and Arrow data shapes."

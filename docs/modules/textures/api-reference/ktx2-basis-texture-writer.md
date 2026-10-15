@@ -10,6 +10,7 @@ import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
 import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
 
 <DocPageHeader
+  format="ktx"
   eyebrow="Texture API / writer"
   title="Write one compressed texture for many GPU families."
   description="KTX2BasisWriter encodes supported RGBA pixel data with Basis Universal and packages the result as KTX2. The output can be transcoded by a consuming runtime to a device-compatible compressed format."
@@ -63,7 +64,7 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
 ## Usage
 
 ```typescript
-import '@loaders.gl/polyfill'; // only if using under Node
+import '@loaders.gl/polyfills'; // only if using under Node
 import {load, encode} from '@loaders.gl/core';
 import {ImageBitmapLoader, getImageData} from '@loaders.gl/images';
 import {KTX2BasisWriter} from '@loaders.gl/textures';

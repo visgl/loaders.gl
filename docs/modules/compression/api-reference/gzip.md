@@ -11,9 +11,9 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
 <DocPageHeader
   eyebrow="Compression API · GZIP"
   title="Use one GZIP pair for reads and writes."
-  description="GZipCompressor and GZipDecompressor provide the normal GZIP path: native streams when available, a compact fflate fallback otherwise, and explicit backend subpaths when an application needs more control."
+  description="GZipCompressor and GZipDecompressor provide the normal GZIP path: native streams when available, a lazy compress-utils WASM fallback otherwise, and explicit backend subpaths when an application needs more control."
   tone="violet"
-  meta={['From v5.0', 'Native stream first', 'fflate fallback']}
+  meta={['From v5.0', 'Native stream first', 'compress-utils fallback']}
   links={[
     {label: 'Compression module', to: '/docs/modules/compression'},
     {label: 'Shared codec API', to: '/docs/modules/compression/api-reference/compressor-decompressor'},
@@ -29,7 +29,7 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
   items={[
     {label: 'Read', value: 'GZipDecompressor restores the original bytes'},
     {label: 'Write', value: 'GZipCompressor emits GZIP frames'},
-    {label: 'Selection', value: 'Native stream first, fflate fallback'},
+    {label: 'Selection', value: 'Native stream first, compress-utils fallback'},
     {label: 'Control', value: 'useNative and gzip.level options'}
   ]}
 />
@@ -45,8 +45,7 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
 </p>
 
 `GZipCompressor` and `GZipDecompressor` are the recommended GZIP transforms. Their async methods
-prefer built-in streams and fall back to compact `fflate`; synchronous and fallback streaming
-operations use `fflate` directly.
+prefer built-in streams and fall back to `compress-utils`; sync methods require preload and use its WASM codec.
 
 ```typescript
 import {GZipCompressor, GZipDecompressor} from '@loaders.gl/compression';
@@ -59,8 +58,8 @@ Both implement the shared [Compressor and Decompressor](./compressor-decompresso
 
 ## Options
 
-- `useNative: false` selects the deterministic `fflate` path.
-- `gzip.level` selects the fallback compression level.
+- `useNative: false` selects the `compress-utils` path.
+- `compressUtils.level` selects the fallback compression level.
 
 ## Backend choices
 
@@ -73,3 +72,5 @@ Most applications do not need these implementation-specific imports.
 | compress-utils | `gzip-compressor-compress-utils` | `gzip-decompressor-compress-utils` |
 
 Compare their measured size and throughput in the [live benchmarks](/docs/modules/compression/benchmarks).
+
+For sync methods, preload first; root callers should use `{useNative: false}` when selecting a WASM implementation for synchronous work.

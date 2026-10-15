@@ -161,7 +161,7 @@
   flex: 0 0 auto;
 }
 
-.logos :global(img) {
+.ecosystemLogo {
   display: block;
   filter: brightness(0) invert(1);
   height: auto;

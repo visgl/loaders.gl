@@ -6,6 +6,7 @@
 import type {CompressionOptions} from './compression';
 import {Compression} from './compression';
 import {
+  initializeWasmModule,
   registerJSModules,
   getJSModule,
   getJSModuleOrNull,
@@ -55,9 +56,16 @@ export class ZstdCompression extends Compression {
   async preload(modules: Record<string, any> = {}): Promise<void> {
     registerJSModules(modules);
     const ZstdCodec = getJSModuleOrNull('zstd-codec');
-    // eslint-disable-next-line  @typescript-eslint/no-misused-promises
     if (!zstdPromise && ZstdCodec) {
-      zstdPromise = new Promise(resolve => ZstdCodec.run(zstd => resolve(zstd)));
+      // zstd-codec exposes only a success callback, not a WASM rejection/abort hook.
+      // Propagating asynchronous initialization failures requires support from the dependency.
+      zstdPromise = initializeWasmModule<any, any>(
+        onInitialized => ZstdCodec.run(onInitialized),
+        module => {
+          const {Generic, Simple, Streaming, Dict} = module;
+          return {Generic, Simple, Streaming, Dict};
+        }
+      );
     }
     if (zstdPromise) {
       zstd = await zstdPromise;

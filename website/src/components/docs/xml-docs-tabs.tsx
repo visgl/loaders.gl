@@ -1,3 +1,4 @@
+import {FormatLogo} from './format-logo';
 import React, {type ReactNode} from 'react';
 import Link from '@docusaurus/Link';
 
@@ -33,6 +34,7 @@ export function XmlDocsTabs({
 }): ReactNode {
   return (
     <nav className="docs-page-tabs" aria-label="XML documentation sections">
+      <FormatLogo slug="xml" />
       {XML_DOCS_TABS.map(tab => (
         <Link
           key={tab.id}

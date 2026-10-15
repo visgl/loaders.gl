@@ -38,7 +38,7 @@ export type OGCTileMatrix = {
   matrixWidth?: number;
   /** Matrix height in tiles. */
   matrixHeight?: number;
-  /** Coalesced rows; not interpreted, so tiles in coalesced rows are not described. */
+  /** Coalesced rows; nonempty declarations are rejected until variable-width geometry is supported. */
   variableMatrixWidths?: unknown[];
 };
 
@@ -83,10 +83,13 @@ export function convertOGCTileMatrixSetToTileGrid(
   const crs = getCRSIdentifier(tileMatrixSet.crs);
   const metersPerUnit = getMetersPerUnit(crs, options.metersPerUnit);
   const swapAxes = getAxisOrder(tileMatrixSet.orderedAxes, crs) === 'yx';
-  return createTileGrid(
-    crs,
-    tileMatrixSet.tileMatrices.map(matrix => toTileGridMatrix(matrix, swapAxes, metersPerUnit))
+  const matrices = tileMatrixSet.tileMatrices.map(matrix =>
+    toTileGridMatrix(matrix, swapAxes, metersPerUnit)
   );
+  if (new Set(matrices.map(matrix => matrix.id)).size !== matrices.length) {
+    throw new Error('OGC TileMatrixSet requires unique tile matrix identifiers');
+  }
+  return createTileGrid(crs, matrices);
 }
 
 /** Converts one tile matrix, keeping only the fields the document provides. */
@@ -97,6 +100,24 @@ function toTileGridMatrix(
 ): TileGridMatrix {
   if (typeof matrix?.id !== 'string' || !matrix.id) {
     throw new Error('OGC TileMatrixSet tile matrices require a string id');
+  }
+  if (
+    matrix.variableMatrixWidths !== undefined &&
+    (!Array.isArray(matrix.variableMatrixWidths) || matrix.variableMatrixWidths.length > 0)
+  ) {
+    throw new Error('OGC TileMatrixSet variableMatrixWidths are not supported');
+  }
+  if (
+    matrix.cellSize !== undefined &&
+    (!Number.isFinite(matrix.cellSize) || matrix.cellSize <= 0)
+  ) {
+    throw new Error('OGC TileMatrixSet cellSize must be a positive finite number');
+  }
+  if (
+    matrix.cornerOfOrigin !== undefined &&
+    !['topleft', 'bottomleft'].includes(String(matrix.cornerOfOrigin).toLowerCase())
+  ) {
+    throw new Error('OGC TileMatrixSet cornerOfOrigin must be topLeft or bottomLeft');
   }
   return createTileGridMatrix({
     id: matrix.id,

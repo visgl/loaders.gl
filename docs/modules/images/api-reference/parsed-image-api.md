@@ -49,8 +49,8 @@ Background: The image returned by [`ImageBitmapLoader`](/docs/modules/images/api
 E.g., the `getImageData` method enables the application to get width, height and pixel data from an image returned by an image category loader in a platform independent way:
 
 ```typescript
-import {ImageBitmapLoader, getImageSize, getImageData} from `@loaders.gl/images`;
-import {load} from `@loaders.gl/core`;
+import {ImageBitmapLoader, getImageSize, getImageData} from '@loaders.gl/images';
+import {load} from '@loaders.gl/core';
 
 const image = await load(URL, ImageBitmapLoader);
 

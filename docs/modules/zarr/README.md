@@ -10,6 +10,7 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
 import {RasterWindowGraphic} from '@site/src/components/docs/raster-window-graphic';
 
 <DocPageHeader
+  format="zarr"
   eyebrow="Chunked array module"
   title="Read the chunks that cover the question."
   description="The Zarr module opens chunked multidimensional data and exposes source APIs for spatial, multiscale, and named-dimension selection. It supports Earth-science rasters as well as OME-Zarr bioimaging data."

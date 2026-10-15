@@ -10,6 +10,7 @@ import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
 import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
 
 <DocPageHeader
+  format="las"
   eyebrow="Point-cloud format"
   title="Point records that scale from files to the cloud."
   description="LAS defines a widely used binary point-cloud record layout. loaders.gl reads LAS and LAZ into application-friendly point or Arrow data, and provides the same category boundary for writers and cloud-oriented COPC workflows."

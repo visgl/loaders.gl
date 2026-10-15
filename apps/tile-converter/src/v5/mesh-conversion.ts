@@ -21,6 +21,15 @@ import {encodeDracoMeshTile} from './mesh-draco.js';
 export interface MeshConversionInput {
   /** Caller-owned resource identifier, forwarded to the output sink. */
   readonly id: string;
+  /** Inspected content placement, used by the hierarchy sink independently of primitive IDs. */
+  readonly contentResourceId?: string;
+  /** Ordered primitive within a content; last marks complete extraction for hierarchy authoring. */
+  readonly contentPrimitive?: {
+    /** Zero-based primitive placement index in scene traversal order. */
+    readonly index: number;
+    /** Whether this is the final primitive placement in the content. */
+    readonly last: boolean;
+  };
   /** Triangle geometry with absolute packed Float32 or Float64 source positions. */
   readonly mesh: MeshGeometry;
   /** Original I3S vector basis; overrides the codec default when supplied by a source. */
@@ -37,6 +46,15 @@ export interface MeshConversionInput {
 export interface EncodedMeshConversionResource {
   /** Caller-owned resource identifier. */
   readonly id: string;
+  /** Inspected content placement, retained by the codec for hierarchy authoring. */
+  readonly contentResourceId?: string;
+  /** Ordered primitive within a content; last marks complete extraction for hierarchy authoring. */
+  readonly contentPrimitive?: {
+    /** Zero-based primitive placement index in scene traversal order. */
+    readonly index: number;
+    /** Whether this is the final primitive placement in the content. */
+    readonly last: boolean;
+  };
   /** Self-contained GLB with local positions and transformed normals. */
   readonly glb: ArrayBuffer;
   /** Target-frame translation to add to the encoded positions. */
@@ -205,6 +223,8 @@ export function createMeshConversionCodec<TInspection = unknown>(
       }
       yield {
         id: resource.id,
+        contentResourceId: resource.contentResourceId,
+        contentPrimitive: resource.contentPrimitive,
         glb: encoded.glb,
         origin,
         boundingBox: [minimum, maximum],
