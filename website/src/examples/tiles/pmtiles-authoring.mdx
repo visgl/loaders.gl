@@ -18,9 +18,15 @@ one zoom and a payload format, then generate and download the PMTiles archive. O
 The example uses the existing [GeoArrow authoring API](/docs/modules/pmtiles/api-reference/geoarrow-pmtiles)
 for MVT/MLT and [raster authoring API](/docs/modules/pmtiles/api-reference/raster-pmtiles) for PNG.
 
-**Bounded first version:** 32 MiB encoded input, 50,000 vector rows, 64 requested tile addresses,
+**Bounded export:** 32 MiB local/vector input, 50,000 vector rows, 64 requested tile addresses,
 and 32 MiB archive output. It exports whole intersecting tiles rather than cropping to the exact
-requested bounds. All input bytes are read before conversion, including GeoTIFF/COG URLs.
-These budgets do not cap peak heap; decompression and parsing allocate before row checks.
+requested bounds. GeoTIFF/COG URLs use range reads with a shared 32 MiB requested-range budget (including coalescing gaps and failed reads);
+the remote file can be larger. Servers must support HTTP 206 and CORS. Vector inputs are read
+completely before conversion.
+These budgets do not cap peak heap; decompression and parsing can allocate before result limits.
 Input reading, parsing, tiling and encoding run in a disposable module worker, keeping the page
 responsive. Cancel terminates computation immediately; retry starts a fresh worker. No data is uploaded.
+
+GeoTIFF conversion reuses the raster region planner behind the
+[common scan architecture](/docs/developer-guide/common-scan-architecture). It selects source
+bands and native overviews for each destination tile, while conversion handles sampling and PNG/PMTiles encoding.

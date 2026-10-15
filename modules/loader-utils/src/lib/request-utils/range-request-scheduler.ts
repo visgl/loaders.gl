@@ -50,6 +50,8 @@ export type RangeRequestSchedulerProps = {
   maxQueueSize?: number;
   /** Maximum individual logical range length; defaults to 64 MiB. */
   maxRangeBytes?: number;
+  /** Lifetime budget for merged transport spans, including gaps and failed/canceled reads; default MAX_SAFE_INTEGER. */
+  maxTotalBytes?: number;
   /** Optional probe.gl Stats object that receives range batching counters. */
   stats?: Stats;
   /** Optional event callback for range batching diagnostics. */
@@ -186,6 +188,7 @@ const DEFAULT_PROPS: Required<RangeRequestSchedulerProps> = {
   maxConcurrency: 6,
   maxQueueSize: 4096,
   maxRangeBytes: 64 * 1024 * 1024,
+  maxTotalBytes: Number.MAX_SAFE_INTEGER,
   stats: createRangeStats('range-request-scheduler-default'),
   onEvent: () => {}
 };
@@ -207,6 +210,8 @@ export class RangeRequestScheduler {
   private transportQueue: MergedRequest[] = [];
   /** Number of active transports. */
   private activeTransports = 0;
+  /** Bytes reserved by started transports; failures and cancellation do not refund this budget. */
+  private reservedTransportBytes = 0;
   /** Number of unsettled logical requests. */
   private queuedRequests = 0;
   /** Unsettled requests retained until completion or disposal. */
@@ -229,12 +234,14 @@ export class RangeRequestScheduler {
       maxMergedBytes: props.maxMergedBytes ?? DEFAULT_PROPS.maxMergedBytes,
       maxConcurrency: props.maxConcurrency ?? 6,
       maxQueueSize: props.maxQueueSize ?? 4096,
-      maxRangeBytes: props.maxRangeBytes ?? 64 * 1024 * 1024
+      maxRangeBytes: props.maxRangeBytes ?? 64 * 1024 * 1024,
+      maxTotalBytes: props.maxTotalBytes ?? DEFAULT_PROPS.maxTotalBytes
     };
     for (const value of [
       this.props.maxConcurrency,
       this.props.maxQueueSize,
-      this.props.maxRangeBytes
+      this.props.maxRangeBytes,
+      this.props.maxTotalBytes
     ]) {
       if (!Number.isSafeInteger(value) || value <= 0)
         throw new Error('Range scheduler limits must be positive integers');
@@ -448,6 +455,10 @@ export class RangeRequestScheduler {
 
       const logicalBytes = getLogicalRequestBytes(requests);
       const length = endOffset - offset;
+      if (length > this.props.maxTotalBytes - this.reservedTransportBytes)
+        throw new RangeError('Range request total byte limit exceeded');
+      // Reserve synchronously before awaiting transport so concurrent reads share one budget.
+      this.reservedTransportBytes += length;
       this.trackEvent({
         type: 'request',
         sourceId: mergedRequest.sourceId,

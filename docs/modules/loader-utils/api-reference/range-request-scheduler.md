@@ -90,8 +90,16 @@ Creates a scheduler for one group of byte-range-addressable resources.
 | `rangeExpansionBytes` | `number` | `65536` | Maximum gap to over-fetch between adjacent requests. |
 | `maxGapBytes` | `number` | `65536` | Compatibility alias for `rangeExpansionBytes`. |
 | `maxMergedBytes` | `number` | `8388608` | Maximum total byte length of one merged request. |
+| `maxTotalBytes` | `number` | `Number.MAX_SAFE_INTEGER` | Lifetime budget for started merged transport spans, including coalesced gaps. |
 | `stats` | `Stats` | created per scheduler | Optional probe.gl `Stats` object that receives the range counters. |
 | `onEvent` | `function` | none | Optional diagnostics callback for queued, batched, completed, failed, and aborted range requests. |
+
+The total-byte budget is reserved synchronously before each transport starts, across all sources
+and concurrent requests on the scheduler. Cache hits handled before scheduling consume no budget.
+Failed reads and reads canceled after starting retain their reservation. A range rejected by the
+budget never calls its transport; end-of-file clamping may return fewer bytes than reserved.
+Limits must be positive safe integers. Use a new scheduler for a fresh budget. This bounds planned
+range bytes; custom transports remain responsible for bounding actual response bodies.
 
 The first queued range starts the batching window. Later arrivals join the batch without
 extending that window, and completed transports do not change it. Each flush starts all merged

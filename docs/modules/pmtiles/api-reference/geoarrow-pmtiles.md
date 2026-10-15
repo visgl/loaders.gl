@@ -122,4 +122,5 @@ blocked in an async iterator must also observe the signal; the helper cannot int
 `next()`. On failure or detected abort, iterators are closed and no partial archive is returned.
 
 Broader CRS reprojection, general exact 64-bit MVT reader/writer qualification, scalable ingestion,
-and raster authoring remain separate tranches.
+and a common table-scan input adapter remain separate tranches.
+[Raster authoring](/docs/modules/pmtiles/api-reference/raster-pmtiles) is available separately.

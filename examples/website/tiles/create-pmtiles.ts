@@ -7,7 +7,7 @@ import type {PMTilesTile} from '@loaders.gl/pmtiles';
 
 /** Small browser-demo budgets; these do not bound parser or encoder peak heap. */
 export const PMTILES_EXAMPLE_LIMITS = {
-  /** Encoded local/remote input bytes. */
+  /** Local/vector input bytes or aggregate requested GeoTIFF range bytes. */
   inputBytes: 32 * 1024 * 1024,
   /** Complete archive bytes. */
   outputBytes: 32 * 1024 * 1024,
@@ -115,9 +115,7 @@ export async function readPMTilesExampleInput(
     if (input.size > maxBytes) throw new Error('Input exceeds the 32 MiB example limit.');
     return waitForPromiseWithSignal(input.arrayBuffer(), signal);
   }
-  const url = new URL(input);
-  if (!['http:', 'https:'].includes(url.protocol) || url.username || url.password)
-    throw new Error('Use an HTTP(S) dataset URL without embedded credentials.');
+  const url = getPMTilesExampleURL(input);
   const response = await fetch(url, {signal});
   if (!response.ok) {
     await response.body?.cancel();
@@ -165,7 +163,6 @@ export async function createPMTilesExampleArchive(
       : !['mvt', 'mlt'].includes(options.tileType))
   )
     throw new Error('Select MVT/MLT for vector data or PNG for GeoTIFF imagery.');
-  const bytes = await readPMTilesExampleInput(input, signal);
   signal.throwIfAborted();
   const pmtiles = {
     maxTiles: PMTILES_EXAMPLE_LIMITS.tiles,
@@ -174,18 +171,25 @@ export async function createPMTilesExampleArchive(
   };
   let archive: ArrayBuffer;
   if (options.format === 'geotiff') {
+    if (input instanceof Blob && input.size > PMTILES_EXAMPLE_LIMITS.inputBytes)
+      throw new Error('Input exceeds the 32 MiB example limit.');
+    const sourceInput = typeof input === 'string' ? getPMTilesExampleURL(input).href : input;
     const [{GeoTIFFRasterSource}, {encodeRasterPMTiles}] = await waitForPromiseWithSignal(
       Promise.all([import('@loaders.gl/geotiff'), import('@loaders.gl/pmtiles/raster')]),
       signal
     );
     signal.throwIfAborted();
-    const source = new GeoTIFFRasterSource(new Blob([bytes]), {});
+    const source = new GeoTIFFRasterSource(sourceInput, {
+      geotiff: {rangeSchedulerProps: {maxTotalBytes: PMTILES_EXAMPLE_LIMITS.inputBytes}}
+    });
     try {
       archive = await encodeRasterPMTiles(source, {tiles, bands: options.bands, pmtiles});
     } finally {
       source.finalize();
     }
   } else {
+    const bytes = await readPMTilesExampleInput(input, signal);
+    signal.throwIfAborted();
     const {parse} = await waitForPromiseWithSignal(import('@loaders.gl/core'), signal);
     signal.throwIfAborted();
     const table =
@@ -230,4 +234,12 @@ export async function createPMTilesExampleArchive(
   }
   signal.throwIfAborted();
   return new Blob([archive], {type: 'application/vnd.pmtiles'});
+}
+
+/** Validates dataset URLs before either whole-file or range transport starts. */
+function getPMTilesExampleURL(input: string): URL {
+  const url = new URL(input);
+  if (!['http:', 'https:'].includes(url.protocol) || url.username || url.password)
+    throw new Error('Use an HTTP(S) dataset URL without embedded credentials.');
+  return url;
 }

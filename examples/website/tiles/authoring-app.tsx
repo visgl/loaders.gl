@@ -213,7 +213,9 @@ export default function PMTilesAuthoringApp() {
             </>
           )}
           <p className={styles.hint}>
-            Drop a file anywhere in this panel. Input limit: 32 MiB. URLs need CORS access.
+            {mode === 'url' && effectiveFormat === 'geotiff'
+              ? 'GeoTIFF URLs require HTTP ranges and CORS. Range-read budget: 32 MiB.'
+              : 'Drop a file anywhere in this panel. Input limit: 32 MiB. URLs need CORS access.'}
           </p>
         </fieldset>
         <fieldset disabled={busy} onChange={clearDownload}>

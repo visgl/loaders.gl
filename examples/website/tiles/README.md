@@ -22,9 +22,12 @@ terminate the worker, including synchronous parsing or encoding. Each retry star
 The complete archive returns as an immutable Blob; the page creates its download URL.
 A worker-capable browser is required; there is no page-thread conversion fallback.
 
-Limits: 32 MiB encoded input, 50,000 input/per-tile vector rows, 64 requested addresses (including
-empty tiles), and a 32 MiB archive. The entire remote input is downloaded with a streamed byte cap;
-this example does not use COG range reads. These are not peak-heap limits: parsing and decompression
+Limits: 32 MiB local/vector input, 50,000 input/per-tile vector rows, 64 requested addresses
+(including empty tiles), and a 32 MiB archive. GeoTIFF/COG URLs use the existing source
+planner and its bounded range cache to read metadata, selected bands, native overviews and
+intersecting blocks. Merged range requests share a 32 MiB lifetime budget per export, including gaps,
+repeated reads and failed transports; the complete remote file can be larger. Servers must support HTTP 206 and CORS.
+A server returning the complete file is rejected. Vector URLs still use a bounded whole-file read. These are not peak-heap limits: parsing and decompression
 can allocate before the decoded row limit is checked. Use small datasets. All-empty exports fail.
 
 Vector geometry must follow the tiler's longitude/latitude contract. Select scalar attributes or
@@ -40,3 +43,18 @@ existing PMTiles viewer.
 
 The inline [3D tile converter](https://loaders.gl/examples/tiles/3d-tiles-conversion) uses the same compact form
 styles from `examples/website/common/conversion.module.css`. Both apps are linked by conversion tabs.
+
+## Scan architecture
+
+Raster conversion uses the lightweight shared `RasterRegionSource` contract. GeoTIFF
+`getRasterForRegion` and the scan-facing `getRaster` entry point share the same region planner,
+range transport, overview selection and decoders. The converter provides destination tile bounds,
+bands, pixel/decode limits and cancellation; the source plans the reads. The example configures the shared
+`RangeRequestScheduler.maxTotalBytes` budget; range validation, caching and cancellation stay in
+the existing source transport.
+
+For vectors, a future `TableScanSource.read()` adapter can feed bounded Arrow batches into the
+existing GeoArrow tiler before MVT/MLT encoding. This example still parses complete GeoJSON/IPC
+inputs. Table filtering/projection and raster region queries retain their distinct result contracts;
+PMTiles tile addressing and packaging stay outside the table query. See the
+[common scan architecture](https://loaders.gl/docs/developer-guide/common-scan-architecture).
