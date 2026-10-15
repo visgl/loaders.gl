@@ -123,6 +123,71 @@
     "./avro-schema": {
       "types": "./dist/avro-schema.d.ts",
       "import": "./dist/avro-schema.js"
+    },
+    "./bson/bson-loader-types": {
+      "types": "./dist/bson/bson-loader-types.d.ts",
+      "import": "./dist/bson/bson-loader-types.js"
+    },
+    "./bson/bson-format": {
+      "types": "./dist/bson/bson-format.d.ts",
+      "import": "./dist/bson/bson-format.js"
+    },
+    "./bson/bson-writer": {
+      "types": "./dist/bson/bson-writer.d.ts",
+      "import": "./dist/bson/bson-writer.js"
+    },
+    "./bson/bson-loader": {
+      "types": "./dist/bson/bson-loader.d.ts",
+      "import": "./dist/bson/bson-loader.js"
+    },
+    "./bson/bundled": {
+      "types": "./dist/bson/bundled.d.ts",
+      "import": "./dist/bson/bundled.js"
+    },
+    "./bson/unbundled": {
+      "types": "./dist/bson/unbundled.d.ts",
+      "import": "./dist/bson/unbundled.js"
+    },
+    "./bson/index": {
+      "types": "./dist/bson/index.d.ts",
+      "import": "./dist/bson/index.js",
+      "require": "./dist/bson/index.cjs"
+    },
+    "./bson": {
+      "types": "./dist/bson.d.ts",
+      "import": "./dist/bson.js"
+    },
+    "./excel/excel-format": {
+      "types": "./dist/excel/excel-format.d.ts",
+      "import": "./dist/excel/excel-format.js"
+    },
+    "./excel/bundled": {
+      "types": "./dist/excel/bundled.d.ts",
+      "import": "./dist/excel/bundled.js"
+    },
+    "./excel/excel-loader": {
+      "types": "./dist/excel/excel-loader.d.ts",
+      "import": "./dist/excel/excel-loader.js"
+    },
+    "./excel/unbundled": {
+      "types": "./dist/excel/unbundled.d.ts",
+      "import": "./dist/excel/unbundled.js"
+    },
+    "./excel/index": {
+      "types": "./dist/excel/index.d.ts",
+      "import": "./dist/excel/index.js",
+      "require": "./dist/excel/index.cjs"
+    },
+    "./excel/excel-loader-types": {
+      "types": "./dist/excel/excel-loader-types.d.ts",
+      "import": "./dist/excel/excel-loader-types.js"
+    },
+    "./excel": {
+      "types": "./dist/excel.d.ts",
+      "import": "./dist/excel.js"
+    },
+    "./excel-worker.js": {
+      "import": "./dist/excel-worker.js"
     }
   },
   "sideEffects": false,
@@ -132,9 +197,10 @@
     "README.md"
   ],
   "scripts": {
-    "pre-build": "npm run build-worker-csv && npm run build-worker-node-csv",
+    "pre-build": "npm run build-worker-csv && npm run build-worker-node-csv && npm run build-worker-excel",
     "build-worker-csv": "node ../../scripts/build-codec-worker.mjs src/workers/csv-worker.ts --bundle --outfile=dist/csv-worker.js --define:__VERSION__=\\\"$npm_package_version\\\"",
-    "build-worker-node-csv": "node ../../scripts/build-codec-worker.mjs src/workers/csv-worker-node.ts --outfile=dist/csv-worker-node.js --platform=node --target=node16 --bundle --sourcemap --define:__VERSION__=\\\"$npm_package_version\\\""
+    "build-worker-node-csv": "node ../../scripts/build-codec-worker.mjs src/workers/csv-worker-node.ts --outfile=dist/csv-worker-node.js --platform=node --target=node16 --bundle --sourcemap --define:__VERSION__=\\\"$npm_package_version\\\"",
+    "build-worker-excel": "node ../../scripts/build-codec-worker.mjs src/workers/excel-worker.ts --bundle --outfile=dist/excel-worker.js --define:__VERSION__=\\\"$npm_package_version\\\""
   },
   "dependencies": {
     "@loaders.gl/arrow": "5.0.0-alpha.12",
@@ -142,7 +208,10 @@
     "@loaders.gl/compression": "5.0.0-alpha.12",
     "@loaders.gl/loader-utils": "5.0.0-alpha.12",
     "@loaders.gl/schema": "5.0.0-alpha.12",
-    "apache-arrow": ">= 17.0.0"
+    "@loaders.gl/schema-utils": "5.0.0-alpha.12",
+    "apache-arrow": ">= 17.0.0",
+    "bson": "4.2.0",
+    "xlsx": "^0.18.5"
   },
   "peerDependencies": {
     "@loaders.gl/core": "~5.0.0-alpha.0"

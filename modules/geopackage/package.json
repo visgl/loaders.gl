@@ -51,14 +51,7 @@
     "build-worker": "# esbuild src/workers/geopackage-worker.ts --bundle --outfile=dist/geopackage-worker.js --external:{util,fs,path} --define:__VERSION__=\\\"$npm_package_version\\\""
   },
   "dependencies": {
-    "@loaders.gl/arrow-geometry": "5.0.0-alpha.12",
-    "@loaders.gl/loader-utils": "5.0.0-alpha.12",
-    "@loaders.gl/schema": "5.0.0-alpha.12",
-    "@loaders.gl/schema-utils": "5.0.0-alpha.12",
-    "@math.gl/crs": "5.0.0-alpha.16",
-    "@math.gl/projection": "5.0.0-alpha.16",
-    "@types/sql.js": "^1.4.5",
-    "sql.js": "1.14.1"
+    "@loaders.gl/geospatial": "5.0.0-alpha.12"
   },
   "peerDependencies": {
     "@loaders.gl/core": "~5.0.0-alpha.0"

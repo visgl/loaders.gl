@@ -4,10 +4,10 @@
 
 // Excel Loader
 
-export {ExcelFormat} from './excel-format';
-export type {ExcelLoaderOptions} from './excel-loader';
-export {ExcelLoader} from './excel-loader';
+export {ExcelFormat} from '@loaders.gl/tables/excel/index';
+export type {ExcelLoaderOptions} from '@loaders.gl/tables/excel/index';
+export {ExcelLoader} from '@loaders.gl/tables/excel/index';
 
 // DEPRECATED EXPORTS
 /** @deprecated Use ExcelLoader. */
-export {ExcelWorkerLoader} from './excel-loader';
+export {ExcelWorkerLoader} from '@loaders.gl/tables/excel/index';

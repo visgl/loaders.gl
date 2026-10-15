@@ -11,7 +11,9 @@ import {
   TCXLoader,
   ShapefileLoader,
   SHPLoader,
-  DBFLoader
+  DBFLoader,
+  FlatGeobufLoader,
+  GeoPackageLoader
 } from '@loaders.gl/geospatial';
 import {KMLLoaderWithParser} from '@loaders.gl/geospatial/kml';
 import {KMZLoaderWithParser} from '@loaders.gl/geospatial/kmz';
@@ -22,8 +24,14 @@ import {SHPLoaderWithParser} from '@loaders.gl/geospatial/shp';
 import {DBFLoaderWithParser} from '@loaders.gl/geospatial/dbf';
 import {KMLLoader as LegacyKMLLoader} from '@loaders.gl/kml';
 import {ShapefileLoader as LegacyShapefileLoader} from '@loaders.gl/shapefile';
+import {FlatGeobufLoaderWithParser} from '@loaders.gl/geospatial/flatgeobuf';
+import {FlatGeobufLoader as LegacyFlatGeobufLoader} from '@loaders.gl/flatgeobuf';
+import {GeoPackageLoaderWithParser} from '@loaders.gl/geospatial/geopackage';
+import {GeoPackageLoader as LegacyGeoPackageLoader} from '@loaders.gl/geopackage';
 
 test.each([
+  [GeoPackageLoader, GeoPackageLoaderWithParser],
+  [FlatGeobufLoader, FlatGeobufLoaderWithParser],
   [KMLLoader, KMLLoaderWithParser],
   [KMZLoader, KMZLoaderWithParser],
   [GPXLoader, GPXLoaderWithParser],
@@ -55,4 +63,25 @@ test('core parses KML using group metadata', async () => {
     type: 'FeatureCollection',
     features: [{geometry: {type: 'Point', coordinates: [1, 2]}}]
   });
+});
+
+test('legacy flatgeobuf metadata shares its grouped owner', () => {
+  expect(LegacyFlatGeobufLoader).toBe(FlatGeobufLoader);
+});
+
+test('legacy geopackage metadata shares its grouped owner', () => {
+  expect(LegacyGeoPackageLoader).toBe(GeoPackageLoader);
+});
+
+test('grouped source entry points preserve legacy source APIs', async () => {
+  const [flatgeobuf, legacyFlatgeobuf, geopackage, legacyGeopackage] = await Promise.all([
+    import('@loaders.gl/geospatial/flatgeobuf/flatgeobuf-source-loader'),
+    import('@loaders.gl/flatgeobuf'),
+    import('@loaders.gl/geospatial/geopackage/geopackage-source-loader'),
+    import('@loaders.gl/geopackage')
+  ]);
+  expect(flatgeobuf.FlatGeobufSourceLoader).toBe(legacyFlatgeobuf.FlatGeobufSourceLoader);
+  expect(flatgeobuf.FlatGeobufVectorSource).toBe(legacyFlatgeobuf.FlatGeobufVectorSource);
+  expect(geopackage.GeoPackageSource).toBe(legacyGeopackage.GeoPackageSource);
+  expect(geopackage.GeoPackageDataSource).toBe(legacyGeopackage.GeoPackageDataSource);
 });

@@ -14,7 +14,7 @@ const FORMAT_EXPORTS = {
   bson: ['BSONFormat'],
   copc: ['COPCFormat'],
   csv: ['CSVFormat'],
-  tables: ['CSVFormat', 'AvroFormat'],
+  tables: ['CSVFormat', 'AvroFormat', 'BSONFormat', 'ExcelFormat'],
   geospatial: [
     'KMLFormat',
     'KMZFormat',
@@ -22,7 +22,9 @@ const FORMAT_EXPORTS = {
     'TCXFormat',
     'ShapefileFormat',
     'SHPFormat',
-    'DBFFormat'
+    'DBFFormat',
+    'FlatGeobufFormat',
+    'GeoPackageFormat'
   ],
   draco: ['DracoFormat'],
   excel: ['ExcelFormat'],

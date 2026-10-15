@@ -2,5 +2,5 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-export type {ExcelLoaderOptions} from './excel-loader';
-export {ExcelLoader, ExcelWorkerLoader} from './excel-loader';
+/** Compatibility entry point; implementation is owned by @loaders.gl/tables. */
+export * from '@loaders.gl/tables/excel/unbundled';

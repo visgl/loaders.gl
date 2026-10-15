@@ -171,6 +171,83 @@
     "./dbf": {
       "types": "./dist/dbf.d.ts",
       "import": "./dist/dbf.js"
+    },
+    "./flatgeobuf/flatgeobuf-loader-types": {
+      "types": "./dist/flatgeobuf/flatgeobuf-loader-types.d.ts",
+      "import": "./dist/flatgeobuf/flatgeobuf-loader-types.js"
+    },
+    "./flatgeobuf/flatgeobuf-loader": {
+      "types": "./dist/flatgeobuf/flatgeobuf-loader.d.ts",
+      "import": "./dist/flatgeobuf/flatgeobuf-loader.js"
+    },
+    "./flatgeobuf/flatgeobuf-source-loader": {
+      "types": "./dist/flatgeobuf/flatgeobuf-source-loader.d.ts",
+      "import": "./dist/flatgeobuf/flatgeobuf-source-loader.js"
+    },
+    "./flatgeobuf/bundled": {
+      "types": "./dist/flatgeobuf/bundled.d.ts",
+      "import": "./dist/flatgeobuf/bundled.js"
+    },
+    "./flatgeobuf/unbundled": {
+      "types": "./dist/flatgeobuf/unbundled.d.ts",
+      "import": "./dist/flatgeobuf/unbundled.js"
+    },
+    "./flatgeobuf/index": {
+      "types": "./dist/flatgeobuf/index.d.ts",
+      "import": "./dist/flatgeobuf/index.js",
+      "require": "./dist/flatgeobuf/index.cjs"
+    },
+    "./flatgeobuf/flatgeobuf-table-query-capabilities": {
+      "types": "./dist/flatgeobuf/flatgeobuf-table-query-capabilities.d.ts",
+      "import": "./dist/flatgeobuf/flatgeobuf-table-query-capabilities.js"
+    },
+    "./flatgeobuf/flatgeobuf-format": {
+      "types": "./dist/flatgeobuf/flatgeobuf-format.d.ts",
+      "import": "./dist/flatgeobuf/flatgeobuf-format.js"
+    },
+    "./flatgeobuf": {
+      "types": "./dist/flatgeobuf.d.ts",
+      "import": "./dist/flatgeobuf.js"
+    },
+    "./flatgeobuf-worker.js": {
+      "import": "./dist/flatgeobuf-worker.js"
+    },
+    "./geopackage/geopackage-format": {
+      "types": "./dist/geopackage/geopackage-format.d.ts",
+      "import": "./dist/geopackage/geopackage-format.js"
+    },
+    "./geopackage/geopackage-source-loader": {
+      "types": "./dist/geopackage/geopackage-source-loader.d.ts",
+      "import": "./dist/geopackage/geopackage-source-loader.js"
+    },
+    "./geopackage/bundled": {
+      "types": "./dist/geopackage/bundled.d.ts",
+      "import": "./dist/geopackage/bundled.js"
+    },
+    "./geopackage/unbundled": {
+      "types": "./dist/geopackage/unbundled.d.ts",
+      "import": "./dist/geopackage/unbundled.js"
+    },
+    "./geopackage/index": {
+      "types": "./dist/geopackage/index.d.ts",
+      "import": "./dist/geopackage/index.js",
+      "require": "./dist/geopackage/index.cjs"
+    },
+    "./geopackage/geopackage-loader": {
+      "types": "./dist/geopackage/geopackage-loader.d.ts",
+      "import": "./dist/geopackage/geopackage-loader.js"
+    },
+    "./geopackage/geopackage-loader-types": {
+      "types": "./dist/geopackage/geopackage-loader-types.d.ts",
+      "import": "./dist/geopackage/geopackage-loader-types.js"
+    },
+    "./geopackage": {
+      "types": "./dist/geopackage.d.ts",
+      "import": "./dist/geopackage.js"
+    },
+    "./geopackage/geopackage-loader-options": {
+      "types": "./dist/geopackage/geopackage-loader-options.d.ts",
+      "import": "./dist/geopackage/geopackage-loader-options.js"
     }
   },
   "sideEffects": false,
@@ -180,9 +257,10 @@
     "README.md"
   ],
   "scripts": {
-    "pre-build": "npm run build-worker-shp-shapefile && npm run build-worker-dbf-shapefile",
+    "pre-build": "npm run build-worker-shp-shapefile && npm run build-worker-dbf-shapefile && npm run build-worker-flatgeobuf",
     "build-worker-shp-shapefile": "node ../../scripts/build-codec-worker.mjs src/workers/shp-worker.ts --bundle --outfile=dist/shp-worker.js --define:__VERSION__=\\\"$npm_package_version\\\"",
-    "build-worker-dbf-shapefile": "node ../../scripts/build-codec-worker.mjs src/workers/dbf-worker.ts --bundle --outfile=dist/dbf-worker.js --define:__VERSION__=\\\"$npm_package_version\\\""
+    "build-worker-dbf-shapefile": "node ../../scripts/build-codec-worker.mjs src/workers/dbf-worker.ts --bundle --outfile=dist/dbf-worker.js --define:__VERSION__=\\\"$npm_package_version\\\"",
+    "build-worker-flatgeobuf": "node ../../scripts/build-codec-worker.mjs src/workers/flatgeobuf-worker.ts --bundle --outfile=dist/flatgeobuf-worker.js --define:__VERSION__=\\\"$npm_package_version\\\""
   },
   "dependencies": {
     "@loaders.gl/arrow": "5.0.0-alpha.12",
@@ -194,7 +272,9 @@
     "@loaders.gl/zip": "5.0.0-alpha.12",
     "@math.gl/crs": "5.0.0-alpha.16",
     "@math.gl/projection": "5.0.0-alpha.16",
-    "apache-arrow": ">= 17.0.0"
+    "@types/sql.js": "^1.4.5",
+    "apache-arrow": ">= 17.0.0",
+    "sql.js": "1.14.1"
   },
   "peerDependencies": {
     "@loaders.gl/core": "~5.0.0-alpha.0"

@@ -3,7 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 /* eslint-disable camelcase */
-import {CRSReprojectionError, isBrowser} from '@loaders.gl/loader-utils';
+import {CRSReprojectionError} from '@loaders.gl/loader-utils';
 import type {
   ArrowTable,
   DataType,
@@ -28,7 +28,7 @@ import type {Projection} from '@math.gl/projection';
 import {parseWKTCRS, type ReadonlyCRSDefinition, type WKTCRSDefinition} from '@math.gl/crs';
 import initSqlJs, {Database, SqlJsStatic, Statement} from 'sql.js';
 
-import type {GeoPackageLoaderOptions} from '../geopackage-loader';
+import type {GeoPackageLoaderOptions} from '../geopackage-loader-types';
 import type {
   DataColumnsMapping,
   DataColumnsRow,
@@ -41,15 +41,10 @@ import type {
   SQLiteTypes
 } from './types';
 
-const SQL_JS_VERSION = '1.14.1';
-const GEOMETRY_OUTPUT_COLUMN_NAME = 'geometry';
+import {DEFAULT_SQLJS_CDN} from '../geopackage-loader-options';
+export {DEFAULT_SQLJS_CDN} from '../geopackage-loader-options';
 
-/**
- * We pin to the same version as sql.js that we use.
- */
-export const DEFAULT_SQLJS_CDN = isBrowser
-  ? `https://cdn.jsdelivr.net/npm/sql.js@${SQL_JS_VERSION}/dist/`
-  : null;
+const GEOMETRY_OUTPUT_COLUMN_NAME = 'geometry';
 
 // https://www.geopackage.org/spec121/#flags_layout
 const ENVELOPE_BYTE_LENGTHS = {

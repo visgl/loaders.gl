@@ -2,16 +2,5 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import type {Format} from '@loaders.gl/loader-utils';
-
-/** flatgeobuf format */
-export const FlatGeobufFormat = {
-  id: 'flatgeobuf',
-  name: 'FlatGeobuf',
-  module: 'flatgeobuf',
-  encoding: 'flatbuffers',
-  format: 'flatgeobuf',
-  extensions: ['fgb'],
-  mimeTypes: ['application/octet-stream'],
-  category: 'geometry'
-} as const satisfies Format;
+/** Compatibility entry point; implementation is owned by @loaders.gl/geospatial. */
+export * from '@loaders.gl/geospatial/flatgeobuf/flatgeobuf-format';

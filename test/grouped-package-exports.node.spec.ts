@@ -29,17 +29,28 @@ test.each([
 
 test('grouped and legacy CommonJS roots expose compatible metadata loaders', () => {
   for (const [legacy, group, loader] of [
+    ['bson', 'tables', 'BSONLoader'],
+    ['excel', 'tables', 'ExcelLoader'],
+    ['flatgeobuf', 'geospatial', 'FlatGeobufLoader'],
+    ['geopackage', 'geospatial', 'GeoPackageLoader'],
     ['csv', 'tables', 'CSVLoader'],
     ['avro', 'tables', 'AvroLoader'],
     ['kml', 'geospatial', 'KMLLoader'],
     ['shapefile', 'geospatial', 'ShapefileLoader']
   ]) {
     const grouped = requirePackage('@loaders.gl/' + group);
-    expect(requirePackage('@loaders.gl/' + legacy)[loader]).toMatchObject({
+    const legacyLoader = requirePackage('@loaders.gl/' + legacy)[loader];
+    expect(legacyLoader).toMatchObject({
       id: grouped[loader].id,
       module: grouped[loader].module,
       options: grouped[loader].options
     });
     expect(grouped[loader]).not.toHaveProperty('parse');
+    if (legacy === 'excel') {
+      expect(typeof legacyLoader.serializeWorkerResult).toBe('function');
+      expect(typeof legacyLoader.deserializeWorkerResult).toBe('function');
+      expect(grouped[loader]).not.toHaveProperty('serializeWorkerResult');
+      expect(grouped[loader]).not.toHaveProperty('deserializeWorkerResult');
+    }
   }
 });

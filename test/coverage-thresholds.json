@@ -94,7 +94,11 @@
         "lines": 78,
         "functions": 60,
         "branches": 65
-      }
+      },
+      "sourcePaths": [
+        "modules/bson/src/",
+        "modules/tables/src/bson/"
+      ]
     },
     "@loaders.gl/compression": {
       "path": "modules/compression",
@@ -218,7 +222,11 @@
         "lines": 94,
         "functions": 100,
         "branches": 78
-      }
+      },
+      "sourcePaths": [
+        "modules/excel/src/",
+        "modules/tables/src/excel/"
+      ]
     },
     "@loaders.gl/flatgeobuf": {
       "path": "modules/flatgeobuf",
@@ -233,7 +241,11 @@
         "lines": 50,
         "functions": 59,
         "branches": 39
-      }
+      },
+      "sourcePaths": [
+        "modules/flatgeobuf/src/",
+        "modules/geospatial/src/flatgeobuf/"
+      ]
     },
     "@loaders.gl/geoarrow": {
       "path": "modules/geoarrow",
@@ -263,7 +275,11 @@
         "lines": 86,
         "functions": 95,
         "branches": 65
-      }
+      },
+      "sourcePaths": [
+        "modules/geopackage/src/",
+        "modules/geospatial/src/geopackage/"
+      ]
     },
     "@loaders.gl/geospatial": {
       "path": "modules/geospatial",

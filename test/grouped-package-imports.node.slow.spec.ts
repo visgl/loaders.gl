@@ -9,25 +9,36 @@ import {expect, test} from 'vitest';
 const REPOSITORY_ROOT = process.cwd();
 
 test.each([
+  ['tables', 'BSONLoader', 'bson', 'BSONLoaderWithParser'],
+  ['tables', 'ExcelLoader', 'excel', 'ExcelLoaderWithParser'],
+  ['geospatial', 'FlatGeobufLoader', 'flatgeobuf', 'FlatGeobufLoaderWithParser'],
+  ['geospatial', 'GeoPackageLoader', 'geopackage', 'GeoPackageLoaderWithParser'],
   ['tables', 'CSVLoader', 'csv', 'CSVLoaderWithParser'],
   ['geospatial', 'KMLLoader', 'kml', 'KMLLoaderWithParser']
-])('published %s ESM metadata preloads through real package exports', (group, metadata, subpath, parser) => {
-  // A separate Node process bypasses Vitest source aliases and checks the published layout.
-  const source = `import {${metadata}} from '@loaders.gl/${group}';
+])(
+  'published %s %s ESM metadata preloads through real package exports',
+  (group, metadata, subpath, parser) => {
+    // A separate Node process bypasses Vitest source aliases and checks the published layout.
+    const source = `import {${metadata}} from '@loaders.gl/${group}';
     import {${parser}} from '@loaders.gl/${group}/${subpath}';
     if (await ${metadata}.preload() !== ${parser}) process.exit(1);`;
-  expect(() =>
-    execFileSync(process.execPath, ['--input-type=module', '-e', source], {
-      cwd: REPOSITORY_ROOT,
-      timeout: 30000
-    })
-  ).not.toThrow();
-});
+    expect(() =>
+      execFileSync(process.execPath, ['--input-type=module', '-e', source], {
+        cwd: REPOSITORY_ROOT,
+        timeout: 30000
+      })
+    ).not.toThrow();
+    // The subprocess has a 30-second deadline; allow time to report its result.
+  },
+  35_000
+);
 
 test.each([
+  ['tables', 'ExcelLoader'],
+  ['geospatial', 'GeoPackageLoader'],
   ['tables', 'CSVLoader'],
   ['geospatial', 'KMLLoader']
-])('grouped %s metadata keeps parser loaders out of the initial browser chunk', async (group, loader) => {
+])('grouped %s %s metadata keeps parser loaders out of the initial browser chunk', async (group, loader) => {
   const result = await build({
     stdin: {
       contents: `import {${loader}} from '@loaders.gl/${group}'; console.log(${loader});`,
@@ -61,8 +72,13 @@ test.each([
   const eagerInputs = [...visited].flatMap(filename => Object.keys(outputs[filename].inputs));
   expect(
     eagerInputs.filter(filename =>
-      /\/(?:csv|avro|kml|kmz|gpx|tcx|shapefile|shp|dbf)-loader\.js$/.test(filename)
+      /\/(?:csv|avro|kml|kmz|gpx|tcx|shapefile|shp|dbf|bson|excel|flatgeobuf|geopackage)-loader\.js$/.test(
+        filename
+      )
     )
+  ).toEqual([]);
+  expect(
+    eagerInputs.filter(filename => /node_modules\/(?:sql\.js|xlsx|apache-arrow)\//.test(filename))
   ).toEqual([]);
   expect(
     Object.values(outputs).some(output =>

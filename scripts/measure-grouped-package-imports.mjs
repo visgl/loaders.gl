@@ -6,6 +6,18 @@ import {build} from 'esbuild';
 
 const repositoryRoot = process.cwd();
 const importCases = [
+  ['Compatibility BSON metadata', '@loaders.gl/bson', 'BSONLoader'],
+  ['Grouped BSON metadata', '@loaders.gl/tables', 'BSONLoader'],
+  ['BSON parser subpath', '@loaders.gl/tables/bson', 'BSONLoaderWithParser'],
+  ['Compatibility Excel metadata', '@loaders.gl/excel', 'ExcelLoader'],
+  ['Grouped Excel metadata', '@loaders.gl/tables', 'ExcelLoader'],
+  ['Excel parser subpath', '@loaders.gl/tables/excel', 'ExcelLoaderWithParser'],
+  ['Compatibility FlatGeobuf metadata', '@loaders.gl/flatgeobuf', 'FlatGeobufLoader'],
+  ['Grouped FlatGeobuf metadata', '@loaders.gl/geospatial', 'FlatGeobufLoader'],
+  ['FlatGeobuf parser subpath', '@loaders.gl/geospatial/flatgeobuf', 'FlatGeobufLoaderWithParser'],
+  ['Compatibility GeoPackage metadata', '@loaders.gl/geopackage', 'GeoPackageLoader'],
+  ['Grouped GeoPackage metadata', '@loaders.gl/geospatial', 'GeoPackageLoader'],
+  ['GeoPackage parser subpath', '@loaders.gl/geospatial/geopackage', 'GeoPackageLoaderWithParser'],
   ['Compatibility CSV metadata', '@loaders.gl/csv', 'CSVLoader'],
   ['Grouped CSV metadata', '@loaders.gl/tables', 'CSVLoader'],
   ['CSV parser subpath', '@loaders.gl/tables/csv', 'CSVLoaderWithParser'],

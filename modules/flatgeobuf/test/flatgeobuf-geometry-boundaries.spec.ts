@@ -13,7 +13,7 @@ import {
   type FlatGeobufHeader,
   writeFlatGeobufGeometry,
   writeFlatGeobufGeometryToWKB
-} from '../src/lib/flatgeobuf-reader';
+} from '../../geospatial/src/flatgeobuf/lib/flatgeobuf-reader';
 
 type GeometryFixture = {
   arrayBuffer: ArrayBuffer;
