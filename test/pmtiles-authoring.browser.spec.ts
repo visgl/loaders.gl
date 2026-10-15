@@ -636,7 +636,7 @@ test('the form displays measured progress and Finish preserves work while Cancel
     act(() => finishButton.click());
     expect(worker.postMessage).toHaveBeenLastCalledWith({type: 'finish'});
     expect(worker.terminate).not.toHaveBeenCalled();
-    expect(mounted.container.textContent).toContain('Completing the in-flight tile');
+    expect(mounted.container.textContent).toContain('Completing in-flight work');
     expect(
       Array.from(mounted.container.querySelectorAll('button')).some(
         button => button.textContent === 'Cancel' && !button.disabled

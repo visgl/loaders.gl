@@ -244,3 +244,71 @@ test.each([
     await file.close();
   }
 }, 30000);
+
+test.each([
+  ['slpk', false],
+  ['3tz', true]
+] as const)(
+  'real worker Finish emits readable partial %s with direct save=%s',
+  async (format, directSave) => {
+    const {inspection, resourceIds, controller, contentUrl} = await createWorkerInput(true);
+    const finishController = new AbortController();
+    const directory = directSave ? await navigator.storage.getDirectory() : undefined;
+    const filename = 'tile-conversion-finished.3tz';
+    const controls = {
+      finishSignal: finishController.signal,
+      onProgress(
+        progress: import('../examples/website/common/conversion-progress').ConversionProgressSnapshot
+      ) {
+        // Request Finish while the first mesh is in flight, before its encoder has completed.
+        if (progress.phase === 'tiles' && progress.currentResource) finishController.abort();
+      }
+    };
+    try {
+      const result = directory
+        ? await saveSelectedContentsInWorker(
+            inspection,
+            resourceIds,
+            format,
+            controller.signal,
+            () => {},
+            await (await directory.getFileHandle(filename, {create: true})).createWritable(),
+            undefined,
+            undefined,
+            controls
+          )
+        : await convertSelectedContentsInWorker(
+            inspection,
+            resourceIds,
+            format,
+            controller.signal,
+            () => {},
+            undefined,
+            undefined,
+            controls
+          );
+      expect(result.partial).toBe(true);
+      expect(result.report.outputResources).toBe(1);
+      const output =
+        'file' in result ? result.file : await (await directory!.getFileHandle(filename)).getFile();
+      const file = new ArrayBufferFile(await output.arrayBuffer());
+      try {
+        const archive = format === 'slpk' ? await parseSLPKArchive(file) : new Tiles3DArchive(file);
+        const root = JSON.parse(
+          new TextDecoder().decode(
+            await archive.getFile(format === 'slpk' ? '' : 'tileset.json', 'http')
+          )
+        );
+        if (format === '3tz') expect(root.root.children).toHaveLength(1);
+        else
+          expect(await archive.getFile('nodes/1/geometries/0', 'http')).toBeInstanceOf(ArrayBuffer);
+      } finally {
+        await file.close();
+      }
+    } finally {
+      URL.revokeObjectURL(contentUrl);
+      await directory?.removeEntry(filename);
+    }
+  },
+  30000
+);

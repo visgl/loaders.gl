@@ -12,7 +12,7 @@ import type {
 } from './create-pmtiles';
 import {createPMTilesArchiveInWorker} from './pmtiles-worker-client';
 import styles from '../common/conversion.module.css';
-import ConversionProgress from './conversion-progress';
+import ConversionProgress from '../common/conversion-progress';
 
 /** A retained browser URL with a fixed safe download name. */
 type ArchiveDownload = {
@@ -381,7 +381,12 @@ export default function PMTilesAuthoringApp() {
       </p>
       {progress && (
         <ConversionProgress
-          progress={progress}
+          progress={{
+            ...progress,
+            completedUnits: progress.completedTiles,
+            totalUnits: progress.totalTiles,
+            currentResource: progress.currentTile
+          }}
           busy={busy}
           startedAt={startedAt}
           finishing={finishing}

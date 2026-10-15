@@ -1,5 +1,8 @@
 import React, {useEffect, useRef, useState} from 'react';
 import styles from '../../../common/conversion.module.css';
+import ConversionProgress, {
+  type ConversionProgressSnapshot
+} from '../../../common/conversion-progress';
 import {inspectI3SConversionInput} from '../i3s-conversion-input';
 import {
   ARCHIVE_MIME_TYPES,
@@ -24,6 +27,7 @@ export type ConversionPanelProps = {
 export function ConversionPanel({onPreview}: ConversionPanelProps) {
   const controller = useRef<AbortController | null>(null);
   const commitStarted = useRef(false);
+  const finishController = useRef<AbortController | null>(null);
   const browserGlobal = globalThis as typeof globalThis & {
     /** Optional native picker, invoked synchronously from the save button's user activation. */
     showSaveFilePicker?: (options: {
@@ -48,6 +52,10 @@ export function ConversionPanel({onPreview}: ConversionPanelProps) {
   const [format, setFormat] = useState<ConversionFormat>('slpk');
   const [featureMapping, setFeatureMapping] = useState('');
   const [busy, setBusy] = useState(false);
+  const [finishing, setFinishing] = useState(false);
+  const [savingToFile, setSavingToFile] = useState(false);
+  const [progress, setProgress] = useState<ConversionProgressSnapshot | null>(null);
+  const [startedAt, setStartedAt] = useState(0);
   const [status, setStatus] = useState('');
   const [error, setError] = useState('');
   const [result, setResult] = useState<
@@ -77,6 +85,7 @@ export function ConversionPanel({onPreview}: ConversionPanelProps) {
     if (commitStarted.current) return;
     controller.current?.abort();
     controller.current = null;
+    finishController.current = null;
     setBusy(false);
     setStatus('Canceled');
   }
@@ -87,6 +96,18 @@ export function ConversionPanel({onPreview}: ConversionPanelProps) {
     const operation = new AbortController();
     controller.current = operation;
     commitStarted.current = false;
+    const finishOperation = convert ? new AbortController() : null;
+    finishController.current = finishOperation;
+    setFinishing(false);
+    setSavingToFile(saveToFile);
+    setStartedAt(performance.now());
+    setProgress({
+      phase: 'reading',
+      completedUnits: 0,
+      totalUnits: null,
+      bytesRead: 0,
+      outputBytes: 0
+    });
     setBusy(true);
     setError('');
     setResult(null);
@@ -129,7 +150,32 @@ export function ConversionPanel({onPreview}: ConversionPanelProps) {
         const onProgress = (message: string): void => {
           if (controller.current === operation) {
             if (message === 'Saving archive') commitStarted.current = true;
-            setStatus(message);
+            setStatus(
+              (
+                {
+                  inspect: 'Reading mesh source',
+                  convert: 'Converting mesh',
+                  validate: 'Validating mesh',
+                  finalize: 'Finalizing mesh metadata'
+                } as Record<string, string>
+              )[message] ?? message
+            );
+          }
+        };
+        let latestProgress: ConversionProgressSnapshot = {
+          phase: 'reading',
+          completedUnits: 0,
+          totalUnits: null,
+          bytesRead: 0,
+          outputBytes: 0
+        };
+        const controls = {
+          finishSignal: finishOperation!.signal,
+          onProgress(next: ConversionProgressSnapshot): void {
+            if (controller.current === operation) {
+              latestProgress = next;
+              setProgress(next);
+            }
           }
         };
         const output = destination
@@ -141,7 +187,8 @@ export function ConversionPanel({onPreview}: ConversionPanelProps) {
               onProgress,
               destination,
               features,
-              metricError
+              metricError,
+              controls
             )
           : await convertSelectedContentsInWorker(
               inspection,
@@ -150,14 +197,24 @@ export function ConversionPanel({onPreview}: ConversionPanelProps) {
               operation.signal,
               onProgress,
               features,
-              metricError
+              metricError,
+              controls
             );
         if (controller.current === operation) {
           setResult(output);
+          const completedUnits = output.report.outputResources ?? latestProgress.completedUnits;
+          setProgress({
+            ...latestProgress,
+            phase: 'complete',
+            completedUnits,
+            totalUnits: completedUnits || null,
+            currentResource: undefined,
+            outputBytes: 'file' in output ? output.file.size : output.size
+          });
           setStatus(
             'file' in output
-              ? `Complete: ${output.file.size.toLocaleString()} bytes`
-              : `Saved ${fileHandle!.name}: ${output.size.toLocaleString()} bytes`
+              ? `${output.partial ? 'Partial archive complete' : 'Complete'}: ${output.file.size.toLocaleString()} bytes`
+              : `Saved ${output.partial ? 'partial archive ' : ''}${fileHandle!.name}: ${output.size.toLocaleString()} bytes`
           );
         }
       } else {
@@ -178,21 +235,25 @@ export function ConversionPanel({onPreview}: ConversionPanelProps) {
               );
         if (controller.current === operation) {
           setInspection(inspected);
+          setProgress(null);
           setStatus(`${inspected.resources.length} content placements. Select explicitly.`);
         }
       }
     } catch (operationError) {
       if (controller.current === operation) {
         setStatus(operation.signal.aborted ? 'Canceled' : 'Failed');
-        if (!operation.signal.aborted)
+        if (!operation.signal.aborted) {
+          setProgress(null);
           setError(
             operationError instanceof Error ? operationError.message : String(operationError)
           );
+        }
       }
     } finally {
       if (controller.current === operation) {
         controller.current = null;
         commitStarted.current = false;
+        finishController.current = null;
         setBusy(false);
       }
     }
@@ -211,7 +272,7 @@ export function ConversionPanel({onPreview}: ConversionPanelProps) {
             void runOperation(false);
           }}
         >
-          <fieldset disabled={busy}>
+          <fieldset disabled={busy} hidden={busy || Boolean(progress)}>
             <legend>1. Choose data</legend>
             <label htmlFor="conversion-input-format">
               Input format
@@ -295,7 +356,7 @@ export function ConversionPanel({onPreview}: ConversionPanelProps) {
             </button>
           </fieldset>
         </form>
-        <fieldset disabled={busy}>
+        <fieldset disabled={busy} hidden={busy || Boolean(progress)}>
           <legend>2. Choose content</legend>
           {inspection ? (
             <label htmlFor="conversion-content">
@@ -325,7 +386,7 @@ export function ConversionPanel({onPreview}: ConversionPanelProps) {
           )}
           <p className={styles.hint}>{resourceIds.length} selected · maximum 64 mesh placements.</p>
         </fieldset>
-        <fieldset disabled={busy || !inspection}>
+        <fieldset disabled={busy || !inspection} hidden={busy || Boolean(progress)}>
           <legend>3. Choose output</legend>
           <label htmlFor="conversion-format">
             Output archive
@@ -408,6 +469,28 @@ export function ConversionPanel({onPreview}: ConversionPanelProps) {
               Convert and save to file
             </button>
           )}
+          {busy && finishController.current && (
+            <button
+              type="button"
+              disabled={
+                finishing ||
+                !progress?.completedUnits ||
+                progress.phase === 'packaging' ||
+                progress.phase === 'complete'
+              }
+              onClick={() => {
+                setFinishing(true);
+                finishController.current?.abort();
+              }}
+            >
+              {finishing ? 'Finishing…' : savingToFile ? 'Finish & save' : 'Finish & download'}
+            </button>
+          )}
+          {!busy && progress && (
+            <button type="button" onClick={() => setProgress(null)}>
+              Edit settings
+            </button>
+          )}
           {busy && (
             <button type="button" disabled={status === 'Saving archive'} onClick={cancelConversion}>
               Cancel
@@ -431,6 +514,19 @@ export function ConversionPanel({onPreview}: ConversionPanelProps) {
         <p role="status" aria-live="polite">
           {status}
         </p>
+      )}
+      {progress && (
+        <ConversionProgress
+          progress={progress}
+          busy={busy}
+          startedAt={startedAt}
+          finishing={finishing}
+          unitLabel="meshes"
+          unitSingularLabel="mesh"
+          inputLabel="Decoded mesh input"
+          tileStageLabel="Converting meshes"
+          note="Mesh totals are determined during decoding. Finish packages meshes already written; Cancel discards the export. File commit cannot be canceled."
+        />
       )}
       {error && (
         <p role="alert" className={styles.error}>
