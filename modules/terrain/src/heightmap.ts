@@ -11,3 +11,13 @@ export {
   decodeTerrainHeightmap,
   TERRARIUM_ELEVATION_DECODER
 } from './lib/decode-terrain-heightmap';
+
+export type {
+  TerrainGridMetadata,
+  TerrainHeightGrid,
+  TerrainRay,
+  TerrainSurfaceHit,
+  TerrainSurfaceBounds,
+  TerrainSurface
+} from './lib/terrain-contracts';
+export {createTerrainHeightGrid, sampleTerrainHeightGrid} from './lib/terrain-height-grid';
