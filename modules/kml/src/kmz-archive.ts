@@ -31,22 +31,27 @@ export async function openKMZArchive(
       ? new HttpFile(data, fetch ? {fetch} : {})
       : (data as Blob | ArrayBuffer);
   const zipFileSystem = new ZipFileSystem(file as Blob | ArrayBuffer | HttpFile);
-  const fileNames = (await zipFileSystem.readdir()).filter(fileName => !fileName.endsWith('/'));
-  const kmlFileName = findPrimaryKMLFile(fileNames);
-  const response = await zipFileSystem.fetch(kmlFileName);
-  const document = parseKMLDocument(await response.text());
+  try {
+    const fileNames = (await zipFileSystem.readdir()).filter(fileName => !fileName.endsWith('/'));
+    const kmlFileName = findPrimaryKMLFile(fileNames);
+    const response = await zipFileSystem.fetch(kmlFileName);
+    const document = parseKMLDocument(await response.text());
 
-  return {
-    kmlFileName,
-    fileNames,
-    document,
-    getResource: async path => {
-      const resourceName = resolveKMZResourcePath(kmlFileName, path);
-      if (!resourceName) throw new Error(`KMZ resource is external: ${path}`);
-      return await (await zipFileSystem.fetch(resourceName)).arrayBuffer();
-    },
-    close: () => zipFileSystem.destroy()
-  };
+    return {
+      kmlFileName,
+      fileNames,
+      document,
+      getResource: async path => {
+        const resourceName = resolveKMZResourcePath(kmlFileName, path);
+        if (!resourceName) throw new Error(`KMZ resource is external: ${path}`);
+        return await (await zipFileSystem.fetch(resourceName)).arrayBuffer();
+      },
+      close: () => zipFileSystem.destroy()
+    };
+  } catch (error) {
+    await zipFileSystem.destroy();
+    throw error;
+  }
 }
 
 function findPrimaryKMLFile(fileNames: string[]): string {

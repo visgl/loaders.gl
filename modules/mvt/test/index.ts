@@ -24,3 +24,5 @@ import './mvt-source.spec';
 import './table-tile-source.spec';
 // import './table-tile-source-loader-full.spec';
 // import './table-tile-source-loader-multi-world.spec';
+
+import './mvt-arrow-writer.spec';

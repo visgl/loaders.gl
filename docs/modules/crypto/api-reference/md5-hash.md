@@ -46,7 +46,7 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
   <img src="https://img.shields.io/badge/From-v2.3-blue.svg?style=flat-square" alt="From-v3.0" />
 </p>
 
-Calculates the MD5 hash.
+Calculates the MD5 hash. Asynchronous hashing rejects if WASM initialization or hashing fails.
 
 ## Interface
 

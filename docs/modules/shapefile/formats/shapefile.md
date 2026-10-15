@@ -10,6 +10,7 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
 import {ShapefileDocsTabs} from '@site/src/components/docs/shapefile-docs-tabs';
 
 <DocPageHeader
+  format="shapefile"
   eyebrow="Legacy geospatial vector format"
   title="Treat the sidecars as part of the dataset."
   description="A Shapefile is a coordinated group of files: geometry, attributes, indexes, coordinate reference information, and sometimes text encoding. loaders.gl helps bring that group into a common vector representation."

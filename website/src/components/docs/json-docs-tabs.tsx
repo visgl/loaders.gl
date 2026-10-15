@@ -1,3 +1,4 @@
+import {FormatLogo} from './format-logo';
 import React, {type ReactNode} from 'react';
 import Link from '@docusaurus/Link';
 
@@ -62,6 +63,7 @@ export function JsonDocsTabs({
 }): ReactNode {
   return (
     <nav className="docs-page-tabs" aria-label="JSON documentation sections">
+      <FormatLogo slug={active.includes('geojson') ? 'geojson' : 'json'} />
       {JSON_DOCS_TABS.map(tab => (
         <Link
           key={tab.id}

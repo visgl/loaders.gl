@@ -40,6 +40,16 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
   tone="violet"
 />
 
+## Compression backends and LZO
+
+Default fallback compressors and decompressors use lazy, direction-specific compress-utils 0.9.0
+WASM modules. Native streams remain the first async choice where supported. Preload enables sync
+calls. Raw DEFLATE and LZ4 bindings share their framed codec assets.
+
+The decoder-only [LzoDecompressor API](./modules/compression/api-reference/lzo) supports raw LZO1X.
+Parquet adds Hadoop-framed LZO page support and ORC adds LZO chunk support. Container framing is
+implemented in TypeScript. Compression workers package the WASM assets required by their codecs.
+
 ## ArcGIS service items and sign-in
 
 Resolve five service-backed ArcGIS item types into explicit layer/table choices, retaining publisher
@@ -66,6 +76,10 @@ See [supported items and verification boundaries](/docs/developer-guide/arcgis/i
 - `OGCAPITilesSource` discovers the tile matrix set of a `{tileMatrix}` template from its tileset
   when none is configured. A failed discovery rejects instead of requesting `z` as the matrix
   identifier; set `ogc-api.discoverTileMatrixSet: false` to keep using `z`.
+
+- The v5 tile-converter complete hierarchy profile supports multiple static mesh primitives and scene placements per content. Each becomes an ordered GLB on the original tile, preserving refinement, per-primitive materials and explicitly mapped features within the existing 64-placement and byte limits. See the [hierarchy profile](/docs/modules/tile-converter/api-reference/v5-conversion#complete-explicit-hierarchy-profile).
+
+- The v5 tile-converter CLI accepts explicit scalar/string feature mappings through `--feature-schema`. Its complete hierarchy profile preserves ordered 3D Tiles 1.1 mesh `contents` arrays on their original tiles, with shared GLB origins and existing precision/byte gates. See the [CLI guide](/docs/modules/tile-converter/cli-reference/tile-converter-v5).
 
 - WMTS tile grids now describe every matrix level, including per-level origins and tile sizes.
   `tileGrid.tileMatrixSet` holds complete levels as math.gl `TileMatrix` geometry, and
@@ -97,6 +111,21 @@ See [supported items and verification boundaries](/docs/developer-guide/arcgis/i
 
 ## v5.0 (In Development)
 
+- **Raster PMTiles authoring** - [`encodeRasterPMTiles`](/docs/modules/pmtiles/api-reference/raster-pmtiles) exports selected gray/RGB/alpha byte-imagery regions as PNG tiles in PMTiles v3, reusing raster sources, affine sampling, validity masks and the existing image writer.
+- **MLT authoring** - `MLTWriter` encodes tile-local GeoArrow WKB and nullable scalar columns as MLT v1. `encodeGeoArrowPMTiles` now accepts `tileType: 'mlt'`, reusing the existing Arrow tiler and bounded selected-tile export pipeline.
+
+Alternate LAS, Parquet, and fast JSON backend loaders are now imported through
+explicit implementation subpaths; see the [upgrade guide](/docs/upgrade-guide#alternate-loader-imports).
+Package barrels now list their exports explicitly.
+
+- GIS retirement: Arrow parsing and triangulation now use focused
+  [Arrow geometry helpers](/docs/modules/arrow-geometry). Geometry metadata
+  validators move to a dedicated schema subpath, and geometry codecs use math.gl-backed
+  codecs. Legacy GeoJSON/FlatGeoJSON binary materialization is shared through
+  `arrow-geometry/legacy-binary`, removing direct GIS dependencies from ArcGIS,
+  KML, MLT and WMS. The GIS compatibility package is removed; loader output defaults remain.
+  Native feature tables preserve M/ZM axes, and binary geometry type metadata can
+  use the same dimension options as the WKB writer.
 - `Tileset3D` retires drawn fallback tiles independently as each replacement region finishes.
   Skip-LOD zoom-out reuses nearby drawn descendants while the desired coarse tile loads.
   See [tile hierarchy and refinement](./modules/3d-tiles/concepts/tile-hierarchy-and-refinement.md).
@@ -283,7 +312,7 @@ Release Date: 2026
 - **Module workers by default** - Worker descriptors can create bundler-resolved ES module workers as their default browser path while retaining explicit worker URLs and pre-built classic-worker fallbacks. Arrow triangulation is the first API to use this path; existing classic workers are not deprecated.
 - **Automatic atomic worker selection** - `core.worker: 'auto'` lets loaders provide synchronous normalized work estimates so small parses stay on the main thread while expensive parses use workers. The default `core.worker: true` behavior remains unchanged.
 - **OpenUSD scenes** - The new `@loaders.gl/scene` module provides an experimental [`USDLoader`](/docs/modules/scene/api-reference/usd-loader) for the [OpenUSD format](/docs/modules/scene/formats/usd), supporting ASCII USDA layers and uncompressed USDZ archives, including reference and variant composition.
-- **JSON format validation** - [Zod](https://zod.dev/) schemas add runtime validation while retaining handwritten TypeScript types, with exported JSON Schemas for `@loaders.gl/textures`, `@loaders.gl/potree`, `@loaders.gl/mvt`, `@loaders.gl/3d-tiles`, `@loaders.gl/gis`, `@loaders.gl/i3s`, and `@loaders.gl/splats`.
+- **JSON format validation** - [Zod](https://zod.dev/) schemas add runtime validation while retaining handwritten TypeScript types, with exported JSON Schemas for `@loaders.gl/textures`, `@loaders.gl/potree`, `@loaders.gl/mvt`, `@loaders.gl/3d-tiles`, `@loaders.gl/schema`, `@loaders.gl/i3s`, and `@loaders.gl/splats`.
 
 **Features**
 
@@ -422,9 +451,10 @@ Release Date: 2026
 
 - The new lightweight `@loaders.gl/compression/native-decompression` entrypoint probes runtime support for gzip, deflate, raw deflate, Brotli, and future Zstandard decompression without importing codec fallbacks. Parquet and SPZ use it before lazily loading codec-backed implementations; until native Zstandard support becomes widely available, most runtimes still need `zstd-codec` for Zstandard-backed parsing.
 
-**@loaders.gl/gis**
+**@loaders.gl/schema and @loaders.gl/geoarrow**
 
-- Handwritten, documented GeoParquet and GeoArrow metadata types are exported from `@loaders.gl/gis`, while matching runtime validators are available from `@loaders.gl/gis/geospatial-metadata-zod-schema` without adding Zod to the lightweight root import.
+- The GIS compatibility package is removed in 5.0. GeoArrow owns application-facing conversion and processing; see the [GIS migration map](/docs/modules/geoarrow/gis-migration). Legacy binary layouts remain supported as explicit, allocating rendering representations.
+- Handwritten, documented GeoParquet and GeoArrow metadata types are exported from `@loaders.gl/schema`, while matching runtime validators are available from `@loaders.gl/schema/geospatial-metadata-zod-schema` without adding Zod to the lightweight root import.
 - Draft-07 `geoparquet.schema.json` and `geoarrow-metadata.schema.json` assets are published for validation and editor integrations.
 
 **@loaders.gl/i3s**
@@ -551,6 +581,8 @@ Release Date: March 31, 2026
 
 **Highlights**
 
+
+
 - **@loaders.gl/mlt** - New [`MLTLoader`](/docs/modules/mlt/api-reference/mlt-loader) and [`MLTSourceLoader`](/docs/modules/mlt/api-reference/mlt-source-loader) add support for the [`MapLibre Tile`](/docs/modules/mlt/formats/mlt) format, with a new [MLT website example](/examples/tiles/mlt).
 - **@loaders.gl/textures** - Texture loaders now return `TextureLevel` objects with explicit `shape`, `format`, and `textureFormat` fields, add manifest-driven [`TextureLoader`](/docs/modules/textures/api-reference/texture-loader), [`TextureArrayLoader`](/docs/modules/textures/api-reference/texture-array-loader), and [`TextureCubeLoader`](/docs/modules/textures/api-reference/texture-cube-loader), and support Radiance HDR textures through [`RadianceHDRLoader`](/docs/modules/textures/api-reference/radiance-hdr-loader).
 - **@loaders.gl/arrow** - Added support for `apache-arrow@21` and a new guide for [Using with Apache Arrow](/docs/developer-guide/apache-arrow).
@@ -597,7 +629,7 @@ A minor release that includes:
 - **TypeScript** - TypeScript v5.6.
 - **Node.js** - Node.js v20 is now the primary supported Node.js version.
 - **Loader/Writer APIs** - Improved type inference for loader / writer options and return types.
-- **[`DataSource`](/docs/developer-guide/using-sources) API** Multi-step data loadingi mprovements.
+- **[`DataSource`](/docs/developer-guide/using-sources) API** Multi-step data loading improvements.
 - **Website** - Live examples are now available for more loaders / formats.
 - **Examples** - Migrated to React functional components. Minimized boilerplate code.
 
@@ -1394,7 +1426,7 @@ The 2.0 release brings potentially dramatic bundle size savings through dynamic 
   - Ease-of-use: Worker loading is provided by the main loader objects. It is not necessary to import the `...WorkerLoader` objects to enable worker loading (but see below about bundle size)
   - Performance: Loading on worker threads is now the default: All worker enabled loaders now run on worker threads by default (set `options.core.worker: false` to disable worker-thread loading and run the loader on the main thread).
   - Debugging: Development builds of workers are now available on `unpkg.com` CDN, eabling debugging of worker loaders.
-  - Bundle size: Workers are no longer bundled, but loaded from from the `unpkg.com` CDN.
+  - Bundle size: Workers are no longer bundled, but loaded from the `unpkg.com` CDN.
   - Bundle size: Note that the old `...WorkerLoader` classes are still available. Using these can save even more bundle space since during tree-shaking since they do not depend on the non-worker parser.
 
 - **Composite Loaders**

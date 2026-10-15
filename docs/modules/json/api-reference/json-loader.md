@@ -10,6 +10,7 @@ import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
 import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
 
 <DocPageHeader
+  format="json"
   eyebrow="JSON module · loader API"
   title="JSONLoader"
   description="Parse arbitrary JSON documents, or stream rows from an array inside a larger document when the payload is too large to process as one blocking operation."
@@ -156,7 +157,7 @@ Supports table category options such as `batchType` and `batchSize`.
 | `json.backend`         | [![Website shields.io](https://img.shields.io/badge/Experimental-orange.svg?style=flat-square)] | `'clarinet' \| 'fast'` | `'clarinet'` | Selects the streaming parser backend. Set to `'fast'` to opt into the faster streaming extractor. |
 | `json.shape`           |                                                                                       | `'object-row-table' \| 'array-row-table'`                  | `undefined`                                                                                                                                        | Selects row-table output for compatibility with existing table extraction workflows.                                                             |
 | `json.jsonpaths`       | [![Website shields.io](https://img.shields.io/badge/v2.2-blue.svg?style=flat-square)] | `string[]`                                                 | `[]`                                                                                                                                               | A list of JSON paths indicating the array that can be streamed.                                                                                   |
-| `metadata` (top level) | [![Website shields.io](https://img.shields.io/badge/v2.2-blue.svg?style=flat-square)] | `boolean`                                                  | If `true`, yields an initial and final batch containing the partial and final result, i.e. the root object excluding the array being streamed.       |
+| `core.metadata` | [![Website shields.io](https://img.shields.io/badge/v2.2-blue.svg?style=flat-square)] | `boolean`                                                  | `false` | If `true`, yields an initial and final batch containing the partial and final result, i.e. the root object excluding the array being streamed.       |
 
 ## JSONPaths
 

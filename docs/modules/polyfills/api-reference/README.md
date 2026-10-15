@@ -40,7 +40,7 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
   tone="blue"
 />
 
-The `@loaders.gl/polyfills` module installs support for Node.js. This module should be imported before you call any loaders.gl functionality under Node.js
+The `@loaders.gl/polyfills` module installs support for Node.js. Import it before using loaders.gl functionality that needs filesystem, image, or other Node adapters. Modern Node.js already provides standard network fetch and web streams.
 
 loaders.gl is based on the HTML5 API provided by modern, evergreen browsers.
 
@@ -58,6 +58,17 @@ Just import `@loaders.gl/polyfills` before you start using other loaders.gl modu
 import '@loaders.gl/polyfills';
 import '@loaders.gl/core';
 ```
+
+CommonJS applications can install the same Node adapters with:
+
+```javascript
+require('@loaders.gl/polyfills');
+```
+
+The Node library transport accepts local paths and file URLs, including URL-escaped filenames.
+Binary reads return exactly the file's bytes. Relative imports in a local CommonJS library
+resolve from that library's directory. Browser bundlers resolve both package entrypoints to
+the browser shim.
 
 ## Features
 
@@ -93,7 +104,7 @@ The Node image decoder support remains limited to the formats supported by the e
 
 ## Deprecated polyfills
 
-Before Node v18, `fetch` needed to be polyfilled. The `@loaders.gl/polyfills` module still conditionally installs a fetch polyfill on Node 16, but this is expected to be removed in next major release.
+The package installs legacy `fetch`, `Response`, and `Headers` fallbacks only when those globals are missing. Supported Node.js versions already provide them; importing polyfills does not replace native network fetch.
 
 ### fetch Polyfill
 
@@ -116,3 +127,14 @@ The Node.js `fetch` is able to follow 30X redirect: if `Response` has status 300
 
 - The `Header` polyfill (for Node.js `fetch`) is a fork of the implementation in https://github.com/github/fetch (MIT license).
 - The `Blob` and `File` polyfills are forks of @gozala's [`web-blob`](https://github.com/Gozala/web-blob) and [`web-file`](https://github.com/Gozala/web-file) modules respectively, under MIT license.
+
+
+## Optional Node image codecs
+
+Node file, library, and stream support works without the image codec dependencies.
+Streams use Node's native Web Streams implementation. Node image codecs are installed
+as optional dependencies and loaded on the first encode or decode request.
+
+If optional dependencies were omitted during installation, install `get-pixels`
+for PNG/JPEG/GIF decoding, and `save-pixels` plus `ndarray` for image encoding.
+A missing codec reports installation instructions when its image operation is requested.

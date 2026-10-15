@@ -92,3 +92,9 @@ new PointCloudTileset(dataSource, options?)
 - This class is point-cloud-only and octree-only.
 - It does not reuse `Tileset3D`, `Tile3D`, 3D Tiles metadata, or I3S-specific traversal logic.
 - COPC URL auto-detection is intentionally conservative. For ambiguous `.laz` URLs, pass `core.type: 'copc'`.
+
+## Dynamic decoded point data
+
+Use [`PointCloudTileSource`](/docs/modules/tiles/api-reference/point-cloud-tile-source) to
+build an additive octree from a decoded Mesh or Arrow point table. It preserves native
+coordinates and attributes, discovers children lazily, and implements this same source contract.

@@ -145,3 +145,27 @@ describe('Node require utilities', () => {
     expect(result[0]).toBe('legacy');
   });
 });
+
+test('local library file URLs preserve exact bytes and relative module resolution', async () => {
+  const {mkdtemp, writeFile, rm} = await import('node:fs/promises');
+  const {tmpdir} = await import('node:os');
+  const {join} = await import('node:path');
+  const {pathToFileURL} = await import('node:url');
+  const directory = await mkdtemp(join(tmpdir(), 'polyfill libraries '));
+  const filePath = join(directory, 'module with spaces.cjs');
+  const source = "module.exports = require('./child.cjs');";
+  try {
+    await writeFile(filePath, source);
+    await writeFile(join(directory, 'child.cjs'), 'module.exports = 42;');
+    for (const filename of [filePath, pathToFileURL(filePath).href]) {
+      const bytes = await readFileAsArrayBuffer(filename);
+      expect(bytes.byteLength).toBe(new TextEncoder().encode(source).byteLength);
+      expect(new TextDecoder().decode(bytes)).toBe(source);
+      expect(await readFileAsText(filename)).toBe(source);
+      expect(await requireFromFile(filename)).toBe(42);
+      expect(requireFromString(source, filename)).toBe(42);
+    }
+  } finally {
+    await rm(directory, {recursive: true, force: true});
+  }
+});

@@ -13,11 +13,11 @@ import {GeoArrowFlowGraphic} from '@site/src/components/docs/geoarrow-flow-graph
 import {ClientExample} from '@site/src/components';
 
 <DocPageHeader
+  format="geoarrow"
   eyebrow="Geospatial columnar format"
   title="GeoArrow"
   description="GeoArrow defines the Arrow extension metadata and layouts that let geospatial features travel with typed attribute columns. It is a convention on top of Arrow, so a valid GeoArrow table remains an Arrow table."
   tone="cyan"
-  logos={[{alt: 'Apache Arrow', src: '/images/format-logos/apache-arrow-logo.png'}]}
   meta={['Apache Arrow extensions', 'Geometry columns', 'CRS metadata']}
   links={[
     {label: 'Arrow format', to: '/docs/modules/arrow/formats/arrow'},

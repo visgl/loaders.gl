@@ -2,9 +2,9 @@ import {expect, test} from 'vitest';
 import {fetchFile, parse, parseSync} from '@loaders.gl/core';
 import {inspectWKBHeader} from '@math.gl/wkb';
 import {WKBLoader, WKTLoader} from '@loaders.gl/wkt/bundled';
-import {parseTestCases} from '@loaders.gl/gis/test/data/wkt/parse-test-cases';
-const WKB_2D_TEST_CASES = '@loaders.gl/gis/test/data/wkt/wkb-testdata2d.json';
-const WKB_Z_TEST_CASES = '@loaders.gl/gis/test/data/wkt/wkb-testdataZ.json';
+import {parseTestCases} from '@loaders.gl/wkt/test/data/wkt/parse-test-cases';
+const WKB_2D_TEST_CASES = '@loaders.gl/wkt/test/data/wkt/wkb-testdata2d.json';
+const WKB_Z_TEST_CASES = '@loaders.gl/wkt/test/data/wkt/wkb-testdataZ.json';
 
 function isWKB(input: ArrayBufferLike): boolean {
   try {

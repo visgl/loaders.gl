@@ -10,6 +10,7 @@ import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
 import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
 
 <DocPageHeader
+  format="chrome-trace"
   eyebrow="Traces module · writer API"
   title="ChromeTraceWriter"
   description="Serialize a typed Chrome trace Arrow table or record batch back into a Chrome Trace Event JSON container."

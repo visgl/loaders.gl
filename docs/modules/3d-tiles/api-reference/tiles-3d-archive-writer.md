@@ -26,9 +26,11 @@ The index has no file comment and excludes itself.
 
 `3tz.maxArchiveBytes` is a nonnegative safe integer, defaulting to `0xfffffffe`. The complete
 archive size, including headers and index, is checked before reading Blobs or serializing.
-Archives exceeding that ZIP32 capacity, 65,533 resource files, noncanonical or non-ASCII
-paths, and nested archive paths are rejected. This first version does not support ZIP64,
-compression. The size budget is not a peak-memory limit.
+Raise `'3tz'.maxArchiveBytes` explicitly for larger output. The `'3tz'.zip64` policy defaults to
+`'auto'`; `'always'` forces ZIP64 and `'never'` rejects overflowing sizes/counts. The buffered API
+rejects output beyond 4 GiB; use streaming for larger archives. Paths remain canonical ASCII and
+case-sensitive, and decoded tileset/mesh validation remains the caller's responsibility. ZIP64
+container qualification does not imply independent 3D Tiles viewer qualification.
 
 The result is an `ArrayBuffer`. For a browser download, wrap it in a Blob with MIME type
 `application/vnd.maxar.archive.3tz+zip`, save as `.3tz`, and revoke object URLs when no longer

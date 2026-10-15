@@ -23,7 +23,9 @@ export type MVTLoaderOptions = LoaderOptions & {
     /** An object containing tile index values (`x`, `y`, `z`) to reproject features' coordinates into WGS84. Mandatory with `wgs84` coordinates option. */
     tileIndex?: {x: number; y: number; z: number};
     /** If provided, stored the layer name of each feature is added to `feature.properties[layerProperty]`. */
-    layerProperty?: string | number;
+    layerProperty?: string | number | null;
+    /** Include source-layer provenance outside feature properties for GeoJSON output. */
+    sourceLayer?: boolean;
     /** layer filter. If provided, only features belonging to the named layers will be included, otherwise features from all layers are returned. */
     layers?: string[];
     /** Override the URL to the worker bundle (by default loads from unpkg.com) */
@@ -51,6 +53,7 @@ export const MVTLoader = {
       shape: 'arrow-table',
       coordinates: 'local',
       layerProperty: 'layerName',
+      sourceLayer: false,
       layers: undefined!,
       tileIndex: undefined!
     }

@@ -970,3 +970,12 @@ body:has(.benchmark-page) footer.theme-layout-footer {
   border-radius: inherit;
   height: 100%;
 }
+
+/* Format navigation reuses the gallery badge at a compact size. */
+.docs-page-tabs [data-format-logo] {
+  margin-right: 0.5rem;
+  width: 170px;
+}
+.docs-page-tabs [data-format-logo] > span {
+  height: 36px;
+}

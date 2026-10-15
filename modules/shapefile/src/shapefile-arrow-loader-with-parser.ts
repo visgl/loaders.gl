@@ -12,13 +12,13 @@ import {
 import * as arrow from 'apache-arrow';
 import type {ArrowTable, ArrowTableBatch, Field, Schema as TableSchema} from '@loaders.gl/schema';
 import {ArrowTableBuilder, convertSchemaToArrow} from '@loaders.gl/schema-utils';
+import {convertFeaturesToGeoArrowTable} from '@loaders.gl/arrow-geometry/feature-table';
+import {convertWKBToGeometry} from '@loaders.gl/arrow-geometry/geometry-codecs';
+import {type GeoParquetGeometryType} from '@loaders.gl/schema';
 import {
-  convertFeaturesToGeoArrowTable,
-  convertWKBToGeometry,
-  type GeoParquetGeometryType,
   makeWKBGeometryField,
   setWKBGeometryColumnMetadata
-} from '@loaders.gl/gis';
+} from '@loaders.gl/arrow-geometry/geometry-field';
 import {projectionEngine} from '@math.gl/projection';
 import type {ReadonlyCRSDefinition, WKTCRSDefinition} from '@math.gl/crs';
 import {SHPLoaderWithParser} from './shp-loader-with-parser';

@@ -9,6 +9,7 @@ import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
 import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
 
 <DocPageHeader
+  format="compressed-textures"
   eyebrow="Textures API · cube arrays"
   title="Load many cubemaps from one manifest."
   description="TextureCubeArrayLoader reads a JSON manifest whose layers contain six cube faces. It keeps the face layout and optional mip chains explicit for environment, irradiance, and other layered texture data."

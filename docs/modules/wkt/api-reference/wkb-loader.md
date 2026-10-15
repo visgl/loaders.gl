@@ -9,6 +9,7 @@ import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
 import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
 
 <DocPageHeader
+  format="wkb"
   eyebrow="WKT module · geometry loader"
   title="WKBLoader"
   description="Parse compact Well-Known Binary geometry into loaders.gl data for database, GIS, Shapefile, and GeoArrow-oriented pipelines."
@@ -40,7 +41,6 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
   tone="orange"
 />
 
-![ogc-logo](../../../images/logos/ogc-logo-60.png)
 
 Loader for the [Well-known binary][wkb] format for representation of geometry.
 
@@ -66,7 +66,7 @@ npm install @loaders.gl/core
 ## Usage
 
 ```typescript
-import {WKBLoader} from '@loaders.gl/wkt';
+import {WKBLoader} from '@loaders.gl/wkt/bundled';
 import {parseSync} from '@loaders.gl/core';
 
 // biome-ignore format: preserve intentional fixture layout
@@ -76,7 +76,7 @@ const buffer = new Uint8Array([
   0, 0, 0, 0,   0,  0, 64
 ]).buffer;
 const data = parseSync(buffer, WKBLoader);
-// => { positions: { value: Float64Array(2) [ 1, 2 ], size: 2 } }
+// => {type: 'Point', coordinates: [1, 2]}
 ```
 
 ```typescript
@@ -105,15 +105,13 @@ const data = await parse(buffer, WKBLoader, {wkb: {workerUrl: WKT_WORKER_URL}});
 
 ## Format Summary
 
-Well-known binary (WKB) is a binary geometry encoding to store geometries (it
-doesn't store attributes). It's used in databases such as PostGIS and as the
-internal storage format of Shapefiles. It's also being discussed as the internal
-storage format for a ["GeoArrow"](https://github.com/geopandas/geo-arrow-spec)
-specification. WKB is defined starting on page 62 of the [OGC Simple Features
-specification](http://portal.opengeospatial.org/files/?artifact_id=25355).
+WKB encodes geometry without a feature's attributes. It is used in spatial
+databases and in the `geoarrow.wkb` geometry extension. Shapefile geometry records
+use their own binary layout; they are not WKB records. See the
+[WKB format page](../formats/wkb) for compatibility details.
 
 It's essentially a binary representation of WKT. For common geospatial types
-including (Multi) `Point`, `Line`, and `Polygon`, there's a 1:1 correspondence
+including (Multi) `Point`, `LineString`, and `Polygon`, there's a 1:1 correspondence
 between WKT/WKB and GeoJSON. WKT and WKB also support extended geometry types,
 such as `Curve`, `Surface`, and `TIN`, which don't have a correspondence to
 GeoJSON.

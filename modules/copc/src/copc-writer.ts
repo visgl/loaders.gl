@@ -10,7 +10,7 @@ import {
   type WriterOptions,
   type WriterWithEncoder
 } from '@loaders.gl/loader-utils';
-import {LASWriter} from '@loaders.gl/las';
+import {LASWriter, type LASExtraBytesWriter} from '@loaders.gl/las';
 import type {Mesh, MeshArrowTable} from '@loaders.gl/schema';
 import type {WKTCRSDefinition} from '@math.gl/crs';
 import {COPCFormat} from './copc-format';
@@ -45,6 +45,8 @@ export type COPCWriterOptions = WriterOptions & {
     offset?: [number, number, number];
     /** Color component depth used by source color attributes. */
     colorDepth?: number | string;
+    /** Explicit custom point attributes and LAS Extra Bytes descriptors to preserve. */
+    extraBytes?: LASExtraBytesWriter[];
     /** Root-node point spacing stored in the COPC info VLR. */
     spacing?: number;
     /** Optional coordinate reference system encoded as an OGC WKT VLR. */
@@ -99,7 +101,8 @@ function encodeCOPCSync(data: Mesh | MeshArrowTable, options: COPCWriterOptions 
     VLR_HEADER_LENGTH +
     COPC_INFO_PAYLOAD_LENGTH +
     laszipVLR.byteLength +
-    (wktVLR?.byteLength || 0);
+    (wktVLR?.byteLength || 0) +
+    rawLAS.vlrs.reduce((bytes, record) => bytes + record.byteLength, 0);
 
   let pointDataByteOffset = pointDataOffset + 8;
   const chunkTableEntries: LAZChunkTableEntry[] = [];
@@ -133,7 +136,7 @@ function encodeCOPCSync(data: Mesh | MeshArrowTable, options: COPCWriterOptions 
       rawLAS.gpsTimeRange
     )
   );
-  const vlrs = [infoVLR, laszipVLR, ...(wktVLR ? [wktVLR] : [])];
+  const vlrs = [infoVLR, laszipVLR, ...rawLAS.vlrs, ...(wktVLR ? [wktVLR] : [])];
   const arrayBuffer = new ArrayBuffer(evlrOffset + hierarchyEVLR.byteLength);
   const bytes = new Uint8Array(arrayBuffer);
   const dataView = new DataView(arrayBuffer);
@@ -168,6 +171,8 @@ function encodeCOPCSync(data: Mesh | MeshArrowTable, options: COPCWriterOptions 
 type RawLASData = {
   /** LAS 1.4 public header. */
   header: Uint8Array;
+  /** VLRs emitted by LASWriter, including Extra Bytes descriptors. */
+  vlrs: Uint8Array[];
   /** Contiguous uncompressed point records. */
   pointData: Uint8Array;
   /** Number of point records. */
@@ -242,7 +247,8 @@ function encodeRawLAS(data: Mesh | MeshArrowTable, options: COPCWriterOptions): 
       pointDataRecordFormat: options.copc?.pointDataRecordFormat,
       scale: options.copc?.scale,
       offset: options.copc?.offset,
-      colorDepth: options.copc?.colorDepth
+      colorDepth: options.copc?.colorDepth,
+      extraBytes: options.copc?.extraBytes
     }
   });
   const dataView = new DataView(arrayBuffer);
@@ -277,6 +283,7 @@ function encodeRawLAS(data: Mesh | MeshArrowTable, options: COPCWriterOptions): 
   const gpsTimeRange = calculateGpsTimeRange(pointData, pointCount, pointDataRecordLength);
   return {
     header,
+    vlrs: readGeneratedLASVLRs(arrayBuffer),
     pointData,
     pointCount,
     pointDataRecordFormat,
@@ -286,6 +293,19 @@ function encodeRawLAS(data: Mesh | MeshArrowTable, options: COPCWriterOptions): 
     bounds,
     gpsTimeRange
   };
+}
+
+/** Retains complete VLR records from the internally generated uncompressed LAS file. */
+function readGeneratedLASVLRs(arrayBuffer: ArrayBuffer): Uint8Array[] {
+  const view = new DataView(arrayBuffer);
+  const records: Uint8Array[] = [];
+  let offset = LAS_1_4_HEADER_LENGTH;
+  for (let index = 0; index < view.getUint32(100, true); index++) {
+    const size = VLR_HEADER_LENGTH + view.getUint16(offset + 20, true);
+    records.push(new Uint8Array(arrayBuffer, offset, size).slice());
+    offset += size;
+  }
+  return records;
 }
 
 /** Calculate the finite GPS time range stored by modern LAS point records. */

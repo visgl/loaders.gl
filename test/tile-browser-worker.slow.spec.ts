@@ -2,7 +2,7 @@ import {expect, test} from 'vitest';
 import {parse} from '@loaders.gl/core';
 import {GLBLoader} from '@loaders.gl/gltf';
 import {parseSLPKArchive} from '@loaders.gl/i3s';
-import {DataViewReadableFile} from '@loaders.gl/zip';
+import {ArrayBufferFile} from '@loaders.gl/loader-utils';
 import {Tiles3DArchive} from '@loaders.gl/3d-tiles';
 import {
   convertSelectedContentsInWorker,
@@ -29,7 +29,14 @@ async function createWorkerInput(collection: boolean, compressed = false) {
   document.root!.children![0].contents![1].uri = contentUrl;
   if (collection) document.root!.children![1].content!.uri = contentUrl;
   return {
-    inspection: {...inspection, tileset: document, resources},
+    inspection: {
+      ...inspection,
+      tileset: document,
+      documents: inspection.documents?.map((placement, index) =>
+        index === 0 ? {...placement, tileset: document} : placement
+      ),
+      resources
+    },
     resourceIds: collection
       ? [resources[1].resourceId, resources[2].resourceId]
       : [resources[1].resourceId],
@@ -100,7 +107,7 @@ test.each([
       }
       expect(outputFile.size).toBeGreaterThan(0);
       expect(phases).toContain('Packaging archive');
-      const file = new DataViewReadableFile(new DataView(await outputFile.arrayBuffer()));
+      const file = new ArrayBufferFile(await outputFile.arrayBuffer());
       const archive = format === 'slpk' ? await parseSLPKArchive(file) : new Tiles3DArchive(file);
       try {
         const root = await archive.getFile(format === 'slpk' ? '' : 'tileset.json', 'http');
@@ -170,5 +177,70 @@ test('canceling after a native file write preserves the previous file', async ()
     nativeWriter.releaseLock();
     URL.revokeObjectURL(contentUrl);
     await directory.removeEntry(filename);
+  }
+}, 30000);
+
+test.each([
+  'slpk',
+  '3tz'
+] as const)('real worker reads cloneable local I3S declarations/File and emits %s', async format => {
+  const {createI3SConversionFixture} = await import('./utils/tile-browser-i3s-conversion');
+  const {inspectI3SConversionInput} = await import(
+    '../examples/website/i3s-slpk/src/i3s-conversion-input'
+  );
+  const fixture = await createI3SConversionFixture();
+  const controller = new AbortController();
+  const inspection = await inspectI3SConversionInput(fixture.file, controller.signal);
+  const output = await convertSelectedContentsInWorker(
+    inspection,
+    ['1'],
+    format,
+    controller.signal,
+    () => {},
+    fixture.features,
+    2
+  );
+  expect(output.file.name).toBe(`selected-mesh.${format}`);
+  expect(output.report.inputResources).toBe(1);
+  const file = new ArrayBufferFile(await output.file.arrayBuffer());
+  try {
+    const archive = format === 'slpk' ? await parseSLPKArchive(file) : new Tiles3DArchive(file);
+    const document = JSON.parse(
+      new TextDecoder().decode(
+        await archive.getFile(format === 'slpk' ? '' : 'tileset.json', 'http')
+      )
+    );
+    expect(format === 'slpk' ? document.layerType : document.root.children.length).toBe(
+      format === 'slpk' ? '3DObject' : 1
+    );
+  } finally {
+    await file.close();
+  }
+}, 30000);
+
+test.each([
+  'slpk',
+  '3tz'
+] as const)('real worker reopens a cloneable local 3TZ and writes %s', async format => {
+  const {createTiles3DConversionArchive} = await import('./utils/tile-browser-archive-conversion');
+  const input = await createTiles3DConversionArchive();
+  const inspection = await inspectConversionInput(input, new AbortController().signal);
+  const output = await convertSelectedContentsInWorker(
+    inspection,
+    [inspection.resources[0].resourceId],
+    format,
+    new AbortController().signal,
+    () => {}
+  );
+  expect(output.report.inputResources).toBe(1);
+  const file = new ArrayBufferFile(await output.file.arrayBuffer());
+  try {
+    const bytes =
+      format === 'slpk'
+        ? await (await parseSLPKArchive(file)).getFile('', 'http')
+        : await new Tiles3DArchive(file).getFile('tileset.json');
+    expect(JSON.parse(new TextDecoder().decode(bytes))).toBeDefined();
+  } finally {
+    await file.close();
   }
 }, 30000);

@@ -9,6 +9,7 @@ import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
 import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
 
 <DocPageHeader
+  format="arrow"
   eyebrow="Arrow table view"
   title="IndexedArrowTable"
   description="IndexedArrowTable and IndexedArrowVector add a readonly index over Arrow data. Filtering, sorting, slicing, and repeated row views can stay as indexes until an application explicitly asks for copied values."

@@ -14,12 +14,19 @@ type ParquetCommonLoaderOptions = {
   /** @deprecated Use `_scan.columns` instead for logical projection. */
   columns?: string[];
   preserveBinary?: boolean;
+  /** Resolves modular-encryption keys from file and column key metadata. */
+  keyRetriever?: ParquetKeyRetriever;
+  /** AAD prefix for encrypted files that intentionally omit it from metadata. */
+  aadPrefix?: Uint8Array;
+  /** Verify plaintext-footer signatures when present. Enabled by default. */
+  verifyFooterSignature?: boolean;
   /** Decode legacy INT96 values as Arrow timestamp-nanosecond values. */
   int96AsTimestamp?: boolean;
 };
 
-/** Additional options supported by the wasm-backed Parquet reader. */
+/** Reader selection, cancellation, and optional WASM backend settings. */
 type ParquetWasmLoaderOptions = ParquetCommonLoaderOptions & {
+  /** Zero-based row groups to read, in output order. */
   rowGroups?: number[];
   concurrency?: number;
   /** Cancels an active worker parse by terminating its worker. */
@@ -30,7 +37,7 @@ type ParquetWasmLoaderOptions = ParquetCommonLoaderOptions & {
   wasmUrl?: string;
 };
 
-/** Public options for the wasm-backed `ParquetLoader` and `GeoParquetLoader`. */
+/** Public options for the TypeScript-backed `ParquetLoader` and `GeoParquetLoader`. */
 export type ParquetLoaderOptions = LoaderOptions & {
   parquet?: {
     shape?: 'object-row-table' | 'arrow-table';
@@ -43,18 +50,12 @@ export type ParquetLoaderOptions = LoaderOptions & {
 export type ParquetJSLoaderOptions = LoaderOptions & {
   parquet?: {
     shape?: 'object-row-table' | 'arrow-table';
-    /** Resolves modular-encryption keys from file and column key metadata. */
-    keyRetriever?: ParquetKeyRetriever;
-    /** AAD prefix for encrypted files that intentionally omit it from metadata. */
-    aadPrefix?: Uint8Array;
-    /** Verify plaintext-footer signatures when present. Enabled by default. */
-    verifyFooterSignature?: boolean;
   } & {
-    [Key in keyof ParquetCommonLoaderOptions]?: ParquetCommonLoaderOptions[Key];
+    [Key in keyof ParquetWasmLoaderOptions]?: ParquetWasmLoaderOptions[Key];
   };
 };
 
-/** Shared default option bag for the wasm-backed Parquet loaders. */
+/** Shared default option bag for the public Parquet loaders. */
 export const PARQUET_LOADER_DEFAULT_OPTIONS = {
   columns: undefined,
   preserveBinary: false,

@@ -12,6 +12,14 @@ import {encodeI3SMeshAttributes} from './i3s-mesh-attributes';
 import type {I3SMeshFeatures} from './i3s-mesh-attributes';
 export type {I3SMeshFeatures} from './i3s-mesh-attributes';
 
+/** Shared lazy GZIP encoder for the synchronous mesh-resource finalization step. */
+const MESH_GZIP_COMPRESSOR = /*#__PURE__*/ new GZipCompressor({useNative: false});
+
+/** Initializes mesh-resource compression before calling the synchronous raw mesh encoder. */
+export async function preloadI3SMeshCompression(): Promise<void> {
+  await MESH_GZIP_COMPRESSOR.preload();
+}
+
 /** Metallic/roughness factors and one encoded base-color texture supported by the I3S mesh profile. */
 export interface I3SMeshMaterial {
   /** Linear RGBA multiplier in [0, 1]; RGB is encoded as I3S sRGB, alpha is unchanged. */
@@ -69,6 +77,7 @@ export interface EncodedI3SMeshLayer {
  * The profile rejects vertex colors, unknown attributes, unused feature rows, invalid
  * associations, and unsupported property types instead of discarding them. Resource caps bound
  * individual buffers, not peak memory. Independent viewer qualification remains application-owned.
+ * Call `await preloadI3SMeshCompression()` before the first synchronous encode.
  * @param mesh - Absolute ECEF triangle geometry; input arrays are never modified.
  * @param options - Required resource and precision limits and explicit metadata mappings.
  * @returns Finalized compressed resources accepted by SLPKWriter.
@@ -95,6 +104,7 @@ export async function encodeI3SMeshLayerWithDraco(
   options: I3SMeshWriterOptions,
   libraryOptions: I3SDracoLibraryOptions = {}
 ): Promise<EncodedI3SMeshLayer> {
+  await preloadI3SMeshCompression();
   const maxResourceBytes = options.maxResourceBytes;
   const prepared = prepareMeshLayer(mesh, options, 'draco');
   const geometry = prepared.files['nodes/1/geometries/0.bin.gz'];
@@ -568,7 +578,7 @@ function compressMeshLayer(
   prepared: EncodedI3SMeshLayer,
   maxResourceBytes: number
 ): EncodedI3SMeshLayer {
-  const compressor = new GZipCompressor({useNative: false, gzip: {mtime: 0}});
+  const compressor = MESH_GZIP_COMPRESSOR;
   const files: Record<string, ArrayBuffer> = {};
   for (const [name, bytes] of Object.entries(prepared.files)) {
     if (bytes.byteLength > maxResourceBytes)

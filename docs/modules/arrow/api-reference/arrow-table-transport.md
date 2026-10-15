@@ -9,6 +9,7 @@ import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
 import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
 
 <DocPageHeader
+  format="arrow"
   eyebrow="Arrow worker transport"
   title="Arrow table transport"
   description="The transport helpers prepare Arrow tables for structured clone or IPC transfer. They make sliced buffers safe to transfer and keep the schema explicit when data crosses a worker boundary."
@@ -77,7 +78,7 @@ import {dehydrateArrowTable, hydrateArrowTable} from '@loaders.gl/arrow/transpor
 const payload = dehydrateArrowTable(table);
 worker.postMessage(payload, transferList);
 
-const table = hydrateArrowTable(payload);
+const hydratedTable = hydrateArrowTable(payload);
 ```
 
 ### `dehydrateArrowTable`
@@ -151,7 +152,7 @@ import {
 const payload = serializeArrowTableToIPC(table);
 worker.postMessage(payload, [payload.data.buffer]);
 
-const table = deserializeArrowTableFromIPC(payload);
+const restoredTable = deserializeArrowTableFromIPC(payload);
 ```
 
 `serializeArrowTableToIPC(table)` returns Arrow IPC bytes.

@@ -10,6 +10,7 @@ import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
 import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
 
 <DocPageHeader
+  format="tcx"
   eyebrow="KML module · loader API"
   title="TCXLoader"
   description="Parse Garmin Training Center XML activities into loaders.gl geometry tables while keeping the activity, lap, and measurement structure available to the application."

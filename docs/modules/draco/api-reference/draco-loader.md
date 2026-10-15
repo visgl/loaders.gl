@@ -10,6 +10,7 @@ import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
 import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
 
 <DocPageHeader
+  format="draco"
   eyebrow="Draco module · loader API"
   title="DracoLoader"
   description="Decode compressed meshes and point clouds into a render-ready Mesh object or a Mesh Arrow table, with worker and backend controls for browser applications."
@@ -43,7 +44,7 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
   tone="blue"
 />
 
-![logo](../images/draco-small.png)
+
 
 `DracoLoader` decodes a mesh or point cloud (maps of attributes) using [DRACO](https://google.github.io/draco/) compression. It returns a [Mesh Arrow table](/docs/specifications/category-mesh#mesh-arrow-tables) by default. Set `draco.shape: 'mesh'` for the legacy [Mesh](/docs/specifications/category-mesh) object.
 

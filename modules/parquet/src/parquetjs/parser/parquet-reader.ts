@@ -279,7 +279,9 @@ export class ParquetReader {
   ): Promise<Uint8Array> {
     const effectiveSignal = signal ?? this.props.signal;
     if (effectiveSignal?.aborted) {
-      throw new Error('Request aborted');
+      const error = new Error('Request aborted');
+      error.name = 'AbortError';
+      throw error;
     }
     if (this.file.handle instanceof ArrayBuffer) {
       return new Uint8Array(this.file.handle, start, length);

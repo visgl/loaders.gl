@@ -13,3 +13,6 @@ export type {MLTSourceLoaderOptions} from './mlt-source-loader';
 // DEPRECATED EXPORTS
 /** @deprecated Use MLTLoader. */
 export {MLTWorkerLoader} from './mlt-loader';
+
+export {MLTWriter} from './mlt-writer';
+export type {MLTWriterOptions} from './mlt-writer';

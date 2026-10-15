@@ -24,7 +24,7 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
 <DocOrientation
   eyebrow="What to choose"
   title="Start with the default, specialize only with a reason."
-  description="The default JavaScript backend is usually the best balance of size and speed. Alternate decoders are available when a workload benefits from WebAssembly or a specific dependency policy."
+  description="The default uses direction-specific compress-utils WASM modules. Alternate backends remain available for reference and comparison."
   tone="blue"
   items={[
     {label: 'Input', value: 'Snappy-compressed blocks or format payloads'},
@@ -46,15 +46,15 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
   <img src="https://img.shields.io/badge/From-v5.0-blue.svg?style=flat-square" alt="From v5.0" />
 </p>
 
-`SnappyCompressor` and `SnappyDecompressor` use the compact `snappyjs` implementation. Snappy is
-not exposed by the browser stream APIs, so the defaults select the small JavaScript codec directly.
+`SnappyCompressor` and `SnappyDecompressor` use the `compress-utils` WASM implementation. Snappy is
+not exposed by the browser stream APIs, so the defaults load the required codec direction dynamically.
 
 ```typescript
 import {SnappyCompressor, SnappyDecompressor} from '@loaders.gl/compression';
 ```
 
 Both implement the shared [Compressor and Decompressor](./compressor-decompressor) APIs and support
-synchronous one-shot operation.
+synchronous one-shot operation after preload.
 
 ## Backend choices
 
@@ -71,3 +71,5 @@ and already know each block's uncompressed size.
 
 The default is normally the best size/performance balance. See the
 [live benchmarks](/docs/modules/compression/benchmarks) before pinning another backend.
+
+For sync methods, preload first; root callers should use `{useNative: false}` when selecting a WASM implementation for synchronous work.

@@ -10,6 +10,7 @@ import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
 import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
 
 <DocPageHeader
+  format="las"
   eyebrow="LAS module · writer API"
   title="LASWriter"
   description="Write loaders.gl mesh or Arrow point-cloud data as LAS or LAZ, with control over point record formats, quantization, compression chunks, and rich point attributes."
@@ -79,11 +80,11 @@ LAZ output supports PDRF 0-10. Legacy formats use LASzip compressor 2 and item v
 | `las.pointDataRecordFormat` | `0` through `10` | Derived | Point record layout. The default depends on version and whether `COLOR_0` is present. |
 | `las.scale` | `[number, number, number]` | `[0.001, 0.001, 0.001]` | Coordinate scale factors used to quantize positions into LAS integer coordinates. |
 | `las.offset` | `[number, number, number]` | Mesh minimum position | Coordinate offsets used to quantize positions into LAS integer coordinates. |
-| `las.colorDepth` | `number \| string` | - | Declares the source color component depth. |
+| `las.colorDepth` | `number \| string` | - | `8` scales source RGB by 257, `16` preserves UInt16 component values. `auto` or omitted retains legacy inference; normalized attributes use their declared normalization. |
 | `las.chunkSize` | `number` | `50000` | Number of points per LAZ chunk. |
 | `las.variableChunkTable` | `boolean` | `false` | Use a variable-size LAZ chunk table and store each chunk's point count. |
 
-Use `las.extraBytes` to append one- or three-component typed mesh attributes to each point record and emit an Extra Bytes VLR. Each entry accepts an `attribute` name and optional `name` and `description`; the writer infers the LAS data type from the typed array and attribute size. LAS Extra Bytes has no four-component data type, so four-component attributes are rejected.
+Use `las.extraBytes` to append one- or three-component typed mesh attributes to each point record and emit an Extra Bytes VLR. Each entry accepts an `attribute` name and optional `name` and `description`; the writer infers the LAS data type from the typed array and attribute size. Names and descriptions are fixed-width ASCII fields; non-ASCII text is rejected to avoid changing metadata. LAS Extra Bytes has no four-component data type, so four-component attributes are rejected.
 
 For modern PDRFs, the writer also maps optional point attributes named `gpsTime`, `scanAngle`, `userData`, `pointSourceId`, `returnNumber`, `numberOfReturns`, `scannerChannel`, `scanDirectionFlag`, `edgeOfFlightLine`, `synthetic`, `keyPoint`, `withheld`, and `overlap`. For PDRF 8 and 10, the optional `nir` attribute is written as a 16-bit near-infrared channel. Missing fields are zero-filled.
 

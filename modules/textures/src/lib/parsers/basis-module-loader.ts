@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import {registerJSModules, getJSModuleOrNull} from '@loaders.gl/loader-utils';
+import {initializeWasmModule, registerJSModules, getJSModuleOrNull} from '@loaders.gl/loader-utils';
 import {loadLibrary, LoadLibraryOptions} from '@loaders.gl/worker-utils';
 
 export const BASIS_EXTERNAL_LIBRARIES = {
@@ -67,9 +67,9 @@ function initializeBasisTranscoderModule(BasisModule, wasmBinary) {
     options.wasmBinary = wasmBinary;
   }
 
-  return new Promise(resolve => {
-    // if you try to return BasisModule the browser crashes!
-    BasisModule(options).then(module => {
+  return initializeWasmModule<any, any>(
+    () => BasisModule(options),
+    module => {
       const {
         BasisFile,
         KTX2File,
@@ -79,15 +79,15 @@ function initializeBasisTranscoderModule(BasisModule, wasmBinary) {
         isFormatSupported
       } = module;
       initializeBasis();
-      resolve({
+      return {
         BasisFile,
         KTX2File,
         getBasisTexFormatBlockHeight,
         getBasisTexFormatBlockWidth,
         isFormatSupported
-      });
-    });
-  });
+      };
+    }
+  );
 }
 
 let loadBasisEncoderPromise;
@@ -140,12 +140,12 @@ function initializeBasisEncoderModule(BasisEncoderModule, wasmBinary) {
     options.wasmBinary = wasmBinary;
   }
 
-  return new Promise(resolve => {
-    // if you try to return BasisModule the browser crashes!
-    BasisEncoderModule(options).then(module => {
+  return initializeWasmModule<any, any>(
+    () => BasisEncoderModule(options),
+    module => {
       const {BasisFile, KTX2File, initializeBasis, BasisEncoder} = module;
       initializeBasis();
-      resolve({BasisFile, KTX2File, BasisEncoder});
-    });
-  });
+      return {BasisFile, KTX2File, BasisEncoder};
+    }
+  );
 }

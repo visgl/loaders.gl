@@ -56,6 +56,15 @@ data types can contain nested `Field` objects.
 
 ### Create a new Schema
 
+```typescript
+import {Schema, Field, Float64, Utf8} from 'apache-arrow';
+
+const schema = new Schema([
+  new Field('latitude', new Float64(), true),
+  new Field('name', new Utf8(), true)
+]);
+```
+
 ### Working with Arrow Schemas
 
 Get the names of the columns in a table.
@@ -69,6 +78,6 @@ const fieldNames = table.schema.fields.map((f) => f.name);
 const fieldTypes = schema.fields.map(f => f.type)
 // Array(3) [Float, Float, Timestamp]
 
-const fieldTypeNames = ...;
+const fieldTypeNames = schema.fields.map(field => field.type.toString());
 // Array(3) ["Float64", "Float64", "Timestamp<MICROSECOND>"]
 ```

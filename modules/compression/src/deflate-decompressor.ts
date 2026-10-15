@@ -3,45 +3,38 @@
 // Copyright (c) vis.gl contributors
 
 import {
-  DeflateFflateDecompressor,
-  type DeflateFflateDecompressorOptions
-} from './deflate-decompressor-fflate';
+  DeflateCompressUtilsDecompressor,
+  type CompressUtilsCompressionOptions
+} from './deflate-decompressor-compress-utils';
+
 import {
-  decompressBatchesWithNativeDecompressionStream,
-  decompressWithNativeDecompressionStream
+  decompressWithNativeDecompressionStream,
+  decompressBatchesWithNativeDecompressionStream
 } from './lib/decompression-stream';
 
-/** Options for the balanced default DEFLATE decompressor. */
-export type DeflateDecompressorOptions = DeflateFflateDecompressorOptions & {
-  /** Whether asynchronous methods may use the built-in stream implementation. */
-  useNative?: boolean;
-};
-
-/** Native-first DEFLATE decompressor with a compact fflate fallback. */
-export class DeflateDecompressor extends DeflateFflateDecompressor {
-  declare readonly options: DeflateDecompressorOptions;
-
-  constructor(options: DeflateDecompressorOptions = {}) {
-    super(options);
-  }
-
-  /** Decompresses with the built-in stream when available, then falls back to fflate. */
-  async decompress(input: ArrayBuffer): Promise<ArrayBuffer> {
+/** Default DEFLATE decompressor backed by the lazily loaded compress-utils codec. */
+export class DeflateDecompressor extends DeflateCompressUtilsDecompressor {
+  /** Decompresses with native streams when available, otherwise lazily initializes WASM. */
+  async decompress(input: ArrayBuffer, size?: number): Promise<ArrayBuffer> {
     if (this.options.useNative !== false) {
-      const format = this.options.raw ? 'deflate-raw' : 'deflate';
-      const output = await decompressWithNativeDecompressionStream(input, format);
+      const output = await decompressWithNativeDecompressionStream(
+        input,
+        this.options.raw ? 'deflate-raw' : 'deflate'
+      );
       if (output) return output;
     }
-    return this.decompressSync(input);
+    return super.decompress(input, size);
   }
 
-  /** Decompresses batches with a built-in or fflate stream. */
+  /** Streams native batches when available, otherwise uses the WASM stream. */
   async *decompressBatches(
     inputBatches: AsyncIterable<ArrayBuffer> | Iterable<ArrayBuffer>
   ): AsyncIterable<ArrayBuffer> {
     if (this.options.useNative !== false) {
-      const format = this.options.raw ? 'deflate-raw' : 'deflate';
-      const output = decompressBatchesWithNativeDecompressionStream(inputBatches, format);
+      const output = decompressBatchesWithNativeDecompressionStream(
+        inputBatches,
+        this.options.raw ? 'deflate-raw' : 'deflate'
+      );
       if (output) {
         yield* output;
         return;
@@ -50,3 +43,5 @@ export class DeflateDecompressor extends DeflateFflateDecompressor {
     yield* super.decompressBatches(inputBatches);
   }
 }
+
+export type {CompressUtilsCompressionOptions as DeflateDecompressorOptions};

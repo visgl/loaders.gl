@@ -31,3 +31,12 @@ export {
   type WKBCoordinateTransform
 } from './wkb-builder';
 export {triangulateWKB} from './triangulate-wkb';
+
+export {
+  makeGeoArrowColumnFromArrowVector,
+  makeArrowVectorFromGeoArrowColumn,
+  inferGeoArrowEncodingFromArrowType,
+  inferGeoArrowDimensionFromArrowType,
+  inferGeoArrowCoordinateLayoutFromArrowType,
+  type MakeGeoArrowColumnFromArrowVectorOptions
+} from './arrow-geoarrow-adapter';

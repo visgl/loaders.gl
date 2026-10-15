@@ -13,11 +13,11 @@ import {DocLiveExample} from '@site/src/components/docs/doc-live-example';
 import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
 
 <DocPageHeader
+  format="arcgis-feature-server"
   eyebrow="ArcGIS module · ArcGIS vector source"
   title="ArcGIS FeatureServer"
   description="Query ArcGIS feature layers through the loaders.gl VectorSource contract, with normalized metadata, schemas, spatial requests, and GeoJSON, binary, or Arrow output."
   tone="violet"
-  logos={[{alt: 'ArcGIS', src: '/images/format-logos/arcgis-logo.svg'}]}
   meta={['FeatureServer', 'VectorSource', 'GeoJSON / binary / Arrow']}
   links={[
     {label: 'ArcGIS module', to: '/docs/modules/arcgis'},
@@ -199,8 +199,11 @@ const layer = new SourceLayer({
   requestCrs: 'EPSG:4326',
   layers: ['0'],
   pickable: true,
-  getLineColor: [0, 80, 255],
-  lineWidthMinPixels: 3
+  format: 'geojson',
+  geoJsonLayerProps: {
+    getLineColor: [0, 80, 255],
+    lineWidthMinPixels: 3
+  }
 });
 ```
 

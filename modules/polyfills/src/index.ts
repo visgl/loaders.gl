@@ -8,10 +8,9 @@ import {isBrowser} from './utils/is-browser';
 import {TextDecoder, TextEncoder} from './text-encoder/text-encoder';
 
 // Node specific
-import {atob, btoa} from './buffer/btoa.node';
+import {atob, btoa} from './buffer/btoa.node.js';
 
-import {encodeImageNode} from './images/encode-image-node';
-import {parseImageNode, NODE_FORMAT_SUPPORT} from './images/parse-image-node';
+import {encodeImageNode, parseImageNode, NODE_FORMAT_SUPPORT} from './images/image-codecs-node';
 import {
   createImageBitmapNode,
   NodeImageBitmap,
@@ -28,6 +27,7 @@ import {NodeHash} from './crypto/node-hash';
 
 // NODE VERSION
 import {versions} from 'node:process';
+import {ReadableStream as NodeReadableStream} from 'node:stream/web';
 export const nodeVersion = parseInt(versions.node.split('.')[0]);
 
 // STREAM POLYFILLS
@@ -73,7 +73,7 @@ if (!globalThis.TextDecoder) {
 }
 
 if (!globalThis.ReadableStream) {
-  globalThis.ReadableStream = ReadableStream;
+  globalThis.ReadableStream = NodeReadableStream as typeof ReadableStream;
 }
 
 // POLYFILLS: btoa, atob
@@ -117,7 +117,7 @@ import {
   readFileAsText,
   requireFromFile,
   requireFromString
-} from './load-library/require-utils.node';
+} from './load-library/require-utils.node.js';
 
 globalThis.loaders.readFileAsArrayBuffer = readFileAsArrayBuffer;
 globalThis.loaders.readFileAsText = readFileAsText;

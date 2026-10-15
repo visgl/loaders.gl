@@ -108,18 +108,16 @@ calculates a checksum while CSV batches are being parsed:
 
 ```typescript title="Calculate a checksum incrementally"
 import {loadInBatches} from '@loaders.gl/core';
-import {CRC32HashTransform} from '@loaders.gl/crypto';
+import {CRC32Hash} from '@loaders.gl/crypto';
 import {CSVLoader} from '@loaders.gl/csv';
 
 let hash;
+const checksum = new CRC32Hash({
+  crypto: {onEnd: (result) => { hash = result.hash; }}
+});
 
 const batches = await loadInBatches('records.csv', CSVLoader, {
-  transforms: [CRC32HashTransform],
-  crypto: {
-    onEnd: (result) => {
-      hash = result.hash;
-    }
-  }
+  core: {transforms: [checksum.hashBatches]}
 });
 
 for await (const batch of batches) {

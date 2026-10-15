@@ -10,6 +10,7 @@ import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
 import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
 
 <DocPageHeader
+  format="csv"
   eyebrow="CSV module · writer API"
   title="CSVWriter"
   description="Write loaders.gl tables back to CSV or another delimiter-separated text representation, including Arrow-backed tables produced by CSVLoader."

@@ -10,6 +10,7 @@ import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
 import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
 
 <DocPageHeader
+  format="gltf"
   eyebrow="glTF API / post-processing"
   title="Opt into convenient scenegraph links."
   description="The glTF loader preserves standards-shaped JSON. postProcessGLTF is the explicit second step for applications that prefer object references between scenes, nodes, meshes, materials, and buffers."
@@ -111,7 +112,7 @@ between the existing EXT extension and the newer KHR extension.
 
 `postProcessGLTF` replaces glTF indices with object references to simplify iteration over the scenegraph.
 
-Background: The GLTF file format describes a tree structure, however it links nodes through numeric indices rather than direct references. (As an example the `nodes` field in the top-level glTF `scenegraph` array is an array of indices into the top-level `nodes` array. Each node has a `mesh` attribute that is an index into to the `meshes` array, and so on).
+Background: The GLTF file format describes a tree structure, however it links nodes through numeric indices rather than direct references. (As an example the `nodes` field in the top-level glTF `scenegraph` array is an array of indices into the top-level `nodes` array. Each node has a `mesh` attribute that is an index into the `meshes` array, and so on).
 
 ### Adds `id` to every node
 
@@ -181,5 +182,5 @@ Sampler parameters (which are textual in glTF) will be resolved into WebGL const
 
 Modifies
 
-- `sampler` - will be resolved the the corresponding image object.
-- `source` - will be resolved the the corresponding image object.
+- `sampler` - will be resolved to the corresponding image object.
+- `source` - will be resolved to the corresponding image object.

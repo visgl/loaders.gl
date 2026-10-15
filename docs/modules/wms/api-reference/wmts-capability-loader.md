@@ -9,6 +9,7 @@ import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
 import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
 
 <DocPageHeader
+  format="wmts"
   eyebrow="WMS module · capabilities loader"
   title="WMTSCapabilitiesLoader"
   description="Read an OGC Web Map Tile Service capabilities response into the layer and request metadata needed to select a tile matrix set and formats."
@@ -40,7 +41,6 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
   tone="cyan"
 />
 
-![ogc-logo](../../../images/logos/ogc-logo-60.png)
 
 <p className="badges">
   <img src="https://img.shields.io/badge/From-v3.4-blue.svg?style=flat-square" alt="From-3.4" />

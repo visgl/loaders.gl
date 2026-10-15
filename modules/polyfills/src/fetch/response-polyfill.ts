@@ -3,7 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import {assert} from '../utils/assert';
-import {decompressReadStream, concatenateReadStream} from '../filesystems/stream-utils.node';
+import {decompressReadStream, concatenateReadStream} from '../filesystems/stream-utils.node.js';
 import {Headers} from './headers-polyfill';
 
 const isBoolean = x => typeof x === 'boolean';

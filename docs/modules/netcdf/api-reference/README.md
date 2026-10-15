@@ -9,6 +9,7 @@ import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
 import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
 
 <DocPageHeader
+  format="netcdf"
   eyebrow="NetCDF source"
   title="Read selected variables without guessing the whole dataset."
   description="The NetCDF source discovers variables, dimensions, attributes, and file metadata before materializing selected numeric slices. It provides a clear boundary between format discovery and raster data access."
@@ -34,7 +35,6 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
   ]}
 />
 
-![ogc-logo](../../../images/logos/ogc-logo-60.png)
 
 <p className="badges">
   <a href="/docs/developer-guide/common-scan-architecture">

@@ -12,7 +12,10 @@ export class DeflateCompressUtilsDecompressor extends CompressUtilsDecompressor 
   constructor(options: CompressUtilsCompressionOptions = {}) {
     super(
       {name: 'deflate', contentEncodings: ['deflate']},
-      () => import('compress-utils/zlib/decompress'),
+      () =>
+        options.raw
+          ? import('compress-utils/deflate/decompress')
+          : import('compress-utils/zlib/decompress'),
       options
     );
   }

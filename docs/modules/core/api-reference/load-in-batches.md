@@ -62,7 +62,7 @@ blobs, responses, and iterables it forwards the input directly to the parser.
 In this mode, it returns one promise for each file. Each promise resolves to an async batch
 iterator, allowing independent files to begin loading without waiting for the other files.
 
-More importantly, when called with multiple files, `loadInBatches` makes all the supplied files available to all loaders (enabling multi-file loaders such as the ShapefileLoader to access multiple files).
+Each file is loaded independently. For formats with companion files, such as Shapefile, use the format-specific options and URL conventions rather than treating a file list as one dataset.
 
 ### Usage
 
@@ -78,22 +78,12 @@ for (const iterator of iterators) {
 
 ```typescript
 import {loadInBatches} from '@loaders.gl/core';
-import {ShapefileLoader} from '@loaders.gl/shapefile';
+import {CSVLoader} from '@loaders.gl/csv';
 
-const batchIteratorPromises = loadInBatches(
-  [shpFile, dbfFile, projFile],
-  ShapefileLoader
-);
-const batchIterators = await Promise.all(batchIteratorPromises);
-for (const batchIterator of batchIterators) {
-  for await (const batch of batchIterator) {
-    switch (batch.batchType) {
-      case 'metadata':
-        console.log(batch.metadata);
-        break;
-      default:
-        processShapefile(batch);
-    }
+const iteratorPromises = loadInBatches(['first.csv', 'second.csv'], CSVLoader);
+for (const iterator of await Promise.all(iteratorPromises)) {
+  for await (const batch of iterator) {
+    processBatch(batch);
   }
 }
 ```
@@ -114,7 +104,7 @@ The `loaders` parameter can be omitted when loaders have been registered with
 
 ## Options
 
-A loader object, that can contain a mix of options:
+The options object can contain:
 
 - options specific to `loadInBatches`, see below.
 - options defined by the `parseInBatches` and `parse` functions can be specified.

@@ -23,8 +23,8 @@ export function writeMVT(tile: MVTTile, pbf?: Protobuf): void {
       layer: tile.layers[key],
       keys: [],
       values: [],
-      keycache: {},
-      valuecache: {}
+      keycache: Object.create(null),
+      valuecache: Object.create(null)
     };
 
     pbf!.writeMessage(MVT.TileInfo.layers, writeLayer, context);
@@ -70,7 +70,10 @@ function writeProperties(context: WriteContext, pbf?: Protobuf): void {
   const feature = context.feature!;
   const {keys, values, keycache, valuecache} = context;
 
-  for (const key in feature.properties) {
+  const entries = feature.propertyEntries
+    ? feature.propertyEntries()
+    : Object.entries(feature.properties);
+  for (const [key, propertyValue] of entries) {
     let keyIndex = keycache[key];
     if (typeof keyIndex === 'undefined') {
       keys.push(key);
@@ -79,7 +82,7 @@ function writeProperties(context: WriteContext, pbf?: Protobuf): void {
     }
     pbf!.writeVarint(keyIndex);
 
-    let value = feature.properties[key];
+    let value = propertyValue;
     const type = typeof value;
     if (type !== 'string' && type !== 'boolean' && type !== 'number') {
       value = JSON.stringify(value);
@@ -99,8 +102,9 @@ function command(cmd, length) {
   return (length << 3) + (cmd & 0x7);
 }
 
-function zigzag(num) {
-  return (num << 1) ^ (num >> 31);
+/** Keeps signed 32-bit coordinate deltas unsigned on the wire. */
+function zigzag(num: number): number {
+  return ((num << 1) ^ (num >> 31)) >>> 0;
 }
 
 function writeGeometry(feature, pbf?: Protobuf): void {
@@ -144,7 +148,7 @@ function writeValue(value: unknown, pbf?: Protobuf): void {
       pbf!.writeBooleanField(7, value);
       break;
     case 'number':
-      if (value % 1 !== 0) {
+      if (value % 1 !== 0 || (value < 0 && !Number.isSafeInteger(-value * 2 - 1))) {
         pbf!.writeDoubleField(3, value);
       } else if (value < 0) {
         pbf!.writeSVarintField(6, value);

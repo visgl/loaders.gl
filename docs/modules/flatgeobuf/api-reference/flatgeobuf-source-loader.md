@@ -11,6 +11,7 @@ import {FlatGeobufDocsTabs} from '@site/src/components/docs/flatgeobuf-docs-tabs
 import {RangeRequestGraphic} from '@site/src/components/docs/range-request-graphic';
 
 <DocPageHeader
+  format="flatgeobuf"
   eyebrow="FlatGeobuf source loader"
   title="Query an indexed vector file from the browser."
   description="`FlatGeobufSourceLoader` uses the FlatGeobuf spatial index and HTTP range requests to return only the features needed for a query. It can expose GeoJSON-style, binary, or Arrow table results."

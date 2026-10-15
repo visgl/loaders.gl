@@ -13,11 +13,11 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
 import {ClientExample} from '@site/src/components';
 
 <DocPageHeader
+  format="geojson"
   eyebrow="GeoJSON loader"
   title="GeoJSONLoader"
   description="GeoJSONLoader preserves the familiar feature and geometry model while supporting binary geometry, Arrow tables, and incremental parsing for larger documents."
   tone="cyan"
-  logos={[{alt: 'GeoJSON', src: '/images/format-logos/geojson-logo.svg'}]}
   meta={['RFC 7946', 'Streaming parser', 'Arrow and binary output']}
   links={[
     {label: 'GeoJSON format', to: '/docs/modules/json/formats/geojson'},
@@ -179,7 +179,7 @@ Supports table category options such as `batchType` and `batchSize`.
 | `json.geoarrowGeometryColumn` |                                                                                 | `string`   | `'geometry'`                                                                                                                                     | Geometry column name used for GeoArrow WKB output. Requires `geojson.shape: 'arrow-table'`. |
 | `geoarrow.encodingPreference` |                                                                                 | `'geoarrow.wkb' \| 'geoarrow.geometry' \| 'optimized'` | `'geoarrow.wkb'` | Arrow geometry representation. WKB is compact and compatible; `geoarrow.geometry` is a stable dense union; `optimized` selects a concrete native encoding for homogeneous data and a dense union for mixed data. |
 | `json.jsonpaths`       | [![Website shields.io](https://img.shields.io/badge/v2.2-blue.svg?style=flat-square)] | `string[]` | `['$.features']`                                                                                                                                 | A list of JSON paths (see below) indicating the array that can be streamed.                                                           |
-| `metadata` (top level) | [![Website shields.io](https://img.shields.io/badge/v2.2-blue.svg?style=flat-square)] | `boolean`  | If `true`, yields an initial and final batch containing the partial and final result (i.e. the root object, excluding the array being streamed). |
+| `core.metadata` | [![Website shields.io](https://img.shields.io/badge/v2.2-blue.svg?style=flat-square)] | `boolean`  | `false` | If `true`, yields an initial and final batch containing the partial and final result (i.e. the root object, excluding the array being streamed). |
 
 ## JSONPaths
 

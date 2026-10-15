@@ -2,11 +2,11 @@ import {expect, test} from 'vitest';
 import * as arrow from 'apache-arrow';
 import {convertGeoArrowGeometry, getGeoarrowVertexCount} from '@loaders.gl/geoarrow';
 import {
-  convertGeometryToWKB,
   makeWKBGeometryArrowTable,
-  makeWKBGeometryData,
-  makeWKBGeometryField
-} from '@loaders.gl/gis';
+  makeWKBGeometryData
+} from '@loaders.gl/arrow-geometry/wkb-arrow-utils';
+import {convertGeometryToWKB} from '@loaders.gl/arrow-geometry/geometry-codecs';
+import {makeWKBGeometryField} from '@loaders.gl/arrow-geometry/geometry-field';
 import type {Schema} from '@loaders.gl/schema';
 test('geoarrow#getGeoarrowVertexCount counts WKB Data/Vector/Table vertices', () => {
   const polygonWKB = convertGeometryToWKB({

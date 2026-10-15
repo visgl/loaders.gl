@@ -10,6 +10,7 @@ import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
 import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
 
 <DocPageHeader
+  format="3d-tiles"
   eyebrow="3D Tiles runtime / LOD"
   title="Turn world-space error into view-space detail."
   description="Screen-space error gives traversal a consistent question: is this tile detailed enough for the current camera, projection, transform, and viewport?"

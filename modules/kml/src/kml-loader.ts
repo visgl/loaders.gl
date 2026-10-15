@@ -3,7 +3,6 @@
 // Copyright (c) vis.gl contributors
 
 import type {Loader, LoaderOptions} from '@loaders.gl/loader-utils';
-// import {geojsonToBinary} from '@loaders.gl/gis';
 // import {GeoJSONTable} from '@loaders.gl/schema';
 import type {
   GeoArrowEncodingPreference,

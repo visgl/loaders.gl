@@ -9,6 +9,7 @@ import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
 import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
 
 <DocPageHeader
+  format="wms"
   eyebrow="WMS source"
   title="Treat a map service as a queryable image source."
   description="WMSSourceLoader discovers service capabilities, validates request parameters, and returns typed map images or feature information through the common source interface."
@@ -37,7 +38,6 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
   <img src="https://img.shields.io/badge/From-v3.3-blue.svg?style=flat-square" alt="From-3.3" />
 </p>
 
-![ogc-logo](../../../images/logos/ogc-logo-60.png)
 
 The `WMSSourceLoader` class helps applications interact with a WMS service (discover its capabilities, request map images and information about geospatial features, etc).
 

@@ -5,7 +5,10 @@
 import * as arrow from 'apache-arrow';
 import type {GeoArrowDimension} from '@loaders.gl/schema';
 
-export {getGeoArrowUnionGeometryKind, type GeoArrowUnionGeometryKind} from '@loaders.gl/gis';
+export {
+  getGeoArrowUnionGeometryKind,
+  type GeoArrowUnionGeometryKind
+} from '@loaders.gl/arrow-geometry/native-geometry';
 
 /** Resolves a dense-union child dimension from its name, physical type, or canonical ID. */
 export function getGeoArrowUnionDimension(

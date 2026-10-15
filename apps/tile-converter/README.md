@@ -2,7 +2,7 @@
 
 [loaders.gl](https://loaders.gl/docs) is a collection of framework independent 3D and geospatial parsers and encoders.
 
-This module contains command line scripts and JavaScript APIs for converting between formats, for instance betwen 3D Tiles and I3S tilesets.
+This module contains command line scripts and JavaScript APIs for converting between formats, for instance between 3D Tiles and I3S tilesets.
 
 For documentation please visit the [website](https://loaders.gl).
 
@@ -23,7 +23,7 @@ The v5 implementation is split into two entrypoints inside this application:
 
 The existing `/v5` and `/v5/browser` imports remain compatible. The adapters consume the
 same core functions, types and error class. No implementation or dependencies move into
-other packages; CLI and v4 code are unchanged. Applications supply platform I/O adapters.
+other packages. The original CLI and v4 code remain compatible. Node inspection now has a separate entrypoint and command, described below.
 
 ## V5 source-backed mesh traversal
 
@@ -495,9 +495,192 @@ for supported layouts, normal frames, and application-owned spatial resources.
 
 ### Original I3S mesh input
 
-The v5 adapters export `createI3SMeshTilesetConversionSource` for an initial untextured
+The v5 adapters export `createI3SMeshTilesetConversionSource` for a selected
 I3S mesh profile. Use a dedicated source-backed runtime with `i3s.geometryMode: 'source'`
 to retain absolute Float64 source coordinates and original normals. Pair the GLB codec
 with `autoOrigin: true` to choose the placement origin after spatial transformation.
-Features require an explicit Arrow mapper; unsupported appearance and attributes fail.
+One encoded PNG/JPEG base-color texture and explicit wrapping are preserved without decoding
+pixels. `features` reads standard scalar/string attribute resources into a caller-declared Arrow
+schema using an `objectIdProperty`, optional `sourceFeatureIdProperty` and `maxAttributeBytes`.
+Signed/unsigned 64-bit properties retain exact bigint values; triangle ownership must be complete.
+Supply `readExternalResource` for external textures/attributes, including byte limits, archive
+resolution, authentication and decompression. `getFeatures` remains the custom alternative.
+Unsupported atlas regions, colors, richer maps, domains/dates and layouts fail explicitly.
+See the v5 conversion API reference for the exact source profile and an example mapping.
 See the [v5 conversion reference](../../docs/modules/tile-converter/api-reference/v5-conversion.md).
+
+## Complete explicit mesh hierarchy
+
+Opt in with `preserveHierarchy: true` on `convertNodeTileset`, or pair
+`createSelectedMeshConversionSource` with `createMeshHierarchyTilesetSink` through the portable
+adapters. The v5 CLI exposes `--preserve-hierarchy`. Select every inspected binary content.
+
+The profile retains explicit topology, external document placements, parent content,
+ADD/REPLACE refinement and version-aware metric errors for native ECEF 3D Tiles/3TZ output.
+Static multi-primitive meshes and repeated scene placements become ordered GLBs on their
+original tile; each retains its supported material, feature table and effective placement.
+Output order follows source content slots, then scene traversal and primitive order.
+Primitives share the first primitive’s origin on each tile and must meet the precision gate.
+The sink requires ordered `contentPrimitive: {index, last}` descriptors through the mesh codec
+before finalization. Outputs without a descriptor remain singleton contents.
+
+Limits are 32 document placements, 256 tiles, 64 selected binary contents and 64 total primitive
+placements, plus 16 MiB input and 32 MiB output/archive gates. These are not peak-memory bounds.
+Implicit tiling, composites, GPU instancing, mixed external-document contents and I3S LOD
+translation remain outside this profile. The browser example still exports flat partial
+collections. See the [CLI guide](https://loaders.gl/docs/modules/tile-converter/cli-reference/tile-converter-v5)
+and [conversion support](https://loaders.gl/docs/modules/tile-converter/cli-reference/supported-features).
+
+## Experimental Node inspection
+
+`tile-converter-v5 inspect` inventories metadata and ordered content declarations from an
+explicit 3D Tiles 1.0/1.1 JSON path or HTTP(S) URL, or a local 3TZ archive:
+
+```sh
+tile-converter-v5 inspect ./dataset/tileset.json
+tile-converter-v5 inspect ./dataset.3tz --input-format 3tz
+```
+
+The command prints JSON to stdout, emits JSON errors to stderr and exits nonzero on failure.
+It reads metadata without opening tile payloads. The default budgets are 16 MiB and 1,000
+content placements; `--max-input-bytes` and `--max-resources` can lower them. This command
+does not perform conversion or full-content validation.
+
+`createNodeTilesetConversionSource` from `@loaders.gl/tile-converter/v5/node` also supplies
+bounded typed-array raw reads for application codecs. It reuses portable explicit traversal.
+Local files are confined to the root document's real directory, including symlink resolution;
+3TZ reads load the index once and stay inside the archive. Close the dedicated source in
+`finally`. Portable entrypoints do not import this Node adapter. I3S/SLPK, remote archives,
+output sinks, nested/implicit dataset extraction and installed Windows qualification remain
+follow-ups. Inputs must remain unchanged during a source's lifetime.
+
+## Decoded point-cloud authoring
+
+`convertPointCloudToTileset` connects the dynamic point tiler to the v5 PNTS sink. It accepts one
+loader-produced point `Mesh` or `MeshArrowTable` and emits every input row once across a flat,
+additive 3D Tiles 1.0 collection. Supply explicit native ECEF (EPSG:4978 XYZ meters with ellipsoidal
+heights); the helper does not infer or transform a CRS. Per-tile RTC centers retain small offsets at
+ECEF magnitudes, and `geometricError` must cover measured position reconstruction error.
+
+```ts
+import {createTilesetSpatialReference} from '@loaders.gl/tiles';
+import {convertPointCloudToTileset} from '@loaders.gl/tile-converter/v5/browser';
+
+const result = await convertPointCloudToTileset(decodedPoints, {
+  spatialReference: createTilesetSpatialReference({
+    sourceCrs: 'EPSG:4978',
+    heightReference: 'ellipsoidal',
+    coordinateFrame: 'geocentric',
+    axisOrder: 'xyz'
+  }),
+  geometricError: 0.001,
+  maxTiles: 1000,
+  maxTotalBytes: 64 * 1024 * 1024,
+  tiling: {
+    maxInputBytes: 64 * 1024 * 1024,
+    maxIndexBytes: 16 * 1024 * 1024,
+    maxTileBytes: 4 * 1024 * 1024,
+    maxNodes: 1000
+  },
+  archive: {maxArchiveBytes: 80 * 1024 * 1024},
+  signal: abortController.signal
+});
+// result.files contains named PNTS Blobs and tileset.json.
+// result.archive is an indexed 3TZ Blob; saving and object URLs belong to the application.
+```
+
+Omit `archive` for files only. Indexing, traversal and packaging use the same cancellation signal;
+the helper closes its private source on success and failure and returns no partial package.
+The report counts PNTS outputs and gathered Arrow input column buffers. Tileset JSON is included in
+`maxTotalBytes`; ZIP headers and index are included in `maxArchiveBytes`. These are separate bounds,
+not a total heap cap. Arrow normalization, source buffers, row indexes, gathered tiles and ZIP
+serialization can occupy additional memory. Input must remain immutable until the promise settles.
+
+The first authoring profile is in memory and preserves all rows, including terminal-node overflow.
+It flattens the octree into independent tile placements; it does not preserve octree LOD, provide
+sampling-error guarantees, ingest batches, or author I3S point layers. PNTS supports `POSITION`,
+`NORMAL`, `BATCH_ID` and one color attribute. Other attributes fail instead of being silently dropped;
+explicitly map or remove them before authoring. LAS, COPC, Potree and other loaders may produce
+compatible decoded points, but their native CRS and additional attributes still require preparation.
+
+### Point-cloud files and harvested mesh vertices
+
+COPC is already a self-contained, range-readable `.copc.laz` file. Potree datasets
+contain multiple files. `encodePotreeArchive` packages the complete output of
+`encodePotreeDataset` into a deterministic STORE ZIP32 with metadata at the root.
+This **loaders.gl Potree ZIP convention is not a native Potree archive standard**.
+The original relative paths are preserved; extracted files remain an ordinary
+Potree dataset. The writer supports its existing 1.0–1.8 and 2.0 DEFAULT profiles.
+
+```ts
+import {
+  encodePotreeArchive,
+  openPointCloudFile,
+  extractMeshVertices
+} from '@loaders.gl/tile-converter/v5/browser';
+import {COPCWriter} from '@loaders.gl/copc';
+
+// Opt in to one point per stored vertex of already placed triangle geometry.
+const points = extractMeshVertices(meshResource.mesh, {
+  attributes: [], // Select additional destination-compatible attributes explicitly.
+  maxPoints: 100000
+});
+const potreeZip = await encodePotreeArchive(points, {
+  maxArchiveBytes: 32 * 1024 * 1024,
+  potree: {
+    version: '2.0',
+    projection: 'EPSG:4978',
+    scale: [0.001, 0.001, 0.001],
+    maxPositionError: 0.001,
+    maxOutputBytes: 16 * 1024 * 1024
+  }
+});
+
+// The existing COPC writer produces a native single-file destination.
+// Supply a bounded decoded batch, compatible attributes, and an explicit CRS.
+const copcFile = new Blob([COPCWriter.encodeSync(points, {
+  copc: {scale: [0.001, 0.001, 0.001], offset: [0, 0, 0], colorDepth: 8, wkt: ecefWkt}
+})], {type: 'application/octet-stream'});
+
+const opened = await openPointCloudFile(potreeZip, {
+  format: 'potree-zip', // Use 'copc' for copcFile or a dropped COPC File.
+  maxFileBytes: 32 * 1024 * 1024,
+  maxEntries: 1000,
+  maxResourceBytes: 4 * 1024 * 1024
+});
+try {
+  const root = await opened.source.getRootTile();
+  const content = await opened.source.loadTileContent(root);
+  // Traverse children on demand with the existing source APIs.
+} finally {
+  await opened.close();
+}
+```
+
+Modern Potree ZIP node reads slice archived ranges without reading all of
+`octree.bin`. Readers use the shared ZIP32/ZIP64 validator and accept unencrypted STORE entries,
+including data descriptors and comments, with canonical relative ASCII resource paths. DEFLATE
+bundles are rejected. Complete reads validate ZIP CRCs; partial ranges cannot. Root `metadata.json` or `cloud.js` is selected only when
+unambiguous; supply `metadataPath` for a nested dataset. Partial range reads do
+not validate whole-entry ZIP CRCs. The isolated archive transport never falls
+back to a network request.
+
+Mesh harvesting preserves repeated/coincident stored vertices, ignores indices,
+and does not sample triangle surfaces. Selected attributes share the caller's
+immutable buffers. Unselected attributes, materials and feature associations are
+intentionally omitted. Use a mesh source adapter first to apply glTF node,
+up-axis, RTC and tile placement once; harvesting performs no coordinate math.
+Callers choose source tiles and LOD: collecting every mesh LOD can repeat the
+same geometry, and harvesting does not deduplicate across resources.
+
+Sources retain their current coordinate policies: Potree 2.0 returns native
+positions, legacy Potree keeps its projection behavior, and COPC can return
+positions relative to an origin. Apply the declared origin and explicit CRS
+operation before writing absolute points into another format. Attribute mapping,
+LOD sampling and independent viewer qualification remain separate work.
+
+Potree output, final ZIP size, entry count, input file size and individual range
+limits are separate bounds. They do not bound total heap, COPC decompression or
+COPC writer temporaries. Potree authoring and COPC writing operate on decoded
+in-memory inputs; these APIs do not assemble a large source into one output
+out of core. Applications own downloading Blobs and revoking object URLs.

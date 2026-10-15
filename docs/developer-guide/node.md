@@ -11,7 +11,7 @@ import {DocOrientation} from '@site/src/components/docs/designed-doc';
 <DocPageHeader
   eyebrow="Server-side JavaScript"
   title="Use the same loaders in Node.js and the browser."
-  description="loaders.gl favors portable Web APIs, with an explicit polyfill package for Node.js environments that do not provide fetch, Response, or related globals."
+  description="loaders.gl uses portable Web APIs and provides Node.js adapters for local files, images, streams, and crypto."
   tone="blue"
   meta={['Node.js', 'Portable APIs', 'Optional polyfills']}
   links={[
@@ -33,27 +33,35 @@ import {DocOrientation} from '@site/src/components/docs/designed-doc';
   ]}
 />
 
-Firstly, to run loaders.gl on Node.js you want to import the `@loaders.gl/polyfills` module.
+loaders.gl uses portable Web APIs such as `ArrayBuffer`, `Response`, and Web
+Streams. Modern Node.js provides the basic APIs needed to parse in-memory data
+and load HTTP URLs.
 
-Also it is good to understand that loaders.gl avoids using Node.js specific APIs (such as Buffer, path, util, fs, streams etc) instead favoring browser compatible equivalents. loaders.gl is optimized for cross-platform compatible APIs.
+## Node.js adapters
 
-However, if your goal is to write Node.js-idiomatic code rather than browser-portable code, you may find that working with loaders.gl can require some extra work.
+Install and import `@loaders.gl/polyfills` before using features that require its
+Node.js adapters, including local-file loading and image decoding:
 
-## Polyfills
-
-To install these polyfills, just `import` the polyfills module before start using loaders.gl.
+```bash
+yarn add @loaders.gl/polyfills
+```
 
 ```typescript
 import '@loaders.gl/polyfills';
-import {parse} from '@loaders.gl/core';
+import {load} from '@loaders.gl/core';
+import {CSVLoader} from '@loaders.gl/csv';
+
+const table = await load('data.csv', CSVLoader);
 ```
 
-## Combining with other Polyfills
+The package registers filesystem, image, stream, and crypto adapters with
+loaders.gl. It also supplies missing globals where applicable. Do not import it
+in a browser bundle.
 
-loaders.gl only installs polyfills if the corresponding global symbol is `undefined`. This means that if another polyfill is already installed when `@loaders.gl/polyfills` is imported, the other polyfill will remain in effect. Since most polyfill libraries work this way, applications can mix and match polyfills by ordering the polyfill import statements appropriately (but see the remarks below for a possible caveat).
+## Combining polyfills
 
-## Provided Polyfills
+Global polyfills are installed only when the corresponding global is absent.
+Import another polyfill first if you want its implementation to take precedence.
+The loaders.gl adapters are registered separately from these globals.
 
-See [API Reference](/docs/modules/polyfills/api-reference).
-
-## Remarks
+See the [polyfills API reference](/docs/modules/polyfills/api-reference) for details.

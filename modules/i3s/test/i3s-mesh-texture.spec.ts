@@ -2,11 +2,13 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
+import {preloadI3SMeshCompression} from '@loaders.gl/i3s';
+import {beforeAll as preloadBeforeAll} from 'vitest';
 import {beforeAll, expect, test} from 'vitest';
 import {fetchFile, parse} from '@loaders.gl/core';
 import {DracoLoader} from '@loaders.gl/draco';
 import {Ellipsoid} from '@math.gl/geospatial';
-import {GZipDecompressor} from '@loaders.gl/compression/gzip-decompressor';
+import {GZipFflateDecompressor as GZipDecompressor} from '@loaders.gl/compression/gzip-decompressor-fflate';
 import {
   encodeI3SMeshLayer,
   encodeI3SMeshLayerWithDraco,
@@ -18,6 +20,8 @@ import type {MeshGeometry} from '@loaders.gl/schema';
 
 let png: Uint8Array;
 let jpeg: Uint8Array;
+preloadBeforeAll(preloadI3SMeshCompression);
+
 const OPTIONS = {maxPositionError: 0.001, maxResourceBytes: 8192};
 const decompressor = new GZipDecompressor({useNative: false});
 beforeAll(async () => {

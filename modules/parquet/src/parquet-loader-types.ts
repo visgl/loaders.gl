@@ -17,7 +17,7 @@ import {PARQUET_WORKER_URL} from './parquet-worker-url';
 /** Options for the Parquet loader. */
 export type ParquetLoaderOptions = SharedParquetLoaderOptions;
 
-/** Preloads the parser-bearing WASM Parquet loader implementation. */
+/** Preloads the parser-bearing TypeScript Parquet loader implementation. */
 async function preloadParquetLoader() {
   const {ParquetLoaderWithParser} = await import('@loaders.gl/parquet/parquet-loader');
   return ParquetLoaderWithParser;

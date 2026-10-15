@@ -11,7 +11,7 @@ export {ArrowFormat} from './exports/arrow-format';
 
 export type {ArrowLoaderOptions} from './exports/arrow-loader';
 
-export {ArrowLoader} from './arrow-loader';
+export {ArrowLoader} from './arrow-loader-types';
 export {ArrowSourceLoader, ArrowTableSource} from './arrow-source';
 
 export {ArrowWriter, type ArrowWriterOptions} from './arrow-writer';
@@ -25,7 +25,7 @@ export {tightenArrowTableSchemaNullability} from './lib/tighten-arrow-table-sche
 
 // Geoarrow loader
 
-export {GeoArrowLoader} from './geoarrow-loader';
+export {GeoArrowLoader} from './geoarrow-loader-types';
 
 // EXPERIMENTAL
 

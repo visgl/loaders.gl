@@ -2,9 +2,12 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import {LZ4JSCompressor, type LZ4JSCompressorOptions} from './lz4-compressor-lz4js';
+import {
+  LZ4CompressUtilsCompressor,
+  type CompressUtilsCompressionOptions
+} from './lz4-compressor-compress-utils';
 
-/** Balanced default LZ4 frame compressor using the compact lz4js implementation. */
-export class LZ4Compressor extends LZ4JSCompressor {}
+/** Default LZ4 compressor backed by the lazily loaded compress-utils codec. */
+export class LZ4Compressor extends LZ4CompressUtilsCompressor {}
 
-export type {LZ4JSCompressorOptions as LZ4CompressorOptions};
+export type {CompressUtilsCompressionOptions as LZ4CompressorOptions};

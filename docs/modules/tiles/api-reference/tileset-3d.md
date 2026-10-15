@@ -428,3 +428,10 @@ Parameters:
 - `viewport`: a [`WebMercatorViewport`](https://deck.gl/#/documentation/deckgl-api-reference/viewports/web-mercator-viewport)
 
 Execute traversal under current viewport and fetch tiles needed for current viewport and update `selectedTiles`. Return `frameNumber` of this update frame.
+
+### I3S content options
+
+`Tileset3DProps.i3s` forwards format options to I3S content requests. A dedicated conversion
+runtime can set `{geometryMode: 'source', decodeTextures: false, useCompressedTextures: false}`
+to retain original-coordinate geometry and encoded PNG/JPEG resources. Rendering runtimes keep
+the default `geometryMode: 'render'`. This option does not select or supply CRS/elevation resources.

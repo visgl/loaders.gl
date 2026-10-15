@@ -7,7 +7,7 @@ import {fetchFile, parse} from '@loaders.gl/core';
 import {GLTFLoader, postProcessGLTF} from '@loaders.gl/gltf';
 import {Tiles3DArchive} from '@loaders.gl/3d-tiles';
 import {parseSLPKArchive} from '@loaders.gl/i3s';
-import {DataViewReadableFile} from '@loaders.gl/zip';
+import {ArrayBufferFile} from '@loaders.gl/loader-utils';
 import {
   inspectConversionInput,
   convertSelectedContents
@@ -102,7 +102,7 @@ test.each([
         ([input]) => String(input) === `https://example.invalid/data/other/${dependency}`
       )
     ).toBe(true);
-  const file = new DataViewReadableFile(new DataView(await result.file.arrayBuffer()));
+  const file = new ArrayBufferFile(await result.file.arrayBuffer());
   if (format === '3tz') {
     const archive = new Tiles3DArchive(file);
     try {

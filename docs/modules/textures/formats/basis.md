@@ -11,6 +11,7 @@ import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
 import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
 
 <DocPageHeader
+  format="basis"
   eyebrow="Portable texture payload"
   title="Ship one compressed asset. Transcode at the edge."
   description="Basis Universal keeps distribution compact and postpones the final texture choice until the runtime knows which GPU formats the device supports. It can travel as a standalone Basis file or inside KTX2."

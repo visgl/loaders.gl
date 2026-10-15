@@ -29,7 +29,7 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
   items={[
     {label: 'Default', value: 'Wrapped DEFLATE stream'},
     {label: 'Raw mode', value: 'raw: true for RFC 1951 blocks'},
-    {label: 'Selection', value: 'Native stream where supported, fflate fallback'},
+    {label: 'Selection', value: 'Native stream where supported, compress-utils fallback'},
     {label: 'Control', value: 'useNative and deflate.level options'}
   ]}
 />
@@ -45,7 +45,7 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
 </p>
 
 `DeflateCompressor` and `DeflateDecompressor` are the recommended DEFLATE transforms. Async methods
-prefer built-in streams and fall back to `fflate`. Wrapped zlib DEFLATE and raw RFC 1951 DEFLATE
+prefer built-in streams and fall back to `compress-utils`. Wrapped zlib DEFLATE and raw RFC 1951 DEFLATE
 remain distinct and interoperable.
 
 ```typescript
@@ -59,10 +59,10 @@ Both implement the shared [Compressor and Decompressor](./compressor-decompresso
 
 ## Options
 
-- `raw: true` selects raw DEFLATE. Raw compression uses `fflate`; raw decompression may use a
+- `raw: true` selects raw DEFLATE. Raw compression uses `compress-utils`; raw decompression may use a
   built-in `deflate-raw` stream when available.
 - `useNative: false` disables built-in probing.
-- `deflate.level` selects the fallback compression level.
+- `compressUtils.level` selects the fallback compression level.
 
 ## Backend choices
 
@@ -73,3 +73,5 @@ Both implement the shared [Compressor and Decompressor](./compressor-decompresso
 | compress-utils | `deflate-compressor-compress-utils` | `deflate-decompressor-compress-utils` |
 
 Most applications should stay with the defaults. See the [live benchmarks](/docs/modules/compression/benchmarks) when deliberately choosing a backend.
+
+For sync methods, preload first; root callers should use `{useNative: false}` when selecting a WASM implementation for synchronous work.

@@ -3,9 +3,6 @@
 // Copyright vis.gl contributors
 
 import {LOD_METRIC_TYPE, TILE_REFINEMENT, TILE_TYPE} from '../../constants';
-// TypeScript's legacy `node` resolution does not inspect package `exports`, but this public
-// subpath is resolved by the package at runtime and avoids loading unrelated DGGS decoders.
-// @ts-expect-error Conditional package subpath exports require a modern module resolver.
 import {getS2DescendantIndex, getS2IndexFromToken, getS2TokenFromIndex} from '@math.gl/dggs/s2';
 import {convertS2BoundingVolumeToOBB, type S2VolumeInfo} from '../helpers/s2-bounding-volume';
 

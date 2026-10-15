@@ -55,3 +55,5 @@ The `@loaders.gl/loader-utils` contains utilities for creating loaders.
 - [`CachedUriResolver`](/docs/modules/loader-utils/api-reference/cached-uri-resolver) resolves resource references against one stable base and memoizes repeated derivations for a caller-controlled lifetime.
 
 - [`encodeArrayBufferToBase64`](/docs/modules/loader-utils/api-reference/encode-array-buffer-to-base64) encodes binary bytes as padded base64.
+
+- [`initializeWasmModule`](/docs/modules/loader-utils/api-reference/initialize-wasm-module) forwards WASM initialization errors and safely extracts Emscripten exports.

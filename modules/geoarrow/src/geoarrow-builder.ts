@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-export {GeoArrowBuilder} from '@loaders.gl/gis';
+export {GeoArrowBuilder} from '@loaders.gl/arrow-geometry';
 export type {
   GeoArrowBuilderEncoding,
   GeoArrowCoordinateTransform,
@@ -18,4 +18,4 @@ export type {
   GeoArrowBuilderWriteOptions,
   GeoArrowBuilderOptions,
   GeoArrowGeometryWriter
-} from '@loaders.gl/gis';
+} from '@loaders.gl/arrow-geometry';

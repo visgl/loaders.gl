@@ -9,6 +9,7 @@ import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
 import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
 
 <DocPageHeader
+  format="kml"
   eyebrow="KML module"
   title="Bring map and track files into one data path."
   description="`@loaders.gl/kml` reads KML, GPX, and TCX documents and converts their geographic content into application-ready data. The formats differ in origin, but share an XML boundary and a geospatial use case."
@@ -40,7 +41,6 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
   tone="orange"
 />
 
-![ogc-logo](../../images/logos/ogc-logo-60.png)
 
 The `@loaders.gl/kml` module supports the KML, KMZ, GPX, and TCX formats.
 

@@ -10,6 +10,7 @@ import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
 import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
 
 <DocPageHeader
+  format="flatgeobuf"
   eyebrow="Indexed geospatial format"
   title="A binary feature stream with a spatial index."
   description="FlatGeobuf stores geospatial features in a compact binary layout and can include a packed Hilbert R-tree. loaders.gl uses that structure for streaming, Arrow conversion, and viewport-sized reads from remote files."

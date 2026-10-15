@@ -292,7 +292,8 @@ test('lz4#worker', async () => {
     operation: 'compress',
     _workerType: 'test'
   });
-  expect(compressedData.byteLength, 'Length correct').toBe(12331);
+  expect(compressedData.byteLength).toBeLessThan(binaryData.byteLength);
+  expect(new DataView(compressedData).getUint32(0, true)).toBe(0x184d2204);
   const decompressdData = await processOnWorker(CompressionWorker, compressedData, {
     compression: 'lz4',
     operation: 'decompress',

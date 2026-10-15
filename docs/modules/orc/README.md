@@ -12,6 +12,7 @@ import {OrcCloudLiveExample} from '@site/src/components/docs/orc-cloud-live-exam
 import apacheLogo from '../../images/logos/apache-logo.png';
 
 <DocPageHeader
+  format="orc"
   eyebrow="ORC module"
   title="@loaders.gl/orc"
   description="`@loaders.gl/orc` reads and writes Apache ORC files. Its source API exposes metadata and a portable scan contract while keeping the current materialized execution model explicit."
@@ -99,3 +100,5 @@ for await (const batch of source.read({
 
 Use Parquet when physical column and row-group pruning is a hard requirement. ORC remains useful
 when format compatibility matters and materializing the selected file is acceptable.
+
+LZO decompression is supported through compress-utils 0.9.0. ORC compression chunk framing is handled in TypeScript. LZO compression is not supported.

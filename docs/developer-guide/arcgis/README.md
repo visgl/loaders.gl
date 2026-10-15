@@ -55,6 +55,7 @@ const serviceUrl =
 
 const source = await load(serviceUrl, ArcGISFeatureServerSourceLoader);
 const features = await source.getFeatures({
+  layers: ['0'],
   format: 'geojson',
   crs: 'EPSG:4326',
   boundingBox: [[-85.9, 37.6], [-85.6, 37.9]]

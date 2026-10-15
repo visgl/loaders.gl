@@ -3,6 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import * as arrow from 'apache-arrow';
+import {isLongitudeLatitudeCRS} from './lib/is-longitude-latitude-crs';
 import {
   DataSource,
   type CoreAPI,
@@ -12,13 +13,13 @@ import {
   type GetTileDataParameters,
   type TileSourceMetadata
 } from '@loaders.gl/loader-utils';
-import type {ArrowTable, Schema, Geometry, GeoArrowEncoding} from '@loaders.gl/schema';
+import type {ArrowTable, Schema, GeoArrowEncoding} from '@loaders.gl/schema';
 import {
-  GeometryConverter,
-  getGeoArrowNativeGeometry,
-  getGeoMetadata,
-  setGeoMetadata
-} from '@loaders.gl/gis';
+  convertWKBToGeometry,
+  convertWKTToGeometry
+} from '@loaders.gl/arrow-geometry/geometry-codecs';
+import {getGeoArrowNativeGeometry} from '@loaders.gl/arrow-geometry/native-geometry';
+import {getGeoMetadata, setGeoMetadata} from '@loaders.gl/schema';
 import {convertArrowToSchema} from '@loaders.gl/schema-utils';
 import {TableVectorTileSource, TableTileSourceLoader} from './table-tile-source-loader';
 import {convertFeaturesToProtoFeature} from './lib/vector-tiler/features/convert-feature';
@@ -177,7 +178,9 @@ export class ArrowTableVectorTileSource
       if (!column.isValid(rowIndex)) continue;
       const geometry =
         encoding === 'geoarrow.wkb' || encoding === 'geoarrow.wkt'
-          ? (GeometryConverter.convert(column.get(rowIndex), 'geojson-geometry') as Geometry)
+          ? encoding === 'geoarrow.wkb'
+            ? convertWKBToGeometry(column.get(rowIndex))
+            : convertWKTToGeometry(column.get(rowIndex))
           : getGeoArrowNativeGeometry(column, rowIndex, encoding);
       if (geometry)
         features.push(
@@ -232,18 +235,6 @@ function getGeometryField(table: arrow.Table, geometryColumn?: string): arrow.Fi
     throw new Error(`Unsupported geometry encoding: ${encoding}`);
   }
   return field;
-}
-
-/** Recognizes the common authority and PROJJSON descriptions of longitude/latitude WGS84. */
-function isLongitudeLatitudeCRS(coordinateSystem: unknown): boolean {
-  if (typeof coordinateSystem === 'string') {
-    return ['EPSG:4326', 'OGC:CRS84'].includes(coordinateSystem.toUpperCase());
-  }
-  const identifier = (coordinateSystem as {id?: {authority?: string; code?: string | number}})?.id;
-  return (
-    (identifier?.authority === 'EPSG' && Number(identifier.code) === 4326) ||
-    (identifier?.authority === 'OGC' && identifier.code === 'CRS84')
-  );
 }
 
 /** Rejects invalid index parameters before constructing the shared tiler. */

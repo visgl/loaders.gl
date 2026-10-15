@@ -9,6 +9,7 @@ import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
 import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
 
 <DocPageHeader
+  format="wkb"
   eyebrow="Geometry binary format"
   title="Carry geometry without paying for readable text."
   description="Well-Known Binary (WKB) is the compact binary counterpart to WKT. Its header identifies byte order and geometry type before the coordinate records, making it useful for storage and transport in GIS pipelines."
@@ -34,7 +35,6 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
   ]}
 />
 
-![ogc-logo](../../../images/logos/ogc-logo-60.png)
 
 - _[`@loaders.gl/wkt`](/docs/modules/wkt)_
 

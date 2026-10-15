@@ -24,10 +24,10 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
 <DocOrientation
   eyebrow="How to use this reference"
   title="Start with the container, then follow the value."
-  description="Most applications begin with makeTable or tableFromIPC, inspect a schema, and then work through vectors or record batches. The API pages below describe the pieces without requiring a legacy Arrow JS mental model."
+  description="Most applications begin with tableFromArrays or tableFromIPC, inspect a schema, and then work through vectors or record batches. The API pages below describe the pieces without requiring a legacy Arrow JS mental model."
   tone="cyan"
   items={[
-    {label: 'Create', value: 'makeTable, makeData, makeVector, or makeBuilder'},
+    {label: 'Create', value: 'tableFromArrays, makeData, makeVector, or makeBuilder'},
     {label: 'Inspect', value: 'Table, RecordBatch, Schema, Field, and Vector'},
     {label: 'Serialize', value: 'tableFromIPC, tableToIPC, and batch readers/writers'},
     {label: 'Migrate', value: 'Prefer modern v21+ exports over legacy vector constructors'}
@@ -47,9 +47,9 @@ This page is aligned to Apache Arrow JS v21.x (`apache-arrow`).
 ## Usage
 
 ```ts
-import {makeTable, Int32, Utf8} from 'apache-arrow';
+import {tableFromArrays, Int32, Utf8} from 'apache-arrow';
 
-const table = makeTable({
+const table = tableFromArrays({
   id: [1, 2, 3],
   name: ['alice', 'bob', 'cara']
 });
@@ -67,9 +67,9 @@ The public API coverage below is for the modern Arrow JS v21+ class/function sur
 
 - `DataType` + concrete type classes (for example `Bool`, `Int`, `Float`, `Utf8`, `Struct`, `Dictionary`, etc.)
 - `Data` — buffer-backed storage for a typed logical Arrow column segment
-- `Vector` — immutable logical view over one or more `Data` chunks
+- `Vector` — logical view over one or more `Data` chunks
 - `RecordBatch` — row-aligned collection of child vectors
-- `Table` — chunked, row-oriented collection of columns
+- `Table` — chunked, columnar collection with row access
 
 ### Schema and fields
 
@@ -90,6 +90,6 @@ The public API coverage below is for the modern Arrow JS v21+ class/function sur
 
 ### Containerized exports (high-value)
 
-`DataType`, `Data`, `Vector`, `Builder`, `Field`, `Schema`, `RecordBatch`, `Table`, `RecordBatchReader`, `RecordBatchWriter`, `MessageReader`, `Message`, `makeData`, `makeVector`, `vectorFromArray`, `makeTable`, `makeBuilder`, `tableFromArrays`, `tableFromIPC`, and `tableToIPC`.
+`DataType`, `Data`, `Vector`, `Builder`, `Field`, `Schema`, `RecordBatch`, `Table`, `RecordBatchReader`, `RecordBatchWriter`, `MessageReader`, `Message`, `makeData`, `makeVector`, `vectorFromArray`, `tableFromArrays`, `makeBuilder`, `tableFromArrays`, `tableFromIPC`, and `tableToIPC`.
 
 If you are cross-checking against source, prefer the official `apache-arrow` package exports in `Arrow.dom.d.ts`/`Arrow.node.d.ts` for the exact public API in your installed version.

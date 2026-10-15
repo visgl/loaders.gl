@@ -212,4 +212,6 @@ For more complex, scenegraph-type formats (i.e. formats that contain multiple ge
 
 ### Material support
 
-Material support is provided by some mesh formats (e.g. OBJ/MTL) and is currently not implemented by loaders.gl, however the glTF loader has full support for PBR (Physically-Based Rendering) materials.
+Material handling depends on the format. A mesh result does not imply that linked
+material libraries have been loaded. `GLTFLoader` preserves glTF PBR material
+descriptors and resolves supported linked resources; shading belongs to the renderer.

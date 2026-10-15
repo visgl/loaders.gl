@@ -12,6 +12,16 @@ const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : 'latest';
 export type CompressionWorkerOptions = {
   compression: string;
   operation: 'compress' | 'decompress';
+  /** Output capacity for raw LZ4 or LZO decoding. */
+  expectedSize?: number;
+  /** Maximum caller-supplied output capacity in bytes. Defaults to 512 MiB. */
+  maxOutputByteLength?: number;
+  /** Selects raw DEFLATE or LZ4 data. */
+  raw?: boolean;
+  /** Encoder/decoder settings forwarded to compress-utils. */
+  compressUtils?: Record<string, unknown>;
+  /** Enables native browser streams when available. */
+  useNative?: boolean;
 };
 
 /**

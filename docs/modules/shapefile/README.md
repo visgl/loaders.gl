@@ -9,6 +9,7 @@ import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
 import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
 
 <DocPageHeader
+  format="shapefile"
   eyebrow="Shapefile module"
   title="Read the geometry and attributes that travel together."
   description="`@loaders.gl/shapefile` loads the familiar `.shp` geometry and companion attribute files into geospatial table data. Use the archive loader for a complete dataset or the lower-level SHP loader for geometry-only input."

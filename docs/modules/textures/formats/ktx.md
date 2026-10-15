@@ -11,6 +11,7 @@ import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
 import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
 
 <DocPageHeader
+  format="ktx"
   eyebrow="GPU texture container"
   title="Keep the texture layout with the payload."
   description="KTX and KTX2 package the metadata needed to interpret texture levels, arrays, cube maps, and compressed GPU data. KTX2 also provides a standard home for Basis Universal payloads."

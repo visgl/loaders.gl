@@ -81,6 +81,44 @@ describe('SpatialCoordinateTransformer', () => {
     expect(transformed[2]).toBe(12);
   });
 
+  test.each([
+    'array',
+    'float32',
+    'float64'
+  ] as const)('projects packed %s XYZ batches without changing source data', storage => {
+    const spatialReference = createTilesetSpatialReference(
+      {
+        sourceCrs: 'EPSG:3857',
+        coordinateFrame: 'projected',
+        axisOrder: 'xy',
+        heightReference: 'ellipsoidal',
+        provenance: 'metadata'
+      },
+      {targetCrs: 'EPSG:4326'}
+    );
+    const transformer = new SpatialCoordinateTransformer(spatialReference);
+    const coordinates = [1113194.9079327357, 0, 12, 0, 1118889.9748579594, -20];
+    const positions =
+      storage === 'float32'
+        ? new Float32Array(coordinates)
+        : storage === 'float64'
+          ? new Float64Array([99, ...coordinates, 99]).subarray(1, -1)
+          : coordinates;
+    const originalPositions = Array.from(positions);
+    const expected = [
+      ...transformer.transformPosition(originalPositions.slice(0, 3)),
+      ...transformer.transformPosition(originalPositions.slice(3, 6))
+    ];
+
+    expect(Array.from(transformer.transformPositions(positions))).toEqual(expected);
+    expect(Array.from(transformer.transformPositions(positions))).toEqual(expected);
+    expect(Array.from(positions)).toEqual(originalPositions);
+    expect(transformer.transformPositions([])).toEqual(new Float64Array());
+    const nonfiniteHeight = [0, 0, NaN];
+    expect(() => transformer.transformPositions(nonfiniteHeight)).toThrow(/finite/);
+    expect(() => transformer.transformPosition(nonfiniteHeight)).toThrow(/finite/);
+  });
+
   test('converts orthometric and ellipsoidal heights with a registered geoid', () => {
     const constantGeoid = {getHeight: () => 30} as Geoid;
     registerGeoidModel('test-geoid', constantGeoid);
@@ -99,6 +137,9 @@ describe('SpatialCoordinateTransformer', () => {
     });
 
     expect(transformer.transformPosition([10, 20, 100])).toEqual([10, 20, 130]);
+    expect(Array.from(transformer.transformPositions([10, 20, 100, 11, 21, 200]))).toEqual([
+      10, 20, 130, 11, 21, 230
+    ]);
   });
 
   test('converts geocentric heights in geographic space before projecting the output', () => {

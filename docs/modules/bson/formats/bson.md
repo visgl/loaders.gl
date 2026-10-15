@@ -11,6 +11,7 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
 import {StructuredDataPathGraphic} from '@site/src/components/docs/structured-data-path-graphic';
 
 <DocPageHeader
+  format="bson"
   eyebrow="Document binary format"
   title="Keep JSON-like documents typed on the wire."
   description="BSON is a binary document format with explicit scalar types such as dates, 64-bit integers, decimals, byte arrays, and regular expressions. loaders.gl exposes it through the same loader and writer boundaries used by other formats."

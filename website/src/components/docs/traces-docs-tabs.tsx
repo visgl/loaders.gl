@@ -1,4 +1,5 @@
 // SPDX-License-Identifier: MIT
+import {FormatLogo} from './format-logo';
 
 import React, {type ReactNode} from 'react';
 import Link from '@docusaurus/Link';
@@ -129,6 +130,7 @@ export function TracesDocsTabs({
 }): ReactNode {
   return (
     <nav className="docs-page-tabs" aria-label="Traces documentation sections">
+      {active.startsWith('perfetto') ? <FormatLogo slug="perfetto-trace" /> : !active.startsWith('otlp') && !active.startsWith('jaeger') && !active.startsWith('zipkin') && <FormatLogo slug="chrome-trace" />}
       {TRACES_DOCS_TABS.map(tab => (
         <Link
           key={tab.id}
