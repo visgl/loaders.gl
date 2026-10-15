@@ -1,21 +1,8 @@
 import {defineConfig} from 'vite';
-import fs from 'node:fs';
 import {fileURLToPath} from 'node:url';
 
-/** Maps workspace packages and parser subpaths to local source during example development. */
-const getAliases = async (frameworkName: string, frameworkRootDirectory: string) => {
-  const modules = await fs.promises.readdir(`${frameworkRootDirectory}/modules`);
-  const aliases: Record<string, string> = {};
-  for (const module of modules)
-    aliases[`${frameworkName}/${module}`] = `${frameworkRootDirectory}/modules/${module}/src`;
-  return aliases;
-};
-
-export default defineConfig(async () => ({
-  resolve: {
-    extensions: ['.ts', '.tsx', '.mjs', '.js', '.jsx', '.json'],
-    alias: await getAliases('@loaders.gl', fileURLToPath(new URL('../../..', import.meta.url)))
-  },
+// Resolve built workspace package exports so Vite honors each package's browser replacements.
+export default defineConfig({
   build: {
     rollupOptions: {
       input: {
@@ -25,4 +12,4 @@ export default defineConfig(async () => ({
     }
   },
   server: {open: true}
-}));
+});

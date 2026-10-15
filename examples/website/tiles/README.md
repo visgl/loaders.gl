@@ -3,6 +3,8 @@
 Run `yarn` and `yarn build` from the repository root, then
 `yarn workspace tiles-loaders-example start`. Open `/authoring.html` for the export form;
 the website embeds the same component at `/examples/tiles/pmtiles-authoring`.
+The standalone example resolves built workspace package exports, including their declared browser
+replacements. Rebuild affected packages after editing library source.
 
 The offline sample generates MVT or MLT in PMTiles without fetching data. Local file selection,
 drag and drop, and HTTP(S) URLs support GeoJSON, GeoArrow IPC/Feather, and byte GeoTIFF/COG.
