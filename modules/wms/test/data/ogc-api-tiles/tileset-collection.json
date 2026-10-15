@@ -1,0 +1,41 @@
+{
+  "title": "The WorldCRS84Quad map tileset for countries",
+  "tileMatrixSetURI": "http://www.opengis.net/def/tilematrixset/OGC/1.0/WorldCRS84Quad",
+  "crs": "http://www.opengis.net/def/crs/OGC/1.3/CRS84",
+  "dataType": "map",
+  "tileMatrixSetLimits": [
+    {
+      "tileMatrix": "0",
+      "minTileRow": 0,
+      "maxTileRow": 0,
+      "minTileCol": 0,
+      "maxTileCol": 1
+    }
+  ],
+  "links": [
+    {
+      "rel": "self",
+      "type": "application/json",
+      "href": "/ogcapi/collections/countries/map/tiles/WorldCRS84Quad?f=json"
+    },
+    {
+      "rel": "http://www.opengis.net/def/rel/ogc/1.0/tiling-scheme",
+      "type": "text/html",
+      "title": "WorldCRS84Quad definition (as HTML)",
+      "href": "/ogcapi/tileMatrixSets/WorldCRS84Quad?f=html"
+    },
+    {
+      "rel": "http://www.opengis.net/def/rel/ogc/1.0/tiling-scheme",
+      "type": "application/json",
+      "title": "WorldCRS84Quad definition (as JSON)",
+      "href": "/ogcapi/tileMatrixSets/WorldCRS84Quad"
+    },
+    {
+      "rel": "item",
+      "type": "image/png",
+      "title": "WorldCRS84Quad map tiles for countries (as PNG)",
+      "href": "/ogcapi/collections/countries/map/tiles/WorldCRS84Quad/{tileMatrix}/{tileRow}/{tileCol}.png",
+      "templated": true
+    }
+  ]
+}
