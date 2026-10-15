@@ -223,3 +223,20 @@ export {
   type PropertyAttribute
 } from './lib/extensions/EXT_structural_metadata';
 export {createExtMeshFeatures} from './lib/extensions/EXT_mesh_features';
+
+export {
+  getGLTFInteractivity,
+  type GLTF_KHR_interactivity,
+  type GLTFInteractivityGraph,
+  type GLTFInteractivityNode,
+  type GLTFInteractivityDeclaration,
+  type GLTFInteractivityValue,
+  type GLTFInteractivitySocket,
+  type GLTFInteractivityProperty,
+  type GLTFInteractivityConfiguration,
+  type GLTFInteractivityDeclarationSocket,
+  type GLTFInteractivityType,
+  type GLTFInteractivityEventValue,
+  type GLTFInteractivityVariable,
+  type GLTFInteractivityEvent
+} from './lib/types/gltf-interactivity';

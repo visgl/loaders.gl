@@ -194,8 +194,7 @@ relative URL resolves against the landing page.
   unit: EPSG:4326, CRS:84, Web Mercator, or the `metersPerUnit` option.
 - A `crs` URI string or `{uri}` object is reported as `tileGrid.crs`; embedded WKT and PROJJSON
   definitions are not interpreted.
-- Nonempty `variableMatrixWidths` (coalesced rows) declarations are rejected; they cannot safely be represented as ordinary rectangular matrices.
-- Matrix identifiers are URL encoded when expanding `{tileMatrix}`. Duplicate identifiers, invalid `cellSize`, and unknown origin corners are rejected. Missing tile dimensions remain incomplete instead of assuming square tiles.
+- `variableMatrixWidths` (coalesced rows) is not interpreted.
 - Tile requests fill `{tileMatrix}` with the `tileMatrix` parameter when given. Otherwise they use
   the matrix whose id equals `z`, then the matrix at index `z`, as in WMTS; this legacy rule is
   kept for compatibility. With a tile matrix set, a matrix it does not contain throws a
