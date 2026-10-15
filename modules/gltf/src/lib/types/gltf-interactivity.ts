@@ -4,34 +4,38 @@
 
 import type {GLTF} from './gltf-json-schema';
 
-/** KHR_interactivity graph structures are preserved verbatim by GLTFLoader. */
-export type GLTFInteractivityValue = {type?: number; value?: unknown; [key: string]: unknown};
-export type GLTFInteractivitySocket = {node?: number; socket?: string; [key: string]: unknown};
+/** KHR_interactivity socket values are arrays of typed components, not JS scalars. */
+export type GLTFInteractivityValue = {
+  node?: number;
+  socket?: string;
+  type?: number;
+  value?: unknown[];
+};
+export type GLTFInteractivitySocket = {node: number; socket?: string};
 export type GLTFInteractivityNode = {
   declaration: number;
   values?: Record<string, GLTFInteractivityValue>;
   flows?: Record<string, GLTFInteractivitySocket>;
-  configuration?: Record<string, GLTFInteractivityValue>;
-  [key: string]: unknown;
+  configuration?: Record<string, {value: unknown[]}>;
 };
 export type GLTFInteractivityDeclaration = {
   op: string;
   extension?: string;
   inputValueSockets?: Record<string, {type: number}>;
   outputValueSockets?: Record<string, {type: number}>;
-  [key: string]: unknown;
 };
 export type GLTFInteractivityGraph = {
-  nodes: GLTFInteractivityNode[];
-  variables?: Array<{type: number; value?: unknown; [key: string]: unknown}>;
+  declarations?: GLTFInteractivityDeclaration[];
+  nodes?: GLTFInteractivityNode[];
+  types?: Array<{signature: string}>;
+  variables?: Array<{type: number; value?: unknown[]; name?: string}>;
   events?: Array<{id: string; [key: string]: unknown}>;
-  [key: string]: unknown;
+  name?: string;
 };
+/** Ratified KHR_interactivity root extension. Declarations and types belong to each graph. */
 export type GLTF_KHR_interactivity = {
-  declarations: GLTFInteractivityDeclaration[];
-  types: Array<{signature: string; [key: string]: unknown}>;
+  graph?: number;
   graphs: GLTFInteractivityGraph[];
-  [key: string]: unknown;
 };
 
 /** Read the raw extension without modifying graph indices or property pointers. */
@@ -39,6 +43,5 @@ export function getGLTFInteractivity(
   gltf: GLTF | {json: GLTF}
 ): GLTF_KHR_interactivity | null {
   const json = 'json' in gltf ? gltf.json : gltf;
-  const extension = json.extensions?.KHR_interactivity as GLTF_KHR_interactivity | undefined;
-  return extension ?? null;
+  return (json.extensions?.KHR_interactivity as GLTF_KHR_interactivity | undefined) ?? null;
 }
