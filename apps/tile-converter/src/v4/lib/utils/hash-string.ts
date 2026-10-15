@@ -2,7 +2,12 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import {createHash} from 'node:crypto';
+import {MD5Hash} from '@loaders.gl/crypto';
+
+/** Shared synchronous calculator for converter identifiers. */
+const md5Hash = new MD5Hash();
+/** Encodes converter identifiers as UTF-8. */
+const textEncoder = new TextEncoder();
 
 /**
  * Computes the legacy lowercase MD5 identifier from a UTF-8 converter string.
@@ -12,5 +17,5 @@ export function hashString(value: string): string {
   if (/[\uD800-\uDBFF](?![\uDC00-\uDFFF])|(?<![\uD800-\uDBFF])[\uDC00-\uDFFF]/u.test(value)) {
     throw new URIError('URI malformed');
   }
-  return createHash('md5').update(value).digest('hex');
+  return md5Hash.hashSync(textEncoder.encode(value).buffer, 'hex');
 }

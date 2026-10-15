@@ -9,6 +9,7 @@
   },
   "references": [
     {"path": "../../modules/3d-tiles"},
+    {"path": "../../modules/crypto"},
     {"path": "../../modules/draco"},
     {"path": "../../modules/gltf"},
     {"path": "../../modules/i3s"},

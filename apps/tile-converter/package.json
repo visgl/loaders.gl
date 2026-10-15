@@ -82,6 +82,7 @@
     "@loaders.gl/3d-tiles": "5.0.0-alpha.12",
     "@loaders.gl/compression": "5.0.0-alpha.12",
     "@loaders.gl/copc": "5.0.0-alpha.12",
+    "@loaders.gl/crypto": "5.0.0-alpha.12",
     "@loaders.gl/draco": "5.0.0-alpha.12",
     "@loaders.gl/gltf": "5.0.0-alpha.12",
     "@loaders.gl/i3s": "5.0.0-alpha.12",

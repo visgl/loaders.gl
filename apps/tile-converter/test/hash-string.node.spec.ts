@@ -1,6 +1,13 @@
 // SPDX-License-Identifier: MIT
-import {expect, test} from 'vitest';
+import {expect, test, vi} from 'vitest';
 import {hashString} from '../src/v4/lib/utils/hash-string';
+
+// FIPS-enabled Node rejects native MD5; converter identifiers must remain available.
+vi.mock('node:crypto', () => ({
+  createHash: vi.fn(() => {
+    throw new Error('ERR_OSSL_EVP_UNSUPPORTED');
+  })
+}));
 
 test.each([
   ['', 'd41d8cd98f00b204e9800998ecf8427e'],

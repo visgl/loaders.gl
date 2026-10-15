@@ -5961,6 +5961,7 @@ __metadata:
     "@loaders.gl/3d-tiles": "npm:5.0.0-alpha.12"
     "@loaders.gl/compression": "npm:5.0.0-alpha.12"
     "@loaders.gl/copc": "npm:5.0.0-alpha.12"
+    "@loaders.gl/crypto": "npm:5.0.0-alpha.12"
     "@loaders.gl/draco": "npm:5.0.0-alpha.12"
     "@loaders.gl/gltf": "npm:5.0.0-alpha.12"
     "@loaders.gl/i3s": "npm:5.0.0-alpha.12"
