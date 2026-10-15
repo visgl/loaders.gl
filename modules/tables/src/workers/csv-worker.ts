@@ -2,4 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import '../csv/workers/csv-worker';
+import {createLoaderWorker} from '@loaders.gl/loader-utils';
+import {CSVLoaderWithParser} from '../csv/csv-loader';
+
+createLoaderWorker(CSVLoaderWithParser);

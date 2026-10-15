@@ -2,4 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import '../shapefile/workers/shp-worker';
+import {SHPLoaderWithParser} from '../shapefile/shp-loader';
+import {createLoaderWorker} from '@loaders.gl/loader-utils';
+
+createLoaderWorker(SHPLoaderWithParser);
