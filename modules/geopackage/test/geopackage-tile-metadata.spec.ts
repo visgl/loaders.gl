@@ -130,3 +130,33 @@ test('mixed packages keep vector default selection alongside tile-table metadata
   ]);
   expect(metadata.tileTables.map(table => table.name)).toEqual(['local', 'regional']);
 });
+
+test.each([
+  "UPDATE gpkg_tile_matrix SET matrix_width = 1 WHERE table_name = 'regional'",
+  "UPDATE gpkg_tile_matrix SET matrix_height = 1 WHERE table_name = 'regional'",
+  "UPDATE gpkg_tile_matrix SET pixel_x_size = pixel_x_size * 1.01 WHERE table_name = 'regional'",
+  "UPDATE gpkg_tile_matrix SET pixel_y_size = pixel_y_size * 1.01 WHERE table_name = 'regional'",
+  "UPDATE gpkg_tile_matrix SET pixel_x_size = 1e308 WHERE table_name = 'regional'",
+  "UPDATE gpkg_tile_matrix_set SET min_x = -1e308, max_x = 1e308 WHERE table_name = 'regional'"
+])('rejects matrix geometry inconsistent with the declared extent: %s', query => {
+  const database = createDatabase();
+  try {
+    database.run(query);
+    expect(() => listGeoPackageTileTables(database)).toThrow('dimensions disagree with bounds');
+  } finally {
+    database.close();
+  }
+});
+
+test('extent validation accepts floating-point roundoff in decimal pixel sizes', () => {
+  const database = createDatabase();
+  try {
+    database.run(`
+      UPDATE gpkg_tile_matrix_set SET min_x = 0, max_x = 0.3, min_y = 0, max_y = 0.6 WHERE table_name = 'regional';
+      UPDATE gpkg_tile_matrix SET pixel_x_size = 0.3 / (matrix_width * tile_width), pixel_y_size = 0.6 / (matrix_height * tile_height) WHERE table_name = 'regional';
+    `);
+    expect(listGeoPackageTileTables(database)[1].tileGrid.tileMatrixSet).toBeDefined();
+  } finally {
+    database.close();
+  }
+});

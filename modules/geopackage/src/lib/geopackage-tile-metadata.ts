@@ -93,6 +93,14 @@ export function listGeoPackageTileTables(database: Database): GeoPackageTileTabl
       ) {
         throw new Error(`Invalid GeoPackage tile matrix for ${name}`);
       }
+      const width = Number(row.matrix_width) * Number(row.tile_width) * Number(row.pixel_x_size);
+      const height = Number(row.matrix_height) * Number(row.tile_height) * Number(row.pixel_y_size);
+      if (
+        !matchesMatrixExtent(width, Number(minimumX), Number(maximumX)) ||
+        !matchesMatrixExtent(height, Number(minimumY), Number(maximumY))
+      ) {
+        throw new Error(`GeoPackage tile matrix dimensions disagree with bounds for ${name}`);
+      }
       identifiers.add(level);
       return createTileGridMatrix({
         id: String(level),
@@ -136,4 +144,13 @@ function readRows(
   } finally {
     statement.free();
   }
+}
+
+/** Compares declared and computed spans, allowing only floating-point roundoff. */
+function matchesMatrixExtent(span: number, minimum: number, maximum: number): boolean {
+  const declaredSpan = maximum - minimum;
+  if (!Number.isFinite(span) || !Number.isFinite(declaredSpan)) return false;
+  const tolerance =
+    32 * Number.EPSILON * Math.max(Math.abs(minimum), Math.abs(maximum), span, declaredSpan);
+  return Math.abs(span - declaredSpan) <= tolerance;
 }

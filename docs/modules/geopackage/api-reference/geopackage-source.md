@@ -65,7 +65,7 @@ const table = await dataSource.getTable(metadata.tables[0]?.name);
 
 Each tile-table entry has `name`, optional `identifier` and `description`, local `srsId`, an authority-qualified `crs` when declared, matrix-set `bounds`, and `tileGrid`. A local SRS key is not assumed to be an EPSG code. Unknown authority identifiers leave the grid partial.
 
-The grid uses `gpkg_tile_matrix_set` for its upper-left origin and extent, and `gpkg_tile_matrix` for level identifiers, matrix dimensions, tile sizes, and pixel sizes. Horizontal pixel size becomes `resolution`; vertical size becomes `resolutionY`. Complete levels expose math.gl geometry. Invalid dimensions, pixel sizes, bounds, duplicate levels, or inconsistent SRS references are rejected.
+The grid uses `gpkg_tile_matrix_set` for its upper-left origin and extent, and `gpkg_tile_matrix` for level identifiers, matrix dimensions, tile sizes, and pixel sizes. Horizontal pixel size becomes `resolution`; vertical size becomes `resolutionY`. Complete levels expose math.gl geometry. Invalid dimensions, pixel sizes, bounds, duplicate levels, or inconsistent SRS references are rejected. At every level, matrix dimensions multiplied by tile dimensions and pixel sizes must match the declared matrix-set extent; only floating-point roundoff is tolerated.
 
 | Capability | Support |
 | --- | --- |
