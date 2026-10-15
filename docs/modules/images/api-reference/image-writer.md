@@ -88,4 +88,4 @@ The supported image types are:
 
 - Supported image types (MIME types) depend on the browser / environment. As a rule, `image/png` and `image/jpeg` are always supported. (Unfortunately it is not currently clear how to determine what formats are available on any given browser, other than "trial and error").
 - `jpegQuality` argument is not supported on all platforms (in which case it is assumed to have reasonable but platform-dependent defaults).
-- The `ImageWriter` currently uses [canvas.toBlob()](https://developer.mozilla.org/en-US/docs/Web/API/HTMLCanvasElement/toBlob) on browsers, so referring to related documentation might be helpful.
+- Browser encoding uses `OffscreenCanvas.convertToBlob()` when available and falls back to `canvas.toBlob()` on the page. Worker encoding requires `OffscreenCanvas` with a 2D rendering context.
