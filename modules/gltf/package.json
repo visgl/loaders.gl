@@ -75,8 +75,8 @@
     "@loaders.gl/schema": "5.0.0-alpha.12",
     "@loaders.gl/schema-utils": "5.0.0-alpha.12",
     "@loaders.gl/textures": "5.0.0-alpha.12",
-    "@math.gl/core": "5.0.0-alpha.16",
-    "@math.gl/culling": "5.0.0-alpha.16",
+    "@math.gl/core": "5.0.0-alpha.18",
+    "@math.gl/culling": "5.0.0-alpha.18",
     "zod": "^4.1.12"
   },
   "peerDependencies": {
