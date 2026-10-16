@@ -57,9 +57,9 @@
       "import": "./dist/geotiff/geotiff-source-loader.js"
     },
     "./geotiff/index": {
-      "types": "./dist/geotiff/index.d.ts",
-      "import": "./dist/geotiff/index.js",
-      "require": "./dist/geotiff/index.cjs"
+      "types": "./dist/geotiff/advanced.d.ts",
+      "import": "./dist/geotiff/advanced.js",
+      "require": "./dist/geotiff/advanced.cjs"
     },
     "./geotiff/lib/load-geotiff": {
       "types": "./dist/geotiff/lib/load-geotiff.d.ts",
@@ -150,8 +150,8 @@
       "import": "./dist/geotiff/unbundled.js"
     },
     "./geotiff": {
-      "types": "./dist/geotiff.d.ts",
-      "import": "./dist/geotiff.js"
+      "types": "./dist/geotiff/index.d.ts",
+      "import": "./dist/geotiff/index.js"
     },
     "./index": {
       "types": "./dist/index.d.ts",
@@ -190,8 +190,8 @@
       "import": "./dist/lerc/unbundled.js"
     },
     "./lerc": {
-      "types": "./dist/lerc.d.ts",
-      "import": "./dist/lerc.js"
+      "types": "./dist/lerc/index.d.ts",
+      "import": "./dist/lerc/index.js"
     },
     "./quantized-mesh": {
       "types": "./dist/quantized-mesh.d.ts",
@@ -288,8 +288,8 @@
       "import": "./dist/terrain/unbundled.js"
     },
     "./terrain": {
-      "types": "./dist/terrain.d.ts",
-      "import": "./dist/terrain.js"
+      "types": "./dist/terrain/index.d.ts",
+      "import": "./dist/terrain/index.js"
     },
     "./terrain-worker.js": {
       "import": "./dist/terrain-worker.js"

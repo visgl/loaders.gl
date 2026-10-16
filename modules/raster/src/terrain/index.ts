@@ -27,7 +27,9 @@ export {TerrainFormat, QuantizedMeshFormat} from './terrain-format';
 export {TerrainLoader} from './terrain-loader-types';
 
 export {parseTerrain} from './terrain-loader';
+export {TerrainLoaderWithParser} from './terrain-loader';
 export {QuantizedMeshLoader} from './quantized-mesh-loader-types';
+export {QuantizedMeshLoaderWithParser} from './quantized-mesh-loader';
 
 export type {QuantizedMeshWriterOptions} from './quantized-mesh-writer';
 export {QuantizedMeshWriter} from './quantized-mesh-writer';

@@ -4,7 +4,6 @@
 
 import type {TypedArray, LoaderWithParser, LoaderOptions} from '@loaders.gl/loader-utils';
 import type {CRSIdentifier} from '@math.gl/crs';
-import {fromArrayBuffer} from 'geotiff';
 import {GeoTIFFLoader as GeoTIFFLoaderMetadata} from './geotiff-loader-types';
 
 const {preload: _GeoTIFFLoaderPreload, ...GeoTIFFLoaderMetadataWithoutPreload} =
@@ -67,6 +66,7 @@ async function parseGeoTIFF(
   options?: GeoTIFFLoaderOptions
 ): Promise<GeoTIFFData> {
   // Load using Geotiff.js
+  const {fromArrayBuffer} = await import('geotiff');
   const tiff = await fromArrayBuffer(data);
 
   // Assumes we only have one image inside TIFF

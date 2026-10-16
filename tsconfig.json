@@ -313,7 +313,7 @@
         "modules/raster/src/geotiff/geotiff-raster-loader"
       ],
       "@loaders.gl/raster/geotiff/index": [
-        "modules/raster/src/geotiff/index.ts"
+        "modules/raster/src/geotiff/advanced.ts"
       ],
       "@loaders.gl/raster/test/geotiff": [
         "modules/raster/test/geotiff"

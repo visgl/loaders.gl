@@ -83,6 +83,28 @@ test('terrain metadata bundle does not eagerly include optional raster decoders'
   expect(inputs.some(input => /(?:terrain|quantized-mesh)-loader\.js$/.test(input))).toBe(false);
 });
 
+test('GeoTIFF parser barrel defers the optional image decoder', async () => {
+  const result = await build({
+    entryPoints: ['modules/raster/src/geotiff/index.ts'],
+    bundle: true,
+    format: 'esm',
+    splitting: true,
+    platform: 'browser',
+    packages: 'external',
+    outdir: 'raster-geotiff-entry-test',
+    write: false,
+    metafile: true,
+    tsconfigRaw: {},
+    logLevel: 'silent'
+  });
+  const entry = Object.values(result.metafile!.outputs).find(
+    output => output.entryPoint === 'modules/raster/src/geotiff/index.ts'
+  )!;
+  expect(
+    entry.imports.some(item => item.path === 'geotiff' && item.kind === 'import-statement')
+  ).toBe(false);
+});
+
 // Consumers must explicitly install optional decoders instead of relying on workspace hoisting.
 test.each(['geotiff', 'ometiff', 'tiles'])('%s example declares its GeoTIFF engine', example => {
   const manifest = JSON.parse(readFileSync(`examples/website/${example}/package.json`, 'utf8'));
