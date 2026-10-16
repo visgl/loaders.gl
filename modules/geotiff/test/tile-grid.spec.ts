@@ -30,7 +30,7 @@ function createImage(
 test('native tiled overviews retain IFD ids, independent resolutions and padded edge tiles', () => {
   const reference = createImage();
   const mask = createImage(10, 7, {NewSubfileType: 4});
-  const overview = createImage(3, 2);
+  const overview = createImage(3, 2, {NewSubfileType: 1});
   const grid = getImageTileGrid([reference, mask, overview], reference)!;
   expect(grid.matrixIds).toEqual(['0', '2']);
   expect(grid.matrices![0]).toMatchObject({
@@ -66,13 +66,13 @@ test('south-up geometry uses bottom-left origin; absent or inconsistent CRS omit
   expect(getImageTileGrid([image], image)!.matrices![0].cornerOfOrigin).toBe('bottomLeft');
   const unknown = createImage(10, 7, {}, {ProjectedCSTypeGeoKey: 32767});
   expect(getImageTileGrid([unknown], unknown)).toBeUndefined();
-  const different = createImage(3, 2, {}, {ProjectedCSTypeGeoKey: 4326});
+  const different = createImage(3, 2, {NewSubfileType: 1}, {ProjectedCSTypeGeoKey: 4326});
   expect(getImageTileGrid([image, different], image)).toBeUndefined();
 });
 
 test('inherited point overviews preserve the reference pixel footprint origin', () => {
   const image = createImage(10, 7, {}, {GTRasterTypeGeoKey: 2});
-  const overview = createImage(3, 2, {}, {GTRasterTypeGeoKey: 2});
+  const overview = createImage(3, 2, {NewSubfileType: 1}, {GTRasterTypeGeoKey: 2});
   expect(getImageTileGrid([image, overview], image)!.matrices![1].origin).toEqual([99, 201.5]);
 });
 
@@ -110,4 +110,41 @@ test.each([
   } finally {
     source.finalize();
   }
+});
+
+test.each([
+  0, 2
+])('independent TIFF pages with flags %i are excluded without renumbering', flags => {
+  const reference = createImage();
+  const page = createImage(10, 7, {NewSubfileType: flags}, {ProjectedCSTypeGeoKey: 32767});
+  const overview = createImage(3, 2, {NewSubfileType: 1});
+  expect(getImageTileGrid([reference, page, overview], reference)!.matrixIds).toEqual(['0', '2']);
+});
+
+test('legacy reduced-image tags establish overview membership', () => {
+  const reference = createImage();
+  const overview = createImage(3, 2, {SubfileType: 2});
+  expect(getImageTileGrid([reference, overview], reference)!.matrixIds).toEqual(['0', '1']);
+});
+
+test.each([
+  {ProjectedCSTypeGeoKey: 32767},
+  {ProjectedCSTypeGeoKey: undefined, GTModelTypeGeoKey: 1},
+  {ProjectedCSTypeGeoKey: undefined, GTCitationGeoKey: 'unsupported local CRS'}
+])('explicitly unknown overview CRS omits the grid: %j', keys => {
+  const reference = createImage();
+  const overview = createImage(3, 2, {NewSubfileType: 1}, keys);
+  expect(getImageTileGrid([reference, overview], reference)).toBeUndefined();
+});
+
+test.each([
+  null,
+  {},
+  {GTRasterTypeGeoKey: 1},
+  {ProjectedCSTypeGeoKey: undefined}
+])('absent overview CRS may inherit the reference CRS: %j', keys => {
+  const reference = createImage();
+  const overview = createImage(3, 2, {NewSubfileType: 1});
+  overview.getGeoKeys = () => keys;
+  expect(getImageTileGrid([reference, overview], reference)!.crs).toBe('EPSG:3857');
 });

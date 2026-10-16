@@ -1669,9 +1669,20 @@ export function getImageTileGrid(images: TiffSourceImage[], referenceImage: Tiff
   if (!coordinateReferenceSystem) return undefined;
   const matrices = images.flatMap((image, index) => {
     if (image.fileDirectory?.NewSubfileType & 4) return [];
+    if (
+      image !== referenceImage &&
+      !(image.fileDirectory?.NewSubfileType & 1) &&
+      image.fileDirectory?.SubfileType !== 2
+    )
+      return [];
     const transform = getImageTransform(image, referenceImage);
     const imageCoordinateReferenceSystem = getImageCRS(image);
+    const imageCoordinateMetadata = image.getGeoKeys?.() || {};
+    const hasDeclaredCoordinateReferenceSystem = Object.entries(imageCoordinateMetadata).some(
+      ([key, value]) => key !== 'GTRasterTypeGeoKey' && value !== undefined && value !== null
+    );
     if (
+      (hasDeclaredCoordinateReferenceSystem && !imageCoordinateReferenceSystem) ||
       (imageCoordinateReferenceSystem &&
         imageCoordinateReferenceSystem !== coordinateReferenceSystem) ||
       !image.fileDirectory?.TileWidth ||
@@ -1685,7 +1696,7 @@ export function getImageTileGrid(images: TiffSourceImage[], referenceImage: Tiff
       return [undefined];
     }
     const pointRegistration =
-      (image.getGeoKeys()?.GTRasterTypeGeoKey ??
+      (imageCoordinateMetadata.GTRasterTypeGeoKey ??
         referenceImage.getGeoKeys()?.GTRasterTypeGeoKey) === 2;
     const inheritedTransform =
       image !== referenceImage &&
