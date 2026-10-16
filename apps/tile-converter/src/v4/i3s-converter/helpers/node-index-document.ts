@@ -6,11 +6,10 @@ import {
   NodeInPage,
   NodeReference
 } from '@loaders.gl/i3s';
-import transform from 'json-map-transform';
-import {v4 as uuidv4} from 'uuid';
+import {randomUUID} from 'node:crypto';
 import {openJson, writeFileForSlpk} from '../../lib/utils/file-utils';
 import I3SConverter from '../i3s-converter';
-import {NODE as nodeTemplate} from '../json-templates/node';
+import {createNode} from '../json-templates/node';
 import {I3SConvertedResources} from '../types';
 import {DumpMetadata} from '../../lib/utils/conversion-dump';
 
@@ -253,7 +252,7 @@ export class NodeIndexDocument {
    */
   static createRootNodeIndexDocument(boundingVolumes: BoundingVolumes): Node3DIndexDocument {
     const root0data = {
-      version: `{${uuidv4().toUpperCase()}}`,
+      version: `{${randomUUID().toUpperCase()}}`,
       id: 'root',
       level: 0,
       lodSelection: [
@@ -269,7 +268,7 @@ export class NodeIndexDocument {
       ...boundingVolumes,
       children: []
     };
-    return transform(root0data, nodeTemplate());
+    return createNode(root0data);
   }
 
   /**
@@ -308,7 +307,7 @@ export class NodeIndexDocument {
       children: [],
       neighbors: []
     };
-    const node = transform(nodeData, nodeTemplate());
+    const node = createNode(nodeData);
 
     if (nodeInPage.mesh) {
       node.geometryData = [{href: './geometries/0'}];

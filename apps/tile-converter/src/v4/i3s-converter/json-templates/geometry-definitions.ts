@@ -1,83 +1,88 @@
-import transform from 'json-map-transform';
+// loaders.gl
+// SPDX-License-Identifier: MIT
+// Copyright (c) vis.gl contributors
 
-const PLAIN_GEOMETRY_DEFINITION = () => ({
-  offset: {
-    default: 8
-  },
-  position: {
-    default: {
+import type {BuilderInput} from '../../lib/utils/builder-input';
+
+import type {SceneLayer3D} from '@loaders.gl/i3s';
+/** Legacy geometry layout choices. */
+export type GeometryConfiguration = {
+  /** Whether texture coordinates are present. */
+  hasTexture?: boolean;
+  /** Whether UV regions are present. */
+  hasUvRegions?: boolean;
+  /** Whether Draco is emitted. */
+  draco?: boolean;
+};
+/** Input to one geometry layout builder. */
+export type GeometryDefinitionInput = {
+  /** Geometry layout choices. */
+  geometryConfig: GeometryConfiguration;
+};
+
+/** Builds plain geometry definition with the legacy field selection and defaults. */
+function createPlainGeometryDefinition(
+  input: BuilderInput<GeometryConfiguration> | null | undefined
+) {
+  const source = input ?? {};
+  return {
+    offset: 8,
+    position: {
       type: 'Float32',
       component: 3
-    }
-  },
-  normal: {
-    default: {
+    },
+    normal: {
       type: 'Float32',
       component: 3
-    }
-  },
-  uv0: {
-    path: 'hasTexture',
-    transform: val => (val && {type: 'Float32', component: 2}) || false,
-    omitValues: [false]
-  },
-  color: {
-    default: {
+    },
+    ...(source.hasTexture ? {uv0: {type: 'Float32', component: 2}} : {}),
+    color: {
       type: 'UInt8',
       component: 4
-    }
-  },
-  uvRegion: {
-    path: 'hasUvRegions',
-    transform: val => (val && {type: 'UInt16', component: 4}) || false,
-    omitValues: [false]
-  },
-  featureId: {
-    default: {
+    },
+    ...(source.hasUvRegions ? {uvRegion: {type: 'UInt16', component: 4}} : {}),
+    featureId: {
       binding: 'per-feature',
       type: 'UInt64',
       component: 1
-    }
-  },
-  faceRange: {
-    default: {
+    },
+    faceRange: {
       binding: 'per-feature',
       type: 'UInt32',
       component: 2
     }
-  }
-});
+  };
+}
 
-const COMPRESSED_GEOMETRY_DEFINITION = () => ({
-  'compressedAttributes.encoding': {
-    default: 'draco'
-  },
-  'compressedAttributes.attributes': {
-    path: 'geometryConfig',
-    transform: val => {
-      const result = ['position', 'normal'];
-      if (val.hasTexture) {
-        result.push('uv0');
-      }
-      result.push('color');
-      if (val.hasUvRegions) {
-        result.push('uv-region');
-      }
-      result.push('feature-index');
-      return result;
+/** Builds compressed geometry definition with the legacy field selection and defaults. */
+function createCompressedGeometryDefinition(
+  input: BuilderInput<GeometryDefinitionInput> | null | undefined
+) {
+  const configuration = input!.geometryConfig!;
+  return {
+    compressedAttributes: {
+      encoding: 'draco',
+      attributes: [
+        'position',
+        'normal',
+        ...(configuration.hasTexture ? ['uv0'] : []),
+        'color',
+        ...(configuration.hasUvRegions ? ['uv-region'] : []),
+        'feature-index'
+      ]
     }
-  }
-});
+  };
+}
 
-export const GEOMETRY_DEFINITION = () => ({
-  geometryBuffers: {
-    path: 'geometryConfig',
-    transform: val => {
-      const result = [transform(val, PLAIN_GEOMETRY_DEFINITION())];
-      if (val.draco) {
-        result.push(transform({geometryConfig: val}, COMPRESSED_GEOMETRY_DEFINITION()));
-      }
-      return result;
-    }
-  }
-});
+/** Builds geometry definition with the legacy field selection and defaults. */
+export function createGeometryDefinition(
+  input: BuilderInput<GeometryDefinitionInput> | null | undefined
+): NonNullable<SceneLayer3D['geometryDefinitions']>[number] {
+  const source = input ?? {};
+  return {
+    geometryBuffers: [
+      createPlainGeometryDefinition(source.geometryConfig),
+      ...(source.geometryConfig!.draco ? [createCompressedGeometryDefinition(source)] : [])
+    ]
+  } as NonNullable<SceneLayer3D['geometryDefinitions']>[number];
+}

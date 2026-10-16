@@ -1,134 +1,73 @@
-import transform from 'json-map-transform';
+// loaders.gl
+// SPDX-License-Identifier: MIT
+// Copyright (c) vis.gl contributors
 
-const MATERIAL_DEFINITION_INFO_PARAMS = () => ({
-  renderMode: {
-    path: 'renderMode',
-    default: 'solid'
-  },
-  shininess: {
-    path: 'shininess',
-    default: 1
-  },
-  reflectivity: {
-    path: 'reflectivity',
-    default: 0
-  },
-  ambient: {
-    path: 'ambient',
-    default: [1, 1, 1]
-  },
-  diffuse: {
-    path: 'diffuse',
-    default: [1, 1, 1]
-  },
-  specular: {
-    path: 'specular',
-    default: [0, 0, 0]
-  },
-  useVertexColorAlpha: {
-    path: 'useVertexColorAlpha',
-    default: false
-  },
-  vertexRegions: {
-    path: 'vertexRegions',
-    default: false
-  },
-  vertexColors: {
-    path: 'vertexColors',
-    default: true
-  }
-});
+import type {BuilderInput} from '../../lib/utils/builder-input';
 
-const MATERIAL_DEFINITION_INFO = () => ({
-  name: {
-    path: 'name',
-    default: 'standard'
-  },
-  type: {
-    path: 'type',
-    default: 'standard'
-  },
-  params: {
-    path: 'params',
-    transform: (val, thisObject, originalObject) =>
-      transform(originalObject, MATERIAL_DEFINITION_INFO_PARAMS())
-  }
-});
+import type {MaterialDefinitionInfo, TextureDefinitionInfo} from '@loaders.gl/i3s';
+import type {SharedResourcesArrays} from '../types';
 
-const TEXTURE_DEFINITION_IMAGE = () => ({
-  id: {
-    path: 'id'
-  },
-  size: {
-    path: 'size'
-  },
-  href: {
-    path: 'href',
-    default: ['../textures/0']
-  },
-  length: {
-    path: 'length'
-  }
-});
+/** Legacy material fields are selected from the material record, rather than its params field. */
+/** Legacy texture records receive the generated image index as an annotation. */
+type IndexedTexture = TextureDefinitionInfo & {
+  /** Generated legacy image index. */
+  imageIndex?: string;
+};
 
-const TEXTURE_DEFINITION_INFO = () => ({
-  encoding: {
-    path: 'encoding'
-  },
-  wrap: {
-    path: 'wrap',
-    default: ['none']
-  },
-  atlas: {
-    path: 'atlas',
-    default: false
-  },
-  uvSet: {
-    path: 'uvSet',
-    default: 'uv0'
-  },
-  channels: {
-    path: 'channels',
-    default: 'rgb'
-  },
-  images: {
-    path: 'images',
-    transform: (val, thisObject, originalObject) =>
-      val.map(image => transform(image, TEXTURE_DEFINITION_IMAGE()))
-  }
-});
+/** Material parameters are selected from the root record. */
+type MaterialInput = BuilderInput<MaterialDefinitionInfo> &
+  BuilderInput<MaterialDefinitionInfo['params']>;
 
-export const SHARED_RESOURCES = () => ({
-  materialDefinitions: {
-    path: 'materialDefinitionInfos',
-    transform: transfromMaterialDefinitions
-  },
-  textureDefinitions: {
-    path: 'textureDefinitionInfos',
-    transform: transfromTextureDefinitions
-  }
-});
-
-function transfromMaterialDefinitions(materialDefinitionInfos, thisObject, originalObject) {
-  const result = {};
-  for (const [index, materialDefinitionInfo] of materialDefinitionInfos.entries()) {
-    result[`Mat${originalObject.nodePath}${index}`] = transform(
-      materialDefinitionInfo,
-      MATERIAL_DEFINITION_INFO()
-    );
-  }
-  return result;
+/** Builds one material while retaining the legacy root-level parameter selection. */
+function createMaterial(input: MaterialInput) {
+  return {
+    name: input.name ?? 'standard',
+    type: input.type ?? 'standard',
+    params: {
+      renderMode: input.renderMode ?? 'solid',
+      shininess: input.shininess ?? 1,
+      reflectivity: input.reflectivity ?? 0,
+      ambient: input.ambient ?? [1, 1, 1],
+      diffuse: input.diffuse ?? [1, 1, 1],
+      specular: input.specular ?? [0, 0, 0],
+      useVertexColorAlpha: input.useVertexColorAlpha ?? false,
+      vertexRegions: input.vertexRegions ?? false,
+      vertexColors: input.vertexColors ?? true
+    }
+  };
 }
 
-function transfromTextureDefinitions(textureDefinitionInfos, thisObject, originalObject) {
-  if (!textureDefinitionInfos) {
-    return null;
+/** Builds a texture record with the historical image fields and defaults. */
+function createTexture(input: BuilderInput<TextureDefinitionInfo>) {
+  return {
+    encoding: input.encoding ?? undefined,
+    wrap: input.wrap ?? ['none'],
+    atlas: input.atlas ?? false,
+    uvSet: input.uvSet ?? 'uv0',
+    channels: input.channels ?? 'rgb',
+    images: input.images!.map(image => ({
+      id: image.id ?? undefined,
+      size: image.size ?? undefined,
+      href: image.href ?? ['../textures/0'],
+      length: image.length ?? undefined
+    }))
+  };
+}
+
+/** Builds shared resources, preserving generated keys and the legacy image-index annotation. */
+export function createSharedResources(input: SharedResourcesArrays) {
+  const materialDefinitions: Record<string, ReturnType<typeof createMaterial>> = {};
+  for (const [index, material] of input.materialDefinitionInfos!.entries()) {
+    materialDefinitions[`Mat${input.nodePath}${index}`] = createMaterial(material);
   }
-  const result = {};
-  for (const [index, textureDefinitionInfo] of textureDefinitionInfos.entries()) {
-    const imageIndex = `${originalObject.nodePath}${index}`;
-    textureDefinitionInfo.imageIndex = imageIndex;
-    result[imageIndex] = transform(textureDefinitionInfo, TEXTURE_DEFINITION_INFO());
+  const textureDefinitions: Record<string, ReturnType<typeof createTexture>> | null =
+    input.textureDefinitionInfos ? {} : null;
+  if (textureDefinitions) {
+    for (const [index, texture] of input.textureDefinitionInfos!.entries()) {
+      const imageIndex = `${input.nodePath}${index}`;
+      (texture as IndexedTexture).imageIndex = imageIndex;
+      textureDefinitions[imageIndex] = createTexture(texture);
+    }
   }
-  return result;
+  return {materialDefinitions, textureDefinitions};
 }

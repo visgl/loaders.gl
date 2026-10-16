@@ -64,7 +64,6 @@
     "README.md"
   ],
   "browser": {
-    "archiver": false,
     "fs": false,
     "join-images": false,
     "path": false,
@@ -104,16 +103,11 @@
     "@math.gl/geometry-utils": "5.0.0-alpha.18",
     "@math.gl/geospatial": "5.0.0-alpha.18",
     "ajv": "^8.12.0",
-    "archiver": "^5.0.0",
     "cors": "^2.8.5",
-    "crypt": "^0.0.2",
     "debug": "~4.3.4",
     "express": "~4.19.2",
     "inquirer": "^8.0.0",
-    "json-map-transform": "^1.2.6",
-    "md5": "^2.3.0",
-    "morgan": "~1.9.1",
-    "uuid": "^9.0.0"
+    "morgan": "~1.9.1"
   },
   "quarantinedDependencies": {
     "join-images": "^1.1.3",

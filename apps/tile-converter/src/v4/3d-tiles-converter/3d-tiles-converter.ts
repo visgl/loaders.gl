@@ -9,7 +9,6 @@ import type {Tile3DBoundingVolume, Tiles3DTileJSON} from '@loaders.gl/3d-tiles';
 
 import {join} from 'path';
 import process from 'process';
-import transform from 'json-map-transform';
 import {load, isBrowser} from '@loaders.gl/core';
 import {I3SLoader, I3SAttributeLoader, COORDINATE_SYSTEM} from '@loaders.gl/i3s';
 import {Geoid} from '@math.gl/geoid';
@@ -20,7 +19,7 @@ import {i3sObbTo3dTilesObb} from './helpers/i3s-obb-to-3d-tiles-obb';
 import {convertScreenThresholdToGeometricError} from '../lib/utils/lod-conversion-utils';
 import {writeFile, removeDir} from '../lib/utils/file-utils';
 import {calculateDatasetSize, timeConverter} from '../lib/utils/statistic-utils';
-import {TILESET as tilesetTemplate} from './json-templates/tileset';
+import {createTileset} from './json-templates/tileset';
 import {createObbFromMbs} from '../i3s-converter/helpers/coordinate-converter';
 import {WorkerFarm} from '@loaders.gl/worker-utils';
 import {BROWSER_ERROR_MESSAGE} from '../constants';
@@ -31,7 +30,7 @@ import {
 import {I3STileHeader} from '@loaders.gl/i3s/src/types';
 import {getNodeCount, loadFromArchive, loadI3SContent, openSLPK} from './helpers/load-i3s';
 import {I3SLoaderOptions} from '@loaders.gl/i3s/src/i3s-loader';
-import {ZipFileSystem} from '../../../zip/src';
+import type {ZipFileSystem} from '@loaders.gl/zip';
 import {ConversionDump, ConversionDumpOptions} from '../lib/utils/conversion-dump';
 import {Progress} from '../i3s-converter/helpers/progress';
 import {PromptModule} from 'inquirer';
@@ -204,7 +203,7 @@ export default class Tiles3DConverter {
 
     await this._addChildren(rootNode, rootTile, 1);
 
-    const tileset = transform({asset: {version: outputVersion}, root: rootTile}, tilesetTemplate());
+    const tileset = createTileset({asset: {version: outputVersion}, root: rootTile});
     await writeFile(this.tilesetPath, JSON.stringify(tileset), 'tileset.json');
     await this.conversionDump.deleteDumpFile();
 

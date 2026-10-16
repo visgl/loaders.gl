@@ -1,0 +1,957 @@
+[
+  {
+    "builder": "createStore",
+    "input": {
+      "id": "store"
+    },
+    "expected": {
+      "id": "STORE",
+      "profile": "meshpyramids",
+      "version": "1.8",
+      "resourcePattern": [
+        "3dNodeIndexDocument",
+        "Attributes",
+        "SharedResource",
+        "Geometry"
+      ],
+      "rootNode": "./nodes/root",
+      "indexCRS": "http://www.opengis.net/def/crs/EPSG/0/4326",
+      "vertexCRS": "http://www.opengis.net/def/crs/EPSG/0/4326",
+      "normalReferenceFrame": "earth-centered",
+      "attributeEncoding": "application/octet-stream; version=1.6",
+      "textureEncoding": [
+        "image/jpeg",
+        "image/ktx2"
+      ],
+      "lodType": "MeshPyramid",
+      "lodModel": "node-switching",
+      "defaultGeometrySchema": {
+        "geometryType": "triangles",
+        "header": [
+          {
+            "property": "vertexCount",
+            "type": "UInt32"
+          },
+          {
+            "property": "featureCount",
+            "type": "UInt32"
+          }
+        ],
+        "topology": "PerAttributeArray",
+        "ordering": [
+          "position",
+          "normal",
+          "uv0",
+          "color"
+        ],
+        "vertexAttributes": {
+          "position": {
+            "valueType": "Float32",
+            "valuesPerElement": 3
+          },
+          "normal": {
+            "valueType": "Float32",
+            "valuesPerElement": 3
+          },
+          "uv0": {
+            "valueType": "Float32",
+            "valuesPerElement": 2
+          },
+          "color": {
+            "valueType": "UInt8",
+            "valuesPerElement": 4
+          }
+        },
+        "featureAttributeOrder": [
+          "id",
+          "faceRange"
+        ],
+        "featureAttributes": {
+          "id": {
+            "valueType": "UInt64",
+            "valuesPerElement": 1
+          },
+          "faceRange": {
+            "valueType": "UInt32",
+            "valuesPerElement": 2
+          }
+        }
+      }
+    }
+  },
+  {
+    "builder": "createStore",
+    "input": {
+      "id": "mixedCase",
+      "version": null,
+      "profile": null,
+      "extent": [
+        0,
+        0,
+        1,
+        1
+      ]
+    },
+    "expected": {
+      "id": "MIXEDCASE",
+      "profile": "meshpyramids",
+      "version": "1.8",
+      "resourcePattern": [
+        "3dNodeIndexDocument",
+        "Attributes",
+        "SharedResource",
+        "Geometry"
+      ],
+      "rootNode": "./nodes/root",
+      "extent": [
+        0,
+        0,
+        1,
+        1
+      ],
+      "indexCRS": "http://www.opengis.net/def/crs/EPSG/0/4326",
+      "vertexCRS": "http://www.opengis.net/def/crs/EPSG/0/4326",
+      "normalReferenceFrame": "earth-centered",
+      "attributeEncoding": "application/octet-stream; version=1.6",
+      "textureEncoding": [
+        "image/jpeg",
+        "image/ktx2"
+      ],
+      "lodType": "MeshPyramid",
+      "lodModel": "node-switching",
+      "defaultGeometrySchema": {
+        "geometryType": "triangles",
+        "header": [
+          {
+            "property": "vertexCount",
+            "type": "UInt32"
+          },
+          {
+            "property": "featureCount",
+            "type": "UInt32"
+          }
+        ],
+        "topology": "PerAttributeArray",
+        "ordering": [
+          "position",
+          "normal",
+          "uv0",
+          "color"
+        ],
+        "vertexAttributes": {
+          "position": {
+            "valueType": "Float32",
+            "valuesPerElement": 3
+          },
+          "normal": {
+            "valueType": "Float32",
+            "valuesPerElement": 3
+          },
+          "uv0": {
+            "valueType": "Float32",
+            "valuesPerElement": 2
+          },
+          "color": {
+            "valueType": "UInt8",
+            "valuesPerElement": 4
+          }
+        },
+        "featureAttributeOrder": [
+          "id",
+          "faceRange"
+        ],
+        "featureAttributes": {
+          "id": {
+            "valueType": "UInt64",
+            "valuesPerElement": 1
+          },
+          "faceRange": {
+            "valueType": "UInt32",
+            "valuesPerElement": 2
+          }
+        }
+      }
+    }
+  },
+  {
+    "builder": "createMetadata",
+    "input": {
+      "nodeCount": 0
+    },
+    "expected": {
+      "folderPattern": "BASIC",
+      "archiveCompressionType": "STORE",
+      "resourceCompressionType": "GZIP",
+      "I3SVersion": "1.8",
+      "nodeCount": 0
+    }
+  },
+  {
+    "builder": "createMetadata",
+    "input": {
+      "nodeCount": 3,
+      "folderPattern": null,
+      "archiveCompressionType": "custom"
+    },
+    "expected": {
+      "folderPattern": "BASIC",
+      "archiveCompressionType": "custom",
+      "resourceCompressionType": "GZIP",
+      "I3SVersion": "1.8",
+      "nodeCount": 3
+    }
+  },
+  {
+    "builder": "createSceneServer",
+    "input": {
+      "serviceItemId": "123",
+      "layerName": "layer",
+      "layers0": {
+        "id": 0
+      }
+    },
+    "expected": {
+      "serviceItemId": "123",
+      "serviceName": "layer",
+      "name": "layer",
+      "currentVersion": 10.7,
+      "serviceVersion": "1.8",
+      "supportedBindings": [
+        "REST"
+      ],
+      "layers": [
+        {
+          "id": 0
+        }
+      ]
+    }
+  },
+  {
+    "builder": "createNode",
+    "input": {
+      "version": "v",
+      "id": "root",
+      "level": 0,
+      "children": []
+    },
+    "expected": {
+      "version": "v",
+      "id": "root",
+      "level": 0,
+      "lodSelection": [
+        {
+          "metricType": "maxScreenThresholdSQ",
+          "maxError": 196349.54374999998
+        },
+        {
+          "metricType": "maxScreenThreshold",
+          "maxError": 999.9999999999999
+        }
+      ],
+      "children": [],
+      "parentNode": {}
+    }
+  },
+  {
+    "builder": "createNode",
+    "input": {
+      "version": "v",
+      "id": "child",
+      "parentNode": {
+        "id": "root",
+        "href": "../root",
+        "extra": 1
+      },
+      "lodSelection": null,
+      "neighbors": []
+    },
+    "expected": {
+      "version": "v",
+      "id": "child",
+      "lodSelection": [
+        {
+          "metricType": "maxScreenThresholdSQ",
+          "maxError": 196349.54374999998
+        },
+        {
+          "metricType": "maxScreenThreshold",
+          "maxError": 999.9999999999999
+        }
+      ],
+      "neighbors": [],
+      "parentNode": {
+        "id": "root",
+        "href": "../root"
+      }
+    }
+  },
+  {
+    "builder": "createLayers",
+    "input": {
+      "version": "abc",
+      "name": "layer",
+      "store": {
+        "id": "store"
+      },
+      "nodePages": {
+        "nodesPerPage": 0
+      },
+      "fullExtent": {
+        "xmin": 0,
+        "ymin": 1,
+        "xmax": 2,
+        "ymax": 3,
+        "zmin": 0,
+        "zmax": 4
+      },
+      "materialDefinitions": [],
+      "popupInfo": null
+    },
+    "expected": {
+      "version": "ABC",
+      "id": 0,
+      "name": "layer",
+      "href": "./layers/0",
+      "layerType": "IntegratedMesh",
+      "spatialReference": {
+        "wkid": 4326,
+        "latestWkid": 4326,
+        "vcsWkid": 5773,
+        "latestVcsWkid": 5773
+      },
+      "capabilities": [
+        "View",
+        "Query"
+      ],
+      "store": {
+        "id": "STORE",
+        "profile": "meshpyramids",
+        "version": "1.8",
+        "resourcePattern": [
+          "3dNodeIndexDocument",
+          "Attributes",
+          "SharedResource",
+          "Geometry"
+        ],
+        "rootNode": "./nodes/root",
+        "indexCRS": "http://www.opengis.net/def/crs/EPSG/0/4326",
+        "vertexCRS": "http://www.opengis.net/def/crs/EPSG/0/4326",
+        "normalReferenceFrame": "earth-centered",
+        "attributeEncoding": "application/octet-stream; version=1.6",
+        "textureEncoding": [
+          "image/jpeg",
+          "image/ktx2"
+        ],
+        "lodType": "MeshPyramid",
+        "lodModel": "node-switching",
+        "defaultGeometrySchema": {
+          "geometryType": "triangles",
+          "header": [
+            {
+              "property": "vertexCount",
+              "type": "UInt32"
+            },
+            {
+              "property": "featureCount",
+              "type": "UInt32"
+            }
+          ],
+          "topology": "PerAttributeArray",
+          "ordering": [
+            "position",
+            "normal",
+            "uv0",
+            "color"
+          ],
+          "vertexAttributes": {
+            "position": {
+              "valueType": "Float32",
+              "valuesPerElement": 3
+            },
+            "normal": {
+              "valueType": "Float32",
+              "valuesPerElement": 3
+            },
+            "uv0": {
+              "valueType": "Float32",
+              "valuesPerElement": 2
+            },
+            "color": {
+              "valueType": "UInt8",
+              "valuesPerElement": 4
+            }
+          },
+          "featureAttributeOrder": [
+            "id",
+            "faceRange"
+          ],
+          "featureAttributes": {
+            "id": {
+              "valueType": "UInt64",
+              "valuesPerElement": 1
+            },
+            "faceRange": {
+              "valueType": "UInt32",
+              "valuesPerElement": 2
+            }
+          }
+        }
+      },
+      "fullExtent": {
+        "xmin": 0,
+        "ymin": 1,
+        "xmax": 2,
+        "ymax": 3,
+        "zmin": 0,
+        "zmax": 4
+      },
+      "heightModelInfo": {
+        "heightModel": "gravity_related_height",
+        "vertCRS": "EGM96_Geoid",
+        "heightUnit": "meter"
+      },
+      "nodePages": {
+        "nodesPerPage": 0,
+        "lodSelectionMetricType": "maxScreenThresholdSQ"
+      },
+      "materialDefinitions": [],
+      "textureSetDefinitions": [],
+      "geometryDefinitions": [],
+      "attributeStorageInfo": [],
+      "fields": []
+    }
+  },
+  {
+    "builder": "createGeometryDefinition",
+    "input": {
+      "geometryConfig": {
+        "hasTexture": false,
+        "hasUvRegions": false,
+        "draco": false
+      }
+    },
+    "expected": {
+      "geometryBuffers": [
+        {
+          "offset": 8,
+          "position": {
+            "type": "Float32",
+            "component": 3
+          },
+          "normal": {
+            "type": "Float32",
+            "component": 3
+          },
+          "color": {
+            "type": "UInt8",
+            "component": 4
+          },
+          "featureId": {
+            "binding": "per-feature",
+            "type": "UInt64",
+            "component": 1
+          },
+          "faceRange": {
+            "binding": "per-feature",
+            "type": "UInt32",
+            "component": 2
+          }
+        }
+      ]
+    }
+  },
+  {
+    "builder": "createGeometryDefinition",
+    "input": {
+      "geometryConfig": {
+        "hasTexture": false,
+        "hasUvRegions": false,
+        "draco": true
+      }
+    },
+    "expected": {
+      "geometryBuffers": [
+        {
+          "offset": 8,
+          "position": {
+            "type": "Float32",
+            "component": 3
+          },
+          "normal": {
+            "type": "Float32",
+            "component": 3
+          },
+          "color": {
+            "type": "UInt8",
+            "component": 4
+          },
+          "featureId": {
+            "binding": "per-feature",
+            "type": "UInt64",
+            "component": 1
+          },
+          "faceRange": {
+            "binding": "per-feature",
+            "type": "UInt32",
+            "component": 2
+          }
+        },
+        {
+          "compressedAttributes": {
+            "encoding": "draco",
+            "attributes": [
+              "position",
+              "normal",
+              "color",
+              "feature-index"
+            ]
+          }
+        }
+      ]
+    }
+  },
+  {
+    "builder": "createGeometryDefinition",
+    "input": {
+      "geometryConfig": {
+        "hasTexture": false,
+        "hasUvRegions": true,
+        "draco": false
+      }
+    },
+    "expected": {
+      "geometryBuffers": [
+        {
+          "offset": 8,
+          "position": {
+            "type": "Float32",
+            "component": 3
+          },
+          "normal": {
+            "type": "Float32",
+            "component": 3
+          },
+          "color": {
+            "type": "UInt8",
+            "component": 4
+          },
+          "uvRegion": {
+            "type": "UInt16",
+            "component": 4
+          },
+          "featureId": {
+            "binding": "per-feature",
+            "type": "UInt64",
+            "component": 1
+          },
+          "faceRange": {
+            "binding": "per-feature",
+            "type": "UInt32",
+            "component": 2
+          }
+        }
+      ]
+    }
+  },
+  {
+    "builder": "createGeometryDefinition",
+    "input": {
+      "geometryConfig": {
+        "hasTexture": false,
+        "hasUvRegions": true,
+        "draco": true
+      }
+    },
+    "expected": {
+      "geometryBuffers": [
+        {
+          "offset": 8,
+          "position": {
+            "type": "Float32",
+            "component": 3
+          },
+          "normal": {
+            "type": "Float32",
+            "component": 3
+          },
+          "color": {
+            "type": "UInt8",
+            "component": 4
+          },
+          "uvRegion": {
+            "type": "UInt16",
+            "component": 4
+          },
+          "featureId": {
+            "binding": "per-feature",
+            "type": "UInt64",
+            "component": 1
+          },
+          "faceRange": {
+            "binding": "per-feature",
+            "type": "UInt32",
+            "component": 2
+          }
+        },
+        {
+          "compressedAttributes": {
+            "encoding": "draco",
+            "attributes": [
+              "position",
+              "normal",
+              "color",
+              "uv-region",
+              "feature-index"
+            ]
+          }
+        }
+      ]
+    }
+  },
+  {
+    "builder": "createGeometryDefinition",
+    "input": {
+      "geometryConfig": {
+        "hasTexture": true,
+        "hasUvRegions": false,
+        "draco": false
+      }
+    },
+    "expected": {
+      "geometryBuffers": [
+        {
+          "offset": 8,
+          "position": {
+            "type": "Float32",
+            "component": 3
+          },
+          "normal": {
+            "type": "Float32",
+            "component": 3
+          },
+          "uv0": {
+            "type": "Float32",
+            "component": 2
+          },
+          "color": {
+            "type": "UInt8",
+            "component": 4
+          },
+          "featureId": {
+            "binding": "per-feature",
+            "type": "UInt64",
+            "component": 1
+          },
+          "faceRange": {
+            "binding": "per-feature",
+            "type": "UInt32",
+            "component": 2
+          }
+        }
+      ]
+    }
+  },
+  {
+    "builder": "createGeometryDefinition",
+    "input": {
+      "geometryConfig": {
+        "hasTexture": true,
+        "hasUvRegions": false,
+        "draco": true
+      }
+    },
+    "expected": {
+      "geometryBuffers": [
+        {
+          "offset": 8,
+          "position": {
+            "type": "Float32",
+            "component": 3
+          },
+          "normal": {
+            "type": "Float32",
+            "component": 3
+          },
+          "uv0": {
+            "type": "Float32",
+            "component": 2
+          },
+          "color": {
+            "type": "UInt8",
+            "component": 4
+          },
+          "featureId": {
+            "binding": "per-feature",
+            "type": "UInt64",
+            "component": 1
+          },
+          "faceRange": {
+            "binding": "per-feature",
+            "type": "UInt32",
+            "component": 2
+          }
+        },
+        {
+          "compressedAttributes": {
+            "encoding": "draco",
+            "attributes": [
+              "position",
+              "normal",
+              "uv0",
+              "color",
+              "feature-index"
+            ]
+          }
+        }
+      ]
+    }
+  },
+  {
+    "builder": "createGeometryDefinition",
+    "input": {
+      "geometryConfig": {
+        "hasTexture": true,
+        "hasUvRegions": true,
+        "draco": false
+      }
+    },
+    "expected": {
+      "geometryBuffers": [
+        {
+          "offset": 8,
+          "position": {
+            "type": "Float32",
+            "component": 3
+          },
+          "normal": {
+            "type": "Float32",
+            "component": 3
+          },
+          "uv0": {
+            "type": "Float32",
+            "component": 2
+          },
+          "color": {
+            "type": "UInt8",
+            "component": 4
+          },
+          "uvRegion": {
+            "type": "UInt16",
+            "component": 4
+          },
+          "featureId": {
+            "binding": "per-feature",
+            "type": "UInt64",
+            "component": 1
+          },
+          "faceRange": {
+            "binding": "per-feature",
+            "type": "UInt32",
+            "component": 2
+          }
+        }
+      ]
+    }
+  },
+  {
+    "builder": "createGeometryDefinition",
+    "input": {
+      "geometryConfig": {
+        "hasTexture": true,
+        "hasUvRegions": true,
+        "draco": true
+      }
+    },
+    "expected": {
+      "geometryBuffers": [
+        {
+          "offset": 8,
+          "position": {
+            "type": "Float32",
+            "component": 3
+          },
+          "normal": {
+            "type": "Float32",
+            "component": 3
+          },
+          "uv0": {
+            "type": "Float32",
+            "component": 2
+          },
+          "color": {
+            "type": "UInt8",
+            "component": 4
+          },
+          "uvRegion": {
+            "type": "UInt16",
+            "component": 4
+          },
+          "featureId": {
+            "binding": "per-feature",
+            "type": "UInt64",
+            "component": 1
+          },
+          "faceRange": {
+            "binding": "per-feature",
+            "type": "UInt32",
+            "component": 2
+          }
+        },
+        {
+          "compressedAttributes": {
+            "encoding": "draco",
+            "attributes": [
+              "position",
+              "normal",
+              "uv0",
+              "color",
+              "uv-region",
+              "feature-index"
+            ]
+          }
+        }
+      ]
+    }
+  },
+  {
+    "builder": "createSharedResources",
+    "input": {
+      "nodePath": "4",
+      "materialDefinitionInfos": [
+        {
+          "name": "mat",
+          "params": {
+            "shininess": 22
+          },
+          "shininess": 0,
+          "reflectivity": 0,
+          "vertexColors": false
+        }
+      ]
+    },
+    "expected": {
+      "materialDefinitions": {
+        "Mat40": {
+          "name": "mat",
+          "type": "standard",
+          "params": {
+            "renderMode": "solid",
+            "shininess": 0,
+            "reflectivity": 0,
+            "ambient": [
+              1,
+              1,
+              1
+            ],
+            "diffuse": [
+              1,
+              1,
+              1
+            ],
+            "specular": [
+              0,
+              0,
+              0
+            ],
+            "useVertexColorAlpha": false,
+            "vertexRegions": false,
+            "vertexColors": false
+          }
+        }
+      },
+      "textureDefinitions": null
+    }
+  },
+  {
+    "builder": "createSharedResources",
+    "input": {
+      "nodePath": "1",
+      "materialDefinitionInfos": [],
+      "textureDefinitionInfos": [
+        {
+          "encoding": [
+            "image/png"
+          ],
+          "images": [
+            {
+              "id": "0",
+              "size": 0,
+              "length": 0
+            }
+          ],
+          "imageIndex": "10"
+        }
+      ]
+    },
+    "expected": {
+      "materialDefinitions": {},
+      "textureDefinitions": {
+        "10": {
+          "encoding": [
+            "image/png"
+          ],
+          "wrap": [
+            "none"
+          ],
+          "atlas": false,
+          "uvSet": "uv0",
+          "channels": "rgb",
+          "images": [
+            {
+              "id": "0",
+              "size": 0,
+              "href": [
+                "../textures/0"
+              ],
+              "length": 0
+            }
+          ]
+        }
+      }
+    }
+  },
+  {
+    "builder": "createTileset",
+    "input": {
+      "asset": {
+        "version": null
+      },
+      "root": {
+        "boundingVolume": {
+          "box": [
+            1
+          ]
+        },
+        "geometricError": 0,
+        "refine": "ADD",
+        "children": [
+          {
+            "geometricError": 1,
+            "children": []
+          }
+        ]
+      }
+    },
+    "expected": {
+      "asset": {
+        "version": "1.0"
+      },
+      "geometricError": 0,
+      "root": {
+        "boundingVolume": {
+          "box": [
+            1
+          ]
+        },
+        "geometricError": 0,
+        "refine": "ADD",
+        "children": [
+          {
+            "geometricError": 1,
+            "children": []
+          }
+        ]
+      }
+    }
+  }
+]
