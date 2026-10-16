@@ -65,7 +65,7 @@ ArcGIS MapServer services expose cached map tiles, dynamically rendered maps, or
 | Automatic mode selection | ✅ Supported | `mode: 'auto'` chooses cached tiles when available, otherwise export |
 | Explicit mode selection | ✅ Supported | Use `mode: 'cached'` or `mode: 'dynamic'` |
 | Service metadata | ✅ Supported | `getMetadata()` exposes bounds, CRS, layers, tile size, and ArcGIS LODs |
-| ArcGIS LOD grid | ✅ Supported | Advertised levels, origins, resolutions, and scale are normalized as a tile grid |
+| ArcGIS LOD grid | ✅ Supported | Advertised levels, origins, resolutions, and tile sizes are normalized as partial per-level metadata |
 | Dynamic rendering parameters | ✅ Supported | Layer visibility, format, transparency, time, and vendor parameters are forwarded |
 | Multiple service URLs | ✅ Supported | Optional URL pool distributes tile requests deterministically |
 | Authentication | ✅ Supported | URL tokens and standard fetch options are preserved |
@@ -155,3 +155,13 @@ For a queryable `/MapServer/{layerId}`, use `ArcGISFeatureServerSourceLoader` an
 source for numbered MapServer layer URLs; MapServer root URLs retain the imagery source.
 Spatial layer queries require advertised GeoJSON support. Counts, IDs, extents and nonspatial
 tables share the feature-query implementation. This does not add `identify`, `find`, or legend APIs.
+
+## TileMatrix metadata
+
+`getMetadata().tileGrid.matrices` preserves each advertised LOD identifier, resolution, origin, and rectangular tile size. Matrix dimensions are not inferred from service coverage, so ArcGIS grids remain partial and do not expose complete `tileMatrixSet` geometry. The grid retains CRS authority identifiers, preferring `latestWkid`; known Web Mercator aliases normalize to EPSG:3857.
+
+After metadata loads, cached-tile URL methods select an exact `tileMatrix` identifier, otherwise the identifier equal to `z`, then the level at index `z`. Unknown identifiers fail. Before metadata is available, numeric `z` and explicit identifiers pass through. Use `tileMatrix` for noncontiguous service levels.
+
+This metadata does not add projected rendering or reprojection. Dynamic MapServer export remains an XYZ Web Mercator operation. Vector geographic decoding requires a matching XYZ zoom; use raw `getTile()` for native matrix bytes when the requested identifier differs from `z`.
+
+See [Tile matrices and tile matrix sets](/docs/developer-guide/tile-matrices).

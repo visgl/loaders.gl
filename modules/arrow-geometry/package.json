@@ -95,10 +95,10 @@
   "dependencies": {
     "@loaders.gl/schema": "5.0.0-alpha.12",
     "@loaders.gl/schema-utils": "5.0.0-alpha.12",
-    "@math.gl/crs": "5.0.0-alpha.16",
-    "@math.gl/geoarrow": "5.0.0-alpha.16",
-    "@math.gl/polygon": "5.0.0-alpha.16",
-    "@math.gl/wkb": "5.0.0-alpha.16",
+    "@math.gl/crs": "5.0.0-alpha.18",
+    "@math.gl/geoarrow": "5.0.0-alpha.18",
+    "@math.gl/polygon": "5.0.0-alpha.18",
+    "@math.gl/wkb": "5.0.0-alpha.18",
     "apache-arrow": ">= 17.0.0"
   }
 }

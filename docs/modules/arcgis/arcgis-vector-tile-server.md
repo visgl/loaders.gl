@@ -128,3 +128,13 @@ or selectively reuse the service's authored style.
 ## References
 
 - [ArcGIS REST API Vector Tile Service](https://developers.arcgis.com/rest/services-reference/enterprise/vector-tile-service/)
+
+## TileMatrix metadata
+
+`getMetadata().tileGrid.matrices` preserves each advertised LOD identifier, resolution, origin, and rectangular tile size. Matrix dimensions are not inferred from service coverage, so ArcGIS grids remain partial and do not expose complete `tileMatrixSet` geometry. The grid retains CRS authority identifiers, preferring `latestWkid`; known Web Mercator aliases normalize to EPSG:3857.
+
+After metadata loads, cached-tile URL methods select an exact `tileMatrix` identifier, otherwise the identifier equal to `z`, then the level at index `z`. Unknown identifiers fail. Before metadata is available, numeric `z` and explicit identifiers pass through. Use `tileMatrix` for noncontiguous service levels.
+
+This metadata does not add projected rendering or reprojection. Dynamic MapServer export remains an XYZ Web Mercator operation. Vector geographic decoding requires a matching XYZ zoom; use raw `getTile()` for native matrix bytes when the requested identifier differs from `z`.
+
+See [Tile matrices and tile matrix sets](/docs/developer-guide/tile-matrices).

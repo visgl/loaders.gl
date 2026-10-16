@@ -57,3 +57,9 @@ The `@loaders.gl/loader-utils` contains utilities for creating loaders.
 - [`encodeArrayBufferToBase64`](/docs/modules/loader-utils/api-reference/encode-array-buffer-to-base64) encodes binary bytes as padded base64.
 
 - [`initializeWasmModule`](/docs/modules/loader-utils/api-reference/initialize-wasm-module) forwards WASM initialization errors and safely extracts Emscripten exports.
+
+## Tile-grid normalization
+
+Source implementations can share `createTileGrid(crs, matrices)`, `createTileGridMatrix(fields)`, `getRequestedTileMatrix(matrices, getId, parameters)`, and `getTileGridMatrixId(grid, parameters)`. Grid construction preserves incomplete advertised metadata and exposes complete math.gl geometry only when every level validates. Matrix fields may include `resolutionY` for vertical pixel size; `resolution` is horizontal and remains the default for both axes.
+
+Protocol-specific CRS and scale interpretation belongs in source modules. These helpers perform no reprojection, extent-based inference, or source fetching. See [Tile matrices and tile matrix sets](/docs/developer-guide/tile-matrices).

@@ -40,6 +40,12 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
   tone="violet"
 />
 
+## Tile matrix source adapters
+
+- Shared grid normalization now lives in `@loaders.gl/loader-utils`, with math.gl 5.0.0-alpha.18 and independent vertical pixel resolution.
+- ArcGIS map and vector tile sources expose per-level grid metadata and preserve matrix identifiers in cached-tile URLs without inventing matrix dimensions.
+- GeoPackage source metadata discovers raster tile tables, including raster-only packages, and exposes normalized matrix geometry. Raster payload access remains separate.
+
 ## Tile matrix coverage
 
 OGC API Tiles exposes matrix coverage limits and avoids requests outside advertised coverage. WMTS exposes its selected-layer limits through the same `tileGrid.limits` metadata. See the new [tile matrix guide](/docs/developer-guide/tile-matrices).

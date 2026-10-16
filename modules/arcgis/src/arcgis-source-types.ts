@@ -155,7 +155,15 @@ export type ArcGISMapServerMetadata = {
   fullExtent?: {xmin: number; ymin: number; xmax: number; ymax: number; spatialReference?: unknown};
   spatialReference?: unknown;
   tileInfo?: {
-    lods?: {level: number}[];
+    /** Advertised level identifiers and coordinate units per pixel. */
+    lods?: {
+      /** Native cache level identifier. */
+      level: number;
+      /** Coordinate units per pixel. */
+      resolution?: number;
+      /** Advertised scale denominator, retained as service metadata. */
+      scale?: number;
+    }[];
     rows?: number;
     cols?: number;
     format?: string;
