@@ -16,9 +16,9 @@ import * as arrow from 'apache-arrow';
 import {
   decodeParquetPageStatisticsValue,
   getParquetIndexRange
-} from '../src/lib/parquet-page-index';
-import {loadWasm} from '../src/lib/utils/load-wasm';
-import type {ParquetField} from '../src/parquetjs/schema/declare';
+} from '../../tables/src/parquet/lib/parquet-page-index';
+import {loadWasm} from '../../tables/src/parquet/lib/utils/load-wasm';
+import type {ParquetField} from '../../tables/src/parquet/parquetjs/schema/declare';
 
 const ROW_COUNT = 8192;
 const SELECTED_ROW_START = 7000;

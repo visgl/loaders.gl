@@ -11,7 +11,7 @@ import {
   type FlatGeobufHeader,
   readFlatGeobufFeatures,
   readFlatGeobufHeader
-} from '../src/lib/flatgeobuf-reader';
+} from '../../geospatial/src/flatgeobuf/lib/flatgeobuf-reader';
 
 /** Builds a byte vector for a FlatGeobuf properties table. */
 function createByteVector(builder: Builder, bytes: Uint8Array): number {

@@ -2,10 +2,10 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-export {AvroFormat} from './avro-format';
-export type {AvroLoaderOptions} from './avro-loader-types';
-export {AvroLoader} from './avro-loader-types';
-export {AvroWriter} from './avro-writer';
-export type {AvroWriterOptions} from './avro-writer';
-export {encodeAvroInChunks} from './avro-stream';
-export {AvroSchemaLoader} from './avro-schema-loader-types';
+export {AvroFormat} from '@loaders.gl/tables/avro/index';
+export type {AvroLoaderOptions} from '@loaders.gl/tables/avro/index';
+export {AvroLoader} from '@loaders.gl/tables/avro/index';
+export {AvroWriter} from '@loaders.gl/tables/avro/index';
+export type {AvroWriterOptions} from '@loaders.gl/tables/avro/index';
+export {encodeAvroInChunks} from '@loaders.gl/tables/avro/index';
+export {AvroSchemaLoader} from '@loaders.gl/tables/avro/index';

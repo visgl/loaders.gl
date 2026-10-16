@@ -2,22 +2,5 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-export {
-  dehydrateArrowTable,
-  hydrateArrowTable,
-  serializeArrowTableToIPC,
-  deserializeArrowTableFromIPC,
-  serializeArrowWorkerResult,
-  deserializeArrowWorkerResult,
-  type DehydratedArrowData,
-  type DehydratedArrowRecordBatch,
-  type DehydratedArrowTable,
-  type DehydratedArrowVector,
-  type SerializedArrowTableIPC
-} from './lib/utils/arrow-table-transport';
-export {
-  splitArrowBuffers,
-  splitArrowTableBuffers,
-  type SplitArrowBuffersInput,
-  type SplitArrowBuffersOptions
-} from './lib/utils/split-arrow-buffers';
+/** Compatibility entry point owned by @loaders.gl/tables. */
+export * from '@loaders.gl/tables/arrow/transport';

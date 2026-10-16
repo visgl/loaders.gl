@@ -1,6 +1,6 @@
 import {expect, test} from 'vitest';
 import {fetchFile, makeIterator} from '@loaders.gl/core';
-import StreamingJSONParser from '../../../src/lib/json-parser/streaming-json-parser';
+import StreamingJSONParser from '../../../../tables/src/json/lib/json-parser/streaming-json-parser';
 const GEOJSON_PATH = `@loaders.gl/json/test/data/geojson-big.json`;
 test('StreamingJSONParser#geojson', async () => {
   const parser = new StreamingJSONParser();

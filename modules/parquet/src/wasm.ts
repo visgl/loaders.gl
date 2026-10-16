@@ -2,5 +2,5 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-/** Package-local parquet-wasm binary URL for ESM applications and bundlers. */
-export const PARQUET_WASM_URL = new URL('./parquet_wasm_bg.wasm', import.meta.url);
+/** Compatibility entry point owned by @loaders.gl/tables. */
+export * from '@loaders.gl/tables/parquet/wasm';

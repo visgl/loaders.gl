@@ -131,7 +131,9 @@ function deduplicateWorkerScriptsByOutput(scriptNames, scripts) {
  * @returns {boolean} True when the script has no literal worker input, or all inputs exist.
  */
 function hasScriptInputs(packageDirectory, scriptCommand) {
-  const workerInputPaths = scriptCommand.match(/src\/workers\/[^\s]+?\.(?:ts|js|cjs)/g) || [];
+  const workerInputPaths = scriptCommand
+    .split(/\s+/)
+    .filter(argument => /(?:^|\/)src\/(?:[^/\s]+\/)*workers\/[^\s]+\.(?:ts|js|cjs)$/.test(argument));
   return workerInputPaths.every(workerInputPath => existsSync(join(packageDirectory, workerInputPath)));
 }
 

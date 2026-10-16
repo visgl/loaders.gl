@@ -10,7 +10,7 @@ import {
   parseCSVArrayBufferAsArrow,
   parseCSVInArrowBatches,
   parseCSVTextAsArrow
-} from '../src/csv-arrow-table-parser';
+} from '../../tables/src/csv/csv-arrow-table-parser';
 
 /** Reads a column without conflating missing columns and null cells. */
 function getColumnValues(table: ArrowTable, columnName: string): unknown[] {

@@ -1,8 +1,8 @@
 // SPDX-License-Identifier: MIT
 
 import {_ClarinetParser} from '@loaders.gl/json';
-import StreamingJSONParser from '../../../src/lib/json-parser/streaming-json-parser';
-import FastStreamingJSONParser from '../../../src/lib/json-parser/fast-streaming-json-parser';
+import StreamingJSONParser from '../../../../tables/src/json/lib/json-parser/streaming-json-parser';
+import FastStreamingJSONParser from '../../../../tables/src/json/lib/json-parser/fast-streaming-json-parser';
 
 const loadJSON = async relativePath => {
   const url = new URL(relativePath, import.meta.url);

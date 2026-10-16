@@ -2,47 +2,4 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import type {Loader, LoaderOptions} from '@loaders.gl/loader-utils';
-import type {ArrowTable} from '@loaders.gl/schema';
-import {ArrowFormat} from './arrow-format';
-
-// __VERSION__ is injected by babel-plugin-version-inline
-// @ts-ignore TS2304: Cannot find name '__VERSION__'.
-const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : 'latest';
-
-/** ArrowLoader options */
-export type ArrowLoaderOptions = LoaderOptions & {
-  /** ArrowLoader options */
-  arrow?: {
-    /** Shape of returned data */
-    shape: 'arrow-table' | 'columnar-table' | 'array-row-table' | 'object-row-table';
-    /** Debounce time between batches (prevent excessive numbers of small batches) */
-    batchDebounceMs?: number;
-    /** Override the URL to the worker bundle (by default loads from unpkg.com) */
-    workerUrl?: string;
-  };
-};
-
-/** ArrowJS table loader */
-async function preload() {
-  const {ArrowLoaderWithParser} = await import('@loaders.gl/arrow/arrow-loader');
-  const {preloadArrowCompressionDecoders} = await import('../lib/parsers/arrow-compression');
-  await preloadArrowCompressionDecoders();
-  return ArrowLoaderWithParser;
-}
-
-/** Metadata-only ArrowJS table worker loader. */
-export const ArrowWorkerLoader = {
-  dataType: null as unknown as ArrowTable,
-  batchType: null as never,
-
-  ...ArrowFormat,
-  version: VERSION,
-  // worker: true,
-  options: {
-    arrow: {
-      shape: 'columnar-table'
-    }
-  },
-  preload
-} as const satisfies Loader<ArrowTable, never, ArrowLoaderOptions>;
+export * from '@loaders.gl/tables/arrow/exports/arrow-loader';

@@ -14,8 +14,8 @@ import {
   openKMZArchive,
   parseKMLDocument
 } from '@loaders.gl/kml';
-import {parseGPXTextToFeatureCollection} from '../src/gpx-loader-with-parser';
-import {parseTCXTextToFeatureCollection} from '../src/tcx-loader-with-parser';
+import {parseGPXTextToFeatureCollection} from '../../geospatial/src/kml/gpx-loader';
+import {parseTCXTextToFeatureCollection} from '../../geospatial/src/kml/tcx-loader';
 
 const EDGE_KML = `<kml xmlns="http://www.opengis.net/kml/2.2"><Document>
   <name>Edge cases</name><description>All the details</description>

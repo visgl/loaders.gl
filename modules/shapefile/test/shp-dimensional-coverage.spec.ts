@@ -47,7 +47,9 @@ describe('SHP dimensional geometry coverage', () => {
   });
 
   test('rejects unsupported record types deterministically', async () => {
-    const {parseRecordToWKB} = await import('../src/lib/parsers/parse-shp-geometry');
+    const {parseRecordToWKB} = await import(
+      '../../geospatial/src/shapefile/lib/parsers/parse-shp-geometry'
+    );
     const bytes = new ArrayBuffer(4);
     new DataView(bytes).setInt32(0, 99, true);
     expect(() => parseRecordToWKB(new DataView(bytes))).toThrow('unsupported shape type: 99');

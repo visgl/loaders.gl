@@ -22,11 +22,11 @@ import {
   gatherParquetColumns,
   getParquetPredicateColumns,
   validateParquetPredicate
-} from '../src/lib/parquet-predicate';
-import {Statistics} from '../src/parquetjs/parquet-thrift/Statistics';
-import {serializeThrift} from '../src/parquetjs/utils/read-utils';
-import {Uint8ArrayCompactProtocol} from '../src/parquetjs/utils/uint8-array-compact-protocol';
-import {Uint8ArrayTransport} from '../src/parquetjs/utils/uint8-array-transport';
+} from '../../tables/src/parquet/lib/parquet-predicate';
+import {Statistics} from '../../tables/src/parquet/parquetjs/parquet-thrift/Statistics';
+import {serializeThrift} from '../../tables/src/parquet/parquetjs/utils/read-utils';
+import {Uint8ArrayCompactProtocol} from '../../tables/src/parquet/parquetjs/utils/uint8-array-compact-protocol';
+import {Uint8ArrayTransport} from '../../tables/src/parquet/parquetjs/utils/uint8-array-transport';
 
 test('Parquet predicates validate, expose filter columns, and preserve exact row indexes', () => {
   const predicate: ParquetPredicate = {

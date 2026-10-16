@@ -59,9 +59,6 @@
     "README.md"
   ],
   "dependencies": {
-    "@loaders.gl/compression": "5.0.0-alpha.12",
-    "@loaders.gl/loader-utils": "5.0.0-alpha.12",
-    "@loaders.gl/schema": "5.0.0-alpha.12",
-    "apache-arrow": ">= 17.0.0"
+    "@loaders.gl/tables": "5.0.0-alpha.12"
   }
 }

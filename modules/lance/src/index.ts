@@ -2,13 +2,13 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-export {LanceFormat} from './lance-format';
-export {LanceLoader} from './lance-loader-types';
-export type {LanceLoaderOptions} from './lance-loader-types';
-export {LanceSourceLoader, LanceSource} from './lance-source-loader';
-export type {LanceSourceLoaderOptions, LanceSourceMetadata} from './lance-source-loader';
+export {LanceFormat} from '@loaders.gl/tables/lance/index';
+export {LanceLoader} from '@loaders.gl/tables/lance/index';
+export type {LanceLoaderOptions} from '@loaders.gl/tables/lance/index';
+export {LanceSourceLoader, LanceSource} from '@loaders.gl/tables/lance/index';
+export type {LanceSourceLoaderOptions, LanceSourceMetadata} from '@loaders.gl/tables/lance/index';
 export {
   LANCE_SOURCE_CAPABILITIES,
   type LanceSourceCapabilities
-} from './lance-source-capabilities';
-export {LanceDecoderUnavailableError} from './lance-errors';
+} from '@loaders.gl/tables/lance/index';
+export {LanceDecoderUnavailableError} from '@loaders.gl/tables/lance/index';

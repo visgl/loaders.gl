@@ -3,7 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import { expect, test } from "vitest";
-import { PARQUET_CODECS } from '@loaders.gl/parquet/parquetjs/codecs';
+import { PARQUET_CODECS } from '../../../tables/src/parquet/parquetjs/codecs';
 /** Creates an exact byte vector for concise codec fixtures. */
 function bytes(values: number[]): Uint8Array {
     return new Uint8Array(values);

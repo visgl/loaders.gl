@@ -1,7 +1,7 @@
 import {expect, test} from 'vitest';
-import {parseLanceManifest} from '../src/lance-manifest';
-import {LanceSourceLoader} from '../src/lance-source-loader';
-import {LanceDecoderUnavailableError} from '../src/lance-errors';
+import {parseLanceManifest} from '../../tables/src/lance/lance-manifest';
+import {LanceSourceLoader} from '../../tables/src/lance/lance-source-loader';
+import {LanceDecoderUnavailableError} from '../../tables/src/lance/lance-errors';
 
 /** Encodes an unsigned integer as protobuf varint bytes. */
 function varint(value: number): number[] {

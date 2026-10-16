@@ -1,5 +1,5 @@
 import {expect, test} from 'vitest';
-import ClarinetParser from '@loaders.gl/json/lib/clarinet/clarinet';
+import ClarinetParser from '../../../../tables/src/json/lib/clarinet/clarinet';
 export const EVENTS = [
   'value',
   'string',

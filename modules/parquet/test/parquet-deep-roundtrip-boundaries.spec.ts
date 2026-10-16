@@ -6,10 +6,10 @@ import {beforeAll, expect, test} from 'vitest';
 import * as arrow from 'apache-arrow';
 import {BlobFile} from '@loaders.gl/loader-utils';
 import type {DataType, Field, ObjectRowTable} from '@loaders.gl/schema';
-import {encodeTableToParquetJs} from '../src/lib/encoders/encode-table-to-parquet-js';
-import {parseParquetFileToArrowWithJs} from '../src/lib/parsers/parse-parquet-to-arrow-js';
-import {ParquetSource} from '../src/parquet-source-loader';
-import {EdgeInterpolationAlgorithm} from '../src/parquetjs/parquet-thrift';
+import {encodeTableToParquetJs} from '../../tables/src/parquet/lib/encoders/encode-table-to-parquet-js';
+import {parseParquetFileToArrowWithJs} from '../../tables/src/parquet/lib/parsers/parse-parquet-to-arrow-js';
+import {ParquetSource} from '../../tables/src/parquet/parquet-source-loader';
+import {EdgeInterpolationAlgorithm} from '../../tables/src/parquet/parquetjs/parquet-thrift';
 
 const inferredValues = {
   active: true,

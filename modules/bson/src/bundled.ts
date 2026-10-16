@@ -2,5 +2,5 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-export type {BSONLoaderOptions} from './bson-loader-with-parser';
-export {BSONLoaderWithParser as BSONLoader} from './bson-loader-with-parser';
+/** Compatibility entry point; implementation is owned by @loaders.gl/tables. */
+export * from '@loaders.gl/tables/bson/bundled';

@@ -4,12 +4,12 @@
 
 import type {ArrowTable} from '@loaders.gl/schema';
 import {expect, test} from 'vitest';
-import {compressAvro, decompressAvro} from '../src/avro-compression';
-import {AvroLoaderWithParser} from '../src/avro-loader';
-import {parseAvroOCF} from '../src/avro-ocf';
-import {encodeAvroInChunks} from '../src/avro-stream';
-import {AvroWriter} from '../src/avro-writer';
-import {decodeAvroBlockRows} from '../src/lib/parsers/parse-avro';
+import {compressAvro, decompressAvro} from '../../tables/src/avro/avro-compression';
+import {AvroLoaderWithParser} from '../../tables/src/avro/avro-loader';
+import {parseAvroOCF} from '../../tables/src/avro/avro-ocf';
+import {encodeAvroInChunks} from '../../tables/src/avro/avro-stream';
+import {AvroWriter} from '../../tables/src/avro/avro-writer';
+import {decodeAvroBlockRows} from '../../tables/src/avro/lib/parsers/parse-avro';
 
 test('Avro Snappy compression appends and validates the block checksum', async () => {
   const value = new TextEncoder().encode('snappy checksum coverage');

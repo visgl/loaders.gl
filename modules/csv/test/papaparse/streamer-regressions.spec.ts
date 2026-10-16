@@ -1,5 +1,5 @@
 import {expect, test} from 'vitest';
-import Papa from '../../src/papaparse/papaparse';
+import Papa from '../../../tables/src/csv/papaparse/papaparse';
 
 test('Papa.parse handles many tiny string chunks without recursive stack growth', () => {
   const rowCount = 12000;

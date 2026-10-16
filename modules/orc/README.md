@@ -12,3 +12,5 @@ Initial Apache ORC support for loaders.gl.
 The loader returns a loaders.gl `arrow-table` containing an Apache Arrow `Table`. It validates the ORC envelope, parses footer and stripe stream metadata, and currently decodes uncompressed primitive columns, non-null nested structs, null PRESENT streams, and multiple stripes.
 
 `ORCWriter` accepts an Apache Arrow `Table` through the loaders.gl table wrapper and emits uncompressed primitive ORC files. Set `orc.stripeSize` to split output into multiple stripes. Compression, nested types, dictionary encoding, and other RLEv2 variants remain work in progress.
+
+Implementation ownership is now `@loaders.gl/tables/orc`. Existing package entry points remain compatible. See the [grouped package guide](../../docs/developer-guide/grouped-packages.md).

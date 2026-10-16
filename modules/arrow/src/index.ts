@@ -3,66 +3,66 @@
 // Copyright (c) vis.gl contributors
 
 // Types
-export {VECTOR_TYPES} from './lib/types';
+export {VECTOR_TYPES} from '@loaders.gl/tables/arrow/index';
 
 // Arrow loader / Writer
 
-export {ArrowFormat} from './exports/arrow-format';
+export {ArrowFormat} from '@loaders.gl/tables/arrow/index';
 
-export type {ArrowLoaderOptions} from './exports/arrow-loader';
+export type {ArrowLoaderOptions} from '@loaders.gl/tables/arrow/index';
 
-export {ArrowLoader} from './arrow-loader-types';
-export {ArrowSourceLoader, ArrowTableSource} from './arrow-source';
+export {ArrowLoader} from '@loaders.gl/tables/arrow/index';
+export {ArrowSourceLoader, ArrowTableSource} from '@loaders.gl/tables/arrow/index';
 
-export {ArrowWriter, type ArrowWriterOptions} from './arrow-writer';
+export {ArrowWriter, type ArrowWriterOptions} from '@loaders.gl/tables/arrow/index';
 export type {
   ArrowConvertFromOptions,
   ArrowConvertToOptions
-} from './arrow-converter/arrow-converter';
-export {ARROW_CONVERTERS, ArrowConverter} from './arrow-converter/arrow-converter';
+} from '@loaders.gl/tables/arrow/index';
+export {ARROW_CONVERTERS, ArrowConverter} from '@loaders.gl/tables/arrow/index';
 
-export {tightenArrowTableSchemaNullability} from './lib/tighten-arrow-table-schema-nullability';
+export {tightenArrowTableSchemaNullability} from '@loaders.gl/tables/arrow/index';
 
 // Geoarrow loader
 
-export {GeoArrowLoader} from './geoarrow-loader-types';
+export {GeoArrowLoader} from '@loaders.gl/tables/arrow/index';
 
 // EXPERIMENTAL
 
 // Arrow Utils
-export {IndexedArrowVector} from './lib/utils/indexed-arrow-vector';
+export {IndexedArrowVector} from '@loaders.gl/tables/arrow/index';
 export {
   IndexedArrowTable,
   type IndexedArrowTableComparator,
   type IndexedArrowTableFindPredicate,
   type IndexedArrowTablePredicate,
   type IndexedArrowTableRow
-} from './lib/utils/indexed-arrow-table';
+} from '@loaders.gl/tables/arrow/index';
 export {
   MappedArrowTable,
   type MappedArrowTableComparator,
   type MappedArrowTablePredicate
-} from './lib/utils/mapped-arrow-table';
+} from '@loaders.gl/tables/arrow/index';
 export {
   validateArrowTableSchema,
   type ValidateArrowTableSchemaOptions
-} from './lib/utils/arrow-schema-utils';
+} from '@loaders.gl/tables/arrow/index';
 export {
   renameArrowColumns,
   type ArrowFieldNameMap,
   type RenamedArrowColumns
-} from './lib/utils/rename-arrow-columns';
+} from '@loaders.gl/tables/arrow/index';
 export {
   convertArrowTableVariableWidthTypes,
   convertArrowVariableWidthVector,
   type ConvertArrowVariableWidthOptions
-} from './lib/utils/convert-arrow-variable-width';
+} from '@loaders.gl/tables/arrow/index';
 export {
   splitArrowBuffers,
   splitArrowTableBuffers,
   type SplitArrowBuffersInput,
   type SplitArrowBuffersOptions
-} from './lib/utils/split-arrow-buffers';
+} from '@loaders.gl/tables/arrow/index';
 export {
   dehydrateArrowTable,
   hydrateArrowTable,
@@ -73,34 +73,34 @@ export {
   type DehydratedArrowTable,
   type DehydratedArrowVector,
   type SerializedArrowTableIPC
-} from './lib/utils/arrow-table-transport';
+} from '@loaders.gl/tables/arrow/index';
 export {
   compareUTF8,
   parseUTF8BigInt,
   parseUTF8Boolean,
   parseUTF8Number,
   type UTF8Comparison
-} from './lib/utils/utf8-utils';
+} from '@loaders.gl/tables/arrow/index';
 
 export type {
   ParseGeoArrowInput,
   ParseGeoArrowResult,
   TriangulateWKBColumnInput,
   TriangulateWKBColumnResult
-} from './triangulate-on-worker';
+} from '@loaders.gl/tables/arrow/index';
 export {
   TriangulationWorker,
   triangulateOnWorker,
   triangulateWKBColumnOnWorker,
   parseGeoArrowOnWorker
-} from './triangulate-on-worker';
+} from '@loaders.gl/tables/arrow/index';
 export {
   triangulateWKBGeometryColumn,
   type TriangulatedWKBGeometryColumns
-} from './triangulate-wkb-geometry-column';
+} from '@loaders.gl/tables/arrow/index';
 
 // DEPRECATED EXPORTS
 /** @deprecated Use ArrowLoader. */
-export {ArrowWorkerLoader} from './exports/arrow-loader';
+export {ArrowWorkerLoader} from '@loaders.gl/tables/arrow/index';
 /** @deprecated Use GeoArrowLoader. */
-export {GeoArrowWorkerLoader} from './exports/geoarrow-loader';
+export {GeoArrowWorkerLoader} from '@loaders.gl/tables/arrow/index';

@@ -8,7 +8,7 @@ import {
   convertRowTableToArrowTable,
   convertTableBatchesToArrow,
   makeNDJSONArrowBatchIterator
-} from '../src/lib/parsers/convert-row-table-to-arrow';
+} from '../../tables/src/json/lib/parsers/convert-row-table-to-arrow';
 
 /** Creates one-field schema metadata for focused conversion tests. */
 function createSchema(type: Field['type'], nullable = false): Schema {

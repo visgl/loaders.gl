@@ -1,5 +1,7 @@
 # @loaders.gl/kml
 
+This POC keeps this package as a compatibility entry point. Its implementation is owned by `@loaders.gl/geospatial`. See the [grouped package guide](../../docs/developer-guide/grouped-packages.md) for the new imports and migration boundaries.
+
 [loaders.gl](https://loaders.gl/docs) is a collection of framework-independent 3D and geospatial parsers and encoders.
 
 This module contains loaders and writers for KML, KMZ, GPX, and TCX, plus a

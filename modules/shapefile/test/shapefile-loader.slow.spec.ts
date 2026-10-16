@@ -13,7 +13,7 @@ import {
   _BrowserFileSystem as BrowserFileSystem
 } from '@loaders.gl/core';
 import {ShapefileLoader} from '@loaders.gl/shapefile';
-import {DBFLoaderWithParser as DBFLoader} from '../src/dbf-loader-with-parser';
+import {DBFLoaderWithParser as DBFLoader} from '../../geospatial/src/shapefile/dbf-loader';
 import {projectionEngine} from '@math.gl/projection';
 import {equals, withEpsilon} from '@math.gl/core';
 setLoaderOptions({

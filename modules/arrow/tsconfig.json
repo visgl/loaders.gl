@@ -13,25 +13,7 @@
   },
   "references": [
     {
-      "path": "../arrow-geometry"
-    },
-    {
-      "path": "../compression"
-    },
-    {
-      "path": "../core"
-    },
-    {
-      "path": "../loader-utils"
-    },
-    {
-      "path": "../schema"
-    },
-    {
-      "path": "../schema-utils"
-    },
-    {
-      "path": "../wkt"
+      "path": "../tables"
     }
   ]
 }

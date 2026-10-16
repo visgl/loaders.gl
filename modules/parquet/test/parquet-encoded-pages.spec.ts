@@ -4,7 +4,7 @@
 
 import {describe, expect, test} from 'vitest';
 
-import {scanParquetEncodedPages} from '../src/parquetjs/parser/encoded-pages';
+import {scanParquetEncodedPages} from '../../tables/src/parquet/parquetjs/parser/encoded-pages';
 import {
   DataPageHeader,
   DataPageHeaderV2,
@@ -12,10 +12,10 @@ import {
   Encoding,
   PageHeader,
   PageType
-} from '../src/parquetjs/parquet-thrift';
-import {serializeThrift} from '../src/parquetjs/utils/read-utils';
-import {crc32} from '../src/parquetjs/utils/crc32';
-import type {ParquetEncodedPageContext} from '../src/parquetjs/parser/encoded-pages';
+} from '../../tables/src/parquet/parquetjs/parquet-thrift';
+import {serializeThrift} from '../../tables/src/parquet/parquetjs/utils/read-utils';
+import {crc32} from '../../tables/src/parquet/parquetjs/utils/crc32';
+import type {ParquetEncodedPageContext} from '../../tables/src/parquet/parquetjs/parser/encoded-pages';
 
 const REQUIRED_CONTEXT: ParquetEncodedPageContext = {
   column: {

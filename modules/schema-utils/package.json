@@ -27,6 +27,11 @@
       "types": "./dist/index.d.ts",
       "import": "./dist/index.js",
       "require": "./dist/index.cjs"
+    },
+    "./arrow-transport": {
+      "types": "./dist/arrow-transport.d.ts",
+      "import": "./dist/arrow-transport.js",
+      "require": "./dist/arrow-transport.cjs"
     }
   },
   "sideEffects": false,
