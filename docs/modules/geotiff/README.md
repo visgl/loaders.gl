@@ -1,5 +1,5 @@
 ---
-title: '@loaders.gl/geotiff'
+title: GeoTIFF and OME-TIFF
 description: Read GeoTIFF, Cloud Optimized GeoTIFF, and OME-TIFF rasters with windows, bands, and metadata.
 hide_title: true
 page_style: designed
@@ -15,7 +15,7 @@ import {ClientExample} from '@site/src/components';
 <DocPageHeader
   format="geotiff"
   eyebrow="Raster module"
-  title="@loaders.gl/geotiff"
+  title="GeoTIFF and OME-TIFF"
   description="The GeoTIFF module handles georeferencing, tiled imagery, multiband data, and multiscale OME-TIFF. Its source APIs can select native windows and overviews before decoding the pixels."
   tone="orange"
   meta={['GeoTIFF / COG', 'OME-TIFF', 'Windowed raster reads']}
@@ -56,7 +56,7 @@ CRS discovery, current native-CRS behavior, and the raster-warping roadmap.
   </a>
 </p>
 
-The `@loaders.gl/geotiff` module provides loader and source support for
+The `@loaders.gl/raster/geotiff/index` module provides loader and source support for
 [GeoTIFF](/docs/modules/geotiff/formats/geotiff) and OME-TIFF data.
 
 <ReferenceBoundary
@@ -72,7 +72,7 @@ workflows.
 ## Installation
 
 ```bash
-npm install @loaders.gl/core @loaders.gl/geotiff
+npm install @loaders.gl/core @loaders.gl/raster geotiff
 ```
 
 ## Loaders and Sources
@@ -101,3 +101,5 @@ and preserve GeoTIFF/COG range access, overview selection, band selection, and t
 This module imports and wraps [geotiff.js](https://github.com/geotiffjs/geotiff.js/) under MIT license.
 
 The [original TIFF decoder core](/docs/modules/geotiff/tiff-decoder-core) handles supported numeric files and retains geotiff.js compatibility fallback.
+
+The `geotiff` decoder is an optional peer dependency. See the [raster package](../raster/README.md) for parser entry points and source constructors.

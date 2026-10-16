@@ -16,10 +16,11 @@
     "@deck.gl/react": "^9.4.0",
     "@deck.gl/widgets": "^9.4.0",
     "@loaders.gl/deck-layers": "workspace:*",
-    "@loaders.gl/geotiff": "workspace:*",
+    "@loaders.gl/raster": "workspace:*",
     "@luma.gl/core": "^9.4.0",
     "@luma.gl/engine": "^9.4.0",
     "@luma.gl/shadertools": "^9.4.0",
+    "geotiff": "^2.1.0",
     "react": "^19.2.5",
     "react-dom": "^19.2.5"
   },

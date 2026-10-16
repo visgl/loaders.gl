@@ -236,7 +236,7 @@ itself and the separate `Tileset3D.loadOptions` API are not removed by this chan
   Set `gml.shape: 'geojson'` for the previous geometry/FeatureCollection/null result, including
   FeatureCollection batches. WFS source format selection is unchanged.
 
-**@loaders.gl/draco, @loaders.gl/potree, and @loaders.gl/terrain**
+**@loaders.gl/draco, @loaders.gl/potree, and @loaders.gl/raster/terrain/index**
 
  - `DracoLoader`, `PotreeBinLoader`, `TerrainLoader`, and `QuantizedMeshLoader` now return Mesh
    Arrow tables by default. Set the corresponding loader option to `shape: 'mesh'` to preserve
@@ -963,3 +963,23 @@ applications that intentionally consume partial data to `queryFeaturePage()` or 
 explicit `complete`/`reason` fields from `queryFeatures()` before displaying results. Spatial
 GeoJSON output is restricted to EPSG:4326; use `requestCrs` for projected input bounds. See the
 [query guide](/docs/developer-guide/arcgis/feature-layers) for the replacement contracts.
+
+## Raster package consolidation
+
+`@loaders.gl/geotiff`, `@loaders.gl/lerc`, and `@loaders.gl/terrain` have been removed.
+Install `@loaders.gl/raster` and use its metadata-only root or explicit parser entry points.
+
+| Removed import | Replacement |
+| --- | --- |
+| `@loaders.gl/geotiff` | `@loaders.gl/raster/geotiff/index` for existing advanced APIs; root for loader metadata |
+| `@loaders.gl/lerc` | `@loaders.gl/raster` for metadata; `@loaders.gl/raster/lerc` for the parser |
+| `@loaders.gl/terrain` | `@loaders.gl/raster` for metadata and writer; `@loaders.gl/raster/terrain/index` for advanced APIs |
+| `@loaders.gl/terrain/heightmap` | `@loaders.gl/raster/terrain/heightmap` |
+
+Direct parser filenames now use `*-loader` and metadata filenames use `*-loader-types`.
+Replace `*-loader-with-parser` imports with their corresponding `@loaders.gl/raster/<format>/*-loader`.
+Use `@loaders.gl/raster/quantized-mesh` for `QuantizedMeshLoaderWithParser`.
+Worker URLs move to the raster package root; the LERC WASM export moves to `raster/lerc/lerc-wasm.wasm`.
+Install optional peers `geotiff` or `lerc` explicitly when using their decoding backends.
+GeoTIFF/OME-TIFF source metadata at the raster root needs asynchronous `load()`; import the explicit
+source subpath when using synchronous `createDataSource()`.

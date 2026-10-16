@@ -5136,10 +5136,11 @@ __metadata:
     "@loaders.gl/arrow-geometry": "npm:5.0.0-alpha.12"
     "@loaders.gl/i3s": "npm:5.0.0-alpha.12"
     "@loaders.gl/images": "npm:5.0.0-alpha.12"
-    "@loaders.gl/lerc": "npm:5.0.0-alpha.12"
     "@loaders.gl/loader-utils": "npm:5.0.0-alpha.12"
     "@loaders.gl/mvt": "npm:5.0.0-alpha.12"
+    "@loaders.gl/raster": "npm:5.0.0-alpha.12"
     "@loaders.gl/schema": "npm:5.0.0-alpha.12"
+    lerc: "npm:^4.2.0"
   peerDependencies:
     "@loaders.gl/core": ~5.0.0-alpha.0
   languageName: unknown
@@ -5429,19 +5430,6 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@loaders.gl/geotiff@workspace:*, @loaders.gl/geotiff@workspace:modules/geotiff":
-  version: 0.0.0-use.local
-  resolution: "@loaders.gl/geotiff@workspace:modules/geotiff"
-  dependencies:
-    "@loaders.gl/loader-utils": "npm:5.0.0-alpha.12"
-    "@math.gl/crs": "npm:5.0.0-alpha.18"
-    fast-xml-parser: "npm:^5.3.6"
-    geotiff: "npm:^2.1.0"
-  peerDependencies:
-    "@loaders.gl/core": ~5.0.0-alpha.0
-  languageName: unknown
-  linkType: soft
-
 "@loaders.gl/gis@npm:^4.4.3":
   version: 4.5.4
   resolution: "@loaders.gl/gis@npm:4.5.4"
@@ -5573,15 +5561,6 @@ __metadata:
       optional: true
     laz-perf:
       optional: true
-  languageName: unknown
-  linkType: soft
-
-"@loaders.gl/lerc@npm:5.0.0-alpha.12, @loaders.gl/lerc@workspace:*, @loaders.gl/lerc@workspace:modules/lerc":
-  version: 0.0.0-use.local
-  resolution: "@loaders.gl/lerc@workspace:modules/lerc"
-  dependencies:
-    "@loaders.gl/loader-utils": "npm:5.0.0-alpha.12"
-    lerc: "npm:^4.2.0"
   languageName: unknown
   linkType: soft
 
@@ -5765,6 +5744,31 @@ __metadata:
   languageName: unknown
   linkType: soft
 
+"@loaders.gl/raster@npm:^5.0.0-alpha.0, @loaders.gl/raster@workspace:modules/raster":
+  version: 0.0.0-use.local
+  resolution: "@loaders.gl/raster@workspace:modules/raster"
+  dependencies:
+    "@loaders.gl/images": "npm:5.0.0-alpha.12"
+    "@loaders.gl/loader-utils": "npm:5.0.0-alpha.12"
+    "@loaders.gl/schema": "npm:5.0.0-alpha.12"
+    "@loaders.gl/schema-utils": "npm:5.0.0-alpha.12"
+    "@mapbox/martini": "npm:0.2.0"
+    "@math.gl/crs": "npm:5.0.0-alpha.18"
+    fast-xml-parser: "npm:^5.3.6"
+    geotiff: "npm:^2.1.0"
+    lerc: "npm:^4.2.0"
+  peerDependencies:
+    "@loaders.gl/core": ~5.0.0-alpha.0
+    geotiff: ^2.1.0
+    lerc: ^4.2.0
+  peerDependenciesMeta:
+    geotiff:
+      optional: true
+    lerc:
+      optional: true
+  languageName: unknown
+  linkType: soft
+
 "@loaders.gl/scan@workspace:*, @loaders.gl/scan@workspace:modules/scan":
   version: 0.0.0-use.local
   resolution: "@loaders.gl/scan@workspace:modules/scan"
@@ -5911,20 +5915,19 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@loaders.gl/terrain@npm:^5.0.0-alpha.0, @loaders.gl/terrain@workspace:modules/terrain":
-  version: 0.0.0-use.local
-  resolution: "@loaders.gl/terrain@workspace:modules/terrain"
+"@loaders.gl/terrain@npm:^4.4.3":
+  version: 4.5.4
+  resolution: "@loaders.gl/terrain@npm:4.5.4"
   dependencies:
-    "@loaders.gl/arrow": "npm:5.0.0-alpha.12"
-    "@loaders.gl/images": "npm:5.0.0-alpha.12"
-    "@loaders.gl/loader-utils": "npm:5.0.0-alpha.12"
-    "@loaders.gl/schema": "npm:5.0.0-alpha.12"
-    "@loaders.gl/schema-utils": "npm:5.0.0-alpha.12"
-    "@mapbox/martini": "npm:0.2.0"
+    "@loaders.gl/images": "npm:4.5.4"
+    "@loaders.gl/loader-utils": "npm:4.5.4"
+    "@loaders.gl/schema": "npm:4.5.4"
+    "@mapbox/martini": "npm:^0.2.0"
   peerDependencies:
-    "@loaders.gl/core": ~5.0.0-alpha.0
-  languageName: unknown
-  linkType: soft
+    "@loaders.gl/core": ~4.5.0
+  checksum: 10c0/44d2d3e5f9ce16f36ec3ab4f98f69c5f0febed81e242d9ad9bce3f9df46c88c13bbdeba3f8a27fee42bb76420b6af0102f49680d0f350c9976383ca91ab60fbc
+  languageName: node
+  linkType: hard
 
 "@loaders.gl/textures@npm:^5.0.0-alpha.0, @loaders.gl/textures@workspace:modules/textures":
   version: 0.0.0-use.local
@@ -6056,12 +6059,13 @@ __metadata:
   dependencies:
     "@loaders.gl/arrow-geometry": "npm:5.0.0-alpha.12"
     "@loaders.gl/images": "npm:5.0.0-alpha.12"
-    "@loaders.gl/lerc": "npm:5.0.0-alpha.12"
     "@loaders.gl/loader-utils": "npm:5.0.0-alpha.12"
+    "@loaders.gl/raster": "npm:5.0.0-alpha.12"
     "@loaders.gl/schema": "npm:5.0.0-alpha.12"
     "@loaders.gl/xml": "npm:5.0.0-alpha.12"
     "@math.gl/crs": "npm:5.0.0-alpha.18"
     "@math.gl/geospatial": "npm:5.0.0-alpha.18"
+    lerc: "npm:^4.2.0"
   peerDependencies:
     "@loaders.gl/core": ~5.0.0-alpha.0
   languageName: unknown
@@ -6242,7 +6246,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@mapbox/martini@npm:0.2.0":
+"@mapbox/martini@npm:0.2.0, @mapbox/martini@npm:^0.2.0":
   version: 0.2.0
   resolution: "@mapbox/martini@npm:0.2.0"
   checksum: 10c0/6d74edcdb9bc2d5243a0f3a42b6e92dce5a6f9c92481d3478246ca1aabe61adf8bfbd965b32271d81493e2ce49bab9671e19c9fd9e23d8f6f98ffd437f212b6c
@@ -19550,10 +19554,11 @@ __metadata:
     "@deck.gl/widgets": "npm:^9.4.0"
     "@loaders.gl/core": "workspace:*"
     "@loaders.gl/deck-layers": "workspace:*"
-    "@loaders.gl/geotiff": "workspace:*"
+    "@loaders.gl/raster": "workspace:*"
     "@luma.gl/core": "npm:^9.4.0"
     "@luma.gl/engine": "npm:^9.4.0"
     "@luma.gl/shadertools": "npm:^9.4.0"
+    geotiff: "npm:^2.1.0"
     mapbox-gl: "npm:maplibre-gl@^3.6.2"
     maplibre-gl: "npm:^3.6.2"
     react: "npm:^19.2.5"
@@ -26209,10 +26214,11 @@ __metadata:
     "@deck.gl/react": "npm:^9.4.0"
     "@deck.gl/widgets": "npm:^9.4.0"
     "@loaders.gl/deck-layers": "workspace:*"
-    "@loaders.gl/geotiff": "workspace:*"
+    "@loaders.gl/raster": "workspace:*"
     "@luma.gl/core": "npm:^9.4.0"
     "@luma.gl/engine": "npm:^9.4.0"
     "@luma.gl/shadertools": "npm:^9.4.0"
+    geotiff: "npm:^2.1.0"
     react: "npm:^19.2.5"
     react-dom: "npm:^19.2.5"
     typescript: "npm:^5.6.0"
@@ -28409,12 +28415,12 @@ __metadata:
     "@loaders.gl/i3s": "workspace:*"
     "@loaders.gl/json": "workspace:*"
     "@loaders.gl/las": "workspace:*"
-    "@loaders.gl/lerc": "workspace:*"
     "@loaders.gl/loader-utils": "workspace:*"
     "@loaders.gl/obj": "workspace:*"
     "@loaders.gl/orc": "workspace:*"
     "@loaders.gl/parquet": "workspace:*"
     "@loaders.gl/ply": "workspace:*"
+    "@loaders.gl/raster": "workspace:*"
     "@loaders.gl/scan": "workspace:*"
     "@loaders.gl/scene": "workspace:*"
     "@loaders.gl/schema": "workspace:*"
@@ -32163,12 +32169,12 @@ __metadata:
     "@loaders.gl/arrow": "workspace:*"
     "@loaders.gl/core": "workspace:*"
     "@loaders.gl/deck-layers": "workspace:*"
-    "@loaders.gl/geotiff": "workspace:*"
     "@loaders.gl/json": "workspace:*"
     "@loaders.gl/loader-utils": "workspace:*"
     "@loaders.gl/mlt": "workspace:*"
     "@loaders.gl/mvt": "workspace:*"
     "@loaders.gl/pmtiles": "workspace:*"
+    "@loaders.gl/raster": "workspace:*"
     "@luma.gl/core": "npm:^9.4.0"
     "@luma.gl/engine": "npm:^9.4.0"
     "@luma.gl/shadertools": "npm:^9.4.0"

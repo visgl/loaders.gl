@@ -63,3 +63,18 @@ GeoJSON follows Excel's transport split: grouped metadata defers Arrow hydration
 Shared Arrow table transport and buffer splitting now belong to `@loaders.gl/schema-utils/arrow-transport`. Arrow and tables transport exports remain compatibility facades. The original Arrow coverage gate still includes the moved transport implementation, while schema-utils also enforces its unchanged owning-package gate. Geospatial depends only on the focused geometry and schema utility packages, avoiding a dependency on all table engines.
 
 Internal format code imports focused transport, UTF-8, and indexed-table helpers directly. Parquet BSON columns use the BSON encoding/decoding kernels rather than the public writer object. This keeps synchronous writer APIs compatible while preventing a deferred parser from anchoring BSON or source infrastructure in the initial metadata chunk. The emitted chunk-graph checks enforce that boundary.
+
+## Raster consolidation
+
+`@loaders.gl/raster` owns GeoTIFF (including numeric TIFF, COG and OME-TIFF), LERC, image-encoded
+terrain and quantized mesh. Its root exports metadata loaders, writer and public types; parser
+implementations use `/geotiff`, `/lerc`, `/terrain` and `/quantized-mesh` subpaths.
+GeoTIFF and OME-TIFF source constructors remain on explicit source subpaths. Their metadata-only
+root exports preload the constructors for asynchronous core APIs.
+
+The standalone GeoTIFF, LERC and terrain packages are removed rather than retained as forwarding
+packages. Install optional `geotiff` and `lerc` peers when using those engines. Existing format
+option namespaces and output defaults remain unchanged. Terrain worker assets now belong to the
+raster package, while the LERC WASM export is `@loaders.gl/raster/lerc/lerc-wasm.wasm`.
+Each moved format retains its original independent browser and merged coverage gates.
+ArcGIS services remain in `@loaders.gl/arcgis`.

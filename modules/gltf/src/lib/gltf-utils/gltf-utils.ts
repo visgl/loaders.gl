@@ -5,7 +5,7 @@
 import {assert} from '../utils/assert';
 
 import type {GLTFPostprocessed} from '../types/gltf-postprocessed-schema';
-import {BYTES, COMPONENTS} from '../gltf-utils/gltf-constants';
+import {BYTES, COMPONENTS} from './gltf-constants';
 
 /**
  * Memory needed to store texture and all mipmap levels 1 + 1/4 + 1/16 + 1/64 + ...

@@ -61,7 +61,7 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
 ## Usage
 
 ```typescript
-import {TerrainLoader} from '@loaders.gl/terrain';
+import {TerrainLoader} from '@loaders.gl/raster';
 import {load} from '@loaders.gl/core';
 
 const data = await load(url, TerrainLoader, options);
@@ -77,7 +77,7 @@ For [Terrarium](https://github.com/tilezen/joerd/blob/master/docs/formats.md) im
 including Mapterhorn terrain WebP tiles, use the named preset:
 
 ```typescript
-import {TERRARIUM_ELEVATION_DECODER} from '@loaders.gl/terrain/heightmap';
+import {TERRARIUM_ELEVATION_DECODER} from '@loaders.gl/raster/terrain/heightmap';
 
 const terrain = await load(url, TerrainLoader, {
   terrain: {elevationDecoder: TERRARIUM_ELEVATION_DECODER}

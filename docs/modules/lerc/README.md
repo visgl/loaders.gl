@@ -11,7 +11,7 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
 <DocPageHeader
   eyebrow="LERC module"
   title="Decode compact raster values with bounded error."
-  description="`@loaders.gl/lerc` exposes LERC decoding for raster and imagery pipelines. It keeps the compressed payload at the edge and returns typed numeric data for the application or a higher-level loader."
+  description="`@loaders.gl/raster/lerc/index` exposes LERC decoding for raster and imagery pipelines. It keeps the compressed payload at the edge and returns typed numeric data for the application or a higher-level loader."
   tone="cyan"
   meta={['LERC', 'Raster data', 'WASM-backed decoder']}
   links={[
@@ -47,14 +47,14 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
 ## Installation
 
 ```bash
-npm install @loaders.gl/core @loaders.gl/lerc
+npm install @loaders.gl/core @loaders.gl/raster lerc
 ```
 
 ## Usage
 
 ```typescript
 import {load} from '@loaders.gl/core';
-import {LERCLoader} from '@loaders.gl/lerc';
+import {LERCLoader} from '@loaders.gl/raster';
 
 const raster = await load('raster.lerc', LERCLoader);
 ```
@@ -62,3 +62,5 @@ const raster = await load('raster.lerc', LERCLoader);
 See the [loader reference](/docs/modules/lerc/api-reference/lerc-loader) for decoded bands, masks,
 statistics, and options. LERC output contains numeric raster values; the application
 chooses how to visualize them.
+
+The `lerc` decoder is an optional peer dependency. See the [raster package](../raster/README.md) for parser entry points and source constructors.

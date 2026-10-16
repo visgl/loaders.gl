@@ -8,7 +8,7 @@ import {createRoot} from 'react-dom/client';
 import DeckGL from '@deck.gl/react';
 
 import {TerrainLayer} from '@deck.gl/geo-layers';
-import {TerrainLoader} from '@loaders.gl/terrain';
+import {TerrainLoader} from '@loaders.gl/raster';
 
 // Set your mapbox token here
 const MAPBOX_TOKEN = process.env.MapboxAccessToken; // eslint-disable-line

@@ -52,7 +52,7 @@ import {ClientExample} from '@site/src/components';
   </a>
 </p>
 
-- _[`@loaders.gl/geotiff`](/docs/modules/geotiff)_
+- _[`@loaders.gl/raster/geotiff/index`](/docs/modules/geotiff)_
 - _[OGC Standard](https://www.ogc.org/standard/geotiff/)_
 
 ## GeoTIFF Metadata

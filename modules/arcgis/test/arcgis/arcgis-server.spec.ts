@@ -1,5 +1,5 @@
 import {expect, test} from 'vitest';
-import {LERCLoader} from '@loaders.gl/lerc';
+import {LERCLoader} from '@loaders.gl/raster';
 import {
   ArcGISFeatureServerSourceLoader,
   ArcGISVectorSource,

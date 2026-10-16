@@ -64,7 +64,7 @@ There are two major versions, known as "Lerc1" and "Lerc2".
 ## Usage
 
 ```typescript
-import {LERCLoader} from '@loaders.gl/lerc';
+import {LERCLoader} from '@loaders.gl/raster';
 import {load} from '@loaders.gl/core';
 
 const url = 'raster.lerc';
