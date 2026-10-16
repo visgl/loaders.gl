@@ -54,8 +54,10 @@ The `@loaders.gl/geopackage` module handles the OGC [GeoPackage](https://www.geo
 ## Installation
 
 ```bash
-npm install @loaders.gl/geopackage
+npm install @loaders.gl/geopackage sql.js
 ```
+
+SQL.js is an optional peer dependency. Applications using the grouped package should install `@loaders.gl/geospatial sql.js`; other geospatial formats do not require SQL.js. The existing `geopackage.sqlJsCDN` option controls WASM asset resolution and does not replace the JavaScript peer dependency.
 
 ## Loaders and Writers
 

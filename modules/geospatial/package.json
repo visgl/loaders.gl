@@ -269,16 +269,24 @@
     "@loaders.gl/schema-utils": "5.0.0-alpha.12",
     "@loaders.gl/xml": "5.0.0-alpha.12",
     "@loaders.gl/zip": "5.0.0-alpha.12",
-    "@math.gl/crs": "5.0.0-alpha.16",
-    "@math.gl/projection": "5.0.0-alpha.16",
+    "@math.gl/crs": "5.0.0-alpha.18",
+    "@math.gl/projection": "5.0.0-alpha.18",
     "@types/sql.js": "^1.4.5",
-    "apache-arrow": ">= 17.0.0",
-    "sql.js": "1.14.1"
+    "apache-arrow": ">= 17.0.0"
   },
   "peerDependencies": {
-    "@loaders.gl/core": "~5.0.0-alpha.0"
+    "@loaders.gl/core": "~5.0.0-alpha.0",
+    "sql.js": "^1.14.1"
   },
   "browser": {
     "fs": false
+  },
+  "peerDependenciesMeta": {
+    "sql.js": {
+      "optional": true
+    }
+  },
+  "devDependencies": {
+    "sql.js": "1.14.1"
   }
 }

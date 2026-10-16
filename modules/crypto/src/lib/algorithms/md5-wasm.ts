@@ -61,6 +61,15 @@ export default async function md5WASM(data) {
   return makeMD5WA()(input, instance.exports, memoryView);
 }
 
+/** Calculates a synchronous hexadecimal MD5 digest using the vendored JavaScript implementation. */
+export function calculateMD5Sync(data: ArrayBuffer | ArrayBufferView | string): string {
+  const input = normalizeInput(data);
+  if (!input) {
+    throw new TypeError(parmTypeErrStr);
+  }
+  return makeMD5JS()(input);
+}
+
 function makeMD5WA() {
   var _loop, loops;
   var getA, setA, getB, setB, getC, setC, getD, setD, _getX, _setX, memView;

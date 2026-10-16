@@ -356,6 +356,13 @@ test('I3S/SLPK controls require selection, mapping and metric error and download
       await expect
         .poll(() => readSettledControl(() => container.querySelector('a')?.download))
         .toBe('selected-mesh.3tz');
+      await React.act(async () => {
+        await userEvent.click(
+          Array.from(container.querySelectorAll('button')).find(
+            element => element.textContent === 'Edit settings'
+          )!
+        );
+      });
     }
   } finally {
     await React.act(async () => root.unmount());
@@ -413,4 +420,33 @@ test('conversion rejects altered nonleaf or missing-content declarations before 
     ).rejects.toThrow(/inspected leaf/);
   }
   expect(fetcher).not.toHaveBeenCalled();
+});
+
+test('I3S Finish propagates through the selected source and finalizes written meshes', async () => {
+  const fetcher = createI3SFixtureFetcher(fixture.resources);
+  const inspection = await inspectI3SConversionInput(
+    'https://example.invalid/layers/0',
+    new AbortController().signal,
+    fetcher
+  );
+  let finishRequested = false;
+  const output = await convertSelectedI3SContents(
+    inspection,
+    ['1'],
+    '3tz',
+    new AbortController().signal,
+    () => {},
+    fetcher,
+    fixture.features,
+    2,
+    {
+      shouldFinish: () => finishRequested,
+      onProgress(progress) {
+        if (progress.completedUnits === 1) finishRequested = true;
+      }
+    }
+  );
+  expect(output.partial).toBe(true);
+  expect(output.report.outputResources).toBe(1);
+  expect(output.file.size).toBeGreaterThan(0);
 });

@@ -84,7 +84,7 @@ export type TileGrid = {
   tileSize?: [number, number];
   /** Top-left origin in grid coordinates. */
   origin?: [number, number];
-  /** Coordinate units per pixel in matrix order, when CRS units are known. */
+  /** Horizontal coordinate units per pixel in matrix order, when CRS units are known. */
   resolutions?: number[];
   /** Matrix identifiers in zoom order. */
   matrixIds?: string[];
@@ -116,8 +116,10 @@ export type TileGridLimits = TileMatrixLimits & {
 export type TileGridMatrix = {
   /** Matrix identifier used in tile requests. */
   id: string;
-  /** Coordinate units per pixel, when CRS units are known. */
+  /** Horizontal coordinate units per pixel, also vertical unless resolutionY is supplied. */
   resolution?: number;
+  /** Vertical coordinate units per pixel; defaults to `resolution` when omitted. */
+  resolutionY?: number;
   /**
    * Origin in grid coordinates, at the corner named by `cornerOfOrigin`. Sources swap it to XY
    * only where they know the axis order; see each source's documentation.

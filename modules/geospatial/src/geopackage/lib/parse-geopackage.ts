@@ -167,6 +167,13 @@ export async function loadGeoPackageDatabase(
 
 /** Reads vector table metadata by joining `gpkg_contents` and `gpkg_geometry_columns`. */
 export function listGeoPackageVectorTables(database: Database): GeoPackageVectorTableInfo[] {
+  // Raster-only GeoPackages need not contain the optional feature schema.
+  if (
+    !database.exec(
+      "SELECT 1 FROM sqlite_master WHERE type = 'table' AND name = 'gpkg_geometry_columns'"
+    ).length
+  )
+    return [];
   const statement = database.prepare(`
     SELECT
       gpkg_contents.table_name,

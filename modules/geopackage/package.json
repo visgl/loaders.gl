@@ -54,10 +54,17 @@
     "@loaders.gl/geospatial": "5.0.0-alpha.12"
   },
   "peerDependencies": {
-    "@loaders.gl/core": "~5.0.0-alpha.0"
+    "@loaders.gl/core": "~5.0.0-alpha.0",
+    "sql.js": "^1.14.1"
   },
   "gitHead": "8a9e77743ea90a7be4ebec572416bb50ca9d73c3",
   "devDependencies": {
-    "apache-arrow": ">= 17.0.0"
+    "apache-arrow": ">= 17.0.0",
+    "sql.js": "1.14.1"
+  },
+  "peerDependenciesMeta": {
+    "sql.js": {
+      "optional": true
+    }
   }
 }

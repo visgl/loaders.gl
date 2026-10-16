@@ -65,7 +65,7 @@ test('grouped and legacy CommonJS roots expose compatible metadata loaders', () 
   }
 });
 
-test('geospatial does not transitively install the table engine group', () => {
+test('geospatial does not transitively install table engines or SQL.js', () => {
   const dependencies = new Set<string>();
   /** Traverses workspace dependencies and required peers, omitting optional peers. */
   function visitPackage(packageName: string): void {
@@ -102,7 +102,8 @@ test('geospatial does not transitively install the table engine group', () => {
     '@loaders.gl/json',
     'bson',
     'xlsx',
-    'parquet-wasm'
+    'parquet-wasm',
+    'sql.js'
   ])
     expect(dependencies.has(dependency), dependency).toBe(false);
 });
@@ -118,4 +119,27 @@ test.each([
   );
   expect(declaration).not.toMatch(new RegExp('export declare const ' + exportName + ':\\s*any;'));
   expect(declaration).toContain('export declare const ' + exportName + ': {');
+});
+
+test.each(['geospatial', 'geopackage'])('%s declares SQL.js as an optional peer', packageName => {
+  const manifest = JSON.parse(
+    fileSystem.readFileSync(
+      path.join(REPOSITORY_ROOT, 'modules', packageName, 'package.json'),
+      'utf8'
+    )
+  );
+  expect(manifest.dependencies).not.toHaveProperty('sql.js');
+  expect(manifest.peerDependencies['sql.js']).toBe('^1.14.1');
+  expect(manifest.peerDependenciesMeta['sql.js']).toEqual({optional: true});
+});
+
+test.each([
+  ['bson', '4.2.0'],
+  ['xlsx', '^0.18.5']
+])('tables declares %s as optional', (dependency, version) => {
+  const manifest = JSON.parse(
+    fileSystem.readFileSync(path.join(REPOSITORY_ROOT, 'modules/tables/package.json'), 'utf8')
+  );
+  expect(manifest.dependencies).not.toHaveProperty(dependency);
+  expect(manifest.optionalDependencies[dependency]).toBe(version);
 });

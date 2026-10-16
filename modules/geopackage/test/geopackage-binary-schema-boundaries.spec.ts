@@ -34,7 +34,13 @@ function createDatabase(
   dataColumns: Record<string, unknown>[] | Error = new Error('no such table: gpkg_data_columns')
 ): Database {
   return {
-    exec: vi.fn(() => (values.length ? [{columns, values}] : [])),
+    exec: vi.fn((query: string) =>
+      query.includes('sqlite_master')
+        ? [{columns: ['1'], values: [[1]]}]
+        : values.length
+          ? [{columns, values}]
+          : []
+    ),
     prepare: vi.fn((query: string) => {
       const isDataColumns = query.includes('gpkg_data_columns');
       if (isDataColumns && dataColumns instanceof Error) throw dataColumns;

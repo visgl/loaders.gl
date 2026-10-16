@@ -33,6 +33,8 @@ import {
   selectGeoPackageVectorTable
 } from './lib/parse-geopackage';
 import {GeoPackageFormat} from './geopackage-format';
+import {listGeoPackageTileTables} from './lib/geopackage-tile-metadata';
+import type {GeoPackageTileTableMetadata} from './lib/geopackage-tile-metadata';
 
 // __VERSION__ is injected by babel-plugin-version-inline
 // @ts-ignore TS2304: Cannot find name '__VERSION__'.
@@ -54,7 +56,10 @@ export type GeoPackageSourceTableMetadata = {
 };
 
 export type GeoPackageSourceMetadata = {
+  /** Feature tables available for Arrow reads. */
   tables: GeoPackageSourceTableMetadata[];
+  /** Raster tile-table metadata; tile payload reads are not provided by this source. */
+  tileTables: GeoPackageTileTableMetadata[];
 };
 
 export type GeoPackageSourceOptions = DataSourceOptions &
@@ -194,35 +199,40 @@ export class GeoPackageDataSource
       arrayBuffer,
       this.options.geopackage?.sqlJsCDN ?? DEFAULT_SQLJS_CDN
     );
-    const vectorTables = listGeoPackageVectorTables(database);
-    const projections = getProjections(database);
-    const defaultTable = selectGeoPackageVectorTable(
-      vectorTables,
-      this.options.geopackage?.table || undefined
-    );
+    try {
+      const vectorTables = listGeoPackageVectorTables(database);
+      const projections = getProjections(database);
+      const defaultTable =
+        vectorTables.length || this.options.geopackage?.table
+          ? selectGeoPackageVectorTable(vectorTables, this.options.geopackage?.table || undefined)
+          : undefined;
 
-    return {
-      tables: vectorTables.map(vectorTable => {
-        const crs = vectorTable.srsId === undefined ? undefined : projections[vectorTable.srsId];
-        return {
-          schema: getGeoPackageArrowSchema(database, vectorTable, crs),
-          name: vectorTable.name,
-          identifier: vectorTable.identifier,
-          description: vectorTable.description,
-          srsId: vectorTable.srsId,
-          crs,
-          geometryColumnName: vectorTable.geometryColumnName,
-          geometryTypeName: vectorTable.geometryTypeName,
-          bounds: vectorTable.bounds
-            ? [
-                [vectorTable.bounds.minX, vectorTable.bounds.minY],
-                [vectorTable.bounds.maxX, vectorTable.bounds.maxY]
-              ]
-            : undefined,
-          isDefault: vectorTable.name === defaultTable.name
-        };
-      })
-    };
+      return {
+        tileTables: listGeoPackageTileTables(database),
+        tables: vectorTables.map(vectorTable => {
+          const crs = vectorTable.srsId === undefined ? undefined : projections[vectorTable.srsId];
+          return {
+            schema: getGeoPackageArrowSchema(database, vectorTable, crs),
+            name: vectorTable.name,
+            identifier: vectorTable.identifier,
+            description: vectorTable.description,
+            srsId: vectorTable.srsId,
+            crs,
+            geometryColumnName: vectorTable.geometryColumnName,
+            geometryTypeName: vectorTable.geometryTypeName,
+            bounds: vectorTable.bounds
+              ? [
+                  [vectorTable.bounds.minX, vectorTable.bounds.minY],
+                  [vectorTable.bounds.maxX, vectorTable.bounds.maxY]
+                ]
+              : undefined,
+            isDefault: vectorTable.name === defaultTable?.name
+          };
+        })
+      };
+    } finally {
+      database.close();
+    }
   }
 
   private async getArrayBuffer(): Promise<ArrayBuffer> {

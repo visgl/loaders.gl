@@ -18,3 +18,15 @@ and exposed validators. Open downloaded results in the [archive viewer](/example
 This app uses the existing [portable v5 conversion APIs](/docs/modules/tile-converter/api-reference/v5-conversion)
 and a disposable conversion worker. Input, mesh, precision and archive budgets are unchanged.
 See **Supported profiles and limits** in the app for the qualified subset and exclusions.
+
+The progress panel shares its layout with the [PMTiles converter](/examples/tiles/pmtiles-authoring).
+It shows conversion stages, the current mesh, meshes written, decoded mesh input bytes,
+acknowledged archive bytes and elapsed time. One selected content can contain multiple mesh
+primitives, so the total stays indeterminate until conversion finishes.
+
+**Finish & download** completes any in-flight mesh, stops before decoding another mesh,
+and finalizes a valid SLPK or 3TZ containing the work already written. It also works with direct
+file saving. **Cancel** terminates the worker and discards the export; a pending file save aborts
+before commit. Cancel is disabled once final file commit begins. Finish requires at least one
+written mesh and is disabled during packaging. Settings collapse during conversion; use
+**Edit settings** afterward to change the selection or retry.

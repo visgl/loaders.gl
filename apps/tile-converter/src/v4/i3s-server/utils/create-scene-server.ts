@@ -1,5 +1,5 @@
 import {SceneLayer3D} from '@loaders.gl/i3s';
-import {v4 as uuidv4} from 'uuid';
+import {randomUUID} from 'node:crypto';
 
 /**
  * Create `/SceneServer` response
@@ -9,7 +9,7 @@ import {v4 as uuidv4} from 'uuid';
  */
 export const createSceneServer = (name: string, layer: SceneLayer3D) => {
   return {
-    serviceItemId: uuidv4().replace(/-/gi, ''),
+    serviceItemId: randomUUID().replace(/-/gi, ''),
     serviceName: name,
     name,
     currentVersion: '10.7',

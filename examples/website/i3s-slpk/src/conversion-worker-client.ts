@@ -1,3 +1,4 @@
+import type {ConversionProgressSnapshot} from '../../common/conversion-progress';
 import type {TileConversionReport} from '@loaders.gl/tile-converter/v5/core';
 import type {
   MeshSourceFeatureOptions,
@@ -31,6 +32,20 @@ export interface ConversionWorkerRequest {
   readonly geometricError?: number;
 }
 
+/** Page-owned observers and an independent cooperative Finish signal. */
+export interface ConversionWorkerControls {
+  /** Measured conversion and acknowledged archive-transfer counters. */
+  readonly onProgress?: (progress: ConversionProgressSnapshot) => void;
+  /** Requests finalization at the next mesh boundary. */
+  readonly finishSignal?: AbortSignal;
+}
+
+/** Cooperative control, never used as an archive acknowledgement. */
+export interface ConversionWorkerFinishRequest {
+  /** Stop pulling meshes and package completed work. */
+  readonly type: 'finish';
+}
+
 /** Worker replies transfer one acknowledged archive chunk at a time, then completion metadata. */
 export type ConversionWorkerMessage =
   | {
@@ -38,6 +53,8 @@ export type ConversionWorkerMessage =
       readonly type: 'progress';
       /** Current conversion phase. */
       readonly message: string;
+      /** Optional measured counters; legacy string-only observers remain supported. */
+      readonly progress?: ConversionProgressSnapshot;
     }
   | {
       /** Archive chunk discriminator. */
@@ -58,6 +75,8 @@ export type ConversionWorkerMessage =
       readonly mimeType: string;
       /** Completed conversion diagnostics. */
       readonly report: TileConversionReport;
+      /** Finish stopped conversion before natural exhaustion. */
+      readonly partial?: boolean;
     }
   | {
       /** Failure discriminator. */
@@ -80,6 +99,8 @@ export interface SavedConversionResult {
   readonly size: number;
   /** Conversion diagnostics, published only after the destination closes successfully. */
   readonly report: TileConversionReport;
+  /** Finish emitted a completed subset. */
+  readonly partial?: boolean;
 }
 
 /** Runs conversion in a disposable worker and collects bounded Blob parts for download/preview. */
@@ -90,7 +111,8 @@ export async function convertSelectedContentsInWorker(
   signal: AbortSignal,
   onProgress: (message: string) => void,
   features?: ConversionFeatureOptions,
-  geometricError?: number
+  geometricError?: number,
+  controls: ConversionWorkerControls = {}
 ): Promise<ConversionResult> {
   const archiveParts: Blob[] = [];
   try {
@@ -100,12 +122,14 @@ export async function convertSelectedContentsInWorker(
       onProgress,
       chunk => {
         archiveParts.push(new Blob([chunk]));
-      }
+      },
+      controls
     );
     signal.throwIfAborted();
     return {
       file: new File(archiveParts, result.name, {type: result.mimeType}),
-      report: result.report
+      report: result.report,
+      ...(result.partial ? {partial: true} : {})
     };
   } finally {
     archiveParts.length = 0;
@@ -128,7 +152,8 @@ export async function saveSelectedContentsInWorker(
   onProgress: (message: string) => void,
   destination: WritableStream<Uint8Array<ArrayBuffer>>,
   features?: ConversionFeatureOptions,
-  geometricError?: number
+  geometricError?: number,
+  controls: ConversionWorkerControls = {}
 ): Promise<SavedConversionResult> {
   const writer = destination.getWriter();
   try {
@@ -136,13 +161,18 @@ export async function saveSelectedContentsInWorker(
       {inspection, resourceIds, format, features, geometricError},
       signal,
       onProgress,
-      chunk => writer.write(chunk)
+      chunk => writer.write(chunk),
+      controls
     );
     signal.throwIfAborted();
     onProgress('Saving archive');
     signal.throwIfAborted();
     await writer.close();
-    return {size: result.totalBytes, report: result.report};
+    return {
+      size: result.totalBytes,
+      report: result.report,
+      ...(result.partial ? {partial: true} : {})
+    };
   } catch (error) {
     // Preserve the conversion/write error even if the destination is already errored or closed.
     try {
@@ -161,7 +191,8 @@ async function runConversionWorker(
   request: ConversionWorkerRequest,
   signal: AbortSignal,
   onProgress: (message: string) => void,
-  writeChunk: (chunk: Uint8Array<ArrayBuffer>) => void | Promise<void>
+  writeChunk: (chunk: Uint8Array<ArrayBuffer>) => void | Promise<void>,
+  controls: ConversionWorkerControls
 ): Promise<Extract<ConversionWorkerMessage, {type: 'result'}>> {
   signal.throwIfAborted();
   const worker = new Worker(new URL('./conversion-worker.ts', import.meta.url), {type: 'module'});
@@ -170,6 +201,19 @@ async function runConversionWorker(
     let writing = false;
     let receivedBytes = 0;
     let nextSequence = 0;
+    let lastProgress: ConversionProgressSnapshot | undefined;
+    let lastPublished = -Infinity;
+    /** Throttles archive-byte updates while preserving stage and mesh completion changes. */
+    function reportProgress(progress: ConversionProgressSnapshot): void {
+      const force =
+        lastProgress?.phase !== progress.phase ||
+        lastProgress?.completedUnits !== progress.completedUnits;
+      lastProgress = progress;
+      if (force || performance.now() - lastPublished >= 100) {
+        controls.onProgress?.(progress);
+        lastPublished = performance.now();
+      }
+    }
     /** Releases the worker and signal subscription on every completion path. */
     function finish(
       error?: unknown,
@@ -178,6 +222,7 @@ async function runConversionWorker(
       if (settled) return;
       settled = true;
       signal.removeEventListener('abort', cancel);
+      controls.finishSignal?.removeEventListener('abort', requestFinish);
       worker.onmessage = null;
       worker.onerror = null;
       worker.onmessageerror = null;
@@ -189,7 +234,17 @@ async function runConversionWorker(
     function cancel(): void {
       finish(signal.reason);
     }
+    /** Preserves the worker so it can finalize a valid partial archive. */
+    function requestFinish(): void {
+      if (settled) return;
+      try {
+        worker.postMessage({type: 'finish'} satisfies ConversionWorkerFinishRequest);
+      } catch (error) {
+        finish(error);
+      }
+    }
     signal.addEventListener('abort', cancel, {once: true});
+    controls.finishSignal?.addEventListener('abort', requestFinish, {once: true});
     worker.onmessage = async (event: MessageEvent<ConversionWorkerMessage>) => {
       if (settled) return;
       try {
@@ -198,6 +253,11 @@ async function runConversionWorker(
         switch (message.type) {
           case 'progress':
             onProgress(message.message);
+            if (message.progress) {
+              if (!validateProgress(message.progress))
+                throw new Error('Invalid conversion progress.');
+              reportProgress(message.progress);
+            }
             break;
           case 'chunk':
             if (
@@ -211,6 +271,8 @@ async function runConversionWorker(
             await writeChunk(message.chunk);
             if (settled) return;
             receivedBytes += byteLength;
+            if (lastProgress)
+              reportProgress({...lastProgress, phase: 'packaging', outputBytes: receivedBytes});
             nextSequence++;
             writing = false;
             worker.postMessage({
@@ -244,8 +306,31 @@ async function runConversionWorker(
     }
     try {
       worker.postMessage(request);
+      if (controls.finishSignal?.aborted) requestFinish();
     } catch (error) {
       finish(error);
     }
   });
+}
+
+/** Validates optional measured snapshots before publishing them to the UI. */
+function validateProgress(progress: ConversionProgressSnapshot): boolean {
+  return Boolean(
+    progress &&
+      ['reading', 'parsing', 'tiles', 'packaging', 'complete'].includes(progress.phase) &&
+      Number.isSafeInteger(progress.completedUnits) &&
+      progress.completedUnits >= 0 &&
+      progress.completedUnits <= CONVERSION_LIMITS.maxMeshResources &&
+      (progress.totalUnits === null ||
+        (Number.isSafeInteger(progress.totalUnits) &&
+          progress.totalUnits >= progress.completedUnits &&
+          progress.totalUnits <= CONVERSION_LIMITS.maxMeshResources)) &&
+      Number.isSafeInteger(progress.bytesRead) &&
+      progress.bytesRead !== null &&
+      progress.bytesRead >= 0 &&
+      Number.isSafeInteger(progress.outputBytes) &&
+      progress.outputBytes >= 0 &&
+      progress.outputBytes <= CONVERSION_LIMITS.maxOutputBytes &&
+      (progress.currentResource === undefined || typeof progress.currentResource === 'string')
+  );
 }

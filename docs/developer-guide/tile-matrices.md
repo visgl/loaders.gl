@@ -11,7 +11,8 @@ This distinction matters outside familiar Web Mercator maps: a projected service
 | `id` | Identifier sent to the source, such as `coarse` or `EPSG:3857:3` |
 | `origin` | Grid corner in normalized X/Y coordinates, in CRS units |
 | `cornerOfOrigin` | `topLeft` (rows run down) or `bottomLeft` (rows run up) |
-| `resolution` | CRS units represented by one pixel |
+| `resolution` | Horizontal CRS units represented by one pixel; also vertical unless `resolutionY` is supplied |
+| `resolutionY` | Optional vertical CRS units represented by one pixel |
 | `tileSize` | Tile width and height in pixels |
 | `matrixSize` | Grid width and height in tiles |
 
@@ -19,7 +20,7 @@ For a top-left matrix, a tile at column `x`, row `y` spans:
 
 ```text
 width  = tileSize[0] * resolution
-height = tileSize[1] * resolution
+height = tileSize[1] * (resolutionY ?? resolution)
 minX   = origin[0] + x * width
 maxY   = origin[1] - y * height
 bounds = [minX, maxY - height, minX + width, maxY]
@@ -89,6 +90,6 @@ WMTS and OGC API Tiles return `null` for unavailable tile content without issuin
 
 A source can expose a projected matrix set even when the consuming renderer expects a Web Mercator XYZ grid. Correct rendering requires compatible tile selection, bounds, and coordinate transformation. TileMatrix metadata does not automatically reproject raster pixels or enable a different deck.gl view.
 
-WMTS and OGC API Tiles share this model today. Other formats may expose partial native grid metadata; consult their support tables rather than assuming every tile source supplies a complete `tileMatrixSet`. 3D spatial trees and arbitrary multidimensional arrays are not automatically two-dimensional tile matrices.
+WMTS and OGC API Tiles share this model. ArcGIS exposes partial per-level grids, while GeoPackage tile-table metadata can expose complete geometry with independent horizontal and vertical pixel sizes. Other formats may expose partial native grid metadata; consult their support tables rather than assuming every tile source supplies a complete `tileMatrixSet`. 3D spatial trees and arbitrary multidimensional arrays are not automatically two-dimensional tile matrices.
 
 See [WMTS](/docs/modules/wms/formats/wmts), [OGC API Tiles](/docs/modules/wms/services/ogc-api), and [CRS and tile grids](/docs/modules/wms/api-reference/crs-and-tile-grids). Standards: [OGC TileMatrixSet 2.0](https://docs.ogc.org/is/17-083r4/17-083r4.html) and [OGC API Tiles](https://docs.ogc.org/is/20-057/20-057.html).

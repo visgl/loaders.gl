@@ -11,3 +11,5 @@ export type {
   GeoPackageSourceMetadata,
   GeoPackageSourceTableMetadata
 } from '@loaders.gl/geospatial/geopackage/index';
+
+export type {GeoPackageTileTableMetadata} from '@loaders.gl/geospatial/geopackage/index';

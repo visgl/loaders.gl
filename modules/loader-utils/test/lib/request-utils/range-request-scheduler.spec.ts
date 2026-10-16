@@ -792,3 +792,152 @@ test('range scheduler prunes canceled queued groups and disposes owned work', as
     })
   ).rejects.toThrow('finalized');
 });
+
+test('RangeRequestScheduler total budget includes merged gaps and rejects before transport', async () => {
+  await withFakeTimers(async () => {
+    const scheduler = new RangeRequestScheduler({
+      batchDelayMs: 0,
+      rangeExpansionBytes: 8,
+      maxTotalBytes: 4
+    });
+    let transports = 0;
+    const fetchRange = async (_offset: number, length: number) => {
+      transports++;
+      return new ArrayBuffer(length);
+    };
+    const first = scheduler.scheduleRequest({sourceId: 'source', offset: 0, length: 2, fetchRange});
+    const second = scheduler.scheduleRequest({
+      sourceId: 'source',
+      offset: 4,
+      length: 2,
+      fetchRange
+    });
+    const rejectedFirst = expect(first).rejects.toThrow('total byte limit');
+    const rejectedSecond = expect(second).rejects.toThrow('total byte limit');
+    await advanceTimersAndFlush();
+    await Promise.all([rejectedFirst, rejectedSecond]);
+    expect(transports).toBe(0);
+    scheduler.finalize();
+  });
+});
+
+test('RangeRequestScheduler concurrent transports share a lifetime budget across sources and batches', async () => {
+  await withFakeTimers(async () => {
+    const scheduler = new RangeRequestScheduler({
+      batchDelayMs: 0,
+      maxConcurrency: 2,
+      maxTotalBytes: 6
+    });
+    const firstTransport = createDeferred<ArrayBuffer>();
+    let transports = 0;
+    const fetchRange = () => {
+      transports++;
+      return firstTransport.promise;
+    };
+    const first = scheduler.scheduleRequest({sourceId: 'a', offset: 0, length: 4, fetchRange});
+    const second = scheduler.scheduleRequest({sourceId: 'b', offset: 0, length: 4, fetchRange});
+    const rejected = expect(second).rejects.toThrow('total byte limit');
+    await advanceTimersAndFlush();
+    await rejected;
+    expect(transports).toBe(1);
+    firstTransport.resolve(new ArrayBuffer(4));
+    await first;
+    const last = scheduler.scheduleRequest({
+      sourceId: 'b',
+      offset: 8,
+      length: 2,
+      fetchRange: async () => new ArrayBuffer(2)
+    });
+    await advanceTimersAndFlush();
+    expect((await last).byteLength).toBe(2);
+    const over = scheduler.scheduleRequest({sourceId: 'c', offset: 0, length: 1, fetchRange});
+    const rejectedOver = expect(over).rejects.toThrow('total byte limit');
+    await advanceTimersAndFlush();
+    await rejectedOver;
+    expect(transports).toBe(1);
+    scheduler.finalize();
+  });
+});
+
+test('RangeRequestScheduler retains failed transport reservations', async () => {
+  await withFakeTimers(async () => {
+    const scheduler = new RangeRequestScheduler({batchDelayMs: 0, maxTotalBytes: 4});
+    const first = scheduler.scheduleRequest({
+      sourceId: 'source',
+      offset: 0,
+      length: 4,
+      fetchRange: async () => {
+        throw new Error('transport failed');
+      }
+    });
+    const failed = expect(first).rejects.toThrow('transport failed');
+    await advanceTimersAndFlush();
+    await failed;
+    const retry = scheduler.scheduleRequest({
+      sourceId: 'source',
+      offset: 0,
+      length: 4,
+      fetchRange: async () => new ArrayBuffer(4)
+    });
+    const rejected = expect(retry).rejects.toThrow('total byte limit');
+    await advanceTimersAndFlush();
+    await rejected;
+    scheduler.finalize();
+  });
+});
+
+test('RangeRequestScheduler validates the total-byte budget', () => {
+  for (const maxTotalBytes of [0, -1, NaN, Infinity, 0.5, Number.MAX_SAFE_INTEGER + 1])
+    expect(() => new RangeRequestScheduler({maxTotalBytes})).toThrow('positive integers');
+});
+
+test('RangeRequestScheduler charges overlapping coalesced ranges once and retains its budget when stats reset', async () => {
+  const scheduler = new RangeRequestScheduler({batchDelayMs: 0, maxTotalBytes: 4});
+  const fetchRange = async (_offset: number, length: number) => new ArrayBuffer(length);
+  const first = scheduler.scheduleRequest({sourceId: 'source', offset: 0, length: 4, fetchRange});
+  const overlap = scheduler.scheduleRequest({sourceId: 'source', offset: 2, length: 2, fetchRange});
+  scheduler.flush();
+  expect((await first).byteLength).toBe(4);
+  expect((await overlap).byteLength).toBe(2);
+  expect(getRangeStats(scheduler.stats).transportBytes).toBe(4);
+  scheduler.stats.reset();
+  const over = scheduler.scheduleRequest({sourceId: 'source', offset: 8, length: 1, fetchRange});
+  const rejected = expect(over).rejects.toThrow('total byte limit');
+  scheduler.flush();
+  await rejected;
+  scheduler.finalize();
+});
+
+test.each([
+  'before',
+  'after'
+] as const)('RangeRequestScheduler cancellation %s transport start preserves lifetime accounting', async phase => {
+  const scheduler = new RangeRequestScheduler({batchDelayMs: 0, maxTotalBytes: 4});
+  let transfers = 0;
+  const fetchRange = async (_offset: number, length: number) => {
+    transfers++;
+    return new ArrayBuffer(length);
+  };
+  const controller = new AbortController();
+  const first = scheduler.scheduleRequest({
+    sourceId: 'a',
+    offset: 0,
+    length: 4,
+    signal: controller.signal,
+    fetchRange
+  });
+  const canceled = expect(first).rejects.toMatchObject({name: 'AbortError'});
+  if (phase === 'after') scheduler.flush();
+  expect(transfers).toBe(phase === 'after' ? 1 : 0);
+  controller.abort();
+  await canceled;
+  const second = scheduler.scheduleRequest({sourceId: 'b', offset: 0, length: 4, fetchRange});
+  const completion =
+    phase === 'after'
+      ? expect(second).rejects.toThrow('total byte limit')
+      : expect(second).resolves.toHaveProperty('byteLength', 4);
+  scheduler.flush();
+  await completion;
+  expect(transfers).toBe(1);
+  scheduler.finalize();
+});

@@ -638,17 +638,17 @@
     "@loaders.gl/schema": "5.0.0-alpha.12",
     "@loaders.gl/schema-utils": "5.0.0-alpha.12",
     "@loaders.gl/worker-utils": "5.0.0-alpha.12",
-    "@math.gl/wkb": "5.0.0-alpha.16",
+    "@math.gl/wkb": "5.0.0-alpha.18",
     "@probe.gl/log": "^4.1.1",
-    "apache-arrow": ">= 17.0.0",
-    "bson": "4.2.0",
-    "xlsx": "^0.18.5"
+    "apache-arrow": ">= 17.0.0"
   },
   "peerDependencies": {
     "@loaders.gl/core": "~5.0.0-alpha.0"
   },
   "optionalDependencies": {
-    "parquet-wasm": "0.7.2"
+    "bson": "4.2.0",
+    "parquet-wasm": "0.7.2",
+    "xlsx": "^0.18.5"
   },
   "browser": {
     "child_process": false,

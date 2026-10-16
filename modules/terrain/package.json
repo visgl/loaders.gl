@@ -54,22 +54,26 @@
     "README.md"
   ],
   "scripts": {
-    "pre-build": "npm run build-worker && npm run build-worker2 && npm run build-bundle && npm run build-bundle-dev",
+    "pre-build": "npm run copy-libs && npm run build-cjs && npm run build-worker && npm run build-worker2 && npm run build-bundle && npm run build-bundle-dev",
     "build-bundle": "node ../../scripts/build-codec-bundle.mjs ./bundle.ts --output=dist/dist.min.js",
     "build-bundle-dev": "node ../../scripts/build-codec-bundle.mjs ./bundle.ts --env=dev --output=dist/dist.dev.js",
     "build-worker": "node ../../scripts/build-codec-worker.mjs src/workers/terrain-worker.ts --bundle --outfile=dist/terrain-worker.js --define:__VERSION__=\\\"$npm_package_version\\\"",
-    "build-worker2": "node ../../scripts/build-codec-worker.mjs src/workers/quantized-mesh-worker.ts --bundle --outfile=dist/quantized-mesh-worker.js --define:__VERSION__=\\\"$npm_package_version\\\""
+    "build-worker2": "node ../../scripts/build-codec-worker.mjs src/workers/quantized-mesh-worker.ts --bundle --outfile=dist/quantized-mesh-worker.js --define:__VERSION__=\\\"$npm_package_version\\\"",
+    "copy-libs": "mkdir -p dist/libs && cp -rf src/libs/* dist/libs",
+    "build-cjs": "node ../../node_modules/@vis.gl/dev-tools/dist/build-cjs.js"
   },
   "dependencies": {
     "@loaders.gl/arrow": "5.0.0-alpha.12",
     "@loaders.gl/images": "5.0.0-alpha.12",
     "@loaders.gl/loader-utils": "5.0.0-alpha.12",
     "@loaders.gl/schema": "5.0.0-alpha.12",
-    "@loaders.gl/schema-utils": "5.0.0-alpha.12",
-    "@mapbox/martini": "^0.2.0"
+    "@loaders.gl/schema-utils": "5.0.0-alpha.12"
   },
   "peerDependencies": {
     "@loaders.gl/core": "~5.0.0-alpha.0"
   },
-  "gitHead": "8a9e77743ea90a7be4ebec572416bb50ca9d73c3"
+  "gitHead": "8a9e77743ea90a7be4ebec572416bb50ca9d73c3",
+  "devDependencies": {
+    "@mapbox/martini": "0.2.0"
+  }
 }

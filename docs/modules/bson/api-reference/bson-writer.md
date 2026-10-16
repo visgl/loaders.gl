@@ -50,6 +50,16 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
 
 `BSONWriter` writes JSON-like JavaScript objects as BSON binary documents.
 
+## Installation
+
+Install `bson` to use this API. It is an optional dependency of `@loaders.gl/tables`.
+
+```bash
+npm install @loaders.gl/core @loaders.gl/bson bson@4.2.0
+```
+
+For grouped imports, install `@loaders.gl/tables` in place of `@loaders.gl/bson` and keep `bson` installed.
+
 ## Usage
 
 ```typescript

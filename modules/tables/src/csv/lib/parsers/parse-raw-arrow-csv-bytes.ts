@@ -39,7 +39,8 @@ const TAB = 9;
 // complete scan below remains authoritative, so late non-ASCII or quote characters still fall back.
 const ASCII_TEXT_PROBE_LENGTH = 256;
 
-const FLOAT = /^\s*-?(\d*\.?\d+|\d+\.?\d*)(e[-+]?\d+)?\s*$/i;
+// Separate digit-leading and dot-leading forms to avoid overlapping digit repetitions.
+const FLOAT = /^\s*-?(?:\d+(?:\.\d*)?|\.\d+)(?:e[-+]?\d+)?\s*$/i;
 const ISO_DATE =
   /(\d{4}-[01]\d-[0-3]\dT[0-2]\d:[0-5]\d:[0-5]\d\.\d+([+-][0-2]\d:[0-5]\d|Z))|(\d{4}-[01]\d-[0-3]\dT[0-2]\d:[0-5]\d:[0-5]\d([+-][0-2]\d:[0-5]\d|Z))|(\d{4}-[01]\d-[0-3]\dT[0-2]\d:[0-5]\d([+-][0-2]\d:[0-5]\d|Z))/;
 

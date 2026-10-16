@@ -5,6 +5,7 @@
 import {
   PMTILES_EXAMPLE_LIMITS,
   selectPMTilesExampleTiles,
+  type PMTilesExampleProgress,
   type PMTilesExampleOptions
 } from './create-pmtiles';
 
@@ -25,17 +26,32 @@ export type PMTilesWorkerMessage =
       archive: Blob;
     }
   | {
+      /** Actual stage, source bytes and tile counters. */
+      type: 'progress';
+      /** Cloneable snapshot from the worker. */
+      progress: PMTilesExampleProgress;
+    }
+  | {
       /** Failed conversion. */
       type: 'error';
       /** User-readable failure. */
       message: string;
     };
 
+/** Page-owned callbacks and a separate signal for emitting partial work. */
+export type PMTilesWorkerControls = {
+  /** Receives conversion stage and measured counters. */
+  onProgress?: (progress: PMTilesExampleProgress) => void;
+  /** Requests packaging at the next tile boundary; does not cancel the worker. */
+  finishSignal?: AbortSignal;
+};
+
 /** Runs one export off the page thread; cancellation also interrupts synchronous computation. */
 export async function createPMTilesArchiveInWorker(
   input: Blob | string,
   options: PMTilesExampleOptions,
-  signal: AbortSignal
+  signal: AbortSignal,
+  controls: PMTilesWorkerControls = {}
 ): Promise<Blob> {
   signal.throwIfAborted();
   selectPMTilesExampleTiles(options.bounds, options.zoom);
@@ -47,6 +63,7 @@ export async function createPMTilesArchiveInWorker(
       if (settled) return;
       settled = true;
       signal.removeEventListener('abort', cancel);
+      controls.finishSignal?.removeEventListener('abort', requestFinish);
       worker.onmessage = null;
       worker.onerror = null;
       worker.onmessageerror = null;
@@ -58,10 +75,32 @@ export async function createPMTilesArchiveInWorker(
     function cancel(): void {
       finish(signal.reason);
     }
+    /** Keeps the worker alive to serialize completed tiles into a valid archive. */
+    function requestFinish(): void {
+      if (settled) return;
+      try {
+        worker.postMessage({type: 'finish'});
+      } catch (error) {
+        finish(error);
+      }
+    }
     signal.addEventListener('abort', cancel, {once: true});
+    controls.finishSignal?.addEventListener('abort', requestFinish, {once: true});
     worker.onmessage = (event: MessageEvent<PMTilesWorkerMessage>) => {
       if (settled) return;
       const message = event.data;
+      if (message?.type === 'progress') {
+        if (!validateProgress(message.progress)) {
+          finish(new Error('Invalid PMTiles worker progress.'));
+          return;
+        }
+        try {
+          controls.onProgress?.(message.progress);
+        } catch (error) {
+          finish(error);
+        }
+        return;
+      }
       if (
         message?.type === 'result' &&
         message.archive instanceof Blob &&
@@ -85,8 +124,29 @@ export async function createPMTilesArchiveInWorker(
     }
     try {
       worker.postMessage({input, options} satisfies PMTilesWorkerRequest);
+      if (controls.finishSignal?.aborted) requestFinish();
     } catch (error) {
       finish(error);
     }
   });
+}
+
+/** Rejects malformed snapshots before they become UI state. */
+function validateProgress(progress: PMTilesExampleProgress): boolean {
+  return Boolean(
+    progress &&
+      ['reading', 'parsing', 'tiles', 'packaging', 'complete'].includes(progress.phase) &&
+      Number.isSafeInteger(progress.totalTiles) &&
+      progress.totalTiles > 0 &&
+      progress.totalTiles <= PMTILES_EXAMPLE_LIMITS.tiles &&
+      Number.isSafeInteger(progress.completedTiles) &&
+      progress.completedTiles >= 0 &&
+      progress.completedTiles <= progress.totalTiles &&
+      (progress.bytesRead === null ||
+        (Number.isSafeInteger(progress.bytesRead) && progress.bytesRead >= 0)) &&
+      Number.isSafeInteger(progress.outputBytes) &&
+      progress.outputBytes >= 0 &&
+      progress.outputBytes <= PMTILES_EXAMPLE_LIMITS.outputBytes &&
+      (progress.currentTile === undefined || typeof progress.currentTile === 'string')
+  );
 }

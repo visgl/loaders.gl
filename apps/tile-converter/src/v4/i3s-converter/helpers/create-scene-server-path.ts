@@ -1,9 +1,8 @@
 import type {SceneLayer3D} from '@loaders.gl/i3s';
-import {v4 as uuidv4} from 'uuid';
-import transform from 'json-map-transform';
+import {randomUUID} from 'node:crypto';
 import {join} from 'path';
 
-import {SCENE_SERVER as sceneServerTemplate} from '../json-templates/scene-server';
+import {createSceneServer} from '../json-templates/scene-server';
 import {writeFile} from '../../lib/utils/file-utils';
 
 /**
@@ -18,12 +17,12 @@ export async function createSceneServerPath(
   rootPath: string
 ): Promise<void> {
   const sceneServerData = {
-    serviceItemId: uuidv4().replace(/-/gi, ''),
+    serviceItemId: randomUUID().replace(/-/gi, ''),
     layerName,
     layers0
   };
 
-  const sceneServer = transform(sceneServerData, sceneServerTemplate());
+  const sceneServer = createSceneServer(sceneServerData);
   const nodePagePath = join(rootPath, 'SceneServer');
   await writeFile(nodePagePath, JSON.stringify(sceneServer));
 }

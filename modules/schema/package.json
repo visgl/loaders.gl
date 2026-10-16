@@ -49,7 +49,7 @@
     "generate-json-schema": "node ../../scripts/generate-json-schema.mjs --schema ./dist/geospatial-metadata-zod-schema.js --export GeoParquetMetadataSchema --output ./dist/geoparquet.schema.json --id https://unpkg.com/@loaders.gl/schema/geoparquet.schema.json --title 'loaders.gl GeoParquet metadata' && node ../../scripts/generate-json-schema.mjs --schema ./dist/geospatial-metadata-zod-schema.js --export GeoArrowMetadataSchema --output ./dist/geoarrow-metadata.schema.json --id https://unpkg.com/@loaders.gl/schema/geoarrow-metadata.schema.json --title 'loaders.gl GeoArrow field metadata'"
   },
   "dependencies": {
-    "@math.gl/types": "5.0.0-alpha.16",
+    "@math.gl/types": "5.0.0-alpha.18",
     "@types/geojson": "^7946.0.7",
     "apache-arrow": ">= 17.0.0",
     "zod": "^4.1.12"

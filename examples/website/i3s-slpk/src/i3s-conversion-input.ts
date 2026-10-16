@@ -15,7 +15,12 @@ import {
   writeMeshConversionResources,
   createArchiveFile
 } from './convert-tileset';
-import type {ConversionFormat, ConversionResources, ConversionResult} from './convert-tileset';
+import type {
+  ConversionFormat,
+  ConversionResources,
+  ConversionResult,
+  MeshConversionControls
+} from './convert-tileset';
 import {openConversionArchive, type ConversionArchiveInput} from './conversion-archive-input';
 
 export type I3SConversionResource = I3SMeshConversionResourceDescriptor;
@@ -95,12 +100,24 @@ export async function inspectI3SConversionInput(
   fetcher: typeof fetch = fetch,
   archiveInput = false
 ): Promise<I3SConversionInspection> {
-  const transport = await openTransport(input, signal, fetcher, 0, archiveInput ? {input, format: 'slpk'} : undefined);
+  const transport = await openTransport(
+    input,
+    signal,
+    fetcher,
+    0,
+    archiveInput ? {input, format: 'slpk'} : undefined
+  );
   try {
     const inspection = await inspectI3SMeshConversionSource({
-      ...transport, signal, dracoLibraryOptions: getDracoLibraryOptions()
+      ...transport,
+      signal,
+      dracoLibraryOptions: getDracoLibraryOptions()
     });
-    return {...inspection, metadataBytes: transport.getConsumedBytes(), ...(transport.archive ? {archive: transport.archive} : {})};
+    return {
+      ...inspection,
+      metadataBytes: transport.getConsumedBytes(),
+      ...(transport.archive ? {archive: transport.archive} : {})
+    };
   } finally {
     await transport.close();
   }
@@ -115,17 +132,42 @@ export async function convertSelectedI3SContentsToResources(
   onProgress: (message: string) => void,
   fetcher: typeof fetch = fetch,
   features?: I3SMeshSourceFeatureOptions,
-  geometricError?: number
+  geometricError?: number,
+  controls: MeshConversionControls = {}
 ): Promise<ConversionResources> {
-  if (format === '3tz' && (typeof geometricError !== 'number' || !Number.isFinite(geometricError) || geometricError < 0))
-    throw new TileConversionError('MESH_GEOMETRIC_ERROR_INVALID', 'I3S to 3TZ requires an explicit nonnegative geometric error in meters.');
-  const transport = await openTransport(inspection.archive?.input ?? inspection.rootUrl, signal, fetcher, inspection.metadataBytes, inspection.archive);
+  if (
+    format === '3tz' &&
+    (typeof geometricError !== 'number' || !Number.isFinite(geometricError) || geometricError < 0)
+  )
+    throw new TileConversionError(
+      'MESH_GEOMETRIC_ERROR_INVALID',
+      'I3S to 3TZ requires an explicit nonnegative geometric error in meters.'
+    );
+  const transport = await openTransport(
+    inspection.archive?.input ?? inspection.rootUrl,
+    signal,
+    fetcher,
+    inspection.metadataBytes,
+    inspection.archive
+  );
   try {
     const {source, spatialContext} = await createSelectedI3SMeshConversionSource(inspection, {
-      ...transport, signal, resourceIds, features, dracoLibraryOptions: getDracoLibraryOptions()
+      ...transport,
+      signal,
+      resourceIds,
+      features,
+      dracoLibraryOptions: getDracoLibraryOptions()
     });
-    const output = await writeMeshConversionResources(source, spatialContext, format, signal, onProgress,
-      (geometricError ?? 0) + CONVERSION_LIMITS.maxPositionError, true);
+    const output = await writeMeshConversionResources(
+      source,
+      spatialContext,
+      format,
+      signal,
+      onProgress,
+      (geometricError ?? 0) + CONVERSION_LIMITS.maxPositionError,
+      true,
+      controls
+    );
     return {...output, name: `selected-${resourceIds.length === 1 ? 'mesh' : 'meshes'}.${format}`};
   } finally {
     await transport.close();
@@ -141,7 +183,8 @@ export async function convertSelectedI3SContents(
   onProgress: (message: string) => void,
   fetcher: typeof fetch = fetch,
   features?: I3SMeshSourceFeatureOptions,
-  geometricError?: number
+  geometricError?: number,
+  controls: MeshConversionControls = {}
 ): Promise<ConversionResult> {
   return createArchiveFile(
     await convertSelectedI3SContentsToResources(
@@ -152,7 +195,8 @@ export async function convertSelectedI3SContents(
       onProgress,
       fetcher,
       features,
-      geometricError
+      geometricError,
+      controls
     ),
     format,
     signal,
