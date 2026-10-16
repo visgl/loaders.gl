@@ -4,9 +4,9 @@
 
 import {expect, test} from 'vitest';
 import * as arrow from 'apache-arrow';
-import {parseORC} from '../src/lib/parsers/parse-orc';
-import {ORCLoaderWithParser} from '../src/orc-loader';
-import {ORCWriter} from '../src/orc-writer';
+import {parseORC} from '../../tables/src/orc/lib/parsers/parse-orc';
+import {ORCLoaderWithParser} from '../../tables/src/orc/orc-loader';
+import {ORCWriter} from '../../tables/src/orc/orc-writer';
 
 test('ORCLoader#parse validates the ORC envelope', () => {
   const postscript = Uint8Array.from([0x08, 0x04, 0x10, 0x00, 0x18, 0x00, 0x20, 0x01, 0x28, 0x00]);

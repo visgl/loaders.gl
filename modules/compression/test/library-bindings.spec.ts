@@ -26,9 +26,25 @@ import {
   type Decompressor
 } from '@loaders.gl/compression';
 import {DeflateFflateCompression} from '@loaders.gl/compression/deflate-fflate';
+import {GZipCompressor as DirectGZipCompressor} from '../src/gzip-compressor';
+import {GZipDecompressor as DirectGZipDecompressor} from '../src/gzip-decompressor';
+import {DeflateCompressor as DirectDeflateCompressor} from '../src/deflate-compressor';
+import {DeflateDecompressor as DirectDeflateDecompressor} from '../src/deflate-decompressor';
+import {BrotliCompressor as DirectBrotliCompressor} from '../src/brotli-compressor';
+import {BrotliDecompressor as DirectBrotliDecompressor} from '../src/brotli-decompressor';
+import {ZstdCompressor as DirectZstdCompressor} from '../src/zstd-compressor';
+import {ZstdDecompressor as DirectZstdDecompressor} from '../src/zstd-decompressor';
 import {GZipFflateCompression} from '@loaders.gl/compression/gzip-fflate';
 import {GZipFflateCompressor} from '@loaders.gl/compression/gzip-compressor-fflate';
 import {GZipFflateDecompressor} from '@loaders.gl/compression/gzip-decompressor-fflate';
+import {DeflateFflateCompressor} from '@loaders.gl/compression/deflate-compressor-fflate';
+import {DeflateFflateDecompressor} from '@loaders.gl/compression/deflate-decompressor-fflate';
+import {DeflatePakoCompressor} from '@loaders.gl/compression/deflate-compressor-pako';
+import {DeflatePakoDecompressor} from '@loaders.gl/compression/deflate-decompressor-pako';
+import {LZ4JSCompressor} from '@loaders.gl/compression/lz4-compressor-lz4js';
+import {LZ4JSDecompressor} from '@loaders.gl/compression/lz4-decompressor-lz4js';
+import {SnappyJSCompressor} from '@loaders.gl/compression/snappy-compressor-snappyjs';
+import {SnappyJSDecompressor} from '@loaders.gl/compression/snappy-decompressor-snappyjs';
 import {DeflatePakoCompression} from '@loaders.gl/compression/deflate-pako';
 import {GZipPakoCompression} from '@loaders.gl/compression/gzip-pako';
 import {GZipPakoCompressor} from '@loaders.gl/compression/gzip-compressor-pako';
@@ -59,6 +75,41 @@ const TEST_BYTES = new TextEncoder().encode(
 
 describe('compression library bindings', () => {
   test.each([
+    ['gzip', DirectGZipCompressor, DirectGZipDecompressor],
+    ['deflate', DirectDeflateCompressor, DirectDeflateDecompressor],
+    ['brotli', DirectBrotliCompressor, DirectBrotliDecompressor],
+    ['zstd', DirectZstdCompressor, DirectZstdDecompressor]
+  ])('%s direct streams interoperate across native and WASM paths', async (_name, CompressorClass, DecompressorClass) => {
+    const inputBatches = [TEST_BYTES.subarray(0, 80), TEST_BYTES.subarray(80)].map(copyArrayBuffer);
+    for (const useNative of [true, false]) {
+      const compressor = new CompressorClass({useNative});
+      const decompressor = new DecompressorClass({useNative});
+      const referenceCompressor = new CompressorClass({useNative: false});
+      const referenceDecompressor = new DecompressorClass({useNative: false});
+      const compressedBatches = await collectBatches(compressor.compressBatches(inputBatches));
+      expect(
+        new Uint8Array(
+          await referenceDecompressor.decompress(
+            copyArrayBuffer(concatenateBatches(compressedBatches))
+          )
+        )
+      ).toEqual(TEST_BYTES);
+      const encoded = new Uint8Array(
+        await referenceCompressor.compress(copyArrayBuffer(TEST_BYTES))
+      );
+      const fragmented = [encoded.subarray(0, 7), encoded.subarray(7)].map(copyArrayBuffer);
+      expect(
+        concatenateBatches(await collectBatches(decompressor.decompressBatches(fragmented)))
+      ).toEqual(TEST_BYTES);
+      expect(
+        new Uint8Array(
+          await decompressor.decompress(await compressor.compress(copyArrayBuffer(TEST_BYTES)))
+        )
+      ).toEqual(TEST_BYTES);
+    }
+  });
+
+  test.each([
     ['gzip', new GZipCompressor({useNative: false}), new GZipDecompressor({useNative: false})],
     [
       'deflate',
@@ -82,6 +133,11 @@ describe('compression library bindings', () => {
     ['xz', new XZCompressor(), new XZDecompressor()]
   ])('%s defaults round trip data', async (_name, compressor, decompressor) => {
     await expectDirectionalRoundTrip(compressor, decompressor);
+    await Promise.all([compressor.preload(), decompressor.preload()]);
+    const syncCompressed = compressor.compressSync(copyArrayBuffer(TEST_BYTES));
+    expect(
+      new Uint8Array(decompressor.decompressSync(syncCompressed, TEST_BYTES.byteLength))
+    ).toEqual(TEST_BYTES);
   });
 
   test('default GZIP codecs stream incrementally', async () => {
@@ -182,6 +238,10 @@ describe('compression library bindings', () => {
   test.each([
     ['uncompressed', new NoCompressor(), new NoDecompressor()],
     ['fflate', new GZipFflateCompressor(), new GZipFflateDecompressor()],
+    ['fflate DEFLATE', new DeflateFflateCompressor(), new DeflateFflateDecompressor()],
+    ['pako DEFLATE', new DeflatePakoCompressor(), new DeflatePakoDecompressor()],
+    ['lz4js', new LZ4JSCompressor(), new LZ4JSDecompressor()],
+    ['snappyjs', new SnappyJSCompressor(), new SnappyJSDecompressor()],
     ['pako', new GZipPakoCompressor(), new GZipPakoDecompressor()]
   ])('%s direction-specific bindings interoperate', async (_name, compressor, decompressor) => {
     await expectDirectionalRoundTrip(compressor, decompressor);

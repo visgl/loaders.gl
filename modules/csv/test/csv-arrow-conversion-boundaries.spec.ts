@@ -4,13 +4,13 @@
 
 import {expect, test} from 'vitest';
 import type {ArrowTable, ArrowTableBatch, ArrayRowTable, ObjectRowTable} from '@loaders.gl/schema';
-import {convertGeometryToWKB} from '@loaders.gl/gis';
+import {convertGeometryToWKB} from '@loaders.gl/arrow-geometry/geometry-codecs';
 import {
   convertCSVRowTableToArrowTable,
   parseCSVArrayBufferAsArrow,
   parseCSVInArrowBatches,
   parseCSVTextAsArrow
-} from '../src/csv-arrow-table-parser';
+} from '../../tables/src/csv/csv-arrow-table-parser';
 
 /** Reads a column without conflating missing columns and null cells. */
 function getColumnValues(table: ArrowTable, columnName: string): unknown[] {

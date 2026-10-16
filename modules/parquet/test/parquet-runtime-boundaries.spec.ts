@@ -3,13 +3,13 @@
 // Copyright (c) vis.gl contributors
 
 import {expect, test} from 'vitest';
-import {normalizeParquetOptions} from '../src/lib/utils/normalize-parquet-options';
+import {normalizeParquetOptions} from '../../tables/src/parquet/lib/utils/normalize-parquet-options';
 import {
   CompactInt64,
   Uint8ArrayCompactProtocol
-} from '../src/parquetjs/utils/uint8-array-compact-protocol';
-import {Thrift} from '../src/parquetjs/utils/thrift-runtime';
-import {Uint8ArrayTransport} from '../src/parquetjs/utils/uint8-array-transport';
+} from '../../tables/src/parquet/parquetjs/utils/uint8-array-compact-protocol';
+import {Thrift} from '../../tables/src/parquet/parquetjs/utils/thrift-runtime';
+import {Uint8ArrayTransport} from '../../tables/src/parquet/parquetjs/utils/uint8-array-transport';
 
 /** Creates a compact protocol over exact bytes. */
 function createProtocol(bytes: number[]): Uint8ArrayCompactProtocol {

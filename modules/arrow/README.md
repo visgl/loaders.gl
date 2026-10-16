@@ -16,3 +16,5 @@ import {GeoArrowBuilder, WKBBuilder, triangulateWKB} from '@loaders.gl/arrow/geo
 
 These utilities are also used by GIS-aware loaders to construct Arrow geometry columns without
 depending on GIS conversion APIs.
+
+Implementation ownership is now `@loaders.gl/tables/arrow`. Existing package entry points remain compatible. See the [grouped package guide](../../docs/developer-guide/grouped-packages.md).

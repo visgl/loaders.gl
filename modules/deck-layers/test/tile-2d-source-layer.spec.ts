@@ -3,7 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import {expect, test, vi} from 'vitest';
-import {convertGeometryToWKB} from '@loaders.gl/gis';
+import {convertGeometryToWKB} from '@loaders.gl/arrow-geometry/geometry-codecs';
 import {Tile2DSourceLayer, type Tile2DSourceLayerProps} from '@loaders.gl/deck-layers';
 import {ArrowTableBuilder} from '@loaders.gl/schema-utils';
 import {ArrowTableTileSourceLoader, MVTSourceLoader} from '@loaders.gl/mvt';

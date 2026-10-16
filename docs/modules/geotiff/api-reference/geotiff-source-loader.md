@@ -266,3 +266,23 @@ cancellation support; obsolete results are discarded even when those reads canno
 be interrupted.
 
 Native reads decode selected planar bands before packing a requested interleaved layout, preserving each selected representation instead of inheriting a wider unselected band type. Invalid raw values are preserved when only the layout changes. TIFF palette indices are categorical and use nearest sampling. Overviews with different band representations or registration are not selected.
+
+### Strict browser range headers
+
+Set `geotiff.requireContentRange: true` to reject HTTP 206 responses without a readable
+`Content-Range` header before consuming their bodies. Cross-origin servers must include
+`Access-Control-Expose-Headers: Content-Range`. This qualifies EOF-clamped ranges using
+authoritative offsets and file length, including TIFFs smaller than the initial metadata read.
+The PMTiles browser converter enables this option. The default remains `false`; full-length
+responses without exposed headers retain their existing behavior, while EOF-shortened responses
+still require authoritative file length.
+
+## Native TileMatrix geometry
+
+`getMetadata().tileGrid` describes physical storage tiles for eligible GeoTIFF/COG image hierarchies. It is built from metadata without decoding samples. Matrix IDs are original image (IFD) indices, matching `overviews[].index`; mask images and independent document pages are excluded without renumbering subsequent images. Secondary levels must carry a reduced-image flag (`NewSubfileType` bit 0 or legacy `SubfileType: 2`), matching raster overview selection. Overview order follows the file rather than assuming power-of-two zoom levels.
+
+Each level retains its own tile dimensions, independent horizontal and vertical pixel resolutions, and origin. Overviews without their own transform inherit the reference transform scaled independently by their actual pixel dimensions. Point-registered sample centers are shifted by half a pixel to obtain tile corners. South-up images use a bottom-left origin.
+
+Matrix dimensions round up image dimensions to complete storage tiles. Consequently edge tiles can extend past the raster's valid footprint: clip tile pixels using `overviews[].width/height`. `boundingBox` retains the existing source bounds convention; point-registered tile corners include the half-pixel adjustment described above. Grid dimensions describe geometry and do not declare data availability.
+
+The optional grid is omitted if any participating reference/overview image uses strips, rotation, shear, reversed columns, invalid geometry, or an explicitly unknown or conflicting CRS, or if the reference CRS is unknown. Only absent overview CRS metadata may inherit the reference CRS. Existing affine metadata and raster reads remain available for these datasets. This does not add a tile-payload endpoint, reprojection, or a Web Mercator pyramid; use the existing window/region raster APIs to read samples.

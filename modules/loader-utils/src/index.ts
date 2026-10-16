@@ -461,7 +461,7 @@ export type {
   CRSReprojectionErrorCode
 } from './lib/crs/crs-reprojection';
 
-export type {TileSource, TileGrid, TileGridMatrix} from './lib/sources/tile-source';
+export type {TileSource, TileGrid, TileGridMatrix, TileGridLimits} from './lib/sources/tile-source';
 export type {TileSourceMetadata, GetTileParameters} from './lib/sources/tile-source';
 export type {GetTileDataBatchResult, GetTileDataParameters} from './lib/sources/tile-source';
 export {getTileDataBatch} from './lib/sources/tile-source-utils';
@@ -507,3 +507,13 @@ export type {RasterMixedData, NumericRasterData} from './lib/sources/raster-sour
 export {waitForPromiseWithSignal, waitForPromiseWithSignals} from './lib/request-utils/abort-utils';
 
 export {validateRasterRegion} from './lib/sources/raster-region';
+export {encodeHex, decodeHex} from './lib/binary-utils/hex-transcoder';
+
+// Shared tile-grid normalization and addressing.
+export {
+  createTileGrid,
+  createTileGridMatrix,
+  getRequestedTileMatrix,
+  getTileGridMatrixId
+} from './lib/sources/tile-grid';
+export type {TileMatrixFields} from './lib/sources/tile-grid';

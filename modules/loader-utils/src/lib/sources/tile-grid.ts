@@ -1,0 +1,162 @@
+// loaders.gl
+// SPDX-License-Identifier: MIT
+// Copyright (c) vis.gl contributors
+
+import type {GetTileParameters, TileGrid, TileGridMatrix} from './tile-source';
+import {validateTileMatrix} from '@math.gl/geospatial';
+import type {TileMatrix, TileMatrixSet} from '@math.gl/geospatial';
+
+/**
+ * Builds a tile grid from advertised per-level metadata. `tileMatrixSet` is set only when every
+ * level is complete and valid, and the grid-wide fields are then derived from it. Otherwise the
+ * grid-wide fields describe the advertised first level, and the aligned `resolutions` and
+ * `matrixSizes` arrays are set only when every level has a value.
+ */
+export function createTileGrid(crs: string | undefined, matrices: TileGridMatrix[]): TileGrid {
+  const tileMatrixSet = getTileMatrixSet(crs, matrices);
+  if (tileMatrixSet) {
+    const levels = tileMatrixSet.matrices;
+    return {
+      crs,
+      tileSize: [levels[0].tileSize[0], levels[0].tileSize[1]],
+      // The grid-wide origin is documented as top-left, so a bottom-left origin is per-level only.
+      origin:
+        levels[0].cornerOfOrigin === 'topLeft'
+          ? [levels[0].origin[0], levels[0].origin[1]]
+          : undefined,
+      resolutions: levels.map(matrix => matrix.resolution),
+      matrixIds: levels.map(matrix => matrix.id),
+      matrixSizes: levels.map(matrix => [matrix.matrixSize[0], matrix.matrixSize[1]]),
+      tileMatrixSet,
+      matrices
+    };
+  }
+  return {
+    crs,
+    tileSize: matrices[0]?.tileSize,
+    // The grid-wide origin is documented as top-left, so a bottom-left origin is per-level only.
+    origin: matrices[0]?.cornerOfOrigin === 'bottomLeft' ? undefined : matrices[0]?.origin,
+    ...(matrices.length && matrices.every(matrix => matrix.resolution !== undefined)
+      ? {resolutions: matrices.map(matrix => matrix.resolution!)}
+      : {}),
+    matrixIds: matrices.map(matrix => matrix.id),
+    matrixSizes: matrices.every(matrix => matrix.matrixSize)
+      ? matrices.map(matrix => matrix.matrixSize!)
+      : undefined,
+    matrices
+  };
+}
+
+/** Returns complete geometry for every level, or undefined when any level is incomplete or invalid. */
+function getTileMatrixSet(
+  crs: string | undefined,
+  matrices: TileGridMatrix[]
+): TileMatrixSet | undefined {
+  if (!crs || !matrices.length) return undefined;
+  const tileMatrices: TileMatrix[] = [];
+  for (const matrix of matrices) {
+    const tileMatrix = toTileMatrix(matrix);
+    if (!tileMatrix) return undefined;
+    tileMatrices.push(tileMatrix);
+  }
+  return {crs, matrices: tileMatrices};
+}
+
+/** Converts one advertised level to math.gl geometry, or null when it is incomplete or invalid. */
+function toTileMatrix(matrix: TileGridMatrix): TileMatrix | null {
+  const {id, resolution, resolutionY, origin, tileSize, matrixSize} = matrix;
+  if (resolution === undefined || !origin || !tileSize || !matrixSize) return null;
+  const tileMatrix: TileMatrix = {
+    id,
+    resolution,
+    ...(resolutionY !== undefined ? {resolutionY} : {}),
+    origin: [origin[0], origin[1]],
+    cornerOfOrigin: matrix.cornerOfOrigin ?? 'topLeft',
+    tileSize: [tileSize[0], tileSize[1]],
+    matrixSize: [matrixSize[0], matrixSize[1]]
+  };
+  try {
+    validateTileMatrix(tileMatrix);
+  } catch {
+    return null;
+  }
+  return tileMatrix;
+}
+
+/** Advertised fields of one tile matrix, in the service's own axis order. */
+export type TileMatrixFields = {
+  /** Advertised matrix identifier. */
+  id: string;
+  /** Coordinate units per pixel, when known. */
+  resolution?: number;
+  /** Vertical coordinate units per pixel; defaults to the horizontal resolution. */
+  resolutionY?: number;
+  /** Origin as advertised; swapped to XY when `swapAxes` is set. */
+  point?: number[];
+  /** Whether the advertised coordinates are Y first. */
+  swapAxes: boolean;
+  /** Corner located by the origin; defaults to top-left. */
+  cornerOfOrigin?: 'topLeft' | 'bottomLeft';
+  /** Advertised tile width in pixels. */
+  tileWidth?: number;
+  /** Advertised tile height in pixels. */
+  tileHeight?: number;
+  /** Advertised matrix width in tiles. */
+  matrixWidth?: number;
+  /** Advertised matrix height in tiles. */
+  matrixHeight?: number;
+};
+
+/** Builds one tile-grid level, keeping only the fields the service advertises. */
+export function createTileGridMatrix(fields: TileMatrixFields): TileGridMatrix {
+  const {point, tileWidth, tileHeight} = fields;
+  const tileGridMatrix: TileGridMatrix = {id: fields.id};
+  if (fields.resolution !== undefined) tileGridMatrix.resolution = fields.resolution;
+  if (fields.resolutionY !== undefined) tileGridMatrix.resolutionY = fields.resolutionY;
+  if (point && point.length >= 2) {
+    tileGridMatrix.origin = fields.swapAxes ? [point[1], point[0]] : [point[0], point[1]];
+  }
+  if (String(fields.cornerOfOrigin).toLowerCase() === 'bottomleft') {
+    tileGridMatrix.cornerOfOrigin = 'bottomLeft';
+  }
+  if (tileWidth !== undefined && tileHeight !== undefined) {
+    tileGridMatrix.tileSize = [tileWidth, tileHeight];
+  }
+  if (fields.matrixWidth !== undefined && fields.matrixHeight !== undefined) {
+    tileGridMatrix.matrixSize = [fields.matrixWidth, fields.matrixHeight];
+  }
+  return tileGridMatrix;
+}
+
+/**
+ * Returns the matrix a tile request addresses. An explicit `tileMatrix` identifier is matched
+ * exactly and throws when the set does not contain it. Without one, `z` selects the matrix whose
+ * identifier is that number, otherwise the matrix at index `z`, without rounding or clamping.
+ */
+export function getRequestedTileMatrix<MatrixT>(
+  matrices: readonly MatrixT[],
+  getId: (matrix: MatrixT) => string,
+  parameters: Pick<GetTileParameters, 'z' | 'tileMatrix'>
+): MatrixT | undefined {
+  if (parameters.tileMatrix !== undefined) {
+    const matrix = matrices.find(candidate => getId(candidate) === parameters.tileMatrix);
+    if (!matrix) throw new RangeError(`Unknown tile matrix "${parameters.tileMatrix}"`);
+    return matrix;
+  }
+  return matrices.find(matrix => getId(matrix) === String(parameters.z)) || matrices[parameters.z];
+}
+
+/**
+ * Returns the `{tileMatrix}` identifier for a request. With a known grid, the requested matrix
+ * must exist in it (see `getRequestedTileMatrix()`); a missing one throws instead of falling back
+ * to `z`. Without a grid, the explicit identifier is used verbatim, otherwise `z`.
+ */
+export function getTileGridMatrixId(
+  tileGrid: TileGrid | undefined,
+  parameters: Pick<GetTileParameters, 'z' | 'tileMatrix'>
+): string {
+  if (!tileGrid?.matrices) return parameters.tileMatrix ?? String(parameters.z);
+  const matrix = getRequestedTileMatrix(tileGrid.matrices, level => level.id, parameters);
+  if (!matrix) throw new RangeError(`No tile matrix for z ${parameters.z}`);
+  return matrix.id;
+}

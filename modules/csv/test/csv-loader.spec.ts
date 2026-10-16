@@ -19,7 +19,7 @@ import {
   CSVWorkerLoader as UnbundledCSVWorkerLoader
 } from '@loaders.gl/csv/unbundled';
 import * as csv from '@loaders.gl/csv';
-import {getGeoMetadata} from '@loaders.gl/gis';
+import {getGeoMetadata} from '@loaders.gl/schema';
 import {getTableLength} from '@loaders.gl/schema-utils';
 // Small CSV Sample Files
 const CSV_SAMPLE_URL = '@loaders.gl/csv/test/data/sample.csv';

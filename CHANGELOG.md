@@ -4,6 +4,18 @@
 
 ### Unreleased
 
+### v5.0.0-alpha.12
+
+- perf(tiles): upgrade math.gl to alpha.16 and batch horizontal XYZ reprojection with reusable projection buffers
+- feat(tile-converter): add bounded hierarchy and LOD conversion, remote and archive inputs, feature schemas, multiple contents, and a v5 CLI
+- feat(zip): add native ZIP32/ZIP64 readers and writers, consolidate indexed archives, and remove the JSZip runtime dependency
+- refactor(compression): adopt compress-utils defaults, TypeScript Parquet decoding, and LZO support
+- refactor(gis): remove the retired GIS compatibility package and move geometry helpers to focused modules
+- feat(terrain): expose lightweight Terrarium height grids
+- feat(potree): support legacy and modern dataset formats
+- refactor(worker-utils): import explicit ESM decoder factories in module workers instead of evaluating fetched scripts
+- chore: make loader exports explicit and add the Arrow type-only subpath
+
 ### v5.0.0-alpha.11
 
 - chore(math.gl): upgrade to 5.0.0-alpha.15

@@ -5,7 +5,7 @@
 import {parseInBatches} from '@loaders.gl/core';
 import {CSVLoader} from '@loaders.gl/csv/bundled';
 import {describe, expect, test} from 'vitest';
-import {calculateInitialTypedColumnCapacity} from '../src/csv-arrow-table-parser';
+import {calculateInitialTypedColumnCapacity} from '../../tables/src/csv/csv-arrow-table-parser';
 
 /** Reads one Arrow column into ordinary JavaScript values for assertions. */
 function getArrowColumnValues(table: any, columnName: string): unknown[] {

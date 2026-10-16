@@ -9,6 +9,9 @@ const darkCodeTheme = themes.dracula;
 const legacyMathCoreEntry = require.resolve('@math.gl/core', {
   paths: [resolve('../node_modules/@deck.gl/core')]
 });
+const legacyMathPolygonEntry = require.resolve('@math.gl/polygon', {
+  paths: [resolve('../node_modules/@deck.gl/layers')]
+});
 
 /** Creates the existing SWC loader with deterministic styled-components IDs. */
 function createJavaScriptLoader(isServer) {
@@ -67,6 +70,7 @@ function createBundlerPlugin() {
           {module: /modules[\\/]las[\\/]src[\\/]libs[\\/]laz-rs-wasm[\\/]laz_rs_wasm\.js$/, message: /Critical dependency/}
         ],
         plugins: [
+          require('./plugins/preserve-draco-assets'),
           new bundler.DefinePlugin({
             __VERSION__: JSON.stringify(version)
           }),
@@ -88,6 +92,13 @@ function createBundlerPlugin() {
             ) {
               // deck.gl/luma.gl 9.3 publish code compiled against math.gl 4.x.
               resource.request = legacyMathCoreEntry;
+            }
+          }),
+          new bundler.NormalModuleReplacementPlugin(/^@math\.gl\/polygon$/, resource => {
+            const normalizedContext = resource.context?.replace(/\\/g, '/');
+            if (normalizedContext?.includes('/node_modules/@deck.gl/')) {
+              // Published deck.gl layers still require the math.gl 4.x WINDING export.
+              resource.request = legacyMathPolygonEntry;
             }
           }),
           new bundler.NormalModuleReplacementPlugin(/^\.\/lerc\.js$/, resource => {
@@ -210,6 +221,8 @@ const config = {
           fallback: {path: false, fs: false, buffer: true},
           modules: [resolve('node_modules'), resolve('../node_modules')],
           alias: {
+            '@loaders.gl/tables': resolve('../modules/tables/src'),
+            '@loaders.gl/geospatial': resolve('../modules/geospatial/src'),
             examples: resolve('../examples'),
             bufferutil: false,
             'utf-8-validate': false,
@@ -239,7 +252,6 @@ const config = {
             '@loaders.gl/geopackage': resolve('../modules/geopackage/src'),
             '@loaders.gl/geotiff': resolve('../modules/geotiff/src'),
             '@loaders.gl/geoarrow': resolve('../modules/geoarrow/src'),
-            '@loaders.gl/gis': resolve('../modules/gis/src'),
             '@loaders.gl/gltf': resolve('../modules/gltf/src'),
             '@loaders.gl/i3s': resolve('../modules/i3s/src'),
             '@loaders.gl/images': resolve('../modules/images/src'),
@@ -350,6 +362,9 @@ const config = {
       {
         createRedirects(existingPath) {
           const pageRedirects = {
+            '/docs/modules/gis': '/docs/modules/geoarrow/gis-migration',
+            '/docs/modules/gis/api-reference/geojson-to-binary': '/docs/modules/geoarrow/api-reference/convert-geojson-to-binary-feature-collection',
+            '/docs/modules/gis/api-reference/binary-to-geojson': '/docs/modules/geoarrow/api-reference/convert-binary-feature-collection-to-geojson',
             '/examples/flatgeobuf': '/examples/geospatial/flatgeobuf',
             '/examples/geoarrow': '/examples/geospatial/geoarrow',
             '/examples/geoparquet': '/examples/geospatial/geoparquet',

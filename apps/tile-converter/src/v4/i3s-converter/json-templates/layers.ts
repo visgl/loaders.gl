@@ -1,137 +1,102 @@
-import transform from 'json-map-transform';
-import {STORE} from './store';
+// loaders.gl
+// SPDX-License-Identifier: MIT
+// Copyright (c) vis.gl contributors
 
-const SPATIAL_REFERENCE = () => ({
-  wkid: {
-    path: 'wkid',
-    default: 4326
-  },
-  latestWkid: {
-    path: 'latestWkid',
-    default: 4326
-  },
-  vcsWkid: {
-    path: 'vcsWkid',
-    default: 5773
-  },
-  latestVcsWkid: {
-    path: 'latestVcsWkid',
-    default: 5773
-  }
-});
+import type {BuilderInput} from '../../lib/utils/builder-input';
 
-const HEIGHT_MODEL_INFO = () => ({
-  heightModel: {
-    path: 'heightModel',
-    default: 'gravity_related_height'
-  },
-  vertCRS: {
-    path: 'vertCRS',
-    default: 'EGM96_Geoid'
-  },
-  heightUnit: {
-    path: 'heightUnit',
-    default: 'meter'
-  }
-});
+import type {SceneLayer3D} from '@loaders.gl/i3s';
+import {createStore, type StoreBuilderRecord} from './store';
 
-const NODE_PAGES = () => ({
-  nodesPerPage: {
-    path: 'nodesPerPage'
-  },
-  lodSelectionMetricType: {
-    path: 'lodSelectionMetricType',
-    default: 'maxScreenThresholdSQ'
-  }
-});
+/** Partially specified nested records completed by the legacy layer builder. */
+type LayerBuilderRecord = Omit<
+  SceneLayer3D,
+  'store' | 'nodePages' | 'spatialReference' | 'heightModelInfo' | 'fullExtent'
+> & {
+  /** Store values completed with defaults. */
+  store: BuilderInput<StoreBuilderRecord>;
+  /** Node page settings. */
+  nodePages?: BuilderInput<NonNullable<SceneLayer3D['nodePages']>>;
+  /** Spatial reference identifiers. */
+  spatialReference?: BuilderInput<NonNullable<SceneLayer3D['spatialReference']>>;
+  /** Height model settings. */
+  heightModelInfo?: BuilderInput<NonNullable<SceneLayer3D['heightModelInfo']>>;
+  /** Extent fields retained without defaults. */
+  fullExtent?: BuilderInput<NonNullable<SceneLayer3D['fullExtent']>>;
+};
 
-const FULL_EXTENT = () => ({
-  xmin: {
-    path: 'xmin'
-  },
-  ymin: {
-    path: 'ymin'
-  },
-  xmax: {
-    path: 'xmax'
-  },
-  ymax: {
-    path: 'ymax'
-  },
-  zmin: {
-    path: 'zmin'
-  },
-  zmax: {
-    path: 'zmax'
-  }
-});
+/** Builds spatial reference with the legacy field selection and defaults. */
+function createSpatialReference(
+  input: BuilderInput<NonNullable<SceneLayer3D['spatialReference']>> | null | undefined
+) {
+  const source = input ?? {};
+  return {
+    wkid: source.wkid ?? 4326,
+    latestWkid: source.latestWkid ?? 4326,
+    vcsWkid: source.vcsWkid ?? 5773,
+    latestVcsWkid: source.latestVcsWkid ?? 5773
+  };
+}
 
-export const LAYERS = () => ({
-  version: {
-    path: 'version',
-    transform: val => val.toUpperCase()
-  },
-  id: {
-    path: 'id',
-    default: 0
-  },
-  name: {
-    path: 'name'
-  },
-  href: {
-    path: 'href',
-    default: './layers/0'
-  },
-  layerType: {
-    path: 'layerType',
-    default: 'IntegratedMesh'
-  },
-  spatialReference: {
-    path: 'spatialReference',
-    transform: val => transform(val, SPATIAL_REFERENCE())
-  },
-  capabilities: {
-    path: 'capabilities',
-    default: ['View', 'Query']
-  },
-  store: {
-    path: 'store',
-    transform: val => transform(val, STORE)
-  },
-  fullExtent: {
-    path: 'fullExtent',
-    transform: val => transform(val, FULL_EXTENT())
-  },
-  heightModelInfo: {
-    path: 'heightModelInfo',
-    transform: val => transform(val, HEIGHT_MODEL_INFO())
-  },
-  nodePages: {
-    path: 'nodePages',
-    transform: val => transform(val, NODE_PAGES())
-  },
-  materialDefinitions: {
-    path: 'materialDefinitions',
-    default: []
-  },
-  textureSetDefinitions: {
-    path: 'textureSetDefinitions',
-    default: []
-  },
-  geometryDefinitions: {
-    path: 'geometryDefinitions',
-    default: []
-  },
-  attributeStorageInfo: {
-    path: 'attributeStorageInfo',
-    default: []
-  },
-  fields: {
-    path: 'fields',
-    default: []
-  },
-  popupInfo: {
-    path: 'popupInfo',
-    default: null
-  }
-});
+/** Builds height model info with the legacy field selection and defaults. */
+function createHeightModelInfo(
+  input: BuilderInput<NonNullable<SceneLayer3D['heightModelInfo']>> | null | undefined
+) {
+  const source = input ?? {};
+  return {
+    heightModel: source.heightModel ?? 'gravity_related_height',
+    vertCRS: source.vertCRS ?? 'EGM96_Geoid',
+    heightUnit: source.heightUnit ?? 'meter'
+  };
+}
+
+/** Builds node pages with the legacy field selection and defaults. */
+function createNodePages(
+  input: BuilderInput<NonNullable<SceneLayer3D['nodePages']>> | null | undefined
+) {
+  const source = input ?? {};
+  return {
+    nodesPerPage: source.nodesPerPage ?? undefined,
+    lodSelectionMetricType: source.lodSelectionMetricType ?? 'maxScreenThresholdSQ'
+  };
+}
+
+/** Builds full extent with the legacy field selection and defaults. */
+function createFullExtent(
+  input: BuilderInput<NonNullable<SceneLayer3D['fullExtent']>> | null | undefined
+) {
+  const source = input ?? {};
+  return {
+    xmin: source.xmin ?? undefined,
+    ymin: source.ymin ?? undefined,
+    xmax: source.xmax ?? undefined,
+    ymax: source.ymax ?? undefined,
+    zmin: source.zmin ?? undefined,
+    zmax: source.zmax ?? undefined
+  };
+}
+
+/** Builds layers with the legacy field selection and defaults. */
+export function createLayers(
+  input: BuilderInput<LayerBuilderRecord> | null | undefined
+): SceneLayer3D {
+  const source = input ?? {};
+  return {
+    version: source.version!.toUpperCase(),
+    id: source.id ?? 0,
+    name: source.name ?? undefined,
+    href: source.href ?? './layers/0',
+    layerType: source.layerType ?? 'IntegratedMesh',
+    spatialReference: createSpatialReference(source.spatialReference),
+    capabilities: source.capabilities ?? ['View', 'Query'],
+    store: createStore(source.store),
+    fullExtent: createFullExtent(source.fullExtent),
+    heightModelInfo: createHeightModelInfo(source.heightModelInfo),
+    nodePages: createNodePages(source.nodePages),
+    materialDefinitions: source.materialDefinitions ?? [],
+    textureSetDefinitions: source.textureSetDefinitions ?? [],
+    geometryDefinitions: source.geometryDefinitions ?? [],
+    attributeStorageInfo: source.attributeStorageInfo ?? [],
+    fields: source.fields ?? [],
+    popupInfo: source.popupInfo ?? undefined
+  } as SceneLayer3D;
+}

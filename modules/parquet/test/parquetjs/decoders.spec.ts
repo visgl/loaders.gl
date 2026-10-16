@@ -1,7 +1,7 @@
 import { expect, test } from "vitest";
 import type Int64 from 'node-int64';
-import { decodeDataPages } from '../../src/parquetjs/parser/decoders';
-import type { ParquetReaderContext } from '../../src/parquetjs/schema/declare';
+import { decodeDataPages } from '../../../tables/src/parquet/parquetjs/parser/decoders';
+import type { ParquetReaderContext } from '../../../tables/src/parquet/parquetjs/schema/declare';
 /** Minimal required-column context for page-assembly metadata tests. */
 const TEST_CONTEXT: ParquetReaderContext = {
     type: 'INT32',

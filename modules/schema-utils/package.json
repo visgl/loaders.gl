@@ -1,6 +1,6 @@
 {
   "name": "@loaders.gl/schema-utils",
-  "version": "5.0.0-alpha.11",
+  "version": "5.0.0-alpha.12",
   "description": "Schema-related utilities for loaders.gl...",
   "license": "MIT",
   "type": "module",
@@ -27,6 +27,11 @@
       "types": "./dist/index.d.ts",
       "import": "./dist/index.js",
       "require": "./dist/index.cjs"
+    },
+    "./arrow-transport": {
+      "types": "./dist/arrow-transport.d.ts",
+      "import": "./dist/arrow-transport.js",
+      "require": "./dist/arrow-transport.cjs"
     }
   },
   "sideEffects": false,
@@ -41,8 +46,8 @@
     "build-bundle-dev": "ocular-bundle ./bundle.ts --env=dev --output=dist/dist.dev.js"
   },
   "dependencies": {
-    "@loaders.gl/schema": "5.0.0-alpha.11",
-    "@math.gl/types": "5.0.0-alpha.15",
+    "@loaders.gl/schema": "5.0.0-alpha.12",
+    "@math.gl/types": "5.0.0-alpha.18",
     "@types/geojson": "^7946.0.7",
     "apache-arrow": ">= 17.0.0"
   },

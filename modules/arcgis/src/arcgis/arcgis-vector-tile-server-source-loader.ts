@@ -15,10 +15,12 @@ import type {
   GetTileParameters,
   SourceLoader,
   TileSourceMetadata,
+  TileGrid,
   VectorTile,
   VectorTileSource
 } from '@loaders.gl/loader-utils';
-import {DataSource} from '@loaders.gl/loader-utils';
+import {DataSource, getTileGridMatrixId} from '@loaders.gl/loader-utils';
+import {createArcGISTileGrid} from './arcgis-tile-grid';
 import {MVTLoader, type MVTLoaderOptions} from '@loaders.gl/mvt';
 import type {Schema} from '@loaders.gl/schema';
 
@@ -33,6 +35,8 @@ export class ArcGISVectorTileServerSource
   readonly localCoordinates = false;
   /** Cached service metadata request. */
   private serviceMetadata: Promise<ArcGISVectorTileServiceMetadata> | null = null;
+  /** Advertised grid, available after metadata loads. */
+  private tileGrid: TileGrid | undefined;
   /** Query parameters supplied with the service URL, such as an access token. */
   private readonly serviceQueryParameters: URLSearchParams;
 
@@ -58,14 +62,16 @@ export class ArcGISVectorTileServerSource
     const metadata = await this.getServiceMetadata();
     const tileInfo = metadata.tileInfo;
     const lods = tileInfo?.lods || [];
+    this.tileGrid = createArcGISTileGrid(tileInfo);
     const extent = metadata.fullExtent || metadata.initialExtent;
     return {
       name: metadata.mapName || this.url.split('/').pop() || '',
       title: metadata.mapName,
       abstract: metadata.serviceDescription,
       format: 'application/vnd.mapbox-vector-tile',
-      minZoom: lods[0]?.level,
-      maxZoom: lods.at(-1)?.level,
+      minZoom: lods.length ? Math.min(...lods.map(level => level.level)) : undefined,
+      maxZoom: lods.length ? Math.max(...lods.map(level => level.level)) : undefined,
+      tileGrid: this.tileGrid,
       boundingBox: extent
         ? [
             [extent.xmin, extent.ymin],
@@ -102,6 +108,12 @@ export class ArcGISVectorTileServerSource
 
   /** Fetches and decodes one ArcGIS vector tile to geographic coordinates. */
   async getVectorTile(parameters: GetTileParameters): Promise<VectorTile | null> {
+    const matrixId = getTileGridMatrixId(this.tileGrid, parameters);
+    if (matrixId !== String(parameters.z)) {
+      throw new Error(
+        'ArcGIS geographic vector decoding requires a matching XYZ zoom; use getTile for native matrix bytes'
+      );
+    }
     const arrayBuffer = await this.getTile(parameters, parameters.signal);
     if (!arrayBuffer) {
       return null;
@@ -128,7 +140,10 @@ export class ArcGISVectorTileServerSource
 
   /** Builds the ArcGIS cached vector tile URL. */
   getTileURL(parameters: GetTileParameters): string {
-    return this.getResourceURL(`/tile/${parameters.z}/${parameters.y}/${parameters.x}.pbf`);
+    const matrixId = getTileGridMatrixId(this.tileGrid, parameters);
+    return this.getResourceURL(
+      `/tile/${encodeURIComponent(matrixId)}/${parameters.y}/${parameters.x}.pbf`
+    );
   }
 
   /** Returns the service metadata URL. */

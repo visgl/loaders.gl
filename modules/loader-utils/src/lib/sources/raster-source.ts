@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: MIT
 // SPDX-FileCopyrightText: Copyright (c) vis.gl contributors
 
+import type {TileGrid} from './tile-source';
 import type {TypedArray} from '../../types';
 import type {CRSDefinition, CRSIdentifier} from '@math.gl/crs';
 
@@ -175,6 +176,8 @@ export type RasterSourceMetadata = {
   supportsRegion?: boolean;
   /** Native tile dimensions when the source is tiled. */
   tileSize?: {width: number; height: number};
+  /** Native tiled overview geometry; matrix IDs are source image indices. Edge tiles may extend beyond raster bounds. */
+  tileGrid?: TileGrid;
   /** Available overview levels. */
   overviews?: RasterOverview[];
   /** Source no-data value when defined. */

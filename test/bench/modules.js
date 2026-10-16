@@ -29,9 +29,11 @@ export async function addModuleBenchmarksToSuite(suite, filters = []) {
     await lasBench(suite);
   }
 
-  if (shouldRunBenchmark('gis')) {
-    const {default: gisBench} = await import('@loaders.gl/gis/test/binary-features/gis.bench');
-    await gisBench(suite);
+  if (shouldRunBenchmark('geoarrow')) {
+    const {default: geoarrowBench} = await import(
+      '@loaders.gl/geoarrow/test/binary-features/geoarrow.bench'
+    );
+    await geoarrowBench(suite);
   }
 
   if (shouldRunBenchmark('shapefile')) {

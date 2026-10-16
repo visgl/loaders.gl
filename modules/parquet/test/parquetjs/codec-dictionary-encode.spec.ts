@@ -3,9 +3,9 @@
 // Copyright (c) vis.gl contributors
 
 import {expect, test} from 'vitest';
-import {PARQUET_CODECS} from '../../src/parquetjs/codecs';
-import {planDictionary} from '../../src/parquetjs/encoder/dictionary-planner';
-import {ParquetSchema} from '../../src/parquetjs/schema/schema';
+import {PARQUET_CODECS} from '../../../tables/src/parquet/parquetjs/codecs';
+import {planDictionary} from '../../../tables/src/parquet/parquetjs/encoder/dictionary-planner';
+import {ParquetSchema} from '../../../tables/src/parquet/parquetjs/schema/schema';
 
 test.each([
   {indices: [1, 2, 3], bitWidth: 2},

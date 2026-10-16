@@ -1,6 +1,9 @@
 import {beforeAll, describe, expect, test} from 'vitest';
 import {fetchFile} from '@loaders.gl/core';
-import {parseSHPToArrow, parseSHPToArrowInBatches} from '../src/lib/parsers/parse-shp-to-arrow';
+import {
+  parseSHPToArrow,
+  parseSHPToArrowInBatches
+} from '../../geospatial/src/shapefile/lib/parsers/parse-shp-to-arrow';
 
 const POINTS_PATH = '@loaders.gl/shapefile/test/data/shapefile-js/points.shp';
 let pointsBuffer: ArrayBuffer;

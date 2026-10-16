@@ -6,7 +6,7 @@
 
 import savePixels from 'save-pixels';
 import ndarray from 'ndarray';
-import {bufferToArrayBuffer} from '../buffer/to-array-buffer.node';
+import {bufferToArrayBuffer} from '../buffer/to-array-buffer.node.js';
 
 /**
  * Returns data bytes representing a compressed image in PNG or JPG format,

@@ -13,7 +13,7 @@ import {
   inspectGeoArrowVector
 } from '@loaders.gl/geoarrow';
 import type {GeoArrowEncoding} from '@loaders.gl/schema';
-import {convertGeometryToWKB} from '@loaders.gl/gis';
+import {convertGeometryToWKB} from '@loaders.gl/arrow-geometry/geometry-codecs';
 import {encodeGeoArrowBoxVector} from '../src/lib/kernels/encode-geoarrow-box';
 import {encodeGeoArrowWKTVector} from '../src/lib/kernels/encode-geoarrow-wkt';
 

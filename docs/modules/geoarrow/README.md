@@ -8,6 +8,10 @@ title: GeoArrow module
 processing for geospatial Arrow tables. Applications can install it when they
 need more than the geometry construction helpers used by loaders.
 
+GeoArrow is independent of the deprecated GIS package. See the
+[GIS migration map](./gis-migration.md) for replacement imports, the combined
+`GEOARROW_CONVERTERS` bundle, and legacy rendering allocation semantics.
+
 ```bash
 npm install @loaders.gl/geoarrow
 ```

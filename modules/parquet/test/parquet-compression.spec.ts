@@ -6,7 +6,7 @@ import { expect, test } from "vitest";
 import { ZstdCodec } from 'zstd-codec';
 import { ZstdCompression } from '@loaders.gl/compression/zstd-compression';
 import { SnappyJSCompressor } from '@loaders.gl/compression/snappy-compressor-snappyjs';
-import { createParquetPageDecompressor, decompress } from '../src/parquetjs/compression';
+import { createParquetPageDecompressor, decompress } from '../../tables/src/parquet/parquetjs/compression';
 test('Parquet compression#native streams avoid codec fallbacks', async () => {
     const formats: string[] = [];
     const restoreDecompressionStream = installMockDecompressionStream(formats, [
@@ -34,31 +34,20 @@ test('Parquet compression#native streams avoid codec fallbacks', async () => {
         restoreDecompressionStream();
     }
 });
-test('Parquet compression#provided modules bypass native streams', async () => {
+test('Parquet compression#default Brotli uses compress-utils rather than injected legacy modules', async () => {
+    const {BrotliCompressUtilsCompressor} = await import('@loaders.gl/compression/brotli-compressor-compress-utils');
     const formats: string[] = [];
-    const restoreDecompressionStream = installMockDecompressionStream(formats, ['brotli', 'zstd']);
-    const input = new Uint8Array([1, 2, 3, 4]);
-    const restoreBrotli = replaceRegisteredModule('brotli', {
-        decompress: (bytes: Uint8Array) => bytes,
-        compress: () => {
-            throw new Error('compression is not used by this test');
-        }
-    });
-    const restoreZstd = replaceRegisteredModule('zstd-codec', ZstdCodec);
+    const restoreNative = installMockDecompressionStream(formats, []);
+    let legacyCalls = 0;
+    const restoreBrotli = replaceRegisteredModule('brotli', {decompress: () => {legacyCalls++;}});
+    const input = new TextEncoder().encode('default brotli codec');
     try {
-        const brotliOutput = await decompress('BROTLI', input, input.byteLength);
-        expect([...brotliOutput], 'provided Brotli module decompresses data').toEqual([...input]);
-        const compression = new ZstdCompression({ modules: { 'zstd-codec': ZstdCodec } });
-        await compression.preload();
-        const compressedZstd = new Uint8Array(compression.compressSync(input.buffer));
-        const zstdOutput = await decompress('ZSTD', compressedZstd, input.byteLength);
-        expect([...zstdOutput], 'provided zstd-codec decompresses data').toEqual([...input]);
-        expect(formats, 'provided modules bypass native stream probing').toEqual([]);
-    }
-    finally {
-        restoreZstd();
+        const encoded = await new BrotliCompressUtilsCompressor().compress(input.buffer);
+        expect(await decompress('BROTLI', new Uint8Array(encoded), input.length)).toEqual(input);
+        expect(legacyCalls).toBe(0);
+    } finally {
         restoreBrotli();
-        restoreDecompressionStream();
+        restoreNative();
     }
 });
 test('Parquet compression#unsupported native gzip lazily falls back to fflate', async () => {
@@ -70,35 +59,18 @@ test('Parquet compression#unsupported native gzip lazily falls back to fflate', 
     ]);
     try {
         const output = await decompress('GZIP', compressedGzip, 9);
-        expect([...output], 'fflate fallback decompresses').toEqual([1, 2, 3, 4, 5, 6, 7, 8, 9]);
+        expect([...output], 'compress-utils fallback decompresses').toEqual([1, 2, 3, 4, 5, 6, 7, 8, 9]);
         expect(formats, 'native gzip is probed before lazy fallback').toEqual(['gzip']);
     }
     finally {
         restoreDecompressionStream();
     }
 });
-test('Parquet compression#Snappy falls back when WebAssembly is unavailable', async () => {
-    const originalDescriptor = Object.getOwnPropertyDescriptor(globalThis, 'WebAssembly');
-    const input = new TextEncoder().encode('Snappy fallback for a Parquet page');
-    const compressor = new SnappyJSCompressor();
-    const compressed = await compressor.compress(input.buffer);
-    try {
-        Object.defineProperty(globalThis, 'WebAssembly', {
-            configurable: true,
-            writable: true,
-            value: undefined
-        });
-        const decompressPage = createParquetPageDecompressor('SNAPPY');
-        expect(await decompressPage(new Uint8Array(compressed), input.byteLength)).toEqual(input);
-    }
-    finally {
-        if (originalDescriptor) {
-            Object.defineProperty(globalThis, 'WebAssembly', originalDescriptor);
-        }
-        else {
-            delete (globalThis as any).WebAssembly;
-        }
-    }
+test('Parquet compression#Snappy uses the shared lazy decoder', async () => {
+  const input = new TextEncoder().encode('Snappy compression for a Parquet page');
+  const compressed = await new SnappyJSCompressor().compress(input.buffer);
+  const decompressPage = createParquetPageDecompressor('SNAPPY');
+  expect(await decompressPage(new Uint8Array(compressed), input.byteLength)).toEqual(input);
 });
 /**
  * Installs a pass-through DecompressionStream double and returns a restorer.

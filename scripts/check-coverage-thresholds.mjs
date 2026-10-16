@@ -30,8 +30,12 @@ checkCoverageSummaryFreshness('browser', browserSummary, violations);
 checkCoverageSummaryFreshness('merged', mergedSummary, violations);
 
 for (const publishedPackage of publishedPackages) {
-  const browserCoverage = aggregatePackageCoverage(browserSummary, publishedPackage.path);
-  const mergedCoverage = aggregatePackageCoverage(mergedSummary, publishedPackage.path);
+  // Compatibility packages keep their original thresholds over the moved implementation.
+  const sourcePaths = manifest.packages[publishedPackage.name]?.sourcePaths || [
+    `${publishedPackage.path}/src/`
+  ];
+  const browserCoverage = aggregatePackageCoverage(browserSummary, sourcePaths);
+  const mergedCoverage = aggregatePackageCoverage(mergedSummary, sourcePaths);
   checkCoveragePresence(publishedPackage.name, 'browser', browserCoverage, violations);
   checkCoveragePresence(publishedPackage.name, 'merged', mergedCoverage, violations);
   let packageThresholds = manifest.packages[publishedPackage.name];
@@ -178,11 +182,10 @@ function findPublishedPackages() {
 }
 
 /** Aggregates file-level Istanbul summary counts for one package. */
-function aggregatePackageCoverage(coverageSummary, packagePath) {
+function aggregatePackageCoverage(coverageSummary, sourcePaths) {
   const aggregate = Object.fromEntries(
     COVERAGE_METRICS.map(metric => [metric, {total: 0, covered: 0, percentage: 100}])
   );
-  const packageSourcePath = `${packagePath}/src/`;
 
   for (const [sourceFile, sourceCoverage] of Object.entries(coverageSummary)) {
     if (sourceFile === 'total') {
@@ -192,7 +195,7 @@ function aggregatePackageCoverage(coverageSummary, packagePath) {
     const relativeSourceFile = path.isAbsolute(normalizedSourceFile)
       ? path.relative(repositoryRoot, normalizedSourceFile).replaceAll(path.sep, '/')
       : normalizedSourceFile.replace(/^\.\//, '');
-    if (!relativeSourceFile.startsWith(packageSourcePath)) {
+    if (!sourcePaths.some(sourcePath => relativeSourceFile.startsWith(sourcePath))) {
       continue;
     }
 

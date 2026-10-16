@@ -25,7 +25,7 @@ import type {
 
 import {deepStrictEqual} from './deep-strict-equal';
 import {parseXMLTextSync} from '../xml/parse-xml-text';
-import rewind from '@turf/rewind';
+import {rewindGeometry} from './rewind-geometry';
 
 /** A GeoJSON feature decoded from a GML feature member. */
 export type GMLFeature = {
@@ -225,8 +225,7 @@ export function parseGMLToGeometry(
       return null;
   }
 
-  // todo
-  return rewind(geometry as any, {mutate: true}) as Geometry;
+  return rewindGeometry(geometry);
 }
 
 /** Parse a list of coordinates from a string */

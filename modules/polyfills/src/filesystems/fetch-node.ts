@@ -5,7 +5,7 @@
 import fs from 'fs';
 import {Readable} from 'stream';
 import {resolvePath} from '@loaders.gl/loader-utils';
-import {decompressReadStream} from './stream-utils.node';
+import {decompressReadStream} from './stream-utils.node.js';
 
 const isBoolean = x => typeof x === 'boolean';
 const isFunction = x => typeof x === 'function';

@@ -14,6 +14,7 @@ type TileDocsTab = {
 export type TileDocsTabId =
   | 'mvt-example'
   | 'pmtiles-example'
+  | 'pmtiles-authoring-example'
   | 'table-tiler-example'
   | 'mlt-example'
   | 'mvt'
@@ -25,6 +26,7 @@ export type TileDocsTabId =
 const TILE_DOCS_TABS: TileDocsTab[] = [
   {id: 'mvt-example', label: 'Try MVT', href: '/examples/tiles/mvt'},
   {id: 'pmtiles-example', label: 'Try PMTiles', href: '/examples/tiles/pmtiles'},
+  {id: 'pmtiles-authoring-example', label: 'Create PMTiles', href: '/examples/tiles/pmtiles-authoring'},
   {id: 'table-tiler-example', label: 'Try Arrow Tiler', href: '/examples/tiles/table-tiler'},
   {id: 'mlt-example', label: 'Try MLT', href: '/examples/tiles/mlt'},
   {id: 'mvt', label: 'MVT', href: '/docs/modules/mvt/formats/mvt'},

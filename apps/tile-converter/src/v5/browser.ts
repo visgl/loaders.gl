@@ -16,6 +16,7 @@ export type {
   TileConversionDiagnostic,
   TileConversionProgress,
   TileConversionReport,
+  TileConversionTimings,
   TileConversionSink,
   TileConversionSource,
   TileValidationReport,
@@ -143,3 +144,42 @@ export type {
   ConvertPointCloudToTilesetOptions,
   ConvertedPointCloudTileset
 } from '@loaders.gl/tile-converter/v5/adapters';
+
+export {
+  encodePotreeArchive,
+  openPointCloudFile,
+  extractMeshVertices
+} from '@loaders.gl/tile-converter/v5/adapters';
+export type {
+  EncodePotreeArchiveOptions,
+  OpenPointCloudFileOptions,
+  OpenedPointCloudFile,
+  ExtractMeshVerticesOptions
+} from '@loaders.gl/tile-converter/v5/adapters';
+
+export {createMeshSourceFeatureOptions} from '@loaders.gl/tile-converter/v5/adapters';
+export type {MeshSourceSchemaOptions} from '@loaders.gl/tile-converter/v5/adapters';
+export {convertPointCloudToPotree} from '@loaders.gl/tile-converter/v5/adapters';
+export type {
+  ConvertPointCloudToPotreeOptions,
+  ConvertedPointCloudPotree
+} from '@loaders.gl/tile-converter/v5/adapters';
+
+export {selectBrowserTilesetContent} from '@loaders.gl/tile-converter/v5/core';
+export type {
+  BrowserTilesetDocumentPlacement,
+  BrowserTilesetContentSelection
+} from '@loaders.gl/tile-converter/v5/core';
+
+export {
+  createSelectedMeshConversionSource,
+  measureMeshBytes,
+  SELECTED_MESH_LIMITS
+} from '@loaders.gl/tile-converter/v5/adapters';
+export type {
+  SelectedMeshSourceOptions,
+  SelectedMeshConversionSource
+} from '@loaders.gl/tile-converter/v5/adapters';
+
+export {createMeshHierarchyTilesetSink} from '@loaders.gl/tile-converter/v5/adapters';
+export type {MeshHierarchyTilesetSinkOptions} from '@loaders.gl/tile-converter/v5/adapters';

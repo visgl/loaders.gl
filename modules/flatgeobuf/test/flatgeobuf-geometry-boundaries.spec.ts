@@ -4,7 +4,8 @@
 
 import {Builder} from 'flatbuffers';
 import {expect, test, vi} from 'vitest';
-import {convertWKBToGeometry, WKBBuilder} from '@loaders.gl/gis';
+import {convertWKBToGeometry} from '@loaders.gl/arrow-geometry/geometry-codecs';
+import {WKBBuilder} from '@loaders.gl/arrow-geometry';
 import {
   decodeFlatGeobufGeometry,
   FlatGeobufGeometryType,
@@ -12,7 +13,7 @@ import {
   type FlatGeobufHeader,
   writeFlatGeobufGeometry,
   writeFlatGeobufGeometryToWKB
-} from '../src/lib/flatgeobuf-reader';
+} from '../../geospatial/src/flatgeobuf/lib/flatgeobuf-reader';
 
 type GeometryFixture = {
   arrayBuffer: ArrayBuffer;

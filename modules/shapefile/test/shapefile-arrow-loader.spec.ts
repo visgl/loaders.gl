@@ -7,7 +7,7 @@ import * as arrow from 'apache-arrow';
 import {validateLoader} from 'test/common/conformance';
 import {setLoaderOptions, fetchFile, load, loadInBatches} from '@loaders.gl/core';
 import {ShapefileLoader} from '@loaders.gl/shapefile';
-import {convertWKBTableToGeoJSON} from '@loaders.gl/gis';
+import {convertWKBTableToGeoJSON} from '@loaders.gl/arrow-geometry/wkb-table';
 import {convertGeoArrowVectorCellToGeoJSON, getGeoMetadata} from '@loaders.gl/geoarrow';
 setLoaderOptions({
   _workerType: 'test',

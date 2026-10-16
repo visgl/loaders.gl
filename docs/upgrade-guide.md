@@ -54,6 +54,38 @@ v4.5 is additive. Existing loaders and defaults continue to work unchanged, exce
 
 ## Upgrading to v5.0
 
+**OGC API Tiles matrix discovery**
+
+`OGCAPITilesSource` now discovers matrix metadata for canonical `/{tileMatrix}` templates by default. Failed discovery rejects the request instead of silently substituting numeric zoom levels. Await `getMetadata()` before calling synchronous `getTileURL()`, or set `ogc-api.discoverTileMatrixSet: false` to retain the previous numeric-template behavior. Configured `tileMatrixSet` documents take precedence over discovery. See the [OGC API Tiles documentation](./modules/wms/services/ogc-api.md).
+
+**@loaders.gl/zip**
+
+- Removed JSZip passthrough options. Replace `jszip.compression: 'STORE' | 'DEFLATE'` with
+  `zip.compression: 'store' | 'deflate'` and use the typed native ZIP options. Writing now uses
+  deterministic sorted paths, a fixed UTC timestamp and automatic ZIP64; exact legacy bytes are
+  not preserved. `zip.onUpdate` reports start/completion only.
+- Removed `/bundled` and `/unbundled`. Import metadata `ZipLoader` from the package root;
+  direct parser access is `ZipLoaderWithParser` from `@loaders.gl/zip/zip-loader`.
+- `ZipLoader` returns ArrayBuffer values only and rejects invalid entries instead of placing
+  errors in the map. Complete reads verify CRCs. The total decoded file-map default is 64 MiB;
+  set `zip.maxTotalDecodedBytes` explicitly for larger maps. The independent per-entry limits
+  `zip.maxDecodedBytes` and `zip.maxCompressedBytes` also default to 64 MiB; raise them explicitly
+  when individual entries exceed those bounds, or use incremental archive reads.
+
+- `ZipFileSystem.stat()` now returns validated `ZipEntry` metadata with numeric `size` and
+  exact `uncompressedSize`. Replace raw-header fields such as `fileName` with `path`; header
+  lengths and central-directory offsets are no longer exposed by this method.
+- One-shot SLPK and 3TZ `parseFile()` extraction now closes the supplied file on success or
+  failure. For repeated reads, use `parseSLPKArchive` or `parse3DTilesArchive` and close the
+  returned archive after the final resource read.
+- Raw ZIP header parsers/serializers, signature/search helpers, central-header iteration and ZIP
+  file utilities are no longer root exports. Use `openZipArchive`, `ZipArchive.entries()`,
+  `getEntryAt()` and the native encoders. Use `ArrayBufferFile`/`BlobFile` from
+  `@loaders.gl/loader-utils` instead of the ZIP-exported `DataViewReadableFile`.
+- Removed `ZIP_COMPRESSION_HANDLERS` and `CompressionHandler`. Use shared archive read methods
+  instead of dispatching container compression in consumers. Complete generic filesystem
+  responses now stream; consume the response body to observe integrity errors.
+
 The sections below document the v5 removals, migrations, and deprecations that remain active.
 
 ### Module-worker decoder wrappers
@@ -65,6 +97,40 @@ Draco, Basis, and Crunch wrappers have generated `.mjs` adapters; custom CDNs mu
 these additional assets. Classic-worker `importScripts()` behavior is unchanged. See
 [decoder library loading](/docs/modules/worker-utils#loading-decoder-libraries) for overrides
 and content-security-policy limitations.
+
+### Explicit reference compression backends
+
+`@loaders.gl/compression` no longer automatically installs `brotli`, `fzstd`, `hysnappy`,
+`lz4js`, `pako`, `snappyjs`, or `zstd-codec`. They are optional peer dependencies.
+Default codecs continue to use native streams or the required `compress-utils` dependency.
+Applications importing a backend-specific entry point must install its corresponding package
+explicitly, for example `npm install pako` before importing `@loaders.gl/compression/gzip-pako`.
+Injectable Brotli and Zstandard implementations still require `modules` registration.
+The deprecated `zstd-compression` asynchronous fallback needs an explicit `fzstd` installation;
+prefer the default `ZstdDecompressor` if no reference backend is required.
+
+### Alternate loader imports
+
+Package roots expose the primary loader for each format. Alternate backend loaders
+are available through implementation subpaths instead of root exports:
+
+```typescript
+import {LASCOPCLoaderWithParser} from '@loaders.gl/las/las-copc-loader';
+import {LAZPerfLoaderWithParser} from '@loaders.gl/las/lazperf-loader';
+import {LAZRsLoaderWithParser} from '@loaders.gl/las/laz-rs-loader';
+import {ParquetJSLoaderWithParser} from '@loaders.gl/parquet/parquet-js-loader';
+import {FastJSONLoader} from '@loaders.gl/json/fast-json-loader';
+```
+
+These replace the root exports `LASCOPCLoader`, `LAZPerfLoader`, `LAZRsLoader`,
+`ParquetJSLoader`, and `_FastJSONLoader`. Implementation subpaths load the parser
+eagerly and support direct parsing. Primary metadata loaders continue to preload
+their implementations for asynchronous core APIs.
+
+The explicit `@loaders.gl/arrow/types` facade exposes Apache Arrow names available
+in the supported minimum release, Arrow 17. Import version-specific names such
+as `Utf8View`, `BinaryView`, `LargeList`, compression helpers, and newer type
+guards directly from your installed `apache-arrow` package.
 
 ### Graph loader output defaults
 
@@ -187,6 +253,22 @@ itself and the separate `Tileset3D.loadOptions` API are not removed by this chan
    would strip Arrow table methods.
  - `draco.decoderType` has been removed. Use `draco.backend: 'wasm' | 'javascript' | 'draco3d'`.
 
+**Removed GIS package**
+
+- `@loaders.gl/gis` is removed in 5.0. Applications should replace it with
+  `@loaders.gl/geoarrow` for conversion and processing. Use `GEOARROW_CONVERTERS`
+  instead of `GIS_CONVERTERS`.
+- Import geometry and metadata types from `@loaders.gl/schema`. Runtime validators
+  use `@loaders.gl/schema/geospatial-metadata-zod-schema`; generated schemas use
+  `@loaders.gl/schema/geoparquet.schema.json` and
+  `@loaders.gl/schema/geoarrow-metadata.schema.json`.
+- Use `convertGeojsonToBinaryFeatureCollection` and
+  `convertBinaryFeatureCollectionToGeojson` from GeoArrow instead of the old
+  `geojsonToBinary` and `binaryToGeojson` aliases. Existing binary layouts are unchanged;
+  these conversions allocate and do not promise borrowed batch views.
+- See the [complete replacement import map](./modules/geoarrow/gis-migration.md),
+  including the lower-level loader helpers, direct math.gl codecs/CRS, and WKT's TWKB subpath.
+
 **Removed compatibility aliases**
 
  - The nonfunctional `@loaders.gl/images` `loadImage()` placeholder has been removed. Use
@@ -209,7 +291,21 @@ itself and the separate `Tileset3D.loadOptions` API are not removed by this chan
  - The `pmtiles.shape: 'columnar-table'` option remains supported for MVT archives only. Passing it
    for an MLT archive now throws; use `geojson-table`, `binary-geometry`, or `arrow-table` instead.
 
+- Synchronous `encodeI3SMeshLayer()` now requires `await preloadI3SMeshCompression()` once before
+  encoding resources. The async Draco encoder and tile-converter pipeline initialize automatically.
+- Direct synchronous RAD chunk helpers require `await preloadRADCompression()` from the
+  `@loaders.gl/splats/rad-loader` subpath. RADSource read/query methods initialize automatically.
+
 **@loaders.gl/compression**
+
+- Default codec implementations now use compress-utils 0.9.0 instead of JavaScript fallbacks.
+  Direct default subpaths require `await codec.preload()` before sync calls; async calls preload
+  automatically. Native-only implementations remain async. Explicit JavaScript backend subpaths
+  remain available for callers that require them.
+  Configure default encoder levels with `compressUtils.level`, replacing `gzip.level` and
+  `deflate.level`. Injected legacy Brotli/zstd-codec modules no longer override the default
+  backend; select their explicit implementation subpaths instead.
+
 
 - The compression package root now exports lightweight, library-neutral classes such as
   `GZipCompressor`, `GZipDecompressor`, and `ZstdDecompressor`. Their async methods prefer built-in
@@ -464,7 +560,7 @@ This unifies top-level loading behavior:
 
 - `loaders.gl/core` - Improved loader type inference: `load()`, `parse()`, etc now infer correct option and return types even when an array of loaders is passed. This can lead to previously undetected type errors now being reported and breaking your build, requiring you to fix the errors.
 - `loaders.gl/core` - internal tile index in `Source` classes has changed from `tileIndex.zoom` to `tileIndex.z`. Should not impact most applications.
-- `@loaders.gl/loader-utils` - Deprecated `FileProvider` classes have been removed from the main entrypoint; use `HttpFile`, `BlobFile`, `NodeFile`, or `DataViewReadableFile` to provide `ReadableFile` access instead.
+- `@loaders.gl/loader-utils` - Deprecated `FileProvider` classes have been removed from the main entrypoint; use `HttpFile`, `BlobFile`, `NodeFile`, or `ArrayBufferFile` to provide `ReadableFile` access instead.
 - `@loaders.gl/zip`/`@loaders.gl/i3s` - Archive parsing helpers expect `ReadableFile` inputs rather than custom provider classes.
 
 **Deprecations**

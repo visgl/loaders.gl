@@ -1,7 +1,7 @@
 {
   "name": "@loaders.gl/geopackage",
   "description": "GeoPackage data loaders",
-  "version": "5.0.0-alpha.11",
+  "version": "5.0.0-alpha.12",
   "license": "MIT",
   "type": "module",
   "publishConfig": {
@@ -51,20 +51,20 @@
     "build-worker": "# esbuild src/workers/geopackage-worker.ts --bundle --outfile=dist/geopackage-worker.js --external:{util,fs,path} --define:__VERSION__=\\\"$npm_package_version\\\""
   },
   "dependencies": {
-    "@loaders.gl/arrow-geometry": "5.0.0-alpha.11",
-    "@loaders.gl/gis": "5.0.0-alpha.11",
-    "@loaders.gl/loader-utils": "5.0.0-alpha.11",
-    "@loaders.gl/schema": "5.0.0-alpha.11",
-    "@loaders.gl/schema-utils": "5.0.0-alpha.11",
-    "@loaders.gl/wkt": "5.0.0-alpha.11",
-    "@math.gl/crs": "5.0.0-alpha.15",
-    "@math.gl/projection": "5.0.0-alpha.15",
-    "@types/sql.js": "^1.4.5",
+    "@loaders.gl/geospatial": "5.0.0-alpha.12"
+  },
+  "peerDependencies": {
+    "@loaders.gl/core": "~5.0.0-alpha.0",
+    "sql.js": "^1.14.1"
+  },
+  "gitHead": "8a9e77743ea90a7be4ebec572416bb50ca9d73c3",
+  "devDependencies": {
     "apache-arrow": ">= 17.0.0",
     "sql.js": "1.14.1"
   },
-  "peerDependencies": {
-    "@loaders.gl/core": "~5.0.0-alpha.0"
-  },
-  "gitHead": "8a9e77743ea90a7be4ebec572416bb50ca9d73c3"
+  "peerDependenciesMeta": {
+    "sql.js": {
+      "optional": true
+    }
+  }
 }

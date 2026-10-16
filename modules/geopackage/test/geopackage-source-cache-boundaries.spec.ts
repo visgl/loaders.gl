@@ -13,8 +13,9 @@ const sourceMocks = vi.hoisted(() => ({
   parseTable: vi.fn()
 }));
 
-vi.mock('../src/lib/parse-geopackage', async importOriginal => {
-  const original = await importOriginal<typeof import('../src/lib/parse-geopackage')>();
+vi.mock('../../geospatial/src/geopackage/lib/parse-geopackage', async importOriginal => {
+  const original =
+    await importOriginal<typeof import('../../geospatial/src/geopackage/lib/parse-geopackage')>();
   return {
     ...original,
     loadGeoPackageDatabase: sourceMocks.loadDatabase,
@@ -25,11 +26,15 @@ vi.mock('../src/lib/parse-geopackage', async importOriginal => {
   };
 });
 
-import {GeoPackageDataSource} from '../src/geopackage-source-loader';
+vi.mock('../../geospatial/src/geopackage/lib/geopackage-tile-metadata', () => ({
+  listGeoPackageTileTables: () => []
+}));
+
+import {GeoPackageDataSource} from '../../geospatial/src/geopackage/geopackage-source-loader';
 
 beforeEach(() => {
   vi.clearAllMocks();
-  sourceMocks.loadDatabase.mockResolvedValue({});
+  sourceMocks.loadDatabase.mockResolvedValue({close: vi.fn()});
   sourceMocks.listTables.mockReturnValue([
     {
       name: 'features',
@@ -111,7 +116,9 @@ test('GeoPackage reports non-Error Blob failures with source context', async () 
 
 test('GeoPackage query metadata rejects empty discovery and cancellation before and after lookup', async () => {
   const source = new GeoPackageDataSource(new Blob([]), {geopackage: {}});
-  const getMetadata = vi.spyOn(source, 'getMetadata').mockResolvedValue({tables: []});
+  const getMetadata = vi
+    .spyOn(source, 'getMetadata')
+    .mockResolvedValue({tables: [], tileTables: []});
   await expect(source.getQueryMetadata()).rejects.toThrow('no vector feature tables');
   const controller = new AbortController();
   controller.abort();

@@ -212,6 +212,7 @@ export function createI3SMeshTilesetConversionSource(
           yield {
             id: `${item.tile.id}/${entry.index}`,
             origin: [0, 0, 0],
+            sourceLayerType: metadata.tileset.layerType,
             mesh,
             normalReferenceFrame:
               content.normalReferenceFrame === 'vertex-reference-frame'

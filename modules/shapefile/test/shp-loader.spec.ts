@@ -4,7 +4,7 @@
 
 import {expect, test} from 'vitest';
 import {setLoaderOptions, load, fetchFile} from '@loaders.gl/core';
-import {convertWKBToGeometry} from '@loaders.gl/gis';
+import {convertWKBToGeometry} from '@loaders.gl/arrow-geometry/geometry-codecs';
 import {SHPLoader} from '@loaders.gl/shapefile';
 const SHAPEFILE_POLYGON_PATH = '@loaders.gl/shapefile/test/data/shapefile-js/polygons.shp';
 const SHAPEFILE_JS_DATA_FOLDER = '@loaders.gl/shapefile/test/data/shapefile-js';

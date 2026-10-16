@@ -3,7 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import {load} from '@loaders.gl/core';
-import {convertWKBToGeometry} from '@loaders.gl/gis';
+import {convertWKBToGeometry} from '@loaders.gl/arrow-geometry/geometry-codecs';
 import {SHPLoader} from '@loaders.gl/shapefile';
 import {describe, expect, test} from 'vitest';
 
@@ -47,7 +47,9 @@ describe('SHP dimensional geometry coverage', () => {
   });
 
   test('rejects unsupported record types deterministically', async () => {
-    const {parseRecordToWKB} = await import('../src/lib/parsers/parse-shp-geometry');
+    const {parseRecordToWKB} = await import(
+      '../../geospatial/src/shapefile/lib/parsers/parse-shp-geometry'
+    );
     const bytes = new ArrayBuffer(4);
     new DataView(bytes).setInt32(0, 99, true);
     expect(() => parseRecordToWKB(new DataView(bytes))).toThrow('unsupported shape type: 99');

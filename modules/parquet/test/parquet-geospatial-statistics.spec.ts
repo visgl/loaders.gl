@@ -5,7 +5,7 @@
 import {expect, test} from 'vitest';
 
 import {encode, load} from '@loaders.gl/core';
-import {encodeWKBGeometryValue} from '@loaders.gl/gis';
+import {encodeWKBGeometryValue} from '@loaders.gl/arrow-geometry/geometry-field';
 import type {ObjectRowTable} from '@loaders.gl/schema';
 import {
   ParquetJSWriter,
@@ -22,10 +22,10 @@ import {
   Encoding,
   GeospatialStatistics,
   Type
-} from '../src/parquetjs/parquet-thrift/index';
-import {serializeThrift} from '../src/parquetjs/utils/read-utils';
-import {Uint8ArrayCompactProtocol} from '../src/parquetjs/utils/uint8-array-compact-protocol';
-import {Uint8ArrayTransport} from '../src/parquetjs/utils/uint8-array-transport';
+} from '../../tables/src/parquet/parquetjs/parquet-thrift/index';
+import {serializeThrift} from '../../tables/src/parquet/parquetjs/utils/read-utils';
+import {Uint8ArrayCompactProtocol} from '../../tables/src/parquet/parquetjs/utils/uint8-array-compact-protocol';
+import {Uint8ArrayTransport} from '../../tables/src/parquet/parquetjs/utils/uint8-array-transport';
 
 test('Parquet native geospatial statistics round-trip all dimensions and geometry types', () => {
   const columnMetadata = new ColumnMetaData({

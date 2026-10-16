@@ -36,7 +36,11 @@ import * as maplibreMLT from '@maplibre/mlt';
 import type {MLTLoaderOptions} from '../mlt-loader';
 import {MLT_DEFAULT_OPTIONS} from '../mlt-loader';
 
-type DecodeTile = (tile: Uint8Array) => any;
+type DecodeTile = (
+  tile: Uint8Array,
+  geometryScaling?: undefined,
+  idWithinMaxSafeInteger?: boolean
+) => any;
 
 const decodeTile = (() => {
   const mltModule = maplibreMLT as unknown as {
@@ -47,7 +51,9 @@ const decodeTile = (() => {
   if (!decodedTile) {
     throw new Error('MLT Loader: decodeTile export missing from @maplibre/mlt');
   }
-  return decodedTile;
+  // The upstream Float64 ID fast path does not expand nullable LongId values.
+  // Its full integer path preserves null positions and exact IDs.
+  return (tile: Uint8Array) => decodedTile(tile, undefined, false);
 })();
 
 type MLTOptions = Required<MLTLoaderOptions>['mlt'];
@@ -786,7 +792,8 @@ function convertFeatureToGeoJSON(
   };
 
   if (id !== undefined && id !== null) {
-    (geojsonFeature as any).id = id;
+    (geojsonFeature as any).id =
+      typeof id === 'bigint' && id >= 0n && id <= BigInt(Number.MAX_SAFE_INTEGER) ? Number(id) : id;
   }
 
   return geojsonFeature;

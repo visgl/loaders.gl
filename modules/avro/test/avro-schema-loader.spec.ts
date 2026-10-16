@@ -3,8 +3,8 @@
 // Copyright (c) vis.gl contributors
 
 import {expect, test} from 'vitest';
-import {AvroSchemaLoaderWithParser} from '../src/avro-schema-loader';
-import {getAvroSchemaFingerprint} from '../src/lib/parsers/parse-avro';
+import {AvroSchemaLoaderWithParser} from '../../tables/src/avro/avro-schema-loader';
+import {getAvroSchemaFingerprint} from '../../tables/src/avro/lib/parsers/parse-avro';
 test('AvroSchemaLoader#parse validates standalone schemas', async () => {
   const schema = await AvroSchemaLoaderWithParser.parse(
     new TextEncoder().encode(

@@ -30,8 +30,8 @@ import {
   NumberArray,
   TypedArray
 } from '@loaders.gl/loader-utils';
-import md5 from 'md5';
-import {v4 as uuidv4} from 'uuid';
+import {hashString} from '../../lib/utils/hash-string';
+import {randomUUID} from 'node:crypto';
 import {generateAttributes} from './geometry-attributes';
 import {encodeStringAttribute} from './encode-string-attribute';
 import {createBoundingVolumesFromGeometry} from './coordinate-converter';
@@ -1092,7 +1092,7 @@ export function convertMaterial(sourceMaterial: GLTFMaterialPostprocessed): I3SM
     };
   }
 
-  sourceMaterial.id = Number.isFinite(sourceMaterial.id) ? sourceMaterial.id : uuidv4();
+  sourceMaterial.id = Number.isFinite(sourceMaterial.id) ? sourceMaterial.id : randomUUID();
   const mergedMaterials: MergedMaterial[] = [{originalMaterialId: sourceMaterial.id}];
   if (!texture) {
     // Should use default baseColorFactor if it is not present in source material
@@ -1386,7 +1386,7 @@ function getOrCreateUniqueFeatureId(
   featuresHashArray: any[]
 ): number {
   const batchTableStr = generateStringFromBatchTableByIndex(batchTable, index);
-  const hash = md5(batchTableStr);
+  const hash = hashString(batchTableStr);
 
   if (featuresHashArray.includes(hash)) {
     return featuresHashArray.indexOf(hash);

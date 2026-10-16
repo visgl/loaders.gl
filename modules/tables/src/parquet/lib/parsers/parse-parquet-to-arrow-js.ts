@@ -1,0 +1,1272 @@
+// loaders.gl
+// SPDX-License-Identifier: MIT
+// Copyright (c) vis.gl contributors
+
+import * as arrow from 'apache-arrow';
+import type {ReadableFile} from '@loaders.gl/loader-utils';
+import type {
+  ArrayType,
+  ArrowTable,
+  ArrowTableBatch,
+  DataType,
+  Field,
+  Schema,
+  SchemaMetadata
+} from '@loaders.gl/schema';
+import {deserializeArrowType} from '@loaders.gl/schema-utils';
+
+import type {ParquetJSLoaderOptions} from '../../parquet-loader-options';
+import {preloadCompressions} from '../../parquetjs/compression';
+import {ParquetReader, type ParquetIterationProps} from '../../parquetjs/parser/parquet-reader';
+import type {
+  ParquetColumnChunk,
+  ParquetField,
+  ParquetRowGroup
+} from '../../parquetjs/schema/declare';
+import type {ParquetSchema} from '../../parquetjs/schema/schema';
+import {materializeColumn, materializeRows} from '../../parquetjs/schema/shred';
+import {createNestedArrowVector} from '../arrow/create-nested-arrow-vector';
+import {getSchemaFromParquetReader} from './get-parquet-schema';
+
+/** Largest byte value copied inline to avoid TypedArray#set call overhead. */
+const MAXIMUM_INLINE_BYTE_COPY_LENGTH = 7;
+
+/** Primitive Arrow type instances used by serialized Parquet schemas. */
+const PARQUET_ARROW_PRIMITIVE_TYPES: Partial<Record<Extract<DataType, string>, arrow.DataType>> = {
+  binary: new arrow.Binary(),
+  bool: new arrow.Bool(),
+  float32: new arrow.Float32(),
+  float64: new arrow.Float64(),
+  int8: new arrow.Int8(),
+  int16: new arrow.Int16(),
+  int32: new arrow.Int32(),
+  int64: new arrow.Int64(),
+  uint8: new arrow.Uint8(),
+  uint16: new arrow.Uint16(),
+  uint32: new arrow.Uint32(),
+  uint64: new arrow.Uint64(),
+  utf8: new arrow.Utf8()
+};
+
+/** Inputs accepted by Apache Arrow's overloaded `Schema.assign` method. */
+type ArrowSchemaAssignment = arrow.Schema | arrow.Field | arrow.Field[];
+
+/** Arrow schema that preserves identity when Apache Arrow assigns its existing fields. */
+class ParquetArrowSchema extends arrow.Schema {
+  /** Whether the next exact field assignment may reuse this schema. */
+  private reuseIdentityAssignment = false;
+
+  /** Enables identity reuse for one synchronous Arrow RecordBatch construction. */
+  enableIdentityAssignmentReuse(): void {
+    this.reuseIdentityAssignment = true;
+  }
+
+  /** Restores Apache Arrow's normal public assignment semantics. */
+  disableIdentityAssignmentReuse(): void {
+    this.reuseIdentityAssignment = false;
+  }
+
+  /**
+   * Avoids cloning fields and merging metadata when assignment is already an exact match.
+   * @param assignments schemas or fields to merge into this schema
+   * @returns this schema for an identity assignment, otherwise Apache Arrow's assigned schema
+   */
+  override assign(...assignments: ArrowSchemaAssignment[]): arrow.Schema {
+    const firstAssignment = assignments[0];
+    if (
+      this.reuseIdentityAssignment &&
+      assignments.length === 1 &&
+      Array.isArray(firstAssignment) &&
+      firstAssignment.length === this.fields.length &&
+      firstAssignment.every((field, index) => field === this.fields[index])
+    ) {
+      return this;
+    }
+    const assignedSchema =
+      assignments.length === 1 && firstAssignment instanceof arrow.Schema
+        ? super.assign(firstAssignment)
+        : super.assign(...(assignments as Array<arrow.Field | arrow.Field[]>));
+    return new ParquetArrowSchema(
+      assignedSchema.fields,
+      assignedSchema.metadata,
+      assignedSchema.dictionaries,
+      assignedSchema.metadataVersion
+    );
+  }
+}
+
+/**
+ * Parses a Parquet file with the TypeScript implementation directly into Arrow batches.
+ * @param file readable Parquet file
+ * @param options loader options applied before Arrow conversion
+ * @returns Arrow table containing the decoded rows
+ */
+export async function parseParquetFileToArrowWithJs(
+  file: ReadableFile,
+  options?: ParquetJSLoaderOptions
+): Promise<ArrowTable> {
+  if (
+    !options?.parquet?.offset &&
+    options?.parquet?.limit === undefined &&
+    options?.parquet?.batchSize === undefined
+  ) {
+    return await parseCompleteParquetFileToArrowWithJs(file, options);
+  }
+  const recordBatches: arrow.RecordBatch[] = [];
+  let schema: Schema | undefined;
+
+  for await (const batch of parseParquetFileToArrowInBatchesWithJs(file, options)) {
+    schema ||= batch.schema;
+    recordBatches.push(...batch.data.batches);
+  }
+
+  schema ||= await readProjectedSchema(file, options);
+  const table = recordBatches.length
+    ? new arrow.Table(recordBatches)
+    : new arrow.Table(createParquetArrowSchema(schema), []);
+  return {shape: 'arrow-table', data: table, schema};
+}
+
+/** Parses complete row groups directly, bypassing batch slicing and wrapper reconstruction. */
+async function parseCompleteParquetFileToArrowWithJs(
+  file: ReadableFile,
+  options?: ParquetJSLoaderOptions
+): Promise<ArrowTable> {
+  await preloadCompressions(options);
+  const reader = new ParquetReader(file, {
+    signal: options?.parquet?.signal,
+    preserveBinary: options?.parquet?.preserveBinary,
+    int96AsTimestamp: options?.parquet?.int96AsTimestamp ?? true,
+    retainByteArrayViews: true,
+    useTypedValueBuffers: true,
+    useTypedLevelBuffers: true,
+    useArrowByteArrayBuffers: true,
+    verifyFooterSignature: options?.parquet?.verifyFooterSignature,
+    keyRetriever: options?.parquet?.keyRetriever,
+    aadPrefix: options?.parquet?.aadPrefix
+  });
+  const schema = projectSchema(await getSchemaFromParquetReader(reader), options?.parquet?.columns);
+  const arrowSchema = createParquetArrowSchema(schema);
+  const parquetSchema = await reader.getSchema();
+  const recordBatches: arrow.RecordBatch[] = [];
+  let onlyTable: ArrowTable | undefined;
+
+  for await (const rowGroup of reader.rowGroupIterator(getParquetIterationProps(options))) {
+    const table = convertRowGroupSliceToArrow(
+      schema,
+      arrowSchema,
+      parquetSchema,
+      rowGroup,
+      0,
+      rowGroup.rowCount
+    );
+    onlyTable = recordBatches.length === 0 ? table : undefined;
+    recordBatches.push(...table.data.batches);
+  }
+  if (onlyTable && recordBatches.length === onlyTable.data.batches.length) {
+    return onlyTable;
+  }
+  return {
+    shape: 'arrow-table',
+    schema,
+    data: recordBatches.length
+      ? new arrow.Table(recordBatches)
+      : new arrow.Table(createParquetArrowSchema(schema), [])
+  };
+}
+
+/** Reads the projected loaders.gl schema when row selection produces no Arrow record batches. */
+async function readProjectedSchema(
+  file: ReadableFile,
+  options?: ParquetJSLoaderOptions
+): Promise<Schema> {
+  const reader = new ParquetReader(file, {
+    signal: options?.parquet?.signal,
+    preserveBinary: options?.parquet?.preserveBinary,
+    int96AsTimestamp: options?.parquet?.int96AsTimestamp ?? true,
+    verifyFooterSignature: options?.parquet?.verifyFooterSignature,
+    keyRetriever: options?.parquet?.keyRetriever,
+    aadPrefix: options?.parquet?.aadPrefix
+  });
+  return projectSchema(await getSchemaFromParquetReader(reader), options?.parquet?.columns);
+}
+
+/**
+ * Parses a Parquet file in batches with the TypeScript implementation and materializes Arrow directly
+ * from decoded columns whenever the selected schema is flat.
+ * @param file readable Parquet file
+ * @param options loader options applied before Arrow conversion
+ * @returns asynchronous Arrow table batches
+ */
+export async function* parseParquetFileToArrowInBatchesWithJs(
+  file: ReadableFile,
+  options?: ParquetJSLoaderOptions
+): AsyncIterable<ArrowTableBatch> {
+  await preloadCompressions(options);
+
+  const reader = new ParquetReader(file, {
+    signal: options?.parquet?.signal,
+    preserveBinary: options?.parquet?.preserveBinary,
+    int96AsTimestamp: options?.parquet?.int96AsTimestamp ?? true,
+    retainByteArrayViews: true,
+    useTypedValueBuffers: true,
+    useTypedLevelBuffers: true,
+    useArrowByteArrayBuffers: true,
+    verifyFooterSignature: options?.parquet?.verifyFooterSignature,
+    keyRetriever: options?.parquet?.keyRetriever,
+    aadPrefix: options?.parquet?.aadPrefix
+  });
+  const schema = projectSchema(await getSchemaFromParquetReader(reader), options?.parquet?.columns);
+  const arrowSchema = createParquetArrowSchema(schema);
+  const parquetSchema = await reader.getSchema();
+  const rowGroups = reader.rowGroupIterator(getParquetIterationProps(options));
+  const rowOffset = Math.max(0, options?.parquet?.offset || 0);
+  const rowLimit = options?.parquet?.limit;
+  const requestedBatchSize = options?.parquet?.batchSize;
+  let rowsVisited = 0;
+  let rowsYielded = 0;
+
+  for await (const rowGroup of rowGroups) {
+    const selectionStart = Math.min(rowGroup.rowCount, Math.max(0, rowOffset - rowsVisited));
+    const availableRowCount = rowGroup.rowCount - selectionStart;
+    const remainingRowCount =
+      rowLimit === undefined
+        ? availableRowCount
+        : Math.max(0, Math.min(availableRowCount, rowLimit - rowsYielded));
+    const selectionEnd = selectionStart + remainingRowCount;
+    rowsVisited += rowGroup.rowCount;
+
+    if (selectionEnd <= selectionStart) {
+      if (rowLimit !== undefined && rowsYielded >= rowLimit) {
+        return;
+      }
+      continue;
+    }
+
+    const arrowTable = convertRowGroupSliceToArrow(
+      schema,
+      arrowSchema,
+      parquetSchema,
+      rowGroup,
+      selectionStart,
+      selectionEnd
+    );
+    const batchSize =
+      requestedBatchSize && requestedBatchSize > 0 ? requestedBatchSize : remainingRowCount;
+
+    for (let batchStart = selectionStart; batchStart < selectionEnd; batchStart += batchSize) {
+      const batchEnd = Math.min(batchStart + batchSize, selectionEnd);
+      const batchTable = sliceArrowTable(
+        arrowTable,
+        batchStart - selectionStart,
+        batchEnd - selectionStart
+      );
+      const length = batchEnd - batchStart;
+
+      yield {
+        batchType: 'data',
+        shape: batchTable.shape,
+        schema: batchTable.schema,
+        data: batchTable.data,
+        length
+      };
+      rowsYielded += length;
+    }
+
+    if (rowLimit !== undefined && rowsYielded >= rowLimit) {
+      return;
+    }
+  }
+}
+
+/** Converts a loaders.gl schema into the identity-aware Arrow schema used by Parquet batches. */
+function createParquetArrowSchema(schema: Schema): ParquetArrowSchema {
+  return new ParquetArrowSchema(
+    schema.fields.map(field => createParquetArrowField(field)),
+    createParquetArrowMetadata(schema.metadata)
+  );
+}
+
+/** Hydrates one serialized Parquet field without generic Arrow conversion allocations. */
+function createParquetArrowField(field: Field): arrow.Field {
+  return new arrow.Field(
+    field.name,
+    createParquetArrowType(field.type),
+    field.nullable,
+    createParquetArrowMetadata(field.metadata)
+  );
+}
+
+/** Reuses immutable primitive Arrow types and falls back for composite serialized types. */
+function createParquetArrowType(dataType: DataType): arrow.DataType {
+  const primitiveType =
+    typeof dataType === 'string' ? PARQUET_ARROW_PRIMITIVE_TYPES[dataType] : undefined;
+  return primitiveType || deserializeArrowType(dataType);
+}
+
+/** Hydrates serialized Parquet metadata without an intermediate entries array. */
+function createParquetArrowMetadata(metadata?: SchemaMetadata): Map<string, string> {
+  const arrowMetadata = new Map<string, string>();
+  if (metadata) {
+    for (const key of Object.keys(metadata)) {
+      arrowMetadata.set(key, metadata[key]);
+    }
+  }
+  return arrowMetadata;
+}
+
+/** Builds Arrow from one selected row-group range with per-column fallbacks. */
+function convertRowGroupSliceToArrow(
+  schema: Schema,
+  arrowSchema: arrow.Schema,
+  parquetSchema: ParquetSchema,
+  rowGroup: ParquetRowGroup,
+  start: number,
+  end: number
+): ArrowTable {
+  const vectors: Record<string, arrow.Vector> = {};
+  let materializedRows: Record<string, unknown>[] | undefined;
+  for (const field of arrowSchema.fields) {
+    const parquetField = parquetSchema.findField(field.name);
+    const columnData = rowGroup.columnData[field.name];
+    const nestedVector = createNestedArrowVector(field.type, parquetField, rowGroup, start, end);
+    if (nestedVector) {
+      vectors[field.name] = nestedVector;
+      continue;
+    }
+    const decimalVector = createDecimalArrowVector(
+      field.type,
+      parquetField,
+      columnData,
+      start,
+      end
+    );
+    if (decimalVector) {
+      vectors[field.name] = decimalVector;
+      continue;
+    }
+    const primitiveVector = createRawPrimitiveArrowVector(
+      field.type,
+      parquetField,
+      columnData,
+      start,
+      end
+    );
+    if (primitiveVector) {
+      vectors[field.name] = primitiveVector;
+      continue;
+    }
+    const byteVector = createRawByteArrowVector(field.type, parquetField, columnData, start, end);
+    if (byteVector) {
+      vectors[field.name] = byteVector;
+      continue;
+    }
+
+    let fullColumn = materializeColumn(parquetSchema, rowGroup, field.name);
+    if (parquetField.fields && hasStandardNestedCollection(parquetField)) {
+      materializedRows ||= materializeRows(parquetSchema, rowGroup);
+      const normalizedValues = materializedRows
+        .slice(start, end)
+        .map(row => normalizeNestedParquetValue(row[field.name], parquetField, field.type));
+      vectors[field.name] = arrow.vectorFromArray(
+        normalizedValues.map(value => normalizeLegacyArrowValue(value, field)),
+        field.type
+      );
+      continue;
+    }
+    if (!fullColumn && parquetField.fields) {
+      materializedRows ||= materializeRows(parquetSchema, rowGroup);
+      const values = materializedRows
+        .slice(start, end)
+        .map(row => normalizeLegacyArrowValue(row[field.name], field));
+      vectors[field.name] = arrow.vectorFromArray(values, field.type);
+      continue;
+    }
+    fullColumn ||= new Array(rowGroup.rowCount).fill(null);
+    const column = sliceColumn(fullColumn, start, end);
+    vectors[field.name] = arrow.vectorFromArray(
+      normalizeArrowColumn(column, field.type),
+      field.type
+    );
+  }
+
+  return {
+    shape: 'arrow-table',
+    schema,
+    data: createArrowTable(arrowSchema, vectors, end - start)
+  };
+}
+
+/** Converts absent legacy repeated values to empty lists before invoking Arrow builders. */
+function normalizeLegacyArrowValue(value: unknown, field: arrow.Field): unknown {
+  if (value === undefined || value === null) {
+    return field.type instanceof arrow.List && !field.nullable ? [] : null;
+  }
+  if (field.type instanceof arrow.List && Array.isArray(value)) {
+    return value.map(element => normalizeLegacyArrowValue(element, field.type.children[0]));
+  }
+  if (field.type instanceof arrow.Struct && typeof value === 'object') {
+    return Object.fromEntries(
+      field.type.children.map(child => [
+        child.name,
+        normalizeLegacyArrowValue(Reflect.get(value, child.name), child)
+      ])
+    );
+  }
+  return value;
+}
+
+/** Detects standard collection wrappers that need normalization before Arrow conversion. */
+function hasStandardNestedCollection(field: ParquetField): boolean {
+  if (field.logicalType?.type === 'LIST') {
+    const element = field.fields?.list?.fields?.element;
+    if (!element) return false;
+    // Nested repeated continuation is still handled by the legacy materializer;
+    // only normalize one-level collections here until that path is fully aligned.
+    if (element.logicalType?.type === 'LIST' || element.logicalType?.type === 'MAP') return false;
+    return true;
+  }
+  if (field.logicalType?.type === 'MAP') {
+    return Boolean(field.fields?.key_value?.fields?.key && field.fields.key_value.fields.value);
+  }
+  return Object.values(field.fields || {}).some(hasStandardNestedCollection);
+}
+
+/** Normalizes standard Parquet LIST/MAP wrappers and absent values before Arrow conversion. */
+function normalizeNestedParquetValue(
+  value: unknown,
+  field: ParquetField,
+  arrowType: arrow.DataType
+): unknown {
+  // Materialization omits absent optional fields; Arrow builders recognize null, not undefined.
+  if (value === undefined || value === null) {
+    return null;
+  }
+  if (!field.fields) {
+    return value;
+  }
+
+  if (
+    field.repetitionType === 'REPEATED' &&
+    arrowType instanceof arrow.List &&
+    Array.isArray(value)
+  ) {
+    return value.map(element =>
+      normalizeNestedParquetValue(element, field, arrowType.children[0].type)
+    );
+  }
+
+  if (field.logicalType?.type === 'LIST' && arrowType instanceof arrow.List) {
+    const listField = field.fields.list;
+    const elementField = listField?.fields?.element;
+    if (!listField || !elementField) {
+      return value;
+    }
+    const listValue = value && typeof value === 'object' ? Reflect.get(value, 'list') : undefined;
+    if (!Array.isArray(listValue)) {
+      return [];
+    }
+    return listValue.map(element =>
+      normalizeNestedParquetValue(
+        element && typeof element === 'object' ? Reflect.get(element, 'element') : element,
+        elementField,
+        arrowType.children[0].type
+      )
+    );
+  }
+
+  if (field.logicalType?.type === 'MAP' && arrowType instanceof arrow.Map_) {
+    const entryField = field.fields.key_value;
+    const keyField = entryField?.fields?.key;
+    const valueField = entryField?.fields?.value;
+    if (!entryField || !keyField || !valueField) {
+      const legacyValueField = field.fields.value;
+      return legacyValueField && typeof value === 'object'
+        ? new Map([
+            [
+              Reflect.get(value, 'key'),
+              normalizeNestedParquetValue(
+                Reflect.get(value, 'value'),
+                legacyValueField,
+                arrowType.children[0].type.children[1].type
+              )
+            ]
+          ])
+        : value;
+    }
+    const entries =
+      value && typeof value === 'object' ? Reflect.get(value, 'key_value') : undefined;
+    if (!Array.isArray(entries)) {
+      return new Map();
+    }
+    return new Map(
+      entries.map(entry => [
+        Reflect.get(entry, 'key'),
+        normalizeNestedParquetValue(
+          Reflect.get(entry, 'value'),
+          valueField,
+          arrowType.children[0].type.children[1].type
+        )
+      ])
+    );
+  }
+
+  if (typeof value !== 'object' || Array.isArray(value) || ArrayBuffer.isView(value)) {
+    return value;
+  }
+  const normalized: Record<string, unknown> = {};
+  for (const [name, childField] of Object.entries(field.fields)) {
+    const childType = arrowType.children?.find(child => child.name === name)?.type;
+    normalized[name] = childType
+      ? normalizeNestedParquetValue(Reflect.get(value, name), childField, childType)
+      : Reflect.get(value, name);
+  }
+  return normalized;
+}
+
+/** Creates an exact Arrow Decimal128/256 vector from unscaled Parquet decimal values. */
+function createDecimalArrowVector(
+  arrowType: arrow.DataType,
+  parquetField: ParquetField,
+  columnData: ParquetColumnChunk | undefined,
+  start: number,
+  end: number
+): arrow.Vector | undefined {
+  if (!(arrowType instanceof arrow.Decimal) || !columnData) {
+    return undefined;
+  }
+  const rowCount = end - start;
+  const wordCount = arrowType.bitWidth / 32;
+  const data = new Uint32Array(rowCount * wordCount);
+  const nullBitmap = parquetField.dLevelMax ? new Uint8Array(Math.ceil(rowCount / 8)) : undefined;
+  let nullCount = 0;
+  let valueIndex = 0;
+
+  if (nullBitmap) {
+    for (let rowIndex = 0; rowIndex < start; rowIndex++) {
+      if (columnData.dlevels[rowIndex] === parquetField.dLevelMax) valueIndex++;
+    }
+  } else {
+    valueIndex = start;
+  }
+
+  for (let rowIndex = 0; rowIndex < rowCount; rowIndex++) {
+    const sourceRowIndex = start + rowIndex;
+    if (!nullBitmap || columnData.dlevels[sourceRowIndex] === parquetField.dLevelMax) {
+      writeArrowDecimal(
+        data,
+        rowIndex * wordCount,
+        wordCount,
+        getUnscaledDecimal(columnData.values[valueIndex++]),
+        arrowType.bitWidth
+      );
+      if (nullBitmap) nullBitmap[rowIndex >> 3] |= 1 << (rowIndex & 7);
+    } else {
+      nullCount++;
+    }
+  }
+
+  return new arrow.Vector([
+    arrow.makeData({
+      type: arrowType,
+      data,
+      nullBitmap: nullCount ? nullBitmap : undefined,
+      nullCount
+    })
+  ]);
+}
+
+/** Converts one Parquet decimal physical value to its signed unscaled integer. */
+function getUnscaledDecimal(value: unknown): bigint {
+  if (typeof value === 'bigint') return value;
+  if (typeof value === 'number') return BigInt(value);
+  const bytes = value as Uint8Array;
+  let unsignedValue = 0n;
+  for (const byte of bytes) unsignedValue = (unsignedValue << 8n) | BigInt(byte);
+  return bytes.length && bytes[0] & 0x80
+    ? unsignedValue - (1n << BigInt(bytes.length * 8))
+    : unsignedValue;
+}
+
+/** Writes one signed bigint into Arrow's little-endian two's-complement decimal buffer. */
+function writeArrowDecimal(
+  data: Uint32Array,
+  offset: number,
+  wordCount: number,
+  value: bigint,
+  bitWidth: number
+): void {
+  const minimum = -(1n << BigInt(bitWidth - 1));
+  const maximum = (1n << BigInt(bitWidth - 1)) - 1n;
+  if (value < minimum || value > maximum) {
+    throw new Error(`Parquet decimal value ${value} exceeds Arrow Decimal${bitWidth}`);
+  }
+  let unsignedValue = BigInt.asUintN(bitWidth, value);
+  for (let wordIndex = 0; wordIndex < wordCount; wordIndex++) {
+    data[offset + wordIndex] = Number(unsignedValue & 0xffffffffn);
+    unsignedValue >>= 32n;
+  }
+}
+
+/** Creates an Arrow table while retaining row counts for a schema with no projected fields. */
+function createArrowTable(
+  schema: arrow.Schema,
+  vectors: Record<string, arrow.Vector>,
+  rowCount: number
+): arrow.Table {
+  if (schema.fields.length) {
+    // Every vector represents one row-group slice and therefore has one data chunk. Supplying the
+    // Struct directly avoids Arrow Table's generic vector redistribution and schema reassignment.
+    const children = schema.fields.map(field => vectors[field.name].data[0]);
+    const data = arrow.makeData({
+      type: new arrow.Struct(schema.fields),
+      length: rowCount,
+      nullCount: 0,
+      children
+    });
+    const recordBatch = createParquetRecordBatch(schema, data);
+    return new arrow.Table(recordBatch);
+  }
+  if (rowCount === 0) {
+    return new arrow.Table(schema, vectors);
+  }
+
+  const recordBatch = createParquetRecordBatch(
+    schema,
+    arrow.makeData({type: new arrow.Struct([]), children: []})
+  );
+  // Apache Arrow JS derives RecordBatch length from its children and therefore resets an empty
+  // Struct to zero rows. Restore the explicit Parquet selection length after construction.
+  Object.defineProperty(recordBatch.data, 'length', {value: rowCount});
+  return new arrow.Table(schema, [recordBatch]);
+}
+
+/** Constructs a RecordBatch while restricting schema identity reuse to the synchronous call. */
+function createParquetRecordBatch(
+  schema: arrow.Schema,
+  data: arrow.Data<arrow.Struct>
+): arrow.RecordBatch {
+  if (!(schema instanceof ParquetArrowSchema)) {
+    return new arrow.RecordBatch(schema, data);
+  }
+
+  schema.enableIdentityAssignmentReuse();
+  try {
+    return new arrow.RecordBatch(schema, data);
+  } finally {
+    schema.disableIdentityAssignmentReuse();
+  }
+}
+
+/** Typed arrays accepted by the direct primitive Arrow materialization path. */
+type RawPrimitiveArrowArray =
+  | Float32Array
+  | Float64Array
+  | Int8Array
+  | Int16Array
+  | Int32Array
+  | Uint8Array
+  | Uint16Array
+  | Uint32Array
+  | BigInt64Array
+  | BigUint64Array;
+
+/** Creates a fixed-width Arrow vector directly from decoded primitive Parquet values. */
+function createRawPrimitiveArrowVector(
+  arrowType: arrow.DataType,
+  parquetField: ParquetField,
+  columnData: ParquetColumnChunk | undefined,
+  start: number,
+  end: number
+): arrow.Vector | undefined {
+  if (!columnData) {
+    return undefined;
+  }
+  const rowCount = end - start;
+  const directData = createRawPrimitiveArrowArrayView(
+    arrowType,
+    parquetField,
+    columnData,
+    start,
+    end
+  );
+  const expandedData = directData
+    ? undefined
+    : createExpandedRawPrimitiveArrowArrayView(arrowType, parquetField, columnData, start, end);
+  if (expandedData) {
+    return new arrow.Vector([
+      arrow.makeData({
+        type: arrowType,
+        data: expandedData.data,
+        nullBitmap: expandedData.nullBitmap,
+        nullCount: expandedData.nullCount
+      } as any)
+    ]);
+  }
+  const data = directData || createRawPrimitiveArrowArray(arrowType, parquetField, rowCount);
+  if (!data) {
+    return undefined;
+  }
+
+  const nullBitmap = parquetField.dLevelMax ? new Uint8Array(Math.ceil(rowCount / 8)) : undefined;
+  let valueIndex = 0;
+  let nullCount = 0;
+
+  if (!nullBitmap) {
+    if (!directData) {
+      valueIndex = start;
+      for (let rowIndex = 0; rowIndex < rowCount; rowIndex++) {
+        setRawPrimitiveArrowValue(data, rowIndex, columnData.values[valueIndex++]);
+      }
+    }
+  } else {
+    for (let rowIndex = 0; rowIndex < start; rowIndex++) {
+      if (columnData.dlevels[rowIndex] === parquetField.dLevelMax) {
+        valueIndex++;
+      }
+    }
+    for (let rowIndex = 0; rowIndex < rowCount; rowIndex++) {
+      const sourceRowIndex = start + rowIndex;
+      if (columnData.dlevels[sourceRowIndex] === parquetField.dLevelMax) {
+        setRawPrimitiveArrowValue(data, rowIndex, columnData.values[valueIndex++]);
+        nullBitmap[rowIndex >> 3] |= 1 << (rowIndex & 7);
+      } else {
+        nullCount++;
+      }
+    }
+  }
+
+  const nulls = nullCount ? nullBitmap : undefined;
+  return new arrow.Vector([
+    arrow.makeData({type: arrowType, data, nullBitmap: nulls, nullCount} as any)
+  ]);
+}
+
+/**
+ * Expands a full nullable primitive column in place into the decoder's row-capacity buffer.
+ *
+ * Parquet omits physical values for null rows, but the decoder allocates from the column's level
+ * count. Walking backwards makes the overlapping expansion safe while building Arrow validity.
+ */
+function createExpandedRawPrimitiveArrowArrayView(
+  arrowType: arrow.DataType,
+  parquetField: ParquetField,
+  columnData: ParquetColumnChunk,
+  start: number,
+  end: number
+):
+  | {data: RawPrimitiveArrowArray; nullBitmap: Uint8Array | undefined; nullCount: number}
+  | undefined {
+  if (
+    parquetField.repetitionType !== 'OPTIONAL' ||
+    parquetField.rLevelMax !== 0 ||
+    start !== 0 ||
+    end !== columnData.count
+  ) {
+    return undefined;
+  }
+  const compactData = getMatchingRawPrimitiveArrowArray(arrowType, parquetField, columnData.values);
+  if (!compactData) {
+    return undefined;
+  }
+  if (columnData.nullCount === 0 && compactData.length === end) {
+    return {data: compactData, nullBitmap: undefined, nullCount: 0};
+  }
+  const data = createRawPrimitiveCapacityView(compactData, end);
+  if (!data) {
+    return undefined;
+  }
+
+  const nullBitmap = new Uint8Array(Math.ceil(end / 8));
+  let valueIndex = compactData.length - 1;
+  let nullCount = 0;
+  for (let rowIndex = end - 1; rowIndex >= 0; rowIndex--) {
+    if (columnData.dlevels[rowIndex] === parquetField.dLevelMax) {
+      setRawPrimitiveArrowValue(data, rowIndex, compactData[valueIndex--]);
+      nullBitmap[rowIndex >> 3] |= 1 << (rowIndex & 7);
+    } else {
+      nullCount++;
+    }
+  }
+  if (valueIndex !== -1) {
+    throw new Error(`Parquet column ${parquetField.name} has inconsistent definition levels`);
+  }
+  return {data, nullBitmap: nullCount ? nullBitmap : undefined, nullCount};
+}
+
+/** Reuses a typed decoded column as the Arrow value buffer for required primitive fields. */
+function createRawPrimitiveArrowArrayView(
+  arrowType: arrow.DataType,
+  parquetField: ParquetField,
+  columnData: ParquetColumnChunk,
+  start: number,
+  end: number
+): RawPrimitiveArrowArray | undefined {
+  if (parquetField.repetitionType !== 'REQUIRED') {
+    return undefined;
+  }
+  const values = getMatchingRawPrimitiveArrowArray(arrowType, parquetField, columnData.values);
+  return values?.subarray(start, end) as RawPrimitiveArrowArray | undefined;
+}
+
+/** Returns a decoded typed value buffer when it exactly matches the target Arrow representation. */
+function getMatchingRawPrimitiveArrowArray(
+  arrowType: arrow.DataType,
+  parquetField: ParquetField,
+  values: ParquetColumnChunk['values']
+): RawPrimitiveArrowArray | undefined {
+  if (
+    parquetField.primitiveType === 'FLOAT' &&
+    arrowType instanceof arrow.Float32 &&
+    values instanceof Float32Array
+  ) {
+    return values;
+  }
+  if (
+    parquetField.primitiveType === 'DOUBLE' &&
+    arrowType instanceof arrow.Float64 &&
+    values instanceof Float64Array
+  ) {
+    return values;
+  }
+  if (
+    parquetField.primitiveType === 'INT32' &&
+    (arrowType instanceof arrow.Int32 ||
+      arrowType instanceof arrow.DateDay ||
+      arrowType instanceof arrow.TimeMillisecond) &&
+    values instanceof Int32Array
+  ) {
+    return values;
+  }
+  if (
+    parquetField.primitiveType === 'INT64' &&
+    (arrowType instanceof arrow.Int64 ||
+      arrowType instanceof arrow.TimeMicrosecond ||
+      arrowType instanceof arrow.TimeNanosecond ||
+      arrowType instanceof arrow.TimestampMillisecond ||
+      arrowType instanceof arrow.TimestampMicrosecond ||
+      arrowType instanceof arrow.TimestampNanosecond) &&
+    values instanceof BigInt64Array
+  ) {
+    return values;
+  }
+  if (
+    parquetField.primitiveType === 'INT96' &&
+    arrowType instanceof arrow.TimestampNanosecond &&
+    values instanceof BigInt64Array
+  ) {
+    return values;
+  }
+  return undefined;
+}
+
+/** Creates a larger view over the unused capacity retained by a compact decoder buffer. */
+function createRawPrimitiveCapacityView(
+  values: RawPrimitiveArrowArray,
+  length: number
+): RawPrimitiveArrowArray | undefined {
+  if (values.buffer.byteLength - values.byteOffset < length * values.BYTES_PER_ELEMENT) {
+    return undefined;
+  }
+  if (values instanceof Float32Array) {
+    return new Float32Array(values.buffer, values.byteOffset, length);
+  }
+  if (values instanceof Float64Array) {
+    return new Float64Array(values.buffer, values.byteOffset, length);
+  }
+  if (values instanceof Int8Array) return new Int8Array(values.buffer, values.byteOffset, length);
+  if (values instanceof Int16Array) return new Int16Array(values.buffer, values.byteOffset, length);
+  if (values instanceof Int32Array) return new Int32Array(values.buffer, values.byteOffset, length);
+  if (values instanceof Uint8Array) return new Uint8Array(values.buffer, values.byteOffset, length);
+  if (values instanceof Uint16Array)
+    return new Uint16Array(values.buffer, values.byteOffset, length);
+  if (values instanceof Uint32Array)
+    return new Uint32Array(values.buffer, values.byteOffset, length);
+  if (values instanceof BigInt64Array) {
+    return new BigInt64Array(values.buffer, values.byteOffset, length);
+  }
+  return new BigUint64Array(values.buffer, values.byteOffset, length);
+}
+
+/** Allocates the Arrow typed array matching an unconverted physical Parquet primitive. */
+function createRawPrimitiveArrowArray(
+  arrowType: arrow.DataType,
+  parquetField: ParquetField,
+  rowCount: number
+): RawPrimitiveArrowArray | undefined {
+  if (parquetField.primitiveType === 'FLOAT' && arrowType instanceof arrow.Float32) {
+    return new Float32Array(rowCount);
+  }
+  if (parquetField.primitiveType === 'DOUBLE' && arrowType instanceof arrow.Float64) {
+    return new Float64Array(rowCount);
+  }
+  if (parquetField.primitiveType === 'INT32' && arrowType instanceof arrow.Int8) {
+    return new Int8Array(rowCount);
+  }
+  if (parquetField.primitiveType === 'INT32' && arrowType instanceof arrow.Int16) {
+    return new Int16Array(rowCount);
+  }
+  if (
+    parquetField.primitiveType === 'INT32' &&
+    (arrowType instanceof arrow.Int32 ||
+      arrowType instanceof arrow.DateDay ||
+      arrowType instanceof arrow.TimeMillisecond)
+  ) {
+    return new Int32Array(rowCount);
+  }
+  if (parquetField.primitiveType === 'INT32' && arrowType instanceof arrow.Uint8) {
+    return new Uint8Array(rowCount);
+  }
+  if (parquetField.primitiveType === 'INT32' && arrowType instanceof arrow.Uint16) {
+    return new Uint16Array(rowCount);
+  }
+  if (parquetField.primitiveType === 'INT32' && arrowType instanceof arrow.Uint32) {
+    return new Uint32Array(rowCount);
+  }
+  if (
+    parquetField.primitiveType === 'INT64' &&
+    (arrowType instanceof arrow.Int64 ||
+      arrowType instanceof arrow.TimeMicrosecond ||
+      arrowType instanceof arrow.TimeNanosecond ||
+      arrowType instanceof arrow.TimestampMillisecond ||
+      arrowType instanceof arrow.TimestampMicrosecond ||
+      arrowType instanceof arrow.TimestampNanosecond)
+  ) {
+    return new BigInt64Array(rowCount);
+  }
+  if (parquetField.primitiveType === 'INT96' && arrowType instanceof arrow.TimestampNanosecond) {
+    return new BigInt64Array(rowCount);
+  }
+  if (parquetField.primitiveType === 'INT64' && arrowType instanceof arrow.Uint64) {
+    return new BigUint64Array(rowCount);
+  }
+  return undefined;
+}
+
+/** Writes a decoded primitive into the exact TypedArray expected by Arrow. */
+function setRawPrimitiveArrowValue(
+  data: RawPrimitiveArrowArray,
+  index: number,
+  value: unknown
+): void {
+  if (data instanceof BigInt64Array) {
+    data[index] = typeof value === 'bigint' ? value : BigInt(value as number | string);
+  } else if (data instanceof BigUint64Array) {
+    data[index] = BigInt.asUintN(
+      64,
+      typeof value === 'bigint' ? value : BigInt(value as number | string)
+    );
+  } else {
+    data[index] = Number(value);
+  }
+}
+
+/** Creates an Arrow Utf8 or Binary vector directly from decoded Parquet byte arrays. */
+function createRawByteArrowVector(
+  arrowType: arrow.DataType,
+  parquetField: ParquetField,
+  columnData: ParquetColumnChunk | undefined,
+  start: number,
+  end: number
+): arrow.Vector | undefined {
+  if (!columnData || !supportsRawByteArrowVector(arrowType, parquetField)) {
+    return undefined;
+  }
+  if (columnData.byteArrayData) {
+    return createBufferedByteArrowVector(arrowType, parquetField, columnData, start, end);
+  }
+
+  const rowCount = end - start;
+  const valueOffsets = new Int32Array(rowCount + 1);
+  const byteValues = columnData.values as Uint8Array[];
+  const nullBitmap = parquetField.dLevelMax ? new Uint8Array(Math.ceil(rowCount / 8)) : undefined;
+  let valueIndex = 0;
+  let firstValueIndex = 0;
+  let dataByteLength = 0;
+  let nullCount = 0;
+
+  if (!nullBitmap) {
+    valueIndex = start;
+    firstValueIndex = valueIndex;
+    for (let rowIndex = 0; rowIndex < rowCount; rowIndex++) {
+      dataByteLength += byteValues[valueIndex++].byteLength;
+      if (dataByteLength > 0x7fffffff) {
+        throw new Error('Arrow Utf8/Binary column exceeds the 32-bit offset range');
+      }
+      valueOffsets[rowIndex + 1] = dataByteLength;
+    }
+  } else {
+    for (let rowIndex = 0; rowIndex < start; rowIndex++) {
+      if (columnData.dlevels[rowIndex] === parquetField.dLevelMax) {
+        valueIndex++;
+      }
+    }
+    firstValueIndex = valueIndex;
+    for (let rowIndex = 0; rowIndex < rowCount; rowIndex++) {
+      const sourceRowIndex = start + rowIndex;
+      if (columnData.dlevels[sourceRowIndex] === parquetField.dLevelMax) {
+        dataByteLength += byteValues[valueIndex++].byteLength;
+        nullBitmap[rowIndex >> 3] |= 1 << (rowIndex & 7);
+      } else {
+        nullCount++;
+      }
+      if (dataByteLength > 0x7fffffff) {
+        throw new Error('Arrow Utf8/Binary column exceeds the 32-bit offset range');
+      }
+      valueOffsets[rowIndex + 1] = dataByteLength;
+    }
+  }
+
+  const contiguousData = getContiguousFixedByteArrayData(
+    parquetField,
+    columnData,
+    byteValues,
+    firstValueIndex,
+    valueIndex,
+    dataByteLength
+  );
+  const data = contiguousData || new Uint8Array(dataByteLength);
+  if (!contiguousData) {
+    const dataView = new DataView(data.buffer, data.byteOffset, data.byteLength);
+    let dataOffset = 0;
+    for (let index = firstValueIndex; index < valueIndex; index++) {
+      const bytes = byteValues[index];
+      if (bytes.byteLength >= 4 && bytes.byteLength <= MAXIMUM_INLINE_BYTE_COPY_LENGTH) {
+        dataView.setUint32(
+          dataOffset,
+          bytes[0] | (bytes[1] << 8) | (bytes[2] << 16) | (bytes[3] << 24),
+          true
+        );
+        dataOffset += 4;
+        for (let byteIndex = 4; byteIndex < bytes.byteLength; byteIndex++) {
+          data[dataOffset++] = bytes[byteIndex];
+        }
+      } else if (bytes.byteLength <= MAXIMUM_INLINE_BYTE_COPY_LENGTH) {
+        for (let byteIndex = 0; byteIndex < bytes.byteLength; byteIndex++) {
+          data[dataOffset++] = bytes[byteIndex];
+        }
+      } else {
+        data.set(bytes, dataOffset);
+        dataOffset += bytes.byteLength;
+      }
+    }
+  }
+
+  const nulls = nullCount ? nullBitmap : undefined;
+  if (arrowType instanceof arrow.Utf8) {
+    return new arrow.Vector([
+      arrow.makeData({
+        type: arrowType,
+        valueOffsets,
+        data,
+        nullBitmap: nulls,
+        nullCount
+      })
+    ]);
+  }
+  if (arrowType instanceof arrow.Binary) {
+    return new arrow.Vector([
+      arrow.makeData({
+        type: arrowType,
+        valueOffsets,
+        data,
+        nullBitmap: nulls,
+        nullCount
+      })
+    ]);
+  }
+  return undefined;
+}
+
+/** Creates a flat Arrow Utf8/Binary vector from the decoder's compact physical byte buffer. */
+function createBufferedByteArrowVector(
+  arrowType: arrow.DataType,
+  parquetField: ParquetField,
+  columnData: ParquetColumnChunk,
+  start: number,
+  end: number
+): arrow.Vector {
+  const byteArrayData = columnData.byteArrayData!;
+  const rowCount = end - start;
+  const nullBitmap = parquetField.dLevelMax ? new Uint8Array(Math.ceil(rowCount / 8)) : undefined;
+  let sourceValueIndex = 0;
+  let nullCount = 0;
+
+  if (!nullBitmap) {
+    sourceValueIndex = start;
+  } else {
+    for (let rowIndex = 0; rowIndex < start; rowIndex++) {
+      if (columnData.dlevels[rowIndex] === parquetField.dLevelMax) sourceValueIndex++;
+    }
+  }
+  const firstValueIndex = sourceValueIndex;
+  const canReuseOffsets = !nullBitmap && start === 0 && end === columnData.count;
+  const valueOffsets = canReuseOffsets ? byteArrayData.valueOffsets : new Int32Array(rowCount + 1);
+  let dataByteLength = 0;
+
+  if (!canReuseOffsets) {
+    for (let rowIndex = 0; rowIndex < rowCount; rowIndex++) {
+      const sourceRowIndex = start + rowIndex;
+      if (!nullBitmap || columnData.dlevels[sourceRowIndex] === parquetField.dLevelMax) {
+        dataByteLength +=
+          byteArrayData.valueOffsets[sourceValueIndex + 1] -
+          byteArrayData.valueOffsets[sourceValueIndex];
+        sourceValueIndex++;
+        if (nullBitmap) nullBitmap[rowIndex >> 3] |= 1 << (rowIndex & 7);
+      } else {
+        nullCount++;
+      }
+      valueOffsets[rowIndex + 1] = dataByteLength;
+    }
+  } else {
+    sourceValueIndex = end;
+    dataByteLength = byteArrayData.valueOffsets[sourceValueIndex];
+  }
+
+  const firstByteOffset = byteArrayData.valueOffsets[firstValueIndex];
+  const lastByteOffset = byteArrayData.valueOffsets[sourceValueIndex];
+  const data = byteArrayData.data.subarray(firstByteOffset, lastByteOffset);
+  return new arrow.Vector([
+    arrow.makeData({
+      type: arrowType,
+      valueOffsets,
+      data,
+      nullBitmap: nullCount ? nullBitmap : undefined,
+      nullCount
+    } as any)
+  ]);
+}
+
+/**
+ * Reuses one PLAIN page's contiguous fixed-width payload as Arrow Binary data.
+ *
+ * A single FIXED_LEN_BYTE_ARRAY page has no length prefixes between physical values. The decoder
+ * retains each value as a view into that page, so Arrow can retain the complete span instead of
+ * allocating and copying every value into another buffer.
+ */
+function getContiguousFixedByteArrayData(
+  parquetField: ParquetField,
+  columnData: ParquetColumnChunk,
+  byteValues: Uint8Array[],
+  firstValueIndex: number,
+  valueEndIndex: number,
+  dataByteLength: number
+): Uint8Array | undefined {
+  const valueCount = valueEndIndex - firstValueIndex;
+  const typeLength = parquetField.typeLength;
+  if (
+    parquetField.primitiveType !== 'FIXED_LEN_BYTE_ARRAY' ||
+    !typeLength ||
+    columnData.pageHeaders.length !== 1 ||
+    valueCount === 0 ||
+    dataByteLength !== valueCount * typeLength
+  ) {
+    return undefined;
+  }
+
+  const firstValue = byteValues[firstValueIndex];
+  const lastValue = byteValues[valueEndIndex - 1];
+  if (
+    firstValue.byteLength !== typeLength ||
+    lastValue.byteLength !== typeLength ||
+    firstValue.buffer !== lastValue.buffer ||
+    lastValue.byteOffset + typeLength !== firstValue.byteOffset + dataByteLength
+  ) {
+    return undefined;
+  }
+  return new Uint8Array(firstValue.buffer, firstValue.byteOffset, dataByteLength);
+}
+
+/** Returns whether one flat Parquet byte column maps directly to Arrow Utf8 or Binary. */
+function supportsRawByteArrowVector(
+  arrowType: arrow.DataType,
+  parquetField: ParquetField
+): boolean {
+  if (arrowType instanceof arrow.Utf8) {
+    return parquetField.originalType === 'UTF8' || parquetField.originalType === 'ENUM';
+  }
+  if (arrowType instanceof arrow.Binary) {
+    return (
+      (!parquetField.originalType ||
+        parquetField.originalType === 'JSON' ||
+        parquetField.originalType === 'BSON' ||
+        parquetField.originalType === 'INTERVAL' ||
+        parquetField.originalType === 'VARIANT' ||
+        parquetField.originalType === 'GEOMETRY' ||
+        parquetField.originalType === 'GEOGRAPHY') &&
+      (parquetField.primitiveType === 'BYTE_ARRAY' ||
+        parquetField.primitiveType === 'FIXED_LEN_BYTE_ARRAY')
+    );
+  }
+  return false;
+}
+
+/** Normalizes JavaScript values that Apache Arrow's 64-bit integer builders require as bigints. */
+function normalizeArrowColumn(
+  column: ArrayLike<unknown>,
+  type: arrow.DataType
+): readonly unknown[] {
+  if (!(type instanceof arrow.Int) || type.bitWidth !== 64) {
+    return column as readonly unknown[];
+  }
+
+  return Array.from(column, value => {
+    if (value === null || value === undefined || typeof value === 'bigint') {
+      return value;
+    }
+    if (value instanceof Date) {
+      return BigInt(value.getTime());
+    }
+    return BigInt(value as number | string);
+  });
+}
+
+/** Slices one Arrow table while preserving the loaders.gl schema wrapper. */
+function sliceArrowTable(table: ArrowTable, start: number, end: number): ArrowTable {
+  if (start === 0 && end === table.data.numRows) {
+    return table;
+  }
+  if (table.data.numCols === 0) {
+    return {...table, data: createArrowTable(table.data.schema, {}, end - start)};
+  }
+  return {...table, data: table.data.slice(start, end)};
+}
+
+/** Slices an arbitrary column while preserving efficient native slice implementations. */
+function sliceColumn(column: ArrayLike<unknown>, start: number, end: number): ArrayLike<unknown> {
+  if ('slice' in column && typeof column.slice === 'function') {
+    return (column.slice as (start: number, end: number) => ArrayType)(start, end);
+  }
+  return Array.from(column).slice(start, end);
+}
+
+/** Creates row-group projection properties from public loader options. */
+function getParquetIterationProps(
+  options?: ParquetJSLoaderOptions
+): ParquetIterationProps | undefined {
+  const columnList = options?.parquet?.columns;
+  if (
+    !columnList?.length &&
+    options?.parquet?.rowGroups === undefined &&
+    !options?.parquet?.signal
+  ) {
+    return undefined;
+  }
+  return {
+    columnList: columnList?.length ? columnList : undefined,
+    rowGroups: options?.parquet?.rowGroups,
+    signal: options?.parquet?.signal
+  };
+}
+
+/** Restricts the loaders.gl schema to explicitly selected top-level columns. */
+function projectSchema(schema: Schema, columns?: string[]): Schema {
+  if (!columns?.length) {
+    return schema;
+  }
+
+  return {
+    ...schema,
+    fields: schema.fields.filter(field => columns.includes(field.name))
+  };
+}

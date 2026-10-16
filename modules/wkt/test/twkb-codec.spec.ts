@@ -6,11 +6,11 @@ import {expect, test} from 'vitest';
 import {fetchFile} from '@loaders.gl/core';
 import {convertGeometryToTWKB, convertTWKBToGeometry} from '../src/twkb';
 import type {Geometry} from '@loaders.gl/schema';
-import {parseTestCases} from '@loaders.gl/gis/test/data/wkt/parse-test-cases';
+import {parseTestCases} from '@loaders.gl/wkt/test/data/wkt/parse-test-cases';
 import {TWKBWriter} from '../src/twkb/twkb-io';
 
-const WKB_2D_TEST_CASES = '@loaders.gl/gis/test/data/wkt/wkb-testdata2d.json';
-const WKB_Z_TEST_CASES = '@loaders.gl/gis/test/data/wkt/wkb-testdataZ.json';
+const WKB_2D_TEST_CASES = '@loaders.gl/wkt/test/data/wkt/wkb-testdata2d.json';
+const WKB_Z_TEST_CASES = '@loaders.gl/wkt/test/data/wkt/wkb-testdataZ.json';
 
 test('convertGeometryToTWKB matches the canonical 2D fixtures without mutating input', async () => {
   const response = await fetchFile(WKB_2D_TEST_CASES);

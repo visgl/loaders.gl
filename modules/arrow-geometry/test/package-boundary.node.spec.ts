@@ -2,10 +2,11 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import {readFileSync, readdirSync} from 'node:fs';
+import {existsSync, readFileSync, readdirSync} from 'node:fs';
 import {fileURLToPath} from 'node:url';
 import {join} from 'node:path';
 import {expect, test} from 'vitest';
+import {preProcessFile} from 'typescript';
 
 const modulesDirectory = fileURLToPath(new URL('../../', import.meta.url));
 
@@ -29,7 +30,16 @@ test.each([
   'arcgis',
   'kml',
   'mlt',
-  'wms'
+  'wms',
+  'csv',
+  'tables',
+  'geospatial',
+  'json',
+  'mvt',
+  'flatgeobuf',
+  'geopackage',
+  'parquet',
+  'shapefile'
 ])('%s does not depend on GIS or the GeoArrow processing package', moduleName => {
   const directory = join(modulesDirectory, moduleName);
   const manifest = JSON.parse(readFileSync(join(directory, 'package.json'), 'utf8'));
@@ -42,6 +52,51 @@ test.each([
   );
 });
 
+/** Collects runtime workspace dependencies, stopping at external packages and visited nodes. */
+function collectDependencies(moduleName: string, visited = new Set<string>()): Set<string> {
+  if (visited.has(moduleName)) return visited;
+  visited.add(moduleName);
+  const manifest = JSON.parse(
+    readFileSync(join(modulesDirectory, moduleName, 'package.json'), 'utf8')
+  );
+  for (const dependency of Object.keys({
+    ...manifest.dependencies,
+    ...manifest.optionalDependencies
+  })) {
+    if (dependency.startsWith('@loaders.gl/')) {
+      collectDependencies(dependency.slice('@loaders.gl/'.length), visited);
+    }
+  }
+  return visited;
+}
+
+test('GeoArrow is independent of GIS in source, project references and transitive dependencies', () => {
+  const directory = join(modulesDirectory, 'geoarrow');
+  expect(readSources(join(directory, 'src'))).not.toMatch(/@loaders\.gl\/gis/);
+  expect(readFileSync(join(directory, 'tsconfig.json'), 'utf8')).not.toContain('../gis');
+  expect(collectDependencies('geoarrow')).not.toContain('gis');
+});
+
+test.each([
+  'arrow',
+  'arcgis',
+  'kml',
+  'mlt',
+  'wms',
+  'csv',
+  'tables',
+  'geospatial',
+  'json',
+  'mvt',
+  'flatgeobuf',
+  'geopackage',
+  'parquet',
+  'shapefile'
+])('%s does not acquire GeoArrow through a compatibility dependency', moduleName => {
+  expect(collectDependencies(moduleName)).not.toContain('geoarrow');
+  expect(collectDependencies(moduleName)).not.toContain('gis');
+});
+
 test('the schema root keeps runtime geospatial validation on its explicit subpath', () => {
   const directory = join(modulesDirectory, 'schema');
   const manifest = JSON.parse(readFileSync(join(directory, 'package.json'), 'utf8'));
@@ -52,4 +107,64 @@ test('the schema root keeps runtime geospatial validation on its explicit subpat
   expect(readFileSync(join(directory, 'src/index.ts'), 'utf8')).not.toMatch(
     /from ['"](?:zod|.*geospatial-metadata-zod-schema)['"]/
   );
+});
+
+test('published consumers and their tests no longer require the GIS compatibility package', () => {
+  expect(existsSync(join(modulesDirectory, 'gis'))).toBe(false);
+  const moduleNames = readdirSync(modulesDirectory).filter(moduleName =>
+    existsSync(join(modulesDirectory, moduleName, 'package.json'))
+  );
+  for (const moduleName of moduleNames) {
+    const directory = join(modulesDirectory, moduleName);
+    const manifest = JSON.parse(readFileSync(join(directory, 'package.json'), 'utf8'));
+    for (const section of [
+      'dependencies',
+      'devDependencies',
+      'peerDependencies',
+      'optionalDependencies'
+    ]) {
+      expect(manifest[section] ?? {}, moduleName).not.toHaveProperty('@loaders.gl/gis');
+    }
+    expect(collectDependencies(moduleName), moduleName).not.toContain('gis');
+    const project = join(directory, 'tsconfig.json');
+    if (existsSync(project)) {
+      expect(readFileSync(project, 'utf8'), moduleName).not.toContain('../gis');
+    }
+    for (const folder of ['src', 'test']) {
+      if (!existsSync(join(directory, folder))) continue;
+      const source = readSources(join(directory, folder));
+      const imports = preProcessFile(source, true, true).importedFiles.map(file => file.fileName);
+      expect(
+        imports.filter(name => /^@loaders\.gl\/gis(?:\/|$)/.test(name)),
+        moduleName
+      ).toEqual([]);
+      expect(source, moduleName).not.toContain('@loaders.gl/' + 'gis/test/data/');
+    }
+  }
+});
+
+test('repository build and test wiring does not require the removed GIS package', () => {
+  for (const filename of [
+    'package.json',
+    'tsconfig.json',
+    'test/aliases.ts',
+    'test/modules.ts',
+    'test/coverage-thresholds.json'
+  ]) {
+    expect(readFileSync(join(modulesDirectory, '..', filename), 'utf8'), filename).not.toContain(
+      '@loaders.gl/' + 'gis'
+    );
+  }
+  // Published deck.gl still requires GIS 4.x; only the retired workspace resolution is forbidden.
+  expect(readFileSync(join(modulesDirectory, '../yarn.lock'), 'utf8')).not.toContain(
+    'workspace:modules/' + 'gis'
+  );
+});
+
+test('the geospatial example uses GeoArrow rather than GIS', () => {
+  const directory = join(modulesDirectory, '../examples/website/geospatial');
+  const manifest = JSON.parse(readFileSync(join(directory, 'package.json'), 'utf8'));
+  expect(manifest.dependencies).toHaveProperty('@loaders.gl/geoarrow');
+  expect(manifest.dependencies).not.toHaveProperty('@loaders.gl/gis');
+  expect(readFileSync(join(directory, 'app.tsx'), 'utf8')).not.toContain('@loaders.gl/gis');
 });

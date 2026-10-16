@@ -3,7 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import {expect, test} from 'vitest';
-import {PARQUET_CODECS} from '../../src/parquetjs/codecs';
+import {PARQUET_CODECS} from '../../../tables/src/parquet/parquetjs/codecs';
 
 test('DELTA_BINARY_PACKED encoder matches the canonical constant-delta layout', () => {
   expect(Array.from(PARQUET_CODECS.DELTA_BINARY_PACKED.encodeValues('INT32', [1, 2, 3], {}))).toEqual(

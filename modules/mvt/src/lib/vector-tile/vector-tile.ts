@@ -10,7 +10,7 @@ import Protobuf from 'pbf';
 export class VectorTile {
   layers: {[x: string]: VectorTileLayer};
   constructor(pbf: Protobuf, end?: number) {
-    this.layers = pbf.readFields(readTile, {}, end);
+    this.layers = pbf.readFields(readTile, Object.create(null), end);
   }
 }
 

@@ -4,13 +4,13 @@
 import * as arrow from 'apache-arrow';
 import {load} from '@loaders.gl/core';
 import {expect, test} from 'vitest';
-import {AvroLoaderWithParser} from '../src/avro-loader';
-import {AvroLoader} from '../src/avro-loader-types';
-import {AvroWriter} from '../src/avro-writer';
-import {encodeAvroInChunks} from '../src/avro-stream';
-import {getAvroSchemaFingerprint} from '../src/lib/parsers/parse-avro';
-import {parseAvroOCF} from '../src/avro-ocf';
-import {compressAvro, decompressAvro} from '../src/avro-compression';
+import {AvroLoaderWithParser} from '../../tables/src/avro/avro-loader';
+import {AvroLoader} from '../../tables/src/avro/avro-loader-types';
+import {AvroWriter} from '../../tables/src/avro/avro-writer';
+import {encodeAvroInChunks} from '../../tables/src/avro/avro-stream';
+import {getAvroSchemaFingerprint} from '../../tables/src/avro/lib/parsers/parse-avro';
+import {parseAvroOCF} from '../../tables/src/avro/avro-ocf';
+import {compressAvro, decompressAvro} from '../../tables/src/avro/avro-compression';
 
 test('Avro compression handles null and deflate blocks', async () => {
   const value = new TextEncoder().encode('compression coverage');

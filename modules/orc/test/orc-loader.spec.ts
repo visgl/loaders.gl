@@ -6,17 +6,20 @@ import {expect, test} from 'vitest';
 import * as arrow from 'apache-arrow';
 import {deflateSync, zlibSync} from 'fflate';
 import {SnappyCompression} from '@loaders.gl/compression/snappy-compression';
-import {ORCLoaderWithParser} from '../src/orc-loader';
+import {ORCLoaderWithParser} from '../../tables/src/orc/orc-loader';
 import {
   createORCSchema,
   getORCDataType,
   ORCSource,
   ORCSourceLoaderWithParser
-} from '../src/orc-source-loader';
-import {ORCTypeKind} from '../src/lib/parsers/parse-orc';
-import {ORCWriter} from '../src/orc-writer';
-import {encodeORC} from '../src/lib/encoders/encode-orc';
-import {decompressORCStream, preloadORCCompression} from '../src/lib/parsers/orc-compression';
+} from '../../tables/src/orc/orc-source-loader';
+import {ORCTypeKind} from '../../tables/src/orc/lib/parsers/parse-orc';
+import {ORCWriter} from '../../tables/src/orc/orc-writer';
+import {encodeORC} from '../../tables/src/orc/lib/encoders/encode-orc';
+import {
+  decompressORCStream,
+  preloadORCCompression
+} from '../../tables/src/orc/lib/parsers/orc-compression';
 
 test('ORCSource exposes footer metadata and shared projection/limit reads', async () => {
   const input = {
@@ -207,7 +210,7 @@ test('ORCLoader#parse decodes dictionary-encoded string columns', async () => {
 });
 
 test('ORC compression decodes framed ZLIB chunks', async () => {
-  await preloadORCCompression();
+  await preloadORCCompression('ZLIB');
   const input = new TextEncoder().encode('orc-zlib');
   const compressed = zlibSync(input);
   const header = compressed.length << 1;
@@ -220,7 +223,7 @@ test('ORC compression decodes framed ZLIB chunks', async () => {
 });
 
 test('ORC compression decodes framed raw DEFLATE chunks', async () => {
-  await preloadORCCompression();
+  await preloadORCCompression('ZLIB');
   const input = new TextEncoder().encode('orc-raw-deflate');
   const compressed = deflateSync(input);
   const header = compressed.length << 1;
@@ -233,9 +236,11 @@ test('ORC compression decodes framed raw DEFLATE chunks', async () => {
 });
 
 test('ORC compression decodes framed Snappy chunks', async () => {
-  await preloadORCCompression();
+  await preloadORCCompression('SNAPPY');
   const input = new TextEncoder().encode('orc-snappy');
-  const compressed = new Uint8Array(new SnappyCompression().compressSync(input.buffer));
+  const encoder = new SnappyCompression();
+  await encoder.preload();
+  const compressed = new Uint8Array(encoder.compressSync(input.buffer));
   const header = compressed.length << 1;
   const framed = new Uint8Array(compressed.length + 3);
   framed[0] = header & 0xff;
@@ -897,16 +902,21 @@ function concatBytes(...arrays: Uint8Array[]): Uint8Array {
   return output;
 }
 
-/** Builds a tiny uncompressed ORC file from explicit streams and type metadata. */
+/** Builds a tiny ORC file from explicit streams and type metadata. */
 function buildORCFixture(options: {
   rowCount: number;
   streams: Array<{kind: number; column: number; bytes: Uint8Array}>;
   types: Array<{kind: number; subtypes?: number[]; fieldNames?: string[]}>;
   encodingKinds?: number[];
+  compression?: (bytes: Uint8Array) => Uint8Array;
 }): Uint8Array {
-  const data = concatBytes(...options.streams.map(stream => stream.bytes));
-  const stripeFooter = encodeMessage([
-    ...options.streams.map(
+  const streams = options.streams.map(stream => ({
+    ...stream,
+    bytes: options.compression?.(stream.bytes) ?? stream.bytes
+  }));
+  const data = concatBytes(...streams.map(stream => stream.bytes));
+  const stripeFooterBytes = encodeMessage([
+    ...streams.map(
       stream =>
         [
           1,
@@ -928,6 +938,7 @@ function buildORCFixture(options: {
         ] as [number, Uint8Array]
     )
   ]);
+  const stripeFooter = options.compression?.(stripeFooterBytes) ?? stripeFooterBytes;
   const stripeInformation = encodeMessage([
     [1, 3],
     [2, 0],
@@ -942,14 +953,15 @@ function buildORCFixture(options: {
       ...(type.fieldNames || []).map(fieldName => [3, fieldName] as [number, string])
     ])
   );
-  const footer = encodeMessage([
+  const footerBytes = encodeMessage([
     [3, stripeInformation],
     ...typeMessages.map(type => [4, type] as [number, Uint8Array]),
     [6, options.rowCount]
   ]);
+  const footer = options.compression?.(footerBytes) ?? footerBytes;
   const postscript = encodeMessage([
     [1, footer.length],
-    [2, 0],
+    [2, options.compression ? 3 : 0],
     [3, 262_144],
     [4, 0],
     [4, 12]
@@ -995,3 +1007,35 @@ function writeVarint(output: number[], value: number): void {
   }
   output.push(value);
 }
+
+/** Constructs a literal-only raw LZO1X block and its ORC chunk header for tiny test streams. */
+function frameLzoTestChunk(bytes: Uint8Array): Uint8Array {
+  if (!bytes.length || bytes.length > 238) throw new Error('Test chunk length out of range');
+  const compressed = concatBytes(
+    new Uint8Array([17 + bytes.length]),
+    bytes,
+    new Uint8Array([17, 0, 0])
+  );
+  const header = compressed.length << 1;
+  return concatBytes(
+    new Uint8Array([header & 255, (header >> 8) & 255, (header >> 16) & 255]),
+    compressed
+  );
+}
+
+test('ORCLoader parses an LZO-compressed file including its footer and stripe streams', async () => {
+  const fixture = buildORCFixture({
+    rowCount: 3,
+    streams: [{kind: 1, column: 1, bytes: new Uint8Array([0, 7])}],
+    types: [{kind: 12, subtypes: [1], fieldNames: ['value']}, {kind: ORCTypeKind.LONG}],
+    encodingKinds: [0, 2],
+    compression: frameLzoTestChunk
+  });
+  const result = await ORCLoaderWithParser.parse(fixture.buffer);
+  expect(result.shape).toBe('arrow-table');
+  if (result.shape === 'arrow-table')
+    expect(getColumnValues(result.data, 'value')).toEqual([7, 7, 7]);
+  expect(() =>
+    decompressORCStream(frameLzoTestChunk(new Uint8Array([1, 2, 3])), 'LZO', 2)
+  ).toThrow();
+});

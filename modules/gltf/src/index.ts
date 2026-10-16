@@ -34,6 +34,27 @@ export type {
 
 export type {GLTFShape, GLTFBoundingVolume} from './lib/types/gltf-shape-schema';
 export type {
+  GLTF_MPEG_audio_spatial,
+  GLTFSpatialAudio,
+  GLTFSpatialAudioSource,
+  GLTFSpatialAudioListener,
+  GLTFSpatialAudioReverb,
+  GLTFSpatialAudioReverbProperty
+} from './lib/types/gltf-mpeg-audio-spatial-schema';
+export {name as MPEG_AUDIO_SPATIAL, getSpatialAudio} from './lib/extensions/MPEG_audio_spatial';
+export type {
+  GLTF_KHR_audio_emitter,
+  GLTFKHRAudioData,
+  GLTFKHRAudioSource,
+  GLTFKHRAudioPositional,
+  GLTFKHRAudioEmitter,
+  GLTFKHRAudioAttachment,
+  GLTFAudioClip,
+  GLTFAudioEmitterSource,
+  GLTFAudioEmitter
+} from './lib/types/gltf-khr-audio-emitter-schema';
+export {name as KHR_AUDIO_EMITTER} from './lib/extensions/KHR_audio_emitter';
+export type {
   GLTF_EXT_mesh_polygon,
   GLTFImplicitFeatureIdRange,
   GLTFMeshPolygonData,
@@ -223,3 +244,31 @@ export {
   type PropertyAttribute
 } from './lib/extensions/EXT_structural_metadata';
 export {createExtMeshFeatures} from './lib/extensions/EXT_mesh_features';
+
+export {
+  getGLTFInteractivity,
+  type GLTF_KHR_interactivity,
+  type GLTFInteractivityGraph,
+  type GLTFInteractivityNode,
+  type GLTFInteractivityDeclaration,
+  type GLTFInteractivityValue,
+  type GLTFInteractivitySocket,
+  type GLTFInteractivityProperty,
+  type GLTFInteractivityConfiguration,
+  type GLTFInteractivityDeclarationSocket,
+  type GLTFInteractivityType,
+  type GLTFInteractivityEventValue,
+  type GLTFInteractivityVariable,
+  type GLTFInteractivityEvent
+} from './lib/types/gltf-interactivity';
+
+// Permissive extension schemas retain unknown properties and do not insert defaults.
+export * from './lib/types/gltf-additional-extension-schemas';
+export * from './lib/types/gltf-audio-extension-schemas';
+export * from './lib/types/gltf-extension-schemas';
+export {
+  getMaterialVariantMappings,
+  getMeshInstances,
+  getXMPMetadata
+} from './lib/api/gltf-extension-data';
+export type {GLTFMaterialVariantData, GLTFMeshInstanceData} from './lib/api/gltf-extension-data';

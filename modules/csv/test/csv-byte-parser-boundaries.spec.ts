@@ -6,7 +6,7 @@ import {expect, test} from 'vitest';
 import {
   parseRawArrowCSVASCIIText,
   parseRawArrowCSVBytes
-} from '../src/lib/parsers/parse-raw-arrow-csv-bytes';
+} from '../../tables/src/csv/lib/parsers/parse-raw-arrow-csv-bytes';
 
 /** Returns one Arrow column as ordinary JavaScript values. */
 function getValues(table: any, columnName: string): unknown[] {

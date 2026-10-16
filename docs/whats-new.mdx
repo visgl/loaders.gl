@@ -40,6 +40,35 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
   tone="violet"
 />
 
+## Experimental grouped loader packages
+
+The package consolidation POC moves Arrow, Avro, BSON, CSV, Excel, JSON, Lance, ORC, and Parquet
+into `@loaders.gl/tables`, and
+KML, Shapefile, FlatGeobuf, and GeoPackage into `@loaders.gl/geospatial`. Group roots expose
+metadata loaders; format subpaths expose parser-bearing loaders. Existing packages remain
+compatibility entry points. See the [grouped package guide](/docs/developer-guide/grouped-packages)
+for imports, worker asset availability, and dependency tradeoffs.
+
+## Tile matrix source adapters
+
+- Shared grid normalization now lives in `@loaders.gl/loader-utils`, with math.gl 5.0.0-alpha.18 and independent vertical pixel resolution.
+- ArcGIS map and vector tile sources expose per-level grid metadata and preserve matrix identifiers in cached-tile URLs without inventing matrix dimensions.
+- GeoPackage source metadata discovers raster tile tables, including raster-only packages, and exposes normalized matrix geometry. Raster payload access remains separate.
+
+## Tile matrix coverage
+
+OGC API Tiles exposes matrix coverage limits and avoids requests outside advertised coverage. WMTS exposes its selected-layer limits through the same `tileGrid.limits` metadata. See the new [tile matrix guide](/docs/developer-guide/tile-matrices).
+
+## Compression backends and LZO
+
+Default fallback compressors and decompressors use lazy, direction-specific compress-utils 0.9.0
+WASM modules. Native streams remain the first async choice where supported. Preload enables sync
+calls. Raw DEFLATE and LZ4 bindings share their framed codec assets.
+
+The decoder-only [LzoDecompressor API](./modules/compression/api-reference/lzo) supports raw LZO1X.
+Parquet adds Hadoop-framed LZO page support and ORC adds LZO chunk support. Container framing is
+implemented in TypeScript. Compression workers package the WASM assets required by their codecs.
+
 ## ArcGIS service items and sign-in
 
 Resolve five service-backed ArcGIS item types into explicit layer/table choices, retaining publisher
@@ -52,6 +81,24 @@ and attribution. SDK dependencies remain in the applications.
 See [supported items and verification boundaries](/docs/developer-guide/arcgis/items).
 
 ## What's new
+
+- `OGCAPITilesSource` discovers the tile matrix set of the tileset its `{tileMatrix}` template
+  belongs to, following the tileset's tiling-scheme link, `tileMatrixSetId` or `tileMatrixSetURI`,
+  when `ogc-api.tileMatrixSet` is not set. New `getTileMatrixSets()` and `getTileMatrixSet(id)`
+  read the `/tileMatrixSets` endpoints. A failed discovery is reported and retried on the next
+  `getMetadata()` without failing the source.
+
+- `convertOGCTileMatrixSetToTileGrid()` converts OGC TileMatrixSet 2.0 JSON to `TileGrid`,
+  honoring `orderedAxes`, `cellSize`, and bottom-left origins, and `OGCAPITilesSource` reports a
+  configured `ogc-api.tileMatrixSet` as `tileGrid`, including `tileGrid.tileMatrixSet`. Tile
+  requests accept an explicit `tileMatrix` identifier.
+- `OGCAPITilesSource` discovers the tile matrix set of a `{tileMatrix}` template from its tileset
+  when none is configured. A failed discovery rejects instead of requesting `z` as the matrix
+  identifier; set `ogc-api.discoverTileMatrixSet: false` to keep using `z`.
+
+- The v5 tile-converter complete hierarchy profile supports multiple static mesh primitives and scene placements per content. Each becomes an ordered GLB on the original tile, preserving refinement, per-primitive materials and explicitly mapped features within the existing 64-placement and byte limits. See the [hierarchy profile](/docs/modules/tile-converter/api-reference/v5-conversion#complete-explicit-hierarchy-profile).
+
+- The v5 tile-converter CLI accepts explicit scalar/string feature mappings through `--feature-schema`. Its complete hierarchy profile preserves ordered 3D Tiles 1.1 mesh `contents` arrays on their original tiles, with shared GLB origins and existing precision/byte gates. See the [CLI guide](/docs/modules/tile-converter/cli-reference/tile-converter-v5).
 
 - WMTS tile grids now describe every matrix level, including per-level origins and tile sizes.
   `tileGrid.tileMatrixSet` holds complete levels as math.gl `TileMatrix` geometry, and
@@ -83,12 +130,23 @@ See [supported items and verification boundaries](/docs/developer-guide/arcgis/i
 
 ## v5.0 (In Development)
 
+- The browser PMTiles converter now reads GeoTIFF/COG URLs through the shared raster source planner, selecting metadata, overviews and intersecting blocks within a bounded range-read budget. A live progress panel reports stages, tile addresses and bytes, with immediate Cancel and cooperative Finish to emit completed work. In-memory byte ceilings are just under 4 GiB, subject to browser memory.
+
+- The [browser PMTiles export example](/examples/tiles/pmtiles-authoring) accepts local files or HTTP(S) GeoJSON, GeoArrow IPC and byte GeoTIFF inputs, then downloads bounded selected-tile MVT, MLT or PNG archives using the existing tiler and authoring APIs. Input reading, parsing, tiling and encoding run in a disposable worker so the page stays responsive; Cancel terminates computation. A matching [inline 3D tile converter](/examples/tiles/3d-tiles-conversion) shares the progress panel and Finish/Cancel controls, reporting written meshes and packaging completed work as SLPK or 3TZ.
+
+- **Raster PMTiles authoring** - [`encodeRasterPMTiles`](/docs/modules/pmtiles/api-reference/raster-pmtiles) exports selected gray/RGB/alpha byte-imagery regions as PNG tiles in PMTiles v3, reusing raster sources, affine sampling, validity masks and the existing image writer.
+- **MLT authoring** - `MLTWriter` encodes tile-local GeoArrow WKB and nullable scalar columns as MLT v1. `encodeGeoArrowPMTiles` now accepts `tileType: 'mlt'`, reusing the existing Arrow tiler and bounded selected-tile export pipeline.
+
+Alternate LAS, Parquet, and fast JSON backend loaders are now imported through
+explicit implementation subpaths; see the [upgrade guide](/docs/upgrade-guide#alternate-loader-imports).
+Package barrels now list their exports explicitly.
+
 - GIS retirement: Arrow parsing and triangulation now use focused
   [Arrow geometry helpers](/docs/modules/arrow-geometry). Geometry metadata
-  validators move to a dedicated schema subpath, and GIS/WKT share math.gl-backed
+  validators move to a dedicated schema subpath, and geometry codecs use math.gl-backed
   codecs. Legacy GeoJSON/FlatGeoJSON binary materialization is shared through
   `arrow-geometry/legacy-binary`, removing direct GIS dependencies from ArcGIS,
-  KML, MLT and WMS. Existing GIS compatibility exports and loader output defaults remain.
+  KML, MLT and WMS. The GIS compatibility package is removed; loader output defaults remain.
   Native feature tables preserve M/ZM axes, and binary geometry type metadata can
   use the same dimension options as the WKB writer.
 - `Tileset3D` retires drawn fallback tiles independently as each replacement region finishes.
@@ -277,7 +335,7 @@ Release Date: 2026
 - **Module workers by default** - Worker descriptors can create bundler-resolved ES module workers as their default browser path while retaining explicit worker URLs and pre-built classic-worker fallbacks. Arrow triangulation is the first API to use this path; existing classic workers are not deprecated.
 - **Automatic atomic worker selection** - `core.worker: 'auto'` lets loaders provide synchronous normalized work estimates so small parses stay on the main thread while expensive parses use workers. The default `core.worker: true` behavior remains unchanged.
 - **OpenUSD scenes** - The new `@loaders.gl/scene` module provides an experimental [`USDLoader`](/docs/modules/scene/api-reference/usd-loader) for the [OpenUSD format](/docs/modules/scene/formats/usd), supporting ASCII USDA layers and uncompressed USDZ archives, including reference and variant composition.
-- **JSON format validation** - [Zod](https://zod.dev/) schemas add runtime validation while retaining handwritten TypeScript types, with exported JSON Schemas for `@loaders.gl/textures`, `@loaders.gl/potree`, `@loaders.gl/mvt`, `@loaders.gl/3d-tiles`, `@loaders.gl/gis`, `@loaders.gl/i3s`, and `@loaders.gl/splats`.
+- **JSON format validation** - [Zod](https://zod.dev/) schemas add runtime validation while retaining handwritten TypeScript types, with exported JSON Schemas for `@loaders.gl/textures`, `@loaders.gl/potree`, `@loaders.gl/mvt`, `@loaders.gl/3d-tiles`, `@loaders.gl/schema`, `@loaders.gl/i3s`, and `@loaders.gl/splats`.
 
 **Features**
 
@@ -416,9 +474,10 @@ Release Date: 2026
 
 - The new lightweight `@loaders.gl/compression/native-decompression` entrypoint probes runtime support for gzip, deflate, raw deflate, Brotli, and future Zstandard decompression without importing codec fallbacks. Parquet and SPZ use it before lazily loading codec-backed implementations; until native Zstandard support becomes widely available, most runtimes still need `zstd-codec` for Zstandard-backed parsing.
 
-**@loaders.gl/gis**
+**@loaders.gl/schema and @loaders.gl/geoarrow**
 
-- Handwritten, documented GeoParquet and GeoArrow metadata types are exported from `@loaders.gl/gis`, while matching runtime validators are available from `@loaders.gl/gis/geospatial-metadata-zod-schema` without adding Zod to the lightweight root import.
+- The GIS compatibility package is removed in 5.0. GeoArrow owns application-facing conversion and processing; see the [GIS migration map](/docs/modules/geoarrow/gis-migration). Legacy binary layouts remain supported as explicit, allocating rendering representations.
+- Handwritten, documented GeoParquet and GeoArrow metadata types are exported from `@loaders.gl/schema`, while matching runtime validators are available from `@loaders.gl/schema/geospatial-metadata-zod-schema` without adding Zod to the lightweight root import.
 - Draft-07 `geoparquet.schema.json` and `geoarrow-metadata.schema.json` assets are published for validation and editor integrations.
 
 **@loaders.gl/i3s**
@@ -544,6 +603,8 @@ The release also includes `KHR_meshopt_compression` support and portable `LINE_L
 Release Date: March 31, 2026
 
 **Highlights**
+
+
 
 - **@loaders.gl/mlt** - New [`MLTLoader`](/docs/modules/mlt/api-reference/mlt-loader) and [`MLTSourceLoader`](/docs/modules/mlt/api-reference/mlt-source-loader) add support for the [`MapLibre Tile`](/docs/modules/mlt/formats/mlt) format, with a new [MLT website example](/examples/tiles/mlt).
 - **@loaders.gl/textures** - Texture loaders now return `TextureLevel` objects with explicit `shape`, `format`, and `textureFormat` fields, add manifest-driven [`TextureLoader`](/docs/modules/textures/api-reference/texture-loader), [`TextureArrayLoader`](/docs/modules/textures/api-reference/texture-array-loader), and [`TextureCubeLoader`](/docs/modules/textures/api-reference/texture-cube-loader), and support Radiance HDR textures through [`RadianceHDRLoader`](/docs/modules/textures/api-reference/radiance-hdr-loader).
@@ -1559,3 +1620,7 @@ for moved imports.
 The ArcGIS package now defers service implementations through its lightweight root loaders.
 Use `@loaders.gl/arcgis/bundled` for synchronous construction and direct source classes; see
 [ArcGIS import patterns](/docs/developer-guide/arcgis#how-imports-work).
+
+### GeoPackage tile payloads and GeoTIFF overview grids
+
+GeoPackage sources can read bounded encoded tile payloads by explicit table and native matrix ID, returning `null` for sparse holes. GeoTIFF/COG raster metadata now includes optional native `tileGrid` geometry for eligible tiled, axis-aligned overview hierarchies, preserving image IDs, independent pixel sizes, and padded edge tiles.

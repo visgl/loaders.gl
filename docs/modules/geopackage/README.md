@@ -54,15 +54,17 @@ The `@loaders.gl/geopackage` module handles the OGC [GeoPackage](https://www.geo
 ## Installation
 
 ```bash
-npm install @loaders.gl/geopackage
+npm install @loaders.gl/geopackage sql.js
 ```
+
+SQL.js is an optional peer dependency. Applications using the grouped package should install `@loaders.gl/geospatial sql.js`; other geospatial formats do not require SQL.js. The existing `geopackage.sqlJsCDN` option controls WASM asset resolution and does not replace the JavaScript peer dependency.
 
 ## Loaders and Writers
 
 | Loader / Source | Description |
 | --------------- | ----------- |
 | [`GeoPackageLoader`](/docs/modules/geopackage/api-reference/geopackage-loader) | Loads one selected GeoPackage vector table. |
-| [`GeoPackageSource`](/docs/modules/geopackage/api-reference/geopackage-source) | Discovers and queries multiple GeoPackage tables as a data source. |
+| [`GeoPackageSource`](/docs/modules/geopackage/api-reference/geopackage-source) | Discovers and queries feature tables, exposes tile grids, and reads bounded encoded tile payloads. |
 
 ## Reprojection
 

@@ -3,7 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import type {CRSIdentifier} from '@math.gl/crs';
-import type {TileMatrixSet} from '@math.gl/geospatial';
+import type {TileMatrixLimits, TileMatrixSet} from '@math.gl/geospatial';
 
 /**
  * Props for a TileSource
@@ -84,7 +84,7 @@ export type TileGrid = {
   tileSize?: [number, number];
   /** Top-left origin in grid coordinates. */
   origin?: [number, number];
-  /** Coordinate units per pixel in matrix order, when CRS units are known. */
+  /** Horizontal coordinate units per pixel in matrix order, when CRS units are known. */
   resolutions?: number[];
   /** Matrix identifiers in zoom order. */
   matrixIds?: string[];
@@ -102,16 +102,31 @@ export type TileGrid = {
    * usable geometry on its own; prefer `tileMatrixSet`.
    */
   matrices?: TileGridMatrix[];
+  /** Inclusive source coverage. Omitted means unrestricted; an empty list allows no tiles. */
+  limits?: TileGridLimits[];
+};
+
+/** Inclusive source coverage for one matrix, independent of its geometric definition. */
+export type TileGridLimits = TileMatrixLimits & {
+  /** Identifier of the covered matrix. Matrices absent from a present limits list are unavailable. */
+  tileMatrix: string;
 };
 
 /** One advertised level of a tile grid. Fields the service does not advertise are omitted. */
 export type TileGridMatrix = {
   /** Matrix identifier used in tile requests. */
   id: string;
-  /** Coordinate units per pixel, when CRS units are known. */
+  /** Horizontal coordinate units per pixel, also vertical unless resolutionY is supplied. */
   resolution?: number;
-  /** Top-left origin in grid coordinates, with the same axis handling as `TileGrid.origin`. */
+  /** Vertical coordinate units per pixel; defaults to `resolution` when omitted. */
+  resolutionY?: number;
+  /**
+   * Origin in grid coordinates, at the corner named by `cornerOfOrigin`. Sources swap it to XY
+   * only where they know the axis order; see each source's documentation.
+   */
   origin?: [number, number];
+  /** Matrix corner that `origin` locates; omitted means top-left. */
+  cornerOfOrigin?: 'topLeft' | 'bottomLeft';
   /** Tile width and height in pixels. */
   tileSize?: [number, number];
   /** Matrix width and height in tile units. */

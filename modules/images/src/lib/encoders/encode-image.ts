@@ -45,11 +45,20 @@ async function encodeImageInBrowser(image, options) {
   const {width, height} = getImageSize(image);
 
   // create a canvas and resize it to the size of our image
-  const canvas = document.createElement('canvas');
+  const canvas =
+    typeof OffscreenCanvas !== 'undefined'
+      ? new OffscreenCanvas(width, height)
+      : document.createElement('canvas');
   canvas.width = width;
   canvas.height = height;
 
   drawImageToCanvas(image, canvas);
+
+  // Workers have no DOM canvas; use their native asynchronous encoder.
+  if ('convertToBlob' in canvas) {
+    const blob = await canvas.convertToBlob({type: mimeType, quality: jpegQuality ?? undefined});
+    return blob.arrayBuffer();
+  }
 
   // The actual encoding is done asynchronously with `canvas.toBlob()`
   const blob = await new Promise<Blob | null>(resolve => {

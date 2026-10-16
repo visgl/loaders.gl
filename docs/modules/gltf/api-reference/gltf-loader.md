@@ -220,6 +220,26 @@ The loader also supports draft glTF 2.1 [thumbnails](/docs/modules/gltf/formats/
 
 The GLTF Loader returns an object with a `json` field containing the glTF Scenegraph. In its basic mode, the `GLTFLoader` does not modify the loaded JSON in any way. Instead, the results of additional processing are placed in parallel top-level fields such as `buffers` and `images`. This ensures that applications that want to work with the standard glTF data structure can do so.
 
+[Audio extensions](/docs/modules/gltf/formats/gltf#spatial-audio) add the following optional
+fields to the loader result. Original audio extension declarations and extension lists are retained.
+
+| Result field | Extension | Contents |
+| --- | --- | --- |
+| `audioClips` | Draft `KHR_audio_emitter` | Encoded `Uint8Array` data and original resource declarations, parallel to the extension's `audio` array. |
+| `audioEmitters` | Draft `KHR_audio_emitter` | Node and scene emitter instances with resolved source and clip references. |
+| `spatialAudio` | `MPEG_audio_spatial` | Root and node audio declarations, including accessor indices, listeners and reverbs. |
+
+`gltf.loadAudio: false` retains KHR emitter and clip metadata without fetching audio URIs
+or populating `audioClips[].data`. External buffers containing audio still load when
+`gltf.loadBuffers` is `true`; disable both options to avoid those downloads.
+The application handles media decoding, playback, spatialization, and MPEG timed-media behavior.
+`autoplay` remains a declaration for that application to interpret.
+
+The [extension schemas and helpers](/docs/modules/gltf/formats/gltf#typed-extension-metadata-and-permissive-validation)
+also expose material variants, GPU instance attributes, animation pointers, node interaction
+flags and XMP packets. These schemas validate known fields while preserving unknown data;
+the loader retains runtime-dependent declarations in the source JSON.
+
 For applications that need static geometry in the Mesh Arrow layout, use `convertGLTFToMeshArrow()` after loading. It converts each source primitive once and returns node placements separately, preserving mesh reuse. Dense, packed accessors retain views of source buffers; interleaved, sparse, and implicit-zero accessors are materialized without changing their logical component values. Conversion does not modify the glTF or bake node transforms, skinning, morph targets, or GPU instancing.
 
 ```ts
@@ -259,6 +279,7 @@ not provide `parseSync`. Async parsing supports the following resource processin
 | `gltf.loadFiles`          | Boolean | `false` | Resolve draft glTF 2.1 `files` entries from URIs or buffer views.             |
 | `gltf.loadExternalAssets` | Boolean | `false` | Recursively parse draft glTF 2.1 external assets instantiated by scene nodes. |
 | `gltf.loadImages`         | Boolean | `true`  | Load images referenced by textures or the draft glTF 2.1 thumbnail.          |
+| `gltf.loadAudio`          | Boolean | `true`  | Load encoded draft `KHR_audio_emitter` clips. Independent of `loadBuffers`; does not decode or play audio. |
 | `gltf.decompressMeshes`   | Boolean | `true`  | Decompress Draco and [KHR/EXT meshopt](/docs/modules/gltf/formats/gltf#meshopt-compression) data. |
 | `gltf.normalize`          | Boolean or string | `true`  | Automatically attempt glTF 1 to 2 conversion. `true` / `'best-effort'` continue through reported gaps; `'strict'` rejects reported unsupported features; `false` rejects glTF 1 input. |
 
@@ -388,3 +409,9 @@ legacy fallback rules.
 | `buffers[\*].byteOffset`  | `Number`      | `null`  | offset of buffer (embedded in larger binary block)               |
 | `buffers[\*].byteLength`  | `ArrayBuffer` | `null`  | length of buffer (embedded in larger binary block)               |
 | `_glb`?                   | `Object`      | N/A     | The output of the GLBLoader if the parsed file was GLB formatted |
+
+## Interactivity graphs
+
+The loader preserves `KHR_interactivity` graph declarations. See the
+[glTF format guide](../formats/gltf#khr_interactivity) for the graph types,
+`getGLTFInteractivity` accessor, validation, and runtime responsibilities.

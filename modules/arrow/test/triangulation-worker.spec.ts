@@ -21,7 +21,7 @@ vi.mock('@loaders.gl/arrow-geometry/binary-features', async importOriginal => {
   };
 });
 
-vi.mock('../src/triangulate-wkb-geometry-column', () => ({
+vi.mock('../../tables/src/arrow/triangulate-wkb-geometry-column', () => ({
   triangulateWKBGeometryColumn: workerMocks.triangulateWKBColumn
 }));
 
@@ -29,7 +29,7 @@ let processMessage: (data: unknown) => Promise<any>;
 
 beforeAll(async () => {
   ({processTriangulationWorkerMessage: processMessage} = await import(
-    '../src/workers/triangulation-worker'
+    '../../tables/src/arrow/workers/triangulation-worker'
   ));
 });
 

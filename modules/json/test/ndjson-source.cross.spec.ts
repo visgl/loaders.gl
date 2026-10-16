@@ -1,5 +1,5 @@
 import {expect, test} from 'vitest';
-import {NDJSONSourceLoader, NDJSONTableSource} from '../src/ndjson-source';
+import {NDJSONSourceLoader, NDJSONTableSource} from '../../tables/src/json/ndjson-source';
 
 test('NDJSONTableSource discovers schema and applies projection and limit', async () => {
   const source = new NDJSONTableSource(

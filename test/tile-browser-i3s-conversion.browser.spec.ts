@@ -1,4 +1,5 @@
 import {beforeAll, expect, test, vi} from 'vitest';
+import {userEvent} from 'vitest/browser';
 import {parse} from '@loaders.gl/core';
 import {GLBLoader} from '@loaders.gl/gltf';
 import {BlobFile} from '@loaders.gl/loader-utils';
@@ -341,10 +342,27 @@ test('I3S/SLPK controls require selection, mapping and metric error and download
         container.querySelector<HTMLInputElement>('#conversion-geometric-error')!,
         '2'
       );
+      const metricInput = container.querySelector<HTMLInputElement>('#conversion-geometric-error')!;
+      expect(metricInput.form).toBeNull();
+      const requestCount = fetcher.mock.calls.length;
+      await React.act(async () => {
+        await userEvent.click(metricInput);
+        await userEvent.keyboard('{Enter}');
+      });
+      expect(container.querySelector('#conversion-content')).toBe(content);
+      expect(content.value).toBe('1');
+      expect(fetcher).toHaveBeenCalledTimes(requestCount);
       await React.act(async () => button.click());
       await expect
         .poll(() => readSettledControl(() => container.querySelector('a')?.download))
         .toBe('selected-mesh.3tz');
+      await React.act(async () => {
+        await userEvent.click(
+          Array.from(container.querySelectorAll('button')).find(
+            element => element.textContent === 'Edit settings'
+          )!
+        );
+      });
     }
   } finally {
     await React.act(async () => root.unmount());
@@ -402,4 +420,33 @@ test('conversion rejects altered nonleaf or missing-content declarations before 
     ).rejects.toThrow(/inspected leaf/);
   }
   expect(fetcher).not.toHaveBeenCalled();
+});
+
+test('I3S Finish propagates through the selected source and finalizes written meshes', async () => {
+  const fetcher = createI3SFixtureFetcher(fixture.resources);
+  const inspection = await inspectI3SConversionInput(
+    'https://example.invalid/layers/0',
+    new AbortController().signal,
+    fetcher
+  );
+  let finishRequested = false;
+  const output = await convertSelectedI3SContents(
+    inspection,
+    ['1'],
+    '3tz',
+    new AbortController().signal,
+    () => {},
+    fetcher,
+    fixture.features,
+    2,
+    {
+      shouldFinish: () => finishRequested,
+      onProgress(progress) {
+        if (progress.completedUnits === 1) finishRequested = true;
+      }
+    }
+  );
+  expect(output.partial).toBe(true);
+  expect(output.report.outputResources).toBe(1);
+  expect(output.file.size).toBeGreaterThan(0);
 });

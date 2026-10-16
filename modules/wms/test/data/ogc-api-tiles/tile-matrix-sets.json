@@ -1,0 +1,39 @@
+{
+  "tileMatrixSets": [
+    {
+      "id": "WebMercatorQuad",
+      "title": "Google Maps Compatible for the World",
+      "uri": "http://www.opengis.net/def/tilematrixset/OGC/1.0/WebMercatorQuad",
+      "links": [
+        {
+          "rel": "self",
+          "href": "https://example.com/ogcapi/tileMatrixSets/WebMercatorQuad"
+        }
+      ]
+    },
+    {
+      "id": "CRS84Quad",
+      "title": "CRS84 for the World",
+      "uri": "http://www.opengis.net/def/tilematrixset/OGC/1.0/WorldCRS84Quad",
+      "links": [
+        {
+          "rel": "self",
+          "type": "text/html",
+          "href": "/ogcapi/tileMatrixSets/CRS84Quad?f=html"
+        },
+        {
+          "rel": "self",
+          "type": "application/json",
+          "href": "/ogcapi/tileMatrixSets/CRS84Quad?f=json"
+        }
+      ]
+    }
+  ],
+  "links": [
+    {
+      "rel": "self",
+      "type": "application/json",
+      "href": "https://example.com/ogcapi/tileMatrixSets?f=json"
+    }
+  ]
+}

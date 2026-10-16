@@ -1,0 +1,50 @@
+// loaders.gl
+// SPDX-License-Identifier: MIT
+// Copyright (c) vis.gl contributors
+
+import type {Loader, LoaderOptions} from '@loaders.gl/loader-utils';
+import type {
+  GeoJSONTable,
+  ObjectRowTable,
+  BinaryFeatureCollection,
+  ArrowTable,
+  GeoArrowEncodingPreference
+} from '@loaders.gl/schema';
+import {TCXFormat} from './kml-format';
+
+// __VERSION__ is injected by babel-plugin-version-inline
+// @ts-ignore TS2304: Cannot find name '__VERSION__'.
+const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : 'latest';
+
+export type TCXLoaderOptions = LoaderOptions & {
+  /** Preferred encoding for Arrow geometry output. */
+  geoarrow?: {encodingPreference?: GeoArrowEncodingPreference};
+  tcx?: {
+    shape?: 'object-row-table' | 'geojson-table' | 'arrow-table' | 'binary-geometry' | 'raw';
+    geoarrow?: {encodingPreference?: GeoArrowEncodingPreference};
+  };
+};
+
+/** Preloads the parser-bearing TCX loader implementation. */
+async function preloadTCXLoader() {
+  const {TCXLoaderWithParser} = await import('@loaders.gl/geospatial/tcx');
+  return TCXLoaderWithParser;
+}
+
+/** Metadata-only loader for TCX (Training Center XML). */
+export const TCXLoader = {
+  dataType: null as unknown as ObjectRowTable | GeoJSONTable | BinaryFeatureCollection | ArrowTable,
+  batchType: null as never,
+
+  ...TCXFormat,
+  version: VERSION,
+  options: {
+    tcx: {shape: 'arrow-table'},
+    gis: {}
+  },
+  preload: preloadTCXLoader
+} as const satisfies Loader<
+  ObjectRowTable | GeoJSONTable | BinaryFeatureCollection | ArrowTable,
+  never,
+  TCXLoaderOptions
+>;

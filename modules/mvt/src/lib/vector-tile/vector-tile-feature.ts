@@ -416,6 +416,15 @@ function readTag(pbf: Protobuf, feature: VectorTileFeature): void {
   while (pbf.pos < end) {
     const key = feature._keys[pbf.readVarint()];
     const value = feature._values[pbf.readVarint()];
-    feature.properties[key] = value;
+    if (key === '__proto__') {
+      Object.defineProperty(feature.properties, key, {
+        value,
+        enumerable: true,
+        configurable: true,
+        writable: true
+      });
+    } else {
+      feature.properties[key] = value;
+    }
   }
 }

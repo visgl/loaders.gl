@@ -2,4 +2,4 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-export * from '@loaders.gl/arrow-geometry';
+export * from '@loaders.gl/tables/arrow/geometry';

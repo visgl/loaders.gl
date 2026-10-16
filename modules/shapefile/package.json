@@ -1,7 +1,7 @@
 {
   "name": "@loaders.gl/shapefile",
   "description": "Loader for the Shapefile Format",
-  "version": "5.0.0-alpha.11",
+  "version": "5.0.0-alpha.12",
   "license": "MIT",
   "type": "module",
   "publishConfig": {
@@ -40,6 +40,18 @@
     },
     "./dbf-worker.js": {
       "import": "./dist/dbf-worker.js"
+    },
+    "./shapefile-loader": {
+      "types": "./dist/shapefile-loader-entry.d.ts",
+      "import": "./dist/shapefile-loader-entry.js"
+    },
+    "./shp-loader": {
+      "types": "./dist/shp-loader-entry.d.ts",
+      "import": "./dist/shp-loader-entry.js"
+    },
+    "./dbf-loader": {
+      "types": "./dist/dbf-loader-entry.d.ts",
+      "import": "./dist/dbf-loader-entry.js"
     }
   },
   "sideEffects": false,
@@ -53,20 +65,13 @@
   ],
   "scripts": {
     "pre-build": "npm run build-worker-shp && npm run build-worker-dbf && npm run build-bundle && npm run build-bundle-dev",
-    "build-bundle": "ocular-bundle ./bundle.ts --output=dist/dist.min.js",
-    "build-bundle-dev": "ocular-bundle ./bundle.ts --env=dev --output=dist/dist.dev.js",
-    "build-worker-shp": "esbuild src/workers/shp-worker.ts --bundle --outfile=dist/shp-worker.js --define:__VERSION__=\\\"$npm_package_version\\\"",
-    "build-worker-dbf": "esbuild src/workers/dbf-worker.ts --bundle --outfile=dist/dbf-worker.js --define:__VERSION__=\\\"$npm_package_version\\\""
+    "build-bundle": "node ../../scripts/build-codec-bundle.mjs ./bundle.ts --output=dist/dist.min.js",
+    "build-bundle-dev": "node ../../scripts/build-codec-bundle.mjs ./bundle.ts --env=dev --output=dist/dist.dev.js",
+    "build-worker-shp": "node ../../scripts/build-codec-worker.mjs ../geospatial/src/workers/shp-worker.ts --bundle --outfile=dist/shp-worker.js --define:__VERSION__=\\\"$npm_package_version\\\"",
+    "build-worker-dbf": "node ../../scripts/build-codec-worker.mjs ../geospatial/src/workers/dbf-worker.ts --bundle --outfile=dist/dbf-worker.js --define:__VERSION__=\\\"$npm_package_version\\\""
   },
   "dependencies": {
-    "@loaders.gl/arrow": "5.0.0-alpha.11",
-    "@loaders.gl/arrow-geometry": "5.0.0-alpha.11",
-    "@loaders.gl/gis": "5.0.0-alpha.11",
-    "@loaders.gl/loader-utils": "5.0.0-alpha.11",
-    "@loaders.gl/schema": "5.0.0-alpha.11",
-    "@math.gl/crs": "5.0.0-alpha.15",
-    "@math.gl/projection": "5.0.0-alpha.15",
-    "apache-arrow": ">= 17.0.0"
+    "@loaders.gl/geospatial": "5.0.0-alpha.12"
   },
   "peerDependencies": {
     "@loaders.gl/core": "~5.0.0-alpha.0"

@@ -11,19 +11,28 @@ type CompressUtilsStream = {
 };
 
 type CompressUtilsCompressModule = {
+  preload?(): Promise<void>;
+  compressSync?(input: Uint8Array, options?: Record<string, unknown>): Uint8Array;
   compress(input: Uint8Array, options?: Record<string, unknown>): Promise<Uint8Array>;
-  createCompressStream(options?: Record<string, unknown>): Promise<CompressUtilsStream>;
+  createCompressStream?(options?: Record<string, unknown>): Promise<CompressUtilsStream>;
 };
 
-type CompressUtilsDecompressModule = {
+/** Decoder API shared by framed and decoder-only compress-utils subpaths. */
+export type CompressUtilsDecompressModule = {
+  preload?(): Promise<void>;
+  decompressSync?(input: Uint8Array, options?: Record<string, unknown>): Uint8Array;
   decompress(input: Uint8Array, options?: Record<string, unknown>): Promise<Uint8Array>;
-  createDecompressStream(): Promise<CompressUtilsStream>;
+  createDecompressStream?(): Promise<CompressUtilsStream>;
 };
 
 /** Options shared by the optional compress-utils codec bindings. */
 export type CompressUtilsCompressionOptions = CompressionOptions & {
   /** Options passed to the compress-utils encoder or decoder. */
   compressUtils?: Record<string, unknown>;
+  /** Selects raw blocks instead of framed DEFLATE or LZ4 data. */
+  raw?: boolean;
+  /** Allows built-in streams for root-level asynchronous APIs. */
+  useNative?: boolean;
 };
 
 type CompressUtilsMetadata = {name: string; extensions?: string[]; contentEncodings?: string[]};
@@ -37,6 +46,10 @@ export class CompressUtilsCompressor extends Compressor {
   readonly options: CompressUtilsCompressionOptions;
 
   private readonly loadModule: () => Promise<CompressUtilsCompressModule>;
+  /** Module initialized for synchronous operations. */
+  private module: CompressUtilsCompressModule | null = null;
+  /** Shared import and WASM initialization for concurrent callers. */
+  private modulePromise: Promise<void> | null = null;
 
   /** Creates a format-specific compress-utils encoder. */
   constructor(
@@ -52,9 +65,34 @@ export class CompressUtilsCompressor extends Compressor {
     this.options = options;
   }
 
+  /** Imports and initializes the codec without loading the opposite direction. */
+  async preload(modules: Record<string, any> = {}): Promise<void> {
+    await super.preload(modules);
+    this.modulePromise ||= this.loadModule().then(async module => {
+      await module.preload?.();
+      this.module = module;
+    });
+    try {
+      await this.modulePromise;
+    } catch (error) {
+      this.modulePromise = null;
+      throw error;
+    }
+  }
+
+  /** Runs synchronously after preload has initialized the WASM codec. */
+  compressSync(input: ArrayBuffer): ArrayBuffer {
+    if (!this.module?.compressSync)
+      throw new Error(`${this.name}: call preload() before compressSync()`);
+    return copyArrayBuffer(
+      this.module.compressSync(new Uint8Array(input), this.options.compressUtils)
+    );
+  }
+
   /** Compresses one buffer with the selected compress-utils encoder. */
   async compress(input: ArrayBuffer): Promise<ArrayBuffer> {
-    const module = await this.loadModule();
+    await this.preload();
+    const module = this.module!;
     const output = await module.compress(new Uint8Array(input), this.options.compressUtils);
     return copyArrayBuffer(output);
   }
@@ -63,8 +101,13 @@ export class CompressUtilsCompressor extends Compressor {
   async *compressBatches(
     inputBatches: AsyncIterable<ArrayBuffer> | Iterable<ArrayBuffer>
   ): AsyncIterable<ArrayBuffer> {
-    const module = await this.loadModule();
-    const stream = await module.createCompressStream(this.options.compressUtils);
+    await this.preload();
+    const module = this.module!;
+    if (!module.createCompressStream) {
+      yield await this.compress(await this.concatenate(inputBatches));
+      return;
+    }
+    const stream = await module.createCompressStream!(this.options.compressUtils);
     yield* transformBatches(stream, inputBatches);
   }
 }
@@ -78,6 +121,10 @@ export class CompressUtilsDecompressor extends Decompressor {
   readonly options: CompressUtilsCompressionOptions;
 
   private readonly loadModule: () => Promise<CompressUtilsDecompressModule>;
+  /** Module initialized for synchronous operations. */
+  private module: CompressUtilsDecompressModule | null = null;
+  /** Shared import and WASM initialization for concurrent callers. */
+  private modulePromise: Promise<void> | null = null;
 
   /** Creates a format-specific compress-utils decoder. */
   constructor(
@@ -93,10 +140,36 @@ export class CompressUtilsDecompressor extends Decompressor {
     this.options = options;
   }
 
+  /** Imports and initializes the codec without loading the opposite direction. */
+  async preload(modules: Record<string, any> = {}): Promise<void> {
+    await super.preload(modules);
+    this.modulePromise ||= this.loadModule().then(async module => {
+      await module.preload?.();
+      this.module = module;
+    });
+    try {
+      await this.modulePromise;
+    } catch (error) {
+      this.modulePromise = null;
+      throw error;
+    }
+  }
+
+  /** Runs synchronously after preload has initialized the WASM codec. */
+  decompressSync(input: ArrayBuffer, size?: number): ArrayBuffer {
+    if (!this.module?.decompressSync)
+      throw new Error(`${this.name}: call preload() before decompressSync()`);
+    return copyArrayBuffer(
+      this.module.decompressSync(new Uint8Array(input), getDecompressOptions(this.options, size))
+    );
+  }
+
   /** Decompresses one buffer with the selected compress-utils decoder. */
-  async decompress(input: ArrayBuffer): Promise<ArrayBuffer> {
-    const module = await this.loadModule();
-    const output = await module.decompress(new Uint8Array(input), this.options.compressUtils);
+  async decompress(input: ArrayBuffer, size?: number): Promise<ArrayBuffer> {
+    const decodeOptions = getDecompressOptions(this.options, size);
+    await this.preload();
+    const module = this.module!;
+    const output = await module.decompress(new Uint8Array(input), decodeOptions);
     return copyArrayBuffer(output);
   }
 
@@ -104,8 +177,13 @@ export class CompressUtilsDecompressor extends Decompressor {
   async *decompressBatches(
     inputBatches: AsyncIterable<ArrayBuffer> | Iterable<ArrayBuffer>
   ): AsyncIterable<ArrayBuffer> {
-    const module = await this.loadModule();
-    const stream = await module.createDecompressStream();
+    await this.preload();
+    const module = this.module!;
+    if (!module.createDecompressStream) {
+      yield await this.decompress(await this.concatenate(inputBatches));
+      return;
+    }
+    const stream = await module.createDecompressStream!();
     yield* transformBatches(stream, inputBatches);
   }
 }
@@ -160,7 +238,7 @@ export class CompressUtilsCompression extends Compression {
     inputBatches: AsyncIterable<ArrayBuffer> | Iterable<ArrayBuffer>
   ): AsyncIterable<ArrayBuffer> {
     const module = await this.loadCompressModule();
-    const stream = await module.createCompressStream(this.options.compressUtils);
+    const stream = await module.createCompressStream!(this.options.compressUtils);
     yield* transformBatches(stream, inputBatches);
   }
 
@@ -169,7 +247,7 @@ export class CompressUtilsCompression extends Compression {
     inputBatches: AsyncIterable<ArrayBuffer> | Iterable<ArrayBuffer>
   ): AsyncIterable<ArrayBuffer> {
     const module = await this.loadDecompressModule();
-    const stream = await module.createDecompressStream();
+    const stream = await module.createDecompressStream!();
     yield* transformBatches(stream, inputBatches);
   }
 }
@@ -194,4 +272,26 @@ async function* transformBatches(
 /** Copies a typed array into an exact ArrayBuffer. */
 function copyArrayBuffer(bytes: Uint8Array): ArrayBuffer {
   return bytes.slice().buffer as ArrayBuffer;
+}
+
+/** Validates caller capacities before the backend can preallocate WASM output memory. */
+function getDecompressOptions(
+  options: CompressUtilsCompressionOptions,
+  size?: number
+): Record<string, unknown> {
+  const decodeOptions = {
+    ...options.compressUtils,
+    ...(size === undefined ? {} : {expectedSize: size})
+  };
+  const capacity = decodeOptions.expectedSize;
+  const maximum = options.maxOutputByteLength ?? 512 * 1024 * 1024;
+  if (!Number.isSafeInteger(maximum) || maximum < 0 || maximum > 0x7fffffff)
+    throw new RangeError('Invalid maxOutputByteLength');
+  if (
+    capacity !== undefined &&
+    (!Number.isSafeInteger(capacity) || (capacity as number) < 0 || (capacity as number) > maximum)
+  ) {
+    throw new RangeError('expectedSize exceeds the configured output capacity limit');
+  }
+  return decodeOptions;
 }

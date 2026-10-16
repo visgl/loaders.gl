@@ -6,7 +6,7 @@ installWorkerHMR();
 export const PARQUET_SOURCE_WORKER_LOAD_WORKER = () =>
   typeof Worker !== 'undefined'
     ? new Worker(
-        new URL('../../../modules/parquet/src/workers/parquet-source-worker.ts', import.meta.url),
+        new URL('../../../modules/tables/src/parquet/workers/parquet-source-worker.ts', import.meta.url),
         {type: 'module'}
       )
     : null;

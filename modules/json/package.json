@@ -1,6 +1,6 @@
 {
   "name": "@loaders.gl/json",
-  "version": "5.0.0-alpha.11",
+  "version": "5.0.0-alpha.12",
   "description": "Framework-independent loader for JSON and streaming JSON formats",
   "license": "MIT",
   "type": "module",
@@ -52,6 +52,10 @@
     },
     "./geojson-worker.js": {
       "import": "./dist/geojson-worker.js"
+    },
+    "./fast-json-loader": {
+      "types": "./dist/fast-json-loader.d.ts",
+      "import": "./dist/fast-json-loader.js"
     }
   },
   "sideEffects": false,
@@ -62,18 +66,12 @@
   ],
   "scripts": {
     "pre-build": "npm run build-bundle && npm run build-bundle-dev && npm run build-worker",
-    "build-bundle": "ocular-bundle ./bundle.ts --output=dist/dist.min.js",
-    "build-bundle-dev": "ocular-bundle ./bundle.ts --env=dev --output=dist/dist.dev.js",
-    "build-worker": "esbuild src/workers/geojson-worker.ts --bundle --outfile=dist/geojson-worker.js --define:__VERSION__=\\\"$npm_package_version\\\""
+    "build-bundle": "node ../../scripts/build-codec-bundle.mjs ./bundle.ts --output=dist/dist.min.js",
+    "build-bundle-dev": "node ../../scripts/build-codec-bundle.mjs ./bundle.ts --env=dev --output=dist/dist.dev.js",
+    "build-worker": "node ../../scripts/build-codec-worker.mjs ../tables/src/json/workers/geojson-worker.ts --bundle --outfile=dist/geojson-worker.js --define:__VERSION__=\\\"$npm_package_version\\\""
   },
   "dependencies": {
-    "@loaders.gl/arrow": "5.0.0-alpha.11",
-    "@loaders.gl/arrow-geometry": "5.0.0-alpha.11",
-    "@loaders.gl/gis": "5.0.0-alpha.11",
-    "@loaders.gl/loader-utils": "5.0.0-alpha.11",
-    "@loaders.gl/schema": "5.0.0-alpha.11",
-    "@loaders.gl/schema-utils": "5.0.0-alpha.11",
-    "apache-arrow": ">= 17.0.0"
+    "@loaders.gl/tables": "5.0.0-alpha.12"
   },
   "peerDependencies": {
     "@loaders.gl/core": "~5.0.0-alpha.0"

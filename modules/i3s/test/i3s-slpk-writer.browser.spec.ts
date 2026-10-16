@@ -8,8 +8,8 @@ import {validateWriter} from 'test/common/conformance';
 import {SLPKWriter as RootWriter, parseSLPKArchive} from '@loaders.gl/i3s';
 import {SLPKWriter, encodeSLPKArchiveInBatches} from '@loaders.gl/i3s/i3s-slpk-writer';
 import {GZipCompressor} from '@loaders.gl/compression';
-import {DataViewReadableFile} from '@loaders.gl/zip';
-import JSZip from 'jszip';
+import {BlobFile} from '@loaders.gl/loader-utils';
+import {readZip} from 'test/common/read-zip';
 
 /** Small caller-authored root used only to qualify packaging and archive reader interoperability. */
 const ROOT = new TextEncoder().encode('{"version":"1.7","layerType":"3DObject"}').buffer;
@@ -17,7 +17,7 @@ const ROOT = new TextEncoder().encode('{"version":"1.7","layerType":"3DObject"}'
 let files: Record<string, ArrayBuffer>;
 /** Shared immutable archive and CRC-checked entries. */
 let archive: ArrayBuffer;
-let zip: JSZip;
+let zip: Awaited<ReturnType<typeof readZip>>;
 
 beforeAll(async () => {
   files = {
@@ -25,7 +25,7 @@ beforeAll(async () => {
     'nodes/0/textures/A.png': new Uint8Array([1, 2, 3]).buffer
   };
   archive = await SLPKWriter.encode(files);
-  zip = await JSZip.loadAsync(archive, {checkCRC32: true});
+  zip = await readZip(archive);
 });
 afterEach(() => vi.restoreAllMocks());
 
@@ -42,9 +42,9 @@ test('SLPK stores supplied GZIP/image bytes unchanged with the index last', asyn
     '@specialIndexFileHASH128@'
   ]);
   for (const [path, bytes] of Object.entries(files)) {
-    expect(await zip.file(path)!.async('arraybuffer')).toEqual(bytes);
+    expect(zip.files[path]).toEqual(bytes);
   }
-  const index = new DataView(await zip.file('@specialIndexFileHASH128@')!.async('arraybuffer'));
+  const index = new DataView(zip.files['@specialIndexFileHASH128@']);
   expect(index.byteLength).toBe(48);
   const names: string[] = [];
   let previous = -1n;
@@ -72,7 +72,7 @@ test('SLPK stores supplied GZIP/image bytes unchanged with the index last', asyn
     names.push(name);
   }
   expect(names.sort()).toEqual(Object.keys(files).sort());
-  const reader = await parseSLPKArchive(new DataViewReadableFile(new DataView(archive)));
+  const reader = await parseSLPKArchive(new BlobFile(archive));
   expect(await reader.getFile('', 'http')).toEqual(ROOT);
   expect(await reader.getFile('nodes/0/textures/a.png')).toEqual(files['nodes/0/textures/A.png']);
 });
@@ -108,12 +108,24 @@ test.each([
   await expect(SLPKWriter.encode(files, {slpk: {maxArchiveBytes}})).rejects.toThrow('safe integer');
 });
 
-test('SLPK requires ZIP64 for archives above its 2 GiB ceiling', async () => {
+test('SLPK upgrades an explicit ZIP64 profile and keeps its default output budget', async () => {
+  const encoded = await SLPKWriter.encode(files, {slpk: {zip64: 'always'}});
+  expect(new DataView(encoded).getUint16(4, true)).toBe(45);
+  const archive = await parseSLPKArchive(new BlobFile(encoded));
+  try {
+    expect(await archive.getFile('', 'http')).toEqual(ROOT);
+  } finally {
+    await archive.close();
+  }
   vi.spyOn(Blob.prototype, 'size', 'get').mockReturnValue(0x7fffffff);
+  await expect(SLPKWriter.encode({'3dSceneLayer.json.gz': new Blob()})).rejects.toThrow(
+    'byte limit'
+  );
+  // This budget fits the ZIP32 layout but not the mandatory ZIP64 metadata above 2 GiB.
   await expect(
     SLPKWriter.encode(
       {'3dSceneLayer.json.gz': new Blob()},
-      {slpk: {maxArchiveBytes: Number.MAX_SAFE_INTEGER}}
+      {slpk: {maxArchiveBytes: 0x7fffffff + 350}}
     )
   ).rejects.toThrow('byte limit');
 });

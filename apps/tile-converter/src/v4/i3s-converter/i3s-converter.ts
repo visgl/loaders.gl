@@ -24,10 +24,9 @@ import {load, encode, isBrowser} from '@loaders.gl/core';
 import {CesiumIonLoader, Tiles3DLoader} from '@loaders.gl/3d-tiles';
 import {Geoid} from '@math.gl/geoid';
 import {join} from 'path';
-import {v4 as uuidv4} from 'uuid';
+import {randomUUID} from 'node:crypto';
 import process from 'process';
-import transform from 'json-map-transform';
-import md5 from 'md5';
+import {hashString} from '../lib/utils/hash-string';
 
 import NodePages from './helpers/node-pages';
 import {writeFile, removeDir, writeFileForSlpk, removeFile} from '../lib/utils/file-utils';
@@ -42,9 +41,9 @@ import {createSceneServerPath} from './helpers/create-scene-server-path';
 import {convertGeometricErrorToScreenThreshold} from '../lib/utils/lod-conversion-utils';
 import {PGMLoader} from '../pgm-loader';
 
-import {LAYERS as layersTemplate} from './json-templates/layers';
-import {GEOMETRY_DEFINITION as geometryDefinitionTemlate} from './json-templates/geometry-definitions';
-import {SHARED_RESOURCES as sharedResourcesTemplate} from './json-templates/shared-resources';
+import {createLayers} from './json-templates/layers';
+import {createGeometryDefinition} from './json-templates/geometry-definitions';
+import {createSharedResources} from './json-templates/shared-resources';
 import {validateNodeBoundingVolumes} from './helpers/node-debug';
 import {KTX2BasisWriterWorker} from '@loaders.gl/textures';
 import {LoaderWithParser} from '@loaders.gl/loader-utils';
@@ -475,7 +474,7 @@ export default class I3SConverter {
 
     if (this.conversionDump.restored && this.conversionDump.materialDefinitions) {
       for (let i = 0; i < this.conversionDump.materialDefinitions.length; i++) {
-        const hash = md5(JSON.stringify(this.conversionDump.materialDefinitions[i]));
+        const hash = hashString(JSON.stringify(this.conversionDump.materialDefinitions[i]));
         this.materialMap.set(hash, i);
       }
       this.materialDefinitions = this.conversionDump.materialDefinitions;
@@ -531,12 +530,11 @@ export default class I3SConverter {
 
     this.layers0!.materialDefinitions = this.materialDefinitions;
     // @ts-ignore
-    this.layers0.geometryDefinitions = transform(
-      this.geometryConfigs.map(config => ({
+    this.layers0.geometryDefinitions = this.geometryConfigs
+      .map(config => ({
         geometryConfig: {...config, draco: this.options.draco}
-      })),
-      geometryDefinitionTemlate()
-    );
+      }))
+      .map(createGeometryDefinition);
 
     if (this.layersHasTexture === false) {
       this.layers0!.store.defaultGeometrySchema.ordering =
@@ -575,12 +573,12 @@ export default class I3SConverter {
     }
     const extent = [fullExtent.xmin, fullExtent.ymin, fullExtent.xmax, fullExtent.ymax];
     const layers0data = {
-      version: `{${uuidv4().toUpperCase()}}`,
+      version: `{${randomUUID().toUpperCase()}}`,
       id: 0,
       name: tilesetName,
       href: './layers/0',
       store: {
-        id: `{${uuidv4().toUpperCase()}}`,
+        id: `{${randomUUID().toUpperCase()}}`,
         extent
       },
       nodePages: {
@@ -589,7 +587,7 @@ export default class I3SConverter {
       compressGeometry: this.options.draco,
       fullExtent
     };
-    this.layers0 = transform(layers0data, layersTemplate());
+    this.layers0 = createLayers(layers0data);
   }
 
   /**
@@ -1210,7 +1208,7 @@ export default class I3SConverter {
       return;
     }
     sharedResources.nodePath = nodePath;
-    const sharedData = transform(sharedResources, sharedResourcesTemplate());
+    const sharedData = createSharedResources(sharedResources);
     const sharedDataStr = JSON.stringify(sharedData);
     this.conversionDump.updateDoneStatus(sourceId, nodeId, ResourceType.SHARED, false);
     const slpkSharedPath = join(childPath, 'shared');
@@ -1462,7 +1460,7 @@ export default class I3SConverter {
    * @return material id
    */
   private _findOrCreateMaterial(material: I3SMaterialDefinition): number {
-    const hash = md5(JSON.stringify(material));
+    const hash = hashString(JSON.stringify(material));
     if (this.materialMap.has(hash)) {
       return this.materialMap.get(hash) || 0;
     }
@@ -1480,7 +1478,7 @@ export default class I3SConverter {
    */
   private findOrCreateGeometryDefinition(hasTexture: boolean, hasUvRegions: boolean): number {
     const geometryConfig = {hasTexture, hasUvRegions};
-    const hash = md5(JSON.stringify(geometryConfig));
+    const hash = hashString(JSON.stringify(geometryConfig));
     if (this.geometryMap.has(hash)) {
       return this.geometryMap.get(hash) || 0;
     }

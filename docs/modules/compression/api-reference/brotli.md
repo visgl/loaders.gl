@@ -29,7 +29,7 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
   items={[
     {label: 'Selection', value: 'Built-in stream when available'},
     {label: 'Compression fallback', value: 'Lazy compress-utils implementation'},
-    {label: 'Decompression fallback', value: 'Lazy loaders.gl JavaScript decoder'},
+    {label: 'Decompression fallback', value: 'Lazy compress-utils decoder'},
     {label: 'Control', value: 'useNative, modules.brotli, and brotli.useZlib'}
   ]}
 />
@@ -45,8 +45,7 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
 </p>
 
 `BrotliCompressor` and `BrotliDecompressor` provide the balanced Brotli policy. Both try a built-in
-stream first. Compression then lazily loads `compress-utils`; decompression lazily loads the compact
-loaders.gl JavaScript decoder. Nothing is loaded for a fallback that is not used.
+stream first. Compression then lazily loads `compress-utils`; decompression lazily loads its decoder-only WASM codec. Nothing is loaded for a fallback that is not used.
 
 ```typescript
 import {BrotliCompressor, BrotliDecompressor} from '@loaders.gl/compression';
@@ -57,8 +56,8 @@ Both implement the shared [Compressor and Decompressor](./compressor-decompresso
 ## Options
 
 - `useNative: false` skips built-in stream probing.
-- `modules.brotli` injects an application-selected implementation.
-- `brotli.useZlib` enables Node's built-in `zlib` path.
+- `compressUtils.level` selects the WASM encoder level.
+- Sync calls require a completed preload. Legacy injected/Node zlib options remain on explicit compatibility subpaths.
 
 ## Backend choices
 
@@ -69,3 +68,5 @@ Both implement the shared [Compressor and Decompressor](./compressor-decompresso
 | compress-utils | Decompression | `brotli-decompressor-compress-utils` |
 
 Built-in Brotli availability is runtime-dependent. The [live benchmarks](/docs/modules/compression/benchmarks) show what the current browser supports.
+
+For sync methods, preload first; root callers should use `{useNative: false}` when selecting a WASM implementation for synchronous work.

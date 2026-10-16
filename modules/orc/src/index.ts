@@ -2,11 +2,11 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-export {ORCFormat} from './orc-format';
-export {ORCSourceLoader} from './orc-source-loader-types';
-export type {ORCSourceLoaderOptions} from './orc-source-loader-types';
-export type {ORCLoaderOptions} from './orc-loader-types';
-export {ORCLoader} from './orc-loader-types';
-export {ORCWriter} from './orc-writer';
-export type {ORCWriterOptions} from './orc-writer';
-export type {ORCFile, ORCFooter, ORCPostScript, ORCCompression} from './lib/parsers/parse-orc';
+export {ORCFormat} from '@loaders.gl/tables/orc/index';
+export {ORCSourceLoader} from '@loaders.gl/tables/orc/index';
+export type {ORCSourceLoaderOptions} from '@loaders.gl/tables/orc/index';
+export type {ORCLoaderOptions} from '@loaders.gl/tables/orc/index';
+export {ORCLoader} from '@loaders.gl/tables/orc/index';
+export {ORCWriter} from '@loaders.gl/tables/orc/index';
+export type {ORCWriterOptions} from '@loaders.gl/tables/orc/index';
+export type {ORCFile, ORCFooter, ORCPostScript, ORCCompression} from '@loaders.gl/tables/orc/index';

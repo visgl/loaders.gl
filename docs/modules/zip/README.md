@@ -48,8 +48,25 @@ The `@loaders.gl/zip` module handles compressing and decompressing of the [ZIP](
 npm install @loaders.gl/core @loaders.gl/zip
 ```
 
+## Random-access archives
+
+Use [`openZipArchive`](/docs/modules/zip/api-reference/zip-archive) to inspect a ZIP32/ZIP64 archive,
+read complete members with CRC validation, stream decoded entries, or read STORE byte ranges.
+See the [ZIP feature table](/docs/modules/zip/formats/zip) for the supported container profiles
+and the limits of the current writer.
+
+Use [`ZipFileSystem`](/docs/modules/zip/api-reference/zip-filesystem) when consumers need
+`fetch` responses, a cached directory, confined resource URLs, or incremental STORE ranges.
+
+## Native writing
+
+[`encodeZip` and `encodeZipInBatches`](/docs/modules/zip/api-reference/encode-zip) write
+ZIP32/ZIP64 from named buffers, Blobs or byte streams, with STORE/DEFLATE, deterministic metadata,
+cancellation and output budgets. Indexed archives use the same native serializers while retaining
+populated local headers. `ZipWriter` delegates to the same native encoder and additionally accepts UTF-8 string values and optional parent directory entries.
+
 ## Attributions
 
-ZipLoader is a wrapper around the [JSZip module](https://stuk.github.io/jszip/). JSZip has extensive documentation on options (and more functionality than this loader object can expose).
+`ZipLoader` delegates to the shared native reader, verifies complete-entry CRCs and returns ArrayBuffer values. Its root export is metadata only; direct parser access uses `@loaders.gl/zip/zip-loader`. The ZIP package runtime dependencies are loaders.gl modules only.
 
 TarBuilder uses a modified version of [tar-js](https://github.com/beatgammit/tar-js), which is under MIT license, for tar archive construction.

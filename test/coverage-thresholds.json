@@ -45,7 +45,13 @@
         "lines": 85,
         "functions": 84,
         "branches": 82
-      }
+      },
+      "sourcePaths": [
+        "modules/arrow/src/",
+        "modules/tables/src/arrow/",
+        "modules/schema-utils/src/lib/arrow/arrow-table-transport.ts",
+        "modules/schema-utils/src/lib/arrow/split-arrow-buffers.ts"
+      ]
     },
     "@loaders.gl/arrow-geometry": {
       "path": "modules/arrow-geometry",
@@ -75,7 +81,11 @@
         "lines": 80,
         "functions": 80,
         "branches": 70
-      }
+      },
+      "sourcePaths": [
+        "modules/avro/src/",
+        "modules/tables/src/avro/"
+      ]
     },
     "@loaders.gl/bson": {
       "path": "modules/bson",
@@ -90,7 +100,11 @@
         "lines": 78,
         "functions": 60,
         "branches": 65
-      }
+      },
+      "sourcePaths": [
+        "modules/bson/src/",
+        "modules/tables/src/bson/"
+      ]
     },
     "@loaders.gl/compression": {
       "path": "modules/compression",
@@ -120,6 +134,21 @@
         "lines": 76,
         "functions": 95,
         "branches": 70
+      }
+    },
+    "@loaders.gl/copc": {
+      "path": "modules/copc",
+      "browser": {
+        "statements": 90,
+        "lines": 90,
+        "functions": 90,
+        "branches": 90
+      },
+      "merged": {
+        "statements": 90,
+        "lines": 90,
+        "functions": 90,
+        "branches": 90
       }
     },
     "@loaders.gl/core": {
@@ -165,7 +194,11 @@
         "lines": 71,
         "functions": 76,
         "branches": 64
-      }
+      },
+      "sourcePaths": [
+        "modules/csv/src/",
+        "modules/tables/src/csv/"
+      ]
     },
     "@loaders.gl/draco": {
       "path": "modules/draco",
@@ -195,7 +228,11 @@
         "lines": 94,
         "functions": 100,
         "branches": 78
-      }
+      },
+      "sourcePaths": [
+        "modules/excel/src/",
+        "modules/tables/src/excel/"
+      ]
     },
     "@loaders.gl/flatgeobuf": {
       "path": "modules/flatgeobuf",
@@ -210,7 +247,11 @@
         "lines": 50,
         "functions": 59,
         "branches": 39
-      }
+      },
+      "sourcePaths": [
+        "modules/flatgeobuf/src/",
+        "modules/geospatial/src/flatgeobuf/"
+      ]
     },
     "@loaders.gl/geoarrow": {
       "path": "modules/geoarrow",
@@ -240,6 +281,25 @@
         "lines": 86,
         "functions": 95,
         "branches": 65
+      },
+      "sourcePaths": [
+        "modules/geopackage/src/",
+        "modules/geospatial/src/geopackage/"
+      ]
+    },
+    "@loaders.gl/geospatial": {
+      "path": "modules/geospatial",
+      "browser": {
+        "statements": 67,
+        "lines": 67,
+        "functions": 71,
+        "branches": 55
+      },
+      "merged": {
+        "statements": 66,
+        "lines": 67,
+        "functions": 69,
+        "branches": 55
       }
     },
     "@loaders.gl/geotiff": {
@@ -255,21 +315,6 @@
         "lines": 60,
         "functions": 73,
         "branches": 41
-      }
-    },
-    "@loaders.gl/gis": {
-      "path": "modules/gis",
-      "browser": {
-        "statements": 81,
-        "lines": 81,
-        "functions": 84,
-        "branches": 65
-      },
-      "merged": {
-        "statements": 80,
-        "lines": 81,
-        "functions": 84,
-        "branches": 65
       }
     },
     "@loaders.gl/gltf": {
@@ -345,7 +390,11 @@
         "lines": 86,
         "functions": 88,
         "branches": 79
-      }
+      },
+      "sourcePaths": [
+        "modules/json/src/",
+        "modules/tables/src/json/"
+      ]
     },
     "@loaders.gl/kml": {
       "path": "modules/kml",
@@ -360,7 +409,11 @@
         "lines": 82,
         "functions": 73,
         "branches": 63
-      }
+      },
+      "sourcePaths": [
+        "modules/kml/src/",
+        "modules/geospatial/src/kml/"
+      ]
     },
     "@loaders.gl/lance": {
       "path": "modules/lance",
@@ -375,7 +428,11 @@
         "lines": 45,
         "functions": 66,
         "branches": 40
-      }
+      },
+      "sourcePaths": [
+        "modules/lance/src/",
+        "modules/tables/src/lance/"
+      ]
     },
     "@loaders.gl/las": {
       "path": "modules/las",
@@ -495,7 +552,11 @@
         "lines": 70,
         "functions": 78,
         "branches": 48
-      }
+      },
+      "sourcePaths": [
+        "modules/orc/src/",
+        "modules/tables/src/orc/"
+      ]
     },
     "@loaders.gl/parquet": {
       "path": "modules/parquet",
@@ -510,7 +571,11 @@
         "lines": 79,
         "functions": 82,
         "branches": 68
-      }
+      },
+      "sourcePaths": [
+        "modules/parquet/src/",
+        "modules/tables/src/parquet/"
+      ]
     },
     "@loaders.gl/pcd": {
       "path": "modules/pcd",
@@ -675,7 +740,11 @@
         "lines": 67,
         "functions": 69,
         "branches": 55
-      }
+      },
+      "sourcePaths": [
+        "modules/shapefile/src/",
+        "modules/geospatial/src/shapefile/"
+      ]
     },
     "@loaders.gl/splats": {
       "path": "modules/splats",
@@ -720,6 +789,21 @@
         "lines": 90,
         "functions": 90,
         "branches": 90
+      }
+    },
+    "@loaders.gl/tables": {
+      "path": "modules/tables",
+      "browser": {
+        "statements": 70,
+        "lines": 71,
+        "functions": 78,
+        "branches": 64
+      },
+      "merged": {
+        "statements": 70,
+        "lines": 71,
+        "functions": 76,
+        "branches": 64
       }
     },
     "@loaders.gl/terrain": {
@@ -855,6 +939,21 @@
         "lines": 80,
         "functions": 70,
         "branches": 80
+      }
+    },
+    "@loaders.gl/zarr": {
+      "path": "modules/zarr",
+      "browser": {
+        "statements": 90,
+        "lines": 90,
+        "functions": 90,
+        "branches": 90
+      },
+      "merged": {
+        "statements": 90,
+        "lines": 90,
+        "functions": 90,
+        "branches": 90
       }
     },
     "@loaders.gl/zip": {

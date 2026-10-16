@@ -61,3 +61,5 @@ the individual service's capabilities when constructing coordinate arrays.
 The shared `VectorSource` contract keeps application geometry and bounding boxes in canonical `xy`
 order. For feature queries, pass `requestCrs` when the input bounding box uses a CRS different from
 the output `crs`; WFS and OGC API adapters translate the canonical values to their wire-axis rules.
+
+For a cross-format explanation of geometry, addressing, and availability, see [Tile matrices and tile matrix sets](/docs/developer-guide/tile-matrices).

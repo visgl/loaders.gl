@@ -29,7 +29,7 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
   items={[
     {label: 'Use it for', value: 'Legacy formats and compatibility checks'},
     {label: 'Interface', value: 'Shared async, sync, and batch methods'},
-    {label: 'Bundle', value: 'Preload before synchronous operation'},
+    {label: 'Synchronous hashing', value: 'JavaScript implementation; no preload required'},
     {label: 'Avoid for', value: 'New security-sensitive applications'}
   ]}
 />
@@ -55,3 +55,17 @@ Implements the [`Hash`](./hash) API.
 ## Methods
 
 ### `constructor(options?: object)`
+
+### `hashSync(input: ArrayBuffer, encoding: 'hex' | 'base64'): string`
+
+Calculates an MD5 digest synchronously using the vendored JavaScript implementation.
+No preload or WebAssembly initialization is required. `hash()` continues to use
+WebAssembly for larger inputs when it is available.
+
+```typescript
+import {MD5Hash} from '@loaders.gl/crypto';
+
+const input = new TextEncoder().encode('hello').buffer;
+const digest = new MD5Hash().hashSync(input, 'hex');
+// '5d41402abc4b2a76b9719d911017c592'
+```

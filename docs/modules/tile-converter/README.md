@@ -15,6 +15,7 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
   tone="orange"
   meta={['I3S ↔ 3D Tiles', 'CLI, API and browser', 'Esri contributed']}
   links={[
+    {label: 'V5 CLI', to: '/docs/modules/tile-converter/cli-reference/tile-converter-v5'},
     {label: 'I3S converter', to: '/docs/modules/tile-converter/api-reference/i3s-converter'},
     {label: '3D Tiles converter', to: '/docs/modules/tile-converter/api-reference/3d-tiles-converter'},
     {label: 'Experimental v5 core', to: '/docs/modules/tile-converter/api-reference/v5-conversion'},
@@ -25,14 +26,14 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
 
 <DocOrientation
   eyebrow="The conversion path"
-  title="Read one tiled standard. Write the other."
+  title="Choose a qualified conversion profile."
   description="The converter uses the loaders.gl format implementations at the edges and keeps conversion concerns in one place, whether it runs from a Node.js API or a command-line bundle."
   tone="orange"
   items={[
-    {label: 'Input', value: 'I3S or 3D Tiles dataset'},
-    {label: 'Conversion', value: 'Format-aware hierarchy and content translation'},
+    {label: 'Input', value: 'I3S, 3D Tiles or decoded point data'},
+    {label: 'Conversion', value: 'Explicit content, feature and spatial policies'},
     {label: 'Execution', value: 'JavaScript API or command line'},
-    {label: 'Output', value: 'The target tiled standard and its resources'}
+    {label: 'Output', value: 'Authored resources, directories or bounded archives'}
   ]}
 />
 
@@ -63,9 +64,30 @@ npm install @loaders.gl/core
 npm install @loaders.gl/tile-converter
 ```
 
-## Command Line Utilities
+## Choose a workflow
 
-`tile-converter` - the npx tool for launch conversion
+| Workflow | Entry point | Current scope |
+| --- | --- | --- |
+| Experimental v5 Node CLI | [`tile-converter-v5`](/docs/modules/tile-converter/cli-reference/tile-converter-v5) | Inspect, validate and convert explicitly selected meshes; opt-in complete explicit hierarchy for 3D Tiles/3TZ |
+| Portable v5 API | [`/v5/core` and `/v5/adapters`](/docs/modules/tile-converter/api-reference/v5-conversion) | Mesh/point processing, declared features and CRS operations, bounded archive output |
+| Browser application | [Inline conversion app](/examples/tiles/3d-tiles-conversion) | Inspect, select, convert and download partial SLPK/3TZ collections |
+| Legacy v4 Node CLI | [`tile-converter`](/docs/modules/tile-converter/cli-reference/tile-converter) | Original I3S ↔ 3D Tiles workflow, filesystem/services and texture atlases |
+
+The documentation describes the current repository implementation. Check the installed
+package version before using experimental v5 capabilities.
+
+## Command line
+
+Start with metadata inspection; conversion requires explicit content IDs from the result:
+
+```bash
+npx tile-converter-v5 inspect ./tileset.json
+npx tile-converter-v5 validate ./tileset.json --resource tile-root-content-0
+npx tile-converter-v5 convert ./tileset.json --resource tile-root-content-0 --output ./converted.3tz
+```
+
+See the [v5 CLI reference](/docs/modules/tile-converter/cli-reference/tile-converter-v5)
+for output formats, feature-schema controls, geometric-error policy and protected destinations.
 
 ## API
 
@@ -75,7 +97,8 @@ A JavaScript API is also available:
 - `Tiles3DConverter` class that converts I3S to 3DTiles
 - The experimental [`/v5/core` and `/v5/adapters` APIs](/docs/modules/tile-converter/api-reference/v5-conversion) for portable mesh/point conversion, explicit feature mapping and archive output.
 
-The command-line tools use the legacy converter classes. V5 CLI integration remains planned.
+The `tile-converter-v5` command uses the shared v5 sources, codecs and sinks.
+The original `tile-converter` command uses the legacy converter classes.
 
 ### Runtime portability
 
@@ -101,7 +124,13 @@ where supported. Its limits are 1,000 inspected declarations/nodes, 64 mesh plac
 rounding. Conversion archives must be at most 16 MiB. Remote archives require HTTP byte ranges and exposed
 ETag or Last-Modified validators; the inspected identity is checked again during conversion. These limits do not bound total peak memory.
 
-Outputs are flat partial collections; source LOD/refinement is not preserved. Feature schemas
+The browser example and default Node workflow produce flat partial collections. To retain
+explicit 3D Tiles hierarchy/LOD and ADD/REPLACE, select every binary content and opt in to
+the [complete hierarchy profile](/docs/modules/tile-converter/api-reference/v5-conversion#complete-explicit-hierarchy-profile)
+for 3D Tiles/3TZ output. It supports external document placements, ordered multiple contents
+and static multiple primitives, within 32 documents, 256 tiles and 64 primitive placements.
+I3S screen-size LOD, implicit tiling, instancing and unmapped tile/group metadata remain
+separate work. Feature schemas
 and CRS/height operations must be declared explicitly. I3S-to-3TZ conversion requires a
 conservative geometric error in meters. Archive dependencies must stay inside the selected
 archive; external dependencies are rejected. Indexed reads and decompressed responses have
@@ -137,7 +166,7 @@ buffer in the worker or guarantees a total memory cap. See the [v5 application g
 There are additional ways to perform conversion:
 
 - Tile converter can be run right on a repository branch. It might be helpful if some updates are needed which last release doesn't contain [Build instructions](/docs/modules/tile-converter/api-reference/build-instructions).
-- An autonomous bundle script can be built. It is entire converter in just 1 file. This file can be destributed directly to interested but not experienced user. [See instructions](/docs/modules/tile-converter/api-reference/tile-converter-bundle).
+- An autonomous bundle script can be built. It packages the legacy converter into one file for distribution. [See instructions](/docs/modules/tile-converter/api-reference/tile-converter-bundle).
 
 ## Attribution
 

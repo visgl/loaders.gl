@@ -29,6 +29,8 @@ import type {
 } from '@loaders.gl/loader-utils';
 import type {CRSIdentifier} from '@math.gl/crs';
 import {
+  createTileGrid,
+  createTileGridMatrix,
   DataSource,
   getRasterViewportBoundingBox,
   RangeRequestScheduler,
@@ -52,6 +54,8 @@ export type GeoTIFFSourceLoaderOptions = DataSourceOptions & {
   geotiff?: {
     /** Optional request headers forwarded to remote GeoTIFF fetches. */
     headers?: Record<string, string>;
+    /** Reject HTTP 206 responses without an exposed Content-Range header; default false. */
+    requireContentRange?: boolean;
     /** Settled byte-cache limits; defaults to 128 entries and 8 MiB. Zero disables retention. */
     rangeCacheProps?: {
       /** Maximum retained byte ranges. */
@@ -778,6 +782,7 @@ export class GeoTIFFRasterSource
       const client = new GeoTIFFRangeSchedulerClient({
         url: this.url,
         fetch: this.fetch,
+        requireContentRange: this.options.geotiff?.requireContentRange,
         sourceId: 'geotiff',
         headers,
         rangeCache,
@@ -850,6 +855,7 @@ export class GeoTIFFRasterSource
       attributions: this.options.core?.attributions || [],
       crs: getImageCRS(referenceImage),
       boundingBox,
+      tileGrid: getImageTileGrid(images, referenceImage),
       width: referenceImage.getWidth(),
       height: referenceImage.getHeight(),
       bandCount: referenceImage.getSamplesPerPixel(),
@@ -1156,6 +1162,8 @@ type GeoTIFFRangeSchedulerClientProps = {
   url: string;
   fetch: (url: string, options?: RequestInit) => Promise<Response>;
   sourceId: string;
+  /** Requires readable range placement and authoritative EOF metadata. */
+  requireContentRange?: boolean;
   headers?: HeadersInit;
   rangeScheduler: RangeRequestScheduler;
   /** Source-owned encoded byte cache. */
@@ -1173,6 +1181,8 @@ class GeoTIFFRangeSchedulerClient {
   readonly url: string;
 
   private readonly fetch: GeoTIFFRangeSchedulerClientProps['fetch'];
+  /** Strict browser profiles require the server to expose range placement metadata. */
+  private readonly requireContentRange: boolean;
   private readonly sourceId: string;
   private readonly defaultHeaders?: HeadersInit;
   private readonly rangeScheduler: RangeRequestScheduler;
@@ -1197,6 +1207,7 @@ class GeoTIFFRangeSchedulerClient {
   constructor(props: GeoTIFFRangeSchedulerClientProps) {
     this.url = props.url;
     this.fetch = props.fetch;
+    this.requireContentRange = props.requireContentRange ?? false;
     this.sourceId = props.sourceId;
     this.defaultHeaders = new Headers(props.headers);
     this.rangeCache = props.rangeCache;
@@ -1312,7 +1323,12 @@ class GeoTIFFRangeSchedulerClient {
 
     let total: number | null;
     try {
-      total = validateGeoTIFFContentRange(response.headers.get('Content-Range'), offset, length);
+      const contentRange = response.headers.get('Content-Range');
+      if (this.requireContentRange && !contentRange)
+        throw new Error(
+          'GeoTIFF range responses require an exposed Content-Range header; configure Access-Control-Expose-Headers: Content-Range.'
+        );
+      total = validateGeoTIFFContentRange(contentRange, offset, length);
       const entityTag = response.headers.get('ETag');
       const lastModified = response.headers.get('Last-Modified');
       if (
@@ -1645,4 +1661,78 @@ function estimateImageTileBytes(
   const columns = Math.ceil(window[2] / tileWidth) - Math.floor(window[0] / tileWidth);
   const rows = Math.ceil(window[3] / tileHeight) - Math.floor(window[1] / tileHeight);
   return columns * rows * tileWidth * tileHeight * bytesPerPixel;
+}
+
+/** Builds native storage-tile geometry without decoding samples or treating strips as tiles. */
+export function getImageTileGrid(images: TiffSourceImage[], referenceImage: TiffSourceImage) {
+  const coordinateReferenceSystem = getImageCRS(referenceImage);
+  if (!coordinateReferenceSystem) return undefined;
+  const matrices = images.flatMap((image, index) => {
+    if (image.fileDirectory?.NewSubfileType & 4) return [];
+    if (
+      image !== referenceImage &&
+      !(image.fileDirectory?.NewSubfileType & 1) &&
+      image.fileDirectory?.SubfileType !== 2
+    )
+      return [];
+    const transform = getImageTransform(image, referenceImage);
+    const imageCoordinateReferenceSystem = getImageCRS(image);
+    const imageCoordinateMetadata = image.getGeoKeys?.() || {};
+    const hasDeclaredCoordinateReferenceSystem = Object.entries(imageCoordinateMetadata).some(
+      ([key, value]) => key !== 'GTRasterTypeGeoKey' && value !== undefined && value !== null
+    );
+    if (
+      (hasDeclaredCoordinateReferenceSystem && !imageCoordinateReferenceSystem) ||
+      (imageCoordinateReferenceSystem &&
+        imageCoordinateReferenceSystem !== coordinateReferenceSystem) ||
+      !image.fileDirectory?.TileWidth ||
+      !image.fileDirectory?.TileLength ||
+      !transform ||
+      transform[1] !== 0 ||
+      transform[3] !== 0 ||
+      transform[0] <= 0 ||
+      transform[4] === 0
+    ) {
+      return [undefined];
+    }
+    const pointRegistration =
+      (imageCoordinateMetadata.GTRasterTypeGeoKey ??
+        referenceImage.getGeoKeys()?.GTRasterTypeGeoKey) === 2;
+    const inheritedTransform =
+      image !== referenceImage &&
+      !image.fileDirectory.ModelTransformation &&
+      !image.fileDirectory.ModelTiepoint &&
+      !image.fileDirectory.ModelPixelScale;
+    const cornerPointRegistration = inheritedTransform
+      ? referenceImage.getGeoKeys()?.GTRasterTypeGeoKey === 2
+      : pointRegistration;
+    const cornerTransform = inheritedTransform
+      ? getImageTransform(referenceImage, referenceImage)!
+      : transform;
+    return [
+      createTileGridMatrix({
+        id: String(index),
+        resolution: transform[0],
+        resolutionY: Math.abs(transform[4]),
+        point: cornerPointRegistration
+          ? [
+              cornerTransform[2] - cornerTransform[0] / 2,
+              cornerTransform[5] - cornerTransform[4] / 2
+            ]
+          : [cornerTransform[2], cornerTransform[5]],
+        swapAxes: false,
+        cornerOfOrigin: transform[4] < 0 ? 'topLeft' : 'bottomLeft',
+        tileWidth: image.getTileWidth(),
+        tileHeight: image.getTileHeight(),
+        matrixWidth: Math.ceil(image.getWidth() / image.getTileWidth()),
+        matrixHeight: Math.ceil(image.getHeight() / image.getTileHeight())
+      })
+    ];
+  });
+  if (!matrices.length || matrices.some(matrix => !matrix)) return undefined;
+  const grid = createTileGrid(
+    coordinateReferenceSystem,
+    matrices.filter(matrix => matrix !== undefined)
+  );
+  return grid.tileMatrixSet ? grid : undefined;
 }

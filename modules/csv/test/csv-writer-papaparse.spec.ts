@@ -17,7 +17,7 @@ License: MIT
 
 /* eslint-disable quotes */
 import {describe, expect, test} from 'vitest';
-import Papa from '@loaders.gl/csv/papaparse/papaparse';
+import Papa from '../../tables/src/csv/papaparse/papaparse';
 
 // import {isBrowser, load} from '@loaders.gl/core';
 // import {parseAsIterator, parseAsAsyncIterator} from '@loaders.gl/core';

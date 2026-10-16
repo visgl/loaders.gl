@@ -1,6 +1,6 @@
 {
   "name": "@loaders.gl/pmtiles",
-  "version": "5.0.0-alpha.11",
+  "version": "5.0.0-alpha.12",
   "description": "Framework-independent loader for the pmtiles format",
   "license": "MIT",
   "type": "module",
@@ -40,6 +40,16 @@
     "./bundled": {
       "types": "./dist/bundled.d.ts",
       "import": "./dist/bundled.js"
+    },
+    "./geoarrow": {
+      "types": "./dist/geoarrow.d.ts",
+      "import": "./dist/geoarrow.js",
+      "require": "./dist/geoarrow.cjs"
+    },
+    "./raster": {
+      "types": "./dist/raster.d.ts",
+      "import": "./dist/raster.js",
+      "require": "./dist/raster.cjs"
     }
   },
   "sideEffects": false,
@@ -50,15 +60,16 @@
   ],
   "scripts": {
     "pre-build": "npm run build-bundle && npm run build-bundle-dev",
-    "build-bundle": "ocular-bundle ./bundle.ts --output=dist/dist.min.js",
-    "build-bundle-dev": "ocular-bundle ./bundle.ts --env=dev --output=dist/dist.dev.js"
+    "build-bundle": "node ../../scripts/build-codec-bundle.mjs ./bundle.ts --output=dist/dist.min.js",
+    "build-bundle-dev": "node ../../scripts/build-codec-bundle.mjs ./bundle.ts --env=dev --output=dist/dist.dev.js"
   },
   "dependencies": {
-    "@loaders.gl/images": "5.0.0-alpha.11",
-    "@loaders.gl/loader-utils": "5.0.0-alpha.11",
-    "@loaders.gl/mlt": "5.0.0-alpha.11",
-    "@loaders.gl/mvt": "5.0.0-alpha.11",
-    "@loaders.gl/schema": "5.0.0-alpha.11",
+    "@loaders.gl/compression": "5.0.0-alpha.12",
+    "@loaders.gl/images": "5.0.0-alpha.12",
+    "@loaders.gl/loader-utils": "5.0.0-alpha.12",
+    "@loaders.gl/mlt": "5.0.0-alpha.12",
+    "@loaders.gl/mvt": "5.0.0-alpha.12",
+    "@loaders.gl/schema": "5.0.0-alpha.12",
     "pmtiles": "^4.5.0"
   },
   "peerDependencies": {

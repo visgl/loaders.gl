@@ -4,7 +4,7 @@
 
 import * as arrow from 'apache-arrow';
 import {convertWKTToGeometry} from '@loaders.gl/arrow-geometry/geometry-codecs';
-import {getWKBGeometryStatistics} from '@loaders.gl/gis';
+import {scanWKB} from '@math.gl/wkb';
 import type {GeoArrowDimension, GeoArrowEncoding} from '@loaders.gl/schema';
 
 type BoxDimension = 2 | 3 | 4;
@@ -69,8 +69,8 @@ function getRowBounds(
   if (value == null) return null;
   if (sourceEncoding === 'geoarrow.wkb') {
     const bytes = value as Uint8Array;
-    const statistics = getWKBGeometryStatistics(bytes);
-    return statistics.bbox ? boundsFromRecord(statistics.bbox, dimension) : null;
+    const statistics = scanWKB(bytes);
+    return statistics.bounds ? boundsFromRecord(statistics.bounds, dimension) : null;
   }
   if (sourceEncoding === 'geoarrow.wkt') {
     const geometry = convertWKTToGeometry(value as string);
@@ -230,9 +230,9 @@ function inferDimension(column: arrow.Vector, sourceEncoding: GeoArrowEncoding):
       const value = column.get(rowIndex);
       if (value == null) continue;
       const bytes = value as Uint8Array;
-      const statistics = getWKBGeometryStatistics(bytes);
-      const hasZ = statistics.bbox?.zmin !== undefined;
-      const hasM = statistics.bbox?.mmin !== undefined;
+      const statistics = scanWKB(bytes);
+      const hasZ = statistics.bounds?.zmin !== undefined;
+      const hasM = statistics.bounds?.mmin !== undefined;
       coordinateSize = Math.max(
         coordinateSize,
         hasZ && hasM ? 4 : hasZ || hasM ? 3 : 2

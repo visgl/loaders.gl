@@ -1,0 +1,42 @@
+{
+  "title": "Demo dataset tiles",
+  "dataType": "vector",
+  "tileMatrixSetId": "WebMercatorQuad",
+  "tileMatrixSetURI": "http://www.opengis.net/def/tilematrixset/OGC/1.0/WebMercatorQuad",
+  "tileMatrixSetLimits": [
+    {
+      "tileMatrix": "0",
+      "minTileRow": 0,
+      "maxTileRow": 0,
+      "minTileCol": 0,
+      "maxTileCol": 0
+    },
+    {
+      "tileMatrix": "1",
+      "minTileRow": 0,
+      "maxTileRow": 1,
+      "minTileCol": 1,
+      "maxTileCol": 1
+    }
+  ],
+  "links": [
+    {
+      "rel": "self",
+      "type": "application/json",
+      "title": "This document",
+      "href": "https://example.com/ogcapi/tiles/WebMercatorQuad?f=json"
+    },
+    {
+      "rel": "http://www.opengis.net/def/rel/ogc/1.0/tiling-scheme",
+      "title": "Tiling scheme definition",
+      "href": "https://example.com/ogcapi/tileMatrixSets/WebMercatorQuad"
+    },
+    {
+      "rel": "item",
+      "type": "application/vnd.mapbox-vector-tile",
+      "title": "Mapbox vector tiles",
+      "href": "https://example.com/ogcapi/tiles/WebMercatorQuad/{tileMatrix}/{tileRow}/{tileCol}?f=mvt",
+      "templated": true
+    }
+  ]
+}

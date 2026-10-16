@@ -4,13 +4,13 @@
 
 import {describe, expect, test} from 'vitest';
 import {GeoArrowBuilder} from '@loaders.gl/arrow/geometry';
-import {convertWKBToGeometry} from '@loaders.gl/gis';
+import {convertWKBToGeometry} from '@loaders.gl/arrow-geometry/geometry-codecs';
 import {
   getRecordWKBOptions,
   parseRecord,
   parseRecordToWKB,
   writeRecordToGeoArrow
-} from '../src/lib/parsers/parse-shp-geometry';
+} from '../../geospatial/src/shapefile/lib/parsers/parse-shp-geometry';
 
 type Point = [number, number];
 

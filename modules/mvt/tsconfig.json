@@ -10,7 +10,6 @@
   "references": [
     {"path": "../arrow-geometry"},
     {"path": "../arrow"},
-    {"path": "../gis"},
     {"path": "../images"},
     {"path": "../loader-utils"},
     {"path": "../schema"},

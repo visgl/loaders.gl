@@ -21,7 +21,7 @@
     "@loaders.gl/loader-utils": "workspace:*",
     "@loaders.gl/tile-converter": "workspace:*",
     "@loaders.gl/tiles": "workspace:*",
-    "@math.gl/geospatial": "5.0.0-alpha.15",
+    "@math.gl/geospatial": "5.0.0-alpha.18",
     "maplibre-gl": "^3.6.2",
     "react": "^19.2.5",
     "react-dom": "^19.2.5",

@@ -7,6 +7,7 @@ import {Vector3} from '@math.gl/core';
 import {Ellipsoid} from '@math.gl/geospatial';
 import type {ReadonlyCRSDefinition} from '@math.gl/crs';
 import type {Projection} from '@math.gl/projection';
+import {ProjectionBuffer} from '@math.gl/projection/bulk';
 import {getGeoidModel, getSpatialProjectionEngine} from './spatial-resource-registry';
 import {
   normalizeCrsIdentifier,
@@ -34,6 +35,9 @@ export class SpatialCoordinateTransformer {
 
   /** Projection from the source CRS directly to the requested horizontal target CRS. */
   private readonly horizontalProjection?: Projection;
+
+  /** Reusable packed xyz projection for horizontal-only coordinate batches. */
+  private readonly horizontalProjectionBuffer?: ProjectionBuffer;
 
   /** Projection from the source CRS to geographic longitude, latitude, and ellipsoidal height. */
   private readonly geographicProjection?: Projection;
@@ -83,6 +87,12 @@ export class SpatialCoordinateTransformer {
         to: getHorizontalProjectionDefinition(spatialReference.targetCrs),
         enforceAxis: false
       });
+      if (!requiresHeightTransformation(spatialReference)) {
+        this.horizontalProjectionBuffer = new ProjectionBuffer({
+          projection: this.horizontalProjection,
+          dimension: 3
+        });
+      }
     }
 
     if (
@@ -160,12 +170,22 @@ export class SpatialCoordinateTransformer {
     return result;
   }
 
-  /** Transform a packed sequence of xyz positions, preserving the input array type only when safe. */
+  /** Transform packed xyz positions into owned Float64 storage, batching finite horizontal transforms. */
   transformPositions(positions: ArrayLike<number>): Float64Array {
     if (positions.length % 3 !== 0) {
       throw new Error('Packed spatial positions must contain a multiple of three components');
     }
     const transformedPositions = new Float64Array(positions.length);
+    if (this.horizontalProjectionBuffer) {
+      transformedPositions.set(positions);
+      // The bulk API rejects nonfinite ordinates; preserve scalar behavior for those inputs.
+      if (transformedPositions.every(Number.isFinite)) {
+        return this.horizontalProjectionBuffer.projectFlatTo(
+          transformedPositions,
+          transformedPositions
+        );
+      }
+    }
     for (let index = 0; index < positions.length; index += 3) {
       const transformed = this.transformPosition([
         Number(positions[index]),

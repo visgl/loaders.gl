@@ -2,8 +2,14 @@ import {expect, test} from 'vitest';
 import {load, fetchFile} from '@loaders.gl/core';
 import {CRSReprojectionError} from '@loaders.gl/loader-utils';
 import {GeoPackageLoader} from '@loaders.gl/geopackage';
-import {getProjection, getSpatialReferenceSystemDefinition} from '../src/lib/parse-geopackage';
-import type {GeoPackageVectorTableInfo, SpatialRefSysRow} from '../src/lib/types';
+import {
+  getProjection,
+  getSpatialReferenceSystemDefinition
+} from '../../geospatial/src/geopackage/lib/parse-geopackage';
+import type {
+  GeoPackageVectorTableInfo,
+  SpatialRefSysRow
+} from '../../geospatial/src/geopackage/lib/types';
 const GPKG_RIVERS = '@loaders.gl/geopackage/test/data/rivers_small.gpkg';
 const GPKG_RIVERS_GEOJSON = '@loaders.gl/geopackage/test/data/rivers_small.geojson';
 

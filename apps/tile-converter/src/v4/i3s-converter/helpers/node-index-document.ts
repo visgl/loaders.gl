@@ -6,11 +6,10 @@ import {
   NodeInPage,
   NodeReference
 } from '@loaders.gl/i3s';
-import transform from 'json-map-transform';
-import {v4 as uuidv4} from 'uuid';
+import {randomUUID} from 'node:crypto';
 import {openJson, writeFileForSlpk} from '../../lib/utils/file-utils';
 import I3SConverter from '../i3s-converter';
-import {NODE as nodeTemplate} from '../json-templates/node';
+import {createNode} from '../json-templates/node';
 import {I3SConvertedResources} from '../types';
 import {DumpMetadata} from '../../lib/utils/conversion-dump';
 
@@ -97,7 +96,7 @@ export class NodeIndexDocument {
   }
 
   /**
-   * Add neighbors to child nodes of this node
+   * Add neighbors, save leaf documents and children, then release finalized child data.
    */
   public async addNeighbors(): Promise<void> {
     if (this.finalized) {
@@ -130,7 +129,10 @@ export class NodeIndexDocument {
       }
       await childNode.save();
     }
-    // The save after adding neighbors is the last one. Finalize the the node
+    // Internal documents were saved during child traversal. A root mesh leaf has no such traversal.
+    if (!this.children.length) {
+      await this.save();
+    }
     this.finalize();
   }
 
@@ -250,7 +252,7 @@ export class NodeIndexDocument {
    */
   static createRootNodeIndexDocument(boundingVolumes: BoundingVolumes): Node3DIndexDocument {
     const root0data = {
-      version: `{${uuidv4().toUpperCase()}}`,
+      version: `{${randomUUID().toUpperCase()}}`,
       id: 'root',
       level: 0,
       lodSelection: [
@@ -266,7 +268,7 @@ export class NodeIndexDocument {
       ...boundingVolumes,
       children: []
     };
-    return transform(root0data, nodeTemplate());
+    return createNode(root0data);
   }
 
   /**
@@ -305,7 +307,7 @@ export class NodeIndexDocument {
       children: [],
       neighbors: []
     };
-    const node = transform(nodeData, nodeTemplate());
+    const node = createNode(nodeData);
 
     if (nodeInPage.mesh) {
       node.geometryData = [{href: './geometries/0'}];

@@ -48,11 +48,71 @@ import {createMeshConversionCodec, createSingleMeshTilesetSink} from '@loaders.g
 ```
 
 Existing `/v5` and `/v5/browser` imports remain compatible and combine their previous
-core and adapter exports. The split adds no package dependencies. CLI, v4 and Node
-filesystem/service integration remain separate and unchanged. Core and adapters have
+core and adapter exports. The split adds no package dependencies. The original CLI and v4 remain compatible. The experimental Node source and metadata-only
+CLI below provide the first filesystem integration increment; conversion commands, output
+sinks and service integration remain separate work. Core and adapters have
 ESM, CommonJS and TypeScript declaration exports. The app still declares its existing
 format and Node service dependencies; importing the core isolates its runtime and
 bundle imports, but does not remove those installation dependencies.
+
+## Conversion budgets and destination recovery
+
+`convertTileset` accepts per-resource limits and cumulative limits for one run:
+
+| Option | Budget checked |
+| --- | --- |
+| `maxInputResourceBytes` | Measured decoded bytes of each input, before encoding |
+| `maxOutputResourceBytes` | Measured bytes of each output after validation, before writing |
+| `maxInputBytes` / `maxOutputBytes` | Sum of measured input/output bytes processed by this run |
+| `maxInputResources` / `maxOutputResources` | Input/output counts, including zero-byte resources |
+
+All limits default to `Infinity` and accept nonnegative safe integers, including zero.
+Invalid limits fail before inspection. Invalid byte measurements and unsafe cumulative
+integer totals fail explicitly. Output counts include every codec output, so they also
+bound fan-out from a single input. Limits reject the offending resource, close the
+source/codec iterators, and invoke the sink's existing abort operation. A resumed run's
+report and budgets include matching resources skipped by a manifest-backed sink.
+
+These gates bound accounted work. Input buffers already exist when input limits are
+checked; output buffers already exist when output limits are checked. They do not bound
+source decoding, codec allocations, diagnostic retention, or total peak memory. Applications
+must also configure source, codec and destination limits.
+
+`createManifestBackedTileConversionSink` accepts an optional `maxResources` cap on
+unique checkpoint entries, including entries loaded from the store. It rejects new IDs
+before writing when the cap is reached; matching IDs and repairs do not add entries.
+The cap bounds the retained checkpoint count, not the store's loading allocations or
+identifier/fingerprint string lengths.
+
+Applications can opt into checking destination bytes before skipping a checkpoint:
+
+```ts
+const sink = await createManifestBackedTileConversionSink({
+  sink: destination,
+  manifestStore,
+  getResourceId,
+  measureResourceBytes,
+  fingerprintResource,
+  maxResources: 1000,
+  verifyResource: async (entry, signal) => {
+    // The storage adapter must check both byte length and the content fingerprint.
+    return storage.matches(entry.resourceId, entry.byteLength, entry.fingerprint, signal);
+  }
+});
+```
+
+Return `true` only when the stored resource matches the checkpoint. Return `false`
+when it is missing or differs: the wrapper rewrites it through the application's
+idempotent destination and persists the checkpoint again. Verification failures propagate
+and prevent subsequent queued writes and finalization. Cancellation is checked before and
+after verification. Changed conversion input still fails with `RESOURCE_RESUME_MISMATCH`
+before checking destination bytes.
+
+Without `verifyResource`, applications retain the existing contract that checkpointed
+bytes remain intact. Storage owns fingerprint calculation, atomic manifest replacement,
+idempotent writes and format-specific finalization/recovery. This hook does not provide a
+filesystem adapter, resume an unfinished ZIP stream, or qualify crash durability.
+
 
 ## Draco mesh output
 
@@ -227,6 +287,41 @@ Source positions retain their declared units, elevation reference and CRS. Suppl
 output and any elevation providers to the shared conversion spatial context so geometry is
 transformed once. Rendering runtimes should keep the default `geometryMode: 'render'`.
 This is a bounded source profile, not qualification of every I3S dataset or appearance profile.
+
+## Declared glTF feature schemas
+
+For one inline glTF structural-metadata class and property table, derive the mapping from
+its declarations instead of repeating field types. Set `features` to the class/identifier selection
+without `schema` to derive the mapping separately for each decoded content:
+
+```typescript
+const source = createMeshTilesetConversionSource(runtime, {
+  features: {metadataClass: 'building', sourceFeatureIdProperty: 'object_id'}
+});
+```
+
+For already decoded glTF, the same mapping is available directly:
+
+```typescript
+import {createMeshSourceFeatureOptions} from '@loaders.gl/tile-converter/v5/adapters';
+
+const features = createMeshSourceFeatureOptions(decodedGltf, {
+  metadataClass: 'building',
+  sourceFeatureIdProperty: 'object_id'
+});
+const source = createMeshTilesetConversionSource(runtime, {features});
+```
+
+The caller selects the class and identifier. Scalar widths (including exact int64/uint64),
+strings and optional/default/noData behavior follow the declared source schema. Omit
+`sourceFeatureIdProperty` to use uint32 table-row identifiers; choose `featureIdField` if
+`feature_id` is already a property. Missing optional columns become their declared default
+or null; missing required columns fail. The qualified mesh profile requires feature rows
+to own geometry; excessive declared counts fail before default columns allocate. Raw schema/property declarations are retained in
+Arrow metadata. This is an explicit mapping helper, not value-based inference or a promise
+that target formats preserve every schema annotation. Destination gates still apply, including
+I3S decimal-string authorization for 64-bit values. Arrays, enums, vectors, transformed
+numeric properties, external schemas and multiple property tables require separate mappings.
 
 ## Source mesh to I3S/SLPK
 
@@ -473,6 +568,27 @@ metadata. These limits do not bound peak decoding/encoding memory. Use
 I3S PointCloud/SLPK writing and general LAS/COPC/I3S source qualification remain separate
 work under tranche 7.
 
+### I3S layer-type policy
+
+I3S sources retain `sourceLayerType` on each mesh resource. The current writer authors
+**1.7 3DObject** layers. IntegratedMesh input therefore requires an explicit codec option:
+
+```typescript
+createI3SMeshConversionCodec({
+  spatialContext,
+  maxPositionError: 0.01,
+  maxResourceBytes: 32 * 1024 * 1024,
+  integratedMeshPolicy: 'as-3d-object'
+});
+```
+
+Without this option the codec throws `I3S_LAYER_TYPE_CHANGE_REQUIRED` before encoding.
+Authorized changes retain source layer provenance on the output resource and add an
+`I3S_LAYER_TYPE_CHANGED` warning to the conversion report. Geometry extraction alone does
+not preserve IntegratedMesh surface-layer semantics or source LOD. The browser example
+rejects this layer change until the application supplies an explicit policy. I3S 1.8/1.10
+writer and independent ArcGIS/Cesium qualification remain open.
+
 ### Native CRS and opt-in reprojection
 
 Retain native coordinates and CRS metadata when the selected writer and consumer support
@@ -480,6 +596,14 @@ that CRS. `spatialContext` is optional on point-source conversion; omitting it p
 source coordinates and placement. Mesh codecs accept native contexts as well as explicitly
 requested transformations. A CRS-aware renderer can consume native data without first
 projecting every vertex. Rendering policy is separate from archive authoring policy.
+
+When no format height operation or target transform is requested, native contexts retain
+coordinates, height reference and epoch metadata. Declared non-meter height units and
+elevation placement still use the shared spatial transformer. Packed positions and matching
+normals must be finite xyz arrays. I3S origins require three finite values and local offsets
+must fit float32. Direct and geometry I3S normal APIs use the same declared vector basis.
+Geographic antimeridian-to-ECEF conformance is covered; reprojection of epoch-tagged
+coordinates still requires a separately qualified epoch-aware operation.
 
 The current 3D Tiles/3TZ collection sinks require ECEF/ellipsoidal content, and the current
 I3S writer profile consumes ECEF before writing geographic I3S geometry. Those specific
@@ -521,7 +645,52 @@ Earth-centered I3S normals targeting EPSG:4978 are normalized directly, without 
 the corresponding position for every normal. Other vector frames still use their declared
 basis transformation. This optimization also applies to the existing I3S spatial adapter.
 
+## Nested explicit 3D Tiles input
+
+`createBrowserTilesetConversionSource` can follow explicit external 3D Tiles 1.0/1.1
+documents when an application supplies `maxTilesetDocuments` greater than 1:
+
+```ts
+const source = createBrowserTilesetConversionSource({
+  input: 'https://example.com/tileset.json',
+  maxInputBytes: 16 * 1024 * 1024,
+  maxInputResources: 1000,
+  maxTilesetDocuments: 16
+});
+```
+
+The default is one document, so existing root-only callers continue to reject external
+JSON. Inspection reads the root document only; `inspection.resources` describes its
+content declarations. Reading expands nested documents lazily in depth-first order,
+yielding binary content to the injected codec. JSON is identified from its response type
+or payload rather than a filename; JSON glTF and implicit tiling remain unsupported.
+
+Limits apply across the entire read: `maxInputBytes` charges all root/nested response
+bytes and binary payloads; `maxInputResources` counts content declarations, including
+external JSON references; `maxTilesetDocuments` counts the root and each external
+placement. Referencing a shared document twice consumes two document reads and retains
+two placements. The source does not cache or merge them. These limits do not qualify
+total peak decoder/JSON memory or a maximum count of contentless tile nodes.
+
+Nested output descriptors include `tilesetUrl`, the declaring document's effective URL.
+`tilePath` indexes tiles within that document; `resourceId` includes the referring
+placement chain. `transform` composes entry-root placement, referring tile and external
+root transforms. This follows the [external tileset transform contract](https://docs.ogc.org/cs/22-025r4/22-025r4.html).
+Dependency URLs resolve relative to each document, including redirects; document query
+parameters propagate only to resources on the same origin. Active ancestor URLs (ignoring
+fragments) are rejected as cycles; aliases/redirects are checked against their effective
+URLs. References with child tiles, conflicting content declarations and non-finite
+composed transforms fail explicitly. Cancellation/errors cancel active response readers;
+closing iteration prevents further requests.
+
+Applications supply CORS/authentication and object-identity policies through their fetcher.
+This is a raw source API; codecs still own content decoding, required metadata mappings and
+output authoring. It does not preserve source LOD/refinement in a destination, flatten scene
+metadata or decode instancing/composites.
+
 ## Browser I3S conversion example
+
+Use the [inline 3D tile conversion app](/examples/tiles/3d-tiles-conversion) to inspect, select, convert and download meshes. It shares its compact controls and navigation with the [PMTiles conversion app](/examples/tiles/pmtiles-authoring). The [archive viewer](/examples/i3s-slpk) retains the same conversion controls alongside rendering.
 
 The [archive example](https://github.com/visgl/loaders.gl/tree/master/examples/website/i3s-slpk)
 accepts I3S `3DObject`/`IntegratedMesh` layer URLs and local/remote SLPK files up to 16 MiB for
@@ -543,7 +712,133 @@ reads, with dependency URLs confined to the archive. Remote inputs require HTTP 
 responses and CORS-exposed `Content-Range` plus an ETag or Last-Modified validator. The
 inspected identity is retained across worker reopening; replaced archives fail instead of
 using stale content declarations. Readers close on success, failure and cancellation.
-Nested/external tilesets and implicit tiling remain unsupported by this bounded example.
+The example also inspects declared **.json external tilesets** up to 32 document placements,
+including nested documents inside local/remote 3TZ. It loads metadata only during inspection,
+then converts selected binary contents using their declaring document's metadata, glTF axes,
+relative URLs and combined placement. Content references without a .json suffix are not
+probed for external metadata. Implicit tiling remains unsupported. Source topology/refinement
+is not exported; source geometric error is conservatively scaled by ancestor placement.
+Selected documents must match the root coordinate epoch; explicit mismatches fail with
+`MESH_SOURCE_EPOCH_MISMATCH`. A document without a declared CRS inherits the qualified root
+reference. Epoch-aware transformations remain unsupported.
+
+## Node inspection and raw content reads
+
+The dedicated `@loaders.gl/tile-converter/v5/node` entrypoint provides
+`createNodeTilesetConversionSource` for explicit 3D Tiles JSON paths/file URLs, HTTP(S) JSON
+URLs and local/remote 3TZ archives. It supplies Node I/O to the existing portable traversal:
+
+```ts
+import {inspectTileset} from '@loaders.gl/tile-converter/v5/core';
+import {createNodeTilesetConversionSource} from '@loaders.gl/tile-converter/v5/node';
+
+const source = await createNodeTilesetConversionSource({
+  input: './dataset.3tz',
+  format: '3tz',
+  signal: abortController.signal
+});
+try {
+  const inspection = await inspectTileset(source, abortController.signal);
+  // source.read(inspection, signal) yields raw Uint8Array contents for your codec.
+} finally {
+  await source.close();
+}
+```
+
+`input` is required; `format` defaults to `3d-tiles`. Optional `maxInputBytes` and
+`maxInputResources` lower the initial 16 MiB / 1,000 content-placement ceilings. `fetcher`
+injects HTTP(S) transport and is never used as a fallback for local inputs. Response bytes
+share a lifetime-wide budget. Local physical reads have a separate aggregate budget checked
+before allocating typed arrays; archive files themselves must also fit that byte ceiling.
+These budgets do not qualify decoder/decompressor peak memory.
+
+Local dependencies must resolve within the root JSON's real directory, including symlinks.
+Archive dependencies must stay in the selected archive. The archive index is loaded once;
+`close()` cancels future I/O and releases its file handle, and is safe to repeat. Use one
+source sequentially, keep input files unchanged during its lifetime and always close in
+`finally`, including after cancellation or errors. No directory snapshot/version pin is claimed.
+
+Inspection reads metadata without loading content, validates the existing explicit 1.0/1.1
+document profile and preserves ordered placements/transforms. Raw reads do not decode meshes,
+infer CRS or qualify content formats. Set `maxTilesetDocuments` (up to 32) to enable raw external-document traversal; add `inspectNestedTilesets: true` to inspect declared .json references without fetching binary contents. Implicit tiling remains unsupported. I3S/SLPK use the separate Node source below. Browser and core entrypoints remain free of
+Node imports.
+
+The [v5 CLI](/docs/modules/tile-converter/cli-reference/tile-converter-v5) exposes this
+metadata inspection as `tile-converter-v5 inspect` and adds bounded selected-mesh `convert`
+and write-free target-profile `validate` commands. The original `tile-converter` command uses v4.
+
+The Node entrypoint also exports `convertNodeTileset`:
+
+```ts
+import {convertNodeTileset} from '@loaders.gl/tile-converter/v5/node';
+
+const report = await convertNodeTileset({
+  input: './dataset/tileset.json',
+  resourceIds: ['tile-root-content-0'],
+  outputFormat: '3tz',
+  output: './selected.3tz',
+  signal: abortController.signal
+});
+```
+
+Omit `output` for target-profile validation without writing. `outputFormat` accepts
+`3d-tiles` (directory), `3tz` and `slpk`; `maxOutputBytes` may lower the 32 MiB ceiling.
+Service callers supply the existing explicit `features` (3D Tiles) or `i3sFeatures` mapping; the CLI
+accepts the same scalar/string mapping through a bounded local `--feature-schema` JSON file. Conversion owns and
+closes the raw Node source before publishing output. It reuses the
+portable `createSelectedMeshConversionSource`, `SELECTED_MESH_LIMITS`, mesh codecs and sinks.
+That source accepts an inspected document, explicit `resourceIds`, `signal`, application
+`dracoLibraryOptions`, optional `fetcher`, confined raw `source`, `features` and a lower
+`maxInputBytes`. Its owner retains the platform source lifetime. `measureMeshBytes` accounts
+for decoded geometry, encoded images, feature columns and triangle associations.
+
+### Node I3S and SLPK selection
+
+`createNodeI3SConversionSource` accepts `format: 'i3s'` for an HTTP(S) layer URL, or
+`format: 'slpk'` for a local path/file URL or remote archive. It exposes `inspect(signal?)`,
+`select(inspection, resourceIds, dracoLibraryOptions, features?)` and idempotent `close()`.
+Use one source sequentially and close it in `finally`. Its transport budget covers metadata,
+content, textures and attributes; archive size/indexed reads and decoded meshes have separate
+bounds. Node source options may lower the existing 16 MiB and 1,000-node ceilings.
+
+`convertNodeTileset` owns that lifetime and accepts these same input formats:
+
+```ts
+const report = await convertNodeTileset({
+  input: './dataset.slpk',
+  format: 'slpk',
+  resourceIds: ['1'],
+  geometricError: 2, // Explicit meters; required for I3S to 3D Tiles targets.
+  outputFormat: '3tz',
+  output: './selected.3tz'
+});
+```
+
+I3S native decoding uses the existing shared CRS/elevation context with EPSG:4978 as target.
+It never applies renderer projection. No new CRS definitions or epoch operations are supplied.
+`integratedMeshPolicy: 'as-3d-object'` explicitly authorizes IntegratedMesh to SLPK and reports
+that layer-type change. Output remains I3S 1.7 3DObject or a partial flat 3D Tiles 1.1 collection.
+The CLI provides these policies and [feature-schema mapping controls](../cli-reference/tile-converter-v5.md#feature-schema-controls).
+
+The portable `inspectI3SMeshConversionSource` and `createSelectedI3SMeshConversionSource`
+accept an injected lifetime-budgeted `fetcher`, `rootUrl`, `signal`, `dracoLibraryOptions`
+and optional lower byte/node limits. Their owner manages transport lifetime. The browser example
+uses these same adapters and retains its cloneable inspection/worker contract.
+
+`openTileConversionArchive` accepts an explicit SLPK/3TZ Blob or HTTP(S) descriptor, byte
+budget, signal and optional fetcher. `createTileConversionArchiveTransport` takes ownership of
+an already opened `ReadableFile` for Node or injected storage. Both return a confined virtual
+`rootUrl`, entry `fetcher` and idempotent `close`; the opener also returns a cloneable descriptor
+with the remote identity for worker reopening. Completed reads and cached lookups reject after
+close. Remote inputs require exact HTTP 206 ranges and stable validator/length identity, without
+full-download fallback. Weak or malformed ETags are rejected, even when a Last-Modified header is also present; the Last-Modified fallback requires an absent ETag and a valid Date at least 60 seconds later. Browser servers must expose Date for this fallback. See [HTTP validator semantics](https://www.rfc-editor.org/rfc/rfc9110.html#section-8.8.2.2). Budgets do not establish total peak-memory bounds or independent viewer
+interoperability. Local archive files and remote resources must remain unchanged while used.
+Node I3S redirects are explicitly rejected; use final URLs.
+
+`selectBrowserTilesetContent` clones a selected document path and returns `tileset`,
+`contentUrl`, `geometricError` and `isLeaf`. Expanded inspections contain `documents`;
+resource `documentIndex` selects a placement snapshot. Error calculation stops at the selected
+tile and includes a conservative linear-transform scale bound. No output LOD tree is claimed.
 
 ## Decoded point-cloud authoring
 
@@ -593,3 +888,228 @@ sampling-error guarantees, ingest batches, or author I3S point layers. PNTS supp
 `NORMAL`, `BATCH_ID` and one color attribute. Other attributes fail instead of being silently dropped;
 explicitly map or remove them before authoring. LAS, COPC, Potree and other loaders may produce
 compatible decoded points, but their native CRS and additional attributes still require preparation.
+
+### Potree octree authoring
+
+`convertPointCloudToPotree` connects the same portable tiler to the existing Potree
+writer. It preserves the connected additive octree addresses and emits each input row
+exactly once. Supply decoded Mesh/Arrow points already placed in a declared native CRS;
+origins, model transforms and reprojection must be applied before this call.
+
+```ts
+import {convertPointCloudToPotree} from '@loaders.gl/tile-converter/v5/adapters';
+
+const result = await convertPointCloudToPotree(decodedPoints, {
+  projection: 'EPSG:4978',
+  maxGatheredBytes: 32 * 1024 * 1024,
+  maxOutputBytes: 64 * 1024 * 1024,
+  tiling: {nodePointLimit: 10000, maximumDepth: 12, maxNodes: 1000},
+  potree: {version: '2.0', scale: [0.001, 0.001, 0.001], maxPositionError: 0.001},
+  archive: {maxArchiveBytes: 80 * 1024 * 1024},
+  signal: abortController.signal
+});
+// result.dataset.files contains named bytes, including metadata and hierarchy.
+// result.archive is an optional loaders.gl STORE ZIP32 bundle.
+```
+
+The projection is written verbatim; it does not validate or transform the coordinates.
+Version and attribute support follow the [Potree writer](/docs/modules/potree/api-reference/potree-writer):
+1.0–1.8 binary output or 2.0 DEFAULT output. Unsupported attributes and positional
+rounding outside the chosen version's precision gate fail; no attributes are silently
+removed. Modern output retains numeric attributes, including exact 64-bit IDs.
+
+Input/index/per-node limits belong to the tiler. `maxGatheredBytes` bounds all retained
+node attribute buffers; `maxOutputBytes` includes metadata, hierarchy and payloads.
+The optional ZIP has its own limit and reuses the completed bytes without re-encoding
+points. The private tiler closes before encoding; failure or cancellation returns no
+partial dataset. Input must remain immutable until completion.
+
+This is bounded in-memory authoring. Source buffers, gathered nodes, writer temporaries,
+encoded files and ZIP output are separate allocations, not a peak-heap guarantee.
+Terminal nodes retain unsampled rows even when they exceed `nodePointLimit`. This initial
+integration does not qualify scalable sampling/LOD, independent viewers, BROTLI writing,
+streaming ingestion, or a complete tiled-source assembly workflow.
+
+### Point-cloud files and harvested mesh vertices
+
+COPC is already a self-contained, range-readable `.copc.laz` file. Potree datasets
+contain multiple files. `encodePotreeArchive` packages the complete output of
+`encodePotreeDataset` into a deterministic STORE ZIP32 with metadata at the root.
+This **loaders.gl Potree ZIP convention is not a native Potree archive standard**.
+The original relative paths are preserved; extracted files remain an ordinary
+Potree dataset. The writer supports its existing 1.0–1.8 and 2.0 DEFAULT profiles.
+
+```ts
+import {
+  encodePotreeArchive,
+  openPointCloudFile,
+  extractMeshVertices
+} from '@loaders.gl/tile-converter/v5/browser';
+import {COPCWriter} from '@loaders.gl/copc';
+
+// Opt in to one point per stored vertex of already placed triangle geometry.
+const points = extractMeshVertices(meshResource.mesh, {
+  attributes: [], // Select additional destination-compatible attributes explicitly.
+  maxPoints: 100000
+});
+const potreeZip = await encodePotreeArchive(points, {
+  maxArchiveBytes: 32 * 1024 * 1024,
+  potree: {
+    version: '2.0',
+    projection: 'EPSG:4978',
+    scale: [0.001, 0.001, 0.001],
+    maxPositionError: 0.001,
+    maxOutputBytes: 16 * 1024 * 1024
+  }
+});
+
+// The existing COPC writer produces a native single-file destination.
+// Supply a bounded decoded batch, compatible attributes, and an explicit CRS.
+const copcFile = new Blob([COPCWriter.encodeSync(points, {
+  copc: {scale: [0.001, 0.001, 0.001], offset: [0, 0, 0], colorDepth: 8, wkt: ecefWkt}
+})], {type: 'application/octet-stream'});
+
+const opened = await openPointCloudFile(potreeZip, {
+  format: 'potree-zip', // Use 'copc' for copcFile or a dropped COPC File.
+  maxFileBytes: 32 * 1024 * 1024,
+  maxEntries: 1000,
+  maxResourceBytes: 4 * 1024 * 1024
+});
+try {
+  const root = await opened.source.getRootTile();
+  const content = await opened.source.loadTileContent(root);
+  // Traverse children on demand with the existing source APIs.
+} finally {
+  await opened.close();
+}
+```
+
+Modern Potree ZIP node reads slice archived ranges without reading all of
+`octree.bin`. Readers use the shared ZIP32/ZIP64 validator and accept unencrypted STORE entries,
+including data descriptors and comments, with canonical relative ASCII resource paths. DEFLATE
+bundles are rejected. Complete reads validate ZIP CRCs; partial ranges cannot. Root `metadata.json` or `cloud.js` is selected only when
+unambiguous; supply `metadataPath` for a nested dataset. Partial range reads do
+not validate whole-entry ZIP CRCs. The isolated archive transport never falls
+back to a network request.
+
+Mesh harvesting preserves repeated/coincident stored vertices, ignores indices,
+and does not sample triangle surfaces. Selected attributes share the caller's
+immutable buffers. Unselected attributes, materials and feature associations are
+intentionally omitted. Use a mesh source adapter first to apply glTF node,
+up-axis, RTC and tile placement once; harvesting performs no coordinate math.
+Callers choose source tiles and LOD: collecting every mesh LOD can repeat the
+same geometry, and harvesting does not deduplicate across resources.
+
+Sources retain their current coordinate policies: Potree 2.0 returns native
+positions, legacy Potree keeps its projection behavior, and COPC can return
+positions relative to an origin. Apply the declared origin and explicit CRS
+operation before writing absolute points into another format. Attribute mapping,
+LOD sampling and independent viewer qualification remain separate work.
+
+Potree output, final ZIP size, entry count, input file size and individual range
+limits are separate bounds. They do not bound total heap, COPC decompression or
+COPC writer temporaries. Potree authoring and COPC writing operate on decoded
+in-memory inputs; these APIs do not assemble a large source into one output
+out of core. Applications own downloading Blobs and revoking object URLs.
+
+
+### Complete explicit hierarchy profile
+
+The default mesh collection remains flat. Opt in with `preserveHierarchy: true` on
+`createSelectedMeshConversionSource` and pair it with `createMeshHierarchyTilesetSink`
+from `@loaders.gl/tile-converter/v5/adapters` (also exposed by `v5/browser`).
+`convertNodeTileset({preserveHierarchy: true, ...})` wires these together for 3D Tiles
+or 3TZ input and output. Select **every** inspected content placement explicitly.
+Browser/service callers must inspect with `inspectNestedTilesets: true`; root-only
+inspection is rejected before decoding. Set `maxTilesetDocuments` above one to inspect declared `.json` external references; the
+Node wrapper already expands inspection with a default 32-document budget. Each nested
+`documents` placement records `parentResourceId`, the introducing content placement.
+Reinspect older nested snapshots that lack this link before requesting hierarchy preservation.
+
+This bounded profile retains original child order, contentless ancestors, parent content,
+and effective ADD/REPLACE refinement, including inherited child policy. The root must
+explicitly declare refinement. Each tile retains its own metric geometric error plus the configured position reconstruction
+allowance. For 3D Tiles 1.1 inputs, error is conservatively scaled by the composed source
+transform; 1.0 inputs already define error in meters independently of the transform. The dataset error is at least the scaled root error plus that allowance.
+Extraction bakes original tile/node/RTC/axis placement once; relative output transforms
+place rebased GLBs in ECEF without applying source transforms a second time. Original
+matrices and bounding-volume representations are replaced by equivalent placements and
+boxes enclosing all converted geometry in each subtree. Explicit native CRS metadata,
+including its epoch, is retained when supplied.
+
+Limits: 32 explicit document placements (including repeats), 256 tiles across the entire tree,
+64 selected binary contents and **64 total mesh primitive placements**, existing 16 MiB input
+and 32 MiB output/archive budgets. Static multi-primitive meshes and repeated scene-node
+placements are supported. Each primitive becomes a self-contained GLB with its own supported
+material and feature mapping, in the original tile’s ordered `contents` list. Ordering follows
+source content slots, then scene traversal and primitive order. Primitives do not become child
+tiles, so ADD/REPLACE and LOD stay on the original tile. Extraction streams a
+`contentPrimitive: {index, last}` descriptor through the codec. The hierarchy sink requires
+contiguous indices and a final marker for every original content before publishing. Direct
+codec outputs without a descriptor retain the singleton-content contract. Feature-bearing
+primitives may share one decoded property table. Extraction retains only rows referenced by
+that primitive’s triangles, in source row order, and remaps triangle associations to dense
+output indices. Stable identifiers remain the selected source property (including exact
+int64/uint64) or the original source row index. Unused vertices do not add output rows.
+Absent defaults and noData replacements are evaluated only for referenced rows; supplied
+columns must still match the full declared source count. This avoids duplicating the full
+Arrow table for every primitive. The per-primitive distinct feature count is validated independently of the table row count,
+following [EXT_mesh_features](https://github.com/CesiumGS/glTF/tree/3d-tiles-next/extensions/2.0/Vendor/EXT_mesh_features).
+Multiple tables/classes remain unsupported.
+Ordered 1.1 mesh `contents` arrays retain their tile and declaration order, with a shared
+origin selected from the first primitive of the first content. The sink rejects different encoded origins within a
+tile. Bounds enclose every content and child; the existing precision gate rejects distant
+contents that cannot share a float32 frame within the configured allowance. A one-entry
+array becomes `content`. External JSON references still require a single `content` with no
+siblings or source children. 1.0 `contents` arrays, contentless leaves, implicit tiling, tile extensions/metadata,
+viewer-request volumes and dataset feature metadata require separate profiles and fail
+explicitly. I3S/SLPK hierarchy is not qualified: screen-size LOD cannot be inferred as meters.
+Partial selection continues to use the default flat profile. Browser example controls
+remain on that profile; services may use the shared hierarchy adapters directly.
+These limits account for retained/output bytes and node counts, not total peak memory.
+External trees are inlined into one output manifest: each reference becomes a contentless
+wrapper containing the external document root. Repeated URLs retain distinct placements
+and IDs. Every document root must explicitly declare its own refinement; it does not inherit
+the referencing tile's policy. Wrapper errors cover the source reference error and any
+declared external dataset activation error. Each document's tile errors follow its own
+1.0/1.1 rule, using the complete placement chain for 1.1 scaling. Absent CRS declarations
+inherit the entry frame only when unambiguous; explicit frame/epoch contradictions fail
+before payload decoding. Declaring-document glTF axes and effective dependency URLs remain
+scoped to each decoded placement. Unlinked, repeated-parent or unreachable document records,
+references with source children and inconsistent transforms fail explicitly.
+Independent viewer qualification, extensionless metadata discovery and larger hierarchies remain open.
+
+## COPC batch output
+
+[Explicit point mapping and COPC output](./point-cloud-copc) adds decoded Mesh/Arrow batch authoring
+with caller-declared CRS, quantization precision, input/output budgets and semantic loss reports.
+The codec emits one independent COPC file per input batch; whole-dataset assembly remains a separate gate.
+
+COPC Extra Bytes names and descriptions use at most 32 printable ASCII bytes; non-ASCII/control text is rejected before encoding rather than silently changing metadata.
+
+## Conversion profiling
+
+<img src="https://img.shields.io/badge/From-v5.0-blue.svg?style=flat-square" alt="From v5.0" />
+
+Set `profile: true` on `convertTileset` or `convertNodeTileset` to add serializable
+`report.timings` in milliseconds. Profiling is disabled by default. The portable core measures
+inspection, source iterator advancement, codec setup/advancement, output validation,
+awaited writes, finalization and total elapsed time. Generator suspension while downstream
+output is validated or written is excluded from read/convert timing, so sink backpressure
+is not counted twice. Timings include awaited work, rather than measuring CPU utilization.
+
+Node reports also include `setupMilliseconds` (transport creation, inspection, selection
+and decoder setup) and `outputMilliseconds` (archive encoding/validation and destination
+publication). Node total time covers the `convertNodeTileset` call, including source close.
+It excludes process/module startup and CLI argument/feature-schema preparation. Portable
+finalization covers the injected sink; the Node output stage runs afterward. Total may exceed
+the sum of named stages because orchestration, byte measurement, progress callbacks and
+cleanup are not separate stages. Completed timings are attached to the returned report only
+after finalization; failed/cancelled operations reject as before.
+
+Use `tile-converter-v5 convert ... --profile` or `validate ... --profile` to include these
+values in the existing JSON output. The boolean option does not add callback or worker
+transport requirements. Repeat measurements with identical input, limits, hardware and
+cache conditions. These timings do not measure peak memory or independently qualify
+large-dataset throughput; detailed decoder/coordinate/Arrow/compression breakdowns and
+large-fixture benchmarks remain follow-up work.

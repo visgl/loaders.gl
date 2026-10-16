@@ -4,7 +4,7 @@ import {createRoot} from 'react-dom/client';
 import {parse} from '@loaders.gl/core';
 import {GLTFScenegraph, GLTFWriter, GLTFLoader, postProcessGLTF} from '@loaders.gl/gltf';
 import {I3SContentLoader, parseSLPKArchive} from '@loaders.gl/i3s';
-import {DataViewReadableFile} from '@loaders.gl/zip';
+import {ArrayBufferFile} from '@loaders.gl/loader-utils';
 import {Tiles3DArchive} from '@loaders.gl/3d-tiles';
 import type {MeshSourceFeatureOptions} from '@loaders.gl/tile-converter/v5/adapters';
 import {ConversionPanel} from '../examples/website/i3s-slpk/src/components/conversion-panel';
@@ -157,9 +157,7 @@ test('browser SLPK mapping preserves exact IDs, Unicode, material factors and tr
     mapping
   );
   expect(mapping).toEqual(FEATURE_MAPPING);
-  const reader = await parseSLPKArchive(
-    new DataViewReadableFile(new DataView(await result.file.arrayBuffer()))
-  );
+  const reader = await parseSLPKArchive(new ArrayBufferFile(await result.file.arrayBuffer()));
   try {
     const layer = JSON.parse(new TextDecoder().decode(await reader.getFile('', 'http')));
     expect(layer.materialDefinitions[0]).toMatchObject({
@@ -229,9 +227,7 @@ test('browser 3TZ preserves normalized colors and one selected material, while I
     () => {},
     fetcher
   );
-  const reader = new Tiles3DArchive(
-    new DataViewReadableFile(new DataView(await result.file.arrayBuffer()))
-  );
+  const reader = new Tiles3DArchive(new ArrayBufferFile(await result.file.arrayBuffer()));
   try {
     const gltf = postProcessGLTF(
       await parse(await reader.getFile('meshes/0.glb'), GLTFLoader, {

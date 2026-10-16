@@ -10,17 +10,17 @@ const lanceMocks = vi.hoisted(() => ({
   readRemoteFileToArrow: vi.fn()
 }));
 
-vi.mock('../src/lance-file', async importOriginal => {
-  const original = await importOriginal<typeof import('../src/lance-file')>();
+vi.mock('../../tables/src/lance/lance-file', async importOriginal => {
+  const original = await importOriginal<typeof import('../../tables/src/lance/lance-file')>();
   return {...original, parseLanceFileMetadata: lanceMocks.parseFileMetadata};
 });
 
-vi.mock('../src/lance-arrow', () => ({
+vi.mock('../../tables/src/lance/lance-arrow', () => ({
   parseLanceFileToArrow: lanceMocks.parseFileToArrow,
   readLanceRemoteFileToArrow: lanceMocks.readRemoteFileToArrow
 }));
 
-import {LanceSourceLoader} from '../src/lance-source-loader';
+import {LanceSourceLoader} from '../../tables/src/lance/lance-source-loader';
 
 const MOCK_TABLE = {shape: 'arrow-table', data: {numRows: 2}};
 const MOCK_FILE_METADATA = {majorVersion: 2, minorVersion: 0, fileSizeBytes: 64};

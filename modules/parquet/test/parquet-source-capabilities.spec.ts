@@ -3,7 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import { expect, test } from "vitest";
-import { PARQUET_SOURCE_CAPABILITIES, type ParquetSourceCapabilities } from '../src/parquet-source-capabilities';
+import { PARQUET_SOURCE_CAPABILITIES, type ParquetSourceCapabilities } from '../../tables/src/parquet/parquet-source-capabilities';
 test('ParquetSourceCapabilities#advertises implemented and deferred features', () => {
     const expectedCapabilities: ParquetSourceCapabilities = {
         tableQuery: {

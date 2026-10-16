@@ -4,21 +4,21 @@
 
 import {beforeAll, expect, test, vi} from 'vitest';
 import {BlobFile} from '@loaders.gl/loader-utils';
-import {ParquetEnvelopeWriter} from '../src/parquetjs/encoder/parquet-encoder';
+import {ParquetEnvelopeWriter} from '../../tables/src/parquet/parquetjs/encoder/parquet-encoder';
 import {
   decodeDataPages,
   decodePage,
   decodeUncompressedDataPages,
   decodeUncompressedDictionaryBuffer
-} from '../src/parquetjs/parser/decoders';
-import {ParquetReader} from '../src/parquetjs/parser/parquet-reader';
-import {ParquetSchema} from '../src/parquetjs/schema/schema';
-import {shredRecord} from '../src/parquetjs/schema/shred';
-import type {ParquetReaderContext} from '../src/parquetjs/schema/declare';
-import {concatUint8Arrays} from '../src/parquetjs/utils/binary-utils';
-import {decodePageHeader, serializeThrift} from '../src/parquetjs/utils/read-utils';
-import {decompress} from '../src/parquetjs/compression';
-import {PARQUET_CODECS} from '../src/parquetjs/codecs';
+} from '../../tables/src/parquet/parquetjs/parser/decoders';
+import {ParquetReader} from '../../tables/src/parquet/parquetjs/parser/parquet-reader';
+import {ParquetSchema} from '../../tables/src/parquet/parquetjs/schema/schema';
+import {shredRecord} from '../../tables/src/parquet/parquetjs/schema/shred';
+import type {ParquetReaderContext} from '../../tables/src/parquet/parquetjs/schema/declare';
+import {concatUint8Arrays} from '../../tables/src/parquet/parquetjs/utils/binary-utils';
+import {decodePageHeader, serializeThrift} from '../../tables/src/parquet/parquetjs/utils/read-utils';
+import {decompress} from '../../tables/src/parquet/parquetjs/compression';
+import {PARQUET_CODECS} from '../../tables/src/parquet/parquetjs/codecs';
 import {
   DataPageHeader,
   DataPageHeaderV2,
@@ -26,7 +26,7 @@ import {
   Encoding,
   PageHeader,
   PageType
-} from '../src/parquetjs/parquet-thrift';
+} from '../../tables/src/parquet/parquetjs/parquet-thrift';
 
 type PageFixture = {
   /** Actual encoded column chunks, including dictionaries where present. */

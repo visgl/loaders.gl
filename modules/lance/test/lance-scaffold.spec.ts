@@ -4,22 +4,28 @@
 
 import {expect, test} from 'vitest';
 
-import {LanceFormat} from '../src/lance-format';
-import {LanceLoader} from '../src/lance-loader-types';
-import {LanceDecoderUnavailableError, LanceLoaderWithParser} from '../src/lance-loader';
-import {parseLanceFileMetadata} from '../src/lance-file';
+import {LanceFormat} from '../../tables/src/lance/lance-format';
+import {LanceLoader} from '../../tables/src/lance/lance-loader-types';
+import {
+  LanceDecoderUnavailableError,
+  LanceLoaderWithParser
+} from '../../tables/src/lance/lance-loader';
+import {parseLanceFileMetadata} from '../../tables/src/lance/lance-file';
 import {
   decodeLanceFlatColumn,
   decodeLanceFlatPage,
   LanceFlatPageUnsupportedError
-} from '../src/lance-decoder';
-import {parseLanceManifest} from '../src/lance-manifest';
+} from '../../tables/src/lance/lance-decoder';
+import {parseLanceManifest} from '../../tables/src/lance/lance-manifest';
 import {
   LANCE_SOURCE_CAPABILITIES,
   type LanceSourceCapabilities
-} from '../src/lance-source-capabilities';
-import {LanceSourceLoader} from '../src/lance-source-loader';
-import {readLanceRemoteCoordinatesToArrow, readLanceRemoteFileToArrow} from '../src/lance-arrow';
+} from '../../tables/src/lance/lance-source-capabilities';
+import {LanceSourceLoader} from '../../tables/src/lance/lance-source-loader';
+import {
+  readLanceRemoteCoordinatesToArrow,
+  readLanceRemoteFileToArrow
+} from '../../tables/src/lance/lance-arrow';
 
 const MANIFEST_FIXTURE = Uint8Array.from([
   0x0a, 0x0d, 0x12, 0x02, 0x69, 0x64, 0x18, 0x00, 0x2a, 0x05, 0x69, 0x6e, 0x74, 0x33, 0x32, 0x30,
@@ -294,7 +300,7 @@ test('Lance source loader identifies dataset and data-file URLs', async () => {
 });
 
 test('Lance scaffold uses an explicit decoder error', async () => {
-  const {LanceLoaderWithParser} = await import('../src/lance-loader');
+  const {LanceLoaderWithParser} = await import('../../tables/src/lance/lance-loader');
 
   await expect(LanceLoaderWithParser.parse(new ArrayBuffer(0))).rejects.toBeInstanceOf(
     LanceDecoderUnavailableError

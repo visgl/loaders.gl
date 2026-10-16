@@ -14,7 +14,7 @@ import {
   NDJSONLoader as BundledNDJSONLoader,
   GeoJSONLoader as BundledGeoJSONLoader
 } from '@loaders.gl/json/bundled';
-import {getGeoMetadata} from '@loaders.gl/gis';
+import {getGeoMetadata} from '@loaders.gl/schema';
 import * as jsonModule from '@loaders.gl/json';
 import * as arrow from 'apache-arrow';
 const GEOJSON_PATH = '@loaders.gl/json/test/data/geojson-big.json';

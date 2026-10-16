@@ -1,6 +1,5 @@
 import {join} from 'path';
-import transform from 'json-map-transform';
-import {METADATA as metadataTemplate} from '../json-templates/metadata';
+import {createMetadata} from '../json-templates/metadata';
 import {NodeInPage} from '@loaders.gl/i3s';
 import {isFileExists, openJson} from '../../lib/utils/file-utils';
 import I3SConverter from '../i3s-converter';
@@ -197,7 +196,7 @@ export default class NodePages {
    * Save metadata file (for slpk only)
    */
   async saveMetadata(): Promise<void> {
-    const metadata = transform({nodeCount: this.nodesCounter}, metadataTemplate());
+    const metadata = createMetadata({nodeCount: this.nodesCounter});
     const compress = false;
     await this.converter.writeQueue.enqueue({
       archiveKey: 'metadata.json',

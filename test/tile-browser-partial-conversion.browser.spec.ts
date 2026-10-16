@@ -1,3 +1,5 @@
+import {preloadI3SMeshCompression} from '@loaders.gl/i3s';
+import {GZipDecompressor} from '@loaders.gl/compression';
 import {afterEach, expect, test, vi} from 'vitest';
 import React, {act} from 'react';
 import {createRoot} from 'react-dom/client';
@@ -8,6 +10,7 @@ import {createArchiveSource} from '../examples/website/i3s-slpk/src/archive-sour
 import {
   inspectConversionInput,
   convertSelectedContents,
+  convertSelectedContentsToResources,
   CONVERSION_LIMITS
 } from '../examples/website/i3s-slpk/src/convert-tileset';
 import {createInput, setInputValue, readSettledControl} from './utils/tile-browser-conversion';
@@ -137,6 +140,10 @@ test.each([
   'slpk',
   '3tz'
 ])('conversion controls allow explicit multi-selection with %s', async format => {
+  await Promise.all([
+    preloadI3SMeshCompression(),
+    new GZipDecompressor({useNative: false}).preload()
+  ]);
   const {fetcher} = createInput(false, false, 'Y', true);
   vi.stubGlobal('showSaveFilePicker', vi.fn());
   vi.stubGlobal('fetch', fetcher);
@@ -236,4 +243,121 @@ vi.mock('../examples/website/i3s-slpk/src/conversion-worker-client', async impor
       );
     }
   };
+});
+
+test('nested metadata selections convert with declaring-document axes, relative URLs and ancestor placement', async () => {
+  const {createTriangle} = await import('./utils/tile-browser-conversion');
+  const {Matrix4} = await import('@math.gl/core');
+  const documents = {
+    'https://example.invalid/tileset.json': {
+      asset: {version: '1.1', gltfUpAxis: 'Y'},
+      root: {
+        boundingVolume: {region: [-0.001, -0.001, 0.001, 0.001, 0, 200]},
+        geometricError: 4,
+        transform: Array.from(new Matrix4().translate([6378137, 0, 0])),
+        children: [
+          {
+            boundingVolume: {sphere: [0, 0, 0, 10]},
+            geometricError: 2,
+            transform: Array.from(new Matrix4().translate([0, 5, 7])),
+            content: {uri: 'nested/tileset.json'}
+          }
+        ]
+      }
+    },
+    'https://example.invalid/nested/tileset.json': {
+      asset: {version: '1.1', gltfUpAxis: 'Z'},
+      root: {
+        boundingVolume: {sphere: [0, 0, 0, 10]},
+        geometricError: 0,
+        transform: Array.from(new Matrix4().translate([0, 2, 0])),
+        content: {uri: 'mesh.glb'}
+      }
+    }
+  };
+  const localFetch = globalThis.fetch.bind(globalThis);
+  const fetcher = vi.fn<typeof fetch>(async (input, options) => {
+    const url = String(input);
+    if (url in documents) return new Response(JSON.stringify(documents[url]));
+    if (url === 'https://example.invalid/nested/mesh.glb') return new Response(createTriangle());
+    const asset = new URL(url, window.location.href);
+    if (asset.origin === window.location.origin) return localFetch(input, options);
+    throw new Error(`Unexpected nested conversion request: ${url}`);
+  });
+  const controller = new AbortController();
+  const inspection = await inspectConversionInput(
+    'https://example.invalid/tileset.json',
+    controller.signal,
+    fetcher
+  );
+  expect(inspection.resources).toHaveLength(1);
+  expect(fetcher).toHaveBeenCalledTimes(2);
+  const original = structuredClone(inspection);
+  const result = await convertSelectedContents(
+    inspection,
+    [inspection.resources[0].resourceId],
+    '3tz',
+    controller.signal,
+    () => {},
+    fetcher
+  );
+  expect(inspection).toEqual(original);
+  expect(
+    fetcher.mock.calls
+      .filter(
+        call => new URL(String(call[0]), window.location.href).origin === 'https://example.invalid'
+      )
+      .map(call => String(call[0]))
+  ).toEqual([
+    'https://example.invalid/tileset.json',
+    'https://example.invalid/nested/tileset.json',
+    'https://example.invalid/nested/mesh.glb'
+  ]);
+  const source = createArchiveSource(result.file);
+  source.coreApi = {fetchFile, load, parse} as any;
+  const runtime = new Tileset3D(source, {loadOptions: {worker: false, gltf: {loadImages: false}}});
+  try {
+    await runtime.tilesetInitializationPromise;
+    expect(Array.from(runtime.root!.children[0].boundingVolume.center)).toEqual([
+      6378137.5, 7.5, 7
+    ]);
+  } finally {
+    runtime.destroy();
+  }
+});
+
+test('Finish finalizes the written mesh subset without fetching the next selected content', async () => {
+  const {fetcher, controller} = createInput(false, false, 'Y', true);
+  const inspection = await inspectConversionInput(
+    'https://example.invalid/tileset.json',
+    controller.signal,
+    fetcher
+  );
+  let finishRequested = false;
+  const snapshots: import('../examples/website/common/conversion-progress').ConversionProgressSnapshot[] =
+    [];
+  const output = await convertSelectedContentsToResources(
+    inspection,
+    [inspection.resources[1].resourceId, inspection.resources[2].resourceId],
+    '3tz',
+    controller.signal,
+    () => {},
+    fetcher,
+    undefined,
+    {
+      shouldFinish: () => finishRequested,
+      onProgress(progress) {
+        snapshots.push(progress);
+        if (progress.completedUnits === 1) finishRequested = true;
+      }
+    }
+  );
+  expect(output.partial).toBe(true);
+  expect(output.report.outputResources).toBe(1);
+  expect(snapshots.at(-1)).toMatchObject({phase: 'packaging', completedUnits: 1, totalUnits: null});
+  expect(fetcher.mock.calls.some(call => String(call[0]).endsWith('sibling.glb'))).toBe(false);
+  const metadata = JSON.parse(
+    await output.files.find(file => file.resourceId === 'tileset.json')!.blob.text()
+  );
+  expect(metadata.root.children).toHaveLength(1);
 });

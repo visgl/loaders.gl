@@ -233,3 +233,30 @@ test('LAS writer scales normalized float colors and preserves 16-bit colors', ()
     ]);
   }
 });
+
+test.each([
+  {value: new Uint8Array([0, 1, 255]), colorDepth: 8, expected: [0, 257, 65535]},
+  {value: new Uint16Array([0, 1, 255]), colorDepth: 16, expected: [0, 1, 255]},
+  {
+    value: new Float32Array([0.5, 1, 0]),
+    colorDepth: 8,
+    normalized: true,
+    expected: [32768, 65535, 0]
+  }
+])('LAS writer honors explicit source RGB depth $colorDepth', ({
+  value,
+  colorDepth,
+  normalized,
+  expected
+}) => {
+  const output = new DataView(
+    LASWriter.encodeSync(createMesh({COLOR_0: {value, size: 3, normalized: normalized ?? false}}), {
+      las: {colorDepth}
+    })
+  );
+  expect([247, 249, 251].map(offset => output.getUint16(offset, true))).toEqual(expected);
+});
+
+test('LAS writer rejects invalid source color depths', () => {
+  expect(() => LASWriter.encodeSync(createMesh(), {las: {colorDepth: 12}})).toThrow('color depth');
+});

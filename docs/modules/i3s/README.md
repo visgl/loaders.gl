@@ -87,3 +87,6 @@ MIT license, code is written for loaders.gl.
 
 [SLPKWriter](/docs/modules/i3s/api-reference/slpk-writer) packages already-authored, individually
 compressed I3S resources into portable indexed SLPK archives with a complete output-size budget.
+
+Call `await preloadI3SMeshCompression()` before the synchronous `encodeI3SMeshLayer()` helper.
+Async Draco encoding initializes its compress-utils GZIP backend automatically.

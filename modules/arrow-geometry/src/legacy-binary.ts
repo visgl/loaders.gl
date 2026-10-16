@@ -21,3 +21,4 @@ export {
   type FlatGeojsonToBinaryOptions
 } from './legacy-binary/convert-flat-geojson-to-binary-features';
 export {getGeometryInfo, type GeojsonGeometryInfo} from './legacy-binary/geometry-info';
+export {transformBinaryCoords, transformGeoJsonCoords} from './legacy-binary/transform-coordinates';

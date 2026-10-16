@@ -1,4 +1,14 @@
-# Tile archive viewer
+# Tile archive viewer and browser conversion
+
+Build workspace packages from the repository root with `yarn build` and `yarn build-workers`,
+then run `yarn workspace i3s-slpk-loaders-example start`. The standalone example resolves built
+workspace exports and their browser replacements; rebuild packages after library edits.
+
+Open `/conversion.html` for the compact conversion form or `/index.html` for the archive viewer.
+The same conversion app is embedded at `/examples/tiles/3d-tiles-conversion`, beside the
+[PMTiles conversion app](https://loaders.gl/examples/tiles/pmtiles-authoring). They share form styles and navigation.
+
+## Tile archive viewer
 
 Open an I3S Scene Layer Package (`.slpk`) or a 3D Tiles archive (`.3tz`) by dropping a file
 anywhere in the viewer, choosing a local file, or entering an HTTP(S) URL. For remote URLs
@@ -199,3 +209,20 @@ separate work.
 
 Conversion, packaging and direct file saving use the existing disposable worker and acknowledged
 streaming protocol. Cancel terminates the worker; failed conversion produces no completed archive.
+
+### Progress and partial completion
+
+The 3D converter and PMTiles authoring app share `examples/website/common/conversion-progress.tsx`.
+Stages, current mesh identity, completed mesh writes and elapsed time remain visible while settings
+are collapsed. Decoded mesh input bytes come from the v5 core; they are not wire-byte counters.
+Archive bytes count chunks acknowledged after a Blob snapshot or destination write. Counter updates
+are throttled while stage and mesh completion changes publish immediately. A content placement can
+contain several primitives, so the mesh total remains indeterminate until completion.
+
+**Finish & download** lets the in-flight mesh finish, closes the lazy source iterator before pulling
+another mesh, finalizes sink metadata and packages the written subset as SLPK or 3TZ. This also
+applies to direct file saving. It requires at least one completed mesh; it is disabled during
+packaging. It may preserve fewer primitives than the selected content contains. **Cancel** terminates
+the disposable worker and discards the export, aborting a pending destination before commit. Cancel
+is disabled once final file close starts. Late Finish messages during archive transfer do not consume
+or invalidate chunk acknowledgements. Use **Edit settings** after completion or cancellation.

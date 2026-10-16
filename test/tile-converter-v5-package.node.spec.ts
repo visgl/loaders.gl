@@ -9,12 +9,16 @@ test('tile-converter(v5)#package export resolves to its built CommonJS entrypoin
   const {
     createTilesetConversionSource,
     createMeshConversionCodec,
+    createMeshSourceFeatureOptions,
     createSingleMeshTilesetSink,
     createSingleMeshTilesetArchive,
     createTileConversionArchive,
     encodeMeshTile,
     convertPointCloudSource,
     convertPointCloudToTileset,
+    encodePotreeArchive,
+    openPointCloudFile,
+    extractMeshVertices,
     convertTileset,
     inspectTileset,
     validateTileset
@@ -25,8 +29,12 @@ test('tile-converter(v5)#package export resolves to its built CommonJS entrypoin
   expect(createTilesetConversionSource).toBeTypeOf('function');
   expect(convertPointCloudSource).toBeTypeOf('function');
   expect(convertPointCloudToTileset).toBeTypeOf('function');
+  expect(encodePotreeArchive).toBeTypeOf('function');
+  expect(openPointCloudFile).toBeTypeOf('function');
+  expect(extractMeshVertices).toBeTypeOf('function');
   expect(encodeMeshTile).toBeTypeOf('function');
   expect(createMeshConversionCodec).toBeTypeOf('function');
+  expect(createMeshSourceFeatureOptions).toBeTypeOf('function');
   expect(createSingleMeshTilesetSink).toBeTypeOf('function');
   expect(createSingleMeshTilesetArchive).toBeTypeOf('function');
   expect(createTileConversionArchive).toBeTypeOf('function');
@@ -39,12 +47,16 @@ test('tile-converter(v5)#browser package export resolves to its browser entrypoi
   const packagePath = require.resolve('@loaders.gl/tile-converter/v5/browser');
   const {
     createMeshConversionCodec,
+    createMeshSourceFeatureOptions,
     createSingleMeshTilesetSink,
     createSingleMeshTilesetArchive,
     createTileConversionArchive,
     encodeMeshTile,
     convertPointCloudSource,
     convertPointCloudToTileset,
+    encodePotreeArchive,
+    openPointCloudFile,
+    extractMeshVertices,
     createBoundedMemoryTileConversionSink,
     createBrowserTileConversionSource,
     createBrowserTilesetConversionSource,
@@ -55,8 +67,12 @@ test('tile-converter(v5)#browser package export resolves to its browser entrypoi
   expect(createBoundedMemoryTileConversionSink).toBeTypeOf('function');
   expect(convertPointCloudSource).toBeTypeOf('function');
   expect(convertPointCloudToTileset).toBeTypeOf('function');
+  expect(encodePotreeArchive).toBeTypeOf('function');
+  expect(openPointCloudFile).toBeTypeOf('function');
+  expect(extractMeshVertices).toBeTypeOf('function');
   expect(encodeMeshTile).toBeTypeOf('function');
   expect(createMeshConversionCodec).toBeTypeOf('function');
+  expect(createMeshSourceFeatureOptions).toBeTypeOf('function');
   expect(createSingleMeshTilesetSink).toBeTypeOf('function');
   expect(createSingleMeshTilesetArchive).toBeTypeOf('function');
   expect(createTileConversionArchive).toBeTypeOf('function');
@@ -93,6 +109,20 @@ test('tile-converter v5 built core and adapters share identities in ESM and Comm
       assert.equal(combined.encodePointCloudTileWithMetadata, formats.encodePointCloudTileWithMetadata);
       assert.equal(combined.createPointCloudTilesetSink, formats.createPointCloudTilesetSink);
       assert.equal(combined.convertPointCloudToTileset, formats.convertPointCloudToTileset);
+      for (const name of ['encodePotreeArchive', 'openPointCloudFile', 'extractMeshVertices', 'convertPointCloudToPotree']) assert.equal(combined[name], formats[name]);
+      const potree = await formats.convertPointCloudToPotree({
+        topology: 'point-list', mode: 0, schema: {fields: [], metadata: {}},
+        attributes: {POSITION: {value: new Float64Array([1, 2, 3]), size: 3}}
+      }, {projection: 'EPSG:4978', maxGatheredBytes: 1024, maxOutputBytes: 4096});
+      assert.equal(potree.pointCount, 1);
+      assert.equal(potree.nodeCount, 1);
+      assert.equal(potree.dataset.metadata.points, 1);
+      const pointArchive = await formats.encodePotreeArchive({
+        topology: 'point-list', mode: 0, schema: {fields: [], metadata: {}},
+        attributes: {POSITION: {value: new Float64Array([1, 2, 3]), size: 3}}
+      }, {maxArchiveBytes: 4096});
+      const openedPoints = await formats.openPointCloudFile(pointArchive, {format: 'potree-zip', maxFileBytes: 4096});
+      try { assert.equal((await openedPoints.source.getRootTile()).pointCount, 1); } finally { await openedPoints.close(); }
       const authoredPoints = await formats.convertPointCloudToTileset({
         topology: 'point-list', mode: 0, schema: {fields: [], metadata: {}},
         attributes: {POSITION: {value: new Float64Array([6378137.125, 0.25, 0.5]), size: 3}}
@@ -167,4 +197,28 @@ test('tile-converter core browser bundle excludes format adapters and Node APIs'
     true
   );
   expect(Object.keys(bundle.metafile!.inputs).some(path => path.includes('adapters'))).toBe(false);
+});
+
+test('built Node adapter shares the core error class without changing portable imports', () => {
+  const output = execFileSync(
+    process.execPath,
+    [
+      '--input-type=module',
+      '-e',
+      `
+    import assert from 'node:assert/strict';
+    import {createRequire} from 'node:module';
+    import * as core from '@loaders.gl/tile-converter/v5/core';
+    import * as node from '@loaders.gl/tile-converter/v5/node';
+    const require = createRequire(import.meta.url);
+    for (const [platform, portable] of [[node, core], [require('@loaders.gl/tile-converter/v5/node'), require('@loaders.gl/tile-converter/v5/core')]]) {
+      await assert.rejects(platform.createNodeTilesetConversionSource({input: 'unused', maxInputBytes: 0}), portable.TileConversionError);
+      assert.equal(portable.createNodeTilesetConversionSource, undefined);
+    }
+    console.log('Node entrypoint passed');
+  `
+    ],
+    {encoding: 'utf8'}
+  );
+  expect(output).toContain('Node entrypoint passed');
 });

@@ -58,7 +58,11 @@ import {
   type LASTypedExtraBytesAttribute
 } from '@loaders.gl/las';
 
-const VERSION = '1.0.0';
+import {normalizeCOPCProjectionDefinition} from './lib/copc-wkt';
+
+// __VERSION__ is injected by the package build.
+// @ts-ignore TS2304: Cannot find name '__VERSION__'.
+const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : 'latest';
 const COPC_PREFIX_CACHE_LENGTH = 65536;
 const COORDINATE_SYSTEM = {
   CARTESIAN: 'cartesian',
@@ -326,13 +330,24 @@ export class COPCTileSource
   protected _hierarchy: COPCHierarchy | null = null;
   protected _pageLoadPromises: Map<string, Promise<void>> = new Map();
   protected _closePromise: Promise<void> | null = null;
+  /** Invalidates cached and physical reads when the source closes. */
+  protected readonly _closeController = new AbortController();
   /** Bounds complete node fetches and worker decodes to control peak memory. */
   protected readonly _nodeDecodeSemaphore: AsyncSemaphore;
 
   constructor(data: string | Blob, options: COPCSourceLoaderOptions, coreApi?: CoreAPI) {
     super(data, options, COPCSourceLoader.defaultOptions, coreApi);
     this._readableFile = createCOPCReadableFile(data, this.url, this.fetch);
-    this._readRange = createCachedCOPCRangeReader(this._readableFile);
+    const readRange = createCachedCOPCRangeReader(this._readableFile);
+    this._readRange = async (begin, end, signal) => {
+      const readSignal = signal
+        ? AbortSignal.any([this._closeController.signal, signal])
+        : this._closeController.signal;
+      readSignal.throwIfAborted();
+      const bytes = await readRange(begin, end, readSignal);
+      readSignal.throwIfAborted();
+      return bytes;
+    };
     const decodeConcurrency =
       this.options.copc?.decodeConcurrency ?? this.loadOptions.core?.maxConcurrency ?? 3;
     if (!Number.isSafeInteger(decodeConcurrency) || decodeConcurrency < 1) {
@@ -347,8 +362,9 @@ export class COPCTileSource
     await this._initPromise;
   }
 
-  /** Release the underlying random-access file handle. */
+  /** Reject subsequent reads, cancel pending ranges and close the file once. */
   close(): Promise<void> {
+    this._closeController.abort(new Error('COPC source is closed'));
     this._closePromise ||= this._readableFile.close();
     return this._closePromise;
   }
@@ -619,6 +635,13 @@ export class COPCTileSource
 
   /** Load one complete COPC node, using the shared LAS worker pool when available. */
   async loadTileContent(tile: {id: string}, options: COPCTileContentLoadOptions = {}) {
+    this._closeController.signal.throwIfAborted();
+    options = {
+      ...options,
+      signal: options.signal
+        ? AbortSignal.any([this._closeController.signal, options.signal])
+        : this._closeController.signal
+    };
     const release = await this._nodeDecodeSemaphore.acquire(options.signal);
     try {
       throwIfCOPCLoadAborted(options.signal);
@@ -875,6 +898,7 @@ export class COPCTileSource
     let loadedPageCount = 0;
 
     while (pending.length > 0) {
+      this._closeController.signal.throwIfAborted();
       if (options.signal?.aborted) {
         throw new Error('COPC hierarchy loading was aborted');
       }
@@ -1202,6 +1226,7 @@ export class COPCTileSource
   }
 
   protected async getNodeById(tileId: string): Promise<COPCHierarchyNode | undefined> {
+    this._closeController.signal.throwIfAborted();
     await this.initialize();
 
     if (!this._hierarchy) {
@@ -1828,25 +1853,12 @@ function createProjection(projectionData?: ReadonlyCRSDefinition): Projection | 
 
   try {
     return projectionEngine.createProjection({
-      from: normalizeProjectionDefinition(projectionData),
+      from: normalizeCOPCProjectionDefinition(projectionData),
       to: 'WGS84'
     });
   } catch {
     return null;
   }
-}
-
-function normalizeProjectionDefinition(
-  projectionData: ReadonlyCRSDefinition
-): ReadonlyCRSDefinition {
-  if (typeof projectionData !== 'string') {
-    return projectionData;
-  }
-  const horizontalWktMatch =
-    projectionData.match(/(PROJCS\[[\s\S]*\])(?:,VERT_CS\[[\s\S]*\])\]$/) ||
-    projectionData.match(/(GEOGCS\[[\s\S]*\])(?:,VERT_CS\[[\s\S]*\])\]$/);
-
-  return horizontalWktMatch?.[1] || projectionData;
 }
 
 /** Return whether a LAS point format contains RGB channels. */

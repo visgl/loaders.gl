@@ -3,6 +3,7 @@ import {createInput, setInputValue, readSettledControl} from './utils/tile-brows
 import React, {act} from 'react';
 import {createRoot} from 'react-dom/client';
 import {ConversionPanel} from '../examples/website/i3s-slpk/src/components/conversion-panel';
+import TileConversionApp from '../examples/website/i3s-slpk/src/conversion-app';
 import {fetchFile, load, parse} from '@loaders.gl/core';
 import {Tileset3D, traverseTilesetContents} from '@loaders.gl/tiles';
 import {createArchiveSource} from '../examples/website/i3s-slpk/src/archive-source';
@@ -192,6 +193,8 @@ test('conversion controls require explicit selection, preview both outputs and r
         selection.dispatchEvent(new Event('change', {bubbles: true}));
       });
       const output = container.querySelector<HTMLSelectElement>('#conversion-format')!;
+      expect(output.form).toBeNull();
+      expect(container.querySelector<HTMLTextAreaElement>('#conversion-features')!.form).toBeNull();
       output.value = format;
       await act(async () => {
         output.dispatchEvent(new Event('change', {bubbles: true}));
@@ -206,6 +209,16 @@ test('conversion controls require explicit selection, preview both outputs and r
         .poll(() => readSettledControl(() => container.querySelector('a')?.download))
         .toBe(`selected-mesh.${format}`);
       const url = container.querySelector('a')!.href;
+      await act(async () => root.render(React.createElement(ConversionPanel)));
+      expect(container.querySelector('a')!.href).toBe(url);
+      expect(
+        Array.from(container.querySelectorAll('button')).some(
+          button => button.textContent === 'Preview generated archive'
+        )
+      ).toBe(false);
+      await act(async () =>
+        root.render(React.createElement(ConversionPanel, {onPreview: preview}))
+      );
       const previewButton = Array.from(container.querySelectorAll('button')).find(
         element => element.textContent === 'Preview generated archive'
       )!;
@@ -286,16 +299,14 @@ test('conversion controls ignore late inspection results after cancel and abort 
   }
 });
 
-test('conversion observes malformed root initialization before output setup can fail', async () => {
+test('conversion observes malformed root initialization before loading selected content', async () => {
   const {fetcher, controller} = createInput();
   const inspection = await inspectConversionInput(
     'https://example.invalid/tileset.json',
     controller.signal,
     fetcher
   );
-  // Both errors are deliberate: root normalization must be observed before validating output LOD.
   (inspection.tileset.root as any).boundingVolume = null;
-  (inspection.tileset.root as any).geometricError = -1;
   await expect(
     convertSelectedContent(
       inspection,
@@ -336,4 +347,27 @@ vi.mock('../examples/website/i3s-slpk/src/conversion-worker-client', async impor
       );
     }
   };
+});
+
+test('standalone 3D conversion controls fit the shared laptop and mobile layout', async () => {
+  vi.stubGlobal('IS_REACT_ACT_ENVIRONMENT', true);
+  const container = document.createElement('div');
+  container.style.width = '900px';
+  document.body.append(container);
+  const root = createRoot(container);
+  try {
+    await act(async () => root.render(React.createElement(TileConversionApp)));
+    const app = container.querySelector('section')!;
+    const steps = container.querySelector('[aria-label="Conversion steps"]')!;
+    expect(app.getAttribute('aria-label')).toBe('Convert 3D tiles');
+    expect(getComputedStyle(steps).gridTemplateColumns.split(' ')).toHaveLength(3);
+    expect(app.getBoundingClientRect().height).toBeLessThanOrEqual(550);
+    expect(container.querySelector('details')!.open).toBe(false);
+    container.style.width = '360px';
+    expect(getComputedStyle(steps).gridTemplateColumns.split(' ')).toHaveLength(1);
+    expect(app.scrollWidth).toBeLessThanOrEqual(360);
+  } finally {
+    await act(async () => root.unmount());
+    container.remove();
+  }
 });

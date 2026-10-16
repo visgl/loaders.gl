@@ -114,7 +114,10 @@ test('OGCAPIFeaturesSource handles a collection URL', async () => {
 
 test('OGCAPITilesSource#getTileURL expands OGC templates', () => {
   const source = OGCAPITilesSourceLoader.createDataSource(OGC_API_URL, {
-    'ogc-api': {tileTemplate: `${OGC_API_URL}/tiles/{tileMatrix}/{tileRow}/{tileCol}.png`}
+    'ogc-api': {
+      tileTemplate: `${OGC_API_URL}/tiles/{tileMatrix}/{tileRow}/{tileCol}.png`,
+      discoverTileMatrixSet: false
+    }
   });
   expect(source.getTileURL({z: 3, x: 4, y: 5})).toBe(`${OGC_API_URL}/tiles/3/5/4.png`);
 });

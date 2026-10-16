@@ -7,6 +7,8 @@
 import {ImageType} from '@loaders.gl/images';
 import type {GLTF} from './gltf-json-schema';
 import type {GLTFGaussianSplatPrimitive} from './gltf-ext-gaussian-splatting-schema';
+import type {GLTFSpatialAudio} from './gltf-mpeg-audio-spatial-schema';
+import type {GLTFAudioClip, GLTFAudioEmitter} from './gltf-khr-audio-emitter-schema';
 
 /** GLTFLoader removes processed extensions from `extensionsUsed` and `extensionsUsed`
  * `processedExtensions` is used to track those extensions
@@ -22,6 +24,12 @@ export type GLTFWithBuffers = {
   externalAssets?: Array<GLTFWithBuffers | null>;
   /** Normalized Gaussian splat primitives discovered by KHR_gaussian_splatting. */
   gaussianSplatPrimitives?: GLTFGaussianSplatPrimitive[];
+  /** Root and node MPEG spatial audio declarations for an application audio renderer. */
+  spatialAudio?: GLTFSpatialAudio[];
+  /** Encoded KHR audio clips, parallel to the extension's audio array. */
+  audioClips?: GLTFAudioClip[];
+  /** KHR emitter instances with resolved source and clip references. */
+  audioEmitters?: GLTFAudioEmitter[];
 };
 
 export type GLTFExternalBuffer = {
