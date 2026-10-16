@@ -44,11 +44,11 @@ import {GeoPackageDocsTabs} from '@site/src/components/docs/geopackage-docs-tabs
   tone="yellow"
 />
 
-`GeoPackageSource` is a GeoPackage-specific source that exposes table metadata and one-table Arrow loads.
+`GeoPackageSource` is implemented in `@loaders.gl/geospatial/geopackage/index` and remains available through the `@loaders.gl/geopackage` compatibility package. It is a GeoPackage-specific source that exposes table metadata and one-table Arrow loads.
 
 ```typescript
 import {createDataSource} from '@loaders.gl/core';
-import {GeoPackageSource} from '@loaders.gl/geopackage';
+import {GeoPackageSource} from '@loaders.gl/geospatial/geopackage/index';
 
 const dataSource = createDataSource(url, [GeoPackageSource], {geopackage: {}});
 const metadata = await dataSource.getMetadata();
@@ -72,7 +72,25 @@ The grid uses `gpkg_tile_matrix_set` for its upper-left origin and extent, and `
 | Tile-table discovery and normalized grids | Supported |
 | Independent horizontal/vertical pixel sizes | Supported |
 | Raster-only and mixed packages | Supported |
-| Tile payload reads/decoding | Not provided by this source |
-| Sparse per-tile availability discovery | Not provided; metadata does not scan tile rows |
+| Encoded tile payload reads | Supported through `getTile()`; decoding is application controlled |
+| Sparse point lookup | Missing rows return `null`; metadata does not scan tile rows |
 
 `bounds` describes the matrix set, not a derived extent from stored tile rows or vector content. Tile-table metadata does not imply every tile position is populated. See [Tile matrices and tile matrix sets](/docs/developer-guide/tile-matrices) and the [GeoPackage tile matrix specification](https://www.geopackage.org/spec/#tile_matrix).
+
+## Encoded tile payloads
+
+Call `getTile(tableName, parameters, {maxBytes?})` with an explicit tile-table name. It returns an owned `ArrayBuffer` containing the stored PNG, JPEG, or other encoded bytes, or `null` for a missing row or an out-of-grid integer position. The vector default-table option does not select a tile table.
+
+`parameters` contains `z`, `x` (column), `y` (top-down row), optional `tileMatrix`, and optional `signal`. An explicit matrix ID is matched exactly. Otherwise `z` first matches a native zoom ID and then a level index. Unknown levels and noninteger coordinates throw.
+
+`maxBytes` defaults to 16 MiB and must be a nonnegative safe integer. Oversized or non-BLOB payloads throw. SQLite checks the encoded length before returning the BLOB. Each read opens and closes a database over cached file bytes; this API loads the whole package and does not provide HTTP range access to SQLite. Cancellation is checked before initialization and before the synchronous lookup; it does not interrupt shared metadata/file loading or a running SQLite statement.
+
+```typescript
+const tileTable = metadata.tileTables[0];
+const bytes = await dataSource.getTile(
+  tileTable.name,
+  {z: 0, tileMatrix: tileTable.tileGrid.matrixIds![0], x: 0, y: 0},
+  {maxBytes: 8 * 1024 * 1024}
+);
+// null means this position has no stored tile. Decode non-null bytes as needed.
+```

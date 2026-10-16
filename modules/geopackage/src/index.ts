@@ -7,6 +7,7 @@ export type {GeoPackageLoaderOptions} from '@loaders.gl/geospatial/geopackage/in
 export {GeoPackageLoader} from '@loaders.gl/geospatial/geopackage/index';
 export {GeoPackageSource, GeoPackageDataSource} from '@loaders.gl/geospatial/geopackage/index';
 export type {
+  GeoPackageTileReadOptions,
   GeoPackageSourceOptions,
   GeoPackageSourceMetadata,
   GeoPackageSourceTableMetadata

@@ -93,3 +93,9 @@ A source can expose a projected matrix set even when the consuming renderer expe
 WMTS and OGC API Tiles share this model. ArcGIS exposes partial per-level grids, while GeoPackage tile-table metadata can expose complete geometry with independent horizontal and vertical pixel sizes. Other formats may expose partial native grid metadata; consult their support tables rather than assuming every tile source supplies a complete `tileMatrixSet`. 3D spatial trees and arbitrary multidimensional arrays are not automatically two-dimensional tile matrices.
 
 See [WMTS](/docs/modules/wms/formats/wmts), [OGC API Tiles](/docs/modules/wms/services/ogc-api), and [CRS and tile grids](/docs/modules/wms/api-reference/crs-and-tile-grids). Standards: [OGC TileMatrixSet 2.0](https://docs.ogc.org/is/17-083r4/17-083r4.html) and [OGC API Tiles](https://docs.ogc.org/is/20-057/20-057.html).
+
+## GeoPackage payloads and GeoTIFF storage tiles
+
+GeoPackage sources expose explicit-table `getTile()` lookups for bounded encoded payloads. Missing rows return `null`; matrix geometry does not imply that every position is populated. See [GeoPackageSource](/docs/modules/geopackage/api-reference/geopackage-source).
+
+GeoTIFF/COG raster sources expose optional `tileGrid` metadata for representable tiled overview hierarchies. Native IFD identifiers, unequal pixel sizes, and padded edge tiles are preserved. Stripped or rotated hierarchies retain their native raster APIs without an invented tile matrix. See [GeoTIFFSourceLoader](/docs/modules/geotiff/api-reference/geotiff-source-loader).
