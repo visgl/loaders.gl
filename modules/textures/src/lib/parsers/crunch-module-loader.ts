@@ -38,7 +38,13 @@ async function loadCrunch(options: LoadLibraryOptions): Promise<any> {
     return crunchModule;
   }
 
-  let loadCrunchDecoder = await loadLibrary(CRUNCH_EXTERNAL_LIBRARIES.DECODER, 'textures', options);
+  let loadCrunchDecoder = await loadLibrary(
+    CRUNCH_EXTERNAL_LIBRARIES.DECODER,
+    'textures',
+    options,
+    null,
+    'crunch.mjs'
+  );
 
   // Depends on how import happened...
   // @ts-ignore TS2339: Property does not exist on type

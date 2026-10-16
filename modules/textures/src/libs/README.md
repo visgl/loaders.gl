@@ -21,6 +21,11 @@ The runtime artifacts were copied without modification from:
 The transcoder is the runtime dependency for both `.basis` and KTX2 decoding. The encoder is
 loaded independently and only by `KTX2BasisWriter`.
 
+The build generates `.mjs` adapters in `dist/libs` with explicit default factory exports for
+module workers. The audited classic Basis assets remain unchanged. The Crunch adapter also
+replaces its old `window = this` shim with a module-local `window` binding to `globalThis`.
+No adapter evaluates fetched source or installs factory globals.
+
 ## License
 
 Basis Universal is licensed under Apache License 2.0. See [BASIS-LICENSE](./BASIS-LICENSE) and

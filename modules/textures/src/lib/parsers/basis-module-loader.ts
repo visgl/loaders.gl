@@ -44,7 +44,13 @@ async function loadBasisTranscoder(options: LoadLibraryOptions) {
   let wasmBinary = null;
 
   [BASIS, wasmBinary] = await Promise.all([
-    await loadLibrary(BASIS_EXTERNAL_LIBRARIES.TRANSCODER, 'textures', options),
+    await loadLibrary(
+      BASIS_EXTERNAL_LIBRARIES.TRANSCODER,
+      'textures',
+      options,
+      null,
+      'basis_transcoder.mjs'
+    ),
     await loadLibrary(BASIS_EXTERNAL_LIBRARIES.TRANSCODER_WASM, 'textures', options)
   ]);
 
@@ -117,7 +123,13 @@ async function loadBasisEncoder(options: LoadLibraryOptions) {
   let wasmBinary = null;
 
   [BASIS_ENCODER, wasmBinary] = await Promise.all([
-    await loadLibrary(BASIS_EXTERNAL_LIBRARIES.ENCODER, 'textures', options),
+    await loadLibrary(
+      BASIS_EXTERNAL_LIBRARIES.ENCODER,
+      'textures',
+      options,
+      null,
+      'basis_encoder.mjs'
+    ),
     await loadLibrary(BASIS_EXTERNAL_LIBRARIES.ENCODER_WASM, 'textures', options)
   ]);
 

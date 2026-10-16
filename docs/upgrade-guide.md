@@ -88,6 +88,16 @@ v4.5 is additive. Existing loaders and defaults continue to work unchanged, exce
 
 The sections below document the v5 removals, migrations, and deprecations that remain active.
 
+### Module-worker decoder wrappers
+
+Module workers no longer evaluate fetched classic JavaScript to install decoder globals.
+Custom decoder URL overrides must provide ESM default factory exports (Draco also accepts named
+factory exports). Built-in
+Draco, Basis, and Crunch wrappers have generated `.mjs` adapters; custom CDNs must serve
+these additional assets. Classic-worker `importScripts()` behavior is unchanged. See
+[decoder library loading](/docs/modules/worker-utils#loading-decoder-libraries) for overrides
+and content-security-policy limitations.
+
 ### Explicit reference compression backends
 
 `@loaders.gl/compression` no longer automatically installs `brotli`, `fzstd`, `hysnappy`,
@@ -121,7 +131,6 @@ The explicit `@loaders.gl/arrow/types` facade exposes Apache Arrow names availab
 in the supported minimum release, Arrow 17. Import version-specific names such
 as `Utf8View`, `BinaryView`, `LargeList`, compression helpers, and newer type
 guards directly from your installed `apache-arrow` package.
-
 
 ### Graph loader output defaults
 
