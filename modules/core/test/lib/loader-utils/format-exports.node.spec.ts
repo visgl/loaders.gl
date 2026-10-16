@@ -61,7 +61,7 @@ const FORMAT_EXPORTS = {
   lerc: ['LERCFormat'],
   mlt: ['MLTFormat'],
   mvt: ['TileJSONFormat', 'MapStyleFormat', 'MVTFormat'],
-  netcdf: ['NetCDFFormat'],
+  scientific: ['NetCDFFormat'],
   obj: ['OBJFormat', 'MTLFormat'],
   parquet: ['ParquetFormat'],
   pcd: ['PCDFormat'],

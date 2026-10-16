@@ -31,7 +31,7 @@ import {LASFormat} from '@loaders.gl/las';
 import {LERCFormat} from '@loaders.gl/lerc';
 import {MLTFormat} from '@loaders.gl/mlt';
 import {MapStyleFormat, MVTFormat, TileJSONFormat} from '@loaders.gl/mvt';
-import {NetCDFFormat} from '@loaders.gl/netcdf';
+import {NetCDFFormat} from '@loaders.gl/scientific/netcdf';
 import {MTLFormat, OBJFormat} from '@loaders.gl/obj';
 import {ParquetFormat} from '@loaders.gl/parquet';
 import {PCDFormat} from '@loaders.gl/pcd';

@@ -24,6 +24,7 @@ const browserSummary = readJsonFile(browserSummaryPath);
 const mergedSummary = readJsonFile(mergedSummaryPath);
 const publishedPackages = findPublishedPackages();
 const results = [];
+const formatResults = [];
 const violations = [];
 
 checkCoverageSummaryFreshness('browser', browserSummary, violations);
@@ -81,6 +82,17 @@ for (const publishedPackage of publishedPackages) {
     packageThresholds.merged,
     violations
   );
+  for (const [formatName, formatThresholds] of Object.entries(packageThresholds.formatThresholds || {})) {
+    const formatCoverageByKind = {
+      browser: aggregatePackageCoverage(browserSummary, formatThresholds.sourcePaths),
+      merged: aggregatePackageCoverage(mergedSummary, formatThresholds.sourcePaths)
+    };
+    for (const coverageKind of ['browser', 'merged']) {
+      checkCoveragePresence(`${publishedPackage.name}/${formatName}`, coverageKind, formatCoverageByKind[coverageKind], violations);
+      checkThresholds(`${publishedPackage.name}/${formatName}`, coverageKind, formatCoverageByKind[coverageKind], formatThresholds[coverageKind], violations);
+    }
+    formatResults.push({name: `${publishedPackage.name}/${formatName}`, ...formatCoverageByKind, thresholds: formatThresholds});
+  }
   results.push({
     name: publishedPackage.name,
     path: publishedPackage.path,
@@ -117,6 +129,7 @@ const report = {
   ).length,
   packageCount: results.length,
   results,
+  formatResults,
   violations
 };
 fs.mkdirSync(path.dirname(outputPath), {recursive: true});

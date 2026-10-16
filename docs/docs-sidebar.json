@@ -64,7 +64,7 @@
       "modules/mvt/formats/map-style",
       "modules/mlt/formats/mlt",
       "modules/mvt/formats/mvt",
-      "modules/netcdf/formats/netcdf",
+      "modules/scientific/netcdf/formats/netcdf",
       "modules/obj/formats/obj",
       "modules/orc/formats/orc",
       "modules/wms/formats/ows-context",
@@ -84,7 +84,7 @@
       "modules/wkt/formats/wkt",
       "modules/wkt/formats/wkt-crs",
       "modules/xml/formats/xml",
-      "modules/zarr/formats/zarr",
+      "modules/scientific/zarr/formats/zarr",
       "modules/zip/formats/zip"
     ]
   },
@@ -240,10 +240,10 @@
           "modules/flatgeobuf/api-reference/flatgeobuf-source-loader",
           "modules/geopackage/api-reference/geopackage-source",
           "modules/geotiff/api-reference/geotiff-source-loader",
-          "modules/zarr/api-reference/geo-zarr-source-loader",
+          "modules/scientific/zarr/api-reference/geo-zarr-source-loader",
           "modules/tiles/api-reference/i3s-source",
           "modules/geotiff/api-reference/ometiff-source-loader",
-          "modules/zarr/api-reference/ome-zarr-source-loader",
+          "modules/scientific/zarr/api-reference/ome-zarr-source-loader",
           "modules/parquet/api-reference/delta-table-source",
           "modules/parquet/api-reference/iceberg-table-source",
           "modules/parquet/api-reference/parquet-source-loader",
@@ -556,13 +556,6 @@
       },
       {
         "type": "category",
-        "label": "@loaders.gl/netcdf",
-        "items": [
-          "modules/netcdf/api-reference/README"
-        ]
-      },
-      {
-        "type": "category",
         "label": "@loaders.gl/mlt",
         "items": [
           "modules/mlt/README"
@@ -753,11 +746,24 @@
       },
       {
         "type": "category",
-        "label": "@loaders.gl/zarr",
+        "label": "@loaders.gl/scientific",
         "items": [
-          "modules/zarr/README",
-          "modules/zarr/api-reference/geo-zarr-source-loader",
-          "modules/zarr/api-reference/ome-zarr-source-loader"
+          {
+            "type": "category",
+            "label": "NetCDF",
+            "items": [
+              "modules/scientific/netcdf/api-reference/README"
+            ]
+          },
+          {
+            "type": "category",
+            "label": "Zarr",
+            "items": [
+              "modules/scientific/zarr/README",
+              "modules/scientific/zarr/api-reference/geo-zarr-source-loader",
+              "modules/scientific/zarr/api-reference/ome-zarr-source-loader"
+            ]
+          }
         ]
       }
     ]
