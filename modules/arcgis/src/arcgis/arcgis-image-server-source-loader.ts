@@ -19,8 +19,8 @@ import type {
   GetImageParameters
 } from '@loaders.gl/loader-utils';
 import {DataSource} from '@loaders.gl/loader-utils';
-import type {LERCData} from '@loaders.gl/lerc';
-import {LERCLoader} from '@loaders.gl/lerc';
+import type {LERCData} from '@loaders.gl/raster';
+import {LERCLoader} from '@loaders.gl/raster';
 import {buildArcGISResourceURL} from './arcgis-url-utils';
 
 /** Runtime service loader for synchronous construction. */

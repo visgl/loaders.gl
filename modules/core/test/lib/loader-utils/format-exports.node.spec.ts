@@ -43,7 +43,7 @@ const FORMAT_EXPORTS = {
   excel: ['ExcelFormat'],
   flatgeobuf: ['FlatGeobufFormat'],
   geopackage: ['GeoPackageFormat'],
-  geotiff: ['GeoTIFFFormat', 'OMETiffFormat'],
+  raster: ['GeoTIFFFormat', 'OMETiffFormat', 'LERCFormat', 'TerrainFormat', 'QuantizedMeshFormat'],
   gltf: ['GLTFFormat', 'GLBFormat'],
   i3s: [
     'ArcGISWebSceneFormat',
@@ -58,7 +58,6 @@ const FORMAT_EXPORTS = {
   json: ['JSONFormat', 'GeoJSONFormat', 'NDJSONFormat', 'NDGeoJSONFormat'],
   kml: ['KMLFormat', 'KMZFormat', 'GPXFormat', 'TCXFormat'],
   las: ['LASFormat'],
-  lerc: ['LERCFormat'],
   mlt: ['MLTFormat'],
   mvt: ['TileJSONFormat', 'MapStyleFormat', 'MVTFormat'],
   netcdf: ['NetCDFFormat'],
@@ -69,7 +68,6 @@ const FORMAT_EXPORTS = {
   pmtiles: ['PMTilesFormat'],
   potree: ['PotreeFormat', 'PotreeHierarchyChunkFormat', 'PotreeBinFormat'],
   shapefile: ['ShapefileFormat', 'SHPFormat', 'DBFFormat'],
-  terrain: ['TerrainFormat', 'QuantizedMeshFormat'],
   textures: [
     'BasisTextureFormat',
     'CompressedTextureFormat',

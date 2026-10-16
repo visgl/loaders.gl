@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 // SPDX-FileCopyrightText: Copyright (c) vis.gl contributors
 
-import {GeoTIFFRasterSource} from '@loaders.gl/geotiff';
+import {GeoTIFFRasterSource} from '@loaders.gl/raster/geotiff/index';
 import {RangeRequestScheduler} from '@loaders.gl/loader-utils';
 import {createRegionExample} from './index.ts';
 import type {RasterRegionParameters} from '@loaders.gl/loader-utils';

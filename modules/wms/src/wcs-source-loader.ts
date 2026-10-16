@@ -2,8 +2,8 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import type {LERCData} from '@loaders.gl/lerc';
-import {LERCLoader} from '@loaders.gl/lerc';
+import type {LERCData} from '@loaders.gl/raster';
+import {LERCLoader} from '@loaders.gl/raster';
 import type {CoreAPI, DataSourceOptions, SourceLoader} from '@loaders.gl/loader-utils';
 import {DataSource} from '@loaders.gl/loader-utils';
 import type {WCSCapabilities} from './wip/lib/wcs/parse-wcs-capabilities';

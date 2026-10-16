@@ -13,7 +13,7 @@ import {CSVFormat} from '@loaders.gl/csv';
 import {DracoFormat} from '@loaders.gl/draco';
 import {ExcelFormat} from '@loaders.gl/excel';
 import {GeoPackageFormat} from '@loaders.gl/geopackage';
-import {GeoTIFFFormat, OMETiffFormat} from '@loaders.gl/geotiff';
+import {GeoTIFFFormat, OMETiffFormat} from '@loaders.gl/raster';
 import {GLBFormat, GLTFFormat} from '@loaders.gl/gltf';
 import {
   ArcGISWebSceneFormat,
@@ -28,7 +28,7 @@ import {ImageBitmapFormat, ImageFormat} from '@loaders.gl/images';
 import {GeoJSONFormat, JSONFormat, NDGeoJSONFormat, NDJSONFormat} from '@loaders.gl/json';
 import {GPXFormat, KMLFormat, KMZFormat, TCXFormat} from '@loaders.gl/kml';
 import {LASFormat} from '@loaders.gl/las';
-import {LERCFormat} from '@loaders.gl/lerc';
+import {LERCFormat} from '@loaders.gl/raster';
 import {MLTFormat} from '@loaders.gl/mlt';
 import {MapStyleFormat, MVTFormat, TileJSONFormat} from '@loaders.gl/mvt';
 import {NetCDFFormat} from '@loaders.gl/netcdf';
@@ -38,7 +38,7 @@ import {PCDFormat} from '@loaders.gl/pcd';
 import {PMTilesFormat} from '@loaders.gl/pmtiles';
 import {PotreeBinFormat, PotreeFormat, PotreeHierarchyChunkFormat} from '@loaders.gl/potree';
 import {DBFFormat, SHPFormat, ShapefileFormat} from '@loaders.gl/shapefile';
-import {QuantizedMeshFormat, TerrainFormat} from '@loaders.gl/terrain';
+import {QuantizedMeshFormat, TerrainFormat} from '@loaders.gl/raster';
 import {
   BasisTextureFormat,
   CompressedTextureFormat,

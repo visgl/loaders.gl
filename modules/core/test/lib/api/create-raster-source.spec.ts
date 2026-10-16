@@ -10,12 +10,12 @@ import {
   GeoTIFFSourceLoader,
   OMETiffImageSource,
   OMETiffSourceLoader
-} from '@loaders.gl/geotiff';
+} from '@loaders.gl/raster/geotiff/index';
 import {createRangeStats, RangeRequestScheduler} from '@loaders.gl/loader-utils';
 import {flushMicrotasks} from '@loaders.gl/test-utils/vitest';
 
-const TIFF_URL = resolvePath('@loaders.gl/geotiff/test/data/gfw-azores.tif');
-const OME_TIFF_URL = resolvePath('@loaders.gl/geotiff/test/data/multi-channel.ome.tif');
+const TIFF_URL = resolvePath('@loaders.gl/raster/test/geotiff/data/gfw-azores.tif');
+const OME_TIFF_URL = resolvePath('@loaders.gl/raster/test/geotiff/data/multi-channel.ome.tif');
 
 function createViewport(bounds: [[number, number], [number, number]], crs?: string) {
   const [[minX, minY], [maxX, maxY]] = bounds;

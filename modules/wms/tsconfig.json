@@ -1,18 +1,34 @@
 {
   "extends": "../../tsconfig.json",
-  "include": ["src/**/*"],
-  "exclude": ["node_modules"],
+  "include": [
+    "src/**/*"
+  ],
+  "exclude": [
+    "node_modules"
+  ],
   "compilerOptions": {
     "composite": true,
     "rootDir": "src",
     "outDir": "dist"
   },
   "references": [
-    {"path": "../arrow-geometry"},
-    {"path": "../xml"},
-    {"path": "../images"},
-    {"path": "../loader-utils"},
-    {"path": "../schema"}
-    ,{"path": "../lerc"}
+    {
+      "path": "../arrow-geometry"
+    },
+    {
+      "path": "../xml"
+    },
+    {
+      "path": "../images"
+    },
+    {
+      "path": "../loader-utils"
+    },
+    {
+      "path": "../schema"
+    },
+    {
+      "path": "../raster"
+    }
   ]
 }

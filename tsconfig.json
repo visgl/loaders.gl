@@ -1,4 +1,3 @@
-// This is a base TS config for the entire mono repo, mainly for linting
 {
   "ts-node": {
     "transpileOnly": true
@@ -16,58 +15,150 @@
     "resolveJsonModule": true,
     "skipLibCheck": true,
     "noUnusedLocals": true,
-    "types": ["node"],
+    "types": [
+      "node"
+    ],
     "ignoreDeprecations": "6.0",
-    // This must be specified if "paths" is.
     "baseUrl": ".",
     "paths": {
-      "@loaders.gl/csv/csv-loader": ["modules/csv/src/csv-loader-entry"],
-      "@loaders.gl/kml/kml-loader": ["modules/kml/src/kml-loader-entry"],
-      "@loaders.gl/kml/gpx-loader": ["modules/kml/src/gpx-loader-entry"],
-      "@loaders.gl/kml/tcx-loader": ["modules/kml/src/tcx-loader-entry"],
-      "@loaders.gl/shapefile/shapefile-loader": ["modules/shapefile/src/shapefile-loader-entry"],
-      "@loaders.gl/shapefile/shp-loader": ["modules/shapefile/src/shp-loader-entry"],
-      "@loaders.gl/shapefile/dbf-loader": ["modules/shapefile/src/dbf-loader-entry"],
-      "@loaders.gl/tables": ["modules/tables/src"],
-      "@loaders.gl/tables/csv": ["modules/tables/src/csv"],
-      "@loaders.gl/tables/avro": ["modules/tables/src/avro"],
-      "@loaders.gl/tables/avro-schema": ["modules/tables/src/avro-schema"],
-      "@loaders.gl/tables/bson": ["modules/tables/src/bson"],
-      "@loaders.gl/tables/excel": ["modules/tables/src/excel"],
-      "@loaders.gl/tables/arrow": ["modules/tables/src/arrow"],
-      "@loaders.gl/tables/json": ["modules/tables/src/json"],
-      "@loaders.gl/tables/lance": ["modules/tables/src/lance"],
-      "@loaders.gl/tables/orc": ["modules/tables/src/orc"],
-      "@loaders.gl/tables/parquet": ["modules/tables/src/parquet"],
-      "@loaders.gl/tables/*": ["modules/tables/src/*"],
-      "@loaders.gl/geospatial": ["modules/geospatial/src"],
-      "@loaders.gl/geospatial/kml": ["modules/geospatial/src/kml"],
-      "@loaders.gl/geospatial/gpx": ["modules/geospatial/src/gpx"],
-      "@loaders.gl/geospatial/tcx": ["modules/geospatial/src/tcx"],
-      "@loaders.gl/geospatial/kmz": ["modules/geospatial/src/kmz"],
-      "@loaders.gl/geospatial/shapefile": ["modules/geospatial/src/shapefile"],
-      "@loaders.gl/geospatial/shp": ["modules/geospatial/src/shp"],
-      "@loaders.gl/geospatial/dbf": ["modules/geospatial/src/dbf"],
-      "@loaders.gl/geospatial/flatgeobuf": ["modules/geospatial/src/flatgeobuf"],
-      "@loaders.gl/geospatial/geopackage": ["modules/geospatial/src/geopackage"],
-      "@loaders.gl/geospatial/*": ["modules/geospatial/src/*"],
-      "@loaders.gl/graphs/dot-loader": ["modules/graphs/src/dot-loader"],
-      "@loaders.gl/graphs": ["modules/graphs/src"],
-      "@loaders.gl/graphs/graphml-loader": ["modules/graphs/src/graphml-loader"],
-      "@loaders.gl/graphs/gexf-loader": ["modules/graphs/src/gexf-loader"],
-      "@loaders.gl/arcgis": ["modules/arcgis/src"],
-      "@loaders.gl/arcgis/items": ["modules/arcgis/src/arcgis-items"],
-      "@loaders.gl/arcgis/authentication": ["modules/arcgis/src/authentication"],
-      "@loaders.gl/arcgis/discovery": ["modules/arcgis/src/arcgis/arcgis-capability-graph"],
-      "@loaders.gl/arcgis/scene-aggregation": ["modules/arcgis/src/arcgis/arcgis-scene-aggregation"],
-      "@loaders.gl/arcgis/bundled": ["modules/arcgis/src/bundled"],
-      "@loaders.gl/arcgis/arcgis-feature-server-source-loader": ["modules/arcgis/src/arcgis/arcgis-feature-server-source-loader"],
-      "@loaders.gl/arcgis/arcgis-image-server-source-loader": ["modules/arcgis/src/arcgis/arcgis-image-server-source-loader"],
-      "@loaders.gl/arcgis/arcgis-image-tile-source-loader": ["modules/arcgis/src/arcgis/arcgis-image-tile-source-loader"],
-      "@loaders.gl/arcgis/arcgis-map-tile-source-loader": ["modules/arcgis/src/arcgis/arcgis-map-tile-source-loader"],
-      "@loaders.gl/arcgis/arcgis-scene-server-source-loader": ["modules/arcgis/src/arcgis/arcgis-scene-server-source-loader"],
-      "@loaders.gl/arcgis/arcgis-vector-tile-server-source-loader": ["modules/arcgis/src/arcgis/arcgis-vector-tile-server-source-loader"],
-      // Supoort modules
+      "@loaders.gl/csv/csv-loader": [
+        "modules/csv/src/csv-loader-entry"
+      ],
+      "@loaders.gl/kml/kml-loader": [
+        "modules/kml/src/kml-loader-entry"
+      ],
+      "@loaders.gl/kml/gpx-loader": [
+        "modules/kml/src/gpx-loader-entry"
+      ],
+      "@loaders.gl/kml/tcx-loader": [
+        "modules/kml/src/tcx-loader-entry"
+      ],
+      "@loaders.gl/shapefile/shapefile-loader": [
+        "modules/shapefile/src/shapefile-loader-entry"
+      ],
+      "@loaders.gl/shapefile/shp-loader": [
+        "modules/shapefile/src/shp-loader-entry"
+      ],
+      "@loaders.gl/shapefile/dbf-loader": [
+        "modules/shapefile/src/dbf-loader-entry"
+      ],
+      "@loaders.gl/tables": [
+        "modules/tables/src"
+      ],
+      "@loaders.gl/tables/csv": [
+        "modules/tables/src/csv"
+      ],
+      "@loaders.gl/tables/avro": [
+        "modules/tables/src/avro"
+      ],
+      "@loaders.gl/tables/avro-schema": [
+        "modules/tables/src/avro-schema"
+      ],
+      "@loaders.gl/tables/bson": [
+        "modules/tables/src/bson"
+      ],
+      "@loaders.gl/tables/excel": [
+        "modules/tables/src/excel"
+      ],
+      "@loaders.gl/tables/arrow": [
+        "modules/tables/src/arrow"
+      ],
+      "@loaders.gl/tables/json": [
+        "modules/tables/src/json"
+      ],
+      "@loaders.gl/tables/lance": [
+        "modules/tables/src/lance"
+      ],
+      "@loaders.gl/tables/orc": [
+        "modules/tables/src/orc"
+      ],
+      "@loaders.gl/tables/parquet": [
+        "modules/tables/src/parquet"
+      ],
+      "@loaders.gl/tables/*": [
+        "modules/tables/src/*"
+      ],
+      "@loaders.gl/geospatial": [
+        "modules/geospatial/src"
+      ],
+      "@loaders.gl/geospatial/kml": [
+        "modules/geospatial/src/kml"
+      ],
+      "@loaders.gl/geospatial/gpx": [
+        "modules/geospatial/src/gpx"
+      ],
+      "@loaders.gl/geospatial/tcx": [
+        "modules/geospatial/src/tcx"
+      ],
+      "@loaders.gl/geospatial/kmz": [
+        "modules/geospatial/src/kmz"
+      ],
+      "@loaders.gl/geospatial/shapefile": [
+        "modules/geospatial/src/shapefile"
+      ],
+      "@loaders.gl/geospatial/shp": [
+        "modules/geospatial/src/shp"
+      ],
+      "@loaders.gl/geospatial/dbf": [
+        "modules/geospatial/src/dbf"
+      ],
+      "@loaders.gl/geospatial/flatgeobuf": [
+        "modules/geospatial/src/flatgeobuf"
+      ],
+      "@loaders.gl/geospatial/geopackage": [
+        "modules/geospatial/src/geopackage"
+      ],
+      "@loaders.gl/geospatial/*": [
+        "modules/geospatial/src/*"
+      ],
+      "@loaders.gl/graphs/dot-loader": [
+        "modules/graphs/src/dot-loader"
+      ],
+      "@loaders.gl/graphs": [
+        "modules/graphs/src"
+      ],
+      "@loaders.gl/graphs/graphml-loader": [
+        "modules/graphs/src/graphml-loader"
+      ],
+      "@loaders.gl/graphs/gexf-loader": [
+        "modules/graphs/src/gexf-loader"
+      ],
+      "@loaders.gl/arcgis": [
+        "modules/arcgis/src"
+      ],
+      "@loaders.gl/arcgis/items": [
+        "modules/arcgis/src/arcgis-items"
+      ],
+      "@loaders.gl/arcgis/authentication": [
+        "modules/arcgis/src/authentication"
+      ],
+      "@loaders.gl/arcgis/discovery": [
+        "modules/arcgis/src/arcgis/arcgis-capability-graph"
+      ],
+      "@loaders.gl/arcgis/scene-aggregation": [
+        "modules/arcgis/src/arcgis/arcgis-scene-aggregation"
+      ],
+      "@loaders.gl/arcgis/bundled": [
+        "modules/arcgis/src/bundled"
+      ],
+      "@loaders.gl/arcgis/arcgis-feature-server-source-loader": [
+        "modules/arcgis/src/arcgis/arcgis-feature-server-source-loader"
+      ],
+      "@loaders.gl/arcgis/arcgis-image-server-source-loader": [
+        "modules/arcgis/src/arcgis/arcgis-image-server-source-loader"
+      ],
+      "@loaders.gl/arcgis/arcgis-image-tile-source-loader": [
+        "modules/arcgis/src/arcgis/arcgis-image-tile-source-loader"
+      ],
+      "@loaders.gl/arcgis/arcgis-map-tile-source-loader": [
+        "modules/arcgis/src/arcgis/arcgis-map-tile-source-loader"
+      ],
+      "@loaders.gl/arcgis/arcgis-scene-server-source-loader": [
+        "modules/arcgis/src/arcgis/arcgis-scene-server-source-loader"
+      ],
+      "@loaders.gl/arcgis/arcgis-vector-tile-server-source-loader": [
+        "modules/arcgis/src/arcgis/arcgis-vector-tile-server-source-loader"
+      ],
       "@loaders.gl/schema": [
         "modules/schema/src"
       ],
@@ -77,7 +168,9 @@
       "@loaders.gl/schema/test": [
         "modules/schema/test"
       ],
-      "@loaders.gl/schema-utils/arrow-transport": ["modules/schema-utils/src/arrow-transport"],
+      "@loaders.gl/schema-utils/arrow-transport": [
+        "modules/schema-utils/src/arrow-transport"
+      ],
       "@loaders.gl/schema-utils": [
         "modules/schema-utils/src"
       ],
@@ -162,8 +255,12 @@
       "@loaders.gl/arrow-geometry/*": [
         "modules/arrow-geometry/src/*"
       ],
-      "@loaders.gl/arrow/arrow-loader": ["modules/arrow/src/arrow-loader"],
-      "@loaders.gl/arrow/geoarrow-loader": ["modules/arrow/src/geoarrow-loader"],
+      "@loaders.gl/arrow/arrow-loader": [
+        "modules/arrow/src/arrow-loader"
+      ],
+      "@loaders.gl/arrow/geoarrow-loader": [
+        "modules/arrow/src/geoarrow-loader"
+      ],
       "@loaders.gl/arrow/types": [
         "modules/arrow/src/types"
       ],
@@ -212,12 +309,14 @@
       "@loaders.gl/geopackage/test": [
         "modules/geopackage/test"
       ],
-      "@loaders.gl/geotiff/geotiff-raster-loader": ["modules/geotiff/src/geotiff-raster-loader"],
-      "@loaders.gl/geotiff": [
-        "modules/geotiff/src"
+      "@loaders.gl/raster/geotiff/geotiff-raster-loader": [
+        "modules/raster/src/geotiff/geotiff-raster-loader"
       ],
-      "@loaders.gl/geotiff/test": [
-        "modules/geotiff/test"
+      "@loaders.gl/raster/geotiff/index": [
+        "modules/raster/src/geotiff/advanced.ts"
+      ],
+      "@loaders.gl/raster/test/geotiff": [
+        "modules/raster/test/geotiff"
       ],
       "@loaders.gl/gltf": [
         "modules/gltf/src"
@@ -240,7 +339,9 @@
       "@loaders.gl/i3s/test": [
         "modules/i3s/test"
       ],
-      "@loaders.gl/json/fast-json-loader": ["modules/json/src/fast-json-loader"],
+      "@loaders.gl/json/fast-json-loader": [
+        "modules/json/src/fast-json-loader"
+      ],
       "@loaders.gl/json": [
         "modules/json/src"
       ],
@@ -277,11 +378,11 @@
       "@loaders.gl/las/test": [
         "modules/las/test"
       ],
-      "@loaders.gl/lerc": [
-        "modules/lerc/src"
+      "@loaders.gl/raster/lerc/index": [
+        "modules/raster/src/lerc/index.ts"
       ],
-      "@loaders.gl/lerc/test": [
-        "modules/lerc/test"
+      "@loaders.gl/raster/test/lerc": [
+        "modules/raster/test/lerc"
       ],
       "@loaders.gl/mlt": [
         "modules/mlt/src"
@@ -409,7 +510,9 @@
       "@loaders.gl/scene/test": [
         "modules/scene/test"
       ],
-      "@loaders.gl/potree/potree-loader": ["modules/potree/src/potree-loader.ts"],
+      "@loaders.gl/potree/potree-loader": [
+        "modules/potree/src/potree-loader.ts"
+      ],
       "@loaders.gl/potree": [
         "modules/potree/src"
       ],
@@ -422,7 +525,9 @@
       "@loaders.gl/shapefile/test": [
         "modules/shapefile/test"
       ],
-      "@loaders.gl/tiles/point-cloud-tile-source": ["modules/tiles/src/point-cloud-tile-source.ts"],
+      "@loaders.gl/tiles/point-cloud-tile-source": [
+        "modules/tiles/src/point-cloud-tile-source.ts"
+      ],
       "@loaders.gl/tiles/point-cloud-tile-source-loader": [
         "modules/tiles/src/point-cloud-tile-source-loader.ts"
       ],
@@ -450,11 +555,11 @@
       "@loaders.gl/tile-converter/test": [
         "apps/tile-converter/test"
       ],
-      "@loaders.gl/terrain": [
-        "modules/terrain/src"
+      "@loaders.gl/raster/terrain/index": [
+        "modules/raster/src/terrain/index.ts"
       ],
-      "@loaders.gl/terrain/test": [
-        "modules/terrain/test"
+      "@loaders.gl/raster/test/terrain": [
+        "modules/raster/test/terrain"
       ],
       "@loaders.gl/textures": [
         "modules/textures/src"
@@ -519,10 +624,18 @@
       "@loaders.gl/zarr/test": [
         "modules/zarr/test"
       ],
-      "@loaders.gl/zip/indexed-zip-writer": ["modules/zip/src/indexed-zip-writer"],
-      "@loaders.gl/zip/zip-loader": ["modules/zip/src/zip-loader"],
-      "@loaders.gl/zip/zip-writer": ["modules/zip/src/zip-writer"],
-      "@loaders.gl/3d-tiles/3d-tiles-archive-writer": ["modules/3d-tiles/src/3d-tiles-archive-writer"],
+      "@loaders.gl/zip/indexed-zip-writer": [
+        "modules/zip/src/indexed-zip-writer"
+      ],
+      "@loaders.gl/zip/zip-loader": [
+        "modules/zip/src/zip-loader"
+      ],
+      "@loaders.gl/zip/zip-writer": [
+        "modules/zip/src/zip-writer"
+      ],
+      "@loaders.gl/3d-tiles/3d-tiles-archive-writer": [
+        "modules/3d-tiles/src/3d-tiles-archive-writer"
+      ],
       "@loaders.gl/zip": [
         "modules/zip/src"
       ],
@@ -531,6 +644,15 @@
       ],
       "test": [
         "test"
+      ],
+      "@loaders.gl/raster": [
+        "modules/raster/src/index.ts"
+      ],
+      "@loaders.gl/raster/*": [
+        "modules/raster/src/*"
+      ],
+      "@loaders.gl/raster/test/*": [
+        "modules/raster/test/*"
       ]
     },
     "plugins": [
@@ -551,7 +673,7 @@
         ],
         "afterDeclarations": true
       }
-    ],
+    ]
   },
   "exclude": [
     "modules/**/src/libs",

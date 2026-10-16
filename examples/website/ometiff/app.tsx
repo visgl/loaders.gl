@@ -10,8 +10,8 @@ import DeckGL from '@deck.gl/react';
 
 import {SourceLayer} from '@loaders.gl/deck-layers';
 import type {RasterData} from '@loaders.gl/loader-utils';
-import type {OMETiffSourceLoaderMetadata} from '@loaders.gl/geotiff';
-import {OMETiffSourceLoader} from '@loaders.gl/geotiff';
+import type {OMETiffSourceLoaderMetadata} from '@loaders.gl/raster/geotiff/index';
+import {OMETiffSourceLoader} from '@loaders.gl/raster/geotiff/index';
 import {createDeckFullscreenWidget, createDeckStatsWidget} from '../shared/create-deck-stats-widget';
 
 const DATA_URL = '/multi-channel.ome.tif';
