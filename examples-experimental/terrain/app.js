@@ -8,7 +8,7 @@ import {createRoot} from 'react-dom/client';
 import DeckGL from '@deck.gl/react';
 
 import {TerrainLayer} from '@deck.gl/geo-layers';
-import {TerrainLoader} from '@loaders.gl/raster';
+import {TerrainLoaderWithParser as TerrainLoader} from '@loaders.gl/raster/terrain';
 
 // Set your mapbox token here
 const MAPBOX_TOKEN = process.env.MapboxAccessToken; // eslint-disable-line
@@ -51,6 +51,7 @@ export default function App({
     color: [255, 255, 255],
     loadOptions: {
       terrain: {
+        shape: 'mesh',
         skirtHeight: 50
       }
     },

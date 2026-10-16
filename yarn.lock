@@ -32178,6 +32178,7 @@ __metadata:
     "@luma.gl/core": "npm:^9.4.0"
     "@luma.gl/engine": "npm:^9.4.0"
     "@luma.gl/shadertools": "npm:^9.4.0"
+    geotiff: "npm:^2.1.0"
     mapbox-gl: "npm:maplibre-gl@^3.6.2"
     maplibre-gl: "npm:^3.6.2"
     react: "npm:^19.2.5"

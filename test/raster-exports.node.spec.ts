@@ -82,3 +82,17 @@ test('terrain metadata bundle does not eagerly include optional raster decoders'
   expect(inputs.some(input => /node_modules\/(geotiff|lerc)\//.test(input))).toBe(false);
   expect(inputs.some(input => /(?:terrain|quantized-mesh)-loader\.js$/.test(input))).toBe(false);
 });
+
+// Consumers must explicitly install optional decoders instead of relying on workspace hoisting.
+test.each(['geotiff', 'ometiff', 'tiles'])('%s example declares its GeoTIFF engine', example => {
+  const manifest = JSON.parse(readFileSync(`examples/website/${example}/package.json`, 'utf8'));
+  expect(manifest.dependencies.geotiff).toBe('^2.1.0');
+});
+
+test('experimental terrain example keeps the loaders.gl runtime compatible with raster', () => {
+  const manifest = JSON.parse(readFileSync('examples-experimental/terrain/package.json', 'utf8'));
+  const version = manifest.dependencies['@loaders.gl/raster'];
+  for (const [name, dependency] of Object.entries(manifest.dependencies)) {
+    if (name.startsWith('@loaders.gl/')) expect(dependency, name).toBe(version);
+  }
+});
