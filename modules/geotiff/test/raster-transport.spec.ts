@@ -6,9 +6,9 @@ import {expect, test, vi} from 'vitest';
 import {RangeRequestScheduler, sampleRaster} from '@loaders.gl/loader-utils';
 import {GeoTIFFRasterSource} from '../src/geotiff-source-loader';
 
-/** Builds a 4 KiB float TIFF, optionally with a wider second band, using one geographic strip. */
-function createFloatTIFF(mixed = false): Uint8Array {
-  const bytes = new Uint8Array(mixed ? 4120 : 4104);
+/** Builds a float TIFF with configurable pixel placement and an optional wider second band. */
+function createFloatTIFF(mixed = false, pixelOffset = 4096): Uint8Array {
+  const bytes = new Uint8Array(pixelOffset + (mixed ? 24 : 8));
   const view = new DataView(bytes.buffer);
   bytes.set([73, 73, 42, 0]);
   view.setUint32(4, 8, true);
@@ -18,7 +18,7 @@ function createFloatTIFF(mixed = false): Uint8Array {
     [258, 3, mixed ? 2 : 1, mixed ? (64 << 16) | 32 : 32],
     [259, 3, 1, 1],
     [262, 3, 1, 1],
-    [273, 4, 1, 4096],
+    [273, 4, 1, pixelOffset],
     [277, 3, 1, mixed ? 2 : 1],
     [278, 4, 1, 1],
     [279, 4, 1, mixed ? 24 : 8],
@@ -41,13 +41,13 @@ function createFloatTIFF(mixed = false): Uint8Array {
   [1, 1, 0, 3, 1024, 0, 1, 2, 1025, 0, 1, 1, 2048, 0, 1, 4326].forEach((value, index) =>
     view.setUint16(256 + index * 2, value, true)
   );
-  view.setFloat32(4096, 4, true);
+  view.setFloat32(pixelOffset, 4, true);
   if (mixed) {
-    view.setFloat64(4100, 1e100, true);
-    view.setFloat32(4108, 8, true);
-    view.setFloat64(4112, 2e100, true);
+    view.setFloat64(pixelOffset + 4, 1e100, true);
+    view.setFloat32(pixelOffset + 12, 8, true);
+    view.setFloat64(pixelOffset + 16, 2e100, true);
   } else {
-    view.setFloat32(4100, 8, true);
+    view.setFloat32(pixelOffset + 4, 8, true);
   }
   return bytes;
 }
@@ -251,6 +251,52 @@ test('real mixed GeoTIFF preserves selected representations and preflights nativ
       'planar'
     );
     expect(readRasters).toHaveBeenCalledTimes(2);
+  } finally {
+    source.finalize();
+  }
+});
+
+test.each([
+  {name: 'strict hidden EOF', strict: true, expose: false, pixelOffset: 512},
+  {name: 'strict exposed EOF', strict: true, expose: true, pixelOffset: 512},
+  {name: 'default hidden full ranges', strict: undefined, expose: false, pixelOffset: 4096}
+])('GeoTIFF transport handles $name according to the declared header profile', async ({
+  strict,
+  expose,
+  pixelOffset
+}) => {
+  const bytes = createFloatTIFF(false, pixelOffset);
+  const source = new GeoTIFFRasterSource('https://example.invalid/raster.tif', {
+    geotiff: {requireContentRange: strict}
+  });
+  const canceled = vi.fn();
+  source.fetch = async (_url, options) => {
+    const range = new Headers(options?.headers).get('Range')!.match(/^bytes=(\d+)-(\d+)$/)!;
+    const offset = Number(range[1]);
+    const end = Math.min(Number(range[2]), bytes.length - 1);
+    return new Response(
+      new ReadableStream({
+        start(controller) {
+          controller.enqueue(bytes.slice(offset, end + 1));
+          controller.close();
+        },
+        cancel: canceled
+      }),
+      {
+        status: 206,
+        headers: expose ? {'Content-Range': `bytes ${offset}-${end}/${bytes.length}`} : {}
+      }
+    );
+  };
+  try {
+    if (strict && !expose) {
+      await expect(source.getMetadata()).rejects.toThrow(
+        'Access-Control-Expose-Headers: Content-Range'
+      );
+      expect(canceled).toHaveBeenCalledOnce();
+    } else {
+      expect(await source.getMetadata()).toMatchObject({width: 2, height: 1, crs: 'EPSG:4326'});
+    }
   } finally {
     source.finalize();
   }

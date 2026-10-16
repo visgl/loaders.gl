@@ -1,5 +1,6 @@
 import type {
   ConversionWorkerAcknowledgement,
+  ConversionWorkerFinishRequest,
   ConversionWorkerMessage
 } from './conversion-worker-client';
 
@@ -22,7 +23,10 @@ export async function transferArchiveChunks(
     for await (const chunk of chunks) {
       const byteLength = chunk.byteLength;
       await new Promise<void>((resolve, reject) => {
-        scope.onmessage = (event: MessageEvent<ConversionWorkerAcknowledgement>) => {
+        scope.onmessage = (
+          event: MessageEvent<ConversionWorkerAcknowledgement | ConversionWorkerFinishRequest>
+        ) => {
+          if (event.data?.type === 'finish') return;
           scope.onmessage = null;
           if (event.data?.type !== 'continue' || event.data.sequence !== sequence) {
             reject(new Error('Invalid conversion archive acknowledgement.'));

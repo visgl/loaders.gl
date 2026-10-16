@@ -10,6 +10,7 @@ import {createArchiveSource} from '../examples/website/i3s-slpk/src/archive-sour
 import {
   inspectConversionInput,
   convertSelectedContents,
+  convertSelectedContentsToResources,
   CONVERSION_LIMITS
 } from '../examples/website/i3s-slpk/src/convert-tileset';
 import {createInput, setInputValue, readSettledControl} from './utils/tile-browser-conversion';
@@ -323,4 +324,40 @@ test('nested metadata selections convert with declaring-document axes, relative 
   } finally {
     runtime.destroy();
   }
+});
+
+test('Finish finalizes the written mesh subset without fetching the next selected content', async () => {
+  const {fetcher, controller} = createInput(false, false, 'Y', true);
+  const inspection = await inspectConversionInput(
+    'https://example.invalid/tileset.json',
+    controller.signal,
+    fetcher
+  );
+  let finishRequested = false;
+  const snapshots: import('../examples/website/common/conversion-progress').ConversionProgressSnapshot[] =
+    [];
+  const output = await convertSelectedContentsToResources(
+    inspection,
+    [inspection.resources[1].resourceId, inspection.resources[2].resourceId],
+    '3tz',
+    controller.signal,
+    () => {},
+    fetcher,
+    undefined,
+    {
+      shouldFinish: () => finishRequested,
+      onProgress(progress) {
+        snapshots.push(progress);
+        if (progress.completedUnits === 1) finishRequested = true;
+      }
+    }
+  );
+  expect(output.partial).toBe(true);
+  expect(output.report.outputResources).toBe(1);
+  expect(snapshots.at(-1)).toMatchObject({phase: 'packaging', completedUnits: 1, totalUnits: null});
+  expect(fetcher.mock.calls.some(call => String(call[0]).endsWith('sibling.glb'))).toBe(false);
+  const metadata = JSON.parse(
+    await output.files.find(file => file.resourceId === 'tileset.json')!.blob.text()
+  );
+  expect(metadata.root.children).toHaveLength(1);
 });

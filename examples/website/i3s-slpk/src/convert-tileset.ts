@@ -8,6 +8,7 @@ import type {
   BrowserTilesetConversionInspection,
   BrowserTileConversionFile,
   TileConversionReport,
+  TileConversionProgress,
   TileConversionSource,
   I3SConversionSpatialContext,
   Tiles3DConversionSpatialContext
@@ -27,6 +28,8 @@ import {
   SELECTED_MESH_LIMITS
 } from '@loaders.gl/tile-converter/v5/adapters';
 
+import type {ConversionProgressSnapshot} from '../../common/conversion-progress';
+
 import {openConversionArchive, type ConversionArchiveInput} from './conversion-archive-input';
 
 /** Explicit 3D Tiles inspection with an optional indexed archive retained for worker reopening. */
@@ -34,6 +37,14 @@ export interface Tiles3DConversionInspection extends BrowserTilesetConversionIns
   /** Local or remote 3TZ input; resources remain relative to its virtual root. */
   readonly archive?: ConversionArchiveInput;
 }
+
+/** Cooperative controls created inside the worker, separate from cancellation. */
+export type MeshConversionControls = {
+  /** Receives actual meshes written and decoded input bytes. Mesh totals remain unknown until completion. */
+  onProgress?: (progress: ConversionProgressSnapshot) => void;
+  /** Stops before pulling the next mesh and finalizes already written output. */
+  shouldFinish?: () => boolean;
+};
 
 /** Formats authored by the example, rather than inferred from an output filename. */
 export type ConversionFormat = 'slpk' | '3tz';
@@ -47,6 +58,8 @@ export interface ConversionResult {
   readonly file: File;
   /** Completed portable conversion report, including measured precision diagnostics. */
   readonly report: TileConversionReport;
+  /** True when Finish stopped mesh enumeration before natural completion. */
+  readonly partial?: boolean;
 }
 
 /** Finalized resources, ready for packaging after the source runtime has been released. */
@@ -57,6 +70,8 @@ export interface ConversionResources {
   readonly name: string;
   /** Completed portable conversion report. */
   readonly report: TileConversionReport;
+  /** True when Finish stopped source enumeration before natural exhaustion. */
+  readonly partial?: boolean;
 }
 
 /** MIME types matching the existing format-specific archive writers. */
@@ -174,20 +189,43 @@ export async function convertSelectedContentsToResources(
   signal: AbortSignal,
   onProgress: (message: string) => void,
   fetcher: typeof fetch = fetch,
-  features?: MeshSourceFeatureOptions
+  features?: MeshSourceFeatureOptions,
+  controls: MeshConversionControls = {}
 ): Promise<ConversionResources> {
   signal.throwIfAborted();
   const archive = inspection.archive
-    ? await openConversionArchive(inspection.archive, CONVERSION_LIMITS.maxInputBytes, signal, fetcher)
+    ? await openConversionArchive(
+        inspection.archive,
+        CONVERSION_LIMITS.maxInputBytes,
+        signal,
+        fetcher
+      )
     : undefined;
   try {
-    const {source, spatialContext, geometricError} = await createSelectedMeshConversionSource(inspection, {
-      resourceIds, signal, features, fetcher: archive?.fetcher ?? fetcher,
-      dracoLibraryOptions: getDracoLibraryOptions()
-    });
-    const output = await writeMeshConversionResources(source, spatialContext, format, signal, onProgress, geometricError);
+    const {source, spatialContext, geometricError} = await createSelectedMeshConversionSource(
+      inspection,
+      {
+        resourceIds,
+        signal,
+        features,
+        fetcher: archive?.fetcher ?? fetcher,
+        dracoLibraryOptions: getDracoLibraryOptions()
+      }
+    );
+    const output = await writeMeshConversionResources(
+      source,
+      spatialContext,
+      format,
+      signal,
+      onProgress,
+      geometricError,
+      false,
+      controls
+    );
     return {...output, name: `selected-${resourceIds.length === 1 ? 'mesh' : 'meshes'}.${format}`};
-  } finally {await archive?.close();}
+  } finally {
+    await archive?.close();
+  }
 }
 
 /** Authors a bounded flat mesh collection through the shared qualified format codecs. */
@@ -198,15 +236,58 @@ export async function writeMeshConversionResources(
   signal: AbortSignal,
   onProgress: (message: string) => void,
   geometricError: number,
-  autoOrigin = false
+  autoOrigin = false,
+  controls: MeshConversionControls = {}
 ): Promise<Omit<ConversionResources, 'name'>> {
+  let currentResource: string | undefined;
+  let partial = false;
+  const controlledSource: typeof source = {
+    /** Delegates qualification to the existing lazy source. */
+    inspect: inspectionSignal => source.inspect(inspectionSignal),
+    /** Closes the underlying iterator before another mesh can be fetched or decoded. */
+    async *read(inspection, readSignal) {
+      const iterator = source.read(inspection, readSignal)[Symbol.asyncIterator]();
+      try {
+        while (true) {
+          // Let the worker receive Finish between meshes, including during synchronous codecs.
+          await new Promise(resolve => setTimeout(resolve, 0));
+          signal.throwIfAborted();
+          if (controls.shouldFinish?.()) {
+            partial = true;
+            break;
+          }
+          const step = await iterator.next();
+          if (step.done) break;
+          currentResource = step.value.id;
+          yield step.value;
+        }
+      } finally {
+        await iterator.return?.();
+      }
+    }
+  };
   const common = {
-    source,
+    source: controlledSource,
     signal,
     measureInputBytes: measureMeshBytes,
     maxInputResourceBytes: CONVERSION_LIMITS.maxInputBytes,
     maxOutputResourceBytes: CONVERSION_LIMITS.maxOutputBytes,
-    onProgress: (progress: {phase: string}) => onProgress(progress.phase)
+    onProgress: (progress: TileConversionProgress) => {
+      onProgress(progress.phase);
+      controls.onProgress?.({
+        phase:
+          progress.phase === 'inspect'
+            ? 'reading'
+            : progress.phase === 'finalize'
+              ? 'packaging'
+              : 'tiles',
+        completedUnits: progress.outputResources,
+        totalUnits: null,
+        currentResource,
+        bytesRead: progress.inputBytes,
+        outputBytes: 0
+      });
+    }
   };
   const codecOptions = {
     dracoLibraryOptions: getDracoLibraryOptions(),
@@ -248,7 +329,7 @@ export async function writeMeshConversionResources(
     files = sink.getFiles();
   }
   signal.throwIfAborted();
-  return {files, report};
+  return {files, report, ...(partial ? {partial: true} : {})};
 }
 
 /** Collects archive chunks as Blob parts for the main-thread integration helpers. */
@@ -271,6 +352,7 @@ export async function createArchiveFile(
   signal.throwIfAborted();
   return {
     file: new File(parts, output.name, {type: ARCHIVE_MIME_TYPES[format]}),
-    report: output.report
+    report: output.report,
+    ...(output.partial ? {partial: true} : {})
   };
 }

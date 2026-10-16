@@ -23,7 +23,10 @@ import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
 `encodeRasterPMTiles` accepts an existing numeric region source and a finite selection of canonical
 XYZ tile addresses. It requests one region at a time, samples it through the shared raster sampler,
 encodes PNG through `ImageWriter`, and packages a PMTiles v3 archive. It retains the caller's source;
-the caller remains responsible for source disposal.
+the caller remains responsible for source disposal. This lightweight region contract reuses the
+same source planning as the [common scan architecture](/docs/developer-guide/common-scan-architecture):
+bounds, bands, native overviews, decoded-output limits and cancellation are handled by the source.
+Tile addressing, rendering and archive encoding remain conversion responsibilities.
 
 Try the [browser PMTiles export example](/examples/tiles/pmtiles-authoring) with a local file or dataset URL.
 

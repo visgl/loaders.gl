@@ -70,6 +70,7 @@ function createBundlerPlugin() {
           {module: /modules[\\/]las[\\/]src[\\/]libs[\\/]laz-rs-wasm[\\/]laz_rs_wasm\.js$/, message: /Critical dependency/}
         ],
         plugins: [
+          require('./plugins/preserve-draco-assets'),
           new bundler.DefinePlugin({
             __VERSION__: JSON.stringify(version)
           }),

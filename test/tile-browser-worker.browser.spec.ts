@@ -807,3 +807,173 @@ test('download cancellation after terminal metadata discards the collected archi
   await assertion;
   expect(worker.terminate).toHaveBeenCalledOnce();
 });
+
+test('Finish preserves completed work, forwards measured counters and keeps archive acknowledgements independent', async () => {
+  const {worker} = createWorkerHarness();
+  const {inspection, controller, resourceIds} = await createOperation();
+  const finishController = new AbortController();
+  const onProgress = vi.fn();
+  const pending = convertSelectedContentsInWorker(
+    inspection,
+    resourceIds,
+    '3tz',
+    controller.signal,
+    () => {},
+    undefined,
+    undefined,
+    {finishSignal: finishController.signal, onProgress}
+  );
+  const progress = {
+    phase: 'tiles',
+    completedUnits: 1,
+    totalUnits: null,
+    bytesRead: 72,
+    outputBytes: 0,
+    currentResource: 'mesh-1'
+  };
+  await worker.onmessage!.call(
+    worker as any,
+    new MessageEvent('message', {data: {type: 'progress', message: 'convert', progress}})
+  );
+  expect(onProgress).toHaveBeenCalledWith(progress);
+  finishController.abort();
+  expect(worker.postMessage).toHaveBeenLastCalledWith({type: 'finish'});
+  expect(worker.terminate).not.toHaveBeenCalled();
+  await worker.onmessage!.call(
+    worker as any,
+    new MessageEvent('message', {data: {type: 'chunk', sequence: 0, chunk: new Uint8Array([1, 2])}})
+  );
+  expect(onProgress).toHaveBeenLastCalledWith(
+    expect.objectContaining({phase: 'packaging', outputBytes: 2})
+  );
+  expect(worker.postMessage).toHaveBeenLastCalledWith({type: 'continue', sequence: 0});
+  await worker.onmessage!.call(
+    worker as any,
+    new MessageEvent('message', {
+      data: {
+        type: 'result',
+        totalBytes: 2,
+        name: 'subset.3tz',
+        mimeType: 'application/zip',
+        report: {diagnostics: []},
+        partial: true
+      }
+    })
+  );
+  expect((await pending).partial).toBe(true);
+  expect(worker.terminate).toHaveBeenCalledOnce();
+});
+
+test('late Finish cannot consume an archive acknowledgement', async () => {
+  let completed = false;
+  const scope = {onmessage: null as Worker['onmessage'], postMessage: vi.fn()};
+  /** Provides a single deterministic archive chunk. */
+  async function* chunks() {
+    yield new Uint8Array([1]);
+  }
+  const pending = transferArchiveChunks(chunks(), scope as any).then(bytes => {
+    completed = true;
+    return bytes;
+  });
+  await expect.poll(() => scope.postMessage.mock.calls.length).toBe(1);
+  scope.onmessage!.call(scope as any, new MessageEvent('message', {data: {type: 'finish'}}));
+  await Promise.resolve();
+  expect(completed).toBe(false);
+  scope.onmessage!.call(
+    scope as any,
+    new MessageEvent('message', {data: {type: 'continue', sequence: 0}})
+  );
+  await expect(pending).resolves.toBe(1);
+});
+
+test('3D controls display shared progress and request Finish without terminating the worker', async () => {
+  const {worker} = createWorkerHarness();
+  const {fetcher} = createInput();
+  vi.stubGlobal('fetch', fetcher);
+  vi.stubGlobal('IS_REACT_ACT_ENVIRONMENT', true);
+  const container = document.createElement('div');
+  container.style.width = '900px';
+  document.body.append(container);
+  const root = createRoot(container);
+  try {
+    await act(async () => root.render(React.createElement(ConversionPanel)));
+    await setInputValue(container.querySelector('input')!, 'https://example.invalid/tileset.json');
+    await act(async () => container.querySelector('form')!.requestSubmit());
+    await expect
+      .poll(() => readSettledControl(() => container.querySelector('#conversion-content')))
+      .not.toBeNull();
+    const selection = container.querySelector<HTMLSelectElement>('#conversion-content')!;
+    selection.value = 'tile-0-content-1';
+    await act(async () => selection.dispatchEvent(new Event('change', {bubbles: true})));
+    const convert = Array.from(container.querySelectorAll('button')).find(
+      button => button.textContent === 'Convert selected content'
+    )!;
+    await act(async () => convert.click());
+    const progress = {
+      phase: 'tiles',
+      completedUnits: 1,
+      totalUnits: null,
+      bytesRead: 1024,
+      outputBytes: 0,
+      currentResource: 'mesh-1'
+    };
+    await act(async () =>
+      worker.onmessage!.call(
+        worker as any,
+        new MessageEvent('message', {data: {type: 'progress', message: 'convert', progress}})
+      )
+    );
+    expect(container.querySelector('[role="progressbar"]')?.hasAttribute('aria-valuenow')).toBe(
+      false
+    );
+    expect(container.textContent).toContain('1 mesh');
+    expect(container.textContent).toContain('mesh-1');
+    expect(container.textContent).toContain('1.0 KiB');
+    expect(container.querySelector('section')!.getBoundingClientRect().height).toBeLessThan(550);
+    await act(async () =>
+      Array.from(container.querySelectorAll('button'))
+        .find(button => button.textContent === 'Finish & download')!
+        .click()
+    );
+    expect(worker.postMessage).toHaveBeenLastCalledWith({type: 'finish'});
+    expect(worker.terminate).not.toHaveBeenCalled();
+    await act(async () =>
+      worker.onmessage!.call(
+        worker as any,
+        new MessageEvent('message', {
+          data: {type: 'chunk', sequence: 0, chunk: new Uint8Array([1, 2])}
+        })
+      )
+    );
+    await act(async () =>
+      worker.onmessage!.call(
+        worker as any,
+        new MessageEvent('message', {
+          data: {
+            type: 'result',
+            totalBytes: 2,
+            name: 'subset.3tz',
+            mimeType: 'application/zip',
+            partial: true,
+            report: {outputResources: 1, diagnostics: []}
+          }
+        })
+      )
+    );
+    await expect
+      .poll(() => container.querySelector('[role="status"]')?.textContent)
+      .toContain('Partial archive complete');
+    expect(container.querySelector('[role="progressbar"]')?.getAttribute('aria-valuenow')).toBe(
+      '1'
+    );
+    expect(container.querySelector('a[download]')).not.toBeNull();
+    expect(
+      Array.from(container.querySelectorAll('button')).some(
+        button => button.textContent === 'Edit settings'
+      )
+    ).toBe(true);
+  } finally {
+    await act(async () => root.unmount());
+    container.remove();
+  }
+});
