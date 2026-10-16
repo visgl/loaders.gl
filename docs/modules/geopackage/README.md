@@ -62,7 +62,7 @@ npm install @loaders.gl/geopackage
 | Loader / Source | Description |
 | --------------- | ----------- |
 | [`GeoPackageLoader`](/docs/modules/geopackage/api-reference/geopackage-loader) | Loads one selected GeoPackage vector table. |
-| [`GeoPackageSource`](/docs/modules/geopackage/api-reference/geopackage-source) | Discovers and queries multiple GeoPackage tables as a data source. |
+| [`GeoPackageSource`](/docs/modules/geopackage/api-reference/geopackage-source) | Discovers and queries feature tables, exposes tile grids, and reads bounded encoded tile payloads. |
 
 ## Reprojection
 

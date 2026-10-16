@@ -3,6 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import type {
+  GetTileParameters,
   CoreAPI,
   DataSourceOptions,
   ScanQueryMetadata,
@@ -12,6 +13,7 @@ import type {
   TableScanSource
 } from '@loaders.gl/loader-utils';
 import {
+  getRequestedTileMatrix,
   createScanQueryMetadata,
   DataSource,
   filterColumnarRowIndices,
@@ -58,8 +60,14 @@ export type GeoPackageSourceTableMetadata = {
 export type GeoPackageSourceMetadata = {
   /** Feature tables available for Arrow reads. */
   tables: GeoPackageSourceTableMetadata[];
-  /** Raster tile-table metadata; tile payload reads are not provided by this source. */
+  /** Raster tile-table metadata for encoded payload reads. */
   tileTables: GeoPackageTileTableMetadata[];
+};
+
+/** Limits applied to one encoded GeoPackage tile read. */
+export type GeoPackageTileReadOptions = {
+  /** Maximum encoded payload size, default 16 MiB. */
+  maxBytes?: number;
 };
 
 export type GeoPackageSourceOptions = DataSourceOptions &
@@ -171,6 +179,69 @@ export class GeoPackageDataSource
           : undefined,
       statistics: {byteLength: undefined}
     });
+  }
+
+  /** Reads one encoded tile from an explicitly selected raster table. Missing tiles return null.
+   * The byte limit applies to encoded payloads; opening SQLite still loads the whole GeoPackage.
+   */
+  async getTile(
+    tableName: string,
+    parameters: Pick<GetTileParameters, 'z' | 'x' | 'y' | 'tileMatrix' | 'signal'>,
+    options: GeoPackageTileReadOptions = {}
+  ): Promise<ArrayBuffer | null> {
+    throwIfAborted(parameters.signal);
+    const maximumBytes = options.maxBytes ?? 16 * 1024 * 1024;
+    if (!Number.isSafeInteger(maximumBytes) || maximumBytes < 0) {
+      throw new Error('Invalid GeoPackage tile byte limit');
+    }
+    const metadata = await this.getMetadata();
+    throwIfAborted(parameters.signal);
+    const table = metadata.tileTables.find(candidate => candidate.name === tableName);
+    if (!table) throw new Error('Unknown GeoPackage tile table: ' + tableName);
+    const matrix = getRequestedTileMatrix(
+      table.tileGrid.matrices || [],
+      value => value.id,
+      parameters
+    );
+    if (!matrix) throw new Error('Unknown GeoPackage tile matrix');
+    if (![parameters.x, parameters.y].every(value => Number.isSafeInteger(value))) {
+      throw new Error('GeoPackage tile coordinates must be integers');
+    }
+    if (
+      parameters.x < 0 ||
+      parameters.y < 0 ||
+      !matrix.matrixSize ||
+      parameters.x >= matrix.matrixSize[0] ||
+      parameters.y >= matrix.matrixSize[1]
+    )
+      return null;
+    const database = await loadGeoPackageDatabase(
+      await this.getArrayBuffer(),
+      this.options.geopackage?.sqlJsCDN ?? DEFAULT_SQLJS_CDN
+    );
+    try {
+      throwIfAborted(parameters.signal);
+      const identifier = '"' + table.name.replaceAll('"', '""') + '"';
+      const statement = database.prepare(
+        'SELECT length(tile_data) AS size, typeof(tile_data) AS type, ' +
+          'CASE WHEN length(tile_data) <= ? THEN tile_data ELSE NULL END AS payload FROM ' +
+          identifier +
+          ' WHERE zoom_level = ? AND tile_column = ? AND tile_row = ? LIMIT 1'
+      );
+      try {
+        statement.bind([maximumBytes, Number(matrix.id), parameters.x, parameters.y]);
+        if (!statement.step()) return null;
+        const row = statement.getAsObject();
+        if (row.type !== 'blob') throw new Error('Invalid GeoPackage tile payload');
+        if (Number(row.size) > maximumBytes) throw new Error('GeoPackage tile exceeds byte limit');
+        throwIfAborted(parameters.signal);
+        return (row.payload as Uint8Array).slice().buffer;
+      } finally {
+        statement.free();
+      }
+    } finally {
+      database.close();
+    }
   }
 
   /** Loads one GeoPackage vector table as an Arrow table. */

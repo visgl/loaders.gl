@@ -160,3 +160,64 @@ test('extent validation accepts floating-point roundoff in decimal pixel sizes',
     database.close();
   }
 });
+
+test('encoded tile reads select native levels, preserve sparse holes and enforce byte limits', async () => {
+  const database = createDatabase();
+  database.run('INSERT INTO regional VALUES (1, 7, 1, 2, ?)', [new Uint8Array([137, 80, 78, 71])]);
+  const source = GeoPackageSource.createDataSource(new Blob([new Uint8Array(database.export())]), {
+    geopackage: {sqlJsCDN: '/node_modules/sql.js/dist/'}
+  });
+  database.close();
+  const parameters = {z: 0, tileMatrix: '7', x: 1, y: 2};
+  expect(new Uint8Array((await source.getTile('regional', parameters))!)).toEqual(
+    new Uint8Array([137, 80, 78, 71])
+  );
+  expect(
+    await source.getTile('regional', {...parameters, tileMatrix: undefined, z: 7})
+  ).not.toBeNull();
+  expect(
+    await source.getTile('regional', {...parameters, tileMatrix: undefined, z: 1})
+  ).not.toBeNull();
+  expect(await source.getTile('regional', {...parameters, x: 0})).toBeNull();
+  expect(await source.getTile('regional', {...parameters, x: 6})).toBeNull();
+  await expect(source.getTile('regional', parameters, {maxBytes: 3})).rejects.toThrow('byte limit');
+  await expect(source.getTile('regional', parameters, {maxBytes: NaN})).rejects.toThrow(
+    'byte limit'
+  );
+  await expect(source.getTile('regional', {...parameters, x: 0.5})).rejects.toThrow('integers');
+  await expect(source.getTile('regional', {...parameters, tileMatrix: 'missing'})).rejects.toThrow(
+    'Unknown tile matrix'
+  );
+  await expect(source.getTile('regional"; DROP TABLE regional; --', parameters)).rejects.toThrow(
+    'Unknown GeoPackage tile table'
+  );
+  const controller = new AbortController();
+  controller.abort();
+  await expect(
+    source.getTile('regional', {...parameters, signal: controller.signal})
+  ).rejects.toThrow();
+});
+
+test('tile reads quote discovered identifiers and reject malformed payloads', async () => {
+  const database = createDatabase();
+  database.run(`ALTER TABLE regional RENAME TO "regional""tiles";
+    UPDATE gpkg_contents SET table_name = 'regional"tiles' WHERE table_name = 'regional';
+    UPDATE gpkg_tile_matrix_set SET table_name = 'regional"tiles' WHERE table_name = 'regional';
+    UPDATE gpkg_tile_matrix SET table_name = 'regional"tiles' WHERE table_name = 'regional';
+    INSERT INTO "regional""tiles" VALUES (1, 2, 0, 0, 'invalid'), (2, 2, 1, 0, X'');`);
+  const source = GeoPackageSource.createDataSource(new Blob([new Uint8Array(database.export())]), {
+    geopackage: {sqlJsCDN: '/node_modules/sql.js/dist/'}
+  });
+  database.close();
+  await expect(source.getTile('regional"tiles', {z: 2, x: 0, y: 0})).rejects.toThrow(
+    'Invalid GeoPackage tile payload'
+  );
+  expect(
+    (await source.getTile('regional"tiles', {z: 2, x: 1, y: 0}, {maxBytes: 0}))?.byteLength
+  ).toBe(0);
+  expect(await source.getTile('regional"tiles', {z: 2, x: 0, y: -1})).toBeNull();
+  expect(await source.getTile('regional"tiles', {z: 2, x: 0, y: 2})).toBeNull();
+  await expect(source.getTile('local', {z: 0, x: 0, y: 0})).rejects.toThrow(
+    'Unknown GeoPackage tile matrix'
+  );
+});

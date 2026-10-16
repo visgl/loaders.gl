@@ -29,6 +29,8 @@ import type {
 } from '@loaders.gl/loader-utils';
 import type {CRSIdentifier} from '@math.gl/crs';
 import {
+  createTileGrid,
+  createTileGridMatrix,
   DataSource,
   getRasterViewportBoundingBox,
   RangeRequestScheduler,
@@ -853,6 +855,7 @@ export class GeoTIFFRasterSource
       attributions: this.options.core?.attributions || [],
       crs: getImageCRS(referenceImage),
       boundingBox,
+      tileGrid: getImageTileGrid(images, referenceImage),
       width: referenceImage.getWidth(),
       height: referenceImage.getHeight(),
       bandCount: referenceImage.getSamplesPerPixel(),
@@ -1658,4 +1661,67 @@ function estimateImageTileBytes(
   const columns = Math.ceil(window[2] / tileWidth) - Math.floor(window[0] / tileWidth);
   const rows = Math.ceil(window[3] / tileHeight) - Math.floor(window[1] / tileHeight);
   return columns * rows * tileWidth * tileHeight * bytesPerPixel;
+}
+
+/** Builds native storage-tile geometry without decoding samples or treating strips as tiles. */
+export function getImageTileGrid(images: TiffSourceImage[], referenceImage: TiffSourceImage) {
+  const coordinateReferenceSystem = getImageCRS(referenceImage);
+  if (!coordinateReferenceSystem) return undefined;
+  const matrices = images.flatMap((image, index) => {
+    if (image.fileDirectory?.NewSubfileType & 4) return [];
+    const transform = getImageTransform(image, referenceImage);
+    const imageCoordinateReferenceSystem = getImageCRS(image);
+    if (
+      (imageCoordinateReferenceSystem &&
+        imageCoordinateReferenceSystem !== coordinateReferenceSystem) ||
+      !image.fileDirectory?.TileWidth ||
+      !image.fileDirectory?.TileLength ||
+      !transform ||
+      transform[1] !== 0 ||
+      transform[3] !== 0 ||
+      transform[0] <= 0 ||
+      transform[4] === 0
+    ) {
+      return [undefined];
+    }
+    const pointRegistration =
+      (image.getGeoKeys()?.GTRasterTypeGeoKey ??
+        referenceImage.getGeoKeys()?.GTRasterTypeGeoKey) === 2;
+    const inheritedTransform =
+      image !== referenceImage &&
+      !image.fileDirectory.ModelTransformation &&
+      !image.fileDirectory.ModelTiepoint &&
+      !image.fileDirectory.ModelPixelScale;
+    const cornerPointRegistration = inheritedTransform
+      ? referenceImage.getGeoKeys()?.GTRasterTypeGeoKey === 2
+      : pointRegistration;
+    const cornerTransform = inheritedTransform
+      ? getImageTransform(referenceImage, referenceImage)!
+      : transform;
+    return [
+      createTileGridMatrix({
+        id: String(index),
+        resolution: transform[0],
+        resolutionY: Math.abs(transform[4]),
+        point: cornerPointRegistration
+          ? [
+              cornerTransform[2] - cornerTransform[0] / 2,
+              cornerTransform[5] - cornerTransform[4] / 2
+            ]
+          : [cornerTransform[2], cornerTransform[5]],
+        swapAxes: false,
+        cornerOfOrigin: transform[4] < 0 ? 'topLeft' : 'bottomLeft',
+        tileWidth: image.getTileWidth(),
+        tileHeight: image.getTileHeight(),
+        matrixWidth: Math.ceil(image.getWidth() / image.getTileWidth()),
+        matrixHeight: Math.ceil(image.getHeight() / image.getTileHeight())
+      })
+    ];
+  });
+  if (!matrices.length || matrices.some(matrix => !matrix)) return undefined;
+  const grid = createTileGrid(
+    coordinateReferenceSystem,
+    matrices.filter(matrix => matrix !== undefined)
+  );
+  return grid.tileMatrixSet ? grid : undefined;
 }

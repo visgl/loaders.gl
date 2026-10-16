@@ -276,3 +276,13 @@ authoritative offsets and file length, including TIFFs smaller than the initial 
 The PMTiles browser converter enables this option. The default remains `false`; full-length
 responses without exposed headers retain their existing behavior, while EOF-shortened responses
 still require authoritative file length.
+
+## Native TileMatrix geometry
+
+`getMetadata().tileGrid` describes physical storage tiles for eligible GeoTIFF/COG image hierarchies. It is built from metadata without decoding samples. Matrix IDs are original image (IFD) indices, matching `overviews[].index`; mask images are excluded without renumbering subsequent images. Overview order follows the file rather than assuming power-of-two zoom levels.
+
+Each level retains its own tile dimensions, independent horizontal and vertical pixel resolutions, and origin. Overviews without their own transform inherit the reference transform scaled independently by their actual pixel dimensions. Point-registered sample centers are shifted by half a pixel to obtain tile corners. South-up images use a bottom-left origin.
+
+Matrix dimensions round up image dimensions to complete storage tiles. Consequently edge tiles can extend past the raster's valid footprint: clip tile pixels using `overviews[].width/height`. `boundingBox` retains the existing source bounds convention; point-registered tile corners include the half-pixel adjustment described above. Grid dimensions describe geometry and do not declare data availability.
+
+The optional grid is omitted if any non-mask image uses strips, rotation, shear, reversed columns, invalid geometry, or a conflicting CRS, or if the reference CRS is unknown. Existing affine metadata and raster reads remain available for these datasets. This does not add a tile-payload endpoint, reprojection, or a Web Mercator pyramid; use the existing window/region raster APIs to read samples.
