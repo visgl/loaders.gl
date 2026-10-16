@@ -63,7 +63,7 @@ data from object storage without downloading a complete dataset.
 | COG | Tiled TIFF raster ranges | [GeoTIFF](/docs/modules/geotiff) |
 | COPC | Indexed LAS/LAZ point-cloud ranges | [COPC](/docs/modules/copc) |
 | PMTiles | Tile archive ranges | [PMTiles](/docs/modules/pmtiles) |
-| Zarr | Chunked multidimensional arrays | [Zarr](/docs/modules/zarr) |
+| Zarr | Chunked multidimensional arrays | [Zarr](/docs/modules/scientific/zarr) |
 | STAC | Catalog and asset discovery | [STAC](/docs/modules/stac) |
 
 Format structure alone does not guarantee selective reads. Check the source's

@@ -19,7 +19,7 @@ import {
 } from '@loaders.gl/mvt';
 import {PMTilesSourceLoader, PMTilesTileSource} from '@loaders.gl/pmtiles';
 import {WMSSourceLoader, WMSImageSource} from '@loaders.gl/wms';
-import {OMEZarrSourceLoader, OMEZarrImageSource} from '@loaders.gl/zarr';
+import {OMEZarrSourceLoader, OMEZarrImageSource} from '@loaders.gl/scientific/zarr';
 import type {Feature, GeoJSONTable} from '@loaders.gl/schema';
 
 const GEOJSON_TABLE: GeoJSONTable = {
@@ -37,7 +37,7 @@ const GEOJSON_TABLE: GeoJSONTable = {
 const PMTILES_FIXTURE_URL = resolvePath(
   '@loaders.gl/pmtiles/test/data/pmtiles-v2/test_fixture_1.pmtiles'
 );
-const OME_ZARR_FIXTURE_URL = resolvePath('@loaders.gl/zarr/test/data/ome.zarr');
+const OME_ZARR_FIXTURE_URL = resolvePath('@loaders.gl/scientific/test/zarr/data/ome.zarr');
 
 test('source entrypoints share flat loading controls and parser namespaces', async () => {
   const fetchResource = vi.fn(async () => new Response('ok'));

@@ -402,15 +402,10 @@
       "@loaders.gl/mvt/test": [
         "modules/mvt/test"
       ],
-      "@loaders.gl/netcdf": [
-        "modules/netcdf/src"
-      ],
-      "@loaders.gl/netcdf/*": [
-        "modules/netcdf/src/*"
-      ],
-      "@loaders.gl/netcdf/test": [
-        "modules/netcdf/test"
-      ],
+      "@loaders.gl/scientific": ["modules/scientific/src"],
+      "@loaders.gl/scientific/*": ["modules/scientific/src/*"],
+      "@loaders.gl/scientific/test": ["modules/scientific/test"],
+      "@loaders.gl/scientific/test/*": ["modules/scientific/test/*"],
       "@loaders.gl/obj": [
         "modules/obj/src"
       ],
@@ -618,24 +613,10 @@
       "@loaders.gl/xml/test": [
         "modules/xml/test"
       ],
-      "@loaders.gl/zarr": [
-        "modules/zarr/src"
-      ],
-      "@loaders.gl/zarr/test": [
-        "modules/zarr/test"
-      ],
-      "@loaders.gl/zip/indexed-zip-writer": [
-        "modules/zip/src/indexed-zip-writer"
-      ],
-      "@loaders.gl/zip/zip-loader": [
-        "modules/zip/src/zip-loader"
-      ],
-      "@loaders.gl/zip/zip-writer": [
-        "modules/zip/src/zip-writer"
-      ],
-      "@loaders.gl/3d-tiles/3d-tiles-archive-writer": [
-        "modules/3d-tiles/src/3d-tiles-archive-writer"
-      ],
+      "@loaders.gl/zip/indexed-zip-writer": ["modules/zip/src/indexed-zip-writer"],
+      "@loaders.gl/zip/zip-loader": ["modules/zip/src/zip-loader"],
+      "@loaders.gl/zip/zip-writer": ["modules/zip/src/zip-writer"],
+      "@loaders.gl/3d-tiles/3d-tiles-archive-writer": ["modules/3d-tiles/src/3d-tiles-archive-writer"],
       "@loaders.gl/zip": [
         "modules/zip/src"
       ],

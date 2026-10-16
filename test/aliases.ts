@@ -44,7 +44,8 @@ function makeAliases() {
     '@loaders.gl/raster/test/lerc': resolveTestPath('./modules/raster/test/lerc'),
     '@loaders.gl/mlt/test': resolveTestPath('./modules/mlt/test'),
     '@loaders.gl/mvt/test': resolveTestPath('./modules/mvt/test'),
-    '@loaders.gl/netcdf/test': resolveTestPath('./modules/netcdf/test'),
+    '@loaders.gl/scientific/test/netcdf': resolveTestPath('./modules/scientific/test/netcdf'),
+    '@loaders.gl/scientific/test/zarr': resolveTestPath('./modules/scientific/test/zarr'),
     '@loaders.gl/obj/test': resolveTestPath('./modules/obj/test'),
     '@loaders.gl/parquet/test': resolveTestPath('./modules/parquet/test'),
     '@loaders.gl/lance/test': resolveTestPath('./modules/lance/test'),
@@ -68,7 +69,6 @@ function makeAliases() {
     '@loaders.gl/wms/test': resolveTestPath('./modules/wms/test'),
     '@loaders.gl/worker-utils/test': resolveTestPath('./modules/worker-utils/test'),
     '@loaders.gl/xml/test': resolveTestPath('./modules/xml/test'),
-    '@loaders.gl/zarr/test': resolveTestPath('./modules/zarr/test'),
     '@loaders.gl/zip/test': resolveTestPath('./modules/zip/test'),
     // eslint-disable-next-line camelcase
     node_modules: resolveTestPath('./node_modules')

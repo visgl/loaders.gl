@@ -21,8 +21,8 @@ import '@loaders.gl/textures/test';
 import '@loaders.gl/raster/test/lerc';
 // import '@loaders.gl/video/test';
 import '@loaders.gl/raster/test/geotiff';
-// import '@loaders.gl/zarr/test';
-import '@loaders.gl/netcdf/test';
+import '@loaders.gl/scientific/test/netcdf';
+import '@loaders.gl/scientific/test/zarr';
 
 // Pointcloud/Mesh Formats
 import '@loaders.gl/draco/test';

@@ -1,0 +1,66 @@
+{
+  "name": "@loaders.gl/scientific",
+  "version": "5.0.0-alpha.12",
+  "description": "Scientific data format loaders with metadata roots and explicit format subpaths",
+  "license": "MIT",
+  "type": "module",
+  "publishConfig": {
+    "access": "public"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/visgl/loaders.gl"
+  },
+  "types": "dist/index.d.ts",
+  "main": "dist/index.cjs",
+  "module": "dist/index.js",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
+    },
+    "./netcdf": {
+      "types": "./dist/netcdf/index.d.ts",
+      "import": "./dist/netcdf/index.js",
+      "require": "./dist/netcdf/index.cjs"
+    },
+    "./netcdf/*": {
+      "types": "./dist/netcdf/*.d.ts",
+      "import": "./dist/netcdf/*.js",
+      "require": "./dist/netcdf/*.cjs"
+    },
+    "./zarr": {
+      "types": "./dist/zarr/index.d.ts",
+      "import": "./dist/zarr/index.js",
+      "require": "./dist/zarr/index.cjs"
+    },
+    "./zarr/*": {
+      "types": "./dist/zarr/*.d.ts",
+      "import": "./dist/zarr/*.js"
+    }
+  },
+  "sideEffects": false,
+  "files": [
+    "src",
+    "dist",
+    "README.md"
+  ],
+  "scripts": {
+    "pre-build": "npm run build-bundle && npm run build-bundle-dev && npm run build-cjs-netcdf && npm run build-cjs-zarr",
+    "build-bundle": "ocular-bundle ./netcdf-bundle.ts --output=dist/netcdf.min.js && ocular-bundle ./zarr-bundle.ts --output=dist/zarr.min.js",
+    "build-bundle-dev": "ocular-bundle ./netcdf-bundle.ts --env=dev --output=dist/netcdf.dev.js && ocular-bundle ./zarr-bundle.ts --env=dev --output=dist/zarr.dev.js",
+    "build-cjs-netcdf": "esbuild src/netcdf/*.ts --bundle --format=cjs --platform=node --target=node22 --outdir=dist/netcdf --out-extension:.js=.cjs --external:@loaders.gl/* --external:@math.gl/*",
+    "build-cjs-zarr": "esbuild src/zarr/index.ts --bundle --format=cjs --platform=node --target=node22 --outfile=dist/zarr/index.cjs --external:@loaders.gl/* --external:@math.gl/*"
+  },
+  "dependencies": {
+    "@loaders.gl/loader-utils": "5.0.0-alpha.12",
+    "@loaders.gl/schema": "5.0.0-alpha.12",
+    "@math.gl/crs": "5.0.0-alpha.14",
+    "zarr": "^0.5.0",
+    "zarrita": "~0.7.1"
+  },
+  "peerDependencies": {
+    "@loaders.gl/core": "~5.0.0-alpha.0"
+  }
+}
