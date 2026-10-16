@@ -11,9 +11,9 @@ test.each(['esm', 'commonjs'])('numeric raster exports work through built %s pac
   const imports =
     format === 'esm'
       ? `import {sampleRaster} from '@loaders.gl/loader-utils';
-       import {GeoTIFFSourceLoader, discoverGeoTIFF} from '@loaders.gl/geotiff';`
+       import {GeoTIFFSourceLoader, discoverGeoTIFF} from '@loaders.gl/raster/geotiff/index';`
       : `const {sampleRaster} = require('@loaders.gl/loader-utils');
-       const {GeoTIFFSourceLoader, discoverGeoTIFF} = require('@loaders.gl/geotiff');`;
+       const {GeoTIFFSourceLoader, discoverGeoTIFF} = require('@loaders.gl/raster/geotiff/index');`;
   const result = spawnSync(
     process.execPath,
     [
@@ -35,7 +35,7 @@ test.each(['esm', 'commonjs'])('numeric raster exports work through built %s pac
 test('published raster declarations support additive mixed regions and legacy common rasters', () => {
   const filename = path.join(process.cwd(), 'test/raster-consumer.mts');
   const source = `import type {RasterData, RasterMixedData, NumericRasterData, RasterRegionSource, RasterDeclaredBandStatistics} from '@loaders.gl/loader-utils';
-    import {GeoTIFFRasterSource} from '@loaders.gl/geotiff';
+    import {GeoTIFFRasterSource} from '@loaders.gl/raster/geotiff/index';
     const source: RasterRegionSource = new GeoTIFFRasterSource(new Blob([]), {});
     const region: Promise<NumericRasterData> = source.getRasterForRegion({bounds: [[0, 0], [1, 1]],
       crs: 'EPSG:4326', width: 1, height: 1});

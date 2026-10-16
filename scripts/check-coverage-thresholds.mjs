@@ -102,6 +102,25 @@ for (const publishedPackage of publishedPackages) {
   });
 }
 
+// Retain every format threshold after removing its standalone package manifest.
+// These gates cover the full implementation directories, independently of group entrypoints.
+for (const [formatName, thresholds] of Object.entries(manifest.formats || {})) {
+  if (!publishedPackages.some(publishedPackage => publishedPackage.name === thresholds.owner)) {
+    violations.push(`Format ${formatName} has no published owner: ${thresholds.owner}`);
+  }
+  const browserCoverage = aggregatePackageCoverage(browserSummary, thresholds.sourcePaths);
+  const mergedCoverage = aggregatePackageCoverage(mergedSummary, thresholds.sourcePaths);
+  checkCoveragePresence(formatName, 'browser', browserCoverage, violations);
+  checkCoveragePresence(formatName, 'merged', mergedCoverage, violations);
+  checkThresholds(formatName, 'browser', browserCoverage, thresholds.browser, violations);
+  checkThresholds(formatName, 'merged', mergedCoverage, thresholds.merged, violations);
+  if (update && !initialize) {
+    raiseThresholds(thresholds.browser, browserCoverage);
+    raiseThresholds(thresholds.merged, mergedCoverage);
+  }
+  results.push({name: formatName, path: thresholds.path, browser: browserCoverage, merged: mergedCoverage, thresholds});
+}
+
 const publishedPackageNames = new Set(publishedPackages.map(publishedPackage => publishedPackage.name));
 for (const manifestPackageName of Object.keys(manifest.packages)) {
   if (!publishedPackageNames.has(manifestPackageName)) {

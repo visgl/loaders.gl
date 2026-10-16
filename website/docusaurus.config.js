@@ -64,7 +64,7 @@ function createBundlerPlugin() {
         ignoreWarnings: [
           {module: /zstd-codec[\\/]lib[\\/]zstd-codec-binding(?:-wasm)?\.js$/, message: /__dirname/},
           {module: /modules[\\/]las[\\/]src[\\/]libs[\\/]laz-perf[\\/]laz-perf\.ts$/, message: /__dirname/},
-          {module: /modules[\\/]lerc[\\/]src[\\/]lerc-wasm-url\.ts$/, message: /__dirname/},
+          {module: /modules[\\/]raster[\\/]src[\\/]lerc[\\/]lerc-wasm-url\.ts$/, message: /__dirname/},
           {module: /modules[\\/]parquet[\\/]src[\\/]lib[\\/]utils[\\/]load-wasm-node\.ts$/, message: /__filename/},
           {module: /modules[\\/]parquet[\\/]src[\\/]parquet-source-worker-url\.ts$/, message: /Critical dependency/},
           {module: /modules[\\/]las[\\/]src[\\/]libs[\\/]laz-rs-wasm[\\/]laz_rs_wasm\.js$/, message: /Critical dependency/}
@@ -109,7 +109,7 @@ function createBundlerPlugin() {
           }),
           new bundler.NormalModuleReplacementPlugin(/^\.\/lerc-wasm-url$/, resource => {
             const normalizedContext = resource.context?.replace(/\\/g, '/');
-            if (normalizedContext?.endsWith('/modules/lerc/src')) {
+            if (normalizedContext?.endsWith('/modules/raster/src/lerc')) {
               resource.request = resolve('./src/utils/lerc-wasm-url.js');
             }
           }),
@@ -250,7 +250,8 @@ const config = {
             '@loaders.gl/excel': resolve('../modules/excel/src'),
             '@loaders.gl/flatgeobuf': resolve('../modules/flatgeobuf/src'),
             '@loaders.gl/geopackage': resolve('../modules/geopackage/src'),
-            '@loaders.gl/geotiff': resolve('../modules/geotiff/src'),
+            '@loaders.gl/raster': resolve('../modules/raster/src'),
+            '@loaders.gl/raster/geotiff/index': resolve('../modules/raster/src/geotiff/index.ts'),
             '@loaders.gl/geoarrow': resolve('../modules/geoarrow/src'),
             '@loaders.gl/gltf': resolve('../modules/gltf/src'),
             '@loaders.gl/i3s': resolve('../modules/i3s/src'),
@@ -258,7 +259,7 @@ const config = {
             '@loaders.gl/json': resolve('../modules/json/src'),
             '@loaders.gl/kml': resolve('../modules/kml/src'),
             '@loaders.gl/las': resolve('../modules/las/src'),
-            '@loaders.gl/lerc': resolve('../modules/lerc/src'),
+            '@loaders.gl/raster/lerc/index': resolve('../modules/raster/src/lerc/index.ts'),
             '@loaders.gl/loader-utils': resolve('../modules/loader-utils/src'),
             '@loaders.gl/mlt': resolve('../modules/mlt/src'),
             '@loaders.gl/mvt': resolve('../modules/mvt/src'),
@@ -279,7 +280,7 @@ const config = {
             '@loaders.gl/splats': resolve('../modules/splats/src'),
             '@loaders.gl/stac': resolve('../modules/stac/src'),
             '@loaders.gl/sql': resolve('../modules/sql/src'),
-            '@loaders.gl/terrain': resolve('../modules/terrain/src'),
+            '@loaders.gl/raster/terrain/index': resolve('../modules/raster/src/terrain/index.ts'),
             '@loaders.gl/textures': resolve('../modules/textures/src'),
             '@loaders.gl/tile-converter/v5/core': resolve('../apps/tile-converter/src/v5/core.ts'),
             '@loaders.gl/tile-converter/v5/adapters': resolve('../apps/tile-converter/src/v5/adapters.ts'),

@@ -5,7 +5,7 @@ description: Decode Terrarium or custom RGB elevation into an unpadded height gr
 
 # Heightmap utilities
 
-Use `@loaders.gl/terrain/heightmap` when you need elevation samples without mesh
+Use `@loaders.gl/raster/terrain/heightmap` when you need elevation samples without mesh
 reconstruction, Arrow conversion, image loading, or worker setup. This entry point
 has no runtime dependencies.
 
@@ -14,7 +14,7 @@ import {getImageData} from '@loaders.gl/images';
 import {
   decodeTerrainHeightmap,
   TERRARIUM_ELEVATION_DECODER
-} from '@loaders.gl/terrain/heightmap';
+} from '@loaders.gl/raster/terrain/heightmap';
 
 // image is an already decoded image, for example from ImageBitmapLoader.
 const heightmap = decodeTerrainHeightmap(getImageData(image), TERRARIUM_ELEVATION_DECODER);
@@ -66,7 +66,7 @@ the footprint and an optional byte validity mask into a `TerrainHeightGrid`. Gri
 require at least two rows and columns. Metadata is explicit:
 
 ```typescript
-import {createTerrainHeightGrid, sampleTerrainHeightGrid} from '@loaders.gl/terrain/heightmap';
+import {createTerrainHeightGrid, sampleTerrainHeightGrid} from '@loaders.gl/raster/terrain/heightmap';
 
 const grid = createTerrainHeightGrid(heightmap, {
   bounds: [west, south, east, north], // unwrapped EPSG:3857 meters
@@ -105,7 +105,7 @@ absent neighbors clamp to the source edge. Missing samples are not filled.
 ## TerrainHeightField
 
 ```typescript
-import {TerrainHeightField} from '@loaders.gl/terrain/heightmap';
+import {TerrainHeightField} from '@loaders.gl/raster/terrain/heightmap';
 
 const field = new TerrainHeightField(grids, {maxMaskBytes: 8 * 1024 * 1024});
 const elevation = field.sampleHeight([mercatorX, mercatorY]);

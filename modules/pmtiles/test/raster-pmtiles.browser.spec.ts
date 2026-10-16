@@ -371,8 +371,8 @@ test('failure closes asynchronous selections and source errors are preserved', a
 });
 
 test('real GeoTIFF Blob source exports an independently decoded geographic image', async () => {
-  const {GeoTIFFRasterSource} = await import('@loaders.gl/geotiff');
-  const {createTiffFixture} = await import('../../geotiff/test/lib/tiff/tiff-fixture');
+  const {GeoTIFFRasterSource} = await import('@loaders.gl/raster/geotiff/index');
+  const {createTiffFixture} = await import('../../raster/test/geotiff/lib/tiff/tiff-fixture');
   const latitude = 85.0511287798066;
   const bytes = createTiffFixture({
     width: 2,

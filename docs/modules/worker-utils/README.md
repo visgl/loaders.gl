@@ -67,3 +67,26 @@ npm install @loaders.gl/worker-utils
 Use atomic processing for independent inputs. Use batched processing when parsing or encoding
 requires state across input chunks, or when input and output should remain streaming rather than
 being concatenated in memory.
+
+## Loading decoder libraries
+
+Classic workers load classic decoder wrappers with `importScripts()`. Module workers use native
+`import()` and explicit factory exports; loaders.gl does not evaluate fetched JavaScript with
+`eval()` or `new Function()`. Draco, Basis, and Crunch ship generated `.mjs` factory adapters
+alongside their unchanged classic `.js` assets in `dist/libs`.
+
+This removes fetched-source evaluation from worker-utils, not dynamic-code requirements inside
+vendored runtimes. In particular, the legacy Crunch runtime contains its own evaluation helpers;
+these adapters do not claim to make every codec compatible with a policy that forbids `unsafe-eval`.
+
+Custom CDNs must serve these `.mjs` assets with a JavaScript MIME type and appropriate CORS
+headers. Module loading still follows the application's content security policy. When supplying
+a URL override through `modules`, use an ESM factory export for module workers; an override of
+the classic asset name is honored rather than silently replaced. Applications may instead inject
+a factory through `modules` on the main thread, avoiding external library loading altogether.
+
+The optional fifth argument to `loadLibrary(url, moduleName, options, libraryName, moduleLibraryName)`
+selects the shipped ESM asset for module workers. Classic workers, the browser main thread, and
+Node.js continue using the classic asset. Without an ESM asset name, a module worker imports the
+supplied URL directly. Libraries that previously relied on `eval` installing globals must provide
+an ESM default or named export instead.

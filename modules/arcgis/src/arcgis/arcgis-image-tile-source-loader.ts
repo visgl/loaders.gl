@@ -17,8 +17,8 @@ import type {
   TileSourceMetadata
 } from '@loaders.gl/loader-utils';
 import {DataSource} from '@loaders.gl/loader-utils';
-import type {LERCData} from '@loaders.gl/lerc';
-import {LERCLoader} from '@loaders.gl/lerc';
+import type {LERCData} from '@loaders.gl/raster';
+import {LERCLoader} from '@loaders.gl/raster';
 
 /** A tile source that renders ArcGIS ImageServer exports as deck.gl tiles. */
 export class ArcGISImageTileSource

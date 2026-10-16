@@ -18,10 +18,11 @@ import '@loaders.gl/core/test';
 // Image Formats
 import '@loaders.gl/images/test';
 import '@loaders.gl/textures/test';
-import '@loaders.gl/lerc/test';
+import '@loaders.gl/raster/test/lerc';
 // import '@loaders.gl/video/test';
-import '@loaders.gl/geotiff/test';
+import '@loaders.gl/raster/test/geotiff';
 import '@loaders.gl/scientific/test/netcdf';
+import '@loaders.gl/scientific/test/zarr';
 
 // Pointcloud/Mesh Formats
 import '@loaders.gl/draco/test';
@@ -30,7 +31,7 @@ import '@loaders.gl/obj/test';
 import '@loaders.gl/pcd/test';
 import '@loaders.gl/ply/test';
 import '@loaders.gl/splats/test';
-import '@loaders.gl/terrain/test';
+import '@loaders.gl/raster/test/terrain';
 
 // Scenegraph Formats
 import '@loaders.gl/gltf/test';

@@ -302,21 +302,6 @@
         "branches": 55
       }
     },
-    "@loaders.gl/geotiff": {
-      "path": "modules/geotiff",
-      "browser": {
-        "statements": 60,
-        "lines": 60,
-        "functions": 75,
-        "branches": 41
-      },
-      "merged": {
-        "statements": 58,
-        "lines": 60,
-        "functions": 73,
-        "branches": 41
-      }
-    },
     "@loaders.gl/gltf": {
       "path": "modules/gltf",
       "browser": {
@@ -447,21 +432,6 @@
         "lines": 48,
         "functions": 45,
         "branches": 46
-      }
-    },
-    "@loaders.gl/lerc": {
-      "path": "modules/lerc",
-      "browser": {
-        "statements": 25,
-        "lines": 28,
-        "functions": 0,
-        "branches": 20
-      },
-      "merged": {
-        "statements": 23,
-        "lines": 28,
-        "functions": 0,
-        "branches": 20
       }
     },
     "@loaders.gl/loader-utils": {
@@ -842,21 +812,6 @@
         "branches": 64
       }
     },
-    "@loaders.gl/terrain": {
-      "path": "modules/terrain",
-      "browser": {
-        "statements": 90,
-        "lines": 90,
-        "functions": 98,
-        "branches": 60
-      },
-      "merged": {
-        "statements": 87,
-        "lines": 89,
-        "functions": 96,
-        "branches": 60
-      }
-    },
     "@loaders.gl/textures": {
       "path": "modules/textures",
       "browser": {
@@ -991,6 +946,90 @@
         "functions": 91,
         "branches": 72
       }
+    },
+    "@loaders.gl/raster": {
+      "path": "modules/raster",
+      "sourcePaths": [
+        "modules/raster/src/index.ts",
+        "modules/raster/src/geotiff.ts",
+        "modules/raster/src/lerc.ts",
+        "modules/raster/src/terrain.ts",
+        "modules/raster/src/quantized-mesh.ts",
+        "modules/raster/src/geotiff/geotiff-source-loader-types.ts",
+        "modules/raster/src/geotiff/ometiff-source-loader-types.ts"
+      ],
+      "ownershipReason": "New source metadata and dispatch entry points use the new-package default; each moved implementation retains its original independent browser and merged format gates.",
+      "browser": {
+        "statements": 90,
+        "lines": 90,
+        "functions": 90,
+        "branches": 90
+      },
+      "merged": {
+        "statements": 90,
+        "lines": 90,
+        "functions": 90,
+        "branches": 90
+      }
+    }
+  },
+  "formats": {
+    "geotiff": {
+      "path": "modules/raster/src/geotiff",
+      "browser": {
+        "statements": 60,
+        "lines": 60,
+        "functions": 75,
+        "branches": 41
+      },
+      "merged": {
+        "statements": 58,
+        "lines": 60,
+        "functions": 73,
+        "branches": 41
+      },
+      "owner": "@loaders.gl/raster",
+      "sourcePaths": [
+        "modules/raster/src/geotiff/"
+      ]
+    },
+    "lerc": {
+      "path": "modules/raster/src/lerc",
+      "browser": {
+        "statements": 25,
+        "lines": 28,
+        "functions": 0,
+        "branches": 20
+      },
+      "merged": {
+        "statements": 23,
+        "lines": 28,
+        "functions": 0,
+        "branches": 20
+      },
+      "owner": "@loaders.gl/raster",
+      "sourcePaths": [
+        "modules/raster/src/lerc/"
+      ]
+    },
+    "terrain": {
+      "path": "modules/raster/src/terrain",
+      "browser": {
+        "statements": 90,
+        "lines": 90,
+        "functions": 98,
+        "branches": 60
+      },
+      "merged": {
+        "statements": 87,
+        "lines": 89,
+        "functions": 96,
+        "branches": 60
+      },
+      "owner": "@loaders.gl/raster",
+      "sourcePaths": [
+        "modules/raster/src/terrain/"
+      ]
     }
   }
 }

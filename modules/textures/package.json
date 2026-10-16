@@ -87,7 +87,7 @@
   "scripts": {
     "pre-build": "npm run generate-json-schema && npm run copy-libs && npm run build-bundle && npm run build-bundle-dev && npm run build-workers",
     "generate-json-schema": "node ../../scripts/generate-json-schema.mjs --schema ./dist/texture-manifest-schema.js --export CompositeImageManifestSchema --output ./dist/texture-manifest.schema.json --id https://unpkg.com/@loaders.gl/textures/texture-manifest.schema.json --title 'loaders.gl composite image texture manifest'",
-    "copy-libs": "cp -rf ./src/libs ./dist/libs",
+    "copy-libs": "mkdir -p ./dist/libs && cp -rf ./src/libs/. ./dist/libs && node ../../scripts/build-library-modules.mjs textures",
     "build-bundle": "ocular-bundle ./bundle.ts --output=dist/dist.min.js",
     "build-bundle-dev": "ocular-bundle ./bundle.ts --env=dev --output=dist/dist.dev.js",
     "build-workers": "npm run build-basis-worker && npm run build-basis-worker-node && npm run build-npy-worker && npm run build-compressed-texture-worker && npm run build-crunch-worker && npm run build-ktx2-basis-writer-worker && npm run build-ktx2-basis-writer-worker-node",

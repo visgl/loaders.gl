@@ -33,7 +33,7 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
   ]}
 />
 
-The `@loaders.gl/terrain` module reconstructs mesh surfaces from either height
+The `@loaders.gl/raster/terrain/index` module reconstructs mesh surfaces from either height
 map images--e.g. [Mapzen Terrain Tiles][mapzen_terrain_tiles]--which encode
 elevation into R,G,B values or the [quantized mesh][quantized_mesh] format.
 
@@ -49,7 +49,7 @@ elevation into R,G,B values or the [quantized mesh][quantized_mesh] format.
 ## Installation
 
 ```bash
-npm install @loaders.gl/terrain
+npm install @loaders.gl/raster
 npm install @loaders.gl/core
 ```
 
@@ -63,7 +63,7 @@ npm install @loaders.gl/core
 
 ## Height grids without mesh reconstruction
 
-The optional [`@loaders.gl/terrain/heightmap`](./api-reference/heightmap.md) entry
+The optional [`@loaders.gl/raster/terrain/heightmap`](./api-reference/heightmap.md) entry
 decodes already unpacked RGBA pixels into an unpadded `Float32Array`, with a named
 Terrarium preset and support for custom RGB coefficients. It does not load images
 or import tessellation or Arrow code.
@@ -76,3 +76,5 @@ from HERE under the MIT license to decode quantized mesh.
 
 The `TerrainLoader` uses [MARTINI](https://github.com/mapbox/martini) or [Delatin](https://github.com/mapbox/delatin) for mesh
 reconstruction which are both under the ISC License.
+
+Terrain and quantized mesh are now provided by `@loaders.gl/raster`. Neither requires the optional `geotiff` or `lerc` decoder. See the [raster package](../raster/README.md).

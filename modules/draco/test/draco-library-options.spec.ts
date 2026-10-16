@@ -7,10 +7,13 @@ test('bundled Draco libraries default to the full decoder and include encoding a
   expect(options.decoderProfile).toBe('full');
   expect(Object.keys(options.modules!).sort()).toEqual([
     'draco_decoder.js',
+    'draco_decoder.mjs',
     'draco_decoder.wasm',
     'draco_encoder.js',
+    'draco_encoder.mjs',
     'draco_encoder.wasm',
-    'draco_wasm_wrapper.js'
+    'draco_wasm_wrapper.js',
+    'draco_wasm_wrapper.mjs'
   ]);
   for (const [name, url] of Object.entries(options.modules!)) {
     expect(new URL(url).pathname).toContain(`/libs/${name}`);
@@ -48,4 +51,5 @@ test('bundled Draco libraries preserve application URL and injected-module overr
   expect(options.modules!['draco_decoder_gltf.wasm']).toBe(binary);
   expect(overrides).toEqual(original);
   expect(options.modules!['draco_wasm_wrapper.js']).toBeUndefined();
+  expect(options.modules!['draco_wasm_wrapper_gltf.mjs']).toBeUndefined();
 });

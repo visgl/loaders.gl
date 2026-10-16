@@ -1,0 +1,349 @@
+{
+  "name": "@loaders.gl/raster",
+  "version": "5.0.0-alpha.12",
+  "description": "GeoTIFF, LERC and terrain loaders with lazy format entry points",
+  "license": "MIT",
+  "type": "module",
+  "publishConfig": {
+    "access": "public"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/visgl/loaders.gl"
+  },
+  "types": "dist/index.d.ts",
+  "main": "dist/index.cjs",
+  "module": "dist/index.js",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
+    },
+    "./geotiff/bundled": {
+      "types": "./dist/geotiff/bundled.d.ts",
+      "import": "./dist/geotiff/bundled.js"
+    },
+    "./geotiff/discover-geotiff": {
+      "types": "./dist/geotiff/discover-geotiff.d.ts",
+      "import": "./dist/geotiff/discover-geotiff.js"
+    },
+    "./geotiff/geotiff-format": {
+      "types": "./dist/geotiff/geotiff-format.d.ts",
+      "import": "./dist/geotiff/geotiff-format.js"
+    },
+    "./geotiff/geotiff-loader-types": {
+      "types": "./dist/geotiff/geotiff-loader-types.d.ts",
+      "import": "./dist/geotiff/geotiff-loader-types.js"
+    },
+    "./geotiff/geotiff-loader": {
+      "types": "./dist/geotiff/geotiff-loader.d.ts",
+      "import": "./dist/geotiff/geotiff-loader.js"
+    },
+    "./geotiff/geotiff-raster-loader-types": {
+      "types": "./dist/geotiff/geotiff-raster-loader-types.d.ts",
+      "import": "./dist/geotiff/geotiff-raster-loader-types.js"
+    },
+    "./geotiff/geotiff-raster-loader": {
+      "types": "./dist/geotiff/geotiff-raster-loader.d.ts",
+      "import": "./dist/geotiff/geotiff-raster-loader.js"
+    },
+    "./geotiff/geotiff-raster-types": {
+      "types": "./dist/geotiff/geotiff-raster-types.d.ts",
+      "import": "./dist/geotiff/geotiff-raster-types.js"
+    },
+    "./geotiff/geotiff-source-loader": {
+      "types": "./dist/geotiff/geotiff-source-loader.d.ts",
+      "import": "./dist/geotiff/geotiff-source-loader.js"
+    },
+    "./geotiff/index": {
+      "types": "./dist/geotiff/advanced.d.ts",
+      "import": "./dist/geotiff/advanced.js",
+      "require": "./dist/geotiff/advanced.cjs"
+    },
+    "./geotiff/lib/load-geotiff": {
+      "types": "./dist/geotiff/lib/load-geotiff.d.ts",
+      "import": "./dist/geotiff/lib/load-geotiff.js"
+    },
+    "./geotiff/lib/ome/load-ome-tiff": {
+      "types": "./dist/geotiff/lib/ome/load-ome-tiff.d.ts",
+      "import": "./dist/geotiff/lib/ome/load-ome-tiff.js"
+    },
+    "./geotiff/lib/ome/ome-indexers": {
+      "types": "./dist/geotiff/lib/ome/ome-indexers.d.ts",
+      "import": "./dist/geotiff/lib/ome/ome-indexers.js"
+    },
+    "./geotiff/lib/ome/ome-utils": {
+      "types": "./dist/geotiff/lib/ome/ome-utils.d.ts",
+      "import": "./dist/geotiff/lib/ome/ome-utils.js"
+    },
+    "./geotiff/lib/ome/omexml": {
+      "types": "./dist/geotiff/lib/ome/omexml.d.ts",
+      "import": "./dist/geotiff/lib/ome/omexml.js"
+    },
+    "./geotiff/lib/ome/utils": {
+      "types": "./dist/geotiff/lib/ome/utils.d.ts",
+      "import": "./dist/geotiff/lib/ome/utils.js"
+    },
+    "./geotiff/lib/tiff/decode-tiff-samples": {
+      "types": "./dist/geotiff/lib/tiff/decode-tiff-samples.d.ts",
+      "import": "./dist/geotiff/lib/tiff/decode-tiff-samples.js"
+    },
+    "./geotiff/lib/tiff/geotiff-decoder-adapter": {
+      "types": "./dist/geotiff/lib/tiff/geotiff-decoder-adapter.d.ts",
+      "import": "./dist/geotiff/lib/tiff/geotiff-decoder-adapter.js"
+    },
+    "./geotiff/lib/tiff/geotiff-source-adapter": {
+      "types": "./dist/geotiff/lib/tiff/geotiff-source-adapter.d.ts",
+      "import": "./dist/geotiff/lib/tiff/geotiff-source-adapter.js"
+    },
+    "./geotiff/lib/tiff/plan-tiff-blocks": {
+      "types": "./dist/geotiff/lib/tiff/plan-tiff-blocks.d.ts",
+      "import": "./dist/geotiff/lib/tiff/plan-tiff-blocks.js"
+    },
+    "./geotiff/lib/tiff/read-tiff-directory": {
+      "types": "./dist/geotiff/lib/tiff/read-tiff-directory.d.ts",
+      "import": "./dist/geotiff/lib/tiff/read-tiff-directory.js"
+    },
+    "./geotiff/lib/tiff/tiff-gdal-metadata": {
+      "types": "./dist/geotiff/lib/tiff/tiff-gdal-metadata.d.ts",
+      "import": "./dist/geotiff/lib/tiff/tiff-gdal-metadata.js"
+    },
+    "./geotiff/lib/tiff/tiff-metadata": {
+      "types": "./dist/geotiff/lib/tiff/tiff-metadata.d.ts",
+      "import": "./dist/geotiff/lib/tiff/tiff-metadata.js"
+    },
+    "./geotiff/lib/tiff/tiff-numeric-decoder": {
+      "types": "./dist/geotiff/lib/tiff/tiff-numeric-decoder.d.ts",
+      "import": "./dist/geotiff/lib/tiff/tiff-numeric-decoder.js"
+    },
+    "./geotiff/lib/tiff/tiff-source-decoder": {
+      "types": "./dist/geotiff/lib/tiff/tiff-source-decoder.d.ts",
+      "import": "./dist/geotiff/lib/tiff/tiff-source-decoder.js"
+    },
+    "./geotiff/lib/tiff/tiff-types": {
+      "types": "./dist/geotiff/lib/tiff/tiff-types.d.ts",
+      "import": "./dist/geotiff/lib/tiff/tiff-types.js"
+    },
+    "./geotiff/lib/tiff-pixel-source": {
+      "types": "./dist/geotiff/lib/tiff-pixel-source.d.ts",
+      "import": "./dist/geotiff/lib/tiff-pixel-source.js"
+    },
+    "./geotiff/lib/utils/tiff-utils": {
+      "types": "./dist/geotiff/lib/utils/tiff-utils.d.ts",
+      "import": "./dist/geotiff/lib/utils/tiff-utils.js"
+    },
+    "./geotiff/loaders": {
+      "types": "./dist/geotiff/loaders.d.ts",
+      "import": "./dist/geotiff/loaders.js"
+    },
+    "./geotiff/ometiff-source-loader": {
+      "types": "./dist/geotiff/ometiff-source-loader.d.ts",
+      "import": "./dist/geotiff/ometiff-source-loader.js"
+    },
+    "./geotiff/types": {
+      "types": "./dist/geotiff/types.d.ts",
+      "import": "./dist/geotiff/types.js"
+    },
+    "./geotiff/unbundled": {
+      "types": "./dist/geotiff/unbundled.d.ts",
+      "import": "./dist/geotiff/unbundled.js"
+    },
+    "./geotiff": {
+      "types": "./dist/geotiff/index.d.ts",
+      "import": "./dist/geotiff/index.js"
+    },
+    "./index": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    },
+    "./lerc/bundled": {
+      "types": "./dist/lerc/bundled.d.ts",
+      "import": "./dist/lerc/bundled.js"
+    },
+    "./lerc/index": {
+      "types": "./dist/lerc/index.d.ts",
+      "import": "./dist/lerc/index.js"
+    },
+    "./lerc/lerc-format": {
+      "types": "./dist/lerc/lerc-format.d.ts",
+      "import": "./dist/lerc/lerc-format.js"
+    },
+    "./lerc/lerc-loader-types": {
+      "types": "./dist/lerc/lerc-loader-types.d.ts",
+      "import": "./dist/lerc/lerc-loader-types.js"
+    },
+    "./lerc/lerc-loader": {
+      "types": "./dist/lerc/lerc-loader.d.ts",
+      "import": "./dist/lerc/lerc-loader.js"
+    },
+    "./lerc/lerc-wasm-url": {
+      "types": "./dist/lerc/lerc-wasm-url.d.ts",
+      "import": "./dist/lerc/lerc-wasm-url.js"
+    },
+    "./lerc/lib/parsers/lerc/lerc-types": {
+      "types": "./dist/lerc/lib/parsers/lerc/lerc-types.d.ts",
+      "import": "./dist/lerc/lib/parsers/lerc/lerc-types.js"
+    },
+    "./lerc/unbundled": {
+      "types": "./dist/lerc/unbundled.d.ts",
+      "import": "./dist/lerc/unbundled.js"
+    },
+    "./lerc": {
+      "types": "./dist/lerc/index.d.ts",
+      "import": "./dist/lerc/index.js"
+    },
+    "./quantized-mesh": {
+      "types": "./dist/quantized-mesh.d.ts",
+      "import": "./dist/quantized-mesh.js"
+    },
+    "./terrain/bundled": {
+      "types": "./dist/terrain/bundled.d.ts",
+      "import": "./dist/terrain/bundled.js"
+    },
+    "./terrain/heightmap": {
+      "types": "./dist/terrain/heightmap.d.ts",
+      "import": "./dist/terrain/heightmap.js",
+      "require": "./dist/terrain/heightmap.cjs"
+    },
+    "./terrain/index": {
+      "types": "./dist/terrain/index.d.ts",
+      "import": "./dist/terrain/index.js",
+      "require": "./dist/terrain/index.cjs"
+    },
+    "./terrain/lib/decode-quantized-mesh": {
+      "types": "./dist/terrain/lib/decode-quantized-mesh.d.ts",
+      "import": "./dist/terrain/lib/decode-quantized-mesh.js"
+    },
+    "./terrain/lib/decode-terrain-heightmap": {
+      "types": "./dist/terrain/lib/decode-terrain-heightmap.d.ts",
+      "import": "./dist/terrain/lib/decode-terrain-heightmap.js"
+    },
+    "./terrain/lib/delatin/index": {
+      "types": "./dist/terrain/lib/delatin/index.d.ts",
+      "import": "./dist/terrain/lib/delatin/index.js"
+    },
+    "./terrain/lib/helpers/skirt": {
+      "types": "./dist/terrain/lib/helpers/skirt.d.ts",
+      "import": "./dist/terrain/lib/helpers/skirt.js"
+    },
+    "./terrain/lib/parse-quantized-mesh": {
+      "types": "./dist/terrain/lib/parse-quantized-mesh.d.ts",
+      "import": "./dist/terrain/lib/parse-quantized-mesh.js"
+    },
+    "./terrain/lib/parse-terrain": {
+      "types": "./dist/terrain/lib/parse-terrain.d.ts",
+      "import": "./dist/terrain/lib/parse-terrain.js"
+    },
+    "./terrain/lib/terrain-contracts": {
+      "types": "./dist/terrain/lib/terrain-contracts.d.ts",
+      "import": "./dist/terrain/lib/terrain-contracts.js"
+    },
+    "./terrain/lib/terrain-height-field": {
+      "types": "./dist/terrain/lib/terrain-height-field.d.ts",
+      "import": "./dist/terrain/lib/terrain-height-field.js"
+    },
+    "./terrain/lib/terrain-height-grid": {
+      "types": "./dist/terrain/lib/terrain-height-grid.d.ts",
+      "import": "./dist/terrain/lib/terrain-height-grid.js"
+    },
+    "./terrain/lib/terrain-heightmap-types": {
+      "types": "./dist/terrain/lib/terrain-heightmap-types.d.ts",
+      "import": "./dist/terrain/lib/terrain-heightmap-types.js"
+    },
+    "./terrain/lib/terrain-neighborhood": {
+      "types": "./dist/terrain/lib/terrain-neighborhood.d.ts",
+      "import": "./dist/terrain/lib/terrain-neighborhood.js"
+    },
+    "./terrain/lib/utils/version": {
+      "types": "./dist/terrain/lib/utils/version.d.ts",
+      "import": "./dist/terrain/lib/utils/version.js"
+    },
+    "./terrain/quantized-mesh-loader-types": {
+      "types": "./dist/terrain/quantized-mesh-loader-types.d.ts",
+      "import": "./dist/terrain/quantized-mesh-loader-types.js"
+    },
+    "./terrain/quantized-mesh-loader": {
+      "types": "./dist/terrain/quantized-mesh-loader.d.ts",
+      "import": "./dist/terrain/quantized-mesh-loader.js"
+    },
+    "./terrain/quantized-mesh-writer": {
+      "types": "./dist/terrain/quantized-mesh-writer.d.ts",
+      "import": "./dist/terrain/quantized-mesh-writer.js"
+    },
+    "./terrain/terrain-format": {
+      "types": "./dist/terrain/terrain-format.d.ts",
+      "import": "./dist/terrain/terrain-format.js"
+    },
+    "./terrain/terrain-loader-types": {
+      "types": "./dist/terrain/terrain-loader-types.d.ts",
+      "import": "./dist/terrain/terrain-loader-types.js"
+    },
+    "./terrain/terrain-loader": {
+      "types": "./dist/terrain/terrain-loader.d.ts",
+      "import": "./dist/terrain/terrain-loader.js"
+    },
+    "./terrain/unbundled": {
+      "types": "./dist/terrain/unbundled.d.ts",
+      "import": "./dist/terrain/unbundled.js"
+    },
+    "./terrain": {
+      "types": "./dist/terrain/index.d.ts",
+      "import": "./dist/terrain/index.js"
+    },
+    "./terrain-worker.js": {
+      "import": "./dist/terrain-worker.js"
+    },
+    "./quantized-mesh-worker.js": {
+      "import": "./dist/quantized-mesh-worker.js"
+    },
+    "./lerc/lerc-wasm.wasm": "./dist/lerc/libs/lerc/lerc-wasm.wasm",
+    "./geotiff/geotiff-source-loader-types": {
+      "types": "./dist/geotiff/geotiff-source-loader-types.d.ts",
+      "import": "./dist/geotiff/geotiff-source-loader-types.js"
+    },
+    "./geotiff/ometiff-source-loader-types": {
+      "types": "./dist/geotiff/ometiff-source-loader-types.d.ts",
+      "import": "./dist/geotiff/ometiff-source-loader-types.js"
+    }
+  },
+  "sideEffects": false,
+  "files": [
+    "src",
+    "dist",
+    "README.md"
+  ],
+  "scripts": {
+    "copy-libs": "mkdir -p dist/terrain/libs dist/lerc/libs && cp -R src/terrain/libs/. dist/terrain/libs/ && cp -R src/lerc/libs/. dist/lerc/libs/",
+    "build-cjs": "node ../../node_modules/@vis.gl/dev-tools/dist/build-cjs.js",
+    "build-worker-terrain": "node ../../scripts/build-codec-worker.mjs src/terrain/workers/terrain-worker.ts --bundle --outfile=dist/terrain-worker.js --define:__VERSION__=\\\"$npm_package_version\\\"",
+    "build-worker-quantized-mesh": "node ../../scripts/build-codec-worker.mjs src/terrain/workers/quantized-mesh-worker.ts --bundle --outfile=dist/quantized-mesh-worker.js --define:__VERSION__=\\\"$npm_package_version\\\"",
+    "pre-build": "npm run copy-libs && node ./build-cjs.mjs && npm run build-worker-terrain && npm run build-worker-quantized-mesh"
+  },
+  "dependencies": {
+    "@loaders.gl/images": "5.0.0-alpha.12",
+    "@loaders.gl/loader-utils": "5.0.0-alpha.12",
+    "@loaders.gl/schema": "5.0.0-alpha.12",
+    "@loaders.gl/schema-utils": "5.0.0-alpha.12",
+    "@math.gl/crs": "5.0.0-alpha.18",
+    "fast-xml-parser": "^5.3.6"
+  },
+  "peerDependencies": {
+    "@loaders.gl/core": "~5.0.0-alpha.0",
+    "geotiff": "^2.1.0",
+    "lerc": "^4.2.0"
+  },
+  "peerDependenciesMeta": {
+    "geotiff": {
+      "optional": true
+    },
+    "lerc": {
+      "optional": true
+    }
+  },
+  "devDependencies": {
+    "@mapbox/martini": "0.2.0",
+    "geotiff": "^2.1.0",
+    "lerc": "^4.2.0"
+  }
+}

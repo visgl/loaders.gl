@@ -6,6 +6,8 @@ node scripts/validate-token.js
 # Build the local worker bundles used by the website examples.
 (
   cd ..
+  # Source imports reference the generated ESM decoder assets, even without a package build.
+  (cd modules/draco && node ../../scripts/build-library-modules.mjs draco)
   npm run --silent build-source-worker --prefix modules/parquet -- --log-level=error
   npm run --silent build-worker --prefix modules/i3s -- --log-level=error
 )

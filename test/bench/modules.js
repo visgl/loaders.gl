@@ -4,7 +4,7 @@
 
 // Override aliases to point to publicly accessible github
 // TODO maybe setPathPrefix is enough?
-import ALIASES from '../../test/aliases';
+import ALIASES from '../aliases';
 import {_addAliases} from '@loaders.gl/loader-utils';
 _addAliases(ALIASES);
 

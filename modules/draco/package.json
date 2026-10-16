@@ -72,7 +72,7 @@
   ],
   "scripts": {
     "pre-build": "npm run copy-libs && npm run build-bundle && npm run build-bundle-dev && npm run build-workers",
-    "copy-libs": "cp -rf ./src/libs ./dist/libs",
+    "copy-libs": "mkdir -p ./dist/libs && cp -rf ./src/libs/. ./dist/libs && node ../../scripts/build-library-modules.mjs draco",
     "build-bundle": "node ../../scripts/build-codec-bundle.mjs ./bundle.ts --output=dist/dist.min.js",
     "build-bundle-dev": "node ../../scripts/build-codec-bundle.mjs ./bundle.ts --env=dev --output=dist/dist.dev.js",
     "build-workers": "yarn build-loader-worker && yarn build-loader-worker-node && yarn build-writer-worker && yarn build-writer-worker-node",

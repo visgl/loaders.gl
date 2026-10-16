@@ -6,6 +6,15 @@ import {build} from 'esbuild';
 
 const repositoryRoot = process.cwd();
 const importCases = [
+  ['Grouped GeoTIFF metadata', '@loaders.gl/raster', 'GeoTIFFLoader'],
+  ['Grouped numeric TIFF metadata', '@loaders.gl/raster', 'GeoTIFFRasterLoader'],
+  ['GeoTIFF parser subpath', '@loaders.gl/raster/geotiff', 'GeoTIFFLoaderWithParser'],
+  ['Grouped LERC metadata', '@loaders.gl/raster', 'LERCLoader'],
+  ['LERC parser subpath', '@loaders.gl/raster/lerc', 'LERCLoaderWithParser'],
+  ['Grouped terrain metadata', '@loaders.gl/raster', 'TerrainLoader'],
+  ['Terrain parser subpath', '@loaders.gl/raster/terrain', 'TerrainLoaderWithParser'],
+  ['Grouped quantized mesh metadata', '@loaders.gl/raster', 'QuantizedMeshLoader'],
+  ['Quantized mesh parser subpath', '@loaders.gl/raster/quantized-mesh', 'QuantizedMeshLoaderWithParser'],
   ['Compatibility Avro metadata', '@loaders.gl/avro', 'AvroLoader'],
   ['Grouped Avro metadata', '@loaders.gl/tables', 'AvroLoader'],
   ['Avro parser subpath', '@loaders.gl/tables/avro', 'AvroLoaderWithParser'],
@@ -59,6 +68,8 @@ for (const [name, specifier, exportName] of importCases) {
     },
     // Exercise emitted package exports instead of the repository's source aliases.
     tsconfigRaw: {},
+    // LERC's Node-only import is not part of its browser implementation.
+    external: ['module'],
     bundle: true,
     minify: true,
     splitting: true,

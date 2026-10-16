@@ -92,7 +92,7 @@ loader when decoded pixels are required.
 
 ## Analytical LERC
 
-When the requested format contains `lerc`, the response is decoded through `@loaders.gl/lerc`:
+When the requested format contains `lerc`, the response is decoded through `@loaders.gl/raster/lerc/index`:
 
 ```ts
 const raster = await source.getCoverage({

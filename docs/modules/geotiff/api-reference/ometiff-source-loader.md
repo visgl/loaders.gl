@@ -55,7 +55,7 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
 
 ```ts
 import {createDataSource} from '@loaders.gl/core';
-import {OMETiffSourceLoader} from '@loaders.gl/geotiff';
+import {OMETiffSourceLoader} from '@loaders.gl/raster/geotiff/index';
 
 const source = createDataSource('multi-channel.ome.tif', [OMETiffSourceLoader], {
   core: {type: 'ometiff'},

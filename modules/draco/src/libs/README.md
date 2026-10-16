@@ -1,6 +1,11 @@
 # Draco runtime assets
 
-The vendored files are pinned to the official [Google Draco 1.5.7 release](https://github.com/google/draco/releases/tag/1.5.7), commit [`8786740086a9f4d83f44aa83badfbea4dce7a1b5`](https://github.com/google/draco/tree/8786740086a9f4d83f44aa83badfbea4dce7a1b5). No generated wrapper, fork, or unverified third-party build is used. The upstream source repository is [google/draco](https://github.com/google/draco/tree/8786740086a9f4d83f44aa83badfbea4dce7a1b5), and the npm package is the Google-published [`draco3d@1.5.7`](https://www.npmjs.com/package/draco3d/v/1.5.7) package.
+The build additionally generates `.mjs` adapters in `dist/libs` by appending an explicit default
+factory export to each classic wrapper. These loaders.gl adapters support native module-worker
+imports without changing the audited upstream files or installing decoder globals. The manifest
+below describes the unchanged upstream assets, not the generated adapters.
+
+The vendored files are pinned to the official [Google Draco 1.5.7 release](https://github.com/google/draco/releases/tag/1.5.7), commit [`8786740086a9f4d83f44aa83badfbea4dce7a1b5`](https://github.com/google/draco/tree/8786740086a9f4d83f44aa83badfbea4dce7a1b5). No fork or unverified third-party build is used. The upstream source repository is [google/draco](https://github.com/google/draco/tree/8786740086a9f4d83f44aa83badfbea4dce7a1b5), and the npm package is the Google-published [`draco3d@1.5.7`](https://www.npmjs.com/package/draco3d/v/1.5.7) package.
 
 | File | Upstream provenance | SHA-256 |
 | --- | --- | --- |

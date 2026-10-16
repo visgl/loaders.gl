@@ -88,6 +88,16 @@ v4.5 is additive. Existing loaders and defaults continue to work unchanged, exce
 
 The sections below document the v5 removals, migrations, and deprecations that remain active.
 
+### Module-worker decoder wrappers
+
+Module workers no longer evaluate fetched classic JavaScript to install decoder globals.
+Custom decoder URL overrides must provide ESM default factory exports (Draco also accepts named
+factory exports). Built-in
+Draco, Basis, and Crunch wrappers have generated `.mjs` adapters; custom CDNs must serve
+these additional assets. Classic-worker `importScripts()` behavior is unchanged. See
+[decoder library loading](/docs/modules/worker-utils#loading-decoder-libraries) for overrides
+and content-security-policy limitations.
+
 ### Explicit reference compression backends
 
 `@loaders.gl/compression` no longer automatically installs `brotli`, `fzstd`, `hysnappy`,
@@ -121,7 +131,6 @@ The explicit `@loaders.gl/arrow/types` facade exposes Apache Arrow names availab
 in the supported minimum release, Arrow 17. Import version-specific names such
 as `Utf8View`, `BinaryView`, `LargeList`, compression helpers, and newer type
 guards directly from your installed `apache-arrow` package.
-
 
 ### Graph loader output defaults
 
@@ -236,7 +245,7 @@ itself and the separate `Tileset3D.loadOptions` API are not removed by this chan
   Set `gml.shape: 'geojson'` for the previous geometry/FeatureCollection/null result, including
   FeatureCollection batches. WFS source format selection is unchanged.
 
-**@loaders.gl/draco, @loaders.gl/potree, and @loaders.gl/terrain**
+**@loaders.gl/draco, @loaders.gl/potree, and @loaders.gl/raster/terrain/index**
 
  - `DracoLoader`, `PotreeBinLoader`, `TerrainLoader`, and `QuantizedMeshLoader` now return Mesh
    Arrow tables by default. Set the corresponding loader option to `shape: 'mesh'` to preserve
@@ -975,3 +984,23 @@ import {OMEZarrImageSource, loadZarr} from '@loaders.gl/scientific/zarr';
 ```
 
 The NetCDF and Zarr documentation now lives under [the scientific module](/docs/modules/scientific). Zarr storage engines are installed as dependencies of the scientific package.
+
+## Raster package consolidation
+
+`@loaders.gl/geotiff`, `@loaders.gl/lerc`, and `@loaders.gl/terrain` have been removed.
+Install `@loaders.gl/raster` and use its metadata-only root or explicit parser entry points.
+
+| Removed import | Replacement |
+| --- | --- |
+| `@loaders.gl/geotiff` | `@loaders.gl/raster/geotiff/index` for existing advanced APIs; root for loader metadata |
+| `@loaders.gl/lerc` | `@loaders.gl/raster` for metadata; `@loaders.gl/raster/lerc` for the parser |
+| `@loaders.gl/terrain` | `@loaders.gl/raster` for metadata and writer; `@loaders.gl/raster/terrain/index` for advanced APIs |
+| `@loaders.gl/terrain/heightmap` | `@loaders.gl/raster/terrain/heightmap` |
+
+Direct parser filenames now use `*-loader` and metadata filenames use `*-loader-types`.
+Replace `*-loader-with-parser` imports with their corresponding `@loaders.gl/raster/<format>/*-loader`.
+Use `@loaders.gl/raster/quantized-mesh` for `QuantizedMeshLoaderWithParser`.
+Worker URLs move to the raster package root; the LERC WASM export moves to `raster/lerc/lerc-wasm.wasm`.
+Install optional peers `geotiff` or `lerc` explicitly when using their decoding backends.
+GeoTIFF/OME-TIFF source metadata at the raster root needs asynchronous `load()`; import the explicit
+source subpath when using synchronous `createDataSource()`.

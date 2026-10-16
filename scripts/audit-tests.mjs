@@ -204,7 +204,7 @@ function findRemoteFetches(files) {
 /** Finds fast tests that reference fixture files larger than one MiB. */
 function findLargeFixtureReferences(files) {
   const largeFixtures = walkFiles(path.resolve('modules'))
-    .filter(filePath => filePath.includes(`${path.sep}test${path.sep}data${path.sep}`))
+    .filter(filePath => /[\\/]test[\\/](?:[^\\/]+[\\/])?data[\\/]/.test(filePath))
     .filter(filePath => fs.statSync(filePath).size > 1024 * 1024)
     .map(toRepositoryPath);
   const references = [];

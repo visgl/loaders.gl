@@ -12,7 +12,7 @@ including metadata for every selected image and band.
 
 ```typescript
 import {load} from '@loaders.gl/core';
-import {GeoTIFFRasterLoader} from '@loaders.gl/geotiff';
+import {GeoTIFFRasterLoader} from '@loaders.gl/raster';
 
 const dataset = await load('geoid.tif', GeoTIFFRasterLoader);
 const image = dataset.images[0];
@@ -88,7 +88,7 @@ The root export is metadata-only. Core's asynchronous `load()` and `parse()`
 automatically preload the parser on first use. To bundle the numeric parser explicitly:
 
 ```typescript
-import {GeoTIFFRasterLoaderWithParser} from '@loaders.gl/geotiff/geotiff-raster-loader';
+import {GeoTIFFRasterLoaderWithParser} from '@loaders.gl/raster/geotiff/geotiff-raster-loader';
 ```
 
 TIFF decompression is asynchronous; there is no `parseSync()` implementation.

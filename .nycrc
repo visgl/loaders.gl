@@ -18,7 +18,7 @@
     "modules/video/src/lib/gifshot/gifshot.ts",
     "modules/polyfills/src/text-encoder/text-encoder.ts",
     "modules/compression/src/brotli/decode.ts",
-    "modules/terrain/src/lib/delatin/index.ts",
+    "modules/raster/src/terrain/lib/delatin/index.ts",
     "modules/crypto/src/lib/algorithms/md5-wasm.ts",
     "modules/wms/src/lib/parsers/gml/deep-strict-equal.ts",
     "**3d-tiles/src/styles/**",

@@ -30,6 +30,8 @@
       "!**/.cache/**",
       "!**/public/**",
       "!**/src/libs/**",
+      "!modules/raster/src/terrain/libs/**",
+      "!modules/raster/src/lerc/libs/**",
       "!test/apps/**",
       "!modules/core/src/iterators/make-stream/make-node-stream.ts",
       "!modules/loader-utils/src/lib/files/node-file-facade.ts",

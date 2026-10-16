@@ -43,6 +43,11 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
 ## Scientific format package consolidation
 
 NetCDF and Zarr are now available from the public `@loaders.gl/scientific` package. The package root exports metadata-only loaders; parser and source implementations are available through `@loaders.gl/scientific/netcdf` and `@loaders.gl/scientific/zarr`. See the [NetCDF format guide](/docs/modules/scientific/netcdf/formats/netcdf) and [upgrade guide](/docs/upgrade-guide#scientific-format-package-consolidation-v5).
+## Raster package
+
+`@loaders.gl/raster` consolidates GeoTIFF, LERC, terrain and quantized mesh with metadata-only
+root exports, lazy parser subpaths, and optional `geotiff`/`lerc` engines. ArcGIS remains in
+`@loaders.gl/arcgis`. See the [raster package](/docs/modules/raster) and [upgrade guide](/docs/upgrade-guide).
 
 ## Experimental grouped loader packages
 
