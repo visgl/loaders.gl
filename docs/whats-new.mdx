@@ -1626,3 +1626,7 @@ for moved imports.
 The ArcGIS package now defers service implementations through its lightweight root loaders.
 Use `@loaders.gl/arcgis/bundled` for synchronous construction and direct source classes; see
 [ArcGIS import patterns](/docs/developer-guide/arcgis#how-imports-work).
+
+### GeoPackage tile payloads and GeoTIFF overview grids
+
+GeoPackage sources can read bounded encoded tile payloads by explicit table and native matrix ID, returning `null` for sparse holes. GeoTIFF/COG raster metadata now includes optional native `tileGrid` geometry for eligible tiled, axis-aligned overview hierarchies, preserving image IDs, independent pixel sizes, and padded edge tiles.

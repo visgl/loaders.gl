@@ -82,6 +82,7 @@ window, resolution, and band vocabulary rather than pretending pixels are table 
 | --- | --- | --- |
 | Entry point | `getRaster()` | `getRaster()` |
 | Metadata discovery | Bands, dtype, bounds, CRS, overviews | Channels, dtype, dimensions, multiscale levels |
+| Native TileMatrix geometry | Optional for tiled, axis-aligned overview hierarchies; see [source details](/docs/modules/geotiff/api-reference/geotiff-source-loader#native-tilematrix-geometry) | Not provided |
 | Spatial window | Bounds pushdown in the source CRS | Not geospatial |
 | Resolution | Overview/target-size selection | Multiscale level selection |
 | Components | Band selection | Channel selection plus time and z slices |
