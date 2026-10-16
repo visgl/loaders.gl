@@ -5,13 +5,13 @@
 import { expect, test } from "vitest";
 import { fetchFile } from '@loaders.gl/core';
 import { BlobFile } from '@loaders.gl/loader-utils';
-import { PARQUET_CODECS } from '../src/parquetjs/codecs/index';
-import { decodeFileMetadata, decodePageHeader } from '../src/parquetjs/utils/read-utils';
-import { ParquetReader } from '../src/parquetjs/parser/parquet-reader';
-import { ParquetEncoder } from '../src/parquetjs/encoder/parquet-encoder';
-import { ParquetSchema } from '../src/parquetjs/schema/schema';
-import { materializeColumns, materializeRows } from '../src/parquetjs/schema/shred';
-import { concatUint8Arrays } from '../src/parquetjs/utils/binary-utils';
+import { PARQUET_CODECS } from '../../tables/src/parquet/parquetjs/codecs/index';
+import { decodeFileMetadata, decodePageHeader } from '../../tables/src/parquet/parquetjs/utils/read-utils';
+import { ParquetReader } from '../../tables/src/parquet/parquetjs/parser/parquet-reader';
+import { ParquetEncoder } from '../../tables/src/parquet/parquetjs/encoder/parquet-encoder';
+import { ParquetSchema } from '../../tables/src/parquet/parquetjs/schema/schema';
+import { materializeColumns, materializeRows } from '../../tables/src/parquet/parquetjs/schema/shred';
+import { concatUint8Arrays } from '../../tables/src/parquet/parquetjs/utils/binary-utils';
 const PARQUET_DIR = '@loaders.gl/parquet/test/data';
 const TEXT_DECODER = new TextDecoder();
 type MutableGlobalThis = typeof globalThis & {
@@ -250,7 +250,7 @@ test('ParquetReader and ParquetJSLoader parse without global Buffer', async () =
     const snappyBytes = await readTestBytes('apache/good/alltypes_plain.snappy.parquet');
     const originalBuffer = (globalThis as MutableGlobalThis).Buffer;
     await withoutGlobalBuffer(async () => {
-        const [{ ParquetJSLoader }] = await Promise.all([import('../src/bundled')]);
+        const [{ ParquetJSLoader }] = await Promise.all([import('../../tables/src/parquet/bundled')]);
         const reader = new ParquetReader(new BlobFile(toExactArrayBuffer(fruitsBytes)));
         const metadata = await reader.getSchemaMetadata();
         expect(metadata, 'reader metadata parsed').toEqual({ myuid: '420', fnord: 'dronf' });

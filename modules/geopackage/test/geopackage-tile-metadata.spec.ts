@@ -7,7 +7,7 @@ import initSqlJs from 'sql.js';
 import type {SqlJsStatic, Database} from 'sql.js';
 import {GeoPackageSource} from '@loaders.gl/geopackage';
 import {getTileBounds} from '@math.gl/geospatial';
-import {listGeoPackageTileTables} from '../src/lib/geopackage-tile-metadata';
+import {listGeoPackageTileTables} from '../../geospatial/src/geopackage/lib/geopackage-tile-metadata';
 
 let sqlite: SqlJsStatic;
 beforeAll(async () => {

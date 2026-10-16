@@ -5,7 +5,7 @@
 import {expect, test} from 'vitest';
 
 import {RequestScheduler} from '@loaders.gl/loader-utils';
-import {IcebergRestCatalog} from '../src/iceberg-rest-catalog';
+import {IcebergRestCatalog} from '../../tables/src/parquet/iceberg-rest-catalog';
 
 test('IcebergRestCatalog loads a table through the standard REST endpoint', async () => {
   const metadataLocation = 'data:application/json,%7B%22format-version%22%3A2%2C%22location%22%3A%22table%22%7D';

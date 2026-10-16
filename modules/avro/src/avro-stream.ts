@@ -2,5 +2,5 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-export {encodeAvroInChunks} from './lib/encoders/encode-avro';
-export type {AvroWriterOptions, AvroSchema} from './lib/encoders/encode-avro';
+/** Compatibility entry point; implementation is owned by @loaders.gl/tables. */
+export * from '@loaders.gl/tables/avro/avro-stream';

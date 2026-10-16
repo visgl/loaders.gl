@@ -2,5 +2,5 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-export type {GeoPackageLoaderOptions} from './geopackage-loader-with-parser';
-export {GeoPackageLoaderWithParser as GeoPackageLoader} from './geopackage-loader-with-parser';
+/** Compatibility entry point; implementation is owned by @loaders.gl/geospatial. */
+export * from '@loaders.gl/geospatial/geopackage/bundled';

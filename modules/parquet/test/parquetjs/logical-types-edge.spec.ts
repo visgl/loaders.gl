@@ -4,7 +4,7 @@
 
 import {expect, test} from 'vitest';
 
-import {fromPrimitive, toPrimitive} from '../../src/parquetjs/schema/types';
+import {fromPrimitive, toPrimitive} from '../../../tables/src/parquet/parquetjs/schema/types';
 
 test('Parquet logical types convert scalar, text, JSON, and temporal values', () => {
   expect(toPrimitive('BOOLEAN' as any, 1)).toBe(true);

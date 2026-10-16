@@ -4,7 +4,7 @@
 
 import {describe, expect, test} from 'vitest';
 
-import {fieldIndexOf} from '../../src/parquetjs/utils/read-utils';
+import {fieldIndexOf} from '../../../tables/src/parquet/parquetjs/utils/read-utils';
 
 describe('fieldIndexOf', () => {
   test('matches selected parents and exact leaf paths', () => {

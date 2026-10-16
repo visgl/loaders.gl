@@ -13,8 +13,9 @@ const sourceMocks = vi.hoisted(() => ({
   parseTable: vi.fn()
 }));
 
-vi.mock('../src/lib/parse-geopackage', async importOriginal => {
-  const original = await importOriginal<typeof import('../src/lib/parse-geopackage')>();
+vi.mock('../../geospatial/src/geopackage/lib/parse-geopackage', async importOriginal => {
+  const original =
+    await importOriginal<typeof import('../../geospatial/src/geopackage/lib/parse-geopackage')>();
   return {
     ...original,
     loadGeoPackageDatabase: sourceMocks.loadDatabase,
@@ -25,9 +26,11 @@ vi.mock('../src/lib/parse-geopackage', async importOriginal => {
   };
 });
 
-vi.mock('../src/lib/geopackage-tile-metadata', () => ({listGeoPackageTileTables: () => []}));
+vi.mock('../../geospatial/src/geopackage/lib/geopackage-tile-metadata', () => ({
+  listGeoPackageTileTables: () => []
+}));
 
-import {GeoPackageDataSource} from '../src/geopackage-source-loader';
+import {GeoPackageDataSource} from '../../geospatial/src/geopackage/geopackage-source-loader';
 
 beforeEach(() => {
   vi.clearAllMocks();

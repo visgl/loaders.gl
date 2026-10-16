@@ -2,24 +2,28 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-export {KMLFormat, KMZFormat, GPXFormat, TCXFormat} from './kml-format';
-export type {GPXLoaderOptions} from './gpx-loader';
-export {GPXLoader} from './gpx-loader';
+export {KMLFormat, KMZFormat, GPXFormat, TCXFormat} from '@loaders.gl/geospatial/kml/index';
+export type {GPXLoaderOptions} from '@loaders.gl/geospatial/kml/index';
+export {GPXLoader} from '@loaders.gl/geospatial/kml/index';
 
-export type {KMLLoaderOptions} from './kml-loader';
-export {KMLLoader} from './kml-loader';
+export type {KMLLoaderOptions} from '@loaders.gl/geospatial/kml/index';
+export {KMLLoader} from '@loaders.gl/geospatial/kml/index';
 
-export type {KMZLoaderOptions} from './kmz-loader-types';
-export {KMZLoader} from './kmz-loader-types';
+export type {KMZLoaderOptions} from '@loaders.gl/geospatial/kml/index';
+export {KMZLoader} from '@loaders.gl/geospatial/kml/index';
 
-export type {KMZArchive} from './kmz-archive';
-export {openKMZArchive, resolveKMZResourcePath} from './kmz-archive';
+export type {KMZArchive} from '@loaders.gl/geospatial/kml/index';
+export {openKMZArchive, resolveKMZResourcePath} from '@loaders.gl/geospatial/kml/index';
 
-export type {KMZSourceOptions} from './kmz-source';
-export {KMZSourceLoader, KMZVectorSource} from './kmz-source';
+export type {KMZSourceOptions} from '@loaders.gl/geospatial/kml/index';
+export {KMZSourceLoader, KMZVectorSource} from '@loaders.gl/geospatial/kml/index';
 
-export type {KMLWriterData, KMLWriterOptions, KMZWriterOptions} from './kml-writer';
-export {KMLWriter, KMZWriter, encodeKMLText} from './kml-writer';
+export type {
+  KMLWriterData,
+  KMLWriterOptions,
+  KMZWriterOptions
+} from '@loaders.gl/geospatial/kml/index';
+export {KMLWriter, KMZWriter, encodeKMLText} from '@loaders.gl/geospatial/kml/index';
 
 export type {
   KMLDocument,
@@ -29,11 +33,11 @@ export type {
   KMLNetworkLink,
   KMLOverlay,
   KMLStyle
-} from './kml-parser';
+} from '@loaders.gl/geospatial/kml/index';
 export {
   convertKMLDocumentToFeatureCollection,
   parseKMLDocument
-} from './kml-parser';
+} from '@loaders.gl/geospatial/kml/index';
 
-export type {TCXLoaderOptions} from './tcx-loader';
-export {TCXLoader} from './tcx-loader';
+export type {TCXLoaderOptions} from '@loaders.gl/geospatial/kml/index';
+export {TCXLoader} from '@loaders.gl/geospatial/kml/index';

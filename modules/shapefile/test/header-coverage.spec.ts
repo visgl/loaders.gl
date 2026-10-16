@@ -1,6 +1,6 @@
 import {expect, test, vi} from 'vitest';
-import {parseSHPHeader} from '../src/lib/parsers/parse-shp-header';
-import {BinaryReader} from '../src/lib/streaming/binary-reader';
+import {parseSHPHeader} from '../../geospatial/src/shapefile/lib/parsers/parse-shp-header';
+import {BinaryReader} from '../../geospatial/src/shapefile/lib/streaming/binary-reader';
 
 test('parseSHPHeader reads mixed-endian fields and bounding boxes', () => {
   const buffer = new ArrayBuffer(100);

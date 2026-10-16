@@ -6,17 +6,20 @@ import {expect, test} from 'vitest';
 import * as arrow from 'apache-arrow';
 import {deflateSync, zlibSync} from 'fflate';
 import {SnappyCompression} from '@loaders.gl/compression/snappy-compression';
-import {ORCLoaderWithParser} from '../src/orc-loader';
+import {ORCLoaderWithParser} from '../../tables/src/orc/orc-loader';
 import {
   createORCSchema,
   getORCDataType,
   ORCSource,
   ORCSourceLoaderWithParser
-} from '../src/orc-source-loader';
-import {ORCTypeKind} from '../src/lib/parsers/parse-orc';
-import {ORCWriter} from '../src/orc-writer';
-import {encodeORC} from '../src/lib/encoders/encode-orc';
-import {decompressORCStream, preloadORCCompression} from '../src/lib/parsers/orc-compression';
+} from '../../tables/src/orc/orc-source-loader';
+import {ORCTypeKind} from '../../tables/src/orc/lib/parsers/parse-orc';
+import {ORCWriter} from '../../tables/src/orc/orc-writer';
+import {encodeORC} from '../../tables/src/orc/lib/encoders/encode-orc';
+import {
+  decompressORCStream,
+  preloadORCCompression
+} from '../../tables/src/orc/lib/parsers/orc-compression';
 
 test('ORCSource exposes footer metadata and shared projection/limit reads', async () => {
   const input = {

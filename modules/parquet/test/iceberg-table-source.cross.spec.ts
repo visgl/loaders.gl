@@ -9,9 +9,9 @@ import {ArrowTableSource} from '@loaders.gl/arrow';
 import {encode} from '@loaders.gl/core';
 import {DataSourceManager} from '@loaders.gl/loader-utils';
 import {FederatedTableScanSource} from '@loaders.gl/scan';
-import {IcebergTableSource} from '../src/iceberg-table-source';
+import {IcebergTableSource} from '../../tables/src/parquet/iceberg-table-source';
 import {AvroWriter} from '@loaders.gl/avro';
-import {ParquetJSWriter} from '../src/parquet-js-writer';
+import {ParquetJSWriter} from '../../tables/src/parquet/parquet-js-writer';
 
 function createMetadataUrl(metadata: unknown): string {
   return `data:application/json,${encodeURIComponent(JSON.stringify(metadata))}`;

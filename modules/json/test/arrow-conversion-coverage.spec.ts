@@ -12,7 +12,7 @@ import {
   makeNDJSONArrowBatchIterator,
   normalizeJSONArrowSchema,
   validateRowTableAgainstArrowSchema
-} from '../src/lib/parsers/convert-row-table-to-arrow';
+} from '../../tables/src/json/lib/parsers/convert-row-table-to-arrow';
 
 async function* yieldBatches(batches: any[]): AsyncIterable<any> {
   yield* batches;

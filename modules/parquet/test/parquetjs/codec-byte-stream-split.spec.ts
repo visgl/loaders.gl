@@ -3,8 +3,8 @@
 // Copyright (c) vis.gl contributors
 
 import {describe, expect, test} from 'vitest';
-import {PARQUET_CODECS} from '../../src/parquetjs/codecs';
-import {isByteStreamSplitType} from '../../src/parquetjs/codecs/byte-stream-split';
+import {PARQUET_CODECS} from '../../../tables/src/parquet/parquetjs/codecs';
+import {isByteStreamSplitType} from '../../../tables/src/parquet/parquetjs/codecs/byte-stream-split';
 
 const CODEC = PARQUET_CODECS.BYTE_STREAM_SPLIT;
 

@@ -3,7 +3,10 @@
 // Copyright (c) vis.gl contributors
 
 import {expect, test} from 'vitest';
-import {decodeAvroBlockRows, type AvroOCFHeader} from '../src/lib/parsers/parse-avro';
+import {
+  decodeAvroBlockRows,
+  type AvroOCFHeader
+} from '../../tables/src/avro/lib/parsers/parse-avro';
 
 /** Supplies a null-codec header for independent raw datum fixtures. */
 function createHeader(schema: AvroOCFHeader['schema']): AvroOCFHeader {

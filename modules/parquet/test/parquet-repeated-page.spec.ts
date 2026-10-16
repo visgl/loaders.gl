@@ -6,8 +6,8 @@ import {encode} from '@loaders.gl/core';
 import type {ObjectRowTable} from '@loaders.gl/schema';
 import {BlobFile} from '@loaders.gl/loader-utils';
 import {ParquetJSWriter} from '@loaders.gl/parquet';
-import {createParquetPagePruningPlan} from '../src/lib/parquet-page-index';
-import {ParquetReader} from '../src/parquetjs/parser/parquet-reader';
+import {createParquetPagePruningPlan} from '../../tables/src/parquet/lib/parquet-page-index';
+import {ParquetReader} from '../../tables/src/parquet/parquetjs/parser/parquet-reader';
 import {expect, test} from 'vitest';
 
 test('ParquetReader selectively reads repeated columns when page boundaries align', async () => {

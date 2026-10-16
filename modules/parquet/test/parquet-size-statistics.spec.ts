@@ -4,8 +4,8 @@ import {encode} from '@loaders.gl/core';
 import {BlobFile} from '@loaders.gl/loader-utils';
 import type {ObjectRowTable} from '@loaders.gl/schema';
 
-import {ParquetJSWriter} from '../src/parquet-js-writer';
-import {ParquetReader} from '../src/parquetjs/parser/parquet-reader';
+import {ParquetJSWriter} from '../../tables/src/parquet/parquet-js-writer';
+import {ParquetReader} from '../../tables/src/parquet/parquetjs/parser/parquet-reader';
 
 const TABLE: ObjectRowTable = {
   shape: 'object-row-table',

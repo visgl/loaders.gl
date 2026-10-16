@@ -12,13 +12,13 @@ import {
   FlatGeobufGeometryType,
   getFlatGeobufCRSIdentifier,
   readFlatGeobufHeader
-} from '../src/lib/flatgeobuf-reader';
+} from '../../geospatial/src/flatgeobuf/lib/flatgeobuf-reader';
 import {
   getProjection,
   makeArrowRow,
   makeArrowSchema,
   parseFlatGeobufInBatches
-} from '../src/lib/parse-flatgeobuf';
+} from '../../geospatial/src/flatgeobuf/lib/parse-flatgeobuf';
 
 const COLUMN_TYPES = [
   ['byte', FlatGeobufColumnType.Byte, 'int8'],

@@ -1,12 +1,12 @@
 import * as arrow from 'apache-arrow';
 import {expect, test} from 'vitest';
 import {createReadableFileFromBuffer} from 'test/utils/readable-files';
-import {AvroWriter} from '../src/avro-writer';
+import {AvroWriter} from '../../tables/src/avro/avro-writer';
 import {
   parseAvroFromFile,
   parseAvroInBatchesFromFile,
   parseAvroOCF
-} from '../src/lib/parsers/parse-avro';
+} from '../../tables/src/avro/lib/parsers/parse-avro';
 
 /** Collects every batch from a file-backed parser invocation. */
 async function collectBatches(iterator: AsyncIterable<unknown>): Promise<unknown[]> {

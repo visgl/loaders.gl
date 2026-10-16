@@ -3,8 +3,8 @@
 // Copyright (c) vis.gl contributors
 
 import {expect, test} from 'vitest';
-import {planColumnPages} from '../../src/parquetjs/encoder/page-planner';
-import {ParquetSchema} from '../../src/parquetjs/schema/schema';
+import {planColumnPages} from '../../../tables/src/parquet/parquetjs/encoder/page-planner';
+import {ParquetSchema} from '../../../tables/src/parquet/parquetjs/schema/schema';
 
 test('page planner splits flat columns at the configured value count', () => {
   const column = new ParquetSchema({value: {type: 'INT32'}}).fields.value;

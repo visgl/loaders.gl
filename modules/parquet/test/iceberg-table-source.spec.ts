@@ -1,6 +1,6 @@
 import {expect, test, vi} from 'vitest';
 import * as arrow from 'apache-arrow';
-import {IcebergTableSource} from '../src/iceberg-table-source';
+import {IcebergTableSource} from '../../tables/src/parquet/iceberg-table-source';
 
 function createMetadataUrl(metadata: unknown): string {
   return `data:application/json,${encodeURIComponent(JSON.stringify(metadata))}`;

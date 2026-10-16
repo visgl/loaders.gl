@@ -4,10 +4,10 @@
 
 import {describe, expect, test} from 'vitest';
 
-import {decodeVariant} from '../../src/parquetjs/schema/variant';
-import {ParquetSchema} from '../../src/parquetjs/schema/schema';
-import {materializeRows} from '../../src/parquetjs/schema/shred';
-import {convertParquetSchema} from '../../src/lib/arrow/convert-schema-from-parquet';
+import {decodeVariant} from '../../../tables/src/parquet/parquetjs/schema/variant';
+import {ParquetSchema} from '../../../tables/src/parquet/parquetjs/schema/schema';
+import {materializeRows} from '../../../tables/src/parquet/parquetjs/schema/shred';
+import {convertParquetSchema} from '../../../tables/src/parquet/lib/arrow/convert-schema-from-parquet';
 
 function createMetadata(dictionary: string[]): Uint8Array {
   const dictionaryBytes = new TextEncoder().encode(dictionary.join(''));

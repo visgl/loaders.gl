@@ -3,8 +3,11 @@
 // Copyright (c) vis.gl contributors
 
 import {expect, test} from 'vitest';
-import {readORCPostScript} from '../src/lib/parsers/parse-orc';
-import {decompressORCStream, preloadORCCompression} from '../src/lib/parsers/orc-compression';
+import {readORCPostScript} from '../../tables/src/orc/lib/parsers/parse-orc';
+import {
+  decompressORCStream,
+  preloadORCCompression
+} from '../../tables/src/orc/lib/parsers/orc-compression';
 
 test('ORC LZO decodes framed compressed and original chunks with bounded capacity', async () => {
   await preloadORCCompression('LZO');

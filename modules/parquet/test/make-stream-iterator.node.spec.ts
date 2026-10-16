@@ -4,7 +4,7 @@
 
 import type {Readable} from 'stream';
 import {expect, test, vi} from 'vitest';
-import {makeStreamIterator} from '../src/lib/utils/make-stream-iterator';
+import {makeStreamIterator} from '../../tables/src/parquet/lib/utils/make-stream-iterator';
 
 /** Collects an asynchronous stream adapter into an array. */
 async function collect<T>(values: AsyncIterable<T>): Promise<T[]> {

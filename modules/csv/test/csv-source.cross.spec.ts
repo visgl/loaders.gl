@@ -1,5 +1,5 @@
 import {expect, test} from 'vitest';
-import {CSVSourceLoader, CSVTableSource} from '../src/csv-source';
+import {CSVSourceLoader, CSVTableSource} from '../../tables/src/csv/csv-source';
 
 test('CSVTableSource discovers schema and applies projection and limit', async () => {
   const source = new CSVTableSource(new Blob(['name,value\na,1\nb,2\n']));

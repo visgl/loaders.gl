@@ -10,8 +10,8 @@ import {
   getGeoPackageGeoJSONTable,
   listGeoPackageVectorTables,
   selectGeoPackageVectorTable
-} from '../src/lib/parse-geopackage';
-import type {GeoPackageVectorTableInfo} from '../src/lib/types';
+} from '../../geospatial/src/geopackage/lib/parse-geopackage';
+import type {GeoPackageVectorTableInfo} from '../../geospatial/src/geopackage/lib/types';
 
 const VECTOR_TABLE: GeoPackageVectorTableInfo = {
   name: 'features',

@@ -18,7 +18,7 @@ const parquetMocks = vi.hoisted(() => ({
   }
 }));
 
-vi.mock('../src/parquetjs/parser/parquet-reader', () => ({
+vi.mock('../../tables/src/parquet/parquetjs/parser/parquet-reader', () => ({
   ParquetReader: class {
     constructor(_file: unknown, options: Record<string, unknown>) {
       parquetMocks.constructorOptions = options;
@@ -31,18 +31,18 @@ vi.mock('../src/parquetjs/parser/parquet-reader', () => ({
   }
 }));
 
-vi.mock('../src/lib/parsers/get-parquet-schema', () => ({
+vi.mock('../../tables/src/parquet/lib/parsers/get-parquet-schema', () => ({
   getSchemaFromParquetReader: vi.fn(async () => parquetMocks.schema)
 }));
 
-vi.mock('../src/parquetjs/compression', () => ({
+vi.mock('../../tables/src/parquet/parquetjs/compression', () => ({
   preloadCompressions: parquetMocks.preloadCompressions
 }));
 
 import {
   parseParquetFile,
   parseParquetFileInBatches
-} from '../src/lib/parsers/parse-parquet-to-json';
+} from '../../tables/src/parquet/lib/parsers/parse-parquet-to-json';
 
 beforeEach(() => {
   parquetMocks.batches = [];

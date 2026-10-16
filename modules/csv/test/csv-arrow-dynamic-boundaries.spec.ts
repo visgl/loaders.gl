@@ -3,7 +3,10 @@
 // Copyright (c) vis.gl contributors
 
 import {expect, test} from 'vitest';
-import {parseCSVArrayBufferAsArrow, parseCSVTextAsArrow} from '../src/csv-arrow-table-parser';
+import {
+  parseCSVArrayBufferAsArrow,
+  parseCSVTextAsArrow
+} from '../../tables/src/csv/csv-arrow-table-parser';
 
 const encoder = new TextEncoder();
 

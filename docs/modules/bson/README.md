@@ -55,7 +55,13 @@ The BSON format stores arbitrary (loosely structured) data largely equivalent to
 ## Installation
 
 ```bash
-npm install @loaders.gl/core @loaders.gl/bson
+npm install @loaders.gl/core @loaders.gl/bson bson@4.2.0
+```
+
+`bson` is an optional dependency of `@loaders.gl/tables` and is required for BSON parsing and writing. If optional dependencies were omitted or failed to install, install it explicitly. For the grouped package:
+
+```bash
+npm install @loaders.gl/core @loaders.gl/tables bson@4.2.0
 ```
 
 ## Loaders and Writers

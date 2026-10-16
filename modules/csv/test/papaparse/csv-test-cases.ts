@@ -6,7 +6,7 @@
 // This is a fork of papaparse v5.0.0-beta.0 under MIT license
 // https://github.com/mholt/PapaParse
 
-import type {CSVParserConfig} from '../../src/papaparse/papaparse';
+import type {CSVParserConfig} from '../../../tables/src/csv/papaparse/papaparse';
 
 /* eslint-disable camelcase, quotes, max-len, prefer-template, wrap-regex */
 

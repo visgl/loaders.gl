@@ -3,7 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import {expect, test} from 'vitest';
-import {fromPrimitive, toPrimitive} from '../../src/parquetjs/schema/types';
+import {fromPrimitive, toPrimitive} from '../../../tables/src/parquet/parquetjs/schema/types';
 
 test('Parquet integer logical types enforce every signed and unsigned boundary', () => {
   const validCases: Array<[string, unknown, number | bigint]> = [

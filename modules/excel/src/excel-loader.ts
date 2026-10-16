@@ -2,54 +2,5 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import type {Loader, LoaderOptions} from '@loaders.gl/loader-utils';
-import type {ArrowTable, ObjectRowTable} from '@loaders.gl/schema';
-import {ExcelFormat} from './excel-format';
-import {
-  deserializeArrowWorkerResult,
-  serializeArrowWorkerResult
-} from '@loaders.gl/arrow/transport';
-
-// __VERSION__ is injected by babel-plugin-version-inline
-// @ts-ignore TS2304: Cannot find name '__VERSION__'.
-const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : 'latest';
-
-/** Options for parsing Excel worksheets. */
-export type ExcelLoaderOptions = LoaderOptions & {
-  /** Options for ExcelLoader */
-  excel?: {
-    /** Selects row-table output or Apache Arrow output. */
-    shape?: /* 'array-row-table' | */ 'object-row-table' | 'arrow-table';
-    /** Specify which sheet to load, if omitted loads default sheet. */
-    sheet?: string;
-    /** Override the URL to the worker bundle (by default loads from unpkg.com). */
-    workerUrl?: string;
-  };
-};
-
-/** Preloads the parser-bearing Excel loader implementation. */
-async function preload() {
-  const {ExcelLoaderWithParser} = await import('./excel-loader-with-parser');
-  return ExcelLoaderWithParser;
-}
-
-/** Metadata-only worker loader for Excel files. */
-export const ExcelLoader = {
-  ...ExcelFormat,
-  dataType: null as unknown as ObjectRowTable | ArrowTable,
-  batchType: null as never,
-  version: VERSION,
-  worker: true,
-  serializeWorkerResult: serializeArrowWorkerResult,
-  deserializeWorkerResult: deserializeArrowWorkerResult,
-  options: {
-    excel: {
-      shape: 'arrow-table',
-      sheet: undefined // Load default Sheet
-    }
-  },
-  preload
-} as const satisfies Loader<ObjectRowTable | ArrowTable, never, ExcelLoaderOptions>;
-
-/** @deprecated Use ExcelLoader. */
-export const ExcelWorkerLoader = ExcelLoader;
+/** Compatibility entry point; implementation is owned by @loaders.gl/tables. */
+export * from '@loaders.gl/tables/excel/excel-loader-types';

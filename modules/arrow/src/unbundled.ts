@@ -2,9 +2,5 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-export type {ArrowLoaderOptions} from './exports/arrow-loader';
-export {ArrowLoader} from './arrow-loader-types';
-export {ArrowWorkerLoader} from './exports/arrow-loader';
-
-export {GeoArrowLoader} from './geoarrow-loader-types';
-export {GeoArrowWorkerLoader} from './exports/geoarrow-loader';
+/** Compatibility entry point owned by @loaders.gl/tables. */
+export * from '@loaders.gl/tables/arrow/unbundled';

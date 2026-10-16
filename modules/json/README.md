@@ -16,3 +16,5 @@ non-fast streaming, and nested schema descendants keep their existing conversion
 
 Arrow conversion can also opt into `json.arrowConversion.utf8Conversion: 'number-to-string'`
 when a schema intentionally stores numeric source values in Utf8 columns.
+
+Implementation ownership is now `@loaders.gl/tables/json`. Existing package entry points remain compatible. See the [grouped package guide](../../docs/developer-guide/grouped-packages.md).

@@ -10,7 +10,7 @@ import {ExcelLoader} from '@loaders.gl/excel';
 import * as excel from '@loaders.gl/excel';
 import * as bundledExcel from '@loaders.gl/excel/bundled';
 import * as unbundledExcel from '@loaders.gl/excel/unbundled';
-import {convertExcelRowsToArrowTable} from '../src/lib/convert-excel-rows-to-arrow';
+import {convertExcelRowsToArrowTable} from '../../tables/src/excel/lib/convert-excel-rows-to-arrow';
 
 const ZIPCODES_XLSX_PATH = '@loaders.gl/excel/test/data/zipcodes-small.xlsx';
 const ZIPCODES_XLSB_PATH = '@loaders.gl/excel/test/data/zipcodes-small.xlsb';

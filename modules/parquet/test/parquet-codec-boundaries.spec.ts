@@ -3,13 +3,13 @@
 // Copyright (c) vis.gl contributors
 
 import {expect, test} from 'vitest';
-import {PARQUET_CODECS} from '../src/parquetjs/codecs';
-import {isDeltaEncodingType} from '../src/parquetjs/codecs/delta';
+import {PARQUET_CODECS} from '../../tables/src/parquet/parquetjs/codecs';
+import {isDeltaEncodingType} from '../../tables/src/parquet/parquetjs/codecs/delta';
 import {
   decodeDataPages,
   decodeSchema,
   decodeUncompressedDataPages
-} from '../src/parquetjs/parser/decoders';
+} from '../../tables/src/parquet/parquetjs/parser/decoders';
 import {
   FieldRepetitionType,
   LogicalType,
@@ -18,8 +18,8 @@ import {
   TimeUnit,
   TimestampType,
   Type
-} from '../src/parquetjs/parquet-thrift';
-import type {ParquetReaderContext, PrimitiveType} from '../src/parquetjs/schema/declare';
+} from '../../tables/src/parquet/parquetjs/parquet-thrift';
+import type {ParquetReaderContext, PrimitiveType} from '../../tables/src/parquet/parquetjs/schema/declare';
 
 /** Creates a byte vector for compact malformed-codec fixtures. */
 function bytes(values: number[]): Uint8Array {

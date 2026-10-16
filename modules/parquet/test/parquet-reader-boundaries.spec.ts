@@ -4,13 +4,13 @@
 
 import type {ReadableFile} from '@loaders.gl/loader-utils';
 import {expect, test, vi} from 'vitest';
-import {ParquetReader} from '../src/parquetjs/parser/parquet-reader';
-import {ParquetSchema} from '../src/parquetjs/schema/schema';
+import {ParquetReader} from '../../tables/src/parquet/parquetjs/parser/parquet-reader';
+import {ParquetSchema} from '../../tables/src/parquet/parquetjs/schema/schema';
 import {
   CompressionCodec,
   FieldRepetitionType,
   Type
-} from '../src/parquetjs/parquet-thrift/index';
+} from '../../tables/src/parquet/parquetjs/parquet-thrift/index';
 
 /** Minimal random-access file used to exercise reader control flow without fixture I/O. */
 class MemoryFile implements ReadableFile {

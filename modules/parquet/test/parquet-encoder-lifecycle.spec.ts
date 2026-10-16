@@ -3,10 +3,10 @@
 // Copyright vis.gl contributors
 
 import {expect, test, vi} from 'vitest';
-import {ParquetEncoder, ParquetEnvelopeWriter} from '../src/parquetjs/encoder/parquet-encoder';
-import {ParquetSchema} from '../src/parquetjs/schema/schema';
-import type {ParquetLogicalType, SchemaDefinition} from '../src/parquetjs/schema/declare';
-import {decodeFileMetadata} from '../src/parquetjs/utils/read-utils';
+import {ParquetEncoder, ParquetEnvelopeWriter} from '../../tables/src/parquet/parquetjs/encoder/parquet-encoder';
+import {ParquetSchema} from '../../tables/src/parquet/parquetjs/schema/schema';
+import type {ParquetLogicalType, SchemaDefinition} from '../../tables/src/parquet/parquetjs/schema/declare';
+import {decodeFileMetadata} from '../../tables/src/parquet/parquetjs/utils/read-utils';
 
 const schema = new ParquetSchema({value: {type: 'INT32'}});
 

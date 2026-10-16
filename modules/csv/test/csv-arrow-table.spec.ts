@@ -28,7 +28,7 @@ import type {ArrowTable, ArrowTableBatch} from '@loaders.gl/schema';
 import {
   deserializeCSVWorkerResult,
   serializeCSVWorkerResult
-} from '../src/lib/csv-worker-transport';
+} from '../../tables/src/csv/lib/csv-worker-transport';
 
 // Small CSV Sample Files
 const CSV_NUMBERS_100_URL = '@loaders.gl/csv/test/data/numbers-100.csv';

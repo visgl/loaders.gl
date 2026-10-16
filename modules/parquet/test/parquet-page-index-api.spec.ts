@@ -5,14 +5,14 @@ import {
   decodeOffsetIndex,
   decodeParquetPageStatisticsValue,
   getParquetIndexRange
-} from '../src/lib/parquet-page-index';
-import {ParquetSchema} from '../src/parquetjs/schema/schema';
-import {Encoding, OffsetIndex, PageLocation, SizeStatistics} from '../src/parquetjs/parquet-thrift';
-import {serializeThrift} from '../src/parquetjs/utils/read-utils';
-import {Uint8ArrayCompactProtocol} from '../src/parquetjs/utils/uint8-array-compact-protocol';
-import {Uint8ArrayTransport} from '../src/parquetjs/utils/uint8-array-transport';
-import {PARQUET_CODECS} from '../src/parquetjs/codecs';
-import {createParquetModuleAad, decryptParquetModule} from '../src/lib/parquet-encryption';
+} from '../../tables/src/parquet/lib/parquet-page-index';
+import {ParquetSchema} from '../../tables/src/parquet/parquetjs/schema/schema';
+import {Encoding, OffsetIndex, PageLocation, SizeStatistics} from '../../tables/src/parquet/parquetjs/parquet-thrift';
+import {serializeThrift} from '../../tables/src/parquet/parquetjs/utils/read-utils';
+import {Uint8ArrayCompactProtocol} from '../../tables/src/parquet/parquetjs/utils/uint8-array-compact-protocol';
+import {Uint8ArrayTransport} from '../../tables/src/parquet/parquetjs/utils/uint8-array-transport';
+import {PARQUET_CODECS} from '../../tables/src/parquet/parquetjs/codecs';
+import {createParquetModuleAad, decryptParquetModule} from '../../tables/src/parquet/lib/parquet-encryption';
 
 describe('Parquet page-index public helpers', () => {
   test('decodes legacy BIT_PACKED level values', () => {

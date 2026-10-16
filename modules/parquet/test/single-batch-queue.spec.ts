@@ -1,5 +1,5 @@
 import {describe, expect, test} from 'vitest';
-import {SingleBatchQueue} from '../src/lib/sources/single-batch-queue';
+import {SingleBatchQueue} from '../../tables/src/parquet/lib/sources/single-batch-queue';
 
 describe('SingleBatchQueue', () => {
   test('preserves order and applies one-value producer backpressure', async () => {

@@ -9,13 +9,13 @@ import {
   canGeoParquetRowGroupMatch,
   combineParquetPredicates,
   createGeoParquetBoundingBoxPredicate
-} from '../src/lib/geo/geoparquet-covering';
+} from '../../tables/src/parquet/lib/geo/geoparquet-covering';
 import {
   canParquetRowGroupMatch,
   filterParquetRowIndices,
   getParquetPredicateColumns
-} from '../src/lib/parquet-predicate';
-import type {ParquetSourceMetadata} from '../src/parquet-source-types';
+} from '../../tables/src/parquet/lib/parquet-predicate';
+import type {ParquetSourceMetadata} from '../../tables/src/parquet/parquet-source-types';
 
 const COVERING = {
   bbox: {

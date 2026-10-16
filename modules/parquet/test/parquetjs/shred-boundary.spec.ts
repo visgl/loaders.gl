@@ -3,14 +3,14 @@
 // Copyright (c) vis.gl contributors
 
 import {expect, test} from 'vitest';
-import {ParquetSchema} from '../../src/parquetjs/schema/schema';
+import {ParquetSchema} from '../../../tables/src/parquet/parquetjs/schema/schema';
 import {
   materializeColumn,
   materializeColumns,
   materializeRows,
   shredBuffer,
   shredRecord
-} from '../../src/parquetjs/schema/shred';
+} from '../../../tables/src/parquet/parquetjs/schema/shred';
 
 test('Parquet shredding normalizes standard LIST and MAP JavaScript values', () => {
   const schema = new ParquetSchema({

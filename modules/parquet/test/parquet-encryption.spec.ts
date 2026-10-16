@@ -12,7 +12,7 @@ import {
   verifyParquetFooterSignature
 } from '@loaders.gl/parquet';
 import type {ParquetSource} from '@loaders.gl/parquet/parquet-source-loader';
-import {createWorkerKeyRetriever} from '../src/lib/parquet-source-worker-decoder';
+import {createWorkerKeyRetriever} from '../../tables/src/parquet/lib/parquet-source-worker-decoder';
 import {expect, test} from 'vitest';
 
 const PARQUET_DIR = '@loaders.gl/parquet/test/data/apache';

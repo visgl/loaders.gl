@@ -12,7 +12,7 @@ import {
   ensureGeoParquetMetadataOnArrowTable,
   getParquetFileMetadataMap,
   normalizeArrowTableGeoMetadata
-} from '../src/lib/geo/geospatial-metadata';
+} from '../../tables/src/parquet/lib/geo/geospatial-metadata';
 
 describe('geospatial metadata', () => {
   it('validates GeoArrow extension metadata before synthesizing GeoParquet metadata', () => {

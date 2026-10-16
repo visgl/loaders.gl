@@ -2,6 +2,5 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-export type {ORCLoaderOptions} from './orc-loader-types';
-export {ORCLoader} from './orc-loader-types';
-export {ORCWriter} from './orc-writer';
+/** Compatibility entry point owned by @loaders.gl/tables. */
+export * from '@loaders.gl/tables/orc/unbundled';

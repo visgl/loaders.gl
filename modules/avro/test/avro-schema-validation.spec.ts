@@ -1,5 +1,5 @@
 import {expect, test} from 'vitest';
-import {parseAvroSchema} from '../src/lib/parsers/parse-avro-schema';
+import {parseAvroSchema} from '../../tables/src/avro/lib/parsers/parse-avro-schema';
 
 test.each([
   ['{', 'Invalid Avro schema JSON'],

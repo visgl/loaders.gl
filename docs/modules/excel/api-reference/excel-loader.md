@@ -61,6 +61,16 @@ Non-streaming table loaders for Excel files.
 
 `ExcelLoader` loads Excel worksheets as loaders.gl `ArrowTable` objects by default. Set `excel.shape: 'object-row-table'` to request row-table output.
 
+## Installation
+
+Install `xlsx` to use this API. It is an optional dependency of `@loaders.gl/tables`.
+
+```bash
+npm install @loaders.gl/core @loaders.gl/excel xlsx@^0.18.5
+```
+
+For grouped imports, install `@loaders.gl/tables` in place of `@loaders.gl/excel` and keep `xlsx` installed.
+
 ## Usage
 
 ```typescript
