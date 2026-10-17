@@ -61,6 +61,9 @@
     "./arrow-worker.js": {
       "import": "./dist/arrow-worker.js"
     },
+    "./arrow-worker.mjs": {
+      "import": "./dist/arrow-worker.mjs"
+    },
     "./geometry": {
       "types": "./dist/geometry/index.d.ts",
       "import": "./dist/geometry/index.js",
@@ -85,7 +88,8 @@
     "fs": false
   },
   "scripts": {
-    "pre-build": "npm run build-worker && npm run build-bundle && npm run build-bundle-dev && npm run build-triangulation-worker && npm run build-triangulation-worker-node",
+    "pre-build": "npm run build-worker && npm run build-module-worker && npm run build-bundle && npm run build-bundle-dev && npm run build-triangulation-worker && npm run build-triangulation-worker-node",
+    "build-module-worker": "node ../../scripts/build-codec-worker.mjs src/workers/arrow-worker.ts --bundle --outfile=dist/arrow-worker.mjs --format=esm --platform=browser --define:__VERSION__=\\\"$npm_package_version\\\"",
     "build-bundle": "node ../../scripts/build-codec-bundle.mjs ./bundle.ts --output=dist/dist.min.js",
     "build-bundle-dev": "node ../../scripts/build-codec-bundle.mjs ./bundle.ts --env=dev --output=dist/dist.dev.js",
     "build-triangulation-worker": "node ../../scripts/build-codec-worker.mjs ../tables/src/arrow/workers/triangulation-worker.ts --bundle --outfile=dist/triangulation-worker.js  --platform=browser --external:{stream} --define:__VERSION__=\\\"$npm_package_version\\\"",

@@ -102,6 +102,19 @@ the focused `@loaders.gl/arrow/transport` subpath as well as the root export.
 For the underlying Apache Arrow JS classes, start with the
 [`ArrowJS API Reference`](/docs/arrowjs/api-reference).
 
+## ESM worker packaging
+
+`@loaders.gl/arrow/arrow-worker.mjs` is a native browser module worker with external compression
+WASM assets. It uses the same loader options and Arrow table transport as the classic worker.
+Create it with `new Worker(workerUrl, {type: 'module'})` through the loader's `loadWorker`
+factory. Serve or copy its sibling `codec-assets` directory along with the worker, using
+`application/wasm` for WASM responses and appropriate cross-origin headers where needed.
+
+The classic `arrow-worker.js` also requires its sibling WASM assets. URL-based classic worker
+loading preserves the original script URL through the loaders.gl blob bootstrap. Inline worker
+source is no longer self-contained; prefer the URL-based or ESM worker paths. This does not remove dynamic
+predicate generation inherited from Apache Arrow; it only externalizes compression WASM.
+
 ## Attributions
 
 `@loaders.gl/arrow` was developed with the benefit of extensive technical advice from Paul Taylor @ Graphistry.

@@ -361,6 +361,19 @@ Concrete runtime classes are unchanged. For example:
 
 The old top-level `*Source` aliases have been removed, so imports must be updated explicitly.
 
+### Worker codec WASM sidecars
+
+Prebuilt workers and standalone bundles no longer embed compression WASM as base64 strings.
+When copying or self-hosting worker scripts, also copy their sibling `codec-assets` directory.
+Serve WASM as `application/wasm`, with appropriate CORS headers for cross-origin requests.
+Node workers need the same sibling files on disk. The default URL-based classic worker bootstrap
+preserves the original script location even when the worker is wrapped in a blob.
+
+Custom inline-source workers are no longer self-contained. Prefer URL-based workers or the new
+`arrow-worker.mjs` and `compression-worker.mjs` module-worker entry points; a custom blob wrapper
+must preserve the absolute original script URL in `globalThis.__loadersWorkerUrl` before executing
+worker source. Bundlers that copy or transform prebuilt workers must preserve their sidecar assets.
+
 ### Source capability interfaces
 
 `ImageSource`, `VectorSource`, and `RasterSource` are now type-only capability interfaces, matching

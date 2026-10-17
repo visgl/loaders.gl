@@ -73,7 +73,9 @@ function getLoadableWorkerURLFromSource(workerSource: string): string {
 function buildScriptSource(workerUrl: string): string {
   return `\
 try {
-  importScripts('${workerUrl}');
+  // Preserve the original script location when the worker itself runs from a blob URL.
+  globalThis.__loadersWorkerUrl = ${JSON.stringify(workerUrl)};
+  importScripts(${JSON.stringify(workerUrl)});
 } catch (error) {
   console.error(error);
   throw error;

@@ -13,6 +13,13 @@ const WORKER_SOURCE = `
 `;
 const LOCAL_WORKER_URL = 'modules/worker-utils/dist/null-worker.js';
 const REMOTE_WORKER_URL = 'https://unpkg.com/loaders.gl/worker-utils/dist/null-worker.js';
+test('blob bootstrap retains and safely quotes the original worker URL', async () => {
+  const workerUrl = 'https://example.invalid/worker\'s-codec.js?name="codec"';
+  const blobUrl = getLoadableWorkerURL({url: workerUrl});
+  const source = await (await fetch(blobUrl)).text();
+  expect(source).toContain(`globalThis.__loadersWorkerUrl = ${JSON.stringify(workerUrl)}`);
+  expect(source).toContain(`importScripts(${JSON.stringify(workerUrl)})`);
+});
 test('getLoadableWorkerURL', () => {
   if (!isBrowser) {
   }
