@@ -60,6 +60,7 @@ for imports, worker asset availability, and dependency tradeoffs.
 
 ## Tile matrix source adapters
 
+- TileJSON sources expose canonical Web Mercator matrix geometry. PMTiles preserves native XYZ levels and supports explicit Web Mercator configuration. Both retain native zoom IDs and configurable logical pixel sizes; sparse content remains separate from world geometry.
 - Shared grid normalization now lives in `@loaders.gl/loader-utils`, with math.gl 5.0.0-alpha.18 and independent vertical pixel resolution.
 - ArcGIS map and vector tile sources expose per-level grid metadata and preserve matrix identifiers in cached-tile URLs without inventing matrix dimensions.
 - GeoPackage source metadata discovers raster tile tables, including raster-only packages, and exposes normalized matrix geometry. Raster payload access remains separate.

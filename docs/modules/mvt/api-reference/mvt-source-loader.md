@@ -108,3 +108,22 @@ const source = createDataSource(url, [MVTSourceLoader], {
 ```
 
 When enabled, the source reports `text/*`, JSON, and XML responses through `core.onError` and returns `null`. It does not reject unrecognized vendor MIME types, because custom services may use them for valid binary tiles. The check is disabled by default to avoid changing behavior for services that use unusual MIME types.
+
+## Source grid metadata
+
+TileJSON establishes a canonical Web Mercator XYZ grid. `getMetadata().tileGrid` preserves
+its zoom identifiers and range; bounds describe dataset coverage and do not redefine the world
+grid or prove that individual tiles exist. Source requests use top-left XYZ rows, with
+`scheme: 'tms'` converted at the endpoint. The existing `{-y}` token always inverts the caller's XYZ row, so TMS metadata does not invert it twice.
+
+`mvt.tileSize` defines a logical pixel frame (default 256 for TileJSON), independently of vector
+quantization extent or encoded image dimensions. `mvt.minZoom`, `mvt.maxZoom`, and `mvt.scheme`
+override advertised values. With `mvt.metadataUrl: null`, configure `mvt.coordinateReferenceSystem: 'EPSG:3857'`
+to establish a canonical source contract without a metadata fetch. Tile size alone does not establish a CRS. An arbitrary template or
+standalone MVT/MLT payload does not establish a geographic grid.
+
+`tileMatrix` selects an exact native zoom ID; without it the shared native-ID-first/index-fallback
+rule applies. The resolved native zoom is also used for vector coordinate decoding. Out-of-world
+indices return `null`; unknown explicit IDs reject. See [Tile matrices](/docs/developer-guide/tile-matrices).
+
+The geographic and row-convention contract follows [TileJSON 3.0](https://github.com/mapbox/tilejson-spec/tree/master/3.0.0).

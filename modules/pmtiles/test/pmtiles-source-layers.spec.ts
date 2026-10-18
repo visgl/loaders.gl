@@ -5,7 +5,8 @@
 import {afterEach, describe, expect, test, vi} from 'vitest';
 import type {Header} from 'pmtiles';
 import {createDataSource} from '@loaders.gl/core';
-import type {CoreAPI} from '@loaders.gl/loader-utils';
+import {createWebMercatorTileGrid, type CoreAPI} from '@loaders.gl/loader-utils';
+import {parsePMTilesHeader} from '../src/lib/parse-pmtiles';
 import {MLTLoader} from '@loaders.gl/mlt';
 import type {MVTLoaderOptions} from '@loaders.gl/mvt';
 import {MVTLoader} from '@loaders.gl/mvt';
@@ -107,6 +108,7 @@ test.each([
 test('PMTilesTileSource#getVectorTile falls back to Arrow without overriding inherited shape', async () => {
   const receivedOptions: MVTLoaderOptions[] = [];
   const source = Object.assign(Object.create(PMTilesTileSource.prototype), {
+    metadata: Promise.resolve({}),
     options: {pmtiles: {}},
     loadOptions: {mvt: {shape: 'binary-geometry'}},
     coreApi: {
@@ -129,6 +131,7 @@ test('PMTilesTileSource#getVectorTile forwards requested layers to the decoder',
   const receivedOptions: MVTLoaderOptions[] = [];
   const receivedLoaders: unknown[] = [];
   const source = Object.assign(Object.create(PMTilesTileSource.prototype), {
+    metadata: Promise.resolve({}),
     options: {pmtiles: {shape: 'arrow-table'}},
     loadOptions: {mvt: {layerProperty: 'sourceLayer', layers: ['fallback']}},
     coreApi: {
@@ -210,6 +213,7 @@ test('PMTilesTileSource#getVectorTile rejects columnar-table output for MLT arch
 describe('PMTilesTileSource runtime paths', () => {
   test('loads schema and normalized metadata', async () => {
     const source = Object.assign(Object.create(PMTilesTileSource.prototype), {
+      metadata: Promise.resolve({}),
       options: {attributions: ['enabled'], core: {attributions: ['application']}},
       loadOptions: {},
       pmtiles: {
@@ -232,6 +236,7 @@ describe('PMTilesTileSource runtime paths', () => {
   test('returns tile bytes and reports missing or failed responses', async () => {
     const reportError = vi.fn();
     const source = Object.assign(Object.create(PMTilesTileSource.prototype), {
+      metadata: Promise.resolve({}),
       url: 'memory://tiles',
       reportError,
       getZxyBatched: vi
@@ -271,6 +276,7 @@ describe('PMTilesTileSource runtime paths', () => {
   test('parses image and vector tiles and preserves inherited options', async () => {
     const parse = vi.fn(async (_data, loader, options) => ({loader: loader.id, options}));
     const source = Object.assign(Object.create(PMTilesTileSource.prototype), {
+      metadata: Promise.resolve({}),
       options: {pmtiles: {}},
       loadOptions: {mvt: {shape: 'binary-geometry', layers: ['fallback']}},
       coreApi: {parse} as unknown as CoreAPI,
@@ -296,6 +302,7 @@ describe('PMTilesTileSource runtime paths', () => {
     vi.useFakeTimers();
     const getZxy = vi.fn(async (z, x, y) => ({data: new Uint8Array([z, x, y]).buffer}));
     const source = Object.assign(Object.create(PMTilesTileSource.prototype), {
+      metadata: Promise.resolve({}),
       data: 'https://example.com/tiles.pmtiles',
       options: {rangeRequests: {batchDelayMs: 5}},
       pmtiles: {getZxy},
@@ -314,4 +321,20 @@ describe('PMTilesTileSource runtime paths', () => {
     await expect(source.getZxyBatched(7, 8, 9)).resolves.toBeTruthy();
     expect(getZxy).toHaveBeenLastCalledWith(7, 8, 9, undefined);
   });
+});
+
+test('PMTiles resolves native matrix IDs and sparse tiles without changing archive coverage', async () => {
+  vi.spyOn(PMTilesTileSource.prototype, 'getMetadata').mockResolvedValue({
+    ...parsePMTilesHeader(createHeader(), null),
+    tileGrid: createWebMercatorTileGrid(3, 4)
+  });
+  const source = new PMTilesTileSource(new Blob([]), {});
+  const getTile = vi.spyOn(source.pmtiles, 'getZxy').mockResolvedValue(undefined);
+  expect(await source.getTile({z: 0, x: 1, y: 2, tileMatrix: '4'})).toBeNull();
+  expect(getTile).toHaveBeenCalledWith(4, 1, 2, undefined);
+  expect(await source.getTile({z: 4, x: 16, y: 0})).toBeNull();
+  expect(getTile).toHaveBeenCalledOnce();
+  await expect(source.getTile({z: 0, x: 0, y: 0, tileMatrix: 'missing'})).rejects.toThrow(
+    /Unknown/
+  );
 });

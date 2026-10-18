@@ -14,7 +14,12 @@ import type {
   ImageType,
   RangeRequestSchedulerProps
 } from '@loaders.gl/loader-utils';
-import {DataSource, DataSourceOptions, resolvePath} from '@loaders.gl/loader-utils';
+import {
+  DataSource,
+  DataSourceOptions,
+  resolvePath,
+  resolveXYZTileParameters
+} from '@loaders.gl/loader-utils';
 import {ImageBitmapLoader, ImageBitmapLoaderOptions} from '@loaders.gl/images';
 import {MLTLoader, MLTLoaderOptions} from '@loaders.gl/mlt';
 import {MVTLoader, MVTLoaderOptions, TileJSONLoaderOptions} from '@loaders.gl/mvt';
@@ -44,6 +49,10 @@ export type PMTilesSourceLoaderOptions = DataSourceOptions &
     /** Preferred encoding for Arrow geometry output. */
     geoarrow?: {encodingPreference?: GeoArrowEncodingPreference};
     pmtiles?: {
+      /** Explicit source CRS contract; PMTiles addressing alone does not establish geographic geometry. */
+      coordinateReferenceSystem?: 'EPSG:3857';
+      /** Logical XYZ pixel frame, independent of encoded tile dimensions or vector extent. */
+      tileSize?: number;
       /** Shape of returned vector tile data. */
       shape?: 'geojson-table' | 'columnar-table' | 'binary-geometry' | 'arrow-table';
       /** Preferred encoding for Arrow geometry output. */
@@ -119,7 +128,11 @@ export class PMTilesTileSource
     const metadata: PMTilesMetadata = parsePMTilesHeader(
       pmtilesHeader,
       pmtilesMetadata,
-      {includeFormatHeader: false},
+      {
+        includeFormatHeader: false,
+        coordinateReferenceSystem: this.options.pmtiles?.coordinateReferenceSystem,
+        tileSize: this.options.pmtiles?.tileSize
+      },
       this.loadOptions
     );
     // Add additional attribution if necessary
@@ -132,12 +145,13 @@ export class PMTilesTileSource
     if (metadata?.tileMIMEType) {
       this.mimeType = metadata?.tileMIMEType;
     }
-    // TODO - do we need to allow tileSize to be overridden? Some PMTiles examples seem to suggest it.
     return metadata;
   }
 
   async getTile(tileParams: GetTileParameters): Promise<ArrayBuffer | null> {
-    const {x, y, z} = tileParams;
+    const resolved = resolveXYZTileParameters((await this.metadata).tileGrid, tileParams);
+    if (!resolved) return null;
+    const {x, y, z} = resolved;
     let rangeResponse;
     try {
       rangeResponse = await this.getZxyBatched(z, x, y, tileParams.signal);
@@ -191,8 +205,11 @@ export class PMTilesTileSource
   // VectorTileSource interface implementation
 
   async getVectorTile(tileParams: GetTileParameters): Promise<VectorTile | null> {
+    const metadata = await this.metadata;
+    const resolved = resolveXYZTileParameters(metadata.tileGrid, tileParams);
+    if (!resolved) return null;
+    tileParams = resolved;
     const arrayBuffer = await this.getTile(tileParams);
-    const metadata = this.metadata ? await this.metadata : undefined;
     const tileMIMEType = this.mimeType || metadata?.tileMIMEType;
 
     if (tileMIMEType === 'application/vnd.maplibre-tile') {

@@ -112,7 +112,8 @@ export function parseTileJSON(jsonMetadata: unknown, options: TileJSONOptions): 
 
   let tileJSON: TileJSON = {
     name: metadata.name || '',
-    description: metadata.description || ''
+    description: metadata.description || '',
+    ...(metadata.scheme ? {scheme: metadata.scheme} : {})
   };
 
   // tippecanoe

@@ -15,7 +15,12 @@ import type {
   GetTileDataParameters
 } from '@loaders.gl/loader-utils';
 import type {Schema} from '@loaders.gl/schema';
-import {DataSource, parseContentType} from '@loaders.gl/loader-utils';
+import {
+  DataSource,
+  parseContentType,
+  createWebMercatorTileGrid,
+  resolveXYZTileParameters
+} from '@loaders.gl/loader-utils';
 import {
   ImageBitmapLoader,
   type ImageBitmapLoaderOptions,
@@ -32,7 +37,16 @@ export type MVTSourceLoaderOptions = DataSourceOptions &
   TileJSONLoaderOptions &
   ImageBitmapLoaderOptions & {
     mvt?: {
-      // TODO - add options here
+      /** Explicit Web Mercator contract for sources without TileJSON metadata. */
+      coordinateReferenceSystem?: 'EPSG:3857';
+      /** Logical XYZ pixel frame, independent of encoded size or vector extent. */
+      tileSize?: number;
+      /** Configured minimum XYZ zoom, overriding TileJSON. */
+      minZoom?: number;
+      /** Configured maximum XYZ zoom, overriding TileJSON. */
+      maxZoom?: number;
+      /** Wire row convention; callers always address XYZ rows. */
+      scheme?: 'xyz' | 'tms';
       /** if not supplied, loads tilejson.json, If null does not load metadata */
       metadataUrl?: string | null;
       /** Override extension (necessary if no metadata) */
@@ -87,13 +101,18 @@ export class MVTTileSource
 {
   readonly metadataUrl: string | null = null;
   schema: 'tms' | 'xyz' | 'template' = 'tms';
+  /** Row convention used by the tile endpoint. */
+  private tileScheme: 'xyz' | 'tms' = 'xyz';
   metadata: Promise<TileSourceMetadata>;
   extension: string;
   mimeType: string | null = null;
 
   constructor(url: string, options: MVTSourceLoaderOptions, coreApi?: CoreAPI) {
     super(url, options, MVTSourceLoader.defaultOptions, coreApi);
-    this.metadataUrl = options.mvt?.metadataUrl || `${this.url}/tilejson.json`;
+    this.metadataUrl =
+      options.mvt?.metadataUrl === null
+        ? null
+        : options.mvt?.metadataUrl || `${this.url}/tilejson.json`;
     this.extension = options.mvt?.extension || '.png';
 
     this.getTileData = this.getTileData.bind(this);
@@ -110,11 +129,21 @@ export class MVTTileSource
 
   async getMetadata(): Promise<TileSourceMetadata> {
     const fallbackMetadata: TileSourceMetadata = {
-      minZoom: 0,
-      maxZoom: 30,
+      minZoom: this.options.mvt?.minZoom ?? 0,
+      maxZoom: this.options.mvt?.maxZoom ?? 30,
+      ...(this.options.mvt?.coordinateReferenceSystem === 'EPSG:3857'
+        ? {
+            tileGrid: createWebMercatorTileGrid(
+              this.options.mvt.minZoom ?? 0,
+              this.options.mvt.maxZoom ?? 30,
+              this.options.mvt.tileSize ?? 256
+            )
+          }
+        : {}),
       attributions: this.options.core?.attributions || []
     };
 
+    this.tileScheme = this.options.mvt?.scheme || 'xyz';
     if (!this.metadataUrl) {
       return fallbackMetadata;
     }
@@ -148,11 +177,19 @@ export class MVTTileSource
     //   this.mimeType = metadata?.tileMIMEType;
     // }
 
+    const minZoom =
+      this.options.mvt?.minZoom ?? tileJSONMetadata?.minZoom ?? fallbackMetadata.minZoom!;
+    const maxZoom =
+      this.options.mvt?.maxZoom ?? tileJSONMetadata?.maxZoom ?? fallbackMetadata.maxZoom!;
+    this.tileScheme = this.options.mvt?.scheme || tileJSONMetadata?.scheme || 'xyz';
     return {
       ...fallbackMetadata,
       ...tileJSONMetadata,
-      minZoom: tileJSONMetadata?.minZoom ?? fallbackMetadata.minZoom,
-      maxZoom: tileJSONMetadata?.maxZoom ?? fallbackMetadata.maxZoom
+      minZoom,
+      maxZoom,
+      ...(tileJSONMetadata
+        ? {tileGrid: createWebMercatorTileGrid(minZoom, maxZoom, this.options.mvt?.tileSize ?? 256)}
+        : {})
     };
   }
 
@@ -161,7 +198,9 @@ export class MVTTileSource
   }
 
   async getTile(parameters: GetTileParameters): Promise<ArrayBuffer | null> {
-    const {x, y, z} = parameters;
+    const resolved = resolveXYZTileParameters((await this.metadata).tileGrid, parameters);
+    if (!resolved) return null;
+    const {x, y, z} = resolved;
     const tileUrl = this.getTileURL(x, y, z);
     const response = await this.fetch(
       tileUrl,
@@ -242,6 +281,8 @@ export class MVTTileSource
     arrayBuffer: ArrayBuffer,
     tileParams: GetTileParameters
   ): Promise<VectorTile | null> {
+    const resolved = resolveXYZTileParameters((await this.metadata).tileGrid, tileParams);
+    if (!resolved) return null;
     const inheritedMVTOptions = (this.loadOptions as MVTLoaderOptions)?.mvt;
     const selectedLayers = normalizeTileLayers(tileParams.layers) || inheritedMVTOptions?.layers;
     const loadOptions: MVTLoaderOptions = {
@@ -250,7 +291,7 @@ export class MVTTileSource
         ...inheritedMVTOptions,
         shape: this.options.mvt?.shape || inheritedMVTOptions?.shape || 'arrow-table',
         coordinates: 'wgs84',
-        tileIndex: {x: tileParams.x, y: tileParams.y, z: tileParams.z},
+        tileIndex: {x: resolved.x, y: resolved.y, z: resolved.z},
         layers: selectedLayers
       }
     };
@@ -263,13 +304,19 @@ export class MVTTileSource
   }
 
   getTileURL(x: number, y: number, z: number) {
+    // The legacy token always inverts the caller's XYZ row, independently of TileJSON scheme.
+    const template =
+      Number.isInteger(y) && Number.isInteger(z)
+        ? this.url.replace(/\{-y\}/g, String(2 ** z - y - 1))
+        : this.url;
+    if (this.tileScheme === 'tms') y = 2 ** z - y - 1;
     switch (this.schema) {
       case 'xyz':
         return `${this.url}/${x}/${y}/${z}${this.extension}`;
       case 'tms':
         return `${this.url}/${z}/${x}/${y}${this.extension}`;
       case 'template':
-        return getURLFromTemplate(this.url, x, y, z, '0');
+        return getURLFromTemplate(template, x, y, z, '0');
       default:
         throw new Error(this.schema);
     }
