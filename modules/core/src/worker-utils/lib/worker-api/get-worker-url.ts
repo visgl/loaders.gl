@@ -58,7 +58,11 @@ export function getCustomWorkerURL(
       url = `modules/${worker.module}/dist/${workerFile}`;
     } else {
       // In the test environment the ts-node loader requires TypeScript code
-      url = `modules/${worker.module}/src/workers/${worker.id}-worker-node.ts`;
+      const workerSourceDirectory =
+        worker.module === 'core' && worker.workerNode?.startsWith('worker-utils/')
+          ? 'worker-utils/workers'
+          : 'workers';
+      url = `modules/${worker.module}/src/${workerSourceDirectory}/${worker.id}-worker-node.ts`;
     }
   }
 

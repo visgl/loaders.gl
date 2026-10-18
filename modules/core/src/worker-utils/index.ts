@@ -70,7 +70,9 @@ export {default as ChildProcessProxy} from './lib/process-utils/child-process-pr
 export const NullWorker: WorkerObject = {
   id: 'null',
   name: 'null',
-  module: 'worker-utils',
+  module: 'core',
+  workerFile: 'worker-utils/null-worker.js',
+  workerNode: 'worker-utils/null-worker-node.js',
   version: VERSION,
   options: {
     null: {}

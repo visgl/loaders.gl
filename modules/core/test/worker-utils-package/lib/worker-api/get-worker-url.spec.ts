@@ -67,7 +67,9 @@ test('getWorkerURL#version fallback warning', () => {
     const LatestWorker: WorkerObject = {
       id: 'latest-test',
       name: 'Latest Test',
-      module: 'worker-utils',
+      module: 'core',
+      workerFile: 'worker-utils/latest-test-worker.js',
+      workerNode: 'worker-utils/latest-test-worker-node.js',
       version: 'latest',
       worker: true,
       options: {
@@ -75,9 +77,11 @@ test('getWorkerURL#version fallback warning', () => {
       }
     };
     const latestWorkerUrl = getWorkerURL(LatestWorker, {});
-    const latestWorkerFile = isBrowser ? 'latest-test-worker.js' : 'latest-test-worker-node.js';
+    const latestWorkerFile = isBrowser
+      ? 'worker-utils/latest-test-worker.js'
+      : 'worker-utils/latest-test-worker-node.js';
     expect(latestWorkerUrl, 'worker url falls back to npm tag').toBe(
-      `https://unpkg.com/@loaders.gl/core/worker-utils@latest/dist/${latestWorkerFile}`
+      `https://unpkg.com/@loaders.gl/core@latest/dist/${latestWorkerFile}`
     );
     expect(warnings.length, 'emits one warning for latest worker fallback').toBe(1);
     expect(
