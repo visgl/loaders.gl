@@ -142,3 +142,29 @@ GeoZarr layouts.
 
 The GeoZarr conventions are still pre-stable. The source therefore retains original group and array
 attributes in `metadata` and treats unknown optional fields as ignorable.
+
+## Spatial multiscale chunk grids
+
+`getMetadata().tileGrid` describes the selected array's spatial storage chunks. Generic
+[Zarr multiscales v0.1](https://github.com/zarr-conventions/multiscales/blob/v0.1/README.md)
+`multiscales.layout` entries can describe direct arrays or groups containing the same variable
+path. `levels` preserves each asset ID, array path, dimensions, non-spatial selections, and
+resolved native metadata. Array dimensions determine logical X/Y independently of physical order.
+
+A complete `tileMatrixSet` requires a common string CRS and explicit, finite, rightward,
+axis-aligned affine geometry for every level. CRS coordinates determine resolution units.
+Each level must declare its own absolute `spatial:transform`, on its array, level group, or
+layout entry; relative-only transformation graphs are not evaluated. Unsupported levels remain
+advertised without complete grid geometry. Unsafe or duplicate asset paths reject discovery.
+Node registration shifts to pixel corners; south-up arrays use bottom-left origins.
+
+Chunk matrices include padded edge chunks. Valid raster extent remains in each level's
+`metadata.boundingBox`. A storage chunk may include multiple time/channel/depth samples: it is
+not a decoded display tile or a standalone 2D payload. `getRaster()` continues to read the
+configured `geozarr.array` and named selection; it does not automatically select an overview.
+To read another advertised level, create a source with that level's `array` path. Sibling grid
+discovery reads metadata only, without decoding coordinate or sample chunks.
+
+OME-Zarr microscopy coordinates remain native OME metadata. An OME `multiscales` array is not
+the generic multiscales object and does not establish a geographic CRS. Use the OME source for
+its existing image/selection APIs. See [Tile matrices](/docs/developer-guide/tile-matrices).
