@@ -14,7 +14,7 @@
     "@deck.gl/core": "^9.4.0",
     "@deck.gl/react": "^9.4.0",
     "@loaders.gl/deck-layers": "workspace:*",
-    "@loaders.gl/zarr": "workspace:*",
+    "@loaders.gl/scientific": "workspace:*",
     "@luma.gl/core": "^9.4.0",
     "@luma.gl/engine": "^9.4.0",
     "@luma.gl/shadertools": "^9.4.0",

@@ -479,21 +479,6 @@
         "branches": 67
       }
     },
-    "@loaders.gl/netcdf": {
-      "path": "modules/netcdf",
-      "browser": {
-        "statements": 61,
-        "lines": 61,
-        "functions": 57,
-        "branches": 60
-      },
-      "merged": {
-        "statements": 61,
-        "lines": 61,
-        "functions": 56,
-        "branches": 60
-      }
-    },
     "@loaders.gl/obj": {
       "path": "modules/obj",
       "browser": {
@@ -680,6 +665,57 @@
         "lines": 81,
         "functions": 86,
         "branches": 76
+      }
+    },
+    "@loaders.gl/scientific": {
+      "path": "modules/scientific",
+      "browser": {
+        "statements": 90,
+        "lines": 90,
+        "functions": 90,
+        "branches": 90
+      },
+      "merged": {
+        "statements": 90,
+        "lines": 90,
+        "functions": 90,
+        "branches": 90
+      },
+      "formatThresholds": {
+        "netcdf": {
+          "sourcePaths": [
+            "modules/scientific/src/netcdf/"
+          ],
+          "browser": {
+            "statements": 61,
+            "lines": 61,
+            "functions": 57,
+            "branches": 60
+          },
+          "merged": {
+            "statements": 61,
+            "lines": 61,
+            "functions": 56,
+            "branches": 60
+          }
+        },
+        "zarr": {
+          "sourcePaths": [
+            "modules/scientific/src/zarr/"
+          ],
+          "browser": {
+            "statements": 90,
+            "lines": 90,
+            "functions": 90,
+            "branches": 90
+          },
+          "merged": {
+            "statements": 90,
+            "lines": 90,
+            "functions": 90,
+            "branches": 90
+          }
+        }
       }
     },
     "@loaders.gl/services": {
@@ -894,21 +930,6 @@
         "lines": 80,
         "functions": 70,
         "branches": 80
-      }
-    },
-    "@loaders.gl/zarr": {
-      "path": "modules/zarr",
-      "browser": {
-        "statements": 90,
-        "lines": 90,
-        "functions": 90,
-        "branches": 90
-      },
-      "merged": {
-        "statements": 90,
-        "lines": 90,
-        "functions": 90,
-        "branches": 90
       }
     },
     "@loaders.gl/zip": {

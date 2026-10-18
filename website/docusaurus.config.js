@@ -263,7 +263,7 @@ const config = {
             '@loaders.gl/loader-utils': resolve('../modules/loader-utils/src'),
             '@loaders.gl/mlt': resolve('../modules/mlt/src'),
             '@loaders.gl/mvt': resolve('../modules/mvt/src'),
-            '@loaders.gl/netcdf': resolve('../modules/netcdf/src'),
+            '@loaders.gl/scientific': resolve('../modules/scientific/src'),
             '@loaders.gl/obj': resolve('../modules/obj/src'),
             '@loaders.gl/parquet': resolve('../modules/parquet/src'),
             '@loaders.gl/orc': resolve('../modules/orc/src'),
@@ -306,7 +306,6 @@ const config = {
             '@loaders.gl/services': resolve('../modules/services/src'),
             '@loaders.gl/worker-utils': resolve('../modules/worker-utils/src'),
             '@loaders.gl/xml': resolve('../modules/xml/src'),
-            '@loaders.gl/zarr': resolve('../modules/zarr/src'),
             '@loaders.gl/zip': resolve('../modules/zip/src'),
             'sql.js$': require.resolve('sql.js/dist/sql-wasm-browser.js'),
 

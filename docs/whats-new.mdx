@@ -40,6 +40,9 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
   tone="violet"
 />
 
+## Scientific format package consolidation
+
+NetCDF and Zarr are now available from the public `@loaders.gl/scientific` package. The package root exports metadata-only loaders; parser and source implementations are available through `@loaders.gl/scientific/netcdf` and `@loaders.gl/scientific/zarr`. See the [NetCDF format guide](/docs/modules/scientific/netcdf/formats/netcdf) and [upgrade guide](/docs/upgrade-guide#scientific-format-package-consolidation-v5).
 ## Raster package
 
 `@loaders.gl/raster` consolidates GeoTIFF, LERC, terrain and quantized mesh with metadata-only
@@ -336,7 +339,7 @@ Release Date: 2026
 - **Benchmarks** - Loaders have live benchmarks, some include external parser baselines such as uDSV, d3-dsv, csv-parser, and PapaParse for the CSVLoader allowing comparison of loaders.gl parsing performance against ecosystem SOTA (State-of-the-Art).
 - **Coverage expansion and test modernization** - Broad, fast, hermetic Vitest coverage has raised combined line-and-branch coverage from about 70% to over 90%, while completing the migration of legacy Tape tests to native Vitest syntax. Compact boundary suites cover binary point-cloud decoders, CSV and Parquet Arrow output, geometry conversion, 3D Tiles traversal, raster and splat sources, and streaming file and worker lifecycles. Large compatibility fixtures remain in the slow lane, and boundary checks use small deterministic inputs.
 - **Mesh category writers** - New experimental [`LASWriter`](/docs/modules/las/api-reference/las-writer), [`OBJWriter`](/docs/modules/obj/api-reference/obj-writer), [`PCDWriter`](/docs/modules/pcd/api-reference/pcd-writer), [`PLYWriter`](/docs/modules/ply/api-reference/ply-writer), and [`QuantizedMeshWriter`](/docs/modules/terrain/api-reference/quantized-mesh-writer) add export support for common mesh and point-cloud formats. Mesh writers accept both plain `Mesh` data and Mesh Arrow tables.
-- **Raster sources** - New experimental `RasterSource` APIs add viewport-driven typed raster loading, with [`GeoTIFFSourceLoader`](/docs/modules/geotiff/api-reference/geotiff-source-loader), [`OMETiffSourceLoader`](/docs/modules/geotiff/api-reference/ometiff-source-loader), [`OMEZarrSourceLoader`](/docs/modules/zarr/api-reference/ome-zarr-source-loader), [`RasterSet`](/docs/modules/tiles/api-reference/raster-set), and new GeoTIFF / OME-TIFF / OME-Zarr website examples.
+- **Raster sources** - New experimental `RasterSource` APIs add viewport-driven typed raster loading, with [`GeoTIFFSourceLoader`](/docs/modules/geotiff/api-reference/geotiff-source-loader), [`OMETiffSourceLoader`](/docs/modules/geotiff/api-reference/ometiff-source-loader), [`OMEZarrSourceLoader`](/docs/modules/scientific/zarr/api-reference/ome-zarr-source-loader), [`RasterSet`](/docs/modules/tiles/api-reference/raster-set), and new GeoTIFF / OME-TIFF / OME-Zarr website examples.
 - **Gaussian splats** - New `@loaders.gl/splats` loaders, Gaussian PLY Arrow table support, and WebGPU `SplatLayer` support add experimental rendering for 3D Gaussian splat scenes.
 - **Module workers by default** - Worker descriptors can create bundler-resolved ES module workers as their default browser path while retaining explicit worker URLs and pre-built classic-worker fallbacks. Arrow triangulation is the first API to use this path; existing classic workers are not deprecated.
 - **Automatic atomic worker selection** - `core.worker: 'auto'` lets loaders provide synchronous normalized work estimates so small parses stay on the main thread while expensive parses use workers. The default `core.worker: true` behavior remains unchanged.
@@ -557,16 +560,16 @@ Release Date: 2026
   `GetRasterParameters.selection` indices for time, vertical level, and other non-spatial raster
   dimensions.
 
-**@loaders.gl/zarr**
+**@loaders.gl/scientific/zarr**
 
 - OME-Zarr channel selection preserves reordered or repeated channels even when the selection has the same length as the source channel count.
-- [`GeoZarrSourceLoader`](/docs/modules/zarr/api-reference/geo-zarr-source-loader) NEW - reads
+- [`GeoZarrSourceLoader`](/docs/modules/scientific/zarr/api-reference/geo-zarr-source-loader) NEW - reads
   axis-aligned GeoZarr `proj:` / `spatial:` grids and regular CF/xarray coordinate arrays through
   viewport-clipped native Zarr windows with named time and vertical selections.
 - [GeoZarr with deck.gl](/examples/geospatial/geo-zarr) NEW - streams NASA POWER monthly solar
   climatology from a public Zarr store, colorizes it in the browser, and displays it on an
   interactive deck.gl map.
-- [`OMEZarrSourceLoader`](/docs/modules/zarr/api-reference/ome-zarr-source-loader) NEW - opens OME-Zarr v2 and v3 image pyramids, normalizes multiscale and channel metadata, and reads typed 2D planes with channel and level selection.
+- [`OMEZarrSourceLoader`](/docs/modules/scientific/zarr/api-reference/ome-zarr-source-loader) NEW - opens OME-Zarr v2 and v3 image pyramids, normalizes multiscale and channel metadata, and reads typed 2D planes with channel and level selection.
 - `loadZarrConsolidatedMetadata()` NEW - browses consolidated Zarr and SpatialData-style roots and distinguishes top-level groups from arrays.
 
 **@loaders.gl/shapefile**

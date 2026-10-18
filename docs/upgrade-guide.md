@@ -973,6 +973,18 @@ explicit `complete`/`reason` fields from `queryFeatures()` before displaying res
 GeoJSON output is restricted to EPSG:4326; use `requestCrs` for projected input bounds. See the
 [query guide](/docs/developer-guide/arcgis/feature-layers) for the replacement contracts.
 
+## Scientific format package consolidation (v5)
+
+NetCDF and Zarr now share the public `@loaders.gl/scientific` package. Replace dependencies on `@loaders.gl/netcdf` or the previously private `@loaders.gl/zarr` package with `@loaders.gl/scientific`. Metadata loaders are exported from the package root; import implementation APIs from a format subpath:
+
+```ts
+import {NetCDFLoader, OMEZarrSourceLoader} from '@loaders.gl/scientific';
+import {NetCDFLoaderWithParser} from '@loaders.gl/scientific/netcdf';
+import {OMEZarrImageSource, loadZarr} from '@loaders.gl/scientific/zarr';
+```
+
+The NetCDF and Zarr documentation now lives under [the scientific module](/docs/modules/scientific). Zarr storage engines are installed as dependencies of the scientific package.
+
 ## Raster package consolidation
 
 `@loaders.gl/geotiff`, `@loaders.gl/lerc`, and `@loaders.gl/terrain` have been removed.

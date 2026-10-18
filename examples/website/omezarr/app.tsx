@@ -13,8 +13,8 @@ import type {
   OMEZarrImageSource,
   OMEZarrSourceLoaderMetadata,
   ZarrConsolidatedMetadata
-} from '@loaders.gl/zarr';
-import {OMEZarrSourceLoader, loadZarrConsolidatedMetadata} from '@loaders.gl/zarr';
+} from '@loaders.gl/scientific/zarr';
+import {OMEZarrSourceLoader, loadZarrConsolidatedMetadata} from '@loaders.gl/scientific/zarr';
 
 type AppProps = {
   hideChrome?: boolean;
