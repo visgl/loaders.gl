@@ -141,7 +141,11 @@ export class I3SPointCloudSource
       );
       this.spatialReference = this.spatialTransformer.spatialReference;
     }
-    this.baseUrl = this.url.replace(/\/+$/, '');
+    let baseUrlEnd = this.url.length;
+    while (baseUrlEnd > 0 && this.url[baseUrlEnd - 1] === '/') {
+      baseUrlEnd--;
+    }
+    this.baseUrl = this.url.slice(0, baseUrlEnd);
     this.nodesPerPage = Math.max(
       1,
       Number(layerJson.nodePages?.nodesPerPage || layerJson.store?.index?.nodePerIndexBlock || 1)

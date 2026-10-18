@@ -1443,7 +1443,11 @@ function readLASString(bytes: Uint8Array, offset: number, length: number): strin
 }
 
 function decodeLASString(bytes: Uint8Array): string {
-  return new TextDecoder().decode(bytes).replace(/\0+$/, '').trim();
+  let end = bytes.length;
+  while (end > 0 && bytes[end - 1] === 0) {
+    end--;
+  }
+  return new TextDecoder().decode(bytes.subarray(0, end)).trim();
 }
 
 function formatLASProjectId(bytes: Uint8Array): string {

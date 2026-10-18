@@ -21,7 +21,8 @@ test('ParquetLoader#loader objects', () => {
 });
 test('ParquetLoader#publishes a module-local worker asset', () => {
     expect(typeof ParquetLoader.worker, 'declares a concrete packaged worker URL').toBe('string');
-    expect(String(ParquetLoader.worker).includes('unpkg.com'), 'does not use the implicit worker CDN fallback').toBeFalsy();
+    const workerUrl = new URL(String(ParquetLoader.worker), 'https://example.invalid');
+    expect(workerUrl.hostname, 'does not use the implicit worker CDN fallback').not.toBe('unpkg.com');
     const workerFile = isBrowser ? '/parquet-worker.js' : '/parquet-worker-node.cjs';
     expect(String(ParquetLoader.worker).endsWith(workerFile), 'targets the packaged runtime worker').toBeTruthy();
 });

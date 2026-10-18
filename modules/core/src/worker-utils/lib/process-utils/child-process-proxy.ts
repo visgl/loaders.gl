@@ -92,7 +92,10 @@ export default class ChildProcessProxy {
         });
 
         console.log(`Spawning ${props.command} ${props.arguments.join(' ')}`);
-        const spawnOptions: SpawnOptions = props.spawn || {};
+        if (props.spawn?.shell) {
+          throw new Error('ChildProcessProxy does not support shell execution');
+        }
+        const spawnOptions: SpawnOptions = {...props.spawn, shell: false};
         const childProcess: NodeChildProcess = childProcessModule.spawn(
           props.command,
           args,

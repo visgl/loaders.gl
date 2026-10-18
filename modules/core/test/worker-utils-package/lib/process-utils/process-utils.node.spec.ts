@@ -5,6 +5,7 @@
 import ChildProcess from 'node:child_process';
 import {afterEach, expect, test, vi} from 'vitest';
 import {getAvailablePort} from '../../../../src/worker-utils/lib/process-utils/process-utils';
+import ChildProcessProxy from '../../../../src/worker-utils/lib/process-utils/child-process-proxy';
 
 afterEach(() => vi.restoreAllMocks());
 
@@ -24,4 +25,11 @@ test('getAvailablePort selects the first free port and falls back on process err
     return {} as any;
   }) as any);
   await expect(getAvailablePort(4000)).resolves.toBe(4000);
+});
+
+test('ChildProcessProxy rejects shell execution before spawning', async () => {
+  const childProcessProxy = new ChildProcessProxy();
+  await expect(
+    childProcessProxy.start({command: 'echo', arguments: ['unsafe'], spawn: {shell: true}})
+  ).rejects.toThrow('does not support shell execution');
 });

@@ -178,7 +178,7 @@ export const WCSCoverageSourceLoader = {
   fromBlob: false,
   options: {wcs: {}},
   defaultOptions: {wcs: {}},
-  testURL: (url: string): boolean => /(?:wcs|GetCapabilities.*WCS|service=WCS)/i.test(url),
+  testURL: (url: string): boolean => url.toLowerCase().includes('wcs'),
   createDataSource: (url: string, options: WCSSourceOptions = {}, coreApi?: CoreAPI) =>
     new WCSCoverageSource(url, options, coreApi)
 } as const satisfies SourceLoader<WCSCoverageSource>;

@@ -113,9 +113,9 @@ export class DataSourceManager {
   readonly protocol: string;
 
   /** Managed DataSource entries keyed by normalized DataSource id. */
-  private dataSources: Record<string, ManagedDataSourceEntry> = {};
+  private dataSources: Record<string, ManagedDataSourceEntry> = Object.create(null);
   /** Consumer subscriptions keyed by consumer id. */
-  private consumers: Record<string, Consumer> = {};
+  private consumers: Record<string, Consumer> = Object.create(null);
   /** Generated DataSource ids keyed by object identity for non-string inputs. */
   private dataSourceIds = new WeakMap<object, string>();
   /** Monotonic counter used to create stable object-identity DataSource ids. */
@@ -310,8 +310,8 @@ export class DataSourceManager {
     }
 
     const dataSources = this.dataSources;
-    this.dataSources = {};
-    this.consumers = {};
+    this.dataSources = Object.create(null);
+    this.consumers = Object.create(null);
     await Promise.all(Object.values(dataSources).map(dataSourceEntry => dataSourceEntry.delete()));
   }
 
@@ -348,7 +348,7 @@ export class DataSourceManager {
     dataSourceEntry: ManagedDataSourceEntry | undefined,
     onChange: DataSourceSubscriber['onChange']
   ): void {
-    this.consumers[consumerId] = this.consumers[consumerId] || {};
+    this.consumers[consumerId] = this.consumers[consumerId] || Object.create(null);
     const consumer = this.consumers[consumerId];
     let request = consumer[requestId];
     const oldDataSourceEntry = request?.dataSourceId && this.dataSources[request.dataSourceId];

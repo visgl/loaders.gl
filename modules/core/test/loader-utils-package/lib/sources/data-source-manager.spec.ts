@@ -78,6 +78,28 @@ test('DataSourceManager#add and subscribe manages DataSource instances', () => {
   ]);
 });
 
+test('DataSourceManager handles prototype-shaped source and subscription ids safely', () => {
+  const dataSourceManager = new DataSourceManager();
+  const dataSource = new TestDataSource('https://example.com/prototype', {});
+  const changes: unknown[] = [];
+
+  dataSourceManager.add({dataSourceId: '__proto__', dataSource});
+  expect(dataSourceManager.contains('__proto__')).toBe(true);
+  expect(
+    dataSourceManager.subscribe({
+      dataSourceId: '__proto__',
+      consumerId: '__proto__',
+      requestId: '__proto__',
+      onChange: updatedDataSource => changes.push(updatedDataSource)
+    })
+  ).toBe(dataSource);
+
+  dataSourceManager.add({dataSourceId: '__proto__', dataSource: null});
+  expect(changes).toEqual([null]);
+  expect(Object.prototype).not.toHaveProperty('dataSourceId');
+  dataSourceManager.unsubscribe({consumerId: '__proto__'});
+});
+
 test('DataSourceManager#listDataSources reports pending, placeholder, retained, and error states', async () => {
   const dataSourceManager = new DataSourceManager();
   let rejectDataSource: (error: Error) => void = () => {};

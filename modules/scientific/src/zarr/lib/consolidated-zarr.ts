@@ -52,7 +52,11 @@ export async function loadConsolidatedMetadata(
   options: LoadConsolidatedMetadataOptions = {}
 ): Promise<ZarrConsolidatedMetadata> {
   const metadataPaths = getMetadataPaths(options.metadataPath);
-  const normalizedUrl = url.replace(/\/+$/, '');
+  let urlEnd = url.length;
+  while (urlEnd > 0 && url[urlEnd - 1] === '/') {
+    urlEnd--;
+  }
+  const normalizedUrl = url.slice(0, urlEnd);
   const errors: string[] = [];
 
   for (const metadataPath of metadataPaths) {
