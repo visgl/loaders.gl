@@ -19,6 +19,7 @@ export function ArcGISDocsTabs({
     >
       <FormatLogo slug={service} />
       <Link to={'/docs/modules/arcgis/' + service}>Service guide</Link>
+      <Link to={'/docs/modules/arcgis/formats/' + service}>Protocol and formats</Link>
       <Link to={example}>Full example</Link>
       <Link to="/docs/modules/arcgis/services">Support and gaps</Link>
       <Link to="/examples/arcgis">All ArcGIS examples</Link>
