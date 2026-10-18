@@ -7,7 +7,7 @@ import type {
   ImageSource,
   ImageSourceMetadata,
   ImageType
-} from '@loaders.gl/loader-utils';
+} from '@loaders.gl/core/loader-utils';
 
 /** Accepted image request currently retained by {@link ImageSet}. */
 export type ImageSetRequest<DataT = ImageType> = {

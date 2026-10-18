@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import type {NumericArray} from '@loaders.gl/loader-utils';
+import type {NumericArray} from '@loaders.gl/core/loader-utils';
 import type {GLTFTextureInfoMetadata} from './gltf-json-schema';
 import type {GLTFImplicitFeatureIdRange} from './gltf-vector-topology';
 /* eslint-disable camelcase */

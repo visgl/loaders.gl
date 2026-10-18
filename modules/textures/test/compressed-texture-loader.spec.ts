@@ -4,7 +4,8 @@
 
 import {expect, test} from 'vitest';
 import {CompressedTextureLoader} from '@loaders.gl/textures';
-import {load, setLoaderOptions, isBrowser} from '@loaders.gl/core';
+import {load, setLoaderOptions} from '@loaders.gl/core';
+import {isBrowser} from '@loaders.gl/core/loader-utils';
 import {
   GL_COMPRESSED_RGB_ETC1_WEBGL,
   GL_COMPRESSED_RGB_S3TC_DXT1_EXT,

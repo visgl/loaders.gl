@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import {toArrayBuffer} from '@loaders.gl/loader-utils';
+import {toArrayBuffer} from '@loaders.gl/core/loader-utils';
 import {Decompressor, type CompressionOptions} from './lib/compression';
 
 type SnappyUncompressor = (input: Uint8Array, outputLength: number) => Uint8Array;

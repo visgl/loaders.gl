@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import type {LoaderWithParser} from '@loaders.gl/loader-utils';
+import type {LoaderWithParser} from '@loaders.gl/core/loader-utils';
 import type {XMLLoaderOptions} from '@loaders.gl/xml';
 import type {CSWCapabilities} from './lib/parsers/csw/parse-csw-capabilities';
 import {parseCSWCapabilities} from './lib/parsers/csw/parse-csw-capabilities';

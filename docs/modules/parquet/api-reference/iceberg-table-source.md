@@ -249,7 +249,7 @@ const table = await catalog.loadTable({namespace: ['analytics'], table: 'events'
 for await (const batch of table.source.scan()) consume(batch);
 ```
 
-The adapter accepts the existing `@loaders.gl/loader-utils` `RequestScheduler` for catalog calls.
+The adapter accepts the existing `@loaders.gl/core/loader-utils` `RequestScheduler` for catalog calls.
 Use it when catalog metadata requests should share an application's request budget. Parquet data
 file ranges continue to use the existing `RangeRequestScheduler`/HTTP transport path; the two
 schedulers are intentionally separate because catalog JSON requests and byte-range reads have

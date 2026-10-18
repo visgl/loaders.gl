@@ -1,6 +1,7 @@
-import {fetchFile, isBrowser} from '@loaders.gl/core';
-import {BlobFile, NodeFile, ReadableFile} from '@loaders.gl/loader-utils';
-import {ArrayBufferFile} from '@loaders.gl/loader-utils';
+import {fetchFile} from '@loaders.gl/core';
+import {isBrowser} from '@loaders.gl/core/loader-utils';
+import {BlobFile, NodeFile, ReadableFile} from '@loaders.gl/core/loader-utils';
+import {ArrayBufferFile} from '@loaders.gl/core/loader-utils';
 
 export async function loadArrayBufferFromFile(path: string): Promise<ArrayBuffer> {
   const response = await fetchFile(path);

@@ -21,7 +21,7 @@ import {
   SharedResources,
   I3SPointRenderer
 } from '../../types';
-import type {LoaderOptions, LoaderContext} from '@loaders.gl/loader-utils';
+import type {LoaderOptions, LoaderContext} from '@loaders.gl/core/loader-utils';
 import {I3SLoaderWithParser} from '../../i3s-loader-with-parser';
 import {getI3SSpatialReference} from '@loaders.gl/tiles';
 

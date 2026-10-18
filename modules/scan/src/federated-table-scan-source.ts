@@ -20,7 +20,7 @@ import {
   type TableQueryExplain,
   type TableScanReadOptions,
   type TableScanSource
-} from '@loaders.gl/loader-utils';
+} from '@loaders.gl/core/loader-utils';
 import type {
   ArrowTable,
   ArrowTableBatch,

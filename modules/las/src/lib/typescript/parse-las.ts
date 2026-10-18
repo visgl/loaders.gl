@@ -13,12 +13,12 @@ import {
   getLAZChunkDeclaredByteLength,
   getLAZChunkHeaderByteLength,
   NeedsMoreData
-} from '@loaders.gl/loader-utils';
+} from '@loaders.gl/core/loader-utils';
 import type {
   LAZChunkMetadata,
   LAZChunkTableEntry,
   LAZPointDataTarget
-} from '@loaders.gl/loader-utils';
+} from '@loaders.gl/core/loader-utils';
 import type {LASLoaderOptions} from '../../las-loader-types';
 import {getLASSchema} from '../get-las-schema';
 import {

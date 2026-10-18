@@ -1,5 +1,5 @@
 import {encode} from '@loaders.gl/core';
-import {BlobFile} from '@loaders.gl/loader-utils';
+import {BlobFile} from '@loaders.gl/core/loader-utils';
 import {ParquetJSWriter, ParquetReader} from '@loaders.gl/parquet';
 import type {ObjectRowTable} from '@loaders.gl/schema';
 import {expect, test} from 'vitest';

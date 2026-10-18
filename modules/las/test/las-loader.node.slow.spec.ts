@@ -42,7 +42,7 @@ import {
   createLAZChunkDecoderCursor,
   decodeLAZChunkTable,
   getLAZChunkByteLength
-} from '@loaders.gl/loader-utils';
+} from '@loaders.gl/core/loader-utils';
 import {LASCOPCLoaderWithParser} from '../src/las-copc-loader';
 import {LAZPerfLoaderWithParser} from '../src/lazperf-loader';
 import {LAZRsLoaderWithParser} from '../src/laz-rs-loader';

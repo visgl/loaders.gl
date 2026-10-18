@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright vis.gl contributors
 
-import type {WriterWithEncoder, WriterOptions} from '@loaders.gl/loader-utils';
+import type {WriterWithEncoder, WriterOptions} from '@loaders.gl/core/loader-utils';
 import {VERSION} from './lib/utils/version';
 import encode3DTile from './lib/encoders/encode-3d-tile';
 

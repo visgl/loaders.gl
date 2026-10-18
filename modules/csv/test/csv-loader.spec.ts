@@ -1,14 +1,7 @@
 import {expect, test} from 'vitest';
 import {validateLoader} from 'test/common/conformance';
-import {
-  load,
-  loadInBatches,
-  isAsyncIterable,
-  parse,
-  parseInBatches,
-  preload,
-  preloadSync
-} from '@loaders.gl/core';
+import {load, loadInBatches, parse, parseInBatches, preload, preloadSync} from '@loaders.gl/core';
+import {isAsyncIterable} from '@loaders.gl/core/loader-utils';
 import {CSVLoader, CSVWorkerLoader} from '@loaders.gl/csv';
 import {
   CSVLoader as BundledCSVLoader,

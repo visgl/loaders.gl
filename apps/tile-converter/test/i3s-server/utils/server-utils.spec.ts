@@ -1,5 +1,5 @@
 import {expect, test} from 'vitest';
-import {isBrowser} from '@loaders.gl/core';
+import {isBrowser} from '@loaders.gl/core/loader-utils';
 import {formErrorHandler, normalizePort} from '../../../src/v4/i3s-server/utils/server-utils';
 test('tile-converter(i3s-server)#normalizePort', async () => {
   if (isBrowser) {

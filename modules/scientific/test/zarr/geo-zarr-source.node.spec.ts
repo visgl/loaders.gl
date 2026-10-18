@@ -4,13 +4,14 @@
 import {pathToFileURL} from 'node:url';
 import '@loaders.gl/polyfills';
 import {expect, test} from 'vitest';
-import {createDataSource, resolvePath} from '@loaders.gl/core';
+import {createDataSource} from '@loaders.gl/core';
+import {resolvePath} from '@loaders.gl/core/loader-utils';
 import {
   GeoZarrRasterSource,
   GeoZarrSourceLoader,
   type GeoZarrSourceLoaderOptions
 } from '@loaders.gl/scientific/zarr';
-import type {RasterBoundingBox, RasterViewport} from '@loaders.gl/loader-utils';
+import type {RasterBoundingBox, RasterViewport} from '@loaders.gl/core/loader-utils';
 const CONTENT_BASE = resolvePath('@loaders.gl/scientific/test/zarr/data');
 const SPATIALDATA_V3_FIXTURE = `${CONTENT_BASE}/spatialdata-v3.zarr`;
 const SPATIALDATA_V3_FIXTURE_URL = pathToFileURL(SPATIALDATA_V3_FIXTURE).href;

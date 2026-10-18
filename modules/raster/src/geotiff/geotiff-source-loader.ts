@@ -26,7 +26,7 @@ import type {
   ScanQueryMetadata,
   ScanQueryMetadataOptions,
   ScanQueryMetadataProvider
-} from '@loaders.gl/loader-utils';
+} from '@loaders.gl/core/loader-utils';
 import type {CRSIdentifier} from '@math.gl/crs';
 import {
   createTileGrid,
@@ -40,7 +40,7 @@ import {
   sampleRaster,
   validateRasterRegion,
   createScanQueryMetadata
-} from '@loaders.gl/loader-utils';
+} from '@loaders.gl/core/loader-utils';
 import {GeoTIFFFormat} from './geotiff-format';
 
 // __VERSION__ is injected by babel-plugin-version-inline

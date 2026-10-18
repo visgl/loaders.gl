@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import type {LoaderWithParser} from '@loaders.gl/loader-utils';
+import type {LoaderWithParser} from '@loaders.gl/core/loader-utils';
 import {parseTOMLSync} from './lib/parsers/parse-toml';
 import {TOMLLoader as TOMLLoaderMetadata} from './toml-loader-types';
 import type {TOMLLoaderOptions} from './toml-loader-options';

@@ -10,7 +10,7 @@ import {
   ServiceRuntime,
   discoverServiceGraph
 } from '@loaders.gl/wms';
-import {createQueryParameterCredential} from '@loaders.gl/loader-utils';
+import {createQueryParameterCredential} from '@loaders.gl/core/loader-utils';
 
 afterEach(() => vi.unstubAllGlobals());
 

@@ -4,7 +4,8 @@
 
 import { expect, test } from "vitest";
 // import {validateLoader} from 'test/common/conformance';
-import { load, loadInBatches, encode, fetchFile, isBrowser, setLoaderOptions } from '@loaders.gl/core';
+import {load, loadInBatches, encode, fetchFile, setLoaderOptions} from '@loaders.gl/core';
+import {isBrowser} from '@loaders.gl/core/loader-utils';
 import type { ArrowTable, ObjectRowTable } from '@loaders.gl/schema';
 import { getGeometryColumnsFromSchema } from '@loaders.gl/geoarrow';
 import {getGeoMetadata} from '@loaders.gl/schema';

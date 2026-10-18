@@ -7,7 +7,7 @@ import {
   I3SLoaderOptions,
   parseSLPKArchive
 } from '@loaders.gl/i3s';
-import {NodeFile} from '@loaders.gl/loader-utils';
+import {NodeFile} from '@loaders.gl/core/loader-utils';
 import {ZipFileSystem} from '@loaders.gl/zip';
 
 export type SLPKUrlParts = {slpkFileName: string; internalFileName: string};

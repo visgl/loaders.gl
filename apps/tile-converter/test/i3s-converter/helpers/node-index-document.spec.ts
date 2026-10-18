@@ -1,5 +1,5 @@
 import {describe, expect, test, vi} from 'vitest';
-import {isBrowser} from '@loaders.gl/core';
+import {isBrowser} from '@loaders.gl/core/loader-utils';
 import type {BoundingVolumes} from '@loaders.gl/i3s';
 import {NodeIndexDocument} from '../../../src/v4/i3s-converter/helpers/node-index-document';
 import I3SConverter from '../../../src/v4/i3s-converter/i3s-converter';

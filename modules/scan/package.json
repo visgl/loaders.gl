@@ -54,7 +54,7 @@
     "build-bundle": "node ../../scripts/build-codec-bundle.mjs ./bundle.ts --output=dist/dist.min.js"
   },
   "dependencies": {
-    "@loaders.gl/loader-utils": "5.0.0-alpha.12",
+    "@loaders.gl/core": "5.0.0-alpha.12",
     "@loaders.gl/parquet": "5.0.0-alpha.12",
     "@loaders.gl/schema": "5.0.0-alpha.12",
     "@loaders.gl/schema-utils": "5.0.0-alpha.12",

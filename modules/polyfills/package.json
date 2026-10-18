@@ -50,8 +50,8 @@
     "build-node-entrypoint": "esbuild src/index.ts --bundle --packages=external --platform=node --format=cjs --outfile=dist/index.cjs"
   },
   "dependencies": {
-    "@loaders.gl/crypto": "5.0.0-alpha.12",
-    "@loaders.gl/loader-utils": "5.0.0-alpha.12"
+    "@loaders.gl/core": "5.0.0-alpha.12",
+    "@loaders.gl/crypto": "5.0.0-alpha.12"
   },
   "peerDependencies": {
     "@loaders.gl/core": "~5.0.0-alpha.0"

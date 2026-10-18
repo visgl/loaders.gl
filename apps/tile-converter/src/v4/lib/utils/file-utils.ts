@@ -1,5 +1,5 @@
 import {load} from '@loaders.gl/core';
-import {JSONLoader} from '@loaders.gl/loader-utils';
+import {JSONLoader} from '@loaders.gl/core/loader-utils';
 import {promises as fs} from 'fs';
 import {isAbsolute, join} from 'path';
 import {compressFileWithGzip} from './compress-util';

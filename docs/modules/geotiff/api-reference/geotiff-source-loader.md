@@ -185,7 +185,7 @@ without disposing an injected scheduler.
 
 ## Shared CPU identify
 
-`@loaders.gl/loader-utils` exports `sampleRaster`, `rasterCoordinateToPixel`,
+`@loaders.gl/core/loader-utils` exports `sampleRaster`, `rasterCoordinateToPixel`,
 `isRasterSampleValid`, `computeRasterStatistics`, and `canReuseRasterCoverage`.
 They perform no network calls and never mutate sample buffers. Coordinates passed
 to the affine inverse must explicitly use the payload CRS. The affine maps grid

@@ -134,7 +134,7 @@ import {
   parseLASWaveformPacketReference,
   readLASWaveformPacket
 } from '@loaders.gl/las';
-import {HttpFile} from '@loaders.gl/loader-utils';
+import {HttpFile} from '@loaders.gl/core/loader-utils';
 
 const metadata = table.loaderData.metadata;
 const waveformRow = table.data.getChild('WAVEFORM').get(pointIndex);

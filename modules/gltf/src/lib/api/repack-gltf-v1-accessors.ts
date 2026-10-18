@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import {padToNBytes} from '@loaders.gl/loader-utils';
+import {padToNBytes} from '@loaders.gl/core/loader-utils';
 import type {GLTF, GLTFWithBuffers, GLTFAccessor} from '../types/gltf-types';
 import {appendGLTFV1BufferData, type GLTFV1BufferAppend} from './append-gltf-v1-buffer-data';
 

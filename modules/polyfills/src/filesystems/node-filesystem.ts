@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import {Stat, RandomAccessFileSystem} from '@loaders.gl/loader-utils';
+import {Stat, RandomAccessFileSystem} from '@loaders.gl/core/loader-utils';
 import fsPromise from 'fs/promises';
 import {NodeFile} from './node-file';
 import {fetchNode} from './fetch-node';

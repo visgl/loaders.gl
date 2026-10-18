@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import type {Loader, LoaderWithParser, StrictLoaderOptions} from '@loaders.gl/loader-utils';
+import type {Loader, LoaderWithParser, StrictLoaderOptions} from '@loaders.gl/core/loader-utils';
 import type {ArrowTable, ArrowTableBatch} from '@loaders.gl/schema';
 import {parseSHP, parseSHPInBatches} from './lib/parsers/parse-shp';
 import type {SHPResult} from './lib/parsers/parse-shp';

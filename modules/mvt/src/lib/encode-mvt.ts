@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import type {WriterOptions} from '@loaders.gl/loader-utils';
+import type {WriterOptions} from '@loaders.gl/core/loader-utils';
 import {Table} from 'apache-arrow';
 import {encodeMVTArrow} from './encode-mvt-arrow';
 import {fromGeojson} from './mapbox-vt-pbf/to-vector-tile';

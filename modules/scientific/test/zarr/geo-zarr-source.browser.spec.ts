@@ -1,6 +1,6 @@
 import {expect, test} from 'vitest';
 import {createDataSource} from '@loaders.gl/core';
-import type {RasterBoundingBox, RasterViewport} from '@loaders.gl/loader-utils';
+import type {RasterBoundingBox, RasterViewport} from '@loaders.gl/core/loader-utils';
 import {
   GeoZarrRasterSource,
   GeoZarrSourceLoader,

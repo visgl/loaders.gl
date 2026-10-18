@@ -1,4 +1,5 @@
-import {fetchFile, isBrowser} from '@loaders.gl/core';
+import {fetchFile} from '@loaders.gl/core';
+import {isBrowser} from '@loaders.gl/core/loader-utils';
 import {expect, test} from 'vitest';
 import {
   NetCDFSource,

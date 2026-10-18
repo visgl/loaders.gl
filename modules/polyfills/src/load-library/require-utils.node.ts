@@ -10,7 +10,7 @@ import Module from 'module';
 import path from 'path';
 import fs from 'fs';
 import {fileURLToPath} from 'node:url';
-import {ensureArrayBuffer} from '@loaders.gl/loader-utils';
+import {ensureArrayBuffer} from '@loaders.gl/core/loader-utils';
 
 /**
  * Loads exact file bytes from a local path, file URL or HTTP(S) resource.

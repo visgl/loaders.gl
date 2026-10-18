@@ -9,8 +9,8 @@ export {
   createTileGridMatrix,
   getRequestedTileMatrix,
   getTileGridMatrixId
-} from '@loaders.gl/loader-utils';
-export type {TileMatrixFields} from '@loaders.gl/loader-utils';
+} from '@loaders.gl/core/loader-utils';
+export type {TileMatrixFields} from '@loaders.gl/core/loader-utils';
 
 /** OGC standardized rendering pixel size, used to convert scale denominators: 0.28 mm. */
 export const OGC_PIXEL_SIZE_METERS = 0.00028;

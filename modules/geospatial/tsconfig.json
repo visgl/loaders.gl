@@ -16,7 +16,7 @@
       "path": "../arrow-geometry"
     },
     {
-      "path": "../loader-utils"
+      "path": "../core"
     },
     {
       "path": "../schema"

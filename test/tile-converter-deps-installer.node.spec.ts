@@ -5,7 +5,7 @@
 import {afterEach, expect, test, vi} from 'vitest';
 import {join} from 'node:path';
 import tileConverterPackage from '../apps/tile-converter/package.json';
-import {ChildProcessProxy} from '@loaders.gl/worker-utils';
+import {ChildProcessProxy} from '@loaders.gl/core/worker-utils';
 import {load, fetchFile} from '@loaders.gl/core';
 import {writeFile} from '../apps/tile-converter/src/v4/lib/utils/file-utils';
 import {DepsInstaller} from '../apps/tile-converter/src/v4/deps-installer/deps-installer';

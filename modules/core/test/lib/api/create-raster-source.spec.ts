@@ -4,14 +4,15 @@
 
 import {expect, test} from 'vitest';
 import {createDataSource} from '@loaders.gl/core';
-import {fetchFile, resolvePath} from '@loaders.gl/core';
+import {fetchFile} from '@loaders.gl/core';
+import {resolvePath} from '@loaders.gl/core/loader-utils';
 import {
   GeoTIFFRasterSource,
   GeoTIFFSourceLoader,
   OMETiffImageSource,
   OMETiffSourceLoader
 } from '@loaders.gl/raster/geotiff/index';
-import {createRangeStats, RangeRequestScheduler} from '@loaders.gl/loader-utils';
+import {createRangeStats, RangeRequestScheduler} from '@loaders.gl/core/loader-utils';
 import {flushMicrotasks} from '@loaders.gl/test-utils/vitest';
 
 const TIFF_URL = resolvePath('@loaders.gl/raster/test/geotiff/data/gfw-azores.tif');

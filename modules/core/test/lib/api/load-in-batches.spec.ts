@@ -3,7 +3,8 @@
 // Copyright (c) vis.gl contributors
 
 import {expect, test} from 'vitest';
-import {loadInBatches, fetchFile, isBrowser} from '@loaders.gl/core';
+import {loadInBatches, fetchFile} from '@loaders.gl/core';
+import {isBrowser} from '@loaders.gl/core/loader-utils';
 import {CSVLoader} from '@loaders.gl/csv';
 import {OBJLoader} from '@loaders.gl/obj';
 import {KMLLoader} from '@loaders.gl/kml';

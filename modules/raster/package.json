@@ -321,8 +321,8 @@
     "pre-build": "npm run copy-libs && node ./build-cjs.mjs && npm run build-worker-terrain && npm run build-worker-quantized-mesh"
   },
   "dependencies": {
+    "@loaders.gl/core": "5.0.0-alpha.12",
     "@loaders.gl/images": "5.0.0-alpha.12",
-    "@loaders.gl/loader-utils": "5.0.0-alpha.12",
     "@loaders.gl/schema": "5.0.0-alpha.12",
     "@loaders.gl/schema-utils": "5.0.0-alpha.12",
     "@math.gl/crs": "5.0.0-alpha.18",

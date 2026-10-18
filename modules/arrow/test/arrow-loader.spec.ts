@@ -10,15 +10,8 @@ import lz4js from 'lz4js';
 import {ZstdCodec} from 'zstd-codec';
 import {ArrowLoader} from '@loaders.gl/arrow';
 import {registerArrowCompressionCodecs} from '../../tables/src/arrow/lib/parsers/arrow-compression';
-import {
-  isBrowser,
-  makeIterator,
-  resolvePath,
-  setLoaderOptions,
-  fetchFile,
-  parse,
-  parseInBatches
-} from '@loaders.gl/core';
+import {makeIterator, setLoaderOptions, fetchFile, parse, parseInBatches} from '@loaders.gl/core';
+import {isBrowser, resolvePath} from '@loaders.gl/core/loader-utils';
 import {
   ARROW_SIMPLE,
   ARROW_DICTIONARY,

@@ -3,8 +3,9 @@
 // Copyright (c) vis.gl contributors
 
 import {describe, expect, test} from 'vitest';
-import {fetchFile, resolvePath} from '@loaders.gl/core';
-import {CRSReprojectionError} from '@loaders.gl/loader-utils';
+import {fetchFile} from '@loaders.gl/core';
+import {resolvePath} from '@loaders.gl/core/loader-utils';
+import {CRSReprojectionError} from '@loaders.gl/core/loader-utils';
 
 import {
   decodeFlatGeobufGeometry,

@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright vis.gl contributors
 
-import type {LoaderWithParser} from '@loaders.gl/loader-utils';
+import type {LoaderWithParser} from '@loaders.gl/core/loader-utils';
 import type {POTreeLoaderOptions} from './potree-loader-types';
 import type {POTreeNode} from './parsers/parse-potree-hierarchy-chunk';
 import {parsePotreeHierarchyChunk} from './parsers/parse-potree-hierarchy-chunk';

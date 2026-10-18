@@ -3,7 +3,8 @@
 // Copyright (c) vis.gl contributors
 
 import {expect, test} from 'vitest';
-import {createDataSource, fetchFile, resolvePath} from '@loaders.gl/core';
+import {createDataSource, fetchFile} from '@loaders.gl/core';
+import {resolvePath} from '@loaders.gl/core/loader-utils';
 import {FlatGeobufSourceLoader, FlatGeobufVectorSource} from '@loaders.gl/flatgeobuf';
 import {convertBinaryFeatureCollectionToGeojson} from '@loaders.gl/geoarrow';
 import {convertGeoArrowToTable} from '@loaders.gl/geoarrow';

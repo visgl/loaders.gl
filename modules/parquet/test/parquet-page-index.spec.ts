@@ -4,7 +4,8 @@
 
 import {beforeAll, describe, expect, test} from 'vitest';
 
-import {createDataSource, isBrowser} from '@loaders.gl/core';
+import {createDataSource} from '@loaders.gl/core';
+import {isBrowser} from '@loaders.gl/core/loader-utils';
 import type {ParquetBatch, ParquetSourceMetadata} from '@loaders.gl/parquet';
 import type {ParquetSourceLoaderOptions} from '@loaders.gl/parquet';
 import {

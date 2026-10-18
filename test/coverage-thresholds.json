@@ -434,21 +434,6 @@
         "branches": 46
       }
     },
-    "@loaders.gl/loader-utils": {
-      "path": "modules/loader-utils",
-      "browser": {
-        "statements": 78,
-        "lines": 78,
-        "functions": 74,
-        "branches": 69
-      },
-      "merged": {
-        "statements": 79,
-        "lines": 79,
-        "functions": 75,
-        "branches": 71
-      }
-    },
     "@loaders.gl/mlt": {
       "path": "modules/mlt",
       "browser": {
@@ -902,21 +887,6 @@
         "branches": 57
       }
     },
-    "@loaders.gl/worker-utils": {
-      "path": "modules/worker-utils",
-      "browser": {
-        "statements": 62,
-        "lines": 63,
-        "functions": 63,
-        "branches": 58
-      },
-      "merged": {
-        "statements": 65,
-        "lines": 65,
-        "functions": 67,
-        "branches": 63
-      }
-    },
     "@loaders.gl/xml": {
       "path": "modules/xml",
       "browser": {
@@ -1029,6 +999,44 @@
       "owner": "@loaders.gl/raster",
       "sourcePaths": [
         "modules/raster/src/terrain/"
+      ]
+    },
+    "@loaders.gl/core/loader-utils": {
+      "path": "modules/core/src/loader-utils",
+      "browser": {
+        "statements": 78,
+        "lines": 78,
+        "functions": 74,
+        "branches": 69
+      },
+      "merged": {
+        "statements": 79,
+        "lines": 79,
+        "functions": 75,
+        "branches": 71
+      },
+      "owner": "@loaders.gl/core",
+      "sourcePaths": [
+        "modules/core/src/loader-utils/"
+      ]
+    },
+    "@loaders.gl/core/worker-utils": {
+      "path": "modules/core/src/worker-utils",
+      "browser": {
+        "statements": 62,
+        "lines": 63,
+        "functions": 63,
+        "branches": 58
+      },
+      "merged": {
+        "statements": 65,
+        "lines": 65,
+        "functions": 67,
+        "branches": 63
+      },
+      "owner": "@loaders.gl/core",
+      "sourcePaths": [
+        "modules/core/src/worker-utils/"
       ]
     }
   }

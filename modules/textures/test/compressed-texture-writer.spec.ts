@@ -3,7 +3,8 @@
 // Copyright (c) vis.gl contributors
 
 import {expect, test} from 'vitest';
-import {encodeURLtoURL, isBrowser} from '@loaders.gl/core';
+import {encodeURLtoURL} from '@loaders.gl/core';
+import {isBrowser} from '@loaders.gl/core/loader-utils';
 import {CompressedTextureWriter} from '@loaders.gl/textures';
 import {createTextureEncoder, loadTextureCompressorPack} from '../src/lib/encoders/encode-texture';
 export const IMAGE_URL = '@loaders.gl/images/test/data/img1-preview.png';

@@ -7,14 +7,14 @@ import type {
   LoaderWithParser,
   StrictLoaderOptions,
   LoaderContext
-} from '@loaders.gl/loader-utils';
+} from '@loaders.gl/core/loader-utils';
 // / import type { GLTFLoaderOptions } from '@loaders.gl/gltf';
 import type {DracoLoaderOptions} from '@loaders.gl/draco';
 import type {ImageBitmapLoaderOptions} from '@loaders.gl/images';
 import {GLBLoader, GLTFLoader} from '@loaders.gl/gltf';
 import type {GLTFWithBuffers} from '@loaders.gl/gltf';
 
-import {path} from '@loaders.gl/loader-utils';
+import {path} from '@loaders.gl/core/loader-utils';
 import {get3DTilesSpatialReference, TILESET_TYPE, LOD_METRIC_TYPE} from '@loaders.gl/tiles';
 import {parse3DTile} from './lib/parsers/parse-3d-tile';
 import {normalizeTileHeaders} from './lib/parsers/parse-3d-tile-header';

@@ -5,7 +5,7 @@
 import {getArcGISServices} from './arcgis-server';
 export {getArcGISServices} from './arcgis-server';
 export type {Service as ArcGISService} from './arcgis-server';
-import type {ServiceCapabilities} from '@loaders.gl/loader-utils';
+import type {ServiceCapabilities} from '@loaders.gl/core/loader-utils';
 import type {Service as ArcGISService} from './arcgis-server';
 
 /** Normalized capabilities discovered from one ArcGIS REST service. */

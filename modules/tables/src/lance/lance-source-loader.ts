@@ -2,8 +2,8 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import type {CoreAPI, SourceLoader} from '@loaders.gl/loader-utils';
-import {DataSource as BaseDataSource, makeTableScanBatch} from '@loaders.gl/loader-utils';
+import type {CoreAPI, SourceLoader} from '@loaders.gl/core/loader-utils';
+import {DataSource as BaseDataSource, makeTableScanBatch} from '@loaders.gl/core/loader-utils';
 import type {ArrowTableBatch} from '@loaders.gl/schema';
 
 import {LanceSourceLoader as LanceSourceLoaderMetadata} from './lance-source-loader-types';

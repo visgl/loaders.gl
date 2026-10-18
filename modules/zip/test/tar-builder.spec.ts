@@ -1,7 +1,7 @@
 import {expect, test} from 'vitest';
 import {validateBuilder} from 'test/common/conformance';
 import {TarBuilder} from '@loaders.gl/zip';
-import {isBrowser} from '@loaders.gl/core';
+import {isBrowser} from '@loaders.gl/core/loader-utils';
 import {IMAGE_DATA_ARRAY} from './lib/test-cases';
 test('Zip#TarBuilder conformance', () => {
   validateBuilder(TarBuilder, 'TarBuilder');

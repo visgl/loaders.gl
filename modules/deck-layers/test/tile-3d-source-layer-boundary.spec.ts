@@ -3,7 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import {beforeEach, expect, test, vi} from 'vitest';
-import {createBearerTokenCredential} from '@loaders.gl/loader-utils';
+import {createBearerTokenCredential} from '@loaders.gl/core/loader-utils';
 
 const existingCredential = createBearerTokenCredential({
   id: 'existing',

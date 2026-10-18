@@ -2934,7 +2934,7 @@ See `4.3-release` branch for additional CHANGELOGS
 - Minimal Raw port of 3D Tileset (#205)
 - @loaders.gl/core: Move node fetch polyfills to @loaders.gl/polyfills (#202)
 - @loaders.gl/images: Move node support to @loaders.gl/polyfills (#203)
-- @loaders.gl/loader-utils: New module breaking out from core (#204)
+- @loaders.gl/core/loader-utils: New module breaking out from core (#204)
 - LAS and GLTF working in examples (#201)
 - Support draco and fix 3d point cloud examples (#199)
 - Use static images (#198)

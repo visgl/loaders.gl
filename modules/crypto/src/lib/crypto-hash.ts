@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import {getJSModule, registerJSModules} from '@loaders.gl/loader-utils';
+import {getJSModule, registerJSModules} from '@loaders.gl/core/loader-utils';
 import {Hash} from './hash';
 
 type CryptoHashOptions = {

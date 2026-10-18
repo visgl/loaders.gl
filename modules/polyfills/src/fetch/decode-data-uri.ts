@@ -3,7 +3,7 @@
 // Copyright vis.gl contributors
 
 // Based on binary-gltf-utils under MIT license: Copyright (c) 2016-17 Karl Cheng
-import {toArrayBuffer} from '@loaders.gl/loader-utils';
+import {toArrayBuffer} from '@loaders.gl/core/loader-utils';
 
 /**
  * Parses a data URI into a buffer, as well as retrieving its declared MIME type.

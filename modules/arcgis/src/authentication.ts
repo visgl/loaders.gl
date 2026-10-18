@@ -7,12 +7,12 @@ import type {
   FetchLike,
   RequestCredential,
   TokenValue
-} from '@loaders.gl/loader-utils';
+} from '@loaders.gl/core/loader-utils';
 import {
   TokenAuthentication,
   createAuthenticatedFetch,
   createQueryParameterCredential
-} from '@loaders.gl/loader-utils';
+} from '@loaders.gl/core/loader-utils';
 
 /** Maximum JSON error bytes retained by the authentication detector. */
 const MAXIMUM_AUTHENTICATION_ERROR_BYTES = 16384;

@@ -46,7 +46,7 @@
     "build-bundle-dev": "ocular-bundle ./bundle.ts --env=dev --output=dist/dist.dev.js"
   },
   "dependencies": {
-    "@loaders.gl/loader-utils": "5.0.0-alpha.12"
+    "@loaders.gl/core": "5.0.0-alpha.12"
   },
   "peerDependencies": {
     "@loaders.gl/core": "~5.0.0-alpha.0"

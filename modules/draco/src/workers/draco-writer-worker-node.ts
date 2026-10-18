@@ -4,7 +4,7 @@
 
 // Polyfills provide Node file loading helpers used by the shared library loader.
 import '@loaders.gl/polyfills';
-import {createWorker} from '@loaders.gl/worker-utils';
+import {createWorker} from '@loaders.gl/core/worker-utils';
 import {encodeDraco, encodeDracoInBatchesLocally} from '../draco-writer';
 
 createWorker(

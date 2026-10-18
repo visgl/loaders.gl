@@ -3,7 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import {default as log} from '@probe.gl/log';
-import type {ReadableFile} from '@loaders.gl/loader-utils';
+import type {ReadableFile} from '@loaders.gl/core/loader-utils';
 import type {ObjectRowTable, ObjectRowTableBatch, Schema} from '@loaders.gl/schema';
 
 import type {ParquetJSLoaderOptions} from '../../parquet-loader-options';

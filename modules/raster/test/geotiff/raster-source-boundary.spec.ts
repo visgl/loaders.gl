@@ -6,9 +6,9 @@ import type {
   RasterBoundingBox,
   RasterChannelDataType,
   RasterViewport
-} from '@loaders.gl/loader-utils';
+} from '@loaders.gl/core/loader-utils';
 import {expect, test, vi} from 'vitest';
-import {sampleRaster} from '@loaders.gl/loader-utils';
+import {sampleRaster} from '@loaders.gl/core/loader-utils';
 import {GeoTIFFRasterSource, GeoTIFFSourceLoader} from '../../src/geotiff/geotiff-source-loader';
 import {OMETiffImageSource, OMETiffSourceLoader} from '../../src/geotiff/ometiff-source-loader';
 

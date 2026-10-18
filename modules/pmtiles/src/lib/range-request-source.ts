@@ -2,7 +2,10 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import {RangeRequestScheduler, type RangeRequestSchedulerProps} from '@loaders.gl/loader-utils';
+import {
+  RangeRequestScheduler,
+  type RangeRequestSchedulerProps
+} from '@loaders.gl/core/loader-utils';
 import type {Source, RangeResponse} from 'pmtiles';
 
 /** Options for the PMTiles range-request source adapter. */

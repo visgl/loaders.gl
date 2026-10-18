@@ -177,17 +177,17 @@
       "@loaders.gl/schema-utils/test": [
         "modules/schema-utils/test"
       ],
-      "@loaders.gl/worker-utils": [
-        "modules/worker-utils/src"
+      "@loaders.gl/core/worker-utils": [
+        "modules/core/src/worker-utils"
       ],
-      "@loaders.gl/worker-utils/test": [
-        "modules/worker-utils/test"
+      "@loaders.gl/core/worker-utils/test": [
+        "modules/core/test/worker-utils-package"
       ],
-      "@loaders.gl/loader-utils": [
-        "modules/loader-utils/src"
+      "@loaders.gl/core/loader-utils": [
+        "modules/core/src/loader-utils"
       ],
-      "@loaders.gl/loader-utils/test": [
-        "modules/loader-utils/test"
+      "@loaders.gl/core/loader-utils/test": [
+        "modules/core/test/loader-utils-package"
       ],
       "@loaders.gl/polyfills": [
         "modules/polyfills/src"

@@ -4,8 +4,8 @@
 
 import type {LERCData} from '@loaders.gl/raster';
 import {LERCLoader} from '@loaders.gl/raster';
-import type {CoreAPI, DataSourceOptions, SourceLoader} from '@loaders.gl/loader-utils';
-import {DataSource} from '@loaders.gl/loader-utils';
+import type {CoreAPI, DataSourceOptions, SourceLoader} from '@loaders.gl/core/loader-utils';
+import {DataSource} from '@loaders.gl/core/loader-utils';
 import type {WCSCapabilities} from './wip/lib/wcs/parse-wcs-capabilities';
 import {parseWCSCapabilities} from './wip/lib/wcs/parse-wcs-capabilities';
 

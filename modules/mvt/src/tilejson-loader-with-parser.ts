@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import type {LoaderWithParser, LoaderOptions} from '@loaders.gl/loader-utils';
+import type {LoaderWithParser, LoaderOptions} from '@loaders.gl/core/loader-utils';
 import type {TileJSON} from './lib/parse-tilejson';
 import {parseTileJSON} from './lib/parse-tilejson';
 import {TileJSONLoader as TileJSONLoaderMetadata} from './tilejson-loader';

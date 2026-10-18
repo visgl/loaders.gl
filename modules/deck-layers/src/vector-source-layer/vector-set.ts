@@ -8,7 +8,7 @@ import type {
   GetFeaturesParameters,
   VectorSource,
   VectorSourceMetadata
-} from '@loaders.gl/loader-utils';
+} from '@loaders.gl/core/loader-utils';
 
 /** Resolved feature-table type returned by the active vector source. */
 type VectorSetData = Awaited<ReturnType<VectorSource['getFeatures']>>;

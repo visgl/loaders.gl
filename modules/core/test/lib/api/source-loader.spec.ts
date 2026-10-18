@@ -8,9 +8,9 @@ import {
   createDataSource,
   fetchFile,
   load,
-  parse,
-  resolvePath
+  parse
 } from '@loaders.gl/core';
+import {resolvePath} from '@loaders.gl/core/loader-utils';
 import {
   MVTSourceLoader,
   MVTTileSource,

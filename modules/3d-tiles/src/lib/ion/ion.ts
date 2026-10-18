@@ -2,12 +2,12 @@
 // SPDX-License-Identifier: MIT
 // Copyright vis.gl contributors
 
-import type {FetchLike, RequestCredential} from '@loaders.gl/loader-utils';
+import type {FetchLike, RequestCredential} from '@loaders.gl/core/loader-utils';
 import {
   assert,
   createAuthenticatedFetch,
   createBearerTokenCredential
-} from '@loaders.gl/loader-utils';
+} from '@loaders.gl/core/loader-utils';
 
 const CESIUM_ION_URL = 'https://api.cesium.com/v1/assets';
 const CESIUM_ION_ORIGIN = 'https://api.cesium.com';

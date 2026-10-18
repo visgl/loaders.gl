@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import type {Loader} from '@loaders.gl/loader-utils';
+import type {Loader} from '@loaders.gl/core/loader-utils';
 import type {Table, ArrowTableBatch} from '@loaders.gl/schema';
 
 import type {ArrowLoaderOptions} from './exports/arrow-loader';

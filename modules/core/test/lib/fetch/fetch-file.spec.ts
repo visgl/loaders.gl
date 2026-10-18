@@ -3,7 +3,8 @@
 // Copyright (c) vis.gl contributors
 
 import {expect, test} from 'vitest';
-import {isBrowser, fetchFile} from '@loaders.gl/core';
+import {fetchFile} from '@loaders.gl/core';
+import {isBrowser} from '@loaders.gl/core/loader-utils';
 
 const DATA_URL = 'data:,important content!';
 const BINARY_URL = '@loaders.gl/core/test/data/files/binary-data.bin';

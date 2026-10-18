@@ -296,26 +296,26 @@
       },
       {
         "type": "category",
-        "label": "@loaders.gl/loader-utils",
+        "label": "@loaders.gl/core/loader-utils",
         "items": [
-          "modules/loader-utils/README",
-          "modules/loader-utils/api-reference/data-source-manager",
-          "modules/loader-utils/api-reference/readable-file",
-          "modules/loader-utils/api-reference/http-file",
-          "modules/loader-utils/api-reference/request-scheduler",
-          "modules/loader-utils/api-reference/request-cache",
-          "modules/loader-utils/api-reference/range-request-scheduler",
-          "modules/loader-utils/api-reference/range-request-cache",
-          "modules/loader-utils/api-reference/request-credentials",
-          "modules/loader-utils/api-reference/parse-with-context"
+          "modules/core/loader-utils/README",
+          "modules/core/loader-utils/api-reference/data-source-manager",
+          "modules/core/loader-utils/api-reference/readable-file",
+          "modules/core/loader-utils/api-reference/http-file",
+          "modules/core/loader-utils/api-reference/request-scheduler",
+          "modules/core/loader-utils/api-reference/request-cache",
+          "modules/core/loader-utils/api-reference/range-request-scheduler",
+          "modules/core/loader-utils/api-reference/range-request-cache",
+          "modules/core/loader-utils/api-reference/request-credentials",
+          "modules/core/loader-utils/api-reference/parse-with-context"
         ]
       },
       {
         "type": "category",
-        "label": "@loaders.gl/worker-utils",
+        "label": "@loaders.gl/core/worker-utils",
         "items": [
-          "modules/worker-utils/README",
-          "modules/worker-utils/api-reference/worker-processing"
+          "modules/core/worker-utils/README",
+          "modules/core/worker-utils/api-reference/worker-processing"
         ]
       },
       {

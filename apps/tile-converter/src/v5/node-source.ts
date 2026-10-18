@@ -5,7 +5,7 @@
 import {open, realpath} from 'node:fs/promises';
 import {basename, dirname, isAbsolute, relative, resolve, sep} from 'node:path';
 import {fileURLToPath} from 'node:url';
-import type {ReadableFile} from '@loaders.gl/loader-utils';
+import type {ReadableFile} from '@loaders.gl/core/loader-utils';
 import {parse3DTilesArchive} from '@loaders.gl/3d-tiles';
 import {
   createBrowserTilesetConversionSource,

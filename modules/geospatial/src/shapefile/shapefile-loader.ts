@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import type {StrictLoaderOptions, LoaderWithParser} from '@loaders.gl/loader-utils';
+import type {StrictLoaderOptions, LoaderWithParser} from '@loaders.gl/core/loader-utils';
 import type {
   Batch,
   GeoArrowEncodingPreference,
@@ -42,7 +42,7 @@ export type ShapefileLoaderOptions = StrictLoaderOptions &
       geoarrow?: {encodingPreference?: GeoArrowEncodingPreference};
       batchSize?: number;
     };
-    gis?: import('@loaders.gl/loader-utils').CRSReprojectionOptions;
+    gis?: import('@loaders.gl/core/loader-utils').CRSReprojectionOptions;
   };
 
 /**

@@ -13,7 +13,7 @@
   },
   "references": [
     {
-      "path": "../loader-utils"
+      "path": "../core"
     },
     {
       "path": "../schema"

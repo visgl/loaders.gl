@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import type {Loader, StrictLoaderOptions} from '@loaders.gl/loader-utils';
+import type {Loader, StrictLoaderOptions} from '@loaders.gl/core/loader-utils';
 import type {Texture} from '@loaders.gl/schema';
 import {RadianceHDRFormat} from './texture-format';
 import {VERSION} from './lib/utils/version';

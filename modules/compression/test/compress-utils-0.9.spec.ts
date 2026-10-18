@@ -3,7 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import {expect, test} from 'vitest';
-import {processOnWorker} from '@loaders.gl/worker-utils';
+import {processOnWorker} from '@loaders.gl/core/worker-utils';
 import {CompressionWorker, LzoDecompressor} from '@loaders.gl/compression';
 import {DeflateCompressUtilsCompressor} from '../src/deflate-compressor-compress-utils';
 import {DeflateCompressUtilsDecompressor} from '../src/deflate-decompressor-compress-utils';

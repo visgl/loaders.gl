@@ -6,7 +6,8 @@
 // See LICENSE.md and https://github.com/AnalyticalGraphicsInc/cesium/blob/master/LICENSE.md
 
 import {expect, test} from 'vitest';
-import {coreApi, parse, fetchFile, load, isBrowser} from '@loaders.gl/core';
+import {coreApi, parse, fetchFile, load} from '@loaders.gl/core';
+import {isBrowser} from '@loaders.gl/core/loader-utils';
 import {Tiles3DLoader} from '@loaders.gl/3d-tiles';
 import {Tiles3DLoader as BundledTiles3DLoader} from '@loaders.gl/3d-tiles/bundled';
 import {DracoLoader} from '@loaders.gl/draco';

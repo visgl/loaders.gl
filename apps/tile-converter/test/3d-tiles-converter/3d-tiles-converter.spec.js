@@ -1,5 +1,6 @@
 import {expect, test} from 'vitest';
-import {isBrowser, setLoaderOptions} from '@loaders.gl/core';
+import {setLoaderOptions} from '@loaders.gl/core';
+import {isBrowser} from '@loaders.gl/core/loader-utils';
 // @ts-expect-error promises
 import {readdir} from 'fs/promises';
 import {default as Tiles3DConverter} from '../../src/v4/3d-tiles-converter/3d-tiles-converter';

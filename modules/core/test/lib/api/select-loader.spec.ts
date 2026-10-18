@@ -3,7 +3,8 @@
 // Copyright (c) vis.gl contributors
 
 import {expect, test} from 'vitest';
-import {fetchFile, selectLoader, selectLoaderSync, isBrowser} from '@loaders.gl/core';
+import {fetchFile, selectLoader, selectLoaderSync} from '@loaders.gl/core';
+import {isBrowser} from '@loaders.gl/core/loader-utils';
 import {ImageLoader} from '@loaders.gl/images';
 import {DracoLoader} from '@loaders.gl/draco';
 import {LASLoader} from '@loaders.gl/las';

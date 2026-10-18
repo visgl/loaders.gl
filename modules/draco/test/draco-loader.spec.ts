@@ -1,7 +1,8 @@
 import {expect, test} from 'vitest';
 import {validateLoader, validateMeshCategoryData} from 'test/common/conformance';
 import {DracoLoader, DracoWorkerLoader} from '@loaders.gl/draco';
-import {setLoaderOptions, load, isBrowser} from '@loaders.gl/core';
+import {setLoaderOptions, load} from '@loaders.gl/core';
+import {isBrowser} from '@loaders.gl/core/loader-utils';
 import draco3d from 'draco3d';
 const BUNNY_DRC_URL = '@loaders.gl/draco/test/data/bunny.drc';
 const CESIUM_TILE_URL = '@loaders.gl/draco/test/data/cesium-tile.drc';

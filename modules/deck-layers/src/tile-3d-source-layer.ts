@@ -19,7 +19,7 @@ import {
   type LoaderOptions,
   type LoaderWithParser,
   type RequestCredential
-} from '@loaders.gl/loader-utils';
+} from '@loaders.gl/core/loader-utils';
 import {createSLPKArchiveResolver, createTiles3DArchiveResolver} from './archive-source-resolver';
 
 /**

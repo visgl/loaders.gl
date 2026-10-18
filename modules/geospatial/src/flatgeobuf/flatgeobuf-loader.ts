@@ -8,7 +8,7 @@ import type {
   GeoJSONTable,
   BinaryFeatureCollection
 } from '@loaders.gl/schema';
-import type {Loader, LoaderWithParser} from '@loaders.gl/loader-utils';
+import type {Loader, LoaderWithParser} from '@loaders.gl/core/loader-utils';
 import {parseFlatGeobuf, ParseFlatGeobufOptions} from './lib/parse-flatgeobuf';
 import {
   FlatGeobufWorkerLoader as FlatGeobufWorkerLoaderMetadata,

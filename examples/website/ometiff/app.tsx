@@ -9,7 +9,7 @@ import type {BitmapBoundingBox} from '@deck.gl/layers';
 import DeckGL from '@deck.gl/react';
 
 import {SourceLayer} from '@loaders.gl/deck-layers';
-import type {RasterData} from '@loaders.gl/loader-utils';
+import type {RasterData} from '@loaders.gl/core/loader-utils';
 import type {OMETiffSourceLoaderMetadata} from '@loaders.gl/raster/geotiff/index';
 import {OMETiffSourceLoader} from '@loaders.gl/raster/geotiff/index';
 import {createDeckFullscreenWidget, createDeckStatsWidget} from '../shared/create-deck-stats-widget';

@@ -5,7 +5,8 @@
 import {expect, test} from 'vitest';
 
 import {ImageLoader, ImageBitmapLoader, getImageType, getImageData} from '@loaders.gl/images';
-import {isBrowser, load} from '@loaders.gl/core';
+import {load} from '@loaders.gl/core';
+import {isBrowser} from '@loaders.gl/core/loader-utils';
 import {parseImageBitmapBlob} from '../src/lib/parsers/parse-image-bitmap';
 
 import {

@@ -9,7 +9,8 @@ import type {Tile3DBoundingVolume, Tiles3DTileJSON} from '@loaders.gl/3d-tiles';
 
 import {join} from 'path';
 import process from 'process';
-import {load, isBrowser} from '@loaders.gl/core';
+import {load} from '@loaders.gl/core';
+import {isBrowser} from '@loaders.gl/core/loader-utils';
 import {I3SLoader, I3SAttributeLoader, COORDINATE_SYSTEM} from '@loaders.gl/i3s';
 import {Geoid} from '@math.gl/geoid';
 
@@ -21,7 +22,7 @@ import {writeFile, removeDir} from '../lib/utils/file-utils';
 import {calculateDatasetSize, timeConverter} from '../lib/utils/statistic-utils';
 import {createTileset} from './json-templates/tileset';
 import {createObbFromMbs} from '../i3s-converter/helpers/coordinate-converter';
-import {WorkerFarm} from '@loaders.gl/worker-utils';
+import {WorkerFarm} from '@loaders.gl/core/worker-utils';
 import {BROWSER_ERROR_MESSAGE} from '../constants';
 import {
   Tiles3DContentConverter,

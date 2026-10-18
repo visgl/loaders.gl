@@ -1,5 +1,5 @@
 /* eslint-disable camelcase */
-import type {NumericArray} from '@loaders.gl/loader-utils';
+import type {NumericArray} from '@loaders.gl/core/loader-utils';
 import type {
   GLTFAccessorPostprocessed,
   GLTFMeshPrimitivePostprocessed,

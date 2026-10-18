@@ -9,7 +9,7 @@ import {
   convertGeoArrowGeometry
 } from '@loaders.gl/geoarrow';
 import type {ArrowTable, GeoJSONTable, Geometry} from '@loaders.gl/schema';
-import type {GetFeaturesParameters} from '@loaders.gl/loader-utils';
+import type {GetFeaturesParameters} from '@loaders.gl/core/loader-utils';
 
 const TABLE: GeoJSONTable = {
   shape: 'geojson-table',

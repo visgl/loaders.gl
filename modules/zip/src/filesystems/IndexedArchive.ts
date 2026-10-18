@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import type {ReadableFile} from '@loaders.gl/loader-utils';
+import type {ReadableFile} from '@loaders.gl/core/loader-utils';
 import {MD5Hash} from '@loaders.gl/crypto';
 import {openZipArchive, type ZipArchive} from '../zip-archive';
 import {parseHashTable} from '../hash-file-utility';

@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import type {CoreAPI, DataSourceOptions, SourceLoader} from '@loaders.gl/loader-utils';
+import type {CoreAPI, DataSourceOptions, SourceLoader} from '@loaders.gl/core/loader-utils';
 import type {STACSource} from './stac-source';
 
 // __VERSION__ is injected by babel-plugin-version-inline

@@ -100,10 +100,9 @@
     "build-crunch-worker": "esbuild src/workers/crunch-worker.ts --outfile=dist/crunch-worker.js --target=esnext --bundle --define:__VERSION__=\\\"$npm_package_version\\\""
   },
   "dependencies": {
+    "@loaders.gl/core": "5.0.0-alpha.12",
     "@loaders.gl/images": "5.0.0-alpha.12",
-    "@loaders.gl/loader-utils": "5.0.0-alpha.12",
     "@loaders.gl/schema": "5.0.0-alpha.12",
-    "@loaders.gl/worker-utils": "5.0.0-alpha.12",
     "@math.gl/types": "5.0.0-alpha.18",
     "zod": "^4.1.12"
   },

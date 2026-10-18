@@ -4,7 +4,7 @@ import {createRoot} from 'react-dom/client';
 import {parse} from '@loaders.gl/core';
 import {GLTFScenegraph, GLTFWriter, GLTFLoader, postProcessGLTF} from '@loaders.gl/gltf';
 import {I3SContentLoader, parseSLPKArchive} from '@loaders.gl/i3s';
-import {ArrayBufferFile} from '@loaders.gl/loader-utils';
+import {ArrayBufferFile} from '@loaders.gl/core/loader-utils';
 import {Tiles3DArchive} from '@loaders.gl/3d-tiles';
 import type {MeshSourceFeatureOptions} from '@loaders.gl/tile-converter/v5/adapters';
 import {ConversionPanel} from '../examples/website/i3s-slpk/src/components/conversion-panel';

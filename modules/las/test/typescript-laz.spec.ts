@@ -3,15 +3,16 @@
 // Copyright (c) vis.gl contributors
 
 import {expect, test} from 'vitest';
-import {fetchFile, isBrowser, parse} from '@loaders.gl/core';
+import {fetchFile, parse} from '@loaders.gl/core';
+import {isBrowser} from '@loaders.gl/core/loader-utils';
 import {LASLoader} from '@loaders.gl/las';
 import {
   createLAZChunkDecoder,
   createLAZChunkDecoderCursor,
   decodeLAZChunk,
   getLAZChunkByteLength
-} from '@loaders.gl/loader-utils';
-import type {LAZChunkMetadata, LAZPointDataTarget} from '@loaders.gl/loader-utils';
+} from '@loaders.gl/core/loader-utils';
+import type {LAZChunkMetadata, LAZPointDataTarget} from '@loaders.gl/core/loader-utils';
 import {convertTableToMesh} from '@loaders.gl/schema-utils';
 import {
   decodeLAZFileInBatches,

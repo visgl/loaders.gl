@@ -1,5 +1,5 @@
 import {afterEach, beforeAll, expect, test, vi} from 'vitest';
-import {BlobFile, HttpFile} from '@loaders.gl/loader-utils';
+import {BlobFile, HttpFile} from '@loaders.gl/core/loader-utils';
 import {Tiles3DArchive, Tiles3DArchiveWriter} from '@loaders.gl/3d-tiles';
 import {parseSLPKArchive} from '@loaders.gl/i3s';
 import {

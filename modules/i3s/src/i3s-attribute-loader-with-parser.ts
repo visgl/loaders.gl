@@ -2,8 +2,8 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import type {LoaderOptions, LoaderWithParser} from '@loaders.gl/loader-utils';
-import {getAuthenticatedFetch, resolvePath} from '@loaders.gl/loader-utils';
+import type {LoaderOptions, LoaderWithParser} from '@loaders.gl/core/loader-utils';
+import {getAuthenticatedFetch, resolvePath} from '@loaders.gl/core/loader-utils';
 import type {I3SLoaderOptions} from './i3s-loader';
 import type {I3STileAttributes} from './lib/parsers/parse-i3s-attribute';
 import type {Field} from './types';

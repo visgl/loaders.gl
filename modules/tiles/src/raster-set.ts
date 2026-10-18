@@ -8,8 +8,8 @@ import type {
   RasterData,
   RasterSource,
   RasterSourceMetadata
-} from '@loaders.gl/loader-utils';
-import {waitForPromiseWithSignals} from '@loaders.gl/loader-utils';
+} from '@loaders.gl/core/loader-utils';
+import {waitForPromiseWithSignals} from '@loaders.gl/core/loader-utils';
 
 /** Accepted raster request currently retained by {@link RasterSet}. */
 export type RasterSetRequest<

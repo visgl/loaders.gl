@@ -3,7 +3,8 @@
 // Copyright (c) vis.gl contributors
 
 import {expect, test} from 'vitest';
-import {load, loadInBatches, isIterator, isAsyncIterable} from '@loaders.gl/core';
+import {load, loadInBatches} from '@loaders.gl/core';
+import {isIterator, isAsyncIterable} from '@loaders.gl/core/loader-utils';
 import type {Schema} from '@loaders.gl/schema';
 import {ObjectRowTableBatch, getTableLength} from '@loaders.gl/schema-utils';
 import {JSONLoader, JSONTableLoader, GeoJSONLoader} from '@loaders.gl/json';

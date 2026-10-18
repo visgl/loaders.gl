@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import type {WriterOptions, WriterWithEncoder} from '@loaders.gl/loader-utils';
+import type {WriterOptions, WriterWithEncoder} from '@loaders.gl/core/loader-utils';
 import {PMTilesFormat} from './pmtiles-format';
 import {encodePMTiles} from './lib/encode-pmtiles';
 import type {PMTilesEncodeOptions, PMTilesTileInput} from './pmtiles-writer-types';

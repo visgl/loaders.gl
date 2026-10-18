@@ -3,7 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 // PLY Loader
-import type {Loader, LoaderOptions} from '@loaders.gl/loader-utils';
+import type {Loader, LoaderOptions} from '@loaders.gl/core/loader-utils';
 import type {MeshArrowTable} from '@loaders.gl/schema';
 import type {PLYMesh} from './lib/ply-types';
 import type {ParsePLYOptions} from './lib/parse-ply';

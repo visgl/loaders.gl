@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import type {LoaderContext} from '@loaders.gl/loader-utils';
+import type {LoaderContext} from '@loaders.gl/core/loader-utils';
 import {parseUSDA} from './parse-usda';
 import {parseUSDZArchive} from './parse-usdz';
 import type {USDAssetPath, USDLoaderOptions, USDPrim, USDStage, USDValue} from './usd-types';

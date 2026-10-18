@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import {SourceLoader, CoreAPI} from '@loaders.gl/loader-utils';
+import {SourceLoader, CoreAPI} from '@loaders.gl/core/loader-utils';
 import type {PotreeSourceLoaderOptions} from './potree-source-options';
 export type {PotreeSourceLoaderOptions} from './potree-source-options';
 import {PotreeNodesSource} from './lib/potree-node-source';

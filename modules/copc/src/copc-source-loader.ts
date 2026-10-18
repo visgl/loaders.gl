@@ -25,7 +25,7 @@ import type {
   TileSourceMetadata,
   GetTileParameters,
   GetTileDataParameters
-} from '@loaders.gl/loader-utils';
+} from '@loaders.gl/core/loader-utils';
 import {
   canParseWithWorker,
   createLAZChunkDecoderCursor,
@@ -45,8 +45,11 @@ import {
   type PointCloudScanSource,
   type PointCloudScanTile,
   type ReadableFile
-} from '@loaders.gl/loader-utils';
-import {createScanQueryMetadata, type PointCloudQueryCapabilities} from '@loaders.gl/loader-utils';
+} from '@loaders.gl/core/loader-utils';
+import {
+  createScanQueryMetadata,
+  type PointCloudQueryCapabilities
+} from '@loaders.gl/core/loader-utils';
 import {projectionEngine} from '@math.gl/projection';
 import type {Projection} from '@math.gl/projection';
 import type {ReadonlyCRSDefinition} from '@math.gl/crs';

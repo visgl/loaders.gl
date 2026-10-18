@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import type {LoaderWithParser} from '@loaders.gl/loader-utils';
+import type {LoaderWithParser} from '@loaders.gl/core/loader-utils';
 import {I3SLEPCCDecoder} from './i3s-lepcc';
 import {
   I3SLEPCCLoader,

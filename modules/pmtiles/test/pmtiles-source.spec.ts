@@ -1,5 +1,6 @@
 import {expect, test} from 'vitest';
-import {isBrowser, fetchFile} from '@loaders.gl/core';
+import {fetchFile} from '@loaders.gl/core';
+import {isBrowser} from '@loaders.gl/core/loader-utils';
 import {PMTILESETS} from './data/tilesets';
 import {PMTilesSourceLoader} from '@loaders.gl/pmtiles';
 test('PMTilesSourceLoader#urls', async () => {

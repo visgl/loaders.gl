@@ -7,8 +7,8 @@ import type {
   CatalogSourceCapabilities,
   CoreAPI,
   SourceLoader
-} from '@loaders.gl/loader-utils';
-import {DataSource} from '@loaders.gl/loader-utils';
+} from '@loaders.gl/core/loader-utils';
+import {DataSource} from '@loaders.gl/core/loader-utils';
 
 import {STACSourceLoader as STACSourceLoaderMetadata} from './stac-source-loader-types';
 import type {STACSourceLoaderOptions} from './stac-source-loader-types';

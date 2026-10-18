@@ -6,8 +6,8 @@ import type {
 } from '@loaders.gl/3d-tiles';
 import {parse3DTilesArchive} from '@loaders.gl/3d-tiles';
 import {LoaderWithParser, load} from '@loaders.gl/core';
-import type {ReadableFile} from '@loaders.gl/loader-utils';
-import {HttpFile, NodeFile, isBrowser} from '@loaders.gl/loader-utils';
+import type {ReadableFile} from '@loaders.gl/core/loader-utils';
+import {HttpFile, NodeFile, isBrowser} from '@loaders.gl/core/loader-utils';
 import {ZipFileSystem} from '@loaders.gl/zip';
 
 /**

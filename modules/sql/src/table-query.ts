@@ -13,7 +13,7 @@ import {
   type TableQueryPlanStep as ColumnarTableQueryPlanStep,
   type TableQueryProjectStep as ColumnarTableQueryProjectStep,
   type TableQueryScanStep as ColumnarTableQueryScanStep
-} from '@loaders.gl/loader-utils';
+} from '@loaders.gl/core/loader-utils';
 
 import {validateSQLPredicate} from './sql-predicate-schema';
 import type {SQLPredicate} from './sql-predicate-types';
@@ -38,7 +38,8 @@ export type TableQueryPlanStep = ColumnarTableQueryPlanStep<SQLPredicate>;
 
 /** Immutable logical query plan shared by Arrow and GPU dataframe backends. */
 export type TableQueryPlan = ColumnarTableQueryPlan<SQLPredicate>;
-export type TableQueryExplain = import('@loaders.gl/loader-utils').TableQueryExplain<SQLPredicate>;
+export type TableQueryExplain =
+  import('@loaders.gl/core/loader-utils').TableQueryExplain<SQLPredicate>;
 import {SQL_DATA_SOURCE_TABLE_QUERY_CAPABILITIES} from './table-query-capabilities';
 
 /**

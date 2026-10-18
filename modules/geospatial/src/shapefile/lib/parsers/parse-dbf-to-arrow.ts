@@ -3,7 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import type {Schema, Field, ArrowTable, ArrowTableBatch} from '@loaders.gl/schema';
-import {toArrayBufferIterator} from '@loaders.gl/loader-utils';
+import {toArrayBufferIterator} from '@loaders.gl/core/loader-utils';
 import {ArrowTableBuilder} from '@loaders.gl/schema-utils';
 import {BinaryChunkReader} from '../streaming/binary-chunk-reader';
 import {DBFLoaderOptions, DBFHeader, DBFField} from './types';

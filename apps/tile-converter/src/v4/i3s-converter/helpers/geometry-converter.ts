@@ -23,13 +23,14 @@ import {createRequire} from 'node:module';
 /* @ts-expect-error TS2732: Cannot find module 'node:module' or its corresponding type declarations. */
 
 import {DracoWriterWorker} from '@loaders.gl/draco';
-import {assert, encode} from '@loaders.gl/core';
+import {encode} from '@loaders.gl/core';
+import {assert} from '@loaders.gl/core/loader-utils';
 import {
   concatenateArrayBuffers,
   concatenateTypedArrays,
   NumberArray,
   TypedArray
-} from '@loaders.gl/loader-utils';
+} from '@loaders.gl/core/loader-utils';
 import {hashString} from '../../lib/utils/hash-string';
 import {randomUUID} from 'node:crypto';
 import {generateAttributes} from './geometry-attributes';

@@ -76,7 +76,7 @@ The preferred way to provide random-access data to loaders.gl is through `Readab
 - `NodeFile` provides safe, tree-shakeable access to local files under Node.js without importing `fs` in application code.
 - `ArrayBufferFile` adapts in-memory buffers (such as data returned by `fetch`) to the same interface.
 
-`ReadableFile` classes replace the deprecated `FileProvider` utilities; new code should use the `ReadableFile` wrappers exported from `@loaders.gl/loader-utils`  to keep loader interactions consistent across platforms.
+`ReadableFile` classes replace the deprecated `FileProvider` utilities; new code should use the `ReadableFile` wrappers exported from `@loaders.gl/core/loader-utils`  to keep loader interactions consistent across platforms.
 
 ### Validated HTTP ranges
 
@@ -84,7 +84,7 @@ The preferred way to provide random-access data to loaders.gl is through `Readab
 validators. Supplying identity from a trusted manifest avoids the opening one-byte probe:
 
 ```ts
-import {HttpFile} from '@loaders.gl/loader-utils';
+import {HttpFile} from '@loaders.gl/core/loader-utils';
 
 const file = await HttpFile.open('https://example.com/data.parquet', {
   byteLength: manifest.byteLength,

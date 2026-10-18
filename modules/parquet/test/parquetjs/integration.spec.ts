@@ -3,8 +3,9 @@
 // Copyright (c) vis.gl contributors
 
 import { expect, test } from "vitest";
-import { isBrowser, fetchFile } from '@loaders.gl/core';
-import { BlobFile } from '@loaders.gl/loader-utils';
+import {fetchFile} from '@loaders.gl/core';
+import {isBrowser} from '@loaders.gl/core/loader-utils';
+import { BlobFile } from '@loaders.gl/core/loader-utils';
 import { ParquetSchema, ParquetReader, ParquetEncoder } from '@loaders.gl/parquet';
 const FRUITS_URL = '@loaders.gl/parquet/test/data/fruits.parquet';
 const GENERATED_PARQUET_DIRECTORY = 'tmp/test-artifacts/parquet';

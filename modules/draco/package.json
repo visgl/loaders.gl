@@ -83,10 +83,9 @@
   },
   "dependencies": {
     "@loaders.gl/arrow": "5.0.0-alpha.12",
-    "@loaders.gl/loader-utils": "5.0.0-alpha.12",
+    "@loaders.gl/core": "5.0.0-alpha.12",
     "@loaders.gl/schema": "5.0.0-alpha.12",
-    "@loaders.gl/schema-utils": "5.0.0-alpha.12",
-    "@loaders.gl/worker-utils": "5.0.0-alpha.12"
+    "@loaders.gl/schema-utils": "5.0.0-alpha.12"
   },
   "optionalDependencies": {
     "draco3d": "1.5.7"

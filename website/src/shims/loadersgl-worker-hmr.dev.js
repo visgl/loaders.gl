@@ -1,4 +1,4 @@
-import {WorkerFarm} from '@loaders.gl/worker-utils';
+import {WorkerFarm} from '@loaders.gl/core/worker-utils';
 
 /** Installs worker-farm cleanup when webpack invalidates a worker source module. */
 export function installWorkerHMR() {

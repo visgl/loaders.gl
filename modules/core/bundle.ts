@@ -34,17 +34,20 @@ export {
   encodeTextSync,
   createDataSource,
   _selectSource,
+  makeIterator,
+  makeStream,
+  NullLoader,
+  _fetchProgress,
+  _BrowserFileSystem,
+  _unregisterLoaders,
+  NullWorkerLoader
+} from '@loaders.gl/core';
+export {
   setPathPrefix,
   getPathPrefix,
   resolvePath,
   RequestScheduler,
-  makeIterator,
-  makeStream,
-  NullLoader,
   JSONLoader,
-  _fetchProgress,
-  _BrowserFileSystem,
-  _unregisterLoaders,
   isBrowser,
   isWorker,
   self,
@@ -65,9 +68,8 @@ export {
   isIterator,
   isResponse,
   isReadableStream,
-  isWritableStream,
-  NullWorkerLoader
-} from '@loaders.gl/core';
+  isWritableStream
+} from '@loaders.gl/core/loader-utils';
 export type {
   Loader,
   LoaderWithParser,

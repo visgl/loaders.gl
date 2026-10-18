@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import type {WriterWithEncoder, WriterOptions} from '@loaders.gl/loader-utils';
+import type {WriterWithEncoder, WriterOptions} from '@loaders.gl/core/loader-utils';
 import type {Geometry, Feature} from '@loaders.gl/schema';
 import {convertGeometryToWKB} from '@loaders.gl/arrow-geometry/geometry-codecs';
 import {VERSION} from './lib/version';

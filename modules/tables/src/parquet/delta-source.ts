@@ -9,8 +9,8 @@ import type {
   ScanQueryMetadataOptions,
   TableScanSource,
   SourceLoader
-} from '@loaders.gl/loader-utils';
-import {createScanQueryMetadata, DataSource} from '@loaders.gl/loader-utils';
+} from '@loaders.gl/core/loader-utils';
+import {createScanQueryMetadata, DataSource} from '@loaders.gl/core/loader-utils';
 import {ParquetDatasetSource} from './parquet-dataset-source';
 import {PARQUET_TABLE_QUERY_CAPABILITIES} from './parquet-source-capabilities';
 import type {DeltaAction, DeltaScanOptions, DeltaSourceOptions} from './delta-types';

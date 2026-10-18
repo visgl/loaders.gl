@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-var-requires */
 
-import {path} from '@loaders.gl/loader-utils';
+import {path} from '@loaders.gl/core/loader-utils';
 const {resolve} = path;
 
 declare const __TEST_REPOSITORY_ROOT__: string;
@@ -40,7 +40,9 @@ function makeAliases() {
     '@loaders.gl/json/test': resolveTestPath('./modules/json/test'),
     '@loaders.gl/kml/test': resolveTestPath('./modules/kml/test'),
     '@loaders.gl/las/test': resolveTestPath('./modules/las/test'),
-    '@loaders.gl/loader-utils/test': resolveTestPath('./modules/loader-utils/test'),
+    '@loaders.gl/core/loader-utils/test': resolveTestPath(
+      './modules/core/test/loader-utils-package'
+    ),
     '@loaders.gl/raster/test/lerc': resolveTestPath('./modules/raster/test/lerc'),
     '@loaders.gl/mlt/test': resolveTestPath('./modules/mlt/test'),
     '@loaders.gl/mvt/test': resolveTestPath('./modules/mvt/test'),
@@ -67,7 +69,9 @@ function makeAliases() {
     '@loaders.gl/video/test': resolveTestPath('./modules/video/test'),
     '@loaders.gl/wkt/test': resolveTestPath('./modules/wkt/test'),
     '@loaders.gl/wms/test': resolveTestPath('./modules/wms/test'),
-    '@loaders.gl/worker-utils/test': resolveTestPath('./modules/worker-utils/test'),
+    '@loaders.gl/core/worker-utils/test': resolveTestPath(
+      './modules/core/test/worker-utils-package'
+    ),
     '@loaders.gl/xml/test': resolveTestPath('./modules/xml/test'),
     '@loaders.gl/zip/test': resolveTestPath('./modules/zip/test'),
     // eslint-disable-next-line camelcase

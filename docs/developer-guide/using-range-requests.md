@@ -46,7 +46,7 @@ independent HTTP request can waste round trips; loading the entire object can wa
 loaders.gl Sources can use scheduled byte-range loading to take the middle path.
 
 PMTiles URL sources use this path by default. The lower-level scheduler is available in
-`@loaders.gl/loader-utils` for future byte-range Sources.
+`@loaders.gl/core/loader-utils` for future byte-range Sources.
 
 <ReferenceBoundary
   title="Scheduling, caching, and transport details"
@@ -176,7 +176,7 @@ helper classes. `createRangeStats` initializes the expected counters and `getRan
 returns a typed snapshot:
 
 ```ts
-import {createRangeStats, getRangeStats} from '@loaders.gl/loader-utils';
+import {createRangeStats, getRangeStats} from '@loaders.gl/core/loader-utils';
 
 const stats = createRangeStats('pmtiles-range-transport');
 

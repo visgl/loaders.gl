@@ -3,7 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import {Decompressor, type CompressionOptions} from './lib/compression';
-import {getJSModule, getJSModuleOrNull, registerJSModules} from '@loaders.gl/loader-utils';
+import {getJSModule, getJSModuleOrNull, registerJSModules} from '@loaders.gl/core/loader-utils';
 
 type LZ4JS = {decompress(input: Uint8Array, maxSize?: number): Uint8Array};
 

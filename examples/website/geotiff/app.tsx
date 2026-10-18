@@ -13,13 +13,13 @@ import type {
   RangeStats,
   RasterSourceMetadata,
   RasterData
-} from '@loaders.gl/loader-utils';
+} from '@loaders.gl/core/loader-utils';
 import {
   createRangeStats,
   getRangeStats,
   sampleRaster,
   rasterCoordinateToPixel
-} from '@loaders.gl/loader-utils';
+} from '@loaders.gl/core/loader-utils';
 import {Map} from 'react-map-gl';
 import maplibregl from 'maplibre-gl';
 import {

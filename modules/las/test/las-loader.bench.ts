@@ -11,8 +11,8 @@ import {
   createLAZChunkDecoderCursor,
   decodeLAZChunk,
   getLAZChunkByteLength
-} from '@loaders.gl/loader-utils';
-import type {LAZPointDataTarget} from '@loaders.gl/loader-utils';
+} from '@loaders.gl/core/loader-utils';
+import type {LAZPointDataTarget} from '@loaders.gl/core/loader-utils';
 import type {MeshArrowTable} from '@loaders.gl/schema';
 import {parseLASHeader} from '../src/lib/typescript/parse-las';
 

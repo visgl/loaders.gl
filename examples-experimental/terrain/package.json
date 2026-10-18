@@ -16,7 +16,7 @@
     "@deck.gl/mesh-layers": "^9.4.0",
     "@deck.gl/layers": "^9.4.0",
     "@loaders.gl/core": "5.0.0-alpha.12",
-    "@loaders.gl/loader-utils": "5.0.0-alpha.12",
+    "@loaders.gl/core/loader-utils": "5.0.0-alpha.12",
     "@loaders.gl/mvt": "5.0.0-alpha.12",
     "maplibre-gl": "^2.4.0",
     "react": "19.2.3",

@@ -1,7 +1,7 @@
 import {expect, test} from 'vitest';
 
 import {encode} from '@loaders.gl/core';
-import {BlobFile} from '@loaders.gl/loader-utils';
+import {BlobFile} from '@loaders.gl/core/loader-utils';
 import type {ObjectRowTable} from '@loaders.gl/schema';
 
 import {ParquetJSWriter} from '../../tables/src/parquet/parquet-js-writer';

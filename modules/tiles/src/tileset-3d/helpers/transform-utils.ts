@@ -4,7 +4,7 @@
 
 import {Ellipsoid} from '@math.gl/geospatial';
 import {Matrix4, Vector3} from '@math.gl/core';
-import {assert} from '@loaders.gl/loader-utils';
+import {assert} from '@loaders.gl/core/loader-utils';
 
 import {Tile3D} from '../common/tile-3d';
 

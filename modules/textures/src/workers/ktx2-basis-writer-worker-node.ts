@@ -4,7 +4,7 @@
 
 // Polyfills increases the bundle size significantly. Use it for NodeJS worker only
 import '@loaders.gl/polyfills';
-import {WorkerBody, WorkerMessagePayload} from '@loaders.gl/worker-utils';
+import {WorkerBody, WorkerMessagePayload} from '@loaders.gl/core/worker-utils';
 import {KTX2BasisWriter, KTX2BasisWriterOptions} from '../ktx2-basis-writer';
 
 (async () => {

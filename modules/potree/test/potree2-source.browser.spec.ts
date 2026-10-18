@@ -4,7 +4,7 @@
 
 import {expect, test, vi} from 'vitest';
 import {encodePotreeDataset, PotreeSourceLoader} from '@loaders.gl/potree';
-import {getPathPrefix, setPathPrefix} from '@loaders.gl/loader-utils';
+import {getPathPrefix, setPathPrefix} from '@loaders.gl/core/loader-utils';
 import {Potree2Source} from '../src/potree2-source';
 import {createPoints, createDatasetFetch} from './potree-format-fixtures';
 

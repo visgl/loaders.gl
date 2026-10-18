@@ -4,7 +4,7 @@
 
 // TODO - GLTFScenegraph should use these
 import {assert} from '../utils/assert';
-import {padToNBytes} from '@loaders.gl/loader-utils';
+import {padToNBytes} from '@loaders.gl/core/loader-utils';
 import type {BigTypedArray} from '@loaders.gl/schema';
 import type {GLTF, GLTFExternalBuffer, GLTFAccessor} from '../types/gltf-types';
 import {getAccessorArrayTypeAndLength} from './gltf-utils';

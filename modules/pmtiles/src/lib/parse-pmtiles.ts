@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import {LoaderOptions} from '@loaders.gl/loader-utils';
+import {LoaderOptions} from '@loaders.gl/core/loader-utils';
 import type {TileJSON} from '@loaders.gl/mvt';
 import {parseTileJSON} from '@loaders.gl/mvt';
 // import {Source, PMTiles, Header, TileType} from 'pmtiles';

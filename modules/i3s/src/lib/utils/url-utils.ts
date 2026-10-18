@@ -3,7 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import {Node3DIndexDocument, SceneLayer3D} from '../../types';
-import type {SearchParams} from '@loaders.gl/loader-utils';
+import type {SearchParams} from '@loaders.gl/core/loader-utils';
 
 /**
  * Return URL seperated from search params

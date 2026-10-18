@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import {log} from '@loaders.gl/loader-utils';
+import {log} from '@loaders.gl/core/loader-utils';
 
 // @ts-ignore TS2304: Cannot find name '__VERSION__'.
 const version = typeof __VERSION__ !== 'undefined' ? __VERSION__ : '';

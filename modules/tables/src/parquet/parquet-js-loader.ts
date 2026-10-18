@@ -2,8 +2,8 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import type {LoaderWithParser, ReadableFile} from '@loaders.gl/loader-utils';
-import {ArrayBufferFile, concatenateArrayBuffersAsync} from '@loaders.gl/loader-utils';
+import type {LoaderWithParser, ReadableFile} from '@loaders.gl/core/loader-utils';
+import {ArrayBufferFile, concatenateArrayBuffersAsync} from '@loaders.gl/core/loader-utils';
 import type {
   ArrowTable,
   ArrowTableBatch,

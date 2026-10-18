@@ -20,7 +20,8 @@ import type {
   Attribute,
   Node3DIndexDocument
 } from '@loaders.gl/i3s';
-import {load, encode, isBrowser} from '@loaders.gl/core';
+import {load, encode} from '@loaders.gl/core';
+import {isBrowser} from '@loaders.gl/core/loader-utils';
 import {CesiumIonLoader, Tiles3DLoader} from '@loaders.gl/3d-tiles';
 import {Geoid} from '@math.gl/geoid';
 import {join} from 'path';
@@ -46,7 +47,7 @@ import {createGeometryDefinition} from './json-templates/geometry-definitions';
 import {createSharedResources} from './json-templates/shared-resources';
 import {validateNodeBoundingVolumes} from './helpers/node-debug';
 import {KTX2BasisWriterWorker} from '@loaders.gl/textures';
-import {LoaderWithParser} from '@loaders.gl/loader-utils';
+import {LoaderWithParser} from '@loaders.gl/core/loader-utils';
 import {I3SMaterialDefinition, TextureSetDefinitionFormats} from '@loaders.gl/i3s';
 import {getImageData, ImageWriter} from '@loaders.gl/images';
 import {GLTFImagePostprocessed} from '@loaders.gl/gltf';
@@ -57,7 +58,7 @@ import {
   ResourceType,
   SharedResourcesArrays
 } from './types';
-import {WorkerFarm} from '@loaders.gl/worker-utils';
+import {WorkerFarm} from '@loaders.gl/core/worker-utils';
 import WriteQueue from '../lib/utils/write-queue';
 import {BROWSER_ERROR_MESSAGE} from '../constants';
 import {

@@ -1,5 +1,6 @@
 import {expect, test} from 'vitest';
-import {fetchFile, isBrowser, parse} from '@loaders.gl/core';
+import {fetchFile, parse} from '@loaders.gl/core';
+import {isBrowser} from '@loaders.gl/core/loader-utils';
 import {getImageData} from '@loaders.gl/images';
 // @ts-expect-error
 import I3SNodePagesTiles from '@loaders.gl/i3s/lib/helpers/i3s-nodepages-tiles';

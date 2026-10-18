@@ -7,8 +7,8 @@ import type {
   DataSourceOptions,
   ReadableFile,
   StrictLoaderOptions
-} from '@loaders.gl/loader-utils';
-import {BlobFile, HttpFile} from '@loaders.gl/loader-utils';
+} from '@loaders.gl/core/loader-utils';
+import {BlobFile, HttpFile} from '@loaders.gl/core/loader-utils';
 import {makeMeshArrowTable} from '@loaders.gl/schema-utils';
 import {convertColorArrayToFloat16} from '@loaders.gl/schema';
 import type {MeshAttributes} from '@loaders.gl/schema';
@@ -28,7 +28,7 @@ import {
   getI3SSpatialReference,
   I3SSpatialTransformer
 } from '@loaders.gl/tiles';
-import {DataSource} from '@loaders.gl/loader-utils';
+import {DataSource} from '@loaders.gl/core/loader-utils';
 import {parseSLPKArchive} from './lib/parsers/parse-slpk/parse-slpk';
 import type {SLPKArchive} from './lib/parsers/parse-slpk/slpk-archieve';
 import {I3SLEPCCDecoder} from './i3s-lepcc';

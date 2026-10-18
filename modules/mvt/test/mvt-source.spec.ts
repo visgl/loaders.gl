@@ -3,7 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import {expect, test} from 'vitest';
-import {isBrowser} from '@loaders.gl/core';
+import {isBrowser} from '@loaders.gl/core/loader-utils';
 import {TILESETS} from './data/tilesets';
 import {MVTSourceLoader, MVTTileSource} from '@loaders.gl/mvt';
 import {isURLTemplate, getURLFromTemplate} from '../src/mvt-source-loader';

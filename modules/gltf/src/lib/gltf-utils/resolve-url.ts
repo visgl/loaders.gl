@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import type {LoaderContext, StrictLoaderOptions} from '@loaders.gl/loader-utils';
+import type {LoaderContext, StrictLoaderOptions} from '@loaders.gl/core/loader-utils';
 
 // Resolves a relative url against a baseUrl
 // If url is absolute, return it unchanged

@@ -3,7 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import type {CompressionOptions} from '../lib/compression';
-import {createWorker} from '@loaders.gl/worker-utils';
+import {createWorker} from '@loaders.gl/core/worker-utils';
 
 type CompressionOperation = 'compress' | 'decompress';
 type CompressionTransform = {
