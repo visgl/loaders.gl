@@ -15,10 +15,9 @@ await decoder.preload();
 const syncData = decoder.decompressSync(compressedBlock, outputCapacity);
 ```
 
-For atomic async and sync calls, the optional second argument supplies integer output capacity from 0 to 2,147,483,647. The backend's
+For atomic async and sync calls, the second argument is a required integer output capacity from 0 to 2,147,483,647. The backend's
 output-size limit also applies. Caller-provided capacities default to a 512 MiB limit before WASM allocation; `maxOutputByteLength` can configure that limit. `compressUtils.expectedSize` in constructor options may supply the
-capacity instead. Without it, the backend measures the block before decoding; supplying a known
-capacity avoids that extra pass. Actual decoded output is also checked against `maxOutputByteLength`.
+capacity instead. Requiring capacity prevents inferred-size allocation before limit validation.
 Returned buffers contain only the actual decoded bytes. Invalid/truncated input,
 invalid back-references, and insufficient capacity reject async calls or throw from sync calls.
 

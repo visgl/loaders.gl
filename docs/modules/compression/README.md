@@ -307,9 +307,9 @@ Call `await preload()` before synchronous work. Direct default subpaths now requ
 async methods initialize automatically. Pass `{useNative: false}` to a root codec when preloading
 for sync methods, since native browser streams only support async work.
 
-`LzoDecompressor` decodes raw LZO1X blocks only. There is no LZO compressor. Optionally pass the output capacity
+`LzoDecompressor` decodes raw LZO1X blocks only. There is no LZO compressor. Pass the output capacity
 as the second argument, or as `compressUtils.expectedSize`. The result contains the actual decoded
-bytes, which may be fewer than the capacity. Without capacity, the backend measures the block first.
+bytes, which may be fewer than the capacity.
 
 ```typescript
 import {LzoDecompressor} from '@loaders.gl/compression';
@@ -330,7 +330,7 @@ wrapped formats.
 Raw LZ4 (`new LZ4Decompressor({raw: true})`) and LZO support genuine incremental
 `decompressBatches()` through compress-utils 0.10.1. They accept fragments of one raw block
 and emit output during decoding without requiring output capacity. Root raw LZ4 atomic calls
-still require capacity; LZO atomic calls can measure the size when capacity is omitted. Root LZ4 batch decoding defaults to framed LZ4; use `raw: true`
+and LZO atomic calls still require capacity. Root LZ4 batch decoding defaults to framed LZ4; use `raw: true`
 for raw blocks. Legacy Hadoop framing remains available only through atomic decoding.
 
 Use bounded input chunks. The decoder retains a fixed history plus the current undrained chunk;

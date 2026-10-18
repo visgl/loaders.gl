@@ -248,9 +248,10 @@ export class CompressUtilsCompression extends Compression {
   async *decompressBatches(
     inputBatches: AsyncIterable<ArrayBuffer> | Iterable<ArrayBuffer>
   ): AsyncIterable<ArrayBuffer> {
+    const maximum = getMaximumOutputByteLength(this.options);
     const module = await this.loadDecompressModule();
     const stream = await module.createDecompressStream!();
-    yield* transformBatches(stream, inputBatches);
+    yield* transformBatches(stream, inputBatches, maximum);
   }
 }
 

@@ -140,28 +140,35 @@ test('compress-utils preload shares initialization, retries failures, and forwar
   expect(forwardedOptions).toEqual({expectedSize: 3});
 });
 
-test.each([
-  'cancel',
-  'overflow',
-  'finish-overflow',
-  'input-error'
-] as const)('Incremental decompression releases resources on %s', async mode => {
+test.each(
+  (['directional', 'combined'] as const).flatMap(binding =>
+    (['cancel', 'overflow', 'finish-overflow', 'input-error'] as const).map(mode => ({
+      binding,
+      mode
+    }))
+  )
+)('Incremental $binding decompression releases resources on $mode', async ({binding, mode}) => {
   let destroyed = 0;
   let inputClosed = false;
-  const decoder = new CompressUtilsDecompressor(
-    METADATA,
-    async () => ({
-      decompress: async input => input,
-      createDecompressStream: async () => ({
-        write: input => input,
-        finish: () => (mode === 'finish-overflow' ? new Uint8Array(2) : new Uint8Array()),
-        destroy: () => {
-          destroyed++;
-        }
-      })
-    }),
-    {maxOutputByteLength: 3}
-  );
+  const loadModule = async () => ({
+    decompress: async input => input,
+    createDecompressStream: async () => ({
+      write: input => input,
+      finish: () => (mode === 'finish-overflow' ? new Uint8Array(2) : new Uint8Array()),
+      destroy: () => {
+        destroyed++;
+      }
+    })
+  });
+  const decoder =
+    binding === 'directional'
+      ? new CompressUtilsDecompressor(METADATA, loadModule, {maxOutputByteLength: 3})
+      : new CompressUtilsCompression(
+          METADATA,
+          async () => ({compress: async input => input}),
+          loadModule,
+          {maxOutputByteLength: 3}
+        );
   /** Keeps source cleanup observable when the consumer stops or decoding fails. */
   async function* input() {
     try {
@@ -181,4 +188,40 @@ test.each([
     );
   expect(destroyed).toBe(1);
   expect(inputClosed).toBe(true);
+});
+
+test('Atomic bindings reject oversized actual output without a capacity hint', async () => {
+  const module = {
+    decompress: async () => INPUT,
+    decompressSync: () => INPUT
+  };
+  const decoder = new CompressUtilsDecompressor(METADATA, async () => module, {
+    maxOutputByteLength: 2
+  });
+  await expect(decoder.decompress(INPUT.buffer)).rejects.toThrow(/maxOutputByteLength/);
+  expect(() => decoder.decompressSync(INPUT.buffer)).toThrow(/maxOutputByteLength/);
+});
+
+test.each([
+  -1,
+  1.5,
+  Number.NaN,
+  0x80000000
+])('Invalid output limit %s is rejected before stream creation', async maximum => {
+  let created = false;
+  const decoder = new CompressUtilsDecompressor(
+    METADATA,
+    async () => ({
+      decompress: async input => input,
+      createDecompressStream: async () => {
+        created = true;
+        return createPassthroughStream();
+      }
+    }),
+    {maxOutputByteLength: maximum}
+  );
+  await expect(collect(decoder.decompressBatches([INPUT.buffer]))).rejects.toThrow(
+    /Invalid maxOutputByteLength/
+  );
+  expect(created).toBe(false);
 });

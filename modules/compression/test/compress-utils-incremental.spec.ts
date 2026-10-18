@@ -85,9 +85,9 @@ test('Root LZ4 batch decoding preserves fragmented framed payloads', async () =>
   expect(Uint8Array.from(chunks)).toEqual(expected);
 });
 
-test('LZO optional atomic capacity still enforces the actual output limit', async () => {
+test('LZO atomic calls require a capacity before inferred allocation', async () => {
   const decoder = new LzoDecompressor({maxOutputByteLength: 4});
   await decoder.preload();
-  expect(() => decoder.decompressSync(RAW_LZO_HELLO.buffer)).toThrow(/maxOutputByteLength/);
-  await expect(decoder.decompress(RAW_LZO_HELLO.buffer)).rejects.toThrow(/maxOutputByteLength/);
+  expect(() => decoder.decompressSync(RAW_LZO_HELLO.buffer)).toThrow(/expectedSize/);
+  await expect(decoder.decompress(RAW_LZO_HELLO.buffer)).rejects.toThrow(/expectedSize/);
 });
