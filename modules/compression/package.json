@@ -312,12 +312,12 @@
   },
   "dependencies": {
     "@loaders.gl/core": "5.0.0-alpha.12",
-    "compress-utils": "^0.9.0"
+    "compress-utils": "^0.10.1"
   },
   "devDependencies": {
     "@types/brotli": "^1.3.0",
     "brotli": "^1.3.2",
-    "compress-utils": "^0.9.0",
+    "compress-utils": "^0.10.1",
     "fflate": "0.7.4",
     "fzstd": "0.1.1",
     "hysnappy": "^1.1.1",

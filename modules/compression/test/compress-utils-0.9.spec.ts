@@ -20,6 +20,7 @@ test('LZO lazy decoder supports preload and sync with output capacity', async ()
   expect(new TextDecoder().decode(decoder.decompressSync(LZO_HELLO, 10))).toBe('hello');
   expect(await decoder.decompress(LZO_HELLO, 10)).toEqual(decoder.decompressSync(LZO_HELLO, 10));
   await expect(decoder.decompress(LZO_HELLO)).rejects.toThrow(/expectedSize/);
+  expect(() => decoder.decompressSync(LZO_HELLO)).toThrow(/expectedSize/);
   await expect(decoder.decompress(LZO_HELLO, -1)).rejects.toThrow(/expectedSize/);
   await expect(decoder.decompress(LZO_HELLO, 4)).rejects.toThrow();
   await expect(decoder.decompress(LZO_HELLO, 512 * 1024 * 1024 + 1)).rejects.toThrow(
