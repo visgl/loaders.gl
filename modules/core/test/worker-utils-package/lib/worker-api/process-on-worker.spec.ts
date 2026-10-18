@@ -42,10 +42,7 @@ const moduleBatchWorkerSource = `
     }
   };
 `;
-test('canProcessOnWorker#custom worker URL', () => {
-  if (!isBrowser) {
-    return;
-  }
+test.runIf(isBrowser)('canProcessOnWorker#custom worker URL', () => {
   const MainThreadLoader = {...NullWorker, worker: false};
   expect(
     canProcessOnWorker(MainThreadLoader, {worker: true}),
@@ -60,19 +57,13 @@ test('canProcessOnWorker#custom worker URL', () => {
     'a built-in worker factory opts into worker processing'
   ).toBeTruthy();
 });
-test('processOnWorker', async () => {
-  if (!isBrowser) {
-    return;
-  }
+test.runIf(isBrowser)('processOnWorker', async () => {
   const nullData = await processOnWorker(NullWorker, 'abc', {
     _workerType: 'test'
   });
   expect(nullData, 'NullWorker verified').toBe('abc');
 });
-test('processOnWorker uses a built-in worker factory', async () => {
-  if (!isBrowser) {
-    return;
-  }
+test.runIf(isBrowser)('processOnWorker uses a built-in worker factory', async () => {
   let loadWorkerCalls = 0;
   const ModuleNullWorker: WorkerObject = {
     ...NullWorker,
@@ -94,10 +85,7 @@ test('processOnWorker uses a built-in worker factory', async () => {
   expect(loadWorkerCalls).toBe(1);
   expect(result).toBe('abc');
 });
-test('URL overrides take precedence over a built-in worker factory', async () => {
-  if (!isBrowser) {
-    return;
-  }
+test.runIf(isBrowser)('URL overrides take precedence over a built-in worker factory', async () => {
   let loadWorkerCalls = 0;
   const ModuleNullWorker: WorkerObject = {
     ...NullWorker,
@@ -116,10 +104,7 @@ test('URL overrides take precedence over a built-in worker factory', async () =>
 
   expect(loadWorkerCalls).toBe(0);
 });
-test('processOnWorkerInBatches uses a built-in worker factory', async () => {
-  if (!isBrowser) {
-    return;
-  }
+test.runIf(isBrowser)('processOnWorkerInBatches uses a built-in worker factory', async () => {
   const ModuleBatchWorker: WorkerObject = {
     ...NullWorker,
     id: 'module-batch',
@@ -145,10 +130,7 @@ test('processOnWorkerInBatches uses a built-in worker factory', async () => {
 
   expect(results).toEqual([2, 4, 6]);
 });
-test('preloadWorker', async () => {
-  if (!isBrowser) {
-    return;
-  }
+test.runIf(isBrowser)('preloadWorker', async () => {
   let startedWorkers = 0;
   await preloadWorker(
     NullWorker,
@@ -170,10 +152,7 @@ test('preloadWorker', async () => {
   expect(startedWorkers >= 3, 'preloaded three worker jobs').toBeTruthy();
   expect(nullData, 'preloaded worker pool can process later jobs').toBe('abc');
 });
-test('preloadWorker handles count above maxConcurrency', async () => {
-  if (!isBrowser) {
-    return;
-  }
+test.runIf(isBrowser)('preloadWorker handles count above maxConcurrency', async () => {
   await Promise.race([
     preloadWorker(
       NullWorker,

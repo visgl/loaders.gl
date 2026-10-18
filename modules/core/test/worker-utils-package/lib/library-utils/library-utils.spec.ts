@@ -19,11 +19,11 @@ test('getLibraryUrl # should not return URL', () => {
     {useLocalLibraries: true, CDN: 'https://c.d.n'},
     'draco_decoder.wasm'
   );
-  if (isBrowser) {
-    expect(result).toBe(`https://c.d.n/draco@${VERSION}/dist/libs/draco_decoder.wasm`);
-  } else {
-    expect(result).toBe('modules/draco/dist/libs/draco_decoder.wasm');
-  }
+  expect(result).toBe(
+    isBrowser
+      ? `https://c.d.n/draco@${VERSION}/dist/libs/draco_decoder.wasm`
+      : 'modules/draco/dist/libs/draco_decoder.wasm'
+  );
 });
 test('getLibraryUrl # should get url from modules option', () => {
   const result = getLibraryUrl('draco_decoder.wasm', 'draco', {

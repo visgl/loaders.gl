@@ -1,5 +1,4 @@
 import {expect, test} from 'vitest';
-import {isBrowser} from '@loaders.gl/core/worker-utils';
 import {getLoadableWorkerURL} from '../../../../src/worker-utils/lib/worker-utils/get-loadable-worker-url';
 const WORKER_SOURCE = `
   self.onmessage = function(event) {
@@ -14,8 +13,6 @@ const WORKER_SOURCE = `
 const LOCAL_WORKER_URL = 'modules/core/dist/worker-utils/null-worker.js';
 const REMOTE_WORKER_URL = 'https://unpkg.com/loaders.gl/worker-utils/dist/null-worker.js';
 test('getLoadableWorkerURL', () => {
-  if (!isBrowser) {
-  }
   let workerURL;
   workerURL = getLoadableWorkerURL({source: WORKER_SOURCE});
   expect(workerURL.startsWith('blob:'), 'Worker source generates Object URL').toBeTruthy();
