@@ -94,7 +94,7 @@ Applications that need ordinary raster pixel access should use the [Image Loader
 
 ## Composite Texture Members
 
-Manifest-driven texture loaders resolve member images through [`ImageBitmapLoader`](/docs/modules/images/api-reference/image-bitmap-loader). Member assets return native `ImageBitmap` in browsers and the installed Node.js `ImageBitmap` polyfill when `@loaders.gl/polyfills` is present.
+Manifest-driven texture loaders resolve member images through [`ImageBitmapLoader`](/docs/modules/images/api-reference/image-bitmap-loader). Member assets return native `ImageBitmap` in browsers and the installed Node.js `ImageBitmap` polyfill when `@loaders.gl/core/polyfills` is present.
 
 ## Usage
 

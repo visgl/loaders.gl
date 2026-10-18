@@ -102,6 +102,11 @@
       "modules/wms/formats/wms",
       "modules/wms/formats/wmts",
       "modules/wms/services/ogc-api",
+      "modules/arcgis/formats/arcgis-feature-server",
+      "modules/arcgis/formats/arcgis-map-server",
+      "modules/arcgis/formats/arcgis-image-server",
+      "modules/arcgis/formats/arcgis-vector-tile-server",
+      "modules/arcgis/formats/arcgis-scene-server",
       "modules/arcgis/arcgis-map-server",
       "modules/arcgis/arcgis-image-server",
       "modules/arcgis/arcgis-feature-server",
@@ -617,7 +622,7 @@
       },
       {
         "type": "category",
-        "label": "@loaders.gl/polyfills",
+        "label": "@loaders.gl/core/polyfills",
         "items": [
           "modules/polyfills/api-reference/README"
         ]

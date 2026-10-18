@@ -34,11 +34,11 @@ export async function parseToNodeImage(
 
   // @ts-ignore
   const parseImageNode: ParseImageNode = globalThis.loaders?.parseImageNode;
-  assert(parseImageNode); // '@loaders.gl/polyfills not installed'
+  assert(parseImageNode); // '@loaders.gl/core/polyfills not installed'
   const createImageBitmapNode: CreateImageBitmapNode | undefined =
     globalThis.loaders?.createImageBitmapNode;
   if (!createImageBitmapNode) {
-    throw new Error("Install '@loaders.gl/polyfills' to parse images under Node.js");
+    throw new Error("Install '@loaders.gl/core/polyfills' to parse images under Node.js");
   }
 
   // @ts-expect-error TODO should we throw error in this case?

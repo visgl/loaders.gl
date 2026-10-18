@@ -16,11 +16,12 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
   format="arcgis-feature-server"
   eyebrow="ArcGIS module · ArcGIS vector source"
   title="ArcGIS FeatureServer"
-  description="Query ArcGIS feature layers through the loaders.gl VectorSource contract, with normalized metadata, schemas, spatial requests, and GeoJSON, binary, or Arrow output."
+  description="Query geometries and attributes from your published ArcGIS feature layers and tables, with bounded pagination and GeoJSON, binary, or Arrow output."
   tone="violet"
   meta={['FeatureServer', 'VectorSource', 'GeoJSON / binary / Arrow']}
   links={[
     {label: 'ArcGIS module', to: '/docs/modules/arcgis'},
+    {label: 'Protocol and formats', to: '/docs/modules/arcgis/formats/arcgis-feature-server'},
     {label: 'ArcGIS service API', to: '/docs/modules/arcgis/api-reference/arcgis'},
     {label: 'Scan architecture', to: '/docs/developer-guide/common-scan-architecture'}
   ]}

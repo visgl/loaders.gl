@@ -62,7 +62,7 @@ A compatibility image loader that preserves the older environment-dependent retu
 ## Usage
 
 ```typescript
-import '@loaders.gl/polyfills'; // only needed if using under Node
+import '@loaders.gl/core/polyfills'; // only needed if using under Node
 import {ImageLoader} from '@loaders.gl/images';
 import {load} from '@loaders.gl/core';
 
@@ -106,4 +106,4 @@ Portability note: The exact set of `imagebitmap` options supported may depend on
 - `ImageLoader` is retained for compatibility and migration.
 - New applications should use [`ImageBitmapLoader`](/docs/modules/images/api-reference/image-bitmap-loader) instead.
 - If application code needs raw pixels from either loader, call `getImageData(image)`.
-- Node.js support requires import `@loaders.gl/polyfills` before installing this module.
+- Node.js support requires import `@loaders.gl/core/polyfills` before installing this module.

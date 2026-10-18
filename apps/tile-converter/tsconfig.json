@@ -34,9 +34,6 @@
       "path": "../../modules/core"
     },
     {
-      "path": "../../modules/polyfills"
-    },
-    {
       "path": "../../modules/tiles"
     },
     {

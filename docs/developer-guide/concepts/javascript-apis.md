@@ -56,7 +56,7 @@ loaders.gl standardizes on the `fetch()` API. The result of a `fetch` operation 
 
 :::info
 The `fetch()` API emerged in browsers, but is now also supported natively on Node, starting with Node.js v18.
-For older Node.js versions, `@loaders.gl/polyfills` installs polyfills of `fetch`, `Response` and `Headers` classes.
+For older Node.js versions, `@loaders.gl/core/polyfills` installs polyfills of `fetch`, `Response` and `Headers` classes.
 :::
 
 ## Local file access
@@ -122,6 +122,6 @@ The `Blob` (and `File`) classes in the browser have some unique advantages. They
 
 The preferred image platform API is `ImageBitmap`.
 
-In browsers, loaders.gl uses the native `ImageBitmap` API when available. Under Node.js, importing `@loaders.gl/polyfills` installs a minimal `ImageBitmap` polyfill together with a global `getImageBitmapData(image)` helper so that `@loaders.gl/images` can keep using the same bitmap-oriented contract.
+In browsers, loaders.gl uses the native `ImageBitmap` API when available. Under Node.js, importing `@loaders.gl/core/polyfills` installs a minimal `ImageBitmap` polyfill together with a global `getImageBitmapData(image)` helper so that `@loaders.gl/images` can keep using the same bitmap-oriented contract.
 
 This Node.js polyfill is intentionally limited. It is sufficient for loaders.gl image loading and `getImageBitmapData(image)`, but it does not provide a full browser-equivalent `createImageBitmap()` implementation.

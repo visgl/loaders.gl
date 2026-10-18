@@ -21,9 +21,6 @@
     },
     {
       "path": "../schema"
-    },
-    {
-      "path": "../polyfills"
     }
   ]
 }

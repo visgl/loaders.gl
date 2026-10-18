@@ -35,7 +35,11 @@ for (const publishedPackage of publishedPackages) {
   const sourcePaths = manifest.packages[publishedPackage.name]?.sourcePaths || [
     `${publishedPackage.path}/src/`
   ];
-  const browserCoverage = aggregatePackageCoverage(browserSummary, sourcePaths);
+  const browserCoverage = aggregatePackageCoverage(
+    browserSummary,
+    sourcePaths,
+    manifest.packages[publishedPackage.name]?.browserExcludedSourcePaths || []
+  );
   const mergedCoverage = aggregatePackageCoverage(mergedSummary, sourcePaths);
   checkCoveragePresence(publishedPackage.name, 'browser', browserCoverage, violations);
   checkCoveragePresence(publishedPackage.name, 'merged', mergedCoverage, violations);
@@ -214,7 +218,7 @@ function findPublishedPackages() {
 }
 
 /** Aggregates file-level Istanbul summary counts for one package. */
-function aggregatePackageCoverage(coverageSummary, sourcePaths) {
+function aggregatePackageCoverage(coverageSummary, sourcePaths, excludedSourcePaths = []) {
   const aggregate = Object.fromEntries(
     COVERAGE_METRICS.map(metric => [metric, {total: 0, covered: 0, percentage: 100}])
   );
@@ -227,7 +231,10 @@ function aggregatePackageCoverage(coverageSummary, sourcePaths) {
     const relativeSourceFile = path.isAbsolute(normalizedSourceFile)
       ? path.relative(repositoryRoot, normalizedSourceFile).replaceAll(path.sep, '/')
       : normalizedSourceFile.replace(/^\.\//, '');
-    if (!sourcePaths.some(sourcePath => relativeSourceFile.startsWith(sourcePath))) {
+    if (
+      !sourcePaths.some(sourcePath => relativeSourceFile.startsWith(sourcePath)) ||
+      excludedSourcePaths.some(sourcePath => relativeSourceFile.startsWith(sourcePath))
+    ) {
       continue;
     }
 

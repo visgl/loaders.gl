@@ -64,7 +64,7 @@ const arrayBuffer = await encode(imageData, ImageWriter, {
 ```
 
 `imageData` is an already decoded image. In Node.js, import
-`@loaders.gl/polyfills` before using the image adapter and save the resulting bytes
+`@loaders.gl/core/polyfills` before using the image adapter and save the resulting bytes
 with your filesystem API.
 
 ## Data Format

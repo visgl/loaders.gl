@@ -74,13 +74,13 @@ Use of `fetchFile` is optional. loaders.gl `parse()` function can be used with d
 </p>
 
 Local file paths require the filesystem adapter installed by importing
-`@loaders.gl/polyfills`. HTTP(S) and data URLs use the runtime fetch API.
+`@loaders.gl/core/polyfills`. HTTP(S) and data URLs use the runtime fetch API.
 
 `fetchFile` will delegate any url that starts with `http://` `https://` or `data:`
 to the built-in `fetch` function. Other URLs will be interpreted as local files.
 
 :::caution
-loaders.gl v4.0+ applications no longer need to install the `@loaders.gl/polyfills`
+loaders.gl v4.0+ applications no longer need to install the `@loaders.gl/core/polyfills`
 module to get `fetch` support under Node.js v18+.
 :::
 

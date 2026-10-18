@@ -80,7 +80,7 @@ return batches or a table, while a glTF loader returns a scenegraph-shaped objec
   [`LoaderOptions`](./loader-options).
 
 Any path prefix set by [`setPathPrefix`](./set-path-prefix) is applied to relative URLs. If
-`@loaders.gl/polyfills` is installed, the same API can be used under Node.js.
+`@loaders.gl/core/polyfills` is installed, the same API can be used under Node.js.
 
 ## Options
 

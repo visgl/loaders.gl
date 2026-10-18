@@ -36,7 +36,7 @@ export async function fetchFile(
         return globalThis.loaders?.fetchNode(url, fetchOptions);
       }
       // throw new Error(
-      //   'fetchFile: globalThis.loaders.fetchNode not defined. Install @loaders.gl/polyfills'
+      //   'fetchFile: globalThis.loaders.fetchNode not defined. Install @loaders.gl/core/polyfills'
       // );
     }
 

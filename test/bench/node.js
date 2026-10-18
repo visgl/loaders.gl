@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import '@loaders.gl/polyfills';
+import '@loaders.gl/core/polyfills';
 import {Bench} from '@probe.gl/bench';
 
 import {addModuleBenchmarksToSuite} from './modules';

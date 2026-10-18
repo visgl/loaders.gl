@@ -6,7 +6,7 @@
 import {LASCOPCLoader} from '../src/las-copc-loader-types';
 import {LAZPerfLoader} from '../src/lazperf-loader-types';
 import {LAZRsLoader} from '../src/laz-rs-loader-types';
-import '@loaders.gl/polyfills';
+import '@loaders.gl/core/polyfills';
 import {Buffer} from 'node:buffer';
 import {expect, test} from 'vitest';
 import {

@@ -16,11 +16,12 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
   format="arcgis-image-server"
   eyebrow="ArcGIS module · ArcGIS raster source"
   title="ArcGIS ImageServer"
-  description="Access rendered imagery and analytical raster data through ImageSource and TileSource contracts, including viewport exports and LERC responses."
+  description="Use your published imagery as rendered images or analytical LERC pixels. Choose viewport exports or tile-shaped exports to match your application."
   tone="violet"
   meta={['ImageServer', 'Images and tiles', 'LERC raster output']}
   links={[
     {label: 'ArcGIS module', to: '/docs/modules/arcgis'},
+    {label: 'Protocol and formats', to: '/docs/modules/arcgis/formats/arcgis-image-server'},
     {label: 'ArcGIS service API', to: '/docs/modules/arcgis/api-reference/arcgis'},
     {label: 'CRS guide', to: '/docs/developer-guide/coordinate-reference-systems'}
   ]}
@@ -74,7 +75,7 @@ an `ImageSource` for viewport exports and a `TileSource` for tiled visualization
 
 ## Authentication
 
-`createArcGISCredential` applies one exact-origin token to metadata, exports, cached tiles, and
+`createArcGISCredential` applies one exact-origin token to metadata, image/tile exports, and
 LERC requests. Configure it in `core.credentials`; explicit URL tokens take precedence. See the
 [authentication guide](/docs/developer-guide/authentication).
 

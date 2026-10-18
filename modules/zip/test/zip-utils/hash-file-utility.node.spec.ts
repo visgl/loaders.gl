@@ -1,7 +1,7 @@
 // loaders.gl
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
-import '@loaders.gl/polyfills';
+import '@loaders.gl/core/polyfills';
 import {expect, test} from 'vitest';
 import {composeHashFile, openZipArchive} from '@loaders.gl/zip';
 import {NodeFile} from '@loaders.gl/core/loader-utils';

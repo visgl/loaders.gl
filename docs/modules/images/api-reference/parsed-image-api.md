@@ -128,7 +128,7 @@ The following image types are distinguished
 | Image Type      | JavaScript Type                                                         | Description                                                                                                                              |
 | --------------- | ----------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------- |
 | `'data'`        | A simple JavaScript object with `data`, `width`, `height` etc. fields.. | Useful when additional manipulation of the image data is desired. Helper APIs continue to accept this shape directly.                    |
-| `'imagebitmap'` | [`ImageBitmap`][image_bitmap]                                           | The preferred image type returned by `ImageBitmapLoader` and by the Node.js `ImageBitmap` polyfill installed by `@loaders.gl/polyfills`. |
+| `'imagebitmap'` | [`ImageBitmap`][image_bitmap]                                           | The preferred image type returned by `ImageBitmapLoader` and by the Node.js `ImageBitmap` polyfill installed by `@loaders.gl/core/polyfills`. |
 | `'image'`       | [`Image`][image] (aka `HTMLImageElement`)                               | Supported by helper APIs for compatibility and still available through deprecated `ImageLoader`.                                         |
 
 [image_bitmap]: https://developer.mozilla.org/en-US/docs/Web/API/ImageBitmap

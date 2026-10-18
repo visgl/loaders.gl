@@ -189,11 +189,11 @@
       "@loaders.gl/core/loader-utils/test": [
         "modules/core/test/loader-utils-package"
       ],
-      "@loaders.gl/polyfills": [
-        "modules/polyfills/src"
+      "@loaders.gl/core/polyfills": [
+        "modules/core/src/polyfills"
       ],
-      "@loaders.gl/polyfills/test": [
-        "modules/polyfills/test"
+      "@loaders.gl/core/polyfills/test": [
+        "modules/core/test/polyfills-package"
       ],
       "@loaders.gl/geoarrow": [
         "modules/geoarrow/src"

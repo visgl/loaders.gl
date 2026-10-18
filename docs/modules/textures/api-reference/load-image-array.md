@@ -51,7 +51,7 @@ A function that loads an array of images. Primarily intended for loading:
 Loading an array of images
 
 ```typescript
-import '@loaders.gl/polyfills'; // only needed for Node.js support
+import '@loaders.gl/core/polyfills'; // only needed for Node.js support
 import {loadImageTextureArray} from '@loaders.gl/textures';
 
 const images = await loadImageTextureArray(count, ({index}) => `filename-${index}`);
@@ -62,7 +62,7 @@ for (const image of images) {
 ```
 
 ```typescript
-import '@loaders.gl/polyfills'; // only needed for Node.js support
+import '@loaders.gl/core/polyfills'; // only needed for Node.js support
 import {loadImageTextureArray} from '@loaders.gl/textures';
 
 const images = await loadImageTextureArray(count,  ({index}) => `filename-${index}`, {
