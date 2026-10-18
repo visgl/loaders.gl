@@ -296,9 +296,9 @@ selection and optional Pako adapters remain available.
 See [compression benchmarks](https://loaders.gl/docs/modules/compression/benchmarks)
 for a live internal-versus-upstream comparison.
 
-## compress-utils 0.9 and LZO
+## compress-utils and incremental raw decoding
 
-All default fallback codecs use compress-utils 0.9.0, a runtime dependency loaded through
+All default fallback codecs use compress-utils 0.10.1, a runtime dependency loaded through
 format- and direction-specific dynamic imports. Root async methods still prefer built-in streams.
 Use ESM code splitting to keep WASM codec modules out of the initial bundle. Alternative JavaScript
 implementations remain available through explicit backend subpaths for reference and comparison.
@@ -326,3 +326,14 @@ encodes LZO. Standalone lzop containers and other LZO variants are not supported
 For raw DEFLATE or LZ4, use `{raw: true}` with the matching compress-utils compressor or decoder.
 Raw LZ4 decoding requires an output capacity. Raw formats share their codec WASM assets with the
 wrapped formats.
+
+Raw LZ4 (`new LZ4Decompressor({raw: true})`) and LZO support genuine incremental
+`decompressBatches()` through compress-utils 0.10.1. They accept fragments of one raw block
+and emit output during decoding without requiring output capacity. Root raw LZ4 atomic calls
+and LZO atomic calls still require capacity. Root LZ4 batch decoding defaults to framed LZ4; use `raw: true`
+for raw blocks. Legacy Hadoop framing remains available only through atomic decoding.
+
+Use bounded input chunks. The decoder retains a fixed history plus the current undrained chunk;
+`maxOutputByteLength` limits cumulative emitted bytes (512 MiB by default). Output is provisional
+until the iterator completes and validates the block ending. Stopping iteration releases the
+native stream. LZO encoding and raw LZ4 incremental encoding are not supported.

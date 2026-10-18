@@ -379,7 +379,7 @@ function getCompressionDependencyInfo(implementationName: string, groupId: strin
       dependencyNpmUrl: 'https://www.npmjs.com/package/lz4js'
     },
     'compress-utils': {
-      dependency: 'compress-utils 0.9.0',
+      dependency: 'compress-utils 0.10.1',
       dependencySize: getCompressUtilsSize(groupId),
       dependencyUrl: 'https://github.com/dupontcyborg/compress-utils',
       dependencyNpmUrl: 'https://www.npmjs.com/package/compress-utils'

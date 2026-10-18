@@ -159,8 +159,9 @@ export class CompressUtilsDecompressor extends Decompressor {
   decompressSync(input: ArrayBuffer, size?: number): ArrayBuffer {
     if (!this.module?.decompressSync)
       throw new Error(`${this.name}: call preload() before decompressSync()`);
-    return copyArrayBuffer(
-      this.module.decompressSync(new Uint8Array(input), getDecompressOptions(this.options, size))
+    return copyDecompressedOutput(
+      this.module.decompressSync(new Uint8Array(input), getDecompressOptions(this.options, size)),
+      this.options
     );
   }
 
@@ -170,7 +171,7 @@ export class CompressUtilsDecompressor extends Decompressor {
     await this.preload();
     const module = this.module!;
     const output = await module.decompress(new Uint8Array(input), decodeOptions);
-    return copyArrayBuffer(output);
+    return copyDecompressedOutput(output, this.options);
   }
 
   /** Incrementally decompresses input batches with compress-utils. */
@@ -183,8 +184,9 @@ export class CompressUtilsDecompressor extends Decompressor {
       yield await this.decompress(await this.concatenate(inputBatches));
       return;
     }
+    const maximum = getMaximumOutputByteLength(this.options);
     const stream = await module.createDecompressStream!();
-    yield* transformBatches(stream, inputBatches);
+    yield* transformBatches(stream, inputBatches, maximum);
   }
 }
 
@@ -246,23 +248,31 @@ export class CompressUtilsCompression extends Compression {
   async *decompressBatches(
     inputBatches: AsyncIterable<ArrayBuffer> | Iterable<ArrayBuffer>
   ): AsyncIterable<ArrayBuffer> {
+    const maximum = getMaximumOutputByteLength(this.options);
     const module = await this.loadDecompressModule();
     const stream = await module.createDecompressStream!();
-    yield* transformBatches(stream, inputBatches);
+    yield* transformBatches(stream, inputBatches, maximum);
   }
 }
 
 /** Streams ArrayBuffer batches through one compress-utils stream. */
 async function* transformBatches(
   stream: CompressUtilsStream,
-  inputBatches: AsyncIterable<ArrayBuffer> | Iterable<ArrayBuffer>
+  inputBatches: AsyncIterable<ArrayBuffer> | Iterable<ArrayBuffer>,
+  maximumOutputByteLength = Number.POSITIVE_INFINITY
 ): AsyncIterable<ArrayBuffer> {
+  let outputByteLength = 0;
   try {
     for await (const input of inputBatches) {
       const output = stream.write(new Uint8Array(input));
+      if (output.byteLength > maximumOutputByteLength - outputByteLength)
+        throw new RangeError('Decompressed output exceeds maxOutputByteLength');
+      outputByteLength += output.byteLength;
       if (output.byteLength > 0) yield copyArrayBuffer(output);
     }
     const output = stream.finish();
+    if (output.byteLength > maximumOutputByteLength - outputByteLength)
+      throw new RangeError('Decompressed output exceeds maxOutputByteLength');
     if (output.byteLength > 0) yield copyArrayBuffer(output);
   } finally {
     stream.destroy();
@@ -284,9 +294,7 @@ function getDecompressOptions(
     ...(size === undefined ? {} : {expectedSize: size})
   };
   const capacity = decodeOptions.expectedSize;
-  const maximum = options.maxOutputByteLength ?? 512 * 1024 * 1024;
-  if (!Number.isSafeInteger(maximum) || maximum < 0 || maximum > 0x7fffffff)
-    throw new RangeError('Invalid maxOutputByteLength');
+  const maximum = getMaximumOutputByteLength(options);
   if (
     capacity !== undefined &&
     (!Number.isSafeInteger(capacity) || (capacity as number) < 0 || (capacity as number) > maximum)
@@ -294,4 +302,22 @@ function getDecompressOptions(
     throw new RangeError('expectedSize exceeds the configured output capacity limit');
   }
   return decodeOptions;
+}
+
+/** Validates the per-decoder limit shared by atomic and incremental operations. */
+function getMaximumOutputByteLength(options: CompressUtilsCompressionOptions): number {
+  const maximum = options.maxOutputByteLength ?? 512 * 1024 * 1024;
+  if (!Number.isSafeInteger(maximum) || maximum < 0 || maximum > 0x7fffffff)
+    throw new RangeError('Invalid maxOutputByteLength');
+  return maximum;
+}
+
+/** Checks actual decoded size, including codecs that can infer size without a capacity hint. */
+function copyDecompressedOutput(
+  bytes: Uint8Array,
+  options: CompressUtilsCompressionOptions
+): ArrayBuffer {
+  if (bytes.byteLength > getMaximumOutputByteLength(options))
+    throw new RangeError('Decompressed output exceeds maxOutputByteLength');
+  return copyArrayBuffer(bytes);
 }
