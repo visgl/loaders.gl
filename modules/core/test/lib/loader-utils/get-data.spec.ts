@@ -10,7 +10,7 @@ import {
   getAsyncIterableFromData,
   getReadableStream
 } from '@loaders.gl/core/lib/loader-utils/get-data';
-import {isIterator, JSONLoader} from '@loaders.gl/core/loader-utils';
+import {isIterator, JSONLoader} from '@loaders.gl/core';
 const BinaryLoader = {
   ...JSONLoader,
   text: false,

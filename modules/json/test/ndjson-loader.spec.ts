@@ -3,8 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import {expect, test} from 'vitest';
-import {load, loadInBatches} from '@loaders.gl/core';
-import {isIterator, isAsyncIterable} from '@loaders.gl/core/loader-utils';
+import {load, loadInBatches, isIterator, isAsyncIterable} from '@loaders.gl/core';
 import {NDJSONLoader} from '@loaders.gl/json';
 import * as json from '@loaders.gl/json';
 import * as bundledJson from '@loaders.gl/json/bundled';

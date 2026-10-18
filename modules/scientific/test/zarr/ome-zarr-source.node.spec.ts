@@ -4,8 +4,7 @@
 import {pathToFileURL} from 'node:url';
 import '@loaders.gl/polyfills';
 import {expect, test} from 'vitest';
-import {createDataSource, fetchFile} from '@loaders.gl/core';
-import {resolvePath} from '@loaders.gl/core/loader-utils';
+import {createDataSource, fetchFile, resolvePath} from '@loaders.gl/core';
 import {
   OMEZarrImageSource,
   OMEZarrSourceLoader,

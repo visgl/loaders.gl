@@ -4,8 +4,7 @@
 import {pathToFileURL} from 'node:url';
 import '@loaders.gl/polyfills';
 import {expect, test} from 'vitest';
-import {createDataSource} from '@loaders.gl/core';
-import {resolvePath} from '@loaders.gl/core/loader-utils';
+import {createDataSource, resolvePath} from '@loaders.gl/core';
 import {
   GeoZarrRasterSource,
   GeoZarrSourceLoader,

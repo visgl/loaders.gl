@@ -3,8 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import {describe, expect, test} from 'vitest';
-import {fetchFile} from '@loaders.gl/core';
-import {resolvePath} from '@loaders.gl/core/loader-utils';
+import {fetchFile, resolvePath} from '@loaders.gl/core';
 import {CRSReprojectionError} from '@loaders.gl/core/loader-utils';
 
 import {

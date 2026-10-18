@@ -3,9 +3,8 @@
 // Copyright (c) vis.gl contributors
 
 import {expect, test} from 'vitest';
-import {createDataSource} from '@loaders.gl/core';
+import {createDataSource, resolvePath} from '@loaders.gl/core';
 import {fetchFile} from '@loaders.gl/core';
-import {resolvePath} from '@loaders.gl/core/loader-utils';
 import {
   GeoTIFFRasterSource,
   GeoTIFFSourceLoader,

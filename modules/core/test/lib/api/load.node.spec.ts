@@ -3,8 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import {expect, test} from 'vitest';
-import {load} from '@loaders.gl/core';
-import {resolvePath} from '@loaders.gl/core/loader-utils';
+import {load, resolvePath} from '@loaders.gl/core';
 import {JSONLoader} from '@loaders.gl/json';
 import {setupLoaderTestEnvironment} from '../../../../../test/vitest-setup-loaders';
 

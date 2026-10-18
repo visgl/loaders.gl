@@ -13,8 +13,7 @@ import {readFile} from 'fs/promises';
 // import {LERCLoader, LERCData} from '@loaders.gl/wms';
 import type {LERCData} from '../../../src/lerc/lib/parsers/lerc/lerc-types';
 import {LERCLoader} from '../../../src/lerc/lerc-loader-types';
-import {load} from '@loaders.gl/core';
-import {resolvePath} from '@loaders.gl/core/loader-utils';
+import {load, resolvePath} from '@loaders.gl/core';
 
 const LERC_FILES = [
   '@loaders.gl/raster/test/lerc/data/lerc/bluemarble_256_256_3_byte.lerc2',

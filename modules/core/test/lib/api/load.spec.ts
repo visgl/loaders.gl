@@ -4,8 +4,15 @@
 
 import {expect, test} from 'vitest';
 import {parseFromContext} from '@loaders.gl/core/loader-utils';
-import {load, fetchFile, registerLoaders, NullLoader, NullWorkerLoader} from '@loaders.gl/core';
-import {isBrowser, resolvePath} from '@loaders.gl/core/loader-utils';
+import {
+  load,
+  fetchFile,
+  registerLoaders,
+  NullLoader,
+  NullWorkerLoader,
+  isBrowser,
+  resolvePath
+} from '@loaders.gl/core';
 import {ArrowLoader} from '@loaders.gl/arrow';
 import {JSONLoader} from '@loaders.gl/json';
 

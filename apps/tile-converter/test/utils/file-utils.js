@@ -1,5 +1,5 @@
 import {promises as fs, constants} from 'fs';
-import {isBrowser} from '@loaders.gl/core/loader-utils';
+import {isBrowser} from '@loaders.gl/core';
 
 export async function cleanUpPath(testPath) {
   // Do not run under browser

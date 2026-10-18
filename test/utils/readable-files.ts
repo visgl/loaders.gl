@@ -1,5 +1,4 @@
-import {fetchFile} from '@loaders.gl/core';
-import {isBrowser} from '@loaders.gl/core/loader-utils';
+import {fetchFile, isBrowser} from '@loaders.gl/core';
 import {BlobFile, NodeFile, ReadableFile} from '@loaders.gl/core/loader-utils';
 import {ArrayBufferFile} from '@loaders.gl/core/loader-utils';
 

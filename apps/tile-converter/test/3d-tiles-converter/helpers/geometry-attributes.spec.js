@@ -1,5 +1,5 @@
 import {expect, test} from 'vitest';
-import {isBrowser} from '@loaders.gl/core/loader-utils';
+import {isBrowser} from '@loaders.gl/core';
 import {generateAttributes} from '../../../src/v4/i3s-converter/helpers/geometry-attributes';
 test('tile-converter(3d-tiles)#geometry-attributes - should return the same attributes with faceRange from 0 to triangleCount - 1 and 0 feature id', async () => {
   if (!isBrowser) {

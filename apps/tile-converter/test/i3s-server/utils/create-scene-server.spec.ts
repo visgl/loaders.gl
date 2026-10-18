@@ -1,5 +1,5 @@
 import {expect, test} from 'vitest';
-import {isBrowser} from '@loaders.gl/core/loader-utils';
+import {isBrowser} from '@loaders.gl/core';
 import {SceneLayer3D} from '@loaders.gl/i3s';
 import {createSceneServer} from '../../../src/v4/i3s-server/utils/create-scene-server';
 test('tile-converter(i3s-server)#createSceneServer', async () => {

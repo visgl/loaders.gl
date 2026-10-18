@@ -1,5 +1,4 @@
-import {fetchFile} from '@loaders.gl/core';
-import {isBrowser} from '@loaders.gl/core/loader-utils';
+import {fetchFile, isBrowser} from '@loaders.gl/core';
 import * as arrow from 'apache-arrow';
 import {expect, test} from 'vitest';
 import {GeoPackageDataSource} from '../../geospatial/src/geopackage/geopackage-source-loader';

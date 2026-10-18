@@ -16,7 +16,7 @@ test('core utility subpaths expose independent ESM entry points', async () => {
   expect(typeof workerUtilities.WorkerFarm).toBe('function');
   expect('HttpFile' in core).toBe(false);
   expect('WorkerFarm' in core).toBe(false);
-  expect('isBrowser' in core).toBe(false);
+  expect(core.isBrowser).toBe(loaderUtilities.isBrowser);
 });
 
 test('core utility subpaths expose independent CommonJS entry points', () => {

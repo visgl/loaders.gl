@@ -9,8 +9,7 @@ import type {Tile3DBoundingVolume, Tiles3DTileJSON} from '@loaders.gl/3d-tiles';
 
 import {join} from 'path';
 import process from 'process';
-import {load} from '@loaders.gl/core';
-import {isBrowser} from '@loaders.gl/core/loader-utils';
+import {load, isBrowser} from '@loaders.gl/core';
 import {I3SLoader, I3SAttributeLoader, COORDINATE_SYSTEM} from '@loaders.gl/i3s';
 import {Geoid} from '@math.gl/geoid';
 

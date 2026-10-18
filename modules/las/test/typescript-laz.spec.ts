@@ -3,8 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import {expect, test} from 'vitest';
-import {fetchFile, parse} from '@loaders.gl/core';
-import {isBrowser} from '@loaders.gl/core/loader-utils';
+import {fetchFile, parse, isBrowser} from '@loaders.gl/core';
 import {LASLoader} from '@loaders.gl/las';
 import {
   createLAZChunkDecoder,

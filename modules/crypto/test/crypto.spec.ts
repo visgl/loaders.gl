@@ -1,6 +1,5 @@
 import {expect, test} from 'vitest';
-import {fetchFile, loadInBatches, NullLoader} from '@loaders.gl/core';
-import {isBrowser} from '@loaders.gl/core/loader-utils';
+import {fetchFile, loadInBatches, NullLoader, isBrowser} from '@loaders.gl/core';
 import {CRC32Hash, CRC32CHash, MD5Hash, SHA256Hash, NodeHash} from '@loaders.gl/crypto';
 import {getBinaryData} from './test-utils/test-utils';
 import CryptoJS from 'crypto-js';

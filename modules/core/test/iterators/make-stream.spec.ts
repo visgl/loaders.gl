@@ -3,8 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import {expect, test} from 'vitest';
-import {makeStream, makeIterator} from '@loaders.gl/core';
-import {isBrowser} from '@loaders.gl/core/loader-utils';
+import {makeStream, makeIterator, isBrowser} from '@loaders.gl/core';
 import {concatenateArrayBuffers, concatenateArrayBuffersAsync} from '@loaders.gl/core/loader-utils';
 
 test.runIf(isBrowser)('asyncIteratorToStream#fetch from asyncIteratorStream', async () => {

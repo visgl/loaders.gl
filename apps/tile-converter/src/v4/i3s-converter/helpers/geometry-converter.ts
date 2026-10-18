@@ -23,8 +23,7 @@ import {createRequire} from 'node:module';
 /* @ts-expect-error TS2732: Cannot find module 'node:module' or its corresponding type declarations. */
 
 import {DracoWriterWorker} from '@loaders.gl/draco';
-import {encode} from '@loaders.gl/core';
-import {assert} from '@loaders.gl/core/loader-utils';
+import {encode, assert} from '@loaders.gl/core';
 import {
   concatenateArrayBuffers,
   concatenateTypedArrays,

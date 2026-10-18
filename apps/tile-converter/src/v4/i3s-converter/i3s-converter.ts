@@ -20,8 +20,7 @@ import type {
   Attribute,
   Node3DIndexDocument
 } from '@loaders.gl/i3s';
-import {load, encode} from '@loaders.gl/core';
-import {isBrowser} from '@loaders.gl/core/loader-utils';
+import {load, encode, isBrowser} from '@loaders.gl/core';
 import {CesiumIonLoader, Tiles3DLoader} from '@loaders.gl/3d-tiles';
 import {Geoid} from '@math.gl/geoid';
 import {join} from 'path';

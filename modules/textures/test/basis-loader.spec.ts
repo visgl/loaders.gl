@@ -4,8 +4,7 @@
 
 import { expect, test } from "vitest";
 import { BasisLoader } from '@loaders.gl/textures';
-import {load, setLoaderOptions} from '@loaders.gl/core';
-import {isBrowser} from '@loaders.gl/core/loader-utils';
+import {load, setLoaderOptions, isBrowser} from '@loaders.gl/core';
 import { GL_COMPRESSED_RGB_ETC1_WEBGL, GL_COMPRESSED_RGB_PVRTC_4BPPV1_IMG, GL_COMPRESSED_RGB_S3TC_DXT1_EXT, GL_COMPRESSED_RGBA8_ETC2_EAC, GL_COMPRESSED_RGBA_ASTC_4x4_KHR, GL_COMPRESSED_RGBA_BPTC_UNORM_EXT, GL_COMPRESSED_RGBA_PVRTC_4BPPV1_IMG, GL_COMPRESSED_RGBA_S3TC_DXT5_EXT, GL_RGBA8 } from '../src/lib/gl-extensions';
 import { withBasisTranscodingLock } from '../src/lib/parsers/parse-basis';
 const BASIS_TEST_URL = '@loaders.gl/textures/test/data/alpha3.basis';

@@ -8,7 +8,7 @@
 import * as arrow from 'apache-arrow';
 import {readFile} from 'node:fs/promises';
 import {expect, test} from 'vitest';
-import {resolvePath} from '@loaders.gl/core/loader-utils';
+import {resolvePath} from '@loaders.gl/core';
 import {
   GEOARROW_MULTILINE_FILE,
   GEOARROW_POINT_FILE,

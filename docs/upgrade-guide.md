@@ -58,8 +58,9 @@ v4.5 is additive. Existing loaders and defaults continue to work unchanged, exce
 
 The standalone `@loaders.gl/loader-utils` and `@loaders.gl/worker-utils` packages have moved to
 `@loaders.gl/core/loader-utils` and `@loaders.gl/core/worker-utils`, respectively. Install
-`@loaders.gl/core` and update imports to the corresponding subpath. Runtime utility exports are
-available from their own subpaths, not the `@loaders.gl/core` root entry point.
+`@loaders.gl/core` and update imports to the corresponding subpath. Existing utility re-exports
+from the `@loaders.gl/core` root remain available for compatibility; the full utility APIs live
+at the subpaths.
 
 Worker URLs previously pointing into `@loaders.gl/worker-utils` should use the matching
 `@loaders.gl/core/worker-utils/null-worker.js` or `null-worker-node.js` subpath.

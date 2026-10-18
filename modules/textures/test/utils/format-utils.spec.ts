@@ -4,7 +4,7 @@
 
 import {expect, test} from 'vitest';
 import type {TextureFormat} from '@loaders.gl/schema';
-import {isBrowser} from '@loaders.gl/core/loader-utils';
+import {isBrowser} from '@loaders.gl/core';
 import {
   getSupportedBasisFormats,
   selectSupportedBasisFormat

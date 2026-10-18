@@ -1,5 +1,5 @@
 import {expect, test, vi} from 'vitest';
-import {isBrowser} from '@loaders.gl/core/loader-utils';
+import {isBrowser} from '@loaders.gl/core';
 import {
   createReadableFileFromBuffer,
   createReadableFileFromPath,

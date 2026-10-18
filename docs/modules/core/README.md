@@ -58,11 +58,15 @@ filesystem, download, or upload API.
 
 <ReferenceBoundary
   title="Core APIs and lightweight entry points"
-  description="The reference below lists the parser, fetch, loader-selection, encoding, and writing APIs."
+  description="The reference below lists the parser, fetch, loader-selection, encoding, writing, and micro-loader APIs."
   tone="blue"
 />
 
-## Micro-loaders
+## Micro-Loaders
 
-`NullLoader` ignores input data and returns `null`. The lightweight `JSONLoader` is available
-from `@loaders.gl/core/loader-utils`.
+Loaders with limited functionality but with minimal bundle size impact:
+
+| Loader       | Description                                                                      |
+| ------------ | -------------------------------------------------------------------------------- |
+| `JSONLoader` | A minimal non-streaming JSON loader that uses the built-in `JSON.parse` function |
+| `NullLoader` | A loader-object that ignores input data and always returns `null`.               |

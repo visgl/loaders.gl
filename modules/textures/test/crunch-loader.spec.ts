@@ -3,8 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import {expect, test} from 'vitest';
-import {load, setLoaderOptions} from '@loaders.gl/core';
-import {isBrowser} from '@loaders.gl/core/loader-utils';
+import {load, setLoaderOptions, isBrowser} from '@loaders.gl/core';
 import {CrunchWorkerLoader} from '@loaders.gl/textures';
 const CRUNCH_URL = '@loaders.gl/textures/test/data/shannon-dxt1.crn';
 setLoaderOptions({

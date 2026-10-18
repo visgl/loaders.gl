@@ -55,12 +55,17 @@ export {encodeText, encodeTextSync} from './lib/api/encode';
 export {createDataSource} from './lib/api/create-data-source';
 export {selectSource as _selectSource} from './lib/api/select-source';
 
+// CORE UTILS SHARED WITH LOADERS (RE-EXPORTED FROM LOADER-UTILS)
+export {setPathPrefix, getPathPrefix, resolvePath} from '@loaders.gl/core/loader-utils';
+export {RequestScheduler} from '@loaders.gl/core/loader-utils';
+
 // ITERATOR UTILS
 export {makeIterator} from './iterators/make-iterator/make-iterator';
 export {makeStream} from './iterators/make-stream/make-stream';
 
 // CORE LOADERS
 export {NullLoader} from './null-loader';
+export {JSONLoader} from '@loaders.gl/core/loader-utils';
 
 // EXPERIMENTAL
 export {fetchProgress as _fetchProgress} from './lib/progress/fetch-progress';
@@ -68,6 +73,33 @@ export {BrowserFileSystem as _BrowserFileSystem} from './lib/filesystems/browser
 
 // FOR TESTING
 export {_unregisterLoaders} from './lib/api/register-loaders';
+
+//
+// TODO - MOVE TO LOADER-UTILS AND DEPRECATE IN CORE?
+//
+
+export {isBrowser, isWorker, self, window, global, document} from '@loaders.gl/core/loader-utils';
+export {assert} from '@loaders.gl/core/loader-utils';
+export {forEach, concatenateArrayBuffersAsync} from '@loaders.gl/core/loader-utils';
+
+export {
+  makeTextDecoderIterator,
+  makeTextEncoderIterator,
+  makeLineIterator,
+  makeNumberedLineIterator
+} from '@loaders.gl/core/loader-utils';
+
+// "JAVASCRIPT" UTILS - move to loader-utils?
+export {
+  isPureObject,
+  isPromise,
+  isIterable,
+  isAsyncIterable,
+  isIterator,
+  isResponse,
+  isReadableStream,
+  isWritableStream
+} from '@loaders.gl/core/loader-utils';
 
 // DEPRECATED EXPORTS
 /** @deprecated Use NullLoader. */

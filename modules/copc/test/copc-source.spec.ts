@@ -5,8 +5,7 @@
 import {expect, test, vi} from 'vitest';
 import * as arrow from 'apache-arrow';
 import {validateWriter} from 'test/common/conformance';
-import {createDataSource, encodeSync, fetchFile, parse} from '@loaders.gl/core';
-import {isBrowser} from '@loaders.gl/core/loader-utils';
+import {createDataSource, encodeSync, fetchFile, parse, isBrowser} from '@loaders.gl/core';
 import {
   COPCSourceLoader,
   COPCTileSource,

@@ -1,7 +1,6 @@
 import {expect, test} from 'vitest';
 import {default as I3SConverter} from '../../src/v4/i3s-converter/i3s-converter';
-import {setLoaderOptions} from '@loaders.gl/core';
-import {isBrowser} from '@loaders.gl/core/loader-utils';
+import {setLoaderOptions, isBrowser} from '@loaders.gl/core';
 import {cleanUpPath} from '../utils/file-utils';
 import {BROWSER_ERROR_MESSAGE} from '../../src/v4/constants';
 import {parseSLPKArchive} from '@loaders.gl/i3s';

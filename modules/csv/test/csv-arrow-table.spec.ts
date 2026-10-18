@@ -3,8 +3,16 @@
 // Copyright (c) vis.gl contributors
 
 import {expect, test} from 'vitest';
-import {load, loadInBatches, parse, parseInBatches, preload, preloadSync} from '@loaders.gl/core';
-import {isIterator, isAsyncIterable} from '@loaders.gl/core/loader-utils';
+import {
+  load,
+  loadInBatches,
+  parse,
+  parseInBatches,
+  preload,
+  preloadSync,
+  isIterator,
+  isAsyncIterable
+} from '@loaders.gl/core';
 import {CSVLoader, CSVWorkerLoader} from '@loaders.gl/csv';
 import {
   CSVLoader as BundledCSVLoader,

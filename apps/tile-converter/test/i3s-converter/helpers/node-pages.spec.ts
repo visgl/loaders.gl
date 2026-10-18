@@ -1,6 +1,6 @@
 import {describe, expect, test} from 'vitest';
 import {default as NodePages} from '../../../src/v4/i3s-converter/helpers/node-pages';
-import {isBrowser} from '@loaders.gl/core/loader-utils';
+import {isBrowser} from '@loaders.gl/core';
 import I3SConverter from '../../../src/v4/i3s-converter/i3s-converter';
 import WriteQueue from '../../../src/v4/lib/utils/write-queue';
 import {ConversionDump} from '../../../src/v4/lib/utils/conversion-dump';
