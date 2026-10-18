@@ -9,6 +9,18 @@ Your application obtains and refreshes tokens. loaders.gl applies them to reques
 trusted origins. It does not implement sign-in screens, OAuth redirects, password handling, or
 persistent credential storage.
 
+## Prepare access to your existing data
+
+Start with the same organization and identity that can access the layer in ArcGIS Online or your
+Enterprise portal. Confirm that the item and its underlying service are shared with that identity.
+An existing browser login does not automatically give a separate application a token.
+
+For user sign-in, register the application with the appropriate portal and configure its redirect
+URLs before connecting a session library. Test the actual service host as well as the portal host;
+federated deployments may require server-specific tokens. The
+[connection checklist](/docs/modules/arcgis#before-connecting-your-application) links Esri's sharing,
+OAuth and CORS guidance. Your portal administrator can confirm the supported deployment flow.
+
 ## Choose an authentication approach
 
 | Scenario | Approach | Supply to loaders.gl | Important boundary |

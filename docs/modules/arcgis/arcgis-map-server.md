@@ -16,11 +16,12 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
   format="arcgis-map-server"
   eyebrow="ArcGIS module · ArcGIS tile source"
   title="ArcGIS MapServer"
-  description="Load cached or dynamically rendered ArcGIS maps through one TileSource, with automatic mode selection, normalized LOD metadata, and shared credentials."
+  description="Display your published ArcGIS map using its existing cache or dynamic map exports, with server-side rendering and your application’s credentials."
   tone="violet"
   meta={['MapServer', 'Cached or dynamic', 'TileSource']}
   links={[
     {label: 'ArcGIS module', to: '/docs/modules/arcgis'},
+    {label: 'Protocol and formats', to: '/docs/modules/arcgis/formats/arcgis-map-server'},
     {label: 'ArcGIS service API', to: '/docs/modules/arcgis/api-reference/arcgis'},
     {label: 'Tiles module', to: '/docs/modules/tiles'}
   ]}
@@ -69,7 +70,7 @@ ArcGIS MapServer services expose cached map tiles, dynamically rendered maps, or
 | Dynamic rendering parameters | ✅ Supported | Layer visibility, format, transparency, time, and vendor parameters are forwarded |
 | Multiple service URLs | ✅ Supported | Optional URL pool distributes tile requests deterministically |
 | Authentication | ✅ Supported | URL tokens and standard fetch options are preserved |
-| Feature queries | ❌ Not provided | Use FeatureServer for vector queries or WMS `GetFeatureInfo` when available |
+| Feature queries | Separate source | Use the [feature query source](/docs/developer-guide/arcgis/feature-layers) for queryable MapServer layers; the map tile source returns images |
 | deck.gl rendering | ✅ First class | `SourceLayer` consumes the `TileSource` directly |
 
 ## Authentication
