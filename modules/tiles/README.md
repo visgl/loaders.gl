@@ -12,6 +12,9 @@ subpath so a format-specific decoder is loaded only when needed.
 | `@loaders.gl/tiles/pmtiles` | PMTiles archives and source loaders |
 
 The 3D runtime and 3D Tiles/I3S formats live in `@loaders.gl/tiles-3d`.
+For deck.gl 9 compatibility, the root temporarily reexports `Tileset3D`,
+`TILE_TYPE`, `TILESET_TYPE`, and `LOD_METRIC_TYPE` from that package. New code
+should import these symbols from `@loaders.gl/tiles-3d`.
 
 ## Tileset2D
 

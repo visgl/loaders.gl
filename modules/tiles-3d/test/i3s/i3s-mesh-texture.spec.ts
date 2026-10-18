@@ -31,7 +31,7 @@ beforeAll(async () => {
         new Uint8Array(
           await (
             await fetchFile(
-              new URL(`../../../test/data/tile-converter-texture.${extension}`, import.meta.url)
+              new URL(`../../../../test/data/tile-converter-texture.${extension}`, import.meta.url)
                 .href
             )
           ).arrayBuffer()

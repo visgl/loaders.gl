@@ -5990,6 +5990,7 @@ __metadata:
     "@loaders.gl/loader-utils": "npm:5.0.0-alpha.12"
     "@loaders.gl/schema": "npm:5.0.0-alpha.12"
     "@loaders.gl/schema-utils": "npm:5.0.0-alpha.12"
+    "@loaders.gl/tiles-3d": "npm:5.0.0-alpha.12"
     "@maplibre/mlt": "npm:^1.1.6"
     "@math.gl/polygon": "npm:5.0.0-alpha.18"
     "@probe.gl/stats": "npm:^4.1.1"

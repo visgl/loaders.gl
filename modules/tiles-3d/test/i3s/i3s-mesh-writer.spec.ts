@@ -124,7 +124,7 @@ test('I3S authoring is exported and generates schema-valid metadata with an empt
   const root = JSON.parse(new TextDecoder().decode(raw['nodes/root/3dNodeIndexDocument.json.gz']));
   const leaf = JSON.parse(new TextDecoder().decode(raw['nodes/1/3dNodeIndexDocument.json.gz']));
   expect(root.geometryData).toBeUndefined();
-  expect(root.children[0].href).toBe('../../1/i3s');
+  expect(root.children[0].href).toBe('../1');
   expect(leaf.geometryData[0].href).toBe('./geometries/0');
   expect(leaf.attributeData).toHaveLength(5);
   expect(JSON.parse(new TextDecoder().decode(raw['metadata.json.gz']))).toMatchObject({

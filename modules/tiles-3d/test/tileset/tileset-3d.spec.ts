@@ -157,34 +157,30 @@ test('Tileset3D#url set up correctly given path with query string', async () => 
   // TODO - params do not work with fetchFile...
   const tilesetJson = await load(path + param, Tiles3DLoader);
   const tileset = new Tileset3D(new Tiles3DSource({...tilesetJson, coreApi}));
-  expect(tileset.url.replace(/.*3d-tiles/, ''), 'url search parameters preserved').toBe(
-    (path + param).replace(/.*3d-tiles/, '')
-  );
+  expect(new URL(tileset.url).search, 'url search parameters preserved').toBe(param);
   const tile = tileset.root;
   if (tile) {
     expect(
       tile.contentUrl.replace(/.*3d-tiles/, ''),
       'raw child url correct, in this case no params'
-    ).toBe('/test/data/CesiumJS/Tilesets/TilesetOfTilesets/tileset2.json');
+    ).toBe('/data/CesiumJS/Tilesets/TilesetOfTilesets/tileset2.json');
     expect(
       tileset.getTileUrl(tile.contentUrl).replace(/.*3d-tiles/, ''),
       'child url content parameters and version parameter preserved'
-    ).toBe(
-      '/test/data/CesiumJS/Tilesets/TilesetOfTilesets/tileset2.json?param1=1&param2=2&v=1.2.3'
-    );
+    ).toBe('/data/CesiumJS/Tilesets/TilesetOfTilesets/tileset2.json?param1=1&param2=2&v=1.2.3');
     tile.contentUrl += '?param3=3';
     expect(
       tileset.getTileUrl(tile.contentUrl).replace(/.*3d-tiles/, ''),
       'child url content parameters preserved'
     ).toBe(
-      '/test/data/CesiumJS/Tilesets/TilesetOfTilesets/tileset2.json?param3=3&param1=1&param2=2&v=1.2.3'
+      '/data/CesiumJS/Tilesets/TilesetOfTilesets/tileset2.json?param3=3&param1=1&param2=2&v=1.2.3'
     );
     tile.contentUrl += '&session=sesh';
     expect(
       tileset.getTileUrl(tile.contentUrl).replace(/.*3d-tiles/, ''),
       'child url content parameters preserved'
     ).toBe(
-      '/test/data/CesiumJS/Tilesets/TilesetOfTilesets/tileset2.json?param3=3&session=sesh&param1=1&param2=2&v=1.2.3'
+      '/data/CesiumJS/Tilesets/TilesetOfTilesets/tileset2.json?param3=3&session=sesh&param1=1&param2=2&v=1.2.3'
     );
     const urlEnds = tileset.getTileUrl(tile.contentUrl).slice(-1);
     expect('?&'.includes(urlEnds)).toBe(false);

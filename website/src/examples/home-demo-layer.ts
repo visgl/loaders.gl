@@ -13,7 +13,7 @@ export function createHomeDemoLayer(): SourceLayer {
     loadOptions: {
       'i3s-content': {
         workerUrl: new URL(
-          '../../../modules/tiles-3d/dist/i3s/i3s-content-worker.js',
+          '../../../modules/tiles-3d/dist/i3s-content-worker.js',
           import.meta.url
         ).href
       },

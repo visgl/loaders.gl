@@ -25,8 +25,8 @@ vi.mock('../src/tile-3d-source-layer', () => ({
   createSource: sourceLayerMocks.createSource
 }));
 
-vi.mock('@loaders.gl/tiles', async importOriginal => {
-  const original = await importOriginal<typeof import('@loaders.gl/tiles')>();
+vi.mock('@loaders.gl/tiles-3d', async importOriginal => {
+  const original = await importOriginal<typeof import('@loaders.gl/tiles-3d')>();
   return {
     ...original,
     Tileset3D: class {

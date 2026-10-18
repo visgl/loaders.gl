@@ -60,7 +60,7 @@ export default class Tiles3DConverter {
     i3s: {coordinateSystem: COORDINATE_SYSTEM.LNGLAT_OFFSETS, decodeTextures: false},
     // We need to load local fs workers because nodejs can't load workers from the Internet
     'i3s-content': {
-      workerUrl: './modules/tiles-3d/dist/i3s/i3s-content-worker-node.js'
+      workerUrl: './modules/tiles-3d/dist/i3s-content-worker-node.js'
     }
   };
   conversionDump: ConversionDump;
