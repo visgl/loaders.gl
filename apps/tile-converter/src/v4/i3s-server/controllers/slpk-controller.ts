@@ -1,4 +1,4 @@
-import '@loaders.gl/polyfills';
+import '@loaders.gl/core/polyfills';
 import {parseSLPKArchive, SLPKArchive} from '@loaders.gl/i3s';
 import {NodeFile} from '@loaders.gl/loader-utils';
 

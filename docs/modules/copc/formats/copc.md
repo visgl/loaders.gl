@@ -91,7 +91,7 @@ The primary `@loaders.gl/copc` implementation is TypeScript-only. It does not re
 | Extra Bytes metadata | ✅ **Full** | Parses 192-byte descriptors and retains the raw VLR payload. Scalar and 2/3-component values, signedness, floating-point types, and descriptor scale/offset are preserved. |
 | Root and child hierarchy pages | ✅ **Full** | Parses native 32-byte hierarchy entries, follows page references lazily, caches loaded pages, and validates offsets, lengths, and point counts. |
 | Spatial node selection | ✅ **Full** | Resolves `depth-x-y-z` keys, computes octree bounds, exposes children, and fetches only selected node byte ranges. |
-| Node range input | ✅ **Full** | Supports HTTP range-readable URLs, browser `Blob` objects, and local files in Node.js with `@loaders.gl/polyfills`. Short or invalid ranges fail deterministically. |
+| Node range input | ✅ **Full** | Supports HTTP range-readable URLs, browser `Blob` objects, and local files in Node.js with `@loaders.gl/core/polyfills`. Short or invalid ranges fail deterministically. |
 | PDRF 6 | ✅ **Full** | TypeScript Point14 decoding with positions and selectively requested scalar fields. |
 | PDRF 7 | ✅ **Full** | PDRF 6 plus progressive RGB decoding. |
 | PDRF 8 | ✅ **Full** | PDRF 7 plus progressive NIR decoding. |

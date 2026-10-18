@@ -22,7 +22,7 @@ export class NodeFileFacade implements ReadableFile, WritableFile {
     if (isBrowser) {
       throw new Error('Can\'t instantiate NodeFile in browser.');
     }
-    throw new Error('Can\'t instantiate NodeFile. Make sure to import @loaders.gl/polyfills first.');
+    throw new Error('Can\'t instantiate NodeFile. Make sure to import @loaders.gl/core/polyfills first.');
   }
   /** Read data */
   async read(start?: number | bigint, length?: number): Promise<ArrayBuffer> {

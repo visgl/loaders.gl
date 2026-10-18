@@ -13,6 +13,6 @@
     {"path": "../schema"},
     {"path": "../schema-utils"},
     {"path": "../worker-utils"},
-    {"path": "../polyfills"}
+    {"path": "../core"}
   ]
 }

@@ -26,7 +26,7 @@ import {DocOrientation} from '@site/src/components/docs/designed-doc';
   description="Import polyfills when the runtime needs them. The core loaders continue to use browser-compatible abstractions for fetching, files, streams, and binary data."
   tone="blue"
   items={[
-    {label: 'Setup', value: 'Import @loaders.gl/polyfills when required'},
+    {label: 'Setup', value: 'Import @loaders.gl/core/polyfills when required'},
     {label: 'Core', value: 'Use fetch, Response, and ArrayBuffer APIs'},
     {label: 'Files', value: 'Adapt local data through readable-file APIs'},
     {label: 'Compatibility', value: 'Keep application code portable where useful'}
@@ -39,15 +39,15 @@ and load HTTP URLs.
 
 ## Node.js adapters
 
-Install and import `@loaders.gl/polyfills` before using features that require its
+Install and import `@loaders.gl/core/polyfills` before using features that require its
 Node.js adapters, including local-file loading and image decoding:
 
 ```bash
-yarn add @loaders.gl/polyfills
+yarn add @loaders.gl/core
 ```
 
 ```typescript
-import '@loaders.gl/polyfills';
+import '@loaders.gl/core/polyfills';
 import {load} from '@loaders.gl/core';
 import {CSVLoader} from '@loaders.gl/csv';
 

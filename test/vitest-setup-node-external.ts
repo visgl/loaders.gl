@@ -4,5 +4,5 @@
 
 import {setupTestEnvironment} from './vitest-setup-common';
 
-await import('@loaders.gl/polyfills');
+await import('@loaders.gl/core/polyfills');
 setupTestEnvironment({blockExternalNetwork: false});

@@ -11,7 +11,7 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
 <DocPageHeader
   eyebrow="Polyfills module"
   title="Give Node.js the platform APIs loaders expect."
-  description="@loaders.gl/polyfills installs compatibility shims for file access, fetch, streams, crypto, images, and library loading when the runtime does not provide the browser-shaped API directly."
+  description="@loaders.gl/core/polyfills installs compatibility shims for file access, fetch, streams, crypto, images, and library loading when the runtime does not provide the browser-shaped API directly."
   tone="blue"
   meta={['Node.js support', 'Fetch and files', 'ImageBitmap and streams']}
   links={[
@@ -24,7 +24,7 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
 <DocOrientation
   eyebrow="The runtime boundary"
   title="Import once, keep loader code portable."
-  description="The polyfills package is primarily for Node.js. In browsers it is designed to be a no-op, while under Node it fills the specific gaps needed by loaders.gl’s browser-compatible contracts."
+  description="The core polyfills subpath is primarily for Node.js. In browsers it is designed to be a no-op, while under Node it fills the specific gaps needed by loaders.gl’s browser-compatible contracts."
   tone="blue"
   items={[
     {label: 'Files', value: 'NodeFile, NodeFilesystem, ReadableFile, and WritableFile'},
@@ -40,35 +40,37 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
   tone="blue"
 />
 
-The `@loaders.gl/polyfills` module installs support for Node.js. Import it before using loaders.gl functionality that needs filesystem, image, or other Node adapters. Modern Node.js already provides standard network fetch and web streams.
+The `@loaders.gl/core/polyfills` subpath installs support for Node.js. Import it before using loaders.gl functionality that needs filesystem, image, or other Node adapters. It does not import the core root or another loaders.gl module. Modern Node.js already provides standard network fetch and web streams.
 
 loaders.gl is based on the HTML5 API provided by modern, evergreen browsers.
 
 ## Installation
 
 ```bash
-npm install @loaders.gl/polyfills
+npm install @loaders.gl/core
 ```
 
 ## Usage
 
-Just import `@loaders.gl/polyfills` before you start using other loaders.gl modules.
+Just import `@loaders.gl/core/polyfills` before you start using other loaders.gl modules.
 
 ```typescript
-import '@loaders.gl/polyfills';
+import '@loaders.gl/core/polyfills';
 import '@loaders.gl/core';
 ```
 
 CommonJS applications can install the same Node adapters with:
 
 ```javascript
-require('@loaders.gl/polyfills');
+require('@loaders.gl/core/polyfills');
 ```
 
 The Node library transport accepts local paths and file URLs, including URL-escaped filenames.
 Binary reads return exactly the file's bytes. Relative imports in a local CommonJS library
 resolve from that library's directory. Browser bundlers resolve both package entrypoints to
 the browser shim.
+
+Image decoding and encoding require the optional `get-pixels`, `ndarray`, and `save-pixels` packages. Install them when using the Node image adapters. File aliases and prefixes for the polyfills can be configured with `addAliases` and `setPathPrefix` from this subpath.
 
 ## Features
 
@@ -85,7 +87,7 @@ The polyfills module installs the following capabilities.
 
 ## ImageBitmap Polyfill
 
-When `@loaders.gl/polyfills` is imported under Node.js, it installs:
+When `@loaders.gl/core/polyfills` is imported under Node.js, it installs:
 
 - `globalThis.ImageBitmap` as a lightweight wrapper around decoded image pixels
 - `globalThis.getImageBitmapData(image)` to unwrap that bitmap back to `{data, width, height}`

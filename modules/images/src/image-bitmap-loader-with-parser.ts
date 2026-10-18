@@ -15,7 +15,7 @@ const {preload: _ImageBitmapLoaderPreload, ...ImageBitmapLoaderMetadataWithoutPr
 export type {ImageBitmapLoaderOptions} from './image-bitmap-loader';
 
 /**
- * Loads images as `ImageBitmap` in browsers and in Node.js when `@loaders.gl/polyfills` is installed.
+ * Loads images as `ImageBitmap` in browsers and in Node.js when `@loaders.gl/core/polyfills` is installed.
  */
 export const ImageBitmapLoaderWithParser = {
   ...ImageBitmapLoaderMetadataWithoutPreload,

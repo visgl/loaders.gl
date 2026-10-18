@@ -51,5 +51,5 @@ export function getDefaultImageType(): ImageTypeEnum {
   }
 
   // This should only happen in Node.js
-  throw new Error('Install \'@loaders.gl/polyfills\' to parse images under Node.js');
+  throw new Error('Install \'@loaders.gl/core/polyfills\' to parse images under Node.js');
 }

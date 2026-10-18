@@ -15,7 +15,6 @@
     {"path": "../../modules/i3s"},
     {"path": "../../modules/images"},
     {"path": "../../modules/loader-utils"},
-    {"path": "../../modules/polyfills"},
     {"path": "../../modules/tiles"},
     {"path": "../../modules/worker-utils"},
     {"path": "../../modules/zip"},

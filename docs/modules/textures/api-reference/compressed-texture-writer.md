@@ -74,7 +74,7 @@ The package is resolved as an optional peer dependency and called directly. The 
 ## Usage
 
 ```typescript
-import '@loaders.gl/polyfills'; // only if using under Node
+import '@loaders.gl/core/polyfills'; // only if using under Node
 import {encodeURLtoURL} from '@loaders.gl/core';
 import {CompressedTextureWriter} from '@loaders.gl/textures';
 

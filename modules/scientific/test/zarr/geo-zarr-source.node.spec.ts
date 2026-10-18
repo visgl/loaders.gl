@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 import {pathToFileURL} from 'node:url';
-import '@loaders.gl/polyfills';
+import '@loaders.gl/core/polyfills';
 import {expect, test} from 'vitest';
 import {createDataSource, resolvePath} from '@loaders.gl/core';
 import {

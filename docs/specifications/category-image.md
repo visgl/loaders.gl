@@ -31,7 +31,7 @@ import {CategoryDataConcept} from '@site/src/components/home/concepts';
     {label: 'Browser path', value: 'ImageBitmap for direct rendering'},
     {label: 'Portable path', value: 'Decoded image data with typed pixels'},
     {label: 'Formats', value: 'PNG, JPEG, WebP, GIF, and other browser-supported inputs'},
-    {label: 'Node.js', value: 'Use @loaders.gl/polyfills for image decoding support'}
+    {label: 'Node.js', value: 'Use @loaders.gl/core/polyfills for image decoding support'}
   ]}
 />
 
@@ -58,7 +58,7 @@ Core image category support is provided by the `@loaders.gl/images` module:
 The preferred loader for new code is `ImageBitmapLoader`:
 
 ```typescript
-import '@loaders.gl/polyfills'; // Only required if loading images under Node.js
+import '@loaders.gl/core/polyfills'; // Only required if loading images under Node.js
 import {ImageBitmapLoader} from '@loaders.gl/images';
 import {registerLoaders, load} from '@loaders.gl/core';
 registerLoaders(ImageBitmapLoader);
@@ -68,7 +68,7 @@ const image = await load('image.jpeg');
 If application code needs raw pixels, convert the loaded image explicitly:
 
 ```typescript
-import '@loaders.gl/polyfills'; // Only required if loading images under Node.js
+import '@loaders.gl/core/polyfills'; // Only required if loading images under Node.js
 import {load} from '@loaders.gl/core';
 import {ImageBitmapLoader, getImageData} from '@loaders.gl/images';
 
@@ -82,7 +82,7 @@ Images can be represented either as opaque image objects (`ImageBitmap` or `Imag
 
 A loaded image can always be converted to an _image data_ object (an object containing a `Uint8Array` with the pixel data, and metadata like `width` and `height`).
 
-`ImageBitmapLoader` returns `ImageBitmap` in browsers. Under Node.js with `@loaders.gl/polyfills`, `ImageBitmapLoader` returns a minimal `ImageBitmap` polyfill backed by decoded image data. Deprecated `ImageLoader` preserves older compatibility return types and options.
+`ImageBitmapLoader` returns `ImageBitmap` in browsers. Under Node.js with `@loaders.gl/core/polyfills`, `ImageBitmapLoader` returns a minimal `ImageBitmap` polyfill backed by decoded image data. Deprecated `ImageLoader` preserves older compatibility return types and options.
 
 Note that _type_ is independent of the _format_ of the image (see below).
 

@@ -153,6 +153,10 @@
     },
     "@loaders.gl/core": {
       "path": "modules/core",
+      "browserExcludedSourcePaths": [
+        "modules/core/src/polyfills/"
+      ],
+      "browserExclusionReason": "The polyfills subpath installs Node.js adapters and cannot execute in Chromium; its source remains in the merged coverage gate and its independent format ratchet.",
       "browser": {
         "statements": 74,
         "lines": 74,
@@ -575,21 +579,6 @@
         "lines": 55,
         "functions": 50,
         "branches": 34
-      }
-    },
-    "@loaders.gl/polyfills": {
-      "path": "modules/polyfills",
-      "browser": {
-        "statements": 0,
-        "lines": 0,
-        "functions": 0,
-        "branches": 0
-      },
-      "merged": {
-        "statements": 61,
-        "lines": 61,
-        "functions": 64,
-        "branches": 46
       }
     },
     "@loaders.gl/potree": {
@@ -1029,6 +1018,25 @@
       "owner": "@loaders.gl/raster",
       "sourcePaths": [
         "modules/raster/src/terrain/"
+      ]
+    },
+    "@loaders.gl/core/polyfills": {
+      "path": "modules/core/src/polyfills",
+      "browser": {
+        "statements": 0,
+        "lines": 0,
+        "functions": 0,
+        "branches": 0
+      },
+      "merged": {
+        "statements": 61,
+        "lines": 61,
+        "functions": 64,
+        "branches": 46
+      },
+      "owner": "@loaders.gl/core",
+      "sourcePaths": [
+        "modules/core/src/polyfills/"
       ]
     }
   }
