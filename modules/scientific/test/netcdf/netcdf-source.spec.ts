@@ -206,6 +206,9 @@ test('NetCDF source materializes every supported numeric type and slice form', a
   await expect(source.getRaster({variables: ['int'], slices: {row: [0, 3]}})).rejects.toThrow(
     /half-open range/
   );
+  await expect(source.getRaster({variables: ['int'], slices: {row: 2}})).rejects.toThrow(
+    /must be an index/
+  );
 
   (source as any).loadReader = async () => ({
     header,
@@ -218,3 +221,111 @@ test('NetCDF source materializes every supported numeric type and slice form', a
     /must contain numeric values/
   );
 });
+
+test('NetCDF source handles scalar variables and files without raster variables', async () => {
+  const header = {
+    version: 1,
+    recordDimension: {length: 0, id: -1, name: '', recordStep: 0},
+    dimensions: [],
+    attributes: [],
+    variables: [
+      {
+        name: 'scalar',
+        dimensions: [],
+        attributes: [],
+        type: 'double',
+        size: 8,
+        offset: 0,
+        record: false
+      }
+    ]
+  } as any;
+  const source = new NetCDFSource(new Blob());
+  (source as any).loadReader = async () => ({header, getDataVariable: () => 42});
+
+  await expect(source.getRaster()).rejects.toThrow(/no numeric variables/);
+  const raster = await source.getRaster({variables: ['scalar']});
+  expect(raster).toMatchObject({width: 1, height: 1, bandCount: 1, dtype: 'float64', noData: null});
+  expect(Array.from(raster.data as Float64Array)).toEqual([42]);
+  expect(raster.metadata).toMatchObject({dimensions: [], shape: [], slices: {}});
+
+  header.variables[0].attributes = [{name: 'missing_value', type: 'double', value: '0'}];
+  expect((await source.getRaster({variables: ['scalar']})).noData).toBe(0);
+  header.variables[0].attributes[0].value = 'unknown';
+  expect((await source.getRaster({variables: ['scalar']})).noData).toBeNull();
+});
+
+test('NetCDF source exposes every primitive field type in query metadata', async () => {
+  const primitiveTypes = [
+    ['byte', 'int8'],
+    ['ubyte', 'uint8'],
+    ['short', 'int16'],
+    ['ushort', 'uint16'],
+    ['int', 'int32'],
+    ['uint', 'uint32'],
+    ['int64', 'int64'],
+    ['uint64', 'uint64'],
+    ['float', 'float32'],
+    ['double', 'float64'],
+    ['char', 'utf8'],
+    ['string', 'utf8'],
+    ['opaque', 'binary']
+  ] as const;
+  const header = {
+    version: 1,
+    recordDimension: {length: 0, id: 0, name: 'record', recordStep: 0},
+    dimensions: [{name: 'record', size: 0, recordId: 0, recordName: 'record'}],
+    attributes: [],
+    variables: primitiveTypes.map(([type]) => ({
+      name: type,
+      dimensions: [0],
+      attributes: [{name: 'units', type: 'char', value: 'sample'}],
+      type,
+      size: 0,
+      offset: 0,
+      record: true
+    }))
+  } as any;
+  const source = new NetCDFSource('https://example.com/all-types.nc');
+  (source as any).headerPromise = Promise.resolve({header, byteLength: 128});
+
+  const metadata = await source.getQueryMetadata();
+  expect(metadata.name).toBe('all-types.nc');
+  expect(metadata.statistics?.rowCount).toBeUndefined();
+  expect(metadata.schema.fields.map(field => field.type)).toEqual(
+    primitiveTypes.map(([, schemaType]) => schemaType)
+  );
+  expect(metadata.schema.fields[0].metadata).toMatchObject({
+    dimensions: 'record[0]',
+    units: 'sample'
+  });
+});
+
+test.runIf(isBrowser)(
+  'NetCDF source retries a failed header and reads full responses',
+  async () => {
+    const response = await fetchFile(NETCDF_FIXTURE);
+    const bytes = await response.arrayBuffer();
+    const source = new NetCDFSource('fixture.nc');
+    let requests = 0;
+    source.fetch = async () => {
+      requests++;
+      return requests === 1
+        ? new Response(null, {status: 503})
+        : new Response(bytes, {status: 200, headers: {'Content-Length': String(bytes.byteLength)}});
+    };
+
+    await expect(source.getQueryMetadata()).rejects.toThrow('status 503');
+    const metadata = await source.getQueryMetadata();
+    expect(metadata.name).toBe('fixture.nc');
+    expect(metadata.statistics?.byteLength).toBe(bytes.byteLength);
+    expect(requests).toBe(2);
+
+    const raster = await source.getRaster({variables: ['wmoId'], slices: {recNum: [0, 1]}});
+    expect(raster.width).toBe(1);
+    expect(requests).toBe(3);
+
+    source.fetch = async () => new Response(null, {status: 503});
+    await expect(source.getRaster({variables: ['wmoId']})).rejects.toThrow('status 503');
+  }
+);
