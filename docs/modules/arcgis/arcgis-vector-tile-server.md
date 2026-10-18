@@ -16,11 +16,12 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
   format="arcgis-vector-tile-server"
   eyebrow="ArcGIS module · ArcGIS vector-tile source"
   title="ArcGIS VectorTileServer"
-  description="Load ArcGIS vector tiles together with their tile grid, style, and sprite metadata, then expose raw or decoded MVT data to the application."
+  description="Read your ArcGIS vector tile layer as raw MVT or decoded features, then apply the styling and labels your application needs."
   tone="violet"
   meta={['VectorTileServer', 'MVT and styles', 'VectorTileSource']}
   links={[
     {label: 'ArcGIS module', to: '/docs/modules/arcgis'},
+    {label: 'Protocol and formats', to: '/docs/modules/arcgis/formats/arcgis-vector-tile-server'},
     {label: 'ArcGIS service API', to: '/docs/modules/arcgis/api-reference/arcgis'},
     {label: 'MVT format', to: '/docs/modules/mvt/formats/mvt'}
   ]}

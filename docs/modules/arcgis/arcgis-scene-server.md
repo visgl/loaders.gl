@@ -15,11 +15,12 @@ import {ClientExample} from '@site/src/components';
   format="arcgis-scene-server"
   eyebrow="ArcGIS module · ArcGIS 3D source"
   title="ArcGIS SceneServer"
-  description="Connect an ArcGIS SceneServer layer to the loaders.gl 3D source runtime, delegating I3S mesh, point, and point-cloud decoding to the existing format implementations."
+  description="Connect your published scene layer to an I3S source. Inspect its layer profile and coordinates, then choose a compatible mesh, point, or point-cloud renderer."
   tone="violet"
   meta={['SceneServer', 'I3S', '3D source integration']}
   links={[
     {label: 'ArcGIS module', to: '/docs/modules/arcgis'},
+    {label: 'Protocol and formats', to: '/docs/modules/arcgis/formats/arcgis-scene-server'},
     {label: 'ArcGIS service API', to: '/docs/modules/arcgis/api-reference/arcgis'},
     {label: 'I3S format', to: '/docs/modules/i3s/formats/i3s'}
   ]}

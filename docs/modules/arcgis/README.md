@@ -1,6 +1,6 @@
 ---
 title: '@loaders.gl/arcgis'
-description: Framework-independent sources for ArcGIS REST services and cloud-hosted geographic data.
+description: Connect your existing ArcGIS Online and Enterprise layers to JavaScript applications.
 hide_title: true
 page_style: designed
 ---
@@ -15,7 +15,7 @@ import {ClientExample} from '@site/src/components';
   format="arcgis"
   eyebrow="Service sources"
   title="@loaders.gl/arcgis"
-  description="Treat remote service endpoints like other loaders.gl sources: discover capabilities, request only what is needed, and hand results to the application or renderer."
+  description="Use layers already published in ArcGIS Online or Enterprise in your own application. Connect to the service, authorize access, and request features, imagery, tiles, or scenes without exporting your data."
   tone="orange"
   meta={['ArcGIS REST', 'Vector, raster, and tiles', 'Source contracts']}
   links={[
@@ -30,8 +30,13 @@ import {ClientExample} from '@site/src/components';
 
 <ServiceSourceGraphic kind="arcgis" />
 
-The `@loaders.gl/arcgis` module provides framework-independent sources for ArcGIS REST services.
-The sources use the same loaders.gl contracts as file loaders: they can be selected and created by async `load()`, and rendered through deck.gl's generic `SourceLayer`.
+If your data is already in ArcGIS, start with its item page or REST service URL. You can query a
+feature layer, display a published map, read imagery values, or connect to vector tiles and scenes.
+Your data stays in ArcGIS; loaders.gl reads the subset your application requests.
+
+Use async `load()` to create a source. Feature, image and tile sources can feed deck.gl's
+`SourceLayer`; SceneServer needs a compatible I3S rendering path. Existing ArcGIS sharing and
+service permissions continue to apply.
 
 OGC protocols such as WMS, WMTS, WFS, WCS, CSW, GML, and OGC API remain in
 [`@loaders.gl/wms`](/docs/modules/wms). Keeping the protocol implementations in their owning
@@ -66,6 +71,22 @@ The root exports lightweight service loaders. Authentication and discovery have 
 imports the selected implementation. For synchronous `createDataSource()` or direct source
 classes, use `@loaders.gl/arcgis/bundled`; see
 [import patterns](/docs/developer-guide/arcgis#how-imports-work).
+
+## Start with your published data
+
+| What you already have | Choose this path | Protocol and feature card |
+| --- | --- | --- |
+| A hosted feature layer, layer view, or queryable table | Copy the layer REST URL and query features | [FeatureServer](/docs/modules/arcgis/formats/arcgis-feature-server) |
+| A tiled map or map image layer | Read its cache or request server-rendered map images | [MapServer](/docs/modules/arcgis/formats/arcgis-map-server) |
+| An imagery layer | Choose rendered imagery or numerical LERC pixels; tile exports are a separate source | [ImageServer](/docs/modules/arcgis/formats/arcgis-image-server) |
+| A vector tile layer | Read MVT tiles and apply your application's styling | [VectorTileServer](/docs/modules/arcgis/formats/arcgis-vector-tile-server) |
+| A scene layer | Choose an explicit scene layer and inspect its I3S profile | [SceneServer](/docs/modules/arcgis/formats/arcgis-scene-server) |
+| An item ID or an item page URL | [Resolve the portal item](/docs/developer-guide/arcgis/items), then select a service layer | Item resolution does not reproduce a complete web map |
+
+Use the service URL from the item's details or ArcGIS Services Directory, not the address of Map
+Viewer. For a feature service with several layers or tables, select the intended layer ID rather
+than assuming it is `0`. A hosted layer view may expose different fields and filters from its
+source layer. Begin with [the user guide](/docs/developer-guide/arcgis) for a complete example.
 
 ## Service support
 
@@ -144,7 +165,15 @@ const layer = new SourceLayer({
 `SourceLayer` is intended for visual sources. Catalogs and analytical LERC rasters remain data
 objects until the application chooses a record, band, color ramp, and NoData treatment.
 
-## Authentication and request customization
+## Authentication and practical setup
+
+A service that works while you are signed in to ArcGIS may still require credentials in your
+application. Use anonymous access for public data, an application-managed user session for
+organizational content, or your organization's backend/proxy flow. API keys are appropriate only
+for resources and privileges that support them; they do not replace a user's private-data access.
+The [authentication guide](/docs/developer-guide/arcgis/authentication) covers token callbacks,
+ArcGIS REST JS sessions, refresh, and Enterprise deployments.
+
 
 Use `ArcGISAuthentication` to scope a token to the exact ArcGIS Online, Enterprise, or proxy
 origin. The credential follows metadata, feature, image, tile, and deck.gl requests:
@@ -174,6 +203,27 @@ application; the ArcGIS package has no Esri SDK dependency. See the
 
 Service-specific options can add ArcGIS request parameters without bypassing the source API. See
 the individual service pages for the supported option names.
+
+## Before connecting your application
+
+| Task | Practical check | ArcGIS documentation |
+| --- | --- | --- |
+| Find the right data URL | Select the actual layer/table endpoint and inspect its metadata with `f=pjson` | [Working with data services](https://developers.arcgis.com/documentation/portal-and-data-services/data-services/how-to-work-with-data-services/) |
+| Confirm access | Check item sharing and service privileges with the identity your application will use | [Share items](https://doc.arcgis.com/en/arcgis-online/share-maps/share-items.htm) |
+| Choose sign-in | Register your application and use a flow suitable for Online or your Enterprise portal | [Authentication types](https://developers.arcgis.com/documentation/security-and-authentication/types-of-authentication/) · [User authentication flows](https://developers.arcgis.com/documentation/security-and-authentication/user-authentication/flows/) |
+| Allow browser requests | Test from the deployed application origin; configure CORS or an approved proxy | [ArcGIS Server cross-domain requests](https://doc.esri.com/en/arcgis-enterprise/latest/administer/restricting-cross-domain-requests-to-arcgis-server.html) |
+| Retrieve the intended records | Apply filters and fields; respect service page limits and inspect completeness | [Feature query parameters](https://developers.arcgis.com/rest/services-reference/enterprise/query-feature-service-layer/) |
+| Preserve map meaning | Check CRS, scale/time settings, attribution and item usage terms; reproduce client styling explicitly | [Service metadata](https://developers.arcgis.com/rest/services-reference/enterprise/map-service/) |
+
+Feature pagination is automatic within a bounded query. `getFeatures()` throws if the result cannot
+be established as complete; `queryFeatures()` exposes completion and partial-result reasons.
+Narrow the query or deliberately configure `maxFeatures` rather than assuming one response contains
+all records. See [pagination and completeness](/docs/developer-guide/arcgis/feature-layers#pagination-and-completeness).
+
+For viewport updates, debounce requests and cancel obsolete work with `AbortSignal`. Test a secured
+layer, token expiry and follow-up tile/scene resources from your production origin. A successful
+metadata request alone does not verify an entire service workflow. The
+[troubleshooting guide](/docs/developer-guide/arcgis/troubleshooting) covers common symptoms.
 
 ## Capability discovery
 

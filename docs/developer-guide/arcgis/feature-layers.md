@@ -138,6 +138,8 @@ attachments, related records, editing and synchronization remain outside this tr
 Metadata and query operations recognize both HTTP failures and ArcGIS `error` objects delivered
 with HTTP 200. `ArcGISFeatureQueryError` exposes `code` and `details`; import its runtime class from
 `@loaders.gl/arcgis/bundled` or the feature implementation subpath when using `instanceof`.
-JSON authentication errors are surfaced, not automatically refreshed by this feature client.
-See the [authentication guide](/docs/developer-guide/arcgis/authentication) for scoped credentials
-and application-managed session renewal.
+Use `ArcGISAuthentication` with a renewable token callback to handle eligible authentication
+failures through the shared transport, including small HTTP 200 JSON error envelopes with codes
+498 or 499. Other query errors remain visible to the caller. The feature client itself does not
+sign in or renew sessions. See the [authentication guide](/docs/developer-guide/arcgis/authentication)
+for refresh boundaries, scoped credentials and application-managed sessions.
