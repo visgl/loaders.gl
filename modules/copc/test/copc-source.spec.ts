@@ -17,8 +17,12 @@ import {
 } from '@loaders.gl/copc';
 import {LASLoader} from '@loaders.gl/las';
 import {decodeLAZChunk, decodeLAZChunkTable} from '@loaders.gl/core/loader-utils';
-import {deduceMeshSchema, makeMeshArrowTable, convertTableToMesh} from '@loaders.gl/schema-utils';
-import {getFloat16Value} from '@loaders.gl/schema';
+import {
+  deduceMeshSchema,
+  makeMeshArrowTable,
+  convertTableToMesh
+} from '@loaders.gl/core/schema-utils';
+import {getFloat16Value} from '@loaders.gl/core/schema';
 
 const ELLIPSOID_FILE_PATH = 'modules/copc/test/data/ellipsoid.copc.laz';
 const ELLIPSOID_BROWSER_URL = new URL('./data/ellipsoid.copc.laz', import.meta.url).href;

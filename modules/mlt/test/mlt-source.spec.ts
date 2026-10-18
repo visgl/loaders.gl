@@ -3,7 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import {expect, test} from 'vitest';
-import type {Feature} from '@loaders.gl/schema';
+import type {Feature} from '@loaders.gl/core/schema';
 
 import {MLTSourceLoader} from '@loaders.gl/mlt';
 import {MLTLoaderWithParser as MLTLoader} from '../src/mlt-loader-with-parser';

@@ -2,7 +2,7 @@ import {expect, test} from 'vitest';
 import {validateWriter, validateMeshCategoryData} from 'test/common/conformance';
 import {PCDLoader, PCDWriter} from '@loaders.gl/pcd';
 import {encode, parse} from '@loaders.gl/core';
-import {convertMeshToTable, deduceMeshSchema} from '@loaders.gl/schema-utils';
+import {convertMeshToTable, deduceMeshSchema} from '@loaders.gl/core/schema-utils';
 const attributes = {
   POSITION: {value: new Float32Array([0, 0, 0, 1, 0, 0, 0, 1, 1]), size: 3},
   NORMAL: {value: new Float32Array([0, 0, 1, 0, 0, 1, 0, 0, 1]), size: 3}

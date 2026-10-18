@@ -8,7 +8,7 @@ import type {
   ArrowTableBatch,
   ObjectRowTable,
   ObjectRowTableBatch
-} from '@loaders.gl/schema';
+} from '@loaders.gl/core/schema';
 
 import {ParquetFormat} from './parquet-format';
 import type {ParquetJSLoaderOptions} from './parquet-loader-options';

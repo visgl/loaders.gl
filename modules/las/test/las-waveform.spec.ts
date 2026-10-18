@@ -4,7 +4,7 @@
 
 import {describe, expect, test} from 'vitest';
 import {ArrayBufferFile, type ReadableFile} from '@loaders.gl/core/loader-utils';
-import type {MeshArrowTable} from '@loaders.gl/schema';
+import type {MeshArrowTable} from '@loaders.gl/core/schema';
 import {LASLoaderWithParser} from '../src/las-loader';
 import {
   decodeLASWaveformSamples,

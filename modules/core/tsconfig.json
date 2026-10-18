@@ -11,12 +11,5 @@
     "rootDir": "src",
     "outDir": "dist"
   },
-  "references": [
-    {
-      "path": "../schema"
-    },
-    {
-      "path": "../schema-utils"
-    }
-  ]
+  "references": []
 }

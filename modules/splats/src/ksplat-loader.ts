@@ -3,7 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import type {LoaderWithParser} from '@loaders.gl/core/loader-utils';
-import type {MeshArrowTable} from '@loaders.gl/schema';
+import type {MeshArrowTable} from '@loaders.gl/core/schema';
 import type {SplatsLoaderOptions} from './types';
 import {parseKSPLAT} from './lib/parse-ksplat';
 import {KSPLATLoader as KSPLATLoaderMetadata} from './ksplat-loader-types';

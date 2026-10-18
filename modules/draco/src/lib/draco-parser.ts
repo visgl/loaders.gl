@@ -10,7 +10,7 @@ import type {
   MeshAttribute,
   MeshAttributeTransform,
   MeshGeometry
-} from '@loaders.gl/schema';
+} from '@loaders.gl/core/schema';
 
 // Draco types (input)
 import type {
@@ -36,7 +36,7 @@ import type {
   DracoOctahedronTransform
 } from './draco-types';
 
-import {getMeshBoundingBox} from '@loaders.gl/schema-utils';
+import {getMeshBoundingBox} from '@loaders.gl/core/schema-utils';
 import {getDracoSchema} from './utils/get-draco-schema';
 
 /** Options to control draco parsing */

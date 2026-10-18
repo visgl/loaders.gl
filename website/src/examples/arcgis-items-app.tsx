@@ -10,7 +10,7 @@ import type {SourceLayerProps} from '@loaders.gl/deck-layers';
 import {resolveArcGISItem} from '@loaders.gl/arcgis/items';
 import {ArcGISAuthentication} from '@loaders.gl/arcgis/authentication';
 import type {ArcGISItemLayer, ArcGISItemResolution} from '@loaders.gl/arcgis/items';
-import type {Feature} from '@loaders.gl/schema';
+import type {Feature} from '@loaders.gl/core/schema';
 
 /** Public configuration shared only with a same-origin OAuth callback popup. */
 type OAuthWindow = Window & {

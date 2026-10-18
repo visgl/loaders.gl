@@ -22,9 +22,6 @@
       "path": "../core"
     },
     {
-      "path": "../schema-utils"
-    },
-    {
       "path": "../textures"
     }
   ]

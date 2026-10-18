@@ -2,13 +2,13 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import {convertArrowToTable} from '@loaders.gl/schema-utils';
+import {convertArrowToTable} from '@loaders.gl/core/schema-utils';
 import type {
   ArrowTable,
   ArrowTableBatch,
   ObjectRowTable,
   ObjectRowTableBatch
-} from '@loaders.gl/schema';
+} from '@loaders.gl/core/schema';
 
 /**
  * Converts an Arrow-backed table into object rows.

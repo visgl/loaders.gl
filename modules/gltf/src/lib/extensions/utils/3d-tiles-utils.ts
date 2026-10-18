@@ -12,7 +12,7 @@
  */
 
 import type {GLTFTextureInfoMetadata, GLTFMeshPrimitive} from '../../types/gltf-json-schema';
-import type {BigTypedArray, TypedArray} from '@loaders.gl/schema';
+import type {BigTypedArray, TypedArray} from '@loaders.gl/core/schema';
 import type {ImageType} from '@loaders.gl/images';
 
 import {GLTFScenegraph} from '../../api/gltf-scenegraph';

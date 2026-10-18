@@ -4,7 +4,7 @@
 
 import * as arrow from 'apache-arrow';
 import {expect, test} from 'vitest';
-import type {Feature, Geometry, Schema} from '@loaders.gl/schema';
+import type {Feature, Geometry, Schema} from '@loaders.gl/core/schema';
 import {
   applyLegacyGeoJSONCRSToSchema,
   convertFeaturesToGeoArrowTable,

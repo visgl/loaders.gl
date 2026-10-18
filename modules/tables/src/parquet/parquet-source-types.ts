@@ -11,7 +11,7 @@ import type {
   ScanExecutionTelemetryCallback,
   StrictLoaderOptions
 } from '@loaders.gl/core/loader-utils';
-import type {ArrowTableBatch, Schema} from '@loaders.gl/schema';
+import type {ArrowTableBatch, Schema} from '@loaders.gl/core/schema';
 import type {
   ColumnarComparisonPredicate,
   ColumnarInPredicate,

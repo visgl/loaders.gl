@@ -4,7 +4,7 @@
 
 import * as arrow from 'apache-arrow';
 import {expect, test} from 'vitest';
-import {convertArrowToSchema} from '@loaders.gl/schema-utils';
+import {convertArrowToSchema} from '@loaders.gl/core/schema-utils';
 import {convertGeoArrowTableToGeoJSON} from '../src/geojson-table';
 import {convertGeometryToWKB} from '../src/geometry-codecs';
 

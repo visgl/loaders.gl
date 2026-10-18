@@ -5115,7 +5115,6 @@ __metadata:
     "@loaders.gl/draco": "npm:5.0.0-alpha.12"
     "@loaders.gl/gltf": "npm:5.0.0-alpha.12"
     "@loaders.gl/images": "npm:5.0.0-alpha.12"
-    "@loaders.gl/schema": "npm:5.0.0-alpha.12"
     "@loaders.gl/tiles": "npm:5.0.0-alpha.12"
     "@loaders.gl/zip": "npm:5.0.0-alpha.12"
     "@math.gl/core": "npm:5.0.0-alpha.18"
@@ -5137,7 +5136,6 @@ __metadata:
     "@loaders.gl/images": "npm:5.0.0-alpha.12"
     "@loaders.gl/mvt": "npm:5.0.0-alpha.12"
     "@loaders.gl/raster": "npm:5.0.0-alpha.12"
-    "@loaders.gl/schema": "npm:5.0.0-alpha.12"
     lerc: "npm:^4.2.0"
   peerDependencies:
     "@loaders.gl/core": ~5.0.0-alpha.0
@@ -5148,8 +5146,6 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@loaders.gl/arrow-geometry@workspace:modules/arrow-geometry"
   dependencies:
-    "@loaders.gl/schema": "npm:5.0.0-alpha.12"
-    "@loaders.gl/schema-utils": "npm:5.0.0-alpha.12"
     "@math.gl/crs": "npm:5.0.0-alpha.18"
     "@math.gl/geoarrow": "npm:5.0.0-alpha.18"
     "@math.gl/polygon": "npm:5.0.0-alpha.18"
@@ -5240,8 +5236,6 @@ __metadata:
   resolution: "@loaders.gl/copc@workspace:modules/copc"
   dependencies:
     "@loaders.gl/las": "npm:5.0.0-alpha.12"
-    "@loaders.gl/schema": "npm:5.0.0-alpha.12"
-    "@loaders.gl/schema-utils": "npm:5.0.0-alpha.12"
     "@math.gl/crs": "npm:5.0.0-alpha.18"
     "@math.gl/projection": "npm:5.0.0-alpha.18"
     copc: "npm:0.0.8"
@@ -5254,12 +5248,14 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@loaders.gl/core@workspace:modules/core"
   dependencies:
-    "@loaders.gl/schema": "npm:5.0.0-alpha.12"
-    "@loaders.gl/schema-utils": "npm:5.0.0-alpha.12"
     "@math.gl/crs": "npm:5.0.0-alpha.18"
     "@math.gl/geospatial": "npm:5.0.0-alpha.18"
+    "@math.gl/types": "npm:5.0.0-alpha.18"
     "@probe.gl/log": "npm:^4.1.1"
     "@probe.gl/stats": "npm:^4.1.1"
+    "@types/geojson": "npm:^7946.0.7"
+    apache-arrow: "npm:>= 17.0.0"
+    zod: "npm:^4.1.12"
   peerDependencies:
     get-pixels: ^3.3.3
     ndarray: ^1.0.19
@@ -5309,8 +5305,6 @@ __metadata:
     "@loaders.gl/arrow": "npm:5.0.0-alpha.12"
     "@loaders.gl/compression": "npm:5.0.0-alpha.12"
     "@loaders.gl/geoarrow": "npm:5.0.0-alpha.12"
-    "@loaders.gl/schema": "npm:5.0.0-alpha.12"
-    "@loaders.gl/schema-utils": "npm:5.0.0-alpha.12"
     "@loaders.gl/tiles": "npm:5.0.0-alpha.12"
     "@loaders.gl/zip": "npm:5.0.0-alpha.12"
     "@luma.gl/core": "npm:^9.4.0"
@@ -5330,8 +5324,6 @@ __metadata:
   resolution: "@loaders.gl/draco@workspace:modules/draco"
   dependencies:
     "@loaders.gl/arrow": "npm:5.0.0-alpha.12"
-    "@loaders.gl/schema": "npm:5.0.0-alpha.12"
-    "@loaders.gl/schema-utils": "npm:5.0.0-alpha.12"
     draco3d: "npm:1.5.7"
   peerDependencies:
     "@loaders.gl/core": ~5.0.0-alpha.0
@@ -5379,8 +5371,6 @@ __metadata:
   resolution: "@loaders.gl/geoarrow@workspace:modules/geoarrow"
   dependencies:
     "@loaders.gl/arrow-geometry": "npm:5.0.0-alpha.12"
-    "@loaders.gl/schema": "npm:5.0.0-alpha.12"
-    "@loaders.gl/schema-utils": "npm:5.0.0-alpha.12"
     "@loaders.gl/wkt": "npm:5.0.0-alpha.12"
     "@math.gl/geoarrow": "npm:5.0.0-alpha.18"
     "@math.gl/polygon": "npm:5.0.0-alpha.18"
@@ -5413,8 +5403,6 @@ __metadata:
   resolution: "@loaders.gl/geospatial@workspace:modules/geospatial"
   dependencies:
     "@loaders.gl/arrow-geometry": "npm:5.0.0-alpha.12"
-    "@loaders.gl/schema": "npm:5.0.0-alpha.12"
-    "@loaders.gl/schema-utils": "npm:5.0.0-alpha.12"
     "@loaders.gl/xml": "npm:5.0.0-alpha.12"
     "@loaders.gl/zip": "npm:5.0.0-alpha.12"
     "@math.gl/crs": "npm:5.0.0-alpha.18"
@@ -5454,8 +5442,6 @@ __metadata:
   dependencies:
     "@loaders.gl/draco": "npm:5.0.0-alpha.12"
     "@loaders.gl/images": "npm:5.0.0-alpha.12"
-    "@loaders.gl/schema": "npm:5.0.0-alpha.12"
-    "@loaders.gl/schema-utils": "npm:5.0.0-alpha.12"
     "@loaders.gl/textures": "npm:5.0.0-alpha.12"
     "@math.gl/core": "npm:5.0.0-alpha.18"
     "@math.gl/culling": "npm:5.0.0-alpha.18"
@@ -5470,8 +5456,6 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@loaders.gl/graphs@workspace:modules/graphs"
   dependencies:
-    "@loaders.gl/schema": "npm:5.0.0-alpha.12"
-    "@loaders.gl/schema-utils": "npm:5.0.0-alpha.12"
     apache-arrow: "npm:>= 17.0.0"
     fast-xml-parser: "npm:^5.5.3"
   peerDependencies:
@@ -5486,8 +5470,6 @@ __metadata:
     "@loaders.gl/compression": "npm:5.0.0-alpha.12"
     "@loaders.gl/draco": "npm:5.0.0-alpha.12"
     "@loaders.gl/images": "npm:5.0.0-alpha.12"
-    "@loaders.gl/schema": "npm:5.0.0-alpha.12"
-    "@loaders.gl/schema-utils": "npm:5.0.0-alpha.12"
     "@loaders.gl/textures": "npm:5.0.0-alpha.12"
     "@loaders.gl/tiles": "npm:5.0.0-alpha.12"
     "@loaders.gl/zip": "npm:5.0.0-alpha.12"
@@ -5544,8 +5526,6 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@loaders.gl/las@workspace:modules/las"
   dependencies:
-    "@loaders.gl/schema": "npm:5.0.0-alpha.12"
-    "@loaders.gl/schema-utils": "npm:5.0.0-alpha.12"
     "@math.gl/crs": "npm:5.0.0-alpha.18"
     copc: "npm:0.0.8"
     laz-perf: "npm:^0.0.7"
@@ -5576,8 +5556,6 @@ __metadata:
   resolution: "@loaders.gl/mlt@workspace:modules/mlt"
   dependencies:
     "@loaders.gl/arrow-geometry": "npm:5.0.0-alpha.12"
-    "@loaders.gl/schema": "npm:5.0.0-alpha.12"
-    "@loaders.gl/schema-utils": "npm:5.0.0-alpha.12"
     "@maplibre/mlt": "npm:^1.1.6"
     apache-arrow: "npm:>= 17.0.0"
   peerDependencies:
@@ -5592,8 +5570,6 @@ __metadata:
     "@loaders.gl/arrow": "npm:5.0.0-alpha.12"
     "@loaders.gl/arrow-geometry": "npm:5.0.0-alpha.12"
     "@loaders.gl/images": "npm:5.0.0-alpha.12"
-    "@loaders.gl/schema": "npm:5.0.0-alpha.12"
-    "@loaders.gl/schema-utils": "npm:5.0.0-alpha.12"
     "@math.gl/polygon": "npm:5.0.0-alpha.18"
     "@probe.gl/stats": "npm:^4.1.1"
     "@types/pbf": "npm:^3.0.2"
@@ -5610,8 +5586,6 @@ __metadata:
   resolution: "@loaders.gl/obj@workspace:modules/obj"
   dependencies:
     "@loaders.gl/arrow": "npm:5.0.0-alpha.12"
-    "@loaders.gl/schema": "npm:5.0.0-alpha.12"
-    "@loaders.gl/schema-utils": "npm:5.0.0-alpha.12"
   peerDependencies:
     "@loaders.gl/core": ~5.0.0-alpha.0
   languageName: unknown
@@ -5648,8 +5622,6 @@ __metadata:
   resolution: "@loaders.gl/pcd@workspace:modules/pcd"
   dependencies:
     "@loaders.gl/arrow": "npm:5.0.0-alpha.12"
-    "@loaders.gl/schema": "npm:5.0.0-alpha.12"
-    "@loaders.gl/schema-utils": "npm:5.0.0-alpha.12"
   peerDependencies:
     "@loaders.gl/core": ~5.0.0-alpha.0
   languageName: unknown
@@ -5660,8 +5632,6 @@ __metadata:
   resolution: "@loaders.gl/ply@workspace:modules/ply"
   dependencies:
     "@loaders.gl/arrow": "npm:5.0.0-alpha.12"
-    "@loaders.gl/schema": "npm:5.0.0-alpha.12"
-    "@loaders.gl/schema-utils": "npm:5.0.0-alpha.12"
     apache-arrow: "npm:>= 17.0.0"
   peerDependencies:
     "@loaders.gl/core": ~5.0.0-alpha.0
@@ -5676,7 +5646,6 @@ __metadata:
     "@loaders.gl/images": "npm:5.0.0-alpha.12"
     "@loaders.gl/mlt": "npm:5.0.0-alpha.12"
     "@loaders.gl/mvt": "npm:5.0.0-alpha.12"
-    "@loaders.gl/schema": "npm:5.0.0-alpha.12"
     pmtiles: "npm:^4.5.0"
   peerDependencies:
     "@loaders.gl/core": ~5.0.0-alpha.0
@@ -5689,8 +5658,6 @@ __metadata:
   dependencies:
     "@loaders.gl/compression": "npm:5.0.0-alpha.12"
     "@loaders.gl/las": "npm:5.0.0-alpha.12"
-    "@loaders.gl/schema": "npm:5.0.0-alpha.12"
-    "@loaders.gl/schema-utils": "npm:5.0.0-alpha.12"
     "@math.gl/crs": "npm:5.0.0-alpha.18"
     "@math.gl/projection": "npm:5.0.0-alpha.18"
     zod: "npm:^4.1.12"
@@ -5704,8 +5671,6 @@ __metadata:
   resolution: "@loaders.gl/raster@workspace:modules/raster"
   dependencies:
     "@loaders.gl/images": "npm:5.0.0-alpha.12"
-    "@loaders.gl/schema": "npm:5.0.0-alpha.12"
-    "@loaders.gl/schema-utils": "npm:5.0.0-alpha.12"
     "@mapbox/martini": "npm:0.2.0"
     "@math.gl/crs": "npm:5.0.0-alpha.18"
     fast-xml-parser: "npm:^5.3.6"
@@ -5728,8 +5693,6 @@ __metadata:
   resolution: "@loaders.gl/scan@workspace:modules/scan"
   dependencies:
     "@loaders.gl/parquet": "npm:5.0.0-alpha.12"
-    "@loaders.gl/schema": "npm:5.0.0-alpha.12"
-    "@loaders.gl/schema-utils": "npm:5.0.0-alpha.12"
     "@loaders.gl/sql": "npm:5.0.0-alpha.12"
     apache-arrow: "npm:>= 17.0.0"
   peerDependencies:
@@ -5745,35 +5708,34 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@loaders.gl/schema-utils@npm:^5.0.0-alpha.0, @loaders.gl/schema-utils@workspace:modules/schema-utils":
-  version: 0.0.0-use.local
-  resolution: "@loaders.gl/schema-utils@workspace:modules/schema-utils"
+"@loaders.gl/schema-utils@npm:4.5.4":
+  version: 4.5.4
+  resolution: "@loaders.gl/schema-utils@npm:4.5.4"
   dependencies:
-    "@loaders.gl/schema": "npm:5.0.0-alpha.12"
-    "@math.gl/types": "npm:5.0.0-alpha.18"
+    "@loaders.gl/schema": "npm:4.5.4"
+    "@math.gl/types": "npm:^4.1.0"
     "@types/geojson": "npm:^7946.0.7"
     apache-arrow: "npm:>= 17.0.0"
   peerDependencies:
-    "@loaders.gl/core": ~5.0.0-alpha.0
-  languageName: unknown
-  linkType: soft
+    "@loaders.gl/core": ~4.5.0
+  checksum: 10c0/30ba445aa9740b3572e3a066b1ae1431d2f7070d13815d50edb65e2b42d5c2360b23712cddbae8f7b1864b3e061a481f10eea4a95061b1b909c6db2d9a73e747
+  languageName: node
+  linkType: hard
 
-"@loaders.gl/schema@npm:^5.0.0-alpha.0, @loaders.gl/schema@workspace:modules/schema":
-  version: 0.0.0-use.local
-  resolution: "@loaders.gl/schema@workspace:modules/schema"
+"@loaders.gl/schema@npm:4.5.4, @loaders.gl/schema@npm:^4.3.3, @loaders.gl/schema@npm:^4.4.3":
+  version: 4.5.4
+  resolution: "@loaders.gl/schema@npm:4.5.4"
   dependencies:
-    "@math.gl/types": "npm:5.0.0-alpha.18"
     "@types/geojson": "npm:^7946.0.7"
     apache-arrow: "npm:>= 17.0.0"
-    zod: "npm:^4.1.12"
-  languageName: unknown
-  linkType: soft
+  checksum: 10c0/e38aeee1a085b6a90eca26f6fe203e05b1f327b258f3d834f0ff29b8ca0b32878c1a37578f2fb41a84b545cc5537f8d5f5ebdfd7fc8646d600112c8741de3a99
+  languageName: node
+  linkType: hard
 
 "@loaders.gl/scientific@workspace:*, @loaders.gl/scientific@workspace:modules/scientific":
   version: 0.0.0-use.local
   resolution: "@loaders.gl/scientific@workspace:modules/scientific"
   dependencies:
-    "@loaders.gl/schema": "npm:5.0.0-alpha.12"
     "@math.gl/crs": "npm:5.0.0-alpha.14"
     zarr: "npm:^0.5.0"
     zarrita: "npm:~0.7.1"
@@ -5805,7 +5767,6 @@ __metadata:
   resolution: "@loaders.gl/splats@workspace:modules/splats"
   dependencies:
     "@loaders.gl/compression": "npm:5.0.0-alpha.12"
-    "@loaders.gl/schema": "npm:5.0.0-alpha.12"
     apache-arrow: "npm:>= 17.0.0"
     zod: "npm:^4.1.12"
     zstd-codec: "npm:^0.1.0"
@@ -5820,8 +5781,6 @@ __metadata:
   dependencies:
     "@duckdb/duckdb-wasm": "npm:^1.33.1-dev45.0"
     "@duckdb/node-api": "npm:^1.5.2-r.1"
-    "@loaders.gl/schema": "npm:5.0.0-alpha.12"
-    "@loaders.gl/schema-utils": "npm:5.0.0-alpha.12"
     apache-arrow: "npm:>= 17.0.0"
     zod: "npm:^4.1.12"
   peerDependencies:
@@ -5853,8 +5812,6 @@ __metadata:
   dependencies:
     "@loaders.gl/arrow-geometry": "npm:5.0.0-alpha.12"
     "@loaders.gl/compression": "npm:5.0.0-alpha.12"
-    "@loaders.gl/schema": "npm:5.0.0-alpha.12"
-    "@loaders.gl/schema-utils": "npm:5.0.0-alpha.12"
     "@math.gl/wkb": "npm:5.0.0-alpha.18"
     "@probe.gl/log": "npm:^4.1.1"
     apache-arrow: "npm:>= 17.0.0"
@@ -5892,7 +5849,6 @@ __metadata:
   resolution: "@loaders.gl/textures@workspace:modules/textures"
   dependencies:
     "@loaders.gl/images": "npm:5.0.0-alpha.12"
-    "@loaders.gl/schema": "npm:5.0.0-alpha.12"
     "@math.gl/types": "npm:5.0.0-alpha.18"
     zod: "npm:^4.1.12"
   peerDependencies:
@@ -5917,8 +5873,6 @@ __metadata:
     "@loaders.gl/i3s": "npm:5.0.0-alpha.12"
     "@loaders.gl/images": "npm:5.0.0-alpha.12"
     "@loaders.gl/potree": "npm:5.0.0-alpha.12"
-    "@loaders.gl/schema": "npm:5.0.0-alpha.12"
-    "@loaders.gl/schema-utils": "npm:5.0.0-alpha.12"
     "@loaders.gl/textures": "npm:5.0.0-alpha.12"
     "@loaders.gl/tiles": "npm:5.0.0-alpha.12"
     "@loaders.gl/zip": "npm:5.0.0-alpha.12"
@@ -5951,8 +5905,6 @@ __metadata:
   resolution: "@loaders.gl/tiles@workspace:modules/tiles"
   dependencies:
     "@deck.gl/core": "npm:^9.4.0"
-    "@loaders.gl/schema": "npm:5.0.0-alpha.12"
-    "@loaders.gl/schema-utils": "npm:5.0.0-alpha.12"
     "@math.gl/core": "npm:5.0.0-alpha.18"
     "@math.gl/crs": "npm:5.0.0-alpha.18"
     "@math.gl/culling": "npm:5.0.0-alpha.18"
@@ -5991,7 +5943,6 @@ __metadata:
   resolution: "@loaders.gl/wkt@workspace:modules/wkt"
   dependencies:
     "@loaders.gl/arrow-geometry": "npm:5.0.0-alpha.12"
-    "@loaders.gl/schema": "npm:5.0.0-alpha.12"
     "@math.gl/crs": "npm:5.0.0-alpha.18"
     "@math.gl/wkb": "npm:5.0.0-alpha.18"
     fuzzer: "npm:^0.2.1"
@@ -6007,7 +5958,6 @@ __metadata:
     "@loaders.gl/arrow-geometry": "npm:5.0.0-alpha.12"
     "@loaders.gl/images": "npm:5.0.0-alpha.12"
     "@loaders.gl/raster": "npm:5.0.0-alpha.12"
-    "@loaders.gl/schema": "npm:5.0.0-alpha.12"
     "@loaders.gl/xml": "npm:5.0.0-alpha.12"
     "@math.gl/crs": "npm:5.0.0-alpha.18"
     "@math.gl/geospatial": "npm:5.0.0-alpha.18"
@@ -14771,7 +14721,6 @@ __metadata:
     "@deck.gl/react": "npm:^9.4.0"
     "@loaders.gl/deck-layers": "workspace:*"
     "@loaders.gl/geoarrow": "workspace:*"
-    "@loaders.gl/schema": "workspace:*"
     "@luma.gl/core": "npm:^9.4.0"
     "@luma.gl/engine": "npm:^9.4.0"
     "@luma.gl/shadertools": "npm:^9.4.0"
@@ -17292,8 +17241,6 @@ __metadata:
     "@deck.gl/layers": "npm:^9.4.0"
     "@deck.gl/react": "npm:^9.4.0"
     "@deck.gl/widgets": "npm:^9.4.0"
-    "@loaders.gl/schema": "workspace:*"
-    "@loaders.gl/schema-utils": "workspace:*"
     "@loaders.gl/sql": "workspace:*"
     "@luma.gl/core": "npm:^9.4.0"
     "@luma.gl/engine": "npm:^9.4.0"
@@ -23184,7 +23131,6 @@ __metadata:
     "@loaders.gl/core": "workspace:*"
     "@loaders.gl/deck-layers": "workspace:*"
     "@loaders.gl/ply": "workspace:*"
-    "@loaders.gl/schema": "workspace:*"
     "@luma.gl/core": "npm:^9.4.0"
     "@luma.gl/webgpu": "npm:^9.4.0"
     react: "npm:^19.2.5"
@@ -28362,8 +28308,6 @@ __metadata:
     "@loaders.gl/raster": "workspace:*"
     "@loaders.gl/scan": "workspace:*"
     "@loaders.gl/scene": "workspace:*"
-    "@loaders.gl/schema": "workspace:*"
-    "@loaders.gl/schema-utils": "workspace:*"
     "@loaders.gl/scientific": "workspace:*"
     "@loaders.gl/services": "workspace:*"
     "@loaders.gl/splats": "workspace:*"

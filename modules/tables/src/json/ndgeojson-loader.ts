@@ -9,7 +9,7 @@ import type {
   Feature,
   ObjectRowTable,
   TableBatch
-} from '@loaders.gl/schema';
+} from '@loaders.gl/core/schema';
 import {NDGeoJSONLoader, type NDGeoJSONLoaderOptions} from './ndgeojson-loader-types';
 import {
   convertGeoJSONFeaturesToArrowTable,

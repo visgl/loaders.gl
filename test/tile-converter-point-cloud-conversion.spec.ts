@@ -5,7 +5,7 @@
 import {expect, test, vi} from 'vitest';
 import {parse} from '@loaders.gl/core';
 import {Tiles3DLoader} from '@loaders.gl/3d-tiles/bundled';
-import {makeMeshArrowTable} from '@loaders.gl/schema-utils';
+import {makeMeshArrowTable} from '@loaders.gl/core/schema-utils';
 import type {PointCloudTileHeader, PointCloudTilesetSource} from '@loaders.gl/tiles';
 import {convertPointCloudSource} from '../apps/tile-converter/src/v5/point-cloud-conversion';
 import type {EncodedPointCloudSourceTile} from '../apps/tile-converter/src/v5/point-cloud-source-encoder';

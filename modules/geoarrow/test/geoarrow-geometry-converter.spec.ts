@@ -9,7 +9,7 @@ import {
   GEOARROW_POINT_FILE,
   GEOARROW_POINT_WKB_FILE
 } from '@loaders.gl/arrow/test/data/geoarrow/test-cases';
-import type {Feature, Geometry} from '@loaders.gl/schema';
+import type {Feature, Geometry} from '@loaders.gl/core/schema';
 import {
   convertGeoArrowGeometry,
   convertGeoArrowToTable,
@@ -26,7 +26,7 @@ import {
   mapGeoArrowCoordinates,
   rewindGeoArrow
 } from '@loaders.gl/geoarrow';
-import {convertArrowToSchema, convert} from '@loaders.gl/schema-utils';
+import {convertArrowToSchema, convert} from '@loaders.gl/core/schema-utils';
 import {convertGeometryToWKB} from '@loaders.gl/arrow-geometry/geometry-codecs';
 import type {GeoArrowGeometryTarget} from '../src/geoarrow-converter/convert-geoarrow-geometry';
 

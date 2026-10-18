@@ -3,7 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import type * as arrow from 'apache-arrow';
-import type {ArrowTableBatch, MeshArrowTable} from '@loaders.gl/schema';
+import type {ArrowTableBatch, MeshArrowTable} from '@loaders.gl/core/schema';
 
 /** Data accepted by MeshArrowPointCloudLayer. */
 export type MeshArrowPointCloudData =

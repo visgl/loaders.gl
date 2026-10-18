@@ -2,8 +2,8 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import type {Mesh, MeshArrowTable} from '@loaders.gl/schema';
-import {convertTableToMesh} from '@loaders.gl/schema-utils';
+import type {Mesh, MeshArrowTable} from '@loaders.gl/core/schema';
+import {convertTableToMesh} from '@loaders.gl/core/schema-utils';
 import {TileConversionError} from '@loaders.gl/tile-converter/v5/core';
 
 /** Explicit source-name mapping and authorized semantic losses. */

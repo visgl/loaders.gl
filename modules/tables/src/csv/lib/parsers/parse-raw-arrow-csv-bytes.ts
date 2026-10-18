@@ -2,8 +2,8 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import type {ArrowTable, Schema} from '@loaders.gl/schema';
-import {getArrowViewTypeSupport} from '@loaders.gl/schema-utils';
+import type {ArrowTable, Schema} from '@loaders.gl/core/schema';
+import {getArrowViewTypeSupport} from '@loaders.gl/core/schema-utils';
 import * as arrow from 'apache-arrow';
 
 import type {CSVRawArrowOptions} from './parse-csv-to-arrow';

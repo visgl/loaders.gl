@@ -9,7 +9,7 @@ import {
   convertGeometryToWKB,
   convertGeometryToWKT
 } from '@loaders.gl/arrow-geometry/geometry-codecs';
-import type {Geometry, Position} from '@loaders.gl/schema';
+import type {Geometry, Position} from '@loaders.gl/core/schema';
 import {convertGeoArrowGeometryToGeoJSON} from '../lib/geometry-converters/convert-geoarrow-to-geojson';
 import type {GeoArrowEncoding, GeoArrowMetadata} from '../metadata/geoarrow-metadata';
 import {getGeometryMetadataForField} from '../metadata/geoarrow-metadata';

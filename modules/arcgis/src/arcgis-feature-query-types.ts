@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import type {GeoJSONTable} from '@loaders.gl/schema';
+import type {GeoJSONTable} from '@loaders.gl/core/schema';
 import type {GetFeaturesParameters} from '@loaders.gl/core/loader-utils';
 import type {ArcGISFeatureServiceQueryOptions} from './arcgis-source-types';
 

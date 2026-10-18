@@ -15,7 +15,7 @@ import type {
   Feature,
   Schema,
   GeoArrowEncodingPreference
-} from '@loaders.gl/schema';
+} from '@loaders.gl/core/schema';
 import {TileSourceMetadata, DataSource, DataSourceOptions} from '@loaders.gl/core/loader-utils';
 import type {MLTLoaderOptions} from './mlt-loader';
 import {MLTFormat} from './mlt-format';

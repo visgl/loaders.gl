@@ -50,7 +50,7 @@ The `LASWriter` writes [Mesh](/docs/specifications/category-mesh) or [Mesh Arrow
 
 ```typescript
 import {encode} from '@loaders.gl/core';
-import type {Mesh, MeshArrowTable} from '@loaders.gl/schema';
+import type {Mesh, MeshArrowTable} from '@loaders.gl/core/schema';
 import {LASWriter} from '@loaders.gl/las';
 
 declare const pointCloud: Mesh | MeshArrowTable;

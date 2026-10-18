@@ -3,13 +3,13 @@
 // Copyright (c) vis.gl contributors
 
 import type {Loader, LoaderOptions} from '@loaders.gl/core/loader-utils';
-// import {GeoJSONTable} from '@loaders.gl/schema';
+// import {GeoJSONTable} from '@loaders.gl/core/schema';
 import type {
   GeoArrowEncodingPreference,
   GeoJSONTable,
   ObjectRowTable,
   ArrowTable
-} from '@loaders.gl/schema';
+} from '@loaders.gl/core/schema';
 import {KMLFormat} from './kml-format';
 
 // __VERSION__ is injected by babel-plugin-version-inline

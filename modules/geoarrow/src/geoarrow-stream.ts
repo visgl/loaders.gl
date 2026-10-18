@@ -9,8 +9,8 @@ import type {
   GeoArrowMetadata,
   GeoMetadata,
   GeoParquetGeometryType
-} from '@loaders.gl/schema';
-import {convertArrowToSchema} from '@loaders.gl/schema-utils';
+} from '@loaders.gl/core/schema';
+import {convertArrowToSchema} from '@loaders.gl/core/schema-utils';
 import {
   type GeoArrowGeometryConvertOptions,
   type GeoArrowGeometryTarget,

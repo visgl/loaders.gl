@@ -5,7 +5,7 @@
 import * as arrow from 'apache-arrow';
 import {expect, test} from 'vitest';
 import {inspectGeoArrowLayout} from '@loaders.gl/geoarrow';
-import type {GeoArrowEncoding} from '@loaders.gl/schema';
+import type {GeoArrowEncoding} from '@loaders.gl/core/schema';
 import {
   decodeWKTGeometryCollectionVector,
   decodeWKTNativeVector,

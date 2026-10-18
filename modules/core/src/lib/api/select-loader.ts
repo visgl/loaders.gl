@@ -12,7 +12,7 @@ import {
   isArrayBufferLike,
   isSourceLoader
 } from '@loaders.gl/core/loader-utils';
-import {TypedArray} from '@loaders.gl/schema';
+import {TypedArray} from '@loaders.gl/core/schema';
 import {normalizeLoader} from '../loader-utils/normalize-loader';
 import {normalizeLoaderOptions} from '../loader-utils/option-utils';
 import {getResourceUrl, getResourceMIMEType} from '../utils/resource-utils';

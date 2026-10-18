@@ -2,8 +2,8 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import type {Mesh, MeshArrowTable, MeshAttribute} from '@loaders.gl/schema';
-import {convertTableToMesh} from '@loaders.gl/schema-utils';
+import type {Mesh, MeshArrowTable, MeshAttribute} from '@loaders.gl/core/schema';
+import {convertTableToMesh} from '@loaders.gl/core/schema-utils';
 import type {WriterOptions, WriterWithEncoder} from '@loaders.gl/core/loader-utils';
 import type {PotreeAttribute, PotreeMetadata} from './types/potree-metadata';
 import type {Potree2Attribute, Potree2AttributeType, Potree2Metadata} from './potree2-types';

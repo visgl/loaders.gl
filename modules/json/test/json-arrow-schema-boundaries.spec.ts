@@ -3,7 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import {expect, test} from 'vitest';
-import type {Field, Schema} from '@loaders.gl/schema';
+import type {Field, Schema} from '@loaders.gl/core/schema';
 import {
   convertRowTableToArrowTable,
   convertTableBatchesToArrow,

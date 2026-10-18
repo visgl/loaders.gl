@@ -12,7 +12,7 @@ import type {
   MultiPoint,
   MultiLineString,
   MultiPolygon
-} from '@loaders.gl/schema';
+} from '@loaders.gl/core/schema';
 import {TWKBReader as BinaryReader} from './twkb-io';
 import {TWKBGeometryType as WKBGeometryType} from './twkb-types';
 

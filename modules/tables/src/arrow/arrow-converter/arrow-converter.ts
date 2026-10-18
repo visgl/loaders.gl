@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import type {Converter} from '@loaders.gl/schema-utils';
+import type {Converter} from '@loaders.gl/core/schema-utils';
 import {convertArrow, isApacheArrowTable} from './convert-arrow';
 
 const convertArrowUnchecked = convertArrow as (

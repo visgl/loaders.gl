@@ -11,7 +11,7 @@ import type {
   TableScanReadOptions,
   TableScanSource
 } from '@loaders.gl/core/loader-utils';
-import type {TableBatch} from '@loaders.gl/schema';
+import type {TableBatch} from '@loaders.gl/core/schema';
 import {DataSource} from '@loaders.gl/core/loader-utils';
 import type {CSVLoaderOptions} from './csv-loader-options';
 import {CSVFormat} from './csv-format';

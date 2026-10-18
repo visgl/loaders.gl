@@ -12,7 +12,7 @@ import {
   validateGeoArrowField,
   validateGeoArrowVector
 } from '@loaders.gl/geoarrow';
-import type {GeoArrowEncoding} from '@loaders.gl/schema';
+import type {GeoArrowEncoding} from '@loaders.gl/core/schema';
 
 /** Creates a minimal Arrow vector around hand-authored physical data. */
 function makeDataVector(type: arrow.DataType, data: Record<string, unknown>): arrow.Vector {

@@ -4,7 +4,7 @@
 
 import {TypedArray} from '@math.gl/types';
 import * as arrow from 'apache-arrow';
-import {getDataTypeFromArray, deserializeArrowType} from '@loaders.gl/schema-utils';
+import {getDataTypeFromArray, deserializeArrowType} from '@loaders.gl/core/schema-utils';
 
 export function isListFixedSizeList(
   vector: arrow.Vector

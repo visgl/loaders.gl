@@ -5,7 +5,7 @@
 import {expect, test} from 'vitest';
 import {fetchFile} from '@loaders.gl/core';
 import {convertGeometryToTWKB, convertTWKBToGeometry} from '../src/twkb';
-import type {Geometry} from '@loaders.gl/schema';
+import type {Geometry} from '@loaders.gl/core/schema';
 import {parseTestCases} from '@loaders.gl/wkt/test/data/wkt/parse-test-cases';
 import {TWKBWriter} from '../src/twkb/twkb-io';
 

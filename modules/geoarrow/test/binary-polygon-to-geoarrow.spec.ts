@@ -3,7 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import {expect, test} from 'vitest';
-import type {BinaryPolygonGeometry} from '@loaders.gl/schema';
+import type {BinaryPolygonGeometry} from '@loaders.gl/core/schema';
 import {getGeoArrowRowBounds, makeGeoArrowColumnFromBinaryPolygon} from '@loaders.gl/geoarrow';
 import {
   getGeoArrowBounds,

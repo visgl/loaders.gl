@@ -17,7 +17,7 @@ import {
   RepetitionType,
   SchemaDefinition
 } from './declare';
-import type {ArrayType} from '@loaders.gl/schema';
+import type {ArrayType} from '@loaders.gl/core/schema';
 import {materializeColumns, materializeRows, shredBuffer, shredRecord} from './shred';
 import {PARQUET_LOGICAL_TYPES} from './types';
 

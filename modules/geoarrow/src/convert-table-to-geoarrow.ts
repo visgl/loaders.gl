@@ -13,8 +13,8 @@ import type {
   GeoArrowEncodingPreference,
   GeoJSONTable,
   Table
-} from '@loaders.gl/schema';
-import {convertTableToArrow} from '@loaders.gl/schema-utils';
+} from '@loaders.gl/core/schema';
+import {convertTableToArrow} from '@loaders.gl/core/schema-utils';
 import type * as arrow from 'apache-arrow';
 import {convertGeoArrowGeometry} from './geoarrow-converter/convert-geoarrow-geometry';
 import type {GeoArrowGeometryConvertOptions} from './geoarrow-converter/convert-geoarrow-geometry';

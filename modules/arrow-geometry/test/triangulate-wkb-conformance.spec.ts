@@ -6,7 +6,7 @@ import {
   convertGeometryToWKB,
   convertWKBToGeometry
 } from '@loaders.gl/arrow-geometry/geometry-codecs';
-import type {Geometry, Position} from '@loaders.gl/schema';
+import type {Geometry, Position} from '@loaders.gl/core/schema';
 import {parseTestCases} from '@loaders.gl/wkt/test/data/wkt/parse-test-cases';
 const WKB_2D_TEST_CASES = '@loaders.gl/wkt/test/data/wkt/wkb-testdata2d.json';
 const WKB_Z_TEST_CASES = '@loaders.gl/wkt/test/data/wkt/wkb-testdataZ.json';

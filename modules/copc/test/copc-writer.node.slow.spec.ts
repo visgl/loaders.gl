@@ -4,7 +4,7 @@
 
 import {encodeSync} from '@loaders.gl/core';
 import {COPCWriter} from '@loaders.gl/copc';
-import {deduceMeshSchema} from '@loaders.gl/schema-utils';
+import {deduceMeshSchema} from '@loaders.gl/core/schema-utils';
 import {Copc} from 'copc';
 import {expect, test} from 'vitest';
 

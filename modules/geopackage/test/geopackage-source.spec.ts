@@ -1,7 +1,7 @@
 import {expect, test} from 'vitest';
 import * as arrow from 'apache-arrow';
 import {createDataSource, fetchFile, load, setLoaderOptions} from '@loaders.gl/core';
-import {getTableRowAsObject} from '@loaders.gl/schema-utils';
+import {getTableRowAsObject} from '@loaders.gl/core/schema-utils';
 import {GeoPackageDataSource, GeoPackageSource} from '@loaders.gl/geopackage';
 import {GeoPackageLoader as BundledGeoPackageLoader} from '@loaders.gl/geopackage/bundled';
 const GPKG_RIVERS_MULTI = '@loaders.gl/geopackage/test/data/rivers_multi.gpkg';

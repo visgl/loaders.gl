@@ -42,7 +42,7 @@ GeoArrow processing, or core.
 ```typescript
 import {makeWKBGeometryField} from '@loaders.gl/arrow-geometry/geometry-field';
 import {makeWKBGeometryDataFromWriters} from '@loaders.gl/arrow-geometry/wkb-arrow-utils';
-import {getGeoMetadata} from '@loaders.gl/schema';
+import {getGeoMetadata} from '@loaders.gl/core/schema';
 ```
 
 The codec subpath preserves null-on-invalid WKT, optional EWKT CRS properties,

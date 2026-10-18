@@ -3,10 +3,10 @@
 // Copyright (c) vis.gl contributors
 
 import * as arrow from 'apache-arrow';
-import type {ArrowTable} from '@loaders.gl/schema';
+import type {ArrowTable} from '@loaders.gl/core/schema';
 import {makeWKBGeometryDataFromWriters} from '@loaders.gl/arrow-geometry/wkb-arrow-utils';
 import {type WKBBuilder} from '@loaders.gl/arrow-geometry';
-import {convertArrowToSchema} from '@loaders.gl/schema-utils';
+import {convertArrowToSchema} from '@loaders.gl/core/schema-utils';
 import type {ProtoTile} from './proto-tile';
 import type {ProtoFeature} from './features/proto-feature';
 import {classifyRings} from '../utils/geometry-utils';

@@ -48,7 +48,7 @@ main process.
 ## Usage
 
 ```typescript
-import type {Feature} from '@loaders.gl/schema';
+import type {Feature} from '@loaders.gl/core/schema';
 import {convertGeojsonToBinaryFeatureCollection} from '@loaders.gl/geoarrow';
 
 const features: Feature[] = [{

@@ -12,7 +12,7 @@ import type {
   Feature,
   Geometry,
   ObjectRowTable
-} from '@loaders.gl/schema';
+} from '@loaders.gl/core/schema';
 
 const features: Feature<Geometry | null>[] = [
   {

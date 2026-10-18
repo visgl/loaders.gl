@@ -27,7 +27,7 @@ export type {
   GeoArrowEncoding,
   GeoArrowEncodingPreference,
   GeoArrowBox
-} from '@loaders.gl/schema';
+} from '@loaders.gl/core/schema';
 export type {
   GeoArrowConvertToOptions,
   GeoArrowConvertFromOptions

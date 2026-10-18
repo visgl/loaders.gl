@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import {convertColorArrayToFloat16, convertColorArrayToFloat32} from '@loaders.gl/schema';
+import {convertColorArrayToFloat16, convertColorArrayToFloat32} from '@loaders.gl/core/schema';
 import type {
   Schema,
   Field,
@@ -10,12 +10,12 @@ import type {
   MeshArrowTable,
   ArrowTableBatch,
   MeshAttribute
-} from '@loaders.gl/schema';
+} from '@loaders.gl/core/schema';
 import {
   ArrowTableBuilder,
   makeMeshArrowTable,
   type MeshArrowAttributes
-} from '@loaders.gl/schema-utils';
+} from '@loaders.gl/core/schema-utils';
 import type {
   CoreAPI,
   SourceLoader,

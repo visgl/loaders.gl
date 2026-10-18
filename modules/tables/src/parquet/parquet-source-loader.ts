@@ -2,7 +2,10 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import {dehydrateArrowTable, hydrateArrowTable} from '@loaders.gl/schema-utils/arrow-transport';
+import {
+  dehydrateArrowTable,
+  hydrateArrowTable
+} from '@loaders.gl/core/schema-utils/arrow-transport';
 import {IndexedArrowTable} from '../arrow/lib/utils/indexed-arrow-table';
 import type {CoreAPI, ReadableFile, SourceLoader} from '@loaders.gl/core/loader-utils';
 import {
@@ -22,9 +25,9 @@ import type {
   ScanQueryMetadataOptions,
   TableScanSource
 } from '@loaders.gl/core/loader-utils';
-import type {ArrayType, ArrowTable, Schema} from '@loaders.gl/schema';
-import {convertTable} from '@loaders.gl/schema-utils';
-import {getGeoMetadata} from '@loaders.gl/schema';
+import type {ArrayType, ArrowTable, Schema} from '@loaders.gl/core/schema';
+import {convertTable} from '@loaders.gl/core/schema-utils';
+import {getGeoMetadata} from '@loaders.gl/core/schema';
 
 import {getSchemaFromParquetReader} from './lib/parsers/get-parquet-schema';
 import {

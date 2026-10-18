@@ -14,8 +14,8 @@ import {Map} from 'react-map-gl'
 import maplibregl from 'maplibre-gl'
 import {tableFromJSON} from 'apache-arrow'
 
-import type {ArrowTable} from '@loaders.gl/schema'
-import {convertArrowToTable} from '@loaders.gl/schema-utils'
+import type {ArrowTable} from '@loaders.gl/core/schema'
+import {convertArrowToTable} from '@loaders.gl/core/schema-utils'
 import {
   bindSQLPredicate,
   compileSQLTableQuery,

@@ -48,7 +48,10 @@ test.each([
     expect(manifest[section] ?? {}).not.toHaveProperty('@loaders.gl/geoarrow');
   }
   expect(readSources(join(directory, 'src'))).not.toMatch(
-    /(?:from\s+|import\s*\()(['"])@loaders\.gl\/(?:gis|geoarrow|core(?!\/(?:loader-utils|worker-utils)(?:\/|\1)))(?:\/|\1)/
+    /(?:from\s+|import\s*\()(['"])@loaders\.gl\/(?:gis|geoarrow)(?:\/|\1)/
+  );
+  expect(readSources(join(directory, 'src'))).not.toMatch(
+    /(?:from\s+|import\s*\()(['"])@loaders\.gl\/core\1/
   );
 });
 
@@ -98,13 +101,13 @@ test.each([
 });
 
 test('the schema root keeps runtime geospatial validation on its explicit subpath', () => {
-  const directory = join(modulesDirectory, 'schema');
+  const directory = join(modulesDirectory, 'core');
   const manifest = JSON.parse(readFileSync(join(directory, 'package.json'), 'utf8'));
-  expect(manifest.exports['./geospatial-metadata-zod-schema']).toMatchObject({
-    import: './dist/geospatial-metadata-zod-schema.js',
-    require: './dist/geospatial-metadata-zod-schema.cjs'
+  expect(manifest.exports['./schema/geospatial-metadata-zod-schema']).toMatchObject({
+    import: './dist/schema/geospatial-metadata-zod-schema.js',
+    require: './dist/schema/geospatial-metadata-zod-schema.cjs'
   });
-  expect(readFileSync(join(directory, 'src/index.ts'), 'utf8')).not.toMatch(
+  expect(readFileSync(join(directory, 'src/schema/index.ts'), 'utf8')).not.toMatch(
     /from ['"](?:zod|.*geospatial-metadata-zod-schema)['"]/
   );
 });

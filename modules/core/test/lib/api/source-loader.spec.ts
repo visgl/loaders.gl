@@ -20,7 +20,7 @@ import {
 import {PMTilesSourceLoader, PMTilesTileSource} from '@loaders.gl/pmtiles';
 import {WMSSourceLoader, WMSImageSource} from '@loaders.gl/wms';
 import {OMEZarrSourceLoader, OMEZarrImageSource} from '@loaders.gl/scientific/zarr';
-import type {Feature, GeoJSONTable} from '@loaders.gl/schema';
+import type {Feature, GeoJSONTable} from '@loaders.gl/core/schema';
 
 const GEOJSON_TABLE: GeoJSONTable = {
   shape: 'geojson-table',

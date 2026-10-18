@@ -4,7 +4,7 @@
 
 import {encode, load} from '@loaders.gl/core';
 import {ParquetJSWriter, ParquetLoader} from '@loaders.gl/parquet';
-import type {ObjectRowTable} from '@loaders.gl/schema';
+import type {ObjectRowTable} from '@loaders.gl/core/schema';
 import {expect, test} from 'vitest';
 
 test('ParquetLoader decodes UTF8 BYTE_ARRAY values as strings (#3122)', async () => {

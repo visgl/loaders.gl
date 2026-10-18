@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import type {ArrowTable, Schema} from '@loaders.gl/schema';
+import type {ArrowTable, Schema} from '@loaders.gl/core/schema';
 import {DataSource} from '@loaders.gl/core/loader-utils';
 import type {CoreAPI, RequiredOptions} from '@loaders.gl/core/loader-utils';
 

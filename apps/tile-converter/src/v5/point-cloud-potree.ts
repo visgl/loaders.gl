@@ -2,8 +2,8 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import type {Mesh, MeshArrowTable} from '@loaders.gl/schema';
-import {PointCloudTiler, type PointCloudTilerOptions} from '@loaders.gl/schema-utils';
+import type {Mesh, MeshArrowTable} from '@loaders.gl/core/schema';
+import {PointCloudTiler, type PointCloudTilerOptions} from '@loaders.gl/core/schema-utils';
 import {encodePotreeDataset} from '@loaders.gl/potree';
 import type {PotreeDataset, PotreeWriterNode, PotreeWriterOptions} from '@loaders.gl/potree';
 import {encodePotreeDatasetArchive} from './point-cloud-file.js';

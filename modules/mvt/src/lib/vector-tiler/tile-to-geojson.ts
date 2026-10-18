@@ -4,7 +4,7 @@
 // Forked from https://github.com/mapbox/geojson-vt under compatible ISC license
 
 import {ProtoTile} from './proto-tile';
-import {Feature, GeoJSONTable} from '@loaders.gl/schema';
+import {Feature, GeoJSONTable} from '@loaders.gl/core/schema';
 
 import {projectToLngLat, convertToLocalCoordinates} from '../utils/geometry-utils';
 

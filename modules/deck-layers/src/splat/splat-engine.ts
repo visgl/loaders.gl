@@ -12,7 +12,7 @@ import {
   type Shader
 } from '@luma.gl/core';
 import type {Color} from '@deck.gl/core';
-import type {ArrowTableBatch} from '@loaders.gl/schema';
+import type {ArrowTableBatch} from '@loaders.gl/core/schema';
 import {BoundingSphere, CullingVolume} from '@math.gl/culling';
 import {
   projectSplatCovarianceToScreen,

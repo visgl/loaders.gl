@@ -8,7 +8,7 @@ import type {
   GeoArrowDimension,
   GeoArrowEncoding,
   GeoArrowOffsetType
-} from '@loaders.gl/schema';
+} from '@loaders.gl/core/schema';
 import {getGeometryMetadataForField} from './metadata/geoarrow-metadata';
 import {
   getGeoArrowUnionDimension,

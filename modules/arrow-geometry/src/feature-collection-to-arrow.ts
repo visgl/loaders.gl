@@ -2,8 +2,8 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import type {ArrowTable, Feature, Field, GeoJsonProperties, Schema} from '@loaders.gl/schema';
-import {ArrowTableBuilder} from '@loaders.gl/schema-utils';
+import type {ArrowTable, Feature, Field, GeoJsonProperties, Schema} from '@loaders.gl/core/schema';
+import {ArrowTableBuilder} from '@loaders.gl/core/schema-utils';
 import {
   encodeWKBGeometryValue,
   inferGeoParquetGeometryTypes,

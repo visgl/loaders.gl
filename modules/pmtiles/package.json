@@ -68,7 +68,6 @@
     "@loaders.gl/images": "5.0.0-alpha.12",
     "@loaders.gl/mlt": "5.0.0-alpha.12",
     "@loaders.gl/mvt": "5.0.0-alpha.12",
-    "@loaders.gl/schema": "5.0.0-alpha.12",
     "pmtiles": "^4.5.0"
   },
   "peerDependencies": {

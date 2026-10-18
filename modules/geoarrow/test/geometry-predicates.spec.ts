@@ -3,7 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import {expect, test} from 'vitest';
-import type {Geometry} from '@loaders.gl/schema';
+import type {Geometry} from '@loaders.gl/core/schema';
 import {intersectsCoordinate, intersectsExtent} from '../src/lib/geometry-predicates';
 
 const polygon: Geometry = {

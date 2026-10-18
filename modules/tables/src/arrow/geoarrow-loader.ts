@@ -9,7 +9,7 @@ import type {
   ArrowTableBatch,
   GeoJSONTable,
   GeoJSONTableBatch
-} from '@loaders.gl/schema';
+} from '@loaders.gl/core/schema';
 import {parseGeoArrowSync, parseGeoArrowInBatches} from './lib/parsers/parse-geoarrow';
 import type {GeoArrowLoaderOptions} from './exports/geoarrow-loader';
 import {GeoArrowLoader as GeoArrowLoaderMetadata} from './geoarrow-loader-types';

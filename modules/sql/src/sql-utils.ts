@@ -3,8 +3,8 @@
 // Copyright (c) vis.gl contributors
 
 import * as arrow from 'apache-arrow';
-import type {ArrowTable, DataType, Field, ObjectRowTable, Schema} from '@loaders.gl/schema';
-import {makeTableFromData, getDataTypeFromArray} from '@loaders.gl/schema-utils';
+import type {ArrowTable, DataType, Field, ObjectRowTable, Schema} from '@loaders.gl/core/schema';
+import {makeTableFromData, getDataTypeFromArray} from '@loaders.gl/core/schema-utils';
 
 import type {SQLColumnInfo} from './sql-types';
 

@@ -4,7 +4,7 @@
 
 import type * as arrow from 'apache-arrow';
 import type {Color} from '@deck.gl/core';
-import type {MeshArrowTable} from '@loaders.gl/schema';
+import type {MeshArrowTable} from '@loaders.gl/core/schema';
 
 const SH_C0 = 0.28209479177387814;
 const DEFAULT_COLOR = [255, 255, 255, 255] as const;

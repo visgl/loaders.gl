@@ -8,7 +8,7 @@ import {
   convertFeaturesToGeoArrowTable,
   convertGeoArrowGeometry
 } from '@loaders.gl/geoarrow';
-import type {Geometry} from '@loaders.gl/schema';
+import type {Geometry} from '@loaders.gl/core/schema';
 
 let index: GeoArrowSpatialIndex;
 beforeAll(() => {

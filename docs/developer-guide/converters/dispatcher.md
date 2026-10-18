@@ -33,7 +33,7 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
   ]}
 />
 
-The shared dispatcher lives in `@loaders.gl/schema-utils`:
+The shared dispatcher lives in `@loaders.gl/core/schema-utils`:
 
 <ReferenceBoundary
   title="Dispatcher contract and path selection"
@@ -75,7 +75,7 @@ Each converter object may define:
 If you pass:
 
 ```ts
-import {convert, TableConverter} from '@loaders.gl/schema-utils';
+import {convert, TableConverter} from '@loaders.gl/core/schema-utils';
 import {ArrowConverter} from '@loaders.gl/arrow';
 
 const objectRows = convert(arrowTable, 'object-row-table', [ArrowConverter, TableConverter]);

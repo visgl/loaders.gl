@@ -7,7 +7,7 @@ import * as unbundledTerrain from '@loaders.gl/raster/terrain/unbundled';
 import {setLoaderOptions, load, registerLoaders} from '@loaders.gl/core';
 import {ImageLoader} from '@loaders.gl/images';
 import {validateArrowTableSchema} from '@loaders.gl/arrow';
-import {indexedMeshArrowSchema} from '@loaders.gl/schema';
+import {indexedMeshArrowSchema} from '@loaders.gl/core/schema';
 registerLoaders([ImageLoader]);
 const TERRARIUM_TERRAIN_PNG_URL = '@loaders.gl/raster/test/terrain/data/terrarium.png';
 const TILE_WITH_EXTENSIONS_URL =

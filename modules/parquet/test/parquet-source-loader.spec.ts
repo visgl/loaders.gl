@@ -7,7 +7,7 @@ import {expect, test} from 'vitest';
 import {hydrateArrowTable} from '@loaders.gl/arrow';
 import {createDataSource, encode, fetchFile, load, isBrowser} from '@loaders.gl/core';
 import {BlobFile} from '@loaders.gl/core/loader-utils';
-import type {ObjectRowTable} from '@loaders.gl/schema';
+import type {ObjectRowTable} from '@loaders.gl/core/schema';
 import {
   PARQUET_SOURCE_CAPABILITIES,
   type ParquetBatch,

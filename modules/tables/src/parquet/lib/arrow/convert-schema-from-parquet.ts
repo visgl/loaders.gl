@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import {Schema, Field, DataType} from '@loaders.gl/schema';
+import {Schema, Field, DataType} from '@loaders.gl/core/schema';
 
 import type {ParquetSchema} from '../../parquetjs/schema/schema';
 import type {FieldDefinition, ParquetType, SchemaDefinition} from '../../parquetjs/schema/declare';

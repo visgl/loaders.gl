@@ -20,7 +20,7 @@ import {
   GeoArrowLayer,
   type GeoArrowLayerProps
 } from '@loaders.gl/deck-layers';
-import type {ArrowTable} from '@loaders.gl/schema';
+import type {ArrowTable} from '@loaders.gl/core/schema';
 import {GeoJsonLayer} from '@deck.gl/layers';
 /**
  * Loads an Apache Arrow table from a GeoArrow test fixture.

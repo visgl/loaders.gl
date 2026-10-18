@@ -11,8 +11,8 @@ import type {
   PotreeWriterOptions,
   PotreeSourceLoaderOptions
 } from '@loaders.gl/potree';
-import type {Mesh, MeshArrowTable, MeshGeometry} from '@loaders.gl/schema';
-import {deduceMeshSchema} from '@loaders.gl/schema-utils';
+import type {Mesh, MeshArrowTable, MeshGeometry} from '@loaders.gl/core/schema';
+import {deduceMeshSchema} from '@loaders.gl/core/schema-utils';
 import {encodeZip, openZipArchive} from '@loaders.gl/zip';
 import type {ZipArchive, ZipEntry} from '@loaders.gl/zip';
 

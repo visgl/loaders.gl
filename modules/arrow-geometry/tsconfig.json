@@ -13,10 +13,7 @@
   },
   "references": [
     {
-      "path": "../schema"
-    },
-    {
-      "path": "../schema-utils"
+      "path": "../core"
     }
   ]
 }

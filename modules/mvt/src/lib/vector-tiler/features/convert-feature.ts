@@ -6,7 +6,7 @@
 /* eslint-disable */
 // @ts-nocheck
 
-import type {Feature, FeatureCollection} from '@loaders.gl/schema';
+import type {Feature, FeatureCollection} from '@loaders.gl/core/schema';
 import type {ProtoFeature} from './proto-feature';
 
 import {createProtoFeature} from './proto-feature';

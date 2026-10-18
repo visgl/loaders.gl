@@ -3,7 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import type {LASCompatibilityLayout} from './las-compatibility';
-import type {Mesh} from '@loaders.gl/schema';
+import type {Mesh} from '@loaders.gl/core/schema';
 import type {WKTCRSDefinition} from '@math.gl/crs';
 
 /** LAS Variable Length Record metadata and payload. */

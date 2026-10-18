@@ -54,6 +54,13 @@ v4.5 is additive. Existing loaders and defaults continue to work unchanged, exce
 
 ## Upgrading to v5.0
 
+**Schema packages move into core subpaths**
+
+- Replace imports from `@loaders.gl/schema` with `@loaders.gl/core/schema`, and imports from `@loaders.gl/schema-utils` with `@loaders.gl/core/schema-utils`.
+- Use `@loaders.gl/core/schema-utils/arrow-transport` for Arrow transport helpers and `@loaders.gl/core/schema/geospatial-metadata-zod-schema` for runtime metadata validation. The GeoParquet and GeoArrow JSON schema files are exported under `@loaders.gl/core/schema/`.
+- Install `@loaders.gl/core` as the package. Published loaders use it as a peer dependency so applications can provide one compatible core version.
+
+
 ### Core utility subpaths
 
 The standalone `@loaders.gl/loader-utils` and `@loaders.gl/worker-utils` packages have moved to
@@ -274,10 +281,10 @@ itself and the separate `Tileset3D.loadOptions` API are not removed by this chan
 - `@loaders.gl/gis` is removed in 5.0. Applications should replace it with
   `@loaders.gl/geoarrow` for conversion and processing. Use `GEOARROW_CONVERTERS`
   instead of `GIS_CONVERTERS`.
-- Import geometry and metadata types from `@loaders.gl/schema`. Runtime validators
-  use `@loaders.gl/schema/geospatial-metadata-zod-schema`; generated schemas use
-  `@loaders.gl/schema/geoparquet.schema.json` and
-  `@loaders.gl/schema/geoarrow-metadata.schema.json`.
+- Import geometry and metadata types from `@loaders.gl/core/schema`. Runtime validators
+  use `@loaders.gl/core/schema/geospatial-metadata-zod-schema`; generated schemas use
+  `@loaders.gl/core/schema/geoparquet.schema.json` and
+  `@loaders.gl/core/schema/geoarrow-metadata.schema.json`.
 - Use `convertGeojsonToBinaryFeatureCollection` and
   `convertBinaryFeatureCollectionToGeojson` from GeoArrow instead of the old
   `geojsonToBinary` and `binaryToGeojson` aliases. Existing binary layouts are unchanged;
@@ -289,9 +296,9 @@ itself and the separate `Tileset3D.loadOptions` API are not removed by this chan
 
  - The nonfunctional `@loaders.gl/images` `loadImage()` placeholder has been removed. Use
    `load(url, ImageBitmapLoader)` or the texture helpers in `@loaders.gl/textures`.
- - `getMeshSize` is no longer exported from `@loaders.gl/schema`; import it from
-   `@loaders.gl/schema-utils`. The `getMeshBoundingBox` root export is deprecated and retained
-   temporarily for deck.gl 9.4 compatibility; migrate imports to `@loaders.gl/schema-utils`.
+ - `getMeshSize` is no longer exported from `@loaders.gl/core/schema`; import it from
+   `@loaders.gl/core/schema-utils`. The `getMeshBoundingBox` root export is deprecated and retained
+   temporarily for deck.gl 9.4 compatibility; migrate imports to `@loaders.gl/core/schema-utils`.
  - CRS forwarding exports (`PROJ4CRS`, `WKTCRS`, `parseWKTCRS`, and `encodeWKTCRS`) are no
    longer exported from `@loaders.gl/gis`; import the canonical definitions and helpers from
    `@math.gl/crs`.
@@ -681,7 +688,7 @@ Loader module changes, in order of estimated impact to applications:
 **@loaders.gl/geopackage**
 
 - `options.geopackage.shape` replaces all other format specification options, such as `options.gis.format`
-- `options.geopackage.shape: 'tables'` - The default data format returned is now `tables` which returns the type `Tables<ObjectRowTable>`, where the `data` of each table is an array of GeoJSON features. (The `Tables` and `ObjectRowTable` types are exported from `@loaders.gl/schema`.) You can use `options.geopackage.shape: 'geojson-table'`.
+- `options.geopackage.shape: 'tables'` - The default data format returned is now `tables` which returns the type `Tables<ObjectRowTable>`, where the `data` of each table is an array of GeoJSON features. (The `Tables` and `ObjectRowTable` types are exported from `@loaders.gl/core/schema`.) You can use `options.geopackage.shape: 'geojson-table'`.
 
 **@loaders.gl/kml**
 
@@ -713,7 +720,7 @@ This module is still marked as experimental and had some breaking changes.
 
 **@loaders.gl/geopackage**
 
-- The default data format returned is now `options.gis.format: 'tables'`, which returns the type `Tables<ObjectRowTable>`, where the `data` of each table is an array of GeoJSON features. (The `Tables` and `ObjectRowTable` types are exported from `@loaders.gl/schema`.) You can use `options.gis.format: 'geojson'` to return an object mapping table names to an array of GeoJSON features.
+- The default data format returned is now `options.gis.format: 'tables'`, which returns the type `Tables<ObjectRowTable>`, where the `data` of each table is an array of GeoJSON features. (The `Tables` and `ObjectRowTable` types are exported from `@loaders.gl/core/schema`.) You can use `options.gis.format: 'geojson'` to return an object mapping table names to an array of GeoJSON features.
 
 ## Upgrading to v3.0
 
@@ -782,7 +789,7 @@ Default number of worker threads for each loader has been reduced from `5` to `3
 
 **@loaders.gl/tables**
 
-- The (undocumented) `@loaders.gl/tables` module has been renamed to `@loaders.gl/schema`.
+- The (undocumented) `@loaders.gl/tables` module has been renamed to `@loaders.gl/core/schema`.
 
 ## Upgrading to v2.3
 

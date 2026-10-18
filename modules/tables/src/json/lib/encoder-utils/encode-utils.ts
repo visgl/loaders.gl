@@ -4,8 +4,8 @@
 // Copyright 2022 Foursquare Labs, Inc.
 
 import {convertWKTToGeometry} from '@loaders.gl/arrow-geometry/geometry-codecs';
-import type {Feature, Geometry, Table} from '@loaders.gl/schema';
-import {getTableLength, getTableNumCols, getTableRowAsArray} from '@loaders.gl/schema-utils';
+import type {Feature, Geometry, Table} from '@loaders.gl/core/schema';
+import {getTableLength, getTableNumCols, getTableRowAsArray} from '@loaders.gl/core/schema-utils';
 
 type Row = {[key: string]: unknown};
 

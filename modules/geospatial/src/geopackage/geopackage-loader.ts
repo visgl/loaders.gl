@@ -3,7 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import type {LoaderWithParser} from '@loaders.gl/core/loader-utils';
-import {GeoJSONTable, ArrowTable} from '@loaders.gl/schema';
+import {GeoJSONTable, ArrowTable} from '@loaders.gl/core/schema';
 import {parseGeoPackage} from './lib/parse-geopackage';
 import {GeoPackageLoader as GeoPackageLoaderMetadata} from './geopackage-loader-types';
 

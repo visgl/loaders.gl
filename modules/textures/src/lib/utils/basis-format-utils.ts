@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import type {TextureFormat} from '@loaders.gl/schema';
+import type {TextureFormat} from '@loaders.gl/core/schema';
 import type {
   BasisASTCBlockSize,
   BasisFormat,

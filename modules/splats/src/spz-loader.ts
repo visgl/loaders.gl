@@ -3,7 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import type {LoaderWithParser} from '@loaders.gl/core/loader-utils';
-import type {MeshArrowTable} from '@loaders.gl/schema';
+import type {MeshArrowTable} from '@loaders.gl/core/schema';
 import type {SplatsLoaderOptions} from './types';
 import {parseSPZ} from './lib/parse-spz';
 import {SPZLoader as SPZLoaderMetadata} from './spz-loader-types';

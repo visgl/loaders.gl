@@ -60,7 +60,7 @@ function makeAliases() {
     '@loaders.gl/core/polyfills/test': resolveTestPath('./modules/core/test/polyfills-package'),
     '@loaders.gl/potree/test': resolveTestPath('./modules/potree/test'),
     '@loaders.gl/shapefile/test': resolveTestPath('./modules/shapefile/test'),
-    '@loaders.gl/schema/test': resolveTestPath('./modules/schema/test'),
+    '@loaders.gl/core/schema/test': resolveTestPath('./modules/core/test/schema-package'),
     '@loaders.gl/raster/test/terrain': resolveTestPath('./modules/raster/test/terrain'),
     '@loaders.gl/textures/test': resolveTestPath('./modules/textures/test'),
     '@loaders.gl/tile-converter/test': resolveTestPath('./apps/tile-converter/test'),

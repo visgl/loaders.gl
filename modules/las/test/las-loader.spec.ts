@@ -4,9 +4,9 @@
 
 import {expect, test} from 'vitest';
 import {fetchFile, parse, parseInBatches} from '@loaders.gl/core';
-import {getFloat16Value, isNativeFloat16Array} from '@loaders.gl/schema';
+import {getFloat16Value, isNativeFloat16Array} from '@loaders.gl/core/schema';
 import {LASLoader, LASWorkerLoader} from '@loaders.gl/las';
-import type {MeshArrowTable} from '@loaders.gl/schema';
+import type {MeshArrowTable} from '@loaders.gl/core/schema';
 import {validateLoader} from 'test/common/conformance';
 import {parseLASHeader} from '../src/lib/typescript/parse-las';
 
